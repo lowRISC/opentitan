@@ -43,8 +43,7 @@ module alert_handler_reg_wrap import alert_pkg::*; (
     .hw2reg,
     .shadowed_storage_err_o(reg2hw_wrap.shadowed_err_storage),
     .shadowed_update_err_o(reg2hw_wrap.shadowed_err_update),
-    .intg_err_o(fatal_integ_alert_o),
-    .devmode_i(1'b1)
+    .intg_err_o(fatal_integ_alert_o)
   );
 
   ////////////////

@@ -16,10 +16,7 @@ module sram_ctrl_regs_reg_top (
   input  sram_ctrl_reg_pkg::sram_ctrl_regs_hw2reg_t hw2reg, // Read
 
   // Integrity check errors
-  output logic intg_err_o,
-
-  // Config
-  input devmode_i // If 1, explicit error return for unmapped register access
+  output logic intg_err_o
 );
 
   import sram_ctrl_reg_pkg::* ;
@@ -119,7 +116,7 @@ module sram_ctrl_regs_reg_top (
   // cdc oversampling signals
 
   assign reg_rdata = reg_rdata_next ;
-  assign reg_error = (devmode_i & addrmiss) | wr_err | intg_err;
+  assign reg_error = addrmiss | wr_err | intg_err;
 
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}

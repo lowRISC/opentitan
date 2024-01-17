@@ -40,7 +40,6 @@ module tb;
   `include "dv_macros.svh"
 
   wire clk, rst_n;
-  wire devmode;
   wire [LcPwrIfWidth-1:0] pwr_lc;
 
   wire [OtpTestCtrlWidth-1:0] otp_vendor_test_ctrl;
@@ -56,7 +55,6 @@ module tb;
     .clk  (clk),
     .rst_n(rst_n)
   );
-  pins_if #(1) devmode_if (devmode);
   pins_if #(LcPwrIfWidth) pwr_lc_if (pwr_lc);
   tl_if tl_if (
     .clk  (clk),
@@ -215,7 +213,6 @@ module tb;
     // drive clk and rst_n from clk_if
     clk_rst_if.set_active();
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
-    uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(pwr_lc_vif)::set(null, "*.env", "pwr_lc_vif", pwr_lc_if);
     uvm_config_db#(virtual lc_ctrl_if)::set(null, "*.env", "lc_ctrl_vif", lc_ctrl_if);

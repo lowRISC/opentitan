@@ -135,9 +135,7 @@ module flash_ctrl
 
     .shadowed_storage_err_o (storage_err),
     .shadowed_update_err_o  (update_err),
-    .intg_err_o             (intg_err),
-
-    .devmode_i (1'b1)
+    .intg_err_o             (intg_err)
   );
 
   bank_cfg_t [NumBanks-1:0] bank_cfgs;

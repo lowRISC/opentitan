@@ -14,7 +14,7 @@ module tb;
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
-  wire   clk, rst_n, devmode;
+  wire   clk, rst_n;
   wire   edn_disable, entropy_src_disable;
   wire   intr_cmd_req_done;
   wire   intr_entropy_req;
@@ -29,7 +29,6 @@ module tb;
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
   pins_if#(NUM_MAX_INTERRUPTS) intr_if(interrupts);
-  pins_if#(1) devmode_if(devmode);
   pins_if#(MuBi8Width) otp_en_cs_sw_app_read_if(otp_en_cs_sw_app_read);
   pins_if#(MuBi4Width) lc_hw_debug_en_if(lc_hw_debug_en);
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
@@ -103,7 +102,6 @@ module tb;
     clk_rst_if.set_active();
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
-    uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(virtual pins_if#(MuBi8Width))::set(null, "*.env", "otp_en_cs_sw_app_read_vif",
         otp_en_cs_sw_app_read_if);
     uvm_config_db#(virtual pins_if#(MuBi4Width))::set(null, "*.env", "lc_hw_debug_en_vif",

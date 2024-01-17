@@ -41,7 +41,6 @@ In addition, it instantiates the following interfaces, connects them to the DUT 
 * ${name.upper()} IOs
 * Interrupts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}}))
 * Alerts ([`alert_esc_if`]({{< relref "hw/dv/sv/alert_esc_agent/doc" >}}))
-* Devmode ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}}))
 
 ${'###'} Common DV utility components
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:

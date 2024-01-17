@@ -46,14 +46,8 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
 
   // Common interfaces - interrupts, alerts, edn clk.
   intr_vif            intr_vif;
-  devmode_vif         devmode_vif;
   rst_shadowed_vif    rst_shadowed_vif;
   virtual clk_rst_if  edn_clk_rst_vif;
-
-  // en_devmode default sets to 1 because all IPs' devmode_i is tied off internally to 1
-  // ICEBOX(#16739): enable random drive devmode once design supports
-  bit  has_devmode = 1;
-  bit  en_devmode = 1;
 
   // If the data intg is passthru for the memory and the data intg value in mem is incorrect, it
   // won't trigger d_error in this mem block and the check is done in the processor

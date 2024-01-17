@@ -194,8 +194,7 @@ from topgen.lib import Name
     .shadowed_storage_err_o(hw2reg.fatal_err_code.shadow_storage_err.de),
     .shadowed_update_err_o(hw2reg.recov_err_code.shadow_update_err.de),
     // SEC_CM: BUS.INTEGRITY
-    .intg_err_o(hw2reg.fatal_err_code.reg_intg.de),
-    .devmode_i(1'b1)
+    .intg_err_o(hw2reg.fatal_err_code.reg_intg.de)
   );
   assign hw2reg.fatal_err_code.reg_intg.d = 1'b1;
   assign hw2reg.recov_err_code.shadow_update_err.d = 1'b1;

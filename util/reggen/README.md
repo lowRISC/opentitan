@@ -636,12 +636,7 @@ The individual bundled wires are associated with the fields rather than the full
 ### Error responses
 
 Writes and reads that target addresses that are not represented within the register list typically return an error.
-However, for security modules (Comportability definition forthcoming), this is under the control of a register module input signal `devmode_i`.
-This signal indicates whether the whole SOC device is in development or production mode.
-For security peripherals in production mode, it is desired to **not** send an error response, so write misses silently fail, and read misses silently fail, but return either random data (TBD) or all `1`s for response data (i.e. `0xFFFFFFFF` for a 32b register).
-For non-security peripherals, or when in development mode (`devmode_i == 1`) these writes and reads to undefined addresses will return with TL-UL error response.
-
-Other error responses (always sent, regardless of `devmode_i`) include for the following reasons:
+Other error responses include for the following reasons:
 
 * TL-UL `a_opcode` illegal value
 * TL-UL writes of size smaller than register size
@@ -656,13 +651,8 @@ Reads response data is always in its byte-channel, i.e. a one-byte read to `addr
 Note with the windowing option, a new TL-UL bus (or more) is spawned and managed outside of this register module.
 Any window that makes use of the byte masks will include the `byte-write: "true"` keyword in their definition.
 Error handling by that TL-UL bus is **completely under the control of the logic that manages this bus.**
-It is recommended to follow the above error rules (including `devmode_i` for address misses on security peripherals) based on the declared number of `validbits`: for the window, but there are some cases where this might be relaxed.
+It is recommended to follow the above error rules based on the declared number of `validbits`: for the window, but there are some cases where this might be relaxed.
 For example, if the termination of the TL-UL bus is a memory that handles byte and halfword writes via masking, errors do not need be returned for unaligned sub-word writes.
-
-#### Current Usage of devmode_i
-Note, for the current iteration of OpenTitan complexes, in order to provide maximum software debuggability within security contexts, we do not make use of `devmode_i`.
-The `devmode_i` is tied off to 1 so that software always receives an error in the event of an access to unmapped space.
-This behavior may change in the future.
 
 ## Register definitions per type
 

@@ -163,9 +163,7 @@ module rom_ctrl
     .tl_win_o   (tl_rom_h2d_upstream),
     .tl_win_i   (tl_rom_d2h),
 
-    .intg_err_o (rom_reg_integrity_error),    // SEC_CM: BUS.INTEGRITY
-
-    .devmode_i  (1'b1)
+    .intg_err_o (rom_reg_integrity_error)    // SEC_CM: BUS.INTEGRITY
   );
 
   // This buffer ensures that when we calculate bus_rom_prince_index by snooping on
@@ -335,8 +333,7 @@ module rom_ctrl
     .tl_o       (regs_tl_o),
     .reg2hw     (reg2hw),
     .hw2reg     (hw2reg),
-    .intg_err_o (reg_integrity_error),    // SEC_CM: BUS.INTEGRITY
-    .devmode_i  (1'b1)
+    .intg_err_o (reg_integrity_error)    // SEC_CM: BUS.INTEGRITY
    );
 
   // The checker FSM ===========================================================

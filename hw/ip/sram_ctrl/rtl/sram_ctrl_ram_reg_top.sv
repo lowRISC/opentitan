@@ -14,10 +14,7 @@ module sram_ctrl_ram_reg_top (
   // To HW
 
   // Integrity check errors
-  output logic intg_err_o,
-
-  // Config
-  input devmode_i // If 1, explicit error return for unmapped register access
+  output logic intg_err_o
 );
 
   import sram_ctrl_reg_pkg::* ;
@@ -42,7 +39,4 @@ module sram_ctrl_ram_reg_top (
   assign tl_o_pre   = tl_reg_d2h;
 
   // Unused signal tieoff
-  // devmode_i is not used if there are no registers
-  logic unused_devmode;
-  assign unused_devmode = ^devmode_i;
 endmodule

@@ -138,10 +138,6 @@ module kmac
   kmac_reg2hw_t reg2hw;
   kmac_hw2reg_t hw2reg;
 
-  // devmode ties to 1 as KMAC should be operated at the beginning for ROM_CTRL.
-  logic devmode;
-  assign devmode = 1'b 1;
-
   // Window
   typedef enum int {
     WinState   = 0,
@@ -1322,9 +1318,7 @@ module kmac
     .shadowed_storage_err_o (shadowed_storage_err),
     .shadowed_update_err_o  (shadowed_update_err),
     // SEC_CM: BUS.INTEGRITY
-    .intg_err_o             (alert_intg_err),
-
-    .devmode_i (devmode)
+    .intg_err_o             (alert_intg_err)
   );
 
   logic unused_cfg_shadowed_qe;

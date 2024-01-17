@@ -15,10 +15,8 @@ module tb;
 
   wire clk, rst_n;
   wire jtag_tdo_oe;
-  wire devmode;
 
   // interfaces
-  pins_if #(1) devmode_if (devmode);
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
   tl_if regs_tl_if(.clk(clk), .rst_n(rst_n));
   tl_if mem_tl_if(.clk(clk), .rst_n(rst_n));
@@ -67,7 +65,6 @@ module tb;
     // drive clk and rst_n from clk_if
     clk_rst_if.set_active();
 
-    uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
     uvm_config_db#(virtual clk_rst_if)::set(
         null, "*.env", "clk_rst_vif_rv_dm_regs_reg_block", clk_rst_if);

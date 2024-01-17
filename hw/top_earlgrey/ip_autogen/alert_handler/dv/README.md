@@ -32,7 +32,6 @@ In addition, it instantiates the following interfaces, connects them to the DUT 
 * ALERT_HANDLER IOs
 * Alerts and escalations([`alert_esc_if`](../../../../dv/sv/alert_esc_agent/README.md))
 * Interrupts ([`pins_if`](../../../../dv/sv/common_ifs/README.md#pins_if))
-* Devmode ([`pins_if`](../../../../dv/sv/common_ifs/README.md#pins_if))
 
 The alert_handler testbench environment can be reused in chip level testing.
 

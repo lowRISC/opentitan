@@ -29,10 +29,6 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
         cfg.num_interrupts > 0) begin
       `uvm_fatal(get_full_name(), "failed to get intr_vif from uvm_config_db")
     end
-    if (cfg.has_devmode && !uvm_config_db#(devmode_vif)::get(this, "", "devmode_vif",
-                                                             cfg.devmode_vif)) begin
-      `uvm_fatal(get_full_name(), "failed to get devmode_vif from uvm_config_db")
-    end
 
     // Only get rst_shadowed_vif if it is an IP level testbench,
     // and the IP contains shadowed registers.

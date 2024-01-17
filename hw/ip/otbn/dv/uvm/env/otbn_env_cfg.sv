@@ -80,8 +80,6 @@ class otbn_env_cfg extends cip_base_env_cfg #(.RAL_T(otbn_reg_block));
 
   function void initialize(bit [31:0] csr_base_addr = '1);
     num_edn = 2;
-    // Tell the CIP base code not to look for a "devmode" interface. OTBN doesn't have one.
-    has_devmode = 0;
 
     // Set the list of alerts, needed by the CIP base code. This needs to match the names assigned
     // in tb.sv (where we bind in the alert interfaces and register each with the UVM DB).

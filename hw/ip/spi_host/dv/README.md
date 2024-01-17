@@ -31,7 +31,6 @@ In addition, it instantiates the following interfaces, connects them to the DUT 
 * SPI_HOST IOs
 * Interrupts ([`pins_if`](../../../dv/sv/common_ifs/README.md))
 * Alerts ([`pins_if`](../../../dv/sv/common_ifs/README.md))
-* Devmode ([`pins_if`](../../../dv/sv/common_ifs/README.md))
 
 ### Common DV utility components
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:

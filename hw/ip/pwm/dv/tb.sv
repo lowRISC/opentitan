@@ -19,7 +19,6 @@ module tb;
 
   wire clk;
   wire rst_n;
-  wire devmode;
   wire clk_core;
   wire rst_core_n;
   wire [PWM_NUM_CHANNELS-1:0] cio_pwm;
@@ -28,7 +27,6 @@ module tb;
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
   clk_rst_if clk_rst_core_if(.clk(clk_core), .rst_n(rst_core_n));
-  pins_if #(1) devmode_if(devmode);
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
 
   `DV_ALERT_IF_CONNECT()
@@ -68,7 +66,6 @@ module tb;
     clk_rst_core_if.set_active();
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_core_vif", clk_rst_core_if);
-    uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();

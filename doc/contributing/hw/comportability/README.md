@@ -114,12 +114,6 @@ In this diagram the auto-generated register submodule is shown within the periph
 This register block communicates with the rest of the peripheral logic to manage configuration and status communication with software.
 Also shown is the mandatory clock, and the optional bus (TL-UL) host, interrupts, alerts, and chip IO.
 
-Additionally an optional input `devmode` is shown which represents an indication to the peripheral what mode the SOC is operating in.
-For now this includes only two modes: development (`devmode = 1`) and production (`devmode = 0`).
-This is the beginning of a security feature that will convey the full life cycle mode status to the peripheral.
-In its current form, only the distinction of development mode vs. production mode is required in order to determine how to handle software errors (see the [Register Tooling](../../../../util/reggen/README.md) documentation for details).
-The full definition of life cycle modes will come upon further refinement of the security properties of the SOC.
-
 ## Peripheral Feature Details
 
 ### Configuration File

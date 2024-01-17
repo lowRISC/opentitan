@@ -179,8 +179,7 @@ module rstmgr
     .tl_o,
     .reg2hw,
     .hw2reg,
-    .intg_err_o(reg_intg_err),
-    .devmode_i(1'b1)
+    .intg_err_o(reg_intg_err)
   );
 
 

@@ -31,7 +31,6 @@ module tb;
   end
 
   wire clk, rst_n;
-  wire devmode;
   wire otp_ctrl_pkg::flash_otp_key_req_t flash_req;
   wire otp_ctrl_pkg::flash_otp_key_rsp_t flash_rsp;
   wire otp_ctrl_pkg::otbn_otp_key_req_t  otbn_req;
@@ -51,7 +50,6 @@ module tb;
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(interrupts);
-  pins_if #(1) devmode_if(devmode);
 
   // lc_otp interfaces
   push_pull_if #(.HostDataWidth(LC_PROG_DATA_SIZE), .DeviceDataWidth(1))
@@ -227,7 +225,6 @@ module tb;
                    set(null, "*env.m_lc_prog_pull_agent*", "vif", lc_prog_if);
 
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
-    uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
 
     uvm_config_db#(virtual otp_ctrl_if)::set(null, "*.env", "otp_ctrl_vif", otp_ctrl_if);
     $timeformat(-12, 0, " ps", 12);

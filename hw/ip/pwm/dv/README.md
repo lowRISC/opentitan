@@ -30,7 +30,6 @@ In addition, it instantiates the following interfaces, connects them to the DUT 
 * [TileLink host interface](../../../dv/sv/tl_agent/README.md)
 * PWM IOs
 * Alerts ([`pins_if`](../../../dv/sv/common_ifs/README.md))
-* Devmode ([`pins_if`](../../../dv/sv/common_ifs/README.md))
 
 ### Common DV utility components
 The following utilities provide generic helper tasks and functions to perform activities

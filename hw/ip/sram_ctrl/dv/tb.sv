@@ -19,7 +19,6 @@ module tb;
   wire rst_n;
   wire clk_otp;
   wire rst_otp_n;
-  wire devmode;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
 
   // OTP key derivation interface
@@ -35,7 +34,6 @@ module tb;
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(interrupts);
   clk_rst_if otp_clk_rst_if(.clk(clk_otp), .rst_n(rst_otp_n));
-  pins_if #(1) devmode_if(devmode);
 
   // TLUL interface to the CSR regfile
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
@@ -126,7 +124,6 @@ module tb;
         null, "*.env", "clk_rst_vif_sram_ctrl_prim_reg_block", clk_rst_if);
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "otp_clk_rst_vif", otp_clk_rst_if);
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
-    uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(virtual push_pull_if#(.DeviceDataWidth(KDI_DATA_SIZE)))::set(null,
       "*.env.m_kdi_agent*", "vif", kdi_if);
     uvm_config_db#(virtual sram_ctrl_lc_if)::set(null, "*.env", "lc_vif", lc_if);

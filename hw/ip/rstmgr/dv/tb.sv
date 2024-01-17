@@ -21,8 +21,6 @@ module tb;
   wire clk_io_div2_i;
   wire clk_usb_i;
 
-  wire devmode;
-
   // interfaces
   clk_rst_if clk_rst_if (
     .clk,
@@ -53,7 +51,6 @@ module tb;
     .rst_n()
   );
 
-  pins_if #(1) devmode_if (devmode);
   tl_if tl_if (
     .clk,
     .rst_n(rstmgr_if.resets_o.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel])
@@ -126,7 +123,6 @@ module tb;
                                             io_div4_clk_rst_if);
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "main_clk_rst_vif", main_clk_rst_if);
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "usb_clk_rst_vif", usb_clk_rst_if);
-    uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
 
     uvm_config_db#(virtual pwrmgr_rstmgr_sva_if)::set(null, "*.env", "pwrmgr_rstmgr_sva_vif",

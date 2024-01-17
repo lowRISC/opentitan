@@ -16,9 +16,6 @@ class aon_timer_env_cfg extends cip_base_env_cfg #(.RAL_T(aon_timer_reg_block));
 
   function new (string name="");
     super.new(name);
-
-    // The aon_timer RTL doesn't support a devmode input at the moment.
-    has_devmode = 1'b0;
   endfunction : new
 
   virtual function void initialize(bit [31:0] csr_base_addr = '1);

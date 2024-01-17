@@ -59,8 +59,6 @@ The following is a list of common features and settings:
   many as the DUT provides. The reason for going with a fixed width pins_if is
   to allow the intr_vif to be available in this base env cfg class (which does not
   know how many interrupt each IP DUT provides).
-* **devmode_vif**: This is a handle to the `pins_if #(1)` interface instance created
-  in the tb to hookup the DUT input `devmode`.
 * **tl_agent_cfg**: The downstream TileLink host agent created in the cip_base_env
   class requires the agent cfg handle to tell it how to configure the agent.
 * **alert_agent_cfgs**: Similar to tl_agent_cfg, the downstream alert device agent

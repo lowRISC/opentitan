@@ -13,7 +13,7 @@ module tb;
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
-  wire clk, rst_n, devmode;
+  wire clk, rst_n;
   //
   // An additional local reset for the csrng pull agent
   //
@@ -31,7 +31,6 @@ module tb;
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
   clk_rst_if csrng_rst_if(.clk(), .rst_n(csrng_rst_n));
   pins_if#(NUM_MAX_INTERRUPTS) intr_if(interrupts);
-  pins_if#(1) devmode_if(devmode);
   pins_if#(8) otp_en_es_fw_read_if(otp_en_es_fw_read);
   pins_if#(8) otp_en_es_fw_over_if(otp_en_es_fw_over);
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
@@ -127,7 +126,6 @@ module tb;
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "csrng_rst_vif", csrng_rst_if);
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
-    uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);
     uvm_config_db#(virtual entropy_src_cov_if)::set(null, "*.env", "entropy_src_cov_if",
         dut.u_entropy_src_cov_if);
     uvm_config_db#(virtual pins_if#(8))::set(null, "*.env", "otp_en_es_fw_read_vif",

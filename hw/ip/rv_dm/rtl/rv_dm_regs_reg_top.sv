@@ -15,10 +15,7 @@ module rv_dm_regs_reg_top (
   output rv_dm_reg_pkg::rv_dm_regs_reg2hw_t reg2hw, // Write
 
   // Integrity check errors
-  output logic intg_err_o,
-
-  // Config
-  input devmode_i // If 1, explicit error return for unmapped register access
+  output logic intg_err_o
 );
 
   import rv_dm_reg_pkg::* ;
@@ -118,7 +115,7 @@ module rv_dm_regs_reg_top (
   // cdc oversampling signals
 
   assign reg_rdata = reg_rdata_next ;
-  assign reg_error = (devmode_i & addrmiss) | wr_err | intg_err;
+  assign reg_error = addrmiss | wr_err | intg_err;
 
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}

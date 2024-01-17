@@ -41,12 +41,8 @@ module prim_generic_flash #(
   output tlul_pkg::tl_d2h_t tl_o,
   // Observability
   input ast_pkg::ast_obs_ctrl_t obs_ctrl_i,
-  output logic [7:0] fla_obs_o,
-  input  devmode_i
+  output logic [7:0] fla_obs_o
 );
-
-  logic unused_devmode;
-  assign unused_devmode = devmode_i;
 
   // convert this into a tlul write later
   logic init;
@@ -126,8 +122,7 @@ module prim_generic_flash #(
     .tl_o      (tl_o),
     .reg2hw    (reg2hw),
     .hw2reg    (hw2reg),
-    .intg_err_o(intg_err),
-    .devmode_i (1'b1)
+    .intg_err_o(intg_err)
   );
 
   logic unused_reg_sig;
