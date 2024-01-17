@@ -139,9 +139,13 @@ static void ack_spi_tpm_header_irq(dif_spi_device_handle_t *spi_device) {
 // and jump execution away between the boolean check and the actual invocation
 // of wait_for_interrupt.
 static void atomic_wait_for_interrupt(void) {
-  irq_global_ctrl(false);
-  if (!header_interrupt_received) {
+  while (true) {
+    irq_global_ctrl(false);
+    if (header_interrupt_received) {
+      break;
+    }
     wait_for_interrupt();
+    irq_global_ctrl(true);
   }
   irq_global_ctrl(true);
 }
