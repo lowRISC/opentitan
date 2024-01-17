@@ -56,6 +56,29 @@ extern const char _chip_info_start[];
 // Life cycle state of the chip.
 lifecycle_state_t lc_state = kLcStateProd;
 
+// ePMP regions for important address spaces.
+const epmp_region_t kMmioRegion = {
+    .start = TOP_EARLGREY_MMIO_BASE_ADDR,
+    .end = TOP_EARLGREY_MMIO_BASE_ADDR + TOP_EARLGREY_MMIO_SIZE_BYTES,
+};
+
+const epmp_region_t kFlashRegion = {
+    .start = TOP_EARLGREY_EFLASH_BASE_ADDR,
+    .end = TOP_EARLGREY_EFLASH_BASE_ADDR + TOP_EARLGREY_EFLASH_SIZE_BYTES,
+};
+
+const epmp_region_t kAstRegion = {
+    .start = TOP_EARLGREY_AST_BASE_ADDR,
+    .end = TOP_EARLGREY_AST_BASE_ADDR + TOP_EARLGREY_AST_SIZE_BYTES,
+};
+
+const epmp_region_t kOtpRegion = {
+    // We only want to lock out the register, not the memory mapped interface.
+    // The size of the register space is 0x1000 bytes.
+    .start = TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR,
+    .end = TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + 0x1000,
+};
+
 OT_WARN_UNUSED_RESULT
 static rom_error_t rom_ext_irq_error(void) {
   uint32_t mcause;
@@ -286,25 +309,72 @@ static rom_error_t rom_ext_boot(const manifest_t *manifest) {
   SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioCreatorInfoPagesLockdown +
                            kOtpSecMmioCreatorSwCfgLockDown);
 
-  // Reconfigure the ePMP MMIO region to be a NAPOT region, thus freeing
-  // up a region for OTP DAI lockout.
-  rom_ext_epmp_mmio_adjust();
+  // ePMP region 15 gives access to RAM and is already configured correctly.
+
+  // Reconfigure the ePMP MMIO region to be NAPOT region 14, thus freeing
+  // up an ePMP entry for use elsewhere.
+  rom_ext_epmp_set_napot(14, kMmioRegion, kEpmpPermLockedReadWrite);
+
+  // ePMP region 13 allows RvDM access and is already configured correctly.
+
+  // ePMP region 12 gives read access to all of flash for both M and U modes.
+  // The flash access was in ePMP region 5.  Clear it so it doesn't take
+  // priority over 12.
+  rom_ext_epmp_set_napot(12, kFlashRegion, kEpmpPermLockedReadOnly);
+  rom_ext_epmp_clear(5);
+
+  // Move the ROM_EXT TOR region from entries 3/4/6 to 9/10/11.
+  // If the ROM_EXT is located in the virtual window, the ROM will have
+  // configured ePMP entry 6 as the read-only region over the entire
+  // window.
+  //
+  // If not using the virtual window, we move the ROM_EXT TOR region to
+  // ePMP entries 10/11.
+  // If using the virtual window, we move the ROM_EXT read-only region to
+  // ePMP entry 11 and move the TOR region to 9/10.
+  uint32_t start, end, vwindow;
+  CSR_READ(CSR_REG_PMPADDR3, &start);
+  CSR_READ(CSR_REG_PMPADDR4, &end);
+  CSR_READ(CSR_REG_PMPADDR6, &vwindow);
+  uint8_t rxindex = 10;
+  if (vwindow) {
+    rxindex = 9;
+    uint32_t size = 1 << bitfield_count_trailing_zeroes32(~vwindow);
+    vwindow = (vwindow & ~(size - 1)) << 2;
+    size <<= 3;
+
+    rom_ext_epmp_set_napot(
+        11, (epmp_region_t){.start = vwindow, .end = vwindow + size},
+        kEpmpPermReadOnly);
+  }
+  rom_ext_epmp_set_tor(rxindex,
+                       (epmp_region_t){.start = start << 2, .end = end << 2},
+                       kEpmpPermReadExecute);
+  for (int8_t i = (int8_t)rxindex - 1; i >= 0; --i) {
+    rom_ext_epmp_clear((uint8_t)i);
+  }
+
   // Use the ePMP to forbid access to the OTP DAI interface.
   // TODO(cfrantz): This lockout is for silicon validation testing.
   // We want to prevent accidental OTP programming by test programs before we
   // commit to a finalized OTP configuration on test chips.  Since the OTP
   // controller doesn't have a per-boot register lockout, we'll use the ePMP to
   // disable access to the programming interface.
-  rom_ext_epmp_otp_dai_lockout();
+  rom_ext_epmp_set_napot(0, kOtpRegion, kEpmpPermLockedNoAccess);
+
   // TODO(cfrantz): This lockout is for silicon validation testing.
   // We want to prevent access to the AST by test programs before we commit
   // to a finalized AST configuration set in OTP.
-  rom_ext_epmp_ast_lockout();
+  rom_ext_epmp_set_napot(1, kAstRegion, kEpmpPermLockedNoAccess);
+  HARDENED_RETURN_IF_ERROR(epmp_state_check());
 
   // Configure address translation, compute the epmp regions and the entry
   // point for the virtual address in case the address translation is enabled.
   // Otherwise, compute the epmp regions and the entry point for the load
   // address.
+  //
+  // We'll map the owner code TOR region as ePMP entries 2/3. If using address
+  // translation, we'll configure ePMP entry 4 as the read-only region.
   epmp_region_t text_region = manifest_code_region_get(manifest);
   uintptr_t entry_point = manifest_entry_point_get(manifest);
   switch (launder32(manifest->address_translation)) {
@@ -316,10 +386,12 @@ static rom_error_t rom_ext_boot(const manifest_t *manifest) {
 
       // Unlock read-only for the whole rom_ext virtual memory.
       HARDENED_RETURN_IF_ERROR(epmp_state_check());
-      rom_ext_epmp_unlock_owner_stage_r(
+      rom_ext_epmp_set_napot(
+          4,
           (epmp_region_t){.start = (uintptr_t)_owner_virtual_start_address,
                           .end = (uintptr_t)_owner_virtual_start_address +
-                                 (uintptr_t)_owner_virtual_size});
+                                 (uintptr_t)_owner_virtual_size},
+          kEpmpPermReadOnly);
       HARDENED_RETURN_IF_ERROR(epmp_state_check());
 
       // Move the ROM_EXT execution section from the load address to the virtual
@@ -345,11 +417,10 @@ static rom_error_t rom_ext_boot(const manifest_t *manifest) {
   // unlock the ROM_EXT code regions so the next stage can re-use those
   // entries and clear RLB to prevent further changes to locked ePMP regions.
   HARDENED_RETURN_IF_ERROR(epmp_state_check());
-  rom_ext_epmp_unlock_owner_stage_rx(text_region);
-  // We'd normally want to unlock the ROM_EXT regions so they can be re-used by
-  // OWNER code, however we need to prevent OWNER code from overriding the OTP
-  // lockout in entry 6.
-  // rom_ext_epmp_final_cleanup();
+  rom_ext_epmp_set_tor(2, text_region, kEpmpPermReadExecute);
+
+  // Now that we're done reconfiguring the ePMP, we'll clear the RLB bit to
+  // prevent any modification to locked entries.
   rom_ext_epmp_clear_rlb();
   HARDENED_RETURN_IF_ERROR(epmp_state_check());
 
