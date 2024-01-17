@@ -31,6 +31,11 @@ fi
 # See #14695 for more information.
 echo "build --remote_default_exec_properties=OSVersion=\"$(lsb_release -ds)\"" >> "${GCP_BAZELRC}"
 
+# Override workspace status in CI.
+# NOTE: it seems the first instance of --workspace_status_command has precedence so this
+# will override the one in .bazelrc, but this behaviour does not seem to be documented.
+echo "build --workspace_status_command=ci/scripts/get_workspace_status.sh" >> "${GCP_BAZELRC}"
+
 "$(dirname $0)"/../bazelisk.sh \
   --bazelrc="${GCP_BAZELRC}" \
   --bazelrc="$(dirname $0)"/.bazelrc \
