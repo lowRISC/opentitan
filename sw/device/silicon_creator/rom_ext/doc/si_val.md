@@ -17,24 +17,33 @@ The ePMP will allow access to the FLASH, to the MMIO region and to SRAM.
 An example of how the SiVal `ROM_EXT` will configure the ePMP:
 
 ```console
- 0: 20010400 ----- ---- sz=00000000     ; OWNER code start.
- 1: 20013d24   TOR LX-R sz=00003924     ; OWNER code end.
- 2: 00008000 NAPOT L--R sz=00008000     ; OWNER data (if using remap window, else ROM data region)
- 3: 20000400 ----- ---- sz=00000000     ; ROM_EXT code start.
- 4: 20004fe8   TOR LX-R sz=00004be8     ; ROM_EXT code end.
- 5: 20000000 NAPOT L--R sz=00100000     ; FLASH data (1 MB).
- 6: 40130000 NAPOT L--- sz=00001000     ; OTP MMIO lockout.
- 7: 40480000 NAPOT L--- sz=00000400     ; AST MMIO lockout.
+ 0: 40130000 NAPOT L--- sz=00001000     ; OTP MMIO lockout.
+ 1: 40480000 NAPOT L--- sz=00000400     ; AST MMIO lockout.
+ 2: 20010400 ----- ---- sz=00000000     ; OWNER code start.
+ 3: 20013cac   TOR -X-R sz=000038ac     ; OWNER code end.
+ 4: 00000000 ----- ---- sz=00000000     ; OWNER data (if using remap window, else unused).
+ 5: 00000000 ----- ---- sz=00000000
+ 6: 00000000 ----- ---- sz=00000000
+ 7: 00000000 ----- ---- sz=00000000
  8: 00000000 ----- ---- sz=00000000
  9: 00000000 ----- ---- sz=00000000
-10: 00000000 ----- ---- sz=00000000
-11: 40000000 NAPOT L-WR sz=10000000     ; MMIO region.
-12: 00000000 ----- ---- sz=00000000
+10: 20000400 ----- ---- sz=00000000     ; ROM_EXT code start.
+11: 20005bc8   TOR -X-R sz=000057c8     ; ROM_EXT code end.
+12: 20000000 NAPOT L--R sz=00100000     ; FLASH data (1 MB).
 13: 00010000 NAPOT LXWR sz=00001000     ; RvDM region (not PROD, RMA/DEV only).
-14: 1001c000   NA4 L--- sz=00000004     ; Stack guard.
+14: 40000000 NAPOT L-WR sz=10000000     ; MMIO region.
 15: 10000000 NAPOT L-WR sz=00020000     ; RAM region.
 mseccfg = 00000002                      ; RLB=0, MMWP=1, MML=0.
 ```
+
+In this configuration, the owner stage can re-arrange ePMP entries
+2-11 as needed.  Applications that require machine/user mode isolation can set
+the MML bit after arranging the ePMP to the preferred configuration.
+
+NOTE: if the ROM\_EXT stage is booted in the virtual slot, then ePMP entries
+9/10/11 will be used to map the virtual window's code/data segments.  Since
+these entries are unlocked _and_ since the ROM\_EXT is no longer requred
+after owner code boots, these entries can be reclaimed for owner use.
 
 ### OTP
 

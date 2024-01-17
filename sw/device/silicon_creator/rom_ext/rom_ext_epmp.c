@@ -6,173 +6,73 @@
 
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/csr.h"
+#include "sw/device/lib/base/hardened.h"
+#include "sw/device/silicon_creator/lib/epmp_state.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-void rom_ext_epmp_unlock_owner_stage_rx(epmp_region_t region) {
-  const int kEntry = 1;
-  epmp_state_configure_tor(kEntry, region, kEpmpPermLockedReadExecute);
+#define EPMP_SET(cfg_reg, addr_reg, mask, cfg, addr) \
+  CSR_CLEAR_BITS(CSR_REG_PMPCFG##cfg_reg, mask);     \
+  CSR_WRITE(CSR_REG_PMPADDR##addr_reg, pmpaddr);     \
+  CSR_SET_BITS(CSR_REG_PMPCFG##cfg_reg, cfg);
 
-  // Update the hardware configuration (CSRs).
-  //
-  // Entry is hardcoded as 1. Make sure to modify hardcoded values if changing
-  // kEntry.
-  //
-  // The `pmp1cfg` configuration is the second field in `pmpcfg0`.
-  //
-  //            32          24          16           8           0
-  //             +-----------+-----------+-----------+-----------+
-  // `pmpcfg0` = |  `pmp3cfg |  `pmp2cfg`| `pmp1cfg` | `pmp0cfg` |
-  //             +-----------+-----------+-----------+-----------+
-
-  CSR_WRITE(CSR_REG_PMPADDR0, ((uint32_t)region.start) >> 2);
-  CSR_WRITE(CSR_REG_PMPADDR1, ((uint32_t)region.end) >> 2);
-  CSR_CLEAR_BITS(CSR_REG_PMPCFG0, 0xff << 8);
-  CSR_SET_BITS(CSR_REG_PMPCFG0, (kEpmpModeTor | kEpmpPermLockedReadExecute)
-                                    << 8);
+static void rom_ext_epmp_set(uint8_t entry, uint32_t pmpcfg, uint32_t pmpaddr) {
+  uint32_t shift = 8 * (entry % 4);
+  uint32_t mask = 0xFFu << shift;
+  uint32_t cfg = (pmpcfg & 0xFFu) << shift;
+  HARDENED_CHECK_LT(entry, 16);
+  switch (entry) {
+    // clang-format off
+    case  0: EPMP_SET(0,  0, mask, cfg, pmpaddr); break;
+    case  1: EPMP_SET(0,  1, mask, cfg, pmpaddr); break;
+    case  2: EPMP_SET(0,  2, mask, cfg, pmpaddr); break;
+    case  3: EPMP_SET(0,  3, mask, cfg, pmpaddr); break;
+    case  4: EPMP_SET(1,  4, mask, cfg, pmpaddr); break;
+    case  5: EPMP_SET(1,  5, mask, cfg, pmpaddr); break;
+    case  6: EPMP_SET(1,  6, mask, cfg, pmpaddr); break;
+    case  7: EPMP_SET(1,  7, mask, cfg, pmpaddr); break;
+    case  8: EPMP_SET(2,  8, mask, cfg, pmpaddr); break;
+    case  9: EPMP_SET(2,  9, mask, cfg, pmpaddr); break;
+    case 10: EPMP_SET(2, 10, mask, cfg, pmpaddr); break;
+    case 11: EPMP_SET(2, 11, mask, cfg, pmpaddr); break;
+    case 12: EPMP_SET(3, 12, mask, cfg, pmpaddr); break;
+    case 13: EPMP_SET(3, 13, mask, cfg, pmpaddr); break;
+    case 14: EPMP_SET(3, 14, mask, cfg, pmpaddr); break;
+    case 15: EPMP_SET(3, 15, mask, cfg, pmpaddr); break;
+    // clang-format on
+    default:
+      // should be impossible to get here because of HARDENED_CHECK_LT above.
+      HARDENED_TRAP();
+  }
+  uint32_t cfgent = entry / 4;
+  epmp_state.pmpcfg[cfgent] = (epmp_state.pmpcfg[cfgent] & ~mask) | cfg;
+  epmp_state.pmpaddr[entry] = pmpaddr;
 }
 
-void rom_ext_epmp_unlock_owner_stage_r(epmp_region_t region) {
-  const int kEntry = 2;
-  epmp_state_configure_napot(kEntry, region, kEpmpPermLockedReadOnly);
-
-  // Update the hardware configuration (CSRs).
-  //
-  // Entry is hardcoded as 2. Make sure to modify hardcoded values if changing
-  // kEntry.
-  //
-  // The `pmp2cfg` configuration is the third field in `pmpcfg0`.
-  //
-  //            32          24          16           8           0
-  //             +-----------+-----------+-----------+-----------+
-  // `pmpcfg0` = |  `pmp3cfg |  `pmp2cfg`| `pmp1cfg` | `pmp0cfg` |
-  //             +-----------+-----------+-----------+-----------+
-  CSR_WRITE(CSR_REG_PMPADDR2,
-            (uint32_t)region.start >> 2 |
-                ((uint32_t)region.end - (uint32_t)region.start - 1) >> 3);
-  CSR_CLEAR_BITS(CSR_REG_PMPCFG0, 0xff << 16);
-  CSR_SET_BITS(CSR_REG_PMPCFG0,
-               ((kEpmpModeNapot | kEpmpPermLockedReadOnly) << 16));
+void rom_ext_epmp_clear(uint8_t entry) {
+  rom_ext_epmp_set(entry, kEpmpModeOff, 0);
 }
 
-void rom_ext_epmp_mmio_adjust(void) {
-  const int kEntry = 11;
-  epmp_region_t region = {
-      .start = 0x40000000,
-      .end = 0x50000000,
-  };
-  epmp_state_configure_napot(kEntry, region, kEpmpPermLockedReadWrite);
-
-  // Update the hardware configuration (CSRs).
-  //
-  // Entry is hardcoded as 2. Make sure to modify hardcoded values if changing
-  // kEntry.
-  //
-  // The `pmp11cfg` configuration is the fourth field in `pmpcfg2`.
-  //
-  //            32          24          16           8           0
-  //             +-----------+-----------+-----------+-----------+
-  // `pmpcfg2` = |  `pmp11cfg |  `pmp10cfg`| `pmp9cfg` | `pmp8cfg` |
-  //             +-----------+-----------+-----------+-----------+
-  CSR_WRITE(CSR_REG_PMPADDR11,
-            (uint32_t)region.start >> 2 |
-                ((uint32_t)region.end - (uint32_t)region.start - 1) >> 3);
-  CSR_CLEAR_BITS(CSR_REG_PMPCFG2, 0xff << 24);
-  CSR_SET_BITS(CSR_REG_PMPCFG2,
-               ((kEpmpModeNapot | kEpmpPermLockedReadWrite) << 24));
+void rom_ext_epmp_set_napot(uint8_t entry, epmp_region_t region,
+                            epmp_perm_t perm) {
+  uint32_t length = region.end - region.start;
+  // The length must be 4 or more.
+  HARDENED_CHECK_GE(length, 4);
+  // The length must be a power of 2.
+  HARDENED_CHECK_EQ(bitfield_popcount32(length), 1);
+  // The start address must be naturally aligned with length.
+  HARDENED_CHECK_EQ(region.start & (length - 1), 0);
+  epmp_mode_t mode = length == 4 ? kEpmpModeNa4 : kEpmpModeNapot;
+  uint32_t addr = (region.start >> 2) | ((length - 1) >> 3);
+  rom_ext_epmp_set(entry, (uint32_t)mode | (uint32_t)perm, addr);
 }
 
-void rom_ext_epmp_otp_dai_lockout(void) {
-  const int kEntry = 6;
-  epmp_region_t region = {
-      .start = TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR,
-      .end = TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + 0x1000,
-  };
-  epmp_state_configure_napot(kEntry, region, kEpmpPermLockedNoAccess);
-
-  // Update the hardware configuration (CSRs).
-  //
-  // Entry is hardcoded as 6. Make sure to modify hardcoded values if changing
-  // kEntry.
-  //
-  // The `pmp6cfg` configuration is the third field in `pmpcfg1`.
-  //
-  //            32          24          16           8           0
-  //             +-----------+-----------+-----------+-----------+
-  // `pmpcfg1` = |  `pmp7cfg |  `pmp6cfg`| `pmp5cfg` | `pmp4cfg` |
-  //             +-----------+-----------+-----------+-----------+
-  CSR_WRITE(CSR_REG_PMPADDR6,
-            (uint32_t)region.start >> 2 |
-                ((uint32_t)region.end - (uint32_t)region.start - 1) >> 3);
-  CSR_CLEAR_BITS(CSR_REG_PMPCFG1, 0xff << 16);
-  CSR_SET_BITS(CSR_REG_PMPCFG1,
-               ((kEpmpModeNapot | kEpmpPermLockedNoAccess) << 16));
-}
-
-void rom_ext_epmp_ast_lockout(void) {
-  const int kEntry = 7;
-  epmp_region_t region = {
-      .start = TOP_EARLGREY_AST_BASE_ADDR,
-      .end = TOP_EARLGREY_AST_BASE_ADDR + TOP_EARLGREY_AST_SIZE_BYTES,
-  };
-  epmp_state_configure_napot(kEntry, region, kEpmpPermLockedNoAccess);
-
-  // Update the hardware configuration (CSRs).
-  //
-  // Entry is hardcoded as 7. Make sure to modify hardcoded values if changing
-  // kEntry.
-  //
-  // The `pmp7cfg` configuration is the fourth field in `pmpcfg1`.
-  //
-  //            32          24          16           8           0
-  //             +-----------+-----------+-----------+-----------+
-  // `pmpcfg1` = |  `pmp7cfg |  `pmp6cfg`| `pmp5cfg` | `pmp4cfg` |
-  //             +-----------+-----------+-----------+-----------+
-  CSR_WRITE(CSR_REG_PMPADDR7,
-            (uint32_t)region.start >> 2 |
-                ((uint32_t)region.end - (uint32_t)region.start - 1) >> 3);
-  CSR_CLEAR_BITS(CSR_REG_PMPCFG1, 0xff << 24);
-  CSR_SET_BITS(CSR_REG_PMPCFG1,
-               ((kEpmpModeNapot | kEpmpPermLockedNoAccess) << 24));
-}
-
-void rom_ext_epmp_clear_rom_region(void) {
-  const int kEntry = 2;
-  const uint32_t kMask = (0xFF << 16);
-  epmp_state.pmpaddr[kEntry] = 0;
-  epmp_state.pmpcfg[0] &= ~kMask;
-
-  // Update the hardware configuration (CSRs).
-  //
-  // Entry is hardcoded as 2. Make sure to modify hardcoded values if changing
-  // kEntry.
-  //
-  // The `pmp2cfg` configuration is the third field in `pmpcfg0`.
-  //
-  //            32          24          16           8           0
-  //             +-----------+-----------+-----------+-----------+
-  // `pmpcfg0` = |  `pmp3cfg |  `pmp2cfg`| `pmp1cfg` | `pmp0cfg` |
-  //             +-----------+-----------+-----------+-----------+
-  CSR_WRITE(CSR_REG_PMPADDR2, 0);
-  CSR_CLEAR_BITS(CSR_REG_PMPCFG0, kMask);
-}
-
-void rom_ext_epmp_final_cleanup(void) {
-  // We want to clear the L bit from pmp3cfg and pmp4cfg to unlock the
-  // ROM_EXT region for the next stage.
-  //
-  //            32          24          16           8           0
-  //             +-----------+-----------+-----------+-----------+
-  // `pmpcfg0` = |  `pmp3cfg |  `pmp2cfg`| `pmp1cfg` | `pmp0cfg` |
-  //             +-----------+-----------+-----------+-----------+
-  // `pmpcfg1` = |  `pmp7cfg |  `pmp6cfg`| `pmp5cfg` | `pmp4cfg` |
-  //             +-----------+-----------+-----------+-----------+
-  const uint32_t kMask0 = (uint32_t)(EPMP_CFG_L << 24);
-  const uint32_t kMask1 = (uint32_t)(EPMP_CFG_L << 0);
-  epmp_state.pmpcfg[0] &= ~kMask0;
-  epmp_state.pmpcfg[1] &= ~kMask1;
-  CSR_CLEAR_BITS(CSR_REG_PMPCFG0, kMask0);
-  CSR_CLEAR_BITS(CSR_REG_PMPCFG1, kMask1);
+void rom_ext_epmp_set_tor(uint8_t entry, epmp_region_t region,
+                          epmp_perm_t perm) {
+  uint32_t start = region.start >> 2;
+  uint32_t end = ((region.end + 3u) & ~3u) >> 2;
+  rom_ext_epmp_set(entry, kEpmpModeOff, start);
+  rom_ext_epmp_set(entry + 1, (uint32_t)kEpmpModeTor | (uint32_t)perm, end);
 }
 
 void rom_ext_epmp_clear_rlb(void) {

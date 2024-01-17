@@ -37,70 +37,44 @@ extern "C" {
 // stage.
 
 /**
- * Unlocks the provided first Silicon Owner stage region with read-execute
- * permissions.
+ * Clear an ePMP entry.
  *
- * The provided ePMP state is also updated to reflect the changes made to the
- * hardware configuration.
+ * Sets the PMPADDR and PMPCFG entries to zero.
  *
- * @param state The ePMP state to update.
- * @param image Region for executable sections in the silicon Owner image.
+ * @param entry The ePMP entry to clear.
  */
-void rom_ext_epmp_unlock_owner_stage_rx(epmp_region_t image);
+void rom_ext_epmp_clear(uint8_t entry);
 
 /**
- * Unlocks the provided first silicon owner region with read-only permissions.
+ * Configures an ePMP entry for a NAPOT or NA4 region.
  *
- * The provided ePMP state is also updated to reflect the changes made to the
- * hardware configuration.
- * The image size must be a power of 2 as this function uses NAPOT
- * (Naturally-Aligned-Power-Of-Two) addressing mode.
+ * The region start must have an alignment consistend with the region size.  The
+ * region size must be a power of two.  If either of these conditions is not
+ * met, this function will fault.
  *
- * @param state The ePMP state to update.
- * @param region Region in the silicon Owner image to receive read-only
- * permission.
+ * From a configuration perspective, an NA4 region is just a special case of a
+ * NAPOT region.
+ *
+ * @param entry The ePMP entry to configure.
+ * @param region The address region to configure.
+ * @param perm The ePMP permissions for the region.
  */
-void rom_ext_epmp_unlock_owner_stage_r(epmp_region_t region);
+void rom_ext_epmp_set_napot(uint8_t entry, epmp_region_t region,
+                            epmp_perm_t perm);
 
 /**
- * Adjusts the ePMP MMIO region from a TOR region to a NAPOT region.
+ * Configures an ePMP entry for a TOR region.
  *
- * The earlgrey MMIO region is 0x4000_0000 to 0x5000_0000.  We adjust
- * this to a NAPOT region to free up an ePMP entry for other use.
- */
-void rom_ext_epmp_mmio_adjust(void);
-
-/**
- * Lock out access to the OTP DAI interface.
+ * The region start and end may be abitrary addresses.  The start will be
+ * rounded down to a 4-byte address.  The end will be rounded up to a 4-byte
+ * address.
  *
- * The OTP controller doesn't have a per-boot software lock-out capability.
- * In order to forbid accidental OTP programming during the bring-up process,
- * we use the ePMP to forbid access to the OTP register space.
+ * @param entry The ePMP entry to configure.
+ * @param region The address region to configure.
+ * @param perm The ePMP permissions for the region.
  */
-void rom_ext_epmp_otp_dai_lockout(void);
-
-/**
- * Lock out access to the AST registers.
- *
- * The AST peripheral contains all of the low-level analog configuration
- * registers (sensors, clock trimming, etc).  After ROM_EXT completes,
- * the ePMP will forbid access to the AST register space.
- */
-void rom_ext_epmp_ast_lockout(void);
-
-/**
- * Clear the ROM mapping from the ePMP.
- *
- * The ROM memory mapping is no longer needed once the ROM_EXT starts.
- */
-void rom_ext_epmp_clear_rom_region(void);
-
-/**
- * Perform final cleanups to the ePMP configuration before owner handoff.
- *
- * Unlock the ROM_EXT code segments so they can be ovewritten by the next stage.
- */
-void rom_ext_epmp_final_cleanup(void);
+void rom_ext_epmp_set_tor(uint8_t entry, epmp_region_t region,
+                          epmp_perm_t perm);
 
 /**
  * Clear the rule-locking-bypass (RLB) bit.
