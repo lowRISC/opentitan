@@ -296,6 +296,12 @@ alias(
 )
 
 alias(
+    name = "p384",
+    actual = "@crate_index__p384-0.13.0//:p384",
+    tags = ["manual"],
+)
+
+alias(
     name = "pem-rfc7468",
     actual = "@crate_index__pem-rfc7468-0.7.0//:pem_rfc7468",
     tags = ["manual"],
