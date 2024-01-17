@@ -4,7 +4,7 @@
 {
   template_param_list: [
     {
-      name: "top_name"
+      name: "topname"
       desc: "Name of top-level design, e.g., 'darjeeling' or 'earlgrey'"
       type: "string"
       default: ""

@@ -4,6 +4,12 @@
 {
   template_param_list: [
     {
+      name: "topname"
+      desc: "Name of top-level design, e.g., 'darjeeling' or 'earlgrey'"
+      type: "string"
+      default: ""
+    }
+    {
       name: "n_alerts"
       desc: "Number of alert sources"
       type: "int"

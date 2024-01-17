@@ -1,6 +1,6 @@
 # Hardware Interfaces
 
-<!-- BEGIN CMDGEN util/regtool.py --interfaces ./hw/top_${top_name}/ip_autogen/pwrmgr/data/pwrmgr.hjson -->
+<!-- BEGIN CMDGEN util/regtool.py --interfaces ./hw/top_${topname}/ip_autogen/pwrmgr/data/pwrmgr.hjson -->
 Referring to the [Comportable guideline for peripheral device functionality](https://opentitan.org/book/doc/contributing/hw/comportability), the module **`pwrmgr`** has the following hardware interfaces defined
 - Primary Clock: **`clk_i`**
 - Other Clocks: **`clk_slow_i`**, **`clk_lc_i`**, **`clk_esc_i`**

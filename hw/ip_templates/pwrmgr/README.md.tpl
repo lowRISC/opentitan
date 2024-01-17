@@ -1,5 +1,5 @@
 # Power Manager HWIP Technical Specification
-[`pwrmgr`](https://reports.opentitan.org/hw/top_${top_name}/ip_autogen/pwrmgr/dv/latest/report.html):
+[`pwrmgr`](https://reports.opentitan.org/hw/top_${topname}/ip_autogen/pwrmgr/dv/latest/report.html):
 ![](https://dashboards.lowrisc.org/badges/dv/pwrmgr/test.svg)
 ![](https://dashboards.lowrisc.org/badges/dv/pwrmgr/passing.svg)
 ![](https://dashboards.lowrisc.org/badges/dv/pwrmgr/functional.svg)

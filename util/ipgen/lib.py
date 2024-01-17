@@ -191,7 +191,6 @@ class IpConfig:
         """Check that obj is a Hjson-serializable object.
 
         If not, raise a ValueError; the what argument names the object.
-
         """
         try:
             # Round-trip objects through the JSON encoder to get the
