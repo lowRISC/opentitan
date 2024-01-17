@@ -12,9 +12,15 @@ class mbx_stress_vseq extends mbx_base_vseq;
   constraint num_txns_c { num_txns inside {[2:12]}; }
 
   // Whether to produce these stimuli to stress the DUT.
-  bit aborts_en = 1'b1;  // Aborts from the SoC side.
-  bit errors_en = 1'b1;  // Errors from the Core side.
-  bit panics_en = 1'b1;  // FW-initiated reset/Abort clear from the Core side.
+  rand bit aborts_en;  // Aborts from the SoC side.
+  rand bit errors_en;  // Errors from the Core side.
+  rand bit panics_en;  // FW-initiated reset/Abort clear from the Core side.
+
+  constraint stressors_en_c {
+    aborts_en dist {0:/75, 1:/25};
+    errors_en dist {0:/75, 1:/25};
+    panics_en dist {0:/75, 1:/25};
+  }
 
   // TODO: decide how often errors and aborts should be generated; sequences shall probably want
   // to override the behavior, but we shall also want some kind of sensible default. Perhaps
@@ -70,10 +76,9 @@ class mbx_stress_vseq extends mbx_base_vseq;
   virtual task body();
     `uvm_info(get_full_name(), "body -- stress test -- Start", UVM_DEBUG)
 
-    // Decide which stimuli to present to the DUT.
-    aborts_en = ($urandom_range(0,100) > 75);
-    errors_en = ($urandom_range(0,100) > 75);
-    panics_en = ($urandom_range(0,100) > 75);
+    `uvm_info(`gfn, $sformatf("aborts_en = %0b", aborts_en), UVM_LOW)
+    `uvm_info(`gfn, $sformatf("errors_en = %0b", errors_en), UVM_LOW)
+    `uvm_info(`gfn, $sformatf("panics_en = %0b", panics_en), UVM_LOW)
 
     super.body();
     `uvm_info(get_full_name(), "body -- stress test -- End", UVM_DEBUG)
