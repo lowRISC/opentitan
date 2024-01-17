@@ -22,6 +22,15 @@ typedef enum uart_pinmux_platform_id {
 } uart_pinmux_platform_id_t;
 
 /**
+ * Define the available external channels that a UART could be connected to.
+ */
+typedef enum uart_pinmux_channel {
+  UartPinmuxChannelConsole,
+  UartPinmuxChannelDut,
+  UartPinmuxChannelCount,
+} uart_pinmux_channel_t;
+
+/**
  * Connect the uart pins to mio pins via pinmux based on the platform the test
  * is running.
  *
@@ -33,7 +42,8 @@ typedef enum uart_pinmux_platform_id {
 OT_WARN_UNUSED_RESULT
 status_t uart_testutils_select_pinmux(const dif_pinmux_t *pinmux,
                                       uint8_t kUartIdx,
-                                      uart_pinmux_platform_id_t platform);
+                                      uart_pinmux_platform_id_t platform,
+                                      uart_pinmux_channel_t channel);
 
 /**
  * Disconnect the uart input pins from mio pads and wire it to zero.
@@ -45,4 +55,5 @@ status_t uart_testutils_select_pinmux(const dif_pinmux_t *pinmux,
 OT_WARN_UNUSED_RESULT
 status_t uart_testutils_detach_pinmux(const dif_pinmux_t *pinmux,
                                       uint8_t uart_id);
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_UART_TESTUTILS_H_
