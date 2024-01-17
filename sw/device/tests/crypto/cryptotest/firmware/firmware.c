@@ -14,7 +14,11 @@
 #include "sw/device/tests/crypto/cryptotest/json/aes_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/aes_sca_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/commands.h"
+<<<<<<< HEAD
 #include "sw/device/tests/crypto/cryptotest/json/ecdsa_commands.h"
+=======
+#include "sw/device/tests/crypto/cryptotest/json/ecdh_commands.h"
+>>>>>>> 5398bf5015 ([cryptotest] add ecdh test device firmware)
 #include "sw/device/tests/crypto/cryptotest/json/hash_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/ibex_fi_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/kmac_sca_commands.h"
@@ -25,7 +29,11 @@
 // Include handlers
 #include "aes.h"
 #include "aes_sca.h"
+<<<<<<< HEAD
 #include "ecdsa.h"
+=======
+#include "ecdh.h"
+>>>>>>> 5398bf5015 ([cryptotest] add ecdh test device firmware)
 #include "hash.h"
 #include "ibex_fi.h"
 #include "kmac_sca.h"
@@ -43,8 +51,13 @@ status_t process_cmd(ujson_t *uj) {
       case kCryptotestCommandAes:
         RESP_ERR(uj, handle_aes(uj));
         break;
+<<<<<<< HEAD
       case kCryptotestCommandEcdsa:
         RESP_ERR(uj, handle_ecdsa(uj));
+=======
+      case kCryptotestCommandEcdh:
+        RESP_ERR(uj, handle_ecdh(uj));
+>>>>>>> 5398bf5015 ([cryptotest] add ecdh test device firmware)
         break;
       case kCryptotestCommandHash:
         RESP_ERR(uj, handle_hash(uj));
