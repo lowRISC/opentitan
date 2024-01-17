@@ -227,11 +227,49 @@ interface edn_cov_if (
     cp_recov_alert_cg: coverpoint recov_alert;
   endgroup : edn_alert_cg
 
+  covergroup edn_cs_cmd_response_cg with function sample(bit csrng_rsp_sts);
+    option.name         = "edn_cs_cmd_response_cg";
+    option.per_instance = 1;
+
+    cp_csrng_rsp_sts_cg: coverpoint csrng_rsp_sts {
+      bins error   = { 1'b1 };
+      bins success = { 1'b0 };
+    }
+  endgroup : edn_cs_cmd_response_cg
+
+  covergroup edn_sw_cmd_sts_cg with function sample(bit cmd_rdy, bit cmd_reg_rdy,
+                                                    bit cmd_sts, bit cmd_ack);
+    option.name         = "edn_sw_cmd_sts_cg";
+    option.per_instance = 1;
+
+    cp_cmd_rdy_cg: coverpoint cmd_rdy {
+      bins ready     = { 1'b1 };
+      bins not_ready = { 1'b0 };
+    }
+
+    cp_cmd_reg_rdy_cg: coverpoint cmd_reg_rdy {
+      bins ready     = { 1'b1 };
+      bins not_ready = { 1'b0 };
+    }
+
+    cp_cmd_sts_cg: coverpoint cmd_sts {
+      bins error   = { 1'b1 };
+      bins success = { 1'b0 };
+    }
+
+    cp_cmd_ack_cg: coverpoint cmd_ack {
+      bins ack    = { 1'b1 };
+      bins no_ack = { 1'b0 };
+    }
+  endgroup : edn_sw_cmd_sts_cg
+
   `DV_FCOV_INSTANTIATE_CG(edn_cfg_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(edn_endpoints_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(edn_cs_cmds_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(edn_error_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(edn_alert_cg, en_full_cov)
+  `DV_FCOV_INSTANTIATE_CG(edn_cs_cmd_response_cg, en_full_cov)
+  `DV_FCOV_INSTANTIATE_CG(edn_sw_cmd_sts_cg, en_full_cov)
 
   // Sample functions needed for xcelium
   function automatic void cg_cfg_sample(edn_env_cfg cfg);
@@ -274,5 +312,16 @@ interface edn_cov_if (
       enum_val = enum_val.next();
     end
   endfunction : cg_alert_sample
+
+  function automatic void cg_cs_cmd_response_sample(bit csrng_rsp_sts, bit csrng_rsp_ack);
+    if (csrng_rsp_ack) begin
+      edn_cs_cmd_response_cg_inst.sample(csrng_rsp_sts);
+    end
+  endfunction : cg_cs_cmd_response_sample
+
+  function automatic void cg_edn_sw_cmd_sts_sample(bit cmd_rdy, bit cmd_reg_rdy,
+                                                   bit cmd_sts, bit cmd_ack);
+    edn_sw_cmd_sts_cg_inst.sample(cmd_rdy, cmd_reg_rdy, cmd_sts, cmd_ack);
+  endfunction : cg_edn_sw_cmd_sts_sample
 
 endinterface : edn_cov_if

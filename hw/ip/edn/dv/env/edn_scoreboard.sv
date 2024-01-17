@@ -269,6 +269,10 @@ class edn_scoreboard extends cip_base_scoreboard #(
         if (data_phase_read) begin
           `DV_CHECK_EQ(sw_cmd_ack, item.d_data[cmd_ack])
           `DV_CHECK_EQ(sw_cmd_sts, item.d_data[cmd_sts])
+          if (cfg.en_cov) begin
+            cov_vif.cg_edn_sw_cmd_sts_sample(item.d_data[cmd_rdy], item.d_data[cmd_reg_rdy],
+                                             item.d_data[cmd_sts], item.d_data[cmd_ack]);
+          end
         end
       end
       "boot_ins_cmd": begin
@@ -615,7 +619,10 @@ class edn_scoreboard extends cip_base_scoreboard #(
 
     forever begin
       rsp_sts_fifo.get(rsp_sts);
-      // Check the register value if we are not in boot_req_mode or
+      if (cfg.en_cov) begin
+        cov_vif.cg_cs_cmd_response_sample(rsp_sts.csrng_rsp_sts, rsp_sts.csrng_rsp_ack);
+      end
+      // Check the register value if we are not in boot_req_mode and not
       // in auto_req_mode after the instantiate.
       if (!boot_mode && (!auto_mode || inst_ack_outstanding)) begin
         // Wait until the ack has propagated through the EDN to the register.
