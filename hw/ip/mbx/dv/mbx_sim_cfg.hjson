@@ -82,6 +82,10 @@
       uvm_test_seq: mbx_stress_vseq
       run_opts: ["+zero_delays=1"]
     }
+    {
+      name: mbx_imbx_oob
+      uvm_test_seq: mbx_imbx_oob_vseq
+    }
   ]
 
   // List of regressions.
