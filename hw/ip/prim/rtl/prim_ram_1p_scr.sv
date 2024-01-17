@@ -34,8 +34,11 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
   // to 2*5 + 1 effective rounds. Setting this to 2 halves this to approximately 5 effective rounds.
   // Number of PRINCE half rounds, can be [1..5]
   parameter  int NumPrinceRoundsHalf = 2,
-  // Number of extra diffusion rounds. Setting this to 0 to disable diffusion.
-  parameter  int NumDiffRounds       = 2,
+  // Number of extra diffusion rounds. Setting this to 0 to disables diffusion.
+  // NOTE: this is zero by default, since the non-linear transformation of data bits can interact
+  // adversely with end-to-end ECC integrity. Only enable this if you know what you are doing
+  // (e.g. using this primitive in a different context with byte parity). See #20788 for context.
+  parameter  int NumDiffRounds       = 0,
   // This parameter governs the block-width of additional diffusion layers.
   // For intra-byte diffusion, set this parameter to 8.
   parameter  int DiffWidth           = DataBitsPerMask,

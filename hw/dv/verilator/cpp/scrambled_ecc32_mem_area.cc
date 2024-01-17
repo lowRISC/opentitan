@@ -162,9 +162,10 @@ void ScrambledEcc32MemArea::WriteBuffer(uint8_t buf[SV_MEM_WIDTH_BYTES],
 std::vector<uint8_t> ScrambledEcc32MemArea::ReadUnscrambled(
     const uint8_t buf[SV_MEM_WIDTH_BYTES], uint32_t src_word) const {
   std::vector<uint8_t> scrambled_data(buf, buf + GetPhysWidthByte());
-  return scramble_decrypt_data(
-      scrambled_data, GetPhysWidth(), 39, AddrIntToBytes(src_word, addr_width_),
-      addr_width_, GetScrambleNonce(), GetScrambleKey(), repeat_keystream_);
+  return scramble_decrypt_data(scrambled_data, GetPhysWidth(), 39,
+                               AddrIntToBytes(src_word, addr_width_),
+                               addr_width_, GetScrambleNonce(),
+                               GetScrambleKey(), repeat_keystream_, false);
 }
 
 void ScrambledEcc32MemArea::ReadBuffer(std::vector<uint8_t> &data,
@@ -196,7 +197,8 @@ void ScrambledEcc32MemArea::ScrambleBuffer(uint8_t buf[SV_MEM_WIDTH_BYTES],
   // Scramble data with integrity
   scramble_buf = scramble_encrypt_data(
       scramble_buf, GetPhysWidth(), 39, AddrIntToBytes(dst_word, addr_width_),
-      addr_width_, GetScrambleNonce(), GetScrambleKey(), repeat_keystream_);
+      addr_width_, GetScrambleNonce(), GetScrambleKey(), repeat_keystream_,
+      false);
 
   // Copy scrambled data to write buffer
   std::copy(scramble_buf.begin(), scramble_buf.end(), &buf[0]);

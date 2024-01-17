@@ -322,7 +322,7 @@ std::vector<uint8_t> scramble_encrypt_data(
     const std::vector<uint8_t> &data_in, uint32_t data_width,
     uint32_t subst_perm_width, const std::vector<uint8_t> &addr,
     uint32_t addr_width, const std::vector<uint8_t> &nonce,
-    const std::vector<uint8_t> &key, bool repeat_keystream) {
+    const std::vector<uint8_t> &key, bool repeat_keystream, bool use_sp_layer) {
   assert(data_in.size() == ((data_width + 7) / 8));
   assert(addr.size() == ((addr_width + 7) / 8));
 
@@ -335,28 +335,32 @@ std::vector<uint8_t> scramble_encrypt_data(
 
   auto data_enc = xor_vectors(data_in, keystream);
 
-  return scramble_subst_perm_full_width(data_enc, data_width, subst_perm_width,
-                                        true);
+  if (use_sp_layer) {
+    return scramble_subst_perm_full_width(data_enc, data_width,
+                                          subst_perm_width, true);
+  } else {
+    return data_enc;
+  }
 }
 
 std::vector<uint8_t> scramble_decrypt_data(
     const std::vector<uint8_t> &data_in, uint32_t data_width,
     uint32_t subst_perm_width, const std::vector<uint8_t> &addr,
     uint32_t addr_width, const std::vector<uint8_t> &nonce,
-    const std::vector<uint8_t> &key, bool repeat_keystream) {
+    const std::vector<uint8_t> &key, bool repeat_keystream, bool use_sp_layer) {
   assert(data_in.size() == ((data_width + 7) / 8));
   assert(addr.size() == ((addr_width + 7) / 8));
-
-  // Data is decrypted by reversing substitution/permutation layer then XORing
-  // with keystream
-  auto data_sp_out = scramble_subst_perm_full_width(data_in, data_width,
-                                                    subst_perm_width, false);
 
   auto keystream =
       scramble_gen_keystream(addr, addr_width, nonce, key, data_width,
                              kNumPrinceHalfRounds, repeat_keystream);
-
-  auto data_dec = xor_vectors(data_sp_out, keystream);
-
-  return data_dec;
+  if (use_sp_layer) {
+    // Data is decrypted by reversing substitution/permutation layer then XORing
+    // with keystream
+    auto data_sp_out = scramble_subst_perm_full_width(data_in, data_width,
+                                                      subst_perm_width, false);
+    return xor_vectors(data_sp_out, keystream);
+  } else {
+    return xor_vectors(data_in, keystream);
+  }
 }

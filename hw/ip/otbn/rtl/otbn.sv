@@ -332,8 +332,7 @@ module otbn
     .Width          (39),
     .Depth          (ImemSizeWords),
     .DataBitsPerMask(39),
-    .EnableParity   (0),
-    .DiffWidth      (39)
+    .EnableParity   (0)
   ) u_imem (
     .clk_i,
     .rst_ni(rst_n),
@@ -535,7 +534,6 @@ module otbn
     .Depth             (DmemSizeWords),
     .DataBitsPerMask   (39),
     .EnableParity      (0),
-    .DiffWidth         (39),
     .ReplicateKeyStream(1)
   ) u_dmem (
     .clk_i,

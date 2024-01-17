@@ -26,11 +26,8 @@ The individual mechanisms are explained in more detail in the subsections below.
 ## Scrambling Primitive
 
 As explained in [`prim_ram_1p_scr`](../../prim/doc/prim_ram_1p_scr.md) the scrambling mechanism employs a reduced-round PRINCE block cipher in CTR mode to scramble the data.
-Since plain CTR mode does not diffuse the data bits due to the bitwise XOR, the scheme is augmented by passing each word through a shallow substitution-permutation (S&P) network implemented with the `prim_subst_perm` primitive.
-The S&P network employed is similar to the one employed in PRESENT and is explained in more detail [here](../../prim/doc/prim_ram_1p_scr.md#custom-substitution-permutation-network).
 
-Another CTR mode augmentation that is aimed at breaking the linear address space is SRAM address scrambling.
-The same S&P network construction that is used for intra-word diffusion is leveraged to non-linearly remap the SRAM address as shown in the block diagram above.
+In order to break the linear address space, the CTR mode is augmented with an S&P network to non-linearly remap the SRAM address as shown in the block diagram above. The S&P network employed is similar to the one employed in PRESENT and is explained in more detail [here](../../prim/doc/prim_ram_1p_scr.md#custom-substitution-permutation-network).
 
 ### Integrity Error Handling
 
