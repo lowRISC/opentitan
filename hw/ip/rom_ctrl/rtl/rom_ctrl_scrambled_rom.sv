@@ -148,22 +148,8 @@ module rom_ctrl_scrambled_rom
 
   assign scr_rdata_o = rdata_scr;
 
-  // Data scrambling ===========================================================
-
-  logic [Width-1:0] rdata_xor;
-
-  prim_subst_perm #(
-    .DataWidth (Width),
-    .NumRounds (2),
-    .Decrypt   (1)
-  ) u_sp_data (
-    .data_i (rdata_scr),
-    .key_i  ('0),
-    .data_o (rdata_xor)
-  );
-
   // XOR rdata with keystream ==================================================
 
-  assign clr_rdata_o = rdata_xor ^ keystream[Width-1:0];
+  assign clr_rdata_o = rdata_scr ^ keystream[Width-1:0];
 
 endmodule

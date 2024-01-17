@@ -132,7 +132,7 @@ To avoid attacks propagating into the rest of the system, we take the following 
 Parameter                   | Default (Max)         | Top Earlgrey | Description
 ----------------------------|-----------------------|--------------|---------------
 `RndCnstRomKey`             | (see RTL)             | (see RTL)    | Compile-time random default constant for scrambling key (used in `prim_prince` block).
-`RndCnstRomNonce`           | (see RTL)             | (see RTL)    | Compile-time random default constant for scrambling nonce (used in `prim_prince` block and the two S&P blocks).
+`RndCnstRomNonce`           | (see RTL)             | (see RTL)    | Compile-time random default constant for scrambling nonce (used in `prim_prince` block and the S&P block).
 
 ### Signals
 

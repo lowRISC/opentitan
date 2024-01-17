@@ -492,8 +492,7 @@ module sram_ctrl
     .Width(DataWidth),
     .Depth(Depth),
     .EnableParity(0),
-    .DataBitsPerMask(DataWidth),
-    .DiffWidth(DataWidth)
+    .DataBitsPerMask(DataWidth)
   ) u_prim_ram_1p_scr (
     .clk_i,
     .rst_ni,

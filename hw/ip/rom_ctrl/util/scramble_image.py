@@ -230,21 +230,14 @@ class Scrambler:
         return subst_perm_dec(phy_addr, addr_scr_nonce, self._addr_width,
                               self.subst_perm_rounds)
 
-    def data_sp_enc(self, width: int, data: int) -> int:
-        return subst_perm_enc(data, 0, width, self.subst_perm_rounds)
-
-    def data_sp_dec(self, width: int, data: int) -> int:
-        return subst_perm_dec(data, 0, width, self.subst_perm_rounds)
-
     def scramble_word(self, width: int, log_addr: int, clr_data: int) -> int:
         '''Scramble clr_data at the given logical address.'''
         keystream = self.get_keystream(log_addr, width)
-        return self.data_sp_enc(width, keystream ^ clr_data)
+        return keystream ^ clr_data
 
     def unscramble_word(self, width: int, log_addr: int, scr_data: int) -> int:
         keystream = self.get_keystream(log_addr, width)
-        sp_scr_data = self.data_sp_dec(width, scr_data)
-        return keystream ^ sp_scr_data
+        return keystream ^ scr_data
 
     def scramble(self, mem: MemFile) -> MemFile:
         assert len(mem.chunks) == 1
@@ -259,15 +252,15 @@ class Scrambler:
         #
         # Then, for all i, we have:
         #
-        #   clr[i] = PRINCE(i) ^ data_sp_dec(scr[addr_sp_enc(i)])
+        #   clr[i] = PRINCE(i) ^ scr[addr_sp_enc(i)]
         #
         # Change coordinates by evaluating at addr_sp_dec(i):
         #
-        #   clr[addr_sp_dec(i)] = PRINCE(addr_sp_dec(i)) ^ data_sp_dec(scr[i])
+        #   clr[addr_sp_dec(i)] = PRINCE(addr_sp_dec(i)) ^ scr[i]
         #
         # so
         #
-        #   scr[i] = data_sp_enc(clr[addr_sp_dec(i)] ^ PRINCE(addr_sp_dec(i)))
+        #   scr[i] = clr[addr_sp_dec(i)] ^ PRINCE(addr_sp_dec(i))
         #
         # Using the scramble_word helper function, this is:
         #
