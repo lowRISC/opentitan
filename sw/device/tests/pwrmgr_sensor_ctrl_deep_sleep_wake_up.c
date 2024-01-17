@@ -28,9 +28,16 @@ OTTF_DEFINE_TEST_CONFIG();
 /**
  * Clean up pwrmgr wakeup reason register for the next round.
  */
-static void delay_n_clear(uint32_t delay_in_us) {
-  busy_spin_micros(delay_in_us);
-  CHECK_DIF_OK(dif_pwrmgr_wakeup_reason_clear(&pwrmgr));
+static bool pwrmgr_wake_status_is_clear(void) {
+  dif_pwrmgr_request_sources_t sources;
+  CHECK_DIF_OK(dif_pwrmgr_get_current_request_sources(
+      &pwrmgr, kDifPwrmgrReqTypeWakeup, &sources));
+  return sources == 0;
+}
+
+static status_t wait_for_pwrmgr_wake_status_is_clear(void) {
+  IBEX_TRY_SPIN_FOR(pwrmgr_wake_status_is_clear(), 20);
+  return OK_STATUS();
 }
 
 bool test_main(void) {
@@ -54,27 +61,34 @@ bool test_main(void) {
   if (wakeup_reason.request_sources == 0) {
     // This is a POR. Prepare to start the test.
     CHECK_DIF_OK(dif_pwrmgr_wakeup_reason_clear(&pwrmgr));
+    CHECK_DIF_OK(dif_pwrmgr_wakeup_request_recording_set_enabled(
+        &pwrmgr, kDifToggleEnabled));
+
+    CHECK_DIF_OK(dif_pwrmgr_get_domain_config(&pwrmgr, &cfg));
+    cfg &= (kDifPwrmgrDomainOptionIoClockInLowPower |
+            kDifPwrmgrDomainOptionUsbClockInLowPower |
+            kDifPwrmgrDomainOptionUsbClockInActivePower);
+    CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
+        &pwrmgr, kDifPwrmgrWakeupRequestSourceSix, cfg));
+    LOG_INFO("Issue WFI to enter sensor_ctrl sleep");
+    wait_for_interrupt();
+
+    // This is not reachable.
+    return false;
   } else if (wakeup_reason.types != kDifPwrmgrWakeupTypeRequest) {
     LOG_ERROR("Unexpected wakeup_reason.types 0x%x", wakeup_reason.types);
     return false;
   } else {
-    // This is a reset from deep_sleep wakeup. Run checks.
-    check_wakeup_reason(5);
+    // This is a reset from deep_sleep due to sensor_ctrl wakeup.
     LOG_INFO("Woke up by sensor_ctrl");
-    clear_wakeup(PWRMGR_PARAM_SENSOR_CTRL_AON_WKUP_REQ_IDX);
+    dif_sensor_ctrl_events_t events;
+    CHECK(!pwrmgr_wake_status_is_clear(), "Expected wake_status to be set");
+    CHECK_DIF_OK(dif_sensor_ctrl_get_recov_events(&sensor_ctrl, &events));
+    CHECK(events == 1, "Expected bit 0 to be set");
+    CHECK_DIF_OK(dif_sensor_ctrl_clear_recov_event(&sensor_ctrl, 0));
+    CHECK_DIF_OK(dif_sensor_ctrl_get_recov_events(&sensor_ctrl, &events));
+    CHECK(events == 0, "Expected recoverable events to clear");
+    CHECK_STATUS_OK(wait_for_pwrmgr_wake_status_is_clear(), 20);
     return true;
   }
-
-  delay_n_clear(4);
-  CHECK_DIF_OK(dif_pwrmgr_get_domain_config(&pwrmgr, &cfg));
-  cfg &= (kDifPwrmgrDomainOptionIoClockInLowPower |
-          kDifPwrmgrDomainOptionUsbClockInLowPower |
-          kDifPwrmgrDomainOptionUsbClockInActivePower);
-  CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
-      &pwrmgr, kDifPwrmgrWakeupRequestSourceSix, cfg));
-  LOG_INFO("Issue WFI to enter sensor_ctrl sleep");
-  wait_for_interrupt();
-
-  // This is not reachable.
-  return false;
 }
