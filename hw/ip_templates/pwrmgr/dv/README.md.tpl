@@ -1,5 +1,5 @@
 # PWRMGR DV document
-
+<% top_name = f"top_{topname}" %>
 ${"##"} Goals
 * **DV**
   * Verify all PWRMGR IP features by running dynamic simulations with a SV/UVM based testbench.
@@ -10,7 +10,7 @@ ${"##"} Goals
 ${"##"} Current status
 * [Design & verification stage](../doc/checklist.md)
   * [HW development stages](../../../../../doc/project_governance/development_stages.md)
-* [Simulation results](https://reports.opentitan.org/hw/top_${top_name}/ip_autogen/pwrmgr/dv/latest/report.html)
+* [Simulation results](https://reports.opentitan.org/hw/${top_name}/ip_autogen/pwrmgr/dv/latest/report.html)
 
 ${"##"} Design features
 For detailed information on PWRMGR design features, please see the [PWRMGR HWIP technical specification](../README.md).
@@ -22,12 +22,12 @@ ${"###"} Block diagram
 ![Block diagram](./doc/tb.svg)
 
 ${"###"} Top level testbench
-Top level testbench is located at [`hw/top_${top_name}/ip_autogen/pwrmgr/dv/tb.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/top_${top_name}/ip_autogen/pwrmgr/dv/tb.sv).
-It instantiates the PWRMGR DUT module [`hw/top_${top_name}/ip_autogen/pwrmgr/rtl/pwrmgr.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/top_${top_name}/ip_autogen/pwrmgr/rtl/pwrmgr.sv).
+Top level testbench is located at [`hw/${top_name}/ip_autogen/pwrmgr/dv/tb.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/${top_name}/ip_autogen/pwrmgr/dv/tb.sv).
+It instantiates the PWRMGR DUT module [`hw/${top_name}/ip_autogen/pwrmgr/rtl/pwrmgr.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/${top_name}/ip_autogen/pwrmgr/rtl/pwrmgr.sv).
 In addition, it instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
 * [Clock and reset interface](../../../../dv/sv/common_ifs/README.md)
 * [TileLink host interface](../../../../dv/sv/tl_agent/README.md)
-* PWRMGR interface [`hw/top_${top_name}/ip_autogen/pwrmgr/dv/env/pwrmgr_if.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/top_${top_name}/ip_autogen/pwrmgr/dv/env/pwrmgr_if.sv).
+* PWRMGR interface [`hw/${top_name}/ip_autogen/pwrmgr/dv/env/pwrmgr_if.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/${top_name}/ip_autogen/pwrmgr/dv/env/pwrmgr_if.sv).
 * Interrupts ([`pins_if`](../../../../dv/sv/common_ifs/README.md))
 * Alerts ([`alert_esc_if`](../../../../dv/sv/alert_esc_agent/README.md))
 
@@ -38,7 +38,7 @@ The following utilities provide generic helper tasks and functions to perform ac
 
 ${"###"} Global types & methods
 All common types and methods defined at the package level can be found in
-[`pwrmgr_env_pkg`](https://github.com/lowRISC/opentitan/blob/master/hw/top_${top_name}/ip_autogen/pwrmgr/dv/env/pwrmgr_env_pkg.sv).
+[`pwrmgr_env_pkg`](https://github.com/lowRISC/opentitan/blob/master/hw/${top_name}/ip_autogen/pwrmgr/dv/env/pwrmgr_env_pkg.sv).
 Some of them in use are:
 ```systemverilog
   typedef enum int {
@@ -75,7 +75,7 @@ It can be created manually by invoking [`regtool`](../../../../../util/reggen/do
 ${"###"} Stimulus strategy
 The sequences are closely related to the testplan's testpoints.
 Testpoints and coverage are described in more detail in the [testplan](#testplan).
-All test sequences reside in [`hw/top_${top_name}/ip_autogen/pwrmgr/dv/env/seq_lib`](https://github.com/lowRISC/opentitan/blob/master/hw/top_${top_name}/ip_autogen/pwrmgr/dv/env/seq_lib), and extend `pwrmgr_base_vseq`.
+All test sequences reside in [`hw/${top_name}/ip_autogen/pwrmgr/dv/env/seq_lib`](https://github.com/lowRISC/opentitan/blob/master/hw/${top_name}/ip_autogen/pwrmgr/dv/env/seq_lib), and extend `pwrmgr_base_vseq`.
 The `pwrmgr_base_vseq` virtual sequence is extended from `cip_base_vseq` and serves as a starting point.
 It provides commonly used handles, variables, functions and tasks used by the test sequences.
 Some of the most commonly used tasks and functions are as follows:
@@ -153,7 +153,7 @@ ${"#####"} AST
 - Outputs `core_clk_en`, `io_clk_en`, and `usb_clk_en` reset low, and go high prior to the slow fsm requesting the fast fsm to wakeup.
   Notice the usb clock can be programmed to stay low on wakeup via the `control` CSR.
   These clock enables are cleared on reset, and should match their corresponding enables in the `control` CSR on low power transitions.
-  These clock enables are checked via SVAs in [`hw/top_${top_name}/ip_autogen/pwrmgr/dv/sva/pwrmgr_clock_enables_sva_if.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/top_${top_name}/ip_autogen/pwrmgr/dv/sva/pwrmgr_clock_enables_sva_if.sv).
+  These clock enables are checked via SVAs in [`hw/${top_name}/ip_autogen/pwrmgr/dv/sva/pwrmgr_clock_enables_sva_if.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/${top_name}/ip_autogen/pwrmgr/dv/sva/pwrmgr_clock_enables_sva_if.sv).
   When slow fsm transitions to `SlowPwrStateReqPwrUp` the clock enables should be on (except usb should match `control.usb_clk_en_active`).
   When slow fsm transitions to `SlowPwrStatePwrClampOn` the clock enables should match their bits in the `control` CSR.
 - Inputs `core_clk_val`, `io_clk_val`, and `usb_clk_val` track the corresponding enables.
@@ -161,7 +161,7 @@ ${"#####"} AST
   Slow fsm waits for them to go high prior to requesting fast fsm wakeup.
   Lack of a high transition when needed is detected via timeout.
   Such timeout would be due to the corresponding enables being set incorrectly.
-  These inputs are checked via SVAs in [`hw/top_${top_name}/ip_autogen/pwrmgr/dv/sva/pwrmgr_ast_sva_if.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/top_${top_name}/ip_autogen/pwrmgr/dv/sva/pwrmgr_ast_sva_if.sv).
+  These inputs are checked via SVAs in [`hw/${top_name}/ip_autogen/pwrmgr/dv/sva/pwrmgr_ast_sva_if.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/${top_name}/ip_autogen/pwrmgr/dv/sva/pwrmgr_ast_sva_if.sv).
 - Output `main_pd_n` should go high when slow fsm transitions to `SlowPwrStateMainPowerOn`, and should match `control.main_pd_n` CSR when slow fsm transitions to `SlowPwrStateMainPowerOff`.
 - Input `main_pok` should turn on for the slow fsm to start power up sequence.
   This is also driven by `slow_responder`, which turn this off in response to `main_pd_n` going low, and turn it back on after a few random slow clock cycles from `main_pd_n` going high.
@@ -226,7 +226,7 @@ There are a number of wakeup and reset requests.
 They are driven by sequences as they need to.
 
 ${"####"} Assertions
-The [`hw/top_${top_name}/ip_autogen/pwrmgr/dv/sva/pwrmgr_bind.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/top_${top_name}/ip_autogen/pwrmgr/dv/sva/pwrmgr_bind.sv) module binds a few modules containing assertions to the IP as follows:
+The [`hw/${top_name}/ip_autogen/pwrmgr/dv/sva/pwrmgr_bind.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/${top_name}/ip_autogen/pwrmgr/dv/sva/pwrmgr_bind.sv) module binds a few modules containing assertions to the IP as follows:
 * TLUL assertions: the `tlul_assert` [assertions](../../../../ip/tlul/doc/TlulProtocolChecker.md) ensures TileLink interface protocol compliance.
 * Clock enables assertions:
   The `pwrmgr_clock_enables_sva_if` module contains assertions checking that the various clk_en outputs correspond to the settings in the `control` CSR.
@@ -248,7 +248,7 @@ We are using our in-house developed [regression tool](../../../../../util/dvsim/
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
 Here's how to run a smoke test:
 ```console
-$ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/top_${top_name}/ip_autogen/pwrmgr/dv/pwrmgr_sim_cfg.hjson -i pwrmgr_smoke
+$ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/${top_name}/ip_autogen/pwrmgr/dv/pwrmgr_sim_cfg.hjson -i pwrmgr_smoke
 ```
 
 ${"##"} Testplan

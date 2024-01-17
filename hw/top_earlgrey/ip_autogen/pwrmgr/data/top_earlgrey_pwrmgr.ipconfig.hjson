@@ -5,7 +5,6 @@
   instance_name: top_earlgrey_pwrmgr
   param_values:
   {
-    top_name: earlgrey
     NumWkups: 6
     Wkups:
     [
@@ -80,5 +79,6 @@
       ]
     }
     NumRstReqs: 2
+    topname: earlgrey
   }
 }

@@ -1,6 +1,6 @@
 # Registers
 
-<!-- BEGIN CMDGEN util/regtool.py -d ./hw/top_${top_name}/ip_autogen/pwrmgr/data/pwrmgr.hjson -->
+<!-- BEGIN CMDGEN util/regtool.py -d ./hw/top_${topname}/ip_autogen/pwrmgr/data/pwrmgr.hjson -->
 ${"##"} Summary
 
 | Name                                                     | Offset   |   Length | Description                                                                     |

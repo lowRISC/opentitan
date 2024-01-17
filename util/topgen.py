@@ -51,8 +51,8 @@ genhdr = """// Copyright lowRISC contributors.
 // SPDX-License-Identifier: Apache-2.0
 """ + warnhdr
 
-GENCMD = ("// util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson\n"
-          "// -o hw/top_{topname}")
+GENCMD = ("// util/topgen.py -t hw/{top_name}/data/{top_name}.hjson\n"
+          "// -o hw/{top_name}")
 
 SRCTREE_TOP = Path(__file__).parents[1].resolve()
 
@@ -69,10 +69,12 @@ def ipgen_render(template_name: str, topname: str, params: Dict[str, object],
     Aborts the program execution in case of an error.
     """
     module_name = params.get("module_instance_name", template_name)
-    instance_name = f"top_{topname}_{module_name}"
+    top_name = f"top_{topname}"
+    instance_name = f"{top_name}_{module_name}"
     ip_template = IpTemplate.from_template_path(SRCTREE_TOP / "hw" /
                                                 "ip_templates" / template_name)
 
+    params.update({"topname": topname})
     try:
         ip_config = IpConfig(ip_template.params, instance_name, params)
     except ValueError as e:
@@ -100,16 +102,16 @@ def generate_top(top: Dict[str, object], name_to_block: Dict[str, IpBlock],
 
 
 def generate_xbars(top: Dict[str, object], out_path: Path) -> None:
-    topname = top["name"]
-    gencmd = ("// util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson "
-              "-o hw/top_{topname}/\n\n".format(topname=topname))
+    top_name = "top_" + top["name"]
+    gencmd = (f"// util/topgen.py -t hw/{top_name}/data/{top_name}.hjson "
+              f"-o hw/{top_name}/\n\n")
 
     for obj in top["xbar"]:
         objname = obj["name"]
         xbar_path = out_path / "ip" / f"xbar_{objname}" / "data" / "autogen"
         xbar_path.mkdir(parents=True, exist_ok=True)
         xbar = tlgen.validate(obj)
-        xbar.ip_path = "/".join(["hw", f"top_{topname}", "ip", "{dut}"])
+        xbar.ip_path = "/".join(["hw", top_name, "ip", "{dut}"])
 
         # Generate output of crossbar with complete fields
         xbar_hjson_path = xbar_path / f"xbar_{xbar.name}.gen.hjson"
@@ -120,7 +122,7 @@ def generate_xbars(top: Dict[str, object], out_path: Path) -> None:
             log.error("Elaboration failed." + repr(xbar))
 
         try:
-            results = tlgen.generate(xbar, f"top_{topname}")
+            results = tlgen.generate(xbar, top_name)
         except:  # noqa: E722
             log.error(exceptions.text_error_template().render())
 
@@ -136,7 +138,7 @@ def generate_xbars(top: Dict[str, object], out_path: Path) -> None:
         dv_path.mkdir(parents=True, exist_ok=True)
 
         # generate testbench for xbar
-        tlgen.generate_tb(xbar, dv_path, f"top_{topname}")
+        tlgen.generate_tb(xbar, dv_path, top_name)
 
         # Read back the comportable IP and amend to Xbar
         xbar_ipfile = ip_path / "data" / "autogen" / f"xbar_{objname}.hjson"
@@ -331,9 +333,10 @@ def generate_pinmux(top: Dict[str, object], out_path: Path) -> None:
     original_rtl_path = orig_ip_path / "rtl"
 
     # Generate register package and RTLs
+    top_name = f"top_{topname}"
     gencmd = (
-        f"// util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson "
-        f"-o hw/top_{topname}/\n\n")
+        f"// util/topgen.py -t hw/{top_name}/data/{top_name}.hjson "
+        f"-o hw/{top_name}/\n\n")
 
     hjson_gen_path = data_path / "pinmux.hjson"
 
@@ -447,7 +450,6 @@ def generate_pwrmgr(top: Dict[str, object], out_path: Path) -> None:
                     "Reset requests are not supported.")
 
     params = {
-        "top_name": topname,
         "NumWkups": n_wkups,
         "Wkups": top["wakeups"],
         "rst_reqs": top["reset_requests"],
@@ -616,7 +618,7 @@ def generate_flash(topcfg: Dict[str, object], out_path: Path) -> None:
 
 
 def generate_top_only(top_only_dict: Dict[str, bool], out_path: Path,
-                      topname: str, alt_hjson_path: str) -> None:
+                      top_name: str, alt_hjson_path: str) -> None:
     log.info("Generating top only modules")
 
     for ip, reggen_only in top_only_dict.items():
@@ -624,7 +626,7 @@ def generate_top_only(top_only_dict: Dict[str, bool], out_path: Path,
         if reggen_only and alt_hjson_path is not None:
             hjson_dir = Path(alt_hjson_path)
         else:
-            hjson_dir = (SRCTREE_TOP / "hw" / f"top_{topname}" / "ip" / ip /
+            hjson_dir = (SRCTREE_TOP / "hw" / top_name / "ip" / ip /
                          "data")
 
         hjson_path = hjson_dir / f"{ip}.hjson"
@@ -795,13 +797,13 @@ def _process_top(topcfg: Dict[str, object], args: argparse.Namespace,
     }
     log.info("Filtered dict is {}".format(top_only_dict))
 
-    topname = topcfg["name"]
+    top_name = f"top_{topcfg['name']}"
 
     # Sweep the IP directory and gather the config files
     ip_dir = Path(__file__).parents[1] / "hw/ip"
     ips = search_ips(ip_dir)
 
-    # exclude filtered IPs (to use top_${topname} one) and
+    # exclude filtered IPs (to use ${top_name} one) and
     exclude_list = generated_list + list(top_only_dict.keys())
     ips = [x for x in ips if not x.parents[1].name in exclude_list]
 
@@ -877,7 +879,7 @@ def _process_top(topcfg: Dict[str, object], args: argparse.Namespace,
                     tpl_path = SRCTREE_TOP / "hw/ip_templates" / ip_name
                     ip_template = IpTemplate.from_template_path(tpl_path)
                     ip_config = IpConfig(ip_template.params,
-                                         f"top_{topname}_{ip_name}")
+                                         f"{top_name}_{ip_name}")
 
                     try:
                         ip_desc = IpDescriptionOnlyRenderer(
@@ -974,7 +976,7 @@ def _process_top(topcfg: Dict[str, object], args: argparse.Namespace,
 
     # Generate top only modules
     # These modules are not templated, but are not in hw/ip
-    generate_top_only(top_only_dict, out_path, topname, args.hjson_path)
+    generate_top_only(top_only_dict, out_path, top_name, args.hjson_path)
 
     return completecfg, name_to_block
 
@@ -1199,6 +1201,7 @@ def main():
                                                       out_path_gen, pass_idx)
 
     topname = topcfg["name"]
+    top_name = f"top_{topname}"
 
     # Create the chip-level RAL only
     if args.top_ral:
@@ -1228,14 +1231,14 @@ def main():
     # Generate top.gen.hjson right before rendering
     genhjson_dir = out_path / "data/autogen"
     genhjson_dir.mkdir(parents=True, exist_ok=True)
-    genhjson_path = genhjson_dir / ("top_%s.gen.hjson" % completecfg["name"])
+    genhjson_path = genhjson_dir / f"{top_name}.gen.hjson"
 
     # Header for HJSON
     gencmd = """//
-// util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson \\
-//                -o hw/top_{topname}/ \\
+// util/topgen.py -t hw/{top_name}/data/{top_name}.hjson \\
+//                -o hw/{top_name}/ \\
 //                --rnd_cnst_seed {seed}
-""".format(topname=topname, seed=completecfg["rnd_cnst_seed"])
+""".format(top_name=top_name, seed=completecfg["rnd_cnst_seed"])
 
     genhjson_path.write_text(genhdr + gencmd +
                              hjson.dumps(completecfg, for_json=True) + '\n')
@@ -1260,16 +1263,16 @@ def main():
 
         # Header for SV files
         gencmd = warnhdr + """//
-// util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson \\
-//                -o hw/top_{topname}/ \\
+// util/topgen.py -t hw/{top_name}/data/{top_name}.hjson \\
+//                -o hw/{top_name}/ \\
 //                --rnd_cnst_seed \\
 //                {seed}
-""".format(topname=topname, seed=completecfg["rnd_cnst_seed"])
+""".format(top_name=top_name, seed=completecfg["rnd_cnst_seed"])
 
         # SystemVerilog Top:
-        # "toplevel.sv.tpl" -> "rtl/autogen/top_{topname}.sv"
+        # "toplevel.sv.tpl" -> "rtl/autogen/{top_name}.sv"
         render_template(TOPGEN_TEMPLATE_PATH / "toplevel.sv.tpl",
-                        out_path / f"rtl/autogen/top_{topname}.sv",
+                        out_path / "rtl" / "autogen" / f"{top_name}.sv",
                         gencmd=gencmd)
 
         # Multiple chip-levels (ASIC, FPGA, Verilator, etc)
@@ -1285,16 +1288,16 @@ def main():
         # object to store it.
         c_helper = TopGenCTest(completecfg, name_to_block)
 
-        # "toplevel_pkg.sv.tpl" -> "rtl/autogen/top_{topname}_pkg.sv"
+        # "toplevel_pkg.sv.tpl" -> "rtl/autogen/{top_name}_pkg.sv"
         render_template(TOPGEN_TEMPLATE_PATH / "toplevel_pkg.sv.tpl",
-                        out_path / f"rtl/autogen/top_{topname}_pkg.sv",
+                        out_path / "rtl" / "autogen" / f"{top_name}_pkg.sv",
                         helper=c_helper,
                         gencmd=gencmd)
 
         # compile-time random netlist constants
         render_template(TOPGEN_TEMPLATE_PATH / "toplevel_rnd_cnst_pkg.sv.tpl",
                         out_path /
-                        f"rtl/autogen/top_{topname}_rnd_cnst_pkg.sv",
+                        f"rtl/autogen/{top_name}_rnd_cnst_pkg.sv",
                         gencmd=gencmd)
 
         # Since SW does not use FuseSoC and instead expects those files always
@@ -1305,14 +1308,14 @@ def main():
         root_paths = [out_path.resolve(), SRCTREE_TOP]
         out_paths = [
             out_path.resolve(),
-            (SRCTREE_TOP / "hw/top_{}/".format(topname)).resolve()
+            (SRCTREE_TOP / "hw" / top_name).resolve()
         ]
         for idx, path in enumerate(out_paths):
             # C Header + C File + Clang-format file
 
             # "clang-format" -> "sw/autogen/.clang-format"
             cformat_tplpath = TOPGEN_TEMPLATE_PATH / "clang-format"
-            cformat_dir = path / "sw/autogen"
+            cformat_dir = path / "sw" / "autogen"
             cformat_dir.mkdir(parents=True, exist_ok=True)
             cformat_path = cformat_dir / ".clang-format"
             cformat_path.write_text(cformat_tplpath.read_text())
@@ -1322,8 +1325,8 @@ def main():
             c_helper.header_macro_prefix = (
                 "OPENTITAN_" + str(rel_header_dir).replace("/", "_").upper())
 
-            # "top_{topname}.h.tpl" -> "sw/autogen/top_{topname}.h"
-            cheader_path = cformat_dir / f"top_{topname}.h"
+            # "{top_name}.h.tpl" -> "sw/autogen/{top_name}.h"
+            cheader_path = cformat_dir / f"{top_name}.h"
             render_template(TOPGEN_TEMPLATE_PATH / "toplevel.h.tpl",
                             cheader_path,
                             helper=c_helper)
@@ -1332,17 +1335,17 @@ def main():
             rel_header_path = cheader_path.relative_to(root_paths[idx])
             c_helper.header_path = str(rel_header_path)
 
-            # "toplevel.c.tpl" -> "sw/autogen/top_{topname}.c"
+            # "toplevel.c.tpl" -> "sw/autogen/{top_name}.c"
             render_template(TOPGEN_TEMPLATE_PATH / "toplevel.c.tpl",
-                            cformat_dir / f"top_{topname}.c",
+                            cformat_dir / f"{top_name}.c",
                             helper=c_helper)
 
-            # "toplevel_memory.ld.tpl" -> "sw/autogen/top_{topname}_memory.ld"
+            # "toplevel_memory.ld.tpl" -> "sw/autogen/{top_name}_memory.ld"
             render_template(TOPGEN_TEMPLATE_PATH / "toplevel_memory.ld.tpl",
-                            cformat_dir / f"top_{topname}_memory.ld")
+                            cformat_dir / f"{top_name}_memory.ld")
 
-            # "toplevel_memory.h.tpl" -> "sw/autogen/top_{topname}_memory.h"
-            memory_cheader_path = cformat_dir / f"top_{topname}_memory.h"
+            # "toplevel_memory.h.tpl" -> "sw/autogen/{top_name}_memory.h"
+            memory_cheader_path = cformat_dir / f"{top_name}_memory.h"
             render_template(TOPGEN_TEMPLATE_PATH / "toplevel_memory.h.tpl",
                             memory_cheader_path,
                             helper=c_helper)
@@ -1385,7 +1388,7 @@ def main():
         gen_top_docs(completecfg, c_helper, out_path)
 
         # Auto-generate tests in "sw/device/tests/autogen" area.
-        gencmd = warnhdr + GENCMD.format(topname=topname)
+        gencmd = warnhdr + GENCMD.format(top_name=top_name)
         for fname in ["plic_all_irqs_test.c", "alert_test.c", "BUILD"]:
             outfile = SRCTREE_TOP / "sw/device/tests/autogen" / fname
             render_template(TOPGEN_TEMPLATE_PATH / f"{fname}.tpl",
