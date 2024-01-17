@@ -62,6 +62,31 @@ typedef struct csrng_app_cmd {
 } csrng_app_cmd_t;
 
 /**
+ * This enum type contains all the different command types for
+ * csrng_send_cmd().
+ */
+typedef enum csrng_app_cmd_type {
+  /**
+   * Command issued directly to CSRNG.
+   */
+  kCsrngAppCmdTypeCsrng,
+  /**
+   * Command issued to CSRNG via the SW_CMD_REQ register of the EDN.
+   */
+  kCsrngAppCmdTypeEdnSw,
+  /**
+   * Command issued to CSRNG via the GENERATE_CMD register of the EDN.
+   * This type of command will be used in the auto mode of the EDN.
+   */
+  kCsrngAppCmdTypeEdnGen,
+  /**
+   * Command issued to CSRNG via the RESEED_CMD register of the EDN.
+   * This type of command will be used in the auto mode of the EDN.
+   */
+  kCsrngAppCmdTypeEdnRes,
+} csrng_app_cmd_type_t;
+
+/**
  * Builds a CSRNG command header.
  *
  * Build a CSRNG command header following the CSRNG specification. The caller is
@@ -87,7 +112,8 @@ uint32_t csrng_cmd_header_build(
  * Returns the result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t csrng_send_app_cmd(mmio_region_t base_addr, ptrdiff_t offset,
+dif_result_t csrng_send_app_cmd(mmio_region_t base_addr,
+                                csrng_app_cmd_type_t cmd_type,
                                 csrng_app_cmd_t cmd);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_DIF_DIF_CSRNG_SHARED_H_

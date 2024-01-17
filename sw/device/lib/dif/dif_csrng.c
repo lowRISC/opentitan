@@ -64,7 +64,7 @@ dif_result_t dif_csrng_instantiate(
   if (csrng == NULL || seed_material == NULL) {
     return kDifBadArg;
   }
-  return csrng_send_app_cmd(csrng->base_addr, CSRNG_CMD_REQ_REG_OFFSET,
+  return csrng_send_app_cmd(csrng->base_addr, kCsrngAppCmdTypeCsrng,
                             (csrng_app_cmd_t){
                                 .id = kCsrngAppCmdInstantiate,
                                 .entropy_src_enable = entropy_src_enable,
@@ -77,7 +77,7 @@ dif_result_t dif_csrng_reseed(const dif_csrng_t *csrng,
   if (csrng == NULL || seed_material == NULL) {
     return kDifBadArg;
   }
-  return csrng_send_app_cmd(csrng->base_addr, CSRNG_CMD_REQ_REG_OFFSET,
+  return csrng_send_app_cmd(csrng->base_addr, kCsrngAppCmdTypeCsrng,
                             (csrng_app_cmd_t){
                                 .id = kCsrngAppCmdReseed,
                                 .seed_material = seed_material,
@@ -89,7 +89,7 @@ dif_result_t dif_csrng_update(const dif_csrng_t *csrng,
   if (csrng == NULL || seed_material == NULL) {
     return kDifBadArg;
   }
-  return csrng_send_app_cmd(csrng->base_addr, CSRNG_CMD_REQ_REG_OFFSET,
+  return csrng_send_app_cmd(csrng->base_addr, kCsrngAppCmdTypeCsrng,
                             (csrng_app_cmd_t){
                                 .id = kCsrngAppCmdUpdate,
                                 .seed_material = seed_material,
@@ -104,7 +104,7 @@ dif_result_t dif_csrng_generate_start(const dif_csrng_t *csrng, size_t len) {
   // Round up the number of 128bit blocks. Aligning with respect to uint32_t.
   // TODO(#6112): Consider using a canonical reference for alignment operations.
   const uint32_t num_128bit_blocks = (len + 3) / 4;
-  return csrng_send_app_cmd(csrng->base_addr, CSRNG_CMD_REQ_REG_OFFSET,
+  return csrng_send_app_cmd(csrng->base_addr, kCsrngAppCmdTypeCsrng,
                             (csrng_app_cmd_t){
                                 .id = kCsrngAppCmdGenerate,
                                 .generate_len = num_128bit_blocks,
@@ -131,7 +131,7 @@ dif_result_t dif_csrng_uninstantiate(const dif_csrng_t *csrng) {
   if (csrng == NULL) {
     return kDifBadArg;
   }
-  return csrng_send_app_cmd(csrng->base_addr, CSRNG_CMD_REQ_REG_OFFSET,
+  return csrng_send_app_cmd(csrng->base_addr, kCsrngAppCmdTypeCsrng,
                             (csrng_app_cmd_t){
                                 .id = kCsrngAppCmdUninstantiate,
                             });

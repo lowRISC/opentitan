@@ -199,7 +199,7 @@ static void edn_ready_wait(const dif_edn_t *edn) {
     CHECK_DIF_OK(dif_edn_get_status(edn, kDifEdnStatusReady, &ready));
   }
   bool ack_err;
-  CHECK_DIF_OK(dif_edn_get_status(edn, kDifEdnStatusCsrngAck, &ack_err));
+  CHECK_DIF_OK(dif_edn_get_status(edn, kDifEdnStatusCsrngStatus, &ack_err));
   CHECK(!ack_err, "Unexpected CSRNG ack error");
 }
 

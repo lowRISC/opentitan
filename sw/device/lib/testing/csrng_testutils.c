@@ -101,7 +101,7 @@ status_t csrng_testutils_kat_reseed(
   // Reseed CSRNG - use the provided seed material only.
   TRY(csrng_testutils_cmd_ready_wait(csrng));
   TRY(csrng_send_app_cmd(
-      csrng->base_addr, CSRNG_CMD_REQ_REG_OFFSET,
+      csrng->base_addr, kCsrngAppCmdTypeCsrng,
       (csrng_app_cmd_t){
           .id = kCsrngAppCmdReseed,
           .entropy_src_enable = kDifCsrngEntropySrcToggleDisable,
