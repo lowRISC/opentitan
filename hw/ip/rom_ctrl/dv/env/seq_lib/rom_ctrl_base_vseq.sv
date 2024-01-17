@@ -112,6 +112,68 @@ class rom_ctrl_base_vseq extends cip_base_vseq #(
     return digest;
   endfunction
 
+  // Overrides tl_access in cip_base_vseq to add custom timeout. Timeout overriden to
+  // cfg.tl_access_timeout_ns (40ms)
+  // The ROM takes a while to be read and otherwise some tests may timeout when using
+  // default timeout.
+  virtual task tl_access(input bit [TL_AW-1:0]  addr,
+                         input bit              write,
+                         inout bit [TL_DW-1:0]  data,
+                         input uint             tl_access_timeout_ns = cfg.tl_access_timeout_ns,
+                         input bit [TL_DBW-1:0] mask = '1,
+                         input bit              check_rsp = 1'b1,
+                         input bit              exp_err_rsp = 1'b0,
+                         input bit [TL_DW-1:0]  exp_data = 0,
+                         input bit [TL_DW-1:0]  compare_mask = '1,
+                         input bit              check_exp_data = 1'b0,
+                         input bit              blocking = csr_utils_pkg::default_csr_blocking,
+                         input mubi4_t          instr_type = MuBi4False,
+                         tl_sequencer           tl_sequencer_h = p_sequencer.tl_sequencer_h,
+                         input tl_intg_err_e    tl_intg_err_type = TlIntgErrNone);
+
+    super.tl_access(.addr(addr), .write(write), .data(data),
+                    .tl_access_timeout_ns(tl_access_timeout_ns),
+                    .mask(mask), .check_rsp(check_rsp), .exp_err_rsp(exp_err_rsp),
+                    .compare_mask(compare_mask), .check_exp_data(check_exp_data),
+                    .blocking(blocking), .instr_type(instr_type), .tl_sequencer_h(tl_sequencer_h),
+                    .tl_intg_err_type(tl_intg_err_type));
+  endtask
+
+  // Overrides tl_access_w_abort in cip_base_vseq to add custom timeout. Timeout overriden to
+  // cfg.tl_access_timeout_ns (40ms)
+  // The ROM takes a while to be read and otherwise some tests may timeout when using
+  // default timeout.
+  virtual task tl_access_w_abort(
+      input bit [TL_AW-1:0]  addr,
+      input bit              write,
+      inout bit [TL_DW-1:0]  data,
+      output bit             completed,
+      output bit             saw_err,
+      input uint             tl_access_timeout_ns = cfg.tl_access_timeout_ns,
+      input bit [TL_DBW-1:0] mask = '1,
+      input bit              check_rsp = 1'b1,
+      input bit              exp_err_rsp = 1'b0,
+      input bit [TL_DW-1:0]  exp_data = 0,
+      input bit [TL_DW-1:0]  compare_mask = '1,
+      input bit              check_exp_data = 1'b0,
+      input bit              blocking = csr_utils_pkg::default_csr_blocking,
+      input mubi4_t          instr_type = MuBi4False,
+      tl_sequencer           tl_sequencer_h = p_sequencer.tl_sequencer_h,
+      input tl_intg_err_e    tl_intg_err_type = TlIntgErrNone,
+      input int              req_abort_pct = 0);
+
+
+    super.tl_access_w_abort(.addr(addr), .write(write), .data(data), .completed(completed),
+                            .saw_err(saw_err), .tl_access_timeout_ns(tl_access_timeout_ns),
+                            .mask(mask), .check_rsp(check_rsp), .exp_err_rsp(exp_err_rsp),
+                            .exp_data(exp_data), .compare_mask(compare_mask),
+                            .check_exp_data(check_exp_data), .blocking(blocking),
+                            .instr_type(instr_type), .tl_sequencer_h(tl_sequencer_h),
+                            .tl_intg_err_type(tl_intg_err_type), .req_abort_pct(req_abort_pct));
+  endtask
+
+
+
   // Set KMAC digest_share0 with ROM digest value and digest_share1 with 0
   virtual function void set_kmac_digest();
     bit [DIGEST_SIZE-1:0]  expected_digest;
