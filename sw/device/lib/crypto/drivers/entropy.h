@@ -52,6 +52,31 @@ typedef struct entropy_seed_material {
 } entropy_seed_material_t;
 
 /**
+ * This enum type contains all the different command types for
+ * csrng_send_app_cmd().
+ */
+typedef enum entropy_csrng_send_app_cmd_type {
+  /**
+   * Command issued directly to CSRNG.
+   */
+  kEntropyCsrngSendAppCmdTypeCsrng,
+  /**
+   * Command issued to CSRNG via the SW_CMD_REQ register of the EDN.
+   */
+  kEntropyCsrngSendAppCmdTypeEdnSw,
+  /**
+   * Command issued to CSRNG via the GENERATE_CMD register of the EDN.
+   * This type of command will be used in the auto mode of the EDN.
+   */
+  kEntropyCsrngSendAppCmdTypeEdnGen,
+  /**
+   * Command issued to CSRNG via the RESEED_CMD register of the EDN.
+   * This type of command will be used in the auto mode of the EDN.
+   */
+  kEntropyCsrngSendAppCmdTypeEdnRes,
+} entropy_csrng_send_app_cmd_type_t;
+
+/**
  * Constant empty seed material for the entropy complex.
  *
  * This is convenient to have available for some implementations.
