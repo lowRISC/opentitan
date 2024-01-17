@@ -201,7 +201,6 @@ module sensor_ctrl
 
     // only recoverable alerts ack
     assign event_clr[i] = recov_event[i] & reg2hw.recov_alert[i].q;
-
   end
 
   // handle internal alert events, currently only have fatals
@@ -295,8 +294,8 @@ module sensor_ctrl
     .Width(1),
     .ResetValue('0)
   ) u_wake_sync (
-    .clk_i,
-    .rst_ni,
+    .clk_i(clk_aon_i),
+    .rst_ni(rst_aon_ni),
     .d_i(async_wake),
     .q_o(unstable_wake_req)
   );
