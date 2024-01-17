@@ -706,11 +706,17 @@ interface chip_if;
     release `AST_HIER.adc_d_o;
   endtask
 
+  // This task triggers a wakeup by forcing an incoming alert from AST to sensor_ctrl.
+  // It should be used when the device is in sleep mode, and the alert will be cleared by
+  // sensor_ctrl alert ack output.
   task static trigger_sensor_ctrl_wkup();
-    `uvm_info(MsgId, "forcing sensor_ctrl ast_alert_i to 1", UVM_MEDIUM)
+    `uvm_info(MsgId, "forcing sensor_ctrl ast_alert_i[0] to 1", UVM_MEDIUM)
     force `SENSOR_CTRL_HIER.ast_alert_i.alerts[0].p = 1'b1;
-    #100us;
-    `uvm_info(MsgId, "releasing sensor_ctrl ast_alert_i", UVM_MEDIUM)
+    // Release the alert when an ack cycle is done, so wait for ack to rise
+    // and release when it falls, with a timeout of 20 micro seconds.
+    `DV_WAIT(`SENSOR_CTRL_HIER.ast_alert_o.alerts_ack[0].p == 1'b1, , 20_000_000, "chip_if")
+    `uvm_info(MsgId, "releasing sensor_ctrl ast_alert_i[0]", UVM_MEDIUM)
+    @(posedge `SENSOR_CTRL_HIER.clk_i);
     release `SENSOR_CTRL_HIER.ast_alert_i.alerts[0].p;
   endtask
 
