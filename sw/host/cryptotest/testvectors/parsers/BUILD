@@ -67,3 +67,13 @@ py_binary(
         requirement("jsonschema"),
     ],
 )
+
+py_binary(
+    name = "wycheproof_ecdh_parser",
+    srcs = ["wycheproof_ecdh_parser.py"],
+    deps = [
+        ":cryptotest_util",
+        requirement("jsonschema"),
+        requirement("pycryptodome"),
+    ],
+)
