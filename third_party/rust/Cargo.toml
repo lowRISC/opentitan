@@ -51,6 +51,7 @@ once_cell = "1.17"
 openssl = "0.10.57"
 openssl-sys = "0.9.93"
 p256 = "0.13.2"
+p384 = "0.13.0"
 pem-rfc7468 = { version = "0.7.0", features = ["alloc", "std"] }
 pqcrypto-sphincsplus = { version = "0.6.4", default-features = false, features = ["std"] }
 pqcrypto-traits = "0.3.4"
