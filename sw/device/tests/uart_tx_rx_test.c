@@ -525,7 +525,8 @@ bool test_main(void) {
   }
 
   // Attach the UART under test.
-  CHECK_STATUS_OK(uart_testutils_select_pinmux(&pinmux, kUartIdx, platform_id));
+  CHECK_STATUS_OK(uart_testutils_select_pinmux(&pinmux, kUartIdx, platform_id,
+                                               UartPinmuxChannelDut));
 
   if (kUseExtClk) {
     config_external_clock(&clkmgr);
