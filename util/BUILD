@@ -9,27 +9,6 @@ package(default_visibility = ["//visibility:public"])
 
 exports_files(glob(["**"]))
 
-genrule(
-    name = "ot_version_file",
-    outs = ["ot_version.txt"],
-    cmd = """awk '/BUILD_GIT_VERSION/ { print $$2 }' bazel-out/volatile-status.txt > $@""",
-    stamp = 1,  # this provides volatile-status.txt
-)
-
-genrule(
-    name = "full_version_file",
-    outs = ["full_version.txt"],
-    cmd = """cp -f bazel-out/volatile-status.txt $@""",
-    stamp = 1,  # this provides volatile-status.txt
-)
-
-genrule(
-    name = "scm_revision_file",
-    outs = ["scm_revision.txt"],
-    cmd = """awk '/BUILD_SCM_REVISION/ { print $$2 }' bazel-out/volatile-status.txt > $@""",
-    stamp = 1,  # this provides volatile-status.txt
-)
-
 py_binary(
     name = "otbn_build",
     srcs = ["otbn_build.py"],
