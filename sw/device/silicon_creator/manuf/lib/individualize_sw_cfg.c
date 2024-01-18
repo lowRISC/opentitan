@@ -101,8 +101,7 @@ static status_t lock_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
       .len = ARRAYSIZE(digest),
       .data = digest,
   };
-  TRY(manuf_util_hash_otp_partition(otp_ctrl, partition,
-                                    &otp_partition_digest));
+  TRY(manuf_util_hash_otp_partition(otp_ctrl, partition, otp_partition_digest));
 
   // Get the least significant 64 bits of the digest. We will use this as the
   // digest to lock the OTP partition. The complete digest will be used in the

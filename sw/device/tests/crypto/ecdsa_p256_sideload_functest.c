@@ -84,7 +84,7 @@ status_t sign_then_verify_test(void) {
       .len = ARRAYSIZE(message_digest_data),
       .mode = kOtcryptoHashModeSha256,
   };
-  TRY(otcrypto_hash(message, &message_digest));
+  TRY(otcrypto_hash(message, message_digest));
 
   // Allocate space for the signature.
   uint32_t sig[kP256SignatureWords] = {0};
@@ -92,14 +92,14 @@ status_t sign_then_verify_test(void) {
   // Generate a signature for the message.
   LOG_INFO("Signing...");
   CHECK_STATUS_OK(otcrypto_ecdsa_sign(
-      &private_key, &message_digest, &kCurveP256,
+      &private_key, message_digest, &kCurveP256,
       (otcrypto_word32_buf_t){.data = sig, .len = ARRAYSIZE(sig)}));
 
   // Verify the signature.
   LOG_INFO("Verifying...");
   hardened_bool_t verification_result;
   CHECK_STATUS_OK(otcrypto_ecdsa_verify(
-      &public_key, &message_digest,
+      &public_key, message_digest,
       (otcrypto_const_word32_buf_t){.data = sig, .len = ARRAYSIZE(sig)},
       &kCurveP256, &verification_result));
 

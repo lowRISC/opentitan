@@ -62,7 +62,7 @@ static status_t run_test(otcrypto_const_byte_buf_t msg,
       .len = kHmacDigestNumWords,
       .mode = kOtcryptoHashModeSha256,
   };
-  TRY(otcrypto_hash(msg, &digest_buf));
+  TRY(otcrypto_hash(msg, digest_buf));
   TRY_CHECK_ARRAYS_EQ(act_digest, exp_digest, kHmacDigestNumWords);
   return OK_STATUS();
 }
@@ -125,7 +125,7 @@ static status_t one_update_streaming_test(void) {
       .len = digest_num_words,
       .mode = kOtcryptoHashModeSha256,
   };
-  TRY(otcrypto_hash_final(&ctx, &digest_buf));
+  TRY(otcrypto_hash_final(&ctx, digest_buf));
   TRY_CHECK_ARRAYS_EQ((unsigned char *)act_digest, kExactBlockExpDigest,
                       sizeof(kExactBlockExpDigest));
   return OK_STATUS();
@@ -161,7 +161,7 @@ static status_t multiple_update_streaming_test(void) {
       .len = digest_num_words,
       .mode = kOtcryptoHashModeSha256,
   };
-  TRY(otcrypto_hash_final(&ctx, &digest_buf));
+  TRY(otcrypto_hash_final(&ctx, digest_buf));
   TRY_CHECK_ARRAYS_EQ((unsigned char *)act_digest, kTwoBlockExpDigest,
                       sizeof(kTwoBlockExpDigest));
   return OK_STATUS();
