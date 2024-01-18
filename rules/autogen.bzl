@@ -76,21 +76,25 @@ autogen_hjson_header = rule(
 )
 
 def _chip_info_src(ctx):
+    stamp_args = []
+    stamp_files = []
+    if stamping_enabled(ctx):
+        stamp_files = [ctx.version_file]
+        stamp_args.append("--ot_version_file")
+        stamp_args.append(ctx.version_file.path)
+
     out_source = ctx.actions.declare_file("chip_info.c")
     ctx.actions.run(
         outputs = [
             out_source,
         ],
         inputs = [
-            ctx.file.version,
             ctx.executable._tool,
-        ],
+        ] + stamp_files,
         arguments = [
             "-o",
             out_source.dirname,
-            "--ot_version_file",
-            ctx.file.version.path,
-        ],
+        ] + stamp_args,
         executable = ctx.executable._tool,
     )
 
@@ -101,16 +105,12 @@ def _chip_info_src(ctx):
 autogen_chip_info_src = rule(
     implementation = _chip_info_src,
     attrs = {
-        "version": attr.label(
-            default = "//util:scm_revision_file",
-            allow_single_file = True,
-        ),
         "_tool": attr.label(
             default = "//util:rom_chip_info",
             executable = True,
             cfg = "exec",
         ),
-    },
+    } | stamp_attr(1, "//rules:stamp_flag"),
 )
 
 def autogen_chip_info(name):
