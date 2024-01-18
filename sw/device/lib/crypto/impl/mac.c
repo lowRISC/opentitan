@@ -193,7 +193,7 @@ otcrypto_status_t otcrypto_hmac_init(otcrypto_hmac_context_t *ctx,
             .len = key->config.key_length,
             .data = (unsigned char *)unmasked_key,
         },
-        &key_digest));
+        key_digest));
   }
 
   // Compute (K0 ^ ipad).
@@ -249,7 +249,7 @@ otcrypto_status_t otcrypto_hmac_final(otcrypto_hmac_context_t *const ctx,
 
   // Finalize the computation of the inner hash = H(K0 ^ ipad || message) and
   // store it in `tag` temporarily.
-  HARDENED_TRY(otcrypto_hash_final(&ctx->inner, &digest_buf));
+  HARDENED_TRY(otcrypto_hash_final(&ctx->inner, digest_buf));
 
   // Finalize the computation of the outer hash
   //    = H(K0 ^ opad || H(K0 ^ ipad || message)).
@@ -258,5 +258,5 @@ otcrypto_status_t otcrypto_hmac_final(otcrypto_hmac_context_t *const ctx,
       (otcrypto_const_byte_buf_t){.len = sizeof(uint32_t) * tag.len,
                                   .data = (unsigned char *)tag.data}));
 
-  return otcrypto_hash_final(&ctx->outer, &digest_buf);
+  return otcrypto_hash_final(&ctx->outer, digest_buf);
 }

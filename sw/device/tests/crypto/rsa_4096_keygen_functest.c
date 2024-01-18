@@ -99,7 +99,7 @@ status_t keygen_then_sign_test(void) {
       .len = ARRAYSIZE(msg_digest_data),
       .mode = kOtcryptoHashModeSha512,
   };
-  TRY(otcrypto_hash(msg_buf, &msg_digest));
+  TRY(otcrypto_hash(msg_buf, msg_digest));
 
   uint32_t sig[kRsa4096NumWords];
   otcrypto_word32_buf_t sig_buf = {
@@ -113,7 +113,7 @@ status_t keygen_then_sign_test(void) {
 
   // Generate a signature.
   LOG_INFO("Starting signature generation...");
-  TRY(otcrypto_rsa_sign(&private_key, &msg_digest, kOtcryptoRsaPaddingPkcs,
+  TRY(otcrypto_rsa_sign(&private_key, msg_digest, kOtcryptoRsaPaddingPkcs,
                         sig_buf));
   LOG_INFO("Signature generation complete.");
   LOG_INFO("OTBN instruction count: %u", otbn_instruction_count_get());
@@ -122,7 +122,7 @@ status_t keygen_then_sign_test(void) {
   // p and q, incorrect d), then this is likely to fail.
   LOG_INFO("Starting signature verification...");
   hardened_bool_t verification_result;
-  TRY(otcrypto_rsa_verify(&public_key, &msg_digest, kOtcryptoRsaPaddingPkcs,
+  TRY(otcrypto_rsa_verify(&public_key, msg_digest, kOtcryptoRsaPaddingPkcs,
                           const_sig_buf, &verification_result));
   LOG_INFO("Signature verification complete.");
   LOG_INFO("OTBN instruction count: %u", otbn_instruction_count_get());

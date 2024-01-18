@@ -139,35 +139,35 @@ static void sha512_state_restore(const otcrypto_hash_context_t *restrict ctx,
  * @return Error status.
  */
 OT_WARN_UNUSED_RESULT
-static status_t check_digest_len(otcrypto_hash_digest_t *digest) {
-  switch (launder32(digest->mode)) {
+static status_t check_digest_len(otcrypto_hash_digest_t digest) {
+  switch (launder32(digest.mode)) {
     case kOtcryptoHashModeSha3_224:
-      if (launder32(digest->len) == (224 / 32)) {
-        HARDENED_CHECK_EQ(digest->len * sizeof(uint32_t) * 8, 224);
+      if (launder32(digest.len) == (224 / 32)) {
+        HARDENED_CHECK_EQ(digest.len * sizeof(uint32_t) * 8, 224);
         return OTCRYPTO_OK;
       }
       return OTCRYPTO_BAD_ARGS;
     case kOtcryptoHashModeSha256:
       OT_FALLTHROUGH_INTENDED;
     case kOtcryptoHashModeSha3_256:
-      if (launder32(digest->len) == (256 / 32)) {
-        HARDENED_CHECK_EQ(digest->len * sizeof(uint32_t) * 8, 256);
+      if (launder32(digest.len) == (256 / 32)) {
+        HARDENED_CHECK_EQ(digest.len * sizeof(uint32_t) * 8, 256);
         return OTCRYPTO_OK;
       }
       return OTCRYPTO_BAD_ARGS;
     case kOtcryptoHashModeSha384:
       OT_FALLTHROUGH_INTENDED;
     case kOtcryptoHashModeSha3_384:
-      if (launder32(digest->len) == (384 / 32)) {
-        HARDENED_CHECK_EQ(digest->len * sizeof(uint32_t) * 8, 384);
+      if (launder32(digest.len) == (384 / 32)) {
+        HARDENED_CHECK_EQ(digest.len * sizeof(uint32_t) * 8, 384);
         return OTCRYPTO_OK;
       }
       return OTCRYPTO_BAD_ARGS;
     case kOtcryptoHashModeSha512:
       OT_FALLTHROUGH_INTENDED;
     case kOtcryptoHashModeSha3_512:
-      if (launder32(digest->len) == (512 / 32)) {
-        HARDENED_CHECK_EQ(digest->len * sizeof(uint32_t) * 8, 512);
+      if (launder32(digest.len) == (512 / 32)) {
+        HARDENED_CHECK_EQ(digest.len * sizeof(uint32_t) * 8, 512);
         return OTCRYPTO_OK;
       }
       return OTCRYPTO_BAD_ARGS;
@@ -187,9 +187,9 @@ static status_t check_digest_len(otcrypto_hash_digest_t *digest) {
  */
 OT_WARN_UNUSED_RESULT
 static status_t hmac_sha256(otcrypto_const_byte_buf_t message,
-                            otcrypto_hash_digest_t *digest) {
-  HARDENED_CHECK_EQ(digest->len, kHmacDigestNumWords);
-  HARDENED_CHECK_EQ(digest->mode, kOtcryptoHashModeSha256);
+                            otcrypto_hash_digest_t digest) {
+  HARDENED_CHECK_EQ(digest.len, kHmacDigestNumWords);
+  HARDENED_CHECK_EQ(digest.mode, kOtcryptoHashModeSha256);
 
   // Initialize the hardware.
   hmac_sha_init();
@@ -200,40 +200,40 @@ static status_t hmac_sha256(otcrypto_const_byte_buf_t message,
   // Retrieve the digest and copy it to the destination buffer.
   hmac_digest_t hmac_digest;
   hmac_final(&hmac_digest);
-  hardened_memcpy(digest->data, hmac_digest.digest, kHmacDigestNumWords);
+  hardened_memcpy(digest.data, hmac_digest.digest, kHmacDigestNumWords);
 
   return OTCRYPTO_OK;
 }
 
 otcrypto_status_t otcrypto_hash(otcrypto_const_byte_buf_t input_message,
-                                otcrypto_hash_digest_t *digest) {
+                                otcrypto_hash_digest_t digest) {
   if (input_message.data == NULL && input_message.len != 0) {
     return OTCRYPTO_BAD_ARGS;
   }
 
-  if (digest == NULL || digest->data == NULL) {
+  if (digest.data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
   // Check that digest length and mode match.
   HARDENED_TRY(check_digest_len(digest));
 
-  switch (digest->mode) {
+  switch (digest.mode) {
     case kOtcryptoHashModeSha3_224:
-      return kmac_sha3_224(input_message.data, input_message.len, digest->data);
+      return kmac_sha3_224(input_message.data, input_message.len, digest.data);
     case kOtcryptoHashModeSha3_256:
-      return kmac_sha3_256(input_message.data, input_message.len, digest->data);
+      return kmac_sha3_256(input_message.data, input_message.len, digest.data);
     case kOtcryptoHashModeSha3_384:
-      return kmac_sha3_384(input_message.data, input_message.len, digest->data);
+      return kmac_sha3_384(input_message.data, input_message.len, digest.data);
     case kOtcryptoHashModeSha3_512:
-      return kmac_sha3_512(input_message.data, input_message.len, digest->data);
+      return kmac_sha3_512(input_message.data, input_message.len, digest.data);
     case kOtcryptoHashModeSha256:
       // Call the HMAC block driver in SHA-256 mode.
       return hmac_sha256(input_message, digest);
     case kOtcryptoHashModeSha384:
-      return sha384(input_message.data, input_message.len, digest->data);
+      return sha384(input_message.data, input_message.len, digest.data);
     case kOtcryptoHashModeSha512:
-      return sha512(input_message.data, input_message.len, digest->data);
+      return sha512(input_message.data, input_message.len, digest.data);
     default:
       // Invalid hash mode.
       return OTCRYPTO_BAD_ARGS;
@@ -245,14 +245,14 @@ otcrypto_status_t otcrypto_hash(otcrypto_const_byte_buf_t input_message,
 }
 
 otcrypto_status_t otcrypto_xof_shake(otcrypto_const_byte_buf_t input_message,
-                                     otcrypto_hash_digest_t *digest) {
-  switch (digest->mode) {
+                                     otcrypto_hash_digest_t digest) {
+  switch (digest.mode) {
     case kOtcryptoHashXofModeShake128:
-      return kmac_shake_128(input_message.data, input_message.len, digest->data,
-                            digest->len);
+      return kmac_shake_128(input_message.data, input_message.len, digest.data,
+                            digest.len);
     case kOtcryptoHashXofModeShake256:
-      return kmac_shake_256(input_message.data, input_message.len, digest->data,
-                            digest->len);
+      return kmac_shake_256(input_message.data, input_message.len, digest.data,
+                            digest.len);
     default:
       return OTCRYPTO_BAD_ARGS;
   }
@@ -266,34 +266,34 @@ otcrypto_status_t otcrypto_xof_cshake(
     otcrypto_const_byte_buf_t input_message,
     otcrypto_const_byte_buf_t function_name_string,
     otcrypto_const_byte_buf_t customization_string,
-    otcrypto_hash_digest_t *digest) {
+    otcrypto_hash_digest_t digest) {
   // According to NIST SP 800-185 Section 3.2, cSHAKE call should use SHAKE, if
   // both `customization_string` and `function_name_string` are empty string
   if (customization_string.len == 0 && function_name_string.len == 0) {
-    switch (digest->mode) {
+    switch (digest.mode) {
       case kOtcryptoHashXofModeCshake128:
         return kmac_shake_128(input_message.data, input_message.len,
-                              digest->data, digest->len);
+                              digest.data, digest.len);
       case kOtcryptoHashXofModeCshake256:
         return kmac_shake_256(input_message.data, input_message.len,
-                              digest->data, digest->len);
+                              digest.data, digest.len);
       default:
         return OTCRYPTO_BAD_ARGS;
     }
   }
 
-  switch (digest->mode) {
+  switch (digest.mode) {
     case kOtcryptoHashXofModeCshake128:
       return kmac_cshake_128(
           input_message.data, input_message.len, function_name_string.data,
           function_name_string.len, customization_string.data,
-          customization_string.len, digest->data, digest->len);
+          customization_string.len, digest.data, digest.len);
       break;
     case kOtcryptoHashXofModeCshake256:
       return kmac_cshake_256(
           input_message.data, input_message.len, function_name_string.data,
           function_name_string.len, customization_string.data,
-          customization_string.len, digest->data, digest->len);
+          customization_string.len, digest.data, digest.len);
     default:
       return OTCRYPTO_BAD_ARGS;
   }
@@ -378,14 +378,14 @@ otcrypto_status_t otcrypto_hash_update(
 }
 
 otcrypto_status_t otcrypto_hash_final(otcrypto_hash_context_t *const ctx,
-                                      otcrypto_hash_digest_t *digest) {
-  if (ctx == NULL || digest == NULL || digest->data == NULL) {
+                                      otcrypto_hash_digest_t digest) {
+  if (ctx == NULL || digest.data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
   // Check that digest length and mode are consistent.
   HARDENED_TRY(check_digest_len(digest));
-  if (ctx->mode != digest->mode) {
+  if (ctx->mode != digest.mode) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -393,19 +393,19 @@ otcrypto_status_t otcrypto_hash_final(otcrypto_hash_context_t *const ctx,
     case kOtcryptoHashModeSha256: {
       sha256_state_t state;
       sha256_state_restore(ctx, &state);
-      HARDENED_TRY(sha256_final(&state, digest->data));
+      HARDENED_TRY(sha256_final(&state, digest.data));
       break;
     }
     case kOtcryptoHashModeSha384: {
       sha384_state_t state;
       sha384_state_restore(ctx, &state);
-      HARDENED_TRY(sha384_final(&state, digest->data));
+      HARDENED_TRY(sha384_final(&state, digest.data));
       break;
     }
     case kOtcryptoHashModeSha512: {
       sha512_state_t state;
       sha512_state_restore(ctx, &state);
-      HARDENED_TRY(sha512_final(&state, digest->data));
+      HARDENED_TRY(sha512_final(&state, digest.data));
       break;
     }
     default:

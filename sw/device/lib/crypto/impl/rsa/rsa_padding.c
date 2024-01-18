@@ -82,25 +82,25 @@ static status_t digest_info_length_get(const otcrypto_hash_mode_t hash_mode,
  * @return OTCRYPTO_BAD_ARGS if the hash function is not valid, otherwise OK.
  */
 OT_WARN_UNUSED_RESULT
-static status_t digest_info_write(const otcrypto_hash_digest_t *message_digest,
+static status_t digest_info_write(const otcrypto_hash_digest_t message_digest,
                                   uint32_t *encoding) {
-  switch (message_digest->mode) {
+  switch (message_digest.mode) {
     case kOtcryptoHashModeSha256:
-      if (message_digest->len != kSha256DigestWords) {
+      if (message_digest.len != kSha256DigestWords) {
         return OTCRYPTO_BAD_ARGS;
       }
       memcpy(encoding + kSha256DigestWords, &kSha256DigestIdentifier,
              sizeof(kSha256DigestIdentifier));
       break;
     case kOtcryptoHashModeSha384:
-      if (message_digest->len != kSha384DigestWords) {
+      if (message_digest.len != kSha384DigestWords) {
         return OTCRYPTO_BAD_ARGS;
       }
       memcpy(encoding + kSha384DigestWords, &kSha384DigestIdentifier,
              sizeof(kSha384DigestIdentifier));
       break;
     case kOtcryptoHashModeSha512:
-      if (message_digest->len != kSha512DigestWords) {
+      if (message_digest.len != kSha512DigestWords) {
         return OTCRYPTO_BAD_ARGS;
       }
       memcpy(encoding + kSha512DigestWords, &kSha512DigestIdentifier,
@@ -112,18 +112,18 @@ static status_t digest_info_write(const otcrypto_hash_digest_t *message_digest,
   };
 
   // Copy the digest into the encoding, reversing the order of bytes.
-  for (size_t i = 0; i < message_digest->len / 2; i++) {
-    uint32_t tmp = __builtin_bswap32(message_digest->data[i]);
+  for (size_t i = 0; i < message_digest.len / 2; i++) {
+    uint32_t tmp = __builtin_bswap32(message_digest.data[i]);
     encoding[i] =
-        __builtin_bswap32(message_digest->data[message_digest->len - 1 - i]);
-    encoding[message_digest->len - 1 - i] = tmp;
+        __builtin_bswap32(message_digest.data[message_digest.len - 1 - i]);
+    encoding[message_digest.len - 1 - i] = tmp;
   }
 
   return OTCRYPTO_OK;
 }
 
 status_t rsa_padding_pkcs1v15_encode(
-    const otcrypto_hash_digest_t *message_digest, size_t encoded_message_len,
+    const otcrypto_hash_digest_t message_digest, size_t encoded_message_len,
     uint32_t *encoded_message) {
   // Initialize all bits of the encoded message to 1.
   size_t encoded_message_bytelen = encoded_message_len * sizeof(uint32_t);
@@ -138,7 +138,7 @@ status_t rsa_padding_pkcs1v15_encode(
 
   // Get the length of the digest info (called T in the RFC).
   size_t tlen;
-  HARDENED_TRY(digest_info_length_get(message_digest->mode, &tlen));
+  HARDENED_TRY(digest_info_length_get(message_digest.mode, &tlen));
 
   if (tlen + 3 + 8 >= encoded_message_bytelen) {
     // Invalid encoded message length/hash function combination; the RFC
@@ -156,7 +156,7 @@ status_t rsa_padding_pkcs1v15_encode(
 }
 
 status_t rsa_padding_pkcs1v15_verify(
-    const otcrypto_hash_digest_t *message_digest,
+    const otcrypto_hash_digest_t message_digest,
     const uint32_t *encoded_message, const size_t encoded_message_len,
     hardened_bool_t *result) {
   // Re-encode the message.
@@ -253,7 +253,7 @@ static status_t mgf1(otcrypto_hash_mode_t hash_mode, const uint8_t *seed,
             .data = hash_input,
             .len = sizeof(hash_input),
         },
-        &digest));
+        digest));
     mask += digest_wordlen;
     mask_len -= digest_bytelen;
   }
@@ -269,7 +269,7 @@ static status_t mgf1(otcrypto_hash_mode_t hash_mode, const uint8_t *seed,
   HARDENED_TRY(
       otcrypto_hash((otcrypto_const_byte_buf_t){.data = hash_input,
                                                 .len = sizeof(hash_input)},
-                    &digest));
+                    digest));
   hardened_memcpy(mask, digest_data, ceil_div(mask_len, sizeof(uint32_t)));
   return OTCRYPTO_OK;
 }
@@ -304,36 +304,36 @@ static inline void reverse_bytes(size_t input_len, uint32_t *input) {
  * @param[out] h Resulting digest, H.
  */
 OT_WARN_UNUSED_RESULT
-static status_t pss_construct_h(const otcrypto_hash_digest_t *message_digest,
+static status_t pss_construct_h(const otcrypto_hash_digest_t message_digest,
                                 const uint32_t *salt, size_t salt_len,
                                 uint32_t *h) {
   // Create a buffer for M' = (0x0000000000000000 || digest || salt).
-  size_t m_prime_wordlen = 2 + message_digest->len + salt_len;
+  size_t m_prime_wordlen = 2 + message_digest.len + salt_len;
   uint32_t m_prime[m_prime_wordlen];
   m_prime[0] = 0;
   m_prime[1] = 0;
   uint32_t *digest_dst = &m_prime[2];
-  uint32_t *salt_dst = digest_dst + message_digest->len;
-  hardened_memcpy(digest_dst, message_digest->data, message_digest->len);
+  uint32_t *salt_dst = digest_dst + message_digest.len;
+  hardened_memcpy(digest_dst, message_digest.data, message_digest.len);
   if (salt_len > 0) {
     hardened_memcpy(salt_dst, salt, salt_len);
   }
 
   // Construct H = Hash(M').
   otcrypto_hash_digest_t h_buffer = {
-      .data = h, .len = message_digest->len, .mode = message_digest->mode};
+      .data = h, .len = message_digest.len, .mode = message_digest.mode};
   return otcrypto_hash(
       (otcrypto_const_byte_buf_t){.data = (unsigned char *)m_prime,
                                   .len = sizeof(m_prime)},
-      &h_buffer);
+      h_buffer);
 }
 
-status_t rsa_padding_pss_encode(const otcrypto_hash_digest_t *message_digest,
+status_t rsa_padding_pss_encode(const otcrypto_hash_digest_t message_digest,
                                 const uint32_t *salt, size_t salt_len,
                                 size_t encoded_message_len,
                                 uint32_t *encoded_message) {
   // Check that the message length is long enough.
-  size_t digest_bytelen = message_digest->len * sizeof(uint32_t);
+  size_t digest_bytelen = message_digest.len * sizeof(uint32_t);
   size_t salt_bytelen = salt_len * sizeof(uint32_t);
   size_t encoded_message_bytelen = encoded_message_len * sizeof(uint32_t);
   if (encoded_message_bytelen < salt_bytelen + digest_bytelen + 2) {
@@ -341,7 +341,7 @@ status_t rsa_padding_pss_encode(const otcrypto_hash_digest_t *message_digest,
   }
 
   // Construct H = Hash(0x0000000000000000 || digest || salt).
-  uint32_t h[message_digest->len];
+  uint32_t h[message_digest.len];
   HARDENED_TRY(pss_construct_h(message_digest, salt, salt_len, h));
 
   // Construct DB = 00...00 || 0x01 || salt.
@@ -356,7 +356,7 @@ status_t rsa_padding_pss_encode(const otcrypto_hash_digest_t *message_digest,
 
   // Compute the mask.
   uint32_t mask[ARRAYSIZE(db)];
-  HARDENED_TRY(mgf1(message_digest->mode, (unsigned char *)h, sizeof(h),
+  HARDENED_TRY(mgf1(message_digest.mode, (unsigned char *)h, sizeof(h),
                     db_bytelen, mask));
 
   // Compute maskedDB = DB ^ mask.
@@ -379,7 +379,7 @@ status_t rsa_padding_pss_encode(const otcrypto_hash_digest_t *message_digest,
   return OTCRYPTO_OK;
 }
 
-status_t rsa_padding_pss_verify(const otcrypto_hash_digest_t *message_digest,
+status_t rsa_padding_pss_verify(const otcrypto_hash_digest_t message_digest,
                                 uint32_t *encoded_message,
                                 size_t encoded_message_len,
                                 hardened_bool_t *result) {
@@ -387,7 +387,7 @@ status_t rsa_padding_pss_verify(const otcrypto_hash_digest_t *message_digest,
   *result = kHardenedBoolFalse;
 
   // Check that the message length is long enough.
-  size_t digest_bytelen = message_digest->len * sizeof(uint32_t);
+  size_t digest_bytelen = message_digest.len * sizeof(uint32_t);
   size_t salt_bytelen = digest_bytelen;
   size_t encoded_message_bytelen = encoded_message_len * sizeof(uint32_t);
   if (encoded_message_bytelen < salt_bytelen + digest_bytelen + 2) {
@@ -413,13 +413,13 @@ status_t rsa_padding_pss_verify(const otcrypto_hash_digest_t *message_digest,
   }
 
   // Extract H.
-  uint32_t h[message_digest->len];
+  uint32_t h[message_digest.len];
   memcpy(h, encoded_message_bytes + db_bytelen, sizeof(h));
 
   // Compute the mask = MFG(H, emLen - hLen - 1). Zero the last bytes if
   // needed.
   uint32_t mask[ARRAYSIZE(db)];
-  HARDENED_TRY(mgf1(message_digest->mode, (unsigned char *)h, sizeof(h),
+  HARDENED_TRY(mgf1(message_digest.mode, (unsigned char *)h, sizeof(h),
                     db_bytelen, mask));
   if (sizeof(mask) > db_bytelen) {
     memset(((unsigned char *)mask) + db_bytelen, 0, sizeof(mask) - db_bytelen);
@@ -453,11 +453,11 @@ status_t rsa_padding_pss_verify(const otcrypto_hash_digest_t *message_digest,
   }
 
   // Extract the salt.
-  uint32_t salt[message_digest->len];
+  uint32_t salt[message_digest.len];
   memcpy(salt, db_bytes + db_bytelen - salt_bytelen, sizeof(salt));
 
   // Construct the expected value of H and compare.
-  uint32_t exp_h[message_digest->len];
+  uint32_t exp_h[message_digest.len];
   HARDENED_TRY(pss_construct_h(message_digest, salt, ARRAYSIZE(salt), exp_h));
   *result = hardened_memeq(h, exp_h, ARRAYSIZE(exp_h));
   return OTCRYPTO_OK;
@@ -511,7 +511,7 @@ status_t rsa_padding_oaep_encode(const otcrypto_hash_mode_t hash_mode,
       .len = ARRAYSIZE(lhash_data),
       .mode = hash_mode,
   };
-  HARDENED_TRY(otcrypto_hash(label_buf, &lhash));
+  HARDENED_TRY(otcrypto_hash(label_buf, lhash));
 
   // Generate a random string the same length as a hash digest (step 2d).
   uint32_t seed[digest_wordlen];
@@ -633,7 +633,7 @@ status_t rsa_padding_oaep_decode(const otcrypto_hash_mode_t hash_mode,
       .len = digest_wordlen,
       .mode = hash_mode,
   };
-  HARDENED_TRY(otcrypto_hash(label_buf, &lhash));
+  HARDENED_TRY(otcrypto_hash(label_buf, lhash));
 
   // Note: as we compare parts of the encoded message to their expected values,
   // we must be careful that the attacker cannot differentiate error codes or

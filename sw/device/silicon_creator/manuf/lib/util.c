@@ -54,7 +54,7 @@ status_t manuf_util_hash_lc_transition_token(const uint32_t *raw_token,
   };
 
   TRY(otcrypto_xof_cshake(input, function_name_string, customization_string,
-                          &output));
+                          output));
   memcpy(hashed_token, token_data, sizeof(token_data));
 
   return OK_STATUS();
@@ -62,13 +62,13 @@ status_t manuf_util_hash_lc_transition_token(const uint32_t *raw_token,
 
 status_t manuf_util_hash_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
                                        dif_otp_ctrl_partition_t partition,
-                                       otcrypto_word32_buf_t *output) {
-  if (otp_ctrl == NULL || output == NULL || output->len != kSha256DigestWords) {
+                                       otcrypto_word32_buf_t output) {
+  if (otp_ctrl == NULL || output.len != kSha256DigestWords) {
     return INVALID_ARGUMENT();
   }
   otcrypto_hash_digest_t digest = {
-      .data = output->data,
-      .len = output->len,
+      .data = output.data,
+      .len = output.len,
       .mode = kOtcryptoHashModeSha256,
   };
 
@@ -84,7 +84,7 @@ status_t manuf_util_hash_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
           .data = (unsigned char *)vendor_test_32bit_array,
           .len = OTP_CTRL_PARAM_VENDOR_TEST_SIZE,
       };
-      TRY(otcrypto_hash(input, &digest));
+      TRY(otcrypto_hash(input, digest));
     } break;
     case kDifOtpCtrlPartitionCreatorSwCfg: {
       otcrypto_const_byte_buf_t input = {
@@ -92,7 +92,7 @@ status_t manuf_util_hash_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
                                     OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET),
           .len = OTP_CTRL_PARAM_CREATOR_SW_CFG_SIZE,
       };
-      TRY(otcrypto_hash(input, &digest));
+      TRY(otcrypto_hash(input, digest));
     } break;
     case kDifOtpCtrlPartitionOwnerSwCfg: {
       otcrypto_const_byte_buf_t input = {
@@ -101,7 +101,7 @@ status_t manuf_util_hash_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
                                     OTP_CTRL_PARAM_CREATOR_SW_CFG_SIZE),
           .len = OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE,
       };
-      TRY(otcrypto_hash(input, &digest));
+      TRY(otcrypto_hash(input, digest));
     } break;
     default:
       return INVALID_ARGUMENT();
