@@ -15,7 +15,9 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/clkmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_console.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
+#include "sw/device/lib/testing/test_framework/ottf_utils.h"
 #include "sw/device/lib/testing/test_framework/status.h"
 #include "sw/device/lib/testing/uart_testutils.h"
 
@@ -58,18 +60,23 @@ typedef enum uart_direction {
 /**
  * Indicates the UART instance under test.
  *
- * From the software / compiler's perspective, this is a constant (hence the
- * `const` qualifier). However, the external DV testbench finds this symbol's
+ * When running in `dv_sim`, the external DV testbench finds this symbol's
  * address and modifies it via backdoor, to test a different UART instance with
  * the same test SW image. Hence, we add the `volatile` keyword to prevent the
  * compiler from optimizing it out.
+ *
  * The `const` is needed to put it in the .rodata section, otherwise it gets
  * placed in .data section in the main SRAM. We cannot backdoor write anything
  * in SRAM at the start of the test because the CRT init code wipes it to 0s.
- * This constant remains unchanged for non-simulation environments (FPGAs and
- * silicon) where this constant must be changed at compile-time to each UART.
  */
-static volatile const uint8_t kUartIdx = UART_IDX;
+static volatile const uint8_t kUartIdxDv = 0xff;
+/**
+ * Outside of DV simulation environments, the `kUartIdx` symbol needs to be
+ * _non_ `const` so that we can modify it via OTTF commands. `kUartIdx` is used
+ * as the source of truth in the test but we copy the value from `kUartIdxDv`
+ * to here if it has been set.
+ */
+static volatile uint8_t kUartIdx = 0xff;
 
 /**
  * Indicates if ext_clk is used and what speed.
@@ -138,6 +145,10 @@ static volatile bool exp_uart_irq_tx_empty;
 static volatile bool uart_irq_tx_empty_fired;
 static volatile bool exp_uart_irq_rx_overflow;
 static volatile bool uart_irq_rx_overflow_fired;
+
+enum {
+  kCommandTimeout = 5000000,  // microseconds
+};
 
 void update_uart_base_addr_and_irq_id(void) {
   switch (kUartIdx) {
@@ -496,23 +507,9 @@ void config_external_clock(const dif_clkmgr_t *clkmgr) {
       clkmgr_testutils_enable_external_clock_blocking(clkmgr, kUseLowSpeedSel));
 }
 
-OTTF_DEFINE_TEST_CONFIG(.console.type = kOttfConsoleSpiDevice,
-                        .console.base_addr = TOP_EARLGREY_SPI_DEVICE_BASE_ADDR,
-                        .console.test_may_clobber = false);
+OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 
 bool test_main(void) {
-  mmio_region_t base_addr;
-
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR);
-  CHECK_DIF_OK(dif_clkmgr_init(base_addr, &clkmgr));
-
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR);
-  CHECK_DIF_OK(dif_pinmux_init(base_addr, &pinmux));
-
-  update_uart_base_addr_and_irq_id();
-
-  LOG_INFO("Test UART%d with base_addr: %08x", kUartIdx, uart_base_addr);
-
   uart_pinmux_platform_id_t platform_id = UartPinmuxPlatformIdCount;
   if (kDeviceType == kDeviceFpgaCw310) {
     platform_id = UartPinmuxPlatformIdHyper310;
@@ -523,6 +520,31 @@ bool test_main(void) {
   } else {
     CHECK(false, "Unsupported platform %d", kDeviceType);
   }
+
+  mmio_region_t base_addr;
+
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR);
+  CHECK_DIF_OK(dif_clkmgr_init(base_addr, &clkmgr));
+
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR);
+  CHECK_DIF_OK(dif_pinmux_init(base_addr, &pinmux));
+
+  if (kUartIdxDv != 0xff) {
+    kUartIdx = kUartIdxDv;
+  } else {
+    OTTF_WAIT_FOR(kUartIdx != 0xff, kCommandTimeout);
+  }
+
+  // If we're testing UART0 we need to move the console to UART1.
+  if (kUartIdx == 0 && kDeviceType != kDeviceSimDV) {
+    CHECK_STATUS_OK(uart_testutils_select_pinmux(&pinmux, 1, platform_id,
+                                                 UartPinmuxChannelConsole));
+    ottf_console_configure_uart(TOP_EARLGREY_UART1_BASE_ADDR);
+  }
+
+  update_uart_base_addr_and_irq_id();
+
+  LOG_INFO("Test UART%d with base_addr: %08x", kUartIdx, uart_base_addr);
 
   // Attach the UART under test.
   CHECK_STATUS_OK(uart_testutils_select_pinmux(&pinmux, kUartIdx, platform_id,

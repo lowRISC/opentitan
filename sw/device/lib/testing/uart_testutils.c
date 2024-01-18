@@ -61,7 +61,6 @@ static const pinmux_testutils_mio_pin_t
                      .mio_out = kTopEarlgreyPinmuxMioOutIoc4,
                      .insel = kTopEarlgreyPinmuxInselIoc3,
                  },
-             // FIXME: select the other available pins.
              [UartPinmuxChannelDut] =
                  {
                      .mio_out = kTopEarlgreyPinmuxMioOutIob5,
@@ -74,7 +73,6 @@ static const pinmux_testutils_mio_pin_t
                     .mio_out = kTopEarlgreyPinmuxMioOutIoc4,
                     .insel = kTopEarlgreyPinmuxInselIoc3,
                 },
-            // FIXME: select the other available pins.
             [UartPinmuxChannelDut] = {
                 .mio_out = kTopEarlgreyPinmuxMioOutIob5,
                 .insel = kTopEarlgreyPinmuxInselIob4,

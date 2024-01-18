@@ -246,6 +246,10 @@
     {
       "name": "console",
       "alias_of": "UART2"
+    },
+    {
+      "name": "dut",
+      "alias_of": "UART3"
     }
   ],
   "strappings": [
