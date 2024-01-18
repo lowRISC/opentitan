@@ -381,6 +381,26 @@
           },
         ]
       },
+      { name: "SCR_KEY_ROTATED",
+        desc: "Clearable SRAM key request status.",
+        swaccess: "rw1c",
+        hwaccess: "hwo",
+        fields: [
+          { bits: "3:0",
+            name: "SUCCESS",
+            mubi: true,
+            desc: '''
+                  This status register is similar to !!SCR_KEY_VALID with the difference that the status is multibit encoded,
+                  SW clearable and sticky (i.e., HW does not auto-clear the register except during escalation). That way,
+                  SW can use this for a hardened acknowledgement mechanism where it clears the register before requesting a key.
+
+                  kMultiBitBool4True indicates that a valid scrambling key has been obtained from OTP.
+                  Write kMultiBitBool4True to clear.
+                  ''',
+            resval: false
+          },
+        ]
+      },
     ],
 
     ram: [

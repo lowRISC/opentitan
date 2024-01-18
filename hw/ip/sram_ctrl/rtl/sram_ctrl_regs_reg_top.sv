@@ -52,9 +52,9 @@ module sram_ctrl_regs_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [5:0] reg_we_check;
+  logic [6:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(6)
+    .OneHotWidth(7)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -141,6 +141,9 @@ module sram_ctrl_regs_reg_top (
   logic ctrl_we;
   logic ctrl_renew_scr_key_wd;
   logic ctrl_init_wd;
+  logic scr_key_rotated_we;
+  logic [3:0] scr_key_rotated_qs;
+  logic [3:0] scr_key_rotated_wd;
 
   // Register instances
   // R[alert_test]: V(True)
@@ -486,8 +489,36 @@ module sram_ctrl_regs_reg_top (
   assign reg2hw.ctrl.init.qe = ctrl_qe;
 
 
+  // R[scr_key_rotated]: V(False)
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_scr_key_rotated (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-  logic [5:0] addr_hit;
+    // from register interface
+    .we     (scr_key_rotated_we),
+    .wd     (scr_key_rotated_wd),
+
+    // from internal hardware
+    .de     (hw2reg.scr_key_rotated.de),
+    .d      (hw2reg.scr_key_rotated.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (scr_key_rotated_qs)
+  );
+
+
+
+  logic [6:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[0] = (reg_addr == SRAM_CTRL_ALERT_TEST_OFFSET);
@@ -496,6 +527,7 @@ module sram_ctrl_regs_reg_top (
     addr_hit[3] = (reg_addr == SRAM_CTRL_EXEC_OFFSET);
     addr_hit[4] = (reg_addr == SRAM_CTRL_CTRL_REGWEN_OFFSET);
     addr_hit[5] = (reg_addr == SRAM_CTRL_CTRL_OFFSET);
+    addr_hit[6] = (reg_addr == SRAM_CTRL_SCR_KEY_ROTATED_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -508,7 +540,8 @@ module sram_ctrl_regs_reg_top (
                (addr_hit[2] & (|(SRAM_CTRL_REGS_PERMIT[2] & ~reg_be))) |
                (addr_hit[3] & (|(SRAM_CTRL_REGS_PERMIT[3] & ~reg_be))) |
                (addr_hit[4] & (|(SRAM_CTRL_REGS_PERMIT[4] & ~reg_be))) |
-               (addr_hit[5] & (|(SRAM_CTRL_REGS_PERMIT[5] & ~reg_be)))));
+               (addr_hit[5] & (|(SRAM_CTRL_REGS_PERMIT[5] & ~reg_be))) |
+               (addr_hit[6] & (|(SRAM_CTRL_REGS_PERMIT[6] & ~reg_be)))));
   end
 
   // Generate write-enables
@@ -529,6 +562,9 @@ module sram_ctrl_regs_reg_top (
   assign ctrl_renew_scr_key_wd = reg_wdata[0];
 
   assign ctrl_init_wd = reg_wdata[1];
+  assign scr_key_rotated_we = addr_hit[6] & reg_we & !reg_error;
+
+  assign scr_key_rotated_wd = reg_wdata[3:0];
 
   // Assign write-enables to checker logic vector.
   always_comb begin
@@ -539,6 +575,7 @@ module sram_ctrl_regs_reg_top (
     reg_we_check[3] = exec_gated_we;
     reg_we_check[4] = ctrl_regwen_we;
     reg_we_check[5] = ctrl_gated_we;
+    reg_we_check[6] = scr_key_rotated_we;
   end
 
   // Read data return
@@ -573,6 +610,10 @@ module sram_ctrl_regs_reg_top (
       addr_hit[5]: begin
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = '0;
+      end
+
+      addr_hit[6]: begin
+        reg_rdata_next[3:0] = scr_key_rotated_qs;
       end
 
       default: begin
