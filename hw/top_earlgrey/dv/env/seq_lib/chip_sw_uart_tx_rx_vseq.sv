@@ -40,7 +40,7 @@ class chip_sw_uart_tx_rx_vseq extends chip_sw_uart_smoke_vseq;
     super.cpu_init();
     sw_symbol_backdoor_overwrite("kUartTxData", exp_uart_tx_data);
     sw_symbol_backdoor_overwrite("kExpUartRxData", uart_rx_data);
-    sw_symbol_backdoor_overwrite("kUartIdx", uart_idx_data);
+    sw_symbol_backdoor_overwrite("kUartIdxDv", uart_idx_data);
   endtask
 
   virtual task body();

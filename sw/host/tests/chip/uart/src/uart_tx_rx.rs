@@ -9,12 +9,14 @@ use std::time::Duration;
 
 use anyhow::{Context, Result};
 use clap::Parser;
+use object::{Object, ObjectSymbol};
 
 use opentitanlib::app::TransportWrapper;
-use opentitanlib::console::spi::SpiConsoleDevice;
 use opentitanlib::execute_test;
+use opentitanlib::io::uart::Uart;
 use opentitanlib::test_utils;
 use opentitanlib::test_utils::init::InitializeTest;
+use opentitanlib::test_utils::mem::MemWriteReq;
 use opentitanlib::uart::console::UartConsole;
 
 #[derive(Debug, Parser)]
@@ -36,14 +38,15 @@ struct TxRxData {
     tx_data: Vec<u8>,
 }
 
+struct TestData<'a> {
+    tx_rx_data: &'a TxRxData,
+    uart_id: u8,
+    uart_id_addr: u64,
+}
+
 fn main() -> Result<()> {
     let opts = Opts::parse();
     opts.init.init_logging();
-
-    let transport = opts.init.init_target()?;
-
-    let spi = transport.spi("BOOTSTRAP")?;
-    let console = SpiConsoleDevice::new(&*spi);
 
     let elf_file = fs::read(&opts.firmware_elf).context("failed to read ELF")?;
     let object = object::File::parse(elf_file.as_ref()).context("failed to parse ELF")?;
@@ -53,7 +56,26 @@ fn main() -> Result<()> {
         tx_data: test_utils::object::symbol_data(&object, "kUartTxData")?,
     };
 
-    execute_test!(uart_tx_rx, &opts, &transport, &console, &tx_rx_data);
+    let uart_id_addr = object
+        .symbols()
+        .find(|symbol| symbol.name() == Ok("kUartIdx"))
+        .context("failed to find kUartIdx symbol")?
+        .address();
+
+    let transport = opts.init.init_target()?;
+    let uart_console = transport.uart("console")?;
+
+    for uart_id in 0..4 {
+        transport.reset_target(Duration::from_millis(500), true)?;
+
+        let test_data = TestData {
+            tx_rx_data: &tx_rx_data,
+            uart_id,
+            uart_id_addr,
+        };
+
+        execute_test!(uart_tx_rx, &opts, &transport, &*uart_console, &test_data);
+    }
 
     Ok(())
 }
@@ -62,11 +84,21 @@ fn main() -> Result<()> {
 fn uart_tx_rx(
     opts: &Opts,
     transport: &TransportWrapper,
-    console: &SpiConsoleDevice,
-    tx_rx_data: &TxRxData,
+    console: &dyn Uart,
+    test_data: &TestData,
 ) -> Result<()> {
-    let uart = transport.uart("console")?;
+    let TestData {
+        tx_rx_data,
+        uart_id,
+        uart_id_addr,
+    } = test_data;
+
+    UartConsole::wait_for(console, r"waiting for commands", opts.timeout)?;
+    MemWriteReq::execute(console, *uart_id_addr as u32, &[*uart_id])?;
+
     UartConsole::wait_for(console, r"Executing the test", opts.timeout)?;
+
+    let uart = transport.uart("dut")?;
 
     log::info!("Sending data...");
     uart.write(&tx_rx_data.rx_data)
