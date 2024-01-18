@@ -25,13 +25,16 @@ ci/bazelisk.sh build  \
 
 # Run the one test.
 # This needs to be run outside the bazel sandbox, so we do not use `bazel run`
+#
+# NOTE: we specify `-type f` in the find commands to avoid finding any
+# additional symlinks bazel might have prepared when building the test targets.
 bazel-bin/sw/host/opentitantool/opentitantool \
     --rcfile="" \
     --logging=info \
     --interface=verilator \
     --verilator-bin=$BIN_DIR/hw/top_englishbreakfast/Vchip_englishbreakfast_verilator \
-    --verilator-rom="$(find bazel-out/* -name 'test_rom_sim_verilator.32.vmem')" \
-    --verilator-flash="$(find bazel-out/* -name 'aes_smoketest_prog_sim_verilator.64.scr.vmem')" \
+    --verilator-rom="$(find bazel-out/* -type f -name 'test_rom_sim_verilator.32.vmem')" \
+    --verilator-flash="$(find bazel-out/* -type f -name 'aes_smoketest_sim_verilator.64.vmem')" \
     console \
     --exit-failure="(FAIL|FAULT).*\n" \
     --exit-success="PASS.*\n" \

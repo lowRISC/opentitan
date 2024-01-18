@@ -247,7 +247,8 @@ mod tests {
         })?;
         const RESULT: &[u8] = &[
             // Identifier octet (universal, integer), length, content (minimal encoding, always uses one byte at least).
-            0x02, 0x01, 0x0, // Identifier octet (universal, integer), length, content.
+            0x02, 0x01, 0x0,
+            // Identifier octet (universal, integer), length, content (minimal encoding).
             0x02, 0x02, 0x12, 0x34,
             // Identifier octet (universal, octet string), length, content (minimal encoding, needs 0x00 because MSB is set).
             0x04, 0x03, 0x00, 0x80, 0x00,
@@ -327,7 +328,8 @@ mod tests {
             // Identifier octet (bitstring, OID), length, content (encoded as per X.690 section 8.6).
             0x03, 0x01, 0x0, // Identifier octet (bitstring, OID), length, content.
             0x03, 0x02, 0x7, 0x80, // Identifier octet (bitstring, OID), length, content.
-            0x04, 0x02, 0x7, 0x00, // Identifier octet (bitstring, OID), length, content.
+            0x04, 0x02, 0x7, 0x00,
+            // Identifier octet (bitstring, OID), length, content (written in binary to make it easier to read).
             0x03, 0x03, 0x04, 0b10110000, 0b10010000,
         ];
         assert_eq!(&der, RESULT);
@@ -337,12 +339,14 @@ mod tests {
     #[test]
     fn test_asn1_der_tag() -> Result<()> {
         // Pairs of (data, encoding of length)
+        let bytes_empty: (&[u8], &[u8]) = (&[], &[0x00]);
         let bytes_short: (&[u8], &[u8]) = (&[0xa5u8; 0x7f], &[0x7f]);
         let bytes_long_1a: (&[u8], &[u8]) = (&[0xb6u8; 0x80], &[0x81, 0x80]);
         let bytes_long_1b: (&[u8], &[u8]) = (&[0xc7u8; 0xff], &[0x81, 0xff]);
         let bytes_long_2a: (&[u8], &[u8]) = (&[0xd8u8; 0x100], &[0x82, 0x01, 0x00]);
         let bytes_long_2b: (&[u8], &[u8]) = (&[0xe9u8; 0xffff], &[0x82, 0xff, 0xff]);
         let seq = [
+            bytes_empty,
             bytes_short,
             bytes_long_1a,
             bytes_long_1b,

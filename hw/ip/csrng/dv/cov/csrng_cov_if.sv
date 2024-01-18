@@ -265,7 +265,7 @@ interface csrng_cov_if (
     option.name         = "csrng_err_code_test_cg";
     option.per_instance = 1;
 
-    err_code_test_cp: coverpoint err_test;
+    cp_err_code_test: coverpoint err_test;
 
   endgroup : csrng_err_code_test_cg
 
@@ -273,14 +273,15 @@ interface csrng_cov_if (
     option.name         = "csrng_recov_alert_sts_cg";
     option.per_instance = 1;
 
-    recov_alert_sts_cp: coverpoint recov_alert;
+    cp_recov_alert_sts: coverpoint recov_alert;
   endgroup : csrng_recov_alert_sts_cg
 
   covergroup csrng_cmds_cg with function sample(bit [NUM_HW_APPS-1:0] app,
                                                 acmd_e                acmd,
                                                 bit [3:0]             clen,
                                                 bit [3:0]             flags,
-                                                bit [11:0]            glen
+                                                bit [11:0]            glen,
+                                                bit [1:0]             flags_transition
                                                );
     option.name         = "csrng_cmds_cg";
     option.per_instance = 1;
@@ -328,6 +329,16 @@ interface csrng_cov_if (
       bins one         = { 1 };
       bins multiple    = { [2:$] };
       ignore_bins zero = { 0 };
+    }
+
+    // Coverpoint for all of the possible transitions of flag0 that can cause a
+    // transition in the fips bit. Transitions are only recorded after reseeds since
+    // the state_db is cleared between instantiates.
+    cp_flags_transition: coverpoint flags_transition iff (acmd == RES) {
+      bins false_to_false = { 2'b00 };
+      bins false_to_true = { 2'b01 };
+      bins true_to_false = { 2'b10 };
+      bins true_to_true = { 2'b11 };
     }
 
     app_acmd_cross: cross cp_app, cp_acmd {
@@ -381,6 +392,7 @@ interface csrng_cov_if (
       // Ignore invalid MuBi values for flags.
       ignore_bins ignore_invalid_mubi = !binsof(cp_flags) intersect { MuBi4True, MuBi4False };
     }
+    cmd_flag0_transition_app_cross: cross cp_flags_transition, cp_app;
   endgroup : csrng_cmds_cg
 
   // Covergroup to sample otp_en_cs_sw_app_read feature
@@ -430,14 +442,103 @@ interface csrng_cov_if (
                                                     iff(read_genbits_reg);
   endgroup
 
-  covergroup csrng_genbits_cg with function sample(bit genbits_fips, bit genbits_valid);
+  covergroup csrng_genbits_cg with function sample(bit genbits_fips,
+                                                   bit[1:0] genbits_fips_transition,
+                                                   uint app,
+                                                   bit valid,
+                                                   bit record_transition);
     option.per_instance  = 1;
     option.name          = "csrng_genbits_cg";
+
     // Coverpoint for indicating FIPS/CC compliant bits on genbits register
-    genbits_fips_cp: coverpoint genbits_fips iff (genbits_valid) {
+    cp_genbits_fips: coverpoint genbits_fips iff (record_transition) {
       bins fips_compliant = { 1'b1 };
       bins fips_non_compliant = { 1'b0 };
     }
+
+    // Coverpoint for all of the possible transitions of genbits_fips that can cause a
+    // transition in the fips bit at the output.
+    cp_genbits_fips_transition: coverpoint genbits_fips_transition iff (record_transition) {
+      bins false_to_false = { 2'b00 };
+      bins false_to_true = { 2'b01 };
+      bins true_to_false = { 2'b10 };
+      bins true_to_true = { 2'b11 };
+    }
+
+    cp_genbits_app: coverpoint app {
+      bins software = { SW_APP };
+      bins hardware = { [0:SW_APP-1] };
+      ignore_bins invalid_app = { [SW_APP+1:$] };
+    }
+
+    // Coverpoint for the valid bit.
+    cp_genbits_valid: coverpoint valid {
+      bins valid = { 1'b1 };
+      bins invalid = { 1'b0 };
+    }
+
+    genbits_fips_transition_app_cross: cross cp_genbits_fips_transition, cp_genbits_app;
+  endgroup
+
+  // This covergroup tracks the compliance bit in the CSRNG state_db.
+  covergroup csrng_state_db_cg with function sample(bit compliance,
+                                                    bit[1:0] compliance_transition,
+                                                    uint app);
+    option.per_instance  = 1;
+    option.name          = "csrng_state_db_cg";
+
+    // Coverpoint for indicating the FIPS/CC compliance bit in the state_db.
+    cp_compliance: coverpoint compliance {
+      bins fips_compliant = { 1'b1 };
+      bins fips_non_compliant = { 1'b0 };
+    }
+
+    cp_app: coverpoint app {
+      bins software = { SW_APP };
+      bins hardware = { [0:SW_APP-1] };
+      ignore_bins invalid_app = { [SW_APP+1:$] };
+    }
+
+    // Coverpoint for all of the possible transitions of the compliance bit.
+    cp_compliance_transition: coverpoint compliance_transition {
+      bins false_to_false = { 2'b00 };
+      bins false_to_true = { 2'b01 };
+      bins true_to_false = { 2'b10 };
+      bins true_to_true = { 2'b11 };
+    }
+
+    compliance_transition_app_cross: cross cp_compliance_transition, cp_app;
+  endgroup
+
+  // This covergroup tracks the fips bit coming from the entropy source.
+  covergroup csrng_es_sample_cg with function sample(bit fips,
+                                                     bit[1:0] fips_transition,
+                                                     uint app,
+                                                     bit record_transition);
+    option.per_instance  = 1;
+    option.name          = "csrng_es_sample_cg";
+
+    // Coverpoint for indicating the FIPS/CC compliance of the entropy.
+    cp_fips: coverpoint fips {
+      bins fips_compliant = { 1'b1 };
+      bins fips_non_compliant = { 1'b0 };
+    }
+
+    cp_app: coverpoint app {
+      bins software = { SW_APP };
+      bins hardware = { [0:SW_APP-1] };
+      ignore_bins invalid_app = { [SW_APP+1:$] };
+    }
+
+    // Coverpoint for all of the possible transitions of the fips bit.
+    cp_fips_transition: coverpoint fips_transition iff (record_transition) {
+      bins false_to_false = {2'b00};
+      bins false_to_true = {2'b01};
+      bins true_to_false = {2'b10};
+      bins true_to_true = {2'b11};
+    }
+
+    fips_transition_app_cross: cross cp_fips_transition, cp_app;
   endgroup
 
   `DV_FCOV_INSTANTIATE_CG(csrng_sfifo_cg, en_full_cov)
@@ -449,6 +550,8 @@ interface csrng_cov_if (
   `DV_FCOV_INSTANTIATE_CG(csrng_recov_alert_sts_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(csrng_otp_en_sw_app_read_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(csrng_genbits_cg, en_full_cov)
+  `DV_FCOV_INSTANTIATE_CG(csrng_state_db_cg, en_full_cov)
+  `DV_FCOV_INSTANTIATE_CG(csrng_es_sample_cg, en_full_cov)
 
   // Sample functions needed for xcelium
   function automatic void cg_cfg_sample(csrng_env_cfg cfg);
@@ -461,12 +564,17 @@ interface csrng_cov_if (
                             );
   endfunction
 
-  function automatic void cg_cmds_sample(bit [NUM_HW_APPS-1:0] hwapp, csrng_item cs_item);
+  function automatic void cg_cmds_sample(bit [NUM_HW_APPS-1:0] hwapp,
+                                         csrng_item cs_item,
+                                         mubi4_t flags_previous);
+    bit flags_previous_bit = (flags_previous == MuBi4True) ? 1'b1 : 1'b0;
+    bit flags_current_bit = (cs_item.flags == MuBi4True) ? 1'b1 : 1'b0;
     csrng_cmds_cg_inst.sample(hwapp,
                               cs_item.acmd,
                               cs_item.clen,
                               cs_item.flags,
-                              cs_item.glen
+                              cs_item.glen,
+                              {flags_previous_bit, flags_current_bit}
                              );
     csrng_sts_cg_inst.sample();
   endfunction
@@ -506,8 +614,29 @@ interface csrng_cov_if (
     );
   endfunction
 
-  function automatic void cg_csrng_genbits_sample(bit genbits_fips, bit genbits_valid);
-    csrng_genbits_cg_inst.sample(genbits_fips, genbits_valid);
+  function automatic void cg_csrng_genbits_sample(bit genbits_fips,
+                                                  bit genbits_fips_previous,
+                                                  uint app,
+                                                  bit valid,
+                                                  bit record_transition);
+    csrng_genbits_cg_inst.sample(genbits_fips,
+                                 {genbits_fips_previous, genbits_fips},
+                                 app,
+                                 valid,
+                                 record_transition);
+  endfunction
+
+  function automatic void cg_csrng_state_db_sample(bit compliance,
+                                                   bit compliance_previous,
+                                                   uint app);
+    csrng_state_db_cg_inst.sample(compliance, {compliance_previous, compliance}, app);
+  endfunction
+
+  function automatic void cg_csrng_es_sample(bit fips,
+                                             bit fips_previous,
+                                             uint app,
+                                             bit record_transition);
+    csrng_es_sample_cg_inst.sample(fips, {fips_previous, fips}, app, record_transition);
   endfunction
 
 endinterface : csrng_cov_if

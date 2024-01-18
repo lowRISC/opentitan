@@ -86,6 +86,27 @@ impl UartConsole {
             return Ok(ExitStatus::ExitSuccess);
         }
 
+        // HACK(nbdd0121): do a nonblocking read because the UART buffer may still have data in it.
+        // If we wait for mio event now, we might be blocking forever.
+        while self.uart_read(device, Duration::from_millis(0), &mut stdout)? {
+            if self
+                .exit_success
+                .as_ref()
+                .map(|rx| rx.is_match(&self.buffer))
+                == Some(true)
+            {
+                return Ok(ExitStatus::ExitSuccess);
+            }
+            if self
+                .exit_failure
+                .as_ref()
+                .map(|rx| rx.is_match(&self.buffer))
+                == Some(true)
+            {
+                return Ok(ExitStatus::ExitFailure);
+            }
+        }
+
         let mut poll = Poll::new()?;
         let transport_help_token = Self::get_next_token();
         let nonblocking_help = device.nonblocking_help()?;
@@ -176,7 +197,7 @@ impl UartConsole {
     where
         T: ConsoleDevice + ?Sized,
     {
-        let mut buf = [0u8; 256];
+        let mut buf = [0u8; 1];
         let len = device.console_read(&mut buf, timeout)?;
         if len == 0 {
             return Ok(false);

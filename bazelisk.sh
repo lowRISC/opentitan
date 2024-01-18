@@ -79,24 +79,29 @@ function outquery_starlark_expr() {
             echo "target.files.to_list()[0].path"
             ;;
         -all)
-            echo "\"\\n\".join([f.path for f in target.files.to_list()])"
+            echo "\"\\n\".join([f.path for f in depset(transitive=[target.files, target.default_runfiles.files]).to_list()])"
             ;;
         -providers)
             echo "providers(target)"
             ;;
         -*)
-            echo "\"\\n\".join([f.path for f in target.files.to_list() if \"$q\"[1:] in f.path])"
+            echo "\"\\n\".join([f.path for f in depset(transitive=[target.files, target.default_runfiles.files]).to_list() if \"$q\"[1:] in f.path])"
             ;;
         .*)
-            echo "\"\\n\".join([f.path for f in target.files.to_list() if f.path.endswith(\"$q\")])"
+            echo "\"\\n\".join([f.path for f in depset(transitive=[target.files, target.default_runfiles.files]).to_list() if f.path.endswith(\"$q\")])"
             ;;
     esac
 }
 
+# Arguments:
+# $qexpr: starlark expression - see `outquery_starlark_expr`
+# $name: name of an array containing Bazel arguments that should come _before_
+#        the subcommand (e.g. `--bazelrc=...`).
 function do_outquery() {
     local qexpr="$1"
     shift
-    "$file" cquery "$@" \
+
+    "$file" "${pre_cmd_args[@]}" cquery "$@" \
         --output=starlark --starlark:expr="$qexpr" \
         --ui_event_filters=-info --noshow_progress
 }
@@ -120,6 +125,14 @@ function main() {
             exit 1
         fi
     fi
+
+    # Shift all flags (starting with `-`) that come before the subcommand
+    # into an array.
+    pre_cmd_args=()
+    while [[ "${1-}" == -* ]]; do
+        pre_cmd_args+=("$1")
+        shift
+    done
 
     case "${1-}" in
         outquery*)
@@ -150,13 +163,13 @@ function main() {
             local qexpr outfile
             qexpr="$(outquery_starlark_expr outquery)"
             outfile=$(do_outquery "$qexpr" "$@")
-            "$file" build "$@"
+            "$file" "${pre_cmd_args[@]}" build "$@"
             # shellcheck disable=SC2059
             # We are intentionally using $command_template as a format string.
             eval "$(printf "$command_template" "$outfile")"
             ;;
         *)
-            exec "$file" "$@"
+            exec "$file" "${pre_cmd_args[@]}" "$@"
             ;;
     esac
 }

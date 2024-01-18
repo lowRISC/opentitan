@@ -31,6 +31,9 @@ class entropy_src_err_vseq extends entropy_src_base_vseq;
     // Turn off fatal alert check
     expect_fatal_alerts = 1'b1;
 
+    // Enable interrupts for fatal errors.
+    csr_wr(.ptr(ral.intr_enable.es_fatal_err), .value(1'b1), .predict(1'b1));
+
     // Turn on module_enable
     csr_wr(.ptr(ral.module_enable), .value(prim_mubi_pkg::MuBi4True));
 
@@ -158,20 +161,14 @@ class entropy_src_err_vseq extends entropy_src_base_vseq;
         // Turn on module_enable
         csr_wr(.ptr(ral.module_enable), .value(prim_mubi_pkg::MuBi4True));
         csr_spinwait(.ptr(fld), .exp_data(1'b1));
-        if (cfg.which_err_code == es_cntr_err_test) begin
-          // Disable entropy_src moduel
-          csr_wr(.ptr(ral.module_enable), .value(prim_mubi_pkg::MuBi4False));
-          // Clear interrupt_enable
-          csr_wr(.ptr(ral.intr_enable), .value(32'd0));
-          // Expect/Clear interrupt bit
-          check_interrupts(.interrupts((1 << FatalErr)), .check_set(1'b1));
-        end
       end
       default: begin
         `uvm_fatal(`gfn, "Invalid case! (bug in environment)")
       end
     endcase // case (cfg.which_err_code)
 
+    // Expect/Clear interrupt bit for fatal errors.
+    check_interrupts(.interrupts((1 << FatalErr)), .check_set(1'b1));
     // Disable entropy_src
     csr_wr(.ptr(ral.module_enable), .value(prim_mubi_pkg::MuBi4False));
     // Disable intr_state

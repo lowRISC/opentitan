@@ -26,13 +26,13 @@ static const uint32_t kExpOutput[16] = {
     0x771c619b, 0xdf82ab22, 0x80b1dc2f, 0x2581f391, 0x64f7ac0c, 0x510494b3,
     0xa43c41b7, 0xdb17514c, 0x87b107ae, 0x793e01c5,
 };
-static const crypto_const_byte_buf_t kEmptyBuffer = {
+static const otcrypto_const_byte_buf_t kEmptyBuffer = {
     .data = NULL,
     .len = 0,
 };
 
 static status_t kat_test(void) {
-  crypto_const_byte_buf_t entropy = {
+  otcrypto_const_byte_buf_t entropy = {
       .data = (const unsigned char *)kTestSeed,
       .len = sizeof(kTestSeed),
   };
@@ -41,7 +41,7 @@ static status_t kat_test(void) {
   TRY(otcrypto_drbg_manual_instantiate(entropy, /*perso_string=*/kEmptyBuffer));
 
   uint32_t actual_output_words[ARRAYSIZE(kExpOutput)];
-  crypto_word32_buf_t actual_output = {
+  otcrypto_word32_buf_t actual_output = {
       .data = actual_output_words,
       .len = ARRAYSIZE(actual_output_words),
   };
@@ -67,7 +67,7 @@ static status_t random_test(void) {
 
   // Generate a relatively large amount of output data.
   uint32_t output_data[1024];
-  crypto_word32_buf_t output = {
+  otcrypto_word32_buf_t output = {
       .data = output_data,
       .len = ARRAYSIZE(output_data),
   };

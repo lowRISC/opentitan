@@ -9,10 +9,14 @@
 // -o hw/top_earlgrey
 #include <limits.h>
 
+// This test should avoid otp_ctrl interrupts in rom_ext, since the rom
+// extension configures CSR accesses to OTP and AST to become illegal.
+//
 // This test is getting too big so we need to split it up. To do so,
 // each peripheral is given an ID (according to their alphabetical order)
 // and we define TEST_MIN_IRQ_PERIPHERAL and TEST_MAX_IRQ_PERIPHERAL to
 // choose which ones are being tested.
+
 #ifndef TEST_MIN_IRQ_PERIPHERAL
 #define TEST_MIN_IRQ_PERIPHERAL 0
 #endif
@@ -21,6 +25,7 @@
 #define TEST_MAX_IRQ_PERIPHERAL 23
 #endif
 
+#include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_adc_ctrl.h"
@@ -68,9 +73,9 @@ static dif_alert_handler_t alert_handler;
 static dif_aon_timer_t aon_timer_aon;
 #endif
 
-#if TEST_MIN_IRQ_PERIPHERAL <= 3 && 3 < TEST_MAX_IRQ_PERIPHERAL
+// TODO(lowrisc/opentitan#20747) Adjust csrng special handling once this is
+// fixed.
 static dif_csrng_t csrng;
-#endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 4 && 4 < TEST_MAX_IRQ_PERIPHERAL
 static dif_edn_t edn0;
@@ -310,6 +315,13 @@ static volatile dif_usbdev_irq_t usbdev_irq_expected;
 static volatile dif_usbdev_irq_t usbdev_irq_serviced;
 #endif
 
+
+#if TEST_MIN_IRQ_PERIPHERAL <= 3 < TEST_MAX_IRQ_PERIPHERAL
+static volatile bool allow_csrng_irq = true;
+#else
+static volatile bool allow_csrng_irq = false;
+#endif
+
 /**
  * Provides external IRQ handling for this test.
  *
@@ -329,736 +341,760 @@ void ottf_external_isr(uint32_t *exc_info) {
 
   top_earlgrey_plic_peripheral_t peripheral = (top_earlgrey_plic_peripheral_t)
       top_earlgrey_plic_interrupt_for_peripheral[plic_irq_id];
-  CHECK(peripheral == peripheral_expected,
-        "Interrupt from incorrect peripheral: exp = %d, obs = %d",
-        peripheral_expected, peripheral);
+  // TODO(lowrisc/opentitan#20747) Adjust code once this issue is fixed.
+  if (allow_csrng_irq && kBootStage == kBootStageOwner &&
+      peripheral != peripheral_expected &&
+      peripheral == kTopEarlgreyPlicPeripheralCsrng) {
+    dif_csrng_irq_t irq = (dif_csrng_irq_t)(
+        plic_irq_id -
+        (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdCsrngCsCmdReqDone);
 
-  switch (peripheral) {
+    dif_csrng_irq_state_snapshot_t snapshot;
+    CHECK_DIF_OK(dif_csrng_irq_get_state(&csrng, &snapshot));
+    CHECK(snapshot == (dif_csrng_irq_state_snapshot_t)(1 << irq),
+          "Only csrng IRQ %d expected to fire. Actual interrupt status = %x",
+          irq, snapshot);
+
+    // TODO: Check Interrupt type then clear INTR_TEST if needed.
+    CHECK_DIF_OK(dif_csrng_irq_force(&csrng, irq, false));
+    CHECK_DIF_OK(dif_csrng_irq_acknowledge(&csrng, irq));
+  } else {
+    CHECK(peripheral == peripheral_expected,
+          "Interrupt from incorrect peripheral: exp = %d, obs = %d",
+          peripheral_expected, peripheral);
+
+    switch (peripheral) {
 #if TEST_MIN_IRQ_PERIPHERAL <= 0 && 0 < TEST_MAX_IRQ_PERIPHERAL
-    case kTopEarlgreyPlicPeripheralAdcCtrlAon: {
-      dif_adc_ctrl_irq_t irq = (dif_adc_ctrl_irq_t)(
-          plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdAdcCtrlAonMatchDone);
-      CHECK(irq == adc_ctrl_irq_expected,
-            "Incorrect adc_ctrl_aon IRQ triggered: exp = %d, obs = %d",
-            adc_ctrl_irq_expected, irq);
-      adc_ctrl_irq_serviced = irq;
+      case kTopEarlgreyPlicPeripheralAdcCtrlAon: {
+        dif_adc_ctrl_irq_t irq = (dif_adc_ctrl_irq_t)(
+            plic_irq_id -
+            (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdAdcCtrlAonMatchDone);
+        CHECK(irq == adc_ctrl_irq_expected,
+              "Incorrect adc_ctrl_aon IRQ triggered: exp = %d, obs = %d",
+              adc_ctrl_irq_expected, irq);
+        adc_ctrl_irq_serviced = irq;
 
-      dif_adc_ctrl_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_adc_ctrl_irq_get_state(&adc_ctrl_aon, &snapshot));
-      CHECK(snapshot == (dif_adc_ctrl_irq_state_snapshot_t)(1 << irq),
-            "Only adc_ctrl_aon IRQ %d expected to fire. Actual interrupt "
-            "status = %x",
-            irq, snapshot);
+        dif_adc_ctrl_irq_state_snapshot_t snapshot;
+        CHECK_DIF_OK(dif_adc_ctrl_irq_get_state(&adc_ctrl_aon, &snapshot));
+        CHECK(snapshot == (dif_adc_ctrl_irq_state_snapshot_t)(1 << irq),
+              "Only adc_ctrl_aon IRQ %d expected to fire. Actual interrupt "
+              "status = %x",
+              irq, snapshot);
 
-      // TODO: Check Interrupt type then clear INTR_TEST if needed.
-      CHECK_DIF_OK(dif_adc_ctrl_irq_force(&adc_ctrl_aon, irq, false));
-      CHECK_DIF_OK(dif_adc_ctrl_irq_acknowledge(&adc_ctrl_aon, irq));
-      break;
-    }
+        // TODO: Check Interrupt type then clear INTR_TEST if needed.
+        CHECK_DIF_OK(dif_adc_ctrl_irq_force(&adc_ctrl_aon, irq, false));
+        CHECK_DIF_OK(dif_adc_ctrl_irq_acknowledge(&adc_ctrl_aon, irq));
+        break;
+      }
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 1 && 1 < TEST_MAX_IRQ_PERIPHERAL
-    case kTopEarlgreyPlicPeripheralAlertHandler: {
-      dif_alert_handler_irq_t irq = (dif_alert_handler_irq_t)(
-          plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdAlertHandlerClassa);
-      CHECK(irq == alert_handler_irq_expected,
-            "Incorrect alert_handler IRQ triggered: exp = %d, obs = %d",
-            alert_handler_irq_expected, irq);
-      alert_handler_irq_serviced = irq;
+      case kTopEarlgreyPlicPeripheralAlertHandler: {
+        dif_alert_handler_irq_t irq = (dif_alert_handler_irq_t)(
+            plic_irq_id -
+            (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdAlertHandlerClassa);
+        CHECK(irq == alert_handler_irq_expected,
+              "Incorrect alert_handler IRQ triggered: exp = %d, obs = %d",
+              alert_handler_irq_expected, irq);
+        alert_handler_irq_serviced = irq;
 
-      dif_alert_handler_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_alert_handler_irq_get_state(&alert_handler, &snapshot));
-      CHECK(snapshot == (dif_alert_handler_irq_state_snapshot_t)(1 << irq),
-            "Only alert_handler IRQ %d expected to fire. Actual interrupt "
-            "status = %x",
-            irq, snapshot);
+        dif_alert_handler_irq_state_snapshot_t snapshot;
+        CHECK_DIF_OK(dif_alert_handler_irq_get_state(&alert_handler, &snapshot));
+        CHECK(snapshot == (dif_alert_handler_irq_state_snapshot_t)(1 << irq),
+              "Only alert_handler IRQ %d expected to fire. Actual interrupt "
+              "status = %x",
+              irq, snapshot);
 
-      // TODO: Check Interrupt type then clear INTR_TEST if needed.
-      CHECK_DIF_OK(dif_alert_handler_irq_force(&alert_handler, irq, false));
-      CHECK_DIF_OK(dif_alert_handler_irq_acknowledge(&alert_handler, irq));
-      break;
-    }
+        // TODO: Check Interrupt type then clear INTR_TEST if needed.
+        CHECK_DIF_OK(dif_alert_handler_irq_force(&alert_handler, irq, false));
+        CHECK_DIF_OK(dif_alert_handler_irq_acknowledge(&alert_handler, irq));
+        break;
+      }
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 2 && 2 < TEST_MAX_IRQ_PERIPHERAL
-    case kTopEarlgreyPlicPeripheralAonTimerAon: {
-      dif_aon_timer_irq_t irq = (dif_aon_timer_irq_t)(
-          plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired);
-      CHECK(irq == aon_timer_irq_expected,
-            "Incorrect aon_timer_aon IRQ triggered: exp = %d, obs = %d",
-            aon_timer_irq_expected, irq);
-      aon_timer_irq_serviced = irq;
+      case kTopEarlgreyPlicPeripheralAonTimerAon: {
+        dif_aon_timer_irq_t irq = (dif_aon_timer_irq_t)(
+            plic_irq_id -
+            (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired);
+        CHECK(irq == aon_timer_irq_expected,
+              "Incorrect aon_timer_aon IRQ triggered: exp = %d, obs = %d",
+              aon_timer_irq_expected, irq);
+        aon_timer_irq_serviced = irq;
 
-      dif_aon_timer_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_aon_timer_irq_get_state(&aon_timer_aon, &snapshot));
-      CHECK(snapshot == (dif_aon_timer_irq_state_snapshot_t)(1 << irq),
-            "Only aon_timer_aon IRQ %d expected to fire. Actual interrupt "
-            "status = %x",
-            irq, snapshot);
+        dif_aon_timer_irq_state_snapshot_t snapshot;
+        CHECK_DIF_OK(dif_aon_timer_irq_get_state(&aon_timer_aon, &snapshot));
+        CHECK(snapshot == (dif_aon_timer_irq_state_snapshot_t)(1 << irq),
+              "Only aon_timer_aon IRQ %d expected to fire. Actual interrupt "
+              "status = %x",
+              irq, snapshot);
 
-      // TODO: Check Interrupt type then clear INTR_TEST if needed.
-      CHECK_DIF_OK(dif_aon_timer_irq_force(&aon_timer_aon, irq, false));
-      CHECK_DIF_OK(dif_aon_timer_irq_acknowledge(&aon_timer_aon, irq));
-      break;
-    }
+        // TODO: Check Interrupt type then clear INTR_TEST if needed.
+        CHECK_DIF_OK(dif_aon_timer_irq_force(&aon_timer_aon, irq, false));
+        CHECK_DIF_OK(dif_aon_timer_irq_acknowledge(&aon_timer_aon, irq));
+        break;
+      }
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 3 && 3 < TEST_MAX_IRQ_PERIPHERAL
-    case kTopEarlgreyPlicPeripheralCsrng: {
-      dif_csrng_irq_t irq = (dif_csrng_irq_t)(
-          plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdCsrngCsCmdReqDone);
-      CHECK(irq == csrng_irq_expected,
-            "Incorrect csrng IRQ triggered: exp = %d, obs = %d",
-            csrng_irq_expected, irq);
-      csrng_irq_serviced = irq;
+      case kTopEarlgreyPlicPeripheralCsrng: {
+        dif_csrng_irq_t irq = (dif_csrng_irq_t)(
+            plic_irq_id -
+            (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdCsrngCsCmdReqDone);
+        // This special handling of CSRNG is because it is configured
+        // to constantly generate interrupts. There may be better ways
+        // to configure the entropy complex so it is less noisy.
+        // TODO(lowrisc/opentitan#20747) Adjust code once this is fixed.
+        if (kBootStage != kBootStageOwner) {
+          CHECK(irq == csrng_irq_expected,
+                "Incorrect csrng IRQ triggered: exp = %d, obs = %d",
+                csrng_irq_expected, irq);
+        }
+        csrng_irq_serviced = irq;
 
-      dif_csrng_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_csrng_irq_get_state(&csrng, &snapshot));
-      CHECK(snapshot == (dif_csrng_irq_state_snapshot_t)(1 << irq),
-            "Only csrng IRQ %d expected to fire. Actual interrupt "
-            "status = %x",
-            irq, snapshot);
+        dif_csrng_irq_state_snapshot_t snapshot;
+        CHECK_DIF_OK(dif_csrng_irq_get_state(&csrng, &snapshot));
+        CHECK(snapshot == (dif_csrng_irq_state_snapshot_t)(1 << irq),
+              "Only csrng IRQ %d expected to fire. Actual interrupt "
+              "status = %x",
+              irq, snapshot);
 
-      // TODO: Check Interrupt type then clear INTR_TEST if needed.
-      CHECK_DIF_OK(dif_csrng_irq_force(&csrng, irq, false));
-      CHECK_DIF_OK(dif_csrng_irq_acknowledge(&csrng, irq));
-      break;
-    }
+        // TODO: Check Interrupt type then clear INTR_TEST if needed.
+        CHECK_DIF_OK(dif_csrng_irq_force(&csrng, irq, false));
+        CHECK_DIF_OK(dif_csrng_irq_acknowledge(&csrng, irq));
+        break;
+      }
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 4 && 4 < TEST_MAX_IRQ_PERIPHERAL
-    case kTopEarlgreyPlicPeripheralEdn0: {
-      dif_edn_irq_t irq = (dif_edn_irq_t)(
-          plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdEdn0EdnCmdReqDone);
-      CHECK(irq == edn_irq_expected,
-            "Incorrect edn0 IRQ triggered: exp = %d, obs = %d",
-            edn_irq_expected, irq);
-      edn_irq_serviced = irq;
+      case kTopEarlgreyPlicPeripheralEdn0: {
+        dif_edn_irq_t irq = (dif_edn_irq_t)(
+            plic_irq_id -
+            (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdEdn0EdnCmdReqDone);
+        CHECK(irq == edn_irq_expected,
+              "Incorrect edn0 IRQ triggered: exp = %d, obs = %d",
+              edn_irq_expected, irq);
+        edn_irq_serviced = irq;
 
-      dif_edn_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_edn_irq_get_state(&edn0, &snapshot));
-      CHECK(snapshot == (dif_edn_irq_state_snapshot_t)(1 << irq),
-            "Only edn0 IRQ %d expected to fire. Actual interrupt "
-            "status = %x",
-            irq, snapshot);
+        dif_edn_irq_state_snapshot_t snapshot;
+        CHECK_DIF_OK(dif_edn_irq_get_state(&edn0, &snapshot));
+        CHECK(snapshot == (dif_edn_irq_state_snapshot_t)(1 << irq),
+              "Only edn0 IRQ %d expected to fire. Actual interrupt "
+              "status = %x",
+              irq, snapshot);
 
-      // TODO: Check Interrupt type then clear INTR_TEST if needed.
-      CHECK_DIF_OK(dif_edn_irq_force(&edn0, irq, false));
-      CHECK_DIF_OK(dif_edn_irq_acknowledge(&edn0, irq));
-      break;
-    }
+        // TODO: Check Interrupt type then clear INTR_TEST if needed.
+        CHECK_DIF_OK(dif_edn_irq_force(&edn0, irq, false));
+        CHECK_DIF_OK(dif_edn_irq_acknowledge(&edn0, irq));
+        break;
+      }
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 4 && 4 < TEST_MAX_IRQ_PERIPHERAL
-    case kTopEarlgreyPlicPeripheralEdn1: {
-      dif_edn_irq_t irq = (dif_edn_irq_t)(
-          plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdEdn1EdnCmdReqDone);
-      CHECK(irq == edn_irq_expected,
-            "Incorrect edn1 IRQ triggered: exp = %d, obs = %d",
-            edn_irq_expected, irq);
-      edn_irq_serviced = irq;
+      case kTopEarlgreyPlicPeripheralEdn1: {
+        dif_edn_irq_t irq = (dif_edn_irq_t)(
+            plic_irq_id -
+            (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdEdn1EdnCmdReqDone);
+        CHECK(irq == edn_irq_expected,
+              "Incorrect edn1 IRQ triggered: exp = %d, obs = %d",
+              edn_irq_expected, irq);
+        edn_irq_serviced = irq;
 
-      dif_edn_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_edn_irq_get_state(&edn1, &snapshot));
-      CHECK(snapshot == (dif_edn_irq_state_snapshot_t)(1 << irq),
-            "Only edn1 IRQ %d expected to fire. Actual interrupt "
-            "status = %x",
-            irq, snapshot);
+        dif_edn_irq_state_snapshot_t snapshot;
+        CHECK_DIF_OK(dif_edn_irq_get_state(&edn1, &snapshot));
+        CHECK(snapshot == (dif_edn_irq_state_snapshot_t)(1 << irq),
+              "Only edn1 IRQ %d expected to fire. Actual interrupt "
+              "status = %x",
+              irq, snapshot);
 
-      // TODO: Check Interrupt type then clear INTR_TEST if needed.
-      CHECK_DIF_OK(dif_edn_irq_force(&edn1, irq, false));
-      CHECK_DIF_OK(dif_edn_irq_acknowledge(&edn1, irq));
-      break;
-    }
+        // TODO: Check Interrupt type then clear INTR_TEST if needed.
+        CHECK_DIF_OK(dif_edn_irq_force(&edn1, irq, false));
+        CHECK_DIF_OK(dif_edn_irq_acknowledge(&edn1, irq));
+        break;
+      }
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 5 && 5 < TEST_MAX_IRQ_PERIPHERAL
-    case kTopEarlgreyPlicPeripheralEntropySrc: {
-      dif_entropy_src_irq_t irq = (dif_entropy_src_irq_t)(
-          plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdEntropySrcEsEntropyValid);
-      CHECK(irq == entropy_src_irq_expected,
-            "Incorrect entropy_src IRQ triggered: exp = %d, obs = %d",
-            entropy_src_irq_expected, irq);
-      entropy_src_irq_serviced = irq;
+      case kTopEarlgreyPlicPeripheralEntropySrc: {
+        dif_entropy_src_irq_t irq = (dif_entropy_src_irq_t)(
+            plic_irq_id -
+            (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdEntropySrcEsEntropyValid);
+        CHECK(irq == entropy_src_irq_expected,
+              "Incorrect entropy_src IRQ triggered: exp = %d, obs = %d",
+              entropy_src_irq_expected, irq);
+        entropy_src_irq_serviced = irq;
 
-      dif_entropy_src_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_entropy_src_irq_get_state(&entropy_src, &snapshot));
-      CHECK(snapshot == (dif_entropy_src_irq_state_snapshot_t)(1 << irq),
-            "Only entropy_src IRQ %d expected to fire. Actual interrupt "
-            "status = %x",
-            irq, snapshot);
+        dif_entropy_src_irq_state_snapshot_t snapshot;
+        CHECK_DIF_OK(dif_entropy_src_irq_get_state(&entropy_src, &snapshot));
+        CHECK(snapshot == (dif_entropy_src_irq_state_snapshot_t)(1 << irq),
+              "Only entropy_src IRQ %d expected to fire. Actual interrupt "
+              "status = %x",
+              irq, snapshot);
 
-      // TODO: Check Interrupt type then clear INTR_TEST if needed.
-      CHECK_DIF_OK(dif_entropy_src_irq_force(&entropy_src, irq, false));
-      CHECK_DIF_OK(dif_entropy_src_irq_acknowledge(&entropy_src, irq));
-      break;
-    }
+        // TODO: Check Interrupt type then clear INTR_TEST if needed.
+        CHECK_DIF_OK(dif_entropy_src_irq_force(&entropy_src, irq, false));
+        CHECK_DIF_OK(dif_entropy_src_irq_acknowledge(&entropy_src, irq));
+        break;
+      }
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 6 && 6 < TEST_MAX_IRQ_PERIPHERAL
-    case kTopEarlgreyPlicPeripheralFlashCtrl: {
-      dif_flash_ctrl_irq_t irq = (dif_flash_ctrl_irq_t)(
-          plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdFlashCtrlProgEmpty);
-      CHECK(irq == flash_ctrl_irq_expected,
-            "Incorrect flash_ctrl IRQ triggered: exp = %d, obs = %d",
-            flash_ctrl_irq_expected, irq);
-      flash_ctrl_irq_serviced = irq;
+      case kTopEarlgreyPlicPeripheralFlashCtrl: {
+        dif_flash_ctrl_irq_t irq = (dif_flash_ctrl_irq_t)(
+            plic_irq_id -
+            (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdFlashCtrlProgEmpty);
+        CHECK(irq == flash_ctrl_irq_expected,
+              "Incorrect flash_ctrl IRQ triggered: exp = %d, obs = %d",
+              flash_ctrl_irq_expected, irq);
+        flash_ctrl_irq_serviced = irq;
 
-      dif_flash_ctrl_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_flash_ctrl_irq_get_state(&flash_ctrl, &snapshot));
-      CHECK(snapshot == (dif_flash_ctrl_irq_state_snapshot_t)(1 << irq),
-            "Only flash_ctrl IRQ %d expected to fire. Actual interrupt "
-            "status = %x",
-            irq, snapshot);
+        dif_flash_ctrl_irq_state_snapshot_t snapshot;
+        CHECK_DIF_OK(dif_flash_ctrl_irq_get_state(&flash_ctrl, &snapshot));
+        CHECK(snapshot == (dif_flash_ctrl_irq_state_snapshot_t)(1 << irq),
+              "Only flash_ctrl IRQ %d expected to fire. Actual interrupt "
+              "status = %x",
+              irq, snapshot);
 
-      // TODO: Check Interrupt type then clear INTR_TEST if needed.
-      CHECK_DIF_OK(dif_flash_ctrl_irq_force(&flash_ctrl, irq, false));
-      CHECK_DIF_OK(dif_flash_ctrl_irq_acknowledge(&flash_ctrl, irq));
-      break;
-    }
+        // TODO: Check Interrupt type then clear INTR_TEST if needed.
+        CHECK_DIF_OK(dif_flash_ctrl_irq_force(&flash_ctrl, irq, false));
+        CHECK_DIF_OK(dif_flash_ctrl_irq_acknowledge(&flash_ctrl, irq));
+        break;
+      }
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 7 && 7 < TEST_MAX_IRQ_PERIPHERAL
-    case kTopEarlgreyPlicPeripheralGpio: {
-      dif_gpio_irq_t irq = (dif_gpio_irq_t)(
-          plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdGpioGpio0);
-      CHECK(irq == gpio_irq_expected,
-            "Incorrect gpio IRQ triggered: exp = %d, obs = %d",
-            gpio_irq_expected, irq);
-      gpio_irq_serviced = irq;
+      case kTopEarlgreyPlicPeripheralGpio: {
+        dif_gpio_irq_t irq = (dif_gpio_irq_t)(
+            plic_irq_id -
+            (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdGpioGpio0);
+        CHECK(irq == gpio_irq_expected,
+              "Incorrect gpio IRQ triggered: exp = %d, obs = %d",
+              gpio_irq_expected, irq);
+        gpio_irq_serviced = irq;
 
-      dif_gpio_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_gpio_irq_get_state(&gpio, &snapshot));
-      CHECK(snapshot == (dif_gpio_irq_state_snapshot_t)(1 << irq),
-            "Only gpio IRQ %d expected to fire. Actual interrupt "
-            "status = %x",
-            irq, snapshot);
+        dif_gpio_irq_state_snapshot_t snapshot;
+        CHECK_DIF_OK(dif_gpio_irq_get_state(&gpio, &snapshot));
+        CHECK(snapshot == (dif_gpio_irq_state_snapshot_t)(1 << irq),
+              "Only gpio IRQ %d expected to fire. Actual interrupt "
+              "status = %x",
+              irq, snapshot);
 
-      // TODO: Check Interrupt type then clear INTR_TEST if needed.
-      CHECK_DIF_OK(dif_gpio_irq_force(&gpio, irq, false));
-      CHECK_DIF_OK(dif_gpio_irq_acknowledge(&gpio, irq));
-      break;
-    }
+        // TODO: Check Interrupt type then clear INTR_TEST if needed.
+        CHECK_DIF_OK(dif_gpio_irq_force(&gpio, irq, false));
+        CHECK_DIF_OK(dif_gpio_irq_acknowledge(&gpio, irq));
+        break;
+      }
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 8 && 8 < TEST_MAX_IRQ_PERIPHERAL
-    case kTopEarlgreyPlicPeripheralHmac: {
-      dif_hmac_irq_t irq = (dif_hmac_irq_t)(
-          plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdHmacHmacDone);
-      CHECK(irq == hmac_irq_expected,
-            "Incorrect hmac IRQ triggered: exp = %d, obs = %d",
-            hmac_irq_expected, irq);
-      hmac_irq_serviced = irq;
+      case kTopEarlgreyPlicPeripheralHmac: {
+        dif_hmac_irq_t irq = (dif_hmac_irq_t)(
+            plic_irq_id -
+            (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdHmacHmacDone);
+        CHECK(irq == hmac_irq_expected,
+              "Incorrect hmac IRQ triggered: exp = %d, obs = %d",
+              hmac_irq_expected, irq);
+        hmac_irq_serviced = irq;
 
-      dif_hmac_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_hmac_irq_get_state(&hmac, &snapshot));
-      CHECK(snapshot == (dif_hmac_irq_state_snapshot_t)(1 << irq),
-            "Only hmac IRQ %d expected to fire. Actual interrupt "
-            "status = %x",
-            irq, snapshot);
+        dif_hmac_irq_state_snapshot_t snapshot;
+        CHECK_DIF_OK(dif_hmac_irq_get_state(&hmac, &snapshot));
+        CHECK(snapshot == (dif_hmac_irq_state_snapshot_t)(1 << irq),
+              "Only hmac IRQ %d expected to fire. Actual interrupt "
+              "status = %x",
+              irq, snapshot);
 
-      // TODO: Check Interrupt type then clear INTR_TEST if needed.
-      CHECK_DIF_OK(dif_hmac_irq_force(&hmac, irq, false));
-      CHECK_DIF_OK(dif_hmac_irq_acknowledge(&hmac, irq));
-      break;
-    }
+        // TODO: Check Interrupt type then clear INTR_TEST if needed.
+        CHECK_DIF_OK(dif_hmac_irq_force(&hmac, irq, false));
+        CHECK_DIF_OK(dif_hmac_irq_acknowledge(&hmac, irq));
+        break;
+      }
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 9 && 9 < TEST_MAX_IRQ_PERIPHERAL
-    case kTopEarlgreyPlicPeripheralI2c0: {
-      dif_i2c_irq_t irq = (dif_i2c_irq_t)(
-          plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdI2c0FmtThreshold);
-      CHECK(irq == i2c_irq_expected,
-            "Incorrect i2c0 IRQ triggered: exp = %d, obs = %d",
-            i2c_irq_expected, irq);
-      i2c_irq_serviced = irq;
+      case kTopEarlgreyPlicPeripheralI2c0: {
+        dif_i2c_irq_t irq = (dif_i2c_irq_t)(
+            plic_irq_id -
+            (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdI2c0FmtThreshold);
+        CHECK(irq == i2c_irq_expected,
+              "Incorrect i2c0 IRQ triggered: exp = %d, obs = %d",
+              i2c_irq_expected, irq);
+        i2c_irq_serviced = irq;
 
-      dif_i2c_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_i2c_irq_get_state(&i2c0, &snapshot));
-      CHECK(snapshot == (dif_i2c_irq_state_snapshot_t)(1 << irq),
-            "Only i2c0 IRQ %d expected to fire. Actual interrupt "
-            "status = %x",
-            irq, snapshot);
+        dif_i2c_irq_state_snapshot_t snapshot;
+        CHECK_DIF_OK(dif_i2c_irq_get_state(&i2c0, &snapshot));
+        CHECK(snapshot == (dif_i2c_irq_state_snapshot_t)(1 << irq),
+              "Only i2c0 IRQ %d expected to fire. Actual interrupt "
+              "status = %x",
+              irq, snapshot);
 
-      // TODO: Check Interrupt type then clear INTR_TEST if needed.
-      CHECK_DIF_OK(dif_i2c_irq_force(&i2c0, irq, false));
-      CHECK_DIF_OK(dif_i2c_irq_acknowledge(&i2c0, irq));
-      break;
-    }
+        // TODO: Check Interrupt type then clear INTR_TEST if needed.
+        CHECK_DIF_OK(dif_i2c_irq_force(&i2c0, irq, false));
+        CHECK_DIF_OK(dif_i2c_irq_acknowledge(&i2c0, irq));
+        break;
+      }
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 9 && 9 < TEST_MAX_IRQ_PERIPHERAL
-    case kTopEarlgreyPlicPeripheralI2c1: {
-      dif_i2c_irq_t irq = (dif_i2c_irq_t)(
-          plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdI2c1FmtThreshold);
-      CHECK(irq == i2c_irq_expected,
-            "Incorrect i2c1 IRQ triggered: exp = %d, obs = %d",
-            i2c_irq_expected, irq);
-      i2c_irq_serviced = irq;
+      case kTopEarlgreyPlicPeripheralI2c1: {
+        dif_i2c_irq_t irq = (dif_i2c_irq_t)(
+            plic_irq_id -
+            (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdI2c1FmtThreshold);
+        CHECK(irq == i2c_irq_expected,
+              "Incorrect i2c1 IRQ triggered: exp = %d, obs = %d",
+              i2c_irq_expected, irq);
+        i2c_irq_serviced = irq;
 
-      dif_i2c_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_i2c_irq_get_state(&i2c1, &snapshot));
-      CHECK(snapshot == (dif_i2c_irq_state_snapshot_t)(1 << irq),
-            "Only i2c1 IRQ %d expected to fire. Actual interrupt "
-            "status = %x",
-            irq, snapshot);
+        dif_i2c_irq_state_snapshot_t snapshot;
+        CHECK_DIF_OK(dif_i2c_irq_get_state(&i2c1, &snapshot));
+        CHECK(snapshot == (dif_i2c_irq_state_snapshot_t)(1 << irq),
+              "Only i2c1 IRQ %d expected to fire. Actual interrupt "
+              "status = %x",
+              irq, snapshot);
 
-      // TODO: Check Interrupt type then clear INTR_TEST if needed.
-      CHECK_DIF_OK(dif_i2c_irq_force(&i2c1, irq, false));
-      CHECK_DIF_OK(dif_i2c_irq_acknowledge(&i2c1, irq));
-      break;
-    }
+        // TODO: Check Interrupt type then clear INTR_TEST if needed.
+        CHECK_DIF_OK(dif_i2c_irq_force(&i2c1, irq, false));
+        CHECK_DIF_OK(dif_i2c_irq_acknowledge(&i2c1, irq));
+        break;
+      }
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 9 && 9 < TEST_MAX_IRQ_PERIPHERAL
-    case kTopEarlgreyPlicPeripheralI2c2: {
-      dif_i2c_irq_t irq = (dif_i2c_irq_t)(
-          plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdI2c2FmtThreshold);
-      CHECK(irq == i2c_irq_expected,
-            "Incorrect i2c2 IRQ triggered: exp = %d, obs = %d",
-            i2c_irq_expected, irq);
-      i2c_irq_serviced = irq;
+      case kTopEarlgreyPlicPeripheralI2c2: {
+        dif_i2c_irq_t irq = (dif_i2c_irq_t)(
+            plic_irq_id -
+            (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdI2c2FmtThreshold);
+        CHECK(irq == i2c_irq_expected,
+              "Incorrect i2c2 IRQ triggered: exp = %d, obs = %d",
+              i2c_irq_expected, irq);
+        i2c_irq_serviced = irq;
 
-      dif_i2c_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_i2c_irq_get_state(&i2c2, &snapshot));
-      CHECK(snapshot == (dif_i2c_irq_state_snapshot_t)(1 << irq),
-            "Only i2c2 IRQ %d expected to fire. Actual interrupt "
-            "status = %x",
-            irq, snapshot);
+        dif_i2c_irq_state_snapshot_t snapshot;
+        CHECK_DIF_OK(dif_i2c_irq_get_state(&i2c2, &snapshot));
+        CHECK(snapshot == (dif_i2c_irq_state_snapshot_t)(1 << irq),
+              "Only i2c2 IRQ %d expected to fire. Actual interrupt "
+              "status = %x",
+              irq, snapshot);
 
-      // TODO: Check Interrupt type then clear INTR_TEST if needed.
-      CHECK_DIF_OK(dif_i2c_irq_force(&i2c2, irq, false));
-      CHECK_DIF_OK(dif_i2c_irq_acknowledge(&i2c2, irq));
-      break;
-    }
+        // TODO: Check Interrupt type then clear INTR_TEST if needed.
+        CHECK_DIF_OK(dif_i2c_irq_force(&i2c2, irq, false));
+        CHECK_DIF_OK(dif_i2c_irq_acknowledge(&i2c2, irq));
+        break;
+      }
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 10 && 10 < TEST_MAX_IRQ_PERIPHERAL
-    case kTopEarlgreyPlicPeripheralKeymgr: {
-      dif_keymgr_irq_t irq = (dif_keymgr_irq_t)(
-          plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdKeymgrOpDone);
-      CHECK(irq == keymgr_irq_expected,
-            "Incorrect keymgr IRQ triggered: exp = %d, obs = %d",
-            keymgr_irq_expected, irq);
-      keymgr_irq_serviced = irq;
+      case kTopEarlgreyPlicPeripheralKeymgr: {
+        dif_keymgr_irq_t irq = (dif_keymgr_irq_t)(
+            plic_irq_id -
+            (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdKeymgrOpDone);
+        CHECK(irq == keymgr_irq_expected,
+              "Incorrect keymgr IRQ triggered: exp = %d, obs = %d",
+              keymgr_irq_expected, irq);
+        keymgr_irq_serviced = irq;
 
-      dif_keymgr_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_keymgr_irq_get_state(&keymgr, &snapshot));
-      CHECK(snapshot == (dif_keymgr_irq_state_snapshot_t)(1 << irq),
-            "Only keymgr IRQ %d expected to fire. Actual interrupt "
-            "status = %x",
-            irq, snapshot);
+        dif_keymgr_irq_state_snapshot_t snapshot;
+        CHECK_DIF_OK(dif_keymgr_irq_get_state(&keymgr, &snapshot));
+        CHECK(snapshot == (dif_keymgr_irq_state_snapshot_t)(1 << irq),
+              "Only keymgr IRQ %d expected to fire. Actual interrupt "
+              "status = %x",
+              irq, snapshot);
 
-      // TODO: Check Interrupt type then clear INTR_TEST if needed.
-      CHECK_DIF_OK(dif_keymgr_irq_force(&keymgr, irq, false));
-      CHECK_DIF_OK(dif_keymgr_irq_acknowledge(&keymgr, irq));
-      break;
-    }
+        // TODO: Check Interrupt type then clear INTR_TEST if needed.
+        CHECK_DIF_OK(dif_keymgr_irq_force(&keymgr, irq, false));
+        CHECK_DIF_OK(dif_keymgr_irq_acknowledge(&keymgr, irq));
+        break;
+      }
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 11 && 11 < TEST_MAX_IRQ_PERIPHERAL
-    case kTopEarlgreyPlicPeripheralKmac: {
-      dif_kmac_irq_t irq = (dif_kmac_irq_t)(
-          plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdKmacKmacDone);
-      CHECK(irq == kmac_irq_expected,
-            "Incorrect kmac IRQ triggered: exp = %d, obs = %d",
-            kmac_irq_expected, irq);
-      kmac_irq_serviced = irq;
+      case kTopEarlgreyPlicPeripheralKmac: {
+        dif_kmac_irq_t irq = (dif_kmac_irq_t)(
+            plic_irq_id -
+            (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdKmacKmacDone);
+        CHECK(irq == kmac_irq_expected,
+              "Incorrect kmac IRQ triggered: exp = %d, obs = %d",
+              kmac_irq_expected, irq);
+        kmac_irq_serviced = irq;
 
-      dif_kmac_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_kmac_irq_get_state(&kmac, &snapshot));
-      CHECK(snapshot == (dif_kmac_irq_state_snapshot_t)(1 << irq),
-            "Only kmac IRQ %d expected to fire. Actual interrupt "
-            "status = %x",
-            irq, snapshot);
+        dif_kmac_irq_state_snapshot_t snapshot;
+        CHECK_DIF_OK(dif_kmac_irq_get_state(&kmac, &snapshot));
+        CHECK(snapshot == (dif_kmac_irq_state_snapshot_t)(1 << irq),
+              "Only kmac IRQ %d expected to fire. Actual interrupt "
+              "status = %x",
+              irq, snapshot);
 
-      // TODO: Check Interrupt type then clear INTR_TEST if needed.
-      CHECK_DIF_OK(dif_kmac_irq_force(&kmac, irq, false));
-      CHECK_DIF_OK(dif_kmac_irq_acknowledge(&kmac, irq));
-      break;
-    }
+        // TODO: Check Interrupt type then clear INTR_TEST if needed.
+        CHECK_DIF_OK(dif_kmac_irq_force(&kmac, irq, false));
+        CHECK_DIF_OK(dif_kmac_irq_acknowledge(&kmac, irq));
+        break;
+      }
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 12 && 12 < TEST_MAX_IRQ_PERIPHERAL
-    case kTopEarlgreyPlicPeripheralOtbn: {
-      dif_otbn_irq_t irq = (dif_otbn_irq_t)(
-          plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdOtbnDone);
-      CHECK(irq == otbn_irq_expected,
-            "Incorrect otbn IRQ triggered: exp = %d, obs = %d",
-            otbn_irq_expected, irq);
-      otbn_irq_serviced = irq;
+      case kTopEarlgreyPlicPeripheralOtbn: {
+        dif_otbn_irq_t irq = (dif_otbn_irq_t)(
+            plic_irq_id -
+            (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdOtbnDone);
+        CHECK(irq == otbn_irq_expected,
+              "Incorrect otbn IRQ triggered: exp = %d, obs = %d",
+              otbn_irq_expected, irq);
+        otbn_irq_serviced = irq;
 
-      dif_otbn_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_otbn_irq_get_state(&otbn, &snapshot));
-      CHECK(snapshot == (dif_otbn_irq_state_snapshot_t)(1 << irq),
-            "Only otbn IRQ %d expected to fire. Actual interrupt "
-            "status = %x",
-            irq, snapshot);
+        dif_otbn_irq_state_snapshot_t snapshot;
+        CHECK_DIF_OK(dif_otbn_irq_get_state(&otbn, &snapshot));
+        CHECK(snapshot == (dif_otbn_irq_state_snapshot_t)(1 << irq),
+              "Only otbn IRQ %d expected to fire. Actual interrupt "
+              "status = %x",
+              irq, snapshot);
 
-      // TODO: Check Interrupt type then clear INTR_TEST if needed.
-      CHECK_DIF_OK(dif_otbn_irq_force(&otbn, irq, false));
-      CHECK_DIF_OK(dif_otbn_irq_acknowledge(&otbn, irq));
-      break;
-    }
+        // TODO: Check Interrupt type then clear INTR_TEST if needed.
+        CHECK_DIF_OK(dif_otbn_irq_force(&otbn, irq, false));
+        CHECK_DIF_OK(dif_otbn_irq_acknowledge(&otbn, irq));
+        break;
+      }
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 13 && 13 < TEST_MAX_IRQ_PERIPHERAL
-    case kTopEarlgreyPlicPeripheralOtpCtrl: {
-      dif_otp_ctrl_irq_t irq = (dif_otp_ctrl_irq_t)(
-          plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdOtpCtrlOtpOperationDone);
-      CHECK(irq == otp_ctrl_irq_expected,
-            "Incorrect otp_ctrl IRQ triggered: exp = %d, obs = %d",
-            otp_ctrl_irq_expected, irq);
-      otp_ctrl_irq_serviced = irq;
+      case kTopEarlgreyPlicPeripheralOtpCtrl: {
+        dif_otp_ctrl_irq_t irq = (dif_otp_ctrl_irq_t)(
+            plic_irq_id -
+            (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdOtpCtrlOtpOperationDone);
+        CHECK(irq == otp_ctrl_irq_expected,
+              "Incorrect otp_ctrl IRQ triggered: exp = %d, obs = %d",
+              otp_ctrl_irq_expected, irq);
+        otp_ctrl_irq_serviced = irq;
 
-      dif_otp_ctrl_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_otp_ctrl_irq_get_state(&otp_ctrl, &snapshot));
-      CHECK(snapshot == (dif_otp_ctrl_irq_state_snapshot_t)(1 << irq),
-            "Only otp_ctrl IRQ %d expected to fire. Actual interrupt "
-            "status = %x",
-            irq, snapshot);
+        dif_otp_ctrl_irq_state_snapshot_t snapshot;
+        CHECK_DIF_OK(dif_otp_ctrl_irq_get_state(&otp_ctrl, &snapshot));
+        CHECK(snapshot == (dif_otp_ctrl_irq_state_snapshot_t)(1 << irq),
+              "Only otp_ctrl IRQ %d expected to fire. Actual interrupt "
+              "status = %x",
+              irq, snapshot);
 
-      // TODO: Check Interrupt type then clear INTR_TEST if needed.
-      CHECK_DIF_OK(dif_otp_ctrl_irq_force(&otp_ctrl, irq, false));
-      CHECK_DIF_OK(dif_otp_ctrl_irq_acknowledge(&otp_ctrl, irq));
-      break;
-    }
+        // TODO: Check Interrupt type then clear INTR_TEST if needed.
+        CHECK_DIF_OK(dif_otp_ctrl_irq_force(&otp_ctrl, irq, false));
+        CHECK_DIF_OK(dif_otp_ctrl_irq_acknowledge(&otp_ctrl, irq));
+        break;
+      }
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 14 && 14 < TEST_MAX_IRQ_PERIPHERAL
-    case kTopEarlgreyPlicPeripheralPattgen: {
-      dif_pattgen_irq_t irq = (dif_pattgen_irq_t)(
-          plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdPattgenDoneCh0);
-      CHECK(irq == pattgen_irq_expected,
-            "Incorrect pattgen IRQ triggered: exp = %d, obs = %d",
-            pattgen_irq_expected, irq);
-      pattgen_irq_serviced = irq;
+      case kTopEarlgreyPlicPeripheralPattgen: {
+        dif_pattgen_irq_t irq = (dif_pattgen_irq_t)(
+            plic_irq_id -
+            (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdPattgenDoneCh0);
+        CHECK(irq == pattgen_irq_expected,
+              "Incorrect pattgen IRQ triggered: exp = %d, obs = %d",
+              pattgen_irq_expected, irq);
+        pattgen_irq_serviced = irq;
 
-      dif_pattgen_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_pattgen_irq_get_state(&pattgen, &snapshot));
-      CHECK(snapshot == (dif_pattgen_irq_state_snapshot_t)(1 << irq),
-            "Only pattgen IRQ %d expected to fire. Actual interrupt "
-            "status = %x",
-            irq, snapshot);
+        dif_pattgen_irq_state_snapshot_t snapshot;
+        CHECK_DIF_OK(dif_pattgen_irq_get_state(&pattgen, &snapshot));
+        CHECK(snapshot == (dif_pattgen_irq_state_snapshot_t)(1 << irq),
+              "Only pattgen IRQ %d expected to fire. Actual interrupt "
+              "status = %x",
+              irq, snapshot);
 
-      // TODO: Check Interrupt type then clear INTR_TEST if needed.
-      CHECK_DIF_OK(dif_pattgen_irq_force(&pattgen, irq, false));
-      CHECK_DIF_OK(dif_pattgen_irq_acknowledge(&pattgen, irq));
-      break;
-    }
+        // TODO: Check Interrupt type then clear INTR_TEST if needed.
+        CHECK_DIF_OK(dif_pattgen_irq_force(&pattgen, irq, false));
+        CHECK_DIF_OK(dif_pattgen_irq_acknowledge(&pattgen, irq));
+        break;
+      }
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 15 && 15 < TEST_MAX_IRQ_PERIPHERAL
-    case kTopEarlgreyPlicPeripheralPwrmgrAon: {
-      dif_pwrmgr_irq_t irq = (dif_pwrmgr_irq_t)(
-          plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdPwrmgrAonWakeup);
-      CHECK(irq == pwrmgr_irq_expected,
-            "Incorrect pwrmgr_aon IRQ triggered: exp = %d, obs = %d",
-            pwrmgr_irq_expected, irq);
-      pwrmgr_irq_serviced = irq;
+      case kTopEarlgreyPlicPeripheralPwrmgrAon: {
+        dif_pwrmgr_irq_t irq = (dif_pwrmgr_irq_t)(
+            plic_irq_id -
+            (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdPwrmgrAonWakeup);
+        CHECK(irq == pwrmgr_irq_expected,
+              "Incorrect pwrmgr_aon IRQ triggered: exp = %d, obs = %d",
+              pwrmgr_irq_expected, irq);
+        pwrmgr_irq_serviced = irq;
 
-      dif_pwrmgr_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_pwrmgr_irq_get_state(&pwrmgr_aon, &snapshot));
-      CHECK(snapshot == (dif_pwrmgr_irq_state_snapshot_t)(1 << irq),
-            "Only pwrmgr_aon IRQ %d expected to fire. Actual interrupt "
-            "status = %x",
-            irq, snapshot);
+        dif_pwrmgr_irq_state_snapshot_t snapshot;
+        CHECK_DIF_OK(dif_pwrmgr_irq_get_state(&pwrmgr_aon, &snapshot));
+        CHECK(snapshot == (dif_pwrmgr_irq_state_snapshot_t)(1 << irq),
+              "Only pwrmgr_aon IRQ %d expected to fire. Actual interrupt "
+              "status = %x",
+              irq, snapshot);
 
-      // TODO: Check Interrupt type then clear INTR_TEST if needed.
-      CHECK_DIF_OK(dif_pwrmgr_irq_force(&pwrmgr_aon, irq, false));
-      CHECK_DIF_OK(dif_pwrmgr_irq_acknowledge(&pwrmgr_aon, irq));
-      break;
-    }
+        // TODO: Check Interrupt type then clear INTR_TEST if needed.
+        CHECK_DIF_OK(dif_pwrmgr_irq_force(&pwrmgr_aon, irq, false));
+        CHECK_DIF_OK(dif_pwrmgr_irq_acknowledge(&pwrmgr_aon, irq));
+        break;
+      }
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 16 && 16 < TEST_MAX_IRQ_PERIPHERAL
-    case kTopEarlgreyPlicPeripheralRvTimer: {
-      dif_rv_timer_irq_t irq = (dif_rv_timer_irq_t)(
-          plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdRvTimerTimerExpiredHart0Timer0);
-      CHECK(irq == rv_timer_irq_expected,
-            "Incorrect rv_timer IRQ triggered: exp = %d, obs = %d",
-            rv_timer_irq_expected, irq);
-      rv_timer_irq_serviced = irq;
+      case kTopEarlgreyPlicPeripheralRvTimer: {
+        dif_rv_timer_irq_t irq = (dif_rv_timer_irq_t)(
+            plic_irq_id -
+            (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdRvTimerTimerExpiredHart0Timer0);
+        CHECK(irq == rv_timer_irq_expected,
+              "Incorrect rv_timer IRQ triggered: exp = %d, obs = %d",
+              rv_timer_irq_expected, irq);
+        rv_timer_irq_serviced = irq;
 
-      dif_rv_timer_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_rv_timer_irq_get_state(&rv_timer, kHart, &snapshot));
-      CHECK(snapshot == (dif_rv_timer_irq_state_snapshot_t)(1 << irq),
-            "Only rv_timer IRQ %d expected to fire. Actual interrupt "
-            "status = %x",
-            irq, snapshot);
+        dif_rv_timer_irq_state_snapshot_t snapshot;
+        CHECK_DIF_OK(dif_rv_timer_irq_get_state(&rv_timer, kHart, &snapshot));
+        CHECK(snapshot == (dif_rv_timer_irq_state_snapshot_t)(1 << irq),
+              "Only rv_timer IRQ %d expected to fire. Actual interrupt "
+              "status = %x",
+              irq, snapshot);
 
-      // TODO: Check Interrupt type then clear INTR_TEST if needed.
-      CHECK_DIF_OK(dif_rv_timer_irq_force(&rv_timer, irq, false));
-      CHECK_DIF_OK(dif_rv_timer_irq_acknowledge(&rv_timer, irq));
-      break;
-    }
+        // TODO: Check Interrupt type then clear INTR_TEST if needed.
+        CHECK_DIF_OK(dif_rv_timer_irq_force(&rv_timer, irq, false));
+        CHECK_DIF_OK(dif_rv_timer_irq_acknowledge(&rv_timer, irq));
+        break;
+      }
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 17 && 17 < TEST_MAX_IRQ_PERIPHERAL
-    case kTopEarlgreyPlicPeripheralSensorCtrlAon: {
-      dif_sensor_ctrl_irq_t irq = (dif_sensor_ctrl_irq_t)(
-          plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdSensorCtrlAonIoStatusChange);
-      CHECK(irq == sensor_ctrl_irq_expected,
-            "Incorrect sensor_ctrl_aon IRQ triggered: exp = %d, obs = %d",
-            sensor_ctrl_irq_expected, irq);
-      sensor_ctrl_irq_serviced = irq;
+      case kTopEarlgreyPlicPeripheralSensorCtrlAon: {
+        dif_sensor_ctrl_irq_t irq = (dif_sensor_ctrl_irq_t)(
+            plic_irq_id -
+            (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdSensorCtrlAonIoStatusChange);
+        CHECK(irq == sensor_ctrl_irq_expected,
+              "Incorrect sensor_ctrl_aon IRQ triggered: exp = %d, obs = %d",
+              sensor_ctrl_irq_expected, irq);
+        sensor_ctrl_irq_serviced = irq;
 
-      dif_sensor_ctrl_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_sensor_ctrl_irq_get_state(&sensor_ctrl_aon, &snapshot));
-      CHECK(snapshot == (dif_sensor_ctrl_irq_state_snapshot_t)(1 << irq),
-            "Only sensor_ctrl_aon IRQ %d expected to fire. Actual interrupt "
-            "status = %x",
-            irq, snapshot);
+        dif_sensor_ctrl_irq_state_snapshot_t snapshot;
+        CHECK_DIF_OK(dif_sensor_ctrl_irq_get_state(&sensor_ctrl_aon, &snapshot));
+        CHECK(snapshot == (dif_sensor_ctrl_irq_state_snapshot_t)(1 << irq),
+              "Only sensor_ctrl_aon IRQ %d expected to fire. Actual interrupt "
+              "status = %x",
+              irq, snapshot);
 
-      // TODO: Check Interrupt type then clear INTR_TEST if needed.
-      CHECK_DIF_OK(dif_sensor_ctrl_irq_force(&sensor_ctrl_aon, irq, false));
-      CHECK_DIF_OK(dif_sensor_ctrl_irq_acknowledge(&sensor_ctrl_aon, irq));
-      break;
-    }
+        // TODO: Check Interrupt type then clear INTR_TEST if needed.
+        CHECK_DIF_OK(dif_sensor_ctrl_irq_force(&sensor_ctrl_aon, irq, false));
+        CHECK_DIF_OK(dif_sensor_ctrl_irq_acknowledge(&sensor_ctrl_aon, irq));
+        break;
+      }
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 18 && 18 < TEST_MAX_IRQ_PERIPHERAL
-    case kTopEarlgreyPlicPeripheralSpiDevice: {
-      dif_spi_device_irq_t irq = (dif_spi_device_irq_t)(
-          plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdSpiDeviceGenericRxFull);
-      CHECK(irq == spi_device_irq_expected,
-            "Incorrect spi_device IRQ triggered: exp = %d, obs = %d",
-            spi_device_irq_expected, irq);
-      spi_device_irq_serviced = irq;
+      case kTopEarlgreyPlicPeripheralSpiDevice: {
+        dif_spi_device_irq_t irq = (dif_spi_device_irq_t)(
+            plic_irq_id -
+            (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdSpiDeviceGenericRxFull);
+        CHECK(irq == spi_device_irq_expected,
+              "Incorrect spi_device IRQ triggered: exp = %d, obs = %d",
+              spi_device_irq_expected, irq);
+        spi_device_irq_serviced = irq;
 
-      dif_spi_device_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_spi_device_irq_get_state(&spi_device, &snapshot));
-      CHECK(snapshot == (dif_spi_device_irq_state_snapshot_t)(1 << irq),
-            "Only spi_device IRQ %d expected to fire. Actual interrupt "
-            "status = %x",
-            irq, snapshot);
+        dif_spi_device_irq_state_snapshot_t snapshot;
+        CHECK_DIF_OK(dif_spi_device_irq_get_state(&spi_device, &snapshot));
+        CHECK(snapshot == (dif_spi_device_irq_state_snapshot_t)(1 << irq),
+              "Only spi_device IRQ %d expected to fire. Actual interrupt "
+              "status = %x",
+              irq, snapshot);
 
-      // TODO: Check Interrupt type then clear INTR_TEST if needed.
-      CHECK_DIF_OK(dif_spi_device_irq_force(&spi_device, irq, false));
-      CHECK_DIF_OK(dif_spi_device_irq_acknowledge(&spi_device, irq));
-      break;
-    }
+        // TODO: Check Interrupt type then clear INTR_TEST if needed.
+        CHECK_DIF_OK(dif_spi_device_irq_force(&spi_device, irq, false));
+        CHECK_DIF_OK(dif_spi_device_irq_acknowledge(&spi_device, irq));
+        break;
+      }
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 19 && 19 < TEST_MAX_IRQ_PERIPHERAL
-    case kTopEarlgreyPlicPeripheralSpiHost0: {
-      dif_spi_host_irq_t irq = (dif_spi_host_irq_t)(
-          plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdSpiHost0Error);
-      CHECK(irq == spi_host_irq_expected,
-            "Incorrect spi_host0 IRQ triggered: exp = %d, obs = %d",
-            spi_host_irq_expected, irq);
-      spi_host_irq_serviced = irq;
+      case kTopEarlgreyPlicPeripheralSpiHost0: {
+        dif_spi_host_irq_t irq = (dif_spi_host_irq_t)(
+            plic_irq_id -
+            (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdSpiHost0Error);
+        CHECK(irq == spi_host_irq_expected,
+              "Incorrect spi_host0 IRQ triggered: exp = %d, obs = %d",
+              spi_host_irq_expected, irq);
+        spi_host_irq_serviced = irq;
 
-      dif_spi_host_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_spi_host_irq_get_state(&spi_host0, &snapshot));
-      CHECK(snapshot == (dif_spi_host_irq_state_snapshot_t)(1 << irq),
-            "Only spi_host0 IRQ %d expected to fire. Actual interrupt "
-            "status = %x",
-            irq, snapshot);
+        dif_spi_host_irq_state_snapshot_t snapshot;
+        CHECK_DIF_OK(dif_spi_host_irq_get_state(&spi_host0, &snapshot));
+        CHECK(snapshot == (dif_spi_host_irq_state_snapshot_t)(1 << irq),
+              "Only spi_host0 IRQ %d expected to fire. Actual interrupt "
+              "status = %x",
+              irq, snapshot);
 
-      // TODO: Check Interrupt type then clear INTR_TEST if needed.
-      CHECK_DIF_OK(dif_spi_host_irq_force(&spi_host0, irq, false));
-      CHECK_DIF_OK(dif_spi_host_irq_acknowledge(&spi_host0, irq));
-      break;
-    }
+        // TODO: Check Interrupt type then clear INTR_TEST if needed.
+        CHECK_DIF_OK(dif_spi_host_irq_force(&spi_host0, irq, false));
+        CHECK_DIF_OK(dif_spi_host_irq_acknowledge(&spi_host0, irq));
+        break;
+      }
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 19 && 19 < TEST_MAX_IRQ_PERIPHERAL
-    case kTopEarlgreyPlicPeripheralSpiHost1: {
-      dif_spi_host_irq_t irq = (dif_spi_host_irq_t)(
-          plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdSpiHost1Error);
-      CHECK(irq == spi_host_irq_expected,
-            "Incorrect spi_host1 IRQ triggered: exp = %d, obs = %d",
-            spi_host_irq_expected, irq);
-      spi_host_irq_serviced = irq;
+      case kTopEarlgreyPlicPeripheralSpiHost1: {
+        dif_spi_host_irq_t irq = (dif_spi_host_irq_t)(
+            plic_irq_id -
+            (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdSpiHost1Error);
+        CHECK(irq == spi_host_irq_expected,
+              "Incorrect spi_host1 IRQ triggered: exp = %d, obs = %d",
+              spi_host_irq_expected, irq);
+        spi_host_irq_serviced = irq;
 
-      dif_spi_host_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_spi_host_irq_get_state(&spi_host1, &snapshot));
-      CHECK(snapshot == (dif_spi_host_irq_state_snapshot_t)(1 << irq),
-            "Only spi_host1 IRQ %d expected to fire. Actual interrupt "
-            "status = %x",
-            irq, snapshot);
+        dif_spi_host_irq_state_snapshot_t snapshot;
+        CHECK_DIF_OK(dif_spi_host_irq_get_state(&spi_host1, &snapshot));
+        CHECK(snapshot == (dif_spi_host_irq_state_snapshot_t)(1 << irq),
+              "Only spi_host1 IRQ %d expected to fire. Actual interrupt "
+              "status = %x",
+              irq, snapshot);
 
-      // TODO: Check Interrupt type then clear INTR_TEST if needed.
-      CHECK_DIF_OK(dif_spi_host_irq_force(&spi_host1, irq, false));
-      CHECK_DIF_OK(dif_spi_host_irq_acknowledge(&spi_host1, irq));
-      break;
-    }
+        // TODO: Check Interrupt type then clear INTR_TEST if needed.
+        CHECK_DIF_OK(dif_spi_host_irq_force(&spi_host1, irq, false));
+        CHECK_DIF_OK(dif_spi_host_irq_acknowledge(&spi_host1, irq));
+        break;
+      }
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 20 && 20 < TEST_MAX_IRQ_PERIPHERAL
-    case kTopEarlgreyPlicPeripheralSysrstCtrlAon: {
-      dif_sysrst_ctrl_irq_t irq = (dif_sysrst_ctrl_irq_t)(
-          plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdSysrstCtrlAonEventDetected);
-      CHECK(irq == sysrst_ctrl_irq_expected,
-            "Incorrect sysrst_ctrl_aon IRQ triggered: exp = %d, obs = %d",
-            sysrst_ctrl_irq_expected, irq);
-      sysrst_ctrl_irq_serviced = irq;
+      case kTopEarlgreyPlicPeripheralSysrstCtrlAon: {
+        dif_sysrst_ctrl_irq_t irq = (dif_sysrst_ctrl_irq_t)(
+            plic_irq_id -
+            (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdSysrstCtrlAonEventDetected);
+        CHECK(irq == sysrst_ctrl_irq_expected,
+              "Incorrect sysrst_ctrl_aon IRQ triggered: exp = %d, obs = %d",
+              sysrst_ctrl_irq_expected, irq);
+        sysrst_ctrl_irq_serviced = irq;
 
-      dif_sysrst_ctrl_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_sysrst_ctrl_irq_get_state(&sysrst_ctrl_aon, &snapshot));
-      CHECK(snapshot == (dif_sysrst_ctrl_irq_state_snapshot_t)(1 << irq),
-            "Only sysrst_ctrl_aon IRQ %d expected to fire. Actual interrupt "
-            "status = %x",
-            irq, snapshot);
+        dif_sysrst_ctrl_irq_state_snapshot_t snapshot;
+        CHECK_DIF_OK(dif_sysrst_ctrl_irq_get_state(&sysrst_ctrl_aon, &snapshot));
+        CHECK(snapshot == (dif_sysrst_ctrl_irq_state_snapshot_t)(1 << irq),
+              "Only sysrst_ctrl_aon IRQ %d expected to fire. Actual interrupt "
+              "status = %x",
+              irq, snapshot);
 
-      // TODO: Check Interrupt type then clear INTR_TEST if needed.
-      CHECK_DIF_OK(dif_sysrst_ctrl_irq_force(&sysrst_ctrl_aon, irq, false));
-      CHECK_DIF_OK(dif_sysrst_ctrl_irq_acknowledge(&sysrst_ctrl_aon, irq));
-      break;
-    }
+        // TODO: Check Interrupt type then clear INTR_TEST if needed.
+        CHECK_DIF_OK(dif_sysrst_ctrl_irq_force(&sysrst_ctrl_aon, irq, false));
+        CHECK_DIF_OK(dif_sysrst_ctrl_irq_acknowledge(&sysrst_ctrl_aon, irq));
+        break;
+      }
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 21 && 21 < TEST_MAX_IRQ_PERIPHERAL
-    case kTopEarlgreyPlicPeripheralUart0: {
-      dif_uart_irq_t irq = (dif_uart_irq_t)(
-          plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdUart0TxWatermark);
-      CHECK(irq == uart_irq_expected,
-            "Incorrect uart0 IRQ triggered: exp = %d, obs = %d",
-            uart_irq_expected, irq);
-      uart_irq_serviced = irq;
+      case kTopEarlgreyPlicPeripheralUart0: {
+        dif_uart_irq_t irq = (dif_uart_irq_t)(
+            plic_irq_id -
+            (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdUart0TxWatermark);
+        CHECK(irq == uart_irq_expected,
+              "Incorrect uart0 IRQ triggered: exp = %d, obs = %d",
+              uart_irq_expected, irq);
+        uart_irq_serviced = irq;
 
-      dif_uart_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_uart_irq_get_state(&uart0, &snapshot));
-      CHECK(snapshot == (dif_uart_irq_state_snapshot_t)(1 << irq),
-            "Only uart0 IRQ %d expected to fire. Actual interrupt "
-            "status = %x",
-            irq, snapshot);
+        dif_uart_irq_state_snapshot_t snapshot;
+        CHECK_DIF_OK(dif_uart_irq_get_state(&uart0, &snapshot));
+        CHECK(snapshot == (dif_uart_irq_state_snapshot_t)(1 << irq),
+              "Only uart0 IRQ %d expected to fire. Actual interrupt "
+              "status = %x",
+              irq, snapshot);
 
-      // TODO: Check Interrupt type then clear INTR_TEST if needed.
-      CHECK_DIF_OK(dif_uart_irq_force(&uart0, irq, false));
-      CHECK_DIF_OK(dif_uart_irq_acknowledge(&uart0, irq));
-      break;
-    }
+        // TODO: Check Interrupt type then clear INTR_TEST if needed.
+        CHECK_DIF_OK(dif_uart_irq_force(&uart0, irq, false));
+        CHECK_DIF_OK(dif_uart_irq_acknowledge(&uart0, irq));
+        break;
+      }
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 21 && 21 < TEST_MAX_IRQ_PERIPHERAL
-    case kTopEarlgreyPlicPeripheralUart1: {
-      dif_uart_irq_t irq = (dif_uart_irq_t)(
-          plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdUart1TxWatermark);
-      CHECK(irq == uart_irq_expected,
-            "Incorrect uart1 IRQ triggered: exp = %d, obs = %d",
-            uart_irq_expected, irq);
-      uart_irq_serviced = irq;
+      case kTopEarlgreyPlicPeripheralUart1: {
+        dif_uart_irq_t irq = (dif_uart_irq_t)(
+            plic_irq_id -
+            (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdUart1TxWatermark);
+        CHECK(irq == uart_irq_expected,
+              "Incorrect uart1 IRQ triggered: exp = %d, obs = %d",
+              uart_irq_expected, irq);
+        uart_irq_serviced = irq;
 
-      dif_uart_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_uart_irq_get_state(&uart1, &snapshot));
-      CHECK(snapshot == (dif_uart_irq_state_snapshot_t)(1 << irq),
-            "Only uart1 IRQ %d expected to fire. Actual interrupt "
-            "status = %x",
-            irq, snapshot);
+        dif_uart_irq_state_snapshot_t snapshot;
+        CHECK_DIF_OK(dif_uart_irq_get_state(&uart1, &snapshot));
+        CHECK(snapshot == (dif_uart_irq_state_snapshot_t)(1 << irq),
+              "Only uart1 IRQ %d expected to fire. Actual interrupt "
+              "status = %x",
+              irq, snapshot);
 
-      // TODO: Check Interrupt type then clear INTR_TEST if needed.
-      CHECK_DIF_OK(dif_uart_irq_force(&uart1, irq, false));
-      CHECK_DIF_OK(dif_uart_irq_acknowledge(&uart1, irq));
-      break;
-    }
+        // TODO: Check Interrupt type then clear INTR_TEST if needed.
+        CHECK_DIF_OK(dif_uart_irq_force(&uart1, irq, false));
+        CHECK_DIF_OK(dif_uart_irq_acknowledge(&uart1, irq));
+        break;
+      }
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 21 && 21 < TEST_MAX_IRQ_PERIPHERAL
-    case kTopEarlgreyPlicPeripheralUart2: {
-      dif_uart_irq_t irq = (dif_uart_irq_t)(
-          plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdUart2TxWatermark);
-      CHECK(irq == uart_irq_expected,
-            "Incorrect uart2 IRQ triggered: exp = %d, obs = %d",
-            uart_irq_expected, irq);
-      uart_irq_serviced = irq;
+      case kTopEarlgreyPlicPeripheralUart2: {
+        dif_uart_irq_t irq = (dif_uart_irq_t)(
+            plic_irq_id -
+            (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdUart2TxWatermark);
+        CHECK(irq == uart_irq_expected,
+              "Incorrect uart2 IRQ triggered: exp = %d, obs = %d",
+              uart_irq_expected, irq);
+        uart_irq_serviced = irq;
 
-      dif_uart_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_uart_irq_get_state(&uart2, &snapshot));
-      CHECK(snapshot == (dif_uart_irq_state_snapshot_t)(1 << irq),
-            "Only uart2 IRQ %d expected to fire. Actual interrupt "
-            "status = %x",
-            irq, snapshot);
+        dif_uart_irq_state_snapshot_t snapshot;
+        CHECK_DIF_OK(dif_uart_irq_get_state(&uart2, &snapshot));
+        CHECK(snapshot == (dif_uart_irq_state_snapshot_t)(1 << irq),
+              "Only uart2 IRQ %d expected to fire. Actual interrupt "
+              "status = %x",
+              irq, snapshot);
 
-      // TODO: Check Interrupt type then clear INTR_TEST if needed.
-      CHECK_DIF_OK(dif_uart_irq_force(&uart2, irq, false));
-      CHECK_DIF_OK(dif_uart_irq_acknowledge(&uart2, irq));
-      break;
-    }
+        // TODO: Check Interrupt type then clear INTR_TEST if needed.
+        CHECK_DIF_OK(dif_uart_irq_force(&uart2, irq, false));
+        CHECK_DIF_OK(dif_uart_irq_acknowledge(&uart2, irq));
+        break;
+      }
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 21 && 21 < TEST_MAX_IRQ_PERIPHERAL
-    case kTopEarlgreyPlicPeripheralUart3: {
-      dif_uart_irq_t irq = (dif_uart_irq_t)(
-          plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdUart3TxWatermark);
-      CHECK(irq == uart_irq_expected,
-            "Incorrect uart3 IRQ triggered: exp = %d, obs = %d",
-            uart_irq_expected, irq);
-      uart_irq_serviced = irq;
+      case kTopEarlgreyPlicPeripheralUart3: {
+        dif_uart_irq_t irq = (dif_uart_irq_t)(
+            plic_irq_id -
+            (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdUart3TxWatermark);
+        CHECK(irq == uart_irq_expected,
+              "Incorrect uart3 IRQ triggered: exp = %d, obs = %d",
+              uart_irq_expected, irq);
+        uart_irq_serviced = irq;
 
-      dif_uart_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_uart_irq_get_state(&uart3, &snapshot));
-      CHECK(snapshot == (dif_uart_irq_state_snapshot_t)(1 << irq),
-            "Only uart3 IRQ %d expected to fire. Actual interrupt "
-            "status = %x",
-            irq, snapshot);
+        dif_uart_irq_state_snapshot_t snapshot;
+        CHECK_DIF_OK(dif_uart_irq_get_state(&uart3, &snapshot));
+        CHECK(snapshot == (dif_uart_irq_state_snapshot_t)(1 << irq),
+              "Only uart3 IRQ %d expected to fire. Actual interrupt "
+              "status = %x",
+              irq, snapshot);
 
-      // TODO: Check Interrupt type then clear INTR_TEST if needed.
-      CHECK_DIF_OK(dif_uart_irq_force(&uart3, irq, false));
-      CHECK_DIF_OK(dif_uart_irq_acknowledge(&uart3, irq));
-      break;
-    }
+        // TODO: Check Interrupt type then clear INTR_TEST if needed.
+        CHECK_DIF_OK(dif_uart_irq_force(&uart3, irq, false));
+        CHECK_DIF_OK(dif_uart_irq_acknowledge(&uart3, irq));
+        break;
+      }
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 22 && 22 < TEST_MAX_IRQ_PERIPHERAL
-    case kTopEarlgreyPlicPeripheralUsbdev: {
-      dif_usbdev_irq_t irq = (dif_usbdev_irq_t)(
-          plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdUsbdevPktReceived);
-      CHECK(irq == usbdev_irq_expected,
-            "Incorrect usbdev IRQ triggered: exp = %d, obs = %d",
-            usbdev_irq_expected, irq);
-      usbdev_irq_serviced = irq;
+      case kTopEarlgreyPlicPeripheralUsbdev: {
+        dif_usbdev_irq_t irq = (dif_usbdev_irq_t)(
+            plic_irq_id -
+            (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdUsbdevPktReceived);
+        CHECK(irq == usbdev_irq_expected,
+              "Incorrect usbdev IRQ triggered: exp = %d, obs = %d",
+              usbdev_irq_expected, irq);
+        usbdev_irq_serviced = irq;
 
-      dif_usbdev_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_usbdev_irq_get_state(&usbdev, &snapshot));
-      CHECK(snapshot == (dif_usbdev_irq_state_snapshot_t)(1 << irq),
-            "Only usbdev IRQ %d expected to fire. Actual interrupt "
-            "status = %x",
-            irq, snapshot);
+        dif_usbdev_irq_state_snapshot_t snapshot;
+        CHECK_DIF_OK(dif_usbdev_irq_get_state(&usbdev, &snapshot));
+        CHECK(snapshot == (dif_usbdev_irq_state_snapshot_t)(1 << irq),
+              "Only usbdev IRQ %d expected to fire. Actual interrupt "
+              "status = %x",
+              irq, snapshot);
 
-      // TODO: Check Interrupt type then clear INTR_TEST if needed.
-      CHECK_DIF_OK(dif_usbdev_irq_force(&usbdev, irq, false));
-      CHECK_DIF_OK(dif_usbdev_irq_acknowledge(&usbdev, irq));
-      break;
-    }
+        // TODO: Check Interrupt type then clear INTR_TEST if needed.
+        CHECK_DIF_OK(dif_usbdev_irq_force(&usbdev, irq, false));
+        CHECK_DIF_OK(dif_usbdev_irq_acknowledge(&usbdev, irq));
+        break;
+      }
 #endif
 
-    default:
-      LOG_FATAL("ISR is not implemented!");
-      test_status_set(kTestStatusFailed);
+      default:
+        LOG_FATAL("ISR is not implemented!");
+        test_status_set(kTestStatusFailed);
+    }
   }
-
   // Complete the IRQ at PLIC.
   CHECK_DIF_OK(dif_rv_plic_irq_complete(&plic, kHart, plic_irq_id));
 }
@@ -1292,7 +1328,9 @@ static void peripheral_irqs_clear(void) {
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 13 && 13 < TEST_MAX_IRQ_PERIPHERAL
-  CHECK_DIF_OK(dif_otp_ctrl_irq_acknowledge_all(&otp_ctrl));
+  if (kBootStage != kBootStageOwner) {
+    CHECK_DIF_OK(dif_otp_ctrl_irq_acknowledge_all(&otp_ctrl));
+  }
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 14 && 14 < TEST_MAX_IRQ_PERIPHERAL
@@ -1538,8 +1576,10 @@ static void peripheral_irqs_enable(void) {
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 13 && 13 < TEST_MAX_IRQ_PERIPHERAL
-  CHECK_DIF_OK(
-      dif_otp_ctrl_irq_restore_all(&otp_ctrl, &otp_ctrl_irqs));
+  if (kBootStage != kBootStageOwner) {
+    CHECK_DIF_OK(
+        dif_otp_ctrl_irq_restore_all(&otp_ctrl, &otp_ctrl_irqs));
+  }
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 14 && 14 < TEST_MAX_IRQ_PERIPHERAL
@@ -1870,17 +1910,21 @@ static void peripheral_irqs_trigger(void) {
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 13 && 13 < TEST_MAX_IRQ_PERIPHERAL
-  peripheral_expected = kTopEarlgreyPlicPeripheralOtpCtrl;
-  for (dif_otp_ctrl_irq_t irq = kDifOtpCtrlIrqOtpOperationDone;
-       irq <= kDifOtpCtrlIrqOtpError; ++irq) {
-    otp_ctrl_irq_expected = irq;
-    LOG_INFO("Triggering otp_ctrl IRQ %d.", irq);
-    CHECK_DIF_OK(dif_otp_ctrl_irq_force(&otp_ctrl, irq, true));
+  // Skip OTP_CTRL in boot stage owner since ROM_EXT configures all accesses
+  // to OTP_CTRL and AST to be illegal.
+  if (kBootStage != kBootStageOwner) {
+    peripheral_expected = kTopEarlgreyPlicPeripheralOtpCtrl;
+    for (dif_otp_ctrl_irq_t irq = kDifOtpCtrlIrqOtpOperationDone;
+         irq <= kDifOtpCtrlIrqOtpError; ++irq) {
+      otp_ctrl_irq_expected = irq;
+      LOG_INFO("Triggering otp_ctrl IRQ %d.", irq);
+      CHECK_DIF_OK(dif_otp_ctrl_irq_force(&otp_ctrl, irq, true));
 
-    // This avoids a race where *irq_serviced is read before
-    // entering the ISR.
-    IBEX_SPIN_FOR(otp_ctrl_irq_serviced == irq, 1);
-    LOG_INFO("IRQ %d from otp_ctrl is serviced.", irq);
+      // This avoids a race where *irq_serviced is read before
+      // entering the ISR.
+      IBEX_SPIN_FOR(otp_ctrl_irq_serviced == irq, 1);
+      LOG_INFO("IRQ %d from otp_ctrl is serviced.", irq);
+    }
   }
 #endif
 

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/hmac.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/hash.h"
@@ -53,13 +54,13 @@ static const uint8_t kExactBlockExpDigest[] = {
  * @param msg Input message.
  * @param exp_digest Expected digest (256 bits).
  */
-static status_t run_test(crypto_const_byte_buf_t msg,
+static status_t run_test(otcrypto_const_byte_buf_t msg,
                          const uint32_t *exp_digest) {
   uint32_t act_digest[kHmacDigestNumWords];
-  hash_digest_t digest_buf = {
+  otcrypto_hash_digest_t digest_buf = {
       .data = act_digest,
       .len = kHmacDigestNumWords,
-      .mode = kHashModeSha256,
+      .mode = kOtcryptoHashModeSha256,
   };
   TRY(otcrypto_hash(msg, &digest_buf));
   TRY_CHECK_ARRAYS_EQ(act_digest, exp_digest, kHmacDigestNumWords);
@@ -74,7 +75,7 @@ static status_t run_test(crypto_const_byte_buf_t msg,
  */
 static status_t simple_test(void) {
   const char plaintext[] = "Test message.";
-  crypto_const_byte_buf_t msg_buf = {
+  otcrypto_const_byte_buf_t msg_buf = {
       .data = (unsigned char *)plaintext,
       .len = sizeof(plaintext) - 1,
   };
@@ -96,7 +97,7 @@ static status_t empty_test(void) {
       0x42c4b0e3, 0x141cfc98, 0xc8f4fb9a, 0x24b96f99,
       0xe441ae27, 0x4c939b64, 0x1b9995a4, 0x55b85278,
   };
-  crypto_const_byte_buf_t msg_buf = {
+  otcrypto_const_byte_buf_t msg_buf = {
       .data = NULL,
       .len = 0,
   };
@@ -107,10 +108,10 @@ static status_t empty_test(void) {
  * Test streaming API with a one-block message in one update.
  */
 static status_t one_update_streaming_test(void) {
-  hash_context_t ctx;
-  TRY(otcrypto_hash_init(&ctx, kHashModeSha256));
+  otcrypto_hash_context_t ctx;
+  TRY(otcrypto_hash_init(&ctx, kOtcryptoHashModeSha256));
 
-  crypto_const_byte_buf_t msg_buf = {
+  otcrypto_const_byte_buf_t msg_buf = {
       .data = kExactBlockMessage,
       .len = kExactBlockMessageLen,
   };
@@ -119,10 +120,10 @@ static status_t one_update_streaming_test(void) {
   size_t digest_num_words =
       (sizeof(kExactBlockExpDigest) + sizeof(uint32_t) - 1) / sizeof(uint32_t);
   uint32_t act_digest[digest_num_words];
-  hash_digest_t digest_buf = {
+  otcrypto_hash_digest_t digest_buf = {
       .data = act_digest,
       .len = digest_num_words,
-      .mode = kHashModeSha256,
+      .mode = kOtcryptoHashModeSha256,
   };
   TRY(otcrypto_hash_final(&ctx, &digest_buf));
   TRY_CHECK_ARRAYS_EQ((unsigned char *)act_digest, kExactBlockExpDigest,
@@ -134,8 +135,8 @@ static status_t one_update_streaming_test(void) {
  * Test streaming API with a two-block message in multiple updates.
  */
 static status_t multiple_update_streaming_test(void) {
-  hash_context_t ctx;
-  TRY(otcrypto_hash_init(&ctx, kHashModeSha256));
+  otcrypto_hash_context_t ctx;
+  TRY(otcrypto_hash_init(&ctx, kOtcryptoHashModeSha256));
 
   // Send 0 bytes, then 1, then 2, etc. until message is done.
   const unsigned char *next = kTwoBlockMessage;
@@ -143,7 +144,7 @@ static status_t multiple_update_streaming_test(void) {
   size_t update_size = 0;
   while (len > 0) {
     update_size = len <= update_size ? len : update_size;
-    crypto_const_byte_buf_t msg_buf = {
+    otcrypto_const_byte_buf_t msg_buf = {
         .data = next,
         .len = update_size,
     };
@@ -155,10 +156,10 @@ static status_t multiple_update_streaming_test(void) {
   size_t digest_num_words =
       (sizeof(kTwoBlockExpDigest) + sizeof(uint32_t) - 1) / sizeof(uint32_t);
   uint32_t act_digest[digest_num_words];
-  hash_digest_t digest_buf = {
+  otcrypto_hash_digest_t digest_buf = {
       .data = act_digest,
       .len = digest_num_words,
-      .mode = kHashModeSha256,
+      .mode = kOtcryptoHashModeSha256,
   };
   TRY(otcrypto_hash_final(&ctx, &digest_buf));
   TRY_CHECK_ARRAYS_EQ((unsigned char *)act_digest, kTwoBlockExpDigest,
@@ -170,6 +171,7 @@ OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
   status_t test_result = OK_STATUS();
+  CHECK_STATUS_OK(entropy_complex_init());
   EXECUTE_TEST(test_result, simple_test);
   EXECUTE_TEST(test_result, empty_test);
   EXECUTE_TEST(test_result, one_update_streaming_test);

@@ -58,10 +58,10 @@ Register write enable for all control registers
 {"reg": [{"name": "REGWEN", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                                                                                                                         |
-|:------:|:------:|:-------:|:-------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|  31:1  |        |         |        | Reserved                                                                                                                                                                                                                                            |
-|   0    |  rw0c  |   0x1   | REGWEN | When true, all writable registers can be modified.     When false, they become read-only. Defaults true, write     zero to clear. This can be cleared after initial     configuration at boot in order to lock in the listed     register settings. |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                                                                                                         |
+|:------:|:------:|:-------:|:-------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|  31:1  |        |         |        | Reserved                                                                                                                                                                                                                            |
+|   0    |  rw0c  |   0x1   | REGWEN | When true, all writable registers can be modified. When false, they become read-only. Defaults true, write zero to clear. This can be cleared after initial configuration at boot in order to lock in the listed register settings. |
 
 ## CFG
 Configuration register
@@ -114,15 +114,15 @@ Enable PWM operation for each channel
 {"reg": [{"name": "EN_0", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "EN_1", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "EN_2", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "EN_3", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "EN_4", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "EN_5", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 26}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                               |
-|:------:|:------:|:-------:|:-------|:--------------------------------------------------------------------------|
-|  31:6  |        |         |        | Reserved                                                                  |
-|   5    |   rw   |   0x0   | EN_5   | Write 1 to this bit to enable PWM pulses on the    corresponding channel. |
-|   4    |   rw   |   0x0   | EN_4   | Write 1 to this bit to enable PWM pulses on the    corresponding channel. |
-|   3    |   rw   |   0x0   | EN_3   | Write 1 to this bit to enable PWM pulses on the    corresponding channel. |
-|   2    |   rw   |   0x0   | EN_2   | Write 1 to this bit to enable PWM pulses on the    corresponding channel. |
-|   1    |   rw   |   0x0   | EN_1   | Write 1 to this bit to enable PWM pulses on the    corresponding channel. |
-|   0    |   rw   |   0x0   | EN_0   | Write 1 to this bit to enable PWM pulses on the    corresponding channel. |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                            |
+|:------:|:------:|:-------:|:-------|:-----------------------------------------------------------------------|
+|  31:6  |        |         |        | Reserved                                                               |
+|   5    |   rw   |   0x0   | EN_5   | Write 1 to this bit to enable PWM pulses on the corresponding channel. |
+|   4    |   rw   |   0x0   | EN_4   | Write 1 to this bit to enable PWM pulses on the corresponding channel. |
+|   3    |   rw   |   0x0   | EN_3   | Write 1 to this bit to enable PWM pulses on the corresponding channel. |
+|   2    |   rw   |   0x0   | EN_2   | Write 1 to this bit to enable PWM pulses on the corresponding channel. |
+|   1    |   rw   |   0x0   | EN_1   | Write 1 to this bit to enable PWM pulses on the corresponding channel. |
+|   0    |   rw   |   0x0   | EN_0   | Write 1 to this bit to enable PWM pulses on the corresponding channel. |
 
 ## INVERT
 Invert the PWM output for each channel
@@ -137,15 +137,15 @@ Invert the PWM output for each channel
 {"reg": [{"name": "INVERT_0", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "INVERT_1", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "INVERT_2", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "INVERT_3", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "INVERT_4", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "INVERT_5", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 26}], "config": {"lanes": 1, "fontsize": 10, "vspace": 100}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name     | Description                                                                                                   |
-|:------:|:------:|:-------:|:---------|:--------------------------------------------------------------------------------------------------------------|
-|  31:6  |        |         |          | Reserved                                                                                                      |
-|   5    |   rw   |   0x0   | INVERT_5 | Write 1 to this bit to invert the output for each channel,    so that the corresponding output is active-low. |
-|   4    |   rw   |   0x0   | INVERT_4 | Write 1 to this bit to invert the output for each channel,    so that the corresponding output is active-low. |
-|   3    |   rw   |   0x0   | INVERT_3 | Write 1 to this bit to invert the output for each channel,    so that the corresponding output is active-low. |
-|   2    |   rw   |   0x0   | INVERT_2 | Write 1 to this bit to invert the output for each channel,    so that the corresponding output is active-low. |
-|   1    |   rw   |   0x0   | INVERT_1 | Write 1 to this bit to invert the output for each channel,    so that the corresponding output is active-low. |
-|   0    |   rw   |   0x0   | INVERT_0 | Write 1 to this bit to invert the output for each channel,    so that the corresponding output is active-low. |
+|  Bits  |  Type  |  Reset  | Name     | Description                                                                                                |
+|:------:|:------:|:-------:|:---------|:-----------------------------------------------------------------------------------------------------------|
+|  31:6  |        |         |          | Reserved                                                                                                   |
+|   5    |   rw   |   0x0   | INVERT_5 | Write 1 to this bit to invert the output for each channel, so that the corresponding output is active-low. |
+|   4    |   rw   |   0x0   | INVERT_4 | Write 1 to this bit to invert the output for each channel, so that the corresponding output is active-low. |
+|   3    |   rw   |   0x0   | INVERT_3 | Write 1 to this bit to invert the output for each channel, so that the corresponding output is active-low. |
+|   2    |   rw   |   0x0   | INVERT_2 | Write 1 to this bit to invert the output for each channel, so that the corresponding output is active-low. |
+|   1    |   rw   |   0x0   | INVERT_1 | Write 1 to this bit to invert the output for each channel, so that the corresponding output is active-low. |
+|   0    |   rw   |   0x0   | INVERT_0 | Write 1 to this bit to invert the output for each channel, so that the corresponding output is active-low. |
 
 ## PWM_PARAM
 Basic PWM Channel Parameters

@@ -23,6 +23,7 @@ opentitan_test(
     ),
     deps = [
         ":aes_testvectors",
+        "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
@@ -107,7 +108,7 @@ opentitan_test(
     srcs = ["aes_gcm_functest.c"],
     exec_env = EARLGREY_TEST_ENVS,
     verilator = verilator_params(
-        timeout = "long",
+        timeout = "eternal",
     ),
     deps = [
         ":aes_gcm_testutils",
@@ -298,6 +299,39 @@ opentitan_test(
         "//sw/device/lib/crypto/drivers:otbn",
         "//sw/device/lib/crypto/impl/ecc:ecdsa_p256",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
+    name = "rsa_2048_encryption_functest",
+    srcs = ["rsa_2048_encryption_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = verilator_params(
+        timeout = "eternal",
+    ),
+    deps = [
+        "//sw/device/lib/crypto/impl:hash",
+        "//sw/device/lib/crypto/impl:rsa",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:profile",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
+    name = "rsa_2048_key_from_cofactor_functest",
+    srcs = ["rsa_2048_key_from_cofactor_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        "//sw/device/lib/crypto/impl:hash",
+        "//sw/device/lib/crypto/impl:rsa",
+        "//sw/device/lib/crypto/impl/rsa:rsa_datatypes",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:profile",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
@@ -534,8 +568,25 @@ py_binary(
 )
 
 opentitan_test(
+    name = "hkdf_functest",
+    srcs = ["hkdf_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/crypto/impl:kdf",
+        "//sw/device/lib/crypto/impl:keyblob",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
     name = "hmac_sha256_functest",
     srcs = ["hmac_sha256_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),

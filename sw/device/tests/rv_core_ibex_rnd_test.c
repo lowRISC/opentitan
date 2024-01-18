@@ -25,6 +25,7 @@ extern uint32_t rv_core_ibex_check_rnd_read_possible_while_status_invalid(void);
 
 enum {
   kRandomDataReads = 32,
+  kRandomDataReadsSilicon = 500000,
   kInvalidReadAttempts = 8,
   // Timeout (in microseconds) when polling random data or the validity of
   // random data.  Can currently take up to 80 ms on the FPGA and up to 2.5 s
@@ -49,12 +50,17 @@ bool test_main(void) {
       mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
       &rv_core_ibex));
 
+  uint32_t data_reads_count = kRandomDataReads;
+  if (kDeviceType == kDeviceSilicon) {
+    data_reads_count = kRandomDataReadsSilicon;
+  }
+
   // Perform multiple reads from `RND_DATA` polling `RND_STATUS` in between to
   // only read valid data. Check different random bits are provided each time
   // and that the random data is never zero or all ones.
   uint32_t rnd_data;
   uint32_t previous_rnd_data = 0;
-  for (int i = 0; i < kRandomDataReads; i++) {
+  for (int i = 0; i < data_reads_count; i++) {
     CHECK_STATUS_OK(rv_core_ibex_testutils_get_rnd_data(
         &rv_core_ibex, kTimeoutUsec, &rnd_data));
     CHECK(rnd_data != previous_rnd_data);
@@ -71,7 +77,7 @@ bool test_main(void) {
 
   // Perform repeated reads from `RND_DATA` without `RND_STATUS` polling to
   // check read when invalid doesn't block.
-  for (int i = 0; i < kRandomDataReads; i++) {
+  for (int i = 0; i < data_reads_count; i++) {
     CHECK_DIF_OK(dif_rv_core_ibex_read_rnd_data(&rv_core_ibex, &rnd_data));
   }
 

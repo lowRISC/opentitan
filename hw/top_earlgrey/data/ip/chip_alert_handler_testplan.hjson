@@ -23,6 +23,7 @@
       si_stage: SV3
       lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
       tests: ["chip_sw_alert_test"]
+      bazel: ["//sw/device/tests/autogen:alert_test"]
     }
     {
       name: chip_sw_alert_handler_escalations
@@ -148,7 +149,7 @@
       si_stage: SV3
       lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
       tests: ["chip_sw_rstmgr_alert_info"]
-      bazel: ["//sw/device/tests:rstmgr_alert_info_test_fpga_cw310_test_rom"]
+      bazel: ["//sw/device/tests:rstmgr_alert_info_test"]
     }
     {
       name: chip_sw_alert_handler_ping_timeout
@@ -163,7 +164,7 @@
       si_stage: SV3
       lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
       tests: ["chip_sw_alert_handler_ping_timeout"]
-      bazel: ["//sw/device/tests:alert_handler_ping_timeout_test_fpga_cw310_test_rom"]
+      bazel: ["//sw/device/tests:alert_handler_ping_timeout_test"]
     }
     {
       name: chip_sw_alert_handler_lpg_sleep_mode_alerts
@@ -208,7 +209,7 @@
       si_stage: SV3
       lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
       tests: ["chip_sw_alert_handler_lpg_sleep_mode_pings"]
-      bazel: ["//sw/device/tests:alert_handler_lpg_sleep_mode_pings_test_fpga_cw310_test_rom"]
+      bazel: ["//sw/device/tests:alert_handler_lpg_sleep_mode_pings_test"]
     }
     {
       name: chip_sw_alert_handler_lpg_clock_off
@@ -222,7 +223,7 @@
       si_stage: SV3
       lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
       tests: ["chip_sw_alert_handler_lpg_clkoff"]
-      bazel: ["//sw/device/tests:alert_handler_lpg_clkoff_test_fpga_cw310_test_rom"]
+      bazel: ["//sw/device/tests:alert_handler_lpg_clkoff_test"]
     }
     {
       name: chip_sw_alert_handler_lpg_reset_toggle
@@ -236,7 +237,7 @@
       si_stage: SV3
       lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
       tests: ["chip_sw_alert_handler_lpg_reset_toggle"]
-      bazel: ["//sw/device/tests:alert_handler_lpg_reset_toggle_test_fpga_cw310_test_rom"]
+      bazel: ["//sw/device/tests:alert_handler_lpg_reset_toggle_test"]
    }
    {
       name: chip_sw_alert_handler_reverse_ping_in_deep_sleep
@@ -294,7 +295,7 @@
       si_stage: SV3
       lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
       tests: ["chip_sw_alert_handler_reverse_ping_in_deep_sleep"]
-      bazel: ["//sw/device/tests:alert_handler_reverse_ping_in_deep_sleep_test_fpga_cw310_test_rom"]
+      bazel: ["//sw/device/tests:alert_handler_reverse_ping_in_deep_sleep_test"]
     }
   ]
 }

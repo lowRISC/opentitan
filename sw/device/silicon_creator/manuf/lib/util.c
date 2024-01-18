@@ -23,15 +23,15 @@ static_assert(
 status_t manuf_util_hash_lc_transition_token(const uint32_t *raw_token,
                                              size_t token_size_bytes,
                                              uint64_t *hashed_token) {
-  crypto_const_byte_buf_t input = {
+  otcrypto_const_byte_buf_t input = {
       .data = (unsigned char *)raw_token,
       .len = token_size_bytes,
   };
-  crypto_const_byte_buf_t function_name_string = {
+  otcrypto_const_byte_buf_t function_name_string = {
       .data = (unsigned char *)"",
       .len = 0,
   };
-  crypto_const_byte_buf_t customization_string = {
+  otcrypto_const_byte_buf_t customization_string = {
       .data = (unsigned char *)"LC_CTRL",
       .len = 7,
   };
@@ -47,10 +47,10 @@ status_t manuf_util_hash_lc_transition_token(const uint32_t *raw_token,
   }
   uint32_t token_data[token_num_words];
   memset(token_data, 0, sizeof(token_data));
-  hash_digest_t output = {
+  otcrypto_hash_digest_t output = {
       .data = token_data,
       .len = token_num_words,
-      .mode = kHashXofModeCshake128,
+      .mode = kOtcryptoHashXofModeCshake128,
   };
 
   TRY(otcrypto_xof_cshake(input, function_name_string, customization_string,
@@ -62,14 +62,14 @@ status_t manuf_util_hash_lc_transition_token(const uint32_t *raw_token,
 
 status_t manuf_util_hash_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
                                        dif_otp_ctrl_partition_t partition,
-                                       crypto_word32_buf_t *output) {
+                                       otcrypto_word32_buf_t *output) {
   if (otp_ctrl == NULL || output == NULL || output->len != kSha256DigestWords) {
     return INVALID_ARGUMENT();
   }
-  hash_digest_t digest = {
+  otcrypto_hash_digest_t digest = {
       .data = output->data,
       .len = output->len,
-      .mode = kHashModeSha256,
+      .mode = kOtcryptoHashModeSha256,
   };
 
   switch (partition) {
@@ -80,14 +80,14 @@ status_t manuf_util_hash_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
       TRY(otp_ctrl_testutils_dai_read32_array(
           otp_ctrl, kDifOtpCtrlPartitionVendorTest, 0, vendor_test_32bit_array,
           OTP_CTRL_PARAM_VENDOR_TEST_SIZE / sizeof(uint32_t)));
-      crypto_const_byte_buf_t input = {
+      otcrypto_const_byte_buf_t input = {
           .data = (unsigned char *)vendor_test_32bit_array,
           .len = OTP_CTRL_PARAM_VENDOR_TEST_SIZE,
       };
       TRY(otcrypto_hash(input, &digest));
     } break;
     case kDifOtpCtrlPartitionCreatorSwCfg: {
-      crypto_const_byte_buf_t input = {
+      otcrypto_const_byte_buf_t input = {
           .data = (unsigned char *)(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR +
                                     OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET),
           .len = OTP_CTRL_PARAM_CREATOR_SW_CFG_SIZE,
@@ -95,7 +95,7 @@ status_t manuf_util_hash_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
       TRY(otcrypto_hash(input, &digest));
     } break;
     case kDifOtpCtrlPartitionOwnerSwCfg: {
-      crypto_const_byte_buf_t input = {
+      otcrypto_const_byte_buf_t input = {
           .data = (unsigned char *)(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR +
                                     OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
                                     OTP_CTRL_PARAM_CREATOR_SW_CFG_SIZE),

@@ -407,11 +407,11 @@ Status of random data in [`RND_DATA`](#rnd_data)
 {"reg": [{"name": "RND_DATA_VALID", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "RND_DATA_FIPS", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 30}], "config": {"lanes": 1, "fontsize": 10, "vspace": 160}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name           | Description                                                                                                                                                                                               |
-|:------:|:------:|:-------:|:---------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|  31:2  |        |         |                | Reserved                                                                                                                                                                                                  |
-|   1    |   ro   |   0x0   | RND_DATA_FIPS  | When [`RND_STATUS.RND_DATA_VALID`](#rnd_status) is 1, this bit indicates whether [`RND_DATA`](#rnd_data) is fips quality.  When [`RND_STATUS.RND_DATA_VALID`](#rnd_status) is 0, this bit has no meaning. |
-|   0    |   ro   |   0x0   | RND_DATA_VALID | When set, the data in [`RND_DATA`](#rnd_data) is valid. When clear an EDN request for new data for [`RND_DATA`](#rnd_data) is pending.                                                                    |
+|  Bits  |  Type  |  Reset  | Name           | Description                                                                                                                                                                                              |
+|:------:|:------:|:-------:|:---------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|  31:2  |        |         |                | Reserved                                                                                                                                                                                                 |
+|   1    |   ro   |   0x0   | RND_DATA_FIPS  | When [`RND_STATUS.RND_DATA_VALID`](#rnd_status) is 1, this bit indicates whether [`RND_DATA`](#rnd_data) is fips quality. When [`RND_STATUS.RND_DATA_VALID`](#rnd_status) is 0, this bit has no meaning. |
+|   0    |   ro   |   0x0   | RND_DATA_VALID | When set, the data in [`RND_DATA`](#rnd_data) is valid. When clear an EDN request for new data for [`RND_DATA`](#rnd_data) is pending.                                                                   |
 
 ## FPGA_INFO
 FPGA build timestamp info.

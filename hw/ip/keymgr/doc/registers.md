@@ -210,12 +210,12 @@ the appropriate crypto cipher target.
 
 This field should be programmed for both hw / sw generation, as this helps diverisifies the output.
 
-| Value   | Name   | Description                                                                                                                                                                                                                                                                                                                                    |
-|:--------|:-------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0x0     | None   | No target selected                                                                                                                                                                                                                                                                                                                             |
-| 0x1     | AES    | AES selected                                                                                                                                                                                                                                                                                                                                   |
-| 0x2     | KMAC   | KMAC selected                                                                                                                                                                                                                                                                                                                                  |
-| 0x3     | OTBN   | OTBN selected.  Note for OTBN hardware operations, the generated output is 384-bits, while for all other operations (including OTBN software), it is 256-bits.  Generating a hardware 384-bit seed directly for OTBN sideload reduces some of the OTBN code burden for entropy expansion. When generating for software, this is not a concern. |
+| Value   | Name   | Description                                                                                                                                                                                                                                                                                                                                   |
+|:--------|:-------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0x0     | None   | No target selected                                                                                                                                                                                                                                                                                                                            |
+| 0x1     | AES    | AES selected                                                                                                                                                                                                                                                                                                                                  |
+| 0x2     | KMAC   | KMAC selected                                                                                                                                                                                                                                                                                                                                 |
+| 0x3     | OTBN   | OTBN selected.  Note for OTBN hardware operations, the generated output is 384-bits, while for all other operations (including OTBN software), it is 256-bits. Generating a hardware 384-bit seed directly for OTBN sideload reduces some of the OTBN code burden for entropy expansion. When generating for software, this is not a concern. |
 
 
 ### CONTROL_SHADOWED . CDI_SEL
@@ -233,13 +233,13 @@ This field should be programmed for both hw / sw generation.
 ### CONTROL_SHADOWED . OPERATION
 Key manager operation selection. All values not enumerated below behave the same as disable
 
-| Value   | Name               | Description                                                                                                                                                                           |
-|:--------|:-------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0x0     | Advance            | Advance key manager state.  Advances key manager to the next stage. If key manager is already at last functional state, the advance operation is equivalent to the disable operation. |
-| 0x1     | Generate ID        | Generates an identity seed from the current state.                                                                                                                                    |
-| 0x2     | Generate SW Output | Generates a key manager output that is visible to software from the current state.                                                                                                    |
-| 0x3     | Generate HW Output | Generates a key manager output that is visible only to hardware crypto blocks.                                                                                                        |
-| 0x4     | Disable            | Disables key manager operation and moves it to the disabled state.  Note the disabled state is terminal and cannot be recovered without a reset.                                      |
+| Value   | Name               | Description                                                                                                                                                                          |
+|:--------|:-------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0x0     | Advance            | Advance key manager state. Advances key manager to the next stage. If key manager is already at last functional state, the advance operation is equivalent to the disable operation. |
+| 0x1     | Generate ID        | Generates an identity seed from the current state.                                                                                                                                   |
+| 0x2     | Generate SW Output | Generates a key manager output that is visible to software from the current state.                                                                                                   |
+| 0x3     | Generate HW Output | Generates a key manager output that is visible only to hardware crypto blocks.                                                                                                       |
+| 0x4     | Disable            | Disables key manager operation and moves it to the disabled state. Note the disabled state is terminal and cannot be recovered without a reset.                                      |
 
 Other values are reserved.
 
@@ -323,10 +323,10 @@ Register write enable for SOFTWARE_BINDING
 {"reg": [{"name": "EN", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                                                                                                             |
-|:------:|:------:|:-------:|:-------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|  31:1  |        |         |        | Reserved                                                                                                                                                                                                                                |
-|   0    |  rw0c  |   0x1   | EN     | Software binding register write enable. This is locked by software and unlocked by hardware upon a successful advance call.  Software binding resets to 1, and its value cannot be altered by software until advancement to Init state. |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                                                                                                            |
+|:------:|:------:|:-------:|:-------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|  31:1  |        |         |        | Reserved                                                                                                                                                                                                                               |
+|   0    |  rw0c  |   0x1   | EN     | Software binding register write enable. This is locked by software and unlocked by hardware upon a successful advance call. Software binding resets to 1, and its value cannot be altered by software until advancement to Init state. |
 
 ## SEALING_SW_BINDING
 Software binding input to sealing portion of the key manager.
@@ -475,9 +475,9 @@ Max creator key version
 {"reg": [{"name": "VAL", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                                             |
-|:------:|:------:|:-------:|:-------|:----------------------------------------------------------------------------------------|
-|  31:0  |   rw   |   0x0   | VAL    | Max key version.  Any key version up to the value specificed in this register is valid. |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                            |
+|:------:|:------:|:-------:|:-------|:---------------------------------------------------------------------------------------|
+|  31:0  |   rw   |   0x0   | VAL    | Max key version. Any key version up to the value specificed in this register is valid. |
 
 ## MAX_OWNER_INT_KEY_VER_REGWEN
 Register write enable for MAX_OWNER_INT_KEY_VERSION
@@ -509,9 +509,9 @@ Max owner intermediate key version
 {"reg": [{"name": "VAL", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                                             |
-|:------:|:------:|:-------:|:-------|:----------------------------------------------------------------------------------------|
-|  31:0  |   rw   |   0x1   | VAL    | Max key version.  Any key version up to the value specificed in this register is valid. |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                            |
+|:------:|:------:|:-------:|:-------|:---------------------------------------------------------------------------------------|
+|  31:0  |   rw   |   0x1   | VAL    | Max key version. Any key version up to the value specificed in this register is valid. |
 
 ## MAX_OWNER_KEY_VER_REGWEN
 Register write enable for MAX_OWNER_KEY_VERSION
@@ -543,9 +543,9 @@ Max owner key version
 {"reg": [{"name": "VAL", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                                             |
-|:------:|:------:|:-------:|:-------|:----------------------------------------------------------------------------------------|
-|  31:0  |   rw   |   0x0   | VAL    | Max key version.  Any key version up to the value specificed in this register is valid. |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                            |
+|:------:|:------:|:-------:|:-------|:---------------------------------------------------------------------------------------|
+|  31:0  |   rw   |   0x0   | VAL    | Max key version. Any key version up to the value specificed in this register is valid. |
 
 ## SW_SHARE0_OUTPUT
 Key manager software output.

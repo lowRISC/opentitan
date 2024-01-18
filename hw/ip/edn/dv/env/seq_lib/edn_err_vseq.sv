@@ -16,10 +16,48 @@ class edn_err_vseq extends edn_base_vseq;
   bit [edn_pkg::ENDPOINT_BUS_WIDTH - 1:0]       edn_bus[MAX_NUM_ENDPOINTS];
   uint                                          endpoint_port;
 
+  // Await a randomly selected state of the edn_ack_sm at index `idx`.  If the state is not reached
+  // within `timeout_clks` clock cycles, the task also returns.  This task returns immediately with
+  // a chance of 100 - `await_pct` percent.
+  task await_random_ack_sm_state(int timeout_clks = 1_000, int await_pct = 90,
+                                 hw_req_mode_e mode);
+    string state_path;
+    state_ack_e exp_state;
+    state_path = cfg.edn_vif.sm_err_path("edn_ack_sm", endpoint_port);
+
+    if ($urandom_range(100, 1) > await_pct) begin
+      // Don't wait if number randomly sampled between 1 and 100 exceeds the await percentage.
+      return;
+    end
+
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(exp_state, exp_state inside {EndPointClear,
+                                                                    DataWait,
+                                                                    AckPls};)
+
+    `uvm_info(`gfn, $sformatf("Waiting for ack_sm[%0d] to reach state %09b",
+                              endpoint_port, exp_state), UVM_HIGH)
+    start_transition_to_ack_state(exp_state, mode);
+    `DV_SPINWAIT_EXIT(
+      forever begin
+        uvm_hdl_data_t val;
+        state_ack_e act_state;
+        cfg.clk_rst_vif.wait_n_clks(1);
+        `DV_CHECK(uvm_hdl_read(state_path, val))
+        act_state = state_ack_e'(val);
+        if (act_state == exp_state) break;
+      end
+      `uvm_info(`gfn, $sformatf("State reached"), UVM_HIGH),
+      // Or exit when the timeout (in clock cycles) has been reached.
+      cfg.clk_rst_vif.wait_n_clks(timeout_clks);
+      `uvm_info(`gfn, $sformatf("Timed out waiting for ack_sm state %09b", exp_state), UVM_HIGH)
+    )
+  endtask
+
   // Await a randomly selected state of edn_main_sm that should be reachable in EDN's current mode.
   // If the state is not reached within `timeout_clks` clock cycles, the task also returns.  This
   // task returns immediately with a chance of 100 - `await_pct` percent.
-  task await_random_main_sm_state(int timeout_clks = 1_000, int await_pct = 90);
+  task await_random_main_sm_state(int timeout_clks = 1_000, int await_pct = 90,
+                                  hw_req_mode_e mode);
     string state_path;
     state_e exp_state;
     state_path = cfg.edn_vif.sm_err_path("edn_main_sm");
@@ -48,6 +86,7 @@ class edn_err_vseq extends edn_base_vseq;
     end
 
     `uvm_info(`gfn, $sformatf("Waiting for main_sm to reach state %s", exp_state.name()), UVM_HIGH)
+    start_transition_to_main_sm_state(exp_state, mode);
     `DV_SPINWAIT_EXIT(
       forever begin
         uvm_hdl_data_t val;
@@ -65,46 +104,47 @@ class edn_err_vseq extends edn_base_vseq;
     )
   endtask
 
-  // Await a randomly selected state of the edn_ack_sm at index `idx`.  If the state is not reached
-  // within `timeout_clks` clock cycles, the task also returns.  This task returns immediately with
-  // a chance of 100 - `await_pct` percent.
-  task await_random_ack_sm_state(int timeout_clks = 1_000, int await_pct = 90);
-    string state_path;
-    logic [8:0] exp_state;
-    state_path = cfg.edn_vif.sm_err_path("edn_ack_sm", endpoint_port);
-
-    if ($urandom_range(100, 1) > await_pct) begin
-      // Don't wait if number randomly sampled between 1 and 100 exceeds the await percentage.
-      return;
+  task start_transition_to_ack_state(state_ack_e exp_state, hw_req_mode_e mode);
+    // Create background thread that transitions the ack sm to the expected state.
+    // INS and GEN commands are only needed if we are not waiting for EndPointClear or DataWait.
+    if (!exp_state inside {EndPointClear, DataWait}) begin
+      fork
+        begin
+          if (cfg.boot_req_mode != MuBi4True) begin
+            // Send INS cmd to start the auto/SW mode operation.
+            wr_cmd(.cmd_type(edn_env_pkg::Sw), .acmd(csrng_pkg::INS),
+                   .clen(0), .flags(MuBi4False), .glen(0), .mode(mode));
+          end
+          if (cfg.auto_req_mode != MuBi4True && cfg.boot_req_mode != MuBi4True) begin
+            // In SW mode send a GEN command to transition through all possible states.
+            // Send GEN cmd with GLEN = 1 (request single genbits).
+            wr_cmd(.cmd_type(edn_env_pkg::Sw), .acmd(csrng_pkg::GEN),
+                   .clen(0), .flags(MuBi4False), .glen(1), .mode(mode));
+          end
+        end
+      join_none
     end
+  endtask
 
-    // TODO(#18968): The FSM states below should not be hardcoded here; instead, they should be
-    // defined in a package (which they currently aren't) and imported from there.
-    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(exp_state, exp_state inside {9'b110001110,   // EndPointClear
-                                                                    9'b011101011,   // DataWait
-                                                                    9'b000100101};) // AckPls
-
-    `uvm_info(`gfn, $sformatf("Waiting for ack_sm[%0d] to reach state %09b",
-                              endpoint_port, exp_state), UVM_HIGH)
-    `DV_SPINWAIT_EXIT(
-      forever begin
-        uvm_hdl_data_t val;
-        state_e act_state;
-        cfg.clk_rst_vif.wait_n_clks(1);
-        `DV_CHECK(uvm_hdl_read(state_path, val))
-        act_state = state_e'(val);
-        if (act_state == exp_state) break;
+  task start_transition_to_main_sm_state(state_e exp_state, edn_env_pkg::hw_req_mode_e mode);
+    // Create background thread that transitions the main sm to the expected state.
+    fork
+      begin
+        // Send an instantiate command if we are in auto mode and the expected state
+        // is not AutoLoadIns. All the other state transitions happen automatically.
+        if (cfg.boot_req_mode != MuBi4True && cfg.auto_req_mode == MuBi4True
+            && exp_state != AutoLoadIns) begin
+          // Send INS cmd to start the auto/SW mode operation.
+          // Set wait_cmd_req_done to 0 since we don't want to wait for the ack.
+          wr_cmd(.cmd_type(edn_env_pkg::Sw), .acmd(csrng_pkg::INS), .clen(0),
+                 .flags(MuBi4False), .glen(0), .mode(mode), .wait_for_ack(0));
+        end
       end
-      `uvm_info(`gfn, $sformatf("State reached"), UVM_HIGH),
-      // Or exit when the timeout (in clock cycles) has been reached.
-      cfg.clk_rst_vif.wait_n_clks(timeout_clks);
-      `uvm_info(`gfn, $sformatf("Timed out waiting for ack_sm state %09b", exp_state), UVM_HIGH)
-    )
+    join_none
   endtask
 
   task body();
-    edn_env_pkg::cmd_type_e    ins_cmd_type, gen_cmd_type;
-    edn_env_pkg::hw_req_mode_e mode;
+    hw_req_mode_e              mode;
     bit [5:0]                  err_code_test_bit;
     string                     path, path1, path2;
     bit                        value1, value2;
@@ -135,6 +175,40 @@ class edn_err_vseq extends edn_base_vseq;
     $assertoff(0, "tb.dut.u_edn_core.u_prim_fifo_sync_gencmd.DataKnown_A");
     cfg.edn_assert_vif.assert_off();
 
+    reg_name = "err_code";
+    csr = ral.get_reg_by_name(reg_name);
+    fld_name = cfg.which_err_code.name();
+
+    first_index = find_index("_", fld_name, "first");
+    last_index = find_index("_", fld_name, "last");
+
+    // Determine the operational mode.
+    if (cfg.boot_req_mode == MuBi4True) begin
+      mode = edn_env_pkg::BootReqMode;
+    end else if (cfg.auto_req_mode == MuBi4True) begin
+      mode = edn_env_pkg::AutoReqMode;
+    end else begin // SW mode
+      mode = edn_env_pkg::SwMode;
+    end
+
+    // Disable the EDN.
+    wait_no_outstanding_access();
+    ral.ctrl.edn_enable.set(prim_mubi_pkg::MuBi4False);
+    csr_update(.csr(ral.ctrl));
+    // Notify the driver that the EDN was disabled.
+    cfg.edn_vif.drive_edn_disable(1);
+    // In Auto mode, minimize number of requests between reseeds and set the reseed command.
+    if (mode == edn_env_pkg::AutoReqMode) begin
+      csr_wr(.ptr(ral.max_num_reqs_between_reseeds), .value(1));
+      wr_cmd(.cmd_type(edn_env_pkg::AutoRes), .acmd(csrng_pkg::RES), .clen(0),
+             .flags(MuBi4False), .mode(mode));
+    end
+    // Enable the EDN.
+    ral.ctrl.edn_enable.set(prim_mubi_pkg::MuBi4True);
+    csr_update(.csr(ral.ctrl));
+    // Notify the driver that the EDN was enabled.
+    cfg.edn_vif.drive_edn_disable(0);
+
     // Load genbits data
     m_endpoint_pull_seq = push_pull_host_seq#(edn_pkg::FIPS_ENDPOINT_BUS_WIDTH)::type_id::
         create("m_endpoint_pull_seq");
@@ -148,46 +222,14 @@ class edn_err_vseq extends edn_base_vseq;
     fork
       m_endpoint_pull_seq.start(p_sequencer.endpoint_sequencer_h[endpoint_port]);
     join_none
-
-    // Determine into which CSRs the Instantiate and Generate commands need to be written.
-    if (cfg.boot_req_mode == MuBi4True) begin
-      ins_cmd_type = edn_env_pkg::BootIns;
-      gen_cmd_type = edn_env_pkg::BootGen;
-      mode = edn_env_pkg::BootReqMode;
-    end else if (cfg.auto_req_mode == MuBi4True) begin
-      ins_cmd_type = edn_env_pkg::Sw;
-      gen_cmd_type = edn_env_pkg::AutoGen;
-      mode = edn_env_pkg::AutoReqMode;
-    end else begin // SW mode
-      ins_cmd_type = edn_env_pkg::Sw;
-      gen_cmd_type = edn_env_pkg::Sw;
-      mode = edn_env_pkg::SwMode;
+    // main_sm is more complex, so the random selection is biased towards it.
+    if ((cfg.which_err_code == edn_ack_sm_err) || ($urandom_range(10, 1) < 8)) begin
+      // Errors in ack_sm can be used to trigger transitions to the Error state in main_sm.
+      await_random_main_sm_state(.mode(mode));
+    end else begin
+      // Errors in main_sm can be used to trigger transitions to the Error state in ack_sm.
+      await_random_ack_sm_state(.mode(mode));
     end
-
-    // Create background thread that writes the Instantiate and Generate commands to the CSRs.
-    fork
-      begin
-        if (cfg.auto_req_mode == MuBi4True) begin
-          // In Auto mode, minimize number of requests between reseeds and set the reseed command.
-          csr_wr(.ptr(ral.max_num_reqs_between_reseeds), .value(1));
-          wr_cmd(.cmd_type(edn_env_pkg::AutoRes), .acmd(csrng_pkg::RES), .clen(0),
-                 .flags(MuBi4False), .mode(mode));
-        end
-        // Send INS cmd.
-        wr_cmd(.cmd_type(ins_cmd_type),
-               .acmd(csrng_pkg::INS), .clen(0), .flags(MuBi4False), .glen(0), .mode(mode));
-        // Send GEN cmd with GLEN = 1 (request single genbits).
-        wr_cmd(.cmd_type(gen_cmd_type),
-               .acmd(csrng_pkg::GEN), .clen(0), .flags(MuBi4False), .glen(1), .mode(mode));
-      end
-    join_none
-
-    reg_name = "err_code";
-    csr = ral.get_reg_by_name(reg_name);
-    fld_name = cfg.which_err_code.name();
-
-    first_index = find_index("_", fld_name, "first");
-    last_index = find_index("_", fld_name, "last");
 
     // Insert the selected error.
     `uvm_info(`gfn, $sformatf("which_err_code = %s", cfg.which_err_code.name()), UVM_HIGH)
@@ -209,13 +251,6 @@ class edn_err_vseq extends edn_base_vseq;
       edn_ack_sm_err, edn_main_sm_err: begin
         fld = csr.get_field_by_name(fld_name);
         path = cfg.edn_vif.sm_err_path(fld_name.substr(0, last_index-1));
-        if (cfg.which_err_code == edn_ack_sm_err) begin
-          // Errors in ack_sm can be used to trigger transitions to the Error state in main_sm.
-          await_random_main_sm_state();
-        end else begin
-          // Errors in main_sm can be used to trigger transitions to the Error state in ack_sm.
-          await_random_ack_sm_state();
-        end
         force_path_err(path, 6'b0, fld, 1'b1);
         if (cfg.en_cov) begin
           csr_rd(.ptr(ral.err_code), .value(backdoor_err_code_val));
@@ -225,13 +260,6 @@ class edn_err_vseq extends edn_base_vseq;
       edn_cntr_err: begin
         fld = csr.get_field_by_name(fld_name);
         path = cfg.edn_vif.cntr_err_path();
-        // Errors in cntr can be used to trigger transitions to the Error state in main_sm or in
-        // ack_sm.  main_sm is more complex, so the random selection is biased towards it.
-        if ($urandom_range(10, 1) < 8) begin
-          await_random_main_sm_state();
-        end else begin
-          await_random_ack_sm_state();
-        end
         force_path_err(path, 6'b000001, fld, 1'b1);
         // Verify EDN.MAIN_SM.CTR.LOCAL_ESC
         csr_rd_check(.ptr(ral.err_code.edn_cntr_err), .compare_value(1'b1));

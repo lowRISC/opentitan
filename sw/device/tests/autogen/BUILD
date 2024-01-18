@@ -10,10 +10,12 @@
 load(
     "//rules/opentitan:defs.bzl",
     "opentitan_test",
+    "silicon_params",
     "verilator_params",
 )
 
-# IP Integration Tests
+package(default_visibility = ["//visibility:public"])
+
 [
     opentitan_test(
         name = "plic_all_irqs_test_{}".format(min),
@@ -24,8 +26,10 @@ load(
         ],
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
             "//hw/top_earlgrey:fpga_cw310_test_rom": None,
             "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
             "//hw/top_earlgrey:sim_dv": None,
             "//hw/top_earlgrey:sim_verilator": None,
         },
@@ -36,6 +40,7 @@ load(
         ),
         deps = [
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//sw/device/lib/arch:boot_stage",
             "//sw/device/lib/base:mmio",
             "//sw/device/lib/dif:adc_ctrl",
             "//sw/device/lib/dif:alert_handler",
@@ -84,13 +89,16 @@ opentitan_test(
     srcs = ["alert_test.c"],
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_sival": None,
+        "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
         "//hw/top_earlgrey:silicon_creator": None,
+        "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
         "//hw/top_earlgrey:sim_dv": None,
         "//hw/top_earlgrey:sim_verilator": None,
     },
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:boot_stage",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:adc_ctrl",

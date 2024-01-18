@@ -154,7 +154,7 @@ jobs:
         --define bitstream=gcp_splice \
         --build_tests_only \
         --test_output=errors \
-        --test_tag_filters="cw310_sival" \
+        --test_tag_filters=cw310_sival,-broken \
         $(bash ./bazelisk.sh query 'attr("tags", "[\[ ]pmod[,\]]", tests(//...))')
     displayName: "Run the PMOD tests for Sival"
   - template: ../ci/publish-bazel-test-results.yml

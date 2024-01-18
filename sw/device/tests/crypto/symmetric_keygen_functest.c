@@ -26,36 +26,36 @@ static const randomness_quality_significance_t kSignificance =
 
 // Personalization data for testing.
 static const uint8_t kPersonalizationData[5] = {0xf0, 0xf1, 0xf2, 0xf3, 0xf4};
-static const crypto_const_byte_buf_t kPersonalization = {
+static const otcrypto_const_byte_buf_t kPersonalization = {
     .data = kPersonalizationData,
     .len = sizeof(kPersonalizationData),
 };
 
 // Represents a 192-bit AES-CBC key.
-static const crypto_key_config_t kAesKeyConfig = {
-    .version = kCryptoLibVersion1,
-    .key_mode = kKeyModeAesCbc,
+static const otcrypto_key_config_t kAesKeyConfig = {
+    .version = kOtcryptoLibVersion1,
+    .key_mode = kOtcryptoKeyModeAesCbc,
     .key_length = 192 / 8,
     .hw_backed = kHardenedBoolFalse,
-    .security_level = kSecurityLevelLow,
+    .security_level = kOtcryptoKeySecurityLevelLow,
 };
 
 // Represents a 256-bit HMAC-SHA256 key.
-static const crypto_key_config_t kHmacKeyConfig = {
-    .version = kCryptoLibVersion1,
-    .key_mode = kKeyModeHmacSha256,
+static const otcrypto_key_config_t kHmacKeyConfig = {
+    .version = kOtcryptoLibVersion1,
+    .key_mode = kOtcryptoKeyModeHmacSha256,
     .key_length = 256 / 8,
     .hw_backed = kHardenedBoolFalse,
-    .security_level = kSecurityLevelLow,
+    .security_level = kOtcryptoKeySecurityLevelLow,
 };
 
 // Represents a 128-bit KMAC key.
-static const crypto_key_config_t kKmacKeyConfig = {
-    .version = kCryptoLibVersion1,
-    .key_mode = kKeyModeKmac128,
+static const otcrypto_key_config_t kKmacKeyConfig = {
+    .version = kOtcryptoLibVersion1,
+    .key_mode = kOtcryptoKeyModeKmac128,
     .key_length = 128 / 8,
     .hw_backed = kHardenedBoolFalse,
-    .security_level = kSecurityLevelLow,
+    .security_level = kOtcryptoKeySecurityLevelLow,
 };
 
 static status_t entropy_complex_init_test(void) {
@@ -76,14 +76,14 @@ static status_t entropy_complex_init_test(void) {
  *
  * @param config Key configuration.
  */
-static status_t basic_keygen_test(crypto_key_config_t config) {
+static status_t basic_keygen_test(otcrypto_key_config_t config) {
   // Allocate and zeroize keyblob.
   size_t key_share_words = config.key_length / sizeof(uint32_t);
   uint32_t keyblob[key_share_words * 2];
   memset(keyblob, 0, sizeof(keyblob));
 
   // Create the blinded key structure and call keygen.
-  crypto_blinded_key_t key = {
+  otcrypto_blinded_key_t key = {
       .config = config,
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,
@@ -129,12 +129,12 @@ static status_t generate_multiple_keys_test(void) {
   memset(keyblob_buffer, 0, sizeof(keyblob_buffer));
 
   // Generate two AES keys.
-  crypto_blinded_key_t key1 = {
+  otcrypto_blinded_key_t key1 = {
       .config = kAesKeyConfig,
       .keyblob_length = sizeof(keyblob_buffer) / 2,
       .keyblob = keyblob1,
   };
-  crypto_blinded_key_t key2 = {
+  otcrypto_blinded_key_t key2 = {
       .config = kAesKeyConfig,
       .keyblob_length = sizeof(keyblob_buffer) / 2,
       .keyblob = keyblob2,

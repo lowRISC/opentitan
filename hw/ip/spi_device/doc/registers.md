@@ -98,21 +98,21 @@ Interrupt State Register
 {"reg": [{"name": "generic_rx_full", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "generic_rx_watermark", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "generic_tx_watermark", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "generic_rx_error", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "generic_rx_overflow", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "generic_tx_underflow", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "upload_cmdfifo_not_empty", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "upload_payload_not_empty", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "upload_payload_overflow", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "readbuf_watermark", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "readbuf_flip", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "tpm_header_not_empty", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 20}], "config": {"lanes": 1, "fontsize": 10, "vspace": 260}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                     | Description                                                                                                                                                                                                                                          |
-|:------:|:------:|:-------:|:-------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 31:12  |        |         |                          | Reserved                                                                                                                                                                                                                                             |
-|   11   |   ro   |   0x0   | tpm_header_not_empty     | TPM Header(Command/Address) buffer available                                                                                                                                                                                                         |
-|   10   |  rw1c  |   0x0   | readbuf_flip             | Read buffer flipped event.  The host system accesses other side of buffer.                                                                                                                                                                           |
-|   9    |  rw1c  |   0x0   | readbuf_watermark        | Read Buffer Threshold event.  The host system accesses greater than or equal to the threshold of a buffer.                                                                                                                                           |
-|   8    |  rw1c  |   0x0   | upload_payload_overflow  | Upload payload overflow event.  When a SPI Host system issues a command with payload more than 256B, this event is reported. When it happens, SW should read the last written payload index CSR to figure out the starting address of the last 256B. |
-|   7    |  rw1c  |   0x0   | upload_payload_not_empty | Upload payload is not empty.  The event occurs after SPI transaction completed                                                                                                                                                                       |
-|   6    |  rw1c  |   0x0   | upload_cmdfifo_not_empty | Upload Command FIFO is not empty                                                                                                                                                                                                                     |
-|   5    |  rw1c  |   0x0   | generic_tx_underflow     | TX Async FIFO underflow                                                                                                                                                                                                                              |
-|   4    |  rw1c  |   0x0   | generic_rx_overflow      | RX Async FIFO overflow                                                                                                                                                                                                                               |
-|   3    |  rw1c  |   0x0   | generic_rx_error         | SDI in FwMode has error                                                                                                                                                                                                                              |
-|   2    |  rw1c  |   0x0   | generic_tx_watermark     | TX SRAM FIFO is under the level                                                                                                                                                                                                                      |
-|   1    |  rw1c  |   0x0   | generic_rx_watermark     | RX SRAM FIFO is above the level                                                                                                                                                                                                                      |
-|   0    |  rw1c  |   0x0   | generic_rx_full          | RX SRAM FIFO Full                                                                                                                                                                                                                                    |
+|  Bits  |  Type  |  Reset  | Name                     | Description                                                                                                                                                                                                                                         |
+|:------:|:------:|:-------:|:-------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 31:12  |        |         |                          | Reserved                                                                                                                                                                                                                                            |
+|   11   |   ro   |   0x0   | tpm_header_not_empty     | TPM Header(Command/Address) buffer available                                                                                                                                                                                                        |
+|   10   |  rw1c  |   0x0   | readbuf_flip             | Read buffer flipped event. The host system accesses other side of buffer.                                                                                                                                                                           |
+|   9    |  rw1c  |   0x0   | readbuf_watermark        | Read Buffer Threshold event. The host system accesses greater than or equal to the threshold of a buffer.                                                                                                                                           |
+|   8    |  rw1c  |   0x0   | upload_payload_overflow  | Upload payload overflow event. When a SPI Host system issues a command with payload more than 256B, this event is reported. When it happens, SW should read the last written payload index CSR to figure out the starting address of the last 256B. |
+|   7    |  rw1c  |   0x0   | upload_payload_not_empty | Upload payload is not empty. The event occurs after SPI transaction completed                                                                                                                                                                       |
+|   6    |  rw1c  |   0x0   | upload_cmdfifo_not_empty | Upload Command FIFO is not empty                                                                                                                                                                                                                    |
+|   5    |  rw1c  |   0x0   | generic_tx_underflow     | TX Async FIFO underflow                                                                                                                                                                                                                             |
+|   4    |  rw1c  |   0x0   | generic_rx_overflow      | RX Async FIFO overflow                                                                                                                                                                                                                              |
+|   3    |  rw1c  |   0x0   | generic_rx_error         | SDI in FwMode has error                                                                                                                                                                                                                             |
+|   2    |  rw1c  |   0x0   | generic_tx_watermark     | TX SRAM FIFO is under the level                                                                                                                                                                                                                     |
+|   1    |  rw1c  |   0x0   | generic_rx_watermark     | RX SRAM FIFO is above the level                                                                                                                                                                                                                     |
+|   0    |  rw1c  |   0x0   | generic_rx_full          | RX SRAM FIFO Full                                                                                                                                                                                                                                   |
 
 ## INTR_ENABLE
 Interrupt Enable Register
@@ -247,11 +247,11 @@ in Idle state as this reset signal doesn't have reset synchronizer.
 ### CONTROL . MODE
 SPI Device operation mode. Currently only FwMode is supported.
 
-| Value   | Name        | Description                                                                                                                                                                                                                                                                  |
-|:--------|:------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0x0     | fwmode      | FW operation mode.  HW just dumps incoming data to SRAM and reads from SRAM and sends to SDO. This mode doesn't support Dual or Quad mode                                                                                                                                    |
-| 0x1     | flashmode   | SPI Flash Emulation mode.  In flash mode, SPI Device IP accepts SPI Flash commands and processes internally, then returns data for the read commands. HW processes the Status, JEDEC ID, SFDP commands.  The current version does not support Dual/Quad IO and QPI commands. |
-| 0x2     | passthrough | In passthrough mode, SPI Device IP forwards the incoming SPI flash traffics to the attached downstream flash device. HW may processes commands internally and returns data.  SW may configure the device to drop inadmissable commands.                                      |
+| Value   | Name        | Description                                                                                                                                                                                                                                                                |
+|:--------|:------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0x0     | fwmode      | FW operation mode. HW just dumps incoming data to SRAM and reads from SRAM and sends to SDO. This mode doesn't support Dual or Quad mode                                                                                                                                   |
+| 0x1     | flashmode   | SPI Flash Emulation mode. In flash mode, SPI Device IP accepts SPI Flash commands and processes internally, then returns data for the read commands. HW processes the Status, JEDEC ID, SFDP commands. The current version does not support Dual/Quad IO and QPI commands. |
+| 0x2     | passthrough | In passthrough mode, SPI Device IP forwards the incoming SPI flash traffics to the attached downstream flash device. HW may processes commands internally and returns data. SW may configure the device to drop inadmissable commands.                                     |
 
 Other values are reserved.
 
@@ -340,10 +340,10 @@ RX/ TX FIFO levels.
 {"reg": [{"name": "rxlvl", "bits": 16, "attr": ["rw"], "rotate": 0}, {"name": "txlvl", "bits": 16, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                                          |
-|:------:|:------:|:-------:|:-------|:-------------------------------------------------------------------------------------|
-| 31:16  |   rw   |   0x0   | txlvl  | TX FIFO level.  If TX SRAM FIFO level drops below this value, it triggers interrupt. |
-|  15:0  |   rw   |  0x80   | rxlvl  | RX FIFO level.  If RX SRAM FIFO level exceeds this value, it triggers interrupt.     |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                         |
+|:------:|:------:|:-------:|:-------|:------------------------------------------------------------------------------------|
+| 31:16  |   rw   |   0x0   | txlvl  | TX FIFO level. If TX SRAM FIFO level drops below this value, it triggers interrupt. |
+|  15:0  |   rw   |  0x80   | rxlvl  | RX FIFO level. If RX SRAM FIFO level exceeds this value, it triggers interrupt.     |
 
 ## ASYNC_FIFO_LEVEL
 RX/ TX Async FIFO levels between main clk and spi clock
@@ -389,16 +389,16 @@ SPI Device status register
 {"reg": [{"name": "rxf_full", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "rxf_empty", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "txf_full", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "txf_empty", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "abort_done", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "csb", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "tpm_csb", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 25}], "config": {"lanes": 1, "fontsize": 10, "vspace": 120}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name       | Description                                                                                               |
-|:------:|:------:|:-------:|:-----------|:----------------------------------------------------------------------------------------------------------|
-|  31:7  |        |         |            | Reserved                                                                                                  |
-|   6    |   ro   |   0x1   | tpm_csb    | Direct input of TPM CSb                                                                                   |
-|   5    |   ro   |   0x1   | csb        | Direct input of CSb signal                                                                                |
-|   4    |   ro   |   0x1   | abort_done | Abort process is completed.  Current version does not implement abort_done logic. It is tied to 1 always. |
-|   3    |   ro   |   0x1   | txf_empty  | TX FIFO empty                                                                                             |
-|   2    |   ro   |    x    | txf_full   | TX FIFO full                                                                                              |
-|   1    |   ro   |   0x1   | rxf_empty  | RX FIFO empty                                                                                             |
-|   0    |   ro   |    x    | rxf_full   | RX FIFO full                                                                                              |
+|  Bits  |  Type  |  Reset  | Name       | Description                                                                                              |
+|:------:|:------:|:-------:|:-----------|:---------------------------------------------------------------------------------------------------------|
+|  31:7  |        |         |            | Reserved                                                                                                 |
+|   6    |   ro   |   0x1   | tpm_csb    | Direct input of TPM CSb                                                                                  |
+|   5    |   ro   |   0x1   | csb        | Direct input of CSb signal                                                                               |
+|   4    |   ro   |   0x1   | abort_done | Abort process is completed. Current version does not implement abort_done logic. It is tied to 1 always. |
+|   3    |   ro   |   0x1   | txf_empty  | TX FIFO empty                                                                                            |
+|   2    |   ro   |    x    | txf_full   | TX FIFO full                                                                                             |
+|   1    |   ro   |   0x1   | rxf_empty  | RX FIFO empty                                                                                            |
+|   0    |   ro   |    x    | rxf_full   | RX FIFO full                                                                                             |
 
 ## RXF_PTR
 Receiver FIFO (SRAM) pointers

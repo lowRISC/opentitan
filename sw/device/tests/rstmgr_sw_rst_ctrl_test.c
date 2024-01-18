@@ -27,8 +27,10 @@ OTTF_DEFINE_TEST_CONFIG();
  *  RSTMGR SW_RST_CTRL Test
  *
  *  This test checks RSTMGR.SW_RST_CTRL_N[index] with peripheral devices.
- *  There are 7 RSTMGR.SW_RST_CTRL_N registers and each register
- *  controls peripheral reset as follows:
+ *  The RSTMGR.SW_RST_CTRL_N register has 8 bits. One of these controls
+ *  USB_AON which has no software writeable CSRs, so it is not amenable
+ *  to this test yet it is still reset with the expectation that it has
+ *  no side-effects. The various bits control peripheral resets as follows:
  *
  * // index | device     |  test register |  reset value |  prgm value |
  * // ------------------------------------------------------------------
@@ -36,15 +38,16 @@ OTTF_DEFINE_TEST_CONFIG();
  * // 1     | SPI_HOST0  |  CONFIGOPTS    |  0x0         |  0x3210000
  * // 2     | SPI_HOST1  |  CONFIGOPTS    |  0x0         |  0x6540000
  * // 3     | USB        |  EP_OUT_ENABLE |  0x0         |  0xc3
- * // 4     | I2C0       |  TIMING0       |  0x0         |  0x8b00cfe
- * // 5     | I2C1       |  TIMING1       |  0x0         |  0x114010d8
- * // 6     | I2C2       |  TIMING2       |  0x0         |  0x19ec1595
+ * // 4     | USB_AON    |                |              |
+ * // 5     | I2C0       |  TIMING0       |  0x0         |  0x8b00cfe
+ * // 6     | I2C1       |  TIMING1       |  0x0         |  0x114010d8
+ * // 7     | I2C2       |  TIMING2       |  0x0         |  0x19ec1595
  *
  * 'test register' is a rw type register under each peripheral device.
- * During the test, these registers are programmed with arbitrary values. ('prgm
- * value') when sw resets are asserted, those values are updated to reset value.
- * In each round, the rstmgr asserts reset to each peripheral device and
- * each test register value is compared with the expected reset value.
+ * These registers are programmed with arbitrary values ('prgm value') before
+ * resetting each peripheral, and the expectation is that when reset is
+ * asserted the register value is set to its reset value. This test has
+ * multiple rounds, one per peripheral.
  */
 
 #define MAKE_INIT_FUNC(dif_)                                             \
@@ -269,6 +272,12 @@ bool test_main(void) {
   dif_rstmgr_t rstmgr;
   CHECK_DIF_OK(dif_rstmgr_init(
       mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+
+  // For completeness reset USB_AON first, expecting no side-effects. The lame
+  // check is that the rest of the test goes through with no problem.
+  CHECK_DIF_OK(dif_rstmgr_software_reset(&rstmgr,
+                                         kTopEarlgreyResetManagerSwResetsUsbAon,
+                                         kDifRstmgrSoftwareReset));
 
   uint32_t reset_vals[ARRAYSIZE(kPeripherals)];
   for (size_t i = 0; i < ARRAYSIZE(kPeripherals); ++i) {

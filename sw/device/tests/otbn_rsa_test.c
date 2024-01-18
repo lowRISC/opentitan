@@ -6,7 +6,7 @@
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
-#include "sw/device/lib/testing/otbn_testutils.h"
+#include "sw/device/lib/testing/otbn_testutils_rsa.h"
 #include "sw/device/lib/testing/profile.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
@@ -67,20 +67,6 @@ static const bool kTestDecrypt = true;
  */
 static const bool kTestRsaGreater1k = false;
 
-OTBN_DECLARE_APP_SYMBOLS(rsa);
-OTBN_DECLARE_SYMBOL_ADDR(rsa, mode);
-OTBN_DECLARE_SYMBOL_ADDR(rsa, n_limbs);
-OTBN_DECLARE_SYMBOL_ADDR(rsa, inout);
-OTBN_DECLARE_SYMBOL_ADDR(rsa, modulus);
-OTBN_DECLARE_SYMBOL_ADDR(rsa, exp);
-
-static const otbn_app_t kOtbnAppRsa = OTBN_APP_T_INIT(rsa);
-static const otbn_addr_t kOtbnVarRsaMode = OTBN_ADDR_T_INIT(rsa, mode);
-static const otbn_addr_t kOtbnVarRsaNLimbs = OTBN_ADDR_T_INIT(rsa, n_limbs);
-static const otbn_addr_t kOtbnVarRsaInOut = OTBN_ADDR_T_INIT(rsa, inout);
-static const otbn_addr_t kOtbnVarRsaModulus = OTBN_ADDR_T_INIT(rsa, modulus);
-static const otbn_addr_t kOtbnVarRsaExp = OTBN_ADDR_T_INIT(rsa, exp);
-
 enum {
   kRsa512SizeBytes = 512 / 8,
   kRsa1024SizeBytes = 1024 / 8,
@@ -90,89 +76,6 @@ enum {
 };
 
 OTTF_DEFINE_TEST_CONFIG();
-
-/**
- * Encrypts a message with RSA.
- *
- * @param otbn The OTBN context object.
- * @param modulus The modulus (n).
- * @param in The plaintext message.
- * @param out The encrypted message.
- * @param size_bytes The size of all buffers in bytes, i.e. the key/modulus
- *                   length (i.e. 128 for RSA 1024). Valid range: 32..512 in
- *                   32 byte-steps (i.e. RSA 256 to RSA 4096).
- */
-static void rsa_encrypt(dif_otbn_t *otbn, const uint8_t *modulus,
-                        const uint8_t *in, uint8_t *out, size_t size_bytes) {
-  CHECK(otbn != NULL);
-  CHECK(size_bytes % 32 == 0);
-
-  uint32_t n_limbs = size_bytes / 32;
-  CHECK(n_limbs != 0 && n_limbs <= 16);
-
-  // Write input arguments.
-  uint32_t mode = 1;  // mode 1 => encrypt
-  CHECK_STATUS_OK(otbn_testutils_write_data(otbn, sizeof(uint32_t), &mode,
-                                            kOtbnVarRsaMode));
-  CHECK_STATUS_OK(otbn_testutils_write_data(otbn, sizeof(uint32_t), &n_limbs,
-                                            kOtbnVarRsaNLimbs));
-  CHECK_STATUS_OK(
-      otbn_testutils_write_data(otbn, size_bytes, modulus, kOtbnVarRsaModulus));
-  CHECK_STATUS_OK(
-      otbn_testutils_write_data(otbn, size_bytes, in, kOtbnVarRsaInOut));
-
-  // Call OTBN to perform operation, and wait for it to complete.
-  CHECK_STATUS_OK(otbn_testutils_execute(otbn));
-  CHECK_STATUS_OK(otbn_testutils_wait_for_done(otbn, kDifOtbnErrBitsNoError));
-
-  // Read back results.
-  CHECK_STATUS_OK(
-      otbn_testutils_read_data(otbn, size_bytes, kOtbnVarRsaInOut, out));
-}
-
-/**
- * Decrypts a message with RSA.
- *
- * @param otbn The OTBN context object.
- * @param modulus The modulus (n).
- * @param private_exponent The private exponent (d).
- * @param in The encrypted message.
- * @param out The decrypted (plaintext) message.
- * @param size_bytes The size of all buffers in bytes, i.e. the key/modulus
- *                   length (i.e. 128 for RSA 1024). Valid range: 32..512 in
- *                   32 byte-steps (i.e. RSA 256 to RSA 4096).
- */
-static void rsa_decrypt(dif_otbn_t *otbn, const uint8_t *modulus,
-                        const uint8_t *private_exponent, const uint8_t *in,
-                        uint8_t *out, size_t size_bytes) {
-  CHECK(otbn != NULL);
-  CHECK(size_bytes % 32 == 0);
-
-  // Limbs are 256b words.
-  uint32_t n_limbs = size_bytes / 32;
-  CHECK(n_limbs != 0 && n_limbs <= 16);
-
-  // Write input arguments.
-  uint32_t mode = 2;  // mode 2 => decrypt
-  CHECK_STATUS_OK(
-      otbn_testutils_write_data(otbn, sizeof(mode), &mode, kOtbnVarRsaMode));
-  CHECK_STATUS_OK(otbn_testutils_write_data(otbn, sizeof(n_limbs), &n_limbs,
-                                            kOtbnVarRsaNLimbs));
-  CHECK_STATUS_OK(
-      otbn_testutils_write_data(otbn, size_bytes, modulus, kOtbnVarRsaModulus));
-  CHECK_STATUS_OK(otbn_testutils_write_data(otbn, size_bytes, private_exponent,
-                                            kOtbnVarRsaExp));
-  CHECK_STATUS_OK(
-      otbn_testutils_write_data(otbn, size_bytes, in, kOtbnVarRsaInOut));
-
-  // Call OTBN to perform operation
-  CHECK_STATUS_OK(otbn_testutils_execute(otbn));
-  CHECK_STATUS_OK(otbn_testutils_wait_for_done(otbn, kDifOtbnErrBitsNoError));
-
-  // Read back results.
-  CHECK_STATUS_OK(
-      otbn_testutils_read_data(otbn, size_bytes, kOtbnVarRsaInOut, out));
-}
 
 /**
  * CHECK()s that the actual data matches the expected data.
@@ -218,13 +121,16 @@ static void rsa_roundtrip(uint32_t size_bytes, const uint8_t *modulus,
   uint64_t t_start = profile_start();
   CHECK_DIF_OK(
       dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), &otbn));
-  CHECK_STATUS_OK(otbn_testutils_load_app(&otbn, kOtbnAppRsa));
+  CHECK_STATUS_OK(otbn_testutils_rsa_load(&otbn));
   profile_end_and_print(t_start, "Initialization");
 
   // Encrypt
   LOG_INFO("Encrypting");
   t_start = profile_start();
-  rsa_encrypt(&otbn, modulus, in, out_encrypted, size_bytes);
+  CHECK_STATUS_OK(
+      otbn_testutils_rsa_modexp_f4_start(&otbn, modulus, in, size_bytes));
+  CHECK_STATUS_OK(
+      otbn_testutils_rsa_modexp_f4_finalize(&otbn, out_encrypted, size_bytes));
   check_data(out_encrypted, encrypted_expected, size_bytes);
   profile_end_and_print(t_start, "Encryption");
 
@@ -232,8 +138,10 @@ static void rsa_roundtrip(uint32_t size_bytes, const uint8_t *modulus,
     // Decrypt
     LOG_INFO("Decrypting");
     t_start = profile_start();
-    rsa_decrypt(&otbn, modulus, private_exponent, encrypted_expected,
-                out_decrypted, size_bytes);
+    CHECK_STATUS_OK(otbn_testutils_rsa_modexp_consttime_start(
+        &otbn, modulus, private_exponent, encrypted_expected, size_bytes));
+    CHECK_STATUS_OK(otbn_testutils_rsa_modexp_consttime_finalize(
+        &otbn, out_decrypted, size_bytes));
     check_data(out_decrypted, in, size_bytes);
     profile_end_and_print(t_start, "Decryption");
   }

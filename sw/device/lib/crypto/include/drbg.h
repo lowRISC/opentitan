@@ -28,7 +28,8 @@ extern "C" {
  * @param perso_string Pointer to personalization bitstring.
  * @return Result of the DRBG instantiate operation.
  */
-crypto_status_t otcrypto_drbg_instantiate(crypto_const_byte_buf_t perso_string);
+otcrypto_status_t otcrypto_drbg_instantiate(
+    otcrypto_const_byte_buf_t perso_string);
 
 /**
  * Reseeds the DRBG with fresh entropy.
@@ -39,7 +40,8 @@ crypto_status_t otcrypto_drbg_instantiate(crypto_const_byte_buf_t perso_string);
  * @param additional_input Pointer to the additional input for DRBG.
  * @return Result of the DRBG reseed operation.
  */
-crypto_status_t otcrypto_drbg_reseed(crypto_const_byte_buf_t additional_input);
+otcrypto_status_t otcrypto_drbg_reseed(
+    otcrypto_const_byte_buf_t additional_input);
 
 /**
  * Instantiates the DRBG system.
@@ -56,8 +58,8 @@ crypto_status_t otcrypto_drbg_reseed(crypto_const_byte_buf_t additional_input);
  * @param personalization_string Pointer to personalization bitstring.
  * @return Result of the DRBG manual instantiation.
  */
-crypto_status_t otcrypto_drbg_manual_instantiate(
-    crypto_const_byte_buf_t entropy, crypto_const_byte_buf_t perso_string);
+otcrypto_status_t otcrypto_drbg_manual_instantiate(
+    otcrypto_const_byte_buf_t entropy, otcrypto_const_byte_buf_t perso_string);
 
 /**
  * Reseeds the DRBG with fresh entropy.
@@ -70,8 +72,9 @@ crypto_status_t otcrypto_drbg_manual_instantiate(
  * @param additional_input Pointer to the additional input for DRBG.
  * @return Result of the manual DRBG reseed operation.
  */
-crypto_status_t otcrypto_drbg_manual_reseed(
-    crypto_const_byte_buf_t entropy, crypto_const_byte_buf_t additional_input);
+otcrypto_status_t otcrypto_drbg_manual_reseed(
+    otcrypto_const_byte_buf_t entropy,
+    otcrypto_const_byte_buf_t additional_input);
 
 /**
  * DRBG function for generating random bits.
@@ -91,8 +94,9 @@ crypto_status_t otcrypto_drbg_manual_reseed(
  * @param[out] drbg_output Pointer to the generated pseudo random bits.
  * @return Result of the DRBG generate operation.
  */
-crypto_status_t otcrypto_drbg_generate(crypto_const_byte_buf_t additional_input,
-                                       crypto_word32_buf_t *drbg_output);
+otcrypto_status_t otcrypto_drbg_generate(
+    otcrypto_const_byte_buf_t additional_input,
+    otcrypto_word32_buf_t *drbg_output);
 
 /**
  * DRBG function for generating random bits.
@@ -112,15 +116,16 @@ crypto_status_t otcrypto_drbg_generate(crypto_const_byte_buf_t additional_input,
  * @param[out] drbg_output Pointer to the generated pseudo random bits.
  * @return Result of the DRBG generate operation.
  */
-crypto_status_t otcrypto_drbg_manual_generate(
-    crypto_const_byte_buf_t additional_input, crypto_word32_buf_t *drbg_output);
+otcrypto_status_t otcrypto_drbg_manual_generate(
+    otcrypto_const_byte_buf_t additional_input,
+    otcrypto_word32_buf_t *drbg_output);
 
 /**
  * Uninstantiates DRBG and clears the context.
  *
  * @return Result of the DRBG uninstantiate operation.
  */
-crypto_status_t otcrypto_drbg_uninstantiate(void);
+otcrypto_status_t otcrypto_drbg_uninstantiate(void);
 
 #ifdef __cplusplus
 }  // extern "C"

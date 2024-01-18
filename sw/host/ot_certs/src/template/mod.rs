@@ -34,13 +34,13 @@
 use anyhow::Result;
 use num_bigint_dig::BigUint;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use serde_with::{serde_as, As, DeserializeAs, Same, SerializeAs};
-use std::{collections::HashMap, marker::PhantomData};
+use std::collections::HashMap;
 
-mod hjson;
+pub mod subst;
+
+use crate::template::subst::{ConvertValue, SubstValue};
 
 /// Full template file, including variable declarations and certificate spec.
-#[serde_as]
 #[derive(Clone, Debug, Deserialize, PartialEq, Eq, Serialize)]
 pub struct Template {
     /// Name of the certificate.
@@ -52,11 +52,9 @@ pub struct Template {
 }
 
 /// Certificate specification.
-#[serde_as]
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
 pub struct Certificate {
     /// X509 certificate's serial number
-    #[serde_as(as = "Value<hjson::BigUint>")]
     pub serial_number: Value<BigUint>,
     /// X509 certificate's issuer.
     pub issuer: HashMap<AttributeType, Value<String>>,
@@ -65,10 +63,8 @@ pub struct Certificate {
     /// X509 certificate's public key.
     pub subject_public_key_info: SubjectPublicKeyInfo,
     /// X509 certificate's authority key identifier.
-    #[serde_as(as = "Value<hjson::HexString>")]
     pub authority_key_identifier: Value<Vec<u8>>,
     /// X509 certificate's public key identifier.
-    #[serde_as(as = "Value<hjson::HexString>")]
     pub subject_key_identifier: Value<Vec<u8>>,
     /// DICE TCB model.
     pub model: Option<Value<String>>,
@@ -77,10 +73,8 @@ pub struct Certificate {
     /// DICE TCB version.
     pub version: Option<Value<String>>,
     /// DICE TCB security version number.
-    #[serde_as(as = "Option<Value<hjson::BigUint>>")]
     pub svn: Option<Value<BigUint>>,
     /// DICE TCB layer.
-    #[serde_as(as = "Option<Value<hjson::BigUint>>")]
     pub layer: Option<Value<BigUint>>,
     /// DICE TCB firmware IDs.
     pub fw_ids: Option<Vec<FirmwareId>>,
@@ -108,7 +102,7 @@ pub enum AttributeType {
 }
 
 /// Value which may either be a variable name or literal.
-#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Value<T> {
     /// This value will be populated on the device when variables are set.
     Variable(Variable),
@@ -161,100 +155,73 @@ impl<T> Value<T> {
     }
 }
 
-// Manual implementation of the deserializer since error messages for untagged
-// enumerations are really terrible.
-impl<'de, T, U> DeserializeAs<'de, Value<T>> for Value<U>
-where
-    U: DeserializeAs<'de, T> + hjson::DeserializeAsHelpMsg<T>,
-{
-    fn deserialize_as<D>(deserializer: D) -> Result<Value<T>, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        // This is a horrible hack: we redefine a local type where T is now instantiated
-        // and we derive a derserializer using serde but using serde with to override the
-        // deserialize for T so that we can combine with SerializeAs. Since this is a local
-        // type with outer generic types, we need to specify them in the type definition,
-        // but U is not used so we need a phantom data to appease the compiler. We further
-        // need to recall serde that there is a type bound on U.
-        //
-        // FIXME: this works but the error message of serde is still terrible. It might be worth
-        // trying to replacing this with serde_as::PickFirst but this requires more boiler plate.
-        #[derive(Deserialize)]
-        #[serde(bound = "U: DeserializeAs<'de, T> + hjson::DeserializeAsHelpMsg<T>")]
-        #[serde(untagged)]
-        pub enum LocalValue<U, T> {
-            Variable {
-                var: String,
-                convert: Option<Conversion>,
-                #[serde(skip)]
-                _phantom: std::marker::PhantomData<U>,
-            },
-            #[serde(with = "As::<U>")]
-            Literal(T),
-        }
-        match LocalValue::<U, T>::deserialize(deserializer) {
-            Ok(val) => match val {
-                LocalValue::Literal(x) => Ok(Value::<T>::Literal(x)),
-                LocalValue::Variable { var, convert, .. } => {
-                    Ok(Value::<T>::Variable(Variable { name: var, convert }))
-                }
-            },
-            Err(_) => {
-                let msg = format!("could not parse value: expected either {} or a variable (use the syntax {{var: \"name\"}}",
-                                  U::help_msg());
-                let example = format!("for example: {}, or {{var: \"my_variabla\"}}", U::example());
-                Err(serde::de::Error::custom(format!("{}\n{}", msg, example)))
-            }
-        }
-    }
-}
-
-// Manual implementation for serializer.
-impl<T, U> SerializeAs<Value<T>> for Value<U>
-where
-    U: SerializeAs<T>,
-{
-    fn serialize_as<'a, S>(val: &'a Value<T>, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        #[derive(Serialize)]
-        #[serde(bound = "U: SerializeAs<T>")]
-        #[serde(untagged)]
-        pub enum LocalValue<'a, U, T> {
-            Variable {
-                var: &'a str,
-                convert: Option<Conversion>,
-                #[serde(skip)]
-                _phantom: std::marker::PhantomData<U>,
-            },
-            #[serde(with = "As::<U>")]
-            Literal(&'a T),
-        }
-        let local_val: LocalValue<'a, U, T> = match val {
-            Value::Literal(x) => LocalValue::Literal(x),
-            Value::Variable(Variable { name, convert }) => LocalValue::Variable {
-                var: name,
-                convert: *convert,
-                _phantom: PhantomData,
-            },
-        };
-        local_val.serialize(serializer)
-    }
-}
-
-// Convenience implementation to avoid using
-// `serde_as(as = "Same<_>)` everywhere.
+// Manual implementation of the deserializer for Value<T> to call into `subst` that
+// handles the parsing.
 impl<'de, T> Deserialize<'de> for Value<T>
 where
-    T: Deserialize<'de> + hjson::DeserializeAsHelpMsg<T>,
+    T: Deserialize<'de>,
+    SubstValue: ConvertValue<T>,
 {
     fn deserialize<D>(deserializer: D) -> Result<Value<T>, D::Error>
     where
         D: Deserializer<'de>,
     {
-        As::<Value<Same>>::deserialize(deserializer)
+        #[derive(Deserialize)]
+        #[serde(untagged)]
+        pub enum LocalValue {
+            Variable {
+                var: String,
+                convert: Option<Conversion>,
+            },
+            Literal(SubstValue),
+        }
+        match LocalValue::deserialize(deserializer) {
+            Ok(val) => match val {
+                LocalValue::Literal(raw_val) => {
+                    let val = raw_val.convert(&None).map_err(serde::de::Error::custom)?;
+                    Ok(Value::<T>::Literal(val))
+                }
+                LocalValue::Variable { var, convert, .. } => {
+                    Ok(Value::<T>::Variable(Variable { name: var, convert }))
+                }
+            },
+            Err(_) => {
+                let msg = "could not parse value: expected either a literal (string, integer or array of bytes) or a variable (use the syntax {{var: \"name\"}}";
+                Err(serde::de::Error::custom(msg))
+            }
+        }
+    }
+}
+
+// Manual implementation of the serializer for Value<T> to call into `subst` that
+// handles the serializing.
+impl<T> Serialize for Value<T>
+where
+    SubstValue: ConvertValue<T>,
+{
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        #[derive(Serialize)]
+        #[serde(untagged)]
+        pub enum LocalValue {
+            Variable {
+                var: String,
+                convert: Option<Conversion>,
+            },
+            Literal(SubstValue),
+        }
+        let res = match self {
+            Value::Variable(Variable { name, convert }) => LocalValue::Variable {
+                var: name.clone(),
+                convert: *convert,
+            },
+            Value::Literal(x) => {
+                LocalValue::Literal(SubstValue::unconvert(x).map_err(serde::ser::Error::custom)?)
+            }
+        };
+        res.serialize(serializer)
     }
 }
 
@@ -282,12 +249,9 @@ pub enum Signature {
 ///
 /// The signature consists of two integers "r" and "s".
 /// See X9.62
-#[serde_as]
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
 pub struct EcdsaSignature {
-    #[serde_as(as = "Value<hjson::BigUint>")]
     pub r: Value<BigUint>,
-    #[serde_as(as = "Value<hjson::BigUint>")]
     pub s: Value<BigUint>,
 }
 
@@ -307,12 +271,9 @@ pub struct EcPublicKeyInfo {
 
 /// Representation of an elliptic curve public key in uncompressed
 /// form.
-#[serde_as]
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
 pub struct EcPublicKey {
-    #[serde_as(as = "Value<hjson::BigUint>")]
     pub x: Value<BigUint>,
-    #[serde_as(as = "Value<hjson::BigUint>")]
     pub y: Value<BigUint>,
 }
 
@@ -333,13 +294,11 @@ pub struct Flags {
 }
 
 /// Firmware ID (fwid) field.
-#[serde_as]
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
 pub struct FirmwareId {
     /// Algorithm used for the has of the firmware.
     pub hash_algorithm: HashAlgorithm,
     /// Raw bytes of the hashed firmware.
-    #[serde_as(as = "Value<hjson::HexString>")]
     pub digest: Value<Vec<u8>>,
 }
 

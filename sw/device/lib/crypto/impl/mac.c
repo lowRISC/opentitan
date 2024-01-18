@@ -5,6 +5,7 @@
 #include "sw/device/lib/crypto/include/mac.h"
 
 #include "sw/device/lib/base/hardened_memory.h"
+#include "sw/device/lib/crypto/drivers/hmac.h"
 #include "sw/device/lib/crypto/drivers/kmac.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
@@ -17,23 +18,23 @@
 #define MODULE_ID MAKE_MODULE_ID('m', 'a', 'c')
 
 OT_WARN_UNUSED_RESULT
-crypto_status_t otcrypto_hmac(const crypto_blinded_key_t *key,
-                              crypto_const_byte_buf_t input_message,
-                              hash_mode_t hash_mode, crypto_word32_buf_t *tag) {
+otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
+                                otcrypto_const_byte_buf_t input_message,
+                                otcrypto_word32_buf_t *tag) {
   // Compute HMAC using the streaming API.
-  hmac_context_t ctx;
-  HARDENED_TRY(otcrypto_hmac_init(&ctx, key, hash_mode));
+  otcrypto_hmac_context_t ctx;
+  HARDENED_TRY(otcrypto_hmac_init(&ctx, key));
   HARDENED_TRY(otcrypto_hmac_update(&ctx, input_message));
   return otcrypto_hmac_final(&ctx, tag);
 }
 
 OT_WARN_UNUSED_RESULT
-crypto_status_t otcrypto_kmac(const crypto_blinded_key_t *key,
-                              crypto_const_byte_buf_t input_message,
-                              kmac_mode_t kmac_mode,
-                              crypto_const_byte_buf_t customization_string,
-                              size_t required_output_len,
-                              crypto_word32_buf_t *tag) {
+otcrypto_status_t otcrypto_kmac(const otcrypto_blinded_key_t *key,
+                                otcrypto_const_byte_buf_t input_message,
+                                otcrypto_kmac_mode_t kmac_mode,
+                                otcrypto_const_byte_buf_t customization_string,
+                                size_t required_output_len,
+                                otcrypto_word32_buf_t *tag) {
   // TODO (#16410) Revisit/complete error checks
 
   // Check for null pointers.
@@ -77,9 +78,9 @@ crypto_status_t otcrypto_kmac(const crypto_blinded_key_t *key,
   kmac_key.len = key_len;
 
   switch (kmac_mode) {
-    case kMacModeKmac128:
+    case kOtcryptoKmacModeKmac128:
       // Check `key_mode` matches `mac_mode`
-      if (key->config.key_mode != kKeyModeKmac128) {
+      if (key->config.key_mode != kOtcryptoKeyModeKmac128) {
         return OTCRYPTO_BAD_ARGS;
       }
       HARDENED_TRY(kmac_kmac_128(&kmac_key, input_message.data,
@@ -87,9 +88,9 @@ crypto_status_t otcrypto_kmac(const crypto_blinded_key_t *key,
                                  customization_string.len, tag->data,
                                  tag->len));
       break;
-    case kMacModeKmac256:
+    case kOtcryptoKmacModeKmac256:
       // Check `key_mode` matches `mac_mode`
-      if (key->config.key_mode != kKeyModeKmac256) {
+      if (key->config.key_mode != kOtcryptoKeyModeKmac256) {
         return OTCRYPTO_BAD_ARGS;
       }
 
@@ -105,9 +106,8 @@ crypto_status_t otcrypto_kmac(const crypto_blinded_key_t *key,
   return OTCRYPTO_OK;
 }
 
-crypto_status_t otcrypto_hmac_init(hmac_context_t *ctx,
-                                   const crypto_blinded_key_t *key,
-                                   hash_mode_t hash_mode) {
+otcrypto_status_t otcrypto_hmac_init(otcrypto_hmac_context_t *ctx,
+                                     const otcrypto_blinded_key_t *key) {
   if (ctx == NULL || key == NULL || key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -115,7 +115,7 @@ crypto_status_t otcrypto_hmac_init(hmac_context_t *ctx,
     // TODO(#15590): Add support for sideloaded keys via a custom OTBN program.
     return OTCRYPTO_NOT_IMPLEMENTED;
   }
-  if (key->config.security_level != kSecurityLevelLow) {
+  if (key->config.security_level != kOtcryptoKeySecurityLevelLow) {
     // TODO: Harden SHA2 implementations.
     return OTCRYPTO_NOT_IMPLEMENTED;
   }
@@ -124,27 +124,22 @@ crypto_status_t otcrypto_hmac_init(hmac_context_t *ctx,
   // digest and message block sizes.
   size_t digest_words = 0;
   size_t message_block_words = 0;
+  otcrypto_hash_mode_t hash_mode;
   switch (key->config.key_mode) {
-    case kKeyModeHmacSha256:
-      if (hash_mode != kHashModeSha256) {
-        return OTCRYPTO_BAD_ARGS;
-      }
+    case kOtcryptoKeyModeHmacSha256:
+      hash_mode = kOtcryptoHashModeSha256;
       digest_words = kSha256DigestWords;
       message_block_words = kSha256MessageBlockWords;
       break;
-    case kKeyModeHmacSha384:
-      if (hash_mode != kHashModeSha384) {
-        return OTCRYPTO_BAD_ARGS;
-      }
+    case kOtcryptoKeyModeHmacSha384:
+      hash_mode = kOtcryptoHashModeSha384;
       digest_words = kSha384DigestWords;
       // Since SHA-512 and SHA-384 have the same core, they use the same
       // message block size.
       message_block_words = kSha512MessageBlockWords;
       break;
-    case kKeyModeHmacSha512:
-      if (hash_mode != kHashModeSha512) {
-        return OTCRYPTO_BAD_ARGS;
-      }
+    case kOtcryptoKeyModeHmacSha512:
+      hash_mode = kOtcryptoHashModeSha512;
       digest_words = kSha512DigestWords;
       message_block_words = kSha512MessageBlockWords;
       break;
@@ -174,10 +169,7 @@ crypto_status_t otcrypto_hmac_init(hmac_context_t *ctx,
   // Initialize the key block, K0. See FIPS 198-1, section 4.
   uint32_t k0[message_block_words];
   memset(k0, 0, sizeof(k0));
-  if (key->config.key_length < (digest_words * sizeof(uint32_t))) {
-    // Key is too short.
-    return OTCRYPTO_BAD_ARGS;
-  } else if (key->config.key_length <= message_block_words * sizeof(uint32_t)) {
+  if (key->config.key_length <= message_block_words * sizeof(uint32_t)) {
     // If the key fits into the message block size, we just need to copy it
     // into the first part of K0.
     hardened_memcpy(k0, unmasked_key, ARRAYSIZE(unmasked_key));
@@ -193,13 +185,13 @@ crypto_status_t otcrypto_hmac_init(hmac_context_t *ctx,
   } else {
     // If the key is longer than the hash function block size, we need to hash
     // it and write the digest into the start of K0.
-    hash_digest_t key_digest = {
+    otcrypto_hash_digest_t key_digest = {
         .len = digest_words,
         .data = k0,
         .mode = hash_mode,
     };
     HARDENED_TRY(otcrypto_hash(
-        (crypto_const_byte_buf_t){
+        (otcrypto_const_byte_buf_t){
             .len = key->config.key_length,
             .data = (unsigned char *)unmasked_key,
         },
@@ -222,19 +214,20 @@ crypto_status_t otcrypto_hmac_init(hmac_context_t *ctx,
   HARDENED_TRY(otcrypto_hash_init(&ctx->inner, hash_mode));
   HARDENED_TRY(otcrypto_hash_update(
       &ctx->inner,
-      (crypto_const_byte_buf_t){.len = sizeof(inner_block),
-                                .data = (unsigned char *)inner_block}));
+      (otcrypto_const_byte_buf_t){.len = sizeof(inner_block),
+                                  .data = (unsigned char *)inner_block}));
 
   // Start computing outer hash = H(K0 ^ opad || inner).
   HARDENED_TRY(otcrypto_hash_init(&ctx->outer, hash_mode));
   return otcrypto_hash_update(
       &ctx->outer,
-      (crypto_const_byte_buf_t){.len = sizeof(outer_block),
-                                .data = (unsigned char *)outer_block});
+      (otcrypto_const_byte_buf_t){.len = sizeof(outer_block),
+                                  .data = (unsigned char *)outer_block});
 }
 
-crypto_status_t otcrypto_hmac_update(hmac_context_t *const ctx,
-                                     crypto_const_byte_buf_t input_message) {
+otcrypto_status_t otcrypto_hmac_update(
+    otcrypto_hmac_context_t *const ctx,
+    otcrypto_const_byte_buf_t input_message) {
   if (ctx == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -243,14 +236,14 @@ crypto_status_t otcrypto_hmac_update(hmac_context_t *const ctx,
   return otcrypto_hash_update(&ctx->inner, input_message);
 }
 
-crypto_status_t otcrypto_hmac_final(hmac_context_t *const ctx,
-                                    crypto_word32_buf_t *tag) {
+otcrypto_status_t otcrypto_hmac_final(otcrypto_hmac_context_t *const ctx,
+                                      otcrypto_word32_buf_t *tag) {
   if (ctx == NULL || tag == NULL || tag->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
   // Create digest buffer that points to the tag.
-  hash_digest_t digest_buf = {
+  otcrypto_hash_digest_t digest_buf = {
       .mode = ctx->inner.mode,
       .len = tag->len,
       .data = tag->data,
@@ -264,8 +257,8 @@ crypto_status_t otcrypto_hmac_final(hmac_context_t *const ctx,
   //    = H(K0 ^ opad || H(K0 ^ ipad || message)).
   HARDENED_TRY(otcrypto_hash_update(
       &ctx->outer,
-      (crypto_const_byte_buf_t){.len = sizeof(uint32_t) * tag->len,
-                                .data = (unsigned char *)tag->data}));
+      (otcrypto_const_byte_buf_t){.len = sizeof(uint32_t) * tag->len,
+                                  .data = (unsigned char *)tag->data}));
 
   return otcrypto_hash_final(&ctx->outer, &digest_buf);
 }

@@ -23,9 +23,9 @@ typedef struct aes_test {
   // IV data (always 16 bytes).
   const uint32_t *iv;
   // Padding mode.
-  aes_padding_t padding;
+  otcrypto_aes_padding_t padding;
   // Block cipher mode.
-  block_cipher_mode_t mode;
+  otcrypto_aes_mode_t mode;
   // Expected ciphertext (length = same as #blocks in plaintext).
   const uint32_t *exp_ciphertext;
 } aes_test_t;
@@ -107,8 +107,8 @@ static const aes_test_t kAesTests[] = {
         .iv = kIv,
         .key = kKey128,
         .key_len = sizeof(kKey128),
-        .padding = kAesPaddingPkcs7,
-        .mode = kBlockCipherModeEcb,
+        .padding = kOtcryptoAesPaddingPkcs7,
+        .mode = kOtcryptoAesModeEcb,
         .exp_ciphertext = kEcb128Pkcs7,
     },
     // CBC, 192-bit key, ISO9797-2 padding
@@ -118,8 +118,8 @@ static const aes_test_t kAesTests[] = {
         .iv = kIv,
         .key = kKey192,
         .key_len = sizeof(kKey192),
-        .padding = kAesPaddingIso9797M2,
-        .mode = kBlockCipherModeCbc,
+        .padding = kOtcryptoAesPaddingIso9797M2,
+        .mode = kOtcryptoAesModeCbc,
         .exp_ciphertext = kCbc192Iso9797M2,
     },
     // CFB, 256-bit key, no padding
@@ -129,8 +129,8 @@ static const aes_test_t kAesTests[] = {
         .iv = kIv,
         .key = kKey256,
         .key_len = sizeof(kKey256),
-        .padding = kAesPaddingNull,
-        .mode = kBlockCipherModeCfb,
+        .padding = kOtcryptoAesPaddingNull,
+        .mode = kOtcryptoAesModeCfb,
         .exp_ciphertext = kCfb256Null,
     },
     // OFB, 192-bit key, PKCS#7 padding
@@ -140,8 +140,8 @@ static const aes_test_t kAesTests[] = {
         .iv = kIv,
         .key = kKey192,
         .key_len = sizeof(kKey192),
-        .padding = kAesPaddingPkcs7,
-        .mode = kBlockCipherModeOfb,
+        .padding = kOtcryptoAesPaddingPkcs7,
+        .mode = kOtcryptoAesModeOfb,
         .exp_ciphertext = kOfb192Pkcs7,
     },
     // CTR, 256-bit key, ISO9797-2 padding
@@ -151,8 +151,8 @@ static const aes_test_t kAesTests[] = {
         .iv = kIv,
         .key = kKey256,
         .key_len = sizeof(kKey256),
-        .padding = kAesPaddingIso9797M2,
-        .mode = kBlockCipherModeCtr,
+        .padding = kOtcryptoAesPaddingIso9797M2,
+        .mode = kOtcryptoAesModeCtr,
         .exp_ciphertext = kCtr256Iso9797M2,
     },
 };

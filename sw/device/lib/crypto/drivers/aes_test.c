@@ -5,6 +5,7 @@
 #include "sw/device/lib/crypto/drivers/aes.h"
 
 #include "sw/device/lib/base/memory.h"
+#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -113,6 +114,7 @@ static status_t run_aes_test(void) {
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
+  CHECK_STATUS_OK(entropy_complex_init());
   CHECK_STATUS_OK(run_aes_test());
 
   return true;

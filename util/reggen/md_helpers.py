@@ -100,7 +100,7 @@ def sanitise_for_md_table(s: str) -> str:
     - new lines, which are converted to spaces.
     - vertical bars, which are escaped.
     '''
-    s = re.sub(r"\n", " ", s)
+    s = re.sub(r"\n+ *", " ", s)
     s = re.sub(r"\|", r"\\\|", s)
     return s
 

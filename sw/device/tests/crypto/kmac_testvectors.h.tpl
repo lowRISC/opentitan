@@ -31,11 +31,11 @@ typedef struct kmac_test_vector {
   char* vector_identifier;
   kmac_test_operation_t test_operation;
   size_t security_strength;
-  crypto_blinded_key_t key;
-  crypto_const_byte_buf_t input_msg;
-  crypto_const_byte_buf_t func_name;
-  crypto_const_byte_buf_t cust_str;
-  crypto_const_byte_buf_t digest;
+  otcrypto_blinded_key_t key;
+  otcrypto_const_byte_buf_t input_msg;
+  otcrypto_const_byte_buf_t func_name;
+  otcrypto_const_byte_buf_t cust_str;
+  otcrypto_const_byte_buf_t digest;
 } kmac_test_vector_t;
 
 static kmac_test_vector_t kKmacTestVectors[${len(tests)}] = {
@@ -47,7 +47,7 @@ static kmac_test_vector_t kKmacTestVectors[${len(tests)}] = {
   % if "key" in t:
         .key = {
             .config = {
-                .key_mode = ${"kKeyModeKmac" + str(t["security_str"])},
+                .key_mode = ${"kOtcryptoKeyModeKmac" + str(t["security_str"])},
                 .key_length = ${t["key_len"]},
                 .hw_backed = kHardenedBoolFalse,
             },

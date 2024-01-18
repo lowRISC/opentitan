@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/base/macros.h"
+#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/aes_gcm/aes_gcm.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
@@ -37,7 +38,8 @@ static status_t test_decrypt_timing(void) {
   current_test->tag[0]++;
   uint32_t cycles_invalid1;
   hardened_bool_t valid;
-  TRY(aes_gcm_testutils_decrypt(current_test, &valid, &cycles_invalid1));
+  TRY(aes_gcm_testutils_decrypt(current_test, &valid, /*streaming=*/false,
+                                &cycles_invalid1));
   TRY_CHECK(valid == kHardenedBoolFalse);
   current_test->tag[0]--;
   LOG_INFO("First invalid tag: %d cycles", cycles_invalid1);
@@ -45,7 +47,8 @@ static status_t test_decrypt_timing(void) {
   // Call AES-GCM decrypt with an incorrect tag (middle word wrong).
   current_test->tag[tag_num_words / 2]++;
   uint32_t cycles_invalid2;
-  TRY(aes_gcm_testutils_decrypt(current_test, &valid, &cycles_invalid2));
+  TRY(aes_gcm_testutils_decrypt(current_test, &valid, /*streaming=*/false,
+                                &cycles_invalid2));
   TRY_CHECK(valid == kHardenedBoolFalse);
   current_test->tag[tag_num_words / 2]--;
   LOG_INFO("Second invalid tag: %d cycles", cycles_invalid2);
@@ -53,7 +56,8 @@ static status_t test_decrypt_timing(void) {
   // Call AES-GCM decrypt with an incorrect tag (last word wrong).
   current_test->tag[tag_num_words - 1]++;
   uint32_t cycles_invalid3;
-  TRY(aes_gcm_testutils_decrypt(current_test, &valid, &cycles_invalid3));
+  TRY(aes_gcm_testutils_decrypt(current_test, &valid, /*streaming=*/false,
+                                &cycles_invalid3));
   TRY_CHECK(valid == kHardenedBoolFalse);
   current_test->tag[tag_num_words - 1]--;
   LOG_INFO("Third invalid tag: %d cycles", cycles_invalid3);
@@ -71,6 +75,7 @@ static status_t test_decrypt_timing(void) {
 OTTF_DEFINE_TEST_CONFIG();
 bool test_main(void) {
   status_t result;
+  CHECK_STATUS_OK(entropy_complex_init());
   for (size_t i = 0; i < ARRAYSIZE(kAesGcmTestvectors); i++) {
     current_test = &kAesGcmTestvectors[i];
     LOG_INFO("Key length = %d", current_test->key_len * sizeof(uint32_t));

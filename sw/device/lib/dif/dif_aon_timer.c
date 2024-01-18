@@ -116,6 +116,17 @@ dif_result_t dif_aon_timer_wakeup_is_enabled(const dif_aon_timer_t *aon,
   return kDifOk;
 }
 
+dif_result_t dif_aon_timer_get_wakeup_cause(const dif_aon_timer_t *aon,
+                                            bool *cause) {
+  if (aon == NULL || cause == NULL) {
+    return kDifBadArg;
+  }
+  uint32_t reg =
+      mmio_region_read32(aon->base_addr, AON_TIMER_WKUP_CAUSE_REG_OFFSET);
+  *cause = bitfield_bit32_read(reg, AON_TIMER_WKUP_CAUSE_CAUSE_BIT);
+  return kDifOk;
+}
+
 dif_result_t dif_aon_timer_clear_wakeup_cause(const dif_aon_timer_t *aon) {
   if (aon == NULL) {
     return kDifBadArg;

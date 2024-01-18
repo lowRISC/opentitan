@@ -19,50 +19,50 @@ using ::testing::ElementsAreArray;
 #define EXPECT_NOT_OK(status_) EXPECT_NE(status_.value, OTCRYPTO_OK.value)
 
 // Key configuration for testing (128-bit AES-CTR software key).
-constexpr crypto_key_config_t kConfigCtr128 = {
-    .version = kCryptoLibVersion1,
-    .key_mode = kKeyModeAesCtr,
+constexpr otcrypto_key_config_t kConfigCtr128 = {
+    .version = kOtcryptoLibVersion1,
+    .key_mode = kOtcryptoKeyModeAesCtr,
     .key_length = 16,
     .hw_backed = kHardenedBoolFalse,
-    .security_level = kSecurityLevelLow,
+    .security_level = kOtcryptoKeySecurityLevelLow,
 };
 
 // Key configuration for testing (31-byte key; not valid but helps test for
 // issues with keys that don't have an even word size).
-constexpr crypto_key_config_t kConfigOddBytes = {
-    .version = kCryptoLibVersion1,
-    .key_mode = kKeyModeAesCtr,
+constexpr otcrypto_key_config_t kConfigOddBytes = {
+    .version = kOtcryptoLibVersion1,
+    .key_mode = kOtcryptoKeyModeAesCtr,
     .key_length = 31,
     .hw_backed = kHardenedBoolFalse,
-    .security_level = kSecurityLevelLow,
+    .security_level = kOtcryptoKeySecurityLevelLow,
 };
 
 // Key configuration for testing (key with a huge number of bytes; not valid
 // but helps test for overflow).
-constexpr crypto_key_config_t kConfigHuge = {
-    .version = kCryptoLibVersion1,
-    .key_mode = kKeyModeAesCtr,
+constexpr otcrypto_key_config_t kConfigHuge = {
+    .version = kOtcryptoLibVersion1,
+    .key_mode = kOtcryptoKeyModeAesCtr,
     .key_length = SIZE_MAX,
     .hw_backed = kHardenedBoolFalse,
-    .security_level = kSecurityLevelLow,
+    .security_level = kOtcryptoKeySecurityLevelLow,
 };
 
 // Key configuration for testing (sideloaded AES-CTR key).
-constexpr crypto_key_config_t kConfigCtrSideloaded = {
-    .version = kCryptoLibVersion1,
-    .key_mode = kKeyModeAesCtr,
+constexpr otcrypto_key_config_t kConfigCtrSideloaded = {
+    .version = kOtcryptoLibVersion1,
+    .key_mode = kOtcryptoKeyModeAesCtr,
     .key_length = 16,
     .hw_backed = kHardenedBoolTrue,
-    .security_level = kSecurityLevelLow,
+    .security_level = kOtcryptoKeySecurityLevelLow,
 };
 
 // Key configuration for testing (sideloaded AES-OFB key).
-constexpr crypto_key_config_t kConfigOfbSideloaded = {
-    .version = kCryptoLibVersion1,
-    .key_mode = kKeyModeAesOfb,
+constexpr otcrypto_key_config_t kConfigOfbSideloaded = {
+    .version = kOtcryptoLibVersion1,
+    .key_mode = kOtcryptoKeyModeAesOfb,
     .key_length = 16,
     .hw_backed = kHardenedBoolTrue,
-    .security_level = kSecurityLevelLow,
+    .security_level = kOtcryptoKeySecurityLevelLow,
 };
 
 TEST(Keyblob, ShareNumWordsSimpleTest) {
@@ -141,7 +141,7 @@ TEST(Keyblob, FromToSharesNoop) {
                       keyblob);
 
   // Construct blinded key.
-  crypto_blinded_key_t key = {
+  otcrypto_blinded_key_t key = {
       .config = kConfigCtr128,
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,
@@ -179,7 +179,7 @@ TEST(Keyblob, FromKeyMaskDoesNotChangeKey) {
                                       kConfigCtr128, keyblob));
 
   // Construct blinded key.
-  crypto_blinded_key_t key = {
+  otcrypto_blinded_key_t key = {
       .config = kConfigCtr128,
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,
@@ -215,7 +215,7 @@ TEST(Keyblob, ToKeymgrDiversificationSimple) {
   }
 
   // Construct blinded key.
-  crypto_blinded_key_t key = {
+  otcrypto_blinded_key_t key = {
       .config = kConfigCtrSideloaded,
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,
@@ -248,7 +248,7 @@ TEST(Keyblob, ToKeymgrDiversificationBadlength) {
   }
 
   // Construct blinded key.
-  crypto_blinded_key_t key = {
+  otcrypto_blinded_key_t key = {
       .config = kConfigCtrSideloaded,
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,
@@ -275,7 +275,7 @@ TEST(Keyblob, ToKeymgrDiversificationDifferentModes) {
   }
 
   // Construct blinded key for CTR mode.
-  crypto_blinded_key_t key1 = {
+  otcrypto_blinded_key_t key1 = {
       .config = kConfigCtrSideloaded,
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,
@@ -283,7 +283,7 @@ TEST(Keyblob, ToKeymgrDiversificationDifferentModes) {
   };
 
   // Construct blinded key for OFB mode.
-  crypto_blinded_key_t key2 = {
+  otcrypto_blinded_key_t key2 = {
       .config = kConfigOfbSideloaded,
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,
@@ -326,7 +326,7 @@ TEST(Keyblob, RemaskDoesNotChangeKey) {
                                       kConfigCtr128, keyblob));
 
   // Construct blinded key.
-  crypto_blinded_key_t key = {
+  otcrypto_blinded_key_t key = {
       .config = kConfigCtr128,
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,
@@ -370,7 +370,7 @@ TEST(Keyblob, RemaskWithZero) {
                                       kConfigCtr128, keyblob));
 
   // Construct blinded key.
-  crypto_blinded_key_t key = {
+  otcrypto_blinded_key_t key = {
       .config = kConfigCtr128,
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,

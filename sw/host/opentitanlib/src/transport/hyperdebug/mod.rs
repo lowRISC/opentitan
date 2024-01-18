@@ -47,6 +47,8 @@ pub use dfu::HyperdebugDfu;
 pub use servo_micro::ServoMicroFlavor;
 pub use ti50::Ti50Flavor;
 
+const UART_BAUD: u32 = 115200;
+
 /// Implementation of the Transport trait for HyperDebug based on the
 /// Nucleo-L552ZE-Q.
 pub struct Hyperdebug<T: Flavor> {
@@ -585,6 +587,7 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
                 }
                 let instance: Rc<dyn Uart> = Rc::new(SerialPortUart::open(
                     tty.to_str().ok_or(TransportError::UnicodePathError)?,
+                    UART_BAUD,
                 )?);
                 self.inner
                     .uarts

@@ -5,6 +5,8 @@
 ${gencmd}
 <%
 irq_peripheral_names = sorted({p.name for p in helper.irq_peripherals})
+has_csrng = "csrng" in irq_peripheral_names
+csrng_index = irq_peripheral_names.index("csrng") if has_csrng else None
 
 # For some rv_timer DIFs, tha hart argument follows the instance handle.
 def args(p):
@@ -13,10 +15,14 @@ def args(p):
 %>\
 #include <limits.h>
 
+// This test should avoid otp_ctrl interrupts in rom_ext, since the rom
+// extension configures CSR accesses to OTP and AST to become illegal.
+//
 // This test is getting too big so we need to split it up. To do so,
 // each peripheral is given an ID (according to their alphabetical order)
 // and we define TEST_MIN_IRQ_PERIPHERAL and TEST_MAX_IRQ_PERIPHERAL to
 // choose which ones are being tested.
+
 #ifndef TEST_MIN_IRQ_PERIPHERAL
 #define TEST_MIN_IRQ_PERIPHERAL 0
 #endif
@@ -25,6 +31,7 @@ def args(p):
 #define TEST_MAX_IRQ_PERIPHERAL ${len(irq_peripheral_names)}
 #endif
 
+#include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/base/mmio.h"
 % for n in sorted(irq_peripheral_names + ["rv_plic"]):
@@ -43,9 +50,15 @@ def args(p):
 <%
   i = irq_peripheral_names.index(p.name)
 %>\
+% if i == csrng_index:
+// TODO(lowrisc/opentitan#20747) Adjust csrng special handling once this is
+// fixed.
+static dif_${p.name}_t ${p.inst_name};
+% else:
 #if TEST_MIN_IRQ_PERIPHERAL <= ${i} && ${i} < TEST_MAX_IRQ_PERIPHERAL
 static dif_${p.name}_t ${p.inst_name};
 #endif
+% endif
 
 % endfor
 static dif_rv_plic_t plic;
@@ -74,6 +87,15 @@ static volatile dif_${n}_irq_t ${n}_irq_serviced;
 #endif
 
 % endfor
+
+% if has_csrng:
+#if TEST_MIN_IRQ_PERIPHERAL <= ${csrng_index} < TEST_MAX_IRQ_PERIPHERAL
+static volatile bool allow_csrng_irq = true;
+#else
+static volatile bool allow_csrng_irq = false;
+#endif
+% endif
+
 /**
  * Provides external IRQ handling for this test.
  *
@@ -93,45 +115,79 @@ void ottf_external_isr(uint32_t *exc_info) {
 
   top_${top["name"]}_plic_peripheral_t peripheral = (top_${top["name"]}_plic_peripheral_t)
       top_${top["name"]}_plic_interrupt_for_peripheral[plic_irq_id];
-  CHECK(peripheral == peripheral_expected,
-        "Interrupt from incorrect peripheral: exp = %d, obs = %d",
-        peripheral_expected, peripheral);
+% if has_csrng:
+  // TODO(lowrisc/opentitan#20747) Adjust code once this issue is fixed.
+  if (allow_csrng_irq && kBootStage == kBootStageOwner &&
+      peripheral != peripheral_expected &&
+      peripheral == kTop${top["name"].capitalize()}PlicPeripheralCsrng) {
+    dif_csrng_irq_t irq = (dif_csrng_irq_t)(
+        plic_irq_id -
+        (dif_rv_plic_irq_id_t)kTop${top["name"].capitalize()}PlicIrqIdCsrngCsCmdReqDone);
 
-  switch (peripheral) {
+    dif_csrng_irq_state_snapshot_t snapshot;
+    CHECK_DIF_OK(dif_csrng_irq_get_state(&csrng, &snapshot));
+    CHECK(snapshot == (dif_csrng_irq_state_snapshot_t)(1 << irq),
+          "Only csrng IRQ %d expected to fire. Actual interrupt status = %x",
+          irq, snapshot);
+
+    // TODO: Check Interrupt type then clear INTR_TEST if needed.
+    CHECK_DIF_OK(dif_csrng_irq_force(&csrng, irq, false));
+    CHECK_DIF_OK(dif_csrng_irq_acknowledge(&csrng, irq));
+% else:
+  if (false) {
+% endif
+  } else {
+    CHECK(peripheral == peripheral_expected,
+          "Interrupt from incorrect peripheral: exp = %d, obs = %d",
+          peripheral_expected, peripheral);
+
+    switch (peripheral) {
     % for p in helper.irq_peripherals:
 <%
   i = irq_peripheral_names.index(p.name)
 %>\
 #if TEST_MIN_IRQ_PERIPHERAL <= ${i} && ${i} < TEST_MAX_IRQ_PERIPHERAL
-    case ${p.plic_name}: {
-      dif_${p.name}_irq_t irq = (dif_${p.name}_irq_t)(
-          plic_irq_id -
-          (dif_rv_plic_irq_id_t)${p.plic_start_irq});
-      CHECK(irq == ${p.name}_irq_expected,
-            "Incorrect ${p.inst_name} IRQ triggered: exp = %d, obs = %d",
-            ${p.name}_irq_expected, irq);
-      ${p.name}_irq_serviced = irq;
+      case ${p.plic_name}: {
+        dif_${p.name}_irq_t irq = (dif_${p.name}_irq_t)(
+            plic_irq_id -
+            (dif_rv_plic_irq_id_t)${p.plic_start_irq});
+      % if i == csrng_index:
+        // This special handling of CSRNG is because it is configured
+        // to constantly generate interrupts. There may be better ways
+        // to configure the entropy complex so it is less noisy.
+        // TODO(lowrisc/opentitan#20747) Adjust code once this is fixed.
+        if (kBootStage != kBootStageOwner) {
+          CHECK(irq == ${p.name}_irq_expected,
+                "Incorrect ${p.inst_name} IRQ triggered: exp = %d, obs = %d",
+                ${p.name}_irq_expected, irq);
+        }
+      % else:
+        CHECK(irq == ${p.name}_irq_expected,
+              "Incorrect ${p.inst_name} IRQ triggered: exp = %d, obs = %d",
+              ${p.name}_irq_expected, irq);
+      % endif
+        ${p.name}_irq_serviced = irq;
 
-      dif_${p.name}_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_${p.name}_irq_get_state(${args(p)}, &snapshot));
-      CHECK(snapshot == (dif_${p.name}_irq_state_snapshot_t)(1 << irq),
-            "Only ${p.inst_name} IRQ %d expected to fire. Actual interrupt "
-            "status = %x",
-            irq, snapshot);
+        dif_${p.name}_irq_state_snapshot_t snapshot;
+        CHECK_DIF_OK(dif_${p.name}_irq_get_state(${args(p)}, &snapshot));
+        CHECK(snapshot == (dif_${p.name}_irq_state_snapshot_t)(1 << irq),
+              "Only ${p.inst_name} IRQ %d expected to fire. Actual interrupt "
+              "status = %x",
+              irq, snapshot);
 
-      // TODO: Check Interrupt type then clear INTR_TEST if needed.
-      CHECK_DIF_OK(dif_${p.name}_irq_force(&${p.inst_name}, irq, false));
-      CHECK_DIF_OK(dif_${p.name}_irq_acknowledge(&${p.inst_name}, irq));
-      break;
-    }
+        // TODO: Check Interrupt type then clear INTR_TEST if needed.
+        CHECK_DIF_OK(dif_${p.name}_irq_force(&${p.inst_name}, irq, false));
+        CHECK_DIF_OK(dif_${p.name}_irq_acknowledge(&${p.inst_name}, irq));
+        break;
+      }
 #endif
 
     % endfor
-    default:
-      LOG_FATAL("ISR is not implemented!");
-      test_status_set(kTestStatusFailed);
+      default:
+        LOG_FATAL("ISR is not implemented!");
+        test_status_set(kTestStatusFailed);
+    }
   }
-
   // Complete the IRQ at PLIC.
   CHECK_DIF_OK(dif_rv_plic_irq_complete(&plic, kHart, plic_irq_id));
 }
@@ -162,10 +218,20 @@ static void peripherals_init(void) {
 static void peripheral_irqs_clear(void) {
   % for p in helper.irq_peripherals:
 <%
+  indent = ""
   i = irq_peripheral_names.index(p.name)
 %>\
 #if TEST_MIN_IRQ_PERIPHERAL <= ${i} && ${i} < TEST_MAX_IRQ_PERIPHERAL
-  CHECK_DIF_OK(dif_${p.name}_irq_acknowledge_all(${args(p)}));
+  % if p.inst_name == "otp_ctrl":
+<%
+  indent = "  "
+%>\
+  if (kBootStage != kBootStageOwner) {
+  % endif
+  ${indent}CHECK_DIF_OK(dif_${p.name}_irq_acknowledge_all(${args(p)}));
+  % if p.inst_name == "otp_ctrl":
+  }
+  % endif
 #endif
 ${"" if loop.last else "\n"}\
   % endfor
@@ -202,9 +268,15 @@ static void peripheral_irqs_enable(void) {
   // from the logging facility.
   if (kDeviceType == kDeviceSimDV) {
   % endif
+  % if p.inst_name == "otp_ctrl":
+<%
+  indent = "  "
+%>\
+  if (kBootStage != kBootStageOwner) {
+  % endif
   ${indent}CHECK_DIF_OK(
   ${indent}    dif_${p.name}_irq_restore_all(${args(p)}, &${p.name}_irqs));
-  % if p.inst_name == "uart0":
+  % if p.inst_name == "uart0" or p.inst_name == "otp_ctrl":
   }
   % endif
 #endif
@@ -241,6 +313,14 @@ static void peripheral_irqs_trigger(void) {
   // non-DV setups.
   if (kDeviceType == kDeviceSimDV) {
   % endif
+  % if p.inst_name == "otp_ctrl":
+<%
+  indent = "  "
+%>\
+  // Skip OTP_CTRL in boot stage owner since ROM_EXT configures all accesses
+  // to OTP_CTRL and AST to be illegal.
+  if (kBootStage != kBootStageOwner) {
+  % endif
   ${indent}peripheral_expected = ${p.plic_name};
   ${indent}for (dif_${p.name}_irq_t irq = ${p.start_irq};
   ${indent}     irq <= ${p.end_irq}; ++irq) {
@@ -253,7 +333,7 @@ static void peripheral_irqs_trigger(void) {
   ${indent}  IBEX_SPIN_FOR(${p.name}_irq_serviced == irq, 1);
   ${indent}  LOG_INFO("IRQ %d from ${p.inst_name} is serviced.", irq);
   ${indent}}
-  % if p.inst_name == "uart0" or p.name == "aon_timer":
+  % if p.inst_name == "uart0" or p.name == "aon_timer" or p.name == "otp_ctrl":
   }
   % endif
 #endif

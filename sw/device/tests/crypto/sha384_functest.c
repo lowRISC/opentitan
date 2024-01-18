@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/hash.h"
 #include "sw/device/lib/runtime/log.h"
@@ -52,17 +53,17 @@ static const uint8_t kEmptyExpDigest[] = {
 status_t sha384_test(const unsigned char *msg, const size_t msg_len,
                      const uint8_t *expected_digest) {
   // Construct a buffer for the message.
-  crypto_const_byte_buf_t input_message = {
+  otcrypto_const_byte_buf_t input_message = {
       .data = msg,
       .len = msg_len,
   };
 
   // Allocate space for the computed digest.
   uint32_t actual_digest_data[384 / 32];
-  hash_digest_t actual_digest = {
+  otcrypto_hash_digest_t actual_digest = {
       .data = actual_digest_data,
       .len = ARRAYSIZE(actual_digest_data),
-      .mode = kHashModeSha384,
+      .mode = kOtcryptoHashModeSha384,
   };
   TRY(otcrypto_hash(input_message, &actual_digest));
 
@@ -78,14 +79,14 @@ status_t sha384_test(const unsigned char *msg, const size_t msg_len,
  */
 status_t sha384_streaming_test(const unsigned char *msg, size_t msg_len,
                                const uint8_t *expected_digest) {
-  hash_context_t ctx;
-  TRY(otcrypto_hash_init(&ctx, kHashModeSha384));
+  otcrypto_hash_context_t ctx;
+  TRY(otcrypto_hash_init(&ctx, kOtcryptoHashModeSha384));
 
   // Send the message 5 bytes at a time.
   while (msg_len > 0) {
     // Construct a buffer for the next update.
     size_t len = (msg_len <= 5) ? msg_len : 5;
-    crypto_const_byte_buf_t input_message = {
+    otcrypto_const_byte_buf_t input_message = {
         .data = msg,
         .len = len,
     };
@@ -96,10 +97,10 @@ status_t sha384_streaming_test(const unsigned char *msg, size_t msg_len,
 
   // Allocate space for the computed digest.
   uint32_t actual_digest_data[384 / 32];
-  hash_digest_t actual_digest = {
+  otcrypto_hash_digest_t actual_digest = {
       .data = actual_digest_data,
       .len = ARRAYSIZE(actual_digest_data),
-      .mode = kHashModeSha384,
+      .mode = kOtcryptoHashModeSha384,
   };
   TRY(otcrypto_hash_final(&ctx, &actual_digest));
 
@@ -134,6 +135,7 @@ static volatile status_t test_result;
 
 bool test_main(void) {
   test_result = OK_STATUS();
+  CHECK_STATUS_OK(entropy_complex_init());
   EXECUTE_TEST(test_result, empty_test);
   EXECUTE_TEST(test_result, one_block_test);
   EXECUTE_TEST(test_result, two_block_test);

@@ -10,13 +10,15 @@ rust_library(
     name = "ot_certs",
     srcs = [
         "src/asn1/builder.rs",
+        "src/asn1/codegen.rs",
         "src/asn1/der.rs",
         "src/asn1/dice_tcb.rs",
         "src/asn1/mod.rs",
         "src/asn1/x509.rs",
+        "src/codegen.rs",
         "src/lib.rs",
-        "src/template/hjson.rs",
         "src/template/mod.rs",
+        "src/template/subst.rs",
         "src/x509.rs",
         "src/x509/extension.rs",
     ],
@@ -27,6 +29,7 @@ rust_library(
         "@crate_index//:anyhow",
         "@crate_index//:asn1",
         "@crate_index//:deser-hjson",
+        "@crate_index//:heck",
         "@crate_index//:hex",
         "@crate_index//:log",
         "@crate_index//:memchr",
@@ -35,7 +38,7 @@ rust_library(
         "@crate_index//:openssl",
         "@crate_index//:rand",
         "@crate_index//:serde",
-        "@crate_index//:serde_with",
+        "@crate_index//:serde_json",
         "@crate_index//:strum",
         # We need those because they are not re-exported by openssl
         # This can be fixed when https://github.com/sfackler/rust-openssl/pull/2021

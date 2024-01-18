@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_ROM_EXT_KEYS_REAL_EARLGREY_Z0_SIVAL_1_H_
-#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_ROM_EXT_KEYS_REAL_EARLGREY_Z0_SIVAL_1_H_
+#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_ROM_EXT_SIVAL_KEYS_EARLGREY_Z0_SIVAL_1_H_
+#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_ROM_EXT_SIVAL_KEYS_EARLGREY_Z0_SIVAL_1_H_
 
 #define EARLGREY_Z0_SIVAL_1                                             \
   {                                                                     \
@@ -36,4 +36,4 @@
     },                                                                  \
   }
 
-#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_ROM_EXT_KEYS_REAL_EARLGREY_Z0_SIVAL_1_H_
+#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_ROM_EXT_SIVAL_KEYS_EARLGREY_Z0_SIVAL_1_H_

@@ -30,8 +30,8 @@ extern "C" {
  * - If the message is hashed with a SHAKE128 or SHAKE256 XOF, PSS padding will
  *   use the same XOF as the MGF, as described in FIPS 186-5.
  *
- * Values in this enum should match the top-level `rsa_padding` enum from
- * `sw/device/lib/crypto/include/rsa.h`.
+ * Values in this enum should match the top-level `otcrypto_rsa_padding` enum
+ * from `sw/device/lib/crypto/include/rsa.h`.
  */
 typedef enum rsa_signature_padding {
   // EMSA-PKCS1-v1_5 padding (RFC 8017, section 9.2).
@@ -55,7 +55,7 @@ typedef enum rsa_signature_padding {
 OT_WARN_UNUSED_RESULT
 status_t rsa_signature_generate_2048_start(
     const rsa_2048_private_key_t *private_key,
-    const hash_digest_t *message_digest,
+    const otcrypto_hash_digest_t *message_digest,
     const rsa_signature_padding_t padding_mode);
 
 /**
@@ -102,7 +102,7 @@ status_t rsa_signature_verify_2048_start(
  */
 OT_WARN_UNUSED_RESULT
 status_t rsa_signature_verify_finalize(
-    const hash_digest_t *message_digest,
+    const otcrypto_hash_digest_t *message_digest,
     const rsa_signature_padding_t padding_mode,
     hardened_bool_t *verification_result);
 
@@ -121,7 +121,7 @@ status_t rsa_signature_verify_finalize(
 OT_WARN_UNUSED_RESULT
 status_t rsa_signature_generate_3072_start(
     const rsa_3072_private_key_t *private_key,
-    const hash_digest_t *message_digest,
+    const otcrypto_hash_digest_t *message_digest,
     const rsa_signature_padding_t padding_mode);
 
 /**
@@ -164,7 +164,7 @@ status_t rsa_signature_verify_3072_start(
 OT_WARN_UNUSED_RESULT
 status_t rsa_signature_generate_4096_start(
     const rsa_4096_private_key_t *private_key,
-    const hash_digest_t *message_digest,
+    const otcrypto_hash_digest_t *message_digest,
     const rsa_signature_padding_t padding_mode);
 
 /**

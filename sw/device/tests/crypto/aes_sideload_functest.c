@@ -32,12 +32,12 @@ static const uint32_t kKeySalt2[7] = {
 };
 
 // Indicates a sideloaded 256-bit AES-CTR key.
-static const crypto_key_config_t kAesKeyConfig = {
-    .version = kCryptoLibVersion1,
-    .key_mode = kKeyModeAesCtr,
+static const otcrypto_key_config_t kAesKeyConfig = {
+    .version = kOtcryptoLibVersion1,
+    .key_mode = kOtcryptoKeyModeAesCtr,
     .key_length = 256 / 8,
     .hw_backed = kHardenedBoolTrue,
-    .security_level = kSecurityLevelLow,
+    .security_level = kOtcryptoKeySecurityLevelLow,
 };
 
 // AES IV testing data.
@@ -63,11 +63,12 @@ static const uint32_t kAesPlaintextBlock[4] = {0};
  * @param[out] output Resulting output block(s).
  * @return OK or error.
  */
-static status_t run_aes(aes_operation_t operation, const uint32_t salt[7],
-                        const uint32_t *input, uint32_t *output) {
+static status_t run_aes(otcrypto_aes_operation_t operation,
+                        const uint32_t salt[7], const uint32_t *input,
+                        uint32_t *output) {
   // Construct the key.
   uint32_t keyblob[8];
-  crypto_blinded_key_t key = {
+  otcrypto_blinded_key_t key = {
       .config = kAesKeyConfig,
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,
@@ -77,25 +78,25 @@ static status_t run_aes(aes_operation_t operation, const uint32_t salt[7],
   // Construct the IV.
   uint32_t iv_data[ARRAYSIZE(kAesIv)];
   memcpy(iv_data, kAesIv, sizeof(kAesIv));
-  crypto_word32_buf_t iv = {
+  otcrypto_word32_buf_t iv = {
       .data = iv_data,
       .len = ARRAYSIZE(iv_data),
   };
 
   // Construct the input buffer.
-  crypto_const_byte_buf_t input_buf = {
+  otcrypto_const_byte_buf_t input_buf = {
       .data = (const unsigned char *)input,
       .len = sizeof(kAesPlaintextBlock),
   };
 
   // Construct the output buffer.
-  crypto_byte_buf_t output_buf = {
+  otcrypto_byte_buf_t output_buf = {
       .data = (unsigned char *)output,
       .len = sizeof(kAesPlaintextBlock),
   };
 
-  return otcrypto_aes(&key, iv, kBlockCipherModeCtr, operation, input_buf,
-                      kAesPaddingNull, output_buf);
+  return otcrypto_aes(&key, iv, kOtcryptoAesModeCtr, operation, input_buf,
+                      kOtcryptoAesPaddingNull, output_buf);
 }
 
 /**
@@ -109,7 +110,8 @@ static status_t run_aes(aes_operation_t operation, const uint32_t salt[7],
  * @return OK or error.
  */
 static status_t encrypt(const uint32_t *salt, uint32_t *ciphertext) {
-  return run_aes(kAesOperationEncrypt, salt, kAesPlaintextBlock, ciphertext);
+  return run_aes(kOtcryptoAesOperationEncrypt, salt, kAesPlaintextBlock,
+                 ciphertext);
 }
 
 /**
@@ -125,7 +127,7 @@ static status_t encrypt(const uint32_t *salt, uint32_t *ciphertext) {
  */
 static status_t decrypt(const uint32_t *salt, const uint32_t *ciphertext,
                         uint32_t *plaintext) {
-  return run_aes(kAesOperationDecrypt, salt, ciphertext, plaintext);
+  return run_aes(kOtcryptoAesOperationDecrypt, salt, ciphertext, plaintext);
 }
 
 /**

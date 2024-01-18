@@ -25,12 +25,12 @@ extern "C" {
  * Representation is internal to the hash implementation; initialize
  * with #otcrypto_hash_init.
  */
-typedef struct hash_context {
+typedef struct otcrypto_hash_context {
   // Required hash mode.
-  hash_mode_t mode;
+  otcrypto_hash_mode_t mode;
   // Context for the hash operation.
   uint32_t data[52];
-} hash_context_t;
+} otcrypto_hash_context_t;
 
 /**
  * Performs the required hash function on the input data.
@@ -47,22 +47,23 @@ typedef struct hash_context {
  * @param[out] digest Output digest after hashing the input message.
  * @return Result of the hash operation.
  */
-crypto_status_t otcrypto_hash(crypto_const_byte_buf_t input_message,
-                              hash_digest_t *digest);
+otcrypto_status_t otcrypto_hash(otcrypto_const_byte_buf_t input_message,
+                                otcrypto_hash_digest_t *digest);
 
 /**
  * Performs the SHAKE extendable output function (XOF) on input data.
  *
  * The caller should allocate space for the `digest` buffer and set the `mode`
- * and `len` fields.  The `mode` parameter must be `kHashXofModeShake128` or
- * `kHashXofModeShake256`; other values will result in errors.
+ * and `len` fields.  The `mode` parameter must be
+ * `kOtcryptoHashXofModeShake128` or `kOtcryptoHashXofModeShake256`; other
+ * values will result in errors.
  *
  * @param input_message Input message for extendable output function.
  * @param[out] digest Output from the extendable output function.
  * @return Result of the xof operation.
  */
-crypto_status_t otcrypto_xof_shake(crypto_const_byte_buf_t input_message,
-                                   hash_digest_t *digest);
+otcrypto_status_t otcrypto_xof_shake(otcrypto_const_byte_buf_t input_message,
+                                     otcrypto_hash_digest_t *digest);
 
 /**
  * Performs the CSHAKE extendable output function (XOF) on input data.
@@ -73,8 +74,9 @@ crypto_status_t otcrypto_xof_shake(crypto_const_byte_buf_t input_message,
  * If no customization is desired it can be empty.
  *
  * The caller should allocate space for the `digest` buffer and set the `mode`
- * and `len` fields. The `mode` parameter must be `kHashXofModeCshake128` or
- * `kHashXofModeCshake256`; other values will result in errors.
+ * and `len` fields. The `mode` parameter must be
+ * `kOtcryptoHashXofModeCshake128` or `kOtcryptoHashXofModeCshake256`; other
+ * values will result in errors.
  *
  * @param input_message Input message for extendable output function.
  * @param function_name_string NIST Function name string.
@@ -82,18 +84,19 @@ crypto_status_t otcrypto_xof_shake(crypto_const_byte_buf_t input_message,
  * @param[out] digest Output from the extendable output function.
  * @return Result of the xof operation.
  */
-crypto_status_t otcrypto_xof_cshake(
-    crypto_const_byte_buf_t input_message,
-    crypto_const_byte_buf_t function_name_string,
-    crypto_const_byte_buf_t customization_string, hash_digest_t *digest);
+otcrypto_status_t otcrypto_xof_cshake(
+    otcrypto_const_byte_buf_t input_message,
+    otcrypto_const_byte_buf_t function_name_string,
+    otcrypto_const_byte_buf_t customization_string,
+    otcrypto_hash_digest_t *digest);
 
 /**
  * Performs the INIT operation for a cryptographic hash function.
  *
  * Initializes the generic hash context. The required hash mode is selected
- * through the `hash_mode` parameter. Only `kHashModeSha256`, `kHashModeSha384`
- * and `kHashModeSha512` are supported. Other modes are not supported and an
- * error would be returned.
+ * through the `hash_mode` parameter. Only `kOtcryptoHashModeSha256`,
+ * `kOtcryptoHashModeSha384` and `kOtcryptoHashModeSha512` are supported. Other
+ * modes are not supported and an error would be returned.
  *
  * Populates the hash context with the selected hash mode and its digest and
  * block sizes. The structure of hash context and how it populates the required
@@ -103,8 +106,8 @@ crypto_status_t otcrypto_xof_cshake(
  * @param hash_mode Required hash mode.
  * @return Result of the hash init operation.
  */
-crypto_status_t otcrypto_hash_init(hash_context_t *const ctx,
-                                   hash_mode_t hash_mode);
+otcrypto_status_t otcrypto_hash_init(otcrypto_hash_context_t *const ctx,
+                                     otcrypto_hash_mode_t hash_mode);
 
 /**
  * Performs the UPDATE operation for a cryptographic hash function.
@@ -120,8 +123,8 @@ crypto_status_t otcrypto_hash_init(hash_context_t *const ctx,
  * @param input_message Input message to be hashed.
  * @return Result of the hash update operation.
  */
-crypto_status_t otcrypto_hash_update(hash_context_t *const ctx,
-                                     crypto_const_byte_buf_t input_message);
+otcrypto_status_t otcrypto_hash_update(otcrypto_hash_context_t *const ctx,
+                                       otcrypto_const_byte_buf_t input_message);
 
 /**
  * Performs the FINAL operation for a cryptographic hash function.
@@ -139,8 +142,8 @@ crypto_status_t otcrypto_hash_update(hash_context_t *const ctx,
  * @param[out] digest Output digest after hashing the input blocks.
  * @return Result of the hash final operation.
  */
-crypto_status_t otcrypto_hash_final(hash_context_t *const ctx,
-                                    hash_digest_t *digest);
+otcrypto_status_t otcrypto_hash_final(otcrypto_hash_context_t *const ctx,
+                                      otcrypto_hash_digest_t *digest);
 
 #ifdef __cplusplus
 }  // extern "C"

@@ -4,6 +4,7 @@
 
 load(
     "//rules/opentitan:defs.bzl",
+    "DEFAULT_TEST_FAILURE_MSG",
     "cw310_params",
     "opentitan_test",
 )
@@ -29,6 +30,7 @@ load(
     "//sw/device/silicon_creator/rom/e2e:defs.bzl",
     "MSG_TEMPLATE_BFV",
     "SLOTS",
+    "msg_template_bfv_all_except",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -38,21 +40,26 @@ BOOT_POLICY_ROLLBACK_CASES = [
         "a": 0,
         "b": 0,
         "exit_success": MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.BOOT_POLICY.ROLLBACK)),
+        # By default the failure message include BFV but this will conflict with what we're looking for.
+        "exit_failure": msg_template_bfv_all_except(CONST.BFV.BOOT_POLICY.ROLLBACK),
     },
     {
         "a": 0,
         "b": 1,
         "exit_success": "slot=0x20080000, security_version=1",
+        "exit_failure": DEFAULT_TEST_FAILURE_MSG,
     },
     {
         "a": 2,
         "b": 0,
         "exit_success": "slot=0x20000000, security_version=2",
+        "exit_failure": DEFAULT_TEST_FAILURE_MSG,
     },
     {
         "a": 1,
         "b": 1,
         "exit_success": "slot=0x20000000, security_version=1",
+        "exit_failure": DEFAULT_TEST_FAILURE_MSG,
     },
 ]
 
@@ -91,6 +98,7 @@ otp_json(
                 "//sw/device/silicon_creator/rom/e2e/boot_policy_newer:empty_test_slot_a_sec_ver_{}".format(t["a"]): "fw_a",
                 "//sw/device/silicon_creator/rom/e2e/boot_policy_newer:empty_test_slot_b_sec_ver_{}".format(t["b"]): "fw_b",
             },
+            exit_failure = t["exit_failure"],
             exit_success = t["exit_success"],
             otp = ":otp_img_boot_policy_rollback_{}".format(lc_state),
             slot_a = SLOTS["a"],

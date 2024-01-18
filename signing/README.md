@@ -15,7 +15,7 @@ For example, a configuration for `//sw/device/silicon_creator/rom/keys/real/rsa:
 might look like the following:
 
 >Locate this file in $HOME/.config/hsmtool/profiles.json and set the file
-mode to 700.
+mode to 600.
 
 ```json
 {
@@ -53,16 +53,16 @@ bazel build \
 
 ## Configuration for silicon\_owner SiVAL signing
 
-The production SiVAL ROM\_EXT respects an RSA signing key held in Google's
-cloud-kms service.
+The production SiVAL ROM\_EXT expects a signing key held in Google's cloud-kms
+service.
 
 You need an hsmtool profile that maps to the cloud-kms token.  Add an entry
 to your profiles confiuration file:
 
 >Locate this file in $HOME/.config/hsmtool/profiles.json and set the file
-mode to 700.
+mode to 600.
 
-```console
+```json
 {
   "earlgrey_z0_sival": {
     "token": "ot-earlgrey-z0-sival",
@@ -71,8 +71,40 @@ mode to 700.
 }
 ```
 
+The configuration file may contain more than one token configuration, for
+example:
+
+```json
+{
+  "earlgrey_a0": {
+    "token": "earlgrey_a0_000",
+    "user": "user",
+    "pin": "XXXXXX"
+  },
+  "earlgrey_z0_sival": {
+    "token": "ot-earlgrey-z0-sival",
+    "user": "user"
+  }
+}
+```
+
+### Cloud KMS authentication
+
 In order to sign with the cloud-kms key, you need to authenticate to Google
 cloud using your opentitan.org account.
+
+> See additional instructions on how to install the `google-cloud-cli` package
+for various OS distributions: https://cloud.google.com/sdk/docs/install.
+>
+>You may also want to consider using the snap package in Debian distributions:
+https://cloud.google.com/sdk/docs/downloads-snap
+>
+> The `gcloud auth login` and `gcloud auth application-default login` commands
+should open a webpage to select the account you want to use to login. The page
+may take a while to load, and in some cases you may have to copy paste the URL
+printed by the CLI into a browser to start the login process.
+>
+> Make sure to use your opentitan.org account to login.
 
 ```console
 # Install the Google cloud CLI if you don't already have it.
@@ -81,15 +113,17 @@ sudo apt install -y google-cloud-cli
 # Log into GCP using your opentitan.org credentials
 gcloud auth login
 
-# Set the active project
-gcloud config set project otkms-407107
-
 # Application default authentication
 gcloud auth application-default login
 ```
 
 Once authenticated to Google cloud, you can build and sign SiVAL tests
 by requesting the `cloud_kms` token:
+
+> You may have to update the permissions on the KMS configuration file as
+follows:
+>
+> `chmod 600 signing/tokens/earlgrey_z1_sival.yaml`
 
 ```console
 bazel build --//signing:token=//signing/tokens:cloud_kms //label-of-target

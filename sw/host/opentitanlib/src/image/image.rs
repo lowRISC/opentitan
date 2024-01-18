@@ -102,8 +102,8 @@ impl Image {
         let manifest = self.borrow_manifest()?;
         let len = self.data.bytes.len() as u32;
 
-        ensure!(manifest.signed_region_end < len);
-        ensure!(manifest.length < len);
+        ensure!(manifest.signed_region_end <= len);
+        ensure!(manifest.length <= len);
         ensure!(manifest.code_start < len);
         ensure!(manifest.code_end < len);
         ensure!(manifest.entry_point < len);

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/kmac.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/hash.h"
@@ -25,13 +26,13 @@ static kmac_test_vector_t *current_test_vector = NULL;
  * @param security_str Security strength (in bits).
  * @param[out] mode SHAKE mode enum value.
  */
-status_t get_shake_mode(size_t security_strength, hash_mode_t *mode) {
+status_t get_shake_mode(size_t security_strength, otcrypto_hash_mode_t *mode) {
   switch (security_strength) {
     case 128:
-      *mode = kHashXofModeShake128;
+      *mode = kOtcryptoHashXofModeShake128;
       break;
     case 256:
-      *mode = kHashXofModeShake256;
+      *mode = kOtcryptoHashXofModeShake256;
       break;
     default:
       LOG_INFO("Invalid security strength for SHAKE: %d bits",
@@ -47,13 +48,13 @@ status_t get_shake_mode(size_t security_strength, hash_mode_t *mode) {
  * @param security_str Security strength (in bits).
  * @param[out] mode cSHAKE mode enum value.
  */
-status_t get_cshake_mode(size_t security_strength, hash_mode_t *mode) {
+status_t get_cshake_mode(size_t security_strength, otcrypto_hash_mode_t *mode) {
   switch (security_strength) {
     case 128:
-      *mode = kHashXofModeCshake128;
+      *mode = kOtcryptoHashXofModeCshake128;
       break;
     case 256:
-      *mode = kHashXofModeCshake256;
+      *mode = kOtcryptoHashXofModeCshake256;
       break;
     default:
       LOG_INFO("Invalid security strength for cSHAKE: %d bits",
@@ -69,19 +70,19 @@ status_t get_cshake_mode(size_t security_strength, hash_mode_t *mode) {
  * @param security_str Security strength (in bits).
  * @param[out] mode Hash mode enum value.
  */
-status_t get_sha3_mode(size_t security_strength, hash_mode_t *mode) {
+status_t get_sha3_mode(size_t security_strength, otcrypto_hash_mode_t *mode) {
   switch (security_strength) {
     case 224:
-      *mode = kHashModeSha3_224;
+      *mode = kOtcryptoHashModeSha3_224;
       break;
     case 256:
-      *mode = kHashModeSha3_256;
+      *mode = kOtcryptoHashModeSha3_256;
       break;
     case 384:
-      *mode = kHashModeSha3_384;
+      *mode = kOtcryptoHashModeSha3_384;
       break;
     case 512:
-      *mode = kHashModeSha3_512;
+      *mode = kOtcryptoHashModeSha3_512;
       break;
     default:
       LOG_INFO("Invalid size for SHA3: %d bits", security_strength);
@@ -96,13 +97,13 @@ status_t get_sha3_mode(size_t security_strength, hash_mode_t *mode) {
  * @param security_str Security strength (in bits).
  * @param[out] mode KMAC mode enum value.
  */
-status_t get_kmac_mode(size_t security_strength, kmac_mode_t *mode) {
+status_t get_kmac_mode(size_t security_strength, otcrypto_kmac_mode_t *mode) {
   switch (security_strength) {
     case 128:
-      *mode = kMacModeKmac128;
+      *mode = kOtcryptoKmacModeKmac128;
       break;
     case 256:
-      *mode = kMacModeKmac256;
+      *mode = kOtcryptoKmacModeKmac256;
       break;
     default:
       LOG_INFO("Invalid size for KMAC: %d bits", security_strength);
@@ -120,7 +121,7 @@ static status_t run_test_vector(void) {
     digest_num_words++;
   }
   uint32_t digest[digest_num_words];
-  hash_digest_t digest_buf = {
+  otcrypto_hash_digest_t digest_buf = {
       .data = digest,
       .len = digest_num_words,
   };
@@ -147,9 +148,9 @@ static status_t run_test_vector(void) {
       break;
     }
     case kKmacTestOperationKmac: {
-      kmac_mode_t mode;
+      otcrypto_kmac_mode_t mode;
       TRY(get_kmac_mode(current_test_vector->security_strength, &mode));
-      crypto_word32_buf_t tag_buf = {
+      otcrypto_word32_buf_t tag_buf = {
           .data = digest_buf.data,
           .len = digest_buf.len,
       };
@@ -177,6 +178,7 @@ bool test_main(void) {
   LOG_INFO("Testing cryptolib KMAC driver.");
 
   // Initialize the core with default parameters
+  CHECK_STATUS_OK(entropy_complex_init());
   CHECK_STATUS_OK(kmac_hwip_default_configure());
 
   status_t test_result = OK_STATUS();

@@ -13,13 +13,24 @@
 extern "C" {
 #endif  // __cplusplus
 
+enum {
+  /**
+   * Number of 32-bit words in a hardware-backed key's keyblob.
+   */
+  kKeyblobHwBackedWords = kKeymgrSaltNumWords,
+  /**
+   * Number of bytes in a hardware-backed key's keyblob.
+   */
+  kKeyblobHwBackedBytes = kKeyblobHwBackedWords * sizeof(uint32_t),
+};
+
 /**
  * Get the word-length of the full blinded keyblob for a given key length.
  *
  * @param config Key configuration.
  * @returns Word-length of the blinded keyblob.
  */
-size_t keyblob_num_words(const crypto_key_config_t config);
+size_t keyblob_num_words(const otcrypto_key_config_t config);
 
 /**
  * Get the word-length of a single key share for a given key length.
@@ -31,7 +42,7 @@ size_t keyblob_num_words(const crypto_key_config_t config);
  * @param config Key configuration.
  * @returns Word-length of one key share (or unblinded key).
  */
-size_t keyblob_share_num_words(const crypto_key_config_t config);
+size_t keyblob_share_num_words(const otcrypto_key_config_t config);
 
 /**
  * Return pointers to the separate shares within the blinded key.
@@ -45,7 +56,7 @@ size_t keyblob_share_num_words(const crypto_key_config_t config);
  * @return Result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-status_t keyblob_to_shares(const crypto_blinded_key_t *key, uint32_t **share0,
+status_t keyblob_to_shares(const otcrypto_blinded_key_t *key, uint32_t **share0,
                            uint32_t **share1);
 
 /**
@@ -64,7 +75,23 @@ status_t keyblob_to_shares(const crypto_blinded_key_t *key, uint32_t **share0,
  * @param[out] keyblob Destination buffer.
  */
 void keyblob_from_shares(const uint32_t *share0, const uint32_t *share1,
-                         const crypto_key_config_t config, uint32_t *keyblob);
+                         const otcrypto_key_config_t config, uint32_t *keyblob);
+
+/**
+ * Construct key manager diversification data from a raw keyblob.
+ *
+ * The keyblob must be exactly 8 32-bit words long. The first word is the
+ * version and subsequent words are the salt. The key mode is appended to the
+ * salt to prevent key manager keys being used for different modes.
+ *
+ * @param keyblob Pointer to the keyblob.
+ * @param mode Key mode to use in the diversification.
+ * @param[out] Destination key manager diversification struct.
+ */
+OT_WARN_UNUSED_RESULT
+status_t keyblob_buffer_to_keymgr_diversification(
+    const uint32_t *keyblob, otcrypto_key_mode_t mode,
+    keymgr_diversification_t *diversification);
 
 /**
  * Construct key manager diversification data from a blinded key.
@@ -82,7 +109,8 @@ void keyblob_from_shares(const uint32_t *share0, const uint32_t *share1,
  */
 OT_WARN_UNUSED_RESULT
 status_t keyblob_to_keymgr_diversification(
-    const crypto_blinded_key_t *key, keymgr_diversification_t *diversification);
+    const otcrypto_blinded_key_t *key,
+    keymgr_diversification_t *diversification);
 
 /**
  * Checks that the configuration represents a key masked with XOR.
@@ -95,7 +123,7 @@ status_t keyblob_to_keymgr_diversification(
  * @return OK if `config` represents an XOR-masked key, BAD_ARGS otherwise.
  */
 OT_WARN_UNUSED_RESULT
-status_t keyblob_ensure_xor_masked(const crypto_key_config_t config);
+status_t keyblob_ensure_xor_masked(const otcrypto_key_config_t config);
 
 /**
  * Construct a blinded keyblob from the given key and mask.
@@ -119,7 +147,7 @@ status_t keyblob_ensure_xor_masked(const crypto_key_config_t config);
  */
 OT_WARN_UNUSED_RESULT
 status_t keyblob_from_key_and_mask(const uint32_t *key, const uint32_t *mask,
-                                   const crypto_key_config_t config,
+                                   const otcrypto_key_config_t config,
                                    uint32_t *keyblob);
 
 /**
@@ -134,7 +162,7 @@ status_t keyblob_from_key_and_mask(const uint32_t *key, const uint32_t *mask,
  * @return Result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-status_t keyblob_remask(crypto_blinded_key_t *key, const uint32_t *mask);
+status_t keyblob_remask(otcrypto_blinded_key_t *key, const uint32_t *mask);
 
 #ifdef __cplusplus
 }  // extern "C"

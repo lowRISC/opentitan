@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/base/hardened_memory.h"
+#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/aes_kwp/aes_kwp.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/runtime/log.h"
@@ -150,6 +151,7 @@ OTTF_DEFINE_TEST_CONFIG();
 bool test_main(void) {
   status_t result = OK_STATUS();
 
+  CHECK_STATUS_OK(entropy_complex_init());
   EXECUTE_TEST(result, no_padding_test);
   EXECUTE_TEST(result, needs_padding_test);
 

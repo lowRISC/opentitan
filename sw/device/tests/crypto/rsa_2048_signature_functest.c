@@ -103,65 +103,66 @@ static const uint32_t kValidSignaturePss[kRsa2048NumWords] = {
  * @return OK or error.
  */
 static status_t run_rsa_2048_sign(const uint8_t *msg, size_t msg_len,
-                                  rsa_padding_t padding_mode, uint32_t *sig) {
-  key_mode_t key_mode;
+                                  otcrypto_rsa_padding_t padding_mode,
+                                  uint32_t *sig) {
+  otcrypto_key_mode_t key_mode;
   switch (padding_mode) {
-    case kRsaPaddingPkcs:
-      key_mode = kKeyModeRsaSignPkcs;
+    case kOtcryptoRsaPaddingPkcs:
+      key_mode = kOtcryptoKeyModeRsaSignPkcs;
       break;
-    case kRsaPaddingPss:
-      key_mode = kKeyModeRsaSignPss;
+    case kOtcryptoRsaPaddingPss:
+      key_mode = kOtcryptoKeyModeRsaSignPss;
       break;
     default:
       return INVALID_ARGUMENT();
   };
 
   // Create two shares for the private exponent (second share is all-zero).
-  crypto_const_word32_buf_t d_share0 = {
+  otcrypto_const_word32_buf_t d_share0 = {
       .data = kTestPrivateExponent,
       .len = ARRAYSIZE(kTestPrivateExponent),
   };
   uint32_t share1[ARRAYSIZE(kTestPrivateExponent)] = {0};
-  crypto_const_word32_buf_t d_share1 = {
+  otcrypto_const_word32_buf_t d_share1 = {
       .data = share1,
       .len = ARRAYSIZE(share1),
   };
 
   // Construct the private key.
-  crypto_key_config_t private_key_config = {
-      .version = kCryptoLibVersion1,
+  otcrypto_key_config_t private_key_config = {
+      .version = kOtcryptoLibVersion1,
       .key_mode = key_mode,
-      .key_length = kRsa2048PrivateKeyBytes,
+      .key_length = kOtcryptoRsa2048PrivateKeyBytes,
       .hw_backed = kHardenedBoolFalse,
-      .security_level = kSecurityLevelLow,
+      .security_level = kOtcryptoKeySecurityLevelLow,
   };
   size_t keyblob_words =
-      ceil_div(kRsa2048PrivateKeyblobBytes, sizeof(uint32_t));
+      ceil_div(kOtcryptoRsa2048PrivateKeyblobBytes, sizeof(uint32_t));
   uint32_t keyblob[keyblob_words];
-  crypto_blinded_key_t private_key = {
+  otcrypto_blinded_key_t private_key = {
       .config = private_key_config,
       .keyblob = keyblob,
-      .keyblob_length = kRsa2048PrivateKeyblobBytes,
+      .keyblob_length = kOtcryptoRsa2048PrivateKeyblobBytes,
   };
-  crypto_const_word32_buf_t modulus = {
+  otcrypto_const_word32_buf_t modulus = {
       .data = kTestModulus,
       .len = ARRAYSIZE(kTestModulus),
   };
-  TRY(otcrypto_rsa_private_key_from_exponents(kRsaSize2048, modulus,
+  TRY(otcrypto_rsa_private_key_from_exponents(kOtcryptoRsaSize2048, modulus,
                                               kTestPublicExponent, d_share0,
                                               d_share1, &private_key));
 
   // Hash the message.
-  crypto_const_byte_buf_t msg_buf = {.data = msg, .len = msg_len};
+  otcrypto_const_byte_buf_t msg_buf = {.data = msg, .len = msg_len};
   uint32_t msg_digest_data[kSha256DigestWords];
-  hash_digest_t msg_digest = {
+  otcrypto_hash_digest_t msg_digest = {
       .data = msg_digest_data,
       .len = ARRAYSIZE(msg_digest_data),
-      .mode = kHashModeSha256,
+      .mode = kOtcryptoHashModeSha256,
   };
   TRY(otcrypto_hash(msg_buf, &msg_digest));
 
-  crypto_word32_buf_t sig_buf = {
+  otcrypto_word32_buf_t sig_buf = {
       .data = sig,
       .len = kRsa2048NumWords,
   };
@@ -188,45 +189,46 @@ static status_t run_rsa_2048_sign(const uint8_t *msg, size_t msg_len,
  */
 static status_t run_rsa_2048_verify(const uint8_t *msg, size_t msg_len,
                                     const uint32_t *sig,
-                                    const rsa_padding_t padding_mode,
+                                    const otcrypto_rsa_padding_t padding_mode,
                                     hardened_bool_t *verification_result) {
-  key_mode_t key_mode;
+  otcrypto_key_mode_t key_mode;
   switch (padding_mode) {
-    case kRsaPaddingPkcs:
-      key_mode = kKeyModeRsaSignPkcs;
+    case kOtcryptoRsaPaddingPkcs:
+      key_mode = kOtcryptoKeyModeRsaSignPkcs;
       break;
-    case kRsaPaddingPss:
-      key_mode = kKeyModeRsaSignPss;
+    case kOtcryptoRsaPaddingPss:
+      key_mode = kOtcryptoKeyModeRsaSignPss;
       break;
     default:
       return INVALID_ARGUMENT();
   };
 
   // Construct the public key.
-  crypto_const_word32_buf_t modulus = {
+  otcrypto_const_word32_buf_t modulus = {
       .data = kTestModulus,
       .len = ARRAYSIZE(kTestModulus),
   };
-  uint32_t public_key_data[ceil_div(kRsa2048PublicKeyBytes, sizeof(uint32_t))];
-  crypto_unblinded_key_t public_key = {
+  uint32_t public_key_data[ceil_div(kOtcryptoRsa2048PublicKeyBytes,
+                                    sizeof(uint32_t))];
+  otcrypto_unblinded_key_t public_key = {
       .key_mode = key_mode,
-      .key_length = kRsa2048PublicKeyBytes,
+      .key_length = kOtcryptoRsa2048PublicKeyBytes,
       .key = public_key_data,
   };
-  TRY(otcrypto_rsa_public_key_construct(kRsaSize2048, modulus,
+  TRY(otcrypto_rsa_public_key_construct(kOtcryptoRsaSize2048, modulus,
                                         kTestPublicExponent, &public_key));
 
   // Hash the message.
-  crypto_const_byte_buf_t msg_buf = {.data = msg, .len = msg_len};
+  otcrypto_const_byte_buf_t msg_buf = {.data = msg, .len = msg_len};
   uint32_t msg_digest_data[kSha256DigestWords];
-  hash_digest_t msg_digest = {
+  otcrypto_hash_digest_t msg_digest = {
       .data = msg_digest_data,
       .len = ARRAYSIZE(msg_digest_data),
-      .mode = kHashModeSha256,
+      .mode = kOtcryptoHashModeSha256,
   };
   TRY(otcrypto_hash(msg_buf, &msg_digest));
 
-  crypto_const_word32_buf_t sig_buf = {
+  otcrypto_const_word32_buf_t sig_buf = {
       .data = sig,
       .len = kRsa2048NumWords,
   };
@@ -242,7 +244,8 @@ status_t pkcs1v15_sign_test(void) {
   // Generate a signature using PKCS#1 v1.5 padding and SHA-256 as the hash
   // function.
   uint32_t sig[kRsa2048NumWords];
-  TRY(run_rsa_2048_sign(kTestMessage, kTestMessageLen, kRsaPaddingPkcs, sig));
+  TRY(run_rsa_2048_sign(kTestMessage, kTestMessageLen, kOtcryptoRsaPaddingPkcs,
+                        sig));
 
   // Compare to the expected signature.
   TRY_CHECK_ARRAYS_EQ(sig, kValidSignaturePkcs1v15,
@@ -254,7 +257,7 @@ status_t pkcs1v15_verify_valid_test(void) {
   // Try to verify a valid signature.
   hardened_bool_t verification_result;
   TRY(run_rsa_2048_verify(kTestMessage, kTestMessageLen,
-                          kValidSignaturePkcs1v15, kRsaPaddingPkcs,
+                          kValidSignaturePkcs1v15, kOtcryptoRsaPaddingPkcs,
                           &verification_result));
 
   // Expect the signature to pass verification.
@@ -266,7 +269,7 @@ status_t pkcs1v15_verify_invalid_test(void) {
   // Try to verify an invalid signature (wrong padding mode).
   hardened_bool_t verification_result;
   TRY(run_rsa_2048_verify(kTestMessage, kTestMessageLen, kValidSignaturePss,
-                          kRsaPaddingPkcs, &verification_result));
+                          kOtcryptoRsaPaddingPkcs, &verification_result));
 
   // Expect the signature to fail verification.
   TRY_CHECK(verification_result == kHardenedBoolFalse);
@@ -276,12 +279,13 @@ status_t pkcs1v15_verify_invalid_test(void) {
 status_t pss_sign_test(void) {
   // PSS signatures are not deterministic, so we need to sign-then-verify.
   uint32_t sig[kRsa2048NumWords];
-  TRY(run_rsa_2048_sign(kTestMessage, kTestMessageLen, kRsaPaddingPss, sig));
+  TRY(run_rsa_2048_sign(kTestMessage, kTestMessageLen, kOtcryptoRsaPaddingPss,
+                        sig));
 
   // Try to verify the signature.
   hardened_bool_t verification_result;
-  TRY(run_rsa_2048_verify(kTestMessage, kTestMessageLen, sig, kRsaPaddingPss,
-                          &verification_result));
+  TRY(run_rsa_2048_verify(kTestMessage, kTestMessageLen, sig,
+                          kOtcryptoRsaPaddingPss, &verification_result));
 
   // Expect the signature to pass verification.
   TRY_CHECK(verification_result == kHardenedBoolTrue);
@@ -292,7 +296,7 @@ status_t pss_verify_valid_test(void) {
   // Try to verify a valid signature.
   hardened_bool_t verification_result;
   TRY(run_rsa_2048_verify(kTestMessage, kTestMessageLen, kValidSignaturePss,
-                          kRsaPaddingPss, &verification_result));
+                          kOtcryptoRsaPaddingPss, &verification_result));
 
   // Expect the signature to pass verification.
   TRY_CHECK(verification_result == kHardenedBoolTrue);
@@ -303,7 +307,7 @@ status_t pss_verify_invalid_test(void) {
   // Try to verify an invalid signature (wrong padding mode).
   hardened_bool_t verification_result;
   TRY(run_rsa_2048_verify(kTestMessage, kTestMessageLen,
-                          kValidSignaturePkcs1v15, kRsaPaddingPss,
+                          kValidSignaturePkcs1v15, kOtcryptoRsaPaddingPss,
                           &verification_result));
 
   // Expect the signature to fail verification.

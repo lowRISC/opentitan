@@ -22,7 +22,6 @@ The OpenTitan Technical Committee membership is:
 * Cyril Guyot
 * Felix Miller
 * Dominic Rizzo (observer)
-* Alphan Ulusoy
 * Michael Munday
 * Rupert Swarbrick
 * Michael Tempelmeier

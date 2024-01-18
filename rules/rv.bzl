@@ -21,6 +21,8 @@ PER_DEVICE_DEPS = {
 def _opentitan_transition_impl(settings, attr):
     return {
         "//command_line_option:platforms": attr.platform,
+        "//command_line_option:copt": settings["//command_line_option:copt"],
+        "//command_line_option:features": settings["//command_line_option:features"],
         "//hw/bitstream/universal:rom": "//hw/bitstream/universal:none",
         "//hw/bitstream/universal:otp": "//hw/bitstream/universal:none",
         "//hw/bitstream/universal:env": "//hw/bitstream/universal:none",
@@ -28,9 +30,19 @@ def _opentitan_transition_impl(settings, attr):
 
 opentitan_transition = transition(
     implementation = _opentitan_transition_impl,
-    inputs = [],
+    # In order to build the englishbreakfast binaries, we need to pass through
+    # the `--copt` and `--features` flags:
+    # - The copt flag defines a preprocessor symbol indicating englishbreakfast.
+    # - The features flags turn off compiler support for CPU extensions not
+    #   present in the englishbreakfast rv32i implementation.
+    inputs = [
+        "//command_line_option:copt",
+        "//command_line_option:features",
+    ],
     outputs = [
         "//command_line_option:platforms",
+        "//command_line_option:copt",
+        "//command_line_option:features",
         "//hw/bitstream/universal:rom",
         "//hw/bitstream/universal:otp",
         "//hw/bitstream/universal:env",

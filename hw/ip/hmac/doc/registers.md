@@ -179,11 +179,11 @@ HMAC command register
 {"reg": [{"name": "hash_start", "bits": 1, "attr": ["r0w1c"], "rotate": -90}, {"name": "hash_process", "bits": 1, "attr": ["r0w1c"], "rotate": -90}, {"bits": 30}], "config": {"lanes": 1, "fontsize": 10, "vspace": 140}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name         | Description                                                                                                                                             |
-|:------:|:------:|:-------:|:-------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------|
-|  31:2  |        |         |              | Reserved                                                                                                                                                |
-|   1    | r0w1c  |    x    | hash_process | If writes 1 into this field, SHA256 or HMAC calculates the digest or signing based on currently received message.                                       |
-|   0    | r0w1c  |    x    | hash_start   | If writes 1 into this field, SHA256 or HMAC begins its operation.  CPU should configure relative information first, such as message_length, secret_key. |
+|  Bits  |  Type  |  Reset  | Name         | Description                                                                                                                                            |
+|:------:|:------:|:-------:|:-------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------|
+|  31:2  |        |         |              | Reserved                                                                                                                                               |
+|   1    | r0w1c  |    x    | hash_process | If writes 1 into this field, SHA256 or HMAC calculates the digest or signing based on currently received message.                                      |
+|   0    | r0w1c  |    x    | hash_start   | If writes 1 into this field, SHA256 or HMAC begins its operation. CPU should configure relative information first, such as message_length, secret_key. |
 
 ## STATUS
 HMAC Status register

@@ -52,6 +52,13 @@ typedef struct entropy_seed_material {
 } entropy_seed_material_t;
 
 /**
+ * Constant empty seed material for the entropy complex.
+ *
+ * This is convenient to have available for some implementations.
+ */
+extern const entropy_seed_material_t kEntropyEmptySeed;
+
+/**
  * Configures the entropy complex in continuous mode.
  *
  * The complex is configured in continuous mode with FIPS mode enabled. This is

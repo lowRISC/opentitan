@@ -43,6 +43,22 @@ dif_result_t dif_sensor_ctrl_lock_cfg(const dif_sensor_ctrl_t *sensor_ctrl) {
 }
 
 OT_WARN_UNUSED_RESULT
+dif_result_t dif_sensor_ctrl_get_ast_event_trigger(
+    const dif_sensor_ctrl_t *sensor_ctrl, dif_sensor_ctrl_event_idx_t event_idx,
+    dif_toggle_t *enable) {
+  if (sensor_ctrl == NULL || is_ast_event_invalid(event_idx) ||
+      enable == NULL) {
+    return kDifBadArg;
+  };
+
+  uint32_t reg = mmio_region_read32(sensor_ctrl->base_addr,
+                                    SENSOR_CTRL_ALERT_TRIG_REG_OFFSET);
+  *enable = dif_bool_to_toggle(bitfield_bit32_read(reg, event_idx));
+
+  return kDifOk;
+}
+
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_sensor_ctrl_set_ast_event_trigger(
     const dif_sensor_ctrl_t *sensor_ctrl, dif_sensor_ctrl_event_idx_t event_idx,
     dif_toggle_t enable) {

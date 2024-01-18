@@ -22,5 +22,6 @@ package entropy_src_test_pkg;
   `include "entropy_src_functional_errors_test.sv"
   `include "entropy_src_alert_test.sv"
   `include "entropy_src_cfg_regwen_test.sv"
+  `include "entropy_src_intr_test.sv"
 
 endpackage

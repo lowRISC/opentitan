@@ -23,42 +23,42 @@ enum {
   kP256SharedKeyWords = kP256SharedKeyBytes / sizeof(uint32_t),
 };
 
-static const ecc_curve_t kCurveP256 = {
-    .curve_type = kEccCurveTypeNistP256,
+static const otcrypto_ecc_curve_t kCurveP256 = {
+    .curve_type = kOtcryptoEccCurveTypeNistP256,
     .domain_parameter = NULL,
 };
 
 // Configuration for the private key.
-static const crypto_key_config_t kEcdhPrivateKeyConfig = {
-    .version = kCryptoLibVersion1,
-    .key_mode = kKeyModeEcdh,
+static const otcrypto_key_config_t kEcdhPrivateKeyConfig = {
+    .version = kOtcryptoLibVersion1,
+    .key_mode = kOtcryptoKeyModeEcdh,
     .key_length = kP256PrivateKeyBytes,
     .hw_backed = kHardenedBoolFalse,
-    .security_level = kSecurityLevelLow,
+    .security_level = kOtcryptoKeySecurityLevelLow,
 };
 
 // Configuration for the ECDH shared (symmetric) key. This configuration
 // specifies an AES key, but any symmetric mode that supports 256-bit keys is
 // OK here.
-static const crypto_key_config_t kEcdhSharedKeyConfig = {
-    .version = kCryptoLibVersion1,
-    .key_mode = kKeyModeAesCtr,
+static const otcrypto_key_config_t kEcdhSharedKeyConfig = {
+    .version = kOtcryptoLibVersion1,
+    .key_mode = kOtcryptoKeyModeAesCtr,
     .key_length = kP256SharedKeyBytes,
     .hw_backed = kHardenedBoolFalse,
-    .security_level = kSecurityLevelLow,
+    .security_level = kOtcryptoKeySecurityLevelLow,
 };
 
 status_t key_exchange_test(void) {
   // Allocate space for two private keys.
   uint32_t keyblobA[keyblob_num_words(kEcdhPrivateKeyConfig)];
-  crypto_blinded_key_t private_keyA = {
+  otcrypto_blinded_key_t private_keyA = {
       .config = kEcdhPrivateKeyConfig,
       .keyblob_length = sizeof(keyblobA),
       .keyblob = keyblobA,
       .checksum = 0,
   };
   uint32_t keyblobB[keyblob_num_words(kEcdhPrivateKeyConfig)];
-  crypto_blinded_key_t private_keyB = {
+  otcrypto_blinded_key_t private_keyB = {
       .config = kEcdhPrivateKeyConfig,
       .keyblob_length = sizeof(keyblobB),
       .keyblob = keyblobB,
@@ -68,13 +68,13 @@ status_t key_exchange_test(void) {
   // Allocate space for two public keys.
   uint32_t pkA[kP256PublicKeyWords] = {0};
   uint32_t pkB[kP256PublicKeyWords] = {0};
-  crypto_unblinded_key_t public_keyA = {
-      .key_mode = kKeyModeEcdh,
+  otcrypto_unblinded_key_t public_keyA = {
+      .key_mode = kOtcryptoKeyModeEcdh,
       .key_length = sizeof(pkA),
       .key = pkA,
   };
-  crypto_unblinded_key_t public_keyB = {
-      .key_mode = kKeyModeEcdh,
+  otcrypto_unblinded_key_t public_keyB = {
+      .key_mode = kOtcryptoKeyModeEcdh,
       .key_length = sizeof(pkB),
       .key = pkB,
   };
@@ -92,14 +92,14 @@ status_t key_exchange_test(void) {
 
   // Allocate space for two shared keys.
   uint32_t shared_keyblobA[keyblob_num_words(kEcdhSharedKeyConfig)];
-  crypto_blinded_key_t shared_keyA = {
+  otcrypto_blinded_key_t shared_keyA = {
       .config = kEcdhSharedKeyConfig,
       .keyblob_length = sizeof(shared_keyblobA),
       .keyblob = shared_keyblobA,
       .checksum = 0,
   };
   uint32_t shared_keyblobB[keyblob_num_words(kEcdhSharedKeyConfig)];
-  crypto_blinded_key_t shared_keyB = {
+  otcrypto_blinded_key_t shared_keyB = {
       .config = kEcdhSharedKeyConfig,
       .keyblob_length = sizeof(shared_keyblobB),
       .keyblob = shared_keyblobB,

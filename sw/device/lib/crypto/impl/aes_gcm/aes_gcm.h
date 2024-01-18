@@ -18,21 +18,9 @@ extern "C" {
 #endif  // __cplusplus
 
 /**
- * Stage of a streaming AES-GCM operation.
- */
-typedef enum aes_gcm_state {
-  kAesGcmStateUpdateAad,
-  kAesGcmStateUpdateEncryptedData,
-} aes_gcm_state_t;
-
-/**
  * AES-GCM context object for streaming operations.
  */
 typedef struct aes_gcm_context {
-  /**
-   * State of the ongoing operation.
-   */
-  aes_gcm_state_t state;
   /**
    * Whether this is an encryption operation (false indicates decryption).
    */
@@ -77,13 +65,16 @@ typedef struct aes_gcm_context {
    * Current context for the tag's ongoing GHASH computation.
    */
   ghash_context_t ghash_ctx;
-} aes_gcm_context_t;
+} __attribute__((aligned(sizeof(uint32_t)))) aes_gcm_context_t;
 
 /**
  * AES-GCM authenticated encryption as defined in NIST SP800-38D, algorithm 4.
  *
  * The key is represented as two shares which are XORed together to get the
  * real key value. The IV must be either 96 or 128 bits.
+ *
+ * If the key is a sideloaded key, it is the caller's responsibility to load
+ * and clear it.
  *
  * The byte-lengths of the plaintext and AAD must each be < 2^32. This is a
  * tighter constraint than the length limits in section 5.2.1.1.
@@ -115,6 +106,9 @@ status_t aes_gcm_encrypt(const aes_key_t key, const size_t iv_len,
  *
  * The key is represented as two shares which are XORed together to get the
  * real key value. The IV must be either 96 or 128 bits.
+ *
+ * If the key is a sideloaded key, it is the caller's responsibility to load
+ * and clear it.
  *
  * The byte-lengths of the plaintext and AAD must each be < 2^32. This is a
  * tighter constraint than the length limits in section 5.2.1.1.
@@ -154,6 +148,9 @@ status_t aes_gcm_decrypt(const aes_key_t key, const size_t iv_len,
  *
  * Populates the `ctx` parameter with initial values.
  *
+ * If the key is a sideloaded key, it is the caller's responsibility to load
+ * and clear it.
+ *
  * Typical usage looks like this (the `update_encrypted_data` and `update_aad`
  * calls cannot be interleaved with each other; you must pass all the
  * associated data before adding encrypted data):
@@ -190,6 +187,9 @@ status_t aes_gcm_update_aad(aes_gcm_context_t *ctx, const size_t aad_len,
  * For encryption, this updates the plaintext. For decryption, it updates the
  * ciphertext.
  *
+ * If the key is a sideloaded key, it is the caller's responsibility to load
+ * and clear it.
+ *
  * Updates the context and returns output that corresponds to (full blocks
  * of) the new chunk of input. The output buffer must have enough space to
  * hold all full blocks that could be produced; rounding the input length up
@@ -220,6 +220,9 @@ status_t aes_gcm_update_encrypted_data(aes_gcm_context_t *ctx,
  * available. If there is definitely no partial data present, `output` will be
  * unused and may be NULL.
  *
+ * If the key is a sideloaded key, it is the caller's responsibility to load
+ * and clear it.
+ *
  * Returns the number of output bytes written in `output_len`.
  *
  * @param ctx AES-GCM context object.
@@ -238,6 +241,9 @@ status_t aes_gcm_encrypt_final(aes_gcm_context_t *ctx, size_t tag_len,
  * Starts an AES-GCM authenticated decryption operation.
  *
  * Populates the `ctx` parameter with initial values.
+ *
+ * If the key is a sideloaded key, it is the caller's responsibility to load
+ * and clear it.
  *
  * Typical usage looks like this (the `update_encrypted_data` and `update_aad`
  * calls cannot be interleaved with each other; you must pass all the
@@ -259,6 +265,9 @@ status_t aes_gcm_decrypt_init(const aes_key_t key, const size_t iv_len,
 
 /**
  * Finishes an AES-GCM decryption operation.
+ *
+ * If the key is a sideloaded key, it is the caller's responsibility to load
+ * and clear it.
  *
  * Finishes processing the data and computes the tag, then compares it to the
  * actual tag. If there is partial data present, `output` must have at least

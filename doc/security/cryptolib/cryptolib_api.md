@@ -17,7 +17,7 @@ This page:
   - [Elliptic curve cryptography](#elliptic-curve-cryptography)
   - [Deterministic random bit generation (DRBG)](#deterministic-random-bit-generation)
   - [Key derivation functions (KDF)](#key-derivation)
-  - [Key import and export](#key-import-and-export)
+  - [Key transport](#key-transport)
 - Explains how [asynchronous operations](#asynchronous-operations) work
 - Lists the [security strength](#security-strength) of each algorithm
 - Lists [references](#reference) for further reading
@@ -44,113 +44,116 @@ Note that in the OpenTitan cryptolib, memory allocation is left mostly to the ca
 
 ### Status Codes
 
-All functions in the OpenTitan cryptolib return `crypto_status_t`.
+All functions in the OpenTitan cryptolib return `otcrypto_status_t`.
 This design is compatible with OpenTitan's internal `status_t` datatype.
 
-{{#header-snippet sw/device/lib/crypto/include/datatypes.h crypto_status_t }}
+{{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_status_t }}
 
-However, the cryptolib additionally guarantees that all status codes will be bit-compatible to the `crypto_status_value` enum.
+However, the cryptolib additionally guarantees that all status codes will be bit-compatible to the `otcrypto_status_value` enum.
 Callers who do not wish to use `status_t` infrastructure may compare to these values.
 
-{{#header-snippet sw/device/lib/crypto/include/datatypes.h crypto_status_value }}
+{{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_status_value }}
 
 ### Data buffers
 
 The cryptolib uses byte buffers for data that may not be 32-bit aligned, such as message inputs to hash functions.
 
-{{#header-snippet sw/device/lib/crypto/include/datatypes.h crypto_byte_buf }}
-{{#header-snippet sw/device/lib/crypto/include/datatypes.h crypto_const_byte_buf }}
+{{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_byte_buf }}
+{{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_const_byte_buf }}
 
 The cryptolib uses word buffers to enforce alignment where either the data is guaranteed to be aligned or where it is especially helpful for implementation reasons.
 Since most OpenTitan hardware interfaces expect aligned data, this is important sometimes for security and simplicity.
 Word buffers can be safely interpreted as byte streams by the caller; the bytes are arranged so that on a little-endian processor like Ibex, they will read as the correct byte-stream even if the specification calls for big-endian.
 
-{{#header-snippet sw/device/lib/crypto/include/datatypes.h crypto_word32_buf }}
-{{#header-snippet sw/device/lib/crypto/include/datatypes.h crypto_const_word32_buf }}
+{{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_word32_buf }}
+{{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_const_word32_buf }}
 
 ### Key data structures
 
 Keys receive extra protection from the cryptolib.
-Public keys are represented in plain, "unblinded" form, but have a checksum to protect their integrity.
+Public keys are represented in plain, "unblinded" form, but include a checksum to protect them against accidental corruption.
 The checksum is implementation-specific and may change over time.
-Therefore, the caller should not compute the checksum themselves; use the key import/export functions to construct unblinded keys.
+The caller should use algorithm-specific routines to construct unblinded keys; see e.g. the ECC and RSA sections for details.
 
-{{#header-snippet sw/device/lib/crypto/include/datatypes.h crypto_unblinded_key }}
+{{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_unblinded_key }}
 
 Secret keys are "blinded", meaning that keys are represented by at least two "shares" the same size as the key.
+Blinded keys are also sometimes referred to as "masked".
 This helps protect against e.g. power side-channel attacks, because the code will never handle a bit of the "real" key, only the independent shares.
-The choice of blinding method depends on the algorithm and is implementation-specific.
-Callers should use key import/export functions to interpret blinded keys.
+The exact blinding method and internal representation of blinded key data is opaque to the caller and subject to change in future library versions.
+Lke unblinded keys, they include a checksum.
+Callers should use key import/export functions to generate, construct, and interpret blinded keys.
 
-{{#header-snippet sw/device/lib/crypto/include/datatypes.h crypto_blinded_key }}
+{{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_blinded_key }}
 
 As shown above, all secret keys have a configuration value.
+Once the key is created, or imported, the configuration is not expected to change; the cryptolib will never change it, and the caller would have to recompute the key checksum to change it, which is not recommended.
 The configuration helps the cryptolib interpret how the key is represented and how it is permitted to be used.
 Nothing in the configuration is typically secret.
 
-{{#header-snippet sw/device/lib/crypto/include/datatypes.h crypto_key_config }}
+{{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_key_config }}
 
 In most cases, the caller needs to provide a configuration before calling algorithms which generate secret keys.
-
-Callers may request keys from OpenTitan's [key manager block][keymgr] by setting `hw_backed` and `diversification_hw_backed` in the key configuration.
-If the key is produced by the key manager, then the keyblob has length 0; the diversification information is enough to produce the key.
+Callers may request keys from OpenTitan's [key manager block][keymgr] by setting `hw_backed` in the key configuration.
+In this case, the keyblob is the diversification input for key manager instead of the key material itself.
+See the [key transport](#key-transport) section for more details.
 
 ### Bookkeeping data structures
 
 This versioning enum helps the cryptolib keep backwards-compatibility if the representation of opaque data-structures changes.
 This way, a later version of the cryptolib can still recognize and interpret a data structure produced by an earlier version, for example a stored key.
 
-{{#header-snippet sw/device/lib/crypto/include/datatypes.h crypto_lib_version }}
+{{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_lib_version }}
 
 The required security level for the blinded key is chosen using the enum below.
 At high security levels, the crypto library will prioritize protecting the key from sophisticated attacks, even at large performance costs. If the security level is low, the crypto library will still try to protect the key, but may forgo the most costly protections against it.
 
-{{#header-snippet sw/device/lib/crypto/include/datatypes.h crypto_key_security_level }}
+{{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_key_security_level }}
 
 Data structures for key types and modes help the cryptolib recognize and prevent misuse of a key for the wrong algorithm or mode.
 
-{{#header-snippet sw/device/lib/crypto/include/datatypes.h key_type }}
-{{#header-snippet sw/device/lib/crypto/include/datatypes.h aes_key_mode }}
-{{#header-snippet sw/device/lib/crypto/include/datatypes.h hmac_key_mode }}
-{{#header-snippet sw/device/lib/crypto/include/datatypes.h kmac_key_mode }}
-{{#header-snippet sw/device/lib/crypto/include/datatypes.h rsa_key_mode }}
-{{#header-snippet sw/device/lib/crypto/include/datatypes.h ecc_key_mode }}
-{{#header-snippet sw/device/lib/crypto/include/datatypes.h kdf_key_mode }}
-{{#header-snippet sw/device/lib/crypto/include/datatypes.h key_mode }}
+{{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_key_type }}
+{{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_aes_key_mode }}
+{{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_hmac_key_mode }}
+{{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_kmac_key_mode }}
+{{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_rsa_key_mode }}
+{{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_ecc_key_mode }}
+{{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_kdf_key_mode }}
+{{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_key_mode }}
 
 ### Algorithm-specific data structures
 
 #### AES data structures
 
-{{#header-snippet sw/device/lib/crypto/include/aes.h block_cipher_mode }}
-{{#header-snippet sw/device/lib/crypto/include/aes.h aes_operation }}
-{{#header-snippet sw/device/lib/crypto/include/aes.h aes_padding }}
-{{#header-snippet sw/device/lib/crypto/include/aes.h aead_gcm_tag_len }}
+{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_mode }}
+{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_operation }}
+{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_padding }}
+{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_gcm_tag_len }}
 
 #### Elliptic curve data structures
 
-{{#header-snippet sw/device/lib/crypto/include/ecc.h eddsa_sign_mode }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h ecc_domain }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h ecc_curve_type }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h ecc_curve }}
+{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_eddsa_sign_mode }}
+{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecc_domain }}
+{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecc_curve_type }}
+{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecc_curve }}
 
 #### Hash data structures
 
-{{#header-snippet sw/device/lib/crypto/include/datatypes.h hash_mode }}
-{{#header-snippet sw/device/lib/crypto/include/datatypes.h hash_digest }}
+{{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_hash_mode }}
+{{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_hash_digest }}
 
 #### Key derivation data structures
 
-{{#header-snippet sw/device/lib/crypto/include/kdf.h kdf_type }}
+{{#header-snippet sw/device/lib/crypto/include/kdf.h otcrypto_kdf_type }}
 
 #### Message authentication data structures
 
-{{#header-snippet sw/device/lib/crypto/include/mac.h kmac_mode }}
+{{#header-snippet sw/device/lib/crypto/include/mac.h otcrypto_kmac_mode }}
 
 #### RSA data structures
 
-{{#header-snippet sw/device/lib/crypto/include/rsa.h rsa_padding }}
-{{#header-snippet sw/device/lib/crypto/include/rsa.h rsa_size }}
+{{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_padding }}
+{{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_size }}
 
 ### Private data structures
 
@@ -158,8 +161,8 @@ The following data structures are considered implementation specific.
 The caller knows their size and must allocate space for them.
 However, they are essentially scratchpad space for the underlying implementation and should not be modified directly.
 
-{{#header-snippet sw/device/lib/crypto/include/hash.h hash_context }}
-{{#header-snippet sw/device/lib/crypto/include/mac.h hmac_context }}
+{{#header-snippet sw/device/lib/crypto/include/hash.h otcrypto_hash_context }}
+{{#header-snippet sw/device/lib/crypto/include/mac.h otcrypto_hmac_context }}
 
 ## AES
 
@@ -167,7 +170,7 @@ OpenTitan includes a hardware [AES block][aes].
 The AES block supports five cipher modes (ECB, CBC, CFB, OFB, and CTR) with a key length of 128 bits, 192 bits and 256 bits.
 
 The crypto library includes all five basic cipher modes supported by the hardware, as well as the AES-KWP key-wrapping scheme and AES-GCM authenticated encryption scheme.
-Padding schemes are defined in the **aes\_padding\_t** structure from [this section](#aes-data-structures).
+Padding schemes are defined in the **otcrypto\_aes\_padding\_t** structure from [this section](#aes-data-structures).
 
 Because the crypto library uses the hardware AES block, it does not expose an init/update/final interface for AES, since this would risk locking up the block if an operation is not finalized.
 
@@ -186,14 +189,19 @@ It protects both the confidentiality and authenticity of the main input and the 
 GCM is specified in [NIST SP800-38D][gcm-spec].
 One important note for using AES-GCM is that shorter tags degrade authentication guarantees, so it is important to fully understand the implications before using shortened tags.
 
-In addition, we expose the internal GHASH and GCTR operation that GCM relies upon (from [NIST SP800-38D][gcm-spec], section 6.4).
-This allows flexibility for use-cases that need custom GCM constructs: for example, we do not provide AES-GCM in streaming mode here because it encourages decryption and processing of unauthenticated data, but some users may need it for compatibility purposes.
-Additionally, the GHASH operation can be used to construct GCM with block ciphers other than AES.
+The cryptolib offers GCM in one-shot and in streaming mode.
+In streaming mode, it is strongly recommended not to process the decrypted data before verifying the authentication tag.
 
 #### GCM - Authenticated Encryption and Decryption
 
-{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_encrypt_gcm }}
-{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_decrypt_gcm }}
+{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_gcm_encrypt }}
+{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_gcm_decrypt }}
+{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_gcm_encrypt_init }}
+{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_gcm_decrypt_init }}
+{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_gcm_update_aad }}
+{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_gcm_update_encrypted_data }}
+{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_gcm_encrypt_final }}
+{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_gcm_decrypt_final }}
 
 ### AES-KWP
 
@@ -269,7 +277,7 @@ RSA (Rivest-Shamir-Adleman) is a family of asymmetric cryptographic algorithms s
 OpenTitan uses the [OpenTitan Big Number Accelerator][otbn] to speed up RSA operations.
 
 OpenTitan supports RSA key generation, signature generation, and signature verification for modulus lengths of 2048, 3072, and 4096 bits.
-Supported padding schemes are defined in the **rsa\_padding\_t** structure in [this section](#rsa-data-structures).
+Supported padding schemes are defined in the **otcrypto\_rsa\_padding\_t** structure in [this section](#rsa-data-structures).
 
 All RSA operations may be run [asynchronously](#asynchronous-operations) through a dedicated [asynchronous API](#rsa-asynchronous-api).
 
@@ -292,7 +300,6 @@ Hash function collision resistance strengths are in the same document (table 3).
 Usually, the collision resistance of a hash function is half the length of its digest.
 For example, SHA-256 has a 256-bit digest and 128-bit strength for collision resistance.
 
-Supported hashing modes are defined in the **rsa\_hash\_t** structure in [this section](#rsa-data-structures).
 The cryptolib will return an error if the hash function lacks enough collision resistance for the RSA length.
 
 Padding schemes are frequently critical for RSA security, and using RSA without a well-established padding scheme is very risky.
@@ -460,30 +467,33 @@ Key derivation functions (KDFs) generate a new key from an existing key.
 
 ### Supported Modes
 
-The OpenTitan key derivation function is based on the counter mode and uses a pseudorandom function (PRF) as a building block.
-The PRF may be either HMAC or KMAC.
+OpenTitan supports two different key derivation methods:
+- KDF-CTR following [NIST SP800-108][kdf-prf-spec] with HMAC or KMAC as the PRF
+- HKDF following [IETF RFC 5869][hkdf-rfc], which is special case of [NIST SP800-56C][nist-kdf-key-establishment]
 
-To learn more about PRFs, various key derivation mechanisms and security considerations, please refer to [NIST SP800-108][kdf-spec] and the links in the [reference](#reference) section.
+To learn more about PRFs, various key derivation mechanisms and security considerations, please refer to the links in the [reference](#reference) section.
 
 ### API
 
+#### KDF-CTR
+
 {{#header-snippet sw/device/lib/crypto/include/kdf.h otcrypto_kdf_ctr }}
 
-## Key import and export
+#### HKDF
 
-The following section defines the interface for importing keys to and exporting keys from the crypto library.
+{{#header-snippet sw/device/lib/crypto/include/kdf.h otcrypto_kdf_hkdf }}
+{{#header-snippet sw/device/lib/crypto/include/kdf.h otcrypto_kdf_hkdf_extract }}
+{{#header-snippet sw/device/lib/crypto/include/kdf.h otcrypto_kdf_hkdf_expand }}
 
-The crypto library typically represents private keys in blinded form, where the exact shape of the blinded key is opaque to the user.
-Public keys are in unblinded form, and the user can easily extract the plain key data.
-However, in some cases, a user might want to import a key generated elsewhere into the cryptolib, or might want to export a private key for use in a different piece of code.
+## Key transport
 
-### Supported Modes
+This is the interface for generating, importing, and exporting crypto library symmetric keys.
+Asymmetric schemes (e.g. RSA or elliptic-curve cryptography) use algorithm-specific routines for key generation; refer to the RSA and ECC sections instead to generate, import, or export asymmetric keys.
 
-The crypto library provides four functions for this purpose:
-- Build an unblinded key from user-provided key data and mode
-- Build a blinded key from user-provided key data and configuration
-- Export an unblinded key to the user-provided key data
-- Export a blinded key to the user-provided key data in shares
+The crypto library represents private keys in masked form ("blinded keys").
+The internal structure of blinded keys is opaque to the user and may change in subsequent versions of the crypto library.
+The caller can control certain characteristics of the generated key via the key configuration.
+See the [key data structures](#key-data-structures) section for more details.
 
 ### Generate random keys
 
@@ -493,15 +503,16 @@ The crypto library provides four functions for this purpose:
 
 {{#header-snippet sw/device/lib/crypto/include/key_transport.h otcrypto_hw_backed_key }}
 
-### Import Keys
+### Import Symmetric Keys
 
-{{#header-snippet sw/device/lib/crypto/include/key_transport.h otcrypto_import_unblinded_key }}
 {{#header-snippet sw/device/lib/crypto/include/key_transport.h otcrypto_import_blinded_key }}
 
-### Export Keys
+### Export Symmetric Keys
 
-{{#header-snippet sw/device/lib/crypto/include/key_transport.h otcrypto_export_unblinded_key }}
 {{#header-snippet sw/device/lib/crypto/include/key_transport.h otcrypto_export_blinded_key }}
+
+Some blinded keys are marked as non-exportable in their configurations.
+The crypto library will always refuse to export these keys.
 
 ## Asynchronous operations
 
@@ -624,7 +635,9 @@ The table below is a recommendation from [NIST SP800-57 Part 1][nist-sp800-57] a
 4. OpenTitan [CSRNG block][csrng] technical specification
 
 **Key derivation**
-1. [NIST SP800-108][kdf-spec]: Recommendation for Key Derivation using Pseudorandom Functions
+1. [NIST SP800-108][kdf-prf-spec]: Recommendation for Key Derivation using Pseudorandom Functions
+2. [NIST SP800-56C][nist-kdf-key-establishment]: Recommendation for Key-Derivation Methods in Key-Establishment Schemes
+3. [RFC 5869][hkdf-rfc]: HMAC-based Extract-and-Expand Key Derivation Function (HKDF)
 
 **Key management and security strength**
 1. [NIST SP800-131][nist-sp800-131a]: Transitioning the Use of Cryptographic Algorithms and Key Lengths
@@ -643,17 +656,19 @@ The table below is a recommendation from [NIST SP800-57 Part 1][nist-sp800-57] a
 [entropy-src]:  ../../../hw/ip/entropy_src/README.md
 [fips-186]: https://csrc.nist.gov/publications/detail/fips/186/5/final
 [gcm-spec]: https://csrc.nist.gov/publications/detail/sp/800-38d/final
+[hkdf-rfc]: https://datatracker.ietf.org/doc/html/rfc5869
 [hmac]:  ../../../hw/ip/hmac/README.md
 [hmac-rfc]: https://datatracker.ietf.org/doc/html/rfc2104
 [hmac-testvectors-rfc]: https://datatracker.ietf.org/doc/html/rfc4231
 [hmac-usage-rfc]: https://datatracker.ietf.org/doc/html/rfc4868
-[kdf-spec]: https://csrc.nist.gov/publications/detail/sp/800-108/final
+[kdf-prf-spec]: https://csrc.nist.gov/publications/detail/sp/800-108/final
 [keymgr]:  ../../../hw/ip/keymgr/README.md
 [kmac]:  ../../../hw/ip/kmac/README.md
 [kwp-spec]: https://csrc.nist.gov/publications/detail/sp/800-38f/final
 [nist-drbg-spec]: https://csrc.nist.gov/publications/detail/sp/800-90a/rev-1/final
 [nist-ecc-domain-params]: https://csrc.nist.gov/publications/detail/sp/800-186/final
 [nist-entropy-spec]: https://csrc.nist.gov/publications/detail/sp/800-90b/final
+[nist-kdf-key-establishment]: https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-56Cr2.pdf
 [nist-rng-spec]: https://csrc.nist.gov/CSRC/media/Publications/sp/800-90c/draft/documents/sp800_90c_second_draft.pdf
 [nist-sp800-131a]: https://csrc.nist.gov/publications/detail/sp/800-131a/rev-2/final
 [nist-sp800-57]: https://csrc.nist.gov/publications/detail/sp/800-57-part-1/rev-5/final

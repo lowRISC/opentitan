@@ -16,7 +16,11 @@ import jsonschema
 from cryptotest_util import parse_rsp, str_to_byte_array
 
 
-SUPPORTED_NIST_CURVES = ["P-256", "P-384"]
+# Mapping from the curve names used by NIST to those used by cryptotest
+EC_NAME_MAPPING = {
+    "P-256": "p256",
+    "P-384": "p384",
+}
 
 
 def parse_testcases(args) -> None:
@@ -27,13 +31,13 @@ def parse_testcases(args) -> None:
     # algorithm) pairs
     for section_name in raw_testcases.keys():
         curve, hash_alg = section_name.split(",")
-        if curve not in SUPPORTED_NIST_CURVES:
+        if curve not in EC_NAME_MAPPING.keys():
             continue
         for test_vec in raw_testcases[section_name]:
             test_case = {
                 "algorithm": "ecdsa",
                 "operation": "verify",
-                "curve": curve.lower(),
+                "curve": EC_NAME_MAPPING[curve],
                 "hash_alg": hash_alg.lower(),
                 "message": str_to_byte_array(test_vec["Msg"]),
                 "qx": int(test_vec["Qx"], 16),

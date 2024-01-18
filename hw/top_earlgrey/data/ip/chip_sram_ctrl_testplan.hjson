@@ -55,12 +55,8 @@
         "chip_sw_sleep_sram_ret_contents_scramble",
       ]
       bazel: [
-        "//sw/device/tests:sram_ctrl_sleep_sram_ret_contents_no_scramble_test_fpga_cw310_sival",
-        "//sw/device/tests:sram_ctrl_sleep_sram_ret_contents_no_scramble_test_fpga_cw310_sival_rom_ext",
-        "//sw/device/tests:sram_ctrl_sleep_sram_ret_contents_no_scramble_test_fpga_cw310_rom_test",
-        "//sw/device/tests:sram_ctrl_sleep_sram_ret_contents_scramble_test_fpga_cw310_sival",
-        "//sw/device/tests:sram_ctrl_sleep_sram_ret_contents_scramble_test_fpga_cw310_sival_rom_ext",
-        "//sw/device/tests:sram_ctrl_sleep_sram_ret_contents_scramble_test_fpga_cw310_rom_test",
+        "//sw/device/tests:sram_ctrl_sleep_sram_ret_contents_no_scramble_test",
+        "//sw/device/tests:sram_ctrl_sleep_sram_ret_contents_scramble_test",
       ]
     }
     {
@@ -107,6 +103,7 @@
       stage: V2
       si_stage: SV3
       tests: ["chip_sw_sram_ctrl_execution_main"]
+      bazel: ["//sw/device/tests:sram_ctrl_execution_test"]
     }
     {
       name: chip_sw_sram_lc_escalation

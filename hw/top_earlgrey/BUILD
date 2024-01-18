@@ -48,7 +48,10 @@ fpga_cw310(
     name = "fpga_cw310",
     design = "earlgrey",
     exec_env = "fpga_cw310",
-    lib = "//sw/device/lib/arch:fpga_cw310",
+    libs = [
+        "//sw/device/lib/arch:boot_stage_rom_ext",
+        "//sw/device/lib/arch:fpga_cw310",
+    ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
     rom_scramble_config = "//hw/top_earlgrey/data:autogen/top_earlgrey.gen.hjson",
     test_cmd = "testing-not-supported",
@@ -107,6 +110,10 @@ fpga_cw310(
     testonly = True,
     base = ":fpga_cw310_test_rom",
     exec_env = "fpga_cw310_rom_ext",
+    libs = [
+        "//sw/device/lib/arch:boot_stage_owner",
+        "//sw/device/lib/arch:fpga_cw310",
+    ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
     manifest = "//sw/device/silicon_owner:manifest_standard",
     otp = "//sw/device/silicon_creator/rom_ext/e2e:otp_img_secret2_locked_rma",
@@ -157,6 +164,10 @@ fpga_cw310(
     testonly = True,
     base = ":fpga_hyper310_rom_with_fake_keys",
     exec_env = "fpga_hyper310_rom_ext",
+    libs = [
+        "//sw/device/lib/arch:boot_stage_owner",
+        "//sw/device/lib/arch:fpga_cw310",
+    ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
     manifest = "//sw/device/silicon_owner:manifest_standard",
     otp = "//sw/device/silicon_creator/rom_ext/e2e:otp_img_secret2_locked_rma",
@@ -198,6 +209,10 @@ fpga_cw310(
     testonly = True,
     base = ":fpga_hyper310_rom_ext",
     exec_env = "fpga_cw310_sival_rom_ext",
+    libs = [
+        "//sw/device/lib/arch:boot_stage_owner",
+        "//sw/device/lib/arch:fpga_cw310",
+    ],
     otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival_bringup:otp_img_prod_manuf_personalized",
     rom_ext = "//sw/device/silicon_creator/rom_ext/sival:rom_ext_fake_prod_signed_slot_a",
     rsa_key = {"//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_prod_private_key_0": "prod_key_0"},
@@ -215,7 +230,10 @@ fpga_cw305(
     name = "fpga_cw305",
     design = "earlgrey",
     exec_env = "fpga_cw305",
-    lib = "//sw/device/lib/arch:fpga_cw305",
+    libs = [
+        "//sw/device/lib/arch:boot_stage_rom_ext",
+        "//sw/device/lib/arch:fpga_cw305",
+    ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
     rom_scramble_config = "//hw/top_earlgrey/data:autogen/top_earlgrey.gen.hjson",
     test_cmd = "testing-not-supported",
@@ -232,7 +250,10 @@ fpga_cw340(
     name = "fpga_cw340",
     design = "earlgrey",
     exec_env = "fpga_cw340",
-    lib = "//sw/device/lib/arch:fpga_cw340",
+    libs = [
+        "//sw/device/lib/arch:boot_stage_rom_ext",
+        "//sw/device/lib/arch:fpga_cw340",
+    ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
     rom_scramble_config = "//hw/top_earlgrey/data:autogen/top_earlgrey.gen.hjson",
     test_cmd = "testing-not-supported",
@@ -280,7 +301,10 @@ silicon(
     ],
     design = "earlgrey",
     exec_env = "silicon_creator",
-    lib = "//sw/device/lib/arch:silicon",
+    libs = [
+        "//sw/device/lib/arch:boot_stage_rom_ext",
+        "//sw/device/lib/arch:silicon",
+    ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
     manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
     param = {
@@ -310,7 +334,10 @@ silicon(
     ],
     design = "earlgrey",
     exec_env = "silicon_owner_sival_rom_ext",
-    lib = "//sw/device/lib/arch:silicon",
+    libs = [
+        "//sw/device/lib/arch:boot_stage_owner",
+        "//sw/device/lib/arch:silicon",
+    ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
     manifest = "//sw/device/silicon_owner:manifest_standard",
     param = {
@@ -325,7 +352,7 @@ silicon(
     }),
     rsa_key = select({
         "//signing:test_keys": {"//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_test_private_key_0": "test_key_0"},
-        "//conditions:default": {"//sw/device/silicon_creator/rom_ext/keys/real:keyset": "earlgrey_z0_sival_1"},
+        "//conditions:default": {"//sw/device/silicon_creator/rom_ext/sival/keys:keyset": "earlgrey_z0_sival_1"},
     }),
     test_cmd = """
         --exec="transport init"
@@ -333,6 +360,21 @@ silicon(
         --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
         no-op
     """,
+)
+
+silicon(
+    name = "silicon_owner_prodc_rom_ext",
+    testonly = True,
+    base = ":silicon_owner_sival_rom_ext",
+    exec_env = "silicon_owner_prodc_rom_ext",
+    rom_ext = select({
+        "//signing:test_keys": "//sw/device/silicon_creator/rom_ext/prodc:rom_ext_fake_prod_signed_slot_a",
+        "//conditions:default": "//sw/device/silicon_creator/rom_ext/prodc/binaries:rom_ext_real_prod_signed_slot_a",
+    }),
+    rsa_key = select({
+        "//signing:test_keys": {"//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_test_private_key_0": "test_key_0"},
+        "//conditions:default": {"//sw/device/silicon_creator/rom_ext/prodc/keys:keyset": "earlgrey_z0_prodc_1"},
+    }),
 )
 
 ###########################################################################
@@ -345,7 +387,10 @@ sim_verilator(
     name = "sim_verilator_base",
     design = "earlgrey",
     exec_env = "sim_verilator",
-    lib = "//sw/device/lib/arch:sim_verilator",
+    libs = [
+        "//sw/device/lib/arch:boot_stage_rom_ext",
+        "//sw/device/lib/arch:sim_verilator",
+    ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
     otp = "//hw/ip/otp_ctrl/data:img_rma",
     rom_scramble_config = "//hw/top_earlgrey/data:autogen/top_earlgrey.gen.hjson",
@@ -393,7 +438,10 @@ sim_dv(
     exec_env = "sim_dv",
     extract_sw_logs = "//util/device_sw_utils:extract_sw_logs_db",
     flash_scramble_tool = "//util/design:gen-flash-img",
-    lib = "//sw/device/lib/arch:sim_dv",
+    libs = [
+        "//sw/device/lib/arch:boot_stage_rom_ext",
+        "//sw/device/lib/arch:sim_dv",
+    ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
     otp = "//hw/ip/otp_ctrl/data:img_rma",
     otp_data_perm = "//hw/ip/otp_ctrl/data:data_perm",

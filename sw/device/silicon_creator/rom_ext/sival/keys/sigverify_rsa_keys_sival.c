@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/base/macros.h"
-#include "sw/device/silicon_creator/rom_ext/keys/real/earlgrey_z0_sival_1.h"
 #include "sw/device/silicon_creator/rom_ext/sigverify_keys.h"
+#include "sw/device/silicon_creator/rom_ext/sival/keys/earlgrey_z0_sival_1.h"
 
 /**
  * Number of RSA public keys.

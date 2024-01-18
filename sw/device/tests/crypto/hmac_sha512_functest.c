@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
@@ -58,20 +59,21 @@ static const uint32_t kTestMask[ARRAYSIZE(kLongTestKey)] = {
  * @return Result (OK or error).
  */
 static status_t run_test(const uint32_t *key, size_t key_len,
-                         crypto_const_byte_buf_t msg, const uint32_t *exp_tag) {
+                         otcrypto_const_byte_buf_t msg,
+                         const uint32_t *exp_tag) {
   // Construct blinded key.
-  crypto_key_config_t config = {
-      .version = kCryptoLibVersion1,
-      .key_mode = kKeyModeHmacSha512,
+  otcrypto_key_config_t config = {
+      .version = kOtcryptoLibVersion1,
+      .key_mode = kOtcryptoKeyModeHmacSha512,
       .key_length = key_len,
       .hw_backed = kHardenedBoolFalse,
       .exportable = kHardenedBoolFalse,
-      .security_level = kSecurityLevelLow,
+      .security_level = kOtcryptoKeySecurityLevelLow,
   };
 
   uint32_t keyblob[keyblob_num_words(config)];
   TRY(keyblob_from_key_and_mask(key, kTestMask, config, keyblob));
-  crypto_blinded_key_t blinded_key = {
+  otcrypto_blinded_key_t blinded_key = {
       .config = config,
       .keyblob = keyblob,
       .keyblob_length = sizeof(keyblob),
@@ -80,12 +82,12 @@ static status_t run_test(const uint32_t *key, size_t key_len,
   blinded_key.checksum = integrity_blinded_checksum(&blinded_key);
 
   uint32_t act_tag[kTagLenWords];
-  crypto_word32_buf_t tag_buf = {
+  otcrypto_word32_buf_t tag_buf = {
       .data = act_tag,
       .len = ARRAYSIZE(act_tag),
   };
 
-  TRY(otcrypto_hmac(&blinded_key, msg, kHashModeSha512, &tag_buf));
+  TRY(otcrypto_hmac(&blinded_key, msg, &tag_buf));
   TRY_CHECK_ARRAYS_EQ(act_tag, exp_tag, kTagLenWords);
   return OK_STATUS();
 }
@@ -99,7 +101,7 @@ static status_t run_test(const uint32_t *key, size_t key_len,
  */
 static status_t simple_test(void) {
   const char plaintext[] = "Test message.";
-  crypto_const_byte_buf_t msg_buf = {
+  otcrypto_const_byte_buf_t msg_buf = {
       .data = (unsigned char *)plaintext,
       .len = sizeof(plaintext) - 1,
   };
@@ -126,7 +128,7 @@ static status_t empty_test(void) {
       0x928b591a, 0x7037a726, 0xdf196d4a, 0x2d589cf7,
 
   };
-  crypto_const_byte_buf_t msg_buf = {
+  otcrypto_const_byte_buf_t msg_buf = {
       .data = NULL,
       .len = 0,
   };
@@ -142,7 +144,7 @@ static status_t empty_test(void) {
  */
 static status_t long_key_test(void) {
   const char plaintext[] = "Test message.";
-  crypto_const_byte_buf_t msg_buf = {
+  otcrypto_const_byte_buf_t msg_buf = {
       .data = (unsigned char *)plaintext,
       .len = sizeof(plaintext) - 1,
   };
@@ -162,6 +164,7 @@ static volatile status_t test_result;
 
 bool test_main(void) {
   test_result = OK_STATUS();
+  CHECK_STATUS_OK(entropy_complex_init());
   EXECUTE_TEST(test_result, empty_test);
   EXECUTE_TEST(test_result, simple_test);
   EXECUTE_TEST(test_result, long_key_test);

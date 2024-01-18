@@ -22,7 +22,7 @@ manifest(d = {
     "address_translation": hex(CONST.HARDENED_FALSE),
     "identifier": hex(CONST.ROM_EXT),
     "manuf_state_creator": hex(CONST.MANUF_STATE.SIVAL),
-    "visibility": ["//visibility:public"],
+    "visibility": ["//visibility:private"],
 })
 
 # To test that the fake-signed SiVAL ROM_EXT can boot, you need a bitstream
@@ -82,7 +82,7 @@ opentitan_binary(
         "//sw/device/lib/crt",
         "//sw/device/silicon_creator/lib:manifest_def",
         "//sw/device/silicon_creator/rom_ext",
-        "//sw/device/silicon_creator/rom_ext/keys/real",
+        "//sw/device/silicon_creator/rom_ext/sival/keys",
     ],
 )
 
@@ -98,7 +98,7 @@ opentitan_binary(
         "//sw/device/lib/crt",
         "//sw/device/silicon_creator/lib:manifest_def",
         "//sw/device/silicon_creator/rom_ext",
-        "//sw/device/silicon_creator/rom_ext/keys/real",
+        "//sw/device/silicon_creator/rom_ext/sival/keys",
     ],
 )
 
@@ -111,7 +111,7 @@ offline_presigning_artifacts(
     ],
     manifest = ":manifest_sival",
     rsa_key = {
-        "//sw/device/silicon_creator/rom/keys/real/rsa:earlgrey_a0_prod_0": "ealrgrey_a0_prod_0",
+        "//sw/device/silicon_creator/rom/keys/real/rsa:earlgrey_a0_prod_0": "earlgrey_a0_prod_0",
     },
     tags = ["manual"],
 )

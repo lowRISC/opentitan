@@ -25,7 +25,7 @@
       features: ["I2C.MODE.HOST", "I2C.OPERATION.READ", "I2C.OPERATION.WRITE"]
       stage: V2
       si_stage: SV2
-      bazel: ["//sw/device/tests/pmod:i2c_host_eeprom_test_cw310_test_rom"]
+      bazel: ["//sw/device/tests/pmod:i2c_host_eeprom_test"]
       tests: ["chip_sw_i2c_host_tx_rx",
               "chip_sw_i2c_host_tx_rx_idx1",
               "chip_sw_i2c_host_tx_rx_idx2"]
@@ -49,7 +49,7 @@
       features: ["I2C.MODE.TARGET", "I2C.OPERATION.READ", "I2C.OPERATION.WRITE"]
       stage: V2
       si_stage: SV2
-      bazel: ["//sw/device/tests:i2c_target_test_cw310_test_rom"]
+      bazel: ["//sw/device/tests:i2c_target_test"]
       tests: ["chip_sw_i2c_device_tx_rx"]
     }
     {
@@ -138,7 +138,7 @@
       stage: V3
       si_stage: SV3
       tests: []
-      bazel: ["//sw/device/tests/pmod:i2c_host_eeprom_test_cw310_test_rom"]
+      bazel: ["//sw/device/tests/pmod:i2c_host_eeprom_test"]
     }
     {
       name: chip_sw_i2c_repeatedstart

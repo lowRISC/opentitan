@@ -12,6 +12,21 @@ cc_library(
 )
 
 cc_library(
+    name = "rsa_encryption",
+    srcs = ["rsa_encryption.c"],
+    hdrs = ["rsa_encryption.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        ":rsa_datatypes",
+        ":rsa_modexp",
+        ":rsa_padding",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/base:memory",
+    ],
+)
+
+cc_library(
     name = "rsa_keygen",
     srcs = ["rsa_keygen.c"],
     hdrs = ["rsa_keygen.h"],
@@ -48,6 +63,7 @@ cc_library(
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:memory",
+        "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/impl:hash",
         "//sw/device/lib/crypto/impl:status",
         "//sw/device/lib/crypto/impl/sha2:sha256",

@@ -187,7 +187,6 @@ rust_library(
         "src/transport/verilator/mod.rs",
         "src/transport/verilator/subprocess.rs",
         "src/transport/verilator/transport.rs",
-        "src/transport/verilator/uart.rs",
         "src/uart/console.rs",
         "src/uart/mod.rs",
         "src/util/bigint.rs",

@@ -82,6 +82,12 @@ EARLGREY_TEST_ENVS = {
     "//hw/top_earlgrey:sim_verilator": None,
 }
 
+# The default set of test environments for Earlgrey.
+EARLGREY_SILICON_OWNER_ROM_EXT_ENVS = {
+    "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
+    "//hw/top_earlgrey:silicon_owner_prodc_rom_ext": None,
+}
+
 # Messages we expect for possible test outcomes.
 OTTF_SUCCESS_MSG = r"PASS.*\n"
 OTTF_FAILURE_MSG = r"(FAIL|FAULT).*\n"

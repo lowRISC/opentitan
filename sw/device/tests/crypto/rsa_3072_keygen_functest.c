@@ -26,39 +26,40 @@ static const unsigned char kTestMessage[] = "Test message.";
 static const size_t kTestMessageLen = sizeof(kTestMessage) - 1;
 
 // RSA key mode for testing.
-static const key_mode_t kTestKeyMode = kKeyModeRsaSignPkcs;
+static const otcrypto_key_mode_t kTestKeyMode = kOtcryptoKeyModeRsaSignPkcs;
 
 status_t keygen_then_sign_test(void) {
   // Allocate buffer for the public key.
-  uint32_t public_key_data[ceil_div(kRsa3072PublicKeyBytes, sizeof(uint32_t))];
+  uint32_t public_key_data[ceil_div(kOtcryptoRsa3072PublicKeyBytes,
+                                    sizeof(uint32_t))];
   memset(public_key_data, 0, sizeof(public_key_data));
-  crypto_unblinded_key_t public_key = {
+  otcrypto_unblinded_key_t public_key = {
       .key_mode = kTestKeyMode,
-      .key_length = kRsa3072PublicKeyBytes,
+      .key_length = kOtcryptoRsa3072PublicKeyBytes,
       .key = public_key_data,
   };
 
   // Allocate buffers for the private key.
   size_t keyblob_words =
-      ceil_div(kRsa3072PrivateKeyblobBytes, sizeof(uint32_t));
+      ceil_div(kOtcryptoRsa3072PrivateKeyblobBytes, sizeof(uint32_t));
   uint32_t keyblob[keyblob_words];
   memset(keyblob, 0, sizeof(keyblob));
-  crypto_blinded_key_t private_key = {
+  otcrypto_blinded_key_t private_key = {
       .config =
           {
-              .version = kCryptoLibVersion1,
+              .version = kOtcryptoLibVersion1,
               .key_mode = kTestKeyMode,
-              .key_length = kRsa3072PrivateKeyBytes,
+              .key_length = kOtcryptoRsa3072PrivateKeyBytes,
               .hw_backed = kHardenedBoolFalse,
-              .security_level = kSecurityLevelLow,
+              .security_level = kOtcryptoKeySecurityLevelLow,
           },
-      .keyblob_length = kRsa3072PrivateKeyblobBytes,
+      .keyblob_length = kOtcryptoRsa3072PrivateKeyblobBytes,
       .keyblob = keyblob,
   };
 
   // Generate the key pair.
   LOG_INFO("Starting keypair generation...");
-  TRY(otcrypto_rsa_keygen(kRsaSize3072, &public_key, &private_key));
+  TRY(otcrypto_rsa_keygen(kOtcryptoRsaSize3072, &public_key, &private_key));
   LOG_INFO("Keypair generation complete.");
   LOG_INFO("OTBN instruction count: %u", otbn_instruction_count_get());
 
@@ -88,31 +89,32 @@ status_t keygen_then_sign_test(void) {
   TRY_CHECK(d_large_enough);
 
   // Hash the message.
-  crypto_const_byte_buf_t msg_buf = {
+  otcrypto_const_byte_buf_t msg_buf = {
       .len = kTestMessageLen,
       .data = kTestMessage,
   };
   uint32_t msg_digest_data[kSha512DigestWords];
-  hash_digest_t msg_digest = {
+  otcrypto_hash_digest_t msg_digest = {
       .data = msg_digest_data,
       .len = ARRAYSIZE(msg_digest_data),
-      .mode = kHashModeSha512,
+      .mode = kOtcryptoHashModeSha512,
   };
   TRY(otcrypto_hash(msg_buf, &msg_digest));
 
   uint32_t sig[kRsa3072NumWords];
-  crypto_word32_buf_t sig_buf = {
+  otcrypto_word32_buf_t sig_buf = {
       .data = sig,
       .len = kRsa3072NumWords,
   };
-  crypto_const_word32_buf_t const_sig_buf = {
+  otcrypto_const_word32_buf_t const_sig_buf = {
       .data = sig,
       .len = kRsa3072NumWords,
   };
 
   // Generate a signature.
   LOG_INFO("Starting signature generation...");
-  TRY(otcrypto_rsa_sign(&private_key, &msg_digest, kRsaPaddingPkcs, &sig_buf));
+  TRY(otcrypto_rsa_sign(&private_key, &msg_digest, kOtcryptoRsaPaddingPkcs,
+                        &sig_buf));
   LOG_INFO("Signature generation complete.");
   LOG_INFO("OTBN instruction count: %u", otbn_instruction_count_get());
 
@@ -120,7 +122,7 @@ status_t keygen_then_sign_test(void) {
   // p and q, incorrect d), then this is likely to fail.
   LOG_INFO("Starting signature verification...");
   hardened_bool_t verification_result;
-  TRY(otcrypto_rsa_verify(&public_key, &msg_digest, kRsaPaddingPkcs,
+  TRY(otcrypto_rsa_verify(&public_key, &msg_digest, kOtcryptoRsaPaddingPkcs,
                           const_sig_buf, &verification_result));
   LOG_INFO("Signature verification complete.");
   LOG_INFO("OTBN instruction count: %u", otbn_instruction_count_get());

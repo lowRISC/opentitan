@@ -149,8 +149,6 @@ When HW_DEBUG_EN is OFF, the TAP should not be able to perform its normal debug 
 #### CPU_EN
 
 CPU_EN controls whether code execution is allowed.
-This is implemented as part of the processor's reset controls.
-In OpenTitan's [reset topology](../../rstmgr/README.md), it is not possible to reset only the processor by itself, so this reset control extends to a large population of the OpenTitan peripherals.
 
 This ensures that during specific states (RAW, TEST_LOCKED, SCRAP, INVALID) it is not possible for the processor to execute code that breaks the device out of a non-functional state.
 

@@ -46,6 +46,7 @@ jobs:
   - publish: $(Pipeline.Workspace)/opentitan-repo.tar.gz
     artifact: opentitan-repo
     displayName: Upload repository
+
 - job: lint
   displayName: Quality (quick lint)
   # Run code quality checks (quick lint)
@@ -179,23 +180,13 @@ jobs:
   dependsOn: lint
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
   pool: ci-public
-  variables:
-    - name: bazelCacheGcpKeyPath
-      value: ''
   steps:
   - template: ci/checkout-template.yml
   - template: ci/install-package-dependencies.yml
-  - task: DownloadSecureFile@1
-    condition: eq(variables['Build.SourceBranchName'], 'master')
-    name: bazelCacheGcpKey
-    inputs:
-      secureFile: "bazel_cache_gcp_key.json"
-    # Set the remote cache GCP key path
-  - bash: echo "##vso[task.setvariable variable=bazelCacheGcpKeyPath]$(bazelCacheGcpKey.secureFilePath)"
-    condition: eq(variables['Build.SourceBranchName'], 'master')
-    displayName: GCP key path
+  - template: ci/load-bazel-cache-write-creds.yml
   - bash: |
       set -x -e
+
       # Check the entire build graph for conflicts in loading or analysis
       # phases. For context, see issue #18726.
       # First, test with an empty bitstream cache entry.
@@ -214,14 +205,13 @@ jobs:
       #   shallow exclusion; tests deeper under //hw will still be found.
       # * It excludes targets that depend on bitstream_splice rules, since the
       #   environment does not have access to Vivado.
-      export GCP_BAZEL_CACHE_KEY=$(bazelCacheGcpKeyPath)
       TARGET_PATTERN_FILE=target_pattern.txt
       echo //... > "${TARGET_PATTERN_FILE}"
       echo -//quality/... >> "${TARGET_PATTERN_FILE}"
       echo -//sw/otbn/crypto/... >> "${TARGET_PATTERN_FILE}"
       echo -//third_party/riscv-compliance/... >> "${TARGET_PATTERN_FILE}"
       echo -//hw:all >> "${TARGET_PATTERN_FILE}"
-      ./bazelisk.sh cquery \
+      ci/bazelisk.sh cquery \
         --noinclude_aspects \
         --output=starlark \
         --starlark:expr='"-{}".format(target.label)' \
@@ -247,8 +237,8 @@ jobs:
       ROM_REAL_TARGETS="//sw/device/silicon_creator/rom:package_real"
       ROM_FAKE_TARGETS="//sw/device/silicon_creator/rom:package_fake"
       QUERY_CMD_ARGS=(outquery-all --noinclude_aspects --noimplicit_deps)
-      ROM_REAL_FILES=($(./bazelisk.sh "${QUERY_CMD_ARGS[@]}" "${ROM_REAL_TARGETS}" | sort | uniq))
-      ROM_FAKE_FILES=($(./bazelisk.sh "${QUERY_CMD_ARGS[@]}" "${ROM_FAKE_TARGETS}" | sort | uniq))
+      ROM_REAL_FILES=($(ci/bazelisk.sh "${QUERY_CMD_ARGS[@]}" "${ROM_REAL_TARGETS}" | sort | uniq))
+      ROM_FAKE_FILES=($(ci/bazelisk.sh "${QUERY_CMD_ARGS[@]}" "${ROM_FAKE_TARGETS}" | sort | uniq))
       cp -Lvt "${ROM_TARGET}" "${ROM_FAKE_FILES[@]}" "${ROM_REAL_FILES[@]}"
   - template: ci/upload-artifacts-template.yml
     parameters:
@@ -260,21 +250,10 @@ jobs:
   timeoutInMinutes: 120
   dependsOn: sw_build
   pool: ci-public
-  variables:
-    - name: bazelCacheGcpKeyPath
-      value: ''
   steps:
   - template: ci/checkout-template.yml
   - template: ci/install-package-dependencies.yml
-  - task: DownloadSecureFile@1
-    condition: eq(variables['Build.SourceBranchName'], 'master')
-    name: bazelCacheGcpKey
-    inputs:
-      secureFile: "bazel_cache_gcp_key.json"
-    # Set the remote cache GCP key path
-  - bash: echo "##vso[task.setvariable variable=bazelCacheGcpKeyPath]$(bazelCacheGcpKey.secureFilePath)"
-    condition: eq(variables['Build.SourceBranchName'], 'master')
-    displayName: GCP key path
+  - template: ci/load-bazel-cache-write-creds.yml
   - download: current
     artifact: target_pattern_file
   - bash: |
@@ -317,34 +296,27 @@ jobs:
   pool: ci-public
   timeoutInMinutes: 240
   dependsOn: lint
-  variables:
-    - name: bazelCacheGcpKeyPath
-      value: ''
   steps:
   - template: ci/checkout-template.yml
   - template: ci/install-package-dependencies.yml
-  - task: DownloadSecureFile@1
-    condition: eq(variables['Build.SourceBranchName'], 'master')
-    name: bazelCacheGcpKey
-    inputs:
-      secureFile: "bazel_cache_gcp_key.json"
-  - bash: echo "##vso[task.setvariable variable=bazelCacheGcpKeyPath]$(bazelCacheGcpKey.secureFilePath)"
-    condition: eq(variables['Build.SourceBranchName'], 'master')
-    displayName: GCP key path
-    # Set the remote cache GCP key path
+  - template: ci/load-bazel-cache-write-creds.yml
   - bash: |
       set -x -e
-      export GCP_BAZEL_CACHE_KEY=$(bazelCacheGcpKeyPath)
       ci/scripts/run-verilator-tests.sh
     displayName: Build & execute tests
   - template: ci/publish-bazel-test-results.yml
   # TODO: build and cache the verilator model to avoid building twice (#12574)
+  # NOTE: The new build/test rules reference verilator as a dependency, but under the
+  #       platforms transition of that rule.  Therefore, verilator is built under a
+  #       configuration like 'k8-opt-exec-$host-FOR-$target'.  In order to get the
+  #       verilator binary, we query the output of one of the verilated tests and ask
+  #       for the verilator binary, which is in a subdir named 'build.verilator_<stuff>'.
   - bash: |
       . util/build_consts.sh
       mkdir -p "$BIN_DIR/hw/top_earlgrey/"
-      cp $(ci/scripts/target-location.sh //hw:verilator) \
+      cp $(ci/bazelisk.sh outquery-build.verilator //sw/device/tests:uart_smoketest_sim_verilator) \
         "$BIN_DIR/hw/top_earlgrey/Vchip_earlgrey_verilator"
-    displayName: Copy //hw:verilator to $BIN_DIR
+    displayName: Copy verilated binary to $BIN_DIR
   - template: ci/upload-artifacts-template.yml
     parameters:
       includePatterns:
@@ -369,6 +341,7 @@ jobs:
     parameters:
       downloadPartialBuildBinFrom:
         - chip_englishbreakfast_verilator
+  - template: ci/load-bazel-cache-write-creds.yml
   - bash: |
       . util/build_consts.sh
       ci/scripts/run-english-breakfast-verilator-tests.sh
@@ -430,15 +403,7 @@ jobs:
   steps:
   - template: ci/checkout-template.yml
   - template: ci/install-package-dependencies.yml
-  - task: DownloadSecureFile@1
-    condition: eq(variables['Build.SourceBranchName'], 'master')
-    name: bazelCacheGcpKey
-    inputs:
-      secureFile: "bazel_cache_gcp_key.json"
-  - bash: echo "##vso[task.setvariable variable=bazelCacheGcpKeyPath]$(bazelCacheGcpKey.secureFilePath)"
-    condition: eq(variables['Build.SourceBranchName'], 'master')
-    displayName: GCP key path
-    # Set the remote cache GCP key path
+  - template: ci/load-bazel-cache-write-creds.yml
   - bash: |
       ci/bazelisk.sh test --test_tag_filters=-nightly //sw/otbn/crypto/...
     displayName: Execute tests
@@ -555,6 +520,7 @@ jobs:
       downloadPartialBuildBinFrom:
         - chip_earlgrey_cw310
         - sw_build
+  - template: ci/load-bazel-cache-write-creds.yml
   - bash: |
       set -e
       . util/build_consts.sh
@@ -581,6 +547,7 @@ jobs:
       downloadPartialBuildBinFrom:
         - chip_earlgrey_cw310
         - sw_build
+  - template: ci/load-bazel-cache-write-creds.yml
   - bash: |
       set -e
       . util/build_consts.sh
@@ -608,11 +575,12 @@ jobs:
         - chip_earlgrey_cw310
         - chip_earlgrey_cw310_hyperdebug
         - sw_build
+  - template: ci/load-bazel-cache-write-creds.yml
   - bash: |
       set -e
       . util/build_consts.sh
       module load "xilinx/vivado/$(VIVADO_VERSION)"
-      ci/scripts/run-fpga-tests.sh hyper310 cw310_sival || { res=$?; echo "To reproduce failures locally, follow the instructions at https://opentitan.org/book/doc/getting_started/setup_fpga.html#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
+      ci/scripts/run-fpga-tests.sh hyper310 cw310_sival,-broken || { res=$?; echo "To reproduce failures locally, follow the instructions at https://opentitan.org/book/doc/getting_started/setup_fpga.html#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
     displayName: Execute tests
   - template: ci/publish-bazel-test-results.yml
 
@@ -634,6 +602,7 @@ jobs:
       downloadPartialBuildBinFrom:
         - chip_earlgrey_cw310_hyperdebug
         - sw_build
+  - template: ci/load-bazel-cache-write-creds.yml
   # We run the update command twice to workaround an issue with udev on the container.
   # Where rusb cannot dynamically update its device list in CI (udev is not completely
   # functional). If the device is in normal mode, the first thing that opentitantool
@@ -673,6 +642,7 @@ jobs:
       downloadPartialBuildBinFrom:
         - chip_earlgrey_cw340
         - sw_build
+  - template: ci/load-bazel-cache-write-creds.yml
   - bash: |
       set -e
       . util/build_consts.sh
@@ -699,11 +669,12 @@ jobs:
       downloadPartialBuildBinFrom:
         - chip_earlgrey_cw310
         - sw_build
+  - template: ci/load-bazel-cache-write-creds.yml
   - bash: |
       set -e
       . util/build_consts.sh
       module load "xilinx/vivado/$(VIVADO_VERSION)"
-      ci/scripts/run-fpga-tests.sh cw310 manuf,-cw310_sival || { res=$?; echo "To reproduce failures locally, follow the instructions at https://opentitan.org/book/doc/getting_started/setup_fpga.html#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
+      ci/scripts/run-fpga-tests.sh cw310 manuf,-cw310_sival,-broken || { res=$?; echo "To reproduce failures locally, follow the instructions at https://opentitan.org/book/doc/getting_started/setup_fpga.html#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
     displayName: Execute tests
   - template: ci/publish-bazel-test-results.yml
 

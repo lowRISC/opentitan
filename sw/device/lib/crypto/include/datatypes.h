@@ -27,14 +27,14 @@ extern "C" {
  * The crypto library's return value is defined as OpenTitan's internal
  * `status_t` in order to simplify testing. However, informally the library
  * guarantees that the concrete value contained in the status will be one of
- * the members of the `crypto_status_value` enum below.
+ * the members of the `otcrypto_status_value` enum below.
  */
-typedef status_t crypto_status_t;
+typedef status_t otcrypto_status_t;
 
 /**
  * Possible status values for the cryptolib.
  *
- * As long as the OTCRYPTO_STATUS_DEBUG define is unset, all `crypto_status_t`
+ * As long as the OTCRYPTO_STATUS_DEBUG define is unset, all `otcrypto_status_t`
  * codes returned by the cryptolib should be bit-by-bit equivalent with one of
  * the values in this enum.
  *
@@ -57,257 +57,273 @@ typedef status_t crypto_status_t;
  * without changing all error codes. Remove the seed (-s argument) to generate
  * completely new 11-bit values.
  */
-typedef enum crypto_status_value {
+typedef enum otcrypto_status_value {
   // Status is OK; no errors.
-  kCryptoStatusOK = (int32_t)0x739,
+  kOtcryptoStatusValueOk = (int32_t)0x739,
   // Invalid input arguments; wrong length or invalid type.
-  kCryptoStatusBadArgs = (int32_t)0x8000fea0 | kInvalidArgument,
+  kOtcryptoStatusValueBadArgs = (int32_t)0x8000fea0 | kInvalidArgument,
   // Error after which it is OK to retry (e.g. timeout).
-  kCryptoStatusInternalError = (int32_t)0x80005340 | kAborted,
+  kOtcryptoStatusValueInternalError = (int32_t)0x80005340 | kAborted,
   // Error after which it is not OK to retry (e.g. integrity check).
-  kCryptoStatusFatalError = (int32_t)0x80006d80 | kFailedPrecondition,
+  kOtcryptoStatusValueFatalError = (int32_t)0x80006d80 | kFailedPrecondition,
   // An asynchronous operation is still in progress.
-  kCryptoStatusAsyncIncomplete = (int32_t)0x8000ea40 | kUnavailable,
+  kOtcryptoStatusValueAsyncIncomplete = (int32_t)0x8000ea40 | kUnavailable,
   // TODO: remove all instances of this error before release; it is to track
   // implementations that are not yet complete.
-  kCryptoStatusNotImplemented = (int32_t)0x80008d20 | kUnimplemented,
-} crypto_status_value_t;
+  kOtcryptoStatusValueNotImplemented = (int32_t)0x80008d20 | kUnimplemented,
+} otcrypto_status_value_t;
 
 /**
  * Struct to hold a fixed-length byte array.
  *
  * Note: the caller must (1) allocate sufficient space and (2) set the `len`
- * field and `data` pointer when `crypto_byte_buf_t` is used for output. The
+ * field and `data` pointer when `otcrypto_byte_buf_t` is used for output. The
  * crypto library will throw an error if `len` doesn't match expectations.
  */
-typedef struct crypto_byte_buf {
+typedef struct otcrypto_byte_buf {
   // Length of the data in bytes.
   size_t len;
   // Pointer to the data.
   uint8_t *data;
-} crypto_byte_buf_t;
+} otcrypto_byte_buf_t;
 
 /**
  * Struct to hold a constant fixed-length byte array.
  *
  * The const annotations prevent any changes to the byte buffer. It is
- * necessary to have this structure separate from `crypto_byte_buf_t` because
+ * necessary to have this structure separate from `otcrypto_byte_buf_t` because
  * data pointed to by a struct does not inherit `const`, so `const
- * crypto_byte_buf_t` would still allow data to change.
+ * otcrypto_byte_buf_t` would still allow data to change.
  */
-typedef struct crypto_const_byte_buf {
+typedef struct otcrypto_const_byte_buf {
   // Length of the data in bytes.
   const size_t len;
   // Pointer to the data.
   const uint8_t *const data;
-} crypto_const_byte_buf_t;
+} otcrypto_const_byte_buf_t;
 
 /**
  * Struct to hold a fixed-length word array.
  *
  * Note: the caller must (1) allocate sufficient space and (2) set the `len`
- * field and `data` pointer when `crypto_word32_buf_t` is used for output. The
+ * field and `data` pointer when `otcrypto_word32_buf_t` is used for output. The
  * crypto library will throw an error if `len` doesn't match expectations.
  */
-typedef struct crypto_word32_buf {
+typedef struct otcrypto_word32_buf {
   // Length of the data in words.
   size_t len;
   // Pointer to the data.
   uint32_t *data;
-} crypto_word32_buf_t;
+} otcrypto_word32_buf_t;
 
 /**
  * Struct to hold a constant fixed-length word array.
  *
  * The const annotations prevent any changes to the word buffer. It is
- * necessary to have this structure separate from `crypto_word32_buf_t` because
- * data pointed to by a struct does not inherit `const`, so `const
- * crypto_word32_buf_t` would still allow data to change.
+ * necessary to have this structure separate from `otcrypto_word32_buf_t`
+ * because data pointed to by a struct does not inherit `const`, so `const
+ * otcrypto_word32_buf_t` would still allow data to change.
  */
-typedef struct crypto_const_word32_buf {
+typedef struct otcrypto_const_word32_buf {
   // Length of the data in words.
   const size_t len;
   // Pointer to the data.
   const uint32_t *const data;
-} crypto_const_word32_buf_t;
+} otcrypto_const_word32_buf_t;
 
 /**
  * Enum to denote the key type of the handled key.
  *
  * Values are hardened.
  */
-typedef enum key_type {
+typedef enum otcrypto_key_type {
   // Key type AES.
-  kKeyTypeAes = 0x8e9,
+  kOtcryptoKeyTypeAes = 0x8e9,
   // Key type HMAC.
-  kKeyTypeHmac = 0xe3f,
+  kOtcryptoKeyTypeHmac = 0xe3f,
   // Key type KMAC.
-  kKeyTypeKmac = 0xb74,
+  kOtcryptoKeyTypeKmac = 0xb74,
   // Key type RSA.
-  kKeyTypeRsa = 0x7ee,
+  kOtcryptoKeyTypeRsa = 0x7ee,
   // Key type ECC.
-  kKeyTypeEcc = 0x15b,
+  kOtcryptoKeyTypeEcc = 0x15b,
   // Key type KDF.
-  kKeyTypeKdf = 0xb87,
-} key_type_t;
+  kOtcryptoKeyTypeKdf = 0xb87,
+} otcrypto_key_type_t;
 
 /**
  * Enum to specify the AES modes that use a key.
  *
- * This will be used in the `key_mode_t` struct to indicate the mode
+ * This will be used in the `otcrypto_key_mode_t` struct to indicate the mode
  * for which the provided key is intended for.
  *
  * Values are hardened.
  */
-typedef enum aes_key_mode {
+typedef enum otcrypto_aes_key_mode {
   // Mode AES ECB.
-  kAesKeyModeEcb = 0x1b6,
+  kOtcryptoAesKeyModeEcb = 0x1b6,
   // Mode AES CBC.
-  kAesKeyModeCbc = 0xf3a,
+  kOtcryptoAesKeyModeCbc = 0xf3a,
   // Mode AES CFB.
-  kAesKeyModeCfb = 0x0f9,
+  kOtcryptoAesKeyModeCfb = 0x0f9,
   // Mode AES OFB.
-  kAesKeyModeOfb = 0xb49,
+  kOtcryptoAesKeyModeOfb = 0xb49,
   // Mode AES CTR.
-  kAesKeyModeCtr = 0x4ce,
+  kOtcryptoAesKeyModeCtr = 0x4ce,
   // Mode AES GCM.
-  kAesKeyModeGcm = 0xaa5,
+  kOtcryptoAesKeyModeGcm = 0xaa5,
   // Mode AES KWP.
-  kAesKeyModeKwp = 0x7d5,
-} aes_key_mode_t;
+  kOtcryptoAesKeyModeKwp = 0x7d5,
+} otcrypto_aes_key_mode_t;
 
 /**
  * Enum to specify the HMAC modes that use a key.
  *
- * This will be used in the `key_mode_t` struct to indicate the mode
+ * This will be used in the `otcrypto_key_mode_t` struct to indicate the mode
  * for which the provided key is intended for.
  *
  * Values are hardened.
  */
-typedef enum hmac_key_mode {
+typedef enum otcrypto_hmac_key_mode {
   // Mode HMAC SHA256.
-  kHmacKeyModeSha256 = 0x7fd,
+  kOtcryptoHmacKeyModeSha256 = 0x7fd,
   // Mode HMAC SHA384.
-  kHmacKeyModeSha384 = 0x43b,
+  kOtcryptoHmacKeyModeSha384 = 0x43b,
   // Mode HMAC SHA512.
-  kHmacKeyModeSha512 = 0x7a2,
-} hmac_key_mode_t;
+  kOtcryptoHmacKeyModeSha512 = 0x7a2,
+} otcrypto_hmac_key_mode_t;
 
 /**
  * Enum to specify the KMAC modes that use a key.
  *
- * This will be used in the `key_mode_t` struct to indicate the mode
+ * This will be used in the `otcrypto_key_mode_t` struct to indicate the mode
  * for which the provided key is intended for.
  *
  * Values are hardened.
  */
-typedef enum kmac_key_mode {
+typedef enum otcrypto_kmac_key_mode {
   // Mode KMAC128.
-  kKmacKeyModeKmac128 = 0xa56,
+  kOtcryptoKmacKeyModeKmac128 = 0xa56,
   // Mode KMAC256.
-  kKmacKeyModeKmac256 = 0x663,
-} kmac_key_mode_t;
+  kOtcryptoKmacKeyModeKmac256 = 0x663,
+} otcrypto_kmac_key_mode_t;
 
 /**
  * Enum to specify the RSA modes that use a key.
  *
- * This will be used in the `key_mode_t` struct to indicate the mode
+ * This will be used in the `otcrypto_key_mode_t` struct to indicate the mode
  * for which the provided key is intended for.
  *
  * Values are hardened.
  */
-typedef enum rsa_key_mode {
+typedef enum otcrypto_rsa_key_mode {
   // Mode RSA Sign, RSASSA-PKCS.
-  kRsaKeyModeSignPkcs = 0x9ff,
+  kOtcryptoRsaKeyModeSignPkcs = 0x3d4,
   // Mode RSA Sign, RSASSA-PSS.
-  kRsaKeyModeSignPss = 0xa95,
-} rsa_key_mode_t;
+  kOtcryptoRsaKeyModeSignPss = 0x761,
+  // Mode RSA Encrypt, RSAES-OAEP.
+  kOtcryptoRsaKeyModeEncryptOaep = 0x585,
+} otcrypto_rsa_key_mode_t;
 
 /**
  * Enum to specify the ECC modes that use a key.
  *
- * This will be used in the `key_mode_t` struct to indicate the mode
+ * This will be used in the `otcrypto_key_mode_t` struct to indicate the mode
  * for which the provided key is intended for.
  *
  * Values are hardened.
  */
-typedef enum ecc_key_mode {
+typedef enum otcrypto_ecc_key_mode {
   // Mode ECDSA.
-  kEccKeyModeEcdsa = 0x4e5,
+  kOtcryptoEccKeyModeEcdsa = 0x4e5,
   // Mode ECDH.
-  kEccKeyModeEcdh = 0x6bb,
+  kOtcryptoEccKeyModeEcdh = 0x6bb,
   // Mode Ed25519.
-  kEccKeyModeEd25519 = 0xd32,
+  kOtcryptoEccKeyModeEd25519 = 0xd32,
   // Mode X25519.
-  kEccKeyModeX25519 = 0x276,
-} ecc_key_mode_t;
+  kOtcryptoEccKeyModeX25519 = 0x276,
+} otcrypto_ecc_key_mode_t;
 
 /**
  * Enum to specify the KDF modes that use a key.
  *
- * This will be used in the `key_mode_t` struct to indicate the mode
+ * This will be used in the `otcrypto_key_mode_t` struct to indicate the mode
  * for which the provided key is intended for.
  *
  * Values are hardened.
  */
-typedef enum kdf_key_mode {
-  // Mode KDF with HMAC as PRF.
-  kKdfKeyModeHMAC = 0x5d8,
-  // Mode KDF with KMAC as PRF.
-  kKdfKeyModeKMAC = 0xb29,
-} kdf_key_mode_t;
+typedef enum otcrypto_kdf_key_mode {
+  // Mode KDF-CTR with HMAC as PRF.
+  kOtcryptoKdfKeyModeCtrHmac = 0x127,
+  // Mode KDF-CTR with KMAC as PRF.
+  kOtcryptoKdfKeyModeCtrKmac = 0x3dd,
+} otcrypto_kdf_key_mode_t;
 
 /**
  * Enum for opentitan crypto modes that use a key.
  *
  * Denotes the crypto mode for which the provided key is to be used.
- * This `key_mode_t` will be a parameter in the `crypto_blinded_key_t`
- * and `crypto_unblinded_key_t` structs.
+ * This `otcrypto_key_mode_t` will be a parameter in the
+ * `otcrypto_blinded_key_t` and `otcrypto_unblinded_key_t` structs.
  *
  * Values are hardened.
  */
-typedef enum key_mode {
+typedef enum otcrypto_key_mode {
   // Key is intended for AES ECB mode.
-  kKeyModeAesEcb = kKeyTypeAes << 16 | kAesKeyModeEcb,
+  kOtcryptoKeyModeAesEcb = kOtcryptoKeyTypeAes << 16 | kOtcryptoAesKeyModeEcb,
   // Key is intended for AES CBC mode.
-  kKeyModeAesCbc = kKeyTypeAes << 16 | kAesKeyModeCbc,
+  kOtcryptoKeyModeAesCbc = kOtcryptoKeyTypeAes << 16 | kOtcryptoAesKeyModeCbc,
   // Key is intended for AES CFB mode.
-  kKeyModeAesCfb = kKeyTypeAes << 16 | kAesKeyModeCfb,
+  kOtcryptoKeyModeAesCfb = kOtcryptoKeyTypeAes << 16 | kOtcryptoAesKeyModeCfb,
   // Key is intended for AES OFB mode.
-  kKeyModeAesOfb = kKeyTypeAes << 16 | kAesKeyModeOfb,
+  kOtcryptoKeyModeAesOfb = kOtcryptoKeyTypeAes << 16 | kOtcryptoAesKeyModeOfb,
   // Key is intended for AES CTR mode.
-  kKeyModeAesCtr = kKeyTypeAes << 16 | kAesKeyModeCtr,
+  kOtcryptoKeyModeAesCtr = kOtcryptoKeyTypeAes << 16 | kOtcryptoAesKeyModeCtr,
   // Key is intended for AES GCM mode.
-  kKeyModeAesGcm = kKeyTypeAes << 16 | kAesKeyModeGcm,
+  kOtcryptoKeyModeAesGcm = kOtcryptoKeyTypeAes << 16 | kOtcryptoAesKeyModeGcm,
   // Key is intended for AES KWP mode.
-  kKeyModeAesKwp = kKeyTypeAes << 16 | kAesKeyModeKwp,
+  kOtcryptoKeyModeAesKwp = kOtcryptoKeyTypeAes << 16 | kOtcryptoAesKeyModeKwp,
   // Key is intended for HMAC SHA256 mode.
-  kKeyModeHmacSha256 = kKeyTypeHmac << 16 | kHmacKeyModeSha256,
+  kOtcryptoKeyModeHmacSha256 =
+      kOtcryptoKeyTypeHmac << 16 | kOtcryptoHmacKeyModeSha256,
   // Key is intended for HMAC SHA384 mode.
-  kKeyModeHmacSha384 = kKeyTypeHmac << 16 | kHmacKeyModeSha384,
+  kOtcryptoKeyModeHmacSha384 =
+      kOtcryptoKeyTypeHmac << 16 | kOtcryptoHmacKeyModeSha384,
   // Key is intended for HMAC SHA512 mode.
-  kKeyModeHmacSha512 = kKeyTypeHmac << 16 | kHmacKeyModeSha512,
+  kOtcryptoKeyModeHmacSha512 =
+      kOtcryptoKeyTypeHmac << 16 | kOtcryptoHmacKeyModeSha512,
   // Key is intended for KMAC128 mode.
-  kKeyModeKmac128 = kKeyTypeKmac << 16 | kKmacKeyModeKmac128,
+  kOtcryptoKeyModeKmac128 =
+      kOtcryptoKeyTypeKmac << 16 | kOtcryptoKmacKeyModeKmac128,
   // Key is intended for KMAC256 mode.
-  kKeyModeKmac256 = kKeyTypeKmac << 16 | kKmacKeyModeKmac256,
+  kOtcryptoKeyModeKmac256 =
+      kOtcryptoKeyTypeKmac << 16 | kOtcryptoKmacKeyModeKmac256,
   // Key is intended for RSA signature RSASSA-PKCS mode.
-  kKeyModeRsaSignPkcs = kKeyTypeRsa << 16 | kRsaKeyModeSignPkcs,
+  kOtcryptoKeyModeRsaSignPkcs =
+      kOtcryptoKeyTypeRsa << 16 | kOtcryptoRsaKeyModeSignPkcs,
   // Key is intended for RSA signature RSASSA-PSS mode.
-  kKeyModeRsaSignPss = kKeyTypeRsa << 16 | kRsaKeyModeSignPss,
+  kOtcryptoKeyModeRsaSignPss =
+      kOtcryptoKeyTypeRsa << 16 | kOtcryptoRsaKeyModeSignPss,
+  // Key is intended for RSA encryption RSAES-OAEP mode.
+  kOtcryptoKeyModeRsaEncryptOaep =
+      kOtcryptoKeyTypeRsa << 16 | kOtcryptoRsaKeyModeEncryptOaep,
   // Key is intended for ECDSA mode.
-  kKeyModeEcdsa = kKeyTypeEcc << 16 | kEccKeyModeEcdsa,
+  kOtcryptoKeyModeEcdsa = kOtcryptoKeyTypeEcc << 16 | kOtcryptoEccKeyModeEcdsa,
   // Key is intended for ECDH mode.
-  kKeyModeEcdh = kKeyTypeEcc << 16 | kEccKeyModeEcdh,
+  kOtcryptoKeyModeEcdh = kOtcryptoKeyTypeEcc << 16 | kOtcryptoEccKeyModeEcdh,
   // Key is intended for Ed25519 mode.
-  kKeyModeEd25519 = kKeyTypeEcc << 16 | kEccKeyModeEd25519,
+  kOtcryptoKeyModeEd25519 =
+      kOtcryptoKeyTypeEcc << 16 | kOtcryptoEccKeyModeEd25519,
   // Key is intended for X25519 mode.
-  kKeyModeX25519 = kKeyTypeEcc << 16 | kEccKeyModeX25519,
-  // Key is intended for KDF with HMAC as PRF.
-  kKeyModeKdfHmac = kKeyTypeKdf << 16 | kKdfKeyModeHMAC,
-  // Key is intended for KDF with KMAC as PRF.
-  kKeyModeKdfKmac = kKeyTypeKdf << 16 | kKdfKeyModeKMAC,
-} key_mode_t;
+  kOtcryptoKeyModeX25519 =
+      kOtcryptoKeyTypeEcc << 16 | kOtcryptoEccKeyModeX25519,
+  // Key is intended for KDF-CTR with HMAC as PRF.
+  kOtcryptoKeyModeKdfCtrHmac =
+      kOtcryptoKeyTypeKdf << 16 | kOtcryptoKdfKeyModeCtrHmac,
+  // Key is intended for KDF-CTR with KMAC as PRF.
+  kOtcryptoKeyModeKdfCtrKmac =
+      kOtcryptoKeyTypeKdf << 16 | kOtcryptoKdfKeyModeCtrKmac,
+} otcrypto_key_mode_t;
 
 /**
  * Enum to denote key security level.
@@ -321,14 +337,14 @@ typedef enum key_mode {
  *
  * Values are hardened.
  */
-typedef enum crypto_key_security_level {
+typedef enum otcrypto_key_security_level {
   // Security level low.
-  kSecurityLevelLow = 0x1e9,
+  kOtcryptoKeySecurityLevelLow = 0x1e9,
   // Security level medium.
-  kSecurityLevelMedium = 0xeab,
+  kOtcryptoKeySecurityLevelMedium = 0xeab,
   // Security level high.
-  kSecurityLevelHigh = 0xa7e,
-} crypto_key_security_level_t;
+  kOtcryptoKeySecurityLevelHigh = 0xa7e,
+} otcrypto_key_security_level_t;
 
 /**
  * Enum to denote the crypto library version.
@@ -340,19 +356,19 @@ typedef enum crypto_key_security_level {
  *
  * Values are hardened.
  */
-typedef enum crypto_lib_version {
+typedef enum otcrypto_lib_version {
   // Version 1.
-  kCryptoLibVersion1 = 0x7f4,
-} crypto_lib_version_t;
+  kOtcryptoLibVersion1 = 0x7f4,
+} otcrypto_lib_version_t;
 
 /**
  * Struct to represent the configuration of a blinded key.
  */
-typedef struct crypto_key_config {
+typedef struct otcrypto_key_config {
   // Crypto library version for this key.
-  crypto_lib_version_t version;
+  otcrypto_lib_version_t version;
   // Mode for which the key usage is intended.
-  key_mode_t key_mode;
+  otcrypto_key_mode_t key_mode;
   // Length in bytes of the unblinded form of this key.
   size_t key_length;
   // Whether the hardware key manager should produce this key.
@@ -362,78 +378,78 @@ typedef struct crypto_key_config {
   // Whether the key can be exported (always false if `hw_backed` is true).
   hardened_bool_t exportable;
   // Key security level.
-  crypto_key_security_level_t security_level;
-} crypto_key_config_t;
+  otcrypto_key_security_level_t security_level;
+} otcrypto_key_config_t;
 
 /**
  * Struct to handle unmasked key type.
  */
-typedef struct crypto_unblinded_key {
+typedef struct otcrypto_unblinded_key {
   // Mode for which the key usage is intended.
-  key_mode_t key_mode;
+  otcrypto_key_mode_t key_mode;
   // Key length in bytes.
   size_t key_length;
   // Implementation specific, storage provided by caller.
   uint32_t *key;
   // Implementation specific, checksum for this struct.
   uint32_t checksum;
-} crypto_unblinded_key_t;
+} otcrypto_unblinded_key_t;
 
 /**
  * Struct to handle masked key type.
  */
-typedef struct crypto_blinded_key {
+typedef struct otcrypto_blinded_key {
   // Key configuration information.
-  const crypto_key_config_t config;
+  const otcrypto_key_config_t config;
   // Length of blinded key material in bytes.
   const size_t keyblob_length;
   // Implementation specific, storage provided by caller.
   uint32_t *keyblob;
   // Implementation specific, checksum for this struct.
   uint32_t checksum;
-} crypto_blinded_key_t;
+} otcrypto_blinded_key_t;
 
 /**
  * Enum to define supported hashing modes.
  *
  * Values are hardened.
  */
-typedef enum hash_mode {
+typedef enum otcrypto_hash_mode {
   // SHA2-256 mode.
-  kHashModeSha256 = 0x69b,
+  kOtcryptoHashModeSha256 = 0x69b,
   // SHA2-384 mode.
-  kHashModeSha384 = 0x7ae,
+  kOtcryptoHashModeSha384 = 0x7ae,
   // SHA2-512 mode.
-  kHashModeSha512 = 0x171,
+  kOtcryptoHashModeSha512 = 0x171,
   // SHA3-224 mode.
-  kHashModeSha3_224 = 0x516,
+  kOtcryptoHashModeSha3_224 = 0x516,
   // SHA3-256 mode.
-  kHashModeSha3_256 = 0x2d4,
+  kOtcryptoHashModeSha3_256 = 0x2d4,
   // SHA3-384 mode.
-  kHashModeSha3_384 = 0x267,
+  kOtcryptoHashModeSha3_384 = 0x267,
   // SHA3-512 mode.
-  kHashModeSha3_512 = 0x44d,
+  kOtcryptoHashModeSha3_512 = 0x44d,
   // Shake128 mode.
-  kHashXofModeShake128 = 0x5d8,
+  kOtcryptoHashXofModeShake128 = 0x5d8,
   // Shake256 mode.
-  kHashXofModeShake256 = 0x34a,
+  kOtcryptoHashXofModeShake256 = 0x34a,
   // cShake128 mode.
-  kHashXofModeCshake128 = 0x0bd,
+  kOtcryptoHashXofModeCshake128 = 0x0bd,
   // cShake256 mode.
-  kHashXofModeCshake256 = 0x4e2,
-} hash_mode_t;
+  kOtcryptoHashXofModeCshake256 = 0x4e2,
+} otcrypto_hash_mode_t;
 
 /**
  * Container for a hash digest.
  */
-typedef struct hash_digest {
+typedef struct otcrypto_hash_digest {
   // Digest type.
-  hash_mode_t mode;
+  otcrypto_hash_mode_t mode;
   // Digest length in 32-bit words.
   size_t len;
   // Digest data.
   uint32_t *data;
-} hash_digest_t;
+} otcrypto_hash_digest_t;
 
 #ifdef __cplusplus
 }  // extern "C"

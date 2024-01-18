@@ -7,6 +7,7 @@
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/memory.h"
+#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/status.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -228,6 +229,9 @@ status_t kmac_key_length_check(size_t key_len) {
 }
 
 status_t kmac_hwip_default_configure(void) {
+  // Ensure that the entropy complex is initialized.
+  HARDENED_TRY(entropy_complex_check());
+
   uint32_t status_reg = abs_mmio_read32(kKmacBaseAddr + KMAC_STATUS_REG_OFFSET);
 
   // Check that core is not in fault state
@@ -451,6 +455,12 @@ OT_WARN_UNUSED_RESULT
 static status_t kmac_init(kmac_operation_t operation,
                           kmac_security_str_t security_str) {
   HARDENED_TRY(wait_status_bit(KMAC_STATUS_SHA3_IDLE_BIT, 1));
+
+  // If the operation is KMAC, ensure that the entropy complex has been
+  // initialized for masking.
+  if (operation == kKmacOperationKMAC) {
+    HARDENED_TRY(entropy_complex_check());
+  }
 
   // We need to preserve some bits of CFG register, such as:
   // entropy_mode, entropy_ready etc. On the other hand, some bits

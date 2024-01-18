@@ -45,7 +45,7 @@ Note that the time taken in this step depends on the properties of the ADC.
 8. *Wait sleep time*: The controller will wait for the next sample timer to time out before restarting at step (1).
 
 If the controller is configured as oneshot mode, ([`adc_en_ctl.oneshot_mode`](registers.md#adc_en_ctl)), the controller waits for high value (1) from channel 0 and 1 in order.
-Once it gets high value from both channel, it goes back to power off state without evaluatging the filters after setting [`adc_intr_status.oneshot`](registers.md#adc_intr_status).
+Once it gets high value from both channels, it goes back to power off state without evaluating the filters after setting [`adc_intr_status.oneshot`](registers.md#adc_intr_status).
 
 In active operation the controller is in continuous scanning mode:
 * The ADC is continually powered on.

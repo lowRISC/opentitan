@@ -1,12 +1,22 @@
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-load("@rules_rust//crate_universe:defs.bzl", "crate", "crates_vendor")
+
+load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load("@rules_rust//bindgen:bindgen.bzl", "rust_bindgen_toolchain")
+load("@rules_rust//crate_universe:defs.bzl", "crate", "crates_vendor")
+
+package(default_visibility = ["//visibility:public"])
 
 config_setting(
     name = "specify_bindgen_libstdcxx",
     values = {"define": "SPECIFY_BINDGEN_LIBSTDCXX=true"},
+)
+
+string_flag(
+    name = "openssl_pkg_config_path",
+    build_setting_default = "",
+    make_variable = "OPENSSL_PKG_CONFIG_PATH",
 )
 
 rust_bindgen_toolchain(
@@ -55,6 +65,13 @@ crates_vendor(
                     ],
                 )
             """,
+        )],
+        "openssl-sys": [crate.annotation(
+            build_script_env = {
+                "PKG_CONFIG_PATH": "$(OPENSSL_PKG_CONFIG_PATH)",
+                "OPENSSL_STATIC": "1",
+            },
+            build_script_toolchains = ["@//third_party/rust:openssl_pkg_config_path"],
         )],
         "pqcrypto-internals": [crate.annotation(
             additive_build_file_content = """

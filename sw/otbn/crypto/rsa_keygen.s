@@ -4,6 +4,7 @@
 
 /* Public interface. */
 .globl rsa_keygen
+.globl rsa_key_from_cofactor
 
 /* Exposed for testing purposes only. */
 .globl relprime_f4
@@ -13,6 +14,10 @@
 
 /**
  * Generate a random RSA key pair.
+ *
+ * The public key is the pair (n, e), where n is the modulus and e is the
+ * public exponent. and the private key is the pair (n, d), where n is the same
+ * modulus as in the public key and d is the private exponent.
  *
  * For the official specification, see FIPS 186-5 section A.1.3. For the
  * purposes of this implementation, the RSA public exponent e is always 65537
@@ -28,13 +33,13 @@
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
- * @param[in]  x30: number of 256-bit limbs for p and q (key size in bits / 512)
+ * @param[in]  x30: plen, number of 256-bit limbs for p and q
  * @param[in]  w31: all-zero
- * @param[out] dmem[rsa_n..rsa_n+(n*2*32)] RSA public key modulus (n)
- * @param[out] dmem[rsa_d..rsa_d+(n*2*32)] RSA private exponent (d)
+ * @param[out] dmem[rsa_n..rsa_n+(plen*2*32)] RSA public key modulus (n)
+ * @param[out] dmem[rsa_d..rsa_d+(plen*2*32)] RSA private exponent (d)
  *
- * clobbered registers: x2 to x15, x17 to x26, x31,
- *                      w2, w3, w4..w[4+(n-1)], w20 to w30
+ * clobbered registers: x2 to x26, x31,
+ *                      w2, w3, w4..w[4+(plen-1)], w20 to w30
  * clobbered flag groups: FG0, FG1
  */
 rsa_keygen:
@@ -50,21 +55,26 @@ rsa_keygen:
   li       x21, 21
 
   /* Generate the first prime, p.
-       dmem[rsa_p..rsa_p+(n*32)] <= p */
+       dmem[rsa_p..rsa_p+(plen*32)] <= p */
   jal      x1, generate_p
   /* Generate the second prime, q.
-       dmem[rsa_q..rsa_q+(n*32)] <= q */
+       dmem[rsa_q..rsa_q+(plen*32)] <= q */
   jal      x1, generate_q
 
   /* Multiply p and q to get the public modulus n.
-       dmem[rsa_n..rsa_n+(n*2*32)] <= p * q */
+       dmem[rsa_n..rsa_n+(plen*2*32)] <= p * q */
   la       x10, rsa_p
   la       x11, rsa_q
   la       x12, rsa_n
   jal      x1, bignum_mul
 
-  /* Derive the private exponent d from p and q (tail-call). */
-  jal      x0, derive_d
+  /* Derive the private exponent d from p and q.
+       x2 <= zero if d is OK, otherwise nonzero */
+  jal      x1, derive_d
+
+  /* Check that d is large enough (tail-call). If d is not large enough,
+     then `check_d` will restart the key-generation process. */
+  jal      x0, check_d
 
 /**
  * Derive the private RSA exponent d.
@@ -72,18 +82,21 @@ rsa_keygen:
  * Returns d = (65537^-1) mod LCM(p-1, q-1).
  *
  * This function overwrites p and q, and requires that they are continuous in
- * memory (specifically, it expects to be able to use 512 bytes of space
- * following the label `rsa_pq`).
+ * memory. Specifically, it expects to be able to use 512 bytes of space
+ * following the label `rsa_pq`.
  *
- * Flags: Flags are not set in this subroutine.
+ * Important: This routine uses `rsa_cofactor` as a second 512-byte work buffer
+ * and clobbers the contents.
  *
- * @param[in] dmem[rsa_p..rsa_p+(n*32)]: first prime p
- * @param[in] dmem[rsa_q..rsa_q+(n*32)]: second prime q
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
+ *
+ * @param[in] dmem[rsa_p..rsa_p+(plen*32)]: first prime p
+ * @param[in] dmem[rsa_q..rsa_q+(plen*32)]: second prime q
  * @param[in]  x20: 20, constant
  * @param[in]  x21: 21, constant
- * @param[in]  x30: number of 256-bit limbs for p and q
+ * @param[in]  x30: plen, number of 256-bit limbs for p and q
  * @param[in]  w31: all-zero
- * @param[out] dmem[rsa_d..rsa_d+(n*2*32)]: result, private exponent d
+ * @param[out] dmem[rsa_d..rsa_d+(plen*2*32)]: result, private exponent d
  *
  * clobbered registers: x2 to x8, x10 to x15, x20 to x26, x31, w20 to w28
  * clobbered flag groups: FG0, FG1
@@ -94,13 +107,13 @@ derive_d:
   la       x11, rsa_q
 
   /* Subtract 1 from p in-place (no carry from lowest limb since p is odd).
-       dmem[rsa_p..rsa_p+(n*32)] <= p - 1 */
+       dmem[rsa_p..rsa_p+(plen*32)] <= p - 1 */
   bn.lid   x20, 0(x10)
   bn.subi  w20, w20, 1
   bn.sid   x20, 0(x10)
 
   /* Subtract 1 from q in-place (no carry from lowest limb since p is odd).
-       dmem[rsa_q..rsa_q+(n*32)] <= q - 1 */
+       dmem[rsa_q..rsa_q+(plen*32)] <= q - 1 */
   bn.lid   x20, 0(x11)
   bn.subi  w20, w20, 1
   bn.sid   x20, 0(x11)
@@ -111,35 +124,55 @@ derive_d:
   jal      x1, lcm
 
   /* Update the number of limbs for modinv.
-       x30 <= n*2 */
+       x30 <= plen*2 */
   add      x30, x30, x30
 
   /* Compute d = (65537^-1) mod LCM(p-1,q-1). The modular inverse
-     routine requires two working buffers, which we construct from `tmp_data`
-     and the required-contiguous `rsa_p` and `rsa_q` buffers.
-       dmem[rsa_d..rsa_d+(n*2*32)] <= (65537^-1) mod dmem[x12..x12+(n*2*32)] */
+     routine requires two working buffers, which we construct from
+     `rsa_cofactor` and the required-contiguous `rsa_p` and `rsa_q` buffers.
+       dmem[rsa_d..rsa_d+(plen*2*32)] <= (65537^-1) mod dmem[x12..x12+(n*2*32)] */
+  la       x12, tmp_scratchpad
   la       x13, rsa_d
-  la       x14, tmp_data
+  la       x14, rsa_cofactor
   la       x15, rsa_pq
   jal      x1, modinv_f4
 
-  /* x30 <= (n*2) >> 1 = n */
+  /* Reset the limb count.
+       x30 <= (plen*2) >> 1 = n */
   srli     x30, x30, 1
+  ret
 
-  /* Get a pointer to the nth limb of d (halfway through the number).
-       x3 <= rsa_d + n*32 */
+/**
+ * Check the private RSA exponent d.
+ *
+ * Calls `rsa_keygen` if d is too small, otherwise returns. Designed to be
+ * tail-called by `rsa_keygen`.
+ *
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
+ *
+ * @param[in]  x20: 20, constant
+ * @param[in]  x30: plen, number of 256-bit limbs for p and q
+ * @param[in]  w31: all-zero
+ * @param[out] dmem[rsa_d..rsa_d+(plen*2*32)]: result, private exponent d
+ *
+ * clobbered registers: x2, x3, w20, w23
+ * clobbered flag groups: FG0, FG1
+ */
+check_d:
+  /* Get a pointer to the second half of d.
+       x3 <= rsa_d + plen*32 */
   slli     x2, x30, 5
   la       x3, rsa_d
   add      x3, x3, x2
 
-  /* Check that d > 2^(n*256), i.e. that the highest n limbs are nonzero. We
+  /* Check that d > 2^(plen*256), i.e. that the highest plen limbs are nonzero. We
      need to retry if it's too small (see FIPS 186-5 section A.1.1), although
-     in practice this is unlikely. We do this by ORing the n highest limbs.
-       FG0.Z <= (d >> (n*256)) == 0 */
+     in practice this is unlikely. We do this by ORing the plen highest limbs.
+       FG0.Z <= (d >> (plen*256)) == 0 */
   bn.mov   w23, w31
   loop     x30, 2
     /* w20 <= d[n+i] */
-    bn.lid   x20, 0(x3++)
+    bn.lid  x20, 0(x3++)
     /* w23 <= w23 | w20 */
     bn.or   w23, w23, w20
 
@@ -149,13 +182,93 @@ derive_d:
   srli     x2, x2, 3
   andi     x2, x2, 1
 
-  /* If the flag is set, the high limbs are zero and we should start from
-     scratch, generating a new p and q. Note that x30 MUST be set to n here,
-     not n*2, to meet the rsa_keygen preconditions. */
+  /* If x2 != 0, then d is too small and we need to restart key generation from
+     scratch. */
   bne      x2, x0, rsa_keygen
 
-  /* If we get here, d is OK; return. */
   ret
+
+/**
+ * Construct an RSA key pair from a modulus and cofactor.
+ *
+ * This routine does not check the validity of the RSA key pair; it does not
+ * ensure that the factors are prime or check any other properties, simply
+ * divides the modulus by the cofactor and derives the private exponent. The
+ * only public exponent supported is e=65537.
+ *
+ * This routine will recompute the public modulus n after deriving the factors;
+ * the caller may want to check that the value matches. If the modulus is not
+ * in fact divisible by the cofactor, or the cofactor is much too small, it
+ * will not match.
+ *
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
+ *
+ * @param[in]  x30: plen, number of 256-bit limbs for p and q
+ * @param[in]  w31: all-zero
+ * @param[in] dmem[rsa_n..rsa_n+(plen*2*32)] RSA public key modulus (n)
+ * @param[in] dmem[rsa_cofactor..rsa_cofactor+(plen*32)] Cofactor (p or q)
+ * @param[out] dmem[rsa_n..rsa_n+(plen*2*32)] Recomputed public key modulus (n)
+ * @param[out] dmem[rsa_d..rsa_d+(plen*2*32)] RSA private exponent (d)
+ *
+ * clobbered registers: x2 to x8, x10 to x15, x20 to x26, x31, w3, w20 to w28
+ * clobbered flag groups: FG0, FG1
+ */
+rsa_key_from_cofactor:
+  /* Initialize wide-register pointers.
+       x20 <= 20
+       x21 <= 21 */
+  li       x20, 20
+  li       x21, 21
+
+  /* Get a pointer to the end of the cofactor.
+       x2 <= rsa_cofactor + plen*32 */
+  slli     x2, x30, 5
+  la       x3, rsa_cofactor
+  add      x2, x2, x3
+
+  /* Set the second half of the cofactor buffer to zero, so the cofactor is the
+     same size as the modulus for division.
+      dmem[rsa_cofactor+plen*32..rsa_cofactor+plen*2*32] <= 0 */
+  li       x3, 31
+  loop     x30, 1
+    bn.sid   x3, 0(x2++)
+
+  /* Update the number of limbs for division.
+       x30 <= plen*2 */
+  add     x30, x30, x30
+
+  /* Compute (n / cofactor) and store the result in `rsa_pq`. The quotient will
+     only occupy the first half (`rsa_p`) if the input is valid.
+       dmem[rsa_n..rsa_n+plen*2*32] <= n % cofactor
+       dmem[rsa_pq..rsa_pq+plen*2*32] <= n / cofactor */
+  la       x10, rsa_n
+  la       x11, rsa_cofactor
+  la       x12, rsa_pq
+  jal      x1, div
+
+  /* Reset the limb count.
+       x30 <= (plen*2) >> 1 = n */
+  srli     x30, x30, 1
+
+  /* Copy the original cofactor into `rsa_q` and compute
+     the private exponent.
+      dmem[rsa_q..rsa_q+plen*32] <= dmem[rsa_cofactor..rsa_cofactor+plen*32] */
+  la       x11, rsa_cofactor
+  la       x2, rsa_q
+  li       x3, 3
+  loop     x30, 2
+    bn.lid   x3, 0(x11++)
+    bn.sid   x3, 0(x2++)
+
+  /* Multiply p and q to get the public modulus n.
+       dmem[rsa_n..rsa_n+(plen*2*32)] <= p * q */
+  la       x10, rsa_p
+  la       x11, rsa_q
+  la       x12, rsa_n
+  jal      x1, bignum_mul
+
+  /* Derive the private exponent d from p and q (tail-call). */
+  jal      x0, derive_d
 
 /**
  * Compute the inverse of 65537 modulo a given number.
@@ -275,17 +388,17 @@ derive_d:
  * @param[in]  x15: dptr_v, pointer to a temporary buffer in DMEM (n limbs)
  * @param[in]  x20: 20, constant
  * @param[in]  x21: 21, constant
- * @param[in]  x30: n, number of 256-bit limbs for modulus m and result d
+ * @param[in]  x30: nlen, number of 256-bit limbs for modulus m and result d
  * @param[in]  w31: all-zero
- * @param[out] dmem[dptr_A..dptr_A+(n*32)]: result, modular inverse d
+ * @param[out] dmem[dptr_A..dptr_A+(plen*32)]: result, modular inverse d
  *
  * clobbered registers: MOD, x2 to x4, x31, w20 to w28
  * clobbered flag groups: FG0, FG1
  */
 modinv_f4:
   /* Zero the intermediate buffers.
-       dmem[dptr_A..dptr_A+(n*32)] <= 0
-       dmem[dptr_C..dptr_C+(n*32)] <= 0 */
+       dmem[dptr_A..dptr_A+(nlen*32)] <= 0
+       dmem[dptr_C..dptr_C+(nlen*32)] <= 0 */
   li       x2, 31
   addi     x3, x13, 0
   addi     x4, x14, 0
@@ -307,7 +420,7 @@ modinv_f4:
   bn.addi  w28, w31, 1
 
   /* Copy the modulus to the buffer for v.
-       dmem[dptr_v..dptr_v+(n*32)] <= m */
+       dmem[dptr_v..dptr_v+(nlen*32)] <= m */
   addi     x3, x12, 0
   addi     x4, x15, 0
   loop     x30, 2
@@ -370,7 +483,7 @@ modinv_f4:
     bn.sub   w22, w22, w20
 
     /* Conditionally subtract u from v.
-         dmem[dptr_v..dptr_v+(n*32)] <= v - (u & w25) */
+         dmem[dptr_v..dptr_v+(nlen*32)] <= v - (u & w25) */
     bn.and   w23, w22, w25
     addi     x2, x15, 0
     loop     x30, 4
@@ -433,7 +546,7 @@ modinv_f4:
 
     /* Update A if we updated u in the previous steps (w24 == 2^256-1). We
        additionally subtract the modulus if *both* w24,w26 == 2^256-1.
-         dmem[dptr_A..dptr_A+(n*32)] <= (w24 == 2^256-1) ? (A + C) mod m : A */
+         dmem[dptr_A..dptr_A+(nlen*32)] <= (w24 == 2^256-1) ? (A + C) mod m : A */
     addi     x2, x12, 0
     addi     x3, x13, 0
     addi     x4, x14, 0
@@ -459,7 +572,7 @@ modinv_f4:
 
     /* Update C if we updated v in the previous steps (w25 == 2^256-1). We
        additionally subtract the modulus if *both* w25,w26 == 2^256-1.
-         dmem[dptr_C..dptr_C+(n*32)] <= (w25 == 2^256-1) ? (A + C) mod m : C */
+         dmem[dptr_C..dptr_C+(nlen*32)] <= (w25 == 2^256-1) ? (A + C) mod m : C */
     addi     x2, x12, 0
     addi     x3, x13, 0
     addi     x4, x14, 0
@@ -522,7 +635,7 @@ modinv_f4:
     bn.sub   w31, w31, w31
 
     /* Conditionally add m to A.
-         dmem[dptr_A..dptr_A+(n+32)] <= (!u[0] && (A[0] | B[0])) ? A + m : A */
+         dmem[dptr_A..dptr_A+(nlen*32)] <= (!u[0] && (A[0] | B[0])) ? A + m : A */
     addi     x2, x12, 0
     addi     x3, x13, 0
     loop     x30, 5
@@ -542,7 +655,7 @@ modinv_f4:
     bn.addc  w23, w31, w31
 
     /* Shift A to the right 1 if FG1.L is unset.
-         dmem[dptr_A..dptr_A+(n+32)] <= FG1.L ? A : A >> 1 */
+         dmem[dptr_A..dptr_A+(nlen*32)] <= FG1.L ? A : A >> 1 */
     addi     x3, x13, 0
     jal      x1, bignum_rshift1_if_not_fg1L
 
@@ -552,7 +665,7 @@ modinv_f4:
     bn.or    w20, w20, w31, FG1
 
     /* Shift v to the right 1 if FG1.L is unset.
-         dmem[dptr_v..dptr_v+(n+32)] <= FG1.L ? v : v >> 1 */
+         dmem[dptr_v..dptr_v+(nlen*32)] <= FG1.L ? v : v >> 1 */
     addi     x3, x15, 0
     bn.mov   w23, w31
     jal      x1, bignum_rshift1_if_not_fg1L
@@ -587,7 +700,7 @@ modinv_f4:
     bn.sub   w31, w31, w31
 
     /* Conditionally add m to C.
-         dmem[dptr_C..dptr_C+(n+32)] <= (!v[0] && (C[0] | D[0])) ? C + m : C */
+         dmem[dptr_C..dptr_C+(nlen*32)] <= (!v[0] && (C[0] | D[0])) ? C + m : C */
     addi     x2, x12, 0
     addi     x3, x14, 0
     loop     x30, 5
@@ -607,7 +720,7 @@ modinv_f4:
     bn.addc  w23, w31, w31
 
     /* Shift C to the right 1 if FG1.L is unset.
-         dmem[dptr_C..dptr_C+(n+32)] <= FG1.L ? C : C >> 1 */
+         dmem[dptr_C..dptr_C+(nlen*32)] <= FG1.L ? C : C >> 1 */
     addi     x3, x14, 0
     jal      x1, bignum_rshift1_if_not_fg1L
 
@@ -647,10 +760,10 @@ _modinv_f4_u_ok:
  * @param[in]   x3: dptr_A, pointer to input A in DMEM
  * @param[in]  x20: 20, constant
  * @param[in]  x21: 21, constant
- * @param[in]  x30: n, number of 256-bit limbs for input A
+ * @param[in]  x30: alen, number of 256-bit limbs for input A
  * @param[in]   w23: value to use as the msb
  * @param[in]   w31: all-zero
- * @param[out] dmem[dptr_A..dptr_A+n*32]: A', result
+ * @param[out] dmem[dptr_A..dptr_A+alen*32]: A', result
  *
  * clobbered registers: x2, x3, x4, w20, w21
  * clobbered flag groups: FG0
@@ -698,19 +811,19 @@ bignum_rshift1_if_not_fg1L:
  *
  * @param[in]  x20: 20, constant
  * @param[in]  x21: 21, constant
- * @param[in]  x30: n, number of 256-bit limbs in the candidate prime
+ * @param[in]  x30: plen, number of 256-bit limbs in the candidate prime
  * @param[in]  x31: n-1, constant
  * @param[in]  w31: all-zero
- * @param[out] dmem[rsa_p..rsa_p+(n*32)]: result, probable prime p
+ * @param[out] dmem[rsa_p..rsa_p+(plen*32)]: result, probable prime p
  *
- * clobbered registers: x2 to x13, x17 to x19, x22 to x26,
- *                      w2, w3, w4..w[4+(n-1)], w20 to w30
+ * clobbered registers: x2 to x13, x16 to x19, x22 to x26,
+ *                      w2, w3, w4..w[4+(plen-1)], w20 to w30
  * clobbered flag groups: FG0, FG1
  */
 generate_p:
   /* Compute nlen, the bit-length of the RSA modulus based on the number of
      limbs for p.
-       x4 <= n << 9 = n*256*2 = nlen */
+       x4 <= n << 9 = plen*256*2 = nlen */
   slli     x4, x30, 9
 
   /* Initialize counter for # of attempts.
@@ -731,7 +844,7 @@ _generate_p_counter_nonzero:
   sub      x4, x4, x5
 
   /* Generate a new random value for p.
-       dmem[rsa_p] <= <random n*256-bit odd value> */
+       dmem[rsa_p] <= <random plen*256-bit odd value> */
   la       x16, rsa_p
   jal      x1, generate_prime_candidate
 
@@ -770,19 +883,19 @@ _generate_p_counter_nonzero:
  *
  * @param[in]  x20: 20, constant
  * @param[in]  x21: 21, constant
- * @param[in]  x30: n, number of 256-bit limbs in the candidate prime
+ * @param[in]  x30: plen, number of 256-bit limbs in the candidate prime
  * @param[in]  x31: n-1, constant
  * @param[in]  w31: all-zero
- * @param[out] dmem[rsa_p..rsa_p+(n*32)]: result, probable prime p
+ * @param[out] dmem[rsa_p..rsa_p+(plen*32)]: result, probable prime p
  *
- * clobbered registers: x2 to x13, x17 to x19, x22 to x26,
- *                      w2, w3, w4..w[4+(n-1)], w20 to w30
+ * clobbered registers: x2 to x13, x16 to x19, x22 to x26,
+ *                      w2, w3, w4..w[4+(plen-1)], w20 to w30
  * clobbered flag groups: FG0, FG1
  */
 generate_q:
   /* Compute nlen, the bit-length of the RSA modulus based on the number of
      limbs for q.
-       x4 <= n << 9 = n*256*2 = nlen */
+       x4 <= n << 9 = plen*256*2 = nlen */
   slli     x4, x30, 9
 
   /* Initialize counter for # of attempts.
@@ -804,7 +917,7 @@ _generate_q_counter_nonzero:
   sub      x4, x4, x5
 
   /* Generate a new random value for q.
-       dmem[rsa_q] <= <random n*256-bit odd value> */
+       dmem[rsa_q] <= <random plen*256-bit odd value> */
   la       x16, rsa_q
   jal      x1, generate_prime_candidate
 
@@ -835,13 +948,14 @@ _generate_q_counter_nonzero:
  * Returns all 1s if the check passess, and 0 if it fails.
  *
  * For the candidate value p, this check passes only if:
- *   * p >= sqrt(2)*(2^(nlen/2 - 1)), where nlen = RSA public key length, and
  *   * GCD(p-1, 65537) = 1, and
  *   * p passes 5 rounds of the Miller-Rabin primality test.
  *
  * Assumes that the input is an odd number (this is a precondition for the
- * primality test). Before using this to check untrusted or imported keys, the
- * caller must check to ensure p is odd.
+ * primality test) and that p >= sqrt(2)*(2^(nlen/2 - 1)), where nlen = RSA
+ * public key length. Internally, `generate_prime_candidate` guarantees these
+ * conditions. The caller must ensure them before using this routine to check
+ * untrusted or imported keys.
  *
  * See FIPS 186-5 section A.1.3 for the official spec. See this comment in
  * BoringSSL's implementation for a detailed description of how to choose the
@@ -856,59 +970,19 @@ _generate_q_counter_nonzero:
  * @param[in]  x16: dptr_p, address of the candidate prime in DMEM
  * @param[in]  x20: 20, constant
  * @param[in]  x21: 21, constant
- * @param[in]  x30: n, number of 256-bit limbs in the candidate prime
- * @param[in]  x31: n-1, constant
+ * @param[in]  x30: plen, number of 256-bit limbs in the candidate prime
+ * @param[in]  x31: plen-1, constant
  * @param[in]  w31: all-zero
  * @param[out] w24: result, all 1s if the check passed and 0 otherwise
  *
  * clobbered registers: x2, x3, x5 to x13, x17 to x19, x22 to x26,
- *                      w2, w3, w4..w[4+(n-1)], w20 to w30
+ *                      w2, w3, w4..w[4+(plen-1)], w20 to w30
  * clobbered flag groups: FG0, FG1
  */
 check_p:
   /* Set the output to the "check passed" value (all 1s) by default.
        w24 <= 2^256 - 1 */
   bn.not   w24, w31
-
-  /* Get a pointer to the precomputed constant sqrt(2)*2^2047. */
-  la       x2, sqrt2_rsa4k
-
-  /* For RSA-2048 and RSA-3072, we will need to shift the lower bound right to
-     get sqrt(2)*2^1535 and sqrt(2)*2^1023, respectively. We can do this by
-     simply adjusting the pointer to skip the lower limbs.
-       x2 <= x2 + ((8 - x30) << 5) = sqrt2_rsa4k + ((8 - n) * 32) */
-  li       x3, 8
-  sub      x3, x3, x30
-  slli     x3, x3, 5
-  add      x2, x2, x3
-
-  /* Clear flags. */
-  bn.sub   w31, w31, w31
-
-  /* Now, the value at dmem[x2] is n limbs long and represents the lower bound
-     for p. Compare the two values. */
-  addi  x3, x16, 0
-  loop  x30, 3
-    /* w20 <= dmem[x2] = lower_bound[i] */
-    bn.lid    x20, 0(x2++)
-    /* w21 <= dmem[x3] = p[i] */
-    bn.lid    x21, 0(x3++)
-    /* FG0.C <= p[i] <? lower_bound[i] + FG0.C */
-    bn.cmpb   w21, w20
-
-  /* If FG0.C is set, p is smaller than the lower bound; set the result to
-     "checks failed" (0).
-       w24 <= FG0.C ? 0 : w24 */
-  bn.sel    w24, w31, w24, FG0.C
-
-  /* Get the FG0.C flag into a register.
-       x2 <= CSRs[FG0][0] = FG0.C */
-  csrrs    x2, FG0, x0
-  andi     x2, x2, 1
-
-  /* If the flag is set, then the check failed and we can skip the remaining
-     checks. */
-  bne      x2, x0, _check_prime_fail
 
   /* Subtract 1 from the lowest limb in-place.
        dmem[x16] <= dmem[x16] - 1 = p - 1 */
@@ -1021,15 +1095,15 @@ _check_prime_fail:
  *
  * @param[in]  x20: 20, constant
  * @param[in]  x21: 21, constant
- * @param[in]  x30: n, number of 256-bit limbs in the candidate prime
- * @param[in]  x31: n-1, constant
+ * @param[in]  x30: plen, number of 256-bit limbs in the candidate prime
+ * @param[in]  x31: plen-1, constant
  * @param[in]  w31: all-zero
- * @param[in]  dmem[rsa_p..rsa_p+(n*32)]: value for p
- * @param[in]  dmem[rsa_q..rsa_q+(n*32)]: candidate value for q
+ * @param[in]  dmem[rsa_p..rsa_p+(plen*32)]: value for p
+ * @param[in]  dmem[rsa_q..rsa_q+(plen*32)]: candidate value for q
  * @param[out] w24: result, all 1s if the check passed and 0 otherwise
  *
  * clobbered registers: x2, x3, x5 to x13, x17 to x19, x22 to x26,
- *                      w2, w3, w4..w[4+(n-1)], w20 to w30
+ *                      w2, w3, w4..w[4+(plen-1)], w20 to w30
  * clobbered flag groups: FG0, FG1
  */
 check_q:
@@ -1082,24 +1156,29 @@ check_q:
 /**
  * Generate a candidate prime (can be used for either p or q).
  *
- * Fixes the lowest and highest bits to 1, so the number is always odd and >=
- * 2^(256*n). All other bits are fully random.
+ * Fixes the lowest 3 bits to 1 and the highest 2 bits to 1, so the number is
+ * always equivalent to 7 mod 8 and is always >= 2^(256*n - 1) * 1.5.  This
+ * implies that the prime candidate is always in range, i.e. it is greater than
+ * sqrt(2) * (2^(256*n - 1)), because sqrt(2) < 1.5. All other bits are fully
+ * random. This follows FIPS 186-5 section A.1.3, which allows generating prime
+ * candidates with a specific value mod 8 and allows the highest 2 bits to be
+ * set arbitrarily.
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
  * @param[in]  x16: dptr_result, address of the result buffer in DMEM
  * @param[in]  x20: 20, constant
- * @param[in]  x30: n, number of 256-bit limbs for the result
- * @param[in]  x31: n-1, constant
+ * @param[in]  x30: plen, number of 256-bit limbs for the result
+ * @param[in]  x31: plen-1, constant
  * @param[in]  w31: all-zero
- * @param[out] dmem[x16..x16+(n*32)]: random candidate prime
+ * @param[out] dmem[x16..x16+(plen*32)]: random candidate prime
  *
  * clobbered registers: x2, x3, w20, w21
  * clobbered flag groups: FG0
  */
 generate_prime_candidate:
   /* Generate random 256-bit limbs.
-       dmem[x16..x16+(n*32)] <= RND(n*32) ^ URND(n*32)  */
+       dmem[x16..x16+(plen*32)] <= RND(n*32) ^ URND(n*32)  */
   addi     x2, x16, 0
   loop     x30, 4
     /* w20 <= RND() */
@@ -1111,14 +1190,11 @@ generate_prime_candidate:
     /* dmem[x2] <= w20 */
     bn.sid   x20, 0(x2++)
 
-  /* Create an all-ones mask.
-       w21 <= 2^256 - 1 */
-  bn.not   w21, w31
-
-  /* Fix the lowest bit to 1 so the number is always odd.
-       dmem[x16] <= (dmem[x16] << 1) mod 2^256 | 1 */
+  /* Fix the lowest 3 bits to 1 so the number is always 7 mod 8.
+       dmem[x16] <= dmem[x16] | 7 */
   bn.lid   x20, 0(x16)
-  bn.rshi  w20, w20, w21 >> 255
+  bn.addi  w21, w31, 7
+  bn.or    w20, w20, w21
   bn.sid   x20, 0(x16)
 
   /* Get a pointer to the last limb.
@@ -1126,12 +1202,11 @@ generate_prime_candidate:
   slli     x3, x31, 5
   add      x2, x16, x3
 
-  /* Fix the highest bit to 1 so the number is always at least 2^(256*n-1).
-     This is implied by the lower bound and setting the bit is explicitly
-     permitted by FIPS 186-5.
-       dmem[x2] <= 1 << 255 | (dmem[x2] >> 1) */
+  /* Fix the highest 2 bits to 1.
+       dmem[x2] <= dmem[x2] | (3 << 6) << 248 = dmem[x2] | 3 << 254 */
   bn.lid   x20, 0(x2)
-  bn.rshi  w20, w21, w20 >> 1
+  bn.addi  w21, w31, 192
+  bn.or    w20, w20, w21 << 248
   bn.sid   x20, 0(x2)
 
   ret
@@ -1175,7 +1250,7 @@ generate_prime_candidate:
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
  * @param[in]  x16: dptr_x, pointer to first limb of x in dmem
- * @param[in]  x30: n, number of 256-bit limbs for x
+ * @param[in]  x30: plen, number of 256-bit limbs for x
  * @param[in]  w31: all-zero
  * @param[out] w22: result, 0 only if x is not relatively prime to F4
  *
@@ -1282,7 +1357,8 @@ relprime_f4:
 
 /* Extra label marking the start of p || q in memory. The `derive_d` function
    uses this to get a 512-byte working buffer, which means p and q must be
-   continuous in memory (but it's OK if their order is reversed). */
+   continuous in memory. In addition, `rsa_key_from_cofactor` uses the
+   larger buffer for division and depends on the order of `p` and `q`. */
 .balign 32
 rsa_pq:
 
@@ -1301,7 +1377,7 @@ rsa_q:
 tmp_scratchpad:
 .zero 512
 
-.section .data
+.bss
 
 /* RSA modulus n = p*q (up to 4096 bits). */
 .balign 32
@@ -1315,9 +1391,11 @@ rsa_n:
 rsa_d:
 .zero 512
 
-/* Temporary working buffer (4096 bits). */
+/* Prime cofactor for n for `rsa_key_from_cofactor`; also used as a temporary
+ * work buffer. */
 .balign 32
-tmp_data:
+.globl rsa_cofactor
+rsa_cofactor:
 .zero 512
 
 /* Montgomery constant m0' (256 bits). */
@@ -1329,77 +1407,3 @@ mont_m0inv:
 .balign 32
 mont_rr:
 .zero 256
-
-/* Precomputed value for sqrt(2)*(2^2047), such that
-     (sqrt2_rsa4k^2 < 2**4095 < (sqrt2_rsa4k+1)^2
-
-   This number was taken from BoringSSL's implementation and has enough
-   precision to be exact for RSA-4096 and smaller:
-     https://boringssl.googlesource.com/boringssl/+/dcabfe2d8940529a69e007660fa7bf6c15954ecc/crypto/fipsmodule/rsa/rsa_impl.c#1006
-*/
-.balign 32
-sqrt2_rsa4k:
-  .word 0xe633e3e1
-  .word 0x4d7c60a5
-  .word 0xca3ea33b
-  .word 0x5fcf8f7b
-  .word 0x92957023
-  .word 0xc246785e
-  .word 0x797f2805
-  .word 0xf9acce41
-  .word 0xd3b1f780
-  .word 0xfdfe170f
-  .word 0x3facb882
-  .word 0xd24f4a76
-  .word 0xaff5f3b2
-  .word 0x18838a2e
-  .word 0xa2f7dc33
-  .word 0xc1fcbdde
-  .word 0xf7aa81c2
-  .word 0xdea06241
-  .word 0xca221307
-  .word 0xf6a1be3f
-  .word 0x7bda1ebf
-  .word 0x332a5e9f
-  .word 0xfe32352f
-  .word 0x0104dc01
-  .word 0x6f8236c7
-  .word 0xb8cf341b
-  .word 0xd528b651
-  .word 0x4264dabc
-  .word 0xebc93e0c
-  .word 0xf4d3a02c
-  .word 0xd8fd0efd
-  .word 0x81394ab6
-  .word 0x9040ca4a
-  .word 0xeaa4a089
-  .word 0x836e582e
-  .word 0xf52f120f
-  .word 0x31f3c84d
-  .word 0xcb2a6343
-  .word 0x8bb7e9dc
-  .word 0xc6d5a8a3
-  .word 0x2f7c4e33
-  .word 0x460abc72
-  .word 0x1688458a
-  .word 0xcab1bc91
-  .word 0x11bc337b
-  .word 0x53059c60
-  .word 0x42af1f4e
-  .word 0xd2202e87
-  .word 0x3dfa2768
-  .word 0x78048736
-  .word 0x439c7b4a
-  .word 0x0f74a85e
-  .word 0xdc83db39
-  .word 0xa8b1fe6f
-  .word 0x3ab8a2c3
-  .word 0x4afc8304
-  .word 0x83339915
-  .word 0xed17ac85
-  .word 0x893ba84c
-  .word 0x1d6f60ba
-  .word 0x754abe9f
-  .word 0x597d89b3
-  .word 0xf9de6484
-  .word 0xb504f333

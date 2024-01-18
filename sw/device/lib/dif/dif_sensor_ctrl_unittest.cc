@@ -38,6 +38,13 @@ TEST_F(SensorCtrlTest, BadArgs) {
   EXPECT_DIF_BADARG(dif_sensor_ctrl_lock_cfg(nullptr));
 
   EXPECT_DIF_BADARG(
+      dif_sensor_ctrl_get_ast_event_trigger(nullptr, good_idx, &toggle_arg));
+  EXPECT_DIF_BADARG(dif_sensor_ctrl_get_ast_event_trigger(&sensor_ctrl, bad_idx,
+                                                          &toggle_arg));
+  EXPECT_DIF_BADARG(
+      dif_sensor_ctrl_get_ast_event_trigger(&sensor_ctrl, good_idx, nullptr));
+
+  EXPECT_DIF_BADARG(
       dif_sensor_ctrl_set_ast_event_trigger(nullptr, good_idx, toggle_arg));
   EXPECT_DIF_BADARG(
       dif_sensor_ctrl_set_ast_event_trigger(&sensor_ctrl, bad_idx, toggle_arg));
@@ -78,6 +85,22 @@ TEST_F(SensorCtrlTest, TriggerEvents) {
     EXPECT_WRITE32(SENSOR_CTRL_ALERT_TRIG_REG_OFFSET, ~(1 << i));
     EXPECT_DIF_OK(dif_sensor_ctrl_set_ast_event_trigger(&sensor_ctrl, i,
                                                         kDifToggleDisabled));
+  }
+
+  for (size_t i = 0; i < SENSOR_CTRL_PARAM_NUM_ALERT_EVENTS; i++) {
+    dif_toggle_t enable = kDifToggleDisabled;
+    EXPECT_READ32(SENSOR_CTRL_ALERT_TRIG_REG_OFFSET, 1 << i);
+    EXPECT_DIF_OK(
+        dif_sensor_ctrl_get_ast_event_trigger(&sensor_ctrl, i, &enable));
+    EXPECT_EQ(enable, kDifToggleEnabled);
+  }
+
+  for (size_t i = 0; i < SENSOR_CTRL_PARAM_NUM_ALERT_EVENTS; i++) {
+    dif_toggle_t enable = kDifToggleEnabled;
+    EXPECT_READ32(SENSOR_CTRL_ALERT_TRIG_REG_OFFSET, ~(1 << i));
+    EXPECT_DIF_OK(
+        dif_sensor_ctrl_get_ast_event_trigger(&sensor_ctrl, i, &enable));
+    EXPECT_EQ(enable, kDifToggleDisabled);
   }
 }
 

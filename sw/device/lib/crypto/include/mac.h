@@ -24,12 +24,12 @@ extern "C" {
  *
  * Values are hardened.
  */
-typedef enum kmac_mode {
+typedef enum otcrypto_kmac_mode {
   // KMAC128 mode.
-  kMacModeKmac128 = 0x336,
+  kOtcryptoKmacModeKmac128 = 0x336,
   // KMAC256 mode.
-  kMacModeKmac256 = 0xec4,
-} kmac_mode_t;
+  kOtcryptoKmacModeKmac256 = 0xec4,
+} otcrypto_kmac_mode_t;
 
 /**
  * Generic hmac context.
@@ -37,32 +37,31 @@ typedef enum kmac_mode {
  * Representation is internal to the hmac implementation; initialize
  * with #otcrypto_hmac_init.
  */
-typedef struct hmac_context {
-  hash_context_t inner;
-  hash_context_t outer;
-} hmac_context_t;
+typedef struct otcrypto_hmac_context {
+  otcrypto_hash_context_t inner;
+  otcrypto_hash_context_t outer;
+} otcrypto_hmac_context_t;
 
 /**
  * Performs the HMAC function on the input data.
  *
  * This function computes the HMAC function on the `input_message` using the
  * `key` and returns a `tag`. The key should be at least as long as the digest
- * for the chosen hash function.. Only `kHashModeSha256`, `kHashModeSha384` and
- * `kHashModeSha512` are supported. Other modes (e.g. SHA-3) are not supported
- * and will result in errors.
+ * for the chosen hash function. The hash function is determined by the key
+ * mode. Only SHA-2 hash functions are supported. Other modes (e.g. SHA-3) are
+ * not supported and will result in errors.
  *
  * The caller should allocate 32 bytes (8 32-bit words) of space for the `tag`
  * buffer and set its `len` field to 8.
  *
  * @param key Pointer to the blinded key struct with key shares.
  * @param input_message Input message to be hashed.
- * @param hash_mode Hash function to use.
  * @param[out] tag Output authentication tag.
  * @return The result of the HMAC operation.
  */
-crypto_status_t otcrypto_hmac(const crypto_blinded_key_t *key,
-                              crypto_const_byte_buf_t input_message,
-                              hash_mode_t hash_mode, crypto_word32_buf_t *tag);
+otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
+                                otcrypto_const_byte_buf_t input_message,
+                                otcrypto_word32_buf_t *tag);
 
 /**
  * Performs the KMAC function on the input data.
@@ -86,33 +85,28 @@ crypto_status_t otcrypto_hmac(const crypto_blinded_key_t *key,
  * @param[out] tag Output authentication tag.
  * @return The result of the KMAC operation.
  */
-crypto_status_t otcrypto_kmac(const crypto_blinded_key_t *key,
-                              crypto_const_byte_buf_t input_message,
-                              kmac_mode_t kmac_mode,
-                              crypto_const_byte_buf_t customization_string,
-                              size_t required_output_len,
-                              crypto_word32_buf_t *tag);
+otcrypto_status_t otcrypto_kmac(const otcrypto_blinded_key_t *key,
+                                otcrypto_const_byte_buf_t input_message,
+                                otcrypto_kmac_mode_t kmac_mode,
+                                otcrypto_const_byte_buf_t customization_string,
+                                size_t required_output_len,
+                                otcrypto_word32_buf_t *tag);
 
 /**
  * Performs the INIT operation for HMAC.
  *
  * Initializes the HMAC context. The key should be at least as long as the
- * digest for the chosen hash function. Only `kHashModeSha256`,
- * `kHashModeSha384` and `kHashModeSha512` are supported. Other modes (e.g.
+ * digest for the chosen hash function. The hash function is determined by the
+ * key mode. Only SHA-2 hash functions are are supported. Other modes (e.g.
  * SHA-3) are not supported and will result in errors.
  *
- * The HMAC streaming API supports only the `kMacModeHmacSha256` mode.  Other
- * modes are not supported and an error would be returned. The interface is
- * designed to be generic to support other required modes in the future.
- *
- * @param ctx Pointer to the generic HMAC context struct.
+ * @param[out] ctx Pointer to the generic HMAC context struct.
  * @param key Pointer to the blinded HMAC key struct.
  * @param hash_mode Hash function to use.
  * @return Result of the HMAC init operation.
  */
-crypto_status_t otcrypto_hmac_init(hmac_context_t *ctx,
-                                   const crypto_blinded_key_t *key,
-                                   hash_mode_t hash_mode);
+otcrypto_status_t otcrypto_hmac_init(otcrypto_hmac_context_t *ctx,
+                                     const otcrypto_blinded_key_t *key);
 
 /**
  * Performs the UPDATE operation for HMAC.
@@ -128,8 +122,8 @@ crypto_status_t otcrypto_hmac_init(hmac_context_t *ctx,
  * @param input_message Input message to be hashed.
  * @return Result of the HMAC update operation.
  */
-crypto_status_t otcrypto_hmac_update(hmac_context_t *const ctx,
-                                     crypto_const_byte_buf_t input_message);
+otcrypto_status_t otcrypto_hmac_update(otcrypto_hmac_context_t *const ctx,
+                                       otcrypto_const_byte_buf_t input_message);
 
 /**
  * Performs the FINAL operation for HMAC.
@@ -148,8 +142,8 @@ crypto_status_t otcrypto_hmac_update(hmac_context_t *const ctx,
  * @param[out] tag Output authentication tag.
  * @return Result of the HMAC final operation.
  */
-crypto_status_t otcrypto_hmac_final(hmac_context_t *const ctx,
-                                    crypto_word32_buf_t *tag);
+otcrypto_status_t otcrypto_hmac_final(otcrypto_hmac_context_t *const ctx,
+                                      otcrypto_word32_buf_t *tag);
 
 #ifdef __cplusplus
 }  // extern "C"

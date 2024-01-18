@@ -37,57 +37,57 @@ status_t handle_aes_block(ujson_t *uj) {
   TRY(ujson_deserialize_cryptotest_aes_padding_t(uj, &uj_padding));
   TRY(ujson_deserialize_cryptotest_aes_data_t(uj, &uj_data));
 
-  block_cipher_mode_t mode;
-  key_mode_t key_mode;
+  otcrypto_aes_mode_t mode;
+  otcrypto_key_mode_t key_mode;
   switch (uj_mode) {
     case kCryptotestAesModeEcb:
-      mode = kBlockCipherModeEcb;
-      key_mode = kKeyModeAesEcb;
+      mode = kOtcryptoAesModeEcb;
+      key_mode = kOtcryptoKeyModeAesEcb;
       break;
     case kCryptotestAesModeCbc:
-      mode = kBlockCipherModeCbc;
-      key_mode = kKeyModeAesCbc;
+      mode = kOtcryptoAesModeCbc;
+      key_mode = kOtcryptoKeyModeAesCbc;
       break;
     case kCryptotestAesModeCfb:
-      mode = kBlockCipherModeCfb;
-      key_mode = kKeyModeAesCfb;
+      mode = kOtcryptoAesModeCfb;
+      key_mode = kOtcryptoKeyModeAesCfb;
       break;
     case kCryptotestAesModeOfb:
-      mode = kBlockCipherModeOfb;
-      key_mode = kKeyModeAesOfb;
+      mode = kOtcryptoAesModeOfb;
+      key_mode = kOtcryptoKeyModeAesOfb;
       break;
     case kCryptotestAesModeCtr:
-      mode = kBlockCipherModeCtr;
-      key_mode = kKeyModeAesCtr;
+      mode = kOtcryptoAesModeCtr;
+      key_mode = kOtcryptoKeyModeAesCtr;
       break;
     default:
       LOG_ERROR("Unrecognized AES block cipher mode: %d", uj_mode);
       return INVALID_ARGUMENT();
   }
 
-  aes_operation_t op;
+  otcrypto_aes_operation_t op;
   switch (uj_op) {
     case kCryptotestAesOperationEncrypt:
-      op = kAesOperationEncrypt;
+      op = kOtcryptoAesOperationEncrypt;
       break;
     case kCryptotestAesOperationDecrypt:
-      op = kAesOperationDecrypt;
+      op = kOtcryptoAesOperationDecrypt;
       break;
     default:
       LOG_ERROR("Unrecognized AES operation: %d", uj_op);
       return INVALID_ARGUMENT();
   }
 
-  aes_padding_t padding;
+  otcrypto_aes_padding_t padding;
   switch (uj_padding) {
     case kCryptotestAesPaddingPkcs7:
-      padding = kAesPaddingPkcs7;
+      padding = kOtcryptoAesPaddingPkcs7;
       break;
     case kCryptotestAesPaddingIso9797M2:
-      padding = kAesPaddingIso9797M2;
+      padding = kOtcryptoAesPaddingIso9797M2;
       break;
     case kCryptotestAesPaddingNull:
-      padding = kAesPaddingNull;
+      padding = kOtcryptoAesPaddingNull;
       break;
     default:
       LOG_ERROR("Unrecognized AES padding scheme: %d", uj_op);
@@ -98,23 +98,23 @@ status_t handle_aes_block(ujson_t *uj) {
   const size_t AES_IV_SIZE = 4;
   uint32_t iv_buf[AES_IV_SIZE];
   memcpy(iv_buf, uj_data.iv, AES_IV_SIZE * 4);
-  crypto_word32_buf_t iv = {
+  otcrypto_word32_buf_t iv = {
       .data = iv_buf,
       .len = kAesBlockWords,
   };
 
-  crypto_const_byte_buf_t input = {
+  otcrypto_const_byte_buf_t input = {
       .data = uj_data.input,
       .len = (size_t)uj_data.input_len,
   };
 
   // Build the key configuration
-  crypto_key_config_t config = {
-      .version = kCryptoLibVersion1,
+  otcrypto_key_config_t config = {
+      .version = kOtcryptoLibVersion1,
       .key_mode = key_mode,
       .key_length = uj_data.key_length,
       .hw_backed = kHardenedBoolFalse,
-      .security_level = kSecurityLevelLow,
+      .security_level = kOtcryptoKeySecurityLevelLow,
   };
   // Create buffer to store key
   uint32_t key_buf[kAesMaxKeyWords];
@@ -123,7 +123,7 @@ status_t handle_aes_block(ujson_t *uj) {
   uint32_t keyblob[keyblob_num_words(config)];
   // Create blinded key
   TRY(keyblob_from_key_and_mask(key_buf, kKeyMask, config, keyblob));
-  crypto_blinded_key_t key = {
+  otcrypto_blinded_key_t key = {
       .config = config,
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,
@@ -137,7 +137,7 @@ status_t handle_aes_block(ujson_t *uj) {
     return OUT_OF_RANGE();
   }
   uint32_t output_buf[padded_len_bytes / sizeof(uint32_t)];
-  crypto_byte_buf_t output = {
+  otcrypto_byte_buf_t output = {
       .data = (unsigned char *)output_buf,
       .len = sizeof(output_buf),
   };

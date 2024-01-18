@@ -28,13 +28,16 @@ static dif_rv_plic_t plic;
 typedef enum {
   kTpmWriteCommand = 0x0,
   kTpmReadCommand = 0x80,
+  kTpmCommandMask = 0xbf
 } tpm_cmd_t;
 
-const static uint8_t kIterations = 10;
-const static uint8_t kTpmCommandRwMask = 0x80;
-const static uint8_t kTpmCommandSizeMask = 0x3f;
+enum {
+  kIterations = 10,
+  kTpmCommandRwMask = 0x80,
+  kTpmCommandSizeMask = 0x3f,
+};
 
-const static dif_spi_device_tpm_config_t tpm_config = {
+const static dif_spi_device_tpm_config_t kTpmConfig = {
     .interface = kDifSpiDeviceTpmInterfaceCrb,
     .disable_return_by_hardware = false,
     .disable_address_prefix_check = false,
@@ -45,7 +48,7 @@ static volatile bool header_interrupt_received = false;
 static void en_plic_irqs(dif_rv_plic_t *plic) {
   // Enable functional interrupts as well as error interrupts to make sure
   // everything is behaving as expected.
-  top_earlgrey_plic_irq_id_t plic_irqs[] = {
+  const top_earlgrey_plic_irq_id_t kIrqs[] = {
       kTopEarlgreyPlicIrqIdSpiDeviceGenericRxFull,
       kTopEarlgreyPlicIrqIdSpiDeviceGenericRxWatermark,
       kTopEarlgreyPlicIrqIdSpiDeviceGenericTxWatermark,
@@ -59,13 +62,13 @@ static void en_plic_irqs(dif_rv_plic_t *plic) {
       kTopEarlgreyPlicIrqIdSpiDeviceReadbufFlip,
       kTopEarlgreyPlicIrqIdSpiDeviceTpmHeaderNotEmpty};
 
-  for (uint32_t i = 0; i < ARRAYSIZE(plic_irqs); ++i) {
+  for (uint32_t i = 0; i < ARRAYSIZE(kIrqs); ++i) {
     CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
-        plic, plic_irqs[i], kTopEarlgreyPlicTargetIbex0, kDifToggleEnabled));
+        plic, kIrqs[i], kTopEarlgreyPlicTargetIbex0, kDifToggleEnabled));
 
     // Assign a default priority
-    CHECK_DIF_OK(dif_rv_plic_irq_set_priority(plic, plic_irqs[i],
-                                              kDifRvPlicMaxPriority));
+    CHECK_DIF_OK(
+        dif_rv_plic_irq_set_priority(plic, kIrqs[i], kDifRvPlicMaxPriority));
   }
 
   // Enable the external IRQ at Ibex.
@@ -74,22 +77,21 @@ static void en_plic_irqs(dif_rv_plic_t *plic) {
 }
 
 static void en_spi_device_irqs(dif_spi_device_t *spi_device) {
-  dif_spi_device_irq_t spi_device_irqs[] = {
-      kDifSpiDeviceIrqGenericRxFull,
-      kDifSpiDeviceIrqGenericRxWatermark,
-      kDifSpiDeviceIrqGenericTxWatermark,
-      kDifSpiDeviceIrqGenericRxError,
-      kDifSpiDeviceIrqGenericRxOverflow,
-      kDifSpiDeviceIrqGenericTxUnderflow,
-      kDifSpiDeviceIrqUploadCmdfifoNotEmpty,
-      kDifSpiDeviceIrqUploadPayloadNotEmpty,
-      kDifSpiDeviceIrqUploadPayloadOverflow,
-      kDifSpiDeviceIrqReadbufWatermark,
-      kDifSpiDeviceIrqReadbufFlip,
-      kDifSpiDeviceIrqTpmHeaderNotEmpty};
+  const dif_spi_device_irq_t kIrqs[] = {kDifSpiDeviceIrqGenericRxFull,
+                                        kDifSpiDeviceIrqGenericRxWatermark,
+                                        kDifSpiDeviceIrqGenericTxWatermark,
+                                        kDifSpiDeviceIrqGenericRxError,
+                                        kDifSpiDeviceIrqGenericRxOverflow,
+                                        kDifSpiDeviceIrqGenericTxUnderflow,
+                                        kDifSpiDeviceIrqUploadCmdfifoNotEmpty,
+                                        kDifSpiDeviceIrqUploadPayloadNotEmpty,
+                                        kDifSpiDeviceIrqUploadPayloadOverflow,
+                                        kDifSpiDeviceIrqReadbufWatermark,
+                                        kDifSpiDeviceIrqReadbufFlip,
+                                        kDifSpiDeviceIrqTpmHeaderNotEmpty};
 
-  for (uint32_t i = 0; i <= ARRAYSIZE(spi_device_irqs); ++i) {
-    CHECK_DIF_OK(dif_spi_device_irq_set_enabled(spi_device, spi_device_irqs[i],
+  for (uint32_t i = 0; i <= ARRAYSIZE(kIrqs); ++i) {
+    CHECK_DIF_OK(dif_spi_device_irq_set_enabled(spi_device, kIrqs[i],
                                                 kDifToggleEnabled));
   }
 }
@@ -135,12 +137,16 @@ static void ack_spi_tpm_header_irq(dif_spi_device_handle_t *spi_device) {
 }
 
 // This routine is needed to make sure that an interrupt does not sneak in
-// and jump excution away between the boolean check and the actual invocation
+// and jump execution away between the boolean check and the actual invocation
 // of wait_for_interrupt.
 static void atomic_wait_for_interrupt(void) {
-  irq_global_ctrl(false);
-  if (!header_interrupt_received) {
+  while (true) {
+    irq_global_ctrl(false);
+    if (header_interrupt_received) {
+      break;
+    }
     wait_for_interrupt();
+    irq_global_ctrl(true);
   }
   irq_global_ctrl(true);
 }
@@ -162,26 +168,28 @@ bool test_main(void) {
       &pinmux, kTopEarlgreyPinmuxPeripheralInSpiDeviceTpmCsb,
       kTopEarlgreyPinmuxInselIoa7));
 
-  dif_pinmux_pad_attr_t out_attr;
-  dif_pinmux_pad_attr_t in_attr = {
-      .slew_rate = 0,
-      .drive_strength = 0,
-      .flags = kDifPinmuxPadAttrPullResistorEnable |
-               kDifPinmuxPadAttrPullResistorUp};
+  if (kDeviceType == kDeviceSimDV) {
+    dif_pinmux_pad_attr_t out_attr;
+    dif_pinmux_pad_attr_t in_attr = {
+        .slew_rate = 0,
+        .drive_strength = 0,
+        .flags = kDifPinmuxPadAttrPullResistorEnable |
+                 kDifPinmuxPadAttrPullResistorUp};
 
-  CHECK_DIF_OK(dif_pinmux_pad_write_attrs(&pinmux, kTopEarlgreyMuxedPadsIoa7,
-                                          kDifPinmuxPadKindMio, in_attr,
-                                          &out_attr));
+    CHECK_DIF_OK(dif_pinmux_pad_write_attrs(&pinmux, kTopEarlgreyMuxedPadsIoa7,
+                                            kDifPinmuxPadKindMio, in_attr,
+                                            &out_attr));
+  }
 
   CHECK_DIF_OK(
-      dif_spi_device_tpm_configure(&spi_device, kDifToggleEnabled, tpm_config));
+      dif_spi_device_tpm_configure(&spi_device, kDifToggleEnabled, kTpmConfig));
 
   // enable interrupts
   en_plic_irqs(&plic);
   en_spi_device_irqs(&spi_device.dev);
 
   // Sync message with testbench to begin.
-  LOG_INFO("Begin TPM Test");
+  LOG_INFO("SYNC: Begin TPM Test");
 
   for (uint32_t i = 0; i < kIterations; i++) {
     LOG_INFO("Iteration %d", i);
@@ -189,10 +197,10 @@ bool test_main(void) {
     // Wait for write interrupt.
     atomic_wait_for_interrupt();
 
-    // Check what comamnd we have received. Store it as expected variables
+    // Check what command we have received. Store it as expected variables
     // and compare when the read command is issued.
-    uint8_t write_command;
-    uint32_t write_addr;
+    uint8_t write_command = 0;
+    uint32_t write_addr = 0;
     CHECK_DIF_OK(dif_spi_device_tpm_get_command(&spi_device, &write_command,
                                                 &write_addr));
     CHECK((write_command & kTpmCommandRwMask) == kTpmWriteCommand,
@@ -202,7 +210,7 @@ bool test_main(void) {
     uint32_t num_bytes = (write_command & kTpmCommandSizeMask) + 1;
     LOG_INFO("Expecting %d bytes from tpm write", num_bytes);
 
-    uint8_t buf[64];
+    uint8_t buf[64] = {0};
     dif_result_t status = kDifOutOfRange;
     while (status == kDifOutOfRange) {
       status = dif_spi_device_tpm_read_data(&spi_device, num_bytes, buf);
@@ -212,18 +220,21 @@ bool test_main(void) {
     // Finished processing the write command
     ack_spi_tpm_header_irq(&spi_device);
 
+    LOG_INFO("SYNC: Waiting Read");
+    // Send the written data right back out for reads.
     // Wait for read interrupt.
     atomic_wait_for_interrupt();
     // Send the written data right back out for reads.
     CHECK_DIF_OK(dif_spi_device_tpm_write_data(&spi_device, num_bytes, buf));
 
-    uint8_t read_command;
-    uint32_t read_addr;
+    uint8_t read_command = 0;
+    uint32_t read_addr = 0;
     CHECK_DIF_OK(
         dif_spi_device_tpm_get_command(&spi_device, &read_command, &read_addr));
     ack_spi_tpm_header_irq(&spi_device);
 
     // Make sure the received command matches expectation
+    read_command &= kTpmCommandMask;
     LOG_INFO("Expected 0x%x, received 0x%x",
              (kTpmReadCommand | (num_bytes - 1)), read_command);
     CHECK((kTpmReadCommand | (num_bytes - 1)) == read_command,

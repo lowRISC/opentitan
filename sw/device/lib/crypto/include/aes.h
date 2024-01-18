@@ -21,88 +21,87 @@ extern "C" {
  *
  * Values are hardened.
  */
-typedef enum aead_gcm_tag_len {
+typedef enum otcrypto_aes_gcm_tag_len {
   // Tag length 128 bits.
-  kAeadGcmTagLen128 = 0x167,
+  kOtcryptoAesGcmTagLen128 = 0x167,
   // Tag length 96 bits.
-  kAeadGcmTagLen96 = 0x35a,
+  kOtcryptoAesGcmTagLen96 = 0x35a,
   // Tag length 64 bits.
-  kAeadGcmTagLen64 = 0x5d4,
+  kOtcryptoAesGcmTagLen64 = 0x5d4,
   // Tag length 32 bits.
-  kAeadGcmTagLen32 = 0xf06,
-} aead_gcm_tag_len_t;
+  kOtcryptoAesGcmTagLen32 = 0xf06,
+} otcrypto_aes_gcm_tag_len_t;
 
 /**
  * Enum to define AES mode of operation.
  *
  * Values are hardened.
  */
-typedef enum block_cipher_mode {
+typedef enum otcrypto_aes_mode {
   // AES ECB mode (electronic codebook mode).
-  kBlockCipherModeEcb = 0x533,
+  kOtcryptoAesModeEcb = 0x533,
   // AES CBC mode (cipher block chaining mode).
-  kBlockCipherModeCbc = 0x45d,
+  kOtcryptoAesModeCbc = 0x45d,
   // AES CFB mode (cipher feedback mode).
-  kBlockCipherModeCfb = 0xcd2,
+  kOtcryptoAesModeCfb = 0xcd2,
   // AES OFB mode (output feedback mode).
-  kBlockCipherModeOfb = 0x39a,
+  kOtcryptoAesModeOfb = 0x39a,
   // AES CTR mode (counter mode).
-  kBlockCipherModeCtr = 0xd2c,
-} block_cipher_mode_t;
+  kOtcryptoAesModeCtr = 0xd2c,
+} otcrypto_aes_mode_t;
 
 /**
  * Enum to define AES operation to be performed.
  *
  * Values are hardened.
  */
-typedef enum aes_operation {
+typedef enum otcrypto_aes_operation {
   // AES operation mode encrypt.
-  kAesOperationEncrypt = 0x2b6,
+  kOtcryptoAesOperationEncrypt = 0x2b6,
   // AES operation mode decrypt.
-  kAesOperationDecrypt = 0x5f0,
-} aes_operation_t;
+  kOtcryptoAesOperationDecrypt = 0x5f0,
+} otcrypto_aes_operation_t;
 
 /**
  * Enum to define padding scheme for AES data.
  *
  * Values are hardened.
  */
-typedef enum aes_padding {
+typedef enum otcrypto_aes_padding {
   // Pads with value same as the number of padding bytes.
-  kAesPaddingPkcs7 = 0xe7f,
+  kOtcryptoAesPaddingPkcs7 = 0xe7f,
   // Pads with 0x80 (10000000), followed by zero bytes.
-  kAesPaddingIso9797M2 = 0xfac,
+  kOtcryptoAesPaddingIso9797M2 = 0xfac,
   // Add no padding.
-  kAesPaddingNull = 0x8ce,
-} aes_padding_t;
+  kOtcryptoAesPaddingNull = 0x8ce,
+} otcrypto_aes_padding_t;
 
 /**
- * Context for GCM GHASH operation.
- *
- * Representation is internal to the aes-gcm ghash implementation;
- * initialize with #otcrypto_gcm_ghash_init.
+ * Context for a streaming AES-GCM operation.
+ *
+ * Representation is internal to the AES-GCM implementation and subject to
+ * change.
  */
-typedef struct gcm_ghash_context {
-  // Context for the gcm-ghash operation.
-  uint32_t ctx[68];
-} gcm_ghash_context_t;
+typedef struct otcrypto_aes_gcm_context {
+  uint32_t data[98];
+} otcrypto_aes_gcm_context_t;
 
 /**
  * Get the number of blocks needed for the plaintext length and padding mode.
  *
  * This returns the size of the padded plaintext, which is the same as the
- * ciphertext size. Returns `kCryptoStatusBadArgs` if the padding mode and
- * length are incompatible (for instance, if the padding mode is "no padding"
- * but the input length is not a multiple of the AES block size).
+ * ciphertext size. Returns `kOtcryptoStatusValueBadArgs` if the padding mode
+ * and length are incompatible (for instance, if the padding mode is "no
+ * padding" but the input length is not a multiple of the AES block size).
  *
  * @param plaintext_len Plaintext data length in bytes.
  * @param aes_padding Padding scheme to be used for the data.
  * @return Size of the padded input or ciphertext.
  * @return Result of the operation.
  */
-crypto_status_t otcrypto_aes_padded_plaintext_length(size_t plaintext_len,
-                                                     aes_padding_t aes_padding,
-                                                     size_t *padded_len);
+otcrypto_status_t otcrypto_aes_padded_plaintext_length(
+    size_t plaintext_len, otcrypto_aes_padding_t aes_padding,
+    size_t *padded_len);
 
 /**
  * Performs the AES operation.
@@ -129,13 +128,13 @@ crypto_status_t otcrypto_aes_padded_plaintext_length(size_t plaintext_len,
  * @param[out] cipher_output Output data after cipher operation.
  * @return The result of the cipher operation.
  */
-crypto_status_t otcrypto_aes(const crypto_blinded_key_t *key,
-                             crypto_word32_buf_t iv,
-                             block_cipher_mode_t aes_mode,
-                             aes_operation_t aes_operation,
-                             crypto_const_byte_buf_t cipher_input,
-                             aes_padding_t aes_padding,
-                             crypto_byte_buf_t cipher_output);
+otcrypto_status_t otcrypto_aes(const otcrypto_blinded_key_t *key,
+                               otcrypto_word32_buf_t iv,
+                               otcrypto_aes_mode_t aes_mode,
+                               otcrypto_aes_operation_t aes_operation,
+                               otcrypto_const_byte_buf_t cipher_input,
+                               otcrypto_aes_padding_t aes_padding,
+                               otcrypto_byte_buf_t cipher_output);
 
 /**
  * Performs the AES-GCM authenticated encryption operation.
@@ -161,13 +160,13 @@ crypto_status_t otcrypto_aes(const crypto_blinded_key_t *key,
  * @return Result of the authenticated encryption.
  * operation
  */
-crypto_status_t otcrypto_aes_encrypt_gcm(const crypto_blinded_key_t *key,
-                                         crypto_const_byte_buf_t plaintext,
-                                         crypto_const_word32_buf_t iv,
-                                         crypto_const_byte_buf_t aad,
-                                         aead_gcm_tag_len_t tag_len,
-                                         crypto_byte_buf_t *ciphertext,
-                                         crypto_word32_buf_t *auth_tag);
+otcrypto_status_t otcrypto_aes_gcm_encrypt(const otcrypto_blinded_key_t *key,
+                                           otcrypto_const_byte_buf_t plaintext,
+                                           otcrypto_const_word32_buf_t iv,
+                                           otcrypto_const_byte_buf_t aad,
+                                           otcrypto_aes_gcm_tag_len_t tag_len,
+                                           otcrypto_byte_buf_t *ciphertext,
+                                           otcrypto_word32_buf_t *auth_tag);
 
 /**
  * Performs the AES-GCM authenticated decryption operation.
@@ -196,11 +195,159 @@ crypto_status_t otcrypto_aes_encrypt_gcm(const crypto_blinded_key_t *key,
  * @return Result of the authenticated decryption.
  * operation
  */
-crypto_status_t otcrypto_aes_decrypt_gcm(
-    const crypto_blinded_key_t *key, crypto_const_byte_buf_t ciphertext,
-    crypto_const_word32_buf_t iv, crypto_const_byte_buf_t aad,
-    aead_gcm_tag_len_t tag_len, crypto_const_word32_buf_t auth_tag,
-    crypto_byte_buf_t *plaintext, hardened_bool_t *success);
+otcrypto_status_t otcrypto_aes_gcm_decrypt(
+    const otcrypto_blinded_key_t *key, otcrypto_const_byte_buf_t ciphertext,
+    otcrypto_const_word32_buf_t iv, otcrypto_const_byte_buf_t aad,
+    otcrypto_aes_gcm_tag_len_t tag_len, otcrypto_const_word32_buf_t auth_tag,
+    otcrypto_byte_buf_t *plaintext, hardened_bool_t *success);
+
+/**
+ * Initializes the AES-GCM authenticated encryption operation.
+ *
+ * The order of operations for encryption is:
+ *   - `otcrypto_aes_gcm_encrypt_init()` called once
+ *   - `otcrypto_aes_gcm_update_aad()` called zero or more times
+ *   - `otcrypto_aes_gcm_update_encrypted_data()` called zero or more times
+ *   - `otcrypto_aes_gcm_encrypt_final()` called once
+ *
+ * Associated data must be added first, before encrypted data; the caller may
+ * not call `otcrypto_aes_gcm_udpate_aad()` after the first call to
+ * `otcrypto_aes_gcm_update_encrypted_data()`.
+ *
+ * The resulting AES-GCM context will include pointers into the keyblob of the
+ * blinded key. It is important that the blinded key (or at least the keyblob)
+ * remains live as long as `ctx` is. The IV is safe to free.
+ *
+ * @param key Pointer to the blinded key struct.
+ * @param iv Initialization vector for the encryption function.
+ * @param[out] ctx Context object for the operation.
+ * @return Result of the initialization operation.
+ */
+otcrypto_status_t otcrypto_aes_gcm_encrypt_init(
+    const otcrypto_blinded_key_t *key, otcrypto_const_word32_buf_t iv,
+    otcrypto_aes_gcm_context_t *ctx);
+
+/**
+ * Initializes the AES-GCM authenticated decryption operation.
+ *
+ * The order of operations for decryption is:
+ *   - `otcrypto_aes_gcm_decrypt_init()` called once
+ *   - `otcrypto_aes_gcm_update_aad()` called zero or more times
+ *   - `otcrypto_aes_gcm_update_encrypted_data()` called zero or more times
+ *   - `otcrypto_aes_gcm_decrypt_final()` called once
+ *
+ * Associated data must be added first, before encrypted data; the caller may
+ * not call `otcrypto_aes_gcm_udpate_aad()` after the first call to
+ * `otcrypto_aes_gcm_update_encrypted_data()`.
+ *
+ * The resulting AES-GCM context will include pointers into the keyblob of the
+ * blinded key. It is important that the blinded key (or at least the keyblob)
+ * remains live as long as `ctx` is. The IV is safe to free.
+ *
+ * IMPORTANT: Although this routine produces decrypted data incrementally, it
+ * is the caller's responsibility to ensure that they do not trust the
+ * decrypted data until the tag check passes.
+ *
+ * @param key Pointer to the blinded key struct.
+ * @param iv Initialization vector for the decryption function.
+ * @param[out] ctx Context object for the operation.
+ * @return Result of the initialization operation.
+ */
+otcrypto_status_t otcrypto_aes_gcm_decrypt_init(
+    const otcrypto_blinded_key_t *key, otcrypto_const_word32_buf_t iv,
+    otcrypto_aes_gcm_context_t *ctx);
+/**
+ * Updates additional authenticated data for an AES-GCM operation.
+ *
+ * May be used for either encryption or decryption. Call
+ * `otcrypto_aes_gcm_encrypt_init` or `otcrypto_aes_gcm_decrypt_init` first.
+ *
+ * @param ctx Context object for the operation, updated in place.
+ * @param aad Additional authenticated data.
+ * @return Result of the update operation.
+ */
+otcrypto_status_t otcrypto_aes_gcm_update_aad(otcrypto_aes_gcm_context_t *ctx,
+                                              otcrypto_const_byte_buf_t aad);
+
+/**
+ * Updates authenticated-and-encrypted data for an AES-GCM operation.
+ *
+ * May be used for either encryption or decryption. Call
+ * `otcrypto_aes_gcm_encrypt_init` or `otcrypto_aes_gcm_decrypt_init` first.
+ *
+ * The caller should allocate space for the output and set the `len` field
+ * accordingly.
+ *
+ * For encryption, `input` is the plaintext and `output` is the ciphertext; for
+ * decryption, they are reversed. The output must always be long enough to
+ * store all full 128-bit blocks of encrypted data received so far minus all
+ * output produced so far; rounding the input length to the next 128-bit
+ * boundary is always enough, but if the caller knows the exact byte-length of
+ * input so far they can calculate it exactly. Returns an error if `output` is
+ * not long enough; if `output` is overly long, only the first
+ * `output_bytes_written` bytes will be used.
+ *
+ * @param ctx Context object for the operation, updated in place.
+ * @param input Plaintext for encryption, ciphertext for decryption.
+ * @param[out] output Ciphertext for encryption, plaintext for decryption.
+ * @param[out] output_bytes_written Number of bytes written to `output`.
+ * @return Result of the update operation.
+ */
+otcrypto_status_t otcrypto_aes_gcm_update_encrypted_data(
+    otcrypto_aes_gcm_context_t *ctx, otcrypto_const_byte_buf_t input,
+    otcrypto_byte_buf_t output, size_t *output_bytes_written);
+
+/**
+ * Finishes the AES-GCM authenticated encryption operation.
+ *
+ * Processes any remaining plaintext from the context and computes the
+ * authentication tag and up to 1 block of ciphertext.
+ *
+ * The caller should allocate space for the ciphertext and tag buffers and set
+ * the `len` fields accordingly. This function returns the
+ * `ciphertext_bytes_written` parameter with the number of bytes written to
+ * `ciphertext`, which is always either 16 or 0. This function returns an error
+ * if the ciphertext or tag buffer is not long enough.
+ *
+ * @param ctx Context object for the operation.
+ * @param tag_len Length of authentication tag to be generated.
+ * @param[out] ciphertext Encrypted output data.
+ * @param[out] ciphertext_bytes_written Number of bytes written to `ciphertext`.
+ * @param[out] auth_tag Generated authentication tag.
+ * @return Result of the final operation.
+ */
+otcrypto_status_t otcrypto_aes_gcm_encrypt_final(
+    otcrypto_aes_gcm_context_t *ctx, otcrypto_aes_gcm_tag_len_t tag_len,
+    otcrypto_byte_buf_t *ciphertext, size_t *ciphertext_bytes_written,
+    otcrypto_word32_buf_t *auth_tag);
+
+/**
+ * Finishes the AES-GCM authenticated decryption operation.
+ *
+ * Processes any remaining ciphertext from the context and computes the
+ * authentication tag and up to 1 block of plaintext.
+ *
+ * The caller should allocate space for the plaintext buffer and set the `len`
+ * field accordingly. This function returns the `ciphertext_bytes_written`
+ * parameter with the number of bytes written to `ciphertext`. This function
+ * returns an error if the plaintext buffer is not long enough.
+ *
+ * IMPORTANT: the caller must check both the returned status and the `success`
+ * parameter to know if the tag is valid. The returned status may be OK even if
+ * the tag check did not succeed, if there were no errors during processing.
+ *
+ * @param ctx Context object for the operation.
+ * @param auth_tag Authentication tag to check.
+ * @param tag_len Length of authentication tag.
+ * @param[out] plaintext Decrypted output data.
+ * @param[out] plaintext_bytes_written Number of bytes written to `plaintext`.
+ * @param[out] success Whether the tag passed verification.
+ * @return Result of the final operation.
+ */
+otcrypto_status_t otcrypto_aes_gcm_decrypt_final(
+    otcrypto_aes_gcm_context_t *ctx, otcrypto_const_word32_buf_t auth_tag,
+    otcrypto_aes_gcm_tag_len_t tag_len, otcrypto_byte_buf_t *plaintext,
+    size_t *plaintext_bytes_written, hardened_bool_t *success);
 
 /**
  * Returns the length that the blinded key will have once wrapped.
@@ -209,8 +356,8 @@ crypto_status_t otcrypto_aes_decrypt_gcm(
  * @param[out] wrapped_num_words Number of 32b words for the wrapped key.
  * @return Result of the operation.
  */
-crypto_status_t otcrypto_aes_kwp_wrapped_len(const crypto_key_config_t config,
-                                             size_t *wrapped_num_words);
+otcrypto_status_t otcrypto_aes_kwp_wrapped_len(
+    const otcrypto_key_config_t config, size_t *wrapped_num_words);
 
 /**
  * Performs the cryptographic key wrapping operation.
@@ -230,9 +377,9 @@ crypto_status_t otcrypto_aes_kwp_wrapped_len(const crypto_key_config_t config,
  * @param[out] wrapped_key Pointer to the output wrapped key.
  * @return Result of the aes-kwp wrap operation.
  */
-crypto_status_t otcrypto_aes_kwp_wrap(const crypto_blinded_key_t *key_to_wrap,
-                                      const crypto_blinded_key_t *key_kek,
-                                      crypto_word32_buf_t *wrapped_key);
+otcrypto_status_t otcrypto_aes_kwp_wrap(
+    const otcrypto_blinded_key_t *key_to_wrap,
+    const otcrypto_blinded_key_t *key_kek, otcrypto_word32_buf_t *wrapped_key);
 
 /**
  * Performs the cryptographic key unwrapping operation.
@@ -264,10 +411,10 @@ crypto_status_t otcrypto_aes_kwp_wrap(const crypto_blinded_key_t *key_to_wrap,
  * @param[out] unwrapped_key Pointer to the output unwrapped key struct.
  * @return Result of the aes-kwp unwrap operation.
  */
-crypto_status_t otcrypto_aes_kwp_unwrap(crypto_const_word32_buf_t wrapped_key,
-                                        const crypto_blinded_key_t *key_kek,
-                                        hardened_bool_t *success,
-                                        crypto_blinded_key_t *unwrapped_key);
+otcrypto_status_t otcrypto_aes_kwp_unwrap(
+    otcrypto_const_word32_buf_t wrapped_key,
+    const otcrypto_blinded_key_t *key_kek, hardened_bool_t *success,
+    otcrypto_blinded_key_t *unwrapped_key);
 
 #ifdef __cplusplus
 }  // extern "C"
