@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_aon_timer.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
@@ -160,7 +159,7 @@ bool test_main(void) {
     uint32_t bite_th = kAONBiteTh;
 
     // Update bark and bite threshold in case of silicon test
-    if (kBootStage == kBootStageOwner) {
+    if (kDeviceType == kDeviceSilicon) {
       bark_th = 4000;
       bite_th = 4 * bark_th;
     }

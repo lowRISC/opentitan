@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
@@ -384,7 +383,7 @@ bool test_main(void) {
   irq_global_ctrl(true);
   irq_external_ctrl(true);
 
-  if (kBootStage != kBootStageOwner) {
+  if (kDeviceType != kDeviceSilicon) {
     do_info_partition_test(kFlashInfoPageIdCreatorSecret, kRandomData1);
     do_info_partition_test(kFlashInfoPageIdOwnerSecret, kRandomData2);
     do_info_partition_test(kFlashInfoPageIdIsoPart, kRandomData3);

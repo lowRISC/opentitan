@@ -1469,6 +1469,7 @@ opentitan_test(
         },
     ),
     deps = [
+        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:mmio",
@@ -1602,9 +1603,6 @@ test_suite(
 opentitan_test(
     name = "flash_ctrl_clock_freqs_test",
     srcs = ["flash_ctrl_clock_freqs_test.c"],
-    # TODO(#12486): [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
-    # update: verilator pass
-    cw310 = new_cw310_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
@@ -1612,9 +1610,10 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
         },
     ),
-    silicon = silicon_params(tags = ["broken"]),
     verilator = new_verilator_params(timeout = "long"),
     deps = [
+        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:clkmgr",
         "//sw/device/lib/dif:flash_ctrl",
