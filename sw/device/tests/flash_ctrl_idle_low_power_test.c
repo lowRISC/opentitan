@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_aon_timer.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
@@ -25,6 +26,7 @@ OTTF_DEFINE_TEST_CONFIG();
 
 static dif_rv_plic_t plic;
 static dif_aon_timer_t aon;
+static dif_rv_core_ibex_t rv_core_ibex;
 
 static plic_isr_ctx_t plic_ctx = {
     .rv_plic = &plic,
@@ -59,6 +61,27 @@ void ottf_external_isr(uint32_t *exc_info) {
                               &irq_serviced);
 }
 
+/**
+ * OTTF external NMI internal IRQ handler.
+ * The ROM configures the watchdog to generates a NMI at bark, so we clean the
+ * NMI and wait the external irq handler next.
+ */
+void ottf_external_nmi_handler(void) {
+  bool is_pending;
+  // The watchdog bark external interrupt is also connected to the NMI input
+  // of rv_core_ibex. We therefore expect the interrupt to be pending on the
+  // peripheral side (the check is done later in the test function).
+  CHECK_DIF_OK(dif_aon_timer_irq_is_pending(&aon, kDifAonTimerIrqWdogTimerBark,
+                                            &is_pending));
+  // In order to handle the NMI we need to acknowledge the interrupt status
+  // bit it at the peripheral side.
+  CHECK_DIF_OK(
+      dif_aon_timer_irq_acknowledge(&aon, kDifAonTimerIrqWdogTimerBark));
+
+  CHECK_DIF_OK(dif_rv_core_ibex_clear_nmi_state(&rv_core_ibex,
+                                                kDifRvCoreIbexNmiSourceAll));
+}
+
 static void enable_irqs(void) {
   // Enable the AON bark interrupt.
   CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
@@ -89,7 +112,9 @@ bool test_main(void) {
       mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
   CHECK_DIF_OK(dif_aon_timer_init(
       mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR), &aon));
-
+  CHECK_DIF_OK(dif_rv_core_ibex_init(
+      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
+      &rv_core_ibex));
   enable_irqs();
 
   CHECK_DIF_OK(dif_aon_timer_watchdog_stop(&aon));
@@ -130,9 +155,18 @@ bool test_main(void) {
         &pwrmgr, kDifPwrmgrWakeupRequestSourceTwo, 0));
 
     CHECK_DIF_OK(dif_aon_timer_watchdog_stop(&aon));
+
+    uint32_t bark_th = kAONBarkTh;
+    uint32_t bite_th = kAONBiteTh;
+
+    // Update bark and bite threshold in case of silicon test
+    if (kBootStage == kBootStageOwner) {
+      bark_th = 4000;
+      bite_th = 4 * bark_th;
+    }
     CHECK_DIF_OK(dif_aon_timer_watchdog_start(
-        &aon /* aon */, kAONBarkTh /* bark_threshold */,
-        kAONBiteTh /* bite_threshold */, false /* pause_in_sleep */,
+        &aon /* aon */, bark_th /* bark_threshold */,
+        bite_th /* bite_threshold */, false /* pause_in_sleep */,
         false /* lock */));
 
     dif_flash_ctrl_transaction_t transaction = {
@@ -143,6 +177,8 @@ bool test_main(void) {
         .word_count = 0x0};
 
     CHECK_DIF_OK(dif_flash_ctrl_start(&flash, transaction));
+    // Do not put any print here.
+    // That will cause interrupt miss and spurious test failure
     wait_for_interrupt();
 
     // Return from interrupt. Stop the watchdog. Check the reset info

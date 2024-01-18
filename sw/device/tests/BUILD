@@ -1433,15 +1433,11 @@ opentitan_test(
     srcs = ["flash_ctrl_idle_low_power_test.c"],
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-        "//hw/top_earlgrey:silicon_creator": None,
-        "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon_owner",
-        "//hw/top_earlgrey:silicon_owner_prodc_rom_ext": "silicon_owner",
+        "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
+        "//hw/top_earlgrey:silicon_owner_prodc_rom_ext": None,
         "//hw/top_earlgrey:sim_dv": None,
         "//hw/top_earlgrey:sim_verilator": None,
     },
-    silicon_owner = silicon_params(
-        tags = ["broken"],
-    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
