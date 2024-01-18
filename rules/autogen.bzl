@@ -2,6 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("//rules:stamp.bzl", "stamp_attr", "stamping_enabled")
+
 """Autogeneration rules for OpenTitan.
 
 The rules in this file are for autogenerating various file resources
@@ -27,17 +29,22 @@ def _hjson_header(ctx):
         executable = ctx.executable._regtool,
     )
 
+    stamp_args = []
+    stamp_files = []
+    if stamping_enabled(ctx):
+        stamp_files = [ctx.version_file]
+        stamp_args.append("--version-stamp={}".format(ctx.version_file.path))
+
     tock = ctx.actions.declare_file("{}.rs".format(ctx.label.name))
     ctx.actions.run(
         outputs = [tock],
-        inputs = ctx.files.srcs + [ctx.executable._regtool, ctx.file.version_stamp],
+        inputs = ctx.files.srcs + [ctx.executable._regtool] + stamp_files,
         arguments = [
             "--tock",
-            "--version-stamp={}".format(ctx.file.version_stamp.path),
             "-q",
             "-o",
             tock.path,
-        ] + node + [src.path for src in ctx.files.srcs],
+        ] + stamp_args + node + [src.path for src in ctx.files.srcs],
         executable = ctx.executable._regtool,
     )
 
@@ -60,16 +67,12 @@ autogen_hjson_header = rule(
         "node": attr.string(
             doc = "Register block node to generate",
         ),
-        "version_stamp": attr.label(
-            default = "//util:full_version_file",
-            allow_single_file = True,
-        ),
         "_regtool": attr.label(
             default = "//util:regtool",
             executable = True,
             cfg = "exec",
         ),
-    },
+    } | stamp_attr(-1, "//rules:stamp_flag"),
 )
 
 def _chip_info_src(ctx):
