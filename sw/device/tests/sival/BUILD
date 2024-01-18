@@ -57,10 +57,8 @@ test_suite(
         "//sw/device/tests:sram_ctrl_sleep_sram_ret_contents_no_scramble_test",
         "//sw/device/tests:sram_ctrl_sleep_sram_ret_contents_scramble_test",
         "//sw/device/tests:sram_ctrl_smoketest",
-        "//sw/device/tests:uart0_tx_rx_test",
-        "//sw/device/tests:uart1_tx_rx_test",
-        "//sw/device/tests:uart2_tx_rx_test",
         "//sw/device/tests:uart_smoketest",
+        "//sw/device/tests:uart_tx_rx_test",
         "//sw/device/tests/pmod:i2c_host_eeprom_test",
     ],
 )

@@ -4447,60 +4447,56 @@ opentitan_binary(
     ],
 )
 
-[
-    opentitan_test(
-        name = "uart{}_tx_rx_test".format(uart_idx),
-        srcs = ["uart_tx_rx_test.c"],
-        copts = ["-DUART_IDX={}".format(uart_idx)],
-        cw310 = new_cw310_params(
-            otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_prod_manuf_personalized",
-            test_cmd = " ".join([
-                "--bitstream=\"{bitstream}\"",
-                "--bootstrap=\"{firmware}\"",
-                "--firmware-elf=\"{firmware:elf}\"",
-            ]),
-            test_harness = "//sw/host/tests/chip/uart:uart_tx_rx",
-        ),
-        exec_env = {
-            # TODO: this test currently fails on FPGA.
-            # "//hw/top_earlgrey:fpga_cw310_sival": None,
-            # "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
-            # "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-            "//hw/top_earlgrey:silicon_creator": None,
-            "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon_owner",
-            "//hw/top_earlgrey:silicon_owner_prodc_rom_ext": "silicon_owner",
-            "//hw/top_earlgrey:sim_dv": None,
-        },
-        silicon = silicon_params(
-            test_cmd = " ".join([
-                "--bootstrap=\"{firmware}\"",
-                "--firmware-elf=\"{firmware:elf}\"",
-            ]),
-            test_harness = "//sw/host/tests/chip/uart:uart_tx_rx",
-        ),
-        silicon_owner = silicon_params(
-            tags = ["broken"],
-        ),
-        deps = [
-            "//hw/ip/lc_ctrl/data:lc_ctrl_regs",
-            "//hw/top_earlgrey/ip/clkmgr/data/autogen:clkmgr_regs",
-            "//hw/top_earlgrey/ip/pinmux/data/autogen:pinmux_regs",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-            "//sw/device/lib/base:mmio",
-            "//sw/device/lib/dif:clkmgr",
-            "//sw/device/lib/dif:lc_ctrl",
-            "//sw/device/lib/dif:rv_plic",
-            "//sw/device/lib/dif:uart",
-            "//sw/device/lib/runtime:hart",
-            "//sw/device/lib/runtime:irq",
-            "//sw/device/lib/runtime:log",
-            "//sw/device/lib/testing:clkmgr_testutils",
-            "//sw/device/lib/testing:uart_testutils",
-            "//sw/device/lib/testing/test_framework:ottf_main",
-        ],
-    )
-    for uart_idx in range(0, 4, 1)
-]
+opentitan_test(
+    name = "uart_tx_rx_test",
+    srcs = ["uart_tx_rx_test.c"],
+    cw310 = new_cw310_params(
+        otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_prod_manuf_personalized",
+        test_cmd = " ".join([
+            "--bitstream=\"{bitstream}\"",
+            "--bootstrap=\"{firmware}\"",
+            "--firmware-elf=\"{firmware:elf}\"",
+        ]),
+        test_harness = "//sw/host/tests/chip/uart:uart_tx_rx",
+    ),
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_sival": None,
+        "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+        "//hw/top_earlgrey:silicon_creator": None,
+        "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon_owner",
+        "//hw/top_earlgrey:silicon_owner_prodc_rom_ext": "silicon_owner",
+        "//hw/top_earlgrey:sim_dv": None,
+    },
+    silicon = silicon_params(
+        test_cmd = " ".join([
+            "--bootstrap=\"{firmware}\"",
+            "--firmware-elf=\"{firmware:elf}\"",
+        ]),
+        test_harness = "//sw/host/tests/chip/uart:uart_tx_rx",
+    ),
+    silicon_owner = silicon_params(
+        tags = ["broken"],
+    ),
+    deps = [
+        "//hw/ip/lc_ctrl/data:lc_ctrl_regs",
+        "//hw/top_earlgrey/ip/clkmgr/data/autogen:clkmgr_regs",
+        "//hw/top_earlgrey/ip/pinmux/data/autogen:pinmux_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:clkmgr",
+        "//sw/device/lib/dif:lc_ctrl",
+        "//sw/device/lib/dif:rv_plic",
+        "//sw/device/lib/dif:uart",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:irq",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:clkmgr_testutils",
+        "//sw/device/lib/testing:uart_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_console",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/testing/test_framework:ottf_utils",
+    ],
+)
 
 opentitan_test(
     name = "rv_core_ibex_mem_test_functest",

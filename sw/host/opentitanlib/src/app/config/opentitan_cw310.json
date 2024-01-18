@@ -51,6 +51,10 @@
     {
       "name": "console",
       "alias_of": "0"
+    },
+    {
+      "name": "dut",
+      "alias_of": "1"
     }
   ]
 }
