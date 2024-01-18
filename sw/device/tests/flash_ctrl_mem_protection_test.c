@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
@@ -199,7 +198,7 @@ bool test_main(void) {
   // Set up default access for data partitions.
   // In silicon, rom_ext will set default region access.
   // After that, it cannot be updated.
-  if (kBootStage != kBootStageOwner) {
+  if (kDeviceType != kDeviceSilicon) {
     CHECK_STATUS_OK(flash_ctrl_testutils_default_region_access(
         &flash, /*rd_en=*/true, /*prog_en=*/true, /*erase_en=*/true,
         /*scramble_en=*/false, /*ecc_en=*/false, /*high_endurance_en=*/false));
