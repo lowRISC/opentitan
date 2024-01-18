@@ -73,27 +73,8 @@ void ottf_console_init(void) {
         CHECK(kOttfTestConfig.console.type == kOttfConsoleUart);
         base_addr = TOP_EARLGREY_UART0_BASE_ADDR;
       }
-      CHECK_DIF_OK(
-          dif_uart_init(mmio_region_from_addr(base_addr), &ottf_console_uart));
-      CHECK(kUartBaudrate <= UINT32_MAX, "kUartBaudrate must fit in uint32_t");
-      CHECK(kClockFreqPeripheralHz <= UINT32_MAX,
-            "kClockFreqPeripheralHz must fit in uint32_t");
-      CHECK_DIF_OK(dif_uart_configure(
-          &ottf_console_uart,
-          (dif_uart_config_t){
-              .baudrate = (uint32_t)kUartBaudrate,
-              .clk_freq_hz = (uint32_t)kClockFreqPeripheralHz,
-              .parity_enable = kDifToggleDisabled,
-              .parity = kDifUartParityEven,
-              .tx_enable = kDifToggleEnabled,
-              .rx_enable = kDifToggleEnabled,
-          }));
-      base_uart_stdout(&ottf_console_uart);
 
-      // Initialize/Configure console flow control (if requested).
-      if (kOttfTestConfig.enable_uart_flow_control) {
-        ottf_console_flow_control_enable();
-      }
+      ottf_console_configure_uart(base_addr);
       break;
     case (kOttfConsoleSpiDevice):
       CHECK_DIF_OK(dif_spi_device_init_handle(
@@ -122,6 +103,29 @@ void ottf_console_init(void) {
     default:
       CHECK(false, "unsupported OTTF console interface.");
       break;
+  }
+}
+
+void ottf_console_configure_uart(uintptr_t base_addr) {
+  CHECK_DIF_OK(
+      dif_uart_init(mmio_region_from_addr(base_addr), &ottf_console_uart));
+  CHECK(kUartBaudrate <= UINT32_MAX, "kUartBaudrate must fit in uint32_t");
+  CHECK(kClockFreqPeripheralHz <= UINT32_MAX,
+        "kClockFreqPeripheralHz must fit in uint32_t");
+  CHECK_DIF_OK(dif_uart_configure(
+      &ottf_console_uart, (dif_uart_config_t){
+                              .baudrate = (uint32_t)kUartBaudrate,
+                              .clk_freq_hz = (uint32_t)kClockFreqPeripheralHz,
+                              .parity_enable = kDifToggleDisabled,
+                              .parity = kDifUartParityEven,
+                              .tx_enable = kDifToggleEnabled,
+                              .rx_enable = kDifToggleEnabled,
+                          }));
+  base_uart_stdout(&ottf_console_uart);
+
+  // Initialize/Configure console flow control (if requested).
+  if (kOttfTestConfig.enable_uart_flow_control) {
+    ottf_console_flow_control_enable();
   }
 }
 
