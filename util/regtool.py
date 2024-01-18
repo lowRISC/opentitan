@@ -18,6 +18,8 @@ from reggen import (
 from reggen.countermeasure import CounterMeasure
 from reggen.ip_block import IpBlock
 
+import version_file
+
 DESC = """regtool, generate register info from Hjson source"""
 
 USAGE = '''
@@ -226,12 +228,8 @@ def main():
                     fmt))
             sys.exit(1)
 
-    version_stamp = {}
-    if args.version_stamp is not None:
-        with open(args.version_stamp, 'rt') as f:
-            for line in f:
-                k, v = line.strip().split(' ', 1)
-                version_stamp[k] = v
+    # Extract version stamp from file
+    version_stamp = version_file.parse_version_file(args.version_stamp)
 
     if fmt == 'doc':
         with outfile:
