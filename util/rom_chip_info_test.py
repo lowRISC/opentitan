@@ -78,8 +78,8 @@ const chip_info_t kChipInfo = {
 
 
 class TestFileOperations(unittest.TestCase):
-    @patch('rom_chip_info.open',
-           mock_open(read_data=f'{EXAMPLE_SHA1_DIGEST:x}'))
+    @patch('version_file.open',
+           mock_open(read_data=f'BUILD_SCM_REVISION {EXAMPLE_SHA1_DIGEST:x}'))
     def test_read_version_file(self):
         """Reading a properly-formatted version file produces the expected int.
         """
@@ -87,7 +87,7 @@ class TestFileOperations(unittest.TestCase):
             pathlib.Path("fake/path/version.txt"))
         self.assertEqual(version, EXAMPLE_SHA1_DIGEST)
 
-    @patch("rom_chip_info.open", mock_open(read_data=''))
+    @patch("version_file.open", mock_open(read_data=''))
     def test_read_version_file_empty(self):
         """Reading an empty version file raises an exception.
         """
@@ -95,7 +95,7 @@ class TestFileOperations(unittest.TestCase):
             rom_chip_info.read_version_file(
                 pathlib.Path("fake/path/version.txt"))
 
-    @patch("rom_chip_info.open", mock_open(read_data='xyz'))
+    @patch("version_file.open", mock_open(read_data='BUILD_SCM_REVISION xyz'))
     def test_read_version_file_invalid_hex(self):
         """Reading an invalid version file raises an exception.
         """
