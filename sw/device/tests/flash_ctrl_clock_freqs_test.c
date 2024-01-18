@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/arch/boot_stage.h"
+#include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_clkmgr.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
@@ -13,6 +13,20 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "otp_ctrl_regs.h"
+
+/**
+ * Bitfields for `CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG` and
+ * `CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG` OTP items.
+ *
+ * Defined here to be able to use in tests.
+ */
+#define FLASH_CTRL_OTP_FIELD_SCRAMBLING \
+  (bitfield_field32_t) { .mask = UINT8_MAX, .index = CHAR_BIT * 0 }
+#define FLASH_CTRL_OTP_FIELD_ECC \
+  (bitfield_field32_t) { .mask = UINT8_MAX, .index = CHAR_BIT * 1 }
+#define FLASH_CTRL_OTP_FIELD_HE \
+  (bitfield_field32_t) { .mask = UINT8_MAX, .index = CHAR_BIT * 2 }
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -90,9 +104,24 @@ static void do_data_partition_test(uint32_t bank_number) {
     // Bank 0 contains the program data so can only be read and checked
     // against the host interface read.
     uint32_t address = 0;
-    CHECK_STATUS_OK(flash_ctrl_testutils_data_region_setup(
+    uint32_t otp_val = abs_mmio_read32(
+        TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR +
+        OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
+        OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET);
+
+    dif_flash_ctrl_region_properties_t region_properties = {
+        .ecc_en = bitfield_field32_read(otp_val, FLASH_CTRL_OTP_FIELD_ECC),
+        .high_endurance_en =
+            bitfield_field32_read(otp_val, FLASH_CTRL_OTP_FIELD_HE),
+        .scramble_en =
+            bitfield_field32_read(otp_val, FLASH_CTRL_OTP_FIELD_SCRAMBLING),
+        .erase_en = kMultiBitBool4True,
+        .prog_en = kMultiBitBool4True,
+        .rd_en = kMultiBitBool4True};
+
+    CHECK_STATUS_OK(flash_ctrl_testutils_data_region_setup_properties(
         &flash_state, kRegionBaseBank0Page0Index, kFlashBank0DataRegion,
-        kRegionSize, &address));
+        kRegionSize, region_properties, &address));
 
     uint32_t readback_data[kDataSize];
     CHECK_STATUS_OK(flash_ctrl_testutils_read(
@@ -141,7 +170,7 @@ bool test_main(void) {
       mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
 
   for (int i = 0; i < kNumLoops; ++i) {
-    if (kBootStage != kBootStageOwner) {
+    if (kDeviceType != kDeviceSilicon) {
       do_info_partition_test(kFlashInfoPageIdCreatorSecret);
       do_info_partition_test(kFlashInfoPageIdOwnerSecret);
       do_info_partition_test(kFlashInfoPageIdIsoPart);
