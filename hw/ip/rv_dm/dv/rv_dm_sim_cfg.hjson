@@ -247,7 +247,7 @@
     }
     {
       name: rv_dm_jtag_dtm_hard_reset
-      uvm_test_seq: rrv_dm_jtag_dtm_hard_reset_vseq
+      uvm_test_seq: rv_dm_jtag_dtm_hard_reset_vseq
       reseed: 2
     }
   ]
