@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
@@ -196,10 +197,13 @@ bool test_main(void) {
       &flash, mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
 
   // Set up default access for data partitions.
-  CHECK_STATUS_OK(flash_ctrl_testutils_default_region_access(
-      &flash, /*rd_en=*/true, /*prog_en=*/true, /*erase_en=*/true,
-      /*scramble_en=*/false, /*ecc_en=*/false, /*high_endurance_en=*/false));
-
+  // In silicon, rom_ext will set default region access.
+  // After that, it cannot be updated.
+  if (kBootStage != kBootStageOwner) {
+    CHECK_STATUS_OK(flash_ctrl_testutils_default_region_access(
+        &flash, /*rd_en=*/true, /*prog_en=*/true, /*erase_en=*/true,
+        /*scramble_en=*/false, /*ecc_en=*/false, /*high_endurance_en=*/false));
+  }
   // Program starts from kRegion[2], kRegion[1], and kRegion[0] in order.
   for (int i = 2; i >= 0; i--) {
     CHECK_DIF_OK(dif_flash_ctrl_set_data_region_properties(
