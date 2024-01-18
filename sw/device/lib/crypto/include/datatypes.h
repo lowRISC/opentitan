@@ -81,10 +81,10 @@ typedef enum otcrypto_status_value {
  * crypto library will throw an error if `len` doesn't match expectations.
  */
 typedef struct otcrypto_byte_buf {
-  // Length of the data in bytes.
-  size_t len;
   // Pointer to the data.
   uint8_t *data;
+  // Length of the data in bytes.
+  size_t len;
 } otcrypto_byte_buf_t;
 
 /**
@@ -96,10 +96,10 @@ typedef struct otcrypto_byte_buf {
  * otcrypto_byte_buf_t` would still allow data to change.
  */
 typedef struct otcrypto_const_byte_buf {
-  // Length of the data in bytes.
-  const size_t len;
   // Pointer to the data.
   const uint8_t *const data;
+  // Length of the data in bytes.
+  const size_t len;
 } otcrypto_const_byte_buf_t;
 
 /**
@@ -110,10 +110,10 @@ typedef struct otcrypto_const_byte_buf {
  * crypto library will throw an error if `len` doesn't match expectations.
  */
 typedef struct otcrypto_word32_buf {
-  // Length of the data in words.
-  size_t len;
   // Pointer to the data.
   uint32_t *data;
+  // Length of the data in words.
+  size_t len;
 } otcrypto_word32_buf_t;
 
 /**
@@ -125,10 +125,10 @@ typedef struct otcrypto_word32_buf {
  * otcrypto_word32_buf_t` would still allow data to change.
  */
 typedef struct otcrypto_const_word32_buf {
-  // Length of the data in words.
-  const size_t len;
   // Pointer to the data.
   const uint32_t *const data;
+  // Length of the data in words.
+  const size_t len;
 } otcrypto_const_word32_buf_t;
 
 /**
@@ -445,10 +445,10 @@ typedef enum otcrypto_hash_mode {
 typedef struct otcrypto_hash_digest {
   // Digest type.
   otcrypto_hash_mode_t mode;
-  // Digest length in 32-bit words.
-  size_t len;
   // Digest data.
   uint32_t *data;
+  // Digest length in 32-bit words.
+  size_t len;
 } otcrypto_hash_digest_t;
 
 #ifdef __cplusplus
