@@ -215,7 +215,7 @@ static status_t run_rsa_4096_sign(const uint8_t *msg, size_t msg_len,
       .len = ARRAYSIZE(msg_digest_data),
       .mode = kOtcryptoHashModeSha512,
   };
-  TRY(otcrypto_hash(msg_buf, &msg_digest));
+  TRY(otcrypto_hash(msg_buf, msg_digest));
 
   otcrypto_word32_buf_t sig_buf = {
       .data = sig,
@@ -223,7 +223,7 @@ static status_t run_rsa_4096_sign(const uint8_t *msg, size_t msg_len,
   };
 
   uint64_t t_start = profile_start();
-  TRY(otcrypto_rsa_sign(&private_key, &msg_digest, padding_mode, sig_buf));
+  TRY(otcrypto_rsa_sign(&private_key, msg_digest, padding_mode, sig_buf));
   profile_end_and_print(t_start, "RSA signature generation");
 
   return OK_STATUS();
@@ -282,7 +282,7 @@ static status_t run_rsa_4096_verify(const uint8_t *msg, size_t msg_len,
       .len = ARRAYSIZE(msg_digest_data),
       .mode = kOtcryptoHashModeSha512,
   };
-  TRY(otcrypto_hash(msg_buf, &msg_digest));
+  TRY(otcrypto_hash(msg_buf, msg_digest));
 
   otcrypto_const_word32_buf_t sig_buf = {
       .data = sig,
@@ -290,7 +290,7 @@ static status_t run_rsa_4096_verify(const uint8_t *msg, size_t msg_len,
   };
 
   uint64_t t_start = profile_start();
-  TRY(otcrypto_rsa_verify(&public_key, &msg_digest, padding_mode, sig_buf,
+  TRY(otcrypto_rsa_verify(&public_key, msg_digest, padding_mode, sig_buf,
                           verification_result));
   profile_end_and_print(t_start, "RSA verify");
 

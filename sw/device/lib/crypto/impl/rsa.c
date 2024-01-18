@@ -289,10 +289,10 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor(
   return OTCRYPTO_OK;
 }
 
-otcrypto_status_t otcrypto_rsa_sign(
-    const otcrypto_blinded_key_t *private_key,
-    const otcrypto_hash_digest_t *message_digest,
-    otcrypto_rsa_padding_t padding_mode, otcrypto_word32_buf_t signature) {
+otcrypto_status_t otcrypto_rsa_sign(const otcrypto_blinded_key_t *private_key,
+                                    const otcrypto_hash_digest_t message_digest,
+                                    otcrypto_rsa_padding_t padding_mode,
+                                    otcrypto_word32_buf_t signature) {
   HARDENED_TRY(
       otcrypto_rsa_sign_async_start(private_key, message_digest, padding_mode));
   return otcrypto_rsa_sign_async_finalize(signature);
@@ -300,7 +300,7 @@ otcrypto_status_t otcrypto_rsa_sign(
 
 otcrypto_status_t otcrypto_rsa_verify(
     const otcrypto_unblinded_key_t *public_key,
-    const otcrypto_hash_digest_t *message_digest,
+    const otcrypto_hash_digest_t message_digest,
     otcrypto_rsa_padding_t padding_mode, otcrypto_const_word32_buf_t signature,
     hardened_bool_t *verification_result) {
   HARDENED_TRY(otcrypto_rsa_verify_async_start(public_key, signature));
@@ -612,11 +612,11 @@ static status_t key_mode_padding_check(otcrypto_key_mode_t key_mode,
 
 otcrypto_status_t otcrypto_rsa_sign_async_start(
     const otcrypto_blinded_key_t *private_key,
-    const otcrypto_hash_digest_t *message_digest,
+    const otcrypto_hash_digest_t message_digest,
     otcrypto_rsa_padding_t padding_mode) {
   // Check for NULL pointers.
-  if (message_digest == NULL || message_digest->data == NULL ||
-      private_key == NULL || private_key->keyblob == NULL) {
+  if (message_digest.data == NULL || private_key == NULL ||
+      private_key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -751,11 +751,10 @@ otcrypto_status_t otcrypto_rsa_verify_async_start(
 }
 
 otcrypto_status_t otcrypto_rsa_verify_async_finalize(
-    const otcrypto_hash_digest_t *message_digest,
+    const otcrypto_hash_digest_t message_digest,
     otcrypto_rsa_padding_t padding_mode, hardened_bool_t *verification_result) {
   // Check for NULL pointers.
-  if (message_digest == NULL || message_digest->data == NULL ||
-      verification_result == NULL) {
+  if (message_digest.data == NULL || verification_result == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 

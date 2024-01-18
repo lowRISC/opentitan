@@ -131,7 +131,7 @@ otcrypto_status_t otcrypto_ecdsa_keygen(
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_sign(
     const otcrypto_blinded_key_t *private_key,
-    const otcrypto_hash_digest_t *message_digest,
+    const otcrypto_hash_digest_t message_digest,
     const otcrypto_ecc_curve_t *elliptic_curve,
     otcrypto_word32_buf_t signature);
 
@@ -159,7 +159,7 @@ otcrypto_status_t otcrypto_ecdsa_sign(
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_verify(
     const otcrypto_unblinded_key_t *public_key,
-    const otcrypto_hash_digest_t *message_digest,
+    const otcrypto_hash_digest_t message_digest,
     otcrypto_const_word32_buf_t signature,
     const otcrypto_ecc_curve_t *elliptic_curve,
     hardened_bool_t *verification_result);
@@ -372,7 +372,7 @@ otcrypto_status_t otcrypto_ecdsa_keygen_async_finalize(
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_sign_async_start(
     const otcrypto_blinded_key_t *private_key,
-    const otcrypto_hash_digest_t *message_digest,
+    const otcrypto_hash_digest_t message_digest,
     const otcrypto_ecc_curve_t *elliptic_curve);
 
 /**
@@ -412,7 +412,7 @@ otcrypto_status_t otcrypto_ecdsa_sign_async_finalize(
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdsa_verify_async_start(
     const otcrypto_unblinded_key_t *public_key,
-    const otcrypto_hash_digest_t *message_digest,
+    const otcrypto_hash_digest_t message_digest,
     otcrypto_const_word32_buf_t signature,
     const otcrypto_ecc_curve_t *elliptic_curve);
 

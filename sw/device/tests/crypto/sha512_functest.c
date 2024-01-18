@@ -58,7 +58,7 @@ status_t sha512_test(const unsigned char *msg, const size_t msg_len,
       .data = actual_digest_data,
       .mode = kOtcryptoHashModeSha512,
   };
-  TRY(otcrypto_hash(input_message, &actual_digest));
+  TRY(otcrypto_hash(input_message, actual_digest));
 
   // Check that the expected and actual digests match.
   TRY_CHECK_ARRAYS_EQ((unsigned char *)actual_digest_data, expected_digest,
@@ -95,7 +95,7 @@ status_t sha512_streaming_test(const unsigned char *msg, size_t msg_len,
       .len = ARRAYSIZE(actual_digest_data),
       .mode = kOtcryptoHashModeSha512,
   };
-  TRY(otcrypto_hash_final(&ctx, &actual_digest));
+  TRY(otcrypto_hash_final(&ctx, actual_digest));
 
   // Check that the expected and actual digests match.
   TRY_CHECK_ARRAYS_EQ((unsigned char *)actual_digest_data, expected_digest,
