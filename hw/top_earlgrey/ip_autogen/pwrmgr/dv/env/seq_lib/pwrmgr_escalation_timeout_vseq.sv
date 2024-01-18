@@ -21,6 +21,7 @@ class pwrmgr_escalation_timeout_vseq extends pwrmgr_base_vseq;
                   UVM_MEDIUM)
         cfg.esc_clk_rst_vif.stop_clk();
         cfg.clk_rst_vif.wait_clks(stop_cycles);
+        `uvm_info(`gfn, "Restarting escalation clock", UVM_MEDIUM)
         cfg.esc_clk_rst_vif.start_clk();
         cfg.esc_clk_rst_vif.wait_clks(4000);
       end
