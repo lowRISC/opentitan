@@ -18,6 +18,7 @@ from typing import Dict, List, Optional, Tuple
 
 import hjson
 import tlgen
+import version_file
 from design.lib.common import expand_seed
 from ipgen import (IpBlockRenderer, IpConfig, IpDescriptionOnlyRenderer,
                    IpTemplate, TemplateRenderError)
@@ -1082,17 +1083,7 @@ def main():
         raise SystemExit(sys.exc_info()[1])
 
     # Extract version stamp from file
-    version_stamp = {}
-    if args.version_stamp is not None:
-        try:
-            with open(args.version_stamp, 'rt') as f:
-                log.info("version stamp path: {}", args.version_stamp)
-                for line in f:
-                    k, v = line.strip().split(' ', 1)
-                    version_stamp[k] = v
-                    log.info("{} {}", k, v)
-        except ValueError:
-            raise SystemExit(sys.exc_info()[1])
+    version_stamp = version_file.parse_version_file(args.version_stamp)
 
     # Initialize RNG for compile-time netlist constants.
     # If specified, override the seed for random netlist constant computation.
