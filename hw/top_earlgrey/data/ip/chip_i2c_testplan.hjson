@@ -75,6 +75,7 @@
       features: ["I2C.MODE.HOST", "I2C.MODE.TARGET", "I2C.SPEED.STANDARD", "I2C.SPEED.FAST", "I2C.SPEED.FASTPLUS"]
       stage: V3
       si_stage: SV3
+      bazel: ["//sw/device/tests/pmod:i2c_host_fram_test"]
       tests: []
     }
     {
