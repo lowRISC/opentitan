@@ -19,6 +19,7 @@ exports_files([
     "aes_gcm_schema.json",
     "drbg_schema.json",
     "ecdh_schema.json",
+    "ed25519_schema.json",
     "hash_schema.json",
     "hmac_schema.json",
     "kmac_schema.json",
