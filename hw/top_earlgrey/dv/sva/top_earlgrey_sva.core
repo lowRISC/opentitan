@@ -7,7 +7,7 @@ description: "TOP_EARLGREY assertion modules and bind file."
 filesets:
   files_dv:
     depend:
-      - lowrisc:ip:pwrmgr_pkg
+      - lowrisc:ip_interfaces:pwrmgr_pkg
       - lowrisc:prim:assert
       - lowrisc:systems:top_earlgrey
     files:

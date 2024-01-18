@@ -39,7 +39,7 @@ filesets:
       - lowrisc:top_englishbreakfast:xbar_main
       - lowrisc:top_englishbreakfast:xbar_peri
       - lowrisc:ip:rstmgr
-      - lowrisc:ip:pwrmgr
+      - lowrisc:opentitan:top_englishbreakfast_pwrmgr
       - lowrisc:ip:rom_ctrl
       - lowrisc:ip:aon_timer
 

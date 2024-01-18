@@ -2,29 +2,17 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:systems:clkmgr:0.1"
-description: "Top specific clock manager "
+name: ${instance_vlnv("lowrisc:ip:pwrmgr:0.1")}
+description: "Power manager RTL"
+virtual:
+  - lowrisc:ip_interfaces:pwrmgr
 
 filesets:
   files_rtl:
     depend:
-      - lowrisc:ip:lc_ctrl_pkg
-      - lowrisc:ip_interfaces:pwrmgr_pkg
-      - lowrisc:ip:tlul
-      - lowrisc:prim:all
-      - lowrisc:prim:buf
-      - lowrisc:prim:clock_buf
-      - lowrisc:prim:clock_div
-      - lowrisc:prim:clock_gating
-      - lowrisc:prim:edge_detector
-      - lowrisc:prim:lc_sync
-      - lowrisc:prim:lc_sender
-      - lowrisc:systems:clkmgr_pkg
-      - lowrisc:ip:clkmgr_components
-    files:
-      - rtl/autogen/clkmgr_reg_pkg.sv
-      - rtl/autogen/clkmgr_reg_top.sv
-      - rtl/autogen/clkmgr.sv
+      - ${instance_vlnv("lowrisc:ip:pwrmgr_pkg:0.1")}
+      - ${instance_vlnv("lowrisc:ip:pwrmgr_reg:0.1")}
+      - lowrisc:ip:pwrmgr_component
     file_type: systemVerilogSource
 
   files_verilator_waiver:
@@ -33,6 +21,7 @@ filesets:
       - lowrisc:lint:common
       - lowrisc:lint:comportable
     files:
+      - lint/pwrmgr.vlt
     file_type: vlt
 
   files_ascentlint_waiver:
@@ -41,21 +30,29 @@ filesets:
       - lowrisc:lint:common
       - lowrisc:lint:comportable
     files:
-      - lint/clkmgr.waiver
+      - lint/pwrmgr.waiver
     file_type: waiver
+
+  files_veriblelint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
 
 parameters:
   SYNTHESIS:
     datatype: bool
     paramtype: vlogdefine
 
+
 targets:
   default: &default_target
     filesets:
-      - tool_verilator  ? (files_verilator_waiver)
-      - tool_ascentlint ? (files_ascentlint_waiver)
+      - tool_verilator   ? (files_verilator_waiver)
+      - tool_ascentlint  ? (files_ascentlint_waiver)
+      - tool_veriblelint ? (files_veriblelint_waiver)
       - files_rtl
-    toplevel: clkmgr
+    toplevel: pwrmgr
 
   lint:
     <<: *default_target

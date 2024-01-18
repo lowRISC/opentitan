@@ -125,7 +125,7 @@ def main():
                     'lowrisc:constants:top_pkg',
                     'lowrisc:prim:util',
                     'lowrisc:ip:lc_ctrl_pkg',
-                    'lowrisc:ip:pwrmgr_pkg',
+                    'lowrisc:ip_interfaces:pwrmgr_pkg',
                     # rstmgr
                     'lowrisc:prim:clock_mux2',
                     # clkmgr

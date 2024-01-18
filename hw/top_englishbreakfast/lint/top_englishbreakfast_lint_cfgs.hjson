@@ -41,7 +41,7 @@
                   ]
              },
              {    name: pwrmgr
-                  fusesoc_core: lowrisc:ip:pwrmgr
+                  fusesoc_core: lowrisc:ip_interfaces:pwrmgr
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"],
                   rel_path: "hw/ip/pwrmgr/lint/{tool}",
                   overrides: [

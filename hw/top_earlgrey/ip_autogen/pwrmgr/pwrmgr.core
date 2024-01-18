@@ -2,32 +2,17 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:ip:pwrmgr:0.1"
+name: lowrisc:opentitan:top_earlgrey_pwrmgr:0.1
 description: "Power manager RTL"
+virtual:
+  - lowrisc:ip_interfaces:pwrmgr
 
 filesets:
   files_rtl:
     depend:
-      - lowrisc:ip:tlul
-      - lowrisc:prim:esc
-      - lowrisc:prim:lc_sync
-      - lowrisc:prim:lc_sender
-      - lowrisc:prim:all
-      - lowrisc:ip:rom_ctrl_pkg
-      - lowrisc:ip:lc_ctrl_pkg
-      - lowrisc:prim:sparse_fsm
-      - lowrisc:prim:mubi
-      - lowrisc:prim:clock_buf
-      - lowrisc:prim:measure
-      - lowrisc:ip_interfaces:alert_handler_reg
-      - lowrisc:ip:pwrmgr_pkg
-      - lowrisc:ip:pwrmgr_reg
-    files:
-      - rtl/pwrmgr_cdc.sv
-      - rtl/pwrmgr_slow_fsm.sv
-      - rtl/pwrmgr_fsm.sv
-      - rtl/pwrmgr_wake_info.sv
-      - rtl/pwrmgr.sv
+      - lowrisc:opentitan:top_earlgrey_pwrmgr_pkg:0.1
+      - lowrisc:opentitan:top_earlgrey_pwrmgr_reg:0.1
+      - lowrisc:ip:pwrmgr_component
     file_type: systemVerilogSource
 
   files_verilator_waiver:
