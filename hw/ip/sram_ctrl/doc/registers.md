@@ -3,14 +3,15 @@
 <!-- BEGIN CMDGEN util/regtool.py -d ./hw/ip/sram_ctrl/data/sram_ctrl.hjson -->
 ## Summary of the **`regs`** interface's registers
 
-| Name                                    | Offset   |   Length | Description                                  |
-|:----------------------------------------|:---------|---------:|:---------------------------------------------|
-| sram_ctrl.[`ALERT_TEST`](#alert_test)   | 0x0      |        4 | Alert Test Register                          |
-| sram_ctrl.[`STATUS`](#status)           | 0x4      |        4 | SRAM status register.                        |
-| sram_ctrl.[`EXEC_REGWEN`](#exec_regwen) | 0x8      |        4 | Lock register for execution enable register. |
-| sram_ctrl.[`EXEC`](#exec)               | 0xc      |        4 | Sram execution enable.                       |
-| sram_ctrl.[`CTRL_REGWEN`](#ctrl_regwen) | 0x10     |        4 | Lock register for control register.          |
-| sram_ctrl.[`CTRL`](#ctrl)               | 0x14     |        4 | SRAM ctrl register.                          |
+| Name                                            | Offset   |   Length | Description                                  |
+|:------------------------------------------------|:---------|---------:|:---------------------------------------------|
+| sram_ctrl.[`ALERT_TEST`](#alert_test)           | 0x0      |        4 | Alert Test Register                          |
+| sram_ctrl.[`STATUS`](#status)                   | 0x4      |        4 | SRAM status register.                        |
+| sram_ctrl.[`EXEC_REGWEN`](#exec_regwen)         | 0x8      |        4 | Lock register for execution enable register. |
+| sram_ctrl.[`EXEC`](#exec)                       | 0xc      |        4 | Sram execution enable.                       |
+| sram_ctrl.[`CTRL_REGWEN`](#ctrl_regwen)         | 0x10     |        4 | Lock register for control register.          |
+| sram_ctrl.[`CTRL`](#ctrl)                       | 0x14     |        4 | SRAM ctrl register.                          |
+| sram_ctrl.[`SCR_KEY_ROTATED`](#scr_key_rotated) | 0x18     |        4 | Clearable SRAM key request status.           |
 
 ## ALERT_TEST
 Alert Test Register
@@ -173,6 +174,31 @@ before triggering a key renewal, hardware will automatically clear that status b
 can poll its status. Note that requesting a new scrambling key takes ~200 OTP cycles, which translates
 to ~800 CPU cycles (OTP runs at 24MHz, CPU runs at 100MHz). Note that writing 1 to this register while
 a key request is pending has no effect.
+
+## SCR_KEY_ROTATED
+Clearable SRAM key request status.
+- Offset: `0x18`
+- Reset default: `0x9`
+- Reset mask: `0xf`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "SUCCESS", "bits": 4, "attr": ["rw1c"], "rotate": -90}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 90}}
+```
+
+|  Bits  |  Type  |  Reset  | Name                                 |
+|:------:|:------:|:-------:|:-------------------------------------|
+|  31:4  |        |         | Reserved                             |
+|  3:0   |  rw1c  |   0x9   | [SUCCESS](#scr_key_rotated--success) |
+
+### SCR_KEY_ROTATED . SUCCESS
+This status register is similar to [`SCR_KEY_VALID`](#scr_key_valid) with the difference that the status is multibit encoded,
+SW clearable and sticky (i.e., HW does not auto-clear the register except during escalation). That way,
+SW can use this for a hardened acknowledgement mechanism where it clears the register before requesting a key.
+
+kMultiBitBool4True indicates that a valid scrambling key has been obtained from OTP.
+Write kMultiBitBool4True to clear.
 
 This interface does not expose any registers.
 <!-- END CMDGEN -->

@@ -13,6 +13,7 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
   // local variables
 
   bit [TL_DW-1:0] exp_status = '0;
+  mubi4_t exp_scr_key_rotated = MuBi4False;
 
   bit in_key_req = 0;
 
@@ -356,6 +357,7 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
       exp_status[SramCtrlScrKeySeedValid] = 0;
       exp_status[SramCtrlScrKeyValid]     = 0;
       exp_status[SramCtrlInitDone]        = 0;
+      exp_scr_key_rotated = MuBi4False;
 
       // escalation resets the key and nonce back to defaults
       reset_key_nonce();
@@ -439,6 +441,7 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
 
       // if we are in escalated state, key_valid and scr_key_seed_valid will remain low
       if (status_lc_esc == EscNone) begin
+        exp_scr_key_rotated = MuBi4True;
         exp_status[SramCtrlScrKeyValid]     = 1;
         exp_status[SramCtrlScrKeySeedValid] = seed_valid;
       end
@@ -523,6 +526,11 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
           void'(ral.ctrl.init.predict(.value(0), .kind(UVM_PREDICT_READ)));
         end
       end
+      "scr_key_rotated": begin
+        if (addr_phase_read) begin
+          void'(ral.scr_key_rotated.predict(.value(exp_scr_key_rotated), .kind(UVM_PREDICT_READ)));
+        end
+      end
       default: begin
         `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
       end
@@ -540,6 +548,9 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
             item.d_data[SramCtrlScrKeyValid] ||
             mirrored_value[SramCtrlScrKeySeedValid] !=
             item.d_data[SramCtrlScrKeySeedValid])) begin
+          new_key_received = 0;
+        end else if (csr.get_name() == "scr_key_rotated" && new_key_received && (
+            mirrored_value != item.d_data)) begin
           new_key_received = 0;
         end else if (csr.get_name() == "status" && init_after_new_key &&
             mirrored_value[SramCtrlInitDone] !=
@@ -571,6 +582,7 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
     mem_bkdr_scb.reset();
     mem_bkdr_scb.update_key(key, nonce);
     exp_status = '0;
+    exp_scr_key_rotated = MuBi4False;
     write_item_q.delete();
     exp_mem[cfg.sram_ral_name].init();
 

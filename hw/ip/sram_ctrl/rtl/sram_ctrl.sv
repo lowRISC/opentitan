@@ -60,6 +60,11 @@ module sram_ctrl
   import lc_ctrl_pkg::lc_tx_or_hi;
   import lc_ctrl_pkg::lc_tx_inv;
   import lc_ctrl_pkg::lc_to_mubi4;
+  import prim_mubi_pkg::mubi4_t;
+  import prim_mubi_pkg::mubi8_t;
+  import prim_mubi_pkg::MuBi4True;
+  import prim_mubi_pkg::MuBi4False;
+  import prim_mubi_pkg::mubi8_test_true_strict;
 
   // This is later on pruned to the correct width at the SRAM wrapper interface.
   parameter int unsigned Depth = MemSizeRam >> 2;
@@ -264,6 +269,11 @@ module sram_ctrl
   assign hw2reg.status.scr_key_valid.d   = key_ack & ~key_req & ~local_esc;
   assign hw2reg.status.scr_key_valid.de  = key_req | key_ack | local_esc;
 
+  // As opposed to scr_key_valid, SW is responsible for clearing this register.
+  // It is not automatically cleared by HW, except when escalating.
+  assign hw2reg.scr_key_rotated.d  = (key_ack & ~local_esc) ? MuBi4True : MuBi4False;
+  assign hw2reg.scr_key_rotated.de = key_ack | local_esc;
+
   // Clear this bit on local escalation.
   logic key_seed_valid;
   assign hw2reg.status.scr_key_seed_valid.d  = key_seed_valid & ~local_esc;
@@ -320,12 +330,6 @@ module sram_ctrl
   ////////////////////
   // SRAM Execution //
   ////////////////////
-
-  import prim_mubi_pkg::mubi4_t;
-  import prim_mubi_pkg::mubi8_t;
-  import prim_mubi_pkg::MuBi4True;
-  import prim_mubi_pkg::MuBi4False;
-  import prim_mubi_pkg::mubi8_test_true_strict;
 
   mubi4_t en_ifetch;
   if (InstrExec) begin : gen_instr_ctrl

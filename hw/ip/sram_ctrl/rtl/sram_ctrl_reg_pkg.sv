@@ -82,6 +82,11 @@ package sram_ctrl_reg_pkg;
     } init_done;
   } sram_ctrl_hw2reg_status_reg_t;
 
+  typedef struct packed {
+    logic [3:0]  d;
+    logic        de;
+  } sram_ctrl_hw2reg_scr_key_rotated_reg_t;
+
   // Register -> HW type for regs interface
   typedef struct packed {
     sram_ctrl_reg2hw_alert_test_reg_t alert_test; // [14:13]
@@ -92,7 +97,8 @@ package sram_ctrl_reg_pkg;
 
   // HW -> register type for regs interface
   typedef struct packed {
-    sram_ctrl_hw2reg_status_reg_t status; // [11:0]
+    sram_ctrl_hw2reg_status_reg_t status; // [16:5]
+    sram_ctrl_hw2reg_scr_key_rotated_reg_t scr_key_rotated; // [4:0]
   } sram_ctrl_regs_hw2reg_t;
 
   // Register offsets for regs interface
@@ -102,6 +108,7 @@ package sram_ctrl_reg_pkg;
   parameter logic [RegsAw-1:0] SRAM_CTRL_EXEC_OFFSET = 5'h c;
   parameter logic [RegsAw-1:0] SRAM_CTRL_CTRL_REGWEN_OFFSET = 5'h 10;
   parameter logic [RegsAw-1:0] SRAM_CTRL_CTRL_OFFSET = 5'h 14;
+  parameter logic [RegsAw-1:0] SRAM_CTRL_SCR_KEY_ROTATED_OFFSET = 5'h 18;
 
   // Reset values for hwext registers and their fields for regs interface
   parameter logic [0:0] SRAM_CTRL_ALERT_TEST_RESVAL = 1'h 0;
@@ -114,17 +121,19 @@ package sram_ctrl_reg_pkg;
     SRAM_CTRL_EXEC_REGWEN,
     SRAM_CTRL_EXEC,
     SRAM_CTRL_CTRL_REGWEN,
-    SRAM_CTRL_CTRL
+    SRAM_CTRL_CTRL,
+    SRAM_CTRL_SCR_KEY_ROTATED
   } sram_ctrl_regs_id_e;
 
   // Register width information to check illegal writes for regs interface
-  parameter logic [3:0] SRAM_CTRL_REGS_PERMIT [6] = '{
+  parameter logic [3:0] SRAM_CTRL_REGS_PERMIT [7] = '{
     4'b 0001, // index[0] SRAM_CTRL_ALERT_TEST
     4'b 0001, // index[1] SRAM_CTRL_STATUS
     4'b 0001, // index[2] SRAM_CTRL_EXEC_REGWEN
     4'b 0001, // index[3] SRAM_CTRL_EXEC
     4'b 0001, // index[4] SRAM_CTRL_CTRL_REGWEN
-    4'b 0001  // index[5] SRAM_CTRL_CTRL
+    4'b 0001, // index[5] SRAM_CTRL_CTRL
+    4'b 0001  // index[6] SRAM_CTRL_SCR_KEY_ROTATED
   };
 
 endpackage
