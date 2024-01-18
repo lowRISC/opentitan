@@ -8,6 +8,8 @@ import argparse
 import logging as log
 from pathlib import Path
 
+import version_file
+
 
 def generate_chip_info_c_source(scm_revision: int) -> str:
     """Return the contents of a C source file that defines `kChipInfo`.
@@ -43,11 +45,14 @@ const chip_info_t kChipInfo = {{
 """
 
 
-def read_version_file(path: Path) -> int:
-    """Interprets the contents of `path` as a big-endian hex literal."""
+def read_version_file(version_info_path) -> int:
+    """
+    Search for the scm revision variable and interprets
+    the contents as a big-endian hex literal. Return an error
+    if the revision cannot be found.
+    """
 
-    with open(path, "rt") as f:
-        version = f.read().strip()
+    version = version_info.get('BUILD_SCM_REVISION', "8badF00d")
     return int(version, base=16)
 
 
@@ -73,13 +78,13 @@ def main():
                         type=Path,
                         help='Output Directory')
     parser.add_argument('--ot_version_file',
-                        required=True,
                         type=Path,
                         help='Path to a file with the OpenTitan Version')
 
     args = parser.parse_args()
 
-    version = read_version_file(args.ot_version_file)
+    # Extract version stamp from file
+    version = read_version_file(version_file.parse_version_file(args.ot_version_file))
     log.info("Version: %x" % (version, ))
 
     generated_source = generate_chip_info_c_source(version)
