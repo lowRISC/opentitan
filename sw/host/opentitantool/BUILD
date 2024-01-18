@@ -36,9 +36,6 @@ rust_binary(
         "src/command/version.rs",
         "src/main.rs",
     ],
-    compile_data = [
-        "//util:full_version.txt",
-    ],
     proc_macro_deps = [
         "//sw/host/opentitanlib/opentitantool_derive",
     ],
