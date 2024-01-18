@@ -2,7 +2,7 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:ip:pwrmgr:0.1"
+name: "lowrisc:ip:pwrmgr_component:0.1"
 description: "Power manager RTL"
 
 filesets:
@@ -20,8 +20,7 @@ filesets:
       - lowrisc:prim:clock_buf
       - lowrisc:prim:measure
       - lowrisc:ip_interfaces:alert_handler_reg
-      - lowrisc:ip:pwrmgr_pkg
-      - lowrisc:ip:pwrmgr_reg
+      - lowrisc:ip_interfaces:pwrmgr_pkg
     files:
       - rtl/pwrmgr_cdc.sv
       - rtl/pwrmgr_slow_fsm.sv

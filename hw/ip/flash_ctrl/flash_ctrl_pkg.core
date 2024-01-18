@@ -11,7 +11,7 @@ filesets:
       - lowrisc:constants:top_pkg
       - lowrisc:prim:util
       - lowrisc:ip:lc_ctrl_pkg
-      - lowrisc:ip:pwrmgr_pkg
+      - lowrisc:ip_interfaces:pwrmgr_pkg
       - lowrisc:ip:jtag_pkg
       - lowrisc:ip:edn_pkg
       - "fileset_partner  ? (partner:systems:ast_pkg)"

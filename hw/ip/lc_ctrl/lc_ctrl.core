@@ -17,7 +17,7 @@ filesets:
       - lowrisc:prim:sparse_fsm
       - lowrisc:ip:lc_ctrl_pkg
       - lowrisc:ip:tlul
-      - lowrisc:ip:pwrmgr_pkg
+      - lowrisc:ip_interfaces:pwrmgr_pkg
       - lowrisc:ip:otp_ctrl_pkg
       - lowrisc:ip:kmac_pkg
       - lowrisc:ip:rv_dm

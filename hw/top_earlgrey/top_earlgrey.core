@@ -7,6 +7,9 @@ description: "Technology-independent Earl Grey toplevel"
 filesets:
   files_rtl_generic:
     depend:
+      # Place the autogen packages first to avoid conflicts
+      - lowrisc:opentitan:top_earlgrey_alert_handler_reg
+      - lowrisc:opentitan:top_earlgrey_pwrmgr_pkg
       - lowrisc:ip:uart:0.1
       - lowrisc:opentitan:top_earlgrey_alert_handler
       - lowrisc:ip:gpio
@@ -41,7 +44,7 @@ filesets:
       - lowrisc:top_earlgrey:xbar_main
       - lowrisc:top_earlgrey:xbar_peri
       - lowrisc:ip:rstmgr
-      - lowrisc:ip:pwrmgr
+      - lowrisc:opentitan:top_earlgrey_pwrmgr
       - lowrisc:ip:aon_timer
       - lowrisc:ip:adc_ctrl
       - lowrisc:ip:sysrst_ctrl

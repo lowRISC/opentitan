@@ -9,7 +9,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:constants:top_pkg
-      - lowrisc:ip:pwrmgr_pkg
+      - lowrisc:ip_interfaces:pwrmgr_pkg
     files:
       - rtl/autogen/clkmgr_pkg.sv
     file_type: systemVerilogSource

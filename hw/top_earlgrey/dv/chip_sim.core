@@ -16,6 +16,9 @@ filesets:
 
   files_dv:
     depend:
+      # Place the autogen packages first to avoid conflicts
+      - lowrisc:opentitan:top_earlgrey_alert_handler_reg
+      - lowrisc:opentitan:top_earlgrey_pwrmgr_pkg
       - lowrisc:ip:tlul
       - lowrisc:dv:chip_test
       - lowrisc:dv:clkmgr_sva

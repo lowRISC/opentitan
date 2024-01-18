@@ -22,7 +22,7 @@ filesets:
       - lowrisc:prim:secded
       - lowrisc:ip:edn_requester
       - lowrisc:prim:sec_anchor
-      - lowrisc:ip:pwrmgr_pkg
+      - lowrisc:ip_interfaces:pwrmgr_pkg
       - lowrisc:ip:edn_pkg
       - lowrisc:prim:sparse_fsm
       - "fileset_partner  ? (partner:systems:ast_pkg)"

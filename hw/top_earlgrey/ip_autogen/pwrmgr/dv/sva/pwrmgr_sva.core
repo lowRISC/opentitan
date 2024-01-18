@@ -9,7 +9,7 @@ filesets:
     depend:
       - lowrisc:tlul:headers
       - lowrisc:fpv:csr_assert_gen
-      - lowrisc:ip:pwrmgr_pkg
+      - lowrisc:ip_interfaces:pwrmgr_pkg
       - lowrisc:dv:clkmgr_pwrmgr_sva_if
       - lowrisc:dv:pwrmgr_rstmgr_sva_if
     files:
@@ -21,7 +21,7 @@ filesets:
 
   files_formal:
     depend:
-      - lowrisc:ip:pwrmgr
+      - lowrisc:ip_interfaces:pwrmgr
 
 generate:
   csr_assert_gen:

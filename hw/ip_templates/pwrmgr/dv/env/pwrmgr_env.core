@@ -9,7 +9,7 @@ filesets:
     depend:
       - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
-      - lowrisc:ip:pwrmgr_pkg
+      - lowrisc:ip_interfaces:pwrmgr_pkg
     files:
       - pwrmgr_env_pkg.sv
       - pwrmgr_env_cfg.sv: {is_include_file: true}

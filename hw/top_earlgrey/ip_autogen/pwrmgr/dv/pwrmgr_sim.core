@@ -7,7 +7,7 @@ description: "PWRMGR DV sim target"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:ip:pwrmgr
+      - lowrisc:ip_interfaces:pwrmgr
   files_dv:
     depend:
       - lowrisc:dv:pwrmgr_test
