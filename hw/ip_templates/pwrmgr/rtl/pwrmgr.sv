@@ -184,7 +184,7 @@ module pwrmgr
   end
 
   localparam int EscTimeOutCnt = 128;
-  logic esc_timeout;
+  logic esc_timeout, esc_timeout_lc_d, esc_timeout_lc_q;
   // SEC_CM: ESC_RX.CLK.BKGN_CHK, ESC_RX.CLK.LOCAL_ESC
   prim_clock_timeout #(
     .TimeOutCnt(EscTimeOutCnt)
@@ -199,6 +199,25 @@ module pwrmgr
     .timeout_o(esc_timeout)
   );
 
+  prim_flop_2sync #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_esc_timeout_sync (
+    .clk_i(clk_lc),
+    .rst_ni(rst_lc_n),
+    .d_i(esc_timeout),
+    .q_o(esc_timeout_lc_d)
+  );
+
+  always_ff @(posedge clk_lc or negedge rst_lc_n) begin
+    if (!rst_lc_n) begin
+      esc_timeout_lc_q <= '0;
+    end else if (esc_timeout_lc_d) begin
+      // once latched, do not clear until reset
+      esc_timeout_lc_q <= 1'b1;
+    end
+  end
+
 
   ////////////////////////////
   ///  async declarations
@@ -210,7 +229,7 @@ module pwrmgr
   assign peri_reqs_raw.rstreqs[NumRstReqs-1:0] = rstreqs_i;
   assign peri_reqs_raw.rstreqs[ResetMainPwrIdx] = slow_rst_req;
   // SEC_CM: ESC_RX.CLK.LOCAL_ESC, CTRL_FLOW.GLOBAL_ESC
-  assign peri_reqs_raw.rstreqs[ResetEscIdx] = esc_rst_req_q | esc_timeout;
+  assign peri_reqs_raw.rstreqs[ResetEscIdx] = esc_rst_req_q | esc_timeout_lc_q;
   assign peri_reqs_raw.rstreqs[ResetNdmIdx] = ndm_req_valid;
 
   ////////////////////////////
@@ -328,7 +347,7 @@ module pwrmgr
 
   assign hw2reg.fault_status.reg_intg_err.de    = reg_intg_err;
   assign hw2reg.fault_status.reg_intg_err.d     = 1'b1;
-  assign hw2reg.fault_status.esc_timeout.de     = esc_timeout;
+  assign hw2reg.fault_status.esc_timeout.de     = esc_timeout_lc_q;
   assign hw2reg.fault_status.esc_timeout.d      = 1'b1;
 
   // The main power domain glitch automatically causes a reset, so regsitering
