@@ -174,10 +174,10 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor(
  * @param[out] signature Pointer to the generated signature struct.
  * @return The result of the RSA signature generation.
  */
-otcrypto_status_t otcrypto_rsa_sign(
-    const otcrypto_blinded_key_t *private_key,
-    const otcrypto_hash_digest_t *message_digest,
-    otcrypto_rsa_padding_t padding_mode, otcrypto_word32_buf_t signature);
+otcrypto_status_t otcrypto_rsa_sign(const otcrypto_blinded_key_t *private_key,
+                                    const otcrypto_hash_digest_t message_digest,
+                                    otcrypto_rsa_padding_t padding_mode,
+                                    otcrypto_word32_buf_t signature);
 
 /**
  * Verifies the authenticity of the input signature.
@@ -195,7 +195,7 @@ otcrypto_status_t otcrypto_rsa_sign(
  */
 otcrypto_status_t otcrypto_rsa_verify(
     const otcrypto_unblinded_key_t *public_key,
-    const otcrypto_hash_digest_t *message_digest,
+    const otcrypto_hash_digest_t message_digest,
     otcrypto_rsa_padding_t padding_mode, otcrypto_const_word32_buf_t signature,
     hardened_bool_t *verification_result);
 
@@ -344,7 +344,7 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_finalize(
  */
 otcrypto_status_t otcrypto_rsa_sign_async_start(
     const otcrypto_blinded_key_t *private_key,
-    const otcrypto_hash_digest_t *message_digest,
+    const otcrypto_hash_digest_t message_digest,
     otcrypto_rsa_padding_t padding_mode);
 
 /**
@@ -385,7 +385,7 @@ otcrypto_status_t otcrypto_rsa_verify_async_start(
  * @return Result of async RSA verify finalize operation.
  */
 otcrypto_status_t otcrypto_rsa_verify_async_finalize(
-    const otcrypto_hash_digest_t *message_digest,
+    const otcrypto_hash_digest_t message_digest,
     otcrypto_rsa_padding_t padding_mode, hardened_bool_t *verification_result);
 
 /**

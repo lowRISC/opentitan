@@ -130,7 +130,7 @@ static status_t run_test_vector(void) {
     case kKmacTestOperationShake: {
       TRY(get_shake_mode(current_test_vector->security_strength,
                          &digest_buf.mode));
-      TRY(otcrypto_xof_shake(current_test_vector->input_msg, &digest_buf));
+      TRY(otcrypto_xof_shake(current_test_vector->input_msg, digest_buf));
       break;
     }
     case kKmacTestOperationCshake: {
@@ -138,13 +138,13 @@ static status_t run_test_vector(void) {
                           &digest_buf.mode));
       TRY(otcrypto_xof_cshake(current_test_vector->input_msg,
                               current_test_vector->func_name,
-                              current_test_vector->cust_str, &digest_buf));
+                              current_test_vector->cust_str, digest_buf));
       break;
     }
     case kKmacTestOperationSha3: {
       TRY(get_sha3_mode(current_test_vector->security_strength,
                         &digest_buf.mode));
-      TRY(otcrypto_hash(current_test_vector->input_msg, &digest_buf));
+      TRY(otcrypto_hash(current_test_vector->input_msg, digest_buf));
       break;
     }
     case kKmacTestOperationKmac: {
