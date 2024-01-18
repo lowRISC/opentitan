@@ -42,7 +42,8 @@ std::vector<uint8_t> scramble_addr(const std::vector<uint8_t> &addr_in,
  *                         used.
  * @param use_sp_layer     Use the S&P layer for data diffusion. In HW this is
  *                         disabled by default since it interacts adversely with
- *                         the end-to-end integrity scheme.
+ *                         the end-to-end integrity scheme. See #20788 for
+ *                         context.
  * @return Byte vector with decrypted data
  */
 std::vector<uint8_t> scramble_decrypt_data(
@@ -65,7 +66,8 @@ std::vector<uint8_t> scramble_decrypt_data(
  *                         used.
  * @param use_sp_layer     Use the S&P layer for data diffusion. In HW this is
  *                         disabled by default since it interacts adversely with
- *                         the end-to-end integrity scheme.
+ *                         the end-to-end integrity scheme. See #20788 for
+ *                         context.
  * @return Byte vector with encrypted data
  */
 std::vector<uint8_t> scramble_encrypt_data(
