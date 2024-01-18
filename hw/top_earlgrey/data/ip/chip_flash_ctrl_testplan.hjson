@@ -18,6 +18,7 @@
               different seed values.
 
             - This test needs to execute as a boot rom image.
+            - In sival, this will be covered by manuf_ft_provision_rma_token_and_personalization.
             '''
       features: ["FLASH_CTRL.INIT.SCRAMBLING_KEYS", "FLASH_CTRL.INIT.ROOT_SEEDS",
                  "FLASH_CTRL.INFO.CREATOR_PARTITION", "FLASH_CTRL.INFO.OWNER_PARTITION"]
@@ -38,6 +39,7 @@
       lc_states: ["DEV", "PROD", "PROD_END", "RMA"]
       tests: ["chip_sw_flash_ctrl_access",
               "chip_sw_flash_ctrl_access_jitter_en"]
+      bazel: ["//sw/device/tests:flash_ctrl_ops_test"]
     }
     {
       name: chip_sw_flash_ctrl_ops
@@ -52,6 +54,7 @@
       si_stage: SV3
       lc_states: ["DEV", "PROD", "PROD_END", "RMA"]
       tests: ["chip_sw_flash_ctrl_ops", "chip_sw_flash_ctrl_ops_jitter_en"]
+      bazel: ["//sw/device/tests:flash_ctrl_ops_test"]
     }
     {
       name: chip_sw_flash_memory_protection
@@ -66,7 +69,8 @@
       stage: V3
       si_stage: SV3
       lc_states: ["DEV", "PROD", "PROD_END", "RMA"]
-      tests: []
+      tests: ["chip_sw_flash_ctrl_mem_protection"]
+      bazel: ["//sw/device/tests:flash_ctrl_mem_protection_test"]
     }
     {
       name: chip_sw_flash_rma_unlocked
@@ -121,6 +125,7 @@
       si_stage: SV3
       lc_states: ["DEV", "PROD", "PROD_END", "RMA"]
       tests: ["chip_sw_flash_ctrl_idle_low_power"]
+      bazel: ["//sw/device/tests:flash_ctrl_idle_low_power_test"]
     }
     {
       name: chip_sw_flash_keymgr_seeds
@@ -148,6 +153,9 @@
       si_stage: SV3
       lc_states: ["DEV", "PROD", "PROD_END", "RMA"]
       tests: ["chip_sw_flash_ctrl_lc_rw_en"]
+      bazel: ["//sw/device/tests:flash_ctrl_info_access_lc_states",
+              "//sw/device/tests:flash_ctrl_info_access_lc_states_personalized"]
+
     }
     {
       name: chip_sw_flash_creator_seed_wipe_on_rma
@@ -158,6 +166,7 @@
       si_stage: SV3
       lc_states: ["DEV", "PROD", "PROD_END", "RMA"]
       tests: ["chip_sw_flash_rma_unlocked"]
+      bazel: ["//sw/device/tests:flash_ctrl_rma_test"]
     }
     {
       name: chip_sw_flash_lc_owner_seed_sw_rw_en
@@ -172,6 +181,7 @@
       si_stage: SV3
       lc_states: ["DEV", "PROD", "PROD_END", "RMA"]
       tests: ["chip_sw_flash_ctrl_lc_rw_en"]
+      bazel: ["//sw/device/tests:flash_ctrl_info_access_lc_states"]
     }
     {
       name: chip_sw_flash_lc_iso_part_sw_rd_en
@@ -186,6 +196,7 @@
       si_stage: SV3
       lc_states: ["PROD", "PROD_END", "RMA"]
       tests: ["chip_sw_flash_ctrl_lc_rw_en"]
+      bazel: ["//sw/device/tests:flash_ctrl_info_access_lc_states"]
     }
     {
       name: chip_sw_flash_lc_iso_part_sw_wr_en
@@ -200,6 +211,7 @@
       si_stage: SV3
       lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
       tests: ["chip_sw_flash_ctrl_lc_rw_en"]
+      bazel: ["//sw/device/tests:flash_ctrl_info_access_lc_states"]
     }
     {
       name: chip_sw_flash_lc_seed_hw_rd_en
@@ -209,6 +221,7 @@
               that this LC signal transitions from 0 to 1 and back to 0. Verify that the flash ctrl
               does (or does not) read the creator and owner partitions to fetch the seeds for the
               keymgr.
+            - In sival, this will be covered by manuf_ft_provision_rma_token_and_personalization.
             '''
       features: ["FLASH_CTRL.INIT.ROOT_SEEDS"]
       stage: V2
@@ -230,8 +243,7 @@
             '''
       features: ["FLASH_CTRL.ESCALATION"]
       stage: V2
-      si_stage: SV3
-      lc_states: []
+      si_stage: None
       tests: ["chip_sw_all_escalation_resets"]
     }
     {
@@ -255,8 +267,9 @@
             - This sets the test for closed source where the flash access timing matters.
             '''
       stage: V2
-      si_stage: None
+      si_stage: SV3
       tests: ["chip_sw_flash_ctrl_clock_freqs"]
+      bazel: ["//sw/device/tests:flash_ctrl_clock_freqs_test"]
     }
     {
       name: chip_sw_flash_ctrl_escalation_reset

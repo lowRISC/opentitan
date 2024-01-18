@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
@@ -131,10 +130,10 @@ static void test_basic_io(void) {
       /*delay=*/0));
   CHECK_ARRAYS_EQ(output_page, input_page, FLASH_UINT32_WORDS_PER_PAGE);
 
-  // If current platform uses sramble, you can't turn it off once you write your test
-  // with scrambled form.
-  // Add if / else to make sure not to revert scrambled region by default.
-  if (kBootStage == kBootStageOwner) {
+  // If current platform uses sramble, you can't turn it off once you write your
+  // test with scrambled form. Add if / else to make sure not to revert
+  // scrambled region by default.
+  if (kDeviceType == kDeviceSilicon) {
     CHECK_STATUS_OK(flash_ctrl_testutils_default_region_access(
         &flash, /*rd_en=*/true, /*prog_en=*/true, /*erase_en=*/true,
         /*scramble_en=*/true, /*ecc_en=*/true, /*high_endurance_en=*/false));
@@ -175,10 +174,10 @@ static void test_memory_protection(void) {
       &flash, mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
 
   // Set up default access for data partitions.
-  // If current platform uses sramble, you can't turn it off once you write your test
-  // with scrambled form.
-  // Add if / else to make sure not to revert scrambled region by default.
-  if (kBootStage == kBootStageOwner) {
+  // If current platform uses scramble, you can't turn it off once you write
+  // your test with scrambled form. Add if / else to make sure not to revert
+  // scrambled region by default.
+  if (kDeviceType == kDeviceSilicon) {
     CHECK_STATUS_OK(flash_ctrl_testutils_default_region_access(
         &flash, /*rd_en=*/true, /*prog_en=*/true, /*erase_en=*/true,
         /*scramble_en=*/true, /*ecc_en=*/true, /*high_endurance_en=*/false));
@@ -219,9 +218,15 @@ static void test_memory_protection(void) {
       /*partition_id=*/0, kDifFlashCtrlPartitionTypeData));
 
   // Turn off flash access by default.
-  CHECK_STATUS_OK(flash_ctrl_testutils_default_region_access(
-      &flash, /*rd_en=*/false, /*prog_en=*/false, /*erase_en=*/false,
-      /*scramble_en=*/true, /*ecc_en=*/true, /*high_endurance_en=*/false));
+  if (kDeviceType == kDeviceSilicon) {
+    CHECK_STATUS_OK(flash_ctrl_testutils_default_region_access(
+        &flash, /*rd_en=*/false, /*prog_en=*/false, /*erase_en=*/false,
+        /*scramble_en=*/true, /*ecc_en=*/true, /*high_endurance_en=*/false));
+  } else {
+    CHECK_STATUS_OK(flash_ctrl_testutils_default_region_access(
+        &flash, /*rd_en=*/false, /*prog_en=*/false, /*erase_en=*/false,
+        /*scramble_en=*/false, /*ecc_en=*/false, /*high_endurance_en=*/false));
+  }
 
   // Enable protected region for access.
   CHECK_DIF_OK(
@@ -281,7 +286,6 @@ bool test_main(void) {
                                                         kDifToggleEnabled));
   CHECK_DIF_OK(dif_flash_ctrl_set_bank_erase_enablement(&flash, /*bank=*/1,
                                                         kDifToggleEnabled));
-
   test_basic_io();
   test_memory_protection();
 
