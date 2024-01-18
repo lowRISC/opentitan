@@ -64,6 +64,8 @@
       rv_dm.mem
       sram_ctrl_main.ram
       flash_ctrl.mem
+      tlul2axi
+      crypto_sram
     ]
     rv_core_ibex.cored:
     [
@@ -93,6 +95,7 @@
       kmac
       sram_ctrl_main.regs
       rv_core_ibex.cfg
+      crypto_sram
     ]
     rv_dm.sba:
     [
@@ -120,6 +123,7 @@
       rv_core_ibex.cfg
       sram_ctrl_main.regs
       sram_ctrl_main.ram
+      crypto_sram
     ]
   }
   nodes:
@@ -133,6 +137,8 @@
       xbar: false
       stub: false
       inst_type: ""
+      req_fifo_pass: true
+      rsp_fifo_pass: true
     }
     {
       name: rv_core_ibex.cored
@@ -143,6 +149,8 @@
       xbar: false
       stub: false
       inst_type: ""
+      req_fifo_pass: true
+      rsp_fifo_pass: true
     }
     {
       name: rv_dm.sba
@@ -152,6 +160,8 @@
       xbar: false
       stub: false
       inst_type: ""
+      req_fifo_pass: true
+      rsp_fifo_pass: true
     }
     {
       name: rv_dm.regs
@@ -169,6 +179,8 @@
       xbar: false
       stub: false
       pipeline: "true"
+      req_fifo_pass: true
+      rsp_fifo_pass: true
     }
     {
       name: rv_dm.mem
@@ -186,6 +198,8 @@
       xbar: false
       stub: false
       pipeline: "true"
+      req_fifo_pass: true
+      rsp_fifo_pass: true
     }
     {
       name: peri
@@ -199,13 +213,432 @@
       [
         {
           base_addr: 0xC0400000
-          size_byte: 0x003fffff
+          size_byte: 0x00400000
         }, 
         {
           base_addr: 0xC0000000
-          size_byte: 0x001fffff
+          size_byte: 0x00200000
         }
       ]
+      req_fifo_pass: true
+      rsp_fifo_pass: true
+    }
+    {
+      name: rom_ctrl.rom
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline: "false"
+      inst_type: rom_ctrl
+      addr_range:
+      [
+        {
+          base_addr: 0xD0008000
+          size_byte: 0x8000
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+      rsp_fifo_pass: true
+    }
+    {
+      name: rom_ctrl.regs
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline: "false"
+      inst_type: rom_ctrl
+      addr_range:
+      [
+        {
+          base_addr: 0xC11e0000
+          size_byte: 0x80
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+      rsp_fifo_pass: true
+    }
+    {
+      name: dbg_mode
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline: "false"
+      inst_type: dbg_mode
+      addr_range:
+      [
+        {
+          base_addr: 0xFF000000
+          size_byte: 0x40
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+      rsp_fifo_pass: true
+    }
+    {
+      name: spi_host0
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline: "false"
+      inst_type: spi_host
+      addr_range:
+      [
+        {
+          base_addr: 0xC0300000
+          size_byte: 0x40
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+      rsp_fifo_pass: true
+    }
+    {
+      name: spi_host1
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline: "false"
+      inst_type: spi_host
+      addr_range:
+      [
+        {
+          base_addr: 0xC0310000
+          size_byte: 0x40
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+      rsp_fifo_pass: true
+    }
+    {
+      name: flash_ctrl.core
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      inst_type: flash_ctrl
+      addr_range:
+      [
+        {
+          base_addr: 0xC1000000
+          size_byte: 0x200
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: "true"
+      req_fifo_pass: true
+      rsp_fifo_pass: true
+    }
+    {
+      name: flash_ctrl.prim
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      inst_type: flash_ctrl
+      addr_range:
+      [
+        {
+          base_addr: 0xC1008000
+          size_byte: 0x80
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: "true"
+      req_fifo_pass: true
+      rsp_fifo_pass: true
+    }
+    {
+      name: flash_ctrl.mem
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      inst_type: flash_ctrl
+      addr_range:
+      [
+        {
+          base_addr: 0xF0000000
+          size_byte: 0x100000
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: "true"
+      req_fifo_pass: true
+      rsp_fifo_pass: true
+    }
+    {
+      name: hmac
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      inst_type: hmac
+      addr_range:
+      [
+        {
+          base_addr: 0xC1110000
+          size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: "true"
+      req_fifo_pass: true
+      rsp_fifo_pass: true
+    }
+    {
+      name: kmac
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      inst_type: kmac
+      addr_range:
+      [
+        {
+          base_addr: 0xC1120000
+          size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: "true"
+      req_fifo_pass: true
+      rsp_fifo_pass: true
+    }
+    {
+      name: aes
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      inst_type: aes
+      addr_range:
+      [
+        {
+          base_addr: 0xC1100000
+          size_byte: 0x100
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: "true"
+      req_fifo_pass: true
+      rsp_fifo_pass: true
+    }
+    {
+      name: entropy_src
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      inst_type: entropy_src
+      addr_range:
+      [
+        {
+          base_addr: 0xC1160000
+          size_byte: 0x100
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: "true"
+      req_fifo_pass: true
+      rsp_fifo_pass: true
+    }
+    {
+      name: csrng
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      inst_type: csrng
+      addr_range:
+      [
+        {
+          base_addr: 0xC1150000
+          size_byte: 0x80
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: "true"
+      req_fifo_pass: true
+      rsp_fifo_pass: true
+    }
+    {
+      name: edn0
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      inst_type: edn
+      addr_range:
+      [
+        {
+          base_addr: 0xC1170000
+          size_byte: 0x80
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: "true"
+      req_fifo_pass: true
+      rsp_fifo_pass: true
+    }
+    {
+      name: edn1
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      inst_type: edn
+      addr_range:
+      [
+        {
+          base_addr: 0xC1180000
+          size_byte: 0x80
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: "true"
+      req_fifo_pass: true
+      rsp_fifo_pass: true
+    }
+    {
+      name: rv_plic
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      inst_type: rv_plic
+      addr_range:
+      [
+        {
+          base_addr: 0xC8000000
+          size_byte: 0x8000000
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: "true"
+      req_fifo_pass: true
+      rsp_fifo_pass: true
+    }
+    {
+      name: otbn
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      inst_type: otbn
+      addr_range:
+      [
+        {
+          base_addr: 0xC1130000
+          size_byte: 0x10000
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: "true"
+      req_fifo_pass: true
+      rsp_fifo_pass: true
+    }
+    {
+      name: keymgr
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      inst_type: keymgr
+      addr_range:
+      [
+        {
+          base_addr: 0xC1140000
+          size_byte: 0x100
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: "true"
+      req_fifo_pass: true
+      rsp_fifo_pass: true
+    }
+    {
+      name: rv_core_ibex.cfg
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      inst_type: rv_core_ibex
+      addr_range:
+      [
+        {
+          base_addr: 0xC11f0000
+          size_byte: 0x100
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: "true"
+      req_fifo_pass: true
+      rsp_fifo_pass: true
+    }
+    {
+      name: sram_ctrl_main.regs
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline: "false"
+      inst_type: sram_ctrl
+      addr_range:
+      [
+        {
+          base_addr: 0xC11c0000
+          size_byte: 0x20
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+      rsp_fifo_pass: true
+    }
+    {
+      name: usbdev
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline: "true"
+      addr_range:
+      [
+        {
+          base_addr: 0xC0320000
+          size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+      rsp_fifo_pass: true
+    },
+    {
+      name: sram_ctrl_main.ram
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline: "false"
+      inst_type: sram_ctrl
+      addr_range:
+      [
+        {
+          base_addr: 0xE0000000
+          size_byte: 0x20000
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+      rsp_fifo_pass: true
     }
     {
       name: tlul2axi
@@ -216,20 +649,20 @@
       addr_range:
       [
        /* {
-          base_addr: 0x10000000
+          base_addr: 0x00010000
           size_byte: 0xA0000000
         }*/
         {
           base_addr: 0x00010000
           size_byte: 0x10000
-        }
+        }/*
         {
           base_addr: 0x02000000
-          size_byte: 0xC0000
-        }
+          size_byte: 0xF0000
+        }*/
         {
           base_addr: 0x0C000000
-          size_byte: 0x3FFFFFF
+          size_byte: 0x4000000
         }
         {
           base_addr: 0x10000000
@@ -241,7 +674,7 @@
         }
         {
           base_addr: 0x1A100000
-          size_byte: 0x92000
+          size_byte: 0x100000
         }
         {
           base_addr: 0x1C000000
@@ -272,382 +705,27 @@
           size_byte: 0x20000000
         }
       ]
-      xbar: true
+      xbar: false
       stub: false
-      pipeline: "true"
-    }
-    {
-      name: rom_ctrl.rom
+      pipeline: true
+    }{
+      name: crypto_sram
       type: device
       clock: clk_main_i
       reset: rst_main_ni
       pipeline: "false"
-      inst_type: rom_ctrl
+      inst_type: crypto_sram
       addr_range:
       [
         {
-          base_addr: 0xD0008000
-          size_byte: 0x8000
-        }
-      ]
-      xbar: false
-      stub: false
-    }
-    {
-      name: rom_ctrl.regs
-      type: device
-      clock: clk_main_i
-      reset: rst_main_ni
-      pipeline: "false"
-      inst_type: rom_ctrl
-      addr_range:
-      [
-        {
-          base_addr: 0xC11e0000
-          size_byte: 0x80
-        }
-      ]
-      xbar: false
-      stub: false
-    }
-    {
-      name: dbg_mode
-      type: device
-      clock: clk_main_i
-      reset: rst_main_ni
-      pipeline: "false"
-      inst_type: dbg_mode
-      addr_range:
-      [
-        {
-          base_addr: 0xFF000000
-          size_byte: 0x40
-        }
-      ]
-      xbar: false
-      stub: false
-    }
-    {
-      name: spi_host0
-      type: device
-      clock: clk_main_i
-      reset: rst_main_ni
-      pipeline: "false"
-      inst_type: spi_host
-      addr_range:
-      [
-        {
-          base_addr: 0xC0300000
-          size_byte: 0x40
-        }
-      ]
-      xbar: false
-      stub: false
-    }
-    {
-      name: spi_host1
-      type: device
-      clock: clk_main_i
-      reset: rst_main_ni
-      pipeline: "false"
-      inst_type: spi_host
-      addr_range:
-      [
-        {
-          base_addr: 0xC0310000
-          size_byte: 0x40
-        }
-      ]
-      xbar: false
-      stub: false
-    }
-    {
-      name: flash_ctrl.core
-      type: device
-      clock: clk_main_i
-      reset: rst_main_ni
-      inst_type: flash_ctrl
-      addr_range:
-      [
-        {
-          base_addr: 0xC1000000
-          size_byte: 0x200
-        }
-      ]
-      xbar: false
-      stub: false
-      pipeline: "true"
-    }
-    {
-      name: flash_ctrl.prim
-      type: device
-      clock: clk_main_i
-      reset: rst_main_ni
-      inst_type: flash_ctrl
-      addr_range:
-      [
-        {
-          base_addr: 0xC1008000
-          size_byte: 0x80
-        }
-      ]
-      xbar: false
-      stub: false
-      pipeline: "true"
-    }
-    {
-      name: flash_ctrl.mem
-      type: device
-      clock: clk_main_i
-      reset: rst_main_ni
-      inst_type: flash_ctrl
-      addr_range:
-      [
-        {
-          base_addr: 0xF0000000
-          size_byte: 0x100000
-        }
-      ]
-      xbar: false
-      stub: false
-      pipeline: "true"
-    }
-    {
-      name: hmac
-      type: device
-      clock: clk_main_i
-      reset: rst_main_ni
-      inst_type: hmac
-      addr_range:
-      [
-        {
-          base_addr: 0xC1110000
-          size_byte: 0x1000
-        }
-      ]
-      xbar: false
-      stub: false
-      pipeline: "true"
-    }
-    {
-      name: kmac
-      type: device
-      clock: clk_main_i
-      reset: rst_main_ni
-      inst_type: kmac
-      addr_range:
-      [
-        {
-          base_addr: 0xC1120000
-          size_byte: 0x1000
-        }
-      ]
-      xbar: false
-      stub: false
-      pipeline: "true"
-    }
-    {
-      name: aes
-      type: device
-      clock: clk_main_i
-      reset: rst_main_ni
-      inst_type: aes
-      addr_range:
-      [
-        {
-          base_addr: 0xC1100000
-          size_byte: 0x100
-        }
-      ]
-      xbar: false
-      stub: false
-      pipeline: "true"
-    }
-    {
-      name: entropy_src
-      type: device
-      clock: clk_main_i
-      reset: rst_main_ni
-      inst_type: entropy_src
-      addr_range:
-      [
-        {
-          base_addr: 0xC1160000
-          size_byte: 0x100
-        }
-      ]
-      xbar: false
-      stub: false
-      pipeline: "true"
-    }
-    {
-      name: csrng
-      type: device
-      clock: clk_main_i
-      reset: rst_main_ni
-      inst_type: csrng
-      addr_range:
-      [
-        {
-          base_addr: 0xC1150000
-          size_byte: 0x80
-        }
-      ]
-      xbar: false
-      stub: false
-      pipeline: "true"
-    }
-    {
-      name: edn0
-      type: device
-      clock: clk_main_i
-      reset: rst_main_ni
-      inst_type: edn
-      addr_range:
-      [
-        {
-          base_addr: 0xC1170000
-          size_byte: 0x80
-        }
-      ]
-      xbar: false
-      stub: false
-      pipeline: "true"
-    }
-    {
-      name: edn1
-      type: device
-      clock: clk_main_i
-      reset: rst_main_ni
-      inst_type: edn
-      addr_range:
-      [
-        {
-          base_addr: 0xC1180000
-          size_byte: 0x80
-        }
-      ]
-      xbar: false
-      stub: false
-      pipeline: "true"
-    }
-    {
-      name: rv_plic
-      type: device
-      clock: clk_main_i
-      reset: rst_main_ni
-      inst_type: rv_plic
-      addr_range:
-      [
-        {
-          base_addr: 0xC8000000
-          size_byte: 0x8000000
-        }
-      ]
-      xbar: false
-      stub: false
-      pipeline: "true"
-    }
-    {
-      name: otbn
-      type: device
-      clock: clk_main_i
-      reset: rst_main_ni
-      inst_type: otbn
-      addr_range:
-      [
-        {
-          base_addr: 0xC1130000
-          size_byte: 0x10000
-        }
-      ]
-      xbar: false
-      stub: false
-      pipeline: "true"
-    }
-    {
-      name: keymgr
-      type: device
-      clock: clk_main_i
-      reset: rst_main_ni
-      inst_type: keymgr
-      addr_range:
-      [
-        {
-          base_addr: 0xC1140000
-          size_byte: 0x100
-        }
-      ]
-      xbar: false
-      stub: false
-      pipeline: "true"
-    }
-    {
-      name: rv_core_ibex.cfg
-      type: device
-      clock: clk_main_i
-      reset: rst_main_ni
-      inst_type: rv_core_ibex
-      addr_range:
-      [
-        {
-          base_addr: 0xC11f0000
-          size_byte: 0x100
-        }
-      ]
-      xbar: false
-      stub: false
-      pipeline: "true"
-    }
-    {
-      name: sram_ctrl_main.regs
-      type: device
-      clock: clk_main_i
-      reset: rst_main_ni
-      pipeline: "false"
-      inst_type: sram_ctrl
-      addr_range:
-      [
-        {
-          base_addr: 0xC11c0000
-          size_byte: 0x20
-        }
-      ]
-      xbar: false
-      stub: false
-    }
-    {
-      name: usbdev
-      type: device
-      clock: clk_main_i
-      reset: rst_main_ni
-      pipeline: "true"
-      addr_range:
-      [
-        {
-          base_addr: 0xC0320000
-          size_byte: 0x1000
-        }
-      ]
-      xbar: false
-      stub: false
-    },
-    {
-      name: sram_ctrl_main.ram
-      type: device
-      clock: clk_main_i
-      reset: rst_main_ni
-      pipeline: "false"
-      inst_type: sram_ctrl
-      addr_range:
-      [
-        {
-          base_addr: 0xE0000000
+          base_addr: 0xfff00000
           size_byte: 0x20000
         }
       ]
       xbar: false
       stub: false
+      req_fifo_pass: true
+      rsp_fifo_pass: true
     }
   ]
   clock: clk_main_i

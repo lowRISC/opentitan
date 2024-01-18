@@ -34,7 +34,6 @@ initial force dut.rst_spi_host1_ni = rst_n;
 `CONNECT_TL_DEVICE_IF(rv_dm__regs, dut, clk_main_i, rst_n)
 `CONNECT_TL_DEVICE_IF(rv_dm__mem, dut, clk_main_i, rst_n)
 `CONNECT_TL_DEVICE_IF(peri, dut, clk_fixed_i, rst_n)
-`CONNECT_TL_DEVICE_IF(tlul2axi, dut, clk_main_i, rst_n)
 `CONNECT_TL_DEVICE_IF(rom_ctrl__rom, dut, clk_main_i, rst_n)
 `CONNECT_TL_DEVICE_IF(rom_ctrl__regs, dut, clk_main_i, rst_n)
 `CONNECT_TL_DEVICE_IF(dbg_mode, dut, clk_main_i, rst_n)
@@ -57,3 +56,5 @@ initial force dut.rst_spi_host1_ni = rst_n;
 `CONNECT_TL_DEVICE_IF(sram_ctrl_main__regs, dut, clk_main_i, rst_n)
 `CONNECT_TL_DEVICE_IF(usbdev, dut, clk_main_i, rst_n)
 `CONNECT_TL_DEVICE_IF(sram_ctrl_main__ram, dut, clk_main_i, rst_n)
+`CONNECT_TL_DEVICE_IF(tlul2axi, dut, clk_main_i, rst_n)
+`CONNECT_TL_DEVICE_IF(crypto_sram, dut, clk_main_i, rst_n)

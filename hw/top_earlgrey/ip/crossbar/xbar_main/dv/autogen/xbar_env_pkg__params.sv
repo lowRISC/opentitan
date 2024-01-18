@@ -14,11 +14,8 @@ tl_device_t xbar_devices[$] = '{
         '{32'h00000000, 32'h00000fff}
     }},
     '{"peri", '{
-        '{32'hc0000000, 32'hc01ffffe},
-        '{32'hc0400000, 32'hc07ffffe}
-    }},
-    '{"tlul2axi", '{
-        '{32'h00010000, 32'h9fffffff}
+        '{32'hc0000000, 32'hc01fffff},
+        '{32'hc0400000, 32'hc07fffff}
     }},
     '{"rom_ctrl__rom", '{
         '{32'hd0008000, 32'hd000ffff}
@@ -85,6 +82,23 @@ tl_device_t xbar_devices[$] = '{
     }},
     '{"sram_ctrl_main__ram", '{
         '{32'he0000000, 32'he001ffff}
+    }},
+    '{"tlul2axi", '{
+        '{32'h00010000, 32'h0001ffff},
+        '{32'h0c000000, 32'h0fffffff},
+        '{32'h10000000, 32'h103fffff},
+        '{32'h10400000, 32'h104fffff},
+        '{32'h1a100000, 32'h1a1fffff},
+        '{32'h1c000000, 32'h1c0fffff},
+        '{32'h18000000, 32'h18000fff},
+        '{32'h20000000, 32'h207fffff},
+        '{32'h30000000, 32'h3000ffff},
+        '{32'h40000000, 32'h40000fff},
+        '{32'h60000000, 32'h60000fff},
+        '{32'h80000000, 32'h9fffffff}
+    }},
+    '{"crypto_sram", '{
+        '{32'hfff00000, 32'hfff1ffff}
 }}};
 
   // List of Xbar hosts
@@ -93,7 +107,9 @@ tl_host_t xbar_hosts[$] = '{
         "rom_ctrl__rom",
         "rv_dm__mem",
         "sram_ctrl_main__ram",
-        "flash_ctrl__mem"}}
+        "flash_ctrl__mem",
+        "tlul2axi",
+        "crypto_sram"}}
     ,
     '{"rv_core_ibex__cored", 1, '{
         "rom_ctrl__rom",
@@ -121,7 +137,8 @@ tl_host_t xbar_hosts[$] = '{
         "usbdev",
         "kmac",
         "sram_ctrl_main__regs",
-        "rv_core_ibex__cfg"}}
+        "rv_core_ibex__cfg",
+        "crypto_sram"}}
     ,
     '{"rv_dm__sba", 2, '{
         "rv_dm__regs",
@@ -147,5 +164,6 @@ tl_host_t xbar_hosts[$] = '{
         "keymgr",
         "rv_core_ibex__cfg",
         "sram_ctrl_main__regs",
-        "sram_ctrl_main__ram"}}
+        "sram_ctrl_main__ram",
+        "crypto_sram"}}
 };

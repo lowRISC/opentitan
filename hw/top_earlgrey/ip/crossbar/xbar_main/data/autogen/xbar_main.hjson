@@ -51,12 +51,6 @@
     }
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_tlul2axi"
-      act:    "req"
-      package: "tlul_ot_pkg"
-    }
-    { struct: "tl"
-      type:   "req_rsp"
       name:   "tl_rom_ctrl__rom"
       act:    "req"
       package: "tlul_ot_pkg"
@@ -184,6 +178,18 @@
     { struct: "tl"
       type:   "req_rsp"
       name:   "tl_sram_ctrl_main__ram"
+      act:    "req"
+      package: "tlul_ot_pkg"
+    }
+    { struct: "tl"
+      type:   "req_rsp"
+      name:   "tl_tlul2axi"
+      act:    "req"
+      package: "tlul_ot_pkg"
+    }
+    { struct: "tl"
+      type:   "req_rsp"
+      name:   "tl_crypto_sram"
       act:    "req"
       package: "tlul_ot_pkg"
     }
