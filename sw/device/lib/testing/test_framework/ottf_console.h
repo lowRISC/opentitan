@@ -41,6 +41,13 @@ void *ottf_console_get(void);
 void ottf_console_init(void);
 
 /**
+ * Configures the given UART to be used by the OTTF console.
+ *
+ * @param base_addr The base address of the UART to use.
+ */
+void ottf_console_configure_uart(uintptr_t base_addr);
+
+/**
  * Manage flow control by inspecting the OTTF console device's receive FIFO.
  *
  * @param uart A UART handle.
