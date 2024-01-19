@@ -108,7 +108,10 @@ module mbx_hostif
     .devmode_i  ( 1'b1          )
   );
 
-  // Instantiate interrupt hardware primitives for ready and abort IRQ
+  logic intr_ready_de, intr_abort_de, intr_error_de;
+  logic intr_ready_d, intr_abort_d, intr_error_d;
+
+  // Instantiate interrupt hardware primitives for ready, abort, and error IRQ
   prim_intr_hw #(.Width(1)) u_intr_ready (
     .clk_i                  ( clk_i                          ),
     .rst_ni                 ( rst_ni                         ),
@@ -117,8 +120,8 @@ module mbx_hostif
     .reg2hw_intr_test_q_i   ( reg2hw.intr_test.mbx_ready.q   ),
     .reg2hw_intr_test_qe_i  ( reg2hw.intr_test.mbx_ready.qe  ),
     .reg2hw_intr_state_q_i  ( reg2hw.intr_state.mbx_ready.q  ),
-    .hw2reg_intr_state_de_o ( hw2reg.intr_state.mbx_ready.de ),
-    .hw2reg_intr_state_d_o  ( hw2reg.intr_state.mbx_ready.d  ),
+    .hw2reg_intr_state_de_o ( intr_ready_de                  ),
+    .hw2reg_intr_state_d_o  ( intr_ready_d                   ),
     .intr_o                 ( intr_ready_o                   )
   );
 
@@ -130,8 +133,8 @@ module mbx_hostif
     .reg2hw_intr_test_q_i   ( reg2hw.intr_test.mbx_abort.q   ),
     .reg2hw_intr_test_qe_i  ( reg2hw.intr_test.mbx_abort.qe  ),
     .reg2hw_intr_state_q_i  ( reg2hw.intr_state.mbx_abort.q  ),
-    .hw2reg_intr_state_de_o ( hw2reg.intr_state.mbx_abort.de ),
-    .hw2reg_intr_state_d_o  ( hw2reg.intr_state.mbx_abort.d  ),
+    .hw2reg_intr_state_de_o ( intr_abort_de                  ),
+    .hw2reg_intr_state_d_o  ( intr_abort_d                   ),
     .intr_o                 ( intr_abort_o                   )
   );
 
@@ -143,10 +146,19 @@ module mbx_hostif
     .reg2hw_intr_test_q_i   ( reg2hw.intr_test.mbx_error.q   ),
     .reg2hw_intr_test_qe_i  ( reg2hw.intr_test.mbx_error.qe  ),
     .reg2hw_intr_state_q_i  ( reg2hw.intr_state.mbx_error.q  ),
-    .hw2reg_intr_state_de_o ( hw2reg.intr_state.mbx_error.de ),
-    .hw2reg_intr_state_d_o  ( hw2reg.intr_state.mbx_error.d  ),
+    .hw2reg_intr_state_de_o ( intr_error_de                  ),
+    .hw2reg_intr_state_d_o  ( intr_error_d                   ),
     .intr_o                 ( intr_error_o                   )
   );
+
+  // Let acknowledging the abort from the host clear all pending interrupts
+  assign hw2reg.intr_state.mbx_ready.de = intr_ready_de | hostif_control_abort_clear_o;
+  assign hw2reg.intr_state.mbx_abort.de = intr_abort_de | hostif_control_abort_clear_o;
+  assign hw2reg.intr_state.mbx_error.de = intr_error_de | hostif_control_abort_clear_o;
+
+  assign hw2reg.intr_state.mbx_ready.d = hostif_control_abort_clear_o ? 1'b0 : intr_ready_d;
+  assign hw2reg.intr_state.mbx_abort.d = hostif_control_abort_clear_o ? 1'b0 : intr_abort_d;
+  assign hw2reg.intr_state.mbx_error.d = hostif_control_abort_clear_o ? 1'b0 : intr_error_d;
 
   // Control Register
   logic abort_d, abort_q;
@@ -155,10 +167,10 @@ module mbx_hostif
   always_comb begin
     abort_d = abort_q;
 
-    if (sysif_control_abort_set_i) begin
-      abort_d = 1'b1;
-    end else if (hostif_control_abort_clear_o) begin
+    if (hostif_control_abort_clear_o) begin
       abort_d = 1'b0;
+    end else if (sysif_control_abort_set_i) begin
+      abort_d = 1'b1;
     end
   end
 

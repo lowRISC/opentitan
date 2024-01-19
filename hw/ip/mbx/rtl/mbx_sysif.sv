@@ -26,6 +26,8 @@ module mbx_sysif
   output logic                        doe_async_msg_en_o,
   input  logic                        doe_async_msg_set_i,
   input  logic                        doe_async_msg_clear_i,
+  // Abort clearing from the host
+  input  logic                        sysif_abort_ack_i,
   // Access to the control register
   output logic                        sysif_control_abort_set_o,
   output logic                        sysif_control_go_set_o,
@@ -155,22 +157,31 @@ module mbx_sysif
   // Interrupt is triggered by the outbound handler if the message has been written to
   // the memory and can be read by the system, an error is raised, or if there is an asynchronous
   // message request coming from the host.
-  // The interrupt is cleared by the SOC firmware via the RW1C behavior
+  // The interrupt is cleared by the SOC firmware via the RW1C behavior or when an abort is
+  // acknowledged by the host
   assign hw2reg.soc_status.doe_intr_status.de = DoeIrqSupport &
                                                 (sysif_status_doe_intr_ready_set_i |
+                                                 sysif_abort_ack_i                 |
                                                  sysif_status_error_set_i          |
                                                  async_msg_set_gated);
-  assign hw2reg.soc_status.doe_intr_status.d  = sysif_status_doe_intr_ready_set_i |
-                                                sysif_status_error_set_i          |
-                                                async_msg_set_gated;
+  assign hw2reg.soc_status.doe_intr_status.d  = (sysif_status_doe_intr_ready_set_i |
+                                                 sysif_status_error_set_i          |
+                                                 async_msg_set_gated)              &
+                                                 ~sysif_abort_ack_i;
 
-  // Async message status is updated by the host interface
-  assign hw2reg.soc_status.doe_async_msg_status.de = DoeAsyncMsgSupport & doe_async_msg_en_o &
-                                                     (doe_async_msg_set_i | doe_async_msg_clear_i);
+  // Async message status is updated by the host interface when enabled
+  // and cleared in all cases on an abort and abort ack/FW reset
+  assign hw2reg.soc_status.doe_async_msg_status.de = (DoeAsyncMsgSupport & doe_async_msg_en_o &
+                                                     (doe_async_msg_set_i |
+                                                      doe_async_msg_clear_i))  |
+                                                     sysif_control_abort_set_o |
+                                                     sysif_abort_ack_i;
   assign hw2reg.soc_status.doe_async_msg_status.d  = doe_async_msg_set_i;
 
-  // Error is cleared when writing the abort bit
-  assign hw2reg.soc_status.error.de = sysif_status_error_set_i | sysif_control_abort_set_o;
+  // Error is cleared when writing the abort bit or on a FW-based reset
+  assign hw2reg.soc_status.error.de = sysif_status_error_set_i |
+                                      sysif_control_abort_set_o |
+                                      sysif_abort_ack_i;
   assign hw2reg.soc_status.error.d  = sysif_status_error_set_i;
 
   // Set by OT firmware (w1s)
