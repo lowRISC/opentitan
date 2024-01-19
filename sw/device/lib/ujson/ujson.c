@@ -8,11 +8,11 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "sw/device/lib/base/crc32.h"
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/ujson/private_status.h"
-#include "sw/device/silicon_creator/lib/crc32.h"
 
 static bool is_space(int c) { return c == ' ' || (unsigned)c - '\t' < 5; }
 

@@ -6,9 +6,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "sw/device/lib/base/crc32.h"
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/ujson/example.h"
-#include "sw/device/silicon_creator/lib/crc32.h"
 
 status_t stdio_getc(void *context) {
   int ch = fgetc(stdin);
