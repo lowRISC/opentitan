@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/dif/dif_i2c.h"
 #include "sw/device/lib/dif/dif_spi_host.h"
+#include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/i2c_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -84,28 +85,32 @@ enum {
   kPwmReg11LowAddr = 0x1D,
 
   // Other
+  kTotalNumLedsOnBoard = 4,
+  kNumLedCycles = 10,
+  kNumColorsInCycle = 4,
+  kLedCyclePauseSeconds = 2,
   kDefaultTimeoutMicros = 1000,
 };
 
-static rgb_color_t kColorBlue = {
+static const rgb_color_t kColorBlue = {
     .r = 0x33,
     .g = 0x69,
     .b = 0xE8,
 };
 
-static rgb_color_t kColorRed = {
+static const rgb_color_t kColorRed = {
     .r = 0xD5,
     .g = 0x0F,
     .b = 0x25,
 };
 
-static rgb_color_t kColorYellow = {
+static const rgb_color_t kColorYellow = {
     .r = 0xEE,
     .g = 0xB2,
     .b = 0x11,
 };
 
-static rgb_color_t kColorGreen = {
+static const rgb_color_t kColorGreen = {
     .r = 0x00,
     .g = 0x99,
     .b = 0x25,
@@ -254,13 +259,23 @@ static status_t turn_on_leds(void) {
 bool test_main(void) {
   CHECK_STATUS_OK(peripheral_init());
   CHECK_STATUS_OK(config_i2c_led_controller());
-
-  CHECK_STATUS_OK(set_led_ctrl_color(kTeacupLedDs5, &kColorBlue));
-  CHECK_STATUS_OK(set_led_ctrl_color(kTeacupLedDs9, &kColorRed));
-  CHECK_STATUS_OK(set_led_ctrl_color(kTeacupLedDs10, &kColorYellow));
-  CHECK_STATUS_OK(set_led_ctrl_color(kTeacupLedDs11, &kColorGreen));
-
   CHECK_STATUS_OK(turn_on_leds());
+
+  const rgb_color_t kColorCycle[kNumColorsInCycle] = {
+      kColorBlue,
+      kColorRed,
+      kColorYellow,
+      kColorGreen,
+  };
+
+  for (size_t i = 0; i < kNumLedCycles; ++i) {
+    for (size_t j = 0; j < kNumColorsInCycle; ++j) {
+      CHECK_STATUS_OK(
+          set_led_ctrl_color((i + j) % kTotalNumLedsOnBoard, &kColorCycle[j]));
+    }
+    busy_spin_micros(kLedCyclePauseSeconds * 1000 * 1000);
+  }
+
   CHECK_STATUS_OK(turn_off_leds());
 
   return true;
