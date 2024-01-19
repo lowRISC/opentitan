@@ -86,6 +86,10 @@ typedef struct dif_keymgr_dpe_advance_params {
  */
 typedef enum dif_keymgr_dpe_key_dest {
   /**
+   * Diversify the generated key for no HW IP (and don't sideload it).
+   */
+  kDifKeymgrDpeKeyDestNone = 0,
+  /**
    * Diversify the generated key for AES (and load it to AES peripheral port if
    * sideload key).
    */
