@@ -2,12 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/base/crc32.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
-#include "sw/device/silicon_creator/lib/crc32.h"
-#include "sw/device/silicon_creator/lib/error.h"
 
 #define LOG_TEST_PARAMS(x)                                           \
   LOG_INFO("[%s] Test params: input = 0x%!y, expected_crc32 = 0x%x", \
@@ -40,40 +39,40 @@ static const test_params_t kTestCases[] = {{
                                                0x9508ac14,
                                            }};
 
-static rom_error_t crc32_test(void) {
+static status_t crc32_test(void) {
   for (size_t i = 0; i < ARRAYSIZE(kTestCases); ++i) {
     LOG_TEST_PARAMS(kTestCases[i]);
-    CHECK(crc32(kTestCases[i].input, kTestCases[i].input_len) ==
-          kTestCases[i].expected_crc32);
+    TRY_CHECK(crc32(kTestCases[i].input, kTestCases[i].input_len) ==
+              kTestCases[i].expected_crc32);
   }
-  return kErrorOk;
+  return OK_STATUS();
 }
 
-static rom_error_t crc32_add_test(void) {
+static status_t crc32_add_test(void) {
   for (size_t i = 0; i < ARRAYSIZE(kTestCases); ++i) {
     LOG_TEST_PARAMS(kTestCases[i]);
     uint32_t ctx;
     crc32_init(&ctx);
     crc32_add(&ctx, kTestCases[i].input, kTestCases[i].input_len);
-    CHECK(crc32_finish(&ctx) == kTestCases[i].expected_crc32);
+    TRY_CHECK(crc32_finish(&ctx) == kTestCases[i].expected_crc32);
   }
-  return kErrorOk;
+  return OK_STATUS();
 }
 
-static rom_error_t crc32_misaligned_test(void) {
+static status_t crc32_misaligned_test(void) {
   uint32_t kExpCrc = 0x414fa339;
   alignas(uint32_t) char input[] =
       ">The quick brown fox jumps over the lazy dog";
-  CHECK(crc32(&input[1], sizeof(input) - 2) == kExpCrc);
+  TRY_CHECK(crc32(&input[1], sizeof(input) - 2) == kExpCrc);
 
   uint32_t ctx;
   crc32_init(&ctx);
   crc32_add(&ctx, &input[1], sizeof(input) - 2);
-  CHECK(crc32_finish(&ctx) == kExpCrc);
-  return kErrorOk;
+  TRY_CHECK(crc32_finish(&ctx) == kExpCrc);
+  return OK_STATUS();
 }
 
-static rom_error_t crc32_add8_test(void) {
+static status_t crc32_add8_test(void) {
   for (size_t i = 0; i < ARRAYSIZE(kTestCases); ++i) {
     LOG_TEST_PARAMS(kTestCases[i]);
     uint32_t ctx;
@@ -81,12 +80,12 @@ static rom_error_t crc32_add8_test(void) {
     for (size_t j = 0; j < kTestCases[i].input_len; ++j) {
       crc32_add8(&ctx, kTestCases[i].input[j]);
     }
-    CHECK(crc32_finish(&ctx) == kTestCases[i].expected_crc32);
+    TRY_CHECK(crc32_finish(&ctx) == kTestCases[i].expected_crc32);
   }
-  return kErrorOk;
+  return OK_STATUS();
 }
 
-static rom_error_t crc32_add32_test(void) {
+static status_t crc32_add32_test(void) {
   uint32_t ctx;
   crc32_init(&ctx);
   const uint32_t kExpCrc = 0x9508ac14;
@@ -95,8 +94,8 @@ static rom_error_t crc32_add32_test(void) {
   OT_DISCARD(crc32_finish(&ctx));
   crc32_add32(&ctx, 0x1badb002);
 
-  CHECK(crc32_finish(&ctx) == kExpCrc);
-  return kErrorOk;
+  TRY_CHECK(crc32_finish(&ctx) == kExpCrc);
+  return OK_STATUS();
 }
 
 OTTF_DEFINE_TEST_CONFIG();

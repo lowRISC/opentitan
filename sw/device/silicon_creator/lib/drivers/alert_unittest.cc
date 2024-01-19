@@ -7,9 +7,9 @@
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/mock_abs_mmio.h"
+#include "sw/device/lib/base/mock_crc32.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_otp.h"
-#include "sw/device/silicon_creator/lib/mock_crc32.h"
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
 #include "alert_handler_regs.h"

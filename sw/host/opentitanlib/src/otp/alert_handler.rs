@@ -490,7 +490,7 @@ mod test {
     // A sanity test to make sure the correct CRC algorithm is being used.
     //
     // These values are taken from the CRC32 unit tests in
-    // `sw/device/silicon_creator/lib/crc32_unittest.cc`.
+    // `sw/device/lib/base/crc32_unittest.cc`.
     #[test]
     fn test_new_crc() {
         let crc = new_crc();
