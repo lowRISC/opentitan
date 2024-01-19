@@ -336,4 +336,12 @@ module core_ibex_tb_top;
     assign dut.u_ibex_top.gen_regfile_ff.register_file_i.gen_wren_check.u_prim_onehot_check.
           unused_assert_connected = 1;
   end
+
+  // Disable the assertion for onhot check in case RdataMuxCheck (set by SecureIbex) is enabled.
+  if (SecureIbex) begin : gen_disable_rdata_mux_check
+    assign dut.u_ibex_top.gen_regfile_ff.register_file_i.gen_rdata_mux_check.
+          u_prim_onehot_check_raddr_a.unused_assert_connected = 1;
+    assign dut.u_ibex_top.gen_regfile_ff.register_file_i.gen_rdata_mux_check.
+          u_prim_onehot_check_raddr_b.unused_assert_connected = 1;
+  end
 endmodule

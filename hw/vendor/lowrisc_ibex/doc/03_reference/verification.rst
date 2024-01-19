@@ -111,8 +111,7 @@ In order to run the co-simulation flow, you'll need:
   + Some custom CSRs
   + Custom NMI behavior
 
-  Ibex verification should work with the Spike version that is tagged as ``ibex-cosim-v0.3``.
-  Other, later, versions called ``ibex-cosim-v*`` may also work but there's no guarantee of backwards compatibility.
+  Ibex verification should work with the Spike version that is tagged as ``ibex-cosim-v0.5``.
 
   Spike must be built with the ``--enable-commitlog`` and ``--enable-misaligned`` options.
   ``--enable-commitlog`` is needed to produce log output to track the instructions that were executed.

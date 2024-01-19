@@ -45,6 +45,8 @@ ${LOWRISC_IP_DIR}/ip/prim_generic/rtl/prim_generic_clock_mux2.sv
 ${PRJ_DIR}/dv/uvm/core_ibex/common/prim/prim_clock_mux2.sv
 ${LOWRISC_IP_DIR}/ip/prim_generic/rtl/prim_generic_flop.sv
 ${PRJ_DIR}/dv/uvm/core_ibex/common/prim/prim_flop.sv
+${LOWRISC_IP_DIR}/ip/prim_generic/rtl/prim_generic_and2.sv
+${PRJ_DIR}/dv/uvm/core_ibex/common/prim/prim_and2.sv
 
 // Shared lowRISC code
 ${LOWRISC_IP_DIR}/ip/prim/rtl/prim_cipher_pkg.sv
@@ -64,6 +66,8 @@ ${LOWRISC_IP_DIR}/ip/prim/rtl/prim_secded_39_32_dec.sv
 ${LOWRISC_IP_DIR}/ip/prim/rtl/prim_secded_72_64_enc.sv
 ${LOWRISC_IP_DIR}/ip/prim/rtl/prim_secded_72_64_dec.sv
 ${LOWRISC_IP_DIR}/ip/prim/rtl/prim_onehot_check.sv
+${LOWRISC_IP_DIR}/ip/prim/rtl/prim_onehot_enc.sv
+${LOWRISC_IP_DIR}/ip/prim/rtl/prim_onehot_mux.sv
 ${LOWRISC_IP_DIR}/ip/prim/rtl/prim_mubi_pkg.sv
 
 // ibex CORE RTL files

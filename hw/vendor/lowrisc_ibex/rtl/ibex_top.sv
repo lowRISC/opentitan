@@ -140,14 +140,15 @@ module ibex_top import ibex_pkg::*; #(
   input logic                          scan_rst_ni
 );
 
-  localparam bit          Lockstep          = SecureIbex;
-  localparam bit          ResetAll          = Lockstep;
-  localparam bit          DummyInstructions = SecureIbex;
-  localparam bit          RegFileECC        = SecureIbex;
-  localparam bit          RegFileWrenCheck  = SecureIbex;
-  localparam int unsigned RegFileDataWidth  = RegFileECC ? 32 + 7 : 32;
-  localparam bit          MemECC            = SecureIbex;
-  localparam int unsigned MemDataWidth      = MemECC ? 32 + 7 : 32;
+  localparam bit          Lockstep              = SecureIbex;
+  localparam bit          ResetAll              = Lockstep;
+  localparam bit          DummyInstructions     = SecureIbex;
+  localparam bit          RegFileECC            = SecureIbex;
+  localparam bit          RegFileWrenCheck      = SecureIbex;
+  localparam bit          RegFileRdataMuxCheck  = SecureIbex;
+  localparam int unsigned RegFileDataWidth      = RegFileECC ? 32 + 7 : 32;
+  localparam bit          MemECC                = SecureIbex;
+  localparam int unsigned MemDataWidth          = MemECC ? 32 + 7 : 32;
   // Icache parameters
   localparam int unsigned BusSizeECC        = ICacheECC ? (BUS_SIZE + 7) : BUS_SIZE;
   localparam int unsigned LineSizeECC       = BusSizeECC * IC_LINE_BEATS;
@@ -421,6 +422,7 @@ module ibex_top import ibex_pkg::*; #(
       .DummyInstructions(DummyInstructions),
       // SEC_CM: DATA_REG_SW.GLITCH_DETECT
       .WrenCheck        (RegFileWrenCheck),
+      .RdataMuxCheck    (RegFileRdataMuxCheck),
       .WordZeroVal      (RegFileDataWidth'(prim_secded_pkg::SecdedInv3932ZeroWord))
     ) register_file_i (
       .clk_i (clk),
@@ -446,6 +448,7 @@ module ibex_top import ibex_pkg::*; #(
       .DummyInstructions(DummyInstructions),
       // SEC_CM: DATA_REG_SW.GLITCH_DETECT
       .WrenCheck        (RegFileWrenCheck),
+      .RdataMuxCheck    (RegFileRdataMuxCheck),
       .WordZeroVal      (RegFileDataWidth'(prim_secded_pkg::SecdedInv3932ZeroWord))
     ) register_file_i (
       .clk_i (clk),
@@ -471,6 +474,7 @@ module ibex_top import ibex_pkg::*; #(
       .DummyInstructions(DummyInstructions),
       // SEC_CM: DATA_REG_SW.GLITCH_DETECT
       .WrenCheck        (RegFileWrenCheck),
+      .RdataMuxCheck    (RegFileRdataMuxCheck),
       .WordZeroVal      (RegFileDataWidth'(prim_secded_pkg::SecdedInv3932ZeroWord))
     ) register_file_i (
       .clk_i (clk),

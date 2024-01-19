@@ -5,6 +5,7 @@
   project:          ibex
 
   // These keys are expected by dvsim.py, so we have to set them to something.
+  book:              bogus.book.domain
   doc_server:        bogus.doc.server
   results_server:    bogus.results.server
   results_html_name: report.html

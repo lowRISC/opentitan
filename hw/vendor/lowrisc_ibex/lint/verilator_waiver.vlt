@@ -64,6 +64,13 @@ lint_off -rule UNUSED -file "*/rtl/ibex_compressed_decoder.sv" -match "*rst_ni*"
 lint_off -rule UNUSED -file "*/rtl/ibex_decoder.sv" -match "*rst_ni*"
 lint_off -rule UNUSED -file "*/rtl/ibex_branch_predict.sv" -match "*rst_ni*"
 
+// Don't worry about the fact that decoded_str and data_accessed appear to be
+// written by multiple processes that might race with each other. They can't
+// race with each other (everything is a descendent of the always_comb block),
+// but Verilator doesn't notice this.
+lint_off -rule MULTIDRIVEN -file "*/rtl/ibex_tracer.sv" -match "*decoded_str*"
+lint_off -rule MULTIDRIVEN -file "*/rtl/ibex_tracer.sv" -match "*data_accessed*"
+
 // Temporary waivers until OpenTitan primitives are lint-clean
 // https://github.com/lowRISC/opentitan/issues/2313
 lint_off -file "*/lowrisc_prim_*/rtl/*.sv"
