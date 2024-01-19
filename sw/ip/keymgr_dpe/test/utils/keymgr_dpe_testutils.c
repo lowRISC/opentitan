@@ -40,6 +40,7 @@ status_t keymgr_dpe_testutils_startup(dif_keymgr_dpe_t *keymgr_dpe,
 
     // Reboot device.
     rstmgr_testutils_reason_clear();
+    LOG_INFO("Triggering software reset");
     TRY(dif_rstmgr_software_device_reset(&rstmgr));
 
     // Wait here until device reset.
@@ -107,6 +108,7 @@ status_t keymgr_dpe_testutils_wait_for_operation_done(
   do {
     TRY(dif_keymgr_dpe_get_status_codes(keymgr_dpe, &status));
   } while (status == 0);
+  LOG_INFO("keymgr_dpe_status_code: 0x%x", status);
   TRY_CHECK(status == kDifKeymgrDpeStatusCodeIdle, "Unexpected status: %x",
             status);
   return OK_STATUS();
