@@ -1213,14 +1213,40 @@ module chip_darjeeling_cw310 #(
     .tl_d2h_i   (dmi_d2h)
   );
 
+  ////////////////
+  // CTN M-to-1 //
+  ////////////////
+
+  tlul_pkg::tl_h2d_t ctn_tl_h2d[2];
+  tlul_pkg::tl_d2h_t ctn_tl_d2h[2];
+
+  tlul_pkg::tl_h2d_t ctn_sm1_to_s1n_tl_h2d;
+  tlul_pkg::tl_d2h_t ctn_sm1_to_s1n_tl_d2h;
+
+  tlul_socket_m1 #(
+    .M         (2),
+    .HReqPass  ({2{1'b1}}),
+    .HRspPass  ({2{1'b1}}),
+    .HReqDepth ({2{4'd0}}),
+    .HRspDepth ({2{4'd0}}),
+    .DReqPass  (1'b1),
+    .DRspPass  (1'b1),
+    .DReqDepth (4'd0),
+    .DRspDepth (4'd0)
+  ) u_ctn_sm1 (
+    .clk_i  (clkmgr_aon_clocks.clk_main_infra),
+    .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
+    .tl_h_i (ctn_tl_h2d),
+    .tl_h_o (ctn_tl_d2h),
+    .tl_d_o (ctn_sm1_to_s1n_tl_h2d),
+    .tl_d_i (ctn_sm1_to_s1n_tl_d2h)
+  );
+
   ////////////////////////////////////////////
   // CTN Address decoding and SRAM Instance //
   ////////////////////////////////////////////
 
   localparam int CtnSramDw = top_pkg::TL_DW + tlul_pkg::DataIntgWidth;
-
-  tlul_pkg::tl_h2d_t ctn_egress_tl_h2d;
-  tlul_pkg::tl_d2h_t ctn_egress_tl_d2h;
 
   tlul_pkg::tl_h2d_t ctn_s1n_tl_h2d[1];
   tlul_pkg::tl_d2h_t ctn_s1n_tl_d2h[1];
@@ -1241,7 +1267,7 @@ module chip_darjeeling_cw310 #(
     // Default steering to generate error response if address is not within the range
     ctn_dev_sel_s1n = 1'b1;
     // Steering to CTN SRAM.
-    if ((ctn_egress_tl_h2d.a_address & ~(TOP_DARJEELING_RAM_CTN_SIZE_BYTES-1)) ==
+    if ((ctn_sm1_to_s1n_tl_h2d.a_address & ~(TOP_DARJEELING_RAM_CTN_SIZE_BYTES-1)) ==
         TOP_DARJEELING_RAM_CTN_BASE_ADDR) begin
       ctn_dev_sel_s1n = 1'd0;
     end
@@ -1256,8 +1282,8 @@ module chip_darjeeling_cw310 #(
   ) u_ctn_s1n (
     .clk_i        (clkmgr_aon_clocks.clk_main_infra),
     .rst_ni       (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
-    .tl_h_i       (ctn_egress_tl_h2d),
-    .tl_h_o       (ctn_egress_tl_d2h),
+    .tl_h_i       (ctn_sm1_to_s1n_tl_h2d),
+    .tl_h_o       (ctn_sm1_to_s1n_tl_d2h),
     .tl_d_o       (ctn_s1n_tl_h2d),
     .tl_d_i       (ctn_s1n_tl_d2h),
     .dev_select_i (ctn_dev_sel_s1n)
@@ -1408,14 +1434,14 @@ module chip_darjeeling_cw310 #(
     .sensor_ctrl_ast_alert_req_i  ( ast_alert_req              ),
     .sensor_ctrl_ast_alert_rsp_o  ( ast_alert_rsp              ),
     .sensor_ctrl_ast_status_i     ( ast_pwst.io_pok            ),
-    .ctn_tl_h2d_o                 ( ctn_egress_tl_h2d          ),
-    .ctn_tl_d2h_i                 ( ctn_egress_tl_d2h          ),
+    .ctn_tl_h2d_o                 ( ctn_tl_h2d[0]              ),
+    .ctn_tl_d2h_i                 ( ctn_tl_d2h[0]              ),
     .soc_gpi_async_o              (                            ),
     .soc_gpo_async_i              ( '0                         ),
     .dma_sys_req_o                (                            ),
     .dma_sys_rsp_i                ( '0                         ),
-    .dma_ctn_tl_h2d_o             (                            ),
-    .dma_ctn_tl_d2h_i             ( tlul_pkg::TL_D2H_DEFAULT   ),
+    .dma_ctn_tl_h2d_o             ( ctn_tl_h2d[1]              ),
+    .dma_ctn_tl_d2h_i             ( ctn_tl_d2h[1]              ),
     .entropy_src_hw_if_req_o      ( entropy_src_hw_if_req      ),
     .entropy_src_hw_if_rsp_i      ( entropy_src_hw_if_rsp      ),
     .calib_rdy_i                  ( ast_init_done              ),
