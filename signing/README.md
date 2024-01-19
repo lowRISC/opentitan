@@ -143,7 +143,7 @@ updates the manifest and public key.  Then, SHA256 digests are computed
 for each binary.
 
 ```console
-bazel build //siging/examples:digests
+bazel build //signing/examples:digests
 ```
 
 The bazel `offline_presigning_artifacts` rule updates the binary with
@@ -175,7 +175,7 @@ secure facility and a signing ceremony would be performed to create the
 detached signatures.
 
 ```console
-bazel build //siging/examples:fake
+bazel build //signing/examples:fake
 ```
 
 The bazel `offline_fake_sign` rule performs the same RSA signing
