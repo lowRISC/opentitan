@@ -67,7 +67,7 @@ impl Der {
         match val {
             Value::Literal(x) => Ok(x),
             Value::Variable(Variable { name, .. }) => bail!(
-                "cannot push value of variable {name}: the Der generator does not support literals"
+                "cannot push value of variable {name}: the DER generator does not support variables"
             ),
         }
     }
