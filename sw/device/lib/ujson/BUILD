@@ -21,7 +21,7 @@ cc_library(
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:status",
         "//sw/device/lib/runtime:print",
-        dual_cc_device_library_of("//sw/device/silicon_creator/lib:crc32"),
+        dual_cc_device_library_of("//sw/device/lib/base:crc32"),
     ],
 )
 

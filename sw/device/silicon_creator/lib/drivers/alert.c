@@ -5,8 +5,8 @@
 #include "sw/device/silicon_creator/lib/drivers/alert.h"
 
 #include "sw/device/lib/base/abs_mmio.h"
+#include "sw/device/lib/base/crc32.h"
 #include "sw/device/lib/base/macros.h"
-#include "sw/device/silicon_creator/lib/crc32.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/error.h"
 

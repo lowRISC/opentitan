@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/base/crc32.h"
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
-#include "sw/device/silicon_creator/lib/crc32.h"
 #include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 
 OTTF_DEFINE_TEST_CONFIG(.console.test_may_clobber = true);

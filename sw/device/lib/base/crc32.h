@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_CRC32_H_
-#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_CRC32_H_
+#ifndef OPENTITAN_SW_DEVICE_LIB_BASE_CRC32_H_
+#define OPENTITAN_SW_DEVICE_LIB_BASE_CRC32_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -72,4 +72,4 @@ uint32_t crc32(const void *buf, size_t len);
 }  // extern "C"
 #endif  // __cplusplus
 
-#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_CRC32_H_
+#endif  // OPENTITAN_SW_DEVICE_LIB_BASE_CRC32_H_

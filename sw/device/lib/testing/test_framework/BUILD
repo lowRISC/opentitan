@@ -28,10 +28,10 @@ cc_library(
     hdrs = ["coverage.h"],
     linkopts = ["-lgcc"],
     deps = [
+        "//sw/device/lib/base:crc32",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
-        "//sw/device/silicon_creator/lib:crc32",
         "//third_party/llvm_compiler_rt",
     ],
 )

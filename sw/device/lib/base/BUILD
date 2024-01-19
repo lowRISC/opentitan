@@ -2,15 +2,84 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:cross_platform.bzl", "dual_cc_library", "dual_inputs")
+load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library", "dual_inputs")
 load(
     "//rules/opentitan:defs.bzl",
     "EARLGREY_TEST_ENVS",
     "cw310_params",
     "opentitan_test",
+    "verilator_params",
 )
 
 package(default_visibility = ["//visibility:public"])
+
+dual_cc_library(
+    name = "crc32",
+    srcs = dual_inputs(
+        device = ["crc32.c"],
+        host = ["mock_crc32.cc"],
+    ),
+    hdrs = dual_inputs(
+        host = ["mock_crc32.h"],
+        shared = ["crc32.h"],
+    ),
+    # This library is a dependancy of the ujson library.
+    visibility = ["//sw/device/lib/ujson:__pkg__"],
+    deps = dual_inputs(
+        host = [
+            ":global_mock",
+            "@googletest//:gtest",
+        ],
+        shared = [
+            ":memory",
+            ":macros",
+        ],
+    ),
+)
+
+cc_test(
+    name = "crc32_unittest",
+    srcs = ["crc32_unittest.cc"],
+    deps = [
+        dual_cc_device_library_of(":crc32"),
+        "@googletest//:gtest_main",
+    ],
+)
+
+opentitan_test(
+    name = "crc32_functest",
+    srcs = ["crc32_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        ":crc32",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
+    name = "crc32_perftest",
+    srcs = ["crc32_perftest.c"],
+    cw310 = cw310_params(
+        tags = [
+            "manual",
+        ],
+    ),
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+    },
+    deps = [
+        ":crc32",
+        ":macros",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/testing/test_framework:ottf_test_config",
+    ],
+)
 
 cc_library(
     name = "global_mock",

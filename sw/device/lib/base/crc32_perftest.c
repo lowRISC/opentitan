@@ -5,13 +5,13 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "sw/device/lib/base/crc32.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
-#include "sw/device/silicon_creator/lib/crc32.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
