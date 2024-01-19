@@ -20,6 +20,7 @@ opentitan_test(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:i2c",
         "//sw/device/lib/dif:spi_host",
+        "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:i2c_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
