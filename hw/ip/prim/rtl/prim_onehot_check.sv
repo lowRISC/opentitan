@@ -137,19 +137,20 @@ module prim_onehot_check #(
     assign addr_err = 1'b0;
   end
 
-  // This logic that will be assign to one, when user adds macro
-  // ASSERT_PRIM_ONEHOT_ERROR_TRIGGER_ALERT to check the error with alert, in case that
-  // prim_onehot_check is used in design without adding this assertion check.
-  `ifdef INC_ASSERT
-  `ifndef PRIM_DEFAULT_IMPL
-    `define PRIM_DEFAULT_IMPL prim_pkg::ImplGeneric
-  `endif
-  parameter prim_pkg::impl_e Impl = `PRIM_DEFAULT_IMPL;
-
+  // We want to know that a block that instantiates prim_onehot_check will raise an alert if we set
+  // our err_o output.
+  //
+  // For confidence that this is true, we use the scheme described in "Security Countermeasure
+  // Verification Framework". We expect a user of prim_onehot_check to use the
+  // ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT macro to check that they will indeed raise an alert if we
+  // set err_o.
+  //
+  // That macro is also designed to drive our local unused_assert_connected variable to true. We add
+  // an assertion locally that checks (just after the start of time) that it is indeed true. This
+  // gives us confidence that the user has bound up the alert correctly.
+`ifdef INC_ASSERT
   logic unused_assert_connected;
-  // TODO(#13337): only check generic for now. The path of this prim in other Impl may differ
-  if (Impl == prim_pkg::ImplGeneric) begin : gen_generic
-    `ASSERT_INIT_NET(AssertConnected_A, unused_assert_connected === 1'b1 || !EnableAlertTriggerSVA)
-  end
-  `endif
+  `ASSERT_INIT_NET(AssertConnected_A, unused_assert_connected === 1'b1 || !EnableAlertTriggerSVA)
+`endif
+
 endmodule : prim_onehot_check
