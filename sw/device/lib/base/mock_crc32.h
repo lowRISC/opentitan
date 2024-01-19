@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_MOCK_CRC32_H_
-#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_MOCK_CRC32_H_
+#ifndef OPENTITAN_SW_DEVICE_LIB_BASE_MOCK_CRC32_H_
+#define OPENTITAN_SW_DEVICE_LIB_BASE_MOCK_CRC32_H_
 
+#include "sw/device/lib/base/crc32.h"
 #include "sw/device/lib/base/global_mock.h"
-#include "sw/device/silicon_creator/lib/crc32.h"
 
 namespace rom_test {
 namespace internal {
@@ -30,4 +30,4 @@ using MockCrc32 = testing::StrictMock<internal::MockCrc32>;
 
 }  // namespace rom_test
 
-#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_MOCK_CRC32_H_
+#endif  // OPENTITAN_SW_DEVICE_LIB_BASE_MOCK_CRC32_H_
