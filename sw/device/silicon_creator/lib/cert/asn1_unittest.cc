@@ -15,14 +15,14 @@
  * the content of another constant array.
  * @param array Pointer to an array.
  * @param size Size in bytes of the array.
- * @param const_expected_result Pointer to an expected result: sizeof() must
- * return the correct size.
+ * @param expected_result An std::array or vector containing the expected
+ * result.
  */
-#define EXPECT_EQ_CONST_ARRAY(array, size, const_expected_result) \
-  do {                                                            \
-    EXPECT_EQ(size, sizeof(const_expected_result));               \
-    EXPECT_EQ(0, memcmp(array, const_expected_result,             \
-                        sizeof(const_expected_result)));          \
+#define EXPECT_EQ_CONST_ARRAY(array, array_size, expected_result)              \
+  do {                                                                         \
+    EXPECT_EQ(array_size, expected_result.size());                             \
+    EXPECT_EQ(true, std::equal(expected_result.begin(), expected_result.end(), \
+                               array));                                        \
   } while (0)
 
 namespace asn1_unittest {
@@ -58,9 +58,9 @@ TEST(Asn1, PushByte) {
 TEST(Asn1, PushBytes) {
   asn1_state_t state;
   uint8_t buf[3] = {0xff, 0xff, 0xff};
-  const uint8_t kData[] = {0xa5, 0xb6};
+  const std::array<uint8_t, 2> kData = {0xa5, 0xb6};
   EXPECT_EQ(asn1_start(&state, buf, sizeof(buf)), kErrorOk);
-  EXPECT_EQ(asn1_push_bytes(&state, kData, sizeof(kData)), kErrorOk);
+  EXPECT_EQ(asn1_push_bytes(&state, kData.begin(), kData.size()), kErrorOk);
   size_t out_size = 42;
   EXPECT_EQ(asn1_finish(&state, &out_size), kErrorOk);
   EXPECT_EQ_CONST_ARRAY(buf, out_size, kData);
@@ -87,7 +87,7 @@ TEST(Asn1, PushEmptyTag) {
   EXPECT_EQ(asn1_finish_tag(&tag), kErrorOk);
   size_t out_size;
   EXPECT_EQ(asn1_finish(&state, &out_size), kErrorOk);
-  const uint8_t kExpectedResult[] = {
+  const std::array<uint8_t, 2> kExpectedResult = {
       0x30, 0x00,  // Identifier octet, length, no contents.
   };
   EXPECT_EQ_CONST_ARRAY(buf, out_size, kExpectedResult);
@@ -102,7 +102,7 @@ TEST(Asn1, PushBoolean) {
   EXPECT_EQ(asn1_push_bool(&state, false), kErrorOk);
   size_t out_size;
   EXPECT_EQ(asn1_finish(&state, &out_size), kErrorOk);
-  const uint8_t kExpectedResult[] = {
+  const std::array<uint8_t, 6> kExpectedResult = {
       // Identifier octet (universal, boolean), length, content (can be any
       // nonzero value, the library uses 0xff).
       0x01, 0x01, 0xff, 0x01, 0x01, 0x00,
@@ -123,7 +123,7 @@ TEST(Asn1, PushInt32) {
   EXPECT_EQ(asn1_push_int32(&state, kAsn1TagNumberInteger, -3000), kErrorOk);
   size_t out_size;
   EXPECT_EQ(asn1_finish(&state, &out_size), kErrorOk);
-  const uint8_t kExpectedResult[] = {
+  const std::array<uint8_t, 19> kExpectedResult = {
       // Identifier octet (universal, integer), length, content (minimal
       // encoding, always uses one byte at least).
       0x02, 0x01, 0x0, 0x02, 0x02, 0x12, 0x34,
@@ -158,7 +158,7 @@ TEST(Asn1, PushIntUnsigned) {
             kErrorOk);
   size_t out_size;
   EXPECT_EQ(asn1_finish(&state, &out_size), kErrorOk);
-  const uint8_t kExpectedResult[] = {
+  const std::array<uint8_t, 12> kExpectedResult = {
       // Identifier octet (universal, integer), length, content (minimal
       // encoding, always uses one byte at least).
       0x02, 0x01, 0x0,  0x02, 0x02, 0x12,
@@ -189,7 +189,7 @@ TEST(Asn1, PushIntSigned) {
             kErrorOk);
   size_t out_size;
   EXPECT_EQ(asn1_finish(&state, &out_size), kErrorOk);
-  const uint8_t kExpectedResult[] = {
+  const std::array<uint8_t, 10> kExpectedResult = {
       // Identifier octet (universal, integer), length, content (minimal
       // encoding, always uses one byte at least).
       0x02, 0x01, 0x0, 0x02, 0x01, 0xff, 0x02, 0x02, 0xf4, 0x48,
@@ -217,7 +217,7 @@ TEST(Asn1, PushStrings) {
   size_t out_size;
   EXPECT_EQ(asn1_finish(&state, &out_size), kErrorOk);
   // clang-format off
-  const uint8_t kExpectedResult[] = {
+  const std::array<uint8_t, 22> kExpectedResult = {
       // Identifier octet (universal, printable string), length, content.
       0x13, 0x07, 0x6c, 0x6f, 0x77, 0x52, 0x49, 0x53, 0x43,
       // Identifier octet (universal, integer), length, content.
@@ -290,7 +290,7 @@ TEST(Asn1, PushRawOid) {
   EXPECT_EQ(asn1_push_oid_raw(&state, kRawOid, sizeof(kRawOid)), kErrorOk);
   size_t out_size;
   EXPECT_EQ(asn1_finish(&state, &out_size), kErrorOk);
-  const uint8_t kExpectedResult[] = {
+  const std::array<uint8_t, 5> kExpectedResult = {
       // Identifier octet (universal, OID), length, content (encoded as per
       // X.690 section 8.19.5).
       0x06, 0x03, 0x88, 0x037, 0x03,
@@ -309,7 +309,7 @@ TEST(Asn1, PushHexStrings) {
             kErrorOk);
   size_t out_size;
   EXPECT_EQ(asn1_finish(&state, &out_size), kErrorOk);
-  const uint8_t kExpectedResult[] = {
+  const std::array<uint8_t, 10> kExpectedResult = {
       // Identifier octet (universal, printable string), length, content.
       0x13, 0x08, 0x30, 0x31, 0x32, 0x33, 0x61, 0x62, 0x65, 0x66,
   };
