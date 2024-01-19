@@ -203,6 +203,8 @@ module mbx
     .doe_async_msg_en_o                  ( doe_async_msg_en                   ),
     .doe_async_msg_set_i                 ( doe_async_msg_set                  ),
     .doe_async_msg_clear_i               ( doe_async_msg_clear                ),
+    // Abort clearing from the host
+    .sysif_abort_ack_i                   ( hostif_control_abort_clear         ),
     // Access to the control register
     .sysif_control_abort_set_o           ( sysif_control_abort_set            ),
     .sysif_control_go_set_o              ( sysif_control_go_set               ),
