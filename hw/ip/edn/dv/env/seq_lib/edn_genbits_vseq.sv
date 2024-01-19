@@ -186,8 +186,8 @@ class edn_genbits_vseq extends edn_base_vseq;
       ral.ctrl.auto_req_mode.set(MuBi4False);
       csr_update(.csr(ral.ctrl));
       mode = edn_env_pkg::SwMode;
-      // Give the hardware time to quiesce
-      csr_spinwait(.ptr(ral.main_sm_state), .exp_data(edn_pkg::Idle), .backdoor(1'b1));
+      // Wait until the EDN enters the Idle state and finally the SWPortMode.
+      csr_spinwait(.ptr(ral.main_sm_state), .exp_data(edn_pkg::SWPortMode), .backdoor(1'b1));
       `DV_CHECK_EQ(cfg.m_csrng_agent_cfg.generate_between_reseeds_cnt, num_reqs_between_reseeds)
       // If the endpoint agents still expect more data, send another generate command
       if (total_glen > cfg.m_csrng_agent_cfg.generate_cnt*cfg.glen_auto_mode) begin
