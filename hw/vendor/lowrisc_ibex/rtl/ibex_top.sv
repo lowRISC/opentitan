@@ -140,21 +140,21 @@ module ibex_top import ibex_pkg::*; #(
   input logic                          scan_rst_ni
 );
 
-  localparam bit          Lockstep          = SecureIbex;
-  localparam bit          ResetAll          = Lockstep;
-  localparam bit          DummyInstructions = SecureIbex;
-  localparam bit          RegFileECC        = SecureIbex;
-  localparam bit          RegFileWrenCheck  = SecureIbex;
-  localparam int unsigned RegFileDataWidth  = RegFileECC ? 32 + 7 : 32;
-  localparam bit          MemECC            = SecureIbex;
-  localparam int unsigned MemDataWidth      = MemECC ? 32 + 7 : 32;
+  localparam bit          Lockstep              = SecureIbex;
+  localparam bit          ResetAll              = Lockstep;
+  localparam bit          DummyInstructions     = SecureIbex;
+  localparam bit          RegFileECC            = SecureIbex;
+  localparam bit          RegFileWrenCheck      = SecureIbex;
+  localparam bit          RegFileRdataMuxCheck  = SecureIbex;
+  localparam int unsigned RegFileDataWidth      = RegFileECC ? 32 + 7 : 32;
+  localparam bit          MemECC                = SecureIbex;
+  localparam int unsigned MemDataWidth          = MemECC ? 32 + 7 : 32;
   // Icache parameters
   localparam int unsigned BusSizeECC        = ICacheECC ? (BUS_SIZE + 7) : BUS_SIZE;
   localparam int unsigned LineSizeECC       = BusSizeECC * IC_LINE_BEATS;
   localparam int unsigned TagSizeECC        = ICacheECC ? (IC_TAG_SIZE + 6) : IC_TAG_SIZE;
   // Scrambling Parameter
   localparam int unsigned NumAddrScrRounds  = ICacheScramble ? 2 : 0;
-  localparam int unsigned NumDiffRounds     = NumAddrScrRounds;
 
   // Clock signals
   logic                        clk;
@@ -421,6 +421,7 @@ module ibex_top import ibex_pkg::*; #(
       .DummyInstructions(DummyInstructions),
       // SEC_CM: DATA_REG_SW.GLITCH_DETECT
       .WrenCheck        (RegFileWrenCheck),
+      .RdataMuxCheck    (RegFileRdataMuxCheck),
       .WordZeroVal      (RegFileDataWidth'(prim_secded_pkg::SecdedInv3932ZeroWord))
     ) register_file_i (
       .clk_i (clk),
@@ -446,6 +447,7 @@ module ibex_top import ibex_pkg::*; #(
       .DummyInstructions(DummyInstructions),
       // SEC_CM: DATA_REG_SW.GLITCH_DETECT
       .WrenCheck        (RegFileWrenCheck),
+      .RdataMuxCheck    (RegFileRdataMuxCheck),
       .WordZeroVal      (RegFileDataWidth'(prim_secded_pkg::SecdedInv3932ZeroWord))
     ) register_file_i (
       .clk_i (clk),
@@ -471,6 +473,7 @@ module ibex_top import ibex_pkg::*; #(
       .DummyInstructions(DummyInstructions),
       // SEC_CM: DATA_REG_SW.GLITCH_DETECT
       .WrenCheck        (RegFileWrenCheck),
+      .RdataMuxCheck    (RegFileRdataMuxCheck),
       .WordZeroVal      (RegFileDataWidth'(prim_secded_pkg::SecdedInv3932ZeroWord))
     ) register_file_i (
       .clk_i (clk),
@@ -561,9 +564,7 @@ module ibex_top import ibex_pkg::*; #(
           .Depth            (IC_NUM_LINES),
           .DataBitsPerMask  (TagSizeECC),
           .EnableParity     (0),
-          .DiffWidth        (TagSizeECC),
-          .NumAddrScrRounds (NumAddrScrRounds),
-          .NumDiffRounds    (NumDiffRounds)
+          .NumAddrScrRounds (NumAddrScrRounds)
         ) tag_bank (
           .clk_i,
           .rst_ni,
@@ -595,9 +596,7 @@ module ibex_top import ibex_pkg::*; #(
           .DataBitsPerMask    (LineSizeECC),
           .ReplicateKeyStream (1),
           .EnableParity       (0),
-          .DiffWidth          (LineSizeECC),
-          .NumAddrScrRounds   (NumAddrScrRounds),
-          .NumDiffRounds      (NumDiffRounds)
+          .NumAddrScrRounds   (NumAddrScrRounds)
         ) data_bank (
           .clk_i,
           .rst_ni,
@@ -1301,4 +1300,33 @@ module ibex_top import ibex_pkg::*; #(
     crash_dump_o.exception_pc === u_ibex_core.cs_registers_i.mepc_q)
   `ASSERT(CrashDumpExceptionAddrConn,
     crash_dump_o.exception_addr === u_ibex_core.cs_registers_i.mtval_q)
+
+  // Explicit INC_ASSERT due to instantiation of prim_secded_inv_39_32_dec below that is only used
+  // by assertions
+  `ifdef INC_ASSERT
+  if (MemECC) begin : g_mem_ecc_asserts
+    logic [1:0] data_ecc_err, instr_ecc_err;
+
+    // Check alerts from memory integrity failures
+
+    prim_secded_inv_39_32_dec u_data_intg_dec (
+      .data_i     (data_rdata_core),
+      .data_o     (),
+      .syndrome_o (),
+      .err_o      (data_ecc_err)
+    );
+    `ASSERT(MajorAlertOnDMemIntegrityErr,
+      data_rvalid_i && (|data_ecc_err) |-> ##[0:5] alert_major_bus_o)
+
+    prim_secded_inv_39_32_dec u_instr_intg_dec (
+      .data_i     (instr_rdata_core),
+      .data_o     (),
+      .syndrome_o (),
+      .err_o      (instr_ecc_err)
+    );
+    // Check alerts from memory integrity failures
+    `ASSERT(MajorAlertOnIMemIntegrityErr,
+      instr_rvalid_i && (|instr_ecc_err) |-> ##[0:5] alert_major_bus_o)
+  end
+  `endif
 endmodule

@@ -54,7 +54,7 @@ class ibex_asm_program_gen extends riscv_asm_program_gen;
 
     riscv_csr_instr::create_csr_filter(cfg);
 
-    if ($value$plusargs("disable_pmp_exception_handler", disable_pmp_exception_handler) &&
+    if ($value$plusargs("disable_pmp_exception_handler=%d", disable_pmp_exception_handler) &&
         disable_pmp_exception_handler) begin
       cfg.pmp_cfg.enable_pmp_exception_handler = 0;
     end

@@ -22,6 +22,7 @@
       - "vcs -file <cwd>/vcs.compile.option.f
               +incdir+<setting>
               +incdir+<user_extension>
+             +vcs+lic+wait
              -f <cwd>/files.f -full64
              -l <out>/compile.log
              -LDFLAGS '-Wl,--no-as-needed'
@@ -53,7 +54,7 @@
 - tool: questa
   compile:
     cmd:
-      - "vmap mtiUvm $QUESTA_HOME/questasim/uvm-1.2"
+      - "vmap mtiUvm $QUESTA_HOME/uvm-1.2"
       - "vlog -64
         +incdir+<setting>
         +incdir+<user_extension>

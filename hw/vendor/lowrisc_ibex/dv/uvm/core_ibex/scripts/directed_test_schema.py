@@ -62,7 +62,8 @@ class DConfig(pydantic.BaseModel):  # noqa
     # DConfig.VALIDATORS #
     ##################################
 
-    @pydantic.validator('ld_script', 'includes', pre=True)
+    @pydantic.field_validator('ld_script', 'includes', mode='before')
+    @classmethod
     def _make_valid_paths(cls, v: Any) -> pathlib.Path:
         return make_valid_pathlib_path(cls, v)
 
@@ -124,20 +125,20 @@ class DirectedTestsYaml(pydantic.BaseModel):  # noqa
             raise ValueError(f"Path object not found in filesystem : {v}")
         return v
 
-    @pydantic.root_validator()
-    def test_config_must_exist(cls, values):
-        """Check that if a test specifies a common config, it exists in the list available."""
-        configs = [c.config for c in values.get('configs')]
-        for test in values.get('tests'):
-            if test.config not in configs:
+    @pydantic.model_validator(mode='after')
+    def test_config_must_exist(self):
+        """A test may only specify common configs in the available list."""
+        config_names = {c.config for c in self.configs}
+        for test in self.tests:
+            if test.config not in config_names:
                 raise ValueError(
                     f"Test '{test.test}' gave the config '{test.config}', but "
                     "this config does not exist in the file "
-                    f"'{values.get('yaml')}'. Configs detected : {configs} \n")
-        return values
+                    f"'{self.yaml}'. Configs detected : {self.configs} \n")
+        return self
 
-    @pydantic.root_validator()
-    def all_paths_must_exist(cls, values):
+    @pydantic.model_validator(mode='after')
+    def all_paths_must_exist(self):
         """Check that all fields specifying files exist on disk.
 
         We need to check all fields recursively for pathlib.Path fields,
@@ -145,18 +146,20 @@ class DirectedTestsYaml(pydantic.BaseModel):  # noqa
         """
 
         def check_model_path_fields_exist(model):
-            for f in filter(lambda f: (f.type_ == pathlib.Path),
-                            model.__fields__.values()):
-                p = validate_path_exists(getattr(model, f.name), values.get('yaml'))
-                setattr(model, f.name, p)
+            for k, f in model.__fields__.items():
+                if f.annotation != pathlib.Path:
+                    continue
 
-        for c in values.get('configs'):
+                p = validate_path_exists(getattr(model, k), self.yaml)
+                setattr(model, k, p)
+
+        for c in self.configs:
             check_model_path_fields_exist(c)
 
-        for t in values.get('tests'):
+        for t in self.tests:
             check_model_path_fields_exist(t)
 
-        return values
+        return self
 
 
 def import_model(directed_test_yaml: pathlib.Path) -> dict:

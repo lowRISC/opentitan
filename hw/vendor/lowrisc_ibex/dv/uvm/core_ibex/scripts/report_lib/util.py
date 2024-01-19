@@ -96,7 +96,7 @@ def parse_xcelium_cov_report(cov_report: str) -> Dict[str, Dict[str, Dict[str, i
                 metric_info.append((metric_info_match.group(1),
                     metric_info_match.group(2)))
 
-            # Skip header seperator line
+            # Skip header separator line
             metrics_start_line = line_no + 2
 
     if metrics_start_line == -1:
