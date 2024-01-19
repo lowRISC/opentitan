@@ -51,7 +51,7 @@
 `include "chip_sw_soc_proxy_external_wakeup_vseq.sv"
 `include "chip_sw_soc_proxy_gpio_vseq.sv"
 // TODO(#462): Adapt keymgr tests to keymgr_dpe
-// `include "chip_sw_keymgr_key_derivation_vseq.sv"
+`include "chip_sw_keymgr_dpe_key_derivation_vseq.sv"
 // `include "chip_sw_keymgr_sideload_kmac_vseq.sv"
 // `include "chip_sw_keymgr_sideload_aes_vseq.sv"
 `include "chip_sw_ast_clk_outputs_vseq.sv"
