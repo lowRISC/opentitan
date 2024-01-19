@@ -373,7 +373,7 @@ silicon(
     }),
     rsa_key = select({
         "//signing:test_keys": {"//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_test_private_key_0": "test_key_0"},
-        "//conditions:default": {"//sw/device/silicon_creator/rom_ext/prodc/keys:keyset": "earlgrey_z0_prodc_1"},
+        "//conditions:default": {"//sw/device/silicon_creator/rom_ext/prodc/keys:keyset": "earlgrey_z1_prodc_1"},
     }),
 )
 
