@@ -104,6 +104,104 @@ status_t rsa_decrypt_finalize(const otcrypto_hash_mode_t hash_mode,
                               size_t plaintext_max_bytelen, uint8_t *plaintext,
                               size_t *plaintext_bytelen);
 
+/**
+ * Starts encrypting a message with RSA-3072; returns immediately.
+ *
+ * The key exponent must be F4=65537; no other exponents are supported.  The
+ * padding scheme is OAEP, and the mask generation function (MGF) is MGF1 with
+ * the hash function indicated by `hash_mode` and a salt the same length as the
+ * hash function output.
+ *
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ *
+ * @param public_key RSA public key.
+ * @param hash_mode Hash function to use for message encoding.
+ * @param message Message to encrypt.
+ * @param message_bytelen Message length in bytes.
+ * @param label Label for OAEP padding.
+ * @param label_bytelen Length of label in bytes.
+ * @return Result of the operation (OK or error).
+ */
+OT_WARN_UNUSED_RESULT
+status_t rsa_encrypt_3072_start(const rsa_3072_public_key_t *public_key,
+                                const otcrypto_hash_mode_t hash_mode,
+                                const uint8_t *message, size_t message_bytelen,
+                                const uint8_t *label, size_t label_bytelen);
+
+/**
+ * Waits for an RSA-3072 encryption to complete.
+ *
+ * Should be invoked only after a `rsa_encrypt_3072_start` call. Blocks until
+ * OTBN is done processing.
+ *
+ * @param[out] ciphertext Encrypted message.
+ * @return Result of the operation (OK or error).
+ */
+OT_WARN_UNUSED_RESULT
+status_t rsa_encrypt_3072_finalize(rsa_3072_int_t *ciphertext);
+
+/**
+ * Start decrypting a message with RSA-3072; returns immediately.
+ *
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ *
+ * @param private_key RSA private key.
+ * @param ciphertext Encrypted message.
+ * @return Result of the operation (OK or error).
+ */
+OT_WARN_UNUSED_RESULT
+status_t rsa_decrypt_3072_start(const rsa_3072_private_key_t *private_key,
+                                const rsa_3072_int_t *ciphertext);
+
+/**
+ * Starts encrypting a message with RSA-4096; returns immediately.
+ *
+ * The key exponent must be F4=65537; no other exponents are supported.  The
+ * padding scheme is OAEP, and the mask generation function (MGF) is MGF1 with
+ * the hash function indicated by `hash_mode` and a salt the same length as the
+ * hash function output.
+ *
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ *
+ * @param public_key RSA public key.
+ * @param hash_mode Hash function to use for message encoding.
+ * @param message Message to encrypt.
+ * @param message_bytelen Message length in bytes.
+ * @param label Label for OAEP padding.
+ * @param label_bytelen Length of label in bytes.
+ * @return Result of the operation (OK or error).
+ */
+OT_WARN_UNUSED_RESULT
+status_t rsa_encrypt_4096_start(const rsa_4096_public_key_t *public_key,
+                                const otcrypto_hash_mode_t hash_mode,
+                                const uint8_t *message, size_t message_bytelen,
+                                const uint8_t *label, size_t label_bytelen);
+
+/**
+ * Waits for an RSA-4096 encryption to complete.
+ *
+ * Should be invoked only after a `rsa_encrypt_4096_start` call. Blocks until
+ * OTBN is done processing.
+ *
+ * @param[out] ciphertext Encrypted message.
+ * @return Result of the operation (OK or error).
+ */
+OT_WARN_UNUSED_RESULT
+status_t rsa_encrypt_4096_finalize(rsa_4096_int_t *ciphertext);
+
+/**
+ * Start decrypting a message with RSA-4096; returns immediately.
+ *
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ *
+ * @param private_key RSA private key.
+ * @param ciphertext Encrypted message.
+ * @return Result of the operation (OK or error).
+ */
+OT_WARN_UNUSED_RESULT
+status_t rsa_decrypt_4096_start(const rsa_4096_private_key_t *private_key,
+                                const rsa_4096_int_t *ciphertext);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
