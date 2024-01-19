@@ -813,10 +813,18 @@ otcrypto_status_t otcrypto_rsa_encrypt_async_start(
                                     label.data, label.len);
     }
     case kOtcryptoRsaSize3072: {
-      return OTCRYPTO_NOT_IMPLEMENTED;
+      HARDENED_CHECK_EQ(size, kOtcryptoRsaSize3072);
+      HARDENED_CHECK_EQ(public_key->key_length, sizeof(rsa_3072_public_key_t));
+      rsa_3072_public_key_t *pk = (rsa_3072_public_key_t *)public_key->key;
+      return rsa_encrypt_3072_start(pk, hash_mode, message.data, message.len,
+                                    label.data, label.len);
     }
     case kOtcryptoRsaSize4096: {
-      return OTCRYPTO_NOT_IMPLEMENTED;
+      HARDENED_CHECK_EQ(size, kOtcryptoRsaSize4096);
+      HARDENED_CHECK_EQ(public_key->key_length, sizeof(rsa_4096_public_key_t));
+      rsa_4096_public_key_t *pk = (rsa_4096_public_key_t *)public_key->key;
+      return rsa_encrypt_4096_start(pk, hash_mode, message.data, message.len,
+                                    label.data, label.len);
     }
     default:
       // Invalid key size. Since the size was inferred, should be unreachable.
@@ -844,10 +852,16 @@ otcrypto_status_t otcrypto_rsa_encrypt_async_finalize(
       return rsa_encrypt_2048_finalize(ctext);
     }
     case kRsa3072NumWords: {
-      return OTCRYPTO_NOT_IMPLEMENTED;
+      HARDENED_CHECK_EQ(ciphertext->len * sizeof(uint32_t),
+                        sizeof(rsa_3072_int_t));
+      rsa_3072_int_t *ctext = (rsa_3072_int_t *)ciphertext->data;
+      return rsa_encrypt_3072_finalize(ctext);
     }
     case kRsa4096NumWords: {
-      return OTCRYPTO_NOT_IMPLEMENTED;
+      HARDENED_CHECK_EQ(ciphertext->len * sizeof(uint32_t),
+                        sizeof(rsa_4096_int_t));
+      rsa_4096_int_t *ctext = (rsa_4096_int_t *)ciphertext->data;
+      return rsa_encrypt_4096_finalize(ctext);
     }
     default:
       return OTCRYPTO_BAD_ARGS;
@@ -902,10 +916,28 @@ otcrypto_status_t otcrypto_rsa_decrypt_async_start(
       return rsa_decrypt_2048_start(sk, ctext);
     }
     case kOtcryptoRsaSize3072: {
-      return OTCRYPTO_NOT_IMPLEMENTED;
+      HARDENED_CHECK_EQ(size, kOtcryptoRsaSize3072);
+      HARDENED_CHECK_EQ(private_key->keyblob_length,
+                        sizeof(rsa_3072_private_key_t));
+      if (ciphertext.len != kRsa3072NumWords) {
+        return OTCRYPTO_BAD_ARGS;
+      }
+      rsa_3072_private_key_t *sk =
+          (rsa_3072_private_key_t *)private_key->keyblob;
+      rsa_3072_int_t *ctext = (rsa_3072_int_t *)ciphertext.data;
+      return rsa_decrypt_3072_start(sk, ctext);
     }
     case kOtcryptoRsaSize4096: {
-      return OTCRYPTO_NOT_IMPLEMENTED;
+      HARDENED_CHECK_EQ(size, kOtcryptoRsaSize4096);
+      HARDENED_CHECK_EQ(private_key->keyblob_length,
+                        sizeof(rsa_4096_private_key_t));
+      if (ciphertext.len != kRsa4096NumWords) {
+        return OTCRYPTO_BAD_ARGS;
+      }
+      rsa_4096_private_key_t *sk =
+          (rsa_4096_private_key_t *)private_key->keyblob;
+      rsa_4096_int_t *ctext = (rsa_4096_int_t *)ciphertext.data;
+      return rsa_decrypt_4096_start(sk, ctext);
     }
     default:
       // Invalid key size. Since the size was inferred, should be unreachable.

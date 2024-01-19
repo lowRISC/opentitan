@@ -101,3 +101,57 @@ status_t rsa_decrypt_finalize(const otcrypto_hash_mode_t hash_mode,
   HARDENED_TRAP();
   return OTCRYPTO_FATAL_ERR;
 }
+
+status_t rsa_encrypt_3072_start(const rsa_3072_public_key_t *public_key,
+                                const otcrypto_hash_mode_t hash_mode,
+                                const uint8_t *message, size_t message_bytelen,
+                                const uint8_t *label, size_t label_bytelen) {
+  // Encode the message.
+  rsa_3072_int_t encoded_message;
+  HARDENED_TRY(rsa_padding_oaep_encode(
+      hash_mode, message, message_bytelen, label, label_bytelen,
+      ARRAYSIZE(encoded_message.data), encoded_message.data));
+
+  // Start computing (encoded_message ^ e) mod n with a variable-time
+  // exponentiation.
+  return rsa_modexp_vartime_3072_start(&encoded_message, public_key->e,
+                                       &public_key->n);
+}
+
+status_t rsa_encrypt_3072_finalize(rsa_3072_int_t *ciphertext) {
+  return rsa_modexp_3072_finalize(ciphertext);
+}
+
+status_t rsa_decrypt_3072_start(const rsa_3072_private_key_t *private_key,
+                                const rsa_3072_int_t *ciphertext) {
+  // Start computing (ciphertext ^ d) mod n.
+  return rsa_modexp_consttime_3072_start(ciphertext, &private_key->d,
+                                         &private_key->n);
+}
+
+status_t rsa_encrypt_4096_start(const rsa_4096_public_key_t *public_key,
+                                const otcrypto_hash_mode_t hash_mode,
+                                const uint8_t *message, size_t message_bytelen,
+                                const uint8_t *label, size_t label_bytelen) {
+  // Encode the message.
+  rsa_4096_int_t encoded_message;
+  HARDENED_TRY(rsa_padding_oaep_encode(
+      hash_mode, message, message_bytelen, label, label_bytelen,
+      ARRAYSIZE(encoded_message.data), encoded_message.data));
+
+  // Start computing (encoded_message ^ e) mod n with a variable-time
+  // exponentiation.
+  return rsa_modexp_vartime_4096_start(&encoded_message, public_key->e,
+                                       &public_key->n);
+}
+
+status_t rsa_encrypt_4096_finalize(rsa_4096_int_t *ciphertext) {
+  return rsa_modexp_4096_finalize(ciphertext);
+}
+
+status_t rsa_decrypt_4096_start(const rsa_4096_private_key_t *private_key,
+                                const rsa_4096_int_t *ciphertext) {
+  // Start computing (ciphertext ^ d) mod n.
+  return rsa_modexp_consttime_4096_start(ciphertext, &private_key->d,
+                                         &private_key->n);
+}
