@@ -60,6 +60,7 @@ def process_whisper_sim_log(whisper_log, csv, full_trace=0):
                     whisper_instr = m.group("instr").replace("\. +  ", "")
                     whisper_instr = whisper_instr.replace("\. - ", "-")
                     rv_instr_trace = RiscvInstructionTraceEntry()
+                    rv_instr_trace.pc = m.group("pc")
                     rv_instr_trace.instr_str = whisper_instr
                     rv_instr_trace.binary = m.group("bin")
                     reg = "x" + str(int(m.group("reg"), 16))

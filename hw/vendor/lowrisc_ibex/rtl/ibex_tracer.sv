@@ -107,19 +107,8 @@ module ibex_tracer (
     end
   end
 
-  function automatic void printbuffer_dumpline();
+  function automatic void printbuffer_dumpline(int fh);
     string rvfi_insn_str;
-
-    if (file_handle == 32'h0) begin
-      string file_name_base = "trace_core";
-      void'($value$plusargs("ibex_tracer_file_base=%s", file_name_base));
-      $sformat(file_name, "%s_%h.log", file_name_base, hart_id_i);
-
-      $display("%m: Writing execution trace to %s", file_name);
-      file_handle = $fopen(file_name, "w");
-      $fwrite(file_handle,
-              "Time\tCycle\tPC\tInsn\tDecoded instruction\tRegister and memory contents\n");
-    end
 
     // Write compressed instructions as four hex digits (16 bit word), and
     // uncompressed ones as 8 hex digits (32 bit words).
@@ -129,33 +118,33 @@ module ibex_tracer (
       rvfi_insn_str = $sformatf("%h", rvfi_insn);
     end
 
-    $fwrite(file_handle, "%15t\t%d\t%h\t%s\t%s\t",
+    $fwrite(fh, "%15t\t%d\t%h\t%s\t%s\t",
             $time, cycle, rvfi_pc_rdata, rvfi_insn_str, decoded_str);
 
     if ((data_accessed & RS1) != 0) begin
-      $fwrite(file_handle, " %s:0x%08x", reg_addr_to_str(rvfi_rs1_addr), rvfi_rs1_rdata);
+      $fwrite(fh, " %s:0x%08x", reg_addr_to_str(rvfi_rs1_addr), rvfi_rs1_rdata);
     end
     if ((data_accessed & RS2) != 0) begin
-      $fwrite(file_handle, " %s:0x%08x", reg_addr_to_str(rvfi_rs2_addr), rvfi_rs2_rdata);
+      $fwrite(fh, " %s:0x%08x", reg_addr_to_str(rvfi_rs2_addr), rvfi_rs2_rdata);
     end
     if ((data_accessed & RS3) != 0) begin
-      $fwrite(file_handle, " %s:0x%08x", reg_addr_to_str(rvfi_rs3_addr), rvfi_rs3_rdata);
+      $fwrite(fh, " %s:0x%08x", reg_addr_to_str(rvfi_rs3_addr), rvfi_rs3_rdata);
     end
     if ((data_accessed & RD) != 0) begin
-      $fwrite(file_handle, " %s=0x%08x", reg_addr_to_str(rvfi_rd_addr), rvfi_rd_wdata);
+      $fwrite(fh, " %s=0x%08x", reg_addr_to_str(rvfi_rd_addr), rvfi_rd_wdata);
     end
     if ((data_accessed & MEM) != 0) begin
-      $fwrite(file_handle, " PA:0x%08x", rvfi_mem_addr);
+      $fwrite(fh, " PA:0x%08x", rvfi_mem_addr);
 
       if (rvfi_mem_rmask != 4'b0000) begin
-        $fwrite(file_handle, " store:0x%08x", rvfi_mem_wdata);
+        $fwrite(fh, " store:0x%08x", rvfi_mem_wdata);
       end
       if (rvfi_mem_wmask != 4'b0000) begin
-        $fwrite(file_handle, " load:0x%08x", rvfi_mem_rdata);
+        $fwrite(fh, " load:0x%08x", rvfi_mem_rdata);
       end
     end
 
-    $fwrite(file_handle, "\n");
+    $fwrite(fh, "\n");
   endfunction
 
 
@@ -747,14 +736,33 @@ module ibex_tracer (
   // close output file for writing
   final begin
     if (file_handle != 32'h0) begin
-      $fclose(file_handle);
+      // This dance with "fh" is a bit silly. Some versions of Verilator treat a call of $fclose(xx)
+      // as a blocking assignment to xx. They then complain about the mixture with that an the
+      // non-blocking assignment we use when opening the file. The bug is fixed with recent versions
+      // of Verilator, but this hack is probably worth it for now.
+      int fh = file_handle;
+      $fclose(fh);
     end
   end
 
   // log execution
-  always_ff @(posedge clk_i) begin
+  always @(posedge clk_i) begin
     if (rvfi_valid && trace_log_enable) begin
-      printbuffer_dumpline();
+
+      int fh = file_handle;
+
+      if (fh == 32'h0) begin
+        string file_name_base = "trace_core";
+        void'($value$plusargs("ibex_tracer_file_base=%s", file_name_base));
+        $sformat(file_name, "%s_%h.log", file_name_base, hart_id_i);
+
+        $display("%m: Writing execution trace to %s", file_name);
+        fh = $fopen(file_name, "w");
+        file_handle <= fh;
+        $fwrite(fh, "Time\tCycle\tPC\tInsn\tDecoded instruction\tRegister and memory contents\n");
+      end
+
+      printbuffer_dumpline(fh);
     end
   end
 

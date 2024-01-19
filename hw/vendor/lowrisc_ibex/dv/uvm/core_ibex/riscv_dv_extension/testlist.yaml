@@ -606,7 +606,7 @@
 - test: riscv_mem_intg_error_test
   description: >
     Normal random instruction test, but randomly insert memory load/store integrity errors
-  iterations: 15
+  iterations: 50
   gen_test: riscv_rand_instr_test
   gen_opts: >
     +require_signature_addr=1

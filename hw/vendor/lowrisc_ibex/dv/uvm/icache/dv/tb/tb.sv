@@ -32,7 +32,6 @@ module tb #(
   localparam int unsigned LineSizeECC = BusSizeECC * IC_LINE_BEATS;
   localparam int unsigned TagSizeECC  = ICacheECC ? (IC_TAG_SIZE + 6) : IC_TAG_SIZE;
   localparam int unsigned NumAddrScrRounds  = 2;
-  localparam int unsigned NumDiffRounds     = NumAddrScrRounds;
 
   ibex_icache_ram_if #(
     .TagSizeECC(TagSizeECC),
@@ -137,9 +136,7 @@ module tb #(
       .Depth            (IC_NUM_LINES),
       .DataBitsPerMask  (TagSizeECC),
       .EnableParity     (0),
-      .DiffWidth        (TagSizeECC),
-      .NumAddrScrRounds (NumAddrScrRounds),
-      .NumDiffRounds    (NumDiffRounds)
+      .NumAddrScrRounds (NumAddrScrRounds)
     ) tag_bank (
       .clk_i       (clk),
       .rst_ni      (rst_n),
@@ -171,9 +168,7 @@ module tb #(
       .DataBitsPerMask    (LineSizeECC),
       .EnableParity       (0),
       .ReplicateKeyStream (1),
-      .DiffWidth          (LineSizeECC),
-      .NumAddrScrRounds   (NumAddrScrRounds),
-      .NumDiffRounds      (NumDiffRounds)
+      .NumAddrScrRounds   (NumAddrScrRounds)
     ) data_bank (
       .clk_i       (clk),
       .rst_ni      (rst_n),

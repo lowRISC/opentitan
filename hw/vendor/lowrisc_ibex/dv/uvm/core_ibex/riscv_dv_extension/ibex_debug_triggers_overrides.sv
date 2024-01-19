@@ -2,25 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class ibex_hardware_triggers_asm_program_gen extends ibex_asm_program_gen;
-
-  `uvm_object_utils(ibex_hardware_triggers_asm_program_gen)
-  `uvm_object_new
-
-  // Same implementation as the parent class, except substitute for our custom debug_rom class.
-  virtual function void gen_debug_rom(int hart);
-    `uvm_info(`gfn, "Creating debug ROM", UVM_LOW)
-    debug_rom = ibex_hardware_triggers_debug_rom_gen::
-                type_id::create("debug_rom", , {"uvm_test_top", ".", `gfn});
-    debug_rom.cfg = cfg;
-    debug_rom.hart = hart;
-    debug_rom.gen_program();
-    instr_stream = {instr_stream, debug_rom.instr_stream};
-  endfunction
-
-endclass
-
-
 class ibex_hardware_triggers_debug_rom_gen extends riscv_debug_rom_gen;
 
   `uvm_object_utils(ibex_hardware_triggers_debug_rom_gen)
@@ -122,6 +103,25 @@ class ibex_hardware_triggers_debug_rom_gen extends riscv_debug_rom_gen;
   endfunction
 
 endclass
+
+class ibex_hardware_triggers_asm_program_gen extends ibex_asm_program_gen;
+
+  `uvm_object_utils(ibex_hardware_triggers_asm_program_gen)
+  `uvm_object_new
+
+  // Same implementation as the parent class, except substitute for our custom debug_rom class.
+  virtual function void gen_debug_rom(int hart);
+    `uvm_info(`gfn, "Creating debug ROM", UVM_LOW)
+    debug_rom = ibex_hardware_triggers_debug_rom_gen::
+                type_id::create("debug_rom", , {"uvm_test_top", ".", `gfn});
+    debug_rom.cfg = cfg;
+    debug_rom.hart = hart;
+    debug_rom.gen_program();
+    instr_stream = {instr_stream, debug_rom.instr_stream};
+  endfunction
+
+endclass
+
 
 class ibex_hardware_triggers_illegal_instr extends riscv_illegal_instr;
 

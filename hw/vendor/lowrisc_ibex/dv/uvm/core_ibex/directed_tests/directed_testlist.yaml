@@ -379,13 +379,174 @@
   test_srcs: access_pmp_overlap/access_pmp_overlap.S
   config: riscv-tests
 
+- test: u_mode_exec_test
+  desc: >
+    PMP U mode exec test
+  iterations: 1
+  test_srcs: u_mode_exec_test/u_mode_exec_test.S
+  config: riscv-tests
+
 # Test-suite: riscv-tests
+
+- test: breakpoint
+  desc: >
+    riscv test - breakpoint
+  iterations: 1
+  test_srcs: ../../../../vendor/riscv-tests/isa/rv32mi/breakpoint.S
+  config: riscv-tests
+
+- test: csr
+  desc: >
+    riscv test - csr
+  iterations: 1
+  test_srcs: ../../../../vendor/riscv-tests/isa/rv32mi/csr.S
+  config: riscv-tests
+
+- test: illegal
+  desc: >
+    riscv test - illegal
+  iterations: 1
+  test_srcs: ../../../../vendor/riscv-tests/isa/rv32mi/illegal.S
+  config: riscv-tests
+
+- test: lh-misaligned
+  desc: >
+    riscv test - lh-misaligned
+  iterations: 1
+  test_srcs: ../../../../vendor/riscv-tests/isa/rv32mi/lh-misaligned.S
+  config: riscv-tests
+
+- test: lw-misaligned
+  desc: >
+    riscv test - lw-misaligned
+  iterations: 1
+  test_srcs: ../../../../vendor/riscv-tests/isa/rv32mi/lw-misaligned.S
+  config: riscv-tests
+
+- test: ma_addr
+  desc: >
+    riscv test - ma_addr
+  iterations: 1
+  test_srcs: ../../../../vendor/riscv-tests/isa/rv32mi/ma_addr.S
+  config: riscv-tests
+
+- test: ma_fetch
+  desc: >
+    riscv test - ma_fetch
+  iterations: 1
+  test_srcs: ../../../../vendor/riscv-tests/isa/rv32mi/ma_fetch.S
+  config: riscv-tests
+
+- test: mcsr
+  desc: >
+    riscv test - mcsr
+  iterations: 1
+  test_srcs: ../../../../vendor/riscv-tests/isa/rv32mi/mcsr.S
+  config: riscv-tests
+
+- test: sbreak
+  desc: >
+    riscv test - sbreak
+  iterations: 1
+  test_srcs: ../../../../vendor/riscv-tests/isa/rv32mi/sbreak.S
+  config: riscv-tests
+
+- test: scall
+  desc: >
+    riscv test - scall
+  iterations: 1
+  test_srcs: ../../../../vendor/riscv-tests/isa/rv32mi/scall.S
+  config: riscv-tests
+
+- test: shamt
+  desc: >
+    riscv test - shamt
+  iterations: 1
+  test_srcs: ../../../../vendor/riscv-tests/isa/rv32mi/shamt.S
+  config: riscv-tests
+
+- test: sh-misaligned
+  desc: >
+    riscv test - sh-misaligned
+  iterations: 1
+  test_srcs: ../../../../vendor/riscv-tests/isa/rv32mi/sh-misaligned.S
+  config: riscv-tests
+
+- test: sw-misaligned
+  desc: >
+    riscv test - sw-misaligned
+  iterations: 1
+  test_srcs: ../../../../vendor/riscv-tests/isa/rv32mi/sw-misaligned.S
+  config: riscv-tests
+
+- test: zicntr
+  desc: >
+    riscv test - zicntr
+  iterations: 1
+  test_srcs: ../../../../vendor/riscv-tests/isa/rv32mi/zicntr.S
+  config: riscv-tests
 
 - test: rvc
   desc: >
     riscv test - rvc
   iterations: 1
   test_srcs: ../../../../vendor/riscv-tests/isa/rv32uc/rvc.S
+  config: riscv-tests
+
+- test: div
+  desc: >
+    riscv test - div
+  iterations: 1
+  test_srcs: ../../../../vendor/riscv-tests/isa/rv32um/div.S
+  config: riscv-tests
+
+- test: divu
+  desc: >
+    riscv test - divu
+  iterations: 1
+  test_srcs: ../../../../vendor/riscv-tests/isa/rv32um/divu.S
+  config: riscv-tests
+
+- test: mulh
+  desc: >
+    riscv test - mulh
+  iterations: 1
+  test_srcs: ../../../../vendor/riscv-tests/isa/rv32um/mulh.S
+  config: riscv-tests
+
+- test: mulhsu
+  desc: >
+    riscv test - mulhsu
+  iterations: 1
+  test_srcs: ../../../../vendor/riscv-tests/isa/rv32um/mulhsu.S
+  config: riscv-tests
+
+- test: mulhu
+  desc: >
+    riscv test - mulhu
+  iterations: 1
+  test_srcs: ../../../../vendor/riscv-tests/isa/rv32um/mulhu.S
+  config: riscv-tests
+
+- test: mul
+  desc: >
+    riscv test - mul
+  iterations: 1
+  test_srcs: ../../../../vendor/riscv-tests/isa/rv32um/mul.S
+  config: riscv-tests
+
+- test: rem
+  desc: >
+    riscv test - rem
+  iterations: 1
+  test_srcs: ../../../../vendor/riscv-tests/isa/rv32um/rem.S
+  config: riscv-tests
+
+- test: remu
+  desc: >
+    riscv test - remu
+  iterations: 1
+  test_srcs: ../../../../vendor/riscv-tests/isa/rv32um/remu.S
   config: riscv-tests
 
 - test: addi
@@ -661,384 +822,251 @@
   test_srcs: ../../../../vendor/riscv-tests/isa/rv32ui/xor.S
   config: riscv-tests
 
-- test: div
-  desc: >
-    riscv test - div
-  iterations: 1
-  test_srcs: ../../../../vendor/riscv-tests/isa/rv32um/div.S
-  config: riscv-tests
-
-- test: divu
-  desc: >
-    riscv test - divu
-  iterations: 1
-  test_srcs: ../../../../vendor/riscv-tests/isa/rv32um/divu.S
-  config: riscv-tests
-
-- test: mulh
-  desc: >
-    riscv test - mulh
-  iterations: 1
-  test_srcs: ../../../../vendor/riscv-tests/isa/rv32um/mulh.S
-  config: riscv-tests
-
-- test: mulhsu
-  desc: >
-    riscv test - mulhsu
-  iterations: 1
-  test_srcs: ../../../../vendor/riscv-tests/isa/rv32um/mulhsu.S
-  config: riscv-tests
-
-- test: mulhu
-  desc: >
-    riscv test - mulhu
-  iterations: 1
-  test_srcs: ../../../../vendor/riscv-tests/isa/rv32um/mulhu.S
-  config: riscv-tests
-
-- test: mul
-  desc: >
-    riscv test - mul
-  iterations: 1
-  test_srcs: ../../../../vendor/riscv-tests/isa/rv32um/mul.S
-  config: riscv-tests
-
-- test: rem
-  desc: >
-    riscv test - rem
-  iterations: 1
-  test_srcs: ../../../../vendor/riscv-tests/isa/rv32um/rem.S
-  config: riscv-tests
-
-- test: remu
-  desc: >
-    riscv test - remu
-  iterations: 1
-  test_srcs: ../../../../vendor/riscv-tests/isa/rv32um/remu.S
-  config: riscv-tests
-
-- test: breakpoint
-  desc: >
-    riscv test - breakpoint
-  iterations: 1
-  test_srcs: ../../../../vendor/riscv-tests/isa/rv32mi/breakpoint.S
-  config: riscv-tests
-
-- test: csr
-  desc: >
-    riscv test - csr
-  iterations: 1
-  test_srcs: ../../../../vendor/riscv-tests/isa/rv32mi/csr.S
-  config: riscv-tests
-
-- test: illegal
-  desc: >
-    riscv test - illegal
-  iterations: 1
-  test_srcs: ../../../../vendor/riscv-tests/isa/rv32mi/illegal.S
-  config: riscv-tests
-
-- test: lh-misaligned
-  desc: >
-    riscv test - lh-misaligned
-  iterations: 1
-  test_srcs: ../../../../vendor/riscv-tests/isa/rv32mi/lh-misaligned.S
-  config: riscv-tests
-
-- test: lw-misaligned
-  desc: >
-    riscv test - lw-misaligned
-  iterations: 1
-  test_srcs: ../../../../vendor/riscv-tests/isa/rv32mi/lw-misaligned.S
-  config: riscv-tests
-
-- test: ma_addr
-  desc: >
-    riscv test - ma_addr
-  iterations: 1
-  test_srcs: ../../../../vendor/riscv-tests/isa/rv32mi/ma_addr.S
-  config: riscv-tests
-
-- test: ma_fetch
-  desc: >
-    riscv test - ma_fetch
-  iterations: 1
-  test_srcs: ../../../../vendor/riscv-tests/isa/rv32mi/ma_fetch.S
-  config: riscv-tests
-
-- test: mcsr
-  desc: >
-    riscv test - mcsr
-  iterations: 1
-  test_srcs: ../../../../vendor/riscv-tests/isa/rv32mi/mcsr.S
-  config: riscv-tests
-
-- test: sbreak
-  desc: >
-    riscv test - sbreak
-  iterations: 1
-  test_srcs: ../../../../vendor/riscv-tests/isa/rv32mi/sbreak.S
-  config: riscv-tests
-
-- test: scall
-  desc: >
-    riscv test - scall
-  iterations: 1
-  test_srcs: ../../../../vendor/riscv-tests/isa/rv32mi/scall.S
-  config: riscv-tests
-
-- test: shamt
-  desc: >
-    riscv test - shamt
-  iterations: 1
-  test_srcs: ../../../../vendor/riscv-tests/isa/rv32mi/shamt.S
-  config: riscv-tests
-
-- test: sh-misaligned
-  desc: >
-    riscv test - sh-misaligned
-  iterations: 1
-  test_srcs: ../../../../vendor/riscv-tests/isa/rv32mi/sh-misaligned.S
-  config: riscv-tests
-
-- test: sw-misaligned
-  desc: >
-    riscv test - sw-misaligned
-  iterations: 1
-  test_srcs: ../../../../vendor/riscv-tests/isa/rv32mi/sw-misaligned.S
-  config: riscv-tests
-
-- test: zicntr
-  desc: >
-    riscv test - zicntr
-  iterations: 1
-  test_srcs: ../../../../vendor/riscv-tests/isa/rv32mi/zicntr.S
-  config: riscv-tests
-
 # Test-suite: riscv-arch-tests
 
-- test: andn-01
+- test: div-01
   desc: >
-    riscv test - andn-01
+    riscv test - div-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/andn-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/M/src/div-01.S
   config: riscv-arch-tests
 
-- test: bclr-01
+- test: divu-01
   desc: >
-    riscv test - bclr-01
+    riscv test - divu-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/bclr-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/M/src/divu-01.S
   config: riscv-arch-tests
 
-- test: bclri-01
+- test: mul-01
   desc: >
-    riscv test - bclri-01
+    riscv test - mul-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/bclri-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/M/src/mul-01.S
   config: riscv-arch-tests
 
-- test: bext-01
+- test: mulh-01
   desc: >
-    riscv test - bext-01
+    riscv test - mulh-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/bext-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/M/src/mulh-01.S
   config: riscv-arch-tests
 
-- test: bexti-01
+- test: mulhsu-01
   desc: >
-    riscv test - bexti-01
+    riscv test - mulhsu-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/bexti-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/M/src/mulhsu-01.S
   config: riscv-arch-tests
 
-- test: binv-01
+- test: mulhu-01
   desc: >
-    riscv test - binv-01
+    riscv test - mulhu-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/binv-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/M/src/mulhu-01.S
   config: riscv-arch-tests
 
-- test: binvi-01
+- test: rem-01
   desc: >
-    riscv test - binvi-01
+    riscv test - rem-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/binvi-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/M/src/rem-01.S
   config: riscv-arch-tests
 
-- test: bset-01
+- test: remu-01
   desc: >
-    riscv test - bset-01
+    riscv test - remu-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/bset-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/M/src/remu-01.S
   config: riscv-arch-tests
 
-- test: bseti-01
+- test: cadd-01
   desc: >
-    riscv test - bseti-01
+    riscv test - cadd-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/bseti-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/C/src/cadd-01.S
   config: riscv-arch-tests
 
-- test: clmul-01
+- test: caddi-01
   desc: >
-    riscv test - clmul-01
+    riscv test - caddi-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/clmul-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/C/src/caddi-01.S
   config: riscv-arch-tests
 
-- test: clmulh-01
+- test: caddi16sp-01
   desc: >
-    riscv test - clmulh-01
+    riscv test - caddi16sp-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/clmulh-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/C/src/caddi16sp-01.S
   config: riscv-arch-tests
 
-- test: clmulr-01
+- test: caddi4spn-01
   desc: >
-    riscv test - clmulr-01
+    riscv test - caddi4spn-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/clmulr-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/C/src/caddi4spn-01.S
   config: riscv-arch-tests
 
-- test: clz-01
+- test: cand-01
   desc: >
-    riscv test - clz-01
+    riscv test - cand-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/clz-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/C/src/cand-01.S
   config: riscv-arch-tests
 
-- test: cpop-01
+- test: candi-01
   desc: >
-    riscv test - cpop-01
+    riscv test - candi-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/cpop-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/C/src/candi-01.S
   config: riscv-arch-tests
 
-- test: ctz-01
+- test: cbeqz-01
   desc: >
-    riscv test - ctz-01
+    riscv test - cbeqz-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/ctz-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/C/src/cbeqz-01.S
   config: riscv-arch-tests
 
-- test: max-01
+- test: cbnez-01
   desc: >
-    riscv test - max-01
+    riscv test - cbnez-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/max-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/C/src/cbnez-01.S
   config: riscv-arch-tests
 
-- test: maxu-01
+- test: cebreak-01
   desc: >
-    riscv test - maxu-01
+    riscv test - cebreak-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/maxu-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/C/src/cebreak-01.S
   config: riscv-arch-tests
 
-- test: min-01
+- test: cj-01
   desc: >
-    riscv test - min-01
+    riscv test - cj-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/min-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/C/src/cj-01.S
   config: riscv-arch-tests
 
-- test: minu-01
+- test: cjal-01
   desc: >
-    riscv test - minu-01
+    riscv test - cjal-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/minu-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/C/src/cjal-01.S
   config: riscv-arch-tests
 
-- test: orcb_32-01
+- test: cjalr-01
   desc: >
-    riscv test - orcb_32-01
+    riscv test - cjalr-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/orcb_32-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/C/src/cjalr-01.S
   config: riscv-arch-tests
 
-- test: orn-01
+- test: cjr-01
   desc: >
-    riscv test - orn-01
+    riscv test - cjr-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/orn-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/C/src/cjr-01.S
   config: riscv-arch-tests
 
-- test: rev8_32-01
+- test: cli-01
   desc: >
-    riscv test - rev8_32-01
+    riscv test - cli-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/rev8_32-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/C/src/cli-01.S
   config: riscv-arch-tests
 
-- test: rol-01
+- test: clui-01
   desc: >
-    riscv test - rol-01
+    riscv test - clui-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/rol-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/C/src/clui-01.S
   config: riscv-arch-tests
 
-- test: ror-01
+- test: clw-01
   desc: >
-    riscv test - ror-01
+    riscv test - clw-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/ror-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/C/src/clw-01.S
   config: riscv-arch-tests
 
-- test: rori-01
+- test: clwsp-01
   desc: >
-    riscv test - rori-01
+    riscv test - clwsp-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/rori-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/C/src/clwsp-01.S
   config: riscv-arch-tests
 
-- test: sext-b-01
+- test: cmv-01
   desc: >
-    riscv test - sext-b-01
+    riscv test - cmv-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/sext-b-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/C/src/cmv-01.S
   config: riscv-arch-tests
 
-- test: sext-h-01
+- test: cnop-01
   desc: >
-    riscv test - sext-h-01
+    riscv test - cnop-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/sext-h-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/C/src/cnop-01.S
   config: riscv-arch-tests
 
-- test: sh1add-01
+- test: cor-01
   desc: >
-    riscv test - sh1add-01
+    riscv test - cor-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/sh1add-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/C/src/cor-01.S
   config: riscv-arch-tests
 
-- test: sh2add-01
+- test: cslli-01
   desc: >
-    riscv test - sh2add-01
+    riscv test - cslli-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/sh2add-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/C/src/cslli-01.S
   config: riscv-arch-tests
 
-- test: sh3add-01
+- test: csrai-01
   desc: >
-    riscv test - sh3add-01
+    riscv test - csrai-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/sh3add-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/C/src/csrai-01.S
   config: riscv-arch-tests
 
-- test: xnor-01
+- test: csrli-01
   desc: >
-    riscv test - xnor-01
+    riscv test - csrli-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/xnor-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/C/src/csrli-01.S
   config: riscv-arch-tests
 
-- test: zext-h_32-01
+- test: csub-01
   desc: >
-    riscv test - zext-h_32-01
+    riscv test - csub-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/zext-h_32-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/C/src/csub-01.S
+  config: riscv-arch-tests
+
+- test: csw-01
+  desc: >
+    riscv test - csw-01
+  iterations: 1
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/C/src/csw-01.S
+  config: riscv-arch-tests
+
+- test: cswsp-01
+  desc: >
+    riscv test - cswsp-01
+  iterations: 1
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/C/src/cswsp-01.S
+  config: riscv-arch-tests
+
+- test: cxor-01
+  desc: >
+    riscv test - cxor-01
+  iterations: 1
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/C/src/cxor-01.S
   config: riscv-arch-tests
 
 - test: Fencei
@@ -1321,249 +1349,228 @@
   test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/I/src/xori-01.S
   config: riscv-arch-tests
 
-- test: cadd-01
+- test: andn-01
   desc: >
-    riscv test - cadd-01
+    riscv test - andn-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/C/src/cadd-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/andn-01.S
   config: riscv-arch-tests
 
-- test: caddi-01
+- test: bclr-01
   desc: >
-    riscv test - caddi-01
+    riscv test - bclr-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/C/src/caddi-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/bclr-01.S
   config: riscv-arch-tests
 
-- test: caddi16sp-01
+- test: bclri-01
   desc: >
-    riscv test - caddi16sp-01
+    riscv test - bclri-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/C/src/caddi16sp-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/bclri-01.S
   config: riscv-arch-tests
 
-- test: caddi4spn-01
+- test: bext-01
   desc: >
-    riscv test - caddi4spn-01
+    riscv test - bext-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/C/src/caddi4spn-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/bext-01.S
   config: riscv-arch-tests
 
-- test: cand-01
+- test: bexti-01
   desc: >
-    riscv test - cand-01
+    riscv test - bexti-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/C/src/cand-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/bexti-01.S
   config: riscv-arch-tests
 
-- test: candi-01
+- test: binv-01
   desc: >
-    riscv test - candi-01
+    riscv test - binv-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/C/src/candi-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/binv-01.S
   config: riscv-arch-tests
 
-- test: cbeqz-01
+- test: binvi-01
   desc: >
-    riscv test - cbeqz-01
+    riscv test - binvi-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/C/src/cbeqz-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/binvi-01.S
   config: riscv-arch-tests
 
-- test: cbnez-01
+- test: bset-01
   desc: >
-    riscv test - cbnez-01
+    riscv test - bset-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/C/src/cbnez-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/bset-01.S
   config: riscv-arch-tests
 
-- test: cebreak-01
+- test: bseti-01
   desc: >
-    riscv test - cebreak-01
+    riscv test - bseti-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/C/src/cebreak-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/bseti-01.S
   config: riscv-arch-tests
 
-- test: cj-01
+- test: clmul-01
   desc: >
-    riscv test - cj-01
+    riscv test - clmul-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/C/src/cj-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/clmul-01.S
   config: riscv-arch-tests
 
-- test: cjal-01
+- test: clmulh-01
   desc: >
-    riscv test - cjal-01
+    riscv test - clmulh-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/C/src/cjal-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/clmulh-01.S
   config: riscv-arch-tests
 
-- test: cjalr-01
+- test: clmulr-01
   desc: >
-    riscv test - cjalr-01
+    riscv test - clmulr-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/C/src/cjalr-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/clmulr-01.S
   config: riscv-arch-tests
 
-- test: cjr-01
+- test: clz-01
   desc: >
-    riscv test - cjr-01
+    riscv test - clz-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/C/src/cjr-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/clz-01.S
   config: riscv-arch-tests
 
-- test: cli-01
+- test: cpop-01
   desc: >
-    riscv test - cli-01
+    riscv test - cpop-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/C/src/cli-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/cpop-01.S
   config: riscv-arch-tests
 
-- test: clui-01
+- test: ctz-01
   desc: >
-    riscv test - clui-01
+    riscv test - ctz-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/C/src/clui-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/ctz-01.S
   config: riscv-arch-tests
 
-- test: clw-01
+- test: max-01
   desc: >
-    riscv test - clw-01
+    riscv test - max-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/C/src/clw-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/max-01.S
   config: riscv-arch-tests
 
-- test: clwsp-01
+- test: maxu-01
   desc: >
-    riscv test - clwsp-01
+    riscv test - maxu-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/C/src/clwsp-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/maxu-01.S
   config: riscv-arch-tests
 
-- test: cmv-01
+- test: min-01
   desc: >
-    riscv test - cmv-01
+    riscv test - min-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/C/src/cmv-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/min-01.S
   config: riscv-arch-tests
 
-- test: cnop-01
+- test: minu-01
   desc: >
-    riscv test - cnop-01
+    riscv test - minu-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/C/src/cnop-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/minu-01.S
   config: riscv-arch-tests
 
-- test: cor-01
+- test: orcb_32-01
   desc: >
-    riscv test - cor-01
+    riscv test - orcb_32-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/C/src/cor-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/orcb_32-01.S
   config: riscv-arch-tests
 
-- test: cslli-01
+- test: orn-01
   desc: >
-    riscv test - cslli-01
+    riscv test - orn-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/C/src/cslli-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/orn-01.S
   config: riscv-arch-tests
 
-- test: csrai-01
+- test: rev8_32-01
   desc: >
-    riscv test - csrai-01
+    riscv test - rev8_32-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/C/src/csrai-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/rev8_32-01.S
   config: riscv-arch-tests
 
-- test: csrli-01
+- test: rol-01
   desc: >
-    riscv test - csrli-01
+    riscv test - rol-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/C/src/csrli-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/rol-01.S
   config: riscv-arch-tests
 
-- test: csub-01
+- test: ror-01
   desc: >
-    riscv test - csub-01
+    riscv test - ror-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/C/src/csub-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/ror-01.S
   config: riscv-arch-tests
 
-- test: csw-01
+- test: rori-01
   desc: >
-    riscv test - csw-01
+    riscv test - rori-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/C/src/csw-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/rori-01.S
   config: riscv-arch-tests
 
-- test: cswsp-01
+- test: sext-b-01
   desc: >
-    riscv test - cswsp-01
+    riscv test - sext-b-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/C/src/cswsp-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/sext-b-01.S
   config: riscv-arch-tests
 
-- test: cxor-01
+- test: sext-h-01
   desc: >
-    riscv test - cxor-01
+    riscv test - sext-h-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/C/src/cxor-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/sext-h-01.S
   config: riscv-arch-tests
 
-- test: div-01
+- test: sh1add-01
   desc: >
-    riscv test - div-01
+    riscv test - sh1add-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/M/src/div-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/sh1add-01.S
   config: riscv-arch-tests
 
-- test: divu-01
+- test: sh2add-01
   desc: >
-    riscv test - divu-01
+    riscv test - sh2add-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/M/src/divu-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/sh2add-01.S
   config: riscv-arch-tests
 
-- test: mul-01
+- test: sh3add-01
   desc: >
-    riscv test - mul-01
+    riscv test - sh3add-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/M/src/mul-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/sh3add-01.S
   config: riscv-arch-tests
 
-- test: mulh-01
+- test: xnor-01
   desc: >
-    riscv test - mulh-01
+    riscv test - xnor-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/M/src/mulh-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/xnor-01.S
   config: riscv-arch-tests
 
-- test: mulhsu-01
+- test: zext-h_32-01
   desc: >
-    riscv test - mulhsu-01
+    riscv test - zext-h_32-01
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/M/src/mulhsu-01.S
-  config: riscv-arch-tests
-
-- test: mulhu-01
-  desc: >
-    riscv test - mulhu-01
-  iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/M/src/mulhu-01.S
-  config: riscv-arch-tests
-
-- test: rem-01
-  desc: >
-    riscv test - rem-01
-  iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/M/src/rem-01.S
-  config: riscv-arch-tests
-
-- test: remu-01
-  desc: >
-    riscv test - remu-01
-  iterations: 1
-  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/M/src/remu-01.S
+  test_srcs: ../../../../vendor/riscv-arch-tests/riscv-test-suite/rv32i_m/B/src/zext-h_32-01.S
   config: riscv-arch-tests
 
 # Test-suite: epmp-tests

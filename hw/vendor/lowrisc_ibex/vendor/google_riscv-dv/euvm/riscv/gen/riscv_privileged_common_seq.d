@@ -123,16 +123,18 @@ class riscv_privileged_common_seq : uvm_sequence!(uvm_sequence_item,uvm_sequence
     mstatus.set_field("TW", cfg.set_mstatus_tw);
     mstatus.set_field("FS", cfg.mstatus_fs);
     mstatus.set_field("VS", cfg.mstatus_vs);
-    if (!(canFind(supported_privileged_mode, privileged_mode_t.SUPERVISOR_MODE) && (XLEN != 32))) {
-      mstatus.set_field("SXL", toubvec!2(0b00));
-    }
-    else if (XLEN == 64) {
-      mstatus.set_field("SXL", toubvec!2(0b10));
-    }
-    if (!(canFind(supported_privileged_mode, privileged_mode_t.USER_MODE) && (XLEN != 32))) {
-      mstatus.set_field("UXL", toubvec!2(0b00));
-    } else if (XLEN == 64) {
-      mstatus.set_field("UXL", toubvec!2(0b10));
+    if (XLEN != 32) {
+      if (!(canFind(supported_privileged_mode, privileged_mode_t.SUPERVISOR_MODE))) {
+        mstatus.set_field("SXL", toubvec!2(0b00));
+      }
+      else if (XLEN == 64) {
+        mstatus.set_field("SXL", toubvec!2(0b10));
+      }
+      if (!(canFind(supported_privileged_mode, privileged_mode_t.USER_MODE))) {
+        mstatus.set_field("UXL", toubvec!2(0b00));
+      } else if (XLEN == 64) {
+        mstatus.set_field("UXL", toubvec!2(0b10));
+      }
     }
     mstatus.set_field("XS", 0);
     mstatus.set_field("SD", 0);
