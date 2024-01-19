@@ -320,6 +320,38 @@ opentitan_test(
 )
 
 opentitan_test(
+    name = "rsa_3072_encryption_functest",
+    srcs = ["rsa_3072_encryption_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = verilator_params(
+        timeout = "eternal",
+    ),
+    deps = [
+        "//sw/device/lib/crypto/impl:hash",
+        "//sw/device/lib/crypto/impl:rsa",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:profile",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
+    name = "rsa_4096_encryption_functest",
+    srcs = ["rsa_4096_encryption_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = verilator_params(
+        timeout = "eternal",
+    ),
+    deps = [
+        "//sw/device/lib/crypto/impl:hash",
+        "//sw/device/lib/crypto/impl:rsa",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:profile",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
     name = "rsa_2048_key_from_cofactor_functest",
     srcs = ["rsa_2048_key_from_cofactor_functest.c"],
     exec_env = EARLGREY_TEST_ENVS,
