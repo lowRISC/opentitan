@@ -471,10 +471,14 @@ module otp_ctrl
 
   // CSR assignments are done in one combo process so that we can use
   // the parameterized digest_assign task below without multiple driver issues.
+  logic unused_part_digest;
   logic [NumPart-1:0][ScrmblBlockWidth-1:0] part_digest;
   logic intr_state_otp_operation_done_d, intr_state_otp_operation_done_de;
   logic intr_state_otp_error_d, intr_state_otp_error_de;
   always_comb begin : p_csr_assign
+    // Not all partition digests are consumed, and assigning them to an unused_* signal in the
+    // function below does not seem to work for some linters.
+    unused_part_digest = ^part_digest;
     // Assign named CSRs (like digests).
     hw2reg = named_reg_assign(part_digest);
     // DAI related CSRs
