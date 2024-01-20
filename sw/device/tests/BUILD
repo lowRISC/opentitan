@@ -3561,6 +3561,7 @@ opentitan_test(
     deps = [
         "//hw/top_earlgrey:alert_handler_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:boot_stage",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -3581,6 +3582,7 @@ opentitan_test(
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:alert_handler_testutils",
         "//sw/device/lib/testing:aon_timer_testutils",
+        "//sw/device/lib/testing:flash_ctrl_testutils",
         "//sw/device/lib/testing:keymgr_testutils",
         "//sw/device/lib/testing:ret_sram_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",

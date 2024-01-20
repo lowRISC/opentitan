@@ -335,3 +335,26 @@ status_t flash_ctrl_testutils_backdoor_wait_update(const volatile uint8_t *addr,
   } while (new_data == prior_data);
   return OK_STATUS();
 }
+
+status_t flash_ctrl_testutils_show_faults(
+    const dif_flash_ctrl_state_t *flash_ctrl) {
+  dif_flash_ctrl_faults_t faults = {.memory_properties_error = false};
+  CHECK_DIF_OK(dif_flash_ctrl_get_faults(flash_ctrl, &faults));
+#define LOG_IF_FIELD_SET(_struct, _field)             \
+  if (_struct._field != 0) {                          \
+    LOG_INFO("Flash_ctrl fault status has " #_field); \
+  }
+
+  LOG_IF_FIELD_SET(faults, memory_properties_error);
+  LOG_IF_FIELD_SET(faults, read_error);
+  LOG_IF_FIELD_SET(faults, prog_window_error);
+  LOG_IF_FIELD_SET(faults, prog_type_error);
+  LOG_IF_FIELD_SET(faults, host_gnt_error);
+  LOG_IF_FIELD_SET(faults, register_integrity_error);
+  LOG_IF_FIELD_SET(faults, phy_integrity_error);
+  LOG_IF_FIELD_SET(faults, lifecycle_manager_error);
+  LOG_IF_FIELD_SET(faults, shadow_storage_error);
+#undef LOG_IF_FIELD_SET
+
+  return OK_STATUS();
+}
