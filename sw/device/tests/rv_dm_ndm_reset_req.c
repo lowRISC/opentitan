@@ -24,7 +24,7 @@
 /*
    RV_DM NDM RESET REQUEST TEST
    In top_earlgrey, the CSRs can be divided into 3 groups as below.
-     1. Group1 : Devce under por_reset
+     1. Group1 : Device under por_reset
         - pwrmgr, rstmgr
      2. Group2 : Device under lc_reset
         - otp_ctrl, pinmux, rv_dm and aontimer
