@@ -33,6 +33,7 @@ filesets:
       - rtl/kmac_entropy.sv
       - rtl/kmac_errchk.sv
       - rtl/kmac.sv
+      - rtl/kmac_reduced.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:

@@ -17,7 +17,10 @@ if { $lr_synth_timing_run } {
 yosys "read_verilog -sv $lr_synth_out_dir/generated/*.v"
 
 # Set top-module parameters.
-yosys "chparam -set EnMasking $lr_synth_en_masking $lr_synth_top_module"
+if { $lr_synth_top_module != "kmac_reduced"} {
+  # For an unknown reason, synthesis of the kmac_reduced modules fails with an error if we try to set this top-level paramater.
+  yosys "chparam -set EnMasking $lr_synth_en_masking $lr_synth_top_module"
+}
 if { $lr_synth_top_module == "keccak_2share" || $lr_synth_top_module == "keccak_round"} {
   yosys "chparam -set Width $lr_synth_width $lr_synth_top_module"
 }

@@ -19,7 +19,7 @@ set_flow_var rpt_out "./${lr_synth_out_dir}/reports" "Report output directory"
 set_flow_bool_var flatten 1 "flatten"
 set_flow_bool_var timing_run 0 "timing run"
 set_flow_var width 1600 "Width of the SHA3 core datapath"
-set_flow_bool_var en_masking 0 "Enable 1st order masking of the SHA3 core"
+set_flow_bool_var en_masking 1 "Enable 1st order masking of the SHA3 core"
 
 source $lr_synth_config_file
 
