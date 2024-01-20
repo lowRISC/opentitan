@@ -214,3 +214,24 @@ dif_result_t dif_sram_ctrl_is_locked(const dif_sram_ctrl_t *sram_ctrl,
 
   return kDifOk;
 }
+
+dif_result_t dif_sram_ctrl_scr_key_rotated(const dif_sram_ctrl_t *sram_ctrl,
+                                           multi_bit_bool_t *success,
+                                           multi_bit_bool_t clear) {
+  if (sram_ctrl == NULL || success == NULL) {
+    return kDifBadArg;
+  }
+
+  // We do not use any control flow statements to determine whether to clear
+  // the CSR or not. Rather, the register is always written and we let the
+  // MuBi logic determine what needs to be done. I.e., the register is
+  // specified as W1C in which case a clear operation only takes place if
+  // clear is set to kMultiBitBool4True. If it is set to kMultiBitBool4False,
+  // the current state will persist.
+  *success = mmio_region_read32(sram_ctrl->base_addr,
+                                SRAM_CTRL_SCR_KEY_ROTATED_REG_OFFSET);
+  mmio_region_write32(sram_ctrl->base_addr,
+                      SRAM_CTRL_SCR_KEY_ROTATED_REG_OFFSET, clear);
+
+  return kDifOk;
+}
