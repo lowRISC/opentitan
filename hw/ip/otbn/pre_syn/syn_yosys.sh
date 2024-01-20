@@ -106,6 +106,7 @@ OT_DEP_SOURCES=(
 OT_DEP_PACKAGES=(
     "$LR_SYNTH_SRC_DIR"/../../top_earlgrey/rtl/*_pkg.sv
     "$LR_SYNTH_SRC_DIR"/../edn/rtl/*_pkg.sv
+    "$LR_SYNTH_SRC_DIR"/../csrng/rtl/*_pkg.sv
     "$LR_SYNTH_SRC_DIR"/../entropy_src/rtl/*_pkg.sv
     "$LR_SYNTH_SRC_DIR"/../lc_ctrl/rtl/*_pkg.sv
     "$LR_SYNTH_SRC_DIR"/../tlul/rtl/*_pkg.sv
