@@ -65,7 +65,7 @@
             after reset seems suitable. The `spi_host` IPs receive multiple resets so they will
             need special consideration.
 
-            SiVal: CPU must be enabled, but no other OTP or lifecycle dependencies.
+            SiVal: CPU and debug must be enabled, so it only works in TEST_UNLOCKED, DEV, and RMA.
             The rv_dm is an important tool for SiVal, so the stage is set to SV2.
             '''
       stage: V2
@@ -73,8 +73,6 @@
       lc_states: [
         "TEST_UNLOCKED",
         "DEV",
-        "PROD",
-        "PROD_END",
         "RMA",
       ]
       features: [
@@ -153,8 +151,7 @@
             Refer to `chip_sw_rstmgr_*sys_reset_info`.
 
             SiVal: CPU must be enabled, but no other OTP or lifecycle dependencies.
-            This can be an important diagnostic tool, so setting it to SV2.
-            This test already runs in CW310.
+            This can be an important diagnostic tool, so setting it to SV3.
             '''
       stage: V2
       si_stage: SV3
@@ -170,12 +167,7 @@
         "RSTMGR.ALERT_INFO.ENABLE",
       ]
       tests: ["chip_sw_rstmgr_alert_info"]
-      bazel: [
-# TODO(lowrisc/opentitan#20589): Enable these _sival tests when the bug is fixed
-#        "//sw/device/tests:rstmgr_alert_info_test_fpga_cw310_sival",
-#        "//sw/device/tests:rstmgr_alert_info_test_fpga_cw310_sival_rom_ext",
-        "//sw/device/tests:rstmgr_alert_info_test_fpga_cw310_test_rom",
-      ]
+      bazel: ["//sw/device/tests:rstmgr_alert_info_test"]
     }
     {
       name: chip_sw_rstmgr_sw_rst

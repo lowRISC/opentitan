@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_alert_handler.h"
@@ -20,6 +21,7 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/alert_handler_testutils.h"
 #include "sw/device/lib/testing/aon_timer_testutils.h"
+#include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/keymgr_testutils.h"
 #include "sw/device/lib/testing/ret_sram_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
@@ -189,6 +191,8 @@ typedef struct test_alert_info {
   alert_handler_testutils_info_t alert_info;
 } test_alert_info_t;
 
+// The expected info is set for rom_ext, meaning kBootStage set to
+// kBootStageOwner. It is adjusted in init_expected_info_for_non_rom_ext.
 static test_alert_info_t kExpectedInfo[kRoundTotal] = {
     [kRound1] =
         {
@@ -205,9 +209,9 @@ static test_alert_info_t kExpectedInfo[kRoundTotal] = {
             .test_name = "Multi classes(ClassB,C)",
             .alert_info =
                 {
-                    .class_accum_cnt = {0, 1, 4, 0},
-                    .class_esc_state = {kCstateIdle, kCstatePhase1,
-                                        kCstatePhase0, kCstateIdle},
+                    .class_accum_cnt = {0, 0, 4, 0},
+                    .class_esc_state = {kCstateIdle, kCstateIdle, kCstateIdle,
+                                        kCstateIdle},
                 },
         },
     [kRound3] =
@@ -683,9 +687,6 @@ static void init_expected_cause(void) {
       .alert_info.alert_cause[kTopEarlgreyAlertIdUart2FatalFault] = 1;
   kExpectedInfo[kRound2]
       .alert_info.alert_cause[kTopEarlgreyAlertIdUart3FatalFault] = 1;
-  kExpectedInfo[kRound2]
-      .alert_info.alert_cause[kTopEarlgreyAlertIdOtpCtrlFatalBusIntegError] = 1;
-
   kExpectedInfo[kRound3]
       .alert_info.alert_cause[kTopEarlgreyAlertIdRvCoreIbexRecovSwErr] = 1;
   kExpectedInfo[kRound3]
@@ -695,6 +696,19 @@ static void init_expected_cause(void) {
   kExpectedInfo[kRound3]
       .alert_info.alert_cause[kTopEarlgreyAlertIdSpiHost0FatalFault] = 1;
 }
+
+// Modify kExpectedInfo for runs without rom_ext, so non-owner stages. The
+// difference is that without rom_ext we expect an otp alert in round 2.
+static void init_expected_info_for_non_rom_ext(void) {
+  if (kBootStage != kBootStageOwner) {
+    kExpectedInfo[kRound2].alert_info.class_accum_cnt[1] = 1;
+    kExpectedInfo[kRound2].alert_info.class_esc_state[1] = kCstatePhase1;
+    kExpectedInfo[kRound2]
+        .alert_info.alert_cause[kTopEarlgreyAlertIdOtpCtrlFatalBusIntegError] =
+        1;
+  }
+}
+
 bool test_main(void) {
   uint32_t event_idx = 0;
 
@@ -704,6 +718,7 @@ bool test_main(void) {
 
   // set expected values
   init_expected_cause();
+  init_expected_info_for_non_rom_ext();
 
   CHECK_DIF_OK(dif_rstmgr_init(
       mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
@@ -712,10 +727,11 @@ bool test_main(void) {
       &alert_handler));
   CHECK_DIF_OK(dif_rv_plic_init(
       mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &plic));
-
   CHECK_DIF_OK(dif_flash_ctrl_init_state(
       &flash_ctrl,
       mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+
+  CHECK_STATUS_OK(flash_ctrl_testutils_show_faults(&flash_ctrl));
 
   peripheral_init();
 
@@ -745,13 +761,14 @@ bool test_main(void) {
     CHECK_STATUS_OK(ret_sram_testutils_counter_get(kEventCounter, &event_idx));
     CHECK_STATUS_OK(ret_sram_testutils_counter_increment(kEventCounter));
     LOG_INFO("Test round %d", event_idx);
-    // We need to initialize the info FLASH partitions storing the Creator and
-    // Owner secrets to avoid getting the flash controller into a fatal error
-    // state.
-    if (kDeviceType == kDeviceFpgaCw310 && rst_info & kDifRstmgrResetInfoPor) {
+    // If not running rom_ext we need to initialize the info FLASH partitions
+    // storing the Creator and Owner secrets to avoid getting the flash
+    // controller into a fatal error state.
+    if (kBootStage != kBootStageOwner) {
       CHECK_STATUS_OK(keymgr_testutils_flash_init(&flash_ctrl, &kCreatorSecret,
                                                   &kOwnerSecret));
     }
+    CHECK_STATUS_OK(flash_ctrl_testutils_show_faults(&flash_ctrl));
 
     global_test_round = kRound1;
     prgm_alert_handler_round1();
