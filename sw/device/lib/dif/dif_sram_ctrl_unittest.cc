@@ -296,5 +296,44 @@ TEST_F(IsLockedTest, Exec) {
   EXPECT_EQ(is_locked, true);
 }
 
+class RotatedTest : public SramCtrlTest {};
+
+TEST_F(RotatedTest, NullArgs) {
+  multi_bit_bool_t success;
+  EXPECT_DIF_BADARG(
+      dif_sram_ctrl_scr_key_rotated(nullptr, &success, kMultiBitBool4False));
+  EXPECT_DIF_BADARG(
+      dif_sram_ctrl_scr_key_rotated(nullptr, nullptr, kMultiBitBool4False));
+  EXPECT_DIF_BADARG(
+      dif_sram_ctrl_scr_key_rotated(&sram_ctrl_, nullptr, kMultiBitBool4False));
+}
+
+TEST_F(IsLockedTest, Rotated0) {
+  multi_bit_bool_t success = kMultiBitBool4True;
+  EXPECT_READ32(SRAM_CTRL_SCR_KEY_ROTATED_REG_OFFSET, kMultiBitBool4False);
+  EXPECT_WRITE32(SRAM_CTRL_SCR_KEY_ROTATED_REG_OFFSET, kMultiBitBool4False);
+  EXPECT_DIF_OK(dif_sram_ctrl_scr_key_rotated(&sram_ctrl_, &success,
+                                              kMultiBitBool4False));
+  EXPECT_EQ(success, kMultiBitBool4False);
+}
+
+TEST_F(IsLockedTest, Rotated1) {
+  multi_bit_bool_t success = kMultiBitBool4False;
+  EXPECT_READ32(SRAM_CTRL_SCR_KEY_ROTATED_REG_OFFSET, kMultiBitBool4True);
+  EXPECT_WRITE32(SRAM_CTRL_SCR_KEY_ROTATED_REG_OFFSET, kMultiBitBool4True);
+  EXPECT_DIF_OK(
+      dif_sram_ctrl_scr_key_rotated(&sram_ctrl_, &success, kMultiBitBool4True));
+  EXPECT_EQ(success, kMultiBitBool4True);
+}
+
+TEST_F(IsLockedTest, Rotated2) {
+  multi_bit_bool_t success = kMultiBitBool4False;
+  EXPECT_READ32(SRAM_CTRL_SCR_KEY_ROTATED_REG_OFFSET, kMultiBitBool4True);
+  EXPECT_WRITE32(SRAM_CTRL_SCR_KEY_ROTATED_REG_OFFSET, kMultiBitBool4False);
+  EXPECT_DIF_OK(dif_sram_ctrl_scr_key_rotated(&sram_ctrl_, &success,
+                                              kMultiBitBool4False));
+  EXPECT_EQ(success, kMultiBitBool4True);
+}
+
 }  // namespace
 }  // namespace dif_sram_ctrl_autogen_unittest
