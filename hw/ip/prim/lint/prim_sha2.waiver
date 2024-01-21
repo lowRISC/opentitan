@@ -37,14 +37,9 @@ waive -rules {ARITH_CONTEXT} -location {prim_sha2_pkg.sv} -regexp {Bitlength of 
 waive -rules {INPUT_NOT_READ} -location {prim_sha2_pkg.sv} -regexp {Input port 'h_i\[0:7\]\[63:32\]' is not read from in function 'compress_multi_256'}
       -comment "Upper bits are only used in SHA2-384/512"
 
-
-
 # INTEGER
 waive -rules {INTEGER}        -location {prim_sha2_pkg.sv} -regexp {'amt' of type int used as a}
 waive -rules {TWO_STATE_TYPE} -location {prim_sha2_pkg.sv} -regexp {'amt' is of two state type 'int'} \
       -comment "shift function behaves as static, it is called with constant in the design"
-waive -rules {INTEGER}        -location {prim_sha2_pkg.sv} -regexp {'amt' of type integer used as a non-constant value}
+waive -rules {INTEGER}        -location {prim_sha2_pkg.sv} -regexp {'amt' of type integer used as a non-constant value} \
       -comment "rotate function behaves as static function - it is called with a constant value in the design"
-
-waive -rules {INTEGER}        -location {tlul_socket_1n.sv} -regexp {'idx' of type int used} \
-      -comment "It compares with the signal and used as constant"
