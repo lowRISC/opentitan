@@ -10,14 +10,15 @@ import logging as log
 import sys
 import textwrap
 import warnings
-from datetime import datetime
-from typing import Any, Dict, Optional, Set, TextIO
+from typing import Any, Optional, Set, TextIO
 
 from reggen.ip_block import IpBlock
 from reggen.multi_register import MultiRegister
 from reggen.params import LocalParam
 from reggen.register import Register
 from reggen.window import Window
+
+from version_file import VersionInformation
 
 REG_VISIBILITY = 'pub(crate)'
 FIELD_VISIBILITY = 'pub(crate)'
@@ -327,7 +328,7 @@ def gen_const_interrupts(fieldout: TextIO, block: IpBlock, component: str,
 
 def gen_tock(block: IpBlock, outfile: TextIO, src_file: Optional[str],
              src_lic: Optional[str], src_copy: str,
-             version_stamp: Dict[str, str]) -> int:
+             version: VersionInformation) -> int:
     rnames = block.get_rnames()
 
     paramout = io.StringIO()
@@ -397,16 +398,12 @@ def gen_tock(block: IpBlock, outfile: TextIO, src_file: Optional[str],
     genout(outfile, '\n')
     genout(outfile, '// Generated register constants for {}.\n', block.name)
 
-    if 'BUILD_GIT_VERSION' in version_stamp:
-        genout(outfile, '// Built for {}\n', version_stamp['BUILD_GIT_VERSION'])
-    if 'BUILD_SCM_REVISION' in version_stamp:
-        genout(outfile, '// https://github.com/lowRISC/opentitan/tree/{}\n', version_stamp['BUILD_SCM_REVISION'])
-    if 'BUILD_SCM_STATUS' in version_stamp:
-        genout(outfile, '// Tree status: {}\n', version_stamp['BUILD_SCM_STATUS'])
-    if 'BUILD_TIMESTAMP' in version_stamp:
-        tm = int(version_stamp['BUILD_TIMESTAMP'])
-        dt = datetime.utcfromtimestamp(tm)
-        genout(outfile, '// Build date: {}\n\n', dt.isoformat())
+    if version.scm_version() is not None:
+        genout(outfile, '// Built for {}\n', version.scm_version())
+    if version.scm_revision() is not None:
+        genout(outfile, '// https://github.com/lowRISC/opentitan/tree/{}\n', version.scm_revision())
+    if version.scm_status() is not None:
+        genout(outfile, '// Tree status: {}\n', version.scm_status())
 
     if src_file:
         genout(outfile, '// Original reference file: {}\n', src_file)

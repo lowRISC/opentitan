@@ -4,12 +4,13 @@
 """This contains a class which is used to help generate `top_{name}.rs`."""
 from collections import OrderedDict, defaultdict
 from typing import Dict, List, Optional, Tuple
-from datetime import datetime
 
 from mako.template import Template
 from reggen.ip_block import IpBlock
 
 from .lib import Name, get_base_and_size
+
+from version_file import VersionInformation
 
 RUST_FILE_EXTENSIONS = (".rs")
 
@@ -188,35 +189,21 @@ class RustArrayMapping(object):
 
 
 class RustFileHeader(object):
-    def __init__(self, name: str, version_stamp: Dict[str, str], skip: bool):
-        self.name = name
+    def __init__(self, version_stamp: VersionInformation):
         self.data = version_stamp
-        self.skip = skip
-        tm = int(version_stamp.get('BUILD_TIMESTAMP', 0))
-        self.tstamp = datetime.utcfromtimestamp(tm) if tm else datetime.utcnow()
-
-    def build(self) -> str:
-        return self.data.get('BUILD_GIT_VERSION', '<unknown>')
-
-    def scm_sha(self) -> str:
-        return self.data.get('BUILD_SCM_REVISION', '<unknown>')
-
-    def scm_status(self) -> str:
-        return self.data.get('BUILD_SCM_STATUS', '<unknown>')
-
-    def time_stamp(self) -> str:
-        return self.tstamp.isoformat()
 
     def render(self):
-        if self.skip:
-            return Template(("")).render(header=self)
-        else:
-            template = ("\n"
-                        "// Built for ${header.build()}\n"
-                        "// https://github.com/lowRISC/opentitan/tree/${header.scm_sha()}\n"
-                        "// Tree status: ${header.scm_status()}\n"
-                        "// Build date: ${header.time_stamp()}\n")
-            return Template(template).render(header=self)
+        template = ""
+        if self.data.scm_version() is not None:
+            template += "// Built for ${header.data.scm_version()}\n"
+        if self.data.scm_revision() is not None:
+            template += ("// https://github.com/lowRISC/opentitan/tree/"
+                         "${header.data.scm_revision()}\n")
+        if self.data.scm_status() is not None:
+            template += "// Tree status: ${header.data.scm_status()}\n"
+        if template != "":
+            template = "\n" + template
+        return Template(template).render(header=self)
 
 
 class TopGenRust:
@@ -225,7 +212,7 @@ class TopGenRust:
         self._top_name = Name(["top"]) + Name.from_snake_case(top_info["name"])
         self._name_to_block = name_to_block
         self.regwidth = int(top_info["datawidth"])
-        self.file_header = RustFileHeader("foo.tpl", version_stamp, len(version_stamp) == 0)
+        self.file_header = RustFileHeader(version_stamp)
 
         self._init_plic_targets()
         self._init_plic_mapping()
