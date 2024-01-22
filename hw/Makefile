@@ -13,7 +13,6 @@ REG_OUTPUT_AUTOGEN_DIR ?= ${PRJ_DIR}/build/autogen
 IPS ?= aes           \
        adc_ctrl      \
        aon_timer     \
-       clkmgr        \
        entropy_src   \
        csrng         \
        edn           \
@@ -26,11 +25,9 @@ IPS ?= aes           \
        lc_ctrl       \
        otp_ctrl      \
        pattgen       \
-       pinmux        \
        pwm           \
        pwrmgr        \
        rom_ctrl      \
-       rstmgr        \
        rv_core_ibex  \
        rv_dm         \
        rv_timer      \
