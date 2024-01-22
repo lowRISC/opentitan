@@ -19,11 +19,11 @@ use crate::transport::{Capability, ProgressIndicator};
 
 mod eeprom;
 mod legacy;
+mod legacy_rescue;
 mod primitive;
-mod rescue;
 
 pub use legacy::LegacyBootstrapError;
-pub use rescue::RescueError;
+pub use legacy_rescue::LegacyRescueError;
 
 #[derive(Debug, Error, Serialize, Deserialize)]
 pub enum BootstrapError {
@@ -37,7 +37,6 @@ impl_serializable_error!(BootstrapError);
 /// The `Legacy` SPI protocol is used by previous generations of Google Titan-class chips.
 /// The `LegacyRescue` UART protocol is used by previous generations of Google Titan-class chips.
 /// The `Eeprom` SPI protocol is planned to be implemented for OpenTitan.
-/// The `Rescue` value is a deprecated alias for `LegacyRescue`.
 /// The 'Emulator' value indicates that this tool has a direct way
 /// of communicating with the OpenTitan emulator, to replace the
 /// contents of the emulated flash storage.
@@ -47,7 +46,6 @@ pub enum BootstrapProtocol {
     Legacy,
     LegacyRescue,
     Eeprom,
-    Rescue,
     Emulator,
 }
 
@@ -147,8 +145,7 @@ impl<'a> Bootstrap<'a> {
         let updater: Box<dyn UpdateProtocol> = match options.protocol {
             BootstrapProtocol::Primitive => Box::new(primitive::Primitive::new(options)),
             BootstrapProtocol::Legacy => Box::new(legacy::Legacy::new(options)),
-            BootstrapProtocol::LegacyRescue => Box::new(rescue::Rescue::new(options)),
-            BootstrapProtocol::Rescue => Box::new(rescue::Rescue::new(options)),
+            BootstrapProtocol::LegacyRescue => Box::new(legacy_rescue::LegacyRescue::new(options)),
             BootstrapProtocol::Eeprom => Box::new(eeprom::Eeprom::new()),
             BootstrapProtocol::Emulator => {
                 // Not intended to be implemented by this struct.
