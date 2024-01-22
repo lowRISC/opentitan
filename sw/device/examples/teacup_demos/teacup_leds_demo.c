@@ -86,9 +86,12 @@ enum {
 
   // Other
   kTotalNumLedsOnBoard = 4,
-  kNumLedCycles = 10,
+  kNumLedCycles = 100,
   kNumColorsInCycle = 4,
-  kLedCyclePauseSeconds = 2,
+  kLedCyclePauseMilliseconds = 200,
+  kLedBrightnessLowPercent = 5,
+  kLedBrightnessHighPercent = 40,
+  kLedBrightnessStepPercent = 5,
   kDefaultTimeoutMicros = 1000,
 };
 
@@ -215,7 +218,7 @@ static status_t config_i2c_led_controller(void) {
 
   // Set global current control to ~30%.
   data[0] = kGlobalCurrentControlRegAddr;
-  data[1] = 0x55;
+  data[1] = (uint8_t)((float)0xFF * (float)kLedBrightnessLowPercent / 100.0);
   TRY(i2c_testutils_write(&i2c, kDeviceAddr, /*byte_count=*/sizeof(data), data,
                           /*skip_stop=*/false));
   TRY(read_led_ctrl_reg(kGlobalCurrentControlRegAddr, &reg_val));
@@ -233,6 +236,13 @@ static status_t config_i2c_led_controller(void) {
     data[0]++;
   }
 
+  return OK_STATUS();
+}
+
+static status_t set_global_led_brightness(uint8_t brightness) {
+  uint8_t data[2] = {kGlobalCurrentControlRegAddr, brightness};
+  TRY(i2c_testutils_write(&i2c, kDeviceAddr, /*byte_count=*/sizeof(data), data,
+                          /*skip_stop=*/false));
   return OK_STATUS();
 }
 
@@ -261,6 +271,14 @@ bool test_main(void) {
   CHECK_STATUS_OK(config_i2c_led_controller());
   CHECK_STATUS_OK(turn_on_leds());
 
+  // Brightness levels and colors.
+  uint8_t brightness_start =
+      (uint8_t)((float)0xFF * (float)kLedBrightnessLowPercent / 100.0);
+  uint8_t brightness_end =
+      (uint8_t)((float)0xFF * (float)kLedBrightnessHighPercent / 100.0);
+  uint8_t brightness_step =
+      (uint8_t)((float)0xFF * (float)kLedBrightnessStepPercent / 100.0);
+  uint8_t curr_brightness = brightness_start;
   const rgb_color_t kColorCycle[kNumColorsInCycle] = {
       kColorBlue,
       kColorRed,
@@ -268,12 +286,19 @@ bool test_main(void) {
       kColorGreen,
   };
 
+  // Cycle through brightness levels and colors.
   for (size_t i = 0; i < kNumLedCycles; ++i) {
     for (size_t j = 0; j < kNumColorsInCycle; ++j) {
       CHECK_STATUS_OK(
           set_led_ctrl_color((i + j) % kTotalNumLedsOnBoard, &kColorCycle[j]));
     }
-    busy_spin_micros(kLedCyclePauseSeconds * 1000 * 1000);
+    CHECK_STATUS_OK(set_global_led_brightness(curr_brightness));
+    curr_brightness += brightness_step;
+    if (curr_brightness >= brightness_end ||
+        curr_brightness <= brightness_start) {
+      brightness_step *= -1;
+    }
+    busy_spin_micros(kLedCyclePauseMilliseconds * 1000);
   }
 
   CHECK_STATUS_OK(turn_off_leds());
