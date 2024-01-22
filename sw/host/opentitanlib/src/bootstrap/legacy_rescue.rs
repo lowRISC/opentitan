@@ -82,7 +82,7 @@ impl Frame {
 
         ensure!(
             payload.starts_with(&Self::MAGIC_HEADER),
-            RescueError::ImageFormatError
+            LegacyRescueError::ImageFormatError
         );
 
         // Find second occurrence of magic value, not followed by signature of encrypted
@@ -92,7 +92,7 @@ impl Frame {
             .position(|c| c[0..4] == Self::MAGIC_HEADER && c[4..8] != Self::CRYPTOLIB_TELL)
         {
             Some(n) => (n + 1) * Self::HEADER_ALIGNMENT,
-            None => bail!(RescueError::ImageFormatError),
+            None => bail!(LegacyRescueError::ImageFormatError),
         };
 
         // Inspect the length field of the RW header.
@@ -160,7 +160,7 @@ impl Frame {
 }
 
 #[derive(Debug, Error, serde::Serialize, serde::Deserialize)]
-pub enum RescueError {
+pub enum LegacyRescueError {
     #[error("Unrecognized image file format")]
     ImageFormatError,
     #[error("Synchronization error communicating with boot rom")]
@@ -168,19 +168,19 @@ pub enum RescueError {
     #[error("Repeated errors communicating with boot rom")]
     RepeatedErrors,
 }
-impl_serializable_error!(RescueError);
+impl_serializable_error!(LegacyRescueError);
 
 /// Implements the UART rescue protocol of Google Ti50 firmware.
-pub struct Rescue {}
+pub struct LegacyRescue {}
 
-impl Rescue {
+impl LegacyRescue {
     /// Abort if a block has not been accepted after this number of retries.
     const MAX_CONSECUTIVE_ERRORS: u32 = 50;
     /// Take some measure to regain protocol synchronization, in case of this number of retries
     /// of the same block.
     const RESYNC_AFTER_CONSECUTIVE_ERRORS: u32 = 3;
 
-    /// Creates a new `Rescue` protocol updater from `options`.
+    /// Creates a new `LegacyRescue` protocol updater from `options`.
     pub fn new(_options: &BootstrapOptions) -> Self {
         Self {}
     }
@@ -248,7 +248,7 @@ impl Rescue {
                 }
             }
         }
-        Err(RescueError::SyncError.into())
+        Err(LegacyRescueError::SyncError.into())
     }
 
     /// Reset the chip and send the magic 'r' character at the opportune moment during boot in
@@ -286,11 +286,11 @@ impl Rescue {
             }
             eprintln!(" Failed to enter rescue mode.");
         }
-        Err(RescueError::RepeatedErrors.into())
+        Err(LegacyRescueError::RepeatedErrors.into())
     }
 }
 
-impl UpdateProtocol for Rescue {
+impl UpdateProtocol for LegacyRescue {
     fn verify_capabilities(
         &self,
         _container: &Bootstrap,
@@ -360,7 +360,7 @@ impl UpdateProtocol for Rescue {
                     }
                 }
             }
-            bail!(RescueError::RepeatedErrors);
+            bail!(LegacyRescueError::RepeatedErrors);
         }
 
         // Reset, in order to leave rescue mode.
