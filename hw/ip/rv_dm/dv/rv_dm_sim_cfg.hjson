@@ -250,6 +250,10 @@
       uvm_test_seq: rv_dm_jtag_dtm_hard_reset_vseq
       reseed: 2
     }
+    {
+      name: rv_dm_stress_all
+      uvm_test_seq: rv_dm_stress_all_vseq
+    }
   ]
 
   // List of regressions.
