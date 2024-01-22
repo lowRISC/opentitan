@@ -111,7 +111,7 @@ impl From<anyhow::Error> for SerializedError {
             Box::new,
             crate::bootstrap::BootstrapError,
             crate::bootstrap::LegacyBootstrapError,
-            crate::bootstrap::RescueError,
+            crate::bootstrap::LegacyRescueError,
             crate::io::console::ConsoleError,
             crate::io::emu::EmuError,
             crate::io::gpio::GpioError,
