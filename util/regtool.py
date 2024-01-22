@@ -229,7 +229,7 @@ def main():
             sys.exit(1)
 
     # Extract version stamp from file
-    version_stamp = version_file.parse_version_file(args.version_stamp)
+    version_stamp = version_file.VersionInformation(args.version_stamp)
 
     if fmt == 'doc':
         with outfile:

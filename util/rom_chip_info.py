@@ -52,7 +52,8 @@ def read_version_file(version_info_path) -> int:
     if the revision cannot be found.
     """
 
-    version = version_info.get('BUILD_SCM_REVISION', "8badF00d")
+    version_info = version_file.VersionInformation(version_info_path)
+    version = version_info.scm_revision("")
     return int(version, base=16)
 
 
@@ -84,7 +85,7 @@ def main():
     args = parser.parse_args()
 
     # Extract version stamp from file
-    version = read_version_file(version_file.parse_version_file(args.ot_version_file))
+    version = read_version_file(args.ot_version_file)
     log.info("Version: %x" % (version, ))
 
     generated_source = generate_chip_info_c_source(version)
