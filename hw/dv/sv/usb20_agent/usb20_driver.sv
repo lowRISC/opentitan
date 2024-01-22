@@ -59,8 +59,8 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     $cast(m_token_pkt, seq_item);
     m_token_pkt.print();
     // Modified each field of the packet to start with the Least Significant Bit (LSB)
-    m_token_pkt.m_pid_type = {<<4{m_token_pkt.m_pid_type}};
-    m_token_pkt.m_pid_type = {<<{m_token_pkt.m_pid_type}};
+    m_token_pkt.m_pid_type = pid_type_e'({<<4{m_token_pkt.m_pid_type}});
+    m_token_pkt.m_pid_type = pid_type_e'({<<{m_token_pkt.m_pid_type}});
     m_token_pkt.address = {<<{m_token_pkt.address}};
     m_token_pkt.endpoint = {<<{m_token_pkt.endpoint}};
     m_token_pkt.crc5 = {<<{m_token_pkt.crc5}};
@@ -90,8 +90,8 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     $cast(m_data_pkt, seq_item);
     m_data_pkt.print();
     // Modified each field of the packet to start with the Least Significant Bit (LSB)
-    m_data_pkt.m_pid_type = {<<4{m_data_pkt.m_pid_type}};
-    m_data_pkt.m_pid_type = {<<{m_data_pkt.m_pid_type}};
+    m_data_pkt.m_pid_type = pid_type_e'({<<4{m_data_pkt.m_pid_type}});
+    m_data_pkt.m_pid_type = pid_type_e'({<<{m_data_pkt.m_pid_type}});
     m_data_pkt.data = {<<8{m_data_pkt.data}};
     m_data_pkt.data = {<<{m_data_pkt.data}};
     m_data_pkt.crc16 = {<<{m_data_pkt.crc16}};
@@ -115,8 +115,8 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     bit driver_handshake_pkt[];
     bit comp_handshake_pkt[];
     $cast(m_handshake_pkt, seq_item);
-    m_handshake_pkt.m_pid_type = {<<4{m_handshake_pkt.m_pid_type}};
-    m_handshake_pkt.m_pid_type = {<<{m_handshake_pkt.m_pid_type}};
+    m_handshake_pkt.m_pid_type = pid_type_e'({<<4{m_handshake_pkt.m_pid_type}});
+    m_handshake_pkt.m_pid_type = pid_type_e'({<<{m_handshake_pkt.m_pid_type}});
     m_handshake_pkt.pack(driver_handshake_pkt);
     `uvm_info(`gfn, $sformatf("Driver Handshake_Packet = %p", driver_handshake_pkt), UVM_DEBUG)
     // To make complete packet need to attach SYNC at start of packet
@@ -287,6 +287,6 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
       received_pid[i] = decoded_received_pkt[i + 8];
     end
     received_pid = {<<4{received_pid}};
-    rsp_item.m_pid_type = received_pid;
+    rsp_item.m_pid_type = pid_type_e'(received_pid);
   endtask
 endclass
