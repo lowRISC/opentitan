@@ -86,7 +86,7 @@ class usb20_monitor extends dv_base_monitor #(
     sof_result = sof_p'(bit_destuffed);
 
     `uvm_info(`gfn, $sformatf("Final Sof Packet = %b", sof_result), UVM_DEBUG)
-    m_sof_pkt.m_pid_type = sof_result[9:2];
+    m_sof_pkt.m_pid_type = pid_type_e'(sof_result[9:2]);
     `uvm_info(`gfn, $sformatf("Sof Pid = %b", m_sof_pkt.m_pid_type), UVM_DEBUG)
     m_sof_pkt.framecnt = sof_result[20:10];
     `uvm_info(`gfn, $sformatf("Sof framecnt = %b", m_sof_pkt.framecnt), UVM_DEBUG)
@@ -122,7 +122,7 @@ class usb20_monitor extends dv_base_monitor #(
     token_result = token_p'(bit_destuffed);
 
     `uvm_info(`gfn, $sformatf("Final Token Packet = %b", token_result), UVM_DEBUG)
-    m_token_pkt.m_pid_type = token_result[26:19];
+    m_token_pkt.m_pid_type = pid_type_e'(token_result[26:19]);
     `uvm_info(`gfn, $sformatf("Token Pid = %b", m_token_pkt.m_pid_type), UVM_DEBUG)
     m_token_pkt.address = token_result[18:12];
     `uvm_info(`gfn, $sformatf("Token Address = %b", m_token_pkt.address), UVM_DEBUG)
@@ -163,7 +163,7 @@ class usb20_monitor extends dv_base_monitor #(
     for (int i = 0; i < 8; i++) begin
       data_pid[i] = bit_destuffed[i + 8];
     end
-    m_data_pkt.m_pid_type = data_pid;
+    m_data_pkt.m_pid_type = pid_type_e'(data_pid);
     `uvm_info(`gfn, $sformatf("Data Pid = %b", m_data_pkt.m_pid_type), UVM_DEBUG)
     // Data_in_bits
     for (int i = 0 ; i < bit_destuffed.size() - 35; i++) begin
@@ -211,9 +211,9 @@ class usb20_monitor extends dv_base_monitor #(
     handshake_result = handshake_p'(bit_destuffed);
 
     `uvm_info(`gfn, $sformatf("Final Handshake Packet = %b", handshake_result), UVM_DEBUG)
-    m_handshake_pkt.m_pid_type = handshake_result[10:3];
-    m_handshake_pkt.m_pid_type = {<<4{m_handshake_pkt.m_pid_type}};
-    m_handshake_pkt.m_pid_type = {<<{m_handshake_pkt.m_pid_type}};
+    m_handshake_pkt.m_pid_type = pid_type_e'(handshake_result[10:3]);
+    m_handshake_pkt.m_pid_type = pid_type_e'({<<4{m_handshake_pkt.m_pid_type}});
+    m_handshake_pkt.m_pid_type = pid_type_e'({<<{m_handshake_pkt.m_pid_type}});
     `uvm_info(`gfn, $sformatf("Handshake Pid = %b", m_handshake_pkt.m_pid_type), UVM_DEBUG)
     analysis_port.write(m_handshake_pkt);
   endtask

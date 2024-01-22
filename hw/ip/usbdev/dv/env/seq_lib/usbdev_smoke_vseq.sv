@@ -48,7 +48,7 @@ class usbdev_smoke_vseq extends usbdev_base_vseq;
     csr_update(ral.avbuffer);
   endtask
 
-  task call_token_sequence(input string pkt_type, input string pid_type);
+  task call_token_sequence(input pkt_type_e pkt_type, input pid_type_e pid_type);
     RSP rsp_item;
     `uvm_create_on(m_token_pkt, p_sequencer.usb20_sequencer_h)
     m_token_pkt.m_pkt_type = pkt_type;
@@ -58,20 +58,20 @@ class usbdev_smoke_vseq extends usbdev_base_vseq;
       m_usb20_item = m_token_pkt;
       start_item(m_token_pkt);
       finish_item(m_token_pkt);
-      if (pid_type == "PidTypeInToken") begin
+      if (pid_type == PidTypeInToken) begin
         get_response(rsp_item);
         $cast(rsp_itm, rsp_item);
         get_response_from_device(rsp_itm, PidTypeData1);
       end
   endtask
 
-  task call_data_sequence(input string pkt_type, input string pid_type);
+  task call_data_sequence(input pkt_type_e pkt_type, input pid_type_e pid_type);
     RSP rsp_item;
     `uvm_create_on(m_data_pkt, p_sequencer.usb20_sequencer_h)
     m_data_pkt.m_pkt_type = pkt_type;
     m_data_pkt.m_pid_type = pid_type;
-    m_data_pkt.m_bmRT = 8'h80;
-    m_data_pkt.m_bR = 8'h06;
+    m_data_pkt.m_bmRT = bmRequestType3;
+    m_data_pkt.m_bR = bRequestGET_DESCRIPTOR;
     assert(m_data_pkt.randomize());
     m_usb20_item = m_data_pkt;
     m_data_pkt.set_payload (m_data_pkt.m_bmRT, m_data_pkt.m_bR,8'h00, 8'h01, 8'h00, 8'h00,
@@ -83,7 +83,7 @@ class usbdev_smoke_vseq extends usbdev_base_vseq;
     get_response_from_device(rsp_itm, PidTypeAck);
   endtask
 
-  task get_response_from_device(usb20_item rsp_itm, input string pid_type);
+  task get_response_from_device(usb20_item rsp_itm, input pid_type_e pid_type);
     `uvm_create_on(m_handshake_pkt, p_sequencer.usb20_sequencer_h)
     m_handshake_pkt.m_pid_type = pid_type;
     m_usb20_item = m_handshake_pkt;

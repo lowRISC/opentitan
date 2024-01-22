@@ -5,7 +5,7 @@
 interface usb20_block_if (
   input clk_i,
   input rst_ni,
-  output wire usb_vbus,
+  output logic usb_vbus,
   inout wire usb_p,
   inout wire usb_n
 );
