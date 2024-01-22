@@ -54,8 +54,7 @@ module prim_sha2 import prim_sha2_pkg::*;
   // tie off unused input ports and signals slices
   if (!MultimodeEn) begin : gen_tie_unused
     logic unused_signals;
-    assign unused_signals = ^{wipe_v_i[63:32], digest_mode_i, shaf_rdata[63:32],
-                              digest_mode_flag_d, digest_mode_flag_q};
+    assign unused_signals = ^{wipe_v_i[63:32], shaf_rdata[63:32]};
   end
 
   assign digest_mode_flag_d = hash_start_i  ? digest_mode_i   :    // latch in configured mode
@@ -272,8 +271,6 @@ module prim_sha2 import prim_sha2_pkg::*;
         round_d = round_q + 1;
       end
     end
-    // assign most significant bit round_d (and consequently round_q) to constant 0
-    if (!MultimodeEn) round_d[RndWidth512-1] = 'b0;
   end
 
   // update round counter (shared)
@@ -309,8 +306,8 @@ module prim_sha2 import prim_sha2_pkg::*;
   fifoctl_state_e fifo_st_q, fifo_st_d;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
-    if      (!rst_ni)    fifo_st_q <= FifoIdle;
-    else                 fifo_st_q <= fifo_st_d;
+    if (!rst_ni) fifo_st_q <= FifoIdle;
+    else         fifo_st_q <= fifo_st_d;
   end
 
   always_comb begin
@@ -421,7 +418,7 @@ module prim_sha2 import prim_sha2_pkg::*;
           init_hash = 1'b1;
           sha_st_d  = ShaCompress;
         end else begin
-          sha_st_d = ShaIdle;
+          sha_st_d  = ShaIdle;
         end
       end
 
