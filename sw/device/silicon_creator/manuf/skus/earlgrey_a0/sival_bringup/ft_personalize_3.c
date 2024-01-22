@@ -15,6 +15,7 @@
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
+#include "sw/device/silicon_creator/lib/drivers/kmac.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/keymgr_binding_value.h"
 #include "sw/device/silicon_creator/lib/otbn_boot_services.h"
@@ -74,6 +75,8 @@ static status_t personalize(ujson_t *uj) {
 
   // Advance keymgr to Initialized state.
   TRY(entropy_complex_init());
+  // Initialize KMAC for key manager operations.
+  TRY(kmac_keymgr_configure());
   keymgr_advance_state();
   TRY(keymgr_state_check(kKeymgrStateInit));
 
@@ -100,6 +103,8 @@ static status_t personalize(ujson_t *uj) {
          kAttestationPublicKeyCoordBytes);
   memcpy(out_data.uds_certificate.y, curr_pubkey.y,
          kAttestationPublicKeyCoordBytes);
+  TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageUdsCertificate,
+                            kFlashCtrlEraseTypePage));
   TRY(flash_ctrl_info_write(&kFlashCtrlInfoPageUdsCertificate,
                             kFlashInfoFieldUdsCertificate.byte_offset,
                             sizeof(attestation_public_key_t) / sizeof(uint32_t),
@@ -136,6 +141,8 @@ static status_t personalize(ujson_t *uj) {
          kAttestationPublicKeyCoordBytes);
   memcpy(out_data.cdi_0_certificate.y, curr_pubkey.y,
          kAttestationPublicKeyCoordBytes);
+  TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageCdi0Certificate,
+                            kFlashCtrlEraseTypePage));
   TRY(flash_ctrl_info_write(&kFlashCtrlInfoPageCdi0Certificate,
                             kFlashInfoFieldCdi0Certificate.byte_offset,
                             sizeof(attestation_public_key_t) / sizeof(uint32_t),
@@ -165,6 +172,8 @@ static status_t personalize(ujson_t *uj) {
          kAttestationPublicKeyCoordBytes);
   memcpy(out_data.cdi_1_certificate.y, curr_pubkey.y,
          kAttestationPublicKeyCoordBytes);
+  TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageCdi1Certificate,
+                            kFlashCtrlEraseTypePage));
   TRY(flash_ctrl_info_write(&kFlashCtrlInfoPageCdi1Certificate,
                             kFlashInfoFieldCdi1Certificate.byte_offset,
                             sizeof(attestation_public_key_t) / sizeof(uint32_t),
