@@ -13,13 +13,21 @@ interface rv_dm_if(input logic clk, input logic rst_n);
   logic [NUM_HARTS-1:0]   unavailable;
 
   // DUT outputs.
-  logic ndmreset_req;
-  logic dmactive;
-  logic [NUM_HARTS-1:0] debug_req;
+  wire ndmreset_req;
+  wire dmactive;
+  wire [NUM_HARTS-1:0] debug_req;
 
   // Disable TLUL host SBA assertions when injecting intg errors on the response channel.
   bit disable_tlul_assert_host_sba_resp_svas;
 
-  // TODO: add clocking blocks.
+  clocking cb @(posedge clk);
+    output lc_hw_debug_en;
+    output scanmode;
+    output scan_rst_n;
+    output unavailable;
+    input ndmreset_req;
+    input dmactive;
+    input debug_req;
+  endclocking
 
 endinterface

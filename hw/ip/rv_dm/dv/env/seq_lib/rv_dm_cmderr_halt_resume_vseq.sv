@@ -22,7 +22,7 @@ class rv_dm_cmderr_halt_resume_vseq extends rv_dm_base_vseq;
       data = $urandom_range(0,31);
       csr_wr(.ptr(jtag_dmi_ral.command), .value(data));
       cfg.clk_rst_vif.wait_clks($urandom_range(0, 1000));
-      cfg.rv_dm_vif.unavailable <= data;
+      cfg.rv_dm_vif.cb.unavailable <= data;
       cfg.clk_rst_vif.wait_clks($urandom_range(0, 1000));
       csr_rd(.ptr(jtag_dmi_ral.abstractcs), .value(rdata));
       cfg.clk_rst_vif.wait_clks($urandom_range(0, 1000));
