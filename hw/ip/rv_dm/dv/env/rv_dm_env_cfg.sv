@@ -63,8 +63,8 @@ class rv_dm_env_cfg extends cip_base_env_cfg #(.RAL_T(rv_dm_regs_reg_block));
     `uvm_info(`gfn, "Fixing reset values in jtag_dmi_ral", UVM_LOW)
     jtag_dmi_ral.hartinfo.dataaddr.set_reset(dm::DataAddr);
     jtag_dmi_ral.hartinfo.datasize.set_reset(dm::DataCount);
-    jtag_dmi_ral.hartinfo.dataaccess.set_reset(1);  // TODO: verify this!
-    jtag_dmi_ral.hartinfo.nscratch.set_reset(2);  // TODO: verify this!
+    jtag_dmi_ral.hartinfo.dataaccess.set_reset(1);
+    jtag_dmi_ral.hartinfo.nscratch.set_reset(2);
     jtag_dmi_ral.abstractcs.datacount.set_reset(dm::DataCount);
     jtag_dmi_ral.abstractcs.progbufsize.set_reset(dm::ProgBufSize);
     jtag_dmi_ral.dmstatus.authenticated.set_reset(1);  // No authentication performed.
