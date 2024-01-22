@@ -49,8 +49,13 @@ class rv_dm_jtag_dmi_debug_disabled_vseq extends rv_dm_base_vseq;
       // Possibly wait a bit
       maybe_delay();
 
-      // Set lc_hw_debug_en to Off.
-      cfg.rv_dm_vif.lc_hw_debug_en = lc_ctrl_pkg::Off;
+      // Set lc_hw_debug_en to some value other than On.
+      begin
+        lc_ctrl_pkg::lc_tx_t lc_hw_debug_en;
+        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(lc_hw_debug_en,
+                                           lc_hw_debug_en != lc_ctrl_pkg::On;)
+        cfg.rv_dm_vif.lc_hw_debug_en = lc_hw_debug_en;
+      end
 
       // Write a different value to abstractdata[0] than read it back. The write should be ignored
       // and the register should read as its reset value (because the debug block is disabled).
