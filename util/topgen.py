@@ -1127,7 +1127,7 @@ def main():
         raise SystemExit(sys.exc_info()[1])
 
     # Extract version stamp from file
-    version_stamp = version_file.parse_version_file(args.version_stamp)
+    version_stamp = version_file.VersionInformation(args.version_stamp)
 
     # Initialize RNG for compile-time netlist constants.
     # If specified, override the seed for random netlist constant computation.
