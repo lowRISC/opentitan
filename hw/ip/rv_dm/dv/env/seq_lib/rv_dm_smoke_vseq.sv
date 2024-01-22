@@ -29,7 +29,7 @@ class rv_dm_smoke_vseq extends rv_dm_base_vseq;
       // Verify that writing to haltreq results in debug_req output to be set.
       csr_wr(.ptr(jtag_dmi_ral.dmcontrol.haltreq), .value(data));
       cfg.clk_rst_vif.wait_clks($urandom_range(0, 1000));
-      `DV_CHECK_EQ(cfg.rv_dm_vif.debug_req, data)
+      `DV_CHECK_EQ(cfg.rv_dm_vif.cb.debug_req, data)
       cfg.clk_rst_vif.wait_clks($urandom_range(1, 10));
     end
     repeat ($urandom_range(1, 10)) begin
@@ -37,13 +37,13 @@ class rv_dm_smoke_vseq extends rv_dm_base_vseq;
       // Verify that writing to ndmreset results in ndmreset output to be set.
       csr_wr(.ptr(jtag_dmi_ral.dmcontrol.ndmreset), .value(data));
       cfg.clk_rst_vif.wait_clks($urandom_range(0, 1000));
-      `DV_CHECK_EQ(cfg.rv_dm_vif.ndmreset_req, data)
+      `DV_CHECK_EQ(cfg.rv_dm_vif.cb.ndmreset_req, data)
       cfg.clk_rst_vif.wait_clks($urandom_range(1, 10));
     end
     repeat ($urandom_range(1, 10)) begin
       data = $urandom_range(0, 1);
       // Verify that the dmstatus[*unavail] field tracks the unavailable_i input.
-      cfg.rv_dm_vif.unavailable <= data;
+      cfg.rv_dm_vif.cb.unavailable <= data;
       csr_rd(.ptr(jtag_dmi_ral.dmstatus), .value(data));
       `DV_CHECK_EQ(cfg.rv_dm_vif.unavailable,
                    get_field_val(jtag_dmi_ral.dmstatus.anyunavail, data))
@@ -56,7 +56,7 @@ class rv_dm_smoke_vseq extends rv_dm_base_vseq;
       // Verify that writing to dmactive results in dmactive output to be set.
       csr_wr(.ptr(jtag_dmi_ral.dmcontrol.dmactive), .value(data));
       cfg.clk_rst_vif.wait_clks($urandom_range(0, 1000));
-      `DV_CHECK_EQ(cfg.rv_dm_vif.dmactive, data)
+      `DV_CHECK_EQ(cfg.rv_dm_vif.cb.dmactive, data)
       cfg.clk_rst_vif.wait_clks($urandom_range(1, 10));
     end
   endtask : body

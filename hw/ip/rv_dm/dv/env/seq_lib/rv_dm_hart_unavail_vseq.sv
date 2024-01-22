@@ -19,7 +19,7 @@ class rv_dm_hart_unavail_vseq extends rv_dm_base_vseq;
     uvm_reg_data_t data;
     repeat ($urandom_range(1, 10)) begin
       data = $urandom_range(0, 1);
-      cfg.rv_dm_vif.unavailable <= data;
+      cfg.rv_dm_vif.cb.unavailable <= data;
       csr_rd(.ptr(jtag_dmi_ral.dmstatus), .value(data));
       `DV_CHECK_EQ(cfg.rv_dm_vif.unavailable,
                    get_field_val(jtag_dmi_ral.dmstatus.anyunavail, data))

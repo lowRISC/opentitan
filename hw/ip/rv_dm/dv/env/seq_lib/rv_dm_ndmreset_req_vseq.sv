@@ -35,9 +35,9 @@ class rv_dm_ndmreset_req_vseq extends rv_dm_base_vseq;
       csr_wr(.ptr(jtag_dmi_ral.dmcontrol.ndmreset), .value(1));
       cfg.clk_rst_vif.wait_clks($urandom_range(0, 1000));
       csr_rd(.ptr(jtag_dmi_ral.dmcontrol), .value(rdata));
-      `DV_CHECK_EQ(cfg.rv_dm_vif.ndmreset_req,
+      `DV_CHECK_EQ(cfg.rv_dm_vif.cb.ndmreset_req,
       get_field_val(jtag_dmi_ral.dmcontrol.ndmreset, rdata))
-      cfg.rv_dm_vif.unavailable = 1;
+      cfg.rv_dm_vif.cb.unavailable <= 1;
       lc_hw_debug_en = lc_ctrl_pkg::Off;
       csr_rd(.ptr(jtag_dmi_ral.dmstatus), .value(rdata));
       `DV_CHECK_EQ(cfg.rv_dm_vif.unavailable,
@@ -45,10 +45,10 @@ class rv_dm_ndmreset_req_vseq extends rv_dm_base_vseq;
       csr_wr(.ptr(jtag_dmi_ral.dmcontrol.ndmreset), .value(0));
       cfg.clk_rst_vif.wait_clks($urandom_range(0, 1000));
       csr_rd(.ptr(jtag_dmi_ral.dmcontrol), .value(rdata));
-      `DV_CHECK_EQ(cfg.rv_dm_vif.ndmreset_req,
+      `DV_CHECK_EQ(cfg.rv_dm_vif.cb.ndmreset_req,
       get_field_val(jtag_dmi_ral.dmcontrol.ndmreset, rdata))
       cfg.clk_rst_vif.wait_clks($urandom_range(1, 1000));
-      cfg.rv_dm_vif.unavailable = 0;
+      cfg.rv_dm_vif.cb.unavailable <= 0;
       lc_hw_debug_en = lc_ctrl_pkg::On;
       csr_rd(.ptr(jtag_dmi_ral.progbuf[0]), .value(rdata));
       `DV_CHECK_EQ(rdata, 'h58710590)

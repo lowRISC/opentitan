@@ -45,11 +45,13 @@ class rv_dm_base_vseq extends cip_base_vseq #(
   task pre_start();
     // Initialize the input signals with defaults at the start of the sim.
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(lc_hw_debug_en)
-    cfg.rv_dm_vif.lc_hw_debug_en <= lc_hw_debug_en;
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(scanmode)
-    cfg.rv_dm_vif.scanmode <= scanmode;
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(unavailable)
+
+    cfg.rv_dm_vif.lc_hw_debug_en <= lc_hw_debug_en;
+    cfg.rv_dm_vif.scanmode <= scanmode;
     cfg.rv_dm_vif.unavailable <= unavailable;
+
     super.pre_start();
   endtask
 
@@ -83,22 +85,22 @@ class rv_dm_base_vseq extends cip_base_vseq #(
     uint delay;
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(delay, delay inside {[0:1000]};) // ns
     #(delay * 1ns);
-    cfg.rv_dm_vif.scan_rst_n <= 1'b0;
+    cfg.rv_dm_vif.cb.scan_rst_n <= 1'b0;
     // Wait for core clock cycles.
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(delay, delay inside {[2:50]};) // cycles
     cfg.clk_rst_vif.wait_clks(delay);
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(delay, delay inside {[0:1000]};) // ns
-    cfg.rv_dm_vif.scan_rst_n <= 1'b1;
+    cfg.rv_dm_vif.cb.scan_rst_n <= 1'b1;
   endtask
 
   virtual task apply_resets_concurrently(int reset_duration_ps = 0);
     int trst_n_duration_ps = cfg.m_jtag_agent_cfg.vif.tck_period_ps * $urandom_range(5, 20) *
         1000_000;
-    cfg.rv_dm_vif.scan_rst_n <= 1'b0;
+    cfg.rv_dm_vif.cb.scan_rst_n <= 1'b0;
     cfg.m_jtag_agent_cfg.vif.trst_n <= 1'b0;
     super.apply_resets_concurrently(dv_utils_pkg::max2(reset_duration_ps, trst_n_duration_ps));
     cfg.m_jtag_agent_cfg.vif.trst_n <= 1'b1;
-    cfg.rv_dm_vif.scan_rst_n <= 1'b1;
+    cfg.rv_dm_vif.cb.scan_rst_n <= 1'b1;
   endtask
 
   virtual task dut_shutdown();
