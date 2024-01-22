@@ -36,7 +36,7 @@ module prim_sha2_32 import prim_sha2_pkg::*;
   // tie off unused ports/port slices
   if (!MultimodeEn) begin : gen_tie_unused
     logic unused_signals;
-    assign unused_signals = ^{message_length_i[127:64],digest_mode_i};
+    assign unused_signals = ^{message_length_i[127:64], digest_mode_i};
   end
 
   // logic and prim_sha2 instantiation for MultimodeEn = 1
@@ -50,13 +50,13 @@ module prim_sha2_32 import prim_sha2_pkg::*;
     digest_mode_e digest_mode_flag_d, digest_mode_flag_q;
 
     always_comb begin : multimode_combinational
-      word_part_inc                 = 1'b0;
-      word_part_reset               = 1'b0;
-      full_word.mask                = 8'hFF; // to keep the padding buffer ready to receive
-      full_word.data                = 64'h0;
-      sha_process                   = 1'b0;
-      word_valid                    = 1'b0;
-      fifo_rready_o                 = 1'b0;
+      word_part_inc    = 1'b0;
+      word_part_reset  = 1'b0;
+      full_word.mask   = 8'hFF; // to keep the padding buffer ready to receive
+      full_word.data   = 64'h0;
+      sha_process      = 1'b0;
+      word_valid       = 1'b0;
+      fifo_rready_o    = 1'b0;
 
       // assign word_buffer
       if (!sha_en_i || hash_start_i) word_buffer_d = 0;
