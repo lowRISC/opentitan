@@ -384,8 +384,6 @@ def gen_tock(block: IpBlock, outfile: TextIO, src_file: Optional[str],
     fieldstr = fieldout.getvalue()
     fieldout.close()
 
-    tm = int(version_stamp.get('BUILD_TIMESTAMP', 0))
-    dt = datetime.utcfromtimestamp(tm) if tm else datetime.utcnow()
     # Opensource council has approved dual-licensing the generated files under
     # both Apache and MIT licenses.
     # Since these generated files are meant to be imported into the Tock
@@ -395,17 +393,20 @@ def gen_tock(block: IpBlock, outfile: TextIO, src_file: Optional[str],
         "// Licensed under the Apache License, Version 2.0 or the MIT License.\n"
     )
     genout(outfile, "// SPDX-License-Identifier: Apache-2.0 OR MIT\n")
-    genout(outfile, "// Copyright lowRISC contributors {}.\n", dt.year)
+    genout(outfile, "// Copyright lowRISC contributors.\n")
     genout(outfile, '\n')
     genout(outfile, '// Generated register constants for {}.\n', block.name)
 
-    genout(outfile, '// Built for {}\n',
-           version_stamp.get('BUILD_GIT_VERSION', '<unknown>'))
-    genout(outfile, '// https://github.com/lowRISC/opentitan/tree/{}\n',
-           version_stamp.get('BUILD_SCM_REVISION', '<unknown>'))
-    genout(outfile, '// Tree status: {}\n',
-           version_stamp.get('BUILD_SCM_STATUS', '<unknown>'))
-    genout(outfile, '// Build date: {}\n\n', dt.isoformat())
+    if 'BUILD_GIT_VERSION' in version_stamp:
+        genout(outfile, '// Built for {}\n', version_stamp['BUILD_GIT_VERSION'])
+    if 'BUILD_SCM_REVISION' in version_stamp:
+        genout(outfile, '// https://github.com/lowRISC/opentitan/tree/{}\n', version_stamp['BUILD_SCM_REVISION'])
+    if 'BUILD_SCM_STATUS' in version_stamp:
+        genout(outfile, '// Tree status: {}\n', version_stamp['BUILD_SCM_STATUS'])
+    if 'BUILD_TIMESTAMP' in version_stamp:
+        tm = int(version_stamp['BUILD_TIMESTAMP'])
+        dt = datetime.utcfromtimestamp(tm)
+        genout(outfile, '// Build date: {}\n\n', dt.isoformat())
 
     if src_file:
         genout(outfile, '// Original reference file: {}\n', src_file)
