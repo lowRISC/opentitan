@@ -321,9 +321,10 @@ otcrypto_status_t otcrypto_rsa_decrypt(
     const otcrypto_blinded_key_t *private_key,
     const otcrypto_hash_mode_t hash_mode,
     otcrypto_const_word32_buf_t ciphertext, otcrypto_const_byte_buf_t label,
-    otcrypto_byte_buf_t plaintext) {
+    otcrypto_byte_buf_t plaintext, size_t *plaintext_bytelen) {
   HARDENED_TRY(otcrypto_rsa_decrypt_async_start(private_key, ciphertext));
-  return otcrypto_rsa_decrypt_async_finalize(hash_mode, label, plaintext);
+  return otcrypto_rsa_decrypt_async_finalize(hash_mode, label, plaintext,
+                                             plaintext_bytelen);
 }
 
 /**
@@ -851,15 +852,15 @@ otcrypto_status_t otcrypto_rsa_encrypt_async_finalize(
       return rsa_encrypt_2048_finalize(ctext);
     }
     case kRsa3072NumWords: {
-      HARDENED_CHECK_EQ(ciphertext->len * sizeof(uint32_t),
+      HARDENED_CHECK_EQ(ciphertext.len * sizeof(uint32_t),
                         sizeof(rsa_3072_int_t));
-      rsa_3072_int_t *ctext = (rsa_3072_int_t *)ciphertext->data;
+      rsa_3072_int_t *ctext = (rsa_3072_int_t *)ciphertext.data;
       return rsa_encrypt_3072_finalize(ctext);
     }
     case kRsa4096NumWords: {
-      HARDENED_CHECK_EQ(ciphertext->len * sizeof(uint32_t),
+      HARDENED_CHECK_EQ(ciphertext.len * sizeof(uint32_t),
                         sizeof(rsa_4096_int_t));
-      rsa_4096_int_t *ctext = (rsa_4096_int_t *)ciphertext->data;
+      rsa_4096_int_t *ctext = (rsa_4096_int_t *)ciphertext.data;
       return rsa_encrypt_4096_finalize(ctext);
     }
     default:
@@ -951,25 +952,23 @@ otcrypto_status_t otcrypto_rsa_decrypt_async_start(
 
 otcrypto_status_t otcrypto_rsa_decrypt_async_finalize(
     const otcrypto_hash_mode_t hash_mode, otcrypto_const_byte_buf_t label,
-    otcrypto_byte_buf_t plaintext) {
+    otcrypto_byte_buf_t plaintext, size_t *plaintext_bytelen) {
   if (plaintext.data == NULL || label.data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
   // Call the unified `finalize()` operation, which will infer the RSA size
   // from OTBN.
-  size_t actual_plaintext_len;
   HARDENED_TRY(rsa_decrypt_finalize(hash_mode, label.data, label.len,
                                     plaintext.len, plaintext.data,
-                                    &actual_plaintext_len));
+                                    plaintext_bytelen));
 
   // Consistency check; this should never happen.
-  if (launder32(actual_plaintext_len) >= plaintext.len) {
+  if (launder32(*plaintext_bytelen) >= plaintext.len) {
     HARDENED_TRAP();
     return OTCRYPTO_FATAL_ERR;
   }
-  HARDENED_CHECK_LE(actual_plaintext_len, plaintext.len);
+  HARDENED_CHECK_LE(*plaintext_bytelen, plaintext.len);
 
-  plaintext.len = actual_plaintext_len;
   return OTCRYPTO_OK;
 }
