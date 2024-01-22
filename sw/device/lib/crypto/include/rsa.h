@@ -249,9 +249,8 @@ otcrypto_status_t otcrypto_rsa_encrypt(
  * of the hash function digest. If the plaintext buffer is not long enough,
  * this function will return an error.
  *
- * If the plaintext buffer is longer than necessary, this function will change
- * the `len` field in `plaintext` to match the actual plaintext length. At this
- * point, excess memory at the end of the buffer may be safely freed.
+ * Decryption recovers the original length of the plaintext buffer and will
+ * return its value in `plaintext_bytelen`.
  *
  * Note: RSA encryption is included for compatibility with legacy interfaces,
  * and is typically not recommended for modern applications because it is
@@ -263,13 +262,14 @@ otcrypto_status_t otcrypto_rsa_encrypt(
  * @param ciphertext Ciphertext to decrypt.
  * @param label Label for OAEP encoding.
  * @param[out] plaintext Buffer for the decrypted message.
+ * @param[out] plaintext_bytelen Recovered byte-length of plaintext.
  * @return Result of the RSA decryption operation.
  */
 otcrypto_status_t otcrypto_rsa_decrypt(
     const otcrypto_blinded_key_t *private_key,
     const otcrypto_hash_mode_t hash_mode,
     otcrypto_const_word32_buf_t ciphertext, otcrypto_const_byte_buf_t label,
-    otcrypto_byte_buf_t plaintext);
+    otcrypto_byte_buf_t plaintext, size_t *plaintext_bytelen);
 /**
  * Starts the asynchronous RSA key generation function.
  *
@@ -442,11 +442,12 @@ otcrypto_status_t otcrypto_rsa_decrypt_async_start(
  * @param hash_mode Hash function to use for OAEP encoding.
  * @param label Label for OAEP encoding.
  * @param[out] plaintext Buffer for the decrypted message.
+ * @param[out] plaintext_bytelen Recovered byte-length of plaintext.
  * @return Result of the RSA decryption finalize operation.
  */
 otcrypto_status_t otcrypto_rsa_decrypt_async_finalize(
     const otcrypto_hash_mode_t hash_mode, otcrypto_const_byte_buf_t label,
-    otcrypto_byte_buf_t plaintext);
+    otcrypto_byte_buf_t plaintext, size_t *plaintext_bytelen);
 
 #ifdef __cplusplus
 }  // extern "C"
