@@ -44,7 +44,7 @@ rust_binary(
         "stamp-env.txt",
     ],
     # stamping is necessary because opentitantool builds version.rs that needs it
-    stamp = 1,
+    stamp = -1,
     deps = [
         "//sw/host/opentitanlib",
         "//sw/host/ot_certs",

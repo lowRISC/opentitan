@@ -411,10 +411,17 @@ impl CommandDispatch for GpioMonitoringVcd {
         let version = super::version::VersionResponse::default();
         writeln!(
             &mut file,
-            "   opentitantool {} {} {}",
-            version.version,
-            if version.clean { "clean" } else { "modified" },
-            version.timestamp,
+            "   opentitantool {} {}",
+            version.version.unwrap_or("<unknown>".into()),
+            if let Some(clean) = version.clean {
+                if clean {
+                    "clean"
+                } else {
+                    "modified"
+                }
+            } else {
+                "<unknown>"
+            }
         )?;
         writeln!(&mut file, "$end")?;
         match clock_nature {
