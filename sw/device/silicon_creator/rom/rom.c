@@ -19,9 +19,7 @@
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/base/static_critical_version.h"
 #include "sw/device/silicon_creator/lib/boot_data.h"
-#include "sw/device/silicon_creator/lib/boot_log.h"
 #include "sw/device/silicon_creator/lib/cfi.h"
-#include "sw/device/silicon_creator/lib/chip_info.h"
 #include "sw/device/silicon_creator/lib/drivers/alert.h"
 #include "sw/device/silicon_creator/lib/drivers/ast.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
@@ -179,8 +177,7 @@ static rom_error_t rom_init(void) {
       otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_RET_RAM_RESET_MASK_OFFSET);
   if ((reset_reasons & reset_mask) != 0) {
     retention_sram_init();
-    retention_sram_get()->version = kRetentionSramVersion2;
-    retention_sram_get()->creator.last_shutdown_reason = kErrorOk;
+    retention_sram_get()->version = kRetentionSramVersion1;
   }
   // Store the reset reason in retention RAM and clear the register.
   retention_sram_get()->creator.reset_reasons = reset_reasons;
@@ -517,27 +514,14 @@ static rom_error_t rom_try_boot(void) {
   rom_error_t error = rom_verify(manifests.ordered[0], &flash_exec);
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomTryBoot, 4);
 
-  // Initialize boot_log
-  boot_log_t *boot_log = &retention_sram_get()->creator.boot_log;
-  boot_log->identifier = kBootLogIdentifier;
-  boot_log->chip_version = kChipInfo.scm_revision;
-  boot_log->bl0_slot = kBootLogUninitialized;
-
   if (launder32(error) == kErrorOk) {
     HARDENED_CHECK_EQ(error, kErrorOk);
-
-    boot_log->rom_ext_slot = kRomExtBootSlotA;
-    boot_log_digest_update(boot_log);
-
     CFI_FUNC_COUNTER_CHECK(rom_counters, kCfiRomVerify, 3);
     CFI_FUNC_COUNTER_INIT(rom_counters, kCfiRomTryBoot);
     CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomTryBoot, 1, kCfiRomBoot);
     HARDENED_RETURN_IF_ERROR(rom_boot(manifests.ordered[0], flash_exec));
     return kErrorRomBootFailed;
   }
-
-  boot_log->rom_ext_slot = kRomExtBootSlotB;
-  boot_log_digest_update(boot_log);
 
   CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomTryBoot, 5, kCfiRomVerify);
   HARDENED_RETURN_IF_ERROR(rom_verify(manifests.ordered[1], &flash_exec));
