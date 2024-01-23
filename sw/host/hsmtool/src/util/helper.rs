@@ -79,3 +79,13 @@ pub fn random_id() -> String {
     let id = random::<u64>();
     as_hex(&id.to_le_bytes())
 }
+
+/// Lock a file for exclusive access.
+pub fn lockfile<P: AsRef<Path>>(path: P) -> Result<File> {
+    let path = path.as_ref();
+    log::info!("Waiting for lockfile {path:?}");
+    let lf = File::create(path)?;
+    rustix::fs::flock(&lf, rustix::fs::FlockOperation::LockExclusive)?;
+    log::info!("Lock acquired");
+    Ok(lf)
+}

@@ -19,6 +19,10 @@ struct Args {
     #[arg(long, default_value = "warn")]
     logging: LevelFilter,
 
+    /// Logging level.
+    #[arg(long, help = "Lock file to serialize multiple hsmtool invocations")]
+    lockfile: Option<PathBuf>,
+
     /// Output format.
     #[arg(short, long, value_enum, default_value = "json")]
     format: Format,
@@ -67,6 +71,13 @@ fn main() -> Result<()> {
     env_logger::Builder::from_default_env()
         .filter(None, args.logging)
         .init();
+
+    // Maybe use a lockfile to serialize parallel instances of hsmtool.
+    let _lockfile = args
+        .lockfile
+        .as_ref()
+        .map(hsmtool::util::helper::lockfile)
+        .transpose()?;
     let hsm = Module::initialize(&args.module).context(
         "Loading the PKCS11 module usually depends on several environent variables.  Check HSMTOOL_MODULE, SOFTHSM2_CONF or your HSM's documentation.")?;
 
