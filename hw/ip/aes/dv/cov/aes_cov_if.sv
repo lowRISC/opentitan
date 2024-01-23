@@ -32,7 +32,7 @@ interface aes_cov_if
 
 
   covergroup aes_ctrl_cg  with function sample(
-             bit                                         aes_op,
+             bit [aes_pkg::AES_OP_WIDTH-1:0]             aes_op,
              bit [aes_pkg::AES_MODE_WIDTH-1:0]           aes_mode,
              bit [aes_pkg::AES_KEYLEN_WIDTH-1:0]         aes_keylen,
              bit                                         aes_man_op,
@@ -307,7 +307,7 @@ interface aes_cov_if
   endfunction
 
   function automatic void cg_ctrl_sample(
-           bit                                         aes_op,
+           bit [aes_pkg::AES_OP_WIDTH-1:0]             aes_op,
            bit [aes_pkg::AES_MODE_WIDTH-1:0]           aes_mode,
            bit [aes_pkg::AES_KEYLEN_WIDTH-1:0]         aes_keylen,
            bit                                         aes_man_op,
