@@ -13,16 +13,25 @@
 #define DIF_SPI_DEVICE_TPM_FIFO_DEPTH 16
 
 enum { kDifSpiDeviceFlashStatusWelBit = 1 };
-enum { kDifSpiDeviceEFlashLen = 2048 };
-enum { kDifSpiDeviceMailboxLen = 1024 };
-enum { kDifSpiDeviceSfdpLen = 256 };
-enum { kDifSpiDevicePayloadLen = 256 };
+enum {
+  kDifSpiDeviceEFlashLen =
+      SPI_DEVICE_PARAM_SRAM_READ_BUFFER_DEPTH * sizeof(uint32_t),
+  kDifSpiDeviceMailboxLen =
+      SPI_DEVICE_PARAM_SRAM_MAILBOX_DEPTH * sizeof(uint32_t),
+  kDifSpiDeviceSfdpLen = SPI_DEVICE_PARAM_SRAM_SFDP_DEPTH * sizeof(uint32_t),
+  kDifSpiDevicePayloadLen =
+      SPI_DEVICE_PARAM_SRAM_PAYLOAD_DEPTH * sizeof(uint32_t),
+};
 
 enum {
-  kDifSpiDeviceEFlashOffset = 0,
-  kDifSpiDeviceMailboxOffset = 2048,
-  kDifSpiDeviceSfdpOffset = 3072,
-  kDifSpiDevicePayloadOffset = 0,
+  kDifSpiDeviceEFlashOffset =
+      SPI_DEVICE_PARAM_SRAM_READ_BUFFER_OFFSET * sizeof(uint32_t),
+  kDifSpiDeviceMailboxOffset =
+      SPI_DEVICE_PARAM_SRAM_MAILBOX_OFFSET * sizeof(uint32_t),
+  kDifSpiDeviceSfdpOffset =
+      SPI_DEVICE_PARAM_SRAM_SFDP_OFFSET * sizeof(uint32_t),
+  kDifSpiDevicePayloadOffset =
+      SPI_DEVICE_PARAM_SRAM_PAYLOAD_OFFSET * sizeof(uint32_t),
 };
 
 /**
