@@ -259,6 +259,7 @@ def _hsmtool_sign(ctx, tool, digest, rsa_key, spxmsg = None, spx_key = None, pro
         inputs = [digest, rsa_key.file, tool.tool] + tool.data,
         arguments = [
             "--quiet",
+            "--lockfile=/tmp/hsmtool.lock",
             "--profile={}".format(profile),
             "rsa",
             "sign",

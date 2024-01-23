@@ -64,6 +64,7 @@ rust_library(
         "@crate_index//:rand",
         "@crate_index//:regex",
         "@crate_index//:rsa",
+        "@crate_index//:rustix",
         "@crate_index//:serde",
         "@crate_index//:serde_json",
         "@crate_index//:sha2",
