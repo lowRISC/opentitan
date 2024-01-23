@@ -148,6 +148,10 @@ module mbx_sysif
   assign hw2reg.soc_status.busy.de = sysif_status_busy_valid_i;
   assign hw2reg.soc_status.busy.d  = sysif_status_busy_i;
 
+  // Gate the async msg setter with the feature strap and the enable bit
+  logic async_msg_set_gated;
+  assign async_msg_set_gated = DoeAsyncMsgSupport & doe_async_msg_en_o & doe_async_msg_set_i;
+
   // Interrupt is triggered by the outbound handler if the message has been written to
   // the memory and can be read by the system, an error is raised, or if there is an asynchronous
   // message request coming from the host.
@@ -155,13 +159,13 @@ module mbx_sysif
   assign hw2reg.soc_status.doe_intr_status.de = DoeIrqSupport &
                                                 (sysif_status_doe_intr_ready_set_i |
                                                  sysif_status_error_set_i          |
-                                                 doe_async_msg_set_i);
+                                                 async_msg_set_gated);
   assign hw2reg.soc_status.doe_intr_status.d  = sysif_status_doe_intr_ready_set_i |
                                                 sysif_status_error_set_i          |
-                                                doe_async_msg_set_i;
+                                                async_msg_set_gated;
 
   // Async message status is updated by the host interface
-  assign hw2reg.soc_status.doe_async_msg_status.de = DoeAsyncMsgSupport &
+  assign hw2reg.soc_status.doe_async_msg_status.de = DoeAsyncMsgSupport & doe_async_msg_en_o &
                                                      (doe_async_msg_set_i | doe_async_msg_clear_i);
   assign hw2reg.soc_status.doe_async_msg_status.d  = doe_async_msg_set_i;
 
