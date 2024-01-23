@@ -21,6 +21,7 @@
       features: ["UART.FIFO_INTERRUPTS"]
       tests: ["chip_sw_uart_tx_rx"]
       tags: ["gls"]
+      bazel: ["//sw/device/tests:uart_tx_rx_test"]
     }
     {
       name: chip_sw_uart_rx_overflow
@@ -37,6 +38,7 @@
       features: ["UART.FIFO_INTERRUPTS"]
       tests: ["chip_sw_uart_tx_rx", "chip_sw_uart_tx_rx_idx1", "chip_sw_uart_tx_rx_idx2",
               "chip_sw_uart_tx_rx_idx3"]
+      bazel: ["//sw/device/tests:uart_tx_rx_test"]
     }
     {
       name: chip_sw_uart_rand_baudrate
@@ -147,7 +149,8 @@
       stage: V3
       si_stage: SV3
       features: ["UART.FIFO_INTERRUPTS"]
-      tests: []
+      tests: ["chip_sw_uart_tx_rx"]
+      bazel: ["//sw/device/tests:uart_tx_rx_test"]
     },
 
   ]
