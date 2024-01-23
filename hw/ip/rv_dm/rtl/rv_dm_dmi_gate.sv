@@ -262,12 +262,12 @@ module rv_dm_dmi_gate
       lc_tx_test_true_strict(strap_hw_debug_en_q)
       |->
       $past(lc_tx_test_true_strict(lc_hw_debug_en[0])))
-  // Check that latching ON can only occur if strap_en_i is set.
+  // Check that latching ON can only occur if strap_en is set.
   `ASSERT(LcHwDebugEnSetRev1_A,
       lc_tx_test_false_loose(strap_hw_debug_en_q) ##1
       lc_tx_test_true_strict(strap_hw_debug_en_q)
       |->
-      $past(strap_en_i))
+      $past(strap_en))
   // Check that any non-OFF value on lc_check_byp_en_i and
   // lc_escalate_en_i clears the latched value.
   `ASSERT(LcHwDebugEnClear_A,
