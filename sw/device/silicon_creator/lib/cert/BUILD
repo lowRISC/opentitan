@@ -7,6 +7,8 @@ load(
     "certificate_template",
 )
 
+package(default_visibility = ["//visibility:public"])
+
 certificate_template(
     name = "generic_template",
     template = "generic.hjson",
