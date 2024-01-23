@@ -263,8 +263,8 @@ module keymgr_dpe
   end
 
   hw_key_req_t root_key;
-  assign root_key.key = '{otp_key_i.creator_root_key_share0,
-                          otp_key_i.creator_root_key_share1};
+  assign root_key.key = '{otp_key_i.creator_root_key_share1,
+                          otp_key_i.creator_root_key_share0};
 
   prim_flop_2sync # (
     .Width(1)
