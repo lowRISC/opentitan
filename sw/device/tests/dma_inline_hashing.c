@@ -33,13 +33,18 @@ enum {
   kIrqVoid = UINT32_MAX,
 };
 
+dif_dma_transaction_width_t dma_transfer_widths[] = {
+    kDifDmaTransWidth1Byte, kDifDmaTransWidth2Bytes, kDifDmaTransWidth4Bytes};
+
 // Expected digest value gets backdoor'ed from the hardware
 static volatile const uint32_t kShaDigestExpData[16];
 static volatile const uint8_t kShaMode;
 
 uint32_t digest[16], digest_2[16];
 uint8_t received_data[TX_SIZE] __attribute__((aligned(4)));
-uint8_t forwarded_data[TX_SIZE] __attribute__((aligned(4)));
+uint8_t target_ot_internal_data[TX_SIZE] __attribute__((aligned(4)));
+uint8_t target_ctn_data[TX_SIZE] __attribute__((aligned(4)))
+__attribute__((section(".ctn_data")));
 static volatile bool is_finished;
 
 static dif_spi_host_t spi_host;
@@ -103,7 +108,7 @@ static status_t external_isr(void) {
 
   dif_rv_plic_irq_id_t plic_periph_base_irq_id =
       kTopDarjeelingPlicIrqIdDmaDmaDone;
-  ;
+
   if (peripheral != kTopDarjeelingPlicPeripheralDma) {
     CHECK(false, "Invalid plic_irq_id that from a DMA!");
   }
@@ -229,30 +234,47 @@ bool test_main(void) {
 
   CHECK_DIF_OK(dif_dma_sha2_digest_get(&dma, kShaMode, digest));
 
+  // Randomize the transfer width, which is possible since we are not using the
+  // inline hashing mode
+  dif_dma_transaction_width_t transfer_width =
+      dma_transfer_widths[rand_testutils_gen32_range(
+          0, ARRAYSIZE(dma_transfer_widths) - 1)];
+
+  dif_dma_transaction_address_t dest_transaction_address;
+  // Decide where to transfer the second transfer the data to
+  if (rand_testutils_gen32_range(0, 1) == 0) {
+    // OT internal memory
+    dest_transaction_address = (dif_dma_transaction_address_t){
+        .address = (uint32_t)&target_ot_internal_data[0],
+        .asid = kDifDmaOpentitanInternalBus};
+  } else {
+    // CTN memory
+    dest_transaction_address = (dif_dma_transaction_address_t){
+        .address = (uint32_t)&target_ctn_data[0],
+        .asid = kDifDmaSoCControlRegisterBus};
+  }
+
   // We only check the digest. If thats valid, we assume the correct data to be
   // transferred
   CHECK_ARRAYS_EQ((uint8_t *)digest, (uint8_t *)kShaDigestExpData, digest_len);
 
-  dif_dma_transaction_t transaction_2 = {
+  dif_dma_transaction_t transaction = {
       .source = {.address = (uint32_t)&received_data[0],
                  .asid = kDifDmaOpentitanInternalBus},
-      .destination = {.address = (uint32_t)&forwarded_data[0],
-                      .asid = kDifDmaOpentitanInternalBus},
+      .destination = dest_transaction_address,
       .total_size = TX_SIZE,
       .chunk_size = TX_SIZE,
-      .width = kDifDmaTransWidth4Bytes};
+      .width = transfer_width};
 
   CHECK_DIF_OK(dif_dma_handshake_irq_enable(&dma, 0x0));
-  CHECK_DIF_OK(dif_dma_configure(&dma, transaction_2));
+  CHECK_DIF_OK(dif_dma_configure(&dma, transaction));
   CHECK_DIF_OK(dif_dma_handshake_disable(&dma));
 
-  CHECK_DIF_OK(dif_dma_start(&dma, kShaMode));
+  CHECK_DIF_OK(dif_dma_start(&dma, kDifDmaCopyOpcode));
   CHECK_DIF_OK(dif_dma_status_poll(&dma, kDifDmaStatusDone));
 
-  CHECK_DIF_OK(dif_dma_sha2_digest_get(&dma, kShaMode, digest_2));
-
-  CHECK_ARRAYS_EQ((uint8_t *)digest_2, (uint8_t *)kShaDigestExpData,
-                  digest_len);
+  CHECK_ARRAYS_EQ((uint8_t *)received_data,
+                  (uint8_t *)dest_transaction_address.address, TX_SIZE);
 
   return true;
 }

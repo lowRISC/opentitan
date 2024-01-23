@@ -137,6 +137,13 @@ SECTIONS {
   } > ottf_flash
 
   /**
+   * Section for data that is stored in the CTN RAM outside of top_darjeeling
+   */
+  .ctn_data : ALIGN(4) {
+    KEEP(*(.ctn_data))
+  } > ottf_flash
+
+  /**
    * Critical static data that is accessible by both the ROM and the ROM
    * extension.
    */
