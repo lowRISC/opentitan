@@ -32,17 +32,17 @@
         // Hash of the creator_sw_cfg OTP partition (SHA256).
         otp_creator_sw_cfg_hash: {
             type: "byte-array",
-            size: 20,
+            size: 32,
         },
         // Hash of the owner_sw_cfg OTP partition (SHA256).
         otp_owner_sw_cfg_hash: {
             type: "byte-array",
-            size: 20,
+            size: 32,
         },
         // Hash of the hw_cfg OTP partition (SHA256).
         otp_hw_cfg_hash: {
             type: "byte-array",
-            size: 20,
+            size: 32,
         },
     },
 

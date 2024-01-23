@@ -28,10 +28,10 @@
             type: "byte-array",
             size: 20,
         },
-        // Hash of the owner stage firmware.
+        // Hash of the owner stage firmware (SHA256).
         owner_firmware_hash: {
             type: "byte-array",
-            size: 20,
+            size: 32,
         },
         // Owner security version, used to prevent rollback.
         owner_security_version: {
