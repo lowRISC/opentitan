@@ -15,8 +15,8 @@ class edn_disable_vseq extends edn_base_vseq;
     // The edn_init is done in dut_init. So adding this disablement in pre_start in order to hit
     // certain boot init states.
     string main_sm_d_path = "tb.dut.u_edn_core.u_edn_main_sm.state_d";
-    state_e boot_sts[$] = {BootLoadIns, BootLoadGen, BootInsAckWait, BootCaptGenCnt,
-                           BootSendGenCmd, BootGenAckWait, BootPulse, BootDone};
+    state_e boot_sts[$] = {BootLoadIns, BootInsAckWait, BootLoadGen,
+                           BootGenAckWait, BootPulse, BootDone};
 
     // CSRNG requests will drop if disablement is sent.
     $assertoff(0, "tb.csrng_if.cmd_push_if.H_DataStableWhenValidAndNotReady_A");

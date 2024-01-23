@@ -70,8 +70,7 @@ class edn_err_vseq extends edn_base_vseq;
     if (cfg.boot_req_mode == MuBi4True) begin
       // If EDN is configured in Boot mode, randomly select one of the Boot states.
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(exp_state,
-                                         exp_state inside {BootLoadIns, BootLoadGen, BootInsAckWait,
-                                                           BootCaptGenCnt, BootSendGenCmd,
+                                         exp_state inside {BootLoadIns, BootInsAckWait, BootLoadGen,
                                                            BootGenAckWait, BootPulse, BootDone};)
     end else if (cfg.auto_req_mode == MuBi4True) begin
       // If instead EDN is configured in Auto mode, randomly select one of the Auto states.
