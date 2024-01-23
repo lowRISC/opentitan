@@ -123,7 +123,7 @@ Advancing a keymgr_dpe slot (also referred to as _deriving a child_) uses multip
 In particular, since there are multiple slots inside keymgr_dpe, source and destination parameters need to be passed to advance calls.
 
 The very first advance call only latches the OTP creator root key (UDS), therefore most of these registers are ignored during the first call.
-The only relevant registers (or register fields) during the first advance call are: `CONTROL_SHADOWED.OPERATION`, `CONTROL_SHADOWED.SLOT_DST_SEL` and `START`.
+The only relevant registers (or register fields) during the first advance call are: `CONTROL_SHADOWED.OPERATION`, `MAX_KEY_VER_SHADOWED`, `CONTROL_SHADOWED.SLOT_DST_SEL` and `START`.
 
 In particular, the destination slot for the UDS is chosen by SW, and there is no designated special slot for it.
 Moreover, since the destination slot for this first advance call has no parent, its `boot_stage` value is not incremented but initialized to `0`.
