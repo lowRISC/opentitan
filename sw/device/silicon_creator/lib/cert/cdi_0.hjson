@@ -28,15 +28,15 @@
             type: "byte-array",
             size: 20,
         },
-        // Hash of the ROM_EXT.
+        // Hash of the ROM_EXT (SHA256).
         rom_ext_hash: {
             type: "byte-array",
-            size: 20,
+            size: 32,
         },
-        // Hash of the ownership manifest.
+        // Hash of the ownership manifest (SHA256).
         ownership_manifest_hash: {
             type: "byte-array",
-            size: 20,
+            size: 32,
         },
         // ROM_EXT security version, used to prevent rollback.
         rom_ext_security_version: {
