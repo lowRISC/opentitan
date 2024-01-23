@@ -28,7 +28,7 @@ package edn_pkg;
   parameter csrng_pkg::csrng_cmd_t BOOT_UNINSTANTIATE = 32'h5;
 
   // Encoding generated with:
-  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 21 -n 9 \
+  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 19 -n 9 \
   //     -s 2596398066 --language=sv
   //
   // Hamming distance histogram:
@@ -36,12 +36,12 @@ package edn_pkg;
   //  0: --
   //  1: --
   //  2: --
-  //  3: |||||||||||| (20.00%)
-  //  4: |||||||||||||||||||| (31.43%)
-  //  5: ||||||||||||||| (23.81%)
-  //  6: ||||||||| (14.76%)
-  //  7: |||| (7.62%)
-  //  8: | (2.38%)
+  //  3: ||||||||||||| (21.05%)
+  //  4: |||||||||||||||||||| (30.41%)
+  //  5: ||||||||||||||| (23.98%)
+  //  6: |||||||||| (15.79%)
+  //  7: |||| (6.43%)
+  //  8: | (2.34%)
   //  9: --
   //
   // Minimum Hamming distance: 3
@@ -49,28 +49,27 @@ package edn_pkg;
   // Minimum Hamming weight: 2
   // Maximum Hamming weight: 7
   //
-  typedef enum logic [8:0] {
+  localparam int StateWidth = 9;
+  typedef enum logic [StateWidth-1:0] {
     Idle              = 9'b011000001, // idle
     BootLoadIns       = 9'b111000111, // boot: load the instantiate command
-    BootLoadGen       = 9'b001111001, // boot: load the generate command
-    BootInsAckWait    = 9'b000000011, // boot: wait for instantiate command ack
-    BootCaptGenCnt    = 9'b001110111, // boot: capture the gen fifo count
-    BootSendGenCmd    = 9'b010101001, // boot: send the generate command
-    BootGenAckWait    = 9'b011110000, // boot: wait for generate command ack
+    BootInsAckWait    = 9'b001111001, // boot: wait for instantiate command ack
+    BootLoadGen       = 9'b000000011, // boot: load the generate command
+    BootGenAckWait    = 9'b001110111, // boot: wait for generate command ack
     BootPulse         = 9'b100110101, // boot: signal a done pulse
-    BootDone          = 9'b000101100, // boot: stay in done state until reset
-    BootLoadUni       = 9'b110111100, // boot: load the uninstantiate command
-    BootUniAckWait    = 9'b110100011, // boot: wait for uninstantiate command ack
-    AutoLoadIns       = 9'b010010010, // auto: load the instantiate command
-    AutoFirstAckWait  = 9'b101100001, // auto: wait for first instantiate command ack
-    AutoAckWait       = 9'b100001110, // auto: wait for instantiate command ack
-    AutoDispatch      = 9'b111011101, // auto: determine next command to be sent
-    AutoCaptGenCnt    = 9'b010111111, // auto: capture the gen fifo count
-    AutoSendGenCmd    = 9'b001101010, // auto: send the generate command
-    AutoCaptReseedCnt = 9'b010010101, // auto: capture the reseed fifo count
-    AutoSendReseedCmd = 9'b000011000, // auto: send the reseed command
-    SWPortMode        = 9'b101111110, // swport: no hw request mode
-    Error             = 9'b001000100  // illegal state reached and hang
+    BootDone          = 9'b000101100, // boot: stay in done state until leaving boot mode
+    BootLoadUni       = 9'b010101001, // boot: load the uninstantiate command
+    BootUniAckWait    = 9'b011110000, // boot: wait for uninstantiate command ack
+    AutoLoadIns       = 9'b110111100, // auto: load the instantiate command
+    AutoFirstAckWait  = 9'b110100011, // auto: wait for first instantiate command ack
+    AutoAckWait       = 9'b010010010, // auto: wait for instantiate command ack
+    AutoDispatch      = 9'b101100001, // auto: determine next command to be sent
+    AutoCaptGenCnt    = 9'b100001110, // auto: capture the gen fifo count
+    AutoSendGenCmd    = 9'b111011101, // auto: send the generate command
+    AutoCaptReseedCnt = 9'b010111111, // auto: capture the reseed fifo count
+    AutoSendReseedCmd = 9'b001101010, // auto: send the reseed command
+    SWPortMode        = 9'b010010101, // swport: no hw request mode
+    Error             = 9'b000011000  // illegal state reached and hang
   } state_e;
 
 endpackage : edn_pkg

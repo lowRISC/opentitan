@@ -63,8 +63,6 @@ module edn_core import edn_pkg::*;
     CsrngCmdReqOut,
     CsrngCmdReqValidOut,
     SwCmdSts,
-    SendReseedCmd,
-    SendGenCmd,
     MainFsmEn,
     CmdFifoCnt,
     CsrngPackerClr,
@@ -96,13 +94,17 @@ module edn_core import edn_pkg::*;
   logic                    max_reqs_cnt_load;
   logic                    max_reqs_between_reseed_load;
   logic [31:0]             max_reqs_between_reseed_bus;
-  logic                    send_rescmd;
+  logic                    send_rescmd, send_rescmd_gated;
+  logic                    send_gencmd, send_gencmd_gated;
+  logic                    cs_cmd_handshake, gencmd_handshake, rescmd_handshake;
   logic                    cmd_sent;
-  logic                    send_gencmd;
-  logic                    boot_send_gencmd;
+  logic                    boot_wr_ins_cmd;
+  logic                    boot_wr_gen_cmd;
+  logic                    boot_wr_uni_cmd;
   logic                    sw_cmd_req_load;
   logic                    sw_cmd_valid;
   logic [31:0]             sw_cmd_req_bus;
+  logic                    send_cs_cmd_gated;
   logic                    reseed_cmd_load;
   logic [31:0]             reseed_cmd_bus;
   logic                    generate_cmd_load;
@@ -115,9 +117,6 @@ module edn_core import edn_pkg::*;
   logic                      packer_cs_rready;
   logic [CSGenBitsWidth-1:0] packer_cs_rdata;
   logic                      boot_req_mode_pfa;
-  logic                      boot_wr_cmd_reg;
-  logic                      boot_wr_cmd_genfifo;
-  logic                      boot_wr_cmd_uni;
   logic                      auto_req_mode_busy;
   logic                      accept_sw_cmds_pulse;
 
@@ -170,7 +169,6 @@ module edn_core import edn_pkg::*;
   logic [RegWidth-1:0]                max_reqs_cnt;
   logic                               max_reqs_cnt_err;
   logic                               cmd_rdy;
-  logic                               output_rdy;
   logic [31:0]                        boot_ins_cmd;
   logic [31:0]                        boot_gen_cmd;
 
@@ -192,8 +190,6 @@ module edn_core import edn_pkg::*;
   logic [31:0]                        cs_cmd_req_out_q, cs_cmd_req_out_d;
   logic                               cs_cmd_req_vld_out_q, cs_cmd_req_vld_out_d;
   logic [RescmdFifoIdxWidth-1:0]      cmd_fifo_cnt_q, cmd_fifo_cnt_d;
-  logic                               send_rescmd_q, send_rescmd_d;
-  logic                               send_gencmd_q, send_gencmd_d;
   logic                               csrng_fips_q, csrng_fips_d;
   logic [NumEndPoints-1:0]            edn_fips_q, edn_fips_d;
   logic [63:0]                        cs_rdata_capt_q, cs_rdata_capt_d;
@@ -210,8 +206,6 @@ module edn_core import edn_pkg::*;
       cs_cmd_req_out_q  <= '0;
       cs_cmd_req_vld_out_q  <= '0;
       cmd_fifo_cnt_q <= '0;
-      send_rescmd_q <= '0;
-      send_gencmd_q <= '0;
       csrng_fips_q <= '0;
       edn_fips_q <= '0;
       cs_rdata_capt_q <= '0;
@@ -226,8 +220,6 @@ module edn_core import edn_pkg::*;
       cs_cmd_req_out_q <= cs_cmd_req_out_d;
       cs_cmd_req_vld_out_q <= cs_cmd_req_vld_out_d;
       cmd_fifo_cnt_q <= cmd_fifo_cnt_d;
-      send_rescmd_q <= send_rescmd_d;
-      send_gencmd_q <= send_gencmd_d;
       csrng_fips_q <= csrng_fips_d;
       edn_fips_q <= edn_fips_d;
       cs_rdata_capt_q <= cs_rdata_capt_d;
@@ -448,27 +440,53 @@ module edn_core import edn_pkg::*;
   assign generate_cmd_load = reg2hw.generate_cmd.qe;
   assign generate_cmd_bus = reg2hw.generate_cmd.q;
 
+  assign cs_cmd_handshake = cs_cmd_req_vld_out_q && send_cs_cmd_gated;
+  assign gencmd_handshake = cs_cmd_req_vld_out_q && send_gencmd_gated;
+  assign rescmd_handshake = cs_cmd_req_vld_out_q && send_rescmd_gated;
+
+  // The cs_cmd_req register feeds commands from the EDN TL-UL registers to the output register.
   assign cs_cmd_req_d =
          (!edn_enable_fo[CsrngCmdReq]) ? '0 :
-         boot_wr_cmd_reg ? boot_ins_cmd :
+         boot_wr_ins_cmd ? boot_ins_cmd :
+         boot_wr_gen_cmd ? boot_gen_cmd :
+         boot_wr_uni_cmd ? edn_pkg::BOOT_UNINSTANTIATE :
          sw_cmd_req_load ? sw_cmd_req_bus :
-         boot_wr_cmd_uni ? edn_pkg::BOOT_UNINSTANTIATE :
          cs_cmd_req_q;
 
+  // The cs_cmd_req_vld register handles the valid signal that is sent along with cs_cmd_req_q.
   assign cs_cmd_req_vld_d =
          (!edn_enable_fo[CsrngCmdReqValid]) ? '0 :
-         (sw_cmd_req_load || boot_wr_cmd_reg || boot_wr_cmd_uni); // cmd reg write
+         cs_cmd_handshake ? '0 :
+         (sw_cmd_req_load || boot_wr_ins_cmd ||
+          boot_wr_gen_cmd || boot_wr_uni_cmd) ? 1'b1 :
+         cs_cmd_req_vld_q; // cmd reg write
 
+  assign send_cs_cmd_gated = cs_cmd_req_vld_q && csrng_cmd_i.csrng_req_ready;
+
+  // The cs_cmd_req_out register feeds the commands coming from the auto mode FIFOs
+  // or the cs_cmd_req register to the CSRNG.
   assign cs_cmd_req_out_d =
          (!edn_enable_fo[CsrngCmdReqOut]) ? '0 :
-         send_rescmd ? sfifo_rescmd_rdata :
-         (send_gencmd || boot_send_gencmd) ? sfifo_gencmd_rdata :
-         cs_cmd_req_q;
+         // Update the output value with the next word of the reseed command in auto mode.
+         (send_rescmd || capt_rescmd_fifo_cnt) ? (sfifo_rescmd_pop ?
+                                                  sfifo_rescmd_rdata :
+                                                  cs_cmd_req_out_q) :
+         // Update the output value with the next word of the generate command in auto mode.
+         (send_gencmd || capt_gencmd_fifo_cnt) ? (sfifo_gencmd_pop ?
+                                                  sfifo_gencmd_rdata :
+                                                  cs_cmd_req_out_q) :
+         // Update the output value with the next word of the cs_cmd_req register.
+         (cs_cmd_req_vld_q && !cs_cmd_handshake) ? cs_cmd_req_q :
+         cs_cmd_req_out_q;
 
+  // The cs_cmd_req_vld_out register handles the valid signal that is sent along with
+  // cs_cmd_req_out.
   assign cs_cmd_req_vld_out_d =
          (!edn_enable_fo[CsrngCmdReqValidOut]) ? '0 :
-         (send_rescmd || send_gencmd || (boot_send_gencmd && cmd_sent)) ? 1'b1 :
-         cs_cmd_req_vld_q;
+         cmd_sent ? '0 :
+         (send_rescmd || capt_rescmd_fifo_cnt) ? 1'b1 :
+         (send_gencmd || capt_gencmd_fifo_cnt) ? 1'b1 :
+         cs_cmd_req_vld_q && !cs_cmd_handshake;
 
   // drive outputs
   assign csrng_cmd_o.csrng_req_valid = cs_cmd_req_vld_out_q;
@@ -478,7 +496,7 @@ module edn_core import edn_pkg::*;
   // and the register is ready for the next word.
   assign hw2reg.sw_cmd_sts.cmd_rdy.de = 1'b1;
   assign hw2reg.sw_cmd_sts.cmd_rdy.d = cmd_rdy;
-  assign cmd_rdy = !sw_cmd_req_load && cmd_rdy_q && cmd_reg_rdy_d;
+  assign cmd_rdy = !sw_cmd_req_load && cmd_rdy_d && cmd_reg_rdy_d;
   // We accept SW commands only in SW or auto mode.
   // In auto mode, sw_cmd_valid will transition to low after the initial instantiate command.
   // In SW mode, cmd_rdy is low when a previous command has not been acked yet.
@@ -496,9 +514,10 @@ module edn_core import edn_pkg::*;
   assign cmd_reg_rdy_d =
          !edn_enable_fo[SwCmdSts] ? 1'b0 :
          !sw_cmd_valid ? 1'b0 :
-         output_rdy;
-  // Do not accept new words if the output FIFO would overflow.
-  assign output_rdy = 1'b1;
+         sw_cmd_req_load ? 1'b0 :
+         accept_sw_cmds_pulse ? 1'b1 :
+         cs_cmd_handshake ? 1'b1 :
+         cmd_reg_rdy_q;
 
   // Whenever a sw_cmd_req is acked by CSRNG, update the command status.
   assign hw2reg.sw_cmd_sts.cmd_sts.de = 1'b1;
@@ -537,18 +556,18 @@ module edn_core import edn_pkg::*;
     .err_o    ()
   );
 
-  // feedback cmd back into rescmd fifo
-  assign send_rescmd_d = send_rescmd;
+  // Gate rescmd FIFO operations in case of CSRNG backpressure.
+  assign send_rescmd_gated = (send_rescmd || capt_rescmd_fifo_cnt) && csrng_cmd_i.csrng_req_ready;
 
   assign sfifo_rescmd_push =
-         (send_rescmd_q & edn_enable_fo[SendReseedCmd]) ? 1'b1  :
+         rescmd_handshake ? 1'b1  :
          reseed_cmd_load;
 
   assign sfifo_rescmd_wdata =
          auto_req_mode_busy ? cs_cmd_req_out_q :
          reseed_cmd_bus;
 
-  assign sfifo_rescmd_pop = send_rescmd;
+  assign sfifo_rescmd_pop = (rescmd_handshake && !cmd_sent) || capt_rescmd_fifo_cnt;
 
   assign sfifo_rescmd_clr = (cmd_fifo_rst_fo[1] || main_sm_done_pulse);
 
@@ -577,20 +596,18 @@ module edn_core import edn_pkg::*;
     .err_o    ()
   );
 
-  // feedback cmd back into gencmd fifo
-  assign send_gencmd_d = send_gencmd;
+  // Gate gencmd FIFO operations in case of CSRNG backpressure.
+  assign send_gencmd_gated = (send_gencmd || capt_gencmd_fifo_cnt) && csrng_cmd_i.csrng_req_ready;
 
   assign sfifo_gencmd_push =
-         (boot_wr_cmd_genfifo & edn_enable_fo[SendGenCmd]) ? 1'b1 :
-         (send_gencmd_q & edn_enable_fo[SendGenCmd]) ? 1'b1  :
+         gencmd_handshake ? 1'b1 :
          generate_cmd_load;
 
   assign sfifo_gencmd_wdata =
-         boot_wr_cmd_genfifo ? boot_gen_cmd :
          auto_req_mode_busy ? cs_cmd_req_out_q :
          generate_cmd_bus;
 
-  assign sfifo_gencmd_pop = send_gencmd || boot_send_gencmd;
+  assign sfifo_gencmd_pop = (gencmd_handshake && !cmd_sent) || capt_gencmd_fifo_cnt;
 
   assign sfifo_gencmd_clr = (cmd_fifo_rst_fo[2] || main_sm_done_pulse);
 
@@ -610,14 +627,13 @@ module edn_core import edn_pkg::*;
     .auto_req_mode_i        (auto_req_mode_pfe),
     .sw_cmd_req_load_i      (sw_cmd_req_load),
     .sw_cmd_valid_o         (sw_cmd_valid),
-    .boot_wr_cmd_reg_o      (boot_wr_cmd_reg),
-    .boot_wr_cmd_genfifo_o  (boot_wr_cmd_genfifo),
-    .boot_wr_cmd_uni_o      (boot_wr_cmd_uni),
+    .boot_wr_ins_cmd_o      (boot_wr_ins_cmd),
+    .boot_wr_gen_cmd_o      (boot_wr_gen_cmd),
+    .boot_wr_uni_cmd_o      (boot_wr_uni_cmd),
     .accept_sw_cmds_pulse_o (accept_sw_cmds_pulse),
     .main_sm_done_pulse_o   (main_sm_done_pulse),
     .csrng_cmd_ack_i        (csrng_cmd_i.csrng_rsp_ack),
     .capt_gencmd_fifo_cnt_o (capt_gencmd_fifo_cnt),
-    .boot_send_gencmd_o     (boot_send_gencmd),
     .send_gencmd_o          (send_gencmd),
     .max_reqs_cnt_zero_i    (max_reqs_cnt_zero),
     .capt_rescmd_fifo_cnt_o (capt_rescmd_fifo_cnt),
@@ -661,12 +677,15 @@ module edn_core import edn_pkg::*;
   assign cmd_fifo_cnt_d =
          (!edn_enable_fo[CmdFifoCnt]) ? '0 :
          (cmd_fifo_rst_fo[3] || main_sm_done_pulse) ? '0 :
-         capt_gencmd_fifo_cnt ? (sfifo_gencmd_depth) :
-         capt_rescmd_fifo_cnt ? (sfifo_rescmd_depth) :
-         (send_gencmd || boot_send_gencmd || send_rescmd)? (cmd_fifo_cnt_q-1) :
+         capt_gencmd_fifo_cnt ? sfifo_gencmd_depth :
+         capt_rescmd_fifo_cnt ? sfifo_rescmd_depth :
+         (sfifo_gencmd_pop || sfifo_rescmd_pop) ? (cmd_fifo_cnt_q-1) :
          cmd_fifo_cnt_q;
 
-  assign cmd_sent = (cmd_fifo_cnt_q == RescmdFifoIdxWidth'(1));
+  // Consider a reseed command as sent if all values have been popped from the queue once
+  // and the handshake with CSRNG happend for the last word.
+  assign cmd_sent = (cmd_fifo_cnt_q == RescmdFifoIdxWidth'(1)) &&
+                    (gencmd_handshake || rescmd_handshake);
 
   // SEC_CM: CONFIG.MUBI
   mubi4_t mubi_boot_req_mode;

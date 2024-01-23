@@ -17,14 +17,13 @@ module edn_main_sm import edn_pkg::*; #(
   input logic                   auto_req_mode_i,
   input logic                   sw_cmd_req_load_i,
   output logic                  sw_cmd_valid_o,
-  output logic                  boot_wr_cmd_reg_o,
-  output logic                  boot_wr_cmd_genfifo_o,
-  output logic                  boot_wr_cmd_uni_o,
+  output logic                  boot_wr_ins_cmd_o,
+  output logic                  boot_wr_gen_cmd_o,
+  output logic                  boot_wr_uni_cmd_o,
   output logic                  accept_sw_cmds_pulse_o,
   output logic                  main_sm_done_pulse_o,
   input logic                   csrng_cmd_ack_i,
   output logic                  capt_gencmd_fifo_cnt_o,
-  output logic                  boot_send_gencmd_o,
   output logic                  send_gencmd_o,
   input logic                   max_reqs_cnt_zero_i,
   output logic                  capt_rescmd_fifo_cnt_o,
@@ -35,25 +34,6 @@ module edn_main_sm import edn_pkg::*; #(
   output logic [StateWidth-1:0] main_sm_state_o,
   output logic                  main_sm_err_o
 );
-//
-// Hamming distance histogram:
-//
-//  0: --
-//  1: --
-//  2: --
-//  3: ||||||||||| (17.54%)
-//  4: |||||||||||||||||||| (29.82%)
-//  5: ||||||||||||||||| (26.32%)
-//  6: ||||||||||| (17.54%)
-//  7: ||||| (7.60%)
-//  8:  (1.17%)
-//  9: --
-//
-// Minimum Hamming distance: 3
-// Maximum Hamming distance: 8
-// Minimum Hamming weight: 2
-// Maximum Hamming weight: 7
-//
 
   state_e state_d, state_q;
 
@@ -63,10 +43,9 @@ module edn_main_sm import edn_pkg::*; #(
 
   always_comb begin
     state_d                = state_q;
-    boot_wr_cmd_reg_o      = 1'b0;
-    boot_wr_cmd_genfifo_o  = 1'b0;
-    boot_wr_cmd_uni_o      = 1'b0;
-    boot_send_gencmd_o     = 1'b0;
+    boot_wr_ins_cmd_o  = 1'b0;
+    boot_wr_gen_cmd_o  = 1'b0;
+    boot_wr_uni_cmd_o  = 1'b0;
     accept_sw_cmds_pulse_o = 1'b0;
     auto_req_mode_busy_o   = 1'b0;
     capt_gencmd_fifo_cnt_o = 1'b0;
@@ -92,27 +71,17 @@ module edn_main_sm import edn_pkg::*; #(
         end
       end
       BootLoadIns: begin
-        boot_wr_cmd_reg_o = 1'b1;
-        state_d = BootLoadGen;
-      end
-      BootLoadGen: begin
-        boot_wr_cmd_genfifo_o = 1'b1;
+        boot_wr_ins_cmd_o = 1'b1;
         state_d = BootInsAckWait;
       end
       BootInsAckWait: begin
         if (csrng_cmd_ack_i) begin
-          state_d = BootCaptGenCnt;
+          state_d = BootLoadGen;
         end
       end
-      BootCaptGenCnt: begin
-        capt_gencmd_fifo_cnt_o = 1'b1;
-        state_d = BootSendGenCmd;
-      end
-      BootSendGenCmd: begin
-        boot_send_gencmd_o = 1'b1;
-        if (cmd_sent_i) begin
-          state_d = BootGenAckWait;
-        end
+      BootLoadGen: begin
+        boot_wr_gen_cmd_o = 1'b1;
+        state_d = BootGenAckWait;
       end
       BootGenAckWait: begin
         if (csrng_cmd_ack_i) begin
@@ -129,7 +98,7 @@ module edn_main_sm import edn_pkg::*; #(
         end
       end
       BootLoadUni: begin
-        boot_wr_cmd_uni_o = 1'b1;
+        boot_wr_uni_cmd_o = 1'b1;
         state_d = BootUniAckWait;
       end
       BootUniAckWait: begin
@@ -208,20 +177,20 @@ module edn_main_sm import edn_pkg::*; #(
     if (local_escalate_i) begin
       state_d = Error;
       // Tie off outputs, except for main_sm_err_o.
-      boot_wr_cmd_reg_o      = 1'b0;
-      boot_wr_cmd_genfifo_o  = 1'b0;
-      boot_wr_cmd_uni_o      = 1'b0;
-      boot_send_gencmd_o     = 1'b0;
+      boot_wr_ins_cmd_o      = 1'b0;
+      boot_wr_gen_cmd_o      = 1'b0;
+      boot_wr_uni_cmd_o      = 1'b0;
       accept_sw_cmds_pulse_o = 1'b0;
       auto_req_mode_busy_o   = 1'b0;
       capt_gencmd_fifo_cnt_o = 1'b0;
       send_gencmd_o          = 1'b0;
       capt_rescmd_fifo_cnt_o = 1'b0;
       send_rescmd_o          = 1'b0;
+      sw_cmd_valid_o         = 1'b0;
       main_sm_done_pulse_o   = 1'b0;
-    end else if (!edn_enable_i && state_q inside {BootLoadIns, BootLoadGen, BootInsAckWait,
-                                                  BootCaptGenCnt, BootSendGenCmd, BootGenAckWait,
-                                                  BootPulse, BootDone, BootLoadUni, BootUniAckWait,
+    end else if (!edn_enable_i && state_q inside {BootLoadIns, BootInsAckWait, BootLoadGen,
+                                                  BootGenAckWait, BootLoadUni, BootUniAckWait,
+                                                  BootPulse, BootDone,
                                                   AutoLoadIns, AutoFirstAckWait, AutoAckWait,
                                                   AutoDispatch, AutoCaptGenCnt, AutoSendGenCmd,
                                                   AutoCaptReseedCnt, AutoSendReseedCmd, SWPortMode
@@ -230,16 +199,16 @@ module edn_main_sm import edn_pkg::*; #(
       // Even when disabled, illegal states must result in a transition to Error.
       state_d = Idle;
       // Tie off outputs, except for main_sm_err_o.
-      boot_wr_cmd_reg_o      = 1'b0;
-      boot_wr_cmd_genfifo_o  = 1'b0;
-      boot_wr_cmd_uni_o      = 1'b0;
-      boot_send_gencmd_o     = 1'b0;
+      boot_wr_ins_cmd_o      = 1'b0;
+      boot_wr_gen_cmd_o      = 1'b0;
+      boot_wr_uni_cmd_o      = 1'b0;
       accept_sw_cmds_pulse_o = 1'b0;
       auto_req_mode_busy_o   = 1'b0;
       capt_gencmd_fifo_cnt_o = 1'b0;
       send_gencmd_o          = 1'b0;
       capt_rescmd_fifo_cnt_o = 1'b0;
       send_rescmd_o          = 1'b0;
+      sw_cmd_valid_o         = 1'b0;
       main_sm_done_pulse_o   = 1'b1;
     end
   end
