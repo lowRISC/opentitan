@@ -1,6 +1,7 @@
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
+
 load("@bazel_skylib//lib:paths.bzl", "paths")
 load("//rules:rv.bzl", "rv_rule")
 load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
@@ -8,7 +9,7 @@ load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 def _certificate_codegen_impl(ctx):
     tc = ctx.toolchains[LOCALTOOLS_TOOLCHAIN]
 
-    basename = paths.replace_extension(ctx.file.template.path, "")
+    basename = paths.replace_extension(ctx.file.template.basename, "")
 
     # Output files before formatting.
     pre_c = ctx.actions.declare_file("{}.pre.c".format(basename))
