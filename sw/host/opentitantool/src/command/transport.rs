@@ -14,7 +14,10 @@ use std::time::Duration;
 
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::{StagedProgressBar, TransportWrapper};
+use opentitanlib::io::jtag::JtagParams;
 use opentitanlib::transport::verilator::transport::Watch;
+use opentitanlib::transport::Capability;
+use opentitanlib::transport::SetJtagPins;
 use opentitanlib::transport::UpdateFirmware;
 
 /// Initialize state of a transport debugger device to fit the device under test.  This
@@ -38,6 +41,39 @@ impl CommandDispatch for TransportInit {
         // Also apply an optional, named gpio strap while performing pin initialization.
         transport.apply_default_configuration(self.gpio_strap.as_deref())?;
         Ok(None)
+    }
+}
+
+#[derive(Debug, Args)]
+pub struct TransportSetJtagPins {
+    #[command(flatten)]
+    pub jtag_params: JtagParams,
+
+    pub tclk: String,
+    pub tms: String,
+    pub tdi: String,
+    pub tdo: String,
+    pub trst: String,
+}
+
+impl CommandDispatch for TransportSetJtagPins {
+    fn run(
+        &self,
+        _context: &dyn Any,
+        transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn Annotate>>> {
+        transport
+            .capabilities()?
+            .request(Capability::GPIO | Capability::JTAG)
+            .ok()?;
+
+        transport.dispatch(&SetJtagPins {
+            tclk: Some(transport.gpio_pin(&self.tclk)?),
+            tms: Some(transport.gpio_pin(&self.tms)?),
+            tdi: Some(transport.gpio_pin(&self.tdi)?),
+            tdo: Some(transport.gpio_pin(&self.tdo)?),
+            trst: Some(transport.gpio_pin(&self.trst)?),
+        })
     }
 }
 
@@ -144,6 +180,7 @@ impl CommandDispatch for TransportQueryAll {
 #[derive(Debug, Subcommand, CommandDispatch)]
 pub enum TransportCommand {
     Init(TransportInit),
+    SetJtagPins(TransportSetJtagPins),
     VerilatorWatch(VerilatorWatch),
     UpdateFirmware(TransportUpdateFirmware),
     Query(TransportQuery),
