@@ -29,7 +29,8 @@ use crate::transport::chip_whisperer::ChipWhisperer;
 use crate::transport::common::fpga::{ClearBitstream, FpgaProgram};
 use crate::transport::common::uart::{flock_serial, SerialPortExclusiveLock, SerialPortUart};
 use crate::transport::{
-    Capabilities, Capability, Transport, TransportError, TransportInterfaceType, UpdateFirmware,
+    Capabilities, Capability, SetJtagPins, Transport, TransportError, TransportInterfaceType,
+    UpdateFirmware,
 };
 use crate::util::openocd::OpenOcdJtagChain;
 use crate::util::usb::UsbBackend;
@@ -632,6 +633,32 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
                 update_firmware_action.progress.as_ref(),
                 update_firmware_action.force,
             )
+        } else if let Some(jtag_set_pins) = action.downcast_ref::<SetJtagPins>() {
+            match (
+                &jtag_set_pins.tclk,
+                &jtag_set_pins.tms,
+                &jtag_set_pins.tdi,
+                &jtag_set_pins.tdo,
+                &jtag_set_pins.trst,
+            ) {
+                (Some(tclk), Some(tms), Some(tdi), Some(tdo), Some(trst)) => {
+                    self.inner.cmd_no_output(&format!(
+                        "jtag set-pins {} {} {} {} {}",
+                        tclk.get_internal_pin_name()
+                            .ok_or(TransportError::InvalidOperation)?,
+                        tms.get_internal_pin_name()
+                            .ok_or(TransportError::InvalidOperation)?,
+                        tdi.get_internal_pin_name()
+                            .ok_or(TransportError::InvalidOperation)?,
+                        tdo.get_internal_pin_name()
+                            .ok_or(TransportError::InvalidOperation)?,
+                        trst.get_internal_pin_name()
+                            .ok_or(TransportError::InvalidOperation)?,
+                    ))?;
+                    Ok(None)
+                }
+                _ => Err(TransportError::UnsupportedOperation.into()),
+            }
         } else if let Some(fpga_program) = action.downcast_ref::<FpgaProgram>() {
             T::load_bitstream(fpga_program).map(|_| None)
         } else if let Some(clear) = action.downcast_ref::<ClearBitstream>() {

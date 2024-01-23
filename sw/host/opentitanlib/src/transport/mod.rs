@@ -183,6 +183,15 @@ pub struct Bootstrap {
     pub image_path: PathBuf,
 }
 
+/// Some transports allow dynamically changing which pins are used for JTAG.
+pub struct SetJtagPins {
+    pub tclk: Option<Rc<dyn GpioPin>>,
+    pub tms: Option<Rc<dyn GpioPin>>,
+    pub tdi: Option<Rc<dyn GpioPin>>,
+    pub tdo: Option<Rc<dyn GpioPin>>,
+    pub trst: Option<Rc<dyn GpioPin>>,
+}
+
 pub trait ProgressIndicator {
     // Begins a new stage, indicating "size" of this stage in bytes.  `name` can be the empty
     // string, for instance if the operation has only a single stage.
