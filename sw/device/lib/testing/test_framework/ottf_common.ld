@@ -141,7 +141,7 @@ SECTIONS {
    */
   .ctn_data : ALIGN(4) {
     KEEP(*(.ctn_data))
-  } > ottf_flash
+  } > ram_ctn
 
   /**
    * Critical static data that is accessible by both the ROM and the ROM
