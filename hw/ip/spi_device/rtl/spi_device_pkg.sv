@@ -5,6 +5,8 @@
 // Serial Peripheral Interface (SPI) Device module.
 //
 
+`include "prim_assert.sv"
+
 package spi_device_pkg;
 
   // Passthrough Inter-module signals
@@ -397,22 +399,27 @@ package spi_device_pkg;
   parameter int unsigned SramOffsetW = $clog2(SramStrbW);
 
   // Msg region is used for read cmd in Flash and Passthrough region
-  parameter int unsigned SramMsgDepth = 512; // 2kB
+  parameter int unsigned SramMsgDepth = spi_device_reg_pkg::SramReadBufferDepth;
   parameter int unsigned SramMsgBytes = SramMsgDepth * SramStrbW;
 
   // Address Width of a Buffer in bytes
   parameter int unsigned SramBufferBytes = SramMsgBytes / 2; // Double Buffer
   parameter int unsigned SramBufferAw    = $clog2(SramBufferBytes);
 
-  parameter int unsigned SramMailboxDepth = 256; // 1kB for mailbox
+  import spi_device_reg_pkg::SramMailboxDepth;
+  export spi_device_reg_pkg::SramMailboxDepth;
 
   // SPI Flash Discoverable Parameter is for host to get the device
   // information. It is a separate Command. The device provides a region in
   // DPSRAM for SW. The size is 256B
-  parameter int unsigned SramSfdpDepth = 64;
-  parameter int unsigned SramPayloadDepth = 64; // 256B for Program
-  parameter int unsigned SramCmdFifoDepth = 16; // 16 x 1B for Cmd
-  parameter int unsigned SramAddrFifoDepth = 16; // 16 x 4B for Addr
+  import spi_device_reg_pkg::SramSfdpDepth;
+  export spi_device_reg_pkg::SramSfdpDepth;
+  import spi_device_reg_pkg::SramPayloadDepth;
+  export spi_device_reg_pkg::SramPayloadDepth;
+  import spi_device_reg_pkg::SramCmdFifoDepth;
+  export spi_device_reg_pkg::SramCmdFifoDepth;
+  import spi_device_reg_pkg::SramAddrFifoDepth;
+  export spi_device_reg_pkg::SramAddrFifoDepth;
   parameter int unsigned SramTotalDepth = SramMsgDepth + SramMailboxDepth
                                         + SramSfdpDepth + SramPayloadDepth
                                         + SramCmdFifoDepth + SramAddrFifoDepth ;
@@ -478,23 +485,35 @@ package spi_device_pkg;
     sram_addr_t'(SramEgressByteOffset[$clog2(SramDw / 8) +: SramAw]);
   parameter sram_addr_t SramReadBufferIdx  = SramEgressIdx;
   parameter sram_addr_t SramReadBufferSize = sram_addr_t'(SramMsgDepth);
+  `ASSERT_STATIC_IN_PACKAGE(CheckReadBufferOffset,
+      SramReadBufferIdx == spi_device_reg_pkg::SramReadBufferOffset)
 
   parameter sram_addr_t SramMailboxIdx  = SramReadBufferIdx + SramReadBufferSize;
   parameter sram_addr_t SramMailboxSize = sram_addr_t'(SramMailboxDepth);
+  `ASSERT_STATIC_IN_PACKAGE(CheckMailboxOffset,
+      SramMailboxIdx == spi_device_reg_pkg::SramMailboxOffset)
 
   parameter sram_addr_t SramSfdpIdx  = SramMailboxIdx + SramMailboxSize;
   parameter sram_addr_t SramSfdpSize = sram_addr_t'(SramSfdpDepth);
+  `ASSERT_STATIC_IN_PACKAGE(CheckSfdpOffset,
+      SramSfdpIdx == spi_device_reg_pkg::SramSfdpOffset)
 
   parameter sram_addr_t SramIngressIdx =
     sram_addr_t'(SramIngressByteOffset[$clog2(SramDw / 8) +: SramAw]);
   parameter sram_addr_t SramPayloadIdx  = SramIngressIdx;
   parameter sram_addr_t SramPayloadSize = sram_addr_t'(SramPayloadDepth);
+  `ASSERT_STATIC_IN_PACKAGE(CheckPayloadOffset,
+      (SramPayloadIdx - SramIngressIdx) == spi_device_reg_pkg::SramPayloadOffset)
 
   parameter sram_addr_t SramCmdFifoIdx  = SramPayloadIdx + SramPayloadSize;
   parameter sram_addr_t SramCmdFifoSize = sram_addr_t'(SramCmdFifoDepth);
+  `ASSERT_STATIC_IN_PACKAGE(CheckCmdFifoOffset,
+      (SramCmdFifoIdx - SramIngressIdx) == spi_device_reg_pkg::SramCmdFifoOffset)
 
   parameter sram_addr_t SramAddrFifoIdx  = SramCmdFifoIdx + SramCmdFifoSize;
   parameter sram_addr_t SramAddrFifoSize = sram_addr_t'(SramAddrFifoDepth);
+  `ASSERT_STATIC_IN_PACKAGE(CheckAddrFifoOffset,
+      (SramAddrFifoIdx - SramIngressIdx) == spi_device_reg_pkg::SramAddrFifoOffset)
 
   // Max BitCount in a transaction
   parameter int unsigned BitLength = SramMsgDepth * 32;
