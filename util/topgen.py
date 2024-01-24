@@ -464,39 +464,10 @@ def get_rst_ni(top: Dict[str, object]) -> object:
     return rstmgrs[0]["reset_connections"]
 
 
-# generate rstmgr
+# generate rstmgr with ipgen
 def generate_rstmgr(topcfg: Dict[str, object], out_path: Path) -> None:
-    log.info("Generating rstmgr")
-
-    # Define target path
-    spec_ip_path = out_path / "ip" / "rstmgr"
-    rtl_path = spec_ip_path / "rtl" / "autogen"
-    rtl_path.mkdir(parents=True, exist_ok=True)
-    data_path = spec_ip_path / "data" / "autogen"
-    data_path.mkdir(parents=True, exist_ok=True)
-    dv_sva_path = spec_ip_path / "dv" / "sva" / "autogen"
-    dv_sva_path.mkdir(parents=True, exist_ok=True)
-
-    orig_ip_path = SRCTREE_TOP / "hw" / "ip" / "rstmgr"
-    tpl_path = orig_ip_path / "data"
-    original_rtl_path = orig_ip_path / "rtl"
-
-    # Read template files from ip directory.
-    tpls = []
-    outputs = []
-    names = [
-        "rstmgr.hjson", "rstmgr.sv", "rstmgr_pkg.sv",
-        "rstmgr_rst_en_track_sva_if.sv"
-    ]
-
-    for x in names:
-        tpls.append(tpl_path / Path(x + ".tpl"))
-        if "hjson" in x:
-            outputs.append(data_path / Path(x))
-        elif "sva_if" in x:
-            outputs.append(dv_sva_path / Path(x))
-        else:
-            outputs.append(rtl_path / Path(x))
+    log.info("Generating rstmgr with ipgen")
+    topname = topcfg["name"]
 
     # Parameters needed for generation
     reset_obj = topcfg["resets"]
@@ -522,35 +493,19 @@ def generate_rstmgr(topcfg: Dict[str, object], out_path: Path) -> None:
     # Number of reset requests
     n_rstreqs = len(topcfg["reset_requests"]["peripheral"])
 
-    # Generate templated files
-    for idx, t in enumerate(tpls):
-        out = StringIO()
-        with t.open(mode="r", encoding="UTF-8") as fin:
-            tpl = Template(fin.read())
-            try:
-                out = tpl.render(clks=clks,
-                                 reqs=topcfg["reset_requests"],
-                                 power_domains=topcfg["power"]["domains"],
-                                 num_rstreqs=n_rstreqs,
-                                 sw_rsts=sw_rsts,
-                                 output_rsts=output_rsts,
-                                 leaf_rsts=leaf_rsts,
-                                 rst_ni=rst_ni['rst_ni']['name'],
-                                 export_rsts=topcfg["exported_rsts"])
+    params = {
+        "clks": clks,
+        "reqs": topcfg["reset_requests"],
+        "power_domains": topcfg["power"]["domains"],
+        "num_rstreqs": n_rstreqs,
+        "sw_rsts": sw_rsts,
+        "output_rsts": output_rsts,
+        "leaf_rsts": leaf_rsts,
+        "rst_ni": rst_ni['rst_ni']['name'],
+        "export_rsts": topcfg["exported_rsts"],
+    }
 
-            except:  # noqa: E722
-                log.error(exceptions.text_error_template().render())
-
-        if out == "":
-            log.error("Cannot generate {}".format(names[idx]))
-            return
-
-        with outputs[idx].open(mode="w", encoding="UTF-8") as fout:
-            fout.write(genhdr + out)
-
-    # Generate reg files
-    hjson_path = outputs[0]
-    generate_regfile_from_path(hjson_path, rtl_path, original_rtl_path)
+    ipgen_render("rstmgr", topname, params, out_path)
 
 
 # generate flash
