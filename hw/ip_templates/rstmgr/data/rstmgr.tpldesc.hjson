@@ -1,0 +1,115 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  template_param_list: [
+    {
+      name: "topname"
+      desc: "Name of top-level design, e.g., 'darjeeling' or 'earlgrey'"
+      type: "string"
+      default: ""
+    }
+    {
+      name: "clks"
+      desc: "List of source clocks, as in 'aon', 'io', 'io_div2'"
+      type: "object"
+      default: ["aon", "io_div4", "main", "io", "io_div2", "usb"]
+    }
+    {
+      name: "reqs"
+      desc: '''A dictionary of reset requests indexed by type, as in 'peripheral', 'int',
+            'debug'.
+            '''
+      type: "object"
+      default: {
+        peripheral: [
+          {
+            name: "rst_req"
+            width: "1"
+            module: "sysrst_ctrl_aon"
+            desc: "reset request running on AON clock"
+          }
+        ]
+        int: []
+        debug: []
+      }
+    }
+    {
+      name: "power_domains"
+      desc: "A list of power domains, as in ['Aon', '0']"
+      type: "object"
+      default: ["Aon", "0"]
+    }
+    {
+      name: "num_rstreqs"
+      desc: "The number of peripheral requests"
+      type: "int"
+      default: "2"
+    }
+    {
+      name: "sw_rsts"
+      desc: "A list of software reset targets, as in ['spi_device', 'i2c0']"
+      type: "object"
+      default: ["spi_device", "i2c0"]
+    }
+    {
+      name: "output_rsts"
+      desc: "A list of reset outputs"
+      type: "object"
+      default: [
+        {
+          name: "por_io_div2"
+          gen: True
+          rst_type: "top"
+          path: "rstmgr_aon_resets.rst_por_io_div2_n"
+          lpg_path: "rstmgr_aon_rst_en.por_io_div2"
+          shadowed: False
+          shadow_path: "rstmgr_aon_resets.rst_por_io_div2_shadowed_n"
+          shadow_lpg_path: "rstmgr_aon_rst_en.por_io_div2_shadowed"
+          domains: ["Aon"]
+          parent: "por_aon"
+          clock: "io_div2"
+        }
+      ]
+    }
+    {
+      name: "leaf_rsts"
+      desc: "A list of generated reset outputs"
+      type: "object"
+      default: [
+        {
+          name: "por_io_div2"
+          gen: True
+          rst_type: "top"
+          path: "rstmgr_aon_resets.rst_por_io_div2_n"
+          lpg_path: "rstmgr_aon_rst_en.por_io_div2"
+          shadowed: False
+          shadow_path: "rstmgr_aon_resets.rst_por_io_div2_shadowed_n"
+          shadow_lpg_path: "rstmgr_aon_rst_en.por_io_div2_shadowed"
+          domains: ["Aon"]
+          parent: "por_aon"
+          clock: "io_div2"
+        }
+      ]
+    }
+    {
+      name: "rst_ni"
+      desc: "A list of input resets"
+      type: "object"
+      default: [
+        {
+          "rst_ni": {
+            name: "lc_io_div4"
+            domain: "Aon"
+          }
+        }
+      ]
+    }
+    {
+      name: "export_rsts"
+      desc: "A dictionary of exported resets"
+      type: "object"
+      default: {}
+    }
+  ]
+}
