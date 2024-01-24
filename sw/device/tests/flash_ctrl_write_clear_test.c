@@ -86,9 +86,15 @@ static void flash_ctrl_write_clear_test(
       &flash, start_addr, kUnusedDataPartitionParam,
       kDifFlashCtrlPartitionTypeData));
 
-  const uint64_t kExpectedValue = 0xa5a5a5a594949494;
-  flash_word_write_verify(start_addr, kExpectedValue);
-  flash_word_write_verify(start_addr, /*expected_value*/ 0);
+  const uint64_t kExpectedValues[] = {
+      UINT64_MAX, UINT64_MAX - 1, 0, 0xa5a5a5a594949494, 0xaaaaaaaaaaaaaaaa,
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE(kExpectedValues); ++i) {
+    flash_word_write_verify(start_addr + sizeof(uint64_t) * i,
+                            kExpectedValues[i]);
+    flash_word_write_verify(start_addr, /*expected_value=*/0);
+  }
 }
 
 bool test_main(void) {
