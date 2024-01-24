@@ -37,7 +37,7 @@ One is exiting from deep sleep, and the other is exiting from normal sleep.
 When exiting from deep sleep, the system begins execution in ROM.
 
 1. Complete normal preparation steps.
-2. Check reset cause in [rstmgr](../../../../ip/rstmgr/README.md)
+2. Check reset cause in [rstmgr](../../rstmgr/README.md)
 3. Re-enable modules that have powered down.
 4. Disable wakeup recording through [`WAKE_INFO_CAPTURE_DIS`](registers.md#wake_info_capture_dis).
 5. Check which source woke up the system through [`WAKE_INFO`](registers.md#wake_info).

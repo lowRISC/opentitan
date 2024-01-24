@@ -68,7 +68,7 @@ Instead the system goes into a terminal non-responsive state where a user or hos
 
 The fast clock domain FSM (referred to as fast FSM from here on) resets to `Low Power` state and waits for a power-up request from the slow FSM.
 
-Once received, the fast FSM releases the life cycle reset stage (see [reset controller](../../../../ip/rstmgr/README.md) for more details).
+Once received, the fast FSM releases the life cycle reset stage (see [reset controller](../../rstmgr/README.md) for more details).
 This allows the [OTP](../../../../ip/otp_ctrl/README.md) to begin sensing.
 Once OTP sensing completes, the life cycle controller is initialized.
 The initialization of the life cycle controller puts the device into its allowed operating state (see [life cycle controller](../../../../ip/lc_ctrl/README.md) for more details).

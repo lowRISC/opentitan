@@ -1,6 +1,6 @@
 # Reset Manager DIF Checklist
 
-This checklist is for [Development Stage](../../../../doc/project_governance/development_stages.md) transitions for the [Reset Manager DIF](../../../../hw/ip/rstmgr/README.md).
+This checklist is for [Development Stage](../../../../doc/project_governance/development_stages.md) transitions for the [Reset Manager DIF](../../../../hw/top_earlgrey/ip_autogen/rstmgr/README.md).
 All checklist items refer to the content in the [Checklist](../../../../doc/project_governance/checklist/README.md).
 
 <h2>DIF Checklist</h2>
