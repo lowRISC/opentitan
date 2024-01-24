@@ -19,8 +19,6 @@ use opentitanlib::test_utils::test_status::TestStatus;
 use opentitanlib::uart::console::UartConsole;
 use opentitanlib::{collection, execute_test};
 
-mod sysrst_ctrl;
-
 use sysrst_ctrl::{Config, setup_pins, set_pins};
 
 #[derive(Debug, Parser)]
