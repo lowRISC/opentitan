@@ -4,6 +4,7 @@
 
 #include "sw/device/silicon_creator/lib/boot_log.h"
 
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 
 static void boot_log_digest_compute(const boot_log_t *boot_log,
@@ -81,8 +82,11 @@ void boot_log_check_or_init(boot_log_t *boot_log, uint32_t rom_ext_slot,
   boot_log->chip_version.scm_revision_low = info->scm_revision.scm_revision_low;
   boot_log->chip_version.scm_revision_high =
       info->scm_revision.scm_revision_high;
-  boot_log->bl0_slot = kBootLogUninitialized;
   boot_log->rom_ext_slot = rom_ext_slot;
+  boot_log->bl0_slot = kBootLogUninitialized;
+  for (size_t i = 0; i < ARRAYSIZE(boot_log->reserved); ++i) {
+    boot_log->reserved[i] = 0;
+  }
   boot_log_digest_update(boot_log);
   return;
 }

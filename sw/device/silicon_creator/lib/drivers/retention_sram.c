@@ -42,5 +42,24 @@ void retention_sram_scramble(void) {
   abs_mmio_write32(kBase + SRAM_CTRL_CTRL_REG_OFFSET, ctrl);
 }
 
+rom_error_t retention_sram_check_version(void) {
+  retention_sram_t *rr = retention_sram_get();
+  switch (rr->version) {
+    case kRetentionSramVersion1:
+      // Version 1 can be in-place upgraded to version 3.
+      rr->version = kRetentionSramVersion3;
+      break;
+    case kRetentionSramVersion3:
+      // Nothing to do for version 3.
+      break;
+    case kRetentionSramVersion2:
+    default:
+      // Version 2 never went into a product, so we should never see it.
+      // Other versions are not defined.
+      return kErrorRetRamBadVersion;
+  }
+  return kErrorOk;
+}
+
 // Extern declarations for the inline functions in the header.
 extern retention_sram_t *retention_sram_get(void);

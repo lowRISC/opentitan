@@ -26,21 +26,6 @@ typedef struct retention_sram_creator {
    */
   uint32_t reset_reasons;
   /**
-   * Boot services message area.
-   *
-   * This is the shared buffer through which ROM_EXT and silicon owner code
-   * communicate with each other.
-   */
-  boot_svc_msg_t boot_svc_msg;
-
-  /**
-   * Boot log area.
-   *
-   * This buffer tracks information about the boot process.
-   */
-  boot_log_t boot_log;
-
-  /**
    * Shutdown reason.
    *
    * Reason of the last shutdown, redacted according to the redaction policy.
@@ -49,17 +34,46 @@ typedef struct retention_sram_creator {
    */
   rom_error_t last_shutdown_reason;
   /**
+   * Boot log area.
+   *
+   * This buffer tracks information about the boot process.
+   */
+  boot_log_t boot_log;
+
+  /**
    * Space reserved for future allocation by the silicon creator.
    *
    * The first half of the retention SRAM is reserved for the silicon creator
    * except for the first word that stores the format version. Hence the total
-   * size of this struct must be 2044 bytes. Remaining space is reserved for
-   * future use.
+   * size of this struct must be 2044 bytes.
+   *
+   * The remaining space is reserved for future use. Are locating the boot_svc
+   * message at the end so that:
+   * - We can add additional members without affecting the offset of boot_svc
+   * and
+   * - We can resize boot_svc without affecting the upper half of the struct.
    */
-  uint32_t reserved[(2044 - sizeof(uint32_t) - sizeof(boot_svc_msg_t) -
-                     sizeof(rom_error_t) - sizeof(boot_log_t)) /
+  uint32_t reserved[(2044 - (sizeof(uint32_t)          // reset_reason
+                             + sizeof(rom_error_t)     // last_shutdown_reason
+                             + sizeof(boot_log_t)      // boot_log
+                             + sizeof(boot_svc_msg_t)  // boot services message
+                             )) /
                     sizeof(uint32_t)];
+
+  /**
+   * Boot services message area.
+   *
+   * This is the shared buffer through which ROM_EXT and silicon owner code
+   * communicate with each other.
+   */
+  boot_svc_msg_t boot_svc_msg;
 } retention_sram_creator_t;
+OT_ASSERT_MEMBER_OFFSET(retention_sram_creator_t, reset_reasons, 0);
+OT_ASSERT_MEMBER_OFFSET(retention_sram_creator_t, last_shutdown_reason, 4);
+OT_ASSERT_MEMBER_OFFSET(retention_sram_creator_t, boot_log, 8);
+OT_ASSERT_MEMBER_OFFSET(retention_sram_creator_t, reserved, 136);
+OT_ASSERT_MEMBER_OFFSET(retention_sram_creator_t, boot_svc_msg, 1788);
+OT_ASSERT_SIZE(boot_svc_msg_t, 256);
 OT_ASSERT_SIZE(retention_sram_creator_t, 2044);
 
 /**
@@ -122,6 +136,11 @@ enum {
    * in the silicon creator area.
    */
   kRetentionSramVersion2 = 0x5b89bd6d,
+  /**
+   * Version 3 is a more stable and expandable layout than prior version.
+   * and the a recognizable ASCII tag of `RR03`.
+   */
+  kRetentionSramVersion3 = 0x33305252,
 };
 
 /**
@@ -162,6 +181,13 @@ void retention_sram_init(void);
  * @return An error if a new key cannot be requested.
  */
 void retention_sram_scramble(void);
+
+/**
+ * Check that the retention SRAM is a known version.
+ *
+ * @return An error if the retention SRAM version is unknown.
+ */
+rom_error_t retention_sram_check_version(void);
 
 #ifdef __cplusplus
 }

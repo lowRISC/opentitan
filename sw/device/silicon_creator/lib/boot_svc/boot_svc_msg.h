@@ -26,6 +26,10 @@ extern "C" {
 // clang-format off
 #define BOOT_SVC_MSGS_DEFINE(X) \
   /**
+   * Empty boot services message.
+   */ \
+  X(boot_svc_empty_t, empty) \
+  /**
    * Next Boot BL0 Slot request and response.
    */ \
   X(boot_svc_next_boot_bl0_slot_req_t, next_boot_bl0_slot_req) \
@@ -63,14 +67,12 @@ typedef union boot_svc_msg {
    */
   boot_svc_header_t header;
   /**
-   * Empty boot services message.
-   */
-  boot_svc_empty_t empty;
-  /**
    * Boot services request and response messages.
    */
   BOOT_SVC_MSGS_DEFINE(BOOT_SVC_MSG_FIELD);
 } boot_svc_msg_t;
+
+OT_ASSERT_SIZE(boot_svc_msg_t, 256);
 
 /**
  * Helper macro for generating the equalities for checking that the value of

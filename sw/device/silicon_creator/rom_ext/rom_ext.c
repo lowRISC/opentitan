@@ -142,6 +142,10 @@ static rom_error_t rom_ext_init(void) {
 
   // Conditionally patch AST and check that it is in the expected state.
   HARDENED_RETURN_IF_ERROR(ast_patch(lc_state));
+
+  // Check that the retention RAM is initialized.
+  HARDENED_RETURN_IF_ERROR(retention_sram_check_version());
+
   return kErrorOk;
 }
 
