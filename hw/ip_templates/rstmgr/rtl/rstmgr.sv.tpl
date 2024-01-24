@@ -292,28 +292,28 @@ module rstmgr
 
 % for i, rst in enumerate(leaf_rsts):
 <%
-  names = [rst.name]
+  names = [rst['name']]
   err_prefix = [""]
-  if rst.shadowed:
-    names.append(f'{rst.name}_shadowed')
+  if rst['shadowed']:
+    names.append(f'{names[0]}_shadowed')
     err_prefix.append('shadow_')
 %>\
-  // Generating resets for ${rst.name}
-  // Power Domains: ${rst.domains}
-  // Shadowed: ${rst.shadowed}
+  // Generating resets for ${names[0]}
+  // Power Domains: ${rst['domains']}
+  // Shadowed: ${rst['shadowed']}
   % for j, name in enumerate(names):
 <%rst_name = Name.from_snake_case(name)
 %>\
     % for domain in power_domains:
-       % if domain in rst.domains:
+       % if domain in rst['domains']:
   rstmgr_leaf_rst #(
-    % if rst.name==rst_ni:
+    % if names[0]==rst_ni:
     .SecCheck(0),
     % else:
     .SecCheck(SecCheck),
     % endif
     .SecMaxSyncDelay(SecMaxSyncDelay),
-    % if rst.sw:
+    % if rst['sw']:
     .SwRstReq(1'b1)
     % else:
     .SwRstReq(1'b0)
@@ -321,10 +321,10 @@ module rstmgr
   ) u_d${domain.lower()}_${name} (
     .clk_i,
     .rst_ni,
-    .leaf_clk_i(clk_${rst.clock.name}_i),
-    .parent_rst_ni(rst_${rst.parent}_n[Domain${domain}Sel]),
-         % if rst.sw:
-    .sw_rst_req_ni(reg2hw.sw_rst_ctrl_n[${rst.name.upper()}].q),
+    .leaf_clk_i(clk_${rst['clock']}_i),
+    .parent_rst_ni(rst_${rst['parent']}_n[Domain${domain}Sel]),
+         % if rst['sw']:
+    .sw_rst_req_ni(reg2hw.sw_rst_ctrl_n[${name.upper()}].q),
          % else:
     .sw_rst_req_ni(1'b1),
          % endif
@@ -336,7 +336,7 @@ module rstmgr
     .fsm_err_o(${err_prefix[j]}fsm_errs[${i}][Domain${domain}Sel])
   );
 
-  % if rst.name!=rst_ni:
+  % if names[0]!=rst_ni:
   if (SecCheck) begin : gen_d${domain.lower()}_${name}_assert
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
     D${domain.capitalize()}${rst_name.as_camel_case()}FsmCheck_A,
