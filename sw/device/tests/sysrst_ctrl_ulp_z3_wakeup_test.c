@@ -15,13 +15,21 @@
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
+#include "sw/device/lib/testing/test_framework/ottf_utils.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-OTTF_DEFINE_TEST_CONFIG();
+/* We need control flow for the ujson messages exchanged
+ * with the host in OTTF_WAIT_FOR on real devices. */
+OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 
-// This is updated by the sv component of the test
-static volatile const uint8_t kTestPhase[1];
+// This is updated by the sv/host component of the test.
+// On DV, we must use variables in flash but on a real device,
+// we must use variables in RAM.
+OT_SECTION(".rodata")
+static volatile const uint8_t kTestPhaseDV[1];
+OT_SECTION(".data")
+static volatile const uint8_t kTestPhaseReal = 0;
 
 static dif_pwrmgr_t pwrmgr;
 static dif_rstmgr_t rstmgr;
@@ -32,7 +40,8 @@ static dif_flash_ctrl_state_t flash;
 enum {
   kNumMioInPads = 3,
   kNumMioOutPads = 1,
-  kTestPhaseTimeoutUsec = 500,
+  kTestPhaseTimeoutUsecDV = 500,
+  kTestPhaseTimeoutUsecReal = 1000000,
   // This means 20 aon_clk ticks ~= 20 * 5 us = 100 us
   kDebounceTimer = 20,
 };
@@ -51,18 +60,28 @@ static const dif_pinmux_index_t kPeripheralInputs[] = {
     kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonLidOpen,
 };
 
-static const dif_pinmux_index_t kInputPads[] = {
+static const dif_pinmux_index_t kInputPadsDV[] = {
     kTopEarlgreyPinmuxInselIor13,
     kTopEarlgreyPinmuxInselIoc7,
     kTopEarlgreyPinmuxInselIoc9,
+};
+
+static const dif_pinmux_index_t kInputPadsReal[] = {
+    kTopEarlgreyPinmuxInselIor10,
+    kTopEarlgreyPinmuxInselIor11,
+    kTopEarlgreyPinmuxInselIor12,
 };
 
 static const dif_pinmux_index_t kPeripheralOutputs[] = {
     kTopEarlgreyPinmuxOutselSysrstCtrlAonZ3Wakeup,
 };
 
-static const dif_pinmux_index_t kOutputPads[] = {
+static const dif_pinmux_index_t kOutputPadsDV[] = {
     kTopEarlgreyPinmuxMioOutIob7,
+};
+
+static const dif_pinmux_index_t kOutputPadsReal[] = {
+    kTopEarlgreyPinmuxMioOutIor5,
 };
 
 /**
@@ -70,11 +89,15 @@ static const dif_pinmux_index_t kOutputPads[] = {
  * peripheral as required.
  */
 static void pinmux_setup(void) {
+  const dif_pinmux_index_t *kInputPads =
+      kDeviceType == kDeviceSimDV ? kInputPadsDV : kInputPadsReal;
   for (int i = 0; i < kNumMioInPads; ++i) {
     CHECK_DIF_OK(
         dif_pinmux_input_select(&pinmux, kPeripheralInputs[i], kInputPads[i]));
   }
 
+  const dif_pinmux_index_t *kOutputPads =
+      kDeviceType == kDeviceSimDV ? kOutputPadsDV : kOutputPadsReal;
   for (int i = 0; i < kNumMioOutPads; ++i) {
     CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kOutputPads[i],
                                           kPeripheralOutputs[i]));
@@ -95,12 +118,17 @@ static status_t wait_next_test_phase(uint8_t prior_phase) {
   test_status_set(kTestStatusInWfi);
   test_status_set(kTestStatusInTest);
   LOG_INFO("wait_next_test_phase after %d", prior_phase);
-  status_t status = flash_ctrl_testutils_backdoor_wait_update(
-      &kTestPhase[0], prior_phase, kTestPhaseTimeoutUsec);
-  if (status_ok(status)) {
-    LOG_INFO("Read test phase 0x%x", kTestPhase[0]);
+  if (kDeviceType == kDeviceSimDV) {
+    status_t status = flash_ctrl_testutils_backdoor_wait_update(
+        &kTestPhaseDV[0], prior_phase, kTestPhaseTimeoutUsecDV);
+    if (status_ok(status)) {
+      LOG_INFO("Read test phase 0x%x", kTestPhaseDV[0]);
+    }
+    return status;
+  } else {
+    OTTF_WAIT_FOR(kTestPhaseReal != prior_phase, kTestPhaseTimeoutUsecReal);
+    return OK_STATUS();
   }
-  return status;
 }
 
 /**
@@ -157,8 +185,12 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_rstmgr_init(
       mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
 
-  CHECK_STATUS_OK(flash_ctrl_testutils_backdoor_init(&flash));
+  if (kDeviceType == kDeviceSimDV) {
+    CHECK_STATUS_OK(flash_ctrl_testutils_backdoor_init(&flash));
+  }
 
+  const volatile uint8_t *kTestPhase =
+      kDeviceType == kDeviceSimDV ? kTestPhaseDV : &kTestPhaseReal;
   uint8_t current_test_phase = kTestPhase[0];
   while (current_test_phase < kTestPhaseDone) {
     LOG_INFO("Test phase %d", current_test_phase);

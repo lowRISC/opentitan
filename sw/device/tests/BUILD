@@ -4289,7 +4289,18 @@ opentitan_test(
 opentitan_test(
     name = "sysrst_ctrl_ulp_z3_wakeup_test",
     srcs = ["sysrst_ctrl_ulp_z3_wakeup_test.c"],
-    exec_env = {"//hw/top_earlgrey:sim_dv": None},
+    cw310 = new_cw310_params(
+        test_cmd = """
+            --bitstream="{bitstream}"
+            --bootstrap="{firmware}"
+            "{firmware:elf}"
+        """,
+        test_harness = "//sw/host/tests/chip/sysrst_ctrl:sysrst_ctrl_ulp_z3_wakeup",
+    ),
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_sival": None,
+        "//hw/top_earlgrey:sim_dv": None,
+    },
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
@@ -4304,6 +4315,7 @@ opentitan_test(
         "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/testing/test_framework:ottf_utils",
     ],
 )
 
