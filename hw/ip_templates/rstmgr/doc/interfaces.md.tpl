@@ -12,7 +12,7 @@ Parameter                   | Default       | Description
 
 ## Signals
 
-<!-- BEGIN CMDGEN util/regtool.py --interfaces ./hw/top_earlgrey/ip/rstmgr/data/autogen/rstmgr.hjson -->
+<!-- BEGIN CMDGEN util/regtool.py --interfaces ./hw/top_${topname}/ip_autogen/rstmgr/data/rstmgr.hjson -->
 Referring to the [Comportable guideline for peripheral device functionality](https://opentitan.org/book/doc/contributing/hw/comportability), the module **`rstmgr`** has the following hardware interfaces defined
 - Primary Clock: **`clk_i`**
 - Other Clocks: **`clk_aon_i`**, **`clk_io_div4_i`**, **`clk_main_i`**, **`clk_io_i`**, **`clk_io_div2_i`**, **`clk_usb_i`**, **`clk_por_i`**
@@ -21,7 +21,7 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 - Peripheral Pins for Chip IO: *none*
 - Interrupts: *none*
 
-## [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
+${"##"} [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
 
 | Port Name   | Package::Struct                  | Type    | Act   |   Width | Description                                                                                                                  |
 |:------------|:---------------------------------|:--------|:------|--------:|:-----------------------------------------------------------------------------------------------------------------------------|
@@ -34,14 +34,14 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | sw_rst_req  | prim_mubi_pkg::mubi4             | uni     | req   |       1 | Software requested system reset to pwrmgr.                                                                                   |
 | tl          | tlul_pkg::tl                     | req_rsp | rsp   |       1 |                                                                                                                              |
 
-## Security Alerts
+${"##"} Security Alerts
 
 | Alert Name        | Description                                                                                                                                                    |
 |:------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | fatal_fault       | This fatal alert is triggered when a fatal structural fault is detected. Structural faults include errors such as sparse fsm errors and tlul integrity errors. |
 | fatal_cnsty_fault | This fatal alert is triggered when a reset consistency fault is detected. It is separated from the category above for clearer error collection and debug.      |
 
-## Security Countermeasures
+${"##"} Security Countermeasures
 
 | Countermeasure ID              | Description                                                                                                                |
 |:-------------------------------|:---------------------------------------------------------------------------------------------------------------------------|

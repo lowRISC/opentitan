@@ -1,7 +1,7 @@
 # Theory of Operation
 
 The OpenTitan reset topology and reset controller block diagram are shown in the diagram below.
-The reset controller is closely related to the [power controller](../../../top_earlgrey/ip_autogen/pwrmgr/README.md), please refer to that spec for details on how reset controller inputs are controlled.
+The reset controller is closely related to the [power controller](../../pwrmgr/README.md), please refer to that spec for details on how reset controller inputs are controlled.
 
 ![Reset Topology](../doc/reset_topology.svg)
 
@@ -11,7 +11,7 @@ The topology can be summarized as follows:
 
 *   There are two reset domains
     *   Test Domain - Driven by `TRSTn`
-    *   Core Domain - Driven by internal [POR circuitry](../../../top_earlgrey/ip/ast/README.md).
+    *   Core Domain - Driven by internal [POR circuitry](../../../ip/ast/README.md).
 *   Test domain is comprised of the following components
     *   SOC TAP and related DFT circuits
     *   RISC-V TAP (part of the `rv_dm` module)
@@ -98,7 +98,7 @@ The reset manager handles the reset of the core domain, and also holds relevant 
 
 Additionally, the reset manager, along with the power manager, accepts requests from the system and asserts resets for the appropriate clock trees.
 These requests primarily come from the following sources:
-*  Peripherals capable of reset requests: such as [sysrst_ctrl](../../sysrst_ctrl/README.md) and [always on timers ](../../aon_timer/README.md).
+*  Peripherals capable of reset requests: such as [sysrst_ctrl](../../../../ip/sysrst_ctrl/README.md) and [always on timers ](../../../../ip/aon_timer/README.md).
 *  Debug modules such as `rv_dm`.
 *  Power manager request for low power entry and exit.
 *  Escalation reset requests such as those from `alert_handler` or `pwrmgr` itself.
@@ -138,7 +138,7 @@ The reset manager then checks as follows:
 
 The alert handler needs to know the status of the various reset domains in the system to avoid false alert indications due to the ping mechanism.
 To that end, the reset manager outputs a 4bit MuBi signal for each reset domain that indicates whether its reset is active.
-For more information on this mechanism, see [alert handler documentation](../../../top_earlgrey/ip_autogen/alert_handler/doc/theory_of_operation.md#low-power-management-of-alert-channels).
+For more information on this mechanism, see [alert handler documentation](../../alert_handler/doc/theory_of_operation.md#low-power-management-of-alert-channels).
 
 ## Design Details
 
@@ -304,7 +304,7 @@ Set [`ALERT_INFO_CTRL.INDEX`](registers.md#alert_info_ctrl) to the desired segme
 The CPU information register contains the value of the CPU state prior to a triggered reset.
 Since this information differs in length between system implementation, the information register only displays 32-bits at a time.
 
-For more details on the CPU dump details, please see [crash dump](../../rv_core_ibex/README.md#crash-dump-collection).
+For more details on the CPU dump details, please see [crash dump](../../../../ip/rv_core_ibex/README.md#crash-dump-collection).
 
 The [`CPU_INFO_ATTR`](registers.md#cpu_info_attr) register indicates how many 32-bit data segments must be read.
 Software then simply needs to write in [`CPU_INFO_CTRL.INDEX`](registers.md#cpu_info_ctrl) which segment it wishes and then read out the [`CPU_INFO`](registers.md#cpu_info) register.
