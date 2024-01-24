@@ -40,6 +40,7 @@ dual_cc_library(
         ],
         shared = [
             ":error",
+            ":nonce",
             "//sw/device/lib/base:macros",
             "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
             "//sw/device/silicon_creator/lib/drivers:hmac",
@@ -80,6 +81,7 @@ cc_library(
     srcs = ["boot_log.c"],
     hdrs = ["boot_log.h"],
     deps = [
+        ":nonce",
         "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib:chip_info",
         "//sw/device/silicon_creator/lib:error",
@@ -497,6 +499,11 @@ cc_library(
 cc_library(
     name = "attestation",
     hdrs = ["attestation.h"],
+)
+
+cc_library(
+    name = "nonce",
+    hdrs = ["nonce.h"],
 )
 
 cc_library(
