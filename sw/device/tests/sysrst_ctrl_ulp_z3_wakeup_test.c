@@ -39,11 +39,10 @@ enum {
 
 enum {
   kTestPhaseInit = 0,
-  kTestPhaseDriveZero = 1,
+  kTestPhaseDriveInitial = 1,
   kTestPhaseWaitNoWakeup = 2,
-  kTestPhaseGlitchLidOpen = 3,
-  kTestPhaseWaitWakeup = 4,
-  kTestPhaseDone = 5,
+  kTestPhaseWaitWakeup = 3,
+  kTestPhaseDone = 4,
 };
 
 static const dif_pinmux_index_t kPeripheralInputs[] = {
@@ -167,18 +166,15 @@ bool test_main(void) {
       case kTestPhaseInit:
         pinmux_setup();
         break;
-      case kTestPhaseDriveZero:
+      case kTestPhaseDriveInitial:
         configure_wakeup();
-        LOG_INFO("kTestPhaseDriveZero");
+        LOG_INFO("kTestPhaseDriveInitial");
         break;
       case kTestPhaseWaitNoWakeup:
         CHECK(!reset_is_low_power_exit());
         CHECK(!has_wakeup_happened());
         LOG_INFO("kTestPhaseWaitNoWakeup");
         go_to_sleep();
-        break;
-      case kTestPhaseGlitchLidOpen:
-        LOG_INFO("kTestPhaseGlitchLidOpen");
         break;
       case kTestPhaseWaitWakeup:
         CHECK(reset_is_low_power_exit());
