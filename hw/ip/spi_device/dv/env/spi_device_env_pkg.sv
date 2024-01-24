@@ -42,7 +42,7 @@ package spi_device_env_pkg;
   } tpm_cfg_mode_e;
 
   typedef enum {
-    GenericMode,
+    DisabledMode,
     FlashMode,
     PassthroughMode
   } device_mode_e;

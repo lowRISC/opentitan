@@ -10,20 +10,6 @@
 
 ## Features
 
-### SPI Generic Mode
-
-- Single-bit wide SPI device interface implementing a raw data transfer protocol
-  termed "Firmware Operation Mode"
-  - No address bits, data is sent and received from peripheral pins to/from an
-    internal buffer
-  - Intended to be used to bulk-load data into and out of the chip
-  - Not intended to support EEPROM or other addressing modes (functionality to
-    come in later versions)
-- Supports clock polarity and reverse bit order configurations
-- Flexible RX/TX Buffer size within an SRAM range
-- Interrupts for RX/TX SRAM FIFO conditions (empty, full, designated level for
-  RX, TX)
-
 ### SPI Flash/ Passthrough Modes
 
 - Support Serial Flash emulation
@@ -49,8 +35,7 @@
 - 1 TPM command (8b) and 1 address (24bit) buffer
 - HW controlled wait state
 - Shared SPI with other SPI Device functionalities. Unique CS# for the TPM
-  - Flash or Passthrough mode can be active with TPM mode.
-    Generic and TPM modes are mutually exclusive.
+  - Flash or Passthrough mode can be active with TPM mode, with the shared pins allowing them to time-multiplex the bus.
 - HW processed registers for read requests during FIFO mode
   - TPM_ACCESS_x, TPM_STS_x, TPM_INTF_CAPABILITY, TPM_INT_ENABLE, TPM_INT_STATUS, TPM_INT_VECTOR, TPM_DID_VID, TPM_RID
   - TPM_HASH_START returns FFh
@@ -58,17 +43,7 @@
 
 ## Description
 
-The SPI device module consists of four functions, the generic mode, SPI Flash mode, SPI passthrough mode, and TPM over SPI mode.
-
-The SPI generic mode is a serial-to-parallel receive (RX) and
-parallel-to-serial transmit (TX) full duplex design (single line mode) used to communicate
-with an outside host. This first version of the module supports operations
-controlled by firmware to dump incoming single-line RX data (SDI) to an
-internal RX buffer, and send data from a transmit buffer to single-line TX
-output (SDO). The clock for the peripheral data transfer uses the SPI
-peripheral pin SCK. In this design the SCK is directly used to drive the
-interface logic as its primary clock, which has performance benefits, but incurs
-design complications described later.
+The SPI device module consists of three functions, SPI Flash mode, SPI passthrough mode, and TPM over SPI mode.
 
 The SW can receive TPM commands with payload (address and data) and respond to the read commands with the return data using the TPM submodule in the SPI_DEVICE HWIP.
 The submodule provides the command, address, write, and read FIFOs for the SW to communicate with the TPM host system.
@@ -94,15 +69,16 @@ Mailbox is an exception as it shares the Read command opcode.
 
 ### SPI Device Modes and Active Submodules
 
-SPI Device HWIP has three modes + TPM mode, which are "Generic" mode (also known as FwMode), "Flash" mode, and "Passthrough" mode.
-Generic mode is exclusive. Flash and Passthrough modes share many parts of the datapath.
-TPM mode only shares the SPI and has separate CSb port, which allows that the host sends TPM commands while other SPI mode is active (except Generic mode).
+SPI Device HWIP has two flash-like modes + TPM mode.
+Flash and Passthrough modes share many parts of the datapath.
+With Flash mode, all commands target the internal node, and a special read buffer is available to stream data back to the host in FIFO style.
+With Passthrough mode, commands may target the internal node and/or a downstream SPI flash, and the read buffer is not available.
+TPM mode only shares the SPI and has separate CSb port, which allows that the host sends TPM commands while other SPI mode is active.
 
-Mode     | FwMode | Status | JEDEC | SFDP | Mailbox | Read | Addr4B | Upload | Passthrough
----------|--------|--------|-------|------|---------|------|--------|--------|-------------
-Generic  | Y      |        |       |      |         |      |        |        |
-Flash    |        |  Y     |   Y   |   Y  |   Y     |   Y  |   Y    |   Y    |
-Passthru |        |  Y/N   |  Y/N  |  Y/N |  Y/N    |   N  |   Y    |   Y    |     Y
+Mode     | Status | JEDEC | SFDP | Mailbox | Read | Addr4B | Upload | Passthrough
+---------|--------|-------|------|---------|------|--------|--------|-------------
+Flash    |  Y     |   Y   |   Y  |   Y     |   Y  |   Y    |   Y    |
+Passthru |  Y/N   |  Y/N  |  Y/N |  Y/N    |   N  |   Y    |   Y    |     Y
 
 *Y/N*: Based on INTERCEPT_EN
 

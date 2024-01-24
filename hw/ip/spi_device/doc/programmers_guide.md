@@ -17,7 +17,7 @@ They are not used in this version of IP.
 ### Initialization
 
 The SW should enable the TPM submodule by writing 1 to the TPM_CFG.en CSR field.
-Other SPI_DEVICE features (Generic, Flash, Passthrough) CSRs do not affect the TPM feature.
+Other SPI_DEVICE features (Flash, Passthrough) CSRs do not affect the TPM feature.
 
 Update TPM_ACCESS_0, TPM_ACCESS_1 CSRs.
 The TPM submodule uses TPM_ACCESS_x.activeLocality to determine if the TPM_STS is returned to the host system.
