@@ -24,6 +24,7 @@
   - HW control of SPI PADs' output enable based on command information list
   - SW configurable internal command process for Read Status, Read JEDEC ID, Read SFDP, and read access to the mailbox space
   - Targets 33MHz @ Quad read mode, fall backs to 25MHz
+  - Optional pipelined reads to decrease timing pressure for passthrough mode
 - Automated tracking of 3B/ 4B address mode in the flash and passthrough modes
 - 24 entries of command information slots
   - Configurable address/ dummy/ payload size per opcode
