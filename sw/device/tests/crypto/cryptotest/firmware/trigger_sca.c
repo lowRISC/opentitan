@@ -27,7 +27,7 @@ status_t handle_trigger_sca_select_source(ujson_t *uj) {
   cryptotest_trigger_sca_source_t uj_trigger;
   TRY(ujson_deserialize_cryptotest_trigger_sca_source_t(uj, &uj_trigger));
 
-  sca_select_trigger_type((sca_trigger_type_t)uj_trigger.source);
+  sca_select_trigger_type(uj_trigger.source);
 
   return OK_STATUS(0);
 }
