@@ -158,6 +158,28 @@ The default dummy cycle for those commands are 7 (0-based).
 The value is the number of cycles.
 For example, if SW programs the dummy cycle for Fast Read Quad to `3h`, the module waits 4 cycles then returns data.
 
+#### Pipelined Reads
+
+For commands with dummy cycles, the SPI Device IP can be configured to insert a 2-stage pipeline into the return path to enable higher clock rates.
+The high-speed read pipeline is of particular interest to Passthrough mode, as it moves the delay from the SPI Device IP to the Host to another cycle, relaxing the timing requirement.
+To use the high-speed read pipeline for Passthrough operation, the SPI Device IP would need to be configured to intercept SFDP reads and advertise 2 additional dummy cycles beyond that specified by the downstream SPI flash.
+The ['CMD_INFO'](registers.md#cmd_info) table should have its dummy cycle field programmed for the same number of dummy cycles as the downstream SPI flash.
+
+The high-speed read pipeline can be configured for either full-cycle or half-cycle sampling.
+With full-cycle sampling, the first stage samples the read data from the downstream SPI flash a full cycle after it shifts data out (with launching and sampling edges being the same direction).
+With half-cycle sampling, a "zeroth" stage samples the read data from the downstream SPI flash half a cycle after it shifts data out (with launching and sampling edges being opposite).
+Full-cycle sampling is available to provide the longest period possible for the longer read path of Host -> SPI Device -> SPI Flash -> SPI Device.
+However, half-cycle sampling is available if hold time requirements cannot be met for full-cycle sampling.
+
+From a compatibility perspective, the high-speed read pipeline is expected to have broad compatibility for Quad Output Read commands, so long as the Host has some flexibility for the number of dummy cycles.
+The 2-stage pipeline also ensures that the transaction ends on full byte boundaries for Quad Output Read.
+By contrast, Fast Read and Dual Output Read conventionally require 8 dummy cycles, though Dual Output Read can also advertise a different number in the SFDP.
+
+Note that the pipeline does function for intercepted reads in Passthrough mode.
+For example, reads addressed to the mailbox will appear with the same number of dummy cycles as reads that were passed through.
+
+See the ['CMD_INFO'](registers.md#cmd_info) descriptions for the specific programming values.
+
 #### Buffer Management
 
 ![Read Buffer Management](../doc/buffer-management.svg)
