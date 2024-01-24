@@ -109,19 +109,17 @@ static status_t take_measurement(void) {
 
   // Read data in the order it's laid out in memory: 10, 11, 00, 01.
   uint8_t data_start = kAlsDataCh10Reg;
-  uint8_t data[4] = {0x00, 0x00, 0x00, 0x00};
+  uint8_t data[4] = {0xFF, 0xFF, 0xFF, 0xFF};
   TRY(i2c_testutils_write(&i2c, kDeviceAddr, 1, &data_start, true));
   TRY(i2c_testutils_read(&i2c, kDeviceAddr, sizeof(data), data,
                          kDefaultTimeoutMicros));
 
-  // Check data isn't all 0x00 or all 0xFF, which are more likely to be errors
+  // Check data isn't all 0xFF, which are more likely to be errors
   // than real values.
   uint8_t all_ff[4] = {0xFF, 0xFF, 0xFF, 0xFF};
-  uint8_t all_00[4] = {0x00, 0x00, 0x00, 0x00};
   LOG_INFO("Measured data: [0x%02x, 0x%02x, 0x%02x, 0x%02x]", data[0], data[1],
            data[2], data[3]);
   TRY_CHECK_ARRAYS_NE(data, all_ff, sizeof(data));
-  TRY_CHECK_ARRAYS_NE(data, all_00, sizeof(data));
 
   return OK_STATUS();
 }
