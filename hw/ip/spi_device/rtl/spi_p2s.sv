@@ -22,7 +22,7 @@ module spi_p2s
 
   // Configuration
   // If CPHA=1, then the first byte should be delayed.
-  // But this does not matter in SPI Flash. Only applicable to Generic mode
+  // But this does not matter in SPI Flash.
   input cpha_i,
 
   // Control
@@ -54,8 +54,7 @@ module spi_p2s
   io_mode_e io_mode;
 
   // in Mode3, the logic skips first clock edge to move to next bit.
-  // This is not necessary for Flash / Passthrough mode. But Generic mode
-  // sends the data through TX line right after reset
+  // This is not necessary for Flash / Passthrough mode.
   logic first_beat, last_beat;
 
   count_t cnt;

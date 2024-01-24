@@ -953,7 +953,7 @@ module spi_device
       cio_sd_en_o = {2'b 00, tpm_miso_en, 1'b 0};
 
     end else begin : spi_out_flash_passthrough
-      // SPI Generic, Flash, Passthrough modes
+      // SPI Flash, Passthrough modes
       unique case (spi_mode)
         FlashMode: begin
           cio_sd_o    = internal_sd;
