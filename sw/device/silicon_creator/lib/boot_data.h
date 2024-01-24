@@ -10,6 +10,7 @@
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/error.h"
+#include "sw/device/silicon_creator/lib/nonce.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -69,10 +70,24 @@ typedef struct boot_data {
    */
   uint32_t primary_bl0_slot;
   /**
+   * Next owner key (ECDSA).  Only relevant in the UNLOCKED_ENDORSED ownership
+   * state.
+   */
+  uint32_t next_owner[8];
+  /**
+   * Challenge/response nonce for signed boot_svc commands.
+   */
+  nonce_t nonce;
+  /**
+   * Ownership state.  One of LOCKED_OWNER, LOCKED_UPDATE, UNLOCKED_ANY,
+   * UNLOCKED_ENDORSED, LOCKED_NONE.
+   */
+  uint32_t ownership_state;
+  /**
    * Padding for future enhancements and to make the size of `boot_data_t` a
    * power of two.
    */
-  uint32_t padding[16];
+  uint32_t padding[5];
 } boot_data_t;
 
 OT_ASSERT_MEMBER_OFFSET(boot_data_t, digest, 0);
@@ -83,7 +98,10 @@ OT_ASSERT_MEMBER_OFFSET(boot_data_t, counter, 48);
 OT_ASSERT_MEMBER_OFFSET(boot_data_t, min_security_version_rom_ext, 52);
 OT_ASSERT_MEMBER_OFFSET(boot_data_t, min_security_version_bl0, 56);
 OT_ASSERT_MEMBER_OFFSET(boot_data_t, primary_bl0_slot, 60);
-OT_ASSERT_MEMBER_OFFSET(boot_data_t, padding, 64);
+OT_ASSERT_MEMBER_OFFSET(boot_data_t, next_owner, 64);
+OT_ASSERT_MEMBER_OFFSET(boot_data_t, nonce, 96);
+OT_ASSERT_MEMBER_OFFSET(boot_data_t, ownership_state, 104);
+OT_ASSERT_MEMBER_OFFSET(boot_data_t, padding, 108);
 OT_ASSERT_SIZE(boot_data_t, 128);
 
 enum {

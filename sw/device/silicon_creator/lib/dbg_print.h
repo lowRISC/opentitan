@@ -45,6 +45,14 @@ void dbg_printf(const char *format, ...) __attribute__((format(printf, 1, 2)));
  */
 void dbg_print_epmp(void);
 
+/**
+ * Hexdump a region of memory.
+ *
+ * @param data The memory to dump.
+ * @param len The length of the region to dump.
+ */
+void dbg_hexdump(const void *data, size_t len);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

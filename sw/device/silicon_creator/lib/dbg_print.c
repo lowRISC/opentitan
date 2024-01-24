@@ -14,6 +14,8 @@
 #include "sw/device/silicon_creator/lib/drivers/uart.h"
 #include "sw/device/silicon_creator/lib/epmp_defs.h"
 
+static const char kHexTable[16] = "0123456789abcdef";
+
 static void print_integer(unsigned value, bool is_signed) {
   char buf[12];
   char *b = buf + sizeof(buf);
@@ -70,7 +72,6 @@ void dbg_printf(const char *format, ...) {
         OT_FALLTHROUGH_INTENDED;
       case 'x': {
         // Print an `unsigned int` in hexadecimal.
-        static const char kHexTable[16] = "0123456789abcdef";
         unsigned int v = va_arg(args, unsigned int);
         for (int i = 0; i < sizeof(v) * 2; ++i) {
           int shift = sizeof(v) * 8 - 4;
@@ -146,4 +147,26 @@ void dbg_print_epmp(void) {
                size);
   }
   dbg_printf("mseccfg = %x\r\n", mseccfg);
+}
+
+void dbg_hexdump(const void *data, size_t len) {
+  const uint8_t *p = (const uint8_t *)data;
+  size_t j = 0;
+
+  while (j < len) {
+    // hexbuf is initialized as 48 spaces followed by a nul byte.
+    char hexbuf[] = "                                                ";
+    // ascii is initialized as 17 nul bytes.
+    char ascii[17] = {
+        0,
+    };
+    dbg_printf("%p: ", p);
+    for (size_t i = 0; i < 16 && j < len; ++p, ++i, ++j) {
+      uint8_t val = *p;
+      hexbuf[i * 3 + 0] = kHexTable[val >> 4];
+      hexbuf[i * 3 + 1] = kHexTable[val & 15];
+      ascii[i] = (val >= 32 && val < 127) ? (char)val : '.';
+    }
+    dbg_printf("%s  %s\r\n", hexbuf, ascii);
+  }
 }

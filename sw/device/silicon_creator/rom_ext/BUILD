@@ -255,10 +255,14 @@ opentitan_binary(
         "//hw/top_earlgrey:fpga_cw310",
         "//hw/top_earlgrey:sim_dv_base",
         "//hw/top_earlgrey:sim_verilator_base",
+        "//hw/top_earlgrey:silicon_creator",
     ],
     linker_script = ":ld_slot_a",
     manifest = ":manifest_standard",
-    rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:prod_private_key_0": "prod_key_0"},
+    rsa_key = select({
+        "//signing:test_keys": {"//sw/device/silicon_creator/rom/keys/fake/rsa:prod_private_key_0": "prod_key_0"},
+        "//conditions:default": {"//sw/device/silicon_creator/rom/keys/real/rsa:keyset": "earlgrey_a0_test_0"},
+    }),
     deps = [
         ":rom_ext",
         "//sw/device/lib/crt",
@@ -273,10 +277,14 @@ opentitan_binary(
         "//hw/top_earlgrey:fpga_cw310",
         "//hw/top_earlgrey:sim_dv_base",
         "//hw/top_earlgrey:sim_verilator_base",
+        "//hw/top_earlgrey:silicon_creator",
     ],
     linker_script = ":ld_slot_b",
     manifest = ":manifest_standard",
-    rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:prod_private_key_0": "prod_key_0"},
+    rsa_key = select({
+        "//signing:test_keys": {"//sw/device/silicon_creator/rom/keys/fake/rsa:prod_private_key_0": "prod_key_0"},
+        "//conditions:default": {"//sw/device/silicon_creator/rom/keys/real/rsa:keyset": "earlgrey_a0_test_0"},
+    }),
     deps = [
         ":rom_ext",
         "//sw/device/lib/crt",
@@ -291,10 +299,14 @@ opentitan_binary(
         "//hw/top_earlgrey:fpga_cw310",
         "//hw/top_earlgrey:sim_dv_base",
         "//hw/top_earlgrey:sim_verilator_base",
+        "//hw/top_earlgrey:silicon_creator",
     ],
     linker_script = ":ld_slot_virtual",
     manifest = ":manifest_virtual",
-    rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:prod_private_key_0": "prod_key_0"},
+    rsa_key = select({
+        "//signing:test_keys": {"//sw/device/silicon_creator/rom/keys/fake/rsa:prod_private_key_0": "prod_key_0"},
+        "//conditions:default": {"//sw/device/silicon_creator/rom/keys/real/rsa:keyset": "earlgrey_a0_test_0"},
+    }),
     deps = [
         ":rom_ext",
         "//sw/device/lib/crt",
