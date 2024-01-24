@@ -11,24 +11,48 @@
 #include "sw/device/silicon_creator/lib/chip_info.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/error.h"
+#include "sw/device/silicon_creator/lib/nonce.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+/**
+ * The boot_log encodes information about how the chip booted.
+ */
 typedef struct boot_log {
+  /** Digest to indicate validity of the boot_log. */
   hmac_digest_t digest;
+  /** Identifier (`BOLG`). */
   uint32_t identifier;
+  /** Chip version (from the ROM). */
   chip_info_scm_revision_t chip_version;
+  /** Which ROM_EXT slot booted. */
   uint32_t rom_ext_slot;
+  /** ROM_EXT major version number. */
+  uint16_t rom_ext_major;
+  /** ROM_EXT minor version number. */
+  uint16_t rom_ext_minor;
+  /** ROM_EXT size in flash. */
+  uint32_t rom_ext_size;
+  /** ROM_EXT nonce for challenge/response boot_svc commands. */
+  nonce_t rom_ext_nonce;
+  /** Which BL0 slot booted. */
   uint32_t bl0_slot;
+  /** Pad to 128 bytes. */
+  uint32_t reserved[15];
 } boot_log_t;
 
 OT_ASSERT_MEMBER_OFFSET(boot_log_t, digest, 0);
 OT_ASSERT_MEMBER_OFFSET(boot_log_t, identifier, 32);
 OT_ASSERT_MEMBER_OFFSET(boot_log_t, chip_version, 36);
 OT_ASSERT_MEMBER_OFFSET(boot_log_t, rom_ext_slot, 44);
-OT_ASSERT_MEMBER_OFFSET(boot_log_t, bl0_slot, 48);
+OT_ASSERT_MEMBER_OFFSET(boot_log_t, rom_ext_major, 48);
+OT_ASSERT_MEMBER_OFFSET(boot_log_t, rom_ext_minor, 50);
+OT_ASSERT_MEMBER_OFFSET(boot_log_t, rom_ext_size, 52);
+OT_ASSERT_MEMBER_OFFSET(boot_log_t, rom_ext_nonce, 56);
+OT_ASSERT_MEMBER_OFFSET(boot_log_t, bl0_slot, 64);
+OT_ASSERT_MEMBER_OFFSET(boot_log_t, reserved, 68);
 
 enum {
   /**

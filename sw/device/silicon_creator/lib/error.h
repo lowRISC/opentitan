@@ -49,6 +49,7 @@ enum module_ {
   kModuleRomExt =          MODULE_CODE('R', 'E'),
   kModuleRomExtInterrupt = MODULE_CODE('R', 'I'),
   kModuleAsn1 =            MODULE_CODE('A', '1'),
+  kModuleRetRam =          MODULE_CODE('R', 'R'),
   kModuleXModem =          MODULE_CODE('X', 'M'),
   // clang-format on
 };
@@ -179,6 +180,8 @@ enum module_ {
   X(kErrorAsn1PushIntegerInvalidArgument,     ERROR_(5, kModuleAsn1, kInvalidArgument)), \
   X(kErrorAsn1FinishBitstringInvalidArgument, ERROR_(6, kModuleAsn1, kInvalidArgument)), \
   X(kErrorAsn1BufferExhausted,                ERROR_(7, kModuleAsn1, kResourceExhausted)), \
+  \
+  X(kErrorRetRamBadVersion,           ERROR_(1, kModuleRetRam, kUnknown)), \
   /* This comment prevent clang from trying to format the macro. */
 
 // clang-format on
