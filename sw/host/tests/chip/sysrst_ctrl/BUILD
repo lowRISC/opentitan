@@ -2,17 +2,30 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@rules_rust//rust:defs.bzl", "rust_binary")
+load("@rules_rust//rust:defs.bzl", "rust_binary", "rust_library")
 
 package(default_visibility = ["//visibility:public"])
+
+rust_library(
+    name = "sysrst_ctrl",
+    srcs = [
+        "mod.rs",
+        "sysrst_ctrl.rs",
+    ],
+    deps = [
+        "//sw/host/opentitanlib",
+        "@crate_index//:anyhow",
+        "@crate_index//:log",
+    ],
+)
 
 rust_binary(
     name = "sysrst_ctrl_inputs",
     srcs = [
-        "sysrst_ctrl.rs",
         "sysrst_ctrl_inputs.rs",
     ],
     deps = [
+        ":sysrst_ctrl",
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",
         "@crate_index//:clap",
@@ -27,10 +40,10 @@ rust_binary(
 rust_binary(
     name = "sysrst_ctrl_in_irq",
     srcs = [
-        "sysrst_ctrl.rs",
         "sysrst_ctrl_in_irq.rs",
     ],
     deps = [
+        ":sysrst_ctrl",
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",
         "@crate_index//:clap",
