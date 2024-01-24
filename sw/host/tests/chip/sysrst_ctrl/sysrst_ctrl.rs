@@ -50,3 +50,17 @@ pub fn set_pins(transport: &TransportWrapper, config: &Config, values: u8) -> Re
     }
     Ok(())
 }
+
+/// Read pins: the i-th bit of `values` corresponds to the i-th entry of `config.input_pins`.
+pub fn read_pins(transport: &TransportWrapper, config: &Config) -> Result<u8> {
+    ensure!(config.input_pins.len() <= 8);
+    let mut values = 0u8;
+    // Set pins on the transport.
+    for (i, pin) in config.input_pins.iter().enumerate() {
+        if transport.gpio_pin(pin)?.read()? {
+            values |= 1 << i;
+        }
+    }
+    log::info!("read pins: {:b}", values);
+    Ok(values)
+}
