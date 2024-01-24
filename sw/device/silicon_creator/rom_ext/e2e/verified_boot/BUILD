@@ -9,6 +9,8 @@ load(
     "cw310_params",
     "opentitan_test",
 )
+load("//rules:const.bzl", "CONST", "hex")
+load("//rules:manifest.bzl", "manifest")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -61,6 +63,36 @@ _POSITIONS = {
 test_suite(
     name = "positions",
     tests = ["position_{}".format(name) for name in _POSITIONS],
+)
+
+manifest(d = {
+    "name": "bad_manifest",
+    "address_translation": hex(CONST.HARDENED_FALSE),
+    "identifier": hex(CONST.OWNER),
+    "manifest_version_major": "0",
+    "manifest_version_minor": "0",
+    "visibility": ["//visibility:public"],
+})
+
+opentitan_test(
+    name = "bad_manifest_test",
+    srcs = ["boot_test.c"],
+    cw310 = cw310_params(
+        exit_failure = "PASS|FAIL|FAULT|BFV:.{8}",
+        # Because our bad manifest has an invalid manifest version, we should
+        # expect kErrorManifestBadVersionMajor from the ROM_EXT.
+        exit_success = "BFV:054d410d",
+    ),
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+    },
+    manifest = ":bad_manifest",
+    deps = [
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:boot_log",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+    ],
 )
 
 _KEYS = {
