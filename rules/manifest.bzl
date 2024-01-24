@@ -11,6 +11,7 @@ _SEL_LIFE_CYCLE_STATE = (1 << 10)
 
 def _manifest_impl(ctx):
     mf = {}
+    mf_version = {}
 
     # All the easy parameters are simple assignments
     if ctx.attr.signature:
@@ -37,6 +38,13 @@ def _manifest_impl(ctx):
         mf["code_end"] = ctx.attr.code_end
     if ctx.attr.entry_point:
         mf["entry_point"] = ctx.attr.entry_point
+
+    if ctx.attr.manifest_version_major:
+        mf_version["major"] = ctx.attr.manifest_version_major
+    if ctx.attr.manifest_version_minor:
+        mf_version["minor"] = ctx.attr.manifest_version_minor
+    if mf_version:
+        mf["manifest_version"] = mf_version
 
     # Address Translation is a bool, but encoded as an int so we can have
     # a special value mean "unset" and so we can set to non-standard values
@@ -140,6 +148,8 @@ _manifest = rule(
         "life_cycle_state": attr.string(doc = "Usage constraint for life cycle status as a 0x-prefixed hex-encoded string"),
         "address_translation": attr.string(doc = "Whether this image uses address translation as a 0x-prefixed hex-encoded string"),
         "identifier": attr.string(doc = "Manifest identifier as a 0x-prefixed hex-encoded string"),
+        "manifest_version_major": attr.string(doc = "Manifest major version as a 0x-prefixed hex-encoded string"),
+        "manifest_version_minor": attr.string(doc = "Manifest minor version as a 0x-prefixed hex-encoded string"),
         "length": attr.string(doc = "Length of this image as a 0x-prefixed hex-encoded string"),
         "version_major": attr.string(doc = "Image major version as a 0x-prefixed hex-encoded string"),
         "version_minor": attr.string(doc = "Image minor version as a 0x-prefixed hex-encoded string"),
