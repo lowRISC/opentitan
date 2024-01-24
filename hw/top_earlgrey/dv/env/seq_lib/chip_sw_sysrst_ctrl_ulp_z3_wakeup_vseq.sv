@@ -21,9 +21,8 @@ class chip_sw_sysrst_ctrl_ulp_z3_wakeup_vseq extends chip_sw_base_vseq;
     PHASE_INIT                  = 0,
     PHASE_DRIVE_ZERO            = 1,
     PHASE_WAIT_NO_WAKEUP        = 2,
-    PHASE_GLITCH_LID_OPEN       = 3,
-    PHASE_WAIT_WAKEUP           = 4,
-    PHASE_DONE                  = 5
+    PHASE_WAIT_WAKEUP           = 3,
+    PHASE_DONE                  = 4
   } test_phases_e;
 
   virtual task pre_start();
@@ -118,10 +117,7 @@ class chip_sw_sysrst_ctrl_ulp_z3_wakeup_vseq extends chip_sw_base_vseq;
     `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInWfi)
 
     glitch_lid_open();
-    write_test_phase(PHASE_GLITCH_LID_OPEN);
     sync_with_sw();
-
-    wait_wakeup_time();
     write_test_phase(PHASE_WAIT_WAKEUP);
     check_wakeup_pin();
     sync_with_sw();
