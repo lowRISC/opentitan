@@ -35,7 +35,7 @@ See [clock manager](../../../ip/clkmgr/README.md)) for more details.
 - vcmain_pok: The main operating domain of the system is ready.
 
 When one of these power-okay signals drop, the corresponding domain in `top_earlgrey` is reset.
-Please refer to [reset manager](../../../ip/rstmgr/README.md)) for more details.
+Please refer to [reset manager](../../ip_autogen/rstmgr/README.md)) for more details.
 Resets throughout the design are asynchronous active low as per the Comportability specification.
 
 Once reset, the reset vector begins in ROM, whose job is to validate code in the embedded flash before jumping to it.
