@@ -46,7 +46,7 @@
   ]
   clocking: [
     {clock: "clk_i", reset: "rst_ni", primary: true},
-% for clk in reset_obj.get_clocks():
+% for clk in clks:
     {clock: "clk_${clk}_i"},
 % endfor
     {clock: "clk_por_i", reset: "rst_por_ni"},
