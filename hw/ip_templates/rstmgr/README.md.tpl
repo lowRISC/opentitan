@@ -1,12 +1,12 @@
 # Reset Manager HWIP Technical Specification
 
-[`rstmgr`](https://reports.opentitan.org/hw/ip/rstmgr/dv/latest/report.html):
+[`rstmgr`](https://reports.opentitan.org/hw/top_${topname}/ip_autogen/rstmgr/dv/latest/report.html):
 ![](https://dashboards.lowrisc.org/badges/dv/rstmgr/test.svg)
 ![](https://dashboards.lowrisc.org/badges/dv/rstmgr/passing.svg)
 ![](https://dashboards.lowrisc.org/badges/dv/rstmgr/functional.svg)
 ![](https://dashboards.lowrisc.org/badges/dv/rstmgr/code.svg)
 
-[`rstmgr_cnsty_chk`](https://reports.opentitan.org/hw/ip/rstmgr/dv/rstmgr_cnsty_chk/latest/report.html):
+[`rstmgr_cnsty_chk`](https://reports.opentitan.org/hw/top_${topname}/ip_autogen/rstmgr/dv/rstmgr_cnsty_chk/latest/report.html):
 ![](https://dashboards.lowrisc.org/badges/dv/rstmgr_cnsty_chk/test.svg)
 ![](https://dashboards.lowrisc.org/badges/dv/rstmgr_cnsty_chk/passing.svg)
 ![](https://dashboards.lowrisc.org/badges/dv/rstmgr_cnsty_chk/functional.svg)
@@ -16,7 +16,7 @@
 
 This document describes the functionality of the reset controller and its interaction with the rest of the OpenTitan system.
 
-## Features
+${"##"} Features
 
 *   Stretch incoming POR.
 *   Cascaded system resets.
