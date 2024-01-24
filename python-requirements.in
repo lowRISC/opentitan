@@ -61,7 +61,7 @@ types-tabulate==0.8.11
 anytree==2.8.0
 
 # Development version with OT-specific changes
-https://github.com/lowRISC/fusesoc/archive/refs/tags/ot-0.4.zip
+https://github.com/lowRISC/fusesoc/archive/refs/tags/ot-0.5.zip
 
 # Development version with OT-specific changes
 https://github.com/lowRISC/edalize/archive/refs/tags/v0.4.0.zip

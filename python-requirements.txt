@@ -186,8 +186,8 @@ enlighten==1.10.2 \
 flake8==5.0.4 \
     --hash=sha256:6fbe320aad8d6b95cec8b8e47bc933004678dc63095be98528b7bdd2a9f510db \
     --hash=sha256:7a1cf6b73744f5806ab95e526f6f0d8c01c66d7bbe349562d22dfca20610b248
-fusesoc @ https://github.com/lowRISC/fusesoc/archive/refs/tags/ot-0.4.zip \
-    --hash=sha256:a41fca0d3d7c3ec6bd0fa82b4834886497dd7a49ca07700a4d85963a23a59340
+fusesoc @ https://github.com/lowRISC/fusesoc/archive/refs/tags/ot-0.5.zip \
+    --hash=sha256:2b9e29adc09b61e00c8f6246274a937a0f13fe940f1362f12788a6246b3cc4c7
 gitdb==4.0.10 \
     --hash=sha256:6eb990b69df4e15bad899ea868dc46572c3f75339735663b81de79b06f17eb9a \
     --hash=sha256:c286cf298426064079ed96a9e4a9d39e7f3e9bf15ba60701e95f5492f28415c7
