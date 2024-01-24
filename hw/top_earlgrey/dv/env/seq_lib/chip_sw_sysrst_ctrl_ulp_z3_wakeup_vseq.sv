@@ -69,7 +69,7 @@ class chip_sw_sysrst_ctrl_ulp_z3_wakeup_vseq extends chip_sw_base_vseq;
     bit [7:0] test_phase[1];
     test_phase[0] = phase;
     `uvm_info(`gfn, $sformatf("Writing test phase %0d", phase), UVM_MEDIUM)
-    sw_symbol_backdoor_overwrite("kTestPhase", test_phase);
+    sw_symbol_backdoor_overwrite("kTestPhaseDV", test_phase);
   endfunction
 
   virtual function void check_wakeup_pin();

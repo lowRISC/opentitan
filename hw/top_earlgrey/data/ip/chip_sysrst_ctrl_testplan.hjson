@@ -190,6 +190,7 @@
         "chip_sw_adc_ctrl_sleep_debug_cable_wakeup",
         "chip_sw_sysrst_ctrl_ulp_z3_wakeup"
       ]
+      bazel: ["//sw/device/tests:sysrst_ctrl_ulp_z3_wakeup_test"]
     }
   ]
 }
