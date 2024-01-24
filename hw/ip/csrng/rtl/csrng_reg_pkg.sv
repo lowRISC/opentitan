@@ -19,42 +19,38 @@ package csrng_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-    } cs_cmd_req_done;
-    struct packed {
-      logic        q;
-    } cs_entropy_req;
+    } cs_fatal_err;
     struct packed {
       logic        q;
     } cs_hw_inst_exc;
     struct packed {
       logic        q;
-    } cs_fatal_err;
+    } cs_entropy_req;
+    struct packed {
+      logic        q;
+    } cs_cmd_req_done;
   } csrng_reg2hw_intr_state_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
-    } cs_cmd_req_done;
-    struct packed {
-      logic        q;
-    } cs_entropy_req;
+    } cs_fatal_err;
     struct packed {
       logic        q;
     } cs_hw_inst_exc;
     struct packed {
       logic        q;
-    } cs_fatal_err;
+    } cs_entropy_req;
+    struct packed {
+      logic        q;
+    } cs_cmd_req_done;
   } csrng_reg2hw_intr_enable_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
       logic        qe;
-    } cs_cmd_req_done;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } cs_entropy_req;
+    } cs_fatal_err;
     struct packed {
       logic        q;
       logic        qe;
@@ -62,30 +58,34 @@ package csrng_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } cs_fatal_err;
+    } cs_entropy_req;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } cs_cmd_req_done;
   } csrng_reg2hw_intr_test_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
       logic        qe;
-    } recov_alert;
+    } fatal_alert;
     struct packed {
       logic        q;
       logic        qe;
-    } fatal_alert;
+    } recov_alert;
   } csrng_reg2hw_alert_test_reg_t;
 
   typedef struct packed {
     struct packed {
       logic [3:0]  q;
-    } enable;
+    } read_int_state;
     struct packed {
       logic [3:0]  q;
     } sw_app_enable;
     struct packed {
       logic [3:0]  q;
-    } read_int_state;
+    } enable;
   } csrng_reg2hw_ctrl_reg_t;
 
   typedef struct packed {

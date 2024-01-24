@@ -31,7 +31,7 @@ package lc_ctrl_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } fatal_prog_error;
+    } fatal_bus_integ_error;
     struct packed {
       logic        q;
       logic        qe;
@@ -39,7 +39,7 @@ package lc_ctrl_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } fatal_bus_integ_error;
+    } fatal_prog_error;
   } lc_ctrl_reg2hw_alert_test_reg_t;
 
   typedef struct packed {
@@ -56,11 +56,11 @@ package lc_ctrl_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } ext_clock_en;
+    } volatile_raw_unlock;
     struct packed {
       logic        q;
       logic        qe;
-    } volatile_raw_unlock;
+    } ext_clock_en;
   } lc_ctrl_reg2hw_transition_ctrl_reg_t;
 
   typedef struct packed {

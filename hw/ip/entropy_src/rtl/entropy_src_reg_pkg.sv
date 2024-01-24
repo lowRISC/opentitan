@@ -20,42 +20,38 @@ package entropy_src_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-    } es_entropy_valid;
-    struct packed {
-      logic        q;
-    } es_health_test_failed;
+    } es_fatal_err;
     struct packed {
       logic        q;
     } es_observe_fifo_ready;
     struct packed {
       logic        q;
-    } es_fatal_err;
+    } es_health_test_failed;
+    struct packed {
+      logic        q;
+    } es_entropy_valid;
   } entropy_src_reg2hw_intr_state_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
-    } es_entropy_valid;
-    struct packed {
-      logic        q;
-    } es_health_test_failed;
+    } es_fatal_err;
     struct packed {
       logic        q;
     } es_observe_fifo_ready;
     struct packed {
       logic        q;
-    } es_fatal_err;
+    } es_health_test_failed;
+    struct packed {
+      logic        q;
+    } es_entropy_valid;
   } entropy_src_reg2hw_intr_enable_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
       logic        qe;
-    } es_entropy_valid;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } es_health_test_failed;
+    } es_fatal_err;
     struct packed {
       logic        q;
       logic        qe;
@@ -63,18 +59,22 @@ package entropy_src_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } es_fatal_err;
+    } es_health_test_failed;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } es_entropy_valid;
   } entropy_src_reg2hw_intr_test_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
       logic        qe;
-    } recov_alert;
+    } fatal_alert;
     struct packed {
       logic        q;
       logic        qe;
-    } fatal_alert;
+    } recov_alert;
   } entropy_src_reg2hw_alert_test_reg_t;
 
   typedef struct packed {
@@ -87,29 +87,29 @@ package entropy_src_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic [3:0]  q;
-    } fips_enable;
+      logic [1:0]  q;
+    } rng_bit_sel;
     struct packed {
       logic [3:0]  q;
-    } entropy_data_reg_enable;
+    } rng_bit_enable;
     struct packed {
       logic [3:0]  q;
     } threshold_scope;
     struct packed {
       logic [3:0]  q;
-    } rng_bit_enable;
+    } entropy_data_reg_enable;
     struct packed {
-      logic [1:0]  q;
-    } rng_bit_sel;
+      logic [3:0]  q;
+    } fips_enable;
   } entropy_src_reg2hw_conf_reg_t;
 
   typedef struct packed {
     struct packed {
       logic [3:0]  q;
-    } es_route;
+    } es_type;
     struct packed {
       logic [3:0]  q;
-    } es_type;
+    } es_route;
   } entropy_src_reg2hw_entropy_control_reg_t;
 
   typedef struct packed {
@@ -120,127 +120,127 @@ package entropy_src_reg_pkg;
   typedef struct packed {
     struct packed {
       logic [15:0] q;
-    } fips_window;
+    } bypass_window;
     struct packed {
       logic [15:0] q;
-    } bypass_window;
+    } fips_window;
   } entropy_src_reg2hw_health_test_windows_reg_t;
 
   typedef struct packed {
     struct packed {
       logic [15:0] q;
       logic        qe;
-    } fips_thresh;
+    } bypass_thresh;
     struct packed {
       logic [15:0] q;
       logic        qe;
-    } bypass_thresh;
+    } fips_thresh;
   } entropy_src_reg2hw_repcnt_thresholds_reg_t;
 
   typedef struct packed {
     struct packed {
       logic [15:0] q;
       logic        qe;
-    } fips_thresh;
+    } bypass_thresh;
     struct packed {
       logic [15:0] q;
       logic        qe;
-    } bypass_thresh;
+    } fips_thresh;
   } entropy_src_reg2hw_repcnts_thresholds_reg_t;
 
   typedef struct packed {
     struct packed {
       logic [15:0] q;
       logic        qe;
-    } fips_thresh;
+    } bypass_thresh;
     struct packed {
       logic [15:0] q;
       logic        qe;
-    } bypass_thresh;
+    } fips_thresh;
   } entropy_src_reg2hw_adaptp_hi_thresholds_reg_t;
 
   typedef struct packed {
     struct packed {
       logic [15:0] q;
       logic        qe;
-    } fips_thresh;
+    } bypass_thresh;
     struct packed {
       logic [15:0] q;
       logic        qe;
-    } bypass_thresh;
+    } fips_thresh;
   } entropy_src_reg2hw_adaptp_lo_thresholds_reg_t;
 
   typedef struct packed {
     struct packed {
       logic [15:0] q;
       logic        qe;
-    } fips_thresh;
+    } bypass_thresh;
     struct packed {
       logic [15:0] q;
       logic        qe;
-    } bypass_thresh;
+    } fips_thresh;
   } entropy_src_reg2hw_bucket_thresholds_reg_t;
 
   typedef struct packed {
     struct packed {
       logic [15:0] q;
       logic        qe;
-    } fips_thresh;
+    } bypass_thresh;
     struct packed {
       logic [15:0] q;
       logic        qe;
-    } bypass_thresh;
+    } fips_thresh;
   } entropy_src_reg2hw_markov_hi_thresholds_reg_t;
 
   typedef struct packed {
     struct packed {
       logic [15:0] q;
       logic        qe;
-    } fips_thresh;
+    } bypass_thresh;
     struct packed {
       logic [15:0] q;
       logic        qe;
-    } bypass_thresh;
+    } fips_thresh;
   } entropy_src_reg2hw_markov_lo_thresholds_reg_t;
 
   typedef struct packed {
     struct packed {
       logic [15:0] q;
       logic        qe;
-    } fips_thresh;
+    } bypass_thresh;
     struct packed {
       logic [15:0] q;
       logic        qe;
-    } bypass_thresh;
+    } fips_thresh;
   } entropy_src_reg2hw_extht_hi_thresholds_reg_t;
 
   typedef struct packed {
     struct packed {
       logic [15:0] q;
       logic        qe;
-    } fips_thresh;
+    } bypass_thresh;
     struct packed {
       logic [15:0] q;
       logic        qe;
-    } bypass_thresh;
+    } fips_thresh;
   } entropy_src_reg2hw_extht_lo_thresholds_reg_t;
 
   typedef struct packed {
     struct packed {
       logic [15:0] q;
-    } alert_threshold;
+    } alert_threshold_inv;
     struct packed {
       logic [15:0] q;
-    } alert_threshold_inv;
+    } alert_threshold;
   } entropy_src_reg2hw_alert_threshold_reg_t;
 
   typedef struct packed {
     struct packed {
       logic [3:0]  q;
-    } fw_ov_mode;
+    } fw_ov_entropy_insert;
     struct packed {
       logic [3:0]  q;
-    } fw_ov_entropy_insert;
+    } fw_ov_mode;
   } entropy_src_reg2hw_fw_ov_control_reg_t;
 
   typedef struct packed {

@@ -23,11 +23,11 @@ package aon_timer_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic        q;
-    } enable;
-    struct packed {
       logic [11:0] q;
     } prescaler;
+    struct packed {
+      logic        q;
+    } enable;
   } aon_timer_reg2hw_wkup_ctrl_reg_t;
 
   typedef struct packed {
@@ -41,10 +41,10 @@ package aon_timer_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-    } enable;
+    } pause_in_sleep;
     struct packed {
       logic        q;
-    } pause_in_sleep;
+    } enable;
   } aon_timer_reg2hw_wdog_ctrl_reg_t;
 
   typedef struct packed {
@@ -62,21 +62,21 @@ package aon_timer_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-    } wkup_timer_expired;
+    } wdog_timer_bark;
     struct packed {
       logic        q;
-    } wdog_timer_bark;
+    } wkup_timer_expired;
   } aon_timer_reg2hw_intr_state_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
       logic        qe;
-    } wkup_timer_expired;
+    } wdog_timer_bark;
     struct packed {
       logic        q;
       logic        qe;
-    } wdog_timer_bark;
+    } wkup_timer_expired;
   } aon_timer_reg2hw_intr_test_reg_t;
 
   typedef struct packed {

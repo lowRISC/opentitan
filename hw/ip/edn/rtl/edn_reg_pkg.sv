@@ -23,56 +23,56 @@ package edn_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-    } edn_cmd_req_done;
+    } edn_fatal_err;
     struct packed {
       logic        q;
-    } edn_fatal_err;
+    } edn_cmd_req_done;
   } edn_reg2hw_intr_state_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
-    } edn_cmd_req_done;
+    } edn_fatal_err;
     struct packed {
       logic        q;
-    } edn_fatal_err;
+    } edn_cmd_req_done;
   } edn_reg2hw_intr_enable_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
       logic        qe;
-    } edn_cmd_req_done;
+    } edn_fatal_err;
     struct packed {
       logic        q;
       logic        qe;
-    } edn_fatal_err;
+    } edn_cmd_req_done;
   } edn_reg2hw_intr_test_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
       logic        qe;
-    } recov_alert;
+    } fatal_alert;
     struct packed {
       logic        q;
       logic        qe;
-    } fatal_alert;
+    } recov_alert;
   } edn_reg2hw_alert_test_reg_t;
 
   typedef struct packed {
     struct packed {
       logic [3:0]  q;
-    } edn_enable;
-    struct packed {
-      logic [3:0]  q;
-    } boot_req_mode;
+    } cmd_fifo_rst;
     struct packed {
       logic [3:0]  q;
     } auto_req_mode;
     struct packed {
       logic [3:0]  q;
-    } cmd_fifo_rst;
+    } boot_req_mode;
+    struct packed {
+      logic [3:0]  q;
+    } edn_enable;
   } edn_reg2hw_ctrl_reg_t;
 
   typedef struct packed {

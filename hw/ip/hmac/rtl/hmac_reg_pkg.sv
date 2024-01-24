@@ -20,32 +20,32 @@ package hmac_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-    } hmac_done;
+    } hmac_err;
     struct packed {
       logic        q;
     } fifo_empty;
     struct packed {
       logic        q;
-    } hmac_err;
+    } hmac_done;
   } hmac_reg2hw_intr_state_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
-    } hmac_done;
+    } hmac_err;
     struct packed {
       logic        q;
     } fifo_empty;
     struct packed {
       logic        q;
-    } hmac_err;
+    } hmac_done;
   } hmac_reg2hw_intr_enable_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
       logic        qe;
-    } hmac_done;
+    } hmac_err;
     struct packed {
       logic        q;
       logic        qe;
@@ -53,7 +53,7 @@ package hmac_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } hmac_err;
+    } hmac_done;
   } hmac_reg2hw_intr_test_reg_t;
 
   typedef struct packed {
@@ -65,11 +65,7 @@ package hmac_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } hmac_en;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } sha_en;
+    } digest_swap;
     struct packed {
       logic        q;
       logic        qe;
@@ -77,18 +73,22 @@ package hmac_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } digest_swap;
+    } sha_en;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } hmac_en;
   } hmac_reg2hw_cfg_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
       logic        qe;
-    } hash_start;
+    } hash_process;
     struct packed {
       logic        q;
       logic        qe;
-    } hash_process;
+    } hash_start;
   } hmac_reg2hw_cmd_reg_t;
 
   typedef struct packed {

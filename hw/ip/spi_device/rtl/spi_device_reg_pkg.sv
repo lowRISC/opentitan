@@ -39,62 +39,50 @@ package spi_device_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-    } upload_cmdfifo_not_empty;
-    struct packed {
-      logic        q;
-    } upload_payload_not_empty;
-    struct packed {
-      logic        q;
-    } upload_payload_overflow;
-    struct packed {
-      logic        q;
-    } readbuf_watermark;
+    } tpm_header_not_empty;
     struct packed {
       logic        q;
     } readbuf_flip;
     struct packed {
       logic        q;
-    } tpm_header_not_empty;
+    } readbuf_watermark;
+    struct packed {
+      logic        q;
+    } upload_payload_overflow;
+    struct packed {
+      logic        q;
+    } upload_payload_not_empty;
+    struct packed {
+      logic        q;
+    } upload_cmdfifo_not_empty;
   } spi_device_reg2hw_intr_state_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
-    } upload_cmdfifo_not_empty;
-    struct packed {
-      logic        q;
-    } upload_payload_not_empty;
-    struct packed {
-      logic        q;
-    } upload_payload_overflow;
-    struct packed {
-      logic        q;
-    } readbuf_watermark;
+    } tpm_header_not_empty;
     struct packed {
       logic        q;
     } readbuf_flip;
     struct packed {
       logic        q;
-    } tpm_header_not_empty;
+    } readbuf_watermark;
+    struct packed {
+      logic        q;
+    } upload_payload_overflow;
+    struct packed {
+      logic        q;
+    } upload_payload_not_empty;
+    struct packed {
+      logic        q;
+    } upload_cmdfifo_not_empty;
   } spi_device_reg2hw_intr_enable_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
       logic        qe;
-    } upload_cmdfifo_not_empty;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } upload_payload_not_empty;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } upload_payload_overflow;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } readbuf_watermark;
+    } tpm_header_not_empty;
     struct packed {
       logic        q;
       logic        qe;
@@ -102,7 +90,19 @@ package spi_device_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } tpm_header_not_empty;
+    } readbuf_watermark;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } upload_payload_overflow;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } upload_payload_not_empty;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } upload_cmdfifo_not_empty;
   } spi_device_reg2hw_intr_test_reg_t;
 
   typedef struct packed {
@@ -117,66 +117,66 @@ package spi_device_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-    } cpol;
-    struct packed {
-      logic        q;
-    } cpha;
-    struct packed {
-      logic        q;
-    } tx_order;
-    struct packed {
-      logic        q;
-    } rx_order;
+    } mailbox_en;
     struct packed {
       logic        q;
     } addr_4b_en;
     struct packed {
       logic        q;
-    } mailbox_en;
+    } rx_order;
+    struct packed {
+      logic        q;
+    } tx_order;
+    struct packed {
+      logic        q;
+    } cpha;
+    struct packed {
+      logic        q;
+    } cpol;
   } spi_device_reg2hw_cfg_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
-    } status;
-    struct packed {
-      logic        q;
-    } jedec;
+    } mbx;
     struct packed {
       logic        q;
     } sfdp;
     struct packed {
       logic        q;
-    } mbx;
+    } jedec;
+    struct packed {
+      logic        q;
+    } status;
   } spi_device_reg2hw_intercept_en_reg_t;
 
   typedef struct packed {
     struct packed {
-      logic        q;
-      logic        qe;
-    } busy;
-    struct packed {
       logic [22:0] q;
       logic        qe;
     } status;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } busy;
   } spi_device_reg2hw_flash_status_reg_t;
 
   typedef struct packed {
     struct packed {
       logic [7:0]  q;
-    } cc;
+    } num_cc;
     struct packed {
       logic [7:0]  q;
-    } num_cc;
+    } cc;
   } spi_device_reg2hw_jedec_cc_reg_t;
 
   typedef struct packed {
     struct packed {
-      logic [15:0] q;
-    } id;
-    struct packed {
       logic [7:0]  q;
     } mf;
+    struct packed {
+      logic [15:0] q;
+    } id;
   } spi_device_reg2hw_jedec_id_reg_t;
 
   typedef struct packed {
@@ -219,95 +219,95 @@ package spi_device_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic [7:0]  q;
-    } opcode;
-    struct packed {
-      logic [1:0]  q;
-    } addr_mode;
-    struct packed {
       logic        q;
-    } addr_swap_en;
-    struct packed {
-      logic        q;
-    } mbyte_en;
-    struct packed {
-      logic [2:0]  q;
-    } dummy_size;
-    struct packed {
-      logic        q;
-    } dummy_en;
-    struct packed {
-      logic [3:0]  q;
-    } payload_en;
-    struct packed {
-      logic        q;
-    } payload_dir;
-    struct packed {
-      logic        q;
-    } payload_swap_en;
-    struct packed {
-      logic        q;
-    } upload;
+    } valid;
     struct packed {
       logic        q;
     } busy;
     struct packed {
       logic        q;
-    } valid;
+    } upload;
+    struct packed {
+      logic        q;
+    } payload_swap_en;
+    struct packed {
+      logic        q;
+    } payload_dir;
+    struct packed {
+      logic [3:0]  q;
+    } payload_en;
+    struct packed {
+      logic        q;
+    } dummy_en;
+    struct packed {
+      logic [2:0]  q;
+    } dummy_size;
+    struct packed {
+      logic        q;
+    } mbyte_en;
+    struct packed {
+      logic        q;
+    } addr_swap_en;
+    struct packed {
+      logic [1:0]  q;
+    } addr_mode;
+    struct packed {
+      logic [7:0]  q;
+    } opcode;
   } spi_device_reg2hw_cmd_info_mreg_t;
 
   typedef struct packed {
     struct packed {
-      logic [7:0]  q;
-    } opcode;
-    struct packed {
       logic        q;
     } valid;
+    struct packed {
+      logic [7:0]  q;
+    } opcode;
   } spi_device_reg2hw_cmd_info_en4b_reg_t;
 
   typedef struct packed {
     struct packed {
-      logic [7:0]  q;
-    } opcode;
-    struct packed {
       logic        q;
     } valid;
+    struct packed {
+      logic [7:0]  q;
+    } opcode;
   } spi_device_reg2hw_cmd_info_ex4b_reg_t;
 
   typedef struct packed {
     struct packed {
-      logic [7:0]  q;
-    } opcode;
-    struct packed {
       logic        q;
     } valid;
+    struct packed {
+      logic [7:0]  q;
+    } opcode;
   } spi_device_reg2hw_cmd_info_wren_reg_t;
 
   typedef struct packed {
     struct packed {
-      logic [7:0]  q;
-    } opcode;
-    struct packed {
       logic        q;
     } valid;
+    struct packed {
+      logic [7:0]  q;
+    } opcode;
   } spi_device_reg2hw_cmd_info_wrdi_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
-    } en;
-    struct packed {
-      logic        q;
-    } tpm_mode;
-    struct packed {
-      logic        q;
-    } hw_reg_dis;
+    } invalid_locality;
     struct packed {
       logic        q;
     } tpm_reg_chk_dis;
     struct packed {
       logic        q;
-    } invalid_locality;
+    } hw_reg_dis;
+    struct packed {
+      logic        q;
+    } tpm_mode;
+    struct packed {
+      logic        q;
+    } en;
   } spi_device_reg2hw_tpm_cfg_reg_t;
 
   typedef struct packed {
@@ -337,10 +337,10 @@ package spi_device_reg_pkg;
   typedef struct packed {
     struct packed {
       logic [15:0] q;
-    } vid;
+    } did;
     struct packed {
       logic [15:0] q;
-    } did;
+    } vid;
   } spi_device_reg2hw_tpm_did_vid_reg_t;
 
   typedef struct packed {
@@ -349,15 +349,15 @@ package spi_device_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic [23:0] q;
-      logic        qe;
-      logic        re;
-    } addr;
-    struct packed {
       logic [7:0]  q;
       logic        qe;
       logic        re;
     } cmd;
+    struct packed {
+      logic [23:0] q;
+      logic        qe;
+      logic        re;
+    } addr;
   } spi_device_reg2hw_tpm_cmd_addr_reg_t;
 
   typedef struct packed {

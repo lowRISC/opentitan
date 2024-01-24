@@ -38,62 +38,50 @@ package flash_ctrl_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-    } prog_empty;
-    struct packed {
-      logic        q;
-    } prog_lvl;
-    struct packed {
-      logic        q;
-    } rd_full;
-    struct packed {
-      logic        q;
-    } rd_lvl;
+    } corr_err;
     struct packed {
       logic        q;
     } op_done;
     struct packed {
       logic        q;
-    } corr_err;
+    } rd_lvl;
+    struct packed {
+      logic        q;
+    } rd_full;
+    struct packed {
+      logic        q;
+    } prog_lvl;
+    struct packed {
+      logic        q;
+    } prog_empty;
   } flash_ctrl_reg2hw_intr_state_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
-    } prog_empty;
-    struct packed {
-      logic        q;
-    } prog_lvl;
-    struct packed {
-      logic        q;
-    } rd_full;
-    struct packed {
-      logic        q;
-    } rd_lvl;
+    } corr_err;
     struct packed {
       logic        q;
     } op_done;
     struct packed {
       logic        q;
-    } corr_err;
+    } rd_lvl;
+    struct packed {
+      logic        q;
+    } rd_full;
+    struct packed {
+      logic        q;
+    } prog_lvl;
+    struct packed {
+      logic        q;
+    } prog_empty;
   } flash_ctrl_reg2hw_intr_enable_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
       logic        qe;
-    } prog_empty;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } prog_lvl;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } rd_full;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } rd_lvl;
+    } corr_err;
     struct packed {
       logic        q;
       logic        qe;
@@ -101,22 +89,26 @@ package flash_ctrl_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } corr_err;
+    } rd_lvl;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } rd_full;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } prog_lvl;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } prog_empty;
   } flash_ctrl_reg2hw_intr_test_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
       logic        qe;
-    } recov_err;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } fatal_std_err;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } fatal_err;
+    } recov_prim_flash_alert;
     struct packed {
       logic        q;
       logic        qe;
@@ -124,7 +116,15 @@ package flash_ctrl_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } recov_prim_flash_alert;
+    } fatal_err;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } fatal_std_err;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } recov_err;
   } flash_ctrl_reg2hw_alert_test_reg_t;
 
   typedef struct packed {
@@ -141,26 +141,26 @@ package flash_ctrl_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic        q;
-    } start;
+      logic [11:0] q;
+    } num;
     struct packed {
       logic [1:0]  q;
-    } op;
+    } info_sel;
     struct packed {
       logic        q;
-    } prog_sel;
+    } partition_sel;
     struct packed {
       logic        q;
     } erase_sel;
     struct packed {
       logic        q;
-    } partition_sel;
+    } prog_sel;
     struct packed {
       logic [1:0]  q;
-    } info_sel;
+    } op;
     struct packed {
-      logic [11:0] q;
-    } num;
+      logic        q;
+    } start;
   } flash_ctrl_reg2hw_control_reg_t;
 
   typedef struct packed {
@@ -170,10 +170,10 @@ package flash_ctrl_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-    } normal;
+    } repair;
     struct packed {
       logic        q;
-    } repair;
+    } normal;
   } flash_ctrl_reg2hw_prog_type_en_reg_t;
 
   typedef struct packed {
@@ -183,208 +183,208 @@ package flash_ctrl_reg_pkg;
   typedef struct packed {
     struct packed {
       logic [3:0]  q;
-    } en;
-    struct packed {
-      logic [3:0]  q;
-    } rd_en;
-    struct packed {
-      logic [3:0]  q;
-    } prog_en;
-    struct packed {
-      logic [3:0]  q;
-    } erase_en;
-    struct packed {
-      logic [3:0]  q;
-    } scramble_en;
+    } he_en;
     struct packed {
       logic [3:0]  q;
     } ecc_en;
     struct packed {
       logic [3:0]  q;
-    } he_en;
+    } scramble_en;
+    struct packed {
+      logic [3:0]  q;
+    } erase_en;
+    struct packed {
+      logic [3:0]  q;
+    } prog_en;
+    struct packed {
+      logic [3:0]  q;
+    } rd_en;
+    struct packed {
+      logic [3:0]  q;
+    } en;
   } flash_ctrl_reg2hw_mp_region_cfg_mreg_t;
 
   typedef struct packed {
     struct packed {
-      logic [8:0]  q;
-    } base;
-    struct packed {
       logic [9:0] q;
     } size;
+    struct packed {
+      logic [8:0]  q;
+    } base;
   } flash_ctrl_reg2hw_mp_region_mreg_t;
 
   typedef struct packed {
     struct packed {
       logic [3:0]  q;
-    } rd_en;
-    struct packed {
-      logic [3:0]  q;
-    } prog_en;
-    struct packed {
-      logic [3:0]  q;
-    } erase_en;
-    struct packed {
-      logic [3:0]  q;
-    } scramble_en;
+    } he_en;
     struct packed {
       logic [3:0]  q;
     } ecc_en;
     struct packed {
       logic [3:0]  q;
-    } he_en;
+    } scramble_en;
+    struct packed {
+      logic [3:0]  q;
+    } erase_en;
+    struct packed {
+      logic [3:0]  q;
+    } prog_en;
+    struct packed {
+      logic [3:0]  q;
+    } rd_en;
   } flash_ctrl_reg2hw_default_region_reg_t;
 
   typedef struct packed {
     struct packed {
       logic [3:0]  q;
-    } en;
-    struct packed {
-      logic [3:0]  q;
-    } rd_en;
-    struct packed {
-      logic [3:0]  q;
-    } prog_en;
-    struct packed {
-      logic [3:0]  q;
-    } erase_en;
-    struct packed {
-      logic [3:0]  q;
-    } scramble_en;
+    } he_en;
     struct packed {
       logic [3:0]  q;
     } ecc_en;
     struct packed {
       logic [3:0]  q;
-    } he_en;
+    } scramble_en;
+    struct packed {
+      logic [3:0]  q;
+    } erase_en;
+    struct packed {
+      logic [3:0]  q;
+    } prog_en;
+    struct packed {
+      logic [3:0]  q;
+    } rd_en;
+    struct packed {
+      logic [3:0]  q;
+    } en;
   } flash_ctrl_reg2hw_bank0_info0_page_cfg_mreg_t;
 
   typedef struct packed {
     struct packed {
       logic [3:0]  q;
-    } en;
-    struct packed {
-      logic [3:0]  q;
-    } rd_en;
-    struct packed {
-      logic [3:0]  q;
-    } prog_en;
-    struct packed {
-      logic [3:0]  q;
-    } erase_en;
-    struct packed {
-      logic [3:0]  q;
-    } scramble_en;
+    } he_en;
     struct packed {
       logic [3:0]  q;
     } ecc_en;
     struct packed {
       logic [3:0]  q;
-    } he_en;
+    } scramble_en;
+    struct packed {
+      logic [3:0]  q;
+    } erase_en;
+    struct packed {
+      logic [3:0]  q;
+    } prog_en;
+    struct packed {
+      logic [3:0]  q;
+    } rd_en;
+    struct packed {
+      logic [3:0]  q;
+    } en;
   } flash_ctrl_reg2hw_bank0_info1_page_cfg_mreg_t;
 
   typedef struct packed {
     struct packed {
       logic [3:0]  q;
-    } en;
-    struct packed {
-      logic [3:0]  q;
-    } rd_en;
-    struct packed {
-      logic [3:0]  q;
-    } prog_en;
-    struct packed {
-      logic [3:0]  q;
-    } erase_en;
-    struct packed {
-      logic [3:0]  q;
-    } scramble_en;
+    } he_en;
     struct packed {
       logic [3:0]  q;
     } ecc_en;
     struct packed {
       logic [3:0]  q;
-    } he_en;
+    } scramble_en;
+    struct packed {
+      logic [3:0]  q;
+    } erase_en;
+    struct packed {
+      logic [3:0]  q;
+    } prog_en;
+    struct packed {
+      logic [3:0]  q;
+    } rd_en;
+    struct packed {
+      logic [3:0]  q;
+    } en;
   } flash_ctrl_reg2hw_bank0_info2_page_cfg_mreg_t;
 
   typedef struct packed {
     struct packed {
       logic [3:0]  q;
-    } en;
-    struct packed {
-      logic [3:0]  q;
-    } rd_en;
-    struct packed {
-      logic [3:0]  q;
-    } prog_en;
-    struct packed {
-      logic [3:0]  q;
-    } erase_en;
-    struct packed {
-      logic [3:0]  q;
-    } scramble_en;
+    } he_en;
     struct packed {
       logic [3:0]  q;
     } ecc_en;
     struct packed {
       logic [3:0]  q;
-    } he_en;
+    } scramble_en;
+    struct packed {
+      logic [3:0]  q;
+    } erase_en;
+    struct packed {
+      logic [3:0]  q;
+    } prog_en;
+    struct packed {
+      logic [3:0]  q;
+    } rd_en;
+    struct packed {
+      logic [3:0]  q;
+    } en;
   } flash_ctrl_reg2hw_bank1_info0_page_cfg_mreg_t;
 
   typedef struct packed {
     struct packed {
       logic [3:0]  q;
-    } en;
-    struct packed {
-      logic [3:0]  q;
-    } rd_en;
-    struct packed {
-      logic [3:0]  q;
-    } prog_en;
-    struct packed {
-      logic [3:0]  q;
-    } erase_en;
-    struct packed {
-      logic [3:0]  q;
-    } scramble_en;
+    } he_en;
     struct packed {
       logic [3:0]  q;
     } ecc_en;
     struct packed {
       logic [3:0]  q;
-    } he_en;
+    } scramble_en;
+    struct packed {
+      logic [3:0]  q;
+    } erase_en;
+    struct packed {
+      logic [3:0]  q;
+    } prog_en;
+    struct packed {
+      logic [3:0]  q;
+    } rd_en;
+    struct packed {
+      logic [3:0]  q;
+    } en;
   } flash_ctrl_reg2hw_bank1_info1_page_cfg_mreg_t;
 
   typedef struct packed {
     struct packed {
       logic [3:0]  q;
-    } en;
-    struct packed {
-      logic [3:0]  q;
-    } rd_en;
-    struct packed {
-      logic [3:0]  q;
-    } prog_en;
-    struct packed {
-      logic [3:0]  q;
-    } erase_en;
-    struct packed {
-      logic [3:0]  q;
-    } scramble_en;
+    } he_en;
     struct packed {
       logic [3:0]  q;
     } ecc_en;
     struct packed {
       logic [3:0]  q;
-    } he_en;
+    } scramble_en;
+    struct packed {
+      logic [3:0]  q;
+    } erase_en;
+    struct packed {
+      logic [3:0]  q;
+    } prog_en;
+    struct packed {
+      logic [3:0]  q;
+    } rd_en;
+    struct packed {
+      logic [3:0]  q;
+    } en;
   } flash_ctrl_reg2hw_bank1_info2_page_cfg_mreg_t;
 
   typedef struct packed {
     struct packed {
       logic [3:0]  q;
-    } scramble_dis;
+    } ecc_dis;
     struct packed {
       logic [3:0]  q;
-    } ecc_dis;
+    } scramble_dis;
   } flash_ctrl_reg2hw_hw_info_cfg_override_reg_t;
 
   typedef struct packed {
@@ -394,70 +394,70 @@ package flash_ctrl_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-    } reg_intg_err;
-    struct packed {
-      logic        q;
-    } prog_intg_err;
-    struct packed {
-      logic        q;
-    } lcmgr_err;
-    struct packed {
-      logic        q;
-    } lcmgr_intg_err;
-    struct packed {
-      logic        q;
-    } arb_fsm_err;
-    struct packed {
-      logic        q;
-    } storage_err;
-    struct packed {
-      logic        q;
-    } phy_fsm_err;
+    } fifo_err;
     struct packed {
       logic        q;
     } ctrl_cnt_err;
     struct packed {
       logic        q;
-    } fifo_err;
+    } phy_fsm_err;
+    struct packed {
+      logic        q;
+    } storage_err;
+    struct packed {
+      logic        q;
+    } arb_fsm_err;
+    struct packed {
+      logic        q;
+    } lcmgr_intg_err;
+    struct packed {
+      logic        q;
+    } lcmgr_err;
+    struct packed {
+      logic        q;
+    } prog_intg_err;
+    struct packed {
+      logic        q;
+    } reg_intg_err;
   } flash_ctrl_reg2hw_std_fault_status_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
-    } op_err;
-    struct packed {
-      logic        q;
-    } mp_err;
-    struct packed {
-      logic        q;
-    } rd_err;
-    struct packed {
-      logic        q;
-    } prog_err;
-    struct packed {
-      logic        q;
-    } prog_win_err;
-    struct packed {
-      logic        q;
-    } prog_type_err;
-    struct packed {
-      logic        q;
-    } seed_err;
-    struct packed {
-      logic        q;
-    } phy_relbl_err;
-    struct packed {
-      logic        q;
-    } phy_storage_err;
-    struct packed {
-      logic        q;
-    } spurious_ack;
+    } host_gnt_err;
     struct packed {
       logic        q;
     } arb_err;
     struct packed {
       logic        q;
-    } host_gnt_err;
+    } spurious_ack;
+    struct packed {
+      logic        q;
+    } phy_storage_err;
+    struct packed {
+      logic        q;
+    } phy_relbl_err;
+    struct packed {
+      logic        q;
+    } seed_err;
+    struct packed {
+      logic        q;
+    } prog_type_err;
+    struct packed {
+      logic        q;
+    } prog_win_err;
+    struct packed {
+      logic        q;
+    } prog_err;
+    struct packed {
+      logic        q;
+    } rd_err;
+    struct packed {
+      logic        q;
+    } mp_err;
+    struct packed {
+      logic        q;
+    } op_err;
   } flash_ctrl_reg2hw_fault_status_reg_t;
 
   typedef struct packed {
@@ -467,10 +467,10 @@ package flash_ctrl_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-    } alert_ack;
+    } alert_trig;
     struct packed {
       logic        q;
-    } alert_trig;
+    } alert_ack;
   } flash_ctrl_reg2hw_phy_alert_cfg_reg_t;
 
   typedef struct packed {
@@ -480,10 +480,10 @@ package flash_ctrl_reg_pkg;
   typedef struct packed {
     struct packed {
       logic [4:0]  q;
-    } prog;
+    } rd;
     struct packed {
       logic [4:0]  q;
-    } rd;
+    } prog;
   } flash_ctrl_reg2hw_fifo_lvl_reg_t;
 
   typedef struct packed {
@@ -1160,143 +1160,143 @@ package flash_ctrl_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic [7:0]  q;
-    } field0;
-    struct packed {
       logic [4:0]  q;
     } field1;
+    struct packed {
+      logic [7:0]  q;
+    } field0;
   } flash_ctrl_reg2hw_csr1_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
-    } field0;
-    struct packed {
-      logic        q;
-    } field1;
-    struct packed {
-      logic        q;
-    } field2;
-    struct packed {
-      logic        q;
-    } field3;
-    struct packed {
-      logic        q;
-    } field4;
-    struct packed {
-      logic        q;
-    } field5;
+    } field7;
     struct packed {
       logic        q;
     } field6;
     struct packed {
       logic        q;
-    } field7;
+    } field5;
+    struct packed {
+      logic        q;
+    } field4;
+    struct packed {
+      logic        q;
+    } field3;
+    struct packed {
+      logic        q;
+    } field2;
+    struct packed {
+      logic        q;
+    } field1;
+    struct packed {
+      logic        q;
+    } field0;
   } flash_ctrl_reg2hw_csr2_reg_t;
 
   typedef struct packed {
     struct packed {
-      logic [3:0]  q;
-    } field0;
+      logic [1:0]  q;
+    } field9;
     struct packed {
-      logic [3:0]  q;
-    } field1;
-    struct packed {
-      logic [2:0]  q;
-    } field2;
+      logic [1:0]  q;
+    } field8;
     struct packed {
       logic [2:0]  q;
-    } field3;
-    struct packed {
-      logic [2:0]  q;
-    } field4;
-    struct packed {
-      logic [2:0]  q;
-    } field5;
+    } field7;
     struct packed {
       logic        q;
     } field6;
     struct packed {
       logic [2:0]  q;
-    } field7;
+    } field5;
     struct packed {
-      logic [1:0]  q;
-    } field8;
+      logic [2:0]  q;
+    } field4;
     struct packed {
-      logic [1:0]  q;
-    } field9;
+      logic [2:0]  q;
+    } field3;
+    struct packed {
+      logic [2:0]  q;
+    } field2;
+    struct packed {
+      logic [3:0]  q;
+    } field1;
+    struct packed {
+      logic [3:0]  q;
+    } field0;
   } flash_ctrl_reg2hw_csr3_reg_t;
 
   typedef struct packed {
     struct packed {
       logic [2:0]  q;
-    } field0;
-    struct packed {
-      logic [2:0]  q;
-    } field1;
+    } field3;
     struct packed {
       logic [2:0]  q;
     } field2;
     struct packed {
       logic [2:0]  q;
-    } field3;
+    } field1;
+    struct packed {
+      logic [2:0]  q;
+    } field0;
   } flash_ctrl_reg2hw_csr4_reg_t;
 
   typedef struct packed {
     struct packed {
-      logic [2:0]  q;
-    } field0;
-    struct packed {
-      logic [1:0]  q;
-    } field1;
-    struct packed {
-      logic [8:0]  q;
-    } field2;
+      logic [3:0]  q;
+    } field4;
     struct packed {
       logic [4:0]  q;
     } field3;
     struct packed {
-      logic [3:0]  q;
-    } field4;
+      logic [8:0]  q;
+    } field2;
+    struct packed {
+      logic [1:0]  q;
+    } field1;
+    struct packed {
+      logic [2:0]  q;
+    } field0;
   } flash_ctrl_reg2hw_csr5_reg_t;
 
   typedef struct packed {
     struct packed {
-      logic [2:0]  q;
-    } field0;
+      logic        q;
+    } field8;
     struct packed {
-      logic [2:0]  q;
-    } field1;
-    struct packed {
-      logic [7:0]  q;
-    } field2;
-    struct packed {
-      logic [2:0]  q;
-    } field3;
+      logic        q;
+    } field7;
     struct packed {
       logic [1:0]  q;
-    } field4;
+    } field6;
     struct packed {
       logic [1:0]  q;
     } field5;
     struct packed {
       logic [1:0]  q;
-    } field6;
+    } field4;
     struct packed {
-      logic        q;
-    } field7;
+      logic [2:0]  q;
+    } field3;
     struct packed {
-      logic        q;
-    } field8;
+      logic [7:0]  q;
+    } field2;
+    struct packed {
+      logic [2:0]  q;
+    } field1;
+    struct packed {
+      logic [2:0]  q;
+    } field0;
   } flash_ctrl_reg2hw_csr6_reg_t;
 
   typedef struct packed {
     struct packed {
-      logic [7:0]  q;
-    } field0;
-    struct packed {
       logic [8:0]  q;
     } field1;
+    struct packed {
+      logic [7:0]  q;
+    } field0;
   } flash_ctrl_reg2hw_csr7_reg_t;
 
   typedef struct packed {
@@ -1321,47 +1321,47 @@ package flash_ctrl_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic [19:0] q;
-    } field0;
-    struct packed {
       logic        q;
     } field1;
+    struct packed {
+      logic [19:0] q;
+    } field0;
   } flash_ctrl_reg2hw_csr13_reg_t;
 
   typedef struct packed {
     struct packed {
-      logic [7:0]  q;
-    } field0;
-    struct packed {
       logic        q;
     } field1;
+    struct packed {
+      logic [7:0]  q;
+    } field0;
   } flash_ctrl_reg2hw_csr14_reg_t;
 
   typedef struct packed {
     struct packed {
-      logic [7:0]  q;
-    } field0;
-    struct packed {
       logic        q;
     } field1;
+    struct packed {
+      logic [7:0]  q;
+    } field0;
   } flash_ctrl_reg2hw_csr15_reg_t;
 
   typedef struct packed {
     struct packed {
-      logic [7:0]  q;
-    } field0;
-    struct packed {
       logic        q;
     } field1;
+    struct packed {
+      logic [7:0]  q;
+    } field0;
   } flash_ctrl_reg2hw_csr16_reg_t;
 
   typedef struct packed {
     struct packed {
-      logic [7:0]  q;
-    } field0;
-    struct packed {
       logic        q;
     } field1;
+    struct packed {
+      logic [7:0]  q;
+    } field0;
   } flash_ctrl_reg2hw_csr17_reg_t;
 
   typedef struct packed {
@@ -1375,13 +1375,13 @@ package flash_ctrl_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-    } field0;
+    } field2;
     struct packed {
       logic        q;
     } field1;
     struct packed {
       logic        q;
-    } field2;
+    } field0;
   } flash_ctrl_reg2hw_csr20_reg_t;
 
   typedef struct packed {

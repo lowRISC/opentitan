@@ -23,20 +23,20 @@ package clkmgr_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } recov_fault;
+    } fatal_fault;
     struct packed {
       logic        q;
       logic        qe;
-    } fatal_fault;
+    } recov_fault;
   } clkmgr_reg2hw_alert_test_reg_t;
 
   typedef struct packed {
     struct packed {
       logic [3:0]  q;
-    } sel;
+    } hi_speed_sel;
     struct packed {
       logic [3:0]  q;
-    } hi_speed_sel;
+    } sel;
   } clkmgr_reg2hw_extclk_ctrl_reg_t;
 
   typedef struct packed {
@@ -46,31 +46,31 @@ package clkmgr_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-    } clk_io_div4_peri_en;
-    struct packed {
-      logic        q;
-    } clk_io_div2_peri_en;
+    } clk_usb_peri_en;
     struct packed {
       logic        q;
     } clk_io_peri_en;
     struct packed {
       logic        q;
-    } clk_usb_peri_en;
+    } clk_io_div2_peri_en;
+    struct packed {
+      logic        q;
+    } clk_io_div4_peri_en;
   } clkmgr_reg2hw_clk_enables_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
-    } clk_main_aes_hint;
-    struct packed {
-      logic        q;
-    } clk_main_hmac_hint;
+    } clk_main_otbn_hint;
     struct packed {
       logic        q;
     } clk_main_kmac_hint;
     struct packed {
       logic        q;
-    } clk_main_otbn_hint;
+    } clk_main_hmac_hint;
+    struct packed {
+      logic        q;
+    } clk_main_aes_hint;
   } clkmgr_reg2hw_clk_hints_reg_t;
 
   typedef struct packed {
@@ -84,10 +84,10 @@ package clkmgr_reg_pkg;
   typedef struct packed {
     struct packed {
       logic [9:0] q;
-    } hi;
+    } lo;
     struct packed {
       logic [9:0] q;
-    } lo;
+    } hi;
   } clkmgr_reg2hw_io_meas_ctrl_shadowed_reg_t;
 
   typedef struct packed {
@@ -97,10 +97,10 @@ package clkmgr_reg_pkg;
   typedef struct packed {
     struct packed {
       logic [8:0]  q;
-    } hi;
+    } lo;
     struct packed {
       logic [8:0]  q;
-    } lo;
+    } hi;
   } clkmgr_reg2hw_io_div2_meas_ctrl_shadowed_reg_t;
 
   typedef struct packed {
@@ -110,10 +110,10 @@ package clkmgr_reg_pkg;
   typedef struct packed {
     struct packed {
       logic [7:0]  q;
-    } hi;
+    } lo;
     struct packed {
       logic [7:0]  q;
-    } lo;
+    } hi;
   } clkmgr_reg2hw_io_div4_meas_ctrl_shadowed_reg_t;
 
   typedef struct packed {
@@ -123,10 +123,10 @@ package clkmgr_reg_pkg;
   typedef struct packed {
     struct packed {
       logic [9:0] q;
-    } hi;
+    } lo;
     struct packed {
       logic [9:0] q;
-    } lo;
+    } hi;
   } clkmgr_reg2hw_main_meas_ctrl_shadowed_reg_t;
 
   typedef struct packed {
@@ -136,22 +136,22 @@ package clkmgr_reg_pkg;
   typedef struct packed {
     struct packed {
       logic [8:0]  q;
-    } hi;
+    } lo;
     struct packed {
       logic [8:0]  q;
-    } lo;
+    } hi;
   } clkmgr_reg2hw_usb_meas_ctrl_shadowed_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
-    } reg_intg;
+    } shadow_storage_err;
     struct packed {
       logic        q;
     } idle_cnt;
     struct packed {
       logic        q;
-    } shadow_storage_err;
+    } reg_intg;
   } clkmgr_reg2hw_fatal_err_code_reg_t;
 
   typedef struct packed {

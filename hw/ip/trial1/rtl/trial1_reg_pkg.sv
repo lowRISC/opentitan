@@ -19,17 +19,17 @@ package trial1_reg_pkg;
 
   typedef struct packed {
     struct packed {
+      logic [7:0]  q;
+    } field15_8;
+    struct packed {
       logic        q;
-    } field0;
+    } field4;
     struct packed {
       logic        q;
     } field1;
     struct packed {
       logic        q;
-    } field4;
-    struct packed {
-      logic [7:0]  q;
-    } field15_8;
+    } field0;
   } trial1_reg2hw_rwtype1_reg_t;
 
   typedef struct packed {
@@ -39,19 +39,19 @@ package trial1_reg_pkg;
   typedef struct packed {
     struct packed {
       logic [15:0] q;
-    } field0;
+    } field1;
     struct packed {
       logic [15:0] q;
-    } field1;
+    } field0;
   } trial1_reg2hw_rwtype3_reg_t;
 
   typedef struct packed {
     struct packed {
       logic [15:0] q;
-    } field0;
+    } field1;
     struct packed {
       logic [15:0] q;
-    } field1;
+    } field0;
   } trial1_reg2hw_rwtype4_reg_t;
 
   typedef struct packed {
@@ -65,10 +65,10 @@ package trial1_reg_pkg;
   typedef struct packed {
     struct packed {
       logic [15:0] q;
-    } field0;
+    } field1;
     struct packed {
       logic [15:0] q;
-    } field1;
+    } field0;
   } trial1_reg2hw_w1ctype1_reg_t;
 
   typedef struct packed {
@@ -98,28 +98,28 @@ package trial1_reg_pkg;
   typedef struct packed {
     struct packed {
       logic [3:0]  q;
-    } field0;
-    struct packed {
-      logic [3:0]  q;
-    } field1;
-    struct packed {
-      logic [3:0]  q;
-    } field2;
-    struct packed {
-      logic [3:0]  q;
-    } field3;
-    struct packed {
-      logic [3:0]  q;
-    } field4;
-    struct packed {
-      logic [3:0]  q;
-    } field5;
+    } field7;
     struct packed {
       logic [3:0]  q;
     } field6;
     struct packed {
       logic [3:0]  q;
-    } field7;
+    } field5;
+    struct packed {
+      logic [3:0]  q;
+    } field4;
+    struct packed {
+      logic [3:0]  q;
+    } field3;
+    struct packed {
+      logic [3:0]  q;
+    } field2;
+    struct packed {
+      logic [3:0]  q;
+    } field1;
+    struct packed {
+      logic [3:0]  q;
+    } field0;
   } trial1_reg2hw_mixtype0_reg_t;
 
   typedef struct packed {

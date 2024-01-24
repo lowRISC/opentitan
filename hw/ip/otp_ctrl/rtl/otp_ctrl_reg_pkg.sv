@@ -193,45 +193,37 @@ package otp_ctrl_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-    } otp_operation_done;
+    } otp_error;
     struct packed {
       logic        q;
-    } otp_error;
+    } otp_operation_done;
   } otp_ctrl_reg2hw_intr_state_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
-    } otp_operation_done;
+    } otp_error;
     struct packed {
       logic        q;
-    } otp_error;
+    } otp_operation_done;
   } otp_ctrl_reg2hw_intr_enable_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
       logic        qe;
-    } otp_operation_done;
+    } otp_error;
     struct packed {
       logic        q;
       logic        qe;
-    } otp_error;
+    } otp_operation_done;
   } otp_ctrl_reg2hw_intr_test_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
       logic        qe;
-    } fatal_macro_error;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } fatal_check_error;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } fatal_bus_integ_error;
+    } recov_prim_otp_alert;
     struct packed {
       logic        q;
       logic        qe;
@@ -239,14 +231,22 @@ package otp_ctrl_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } recov_prim_otp_alert;
+    } fatal_bus_integ_error;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } fatal_check_error;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } fatal_macro_error;
   } otp_ctrl_reg2hw_alert_test_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
       logic        qe;
-    } rd;
+    } digest;
     struct packed {
       logic        q;
       logic        qe;
@@ -254,7 +254,7 @@ package otp_ctrl_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } digest;
+    } rd;
   } otp_ctrl_reg2hw_direct_access_cmd_reg_t;
 
   typedef struct packed {
@@ -269,11 +269,11 @@ package otp_ctrl_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } integrity;
+    } consistency;
     struct packed {
       logic        q;
       logic        qe;
-    } consistency;
+    } integrity;
   } otp_ctrl_reg2hw_check_trigger_reg_t;
 
   typedef struct packed {
@@ -685,38 +685,38 @@ package otp_ctrl_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic        q;
-    } field0;
-    struct packed {
-      logic        q;
-    } field1;
-    struct packed {
-      logic        q;
-    } field2;
+      logic [10:0] q;
+    } field4;
     struct packed {
       logic [9:0] q;
     } field3;
     struct packed {
-      logic [10:0] q;
-    } field4;
+      logic        q;
+    } field2;
+    struct packed {
+      logic        q;
+    } field1;
+    struct packed {
+      logic        q;
+    } field0;
   } otp_ctrl_reg2hw_csr0_reg_t;
 
   typedef struct packed {
     struct packed {
-      logic [6:0]  q;
-    } field0;
+      logic [15:0] q;
+    } field4;
     struct packed {
       logic        q;
-    } field1;
+    } field3;
     struct packed {
       logic [6:0]  q;
     } field2;
     struct packed {
       logic        q;
-    } field3;
+    } field1;
     struct packed {
-      logic [15:0] q;
-    } field4;
+      logic [6:0]  q;
+    } field0;
   } otp_ctrl_reg2hw_csr1_reg_t;
 
   typedef struct packed {
@@ -725,101 +725,101 @@ package otp_ctrl_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic [2:0]  q;
-    } field0;
-    struct packed {
-      logic [9:0] q;
-    } field1;
-    struct packed {
       logic        q;
-    } field2;
-    struct packed {
-      logic        q;
-    } field3;
-    struct packed {
-      logic        q;
-    } field4;
-    struct packed {
-      logic        q;
-    } field5;
-    struct packed {
-      logic        q;
-    } field6;
+    } field8;
     struct packed {
       logic        q;
     } field7;
     struct packed {
       logic        q;
-    } field8;
-  } otp_ctrl_reg2hw_csr3_reg_t;
-
-  typedef struct packed {
-    struct packed {
-      logic [9:0] q;
-    } field0;
+    } field6;
     struct packed {
       logic        q;
-    } field1;
-    struct packed {
-      logic        q;
-    } field2;
-    struct packed {
-      logic        q;
-    } field3;
-  } otp_ctrl_reg2hw_csr4_reg_t;
-
-  typedef struct packed {
-    struct packed {
-      logic [5:0]  q;
-    } field0;
-    struct packed {
-      logic [1:0]  q;
-    } field1;
-    struct packed {
-      logic        q;
-    } field2;
-    struct packed {
-      logic [2:0]  q;
-    } field3;
+    } field5;
     struct packed {
       logic        q;
     } field4;
     struct packed {
       logic        q;
-    } field5;
+    } field3;
+    struct packed {
+      logic        q;
+    } field2;
+    struct packed {
+      logic [9:0] q;
+    } field1;
+    struct packed {
+      logic [2:0]  q;
+    } field0;
+  } otp_ctrl_reg2hw_csr3_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic        q;
+    } field3;
+    struct packed {
+      logic        q;
+    } field2;
+    struct packed {
+      logic        q;
+    } field1;
+    struct packed {
+      logic [9:0] q;
+    } field0;
+  } otp_ctrl_reg2hw_csr4_reg_t;
+
+  typedef struct packed {
     struct packed {
       logic [15:0] q;
     } field6;
+    struct packed {
+      logic        q;
+    } field5;
+    struct packed {
+      logic        q;
+    } field4;
+    struct packed {
+      logic [2:0]  q;
+    } field3;
+    struct packed {
+      logic        q;
+    } field2;
+    struct packed {
+      logic [1:0]  q;
+    } field1;
+    struct packed {
+      logic [5:0]  q;
+    } field0;
   } otp_ctrl_reg2hw_csr5_reg_t;
 
   typedef struct packed {
     struct packed {
-      logic [9:0] q;
-    } field0;
-    struct packed {
-      logic        q;
-    } field1;
+      logic [15:0] q;
+    } field3;
     struct packed {
       logic        q;
     } field2;
     struct packed {
-      logic [15:0] q;
-    } field3;
+      logic        q;
+    } field1;
+    struct packed {
+      logic [9:0] q;
+    } field0;
   } otp_ctrl_reg2hw_csr6_reg_t;
 
   typedef struct packed {
     struct packed {
-      logic [5:0]  q;
-    } field0;
-    struct packed {
-      logic [2:0]  q;
-    } field1;
+      logic        q;
+    } field3;
     struct packed {
       logic        q;
     } field2;
     struct packed {
-      logic        q;
-    } field3;
+      logic [2:0]  q;
+    } field1;
+    struct packed {
+      logic [5:0]  q;
+    } field0;
   } otp_ctrl_reg2hw_csr7_reg_t;
 
   typedef struct packed {

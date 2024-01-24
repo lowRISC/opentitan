@@ -23,11 +23,11 @@ package aes_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } recov_ctrl_update_err;
+    } fatal_fault;
     struct packed {
       logic        q;
       logic        qe;
-    } fatal_fault;
+    } recov_ctrl_update_err;
   } aes_reg2hw_alert_test_reg_t;
 
   typedef struct packed {
@@ -57,25 +57,10 @@ package aes_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic [1:0]  q;
-      logic        qe;
-      logic        re;
-    } operation;
-    struct packed {
-      logic [5:0]  q;
-      logic        qe;
-      logic        re;
-    } mode;
-    struct packed {
-      logic [2:0]  q;
-      logic        qe;
-      logic        re;
-    } key_len;
-    struct packed {
       logic        q;
       logic        qe;
       logic        re;
-    } sideload;
+    } manual_operation;
     struct packed {
       logic [2:0]  q;
       logic        qe;
@@ -85,40 +70,55 @@ package aes_reg_pkg;
       logic        q;
       logic        qe;
       logic        re;
-    } manual_operation;
+    } sideload;
+    struct packed {
+      logic [2:0]  q;
+      logic        qe;
+      logic        re;
+    } key_len;
+    struct packed {
+      logic [5:0]  q;
+      logic        qe;
+      logic        re;
+    } mode;
+    struct packed {
+      logic [1:0]  q;
+      logic        qe;
+      logic        re;
+    } operation;
   } aes_reg2hw_ctrl_shadowed_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
-    } key_touch_forces_reseed;
+    } force_masks;
     struct packed {
       logic        q;
-    } force_masks;
+    } key_touch_forces_reseed;
   } aes_reg2hw_ctrl_aux_shadowed_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
-    } start;
-    struct packed {
-      logic        q;
-    } key_iv_data_in_clear;
+    } prng_reseed;
     struct packed {
       logic        q;
     } data_out_clear;
     struct packed {
       logic        q;
-    } prng_reseed;
+    } key_iv_data_in_clear;
+    struct packed {
+      logic        q;
+    } start;
   } aes_reg2hw_trigger_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
-    } idle;
+    } output_lost;
     struct packed {
       logic        q;
-    } output_lost;
+    } idle;
   } aes_reg2hw_status_reg_t;
 
   typedef struct packed {

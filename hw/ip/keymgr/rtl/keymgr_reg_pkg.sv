@@ -37,11 +37,11 @@ package keymgr_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } recov_operation_err;
+    } fatal_fault_err;
     struct packed {
       logic        q;
       logic        qe;
-    } fatal_fault_err;
+    } recov_operation_err;
   } keymgr_reg2hw_alert_test_reg_t;
 
   typedef struct packed {
@@ -50,14 +50,14 @@ package keymgr_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic [2:0]  q;
-    } operation;
+      logic [1:0]  q;
+    } dest_sel;
     struct packed {
       logic        q;
     } cdi_sel;
     struct packed {
-      logic [1:0]  q;
-    } dest_sel;
+      logic [2:0]  q;
+    } operation;
   } keymgr_reg2hw_control_shadowed_reg_t;
 
   typedef struct packed {
@@ -104,46 +104,46 @@ package keymgr_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-    } cmd;
-    struct packed {
-      logic        q;
-    } kmac_fsm;
-    struct packed {
-      logic        q;
-    } kmac_done;
-    struct packed {
-      logic        q;
-    } kmac_op;
-    struct packed {
-      logic        q;
-    } kmac_out;
-    struct packed {
-      logic        q;
-    } regfile_intg;
-    struct packed {
-      logic        q;
-    } shadow;
-    struct packed {
-      logic        q;
-    } ctrl_fsm_intg;
-    struct packed {
-      logic        q;
-    } ctrl_fsm_chk;
-    struct packed {
-      logic        q;
-    } ctrl_fsm_cnt;
-    struct packed {
-      logic        q;
-    } reseed_cnt;
-    struct packed {
-      logic        q;
-    } side_ctrl_fsm;
+    } key_ecc;
     struct packed {
       logic        q;
     } side_ctrl_sel;
     struct packed {
       logic        q;
-    } key_ecc;
+    } side_ctrl_fsm;
+    struct packed {
+      logic        q;
+    } reseed_cnt;
+    struct packed {
+      logic        q;
+    } ctrl_fsm_cnt;
+    struct packed {
+      logic        q;
+    } ctrl_fsm_chk;
+    struct packed {
+      logic        q;
+    } ctrl_fsm_intg;
+    struct packed {
+      logic        q;
+    } shadow;
+    struct packed {
+      logic        q;
+    } regfile_intg;
+    struct packed {
+      logic        q;
+    } kmac_out;
+    struct packed {
+      logic        q;
+    } kmac_op;
+    struct packed {
+      logic        q;
+    } kmac_done;
+    struct packed {
+      logic        q;
+    } kmac_fsm;
+    struct packed {
+      logic        q;
+    } cmd;
   } keymgr_reg2hw_fault_status_reg_t;
 
   typedef struct packed {

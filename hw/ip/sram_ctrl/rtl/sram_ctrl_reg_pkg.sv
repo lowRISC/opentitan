@@ -25,19 +25,19 @@ package sram_ctrl_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-    } bus_integ_error;
-    struct packed {
-      logic        q;
-    } init_error;
-    struct packed {
-      logic        q;
-    } escalated;
+    } init_done;
     struct packed {
       logic        q;
     } scr_key_seed_valid;
     struct packed {
       logic        q;
-    } init_done;
+    } escalated;
+    struct packed {
+      logic        q;
+    } init_error;
+    struct packed {
+      logic        q;
+    } bus_integ_error;
   } sram_ctrl_reg2hw_status_reg_t;
 
   typedef struct packed {
@@ -48,11 +48,11 @@ package sram_ctrl_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } renew_scr_key;
+    } init;
     struct packed {
       logic        q;
       logic        qe;
-    } init;
+    } renew_scr_key;
   } sram_ctrl_reg2hw_ctrl_reg_t;
 
   typedef struct packed {
