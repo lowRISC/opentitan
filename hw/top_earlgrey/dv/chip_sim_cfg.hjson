@@ -1947,6 +1947,13 @@
       run_opts: ["+test_timeout_ns=8_000_000", "+bypass_alert_ready_to_end_check=1"]
     }
     {
+      name: chip_sw_flash_ctrl_write_clear
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["//sw/device/tests/sim_dv:flash_ctrl_write_clear_test:1:new_rules"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+test_timeout_ns=8_000_000"]
+    }
+    {
       name: chip_padctrl_attributes
       build_mode: "pad_ctrl_test_mode"
       uvm_test_seq: chip_padctrl_attributes_vseq
