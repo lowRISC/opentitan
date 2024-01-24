@@ -696,21 +696,6 @@ opentitan_test(
 )
 
 opentitan_test(
-    name = "rv_dm_ndm_reset_req_when_cpu_halted",
-    srcs = ["rv_dm_ndm_reset_req_when_cpu_halted.c"],
-    exec_env = {"//hw/top_earlgrey:sim_dv": None},
-    deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/dif:rstmgr",
-        "//sw/device/lib/runtime:hart",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:rstmgr_testutils",
-        "//sw/device/lib/testing/test_framework:check",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
-)
-
-opentitan_test(
     name = "sram_ctrl_execution_main_test",
     srcs = ["sram_ctrl_execution_main_test.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
