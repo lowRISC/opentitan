@@ -3,10 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "//rules/opentitan:defs.bzl",
-    "opentitan_binary",
-)
-load(
     "//rules:opentitan_test.bzl",
     "cw310_params",
     "dv_params",
@@ -52,6 +48,8 @@ load(
     "opentitan_test",
     "rsa_key_by_name",
     new_cw310_params = "cw310_params",
+    new_dv_params = "dv_params",
+    new_verilator_params = "verilator_params",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -313,25 +311,25 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "rom_e2e_smoke",
-    cw310 = cw310_params(
-        bitstream = "//hw/bitstream:rom_with_fake_keys",
-    ),
-    dv = dv_params(
+    srcs = ["empty_test.c"],
+    dv = new_dv_params(
         rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
     ),
-    key_struct = RSA_ONLY_KEY_STRUCTS[0],
-    ot_flash_binary = ":empty_test_slot_a",
-    targets = [
-        "cw310_rom_with_fake_keys",
-        "verilator",
-        "dv",
-    ],
-    verilator = verilator_params(
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:sim_dv": None,
+        "//hw/top_earlgrey:sim_verilator": None,
+    },
+    verilator = new_verilator_params(
         timeout = "eternal",
         rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
     ),
+    deps = [
+        "//sw/device/lib/dif:spi_device",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
 )
 
 opentitan_functest(
