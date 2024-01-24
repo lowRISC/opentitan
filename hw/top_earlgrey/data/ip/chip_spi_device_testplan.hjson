@@ -23,10 +23,9 @@
         "SPI_DEVICE.MODE.FLASH_EMULATION.COMMANDS",
         "SPI_DEVICE.MODE.FLASH_EMULATION.READ_COMMAND_PROCESSOR",
         "SPI_DEVICE.HW.FLASH_EMULATION_BLOCKS",
-        "SPI_DEVICE.HW.LAST_READ_ADDR",
       ]
-      tests: ["chip_sw_uart_tx_rx_bootstrap"]
-      bazel: []
+      tests: ["rom_e2e_smoke"]
+      bazel: ["//sw/device/silicon_creator/rom/e2e:rom_e2e_smoke"]
     }
     {
       name: chip_sw_spi_device_pass_through
@@ -38,6 +37,7 @@
             - Send random flash commands over the SPI device interface (chip IOs) from the
               testbench.
             - Verify the flash commands which pass through spi_host0 are received on chip IOs.
+            - Verify the LAST_READ_ADDR.
             - Verify that only the payloads that are not filtered show up on the SPI host interface
               at chip IOs.
             - Verify spi_host1 doesn't send out any data from spi_device.
@@ -58,6 +58,7 @@
         "SPI_DEVICE.MODE.PASSTHROUGH",
         "SPI_DEVICE.HW.LANES",
         "SPI_DEVICE.MODE.PASSTHROUGH.CMD_FILTER",
+        "SPI_DEVICE.HW.LAST_READ_ADDR",
       ]
       tests: ["chip_sw_spi_device_pass_through"]
       bazel: []

@@ -65,6 +65,7 @@ test_suite(
 test_suite(
     name = "sv3_tests",
     tests = [
+        "//sw/device/silicon_creator/rom/e2e:rom_e2e_smoke",
         "//sw/device/tests:aes_entropy_test",
         "//sw/device/tests:aes_idle_test",
         "//sw/device/tests:alert_handler_lpg_clkoff_test",
