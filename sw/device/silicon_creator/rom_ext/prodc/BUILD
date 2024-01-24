@@ -46,7 +46,7 @@ opentitan_binary(
         "//sw/device/lib/crt",
         "//sw/device/silicon_creator/lib:manifest_def",
         "//sw/device/silicon_creator/rom_ext",
-        "//sw/device/silicon_creator/rom_ext/keys/fake",
+        "//sw/device/silicon_creator/rom_ext/prodc/keys",
     ],
 )
 
@@ -66,7 +66,7 @@ opentitan_binary(
         "//sw/device/lib/crt",
         "//sw/device/silicon_creator/lib:manifest_def",
         "//sw/device/silicon_creator/rom_ext",
-        "//sw/device/silicon_creator/rom_ext/keys/fake",
+        "//sw/device/silicon_creator/rom_ext/prodc/keys",
     ],
 )
 
