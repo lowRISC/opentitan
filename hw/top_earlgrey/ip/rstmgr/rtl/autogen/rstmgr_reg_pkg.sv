@@ -25,11 +25,11 @@ package rstmgr_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } fatal_fault;
+    } fatal_cnsty_fault;
     struct packed {
       logic        q;
       logic        qe;
-    } fatal_cnsty_fault;
+    } fatal_fault;
   } rstmgr_reg2hw_alert_test_reg_t;
 
   typedef struct packed {
@@ -38,29 +38,29 @@ package rstmgr_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic        q;
-    } sw_reset;
-    struct packed {
       logic [4:0]  q;
     } hw_req;
+    struct packed {
+      logic        q;
+    } sw_reset;
   } rstmgr_reg2hw_reset_info_reg_t;
 
   typedef struct packed {
     struct packed {
-      logic        q;
-    } en;
-    struct packed {
       logic [3:0]  q;
     } index;
+    struct packed {
+      logic        q;
+    } en;
   } rstmgr_reg2hw_alert_info_ctrl_reg_t;
 
   typedef struct packed {
     struct packed {
-      logic        q;
-    } en;
-    struct packed {
       logic [3:0]  q;
     } index;
+    struct packed {
+      logic        q;
+    } en;
   } rstmgr_reg2hw_cpu_info_ctrl_reg_t;
 
   typedef struct packed {
@@ -70,13 +70,13 @@ package rstmgr_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-    } reg_intg_err;
+    } fsm_err;
     struct packed {
       logic        q;
     } reset_consistency_err;
     struct packed {
       logic        q;
-    } fsm_err;
+    } reg_intg_err;
   } rstmgr_reg2hw_err_code_reg_t;
 
   typedef struct packed {

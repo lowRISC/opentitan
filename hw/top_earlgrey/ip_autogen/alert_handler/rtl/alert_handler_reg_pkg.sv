@@ -172,42 +172,38 @@ package alert_handler_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-    } classa;
-    struct packed {
-      logic        q;
-    } classb;
+    } classd;
     struct packed {
       logic        q;
     } classc;
     struct packed {
       logic        q;
-    } classd;
+    } classb;
+    struct packed {
+      logic        q;
+    } classa;
   } alert_handler_reg2hw_intr_state_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
-    } classa;
-    struct packed {
-      logic        q;
-    } classb;
+    } classd;
     struct packed {
       logic        q;
     } classc;
     struct packed {
       logic        q;
-    } classd;
+    } classb;
+    struct packed {
+      logic        q;
+    } classa;
   } alert_handler_reg2hw_intr_enable_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
       logic        qe;
-    } classa;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } classb;
+    } classd;
     struct packed {
       logic        q;
       logic        qe;
@@ -215,7 +211,11 @@ package alert_handler_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } classd;
+    } classb;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } classa;
   } alert_handler_reg2hw_intr_test_reg_t;
 
   typedef struct packed {
@@ -256,35 +256,35 @@ package alert_handler_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic        q;
-    } en;
-    struct packed {
-      logic        q;
-    } lock;
-    struct packed {
-      logic        q;
-    } en_e0;
-    struct packed {
-      logic        q;
-    } en_e1;
-    struct packed {
-      logic        q;
-    } en_e2;
-    struct packed {
-      logic        q;
-    } en_e3;
-    struct packed {
       logic [1:0]  q;
-    } map_e0;
-    struct packed {
-      logic [1:0]  q;
-    } map_e1;
+    } map_e3;
     struct packed {
       logic [1:0]  q;
     } map_e2;
     struct packed {
       logic [1:0]  q;
-    } map_e3;
+    } map_e1;
+    struct packed {
+      logic [1:0]  q;
+    } map_e0;
+    struct packed {
+      logic        q;
+    } en_e3;
+    struct packed {
+      logic        q;
+    } en_e2;
+    struct packed {
+      logic        q;
+    } en_e1;
+    struct packed {
+      logic        q;
+    } en_e0;
+    struct packed {
+      logic        q;
+    } lock;
+    struct packed {
+      logic        q;
+    } en;
   } alert_handler_reg2hw_classa_ctrl_shadowed_reg_t;
 
   typedef struct packed {
@@ -322,35 +322,35 @@ package alert_handler_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic        q;
-    } en;
-    struct packed {
-      logic        q;
-    } lock;
-    struct packed {
-      logic        q;
-    } en_e0;
-    struct packed {
-      logic        q;
-    } en_e1;
-    struct packed {
-      logic        q;
-    } en_e2;
-    struct packed {
-      logic        q;
-    } en_e3;
-    struct packed {
       logic [1:0]  q;
-    } map_e0;
-    struct packed {
-      logic [1:0]  q;
-    } map_e1;
+    } map_e3;
     struct packed {
       logic [1:0]  q;
     } map_e2;
     struct packed {
       logic [1:0]  q;
-    } map_e3;
+    } map_e1;
+    struct packed {
+      logic [1:0]  q;
+    } map_e0;
+    struct packed {
+      logic        q;
+    } en_e3;
+    struct packed {
+      logic        q;
+    } en_e2;
+    struct packed {
+      logic        q;
+    } en_e1;
+    struct packed {
+      logic        q;
+    } en_e0;
+    struct packed {
+      logic        q;
+    } lock;
+    struct packed {
+      logic        q;
+    } en;
   } alert_handler_reg2hw_classb_ctrl_shadowed_reg_t;
 
   typedef struct packed {
@@ -388,35 +388,35 @@ package alert_handler_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic        q;
-    } en;
-    struct packed {
-      logic        q;
-    } lock;
-    struct packed {
-      logic        q;
-    } en_e0;
-    struct packed {
-      logic        q;
-    } en_e1;
-    struct packed {
-      logic        q;
-    } en_e2;
-    struct packed {
-      logic        q;
-    } en_e3;
-    struct packed {
       logic [1:0]  q;
-    } map_e0;
-    struct packed {
-      logic [1:0]  q;
-    } map_e1;
+    } map_e3;
     struct packed {
       logic [1:0]  q;
     } map_e2;
     struct packed {
       logic [1:0]  q;
-    } map_e3;
+    } map_e1;
+    struct packed {
+      logic [1:0]  q;
+    } map_e0;
+    struct packed {
+      logic        q;
+    } en_e3;
+    struct packed {
+      logic        q;
+    } en_e2;
+    struct packed {
+      logic        q;
+    } en_e1;
+    struct packed {
+      logic        q;
+    } en_e0;
+    struct packed {
+      logic        q;
+    } lock;
+    struct packed {
+      logic        q;
+    } en;
   } alert_handler_reg2hw_classc_ctrl_shadowed_reg_t;
 
   typedef struct packed {
@@ -454,35 +454,35 @@ package alert_handler_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic        q;
-    } en;
-    struct packed {
-      logic        q;
-    } lock;
-    struct packed {
-      logic        q;
-    } en_e0;
-    struct packed {
-      logic        q;
-    } en_e1;
-    struct packed {
-      logic        q;
-    } en_e2;
-    struct packed {
-      logic        q;
-    } en_e3;
-    struct packed {
       logic [1:0]  q;
-    } map_e0;
-    struct packed {
-      logic [1:0]  q;
-    } map_e1;
+    } map_e3;
     struct packed {
       logic [1:0]  q;
     } map_e2;
     struct packed {
       logic [1:0]  q;
-    } map_e3;
+    } map_e1;
+    struct packed {
+      logic [1:0]  q;
+    } map_e0;
+    struct packed {
+      logic        q;
+    } en_e3;
+    struct packed {
+      logic        q;
+    } en_e2;
+    struct packed {
+      logic        q;
+    } en_e1;
+    struct packed {
+      logic        q;
+    } en_e0;
+    struct packed {
+      logic        q;
+    } lock;
+    struct packed {
+      logic        q;
+    } en;
   } alert_handler_reg2hw_classd_ctrl_shadowed_reg_t;
 
   typedef struct packed {

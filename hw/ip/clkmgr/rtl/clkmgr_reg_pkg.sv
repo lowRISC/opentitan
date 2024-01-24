@@ -19,19 +19,19 @@ package clkmgr_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-    } clk_fixed_peri_en;
+    } clk_usb_48mhz_peri_en;
     struct packed {
       logic        q;
-    } clk_usb_48mhz_peri_en;
+    } clk_fixed_peri_en;
   } clkmgr_reg2hw_clk_enables_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
-    } clk_main_aes_hint;
+    } clk_main_hmac_hint;
     struct packed {
       logic        q;
-    } clk_main_hmac_hint;
+    } clk_main_aes_hint;
   } clkmgr_reg2hw_clk_hints_reg_t;
 
   typedef struct packed {

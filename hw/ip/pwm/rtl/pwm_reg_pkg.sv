@@ -24,17 +24,17 @@ package pwm_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic [26:0] q;
+      logic        q;
       logic        qe;
-    } clk_div;
+    } cntr_en;
     struct packed {
       logic [3:0]  q;
       logic        qe;
     } dc_resn;
     struct packed {
-      logic        q;
+      logic [26:0] q;
       logic        qe;
-    } cntr_en;
+    } clk_div;
   } pwm_reg2hw_cfg_reg_t;
 
   typedef struct packed {
@@ -49,39 +49,39 @@ package pwm_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic [15:0] q;
+      logic        q;
       logic        qe;
-    } phase_delay;
+    } blink_en;
     struct packed {
       logic        q;
       logic        qe;
     } htbt_en;
     struct packed {
-      logic        q;
+      logic [15:0] q;
       logic        qe;
-    } blink_en;
+    } phase_delay;
   } pwm_reg2hw_pwm_param_mreg_t;
 
   typedef struct packed {
     struct packed {
       logic [15:0] q;
       logic        qe;
-    } a;
+    } b;
     struct packed {
       logic [15:0] q;
       logic        qe;
-    } b;
+    } a;
   } pwm_reg2hw_duty_cycle_mreg_t;
 
   typedef struct packed {
     struct packed {
       logic [15:0] q;
       logic        qe;
-    } x;
+    } y;
     struct packed {
       logic [15:0] q;
       logic        qe;
-    } y;
+    } x;
   } pwm_reg2hw_blink_param_mreg_t;
 
   // Register -> HW type

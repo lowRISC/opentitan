@@ -20,152 +20,104 @@ package i2c_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-    } fmt_threshold;
-    struct packed {
-      logic        q;
-    } rx_threshold;
-    struct packed {
-      logic        q;
-    } fmt_overflow;
-    struct packed {
-      logic        q;
-    } rx_overflow;
-    struct packed {
-      logic        q;
-    } nak;
-    struct packed {
-      logic        q;
-    } scl_interference;
-    struct packed {
-      logic        q;
-    } sda_interference;
-    struct packed {
-      logic        q;
-    } stretch_timeout;
-    struct packed {
-      logic        q;
-    } sda_unstable;
-    struct packed {
-      logic        q;
-    } cmd_complete;
-    struct packed {
-      logic        q;
-    } tx_stretch;
-    struct packed {
-      logic        q;
-    } tx_overflow;
-    struct packed {
-      logic        q;
-    } acq_full;
+    } host_timeout;
     struct packed {
       logic        q;
     } unexp_stop;
     struct packed {
       logic        q;
-    } host_timeout;
+    } acq_full;
+    struct packed {
+      logic        q;
+    } tx_overflow;
+    struct packed {
+      logic        q;
+    } tx_stretch;
+    struct packed {
+      logic        q;
+    } cmd_complete;
+    struct packed {
+      logic        q;
+    } sda_unstable;
+    struct packed {
+      logic        q;
+    } stretch_timeout;
+    struct packed {
+      logic        q;
+    } sda_interference;
+    struct packed {
+      logic        q;
+    } scl_interference;
+    struct packed {
+      logic        q;
+    } nak;
+    struct packed {
+      logic        q;
+    } rx_overflow;
+    struct packed {
+      logic        q;
+    } fmt_overflow;
+    struct packed {
+      logic        q;
+    } rx_threshold;
+    struct packed {
+      logic        q;
+    } fmt_threshold;
   } i2c_reg2hw_intr_state_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
-    } fmt_threshold;
-    struct packed {
-      logic        q;
-    } rx_threshold;
-    struct packed {
-      logic        q;
-    } fmt_overflow;
-    struct packed {
-      logic        q;
-    } rx_overflow;
-    struct packed {
-      logic        q;
-    } nak;
-    struct packed {
-      logic        q;
-    } scl_interference;
-    struct packed {
-      logic        q;
-    } sda_interference;
-    struct packed {
-      logic        q;
-    } stretch_timeout;
-    struct packed {
-      logic        q;
-    } sda_unstable;
-    struct packed {
-      logic        q;
-    } cmd_complete;
-    struct packed {
-      logic        q;
-    } tx_stretch;
-    struct packed {
-      logic        q;
-    } tx_overflow;
-    struct packed {
-      logic        q;
-    } acq_full;
+    } host_timeout;
     struct packed {
       logic        q;
     } unexp_stop;
     struct packed {
       logic        q;
-    } host_timeout;
+    } acq_full;
+    struct packed {
+      logic        q;
+    } tx_overflow;
+    struct packed {
+      logic        q;
+    } tx_stretch;
+    struct packed {
+      logic        q;
+    } cmd_complete;
+    struct packed {
+      logic        q;
+    } sda_unstable;
+    struct packed {
+      logic        q;
+    } stretch_timeout;
+    struct packed {
+      logic        q;
+    } sda_interference;
+    struct packed {
+      logic        q;
+    } scl_interference;
+    struct packed {
+      logic        q;
+    } nak;
+    struct packed {
+      logic        q;
+    } rx_overflow;
+    struct packed {
+      logic        q;
+    } fmt_overflow;
+    struct packed {
+      logic        q;
+    } rx_threshold;
+    struct packed {
+      logic        q;
+    } fmt_threshold;
   } i2c_reg2hw_intr_enable_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
       logic        qe;
-    } fmt_threshold;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } rx_threshold;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } fmt_overflow;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } rx_overflow;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } nak;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } scl_interference;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } sda_interference;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } stretch_timeout;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } sda_unstable;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } cmd_complete;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } tx_stretch;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } tx_overflow;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } acq_full;
+    } host_timeout;
     struct packed {
       logic        q;
       logic        qe;
@@ -173,7 +125,55 @@ package i2c_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } host_timeout;
+    } acq_full;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } tx_overflow;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } tx_stretch;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } cmd_complete;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } sda_unstable;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } stretch_timeout;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } sda_interference;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } scl_interference;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } nak;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } rx_overflow;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } fmt_overflow;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } rx_threshold;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } fmt_threshold;
   } i2c_reg2hw_intr_test_reg_t;
 
   typedef struct packed {
@@ -184,13 +184,13 @@ package i2c_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-    } enablehost;
+    } llpbk;
     struct packed {
       logic        q;
     } enabletarget;
     struct packed {
       logic        q;
-    } llpbk;
+    } enablehost;
   } i2c_reg2hw_ctrl_reg_t;
 
   typedef struct packed {
@@ -200,21 +200,9 @@ package i2c_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic [7:0]  q;
-      logic        qe;
-    } fbyte;
-    struct packed {
       logic        q;
       logic        qe;
-    } start;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } stop;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } readb;
+    } nakok;
     struct packed {
       logic        q;
       logic        qe;
@@ -222,126 +210,138 @@ package i2c_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } nakok;
+    } readb;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } stop;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } start;
+    struct packed {
+      logic [7:0]  q;
+      logic        qe;
+    } fbyte;
   } i2c_reg2hw_fdata_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
       logic        qe;
-    } rxrst;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } fmtrst;
-    struct packed {
-      logic [2:0]  q;
-      logic        qe;
-    } rxilvl;
-    struct packed {
-      logic [1:0]  q;
-      logic        qe;
-    } fmtilvl;
+    } txrst;
     struct packed {
       logic        q;
       logic        qe;
     } acqrst;
     struct packed {
+      logic [1:0]  q;
+      logic        qe;
+    } fmtilvl;
+    struct packed {
+      logic [2:0]  q;
+      logic        qe;
+    } rxilvl;
+    struct packed {
       logic        q;
       logic        qe;
-    } txrst;
+    } fmtrst;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } rxrst;
   } i2c_reg2hw_fifo_ctrl_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
-    } txovrden;
+    } sdaval;
     struct packed {
       logic        q;
     } sclval;
     struct packed {
       logic        q;
-    } sdaval;
+    } txovrden;
   } i2c_reg2hw_ovrd_reg_t;
 
   typedef struct packed {
     struct packed {
       logic [15:0] q;
-    } thigh;
+    } tlow;
     struct packed {
       logic [15:0] q;
-    } tlow;
+    } thigh;
   } i2c_reg2hw_timing0_reg_t;
 
   typedef struct packed {
     struct packed {
       logic [15:0] q;
-    } t_r;
+    } t_f;
     struct packed {
       logic [15:0] q;
-    } t_f;
+    } t_r;
   } i2c_reg2hw_timing1_reg_t;
 
   typedef struct packed {
     struct packed {
       logic [15:0] q;
-    } tsu_sta;
+    } thd_sta;
     struct packed {
       logic [15:0] q;
-    } thd_sta;
+    } tsu_sta;
   } i2c_reg2hw_timing2_reg_t;
 
   typedef struct packed {
     struct packed {
       logic [15:0] q;
-    } tsu_dat;
+    } thd_dat;
     struct packed {
       logic [15:0] q;
-    } thd_dat;
+    } tsu_dat;
   } i2c_reg2hw_timing3_reg_t;
 
   typedef struct packed {
     struct packed {
       logic [15:0] q;
-    } tsu_sto;
+    } t_buf;
     struct packed {
       logic [15:0] q;
-    } t_buf;
+    } tsu_sto;
   } i2c_reg2hw_timing4_reg_t;
 
   typedef struct packed {
     struct packed {
-      logic [30:0] q;
-    } val;
-    struct packed {
       logic        q;
     } en;
+    struct packed {
+      logic [30:0] q;
+    } val;
   } i2c_reg2hw_timeout_ctrl_reg_t;
 
   typedef struct packed {
     struct packed {
       logic [6:0]  q;
-    } address0;
-    struct packed {
-      logic [6:0]  q;
-    } mask0;
+    } mask1;
     struct packed {
       logic [6:0]  q;
     } address1;
     struct packed {
       logic [6:0]  q;
-    } mask1;
+    } mask0;
+    struct packed {
+      logic [6:0]  q;
+    } address0;
   } i2c_reg2hw_target_id_reg_t;
 
   typedef struct packed {
     struct packed {
-      logic [7:0]  q;
-      logic        re;
-    } abyte;
-    struct packed {
       logic [1:0]  q;
       logic        re;
     } signal;
+    struct packed {
+      logic [7:0]  q;
+      logic        re;
+    } abyte;
   } i2c_reg2hw_acqdata_reg_t;
 
   typedef struct packed {

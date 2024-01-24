@@ -50,22 +50,22 @@ package pwrmgr_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-    } low_power_hint;
-    struct packed {
-      logic        q;
-    } core_clk_en;
-    struct packed {
-      logic        q;
-    } io_clk_en;
-    struct packed {
-      logic        q;
-    } usb_clk_en_lp;
+    } main_pd_n;
     struct packed {
       logic        q;
     } usb_clk_en_active;
     struct packed {
       logic        q;
-    } main_pd_n;
+    } usb_clk_en_lp;
+    struct packed {
+      logic        q;
+    } io_clk_en;
+    struct packed {
+      logic        q;
+    } core_clk_en;
+    struct packed {
+      logic        q;
+    } low_power_hint;
   } pwrmgr_reg2hw_control_reg_t;
 
   typedef struct packed {
@@ -87,29 +87,29 @@ package pwrmgr_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic [5:0]  q;
+      logic        q;
       logic        qe;
-    } reasons;
+    } abort;
     struct packed {
       logic        q;
       logic        qe;
     } fall_through;
     struct packed {
-      logic        q;
+      logic [5:0]  q;
       logic        qe;
-    } abort;
+    } reasons;
   } pwrmgr_reg2hw_wake_info_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
-    } reg_intg_err;
+    } main_pd_glitch;
     struct packed {
       logic        q;
     } esc_timeout;
     struct packed {
       logic        q;
-    } main_pd_glitch;
+    } reg_intg_err;
   } pwrmgr_reg2hw_fault_status_reg_t;
 
   typedef struct packed {

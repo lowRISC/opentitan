@@ -22,41 +22,41 @@ package sensor_ctrl_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-    } io_status_change;
+    } init_status_change;
     struct packed {
       logic        q;
-    } init_status_change;
+    } io_status_change;
   } sensor_ctrl_reg2hw_intr_state_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
-    } io_status_change;
+    } init_status_change;
     struct packed {
       logic        q;
-    } init_status_change;
+    } io_status_change;
   } sensor_ctrl_reg2hw_intr_enable_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
       logic        qe;
-    } io_status_change;
+    } init_status_change;
     struct packed {
       logic        q;
       logic        qe;
-    } init_status_change;
+    } io_status_change;
   } sensor_ctrl_reg2hw_intr_test_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
       logic        qe;
-    } recov_alert;
+    } fatal_alert;
     struct packed {
       logic        q;
       logic        qe;
-    } fatal_alert;
+    } recov_alert;
   } sensor_ctrl_reg2hw_alert_test_reg_t;
 
   typedef struct packed {

@@ -24,30 +24,30 @@ package spi_host_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-    } error;
+    } spi_event;
     struct packed {
       logic        q;
-    } spi_event;
+    } error;
   } spi_host_reg2hw_intr_state_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
-    } error;
+    } spi_event;
     struct packed {
       logic        q;
-    } spi_event;
+    } error;
   } spi_host_reg2hw_intr_enable_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
       logic        qe;
-    } error;
+    } spi_event;
     struct packed {
       logic        q;
       logic        qe;
-    } spi_event;
+    } error;
   } spi_host_reg2hw_intr_test_reg_t;
 
   typedef struct packed {
@@ -57,44 +57,44 @@ package spi_host_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic [7:0]  q;
-    } rx_watermark;
-    struct packed {
-      logic [7:0]  q;
-    } tx_watermark;
-    struct packed {
       logic        q;
-    } output_en;
+    } spien;
     struct packed {
       logic        q;
     } sw_rst;
     struct packed {
       logic        q;
-    } spien;
+    } output_en;
+    struct packed {
+      logic [7:0]  q;
+    } tx_watermark;
+    struct packed {
+      logic [7:0]  q;
+    } rx_watermark;
   } spi_host_reg2hw_control_reg_t;
 
   typedef struct packed {
     struct packed {
-      logic [15:0] q;
-    } clkdiv;
-    struct packed {
-      logic [3:0]  q;
-    } csnidle;
-    struct packed {
-      logic [3:0]  q;
-    } csntrail;
-    struct packed {
-      logic [3:0]  q;
-    } csnlead;
-    struct packed {
       logic        q;
-    } fullcyc;
+    } cpol;
     struct packed {
       logic        q;
     } cpha;
     struct packed {
       logic        q;
-    } cpol;
+    } fullcyc;
+    struct packed {
+      logic [3:0]  q;
+    } csnlead;
+    struct packed {
+      logic [3:0]  q;
+    } csntrail;
+    struct packed {
+      logic [3:0]  q;
+    } csnidle;
+    struct packed {
+      logic [15:0] q;
+    } clkdiv;
   } spi_host_reg2hw_configopts_mreg_t;
 
   typedef struct packed {
@@ -103,81 +103,81 @@ package spi_host_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic [8:0]  q;
+      logic [1:0]  q;
       logic        qe;
-    } len;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } csaat;
+    } direction;
     struct packed {
       logic [1:0]  q;
       logic        qe;
     } speed;
     struct packed {
-      logic [1:0]  q;
+      logic        q;
       logic        qe;
-    } direction;
+    } csaat;
+    struct packed {
+      logic [8:0]  q;
+      logic        qe;
+    } len;
   } spi_host_reg2hw_command_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
-    } cmdbusy;
-    struct packed {
-      logic        q;
-    } overflow;
-    struct packed {
-      logic        q;
-    } underflow;
+    } csidinval;
     struct packed {
       logic        q;
     } cmdinval;
     struct packed {
       logic        q;
-    } csidinval;
+    } underflow;
+    struct packed {
+      logic        q;
+    } overflow;
+    struct packed {
+      logic        q;
+    } cmdbusy;
   } spi_host_reg2hw_error_enable_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
-    } cmdbusy;
-    struct packed {
-      logic        q;
-    } overflow;
-    struct packed {
-      logic        q;
-    } underflow;
-    struct packed {
-      logic        q;
-    } cmdinval;
+    } accessinval;
     struct packed {
       logic        q;
     } csidinval;
     struct packed {
       logic        q;
-    } accessinval;
+    } cmdinval;
+    struct packed {
+      logic        q;
+    } underflow;
+    struct packed {
+      logic        q;
+    } overflow;
+    struct packed {
+      logic        q;
+    } cmdbusy;
   } spi_host_reg2hw_error_status_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
-    } rxfull;
-    struct packed {
-      logic        q;
-    } txempty;
-    struct packed {
-      logic        q;
-    } rxwm;
-    struct packed {
-      logic        q;
-    } txwm;
+    } idle;
     struct packed {
       logic        q;
     } ready;
     struct packed {
       logic        q;
-    } idle;
+    } txwm;
+    struct packed {
+      logic        q;
+    } rxwm;
+    struct packed {
+      logic        q;
+    } txempty;
+    struct packed {
+      logic        q;
+    } rxfull;
   } spi_host_reg2hw_event_enable_reg_t;
 
   typedef struct packed {

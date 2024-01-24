@@ -26,11 +26,11 @@ package rstmgr_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic        q;
-    } en;
-    struct packed {
       logic [3:0]  q;
     } index;
+    struct packed {
+      logic        q;
+    } en;
   } rstmgr_reg2hw_alert_info_ctrl_reg_t;
 
   typedef struct packed {

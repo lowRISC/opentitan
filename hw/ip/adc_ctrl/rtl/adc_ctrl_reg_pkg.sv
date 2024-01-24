@@ -39,22 +39,22 @@ package adc_ctrl_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-    } adc_enable;
+    } oneshot_mode;
     struct packed {
       logic        q;
-    } oneshot_mode;
+    } adc_enable;
   } adc_ctrl_reg2hw_adc_en_ctl_reg_t;
 
   typedef struct packed {
     struct packed {
-      logic        q;
-    } lp_mode;
+      logic [23:0] q;
+    } wakeup_time;
     struct packed {
       logic [3:0]  q;
     } pwrup_time;
     struct packed {
-      logic [23:0] q;
-    } wakeup_time;
+      logic        q;
+    } lp_mode;
   } adc_ctrl_reg2hw_adc_pd_ctl_reg_t;
 
   typedef struct packed {
@@ -71,32 +71,32 @@ package adc_ctrl_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic [9:0] q;
-    } min_v;
-    struct packed {
       logic        q;
-    } cond;
+    } en;
     struct packed {
       logic [9:0] q;
     } max_v;
     struct packed {
       logic        q;
-    } en;
+    } cond;
+    struct packed {
+      logic [9:0] q;
+    } min_v;
   } adc_ctrl_reg2hw_adc_chn0_filter_ctl_mreg_t;
 
   typedef struct packed {
     struct packed {
-      logic [9:0] q;
-    } min_v;
-    struct packed {
       logic        q;
-    } cond;
+    } en;
     struct packed {
       logic [9:0] q;
     } max_v;
     struct packed {
       logic        q;
-    } en;
+    } cond;
+    struct packed {
+      logic [9:0] q;
+    } min_v;
   } adc_ctrl_reg2hw_adc_chn1_filter_ctl_mreg_t;
 
   typedef struct packed {
@@ -113,11 +113,11 @@ package adc_ctrl_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic [7:0]  q;
-    } filter_match;
-    struct packed {
       logic        q;
     } oneshot;
+    struct packed {
+      logic [7:0]  q;
+    } filter_match;
   } adc_ctrl_reg2hw_adc_intr_status_reg_t;
 
   typedef struct packed {

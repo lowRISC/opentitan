@@ -25,32 +25,32 @@ package kmac_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-    } kmac_done;
+    } kmac_err;
     struct packed {
       logic        q;
     } fifo_empty;
     struct packed {
       logic        q;
-    } kmac_err;
+    } kmac_done;
   } kmac_reg2hw_intr_state_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
-    } kmac_done;
+    } kmac_err;
     struct packed {
       logic        q;
     } fifo_empty;
     struct packed {
       logic        q;
-    } kmac_err;
+    } kmac_done;
   } kmac_reg2hw_intr_enable_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
       logic        qe;
-    } kmac_done;
+    } kmac_err;
     struct packed {
       logic        q;
       logic        qe;
@@ -58,61 +58,25 @@ package kmac_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } kmac_err;
+    } kmac_done;
   } kmac_reg2hw_intr_test_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
       logic        qe;
-    } recov_operation_err;
+    } fatal_fault_err;
     struct packed {
       logic        q;
       logic        qe;
-    } fatal_fault_err;
+    } recov_operation_err;
   } kmac_reg2hw_alert_test_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
       logic        qe;
-    } kmac_en;
-    struct packed {
-      logic [2:0]  q;
-      logic        qe;
-    } kstrength;
-    struct packed {
-      logic [1:0]  q;
-      logic        qe;
-    } mode;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } msg_endianness;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } state_endianness;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } sideload;
-    struct packed {
-      logic [1:0]  q;
-      logic        qe;
-    } entropy_mode;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } entropy_fast_process;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } msg_mask;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } entropy_ready;
+    } en_unsupported_modestrength;
     struct packed {
       logic        q;
       logic        qe;
@@ -120,31 +84,67 @@ package kmac_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } en_unsupported_modestrength;
+    } entropy_ready;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } msg_mask;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } entropy_fast_process;
+    struct packed {
+      logic [1:0]  q;
+      logic        qe;
+    } entropy_mode;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } sideload;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } state_endianness;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } msg_endianness;
+    struct packed {
+      logic [1:0]  q;
+      logic        qe;
+    } mode;
+    struct packed {
+      logic [2:0]  q;
+      logic        qe;
+    } kstrength;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } kmac_en;
   } kmac_reg2hw_cfg_shadowed_reg_t;
 
   typedef struct packed {
     struct packed {
-      logic [5:0]  q;
+      logic        q;
       logic        qe;
-    } cmd;
+    } hash_cnt_clr;
     struct packed {
       logic        q;
       logic        qe;
     } entropy_req;
     struct packed {
-      logic        q;
+      logic [5:0]  q;
       logic        qe;
-    } hash_cnt_clr;
+    } cmd;
   } kmac_reg2hw_cmd_reg_t;
 
   typedef struct packed {
     struct packed {
-      logic [9:0] q;
-    } prescaler;
-    struct packed {
       logic [15:0] q;
     } wait_timer;
+    struct packed {
+      logic [9:0] q;
+    } prescaler;
   } kmac_reg2hw_entropy_period_reg_t;
 
   typedef struct packed {

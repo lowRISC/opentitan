@@ -20,30 +20,30 @@ package pattgen_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-    } done_ch0;
+    } done_ch1;
     struct packed {
       logic        q;
-    } done_ch1;
+    } done_ch0;
   } pattgen_reg2hw_intr_state_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
-    } done_ch0;
+    } done_ch1;
     struct packed {
       logic        q;
-    } done_ch1;
+    } done_ch0;
   } pattgen_reg2hw_intr_enable_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
       logic        qe;
-    } done_ch0;
+    } done_ch1;
     struct packed {
       logic        q;
       logic        qe;
-    } done_ch1;
+    } done_ch0;
   } pattgen_reg2hw_intr_test_reg_t;
 
   typedef struct packed {
@@ -54,16 +54,16 @@ package pattgen_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-    } enable_ch0;
-    struct packed {
-      logic        q;
-    } enable_ch1;
+    } polarity_ch1;
     struct packed {
       logic        q;
     } polarity_ch0;
     struct packed {
       logic        q;
-    } polarity_ch1;
+    } enable_ch1;
+    struct packed {
+      logic        q;
+    } enable_ch0;
   } pattgen_reg2hw_ctrl_reg_t;
 
   typedef struct packed {
@@ -84,17 +84,17 @@ package pattgen_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic [5:0]  q;
-    } len_ch0;
-    struct packed {
       logic [9:0] q;
-    } reps_ch0;
+    } reps_ch1;
     struct packed {
       logic [5:0]  q;
     } len_ch1;
     struct packed {
       logic [9:0] q;
-    } reps_ch1;
+    } reps_ch0;
+    struct packed {
+      logic [5:0]  q;
+    } len_ch0;
   } pattgen_reg2hw_size_reg_t;
 
   typedef struct packed {

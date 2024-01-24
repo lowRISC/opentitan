@@ -38,25 +38,17 @@ package pinmux_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic        q;
+      logic [3:0]  q;
       logic        qe;
-    } invert;
+    } drive_strength;
+    struct packed {
+      logic [1:0]  q;
+      logic        qe;
+    } slew_rate;
     struct packed {
       logic        q;
       logic        qe;
-    } virtual_od_en;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } pull_en;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } pull_select;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } keeper_en;
+    } od_en;
     struct packed {
       logic        q;
       logic        qe;
@@ -64,38 +56,38 @@ package pinmux_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } od_en;
+    } keeper_en;
     struct packed {
-      logic [1:0]  q;
+      logic        q;
       logic        qe;
-    } slew_rate;
+    } pull_select;
     struct packed {
-      logic [3:0]  q;
+      logic        q;
       logic        qe;
-    } drive_strength;
+    } pull_en;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } virtual_od_en;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } invert;
   } pinmux_reg2hw_mio_pad_attr_mreg_t;
 
   typedef struct packed {
     struct packed {
-      logic        q;
+      logic [3:0]  q;
       logic        qe;
-    } invert;
+    } drive_strength;
+    struct packed {
+      logic [1:0]  q;
+      logic        qe;
+    } slew_rate;
     struct packed {
       logic        q;
       logic        qe;
-    } virtual_od_en;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } pull_en;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } pull_select;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } keeper_en;
+    } od_en;
     struct packed {
       logic        q;
       logic        qe;
@@ -103,15 +95,23 @@ package pinmux_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } od_en;
+    } keeper_en;
     struct packed {
-      logic [1:0]  q;
+      logic        q;
       logic        qe;
-    } slew_rate;
+    } pull_select;
     struct packed {
-      logic [3:0]  q;
+      logic        q;
       logic        qe;
-    } drive_strength;
+    } pull_en;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } virtual_od_en;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } invert;
   } pinmux_reg2hw_dio_pad_attr_mreg_t;
 
   typedef struct packed {
@@ -144,14 +144,14 @@ package pinmux_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic [2:0]  q;
-    } mode;
+      logic        q;
+    } miodio;
     struct packed {
       logic        q;
     } filter;
     struct packed {
-      logic        q;
-    } miodio;
+      logic [2:0]  q;
+    } mode;
   } pinmux_reg2hw_wkup_detector_mreg_t;
 
   typedef struct packed {

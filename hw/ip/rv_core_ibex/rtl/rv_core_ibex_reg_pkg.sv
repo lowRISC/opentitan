@@ -23,11 +23,7 @@ package rv_core_ibex_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } fatal_sw_err;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } recov_sw_err;
+    } recov_hw_err;
     struct packed {
       logic        q;
       logic        qe;
@@ -35,7 +31,11 @@ package rv_core_ibex_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } recov_hw_err;
+    } recov_sw_err;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } fatal_sw_err;
   } rv_core_ibex_reg2hw_alert_test_reg_t;
 
   typedef struct packed {
@@ -73,19 +73,19 @@ package rv_core_ibex_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-    } alert_en;
+    } wdog_en;
     struct packed {
       logic        q;
-    } wdog_en;
+    } alert_en;
   } rv_core_ibex_reg2hw_nmi_enable_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
-    } alert;
+    } wdog;
     struct packed {
       logic        q;
-    } wdog;
+    } alert;
   } rv_core_ibex_reg2hw_nmi_state_reg_t;
 
   typedef struct packed {

@@ -20,172 +20,116 @@ package usbdev_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-    } pkt_received;
-    struct packed {
-      logic        q;
-    } pkt_sent;
-    struct packed {
-      logic        q;
-    } disconnected;
-    struct packed {
-      logic        q;
-    } host_lost;
-    struct packed {
-      logic        q;
-    } link_reset;
-    struct packed {
-      logic        q;
-    } link_suspend;
-    struct packed {
-      logic        q;
-    } link_resume;
-    struct packed {
-      logic        q;
-    } av_empty;
-    struct packed {
-      logic        q;
-    } rx_full;
-    struct packed {
-      logic        q;
-    } av_overflow;
-    struct packed {
-      logic        q;
-    } link_in_err;
-    struct packed {
-      logic        q;
-    } rx_crc_err;
-    struct packed {
-      logic        q;
-    } rx_pid_err;
-    struct packed {
-      logic        q;
-    } rx_bitstuff_err;
-    struct packed {
-      logic        q;
-    } frame;
+    } link_out_err;
     struct packed {
       logic        q;
     } powered;
     struct packed {
       logic        q;
-    } link_out_err;
+    } frame;
+    struct packed {
+      logic        q;
+    } rx_bitstuff_err;
+    struct packed {
+      logic        q;
+    } rx_pid_err;
+    struct packed {
+      logic        q;
+    } rx_crc_err;
+    struct packed {
+      logic        q;
+    } link_in_err;
+    struct packed {
+      logic        q;
+    } av_overflow;
+    struct packed {
+      logic        q;
+    } rx_full;
+    struct packed {
+      logic        q;
+    } av_empty;
+    struct packed {
+      logic        q;
+    } link_resume;
+    struct packed {
+      logic        q;
+    } link_suspend;
+    struct packed {
+      logic        q;
+    } link_reset;
+    struct packed {
+      logic        q;
+    } host_lost;
+    struct packed {
+      logic        q;
+    } disconnected;
+    struct packed {
+      logic        q;
+    } pkt_sent;
+    struct packed {
+      logic        q;
+    } pkt_received;
   } usbdev_reg2hw_intr_state_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
-    } pkt_received;
-    struct packed {
-      logic        q;
-    } pkt_sent;
-    struct packed {
-      logic        q;
-    } disconnected;
-    struct packed {
-      logic        q;
-    } host_lost;
-    struct packed {
-      logic        q;
-    } link_reset;
-    struct packed {
-      logic        q;
-    } link_suspend;
-    struct packed {
-      logic        q;
-    } link_resume;
-    struct packed {
-      logic        q;
-    } av_empty;
-    struct packed {
-      logic        q;
-    } rx_full;
-    struct packed {
-      logic        q;
-    } av_overflow;
-    struct packed {
-      logic        q;
-    } link_in_err;
-    struct packed {
-      logic        q;
-    } rx_crc_err;
-    struct packed {
-      logic        q;
-    } rx_pid_err;
-    struct packed {
-      logic        q;
-    } rx_bitstuff_err;
-    struct packed {
-      logic        q;
-    } frame;
+    } link_out_err;
     struct packed {
       logic        q;
     } powered;
     struct packed {
       logic        q;
-    } link_out_err;
+    } frame;
+    struct packed {
+      logic        q;
+    } rx_bitstuff_err;
+    struct packed {
+      logic        q;
+    } rx_pid_err;
+    struct packed {
+      logic        q;
+    } rx_crc_err;
+    struct packed {
+      logic        q;
+    } link_in_err;
+    struct packed {
+      logic        q;
+    } av_overflow;
+    struct packed {
+      logic        q;
+    } rx_full;
+    struct packed {
+      logic        q;
+    } av_empty;
+    struct packed {
+      logic        q;
+    } link_resume;
+    struct packed {
+      logic        q;
+    } link_suspend;
+    struct packed {
+      logic        q;
+    } link_reset;
+    struct packed {
+      logic        q;
+    } host_lost;
+    struct packed {
+      logic        q;
+    } disconnected;
+    struct packed {
+      logic        q;
+    } pkt_sent;
+    struct packed {
+      logic        q;
+    } pkt_received;
   } usbdev_reg2hw_intr_enable_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
       logic        qe;
-    } pkt_received;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } pkt_sent;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } disconnected;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } host_lost;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } link_reset;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } link_suspend;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } link_resume;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } av_empty;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } rx_full;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } av_overflow;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } link_in_err;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } rx_crc_err;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } rx_pid_err;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } rx_bitstuff_err;
-    struct packed {
-      logic        q;
-      logic        qe;
-    } frame;
+    } link_out_err;
     struct packed {
       logic        q;
       logic        qe;
@@ -193,7 +137,63 @@ package usbdev_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } link_out_err;
+    } frame;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } rx_bitstuff_err;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } rx_pid_err;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } rx_crc_err;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } link_in_err;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } av_overflow;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } rx_full;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } av_empty;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } link_resume;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } link_suspend;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } link_reset;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } host_lost;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } disconnected;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } pkt_sent;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } pkt_received;
   } usbdev_reg2hw_intr_test_reg_t;
 
   typedef struct packed {
@@ -203,15 +203,15 @@ package usbdev_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic        q;
-    } enable;
+      logic [6:0]  q;
+    } device_address;
     struct packed {
       logic        q;
       logic        qe;
     } resume_link_active;
     struct packed {
-      logic [6:0]  q;
-    } device_address;
+      logic        q;
+    } enable;
   } usbdev_reg2hw_usbctrl_reg_t;
 
   typedef struct packed {
@@ -229,21 +229,21 @@ package usbdev_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic [4:0]  q;
+      logic [3:0]  q;
       logic        re;
-    } buffer;
-    struct packed {
-      logic [6:0]  q;
-      logic        re;
-    } size;
+    } ep;
     struct packed {
       logic        q;
       logic        re;
     } setup;
     struct packed {
-      logic [3:0]  q;
+      logic [6:0]  q;
       logic        re;
-    } ep;
+    } size;
+    struct packed {
+      logic [4:0]  q;
+      logic        re;
+    } buffer;
   } usbdev_reg2hw_rxfifo_reg_t;
 
   typedef struct packed {
@@ -272,17 +272,17 @@ package usbdev_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic [4:0]  q;
-    } buffer;
-    struct packed {
-      logic [6:0]  q;
-    } size;
+      logic        q;
+    } rdy;
     struct packed {
       logic        q;
     } pend;
     struct packed {
-      logic        q;
-    } rdy;
+      logic [6:0]  q;
+    } size;
+    struct packed {
+      logic [4:0]  q;
+    } buffer;
   } usbdev_reg2hw_configin_mreg_t;
 
   typedef struct packed {
@@ -301,63 +301,63 @@ package usbdev_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-    } dp_o;
-    struct packed {
-      logic        q;
-    } dn_o;
-    struct packed {
-      logic        q;
-    } d_o;
-    struct packed {
-      logic        q;
-    } se0_o;
-    struct packed {
-      logic        q;
-    } oe_o;
-    struct packed {
-      logic        q;
-    } rx_enable_o;
-    struct packed {
-      logic        q;
-    } dp_pullup_en_o;
+    } en;
     struct packed {
       logic        q;
     } dn_pullup_en_o;
     struct packed {
       logic        q;
-    } en;
+    } dp_pullup_en_o;
+    struct packed {
+      logic        q;
+    } rx_enable_o;
+    struct packed {
+      logic        q;
+    } oe_o;
+    struct packed {
+      logic        q;
+    } se0_o;
+    struct packed {
+      logic        q;
+    } d_o;
+    struct packed {
+      logic        q;
+    } dn_o;
+    struct packed {
+      logic        q;
+    } dp_o;
   } usbdev_reg2hw_phy_pins_drive_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
-    } use_diff_rcvr;
-    struct packed {
-      logic        q;
-    } tx_use_d_se0;
-    struct packed {
-      logic        q;
-    } eop_single_bit;
-    struct packed {
-      logic        q;
-    } pinflip;
+    } tx_osc_test_mode;
     struct packed {
       logic        q;
     } usb_ref_disable;
     struct packed {
       logic        q;
-    } tx_osc_test_mode;
+    } pinflip;
+    struct packed {
+      logic        q;
+    } eop_single_bit;
+    struct packed {
+      logic        q;
+    } tx_use_d_se0;
+    struct packed {
+      logic        q;
+    } use_diff_rcvr;
   } usbdev_reg2hw_phy_config_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
       logic        qe;
-    } suspend_req;
+    } wake_ack;
     struct packed {
       logic        q;
       logic        qe;
-    } wake_ack;
+    } suspend_req;
   } usbdev_reg2hw_wake_control_reg_t;
 
   typedef struct packed {

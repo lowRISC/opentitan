@@ -42,11 +42,11 @@ package rv_timer_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic [11:0] q;
-    } prescale;
-    struct packed {
       logic [7:0]  q;
     } step;
+    struct packed {
+      logic [11:0] q;
+    } prescale;
   } rv_timer_reg2hw_cfg0_reg_t;
 
   typedef struct packed {

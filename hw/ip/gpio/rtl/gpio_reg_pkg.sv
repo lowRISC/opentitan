@@ -43,22 +43,22 @@ package gpio_reg_pkg;
     struct packed {
       logic [15:0] q;
       logic        qe;
-    } data;
+    } mask;
     struct packed {
       logic [15:0] q;
       logic        qe;
-    } mask;
+    } data;
   } gpio_reg2hw_masked_out_lower_reg_t;
 
   typedef struct packed {
     struct packed {
       logic [15:0] q;
       logic        qe;
-    } data;
+    } mask;
     struct packed {
       logic [15:0] q;
       logic        qe;
-    } mask;
+    } data;
   } gpio_reg2hw_masked_out_upper_reg_t;
 
   typedef struct packed {
@@ -70,22 +70,22 @@ package gpio_reg_pkg;
     struct packed {
       logic [15:0] q;
       logic        qe;
-    } data;
+    } mask;
     struct packed {
       logic [15:0] q;
       logic        qe;
-    } mask;
+    } data;
   } gpio_reg2hw_masked_oe_lower_reg_t;
 
   typedef struct packed {
     struct packed {
       logic [15:0] q;
       logic        qe;
-    } data;
+    } mask;
     struct packed {
       logic [15:0] q;
       logic        qe;
-    } mask;
+    } data;
   } gpio_reg2hw_masked_oe_upper_reg_t;
 
   typedef struct packed {

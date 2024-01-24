@@ -65,7 +65,7 @@ ${hdr}
       ## We are inhomogeneous, which means there is more than one different
       ## field. Generate a reg2hw typedef that packs together all the fields of
       ## the register.
-      % for f in r0.fields:
+      % for f in reversed(r0.fields):
 <%
           field_q_width = f.get_n_bits(r0.hwext, r0.hwre, ["q"])
 %>\
