@@ -1,0 +1,48 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+// Example configuration
+{
+  // Reset attributes
+  // name: name of reset.
+  //
+  // gen: whether the reset is generated
+  // 1: it is a generated reset inside rstmgr
+  // 0: it is a hardwired design reset inside rstmgr (roots and por)
+  //
+  // type: the reset type [ext, top]
+  // ext: the reset is coming in from the ports, external to earlgrey
+  // int: the reset is only used inside rstmgr
+  // top: the reset is output from rstmgr to top level struct
+  //
+  // root: The parent reset
+  // If type is "ext", there is no root, since it is external
+  //
+  // domain: The power domain
+  // If no domain, it means there is no choice, just inherits from root.
+  // Otherwise, selects the domain to which it is related
+  // 0 is defaulted for always on.
+  // TBD: This should eventually be changed to a name->index project wide lookup
+  //
+  // clk:  related clock domain for synchronous release
+  // If type is "por", there is not related clock, since it is
+  // likely external or generated from a voltage comparator
+  //
+  resets: [
+    { name: "rst_ni",      gen: 0, type: "ext"                                                  }
+    { name: "por_aon",     gen: 0, type: "top",              root: "rst_ni",  clk: "aon"        }
+    { name: "lc_src",      gen: 0, type: "int",              root: "por",     clk: "io_div2"    }
+    { name: "sys_src",     gen: 0, type: "int",              root: "por",     clk: "io_div2"    }
+    { name: "por",         gen: 1, type: "top",              root: "por_aon", clk: "main"       }
+    { name: "por_io",      gen: 1, type: "top",              root: "por_aon", clk: "io"         }
+    { name: "por_io_div2", gen: 1, type: "top",              root: "por_aon", clk: "io_div2"    }
+    { name: "por_usb",     gen: 1, type: "top",              root: "por_aon", clk: "usb"        }
+    { name: "lc",          gen: 1, type: "top", domain: "0", root: "lc_src",  clk: "io_div2"    }
+    { name: "sys",         gen: 1, type: "top", domain: "0", root: "sys_src", clk: "main"       }
+    { name: "sys_io",      gen: 1, type: "top", domain: "0", root: "sys_src", clk: "io_div2"    }
+    { name: "sys_aon",     gen: 1, type: "top", domain: "0", root: "sys_src", clk: "aon"        }
+    { name: "spi_device",  gen: 1, type: "top", domain: "0", root: "sys_src", clk: "io_div2",  sw: 1 }
+    { name: "usb",         gen: 1, type: "top", domain: "0", root: "sys_src", clk: "usb", sw: 1 }
+  ]
+}
