@@ -575,8 +575,10 @@ static rom_error_t rom_ext_try_boot(void) {
   rom_ext_boot_policy_manifests_t manifests =
       rom_ext_boot_policy_manifests_get(&boot_data);
   rom_error_t error = kErrorRomExtBootFailed;
+  rom_error_t slot[2] = {0, 0};
   for (size_t i = 0; i < ARRAYSIZE(manifests.ordered); ++i) {
     error = rom_ext_verify(manifests.ordered[i], &boot_data);
+    slot[i] = error;
     if (error != kErrorOk) {
       continue;
     }
@@ -600,6 +602,15 @@ static rom_error_t rom_ext_try_boot(void) {
     return kErrorRomExtBootFailed;
   }
 
+  // If we get here, the loop exited after trying both slots.
+  // If we see kErrorBootPolicyBadIdentifier as the error, we probably have an
+  // empty slot.  In that case, the "bad identifier" error is not helpful, so
+  // maybe choose the error from the other slot.
+  if (error == kErrorBootPolicyBadIdentifier && error == slot[1]) {
+    // If the bad identifier error comes from the non-primary slot, prefer
+    // the error from the primary slot.
+    error = slot[0];
+  }
   return error;
 }
 
