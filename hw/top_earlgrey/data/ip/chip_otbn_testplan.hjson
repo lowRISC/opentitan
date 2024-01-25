@@ -40,6 +40,7 @@
       si_stage: SV3
       tests: ["chip_sw_otbn_ecdsa_op_irq",
               "chip_sw_otbn_ecdsa_op_irq_jitter_en"]
+      bazel: ["//sw/device/tests:otbn_ecdsa_op_irq_test"]
       lc_states: ["TEST_UNLOCKED", "DEV", "RMA", "PROD", "PROD_END"]
       features: [
         "OTBN.ISA"
