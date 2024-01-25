@@ -142,10 +142,6 @@ Data structures for key types and modes help the cryptolib recognize and prevent
 {{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_hash_mode }}
 {{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_hash_digest }}
 
-#### Key derivation data structures
-
-{{#header-snippet sw/device/lib/crypto/include/kdf.h otcrypto_kdf_type }}
-
 #### Message authentication data structures
 
 {{#header-snippet sw/device/lib/crypto/include/mac.h otcrypto_kmac_mode }}
@@ -477,7 +473,9 @@ To learn more about PRFs, various key derivation mechanisms and security conside
 
 #### KDF-CTR
 
-{{#header-snippet sw/device/lib/crypto/include/kdf.h otcrypto_kdf_ctr }}
+{{#header-snippet sw/device/lib/crypto/include/kdf.h otcrypto_kdf_hmac_ctr }}
+{{#header-snippet sw/device/lib/crypto/include/kdf.h otcrypto_kdf_kmac }}
+
 
 #### HKDF
 
