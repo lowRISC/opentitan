@@ -7,8 +7,8 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/rstmgr/doc/">Reset Manager</a> Device Interface
- * Functions
+ * @brief <a href="/book/hw/top_earlgrey/ip_autogen/rstmgr/">Reset Manager</a>
+ * Device Interface Functions
  */
 
 #include <stdbool.h>
