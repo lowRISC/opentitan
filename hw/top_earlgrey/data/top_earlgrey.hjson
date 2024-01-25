@@ -409,7 +409,7 @@
       },
       domain: ["Aon", "0"],
       base_addr: "0x40410000",
-      attr: "templated",
+      attr: "ipgen",
     },
     { name: "clkmgr_aon",
       type: "clkmgr",

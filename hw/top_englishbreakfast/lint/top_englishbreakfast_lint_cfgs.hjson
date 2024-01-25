@@ -41,7 +41,7 @@
                   ]
              },
              {    name: pwrmgr
-                  fusesoc_core: lowrisc:ip_interfaces:pwrmgr
+                  fusesoc_core: lowrisc:opentitan:top_englishbreakfast_pwrmgr
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"],
                   rel_path: "hw/ip/pwrmgr/lint/{tool}",
                   overrides: [
@@ -52,9 +52,9 @@
                   ]
              },
              {    name: rstmgr
-                  fusesoc_core: lowrisc:ip:rstmgr
+                  fusesoc_core: lowrisc:opentitan:top_englishbreakfast_rstmgr
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"],
-                  rel_path: "hw/top_englishbreakfast/ip/rstmgr/lint/{tool}",
+                  rel_path: "hw/ip/rstmgr/lint/{tool}",
                   overrides: [
                     {
                       name: design_level
