@@ -6,6 +6,7 @@
 #define OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_KDF_H_
 
 #include "sw/device/lib/crypto/include/datatypes.h"
+#include "sw/device/lib/crypto/include/mac.h"
 
 /**
  * @file
@@ -19,22 +20,11 @@ extern "C" {
 #endif  // __cplusplus
 
 /**
- * Enum to define the supported KDF constructions.
+ * Performs the key derivation function in counter mode wtih HMAC according to
+ * NIST SP 800-108r1.
  *
- * Values are hardened.
- */
-typedef enum otcrypto_kdf_type {
-  // KDF construction with HMAC as a PRF.
-  kOtcryptoKdfTypeHmac = 0x4f1,
-  // KDF construction with KMAC as a PRF.
-  kOtcryptoKdfTypeKmac = 0x754,
-} otcrypto_kdf_type_t;
-
-/**
- * Performs the key derivation function in counter mode.
- *
- * The required PRF engine for the KDF function is selected using the
- * `kdf_mode` parameter.
+ * The supported PRF engine for the KDF function is HMAC (since KMAC does not
+ * use the counter mode).
  *
  * The caller should allocate and partially populate the `keying_material`
  * blinded key struct, including populating the key configuration and
@@ -46,17 +36,51 @@ typedef enum otcrypto_kdf_type {
  * `checksum` field of the blinded key struct will be populated by this
  * function.
  *
- * @param key_derivation_key Pointer to the blinded key derivation key.
- * @param kdf_mode Required KDF mode, with HMAC or KMAC as a PRF.
- * @param key_mode Crypto mode for which the derived key is intended.
- * @param required_bit_len Required length of the derived key in bits.
- * @param[out] keying_material Pointer to the blinded keying material.
+ * @param key_derivation_key Blinded key derivation key.
+ * @param kdf_label Label string according to SP 800-108r1.
+ * @param kdf_context Context string according to SP 800-108r1.
+ * @param required_byte_len Required length of the derived key in bytes.
+ * @param[out] keying_material Pointer to the blinded keying material to be
+ * populated by this function.
  * @return Result of the key derivation operation.
  */
-otcrypto_status_t otcrypto_kdf_ctr(
+otcrypto_status_t otcrypto_kdf_hmac_ctr(
     const otcrypto_blinded_key_t key_derivation_key,
-    otcrypto_kdf_type_t kdf_mode, otcrypto_key_mode_t key_mode,
-    size_t required_bit_len, otcrypto_blinded_key_t keying_material);
+    const otcrypto_const_byte_buf_t kdf_label,
+    const otcrypto_const_byte_buf_t kdf_context, size_t required_byte_len,
+    otcrypto_blinded_key_t *keying_material);
+
+/**
+ * Performs the key derivation function with single KMAC invocation according to
+ * NIST SP 800-108r1.
+ *
+ * The supported PRF engine for the KDF function is either of
+ * {KMAC128, KMAC256}. This is passed with `kmac_mode` input argument.
+ *
+ * The caller should allocate and partially populate the `keying_material`
+ * blinded key struct, including populating the key configuration and
+ * allocating space for the keyblob. The caller should indicate the length of
+ * the allocated keyblob; this function will return an error if the keyblob
+ * length does not match expectations. For hardware-backed keys, the keyblob
+ * length is 0 and the keyblob pointer may be `NULL`. For non-hardware-backed
+ * keys, the keyblob should be twice the length of the key. The value in the
+ * `checksum` field of the blinded key struct will be populated by this
+ * function.
+ *
+ * @param key_derivation_key Blinded key derivation key.
+ * @param kmac_mode Either KMAC128 or KMAC256 as PRF.
+ * @param kdf_label Label string according to SP 800-108r1.
+ * @param kdf_context Context string according to SP 800-108r1.
+ * @param required_byte_len Required length of the derived key in bytes.
+ * @param[out] keying_material Pointer to the blinded keying material to be
+ * populated by this function.
+ * @return Result of the key derivation operation.
+ */
+otcrypto_status_t otcrypto_kdf_kmac(
+    const otcrypto_blinded_key_t key_derivation_key,
+    otcrypto_kmac_mode_t kmac_mode, const otcrypto_const_byte_buf_t kdf_label,
+    const otcrypto_const_byte_buf_t kdf_context, size_t required_byte_len,
+    otcrypto_blinded_key_t *keying_material);
 
 /**
  * Performs HKDF in one shot, both expand and extract stages.
