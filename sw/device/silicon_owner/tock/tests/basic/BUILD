@@ -42,5 +42,6 @@ opentitan_test(
     ),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:fpga_cw310_test_rom_ext": None,
     },
 )
