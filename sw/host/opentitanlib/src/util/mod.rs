@@ -7,7 +7,6 @@ pub mod bitbang;
 pub mod bitfield;
 pub mod file;
 pub mod num_de;
-pub mod openocd;
 pub mod parse_int;
 pub mod present;
 pub mod printer;
