@@ -93,7 +93,7 @@ opentitan_test(
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_earlgrey:alert_handler_regs",
         "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
-        "//hw/top_earlgrey/ip/rstmgr/data/autogen:rstmgr_regs",
+        "//hw/top_earlgrey/ip_autogen/rstmgr/data:rstmgr_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/testing:rstmgr_testutils",
@@ -620,7 +620,7 @@ dual_cc_library(
     ),
     deps = dual_inputs(
         device = [
-            "//hw/top_earlgrey/ip/rstmgr/data/autogen:rstmgr_regs",
+            "//hw/top_earlgrey/ip_autogen/rstmgr/data:rstmgr_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         ],
         host = [
