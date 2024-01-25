@@ -113,6 +113,7 @@ filegroup(
     ) + [
         "//:tool_requirements.py",
         "//hw/ip:all_files",
+        "//hw/ip_templates:all_files",
         "//hw/top_earlgrey:all_files",
         "//util:check_tool_requirements.py",
     ],
