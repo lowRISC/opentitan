@@ -107,8 +107,6 @@ def main():
     delete_path(REPO_TOP / 'hw' / topname / 'ip/clkmgr')
     delete_path(REPO_TOP / 'hw' / topname / 'ip/flash_ctrl')
     delete_path(REPO_TOP / 'hw' / topname / 'ip/pinmux')
-    delete_path(REPO_TOP / 'hw' / topname / 'ip/pwrmgr')
-    delete_path(REPO_TOP / 'hw' / topname / 'ip/rstmgr')
     delete_path(REPO_TOP / 'hw' / topname / 'ip/sensor_ctrl/rtl')
     delete_path(REPO_TOP / 'hw' / topname / 'ip/xbar_main')
     delete_path(REPO_TOP / 'hw' / topname / 'ip/xbar_peri')
@@ -145,7 +143,7 @@ def main():
         'ip/clkmgr/data/autogen/clkmgr.hjson',
         'ip/flash_ctrl/data/autogen/flash_ctrl.hjson',
         'ip_autogen/pwrmgr/data/pwrmgr.hjson',
-        'ip/rstmgr/data/autogen/rstmgr.hjson',
+        'ip_autogen/rstmgr/data/rstmgr.hjson',
         'ip/pinmux/data/autogen/pinmux.hjson',
         'ip_autogen/rv_plic/data/rv_plic.hjson',
         'ip/ast/data/ast.hjson',
