@@ -540,3 +540,18 @@ dif_result_t dif_spi_host_get_error(const dif_spi_host_t *spi_host,
 
   return kDifOk;
 }
+
+dif_result_t dif_spi_host_wait_until_idle(const dif_spi_host_t *spi_host) {
+  if (spi_host == NULL) {
+    return kDifBadArg;
+  }
+
+  bool active;
+  do {
+    uint32_t reg =
+        mmio_region_read32(spi_host->base_addr, SPI_HOST_STATUS_REG_OFFSET);
+    active = bitfield_bit32_read(reg, SPI_HOST_STATUS_ACTIVE_BIT);
+  } while (active);
+
+  return kDifOk;
+}
