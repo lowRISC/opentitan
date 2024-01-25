@@ -7,11 +7,13 @@ description: "RSTMGR assertion modules and bind file."
 filesets:
   files_dv:
     depend:
-      - lowrisc:systems:rstmgr_sva
+      - lowrisc:prim:mubi
+      - lowrisc:ip_interfaces:rstmgr_pkg
       - lowrisc:dv:rstmgr_sva_ifs
 
     files:
       - rstmgr_bind.sv
+      - rstmgr_rst_en_track_sva_if.sv
     file_type: systemVerilogSource
 
 targets:

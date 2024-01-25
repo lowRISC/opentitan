@@ -7,12 +7,13 @@ description: "RSTMGR DV UVM environment"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:ip:rstmgr
+      - lowrisc:ip_interfaces:rstmgr
 
   files_dv:
     depend:
       - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
+      - lowrisc:ip_interfaces:rstmgr_pkg
 
     files:
       - rstmgr_env_pkg.sv
@@ -41,7 +42,7 @@ generate:
     generator: ralgen
     parameters:
       name: rstmgr
-      ip_hjson: ../../../../top_earlgrey/ip/rstmgr/data/autogen/rstmgr.hjson
+      ip_hjson: ../../data/rstmgr.hjson
 
 targets:
   default:

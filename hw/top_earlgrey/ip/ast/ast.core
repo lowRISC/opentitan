@@ -24,7 +24,7 @@ filesets:
       - lowrisc:ip:lc_ctrl_pkg
       - lowrisc:ip:edn_pkg
       - lowrisc:ip_interfaces:alert_handler_reg
-      - lowrisc:ip:rstmgr_pkg
+      - lowrisc:ip_interfaces:rstmgr_pkg
       - lowrisc:systems:clkmgr_pkg
     files:
       - rtl/ast_reg_pkg.sv

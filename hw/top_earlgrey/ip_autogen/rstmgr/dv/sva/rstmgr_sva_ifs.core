@@ -9,7 +9,7 @@ filesets:
     depend:
       - lowrisc:ip:lc_ctrl_pkg
       - lowrisc:ip_interfaces:pwrmgr_pkg
-      - lowrisc:ip:rstmgr
+      - lowrisc:ip_interfaces:rstmgr
 
     files:
       - rstmgr_attrs_sva_if.sv
