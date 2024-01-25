@@ -254,9 +254,11 @@ typedef enum otcrypto_ecc_key_mode {
  */
 typedef enum otcrypto_kdf_key_mode {
   // Mode KDF-CTR with HMAC as PRF.
-  kOtcryptoKdfKeyModeCtrHmac = 0x127,
-  // Mode KDF-CTR with KMAC as PRF.
-  kOtcryptoKdfKeyModeCtrKmac = 0x3dd,
+  kOtcryptoKdfKeyModeCtrHmac = 0x12f,
+  // Mode KDF-KMAC with KMAC128 as PRF.
+  kOtcryptoKdfKeyModeKmac128 = 0xe5e,
+  // Mode KDF-KMAC with KMAC256 as PRF.
+  kOtcryptoKdfKeyModeKmac256 = 0x353,
 } otcrypto_kdf_key_mode_t;
 
 /**
@@ -320,9 +322,12 @@ typedef enum otcrypto_key_mode {
   // Key is intended for KDF-CTR with HMAC as PRF.
   kOtcryptoKeyModeKdfCtrHmac =
       kOtcryptoKeyTypeKdf << 16 | kOtcryptoKdfKeyModeCtrHmac,
-  // Key is intended for KDF-CTR with KMAC as PRF.
-  kOtcryptoKeyModeKdfCtrKmac =
-      kOtcryptoKeyTypeKdf << 16 | kOtcryptoKdfKeyModeCtrKmac,
+  // Key is intended for KDF with KMAC128 as PRF.
+  kOtcryptoKeyModeKdfKmac128 =
+      kOtcryptoKeyTypeKdf << 16 | kOtcryptoKdfKeyModeKmac128,
+  // Key is intended for KDF with KMAC256 as PRF.
+  kOtcryptoKeyModeKdfKmac256 =
+      kOtcryptoKeyTypeKdf << 16 | kOtcryptoKdfKeyModeKmac256,
 } otcrypto_key_mode_t;
 
 /**

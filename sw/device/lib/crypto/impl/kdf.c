@@ -14,12 +14,21 @@
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('k', 'd', 'f')
 
-otcrypto_status_t otcrypto_kdf_ctr(const otcrypto_blinded_key_t ikm,
-                                   otcrypto_kdf_type_t kdf_mode,
-                                   otcrypto_key_mode_t key_mode,
-                                   size_t required_bit_len,
-                                   otcrypto_blinded_key_t keying_material) {
-  // TODO: Implement HMAC-KDF-CTR and KMAC-KDF-CTR.
+otcrypto_status_t otcrypto_kdf_hmac_ctr(
+    const otcrypto_blinded_key_t key_derivation_key,
+    const otcrypto_const_byte_buf_t kdf_label,
+    const otcrypto_const_byte_buf_t kdf_context, size_t required_byte_len,
+    otcrypto_blinded_key_t *keying_material) {
+  // TODO: Implement HMAC-KDF-CTR.
+  return OTCRYPTO_NOT_IMPLEMENTED;
+}
+
+otcrypto_status_t otcrypto_kdf_kmac(
+    const otcrypto_blinded_key_t key_derivation_key,
+    otcrypto_kmac_mode_t kmac_mode, const otcrypto_const_byte_buf_t kdf_label,
+    const otcrypto_const_byte_buf_t kdf_context, size_t required_byte_len,
+    otcrypto_blinded_key_t *keying_material) {
+  // TODO: Implement KMAC-KDF.
   return OTCRYPTO_NOT_IMPLEMENTED;
 }
 
