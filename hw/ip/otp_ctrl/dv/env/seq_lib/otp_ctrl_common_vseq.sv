@@ -17,7 +17,7 @@ class otp_ctrl_common_vseq extends otp_ctrl_base_vseq;
   constraint dai_addr_c {
     dai_addr dist {
         [0 : (PartInfo[LifeCycleIdx].offset - 1)]    :/ 1,
-        [PartInfo[LifeCycleIdx].offset : {11{1'b1}}] :/ 1};
+        [PartInfo[LifeCycleIdx].offset : {OTP_ADDR_WIDTH{1'b1}}] :/ 1};
   }
 
   constraint reset_drive_cond_c {
