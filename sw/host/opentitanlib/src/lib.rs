@@ -13,6 +13,7 @@ pub mod bootstrap;
 pub mod chip;
 pub mod console;
 pub mod crypto;
+pub mod debug;
 pub mod dif;
 pub mod image;
 pub mod io;

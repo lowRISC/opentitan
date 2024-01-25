@@ -10,6 +10,7 @@ mod gpio;
 mod i2c;
 mod spi;
 
+use crate::debug::openocd::OpenOcdJtagChain;
 use crate::io::emu::Emulator;
 use crate::io::gpio::{GpioBitbanging, GpioMonitoring, GpioPin, PinMode, PullMode};
 use crate::io::i2c::Bus;
@@ -22,7 +23,6 @@ use crate::transport::{
     ioexpander, Capability, ProgressIndicator, ProxyOps, Transport, TransportError,
     TransportInterfaceType,
 };
-use crate::util::openocd::OpenOcdJtagChain;
 
 use anyhow::{bail, ensure, Result};
 use indicatif::{ProgressBar, ProgressStyle};
