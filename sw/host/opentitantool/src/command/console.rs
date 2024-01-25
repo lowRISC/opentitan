@@ -97,8 +97,8 @@ impl CommandDispatch for Console {
                 uart.write(send.as_bytes())?;
             }
             if !self.non_interactive {
-                eprintln!("Starting interactive console");
-                eprintln!("[CTRL+C] to exit.\n");
+                eprint!("Starting interactive console\r\n");
+                eprint!("[CTRL+C] to exit.\r\n\r\n");
             }
             console.interact(&*uart, stdin.as_mut().map(|x| x as _), Some(&mut stdout))?
         };
