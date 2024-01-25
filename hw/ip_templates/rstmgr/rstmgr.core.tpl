@@ -2,8 +2,10 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:ip:rstmgr:0.1"
-description: "Reset manager component without the generated portions"
+name: ${instance_vlnv("lowrisc:ip:rstmgr:0.1")}
+description: "Reset manager RTL"
+virtual:
+  - lowrisc:ip_interfaces:rstmgr
 
 filesets:
   files_rtl:
@@ -17,17 +19,15 @@ filesets:
       - lowrisc:prim:mubi
       - lowrisc:prim:clock_buf
       - lowrisc:prim:sparse_fsm
-      - "fileset_ip     ? (lowrisc:ip:rstmgr_pkg)"
-      - "fileset_top    ? (lowrisc:systems:rstmgr_pkg)"
+      - ${instance_vlnv("lowrisc:ip:rstmgr_pkg:0.1")}
+      - ${instance_vlnv("lowrisc:ip:rstmgr_reg:0.1")}
       - lowrisc:ip:rstmgr_cnsty_chk
-      - "fileset_top    ? (lowrisc:systems:rstmgr)"
-      - "fileset_topgen ? (lowrisc:systems:topgen)"
     files:
       - rtl/rstmgr_ctrl.sv
       - rtl/rstmgr_por.sv
       - rtl/rstmgr_crash_info.sv
       - rtl/rstmgr_leaf_rst.sv
-      - "fileset_ip ? (rtl/rstmgr.sv)"
+      - rtl/rstmgr.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:

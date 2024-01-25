@@ -43,7 +43,7 @@ filesets:
       - lowrisc:ip:usbdev
       - lowrisc:top_earlgrey:xbar_main
       - lowrisc:top_earlgrey:xbar_peri
-      - lowrisc:ip:rstmgr
+      - lowrisc:opentitan:top_earlgrey_rstmgr
       - lowrisc:opentitan:top_earlgrey_pwrmgr
       - lowrisc:ip:aon_timer
       - lowrisc:ip:adc_ctrl

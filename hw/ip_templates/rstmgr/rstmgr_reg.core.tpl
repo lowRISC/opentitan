@@ -2,18 +2,18 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:ip:rstmgr_reg:0.1"
+name: ${instance_vlnv("lowrisc:ip:rstmgr_reg:0.1")}
 description: "Reset manager registers"
+virtual:
+  - lowrisc:ip_interfaces:rstmgr_reg
 
 filesets:
   files_rtl:
     depend:
       - lowrisc:tlul:headers
-      - "fileset_top    ? (lowrisc:systems:rstmgr_reg)"
-      - "fileset_topgen ? (lowrisc:systems:topgen-reg-only)"
     files:
-      - "fileset_ip ? (rtl/rstmgr_reg_pkg.sv)"
-      - "fileset_ip ? (rtl/rstmgr_reg_top.sv)"
+      - rtl/rstmgr_reg_pkg.sv
+      - rtl/rstmgr_reg_top.sv
     file_type: systemVerilogSource
 
 targets:
