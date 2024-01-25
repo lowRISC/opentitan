@@ -2103,18 +2103,34 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
-    name = "kmac_app_rom_test",
-    srcs = ["kmac_app_rom_test.c"],
-    exec_env = EARLGREY_TEST_ENVS,
-    deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:rom_ctrl",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
-)
+_KMAC_APP_ROM_LIST = [
+    ("//sw/device/lib/testing/test_rom:test_rom_verilator_hashfile", "sim_verilator"),
+    ("//sw/device/silicon_creator/rom:rom_with_fake_keys_fpga_cw310_hashfile", "fpga_cw310_sival_rom_ext"),
+    ("//sw/device/lib/testing/test_rom:test_rom_fpga_cw310_hashfile", "fpga_cw310_test_rom"),
+    ("//sw/device/silicon_creator/rom:rom_with_fake_keys_fpga_cw310_hashfile", "fpga_cw310_rom_with_fake_keys"),
+    ("//sw/device/lib/testing/test_rom:test_rom_sim_dv_hashfile", "sim_dv"),
+]
+
+[
+    opentitan_test(
+        name = "kmac_app_rom_test_{}".format(exec_env),
+        srcs = [
+            "kmac_app_rom_test.c",
+            hashfile,
+        ],
+        exec_env = {
+            "//hw/top_earlgrey:{}".format(exec_env): None,
+        },
+        deps = [
+            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//sw/device/lib/base:mmio",
+            "//sw/device/lib/dif:rom_ctrl",
+            "//sw/device/lib/runtime:log",
+            "//sw/device/lib/testing/test_framework:ottf_main",
+        ],
+    )
+    for (hashfile, exec_env) in _KMAC_APP_ROM_LIST
+]
 
 opentitan_test(
     name = "kmac_entropy_test",
