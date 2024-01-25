@@ -33,7 +33,6 @@ ci/scripts/check-pr-changes-allowed.py
 
 # Individual HJSON files that effect RTL generation (no wildcard as it's
 # too broad and will also block DV-only files)
-# hw/top_earlgrey/ip_autogen/pwrmgr/data/pwrmgr.hjson
 # hw/ip/lc_ctrl/data/lc_ctrl.hjson
 # hw/ip/rv_timer/data/rv_timer.hjson
 # hw/ip/clkmgr/data/clkmgr.hjson
@@ -48,7 +47,6 @@ ci/scripts/check-pr-changes-allowed.py
 # hw/ip/usbdev/data/usbdev.hjson
 # hw/ip/uart/data/uart.hjson
 # hw/ip/flash_ctrl/data/flash_ctrl.hjson
-# hw/ip/rstmgr/data/rstmgr.hjson
 # hw/ip/sram_ctrl/data/sram_ctrl.hjson
 # hw/ip/rom_ctrl/data/rom_ctrl.hjson
 # hw/ip/hmac/data/hmac.hjson
@@ -78,10 +76,14 @@ ci/scripts/check-pr-changes-allowed.py
 # hw/ip/aon_timer/data/aon_timer.hjson
 
 # hw/ip_templates/alert_handler/data/alert_handler.hjson.tpl
+# hw/ip_templates/pwrmgr/data/pwrmgr.hjson.tpl
+# hw/ip_templates/rstmgr/data/rstmgr.hjson.tpl
 # hw/ip_templates/rv_plic/data/rv_plic.hjson.tpl
 
 # hw/top_earlgrey/ip/ast/data/ast.hjson
 # hw/top_earlgrey/ip_autogen/alert_handler/data/alert_handler.hjson
+# hw/top_earlgrey/ip_autogen/pwrmgr/data/pwrmgr.hjson
+# hw/top_earlgrey/ip_autogen/rstmgr/data/rstmgr.hjson
 # hw/top_earlgrey/ip_autogen/rv_plic/data/rv_plic.hjson
 
 # hw/top_earlgrey/data/top_earlgrey.hjson
