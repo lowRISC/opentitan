@@ -199,13 +199,16 @@ module tb;
     `undef MEM_MODULE_PATH
   end : gen_impl_generic
 
-  initial begin
-    // DV forced otp_cmd_i to reach invalid state, thus violate the assertions
-    $assertoff(0, tb.dut.gen_partitions[3].gen_buffered.u_part_buf.OtpErrorState_A);
-    $assertoff(0, tb.dut.gen_partitions[4].gen_buffered.u_part_buf.OtpErrorState_A);
-    $assertoff(0, tb.dut.gen_partitions[5].gen_buffered.u_part_buf.OtpErrorState_A);
-    $assertoff(0, tb.dut.gen_partitions[6].gen_buffered.u_part_buf.OtpErrorState_A);
+  // DV forced otp_cmd_i to reach invalid state, thus violate the assertions
+  for (genvar idx = 0; idx < NumPart; idx++) begin : gen_assertoff_loop
+    if (is_hw_part_idx(idx)) begin : gen_assertoff
+      initial begin
+        $assertoff(0, tb.dut.gen_partitions[idx].gen_buffered.u_part_buf.OtpErrorState_A);
+      end
+    end
+  end
 
+  initial begin
     // drive clk and rst_n from clk_if
     clk_rst_if.set_active();
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
