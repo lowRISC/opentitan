@@ -28,3 +28,4 @@
 `include "rv_dm_abstractcmd_status_vseq.sv"
 `include "rv_dm_rom_read_access_vseq.sv"
 `include "rv_dm_progbuf_read_write_execute_vseq.sv"
+`include "rv_dm_sba_debug_disabled_vseq.sv"
