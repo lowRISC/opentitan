@@ -19,6 +19,7 @@ use std::marker::PhantomData;
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
 
+use crate::debug::openocd::OpenOcdJtagChain;
 use crate::io::gpio::{GpioBitbanging, GpioMonitoring, GpioPin};
 use crate::io::i2c::Bus;
 use crate::io::jtag::{JtagChain, JtagParams};
@@ -31,7 +32,6 @@ use crate::transport::common::uart::flock_serial;
 use crate::transport::{
     Capabilities, Capability, Transport, TransportError, TransportInterfaceType, UpdateFirmware,
 };
-use crate::util::openocd::OpenOcdJtagChain;
 use crate::util::usb::UsbBackend;
 
 pub mod c2d2;

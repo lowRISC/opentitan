@@ -11,9 +11,9 @@ use opentitanlib::io::uart::Uart;
 use regex::Regex;
 
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::debug::elf_debugger::{ElfDebugger, ElfSymbols, SymbolicAddress};
 use opentitanlib::execute_test;
 use opentitanlib::io::jtag::{JtagTap, RiscvCsr, RiscvGpr};
-use opentitanlib::test_utils::elf_debugger::{ElfDebugger, ElfSymbols, SymbolicAddress};
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::uart::console::{ExitStatus, UartConsole};
 
