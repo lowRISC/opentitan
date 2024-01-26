@@ -25,7 +25,7 @@ def main(argv):
     # Open the PNG file.
     try:
         im = Image.open(args.png)
-    except:
+    except IOError:
         print("Failed to open png file ", args.png)
         sys.exit(1)
     im.thumbnail((MAX_WIDTH, MAX_HEIGHT), Image.Resampling.LANCZOS)
@@ -35,11 +35,11 @@ def main(argv):
     # Open the output file.
     try:
         outfile = open(args.outfile, "w")
-    except:
+    except IOError:
         print("Failed to open the output or bin files.")
         sys.exit(0)
 
-    # Load the PNG image and convert it to a RGB656 bitmap C array.
+    # Load the PNG image and convert it to a RGB565 bitmap C array.
     print(f"const size_t kBitmapCols = {image_width};", file=outfile)
     print(f"const size_t kBitmapRows = {image_height};", file=outfile)
     print(f"const uint16_t kBitmap[{image_height}][{image_width}] = {{",
