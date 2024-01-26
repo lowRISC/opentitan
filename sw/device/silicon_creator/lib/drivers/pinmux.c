@@ -11,6 +11,7 @@
 #include "sw/device/silicon_creator/lib/base/chip.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 
+#include "gpio_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "otp_ctrl_regs.h"
 #include "pinmux_regs.h"
@@ -103,15 +104,58 @@ static void configure_input(pinmux_input_t input) {
 }
 
 /**
- * Enables pull-down for the specified pad.
+ * Enables or disables pull-up/pull-down for the specified pad.
  *
  * @param pad A MIO pad.
+ * @param enable Whether the internal pull resistor should be enabled.
+ * @param up Whether the pull resistor should pull up(true) or down(false).
  */
-static void enable_pull_down(top_earlgrey_muxed_pads_t pad) {
-  uint32_t reg =
-      bitfield_bit32_write(0, PINMUX_MIO_PAD_ATTR_0_PULL_EN_0_BIT, true);
+static void enable_pull(top_earlgrey_muxed_pads_t pad, bool enable, bool up) {
+  uint32_t reg = 0;
+  reg = bitfield_bit32_write(reg, PINMUX_MIO_PAD_ATTR_0_PULL_EN_0_BIT, enable);
+  reg = bitfield_bit32_write(reg, PINMUX_MIO_PAD_ATTR_0_PULL_SELECT_0_BIT, up);
   abs_mmio_write32(
       kBase + PINMUX_MIO_PAD_ATTR_0_REG_OFFSET + pad * sizeof(uint32_t), reg);
+}
+
+/**
+ * Delay while we wait for pinmux values to stabilize after changing resistor
+ * pull-up/down values.
+ */
+static void pinmux_prop_delay(void) {
+  // Wait for pull downs to propagate to the physical pads.
+  CSR_WRITE(CSR_REG_MCYCLE, 0);
+  uint32_t mcycle;
+  do {
+    CSR_READ(CSR_REG_MCYCLE, &mcycle);
+  } while (mcycle < PINMUX_PAD_ATTR_PROP_CYCLES);
+}
+
+/**
+ * Read a single strap pin considering weak/strong pull resistors.
+ *
+ * @param input The input pin to read.
+ * @return The value of the pin.
+ */
+static uint32_t read_strap_pin(pinmux_input_t input) {
+  // First, disable all pull resistors and read the state of the pin.
+  enable_pull(input.pad, false, false);
+  pinmux_prop_delay();
+  uint32_t val =
+      abs_mmio_read32(TOP_EARLGREY_GPIO_BASE_ADDR + GPIO_DATA_IN_REG_OFFSET);
+  uint32_t state = bitfield_bit32_read(val, input.periph);
+  uint32_t res = state ? 2 : 0;
+
+  // Then, enable the opposite pull to the observed state.
+  // If the external signal is weak, the internal pull resistor will win; if
+  // the external signal is strong, the external resistor will win.
+  enable_pull(input.pad, true, !state);
+  pinmux_prop_delay();
+
+  val = abs_mmio_read32(TOP_EARLGREY_GPIO_BASE_ADDR + GPIO_DATA_IN_REG_OFFSET);
+  state = bitfield_bit32_read(val, input.periph);
+  res += state ? 1 : 0;
+  return res;
 }
 
 /**
@@ -132,15 +176,12 @@ void pinmux_init(void) {
     HARDENED_CHECK_NE(bootstrap_dis, kHardenedBoolTrue);
     // Note: attributes should be configured before the pinmux matrix to avoid
     // "undesired electrical behavior and/or contention at the pads".
-    enable_pull_down(kInputSwStrap0.pad);
-    enable_pull_down(kInputSwStrap1.pad);
-    enable_pull_down(kInputSwStrap2.pad);
+    enable_pull(kInputSwStrap0.pad, /*enable=*/true, /*up=*/false);
+    enable_pull(kInputSwStrap1.pad, /*enable=*/true, /*up=*/false);
+    enable_pull(kInputSwStrap2.pad, /*enable=*/true, /*up=*/false);
     // Wait for pull downs to propagate to the physical pads.
-    CSR_WRITE(CSR_REG_MCYCLE, 0);
-    uint32_t mcycle;
-    do {
-      CSR_READ(CSR_REG_MCYCLE, &mcycle);
-    } while (mcycle < PINMUX_PAD_ATTR_PROP_CYCLES);
+    pinmux_prop_delay();
+
     configure_input(kInputSwStrap0);
     configure_input(kInputSwStrap1);
     configure_input(kInputSwStrap2);
@@ -148,4 +189,12 @@ void pinmux_init(void) {
 
   configure_input(kInputUart0);
   configure_output(kOutputUart0);
+}
+
+uint32_t pinmux_read_straps(void) {
+  uint32_t value = 0;
+  value |= read_strap_pin(kInputSwStrap0);
+  value |= read_strap_pin(kInputSwStrap1) << 2;
+  value |= read_strap_pin(kInputSwStrap2) << 4;
+  return value;
 }
