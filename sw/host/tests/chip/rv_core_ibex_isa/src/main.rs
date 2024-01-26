@@ -9,7 +9,7 @@ use clap::Parser;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::execute_test;
-use opentitanlib::io::jtag::{JtagTap, RiscvReg, RiscvGpr};
+use opentitanlib::io::jtag::{JtagTap, RiscvGpr, RiscvReg};
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::load_sram_program::{
     ExecutionMode, ExecutionResult, SramProgramParams,
@@ -46,10 +46,10 @@ fn ibex_isa_smoke_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> 
     uart.clear_rx_buffer()?;
 
     // Load SRAM program
-    match opts
-        .sram_program
-        .load_and_execute(&mut *jtag, ExecutionMode::JumpAndWait(Duration::from_secs(5)))?
-    {
+    match opts.sram_program.load_and_execute(
+        &mut *jtag,
+        ExecutionMode::JumpAndWait(Duration::from_secs(5)),
+    )? {
         ExecutionResult::ExecutionDone => log::info!("program successfully ran"),
         res => bail!("program execution failed: {:?}", res),
     }

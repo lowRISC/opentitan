@@ -24,9 +24,13 @@ pub fn setup_pins(transport: &TransportWrapper, config: &Config) -> Result<()> {
     // Since the EC reset and flash WP pins are open drain, configure those hyperdebug pins as
     // open drain with pullup.
     assert_eq!(config.output_pins.len(), config.open_drain.len());
-    for (pin,od) in std::iter::zip(&config.output_pins, &config.open_drain) {
+    for (pin, od) in std::iter::zip(&config.output_pins, &config.open_drain) {
         log::info!("output pin {}: {}", pin, od);
-        transport.gpio_pin(pin)?.set_mode(if *od { PinMode::OpenDrain } else { PinMode::PushPull} )?;
+        transport.gpio_pin(pin)?.set_mode(if *od {
+            PinMode::OpenDrain
+        } else {
+            PinMode::PushPull
+        })?;
     }
     for pin in &config.input_pins {
         log::info!("input pin {}", pin);
