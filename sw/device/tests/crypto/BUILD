@@ -268,6 +268,13 @@ autogen_cryptotest_header(
     tool = "//sw/device/tests/crypto:kmac_set_testvectors",
 )
 
+autogen_cryptotest_header(
+    name = "kdf_testvectors_random_header",
+    hjson = "//sw/device/tests/crypto/testvectors:kdf_testvectors_random",
+    template = ":kdf_testvectors.h.tpl",
+    tool = "//sw/device/tests/crypto:kdf_set_testvectors",
+)
+
 opentitan_test(
     name = "kmac_functest_hardcoded",
     srcs = ["kmac_functest.c"],
@@ -661,6 +668,17 @@ opentitan_test(
 py_binary(
     name = "rsa_3072_verify_set_testvectors",
     srcs = ["rsa_3072_verify_set_testvectors.py"],
+    imports = ["."],
+    deps = [
+        "//util/design/lib:common",
+        requirement("hjson"),
+        requirement("mako"),
+    ],
+)
+
+py_binary(
+    name = "kdf_set_testvectors",
+    srcs = ["kdf_set_testvectors.py"],
     imports = ["."],
     deps = [
         "//util/design/lib:common",
