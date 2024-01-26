@@ -138,6 +138,9 @@ TAP strap 1 | TAP strap 0  | Life Cycle State         | Selected TAP
 
 Note that the tool-inserted DFT controller may assert the `dft_hold_tap_sel_i` during a test (e.g. boundary scan) in which case the `pinmux` will temporarily pause sampling of the TAP selection straps.
 
+It should be noted that the TAP straps are muxed with MIOs and that the pad attributes will take effect even in life cycles states that
+continuously sample the straps. As a result, pad attributes can interfere or even disable tap selection entirely in those life cycle states.
+
 Also, it should be noted that the pad attributes of all JTAG IOs will be gated to all-zero temporarily, while the JTAG is enabled (this does not affect the values in the CSRs).
 This is to ensure that any functional attributes like inversion or pull-ups / pull-downs do not interfere with the JTAG while it is in use.
 
