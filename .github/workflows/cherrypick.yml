@@ -1,0 +1,38 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: Cherry-pick Pull Request
+on:
+  pull_request_target:
+    types: [closed, labeled]
+
+permissions:
+  contents: read
+
+jobs:
+  cherrypick:
+    # NOTE: We currently need these permissions because we create pull request with the repo-scoped
+    # default token. We should in the future move to a PAT owned by lowrisc-bot and create pull request
+    # on its behalf.
+    permissions:
+      # Needed for the action to create branch.
+      contents: write
+      # Needed for the action to create a pull request.
+      pull-requests: write
+
+    name: Cherry-pick Pull Request
+    if: github.event.pull_request.merged == true && (github.event_name != 'labeled' || startsWith('CherryPick:', github.event.label.name))
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Create backport PRs
+        uses: korthout/backport-action@e8161d6a0dbfa2651b7daa76cbb75bc7c925bbf3 # v2.4.1
+        with:
+          label_pattern: "^CherryPick:([^ ]+)$"
+          pull_title: "Cherry-pick to ${target_branch}: ${pull_title}"
+          pull_description: |
+            This is an automatic cherry-pick of #${pull_number} to branch `${target_branch}`.
