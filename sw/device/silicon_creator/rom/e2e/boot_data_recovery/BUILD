@@ -4,6 +4,7 @@
 
 load(
     "//rules/opentitan:defs.bzl",
+    "DEFAULT_TEST_FAILURE_MSG",
     "cw310_params",
     "opentitan_test",
     "rsa_key_for_lc_state",
@@ -38,6 +39,7 @@ load(
     "//sw/device/silicon_creator/rom/e2e:defs.bzl",
     "MSG_PASS",
     "MSG_TEMPLATE_BFV",
+    "msg_template_bfv_all_except",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -142,6 +144,7 @@ BOOT_DATA_RECOVERY_MANIFEST = manifest(
         ),
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
         cw310 = cw310_params(
+            exit_failure = msg_template_bfv_all_except(case["expected_bfv"]) if case["expected_bfv"] != None else DEFAULT_TEST_FAILURE_MSG,
             exit_success = MSG_TEMPLATE_BFV.format(hex_digits(case["expected_bfv"])) if case["expected_bfv"] != None else MSG_PASS,
             otp = ":otp_img_boot_data_recovery_{}_{}".format(
                 case["lc_state"],
