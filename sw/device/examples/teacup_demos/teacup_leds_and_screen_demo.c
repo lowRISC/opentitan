@@ -34,7 +34,7 @@ static screen_t screen;
  */
 enum {
   // Demo Control
-  kDemoNumCycles = 100,
+  kDemoNumCycles = 50,
 
   // LED Control
   kLedNumColorsInCycle = 4,
