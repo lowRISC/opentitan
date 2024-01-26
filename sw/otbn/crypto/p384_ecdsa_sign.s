@@ -125,6 +125,20 @@ k0:
 k1:
   .zero 64
 
+/* r part of signature */
+.globl r
+.balign 32
+r:
+  .zero 64
+
+/* s part of signature */
+.globl s
+.balign 32
+s:
+  .zero 64
+
+.data
+
 /* private key first share */
 .globl d0
 .balign 32
@@ -141,18 +155,6 @@ d1:
 .globl msg
 .balign 32
 msg:
-  .zero 64
-
-/* r part of signature */
-.globl r
-.balign 32
-r:
-  .zero 64
-
-/* s part of signature */
-.globl s
-.balign 32
-s:
   .zero 64
 
 /* 704 bytes of scratchpad memory
