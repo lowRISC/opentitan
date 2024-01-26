@@ -163,22 +163,6 @@ opentitan_test(
 )
 
 opentitan_test(
-    name = "sysrst_ctrl_outputs_test",
-    srcs = ["sysrst_ctrl_outputs_test.c"],
-    exec_env = {"//hw/top_earlgrey:sim_dv": None},
-    deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:pinmux",
-        "//sw/device/lib/dif:sysrst_ctrl",
-        "//sw/device/lib/runtime:ibex",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:flash_ctrl_testutils",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
-)
-
-opentitan_test(
     name = "sysrst_ctrl_ec_rst_l_test",
     srcs = ["sysrst_ctrl_ec_rst_l_test.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
