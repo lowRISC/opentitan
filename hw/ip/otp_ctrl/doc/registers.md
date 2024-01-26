@@ -220,13 +220,22 @@ Register write enable for all direct access interface registers.
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "DIRECT_ACCESS_REGWEN", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 220}}
+{"reg": [{"name": "DIRECT_ACCESS_REGWEN", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 220}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                 | Description                                                                                                                                                                                                                          |
-|:------:|:------:|:-------:|:---------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|  31:1  |        |         |                      | Reserved                                                                                                                                                                                                                             |
-|   0    |   ro   |   0x1   | DIRECT_ACCESS_REGWEN | This bit is hardware-managed and only readable by software. The DAI sets this bit temporarily to 0 during an OTP operation such that the corresponding address and data registers cannot be modified while the operation is pending. |
+|  Bits  |  Type  |  Reset  | Name                                                                |
+|:------:|:------:|:-------:|:--------------------------------------------------------------------|
+|  31:1  |        |         | Reserved                                                            |
+|   0    |  rw0c  |   0x1   | [DIRECT_ACCESS_REGWEN](#direct_access_regwen--direct_access_regwen) |
+
+### DIRECT_ACCESS_REGWEN . DIRECT_ACCESS_REGWEN
+This bit controls whether the DAI registers can be written.
+Write 0 to it in order to clear the bit.
+
+Note that the hardware also modulates this bit and sets it to 0 temporarily
+during an OTP operation such that the corresponding address and data registers
+cannot be modified while an operation is pending. The [`DAI_IDLE`](#dai_idle) status bit
+will also be set to 0 in such a case.
 
 ## DIRECT_ACCESS_CMD
 Command register for direct accesses.

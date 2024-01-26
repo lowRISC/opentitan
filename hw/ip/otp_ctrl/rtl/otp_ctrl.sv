@@ -353,6 +353,11 @@ module otp_ctrl
   dai_cmd_e                     dai_cmd;
   logic [OtpByteAddrWidth-1:0]  dai_addr;
   logic [NumDaiWords-1:0][31:0] dai_wdata, dai_rdata;
+  logic direct_access_regwen_d, direct_access_regwen_q;
+
+  // This is the HWEXT implementation of a RW0C regwen bit.
+  assign direct_access_regwen_d = (reg2hw.direct_access_regwen.qe &&
+                                   !reg2hw.direct_access_regwen.q) ? 1'b0 : direct_access_regwen_q;
 
   // Any write to this register triggers a DAI command.
   assign dai_req = reg2hw.direct_access_cmd.digest.qe |
@@ -375,11 +380,14 @@ module otp_ctrl
   assign otp_idle_d = lci_prog_idle & dai_prog_idle;
   assign pwr_otp_o.otp_idle = otp_idle_q;
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin : p_idle_reg
+  always_ff @(posedge clk_i or negedge rst_ni) begin : p_idle_regwen_regs
     if (!rst_ni) begin
       otp_idle_q <= 1'b0;
+      // The regwen bit has to reset to 1 so that CSR accesses are enabled by default.
+      direct_access_regwen_q  <= 1'b1;
     end else begin
       otp_idle_q <= otp_idle_d;
+      direct_access_regwen_q <= direct_access_regwen_d;
     end
   end
 
@@ -492,8 +500,8 @@ module otp_ctrl
     hw2reg = named_reg_assign(part_digest);
     // DAI related CSRs
     hw2reg.direct_access_rdata = dai_rdata;
-    // This write-protects all DAI regs during pending operations.
-    hw2reg.direct_access_regwen.d = dai_idle;
+    // ANDing this state with dai_idle write-protects all DAI regs during pending operations.
+    hw2reg.direct_access_regwen.d = direct_access_regwen_q & dai_idle;
     // Assign these to the status register.
     hw2reg.status = {part_errors_reduced,
                      chk_timeout,

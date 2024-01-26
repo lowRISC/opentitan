@@ -245,6 +245,11 @@ package otp_ctrl_reg_pkg;
   } otp_ctrl_reg2hw_alert_test_reg_t;
 
   typedef struct packed {
+    logic        q;
+    logic        qe;
+  } otp_ctrl_reg2hw_direct_access_regwen_reg_t;
+
+  typedef struct packed {
     struct packed {
       logic        q;
       logic        qe;
@@ -409,10 +414,11 @@ package otp_ctrl_reg_pkg;
 
   // Register -> HW type for core interface
   typedef struct packed {
-    otp_ctrl_reg2hw_intr_state_reg_t intr_state; // [201:200]
-    otp_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [199:198]
-    otp_ctrl_reg2hw_intr_test_reg_t intr_test; // [197:194]
-    otp_ctrl_reg2hw_alert_test_reg_t alert_test; // [193:184]
+    otp_ctrl_reg2hw_intr_state_reg_t intr_state; // [203:202]
+    otp_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [201:200]
+    otp_ctrl_reg2hw_intr_test_reg_t intr_test; // [199:196]
+    otp_ctrl_reg2hw_alert_test_reg_t alert_test; // [195:186]
+    otp_ctrl_reg2hw_direct_access_regwen_reg_t direct_access_regwen; // [185:184]
     otp_ctrl_reg2hw_direct_access_cmd_reg_t direct_access_cmd; // [183:178]
     otp_ctrl_reg2hw_direct_access_address_reg_t direct_access_address; // [177:167]
     otp_ctrl_reg2hw_direct_access_wdata_mreg_t [1:0] direct_access_wdata; // [166:103]
