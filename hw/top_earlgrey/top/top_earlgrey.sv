@@ -143,8 +143,10 @@ module top_earlgrey #(
   // Inter-module Signal External type
   output ast_pkg::adc_ast_req_t       adc_req_o,
   input  ast_pkg::adc_ast_rsp_t       adc_rsp_i,
-  output axi_req_t                    axi_req_o,
-  input  axi_rsp_t                    axi_rsp_i,
+  output axi_req_t                    idma_axi_req_o,
+  input  axi_rsp_t                    idma_axi_rsp_i,
+  output axi_req_t                    tlul2axi_req_o,
+  input  axi_rsp_t                    tlul2axi_rsp_i,
   input  logic       irq_ibex_i,
   input  jtag_ot_pkg::jtag_req_t       jtag_req_i,
   output jtag_ot_pkg::jtag_rsp_t       jtag_rsp_o,
@@ -819,8 +821,6 @@ module top_earlgrey #(
 
   axi_req_t axi_req_tcdm;
   axi_rsp_t axi_rsp_tcdm;
-  axi_req_t axi_req_host;
-  axi_rsp_t axi_rsp_host;
 
   // define mixed connection to port
   assign edn0_edn_req[2] = ast_edn_req_i;
@@ -2195,25 +2195,12 @@ module top_earlgrey #(
   ) idma_wrap_i (
       .clk_i          ( clkmgr_aon_clocks.clk_main_infra ),
       .rst_ni         ( rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel] ),
-      .reg_req_i      ( idma_reg_req ),
-      .reg_rsp_o      ( idma_reg_rsp ),
-      .axi_req_host_o ( axi_req_host ),
-      .axi_rsp_host_i ( axi_rsp_host ),
-      .axi_req_tcdm_o ( axi_req_tcdm ),
-      .axi_rsp_tcdm_i ( axi_rsp_tcdm )
-  );
-  axi_sim_mem #(
-      .AddrWidth(32'd64),
-      .DataWidth(32'd32),
-      .IdWidth(32'd8),
-      .UserWidth(32'd1),
-      .axi_req_t(axi_req_t),
-      .axi_rsp_t(axi_rsp_t)
-  ) axi_sim_mem_instance (
-      .clk_i     ( clkmgr_aon_clocks.clk_main_infra ),
-      .rst_ni    ( rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel] ),
-      .axi_req_i ( axi_req_host ),
-      .axi_rsp_o ( axi_rsp_host )
+      .reg_req_i      ( idma_reg_req   ),
+      .reg_rsp_o      ( idma_reg_rsp   ),
+      .axi_req_host_o ( idma_axi_req_o ),
+      .axi_rsp_host_i ( idma_axi_rsp_i ),
+      .axi_req_tcdm_o ( axi_req_tcdm   ),
+      .axi_rsp_tcdm_i ( axi_rsp_tcdm   )
   );
   tlul2axi  #(
       .axi_req_t(axi_req_t),
@@ -2224,9 +2211,9 @@ module top_earlgrey #(
       .intr_mbox_irq_o (intr_tlul2axi_mbox_irq),
 
       // Inter-module signals
-      .axi_req_o(axi_req_o),
+      .axi_req_o(tlul2axi_req_o),
       .intr_mbox_irq_i(irq_ibex_i),
-      .axi_rsp_i(axi_rsp_i),
+      .axi_rsp_i(tlul2axi_rsp_i),
       .tl_i(tlul2axi_tl_req),
       .tl_o(tlul2axi_tl_rsp),
 

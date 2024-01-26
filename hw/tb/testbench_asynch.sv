@@ -21,17 +21,17 @@ module testbench_asynch ();
    import top_earlgrey_pkg::*;
    import secure_subsystem_synth_pkg::*;
    import "DPI-C" function read_elf(input string filename);
-   import "DPI-C" function byte get_section(output longint address, output longint len); 
+   import "DPI-C" function byte get_section(output longint address, output longint len);
    import "DPI-C" context function byte read_section(input longint address, inout byte buffer[]);
-   
+
  ////////////////////////////  Defines ////////////////////////////
- 
+
    localparam AxiWideBeWidth    = 4;
    localparam AxiWideByteOffset = $clog2(AxiWideBeWidth);
 
    localparam time TA   = 1ns;
    localparam time TT   = 2ns;
-   
+
    localparam int unsigned AxiAddrWidth          = SynthAxiAddrWidth;
    localparam int unsigned AxiDataWidth          = SynthAxiDataWidth;
    localparam int unsigned AxiUserWidth          = SynthAxiUserWidth;
@@ -41,7 +41,7 @@ module testbench_asynch ();
    localparam int unsigned AxiOtDataWidth        = SynthOtAxiDataWidth;
    localparam int unsigned AxiOtUserWidth        = SynthOtAxiUserWidth;
    localparam int unsigned AxiOtOutIdWidth       = SynthOtAxiOutIdWidth;
- 
+
    localparam int unsigned AsyncAxiOutAwWidth    = SynthAsyncAxiOutAwWidth;
    localparam int unsigned AsyncAxiOutWWidth     = SynthAsyncAxiOutWWidth;
    localparam int unsigned AsyncAxiOutBWidth     = SynthAsyncAxiOutBWidth;
@@ -63,31 +63,31 @@ module testbench_asynch ();
    localparam type         axi_ot_out_r_chan_t   = synth_ot_axi_out_r_chan_t;
    localparam type         axi_ot_out_req_t      = synth_ot_axi_out_req_t;
    localparam type         axi_ot_out_resp_t     = synth_ot_axi_out_resp_t;
-   
+
    localparam int  unsigned LogDepth             = SynthLogDepth;
    localparam int  unsigned CdcSyncStages        = SynthCdcSyncStages;
-   
-   localparam bit  RAND_RESP = 0; 
-   localparam int  AX_MIN_WAIT_CYCLES = 0;   
-   localparam int  AX_MAX_WAIT_CYCLES = 1;   
-   localparam int  R_MIN_WAIT_CYCLES = 0;   
-   localparam int  R_MAX_WAIT_CYCLES = 1;   
+
+   localparam bit  RAND_RESP = 0;
+   localparam int  AX_MIN_WAIT_CYCLES = 0;
+   localparam int  AX_MAX_WAIT_CYCLES = 1;
+   localparam int  R_MIN_WAIT_CYCLES = 0;
+   localparam int  R_MAX_WAIT_CYCLES = 1;
    localparam int  RESP_MIN_WAIT_CYCLES = 0;
    localparam int  RESP_MAX_WAIT_CYCLES = 1;
    localparam int  NUM_BEATS = 100;
-   
+
    localparam int unsigned RTC_CLOCK_PERIOD = 10ns;
    localparam int unsigned AON_PERIOD = 5us;
    localparam int unsigned IO_PERIOD = 10.41ns;
    localparam int unsigned USB_PERIOD = 20.82ns;
-   
+
    int          secd_sections [bit [31:0]];
    logic [31:0] secd_memory[bit [31:0]];
    string       sram;
    logic [1:0]  boot_mode;
 
    logic [1:0]  bootmode;
-   
+
    logic clk_sys = 1'b0;
    logic aon_clk = 1'b0;
    logic io_clk = 1'b0;
@@ -96,7 +96,7 @@ module testbench_asynch ();
    logic es_rng_fips;
    logic SCK, CSNeg;
    logic [3:0] SPIdata_i, SPIdata_o, SPIdata_oe_o;
-   
+
    wire  I0, I1, I2, I3, WPNeg, RESETNeg;
    wire  PWROK_S, IOPWROK_S, BIAS_S, RETC_S;
    wire  ibex_uart_rx, ibex_uart_tx;
@@ -117,10 +117,26 @@ module testbench_asynch ();
    logic [ AsyncAxiOutRWidth-1:0] async_axi_out_r_data_i;
    logic             [LogDepth:0] async_axi_out_r_wptr_i;
    logic             [LogDepth:0] async_axi_out_r_rptr_o;
-  
+
+   logic [AsyncAxiOutAwWidth-1:0] async_idma_axi_out_aw_data_o;
+   logic             [LogDepth:0] async_idma_axi_out_aw_wptr_o;
+   logic             [LogDepth:0] async_idma_axi_out_aw_rptr_i;
+   logic [ AsyncAxiOutWWidth-1:0] async_idma_axi_out_w_data_o;
+   logic             [LogDepth:0] async_idma_axi_out_w_wptr_o;
+   logic             [LogDepth:0] async_idma_axi_out_w_rptr_i;
+   logic [ AsyncAxiOutBWidth-1:0] async_idma_axi_out_b_data_i;
+   logic             [LogDepth:0] async_idma_axi_out_b_wptr_i;
+   logic             [LogDepth:0] async_idma_axi_out_b_rptr_o;
+   logic [AsyncAxiOutArWidth-1:0] async_idma_axi_out_ar_data_o;
+   logic             [LogDepth:0] async_idma_axi_out_ar_wptr_o;
+   logic             [LogDepth:0] async_idma_axi_out_ar_rptr_i;
+   logic [ AsyncAxiOutRWidth-1:0] async_idma_axi_out_r_data_i;
+   logic             [LogDepth:0] async_idma_axi_out_r_wptr_i;
+   logic             [LogDepth:0] async_idma_axi_out_r_rptr_o;
+
    uart_bus #(.BAUD_RATE(1250000), .PARITY_EN(0)) i_uart0_bus (.rx(ibex_uart_tx), .tx(ibex_uart_rx), .rx_en(1'b1)); //1470588
-   
-   typedef axi_test::axi_rand_slave #(  
+
+   typedef axi_test::axi_rand_slave #(
      .AW( AxiAddrWidth  ),
      .DW( AxiDataWidth  ),
      .IW( AxiOutIdWidth ),
@@ -135,21 +151,35 @@ module testbench_asynch ();
      .RESP_MIN_WAIT_CYCLES(RESP_MIN_WAIT_CYCLES),
      .RESP_MAX_WAIT_CYCLES(RESP_MAX_WAIT_CYCLES)
    ) axi_ran_slave;
-      
+
    AXI_BUS #(
     .AXI_ADDR_WIDTH ( AxiAddrWidth  ),
     .AXI_DATA_WIDTH ( AxiDataWidth  ),
     .AXI_ID_WIDTH   ( AxiOutIdWidth ),
     .AXI_USER_WIDTH ( AxiUserWidth  )
-   ) axi_slave();
+   ) tlul2axi_slave();
 
    AXI_BUS_DV #(
     .AXI_ADDR_WIDTH ( AxiAddrWidth  ),
     .AXI_DATA_WIDTH ( AxiDataWidth  ),
     .AXI_ID_WIDTH   ( AxiOutIdWidth ),
     .AXI_USER_WIDTH ( AxiUserWidth  )
-   ) axi (clk_sys);
-   
+   ) tlul2axi (clk_sys);
+
+   AXI_BUS #(
+    .AXI_ADDR_WIDTH ( AxiAddrWidth  ),
+    .AXI_DATA_WIDTH ( AxiDataWidth  ),
+    .AXI_ID_WIDTH   ( AxiOutIdWidth ),
+    .AXI_USER_WIDTH ( AxiUserWidth  )
+   ) idma_axi_slave();
+
+   AXI_BUS_DV #(
+    .AXI_ADDR_WIDTH ( AxiAddrWidth  ),
+    .AXI_DATA_WIDTH ( AxiDataWidth  ),
+    .AXI_ID_WIDTH   ( AxiOutIdWidth ),
+    .AXI_USER_WIDTH ( AxiUserWidth  )
+   ) idma_axi (clk_sys);
+
    typedef jtag_ot_test::riscv_dbg #(
       .IrLength       (5                 ),
       .TA             (TA                ),
@@ -157,36 +187,41 @@ module testbench_asynch ();
    ) riscv_dbg_t;
 
    JTAG_DV jtag_mst (clk_sys);
-   
+
    jtag_ot_pkg::jtag_req_t jtag_i;
    jtag_ot_pkg::jtag_rsp_t jtag_o;
-      
-   axi_out_req_t   ot_axi_req;
-   axi_out_resp_t  ot_axi_rsp;
+
+   axi_out_req_t   tlul2axi_req, idma_axi_req;
+   axi_out_resp_t  tlul2axi_rsp, idma_axi_rsp;
 
    entropy_src_pkg::entropy_src_rng_req_t es_rng_req;
    entropy_src_pkg::entropy_src_rng_rsp_t es_rng_rsp;
-   
+
    riscv_dbg_t::jtag_driver_t jtag_driver = new(jtag_mst);
    riscv_dbg_t riscv_dbg = new(jtag_driver);
-   
-   axi_ran_slave axi_rand_slave = new(axi);
-     
-   `AXI_ASSIGN (axi, axi_slave)
-   `AXI_ASSIGN_FROM_REQ (axi_slave, ot_axi_req)
-   `AXI_ASSIGN_TO_RESP  (ot_axi_rsp, axi_slave)
 
-   assign jtag_i.tck        = clk_sys;  
+   axi_ran_slave tlul2axi_rand_slave = new(tlul2axi);
+   axi_ran_slave idma_axi_rand_slave = new(idma_axi);
+
+   `AXI_ASSIGN (tlul2axi, tlul2axi_slave)
+   `AXI_ASSIGN_FROM_REQ (tlul2axi_slave, tlul2axi_req)
+   `AXI_ASSIGN_TO_RESP  (tlul2axi_rsp, tlul2axi_slave)
+
+   `AXI_ASSIGN (idma_axi, idma_axi_slave)
+   `AXI_ASSIGN_FROM_REQ (idma_axi_slave, idma_axi_req)
+   `AXI_ASSIGN_TO_RESP  (idma_axi_rsp, idma_axi_slave)
+
+   assign jtag_i.tck        = clk_sys;
    assign jtag_i.trst_n     = jtag_mst.trst_n;
    assign jtag_i.tms        = jtag_mst.tms;
    assign jtag_i.tdi        = jtag_mst.tdi;
    assign jtag_mst.tdo      = jtag_o.tdo;
-   
+
    assign RESETNeg = 1'b1;
    assign WPNeg    = 1'b0;
 
    assign ibex_uart_rx = '0;
-   
+
 `ifdef VIPS
    pad_alsaqr i_I0 ( .OEN(~SPIdata_oe_o[0]), .I(SPIdata_o[0]), .O(), .PUEN(1'b1), .PAD(I0), 
                      .DRV(2'b00), .SLW(1'b0), .SMT(1'b0), .PWROK(PWROK_S), 
@@ -207,7 +242,7 @@ module testbench_asynch ();
     .RESETNeg (    )
    );
 `endif //  `ifdef VIPS
-   
+
    axi_cdc_dst #(
      .LogDepth   ( LogDepth         ),
      .SyncStages ( CdcSyncStages    ),
@@ -218,7 +253,7 @@ module testbench_asynch ();
      .r_chan_t   ( axi_out_r_chan_t  ),
      .axi_req_t  ( axi_out_req_t     ),
      .axi_resp_t ( axi_out_resp_t    )
-   ) i_cdc_in (
+   ) i_cdc_in_tlul2axi (
      .async_data_slave_aw_data_i( async_axi_out_aw_data_o ),
      .async_data_slave_aw_wptr_i( async_axi_out_aw_wptr_o ),
      .async_data_slave_aw_rptr_o( async_axi_out_aw_rptr_i ),
@@ -234,10 +269,42 @@ module testbench_asynch ();
      .async_data_slave_r_data_o ( async_axi_out_r_data_i  ),
      .async_data_slave_r_wptr_o ( async_axi_out_r_wptr_i  ),
      .async_data_slave_r_rptr_i ( async_axi_out_r_rptr_o  ),
-     .dst_clk_i                 ( clk_sys   ),
-     .dst_rst_ni                ( rst_sys_n ),
-     .dst_req_o                 ( ot_axi_req ),
-     .dst_resp_i                ( ot_axi_rsp )
+     .dst_clk_i                 ( clk_sys      ),
+     .dst_rst_ni                ( rst_sys_n    ),
+     .dst_req_o                 ( tlul2axi_req ),
+     .dst_resp_i                ( tlul2axi_rsp )
+   );
+
+   axi_cdc_dst #(
+     .LogDepth   ( LogDepth         ),
+     .SyncStages ( CdcSyncStages    ),
+     .aw_chan_t  ( axi_out_aw_chan_t ),
+     .w_chan_t   ( axi_out_w_chan_t  ),
+     .b_chan_t   ( axi_out_b_chan_t  ),
+     .ar_chan_t  ( axi_out_ar_chan_t ),
+     .r_chan_t   ( axi_out_r_chan_t  ),
+     .axi_req_t  ( axi_out_req_t     ),
+     .axi_resp_t ( axi_out_resp_t    )
+   ) i_cdc_in_idma (
+     .async_data_slave_aw_data_i( async_idma_axi_out_aw_data_o ),
+     .async_data_slave_aw_wptr_i( async_idma_axi_out_aw_wptr_o ),
+     .async_data_slave_aw_rptr_o( async_idma_axi_out_aw_rptr_i ),
+     .async_data_slave_w_data_i ( async_idma_axi_out_w_data_o  ),
+     .async_data_slave_w_wptr_i ( async_idma_axi_out_w_wptr_o  ),
+     .async_data_slave_w_rptr_o ( async_idma_axi_out_w_rptr_i  ),
+     .async_data_slave_b_data_o ( async_idma_axi_out_b_data_i  ),
+     .async_data_slave_b_wptr_o ( async_idma_axi_out_b_wptr_i  ),
+     .async_data_slave_b_rptr_i ( async_idma_axi_out_b_rptr_o  ),
+     .async_data_slave_ar_data_i( async_idma_axi_out_ar_data_o ),
+     .async_data_slave_ar_wptr_i( async_idma_axi_out_ar_wptr_o ),
+     .async_data_slave_ar_rptr_o( async_idma_axi_out_ar_rptr_i ),
+     .async_data_slave_r_data_o ( async_idma_axi_out_r_data_i  ),
+     .async_data_slave_r_wptr_o ( async_idma_axi_out_r_wptr_i  ),
+     .async_data_slave_r_rptr_i ( async_idma_axi_out_r_rptr_o  ),
+     .dst_clk_i                 ( clk_sys      ),
+     .dst_rst_ni                ( rst_sys_n    ),
+     .dst_req_o                 ( idma_axi_req ),
+     .dst_resp_i                ( idma_axi_rsp )
    );
 
 /////////////////////////////// DUT ///////////////////////////////
@@ -277,19 +344,34 @@ module testbench_asynch ();
        .async_axi_out_ar_rptr_i,
        .async_axi_out_r_data_i,
        .async_axi_out_r_wptr_i,
-       .async_axi_out_r_rptr_o,      
-    // Uart   
+       .async_axi_out_r_rptr_o,
+       .async_idma_axi_out_aw_data_o,
+       .async_idma_axi_out_aw_wptr_o,
+       .async_idma_axi_out_aw_rptr_i,
+       .async_idma_axi_out_w_data_o,
+       .async_idma_axi_out_w_wptr_o,
+       .async_idma_axi_out_w_rptr_i,
+       .async_idma_axi_out_b_data_i,
+       .async_idma_axi_out_b_wptr_i,
+       .async_idma_axi_out_b_rptr_o,
+       .async_idma_axi_out_ar_data_o,
+       .async_idma_axi_out_ar_wptr_o,
+       .async_idma_axi_out_ar_rptr_i,
+       .async_idma_axi_out_r_data_i,
+       .async_idma_axi_out_r_wptr_i,
+       .async_idma_axi_out_r_rptr_o,
+    // Uart
        .ibex_uart_rx_i   ( ibex_uart_rx  ),
        .ibex_uart_tx_o   ( ibex_uart_tx  ),
-    // SPI host   
- `ifdef VIPS                        
+    // SPI host
+ `ifdef VIPS
        .spi_host_SCK_o   ( SCK           ),
        .spi_host_SCK_en_o(               ),
        .spi_host_CSB_o   ( CSNeg         ),
        .spi_host_CSB_en_o(               ),
        .spi_host_SD_o    ( SPIdata_o     ),
        .spi_host_SD_i    ( SPIdata_i     ),
-       .spi_host_SD_en_o ( SPIdata_oe_o  ),            
+       .spi_host_SD_en_o ( SPIdata_oe_o  ),
  `else
        .spi_host_SCK_o   (               ),
        .spi_host_SCK_en_o(               ),
@@ -301,57 +383,66 @@ module testbench_asynch ();
  `endif
        .axi_isolated_o   (               ),
        .axi_isolate_i    ( '0            ),
-       .gpio_0_i         ( '0            ), 
+       .gpio_0_i         ( '0            ),
        .gpio_1_i         ( '0            ),
-       .gpio_0_o         (               ), 
+       .gpio_0_o         (               ),
        .gpio_1_o         (               ),
-       .gpio_0_oe_o      (               ), 
+       .gpio_0_oe_o      (               ),
        .gpio_1_oe_o      (               )
    );
- 
+
 ///////////////////////// Processes ///////////////////////////////
 
-  
+
   initial begin  : main_clock_rst_process
     clk_sys   = 1'b0;
     rst_sys_n = 1'b0;
     jtag_mst.trst_n = 1'b0;
-     
+
     repeat (2)
      #(RTC_CLOCK_PERIOD/2) clk_sys = 1'b0;
      rst_sys_n = 1'b1;
-  
+
     forever
       #(RTC_CLOCK_PERIOD/2) clk_sys = ~clk_sys;
   end // block: main_clock_rst_process
-   
+
   initial begin  : aon_clock_process
     aon_clk   = 1'b0;
     forever
       #(AON_PERIOD/2) aon_clk = ~aon_clk;
   end
-  
+
   initial begin  : io_clock_process
     io_clk   = 1'b0;
     forever
       #(IO_PERIOD/2) io_clk = ~io_clk;
   end
-  
+
   initial begin  : usb_clock_process
     usb_clk   = 1'b0;
     forever
       #(USB_PERIOD/2) usb_clk = ~usb_clk;
-  end 
-
-  initial begin  : axi_slave_process
-     
-    @(posedge rst_sys_n);
-    axi_rand_slave.reset();
-    repeat (4)  @(posedge clk_sys);
-     axi_rand_slave.run();
-  
   end
-   
+
+  initial begin  : axi_slave_process_tlul2axi
+
+    @(posedge rst_sys_n);
+    tlul2axi_rand_slave.reset();
+    repeat (4)  @(posedge clk_sys);
+     tlul2axi_rand_slave.run();
+
+  end
+
+  initial begin  : axi_slave_process_idma
+
+    @(posedge rst_sys_n);
+    idma_axi_rand_slave.reset();
+    repeat (4)  @(posedge clk_sys);
+     idma_axi_rand_slave.run();
+
+  end
+
   initial  begin : bootmodes
 
     if(!$value$plusargs("BOOTMODE=%d", boot_mode)) begin
@@ -362,7 +453,7 @@ module testbench_asynch ();
        sram="";
        $display("Loading to SRAM: %s", sram);
     end
-     
+
     case(boot_mode)
         0:begin
           bootmode = 2'b00;
@@ -394,7 +485,7 @@ module testbench_asynch ();
   end // block: bootmodes
 
 ///////////////////////////// Tasks ///////////////////////////////
-   
+
   task debug_secd_module_init;
      logic [31:0]  idcode;
      automatic dm_ot::sbcs_t sbcs = '{

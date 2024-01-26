@@ -70,25 +70,41 @@ module secure_subsystem_synth_wrap
    input logic                           jtag_tdi_i,
    output logic                          jtag_tdo_o,
    output logic                          jtag_tdo_oe_o,
-   // Asynch AXI port
-   output logic [AsyncAxiOutAwWidth-1:0] async_axi_out_aw_data_o,
-   output logic [LogDepth:0]             async_axi_out_aw_wptr_o,
-   input logic [LogDepth:0]              async_axi_out_aw_rptr_i,
-   output logic [AsyncAxiOutWWidth-1:0]  async_axi_out_w_data_o,
-   output logic [LogDepth:0]             async_axi_out_w_wptr_o,
-   input logic [LogDepth:0]              async_axi_out_w_rptr_i,
-   input logic [AsyncAxiOutBWidth-1:0]   async_axi_out_b_data_i,
-   input logic [LogDepth:0]              async_axi_out_b_wptr_i,
-   output logic [LogDepth:0]             async_axi_out_b_rptr_o,
-   output logic [AsyncAxiOutArWidth-1:0] async_axi_out_ar_data_o,
-   output logic [LogDepth:0]             async_axi_out_ar_wptr_o,
-   input logic [LogDepth:0]              async_axi_out_ar_rptr_i,
-   input logic [AsyncAxiOutRWidth-1:0]   async_axi_out_r_data_i,
-   input logic [LogDepth:0]              async_axi_out_r_wptr_i,
-   output logic [LogDepth:0]             async_axi_out_r_rptr_o,
+   // Asynch AXI tlul2axi port
+   output logic [AsyncAxiOutAwWidth-1:0]  async_axi_out_aw_data_o,
+   output logic [LogDepth:0]              async_axi_out_aw_wptr_o,
+   input logic  [LogDepth:0]              async_axi_out_aw_rptr_i,
+   output logic [AsyncAxiOutWWidth-1:0]   async_axi_out_w_data_o,
+   output logic [LogDepth:0]              async_axi_out_w_wptr_o,
+   input logic  [LogDepth:0]              async_axi_out_w_rptr_i,
+   input logic  [AsyncAxiOutBWidth-1:0]   async_axi_out_b_data_i,
+   input logic  [LogDepth:0]              async_axi_out_b_wptr_i,
+   output logic [LogDepth:0]              async_axi_out_b_rptr_o,
+   output logic [AsyncAxiOutArWidth-1:0]  async_axi_out_ar_data_o,
+   output logic [LogDepth:0]              async_axi_out_ar_wptr_o,
+   input logic  [LogDepth:0]              async_axi_out_ar_rptr_i,
+   input logic  [AsyncAxiOutRWidth-1:0]   async_axi_out_r_data_i,
+   input logic  [LogDepth:0]              async_axi_out_r_wptr_i,
+   output logic [LogDepth:0]              async_axi_out_r_rptr_o,
+   // Asynch AXI idma port
+   output logic [AsyncAxiOutAwWidth-1:0]  async_idma_axi_out_aw_data_o,
+   output logic [LogDepth:0]              async_idma_axi_out_aw_wptr_o,
+   input logic  [LogDepth:0]              async_idma_axi_out_aw_rptr_i,
+   output logic [AsyncAxiOutWWidth-1:0]   async_idma_axi_out_w_data_o,
+   output logic [LogDepth:0]              async_idma_axi_out_w_wptr_o,
+   input logic  [LogDepth:0]              async_idma_axi_out_w_rptr_i,
+   input logic  [AsyncAxiOutBWidth-1:0]   async_idma_axi_out_b_data_i,
+   input logic  [LogDepth:0]              async_idma_axi_out_b_wptr_i,
+   output logic [LogDepth:0]              async_idma_axi_out_b_rptr_o,
+   output logic [AsyncAxiOutArWidth-1:0]  async_idma_axi_out_ar_data_o,
+   output logic [LogDepth:0]              async_idma_axi_out_ar_wptr_o,
+   input logic  [LogDepth:0]              async_idma_axi_out_ar_rptr_i,
+   input logic  [AsyncAxiOutRWidth-1:0]   async_idma_axi_out_r_data_i,
+   input logic  [LogDepth:0]              async_idma_axi_out_r_wptr_i,
+   output logic [LogDepth:0]              async_idma_axi_out_r_rptr_o,
    // Axi Isolate
-   input  logic                          axi_isolate_i,
-   output logic                          axi_isolated_o,
+   input  logic [1:0]                    axi_isolate_i,
+   output logic [1:0]                    axi_isolated_o,
    // Interrupt signal
    input logic                           irq_ibex_i,
    // OT peripherals
@@ -112,11 +128,14 @@ module secure_subsystem_synth_wrap
 
 );
 
-   axi_out_req_t        axi_req;
-   axi_out_resp_t       axi_rsp;
+   axi_out_req_t        tlul2axi_req, idma_axi_req;
+   axi_out_resp_t       tlul2axi_rsp, idma_axi_rsp;
 
-   axi_ot_out_req_t     ot_axi_req;
-   axi_ot_out_resp_t    ot_axi_rsp;
+   axi_ot_out_req_t     tlul2axi_req32, idma_axi_req32;
+   axi_ot_out_resp_t    tlul2axi_rsp32, idma_axi_rsp32;
+
+   axi_out_req_t        tlul2axi_out_req, idma_axi_out_req;
+   axi_out_resp_t       tlul2axi_out_rsp, idma_axi_out_rsp;
 
    jtag_ot_pkg::jtag_req_t jtag_i;
    jtag_ot_pkg::jtag_rsp_t jtag_o;
@@ -124,8 +143,6 @@ module secure_subsystem_synth_wrap
    entropy_src_pkg::entropy_src_rng_req_t es_rng_req;
    entropy_src_pkg::entropy_src_rng_rsp_t es_rng_rsp;
 
-   axi_out_req_t axi_out_req;
-   axi_out_resp_t axi_out_rsp;
 
    logic [15:0] dio_in_i;
    logic [15:0] dio_out_o;
@@ -142,7 +159,8 @@ module secure_subsystem_synth_wrap
 
    logic fetch_en_sync;
    logic irq_ibex_sync;
-   logic axi_isolate_sync;
+
+   logic [1:0] axi_isolate_sync;
 
    wire [1:0] flash_testmode_tieoff;
    wire otp_ext_tieoff, flash_testvolt_tieoff;
@@ -233,11 +251,21 @@ module secure_subsystem_synth_wrap
    sync #(
      .STAGES     ( SyncStages ),
      .ResetValue ( 1'b1       )
-   ) i_isolate_sync (
+   ) i_isolate_sync_tlul2axi (
      .clk_i,
-     .rst_ni   ( pwr_on_rst_ni    ),
-     .serial_i ( axi_isolate_i    ),
-     .serial_o ( axi_isolate_sync )
+     .rst_ni   ( pwr_on_rst_ni       ),
+     .serial_i ( axi_isolate_i[0]    ),
+     .serial_o ( axi_isolate_sync[0] )
+   );
+
+   sync #(
+     .STAGES     ( SyncStages ),
+     .ResetValue ( 1'b1       )
+   ) i_isolate_sync_idma (
+     .clk_i,
+     .rst_ni   ( pwr_on_rst_ni       ),
+     .serial_i ( axi_isolate_i[1]    ),
+     .serial_o ( axi_isolate_sync[1] )
    );
 
    axi_isolate            #(
@@ -250,15 +278,36 @@ module secure_subsystem_synth_wrap
      .AxiUserWidth         ( AxiUserWidth   ),
      .axi_req_t            ( axi_out_req_t  ),
      .axi_resp_t           ( axi_out_resp_t )
-   ) i_axi_out_isolate     (
-     .clk_i                ( clk_i            ),
-     .rst_ni               ( rst_ni           ),
-     .slv_req_i            ( axi_req          ),
-     .slv_resp_o           ( axi_rsp          ),
-     .mst_req_o            ( axi_out_req      ),
-     .mst_resp_i           ( axi_out_rsp      ),
-     .isolate_i            ( axi_isolate_sync ),
-     .isolated_o           ( axi_isolated_o   )
+   ) i_axi_out_isolate_tlul2axi (
+     .clk_i                ( clk_i               ),
+     .rst_ni               ( rst_ni              ),
+     .slv_req_i            ( tlul2axi_req        ),
+     .slv_resp_o           ( tlul2axi_rsp        ),
+     .mst_req_o            ( tlul2axi_out_req    ),
+     .mst_resp_i           ( tlul2axi_out_rsp    ),
+     .isolate_i            ( axi_isolate_sync[0] ),
+     .isolated_o           ( axi_isolated_o[0]   )
+   );
+
+   axi_isolate            #(
+     .NumPending           ( secure_subsystem_synth_pkg::AxiMaxOutTrans ),
+     .TerminateTransaction ( 1              ),
+     .AtopSupport          ( 1              ),
+     .AxiAddrWidth         ( AxiAddrWidth   ),
+     .AxiDataWidth         ( AxiDataWidth   ),
+     .AxiIdWidth           ( AxiOutIdWidth  ),
+     .AxiUserWidth         ( AxiUserWidth   ),
+     .axi_req_t            ( axi_out_req_t  ),
+     .axi_resp_t           ( axi_out_resp_t )
+   ) i_axi_out_isolate_idma (
+     .clk_i                ( clk_i                 ),
+     .rst_ni               ( rst_ni                ),
+     .slv_req_i            ( idma_axi_req          ),
+     .slv_resp_o           ( idma_axi_rsp          ),
+     .mst_req_o            ( idma_axi_out_req      ),
+     .mst_resp_i           ( idma_axi_out_rsp      ),
+     .isolate_i            ( axi_isolate_sync[1]   ),
+     .isolated_o           ( axi_isolated_o[1]     )
    );
 
    axi_dw_converter #(
@@ -278,15 +327,43 @@ module secure_subsystem_synth_wrap
       .axi_mst_resp_t     ( axi_out_resp_t      ),
       .axi_slv_req_t      ( axi_ot_out_req_t    ),
       .axi_slv_resp_t     ( axi_ot_out_resp_t   )
-   )  i_axi_dw_converter (
+   )  i_axi_dw_converter_tlul2axi (
       .clk_i,
-      .rst_ni     ( rst_ni     ),
+      .rst_ni     ( rst_ni         ),
       // slave port
-      .slv_req_i  ( ot_axi_req ),
-      .slv_resp_o ( ot_axi_rsp ),
+      .slv_req_i  ( tlul2axi_req32 ),
+      .slv_resp_o ( tlul2axi_rsp32 ),
       // master port
-      .mst_req_o  ( axi_req    ),
-      .mst_resp_i ( axi_rsp    )
+      .mst_req_o  ( tlul2axi_req   ),
+      .mst_resp_i ( tlul2axi_rsp   )
+   );
+
+   axi_dw_converter #(
+      .AxiMaxReads        ( 8                   ),
+      .AxiSlvPortDataWidth( AxiOtDataWidth      ),
+      .AxiMstPortDataWidth( AxiDataWidth        ),
+      .AxiAddrWidth       ( AxiAddrWidth        ),
+      .AxiIdWidth         ( AxiOutIdWidth       ),
+      .aw_chan_t          ( axi_out_aw_chan_t   ),
+      .mst_w_chan_t       ( axi_out_w_chan_t    ),
+      .slv_w_chan_t       ( axi_ot_out_w_chan_t ),
+      .b_chan_t           ( axi_out_b_chan_t    ),
+      .ar_chan_t          ( axi_out_ar_chan_t   ),
+      .mst_r_chan_t       ( axi_out_r_chan_t    ),
+      .slv_r_chan_t       ( axi_ot_out_r_chan_t ),
+      .axi_mst_req_t      ( axi_out_req_t       ),
+      .axi_mst_resp_t     ( axi_out_resp_t      ),
+      .axi_slv_req_t      ( axi_ot_out_req_t    ),
+      .axi_slv_resp_t     ( axi_ot_out_resp_t   )
+   )  i_axi_dw_converter_idma (
+      .clk_i,
+      .rst_ni     ( rst_ni         ),
+      // slave port
+      .slv_req_i  ( idma_axi_req32 ),
+      .slv_resp_o ( idma_axi_rsp32 ),
+      // master port
+      .mst_req_o  ( idma_axi_req   ),
+      .mst_resp_i ( idma_axi_rsp   )
    );
 
    // CDC domain
@@ -301,11 +378,11 @@ module secure_subsystem_synth_wrap
       .r_chan_t   ( axi_out_r_chan_t  ),
       .axi_req_t  ( axi_out_req_t     ),
       .axi_resp_t ( axi_out_resp_t    )
-   ) i_cdc_out (
+   ) i_cdc_out_tlul2axi (
       .src_clk_i                  ( clk_i                   ),
       .src_rst_ni                 ( pwr_on_rst_ni           ),
-      .src_req_i                  ( axi_out_req             ),
-      .src_resp_o                 ( axi_out_rsp             ),
+      .src_req_i                  ( tlul2axi_out_req        ),
+      .src_resp_o                 ( tlul2axi_out_rsp        ),
       .async_data_master_aw_data_o( async_axi_out_aw_data_o ),
       .async_data_master_aw_wptr_o( async_axi_out_aw_wptr_o ),
       .async_data_master_aw_rptr_i( async_axi_out_aw_rptr_i ),
@@ -323,6 +400,37 @@ module secure_subsystem_synth_wrap
       .async_data_master_r_rptr_o ( async_axi_out_r_rptr_o  )
    );
 
+   axi_cdc_src #(
+      .LogDepth   ( LogDepth          ),
+      .SyncStages ( CdcSyncStages     ),
+      .aw_chan_t  ( axi_out_aw_chan_t ),
+      .w_chan_t   ( axi_out_w_chan_t  ),
+      .b_chan_t   ( axi_out_b_chan_t  ),
+      .ar_chan_t  ( axi_out_ar_chan_t ),
+      .r_chan_t   ( axi_out_r_chan_t  ),
+      .axi_req_t  ( axi_out_req_t     ),
+      .axi_resp_t ( axi_out_resp_t    )
+   ) i_cdc_out_idma (
+      .src_clk_i                  ( clk_i                        ),
+      .src_rst_ni                 ( pwr_on_rst_ni                ),
+      .src_req_i                  ( idma_axi_out_req             ),
+      .src_resp_o                 ( idma_axi_out_rsp             ),
+      .async_data_master_aw_data_o( async_idma_axi_out_aw_data_o ),
+      .async_data_master_aw_wptr_o( async_idma_axi_out_aw_wptr_o ),
+      .async_data_master_aw_rptr_i( async_idma_axi_out_aw_rptr_i ),
+      .async_data_master_w_data_o ( async_idma_axi_out_w_data_o  ),
+      .async_data_master_w_wptr_o ( async_idma_axi_out_w_wptr_o  ),
+      .async_data_master_w_rptr_i ( async_idma_axi_out_w_rptr_i  ),
+      .async_data_master_b_data_i ( async_idma_axi_out_b_data_i  ),
+      .async_data_master_b_wptr_i ( async_idma_axi_out_b_wptr_i  ),
+      .async_data_master_b_rptr_o ( async_idma_axi_out_b_rptr_o  ),
+      .async_data_master_ar_data_o( async_idma_axi_out_ar_data_o ),
+      .async_data_master_ar_wptr_o( async_idma_axi_out_ar_wptr_o ),
+      .async_data_master_ar_rptr_i( async_idma_axi_out_ar_rptr_i ),
+      .async_data_master_r_data_i ( async_idma_axi_out_r_data_i  ),
+      .async_data_master_r_wptr_i ( async_idma_axi_out_r_wptr_i  ),
+      .async_data_master_r_rptr_o ( async_idma_axi_out_r_rptr_o  )
+   );
 
    top_earlgrey #(
       .HartIdOffs(HartIdOffs),
@@ -400,8 +508,10 @@ module secure_subsystem_synth_wrap
       .clk_io_i                     ( clk_i                 ),
       .clk_aon_i                    ( clk_i                 ),
       .clk_usb_i                    ( clk_i                 ),
-      .axi_req_o                    ( ot_axi_req            ),
-      .axi_rsp_i                    ( ot_axi_rsp            ),
+      .tlul2axi_req_o               ( tlul2axi_req32        ),
+      .tlul2axi_rsp_i               ( tlul2axi_rsp32        ),
+      .idma_axi_req_o               ( idma_axi_req32        ),
+      .idma_axi_rsp_i               ( idma_axi_rsp32        ),
       .irq_ibex_i                   ( irq_ibex_sync         ),
       .jtag_req_i                   ( jtag_i                ),
       .jtag_rsp_o                   ( jtag_o                ),
