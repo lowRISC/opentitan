@@ -37,7 +37,8 @@ start:
  * @param[out] dmem[d0]: 1st private key share d0
  * @param[out] dmem[d1]: 2nd private key share d1
  * @param[out]  dmem[x]: Public key x-coordinate
- * @param[out]  dmem[y]: Public key y-coordinate
+ * @param[out]  dmem[y]: Public key y-coordinate]
+
  */
 random_keygen:
   /* Generate secret key d in shares.
@@ -96,6 +97,30 @@ d0:
 .globl d1
 .balign 32
 d1:
+  .zero 64
+
+/* pointer to x-coordinate (dptr_x) */
+.globl dptr_x
+.balign 4
+dptr_x:
+  .zero 4
+
+/* pointer to y-coordinate (dptr_y) */
+.globl dptr_y
+.balign 4
+dptr_y:
+  .zero 4
+
+/* x-coordinate. */
+.globl x
+.balign 32
+x:
+  .zero 64
+
+/* y-coordinate. */
+.globl y
+.balign 32
+y:
   .zero 64
 
 /* 704 bytes of scratchpad memory
