@@ -88,10 +88,7 @@ pub fn main() -> anyhow::Result<()> {
                 Some(pin) => Some((transport.gpio_pin(pin)?, transport.gpio_monitoring()?)),
                 None => None,
             };
-            Box::new(SpiDriver::new(
-                spi,
-                ready_pin,
-            )?)
+            Box::new(SpiDriver::new(spi, ready_pin)?)
         }
         TpmBus::I2C { params, gsc_ready } => {
             let i2c = params.create(&transport, "TPM")?;
@@ -99,10 +96,7 @@ pub fn main() -> anyhow::Result<()> {
                 Some(pin) => Some((transport.gpio_pin(pin)?, transport.gpio_monitoring()?)),
                 None => None,
             };
-            Box::new(I2cDriver::new(
-                i2c,
-                ready_pin,
-            )?)
+            Box::new(I2cDriver::new(i2c, ready_pin)?)
         }
     };
     bus.init()?;

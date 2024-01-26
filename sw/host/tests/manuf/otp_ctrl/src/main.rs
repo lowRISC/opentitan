@@ -94,7 +94,8 @@ fn lock_partition(opts: &Opts, transport: &TransportWrapper) -> anyhow::Result<(
     assert_eq!(digest, [0x00; 2]);
 
     // Lock the partition.
-    OtpPartition::lock(&mut *jtag, Partition::HW_CFG0).context("failed to lock HW_CFG0 partition")?;
+    OtpPartition::lock(&mut *jtag, Partition::HW_CFG0)
+        .context("failed to lock HW_CFG0 partition")?;
 
     // Read the digest again to see if it's been calculated (locked):
     let digest = OtpPartition::read_digest(&mut *jtag, Partition::HW_CFG0)

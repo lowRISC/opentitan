@@ -9,9 +9,9 @@ use clap::Parser;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::execute_test;
+use opentitanlib::io::jtag::JtagTap;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::uart::console::UartConsole;
-use opentitanlib::io::jtag::JtagTap;
 
 #[derive(Debug, Parser)]
 struct Opts {
