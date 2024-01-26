@@ -86,6 +86,14 @@ dptr_r:
 dptr_s:
   .zero 4
 
+/* result of verify (x1 coordinate) */
+.globl rnd
+.balign 32
+rnd:
+  .zero 64
+
+.data
+
 /* Public key x-coordinate. */
 .globl x
 .balign 32
@@ -96,12 +104,6 @@ x:
 .globl y
 .balign 32
 y:
-  .zero 64
-
-/* result of verify (x1 coordinate) */
-.globl rnd
-.balign 32
-rnd:
   .zero 64
 
 /* hash message to sign/verify */

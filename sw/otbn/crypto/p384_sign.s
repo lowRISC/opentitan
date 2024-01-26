@@ -47,44 +47,44 @@ p384_sign:
   /* init all-zero reg */
   bn.xor    w31, w31, w31
 
-  /* set dmem pointer to domain parameter b */
+  /* get dmem pointer of domain parameter b */
   la        x28, p384_b
 
-  /* set dmem pointer to base point x-coordinate */
+  /* get dmem pointer of base point x-coordinate */
   la        x20, p384_gx
 
-  /* set dmem pointer to base point y-coordinate */
+  /* get dmem pointer of base point y-coordinate */
   la        x21, p384_gy
 
-  /* set dmem pointer to 1st scalar share k0 */
+  /* get dmem pointer of 1st scalar share k0 */
   la        x17, dptr_k0
   lw        x17, 0(x17)
 
-  /* set dmem pointer to 2nd scalar share k1 */
+  /* get dmem pointer of 2nd scalar share k1 */
   la        x19, dptr_k1
   lw        x19, 0(x19)
 
-  /* set dmem pointer to 1st private key share d0 */
+  /* get dmem pointer of 1st private key share d0 */
   la        x4, dptr_d0
   lw        x4, 0(x4)
 
-  /* set dmem pointer to 2nd private key share d1 */
+  /* get dmem pointer of 2nd private key share d1 */
   la        x5, dptr_d1
   lw        x5, 0(x5)
 
-  /* set dmem pointer to message msg */
+  /* get dmem pointer of message msg */
   la        x6, dptr_msg
   lw        x6, 0(x6)
 
-  /* set dmem pointer to signature r */
+  /* get dmem pointer of signature r */
   la        x14, dptr_r
   lw        x14, 0(x14)
 
-  /* set dmem pointer to signature s */
+  /* get dmem pointer of signature s */
   la        x15, dptr_s
   lw        x15, 0(x15)
 
-  /* set dmem pointer to scratchpad */
+  /* get dmem pointer of scratchpad */
   la        x30, scratchpad
 
   /* load domain parameter p (modulus)
@@ -103,11 +103,11 @@ p384_sign:
 
   /* scalar multiplication with base point and
      conversion of projective coordinates to affine space
-     [w28:w25] <= (x_1, y_1) = (k*alpha) * G */
+     [w28:w25] <= (R_x, R_y) = k * G */
   jal       x1, scalar_mult_int_p384
   jal       x1, proj_to_affine_p384
 
-  /* store r of signature in dmem: dmem[dptr_r] <= r = [w26,w25] */
+  /* store r of signature in dmem: dmem[dptr_r] <= r = R_x = [w26,w25] */
   li        x2, 25
   bn.sid    x2++, 0(x14)
   bn.sid    x2++, 32(x14)

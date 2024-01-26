@@ -114,21 +114,23 @@ keypair_random:
  */
 shared_key:
     /* Generate arithmetically masked shared key d*Q.
-       dmem[x] <= (d*Q).x - m_x mod p
-       dmem[y] <= m_x */
+       dmem[x] <= (d*Q).x - m mod p
+       dmem[y] <= m */
   jal       x1, p384_scalar_mult
 
   /* Arithmetic-to-boolean conversion*/
 
   /* load result to WDRs for a2b conversion.
-     [w12,w11] <= dmem[p1_x] = x_m
-     [w19,w18] <= dmem[p1_y] = m */
+     [w12,w11] <= dmem[x] = x_m
+     [w19,w18] <= dmem[y] = m */
   li        x2, 11
-  la        x3, x
+  la        x3, dptr_x
+  lw        x3, 0(x3)
   bn.lid    x2++, 0(x3)
   bn.lid    x2++, 32(x3)
   li        x2, 18
-  la        x3, y
+  la        x3, dptr_y
+  lw        x3, 0(x3)
   bn.lid    x2++, 0(x3)
   bn.lid    x2, 32(x3)
 
@@ -141,10 +143,13 @@ shared_key:
 
   jal       x1, p384_arithmetic_to_boolean_mod
 
-  /* dmem[x] <= w20 = x' */
-  li        x3, 20
-  la        x4, x
-  bn.sid    x3, 0(x4)
+  /* Store arithmetically masked key to DMEM
+     dmem[x] <= [w21,w20] = x_m' */
+  li        x2, 20
+  la        x3, dptr_x
+  lw        x3, 0(x3)
+  bn.sid    x2++, 0(x3)
+  bn.sid    x2++, 32(x3)
 
   ecall
 
@@ -191,6 +196,7 @@ y:
 .globl dptr_d0
 .balign 4
 dptr_d0:
+dptr_k0:
   .zero 4
 
 /* pointer to d1 (dptr_d1) */
@@ -198,6 +204,7 @@ dptr_d0:
 .globl dptr_d1
 .balign 4
 dptr_d1:
+dptr_k1:
   .zero 4
 
 .globl d0
