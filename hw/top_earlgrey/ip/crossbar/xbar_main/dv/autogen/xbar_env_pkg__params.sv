@@ -84,21 +84,13 @@ tl_device_t xbar_devices[$] = '{
         '{32'he0000000, 32'he001ffff}
     }},
     '{"tlul2axi", '{
-        '{32'h00010000, 32'h0001ffff},
-        '{32'h0c000000, 32'h0fffffff},
-        '{32'h10000000, 32'h103fffff},
-        '{32'h10400000, 32'h104fffff},
-        '{32'h1a100000, 32'h1a1fffff},
-        '{32'h1c000000, 32'h1c0fffff},
-        '{32'h18000000, 32'h18000fff},
-        '{32'h20000000, 32'h207fffff},
-        '{32'h30000000, 32'h3000ffff},
-        '{32'h40000000, 32'h40000fff},
-        '{32'h60000000, 32'h60000fff},
-        '{32'h80000000, 32'h9fffffff}
+        '{32'h00010000, 32'h9fffffff}
     }},
     '{"crypto_sram", '{
         '{32'hfff00000, 32'hfff1ffff}
+    }},
+    '{"idma", '{
+        '{32'hfef00000, 32'hfef1ffff}
 }}};
 
   // List of Xbar hosts
@@ -138,7 +130,8 @@ tl_host_t xbar_hosts[$] = '{
         "kmac",
         "sram_ctrl_main__regs",
         "rv_core_ibex__cfg",
-        "crypto_sram"}}
+        "crypto_sram",
+        "idma"}}
     ,
     '{"rv_dm__sba", 2, '{
         "rv_dm__regs",
@@ -165,5 +158,6 @@ tl_host_t xbar_hosts[$] = '{
         "rv_core_ibex__cfg",
         "sram_ctrl_main__regs",
         "sram_ctrl_main__ram",
-        "crypto_sram"}}
+        "crypto_sram",
+        "idma"}}
 };

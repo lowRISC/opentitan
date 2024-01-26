@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 `include "prim_assert.sv"
-
+`include "register_interface/typedef.svh"
 
 //
 // ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------//
@@ -14,6 +14,10 @@
 //                --rnd_cnst_seed 4881560218908238235
 
 module top_earlgrey #(
+  parameter int unsigned AxiAddrWidth = 64,
+  parameter int unsigned AxiDataWidth = 64,
+  parameter int unsigned AxiIdWidth   = 8,
+  parameter int unsigned AxiUserWidth = 1,
   // Manually defined parameters
   parameter int unsigned HartIdOffs = 0,
   // Auto-inferred parameters
@@ -22,7 +26,7 @@ module top_earlgrey #(
   // parameters for uart2
   // parameters for uart3
   // parameters for gpio
-  parameter bit GpioGpioAsyncOn = 1,
+  parameter bit          GpioGpioAsyncOn = 1,
   // parameters for spi_device
   // parameters for i2c0
   // parameters for i2c1
@@ -30,7 +34,7 @@ module top_earlgrey #(
   // parameters for pattgen
   // parameters for rv_timer
   // parameters for otp_ctrl
-  parameter OtpCtrlMemInitFile = "",
+  parameter              OtpCtrlMemInitFile = "",
   // parameters for lc_ctrl
   parameter logic [15:0] LcCtrlChipGen = 16'h 0000,
   parameter logic [15:0] LcCtrlChipRev = 16'h 0000,
@@ -39,86 +43,88 @@ module top_earlgrey #(
   // parameters for spi_host0
   // parameters for spi_host1
   // parameters for usbdev
-  parameter bit UsbdevStub = 0,
-  parameter int UsbdevRcvrWakeTimeUs = 100,
+  parameter bit          UsbdevStub = 0,
+  parameter int          UsbdevRcvrWakeTimeUs = 100,
   // parameters for pwrmgr_aon
   // parameters for rstmgr_aon
-  parameter bit SecRstmgrAonCheck = 1'b1,
-  parameter int SecRstmgrAonMaxSyncDelay = 2,
+  parameter bit          SecRstmgrAonCheck = 1'b1,
+  parameter int          SecRstmgrAonMaxSyncDelay = 2,
   // parameters for clkmgr_aon
   // parameters for sysrst_ctrl_aon
   // parameters for adc_ctrl_aon
   // parameters for pwm_aon
   // parameters for pinmux_aon
-  parameter pinmux_pkg::target_cfg_t PinmuxAonTargetCfg = pinmux_pkg::DefaultTargetCfg,
+  parameter              pinmux_pkg::target_cfg_t PinmuxAonTargetCfg = pinmux_pkg::DefaultTargetCfg,
   // parameters for aon_timer_aon
   // parameters for sensor_ctrl
   // parameters for tlul2axi
   // parameters for sram_ctrl_ret_aon
-  parameter SramCtrlRetAonMemInitFile = "",
-  parameter bit SramCtrlRetAonInstrExec = 0,
+  parameter              SramCtrlRetAonMemInitFile = "",
+  parameter bit          SramCtrlRetAonInstrExec = 0,
   // parameters for flash_ctrl
-  parameter     FlashCtrlMemInitFile = "",
-  parameter bit SecFlashCtrlScrambleEn = 1,
-  parameter int FlashCtrlProgFifoDepth = 4,
-  parameter int FlashCtrlRdFifoDepth = 16,
+  parameter              FlashCtrlMemInitFile = "",
+  parameter bit          SecFlashCtrlScrambleEn = 1,
+  parameter int          FlashCtrlProgFifoDepth = 4,
+  parameter int          FlashCtrlRdFifoDepth = 16,
   // parameters for rv_dm
   parameter logic [31:0] RvDmIdcodeValue = jtag_id_pkg::JTAG_IDCODE,
   // parameters for rv_plic
   // parameters for aes
-  parameter bit SecAesMasking = 1,
-  parameter aes_pkg::sbox_impl_e SecAesSBoxImpl = aes_pkg::SBoxImplDom,
+  parameter bit          SecAesMasking = 1,
+  parameter              aes_pkg::sbox_impl_e SecAesSBoxImpl = aes_pkg::SBoxImplDom,
   parameter int unsigned SecAesStartTriggerDelay = 0,
-  parameter bit SecAesAllowForcingMasks = 1'b0,
-  parameter bit SecAesSkipPRNGReseeding = 1'b0,
+  parameter bit          SecAesAllowForcingMasks = 1'b0,
+  parameter bit          SecAesSkipPRNGReseeding = 1'b0,
   // parameters for hmac
   // parameters for kmac
-  parameter bit KmacEnMasking = 1,
-  parameter int SecKmacCmdDelay = 0,
-  parameter bit SecKmacIdleAcceptSwMsg = 0,
+  parameter bit          KmacEnMasking = 1,
+  parameter int          SecKmacCmdDelay = 0,
+  parameter bit          SecKmacIdleAcceptSwMsg = 0,
   // parameters for otbn
-  parameter bit OtbnStub = 0,
-  parameter otbn_pkg::regfile_e OtbnRegFile = otbn_pkg::RegFileFF,
+  parameter bit          OtbnStub = 0,
+  parameter              otbn_pkg::regfile_e OtbnRegFile = otbn_pkg::RegFileFF,
   // parameters for keymgr
-  parameter bit KeymgrKmacEnMasking = 1,
+  parameter bit          KeymgrKmacEnMasking = 1,
   // parameters for csrng
-  parameter aes_pkg::sbox_impl_e CsrngSBoxImpl = aes_pkg::SBoxImplCanright,
+  parameter              aes_pkg::sbox_impl_e CsrngSBoxImpl = aes_pkg::SBoxImplCanright,
   // parameters for entropy_src
-  parameter bit EntropySrcStub = 0,
+  parameter bit          EntropySrcStub = 0,
   // parameters for edn0
   // parameters for edn1
   // parameters for sram_ctrl_main
-  parameter SramCtrlMainMemInitFile = "",
-  parameter bit SramCtrlMainInstrExec = 1,
+  parameter              SramCtrlMainMemInitFile = "",
+  parameter bit          SramCtrlMainInstrExec = 1,
   // parameters for rom_ctrl
-  parameter RomCtrlBootRomInitFile = "",
-  parameter bit SecRomCtrlDisableScrambling = 1'b0,
+  parameter              RomCtrlBootRomInitFile = "",
+  parameter bit          SecRomCtrlDisableScrambling = 1'b0,
   // parameters for rv_core_ibex
-  parameter bit RvCoreIbexPMPEnable = 1,
+  parameter bit          RvCoreIbexPMPEnable = 1,
   parameter int unsigned RvCoreIbexPMPGranularity = 0,
   parameter int unsigned RvCoreIbexPMPNumRegions = 16,
   parameter int unsigned RvCoreIbexMHPMCounterNum = 10,
   parameter int unsigned RvCoreIbexMHPMCounterWidth = 32,
-  parameter bit RvCoreIbexRV32E = 0,
-  parameter ibex_pkg::rv32m_e RvCoreIbexRV32M = ibex_pkg::RV32MSingleCycle,
-  parameter ibex_pkg::rv32b_e RvCoreIbexRV32B = ibex_pkg::RV32BOTEarlGrey,
-  parameter ibex_pkg::regfile_e RvCoreIbexRegFile = ibex_pkg::RegFileFF,
-  parameter bit RvCoreIbexBranchTargetALU = 1,
-  parameter bit RvCoreIbexWritebackStage = 1,
-  parameter bit RvCoreIbexICache = 1,
-  parameter bit RvCoreIbexICacheECC = 1,
-  parameter bit RvCoreIbexICacheScramble = 1,
-  parameter bit RvCoreIbexBranchPredictor = 0,
-  parameter bit RvCoreIbexDbgTriggerEn = 1,
-  parameter int RvCoreIbexDbgHwBreakNum = 4,
-  parameter bit RvCoreIbexSecureIbex = 1,
+  parameter bit          RvCoreIbexRV32E = 0,
+  parameter              ibex_pkg::rv32m_e RvCoreIbexRV32M = ibex_pkg::RV32MSingleCycle,
+  parameter              ibex_pkg::rv32b_e RvCoreIbexRV32B = ibex_pkg::RV32BOTEarlGrey,
+  parameter              ibex_pkg::regfile_e RvCoreIbexRegFile = ibex_pkg::RegFileFF,
+  parameter bit          RvCoreIbexBranchTargetALU = 1,
+  parameter bit          RvCoreIbexWritebackStage = 1,
+  parameter bit          RvCoreIbexICache = 1,
+  parameter bit          RvCoreIbexICacheECC = 1,
+  parameter bit          RvCoreIbexICacheScramble = 1,
+  parameter bit          RvCoreIbexBranchPredictor = 0,
+  parameter bit          RvCoreIbexDbgTriggerEn = 1,
+  parameter int          RvCoreIbexDbgHwBreakNum = 4,
+  parameter bit          RvCoreIbexSecureIbex = 1,
   parameter int unsigned RvCoreIbexDmHaltAddr =
-      tl_main_pkg::ADDR_SPACE_RV_DM__MEM + dm_ot::HaltAddress[31:0],
+                         tl_main_pkg::ADDR_SPACE_RV_DM__MEM + dm_ot::HaltAddress[31:0],
   parameter int unsigned RvCoreIbexDmExceptionAddr =
-      tl_main_pkg::ADDR_SPACE_RV_DM__MEM + dm_ot::ExceptionAddress[31:0],
-  parameter bit RvCoreIbexPipeLine = 0,
-  parameter type axi_req_t = logic,
-  parameter type axi_rsp_t = logic
+                         tl_main_pkg::ADDR_SPACE_RV_DM__MEM + dm_ot::ExceptionAddress[31:0],
+  parameter bit          RvCoreIbexPipeLine = 0,
+  parameter int          N_LOG_MST = 2,
+  parameter int          N_LOG_SLV = 8,
+  parameter              type axi_req_t = logic,
+  parameter              type axi_rsp_t = logic
 ) (
   // Multiplexed I/O
   input        [46:0] mio_in_i,
@@ -218,6 +224,21 @@ module top_earlgrey #(
   import top_earlgrey_pkg::*;
   // Compile-time random constants
   import top_earlgrey_rnd_cnst_pkg::*;
+
+  typedef logic [31:0] reg_addr_t;
+  typedef logic [31:0] reg_data_t;
+  typedef logic [3:0]  reg_strb_t;
+
+  `REG_BUS_TYPEDEF_REQ(reg_req_t, reg_addr_t, reg_data_t, reg_strb_t)
+  `REG_BUS_TYPEDEF_RSP(reg_rsp_t, reg_data_t)
+
+  reg_req_t idma_reg_req;
+  reg_rsp_t idma_reg_rsp;
+
+  logic write_req, read_req;
+
+  assign idma_reg_req.write = write_req;
+  assign idma_reg_req.valid = write_req | read_req;
 
   // Signals
   logic [56:0] mio_p2d;
@@ -358,6 +379,32 @@ module top_earlgrey #(
   logic        cio_flash_ctrl_tdi_p2d;
   logic        cio_flash_ctrl_tdo_d2p;
   logic        cio_flash_ctrl_tdo_en_d2p;
+
+  // crypto tcdm master signals
+  logic [N_LOG_MST-1:0]         tcdm_mst_req;
+  logic [N_LOG_MST-1:0] [14:0]  tcdm_mst_add;
+  logic [N_LOG_MST-1:0]         tcdm_mst_wen;
+  logic [N_LOG_MST-1:0] [31:0]  tcdm_mst_wdata;
+  logic [N_LOG_MST-1:0]         tcdm_mst_gnt;
+  logic [N_LOG_MST-1:0]         tcdm_mst_r_valid;
+  logic [N_LOG_MST-1:0] [31:0]  tcdm_mst_r_rdata;
+  logic [N_LOG_MST-1:0] [3:0]   tcdm_mst_be;
+  logic [31:0]                  tcdm_mst_wmask;
+  // crypto tcdm slave signals
+  logic [N_LOG_SLV-1:0]         tcdm_slv_req;
+  logic [N_LOG_SLV-1:0] [9:0]   tcdm_slv_add;
+  logic [N_LOG_SLV-1:0]         tcdm_slv_wen;
+  logic [N_LOG_SLV-1:0] [31:0]  tcdm_slv_wdata;
+  logic [N_LOG_SLV-1:0] [3:0]   tcdm_slv_be;
+  logic [N_LOG_SLV-1:0]         tcdm_slv_gnt;
+  logic [N_LOG_SLV-1:0] [31:0]  tcdm_slv_r_rdata;
+  logic [N_LOG_SLV-1:0]         tcdm_slv_r_valid;
+
+  assign tcdm_mst_be[0][0] = tcdm_mst_wmask[0];
+  assign tcdm_mst_be[0][1] = tcdm_mst_wmask[8];
+  assign tcdm_mst_be[0][2] = tcdm_mst_wmask[16];
+  assign tcdm_mst_be[0][3] = tcdm_mst_wmask[24];
+
   // rv_dm
   // rv_plic
   // aes
@@ -692,6 +739,8 @@ module top_earlgrey #(
   tlul_ot_pkg::tl_d2h_t       sram_ctrl_main_regs_tl_rsp;
   tlul_ot_pkg::tl_h2d_t       sram_ctrl_main_ram_tl_req;
   tlul_ot_pkg::tl_d2h_t       sram_ctrl_main_ram_tl_rsp;
+  tlul_ot_pkg::tl_h2d_t       crypto_sram_tl_req;
+  tlul_ot_pkg::tl_d2h_t       crypto_sram_tl_rsp;
   tlul_ot_pkg::tl_h2d_t       tlul2axi_tl_req;
   tlul_ot_pkg::tl_d2h_t       tlul2axi_tl_rsp;
   tlul_ot_pkg::tl_h2d_t       uart0_tl_req;
@@ -748,6 +797,8 @@ module top_earlgrey #(
   tlul_ot_pkg::tl_d2h_t       adc_ctrl_aon_tl_rsp;
   tlul_ot_pkg::tl_h2d_t       bootmode_tl_req;
   tlul_ot_pkg::tl_d2h_t       bootmode_tl_rsp;
+  tlul_ot_pkg::tl_h2d_t       idma_tl_req;
+  tlul_ot_pkg::tl_d2h_t       idma_tl_rsp;
   clkmgr_pkg::clkmgr_out_t       clkmgr_aon_clocks;
   clkmgr_pkg::clkmgr_cg_en_t       clkmgr_aon_cg_en;
   rstmgr_pkg::rstmgr_out_t       rstmgr_aon_resets;
@@ -765,6 +816,11 @@ module top_earlgrey #(
   otp_ctrl_pkg::otp_manuf_state_t       lc_ctrl_otp_manuf_state;
   otp_ctrl_pkg::otp_device_id_t       keymgr_otp_device_id;
   prim_mubi_pkg::mubi8_t       sram_ctrl_main_otp_en_sram_ifetch;
+
+  axi_req_t axi_req_tcdm;
+  axi_rsp_t axi_rsp_tcdm;
+  axi_req_t axi_req_host;
+  axi_rsp_t axi_rsp_host;
 
   // define mixed connection to port
   assign edn0_edn_req[2] = ast_edn_req_i;
@@ -2014,7 +2070,6 @@ module top_earlgrey #(
   sensor_ctrl #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[33:32])
   ) u_sensor_ctrl (
-
       // Output
       .cio_ast_debug_out_o    (cio_sensor_ctrl_ast_debug_out_d2p),
       .cio_ast_debug_out_en_o (cio_sensor_ctrl_ast_debug_out_en_d2p),
@@ -2042,6 +2097,123 @@ module top_earlgrey #(
       .clk_aon_i (clkmgr_aon_clocks.clk_aon_secure),
       .rst_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainAonSel]),
       .rst_aon_ni (rstmgr_aon_resets.rst_lc_aon_n[rstmgr_pkg::DomainAonSel])
+  );
+  tlul_adapter_sram #(
+    .SramAw(15),
+    .SramDw(32),
+    .Outstanding(1),
+    .ByteAccess(1),
+    .ErrOnWrite(0),
+    .ErrOnRead(0),
+    .CmdIntgCheck(1),
+    .EnableRspIntgGen(1),
+    .EnableDataIntgGen(1)
+  ) u_adapter_crypto_sram (
+    .clk_i        ( clkmgr_aon_clocks.clk_main_infra ),
+    .rst_ni       ( rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel] ),
+    .tl_i         ( crypto_sram_tl_req       ),
+    .tl_o         ( crypto_sram_tl_rsp       ),
+    .en_ifetch_i  ( prim_mubi_pkg::MuBi4False),
+    .req_o        ( tcdm_mst_req[0]          ),
+    .req_type_o   (                          ),
+    .gnt_i        ( tcdm_mst_gnt[0]          ),
+    .we_o         ( tcdm_mst_wen[0]          ),
+    .addr_o       ( tcdm_mst_add[0]          ),
+    .wdata_o      ( tcdm_mst_wdata[0]        ),
+    .wmask_o      ( tcdm_mst_wmask           ),
+    .intg_error_o (                          ),
+    .rdata_i      ( tcdm_mst_r_rdata[0]      ),
+    .rvalid_i     ( tcdm_mst_r_valid[0]      ),
+    .rerror_i     ( '0                       )
+  );
+  crypto_sram_wrap  #(
+      .MstAddrWidth(15)
+  ) i_crypto_sram (
+      .clk_i     ( clkmgr_aon_clocks.clk_main_infra ),
+      .rst_ni    ( rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel] ),
+      .req_i     ( tcdm_mst_req     ),
+      .wen_i     ( tcdm_mst_wen     ),
+      .gnt_o     ( tcdm_mst_gnt     ),
+      .add_i     ( tcdm_mst_add     ),
+      .wdata_i   ( tcdm_mst_wdata   ),
+      .be_i      ( tcdm_mst_be      ),
+      .r_valid_o ( tcdm_mst_r_valid ),
+      .r_rdata_o ( tcdm_mst_r_rdata )
+  );
+  axi_to_mem #(
+      .axi_req_t(axi_req_t),
+      .axi_resp_t(axi_rsp_t),
+      .AddrWidth(15),
+      .DataWidth(32),
+      .IdWidth(AxiIdWidth),
+      .NumBanks(1),
+      .BufDepth(1),
+      .HideStrb(1'b0),
+      .OutFifoDepth(1)
+  ) axi_to_mem_instance (
+      .clk_i        ( clkmgr_aon_clocks.clk_main_infra ),
+      .rst_ni       ( rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel] ),
+      .busy_o       (                     ),
+      .axi_req_i    ( axi_req_tcdm        ),
+      .axi_resp_o   ( axi_rsp_tcdm        ),
+      .mem_req_o    ( tcdm_mst_req[1]     ),
+      .mem_gnt_i    ( tcdm_mst_gnt[1]     ),
+      .mem_addr_o   ( tcdm_mst_add[1]     ),
+      .mem_wdata_o  ( tcdm_mst_wdata[1]   ),
+      .mem_strb_o   ( tcdm_mst_be[1]      ),
+      .mem_atop_o   (                     ),
+      .mem_we_o     ( tcdm_mst_wen[1]     ),
+      .mem_rvalid_i ( tcdm_mst_r_valid[1] ),
+      .mem_rdata_i  ( tcdm_mst_r_rdata[1] )
+  );
+  tlul_adapter_reg #(
+      .CmdIntgCheck(1),
+      .EnableRspIntgGen(1),
+      .EnableDataIntgGen(1),
+      .RegAw(32),
+      .RegDw(32)
+  ) tlul2reg_i (
+      .clk_i       ( clkmgr_aon_clocks.clk_main_infra ),
+      .rst_ni      ( rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel] ),
+      .tl_i        ( idma_tl_req        ),
+      .tl_o        ( idma_tl_rsp        ),
+      .re_o        ( read_req           ), //idma_reg_req.valid ),
+      .we_o        ( write_req          ), //idma_reg_req.write ),
+      .addr_o      ( idma_reg_req.addr  ),
+      .wdata_o     ( idma_reg_req.wdata ),
+      .en_ifetch_i ( 4'b0101            ),
+      .be_o        ( idma_reg_req.wstrb ),
+      .rdata_i     ( idma_reg_rsp.rdata ),
+      .busy_i      ( 1'b0               ),
+      .error_i     ( 1'b0               )
+  );
+  idma_wrap #(
+      .axi_req_t(axi_req_t),
+      .axi_rsp_t(axi_rsp_t),
+      .reg_req_t(reg_req_t),
+      .reg_rsp_t(reg_rsp_t)
+  ) idma_wrap_i (
+      .clk_i          ( clkmgr_aon_clocks.clk_main_infra ),
+      .rst_ni         ( rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel] ),
+      .reg_req_i      ( idma_reg_req ),
+      .reg_rsp_o      ( idma_reg_rsp ),
+      .axi_req_host_o ( axi_req_host ),
+      .axi_rsp_host_i ( axi_rsp_host ),
+      .axi_req_tcdm_o ( axi_req_tcdm ),
+      .axi_rsp_tcdm_i ( axi_rsp_tcdm )
+  );
+  axi_sim_mem #(
+      .AddrWidth(32'd64),
+      .DataWidth(32'd32),
+      .IdWidth(32'd8),
+      .UserWidth(32'd1),
+      .axi_req_t(axi_req_t),
+      .axi_rsp_t(axi_rsp_t)
+  ) axi_sim_mem_instance (
+      .clk_i     ( clkmgr_aon_clocks.clk_main_infra ),
+      .rst_ni    ( rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel] ),
+      .axi_req_i ( axi_req_host ),
+      .axi_rsp_o ( axi_rsp_host )
   );
   tlul2axi  #(
       .axi_req_t(axi_req_t),
@@ -2961,6 +3133,11 @@ module top_earlgrey #(
     .tl_tlul2axi_o(tlul2axi_tl_req),
     .tl_tlul2axi_i(tlul2axi_tl_rsp),
 
+    .tl_crypto_sram_o(crypto_sram_tl_req),
+    .tl_crypto_sram_i(crypto_sram_tl_rsp),
+
+    .tl_idma_o(idma_tl_req),
+    .tl_idma_i(idma_tl_rsp),
 
     .scanmode_i
   );

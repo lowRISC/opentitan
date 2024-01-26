@@ -266,6 +266,10 @@ module secure_subsystem_synth_wrap
    );
    
    top_earlgrey #(
+    .AxiAddrWidth(AXI_ADDR_WIDTH),
+    .AxiIdWidth(AXI_ID_WIDTH),
+    .AxiUserWidth(AXI_USER_WIDTH),
+    .AxiDataWidth(AXI_DATA_WIDTH),
     .HartIdOffs(HartIdOffs),
     .OtpCtrlMemInitFile(OtpCtrlMemInitFile),
     .SramCtrlMainMemInitFile(SramCtrlMainMemInitFile),

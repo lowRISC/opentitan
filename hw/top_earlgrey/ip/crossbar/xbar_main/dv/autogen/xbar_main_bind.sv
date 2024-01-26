@@ -188,5 +188,11 @@ module xbar_main_bind;
     .h2d    (tl_crypto_sram_o),
     .d2h    (tl_crypto_sram_i)
   );
+  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_idma (
+    .clk_i  (clk_main_i),
+    .rst_ni (rst_main_ni),
+    .h2d    (tl_idma_o),
+    .d2h    (tl_idma_i)
+  );
 
 endmodule

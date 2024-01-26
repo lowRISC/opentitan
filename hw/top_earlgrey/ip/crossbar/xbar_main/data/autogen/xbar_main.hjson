@@ -193,5 +193,11 @@
       act:    "req"
       package: "tlul_ot_pkg"
     }
+    { struct: "tl"
+      type:   "req_rsp"
+      name:   "tl_idma"
+      act:    "req"
+      package: "tlul_ot_pkg"
+    }
   ]
 }

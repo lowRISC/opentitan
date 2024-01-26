@@ -34,8 +34,11 @@ package tl_main_pkg;
   localparam logic [31:0] ADDR_SPACE_SRAM_CTRL_MAIN__REGS = 32'h c11c0000;
   localparam logic [31:0] ADDR_SPACE_USBDEV               = 32'h c0320000;
   localparam logic [31:0] ADDR_SPACE_SRAM_CTRL_MAIN__RAM  = 32'h e0000000;
-  localparam logic [31:0] ADDR_SPACE_TLUL2AXI             = 32'h 00010000;
+  localparam logic [0:0][31:0] ADDR_SPACE_TLUL2AXI             = {
+    32'h 00010000
+  };
   localparam logic [31:0] ADDR_SPACE_CRYPTO_SRAM          = 32'h fff00000;
+  localparam logic [31:0] ADDR_SPACE_IDMA                 = 32'h fef00000;
 
   localparam logic [31:0] ADDR_MASK_RV_DM__REGS          = 32'h 00000003;
   localparam logic [31:0] ADDR_MASK_RV_DM__MEM           = 32'h 00000fff;
@@ -65,11 +68,14 @@ package tl_main_pkg;
   localparam logic [31:0] ADDR_MASK_SRAM_CTRL_MAIN__REGS = 32'h 0000001f;
   localparam logic [31:0] ADDR_MASK_USBDEV               = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_SRAM_CTRL_MAIN__RAM  = 32'h 0001ffff;
-  localparam logic [31:0] ADDR_MASK_TLUL2AXI             = 32'h 9fffffff;
+  localparam logic [0:0][31:0] ADDR_MASK_TLUL2AXI             = {
+    32'h 9ffeffff
+  };
   localparam logic [31:0] ADDR_MASK_CRYPTO_SRAM          = 32'h 0001ffff;
+  localparam logic [31:0] ADDR_MASK_IDMA                 = 32'h 0001ffff;
 
   localparam int N_HOST   = 3;
-  localparam int N_DEVICE = 27;
+  localparam int N_DEVICE = 28;
 
   typedef enum int {
     TlRvDmRegs = 0,
@@ -98,7 +104,8 @@ package tl_main_pkg;
     TlUsbdev = 23,
     TlSramCtrlMainRam = 24,
     TlTlul2Axi = 25,
-    TlCryptoSram = 26
+    TlCryptoSram = 26,
+    TlIdma = 27
   } tl_device_e;
 
   typedef enum int {

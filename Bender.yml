@@ -1,11 +1,14 @@
 package:
 
   name: opentitan
-  
+
 dependencies:
 
- axi:         { git: "https://github.com/pulp-platform/axi.git", version: =0.39.1-beta  }
- 
+  axi:                  { git: "https://github.com/pulp-platform/axi.git", version: =0.39.1  }
+  cluster_interconnect: { git: "https://github.com/pulp-platform/cluster_interconnect.git", version: "1.1.2" }
+  idma:                 { git: "https://github.com/pulp-platform/idma.git", rev: "2ee97a360169772ae18a17d5de4cd4480a6d4804" }
+  register_interface:   { git: "https://github.com/pulp-platform/register_interface.git", version: 0.4.2 }
+
 export_include_dirs:
        - hw/ip/prim/rtl
        - hw/ip/tlul/rtl
@@ -13,8 +16,8 @@ export_include_dirs:
        - hw/dv/sv/dv_utils
        - hw/ip/tlul2axi/test
        - hw/ip/lowrisc_ibex/rtl
- 
-sources:      
+
+sources:
 
 ###### dbg_rv
 
@@ -461,6 +464,11 @@ sources:
       - hw/ip/sram_ctrl/rtl/sram_ctrl_pkg.sv
       - hw/ip/sram_ctrl/rtl/sram_ctrl_regs_reg_top.sv
       - hw/ip/sram_ctrl/rtl/sram_ctrl.sv
+
+#### crypto_sram
+
+      - hw/ip/crypto_sram_wrap/rtl/crypto_sram_wrap.sv
+      - hw/ip/crypto_sram_wrap/rtl/idma_wrap.sv
 
 #### flash_ctrl
 
