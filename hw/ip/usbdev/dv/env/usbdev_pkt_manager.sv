@@ -7,7 +7,7 @@
 class usbdev_pkt_manager extends uvm_object;
   `uvm_object_utils(usbdev_pkt_manager)
 
-  //This queue is used to store the expected packet.
+  // This queue is used to store the expected packet.
   static bit exp_q[$][];
 
   function new(string name = "usbdev_pkt_manager");
@@ -76,14 +76,11 @@ class token_packet extends usbdev_pkt_manager;
     end
     crc = ~crc;
 
-    // Bit streaming to send LSB first...
-    this.pid  = {<<4{tpid}};
-    this.pid  = {<<{this.pid}};
-    taddress  = {<<{taddress}};
+    this.pid = tpid;
     this.addr = taddress;
-    tendpoint = {<<{tendpoint}};
     this.endp = tendpoint;
-    this.crc5 = crc;
+    this.crc5 = {<<{crc}};
+
     // Pack the token packet
     this.pack(pack_token);
     super.push_packet(pack_token);
@@ -141,8 +138,7 @@ class data_packet extends usbdev_pkt_manager;
     end
     crc = ~crc;
 
-    this.pid = {<<4{dpid}};
-    this.pid = {<<{this.pid}};
+    this.pid = dpid;
     this.data = {<<8{this.data}};
     this.data = {<<{this.data}};
     this.crc16 = {<<{crc}};
@@ -172,7 +168,7 @@ class hand_shake_packet extends usbdev_pkt_manager;
   // send_handshake_packet task : To get the field of data packet and pack them and then send that
   // packet into expected queue
   task send_handshake_packet(bit [7:0] hpid);
-    this.pid  = hpid;
+    this.pid = hpid;
 
     // Pack the handshake packet
     this.pack(pack_handshake);

@@ -9,8 +9,8 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
 );
   `uvm_component_utils(usbdev_scoreboard)
 
-  usbdev_packetiser  m_packetiser;
-  usbdev_TransactionManager m_usbdev_trans;
+  usbdev_packetiser m_packetiser;
+  usbdev_transaction_manager m_usbdev_trans;
   usbdev_pkt_manager m_pkt_manager;
   usb20_item m_usb20_item;
 
@@ -19,14 +19,31 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
   bit actual_pkt[];
 
   // TLM agent fifos
-  uvm_tlm_analysis_fifo #(usb20_item) usb20_fifo;
+  uvm_tlm_analysis_fifo #(usb20_item) req_usb20_fifo;
+  uvm_tlm_analysis_fifo #(usb20_item) rsp_usb20_fifo;
 
   // Intr checks
   local bit [NumUsbdevInterrupts-1:0] intr_exp;
   local bit [NumUsbdevInterrupts-1:0] intr_exp_at_addr_phase;
 
   // local queues to hold incoming packets pending comparison
-  usb20_item usb20_q[$];
+  local bit actual_pkt_q[$][];
+  local bit expected_pkt_q[$][];
+
+  // Local variables
+  local bit ep_out_enable;
+  local bit rx_enable_out;
+  local bit rx_enable_setup;
+  local bit pkt_ack;
+  local bit pkt_nak;
+  local bit pkt_stall;
+  local bit pkt_sent;
+  local bit stall;
+  local bit [31:0] ep_out_enable_reg;
+  local bit [31:0] rx_enable_setup_reg;
+  local bit [31:0] rx_enable_out_reg;
+  local bit [31:0] out_stall_reg;
+  local bit [3:0] endp_index;
 
   `uvm_component_new
 
@@ -36,7 +53,8 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
     m_pkt_manager = new();
     m_usbdev_trans = new();
     m_usb20_item = new();
-    usb20_fifo = new("usb20_fifo", this);
+    req_usb20_fifo = new("req_usb20_fifo", this);
+    rsp_usb20_fifo = new("rsp_usb20_fifo", this);
   endfunction
 
   function void connect_phase(uvm_phase phase);
@@ -47,43 +65,77 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
     super.run_phase(phase);
     fork
       process_usb20_fifo();
+      process_usb20_pkt();
     join_none
   endtask
 
   virtual task process_usb20_fifo();
     usb20_item item;
     forever begin
+      req_usb20_fifo.get(item);
+      m_packetiser.pack_pkt(item);
       usbdev_expected_pkt();
-      usb20_fifo.get(item);
       item.pack(actual_pkt);
+      actual_pkt_q.push_back(actual_pkt);
       `uvm_info(`gfn, $sformatf("received usb20 item :\n%0s", item.sprint()), UVM_DEBUG)
       `uvm_info(`gfn, $sformatf("ACTUAL PACKET : %p", actual_pkt), UVM_DEBUG)
     end
   endtask
 
   // usbdev_expected_pkt task : To run the predictor
-  // and compare the actual pkt with expected pkt
   // -------------------------------
   virtual task usbdev_expected_pkt();
-    m_packetiser.pack_pkt(m_usb20_item);
     m_usbdev_trans.transaction_manager(m_packetiser.token_pkt_arr, m_packetiser.data_pkt_arr,
                                        m_packetiser.handshake_pkt_arr);
     m_pkt_manager.pop_packet(expected_pkt);
+    expected_pkt_q.push_back(expected_pkt);
     `uvm_info(`gfn, $sformatf("EXPECTED PACKET : %p", expected_pkt), UVM_DEBUG)
-    foreach(actual_pkt[i])
-      `DV_CHECK_EQ(actual_pkt[i], expected_pkt[i]);
+  endtask
+
+  // process_usb20_pkt task : Process queue
+  // and compare the actual pkt with expected pkt
+  // -------------------------------
+  virtual task process_usb20_pkt();
+    usb20_item item;
+    rsp_usb20_fifo.get(item);
+    usbdev_expected_pkt();
+    item.pack(expected_pkt);
+    actual_pkt_q.push_back(expected_pkt);
+    compare_usb20_pkt();
+  endtask
+
+  // compare_usb20_pkt task : To check pkt transmission accuracy
+  // -------------------------------
+  virtual task compare_usb20_pkt();
+    if (actual_pkt_q.size() > 0) begin
+      repeat(actual_pkt_q.size()) begin
+        `DV_CHECK_EQ(actual_pkt_q.pop_front(), expected_pkt_q.pop_front());
+        `uvm_info(`gfn,"item match",UVM_DEBUG)
+      end
+    end
   endtask
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
     uvm_reg csr;
     bit     do_read_check   = 1'b1;
+    bit     buffer_mem      = 1'b0;
+    bit     [11:0] buffer_start_offset = 12'h800;
+    bit     [11:0] buffer_end_offset = 12'hffc;
     bit     write           = item.is_write();
+    string  csr_name;
+    bit [TL_AW-1:0] addr_mask = ral.get_addr_mask();
     uvm_reg_addr_t csr_addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
 
     // if access was to a valid csr, get the csr handle
     if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
       csr = cfg.ral_models[ral_name].default_map.get_reg_by_offset(csr_addr);
       `DV_CHECK_NE_FATAL(csr, null)
+      csr_name = csr.get_name();
+    end
+    // if access was to a valid mem buffer location
+    else if (((item.a_addr & addr_mask) inside {[buffer_start_offset : buffer_end_offset]})) begin
+      csr_name = "buffer";
+      buffer_mem = 1'b1;
     end
     else begin
       `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
@@ -99,8 +151,7 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
     // process the csr req
     // for write, update local variable and fifo at address phase
     // for read, update predication at address phase and compare at data phase
-
-    case (csr.get_name())
+    case (csr_name)
       // add individual case item for each csr
       "usbctrl": begin
         // no special handling yet
@@ -146,7 +197,15 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
         // TODO
       end
       "ep_out_enable": begin
-        // TODO
+        do_read_check = 1'b0;
+        ep_out_enable_reg = ral.ep_out_enable[0].get_mirrored_value();
+        foreach(ep_out_enable_reg[i]) begin
+          if (ep_out_enable_reg[i]==1'b1) begin
+            ep_out_enable = 1'b1;
+            endp_index = i;
+            break;
+          end
+        end
       end
       "ep_in_enable": begin
         // TODO
@@ -161,10 +220,18 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
         do_read_check = 1'b0;
       end
       "rxenable_setup": begin
-        // TODO
+        do_read_check = 1'b0;
+        rx_enable_setup_reg = ral.rxenable_setup[0].get_mirrored_value();
+        if (rx_enable_setup_reg[endp_index]) begin
+          rx_enable_setup = 1'b1;
+        end
       end
       "rxenable_out": begin
-        // TODO
+        do_read_check = 1'b0;
+        rx_enable_out_reg = ral.rxenable_out[0].get_mirrored_value();
+        if (rx_enable_out_reg[endp_index]) begin
+          rx_enable_out = 1'b1;
+        end
       end
       "set_nak_out": begin
         // TODO
@@ -173,12 +240,15 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
         // TODO
       end
       "out_stall": begin
-        // TODO
+        out_stall_reg = ral.out_stall[0].get_mirrored_value();
+        if (out_stall_reg[endp_index]) begin
+          stall = 1'b1;
+        end
       end
       "in_stall": begin
         // TODO
       end
-      "configin": begin
+      "configin_0": begin
         // TODO
       end
       "out_iso": begin
@@ -206,28 +276,44 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
         // TODO
       end
       "buffer": begin
-        // TODO
+        do_read_check = 1'b1;
       end
       default: begin
         `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
       end
     endcase
-
     // On reads, if do_read_check, is set, then check mirrored_value against item.d_data
     if (!write && channel == DataChannel) begin
-      if (do_read_check) begin
+      if (do_read_check & ~buffer_mem) begin
         `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data,
                      $sformatf("reg name: %0s", csr.get_full_name()))
       end
+      else if (do_read_check & buffer_mem) begin
+        // do-nothing
+      end
+      else //if (~buffer_mem)
       void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
+    end
+    // hand_shaking : send regs information required for hanshaking to predictor
+    pkt_ack = ep_out_enable & (rx_enable_out || rx_enable_setup) & ~stall;
+    pkt_nak = ~rx_enable_out & ~rx_enable_setup;
+    pkt_stall = stall;
+    if (pkt_ack & ~pkt_stall) begin
+      m_usbdev_trans.m_usbdev_handshake_pkt = ACK;
+    end else if (pkt_nak & ~pkt_stall) begin
+      m_usbdev_trans.m_usbdev_handshake_pkt = NAK;
+    end else if(stall) begin
+      m_usbdev_trans.m_usbdev_handshake_pkt = STALL;
     end
   endtask
 
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
     // Reset local fifos queues and variables
-    usb20_fifo.flush();
-    usb20_q.delete();
+    req_usb20_fifo.flush();
+    rsp_usb20_fifo.flush();
+    actual_pkt_q.delete();
+    expected_pkt_q.delete();
     intr_exp = 0;
     intr_exp_at_addr_phase = 0;
   endfunction
@@ -235,8 +321,8 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
   function void check_phase(uvm_phase phase);
     super.check_phase(phase);
     // Post test checks to ensure that all local fifos and queues are empty
-    `DV_EOT_PRINT_TLM_FIFO_CONTENTS(usb20_item, usb20_fifo)
-    `DV_EOT_PRINT_Q_CONTENTS(usb20_item, usb20_q)
+    `DV_EOT_PRINT_TLM_FIFO_CONTENTS(usb20_item, req_usb20_fifo)
+    `DV_EOT_PRINT_TLM_FIFO_CONTENTS(usb20_item, rsp_usb20_fifo)
   endfunction
 
 endclass

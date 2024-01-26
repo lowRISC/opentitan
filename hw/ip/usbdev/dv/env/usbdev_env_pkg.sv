@@ -47,6 +47,18 @@ package usbdev_env_pkg;
     NumUsbdevInterrupts
   } usbdev_intr_e;
 
+  typedef enum bit [1:0] {
+    ACK = 0,
+    NAK = 1,
+    STALL = 2
+  } usbdev_handshake_pkt_e;
+
+  typedef enum bit [1:0] {
+    TOKEN_PKT = 2'b10,
+    DATA_PKT = 2'b00,
+    HANDSHAKE_PKT = 2'b01
+  } usbdev_pkt_type_e;
+
   // functions
 
   // package sources

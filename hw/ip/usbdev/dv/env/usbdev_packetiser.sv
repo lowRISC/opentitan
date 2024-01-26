@@ -25,25 +25,19 @@ class usbdev_packetiser extends uvm_object;
   endfunction
 
   // pack_pkt task
+  // Last 2 bits of pid classifies the pkt type
   // -------------------------------
   task pack_pkt(usb20_item m_usb20_item);
-    if (m_usb20_item.m_pkt_type == PktTypeToken) begin
-      m_tpkt.m_pid_type = pid_type_e'({<<4{m_tpkt.m_pid_type}});
-      m_tpkt.m_pid_type = pid_type_e'({<<{m_tpkt.m_pid_type}});
-      m_tpkt.address = {<<{m_tpkt.address}};
-      m_tpkt.endpoint = {<<{m_tpkt.endpoint}};
-      m_tpkt.crc5 = {<<{m_tpkt.crc5}};
+    if (m_usb20_item.m_pid_type[1:0] == TOKEN_PKT) begin
+      $cast(m_tpkt, m_usb20_item.clone());
       m_tpkt.pack(token_pkt_arr);
     end
-    else if (m_usb20_item.m_pkt_type == PktTypeData) begin
-      m_dpkt.m_pid_type = pid_type_e'({<<4{m_dpkt.m_pid_type}});
-      m_dpkt.m_pid_type = pid_type_e'({<<{m_dpkt.m_pid_type}});
-      m_dpkt.crc16 = {<<{m_dpkt.crc16}};
+    else if (m_usb20_item.m_pid_type[1:0] == DATA_PKT) begin
+      $cast(m_dpkt, m_usb20_item.clone());
       m_dpkt.pack(data_pkt_arr);
     end
-    else if (m_usb20_item.m_pkt_type == PktTypeHandshake) begin
-      m_hpkt.m_pid_type = pid_type_e'({<<4{m_hpkt.m_pid_type}});
-      m_hpkt.m_pid_type = pid_type_e'({<<{m_hpkt.m_pid_type}});
+    else if (m_usb20_item.m_pid_type[1:0] == HANDSHAKE_PKT) begin
+      $cast(m_hpkt, m_usb20_item.clone());
       m_hpkt.pack(handshake_pkt_arr);
     end
     else;

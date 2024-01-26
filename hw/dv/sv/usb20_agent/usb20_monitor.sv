@@ -4,12 +4,12 @@
 
 class usb20_monitor extends dv_base_monitor #(
   .ITEM_T (usb20_item),
+  .REQ_ITEM_T (usb20_item),
+  .RSP_ITEM_T (usb20_item),
   .CFG_T  (usb20_agent_cfg),
   .COV_T  (usb20_agent_cov)
 );
   `uvm_component_utils(usb20_monitor)
-
-   uvm_analysis_port #(usb20_item) usb20_monitor_analysis_port;
 
    sof_pkt        m_sof_pkt;
    token_pkt      m_token_pkt;
@@ -34,7 +34,6 @@ class usb20_monitor extends dv_base_monitor #(
     m_token_pkt = token_pkt::type_id::create("m_token_pkt", this);
     m_data_pkt = data_pkt::type_id::create("m_data_pkt", this);
     m_handshake_pkt = handshake_pkt::type_id::create("m_handshake_pkt", this);
-    usb20_monitor_analysis_port = new("usb20_monitor_analysis_port", this);
     if (!uvm_config_db#(virtual usb20_block_if)::get(this, "*.env.m_usb20_agent*", "bif",
                                                      cfg.bif)) begin
       `uvm_fatal(`gfn, "failed to get usb20_block_if handle from uvm_config_db")
@@ -92,7 +91,7 @@ class usb20_monitor extends dv_base_monitor #(
     `uvm_info(`gfn, $sformatf("Sof framecnt = %b", m_sof_pkt.framecnt), UVM_DEBUG)
     m_sof_pkt.crc5 = sof_result[25:21];
     `uvm_info(`gfn, $sformatf("Sof crc5 = %b", m_sof_pkt.crc5), UVM_DEBUG)
-    analysis_port.write(m_sof_pkt);
+    req_analysis_port.write(m_sof_pkt);
   endtask
 
   // Monitor token packet
@@ -123,14 +122,19 @@ class usb20_monitor extends dv_base_monitor #(
 
     `uvm_info(`gfn, $sformatf("Final Token Packet = %b", token_result), UVM_DEBUG)
     m_token_pkt.m_pid_type = pid_type_e'(token_result[26:19]);
+    m_token_pkt.m_pid_type = pid_type_e'({<<4{m_token_pkt.m_pid_type}});
+    m_token_pkt.m_pid_type = pid_type_e'({<<{m_token_pkt.m_pid_type}});
     `uvm_info(`gfn, $sformatf("Token Pid = %b", m_token_pkt.m_pid_type), UVM_DEBUG)
     m_token_pkt.address = token_result[18:12];
+    m_token_pkt.address = {<<{m_token_pkt.address}};
     `uvm_info(`gfn, $sformatf("Token Address = %b", m_token_pkt.address), UVM_DEBUG)
     m_token_pkt.endpoint = token_result[11:8];
+    m_token_pkt.endpoint = {<<{m_token_pkt.endpoint}};
     `uvm_info(`gfn, $sformatf("Token Endpoint = %b", m_token_pkt.endpoint), UVM_DEBUG)
     m_token_pkt.crc5 = token_result[7:3];
+    m_token_pkt.crc5 = {<<{m_token_pkt.crc5}};
     `uvm_info(`gfn, $sformatf("Token Crc5 = %b", m_token_pkt.crc5), UVM_DEBUG)
-    analysis_port.write(m_token_pkt);
+    req_analysis_port.write(m_token_pkt);
   endtask
 
   // Monitor data packet
@@ -164,6 +168,8 @@ class usb20_monitor extends dv_base_monitor #(
       data_pid[i] = bit_destuffed[i + 8];
     end
     m_data_pkt.m_pid_type = pid_type_e'(data_pid);
+    m_data_pkt.m_pid_type = pid_type_e'({<<4{m_data_pkt.m_pid_type}});
+    m_data_pkt.m_pid_type = pid_type_e'({<<{m_data_pkt.m_pid_type}});
     `uvm_info(`gfn, $sformatf("Data Pid = %b", m_data_pkt.m_pid_type), UVM_DEBUG)
     // Data_in_bits
     for (int i = 0 ; i < bit_destuffed.size() - 35; i++) begin
@@ -182,7 +188,8 @@ class usb20_monitor extends dv_base_monitor #(
     end
     m_data_pkt.crc16 = data_crc16;
     `uvm_info(`gfn, $sformatf("Data Crc16 = %b", m_data_pkt.crc16), UVM_DEBUG)
-    analysis_port.write(m_data_pkt);
+    if (cfg.bif.usb_dp_en_o) rsp_analysis_port.write(m_data_pkt);
+    else req_analysis_port.write(m_data_pkt);
   endtask
 
   // Monitor handshake packet
@@ -215,7 +222,8 @@ class usb20_monitor extends dv_base_monitor #(
     m_handshake_pkt.m_pid_type = pid_type_e'({<<4{m_handshake_pkt.m_pid_type}});
     m_handshake_pkt.m_pid_type = pid_type_e'({<<{m_handshake_pkt.m_pid_type}});
     `uvm_info(`gfn, $sformatf("Handshake Pid = %b", m_handshake_pkt.m_pid_type), UVM_DEBUG)
-    analysis_port.write(m_handshake_pkt);
+    if (cfg.bif.usb_dp_en_o) rsp_analysis_port.write(m_handshake_pkt);
+    else req_analysis_port.write(m_handshake_pkt);
   endtask
 
   // NRZI decoder
