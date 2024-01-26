@@ -3,3 +3,5 @@
 # SPDX-License-Identifier: Apache-2.0
 
 module(name = "lowrisc_opentitan")
+
+bazel_dep(name = "buildifier_prebuilt", version = "6.4.0")
