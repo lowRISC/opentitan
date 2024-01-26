@@ -37,7 +37,8 @@ class usbdev_env extends cip_base_env #(
   function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
     if (cfg.en_scb) begin
-      m_usb20_agent.monitor.analysis_port.connect(scoreboard.usb20_fifo.analysis_export);
+      m_usb20_agent.monitor.req_analysis_port.connect(scoreboard.req_usb20_fifo.analysis_export);
+      m_usb20_agent.monitor.rsp_analysis_port.connect(scoreboard.rsp_usb20_fifo.analysis_export);
     end
     if (cfg.is_active && cfg.m_usb20_agent_cfg.is_active) begin
       virtual_sequencer.usb20_sequencer_h = m_usb20_agent.sequencer;
