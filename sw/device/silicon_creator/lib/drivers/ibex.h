@@ -8,6 +8,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "sw/device/lib/arch/device.h"
+#include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/base/macros.h"
 
 #ifdef __cplusplus
@@ -21,6 +23,26 @@ extern "C" {
  */
 OT_WARN_UNUSED_RESULT
 uint32_t ibex_fpga_version(void);
+
+#ifdef OT_PLATFORM_RV32
+OT_WARN_UNUSED_RESULT
+inline uint64_t ibex_mcycle(void) {
+  uint32_t lo, hi, hi2;
+  do {
+    CSR_READ(CSR_REG_MCYCLEH, &hi);
+    CSR_READ(CSR_REG_MCYCLE, &lo);
+    CSR_READ(CSR_REG_MCYCLEH, &hi2);
+  } while (hi != hi2);
+  return ((uint64_t)hi << 32) | lo;
+}
+
+inline uint64_t ibex_time_to_cycles(uint64_t time_us) {
+  return to_cpu_cycles(time_us);
+}
+#else
+extern uint64_t ibex_mcycle(void);
+extern uint64_t ibex_time_to_cycles(uint64_t time_us);
+#endif
 
 /**
  * The following constants represent the expected number of sec_mmio register
