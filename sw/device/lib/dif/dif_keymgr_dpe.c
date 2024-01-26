@@ -294,8 +294,8 @@ dif_result_t dif_keymgr_dpe_generate(
       KEYMGR_DPE_CONTROL_SHADOWED_REG_RESVAL,
       KEYMGR_DPE_CONTROL_SHADOWED_DEST_SEL_FIELD, params->key_dest);
   reg_control = bitfield_field32_write(
-      KEYMGR_DPE_CONTROL_SHADOWED_REG_RESVAL,
-      KEYMGR_DPE_CONTROL_SHADOWED_SLOT_SRC_SEL_FIELD, params->slot_src_sel);
+      reg_control, KEYMGR_DPE_CONTROL_SHADOWED_SLOT_SRC_SEL_FIELD,
+      params->slot_src_sel);
 
   if (params->sideload_key) {
     reg_control = bitfield_field32_write(
