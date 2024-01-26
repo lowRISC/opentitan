@@ -30,7 +30,8 @@
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-status_t keymgr_dpe_testutils_startup(dif_keymgr_dpe_t *keymgr_dpe);
+status_t keymgr_dpe_testutils_startup(dif_keymgr_dpe_t *keymgr_dpe,
+                                      uint32_t slot_dst_sel);
 
 /**
  * Issues a keymgr_dpe advance operation and wait for it to complete.

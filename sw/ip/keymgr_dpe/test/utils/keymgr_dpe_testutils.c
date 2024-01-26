@@ -18,7 +18,8 @@
 #include "sw/lib/sw/device/runtime/log.h"
 #include "sw/lib/sw/device/silicon_creator/base/chip.h"
 
-status_t keymgr_dpe_testutils_startup(dif_keymgr_dpe_t *keymgr_dpe) {
+status_t keymgr_dpe_testutils_startup(dif_keymgr_dpe_t *keymgr_dpe,
+                                      uint32_t slot_dst_sel) {
   dif_rstmgr_t rstmgr;
   dif_rstmgr_reset_info_bitfield_t info;
 
@@ -53,7 +54,7 @@ status_t keymgr_dpe_testutils_startup(dif_keymgr_dpe_t *keymgr_dpe) {
 
     // Advance to Initialized state.
     TRY(keymgr_dpe_testutils_check_state(keymgr_dpe, kDifKeymgrDpeStateReset));
-    TRY(dif_keymgr_dpe_initialize(keymgr_dpe, /*slot_dst_sel=*/1));
+    TRY(dif_keymgr_dpe_initialize(keymgr_dpe, slot_dst_sel));
     TRY(keymgr_dpe_testutils_wait_for_operation_done(keymgr_dpe));
     TRY(keymgr_dpe_testutils_check_state(keymgr_dpe,
                                          kDifKeymgrDpeStateAvailable));
