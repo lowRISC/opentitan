@@ -1870,19 +1870,24 @@
         desc: '''
               Register write enable for all direct access interface registers.
               ''',
-        swaccess: "ro",
-        hwaccess: "hwo",
+        swaccess: "rw0c",
+        hwaccess: "hrw",
         hwext:    "true",
+        hwqe:     "true",
         tags: [ // OTP internal HW will set this enable register to 0 when OTP is not under IDLE
                 // state, so could not auto-predict its value
                 "excl:CsrNonInitTests:CsrExclCheck"],
         fields: [
           {
               bits:   "0",
-              desc: ''' This bit is hardware-managed and only readable by software.
-              The DAI sets this bit temporarily to 0 during an OTP operation such that
-              the corresponding address and data registers cannot be modified while
-              the operation is pending.
+              desc: '''
+              This bit controls whether the DAI registers can be written.
+              Write 0 to it in order to clear the bit.
+
+              Note that the hardware also modulates this bit and sets it to 0 temporarily
+              during an OTP operation such that the corresponding address and data registers
+              cannot be modified while an operation is pending. The !!DAI_IDLE status bit
+              will also be set to 0 in such a case.
               '''
               resval: 1,
           },

@@ -39,6 +39,10 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
   // This bit is used for DAI interface to mark if the read access is valid.
   bit dai_read_valid;
 
+  // This captures the regwen state as configured by the SW side (i.e. without HW modulation
+  // with the idle signal overlaid).
+  bit direct_access_regwen_state = 1;
+
   // ICEBOX(#17798): currently scb will skip checking the readout value if the ECC error is
   // uncorrectable. Because if the error is uncorrectable, current scb does not track all the
   // backdoor injected values.
@@ -151,7 +155,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
 
           if (cfg.otp_ctrl_vif.under_error_states() == 0) begin
             // Dai access is unlocked because the power init is done
-            void'(ral.direct_access_regwen.predict(1));
+            void'(ral.direct_access_regwen.predict(direct_access_regwen_state));
 
             // Dai idle is set because the otp init is done
             exp_status[OtpDaiIdleIdx] = 1;
@@ -557,6 +561,10 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
     bit         do_read_check = 1;
     uvm_reg     csr;
     dv_base_reg dv_reg;
+    string      csr_name;
+
+    `uvm_info(`gfn, $sformatf("sw state %d, reg state %d", direct_access_regwen_state,
+                             `gmv(ral.direct_access_regwen)), UVM_LOW);
 
     // if access was to a valid csr, get the csr handle
     if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
@@ -624,14 +632,18 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
       `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
     end
 
+    csr_name = csr.get_name();
+
     if (addr_phase_write) begin
-      if (cfg.en_cov && cfg.otp_ctrl_vif.alert_reqs && csr.get_name == "direct_access_cmd") begin
+      if (cfg.en_cov && cfg.otp_ctrl_vif.alert_reqs && csr_name == "direct_access_cmd") begin
         cov.req_dai_access_after_alert_cg.sample(item.a_data);
       end
 
       // Skip predict if the register is locked by `direct_access_regwen`.
+      // An exception is the direct_access_regwen which may always be written.
       if (ral.direct_access_regwen.locks_reg_or_fld(dv_reg) &&
-          `gmv(ral.direct_access_regwen) == 0) return;
+          `gmv(ral.direct_access_regwen) == 0 &&
+          csr_name != "direct_access_regwen") return;
 
       void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
     end
@@ -639,7 +651,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
     // process the csr req
     // for write, update local variable and fifo at address phase
     // for read, update predication at address phase and compare at data phase
-    case (csr.get_name())
+    case (csr_name)
       // add individual case item for each csr
       "intr_state": begin
         if (data_phase_read) begin
@@ -904,7 +916,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
           if (under_dai_access && !cfg.otp_ctrl_vif.under_error_states()) begin
             if (item.d_data[OtpDaiIdleIdx]) begin
               under_dai_access = 0;
-              void'(ral.direct_access_regwen.predict(1));
+              void'(ral.direct_access_regwen.predict(direct_access_regwen_state));
               void'(ral.intr_state.otp_operation_done.predict(1));
             end
           end
@@ -940,6 +952,15 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
           end
         end
       end
+      "direct_access_regwen": begin
+        if (addr_phase_write) begin
+          // This locks the DAI until the next reset.
+          if (!item.a_data[0]) begin
+            direct_access_regwen_state = 0;
+            void'(ral.direct_access_regwen.predict(0));
+          end
+        end
+      end
       // For error codes, if lc_prog in progress, err_code might update anytime in DUT. Ignore
       // checking until req is acknowledged.
 
@@ -967,7 +988,6 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
 <% part_name_snake = Name.from_snake_case(part["name"]).as_snake_case() %>\
       "${part_name_snake}_read_lock",
 % endfor
-      "direct_access_regwen",
       "direct_access_wdata_0",
       "direct_access_wdata_1",
       "direct_access_address",
@@ -1071,6 +1091,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
       sram_fifos[i].flush();
     end
 
+    direct_access_regwen_state = 1;
     under_chk             = 0;
     under_dai_access      = 0;
     ignore_digest_chk     = 0;

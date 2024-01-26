@@ -228,7 +228,9 @@ module otp_ctrl_core_reg_top (
   logic err_code_9_re;
   logic [2:0] err_code_9_qs;
   logic direct_access_regwen_re;
+  logic direct_access_regwen_we;
   logic direct_access_regwen_qs;
+  logic direct_access_regwen_wd;
   logic direct_access_cmd_we;
   logic direct_access_cmd_rd_wd;
   logic direct_access_cmd_wr_wd;
@@ -965,19 +967,23 @@ module otp_ctrl_core_reg_top (
 
 
   // R[direct_access_regwen]: V(True)
+  logic direct_access_regwen_qe;
+  logic [0:0] direct_access_regwen_flds_we;
+  assign direct_access_regwen_qe = &direct_access_regwen_flds_we;
   prim_subreg_ext #(
     .DW    (1)
   ) u_direct_access_regwen (
     .re     (direct_access_regwen_re),
-    .we     (1'b0),
-    .wd     ('0),
+    .we     (direct_access_regwen_we),
+    .wd     (direct_access_regwen_wd),
     .d      (hw2reg.direct_access_regwen.d),
     .qre    (),
-    .qe     (),
-    .q      (),
+    .qe     (direct_access_regwen_flds_we[0]),
+    .q      (reg2hw.direct_access_regwen.q),
     .ds     (),
     .qs     (direct_access_regwen_qs)
   );
+  assign reg2hw.direct_access_regwen.qe = direct_access_regwen_qe;
 
 
   // R[direct_access_cmd]: V(True)
@@ -1827,6 +1833,9 @@ module otp_ctrl_core_reg_top (
   assign err_code_8_re = addr_hit[13] & reg_re & !reg_error;
   assign err_code_9_re = addr_hit[14] & reg_re & !reg_error;
   assign direct_access_regwen_re = addr_hit[15] & reg_re & !reg_error;
+  assign direct_access_regwen_we = addr_hit[15] & reg_we & !reg_error;
+
+  assign direct_access_regwen_wd = reg_wdata[0];
   assign direct_access_cmd_we = addr_hit[16] & reg_we & !reg_error;
 
   assign direct_access_cmd_rd_wd = reg_wdata[0];
@@ -1907,7 +1916,7 @@ module otp_ctrl_core_reg_top (
     reg_we_check[12] = 1'b0;
     reg_we_check[13] = 1'b0;
     reg_we_check[14] = 1'b0;
-    reg_we_check[15] = 1'b0;
+    reg_we_check[15] = direct_access_regwen_we;
     reg_we_check[16] = direct_access_cmd_gated_we;
     reg_we_check[17] = direct_access_address_gated_we;
     reg_we_check[18] = direct_access_wdata_0_gated_we;

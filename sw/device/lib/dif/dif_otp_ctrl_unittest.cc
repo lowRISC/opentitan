@@ -30,6 +30,39 @@ class OtpTest : public testing::Test, public MmioTest {
   dif_otp_ctrl_t otp_ = {.base_addr = dev().region()};
 };
 
+class DaiRegwenTest : public OtpTest {};
+
+TEST_F(DaiRegwenTest, LockDai) {
+  EXPECT_WRITE32(
+      OTP_CTRL_DIRECT_ACCESS_REGWEN_REG_OFFSET,
+      {{OTP_CTRL_DIRECT_ACCESS_REGWEN_DIRECT_ACCESS_REGWEN_BIT, false}});
+  EXPECT_DIF_OK(dif_otp_ctrl_lock_dai(&otp_));
+}
+
+TEST_F(DaiRegwenTest, IsDaiLocked) {
+  bool flag;
+
+  EXPECT_READ32(
+      OTP_CTRL_DIRECT_ACCESS_REGWEN_REG_OFFSET,
+      {{OTP_CTRL_DIRECT_ACCESS_REGWEN_DIRECT_ACCESS_REGWEN_BIT, true}});
+  EXPECT_DIF_OK(dif_otp_ctrl_dai_is_locked(&otp_, &flag));
+  EXPECT_FALSE(flag);
+
+  EXPECT_READ32(
+      OTP_CTRL_DIRECT_ACCESS_REGWEN_REG_OFFSET,
+      {{OTP_CTRL_DIRECT_ACCESS_REGWEN_DIRECT_ACCESS_REGWEN_BIT, false}});
+  EXPECT_DIF_OK(dif_otp_ctrl_dai_is_locked(&otp_, &flag));
+  EXPECT_TRUE(flag);
+}
+
+TEST_F(DaiRegwenTest, NullArgs) {
+  EXPECT_DIF_BADARG(dif_otp_ctrl_lock_dai(nullptr));
+
+  bool flag;
+  EXPECT_DIF_BADARG(dif_otp_ctrl_dai_is_locked(nullptr, &flag));
+  EXPECT_DIF_BADARG(dif_otp_ctrl_dai_is_locked(&otp_, nullptr));
+}
+
 class ConfigTest : public OtpTest {};
 
 TEST_F(ConfigTest, Basic) {
