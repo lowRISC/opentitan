@@ -235,18 +235,27 @@ opentitan_test(
     ],
 )
 
-cc_library(
+dual_cc_library(
     name = "ibex",
-    srcs = ["ibex.c"],
-    hdrs = ["ibex.h"],
-    deps = [
-        "//hw/ip/rv_core_ibex/data:rv_core_ibex_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base:abs_mmio",
-        "//sw/device/lib/base:macros",
-        "//sw/device/lib/runtime:hart",
-        "//sw/device/silicon_creator/lib/base:sec_mmio",
-    ],
+    srcs = dual_inputs(
+        host = ["ibex_host.c"],
+        shared = ["ibex.c"],
+    ),
+    hdrs = dual_inputs(
+        shared = ["ibex.h"],
+    ),
+    deps = dual_inputs(
+        shared = [
+            "//hw/ip/rv_core_ibex/data:rv_core_ibex_regs",
+            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//sw/device/lib/arch:device",
+            "//sw/device/lib/base:abs_mmio",
+            "//sw/device/lib/base:csr",
+            "//sw/device/lib/base:macros",
+            "//sw/device/lib/runtime:hart",
+            "//sw/device/silicon_creator/lib/base:sec_mmio",
+        ],
+    ),
 )
 
 cc_test(
@@ -466,6 +475,7 @@ cc_library(
     srcs = ["pinmux.c"],
     hdrs = ["pinmux.h"],
     deps = [
+        "//hw/ip/gpio/data:gpio_regs",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//hw/top_earlgrey/ip/pinmux/data/autogen:pinmux_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -670,11 +680,13 @@ cc_library(
     srcs = ["uart.c"],
     hdrs = ["uart.h"],
     deps = [
+        ":ibex",
         "//hw/ip/uart/data:uart_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:hardened",
         "//sw/device/silicon_creator/lib:error",
     ],
 )
@@ -686,6 +698,7 @@ cc_test(
         ":uart",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:hardened",
         "//sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
     ],

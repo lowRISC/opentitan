@@ -10,6 +10,7 @@
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
+#include "sw/device/silicon_creator/lib/drivers/ibex.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -50,11 +51,25 @@ void uart_init(uint32_t precalculated_nco) {
                    0u);
 }
 
+void uart_enable_receiver(void) {
+  uint32_t reg =
+      abs_mmio_read32(TOP_EARLGREY_UART0_BASE_ADDR + UART_CTRL_REG_OFFSET);
+  reg = bitfield_bit32_write(reg, UART_CTRL_RX_BIT, true);
+  abs_mmio_write32(TOP_EARLGREY_UART0_BASE_ADDR + UART_CTRL_REG_OFFSET, reg);
+}
+
 OT_WARN_UNUSED_RESULT
 static bool uart_tx_full(void) {
   uint32_t reg =
       abs_mmio_read32(TOP_EARLGREY_UART0_BASE_ADDR + UART_STATUS_REG_OFFSET);
   return bitfield_bit32_read(reg, UART_STATUS_TXFULL_BIT);
+}
+
+OT_WARN_UNUSED_RESULT
+static bool uart_rx_empty(void) {
+  uint32_t reg =
+      abs_mmio_read32(TOP_EARLGREY_UART0_BASE_ADDR + UART_STATUS_REG_OFFSET);
+  return bitfield_bit32_read(reg, UART_STATUS_RXEMPTY_BIT);
 }
 
 OT_WARN_UNUSED_RESULT
@@ -76,6 +91,12 @@ void uart_putchar(uint8_t byte) {
   }
 }
 
+int uart_getchar(uint32_t timeout_ms) {
+  uint8_t ch;
+  size_t n = uart_read(&ch, 1, timeout_ms);
+  return n ? (int)ch : -1;
+}
+
 size_t uart_write(const uint8_t *data, size_t len) {
   size_t total = len;
   while (len) {
@@ -84,6 +105,40 @@ size_t uart_write(const uint8_t *data, size_t len) {
     len--;
   }
   return total;
+}
+
+size_t uart_read(uint8_t *data, size_t len, uint32_t timeout_ms) {
+  uint64_t time = ibex_mcycle();
+  uint64_t deadline = timeout_ms == UINT32_MAX
+                          ? UINT64_MAX
+                          : time + ibex_time_to_cycles(timeout_ms * 1000);
+
+  size_t n = 0;
+  for (n = 0; n < len; ++n) {
+    // If the receive FIFO is empty, wait.
+    while (uart_rx_empty()) {
+      time = ibex_mcycle();
+      if (time > deadline)
+        return n;
+    }
+    uint32_t reg =
+        abs_mmio_read32(TOP_EARLGREY_UART0_BASE_ADDR + UART_RDATA_REG_OFFSET);
+    *data++ = (uint8_t)reg;
+  }
+  return n;
+}
+
+hardened_bool_t uart_break_detect(uint32_t timeout_us) {
+  uint64_t time = ibex_mcycle();
+  uint64_t deadline = time + ibex_time_to_cycles(timeout_us);
+  while (time < deadline) {
+    uint32_t val =
+        abs_mmio_read32(TOP_EARLGREY_UART0_BASE_ADDR + UART_VAL_REG_OFFSET);
+    if (val)
+      return kHardenedBoolFalse;
+    time = ibex_mcycle();
+  }
+  return kHardenedBoolTrue;
 }
 
 size_t uart_sink(void *uart, const char *data, size_t len) {
