@@ -47,7 +47,8 @@ bool test_main(void) {
   dif_keymgr_dpe_t keymgr_dpe;
   dif_keymgr_dpe_advance_params_t keymgr_dpe_advance_params;
 
-  CHECK_STATUS_OK(keymgr_dpe_testutils_startup(&keymgr_dpe));
+  CHECK_STATUS_OK(keymgr_dpe_testutils_startup(&keymgr_dpe,
+                                               /*slot_dst_sel=*/1));
 
   CHECK_STATUS_OK(keymgr_dpe_testutils_check_state(
       &keymgr_dpe, kDifKeymgrDpeStateAvailable));
