@@ -11,7 +11,7 @@
 #
 
 GIT ?= git
-BENDER ?= bender
+BENDER ?= ./bender
 VSIM ?= vsim
 DPI-LIB ?= work-dpi
 run_script := scripts/opentitan_start.tcl
@@ -82,6 +82,12 @@ secure_boot_jtag:
 secure_boot_spi:
 	make clean sim BOOTMODE=1 vip=1
 
+bender:
+	wget "https://github.com/pulp-platform/bender/releases/download/v0.22.0/bender-0.22.0-x86_64-linux-gnu-centos7.8.2003.tar.gz"
+	tar -xvzf bender-0.22.0-x86_64-linux-gnu-centos7.8.2003.tar.gz
+	rm bender-0.22.0-x86_64-linux-gnu-centos7.8.2003.tar.gz
+	./bender --version | grep -q "bender 0.22.0"
+
 $(OT_ROOT)/hw/tb/vips:
 	rm -rf $@
 	mkdir $@
@@ -94,5 +100,5 @@ $(OT_ROOT)/hw/tb/vips:
 	cp model_tmp/exe_folder/S25fs256s/model/s25fs256s.v model_tmp/exe_folder/S25fs256s/model/s25fs256s_verilog.sdf $@
 	rm -rf model_tmp
 
-init: update scripts/compile_opentitan.tcl scripts/compile_opentitan_vip.tcl $(OT_ROOT)/hw/tb/vips
-	make -C $(IDMA_ROOT) idma_hw_all
+init: bender update scripts/compile_opentitan.tcl scripts/compile_opentitan_vip.tcl $(OT_ROOT)/hw/tb/vips
+	make -C $(IDMA_ROOT) idma_all

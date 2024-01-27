@@ -6,8 +6,8 @@ dependencies:
 
   axi:                  { git: "https://github.com/pulp-platform/axi.git", version: =0.39.1  }
   cluster_interconnect: { git: "https://github.com/pulp-platform/cluster_interconnect.git", version: "1.1.2" }
-  idma:                 { git: "https://github.com/pulp-platform/idma.git", rev: "2ee97a360169772ae18a17d5de4cd4480a6d4804" }
-  register_interface:   { git: "https://github.com/pulp-platform/register_interface.git", version: 0.4.2 }
+  idma:                 { git: "https://github.com/pulp-platform/idma.git", rev: "c68e28619c73b7f0e760db8b50707f7b2a6dddd7" }
+  register_interface:   { git: "https://github.com/pulp-platform/register_interface.git", version: 0.3.2 }
 
 export_include_dirs:
        - hw/ip/prim/rtl
