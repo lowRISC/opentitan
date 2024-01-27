@@ -164,6 +164,7 @@ rust_library(
         "src/transport/hyperdebug/servo_micro.rs",
         "src/transport/hyperdebug/spi.rs",
         "src/transport/hyperdebug/ti50.rs",
+        "src/transport/hyperdebug/uart.rs",
         "src/transport/ioexpander/mod.rs",
         "src/transport/ioexpander/sx1503.rs",
         "src/transport/mod.rs",
