@@ -2455,10 +2455,25 @@ module entropy_src_core import entropy_src_pkg::*; #(
   //--------------------------------------------
   // entropy conditioner
   //--------------------------------------------
-  // This block will take in raw entropy from the noise source block
-  // and compress it such that a perfect entropy source is created
-  // This block will take in 2048 (by default setting) bits to create 384 bits.
-
+  // This block takes in either post-health test entropy bits (when running in FIPS/CC compliant
+  // mode) or entropy injected by software (when running in Firmware Override: Extract & Insert
+  // mode).
+  // The amount of entropy consumed to generate a 384-bit seed depends on the mode of operation:
+  // - In FIPS/CC compliant mode, HEALTH_TEST_WINDOWS.FIPS_WINDOW x 4 bits (by default 2048 bits)
+  //   are required to produce one 384-bit seed. For the first seed after start up, the number of
+  //   bits consumed is doubled to align with the required 1024 samples of 4 bits for startup
+  //   health testing.
+  //   For windows which fail a health test, the entropy is still absorbed by the SHA3 engine
+  //   but no seed is produced. In order for the SHA3 engine to produce a seed, the last window it
+  //   absorbed must have passed the health tests.
+  // - In Firmware Override: Extract & Insert mode, the operation of the SHA3 engine is software
+  //   defined.
+  //
+  // Note that the final absorption operation of the SHA3 engine is triggered by the main state
+  // machine (upon receiving the health-test done pulse). The SHA3 engine is also triggered
+  // internally by the padding logic whenever 832 bits (= the rate or block size of SHA3-384) have
+  // been received.
+  //
   // Note on backpressure from the SHA block:
   // If we use the full sha3_msgfifo_ready signal, we create a combinational logic
   // loop.  However, the SHA3 seems to have a hiccup by which it some times

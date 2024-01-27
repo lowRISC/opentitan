@@ -160,7 +160,8 @@ module entropy_src_main_sm
             if (ht_fail_pulse_i) begin
               state_d = StartupFail1;
             end else begin
-              // Passed two consecutive tests
+              // We've now passed two consecutive test windows of the configured window length.
+              // Next, we're going to compress the collected entropy to produce a single seed.
               state_d = Sha3Prep;
               rst_alert_cntr_o = 1'b1;
             end
@@ -186,6 +187,16 @@ module entropy_src_main_sm
         if (!enable_i) begin
           state_d = Idle;
         end else begin
+          // Send the Start trigger to the SHA3 engine. After this point, collected raw entropy is
+          // going to be moved into the conditioner in chunks of 64 bits. The SHA3 engine itself
+          // will hash the received raw entropy whenever either of the following two conditions are
+          // met:
+          // 1) 13 64-bit chunks have been received (13 x 64 = 832 = the rate or block size of
+          //    the employed SHA3-384 engine). This condition is checked internally to the SHA3
+          //    engine.
+          // 2) The total amount of received entropy is equal to the configured health test window
+          //    size. This condition is checked by this FSM which then triggers the SHA3 engine
+          //    using the sha3_process_o signal.
           sha3_start_o = 1'b1;
           state_d = ContHTRunning;
         end
@@ -195,9 +206,12 @@ module entropy_src_main_sm
           state_d = Idle;
         end else begin
           if (ht_done_pulse_i) begin
+            // We've finished testing the current window and all the collected and tested entropy
+            // has been forwarded to the SHA3 engine and has at least partially been absorbed.
             if (alert_thresh_fail_i) begin
               state_d = AlertState;
             end else if (!ht_fail_pulse_i) begin
+              // Move forward and get the conditioner ready to finish the absorption process.
               state_d = Sha3Prep;
               rst_alert_cntr_o = 1'b1;
             end
@@ -226,6 +240,7 @@ module entropy_src_main_sm
         end
       end
       Sha3Process: begin
+        // Trigger the final absorption operation of the SHA3 engine.
         cs_aes_halt_req_o = 1'b1;
         sha3_process_o = 1'b1;
         state_d = Sha3Valid;
@@ -242,6 +257,8 @@ module entropy_src_main_sm
           state_d = Sha3MsgDone;
         end else begin
           if (main_stage_rdy_i) begin
+            // Push the digest produced by the SHA3 engine into the final FIFO and clear the
+            // internal state of the SHA3 engine to start from scratch for the next seed.
             sha3_done_o = prim_mubi_pkg::MuBi4True;
             main_stage_push_o = 1'b1;
             state_d = Sha3MsgDone;
