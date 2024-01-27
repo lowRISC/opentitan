@@ -16,7 +16,11 @@ When entropy is delivered to the downstream hardware block, a signal will indica
 Once the initial boot-time mode phase has completed, the ENTROPY_SRC block can be switched to FIPS/CC compliant mode (for simplicity referred to as FIPS mode) by setting the `FIPS_ENABLE` field in the [`CONF`](registers.md#conf) register to `kMultiBitBool4True`.
 In this mode, once the raw entropy has been health checked, it will be passed into a conditioner block.
 This block will compress the bits such that the entropy bits/physical bits, or min-entropy value, should be improved over the raw data source min-entropy value.
-The compression operation, by default, will compress every 2048 tested bits into 384 full-entropy bits.
+The compression operation will compress every [`HEALTH_TEST_WINDOWS.FIPS_WINDOW`](registers.md#health_test_windows--fips_window) x 4 tested bits into 384 full-entropy bits.
+By default, 2048 tested bits are used.
+
+Note that after enabling the ENTROPY_SRC block, the health tests need to pass for two subsequent windows of [`HEALTH_TEST_WINDOWS.FIPS_WINDOW`](registers.md#health_test_windows--fips_window) x 4 tested bits (startup health testing).
+By default, 1024 samples of 4 bits (4096 1-bit samples when running in single-channel mode), i.e., 4096 tested bits, are used for producing the startup seed.
 
 The hardware conditioning can also be bypassed and replaced in normal operation with a firmware-defined conditioning algorithm.
 This firmware conditioning algorithm can be disabled on boot for security purposes.

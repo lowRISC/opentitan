@@ -48,7 +48,7 @@ These tests include:
 - Optional Vendor Specific tests, which allow silicon creators to extend the health checks by adding a top-level block external to this IP.
 
 The Repetition Count and Adaptive Proportion test are specifically recommended by SP 800-90B, and are implemented in accordance with those recommendations.
-In FIPS/CC-compliance mode, all checks except the Repetition Count test are performed on fixed window of data, typically consisting of 2048 bits each.
+In FIPS/CC-compliance mode, all checks except the Repetition Count test are performed on a fixed window of data of configurable size, by default consisting of 2048 bits each.
 Per the definition in SP 800-90B, the Repetition Count test does not operate on a fixed window.
 The repetition count test fails if any sequence of bits continuously asserts the same value for too many samples, as determined by the programmable threshold, regardless of whether that sequence crosses any window boundaries.
 The thresholds for these tests should be chosen to achieve a low false-positive rate (&alpha;) given a conservative estimate of the manufacturing tolerances of the PTRNG noise source.
@@ -56,7 +56,8 @@ The combined choice of threshold and window size then determine the false-negati
 
 When the IP is disabled by clearing the [`MODULE_ENABLE`](./doc/registers.md#MODULE_ENABLE) register, all health checks are disabled and all counters internal to the health checks are reset.
 
-In order to compensate for the fact our tests (like *all* realistic statistical tests) have finite resolution for detecting defects, we conservatively use 2048 bits of PTRNG noise source to construct each 384 bit conditioned entropy sample.
+In order to compensate for the fact our tests (like *all* realistic statistical tests) have finite resolution for detecting defects, we conservatively use 2048 bits of PTRNG noise source to construct each 384 bit conditioned entropy sample by default.
+The effectively used number of bits is equal to the configured health test window size.
 When passed through the conditioning block, the resultant entropy stream will be full entropy unless the PTRNG noise source has encountered some statistical defect serious enough to reduce the raw min-entropy to a level below 0.375 bits of entropy per output bit.
 We choose this level as our definition of "non-tolerable statistical defects" for the purposes of evaluating this system under AIS31.
 Given this definition of "non-tolerable defects", the health-checks as implemented for this block will almost certainly detect any of the previously mentioned defects in a single iteration of the health checks (i.e. such serious defects will be detected with very low &beta;).
