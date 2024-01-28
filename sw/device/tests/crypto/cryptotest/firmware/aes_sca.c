@@ -639,8 +639,7 @@ status_t handle_aes_sca_fvsr_key_batch_encrypt(ujson_t *uj) {
   }
   sca_set_trigger_low();
 
-  // Only send the first word to increase capture rate
-  TRY(aes_send_ciphertext(true, uj));
+  TRY(aes_send_ciphertext(false, uj));
 
   // Start to generate random keys and plaintexts for the next batch when the
   // waves are getting from scope by the host to increase capture rate.
