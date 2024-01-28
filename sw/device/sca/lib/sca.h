@@ -124,6 +124,24 @@ typedef enum sca_peripheral {
 typedef uint32_t sca_peripherals_t;
 
 /**
+ * A set of contexts for SW LFSR
+ *
+ * This type is used for specifying the context of the LFSR, with each context
+ * corresponding to a different state variable
+ */
+typedef enum sca_lfsr_context {
+  /**
+   * PRNG used for initial data sharing
+   */
+  kScaLfsrMasking = 0,
+  /**
+   * PRNG used for determining the order of fixed and random measurements
+   */
+  kScaLfsrOrder = 1,
+
+} sca_lfsr_context_t;
+
+/**
  * Initializes the peripherals (pinmux, uart, gpio, and timer) used by SCA code.
  *
  * @param trigger Peripheral to use for the trigger signal.
@@ -184,8 +202,9 @@ void sca_call_and_sleep(sca_callee callee, uint32_t sleep_cycles);
  * Note that the LFSR itself has very low diffusion.
  *
  * @param seed The new seed value.
+ * @param context Specifies which LFSR to seed.
  */
-void sca_seed_lfsr(uint32_t seed);
+void sca_seed_lfsr(uint32_t seed, sca_lfsr_context_t context);
 
 /**
  * Steps the software LFSR usable e.g. for key masking `num_steps` times.
@@ -196,10 +215,11 @@ void sca_seed_lfsr(uint32_t seed);
  * ensured that each state bit depends on at least two previous state bits.
  *
  * @param num_steps The number of steps to run.
+ * @param context Specifies which LFSR to run.
 
  * @return The current state of the LFSR.
  */
-uint32_t sca_next_lfsr(uint16_t num_steps);
+uint32_t sca_next_lfsr(uint16_t num_steps, sca_lfsr_context_t context);
 
 /**
  * Applies a linear layer.

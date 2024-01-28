@@ -300,11 +300,26 @@ void sca_call_and_sleep(sca_callee callee, uint32_t sleep_cycles) {
       &clkmgr, CLKMGR_CLK_ENABLES_CLK_IO_DIV4_PERI_EN_BIT, kDifToggleEnabled));
 }
 
-static uint32_t sca_lfsr_state = 0xdeadbeef;
+static uint32_t sca_lfsr_state_masking = 0xdeadbeef;
+static uint32_t sca_lfsr_state_order = 0x99999999;
 
-void sca_seed_lfsr(uint32_t seed) { sca_lfsr_state = seed; }
+void sca_seed_lfsr(uint32_t seed, sca_lfsr_context_t context) {
+  if (context == kScaLfsrMasking) {
+    sca_lfsr_state_masking = seed;
+  }
+  if (context == kScaLfsrOrder) {
+    sca_lfsr_state_masking = seed;
+  }
+}
 
-uint32_t sca_next_lfsr(uint16_t num_steps) {
+uint32_t sca_next_lfsr(uint16_t num_steps, sca_lfsr_context_t context) {
+  uint32_t sca_lfsr_state;
+  if (context == kScaLfsrMasking) {
+    sca_lfsr_state = sca_lfsr_state_masking;
+  }
+  if (context == kScaLfsrOrder) {
+    sca_lfsr_state = sca_lfsr_state_order;
+  }
   const uint32_t lfsr_out = sca_lfsr_state;
   for (size_t i = 0; i < num_steps; ++i) {
     bool lfsr_bit = sca_lfsr_state & 0x00000001;
@@ -312,6 +327,12 @@ uint32_t sca_next_lfsr(uint16_t num_steps) {
     if (lfsr_bit) {
       sca_lfsr_state ^= 0x80000057;
     }
+  }
+  if (context == kScaLfsrMasking) {
+    sca_lfsr_state_masking = sca_lfsr_state;
+  }
+  if (context == kScaLfsrOrder) {
+    sca_lfsr_state_order = sca_lfsr_state;
   }
   return lfsr_out;
 }
