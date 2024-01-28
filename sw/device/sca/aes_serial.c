@@ -300,7 +300,7 @@ static void aes_serial_single_encrypt(const uint8_t *plaintext,
 }
 
 /**
- * Advances data for fvsr-key TVLA - fixed set
+ * Advances data for fvsr-key TVLA - fixed set.
  *
  * This function updates plaintext_fixed for fvsr-key TVLA, according
  * to DTR recommendations.
@@ -311,7 +311,7 @@ static void aes_serial_advance_fixed(void) {
 }
 
 /**
- * Advances data for fvsr-key TVLA - random set
+ * Advances data for fvsr-key TVLA - random set.
  *
  * This function updates plaintext_random and key_random for fvsr-key and
  * random TVLA, according to DTR recommendations.
@@ -321,6 +321,17 @@ static void aes_serial_advance_random(void) {
   memcpy(plaintext_random, ciphertext_temp, kAesTextLength);
   aes_sw_encrypt_block(key_random, kKeyGenRoundKeys, ciphertext_temp);
   memcpy(key_random, ciphertext_temp, kAesTextLength);
+}
+
+/**
+ * Advances data for fvsr-data TVLA - random set.
+ *
+ * This function updates plaintext_random for fvsr-data and
+ * TVLA, according to DTR recommendations, Section 5.1.
+ */
+static void aes_serial_advance_random_data(void) {
+  aes_sw_encrypt_block(plaintext_random, kKeyGenRoundKeys, ciphertext_temp);
+  memcpy(plaintext_random, ciphertext_temp, kAesTextLength);
 }
 
 /**
@@ -569,6 +580,64 @@ static void aes_serial_fvsr_key_batch_encrypt(const uint8_t *data,
 }
 
 /**
+ * Simple serial 'h' (fixed vs random data batch encrypt) command handler.
+ *
+ * This command is designed to maximize the capture rate for side-channel
+ * attacks. Instead of expecting a plaintext and sending the resulting
+ * ciphertext from and to the host for each encryption, this command repeatedly
+ * encrypts plaintexts that are generated on the device. The data
+ * collection method is based on the derived test requirements (DTR) for TVLA:
+ * https://www.rambus.com/wp-content/uploads/2015/08/TVLA-DTR-with-AES.pdf
+ * The measurements are taken by using either fixed or randomly selected
+ * plaintexts. In order to simplify the analysis, the first encryption has to
+ * use fixed plaintext. This minimizes the overhead of UART communication and
+ * significantly improves the capture rate. The host must use the same PRNG to
+ * be able to compute the random plaintext and the ciphertext of each trace.
+ *
+ * Packet payload must be a `uint32_t` representation of the number of
+ * encryptions to perform. Number of operations of a batch should not be greater
+ * than the 'kNumBatchOpsMax' value.
+ *
+ * Note that the host can partially verify this operation by checking the
+ * contents of the 'r' (last ciphertext) packet that is sent at the end of every
+ * batch.
+ *
+ * @param data Packet payload.
+ * @param data_len Packet payload length.
+ */
+static void aes_serial_fvsr_data_batch_encrypt(const uint8_t *data,
+                                               size_t data_len) {
+  uint32_t num_encryptions = 0;
+  SS_CHECK(data_len == sizeof(num_encryptions));
+  num_encryptions = read_32(data);
+  SS_CHECK(num_encryptions <= kNumBatchOpsMax);
+
+  for (uint32_t i = 0; i < num_encryptions; ++i) {
+    // The same key is used for both fixed and random data set.
+    memcpy(batch_keys[i], key_fixed, kAesKeyLength);
+    if (sample_fixed) {
+      memcpy(batch_plaintexts[i], plaintext_fixed, kAesKeyLength);
+    } else {
+      memcpy(batch_plaintexts[i], plaintext_random, kAesKeyLength);
+      aes_serial_advance_random_data();
+    }
+    sample_fixed = sca_next_lfsr(1, kScaLfsrOrder) & 0x1;
+  }
+
+  sca_set_trigger_high();
+  for (uint32_t i = 0; i < num_encryptions; ++i) {
+    aes_key_mask_and_config(batch_keys[i], kAesKeyLength);
+    aes_encrypt(batch_plaintexts[i], kAesTextLength);
+  }
+  sca_set_trigger_low();
+
+  // Acknowledge command
+  simple_serial_send_status(0);
+
+  aes_send_ciphertext(false);
+}
+
+/**
  * Simple serial 'l' (seed lfsr) command handler.
  *
  * This function only supports 4-byte seeds.
@@ -590,6 +659,21 @@ static void aes_serial_seed_lfsr(const uint8_t *seed, size_t seed_len) {
 }
 
 /**
+ * Simple serial 'j' (seed lfsr) command handler.
+ *
+ * This function only supports 4-byte seeds.
+ * Sets the seed for the LFSR used to determine the order of measurements
+ * in fixed-vs-random-data dataset.
+ *
+ * @param seed A buffer holding the seed.
+ */
+static void aes_serial_seed_lfsr_order(const uint8_t *seed, size_t seed_len) {
+  SS_CHECK(seed_len == sizeof(uint32_t));
+  uint32_t seed_local = read_32(seed);
+  sca_seed_lfsr(seed_local, kScaLfsrOrder);
+}
+
+/**
  * Simple serial 'd' (set starting values) command handler.
  *
  * This function sets starting values for FvsR data generation
@@ -603,24 +687,49 @@ static void aes_serial_set_default_values(const uint8_t *data,
   SS_CHECK(data_len == sizeof(uint32_t));
   uint32_t command = 0;
   command = read_32(data);
-  static const uint8_t kPlaintextFixedStart[kAesTextLength] = {
-      0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
-      0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa};
-  static const uint8_t kKeyFixedStart[kAesTextLength] = {
+  // Starting constants for fixed-vs-random key, DTR Section 5.3
+  static const uint8_t kPlaintextFixedStartFvsrKey[kAesTextLength] = {
+      0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA,
+      0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA};
+  static const uint8_t kKeyFixedStartFvsrKey[kAesTextLength] = {
       0x81, 0x1E, 0x37, 0x31, 0xB0, 0x12, 0x0A, 0x78,
       0x42, 0x78, 0x1E, 0x22, 0xB2, 0x5C, 0xDD, 0xF9};
-  static const uint8_t kPlaintextRandomStart[kAesTextLength] = {
+  static const uint8_t kPlaintextRandomStartFvsrKey[kAesTextLength] = {
       0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc,
       0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc};
-  static const uint8_t kKeyRandomStart[kAesTextLength] = {
+  static const uint8_t kKeyRandomStartFvsrKey[kAesTextLength] = {
       0x53, 0x53, 0x53, 0x53, 0x53, 0x53, 0x53, 0x53,
       0x53, 0x53, 0x53, 0x53, 0x53, 0x53, 0x53, 0x53};
+  // Starting constants for fixed-vs-random data, DTR Section 5.1
+  static const uint8_t kPlaintextFixedStartFvsrData[kAesTextLength] = {
+      0xDA, 0x39, 0xA3, 0xEE, 0x5E, 0x6B, 0x4B, 0x0D,
+      0x32, 0x55, 0xBF, 0xEF, 0x95, 0x60, 0x18, 0x90};
+  static const uint8_t kPlaintextRandomStartFvsrData[kAesTextLength] = {
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+  static const uint8_t kKeyStartFvsrData[kAesTextLength] = {
+      0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF,
+      0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0};
+
+  // Initial state of the prng
+  static const uint32_t kPrngInitialState = 0x99999999;
+
+  // If fixed-vs-random key analysis
   if (command == 1) {
-    memcpy(plaintext_fixed, kPlaintextFixedStart, kAesTextLength);
-    memcpy(key_fixed, kKeyFixedStart, kAesKeyLength);
-    memcpy(plaintext_random, kPlaintextRandomStart, kAesTextLength);
-    memcpy(key_random, kKeyRandomStart, kAesKeyLength);
+    memcpy(plaintext_fixed, kPlaintextFixedStartFvsrKey, kAesTextLength);
+    memcpy(key_fixed, kKeyFixedStartFvsrKey, kAesKeyLength);
+    memcpy(plaintext_random, kPlaintextRandomStartFvsrKey, kAesTextLength);
+    memcpy(key_random, kKeyRandomStartFvsrKey, kAesKeyLength);
   }
+
+  // If fixed-vs-random data analysis
+  if (command == 2) {
+    memcpy(plaintext_fixed, kPlaintextFixedStartFvsrData, kAesTextLength);
+    memcpy(key_fixed, kKeyStartFvsrData, kAesKeyLength);
+    memcpy(plaintext_random, kPlaintextRandomStartFvsrData, kAesTextLength);
+  }
+
+  sca_seed_lfsr(kPrngInitialState, kScaLfsrOrder);
 }
 
 /**
@@ -651,7 +760,9 @@ bool test_main(void) {
   simple_serial_register_handler('f', aes_serial_fvsr_key_set);
   simple_serial_register_handler('g', aes_serial_fvsr_key_batch_generate);
   simple_serial_register_handler('e', aes_serial_fvsr_key_batch_encrypt);
+  simple_serial_register_handler('h', aes_serial_fvsr_data_batch_encrypt);
   simple_serial_register_handler('l', aes_serial_seed_lfsr);
+  simple_serial_register_handler('j', aes_serial_seed_lfsr_order);
   simple_serial_register_handler('a', aes_serial_batch_alternative_encrypt);
   simple_serial_register_handler('i', aes_serial_batch_plaintext_set);
   simple_serial_register_handler('d', aes_serial_set_default_values);
