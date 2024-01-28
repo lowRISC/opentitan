@@ -224,7 +224,7 @@ static kmac_sca_error_t kmac_msg_start(
   mmio_region_write32(kmac.base_addr, KMAC_KEY_LEN_REG_OFFSET, key_len);
   for (int i = 0; i < ARRAYSIZE(k->share0); ++i) {
     // Run LFSR for 32 steps to ensure that all state bits are updated.
-    const uint32_t a = sca_next_lfsr(32);
+    const uint32_t a = sca_next_lfsr(32, kScaLfsrMasking);
     mmio_region_write32(kmac.base_addr,
                         KMAC_KEY_SHARE0_0_REG_OFFSET +
                             (ptrdiff_t)i * (ptrdiff_t)sizeof(uint32_t),
@@ -706,7 +706,7 @@ status_t handle_kmac_sca_batch(ujson_t *uj) {
 status_t handle_kmac_sca_seed_lfsr(ujson_t *uj) {
   cryptotest_kmac_sca_lfsr_t uj_lfsr_data;
   TRY(ujson_deserialize_cryptotest_kmac_sca_lfsr_t(uj, &uj_lfsr_data));
-  sca_seed_lfsr(read_32(uj_lfsr_data.seed));
+  sca_seed_lfsr(read_32(uj_lfsr_data.seed), kScaLfsrMasking);
 
   return OK_STATUS(0);
 }
