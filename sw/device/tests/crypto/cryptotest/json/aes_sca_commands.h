@@ -27,7 +27,9 @@ extern "C" {
     value(_, FvsrKeyBatchGenerate) \
     value(_, FvsrKeyBatchEncrypt) \
     value(_, FvsrKeyStartBatchGenerate) \
+    value(_, FvsrDataBatchEncrypt) \
     value(_, SeedLfsr) \
+    value(_, SeedLfsrOrder) \
     value(_, BatchAlternativeEncrypt) \
     value(_, BatchPlaintextSet)
 UJSON_SERDE_ENUM(AesScaSubcommand, aes_sca_subcommand_t, AESSCA_SUBCOMMAND);
