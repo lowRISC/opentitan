@@ -8,12 +8,12 @@ description: "Alert Handler component without the CSRs"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:ip:edn_requester
       - lowrisc:ip:tlul
       - lowrisc:prim:all
       - lowrisc:prim:esc
       - lowrisc:prim:double_lfsr
       - lowrisc:prim:count
+      - lowrisc:prim:edn_req
       - lowrisc:prim:buf
       - lowrisc:prim:mubi
       - lowrisc:prim:sparse_fsm

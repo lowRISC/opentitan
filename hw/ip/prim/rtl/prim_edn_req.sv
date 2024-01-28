@@ -13,7 +13,7 @@
 
 `include "prim_assert.sv"
 
-module edn_requester
+module prim_edn_req
   import prim_alert_pkg::*;
 #(
   parameter int OutWidth = 32,
@@ -212,4 +212,4 @@ module edn_requester
   assign unused_param_maxlatency = ^MaxLatency;
 `endif // SYNTHESIS
 
-endmodule : edn_requester
+endmodule : prim_edn_req

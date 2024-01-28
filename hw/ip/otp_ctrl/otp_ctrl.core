@@ -20,7 +20,7 @@ filesets:
       - lowrisc:prim:buf
       - lowrisc:prim:flop
       - lowrisc:prim:secded
-      - lowrisc:ip:edn_requester
+      - lowrisc:prim:edn_req
       - lowrisc:prim:sec_anchor
       - lowrisc:ip_interfaces:pwrmgr_pkg
       - lowrisc:ip:edn_pkg

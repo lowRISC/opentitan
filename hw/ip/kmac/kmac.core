@@ -19,7 +19,7 @@ filesets:
       - lowrisc:ip:keymgr_pkg
       - lowrisc:ip:sha3
       - lowrisc:ip:edn_pkg
-      - lowrisc:ip:edn_requester
+      - lowrisc:prim:edn_req
       - lowrisc:ip:kmac_pkg
       - lowrisc:ip:lc_ctrl_pkg
       - lowrisc:prim:lc_sync
