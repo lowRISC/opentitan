@@ -157,14 +157,16 @@ static aes_sca_error_t aes_key_mask_and_config(const uint8_t *key,
   dif_aes_key_share_t key_shares;
   // Mask the provided key.
   for (int i = 0; i < key_len / 4; ++i) {
-    key_shares.share1[i] =
-        sca_non_linear_layer(sca_linear_layer(sca_next_lfsr(1)));
+    key_shares.share1[i] = sca_non_linear_layer(
+        sca_linear_layer(sca_next_lfsr(1, kScaLfsrMasking)));
     key_shares.share0[i] = *((uint32_t *)key + i) ^ key_shares.share1[i];
   }
   // Provide random shares for unused key bits.
   for (size_t i = key_len; i < kAesKeyLengthMax / 4; ++i) {
-    key_shares.share1[i] = sca_non_linear_layer(sca_next_lfsr(1));
-    key_shares.share0[i] = sca_non_linear_layer(sca_next_lfsr(1));
+    key_shares.share1[i] =
+        sca_non_linear_layer(sca_next_lfsr(1, kScaLfsrMasking));
+    key_shares.share0[i] =
+        sca_non_linear_layer(sca_next_lfsr(1, kScaLfsrMasking));
   }
   if (dif_aes_start(&aes, &transaction, &key_shares, NULL) != kDifOk) {
     return aesScaAborted;
@@ -669,7 +671,7 @@ status_t handle_aes_sca_seed_lfsr(ujson_t *uj) {
     // enable masking
     transaction.force_masks = false;
   }
-  sca_seed_lfsr(seed_local);
+  sca_seed_lfsr(seed_local, kScaLfsrMasking);
 
   return OK_STATUS(0);
 }
