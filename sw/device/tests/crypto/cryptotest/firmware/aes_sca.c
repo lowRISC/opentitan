@@ -312,7 +312,7 @@ status_t handle_aes_sca_single_encrypt(ujson_t *uj) {
 }
 
 /**
- * Advances data for fvsr-key TVLA - fixed set
+ * Advances data for fvsr-key TVLA - fixed set.
  *
  * This function updates plaintext_fixed for fvsr-key TVLA, according
  * to DTR recommendations.
@@ -323,7 +323,7 @@ static void aes_serial_advance_fixed(void) {
 }
 
 /**
- * Advances data for fvsr-key TVLA - random set
+ * Advances data for fvsr-key TVLA - random set.
  *
  * This function updates plaintext_random and key_random for fvsr-key and
  * random TVLA, according to DTR recommendations.
@@ -333,6 +333,17 @@ static void aes_serial_advance_random(void) {
   memcpy(plaintext_random, ciphertext_temp, kAesTextLength);
   aes_sw_encrypt_block(key_random, kKeyGenRoundKeys, ciphertext_temp);
   memcpy(key_random, ciphertext_temp, kAesTextLength);
+}
+
+/**
+ * Advances data for fvsr-data TVLA - random set.
+ *
+ * This function updates plaintext_random for fvsr-data and
+ * TVLA, according to DTR recommendations, Section 5.1.
+ */
+static void aes_serial_advance_random_data(void) {
+  aes_sw_encrypt_block(plaintext_random, kKeyGenRoundKeys, ciphertext_temp);
+  memcpy(plaintext_random, ciphertext_temp, kAesTextLength);
 }
 
 /**
@@ -649,6 +660,67 @@ status_t handle_aes_sca_fvsr_key_batch_encrypt(ujson_t *uj) {
 }
 
 /**
+ * Fixed vs random data batch encrypt and generate command handler.
+ *
+ * This command is designed to maximize the capture rate for side-channel
+ * attacks. Instead of expecting a plaintext and sending the resulting
+ * ciphertext from and to the host for each encryption, this command repeatedly
+ * encrypts plaintexts that are generated on the device. The data
+ * collection method is based on the derived test requirements (DTR) for TVLA:
+ * https://www.rambus.com/wp-content/uploads/2015/08/TVLA-DTR-with-AES.pdf
+ * The measurements are taken by using either fixed or randomly selected
+ * plaintexts. In order to simplify the analysis, the first encryption has to
+ * use fixed plaintext. This minimizes the overhead of UART communication and
+ * significantly improves the capture rate. The host must use the same PRNG to
+ * be able to compute the random plaintext and the ciphertext of each trace.
+ *
+ * Packet payload must be a `uint32_t` representation of the number of
+ * encryptions to perform. Number of operations of a batch should not be greater
+ * than the 'kNumBatchOpsMax' value.
+ *
+ * Note that the host can partially verify this operation by checking the
+ * contents of the 'r' (last ciphertext) packet that is sent at the end of every
+ * batch.
+ *
+ * The uJSON data contains:
+ *  - data: The number of encryptions.
+ *
+ * @param uj The received uJSON data.
+ */
+status_t handle_aes_sca_fvsr_data_batch_encrypt(ujson_t *uj) {
+  cryptotest_aes_sca_data_t uj_data;
+  TRY(ujson_deserialize_cryptotest_aes_sca_data_t(uj, &uj_data));
+
+  uint32_t num_encryptions = 0;
+  num_encryptions = read_32(uj_data.data);
+  if (num_encryptions > kNumBatchOpsMax) {
+    return OUT_OF_RANGE();
+  }
+
+  for (uint32_t i = 0; i < num_encryptions; ++i) {
+    memcpy(batch_keys[i], key_fixed, kAesKeyLength);
+    if (sample_fixed) {
+      memcpy(batch_plaintexts[i], plaintext_fixed, kAesKeyLength);
+    } else {
+      memcpy(batch_plaintexts[i], plaintext_random, kAesKeyLength);
+      aes_serial_advance_random_data();
+    }
+    sample_fixed = sca_next_lfsr(1, kScaLfsrOrder) & 0x1;
+  }
+
+  sca_set_trigger_high();
+  for (uint32_t i = 0; i < num_encryptions; ++i) {
+    aes_key_mask_and_config(batch_keys[i], kAesKeyLength);
+    aes_encrypt(batch_plaintexts[i], kAesTextLength);
+  }
+  sca_set_trigger_low();
+
+  TRY(aes_send_ciphertext(false, uj));
+
+  return OK_STATUS(0);
+}
+
+/**
  * Seed lfsr command handler.
  *
  * This function only supports 4-byte seeds.
@@ -677,6 +749,28 @@ status_t handle_aes_sca_seed_lfsr(ujson_t *uj) {
 }
 
 /**
+ * Seed lfsr command handler.
+ *
+ * This function only supports 4-byte seeds.
+ * Sets the seed for the LFSR used to determine the order of measurements
+ * in fixed-vs-random-data dataset.
+ *
+ * The uJSON data contains:
+ *  - seed: A buffer holding the seed.
+ *
+ * @param uj The received uJSON data.
+ */
+status_t handle_aes_sca_seed_lfsr_order(ujson_t *uj) {
+  cryptotest_aes_sca_lfsr_t uj_lfsr_data;
+  TRY(ujson_deserialize_cryptotest_aes_sca_lfsr_t(uj, &uj_lfsr_data));
+
+  uint32_t seed_local = read_32(uj_lfsr_data.seed);
+  sca_seed_lfsr(seed_local, kScaLfsrOrder);
+
+  return OK_STATUS(0);
+}
+
+/**
  * Set starting values command handler.
  *
  * This function sets starting values for FvsR data generation
@@ -694,24 +788,48 @@ status_t handle_aes_sca_fvsr_key_start_batch_generate(ujson_t *uj) {
   uint32_t command = 0;
   command = read_32(uj_data.data);
 
-  static const uint8_t kPlaintextFixedStart[kAesTextLength] = {
-      0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
-      0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa};
-  static const uint8_t kKeyFixedStart[kAesTextLength] = {
+  static const uint8_t kPlaintextFixedStartFvsrKey[kAesTextLength] = {
+      0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA,
+      0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA};
+  static const uint8_t kKeyFixedStartFvsrKey[kAesTextLength] = {
       0x81, 0x1E, 0x37, 0x31, 0xB0, 0x12, 0x0A, 0x78,
       0x42, 0x78, 0x1E, 0x22, 0xB2, 0x5C, 0xDD, 0xF9};
-  static const uint8_t kPlaintextRandomStart[kAesTextLength] = {
+  static const uint8_t kPlaintextRandomStartFvsrKey[kAesTextLength] = {
       0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc,
       0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc};
-  static const uint8_t kKeyRandomStart[kAesTextLength] = {
+  static const uint8_t kKeyRandomStartFvsrKey[kAesTextLength] = {
       0x53, 0x53, 0x53, 0x53, 0x53, 0x53, 0x53, 0x53,
       0x53, 0x53, 0x53, 0x53, 0x53, 0x53, 0x53, 0x53};
+  // Starting constants for fixed-vs-random data, DTR Section 5.1
+  static const uint8_t kPlaintextFixedStartFvsrData[kAesTextLength] = {
+      0xDA, 0x39, 0xA3, 0xEE, 0x5E, 0x6B, 0x4B, 0x0D,
+      0x32, 0x55, 0xBF, 0xEF, 0x95, 0x60, 0x18, 0x90};
+  static const uint8_t kPlaintextRandomStartFvsrData[kAesTextLength] = {
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+  static const uint8_t kKeyStartFvsrData[kAesTextLength] = {
+      0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF,
+      0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0};
+
+  // Initial state of the prng
+  static const uint32_t kPrngInitialState = 0x99999999;
+
+  // If fixed-vs-random key analysis
   if (command == 1) {
-    memcpy(plaintext_fixed, kPlaintextFixedStart, kAesTextLength);
-    memcpy(key_fixed, kKeyFixedStart, kAesKeyLength);
-    memcpy(plaintext_random, kPlaintextRandomStart, kAesTextLength);
-    memcpy(key_random, kKeyRandomStart, kAesKeyLength);
+    memcpy(plaintext_fixed, kPlaintextFixedStartFvsrKey, kAesTextLength);
+    memcpy(key_fixed, kKeyFixedStartFvsrKey, kAesKeyLength);
+    memcpy(plaintext_random, kPlaintextRandomStartFvsrKey, kAesTextLength);
+    memcpy(key_random, kKeyRandomStartFvsrKey, kAesKeyLength);
   }
+
+  // If fixed-vs-random data analysis
+  if (command == 2) {
+    memcpy(plaintext_fixed, kPlaintextFixedStartFvsrData, kAesTextLength);
+    memcpy(key_fixed, kKeyStartFvsrData, kAesKeyLength);
+    memcpy(plaintext_random, kPlaintextRandomStartFvsrData, kAesTextLength);
+  }
+
+  sca_seed_lfsr(kPrngInitialState, kScaLfsrOrder);
 
   return OK_STATUS(0);
 }
@@ -765,8 +883,14 @@ status_t handle_aes_sca(ujson_t *uj) {
     case kAesScaSubcommandFvsrKeyStartBatchGenerate:
       return handle_aes_sca_fvsr_key_start_batch_generate(uj);
       break;
+    case kAesScaSubcommandFvsrDataBatchEncrypt:
+      return handle_aes_sca_fvsr_data_batch_encrypt(uj);
+      break;
     case kAesScaSubcommandSeedLfsr:
       return handle_aes_sca_seed_lfsr(uj);
+      break;
+    case kAesScaSubcommandSeedLfsrOrder:
+      return handle_aes_sca_seed_lfsr_order(uj);
       break;
     case kAesScaSubcommandBatchAlternativeEncrypt:
       return handle_aes_sca_batch_alternative_encrypt(uj);
