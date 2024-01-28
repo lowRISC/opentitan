@@ -500,7 +500,7 @@ static void sha3_serial_batch(const uint8_t *data, size_t data_len) {
  */
 static void sha3_serial_seed_lfsr(const uint8_t *seed, size_t seed_len) {
   SS_CHECK(seed_len == sizeof(uint32_t));
-  sca_seed_lfsr(read_32(seed));
+  sca_seed_lfsr(read_32(seed), kScaLfsrMasking);
 }
 
 /**

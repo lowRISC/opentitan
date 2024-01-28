@@ -222,7 +222,7 @@ static dif_result_t kmac_msg_start(dif_kmac_mode_kmac_t mode, size_t l,
   mmio_region_write32(kmac.base_addr, KMAC_KEY_LEN_REG_OFFSET, key_len);
   for (int i = 0; i < ARRAYSIZE(k->share0); ++i) {
     // Run LFSR for 32 steps to ensure that all state bits are updated.
-    const uint32_t a = sca_next_lfsr(32);
+    const uint32_t a = sca_next_lfsr(32, kScaLfsrMasking);
     mmio_region_write32(kmac.base_addr,
                         KMAC_KEY_SHARE0_0_REG_OFFSET +
                             (ptrdiff_t)i * (ptrdiff_t)sizeof(uint32_t),
@@ -571,7 +571,7 @@ static void sha3_serial_batch(const uint8_t *data, size_t data_len) {
  */
 static void sha3_serial_seed_lfsr(const uint8_t *seed, size_t seed_len) {
   SS_CHECK(seed_len == sizeof(uint32_t));
-  sca_seed_lfsr(read_32(seed));
+  sca_seed_lfsr(read_32(seed), kScaLfsrMasking);
 }
 
 /**
