@@ -577,7 +577,7 @@ status_t handle_sha3_sca_batch(ujson_t *uj) {
 status_t handle_sha3_sca_seed_lfsr(ujson_t *uj) {
   cryptotest_sha3_sca_lfsr_t uj_lfsr_data;
   TRY(ujson_deserialize_cryptotest_sha3_sca_lfsr_t(uj, &uj_lfsr_data));
-  sca_seed_lfsr(read_32(uj_lfsr_data.seed));
+  sca_seed_lfsr(read_32(uj_lfsr_data.seed), kScaLfsrMasking);
 
   return OK_STATUS(0);
 }
