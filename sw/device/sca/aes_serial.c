@@ -528,19 +528,12 @@ static void aes_serial_fvsr_key_batch_generate(const uint8_t *data,
  * https://www.rambus.com/wp-content/uploads/2015/08/TVLA-DTR-with-AES.pdf
  * The measurements are taken by using either fixed or randomly selected keys.
  * In order to simplify the analysis, the first encryption has to use fixed key.
- * In addition, a PRNG is used for random key and plaintext generation instead
- * of AES algorithm as specified in the TVLA DTR.
  * This minimizes the overhead of UART communication and significantly improves
- * the capture rate. The host must use the same PRNG to be able to compute the
- * random plaintext, random key and the ciphertext of each trace.
+ * the capture rate.
  *
  * Packet payload must be a `uint32_t` representation of the number of
  * encryptions to perform. Number of operations of a batch should not be greater
  * than the 'kNumBatchOpsMax' value.
- *
- * The PRNG should be initialized using the 's' (seed PRNG) command before
- * starting batch encryption. In addition, the fixed key should also be set
- * using 't' (fvsr key set) command before starting batch encryption.
  *
  * Note that the host can partially verify this operation by checking the
  * contents of the 'r' (last ciphertext) packet that is sent at the end of every
@@ -563,8 +556,10 @@ static void aes_serial_fvsr_key_batch_encrypt(const uint8_t *data,
   }
   sca_set_trigger_low();
 
-  // Only send the first word to increase capture rate
-  aes_send_ciphertext(true);
+  // Acknowledge command
+  simple_serial_send_status(0);
+
+  aes_send_ciphertext(false);
 
   // Start to generate random keys and plaintexts for the next batch when the
   // waves are getting from scope by the host to increase capture rate.
