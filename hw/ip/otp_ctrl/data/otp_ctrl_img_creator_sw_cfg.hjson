@@ -17,6 +17,11 @@
                     value: "0x0",
                 },
                 {
+                    name: "CREATOR_SW_CFG_AST_INIT_EN",
+                    // Use MuBi4True to enable initialization.
+                    value: "0x6",
+                },
+                {
                     name: "CREATOR_SW_CFG_SIGVERIFY_RSA_MOD_EXP_IBEX_EN",
                     // Use software mod_exp implementation for signature
                     // verification. See the definition of `hardened_bool_t` in
