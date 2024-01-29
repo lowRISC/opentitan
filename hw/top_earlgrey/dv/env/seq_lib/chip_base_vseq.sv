@@ -289,12 +289,6 @@ class chip_base_vseq #(
 
   // Initialize the OTP creator SW cfg region with AST configuration data.
   virtual function void initialize_otp_creator_sw_cfg_ast_cfg();
-    // The knob controls whether the AST is actually programmed.
-    if (cfg.do_creator_sw_cfg_ast_cfg) begin
-      cfg.mem_bkdr_util_h[Otp].write32(otp_ctrl_reg_pkg::CreatorSwCfgAstInitEnOffset,
-                                       prim_mubi_pkg::MuBi4True);
-    end
-
     // Ensure that the allocated size of the AST cfg region in OTP is equal to the number of AST
     // registers to be programmed.
     `DV_CHECK_EQ_FATAL(otp_ctrl_reg_pkg::CreatorSwCfgAstCfgSize, ast_pkg::AstRegsNum * 4)
