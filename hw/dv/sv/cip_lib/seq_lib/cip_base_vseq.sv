@@ -802,7 +802,7 @@ class cip_base_vseq #(
           csr_utils_pkg::wait_no_outstanding_access();
 
           // Manually lock lockable flds because we use tl_access() instead of csr_wr().
-          if (csrs[i].is_wen_reg()) csrs[i].lock_lockable_flds(`gmv(csrs[i]));
+          if (csrs[i].is_wen_reg()) csrs[i].lock_lockable_flds(`gmv(csrs[i]), UVM_PREDICT_WRITE);
         end
       end
     end
