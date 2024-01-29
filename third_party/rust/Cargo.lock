@@ -304,7 +304,6 @@ dependencies = [
  "indexmap 2.0.0",
  "indicatif",
  "indoc",
- "libftdi1-sys",
  "log",
  "mdbook",
  "memchr",

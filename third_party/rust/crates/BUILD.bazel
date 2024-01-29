@@ -206,12 +206,6 @@ alias(
 )
 
 alias(
-    name = "libftdi1-sys",
-    actual = "@crate_index__libftdi1-sys-1.1.2//:libftdi1_sys",
-    tags = ["manual"],
-)
-
-alias(
     name = "log",
     actual = "@crate_index__log-0.4.20//:log",
     tags = ["manual"],
