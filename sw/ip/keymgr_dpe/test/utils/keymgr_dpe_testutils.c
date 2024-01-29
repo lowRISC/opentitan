@@ -28,11 +28,14 @@ status_t keymgr_dpe_testutils_startup(dif_keymgr_dpe_t *keymgr_dpe,
 
   // POR reset.
   if (info == kDifRstmgrResetInfoPor) {
-    LOG_INFO("Powered up for the first time, lock SECRET2 partition");
+    LOG_INFO(
+        "Powered up for the first time, lock SECRET2 and SECRET3 partitions");
     dif_otp_ctrl_t otp;
     TRY(dif_otp_ctrl_init(mmio_region_from_addr(kOtpCtrlCoreBaseAddr[0]),
                           &otp));
     TRY(otp_ctrl_testutils_lock_partition(&otp, kDifOtpCtrlPartitionSecret2,
+                                          0));
+    TRY(otp_ctrl_testutils_lock_partition(&otp, kDifOtpCtrlPartitionSecret3,
                                           0));
 
     // Reboot device.
