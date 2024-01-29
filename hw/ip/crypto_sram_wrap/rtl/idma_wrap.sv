@@ -257,10 +257,10 @@ module idma_wrap  import idma_pkg::*; #(
   localparam axi_pkg::xbar_cfg_t XbarCfg = '{
     NoSlvPorts:                    NumSlvPorts,
     NoMstPorts:                    NumMstPorts,
-    MaxMstTrans:                            10,
-    MaxSlvTrans:                            10,
+    MaxMstTrans:                             1,
+    MaxSlvTrans:                             1,
     FallThrough:                          1'b0,
-    LatencyMode:        axi_pkg::CUT_ALL_PORTS,
+    LatencyMode:           axi_pkg::NO_LATENCY,
     PipelineStages:                      32'd0,
     AxiIdWidthSlvPorts:             SlvIdWidth,
     AxiIdUsedSlvPorts:              SlvIdWidth,
