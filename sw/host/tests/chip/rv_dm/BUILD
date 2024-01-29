@@ -62,3 +62,17 @@ rust_binary(
         "@crate_index//:log",
     ],
 )
+
+rust_binary(
+    name = "ndm_reset_req_when_cpu_halted",
+    srcs = [
+        "src/ndm_reset_req_when_cpu_halted.rs",
+    ],
+    deps = [
+        "//sw/host/opentitanlib",
+        "@crate_index//:anyhow",
+        "@crate_index//:clap",
+        "@crate_index//:humantime",
+        "@crate_index//:log",
+    ],
+)
