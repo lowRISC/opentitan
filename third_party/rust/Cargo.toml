@@ -32,6 +32,7 @@ erased-serde = "0.3.12"
 # Note: this is needed because openssl does not re-rexports this, we cannot use a
 # too recent version because it break things.
 foreign-types = "0.3.2"
+ftdi = "0.1.3"
 heck = "0.4.1"
 hex = "0.4.3"
 humantime = "2.1.0"
