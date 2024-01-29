@@ -4,7 +4,6 @@
 
 use anyhow::{ensure, Context, Result};
 use once_cell::sync::Lazy;
-use safe_ftdi as ftdi;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;

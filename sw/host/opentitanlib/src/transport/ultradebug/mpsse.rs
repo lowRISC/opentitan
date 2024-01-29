@@ -2,11 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use std::io::{Read, Write};
+use std::time::{Duration, Instant};
+
 use anyhow::{bail, Result};
 use bitflags::bitflags;
 use log;
-use safe_ftdi as ftdi;
-use std::time::{Duration, Instant};
 use thiserror::Error;
 
 use crate::io::gpio::GpioError;
@@ -213,9 +214,9 @@ pub struct Context {
 
 impl Context {
     /// Create a new MPSSE `Context` given an FTDI device.
-    pub fn new(device: ftdi::Device) -> Result<Self> {
-        device.set_event_char(0, false)?;
-        device.set_error_char(0, false)?;
+    pub fn new(mut device: ftdi::Device) -> Result<Self> {
+        device.usb_set_event_char(None)?;
+        device.usb_set_error_char(None)?;
         device.set_latency_timer(1)?;
         device.set_bitmode(0, ftdi::BitMode::Reset)?;
         device.set_bitmode(0, ftdi::BitMode::Mpsse)?;
@@ -234,22 +235,22 @@ impl Context {
         Ok(context)
     }
 
-    fn read_timeout(&self, rxbuf: &mut [u8], timeout: Duration) -> Result<u32> {
+    fn read_timeout(&mut self, rxbuf: &mut [u8], timeout: Duration) -> Result<usize> {
         let deadline = Instant::now() + timeout;
         let mut rxlen = 0;
         while rxlen < rxbuf.len() {
             if Instant::now() > deadline {
                 return Ok(0);
             }
-            let n = self.device.read_data(&mut rxbuf[rxlen..])?;
-            rxlen += n as usize;
+            let n = self.device.read(&mut rxbuf[rxlen..])?;
+            rxlen += n;
         }
-        Ok(rxlen as u32)
+        Ok(rxlen)
     }
 
-    fn read_status(&self) -> Result<()> {
+    fn read_status(&mut self) -> Result<()> {
         let mut buf = [0u8; 2];
-        let n = self.device.read_data(&mut buf)?;
+        let n = self.device.read(&mut buf)?;
         if n > 0 {
             Err(Error::MpsseUnknown(buf[0], buf[1]).into())
         } else {
@@ -258,7 +259,7 @@ impl Context {
     }
 
     /// Execute a slice of `commands` on the target FTDI device.
-    pub fn execute(&self, commands: &mut [Command]) -> Result<()> {
+    pub fn execute(&mut self, commands: &mut [Command]) -> Result<()> {
         // Build up a transmit buffer from the slice of commands.
         // The buffer contains both MPSSE opcodes and data.
         // Calculate the size of the receive buffer needed.
@@ -277,16 +278,16 @@ impl Context {
         rxlen = 0;
         while txlen < txbuf.len() || rxlen < rxbuf.len() {
             if txlen < txbuf.len() {
-                let n = self.device.write_data(&txbuf[txlen..])?;
-                txlen += n as usize;
+                let n = self.device.write(&txbuf[txlen..])?;
+                txlen += n;
             }
             if rxlen < rxbuf.len() {
                 let n = if txlen < txbuf.len() {
-                    self.device.read_data(&mut rxbuf[rxlen..])?
+                    self.device.read(&mut rxbuf[rxlen..])?
                 } else {
                     self.read_timeout(&mut rxbuf[rxlen..], self.receive_timeout)?
                 };
-                rxlen += n as usize;
+                rxlen += n;
             }
         }
 
@@ -375,7 +376,7 @@ impl Context {
 
     /// Send an invalid command to the FTDI device (this is typically used in a debugging
     /// context to ensure synchronization with the FTDI device).
-    pub fn invalid_command(&self) -> Result<()> {
+    pub fn invalid_command(&mut self) -> Result<()> {
         self.execute(&mut [Command::InvalidCommand])
     }
 }

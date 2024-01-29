@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{bail, ensure, Context, Result};
-use safe_ftdi as ftdi;
 use std::cell::RefCell;
 use std::rc::Rc;
+
+use anyhow::{bail, ensure, Context, Result};
 
 use crate::io::gpio::GpioPin;
 use crate::io::spi::Target;
@@ -53,14 +53,15 @@ impl Ultradebug {
 
     /// Construct an `ftdi::Device` for the specified `interface` on the Ultradebug device.
     pub fn from_interface(&self, interface: ftdi::Interface) -> Result<ftdi::Device> {
-        ftdi::Device::from_description_serial(
-            interface,
-            self.usb_vid.unwrap_or(Ultradebug::VID_GOOGLE),
-            self.usb_pid.unwrap_or(Ultradebug::PID_ULTRADEBUG),
-            None,
-            self.usb_serial.clone(),
-        )
-        .context("FTDI error")
+        let vid = self.usb_vid.unwrap_or(Ultradebug::VID_GOOGLE);
+        let pid = self.usb_pid.unwrap_or(Ultradebug::PID_ULTRADEBUG);
+
+        let mut opener = ftdi::find_by_vid_pid(vid, pid).interface(interface);
+        if let Some(serial) = &self.usb_serial {
+            opener = opener.serial(serial);
+        }
+
+        opener.open().context("FTDI error")
     }
 
     // Create an instance of an MPSSE context bound to Ultradebug interface B.
@@ -69,8 +70,6 @@ impl Ultradebug {
         let mut mpsse_b = self.mpsse_b.borrow_mut();
         if mpsse_b.is_none() {
             let device = self.from_interface(ftdi::Interface::B)?;
-            // Read and write timeouts:
-            device.set_timeouts(5000, 5000);
 
             // Create a new MPSSE context and configure it
             let mut mpdev = mpsse::Context::new(device).context("FTDI error")?;

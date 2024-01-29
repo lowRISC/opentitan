@@ -264,6 +264,7 @@ rust_library(
         "@crate_index//:directories",
         "@crate_index//:env_logger",
         "@crate_index//:erased-serde",
+        "@crate_index//:ftdi",
         "@crate_index//:hex",
         "@crate_index//:humantime",
         "@crate_index//:humantime-serde",
@@ -295,7 +296,6 @@ rust_library(
         "@crate_index//:thiserror",
         "@crate_index//:typetag",
         "@crate_index//:zerocopy",
-        "@lowrisc_safe_ftdi//:safe_ftdi",
         "@lowrisc_serde_annotate//:serde_annotate",
     ],
 )
