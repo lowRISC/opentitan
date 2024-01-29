@@ -383,10 +383,10 @@ package csr_utils_pkg;
 
   // backdoor read csr
   // uvm_reg::peek() returns a 2-state value, directly get data from hdl path
-  task automatic csr_peek(input uvm_object      ptr,
-                          output uvm_reg_data_t value,
-                          input uvm_check_e     check = default_csr_check,
-                          input bkdr_reg_path_e kind = BkdrRegPathRtl);
+  function automatic void csr_peek(input uvm_object      ptr,
+                                   output uvm_reg_data_t value,
+                                   input uvm_check_e     check = default_csr_check,
+                                   input bkdr_reg_path_e kind = BkdrRegPathRtl);
     string      msg_id = {csr_utils_pkg::msg_id, "::csr_peek"};
     csr_field_t csr_or_fld = decode_csr_or_field(ptr);
     uvm_reg     csr = csr_or_fld.csr;
@@ -411,7 +411,7 @@ package csr_utils_pkg;
 
     // if it's field, only return field value
     if (csr_or_fld.field != null) value = get_field_val(csr_or_fld.field, value);
-  endtask
+  endfunction
 
   task automatic csr_rd_check(input  uvm_object         ptr,
                               input  uvm_check_e        check = default_csr_check,
