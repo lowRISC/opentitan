@@ -4230,20 +4230,43 @@ test_suite(
     ],
 )
 
-opentitan_test(
+[
+    opentitan_test(
+        name = "rv_dm_ndm_reset_req_when_cpu_halted_{}".format(lc_state),
+        srcs = ["rv_dm_ndm_reset_req_when_cpu_halted.c"],
+        cw310 = hyper310_jtag_params(
+            otp = _SIVAL_OTP_IMAGE[lc_state],
+            tags = [
+                "lc_{}".format(lc_state),
+            ],
+            test_cmd = """
+                --bootstrap="{firmware}"
+            """,
+            test_harness = "//sw/host/tests/chip/rv_dm:ndm_reset_req_when_cpu_halted",
+        ),
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:sim_dv": None,
+        },
+        deps = [
+            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//sw/device/lib/dif:rstmgr",
+            "//sw/device/lib/runtime:hart",
+            "//sw/device/lib/runtime:log",
+            "//sw/device/lib/testing:rstmgr_testutils",
+            "//sw/device/lib/testing/test_framework:check",
+            "//sw/device/lib/testing/test_framework:ottf_main",
+        ],
+    )
+    for lc_state, lc_state_val in _RV_DM_JTAG_LC_STATES
+]
+
+test_suite(
     name = "rv_dm_ndm_reset_req_when_cpu_halted",
-    srcs = ["rv_dm_ndm_reset_req_when_cpu_halted.c"],
-    exec_env = {
-        "//hw/top_earlgrey:sim_dv": None,
-    },
-    deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/dif:rstmgr",
-        "//sw/device/lib/runtime:hart",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:rstmgr_testutils",
-        "//sw/device/lib/testing/test_framework:check",
-        "//sw/device/lib/testing/test_framework:ottf_main",
+    tags = ["manual"],
+    tests = [
+        ":rv_dm_ndm_reset_req_when_cpu_halted_{}".format(lc_state)
+        for lc_state, _ in _RV_DM_JTAG_LC_STATES
     ],
 )
 
