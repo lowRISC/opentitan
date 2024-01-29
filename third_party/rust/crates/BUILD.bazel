@@ -158,6 +158,12 @@ alias(
 )
 
 alias(
+    name = "ftdi",
+    actual = "@crate_index__ftdi-0.1.3//:ftdi",
+    tags = ["manual"],
+)
+
+alias(
     name = "heck",
     actual = "@crate_index__heck-0.4.1//:heck",
     tags = ["manual"],
