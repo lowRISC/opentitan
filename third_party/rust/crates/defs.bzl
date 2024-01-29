@@ -323,7 +323,6 @@ _NORMAL_DEPENDENCIES = {
             "humantime-serde": "@crate_index__humantime-serde-1.1.1//:humantime_serde",
             "indexmap": "@crate_index__indexmap-2.0.0//:indexmap",
             "indicatif": "@crate_index__indicatif-0.17.6//:indicatif",
-            "libftdi1-sys": "@crate_index__libftdi1-sys-1.1.2//:libftdi1_sys",
             "log": "@crate_index__log-0.4.20//:log",
             "mdbook": "@crate_index__mdbook-0.4.34//:mdbook",
             "memchr": "@crate_index__memchr-2.6.4//:memchr",

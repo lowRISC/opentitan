@@ -65,7 +65,7 @@ rust_bindgen_libstdcxx = repository_rule(
     environ = ["RULES_RUST_BINDGEN_LIBSTDCXX_DIR"],
 )
 
-def rust_repos(rules_rust = None, safe_ftdi = None, serde_annotate = None):
+def rust_repos(rules_rust = None, serde_annotate = None):
     # Since rules_rust 0.23.0, bindgen depedns on the llvm project and
     # builds the llvm libaries from source.  Building llvm from source has a
     # huge impact on build times.  Instead, we depend on a pre-built llvm
@@ -98,14 +98,6 @@ def rust_repos(rules_rust = None, safe_ftdi = None, serde_annotate = None):
         sha256 = "1a110ae8bfa34091e2a62e4c0325f8231f934b2956f3a585d4cafba5c81c2676",
         strip_prefix = "rules_rust-rebase-20231115_01",
         url = "https://github.com/lowRISC/rules_rust/archive/refs/tags/rebase-20231115_01.tar.gz",
-    )
-
-    http_archive_or_local(
-        name = "lowrisc_safe_ftdi",
-        local = safe_ftdi,
-        sha256 = "2dc6744f4bf6f95fbe51befb9316a0a33f70291856fef8bd85157a387659e527",
-        strip_prefix = "safe-ftdi-bazel-20230213_01",
-        url = "https://github.com/lowRISC/safe-ftdi/archive/refs/tags/bazel-20230213_01.tar.gz",
     )
 
     http_archive_or_local(
