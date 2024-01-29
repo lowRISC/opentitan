@@ -4,5 +4,6 @@
 
 //! Debugging-related facilities.
 
+pub mod dmi;
 pub mod elf_debugger;
 pub mod openocd;
