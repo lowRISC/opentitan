@@ -305,14 +305,15 @@ class dv_base_reg extends uvm_reg;
       end
       do_update_shadow_vals = 0;
     end
-    lock_lockable_flds(rw.value[0]);
+    lock_lockable_flds(rw.value[0], kind);
   endfunction
 
   // This function is used for wen_reg to lock its lockable flds by changing the lockable flds'
   // access policy. For register write via csr_wr(), this function is included in post_write().
   // For register write via tl_access(), user will need to call this function manually.
-  virtual function void lock_lockable_flds(uvm_reg_data_t val);
+  virtual function void lock_lockable_flds(uvm_reg_data_t val, uvm_predict_e kind);
     if (is_wen_reg()) begin
+      `uvm_info(`gfn, $sformatf("lock_lockable_flds %d val", val), UVM_LOW);
       foreach (m_fields[i]) begin
         dv_base_reg_field fld;
         `downcast(fld, m_fields[i])
@@ -322,7 +323,17 @@ class dv_base_reg extends uvm_reg;
           case (field_access)
             // discussed in issue #1922: enable register is standarized to W0C or RO (if HW has
             // write access).
-            "W0C": if (field_val == 1'b0) fld.set_lockable_flds_access(1);
+            "W0C": begin
+              // This is the regular behavior with W0C access policy enabled (i.e., only
+              // clearing is possible).
+              if (kind == UVM_PREDICT_WRITE && field_val == 1'b0) begin
+                fld.set_lockable_flds_access(1);
+              // In this case we are using direct prediction where the access policy is not
+              // applied. I.e., a regwen bit that has been set to 0 can be set to 1 again.
+              end else if (kind == UVM_PREDICT_DIRECT) begin
+                fld.set_lockable_flds_access((~field_val) & fld.get_field_mask());
+              end
+            end
             "RO": ; // if RO, it's updated by design, need to predict in scb
             default:`uvm_fatal(`gfn, $sformatf("lock register invalid access %s", field_access))
           endcase
