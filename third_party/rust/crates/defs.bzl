@@ -316,6 +316,7 @@ _NORMAL_DEPENDENCIES = {
             "env_logger": "@crate_index__env_logger-0.10.0//:env_logger",
             "erased-serde": "@crate_index__erased-serde-0.3.31//:erased_serde",
             "foreign-types": "@crate_index__foreign-types-0.3.2//:foreign_types",
+            "ftdi": "@crate_index__ftdi-0.1.3//:ftdi",
             "heck": "@crate_index__heck-0.4.1//:heck",
             "hex": "@crate_index__hex-0.4.3//:hex",
             "humantime": "@crate_index__humantime-2.1.0//:humantime",
@@ -1320,6 +1321,26 @@ def crate_repositories():
         urls = ["https://crates.io/api/v1/crates/form_urlencoded/1.2.0/download"],
         strip_prefix = "form_urlencoded-1.2.0",
         build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.form_urlencoded-1.2.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "crate_index__ftdi-0.1.3",
+        sha256 = "2f9c8c625c6b8634ce70cd8cbb2ab8a103e4c2b4185c86d9954d2e16b1ef7c4a",
+        type = "tar.gz",
+        urls = ["https://crates.io/api/v1/crates/ftdi/0.1.3/download"],
+        strip_prefix = "ftdi-0.1.3",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.ftdi-0.1.3.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "crate_index__ftdi-mpsse-0.1.1",
+        sha256 = "fa7cfcda69930a8d2fdcdd7ffb9234fe4c79a8c73934ed4904327d77bfb5078a",
+        type = "tar.gz",
+        urls = ["https://crates.io/api/v1/crates/ftdi-mpsse/0.1.1/download"],
+        strip_prefix = "ftdi-mpsse-0.1.1",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.ftdi-mpsse-0.1.1.bazel"),
     )
 
     maybe(
