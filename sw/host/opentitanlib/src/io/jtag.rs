@@ -13,6 +13,7 @@ use std::time::Duration;
 use crate::app::TransportWrapper;
 use crate::dif::lc_ctrl::LcCtrlReg;
 use crate::impl_serializable_error;
+use crate::util::openocd::OpenOcd;
 
 #[derive(Debug, Args, Clone)]
 pub struct JtagParams {
@@ -55,13 +56,16 @@ pub trait JtagChain {
     fn connect(self: Box<Self>, tap: JtagTap) -> Result<Box<dyn Jtag>>;
 
     /// Stop further setup and returns raw OpenOCD instance.
-    fn into_raw(self: Box<Self>) -> Result<crate::util::openocd::OpenOcd>;
+    fn into_raw(self: Box<Self>) -> Result<OpenOcd>;
 }
 
 /// A trait which represents a TAP on a JTAG chain.
 pub trait Jtag {
     /// Stop further operation and returns raw OpenOCD instance.
-    fn into_raw(self: Box<Self>) -> Result<crate::util::openocd::OpenOcd>;
+    fn into_raw(self: Box<Self>) -> Result<OpenOcd>;
+
+    /// Returns the underlying OpenOCD instance.
+    fn as_raw(&mut self) -> Result<&mut OpenOcd>;
 
     /// Disconnect from the TAP.
     fn disconnect(self: Box<Self>) -> Result<()>;
