@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::{Context, Result};
-use safe_ftdi as ftdi;
 use std::cell::RefCell;
 use std::rc::Rc;
 
@@ -53,18 +52,17 @@ impl UltradebugSpi {
     }
 
     fn do_assert_cs(&self, assert: bool) -> Result<()> {
-        let device = self.device.borrow();
+        let mut device = self.device.borrow_mut();
+        let mut command = [mpsse::Command::SetLowGpio(
+            device.gpio_direction,
+            if assert {
+                device.gpio_value & !Self::MASK_CHIP_SELECT
+            } else {
+                device.gpio_value | Self::MASK_CHIP_SELECT
+            },
+        )];
         // Assert or deassert CS#
-        device
-            .execute(&mut [mpsse::Command::SetLowGpio(
-                device.gpio_direction,
-                if assert {
-                    device.gpio_value & !Self::MASK_CHIP_SELECT
-                } else {
-                    device.gpio_value | Self::MASK_CHIP_SELECT
-                },
-            )])
-            .context("FTDI error")?;
+        device.execute(&mut command).context("FTDI error")?;
         Ok(())
     }
 }
@@ -124,7 +122,7 @@ impl Target for UltradebugSpi {
         };
 
         let mut command = Vec::new();
-        let device = self.device.borrow();
+        let mut device = self.device.borrow_mut();
         let cs_not_already_asserted = self.inner.borrow().cs_asserted_count == 0;
         if cs_not_already_asserted {
             // Assert CS# (drive low).

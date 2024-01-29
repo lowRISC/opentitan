@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::{bail, ensure, Context, Result};
-use safe_ftdi as ftdi;
 use std::cell::RefCell;
 use std::rc::Rc;
 
