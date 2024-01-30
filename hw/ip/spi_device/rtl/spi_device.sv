@@ -367,7 +367,7 @@ module spi_device
   assign hw2reg.status.csb.d     = sys_csb_syncd;
   assign hw2reg.status.tpm_csb.d = sys_tpm_csb_syncd;
 
-  assign spi_mode = spi_mode_e'(reg2hw.control.q);
+  assign spi_mode = spi_mode_e'(reg2hw.control.mode.q);
 
   prim_edge_detector #(
     .Width (2),
@@ -1121,6 +1121,11 @@ module spi_device
   assign sck_status_wr_set = (cmd_only_dp_sel == DpWrEn);
   assign sck_status_wr_clr = (cmd_only_dp_sel == DpWrDi);
 
+  logic flash_status_sync_fifo_clr;
+  assign flash_status_sync_fifo_clr = reg2hw.control.flash_status_fifo_clr.q;
+  assign hw2reg.control.flash_status_fifo_clr.d  = '0;
+  assign hw2reg.control.flash_status_fifo_clr.de = 1'b1;
+
   spid_status u_spid_status (
     .clk_i  (clk_spi_in_buf),
     .rst_ni (rst_spi_n),
@@ -1133,6 +1138,8 @@ module spi_device
     .sys_rst_ni (rst_ni),
 
     .sys_csb_deasserted_pulse_i (sys_csb_deasserted_pulse),
+
+    .sys_update_clr_i(flash_status_sync_fifo_clr),
 
     .sys_status_we_i (readstatus_qe),
     .sys_status_i    (readstatus_q),
@@ -1153,6 +1160,7 @@ module spi_device
     .inclk_we_set_i (sck_status_wr_set),
     .inclk_we_clr_i (sck_status_wr_clr),
 
+    .inclk_status_commit_i(s2p_data_valid),
     .csb_busy_broadcast_o (csb_status_busy_broadcast) // SCK domain
   );
 

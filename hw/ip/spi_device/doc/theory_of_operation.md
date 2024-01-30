@@ -93,6 +93,14 @@ SW sees the committed registers when reading the [`FLASH_STATUS`](registers.md#f
 
 The attached host system also reads back the committed registers via Read Status commands.
 This scheme is to guarantee the atomicity of the STATUS register.
+On every 8th SPI clock cycle, the SPI domain commits the latest resolved value to the committed registers.
+Each byte beat of the Read Status commands will return the latest committed value of the targeted register.
+A Read Status commands can thus repeatedly poll the BUSY bit and see updates in the same transaction.
+
+Again, note that the passthrough gate only updates after CSB makes a 0->1 transition, and it derives its value from the committed BUSY bit.
+After the BUSY bit is set, there must be at least one command before the gate will open again.
+Typically, a Read Status command follows any command that would set the BUSY bit, to check that the BUSY bit has cleared.
+This activity is sufficient to unblock passthrough for the next command.
 
 If the host sends the Write Status commands, the commands are not processed in this module.
 SW must configure the remaining command information entries to upload the Write Status commands to the FIFOs.
