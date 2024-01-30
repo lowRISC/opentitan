@@ -1097,15 +1097,15 @@ def opentitan_ram_binary(
         binaries.append(":" + bin_name)
 
         # Generate Un-scrambled RAM VMEM (for testing SRAM injection in DV)
-        vmem_name = "{}_vmem".format(devname)
-        dev_targets.append(":" + vmem_name)
-        bin_to_vmem(
-            name = vmem_name,
-            bin = bin_name,
-            platform = platform,
-            testonly = testonly,
-            word_size = 32,
-        )
+        #vmem_name = "{}_vmem".format(devname)
+        #dev_targets.append(":" + vmem_name)
+        #bin_to_vmem(
+        #    name = vmem_name,
+        #    bin = bin_name,
+        #    platform = platform,
+        #    testonly = testonly,
+        #    word_size = 32,
+        #)
 
         # Create a filegroup with just the current device's targets.
         native.filegroup(
