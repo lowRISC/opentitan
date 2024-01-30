@@ -15,6 +15,15 @@ extern "C" {
 
 // clang-format off
 
+// Following a `Verify` Operation, the host is expected to send the following parameters, in order:
+// - hash_alg (ECDSA_HASH_ALG)
+// - curve (ECDSA_CURVE)
+// - message_digest (ECDSA_MESSAGE)
+// - signature (ECDSA_SIGNATURE)
+// - qx (ECDSA_COORDINATE)
+// - qy (ECDSA_COORDINATE)
+// The device will then respond with:
+// - result (ECDSA_VERIFY_OUTPUT)
 #define ECDSA_OPERATION(_, value) \
     value(_, Verify)
 UJSON_SERDE_ENUM(CryptotestEcdsaOperation, cryptotest_ecdsa_operation_t, ECDSA_OPERATION);
