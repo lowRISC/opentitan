@@ -691,19 +691,22 @@ module spi_device
   );
 
   // CSb edge on the system clock
-  prim_edge_detector #(
-    .Width     (1    ),
-    .ResetValue(1'b 1),
-    .EnSync    (1'b 1)
-  ) u_csb_edge_sysclk (
+  spid_csb_sync u_spid_csb_sync (
     .clk_i,
     .rst_ni,
-    .d_i      (sys_csb      ),
-    .q_sync_o (sys_csb_syncd),
+    .sck_i                     (clk_spi_in_buf),
+    .sck_pulse_en_i            (1'b1),
+    .csb_i                     (clk_csb),
+    .csb_deasserted_pulse_o    (sys_csb_deasserted_pulse)
+  );
 
-    // sys_csb_assertion can be detected but no usage
-    .q_posedge_pulse_o (sys_csb_deasserted_pulse),
-    .q_negedge_pulse_o (                        )
+  prim_flop_2sync #(
+    .Width       (1)
+  ) u_sys_csb_syncd (
+    .clk_i,
+    .rst_ni,
+    .d_i       (sys_csb),
+    .q_o       (sys_csb_syncd)
   );
 
   // CSb edge on the SPI input clock
@@ -1224,7 +1227,6 @@ module spi_device
     .clk_csb_i (clk_csb),
 
     .sck_csb_asserted_pulse_i   (sck_csb_asserted_pulse),
-    .sys_csb_deasserted_pulse_i (sys_csb_deasserted_pulse),
 
     .sel_dp_i          (cmd_dp_sel),
     .cmd_only_sel_dp_i (cmd_only_dp_sel),
