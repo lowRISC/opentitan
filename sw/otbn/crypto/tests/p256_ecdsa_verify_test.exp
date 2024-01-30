@@ -1,2 +1,3 @@
-# Expected values (w0=x_r == R):
+# Expected values (w0=x_r == R, x2 = HARDENED_BOOL_TRUE):
+x2 = 0x739
 w0 = 0x815215ad7dd27f336b35843cbe064de299504edd0c7d87dd1147ea5680a9674a
