@@ -20,7 +20,8 @@ OTBN_DECLARE_SYMBOL_ADDR(p256_ecdh, y);     // The public key y-coordinate.
 OTBN_DECLARE_SYMBOL_ADDR(p256_ecdh,
                          d0);  // The private key scalar d (share 0).
 OTBN_DECLARE_SYMBOL_ADDR(p256_ecdh,
-                         d1);  // The private key scalar d (share 1).
+                         d1);             // The private key scalar d (share 1).
+OTBN_DECLARE_SYMBOL_ADDR(p256_ecdh, ok);  // Public key validity.
 
 static const otbn_app_t kOtbnAppEcdh = OTBN_APP_T_INIT(p256_ecdh);
 static const otbn_addr_t kOtbnVarEcdhMode = OTBN_ADDR_T_INIT(p256_ecdh, mode);
@@ -28,6 +29,7 @@ static const otbn_addr_t kOtbnVarEcdhX = OTBN_ADDR_T_INIT(p256_ecdh, x);
 static const otbn_addr_t kOtbnVarEcdhY = OTBN_ADDR_T_INIT(p256_ecdh, y);
 static const otbn_addr_t kOtbnVarEcdhD0 = OTBN_ADDR_T_INIT(p256_ecdh, d0);
 static const otbn_addr_t kOtbnVarEcdhD1 = OTBN_ADDR_T_INIT(p256_ecdh, d1);
+static const otbn_addr_t kOtbnVarEcdhOk = OTBN_ADDR_T_INIT(p256_ecdh, ok);
 
 // Mode is represented by a single word. See `p256_ecdh.s` for values.
 static const uint32_t kOtbnEcdhModeWords = 1;
@@ -93,6 +95,14 @@ status_t ecdh_p256_shared_key_start(const p256_masked_scalar_t *private_key,
 status_t ecdh_p256_shared_key_finalize(ecdh_p256_shared_key_t *shared_key) {
   // Spin here waiting for OTBN to complete.
   HARDENED_TRY(otbn_busy_wait_for_done());
+
+  // Read the code indicating if the public key is valid.
+  uint32_t ok;
+  HARDENED_TRY(otbn_dmem_read(1, kOtbnVarEcdhOk, &ok));
+  if (launder32(ok) != kHardenedBoolTrue) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(ok, kHardenedBoolTrue);
 
   // Read the shares of the key from OTBN dmem (at vars x and y).
   HARDENED_TRY(
