@@ -18,6 +18,9 @@ class rv_dm_mem_tl_access_resuming_vseq extends rv_dm_base_vseq;
   task body();
     uvm_reg_data_t wdata;
     uvm_reg_data_t rdata;
+    // Disable unavailable signal to make sure hart should be in known state. if hart is
+    // unavailabke then it could not halted.
+    cfg.rv_dm_vif.unavailable <= 0;
     repeat ($urandom_range(1, 10)) begin
       wdata = $urandom_range(0,1);
       // Verify that writing to RESUMING results in anyresumeack and
