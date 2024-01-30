@@ -13,56 +13,57 @@
 | spi_device.[`CFG`](#cfg)                                 | 0x14     |        4 | Configuration Register                          |
 | spi_device.[`STATUS`](#status)                           | 0x18     |        4 | SPI Device status register                      |
 | spi_device.[`INTERCEPT_EN`](#intercept_en)               | 0x1c     |        4 | Intercept Passthrough datapath.                 |
-| spi_device.[`LAST_READ_ADDR`](#last_read_addr)           | 0x20     |        4 | Last Read Address                               |
-| spi_device.[`FLASH_STATUS`](#flash_status)               | 0x24     |        4 | SPI Flash Status register.                      |
-| spi_device.[`JEDEC_CC`](#jedec_cc)                       | 0x28     |        4 | JEDEC Continuation Code configuration register. |
-| spi_device.[`JEDEC_ID`](#jedec_id)                       | 0x2c     |        4 | JEDEC ID register.                              |
-| spi_device.[`READ_THRESHOLD`](#read_threshold)           | 0x30     |        4 | Read Buffer threshold register.                 |
-| spi_device.[`MAILBOX_ADDR`](#mailbox_addr)               | 0x34     |        4 | Mailbox Base address register.                  |
-| spi_device.[`UPLOAD_STATUS`](#upload_status)             | 0x38     |        4 | Upload module status register.                  |
-| spi_device.[`UPLOAD_STATUS2`](#upload_status2)           | 0x3c     |        4 | Upload module status 2 register.                |
-| spi_device.[`UPLOAD_CMDFIFO`](#upload_cmdfifo)           | 0x40     |        4 | Command Fifo Read Port.                         |
-| spi_device.[`UPLOAD_ADDRFIFO`](#upload_addrfifo)         | 0x44     |        4 | Address Fifo Read Port.                         |
-| spi_device.[`CMD_FILTER_0`](#CMD_FILTER_0)               | 0x48     |        4 | Command Filter                                  |
-| spi_device.[`CMD_FILTER_1`](#CMD_FILTER_1)               | 0x4c     |        4 | Command Filter                                  |
-| spi_device.[`CMD_FILTER_2`](#CMD_FILTER_2)               | 0x50     |        4 | Command Filter                                  |
-| spi_device.[`CMD_FILTER_3`](#CMD_FILTER_3)               | 0x54     |        4 | Command Filter                                  |
-| spi_device.[`CMD_FILTER_4`](#CMD_FILTER_4)               | 0x58     |        4 | Command Filter                                  |
-| spi_device.[`CMD_FILTER_5`](#CMD_FILTER_5)               | 0x5c     |        4 | Command Filter                                  |
-| spi_device.[`CMD_FILTER_6`](#CMD_FILTER_6)               | 0x60     |        4 | Command Filter                                  |
-| spi_device.[`CMD_FILTER_7`](#CMD_FILTER_7)               | 0x64     |        4 | Command Filter                                  |
-| spi_device.[`ADDR_SWAP_MASK`](#addr_swap_mask)           | 0x68     |        4 | Address Swap Mask register.                     |
-| spi_device.[`ADDR_SWAP_DATA`](#addr_swap_data)           | 0x6c     |        4 | The address value for the address swap feature. |
-| spi_device.[`PAYLOAD_SWAP_MASK`](#payload_swap_mask)     | 0x70     |        4 | Write Data Swap in the passthrough mode.        |
-| spi_device.[`PAYLOAD_SWAP_DATA`](#payload_swap_data)     | 0x74     |        4 | Write Data Swap in the passthrough mode.        |
-| spi_device.[`CMD_INFO_0`](#cmd_info)                     | 0x78     |        4 | Command Info register.                          |
-| spi_device.[`CMD_INFO_1`](#cmd_info)                     | 0x7c     |        4 | Command Info register.                          |
-| spi_device.[`CMD_INFO_2`](#cmd_info)                     | 0x80     |        4 | Command Info register.                          |
-| spi_device.[`CMD_INFO_3`](#cmd_info)                     | 0x84     |        4 | Command Info register.                          |
-| spi_device.[`CMD_INFO_4`](#cmd_info)                     | 0x88     |        4 | Command Info register.                          |
-| spi_device.[`CMD_INFO_5`](#cmd_info)                     | 0x8c     |        4 | Command Info register.                          |
-| spi_device.[`CMD_INFO_6`](#cmd_info)                     | 0x90     |        4 | Command Info register.                          |
-| spi_device.[`CMD_INFO_7`](#cmd_info)                     | 0x94     |        4 | Command Info register.                          |
-| spi_device.[`CMD_INFO_8`](#cmd_info)                     | 0x98     |        4 | Command Info register.                          |
-| spi_device.[`CMD_INFO_9`](#cmd_info)                     | 0x9c     |        4 | Command Info register.                          |
-| spi_device.[`CMD_INFO_10`](#cmd_info)                    | 0xa0     |        4 | Command Info register.                          |
-| spi_device.[`CMD_INFO_11`](#cmd_info)                    | 0xa4     |        4 | Command Info register.                          |
-| spi_device.[`CMD_INFO_12`](#cmd_info)                    | 0xa8     |        4 | Command Info register.                          |
-| spi_device.[`CMD_INFO_13`](#cmd_info)                    | 0xac     |        4 | Command Info register.                          |
-| spi_device.[`CMD_INFO_14`](#cmd_info)                    | 0xb0     |        4 | Command Info register.                          |
-| spi_device.[`CMD_INFO_15`](#cmd_info)                    | 0xb4     |        4 | Command Info register.                          |
-| spi_device.[`CMD_INFO_16`](#cmd_info)                    | 0xb8     |        4 | Command Info register.                          |
-| spi_device.[`CMD_INFO_17`](#cmd_info)                    | 0xbc     |        4 | Command Info register.                          |
-| spi_device.[`CMD_INFO_18`](#cmd_info)                    | 0xc0     |        4 | Command Info register.                          |
-| spi_device.[`CMD_INFO_19`](#cmd_info)                    | 0xc4     |        4 | Command Info register.                          |
-| spi_device.[`CMD_INFO_20`](#cmd_info)                    | 0xc8     |        4 | Command Info register.                          |
-| spi_device.[`CMD_INFO_21`](#cmd_info)                    | 0xcc     |        4 | Command Info register.                          |
-| spi_device.[`CMD_INFO_22`](#cmd_info)                    | 0xd0     |        4 | Command Info register.                          |
-| spi_device.[`CMD_INFO_23`](#cmd_info)                    | 0xd4     |        4 | Command Info register.                          |
-| spi_device.[`CMD_INFO_EN4B`](#cmd_info_en4b)             | 0xd8     |        4 | Opcode for EN4B.                                |
-| spi_device.[`CMD_INFO_EX4B`](#cmd_info_ex4b)             | 0xdc     |        4 | Opcode for EX4B                                 |
-| spi_device.[`CMD_INFO_WREN`](#cmd_info_wren)             | 0xe0     |        4 | Opcode for Write Enable (WREN)                  |
-| spi_device.[`CMD_INFO_WRDI`](#cmd_info_wrdi)             | 0xe4     |        4 | Opcode for Write Disable (WRDI)                 |
+| spi_device.[`ADDR_MODE`](#addr_mode)                     | 0x20     |        4 | Flash address mode configuration                |
+| spi_device.[`LAST_READ_ADDR`](#last_read_addr)           | 0x24     |        4 | Last Read Address                               |
+| spi_device.[`FLASH_STATUS`](#flash_status)               | 0x28     |        4 | SPI Flash Status register.                      |
+| spi_device.[`JEDEC_CC`](#jedec_cc)                       | 0x2c     |        4 | JEDEC Continuation Code configuration register. |
+| spi_device.[`JEDEC_ID`](#jedec_id)                       | 0x30     |        4 | JEDEC ID register.                              |
+| spi_device.[`READ_THRESHOLD`](#read_threshold)           | 0x34     |        4 | Read Buffer threshold register.                 |
+| spi_device.[`MAILBOX_ADDR`](#mailbox_addr)               | 0x38     |        4 | Mailbox Base address register.                  |
+| spi_device.[`UPLOAD_STATUS`](#upload_status)             | 0x3c     |        4 | Upload module status register.                  |
+| spi_device.[`UPLOAD_STATUS2`](#upload_status2)           | 0x40     |        4 | Upload module status 2 register.                |
+| spi_device.[`UPLOAD_CMDFIFO`](#upload_cmdfifo)           | 0x44     |        4 | Command Fifo Read Port.                         |
+| spi_device.[`UPLOAD_ADDRFIFO`](#upload_addrfifo)         | 0x48     |        4 | Address Fifo Read Port.                         |
+| spi_device.[`CMD_FILTER_0`](#CMD_FILTER_0)               | 0x4c     |        4 | Command Filter                                  |
+| spi_device.[`CMD_FILTER_1`](#CMD_FILTER_1)               | 0x50     |        4 | Command Filter                                  |
+| spi_device.[`CMD_FILTER_2`](#CMD_FILTER_2)               | 0x54     |        4 | Command Filter                                  |
+| spi_device.[`CMD_FILTER_3`](#CMD_FILTER_3)               | 0x58     |        4 | Command Filter                                  |
+| spi_device.[`CMD_FILTER_4`](#CMD_FILTER_4)               | 0x5c     |        4 | Command Filter                                  |
+| spi_device.[`CMD_FILTER_5`](#CMD_FILTER_5)               | 0x60     |        4 | Command Filter                                  |
+| spi_device.[`CMD_FILTER_6`](#CMD_FILTER_6)               | 0x64     |        4 | Command Filter                                  |
+| spi_device.[`CMD_FILTER_7`](#CMD_FILTER_7)               | 0x68     |        4 | Command Filter                                  |
+| spi_device.[`ADDR_SWAP_MASK`](#addr_swap_mask)           | 0x6c     |        4 | Address Swap Mask register.                     |
+| spi_device.[`ADDR_SWAP_DATA`](#addr_swap_data)           | 0x70     |        4 | The address value for the address swap feature. |
+| spi_device.[`PAYLOAD_SWAP_MASK`](#payload_swap_mask)     | 0x74     |        4 | Write Data Swap in the passthrough mode.        |
+| spi_device.[`PAYLOAD_SWAP_DATA`](#payload_swap_data)     | 0x78     |        4 | Write Data Swap in the passthrough mode.        |
+| spi_device.[`CMD_INFO_0`](#cmd_info)                     | 0x7c     |        4 | Command Info register.                          |
+| spi_device.[`CMD_INFO_1`](#cmd_info)                     | 0x80     |        4 | Command Info register.                          |
+| spi_device.[`CMD_INFO_2`](#cmd_info)                     | 0x84     |        4 | Command Info register.                          |
+| spi_device.[`CMD_INFO_3`](#cmd_info)                     | 0x88     |        4 | Command Info register.                          |
+| spi_device.[`CMD_INFO_4`](#cmd_info)                     | 0x8c     |        4 | Command Info register.                          |
+| spi_device.[`CMD_INFO_5`](#cmd_info)                     | 0x90     |        4 | Command Info register.                          |
+| spi_device.[`CMD_INFO_6`](#cmd_info)                     | 0x94     |        4 | Command Info register.                          |
+| spi_device.[`CMD_INFO_7`](#cmd_info)                     | 0x98     |        4 | Command Info register.                          |
+| spi_device.[`CMD_INFO_8`](#cmd_info)                     | 0x9c     |        4 | Command Info register.                          |
+| spi_device.[`CMD_INFO_9`](#cmd_info)                     | 0xa0     |        4 | Command Info register.                          |
+| spi_device.[`CMD_INFO_10`](#cmd_info)                    | 0xa4     |        4 | Command Info register.                          |
+| spi_device.[`CMD_INFO_11`](#cmd_info)                    | 0xa8     |        4 | Command Info register.                          |
+| spi_device.[`CMD_INFO_12`](#cmd_info)                    | 0xac     |        4 | Command Info register.                          |
+| spi_device.[`CMD_INFO_13`](#cmd_info)                    | 0xb0     |        4 | Command Info register.                          |
+| spi_device.[`CMD_INFO_14`](#cmd_info)                    | 0xb4     |        4 | Command Info register.                          |
+| spi_device.[`CMD_INFO_15`](#cmd_info)                    | 0xb8     |        4 | Command Info register.                          |
+| spi_device.[`CMD_INFO_16`](#cmd_info)                    | 0xbc     |        4 | Command Info register.                          |
+| spi_device.[`CMD_INFO_17`](#cmd_info)                    | 0xc0     |        4 | Command Info register.                          |
+| spi_device.[`CMD_INFO_18`](#cmd_info)                    | 0xc4     |        4 | Command Info register.                          |
+| spi_device.[`CMD_INFO_19`](#cmd_info)                    | 0xc8     |        4 | Command Info register.                          |
+| spi_device.[`CMD_INFO_20`](#cmd_info)                    | 0xcc     |        4 | Command Info register.                          |
+| spi_device.[`CMD_INFO_21`](#cmd_info)                    | 0xd0     |        4 | Command Info register.                          |
+| spi_device.[`CMD_INFO_22`](#cmd_info)                    | 0xd4     |        4 | Command Info register.                          |
+| spi_device.[`CMD_INFO_23`](#cmd_info)                    | 0xd8     |        4 | Command Info register.                          |
+| spi_device.[`CMD_INFO_EN4B`](#cmd_info_en4b)             | 0xdc     |        4 | Opcode for EN4B.                                |
+| spi_device.[`CMD_INFO_EX4B`](#cmd_info_ex4b)             | 0xe0     |        4 | Opcode for EX4B                                 |
+| spi_device.[`CMD_INFO_WREN`](#cmd_info_wren)             | 0xe4     |        4 | Opcode for Write Enable (WREN)                  |
+| spi_device.[`CMD_INFO_WRDI`](#cmd_info_wrdi)             | 0xe8     |        4 | Opcode for Write Disable (WRDI)                 |
 | spi_device.[`TPM_CAP`](#tpm_cap)                         | 0x800    |        4 | TPM HWIP Capability register.                   |
 | spi_device.[`TPM_CFG`](#tpm_cfg)                         | 0x804    |        4 | TPM Configuration register.                     |
 | spi_device.[`TPM_STATUS`](#tpm_status)                   | 0x808    |        4 | TPM submodule state register.                   |
@@ -197,58 +198,23 @@ Other values are reserved.
 Configuration Register
 - Offset: `0x14`
 - Reset default: `0x0`
-- Reset mask: `0x101000f`
+- Reset mask: `0x100000f`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "CPOL", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "CPHA", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "tx_order", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "rx_order", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 12}, {"name": "addr_4b_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 7}, {"name": "mailbox_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 7}], "config": {"lanes": 1, "fontsize": 10, "vspace": 120}}
+{"reg": [{"name": "CPOL", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "CPHA", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "tx_order", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "rx_order", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 20}, {"name": "mailbox_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 7}], "config": {"lanes": 1, "fontsize": 10, "vspace": 120}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                           |
-|:------:|:------:|:-------:|:-------------------------------|
-| 31:25  |        |         | Reserved                       |
-|   24   |   rw   |   0x0   | [mailbox_en](#cfg--mailbox_en) |
-| 23:17  |        |         | Reserved                       |
-|   16   |   rw   |   0x0   | [addr_4b_en](#cfg--addr_4b_en) |
-|  15:4  |        |         | Reserved                       |
-|   3    |   rw   |   0x0   | [rx_order](#cfg--rx_order)     |
-|   2    |   rw   |   0x0   | [tx_order](#cfg--tx_order)     |
-|   1    |   rw   |   0x0   | [CPHA](#cfg--cpha)             |
-|   0    |   rw   |   0x0   | [CPOL](#cfg--cpol)             |
-
-### CFG . mailbox_en
-Mailbox enable.
-
-If 1, in the flash and passthrough mode, the IP checks the incoming
-address and return from the internal Mailbox buffer if the address
-falls into the MAILBOX range
-(MAILBOX_ADDR:MAILBOX_ADDR+MAILBOX_SIZE)}.
-
-### CFG . addr_4b_en
-4B Address Mode enable.
-
-This field configures the internal module to receive 32 bits of the
-SPI commands. The affected commands are the SPI read commands
-except QPI, and program commands. It is expected for SW to
-configure this field at the configuration stage and leave the
-updation to HW until next reset.
-
-Even though Read SFDP command has address fields, the SFDP command
-is not affected by this field. The command always parse 24 bits on
-the SPI line 0 following the SPI command as the address field.
-
-### CFG . rx_order
-RX bit order on SDI. Module stores bitstream from MSB to LSB if value is 0.
-
-### CFG . tx_order
-TX bit order on SDO. 0 for MSB to LSB, 1 for LSB to MSB
-
-### CFG . CPHA
-Data phase. 0 for negative edge change, 1 for positive edge change
-
-### CFG . CPOL
-Clock polarity. 0 for normal SPI, 1 for negative edge latch
+|  Bits  |  Type  |  Reset  | Name       | Description                                                                                                                                                                                                                    |
+|:------:|:------:|:-------:|:-----------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 31:25  |        |         |            | Reserved                                                                                                                                                                                                                       |
+|   24   |   rw   |   0x0   | mailbox_en | Mailbox enable. If 1, in the flash and passthrough mode, the IP checks the incoming address and return from the internal Mailbox buffer if the address falls into the MAILBOX range (MAILBOX_ADDR:MAILBOX_ADDR+MAILBOX_SIZE)}. |
+|  23:4  |        |         |            | Reserved                                                                                                                                                                                                                       |
+|   3    |   rw   |   0x0   | rx_order   | RX bit order on SDI. Module stores bitstream from MSB to LSB if value is 0.                                                                                                                                                    |
+|   2    |   rw   |   0x0   | tx_order   | TX bit order on SDO. 0 for MSB to LSB, 1 for LSB to MSB                                                                                                                                                                        |
+|   1    |   rw   |   0x0   | CPHA       | Data phase. 0 for negative edge change, 1 for positive edge change                                                                                                                                                             |
+|   0    |   rw   |   0x0   | CPOL       | Clock polarity. 0 for normal SPI, 1 for negative edge latch                                                                                                                                                                    |
 
 ## STATUS
 SPI Device status register
@@ -290,12 +256,54 @@ Intercept Passthrough datapath.
 |   1    |   rw   |   0x0   | jedec  | If set, Read JEDEC ID is processed internally.                  |
 |   0    |   rw   |   0x0   | status | If set, Read Status is processed internally.                    |
 
+## ADDR_MODE
+Flash address mode configuration
+
+This register shows the current address mode and pending changes.
+It is updated by the HW when the command phase completes.
+- Offset: `0x20`
+- Reset default: `0x0`
+- Reset mask: `0x80000001`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "addr_4b_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 30}, {"name": "pending", "bits": 1, "attr": ["ro"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 120}}
+```
+
+|  Bits  |  Type  |  Reset  | Name                                 |
+|:------:|:------:|:-------:|:-------------------------------------|
+|   31   |   ro   |    x    | [pending](#addr_mode--pending)       |
+|  30:1  |        |         | Reserved                             |
+|   0    |   rw   |    x    | [addr_4b_en](#addr_mode--addr_4b_en) |
+
+### ADDR_MODE . pending
+SW-originated change is pending.
+
+This bit is 1 whenever the current value of addr_4b_en has yet to sync with the SPI domain.
+If an EN4B or EX4B command arrives next, the current value in `addr_4b_en` will be ignored,
+and the SPI flash command will take priority, with an update to `addr_4b_en` to match the command's result.
+
+### ADDR_MODE . addr_4b_en
+4B Address Mode enable.
+
+This field configures the internal module to receive 32 bits of the SPI commands.
+The affected commands are the SPI read commands except QPI, and program commands.
+It is expected for SW to configure this field at the configuration stage and release control to HW until the next reset.
+
+Even though Read SFDP command has address fields, the SFDP command is not affected by this field.
+The command always parse 24 bits on the SPI line 0 following the SPI command as the address field.
+
+This field has noteworthy read behavior.
+If a software-initiated change is still `pending` the sync to the SPI domain, this bit will reflect the value to be sent.
+Otherwise, this field will reflect the current value observed in the SPI domain.
+
 ## LAST_READ_ADDR
 Last Read Address
 
 This register shows the last address accessed by the host system.
 It is updated by the HW when CSb is de-asserted.
-- Offset: `0x20`
+- Offset: `0x24`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -320,7 +328,7 @@ maintain this register value up to date.
 The HW latches the value when SPI Flash transaction begins. Any updates
 during the transaction will be updated after the transaction is
 completed.
-- Offset: `0x24`
+- Offset: `0x28`
 - Reset default: `0x0`
 - Reset mask: `0xffffff`
 
@@ -374,7 +382,7 @@ JEDEC Continuation Code configuration register.
 Read JEDEC ID must return the continuation code if the manufacturer ID
 is not shown in the first page of JEDEC table. This register controls
 the Continuation Code.
-- Offset: `0x28`
+- Offset: `0x2c`
 - Reset default: `0x7f`
 - Reset mask: `0xffff`
 
@@ -392,7 +400,7 @@ the Continuation Code.
 
 ## JEDEC_ID
 JEDEC ID register.
-- Offset: `0x2c`
+- Offset: `0x30`
 - Reset default: `0x0`
 - Reset mask: `0xffffff`
 
@@ -411,7 +419,7 @@ JEDEC ID register.
 ## READ_THRESHOLD
 Read Buffer threshold register.
 
-- Offset: `0x30`
+- Offset: `0x34`
 - Reset default: `0x0`
 - Reset mask: `0x3ff`
 
@@ -431,7 +439,7 @@ Mailbox Base address register.
 
 The mailbox size is fixed. In this version of IP, the size is 1kB.
 Lower 10 bits of the Mailbox address is tied to 0.
-- Offset: `0x34`
+- Offset: `0x38`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -447,7 +455,7 @@ Lower 10 bits of the Mailbox address is tied to 0.
 
 ## UPLOAD_STATUS
 Upload module status register.
-- Offset: `0x38`
+- Offset: `0x3c`
 - Reset default: `0x0`
 - Reset mask: `0x9f9f`
 
@@ -479,7 +487,7 @@ payload in a command, this field may not be 0. For example, if the
 system issues 258B payload, the payload_depth is 256 (as the IP only
 holds 256B of payload), the payload_start_idx is 2. SW should read from
 2 to 255 then 0 and 1.
-- Offset: `0x3c`
+- Offset: `0x40`
 - Reset default: `0x0`
 - Reset mask: `0xff01ff`
 
@@ -498,7 +506,7 @@ holds 256B of payload), the payload_start_idx is 2. SW should read from
 
 ## UPLOAD_CMDFIFO
 Command Fifo Read Port.
-- Offset: `0x40`
+- Offset: `0x44`
 - Reset default: `0x0`
 - Reset mask: `0xff`
 
@@ -515,7 +523,7 @@ Command Fifo Read Port.
 
 ## UPLOAD_ADDRFIFO
 Address Fifo Read Port.
-- Offset: `0x44`
+- Offset: `0x48`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -534,7 +542,7 @@ Command Filter
 
 If a bit in this CSR is 1, then corresponding SPI command w.r.t the
 bit position among 256 bit is dropped in SPI Passthrough mode.
-- Offset: `0x48`
+- Offset: `0x4c`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -584,7 +592,7 @@ Command Filter
 
 If a bit in this CSR is 1, then corresponding SPI command w.r.t the
 bit position among 256 bit is dropped in SPI Passthrough mode.
-- Offset: `0x4c`
+- Offset: `0x50`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -634,7 +642,7 @@ Command Filter
 
 If a bit in this CSR is 1, then corresponding SPI command w.r.t the
 bit position among 256 bit is dropped in SPI Passthrough mode.
-- Offset: `0x50`
+- Offset: `0x54`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -684,7 +692,7 @@ Command Filter
 
 If a bit in this CSR is 1, then corresponding SPI command w.r.t the
 bit position among 256 bit is dropped in SPI Passthrough mode.
-- Offset: `0x54`
+- Offset: `0x58`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -734,7 +742,7 @@ Command Filter
 
 If a bit in this CSR is 1, then corresponding SPI command w.r.t the
 bit position among 256 bit is dropped in SPI Passthrough mode.
-- Offset: `0x58`
+- Offset: `0x5c`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -784,7 +792,7 @@ Command Filter
 
 If a bit in this CSR is 1, then corresponding SPI command w.r.t the
 bit position among 256 bit is dropped in SPI Passthrough mode.
-- Offset: `0x5c`
+- Offset: `0x60`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -834,7 +842,7 @@ Command Filter
 
 If a bit in this CSR is 1, then corresponding SPI command w.r.t the
 bit position among 256 bit is dropped in SPI Passthrough mode.
-- Offset: `0x60`
+- Offset: `0x64`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -884,7 +892,7 @@ Command Filter
 
 If a bit in this CSR is 1, then corresponding SPI command w.r.t the
 bit position among 256 bit is dropped in SPI Passthrough mode.
-- Offset: `0x64`
+- Offset: `0x68`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -937,7 +945,7 @@ this register is set, the corresponding address bit in the SPI Read
 commands is replaced with the data from [`ADDR_SWAP_DATA.`](#addr_swap_data)
 
 If 3B address mode is active, upper 8bit [31:24] is ignored.
-- Offset: `0x68`
+- Offset: `0x6c`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -953,7 +961,7 @@ If 3B address mode is active, upper 8bit [31:24] is ignored.
 
 ## ADDR_SWAP_DATA
 The address value for the address swap feature.
-- Offset: `0x6c`
+- Offset: `0x70`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -972,7 +980,7 @@ Write Data Swap in the passthrough mode.
 
 PAYLOAD_SWAP_MASK CSR provides the SW to change certain bits in the
 first 4 bytes of the write payload in the passthrough mode.
-- Offset: `0x70`
+- Offset: `0x74`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -996,7 +1004,7 @@ passthrough mode.
 The register should be written in Little-Endian order. [7:0] bits are
 processed in the first received payload byte. [31:24] bits for the 4th
 byte.
-- Offset: `0x74`
+- Offset: `0x78`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -1020,30 +1028,30 @@ Command Info register.
 
 | Name        | Offset   |
 |:------------|:---------|
-| CMD_INFO_0  | 0x78     |
-| CMD_INFO_1  | 0x7c     |
-| CMD_INFO_2  | 0x80     |
-| CMD_INFO_3  | 0x84     |
-| CMD_INFO_4  | 0x88     |
-| CMD_INFO_5  | 0x8c     |
-| CMD_INFO_6  | 0x90     |
-| CMD_INFO_7  | 0x94     |
-| CMD_INFO_8  | 0x98     |
-| CMD_INFO_9  | 0x9c     |
-| CMD_INFO_10 | 0xa0     |
-| CMD_INFO_11 | 0xa4     |
-| CMD_INFO_12 | 0xa8     |
-| CMD_INFO_13 | 0xac     |
-| CMD_INFO_14 | 0xb0     |
-| CMD_INFO_15 | 0xb4     |
-| CMD_INFO_16 | 0xb8     |
-| CMD_INFO_17 | 0xbc     |
-| CMD_INFO_18 | 0xc0     |
-| CMD_INFO_19 | 0xc4     |
-| CMD_INFO_20 | 0xc8     |
-| CMD_INFO_21 | 0xcc     |
-| CMD_INFO_22 | 0xd0     |
-| CMD_INFO_23 | 0xd4     |
+| CMD_INFO_0  | 0x7c     |
+| CMD_INFO_1  | 0x80     |
+| CMD_INFO_2  | 0x84     |
+| CMD_INFO_3  | 0x88     |
+| CMD_INFO_4  | 0x8c     |
+| CMD_INFO_5  | 0x90     |
+| CMD_INFO_6  | 0x94     |
+| CMD_INFO_7  | 0x98     |
+| CMD_INFO_8  | 0x9c     |
+| CMD_INFO_9  | 0xa0     |
+| CMD_INFO_10 | 0xa4     |
+| CMD_INFO_11 | 0xa8     |
+| CMD_INFO_12 | 0xac     |
+| CMD_INFO_13 | 0xb0     |
+| CMD_INFO_14 | 0xb4     |
+| CMD_INFO_15 | 0xb8     |
+| CMD_INFO_16 | 0xbc     |
+| CMD_INFO_17 | 0xc0     |
+| CMD_INFO_18 | 0xc4     |
+| CMD_INFO_19 | 0xc8     |
+| CMD_INFO_20 | 0xcc     |
+| CMD_INFO_21 | 0xd0     |
+| CMD_INFO_22 | 0xd4     |
+| CMD_INFO_23 | 0xd8     |
 
 
 ### Fields
@@ -1156,7 +1164,7 @@ Command Opcode
 Opcode for EN4B.
 
 If the register is active, it affects in flash / passthrough modes.
-- Offset: `0xd8`
+- Offset: `0xdc`
 - Reset default: `0x0`
 - Reset mask: `0x800000ff`
 
@@ -1174,7 +1182,7 @@ If the register is active, it affects in flash / passthrough modes.
 
 ## CMD_INFO_EX4B
 Opcode for EX4B
-- Offset: `0xdc`
+- Offset: `0xe0`
 - Reset default: `0x0`
 - Reset mask: `0x800000ff`
 
@@ -1192,7 +1200,7 @@ Opcode for EX4B
 
 ## CMD_INFO_WREN
 Opcode for Write Enable (WREN)
-- Offset: `0xe0`
+- Offset: `0xe4`
 - Reset default: `0x0`
 - Reset mask: `0x800000ff`
 
@@ -1210,7 +1218,7 @@ Opcode for Write Enable (WREN)
 
 ## CMD_INFO_WRDI
 Opcode for Write Disable (WRDI)
-- Offset: `0xe4`
+- Offset: `0xe8`
 - Reset default: `0x0`
 - Reset mask: `0x800000ff`
 

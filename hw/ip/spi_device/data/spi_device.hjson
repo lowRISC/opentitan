@@ -513,23 +513,6 @@
           desc: "RX bit order on SDI. Module stores bitstream from MSB to LSB if value is 0.",
           resval: "0",
         },
-        { bits: "16"
-          name: "addr_4b_en"
-          swaccess: "rw"
-          hwaccess: "hrw" // Updated by EN4B/EX4B
-          desc: '''4B Address Mode enable.
-
-            This field configures the internal module to receive 32 bits of the
-            SPI commands. The affected commands are the SPI read commands
-            except QPI, and program commands. It is expected for SW to
-            configure this field at the configuration stage and leave the
-            updation to HW until next reset.
-
-            Even though Read SFDP command has address fields, the SFDP command
-            is not affected by this field. The command always parse 24 bits on
-            the SPI line 0 following the SPI command as the address field.
-            '''
-        }
         { bits: "24"
           name: "mailbox_en"
           desc: '''Mailbox enable.
@@ -588,6 +571,52 @@
         } // f: mailbox
       ]
     } // R: INTERCEPT_EN
+    { name: "ADDR_MODE"
+      desc: '''Flash address mode configuration
+
+        This register shows the current address mode and pending changes.
+        It is updated by the HW when the command phase completes.
+        '''
+      swaccess: "ro"
+      hwaccess: "hwo"
+      hwext: true
+      tags: [
+        // SW is not able to read back the ADDR_MODE register right after write.
+        // The pending field changes whenever the CSR is written, regardless of the value.
+        // So, the CSR is excluded from most automated CSR tests.
+        "excl:CsrNonInitTests:CsrExclWrite"
+      ]
+      fields: [
+        { bits: "0"
+          name: "addr_4b_en"
+          swaccess: "rw"
+          hwaccess: "hrw" // Updated by EN4B/EX4B
+          hwqe: true
+          desc: '''4B Address Mode enable.
+
+            This field configures the internal module to receive 32 bits of the SPI commands.
+            The affected commands are the SPI read commands except QPI, and program commands.
+            It is expected for SW to configure this field at the configuration stage and release control to HW until the next reset.
+
+            Even though Read SFDP command has address fields, the SFDP command is not affected by this field.
+            The command always parse 24 bits on the SPI line 0 following the SPI command as the address field.
+
+            This field has noteworthy read behavior.
+            If a software-initiated change is still `pending` the sync to the SPI domain, this bit will reflect the value to be sent.
+            Otherwise, this field will reflect the current value observed in the SPI domain.
+            '''
+        },
+        { bits: "31"
+          name: "pending"
+          desc: '''SW-originated change is pending.
+
+            This bit is 1 whenever the current value of addr_4b_en has yet to sync with the SPI domain.
+            If an EN4B or EX4B command arrives next, the current value in `addr_4b_en` will be ignored,
+            and the SPI flash command will take priority, with an update to `addr_4b_en` to match the command's result.
+            '''
+        }
+      ]
+    } // R: ADDR_MODE
     { name: "LAST_READ_ADDR"
       desc: '''Last Read Address
 
@@ -622,8 +651,7 @@
       hwqe: true
       tags: [
         // SW is not able to read back the STATUS register right after write.
-        // The read back value is committed value, which needs at least a SPI
-        // transaction.
+        // The read back value is the committed value, which needs at least a SPI transaction.
         // So excluded from CSR automation test.
         "excl:CsrNonInitTests:CsrExclWrite"
       ]

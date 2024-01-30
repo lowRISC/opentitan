@@ -183,13 +183,21 @@ The HW logic creates the default **CMD_INFO** structures for the two commands.
 The command parser module uses the generated structures to process and trigger the 4B management module.
 
 When the HW receives one of the commands, the HW changes the broadcast signal *cfg_addr_4b_en*.
-Also the HW updates [`CFG.addr_4b_en`](registers.md#cfg) after passing through CDC.
-It takes at most three SYS_CLK cycles to update the value in the *CFG* register after the completion of the SPI transaction (CSb de-assertion).
+Also the HW updates [`ADDR_MODE.addr_4b_en`](registers.md#addr_mode) after passing through CDC.
+It takes at most three SYS_CLK cycles to update the value in the *ADDR_MODE* register after the completion of the SPI transaction (CSb de-assertion).
 
 _Note: The HW changes the broadcasting signal and the CSR even though the SPI host system sends more than 8 beats of the SPI S[0].
 After the logic matches the received command byte with EN4B/ EX4B, the logic ignores the rest of the SPI data._
 
-The broadcasted `cfg_addr_4b_en` signal affects the read commands which `addr_mode` is *AddrCfg* in their command information entries.
+The broadcasted `cfg_addr_4b_en` signal affects the read commands for which `addr_mode` is *AddrCfg* in their command information entries.
+
+SW may also configure the initial address mode by writing to [`ADDR_MODE.addr_4b_en`](registers.md#addr_mode).
+SW must not write to this CSR unless it knows the upstream host is inactive and expects initial values for the next transaction.
+After initialization (from the upstream SPI host's perspective), it is a protocol violation for the address mode to change outside the host's explicit commands.
+A SW request will set the [`ADDR_MODE.pending`](registers.md#addr_mode) bit, which will remain set until HW consumes the update.
+SW will see the intended mode in [`ADDR_MODE.addr_4b_en`](registers.md#addr_mode) until HW completes the request.
+However, SW may overwrite the requested value, so long as the SPI host is held inactive.
+The request does not complete until the SPI host completes the opcode phase of the transaction, and it will take effect for that same transaction's address phase (if any).
 
 ### Command Upload
 

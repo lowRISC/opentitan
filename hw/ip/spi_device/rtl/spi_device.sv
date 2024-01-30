@@ -187,6 +187,7 @@ module spi_device
 
   spi_mode_e spi_mode;
   logic cfg_addr_4b_en;
+  logic cmd_sync_addr_4b_en;
 
   // Address 3B/ 4B tracker related signals
   //
@@ -268,11 +269,15 @@ module spi_device
   cmd_info_t                  cmd_only_info_broadcast;
   logic [CmdInfoIdxW-1:0]     cmd_only_info_idx_broadcast;
 
+  // Synchronization pulse indicating that the 8th bit of the command is
+  // arriving. This is used to time the transfer of some data to/from the sys
+  // domain.
+  logic                       cmd_sync_pulse;
+
   // CSb edge detector in the system clock and SPI input clock
   // SYS clock assertion can be detected but no usage for the event yet.
   // SPI clock de-assertion cannot be detected as no SCK at the time is given.
   logic sys_csb_deasserted_pulse;
-  logic sck_csb_asserted_pulse  ;
 
   // Read Status input and broadcast
   logic sck_status_busy_set;       // set by HW (upload)
@@ -357,8 +362,6 @@ module spi_device
   assign cpha = reg2hw.cfg.cpha.q;
   assign txorder = reg2hw.cfg.tx_order.q;
   assign rxorder = reg2hw.cfg.rx_order.q;
-
-  //assign cfg_addr_4b_en = reg2hw.cfg.addr_4b_en.q;
 
   // CSb : after 2stage synchronizer
   assign hw2reg.status.csb.d     = sys_csb_syncd;
@@ -709,23 +712,6 @@ module spi_device
     .q_o       (sys_csb_syncd)
   );
 
-  // CSb edge on the SPI input clock
-  prim_edge_detector #(
-    .Width      (1    ),
-    .ResetValue (1'b 1),
-    .EnSync     (1'b 1)
-  ) u_csb_edge_spiclk (
-    .clk_i  (clk_spi_in_buf),
-    .rst_ni (rst_spi_n),
-
-    .d_i      (sck_csb),
-    .q_sync_o (       ),
-
-    // posedge(deassertion) cannot be detected as clock could be absent.
-    .q_posedge_pulse_o (                      ),
-    .q_negedge_pulse_o (sck_csb_asserted_pulse)
-  );
-
   // TPM CSb 2FF sync to SYS_CLK
   prim_flop_2sync #(
     .Width      (1    ),
@@ -1058,6 +1044,7 @@ module spi_device
     .cmd_info_idx_o    (cmd_info_idx_broadcast),
     .cmd_only_info_o     (cmd_only_info_broadcast),
     .cmd_only_info_idx_o (cmd_only_info_idx_broadcast),
+    .cmd_sync_pulse_o  (cmd_sync_pulse),
 
     .cfg_intercept_en_status_i (cfg_intercept_en.status),
     .cfg_intercept_en_jedec_i  (cfg_intercept_en.jedec),
@@ -1185,7 +1172,7 @@ module spi_device
 
     .clk_out_i (clk_spi_out_buf),
 
-    .inclk_csb_asserted_pulse_i (sck_csb_asserted_pulse),
+    .cmd_sync_pulse_i (cmd_sync_pulse),
 
     .sys_jedec_i (jedec_cfg),
 
@@ -1226,8 +1213,6 @@ module spi_device
 
     .clk_csb_i (clk_csb),
 
-    .sck_csb_asserted_pulse_i   (sck_csb_asserted_pulse),
-
     .sel_dp_i          (cmd_dp_sel),
     .cmd_only_sel_dp_i (cmd_only_dp_sel),
 
@@ -1262,7 +1247,7 @@ module spi_device
 
     .spi_mode_i (spi_mode),
 
-    .cfg_addr_4b_en_i (cfg_addr_4b_en),
+    .cmd_sync_cfg_addr_4b_en_i (cmd_sync_addr_4b_en),
 
     .cmd_only_info_i     (cmd_only_info_broadcast),
     .cmd_only_info_idx_i (cmd_only_info_idx_broadcast),
@@ -1326,18 +1311,15 @@ module spi_device
 
     .spi_clk_i  (clk_spi_in_buf),
 
-    .spi_csb_asserted_pulse_i  (sck_csb_asserted_pulse  ),
-    .sys_csb_deasserted_pulse_i(sys_csb_deasserted_pulse),
+    .cmd_sync_pulse_i (cmd_sync_pulse),
 
-    // Assume CFG.addr_4b_en is not external register.
-    // And has the permissions as below:
-    //    swaccess: "rw"
-    //    hwaccess: "hrw"
-    .reg2hw_cfg_addr_4b_en_q_i  (reg2hw.cfg.addr_4b_en.q ), // registered input
-    .hw2reg_cfg_addr_4b_en_de_o (hw2reg.cfg.addr_4b_en.de),
-    .hw2reg_cfg_addr_4b_en_d_o  (hw2reg.cfg.addr_4b_en.d ),
+    .reg2hw_addr_mode_addr_4b_en_q_i   (reg2hw.addr_mode.addr_4b_en.q),
+    .reg2hw_addr_mode_addr_4b_en_qe_i  (reg2hw.addr_mode.addr_4b_en.qe),
+    .hw2reg_addr_mode_pending_d_o      (hw2reg.addr_mode.pending.d),
+    .hw2reg_addr_mode_addr_4b_en_d_o   (hw2reg.addr_mode.addr_4b_en.d),
 
-    .spi_cfg_addr_4b_en_o (cfg_addr_4b_en), // broadcast
+    .spi_cfg_addr_4b_en_o      (cfg_addr_4b_en), // broadcast
+    .cmd_sync_cfg_addr_4b_en_o (cmd_sync_addr_4b_en), // early output for upload
 
     .spi_addr_4b_set_i (cmd_en4b_pulse), // EN4B command
     .spi_addr_4b_clr_i (cmd_ex4b_pulse)  // EX4B command

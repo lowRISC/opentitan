@@ -57,8 +57,6 @@ module spid_upload
 
   input clk_csb_i, // CSb as a clock source
 
-  input sck_csb_asserted_pulse_i,
-
   input sel_datapath_e sel_dp_i,
   input sel_datapath_e cmd_only_sel_dp_i,
 
@@ -97,7 +95,8 @@ module spid_upload
   // Configurations:
   input spi_mode_e spi_mode_i,
 
-  input logic cfg_addr_4b_en_i,
+  // Early (next value to be committed at 8th posedge) view of addr mode
+  input logic cmd_sync_cfg_addr_4b_en_i,
 
   input cmd_info_t              cmd_only_info_i,
   input logic [CmdInfoIdxW-1:0] cmd_only_info_idx_i,
@@ -225,8 +224,7 @@ module spid_upload
   // Address latch
   logic addr_update, addr_shift;
   logic [31:0] address_q, address_d;
-  logic [4:0]  addrcnt;
-
+  logic [AddrCntW-1:0]  addrcnt;
 
   // unused
   logic unused_cmdinfo_idx;
@@ -237,7 +235,7 @@ module spid_upload
   //////////////
 
   // Command info process
-  assign cmdinfo_addr_mode = get_addr_mode(cmd_only_info_i.addr_mode, cfg_addr_4b_en_i);
+  assign cmdinfo_addr_mode = get_addr_mode(cmd_only_info_i.addr_mode, cmd_sync_cfg_addr_4b_en_i);
   assign cmdinfo_addr_en   = cmdinfo_addr_mode != AddrDisabled;
 
   assign cmdinfo_addr_4b_en = cmdinfo_addr_mode == Addr4B;
@@ -294,7 +292,7 @@ module spid_upload
   // a pulse to set the interrupt (along with the status). So that the SW can
   // get the event.
 
-  logic sck_cmdfifo_set;
+  logic sck_cmdfifo_set, sys_cmdfifo_set;
   `ASSERT(CmdFifoPush_A,
           cmdfifo_wvalid && cmdfifo_wready |=> cmdfifo_depth != 0,
           clk_i, !sys_rst_ni)
