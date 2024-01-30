@@ -2,26 +2,40 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Primitive interrupt handler. This assumes the existence of three
-// controller registers: INTR_ENABLE, INTR_STATE, INTR_TEST.
-// This module can be instantiated once per interrupt field, or
-// "bussified" with all fields of the interrupt vector.
+// Primitive block for generating CIP interrupts in peripherals.
+//
+// This block generates both the level-triggered wired interrupt signal intr_o and also updates
+// the value of the INTR_STATE register. Together, the signal and register make up the two
+// externally-visible indications of of the interrupt state.
+//
+// This assumes the existence of three external controller registers, which
+// interface with this module via the standard reggen reg2hw/hw2reg signals. The 3 registers are:
+// - INTR_ENABLE : enables/masks the output of INTR_STATE as the intr_o signal
+// - INTR_STATE  : the current state of the interrupt (may be RO or W1C depending on "IntrT")
+// - INTR_TEST   : sw-access-only register which asserts the interrupt for testing purposes
 
 module prim_intr_hw # (
+  // This module can be instantiated once per interrupt field (Width == 1), or
+  // "bussified" with all fields of the interrupt vector (Width == $width(vec)).
   parameter int unsigned Width = 1,
-  parameter bit FlopOutput = 1,
+  parameter bit          FlopOutput = 1,
 
-  // IntrT parameter is to hint the logic for the interrupt type. Module
-  // supports two interrupt types, *Status* and *Event*.
-  //
-  // The differences between those two types are:
-  // - Status is persistent. Until the root cause is alleviated, the interrupt
-  //   keeps asserting.
-  // - Event remains high for a relatively short period time without SW
-  //   intervention. One distinct example is an error (error could be status
-  //   though). If a certain error condition is captured, HW logic may create a
-  //   pulse. In this case the interrupt is assumed as an Event interrupt.
-  parameter IntrT = "Event" // Event or Status
+  // As the wired interrupt signal intr_o is a level-triggered interrupt, the upstream consumer sw
+  // has two options to make forward progress when this signal is asserted:
+  // - Mask the interrupt, by setting INTR_ENABLE = 1'b0 or masking/enabling at an upstream consumer.
+  // - Interact with the peripheral in some user-defined way that clears the signal.
+  // To make this user-defined interaction ergonomic from a SW-perspective, we have defined
+  // two common patterns for typical interrupt-triggering events, *Status* and *Event*.
+  // - *Event* is useful for capturing a momentary assertion of the input signal.
+  //   - INTR_STATE/intr_o is set to '1 upon the event occurring.
+  //   - INTR_STATE/intr_o remain set until software writes-1-to-clear to INTR_STATE.
+  // - *Status* captures a persistent conditional assertion that requires intervention to de-assert.
+  //   - Until the root cause is alleviated, the interrupt output (while enabled) is continuously
+  //     asserted.
+  //   - INTR_STATE for *status* interrupts is RO (it simply presents the raw HW input signal).
+  //   - If the root_cause is cleared, INTR_STATE/intr_o also clears automatically.
+  // More details about the interrupt type distinctions can be found in the comportability docs.
+  parameter              IntrT = "Event" // Event or Status
 ) (
   // event
   input  clk_i,
