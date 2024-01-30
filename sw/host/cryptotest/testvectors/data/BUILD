@@ -41,6 +41,12 @@ genrule(
     )
     for src_name, cryptotest_name in [
         ("ecdsa_secp256r1_sha256_test.json", "wycheproof_ecdsa_p256_sha256"),
+        ("ecdsa_secp256r1_sha512_test.json", "wycheproof_ecdsa_p256_sha512"),
+        ("ecdsa_secp256r1_sha3_256_test.json", "wycheproof_ecdsa_p256_sha3_256"),
+        ("ecdsa_secp256r1_sha3_512_test.json", "wycheproof_ecdsa_p256_sha3_512"),
         ("ecdsa_secp384r1_sha384_test.json", "wycheproof_ecdsa_p384_sha384"),
+        ("ecdsa_secp384r1_sha512_test.json", "wycheproof_ecdsa_p384_sha512"),
+        ("ecdsa_secp384r1_sha3_384_test.json", "wycheproof_ecdsa_p384_sha3_384"),
+        ("ecdsa_secp384r1_sha3_512_test.json", "wycheproof_ecdsa_p384_sha3_512"),
     ]
 ]

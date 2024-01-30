@@ -17,7 +17,8 @@ from cryptotest_util import parse_rsp, str_to_byte_array
 # Mapping from the curve names used by NIST to those used by cryptotest
 EC_NAME_MAPPING = {
     "P-256": "p256",
-    "P-384": "p384",
+    # TODO (#21067) uncomment when cryptolib supports P-384
+    # "P-384": "p384",
 }
 
 
