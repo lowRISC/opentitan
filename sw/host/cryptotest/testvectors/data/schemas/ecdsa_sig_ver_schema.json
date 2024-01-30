@@ -19,6 +19,14 @@
     "type": "object",
     "additionalProperties": false,
     "properties": {
+      "vendor": {
+        "description": "test vector vendor name",
+        "type": "string"
+      },
+      "test_case_id": {
+        "description": "test_case_id",
+        "type": "integer"
+      },
       "algorithm": {
         "description": "Should be ecdsa",
         "type": "string",

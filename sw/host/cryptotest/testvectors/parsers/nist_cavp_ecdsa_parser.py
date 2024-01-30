@@ -34,6 +34,8 @@ def parse_testcases(args) -> None:
             continue
         for test_vec in raw_testcases[section_name]:
             test_case = {
+                "vendor": "nist",
+                "test_case_id": test_count,
                 "algorithm": "ecdsa",
                 "operation": "verify",
                 "curve": EC_NAME_MAPPING[curve],
