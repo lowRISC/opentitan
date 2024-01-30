@@ -396,8 +396,6 @@ p384_verify:
   bn.sel    w4, w16, w4, C
   bn.sel    w5, w17, w5, C
 
-  fail:
-
   /* store affine x-coordinate in dmem: dmem[dptr_rnd] <= x1 = [w5,w4] */
   li        x2, 4
   la        x3, dptr_rnd
@@ -406,6 +404,14 @@ p384_verify:
   bn.sid    x2++, 32(x3)
 
   ret
+
+/**
+ * Failure cases jump here.
+ */
+fail:
+  unimp
+  unimp
+  unimp
 
 
 /* pointers and scratchpad memory */
