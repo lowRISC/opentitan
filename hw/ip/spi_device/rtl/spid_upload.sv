@@ -58,7 +58,6 @@ module spid_upload
   input clk_csb_i, // CSb as a clock source
 
   input sck_csb_asserted_pulse_i,
-  input sys_csb_deasserted_pulse_i,
 
   input sel_datapath_e sel_dp_i,
   input sel_datapath_e cmd_only_sel_dp_i,
@@ -277,9 +276,9 @@ module spid_upload
   //
   // cmdfifo_depth (SCK) is a registered signal. So, it becomes notempty after
   // 8th beat of the SCK. The CSb as a clock latches the signal to be != 0,
-  // then sys_csb_deasserted_pulse_i signal let SYS_CLK latch the notemtpy
-  // signal. as CSb as a clock is synced clock to the SCK, there is no CDC
-  // issue here. Please check the chip Synopsys Design Constraints (SDC) file.
+  // then sys_cmdfifo_set signal let SYS_CLK latch the notempty signal.
+  // Because CSb as a clock is synchronous with SCK, there is no CDC issue
+  // here. Please check the chip Synopsys Design Constraints (SDC) file.
   //
   // The case to be considered: If two commands are back-to-back and uploaded
   // into the CMDFIFO. Then, if SW pops the first one, the notempty keeps
@@ -296,35 +295,31 @@ module spid_upload
   // get the event.
 
   logic sck_cmdfifo_set;
-  always_ff @(posedge clk_i or negedge sys_rst_ni) begin
-    // Can't use rst_ni, as it is basically CSb. conflict to @posedge CSb
-    if (!sys_rst_ni)                           sck_cmdfifo_set <= 1'b 0;
-    // Can't use cmdfifo_depth != '0 as cmdfifo_depth is latched by SCK
-    // CmdOnly SPI transaction cannot catch
-    else if (cmdfifo_wvalid && cmdfifo_wready) sck_cmdfifo_set <= 1'b 1;
-    else if (sck_csb_asserted_pulse_i)         sck_cmdfifo_set <= 1'b 0;
-  end
   `ASSERT(CmdFifoPush_A,
           cmdfifo_wvalid && cmdfifo_wready |=> cmdfifo_depth != 0,
           clk_i, !sys_rst_ni)
 
-  logic csb_cmdfifo_set;
-  always_ff @(posedge clk_csb_i or negedge sys_rst_ni) begin
-    if (!sys_rst_ni) csb_cmdfifo_set <= 1'b 0;
-    else             csb_cmdfifo_set <= sck_cmdfifo_set;
-  end
+  assign sck_cmdfifo_set = cmdfifo_wvalid && cmdfifo_wready;
 
-  logic sys_cmdfifo_set;
+  spid_csb_sync u_sys_cmdfifo_set (
+    .clk_i                     (sys_clk_i),
+    .rst_ni                    (sys_rst_ni),
+    .sck_i                     (clk_i),
+    .sck_pulse_en_i            (sck_cmdfifo_set),
+    .csb_i                     (clk_csb_i),
+    .csb_deasserted_pulse_o    (sys_cmdfifo_set)
+  );
+
+  // This block is merely to align INTR_STATE updates with the payload FIFO
+  // depth updates, so the interrupt doesn't appear a cycle before the related
+  // upload data.
   always_ff @(posedge sys_clk_i or negedge sys_rst_ni) begin
-    if (!sys_rst_ni) sys_cmdfifo_set <= 1'b 0;
-    else if (sys_csb_deasserted_pulse_i && csb_cmdfifo_set) begin
-      sys_cmdfifo_set <= 1'b 1;
+    if (!sys_rst_ni) begin
+      sys_cmdfifo_set_o <= 1'b0;
     end else begin
-      sys_cmdfifo_set <= 1'b 0;
+      sys_cmdfifo_set_o <= sys_cmdfifo_set;
     end
   end
-
-  assign sys_cmdfifo_set_o = sys_cmdfifo_set;
 
   // payloadptr manage: spid_fifo2sram_adapter's fifoptr (wdepth) is reset by
   // CSb everytime. the written payload size should be visible to SW even CSb
@@ -366,9 +361,9 @@ module spid_upload
   always_ff @(posedge sys_clk_i or negedge sys_rst_ni) begin
     if (!sys_rst_ni) sys_payload_depth_o <= '0;
     else if (sys_payloadptr_clr_posedge) sys_payload_depth_o <= '0;
-    else if (sys_csb_deasserted_pulse_i && payload_max) begin
+    else if (sys_cmdfifo_set && payload_max) begin
       sys_payload_depth_o <= PayloadPtrW'(PayloadByte);
-    end else if (sys_csb_deasserted_pulse_i && !payload_max) begin
+    end else if (sys_cmdfifo_set && !payload_max) begin
       sys_payload_depth_o <= PayloadPtrW'(payloadptr);
     end
   end
@@ -389,11 +384,11 @@ module spid_upload
   always_ff @(posedge sys_clk_i or negedge sys_rst_ni) begin
     if (!sys_rst_ni)                     sys_payload_start_idx_o <= '0;
     else if (sys_payloadptr_clr_posedge) sys_payload_start_idx_o <= '0;
-    else if (sys_csb_deasserted_pulse_i && payload_max) begin
+    else if (sys_cmdfifo_set && payload_max) begin
       // Payload reached the max, need to tell SW the exact location SW shoul
       // read
       sys_payload_start_idx_o <= payloadptr;
-    end else if (sys_csb_deasserted_pulse_i && !payload_max) begin
+    end else if (sys_cmdfifo_set && !payload_max) begin
       // Payload buffer has not been reached to the max, the start index
       // should be 0 for SW to read from the first of the buffer.
       sys_payload_start_idx_o <= '0;
@@ -417,7 +412,7 @@ module spid_upload
   always_ff @(posedge sys_clk_i or negedge sys_rst_ni) begin
     if (!sys_rst_ni)                     sys_event_payload_overflow <= 1'b 0;
     else if (sys_payloadptr_clr_posedge) sys_event_payload_overflow <= 1'b 0;
-    else if (sys_csb_deasserted_pulse_i) begin
+    else if (sys_cmdfifo_set) begin
       sys_event_payload_overflow <= event_payload_overflow;
     end
   end

@@ -34,6 +34,7 @@ filesets:
       - rtl/spid_jedec.sv
       - rtl/spid_addr_4b.sv
       - rtl/spid_fifo2sram_adapter.sv
+      - rtl/spid_csb_sync.sv
       - rtl/spid_upload.sv
       - rtl/spi_tpm.sv
       - rtl/spi_s2p.sv
