@@ -34,6 +34,7 @@ outputs:
 """
 
 import argparse
+import binascii
 import logging as log
 import os
 import shlex
@@ -125,6 +126,53 @@ def call_rv32_objcopy(args: List[str]):
 def call_rv32_ar(args: List[str]):
     rv32_tool_ar = os.environ.get('RV32_TOOL_AR', 'riscv32-unknown-elf-ar')
     run_cmd([rv32_tool_ar] + args)
+
+
+def get_app_checksum(elf_path: str) -> int:
+    '''Get the CRC32 checksum of an OTBN app.
+
+    The checksum is computed over first the `.text` (IMEM) section, then the
+    `.data` section, in order. Each 32-bit word of IMEM or DMEM becomes a
+    48-bit value: {imem, addr, value}, where `imem` is 1 or 0 depending on if
+    the value is for IMEM or DMEM, `addr` is the word-offset within OTBN's
+    memory zero-extended to 15 bits. The checksum is computed over this value
+    in little-endian order.
+    '''
+    with open(elf_path, 'rb') as elf:
+        elf_file = ELFFile(elf)
+        imem = elf_file.get_section_by_name('.text').data()
+        data = elf_file.get_section_by_name('.data').data()
+
+        # Compute the checksum over the IMEM.
+        checksum = 0
+        for i in range(0, len(imem), 4):
+            checksum = binascii.crc32(imem[i:i + 4], checksum)
+            location = (1 << 15) | (i // 4)
+            location_bytes = int.to_bytes(location, length=2, byteorder='little')
+            checksum = binascii.crc32(location_bytes, checksum)
+
+        # The starting offset for the data section might not be zero, so pull
+        # it from the symbol table.
+        symtab = elf_file.get_section_by_name('.symtab')
+        data_start_symbols = symtab.get_symbol_by_name('_dmem_data_start')
+        if len(data_start_symbols) != 1:
+            raise ValueError(f'Expected one symbol for `_dmem_data_start`, '
+                             f'got {len(data_start_symbols)}: '
+                             f'{data_start_symbols}')
+        data_start_offset = data_start_symbols[0]['st_value']
+        if (data_start_offset % 4 != 0):
+            # If `.data` is not word-aligned, it will cause problems for Ibex
+            # loading the app.
+            raise ValueError('Start of `.data` section is not word-aligned.')
+
+        # Continue computing the checksum over `.data`.
+        for i in range(0, len(data), 4):
+            checksum = binascii.crc32(data[i:i + 4], checksum)
+            location = ((data_start_offset + i) // 4)
+            location_bytes = int.to_bytes(location, length=2, byteorder='little')
+            checksum = binascii.crc32(location_bytes, checksum)
+
+    return checksum
 
 
 def get_otbn_syms(elf_path: str) -> List[Tuple[str, int]]:
@@ -266,6 +314,12 @@ def main() -> int:
         ]
         for name, addr in get_otbn_syms(out_elf):
             args += ['--add-symbol', f'{otbn_side_pfx}{name}=0x{addr:x}']
+
+        # Compute the CRC32 checksum and add it as a constant. Ibex can use
+        # this with the LOAD_CHECKSUM register to ensure the app was loaded
+        # correctly.
+        checksum = get_app_checksum(out_elf)
+        args += ['--add-symbol', f'{otbn_side_pfx}_checksum={checksum:#x}']
 
         call_rv32_objcopy(args + [out_elf, out_embedded_obj])
 
