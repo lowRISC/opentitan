@@ -618,23 +618,28 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
 
   virtual task clear_flash_busy_bit();
     bit busy;
-    uint wait_txn_count = 1;
+    uint wait_sck_count = 5;
     `uvm_info(`gfn, "Clearing flash busy bit", UVM_MEDIUM)
-    // Check if there is any ongoing SPI transaction
-    if (!cfg.spi_host_agent_cfg.vif.csb[FW_FLASH_CSB_ID]) begin
-      wait_txn_count++;
-    end
     // clear busy bit
     ral.flash_status.busy.set(0);
     csr_update(ral.flash_status);
     // The intent here is to check the flash_status after csr_wr and then read the register
     // after end of SPI transaction (since flash_status gets update after CSB is deasserted)
-    // Wait for end of SPI transaction
-    repeat (wait_txn_count) begin
-      @(posedge cfg.spi_host_agent_cfg.vif.csb[FW_FLASH_CSB_ID]);
-      `uvm_info(`gfn, "Detected end of SPI transaction", UVM_HIGH)
+    // First, ensure enough SPI clock cycles occur to make the transition into
+    // the SPI domain.
+    while (wait_sck_count > 0) begin
+      @(posedge cfg.spi_host_agent_cfg.vif.sck);
+      if (cfg.spi_host_agent_cfg.vif.csb[FW_FLASH_CSB_ID] == 0) begin
+        wait_sck_count--;
+      end else begin
+        wait_sck_count = 5;
+      end
     end
-    // Wait for 5 cycles after deassertion of CSB to allow for flash_status to get updated
+    // Wait for the SPI transaction to end.
+    @(posedge cfg.spi_host_agent_cfg.vif.csb[FW_FLASH_CSB_ID]);
+    `uvm_info(`gfn, "Detected end of SPI transaction", UVM_HIGH)
+    // Wait for 5 cycles after deassertion of CSB to allow for flash_status to
+    // get updated in the core clock domain.
     cfg.clk_rst_vif.wait_clks(5);
     get_flash_status_busy(busy);
     // If busy bit is not cleared, check once more else raise an error

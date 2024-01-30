@@ -446,6 +446,22 @@
       swaccess: "rw",
       hwaccess: "hro",
       fields: [
+        { bits: "0",
+          name: "FLASH_STATUS_FIFO_CLR",
+          swaccess: "rw1s",
+          hwaccess: "hrw",
+          desc: '''Set to clear the flash status FIFO.
+
+            When set to 1, resets the flash status FIFO used for synchronizing changes from firmware.
+            The reset should only be used when the upstream SPI host is known to be inactive.
+            This function is intended to allow restoring initial values when the upstream SPI host is reset.
+
+            This CSR automatically resets to 0.
+            '''
+          resval: "0",
+          tags: [// This CSR only briefly pulses to anything other than 0.
+                 "excl:CsrNonInitTests:CsrExclWrite"]
+        },
         { bits: "5:4",
           name: "MODE",
           desc: "SPI Device flash operation mode.",

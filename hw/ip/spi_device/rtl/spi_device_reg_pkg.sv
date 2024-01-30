@@ -111,7 +111,12 @@ package spi_device_reg_pkg;
   } spi_device_reg2hw_alert_test_reg_t;
 
   typedef struct packed {
-    logic [1:0]  q;
+    struct packed {
+      logic [1:0]  q;
+    } mode;
+    struct packed {
+      logic        q;
+    } flash_status_fifo_clr;
   } spi_device_reg2hw_control_reg_t;
 
   typedef struct packed {
@@ -405,6 +410,13 @@ package spi_device_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        d;
+      logic        de;
+    } flash_status_fifo_clr;
+  } spi_device_hw2reg_control_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic        d;
     } csb;
     struct packed {
       logic        d;
@@ -516,11 +528,11 @@ package spi_device_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    spi_device_reg2hw_intr_state_reg_t intr_state; // [1508:1503]
-    spi_device_reg2hw_intr_enable_reg_t intr_enable; // [1502:1497]
-    spi_device_reg2hw_intr_test_reg_t intr_test; // [1496:1485]
-    spi_device_reg2hw_alert_test_reg_t alert_test; // [1484:1483]
-    spi_device_reg2hw_control_reg_t control; // [1482:1481]
+    spi_device_reg2hw_intr_state_reg_t intr_state; // [1509:1504]
+    spi_device_reg2hw_intr_enable_reg_t intr_enable; // [1503:1498]
+    spi_device_reg2hw_intr_test_reg_t intr_test; // [1497:1486]
+    spi_device_reg2hw_alert_test_reg_t alert_test; // [1485:1484]
+    spi_device_reg2hw_control_reg_t control; // [1483:1481]
     spi_device_reg2hw_cfg_reg_t cfg; // [1480:1476]
     spi_device_reg2hw_intercept_en_reg_t intercept_en; // [1475:1472]
     spi_device_reg2hw_addr_mode_reg_t addr_mode; // [1471:1470]
@@ -557,7 +569,8 @@ package spi_device_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    spi_device_hw2reg_intr_state_reg_t intr_state; // [215:204]
+    spi_device_hw2reg_intr_state_reg_t intr_state; // [217:206]
+    spi_device_hw2reg_control_reg_t control; // [205:204]
     spi_device_hw2reg_status_reg_t status; // [203:202]
     spi_device_hw2reg_addr_mode_reg_t addr_mode; // [201:200]
     spi_device_hw2reg_last_read_addr_reg_t last_read_addr; // [199:168]

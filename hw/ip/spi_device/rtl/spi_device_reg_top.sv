@@ -208,8 +208,10 @@ module spi_device_reg_top (
   logic alert_test_we;
   logic alert_test_wd;
   logic control_we;
-  logic [1:0] control_qs;
-  logic [1:0] control_wd;
+  logic control_flash_status_fifo_clr_qs;
+  logic control_flash_status_fifo_clr_wd;
+  logic [1:0] control_mode_qs;
+  logic [1:0] control_mode_wd;
   logic cfg_we;
   logic cfg_cpol_qs;
   logic cfg_cpol_wd;
@@ -1935,18 +1937,46 @@ module spi_device_reg_top (
 
 
   // R[control]: V(False)
+  //   F[flash_status_fifo_clr]: 0:0
   prim_subreg #(
-    .DW      (2),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (2'h1),
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW1S),
+    .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_control (
+  ) u_control_flash_status_fifo_clr (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (control_we),
-    .wd     (control_wd),
+    .wd     (control_flash_status_fifo_clr_wd),
+
+    // from internal hardware
+    .de     (hw2reg.control.flash_status_fifo_clr.de),
+    .d      (hw2reg.control.flash_status_fifo_clr.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.control.flash_status_fifo_clr.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (control_flash_status_fifo_clr_qs)
+  );
+
+  //   F[mode]: 5:4
+  prim_subreg #(
+    .DW      (2),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (2'h1),
+    .Mubi    (1'b0)
+  ) u_control_mode (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (control_we),
+    .wd     (control_mode_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1954,11 +1984,11 @@ module spi_device_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.control.q),
+    .q      (reg2hw.control.mode.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (control_qs)
+    .qs     (control_mode_qs)
   );
 
 
@@ -18769,7 +18799,9 @@ module spi_device_reg_top (
   assign alert_test_wd = reg_wdata[0];
   assign control_we = addr_hit[4] & reg_we & !reg_error;
 
-  assign control_wd = reg_wdata[5:4];
+  assign control_flash_status_fifo_clr_wd = reg_wdata[0];
+
+  assign control_mode_wd = reg_wdata[5:4];
   assign cfg_we = addr_hit[5] & reg_we & !reg_error;
 
   assign cfg_cpol_wd = reg_wdata[0];
@@ -20139,7 +20171,8 @@ module spi_device_reg_top (
       end
 
       addr_hit[4]: begin
-        reg_rdata_next[5:4] = control_qs;
+        reg_rdata_next[0] = control_flash_status_fifo_clr_qs;
+        reg_rdata_next[5:4] = control_mode_qs;
       end
 
       addr_hit[5]: begin

@@ -584,13 +584,18 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       READ_STATUS_3: start_addr = 2;
       default: `uvm_error(`gfn, $sformatf("unexpected status opcode: 0x%0h", item.opcode))
     endcase
-    foreach (item.payload_q[i]) begin
-      // status has 3 bytes, if read OOB, it will wrap
-      int offset = (start_addr + i) % 3;
-      `DV_CHECK_CASE_EQ(item.payload_q[i], status[offset * 8 +: 8],
-          $sformatf("status mismatch, offset %0d, act: 0x%0h, exp: 0x%0h",
-              offset, item.payload_q[i], status[offset * 8 +: 8]))
-    end
+    // TODO(#21111): The value of the status register can change in the middle
+    // of SPI transactions. The SPI domain updates its values every 8 clocks.
+    // However, the SW / SYS domain only updates on CSB de-assertion, with the
+    // sampling point delayed by the CSB edge detector. In addition, the read
+    // commands no longer rotate through the registers.
+    //foreach (item.payload_q[i]) begin
+    //  // status has 3 bytes, if read OOB, it will wrap
+    //  int offset = (start_addr + i) % 3;
+    //  `DV_CHECK_CASE_EQ(item.payload_q[i], status[offset * 8 +: 8],
+    //      $sformatf("status mismatch, offset %0d, act: 0x%0h, exp: 0x%0h",
+    //          offset, item.payload_q[i], status[offset * 8 +: 8]))
+    //end
 
     if (cfg.en_cov) begin
       cov.flash_status_cg.sample(.status(status), .is_host_read(1), .sw_read_while_csb_active(0));

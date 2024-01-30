@@ -33,6 +33,11 @@ module spid_status
 
   input sys_csb_deasserted_pulse_i, // to latch committed status
 
+  // When 1, clear any pending status register updates.
+  // Should only be asserted when any upstream SPI host is held in reset or is
+  // otherwise known to not issue transactions.
+  input sys_update_clr_i,
+
   // status register from CSR: sys_clk domain
   // bit [          0]: RW0C by SW / W1S by HW
   // bit [StatusW-1:1]: RW
@@ -58,8 +63,14 @@ module spid_status
   input inclk_we_set_i,
   input inclk_we_clr_i,
 
-  // indicator of busy for other HW. Mainly to block passthrough
-  output logic csb_busy_broadcast_o // SCK domain
+  // Commit signal for staged status bits. This should occur at every 8th
+  // latched bit, when the last bit of each byte is sampled. The periodic
+  // commit allows status updates to occur mid-command, for continuous Read
+  // Status commands.
+  input inclk_status_commit_i,
+
+  // indicator of busy for blocking passthrough
+  output logic csb_busy_broadcast_o // CSB domain
 );
 
   ///////////////
@@ -88,9 +99,10 @@ module spid_status
   ////////////
   // Signal //
   ////////////
-  logic [StatusW-1:0] sck_status_committed;
+  logic [StatusW-1:0] sck_status_committed, csb_status_committed;
   logic [StatusW-1:0] sck_status_staged;
   logic [StatusW-1:0] sck_sw_status;
+  logic [StatusW-1:0] sck_status_to_commit;
 
   logic      p2s_valid_inclk;
   spi_byte_t p2s_byte_inclk;
@@ -139,10 +151,10 @@ module spid_status
   always_ff @(posedge clk_i or negedge sys_rst_ni) begin
     if (!sys_rst_ni) begin
       sck_status_staged[BitBusy] <= 1'b 0;
-    end else if (sck_sw_we && (sck_sw_status[BitBusy] == 1'b 0)) begin
-      sck_status_staged[BitBusy] <= 1'b 0;
     end else if (inclk_busy_set_i) begin
       sck_status_staged[BitBusy] <= 1'b 1;
+    end else if (sck_sw_we && (sck_sw_status[BitBusy] == 1'b 0)) begin
+      sck_status_staged[BitBusy] <= 1'b 0;
     end
   end
 
@@ -168,50 +180,113 @@ module spid_status
     end
   end
 
-  // Staged to Comitted at CSb de-assertion
-  prim_flop #(
-    .Width      ($bits(sck_status_staged)),
-    .ResetValue ('0)
+  // HW-originated WEL and WIP updates bypass the flop so they are committed
+  // immediately. The changes still must be placed in the flops above, so the
+  // staged values are correct for the next update.
+  // TODO: HW changes should not be allowed while BUSY
+  always_comb begin
+    sck_status_to_commit = sck_status_staged;
+    if (inclk_we_set_i) begin
+      sck_status_to_commit[BitWe] = 1'b1;
+    end else if (inclk_we_clr_i) begin
+      sck_status_to_commit[BitWe] = 1'b0;
+    end
+    if (inclk_busy_set_i) begin
+      sck_status_to_commit[BitBusy] = 1'b1;
+    end
+  end
+
+  prim_flop_en #(
+    .Width     ($bits(sck_status_committed)),
+    .ResetValue('0)
   ) u_stage_to_commit (
+    .clk_i     (clk_i),
+    .rst_ni    (sys_rst_ni),
+    .en_i      (inclk_status_commit_i),
+    .d_i       (sck_status_to_commit),
+    .q_o       (sck_status_committed)
+  );
+
+  assign status_busy_o = sck_status_committed[BitBusy];
+  assign status_wel_o = sck_status_committed[BitWe];
+
+  // Staged to Committed at CSb de-assertion
+  // SW and the passthrough gate only receive the final values of
+  // a transaction.
+  prim_flop #(
+    .Width      ($bits(sck_status_committed)),
+    .ResetValue ('0)
+  ) u_sck2csb_status (
     .clk_i  (clk_csb_i),
     .rst_ni (sys_rst_ni),
-    .d_i    (sck_status_staged),
-    .q_o    (sck_status_committed)
+    .d_i    (sck_status_committed),
+    .q_o    (csb_status_committed)
   );
-  // busy_broadcast
-  assign csb_busy_broadcast_o = sck_status_committed[BitBusy];
+
+  assign csb_busy_broadcast_o = csb_status_committed[BitBusy];
 
   // Status in SCK
   assign sck_sw_ack = 1'b 1; // always accept when clock is valid.
+
+  // For normal SPI flash operation, there should only ever be one write from
+  // the SYS domain to update the status register in response to any command.
+  // Status register bits should never update outside of direct command
+  // responses. Thus, there should never be enough writes to fill the FIFO,
+  // since any subsequent command would clear the prior write.
+  // Note that this means that spi_device does not support using the status
+  // register for anything but the following:
+  //   - initial "power-on / reset" values shown to the upstream host
+  //   - values the host explicitly programmed via WRITE STATUS REGISTER types
+  //   - hardware-updated BUSY and WEL bits
+  // Some SPI flash devices support reporting the address mode in one of the
+  // status bits. This IP does not. Support here would require another
+  // hardware-updated bit, to respond to EN4B and EX4B.
+  //
+  // To effect reliable support for initial values, allow resetting the FIFO
+  // to clear any state that may have built up from a prior session.
+  logic status_fifo_clr_n, status_fifo_rst_n;
+  always_ff @(posedge sys_clk_i or negedge sys_rst_ni) begin
+    if (!sys_rst_ni) begin
+      status_fifo_clr_n <= 1'b0;
+    end else begin
+      status_fifo_clr_n <= !sys_update_clr_i;
+    end
+  end
+  assign status_fifo_rst_n = sys_rst_ni & status_fifo_clr_n;
 
   prim_fifo_async #(
     .Width             (StatusW),
     .Depth             (2),
     .OutputZeroIfEmpty (1'b 1)
   ) u_sw_status_update_sync (
-    .clk_wr_i  (sys_clk_i      ),
-    .rst_wr_ni (sys_rst_ni     ),
-    .wvalid_i  (sys_status_we_i),
-    .wready_o  (               ), // ignore
-    .wdata_i   (sys_status_i   ),
-    .wdepth_o  (               ),
+    .clk_wr_i  (sys_clk_i        ),
+    .rst_wr_ni (status_fifo_rst_n),
+    .wvalid_i  (sys_status_we_i  ),
+    .wready_o  (                 ), // ignore
+    .wdata_i   (sys_status_i     ),
+    .wdepth_o  (                 ),
 
-    .clk_rd_i  (clk_i        ),
-    .rst_rd_ni (sys_rst_ni   ),
-    .rvalid_o  (sck_sw_we    ),
-    .rready_i  (sck_sw_ack   ),
-    .rdata_o   (sck_sw_status),
-    .rdepth_o  (             )
+    .clk_rd_i  (clk_i            ),
+    .rst_rd_ni (status_fifo_rst_n),
+    .rvalid_o  (sck_sw_we        ),
+    .rready_i  (sck_sw_ack       ),
+    .rdata_o   (sck_sw_status    ),
+    .rdepth_o  (                 )
   );
 
   // Committed to SYS clk
-  // Update with csb release event (pulse), which always will be delayed two
-  // SYS cycles. Then it is safe to use comitted register.
+  // Timing requirements:
+  //   - 3x sys_clk cycles < 8x spi_clk cycles + 1 CSB "cycle"
+  // Breakdown:
+  //   - 2 sys_clk cycles to produce sys_csb_deasserted_pulse_i
+  //   - 1 sys_clk cycle to latch csb_status_committed
+  //   - Must execute before back-to-back WREN -> WRDI
+  //   - Other bits have much longer stability
   always_ff @(posedge sys_clk_i or negedge sys_rst_ni) begin
     if (!sys_rst_ni) begin
       sys_status_o <= '0;
     end else if (sys_csb_deasserted_pulse_i) begin
-      sys_status_o <= sck_status_committed;
+      sys_status_o <= csb_status_committed;
     end
   end
 
@@ -232,7 +307,7 @@ module spid_status
 
   // cmd_idx to data selector
   logic [1:0] byte_sel_d, byte_sel_q;
-  logic byte_sel_update, byte_sel_inc;
+  logic byte_sel_update;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -254,13 +329,6 @@ module spid_status
           byte_sel_d = i;
         end
       end
-    end else if (byte_sel_inc) begin
-      unique case (byte_sel_q)
-        2'b 00:  byte_sel_d = 2'b 01;
-        2'b 01:  byte_sel_d = 2'b 10;
-        2'b 10:  byte_sel_d = 2'b 00;
-        default: byte_sel_d = 2'b 00;
-      endcase
     end
   end : byte_sel_input
 
@@ -279,7 +347,6 @@ module spid_status
     st_d = st_q;
 
     byte_sel_update = 1'b 0;
-    byte_sel_inc    = 1'b 0;
 
     p2s_valid_inclk = 1'b 0;
 
@@ -296,13 +363,6 @@ module spid_status
       StActive: begin
         p2s_valid_inclk = 1'b 1;
         // deadend state
-        // Everytime a byte sent out, shift to next.
-
-        // Check if the byte_sel_inc to be delayed a cycle
-        // p2s_sent is asserted at 7th beat not 8th beat.
-        // But the spi_p2s module stores prev data into its 8bit register.
-        // So increasing the selection signal does not affect current SPI byte.
-        if (outclk_p2s_sent_i) byte_sel_inc = 1'b 1;
       end
 
       default: begin

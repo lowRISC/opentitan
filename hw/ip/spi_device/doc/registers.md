@@ -169,19 +169,20 @@ Alert Test Register
 Control register
 - Offset: `0x10`
 - Reset default: `0x10`
-- Reset mask: `0x30`
+- Reset mask: `0x31`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"bits": 4}, {"name": "MODE", "bits": 2, "attr": ["rw"], "rotate": -90}, {"bits": 26}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "FLASH_STATUS_FIFO_CLR", "bits": 1, "attr": ["rw1s"], "rotate": -90}, {"bits": 3}, {"name": "MODE", "bits": 2, "attr": ["rw"], "rotate": -90}, {"bits": 26}], "config": {"lanes": 1, "fontsize": 10, "vspace": 230}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                   |
-|:------:|:------:|:-------:|:-----------------------|
-|  31:6  |        |         | Reserved               |
-|  5:4   |   rw   |   0x1   | [MODE](#control--mode) |
-|  3:0   |        |         | Reserved               |
+|  Bits  |  Type  |  Reset  | Name                                                     |
+|:------:|:------:|:-------:|:---------------------------------------------------------|
+|  31:6  |        |         | Reserved                                                 |
+|  5:4   |   rw   |   0x1   | [MODE](#control--mode)                                   |
+|  3:1   |        |         | Reserved                                                 |
+|   0    |  rw1s  |   0x0   | [FLASH_STATUS_FIFO_CLR](#control--flash_status_fifo_clr) |
 
 ### CONTROL . MODE
 SPI Device flash operation mode.
@@ -193,6 +194,15 @@ SPI Device flash operation mode.
 | 0x2     | passthrough | In passthrough mode, SPI Device IP forwards the incoming SPI flash traffics to the attached downstream flash device. HW may processes commands internally and returns data. SW may configure the device to drop inadmissable commands.                                     |
 
 Other values are reserved.
+
+### CONTROL . FLASH_STATUS_FIFO_CLR
+Set to clear the flash status FIFO.
+
+When set to 1, resets the flash status FIFO used for synchronizing changes from firmware.
+The reset should only be used when the upstream SPI host is known to be inactive.
+This function is intended to allow restoring initial values when the upstream SPI host is reset.
+
+This CSR automatically resets to 0.
 
 ## CFG
 Configuration Register
