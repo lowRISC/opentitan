@@ -53,19 +53,19 @@
       },
       "qx": {
         "description": "Qx",
-        "type": "integer"
+        "type": "string"
       },
       "qy": {
         "description": "Qy",
-        "type": "integer"
+        "type": "string"
       },
       "r": {
         "description": "r parameter",
-        "type": "integer"
+        "type": "string"
       },
       "s": {
         "description": "s parameter",
-        "type": "integer"
+        "type": "string"
       },
       "result": {
         "description": "Verification result",
