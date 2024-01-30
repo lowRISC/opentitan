@@ -17,6 +17,11 @@ EC_NAME_MAPPING = {
     "secp384r1": "p384",
 }
 
+EC_SIGNATURE_PARAM_LEN = {
+    "secp256r1": 32,
+    "secp384r1": 48,
+}
+
 
 def _parse_der_signature(der_str):
     seq_der = DerSequence()
@@ -33,6 +38,7 @@ def _parse_der_signature(der_str):
     if len(seq) != 2:
         raise ValueError(
             "Failed to parse DER-encoded signature into r and s values")
+
     return seq
 
 
@@ -54,8 +60,10 @@ def parse_test_vectors(raw_data):
                 "curve": EC_NAME_MAPPING[key["curve"]],
                 "hash_alg": group["sha"].lower(),
                 "message": list(bytes.fromhex(test["msg"])),
-                "qx": int(key["wx"], 16),
-                "qy": int(key["wy"], 16),
+                # Encode qx and qy as a string because downstream test vector
+                # consumers may incorrectly handle large integers.
+                "qx": key["wx"],
+                "qy": key["wy"],
             }
 
             # Parse r and s from DER-encoded signature
@@ -75,7 +83,12 @@ def parse_test_vectors(raw_data):
                 )
                 continue
 
-            test_vec["r"], test_vec["s"] = signature_seq
+            # Encode r and s as hex strings since downstream test vector
+            # consumers may incorrectly handle large values.
+            # [2:] removes the "0x" prefix.
+            test_vec["r"], test_vec["s"] = [
+                hex(val)[2:] for val in signature_seq
+            ]
 
             # Parse the expected result
             if test["result"] == "valid":
