@@ -83,6 +83,13 @@ typedef struct otbn_app {
    * time.
    */
   const otbn_addr_t dmem_data_start_addr;
+  /**
+   * Application checksum.
+   *
+   * This value represents a CRC32 checksum over IMEM and the `.data` portion
+   * of DMEM.
+   */
+  const uint32_t checksum;
 } otbn_app_t;
 
 /**
@@ -147,12 +154,13 @@ typedef struct otbn_app {
  * @param app_name Name of the application to load, which is typically the
  *                 name of the main (assembly) source file.
  */
-#define OTBN_DECLARE_APP_SYMBOLS(app_name)             \
-  OTBN_DECLARE_SYMBOL_PTR(app_name, _imem_start);      \
-  OTBN_DECLARE_SYMBOL_PTR(app_name, _imem_end);        \
-  OTBN_DECLARE_SYMBOL_PTR(app_name, _dmem_data_start); \
-  OTBN_DECLARE_SYMBOL_PTR(app_name, _dmem_data_end);   \
-  OTBN_DECLARE_SYMBOL_ADDR(app_name, _dmem_data_start)
+#define OTBN_DECLARE_APP_SYMBOLS(app_name)              \
+  OTBN_DECLARE_SYMBOL_PTR(app_name, _imem_start);       \
+  OTBN_DECLARE_SYMBOL_PTR(app_name, _imem_end);         \
+  OTBN_DECLARE_SYMBOL_PTR(app_name, _dmem_data_start);  \
+  OTBN_DECLARE_SYMBOL_PTR(app_name, _dmem_data_end);    \
+  OTBN_DECLARE_SYMBOL_ADDR(app_name, _dmem_data_start); \
+  OTBN_DECLARE_SYMBOL_ADDR(app_name, _checksum)
 
 /**
  * Initializes the OTBN application information structure.
@@ -171,6 +179,7 @@ typedef struct otbn_app {
       .dmem_data_start = OTBN_SYMBOL_PTR(app_name, _dmem_data_start),       \
       .dmem_data_end = OTBN_SYMBOL_PTR(app_name, _dmem_data_end),           \
       .dmem_data_start_addr = OTBN_ADDR_T_INIT(app_name, _dmem_data_start), \
+      .checksum = OTBN_ADDR_T_INIT(app_name, _checksum),                    \
   })
 
 /**

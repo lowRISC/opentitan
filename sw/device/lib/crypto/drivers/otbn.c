@@ -138,13 +138,6 @@ static void otbn_write(uint32_t dest_addr, const uint32_t *src,
   HARDENED_CHECK_EQ(iter_cnt, num_words);
 }
 
-static status_t otbn_imem_write(size_t num_words, const uint32_t *src,
-                                otbn_addr_t dest) {
-  HARDENED_TRY(check_offset_len(dest, num_words, kOtbnIMemSizeBytes));
-  otbn_write(kBase + OTBN_IMEM_REG_OFFSET + dest, src, num_words);
-  return OTCRYPTO_OK;
-}
-
 status_t otbn_dmem_write(size_t num_words, const uint32_t *src,
                          otbn_addr_t dest) {
   HARDENED_TRY(check_offset_len(dest, num_words, kOtbnDMemSizeBytes));
@@ -306,15 +299,45 @@ status_t otbn_load_app(const otbn_app_t app) {
   HARDENED_TRY(otbn_imem_sec_wipe());
   HARDENED_TRY(otbn_dmem_sec_wipe());
 
-  // IMEM always starts at zero.
-  otbn_addr_t imem_start_addr = 0;
-  HARDENED_TRY(
-      otbn_imem_write(imem_num_words, app.imem_start, imem_start_addr));
+  // Reset the LOAD_CHECKSUM register.
+  abs_mmio_write32(kBase + OTBN_LOAD_CHECKSUM_REG_OFFSET, 0);
 
-  if (data_num_words > 0) {
-    HARDENED_TRY(otbn_dmem_write(data_num_words, app.dmem_data_start,
-                                 app.dmem_data_start_addr));
+  // Ensure that the IMEM section fits in IMEM and the data section fits in
+  // DMEM.
+  HARDENED_TRY(check_offset_len(app.dmem_data_start_addr, data_num_words,
+                                kOtbnDMemSizeBytes));
+
+  // Write to IMEM. Always starts at zero on the OTBN side.
+  otbn_addr_t imem_offset = 0;
+  HARDENED_TRY(
+      check_offset_len(imem_offset, imem_num_words, kOtbnIMemSizeBytes));
+  uint32_t imem_start_addr = kBase + OTBN_IMEM_REG_OFFSET + imem_offset;
+  uint32_t i = 0;
+  for (; launder32(i) < imem_num_words; i++) {
+    HARDENED_CHECK_LT(i, imem_num_words);
+    abs_mmio_write32(imem_start_addr + i * sizeof(uint32_t), app.imem_start[i]);
   }
+  HARDENED_CHECK_EQ(i, imem_num_words);
+
+  // Write the data portion to DMEM.
+  otbn_addr_t data_offset = app.dmem_data_start_addr;
+  HARDENED_TRY(
+      check_offset_len(data_offset, data_num_words, kOtbnDMemSizeBytes));
+  uint32_t data_start_addr = kBase + OTBN_DMEM_REG_OFFSET + data_offset;
+  i = 0;
+  for (; launder32(i) < data_num_words; i++) {
+    HARDENED_CHECK_LT(i, data_num_words);
+    abs_mmio_write32(data_start_addr + i * sizeof(uint32_t),
+                     app.dmem_data_start[i]);
+  }
+  HARDENED_CHECK_EQ(i, data_num_words);
+
+  // Ensure that the checksum matches expectations.
+  uint32_t checksum = abs_mmio_read32(kBase + OTBN_LOAD_CHECKSUM_REG_OFFSET);
+  if (launder32(checksum) != app.checksum) {
+    return OTCRYPTO_FATAL_ERR;
+  }
+  HARDENED_CHECK_EQ(checksum, app.checksum);
 
   return OTCRYPTO_OK;
 }
