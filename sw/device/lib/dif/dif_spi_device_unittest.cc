@@ -281,41 +281,29 @@ TEST_F(FlashTest, MailboxConfigTest) {
 
 TEST_F(FlashTest, Addr4bConfig) {
   dif_toggle_t toggle;
-  EXPECT_READ32(SPI_DEVICE_CFG_REG_OFFSET,
+  EXPECT_READ32(SPI_DEVICE_ADDR_MODE_REG_OFFSET,
                 {
-                    {SPI_DEVICE_CFG_MAILBOX_EN_BIT, 1},
+                    {SPI_DEVICE_ADDR_MODE_PENDING_BIT, 1},
                 });
   EXPECT_DIF_OK(dif_spi_device_get_4b_address_mode(&spi_, &toggle));
   EXPECT_EQ(toggle, kDifToggleDisabled);
 
-  EXPECT_READ32(SPI_DEVICE_CFG_REG_OFFSET,
+  EXPECT_READ32(SPI_DEVICE_ADDR_MODE_REG_OFFSET,
                 {
-                    {SPI_DEVICE_CFG_MAILBOX_EN_BIT, 1},
-                    {SPI_DEVICE_CFG_ADDR_4B_EN_BIT, 1},
+                    {SPI_DEVICE_ADDR_MODE_PENDING_BIT, 1},
+                    {SPI_DEVICE_ADDR_MODE_ADDR_4B_EN_BIT, 1},
                 });
   EXPECT_DIF_OK(dif_spi_device_get_4b_address_mode(&spi_, &toggle));
   EXPECT_EQ(toggle, kDifToggleEnabled);
 
-  EXPECT_READ32(SPI_DEVICE_CFG_REG_OFFSET,
-                {
-                    {SPI_DEVICE_CFG_MAILBOX_EN_BIT, 1},
-                    {SPI_DEVICE_CFG_ADDR_4B_EN_BIT, 0},
-                });
-  EXPECT_WRITE32(SPI_DEVICE_CFG_REG_OFFSET,
+  EXPECT_WRITE32(SPI_DEVICE_ADDR_MODE_REG_OFFSET,
                  {
-                     {SPI_DEVICE_CFG_MAILBOX_EN_BIT, 1},
-                     {SPI_DEVICE_CFG_ADDR_4B_EN_BIT, 1},
+                     {SPI_DEVICE_ADDR_MODE_ADDR_4B_EN_BIT, 1},
                  });
   EXPECT_DIF_OK(dif_spi_device_set_4b_address_mode(&spi_, kDifToggleEnabled));
-  EXPECT_READ32(SPI_DEVICE_CFG_REG_OFFSET,
-                {
-                    {SPI_DEVICE_CFG_MAILBOX_EN_BIT, 1},
-                    {SPI_DEVICE_CFG_ADDR_4B_EN_BIT, 1},
-                });
-  EXPECT_WRITE32(SPI_DEVICE_CFG_REG_OFFSET,
+  EXPECT_WRITE32(SPI_DEVICE_ADDR_MODE_REG_OFFSET,
                  {
-                     {SPI_DEVICE_CFG_MAILBOX_EN_BIT, 1},
-                     {SPI_DEVICE_CFG_ADDR_4B_EN_BIT, 0},
+                     {SPI_DEVICE_ADDR_MODE_ADDR_4B_EN_BIT, 0},
                  });
   EXPECT_DIF_OK(dif_spi_device_set_4b_address_mode(&spi_, kDifToggleDisabled));
 }

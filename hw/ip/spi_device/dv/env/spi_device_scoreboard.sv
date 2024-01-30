@@ -159,16 +159,16 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
                 if (`GET_OPCODE_VALID_AND_MATCH(cmd_info_en4b, item.opcode)) begin
                   if (cfg.en_cov) begin
                     cov.spi_device_addr_4b_enter_exit_command_cg.sample(
-                        .addr_4b_en(1), .prev_addr_4b_en(`gmv(ral.cfg.addr_4b_en)));
+                        .addr_4b_en(1), .prev_addr_4b_en(`gmv(ral.addr_mode.addr_4b_en)));
                   end
-                  void'(ral.cfg.addr_4b_en.predict(.value(1), .kind(UVM_PREDICT_WRITE)));
+                  void'(ral.addr_mode.addr_4b_en.predict(.value(1), .kind(UVM_PREDICT_WRITE)));
                   `uvm_info(`gfn, "Enable 4b addr due to cmd EN4B", UVM_MEDIUM)
                 end else if (`GET_OPCODE_VALID_AND_MATCH(cmd_info_ex4b, item.opcode)) begin
                   if (cfg.en_cov) begin
                     cov.spi_device_addr_4b_enter_exit_command_cg.sample(
-                        .addr_4b_en(0), .prev_addr_4b_en(`gmv(ral.cfg.addr_4b_en)));
+                        .addr_4b_en(0), .prev_addr_4b_en(`gmv(ral.addr_mode.addr_4b_en)));
                   end
-                  void'(ral.cfg.addr_4b_en.predict(.value(0), .kind(UVM_PREDICT_WRITE)));
+                  void'(ral.addr_mode.addr_4b_en.predict(.value(0), .kind(UVM_PREDICT_WRITE)));
                   `uvm_info(`gfn, "Disable 4b addr due to cmd EX4B", UVM_MEDIUM)
                 end else if (`GET_OPCODE_VALID_AND_MATCH(cmd_info_wren, item.opcode)) begin
                   update_wel = 1;
@@ -987,9 +987,9 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
           tpm_hw_reg_pre_val_aa[csr.get_name] = `gmv(csr);
         end
       end
-      if (cfg.en_cov && csr.get_name == "cfg") begin
-        bit pre_addr4b = `gmv(ral.cfg.addr_4b_en);
-        bit cur_addr4b = get_field_val(ral.cfg.addr_4b_en, item.a_data);
+      if (cfg.en_cov && csr.get_name == "addr_mode") begin
+        bit pre_addr4b = `gmv(ral.addr_mode.addr_4b_en);
+        bit cur_addr4b = get_field_val(ral.addr_mode.addr_4b_en, item.a_data);
         // cover that the addr4b is updated by SW
         if (pre_addr4b != cur_addr4b) cov.sw_update_addr4b_cg.sample();
       end

@@ -342,9 +342,10 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     ral.cfg.rx_order.set(cfg.spi_host_agent_cfg.device_bit_dir);
 
     if (cfg.do_addr_4b_cfg) begin
-      `DV_CHECK_RANDOMIZE_FATAL(ral.cfg.addr_4b_en)
-      cfg.spi_host_agent_cfg.flash_addr_4b_en = ral.cfg.addr_4b_en.get();
-      cfg.spi_device_agent_cfg.flash_addr_4b_en = ral.cfg.addr_4b_en.get();
+      `DV_CHECK_RANDOMIZE_FATAL(ral.addr_mode.addr_4b_en)
+      cfg.spi_host_agent_cfg.flash_addr_4b_en = ral.addr_mode.addr_4b_en.get();
+      cfg.spi_device_agent_cfg.flash_addr_4b_en = ral.addr_mode.addr_4b_en.get();
+      csr_update(.csr(ral.addr_mode));
       cfg.do_addr_4b_cfg = 0;
     end
 
@@ -523,7 +524,7 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
       @(posedge cfg.spi_host_agent_cfg.vif.csb[FW_FLASH_CSB_ID]);
       `uvm_info(`gfn, $sformatf("set addr_4b_en = %0b", value), UVM_MEDIUM)
       cfg.clk_rst_vif.wait_clks(3);
-      void'(ral.cfg.addr_4b_en.predict(.value(value)));
+      void'(ral.addr_mode.addr_4b_en.predict(.value(value)));
     end join_none
   endtask
 
@@ -744,14 +745,14 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
       // Wait for register to be free
       `DV_SPINWAIT(
         while(1) begin
-          if (ral.cfg.is_busy()) begin
+          if (ral.addr_mode.is_busy()) begin
             cfg.clk_rst_vif.wait_clks(1);
           end else begin
             break;
           end
         end)
       // Check the contents of addr4b_en
-      csr_rd_check(.ptr(ral.cfg.addr_4b_en),
+      csr_rd_check(.ptr(ral.addr_mode.addr_4b_en),
              .compare_value(cfg.spi_device_agent_cfg.flash_addr_4b_en));
       cfg.spi_cfg_sema.put();
   endtask

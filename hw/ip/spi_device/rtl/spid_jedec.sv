@@ -14,7 +14,7 @@ module spid_jedec
 
   input clk_out_i, // Output clock (inverted SCK)
 
-  input inclk_csb_asserted_pulse_i,
+  input cmd_sync_pulse_i,
 
   input jedec_cfg_t sys_jedec_i, // from CSR
 
@@ -70,7 +70,7 @@ module spid_jedec
   // Jedec latch
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni)                         jedec <= '{default: '0};
-    else if (inclk_csb_asserted_pulse_i) jedec <= sys_jedec_i;
+    else if (cmd_sync_pulse_i) jedec <= sys_jedec_i;
   end
 
   // If num_cc is non-zero, the logic shall return CC first

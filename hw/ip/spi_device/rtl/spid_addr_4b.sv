@@ -9,14 +9,14 @@
 // size. As the commands are self-complete (cmd byte only) and no BUSY status
 // follows, HW processes those commands.
 //
-// SW may change the value by updating !!CFG CSR. The update is applied to SPI
-// clock domain when the SPI transaction begins. As first 8 beats of the
-// transaction are the opcode (1 byte), the update has enough time to go
+// SW may change the value by updating !!ADDR_MODE CSR. The update is applied to
+// the SPI clock domain when the SPI transaction begins. As the first 8 beats of
+// the transaction are the opcode (1 byte), the update has enough time to go
 // through a CDC.
 //
-// The module needs /CS edge (puse) signals from outside. The assertion event
-// (1 -> 0) signal should be in SPI clock domain. The deassertion event (0 ->
-// 1) should be in SYS clock domain.
+// The module uses the cmd_sync_pulse (the 8th posedge of the SPI clock) to
+// update the address mode. The sys_clk domain then receives new values
+// through a 2-flop synchronizer.
 
 `include "prim_assert.sv"
 
@@ -26,18 +26,15 @@ module spid_addr_4b (
 
   input spi_clk_i,
 
-  input spi_csb_asserted_pulse_i,
-  input sys_csb_deasserted_pulse_i,
+  input cmd_sync_pulse_i,
 
-  // Assume CFG.addr_4b_en is not external register.
-  // And has the permissions as below:
-  //    swaccess: "rw"
-  //    hwaccess: "hrw"
-  input        reg2hw_cfg_addr_4b_en_q_i, // registered input
-  output logic hw2reg_cfg_addr_4b_en_de_o,
-  output logic hw2reg_cfg_addr_4b_en_d_o,
+  input        reg2hw_addr_mode_addr_4b_en_q_i,  // registered input
+  input        reg2hw_addr_mode_addr_4b_en_qe_i, // SYS has originated a change
+  output logic hw2reg_addr_mode_pending_d_o,
+  output logic hw2reg_addr_mode_addr_4b_en_d_o,
 
   output logic spi_cfg_addr_4b_en_o, // broadcast
+  output logic cmd_sync_cfg_addr_4b_en_o, // early output for cmdfifo
 
   input spi_addr_4b_set_i, // EN4B command
   input spi_addr_4b_clr_i  // EX4B command
@@ -45,107 +42,108 @@ module spid_addr_4b (
 
   import spi_device_pkg::*;
 
-  ////////////////
-  // SYS -> SPI //
-  ////////////////
-  // The logic below converts SYS CSR output into SPI cfg_addr_4b_en value.
-  logic spi_reg_cfg_addr_4b_en_sync;
-  prim_flop_2sync #(
-    .Width(1),
-    .ResetValue(1'b1)
+  /////////////////////////////////////////////////////
+  // SYS -> SPI (for SYS-originated change requests) //
+  /////////////////////////////////////////////////////
+  logic sys_fw_new_addr_mode_req, spi_fw_new_addr_mode_req;
+  logic sys_fw_new_addr_mode_ack, spi_fw_new_addr_mode_ack;
+  logic sys_fw_new_addr_mode_data, spi_fw_new_addr_mode_data;
+
+  always_ff @(posedge sys_clk_i or negedge sys_rst_ni) begin
+    if (!sys_rst_ni) begin
+      sys_fw_new_addr_mode_req <= 1'b0;
+    end else if (reg2hw_addr_mode_addr_4b_en_qe_i) begin
+      sys_fw_new_addr_mode_req <= 1'b1;
+    end else if (sys_fw_new_addr_mode_ack) begin
+      sys_fw_new_addr_mode_req <= 1'b0;
+    end
+  end
+
+  always_ff @(posedge sys_clk_i or negedge sys_rst_ni) begin
+    if (!sys_rst_ni) begin
+      sys_fw_new_addr_mode_data <= 1'b0;
+    end else if (reg2hw_addr_mode_addr_4b_en_qe_i) begin
+      sys_fw_new_addr_mode_data <= reg2hw_addr_mode_addr_4b_en_q_i;
+    end
+  end
+
+  // SYS-originated address mode changes must only occur while SPI is inactive.
+  // The SPI flash protocol and hardware view would be violated otherwise.
+  // Thus, the data will always be stable by the time the SPI domain picks it up.
+  prim_sync_reqack_data #(
+    .Width (1)
   ) u_sys2spi_sync (
-    .clk_i  (spi_clk_i                    ),
-    .rst_ni (sys_rst_ni                   ), // value to be consistent
-    .d_i    (reg2hw_cfg_addr_4b_en_q_i    ),
-    .q_o    (spi_reg_cfg_addr_4b_en_sync  )
+    .clk_src_i        (sys_clk_i),
+    .rst_src_ni       (sys_rst_ni),
+    .clk_dst_i        (spi_clk_i),
+    .rst_dst_ni       (sys_rst_ni),
+
+    .req_chk_i        (1'b1),
+
+    .src_req_i        (sys_fw_new_addr_mode_req),
+    .src_ack_o        (sys_fw_new_addr_mode_ack),
+    .dst_req_o        (spi_fw_new_addr_mode_req),
+    .dst_ack_i        (spi_fw_new_addr_mode_ack),
+
+    .data_i           (sys_fw_new_addr_mode_data),
+    .data_o           (spi_fw_new_addr_mode_data)
   );
+
+  assign spi_fw_new_addr_mode_ack = spi_fw_new_addr_mode_req & cmd_sync_pulse_i;
+  assign hw2reg_addr_mode_pending_d_o = sys_fw_new_addr_mode_req;
 
   ////////////////
   // SPI -> SYS //
   ////////////////
-  // When a transaction is completed, check if the cfg_addr_4b value changed.
-  // If changed, create an event to update cfg_addr_4b in SYS clock domain so
-  // that SW can read.
+  // The SPI domain is the source of truth, so keep the SYS domain updated
+  // when a firmware change isn't pending.
+  logic sys_cfg_addr_4b_en;
 
-  logic sys_cfg_addr_4b_en_sync;
   prim_flop_2sync #(
-    .Width (1),
-    .ResetValue (1'b 0)
+    .Width (1)
   ) u_spi2sys_sync (
-    .clk_i (sys_clk_i),
-    .rst_ni (sys_rst_ni),
-    .d_i    (spi_cfg_addr_4b_en_o),
-    .q_o    (sys_cfg_addr_4b_en_sync)
+    .clk_i     (sys_clk_i),
+    .rst_ni    (sys_rst_ni),
+    .d_i       (spi_cfg_addr_4b_en_o),
+    .q_o       (sys_cfg_addr_4b_en)
   );
 
-  // Compare if sys_ and  sys_cfg input are different
-  always_ff @(posedge sys_clk_i or negedge sys_rst_ni) begin
-    if (!sys_rst_ni) begin
-      hw2reg_cfg_addr_4b_en_de_o <= 1'b 0;
-      hw2reg_cfg_addr_4b_en_d_o  <= 1'b 0;
-    end else if (sys_csb_deasserted_pulse_i
-      && (sys_cfg_addr_4b_en_sync != reg2hw_cfg_addr_4b_en_q_i)) begin
-      // update!
-      hw2reg_cfg_addr_4b_en_de_o <= 1'b 1;
-      hw2reg_cfg_addr_4b_en_d_o  <= sys_cfg_addr_4b_en_sync;
+  always_comb begin
+    if (sys_fw_new_addr_mode_req) begin
+      hw2reg_addr_mode_addr_4b_en_d_o = sys_fw_new_addr_mode_data;
     end else begin
-      // Keep value 0 otherwise
-      hw2reg_cfg_addr_4b_en_de_o <= 1'b 0;
-      hw2reg_cfg_addr_4b_en_d_o  <= 1'b 0;
+      hw2reg_addr_mode_addr_4b_en_d_o = sys_cfg_addr_4b_en;
     end
   end
 
   ////////////////
   // SPI domain //
   ////////////////
-  // Generates spi_cfg_addr_4b_en to broadcast to other submodules
+  logic spi_cfg_addr_4b_en_d, spi_cfg_addr_4b_en_q;
+  always_comb begin
+    spi_cfg_addr_4b_en_d = spi_cfg_addr_4b_en_q;
 
-  logic addr_4b_en_locked;
-  logic addr_4b_en_lock_condition;
-  logic addr_4b_en_unlock_condition;
-  logic addr_4b_en_sw_update_condition;
-
-  assign addr_4b_en_lock_condition = spi_reg_cfg_addr_4b_en_sync ? spi_addr_4b_clr_i :
-                                                                   spi_addr_4b_set_i;
-  assign addr_4b_en_unlock_condition = (spi_reg_cfg_addr_4b_en_sync == spi_cfg_addr_4b_en_o);
-  assign addr_4b_en_sw_update_condition = (spi_reg_cfg_addr_4b_en_sync != spi_cfg_addr_4b_en_o);
-
-
-  always_ff @(posedge spi_clk_i or negedge sys_rst_ni) begin
-    if (!sys_rst_ni) begin
-      addr_4b_en_locked <= 1'b 0;
-    end else if (!addr_4b_en_locked & addr_4b_en_lock_condition) begin
-      addr_4b_en_locked <= 1'b 1;
-    end else if (addr_4b_en_locked & addr_4b_en_unlock_condition) begin
-      addr_4b_en_locked <= 1'b 0;
-    end
-  end
-
-  // This delays spi_csb_asserted_pulse_i by an extra cycle to cover the
-  // potential extra cycle introduced by the synchronizer.
-  logic spi_csb_asserted_pulse_d1;
-  always_ff @(posedge spi_clk_i or negedge sys_rst_ni) begin
-    if (!sys_rst_ni) begin
-      spi_csb_asserted_pulse_d1 <= 1'b 0;
-    end else begin
-      spi_csb_asserted_pulse_d1 <= spi_csb_asserted_pulse_i;
-    end
-  end
-
-  always_ff @(posedge spi_clk_i or negedge sys_rst_ni) begin
-    if (!sys_rst_ni) begin
-      spi_cfg_addr_4b_en_o <= 1'b 0;
-    end else if (spi_addr_4b_set_i) begin
+    if (spi_addr_4b_set_i) begin
       // This event occurs when EN4B command is received
-      spi_cfg_addr_4b_en_o <= 1'b 1;
+      spi_cfg_addr_4b_en_d = 1'b 1;
     end else if (spi_addr_4b_clr_i) begin
       // EX4B command raises the clear event
-      spi_cfg_addr_4b_en_o <= 1'b 0;
-    end else if (spi_csb_asserted_pulse_d1 & !addr_4b_en_locked &
-                 addr_4b_en_sw_update_condition) begin
+      spi_cfg_addr_4b_en_d = 1'b 0;
+    end else if (spi_fw_new_addr_mode_req) begin
       // Update
-      spi_cfg_addr_4b_en_o <= spi_reg_cfg_addr_4b_en_sync;
+      spi_cfg_addr_4b_en_d = spi_fw_new_addr_mode_data;
     end
   end
+
+  always_ff @(posedge spi_clk_i or negedge sys_rst_ni) begin
+    if (!sys_rst_ni) begin
+      spi_cfg_addr_4b_en_q <= 1'b 0;
+    end else if (cmd_sync_pulse_i) begin
+      spi_cfg_addr_4b_en_q <= spi_cfg_addr_4b_en_d;
+    end
+  end
+
+  assign spi_cfg_addr_4b_en_o = spi_cfg_addr_4b_en_q;
+  assign cmd_sync_cfg_addr_4b_en_o = spi_cfg_addr_4b_en_d;
 
 endmodule : spid_addr_4b

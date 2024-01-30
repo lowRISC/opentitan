@@ -502,9 +502,11 @@ void spi_device_init(void) {
   reg = bitfield_bit32_write(reg, SPI_DEVICE_CFG_CPHA_BIT, false);
   reg = bitfield_bit32_write(reg, SPI_DEVICE_CFG_TX_ORDER_BIT, false);
   reg = bitfield_bit32_write(reg, SPI_DEVICE_CFG_RX_ORDER_BIT, false);
-  reg = bitfield_bit32_write(reg, SPI_DEVICE_CFG_ADDR_4B_EN_BIT, false);
   reg = bitfield_bit32_write(reg, SPI_DEVICE_CFG_MAILBOX_EN_BIT, false);
   abs_mmio_write32(kBase + SPI_DEVICE_CFG_REG_OFFSET, reg);
+
+  reg = bitfield_bit32_write(0, SPI_DEVICE_ADDR_MODE_ADDR_4B_EN_BIT, false);
+  abs_mmio_write32(kBase + SPI_DEVICE_ADDR_MODE_REG_OFFSET, reg);
 
   // JEDEC manufacturer and device ID.
   // spi_device sends these in the following order: continuation codes,

@@ -180,16 +180,16 @@ dif_result_t dif_spi_device_set_4b_address_mode(dif_spi_device_handle_t *spi,
   if (spi == NULL || !dif_is_valid_toggle(addr_4b)) {
     return kDifBadArg;
   }
-  uint32_t cfg_reg =
-      mmio_region_read32(spi->dev.base_addr, SPI_DEVICE_CFG_REG_OFFSET);
+  uint32_t cfg_reg = 0;
   if (addr_4b == kDifToggleEnabled) {
-    cfg_reg =
-        bitfield_bit32_write(cfg_reg, SPI_DEVICE_CFG_ADDR_4B_EN_BIT, true);
+    cfg_reg = bitfield_bit32_write(cfg_reg, SPI_DEVICE_ADDR_MODE_ADDR_4B_EN_BIT,
+                                   true);
   } else {
-    cfg_reg =
-        bitfield_bit32_write(cfg_reg, SPI_DEVICE_CFG_ADDR_4B_EN_BIT, false);
+    cfg_reg = bitfield_bit32_write(cfg_reg, SPI_DEVICE_ADDR_MODE_ADDR_4B_EN_BIT,
+                                   false);
   }
-  mmio_region_write32(spi->dev.base_addr, SPI_DEVICE_CFG_REG_OFFSET, cfg_reg);
+  mmio_region_write32(spi->dev.base_addr, SPI_DEVICE_ADDR_MODE_REG_OFFSET,
+                      cfg_reg);
   return kDifOk;
 }
 
@@ -199,8 +199,8 @@ dif_result_t dif_spi_device_get_4b_address_mode(dif_spi_device_handle_t *spi,
     return kDifBadArg;
   }
   uint32_t cfg_reg =
-      mmio_region_read32(spi->dev.base_addr, SPI_DEVICE_CFG_REG_OFFSET);
-  if (bitfield_bit32_read(cfg_reg, SPI_DEVICE_CFG_ADDR_4B_EN_BIT)) {
+      mmio_region_read32(spi->dev.base_addr, SPI_DEVICE_ADDR_MODE_REG_OFFSET);
+  if (bitfield_bit32_read(cfg_reg, SPI_DEVICE_ADDR_MODE_ADDR_4B_EN_BIT)) {
     *addr_4b = kDifToggleEnabled;
   } else {
     *addr_4b = kDifToggleDisabled;

@@ -39,10 +39,12 @@ TEST_F(InitTest, Init) {
                          {SPI_DEVICE_CFG_CPHA_BIT, 0},
                          {SPI_DEVICE_CFG_TX_ORDER_BIT, 0},
                          {SPI_DEVICE_CFG_RX_ORDER_BIT, 0},
-                         {SPI_DEVICE_CFG_ADDR_4B_EN_BIT, 0},
                          {SPI_DEVICE_CFG_MAILBOX_EN_BIT, 0},
                      });
-
+  EXPECT_ABS_WRITE32(base_ + SPI_DEVICE_ADDR_MODE_REG_OFFSET,
+                     {
+                         {SPI_DEVICE_ADDR_MODE_ADDR_4B_EN_BIT, 0},
+                     });
   EXPECT_ABS_WRITE32(
       base_ + SPI_DEVICE_JEDEC_CC_REG_OFFSET,
       {

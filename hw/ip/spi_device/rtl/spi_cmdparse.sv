@@ -48,6 +48,10 @@ module spi_cmdparse
   output cmd_info_t              cmd_only_info_o,
   output logic [CmdInfoIdxW-1:0] cmd_only_info_idx_o,
 
+  // Synchronization pulse that indicates the 8th bit of the command is
+  // arriving. Originates from the SCK domain.
+  output logic                   cmd_sync_pulse_o,
+
   // CFG: Intercept
   input cfg_intercept_en_status_i,
   input cfg_intercept_en_jedec_i,
@@ -308,6 +312,7 @@ module spi_cmdparse
     sel_dp = DpNone;
     cmd_only_sel_dp = DpNone;
 
+    cmd_sync_pulse_o = 1'b0;
     latch_cmdinfo = 1'b 0;
 
     intercept_d = 1'b 0;
@@ -317,6 +322,7 @@ module spi_cmdparse
         if (module_active && data_valid_i && cmd_info_d.valid) begin
           // 8th bit is valid here
           latch_cmdinfo = 1'b 1;
+          cmd_sync_pulse_o = 1'b1;
 
           priority case (1'b 1)
             opcode_readstatus: begin
@@ -390,6 +396,7 @@ module spi_cmdparse
         else if (module_active && data_valid_i) begin
           // Could not find valid command information entry.
           st_d = StWait;
+          cmd_sync_pulse_o = 1'b1;
         end // if (module_active && data_valid_i)
       end
 

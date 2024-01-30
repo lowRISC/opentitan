@@ -326,7 +326,7 @@ module spi_passthrough
   logic [MetaBitCntW-1:0] bitcnt;
 
   // Address or anything host driving after opcode counter
-  logic [AddrCntW-1:0] addrcnt, addrcnt_outclk;
+  logic [AddrCntW-1:0] addrcnt_outclk;
 
   // Dummy counter
   logic [DummyCntW-1:0] dummycnt, dummycnt_d;
@@ -450,27 +450,18 @@ module spi_passthrough
     1'b0,
     cmd_info.valid, // valid bit is checked before latching into cmd_info
     cmd_info.opcode,
-    cmd_info.addr_mode,
     cmd_info.opcode,
     cmd_info.upload,
     cmd_info.busy
   };
 
-  addr_mode_e cmdinfo7th_addr_mode;
-  assign cmdinfo7th_addr_mode = get_addr_mode(
-    cmd_info_7th[host_s_i[0]].addr_mode, cfg_addr_4b_en_i);
-
   always_comb begin
     cmd_info_d = '0;
-    addr_size_d = AddrCntW'(23);
 
     if (cmd_8th) begin
       // Latch only two cmd_info when the 7th bit arrives. Then select among two
       // at the 8th beat for cmd_info_d to reduce timing.
       cmd_info_d = cmd_info_7th[host_s_i[0]];
-
-      addr_size_d = (cmdinfo7th_addr_mode == Addr4B)
-                  ? AddrCntW'(31) : AddrCntW'(23);
 
       cmd_info_d.opcode = opcode_d;
 
@@ -478,26 +469,37 @@ module spi_passthrough
     end
   end
 
+  addr_mode_e addr_mode;
+  assign addr_mode = get_addr_mode(cmd_info.addr_mode, cfg_addr_4b_en_i);
+
+  always_comb begin
+    addr_size_d = AddrCntW'(23);
+    if (addr_mode == Addr4B) begin
+      addr_size_d = AddrCntW'(31);
+    end
+  end
+
   // Address swap
-  logic addr_set;
+  logic addr_set_d, addr_set_q;
   logic addr_phase, addr_phase_outclk;
   assign addr_phase = (st == StAddress);
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      addrcnt <= '0;
-    end else if (addr_set) begin
-      // When addr_set is 1, cmd_info is not yet latched.
-      `ASSERT_I(AddrSetInStIdle_A, st == StIdle)
-      addrcnt <= addr_size_d;
-    end else if (addrcnt != '0) begin
-      addrcnt <= addrcnt - AddrCntW'(1);
+      addr_set_q <= '0;
+    end else begin
+      addr_set_q <= addr_set_d;
     end
   end
 
   always_ff @(posedge clk_out_i or negedge rst_ni) begin
-    if (!rst_ni) addrcnt_outclk <= '0;
-    else         addrcnt_outclk <= addrcnt;
+    if (!rst_ni) begin
+      addrcnt_outclk <= '0;
+    end else if (addr_set_q) begin
+      addrcnt_outclk <= addr_size_d;
+    end else if (addrcnt_outclk != '0) begin
+      addrcnt_outclk <= addrcnt_outclk - AddrCntW'(1);
+    end
   end
 
   // Based on AddrCnt, the logic swap.
@@ -684,7 +686,7 @@ module spi_passthrough
     cmd_info_latch = 1'b 0;
 
     // addr_set
-    addr_set = 1'b 0;
+    addr_set_d = 1'b 0;
 
     // Payload swap control
     payload_replace_set = 1'b 0;
@@ -723,7 +725,7 @@ module spi_passthrough
           if (cmd_info_d.addr_mode != AddrDisabled) begin
             st_d = StAddress;
 
-            addr_set = 1'b 1;
+            addr_set_d = 1'b 1;
           end else if (cmd_info_d.dummy_en) begin
             st_d = StHighZ;
 
@@ -798,7 +800,7 @@ module spi_passthrough
 
       StAddress: begin
         // based on state, addr_phase is set. So just check if counter reaches 0
-        if (addrcnt == '0) begin
+        if (addrcnt_outclk == '0) begin
           if (cmd_info.mbyte_en) begin
             st_d = StMByte;
 
