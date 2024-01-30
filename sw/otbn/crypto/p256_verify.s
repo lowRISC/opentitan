@@ -234,7 +234,6 @@ p256_verify:
   bn.wsrw   MOD, w0
   bn.subm   w24, w19, w31
 
-  fail:
   /* store affine x-coordinate in dmem: dmem[x_r] = w24 = x_r */
   la        x17, x_r
   li        x2, 24
@@ -377,6 +376,14 @@ mod_inv_var:
   bn.addm   w1, w2, w31
 
   ret
+
+/**
+ * Failure cases jump here.
+ */
+fail:
+  unimp
+  unimp
+  unimp
 
 .section .bss
 
