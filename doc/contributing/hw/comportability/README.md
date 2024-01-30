@@ -356,8 +356,9 @@ In this example, the IP name is `uart`, though the other configuration fields ar
     ],
     available_inout_list: [],        // optional; default []
     interrupt_list: [                // optional; default []
-      { name: "tx_watermark",  desc: "raised if the transmit FIFO..."}
-      { name: "rx_watermark",  desc: "raised if the receive FIFO..."}
+      // Interrupt type is 'event' if unspecified.
+      { name: "tx_watermark",  desc: "raised if the transmit FIFO...", type: "status"}
+      { name: "rx_watermark",  desc: "raised if the receive FIFO...", type: "status"}
       { name: "tx_overflow",   desc: "raised if the transmit FIFO..."}
       { name: "rx_overflow",   desc: "raised if the receive FIFO..."}
       { name: "rx_frame_err",  desc: "raised if a framing error..."}
@@ -462,62 +463,139 @@ Here is an example specification:
 
 ## Interrupt Handling
 
-Interrupts are critical and common enough to attempt to standardize across the project.
-Where possible (exceptions for inherited IP that is too tricky to convert) all interrupts shall have common naming, hardware interface, and software interface.
-These are described in this section.
+Interrupts are critical and common enough to standardize across the project.
+Where possible (exceptions for inherited IP that is too tricky to convert) all interrupts shall have common naming, hardware interfaces, and software interfaces.
 
-### Event Type Interrupt
+### Conventions
 
-Event type interrupts are latched indications of defined peripheral events that have occurred and not yet been addressed by the local processor.
-All interrupts are sent to the processor as active-high level (as opposed to edge) interrupts.
-Events themselves can be edge or level, active high or low, as defined by the associated peripheral.
-For instance, the GPIO module might detect the rising or falling edge of one its input bits as an interrupt event.
+Currently, all wired CIP interrupts in OpenTitan use active-high level-triggering.
+(An alternate standard is the use of edge-triggered interupts, which are not described here, but may be supported in a future release.)
 
-The latching of the event is done by the auto-generated register file as described below.
-The clearing of the event is done by a processor write when the handling of the event is completed.
-The waveform below shows the timing of the event occurrence, its latched value, and the clearing by the processor.
-More details follow.
+![OpenTitan System Interrupt Architecture](ot_interrupt_arch.svg)
+
+Interrupts sent to the processor are aggregated by a platform level interrupt controller (PLIC).
+Within that logic there may be another level of control for enabling, prioritizing, and enumeration.
+Specification of this control is defined in the rv_plic documentation of the corresponding toplevel design.
+
+### Defining Interrupts
+
+The `.hjson` [configuration file](#configuration-file) for a peripheral specifies interrupts with the field 'interrupt_list'.
+See the [example](#configuration-information-in-the-file) file above for one possible use of this schema.
+For each entry in 'interrupt_list', the following keys are defined:
+
+| Key  | Kind     | Type   | Description of Value                                                          |
+|------|----------|--------|-------------------------------------------------------------------------------|
+| name | required | string | Name of the interrupt                                                         |
+| desc | optional | string | Description of the interrupt                                                  |
+| type | optional | string | Select between "Event" and "Status" types, default is "Event" if unspecified. |
+
+### Interrupts per module
+
+A peripheral generates a separate wired interrupt for each interrupt source, which are all routed to the target's interrupt controller.
+All peripheral interrupts have equal severity, but may be classified into a hierarchy at a higher level, such as at a platform interrupt controller.
+The determination of which input has interrupted the processor, sometimes referred to as "Disambiguation", is done primarily by querying the rv_plic claim/complete register (`CC`).
+This is distinct from another possible model in which each peripheral would send only one interrupt, and the processor would disambiguate by querying the peripheral to figure out which interrupt was triggered.
+
+### Register Creation
+
+By default for every peripheral, three registers are **automatically** created to manage the interrupts (as defined in the 'interrupt_list' of the `.hjson` file).
+These registers are named `INTR_STATE`, `INTR_ENABLE` and `INTR_TEST`, and are placed in that order automatically by the `reggen` tool at the top of the peripheral's address map.
+There is one bitfield in each register per interrupt.
+(It is currently an error if the `.hjson` defines more than 32 interrupts for each peripheral.)
+The function of each register is explained in the following table.
+
+| Name          | Offset | Desc                                                                                  |
+|---------------|--------|---------------------------------------------------------------------------------------|
+| `INTR_STATE`  | 0x0    | holds the current state of the interrupt (may be RO or W1C depending on "IntrT").     |
+| `INTR_ENABLE` | 0x4    | enables/masks the output of INTR_STATE to create the wired interrupt signal `intr_o`. |
+| `INTR_TEST`   | 0x8    | write-only (`wo`) register which asserts the interrupt for testing purposes.          |
+
+The contents of the `INTR_STATE` register are not qualified by `INTR_ENABLE`, but rather show the raw state of all latched hardware interrupt events.
+
+### CIP Interrupt Types
+
+Interrupts are a mechanism for hardware to request attention from software, commonly as either a normal part of a system's operation or as a way to handle exceptional circumstances.
+One way to design robust control flows and abstractions using interrupts is to model Interrupts + Interrupt Handlers as forming a handshaking interaction between hardware and software.
+Hardware creates an interrupt request when a condition is true or an event occurs.
+Software responds to this request, possibly performing some action to address the condition/event, then acknowledges the interrupt request as completed.
+This request/acknowledge sequence is one way to mitigate the effects of non-determinism in a real system, such as race-conditions due to the inherent round-trip latency from signaling to handling, and the unknown latency of a core executing the handler for one of possibly many competing interrupt requests.
+
+When creating an interrupt in a peripheral, we can identify two distinct behaviors a designer may choose to implement.
+
+1. **Event** type: Whenever an instantaneous event occurs, trigger an interrupt request.
+   The current interrupt can only be cleared by an acknowledgement from the handler (ack is a `W1C` operation to `INTR_STATE` in this mode).
+2. **Status** type: So long as the input is persistently true, trigger interrupt requests, including immediately after the previous request has been acknowledged.
+
+> The names *Event* and *Status* are OpenTitan terminology.
+> Generic hardware `prim_intr_hw` is defined which generates interrupt requests for each type by using a parameter at the time of instantiation.
+
+An instantaneous *Event* could be an error occuring, a counter value crossing a threshold, or a particular transition between two abstract states inside the peripheral.
+A persistant *Status* might be any conditional expression evaluating truthfully, such as a counter value currently exceeds a threshold, or the system being in a particular abstract state, such as an error state it cannot recover from on its own.
+
+Choosing to generate interrupts based on instantaneous events or persistant status signals can make it easier to write SW handlers that are simple and race-free.
+For example, an event interrupt request implies that "the event happened at some point in the past (since we last acknowledged this interrupt)".
+A status interrupt request means that "the condition is currently true".
+
+#### Event Type Interrupt
+
+Event type interrupts are latched indications of defined peripheral events that have occurred and have not yet been acknowledged by the processor.
+For instance, the GPIO module might detect the rising or falling edge of one its inputs as an interrupt event.
+Using level-triggered wired interrupts, this is signaled by latching `intr_o` high (request) when the event occurs, and resetting `intr_o` low (ack) when software has finished executing its handler.
+
+> The generic component `prim_intr_hw` can generate the correct hardware when parameterized with `.IntrT("Event")`.
+
+![Event Type Interrupt Hardware](event_intr_type.svg)
+
+The event is latched into the corresponding bitfield of `INTR_STATE` when it occurs.
+The event is cleared/acknowledged by a sw write of this bitfield, as `INTR_STATE` has **W1C** behaviour in this mode.
+The waveform below shows the timing of the event occurrence, its latched value, and the clearing of the event by a SW handler.
 
 ```wavejson
 {
   signal: [
     { name: 'Clock',             wave: 'p.............' },
-    { name: 'event',             wave: '0..10.........' },
+    { name: 'hw_i',              wave: '0..10.........' },
     { name: 'INTR_ENABLE',       wave: '1.............' },
     { name: 'INTR_STATE',        wave: '0...1....0....' },
-    { name: 'intr_o',            wave: '0...1....0....' },
-    { name: 'SW write to clear', wave: '0.......10....' },
+    { name: 'intr_o',            wave: '0....1....0...' },
+    { name: 'SW w1c',            wave: '0.......10....' },
   ],
   head: {
-    text: 'Interrupt Latching and Clearing',
+    text: 'Event-Type Interrupt Latching and Clearing (output flop enabled)',
   },
   foot: {
-    text: 'event signaled at cycle 3, state bit cleared in cycle 8',
+    text: 'event signaled at cycle 3, cleared in cycle 8',
     tock: 0
   },
 }
 ```
 
-### Status Type Interrupt
+#### Status Type Interrupt
 
-Status type interrupts forwards the internal status signals to the local processor.
-They may or may not be latched inside the hw module.
-The difference between the event type and status type interrupt is the persistence.
-The status type interrupts do not drop the interrupt lines until the cause signals are dropped by the processor or hardware logic
-SW is responsible to mask the interrupts if they want to process the interrupt in a deferred way.
+Status type interrupts create a wired level-triggered interrupt signal directly from the input signal from hardware (only qualified by `INTR_ENABLE`).
+If the input signal is asserted, then the wired interrupt is constantly asserted, effectively issuing interrupt requests continuously.
+With this interrupt type, the acknowledgement part of the req/ack handshake is an intervention from sw which causes the input signal from hardware to return to an inactive state.
+This means that the wired interrupt does not deassert until the root cause of the hardware input signal is addressed.
+Software cannot acknowledge this interrupt request using the `INTR_STATE` register, which has (`ro`) acccess permissions in this context.
+
+> The generic component `prim_intr_hw` can generate the correct hardware when parameterized with `.IntrT("Status")`.
+
+![Status Type Interrupt Hardware](status_intr_type.svg)
+
+The waveform below shows the timing of the status type interrupt.
 
 ```wavejson
 {
   signal: [
     { name: 'Clock',                  wave: 'p.............' },
-    { name: 'event',                  wave: '0..1......0...' },
+    { name: 'hw_i',                   wave: '0..1......0...' },
     { name: 'INTR_ENABLE',            wave: '1.............' },
     { name: 'INTR_STATE',             wave: '0...1......0..' },
     { name: 'intr_o',                 wave: '0...1......0..' },
-    { name: 'SW addresses the cause', wave: '0.........10..' },
+    { name: 'SW addresses the cause', wave: '0........10...' },
   ],
   head: {
-    text: 'Interrupt Latching and Clearing',
+    text: 'Status-Type Interrupt Setting and Clearing (output flop enabled)',
   },
   foot: {
     text: 'status lasts until processor addresses the cause',
@@ -526,43 +604,14 @@ SW is responsible to mask the interrupts if they want to process the interrupt i
 }
 ```
 
-### Interrupts per module
+If SW cannot address the root cause of the interrupt, or wishes to defer handling, it should mask the interrupt, either at the peripheral or at some point further up the tree such as at the PLIC.
+Masking at the peripheral can be achieved by clearing the corresponding bit in `INTR_ENABLE`.
 
-A peripheral generates a separate interrupt for each event and sends them all as bundle to the local processor's interrupt module.
-"Disambiguation", or the determining of which interrupt has woken the processor, is done at the processor in its handler (to be specified eventually in the core processor specification).
-This is as distinct from a model in which each peripheral would send only one interrupt, and the processor would disambiguate by querying the peripheral to figure out which interrupt was triggered.
+### Interrupt Hardware Implementation (Event Type)
 
-### Defining Interrupts
-
-The configuration file defined above specifies all that needs to be known about the interrupts in the standard case.
-The following sections specify what comes out of various tools based upon the simple list defined in the above example.
-
-### Register Creation
-
-For every peripheral, by default, three registers are **automatically** created to manage each of the interrupts for that peripheral (as defined in the `interrupt_list` portion of the Hjson file).
-Every interrupt has one field bit for each of three registers.
-(It is an error condition if there are more than 32 interrupts per peripheral.)
-The three registers are the `INTR_STATE` register, the `INTR_ENABLE` register, and the `INTR_TEST` register.
-They are placed at the top of the peripheral's address map in that order automatically by the `reggen` tool.
-
-The `INTR_ENABLE` register is readable and writeable by the CPU (`rw`), with one bit per interrupt which, when true, enables the interrupt of the module to be reported to the output to the processor.
-The `INTR_STATE` register for the event type interrupt is readable by the CPU and each bit may be written with `1` to clear it (`rw1c`), so that a read of the register indicates the current state of all latched interrupts, and a write of `1` to any field clears the state of the corresponding interrupt.
-`INTR_TEST` for the event type interrupt is a write-only (`wo`) register that allows software to test the reporting of the interrupt, simulating a trigger of the original event, the setting of the `INTR_STATE` register, and the raised level of the interrupt output to the processor (modulo the effect of `INTR_ENABLE`).
-No modifications to other portions of the hardware (eg. clearing of FIFO pointers) occurs.
-`INTR_STATE` and `INTR_TEST` for the status type interrupt differ from them in the event type interrupts. The details will be described later (TBD).
-See the next section for the hardware implementation.
-
-The contents of the `INTR_STATE` register do **not** take into consideration the enable value, but rather show the raw state of all latched hardware interrupt events.
-The output interrupt to the processor ANDs the interrupt state with the interrupt enable register before sending to the processor for consideration.
-
-### Interrupt Hardware Implementation
-
-All interrupts as sent to the processor are active-high level interrupts of equal severity<sup>2</sup>.
-Taking an interrupt `foo` as an example, the block diagram below shows the hardware implementation.
-The assumption is that there is an internal signal (call it `event_foo`) that indicates the detection of the event that is to trigger the interrupt.
-The block diagram shows the interaction between that event, the three defining software-facing registers, and the output interrupt `intr_foo_o`.
-
-<sup>2</sup> Higher priority interrupts in the form of a Non-Maskable Interrupt (NMI) are expected to be overlaid in the future.
+Taking an interrupt `foo` as an example, the block diagram below shows one possible hardware implementation.
+We assume that an internal signal (call it `event_foo`) indicates the detection of the event that is to trigger the interrupt.
+The block diagram shows the interaction between that event, the three software-facing registers, and the output interrupt `intr_foo_o`.
 
 ![Example Interrupt HW](comportability_diagram_intr_hw.svg)
 
@@ -577,10 +626,6 @@ The output of the `INTR_STATE` register becomes the outgoing interrupt to the pr
 Note that the handling of the `ro/rw1c` functionality of the `INTR_STATE` register allows software to control the clearing of the `INTR_STATE` content.
 A write of `1` to the corresponding bit of `INTR_STATE` clears the latched value, but if the event itself is still active, the `INTR_STATE` register will return to true.
 The hardware does not have the ability to clear the latched interrupt state, only software does.
-
-Interrupts sent to the processor are handled by its interrupt controller.
-Within that logic there may be another level of control for enabling, prioritizing, and enumeration.
-Specification of this control is defined in the rv_plic documentation of the corresponding toplevel design.
 
 ## Alert Handling
 
