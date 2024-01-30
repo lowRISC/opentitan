@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://raw.githubusercontent.com/lowRISC/opentitan/master/sw/host/cryptotest/testvectors/data/schemas/aes_block_schema.json",
+  "$id": "https://raw.githubusercontent.com/lowRISC/opentitan/master/sw/host/cryptotest/testvectors/data/schemas/ecdsa_sig_ver_schema.json",
   "title": "Cryptotest ECDSA Signature Verification Test Vector",
   "description": "A list of testvectors for ECDSA Signature Verification testing",
   "$defs": {
