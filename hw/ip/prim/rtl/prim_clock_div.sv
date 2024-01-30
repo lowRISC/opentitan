@@ -27,6 +27,7 @@ module prim_clock_div #(
   assign step_down_req = test_en_i ? '0 : step_down_req_i;
 
   logic clk_int;
+  logic clk_muxed;
 
   if (Divisor == 2) begin : gen_div2
     logic q_p, q_n;
@@ -86,7 +87,7 @@ module prim_clock_div #(
         clk_int <= ResetValue;
       end else if (cnt >= limit) begin
         cnt <= '0;
-        clk_int <= ~clk_o;
+        clk_int <= ~clk_muxed;
       end else begin
         cnt <= cnt + 1'b1;
       end
@@ -102,7 +103,6 @@ module prim_clock_div #(
   end
 
   // anchor points for constraints
-  logic clk_muxed;
   prim_clock_mux2 #(
     .NoFpgaBufG(1'b1)
   ) u_clk_mux (
@@ -112,6 +112,7 @@ module prim_clock_div #(
     .clk_o(clk_muxed)
   );
 
+  // Hookup point for OCC on divided clock.
   prim_clock_buf u_clk_div_buf (
     .clk_i(clk_muxed),
     .clk_o
