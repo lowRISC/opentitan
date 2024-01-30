@@ -81,9 +81,11 @@ It means the update happens when the next SPI transaction is received.
 The BUSY bit in the CSR is the synchronized value of the STATUS BUSY bit in the SPI clock domain.
 Due to the CDC latency, SW may see the updated value (BUSY clear) with long delay.
 
-WEL bit can be controlled by SW and also by HW.
+The WEL bit can get updates from both HW and SW.
 HW updates WEL bit when it receives WREN(06h) or WRDI(04h) commands.
 The opcode can be configured via [`CMD_INFO_WREN`](registers.md#cmd_info_wren) and [`CMD_INFO_WRDI`](registers.md#cmd_info_wrdi).
+Meanwhile, SW may clear the WEL bit when it completes the received commands.
+Note that SW may only clear the WEL bit.
 
 The SW update of the STATUS register via [`FLASH_STATUS`](registers.md#flash_status) is not instantaneous.
 The IP stores the SW request into the asynchronous FIFO then the request is processed in the SPI clock domain.
@@ -221,10 +223,14 @@ The `addr_mode` is used to determine the address size in the command.
 If `busy` field in the command information entry is set, the upload module also sets *BUSY* bit in the *STATUS* register.
 SW may clear the *BUSY* bit after processing the command.
 
+In addition, the HW stores some metadata alongside the opcode in the [`CMD FIFO`](registers.md#upload_cmdfifo).
+Included are the state of the address mode, the BUSY status bit, and the WEL status bit at the time the command was uploaded.
+With these, SW can determine what size the address should be and whether the uploaded command should be rejected.
+
 The upload module provides [`UPLOAD_STATUS`](registers.md#upload_status) and [`UPLOAD_STATUS2`](registers.md#upload_status2) CSRs for SW to parse the command, address, and payload.
 If a received command has payload, SW may read the payload from the Payload buffer starting from `payload_start_idx` address.
-In normal case, `payload_start_idx` in [`UPLOAD_STATUS2`](registers.md#upload_status2) shows **0**.
-In error case of the host sending more than the maximum allowed payload size (256B in the current version), the `payload_start_idx` may not be 0.
+In the normal case, `payload_start_idx` in [`UPLOAD_STATUS2`](registers.md#upload_status2) shows **0**.
+In the error case of the host sending more than the maximum allowed payload size (256B in the current version), the `payload_start_idx` may not be 0.
 It is expected that the `payload_depth` is maximum payload size, 256B if `payload_start_idx` is non-zero.
 In this scenario, SW should read from `payload_start_idx` to the end of the payload buffer then do a second read from the beginning of the buffer to the remained bytes.
 

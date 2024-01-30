@@ -74,9 +74,9 @@ module spid_upload
   input             sys_addrfifo_gnt_i, // from arbiter
 
   // FIFO access in sys_clk (CMDFIFO/ ADDRFIFO)
-  output logic       sys_cmdfifo_rvalid_o,
-  input              sys_cmdfifo_rready_i,
-  output logic [7:0] sys_cmdfifo_rdata_o,
+  output logic        sys_cmdfifo_rvalid_o,
+  input               sys_cmdfifo_rready_i,
+  output logic [15:0] sys_cmdfifo_rdata_o,
 
   output logic        sys_addrfifo_rvalid_o,
   input               sys_addrfifo_rready_i,
@@ -97,6 +97,8 @@ module spid_upload
 
   // Early (next value to be committed at 8th posedge) view of addr mode
   input logic cmd_sync_cfg_addr_4b_en_i,
+  input logic cmd_sync_status_wel_i,
+  input logic cmd_sync_status_busy_i,
 
   input cmd_info_t              cmd_only_info_i,
   input logic [CmdInfoIdxW-1:0] cmd_only_info_idx_i,
@@ -122,7 +124,7 @@ module spid_upload
   output logic [PayloadIdxW-1:0] sys_payload_start_idx_o
 );
 
-  localparam int unsigned CmdFifoWidth  =  8;
+  localparam int unsigned CmdFifoWidth  =  16;
   localparam int unsigned AddrFifoWidth = 32;
 
   assign io_mode_o = SingleIO; // Only single input mode is supported in upload
@@ -184,7 +186,7 @@ module spid_upload
 
   logic               cmdfifo_wvalid;
   logic               cmdfifo_wready; // Assume always ready
-  logic [7:0]         cmdfifo_wdata ;
+  logic [15:0]        cmdfifo_wdata ;
   logic [CmdPtrW-1:0] cmdfifo_depth; // Write side depth to check if FIFO empty
 
   // cmdfifo_depth is used in assertion not in the logic.
@@ -240,7 +242,11 @@ module spid_upload
 
   assign cmdinfo_addr_4b_en = cmdinfo_addr_mode == Addr4B;
 
-  assign cmdfifo_wdata  = s2p_byte_i; // written to FIFO at first
+  assign cmdfifo_wdata  = { cmdinfo_addr_4b_en,
+                            cmd_sync_status_wel_i,
+                            cmd_sync_status_busy_i,
+                            5'h00,
+                            s2p_byte_i};
   assign addrfifo_wdata = address_d;
   assign payload_wdata  = s2p_byte_i;
 

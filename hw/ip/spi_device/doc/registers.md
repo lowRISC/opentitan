@@ -345,13 +345,14 @@ completed.
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "busy", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "status", "bits": 23, "attr": ["rw"], "rotate": 0}, {"bits": 8}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "busy", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "wel", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "status", "bits": 22, "attr": ["rw"], "rotate": 0}, {"bits": 8}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                            |
 |:------:|:------:|:-------:|:--------------------------------|
 | 31:24  |        |         | Reserved                        |
-|  23:1  |   rw   |    x    | [status](#flash_status--status) |
+|  23:2  |   rw   |    x    | [status](#flash_status--status) |
+|   1    |  rw0c  |    x    | [wel](#flash_status--wel)       |
 |   0    |  rw0c  |    x    | [busy](#flash_status--busy)     |
 
 ### FLASH_STATUS . status
@@ -360,10 +361,6 @@ Rest of the status register.
 Fields other than the bit 0 (BUSY) and bit 1 (WEL) fields are
 SW-maintained fields. HW just reads and returns to the host system.
 
-Bit 1 (WEL) is a SW modifiable and HW modifiable field. HW updates
-the WEL field when `WRDI` or `WREN` command is received.
-
-- [ 1]\: WEL
 - [ 2]\: BP0
 - [ 3]\: BP1
 - [ 4]\: BP2
@@ -381,6 +378,13 @@ the WEL field when `WRDI` or `WREN` command is received.
 - [21]\: DRV0
 - [22]\: DRV1
 - [23]\: HOLD /RST
+
+### FLASH_STATUS . wel
+WEL signal is cleared when CSb is high. SW should read
+back the register to confirm the value is cleared.
+
+Bit 1 (WEL) is a SW modifiable and HW modifiable field.
+HW updates the WEL field when `WRDI` or `WREN` command is received.
 
 ### FLASH_STATUS . busy
 BUSY signal is cleared when CSb is high. SW should read
@@ -518,18 +522,22 @@ holds 256B of payload), the payload_start_idx is 2. SW should read from
 Command Fifo Read Port.
 - Offset: `0x44`
 - Reset default: `0x0`
-- Reset mask: `0xff`
+- Reset mask: `0xe0ff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "data", "bits": 8, "attr": ["ro"], "rotate": 0}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "data", "bits": 8, "attr": ["ro"], "rotate": 0}, {"bits": 5}, {"name": "busy", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "wel", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "addr4b_mode", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 16}], "config": {"lanes": 1, "fontsize": 10, "vspace": 130}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description   |
-|:------:|:------:|:-------:|:-------|:--------------|
-|  31:8  |        |         |        | Reserved      |
-|  7:0   |   ro   |    x    | data   | read data     |
+|  Bits  |  Type  |  Reset  | Name        | Description                                                |
+|:------:|:------:|:-------:|:------------|:-----------------------------------------------------------|
+| 31:16  |        |         |             | Reserved                                                   |
+|   15   |   ro   |    x    | addr4b_mode | 1 if address mode at command time is 4 Bytes, else 3 Bytes |
+|   14   |   ro   |    x    | wel         | State of WEL bit at command time                           |
+|   13   |   ro   |    x    | busy        | State of BUSY bit at command time                          |
+|  12:8  |        |         |             | Reserved                                                   |
+|  7:0   |   ro   |    x    | data        | command opcode                                             |
 
 ## UPLOAD_ADDRFIFO
 Address Fifo Read Port.

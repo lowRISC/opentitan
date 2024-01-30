@@ -154,8 +154,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
                 check_read_cmd_data_for_non_read_buffer(item, downstream_item);
               end
               InternalProcessCfgCmd: begin
-                // wel is the first bit of `flash_status.status`
-                bit prev_wel = `gmv(ral.flash_status.status) & 1'b1;
+                bit prev_wel = `gmv(ral.flash_status.wel);
                 if (`GET_OPCODE_VALID_AND_MATCH(cmd_info_en4b, item.opcode)) begin
                   if (cfg.en_cov) begin
                     cov.spi_device_addr_4b_enter_exit_command_cg.sample(
@@ -1088,7 +1087,8 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       "upload_cmdfifo": begin
         if (!write && channel == DataChannel) begin
           `DV_CHECK_GT(upload_cmd_q.size, 0)
-          `DV_CHECK_EQ(item.d_data, upload_cmd_q.pop_front())
+          // TODO: Check addr4b_mode, wel, and busy bits
+          `DV_CHECK_EQ(item.d_data[7:0], upload_cmd_q.pop_front())
           update_cmdfifo_status();
         end
       end

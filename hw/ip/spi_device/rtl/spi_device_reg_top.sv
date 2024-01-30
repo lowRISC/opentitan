@@ -246,8 +246,10 @@ module spi_device_reg_top (
   logic flash_status_we;
   logic flash_status_busy_qs;
   logic flash_status_busy_wd;
-  logic [22:0] flash_status_status_qs;
-  logic [22:0] flash_status_status_wd;
+  logic flash_status_wel_qs;
+  logic flash_status_wel_wd;
+  logic [21:0] flash_status_status_qs;
+  logic [21:0] flash_status_status_wd;
   logic jedec_cc_we;
   logic [7:0] jedec_cc_cc_qs;
   logic [7:0] jedec_cc_cc_wd;
@@ -271,7 +273,10 @@ module spi_device_reg_top (
   logic [8:0] upload_status2_payload_depth_qs;
   logic [7:0] upload_status2_payload_start_idx_qs;
   logic upload_cmdfifo_re;
-  logic [7:0] upload_cmdfifo_qs;
+  logic [7:0] upload_cmdfifo_data_qs;
+  logic upload_cmdfifo_busy_qs;
+  logic upload_cmdfifo_wel_qs;
+  logic upload_cmdfifo_addr4b_mode_qs;
   logic upload_addrfifo_re;
   logic [31:0] upload_addrfifo_qs;
   logic cmd_filter_0_we;
@@ -2328,7 +2333,7 @@ module spi_device_reg_top (
 
   // R[flash_status]: V(True)
   logic flash_status_qe;
-  logic [1:0] flash_status_flds_we;
+  logic [2:0] flash_status_flds_we;
   assign flash_status_qe = &flash_status_flds_we;
   //   F[busy]: 0:0
   prim_subreg_ext #(
@@ -2346,16 +2351,32 @@ module spi_device_reg_top (
   );
   assign reg2hw.flash_status.busy.qe = flash_status_qe;
 
-  //   F[status]: 23:1
+  //   F[wel]: 1:1
   prim_subreg_ext #(
-    .DW    (23)
+    .DW    (1)
+  ) u_flash_status_wel (
+    .re     (flash_status_re),
+    .we     (flash_status_we),
+    .wd     (flash_status_wel_wd),
+    .d      (hw2reg.flash_status.wel.d),
+    .qre    (),
+    .qe     (flash_status_flds_we[1]),
+    .q      (reg2hw.flash_status.wel.q),
+    .ds     (),
+    .qs     (flash_status_wel_qs)
+  );
+  assign reg2hw.flash_status.wel.qe = flash_status_qe;
+
+  //   F[status]: 23:2
+  prim_subreg_ext #(
+    .DW    (22)
   ) u_flash_status_status (
     .re     (flash_status_re),
     .we     (flash_status_we),
     .wd     (flash_status_status_wd),
     .d      (hw2reg.flash_status.status.d),
     .qre    (),
-    .qe     (flash_status_flds_we[1]),
+    .qe     (flash_status_flds_we[2]),
     .q      (reg2hw.flash_status.status.q),
     .ds     (),
     .qs     (flash_status_status_qs)
@@ -2698,18 +2719,64 @@ module spi_device_reg_top (
 
 
   // R[upload_cmdfifo]: V(True)
+  //   F[data]: 7:0
   prim_subreg_ext #(
     .DW    (8)
-  ) u_upload_cmdfifo (
+  ) u_upload_cmdfifo_data (
     .re     (upload_cmdfifo_re),
     .we     (1'b0),
     .wd     ('0),
-    .d      (hw2reg.upload_cmdfifo.d),
-    .qre    (reg2hw.upload_cmdfifo.re),
+    .d      (hw2reg.upload_cmdfifo.data.d),
+    .qre    (reg2hw.upload_cmdfifo.data.re),
     .qe     (),
-    .q      (reg2hw.upload_cmdfifo.q),
+    .q      (reg2hw.upload_cmdfifo.data.q),
     .ds     (),
-    .qs     (upload_cmdfifo_qs)
+    .qs     (upload_cmdfifo_data_qs)
+  );
+
+  //   F[busy]: 13:13
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_upload_cmdfifo_busy (
+    .re     (upload_cmdfifo_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.upload_cmdfifo.busy.d),
+    .qre    (reg2hw.upload_cmdfifo.busy.re),
+    .qe     (),
+    .q      (reg2hw.upload_cmdfifo.busy.q),
+    .ds     (),
+    .qs     (upload_cmdfifo_busy_qs)
+  );
+
+  //   F[wel]: 14:14
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_upload_cmdfifo_wel (
+    .re     (upload_cmdfifo_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.upload_cmdfifo.wel.d),
+    .qre    (reg2hw.upload_cmdfifo.wel.re),
+    .qe     (),
+    .q      (reg2hw.upload_cmdfifo.wel.q),
+    .ds     (),
+    .qs     (upload_cmdfifo_wel_qs)
+  );
+
+  //   F[addr4b_mode]: 15:15
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_upload_cmdfifo_addr4b_mode (
+    .re     (upload_cmdfifo_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.upload_cmdfifo.addr4b_mode.d),
+    .qre    (reg2hw.upload_cmdfifo.addr4b_mode.re),
+    .qe     (),
+    .q      (reg2hw.upload_cmdfifo.addr4b_mode.q),
+    .ds     (),
+    .qs     (upload_cmdfifo_addr4b_mode_qs)
   );
 
 
@@ -18833,7 +18900,9 @@ module spi_device_reg_top (
 
   assign flash_status_busy_wd = reg_wdata[0];
 
-  assign flash_status_status_wd = reg_wdata[23:1];
+  assign flash_status_wel_wd = reg_wdata[1];
+
+  assign flash_status_status_wd = reg_wdata[23:2];
   assign jedec_cc_we = addr_hit[11] & reg_we & !reg_error;
 
   assign jedec_cc_cc_wd = reg_wdata[7:0];
@@ -20206,7 +20275,8 @@ module spi_device_reg_top (
 
       addr_hit[10]: begin
         reg_rdata_next[0] = flash_status_busy_qs;
-        reg_rdata_next[23:1] = flash_status_status_qs;
+        reg_rdata_next[1] = flash_status_wel_qs;
+        reg_rdata_next[23:2] = flash_status_status_qs;
       end
 
       addr_hit[11]: begin
@@ -20240,7 +20310,10 @@ module spi_device_reg_top (
       end
 
       addr_hit[17]: begin
-        reg_rdata_next[7:0] = upload_cmdfifo_qs;
+        reg_rdata_next[7:0] = upload_cmdfifo_data_qs;
+        reg_rdata_next[13] = upload_cmdfifo_busy_qs;
+        reg_rdata_next[14] = upload_cmdfifo_wel_qs;
+        reg_rdata_next[15] = upload_cmdfifo_addr4b_mode_qs;
       end
 
       addr_hit[18]: begin

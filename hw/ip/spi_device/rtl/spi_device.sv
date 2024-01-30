@@ -148,10 +148,10 @@ module spi_device
   logic [1:0]            sys_sram_rerror [SysSramEnd];
 
 
-  logic       cmdfifo_rvalid, cmdfifo_rready;
-  logic [7:0] cmdfifo_rdata;
-  logic       cmdfifo_notempty;
-  logic       cmdfifo_set_pulse;
+  logic        cmdfifo_rvalid, cmdfifo_rready;
+  logic [15:0] cmdfifo_rdata;
+  logic        cmdfifo_notempty;
+  logic        cmdfifo_set_pulse;
 
   logic        addrfifo_rvalid, addrfifo_rready;
   logic [31:0] addrfifo_rdata;
@@ -278,6 +278,10 @@ module spi_device
   // SYS clock assertion can be detected but no usage for the event yet.
   // SPI clock de-assertion cannot be detected as no SCK at the time is given.
   logic sys_csb_deasserted_pulse;
+
+  // Important status bits for tracking in the upload module
+  logic cmd_sync_status_busy;
+  logic cmd_sync_status_wel;
 
   // Read Status input and broadcast
   logic sck_status_busy_set;       // set by HW (upload)
@@ -1110,13 +1114,16 @@ module spi_device
   logic [23:0] readstatus_q;
   logic [23:0] readstatus_d;
 
-  assign readstatus_qe =  reg2hw.flash_status.busy.qe
-                       && reg2hw.flash_status.status.qe;
+  assign readstatus_qe =  reg2hw.flash_status.busy.qe &&
+                          reg2hw.flash_status.wel.qe &&
+                          reg2hw.flash_status.status.qe;
   assign readstatus_q = { reg2hw.flash_status.status.q,
+                          reg2hw.flash_status.wel.q,
                           reg2hw.flash_status.busy.q
                         };
   assign hw2reg.flash_status.busy.d   = readstatus_d[0];
-  assign hw2reg.flash_status.status.d = readstatus_d[23:1];
+  assign hw2reg.flash_status.wel.d    = readstatus_d[1];
+  assign hw2reg.flash_status.status.d = readstatus_d[23:2];
 
   assign sck_status_wr_set = (cmd_only_dp_sel == DpWrEn);
   assign sck_status_wr_clr = (cmd_only_dp_sel == DpWrDi);
@@ -1160,8 +1167,10 @@ module spi_device
     .inclk_we_set_i (sck_status_wr_set),
     .inclk_we_clr_i (sck_status_wr_clr),
 
-    .inclk_status_commit_i(s2p_data_valid),
-    .csb_busy_broadcast_o (csb_status_busy_broadcast) // SCK domain
+    .inclk_status_commit_i  (s2p_data_valid),
+    .cmd_sync_status_busy_o (cmd_sync_status_busy),
+    .cmd_sync_status_wel_o  (cmd_sync_status_wel),
+    .csb_busy_broadcast_o   (csb_status_busy_broadcast) // SCK domain
   );
 
   // Tie unused
@@ -1256,6 +1265,8 @@ module spi_device
     .spi_mode_i (spi_mode),
 
     .cmd_sync_cfg_addr_4b_en_i (cmd_sync_addr_4b_en),
+    .cmd_sync_status_wel_i     (cmd_sync_status_wel),
+    .cmd_sync_status_busy_i    (cmd_sync_status_busy),
 
     .cmd_only_info_i     (cmd_only_info_broadcast),
     .cmd_only_info_idx_i (cmd_only_info_idx_broadcast),
@@ -1277,10 +1288,22 @@ module spi_device
     .sys_payload_start_idx_o (payload_start_idx)
   );
   // FIFO connect
-  assign cmdfifo_rready = reg2hw.upload_cmdfifo.re;
-  assign hw2reg.upload_cmdfifo.d = cmdfifo_rdata;
+  assign cmdfifo_rready = reg2hw.upload_cmdfifo.data.re;
+  assign hw2reg.upload_cmdfifo.data.d = cmdfifo_rdata[7:0];
+  assign hw2reg.upload_cmdfifo.busy.d = cmdfifo_rdata[13];
+  assign hw2reg.upload_cmdfifo.wel.d = cmdfifo_rdata[14];
+  assign hw2reg.upload_cmdfifo.addr4b_mode.d = cmdfifo_rdata[15];
+  logic unused_cmdfifo_re;
+  assign unused_cmdfifo_re = ^{reg2hw.upload_cmdfifo.busy.re,
+                               reg2hw.upload_cmdfifo.wel.re,
+                               reg2hw.upload_cmdfifo.addr4b_mode.re};
   logic unused_cmdfifo_q;
-  assign unused_cmdfifo_q = ^{reg2hw.upload_cmdfifo.q, cmdfifo_rvalid};
+  assign unused_cmdfifo_q = ^{reg2hw.upload_cmdfifo.data.q,
+                              reg2hw.upload_cmdfifo.busy.q,
+                              reg2hw.upload_cmdfifo.wel.q,
+                              reg2hw.upload_cmdfifo.addr4b_mode.q,
+                              cmdfifo_rdata[12:8],
+                              cmdfifo_rvalid};
 
   assign addrfifo_rready = reg2hw.upload_addrfifo.re;
   assign hw2reg.upload_addrfifo.d = addrfifo_rdata;

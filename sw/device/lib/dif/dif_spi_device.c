@@ -12,7 +12,6 @@
 
 #define DIF_SPI_DEVICE_TPM_FIFO_DEPTH 16
 
-enum { kDifSpiDeviceFlashStatusWelBit = 1 };
 enum {
   kDifSpiDeviceEFlashLen =
       SPI_DEVICE_PARAM_SRAM_READ_BUFFER_DEPTH * sizeof(uint32_t),
@@ -767,7 +766,7 @@ dif_result_t dif_spi_device_clear_flash_busy_bit(dif_spi_device_handle_t *spi) {
   uint32_t reg_val = mmio_region_read32(spi->dev.base_addr,
                                         SPI_DEVICE_FLASH_STATUS_REG_OFFSET);
   reg_val =
-      bitfield_bit32_write(reg_val, kDifSpiDeviceFlashStatusWelBit, false);
+      bitfield_bit32_write(reg_val, SPI_DEVICE_FLASH_STATUS_WEL_BIT, false);
   reg_val =
       bitfield_bit32_write(reg_val, SPI_DEVICE_FLASH_STATUS_BUSY_BIT, false);
   mmio_region_write32(spi->dev.base_addr, SPI_DEVICE_FLASH_STATUS_REG_OFFSET,
