@@ -47,6 +47,8 @@ def parse_test_vectors(raw_data):
         for test in group["tests"]:
             logging.debug(f"Parsing tcId {test['tcId']}")
             test_vec = {
+                "vendor": "wycheproof",
+                "test_case_id": test['tcId'],
                 "algorithm": "ecdsa",
                 "operation": "verify",
                 "curve": EC_NAME_MAPPING[key["curve"]],
