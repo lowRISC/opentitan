@@ -40,7 +40,7 @@ genrule(
         tool = "//sw/host/cryptotest/testvectors/parsers:wycheproof_ecdsa_parser",
     )
     for src_name, cryptotest_name in [
-        ("ecdsa_secp256k1_sha256_test.json", "wycheproof_ecdsa_p256_sha256"),
+        ("ecdsa_secp256r1_sha256_test.json", "wycheproof_ecdsa_p256_sha256"),
         ("ecdsa_secp384r1_sha384_test.json", "wycheproof_ecdsa_p384_sha384"),
     ]
 ]
