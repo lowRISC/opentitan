@@ -10,6 +10,14 @@
  * https://chromium.googlesource.com/chromiumos/platform/ec/+/refs/heads/cr50_stab/chip/g/dcrypto/dcrypto_p256.c
  */
 
+/**
+ * Hardened boolean values.
+ *
+ * Should match the values in `hardened_asm.h`.
+ */
+.equ HARDENED_BOOL_TRUE, 0x739
+.equ HARDENED_BOOL_FALSE, 0x1d4
+
 .globl p256_verify
 
 .text
@@ -27,7 +35,10 @@
  *
  * The routine computes the x1 coordinate and places it in dmem. x1 will be
  * reduced (mod n), however, the final comparison has to be performed on the
- * host side. The signature is valid if x1 == r.
+ * host side. The `ok` status code is false if the signature is invalid (e.g. r
+ * or s is out of range) and in this case `x1` is meaningless. The signature is
+ * valid if BOTH `ok` is true and `x1 == r`.
+ *
  * This routine runs in variable time.
  *
  * @param[in]  dmem[msg]: message to be verified (256 bits)
@@ -35,6 +46,7 @@
  * @param[in]  dmem[s]:   s component of signature (256 bits)
  * @param[in]  dmem[x]:   affine x-coordinate of public key (256 bits)
  * @param[in]  dmem[y]:   affine y-coordinate of public key (256 bits)
+ * @param[out] dmem[ok]:  whether the signature passed basic checks (32 bits)
  * @param[out] dmem[x_r]: dmem buffer for reduced affine x_r-coordinate (x_1)
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
@@ -67,17 +79,17 @@ p256_verify:
   la        x20, s
   bn.lid    x0, 0(x20)
 
-  /* goto 'fail' if w0 == w31 <=> s == 0 */
+  /* Fail if w0 == w31 <=> s == 0 */
   bn.cmp    w0, w31
   csrrs     x2, FG0, x0
   andi      x2, x2, 8
-  bne       x2, x0, fail
+  bne       x2, x0, p256_invalid_input
 
-  /* goto 'fail' if w0 >= w29 <=> s >= n */
+  /* Fail if w0 >= w29 <=> s >= n */
   bn.cmp    w0, w29
   csrrs     x2, FG0, x0
   andi      x2, x2, 1
-  beq       x2, x0, fail
+  beq       x2, x0, p256_invalid_input
 
   /* w1 = s^-1  mod n */
   jal       x1, mod_inv_var
@@ -87,17 +99,17 @@ p256_verify:
   li        x2,  24
   bn.lid    x2, 0(x19)
 
-  /* goto 'fail' if w24 == w31 <=> r == 0 */
+  /* Fail if w24 == w31 <=> r == 0 */
   bn.cmp    w24, w31
   csrrs     x2, FG0, x0
   andi      x2, x2, 8
-  bne       x2, x0, fail
+  bne       x2, x0, p256_invalid_input
 
-  /* goto 'fail' if w0 >= w29 <=> r >= n */
+  /* Fail if w0 >= w29 <=> r >= n */
   bn.cmp    w24, w29
   csrrs     x2, FG0, x0
   andi      x2, x2, 1
-  beq       x2, x0, fail
+  beq       x2, x0, p256_invalid_input
 
   /* w25 = s^-1 = w1 */
   bn.mov    w25, w1
@@ -233,6 +245,11 @@ p256_verify:
   bn.lid    x0, 0(x3)
   bn.wsrw   MOD, w0
   bn.subm   w24, w19, w31
+
+  /* If we got here the basic validity checks passed, so set `ok` to true. */
+  la       x2, ok
+  addi     x3, x0, HARDENED_BOOL_TRUE
+  sw       x3, 0(x2)
 
   /* store affine x-coordinate in dmem: dmem[x_r] = w24 = x_r */
   la        x17, x_r
@@ -377,15 +394,14 @@ mod_inv_var:
 
   ret
 
-/**
- * Failure cases jump here.
- */
-fail:
-  unimp
-  unimp
-  unimp
-
 .section .bss
+
+/* Success code for basic validity checks on the public key and signature.
+   Used for verify. Should be HARDENED_BOOL_TRUE or HARDENED_BOOL_FALSE. */
+.balign 4
+.weak ok
+ok:
+  .zero 4
 
 /* message digest */
 .balign 32
