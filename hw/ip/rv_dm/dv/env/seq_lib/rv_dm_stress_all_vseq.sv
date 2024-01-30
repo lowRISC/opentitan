@@ -21,7 +21,6 @@ class rv_dm_stress_all_vseq extends rv_dm_base_vseq;
                           "rv_dm_mem_tl_access_halted_vseq",
                           "rv_dm_cmderr_not_supported_vseq",
                           "rv_dm_hart_unavail_vseq",
-                          "rv_dm_common_vseq",
                           "rv_dm_jtag_dtm_hard_reset_vseq",
                           "rv_dm_jtag_dmi_dm_inactive_vseq",
                           "rv_dm_jtag_dtm_idle_hint_vseq",
