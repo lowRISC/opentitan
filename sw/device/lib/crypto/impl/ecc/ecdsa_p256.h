@@ -33,6 +33,7 @@ typedef struct ecdsa_p256_signature_t {
  *
  * @return Result of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t ecdsa_p256_keygen_start(void);
 
 /**
@@ -43,6 +44,7 @@ status_t ecdsa_p256_keygen_start(void);
  *
  * @return Result of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t ecdsa_p256_sideload_keygen_start(void);
 
 /**
@@ -54,6 +56,7 @@ status_t ecdsa_p256_sideload_keygen_start(void);
  * @param[out] public_key Generated public key.
  * @return Result of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t ecdsa_p256_keygen_finalize(p256_masked_scalar_t *private_key,
                                     p256_point_t *public_key);
 
@@ -66,6 +69,7 @@ status_t ecdsa_p256_keygen_finalize(p256_masked_scalar_t *private_key,
  * @param[out] public_key Public key.
  * @return Result of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t ecdsa_p256_sideload_keygen_finalize(p256_point_t *public_key);
 
 /**
@@ -77,6 +81,7 @@ status_t ecdsa_p256_sideload_keygen_finalize(p256_point_t *public_key);
  * @param private_key Secret key to sign the message with.
  * @return Result of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t ecdsa_p256_sign_start(const uint32_t digest[kP256ScalarWords],
                                const p256_masked_scalar_t *private_key);
 
@@ -89,6 +94,7 @@ status_t ecdsa_p256_sign_start(const uint32_t digest[kP256ScalarWords],
  * @param digest Digest of the message to sign.
  * @return Result of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t ecdsa_p256_sideload_sign_start(
     const uint32_t digest[kP256ScalarWords]);
 
@@ -102,6 +108,7 @@ status_t ecdsa_p256_sideload_sign_start(
  * @param[out] result Buffer in which to store the generated signature.
  * @return Result of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t ecdsa_p256_sign_finalize(ecdsa_p256_signature_t *result);
 
 /**
@@ -116,6 +123,7 @@ status_t ecdsa_p256_sign_finalize(ecdsa_p256_signature_t *result);
  * @param public_key Key to check the signature against.
  * @return Result of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t ecdsa_p256_verify_start(const ecdsa_p256_signature_t *signature,
                                  const uint32_t digest[kP256ScalarWords],
                                  const p256_point_t *public_key);
@@ -140,6 +148,7 @@ status_t ecdsa_p256_verify_start(const ecdsa_p256_signature_t *signature,
  * otherwise)
  * @return Result of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t ecdsa_p256_verify_finalize(const ecdsa_p256_signature_t *signature,
                                     hardened_bool_t *result);
 

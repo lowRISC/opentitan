@@ -33,6 +33,7 @@ typedef struct ecdh_p256_shared_key {
  *
  * @return Result of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t ecdh_p256_keypair_start(void);
 
 /**
@@ -44,6 +45,7 @@ status_t ecdh_p256_keypair_start(void);
  * @param[out] public_key Generated public key.
  * @return Result of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t ecdh_p256_keypair_finalize(p256_masked_scalar_t *private_key,
                                     p256_point_t *public_key);
 
@@ -56,6 +58,7 @@ status_t ecdh_p256_keypair_finalize(p256_masked_scalar_t *private_key,
  * @param public_key Public key (Q).
  * @return Result of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t ecdh_p256_shared_key_start(const p256_masked_scalar_t *private_key,
                                     const p256_point_t *public_key);
 
@@ -69,6 +72,7 @@ status_t ecdh_p256_shared_key_start(const p256_masked_scalar_t *private_key,
  * @param[out] shared_key Shared secret key (x-coordinate of d*Q).
  * @return Result of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t ecdh_p256_shared_key_finalize(ecdh_p256_shared_key_t *shared_key);
 
 /**
@@ -81,6 +85,7 @@ status_t ecdh_p256_shared_key_finalize(ecdh_p256_shared_key_t *shared_key);
  *
  * @return Result of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t ecdh_p256_sideload_keypair_start(void);
 
 /**
@@ -91,6 +96,7 @@ status_t ecdh_p256_sideload_keypair_start(void);
  * @param[out] public_key Generated public key.
  * @return Result of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t ecdh_p256_sideload_keypair_finalize(p256_point_t *public_key);
 
 /**
@@ -104,6 +110,7 @@ status_t ecdh_p256_sideload_keypair_finalize(p256_point_t *public_key);
  * @param public_key Public key (Q).
  * @return Result of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t ecdh_p256_sideload_shared_key_start(const p256_point_t *public_key);
 
 #ifdef __cplusplus
