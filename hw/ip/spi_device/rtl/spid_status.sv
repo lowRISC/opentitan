@@ -40,7 +40,8 @@ module spid_status
 
   // status register from CSR: sys_clk domain
   // bit [          0]: RW0C by SW / W1S by HW
-  // bit [StatusW-1:1]: RW
+  // bit [          1]: RW0C by SW / W1S by HW
+  // bit [StatusW-1:2]: RW
   input                      sys_status_we_i,
   input  logic [StatusW-1:0] sys_status_i,
   output logic [StatusW-1:0] sys_status_o, // sys_clk domain
@@ -68,6 +69,11 @@ module spid_status
   // commit allows status updates to occur mid-command, for continuous Read
   // Status commands.
   input inclk_status_commit_i,
+
+  // Next status bits for reporting alongside commands. These bits are only
+  // valid during the command sync pulse from the cmdparse module.
+  output logic cmd_sync_status_busy_o,
+  output logic cmd_sync_status_wel_o,
 
   // indicator of busy for blocking passthrough
   output logic csb_busy_broadcast_o // CSB domain
@@ -166,7 +172,7 @@ module spid_status
       sck_status_staged[BitWe] <= 1'b 1;
     end else if (inclk_we_clr_i) begin
       sck_status_staged[BitWe] <= 1'b 0;
-    end else if (sck_sw_we) begin
+    end else if (sck_sw_we && (sck_sw_status[BitWe] == 1'b0)) begin
       sck_status_staged[BitWe] <= sck_sw_status[BitWe];
     end
   end
@@ -207,8 +213,8 @@ module spid_status
     .q_o       (sck_status_committed)
   );
 
-  assign status_busy_o = sck_status_committed[BitBusy];
-  assign status_wel_o = sck_status_committed[BitWe];
+  assign cmd_sync_status_busy_o = sck_status_to_commit[BitBusy];
+  assign cmd_sync_status_wel_o = sck_status_to_commit[BitWe];
 
   // Staged to Committed at CSb de-assertion
   // SW and the passthrough gate only receive the final values of

@@ -679,17 +679,24 @@
           swaccess: "rw0c"
           hwaccess: "hrw"
         } // f: busy
-        { bits: "23:1"
+        { bits: "1"
+          name: "wel"
+          desc: '''WEL signal is cleared when CSb is high. SW should read
+            back the register to confirm the value is cleared.
+
+            Bit 1 (WEL) is a SW modifiable and HW modifiable field.
+            HW updates the WEL field when `WRDI` or `WREN` command is received.
+          '''
+          swaccess: "rw0c"
+          hwaccess: "hrw"
+        } // f: busy
+        { bits: "23:2"
           name: "status"
           desc: '''Rest of the status register.
 
             Fields other than the bit 0 (BUSY) and bit 1 (WEL) fields are
             SW-maintained fields. HW just reads and returns to the host system.
 
-            Bit 1 (WEL) is a SW modifiable and HW modifiable field. HW updates
-            the WEL field when `WRDI` or `WREN` command is received.
-
-            - [ 1]\: WEL
             - [ 2]\: BP0
             - [ 3]\: BP1
             - [ 4]\: BP2
@@ -842,7 +849,19 @@
       fields: [
         { bits: "7:0"
           name: "data"
-          desc: "read data"
+          desc: "command opcode"
+        }
+        { bits: "13"
+          name: "busy"
+          desc: "State of BUSY bit at command time"
+        }
+        { bits: "14"
+          name: "wel"
+          desc: "State of WEL bit at command time"
+        }
+        { bits: "15"
+          name: "addr4b_mode"
+          desc: "1 if address mode at command time is 4 Bytes, else 3 Bytes"
         }
       ]
     } // R: UPLOAD_CMDFIFO

@@ -117,8 +117,9 @@ fn test_read_status_extended(opts: &Opts, transport: &TransportWrapper) -> Resul
     let uart = transport.uart("console")?;
     let spi = transport.spi(&opts.spi)?;
 
+    // Note that the WIP and WEL bits cannot be written.
     let sr = StatusRegister {
-        status: 0x5A55AA,
+        status: 0x5A55A8,
         addr_4b: false,
     };
     sr.write(&*uart)?;

@@ -631,7 +631,9 @@ rom_error_t spi_device_cmd_get(spi_device_cmd_t *cmd) {
     return kErrorSpiDevicePayloadOverflow;
   }
 
-  cmd->opcode = abs_mmio_read32(kBase + SPI_DEVICE_UPLOAD_CMDFIFO_REG_OFFSET);
+  reg = abs_mmio_read32(kBase + SPI_DEVICE_UPLOAD_CMDFIFO_REG_OFFSET);
+  cmd->opcode =
+      bitfield_field32_read(reg, SPI_DEVICE_UPLOAD_CMDFIFO_DATA_FIELD);
   cmd->address = kSpiDeviceNoAddress;
   reg = abs_mmio_read32(kBase + SPI_DEVICE_UPLOAD_STATUS_REG_OFFSET);
   if (bitfield_bit32_read(reg,

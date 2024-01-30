@@ -161,9 +161,13 @@ package spi_device_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic [22:0] q;
+      logic [21:0] q;
       logic        qe;
     } status;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } wel;
     struct packed {
       logic        q;
       logic        qe;
@@ -197,8 +201,22 @@ package spi_device_reg_pkg;
   } spi_device_reg2hw_mailbox_addr_reg_t;
 
   typedef struct packed {
-    logic [7:0]  q;
-    logic        re;
+    struct packed {
+      logic        q;
+      logic        re;
+    } addr4b_mode;
+    struct packed {
+      logic        q;
+      logic        re;
+    } wel;
+    struct packed {
+      logic        q;
+      logic        re;
+    } busy;
+    struct packed {
+      logic [7:0]  q;
+      logic        re;
+    } data;
   } spi_device_reg2hw_upload_cmdfifo_reg_t;
 
   typedef struct packed {
@@ -441,7 +459,10 @@ package spi_device_reg_pkg;
       logic        d;
     } busy;
     struct packed {
-      logic [22:0] d;
+      logic        d;
+    } wel;
+    struct packed {
+      logic [21:0] d;
     } status;
   } spi_device_hw2reg_flash_status_reg_t;
 
@@ -476,7 +497,18 @@ package spi_device_reg_pkg;
   } spi_device_hw2reg_upload_status2_reg_t;
 
   typedef struct packed {
-    logic [7:0]  d;
+    struct packed {
+      logic [7:0]  d;
+    } data;
+    struct packed {
+      logic        d;
+    } busy;
+    struct packed {
+      logic        d;
+    } wel;
+    struct packed {
+      logic        d;
+    } addr4b_mode;
   } spi_device_hw2reg_upload_cmdfifo_reg_t;
 
   typedef struct packed {
@@ -528,20 +560,20 @@ package spi_device_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    spi_device_reg2hw_intr_state_reg_t intr_state; // [1509:1504]
-    spi_device_reg2hw_intr_enable_reg_t intr_enable; // [1503:1498]
-    spi_device_reg2hw_intr_test_reg_t intr_test; // [1497:1486]
-    spi_device_reg2hw_alert_test_reg_t alert_test; // [1485:1484]
-    spi_device_reg2hw_control_reg_t control; // [1483:1481]
-    spi_device_reg2hw_cfg_reg_t cfg; // [1480:1476]
-    spi_device_reg2hw_intercept_en_reg_t intercept_en; // [1475:1472]
-    spi_device_reg2hw_addr_mode_reg_t addr_mode; // [1471:1470]
-    spi_device_reg2hw_flash_status_reg_t flash_status; // [1469:1444]
-    spi_device_reg2hw_jedec_cc_reg_t jedec_cc; // [1443:1428]
-    spi_device_reg2hw_jedec_id_reg_t jedec_id; // [1427:1404]
-    spi_device_reg2hw_read_threshold_reg_t read_threshold; // [1403:1394]
-    spi_device_reg2hw_mailbox_addr_reg_t mailbox_addr; // [1393:1362]
-    spi_device_reg2hw_upload_cmdfifo_reg_t upload_cmdfifo; // [1361:1353]
+    spi_device_reg2hw_intr_state_reg_t intr_state; // [1516:1511]
+    spi_device_reg2hw_intr_enable_reg_t intr_enable; // [1510:1505]
+    spi_device_reg2hw_intr_test_reg_t intr_test; // [1504:1493]
+    spi_device_reg2hw_alert_test_reg_t alert_test; // [1492:1491]
+    spi_device_reg2hw_control_reg_t control; // [1490:1488]
+    spi_device_reg2hw_cfg_reg_t cfg; // [1487:1483]
+    spi_device_reg2hw_intercept_en_reg_t intercept_en; // [1482:1479]
+    spi_device_reg2hw_addr_mode_reg_t addr_mode; // [1478:1477]
+    spi_device_reg2hw_flash_status_reg_t flash_status; // [1476:1450]
+    spi_device_reg2hw_jedec_cc_reg_t jedec_cc; // [1449:1434]
+    spi_device_reg2hw_jedec_id_reg_t jedec_id; // [1433:1410]
+    spi_device_reg2hw_read_threshold_reg_t read_threshold; // [1409:1400]
+    spi_device_reg2hw_mailbox_addr_reg_t mailbox_addr; // [1399:1368]
+    spi_device_reg2hw_upload_cmdfifo_reg_t upload_cmdfifo; // [1367:1353]
     spi_device_reg2hw_upload_addrfifo_reg_t upload_addrfifo; // [1352:1320]
     spi_device_reg2hw_cmd_filter_mreg_t [255:0] cmd_filter; // [1319:1064]
     spi_device_reg2hw_addr_swap_mask_reg_t addr_swap_mask; // [1063:1032]
@@ -569,15 +601,15 @@ package spi_device_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    spi_device_hw2reg_intr_state_reg_t intr_state; // [217:206]
-    spi_device_hw2reg_control_reg_t control; // [205:204]
-    spi_device_hw2reg_status_reg_t status; // [203:202]
-    spi_device_hw2reg_addr_mode_reg_t addr_mode; // [201:200]
-    spi_device_hw2reg_last_read_addr_reg_t last_read_addr; // [199:168]
-    spi_device_hw2reg_flash_status_reg_t flash_status; // [167:144]
-    spi_device_hw2reg_upload_status_reg_t upload_status; // [143:128]
-    spi_device_hw2reg_upload_status2_reg_t upload_status2; // [127:109]
-    spi_device_hw2reg_upload_cmdfifo_reg_t upload_cmdfifo; // [108:101]
+    spi_device_hw2reg_intr_state_reg_t intr_state; // [220:209]
+    spi_device_hw2reg_control_reg_t control; // [208:207]
+    spi_device_hw2reg_status_reg_t status; // [206:205]
+    spi_device_hw2reg_addr_mode_reg_t addr_mode; // [204:203]
+    spi_device_hw2reg_last_read_addr_reg_t last_read_addr; // [202:171]
+    spi_device_hw2reg_flash_status_reg_t flash_status; // [170:147]
+    spi_device_hw2reg_upload_status_reg_t upload_status; // [146:131]
+    spi_device_hw2reg_upload_status2_reg_t upload_status2; // [130:112]
+    spi_device_hw2reg_upload_cmdfifo_reg_t upload_cmdfifo; // [111:101]
     spi_device_hw2reg_upload_addrfifo_reg_t upload_addrfifo; // [100:69]
     spi_device_hw2reg_tpm_cap_reg_t tpm_cap; // [68:50]
     spi_device_hw2reg_tpm_status_reg_t tpm_status; // [49:40]
@@ -677,7 +709,7 @@ package spi_device_reg_pkg;
   parameter logic [31:0] SPI_DEVICE_ADDR_MODE_RESVAL = 32'h 0;
   parameter logic [31:0] SPI_DEVICE_LAST_READ_ADDR_RESVAL = 32'h 0;
   parameter logic [23:0] SPI_DEVICE_FLASH_STATUS_RESVAL = 24'h 0;
-  parameter logic [7:0] SPI_DEVICE_UPLOAD_CMDFIFO_RESVAL = 8'h 0;
+  parameter logic [15:0] SPI_DEVICE_UPLOAD_CMDFIFO_RESVAL = 16'h 0;
   parameter logic [31:0] SPI_DEVICE_UPLOAD_ADDRFIFO_RESVAL = 32'h 0;
   parameter logic [31:0] SPI_DEVICE_TPM_CMD_ADDR_RESVAL = 32'h 0;
   parameter logic [31:0] SPI_DEVICE_TPM_READ_FIFO_RESVAL = 32'h 0;
@@ -788,7 +820,7 @@ package spi_device_reg_pkg;
     4'b 1111, // index[14] SPI_DEVICE_MAILBOX_ADDR
     4'b 0011, // index[15] SPI_DEVICE_UPLOAD_STATUS
     4'b 0111, // index[16] SPI_DEVICE_UPLOAD_STATUS2
-    4'b 0001, // index[17] SPI_DEVICE_UPLOAD_CMDFIFO
+    4'b 0011, // index[17] SPI_DEVICE_UPLOAD_CMDFIFO
     4'b 1111, // index[18] SPI_DEVICE_UPLOAD_ADDRFIFO
     4'b 1111, // index[19] SPI_DEVICE_CMD_FILTER_0
     4'b 1111, // index[20] SPI_DEVICE_CMD_FILTER_1
