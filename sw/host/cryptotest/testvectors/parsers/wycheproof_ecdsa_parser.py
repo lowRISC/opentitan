@@ -23,7 +23,7 @@ EC_SIGNATURE_PARAM_LEN = {
 }
 
 
-def _parse_der_signature(der_str):
+def _parse_der_signature(der_str, curve):
     seq_der = DerSequence()
     seq_der.decode(
         bytes.fromhex(der_str),
@@ -38,6 +38,13 @@ def _parse_der_signature(der_str):
     if len(seq) != 2:
         raise ValueError(
             "Failed to parse DER-encoded signature into r and s values")
+
+    # A few tests include DER integers for r and s that are too long for their curves.
+    # We need to ignore these.
+    if len(hex(seq[0])) - 2 > 2 * EC_SIGNATURE_PARAM_LEN[curve]:
+        raise ValueError("Signature parameter r too large")
+    if len(hex(seq[1])) - 2 > 2 * EC_SIGNATURE_PARAM_LEN[curve]:
+        raise ValueError("Signature parameter s too large")
 
     return seq
 
@@ -71,7 +78,7 @@ def parse_test_vectors(raw_data):
             # part of the test case. Cryptolib does not accept DER-encoded
             # input, so ignore this test case.
             try:
-                signature_seq = _parse_der_signature(test["sig"])
+                signature_seq = _parse_der_signature(test["sig"], key["curve"])
             except ValueError:
                 logging.info(
                     f"Skipped tcId {test['tcId']}: ValueError while parsing DER sequence."
