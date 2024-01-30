@@ -110,6 +110,17 @@ from topgen.lib import Name
   import prim_mubi_pkg::mubi4_test_true_loose;
   import prim_mubi_pkg::mubi4_test_false_strict;
 
+  // Hookup point for OCC's on root clocks.
+% for src in clocks.srcs.values():
+  logic clk_${src.name};
+  prim_clock_buf #(
+    .NoFpgaBuf(1'b1)
+  ) u_clk_${src.name}_buf (
+    .clk_i(clk_${src.name}_i),
+    .clk_o(clk_${src.name})
+  );
+% endfor
+
   ////////////////////////////////////////////////////
   // External step down request
   ////////////////////////////////////////////////////
@@ -121,7 +132,7 @@ from topgen.lib import Name
     .StabilityCheck(1),
     .ResetValue(MuBi4False)
   ) u_${src_name}_step_down_req_sync (
-    .clk_i(clk_${src_name}_i),
+    .clk_i(clk_${src_name}),
     .rst_ni(rst_${src_name}_ni),
     .mubi_i(div_step_down_req_i),
     .mubi_o({${src_name}_step_down_req})
@@ -139,7 +150,7 @@ from topgen.lib import Name
   logic [${len(clocks.derived_srcs)-1}:0] step_down_acks;
 
 % for src_name in clocks.derived_srcs:
-  logic clk_${src_name}_i;
+  logic clk_${src_name};
 % endfor
 
 % for src in clocks.derived_srcs.values():
@@ -159,12 +170,13 @@ from topgen.lib import Name
   prim_clock_div #(
     .Divisor(${src.div})
   ) u_no_scan_${src.name}_div (
+    // We're using the pre-occ hookup (*_i) version for clock derivation.
     .clk_i(clk_${src.src.name}_i),
     .rst_ni(rst_root_${src.src.name}_ni),
     .step_down_req_i(mubi4_test_true_strict(${src.src.name}_step_down_req)),
     .step_down_ack_o(step_down_acks[${loop.index}]),
     .test_en_i(mubi4_test_true_strict(${src.name}_div_scanmode[0])),
-    .clk_o(clk_${src.name}_i)
+    .clk_o(clk_${src.name})
   );
 % endfor
 
@@ -184,7 +196,7 @@ from topgen.lib import Name
     .rst_ni,
     .rst_shadowed_ni,
 % for src in typed_clocks.rg_srcs:
-    .clk_${src}_i,
+    .clk_${src}_i(clk_${src}),
     .rst_${src}_ni,
 % endfor
     .tl_i,
@@ -280,7 +292,7 @@ from topgen.lib import Name
   ////////////////////////////////////////////////////
 % for k,v in typed_clocks.ft_clks.items():
   prim_clock_buf u_${k}_buf (
-    .clk_i(clk_${v.src.name}_i),
+    .clk_i(clk_${v.src.name}),
     .clk_o(clocks_o.${k})
   );
 
@@ -313,7 +325,7 @@ from topgen.lib import Name
   logic clk_${src}_en;
   logic clk_${src}_root;
   clkmgr_root_ctrl u_${src}_root_ctrl (
-    .clk_i(clk_${src}_i),
+    .clk_i(clk_${src}),
     .rst_ni(rst_root_${src}_ni),
     .scanmode_i,
     .async_en_i(pwrmgr_${src}_en),
@@ -382,9 +394,9 @@ from topgen.lib import Name
   ) u_${src}_meas (
     .clk_i,
     .rst_ni,
-    .clk_src_i(clk_${src}_i),
+    .clk_src_i(clk_${src}),
     .rst_src_ni(rst_${src}_ni),
-    .clk_ref_i(clk_aon_i),
+    .clk_ref_i(clk_aon),
     .rst_ref_ni(rst_aon_ni),
     // signals on source domain
     .src_en_i(clk_${src}_en & mubi4_test_true_loose(mubi4_t'(reg2hw.${src}_meas_ctrl_en))),
@@ -414,7 +426,7 @@ from topgen.lib import Name
   prim_mubi4_sender #(
     .ResetValue(MuBi4True)
   ) u_prim_mubi4_sender_${k} (
-    .clk_i(clk_${v.src.name}_i),
+    .clk_i(clk_${v.src.name}),
     .rst_ni(rst_${v.src.name}_ni),
     .mubi_i(((clk_${v.src.name}_en) ? MuBi4False : MuBi4True)),
     .mubi_o(cg_en_o.${k.split('clk_')[-1]})
@@ -433,7 +445,7 @@ from topgen.lib import Name
   prim_flop_2sync #(
     .Width(1)
   ) u_${k}_sw_en_sync (
-    .clk_i(clk_${v.src.name}_i),
+    .clk_i(clk_${v.src.name}),
     .rst_ni(rst_${v.src.name}_ni),
     .d_i(reg2hw.clk_enables.${k}_en.q),
     .q_o(${k}_sw_en)
@@ -456,7 +468,7 @@ from topgen.lib import Name
   prim_clock_gating #(
     .FpgaBufGlobal(1'b1) // This clock spans across multiple clock regions.
   ) u_${k}_cg (
-    .clk_i(clk_${v.src.name}_i),
+    .clk_i(clk_${v.src.name}),
     .en_i(${k}_combined_en),
     .test_en_i(mubi4_test_true_strict(${k}_scanmode[0])),
     .clk_o(clocks_o.${k})
@@ -466,7 +478,7 @@ from topgen.lib import Name
   prim_mubi4_sender #(
     .ResetValue(MuBi4True)
   ) u_prim_mubi4_sender_${k} (
-    .clk_i(clk_${v.src.name}_i),
+    .clk_i(clk_${v.src.name}),
     .rst_ni(rst_${v.src.name}_ni),
     .mubi_i(((${k}_combined_en) ? MuBi4False : MuBi4True)),
     .mubi_o(cg_en_o.${k.split('clk_')[-1]})
@@ -491,7 +503,7 @@ from topgen.lib import Name
     .FpgaBufGlobal(1'b0) // This clock is used primarily locally.
 % endif
   ) u_${clk}_trans (
-    .clk_i(clk_${sig.src.name}_i),
+    .clk_i(clk_${sig.src.name}),
     .clk_gated_i(clk_${sig.src.name}_root),
     .rst_ni(rst_${sig.src.name}_ni),
     .en_i(clk_${sig.src.name}_en),
