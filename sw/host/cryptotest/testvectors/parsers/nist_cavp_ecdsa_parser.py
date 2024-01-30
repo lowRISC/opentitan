@@ -14,11 +14,20 @@ import sys
 import jsonschema
 from cryptotest_util import parse_rsp, str_to_byte_array
 
+SUPPORTED_HASHES = [
+    "sha-256",
+    "sha-384",
+    "sha-512",
+    "sha3-256",
+    "sha3-384",
+    "sha3-512",
+]
+
 # Mapping from the curve names used by NIST to those used by cryptotest
 EC_NAME_MAPPING = {
     "P-256": "p256",
-    # TODO (#21067) uncomment when cryptolib supports P-384
-    # "P-384": "p384",
+    #    TODO (#21067) uncomment when cryptolib supports P-384
+    #    "P-384": "p384",
 }
 
 
@@ -26,25 +35,30 @@ def parse_testcases(args) -> None:
     raw_testcases = parse_rsp(args.src)
     test_cases = list()
 
+    test_count = 0
     # NIST splits the rsp files into sections with named after (curve, hash
     # algorithm) pairs
     for section_name in raw_testcases.keys():
         curve, hash_alg = section_name.split(",")
+        hash_alg = hash_alg.lower()
+        if hash_alg not in SUPPORTED_HASHES:
+            continue
         if curve not in EC_NAME_MAPPING.keys():
             continue
         for test_vec in raw_testcases[section_name]:
+            test_count += 1
             test_case = {
                 "vendor": "nist",
                 "test_case_id": test_count,
                 "algorithm": "ecdsa",
                 "operation": "verify",
                 "curve": EC_NAME_MAPPING[curve],
-                "hash_alg": hash_alg.lower(),
+                "hash_alg": hash_alg,
                 "message": str_to_byte_array(test_vec["Msg"]),
-                "qx": int(test_vec["Qx"], 16),
-                "qy": int(test_vec["Qy"], 16),
-                "r": int(test_vec["R"], 16),
-                "s": int(test_vec["S"], 16),
+                "qx": test_vec["Qx"],
+                "qy": test_vec["Qy"],
+                "r": test_vec["R"],
+                "s": test_vec["S"],
             }
 
             # NIST test vectors express the expected result as a string with a
