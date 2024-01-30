@@ -157,13 +157,13 @@ module clkmgr_bind;
   );
 
   bind clkmgr clkmgr_aon_cg_en_sva_if clkmgr_aon_cg_io_div2_powerup (
-    .clk(clk_io_div2_i),
+    .clk(clk_io_div2),
     .rst_n(rst_io_div2_ni),
     .cg_en(cg_en_o.io_div2_powerup == prim_mubi_pkg::MuBi4True)
   );
 
   bind clkmgr clkmgr_aon_cg_en_sva_if clkmgr_aon_cg_io_div4_powerup (
-    .clk(clk_io_div4_i),
+    .clk(clk_io_div4),
     .rst_n(rst_io_div4_ni),
     .cg_en(cg_en_o.io_div4_powerup == prim_mubi_pkg::MuBi4True)
   );
@@ -178,7 +178,7 @@ module clkmgr_bind;
 
   // Non-AON clock gating enables.
   bind clkmgr clkmgr_cg_en_sva_if clkmgr_cg_io_div4_infra (
-    .clk(clk_io_div4_i),
+    .clk(clk_io_div4),
     .rst_n(rst_io_div4_ni),
     .ip_clk_en(clk_io_div4_en),
     .sw_clk_en(1'b1),
@@ -205,7 +205,7 @@ module clkmgr_bind;
   );
 
   bind clkmgr clkmgr_cg_en_sva_if clkmgr_cg_io_div4_secure (
-    .clk(clk_io_div4_i),
+    .clk(clk_io_div4),
     .rst_n(rst_io_div4_ni),
     .ip_clk_en(clk_io_div4_en),
     .sw_clk_en(1'b1),
@@ -223,7 +223,7 @@ module clkmgr_bind;
   );
 
   bind clkmgr clkmgr_cg_en_sva_if clkmgr_cg_io_div4_timers (
-    .clk(clk_io_div4_i),
+    .clk(clk_io_div4),
     .rst_n(rst_io_div4_ni),
     .ip_clk_en(clk_io_div4_en),
     .sw_clk_en(1'b1),
@@ -232,7 +232,7 @@ module clkmgr_bind;
   );
 
   bind clkmgr clkmgr_cg_en_sva_if clkmgr_cg_io_div2_peri (
-    .clk(clk_io_div2_i),
+    .clk(clk_io_div2),
     .rst_n(rst_io_div2_ni),
     .ip_clk_en(clk_io_div2_en),
     .sw_clk_en(clk_io_div2_peri_sw_en),
@@ -241,7 +241,7 @@ module clkmgr_bind;
   );
 
   bind clkmgr clkmgr_cg_en_sva_if clkmgr_cg_io_div4_peri (
-    .clk(clk_io_div4_i),
+    .clk(clk_io_div4),
     .rst_n(rst_io_div4_ni),
     .ip_clk_en(clk_io_div4_en),
     .sw_clk_en(clk_io_div4_peri_sw_en),
