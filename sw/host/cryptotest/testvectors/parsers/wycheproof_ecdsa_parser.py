@@ -5,15 +5,15 @@
 
 import argparse
 import json
-import jsonschema
 import logging
 import sys
 
+import jsonschema
 from Crypto.Util.asn1 import DerSequence
 
 # Mapping from the curve names used by Wycheproof to those used by cryptotest
 EC_NAME_MAPPING = {
-    "secp256k1": "p256",
+    "secp256r1": "p256",
     "secp384r1": "p384",
 }
 
@@ -31,7 +31,8 @@ def _parse_der_signature(der_str):
     # Some tests parse correctly as a DER sequence but produce extra values.
     # These tests should be reject for a bad DER-encoded signature
     if len(seq) != 2:
-        raise ValueError("Failed to parse DER-encoded signature into r and s values")
+        raise ValueError(
+            "Failed to parse DER-encoded signature into r and s values")
     return seq
 
 
@@ -62,10 +63,14 @@ def parse_test_vectors(raw_data):
             try:
                 signature_seq = _parse_der_signature(test["sig"])
             except ValueError:
-                logging.info(f"Skipped tcId {test['tcId']}: ValueError while parsing DER sequence.")
+                logging.info(
+                    f"Skipped tcId {test['tcId']}: ValueError while parsing DER sequence."
+                )
                 continue
             except IndexError:
-                logging.info(f"Skipped tcId {test['tcId']}: IndexError while parsing DER sequence.")
+                logging.info(
+                    f"Skipped tcId {test['tcId']}: IndexError while parsing DER sequence."
+                )
                 continue
 
             test_vec["r"], test_vec["s"] = signature_seq
@@ -88,23 +93,15 @@ def parse_test_vectors(raw_data):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        '--src',
-        metavar='FILE',
-        type=argparse.FileType('r'),
-        help='Read test vectors from this JSON file.'
-    )
-    parser.add_argument(
-        '--dst',
-        metavar='FILE',
-        type=argparse.FileType('w'),
-        help='Write output to this file.'
-    )
-    parser.add_argument(
-        "--schema",
-        type = str,
-        help = "Testvector schema file"
-    )
+    parser.add_argument('--src',
+                        metavar='FILE',
+                        type=argparse.FileType('r'),
+                        help='Read test vectors from this JSON file.')
+    parser.add_argument('--dst',
+                        metavar='FILE',
+                        type=argparse.FileType('w'),
+                        help='Write output to this file.')
+    parser.add_argument("--schema", type=str, help="Testvector schema file")
     args = parser.parse_args()
 
     testvecs = parse_test_vectors(json.load(args.src))
