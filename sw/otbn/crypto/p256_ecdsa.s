@@ -103,17 +103,26 @@ ecdsa_sign:
 /**
  * Verify a signature.
  *
+ * The result of the verification is returned in two variables: `ok`
+ * indicates whether the signature passed basic validity checks, and `x_r`
+ * indicates the recovered value. A signature passes verification only if BOTH:
+ * - `ok` is true, and
+ * - `x_r` is equal to the original `r` value.
+ *
+ * If `ok` is false, the value in `x_r` is meaningless; callers
+ * should check both.
+ *
  * @param[in]  dmem[msg]: message to be verified (256 bits)
  * @param[in]  dmem[r]:   r component of signature (256 bits)
  * @param[in]  dmem[s]:   s component of signature (256 bits)
  * @param[in]  dmem[x]:   affine x-coordinate of public key (256 bits)
  * @param[in]  dmem[y]:   affine y-coordinate of public key (256 bits)
+ * @param[out] dmem[ok]:  success/failure of basic checks (32 bits)
  * @param[out] dmem[x_r]: dmem buffer for reduced affine x_r-coordinate (x_1)
  */
 ecdsa_verify:
-  /* Validate the public key (jumps back here if successful). */
-  jal      x0, check_public_key_valid
-  _pk_valid:
+  /* Validate the public key (ends the program on failure). */
+  jal      x1, p256_check_public_key
 
   /* Verify the signature (compute x_r). */
   jal      x1, p256_verify
@@ -194,94 +203,18 @@ secret_key_from_seed:
 
   ret
 
-/**
- * Check if a provided public key is valid.
- *
- * For a given public key (x, y), check that:
- * - x and y are both fully reduced mod p
- * - (x, y) is on the P-256 curve.
- *
- * Note that, because the point is in affine form, it is not possible that (x,
- * y) is the point at infinity. In some other forms such as projective
- * coordinates, we would need to check for this also.
- *
- * This routine raises a software error and halts operation if the public key
- * is invalid.
- *
- * @param[in] dmem[x]: Public key x-coordinate.
- * @param[in] dmem[y]: Public key y-coordinate.
- */
-check_public_key_valid:
-  /* Init all-zero register. */
-  bn.xor   w31, w31, w31
-
-  /* Load domain parameter p.
-       w29 <= dmem[p256_p] = p */
-  li        x2, 29
-  la        x3, p256_p
-  bn.lid    x2, 0(x3)
-
-  /* Load public key x-coordinate.
-       w2 <= dmem[x] = x */
-  li        x2, 2
-  la        x3, x
-  bn.lid    x2, 0(x3)
-
-  /* Compare x to p.
-       FG0.C <= (x < p) */
-  bn.cmp    w2, w29
-
-  /* Trigger a fault if FG0.C is false. */
-  csrrs     x2, FG0, x0
-  andi      x2, x2, 1
-  bne       x2, x0, _x_valid
-  unimp
-
-  _x_valid:
-
-  /* Load public key y-coordinate.
-       w2 <= dmem[y] = y */
-  li        x2, 2
-  la        x3, y
-  bn.lid    x2, 0(x3)
-
-  /* Compare y to p.
-       FG0.C <= (y < p) */
-  bn.cmp    w2, w29
-
-  /* Trigger a fault if FG0.C is false. */
-  csrrs     x2, FG0, x0
-  andi      x2, x2, 1
-  bne       x2, x0, _y_valid
-  unimp
-
-  _y_valid:
-
-  /* Compute both sides of the Weierstrauss equation.
-       w18 <= (x^3 + ax + b) mod p
-       w19 <= (y^2) mod p */
-  jal      x1, p256_isoncurve
-
-  /* Compare the two sides of the equation.
-       FG0.Z <= (y^2) mod p == (x^2 + ax + b) mod p */
-  bn.cmp    w18, w19
-
-  /* Trigger a fault if FG0.Z is false; otherwise jump back to the single call
-     site. */
-  csrrs     x2, FG0, x0
-  srli      x2, x2, 3
-  andi      x2, x2, 1
-  bne       x2, x0, _pk_valid
-  unimp
-  unimp
-  unimp
-
 .bss
 
 /* Operation mode. */
 .globl mode
 .balign 4
 mode:
+  .zero 4
+
+/* Success code for basic validity checks on the public key and signature. */
+.globl ok
+.balign 4
+ok:
   .zero 4
 
 /* Message digest. */

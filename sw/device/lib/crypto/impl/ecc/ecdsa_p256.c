@@ -25,6 +25,7 @@ OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa,
 OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa,
                          d1);  // The private key scalar d (share 1).
 OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, x_r);  // Verification result.
+OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, ok);   // Status code.
 
 static const otbn_app_t kOtbnAppEcdsa = OTBN_APP_T_INIT(p256_ecdsa);
 static const otbn_addr_t kOtbnVarEcdsaMode = OTBN_ADDR_T_INIT(p256_ecdsa, mode);
@@ -36,6 +37,7 @@ static const otbn_addr_t kOtbnVarEcdsaY = OTBN_ADDR_T_INIT(p256_ecdsa, y);
 static const otbn_addr_t kOtbnVarEcdsaD0 = OTBN_ADDR_T_INIT(p256_ecdsa, d0);
 static const otbn_addr_t kOtbnVarEcdsaD1 = OTBN_ADDR_T_INIT(p256_ecdsa, d1);
 static const otbn_addr_t kOtbnVarEcdsaXr = OTBN_ADDR_T_INIT(p256_ecdsa, x_r);
+static const otbn_addr_t kOtbnVarEcdsaOk = OTBN_ADDR_T_INIT(p256_ecdsa, ok);
 
 enum {
   /*
@@ -164,6 +166,15 @@ status_t ecdsa_p256_verify_finalize(const ecdsa_p256_signature_t *signature,
                                     hardened_bool_t *result) {
   // Spin here waiting for OTBN to complete.
   HARDENED_TRY(otbn_busy_wait_for_done());
+
+  // Read the status code out of DMEM (false if basic checks on the validity of
+  // the signature and public key failed).
+  uint32_t ok;
+  HARDENED_TRY(otbn_dmem_read(1, kOtbnVarEcdsaOk, &ok));
+  if (launder32(ok) != kHardenedBoolTrue) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(ok, kHardenedBoolTrue);
 
   // Read x_r (recovered R) out of OTBN dmem.
   uint32_t x_r[kP256ScalarWords];
