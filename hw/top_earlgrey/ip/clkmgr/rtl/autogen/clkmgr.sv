@@ -113,6 +113,36 @@
   import prim_mubi_pkg::mubi4_test_true_loose;
   import prim_mubi_pkg::mubi4_test_false_strict;
 
+  // Hookup point for OCC's on root clocks.
+  logic clk_main;
+  prim_clock_buf #(
+    .NoFpgaBuf(1'b1)
+  ) u_clk_main_buf (
+    .clk_i(clk_main_i),
+    .clk_o(clk_main)
+  );
+  logic clk_io;
+  prim_clock_buf #(
+    .NoFpgaBuf(1'b1)
+  ) u_clk_io_buf (
+    .clk_i(clk_io_i),
+    .clk_o(clk_io)
+  );
+  logic clk_usb;
+  prim_clock_buf #(
+    .NoFpgaBuf(1'b1)
+  ) u_clk_usb_buf (
+    .clk_i(clk_usb_i),
+    .clk_o(clk_usb)
+  );
+  logic clk_aon;
+  prim_clock_buf #(
+    .NoFpgaBuf(1'b1)
+  ) u_clk_aon_buf (
+    .clk_i(clk_aon_i),
+    .clk_o(clk_aon)
+  );
+
   ////////////////////////////////////////////////////
   // External step down request
   ////////////////////////////////////////////////////
@@ -123,7 +153,7 @@
     .StabilityCheck(1),
     .ResetValue(MuBi4False)
   ) u_io_step_down_req_sync (
-    .clk_i(clk_io_i),
+    .clk_i(clk_io),
     .rst_ni(rst_io_ni),
     .mubi_i(div_step_down_req_i),
     .mubi_o({io_step_down_req})
@@ -139,8 +169,8 @@
 
   logic [1:0] step_down_acks;
 
-  logic clk_io_div2_i;
-  logic clk_io_div4_i;
+  logic clk_io_div2;
+  logic clk_io_div4;
 
 
   // Declared as size 1 packed array to avoid FPV warning.
@@ -158,12 +188,13 @@
   prim_clock_div #(
     .Divisor(2)
   ) u_no_scan_io_div2_div (
+    // We're using the pre-occ hookup (*_i) version for clock derivation.
     .clk_i(clk_io_i),
     .rst_ni(rst_root_io_ni),
     .step_down_req_i(mubi4_test_true_strict(io_step_down_req)),
     .step_down_ack_o(step_down_acks[0]),
     .test_en_i(mubi4_test_true_strict(io_div2_div_scanmode[0])),
-    .clk_o(clk_io_div2_i)
+    .clk_o(clk_io_div2)
   );
 
   // Declared as size 1 packed array to avoid FPV warning.
@@ -181,12 +212,13 @@
   prim_clock_div #(
     .Divisor(4)
   ) u_no_scan_io_div4_div (
+    // We're using the pre-occ hookup (*_i) version for clock derivation.
     .clk_i(clk_io_i),
     .rst_ni(rst_root_io_ni),
     .step_down_req_i(mubi4_test_true_strict(io_step_down_req)),
     .step_down_ack_o(step_down_acks[1]),
     .test_en_i(mubi4_test_true_strict(io_div4_div_scanmode[0])),
-    .clk_o(clk_io_div4_i)
+    .clk_o(clk_io_div4)
   );
 
   ////////////////////////////////////////////////////
@@ -204,15 +236,15 @@
     .clk_i,
     .rst_ni,
     .rst_shadowed_ni,
-    .clk_io_i,
+    .clk_io_i(clk_io),
     .rst_io_ni,
-    .clk_io_div2_i,
+    .clk_io_div2_i(clk_io_div2),
     .rst_io_div2_ni,
-    .clk_io_div4_i,
+    .clk_io_div4_i(clk_io_div4),
     .rst_io_div4_ni,
-    .clk_main_i,
+    .clk_main_i(clk_main),
     .rst_main_ni,
-    .clk_usb_i,
+    .clk_usb_i(clk_usb),
     .rst_usb_ni,
     .tl_i,
     .tl_o,
@@ -311,63 +343,63 @@
   // bundling management purposes through clocks_o
   ////////////////////////////////////////////////////
   prim_clock_buf u_clk_io_div4_powerup_buf (
-    .clk_i(clk_io_div4_i),
+    .clk_i(clk_io_div4),
     .clk_o(clocks_o.clk_io_div4_powerup)
   );
 
   // clock gated indication for alert handler: these clocks are never gated.
   assign cg_en_o.io_div4_powerup = MuBi4False;
   prim_clock_buf u_clk_aon_powerup_buf (
-    .clk_i(clk_aon_i),
+    .clk_i(clk_aon),
     .clk_o(clocks_o.clk_aon_powerup)
   );
 
   // clock gated indication for alert handler: these clocks are never gated.
   assign cg_en_o.aon_powerup = MuBi4False;
   prim_clock_buf u_clk_main_powerup_buf (
-    .clk_i(clk_main_i),
+    .clk_i(clk_main),
     .clk_o(clocks_o.clk_main_powerup)
   );
 
   // clock gated indication for alert handler: these clocks are never gated.
   assign cg_en_o.main_powerup = MuBi4False;
   prim_clock_buf u_clk_io_powerup_buf (
-    .clk_i(clk_io_i),
+    .clk_i(clk_io),
     .clk_o(clocks_o.clk_io_powerup)
   );
 
   // clock gated indication for alert handler: these clocks are never gated.
   assign cg_en_o.io_powerup = MuBi4False;
   prim_clock_buf u_clk_usb_powerup_buf (
-    .clk_i(clk_usb_i),
+    .clk_i(clk_usb),
     .clk_o(clocks_o.clk_usb_powerup)
   );
 
   // clock gated indication for alert handler: these clocks are never gated.
   assign cg_en_o.usb_powerup = MuBi4False;
   prim_clock_buf u_clk_io_div2_powerup_buf (
-    .clk_i(clk_io_div2_i),
+    .clk_i(clk_io_div2),
     .clk_o(clocks_o.clk_io_div2_powerup)
   );
 
   // clock gated indication for alert handler: these clocks are never gated.
   assign cg_en_o.io_div2_powerup = MuBi4False;
   prim_clock_buf u_clk_aon_secure_buf (
-    .clk_i(clk_aon_i),
+    .clk_i(clk_aon),
     .clk_o(clocks_o.clk_aon_secure)
   );
 
   // clock gated indication for alert handler: these clocks are never gated.
   assign cg_en_o.aon_secure = MuBi4False;
   prim_clock_buf u_clk_aon_peri_buf (
-    .clk_i(clk_aon_i),
+    .clk_i(clk_aon),
     .clk_o(clocks_o.clk_aon_peri)
   );
 
   // clock gated indication for alert handler: these clocks are never gated.
   assign cg_en_o.aon_peri = MuBi4False;
   prim_clock_buf u_clk_aon_timers_buf (
-    .clk_i(clk_aon_i),
+    .clk_i(clk_aon),
     .clk_o(clocks_o.clk_aon_timers)
   );
 
@@ -401,7 +433,7 @@
   logic clk_main_en;
   logic clk_main_root;
   clkmgr_root_ctrl u_main_root_ctrl (
-    .clk_i(clk_main_i),
+    .clk_i(clk_main),
     .rst_ni(rst_root_main_ni),
     .scanmode_i,
     .async_en_i(pwrmgr_main_en),
@@ -426,7 +458,7 @@
   logic clk_io_en;
   logic clk_io_root;
   clkmgr_root_ctrl u_io_root_ctrl (
-    .clk_i(clk_io_i),
+    .clk_i(clk_io),
     .rst_ni(rst_root_io_ni),
     .scanmode_i,
     .async_en_i(pwrmgr_io_en),
@@ -438,7 +470,7 @@
   logic clk_io_div2_en;
   logic clk_io_div2_root;
   clkmgr_root_ctrl u_io_div2_root_ctrl (
-    .clk_i(clk_io_div2_i),
+    .clk_i(clk_io_div2),
     .rst_ni(rst_root_io_div2_ni),
     .scanmode_i,
     .async_en_i(pwrmgr_io_div2_en),
@@ -450,7 +482,7 @@
   logic clk_io_div4_en;
   logic clk_io_div4_root;
   clkmgr_root_ctrl u_io_div4_root_ctrl (
-    .clk_i(clk_io_div4_i),
+    .clk_i(clk_io_div4),
     .rst_ni(rst_root_io_div4_ni),
     .scanmode_i,
     .async_en_i(pwrmgr_io_div4_en),
@@ -475,7 +507,7 @@
   logic clk_usb_en;
   logic clk_usb_root;
   clkmgr_root_ctrl u_usb_root_ctrl (
-    .clk_i(clk_usb_i),
+    .clk_i(clk_usb),
     .rst_ni(rst_root_usb_ni),
     .scanmode_i,
     .async_en_i(pwrmgr_usb_en),
@@ -538,9 +570,9 @@
   ) u_io_meas (
     .clk_i,
     .rst_ni,
-    .clk_src_i(clk_io_i),
+    .clk_src_i(clk_io),
     .rst_src_ni(rst_io_ni),
-    .clk_ref_i(clk_aon_i),
+    .clk_ref_i(clk_aon),
     .rst_ref_ni(rst_aon_ni),
     // signals on source domain
     .src_en_i(clk_io_en & mubi4_test_true_loose(mubi4_t'(reg2hw.io_meas_ctrl_en))),
@@ -565,9 +597,9 @@
   ) u_io_div2_meas (
     .clk_i,
     .rst_ni,
-    .clk_src_i(clk_io_div2_i),
+    .clk_src_i(clk_io_div2),
     .rst_src_ni(rst_io_div2_ni),
-    .clk_ref_i(clk_aon_i),
+    .clk_ref_i(clk_aon),
     .rst_ref_ni(rst_aon_ni),
     // signals on source domain
     .src_en_i(clk_io_div2_en & mubi4_test_true_loose(mubi4_t'(reg2hw.io_div2_meas_ctrl_en))),
@@ -592,9 +624,9 @@
   ) u_io_div4_meas (
     .clk_i,
     .rst_ni,
-    .clk_src_i(clk_io_div4_i),
+    .clk_src_i(clk_io_div4),
     .rst_src_ni(rst_io_div4_ni),
-    .clk_ref_i(clk_aon_i),
+    .clk_ref_i(clk_aon),
     .rst_ref_ni(rst_aon_ni),
     // signals on source domain
     .src_en_i(clk_io_div4_en & mubi4_test_true_loose(mubi4_t'(reg2hw.io_div4_meas_ctrl_en))),
@@ -619,9 +651,9 @@
   ) u_main_meas (
     .clk_i,
     .rst_ni,
-    .clk_src_i(clk_main_i),
+    .clk_src_i(clk_main),
     .rst_src_ni(rst_main_ni),
-    .clk_ref_i(clk_aon_i),
+    .clk_ref_i(clk_aon),
     .rst_ref_ni(rst_aon_ni),
     // signals on source domain
     .src_en_i(clk_main_en & mubi4_test_true_loose(mubi4_t'(reg2hw.main_meas_ctrl_en))),
@@ -646,9 +678,9 @@
   ) u_usb_meas (
     .clk_i,
     .rst_ni,
-    .clk_src_i(clk_usb_i),
+    .clk_src_i(clk_usb),
     .rst_src_ni(rst_usb_ni),
-    .clk_ref_i(clk_aon_i),
+    .clk_ref_i(clk_aon),
     .rst_ref_ni(rst_aon_ni),
     // signals on source domain
     .src_en_i(clk_usb_en & mubi4_test_true_loose(mubi4_t'(reg2hw.usb_meas_ctrl_en))),
@@ -676,7 +708,7 @@
   prim_mubi4_sender #(
     .ResetValue(MuBi4True)
   ) u_prim_mubi4_sender_clk_io_div4_infra (
-    .clk_i(clk_io_div4_i),
+    .clk_i(clk_io_div4),
     .rst_ni(rst_io_div4_ni),
     .mubi_i(((clk_io_div4_en) ? MuBi4False : MuBi4True)),
     .mubi_o(cg_en_o.io_div4_infra)
@@ -687,7 +719,7 @@
   prim_mubi4_sender #(
     .ResetValue(MuBi4True)
   ) u_prim_mubi4_sender_clk_main_infra (
-    .clk_i(clk_main_i),
+    .clk_i(clk_main),
     .rst_ni(rst_main_ni),
     .mubi_i(((clk_main_en) ? MuBi4False : MuBi4True)),
     .mubi_o(cg_en_o.main_infra)
@@ -698,7 +730,7 @@
   prim_mubi4_sender #(
     .ResetValue(MuBi4True)
   ) u_prim_mubi4_sender_clk_usb_infra (
-    .clk_i(clk_usb_i),
+    .clk_i(clk_usb),
     .rst_ni(rst_usb_ni),
     .mubi_i(((clk_usb_en) ? MuBi4False : MuBi4True)),
     .mubi_o(cg_en_o.usb_infra)
@@ -709,7 +741,7 @@
   prim_mubi4_sender #(
     .ResetValue(MuBi4True)
   ) u_prim_mubi4_sender_clk_io_infra (
-    .clk_i(clk_io_i),
+    .clk_i(clk_io),
     .rst_ni(rst_io_ni),
     .mubi_i(((clk_io_en) ? MuBi4False : MuBi4True)),
     .mubi_o(cg_en_o.io_infra)
@@ -720,7 +752,7 @@
   prim_mubi4_sender #(
     .ResetValue(MuBi4True)
   ) u_prim_mubi4_sender_clk_io_div2_infra (
-    .clk_i(clk_io_div2_i),
+    .clk_i(clk_io_div2),
     .rst_ni(rst_io_div2_ni),
     .mubi_i(((clk_io_div2_en) ? MuBi4False : MuBi4True)),
     .mubi_o(cg_en_o.io_div2_infra)
@@ -731,7 +763,7 @@
   prim_mubi4_sender #(
     .ResetValue(MuBi4True)
   ) u_prim_mubi4_sender_clk_io_div4_secure (
-    .clk_i(clk_io_div4_i),
+    .clk_i(clk_io_div4),
     .rst_ni(rst_io_div4_ni),
     .mubi_i(((clk_io_div4_en) ? MuBi4False : MuBi4True)),
     .mubi_o(cg_en_o.io_div4_secure)
@@ -742,7 +774,7 @@
   prim_mubi4_sender #(
     .ResetValue(MuBi4True)
   ) u_prim_mubi4_sender_clk_main_secure (
-    .clk_i(clk_main_i),
+    .clk_i(clk_main),
     .rst_ni(rst_main_ni),
     .mubi_i(((clk_main_en) ? MuBi4False : MuBi4True)),
     .mubi_o(cg_en_o.main_secure)
@@ -753,7 +785,7 @@
   prim_mubi4_sender #(
     .ResetValue(MuBi4True)
   ) u_prim_mubi4_sender_clk_io_div4_timers (
-    .clk_i(clk_io_div4_i),
+    .clk_i(clk_io_div4),
     .rst_ni(rst_io_div4_ni),
     .mubi_i(((clk_io_div4_en) ? MuBi4False : MuBi4True)),
     .mubi_o(cg_en_o.io_div4_timers)
@@ -771,7 +803,7 @@
   prim_flop_2sync #(
     .Width(1)
   ) u_clk_io_div4_peri_sw_en_sync (
-    .clk_i(clk_io_div4_i),
+    .clk_i(clk_io_div4),
     .rst_ni(rst_io_div4_ni),
     .d_i(reg2hw.clk_enables.clk_io_div4_peri_en.q),
     .q_o(clk_io_div4_peri_sw_en)
@@ -794,7 +826,7 @@
   prim_clock_gating #(
     .FpgaBufGlobal(1'b1) // This clock spans across multiple clock regions.
   ) u_clk_io_div4_peri_cg (
-    .clk_i(clk_io_div4_i),
+    .clk_i(clk_io_div4),
     .en_i(clk_io_div4_peri_combined_en),
     .test_en_i(mubi4_test_true_strict(clk_io_div4_peri_scanmode[0])),
     .clk_o(clocks_o.clk_io_div4_peri)
@@ -804,7 +836,7 @@
   prim_mubi4_sender #(
     .ResetValue(MuBi4True)
   ) u_prim_mubi4_sender_clk_io_div4_peri (
-    .clk_i(clk_io_div4_i),
+    .clk_i(clk_io_div4),
     .rst_ni(rst_io_div4_ni),
     .mubi_i(((clk_io_div4_peri_combined_en) ? MuBi4False : MuBi4True)),
     .mubi_o(cg_en_o.io_div4_peri)
@@ -813,7 +845,7 @@
   prim_flop_2sync #(
     .Width(1)
   ) u_clk_io_div2_peri_sw_en_sync (
-    .clk_i(clk_io_div2_i),
+    .clk_i(clk_io_div2),
     .rst_ni(rst_io_div2_ni),
     .d_i(reg2hw.clk_enables.clk_io_div2_peri_en.q),
     .q_o(clk_io_div2_peri_sw_en)
@@ -836,7 +868,7 @@
   prim_clock_gating #(
     .FpgaBufGlobal(1'b1) // This clock spans across multiple clock regions.
   ) u_clk_io_div2_peri_cg (
-    .clk_i(clk_io_div2_i),
+    .clk_i(clk_io_div2),
     .en_i(clk_io_div2_peri_combined_en),
     .test_en_i(mubi4_test_true_strict(clk_io_div2_peri_scanmode[0])),
     .clk_o(clocks_o.clk_io_div2_peri)
@@ -846,7 +878,7 @@
   prim_mubi4_sender #(
     .ResetValue(MuBi4True)
   ) u_prim_mubi4_sender_clk_io_div2_peri (
-    .clk_i(clk_io_div2_i),
+    .clk_i(clk_io_div2),
     .rst_ni(rst_io_div2_ni),
     .mubi_i(((clk_io_div2_peri_combined_en) ? MuBi4False : MuBi4True)),
     .mubi_o(cg_en_o.io_div2_peri)
@@ -855,7 +887,7 @@
   prim_flop_2sync #(
     .Width(1)
   ) u_clk_io_peri_sw_en_sync (
-    .clk_i(clk_io_i),
+    .clk_i(clk_io),
     .rst_ni(rst_io_ni),
     .d_i(reg2hw.clk_enables.clk_io_peri_en.q),
     .q_o(clk_io_peri_sw_en)
@@ -878,7 +910,7 @@
   prim_clock_gating #(
     .FpgaBufGlobal(1'b1) // This clock spans across multiple clock regions.
   ) u_clk_io_peri_cg (
-    .clk_i(clk_io_i),
+    .clk_i(clk_io),
     .en_i(clk_io_peri_combined_en),
     .test_en_i(mubi4_test_true_strict(clk_io_peri_scanmode[0])),
     .clk_o(clocks_o.clk_io_peri)
@@ -888,7 +920,7 @@
   prim_mubi4_sender #(
     .ResetValue(MuBi4True)
   ) u_prim_mubi4_sender_clk_io_peri (
-    .clk_i(clk_io_i),
+    .clk_i(clk_io),
     .rst_ni(rst_io_ni),
     .mubi_i(((clk_io_peri_combined_en) ? MuBi4False : MuBi4True)),
     .mubi_o(cg_en_o.io_peri)
@@ -897,7 +929,7 @@
   prim_flop_2sync #(
     .Width(1)
   ) u_clk_usb_peri_sw_en_sync (
-    .clk_i(clk_usb_i),
+    .clk_i(clk_usb),
     .rst_ni(rst_usb_ni),
     .d_i(reg2hw.clk_enables.clk_usb_peri_en.q),
     .q_o(clk_usb_peri_sw_en)
@@ -920,7 +952,7 @@
   prim_clock_gating #(
     .FpgaBufGlobal(1'b1) // This clock spans across multiple clock regions.
   ) u_clk_usb_peri_cg (
-    .clk_i(clk_usb_i),
+    .clk_i(clk_usb),
     .en_i(clk_usb_peri_combined_en),
     .test_en_i(mubi4_test_true_strict(clk_usb_peri_scanmode[0])),
     .clk_o(clocks_o.clk_usb_peri)
@@ -930,7 +962,7 @@
   prim_mubi4_sender #(
     .ResetValue(MuBi4True)
   ) u_prim_mubi4_sender_clk_usb_peri (
-    .clk_i(clk_usb_i),
+    .clk_i(clk_usb),
     .rst_ni(rst_usb_ni),
     .mubi_i(((clk_usb_peri_combined_en) ? MuBi4False : MuBi4True)),
     .mubi_o(cg_en_o.usb_peri)
@@ -948,7 +980,7 @@
   clkmgr_trans #(
     .FpgaBufGlobal(1'b0) // This clock is used primarily locally.
   ) u_clk_main_aes_trans (
-    .clk_i(clk_main_i),
+    .clk_i(clk_main),
     .clk_gated_i(clk_main_root),
     .rst_ni(rst_main_ni),
     .en_i(clk_main_en),
@@ -970,7 +1002,7 @@
   clkmgr_trans #(
     .FpgaBufGlobal(1'b0) // This clock is used primarily locally.
   ) u_clk_main_hmac_trans (
-    .clk_i(clk_main_i),
+    .clk_i(clk_main),
     .clk_gated_i(clk_main_root),
     .rst_ni(rst_main_ni),
     .en_i(clk_main_en),
@@ -992,7 +1024,7 @@
   clkmgr_trans #(
     .FpgaBufGlobal(1'b1) // KMAC is getting too big for a single clock region.
   ) u_clk_main_kmac_trans (
-    .clk_i(clk_main_i),
+    .clk_i(clk_main),
     .clk_gated_i(clk_main_root),
     .rst_ni(rst_main_ni),
     .en_i(clk_main_en),
@@ -1014,7 +1046,7 @@
   clkmgr_trans #(
     .FpgaBufGlobal(1'b0) // This clock is used primarily locally.
   ) u_clk_main_otbn_trans (
-    .clk_i(clk_main_i),
+    .clk_i(clk_main),
     .clk_gated_i(clk_main_root),
     .rst_ni(rst_main_ni),
     .en_i(clk_main_en),
