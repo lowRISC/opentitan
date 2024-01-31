@@ -8,18 +8,25 @@
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
+#include "sw/device/lib/testing/sysrst_ctrl_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
+#include "sw/device/lib/testing/test_framework/ottf_utils.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-OTTF_DEFINE_TEST_CONFIG();
+/* We need control flow for the ujson messages exchanged
+ * with the host in OTTF_WAIT_FOR on real devices. */
+OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 
 static dif_pinmux_t pinmux;
 static dif_sysrst_ctrl_t sysrst_ctrl;
 static dif_flash_ctrl_state_t flash;
 
-const uint32_t kTestPhaseTimeoutUsec = 100;
+enum {
+  kTestPhaseTimeoutUsecDV = 100,
+  kTestPhaseTimeoutUsecReal = 1000000,
+};
 
 enum {
   kTestPhaseSetup = 0,
@@ -48,11 +55,18 @@ static const dif_pinmux_index_t kPeripheralInputs[] = {
     kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonPwrbIn,
 };
 
-static const dif_pinmux_index_t kInputPads[] = {
+static const dif_pinmux_index_t kInputPadsDV[] = {
     kTopEarlgreyPinmuxInselIob3,
     kTopEarlgreyPinmuxInselIob6,
     kTopEarlgreyPinmuxInselIob8,
     kTopEarlgreyPinmuxInselIor13,
+};
+
+static const dif_pinmux_index_t kInputPadsReal[] = {
+    kTopEarlgreyPinmuxInselIor10,
+    kTopEarlgreyPinmuxInselIor11,
+    kTopEarlgreyPinmuxInselIor12,
+    kTopEarlgreyPinmuxInselIor5,
 };
 
 static const dif_pinmux_index_t kPeripheralOutputs[] = {
@@ -64,10 +78,15 @@ static const dif_pinmux_index_t kPeripheralOutputs[] = {
     kTopEarlgreyPinmuxOutselSysrstCtrlAonZ3Wakeup,
 };
 
-static const dif_pinmux_index_t kOutputPads[] = {
+static const dif_pinmux_index_t kOutputPadsDV[] = {
     kTopEarlgreyPinmuxMioOutIob9, kTopEarlgreyPinmuxMioOutIor5,
     kTopEarlgreyPinmuxMioOutIor6, kTopEarlgreyPinmuxMioOutIoc7,
     kTopEarlgreyPinmuxMioOutIoc9, kTopEarlgreyPinmuxMioOutIob7,
+};
+static const dif_pinmux_index_t kOutputPadsReal[] = {
+    kTopEarlgreyPinmuxMioOutIor6, kTopEarlgreyPinmuxMioOutIor7,
+    kTopEarlgreyPinmuxMioOutIob0, kTopEarlgreyPinmuxMioOutIob1,
+    kTopEarlgreyPinmuxMioOutIob2, kTopEarlgreyPinmuxMioOutIob3,
 };
 
 static const dif_sysrst_ctrl_pin_t kSysrstCtrlOutputs[] = {
@@ -77,16 +96,29 @@ static const dif_sysrst_ctrl_pin_t kSysrstCtrlOutputs[] = {
     kDifSysrstCtrlPinEcResetInOut,      kDifSysrstCtrlPinFlashWriteProtectInOut,
 };
 
-// Test phase written by testbench.
-static volatile const uint8_t kTestPhase[1] = {0};
+// Test phase written by testbench/host.
+// On DV, we must use variables in flash but on a real device,
+// we must use variables in RAM.
+OT_SECTION(".rodata")
+static volatile const uint8_t kTestPhaseDV = 0;
+OT_SECTION(".data")
+static volatile const uint8_t kTestPhaseReal = kTestPhaseSetup;
 
 // Sets up the pinmux to assign input and output pads
 // to the sysrst_ctrl peripheral as required.
 static void pinmux_setup(void) {
+  /* On real devices, we also need to configure the DIO pins */
+  if (kDeviceType != kDeviceSimDV) {
+    setup_dio_pins(&pinmux, &sysrst_ctrl);
+  }
+  const dif_pinmux_index_t *kInputPads =
+      kDeviceType == kDeviceSimDV ? kInputPadsDV : kInputPadsReal;
   for (int i = 0; i < kNumMioInputs; ++i) {
     CHECK_DIF_OK(
         dif_pinmux_input_select(&pinmux, kPeripheralInputs[i], kInputPads[i]));
   }
+  const dif_pinmux_index_t *kOutputPads =
+      kDeviceType == kDeviceSimDV ? kOutputPadsDV : kOutputPadsReal;
   for (int i = 0; i < kNumMioOutputs; ++i) {
     CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kOutputPads[i],
                                           kPeripheralOutputs[i]));
@@ -96,16 +128,20 @@ static void pinmux_setup(void) {
 // Waits for the kTestPhase variable to be changed by a backdoor overwrite
 // from the testbench in `chip_sw_sysrst_ctrl_ec_rst_l_vseq.sv`. This will
 // indicate that the testbench is ready to proceed with the next phase of the
-// test. The function `flash_ctrl_testutils_backdoor_wait_update` it's used to
+// test. The function `flash_ctrl_testutils_backdoor_wait_update` is used to
 // deal with possible caching that can prevent the software to read the new
-// value of `kTestPhase`.
+// value of `kTestPhase` (in DV).
 static void sync_with_testbench(uint8_t prior_phase) {
   // Set WFI status for testbench synchronization,
   // no actual WFI instruction is issued.
   test_status_set(kTestStatusInWfi);
   test_status_set(kTestStatusInTest);
-  CHECK_STATUS_OK(flash_ctrl_testutils_backdoor_wait_update(
-      &kTestPhase[0], prior_phase, kTestPhaseTimeoutUsec));
+  if (kDeviceType == kDeviceSimDV) {
+    CHECK_STATUS_OK(flash_ctrl_testutils_backdoor_wait_update(
+        &kTestPhaseDV, prior_phase, kTestPhaseTimeoutUsecDV));
+  } else {
+    OTTF_WAIT_FOR(prior_phase != kTestPhaseReal, kTestPhaseTimeoutUsecReal);
+  }
 }
 
 // Enables the sysrst_ctrl overrides for the output pins. Allows
@@ -144,9 +180,13 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_sysrst_ctrl_init(
       mmio_region_from_addr(TOP_EARLGREY_SYSRST_CTRL_AON_BASE_ADDR),
       &sysrst_ctrl));
-  CHECK_STATUS_OK(flash_ctrl_testutils_backdoor_init(&flash));
+  if (kDeviceType == kDeviceSimDV) {
+    CHECK_STATUS_OK(flash_ctrl_testutils_backdoor_init(&flash));
+  }
 
-  uint8_t current_test_phase = kTestPhase[0];
+  const volatile uint8_t *kTestPhase =
+      kDeviceType == kDeviceSimDV ? &kTestPhaseDV : &kTestPhaseReal;
+  uint8_t current_test_phase = *kTestPhase;
   while (current_test_phase < kTestPhaseDone) {
     LOG_INFO("Test phase %d", current_test_phase);
     switch (current_test_phase) {
@@ -172,11 +212,11 @@ bool test_main(void) {
         set_output_overrides(kLoopbackPartial);
         break;
       default:
-        LOG_ERROR("Unexpected test phase : %d", kTestPhase[0]);
+        LOG_ERROR("Unexpected test phase : %d", *kTestPhase);
         break;
     }
     sync_with_testbench(current_test_phase);
-    current_test_phase = kTestPhase[0];
+    current_test_phase = *kTestPhase;
   }
   return true;
 }
