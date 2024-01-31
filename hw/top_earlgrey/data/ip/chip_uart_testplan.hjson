@@ -103,6 +103,7 @@
       si_stage: SV3
       features: ["UART.LINE_LOOPBACK"]
       tests: []
+	  bazel: ["//sw/device/tests:uart_loopback_test"]
     },
     {
       name: chip_sw_uart_system_loopback
@@ -116,6 +117,7 @@
       si_stage: SV3
       features: ["UART.SYSTEM_LOOPBACK"]
       tests: []
+	  bazel: ["//sw/device/tests:uart_loopback_test"]
     },
     {
       name: chip_sw_uart_line_break
