@@ -100,7 +100,10 @@ cc_library(
 cc_library(
     name = "sha3_sca",
     srcs = ["sha3_sca.c"],
-    hdrs = ["sha3_sca.h"],
+    hdrs = [
+        "sha3_sca.h",
+        "status.h",
+    ],
     deps = [
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
