@@ -59,6 +59,7 @@ module otp_ctrl
   // Lifecycle broadcast inputs
   // SEC_CM: LC_CTRL.INTERSIG.MUBI
   input  lc_ctrl_pkg::lc_tx_t                        lc_creator_seed_sw_rw_en_i,
+  input  lc_ctrl_pkg::lc_tx_t                        lc_owner_seed_sw_rw_en_i,
   input  lc_ctrl_pkg::lc_tx_t                        lc_seed_hw_rd_en_i,
   input  lc_ctrl_pkg::lc_tx_t                        lc_dft_en_i,
   input  lc_ctrl_pkg::lc_tx_t                        lc_escalate_en_i,
@@ -139,7 +140,8 @@ module otp_ctrl
   // Life Cycle Signal Synchronization //
   ///////////////////////////////////////
 
-  lc_ctrl_pkg::lc_tx_t       lc_creator_seed_sw_rw_en, lc_seed_hw_rd_en, lc_check_byp_en;
+  lc_ctrl_pkg::lc_tx_t       lc_creator_seed_sw_rw_en, lc_owner_seed_sw_rw_en,
+                             lc_seed_hw_rd_en, lc_check_byp_en;
   lc_ctrl_pkg::lc_tx_t [2:0] lc_dft_en;
   // NumAgents + lfsr timer and scrambling datapath.
   lc_ctrl_pkg::lc_tx_t [NumAgentsIdx+1:0] lc_escalate_en, lc_escalate_en_synced;
@@ -162,6 +164,15 @@ module otp_ctrl
     .rst_ni,
     .lc_en_i(lc_creator_seed_sw_rw_en_i),
     .lc_en_o({lc_creator_seed_sw_rw_en})
+  );
+
+  prim_lc_sync #(
+    .NumCopies(1)
+  ) u_prim_lc_sync_owner_seed_sw_rw_en (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(lc_owner_seed_sw_rw_en_i),
+    .lc_en_o({lc_owner_seed_sw_rw_en})
   );
 
   prim_lc_sync #(
@@ -318,7 +329,14 @@ module otp_ctrl
     // provisioning is enabled.
     if (lc_ctrl_pkg::lc_tx_test_false_loose(lc_creator_seed_sw_rw_en)) begin
       for (int k = 0; k < NumPart; k++) begin
-        if (PartInfo[k].iskeymgr) begin
+        if (PartInfo[k].iskeymgr_creator) begin
+          part_access_pre[k] = {2{prim_mubi_pkg::MuBi8True}};
+        end
+      end
+    end
+    if (lc_ctrl_pkg::lc_tx_test_false_loose(lc_owner_seed_sw_rw_en)) begin
+      for (int k = 0; k < NumPart; k++) begin
+        if (PartInfo[k].iskeymgr_owner) begin
           part_access_pre[k] = {2{prim_mubi_pkg::MuBi8True}};
         end
       end

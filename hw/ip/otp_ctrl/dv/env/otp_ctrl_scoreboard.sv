@@ -220,7 +220,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
             `DV_CHECK_EQ(cfg.otp_ctrl_vif.lc_data_o, exp_lc_data)
 
             // ---------------------- Check keymgr_key_o output ---------------------------------
-            // Otp_keymgr outputs creator root key shares from the secret2 partition.
+            // Otp_keymgr outputs creator and owner keys from secret partitions.
             // Depends on lc_seed_hw_rd_en_i, it will output the real keys or a constant
             exp_keymgr_data = '0;
             exp_keymgr_data.creator_root_key_share0_valid = get_otp_digest_val(Secret2Idx) != 0;
@@ -764,7 +764,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                     dai_cmd_e'(item.a_data));
               end else if (part_idx == Secret3Idx) begin
                 cov.dai_access_secret3_cg.sample(
-                    !(cfg.otp_ctrl_vif.lc_creator_seed_sw_rw_en_i != lc_ctrl_pkg::On),
+                    !(cfg.otp_ctrl_vif.lc_owner_seed_sw_rw_en_i != lc_ctrl_pkg::On),
                     dai_cmd_e'(item.a_data));
               end else if (is_sw_part_idx(part_idx) && part_has_digest(part_idx) &&
                            item.a_data inside {DaiRead, DaiWrite}) begin
@@ -787,10 +787,21 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                     // However, digest is always readable except SW partitions (Issue #5752).
                     (is_secret(dai_addr) && get_digest_reg_val(part_idx) != 0 &&
                      !is_digest(dai_addr)) ||
-                    // If the partition has key material and lc_creator_seed_sw_rw is disable, then
-                    // return access error.
-                    (PartInfo[part_idx].iskeymgr && !is_digest(dai_addr) &&
+                    // If the partition has creator key material and lc_creator_seed_sw_rw is
+                    // disable, then return access error.
+                    (PartInfo[part_idx].iskeymgr_creator && !is_digest(dai_addr) &&
                      cfg.otp_ctrl_vif.lc_creator_seed_sw_rw_en_i != lc_ctrl_pkg::On)) begin
+                  predict_err(OtpDaiErrIdx, OtpAccessError);
+                  predict_rdata(is_secret(dai_addr) || is_digest(dai_addr), 0, 0);
+                end else if (sw_read_lock ||
+                    // Secret partitions cal digest can also lock read access.
+                    // However, digest is always readable except SW partitions (Issue #5752).
+                    (is_secret(dai_addr) && get_digest_reg_val(part_idx) != 0 &&
+                     !is_digest(dai_addr)) ||
+                    // If the partition has owner key material and lc_owner_seed_sw_rw is disable,
+                    // then return access error.
+                    (PartInfo[part_idx].iskeymgr_owner && !is_digest(dai_addr) &&
+                     cfg.otp_ctrl_vif.lc_owner_seed_sw_rw_en_i != lc_ctrl_pkg::On)) begin
                   predict_err(OtpDaiErrIdx, OtpAccessError);
                   predict_rdata(is_secret(dai_addr) || is_digest(dai_addr), 0, 0);
 
@@ -847,8 +858,13 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                   is_write_locked = 0;
                 end
 
-                if (is_write_locked || (PartInfo[part_idx].iskeymgr && !is_digest(dai_addr) &&
-                     cfg.otp_ctrl_vif.lc_creator_seed_sw_rw_en_i != lc_ctrl_pkg::On)) begin
+                if (is_write_locked || (PartInfo[part_idx].iskeymgr_creator &&
+                    !is_digest(dai_addr) &&
+                    cfg.otp_ctrl_vif.lc_creator_seed_sw_rw_en_i != lc_ctrl_pkg::On)) begin
+                  predict_err(OtpDaiErrIdx, OtpAccessError);
+                end else if (is_write_locked || (PartInfo[part_idx].iskeymgr_owner &&
+                             !is_digest(dai_addr) &&
+                             cfg.otp_ctrl_vif.lc_owner_seed_sw_rw_en_i != lc_ctrl_pkg::On)) begin
                   predict_err(OtpDaiErrIdx, OtpAccessError);
                 end else begin
                   predict_no_err(OtpDaiErrIdx);
@@ -1539,8 +1555,12 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
     if (!part_has_hw_digest(part_idx) || get_digest_reg_val(part_idx) != 0) begin
       predict_err(OtpDaiErrIdx, OtpAccessError);
       return;
-    end else if (PartInfo[part_idx].iskeymgr &&
+    end else if (PartInfo[part_idx].iskeymgr_creator &&
                  cfg.otp_ctrl_vif.lc_creator_seed_sw_rw_en_i != lc_ctrl_pkg::On) begin
+      predict_err(OtpDaiErrIdx, OtpAccessError);
+      return;
+    end else if (PartInfo[part_idx].iskeymgr_owner &&
+                 cfg.otp_ctrl_vif.lc_owner_seed_sw_rw_en_i != lc_ctrl_pkg::On) begin
       predict_err(OtpDaiErrIdx, OtpAccessError);
       return;
     end else begin

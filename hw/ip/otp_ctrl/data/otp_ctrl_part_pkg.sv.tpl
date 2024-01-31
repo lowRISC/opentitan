@@ -89,27 +89,29 @@ package otp_ctrl_part_pkg;
     // Key index to use for scrambling.
     key_sel_e key_sel;
     // Attributes
-    logic secret;     // Whether the partition is secret (and hence scrambled)
-    logic sw_digest;  // Whether the partition has a software digest
-    logic hw_digest;  // Whether the partition has a hardware digest
-    logic write_lock; // Whether the partition is write lockable (via digest)
-    logic read_lock;  // Whether the partition is read lockable (via digest)
-    logic integrity;  // Whether the partition is integrity protected
-    logic iskeymgr;   // Whether the partition has any key material
+    logic secret;           // Whether the partition is secret (and hence scrambled)
+    logic sw_digest;        // Whether the partition has a software digest
+    logic hw_digest;        // Whether the partition has a hardware digest
+    logic write_lock;       // Whether the partition is write lockable (via digest)
+    logic read_lock;        // Whether the partition is read lockable (via digest)
+    logic integrity;        // Whether the partition is integrity protected
+    logic iskeymgr_creator; // Whether the partition has any creator key material
+    logic iskeymgr_owner;   // Whether the partition has any owner key material
   } part_info_t;
 
   parameter part_info_t PartInfoDefault = '{
-      variant:    Unbuffered,
-      offset:     '0,
-      size:       OtpByteAddrWidth'('hFF),
-      key_sel:    key_sel_e'('0),
-      secret:     1'b0,
-      sw_digest:  1'b0,
-      hw_digest:  1'b0,
-      write_lock: 1'b0,
-      read_lock:  1'b0,
-      integrity:  1'b0,
-      iskeymgr:   1'b0
+      variant:          Unbuffered,
+      offset:           '0,
+      size:             OtpByteAddrWidth'('hFF),
+      key_sel:          key_sel_e'('0),
+      secret:           1'b0,
+      sw_digest:        1'b0,
+      hw_digest:        1'b0,
+      write_lock:       1'b0,
+      read_lock:        1'b0,
+      integrity:        1'b0,
+      iskeymgr_creator: 1'b0,
+      iskeymgr_owner:   1'b0
   };
 
   ////////////////////////
@@ -120,17 +122,18 @@ package otp_ctrl_part_pkg;
 % for part in otp_mmap.config["partitions"]:
     // ${part["name"]}
     '{
-      variant:    ${part["variant"]},
-      offset:     ${otp_mmap.config["otp"]["byte_addr_width"]}'d${part["offset"]},
-      size:       ${part["size"]},
-      key_sel:    ${part["key_sel"] if part["key_sel"] != "NoKey" else "key_sel_e'('0)"},
-      secret:     1'b${"1" if part["secret"] else "0"},
-      sw_digest:  1'b${"1" if part["sw_digest"] else "0"},
-      hw_digest:  1'b${"1" if part["hw_digest"] else "0"},
-      write_lock: 1'b${"1" if part["write_lock"].lower() == "digest" else "0"},
-      read_lock:  1'b${"1" if part["read_lock"].lower() == "digest" else "0"},
-      integrity:  1'b${"1" if part["integrity"] else "0"},
-      iskeymgr:   1'b${"1" if part["iskeymgr"] else "0"}
+      variant:          ${part["variant"]},
+      offset:           ${otp_mmap.config["otp"]["byte_addr_width"]}'d${part["offset"]},
+      size:             ${part["size"]},
+      key_sel:          ${part["key_sel"] if part["key_sel"] != "NoKey" else "key_sel_e'('0)"},
+      secret:           1'b${"1" if part["secret"] else "0"},
+      sw_digest:        1'b${"1" if part["sw_digest"] else "0"},
+      hw_digest:        1'b${"1" if part["hw_digest"] else "0"},
+      write_lock:       1'b${"1" if part["write_lock"].lower() == "digest" else "0"},
+      read_lock:        1'b${"1" if part["read_lock"].lower() == "digest" else "0"},
+      integrity:        1'b${"1" if part["integrity"] else "0"},
+      iskeymgr_creator: 1'b${"1" if part["iskeymgr_creator"] else "0"},
+      iskeymgr_owner:   1'b${"1" if part["iskeymgr_owner"] else "0"}
     }${"" if loop.last else ","}
 % endfor
   };
@@ -311,14 +314,14 @@ package otp_ctrl_part_pkg;
   part_name = Name.from_snake_case(part["name"])
   part_name_camel = part_name.as_camel_case()
 %>\
-  % if part["iskeymgr"]:
+  % if part["iskeymgr_creator"] or part["iskeymgr_owner"]:
     valid = (part_digest[${part_name_camel}Idx] != 0);
     % for item in part["items"]:
 <%
   item_name = Name.from_snake_case(item["name"])
   item_name_camel = item_name.as_camel_case()
 %>\
-      % if item["iskeymgr"]:
+      % if item["iskeymgr_creator"] or item["iskeymgr_owner"]:
     otp_keymgr_key.${item["name"].lower()}_valid = valid;
     if (lc_ctrl_pkg::lc_tx_test_true_strict(lc_seed_hw_rd_en)) begin
       otp_keymgr_key.${item["name"].lower()} =
