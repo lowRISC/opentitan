@@ -1011,19 +1011,19 @@
                     name: "CREATOR_ROOT_KEY_SHARE0",
                     inv_default: "<random>",
                     size: "32",
-                    iskeymgr: true
+                    iskeymgr_creator: true
                 }
                 {
                     name: "CREATOR_ROOT_KEY_SHARE1",
                     inv_default: "<random>",
                     size: "32"
-                    iskeymgr: true
+                    iskeymgr_creator: true
                 }
                 {
                     name: "CREATOR_SEED",
                     inv_default: "<random>",
                     size: "32",
-                    iskeymgr: true
+                    iskeymgr_creator: true
                 }
             ],
             desc: '''Secret partition 2.
@@ -1046,7 +1046,7 @@
                     name: "OWNER_SEED",
                     inv_default: "<random>",
                     size: "32",
-                    iskeymgr: true
+                    iskeymgr_owner: true
                 }
             ],
             desc: '''Secret partition 3.

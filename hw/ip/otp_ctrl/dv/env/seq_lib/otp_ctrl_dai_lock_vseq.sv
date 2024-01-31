@@ -97,6 +97,9 @@ class otp_ctrl_dai_lock_vseq extends otp_ctrl_smoke_vseq;
     if ($urandom_range(0, 1)) begin
       cfg.otp_ctrl_vif.drive_lc_creator_seed_sw_rw_en(get_rand_lc_tx_val(.t_weight(0)));
     end
+    if ($urandom_range(0, 1)) begin
+      cfg.otp_ctrl_vif.drive_lc_owner_seed_sw_rw_en(get_rand_lc_tx_val(.t_weight(0)));
+    end
   endtask
 
 endclass

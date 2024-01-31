@@ -338,6 +338,17 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
     }
     { struct:  "lc_tx"
       type:    "uni"
+      name:    "lc_owner_seed_sw_rw_en"
+      act:     "rcv"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
+      desc:    '''
+               Provision enable qualifier coming from life cycle controller.
+               This signal enables SW read / write access to the OWNER_SEED.
+               '''
+    }
+    { struct:  "lc_tx"
+      type:    "uni"
       name:    "lc_seed_hw_rd_en"
       act:     "rcv"
       default: "lc_ctrl_pkg::Off"

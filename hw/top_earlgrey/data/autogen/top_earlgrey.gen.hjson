@@ -1474,6 +1474,22 @@
           index: -1
         }
         {
+          name: lc_owner_seed_sw_rw_en
+          desc:
+            '''
+            Provision enable qualifier coming from life cycle controller.
+            This signal enables SW read / write access to the OWNER_SEED.
+            '''
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: lc_ctrl_pkg::Off
+          inst_name: otp_ctrl
+          index: -1
+        }
+        {
           name: lc_seed_hw_rd_en
           desc:
             '''
@@ -16140,6 +16156,22 @@
         default: lc_ctrl_pkg::Off
         inst_name: otp_ctrl
         top_signame: lc_ctrl_lc_creator_seed_sw_rw_en
+        index: -1
+      }
+      {
+        name: lc_owner_seed_sw_rw_en
+        desc:
+          '''
+          Provision enable qualifier coming from life cycle controller.
+          This signal enables SW read / write access to the OWNER_SEED.
+          '''
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: lc_ctrl_pkg::Off
+        inst_name: otp_ctrl
         index: -1
       }
       {

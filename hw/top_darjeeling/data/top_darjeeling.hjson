@@ -1144,6 +1144,7 @@
 
       // LC access control signal broadcast
       'lc_ctrl.lc_creator_seed_sw_rw_en'   : ['otp_ctrl.lc_creator_seed_sw_rw_en'],
+      'lc_ctrl.lc_owner_seed_sw_rw_en'     : ['otp_ctrl.lc_owner_seed_sw_rw_en'],
       'lc_ctrl.lc_seed_hw_rd_en'           : ['otp_ctrl.lc_seed_hw_rd_en'],
 
       // rv_plic connections

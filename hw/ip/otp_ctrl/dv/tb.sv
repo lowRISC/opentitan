@@ -123,6 +123,7 @@ module tb;
     .lc_otp_program_i           ({lc_prog_if.req, lc_prog_if.h_data}),
     .lc_otp_program_o           ({lc_prog_if.d_data, lc_prog_if.ack}),
     .lc_creator_seed_sw_rw_en_i (otp_ctrl_if.lc_creator_seed_sw_rw_en_i),
+    .lc_owner_seed_sw_rw_en_i   (otp_ctrl_if.lc_owner_seed_sw_rw_en_i),
     .lc_seed_hw_rd_en_i         (otp_ctrl_if.lc_seed_hw_rd_en_i),
     .lc_dft_en_i                (otp_ctrl_if.lc_dft_en_i),
     .lc_escalate_en_i           (otp_ctrl_if.lc_escalate_en_i),
