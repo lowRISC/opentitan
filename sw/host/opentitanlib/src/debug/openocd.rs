@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use std::fmt::LowerHex;
 use std::io::{BufRead, BufReader, Write};
 use std::mem::size_of;
 use std::net::TcpStream;
@@ -203,6 +204,26 @@ impl OpenOcd {
     pub fn execute(&mut self, cmd: &str) -> Result<String> {
         self.send(cmd)?;
         self.recv()
+    }
+
+    /// Load instruction register of a given tap.
+    pub fn irscan(&mut self, tap: &str, ir: u32) -> Result<()> {
+        let cmd = format!("irscan {} {:#x}", tap, ir);
+        let result = self.execute(&cmd)?;
+        ensure!(result.is_empty(), "unexpected response: '{result}'");
+        Ok(())
+    }
+
+    /// Load data register of a given tap and return the scan.
+    pub fn drscan<T: ParseInt + LowerHex>(
+        &mut self,
+        tap: &str,
+        numbits: u32,
+        data: T,
+    ) -> Result<T> {
+        let cmd = format!("drscan {} {} {:#x}", tap, numbits, data);
+        let result = self.execute(&cmd)?;
+        Ok(T::from_str_radix(&result, 16).map_err(|x| x.into())?)
     }
 }
 
