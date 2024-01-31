@@ -91,27 +91,29 @@ package otp_ctrl_part_pkg;
     // Key index to use for scrambling.
     key_sel_e key_sel;
     // Attributes
-    logic secret;     // Whether the partition is secret (and hence scrambled)
-    logic sw_digest;  // Whether the partition has a software digest
-    logic hw_digest;  // Whether the partition has a hardware digest
-    logic write_lock; // Whether the partition is write lockable (via digest)
-    logic read_lock;  // Whether the partition is read lockable (via digest)
-    logic integrity;  // Whether the partition is integrity protected
-    logic iskeymgr;   // Whether the partition has any key material
+    logic secret;           // Whether the partition is secret (and hence scrambled)
+    logic sw_digest;        // Whether the partition has a software digest
+    logic hw_digest;        // Whether the partition has a hardware digest
+    logic write_lock;       // Whether the partition is write lockable (via digest)
+    logic read_lock;        // Whether the partition is read lockable (via digest)
+    logic integrity;        // Whether the partition is integrity protected
+    logic iskeymgr_creator; // Whether the partition has any creator key material
+    logic iskeymgr_owner;   // Whether the partition has any owner key material
   } part_info_t;
 
   parameter part_info_t PartInfoDefault = '{
-      variant:    Unbuffered,
-      offset:     '0,
-      size:       OtpByteAddrWidth'('hFF),
-      key_sel:    key_sel_e'('0),
-      secret:     1'b0,
-      sw_digest:  1'b0,
-      hw_digest:  1'b0,
-      write_lock: 1'b0,
-      read_lock:  1'b0,
-      integrity:  1'b0,
-      iskeymgr:   1'b0
+      variant:          Unbuffered,
+      offset:           '0,
+      size:             OtpByteAddrWidth'('hFF),
+      key_sel:          key_sel_e'('0),
+      secret:           1'b0,
+      sw_digest:        1'b0,
+      hw_digest:        1'b0,
+      write_lock:       1'b0,
+      read_lock:        1'b0,
+      integrity:        1'b0,
+      iskeymgr_creator: 1'b0,
+      iskeymgr_owner:   1'b0
   };
 
   ////////////////////////
@@ -121,115 +123,123 @@ package otp_ctrl_part_pkg;
   localparam part_info_t PartInfo [NumPart] = '{
     // VENDOR_TEST
     '{
-      variant:    Unbuffered,
-      offset:     11'd0,
-      size:       64,
-      key_sel:    key_sel_e'('0),
-      secret:     1'b0,
-      sw_digest:  1'b1,
-      hw_digest:  1'b0,
-      write_lock: 1'b1,
-      read_lock:  1'b0,
-      integrity:  1'b0,
-      iskeymgr:   1'b0
+      variant:          Unbuffered,
+      offset:           11'd0,
+      size:             64,
+      key_sel:          key_sel_e'('0),
+      secret:           1'b0,
+      sw_digest:        1'b1,
+      hw_digest:        1'b0,
+      write_lock:       1'b1,
+      read_lock:        1'b0,
+      integrity:        1'b0,
+      iskeymgr_creator: 1'b0,
+      iskeymgr_owner:   1'b0
     },
     // CREATOR_SW_CFG
     '{
-      variant:    Unbuffered,
-      offset:     11'd64,
-      size:       800,
-      key_sel:    key_sel_e'('0),
-      secret:     1'b0,
-      sw_digest:  1'b1,
-      hw_digest:  1'b0,
-      write_lock: 1'b1,
-      read_lock:  1'b0,
-      integrity:  1'b1,
-      iskeymgr:   1'b0
+      variant:          Unbuffered,
+      offset:           11'd64,
+      size:             800,
+      key_sel:          key_sel_e'('0),
+      secret:           1'b0,
+      sw_digest:        1'b1,
+      hw_digest:        1'b0,
+      write_lock:       1'b1,
+      read_lock:        1'b0,
+      integrity:        1'b1,
+      iskeymgr_creator: 1'b0,
+      iskeymgr_owner:   1'b0
     },
     // OWNER_SW_CFG
     '{
-      variant:    Unbuffered,
-      offset:     11'd864,
-      size:       800,
-      key_sel:    key_sel_e'('0),
-      secret:     1'b0,
-      sw_digest:  1'b1,
-      hw_digest:  1'b0,
-      write_lock: 1'b1,
-      read_lock:  1'b0,
-      integrity:  1'b1,
-      iskeymgr:   1'b0
+      variant:          Unbuffered,
+      offset:           11'd864,
+      size:             800,
+      key_sel:          key_sel_e'('0),
+      secret:           1'b0,
+      sw_digest:        1'b1,
+      hw_digest:        1'b0,
+      write_lock:       1'b1,
+      read_lock:        1'b0,
+      integrity:        1'b1,
+      iskeymgr_creator: 1'b0,
+      iskeymgr_owner:   1'b0
     },
     // HW_CFG0
     '{
-      variant:    Buffered,
-      offset:     11'd1664,
-      size:       80,
-      key_sel:    key_sel_e'('0),
-      secret:     1'b0,
-      sw_digest:  1'b0,
-      hw_digest:  1'b1,
-      write_lock: 1'b1,
-      read_lock:  1'b0,
-      integrity:  1'b1,
-      iskeymgr:   1'b0
+      variant:          Buffered,
+      offset:           11'd1664,
+      size:             80,
+      key_sel:          key_sel_e'('0),
+      secret:           1'b0,
+      sw_digest:        1'b0,
+      hw_digest:        1'b1,
+      write_lock:       1'b1,
+      read_lock:        1'b0,
+      integrity:        1'b1,
+      iskeymgr_creator: 1'b0,
+      iskeymgr_owner:   1'b0
     },
     // SECRET0
     '{
-      variant:    Buffered,
-      offset:     11'd1744,
-      size:       40,
-      key_sel:    Secret0Key,
-      secret:     1'b1,
-      sw_digest:  1'b0,
-      hw_digest:  1'b1,
-      write_lock: 1'b1,
-      read_lock:  1'b1,
-      integrity:  1'b1,
-      iskeymgr:   1'b0
+      variant:          Buffered,
+      offset:           11'd1744,
+      size:             40,
+      key_sel:          Secret0Key,
+      secret:           1'b1,
+      sw_digest:        1'b0,
+      hw_digest:        1'b1,
+      write_lock:       1'b1,
+      read_lock:        1'b1,
+      integrity:        1'b1,
+      iskeymgr_creator: 1'b0,
+      iskeymgr_owner:   1'b0
     },
     // SECRET1
     '{
-      variant:    Buffered,
-      offset:     11'd1784,
-      size:       88,
-      key_sel:    Secret1Key,
-      secret:     1'b1,
-      sw_digest:  1'b0,
-      hw_digest:  1'b1,
-      write_lock: 1'b1,
-      read_lock:  1'b1,
-      integrity:  1'b1,
-      iskeymgr:   1'b0
+      variant:          Buffered,
+      offset:           11'd1784,
+      size:             88,
+      key_sel:          Secret1Key,
+      secret:           1'b1,
+      sw_digest:        1'b0,
+      hw_digest:        1'b1,
+      write_lock:       1'b1,
+      read_lock:        1'b1,
+      integrity:        1'b1,
+      iskeymgr_creator: 1'b0,
+      iskeymgr_owner:   1'b0
     },
     // SECRET2
     '{
-      variant:    Buffered,
-      offset:     11'd1872,
-      size:       88,
-      key_sel:    Secret2Key,
-      secret:     1'b1,
-      sw_digest:  1'b0,
-      hw_digest:  1'b1,
-      write_lock: 1'b1,
-      read_lock:  1'b1,
-      integrity:  1'b1,
-      iskeymgr:   1'b1
+      variant:          Buffered,
+      offset:           11'd1872,
+      size:             88,
+      key_sel:          Secret2Key,
+      secret:           1'b1,
+      sw_digest:        1'b0,
+      hw_digest:        1'b1,
+      write_lock:       1'b1,
+      read_lock:        1'b1,
+      integrity:        1'b1,
+      iskeymgr_creator: 1'b1,
+      iskeymgr_owner:   1'b0
     },
     // LIFE_CYCLE
     '{
-      variant:    LifeCycle,
-      offset:     11'd1960,
-      size:       88,
-      key_sel:    key_sel_e'('0),
-      secret:     1'b0,
-      sw_digest:  1'b0,
-      hw_digest:  1'b0,
-      write_lock: 1'b0,
-      read_lock:  1'b0,
-      integrity:  1'b1,
-      iskeymgr:   1'b0
+      variant:          LifeCycle,
+      offset:           11'd1960,
+      size:             88,
+      key_sel:          key_sel_e'('0),
+      secret:           1'b0,
+      sw_digest:        1'b0,
+      hw_digest:        1'b0,
+      write_lock:       1'b0,
+      read_lock:        1'b0,
+      integrity:        1'b1,
+      iskeymgr_creator: 1'b0,
+      iskeymgr_owner:   1'b0
     }
   };
 

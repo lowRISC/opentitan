@@ -117,7 +117,8 @@ def _validate_part(part: Dict, key_names: List[str], is_last: bool):
     part.setdefault("read_lock", "none")
     part.setdefault("key_sel", "NoKey")
     part.setdefault("absorb", False)
-    part.setdefault("iskeymgr", False)
+    part.setdefault("iskeymgr_creator", False)
+    part.setdefault("iskeymgr_owner", False)
     log.info("Validating partition {}".format(part["name"]))
 
     # Make sure these are boolean types (simplifies the mako templates)
@@ -182,10 +183,20 @@ def _validate_part(part: Dict, key_names: List[str], is_last: bool):
     for item in part["items"]:
         _validate_item(item, part["variant"] == "Buffered", part["secret"])
         # if any item has key material, we need mark the partition as such
-        if item["iskeymgr"]:
-            part["iskeymgr"] = True
+        if item["iskeymgr_creator"]:
+            part["iskeymgr_creator"] = True
+        elif item["iskeymgr_owner"]:
+            part["iskeymgr_owner"] = True
 
         size += item["size"]
+
+    # Partitions can either hold keymaterial for the creator stage or owner
+    # stage, but not both. This is because the two have separate SW write
+    # enable signals in HW.
+    if part["iskeymgr_creator"] and part["iskeymgr_owner"]:
+        raise RuntimeError(
+            "Partition {} with key material for the key manager cannot be "
+            "associated with the creator AND the owner.".format(part["name"]))
 
     # if size not previously defined, set it
     if "size" not in part:
@@ -205,19 +216,28 @@ def _validate_item(item: Dict, buffered: bool, secret: bool):
     item.setdefault("size", "0")
     item.setdefault("isdigest", "false")
     item.setdefault("ismubi", "false")
-    item.setdefault("iskeymgr", "false")
+    item.setdefault("iskeymgr_creator", "false")
+    item.setdefault("iskeymgr_owner", "false")
 
     # make sure these have the correct types
-    item["iskeymgr"] = check_bool(item["iskeymgr"])
+    item["iskeymgr_creator"] = check_bool(item["iskeymgr_creator"])
+    item["iskeymgr_owner"] = check_bool(item["iskeymgr_owner"])
     item["isdigest"] = check_bool(item["isdigest"])
     item["ismubi"] = check_bool(item["ismubi"])
     item["size"] = check_int(item["size"])
     item_width = item["size"] * 8
 
+    # Key material can either be for the creator stage or owner stage, but not
+    # both. This is because the two have separate SW write enable signals in HW.
+    if item["iskeymgr_creator"] and item["iskeymgr_owner"]:
+        raise RuntimeError(
+            "Key material for {} for sideloading into the key manager cannot be "
+            "associated with the creator AND the owner.".format(item["name"]))
+
     # Key material for the keymgr needs to live in a buffered partition so that
     # it can be sideloaded. The partition should also be secret for
     # confidentiality.
-    if item["iskeymgr"]:
+    if item["iskeymgr_creator"] or item["iskeymgr_owner"]:
         if not buffered:
             raise RuntimeError(
                 "Key material {} for sideloading into the key manager needs "
@@ -314,7 +334,9 @@ def _validate_mmap(config: Dict) -> Dict:
                 True,
                 "inv_default":
                 "<random>",
-                "iskeymgr":
+                "iskeymgr_creator":
+                False,
+                "iskeymgr_owner":
                 False
             })
             # Randomize the digest default.
