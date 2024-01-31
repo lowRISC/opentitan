@@ -3124,7 +3124,6 @@ opentitan_test(
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-        "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
     },
     deps = [
         ":spi_host_flash_test_impl",
@@ -4871,6 +4870,41 @@ opentitan_test(
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/dif:uart",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/testing:uart_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_console",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/testing/test_framework:ottf_utils",
+    ],
+)
+
+opentitan_test(
+    name = "uart_loopback_test",
+    srcs = ["uart_loopback_test.c"],
+    cw310 = new_cw310_params(
+        test_cmd = " ".join([
+            "--bitstream=\"{bitstream}\"",
+            "--bootstrap=\"{firmware}\"",
+            "--firmware-elf=\"{firmware:elf}\"",
+        ]),
+        test_harness = "//sw/host/tests/chip/uart:uart_loopback",
+    ),
+    exec_env = dicts.add(
+        {"//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None},
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+    ),
+    silicon = silicon_params(
+        test_cmd = " ".join([
+            "--bootstrap=\"{firmware}\"",
+            "--firmware-elf=\"{firmware:elf}\"",
+        ]),
+        test_harness = "//sw/host/tests/chip/uart:uart_loopback",
+    ),
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/testing:uart_testutils",
