@@ -6,6 +6,7 @@ load(
     "cw310_params",
     "opentitan_binary",
     "opentitan_test",
+    "silicon_params",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -142,6 +143,35 @@ opentitan_binary(
     exec_env = [
         "//hw/top_earlgrey:fpga_cw310_test_rom",
     ],
+    deps = [
+        ":aes",
+        ":aes_sca",
+        ":ibex_fi",
+        ":kmac_sca",
+        ":prng_sca",
+        ":sha3_sca",
+        ":trigger_sca",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+        "//sw/device/tests/crypto/cryptotest/json:aes_commands",
+        "//sw/device/tests/crypto/cryptotest/json:commands",
+        "//sw/device/tests/crypto/cryptotest/json:ibex_fi_commands",
+    ],
+)
+
+opentitan_test(
+    name = "chip_pen_test",
+    srcs = [":firmware.c"],
+    exec_env = {
+        "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon_owner",
+    },
+    silicon_owner = silicon_params(
+        tags = ["broken"],
+    ),
     deps = [
         ":aes",
         ":aes_sca",
