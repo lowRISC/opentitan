@@ -124,7 +124,7 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
     ral.control_shadowed.slot_src_sel.set(src_slot);
     ral.control_shadowed.slot_dst_sel.set(dst_slot);
     csr_update(.csr(ral.control_shadowed));
-    csr_wr(.ptr(ral.start), .value(1));
+    csr_wr(.ptr(ral.start), .value(1), .blocking(0));
 
     if (wait_done)
       wait_op_done();
@@ -290,8 +290,13 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
       end
     endcase
 
-    `uvm_info(`gfn, $sformatf("Wait for operation done in state %0s, operation %0s, good_op %0d",
-                              current_state.name, cast_operation.name, is_good_op), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf({"Wait for operation done in state %0s, operation %0s, ",
+                               "src_slot[%0d] = %p, dst_slot[%0d] = %p, good_op %0d"},
+                              current_state.name, cast_operation.name,
+                              src_slot, cfg.keymgr_dpe_vif.internal_key_slots[src_slot],
+                              dst_slot, cfg.keymgr_dpe_vif.internal_key_slots[dst_slot],
+                              is_good_op),
+              UVM_MEDIUM)
 
     // wait for status to get out of OpWip and check
     // TODO(#667) - need to restructure SCB so that reading a WIP status doesn't cause error
