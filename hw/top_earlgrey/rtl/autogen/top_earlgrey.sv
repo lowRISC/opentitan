@@ -1421,6 +1421,7 @@ module top_earlgrey #(
       .otp_lc_data_o(otp_ctrl_otp_lc_data),
       .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
       .lc_creator_seed_sw_rw_en_i(lc_ctrl_lc_creator_seed_sw_rw_en),
+      .lc_owner_seed_sw_rw_en_i(lc_ctrl_pkg::Off),
       .lc_seed_hw_rd_en_i(lc_ctrl_lc_seed_hw_rd_en),
       .lc_dft_en_i(lc_ctrl_lc_dft_en),
       .lc_check_byp_en_i(lc_ctrl_lc_check_byp_en),
