@@ -57,6 +57,7 @@ static CONFIG: Lazy<HashMap<&'static str, Config>> = Lazy::new(|| {
             open_drain: vec![false, false, false],
             // z3_wakeup
             input_pins: vec!["IOR5"],
+            pullup_pins: vec![],
         },
     }
 });

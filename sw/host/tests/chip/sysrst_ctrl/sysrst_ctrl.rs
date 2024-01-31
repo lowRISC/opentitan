@@ -9,11 +9,13 @@ use opentitanlib::io::gpio::{PinMode, PullMode};
 pub struct Config {
     // List of the output IO names of the transport.
     pub output_pins: Vec<&'static str>,
-    // If true, the input pin will be setup in open drain mode (with a pullup), otherwise
+    // If true, the input pin will be setup in open drain mode, otherwise
     // in push-pull mode. The order must match the one in pins.
     pub open_drain: Vec<bool>,
     // List of the input IO names of the transport.
     pub input_pins: Vec<&'static str>,
+    // List of pins that must have a pullup enabled.
+    pub pullup_pins: Vec<&'static str>,
 }
 
 /// Configure earlgrey and debugger pins.
@@ -24,17 +26,15 @@ pub fn setup_pins(transport: &TransportWrapper, config: &Config) -> Result<()> {
     assert_eq!(config.output_pins.len(), config.open_drain.len());
     for (pin,od) in std::iter::zip(&config.output_pins, &config.open_drain) {
         log::info!("output pin {}: {}", pin, od);
-        if *od {
-            transport.gpio_pin(pin)?.set_mode(PinMode::OpenDrain)?;
-            transport.gpio_pin(pin)?.set_pull_mode(PullMode::PullUp)?;
-        }
-        else {
-            transport.gpio_pin(pin)?.set_mode(PinMode::PushPull)?;
-        }
+        transport.gpio_pin(pin)?.set_mode(if *od { PinMode::OpenDrain } else { PinMode::PushPull} )?;
     }
     for pin in &config.input_pins {
         log::info!("input pin {}", pin);
         transport.gpio_pin(pin)?.set_mode(PinMode::Input)?;
+    }
+    for pin in &config.pullup_pins {
+        log::info!("pullup pin {}", pin);
+        transport.gpio_pin(pin)?.set_pull_mode(PullMode::PullUp)?;
     }
     Ok(())
 }
