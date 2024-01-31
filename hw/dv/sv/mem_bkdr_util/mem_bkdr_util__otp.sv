@@ -125,10 +125,8 @@ endfunction
 
 virtual function void otp_write_hw_cfg0_partition(
     bit [DeviceIdSize*8-1:0] device_id, bit [ManufStateSize*8-1:0] manuf_state,
-    bit [EnSramIfetchSize*8-1:0] en_sram_ifetch,
     bit [EnCsrngSwAppReadSize*8-1:0] en_csrng_sw_app_read,
-    bit [EnEntropySrcFwReadSize*8-1:0] en_entropy_src_fw_read,
-    bit [EnEntropySrcFwOverSize*8-1:0] en_entropy_src_fw_over);
+    bit [EnSramIfetchSize*8-1:0] en_sram_ifetch);
   bit [HwCfg0DigestSize*8-1:0] digest;
 
   bit [bus_params_pkg::BUS_DW-1:0] hw_cfg0_data[$];
@@ -139,11 +137,9 @@ virtual function void otp_write_hw_cfg0_partition(
   for (int i = 0; i < ManufStateSize; i += 4) begin
     write32(i + ManufStateOffset, manuf_state[i*8+:32]);
   end
-  write32(EnSramIfetchOffset,
-          {en_entropy_src_fw_over, en_entropy_src_fw_read, en_csrng_sw_app_read, en_sram_ifetch});
+  write32(EnSramIfetchOffset, {en_csrng_sw_app_read, en_sram_ifetch});
 
-  hw_cfg0_data = {<<32 {32'h0, en_entropy_src_fw_over, en_entropy_src_fw_read,
-                        en_csrng_sw_app_read, en_sram_ifetch, manuf_state, device_id}};
+  hw_cfg0_data = {<<32 {32'h0, en_csrng_sw_app_read, en_sram_ifetch, manuf_state, device_id}};
   digest = cal_digest(HwCfg0Idx, hw_cfg0_data);
 
   write64(HwCfg0DigestOffset, digest);

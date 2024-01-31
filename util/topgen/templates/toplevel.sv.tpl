@@ -234,10 +234,6 @@ module top_${top["name"]} #(
   // be performed by hand.
   assign csrng_otp_en_csrng_sw_app_read =
       otp_ctrl_otp_broadcast.hw_cfg0_data.en_csrng_sw_app_read;
-  assign entropy_src_otp_en_entropy_src_fw_read =
-      otp_ctrl_otp_broadcast.hw_cfg0_data.en_entropy_src_fw_read;
-  assign entropy_src_otp_en_entropy_src_fw_over =
-      otp_ctrl_otp_broadcast.hw_cfg0_data.en_entropy_src_fw_over;
   assign sram_ctrl_main_otp_en_sram_ifetch =
       otp_ctrl_otp_broadcast.hw_cfg0_data.en_sram_ifetch;
   assign lc_ctrl_otp_device_id =

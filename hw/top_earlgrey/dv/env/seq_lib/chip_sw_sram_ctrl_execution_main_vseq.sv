@@ -14,9 +14,6 @@ class chip_sw_sram_ctrl_execution_main_vseq extends chip_sw_base_vseq;
   localparam logic [7:0] MUBI8TRUE = prim_mubi_pkg::MuBi8True;
   localparam logic [7:0] MUBI8FALSE = prim_mubi_pkg::MuBi8False;
   localparam logic [7:0] EN_CSRNG_SW_APP_READ = MUBI8FALSE;
-  localparam logic [7:0] EN_ENTROPY_SRC_FW_READ = MUBI8FALSE;
-  localparam logic [7:0] EN_ENTROPY_SRC_FW_OVER = MUBI8FALSE;
-
 
   virtual task do_test(logic [7:0] en_sram_ifetch, bit set_prod_lc);
 
@@ -27,9 +24,7 @@ class chip_sw_sram_ctrl_execution_main_vseq extends chip_sw_base_vseq;
     end
     cfg.mem_bkdr_util_h[Otp].otp_write_hw_cfg0_partition(
         .device_id(DEVICE_ID), .manuf_state(MANUF_STATE), .en_sram_ifetch(en_sram_ifetch),
-        .en_csrng_sw_app_read(EN_CSRNG_SW_APP_READ),
-        .en_entropy_src_fw_read(EN_ENTROPY_SRC_FW_READ),
-        .en_entropy_src_fw_over(EN_ENTROPY_SRC_FW_OVER));
+        .en_csrng_sw_app_read(EN_CSRNG_SW_APP_READ));
 
     `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest)
     `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInWfi)

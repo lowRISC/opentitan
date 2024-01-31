@@ -6667,8 +6667,8 @@
           type: uni
           act: rcv
           width: 1
+          default: prim_mubi_pkg::MuBi8True
           inst_name: csrng
-          default: ""
           top_signame: csrng_otp_en_csrng_sw_app_read
           index: -1
         }
@@ -6816,9 +6816,8 @@
           type: uni
           act: rcv
           width: 1
+          default: prim_mubi_pkg::MuBi8True
           inst_name: entropy_src
-          default: ""
-          top_signame: entropy_src_otp_en_entropy_src_fw_read
           index: -1
         }
         {
@@ -6828,9 +6827,8 @@
           type: uni
           act: rcv
           width: 1
+          default: prim_mubi_pkg::MuBi8True
           inst_name: entropy_src
-          default: ""
-          top_signame: entropy_src_otp_en_entropy_src_fw_over
           index: -1
         }
         {
@@ -8666,8 +8664,6 @@
       pinmux_aon.dft_jtag
       otp_ctrl.otp_broadcast
       csrng.otp_en_csrng_sw_app_read
-      entropy_src.otp_en_entropy_src_fw_read
-      entropy_src.otp_en_entropy_src_fw_over
       lc_ctrl.otp_device_id
       lc_ctrl.otp_manuf_state
       keymgr.otp_device_id
@@ -19007,8 +19003,8 @@
         type: uni
         act: rcv
         width: 1
+        default: prim_mubi_pkg::MuBi8True
         inst_name: csrng
-        default: ""
         top_signame: csrng_otp_en_csrng_sw_app_read
         index: -1
       }
@@ -19103,9 +19099,8 @@
         type: uni
         act: rcv
         width: 1
+        default: prim_mubi_pkg::MuBi8True
         inst_name: entropy_src
-        default: ""
-        top_signame: entropy_src_otp_en_entropy_src_fw_read
         index: -1
       }
       {
@@ -19115,9 +19110,8 @@
         type: uni
         act: rcv
         width: 1
+        default: prim_mubi_pkg::MuBi8True
         inst_name: entropy_src
-        default: ""
-        top_signame: entropy_src_otp_en_entropy_src_fw_over
         index: -1
       }
       {
@@ -23410,25 +23404,7 @@
         width: 1
         type: uni
         end_idx: -1
-        default: ""
-      }
-      {
-        package: prim_mubi_pkg
-        struct: mubi8
-        signame: entropy_src_otp_en_entropy_src_fw_read
-        width: 1
-        type: uni
-        end_idx: -1
-        default: ""
-      }
-      {
-        package: prim_mubi_pkg
-        struct: mubi8
-        signame: entropy_src_otp_en_entropy_src_fw_over
-        width: 1
-        type: uni
-        end_idx: -1
-        default: ""
+        default: prim_mubi_pkg::MuBi8True
       }
       {
         package: otp_ctrl_pkg

@@ -219,7 +219,7 @@
             write_lock: "Digest",
             read_lock:  "None",
             key_sel:    "NoKey",
-            ecc_fatal:  true,
+            integrity:  true,
             bkout_type: true,
             items: [
                 {
@@ -247,27 +247,13 @@
                     ismubi:      true,
                     inv_default: false
                 },
-                {
-                    name:        "EN_ENTROPY_SRC_FW_READ",
-                    size:        "1",
-                    ismubi:      true,
-                    inv_default: false
-                },
-                {
-                    name:        "EN_ENTROPY_SRC_FW_OVER",
-                    size:        "1",
-                    ismubi:      true,
-                    inv_default: false
-                },
             ],
             desc: '''
+            DEVICE_ID: Unique device identifier.
+            MANUF_STATE: Vector for capturing the manufacturing status.
             EN_SRAM_IFETCH: Enable / disable execute from SRAM CSR switch.
             EN_CSRNG_SW_APP_READ: This input efuse is used to enable access
             to the NIST internal state per instance.
-            EN_ENTROPY_SRC_FW_READ: This input efuse is used to enable access
-            to the ENTROPY_DATA register directly.
-            EN_ENTROPY_SRC_FW_OVER: This input efuse is used to enable access
-            to the firmware override FIFO and other related functions.
             '''
         }
         {

@@ -225,12 +225,6 @@ otp_json(
                 # Cryptolib and chip-level tests require access to the CSRNG
                 # software interfaces.
                 "EN_CSRNG_SW_APP_READ": True,
-                # Cryptolib and chip-level tests require access to the
-                # entropy_src FW data interface.
-                "EN_ENTROPY_SRC_FW_READ": True,
-                # Cryptolib and chip-level tests require access to the
-                # entropy_src FW override interface.
-                "EN_ENTROPY_SRC_FW_OVER": True,
             },
             lock = True,
         ),
