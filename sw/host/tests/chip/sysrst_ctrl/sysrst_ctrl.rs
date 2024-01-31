@@ -41,7 +41,7 @@ pub fn setup_pins(transport: &TransportWrapper, config: &Config) -> Result<()> {
 
 /// Set pins: the i-th bit of `values` corresponds to the i-th entry of `config.output_pins`.
 pub fn set_pins(transport: &TransportWrapper, config: &Config, values: u8) -> Result<()> {
-    ensure!(config.input_pins.len() <= 8);
+    ensure!(config.output_pins.len() <= 8);
     log::info!("Set pins to {:b}", values);
     // Set pins on the transport.
     for (i, pin) in config.output_pins.iter().enumerate() {
