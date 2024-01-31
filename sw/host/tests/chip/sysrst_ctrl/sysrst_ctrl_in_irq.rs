@@ -147,19 +147,14 @@ fn main() -> Result<()> {
     opts.init.init_logging();
     let transport = opts.init.init_target()?;
 
-    /* Load the ELF binary and get the address of the `kPhase` variable
-     * in example_sival.c */
     let elf_binary = fs::read(&opts.firmware_elf)?;
     let elf_file = object::File::parse(&*elf_binary)?;
-    let mut symbols = HashMap::<String, (u32, u64)>::new();
-    for sym in elf_file.symbols() {
-        symbols.insert(sym.name()?.to_owned(), (sym.address() as u32, sym.size()));
-    }
-    let (test_phase_address, test_phase_size) = symbols
-        .get("kCurrentTestPhaseReal")
+    let symbol = elf_file
+        .symbols()
+        .find(|symbol| symbol.name() == Ok("kCurrentTestPhaseReal"))
         .expect("Provided ELF missing 'kCurrentTestPhaseReal' symbol");
     assert_eq!(
-        *test_phase_size, 1,
+        symbol.size(), 1,
         "symbol 'kCurrentTestPhaseReal' does not have the expected size"
     );
 
@@ -181,7 +176,7 @@ fn main() -> Result<()> {
         &transport,
         &*uart,
         config,
-        *test_phase_address
+        symbol.address() as u32,
     );
     Ok(())
 }
