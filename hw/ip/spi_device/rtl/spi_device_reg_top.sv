@@ -2245,6 +2245,8 @@ module spi_device_reg_top (
   logic addr_mode_qe;
   logic [1:0] addr_mode_flds_we;
   // This ignores QEs that are set to constant 0 due to read-only fields.
+  logic unused_addr_mode_flds_we;
+  assign unused_addr_mode_flds_we = ^(addr_mode_flds_we & 2'h2);
   assign addr_mode_qe = &(addr_mode_flds_we | 2'h2);
   //   F[addr_4b_en]: 0:0
   prim_subreg_ext #(
