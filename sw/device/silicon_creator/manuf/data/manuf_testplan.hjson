@@ -271,8 +271,6 @@
             - Check device lc_state. Return error to the host if device in invalid state.
             - Configure the following OTP fuses to enable access to entropy:
               - EN_CSRNG_SW_APP_READ
-              - EN_ENTROPY_SRC_FW_READ
-              - EN_ENTROPY_SRC_FW_OVER
             - Configure remaining HW_CFG0 OTP fields:
               - DEVICE_ID
               - MANUF_STATE

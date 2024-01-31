@@ -943,30 +943,6 @@
       default: "1",
       local: "true"
     },
-    { name: "EnEntropySrcFwReadOffset",
-      desc: "Offset of EN_ENTROPY_SRC_FW_READ",
-      type: "int",
-      default: "1730",
-      local: "true"
-    },
-    { name: "EnEntropySrcFwReadSize",
-      desc: "Size of EN_ENTROPY_SRC_FW_READ",
-      type: "int",
-      default: "1",
-      local: "true"
-    },
-    { name: "EnEntropySrcFwOverOffset",
-      desc: "Offset of EN_ENTROPY_SRC_FW_OVER",
-      type: "int",
-      default: "1731",
-      local: "true"
-    },
-    { name: "EnEntropySrcFwOverSize",
-      desc: "Size of EN_ENTROPY_SRC_FW_OVER",
-      type: "int",
-      default: "1",
-      local: "true"
-    },
     { name: "HwCfg0DigestOffset",
       desc: "Offset of HW_CFG0_DIGEST",
       type: "int",
@@ -1562,8 +1538,6 @@
       name: "OTP_CTRL.ENTROPY_READ"
       desc: '''Firmware can read entropy from ENTROPY_SRC block by configuring following field of HW_CFG* partition.
         - EN_CSRNG_SW_APP_READ
-        - EN_ENTROPY_SRC_FW_READ
-        - EN_ENTROPY_SRC_FW_OVER
       '''
     }
     {

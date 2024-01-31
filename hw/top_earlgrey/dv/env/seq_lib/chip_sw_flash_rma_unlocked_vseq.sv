@@ -72,9 +72,7 @@ class chip_sw_flash_rma_unlocked_vseq extends chip_sw_base_vseq;
       .manuf_state(manuf_state),
       // Use same default config as in otp_ctrl_img_hw_cfg.hjson
       .en_sram_ifetch(prim_mubi_pkg::MuBi8False),
-      .en_csrng_sw_app_read(prim_mubi_pkg::MuBi8True),
-      .en_entropy_src_fw_read(prim_mubi_pkg::MuBi8True),
-      .en_entropy_src_fw_over(prim_mubi_pkg::MuBi8True));
+      .en_csrng_sw_app_read(prim_mubi_pkg::MuBi8True));
 
     // Read current chip revision and generation parameter values.
     retval = uvm_hdl_read(SILICON_CREATOR_ID_PATH, silicon_creator_id);

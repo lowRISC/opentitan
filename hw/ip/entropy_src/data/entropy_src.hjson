@@ -78,12 +78,14 @@
       name:    "otp_en_entropy_src_fw_read"
       act:     "rcv"
       package: "prim_mubi_pkg"
+      default: "prim_mubi_pkg::MuBi8True"
     }
     { struct:  "mubi8"
       type:    "uni"
       name:    "otp_en_entropy_src_fw_over"
       act:     "rcv"
       package: "prim_mubi_pkg"
+      default: "prim_mubi_pkg::MuBi8True"
     }
     { struct:  "logic"
       type:    "uni"

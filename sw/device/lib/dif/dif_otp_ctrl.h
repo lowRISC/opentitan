@@ -64,10 +64,6 @@ typedef enum dif_otp_ctrl_partition {
    * - EN_SRAM_IFETCH: Enable / disable execute from SRAM CSR switch.
    * - EN_CSRNG_SW_APP_READ: This input efuse is used to enable access
    * to the NIST internal state per instance.
-   * - EN_ENTROPY_SRC_FW_READ: This input efuse is used to enable access
-   * to the ENTROPY_DATA register directly.
-   * - EN_ENTROPY_SRC_FW_OVER: This input efuse is used to enable access
-   * to the firmware override FIFO and other related functions.
    */
   kDifOtpCtrlPartitionHwCfg0,
   /**
