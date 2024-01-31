@@ -41,6 +41,8 @@ static CONFIG: Lazy<HashMap<&'static str, Config>> = Lazy::new(|| {
             output_pins: vec!["IOR10", "IOR11", "IOR12", "IOR5", "IOR6", "IOR7", "IOR8", "IOR9"],
             open_drain: vec![false, false, false, false, false, false, true, true],
             input_pins: vec![],
+            //  ec_rst, flash_wp
+            pullup_pins: vec!["IOR8", "IOR9"],
         },
     }
 });
