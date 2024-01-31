@@ -35,3 +35,18 @@ rust_binary(
         "//third_party/rust/crates:object",
     ],
 )
+
+rust_binary(
+    name = "uart_loopback",
+    srcs = [
+        "src/uart_loopback.rs",
+    ],
+    deps = [
+        "//sw/host/opentitanlib",
+        "//third_party/rust/crates:anyhow",
+        "//third_party/rust/crates:clap",
+        "//third_party/rust/crates:humantime",
+        "//third_party/rust/crates:log",
+        "//third_party/rust/crates:object",
+    ],
+)
