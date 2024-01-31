@@ -38,6 +38,7 @@ struct Opts {
 static CONFIG: Lazy<HashMap<&'static str, Config>> = Lazy::new(|| {
     collection! {
         "hyper310" => Config {
+            // key0, key1, key2, pwrb_in, ac_present_in, lid_open, ec_rst, flash_wp
             output_pins: vec!["IOR10", "IOR11", "IOR12", "IOR5", "IOR6", "IOR7", "IOR8", "IOR9"],
             open_drain: vec![false, false, false, false, false, false, true, true],
             input_pins: vec![],
