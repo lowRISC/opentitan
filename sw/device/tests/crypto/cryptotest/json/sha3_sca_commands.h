@@ -11,6 +11,7 @@ extern "C" {
 
 #define SHA3SCA_CMD_MAX_BATCH_DIGEST_BYTES 32
 #define SHA3SCA_CMD_MAX_DATA_BYTES 16
+#define SHA3SCA_CMD_MAX_FPGA_MODE_BYTES 1
 #define SHA3SCA_CMD_MAX_MASKS_OFF_BYTES 1
 #define SHA3SCA_CMD_MAX_LFSR_BYTES 4
 #define SHA3SCA_CMD_MAX_MSG_BYTES 16
@@ -38,6 +39,10 @@ UJSON_SERDE_STRUCT(CryptotestSha3ScaLfsr, cryptotest_sha3_sca_lfsr_t, SHA3_SCA_L
 #define SHA3_SCA_DATA(field, string) \
     field(data, uint8_t, SHA3SCA_CMD_MAX_DATA_BYTES)
 UJSON_SERDE_STRUCT(CryptotestSha3ScaData, cryptotest_sha3_sca_data_t, SHA3_SCA_DATA);
+
+#define SHA3_SCA_FPGA_MODE(field, string) \
+    field(fpga_mode, uint8_t)
+UJSON_SERDE_STRUCT(CryptotestSha3ScaFpgaMode, cryptotest_sha3_sca_fpga_mode_t, SHA3_SCA_FPGA_MODE);
 
 #define SHA3_SCA_MSG(field, string) \
     field(msg, uint8_t, SHA3SCA_CMD_MAX_MSG_BYTES) \
