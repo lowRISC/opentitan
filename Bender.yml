@@ -6,7 +6,7 @@ dependencies:
 
   axi:                  { git: "https://github.com/pulp-platform/axi.git", version: =0.39.1  }
   cluster_interconnect: { git: "https://github.com/pulp-platform/cluster_interconnect.git", version: "1.1.2" }
-  idma:                 { git: "git@github.com:alSaqr-platform/idma.git", rev: "da9b02930ec976972a4599d76a86848f2a54a9c4" }
+  idma:                 { git: "git@github.com:alSaqr-platform/idma.git", version: 0.5.1 }
   register_interface:   { git: "https://github.com/pulp-platform/register_interface.git", version: 0.3.2 }
 
 export_include_dirs:

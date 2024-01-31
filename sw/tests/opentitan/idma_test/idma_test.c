@@ -9,11 +9,11 @@
 #define L2_BASE        0x1C001000
 #define L3_BASE        0x80000000
 
-#define IDMA_SRC_ADDR_OFFSET         0xd8
-#define IDMA_DST_ADDR_OFFSET         0xd0
-#define IDMA_LENGTH_OFFSET           0xe0
-#define IDMA_NEXT_ID_OFFSET          0x44
-#define IDMA_REPS_2_OFFSET           0xf8
+#define IDMA_SRC_ADDR_OFFSET         0x00
+#define IDMA_DST_ADDR_OFFSET         0x04
+#define IDMA_LENGTH_OFFSET           0x08
+#define IDMA_NEXT_ID_OFFSET          0x20
+#define IDMA_REPS_2_OFFSET           0x18
 int main() {
 
   int baud_rate = 115200;
@@ -34,25 +34,12 @@ int main() {
   ptr = (int *) (IDMA_BASE + IDMA_LENGTH_OFFSET);
   *ptr = 0x00000190;
   ptr = (int *) (IDMA_BASE + IDMA_NEXT_ID_OFFSET);
-  *ptr = 0x00000001;
-  ptr = (int *) (IDMA_BASE);
-  *ptr = 0x00000400;
-  ptr = (int *) (IDMA_BASE + IDMA_REPS_2_OFFSET);
-  *ptr = 0x00000320;
-  ptr = (int *) (IDMA_BASE + IDMA_NEXT_ID_OFFSET);
   buff = *ptr;
   for(int i = 0; i<100; i++){
     ptr = (int *) L2_BASE + i;
     b = *ptr;
-    if(b=!i){
-      printf("Wrong! Reading at 0x%x: 0x%x\r\n",ptr,*ptr);
-      uart_wait_tx_done();
+    if(b=!i)
       err++;
-    }
-    else{
-      printf("Correct! Reading at 0x%x: 0x%x\r\n",ptr,*ptr);
-      uart_wait_tx_done();
-    }
   }
   printf("Num errors: %d out of 100!\r\n",err);
   uart_wait_tx_done();

@@ -101,4 +101,3 @@ $(OT_ROOT)/hw/tb/vips:
 	rm -rf model_tmp
 
 init: bender update scripts/compile_opentitan.tcl scripts/compile_opentitan_vip.tcl $(OT_ROOT)/hw/tb/vips
-	make -C $(IDMA_ROOT) idma_all
