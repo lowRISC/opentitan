@@ -297,7 +297,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
       FastPwrStateReleaseLcRst: begin
         rst_lc_req_d = '0;  // release rst_lc_n for all power domains
         rst_sys_req_d = '0; // release rst_sys_n for all power domains
-        // once all resets are released continue to otp initilization
+        // once all resets are released continue to otp initialization
         if (&pwr_rst_i.rst_lc_src_n) begin
           state_d = FastPwrStateOtpInit;
         end
