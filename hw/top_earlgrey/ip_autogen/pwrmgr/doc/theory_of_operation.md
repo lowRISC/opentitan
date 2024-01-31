@@ -231,6 +231,8 @@ Similar to [reset handling](#reset-request-handling), wakeup signals are only ob
 
 Wakeup recording begins when the fast FSM transitions out of `Active` state and continues until explicitly disabled by software.
 This ensures wakeup events are not missed until software has set up the appropriate peripherals.
+Recording needs clocks to be active, and during low power they are usually not.
+For this reason, it is important for wakeups to be level and remain active until software clears them.
 
 The software is also able to enable recording during `Active` state if it chooses to do so.  The recording enables are OR’d together for hardware purposes.
 
