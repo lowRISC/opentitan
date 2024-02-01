@@ -124,7 +124,7 @@ Further information can be found in [Getting Started with a Design](../hw/design
 
 The main license used by OpenTitan is the Apache License, Version 2.0, marked by the following license header in all source files:
 
-    // Copyright lowRISC contributors.
+    // Copyright lowRISC contributors (OpenTitan project).
     // Licensed under the Apache License, Version 2.0, see LICENSE for details.
     // SPDX-License-Identifier: Apache-2.0
 

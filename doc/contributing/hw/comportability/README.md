@@ -49,7 +49,7 @@ If the file is not covered by a SPDX license then the "Licensed under" line is r
 All files that use the default copyright and license should therefore include the following header (change the comment character as appropriate):
 
 ```
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 ```

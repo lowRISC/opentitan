@@ -156,7 +156,7 @@ index 0000000..d5d88d4
 --- /dev/null
 +++ b/riscv-target/opentitan/compliance_io.h
 @@ -0,0 +1,22 @@
-+// Copyright lowRISC contributors.
++// Copyright lowRISC contributors (OpenTitan project).
 +// Licensed under the Apache License, Version 2.0, see LICENSE for details.
 +// SPDX-License-Identifier: Apache-2.0
 +
@@ -184,7 +184,7 @@ index 0000000..6a889cf
 --- /dev/null
 +++ b/riscv-target/opentitan/compliance_test.h
 @@ -0,0 +1,35 @@
-+// Copyright lowRISC contributors.
++// Copyright lowRISC contributors (OpenTitan project).
 +// Licensed under the Apache License, Version 2.0, see LICENSE for details.
 +// SPDX-License-Identifier: Apache-2.0
 +
@@ -225,7 +225,7 @@ index 0000000..b71105c
 --- /dev/null
 +++ b/riscv-target/opentitan/device/rv32imc/Makefile.include
 @@ -0,0 +1,74 @@
-+# Copyright lowRISC contributors.
++# Copyright lowRISC contributors (OpenTitan project).
 +# Licensed under the Apache License, Version 2.0, see LICENSE for details.
 +# SPDX-License-Identifier: Apache-2.0
 +
@@ -305,7 +305,7 @@ index 0000000..c526fec
 --- /dev/null
 +++ b/riscv-target/opentitan/device/rv32imc/isa.yaml
 @@ -0,0 +1,49 @@
-+## Copyright lowRISC contributors.
++## Copyright lowRISC contributors (OpenTitan project).
 +## Licensed under the Apache License, Version 2.0, see LICENSE for details.
 +## SPDX-License-Identifier: Apache-2.0
 +
@@ -360,7 +360,7 @@ index 0000000..8d67e4e
 --- /dev/null
 +++ b/riscv-target/opentitan/device/rv32imc/main.c
 @@ -0,0 +1,13 @@
-+// Copyright lowRISC contributors.
++// Copyright lowRISC contributors (OpenTitan project).
 +// Licensed under the Apache License, Version 2.0, see LICENSE for details.
 +// SPDX-License-Identifier: Apache-2.0
 +
@@ -379,7 +379,7 @@ index 0000000..7d547d9
 --- /dev/null
 +++ b/riscv-target/opentitan/device/rv32imc/platform.yaml
 @@ -0,0 +1,10 @@
-+# Copyright lowRISC contributors.
++# Copyright lowRISC contributors (OpenTitan project).
 +# Licensed under the Apache License, Version 2.0, see LICENSE for details.
 +# SPDX-License-Identifier: Apache-2.0
 +
@@ -395,7 +395,7 @@ index 0000000..1b1b5c7
 --- /dev/null
 +++ b/riscv-target/opentitan/device/rv32imc/run_rvc_test.S
 @@ -0,0 +1,85 @@
-+// Copyright lowRISC contributors.
++// Copyright lowRISC contributors (OpenTitan project).
 +// Licensed under the Apache License, Version 2.0, see LICENSE for details.
 +// SPDX-License-Identifier: Apache-2.0
 +

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright lowRISC contributors.
+# Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -13,7 +13,7 @@ import sys
 import hjson
 
 UPSTREAM = "lowRISC/opentitan"
-COPYRIGHT_HEADER = """// Copyright lowRISC contributors.
+COPYRIGHT_HEADER = """// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 

@@ -74,7 +74,7 @@ Anything enclosed should have two space indentation.
 In most cases, before the opening `{` the file should start with a comment containing the copyright and license details and the SPDX-License-Identifier.
 
 ```hjson {.good}
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {

@@ -258,7 +258,7 @@ Vendoring external code is done by creating a vendor description file, and then 
    4. Create the vendor description file in `hw/vendor/<vendor>_<name>.vendor.hjson` with the following contents (adjust as needed):
 
       ```
-      // Copyright lowRISC contributors.
+      // Copyright lowRISC contributors (OpenTitan project).
       // Licensed under the Apache License, Version 2.0, see LICENSE for details.
       // SPDX-License-Identifier: Apache-2.0
       {
