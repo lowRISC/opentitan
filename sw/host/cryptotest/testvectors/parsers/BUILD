@@ -49,3 +49,12 @@ py_binary(
         requirement("jsonschema"),
     ],
 )
+
+py_binary(
+    name = "wycheproof_hmac_parser",
+    srcs = ["wycheproof_hmac_parser.py"],
+    deps = [
+        ":cryptotest_util",
+        requirement("jsonschema"),
+    ],
+)
