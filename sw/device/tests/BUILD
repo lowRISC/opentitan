@@ -3534,7 +3534,7 @@ opentitan_test(
     srcs = ["usbdev_config_host_test.c"],
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     verilator = new_verilator_params(timeout = "long"),
     deps = [
