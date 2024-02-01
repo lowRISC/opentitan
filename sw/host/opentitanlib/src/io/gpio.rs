@@ -5,6 +5,7 @@
 use anyhow::Result;
 use clap::ValueEnum;
 use serde::{Deserialize, Serialize};
+use std::time::Duration;
 use thiserror::Error;
 
 use crate::impl_serializable_error;
@@ -35,6 +36,14 @@ pub enum GpioError {
     PinValueUndefined(String),
     #[error("Unsupported voltage {0}V requested")]
     UnsupportedPinVoltage(f32),
+    #[error("Unsupported number of pins: {0}")]
+    UnsupportedNumberOfPins(usize),
+    #[error("Mismatched bitbang data length: {0} != {1}")]
+    MismatchedDataLength(usize, usize),
+    #[error("Bitbang data beyond the {0} least significant bits")]
+    InvalidBitbangData(usize),
+    #[error("Bitbang delay of zero, or at end of sequence, not permitted")]
+    InvalidBitbangDelay,
     #[error("Generic error: {0}")]
     Generic(String),
 }
@@ -199,4 +208,49 @@ pub trait GpioMonitoring {
         pins: &[&dyn GpioPin],
         continue_monitoring: bool,
     ) -> Result<MonitoringReadResponse>;
+}
+
+/// Represents one entry in the specification of a bitbanging waveform.  Pins must have been
+/// configured as either `PushPull`, `OpenDrain` or `Input` prior to requesting a bitbang
+/// operation.
+///
+/// `Write` and `Both` are somewhat equivalent to their namesakes in `spi::Transfer`, that is
+/// `Write` requests using the given data for generating waveforms on any of the pins configured
+/// as output, while disregarding the actual levels of the pins.  `Both` requests generating a
+/// waveform, and also sampling every pin at each clock tick.
+pub enum BitbangEntry<'rd, 'wr> {
+    /// Represents a sequence of pin values.  Bit 0 in each byte controls the first `GpioPin` in
+    /// the slice given to `GpioBitbanging::run()`, bit 1 controls the second `GpioPin`, and so
+    /// on.  Each byte is applied to the pins in sequence, with a particular delay between each
+    /// given by the `clock_tick` argument to `run()`.
+    Write(&'wr [u8]),
+    /// Represents a sequence of pin values as above, but additionally captures the value of any
+    /// pins in `Input` or `OpenDrain` mode.  At each clock tick, the input levels are sampled
+    /// just before the given output levels are applied, meaning that the data coming back will be
+    /// offset by one sample.
+    Both(&'wr [u8], &'rd mut [u8]),
+    /// Represents a delay of the given number of clock ticks in which the output levels are held
+    /// as indicated by the last byte of the preceeding `Write`/`Both` entry.
+    ///
+    /// A delay of zero is invalid.  A delay of one tick is equivalent to not specifying any
+    /// `Delay` between two `Write` blocks, which is also equivalent to concatenating the two into
+    /// a single `Write` block.
+    Delay(u32),
+}
+
+/// A trait implemented by transports which support synchronous bit-banging on GPIO pins, similar
+/// to FTDI devices.  This trait allows generation of arbitraty waveforms on a set of pins, and
+/// optionally getting back samples from same or other pins, taken at precise times.
+pub trait GpioBitbanging {
+    /// Apply the given sequence of values to the given set of GPIO pins, by each tick of a clock
+    /// with the given period.  This function does not change the mode of any pins, they must
+    /// already be put into `PushPull`, `OpenDrain` or `Input` mode as appropriate.  (In the
+    /// latter case, the specified waveform data does not matter, as the pin is not driving, and
+    /// would be included in the set of pins only in order to have it sampled at each clock tick.)
+    fn run(
+        &self,
+        pins: &[&dyn GpioPin],
+        clock_tick: Duration,
+        waveform: &mut [BitbangEntry],
+    ) -> Result<()>;
 }

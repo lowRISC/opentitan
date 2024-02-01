@@ -12,7 +12,7 @@ use std::rc::Rc;
 
 use crate::bootstrap::BootstrapOptions;
 use crate::io::emu::Emulator;
-use crate::io::gpio::{GpioMonitoring, GpioPin};
+use crate::io::gpio::{GpioBitbanging, GpioMonitoring, GpioPin};
 use crate::io::i2c::Bus;
 use crate::io::jtag::{JtagChain, JtagParams};
 use crate::io::nonblocking_help::{NoNonblockingHelp, NonblockingHelp};
@@ -50,6 +50,7 @@ bitflags! {
         const UART_NONBLOCKING = 0x01 << 8;
         const SPI_DUAL = 0x01 << 9;
         const SPI_QUAD = 0x01 << 10;
+        const GPIO_BITBANGING = 0x01 << 11;
     }
 }
 
@@ -134,6 +135,11 @@ pub trait Transport {
     /// Returns a [`GpioMonitoring`] implementation, for logic analyzer functionality.
     fn gpio_monitoring(&self) -> Result<Rc<dyn GpioMonitoring>> {
         Err(TransportError::InvalidInterface(TransportInterfaceType::GpioMonitoring).into())
+    }
+    /// Returns a [`GpioBitbanging`] implementation, for timed and synchronized manipulation of
+    /// multiple GPIO pins.
+    fn gpio_bitbanging(&self) -> Result<Rc<dyn GpioBitbanging>> {
+        Err(TransportError::InvalidInterface(TransportInterfaceType::GpioBitbanging).into())
     }
     /// Returns a [`Emulator`] implementation.
     fn emulator(&self) -> Result<Rc<dyn Emulator>> {
