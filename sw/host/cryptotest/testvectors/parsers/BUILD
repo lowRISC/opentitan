@@ -40,3 +40,12 @@ py_binary(
         requirement("pycryptodome"),
     ],
 )
+
+py_binary(
+    name = "nist_cavp_hmac_parser",
+    srcs = ["nist_cavp_hmac_parser.py"],
+    deps = [
+        ":cryptotest_util",
+        requirement("jsonschema"),
+    ],
+)
