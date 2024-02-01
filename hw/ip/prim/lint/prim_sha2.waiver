@@ -34,7 +34,7 @@ waive -rules {ARITH_CONTEXT} -location {prim_sha2_pkg.sv} -regexp {Bitlength of 
       -comment "Bitwidth overflow is intended"
 
 # INPUT_NOT_READ
-waive -rules {INPUT_NOT_READ} -location {prim_sha2_pkg.sv} -regexp {Input port 'h_i\[0:7\]\[63:32\]' is not read from in function 'compress_multi_256'}
+waive -rules {INPUT_NOT_READ} -location {prim_sha2_pkg.sv} -regexp {Input port 'h_i\[0:7\]\[63:32\]' is not read from in function 'compress_multi_256'} \
       -comment "Upper bits are only used in SHA2-384/512"
 
 # INTEGER
