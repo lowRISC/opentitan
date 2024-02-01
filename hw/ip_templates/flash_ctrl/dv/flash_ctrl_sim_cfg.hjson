@@ -14,5 +14,5 @@
   // Simulator used to sign off this block
   tool: vcs
 
-  import_cfgs: ["{proj_root}/hw/ip/flash_ctrl/dv/flash_ctrl_base_sim_cfg.hjson"]
+  import_cfgs: ["{self_dir}/flash_ctrl_base_sim_cfg.hjson"]
 }

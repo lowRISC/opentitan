@@ -1,13 +1,13 @@
 # Interfaces
 
-<!-- BEGIN CMDGEN util/regtool.py --interfaces ./hw/ip/flash_ctrl/data/flash_ctrl.hjson -->
+<!-- BEGIN CMDGEN util/regtool.py --interfaces ./hw/top_${topname}/ip_autogen/flash_ctrl/data/flash_ctrl.hjson -->
 Referring to the [Comportable guideline for peripheral device functionality](https://opentitan.org/book/doc/contributing/hw/comportability), the module **`flash_ctrl`** has the following hardware interfaces defined
 - Primary Clock: **`clk_i`**
 - Other Clocks: **`clk_otp_i`**
 - Bus Device Interfaces (TL-UL): **`core_tl`**, **`prim_tl`**, **`mem_tl`**
 - Bus Host Interfaces (TL-UL): *none*
 
-## Peripheral Pins for Chip IO
+${"##"} Peripheral Pins for Chip IO
 
 | Pin name   | Direction   | Description   |
 |:-----------|:------------|:--------------|
@@ -16,7 +16,7 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | tdi        | input       | jtag input    |
 | tdo        | output      | jtag output   |
 
-## [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
+${"##"} [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
 
 | Port Name                | Package::Struct                | Type    | Act   |   Width | Description   |
 |:-------------------------|:-------------------------------|:--------|:------|--------:|:--------------|
@@ -44,7 +44,7 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | prim_tl                  | tlul_pkg::tl                   | req_rsp | rsp   |       1 |               |
 | mem_tl                   | tlul_pkg::tl                   | req_rsp | rsp   |       1 |               |
 
-## Interrupts
+${"##"} Interrupts
 
 | Interrupt Name   | Type   | Description                   |
 |:-----------------|:-------|:------------------------------|
@@ -55,7 +55,7 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | op_done          | Event  | Operation complete            |
 | corr_err         | Event  | Correctable error encountered |
 
-## Security Alerts
+${"##"} Security Alerts
 
 | Alert Name             | Description                                                                                                         |
 |:-----------------------|:--------------------------------------------------------------------------------------------------------------------|
@@ -65,7 +65,7 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | fatal_prim_flash_alert | Fatal alert triggered inside the flash primitive, including fatal TL-UL bus integrity faults of the test interface. |
 | recov_prim_flash_alert | Recoverable alert triggered inside the flash primitive.                                                             |
 
-## Security Countermeasures
+${"##"} Security Countermeasures
 
 | Countermeasure ID                          | Description                                                                                                                                                                                                                                        |
 |:-------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -102,7 +102,7 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 <!-- END CMDGEN -->
 
-## Signals
+${"##"} Signals
 
 In addition to the interrupts and bus signals, the tables below lists the flash controller functional I/Os.
 

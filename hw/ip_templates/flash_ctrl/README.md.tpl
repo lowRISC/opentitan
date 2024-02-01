@@ -1,6 +1,6 @@
 # Flash Controller HWIP Technical Specification
 
-[`flash_ctrl`](https://reports.opentitan.org/hw/ip/flash_ctrl/dv/latest/report.html):
+[`flash_ctrl`](https://reports.opentitan.org/hw/top_${topname}/ip_autogen/flash_ctrl/dv/latest/report.html):
 ![](https://dashboards.lowrisc.org/badges/dv/flash_ctrl/test.svg)
 ![](https://dashboards.lowrisc.org/badges/dv/flash_ctrl/passing.svg)
 ![](https://dashboards.lowrisc.org/badges/dv/flash_ctrl/functional.svg)
@@ -25,12 +25,12 @@ This open source flash controller is divided into two partitions.
 
 The remaining document focuses primarily on the function of these blocks.
 
-This module conforms to the [Comportable guideline for peripheral functionality.](../../../doc/contributing/hw/comportability/README.md)
+This module conforms to the [Comportable guideline for peripheral functionality](https://opentitan.org/book/doc/contributing/hw/comportability).
 See that document for integration overview within the broader top level system.
 
-## Features
+${"##"} Features
 
-### Flash Protocol Controller Features
+${"###"} Flash Protocol Controller Features
 The flash protocol controller interfaces with software and other hardware components in the system (such as life cycle, key manager and OTP).
 Regardless of the flash size underneath, the flash controller maintains the same data resolution as the bus and processor (default 4B).
 The flash physical controller (see section below) is then responsible for bridging that size gap between the default data resolution and the actual flash memory.
@@ -54,7 +54,7 @@ The protocol controller currently supports the following features:
 *  Idle indication to external power managers.
 *  Software control of flash code fetch.
 
-### Flash Physical Controller Features
+${"###"} Flash Physical Controller Features
 
 The flash physical controller wraps the actual flash memory and translates both host and controller initiated requests into low level flash transactions.
 
@@ -82,7 +82,7 @@ The physical controller supports the following features
 *  Life cycle modulated JTAG connection to the vendor flash module.
 
 
-### Flash Memory Overview
+${"###"} Flash Memory Overview
 
 Unlike sram, flash memory is not typically organized as a contiguous block of generic storage.
 Instead it is organized into data partitions and information partitions.
@@ -115,9 +115,9 @@ Lastly, while the different partitions may be identical in some attributes, they
 
 For default assumptions of the design, see the [default configuration](./doc/theory_of_operation.md#flash-default-configuration).
 
-#### Addresses Map
+${"####"} Addresses Map
 
-##### Bank Address
+${"#####"} Bank Address
 The flash address map is built upon the bank base address.
 The bank size is based upon the number of pages in the data partition.
 The first bank's address is always `0x0`.
@@ -128,7 +128,7 @@ Assume each bank is 512KB in size.
 The address of bank 0 is `0x0`.
 The address of bank 1 is `0x80000`
 
-##### Page Address
+${"#####"} Page Address
 The address of a particular page is calculated based on the page size and the index number of the page.
 
 For example:
@@ -139,14 +139,14 @@ This would still be `0x80000` in this case.
 
 To access page 4 in bank 1, the address would then be `0x80000 + 2KB * 4 = 0x82000`.
 
-##### Partition Access
+${"#####"} Partition Access
 All partitions share the same addressing scheme.
 For example, the page 0 address of any kind of partition is always the same.
 
 To distinguish which partition is accessed, use the configuration in [`CONTROL.PARTITION_SEL`](data/flash_ctrl.hjson#control) and [`CONTROL.INFO_SEL`](data/flash_ctrl.hjson#control)
 Note however, the system host is only able to access the [data partitions](./doc/theory_of_operation.md#host-and-protocol-controller-handling).
 
-##### Default Address Map
+${"#####"} Default Address Map
 Based on the [default configuration](./doc/theory_of_operation.md#flash-default-configuration), the following would be the default address map for each partition / page.
 
 Location        | Address      |
@@ -165,7 +165,7 @@ Bank 1 Page 255 | 0xFF800      |
 Note when accessing from host, the system memory address for flash should be added to this offset.
 
 
-#### Secret Information Partitions
+${"####"} Secret Information Partitions
 
 Two information partition pages (one for creator and one for owner) in the design hold secret seeds for the key manager.
 These pages, when enabled by life cycle and OTP, are read upon flash controller initialization (no software configuration is required).
@@ -179,9 +179,9 @@ The seed pages can be programmed/erased/read by software when the following are 
 The seed pages are read under the following initialization conditions:
 *  life cycle sets provision enable - `lc_seed_hw_rd_en` is set.
 
-See [life cycle](../lc_ctrl/README.md#creator_seed_sw_rw_en-and-owner_seed_sw_rw_en) for more details on when this partition is allowed to be populated.
+See [life cycle](../../../ip/lc_ctrl/README.md#creator_seed_sw_rw_en-and-owner_seed_sw_rw_en) for more details on when this partition is allowed to be populated.
 
-#### Isolated Information Partitions
+${"####"} Isolated Information Partitions
 
 One information partition page in the design is used for manufacturing time authentication.
 The accessibility of this page is controlled by life cycle and OTP.
@@ -192,4 +192,4 @@ During TEST states, the isolated page is only programmable.
 During production and RMA states, the isolated page is also readable.
 * Both `lc_iso_part_sw_wr_en` and `lc_iso_part_sw_rd_en` are set.
 
-See [life cycle](../lc_ctrl/README.md#iso_part_sw_rd_en-and-iso_part_sw_wr_en) for more details
+See [life cycle](../../../ip/lc_ctrl/README.md#iso_part_sw_rd_en-and-iso_part_sw_wr_en) for more details

@@ -3,8 +3,8 @@
 The flash protocol controller maintains two separate access windows for the FIFO.
 It is implemented this way because the access window supports transaction back-pressure should the FIFO become full (in case of write) or empty (in case of read).
 
-<!-- BEGIN CMDGEN util/regtool.py -d ./hw/ip/flash_ctrl/data/flash_ctrl.hjson -->
-## Summary of the **`core`** interface's registers
+<!-- BEGIN CMDGEN util/regtool.py -d ./hw/top_${topname}/ip_autogen/flash_ctrl/data/flash_ctrl.hjson -->
+${"##"} Summary of the **`core`** interface's registers
 
 | Name                                                         | Offset   |   Length | Description                                                   |
 |:-------------------------------------------------------------|:---------|---------:|:--------------------------------------------------------------|
@@ -119,13 +119,13 @@ It is implemented this way because the access window supports transaction back-p
 | flash_ctrl.[`prog_fifo`](#prog_fifo)                         | 0x1b0    |        4 | Flash program FIFO.                                           |
 | flash_ctrl.[`rd_fifo`](#rd_fifo)                             | 0x1b4    |        4 | Flash read FIFO.                                              |
 
-## INTR_STATE
+${"##"} INTR_STATE
 Interrupt State Register
 - Offset: `0x0`
 - Reset default: `0x0`
 - Reset mask: `0x3f`
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "prog_empty", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "prog_lvl", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "rd_full", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "rd_lvl", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "op_done", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "corr_err", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 26}], "config": {"lanes": 1, "fontsize": 10, "vspace": 120}}
@@ -141,13 +141,13 @@ Interrupt State Register
 |   1    |  rw1c  |   0x0   | prog_lvl   | Program FIFO drained to level |
 |   0    |  rw1c  |   0x0   | prog_empty | Program FIFO empty            |
 
-## INTR_ENABLE
+${"##"} INTR_ENABLE
 Interrupt Enable Register
 - Offset: `0x4`
 - Reset default: `0x0`
 - Reset mask: `0x3f`
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "prog_empty", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "prog_lvl", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "rd_full", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "rd_lvl", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "op_done", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "corr_err", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 26}], "config": {"lanes": 1, "fontsize": 10, "vspace": 120}}
@@ -163,13 +163,13 @@ Interrupt Enable Register
 |   1    |   rw   |   0x0   | prog_lvl   | Enable interrupt when [`INTR_STATE.prog_lvl`](#intr_state) is set.   |
 |   0    |   rw   |   0x0   | prog_empty | Enable interrupt when [`INTR_STATE.prog_empty`](#intr_state) is set. |
 
-## INTR_TEST
+${"##"} INTR_TEST
 Interrupt Test Register
 - Offset: `0x8`
 - Reset default: `0x0`
 - Reset mask: `0x3f`
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "prog_empty", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "prog_lvl", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "rd_full", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "rd_lvl", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "op_done", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "corr_err", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 26}], "config": {"lanes": 1, "fontsize": 10, "vspace": 120}}
@@ -185,13 +185,13 @@ Interrupt Test Register
 |   1    |   wo   |   0x0   | prog_lvl   | Write 1 to force [`INTR_STATE.prog_lvl`](#intr_state) to 1.   |
 |   0    |   wo   |   0x0   | prog_empty | Write 1 to force [`INTR_STATE.prog_empty`](#intr_state) to 1. |
 
-## ALERT_TEST
+${"##"} ALERT_TEST
 Alert Test Register
 - Offset: `0xc`
 - Reset default: `0x0`
 - Reset mask: `0x1f`
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "recov_err", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "fatal_std_err", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "fatal_err", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "fatal_prim_flash_alert", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "recov_prim_flash_alert", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 27}], "config": {"lanes": 1, "fontsize": 10, "vspace": 240}}
@@ -206,13 +206,13 @@ Alert Test Register
 |   1    |   wo   |   0x0   | fatal_std_err          | Write 1 to trigger one alert event of this kind. |
 |   0    |   wo   |   0x0   | recov_err              | Write 1 to trigger one alert event of this kind. |
 
-## DIS
+${"##"} DIS
 Disable flash functionality
 - Offset: `0x10`
 - Reset default: `0x9`
 - Reset mask: `0xf`
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "VAL", "bits": 4, "attr": ["rw1s"], "rotate": 0}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -223,7 +223,7 @@ Disable flash functionality
 |  31:4  |        |         | Reserved         |
 |  3:0   |  rw1s  |   0x9   | [VAL](#dis--val) |
 
-### DIS . VAL
+${"###"} DIS . VAL
 Disables flash functionality completely.
 This is a shortcut mechanism used by the software to completely
 kill flash in case of emergency.
@@ -231,13 +231,13 @@ kill flash in case of emergency.
 Since this register is rw1s instead of rw, to disable, write the value kMuBi4True
 to the register to disable the flash.
 
-## EXEC
+${"##"} EXEC
 Controls whether flash can be used for code execution fetches
 - Offset: `0x14`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "EN", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -247,13 +247,13 @@ Controls whether flash can be used for code execution fetches
 |:------:|:------:|:-------:|:-------|:-----------------------------------------------------------------------------------------------------------|
 |  31:0  |   rw   |   0x0   | EN     | A value of 0xa26a38f7 allows flash to be used for code execution. Any other value prevents code execution. |
 
-## INIT
+${"##"} INIT
 Controller init register
 - Offset: `0x18`
 - Reset default: `0x0`
 - Reset mask: `0x1`
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "VAL", "bits": 1, "attr": ["rw1s"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -264,7 +264,7 @@ Controller init register
 |  31:1  |        |         | Reserved          |
 |   0    |  rw1s  |   0x0   | [VAL](#init--val) |
 
-### INIT . VAL
+${"###"} INIT . VAL
 Initializes the flash controller.
 
 During the initialization process, the flash controller requests the address and data
@@ -274,7 +274,7 @@ of the flash controller.
 When the initialization sequence is complete, the flash read buffers are enabled
 and turned on.
 
-## CTRL_REGWEN
+${"##"} CTRL_REGWEN
 Controls the configurability of the [`CONTROL`](#control) register.
 
 This register ensures the contents of [`CONTROL`](#control) cannot be changed by software once a flash
@@ -285,7 +285,7 @@ It unlocks whenever the existing flash operation completes, regardless of succes
 - Reset default: `0x1`
 - Reset mask: `0x1`
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "EN", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -296,14 +296,14 @@ It unlocks whenever the existing flash operation completes, regardless of succes
 |  31:1  |        |         |        | Reserved                                                                                                                                                                                                                                          |
 |   0    |   ro   |   0x1   | EN     | Configuration enable. This bit defaults to 1 and is set to 0 by hardware when flash operation is initiated. When the controller completes the flash operation, this bit is set back to 1 to allow software configuration of [`CONTROL`](#control) |
 
-## CONTROL
+${"##"} CONTROL
 Control register
 - Offset: `0x20`
 - Reset default: `0x0`
 - Reset mask: `0xfff07f1`
 - Register enable: [`CTRL_REGWEN`](#ctrl_regwen)
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "START", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 3}, {"name": "OP", "bits": 2, "attr": ["rw"], "rotate": 0}, {"name": "PROG_SEL", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "ERASE_SEL", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "PARTITION_SEL", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "INFO_SEL", "bits": 2, "attr": ["rw"], "rotate": -90}, {"bits": 5}, {"name": "NUM", "bits": 12, "attr": ["rw"], "rotate": 0}, {"bits": 4}], "config": {"lanes": 1, "fontsize": 10, "vspace": 150}}
@@ -322,16 +322,16 @@ Control register
 |  3:1   |        |         | Reserved                                 |
 |   0    |   rw   |   0x0   | [START](#control--start)                 |
 
-### CONTROL . NUM
+${"###"} CONTROL . NUM
 One fewer than the number of bus words the flash operation should read or program.
 For example, to read 10 words, software should program this field with the value 9.
 
-### CONTROL . INFO_SEL
+${"###"} CONTROL . INFO_SEL
 Informational partions can have multiple types.
 
 This field selects the info type to be accessed.
 
-### CONTROL . PARTITION_SEL
+${"###"} CONTROL . PARTITION_SEL
 When doing a read, program or page erase operation, selects either info or data partition for operation.
 When 0, select data partition - this is the portion of flash that is accessible both by the host and by the controller.
 When 1, select info partition - this is the portion of flash that is only accessible by the controller.
@@ -340,7 +340,7 @@ When doing a bank erase operation, selects info partition also for erase.
 When 0, bank erase only erases data partition.
 When 1, bank erase erases data partition and info partition.
 
-### CONTROL . ERASE_SEL
+${"###"} CONTROL . ERASE_SEL
 Flash erase operation type selection
 
 | Value   | Name       | Description           |
@@ -349,7 +349,7 @@ Flash erase operation type selection
 | 0x1     | Bank Erase | Erase 1 bank of flash |
 
 
-### CONTROL . PROG_SEL
+${"###"} CONTROL . PROG_SEL
 Flash program operation type selection
 
 | Value   | Name           | Description                                                                                                        |
@@ -358,7 +358,7 @@ Flash program operation type selection
 | 0x1     | Program repair | Repair program operation to the flash.  Whether this is actually supported depends on the underlying flash memory. |
 
 
-### CONTROL . OP
+${"###"} CONTROL . OP
 Flash operation selection
 
 | Value   | Name   | Description                                                         |
@@ -369,18 +369,18 @@ Flash operation selection
 
 Other values are reserved.
 
-### CONTROL . START
+${"###"} CONTROL . START
 Start flash transaction.  This bit shall only be set at the same time or after the other
 fields of the [`CONTROL`](#control) register and [`ADDR`](#addr) have been programmed.
 
-## ADDR
+${"##"} ADDR
 Address for flash operation
 - Offset: `0x24`
 - Reset default: `0x0`
 - Reset mask: `0xfffff`
 - Register enable: [`CTRL_REGWEN`](#ctrl_regwen)
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "START", "bits": 20, "attr": ["rw"], "rotate": 0}, {"bits": 12}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -391,7 +391,7 @@ Address for flash operation
 | 31:20  |        |         | Reserved              |
 |  19:0  |   rw   |   0x0   | [START](#addr--start) |
 
-### ADDR . START
+${"###"} ADDR . START
 Start address of a flash transaction.  This is a byte address relative to the flash
 only.  Ie, an address of 0 will access address 0 of the requested partition.
 
@@ -406,14 +406,14 @@ For page erases, the controller will truncate to the closest lower page aligned
 address.  Similarly for bank erases, the controller will truncate to the closest
 lower bank aligned address.
 
-## PROG_TYPE_EN
+${"##"} PROG_TYPE_EN
 Enable different program types
 - Offset: `0x28`
 - Reset default: `0x3`
 - Reset mask: `0x3`
 - Register enable: [`CTRL_REGWEN`](#ctrl_regwen)
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "NORMAL", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "REPAIR", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 30}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -425,13 +425,13 @@ Enable different program types
 |   1    |  rw0c  |   0x1   | REPAIR | Repair prog type available |
 |   0    |  rw0c  |   0x1   | NORMAL | Normal prog type available |
 
-## ERASE_SUSPEND
+${"##"} ERASE_SUSPEND
 Suspend erase
 - Offset: `0x2c`
 - Reset default: `0x0`
 - Reset mask: `0x1`
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "REQ", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -442,12 +442,12 @@ Suspend erase
 |  31:1  |        |         |        | Reserved                                                                                                                                                                                          |
 |   0    |   rw   |   0x0   | REQ    | When 1, request erase suspend. If no erase ongoing, the request is immediately cleared by hardware If erase ongoing, the request is fed to the flash_phy and cleared when the suspend is handled. |
 
-## REGION_CFG_REGWEN
+${"##"} REGION_CFG_REGWEN
 Memory region registers configuration enable.
 - Reset default: `0x1`
 - Reset mask: `0x1`
 
-### Instances
+${"###"} Instances
 
 | Name                | Offset   |
 |:--------------------|:---------|
@@ -461,7 +461,7 @@ Memory region registers configuration enable.
 | REGION_CFG_REGWEN_7 | 0x4c     |
 
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "REGION", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -472,7 +472,7 @@ Memory region registers configuration enable.
 |  31:1  |        |         | Reserved                             |
 |   0    |  rw0c  |   0x1   | [REGION](#region_cfg_regwen--region) |
 
-### REGION_CFG_REGWEN . REGION
+${"###"} REGION_CFG_REGWEN . REGION
 Region register write enable.  Once set to 0, it can longer be configured to 1
 
 | Value   | Name           | Description                                         |
@@ -481,12 +481,12 @@ Region register write enable.  Once set to 0, it can longer be configured to 1
 | 0x1     | Region enabled | Region can be configured                            |
 
 
-## MP_REGION_CFG
+${"##"} MP_REGION_CFG
 Memory property configuration for data partition
 - Reset default: `0x9999999`
 - Reset mask: `0xfffffff`
 
-### Instances
+${"###"} Instances
 
 | Name            | Offset   |
 |:----------------|:---------|
@@ -500,7 +500,7 @@ Memory property configuration for data partition
 | MP_REGION_CFG_7 | 0x6c     |
 
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "EN", "bits": 4, "attr": ["rw"], "rotate": 0}, {"name": "RD_EN", "bits": 4, "attr": ["rw"], "rotate": 0}, {"name": "PROG_EN", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "ERASE_EN", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "SCRAMBLE_EN", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "ECC_EN", "bits": 4, "attr": ["rw"], "rotate": 0}, {"name": "HE_EN", "bits": 4, "attr": ["rw"], "rotate": 0}, {"bits": 4}], "config": {"lanes": 1, "fontsize": 10, "vspace": 130}}
@@ -517,12 +517,12 @@ Memory property configuration for data partition
 |  7:4   |   rw   |   0x9   | RD_EN       | Region can be read                                                                                                 |
 |  3:0   |   rw   |   0x9   | EN          | Region enabled, following fields apply. If region is disabled, it is not matched against any incoming transaction. |
 
-## MP_REGION
+${"##"} MP_REGION
 Memory base and size configuration for data partition
 - Reset default: `0x0`
 - Reset mask: `0x7ffff`
 
-### Instances
+${"###"} Instances
 
 | Name        | Offset   |
 |:------------|:---------|
@@ -536,7 +536,7 @@ Memory base and size configuration for data partition
 | MP_REGION_7 | 0x8c     |
 
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "BASE", "bits": 9, "attr": ["rw"], "rotate": 0}, {"name": "SIZE", "bits": 10, "attr": ["rw"], "rotate": 0}, {"bits": 13}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -548,13 +548,13 @@ Memory base and size configuration for data partition
 |  18:9  |   rw   |   0x0   | SIZE   | Region size in number of pages. For example, if base is 0 and size is 1, then the region is defined by page 0. If base is 0 and size is 2, then the region is defined by pages 0 and 1. |
 |  8:0   |   rw   |   0x0   | BASE   | Region base page. Note the granularity is page, not byte or word                                                                                                                        |
 
-## DEFAULT_REGION
+${"##"} DEFAULT_REGION
 Default region properties
 - Offset: `0x90`
 - Reset default: `0x999999`
 - Reset mask: `0xffffff`
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "RD_EN", "bits": 4, "attr": ["rw"], "rotate": 0}, {"name": "PROG_EN", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "ERASE_EN", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "SCRAMBLE_EN", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "ECC_EN", "bits": 4, "attr": ["rw"], "rotate": 0}, {"name": "HE_EN", "bits": 4, "attr": ["rw"], "rotate": 0}, {"bits": 8}], "config": {"lanes": 1, "fontsize": 10, "vspace": 130}}
@@ -570,12 +570,12 @@ Default region properties
 |  7:4   |   rw   |   0x9   | PROG_EN     | Region can be programmed                                    |
 |  3:0   |   rw   |   0x9   | RD_EN       | Region can be read                                          |
 
-## BANK0_INFO0_REGWEN
+${"##"} BANK0_INFO0_REGWEN
 Memory region registers configuration enable.
 - Reset default: `0x1`
 - Reset mask: `0x1`
 
-### Instances
+${"###"} Instances
 
 | Name                 | Offset   |
 |:---------------------|:---------|
@@ -591,7 +591,7 @@ Memory region registers configuration enable.
 | BANK0_INFO0_REGWEN_9 | 0xb8     |
 
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "REGION", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -602,7 +602,7 @@ Memory region registers configuration enable.
 |  31:1  |        |         | Reserved                              |
 |   0    |  rw0c  |   0x1   | [REGION](#bank0_info0_regwen--region) |
 
-### BANK0_INFO0_REGWEN . REGION
+${"###"} BANK0_INFO0_REGWEN . REGION
 Info0 page write enable.  Once set to 0, it can longer be configured to 1
 
 | Value   | Name         | Description                                         |
@@ -611,13 +611,13 @@ Info0 page write enable.  Once set to 0, it can longer be configured to 1
 | 0x1     | Page enabled | Region can be configured                            |
 
 
-## BANK0_INFO0_PAGE_CFG
+${"##"} BANK0_INFO0_PAGE_CFG
   Memory property configuration for info partition in bank0,
   Unlike data partition, each page is individually configured.
 - Reset default: `0x9999999`
 - Reset mask: `0xfffffff`
 
-### Instances
+${"###"} Instances
 
 | Name                   | Offset   |
 |:-----------------------|:---------|
@@ -633,7 +633,7 @@ Info0 page write enable.  Once set to 0, it can longer be configured to 1
 | BANK0_INFO0_PAGE_CFG_9 | 0xe0     |
 
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "EN", "bits": 4, "attr": ["rw"], "rotate": 0}, {"name": "RD_EN", "bits": 4, "attr": ["rw"], "rotate": 0}, {"name": "PROG_EN", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "ERASE_EN", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "SCRAMBLE_EN", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "ECC_EN", "bits": 4, "attr": ["rw"], "rotate": 0}, {"name": "HE_EN", "bits": 4, "attr": ["rw"], "rotate": 0}, {"bits": 4}], "config": {"lanes": 1, "fontsize": 10, "vspace": 130}}
@@ -650,19 +650,19 @@ Info0 page write enable.  Once set to 0, it can longer be configured to 1
 |  7:4   |   rw   |   0x9   | RD_EN       | Region can be read                                          |
 |  3:0   |   rw   |   0x9   | EN          | Region enabled, following fields apply                      |
 
-## BANK0_INFO1_REGWEN
+${"##"} BANK0_INFO1_REGWEN
 Memory region registers configuration enable.
 - Reset default: `0x1`
 - Reset mask: `0x1`
 
-### Instances
+${"###"} Instances
 
 | Name               | Offset   |
 |:-------------------|:---------|
 | BANK0_INFO1_REGWEN | 0xe4     |
 
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "REGION", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -673,7 +673,7 @@ Memory region registers configuration enable.
 |  31:1  |        |         | Reserved                              |
 |   0    |  rw0c  |   0x1   | [REGION](#bank0_info1_regwen--region) |
 
-### BANK0_INFO1_REGWEN . REGION
+${"###"} BANK0_INFO1_REGWEN . REGION
 Info1 page write enable.  Once set to 0, it can longer be configured to 1
 
 | Value   | Name         | Description                                         |
@@ -682,20 +682,20 @@ Info1 page write enable.  Once set to 0, it can longer be configured to 1
 | 0x1     | Page enabled | Region can be configured                            |
 
 
-## BANK0_INFO1_PAGE_CFG
+${"##"} BANK0_INFO1_PAGE_CFG
   Memory property configuration for info partition in bank0,
   Unlike data partition, each page is individually configured.
 - Reset default: `0x9999999`
 - Reset mask: `0xfffffff`
 
-### Instances
+${"###"} Instances
 
 | Name                 | Offset   |
 |:---------------------|:---------|
 | BANK0_INFO1_PAGE_CFG | 0xe8     |
 
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "EN", "bits": 4, "attr": ["rw"], "rotate": 0}, {"name": "RD_EN", "bits": 4, "attr": ["rw"], "rotate": 0}, {"name": "PROG_EN", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "ERASE_EN", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "SCRAMBLE_EN", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "ECC_EN", "bits": 4, "attr": ["rw"], "rotate": 0}, {"name": "HE_EN", "bits": 4, "attr": ["rw"], "rotate": 0}, {"bits": 4}], "config": {"lanes": 1, "fontsize": 10, "vspace": 130}}
@@ -712,12 +712,12 @@ Info1 page write enable.  Once set to 0, it can longer be configured to 1
 |  7:4   |   rw   |   0x9   | RD_EN       | Region can be read                                          |
 |  3:0   |   rw   |   0x9   | EN          | Region enabled, following fields apply                      |
 
-## BANK0_INFO2_REGWEN
+${"##"} BANK0_INFO2_REGWEN
 Memory region registers configuration enable.
 - Reset default: `0x1`
 - Reset mask: `0x1`
 
-### Instances
+${"###"} Instances
 
 | Name                 | Offset   |
 |:---------------------|:---------|
@@ -725,7 +725,7 @@ Memory region registers configuration enable.
 | BANK0_INFO2_REGWEN_1 | 0xf0     |
 
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "REGION", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -736,7 +736,7 @@ Memory region registers configuration enable.
 |  31:1  |        |         | Reserved                              |
 |   0    |  rw0c  |   0x1   | [REGION](#bank0_info2_regwen--region) |
 
-### BANK0_INFO2_REGWEN . REGION
+${"###"} BANK0_INFO2_REGWEN . REGION
 Info2 page write enable.  Once set to 0, it can longer be configured to 1
 
 | Value   | Name         | Description                                         |
@@ -745,13 +745,13 @@ Info2 page write enable.  Once set to 0, it can longer be configured to 1
 | 0x1     | Page enabled | Region can be configured                            |
 
 
-## BANK0_INFO2_PAGE_CFG
+${"##"} BANK0_INFO2_PAGE_CFG
   Memory property configuration for info partition in bank0,
   Unlike data partition, each page is individually configured.
 - Reset default: `0x9999999`
 - Reset mask: `0xfffffff`
 
-### Instances
+${"###"} Instances
 
 | Name                   | Offset   |
 |:-----------------------|:---------|
@@ -759,7 +759,7 @@ Info2 page write enable.  Once set to 0, it can longer be configured to 1
 | BANK0_INFO2_PAGE_CFG_1 | 0xf8     |
 
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "EN", "bits": 4, "attr": ["rw"], "rotate": 0}, {"name": "RD_EN", "bits": 4, "attr": ["rw"], "rotate": 0}, {"name": "PROG_EN", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "ERASE_EN", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "SCRAMBLE_EN", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "ECC_EN", "bits": 4, "attr": ["rw"], "rotate": 0}, {"name": "HE_EN", "bits": 4, "attr": ["rw"], "rotate": 0}, {"bits": 4}], "config": {"lanes": 1, "fontsize": 10, "vspace": 130}}
@@ -776,12 +776,12 @@ Info2 page write enable.  Once set to 0, it can longer be configured to 1
 |  7:4   |   rw   |   0x9   | RD_EN       | Region can be read                                          |
 |  3:0   |   rw   |   0x9   | EN          | Region enabled, following fields apply                      |
 
-## BANK1_INFO0_REGWEN
+${"##"} BANK1_INFO0_REGWEN
 Memory region registers configuration enable.
 - Reset default: `0x1`
 - Reset mask: `0x1`
 
-### Instances
+${"###"} Instances
 
 | Name                 | Offset   |
 |:---------------------|:---------|
@@ -797,7 +797,7 @@ Memory region registers configuration enable.
 | BANK1_INFO0_REGWEN_9 | 0x120    |
 
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "REGION", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -808,7 +808,7 @@ Memory region registers configuration enable.
 |  31:1  |        |         | Reserved                              |
 |   0    |  rw0c  |   0x1   | [REGION](#bank1_info0_regwen--region) |
 
-### BANK1_INFO0_REGWEN . REGION
+${"###"} BANK1_INFO0_REGWEN . REGION
 Info0 page write enable.  Once set to 0, it can longer be configured to 1
 
 | Value   | Name         | Description                                         |
@@ -817,13 +817,13 @@ Info0 page write enable.  Once set to 0, it can longer be configured to 1
 | 0x1     | Page enabled | Region can be configured                            |
 
 
-## BANK1_INFO0_PAGE_CFG
+${"##"} BANK1_INFO0_PAGE_CFG
   Memory property configuration for info partition in bank1,
   Unlike data partition, each page is individually configured.
 - Reset default: `0x9999999`
 - Reset mask: `0xfffffff`
 
-### Instances
+${"###"} Instances
 
 | Name                   | Offset   |
 |:-----------------------|:---------|
@@ -839,7 +839,7 @@ Info0 page write enable.  Once set to 0, it can longer be configured to 1
 | BANK1_INFO0_PAGE_CFG_9 | 0x148    |
 
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "EN", "bits": 4, "attr": ["rw"], "rotate": 0}, {"name": "RD_EN", "bits": 4, "attr": ["rw"], "rotate": 0}, {"name": "PROG_EN", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "ERASE_EN", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "SCRAMBLE_EN", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "ECC_EN", "bits": 4, "attr": ["rw"], "rotate": 0}, {"name": "HE_EN", "bits": 4, "attr": ["rw"], "rotate": 0}, {"bits": 4}], "config": {"lanes": 1, "fontsize": 10, "vspace": 130}}
@@ -856,19 +856,19 @@ Info0 page write enable.  Once set to 0, it can longer be configured to 1
 |  7:4   |   rw   |   0x9   | RD_EN       | Region can be read                                          |
 |  3:0   |   rw   |   0x9   | EN          | Region enabled, following fields apply                      |
 
-## BANK1_INFO1_REGWEN
+${"##"} BANK1_INFO1_REGWEN
 Memory region registers configuration enable.
 - Reset default: `0x1`
 - Reset mask: `0x1`
 
-### Instances
+${"###"} Instances
 
 | Name               | Offset   |
 |:-------------------|:---------|
 | BANK1_INFO1_REGWEN | 0x14c    |
 
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "REGION", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -879,7 +879,7 @@ Memory region registers configuration enable.
 |  31:1  |        |         | Reserved                              |
 |   0    |  rw0c  |   0x1   | [REGION](#bank1_info1_regwen--region) |
 
-### BANK1_INFO1_REGWEN . REGION
+${"###"} BANK1_INFO1_REGWEN . REGION
 Info1 page write enable.  Once set to 0, it can longer be configured to 1
 
 | Value   | Name         | Description                                         |
@@ -888,20 +888,20 @@ Info1 page write enable.  Once set to 0, it can longer be configured to 1
 | 0x1     | Page enabled | Region can be configured                            |
 
 
-## BANK1_INFO1_PAGE_CFG
+${"##"} BANK1_INFO1_PAGE_CFG
   Memory property configuration for info partition in bank1,
   Unlike data partition, each page is individually configured.
 - Reset default: `0x9999999`
 - Reset mask: `0xfffffff`
 
-### Instances
+${"###"} Instances
 
 | Name                 | Offset   |
 |:---------------------|:---------|
 | BANK1_INFO1_PAGE_CFG | 0x150    |
 
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "EN", "bits": 4, "attr": ["rw"], "rotate": 0}, {"name": "RD_EN", "bits": 4, "attr": ["rw"], "rotate": 0}, {"name": "PROG_EN", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "ERASE_EN", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "SCRAMBLE_EN", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "ECC_EN", "bits": 4, "attr": ["rw"], "rotate": 0}, {"name": "HE_EN", "bits": 4, "attr": ["rw"], "rotate": 0}, {"bits": 4}], "config": {"lanes": 1, "fontsize": 10, "vspace": 130}}
@@ -918,12 +918,12 @@ Info1 page write enable.  Once set to 0, it can longer be configured to 1
 |  7:4   |   rw   |   0x9   | RD_EN       | Region can be read                                          |
 |  3:0   |   rw   |   0x9   | EN          | Region enabled, following fields apply                      |
 
-## BANK1_INFO2_REGWEN
+${"##"} BANK1_INFO2_REGWEN
 Memory region registers configuration enable.
 - Reset default: `0x1`
 - Reset mask: `0x1`
 
-### Instances
+${"###"} Instances
 
 | Name                 | Offset   |
 |:---------------------|:---------|
@@ -931,7 +931,7 @@ Memory region registers configuration enable.
 | BANK1_INFO2_REGWEN_1 | 0x158    |
 
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "REGION", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -942,7 +942,7 @@ Memory region registers configuration enable.
 |  31:1  |        |         | Reserved                              |
 |   0    |  rw0c  |   0x1   | [REGION](#bank1_info2_regwen--region) |
 
-### BANK1_INFO2_REGWEN . REGION
+${"###"} BANK1_INFO2_REGWEN . REGION
 Info2 page write enable.  Once set to 0, it can longer be configured to 1
 
 | Value   | Name         | Description                                         |
@@ -951,13 +951,13 @@ Info2 page write enable.  Once set to 0, it can longer be configured to 1
 | 0x1     | Page enabled | Region can be configured                            |
 
 
-## BANK1_INFO2_PAGE_CFG
+${"##"} BANK1_INFO2_PAGE_CFG
   Memory property configuration for info partition in bank1,
   Unlike data partition, each page is individually configured.
 - Reset default: `0x9999999`
 - Reset mask: `0xfffffff`
 
-### Instances
+${"###"} Instances
 
 | Name                   | Offset   |
 |:-----------------------|:---------|
@@ -965,7 +965,7 @@ Info2 page write enable.  Once set to 0, it can longer be configured to 1
 | BANK1_INFO2_PAGE_CFG_1 | 0x160    |
 
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "EN", "bits": 4, "attr": ["rw"], "rotate": 0}, {"name": "RD_EN", "bits": 4, "attr": ["rw"], "rotate": 0}, {"name": "PROG_EN", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "ERASE_EN", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "SCRAMBLE_EN", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "ECC_EN", "bits": 4, "attr": ["rw"], "rotate": 0}, {"name": "HE_EN", "bits": 4, "attr": ["rw"], "rotate": 0}, {"bits": 4}], "config": {"lanes": 1, "fontsize": 10, "vspace": 130}}
@@ -982,13 +982,13 @@ Info2 page write enable.  Once set to 0, it can longer be configured to 1
 |  7:4   |   rw   |   0x9   | RD_EN       | Region can be read                                          |
 |  3:0   |   rw   |   0x9   | EN          | Region enabled, following fields apply                      |
 
-## HW_INFO_CFG_OVERRIDE
+${"##"} HW_INFO_CFG_OVERRIDE
 HW interface info configuration rule overrides
 - Offset: `0x164`
 - Reset default: `0x99`
 - Reset mask: `0xff`
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "SCRAMBLE_DIS", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "ECC_DIS", "bits": 4, "attr": ["rw"], "rotate": -90}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 140}}
@@ -1000,13 +1000,13 @@ HW interface info configuration rule overrides
 |  7:4   |   rw   |   0x9   | ECC_DIS      | The hardwired hardware info configuration rules for ECC enable are logically AND'd with this field. If the hardware rules hardwires ECC to enable, we can disable via software if needed. By default this field is false.           |
 |  3:0   |   rw   |   0x9   | SCRAMBLE_DIS | The hardwired hardware info configuration rules for scramble enable are logically AND'd with this field. If the hardware rules hardwires scramble to enable, we can disable via software if needed. By default this field is false. |
 
-## BANK_CFG_REGWEN
+${"##"} BANK_CFG_REGWEN
 Bank configuration registers configuration enable.
 - Offset: `0x168`
 - Reset default: `0x1`
 - Reset mask: `0x1`
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "BANK", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -1017,7 +1017,7 @@ Bank configuration registers configuration enable.
 |  31:1  |        |         | Reserved                       |
 |   0    |  rw0c  |   0x1   | [BANK](#bank_cfg_regwen--bank) |
 
-### BANK_CFG_REGWEN . BANK
+${"###"} BANK_CFG_REGWEN . BANK
 Bank register write enable.  Once set to 0, it can longer be configured to 1
 
 | Value   | Name         | Description                                       |
@@ -1026,14 +1026,14 @@ Bank register write enable.  Once set to 0, it can longer be configured to 1
 | 0x1     | Bank enabled | Bank can be configured                            |
 
 
-## MP_BANK_CFG_SHADOWED
+${"##"} MP_BANK_CFG_SHADOWED
 Memory properties bank configuration
 - Offset: `0x16c`
 - Reset default: `0x0`
 - Reset mask: `0x3`
 - Register enable: [`BANK_CFG_REGWEN`](#bank_cfg_regwen)
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "ERASE_EN_0", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "ERASE_EN_1", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 30}], "config": {"lanes": 1, "fontsize": 10, "vspace": 120}}
@@ -1045,13 +1045,13 @@ Memory properties bank configuration
 |   1    |   rw   |   0x0   | ERASE_EN_1 | Bank wide erase enable |
 |   0    |   rw   |   0x0   | ERASE_EN_0 | Bank wide erase enable |
 
-## OP_STATUS
+${"##"} OP_STATUS
 Flash Operation Status
 - Offset: `0x170`
 - Reset default: `0x0`
 - Reset mask: `0x3`
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "done", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "err", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 30}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -1063,13 +1063,13 @@ Flash Operation Status
 |   1    |   rw   |   0x0   | err    | Flash operation error. Set by HW, cleared by SW. See [`ERR_CODE`](#err_code) for more details. |
 |   0    |   rw   |   0x0   | done   | Flash operation done. Set by HW, cleared by SW                                                 |
 
-## STATUS
+${"##"} STATUS
 Flash Controller Status
 - Offset: `0x174`
 - Reset default: `0xa`
 - Reset mask: `0x3f`
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "rd_full", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "rd_empty", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "prog_full", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "prog_empty", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "init_wip", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "initialized", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 26}], "config": {"lanes": 1, "fontsize": 10, "vspace": 130}}
@@ -1085,13 +1085,13 @@ Flash Controller Status
 |   1    |   ro   |   0x1   | rd_empty    | Flash read FIFO empty                                   |
 |   0    |   ro   |   0x0   | rd_full     | Flash read FIFO full, software must consume data        |
 
-## DEBUG_STATE
+${"##"} DEBUG_STATE
 Current flash fsm state
 - Offset: `0x178`
 - Reset default: `0x0`
 - Reset mask: `0x7ff`
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "lcmgr_state", "bits": 11, "attr": ["ro"], "rotate": 0}, {"bits": 21}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -1102,7 +1102,7 @@ Current flash fsm state
 | 31:11  |        |         |             | Reserved                      |
 |  10:0  |   ro   |    x    | lcmgr_state | Current lcmgr interface staet |
 
-## ERR_CODE
+${"##"} ERR_CODE
 Flash error code register.
 This register tabulates detailed error status of the flash.
 This is separate from [`OP_STATUS`](#op_status), which is used to indicate the current state of the software initiated
@@ -1114,7 +1114,7 @@ generated by software.
 - Reset default: `0x0`
 - Reset mask: `0xff`
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "op_err", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "mp_err", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "rd_err", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "prog_err", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "prog_win_err", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "prog_type_err", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "update_err", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "macro_err", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 150}}
@@ -1132,7 +1132,7 @@ generated by software.
 |   1    |  rw1c  |   0x0   | mp_err        | Flash access has encountered an access permission error. Please see [`ERR_ADDR`](#err_addr) for exact address. This is a synchronous error.                                                                                                                                 |
 |   0    |  rw1c  |   0x0   | op_err        | Software has supplied an undefined operation. See [`CONTROL.OP`](#control) for list of valid operations.                                                                                                                                                                    |
 
-## STD_FAULT_STATUS
+${"##"} STD_FAULT_STATUS
 This register tabulates standard fault status of the flash.
 
 These represent errors that occur in the standard structures of the design.
@@ -1141,7 +1141,7 @@ For example fsm integrity, counter integrity and tlul integrity.
 - Reset default: `0x0`
 - Reset mask: `0x1ff`
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "reg_intg_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "prog_intg_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "lcmgr_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "lcmgr_intg_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "arb_fsm_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "storage_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "phy_fsm_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ctrl_cnt_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "fifo_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 23}], "config": {"lanes": 1, "fontsize": 10, "vspace": 160}}
@@ -1160,7 +1160,7 @@ For example fsm integrity, counter integrity and tlul integrity.
 |   1    |   ro   |   0x0   | prog_intg_err  | The flash controller encountered a program data transmission integrity error.                                                                                                             |
 |   0    |   ro   |   0x0   | reg_intg_err   | The flash controller encountered a register integrity error.                                                                                                                              |
 
-## FAULT_STATUS
+${"##"} FAULT_STATUS
 This register tabulates customized fault status of the flash.
 
 These are errors that are impossible to have been caused by software or unrecoverable
@@ -1169,7 +1169,7 @@ in nature.
 - Reset default: `0x0`
 - Reset mask: `0xfff`
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "op_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "mp_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "rd_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "prog_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "prog_win_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "prog_type_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "seed_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "phy_relbl_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "phy_storage_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "spurious_ack", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "arb_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "host_gnt_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 20}], "config": {"lanes": 1, "fontsize": 10, "vspace": 170}}
@@ -1191,13 +1191,13 @@ in nature.
 |   1    |   ro   |   0x0   | mp_err          | The flash life cycle management interface encountered a memory permission error.                                                                                                                                             |
 |   0    |   ro   |   0x0   | op_err          | The flash life cycle management interface has supplied an undefined operation. See [`CONTROL.OP`](#control) for list of valid operations.                                                                                    |
 
-## ERR_ADDR
+${"##"} ERR_ADDR
 Synchronous error address
 - Offset: `0x188`
 - Reset default: `0x0`
 - Reset mask: `0xfffff`
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "ERR_ADDR", "bits": 20, "attr": ["ro"], "rotate": 0}, {"bits": 12}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -1208,13 +1208,13 @@ Synchronous error address
 | 31:20  |        |         |          | Reserved      |
 |  19:0  |   ro   |   0x0   | ERR_ADDR |               |
 
-## ECC_SINGLE_ERR_CNT
+${"##"} ECC_SINGLE_ERR_CNT
 Total number of single bit ECC error count
 - Offset: `0x18c`
 - Reset default: `0x0`
 - Reset mask: `0xffff`
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "ECC_SINGLE_ERR_CNT_0", "bits": 8, "attr": ["rw"], "rotate": -90}, {"name": "ECC_SINGLE_ERR_CNT_1", "bits": 8, "attr": ["rw"], "rotate": -90}, {"bits": 16}], "config": {"lanes": 1, "fontsize": 10, "vspace": 220}}
@@ -1226,12 +1226,12 @@ Total number of single bit ECC error count
 |  15:8  |   rw   |   0x0   | ECC_SINGLE_ERR_CNT_1 | This count will not wrap when saturated |
 |  7:0   |   rw   |   0x0   | ECC_SINGLE_ERR_CNT_0 | This count will not wrap when saturated |
 
-## ECC_SINGLE_ERR_ADDR
+${"##"} ECC_SINGLE_ERR_ADDR
 Latest address of ECC single err
 - Reset default: `0x0`
 - Reset mask: `0xfffff`
 
-### Instances
+${"###"} Instances
 
 | Name                  | Offset   |
 |:----------------------|:---------|
@@ -1239,7 +1239,7 @@ Latest address of ECC single err
 | ECC_SINGLE_ERR_ADDR_1 | 0x194    |
 
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "ECC_SINGLE_ERR_ADDR", "bits": 20, "attr": ["ro"], "rotate": 0}, {"bits": 12}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -1250,13 +1250,13 @@ Latest address of ECC single err
 | 31:20  |        |         |                     | Reserved                                  |
 |  19:0  |   ro   |   0x0   | ECC_SINGLE_ERR_ADDR | Latest single error address for this bank |
 
-## PHY_ALERT_CFG
+${"##"} PHY_ALERT_CFG
 Phy alert configuration
 - Offset: `0x198`
 - Reset default: `0x0`
 - Reset mask: `0x3`
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "alert_ack", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "alert_trig", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 30}], "config": {"lanes": 1, "fontsize": 10, "vspace": 120}}
@@ -1268,13 +1268,13 @@ Phy alert configuration
 |   1    |   rw   |   0x0   | alert_trig | Trigger flash phy alert     |
 |   0    |   rw   |   0x0   | alert_ack  | Acknowledge flash phy alert |
 
-## PHY_STATUS
+${"##"} PHY_STATUS
 Flash Phy Status
 - Offset: `0x19c`
 - Reset default: `0x6`
 - Reset mask: `0x7`
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "init_wip", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "prog_normal_avail", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "prog_repair_avail", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 29}], "config": {"lanes": 1, "fontsize": 10, "vspace": 190}}
@@ -1287,13 +1287,13 @@ Flash Phy Status
 |   1    |   ro   |   0x1   | prog_normal_avail | Normal program supported          |
 |   0    |   ro   |   0x0   | init_wip          | Flash phy controller initializing |
 
-## Scratch
+${"##"} Scratch
 Flash Controller Scratch
 - Offset: `0x1a0`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "data", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -1303,13 +1303,13 @@ Flash Controller Scratch
 |:------:|:------:|:-------:|:-------|:----------------------------|
 |  31:0  |   rw   |   0x0   | data   | Flash ctrl scratch register |
 
-## FIFO_LVL
+${"##"} FIFO_LVL
 Programmable depth where FIFOs should generate interrupts
 - Offset: `0x1a4`
 - Reset default: `0xf0f`
 - Reset mask: `0x1f1f`
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "PROG", "bits": 5, "attr": ["rw"], "rotate": 0}, {"bits": 3}, {"name": "RD", "bits": 5, "attr": ["rw"], "rotate": 0}, {"bits": 19}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -1322,13 +1322,13 @@ Programmable depth where FIFOs should generate interrupts
 |  7:5   |        |         |        | Reserved                                                                                                                              |
 |  4:0   |   rw   |   0xf   | PROG   | When the program FIFO drains to this level, trigger an interrupt. Default value is set such that interrupt does not trigger at reset. |
 
-## FIFO_RST
+${"##"} FIFO_RST
 Reset for flash controller FIFOs
 - Offset: `0x1a8`
 - Reset default: `0x0`
 - Reset mask: `0x1`
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -1339,13 +1339,13 @@ Reset for flash controller FIFOs
 |  31:1  |        |         |        | Reserved                                                                                                                                                                                         |
 |   0    |   rw   |   0x0   | EN     | Active high resets for both program and read FIFOs.  This is especially useful after the controller encounters an error of some kind. This bit will hold the FIFO in reset as long as it is set. |
 
-## CURR_FIFO_LVL
+${"##"} CURR_FIFO_LVL
 Current program and read fifo depth
 - Offset: `0x1ac`
 - Reset default: `0x0`
 - Reset mask: `0x1f1f`
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "PROG", "bits": 5, "attr": ["ro"], "rotate": 0}, {"bits": 3}, {"name": "RD", "bits": 5, "attr": ["ro"], "rotate": 0}, {"bits": 19}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -1358,7 +1358,7 @@ Current program and read fifo depth
 |  7:5   |        |         |        | Reserved                   |
 |  4:0   |   ro   |   0x0   | PROG   | Current program fifo depth |
 
-## prog_fifo
+${"##"} prog_fifo
 Flash program FIFO.
 
 The FIFO is 16 entries of 4B flash words. This FIFO can only be programmed
@@ -1370,7 +1370,7 @@ This ensures accidental programming of the program FIFO cannot lock up the syste
 - Access: `wo`
 - Byte writes are *not* supported.
 
-## rd_fifo
+${"##"} rd_fifo
 Flash read FIFO.
 
 The FIFO is 16 entries of 4B flash words
@@ -1380,7 +1380,7 @@ The FIFO is 16 entries of 4B flash words
 - Access: `ro`
 - Byte writes are *not* supported.
 
-## Summary of the **`prim`** interface's registers
+${"##"} Summary of the **`prim`** interface's registers
 
 | Name                                     | Offset   |   Length | Description   |
 |:-----------------------------------------|:---------|---------:|:--------------|
@@ -1406,13 +1406,13 @@ The FIFO is 16 entries of 4B flash words
 | flash_ctrl.[`CSR19`](#csr19)             | 0x4c     |        4 |               |
 | flash_ctrl.[`CSR20`](#csr20)             | 0x50     |        4 |               |
 
-## CSR0_REGWEN
+${"##"} CSR0_REGWEN
 
 - Offset: `0x0`
 - Reset default: `0x1`
 - Reset mask: `0x1`
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "field0", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -1423,18 +1423,18 @@ The FIFO is 16 entries of 4B flash words
 |  31:1  |        |         | Reserved                       |
 |   0    |  rw0c  |   0x1   | [field0](#csr0_regwen--field0) |
 
-### CSR0_REGWEN . field0
+${"###"} CSR0_REGWEN . field0
 
 All values are reserved.
 
-## CSR1
+${"##"} CSR1
 
 - Offset: `0x4`
 - Reset default: `0x0`
 - Reset mask: `0x1fff`
 - Register enable: [`CSR0_REGWEN`](#csr0_regwen)
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "field0", "bits": 8, "attr": ["rw"], "rotate": 0}, {"name": "field1", "bits": 5, "attr": ["rw"], "rotate": 0}, {"bits": 19}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -1446,21 +1446,21 @@ All values are reserved.
 |  12:8  |   rw   |   0x0   | [field1](#csr1--field1) |
 |  7:0   |   rw   |   0x0   | [field0](#csr1--field0) |
 
-### CSR1 . field1
+${"###"} CSR1 . field1
 
 All values are reserved.
 
-### CSR1 . field0
+${"###"} CSR1 . field0
 
 All values are reserved.
 
-## CSR2
+${"##"} CSR2
 
 - Offset: `0x8`
 - Reset default: `0x0`
 - Reset mask: `0xff`
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "field0", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "field1", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "field2", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "field3", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "field4", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "field5", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "field6", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "field7", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -1478,46 +1478,46 @@ All values are reserved.
 |   1    |  rw1c  |   0x0   | [field1](#csr2--field1) |
 |   0    |  rw1c  |   0x0   | [field0](#csr2--field0) |
 
-### CSR2 . field7
+${"###"} CSR2 . field7
 
 All values are reserved.
 
-### CSR2 . field6
+${"###"} CSR2 . field6
 
 All values are reserved.
 
-### CSR2 . field5
+${"###"} CSR2 . field5
 
 All values are reserved.
 
-### CSR2 . field4
+${"###"} CSR2 . field4
 
 All values are reserved.
 
-### CSR2 . field3
+${"###"} CSR2 . field3
 
 All values are reserved.
 
-### CSR2 . field2
+${"###"} CSR2 . field2
 
 All values are reserved.
 
-### CSR2 . field1
+${"###"} CSR2 . field1
 
 All values are reserved.
 
-### CSR2 . field0
+${"###"} CSR2 . field0
 
 All values are reserved.
 
-## CSR3
+${"##"} CSR3
 
 - Offset: `0xc`
 - Reset default: `0x0`
 - Reset mask: `0xfffffff`
 - Register enable: [`CSR0_REGWEN`](#csr0_regwen)
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "field0", "bits": 4, "attr": ["rw"], "rotate": 0}, {"name": "field1", "bits": 4, "attr": ["rw"], "rotate": 0}, {"name": "field2", "bits": 3, "attr": ["rw"], "rotate": -90}, {"name": "field3", "bits": 3, "attr": ["rw"], "rotate": -90}, {"name": "field4", "bits": 3, "attr": ["rw"], "rotate": -90}, {"name": "field5", "bits": 3, "attr": ["rw"], "rotate": -90}, {"name": "field6", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "field7", "bits": 3, "attr": ["rw"], "rotate": -90}, {"name": "field8", "bits": 2, "attr": ["rw"], "rotate": -90}, {"name": "field9", "bits": 2, "attr": ["rw"], "rotate": -90}, {"bits": 4}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -1537,54 +1537,54 @@ All values are reserved.
 |  7:4   |   rw   |   0x0   | [field1](#csr3--field1) |
 |  3:0   |   rw   |   0x0   | [field0](#csr3--field0) |
 
-### CSR3 . field9
+${"###"} CSR3 . field9
 
 All values are reserved.
 
-### CSR3 . field8
+${"###"} CSR3 . field8
 
 All values are reserved.
 
-### CSR3 . field7
+${"###"} CSR3 . field7
 
 All values are reserved.
 
-### CSR3 . field6
+${"###"} CSR3 . field6
 
 All values are reserved.
 
-### CSR3 . field5
+${"###"} CSR3 . field5
 
 All values are reserved.
 
-### CSR3 . field4
+${"###"} CSR3 . field4
 
 All values are reserved.
 
-### CSR3 . field3
+${"###"} CSR3 . field3
 
 All values are reserved.
 
-### CSR3 . field2
+${"###"} CSR3 . field2
 
 All values are reserved.
 
-### CSR3 . field1
+${"###"} CSR3 . field1
 
 All values are reserved.
 
-### CSR3 . field0
+${"###"} CSR3 . field0
 
 All values are reserved.
 
-## CSR4
+${"##"} CSR4
 
 - Offset: `0x10`
 - Reset default: `0x0`
 - Reset mask: `0xfff`
 - Register enable: [`CSR0_REGWEN`](#csr0_regwen)
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "field0", "bits": 3, "attr": ["rw"], "rotate": -90}, {"name": "field1", "bits": 3, "attr": ["rw"], "rotate": -90}, {"name": "field2", "bits": 3, "attr": ["rw"], "rotate": -90}, {"name": "field3", "bits": 3, "attr": ["rw"], "rotate": -90}, {"bits": 20}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -1598,30 +1598,30 @@ All values are reserved.
 |  5:3   |   rw   |   0x0   | [field1](#csr4--field1) |
 |  2:0   |   rw   |   0x0   | [field0](#csr4--field0) |
 
-### CSR4 . field3
+${"###"} CSR4 . field3
 
 All values are reserved.
 
-### CSR4 . field2
+${"###"} CSR4 . field2
 
 All values are reserved.
 
-### CSR4 . field1
+${"###"} CSR4 . field1
 
 All values are reserved.
 
-### CSR4 . field0
+${"###"} CSR4 . field0
 
 All values are reserved.
 
-## CSR5
+${"##"} CSR5
 
 - Offset: `0x14`
 - Reset default: `0x0`
 - Reset mask: `0x7fffff`
 - Register enable: [`CSR0_REGWEN`](#csr0_regwen)
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "field0", "bits": 3, "attr": ["rw"], "rotate": -90}, {"name": "field1", "bits": 2, "attr": ["rw"], "rotate": -90}, {"name": "field2", "bits": 9, "attr": ["rw"], "rotate": 0}, {"name": "field3", "bits": 5, "attr": ["rw"], "rotate": 0}, {"name": "field4", "bits": 4, "attr": ["rw"], "rotate": 0}, {"bits": 9}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -1636,34 +1636,34 @@ All values are reserved.
 |  4:3   |   rw   |   0x0   | [field1](#csr5--field1) |
 |  2:0   |   rw   |   0x0   | [field0](#csr5--field0) |
 
-### CSR5 . field4
+${"###"} CSR5 . field4
 
 All values are reserved.
 
-### CSR5 . field3
+${"###"} CSR5 . field3
 
 All values are reserved.
 
-### CSR5 . field2
+${"###"} CSR5 . field2
 
 All values are reserved.
 
-### CSR5 . field1
+${"###"} CSR5 . field1
 
 All values are reserved.
 
-### CSR5 . field0
+${"###"} CSR5 . field0
 
 All values are reserved.
 
-## CSR6
+${"##"} CSR6
 
 - Offset: `0x18`
 - Reset default: `0x0`
 - Reset mask: `0x1ffffff`
 - Register enable: [`CSR0_REGWEN`](#csr0_regwen)
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "field0", "bits": 3, "attr": ["rw"], "rotate": -90}, {"name": "field1", "bits": 3, "attr": ["rw"], "rotate": -90}, {"name": "field2", "bits": 8, "attr": ["rw"], "rotate": 0}, {"name": "field3", "bits": 3, "attr": ["rw"], "rotate": -90}, {"name": "field4", "bits": 2, "attr": ["rw"], "rotate": -90}, {"name": "field5", "bits": 2, "attr": ["rw"], "rotate": -90}, {"name": "field6", "bits": 2, "attr": ["rw"], "rotate": -90}, {"name": "field7", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "field8", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 7}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -1682,50 +1682,50 @@ All values are reserved.
 |  5:3   |   rw   |   0x0   | [field1](#csr6--field1) |
 |  2:0   |   rw   |   0x0   | [field0](#csr6--field0) |
 
-### CSR6 . field8
+${"###"} CSR6 . field8
 
 All values are reserved.
 
-### CSR6 . field7
+${"###"} CSR6 . field7
 
 All values are reserved.
 
-### CSR6 . field6
+${"###"} CSR6 . field6
 
 All values are reserved.
 
-### CSR6 . field5
+${"###"} CSR6 . field5
 
 All values are reserved.
 
-### CSR6 . field4
+${"###"} CSR6 . field4
 
 All values are reserved.
 
-### CSR6 . field3
+${"###"} CSR6 . field3
 
 All values are reserved.
 
-### CSR6 . field2
+${"###"} CSR6 . field2
 
 All values are reserved.
 
-### CSR6 . field1
+${"###"} CSR6 . field1
 
 All values are reserved.
 
-### CSR6 . field0
+${"###"} CSR6 . field0
 
 All values are reserved.
 
-## CSR7
+${"##"} CSR7
 
 - Offset: `0x1c`
 - Reset default: `0x0`
 - Reset mask: `0x1ffff`
 - Register enable: [`CSR0_REGWEN`](#csr0_regwen)
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "field0", "bits": 8, "attr": ["rw"], "rotate": 0}, {"name": "field1", "bits": 9, "attr": ["rw"], "rotate": 0}, {"bits": 15}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -1737,22 +1737,22 @@ All values are reserved.
 |  16:8  |   rw   |   0x0   | [field1](#csr7--field1) |
 |  7:0   |   rw   |   0x0   | [field0](#csr7--field0) |
 
-### CSR7 . field1
+${"###"} CSR7 . field1
 
 All values are reserved.
 
-### CSR7 . field0
+${"###"} CSR7 . field0
 
 All values are reserved.
 
-## CSR8
+${"##"} CSR8
 
 - Offset: `0x20`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 - Register enable: [`CSR0_REGWEN`](#csr0_regwen)
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "field0", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -1762,18 +1762,18 @@ All values are reserved.
 |:------:|:------:|:-------:|:------------------------|
 |  31:0  |   rw   |   0x0   | [field0](#csr8--field0) |
 
-### CSR8 . field0
+${"###"} CSR8 . field0
 
 All values are reserved.
 
-## CSR9
+${"##"} CSR9
 
 - Offset: `0x24`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 - Register enable: [`CSR0_REGWEN`](#csr0_regwen)
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "field0", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -1783,18 +1783,18 @@ All values are reserved.
 |:------:|:------:|:-------:|:------------------------|
 |  31:0  |   rw   |   0x0   | [field0](#csr9--field0) |
 
-### CSR9 . field0
+${"###"} CSR9 . field0
 
 All values are reserved.
 
-## CSR10
+${"##"} CSR10
 
 - Offset: `0x28`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 - Register enable: [`CSR0_REGWEN`](#csr0_regwen)
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "field0", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -1804,18 +1804,18 @@ All values are reserved.
 |:------:|:------:|:-------:|:-------------------------|
 |  31:0  |   rw   |   0x0   | [field0](#csr10--field0) |
 
-### CSR10 . field0
+${"###"} CSR10 . field0
 
 All values are reserved.
 
-## CSR11
+${"##"} CSR11
 
 - Offset: `0x2c`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 - Register enable: [`CSR0_REGWEN`](#csr0_regwen)
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "field0", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -1825,18 +1825,18 @@ All values are reserved.
 |:------:|:------:|:-------:|:-------------------------|
 |  31:0  |   rw   |   0x0   | [field0](#csr11--field0) |
 
-### CSR11 . field0
+${"###"} CSR11 . field0
 
 All values are reserved.
 
-## CSR12
+${"##"} CSR12
 
 - Offset: `0x30`
 - Reset default: `0x0`
 - Reset mask: `0x3ff`
 - Register enable: [`CSR0_REGWEN`](#csr0_regwen)
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "field0", "bits": 10, "attr": ["rw"], "rotate": 0}, {"bits": 22}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -1847,18 +1847,18 @@ All values are reserved.
 | 31:10  |        |         | Reserved                 |
 |  9:0   |   rw   |   0x0   | [field0](#csr12--field0) |
 
-### CSR12 . field0
+${"###"} CSR12 . field0
 
 All values are reserved.
 
-## CSR13
+${"##"} CSR13
 
 - Offset: `0x34`
 - Reset default: `0x0`
 - Reset mask: `0x1fffff`
 - Register enable: [`CSR0_REGWEN`](#csr0_regwen)
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "field0", "bits": 20, "attr": ["rw"], "rotate": 0}, {"name": "field1", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 11}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -1870,22 +1870,22 @@ All values are reserved.
 |   20   |   rw   |   0x0   | [field1](#csr13--field1) |
 |  19:0  |   rw   |   0x0   | [field0](#csr13--field0) |
 
-### CSR13 . field1
+${"###"} CSR13 . field1
 
 All values are reserved.
 
-### CSR13 . field0
+${"###"} CSR13 . field0
 
 All values are reserved.
 
-## CSR14
+${"##"} CSR14
 
 - Offset: `0x38`
 - Reset default: `0x0`
 - Reset mask: `0x1ff`
 - Register enable: [`CSR0_REGWEN`](#csr0_regwen)
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "field0", "bits": 8, "attr": ["rw"], "rotate": 0}, {"name": "field1", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 23}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -1897,22 +1897,22 @@ All values are reserved.
 |   8    |   rw   |   0x0   | [field1](#csr14--field1) |
 |  7:0   |   rw   |   0x0   | [field0](#csr14--field0) |
 
-### CSR14 . field1
+${"###"} CSR14 . field1
 
 All values are reserved.
 
-### CSR14 . field0
+${"###"} CSR14 . field0
 
 All values are reserved.
 
-## CSR15
+${"##"} CSR15
 
 - Offset: `0x3c`
 - Reset default: `0x0`
 - Reset mask: `0x1ff`
 - Register enable: [`CSR0_REGWEN`](#csr0_regwen)
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "field0", "bits": 8, "attr": ["rw"], "rotate": 0}, {"name": "field1", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 23}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -1924,22 +1924,22 @@ All values are reserved.
 |   8    |   rw   |   0x0   | [field1](#csr15--field1) |
 |  7:0   |   rw   |   0x0   | [field0](#csr15--field0) |
 
-### CSR15 . field1
+${"###"} CSR15 . field1
 
 All values are reserved.
 
-### CSR15 . field0
+${"###"} CSR15 . field0
 
 All values are reserved.
 
-## CSR16
+${"##"} CSR16
 
 - Offset: `0x40`
 - Reset default: `0x0`
 - Reset mask: `0x1ff`
 - Register enable: [`CSR0_REGWEN`](#csr0_regwen)
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "field0", "bits": 8, "attr": ["rw"], "rotate": 0}, {"name": "field1", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 23}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -1951,22 +1951,22 @@ All values are reserved.
 |   8    |   rw   |   0x0   | [field1](#csr16--field1) |
 |  7:0   |   rw   |   0x0   | [field0](#csr16--field0) |
 
-### CSR16 . field1
+${"###"} CSR16 . field1
 
 All values are reserved.
 
-### CSR16 . field0
+${"###"} CSR16 . field0
 
 All values are reserved.
 
-## CSR17
+${"##"} CSR17
 
 - Offset: `0x44`
 - Reset default: `0x0`
 - Reset mask: `0x1ff`
 - Register enable: [`CSR0_REGWEN`](#csr0_regwen)
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "field0", "bits": 8, "attr": ["rw"], "rotate": 0}, {"name": "field1", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 23}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -1978,22 +1978,22 @@ All values are reserved.
 |   8    |   rw   |   0x0   | [field1](#csr17--field1) |
 |  7:0   |   rw   |   0x0   | [field0](#csr17--field0) |
 
-### CSR17 . field1
+${"###"} CSR17 . field1
 
 All values are reserved.
 
-### CSR17 . field0
+${"###"} CSR17 . field0
 
 All values are reserved.
 
-## CSR18
+${"##"} CSR18
 
 - Offset: `0x48`
 - Reset default: `0x0`
 - Reset mask: `0x1`
 - Register enable: [`CSR0_REGWEN`](#csr0_regwen)
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "field0", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -2004,18 +2004,18 @@ All values are reserved.
 |  31:1  |        |         | Reserved                 |
 |   0    |   rw   |   0x0   | [field0](#csr18--field0) |
 
-### CSR18 . field0
+${"###"} CSR18 . field0
 
 All values are reserved.
 
-## CSR19
+${"##"} CSR19
 
 - Offset: `0x4c`
 - Reset default: `0x0`
 - Reset mask: `0x1`
 - Register enable: [`CSR0_REGWEN`](#csr0_regwen)
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "field0", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -2026,17 +2026,17 @@ All values are reserved.
 |  31:1  |        |         | Reserved                 |
 |   0    |   rw   |   0x0   | [field0](#csr19--field0) |
 
-### CSR19 . field0
+${"###"} CSR19 . field0
 
 All values are reserved.
 
-## CSR20
+${"##"} CSR20
 
 - Offset: `0x50`
 - Reset default: `0x0`
 - Reset mask: `0x7`
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "field0", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "field1", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "field2", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 29}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -2049,15 +2049,15 @@ All values are reserved.
 |   1    |  rw1c  |   0x0   | [field1](#csr20--field1) |
 |   0    |  rw1c  |   0x0   | [field0](#csr20--field0) |
 
-### CSR20 . field2
+${"###"} CSR20 . field2
 
 All values are reserved.
 
-### CSR20 . field1
+${"###"} CSR20 . field1
 
 All values are reserved.
 
-### CSR20 . field0
+${"###"} CSR20 . field0
 
 All values are reserved.
 
