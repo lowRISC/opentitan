@@ -281,8 +281,7 @@ class Flash:
     max_banks = 4
     max_pages_per_bank = 1024
 
-    def __init__(self, mem, base_addr=0):
-        self.base_addr = int(base_addr, 16)
+    def __init__(self, mem):
         self.banks = mem.get('banks', 2)
         self.pages_per_bank = mem.get('pages_per_bank', 8)
         self.program_resolution = mem.get('program_resolution', 128)
@@ -302,7 +301,6 @@ class Flash:
 
         size_int = int(self.total_bytes)
         self.size = hex(size_int)
-        self.end_addr = self.base_addr + size_int
 
     def is_pow2(self, n):
         return (n != 0) and (n & (n - 1) == 0)
@@ -854,7 +852,7 @@ def check_modules(top, prefix):
                     if mem_type == "flash":
                         check_keys(value['config'], eflash_required, eflash_optional,
                                    eflash_added, "Eflash")
-                        flash = Flash(value['config'], m['base_addrs'][intf])
+                        flash = Flash(value['config'])
                         value['size'] = flash.size
                         value['config'] = flash
                     else:
