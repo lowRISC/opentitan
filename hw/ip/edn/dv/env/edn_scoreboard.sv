@@ -36,6 +36,8 @@ class edn_scoreboard extends cip_base_scoreboard #(
   csrng_pkg::csrng_cmd_t reseed_cmd_comp = edn_reg_pkg::EDN_RESEED_CMD_RESVAL;
   csrng_pkg::csrng_cmd_t generate_cmd_comp = edn_reg_pkg::EDN_GENERATE_CMD_RESVAL;
 
+  // indicator bit, 1'b1 if the EDN was reset.
+  bit reset_happened = 1'b0;
   // indicator bit, 1'b1 if EDN is in boot mode
   bit boot_mode = 1'b0;
   // indicator bit, 1'b1 if EDN is in auto mode
@@ -54,18 +56,16 @@ class edn_scoreboard extends cip_base_scoreboard #(
   // EDN previous and current ctrl state
   edn_reg_pkg::edn_reg2hw_ctrl_reg_t edn_ctrl_pre = edn_reg_pkg::CtrlResval;
   edn_reg_pkg::edn_reg2hw_ctrl_reg_t edn_ctrl = edn_reg_pkg::CtrlResval;
+  // Variable for sw_cmd_sts predictions.
+  // Due tue the high volatility and constant polling requests to the sw_cmd_sts register,
+  // it is preferrable to not use uvm_reg predictions.
+  bit [31:0] sw_cmd_sts;
   // MAX_NUM_REQS_BETWEEN_RESEEDS state and ctr
   bit [31:0] max_num_reqs_between_reseeds = edn_reg_pkg::MaxNumReqsBetweenReseedsResval;
   bit [31:0] reqs_between_reseeds_ctr     = edn_reg_pkg::MaxNumReqsBetweenReseedsResval;
 
   // Sample interrupt pins at read data phase. This is used to compare with intr_state read value.
   bit [NumEdnIntr-1:0] intr_pins;
-
-  // Variables to track the SW_CMD_STS bits.
-  // TODO: (#15561) replace this by using predicts. e.g. ral.sw_cmd_sts.sw_cmd_ack.predict(.value(1'b0));
-  // This can be done once there is a proper prediction model for the ready fields.
-  bit sw_cmd_ack = 1'b0;
-  bit sw_cmd_sts = 1'b0;
 
   `uvm_component_new
 
@@ -198,6 +198,11 @@ class edn_scoreboard extends cip_base_scoreboard #(
           reseed_cmd_q.delete();
           generate_cmd_q.delete();
         end
+        // Set all sw_cmd_sts fields to 0 if the EDN is being disabled.
+        if (write && (edn_ctrl.edn_enable.q == MuBi4False &&
+                      edn_ctrl_pre.edn_enable.q == MuBi4True)) begin
+          sw_cmd_sts = 32'b0;
+        end
 
         if (write && (edn_ctrl.edn_enable.q == MuBi4True)) begin
           // set boot mode flag if boot_req_mode is true and we are not already in auto mode
@@ -210,14 +215,13 @@ class edn_scoreboard extends cip_base_scoreboard #(
             auto_mode = 1'b1;
           end
 
-          // If EDN was disabled and is now enabled, set the initial state
-          if ((edn_ctrl_pre.edn_enable.q != MuBi4True) || (cfg.backdoor_disable)) begin
+          // If EDN was disabled/reset and is now enabled, set the initial state
+          if ((edn_ctrl_pre.edn_enable.q != MuBi4True) || cfg.backdoor_disable ||
+              reset_happened) begin
             clen_cntr = 0;
             reqs_between_reseeds_ctr = 32'b0;
             instantiated = 1'b0;
             boot_gen_cmd_sent = 1'b0;
-            sw_cmd_ack = 1'b0;
-            sw_cmd_sts = 1'b0;
             sw_cmd_req_q.delete();
 
             // Clear the auto mode FIFOs if Main_SM enters SW_Port_Mode or if the EDN has been
@@ -230,45 +234,76 @@ class edn_scoreboard extends cip_base_scoreboard #(
             // We can reset the indicator bits since the backdoor disable is now accounted for.
             cfg.backdoor_disable = 1'b0;
             backdoor_disable_fifo_clr = 1'b0;
+            reset_happened = 1'b0;
+            sw_cmd_sts[cmd_ack] = 1'b0;
+            sw_cmd_sts[cmd_sts] = 1'b0;
+            sw_cmd_sts[cmd_rdy] = !boot_mode;
+            sw_cmd_sts[cmd_reg_rdy] = !boot_mode;
 
-          // If auto mode is being disabled wait for SM to enter Idle state and clear FIFOs
+          // If boot mode is being disabled, wait for SM to enter the Idle state
+          // and predict the status ready signals to be high.
+          end else if ((edn_ctrl.boot_req_mode.q != MuBi4True) &&
+                       (edn_ctrl_pre.boot_req_mode.q == MuBi4True)) begin
+            fork
+              `DV_SPINWAIT_EXIT(
+                  wait(!boot_mode);
+                  csr_spinwait(.ptr(ral.main_sm_state), .exp_data(edn_pkg::Idle), .backdoor(1'b1));
+                  csr_spinwait(.ptr(ral.main_sm_state), .exp_data(edn_pkg::Idle), .backdoor(1'b1), .compare_op(CompareOpNe));
+                  if (edn_ctrl.auto_req_mode.q == MuBi4True) begin
+                    auto_mode = 1'b1;
+                  end
+                  sw_cmd_sts[cmd_rdy] = 1'b1;
+                  sw_cmd_sts[cmd_reg_rdy] = 1'b1;,
+                  wait (cfg.backdoor_disable || reset_happened);
+              )
+            join_none
+
+          // If auto mode is being disabled wait for SM to go through the Idle state.
           end else if ((edn_ctrl.auto_req_mode.q != MuBi4True) &&
                        (edn_ctrl_pre.auto_req_mode.q == MuBi4True)) begin
             fork
-              begin
-                csr_spinwait(.ptr(ral.main_sm_state), .exp_data(edn_pkg::Idle), .backdoor(1'b1));
-                reseed_cmd_q.delete();
-                generate_cmd_q.delete();
-                auto_mode = 1'b0;
-                if (edn_ctrl.boot_req_mode.q == MuBi4True) begin
-                  boot_mode = 1'b1;
-                end
-              end
+              `DV_SPINWAIT_EXIT(
+                  csr_spinwait(.ptr(ral.main_sm_state), .exp_data(edn_pkg::Idle), .backdoor(1'b1));
+                  // Clear the FIFOs since we left the auto mode.
+                  reseed_cmd_q.delete();
+                  generate_cmd_q.delete();
+                  auto_mode = 1'b0;
+                  // Check if the EDN will enter boot or SW mode.
+                  if (edn_ctrl.boot_req_mode.q == MuBi4True) begin
+                    boot_mode = 1'b1;
+                  // If the EDN enters SW mode, set the prediction for sw_cmd_sts accordingly.
+                  end else begin
+                    sw_cmd_sts[cmd_rdy] = 1'b1;
+                    sw_cmd_sts[cmd_reg_rdy] = 1'b1;
+                  end,
+                  wait (cfg.backdoor_disable || reset_happened);
+              )
             join_none
           end
         end
       end
       "sw_cmd_req": begin
         // Only save sw commands if we are in a state that allows for sw commands
-        bit sw_cmd_allowed = (boot_mode && boot_gen_cmd_sent) ||
-                             (!boot_mode && !auto_mode) ||
+        bit sw_cmd_allowed = (!boot_mode && !auto_mode) ||
                              (auto_mode && !instantiated);
 
-        if (addr_phase_write && `gmv(ral.sw_cmd_sts.cmd_reg_rdy) && sw_cmd_allowed) begin
-          sw_cmd_ack = 0;
+        if (addr_phase_write && sw_cmd_sts[cmd_reg_rdy] && sw_cmd_allowed) begin
+          // If a SW command is issued, reset the SW_CMD_STS register (apart from the cmd_sts field).
+          sw_cmd_sts[cmd_ack] = 1'b0;
+          sw_cmd_sts[cmd_rdy] = 1'b0;
+          sw_cmd_sts[cmd_reg_rdy]= 1'b0;
           sw_cmd_req_q.push_back(item.a_data);
         end
       end
       "sw_cmd_sts": begin
         do_read_check = 1'b0;
-        // If the EDN was disabled via back door, the state tracking bits need to be cleared.
+        // If the EDN was disabled via back door, the SW_CMD_STS prediction needs to be reset.
         if (cfg.backdoor_disable) begin
-            sw_cmd_ack = 1'b0;
-            sw_cmd_sts = 1'b0;
+          sw_cmd_sts = 32'b0;
         end
         if (data_phase_read) begin
-          `DV_CHECK_EQ(sw_cmd_ack, item.d_data[cmd_ack])
-          `DV_CHECK_EQ(sw_cmd_sts, item.d_data[cmd_sts])
+          `DV_CHECK_EQ(sw_cmd_sts, item.d_data,
+                       $sformatf("reg name: %0s", csr.get_full_name()))
           if (cfg.en_cov) begin
             cov_vif.cg_edn_sw_cmd_sts_sample(item.d_data[cmd_rdy], item.d_data[cmd_reg_rdy],
                                              item.d_data[cmd_sts], item.d_data[cmd_ack]);
@@ -330,6 +365,7 @@ class edn_scoreboard extends cip_base_scoreboard #(
     cs_cmd_item_t cs_cmd_item;
     csrng_pkg::csrng_cmd_t cs_cmd;
     csrng_pkg::acmd_e acmd_cur; // store current acmd to determine where additional data comes from
+    bit predict_sts;
 
     instantiated = 1'b0;
     clen_cntr = 0;
@@ -338,6 +374,7 @@ class edn_scoreboard extends cip_base_scoreboard #(
     forever begin
       cs_cmd_fifo.get(cs_cmd_item);
       cs_cmd = cs_cmd_item.h_data[csrng_pkg::CSRNG_CMD_WIDTH-1:0];
+      predict_sts = 1'b1;
 
       // Check if EDN is disabled
       `DV_CHECK_FATAL((edn_ctrl.edn_enable.q == MuBi4True) && !cfg.backdoor_disable,
@@ -579,21 +616,27 @@ class edn_scoreboard extends cip_base_scoreboard #(
             end
 
             if (boot_gen_cmd_sent) begin
-              boot_gen_cmd_sent = 1'b0;
               `DV_CHECK_FATAL(cs_cmd == edn_pkg::BOOT_UNINSTANTIATE,
                               $sformatf({"Uninstantiate command 0x%h has to match",
                                          " the boot mode uninstantiate command 0x%h."},
                                         cs_cmd, edn_pkg::BOOT_UNINSTANTIATE))
-              csr_spinwait(.ptr(ral.main_sm_state), .exp_data(edn_pkg::Idle), .backdoor(1'b1));
-              boot_mode = 1'b0;
             end
 
+            boot_gen_cmd_sent = 1'b0;
+            boot_mode = 1'b0;
             instantiated = 1'b0;
+            predict_sts = 1'b0;
           end
           default: begin
             `uvm_error(`gfn, $sformatf("Invalid application command. cmd: 0x%h", cs_cmd))
           end
         endcase
+      end
+
+      // Each time a handshake happens in SW mode, the cmd_reg_rdy signal goes high.
+      // In auto mode the signal also goes high but only for the initial instantiate command.
+      if ((!auto_mode || (!instantiated && clen_cntr)) && !boot_mode && predict_sts) begin
+        sw_cmd_sts[cmd_reg_rdy] = 1'b1;
       end
     end
 
@@ -625,12 +668,19 @@ class edn_scoreboard extends cip_base_scoreboard #(
       // Check the register value if we are not in boot_req_mode and not
       // in auto_req_mode after the instantiate.
       if (!boot_mode && (!auto_mode || inst_ack_outstanding)) begin
-        // Wait until the ack has propagated through the EDN to the register.
-        `DV_SPINWAIT_EXIT(
-            csr_spinwait(.ptr(ral.sw_cmd_sts.cmd_ack), .exp_data(rsp_sts.csrng_rsp_ack), .backdoor(1'b1));
-            sw_cmd_ack = rsp_sts.csrng_rsp_ack;
-            sw_cmd_sts = rsp_sts.csrng_rsp_sts;,
-            wait (cfg.backdoor_disable);)
+        // Wait until the ack has propagated through the EDN to the register
+        // and set the prediction for the SW_CMD_STS register.
+        fork
+          `DV_SPINWAIT_EXIT(
+              csr_spinwait(.ptr(ral.sw_cmd_sts.cmd_ack),
+                           .exp_data(rsp_sts.csrng_rsp_ack), .backdoor(1'b1));
+              sw_cmd_sts[cmd_ack] = rsp_sts.csrng_rsp_ack;
+              sw_cmd_sts[cmd_sts] = rsp_sts.csrng_rsp_sts;
+              sw_cmd_sts[cmd_rdy] = !auto_mode;
+              sw_cmd_sts[cmd_reg_rdy] = !auto_mode;,
+              wait (cfg.backdoor_disable || reset_happened);
+          )
+        join_none
         inst_ack_outstanding = 0;
       end
     end
@@ -665,8 +715,9 @@ class edn_scoreboard extends cip_base_scoreboard #(
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
     // reset local fifos queues and variables
-    sw_cmd_ack = 1'b0;
-    sw_cmd_sts = 1'b0;
+    reset_happened = 1'b1;
+    // Reset the prediction for the SW_CMD_STS register.
+    sw_cmd_sts = 32'b0;
   endfunction
 
   function void check_phase(uvm_phase phase);
