@@ -91,3 +91,17 @@ rust_binary(
         "@crate_index//:rand",
     ],
 )
+
+rust_binary(
+    name = "control_status",
+    srcs = [
+        "src/control_status.rs",
+    ],
+    deps = [
+        "//sw/host/opentitanlib",
+        "@crate_index//:anyhow",
+        "@crate_index//:clap",
+        "@crate_index//:humantime",
+        "@crate_index//:log",
+    ],
+)
