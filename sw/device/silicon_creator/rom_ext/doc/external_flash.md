@@ -186,12 +186,12 @@ A bundle asset's integrity must be verified prior to being loaded or used, by go
 
 | Field       | Size (bytes) | Offset (bytes) | C Data Type    |
 | ----------- | ------------ | -------------- | -------------- |
-| `signature` | 384          | 0              | `uint32_t[96]` |
-| `key_owner` | 4            | 384            | `key_owner_t`  |
+| `signature` | 48           | 0              | `uint8_t[48]`  |
+| `key_owner` | 4            | 48             | `key_owner_t`  |
 
 
 ### Field Descriptions
-- `signature`: [`RSASSA-PKCS1-v1_5`](https://datatracker.ietf.org/doc/html/rfc8017#section-8.2) signature of the [Bundle Manifest](#bundle-manifest-bundle_manifest_t) generated using a 3072-bit RSA private key and the SHA-256 hash function.
+- `signature`: [ECDSA](https://csrc.nist.gov/pubs/fips/186-5/final) signature of the [Bundle Manifest](#bundle-manifest-bundle_manifest_t) generated using a [Curve P-384](https://csrc.nist.gov/pubs/sp/800/186/final) ECDSA private key and the SHAKE256 hash function.
 - `key_owner`: Owner of the key used for the signature, [see here](#key-owner-key_owner_t).
 
 ## Bundle Verification
@@ -369,37 +369,37 @@ Detailed structures can be found below:
 
 | Field              | Size (bytes)                  | Offset (bytes) | C Data Type        |
 | ------------------ | ----------------------------- | -------------- | ------------------ |
-| `signature`        | 384                           | 0              | `uint32_t[96]`     |
-| `version_major`    | 2                             | 384            | `uint16_t`         |
-| `version_minor`    | 2                             | 386            | `uint16_t`         |
-| `security_version` | 4                             | 388            | `uint32_t`         |
-| `public_key`       | 416                           | 392            | `pub_key_t`        |
-| `owner`            | 4                             | 808            | `key_owner_t`      |
-| `key_count`        | 4                             | 812            | `uint32_t`         |
-| `keys`             | sizeof(`key_t`) * `key_count` | 816            | `key_t[key_count]` |
+| `signature`        | 48                            | 0              | `uint8_t[48] `     |
+| `version_major`    | 2                             | 48             | `uint16_t`         |
+| `version_minor`    | 2                             | 50             | `uint16_t`         |
+| `security_version` | 4                             | 52             | `uint32_t`         |
+| `public_key`       | 48                            | 56             | `uint8_t[48]`      |
+| `owner`            | 4                             | 104            | `key_owner_t`      |
+| `key_count`        | 4                             | 108            | `uint32_t`         |
+| `keys`             | sizeof(`key_t`) * `key_count` | 112            | `key_t[key_count]` |
 
 ### Field Descriptions
 
-- `signature`: [`RSASSA-PKCS1-v1_5`](https://datatracker.ietf.org/doc/html/rfc8017#section-8.2) signature of the Key Bundle generated using a 3072-bit RSA private key and the SHA-256 hash function. The signed region of a Key Bundle starts immediately after this field and extends to the end of the bundle.
+- `signature`: [ECDSA](https://csrc.nist.gov/pubs/fips/186-5/final) signature of the Key Bundle generated using a [Curve P-384](https://csrc.nist.gov/pubs/sp/800/186/final) ECDSA private key and the SHAKE256 hash function. The signed region of a Key Bundle starts immediately after this field and extends to the end of the bundle.
 - `version_major`/`version_minor`: Key Manifest structure major/minor version (see [version](#version)). In any case the Key Manifest version must be compatible with the Partiton Table version (major `=`, minor `>=`).
 - `security_version`: Security version of the key bundle used for anti-rollback protection. Must be a monotonically increasing integer.
 - `owner`: [Owner](#key-owner-key_owner_t) for the keys present in the bundle.
-- `public_key`: [Public key](#public-key-pub_key_t) used to sign the current bundle. This field must be verified against its OTP-stored digest.
+- `public_key `: [Curve P-384](https://csrc.nist.gov/pubs/sp/800/186/final) [ECDSA](https://csrc.nist.gov/pubs/fips/186-5/final) public key used to sign the current bundle. This field must be verified against its OTP-stored digest.
 - `key_count`: Number of [keys](#key-key_t) in the bundle.
 - `keys`: Array of [keys](#key-key_t).
 
 
 ## Key `key_t`
 
-| Field        | Size (bytes) | Offset (bytes) | C Data Type  |
-| ------------ | ------------ | -------------- | ------------ |
-| `key_role`   | 4            | 0              | `key_role_t` |
-| `public_key` | 416          | 4              | `pub_key_t`  |
+| Field        | Size (bytes) | Offset (bytes) | C Data Type    |
+| ------------ | ------------ | -------------- | -------------- |
+| `key_role`   | 4            | 0              | `key_role_t`   |
+| `public_key` | 48           | 4              | `uint8_t[48]`  |
 
 ### Field Descriptions
 
 - `key_role`: [Key role](#key-role-key_role_t).
-- `public_key `: [Public part](#public-key-pub_key_t) of the key.
+- `public_key `: [Curve P-384](https://csrc.nist.gov/pubs/sp/800/186/final) [ECDSA](https://csrc.nist.gov/pubs/fips/186-5/final) public key.
 
 
 ## Key Role `key_role_t`
@@ -411,17 +411,3 @@ The `Key Role` values are defined below:
 | `Firmware Signing`                    | 0x0   |
 | `Relinquish Platform Owner Ownership` | 0x1   |
 | `Debug Authorization`                 | 0x2   |
-
-
-## Public Key `pub_key_t`
-
-| Field          | Size (bytes) | Offset (bytes) | C Data Type    |
-| -------------- | ------------ | -------------- | -------------- |
-| `rsa_modulus`  | 384          | 0              | `uint32_t[96]` |
-| `rsa_exponent` | 32           | 384            | `uint32_t[8]`  |
-
-### Field Descriptions
-
-- `rsa_modulus`: 3072-bit RSA modulus.
-- `rsa_exponent`: 256-bit RSA public exponent.
-
