@@ -37,7 +37,7 @@ The clock might drift off.
 
 Control transfers pass through synchronous FIFOs or have a ready bit synchronized across the clock domain boundary.
 A dual-port synchronous buffer SRAM is used for data transfers, and the bus clock and USB clock come from the same 48 MHz input.
-The wake detection module is clocked by a separate clock, and a couple registers are used to interface with it.
+The wake detection module is clocked by a separate clock, and a couple of registers are used to interface with it.
 Any bus-related clock domain crossings must happen outside the core, except for the transition between the 48 MHz clock and the wake detection module's clock.
 The 48 MHz clock must be enabled to reach the registers in `usbdev`.
 
@@ -162,20 +162,21 @@ This is an asynchronous dual-port SRAM with software accessing from the bus cloc
 
 ### Reception
 
-Software provides buffers for packet reception through a 4-entry Available Buffer FIFO.
-(More study needed but four seems about right: one just returned to software, one being filled, one ready to be filled, and one for luck.)
+Software provides buffers for packet reception through an 8-entry Available OUT Buffer FIFO and a 4-entry Available SETUP Buffer FIFO.
 The [`rxenable_out`](registers.md#rxenable_out) and [`rxenable_setup`](registers.md#rxenable_setup) registers is used to indicate which endpoints will accept data from the host using OUT or SETUP transactions, respectively.
-When a packet is transferred from the host to the device (using an OUT or SETUP transaction) and reception of that type of transaction is enabled for the requested endpoint, the next buffer ID is pulled from the Available Buffer FIFO.
+When a packet is transferred from the host to the device (using an OUT or SETUP transaction) and reception of that type of transaction is enabled for the requested endpoint, the next buffer ID is pulled from the appropriate Available Buffer FIFO.
 The packet data is written to the corresponding buffer in the packet buffer (the 2 kB SRAM).
 If the packet is correctly received, an ACK is returned to the host.
 In addition, the buffer ID, the packet size, an out/setup flag and the endpoint ID are passed back to software using the Received Buffer FIFO and a pkt_received interrupt is raised.
 
-Software should immediately provide a free buffer for future reception by writing the corresponding buffer ID to the Available Buffer FIFO.
+Software should immediately provide a free buffer for future reception by writing the corresponding buffer ID to the Available OUT Buffer FIFO or the Available SETUP Buffer FIFO, according to which packet type was received.
 It can then process the packet and eventually return the received buffer to the free pool.
 This allows streaming on a single endpoint or across a number of endpoints.
 If the packets cannot be consumed at the rate they are received, software can implement selective flow control by clearing [`rxenable_out`](registers.md#rxenable_out) for a particular endpoint, which will result in a request to that endpoint being NAKed (negative acknowledgment).
-In the unfortunate event that the Available Buffer FIFO is empty or the Received Buffer FIFO is full, all OUT transactions are NAKed and SETUP transactions are ignored.
+In the unfortunate event that the appropriate Available Buffer FIFO is empty or the Received Buffer FIFO is full, all OUT transactions are NAKed and SETUP transactions are ignored.
 In that event, the host will retry the transaction (up to some maximum attempts or time).
+
+Since a SETUP packet being ignored is understood by the host controller to be an error in transmission, it will retry the transmission almost immediately (intervals of just 15-16us have been observed). To prevent three such failures in rapid succession leading to the Control Transfer being retired, the final entry of the Received Buffer FIFO shall only ever be allocated to a SETUP packet. It is, however, the responsibility of software to keep the Available SETUP Buffer FIFO populated so that this scheme can be successful.
 
 There are two options for a given OUT endpoint's flow control, controlled by the [`set_nak_out`](registers.md#set_nak_out) register.
 If `set_nak_out` is 0 for the endpoint, it will accept packets as long as there are buffers available in the Available Buffer FIFO and space available in the Received Buffer FIFO.
@@ -193,7 +194,7 @@ On receipt of the ACK from the host, the rdy bit in the [`configin`](registers.m
 Software can return the buffer to the free pool and write a 1 to clear the endpoint bit in the [`in_sent`](registers.md#in_sent) register.
 Note that streaming can be achieved if the next buffer has been prepared and is written to the [`configin`](registers.md#configin) register when the interrupt is received.
 
-A Control transfer requires one or more IN transactions, either during the data stage or the status stage.
+A Control Transfer requires one or more IN transactions, either during the data stage or the status stage.
 Therefore, when a SETUP transaction is received for an endpoint, any buffers that are waiting to be sent out to the host from that endpoint are canceled by clearing the rdy bit in the corresponding [`configin`](registers.md#configin) register.
 To keep track of such canceled buffers, the pend bit in the same register is set.
 The transfer must be queued again after the Control transfer is completed.
@@ -204,11 +205,12 @@ The pend bit in the [`configin`](registers.md#configin) register is set for all 
 
 ### Buffer Count and Size
 
-Under high load, the 32 buffers of the packet buffer (2 kB SRAM) are allocated as follows:
+Under high load, the 32 buffers of the packet buffer (2 kB SRAM) may be allocated as follows:
 - 1 is being processed following reception,
-- 4 are in the Available Buffer FIFO, and
+- 4 are in the Available OUT Buffer FIFO,
+- 1 is in the Available SETUP Buffer FIFO, and
 - 12 (worst case) waiting transmissions in the [`configin`](registers.md#configin) registers.
-This leaves 15 buffers for preparation of future transmissions (which would need 12 in the worst case of one per endpoint) and the free pool.
+This leaves 14 buffers for preparation of future transmissions (which would need 12 in the worst case of one per endpoint) and the free pool.
 
 The size of 64 bytes per buffer satisfies the maximum USB packet size for a Full-Speed interface for Control transfers (max may be 8, 16, 32 or 64 bytes), Bulk Transfers (max is 64 bytes) and Interrupt transfers (max is 64 bytes).
 It is small for Isochronous transfers (which have a max size of 1023 bytes).
