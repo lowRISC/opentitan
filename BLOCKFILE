@@ -20,44 +20,90 @@ BLOCKFILE
 .github/workflows/pr_change_check.yml
 ci/scripts/check-pr-changes-allowed.py
 
-# For the following HW IP blocks and top level we don't expect changes while
-# working on Darjeeling; so block changes to their RTL as well as to HJSON files
-# that affect RTL generation (no wildcard as it's too broad and will also block
-# DV-only files).  Please keep this list sorted.
-hw/ip/adc_ctrl/data/adc_ctrl.hjson
-hw/ip/adc_ctrl/rtl/*
+# Please keep the following lists of files sorted.
+
+# RTL changes to HW IP blocks used in Darjeeling are restricted on this branch.
+# adc_ctrl is not used in Darjeeling
+hw/ip/aes/data/aes.hjson
+hw/ip/aes/rtl/*
 hw/ip/aon_timer/data/aon_timer.hjson
 hw/ip/aon_timer/rtl/*
+hw/ip/clkmgr/data/clkmgr.hjson
+hw/ip/clkmgr/rtl/*
+hw/ip/csrng/data/csrng.hjson
+hw/ip/csrng/rtl/*
+hw/ip/dma/data/dma.hjson
+hw/ip/dma/rtl/*
+hw/ip/edn/data/edn.hjson
+hw/ip/edn/rtl/*
+# entropy_src is not used in Darjeeling
+# flash_ctrl is not used in Darjeeling
 hw/ip/gpio/data/gpio.hjson
 hw/ip/gpio/rtl/*
+hw/ip/hmac/data/hmac.hjson
+hw/ip/hmac/rtl/*
 hw/ip/i2c/data/i2c.hjson
 hw/ip/i2c/rtl/*
+# keymgr (non-DPE) is not used in Darjeeling
+hw/ip/keymgr_dpe/data/keymgr_dpe.hjson
+hw/ip/keymgr_dpe/rtl/*
 hw/ip/kmac/data/kmac.hjson
 hw/ip/kmac/rtl/*
-hw/ip/pattgen/data/pattgen.hjson
-hw/ip/pattgen/rtl/*
-hw/ip/pwm/data/pwm.hjson
-hw/ip/pwm/rtl/*
+hw/ip/lc_ctrl/data/lc_ctrl.hjson
+hw/ip/lc_ctrl/rtl/*
+# lc_ctrl_v1 is not used in Darjeeling
+hw/ip/mbx/data/mbx.hjson
+hw/ip/mbx/rtl/*
+hw/ip/otbn/data/otbn.hjson
+hw/ip/otbn/rtl/*
+hw/ip/otp_ctrl/data/otp_ctrl.hjson
+hw/ip/otp_ctrl/rtl/*
+# pattgen is not used in Darjeeling
+hw/ip/pinmux/data/pinmux.hjson
+hw/ip/pinmux/rtl/*
+hw/ip/prim/rtl/*
+hw/ip/prim_generic/rtl/*
+hw/ip/prim_xilinx/rtl/*
+# pwm is not used in Darjeeling
+hw/ip/pwrmgr/data/pwrmgr.hjson
+hw/ip/pwrmgr/rtl/*
+hw/ip/rom_ctrl/data/rom_ctrl.hjson
+hw/ip/rom_ctrl/rtl/*
+hw/ip/rstmgr/data/rstmgr.hjson
+hw/ip/rstmgr/rtl/*
+hw/ip/rv_core_ibex/data/rv_core_ibex.hjson
+hw/ip/rv_core_ibex/rtl/*
+hw/ip/rv_dm/data/rv_dm.hjson
+hw/ip/rv_dm/rtl/*
+# rv_dm_v1 is not used in Darjeeling
 hw/ip/rv_timer/data/rv_timer.hjson
 hw/ip/rv_timer/rtl/*
 hw/ip/spi_device/data/spi_device.hjson
 hw/ip/spi_device/rtl/*
 hw/ip/spi_host/data/spi_host.hjson
 hw/ip/spi_host/rtl/*
+hw/ip/sram_ctrl/data/sram_ctrl.hjson
+hw/ip/sram_ctrl/rtl/*
+# sysrst_ctrl is not used in Darjeeling
 hw/ip/tlul/rtl/*
 hw/ip/uart/data/uart.hjson
 hw/ip/uart/rtl/*
-hw/ip/usbdev/rtl/*
-hw/ip/usbdev/data/usbdev.hjson
-hw/top_earlgrey/data/top_earlgrey.hjson
-hw/top_earlgrey/data/xbar_main.hjson
-hw/top_earlgrey/data/xbar_peri.hjson
-hw/top_earlgrey/ip/ast/data/ast.hjson
-hw/top_earlgrey/ip_autogen/alert_handler/data/alert_handler.hjson
-hw/top_earlgrey/ip_autogen/rv_plic/data/rv_plic.hjson
-hw/top_earlgrey/rtl/*
+# usbdev is not used in Darjeeling
 
-# Vendored IP
+# RTL changes to Darjeeling are restricted on this branch.
+hw/top_darjeeling/data/top_darjeeling.hjson
+hw/top_darjeeling/data/xbar_*.hjson
+hw/top_darjeeling/ip/ast/data/ast.hjson
+hw/top_darjeeling/ip/ast/rtl/*
+hw/top_darjeeling/ip/sensor_ctrl/data/sensor_ctrl.hjson
+hw/top_darjeeling/ip/sensor_ctrl/rtl/*
+hw/top_darjeeling/ip/soc_proxy/data/soc_proxy.hjson
+hw/top_darjeeling/ip/soc_proxy/rtl/*
+hw/top_darjeeling/ip_autogen/alert_handler/data/alert_handler.hjson
+hw/top_darjeeling/ip_autogen/rv_plic/data/rv_plic.hjson
+hw/top_darjeeling/rtl/*
+
+# RTL changes to vendored IP used in Darjeeling are restricted on this branch.
 hw/vendor/lowrisc_ibex/rtl/*
 hw/vendor/pulp_riscv_dbg/src/*
 hw/vendor/pulp_riscv_dbg/debug_rom/*
