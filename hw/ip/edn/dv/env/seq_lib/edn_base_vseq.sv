@@ -190,8 +190,11 @@ class edn_base_vseq extends cip_base_vseq #(
       end
       edn_env_pkg::Sw: begin
         if (additional_data) begin
+          // Use a spinwait delay that is high enough to leave room for other requests in between polling
+          // requests to the sw_cmd_sts register.
           `DV_SPINWAIT_EXIT(
-            csr_spinwait(.ptr(ral.sw_cmd_sts.cmd_reg_rdy), .exp_data(1'b1));,
+            csr_spinwait(.ptr(ral.sw_cmd_sts.cmd_reg_rdy), .exp_data(1'b1),
+                         .spinwait_delay_ns(1000));,
             wait(cfg.abort_sw_cmd);,
             "Aborted SW command"
           )
@@ -199,8 +202,11 @@ class edn_base_vseq extends cip_base_vseq #(
           additional_data -= 1;
         end
         else begin
+          // Use a spinwait delay that is high enough to leave room for other requests in between polling
+          // requests to the sw_cmd_sts register.
           `DV_SPINWAIT_EXIT(
-            csr_spinwait(.ptr(ral.sw_cmd_sts.cmd_rdy), .exp_data(1'b1));,
+            csr_spinwait(.ptr(ral.sw_cmd_sts.cmd_rdy), .exp_data(1'b1),
+                         .spinwait_delay_ns(1000));,
             wait(cfg.abort_sw_cmd);,
             "Aborted SW command"
           )
