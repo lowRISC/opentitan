@@ -55,6 +55,9 @@ class edn_disable_vseq extends edn_base_vseq;
         // If directly writing to ral.ctrl.edn_enable, sometimes it will override the
         // boot_req_mode to Mubi4False, so I hardcode this ctrl_val for now.
         ctrl_val = {MuBi4False, MuBi4False, MuBi4True, MuBi4False};
+        // Generally the register should not be busy but it is possible that the register is accessed
+        // simultaneously by the edn_base_vseq, which could cause the test to fail.
+        wait(!ral.ctrl.is_busy());
         csr_wr(.ptr(ral.ctrl), .value(ctrl_val), .backdoor(1));
         cfg.backdoor_disable = 1'b1; // Notify scoreboard of backdoor disable
         cfg.edn_vif.drive_edn_disable(1);
