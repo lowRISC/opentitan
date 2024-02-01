@@ -14,7 +14,7 @@ module prim_clock_gating_sync (
 );
 
 
-  prim_flop_2sync #(
+  prim_generic_flop_2sync #(
     .Width(1)
   ) i_sync (
     .clk_i,

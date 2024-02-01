@@ -113,7 +113,7 @@ The IP block conforms to the [style guide regarding X usage](https://github.com/
 
 ### CDC_SYNCMACRO
 
-All CDC synchronization flops use behavioral synchronization macros (e.g. `prim_flop_2sync`) not manually created flops.
+All CDC synchronization flops use behavioral synchronization macros (e.g. `prim_generic_flop_2sync`) not manually created flops.
 
 ### LINT_PASS
 

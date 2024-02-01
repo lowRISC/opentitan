@@ -240,7 +240,7 @@ module rv_core_ibex
 
   // Synchronize to fast Ibex clock domain.
   logic alert_irq_nm;
-  prim_flop_2sync #(
+  prim_generic_flop_2sync #(
     .Width(1)
   ) u_alert_nmi_sync (
     .clk_i,
@@ -250,7 +250,7 @@ module rv_core_ibex
   );
 
   logic wdog_irq_nm;
-  prim_flop_2sync #(
+  prim_generic_flop_2sync #(
     .Width(1)
   ) u_wdog_nmi_sync (
     .clk_i,
@@ -286,7 +286,7 @@ module rv_core_ibex
   // timer interrupts do not come from
   // rv_plic and may not be synchronous to the ibex core
   logic irq_timer_sync;
-  prim_flop_2sync #(
+  prim_generic_flop_2sync #(
     .Width(1)
   ) u_intr_timer_sync (
     .clk_i,

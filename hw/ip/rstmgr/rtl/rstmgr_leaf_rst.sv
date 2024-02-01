@@ -40,7 +40,7 @@ module rstmgr_leaf_rst
  );
 
   logic leaf_rst_sync;
-  prim_flop_2sync #(
+  prim_generic_flop_2sync #(
     .Width(1),
     .ResetValue('0)
   ) u_rst_sync (

@@ -1294,7 +1294,7 @@ module clkmgr_reg_top (
   logic async_io_meas_ctrl_shadowed_hi_err_storage;
 
   // storage error is persistent and can be sampled at any time
-  prim_flop_2sync #(
+  prim_generic_flop_2sync #(
     .Width(1),
     .ResetValue('0)
   ) u_io_meas_ctrl_shadowed_hi_err_storage_sync (
@@ -1353,7 +1353,7 @@ module clkmgr_reg_top (
   logic async_io_meas_ctrl_shadowed_lo_err_storage;
 
   // storage error is persistent and can be sampled at any time
-  prim_flop_2sync #(
+  prim_generic_flop_2sync #(
     .Width(1),
     .ResetValue('0)
   ) u_io_meas_ctrl_shadowed_lo_err_storage_sync (
@@ -1452,7 +1452,7 @@ module clkmgr_reg_top (
   logic async_io_div2_meas_ctrl_shadowed_hi_err_storage;
 
   // storage error is persistent and can be sampled at any time
-  prim_flop_2sync #(
+  prim_generic_flop_2sync #(
     .Width(1),
     .ResetValue('0)
   ) u_io_div2_meas_ctrl_shadowed_hi_err_storage_sync (
@@ -1511,7 +1511,7 @@ module clkmgr_reg_top (
   logic async_io_div2_meas_ctrl_shadowed_lo_err_storage;
 
   // storage error is persistent and can be sampled at any time
-  prim_flop_2sync #(
+  prim_generic_flop_2sync #(
     .Width(1),
     .ResetValue('0)
   ) u_io_div2_meas_ctrl_shadowed_lo_err_storage_sync (
@@ -1610,7 +1610,7 @@ module clkmgr_reg_top (
   logic async_io_div4_meas_ctrl_shadowed_hi_err_storage;
 
   // storage error is persistent and can be sampled at any time
-  prim_flop_2sync #(
+  prim_generic_flop_2sync #(
     .Width(1),
     .ResetValue('0)
   ) u_io_div4_meas_ctrl_shadowed_hi_err_storage_sync (
@@ -1669,7 +1669,7 @@ module clkmgr_reg_top (
   logic async_io_div4_meas_ctrl_shadowed_lo_err_storage;
 
   // storage error is persistent and can be sampled at any time
-  prim_flop_2sync #(
+  prim_generic_flop_2sync #(
     .Width(1),
     .ResetValue('0)
   ) u_io_div4_meas_ctrl_shadowed_lo_err_storage_sync (
@@ -1768,7 +1768,7 @@ module clkmgr_reg_top (
   logic async_main_meas_ctrl_shadowed_hi_err_storage;
 
   // storage error is persistent and can be sampled at any time
-  prim_flop_2sync #(
+  prim_generic_flop_2sync #(
     .Width(1),
     .ResetValue('0)
   ) u_main_meas_ctrl_shadowed_hi_err_storage_sync (
@@ -1827,7 +1827,7 @@ module clkmgr_reg_top (
   logic async_main_meas_ctrl_shadowed_lo_err_storage;
 
   // storage error is persistent and can be sampled at any time
-  prim_flop_2sync #(
+  prim_generic_flop_2sync #(
     .Width(1),
     .ResetValue('0)
   ) u_main_meas_ctrl_shadowed_lo_err_storage_sync (
@@ -1925,7 +1925,7 @@ module clkmgr_reg_top (
   logic async_usb_meas_ctrl_shadowed_hi_err_storage;
 
   // storage error is persistent and can be sampled at any time
-  prim_flop_2sync #(
+  prim_generic_flop_2sync #(
     .Width(1),
     .ResetValue('0)
   ) u_usb_meas_ctrl_shadowed_hi_err_storage_sync (
@@ -1984,7 +1984,7 @@ module clkmgr_reg_top (
   logic async_usb_meas_ctrl_shadowed_lo_err_storage;
 
   // storage error is persistent and can be sampled at any time
-  prim_flop_2sync #(
+  prim_generic_flop_2sync #(
     .Width(1),
     .ResetValue('0)
   ) u_usb_meas_ctrl_shadowed_lo_err_storage_sync (

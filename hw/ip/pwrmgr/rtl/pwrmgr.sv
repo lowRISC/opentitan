@@ -95,7 +95,7 @@ module pwrmgr
   logic ndmreset_req_q;
   logic ndm_req_valid;
 
-  prim_flop_2sync #(
+  prim_generic_flop_2sync #(
     .Width(1),
     .ResetValue('0)
   ) u_ndm_sync (

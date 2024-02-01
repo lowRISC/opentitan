@@ -73,7 +73,7 @@ module prim_fifo_async #(
   end
 
   // sync gray-coded pointer to read clk
-  prim_flop_2sync #(.Width(PTR_WIDTH)) sync_wptr (
+  prim_generic_flop_2sync #(.Width(PTR_WIDTH)) sync_wptr (
     .clk_i    (clk_rd_i),
     .rst_ni   (rst_rd_ni),
     .d_i      (fifo_wptr_gray_q),
@@ -106,7 +106,7 @@ module prim_fifo_async #(
   end
 
   // sync gray-coded pointer to write clk
-  prim_flop_2sync #(.Width(PTR_WIDTH)) sync_rptr (
+  prim_generic_flop_2sync #(.Width(PTR_WIDTH)) sync_rptr (
     .clk_i    (clk_wr_i),
     .rst_ni   (rst_wr_ni),
     .d_i      (fifo_rptr_gray_q),

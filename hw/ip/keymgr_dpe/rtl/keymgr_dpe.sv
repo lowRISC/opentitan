@@ -268,7 +268,7 @@ module keymgr_dpe
   assign root_key.key = '{otp_key_i.creator_root_key_share1,
                           otp_key_i.creator_root_key_share0};
 
-  prim_flop_2sync # (
+  prim_generic_flop_2sync # (
     .Width(1)
   ) u_key_valid_sync (
     .clk_i,

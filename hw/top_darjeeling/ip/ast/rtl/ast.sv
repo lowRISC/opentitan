@@ -222,7 +222,7 @@ assign rst_poks_por_n = vcc_pok_str && vcaon_pok && por_ni;
 assign poks_por_ack = vcaon_pok_por_src || rglssm_vcmon;
 
 // Reset De-Assert Sync
-prim_flop_2sync #(
+prim_generic_flop_2sync #(
   .Width ( 1 ),
   .ResetValue ( 1'b0 )
 ) u_no_scan_poks_por_dasrt (
@@ -451,7 +451,7 @@ aon_clk  u_aon_clk (
 logic vcmpp_aon_sync_n, rst_vcmpp_aon_n;
 
 // Reset De-Assert Sync
-prim_flop_2sync #(
+prim_generic_flop_2sync #(
   .Width ( 1 ),
   .ResetValue ( 1'b0 )
 ) u_rst_vcmpp_aon_dasrt (
@@ -615,7 +615,7 @@ prim_mubi4_sync #(
 );
 
 // Reset De-Assert Sync
-prim_flop_2sync #(
+prim_generic_flop_2sync #(
   .Width ( 1 ),
   .ResetValue ( 1'b0 )
 ) u_rst_sys_dasrt (

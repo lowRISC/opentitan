@@ -392,7 +392,7 @@ module i2c_core import i2c_pkg::*;
   );
 
   // sync the incoming SCL and SDA signals
-  prim_flop_2sync #(
+  prim_generic_flop_2sync #(
     .Width(1),
     .ResetValue(1'b1)
   ) u_i2c_sync_scl (
@@ -402,7 +402,7 @@ module i2c_core import i2c_pkg::*;
     .q_o (scl_sync)
   );
 
-  prim_flop_2sync #(
+  prim_generic_flop_2sync #(
     .Width(1),
     .ResetValue(1'b1)
   ) u_i2c_sync_sda (

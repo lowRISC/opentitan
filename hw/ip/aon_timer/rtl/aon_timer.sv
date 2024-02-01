@@ -69,7 +69,7 @@ module aon_timer import aon_timer_reg_pkg::*;
   //////////////////////////////
 
   logic aon_sleep_mode;
-  prim_flop_2sync #(
+  prim_generic_flop_2sync #(
     .Width(1)
   ) u_sync_sleep_mode (
     .clk_i   (clk_aon_i),

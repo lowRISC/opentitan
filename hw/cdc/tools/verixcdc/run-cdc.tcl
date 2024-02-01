@@ -99,7 +99,7 @@ if {$PARAMS != ""} {
 set prim_2ff_modules {}
 
 # Find every derivated modules from 2FF synchronizer
-foreach mod [get_all_modules prim_flop_2sync] {
+foreach mod [get_all_modules prim_generic_flop_2sync] {
   lappend prim_2ff_modules $mod
   puts "Adding to list prim_2ff_modules: $mod"
 }

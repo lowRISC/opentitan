@@ -300,7 +300,7 @@ module flash_ctrl_lcmgr
   // synchronize inputs
   logic init_q;
 
-  prim_flop_2sync #(
+  prim_generic_flop_2sync #(
     .Width(1),
     .ResetValue(0)
   ) u_sync_flash_init (

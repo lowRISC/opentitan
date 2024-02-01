@@ -962,7 +962,7 @@ end
 
   // The init request comes from the power manager, which lives in the AON clock domain.
   logic pwr_otp_req_synced;
-  prim_flop_2sync #(
+  prim_generic_flop_2sync #(
     .Width(1)
   ) u_otp_init_sync (
     .clk_i,

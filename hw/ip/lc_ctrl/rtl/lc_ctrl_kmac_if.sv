@@ -108,10 +108,10 @@ module lc_ctrl_kmac_if
 
   // Need to synchronize this error signal separately.
   logic kmac_fsm_err_d, kmac_fsm_err_q;
-  prim_flop_2sync #(
+  prim_generic_flop_2sync #(
     .Width(1),
     .ResetValue(0)
-  ) u_prim_flop_2sync (
+  ) u_prim_generic_flop_2sync (
     .clk_i,
     .rst_ni,
     .d_i(kmac_fsm_err_q),

@@ -59,7 +59,7 @@ If the `clk_i` input of the module in which you are inserting the ILA does not f
 
 The `probe0` input of the ILA takes the signals identified for debugging.
 Ideally, these signals are all in the same clock domain as the ILA.
-If that is not the case, we recommend syncing those signals that are in a different clock domain into the clock domain of the ILA by instantiating a `prim_flop_2sync`.
+If that is not the case, we recommend syncing those signals that are in a different clock domain into the clock domain of the ILA by instantiating a `prim_generic_flop_2sync`.
 Calculate the total bit width of the signals assigned to the `probe0` input; you will need that number in the next step.
 
 Here is a complete example of an ILA and a synchronizer instantiated in `dmi_jtag` to sample the JTAG I/Os of that module:
@@ -75,9 +75,9 @@ assign probe0_presync = {
   tdo_oe_o
 };
 
-prim_flop_2sync #(
+prim_generic_flop_2sync #(
   .Width(SyncWidth)
-) u_prim_flop_2sync_probe0 (
+) u_prim_generic_flop_2sync_probe0 (
   .clk_i  (clk_i),
   .rst_ni (rst_ni),
   .d_i    (probe0_presync),

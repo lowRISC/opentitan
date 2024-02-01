@@ -230,7 +230,7 @@ bool test_main(void) {
   if (kI2cCdcInstrumentationEnabled) {
     // Increase rise cycles to accommodate CDC incorrectly delaying the data
     // change. Without this, the SDA interference interrupt will be triggered
-    // when the prim_flop_2sync randomly adds an extra cycle of delay.
+    // when the prim_generic_flop_2sync randomly adds an extra cycle of delay.
     config.rise_cycles++;
   }
   CHECK_DIF_OK(dif_i2c_configure(&i2c, config));

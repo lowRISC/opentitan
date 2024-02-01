@@ -69,7 +69,7 @@ module sensor_ctrl
     );
   end
 
-  prim_flop_2sync #(
+  prim_generic_flop_2sync #(
     .Width(NumAlertEvents),
     .ResetValue('0)
   ) u_alert_p_sync (
@@ -79,7 +79,7 @@ module sensor_ctrl
     .q_o(alert_event_p)
   );
 
-  prim_flop_2sync #(
+  prim_generic_flop_2sync #(
     .Width(NumAlertEvents),
     .ResetValue({NumAlertEvents{1'b1}})
   ) u_alert_n_sync (
@@ -296,7 +296,7 @@ module sensor_ctrl
                       (~&async_alert_event_n) |
                       (|reg2hw.recov_alert);
 
-  prim_flop_2sync #(
+  prim_generic_flop_2sync #(
     .Width(1),
     .ResetValue('0)
   ) u_wake_sync (

@@ -183,7 +183,7 @@ module prim_fifo_async_sram_adapter #(
 
   assign w_wptr_gray_d = dec2gray(w_wptr_d);
 
-  prim_flop_2sync #(
+  prim_generic_flop_2sync #(
     .Width (PtrW)
   ) u_sync_wptr_gray (
     .clk_i  (clk_rd_i),
@@ -225,7 +225,7 @@ module prim_fifo_async_sram_adapter #(
 
   assign r_rptr_gray_d = dec2gray(r_rptr_d);
 
-  prim_flop_2sync #(
+  prim_generic_flop_2sync #(
     .Width (PtrW)
   ) u_sync_rptr_gray (
     .clk_i  (clk_wr_i),

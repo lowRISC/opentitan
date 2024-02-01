@@ -230,7 +230,7 @@ module uart_core (
   //////////////
 
   //      sync the incoming data
-  prim_flop_2sync #(
+  prim_generic_flop_2sync #(
     .Width(1),
     .ResetValue(1'b1)
   ) sync_rx (

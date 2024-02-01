@@ -9,7 +9,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:prim:all
-      - lowrisc:prim:flop_2sync
+      - lowrisc:prim_generic:flop_2sync
       - lowrisc:prim:assert
     files:
       - rtl/prim_clock_meas.sv

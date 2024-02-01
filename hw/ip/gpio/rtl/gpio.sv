@@ -69,9 +69,9 @@ module gpio
   if (GpioAsHwStrapsEn) begin : gen_strap_sample
     // sample at gpio inputs at strap_en_i signal pulse.
     logic strap_en;
-    prim_flop_2sync #(
+    prim_generic_flop_2sync #(
       .Width(1)
-    ) u_prim_flop_2sync (
+    ) u_prim_generic_flop_2sync (
       .clk_i,
       .rst_ni,
       .d_i(strap_en_i),

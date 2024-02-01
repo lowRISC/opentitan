@@ -34,7 +34,7 @@ module ast_pulse_sync (
 logic rst_src_n, rst_dst_da_n;
 logic rst_dst_n, rst_src_da_n;
 
-prim_flop_2sync #(
+prim_generic_flop_2sync #(
   .Width ( 1 ),
   .ResetValue ( 1'b0 )
 ) u_rst_dst_da (
@@ -44,7 +44,7 @@ prim_flop_2sync #(
   .q_o ( rst_dst_da_n )
 );
 
-prim_flop_2sync #(
+prim_generic_flop_2sync #(
   .Width ( 1 ),
   .ResetValue ( 1'b0 )
 ) u_rst_src_da (
@@ -91,7 +91,7 @@ end
 ///////////////////////////////////////
 logic dst_req;
 
-prim_flop_2sync #(
+prim_generic_flop_2sync #(
   .Width ( 1 ),
   .ResetValue ( 1'b0 )
 ) u_dst_req (
@@ -106,7 +106,7 @@ prim_flop_2sync #(
 ///////////////////////////////////////
 logic src_ack;
 
-prim_flop_2sync #(
+prim_generic_flop_2sync #(
   .Width ( 1 ),
   .ResetValue ( 1'b0 )
 ) u_sync2_ack (

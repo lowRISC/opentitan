@@ -34,9 +34,9 @@ module prim_filter_ctr #(
   if (AsyncOn) begin : gen_async
     // Run this through a 2 stage synchronizer to
     // prevent metastability.
-    prim_flop_2sync #(
+    prim_generic_flop_2sync #(
       .Width(1)
-    ) prim_flop_2sync (
+    ) prim_generic_flop_2sync (
       .clk_i,
       .rst_ni,
       .d_i(filter_i),
@@ -79,4 +79,3 @@ module prim_filter_ctr #(
   assign filter_o = enable_i ? stored_value_q : filter_synced;
 
 endmodule
-

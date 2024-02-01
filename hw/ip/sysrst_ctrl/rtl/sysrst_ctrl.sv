@@ -116,9 +116,9 @@ module sysrst_ctrl
   // Synchronize input signals to AON clock
   logic aon_pwrb_int, aon_key0_int, aon_key1_int, aon_key2_int;
   logic aon_ac_present_int, aon_lid_open_int, aon_ec_rst_l_int, aon_flash_wp_l_int;
-  prim_flop_2sync #(
+  prim_generic_flop_2sync #(
     .Width(8)
-  ) u_prim_flop_2sync_input (
+  ) u_prim_generic_flop_2sync_input (
     .clk_i(clk_aon_i),
     .rst_ni(rst_aon_ni),
     .d_i({pwrb_int,

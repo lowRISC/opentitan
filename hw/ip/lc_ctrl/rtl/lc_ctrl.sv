@@ -533,9 +533,9 @@ module lc_ctrl
 
   // Signals going to and coming from power manager.
   logic lc_init;
-  prim_flop_2sync #(
+  prim_generic_flop_2sync #(
     .Width(1)
-  ) u_prim_flop_2sync_init (
+  ) u_prim_generic_flop_2sync_init (
     .clk_i,
     .rst_ni,
     .d_i(pwr_lc_i.lc_init),

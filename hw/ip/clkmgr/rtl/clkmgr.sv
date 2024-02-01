@@ -107,7 +107,7 @@ module clkmgr import clkmgr_pkg::*; (
   // Sync the OR back into clkmgr domain for feedback to pwrmgr.
   // Since the signal is combo / converged on the other side, de-bounce
   // the signal prior to output
-  prim_flop_2sync #(
+  prim_generic_flop_2sync #(
     .Width(1)
   ) i_roots_en_sync (
     .clk_i,
@@ -151,7 +151,7 @@ module clkmgr import clkmgr_pkg::*; (
   logic clk_fixed_peri_sw_en;
   logic clk_usb_48mhz_peri_sw_en;
 
-  prim_flop_2sync #(
+  prim_generic_flop_2sync #(
     .Width(1)
   ) i_clk_fixed_peri_sw_en_sync (
     .clk_i(clk_fixed_i),
@@ -167,7 +167,7 @@ module clkmgr import clkmgr_pkg::*; (
     .clk_o(clocks_o.clk_fixed_peri)
   );
 
-  prim_flop_2sync #(
+  prim_generic_flop_2sync #(
     .Width(1)
   ) i_clk_usb_48mhz_peri_sw_en_sync (
     .clk_i(clk_usb_48mhz_i),
@@ -201,7 +201,7 @@ module clkmgr import clkmgr_pkg::*; (
 
   assign clk_main_aes_en = clk_main_aes_hint | ~status_i.idle[0];
 
-  prim_flop_2sync #(
+  prim_generic_flop_2sync #(
     .Width(1)
   ) i_clk_main_aes_hint_sync (
     .clk_i(clk_main_i),
@@ -219,7 +219,7 @@ module clkmgr import clkmgr_pkg::*; (
 
   assign clk_main_hmac_en = clk_main_hmac_hint | ~status_i.idle[1];
 
-  prim_flop_2sync #(
+  prim_generic_flop_2sync #(
     .Width(1)
   ) i_clk_main_hmac_hint_sync (
     .clk_i(clk_main_i),

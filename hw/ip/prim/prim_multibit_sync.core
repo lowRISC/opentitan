@@ -9,7 +9,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:prim:assert
-      - lowrisc:prim:flop_2sync
+      - lowrisc:prim_generic:flop_2sync
     files:
       - rtl/prim_multibit_sync.sv
     file_type: systemVerilogSource

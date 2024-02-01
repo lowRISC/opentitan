@@ -430,7 +430,7 @@ from topgen.lib import Name
 % endfor
 
 % for k,v in typed_clocks.sw_clks.items():
-  prim_flop_2sync #(
+  prim_generic_flop_2sync #(
     .Width(1)
   ) u_${k}_sw_en_sync (
     .clk_i(clk_${v.src.name}_i),

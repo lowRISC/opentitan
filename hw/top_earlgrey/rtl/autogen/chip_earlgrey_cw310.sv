@@ -1143,7 +1143,7 @@ module chip_earlgrey_cw310 #(
   assign clk_io_div4_trigger_oe = mio_oe[MioOutGpioGpio8];
 
   // Synchronize signals to manual_in_io_clk.
-  prim_flop_2sync #(
+  prim_generic_flop_2sync #(
     .Width ($bits(clk_trans_idle) + 2)
   ) u_sync_trigger (
     .clk_i (manual_in_io_clk),

@@ -114,7 +114,7 @@ module rstmgr
       );
     end else begin : gen_rst_por_domain
       logic rst_por_aon_premux;
-      prim_flop_2sync #(
+      prim_generic_flop_2sync #(
         .Width(1),
         .ResetValue('0)
       ) u_por_domain_sync (

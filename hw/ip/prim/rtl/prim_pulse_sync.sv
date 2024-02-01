@@ -69,7 +69,7 @@ module prim_pulse_sync (
   //////////////////////////////////////////////////////////
   logic dst_level;
 
-  prim_flop_2sync #(.Width(1)) prim_flop_2sync (
+  prim_generic_flop_2sync #(.Width(1)) prim_generic_flop_2sync (
     // source clock domain
     .d_i    (src_level),
     // destination clock domain

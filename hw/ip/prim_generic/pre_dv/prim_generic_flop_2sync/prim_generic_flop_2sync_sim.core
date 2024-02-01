@@ -2,12 +2,12 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:dv:prim_flop_2sync_sim:0.1"
-description: "prim_flop_2sync_sim sim target"
+name: "lowrisc:dv:prim_generic_flop_2sync_sim:0.1"
+description: "prim_generic_flop_2sync_sim sim target"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:prim:flop_2sync
+      - lowrisc:prim_generic:flop_2sync
 
   files_dv:
     depend:

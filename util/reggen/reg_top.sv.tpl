@@ -992,7 +992,7 @@ ${bits.msb}\
   logic async_${finst_name}_err_storage;
 
   // storage error is persistent and can be sampled at any time
-  prim_flop_2sync #(
+  prim_generic_flop_2sync #(
     .Width(1),
     .ResetValue('0)
   ) u_${finst_name}_err_storage_sync (

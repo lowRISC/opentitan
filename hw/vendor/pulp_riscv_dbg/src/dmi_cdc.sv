@@ -62,7 +62,7 @@ module dmi_cdc (
   end
 
   logic combined_rstn_premux;
-  prim_flop_2sync #(
+  prim_generic_flop_2sync #(
     .Width(1),
     .ResetValue(0)
   ) u_combined_rstn_sync (

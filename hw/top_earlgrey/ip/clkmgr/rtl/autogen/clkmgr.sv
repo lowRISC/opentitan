@@ -769,7 +769,7 @@
   logic clk_io_peri_sw_en;
   logic clk_usb_peri_sw_en;
 
-  prim_flop_2sync #(
+  prim_generic_flop_2sync #(
     .Width(1)
   ) u_clk_io_div4_peri_sw_en_sync (
     .clk_i(clk_io_div4_i),
@@ -811,7 +811,7 @@
     .mubi_o(cg_en_o.io_div4_peri)
   );
 
-  prim_flop_2sync #(
+  prim_generic_flop_2sync #(
     .Width(1)
   ) u_clk_io_div2_peri_sw_en_sync (
     .clk_i(clk_io_div2_i),
@@ -853,7 +853,7 @@
     .mubi_o(cg_en_o.io_div2_peri)
   );
 
-  prim_flop_2sync #(
+  prim_generic_flop_2sync #(
     .Width(1)
   ) u_clk_io_peri_sw_en_sync (
     .clk_i(clk_io_i),
@@ -895,7 +895,7 @@
     .mubi_o(cg_en_o.io_peri)
   );
 
-  prim_flop_2sync #(
+  prim_generic_flop_2sync #(
     .Width(1)
   ) u_clk_usb_peri_sw_en_sync (
     .clk_i(clk_usb_i),

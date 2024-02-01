@@ -45,7 +45,7 @@ module clkmgr_trans
   assign idle_valid = (idle_cnt == IdleCntWidth'(TransIdleCnt));
   assign local_en = sw_hint_synced | ~idle_valid;
 
-  prim_flop_2sync #(
+  prim_generic_flop_2sync #(
     .Width(1)
   ) u_hint_sync (
     .clk_i(clk_i),
@@ -145,7 +145,7 @@ module clkmgr_trans
   end
 
   // register facing domain
-  prim_flop_2sync #(
+  prim_generic_flop_2sync #(
     .Width(1)
   ) u_err_sync (
     .clk_i(clk_reg_i),
@@ -162,7 +162,7 @@ module clkmgr_trans
     end
   end
 
-  prim_flop_2sync #(
+  prim_generic_flop_2sync #(
     .Width(1)
   ) u_en_sync (
     .clk_i(clk_reg_i),

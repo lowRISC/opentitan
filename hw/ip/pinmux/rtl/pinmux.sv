@@ -279,10 +279,10 @@ module pinmux
   logic strap_en;
   if (SecVolatileRawUnlockEn) begin : gen_strap_override
     logic strap_en_override_d, strap_en_override_q;
-    prim_flop_2sync #(
+    prim_generic_flop_2sync #(
       .Width(1),
       .ResetValue(0)
-    ) u_prim_flop_2sync (
+    ) u_prim_generic_flop_2sync (
       .clk_i,
       .rst_ni,
       .d_i(strap_en_override_i),

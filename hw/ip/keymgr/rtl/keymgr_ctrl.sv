@@ -310,7 +310,7 @@ module keymgr_ctrl
   // root key valid sync
   logic root_key_valid_q;
 
-  prim_flop_2sync # (
+  prim_generic_flop_2sync # (
     .Width(1)
   ) u_key_valid_sync (
     .clk_i,

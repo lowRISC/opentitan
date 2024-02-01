@@ -241,9 +241,9 @@ module soc_proxy
   // Synchronize external interrupt signals
   logic [NumExternalIrqs-1:0] soc_intr;
   for (genvar i = 0; i < NumExternalIrqs; i++) begin : gen_sync_external_irqs
-    prim_flop_2sync #(
+    prim_generic_flop_2sync #(
       .Width(1)
-    ) u_prim_flop_2sync (
+    ) u_prim_generic_flop_2sync (
       .clk_i,
       .rst_ni,
       .d_i(soc_intr_async_i[i]),
@@ -268,9 +268,9 @@ module soc_proxy
   );
 
   // Synchronize external wakeup request
-  prim_flop_2sync #(
+  prim_generic_flop_2sync #(
     .Width(1)
-  ) u_prim_flop_2sync_soc_wkup (
+  ) u_prim_generic_flop_2sync_soc_wkup (
     .clk_i  (clk_aon_i),
     .rst_ni (rst_aon_ni),
     .d_i    (soc_wkup_async_i),

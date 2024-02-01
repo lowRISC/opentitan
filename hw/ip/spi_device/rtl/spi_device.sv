@@ -451,13 +451,13 @@ module spi_device
     if (!rst_ni) txf_empty_q <= 1'b1;
     else         txf_empty_q <= txf_empty;
   end
-  prim_flop_2sync #(.Width(1)) u_sync_rxf (
+  prim_generic_flop_2sync #(.Width(1)) u_sync_rxf (
     .clk_i,
     .rst_ni,
     .d_i(rxf_full_q),
     .q_o(rxf_full_syncd)
   );
-  prim_flop_2sync #(.Width(1), .ResetValue(1'b1)) u_sync_txe (
+  prim_generic_flop_2sync #(.Width(1), .ResetValue(1'b1)) u_sync_txe (
     .clk_i,
     .rst_ni,
     .d_i(txf_empty_q),
@@ -985,7 +985,7 @@ module spi_device
   );
 
   // TPM CSb 2FF sync to SYS_CLK
-  prim_flop_2sync #(
+  prim_generic_flop_2sync #(
     .Width      (1    ),
     .ResetValue (1'b 1)
   ) u_sys_tpm_csb_sync (
