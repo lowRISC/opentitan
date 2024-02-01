@@ -11,7 +11,7 @@ mod i2c;
 mod spi;
 
 use crate::io::emu::Emulator;
-use crate::io::gpio::{GpioMonitoring, GpioPin, PinMode, PullMode};
+use crate::io::gpio::{GpioBitbanging, GpioMonitoring, GpioPin, PinMode, PullMode};
 use crate::io::i2c::Bus;
 use crate::io::ioexpander::IoExpander;
 use crate::io::jtag::{JtagChain, JtagParams};
@@ -821,6 +821,11 @@ impl TransportWrapper {
     /// Returns a [`GpioMonitoring`] implementation.
     pub fn gpio_monitoring(&self) -> Result<Rc<dyn GpioMonitoring>> {
         self.transport.gpio_monitoring()
+    }
+
+    /// Returns a [`GpioBitbanging`] implementation.
+    pub fn gpio_bitbanging(&self) -> Result<Rc<dyn GpioBitbanging>> {
+        self.transport.gpio_bitbanging()
     }
 
     pub fn pin_strapping(&self, name: &str) -> Result<PinStrapping> {
