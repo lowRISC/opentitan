@@ -448,9 +448,10 @@ impl Builder for Codegen<'_> {
         let str_type = str_type.codestring();
         match val {
             Value::Literal(x) => {
-                // NOTE: we are not using a constant for the size of the string because technically there is no way
-                // to know what the `char` type is and therefore what the length of this string is for the C compiler.
-                self.push_str_with_indent(&format!("RETURN_IF_ERROR(asn1_push_string(&state, {str_type}, \"{x}\", strlen(\"{x}\")));\n"));
+                let len = x.len();
+                self.push_str_with_indent(&format!(
+                    "RETURN_IF_ERROR(asn1_push_string(&state, {str_type}, \"{x}\", {len}));\n"
+                ));
                 // A tagged string needs a tag (up to 3 bytes of length) and the string itself.
                 // Don't try to exactly compute how many bytes we need for the length.
                 self.max_out_size += Self::tag_and_content_size(x.len());
