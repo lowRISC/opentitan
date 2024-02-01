@@ -15,7 +15,7 @@
   fusesoc_core: lowrisc:dv:flash_ctrl_sim:0.1
 
   // Testplan hjson file.
-  testplan: "{proj_root}/hw/ip/flash_ctrl/data/flash_ctrl_testplan.hjson"
+  testplan: "{self_dir}/../data/flash_ctrl_testplan.hjson"
 
   // Import additional common sim cfg files.
   import_cfgs: [// Project wide common sim cfg file

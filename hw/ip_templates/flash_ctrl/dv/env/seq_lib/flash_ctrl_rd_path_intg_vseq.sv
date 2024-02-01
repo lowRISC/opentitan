@@ -2,9 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// This sequence sends read traffic with error injection
-// at the output of read_buffer.
-// Read response will trigger fatal_err.storage_err.
+// This sequence sends read traffic with error injection at the output of read_buffer,
+// and checks the read response will trigger fatal_err.storage_err.
+// It enables scrambling since it is possible to skip the read buffer when it is disabled,
+// see rtl/flash_phy_rd.sv for details.
 class flash_ctrl_rd_path_intg_vseq extends flash_ctrl_legacy_base_vseq;
   `uvm_object_utils(flash_ctrl_rd_path_intg_vseq)
   `uvm_object_new
@@ -20,9 +21,7 @@ class flash_ctrl_rd_path_intg_vseq extends flash_ctrl_legacy_base_vseq;
       data_4s_t rdata;
 
       // Read buffer can be skipped if descramble is not enabled and there is
-      // no backlog at the read response pipeline
-      // (https://cs.opensource.google/opentitan/opentitan/+/master:
-      //  hw/ip/flash_ctrl/rtl/flash_phy_rd.sv;drc=8046c2896fa50aaf3a186a7ce8c0570db9f99eaf;l=481)
+      // no backlog at the read response pipeline.
       // Enable ecc for all regions
       flash_otf_region_cfg(.scr_mode(OTFCfgTrue), .ecc_mode(OTFCfgTrue));
       cfg.clk_rst_vif.wait_clks(10);

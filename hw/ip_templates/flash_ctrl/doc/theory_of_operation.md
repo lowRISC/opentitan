@@ -39,7 +39,7 @@ It is expected that after an RMA transition, the entire system will be rebooted.
 #### Initialization
 
 The flash protocol controller is initialized through [`INIT`](registers.md#init).
-When initialization is invoked, the flash controller requests the address and data scrambling keys from an external entity, [otp_ctrl](../../otp_ctrl/README.md#interface-to-flash-scrambler) in this case.
+When initialization is invoked, the flash controller requests the address and data scrambling keys from an external entity, [otp_ctrl](../../../../ip/otp_ctrl/README.md#interface-to-flash-scrambler) in this case.
 
 After the scrambling keys are requested, the flash protocol controller reads the root seeds out of the [secret partitions](#secret-information-partitions) and sends them to the key manager.
 Once the above steps are completed, the read buffers in the flash physical controller are enabled for operation.
@@ -138,7 +138,7 @@ To support separate access privileges between data and code, the flash protocol 
 If software programs [`EXEC`](registers.md#exec) to `0xa26a38f7`, code fetch from flash is allowed.
 If software programs [`EXEC`](registers.md#exec) to any other value, code fetch from flash results in an error.
 
-The flash protocol controller distinguishes code / data transactions through the [instruction type attribute](../../lc_ctrl/README.md#usage-of-user-bits) of the TL-UL interface.
+The flash protocol controller distinguishes code / data transactions through the [instruction type attribute](../../../../ip/lc_ctrl/README.md#usage-of-user-bits) of the TL-UL interface.
 
 #### Flash Errors and Faults
 
