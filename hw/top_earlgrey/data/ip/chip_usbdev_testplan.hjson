@@ -83,8 +83,8 @@
       stage: V2
       si_stage: SV3
       lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
-      tests: []
-      bazel: []
+      tests: ["chip_sw_usbdev_aon_pullup"]
+      bazel: ["//sw/device/tests:usbdev_aon_pullup_test"]
     }
     {
       name: chip_sw_usbdev_sof
