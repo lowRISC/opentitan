@@ -202,10 +202,10 @@ Each entry in the OTP ROM patch table is composed of two 32 bit words with the f
 
 When applying ROM patches, the patch loader configures the Ibex instruction re-routing logic for each patch region, as follows:
 
-1. `IBUS_ADDR_MATCHING` is set to `(M_BASE & ~(P_SIZE - 1)) | ((P_SIZE - 1) >> 1)` in order for the Ibex remapping logic to form the ROM patch matching mask for that region.
+1. `IBUS_ADDR_MATCHING` is set to `(M_BASE & ~(P_SIZE_BYTES - 1)) | ((P_SIZE_BYTES - 1) >> 1)`, where `P_SIZE_BYTES = P_SIZE << 2`, in order for the Ibex remapping logic to form the ROM patch matching mask for that region.
    See next section for more details.
 1. `IBUS_REMAP_ADDR` is set to `R_BASE`.
-1. `IBUS_ADDR_EN` is set to 1 if the patch loader evaluates the patch to be a valid one.
+1. `IBUS_ADDR_EN` is set to 1 if the patch loader determines that the patch is valid.
 1. `IBUS_REGWEN` is set to 0 if `L` is set to 1.
 
 #### Patch Match Logic Details
@@ -222,7 +222,7 @@ As described in the previous section, the `IBUS_ADDR_MATCHING` register is confi
 | `yy yyyy yyy0 1111` | 32                          | 8        |
 
 
-- A bitmask can be derived from this pattern as `mask = (IBUS_ADDR_MATCHING ^ (IBUS_ADDR_MATCHING + 1));`.
+- A bitmask can be derived from this pattern as `mask = ~(IBUS_ADDR_MATCHING ^ (IBUS_ADDR_MATCHING + 1))`.
   This mask will be `1` in all the positions with a `y` in the table.
   Then the redirection is defined by saying that it applies to an address `addr` if
 
@@ -230,11 +230,11 @@ As described in the previous section, the `IBUS_ADDR_MATCHING` register is confi
    (addr & mask) == (IBUS_ADDR_MATCHING & mask)
 ```
 
-- If a redirection applies, the redirected address can be computed by adding the bottom bits of `addr` to ``IBUS_REMAP_ADDR``.
+- If a redirection applies, the redirected address can be computed by adding the bottom bits of `addr` to `IBUS_REMAP_ADDR`.
   These bits are those that are zero in `mask`, so the redirected address is:
 
 ```
-   raddr = {IBUS_REMAP_ADDR} | (addr & ~mask);
+   raddr = IBUS_REMAP_ADDR | (addr & ~mask);
 ```
 
 Using these patches implies the following system-level considerations:
