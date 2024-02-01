@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright lowRISC contributors.
+# Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 r"""SECDED encoder/decoder generator
@@ -22,7 +22,7 @@ import subprocess
 from typing import Any, Dict, List, Tuple
 from pathlib import Path
 
-COPYRIGHT = """// Copyright lowRISC contributors.
+COPYRIGHT = """// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -837,7 +837,7 @@ endmodule : {}_bind_fpv
 
     with open(outdir + "/" + module_name + "_fpv.core", "w") as f:
         outstr = '''CAPI=2:
-# Copyright lowRISC contributors.
+# Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 name: "lowrisc:fpv:{}_fpv:0.1"

@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Copyright (C) 1997 - 2002, Makoto Matsumoto and Takuji Nishimura,
 // All rights reserved.
 // SPDX-License-Identifier: BSD-3-Clause
