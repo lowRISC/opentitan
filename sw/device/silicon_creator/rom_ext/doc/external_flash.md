@@ -310,16 +310,21 @@ Asset types from `0x8000` to `0xFFFF` are available for defining custom asset ty
 
 ## Firmware Description `firmware_desc_t`
 
-| Field          | Size (bytes) | Offset (bytes) | C Data Type |
-| -------------- | ------------ | -------------- | ----------- |
-| `load_address` | 4            | 0              | `uint32_t`  |
-| `entry_point`  | 4            | 4              | `uint32_t`  |
-| `code_start`   | 4            | 8              | `uint32_t`  |
-| `code_end`     | 4            | 12             | `uint32_t`  |
+| Field             | Size (bytes) | Offset (bytes) | C Data Type |
+| ----------------- | ------------ | -------------- | ----------- |
+| `load_address`    | 4            | 0              | `uint32_t`  |
+| `virtual_address` | 4            | 4              | `uint32_t`  |
+| `entry_point`     | 4            | 8              | `uint32_t`  |
+| `code_start`      | 4            | 12             | `uint32_t`  |
+| `code_end`        | 4            | 16             | `uint32_t`  |
+
+> **Note** The actual firmware asset payload starts after the `firmware_desc_t` header, and its size is the Asset size minus the `firmware_desc_t` header size.
+> **Note** Firmware loaders should only load the firmware asset payload bytes, without the `firmware_desc_t` header, at the load or virtual address.
 
 ### Field Descriptions
 
 - `load_address`: Absolute address at which the firmware must be loaded. Must be 4-byte word aligned.
+- `virtual_address`: Absolute address at which the load address must be remapped. If virtual addressing is used, virtual address must be equal to load address. Must be 4-byte word aligned.
 - `entry_point`: Absolute address of the first instruction to execute in the firmware in bytes. Must be 4-byte word aligned.
 - `code_start`: Absolute address of the start of the executable region of the firmware in bytes. Must be 4-byte word aligned.
 - `code_end`: Absolute address of the end of the executable region of the firmware (exclusive) in bytes. Note that the range from `code_start` to `code_end` must cover all machine instructions, i.e. .vectors, .crt, and .text, in the firmware. Must be 4-byte word aligned.
