@@ -204,6 +204,26 @@ rom_error_t asn1_push_integer(asn1_state_t *state, uint8_t tag, bool is_signed,
                               const uint8_t *bytes_be, size_t size);
 
 /**
+ * Push a padded integer into the buffer.
+ *
+ * If the integer is unsigned, it will be padded to the required length with
+ * zeroes. If the integer is signed, it will be padded so as to preserve its
+ * value in two's complement. If the integer size is larger than the requested
+ * size with padding, an error will be reported.
+ *
+ * @param state Pointer to the state initialized by asn1_start.
+ * @param is_signed If true, the byte array represents a signed integer in two's
+ * complement.
+ * @param bytes_be Pointer to a byte array holding an integer in big-endian
+ * format.
+ * @param size Number of the bytes in the array.
+ * @param size Number of the bytes to output with padding.
+ */
+rom_error_t asn1_push_integer_pad(asn1_state_t *state, bool is_signed,
+                                  const uint8_t *bytes_be, size_t size,
+                                  size_t padded_size);
+
+/**
  * Push an object identifier into the buffer.
  *
  * The object identifier must already be encoded according to the X.690 spec,
