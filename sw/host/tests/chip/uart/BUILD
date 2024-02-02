@@ -9,7 +9,7 @@ package(default_visibility = ["//visibility:public"])
 rust_binary(
     name = "uart_tx_rx",
     srcs = [
-        "src/main.rs",
+        "src/uart_tx_rx.rs",
     ],
     deps = [
         "//sw/host/opentitanlib",
