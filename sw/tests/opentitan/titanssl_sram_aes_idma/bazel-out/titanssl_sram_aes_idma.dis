@@ -1,0 +1,1757 @@
+
+bazel-out/k8-fastbuild-ST-2cc462681f62/bin/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma_sim_verilator.elf:     file format elf32-littleriscv
+bazel-out/k8-fastbuild-ST-2cc462681f62/bin/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma_sim_verilator.elf
+architecture: riscv:rv32, flags 0x00000112:
+EXEC_P, HAS_SYMS, D_PAGED
+start address 0xe0000080
+
+Program Header:
+    LOAD off    0x00001000 vaddr 0xe0000000 paddr 0xe0000000 align 2**12
+         filesz 0x00000492 memsz 0x000004c8 flags rwx
+    LOAD off    0x00000000 vaddr 0xe0008000 paddr 0xe0008000 align 2**12
+         filesz 0x00000000 memsz 0x00002000 flags rw-
+   STACK off    0x00000000 vaddr 0x00000000 paddr 0x00000000 align 2**4
+         filesz 0x00000000 memsz 0x00000000 flags rw-
+
+Sections:
+Idx Name              Size      VMA       LMA       File off  Algn  Flags
+  0 .vectors          00000084  e0000000  e0000000  00001000  2**0  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  1 .text             0000040e  e0000084  e0000084  00001084  2**2  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  2 .rodata           00000002  e0000492  e0000492  00001492  2**0  ALLOC
+  3 .data             00000000  e0000494  e0000492  00001492  2**0  CONTENTS, ALLOC, LOAD, DATA
+  4 .bss              00000034  e0000494  e0000494  00001492  2**2  ALLOC
+  5 .logs.fields      00000000  e00004c8  e00004c8  00001492  2**0  CONTENTS
+  6 .stack            00002000  e0008000  e0008000  00002000  2**0  ALLOC
+  7 .debug_loc        00000ba6  00000000  00000000  00001492  2**0  CONTENTS, READONLY, DEBUGGING, OCTETS
+  8 .debug_abbrev     000004d4  00000000  00000000  00002038  2**0  CONTENTS, READONLY, DEBUGGING, OCTETS
+  9 .debug_info       00001796  00000000  00000000  0000250c  2**0  CONTENTS, READONLY, DEBUGGING, OCTETS
+ 10 .debug_ranges     000001a0  00000000  00000000  00003ca2  2**0  CONTENTS, READONLY, DEBUGGING, OCTETS
+ 11 .debug_str        00000485  00000000  00000000  00003e42  2**0  CONTENTS, READONLY, DEBUGGING, OCTETS
+ 12 .comment          00000074  00000000  00000000  000042c7  2**0  CONTENTS, READONLY
+ 13 .riscv.attributes 00000026  00000000  00000000  0000433b  2**0  CONTENTS, READONLY
+ 14 .debug_frame      00000194  00000000  00000000  00004364  2**2  CONTENTS, READONLY, DEBUGGING, OCTETS
+ 15 .debug_line       0000140c  00000000  00000000  000044f8  2**0  CONTENTS, READONLY, DEBUGGING, OCTETS
+ 16 .debug_aranges    00000028  00000000  00000000  00005904  2**0  CONTENTS, READONLY, DEBUGGING, OCTETS
+SYMBOL TABLE:
+e0000000 l    d  .vectors       00000000 .vectors
+e0000084 l    d  .text  00000000 .text
+e0000492 l    d  .rodata        00000000 .rodata
+e0000494 l    d  .data  00000000 .data
+e0000494 l    d  .bss   00000000 .bss
+e00004c8 l    d  .logs.fields   00000000 .logs.fields
+e0008000 l    d  .stack 00000000 .stack
+00000000 l    d  .debug_loc     00000000 .debug_loc
+00000000 l    d  .debug_abbrev  00000000 .debug_abbrev
+00000000 l    d  .debug_info    00000000 .debug_info
+00000000 l    d  .debug_ranges  00000000 .debug_ranges
+00000000 l    d  .debug_str     00000000 .debug_str
+00000000 l    d  .comment       00000000 .comment
+00000000 l    d  .riscv.attributes      00000000 .riscv.attributes
+00000000 l    d  .debug_frame   00000000 .debug_frame
+00000000 l    d  .debug_line    00000000 .debug_line
+00000000 l    d  .debug_aranges 00000000 .debug_aranges
+00000000 l    df *ABS*  00000000 crt0.o
+e0000084 l       .text  00000000 default_exc_handler
+e0000084 l       .text  00000000 
+e00000fe l       .text  00000000 sleep_loop
+e0000084 l       .text  00000000 
+e0000086 l       .text  00000000 reset_handler
+e0000086 l       .text  00000000 
+e0000086 l       .text  00000000 
+e00000cc l       .text  00000000 
+e00000ea l       .text  00000000 zero_loop_end
+e00000e0 l       .text  00000000 zero_loop
+e00000e0 l       .text  00000000 
+e00000ea l       .text  00000000 
+e00000ea l       .text  00000000 main_entry
+e00000ea l       .text  00000000 
+e00000ee l       .text  00000000 
+e00000f2 l       .text  00000000 
+e00000fe l       .text  00000000 
+e0000102 l       .text  00000000 
+e0000000 l       .vectors       00000000 
+e000002c l       .vectors       00000000 
+e0000030 l       .vectors       00000000 
+e000007c l       .vectors       00000000 
+e0000080 l       .vectors       00000000 
+0000162a l       .debug_info    00000000 
+000004b5 l       .debug_abbrev  00000000 
+e0000104 l       .text  00000000 
+e0000084 l       .vectors       00000000 
+00000178 l       .debug_ranges  00000000 
+00000000 l    df *ABS*  00000000 titanssl_sram_aes_idma.c
+e0000104 l       .text  00000000 
+e0000104 l       .text  00000000 
+e0000494 l     O .bss   00000008 buffer_plain_idma
+e0000104 l       .text  00000000 
+e0000110 l       .text  00000000 
+e0000114 l       .text  00000000 
+e000049c l     O .bss   00000008 buffer_cipher_idma
+e0000116 l       .text  00000000 
+e0000122 l       .text  00000000 
+e0000124 l       .text  00000000 
+e00004a4 l     O .bss   00000008 buffer_plain
+e0000126 l       .text  00000000 
+e0000132 l       .text  00000000 
+e0000134 l       .text  00000000 
+e00004ac l     O .bss   00000008 buffer_cipher
+e0000136 l       .text  00000000 
+e0000142 l       .text  00000000 
+e0000144 l       .text  00000000 
+e00004b4 l     O .bss   00000008 buffer_key
+e0000146 l       .text  00000000 
+e0000152 l       .text  00000000 
+e0000158 l       .text  00000000 
+e000015a l       .text  00000000 
+e000015a l       .text  00000000 
+e0000160 l       .text  00000000 
+e0000160 l       .text  00000000 
+e0000162 l       .text  00000000 
+e0000162 l       .text  00000000 
+e0000164 l       .text  00000000 
+e0000166 l       .text  00000000 
+e000016a l       .text  00000000 
+e000016e l       .text  00000000 
+e000016e l       .text  00000000 
+e00004bc l     O .bss   00000008 buffer_iv
+e000017e l       .text  00000000 
+e0000182 l       .text  00000000 
+e0000184 l       .text  00000000 
+e0000184 l       .text  00000000 
+e000018a l       .text  00000000 
+e000018a l       .text  00000000 
+e000018c l       .text  00000000 
+e000018c l       .text  00000000 
+e000018e l       .text  00000000 
+e0000190 l       .text  00000000 
+e0000194 l       .text  00000000 
+e0000198 l       .text  00000000 
+e0000198 l       .text  00000000 
+e000019a l       .text  00000000 
+e000019a l       .text  00000000 
+e000019a l       .text  00000000 
+e000019a l       .text  00000000 
+e000019a l       .text  00000000 
+e000019c l       .text  00000000 
+e00001a4 l       .text  00000000 
+e00001a4 l       .text  00000000 
+e00001aa l       .text  00000000 
+e00001aa l       .text  00000000 
+e00001ae l       .text  00000000 
+e00001b0 l       .text  00000000 
+e00001b2 l       .text  00000000 
+e00001b4 l       .text  00000000 
+e00001b6 l       .text  00000000 
+e00001b6 l       .text  00000000 
+e00001c2 l       .text  00000000 
+e00001c2 l       .text  00000000 
+e00001c6 l       .text  00000000 
+e00001c6 l       .text  00000000 
+e00001ca l       .text  00000000 
+e00001ca l       .text  00000000 
+e00001cc l       .text  00000000 
+e00001cc l       .text  00000000 
+e00001ce l       .text  00000000 
+e00001ce l       .text  00000000 
+e00001d4 l       .text  00000000 
+e00001d4 l       .text  00000000 
+e00001d6 l       .text  00000000 
+e00001d6 l       .text  00000000 
+e00001de l       .text  00000000 
+e00001de l       .text  00000000 
+e00001e0 l       .text  00000000 
+e00001e0 l       .text  00000000 
+e00001e4 l       .text  00000000 
+e00001e4 l       .text  00000000 
+e00001e6 l       .text  00000000 
+e00001e6 l       .text  00000000 
+e00001e8 l       .text  00000000 
+e00001e8 l       .text  00000000 
+e00001f0 l       .text  00000000 
+e00001f0 l       .text  00000000 
+e00001f6 l       .text  00000000 
+e00001f6 l       .text  00000000 
+e00001f8 l       .text  00000000 
+e00001f8 l       .text  00000000 
+e00001fc l       .text  00000000 
+e00001fc l       .text  00000000 
+e00001fe l       .text  00000000 
+e00001fe l       .text  00000000 
+e0000200 l       .text  00000000 
+e0000200 l       .text  00000000 
+e000020a l       .text  00000000 
+e000020a l       .text  00000000 
+e000020c l       .text  00000000 
+e000020c l       .text  00000000 
+e000020e l       .text  00000000 
+e000020e l       .text  00000000 
+e0000212 l       .text  00000000 
+e0000212 l       .text  00000000 
+e0000218 l       .text  00000000 
+e0000218 l       .text  00000000 
+e000021a l       .text  00000000 
+e000021a l       .text  00000000 
+e000021c l       .text  00000000 
+e000021e l       .text  00000000 
+e000021e l       .text  00000000 
+e0000220 l       .text  00000000 
+e0000220 l       .text  00000000 
+e0000222 l       .text  00000000 
+e0000222 l       .text  00000000 
+e0000224 l       .text  00000000 
+e0000224 l       .text  00000000 
+e0000226 l       .text  00000000 
+e0000226 l       .text  00000000 
+e0000228 l       .text  00000000 
+e0000228 l       .text  00000000 
+e000022a l       .text  00000000 
+e000022a l       .text  00000000 
+e000022c l       .text  00000000 
+e000022c l       .text  00000000 
+e000022e l       .text  00000000 
+e000022e l       .text  00000000 
+e0000230 l       .text  00000000 
+e0000230 l       .text  00000000 
+e0000232 l       .text  00000000 
+e0000232 l       .text  00000000 
+e0000234 l       .text  00000000 
+e0000234 l       .text  00000000 
+e0000236 l       .text  00000000 
+e0000236 l       .text  00000000 
+e0000238 l       .text  00000000 
+e0000238 l       .text  00000000 
+e000023a l       .text  00000000 
+e000023a l       .text  00000000 
+e000023c l       .text  00000000 
+e000023c l       .text  00000000 
+e000023e l       .text  00000000 
+e000023e l       .text  00000000 
+e0000240 l       .text  00000000 
+e0000240 l       .text  00000000 
+e0000242 l       .text  00000000 
+e0000242 l       .text  00000000 
+e0000244 l       .text  00000000 
+e0000244 l       .text  00000000 
+e0000246 l       .text  00000000 
+e0000246 l       .text  00000000 
+e0000248 l       .text  00000000 
+e0000248 l       .text  00000000 
+e000024a l       .text  00000000 
+e000024a l       .text  00000000 
+e000024c l       .text  00000000 
+e000024c l       .text  00000000 
+e000024e l       .text  00000000 
+e000024e l       .text  00000000 
+e0000250 l       .text  00000000 
+e0000250 l       .text  00000000 
+e0000252 l       .text  00000000 
+e0000252 l       .text  00000000 
+e0000254 l       .text  00000000 
+e0000254 l       .text  00000000 
+e0000256 l       .text  00000000 
+e0000256 l       .text  00000000 
+e0000258 l       .text  00000000 
+e0000258 l       .text  00000000 
+e000025a l       .text  00000000 
+e000025a l       .text  00000000 
+e000025c l       .text  00000000 
+e000025c l       .text  00000000 
+e000025e l       .text  00000000 
+e000025e l       .text  00000000 
+e0000262 l       .text  00000000 
+e0000262 l       .text  00000000 
+e0000264 l       .text  00000000 
+e0000268 l       .text  00000000 
+e0000268 l       .text  00000000 
+e000026c l       .text  00000000 
+e000026c l       .text  00000000 
+e000026e l       .text  00000000 
+e000026e l       .text  00000000 
+e0000270 l       .text  00000000 
+e0000272 l       .text  00000000 
+e0000278 l       .text  00000000 
+e0000278 l       .text  00000000 
+e000027a l       .text  00000000 
+e000027a l       .text  00000000 
+e000027c l       .text  00000000 
+e000027c l       .text  00000000 
+e000027e l       .text  00000000 
+e000027e l       .text  00000000 
+e0000280 l       .text  00000000 
+e0000280 l       .text  00000000 
+e0000282 l       .text  00000000 
+e0000282 l       .text  00000000 
+e0000288 l       .text  00000000 
+e0000288 l       .text  00000000 
+e000028a l       .text  00000000 
+e000028a l       .text  00000000 
+e0000292 l       .text  00000000 
+e0000292 l       .text  00000000 
+e0000294 l       .text  00000000 
+e0000298 l       .text  00000000 
+e000029c l       .text  00000000 
+e000029c l       .text  00000000 
+e00002a0 l       .text  00000000 
+e00002a6 l       .text  00000000 
+e00002a6 l       .text  00000000 
+e00002a8 l       .text  00000000 
+e00002a8 l       .text  00000000 
+e00002aa l       .text  00000000 
+e00002aa l       .text  00000000 
+e00002ac l       .text  00000000 
+e00002ac l       .text  00000000 
+e00002ae l       .text  00000000 
+e00002ae l       .text  00000000 
+e00002b0 l       .text  00000000 
+e00002b0 l       .text  00000000 
+e00002b6 l       .text  00000000 
+e00002b6 l       .text  00000000 
+e00002b8 l       .text  00000000 
+e00002b8 l       .text  00000000 
+e00002bc l       .text  00000000 
+e00002bc l       .text  00000000 
+e00002be l       .text  00000000 
+e00002be l       .text  00000000 
+e00002c0 l       .text  00000000 
+e00002c4 l       .text  00000000 
+e00002ce l       .text  00000000 
+e00002ce l       .text  00000000 
+e00002d2 l       .text  00000000 
+e00002d2 l       .text  00000000 
+e00002d6 l       .text  00000000 
+e00002d6 l       .text  00000000 
+e00002da l       .text  00000000 
+e00002de l       .text  00000000 
+e00002e6 l       .text  00000000 
+e00002e6 l       .text  00000000 
+e00002e8 l       .text  00000000 
+e00002e8 l       .text  00000000 
+e00002ea l       .text  00000000 
+e00002ea l       .text  00000000 
+e00002ec l       .text  00000000 
+e00002ec l       .text  00000000 
+e00002ee l       .text  00000000 
+e00002ee l       .text  00000000 
+e00002f0 l       .text  00000000 
+e00002f0 l       .text  00000000 
+e00002f2 l       .text  00000000 
+e00002f2 l       .text  00000000 
+e00002f4 l       .text  00000000 
+e00002f4 l       .text  00000000 
+e00002f8 l       .text  00000000 
+e00002f8 l       .text  00000000 
+e00002fc l       .text  00000000 
+e00002fc l       .text  00000000 
+e00002fe l       .text  00000000 
+e00002fe l       .text  00000000 
+e0000300 l       .text  00000000 
+e0000300 l       .text  00000000 
+e0000302 l       .text  00000000 
+e0000302 l       .text  00000000 
+e0000304 l       .text  00000000 
+e0000304 l       .text  00000000 
+e0000306 l       .text  00000000 
+e0000306 l       .text  00000000 
+e0000308 l       .text  00000000 
+e0000308 l       .text  00000000 
+e000030a l       .text  00000000 
+e000030a l       .text  00000000 
+e000030c l       .text  00000000 
+e000030c l       .text  00000000 
+e000030e l       .text  00000000 
+e000030e l       .text  00000000 
+e0000310 l       .text  00000000 
+e0000312 l       .text  00000000 
+e0000314 l       .text  00000000 
+e0000318 l       .text  00000000 
+e000031a l       .text  00000000 
+e000031e l       .text  00000000 
+e000031e l       .text  00000000 
+e0000322 l       .text  00000000 
+e0000322 l       .text  00000000 
+e0000326 l       .text  00000000 
+e0000326 l       .text  00000000 
+e0000328 l       .text  00000000 
+e0000328 l       .text  00000000 
+e000032a l       .text  00000000 
+e000032e l       .text  00000000 
+e000032e l       .text  00000000 
+e0000330 l       .text  00000000 
+e0000330 l       .text  00000000 
+e0000332 l       .text  00000000 
+e0000332 l       .text  00000000 
+e0000334 l       .text  00000000 
+e0000334 l       .text  00000000 
+e0000336 l       .text  00000000 
+e0000336 l       .text  00000000 
+e0000338 l       .text  00000000 
+e0000338 l       .text  00000000 
+e000033a l       .text  00000000 
+e000033a l       .text  00000000 
+e000033c l       .text  00000000 
+e000033c l       .text  00000000 
+e0000346 l       .text  00000000 
+e0000346 l       .text  00000000 
+e000034c l       .text  00000000 
+e000034c l       .text  00000000 
+e0000350 l       .text  00000000 
+e0000352 l       .text  00000000 
+e0000354 l       .text  00000000 
+e0000356 l       .text  00000000 
+e0000358 l       .text  00000000 
+e0000358 l       .text  00000000 
+e000035c l       .text  00000000 
+e000035c l       .text  00000000 
+e0000360 l       .text  00000000 
+e0000360 l       .text  00000000 
+e0000362 l       .text  00000000 
+e0000362 l       .text  00000000 
+e0000364 l       .text  00000000 
+e0000364 l       .text  00000000 
+e000036a l       .text  00000000 
+e000036a l       .text  00000000 
+e000036c l       .text  00000000 
+e000036c l       .text  00000000 
+e0000374 l       .text  00000000 
+e0000374 l       .text  00000000 
+e0000376 l       .text  00000000 
+e0000376 l       .text  00000000 
+e000037a l       .text  00000000 
+e000037a l       .text  00000000 
+e000037c l       .text  00000000 
+e000037c l       .text  00000000 
+e000037e l       .text  00000000 
+e0000386 l       .text  00000000 
+e0000386 l       .text  00000000 
+e0000388 l       .text  00000000 
+e000038c l       .text  00000000 
+e0000390 l       .text  00000000 
+e0000390 l       .text  00000000 
+e0000394 l       .text  00000000 
+e0000394 l       .text  00000000 
+e0000394 l       .text  00000000 
+e0000394 l       .text  00000000 
+e0000394 l       .text  00000000 
+e0000396 l       .text  00000000 
+e0000396 l       .text  00000000 
+e0000398 l       .text  00000000 
+e000039a l       .text  00000000 
+e000039c l       .text  00000000 
+e000039e l       .text  00000000 
+e000039e l       .text  00000000 
+e00003aa l       .text  00000000 
+e00003aa l       .text  00000000 
+e00003ae l       .text  00000000 
+e00003b8 l       .text  00000000 
+e00003c4 l       .text  00000000 
+e00003c6 l       .text  00000000 
+e00003c6 l       .text  00000000 
+e00003c8 l       .text  00000000 
+e00003c8 l       .text  00000000 
+e00003e2 l       .text  00000000 
+e00003e2 l       .text  00000000 
+e00003ea l       .text  00000000 
+e00003ea l       .text  00000000 
+00000000 l       .debug_loc     00000000 
+0000001b l       .debug_loc     00000000 
+00000036 l       .debug_loc     00000000 
+0000005d l       .debug_loc     00000000 
+00000084 l       .debug_loc     00000000 
+000000aa l       .debug_loc     00000000 
+000000d0 l       .debug_loc     00000000 
+000000f6 l       .debug_loc     00000000 
+00000111 l       .debug_loc     00000000 
+00000137 l       .debug_loc     00000000 
+000001b7 l       .debug_loc     00000000 
+000001dd l       .debug_loc     00000000 
+000001f8 l       .debug_loc     00000000 
+00000213 l       .debug_loc     00000000 
+0000022e l       .debug_loc     00000000 
+00000000 l       .debug_str     00000000 
+00000074 l       .debug_str     00000000 
+000000b7 l       .debug_str     00000000 
+00000000 l       .debug_ranges  00000000 
+000000c6 l       .debug_str     00000000 
+00000107 l       .debug_str     00000000 
+000000d8 l       .debug_str     00000000 
+0000027a l       .debug_str     00000000 
+000000eb l       .debug_str     00000000 
+000000dd l       .debug_str     00000000 
+00000100 l       .debug_str     00000000 
+000000f3 l       .debug_str     00000000 
+00000119 l       .debug_str     00000000 
+0000012c l       .debug_str     00000000 
+00000139 l       .debug_str     00000000 
+00000147 l       .debug_str     00000000 
+00000152 l       .debug_str     00000000 
+0000015c l       .debug_str     00000000 
+000000fc l       .debug_str     00000000 
+00000164 l       .debug_str     00000000 
+0000029a l       .debug_str     00000000 
+000003fb l       .debug_str     00000000 
+0000016d l       .debug_str     00000000 
+00000184 l       .debug_str     00000000 
+0000018d l       .debug_str     00000000 
+00000196 l       .debug_str     00000000 
+000001a0 l       .debug_str     00000000 
+000001a5 l       .debug_str     00000000 
+000001a9 l       .debug_str     00000000 
+0000047a l       .debug_str     00000000 
+000001d6 l       .debug_str     00000000 
+000001c8 l       .debug_str     00000000 
+000001bc l       .debug_str     00000000 
+000001dd l       .debug_str     00000000 
+000001e7 l       .debug_str     00000000 
+00000203 l       .debug_str     00000000 
+000001fd l       .debug_str     00000000 
+0000020d l       .debug_str     00000000 
+00000221 l       .debug_str     00000000 
+0000022a l       .debug_str     00000000 
+00000241 l       .debug_str     00000000 
+00000255 l       .debug_str     00000000 
+0000025b l       .debug_str     00000000 
+000002ac l       .debug_str     00000000 
+000000cd l       .debug_str     00000000 
+00000120 l       .debug_str     00000000 
+00000133 l       .debug_str     00000000 
+00000140 l       .debug_str     00000000 
+0000014e l       .debug_str     00000000 
+00000159 l       .debug_str     00000000 
+000002bf l       .debug_str     00000000 
+00000427 l       .debug_str     00000000 
+000002c8 l       .debug_str     00000000 
+000002cf l       .debug_str     00000000 
+0000026d l       .debug_str     00000000 
+0000027c l       .debug_str     00000000 
+000002c3 l       .debug_str     00000000 
+000002d6 l       .debug_str     00000000 
+000002db l       .debug_str     00000000 
+0000027e l       .debug_str     00000000 
+0000028b l       .debug_str     00000000 
+000000e6 l       .debug_str     00000000 
+00000000 l       .debug_frame   00000000 
+e000019a l       .text  00000000 
+e0000394 l       .text  00000000 
+e00003ea l       .text  00000000 
+00000000 l    df *ABS*  00000000 utils.c
+e00003ea l       .text  00000000 
+e00003ea l       .text  00000000 
+e00003ea l       .text  00000000 
+e00003ee l       .text  00000000 
+e00003f2 l       .text  00000000 
+e00003f4 l       .text  00000000 
+e00003f8 l       .text  00000000 
+e00003fa l       .text  00000000 
+e00003fe l       .text  00000000 
+e00003fe l       .text  00000000 
+e0000404 l       .text  00000000 
+e0000408 l       .text  00000000 
+e000040a l       .text  00000000 
+e000040c l       .text  00000000 
+e0000410 l       .text  00000000 
+e0000414 l       .text  00000000 
+e0000416 l       .text  00000000 
+e0000418 l       .text  00000000 
+e0000418 l       .text  00000000 
+e0000418 l       .text  00000000 
+e0000418 l       .text  00000000 
+e0000418 l       .text  00000000 
+e000041a l       .text  00000000 
+e000041a l       .text  00000000 
+e0000428 l       .text  00000000 
+e0000430 l       .text  00000000 
+e0000432 l       .text  00000000 
+e0000436 l       .text  00000000 
+e000043a l       .text  00000000 
+e0000446 l       .text  00000000 
+e0000448 l       .text  00000000 
+e000044a l       .text  00000000 
+e000044a l       .text  00000000 
+e000044c l       .text  00000000 
+e000044c l       .text  00000000 
+e000044e l       .text  00000000 
+e000044e l       .text  00000000 
+e0000450 l       .text  00000000 
+e0000450 l       .text  00000000 
+e0000454 l       .text  00000000 
+e0000454 l       .text  00000000 
+e000045c l       .text  00000000 
+e000045e l       .text  00000000 
+e000045e l       .text  00000000 
+e0000460 l       .text  00000000 
+e0000460 l       .text  00000000 
+e0000476 l       .text  00000000 
+e000047a l       .text  00000000 
+e000047c l       .text  00000000 
+e000047e l       .text  00000000 
+e000047e l       .text  00000000 
+e0000480 l       .text  00000000 
+e0000484 l       .text  00000000 
+e0000486 l       .text  00000000 
+e0000492 l       .text  00000000 
+e0000492 l       .text  00000000 
+00000249 l       .debug_loc     00000000 
+0000026f l       .debug_loc     00000000 
+00000297 l       .debug_loc     00000000 
+000002bd l       .debug_loc     00000000 
+0000031a l       .debug_loc     00000000 
+00000342 l       .debug_loc     00000000 
+00000368 l       .debug_loc     00000000 
+0000039d l       .debug_loc     00000000 
+000003dd l       .debug_loc     00000000 
+000003f8 l       .debug_loc     00000000 
+00000419 l       .debug_loc     00000000 
+00000434 l       .debug_loc     00000000 
+0000044f l       .debug_loc     00000000 
+0000046a l       .debug_loc     00000000 
+00000485 l       .debug_loc     00000000 
+000004ad l       .debug_loc     00000000 
+000004de l       .debug_loc     00000000 
+00000513 l       .debug_loc     00000000 
+0000053b l       .debug_loc     00000000 
+00000557 l       .debug_loc     00000000 
+00000572 l       .debug_loc     00000000 
+0000058d l       .debug_loc     00000000 
+000005a8 l       .debug_loc     00000000 
+000005c3 l       .debug_loc     00000000 
+000005de l       .debug_loc     00000000 
+000005f9 l       .debug_loc     00000000 
+00000614 l       .debug_loc     00000000 
+00000671 l       .debug_loc     00000000 
+00000697 l       .debug_loc     00000000 
+000006d7 l       .debug_loc     00000000 
+000006ff l       .debug_loc     00000000 
+00000725 l       .debug_loc     00000000 
+00000765 l       .debug_loc     00000000 
+00000797 l       .debug_loc     00000000 
+000007c3 l       .debug_loc     00000000 
+000007de l       .debug_loc     00000000 
+000007f9 l       .debug_loc     00000000 
+0000081a l       .debug_loc     00000000 
+00000835 l       .debug_loc     00000000 
+0000085b l       .debug_loc     00000000 
+00000897 l       .debug_loc     00000000 
+000008bd l       .debug_loc     00000000 
+00000904 l       .debug_loc     00000000 
+0000094b l       .debug_loc     00000000 
+00000987 l       .debug_loc     00000000 
+000009af l       .debug_loc     00000000 
+00000a0c l       .debug_loc     00000000 
+00000a36 l       .debug_loc     00000000 
+00000a78 l       .debug_loc     00000000 
+00000b01 l       .debug_loc     00000000 
+00000b1c l       .debug_loc     00000000 
+00000b42 l       .debug_loc     00000000 
+00000b68 l       .debug_loc     00000000 
+00000b85 l       .debug_loc     00000000 
+00000000 l       .debug_str     00000000 
+000002e0 l       .debug_str     00000000 
+000000b7 l       .debug_str     00000000 
+00000110 l       .debug_ranges  00000000 
+00000302 l       .debug_str     00000000 
+000000e6 l       .debug_str     00000000 
+0000030f l       .debug_str     00000000 
+000000f3 l       .debug_str     00000000 
+000000fc l       .debug_str     00000000 
+00000390 l       .debug_str     00000000 
+000003a3 l       .debug_str     00000000 
+0000032e l       .debug_str     00000000 
+00000335 l       .debug_str     00000000 
+0000034e l       .debug_str     00000000 
+00000323 l       .debug_str     00000000 
+0000032a l       .debug_str     00000000 
+0000034a l       .debug_str     00000000 
+00000351 l       .debug_str     00000000 
+00000357 l       .debug_str     00000000 
+000002c1 l       .debug_str     00000000 
+00000342 l       .debug_str     00000000 
+00000338 l       .debug_str     00000000 
+0000035b l       .debug_str     00000000 
+000000b5 l       .debug_str     00000000 
+00000369 l       .debug_str     00000000 
+00000371 l       .debug_str     00000000 
+0000037c l       .debug_str     00000000 
+000003ed l       .debug_str     00000000 
+0000045b l       .debug_str     00000000 
+00000462 l       .debug_str     00000000 
+000001a5 l       .debug_str     00000000 
+00000419 l       .debug_str     00000000 
+00000068 l       .debug_ranges  00000000 
+00000080 l       .debug_ranges  00000000 
+00000098 l       .debug_ranges  00000000 
+000000b0 l       .debug_ranges  00000000 
+000000c8 l       .debug_ranges  00000000 
+000000e0 l       .debug_ranges  00000000 
+000003f5 l       .debug_str     00000000 
+000003fb l       .debug_str     00000000 
+0000042b l       .debug_str     00000000 
+00000474 l       .debug_str     00000000 
+00000477 l       .debug_str     00000000 
+0000046a l       .debug_str     00000000 
+0000047f l       .debug_str     00000000 
+00000481 l       .debug_str     00000000 
+0000016b l       .debug_str     00000000 
+000000f8 l       .debug_ranges  00000000 
+0000027e l       .debug_str     00000000 
+000003fd l       .debug_str     00000000 
+00000404 l       .debug_str     00000000 
+000003aa l       .debug_str     00000000 
+000003b4 l       .debug_str     00000000 
+000003c1 l       .debug_str     00000000 
+000003d3 l       .debug_str     00000000 
+00000038 l       .debug_ranges  00000000 
+00000050 l       .debug_ranges  00000000 
+000003d8 l       .debug_str     00000000 
+0000041d l       .debug_str     00000000 
+00000425 l       .debug_str     00000000 
+000000d6 l       .debug_str     00000000 
+0000021f l       .debug_str     00000000 
+0000030d l       .debug_str     00000000 
+0000042d l       .debug_str     00000000 
+00000434 l       .debug_str     00000000 
+0000043f l       .debug_str     00000000 
+00000446 l       .debug_str     00000000 
+0000044d l       .debug_str     00000000 
+00000454 l       .debug_str     00000000 
+00000380 l       .debug_str     00000000 
+0000027a l       .debug_str     00000000 
+00000387 l       .debug_str     00000000 
+0000038e l       .debug_str     00000000 
+000000e9 l       .debug_str     00000000 
+00000410 l       .debug_str     00000000 
+0000028b l       .debug_str     00000000 
+00000084 l       .debug_frame   00000000 
+e0000418 l       .text  00000000 
+e0000492 l       .text  00000000 
+e0000418 g     F .text  0000007a external_irq_handler
+e00004c4 g     O .bss   00000004 next_id
+00008000 g       *ABS*  00000000 _stack_len
+e0000104 g     F .text  00000096 initialize_memory
+e0000494 g       .bss   00000000 _bss_start
+e000a000 g       .stack 00000000 stack
+e0000080 g       *ABS*  00000000 _entry_point
+e00004c8 g       .bss   00000000 _bss_end
+e00003ea g     F .text  0000002e uart_set_cfg
+e00000cc g       .text  00000000 _start
+e000019a g     F .text  000001fa titanssl_benchmark_aes
+e0000394 g     F .text  00000056 main
+e0000084 g       .vectors       00000000 _vectors_end
+e0010000 g       .vectors       00000000 _stack_start
+00002000 g       *ABS*  00000000 _min_stack
+e0010010 g       *ABS*  00000000 fromhost
+00020008 g       *ABS*  00000000 tohost
+e000a000 g       .stack 00000000 _stack
+e0000000 g       .vectors       00000000 _vectors_start
+
+
+
+Disassembly of section .vectors:
+
+e0000000 <_vectors_start>:
+e0000000:       0840006f                j       e0000084 <_vectors_end>
+e0000004:       0800006f                j       e0000084 <_vectors_end>
+e0000008:       07c0006f                j       e0000084 <_vectors_end>
+e000000c:       0780006f                j       e0000084 <_vectors_end>
+e0000010:       0740006f                j       e0000084 <_vectors_end>
+e0000014:       0700006f                j       e0000084 <_vectors_end>
+e0000018:       06c0006f                j       e0000084 <_vectors_end>
+e000001c:       0680006f                j       e0000084 <_vectors_end>
+e0000020:       0640006f                j       e0000084 <_vectors_end>
+e0000024:       0600006f                j       e0000084 <_vectors_end>
+e0000028:       05c0006f                j       e0000084 <_vectors_end>
+e000002c:       3ec0006f                j       e0000418 <external_irq_handler>
+e0000030:       0540006f                j       e0000084 <_vectors_end>
+e0000034:       0500006f                j       e0000084 <_vectors_end>
+e0000038:       04c0006f                j       e0000084 <_vectors_end>
+e000003c:       0480006f                j       e0000084 <_vectors_end>
+e0000040:       0440006f                j       e0000084 <_vectors_end>
+e0000044:       0400006f                j       e0000084 <_vectors_end>
+e0000048:       03c0006f                j       e0000084 <_vectors_end>
+e000004c:       0380006f                j       e0000084 <_vectors_end>
+e0000050:       0340006f                j       e0000084 <_vectors_end>
+e0000054:       0300006f                j       e0000084 <_vectors_end>
+e0000058:       02c0006f                j       e0000084 <_vectors_end>
+e000005c:       0280006f                j       e0000084 <_vectors_end>
+e0000060:       0240006f                j       e0000084 <_vectors_end>
+e0000064:       0200006f                j       e0000084 <_vectors_end>
+e0000068:       01c0006f                j       e0000084 <_vectors_end>
+e000006c:       0180006f                j       e0000084 <_vectors_end>
+e0000070:       0140006f                j       e0000084 <_vectors_end>
+e0000074:       0100006f                j       e0000084 <_vectors_end>
+e0000078:       00c0006f                j       e0000084 <_vectors_end>
+e000007c:       0080006f                j       e0000084 <_vectors_end>
+e0000080:       0060006f                j       e0000086 <reset_handler>
+
+Disassembly of section .text:
+
+e0000084 <default_exc_handler>:
+default_exc_handler():
+e0000084:       a8ad                    j       e00000fe <sleep_loop>
+
+e0000086 <reset_handler>:
+reset_handler():
+e0000086:       4081                    li      ra,0
+e0000088:       8106                    mv      sp,ra
+e000008a:       8186                    mv      gp,ra
+e000008c:       8206                    mv      tp,ra
+e000008e:       8286                    mv      t0,ra
+e0000090:       8306                    mv      t1,ra
+e0000092:       8386                    mv      t2,ra
+e0000094:       8406                    mv      s0,ra
+e0000096:       8486                    mv      s1,ra
+e0000098:       8506                    mv      a0,ra
+e000009a:       8586                    mv      a1,ra
+e000009c:       8606                    mv      a2,ra
+e000009e:       8686                    mv      a3,ra
+e00000a0:       8706                    mv      a4,ra
+e00000a2:       8786                    mv      a5,ra
+e00000a4:       8806                    mv      a6,ra
+e00000a6:       8886                    mv      a7,ra
+e00000a8:       8906                    mv      s2,ra
+e00000aa:       8986                    mv      s3,ra
+e00000ac:       8a06                    mv      s4,ra
+e00000ae:       8a86                    mv      s5,ra
+e00000b0:       8b06                    mv      s6,ra
+e00000b2:       8b86                    mv      s7,ra
+e00000b4:       8c06                    mv      s8,ra
+e00000b6:       8c86                    mv      s9,ra
+e00000b8:       8d06                    mv      s10,ra
+e00000ba:       8d86                    mv      s11,ra
+e00000bc:       8e06                    mv      t3,ra
+e00000be:       8e86                    mv      t4,ra
+e00000c0:       8f06                    mv      t5,ra
+e00000c2:       8f86                    mv      t6,ra
+e00000c4:       00010117                auipc   sp,0x10
+e00000c8:       f3c10113                addi    sp,sp,-196 # e0010000 <_stack_start>
+
+e00000cc <_start>:
+e00000cc:       00000d17                auipc   s10,0x0
+e00000d0:       3c8d0d13                addi    s10,s10,968 # e0000494 <buffer_plain_idma>
+e00000d4:       00000d97                auipc   s11,0x0
+e00000d8:       3f4d8d93                addi    s11,s11,1012 # e00004c8 <_bss_end>
+e00000dc:       01bd5763                bge     s10,s11,e00000ea <main_entry>
+
+e00000e0 <zero_loop>:
+zero_loop():
+e00000e0:       /-> 000d2023            sw      zero,0(s10)
+e00000e4:       |   0d11                        addi    s10,s10,4
+e00000e6:       \-- ffaddde3            bge     s11,s10,e00000e0 <zero_loop>
+
+e00000ea <main_entry>:
+zero_loop_end():
+e00000ea:       4501                    li      a0,0
+e00000ec:       4581                    li      a1,0
+e00000ee:       2a6000ef                jal     ra,e0000394 <main>
+e00000f2:       c11c0537                lui     a0,0xc11c0
+e00000f6:       0561                    addi    a0,a0,24
+e00000f8:       4285                    li      t0,1
+e00000fa:       00552023                sw      t0,0(a0) # c11c0000 <fromhost+0xe11afff0>
+
+e00000fe <sleep_loop>:
+sleep_loop():
+e00000fe:       /-> 10500073            wfi
+e0000102:       \-- bff5                        j       e00000fe <sleep_loop>
+
+e0000104 <initialize_memory>:
+initialize_memory():
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:119
+    p = (uint32_t*)0xc1170014;
+    *p = 0x00009966;
+}
+
+void initialize_memory()
+{
+e0000104:           00000517            auipc   a0,0x0
+e0000108:           39050513            addi    a0,a0,912 # e0000494 <buffer_plain_idma>
+e000010c:           fff005b7            lui     a1,0xfff00
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:120
+     buffer_plain_idma.data = (uint8_t*)TITANSSL_ADDR_PLAIN_IDMA;
+e0000110:           c10c                        sw      a1,0(a0)
+e0000112:           6589                        lui     a1,0x2
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:121
+     buffer_plain_idma.n = TITANSSL_SIZE_PLAIN;
+e0000114:           c14c                        sw      a1,4(a0)
+e0000116:           00000517            auipc   a0,0x0
+e000011a:           38650513            addi    a0,a0,902 # e000049c <buffer_cipher_idma>
+e000011e:           fff04637            lui     a2,0xfff04
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:123
+
+     buffer_cipher_idma.data = (uint8_t*)TITANSSL_ADDR_CIPHER_IDMA;
+e0000122:           c110                        sw      a2,0(a0)
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:124
+     buffer_cipher_idma.n = TITANSSL_SIZE_PLAIN;
+e0000124:           c14c                        sw      a1,4(a0)
+e0000126:           00000517            auipc   a0,0x0
+e000012a:           37e50513            addi    a0,a0,894 # e00004a4 <buffer_plain>
+e000012e:           80000637            lui     a2,0x80000
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:126
+
+     buffer_plain.data = (uint8_t*)TITANSSL_ADDR_PLAIN;
+e0000132:           c110                        sw      a2,0(a0)
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:127
+     buffer_plain.n = TITANSSL_SIZE_PLAIN;
+e0000134:           c14c                        sw      a1,4(a0)
+e0000136:           00000517            auipc   a0,0x0
+e000013a:           37650513            addi    a0,a0,886 # e00004ac <buffer_cipher>
+e000013e:           80720637            lui     a2,0x80720
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:130
+     //for (size_t i=0; i<TITANSSL_SIZE_PLAIN; i++) buffer_plain.data[i] = 0x0;
+
+     buffer_cipher.data = (uint8_t*)TITANSSL_ADDR_CIPHER;
+e0000142:           c110                        sw      a2,0(a0)
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:131
+     buffer_cipher.n = TITANSSL_SIZE_CIPHER;
+e0000144:           c14c                        sw      a1,4(a0)
+e0000146:           00000517            auipc   a0,0x0
+e000014a:           36e50513            addi    a0,a0,878 # e00004b4 <buffer_key>
+e000014e:           e0006637            lui     a2,0xe0006
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:134
+     //for (size_t i=0; i<TITANSSL_SIZE_CIPHER; i++) buffer_cipher.data[i] = 0x0;
+
+     buffer_key.data = (uint8_t*)TITANSSL_ADDR_KEY;
+e0000152:           c110                        sw      a2,0(a0)
+e0000154:           02000593            li      a1,32
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:135
+     buffer_key.n = TITANSSL_SIZE_KEY;
+e0000158:           c14c                        sw      a1,4(a0)
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:136
+     for (size_t i=0; i<TITANSSL_SIZE_KEY; i++) buffer_key.data[i] = 0x0;
+e000015a:           00060023            sb      zero,0(a2) # e0006000 <fromhost+0xffff5ff0>
+e000015e:           4605                        li      a2,1
+e0000160:       /-> 4114                        lw      a3,0(a0)
+e0000162:       |   96b2                        add     a3,a3,a2
+e0000164:       |   0605                        addi    a2,a2,1
+e0000166:       |   00068023            sb      zero,0(a3)
+e000016a:       \-- feb61be3            bne     a2,a1,e0000160 <initialize_memory+0x5c>
+e000016e:           e0006637            lui     a2,0xe0006
+e0000172:           10060593            addi    a1,a2,256 # e0006100 <fromhost+0xffff60f0>
+e0000176:           00000517            auipc   a0,0x0
+e000017a:           34650513            addi    a0,a0,838 # e00004bc <buffer_iv>
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:138
+
+     buffer_iv.data = (uint8_t*)TITANSSL_ADDR_IV;
+e000017e:           c10c                        sw      a1,0(a0)
+e0000180:           45c1                        li      a1,16
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:139
+     buffer_iv.n = TITANSSL_SIZE_IV;
+e0000182:           c14c                        sw      a1,4(a0)
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:140
+     for (size_t i=0; i<TITANSSL_SIZE_IV; i++) buffer_iv.data[i] = 0x0;
+e0000184:           10060023            sb      zero,256(a2)
+e0000188:           4605                        li      a2,1
+e000018a:       /-> 4114                        lw      a3,0(a0)
+e000018c:       |   96b2                        add     a3,a3,a2
+e000018e:       |   0605                        addi    a2,a2,1
+e0000190:       |   00068023            sb      zero,0(a3)
+e0000194:       \-- feb61be3            bne     a2,a1,e000018a <initialize_memory+0x86>
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:141
+}
+e0000198:           8082                        ret
+
+e000019a <titanssl_benchmark_aes>:
+titanssl_benchmark_aes():
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:150
+        titanssl_buffer_t *const cipher_idma,
+        titanssl_buffer_t *const plain,
+        titanssl_buffer_t *const cipher,
+        titanssl_buffer_t *const key,
+        titanssl_buffer_t *const iv)
+{
+e000019a:                 1141                  addi    sp,sp,-16
+e000019c:                 fef005b7              lui     a1,0xfef00
+e00001a0:                 80000637              lui     a2,0x80000
+issue_idma_transaction():
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:94
+    *ptr = src_addr;
+e00001a4:                 c190                  sw      a2,0(a1)
+e00001a6:                 fff00637              lui     a2,0xfff00
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:96
+    *ptr = dst_addr;
+e00001aa:                 c1d0                  sw      a2,4(a1)
+e00001ac:                 6609                  lui     a2,0x2
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:98
+    *ptr = num_bytes;
+e00001ae:                 c590                  sw      a2,8(a1)
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:100
+    buff = *ptr;
+e00001b0:                 5190                  lw      a2,32(a1)
+e00001b2:                 c432                  sw      a2,8(sp)
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:101
+    return *ptr;
+e00001b4:                 518c                  lw      a1,32(a1)
+titanssl_benchmark_aes():
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:162
+    if(TITANSSL_ADDR_PLAIN > 1024)
+      for(int i=0;i<TITANSSL_SIZE_PLAIN/1024;i++)
+        next_id = issue_idma_transaction(TITANSSL_ADDR_PLAIN+i*1024/4,TITANSSL_ADDR_PLAIN_IDMA+i*1024/4,1024);
+    else
+      next_id = issue_idma_transaction(TITANSSL_ADDR_PLAIN,TITANSSL_ADDR_PLAIN_IDMA,TITANSSL_SIZE_PLAIN);*/
+    next_id = issue_idma_transaction(TITANSSL_ADDR_PLAIN,TITANSSL_ADDR_PLAIN_IDMA,TITANSSL_SIZE_PLAIN);
+e00001b6:                 00000817              auipc   a6,0x0
+e00001ba:                 30e80813              addi    a6,a6,782 # e00004c4 <next_id>
+e00001be:                 00b82023              sw      a1,0(a6)
+e00001c2:                 c11005b7              lui     a1,0xc1100
+mmio_region_read32():
+/proc/self/cwd/./sw/device/lib/base/mmio.h:96
+ * @param offset the offset to read at, in bytes.
+ * @return the read value.
+ */
+OT_WARN_UNUSED_RESULT
+inline uint32_t mmio_region_read32(mmio_region_t base, ptrdiff_t offset) {
+  return ((volatile uint32_t *)base.base)[offset / sizeof(uint32_t)];
+e00001c6:             /-> 0845a603              lw      a2,132(a1) # c1100084 <fromhost+0xe10f0074>
+bitfield_bit32_read():
+/proc/self/cwd/./sw/device/lib/base/bitfield.h:122
+ */
+OT_WARN_UNUSED_RESULT
+inline bool bitfield_bit32_read(uint32_t bitfield,
+                                bitfield_bit32_index_t bit_index) {
+  return bitfield_field32_read(bitfield,
+                               bitfield_bit32_to_field32(bit_index)) == 0x1u;
+e00001ca:             |   8a05                  andi    a2,a2,1
+titanssl_benchmark_aes():
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:167
+    // Get the AES IP base address
+    aes = mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR);
+
+    // Reset the IP
+    while(!mmio_region_get_bit32(aes, AES_STATUS_REG_OFFSET, AES_STATUS_IDLE_BIT));
+e00001cc:             \-- de6d                  beqz    a2,e00001c6 <titanssl_benchmark_aes+0x2c>
+e00001ce:                 c11005b7              lui     a1,0xc1100
+e00001d2:                 6621                  lui     a2,0x8
+mmio_region_write32():
+/proc/self/cwd/./sw/device/lib/base/mmio.h:145
+ * @param offset the offset to write at, in bytes.
+ * @param value the value to write.
+ */
+inline void mmio_region_write32(mmio_region_t base, ptrdiff_t offset,
+                                uint32_t value) {
+  ((volatile uint32_t *)base.base)[offset / sizeof(uint32_t)] = value;
+e00001d4:                 d9f0                  sw      a2,116(a1)
+e00001d6:                 d9f0                  sw      a2,116(a1)
+e00001d8:                 08058613              addi    a2,a1,128 # c1100080 <fromhost+0xe10f0070>
+e00001dc:                 4699                  li      a3,6
+e00001de:                 c214                  sw      a3,0(a2)
+mmio_region_read32():
+/proc/self/cwd/./sw/device/lib/base/mmio.h:96
+  return ((volatile uint32_t *)base.base)[offset / sizeof(uint32_t)];
+e00001e0:             /-> 0845a603              lw      a2,132(a1)
+bitfield_bit32_read():
+/proc/self/cwd/./sw/device/lib/base/bitfield.h:122
+e00001e4:             |   8a05                  andi    a2,a2,1
+titanssl_benchmark_aes():
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:174
+    mmio_region_write32(aes, AES_CTRL_SHADOWED_REG_OFFSET, reg);
+    mmio_region_write32(aes, AES_CTRL_SHADOWED_REG_OFFSET, reg);
+    reg = bitfield_bit32_write(0, AES_TRIGGER_KEY_IV_DATA_IN_CLEAR_BIT, true);
+    reg = bitfield_bit32_write(reg, AES_TRIGGER_DATA_OUT_CLEAR_BIT, true);
+    mmio_region_write32(aes, AES_TRIGGER_REG_OFFSET, reg);
+    while (!mmio_region_get_bit32(aes, AES_STATUS_REG_OFFSET, AES_STATUS_IDLE_BIT));
+e00001e6:             \-- de6d                  beqz    a2,e00001e0 <titanssl_benchmark_aes+0x46>
+e00001e8:                 c11005b7              lui     a1,0xc1100
+e00001ec:                 78300613              li      a2,1923
+mmio_region_write32():
+/proc/self/cwd/./sw/device/lib/base/mmio.h:145
+  ((volatile uint32_t *)base.base)[offset / sizeof(uint32_t)] = value;
+e00001f0:                 d9f0                  sw      a2,116(a1)
+e00001f2:                 07458693              addi    a3,a1,116 # c1100074 <fromhost+0xe10f0064>
+e00001f6:                 c290                  sw      a2,0(a3)
+mmio_region_read32():
+/proc/self/cwd/./sw/device/lib/base/mmio.h:96
+  return ((volatile uint32_t *)base.base)[offset / sizeof(uint32_t)];
+e00001f8:             /-> 0845a603              lw      a2,132(a1)
+bitfield_bit32_read():
+/proc/self/cwd/./sw/device/lib/base/bitfield.h:122
+e00001fc:             |   8a05                  andi    a2,a2,1
+titanssl_benchmark_aes():
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:182
+    reg = bitfield_field32_write(reg, AES_CTRL_SHADOWED_KEY_LEN_FIELD, AES_CTRL_SHADOWED_KEY_LEN_MASK);
+    mmio_region_write32(aes, AES_CTRL_SHADOWED_REG_OFFSET, reg);
+    mmio_region_write32(aes, AES_CTRL_SHADOWED_REG_OFFSET, reg);
+
+    // Initialize AES IP configurations
+    while(!mmio_region_get_bit32(aes, AES_STATUS_REG_OFFSET, AES_STATUS_IDLE_BIT));
+e00001fe:             \-- de6d                  beqz    a2,e00001f8 <titanssl_benchmark_aes+0x5e>
+e0000200:                 6589                  lui     a1,0x2
+e0000202:                 40958593              addi    a1,a1,1033 # 2409 <_min_stack+0x409>
+e0000206:                 c1100637              lui     a2,0xc1100
+mmio_region_write32():
+/proc/self/cwd/./sw/device/lib/base/mmio.h:145
+  ((volatile uint32_t *)base.base)[offset / sizeof(uint32_t)] = value;
+e000020a:                 da6c                  sw      a1,116(a2)
+e000020c:                 da6c                  sw      a1,116(a2)
+e000020e:                 06062c23              sw      zero,120(a2) # c1100078 <fromhost+0xe10f0068>
+e0000212:                 06062c23              sw      zero,120(a2)
+e0000216:                 4585                  li      a1,1
+e0000218:                 de6c                  sw      a1,124(a2)
+titanssl_benchmark_aes():
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:200
+    mmio_region_write32(aes, AES_CTRL_AUX_SHADOWED_REG_OFFSET, reg);
+    mmio_region_write32(aes, AES_CTRL_AUX_SHADOWED_REG_OFFSET, reg);
+    mmio_region_write32(aes, AES_CTRL_AUX_REGWEN_REG_OFFSET, true);
+
+    // Initialize key shares
+    mmio_region_write32(aes, AES_KEY_SHARE0_0_REG_OFFSET, ((uint32_t*)(key->data))[0]);
+e000021a:                 430c                  lw      a1,0(a4)
+e000021c:                 4194                  lw      a3,0(a1)
+mmio_region_write32():
+/proc/self/cwd/./sw/device/lib/base/mmio.h:145
+e000021e:                 c254                  sw      a3,4(a2)
+titanssl_benchmark_aes():
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:201
+    mmio_region_write32(aes, AES_KEY_SHARE0_1_REG_OFFSET, ((uint32_t*)(key->data))[1]);
+e0000220:                 41d4                  lw      a3,4(a1)
+mmio_region_write32():
+/proc/self/cwd/./sw/device/lib/base/mmio.h:145
+e0000222:                 c614                  sw      a3,8(a2)
+titanssl_benchmark_aes():
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:202
+    mmio_region_write32(aes, AES_KEY_SHARE0_2_REG_OFFSET, ((uint32_t*)(key->data))[2]);
+e0000224:                 4594                  lw      a3,8(a1)
+mmio_region_write32():
+/proc/self/cwd/./sw/device/lib/base/mmio.h:145
+e0000226:                 c654                  sw      a3,12(a2)
+titanssl_benchmark_aes():
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:203
+    mmio_region_write32(aes, AES_KEY_SHARE0_3_REG_OFFSET, ((uint32_t*)(key->data))[3]);
+e0000228:                 45d4                  lw      a3,12(a1)
+mmio_region_write32():
+/proc/self/cwd/./sw/device/lib/base/mmio.h:145
+e000022a:                 ca14                  sw      a3,16(a2)
+titanssl_benchmark_aes():
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:204
+    mmio_region_write32(aes, AES_KEY_SHARE0_4_REG_OFFSET, ((uint32_t*)(key->data))[4]);
+e000022c:                 4994                  lw      a3,16(a1)
+mmio_region_write32():
+/proc/self/cwd/./sw/device/lib/base/mmio.h:145
+e000022e:                 ca54                  sw      a3,20(a2)
+titanssl_benchmark_aes():
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:205
+    mmio_region_write32(aes, AES_KEY_SHARE0_5_REG_OFFSET, ((uint32_t*)(key->data))[5]);
+e0000230:                 49d4                  lw      a3,20(a1)
+mmio_region_write32():
+/proc/self/cwd/./sw/device/lib/base/mmio.h:145
+e0000232:                 ce14                  sw      a3,24(a2)
+titanssl_benchmark_aes():
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:206
+    mmio_region_write32(aes, AES_KEY_SHARE0_6_REG_OFFSET, ((uint32_t*)(key->data))[6]);
+e0000234:                 4d94                  lw      a3,24(a1)
+mmio_region_write32():
+/proc/self/cwd/./sw/device/lib/base/mmio.h:145
+e0000236:                 ce54                  sw      a3,28(a2)
+titanssl_benchmark_aes():
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:207
+    mmio_region_write32(aes, AES_KEY_SHARE0_7_REG_OFFSET, ((uint32_t*)(key->data))[7]);
+e0000238:                 4dd4                  lw      a3,28(a1)
+mmio_region_write32():
+/proc/self/cwd/./sw/device/lib/base/mmio.h:145
+e000023a:                 d214                  sw      a3,32(a2)
+titanssl_benchmark_aes():
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:208
+    mmio_region_write32(aes, AES_KEY_SHARE1_0_REG_OFFSET, ((uint32_t*)(key->data))[0]);
+e000023c:                 4194                  lw      a3,0(a1)
+mmio_region_write32():
+/proc/self/cwd/./sw/device/lib/base/mmio.h:145
+e000023e:                 d254                  sw      a3,36(a2)
+titanssl_benchmark_aes():
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:209
+    mmio_region_write32(aes, AES_KEY_SHARE1_1_REG_OFFSET, ((uint32_t*)(key->data))[1]);
+e0000240:                 41d4                  lw      a3,4(a1)
+mmio_region_write32():
+/proc/self/cwd/./sw/device/lib/base/mmio.h:145
+e0000242:                 d614                  sw      a3,40(a2)
+titanssl_benchmark_aes():
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:210
+    mmio_region_write32(aes, AES_KEY_SHARE1_2_REG_OFFSET, ((uint32_t*)(key->data))[2]);
+e0000244:                 4594                  lw      a3,8(a1)
+mmio_region_write32():
+/proc/self/cwd/./sw/device/lib/base/mmio.h:145
+e0000246:                 d654                  sw      a3,44(a2)
+titanssl_benchmark_aes():
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:211
+    mmio_region_write32(aes, AES_KEY_SHARE1_3_REG_OFFSET, ((uint32_t*)(key->data))[3]);
+e0000248:                 45d4                  lw      a3,12(a1)
+mmio_region_write32():
+/proc/self/cwd/./sw/device/lib/base/mmio.h:145
+e000024a:                 da14                  sw      a3,48(a2)
+titanssl_benchmark_aes():
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:212
+    mmio_region_write32(aes, AES_KEY_SHARE1_4_REG_OFFSET, ((uint32_t*)(key->data))[4]);
+e000024c:                 4994                  lw      a3,16(a1)
+mmio_region_write32():
+/proc/self/cwd/./sw/device/lib/base/mmio.h:145
+e000024e:                 da54                  sw      a3,52(a2)
+titanssl_benchmark_aes():
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:213
+    mmio_region_write32(aes, AES_KEY_SHARE1_5_REG_OFFSET, ((uint32_t*)(key->data))[5]);
+e0000250:                 49d4                  lw      a3,20(a1)
+mmio_region_write32():
+/proc/self/cwd/./sw/device/lib/base/mmio.h:145
+e0000252:                 de14                  sw      a3,56(a2)
+titanssl_benchmark_aes():
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:214
+    mmio_region_write32(aes, AES_KEY_SHARE1_6_REG_OFFSET, ((uint32_t*)(key->data))[6]);
+e0000254:                 4d94                  lw      a3,24(a1)
+mmio_region_write32():
+/proc/self/cwd/./sw/device/lib/base/mmio.h:145
+e0000256:                 de54                  sw      a3,60(a2)
+titanssl_benchmark_aes():
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:215
+    mmio_region_write32(aes, AES_KEY_SHARE1_7_REG_OFFSET, ((uint32_t*)(key->data))[7]);
+e0000258:                 4dcc                  lw      a1,28(a1)
+mmio_region_write32():
+/proc/self/cwd/./sw/device/lib/base/mmio.h:145
+e000025a:                 c22c                  sw      a1,64(a2)
+mmio_region_read32():
+/proc/self/cwd/./sw/device/lib/base/mmio.h:96
+  return ((volatile uint32_t *)base.base)[offset / sizeof(uint32_t)];
+e000025c:                 5a6c                  lw      a1,116(a2)
+titanssl_benchmark_aes():
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:220
+
+    // Initialize IV
+    reg = mmio_region_read32(aes, AES_CTRL_SHADOWED_REG_OFFSET);
+    reg = bitfield_field32_read(reg, AES_CTRL_SHADOWED_MODE_FIELD);
+    if (reg != AES_CTRL_SHADOWED_MODE_VALUE_AES_ECB)
+e000025e:                 0fc5f593              andi    a1,a1,252
+e0000262:                 4691                  li      a3,4
+e0000264:          /----- 02d58363              beq     a1,a3,e000028a <titanssl_benchmark_aes+0xf0>
+mmio_region_read32():
+/proc/self/cwd/./sw/device/lib/base/mmio.h:96
+e0000268:          |  /-> 08462583              lw      a1,132(a2)
+bitfield_bit32_read():
+/proc/self/cwd/./sw/device/lib/base/bitfield.h:122
+e000026c:          |  |   8985                  andi    a1,a1,1
+titanssl_benchmark_aes():
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:222
+    {
+        while(!mmio_region_get_bit32(aes, AES_STATUS_REG_OFFSET, AES_STATUS_IDLE_BIT));
+e000026e:          |  \-- dded                  beqz    a1,e0000268 <titanssl_benchmark_aes+0xce>
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:223
+        mmio_region_write32(aes, AES_IV_0_REG_OFFSET, ((uint32_t*)(iv->data))[0]);
+e0000270:          |      438c                  lw      a1,0(a5)
+e0000272:          |      4190                  lw      a2,0(a1)
+e0000274:          |      c11006b7              lui     a3,0xc1100
+mmio_region_write32():
+/proc/self/cwd/./sw/device/lib/base/mmio.h:145
+  ((volatile uint32_t *)base.base)[offset / sizeof(uint32_t)] = value;
+e0000278:          |      c2f0                  sw      a2,68(a3)
+titanssl_benchmark_aes():
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:224
+        mmio_region_write32(aes, AES_IV_1_REG_OFFSET, ((uint32_t*)(iv->data))[1]);
+e000027a:          |      41d0                  lw      a2,4(a1)
+mmio_region_write32():
+/proc/self/cwd/./sw/device/lib/base/mmio.h:145
+e000027c:          |      c6b0                  sw      a2,72(a3)
+titanssl_benchmark_aes():
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:225
+        mmio_region_write32(aes, AES_IV_2_REG_OFFSET, ((uint32_t*)(iv->data))[2]);
+e000027e:          |      4590                  lw      a2,8(a1)
+mmio_region_write32():
+/proc/self/cwd/./sw/device/lib/base/mmio.h:145
+e0000280:          |      c6f0                  sw      a2,76(a3)
+titanssl_benchmark_aes():
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:226
+        mmio_region_write32(aes, AES_IV_3_REG_OFFSET, ((uint32_t*)(iv->data))[3]);
+e0000282:          |      45cc                  lw      a1,12(a1)
+e0000284:          |      05068613              addi    a2,a3,80 # c1100050 <fromhost+0xe10f0040>
+mmio_region_write32():
+/proc/self/cwd/./sw/device/lib/base/mmio.h:145
+e0000288:          |      c20c                  sw      a1,0(a2)
+titanssl_benchmark_aes():
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:230
+    }
+
+    // Wait for iDMA to populate TCDM with payload
+    wait_for_idma_eot(next_id);
+e000028a:          \----> 00082583              lw      a1,0(a6)
+e000028e:                 fef00637              lui     a2,0xfef00
+wait_for_idma_eot():
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:87
+    while(*ptr!=next_id)
+e0000292:             /-> 5254                  lw      a3,36(a2)
+e0000294:          /--|-- 00b68463              beq     a3,a1,e000029c <titanssl_benchmark_aes+0x102>
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:88
+      asm volatile("nop");
+e0000298:          |  |   0001                  nop
+e000029a:          |  \-- bfe5                  j       e0000292 <titanssl_benchmark_aes+0xf8>
+titanssl_benchmark_aes():
+e000029c:          \----> fff00637              lui     a2,0xfff00
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:236
+
+    // Compute AES with data from/to TCDM
+    dp_src = (uint8_t*)TITANSSL_ADDR_PLAIN_IDMA;
+    dp_dst = (uint8_t*)TITANSSL_ADDR_CIPHER_IDMA;
+
+    mmio_region_write32(aes, AES_DATA_IN_0_REG_OFFSET, ((uint32_t*)dp_src)[0]);
+e00002a0:                 4214                  lw      a3,0(a2)
+e00002a2:                 c11005b7              lui     a1,0xc1100
+mmio_region_write32():
+/proc/self/cwd/./sw/device/lib/base/mmio.h:145
+e00002a6:                 c9f4                  sw      a3,84(a1)
+titanssl_benchmark_aes():
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:237
+    mmio_region_write32(aes, AES_DATA_IN_1_REG_OFFSET, ((uint32_t*)dp_src)[1]);
+e00002a8:                 4254                  lw      a3,4(a2)
+mmio_region_write32():
+/proc/self/cwd/./sw/device/lib/base/mmio.h:145
+e00002aa:                 cdb4                  sw      a3,88(a1)
+titanssl_benchmark_aes():
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:238
+    mmio_region_write32(aes, AES_DATA_IN_2_REG_OFFSET, ((uint32_t*)dp_src)[2]);
+e00002ac:                 4614                  lw      a3,8(a2)
+mmio_region_write32():
+/proc/self/cwd/./sw/device/lib/base/mmio.h:145
+e00002ae:                 cdf4                  sw      a3,92(a1)
+titanssl_benchmark_aes():
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:239
+    mmio_region_write32(aes, AES_DATA_IN_3_REG_OFFSET, ((uint32_t*)dp_src)[3]);
+e00002b0:                 4650                  lw      a2,12(a2)
+e00002b2:                 06058693              addi    a3,a1,96 # c1100060 <fromhost+0xe10f0050>
+mmio_region_write32():
+/proc/self/cwd/./sw/device/lib/base/mmio.h:145
+e00002b6:                 c290                  sw      a2,0(a3)
+mmio_region_read32():
+/proc/self/cwd/./sw/device/lib/base/mmio.h:96
+  return ((volatile uint32_t *)base.base)[offset / sizeof(uint32_t)];
+e00002b8:             /-> 0845a603              lw      a2,132(a1)
+bitfield_bit32_read():
+/proc/self/cwd/./sw/device/lib/base/bitfield.h:122
+e00002bc:             |   8a41                  andi    a2,a2,16
+titanssl_benchmark_aes():
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:240
+    while(!mmio_region_get_bit32(aes, AES_STATUS_REG_OFFSET, AES_STATUS_INPUT_READY_BIT));
+e00002be:             \-- de6d                  beqz    a2,e00002b8 <titanssl_benchmark_aes+0x11e>
+e00002c0:                 00052883              lw      a7,0(a0)
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:243
+    dp_src += 16;
+
+    while (dp_src - plain_idma->data < plain_idma->n) {
+e00002c4:                 414c                  lw      a1,4(a0)
+e00002c6:                 fff00637              lui     a2,0xfff00
+e00002ca:                 01060713              addi    a4,a2,16 # fff00010 <fromhost+0x1fef0000>
+e00002ce:                 411707b3              sub     a5,a4,a7
+e00002d2:                 fff04637              lui     a2,0xfff04
+e00002d6:       /-------- 04b7f463              bgeu    a5,a1,e000031e <titanssl_benchmark_aes+0x184>
+e00002da:       |         fff04637              lui     a2,0xfff04
+e00002de:       |         c11007b7              lui     a5,0xc1100
+e00002e2:       |         06078293              addi    t0,a5,96 # c1100060 <fromhost+0xe10f0050>
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:244
+        mmio_region_write32(aes, AES_DATA_IN_0_REG_OFFSET, ((uint32_t*)dp_src)[0]);
+e00002e6:       |  /----> 4314                  lw      a3,0(a4)
+mmio_region_write32():
+/proc/self/cwd/./sw/device/lib/base/mmio.h:145
+  ((volatile uint32_t *)base.base)[offset / sizeof(uint32_t)] = value;
+e00002e8:       |  |      cbf4                  sw      a3,84(a5)
+titanssl_benchmark_aes():
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:245
+        mmio_region_write32(aes, AES_DATA_IN_1_REG_OFFSET, ((uint32_t*)dp_src)[1]);
+e00002ea:       |  |      4354                  lw      a3,4(a4)
+mmio_region_write32():
+/proc/self/cwd/./sw/device/lib/base/mmio.h:145
+e00002ec:       |  |      cfb4                  sw      a3,88(a5)
+titanssl_benchmark_aes():
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:246
+        mmio_region_write32(aes, AES_DATA_IN_2_REG_OFFSET, ((uint32_t*)dp_src)[2]);
+e00002ee:       |  |      4714                  lw      a3,8(a4)
+mmio_region_write32():
+/proc/self/cwd/./sw/device/lib/base/mmio.h:145
+e00002f0:       |  |      cff4                  sw      a3,92(a5)
+titanssl_benchmark_aes():
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:247
+        mmio_region_write32(aes, AES_DATA_IN_3_REG_OFFSET, ((uint32_t*)dp_src)[3]);
+e00002f2:       |  |      4754                  lw      a3,12(a4)
+mmio_region_write32():
+/proc/self/cwd/./sw/device/lib/base/mmio.h:145
+e00002f4:       |  |      00d2a023              sw      a3,0(t0)
+mmio_region_read32():
+/proc/self/cwd/./sw/device/lib/base/mmio.h:96
+  return ((volatile uint32_t *)base.base)[offset / sizeof(uint32_t)];
+e00002f8:       |  |  /-> 0847a683              lw      a3,132(a5)
+bitfield_bit32_read():
+/proc/self/cwd/./sw/device/lib/base/bitfield.h:122
+e00002fc:       |  |  |   8aa1                  andi    a3,a3,8
+titanssl_benchmark_aes():
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:249
+
+        while(!mmio_region_get_bit32(aes, AES_STATUS_REG_OFFSET, AES_STATUS_OUTPUT_VALID_BIT));
+e00002fe:       |  |  \-- deed                  beqz    a3,e00002f8 <titanssl_benchmark_aes+0x15e>
+mmio_region_read32():
+/proc/self/cwd/./sw/device/lib/base/mmio.h:96
+e0000300:       |  |      53f4                  lw      a3,100(a5)
+titanssl_benchmark_aes():
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:250
+        ((uint32_t*)(dp_dst))[0] = mmio_region_read32(aes, AES_DATA_OUT_0_REG_OFFSET);
+e0000302:       |  |      c214                  sw      a3,0(a2)
+mmio_region_read32():
+/proc/self/cwd/./sw/device/lib/base/mmio.h:96
+e0000304:       |  |      57b4                  lw      a3,104(a5)
+titanssl_benchmark_aes():
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:251
+        ((uint32_t*)(dp_dst))[1] = mmio_region_read32(aes, AES_DATA_OUT_1_REG_OFFSET);
+e0000306:       |  |      c254                  sw      a3,4(a2)
+mmio_region_read32():
+/proc/self/cwd/./sw/device/lib/base/mmio.h:96
+e0000308:       |  |      57f4                  lw      a3,108(a5)
+titanssl_benchmark_aes():
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:252
+        ((uint32_t*)(dp_dst))[2] = mmio_region_read32(aes, AES_DATA_OUT_2_REG_OFFSET);
+e000030a:       |  |      c614                  sw      a3,8(a2)
+mmio_region_read32():
+/proc/self/cwd/./sw/device/lib/base/mmio.h:96
+e000030c:       |  |      5bb4                  lw      a3,112(a5)
+titanssl_benchmark_aes():
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:253
+        ((uint32_t*)(dp_dst))[3] = mmio_region_read32(aes, AES_DATA_OUT_3_REG_OFFSET);
+e000030e:       |  |      c654                  sw      a3,12(a2)
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:243
+    while (dp_src - plain_idma->data < plain_idma->n) {
+e0000310:       |  |      4154                  lw      a3,4(a0)
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:255
+        dp_dst += 16;
+        dp_src += 16;
+e0000312:       |  |      0741                  addi    a4,a4,16
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:243
+    while (dp_src - plain_idma->data < plain_idma->n) {
+e0000314:       |  |      411705b3              sub     a1,a4,a7
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:254
+        dp_dst += 16;
+e0000318:       |  |      0641                  addi    a2,a2,16
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:243
+    while (dp_src - plain_idma->data < plain_idma->n) {
+e000031a:       |  \----- fcd5e6e3              bltu    a1,a3,e00002e6 <titanssl_benchmark_aes+0x14c>
+e000031e:       \-------> c1100537              lui     a0,0xc1100
+mmio_region_read32():
+/proc/self/cwd/./sw/device/lib/base/mmio.h:96
+e0000322:             /-> 08452583              lw      a1,132(a0) # c1100084 <fromhost+0xe10f0074>
+bitfield_bit32_read():
+/proc/self/cwd/./sw/device/lib/base/bitfield.h:122
+e0000326:             |   89a1                  andi    a1,a1,8
+titanssl_benchmark_aes():
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:257
+    }
+    while(!mmio_region_get_bit32(aes, AES_STATUS_REG_OFFSET, AES_STATUS_OUTPUT_VALID_BIT));
+e0000328:             \-- dded                  beqz    a1,e0000322 <titanssl_benchmark_aes+0x188>
+e000032a:                 c1100537              lui     a0,0xc1100
+mmio_region_read32():
+/proc/self/cwd/./sw/device/lib/base/mmio.h:96
+e000032e:                 516c                  lw      a1,100(a0)
+titanssl_benchmark_aes():
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:258
+    ((uint32_t*)(dp_dst))[0] = mmio_region_read32(aes, AES_DATA_OUT_0_REG_OFFSET);
+e0000330:                 c20c                  sw      a1,0(a2)
+mmio_region_read32():
+/proc/self/cwd/./sw/device/lib/base/mmio.h:96
+e0000332:                 552c                  lw      a1,104(a0)
+titanssl_benchmark_aes():
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:259
+    ((uint32_t*)(dp_dst))[1] = mmio_region_read32(aes, AES_DATA_OUT_1_REG_OFFSET);
+e0000334:                 c24c                  sw      a1,4(a2)
+mmio_region_read32():
+/proc/self/cwd/./sw/device/lib/base/mmio.h:96
+e0000336:                 556c                  lw      a1,108(a0)
+titanssl_benchmark_aes():
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:260
+    ((uint32_t*)(dp_dst))[2] = mmio_region_read32(aes, AES_DATA_OUT_2_REG_OFFSET);
+e0000338:                 c60c                  sw      a1,8(a2)
+mmio_region_read32():
+/proc/self/cwd/./sw/device/lib/base/mmio.h:96
+e000033a:                 592c                  lw      a1,112(a0)
+titanssl_benchmark_aes():
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:261
+    ((uint32_t*)(dp_dst))[3] = mmio_region_read32(aes, AES_DATA_OUT_3_REG_OFFSET);
+e000033c:                 c64c                  sw      a1,12(a2)
+e000033e:                 fef005b7              lui     a1,0xfef00
+e0000342:                 fff04637              lui     a2,0xfff04
+issue_idma_transaction():
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:94
+    *ptr = src_addr;
+e0000346:                 c190                  sw      a2,0(a1)
+e0000348:                 80720637              lui     a2,0x80720
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:96
+    *ptr = dst_addr;
+e000034c:                 c1d0                  sw      a2,4(a1)
+e000034e:                 6609                  lui     a2,0x2
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:98
+    *ptr = num_bytes;
+e0000350:                 c590                  sw      a2,8(a1)
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:100
+    buff = *ptr;
+e0000352:                 5190                  lw      a2,32(a1)
+e0000354:                 c632                  sw      a2,12(sp)
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:101
+    return *ptr;
+e0000356:                 518c                  lw      a1,32(a1)
+titanssl_benchmark_aes():
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:269
+    if(TITANSSL_ADDR_CIPHER > 1024)
+      for(int i=0;i<TITANSSL_SIZE_CIPHER/1024;i++)
+        next_id = issue_idma_transaction(TITANSSL_ADDR_CIPHER_IDMA+i*1024/4,TITANSSL_ADDR_CIPHER+i*1024/4,1024);
+    else
+      next_id = issue_idma_transaction(TITANSSL_ADDR_CIPHER_IDMA,TITANSSL_ADDR_CIPHER,TITANSSL_SIZE_CIPHER);*/
+    next_id = issue_idma_transaction(TITANSSL_ADDR_CIPHER_IDMA,TITANSSL_ADDR_CIPHER,TITANSSL_SIZE_CIPHER);
+e0000358:                 00b82023              sw      a1,0(a6)
+mmio_region_read32():
+/proc/self/cwd/./sw/device/lib/base/mmio.h:96
+e000035c:             /-> 08452583              lw      a1,132(a0) # c1100084 <fromhost+0xe10f0074>
+bitfield_bit32_read():
+/proc/self/cwd/./sw/device/lib/base/bitfield.h:122
+e0000360:             |   8985                  andi    a1,a1,1
+titanssl_benchmark_aes():
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:271
+    // Reset operation mode, key, iv, and data registers
+    while(!mmio_region_get_bit32(aes, AES_STATUS_REG_OFFSET, AES_STATUS_IDLE_BIT));
+e0000362:             \-- dded                  beqz    a1,e000035c <titanssl_benchmark_aes+0x1c2>
+e0000364:                 c1100537              lui     a0,0xc1100
+e0000368:                 65a1                  lui     a1,0x8
+mmio_region_write32():
+/proc/self/cwd/./sw/device/lib/base/mmio.h:145
+  ((volatile uint32_t *)base.base)[offset / sizeof(uint32_t)] = value;
+e000036a:                 d96c                  sw      a1,116(a0)
+e000036c:                 d96c                  sw      a1,116(a0)
+e000036e:                 08050593              addi    a1,a0,128 # c1100080 <fromhost+0xe10f0070>
+e0000372:                 4619                  li      a2,6
+e0000374:                 c190                  sw      a2,0(a1)
+mmio_region_read32():
+/proc/self/cwd/./sw/device/lib/base/mmio.h:96
+  return ((volatile uint32_t *)base.base)[offset / sizeof(uint32_t)];
+e0000376:             /-> 08452583              lw      a1,132(a0)
+bitfield_bit32_read():
+/proc/self/cwd/./sw/device/lib/base/bitfield.h:122
+e000037a:             |   8985                  andi    a1,a1,1
+titanssl_benchmark_aes():
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:278
+    mmio_region_write32(aes, AES_CTRL_SHADOWED_REG_OFFSET, reg);
+    mmio_region_write32(aes, AES_CTRL_SHADOWED_REG_OFFSET, reg);
+    reg = bitfield_bit32_write(0, AES_TRIGGER_KEY_IV_DATA_IN_CLEAR_BIT, true);
+    reg = bitfield_bit32_write(reg, AES_TRIGGER_DATA_OUT_CLEAR_BIT, true);
+    mmio_region_write32(aes, AES_TRIGGER_REG_OFFSET, reg);
+    while (!mmio_region_get_bit32(aes, AES_STATUS_REG_OFFSET, AES_STATUS_IDLE_BIT));
+e000037c:             \-- dded                  beqz    a1,e0000376 <titanssl_benchmark_aes+0x1dc>
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:281
+
+    // Wait for DMA to move back all encrypted payload
+    wait_for_idma_eot(next_id);
+e000037e:                 00082503              lw      a0,0(a6)
+e0000382:                 fef005b7              lui     a1,0xfef00
+wait_for_idma_eot():
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:87
+    while(*ptr!=next_id)
+e0000386:             /-> 51d0                  lw      a2,36(a1)
+e0000388:          /--|-- 00a60463              beq     a2,a0,e0000390 <titanssl_benchmark_aes+0x1f6>
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:88
+      asm volatile("nop");
+e000038c:          |  |   0001                  nop
+e000038e:          |  \-- bfe5                  j       e0000386 <titanssl_benchmark_aes+0x1ec>
+titanssl_benchmark_aes():
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:282
+}
+e0000390:          \----> 0141                  addi    sp,sp,16
+e0000392:                 8082                  ret
+
+e0000394 <main>:
+main():
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:287
+
+int main(
+        int argc, 
+        char **argv)
+{
+e0000394:       1141                    addi    sp,sp,-16
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:295
+#define test_freq 50000000
+#else
+#define baud_rate 115200
+#define test_freq 100000000
+#endif
+        uart_set_cfg(
+e0000396:       c606                    sw      ra,12(sp)
+e0000398:       45ed                    li      a1,27
+e000039a:       4501                    li      a0,0
+e000039c:       20b9                    jal     e00003ea <uart_set_cfg>
+e000039e:       00909537                lui     a0,0x909
+e00003a2:       09950513                addi    a0,a0,153 # 909099 <tohost+0x8e9091>
+e00003a6:       c11605b7                lui     a1,0xc1160
+initialize_edn():
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:109
+    *p = 0x00909099;
+e00003aa:       d1c8                    sw      a0,36(a1)
+e00003ac:       4519                    li      a0,6
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:111
+    *p = 0x00000006;
+e00003ae:       d188                    sw      a0,32(a1)
+e00003b0:       c1150537                lui     a0,0xc1150
+e00003b4:       66600593                li      a1,1638
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:113
+    *p = 0x00000666;
+e00003b8:       c94c                    sw      a1,20(a0)
+e00003ba:       6529                    lui     a0,0xa
+e00003bc:       96650513                addi    a0,a0,-1690 # 9966 <_stack_len+0x1966>
+e00003c0:       c11705b7                lui     a1,0xc1170
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:115
+    *p = 0x00009966;
+e00003c4:       c9c8                    sw      a0,20(a1)
+main():
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:301
+        0,
+        (test_freq/baud_rate)>>4
+    );
+
+    initialize_edn();
+    initialize_memory();
+e00003c6:       3b3d                    jal     e0000104 <initialize_memory>
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:302
+    titanssl_benchmark_aes(
+e00003c8:       00000517                auipc   a0,0x0
+e00003cc:       0cc50513                addi    a0,a0,204 # e0000494 <buffer_plain_idma>
+e00003d0:       00000717                auipc   a4,0x0
+e00003d4:       0e470713                addi    a4,a4,228 # e00004b4 <buffer_key>
+e00003d8:       00000797                auipc   a5,0x0
+e00003dc:       0e478793                addi    a5,a5,228 # e00004bc <buffer_iv>
+e00003e0:       3b6d                    jal     e000019a <titanssl_benchmark_aes>
+/proc/self/cwd/sw/tests/opentitan/titanssl_sram_aes_idma/titanssl_sram_aes_idma.c:319
+                printf("0x%02x\r\n", buffer_cipher.data[i]);
+        uart_wait_tx_done();
+        }
+#endif
+
+        return 0;
+e00003e2:       4501                    li      a0,0
+e00003e4:       40b2                    lw      ra,12(sp)
+e00003e6:       0141                    addi    sp,sp,16
+e00003e8:       8082                    ret
+
+e00003ea <uart_set_cfg>:
+uart_set_cfg():
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:42
+  putchar('\n');
+  */
+}
+
+
+void uart_set_cfg(int parity, uint16_t clk_counter) {
+e00003ea:       40000537                lui     a0,0x40000
+e00003ee:       08300613                li      a2,131
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:44
+  unsigned int i;
+  *(volatile unsigned int*)(UART_REG_LCR) = 0x83; //sets 8N1 and set DLAB to 1
+e00003f2:       c550                    sw      a2,12(a0)
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:45
+  *(volatile unsigned int*)(UART_REG_DLM) = (clk_counter >> 8) & 0xFF;
+e00003f4:       0085d613                srli    a2,a1,0x8
+e00003f8:       c150                    sw      a2,4(a0)
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:46
+  *(volatile unsigned int*)(UART_REG_DLL) =  clk_counter       & 0xFF;
+e00003fa:       0ff5f593                andi    a1,a1,255
+e00003fe:       c10c                    sw      a1,0(a0)
+e0000400:       0a700593                li      a1,167
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:47
+  *(volatile unsigned int*)(UART_REG_FCR) = 0xA7; //enables 16byte FIFO and clear FIFOs
+e0000404:       c50c                    sw      a1,8(a0)
+e0000406:       458d                    li      a1,3
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:48
+  *(volatile unsigned int*)(UART_REG_LCR) = 0x03; //sets 8N1 and set DLAB to 0
+e0000408:       c54c                    sw      a1,12(a0)
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:50
+
+  *(volatile unsigned int*)(UART_REG_IER) = ((*(volatile unsigned int*)(UART_REG_IER)) & 0xF0) | 0x02; // set IER (interrupt enable register) on UART
+e000040a:       414c                    lw      a1,4(a0)
+e000040c:       0f05f593                andi    a1,a1,240
+e0000410:       0025e593                ori     a1,a1,2
+e0000414:       c14c                    sw      a1,4(a0)
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:51
+}
+e0000416:       8082                    ret
+
+e0000418 <external_irq_handler>:
+external_irq_handler():
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:338
+  putchar('\n');
+
+  return i;
+}
+
+void external_irq_handler(void)  {
+e0000418:           1101                        addi    sp,sp,-32
+e000041a:           ce2a                        sw      a0,28(sp)
+e000041c:           cc2e                        sw      a1,24(sp)
+e000041e:           ca32                        sw      a2,20(sp)
+e0000420:           c836                        sw      a3,16(sp)
+e0000422:           c63a                        sw      a4,12(sp)
+e0000424:           c43e                        sw      a5,8(sp)
+e0000426:           c242                        sw      a6,4(sp)
+e0000428:           c8200537            lui     a0,0xc8200
+e000042c:           09f00593            li      a1,159
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:355
+  p_reg5 = (int *) 0x1040401C;
+
+  // start of """Interrupt Service Routine"""
+  
+  plic_check = (int *) 0xC8200004;
+  while(*plic_check != mbox_id);   //check wether the intr is the correct one
+e0000430:       /-> 4150                        lw      a2,4(a0)
+e0000432:       \-- feb61fe3            bne     a2,a1,e0000430 <external_irq_handler+0x18>
+e0000436:           10404537            lui     a0,0x10404
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:358
+  
+  p_reg = (int *) 0x10404020;
+ *p_reg = 0x00000000;        //clearing the pending interrupt signal
+e000043a:           02052023            sw      zero,32(a0) # 10404020 <tohost+0x103e4018>
+e000043e:           c82005b7            lui     a1,0xc8200
+e0000442:           09f00613            li      a2,159
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:360
+ 
+ *plic_check = mbox_id;      //completing interrupt
+e0000446:           c1d0                        sw      a2,4(a1)
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:362
+ 
+  a = *p_reg1;
+e0000448:           450c                        lw      a1,8(a0)
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:363
+  b = *p_reg2;
+e000044a:           4910                        lw      a2,16(a0)
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:364
+  c = *p_reg3;
+e000044c:           4954                        lw      a3,20(a0)
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:365
+  d = *p_reg4;
+e000044e:           4d18                        lw      a4,24(a0)
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:366
+  e = *p_reg5;
+e0000450:           01c52803            lw      a6,28(a0)
+e0000454:           baadc7b7            lui     a5,0xbaadc
+e0000458:           0de78793            addi    a5,a5,222 # baadc0de <fromhost+0xdaacc0ce>
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:369
+  
+  
+  if( a == 0xBAADC0DE &&  b == 0xBAADC0DE && c == 0xBAADC0DE && d == 0xBAADC0DE && e == 0xBAADC0DE){
+e000045c:           8dbd                        xor     a1,a1,a5
+e000045e:           8e3d                        xor     a2,a2,a5
+e0000460:           8dd1                        or      a1,a1,a2
+e0000462:           00f6c633            xor     a2,a3,a5
+e0000466:           8dd1                        or      a1,a1,a2
+e0000468:           00f74633            xor     a2,a4,a5
+e000046c:           8dd1                        or      a1,a1,a2
+e000046e:           00f84633            xor     a2,a6,a5
+e0000472:           8dd1                        or      a1,a1,a2
+e0000474:       /-- e589                        bnez    a1,e000047e <external_irq_handler+0x66>
+e0000476:       |   02450513            addi    a0,a0,36
+e000047a:       |   4585                        li      a1,1
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:371
+      p_reg = (int *) 0x10404024; // completion interrupt to ariane agent
+     *p_reg = 0x00000001;
+e000047c:       |   c10c                        sw      a1,0(a0)
+/proc/self/cwd/sw/tests/opentitan/common/utils.c:375
+  }
+  
+  return;
+}
+e000047e:       \-> 4812                        lw      a6,4(sp)
+e0000480:           47a2                        lw      a5,8(sp)
+e0000482:           4732                        lw      a4,12(sp)
+e0000484:           46c2                        lw      a3,16(sp)
+e0000486:           4652                        lw      a2,20(sp)
+e0000488:           45e2                        lw      a1,24(sp)
+e000048a:           4572                        lw      a0,28(sp)
+e000048c:           6105                        addi    sp,sp,32
+e000048e:           30200073            mret
