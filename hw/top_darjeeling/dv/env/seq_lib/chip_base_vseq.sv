@@ -128,7 +128,8 @@ class chip_base_vseq #(
   // cycle) and  performs immediate post-reset steps to prime the design for stimulus. The
   // base class method invoked by super.dut_init() applies the reset.
   virtual task dut_init(string reset_kind = "HARD");
-    bit otp_clear_hw_cfg, otp_clear_secret0, otp_clear_secret1, otp_clear_secret2;
+    bit otp_clear_hw_cfg, otp_clear_secret0, otp_clear_secret1, otp_clear_secret2,
+        otp_clear_secret3;
     // Connect the external clock source if the test needs it.
     //
     // TODO: This is a functional interface which should ideally be connected only in the extended
@@ -153,6 +154,7 @@ class chip_base_vseq #(
     void'($value$plusargs("otp_clear_secret0=%0d", otp_clear_secret0));
     void'($value$plusargs("otp_clear_secret1=%0d", otp_clear_secret1));
     void'($value$plusargs("otp_clear_secret2=%0d", otp_clear_secret2));
+    void'($value$plusargs("otp_clear_secret3=%0d", otp_clear_secret3));
     if (otp_clear_hw_cfg) begin
         cfg.mem_bkdr_util_h[Otp].otp_clear_hw_cfg_partition();
     end
@@ -164,6 +166,9 @@ class chip_base_vseq #(
     end
     if (otp_clear_secret2) begin
         cfg.mem_bkdr_util_h[Otp].otp_clear_secret2_partition();
+    end
+    if (otp_clear_secret3) begin
+        cfg.mem_bkdr_util_h[Otp].otp_clear_secret3_partition();
     end
 
     initialize_otp_sig_verify();
