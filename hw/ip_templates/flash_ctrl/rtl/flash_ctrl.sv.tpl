@@ -151,8 +151,8 @@ module flash_ctrl
     .region_i(reg2hw.mp_region),
     .region_cfg_i(reg2hw.mp_region_cfg),
     .default_cfg_i(reg2hw.default_region),
-% for bank in range(cfg.banks):
-  % for idx in range(cfg.info_types):
+% for bank in range(banks):
+  % for idx in range(info_types):
     .bank${bank}_info${idx}_cfg_i(reg2hw.bank${bank}_info${idx}_page_cfg),
   % endfor
 % endfor
