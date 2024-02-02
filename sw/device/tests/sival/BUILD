@@ -11,6 +11,7 @@ test_suite(
         "//sw/device/silicon_creator/rom/e2e/jtag_inject:rom_e2e_openocd_debug_test",
         "//sw/device/tests:rstmgr_cpu_info_test",
         "//sw/device/tests:rv_core_ibex_epmp_test_functest",
+        "//sw/device/tests:rv_core_ibex_isa_test_functest",
         "//sw/device/tests:rv_core_ibex_mem_test_functest",
         "//sw/device/tests:rv_core_ibex_rnd_test",
     ],
