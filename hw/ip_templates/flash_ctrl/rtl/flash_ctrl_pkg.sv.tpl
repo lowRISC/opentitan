@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Flash Controller module.
+// Flash Controller package.
 //
 
 package flash_ctrl_pkg;
@@ -15,23 +15,19 @@ package flash_ctrl_pkg;
   parameter int InfoTypes                = flash_ctrl_reg_pkg::NumInfoTypes;
 
   // fixed parameters of flash derived from topgen parameters
-  parameter int DataWidth       = ${cfg.data_width};
-  parameter int MetaDataWidth   = ${cfg.metadata_width};
+  parameter int DataWidth       = ${data_width};
+  parameter int MetaDataWidth   = ${metadata_width};
 
 // The following hard-wired values are there to work-around verilator.
 // For some reason if the values are assigned through parameters verilator thinks
 // they are not constant
   parameter int InfoTypeSize [InfoTypes] = '{
-  % for type in range(cfg.info_types):
-    ${cfg.infos_per_bank[type]}${"," if not loop.last else ""}
-  % endfor
+% for type in range(info_types):
+    flash_ctrl_reg_pkg::NumInfos${type}${"," if not loop.last else ""}
+% endfor
   };
-  parameter int InfosPerBank    = max_info_pages('{
-  % for type in range(cfg.info_types):
-    ${cfg.infos_per_bank[type]}${"," if not loop.last else ""}
-  % endfor
-  });
-  parameter int WordsPerPage    = ${cfg.words_per_page}; // Number of flash words per page
+  parameter int InfosPerBank    = max_info_pages(InfoTypeSize);
+  parameter int WordsPerPage    = ${words_per_page}; // Number of flash words per page
   parameter int BusWidth        = top_pkg::TL_DW;
   parameter int BusIntgWidth    = tlul_pkg::DataIntgWidth;
   parameter int BusFullWidth    = BusWidth + BusIntgWidth;
@@ -69,15 +65,10 @@ package flash_ctrl_pkg;
 
   // The end address in bus words for each kind of partition in each bank
   parameter logic [PageW-1:0] DataPartitionEndAddr = PageW'(PagesPerBank - 1);
-  //parameter logic [PageW-1:0] InfoPartitionEndAddr [InfoTypes] = '{
-  % for type in range((cfg.info_types)):
-  //  ${cfg.infos_per_bank[type]-1}${"," if not loop.last else ""}
-  % endfor
-  //};
   parameter logic [PageW-1:0] InfoPartitionEndAddr [InfoTypes] = '{
-  % for type in range((cfg.info_types)):
+% for type in range(info_types):
     PageW'(InfoTypeSize[${type}] - 1)${"," if not loop.last else ""}
-  % endfor
+% endfor
   };
 
   // Flash Disable usage

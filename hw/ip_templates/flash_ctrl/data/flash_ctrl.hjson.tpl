@@ -3,14 +3,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 <%
-  page_width = (cfg.pages_per_bank-1).bit_length()
-  bank_width = (cfg.banks-1).bit_length()
-  total_pages = cfg.banks * cfg.pages_per_bank
+  page_width = (pages_per_bank-1).bit_length()
+  bank_width = (banks-1).bit_length()
+  total_pages = banks * pages_per_bank
   page_idx_width = (total_pages-1).bit_length()
   page_num_width = total_pages.bit_length()
-  bytes_per_page = cfg.words_per_page * cfg.word_bytes
+  bytes_per_page = words_per_page * word_bytes
   total_byte_width = int(total_pages*bytes_per_page-1).bit_length()
-  info_type_width = (cfg.info_types-1).bit_length()
+  info_type_width = (info_types-1).bit_length()
   max_fifo_depth = 16
   max_fifo_width = max_fifo_depth.bit_length()
 %>
@@ -422,21 +422,21 @@
     { name: "RegNumBanks",
       desc: "Number of flash banks",
       type: "int",
-      default: "${cfg.banks}",
+      default: "${banks}",
       local: "true"
     },
 
     { name: "RegPagesPerBank",
       desc: "Number of pages per bank",
       type: "int",
-      default: "${cfg.pages_per_bank}",
+      default: "${pages_per_bank}",
       local: "true"
     },
 
     { name: "RegBusPgmResBytes",
       desc: "Program resolution window in bytes",
       type: "int",
-      default: "${cfg.pgm_resolution_bytes}",
+      default: "${pgm_resolution_bytes}",
       local: "true"
     },
 
@@ -466,43 +466,43 @@
     { name: "NumInfoTypes",
       desc: "Number of info partition types",
       type: "int",
-      default: "${cfg.info_types}",
+      default: "${info_types}",
       local: "true"
     },
-    % for type in range(cfg.info_types):
+% for type in range(info_types):
     { name: "NumInfos${type}",
       desc: "Number of configurable flash info pages for info type ${type}",
       type: "int",
-      default: "${cfg.infos_per_bank[type]}",
+      default: "${infos_per_bank[type]}",
       local: "true"
     },
-    % endfor
+% endfor
 
     { name: "WordsPerPage",
       desc: "Number of words per page",
       type: "int",
-      default: "${cfg.words_per_page}",
+      default: "${words_per_page}",
       local: "true"
     },
 
     { name: "BytesPerWord",
       desc: "Number of bytes per word",
       type: "int",
-      default: "${cfg.word_bytes}",
+      default: "${word_bytes}",
       local: "true"
     },
 
     { name: "BytesPerPage",
       desc: "Number of bytes per page",
       type: "int",
-      default: "${cfg.bytes_per_page}",
+      default: "${bytes_per_page}",
       local: "true"
     },
 
     { name: "BytesPerBank",
       desc: "Number of bytes per bank",
       type: "int",
-      default: "${cfg.bytes_per_bank}",
+      default: "${bytes_per_bank}",
       local: "true"
     },
 
@@ -1124,8 +1124,8 @@
       },
 
       // Info partition memory properties setup
-      % for bank in range(cfg.banks):
-      %   for idx in range(cfg.info_types):
+% for bank in range(banks):
+  % for idx in range(info_types):
       { multireg: {
           cname: "FLASH_CTRL",
           name: "BANK${bank}_INFO${idx}_REGWEN"
@@ -1232,8 +1232,8 @@
           ],
         },
       },
-      %   endfor
-      % endfor
+  % endfor
+% endfor
 
       { name: "HW_INFO_CFG_OVERRIDE",
         desc: "HW interface info configuration rule overrides",

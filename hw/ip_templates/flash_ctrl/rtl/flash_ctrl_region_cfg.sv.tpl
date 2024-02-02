@@ -22,8 +22,8 @@ module flash_ctrl_region_cfg
   input sw_region_t [MpRegions-1:0] region_i,
   input sw_region_cfg_t [MpRegions-1:0] region_cfg_i,
   input sw_default_cfg_t default_cfg_i,
-% for bank in range(cfg.banks):
-  % for idx in range(cfg.info_types):
+% for bank in range(banks):
+  % for idx in range(info_types):
   input sw_info_cfg_t [NumInfos${idx}-1:0] bank${bank}_info${idx}_cfg_i,
   % endfor
 % endfor
@@ -124,11 +124,11 @@ module flash_ctrl_region_cfg
 
   // transform from unique names reg output to structure
   // Not all types have the maximum number of banks, so those are packed to 0
-  % for bank in range(cfg.banks):
-  %   for idx in range(cfg.info_types):
+% for bank in range(banks):
+  % for idx in range(info_types):
   assign sw_info_cfgs[${bank}][${idx}] = InfoBits'(bank${bank}_info${idx}_cfg_i);
-  %   endfor
   % endfor
+% endfor
 
   // strip error indications
   for (genvar i = 0; i < NumBanks; i++) begin : gen_info_cfg_bank
