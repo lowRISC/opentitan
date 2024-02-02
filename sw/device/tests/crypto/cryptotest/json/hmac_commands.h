@@ -20,6 +20,7 @@ extern "C" {
     value(_, Sha384) \
     value(_, Sha512) \
     value(_, Sha3_256) \
+    value(_, Sha3_384) \
     value(_, Sha3_512)
 UJSON_SERDE_ENUM(CryptotestHmacHashAlg, cryptotest_hmac_hash_alg_t, HMAC_HASH_ALG);
 
