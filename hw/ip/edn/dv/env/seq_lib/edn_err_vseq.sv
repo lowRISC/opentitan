@@ -208,6 +208,11 @@ class edn_err_vseq extends edn_base_vseq;
       wr_cmd(.cmd_type(edn_env_pkg::AutoRes), .acmd(csrng_pkg::RES), .clen(0),
              .flags(MuBi4False), .mode(mode));
     end
+    // Write auto mode commands to the FIFOs that minimize the time it takes to reach the desired state.
+    wr_cmd(.cmd_type(edn_env_pkg::AutoRes), .acmd(csrng_pkg::RES), .clen(0), .flags(MuBi4False),
+            .glen(1), .mode(mode));
+    wr_cmd(.cmd_type(edn_env_pkg::AutoGen), .acmd(csrng_pkg::GEN), .clen(0), .flags(MuBi4False),
+            .glen(1), .mode(mode));
     // Enable the EDN.
     ral.ctrl.edn_enable.set(prim_mubi_pkg::MuBi4True);
     csr_update(.csr(ral.ctrl));
