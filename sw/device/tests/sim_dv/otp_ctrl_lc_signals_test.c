@@ -60,8 +60,17 @@ static const uint8_t kOtpOwnerSeed[OTP_CTRL_PARAM_OWNER_SEED_SIZE] = {
     0x2c, 0xd9, 0x35, 0x8e, 0xe6, 0x13, 0x11, 0x14, 0xab, 0x22, 0x42,
     0x63, 0xc5, 0xdb, 0xfb, 0xc9, 0xe7, 0x92, 0x46, 0x33, 0x4e};
 
-// Enum that encodes the possible test modes.
-typedef enum { kWriteMode, kReadMode, kWriteReadMode } test_mode_t;
+// Enum that encodes the possible OTP access modes.
+typedef enum { kWriteMode, kReadMode, kWriteReadMode } access_mode_t;
+
+// Enum that encodes the boot stage from which to generate an output.
+typedef enum { kBootStage1, kBootStage2 } boot_stage_t;
+
+// Enum that encodes whether KeymgrDpe is enabled by LC.
+typedef enum { kDisabledByLc, kEnabledByLc } lc_enable_t;
+
+// Enum that encodes the OTP partitions to access.
+typedef enum { kSecret2Only, kSecret3Only, kSecret2AndSecret3 } partitions_t;
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -153,15 +162,15 @@ static void otp_read_test(dif_otp_ctrl_partition_t partition, uint32_t address,
 /**
  * Test wrapper function that first calls the write and then the read test.
  */
-static void otp_write_read_test(test_mode_t test_mode,
+static void otp_write_read_test(access_mode_t access_mode,
                                 dif_otp_ctrl_partition_t partition,
                                 uint32_t address, const uint8_t *buffer,
                                 uint32_t size, exp_test_result_t exp_result) {
-  if (test_mode == kWriteMode || test_mode == kWriteReadMode) {
+  if (access_mode == kWriteMode || access_mode == kWriteReadMode) {
     LOG_INFO("Write test at 0x%x...", address);
     otp_write_test(partition, address, buffer, size, exp_result);
   }
-  if (test_mode == kReadMode || test_mode == kWriteReadMode) {
+  if (access_mode == kReadMode || access_mode == kWriteReadMode) {
     LOG_INFO("Read test at 0x%x...", address);
     otp_read_test(partition, address, buffer, size, exp_result);
   }
@@ -169,38 +178,46 @@ static void otp_write_read_test(test_mode_t test_mode,
 
 /**
  * Test wrapper function that calls the write and read tests above for all
- * objects within the SECRET2 and SECRET3 partitions.
+ * objects within the specified partitions.
  */
-static void run_otp_access_tests(test_mode_t test_mode,
+static void run_otp_access_tests(partitions_t partitions,
+                                 access_mode_t access_mode,
                                  exp_test_result_t exp_result) {
-  // Silicon Creator (SECRET2 partition) objects:
-  // - RMA Token
-  otp_write_read_test(
-      test_mode, kDifOtpCtrlPartitionSecret2,
-      OTP_CTRL_PARAM_RMA_TOKEN_OFFSET - OTP_CTRL_PARAM_SECRET2_OFFSET,
-      (uint8_t *)kOtpRmaToken, OTP_CTRL_PARAM_RMA_TOKEN_SIZE, exp_result);
-  // - Creator Root Key (two shares)
-  otp_write_read_test(test_mode, kDifOtpCtrlPartitionSecret2,
-                      OTP_CTRL_PARAM_CREATOR_ROOT_KEY_SHARE0_OFFSET -
-                          OTP_CTRL_PARAM_SECRET2_OFFSET,
-                      (uint8_t *)kOtpCreatorRootKeyShare0,
-                      OTP_CTRL_PARAM_CREATOR_ROOT_KEY_SHARE0_SIZE, exp_result);
-  otp_write_read_test(test_mode, kDifOtpCtrlPartitionSecret2,
-                      OTP_CTRL_PARAM_CREATOR_ROOT_KEY_SHARE1_OFFSET -
-                          OTP_CTRL_PARAM_SECRET2_OFFSET,
-                      (uint8_t *)kOtpCreatorRootKeyShare1,
-                      OTP_CTRL_PARAM_CREATOR_ROOT_KEY_SHARE1_SIZE, exp_result);
-  // - Creator Seed
-  otp_write_read_test(
-      test_mode, kDifOtpCtrlPartitionSecret2,
-      OTP_CTRL_PARAM_CREATOR_SEED_OFFSET - OTP_CTRL_PARAM_SECRET2_OFFSET,
-      (uint8_t *)kOtpCreatorSeed, OTP_CTRL_PARAM_CREATOR_SEED_SIZE, exp_result);
-  // Silicon Owner (SECRET3 partition) objects:
-  // - Owner Seed
-  otp_write_read_test(
-      test_mode, kDifOtpCtrlPartitionSecret3,
-      OTP_CTRL_PARAM_OWNER_SEED_OFFSET - OTP_CTRL_PARAM_SECRET3_OFFSET,
-      (uint8_t *)kOtpOwnerSeed, OTP_CTRL_PARAM_OWNER_SEED_SIZE, exp_result);
+  if (partitions == kSecret2Only || partitions == kSecret2AndSecret3) {
+    // Silicon Creator (SECRET2 partition) objects:
+    // - RMA Token
+    otp_write_read_test(
+        access_mode, kDifOtpCtrlPartitionSecret2,
+        OTP_CTRL_PARAM_RMA_TOKEN_OFFSET - OTP_CTRL_PARAM_SECRET2_OFFSET,
+        (uint8_t *)kOtpRmaToken, OTP_CTRL_PARAM_RMA_TOKEN_SIZE, exp_result);
+    // - Creator Root Key (two shares)
+    otp_write_read_test(access_mode, kDifOtpCtrlPartitionSecret2,
+                        OTP_CTRL_PARAM_CREATOR_ROOT_KEY_SHARE0_OFFSET -
+                            OTP_CTRL_PARAM_SECRET2_OFFSET,
+                        (uint8_t *)kOtpCreatorRootKeyShare0,
+                        OTP_CTRL_PARAM_CREATOR_ROOT_KEY_SHARE0_SIZE,
+                        exp_result);
+    otp_write_read_test(access_mode, kDifOtpCtrlPartitionSecret2,
+                        OTP_CTRL_PARAM_CREATOR_ROOT_KEY_SHARE1_OFFSET -
+                            OTP_CTRL_PARAM_SECRET2_OFFSET,
+                        (uint8_t *)kOtpCreatorRootKeyShare1,
+                        OTP_CTRL_PARAM_CREATOR_ROOT_KEY_SHARE1_SIZE,
+                        exp_result);
+    // - Creator Seed
+    otp_write_read_test(
+        access_mode, kDifOtpCtrlPartitionSecret2,
+        OTP_CTRL_PARAM_CREATOR_SEED_OFFSET - OTP_CTRL_PARAM_SECRET2_OFFSET,
+        (uint8_t *)kOtpCreatorSeed, OTP_CTRL_PARAM_CREATOR_SEED_SIZE,
+        exp_result);
+  }
+  if (partitions == kSecret3Only || partitions == kSecret2AndSecret3) {
+    // Silicon Owner (SECRET3 partition) objects:
+    // - Owner Seed
+    otp_write_read_test(
+        access_mode, kDifOtpCtrlPartitionSecret3,
+        OTP_CTRL_PARAM_OWNER_SEED_OFFSET - OTP_CTRL_PARAM_SECRET3_OFFSET,
+        (uint8_t *)kOtpOwnerSeed, OTP_CTRL_PARAM_OWNER_SEED_SIZE, exp_result);
+  }
 }
 
 /**
@@ -211,16 +228,19 @@ static void run_otp_access_tests(test_mode_t test_mode,
  * (b) The Creator Root Key cannot be loaded because the SECRET2 OTP partition
  *     is not locked.
  *
- * @param disabled_by_lc  distinguishes between the expected failure reasons
- *                        (see above): true -> (a); false -> (b)
+ * @param lc_enable distinguishes between the expected failure reasons
+ *                  (see above): kDisabledByLc -> (a); kEnabledByLc -> (b)
  */
-static void keymgr_dpe_check_cannot_initialize(bool disabled_by_lc) {
-  LOG_INFO("Check that KeymgrDpe cannot be initialized after reset...");
+static void keymgr_dpe_check_initialize(lc_enable_t lc_enable,
+                                        exp_test_result_t exp_result) {
+  LOG_INFO("Check that KeymgrDpe %s be initialized after reset...",
+           exp_result == kExpectFailed ? "cannot" : "can");
   CHECK_STATUS_OK(
       keymgr_dpe_testutils_check_state(&keymgr_dpe, kDifKeymgrDpeStateReset));
   const dif_result_t init_res =
       dif_keymgr_dpe_initialize(&keymgr_dpe, /*slot_dst_sel=*/0);
-  if (disabled_by_lc) {
+  if (lc_enable == kDisabledByLc) {
+    CHECK(exp_result == kExpectFailed);
     // We expect that keymgr_dpe is locked entirely, so the initialization does
     // not even start and keymgr_dpe remains in reset.
     CHECK(init_res == kDifLocked,
@@ -228,27 +248,27 @@ static void keymgr_dpe_check_cannot_initialize(bool disabled_by_lc) {
     CHECK_STATUS_OK(
         keymgr_dpe_testutils_check_state(&keymgr_dpe, kDifKeymgrDpeStateReset));
   } else {
-    // We expect that keymgr_dpe is not locked, so the initialization starts but
-    // fails because the Creator Root Key is invalid.
+    // We expect that keymgr_dpe is not locked, so the initialization starts.
     CHECK(init_res == kDifOk);
     CHECK_STATUS_OK(keymgr_dpe_testutils_wait_for_operation_done(&keymgr_dpe));
-    CHECK_STATUS_OK(keymgr_dpe_testutils_check_state(
-        &keymgr_dpe, kDifKeymgrDpeStateInvalid));
+    // If we expect a failure (because the Creator Root Key is invalid),
+    // keymgr_dpe must now be in the Invalid state; otherwise, it must be
+    // available.
+    const dif_keymgr_dpe_state_t exp_state = exp_result == kExpectFailed
+                                                 ? kDifKeymgrDpeStateInvalid
+                                                 : kDifKeymgrDpeStateAvailable;
+    CHECK_STATUS_OK(keymgr_dpe_testutils_check_state(&keymgr_dpe, exp_state));
   }
 }
 
 /**
- * Initialize KeymgrDpe, derive boot stage 0 to 2 keys and generate a SW output.
+ * Initialize KeymgrDpe, derive boot stage 0, 1, and 2 (depending on the
+ * `boot_stage` argument) keys and generate a SW output.
  */
-static void keymgr_dpe_check_can_generate_key(void) {
+static void keymgr_dpe_check_can_generate_output(boot_stage_t boot_stage) {
   // Initialize keymgr_dpe and derive boot stage 0 key.
   LOG_INFO("Check that KeymgrDpe can be initialized to boot stage 0 key...");
-  CHECK_STATUS_OK(
-      keymgr_dpe_testutils_check_state(&keymgr_dpe, kDifKeymgrDpeStateReset));
-  CHECK_DIF_OK(dif_keymgr_dpe_initialize(&keymgr_dpe, /*slot_dst_sel=*/0));
-  CHECK_STATUS_OK(keymgr_dpe_testutils_wait_for_operation_done(&keymgr_dpe));
-  CHECK_STATUS_OK(keymgr_dpe_testutils_check_state(
-      &keymgr_dpe, kDifKeymgrDpeStateAvailable));
+  keymgr_dpe_check_initialize(kEnabledByLc, kExpectPassed);
 
   // Derive boot stage 1 key.
   LOG_INFO("Check that KeymgrDpe can derive boot stage 1 key ...");
@@ -262,19 +282,22 @@ static void keymgr_dpe_check_can_generate_key(void) {
   CHECK_STATUS_OK(
       keymgr_dpe_testutils_advance_state(&keymgr_dpe, &stage1_params));
 
-  // Derive boot stage 2 key.
-  LOG_INFO("Check that KeymgrDpe can derive boot stage 2 key ...");
-  const dif_keymgr_dpe_advance_params_t stage2_params = {
-      .slot_src_sel = 0,
-      .slot_dst_sel = 0,
-      .max_key_version = 42,
-      .binding_value = {17, 18, 19, 20, 21, 22, 23, 24},
-      .slot_policy = 0x5,  // allow child, not exportable, retain parent
-  };
-  CHECK_STATUS_OK(
-      keymgr_dpe_testutils_advance_state(&keymgr_dpe, &stage2_params));
+  if (boot_stage == kBootStage2) {
+    // Derive boot stage 2 key.
+    LOG_INFO("Check that KeymgrDpe can derive boot stage 2 key ...");
+    const dif_keymgr_dpe_advance_params_t stage2_params = {
+        .slot_src_sel = 0,
+        .slot_dst_sel = 0,
+        .max_key_version = 42,
+        .binding_value = {17, 18, 19, 20, 21, 22, 23, 24},
+        .slot_policy = 0x5,  // allow child, not exportable, retain parent
+    };
+    CHECK_STATUS_OK(
+        keymgr_dpe_testutils_advance_state(&keymgr_dpe, &stage2_params));
+  }
 
-  // Generate SW output from boot stage 2 key.
+  // Generate SW output from slot 0, which contains the key of boot stage 1 or 2
+  // depending on the `boot_stage` argument.
   LOG_INFO("Check that KeymgrDpe can generate SW output ...");
   const dif_keymgr_dpe_generate_params_t gen_params = {
       .sideload_key = false,
@@ -312,18 +335,27 @@ static void reset_chip(void) {
  * check based on the state exposed in the life cycle controller.
  *
  * PROD/DEV/RMA:
- * 1) Program SECRET2 and SECRET3 partitions and read them back
- * 2) Check that key manager initialization errors out (because the SECRET2
- *    partition is not locked and thus the Creator Root Key is not available to
- *    the key manager).
- * 3) Reset the chip.
- * 4) Check that the SECRET2 and SECRET3 partitions can still be read.
- * 5) Check that the key manager advance errors out (because the SECRET2
- *    partition is still not locked).
- * 6) Lock the SECRET2 and SECRET3 partitions.
- * 7) Reset the chip.
- * 8) Check that the SECRET2 and SECRET3 partitions are not accessible anymore.
- * 9) Check that the key manager can generate a SW key without errors.
+ * 1.1) Program the SECRET2 partition and read it back.
+ *  .2) Check that key manager initialization errors out (because the SECRET2
+ *      partition is not locked and thus the Creator Root Key is not available
+ *      to the key manager).
+ *  .3) Reset the chip.
+ * 2.1) Check that the SECRET2 partition can still be read from SW.
+ *  .2) Check that key manager initialization still errors out (because the
+ *      SECRET2 partition is still not locked).
+ *  .3) Lock the SECRET2 partition.
+ *  .4) Program the SECRET3 partition and read it back.
+ *  .5) Reset the chip.
+ * 3.1) Check that the SECRET2 partition can no longer be read from SW.
+ *  .2) Check that the SECRET3 partition can still be read from SW.
+ *  .3) Check that key manager can be initialized and a SW output can be
+ *      generated from the boot stage 1 key.
+ *  .4) Lock the SECRET3 partition.
+ *  .5) Reset the chip.
+ * 4.1) Check that neither the SECRET2 nor the SECRET3 partition can be read or
+ *      written from SW.
+ *  .2) Check that key manager can be initialized and a SW output can be
+ *      generated from the boot stage 2 key.
  *
  * All other life cycle states:
  * 1) Check that key manager cannot be initialized because it is disabled.
@@ -347,12 +379,11 @@ bool test_main(void) {
     case kDifLcCtrlStateRma:
       if (rst_info & kDifRstmgrResetInfoPor) {
         LOG_INFO("First access test iteration...");
-        // Program the SECRET2 and SECRET3 partitions and perform read back
-        // test.
-        run_otp_access_tests(kWriteReadMode, kExpectPassed);
+        // Program the SECRET2 partition and perform read-back test.
+        run_otp_access_tests(kSecret2Only, kWriteReadMode, kExpectPassed);
         // We expect the root key to be invalid at this point, so KeymgrDpe
         // cannot be initialized.
-        keymgr_dpe_check_cannot_initialize(/*disabled_by_lc=*/false);
+        keymgr_dpe_check_initialize(kEnabledByLc, kExpectFailed);
         reset_chip();
 
       } else if (rst_info == kDifRstmgrResetInfoSw) {
@@ -361,42 +392,61 @@ bool test_main(void) {
             &otp, kDifOtpCtrlPartitionSecret2, &secret2_digest_computed));
         CHECK_DIF_OK(dif_otp_ctrl_is_digest_computed(
             &otp, kDifOtpCtrlPartitionSecret3, &secret3_digest_computed));
-        CHECK(secret2_digest_computed == secret3_digest_computed,
-              "Expected both or neither of SECRET2 and SECRET3 to be digested");
 
         if (!secret2_digest_computed) {
           LOG_INFO("Second access test iteration...");
-          // SECRET2 partition should still be readable.
-          run_otp_access_tests(kReadMode, kExpectPassed);
+          CHECK(!secret3_digest_computed,
+                "SECRET3 digest should only be computed after the third "
+                "iteration.");
+          // SECRET2 partition should still be readable from SW.
+          run_otp_access_tests(kSecret2Only, kReadMode, kExpectPassed);
           // We expect the root key to still be invalid at this point, since
           // SECRET2 has not been locked yet.
-          keymgr_dpe_check_cannot_initialize(/*disabled_by_lc=*/false);
+          keymgr_dpe_check_initialize(kEnabledByLc, kExpectFailed);
           // Lock the SECRET2 partition.
           CHECK_STATUS_OK(otp_ctrl_testutils_lock_partition(
               &otp, kDifOtpCtrlPartitionSecret2, 0));
+          // Program the SECRET3 partition and perform read-back test.
+          run_otp_access_tests(kSecret3Only, kWriteReadMode, kExpectPassed);
+          reset_chip();
+
+        } else if (secret2_digest_computed && !secret3_digest_computed) {
+          LOG_INFO("Third access test iteration...");
+          // SECRET2 partition should no longer be accessible from SW.
+          run_otp_access_tests(kSecret2Only, kWriteReadMode, kExpectFailed);
+          // SECRET3 partition should still be readable from SW.
+          run_otp_access_tests(kSecret3Only, kReadMode, kExpectPassed);
+          // It should now be possible to initialize KeymgrDpe and generate an
+          // output from the boot stage 1 key.
+          keymgr_dpe_check_can_generate_output(kBootStage1);
+          // Lock the SECRET3 partition.
           CHECK_STATUS_OK(otp_ctrl_testutils_lock_partition(
               &otp, kDifOtpCtrlPartitionSecret3, 0));
           reset_chip();
+
         } else {
-          LOG_INFO("Third access test iteration...");
-          // All accesses are disallowed.
-          run_otp_access_tests(kWriteReadMode, kExpectFailed);
-          // At this point we expect that the key manager can generate keys
-          // without errors.
-          keymgr_dpe_check_can_generate_key();
+          CHECK(secret2_digest_computed && secret3_digest_computed);
+          LOG_INFO("Fourth access test iteration...");
+          // All OTP accesses from SW are disallowed.
+          run_otp_access_tests(kSecret2AndSecret3, kWriteReadMode,
+                               kExpectFailed);
+          // It should now be possible to initialize KeymgrDpe and generate an
+          // output from the boot stage 2 key.
+          keymgr_dpe_check_can_generate_output(kBootStage2);
           // Test passed.
           return true;
         }
+
       } else {
         LOG_ERROR("Unexpected reset info 0x%02X", rst_info);
       }
 
       break;
     default:  // this covers all TEST_UNLOCKED* states.
-      // Accesses to the SECRET2 partition should error out.
-      run_otp_access_tests(kWriteReadMode, kExpectFailed);
+      // SW accesses to the SECRET2 and SECRET3 partition should error out.
+      run_otp_access_tests(kSecret2AndSecret3, kWriteReadMode, kExpectFailed);
       // KeymgrDpe initialization should not work in this state.
-      keymgr_dpe_check_cannot_initialize(/*disabled_by_lc=*/true);
+      keymgr_dpe_check_initialize(kDisabledByLc, kExpectFailed);
       // Test passed.
       return true;
   }
