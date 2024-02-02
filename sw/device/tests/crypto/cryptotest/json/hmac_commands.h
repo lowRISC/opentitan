@@ -10,7 +10,7 @@ extern "C" {
 #endif
 
 #define HMAC_CMD_MAX_MESSAGE_BYTES 256
-#define HMAC_CMD_MAX_KEY_BYTES 142
+#define HMAC_CMD_MAX_KEY_BYTES 192
 #define HMAC_CMD_MAX_TAG_BYTES 64
 
 // clang-format off
