@@ -341,13 +341,13 @@ static status_t test_init(void) {
   base_addr = mmio_region_from_addr(TOP_EARLGREY_SPI_HOST0_BASE_ADDR);
   TRY(dif_spi_host_init(base_addr, &spi_host));
 
-  CHECK(kClockFreqPeripheralHz <= UINT32_MAX,
-        "kClockFreqPeripheralHz must fit in uint32_t");
+  CHECK(kClockFreqHiSpeedPeripheralHz <= UINT32_MAX,
+        "kClockFreqHiSpeedPeripheralHz must fit in uint32_t");
   TRY(dif_spi_host_configure(
       &spi_host,
       (dif_spi_host_config_t){
           .spi_clock = 1000000,
-          .peripheral_clock_freq_hz = (uint32_t)kClockFreqPeripheralHz,
+          .peripheral_clock_freq_hz = (uint32_t)kClockFreqHiSpeedPeripheralHz,
           .rx_watermark = kTxWatermark,
           .tx_watermark = kRxWatermark,
       }));
