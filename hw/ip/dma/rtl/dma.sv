@@ -277,7 +277,7 @@ module dma
       reg2hw.control.memory_buffer_auto_increment_enable.q;
   end
 
-  prim_generic_flop_en #(
+  prim_flop_en #(
     .Width($bits(control_state_t))
   ) u_opcode (
     .clk_i  ( gated_clk     ),
@@ -302,7 +302,7 @@ module dma
   logic [TRANSFER_BYTES_WIDTH-1:0] chunk_remaining_bytes;
   logic [TRANSFER_BYTES_WIDTH-1:0] remaining_bytes;
   logic                            capture_transfer_byte;
-  prim_generic_flop_en #(
+  prim_flop_en #(
     .Width(TRANSFER_BYTES_WIDTH)
   ) aff_transfer_byte (
     .clk_i  ( gated_clk             ),
@@ -314,7 +314,7 @@ module dma
 
   logic [TRANSFER_BYTES_WIDTH-1:0] chunk_byte_q, chunk_byte_d;
   logic                            capture_chunk_byte;
-  prim_generic_flop_en #(
+  prim_flop_en #(
     .Width(TRANSFER_BYTES_WIDTH)
   ) aff_chunk_byte (
     .clk_i  ( gated_clk          ),
@@ -326,7 +326,7 @@ module dma
 
   logic       capture_transfer_width;
   logic [2:0] transfer_width_q, transfer_width_d;
-  prim_generic_flop_en #(
+  prim_flop_en #(
     .Width(3)
   ) aff_transfer_width (
     .clk_i ( gated_clk              ),
@@ -339,7 +339,7 @@ module dma
   logic                      capture_addr;
   logic [SYS_ADDR_WIDTH-1:0] src_addr_q, src_addr_d;
   logic [SYS_ADDR_WIDTH-1:0] dst_addr_q, dst_addr_d;
-  prim_generic_flop_en #(
+  prim_flop_en #(
     .Width(SYS_ADDR_WIDTH)
   ) aff_src_addr (
     .clk_i ( gated_clk    ),
@@ -349,7 +349,7 @@ module dma
     .q_o   ( src_addr_q   )
   );
 
-  prim_generic_flop_en #(
+  prim_flop_en #(
     .Width(SYS_ADDR_WIDTH)
   ) aff_dst_addr (
     .clk_i ( gated_clk    ),
@@ -362,7 +362,7 @@ module dma
   logic                       capture_be;
   logic [top_pkg::TL_DBW-1:0] req_src_be_q, req_src_be_d;
   logic [top_pkg::TL_DBW-1:0] req_dst_be_q, req_dst_be_d;
-  prim_generic_flop_en #(
+  prim_flop_en #(
     .Width(top_pkg::TL_DBW)
   ) aff_req_src_be (
     .clk_i ( gated_clk    ),
@@ -372,7 +372,7 @@ module dma
     .q_o   ( req_src_be_q )
   );
 
-  prim_generic_flop_en #(
+  prim_flop_en #(
     .Width(top_pkg::TL_DBW)
   ) aff_req_dst_be (
     .clk_i ( gated_clk    ),
@@ -382,7 +382,7 @@ module dma
     .q_o   ( req_dst_be_q )
   );
 
-  prim_generic_flop_en #(
+  prim_flop_en #(
     .Width(INTR_CLEAR_SOURCES_WIDTH)
   ) u_clear_index (
     .clk_i ( gated_clk      ),
@@ -1058,7 +1058,7 @@ module dma
   end
 
 
-  prim_generic_flop_en #(
+  prim_flop_en #(
     .Width(top_pkg::TL_DW)
   ) aff_read_return_data (
     .clk_i ( gated_clk             ),
@@ -1371,7 +1371,7 @@ module dma
     .q_o   ( sys_o.vld_vec     )
   );
 
-  prim_generic_flop_en #(
+  prim_flop_en #(
     .Width(SYS_METADATA_WIDTH)
   ) u_sys_metadata_write_vec (
     .clk_i ( gated_clk                           ),
@@ -1382,7 +1382,7 @@ module dma
   );
 
   logic [$bits(sys_opc_e)-1:0] sys_req_opcode_write_vec_q;
-  prim_generic_flop_en #(
+  prim_flop_en #(
     .Width($bits(sys_opc_e))
   ) u_sys_opcode_write_vec (
     .clk_i ( gated_clk                         ),
@@ -1393,7 +1393,7 @@ module dma
   );
   assign sys_o.opcode_vec[SysCmdWrite] = sys_opc_e'(sys_req_opcode_write_vec_q);
 
-  prim_generic_flop_en #(
+  prim_flop_en #(
     .Width(SYS_ADDR_WIDTH)
   ) u_sys_iova_write_vec (
     .clk_i ( gated_clk                       ),
@@ -1403,7 +1403,7 @@ module dma
     .q_o   ( sys_o.iova_vec[SysCmdWrite]     )
   );
 
-  prim_generic_flop_en #(
+  prim_flop_en #(
     .Width(SYS_RACL_WIDTH)
   ) u_sys_racl_write_vec (
     .clk_i ( gated_clk                       ),
@@ -1413,7 +1413,7 @@ module dma
     .q_o   ( sys_o.racl_vec[SysCmdWrite]     )
   );
 
-  prim_generic_flop_en #(
+  prim_flop_en #(
     .Width(SYS_METADATA_WIDTH)
   ) u_sys_metadata_read_vec (
     .clk_i ( gated_clk                          ),
@@ -1424,7 +1424,7 @@ module dma
   );
 
   logic [$bits(sys_opc_e)-1:0] sys_req_opcode_read_vec_q;
-  prim_generic_flop_en #(
+  prim_flop_en #(
     .Width($bits(sys_opc_e))
   ) u_sys_opcode_read_vec (
     .clk_i ( gated_clk                        ),
@@ -1435,7 +1435,7 @@ module dma
   );
   assign sys_o.opcode_vec[SysCmdRead] = sys_opc_e'(sys_req_opcode_read_vec_q);
 
-  prim_generic_flop_en #(
+  prim_flop_en #(
     .Width(SYS_ADDR_WIDTH)
   ) u_sys_iova_read_vec (
     .clk_i ( gated_clk                      ),
@@ -1445,7 +1445,7 @@ module dma
     .q_o   ( sys_o.iova_vec[SysCmdRead]     )
   );
 
-  prim_generic_flop_en #(
+  prim_flop_en #(
     .Width(SYS_RACL_WIDTH)
   ) u_sys_racl_read_vec (
     .clk_i ( gated_clk                      ),
@@ -1455,7 +1455,7 @@ module dma
     .q_o   ( sys_o.racl_vec[SysCmdRead]     )
   );
 
-  prim_generic_flop_en #(
+  prim_flop_en #(
     .Width(SYS_DATA_WIDTH)
   ) u_sys_write_data (
     .clk_i ( gated_clk                      ),
@@ -1465,7 +1465,7 @@ module dma
     .q_o   ( sys_o.write_data               )
   );
 
-  prim_generic_flop_en #(
+  prim_flop_en #(
     .Width(SYS_DATA_BYTEWIDTH)
   ) u_sys_write_be (
     .clk_i ( gated_clk                      ),
@@ -1475,7 +1475,7 @@ module dma
     .q_o   ( sys_o.write_be                 )
   );
 
-  prim_generic_flop_en #(
+  prim_flop_en #(
     .Width(SYS_DATA_BYTEWIDTH)
   ) u_sys_read_be (
     .clk_i ( gated_clk                      ),
