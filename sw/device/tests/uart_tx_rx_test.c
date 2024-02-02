@@ -510,17 +510,6 @@ void config_external_clock(const dif_clkmgr_t *clkmgr) {
 OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 
 bool test_main(void) {
-  uart_pinmux_platform_id_t platform_id = UartPinmuxPlatformIdCount;
-  if (kDeviceType == kDeviceFpgaCw310) {
-    platform_id = UartPinmuxPlatformIdHyper310;
-  } else if (kDeviceType == kDeviceSimDV) {
-    platform_id = UartPinmuxPlatformIdDvsim;
-  } else if (kDeviceType == kDeviceSilicon) {
-    platform_id = UartPinmuxPlatformIdSilicon;
-  } else {
-    CHECK(false, "Unsupported platform %d", kDeviceType);
-  }
-
   mmio_region_t base_addr;
 
   base_addr = mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR);
@@ -537,8 +526,8 @@ bool test_main(void) {
 
   // If we're testing UART0 we need to move the console to UART1.
   if (kUartIdx == 0 && kDeviceType != kDeviceSimDV) {
-    CHECK_STATUS_OK(uart_testutils_select_pinmux(&pinmux, 1, platform_id,
-                                                 UartPinmuxChannelConsole));
+    CHECK_STATUS_OK(
+        uart_testutils_select_pinmux(&pinmux, 1, kUartPinmuxChannelConsole));
     ottf_console_configure_uart(TOP_EARLGREY_UART1_BASE_ADDR);
   }
 
@@ -547,8 +536,8 @@ bool test_main(void) {
   LOG_INFO("Test UART%d with base_addr: %08x", kUartIdx, uart_base_addr);
 
   // Attach the UART under test.
-  CHECK_STATUS_OK(uart_testutils_select_pinmux(&pinmux, kUartIdx, platform_id,
-                                               UartPinmuxChannelDut));
+  CHECK_STATUS_OK(
+      uart_testutils_select_pinmux(&pinmux, kUartIdx, kUartPinmuxChannelDut));
 
   if (kUseExtClk) {
     config_external_clock(&clkmgr);
