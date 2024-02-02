@@ -1,6 +1,3 @@
-# Registers
-
-<!-- BEGIN CMDGEN util/regtool.py -d ./hw/ip/edn/data/edn.hjson -->
 ## Summary
 
 | Name                                                                | Offset   |   Length | Description                                                  |
@@ -14,14 +11,15 @@
 | edn.[`BOOT_INS_CMD`](#boot_ins_cmd)                                 | 0x18     |        4 | EDN boot instantiate command register                        |
 | edn.[`BOOT_GEN_CMD`](#boot_gen_cmd)                                 | 0x1c     |        4 | EDN boot generate command register                           |
 | edn.[`SW_CMD_REQ`](#sw_cmd_req)                                     | 0x20     |        4 | EDN csrng app command request register                       |
-| edn.[`SW_CMD_STS`](#sw_cmd_sts)                                     | 0x24     |        4 | EDN command status register                                  |
-| edn.[`RESEED_CMD`](#reseed_cmd)                                     | 0x28     |        4 | EDN csrng reseed command register                            |
-| edn.[`GENERATE_CMD`](#generate_cmd)                                 | 0x2c     |        4 | EDN csrng generate command register                          |
-| edn.[`MAX_NUM_REQS_BETWEEN_RESEEDS`](#max_num_reqs_between_reseeds) | 0x30     |        4 | EDN maximum number of requests between reseeds register      |
-| edn.[`RECOV_ALERT_STS`](#recov_alert_sts)                           | 0x34     |        4 | Recoverable alert status register                            |
-| edn.[`ERR_CODE`](#err_code)                                         | 0x38     |        4 | Hardware detection of fatal error conditions status register |
-| edn.[`ERR_CODE_TEST`](#err_code_test)                               | 0x3c     |        4 | Test error conditions register                               |
-| edn.[`MAIN_SM_STATE`](#main_sm_state)                               | 0x40     |        4 | Main state machine state observation register                |
+| edn.[`SW_CMD_STS`](#sw_cmd_sts)                                     | 0x24     |        4 | EDN software command status register                         |
+| edn.[`HW_CMD_STS`](#hw_cmd_sts)                                     | 0x28     |        4 | EDN hardware command status register                         |
+| edn.[`RESEED_CMD`](#reseed_cmd)                                     | 0x2c     |        4 | EDN csrng reseed command register                            |
+| edn.[`GENERATE_CMD`](#generate_cmd)                                 | 0x30     |        4 | EDN csrng generate command register                          |
+| edn.[`MAX_NUM_REQS_BETWEEN_RESEEDS`](#max_num_reqs_between_reseeds) | 0x34     |        4 | EDN maximum number of requests between reseeds register      |
+| edn.[`RECOV_ALERT_STS`](#recov_alert_sts)                           | 0x38     |        4 | Recoverable alert status register                            |
+| edn.[`ERR_CODE`](#err_code)                                         | 0x3c     |        4 | Hardware detection of fatal error conditions status register |
+| edn.[`ERR_CODE_TEST`](#err_code_test)                               | 0x40     |        4 | Test error conditions register                               |
+| edn.[`MAIN_SM_STATE`](#main_sm_state)                               | 0x44     |        4 | Main state machine state observation register                |
 
 ## INTR_STATE
 Interrupt State Register
@@ -223,7 +221,7 @@ Note that CSRNG command format details can be found
 in the CSRNG documentation.
 
 ## SW_CMD_STS
-EDN command status register
+EDN software command status register
 - Offset: `0x24`
 - Reset default: `0x0`
 - Reset mask: `0xf`
@@ -243,15 +241,15 @@ EDN command status register
 |   0    |   ro   |   0x0   | [CMD_REG_RDY](#sw_cmd_sts--cmd_reg_rdy) |
 
 ### SW_CMD_STS . CMD_ACK
-This one bit field indicates when a command has been acknowledged by the CSRNG.
+This one bit field indicates when a SW command has been acknowledged by the CSRNG.
 It is set to low each time a new command is written to [`SW_CMD_REQ.`](#sw_cmd_req)
 The field is set to high once a SW command request has been acknowledged by the CSRNG.
-0b0: The last command has not been acknowledged yet.
-0b1: The last command has been acknowledged.
+0b0: The last SW command has not been acknowledged yet.
+0b1: The last SW command has been acknowledged.
 
 ### SW_CMD_STS . CMD_STS
 This one bit field represents the status code returned with the CSRNG application command ack.
-It is updated each time a command is acknowledged by CSRNG.
+It is updated each time a SW command is acknowledged by CSRNG.
 To check whether a command was succesful, wait for [`INTR_STATE.EDN_CMD_REQ_DONE`](#intr_state) or
 [`SW_CMD_STS.CMD_ACK`](#sw_cmd_sts) to be high and then check the value of this field.
 0b0: Request completed successfully.
@@ -269,9 +267,59 @@ This bit has to be polled before each word of a command is written to [`SW_CMD_R
 0b0: The EDN is not ready to accept the next word yet.
 0b1: The EDN is ready to accept the next word.
 
+## HW_CMD_STS
+EDN hardware command status register
+- Offset: `0x28`
+- Reset default: `0x0`
+- Reset mask: `0xff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "BOOT_MODE", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "AUTO_MODE", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CMD_STS", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CMD_ACK", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CMD_TYPE", "bits": 4, "attr": ["ro"], "rotate": -90}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 110}}
+```
+
+|  Bits  |  Type  |  Reset  | Name                                |
+|:------:|:------:|:-------:|:------------------------------------|
+|  31:8  |        |         | Reserved                            |
+|  7:4   |   ro   |   0x0   | [CMD_TYPE](#hw_cmd_sts--cmd_type)   |
+|   3    |   ro   |   0x0   | [CMD_ACK](#hw_cmd_sts--cmd_ack)     |
+|   2    |   ro   |   0x0   | [CMD_STS](#hw_cmd_sts--cmd_sts)     |
+|   1    |   ro   |   0x0   | [AUTO_MODE](#hw_cmd_sts--auto_mode) |
+|   0    |   ro   |   0x0   | [BOOT_MODE](#hw_cmd_sts--boot_mode) |
+
+### HW_CMD_STS . CMD_TYPE
+This field contains the application command type of the hardware controlled command issued last.
+The application command selects one of five operations to perform.
+A description of the application command types can be found [here](https://opentitan.org/book/hw/ip/csrng/doc/theory_of_operation.html#command-description).
+
+### HW_CMD_STS . CMD_ACK
+This one bit field indicates when a HW command has been acknowledged by the CSRNG.
+It is set to low each time a new command is sent to the CSRNG.
+The field is set to high once a HW command request has been acknowledged by the CSRNG.
+0b0: The last HW command has not been acknowledged yet.
+0b1: The last HW command has been acknowledged.
+
+### HW_CMD_STS . CMD_STS
+This one bit field represents the status code returned with the CSRNG application command ack.
+It is updated each time a HW command is acknowledged by CSRNG.
+0b0: Request completed successfully.
+0b1: Request completed with an error.
+
+### HW_CMD_STS . AUTO_MODE
+This one bit field indicates whether the EDN is in the hardware controlled part of auto mode.
+The instantiate command is issued via SW interface and is thus not part of the hardware controlled part of auto mode.
+0b0: The EDN is not in the hardware controlled part of auto mode.
+0b1: The EDN is in the hardware controlled part of auto mode.
+
+### HW_CMD_STS . BOOT_MODE
+This one bit field indicates whether the EDN is in the hardware controlled boot mode.
+0b0: The EDN is not in boot mode.
+0b1: The EDN is in boot mode.
+
 ## RESEED_CMD
 EDN csrng reseed command register
-- Offset: `0x28`
+- Offset: `0x2c`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -299,7 +347,7 @@ in the CSRNG documentation.
 
 ## GENERATE_CMD
 EDN csrng generate command register
-- Offset: `0x2c`
+- Offset: `0x30`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -327,7 +375,7 @@ in the CSRNG documentation.
 
 ## MAX_NUM_REQS_BETWEEN_RESEEDS
 EDN maximum number of requests between reseeds register
-- Offset: `0x30`
+- Offset: `0x34`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -350,7 +398,7 @@ automatic reseed when it reaches zero.
 
 ## RECOV_ALERT_STS
 Recoverable alert status register
-- Offset: `0x34`
+- Offset: `0x38`
 - Reset default: `0x0`
 - Reset mask: `0x100f`
 
@@ -372,7 +420,7 @@ Recoverable alert status register
 
 ## ERR_CODE
 Hardware detection of fatal error conditions status register
-- Offset: `0x38`
+- Offset: `0x3c`
 - Reset default: `0x0`
 - Reset mask: `0x70700003`
 
@@ -444,7 +492,7 @@ When this bit is set, a fatal error condition will result.
 
 ## ERR_CODE_TEST
 Test error conditions register
-- Offset: `0x3c`
+- Offset: `0x40`
 - Reset default: `0x0`
 - Reset mask: `0x1f`
 
@@ -469,7 +517,7 @@ an interrupt or an alert.
 
 ## MAIN_SM_STATE
 Main state machine state observation register
-- Offset: `0x40`
+- Offset: `0x44`
 - Reset default: `0xc1`
 - Reset mask: `0x1ff`
 
@@ -483,6 +531,3 @@ Main state machine state observation register
 |:------:|:------:|:-------:|:--------------|:---------------------------------------------------------------------------------------------------------------|
 |  31:9  |        |         |               | Reserved                                                                                                       |
 |  8:0   |   ro   |  0xc1   | MAIN_SM_STATE | This is the state of the EDN main state machine. See the RTL file `edn_main_sm` for the meaning of the values. |
-
-
-<!-- END CMDGEN -->
