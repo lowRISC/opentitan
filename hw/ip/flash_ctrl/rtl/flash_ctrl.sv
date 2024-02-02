@@ -96,8 +96,6 @@ module flash_ctrl
   `ASSERT_INIT(FifoDepthCheck_A, (ProgFifoDepth <= MaxFifoDepth) &
                                  (RdFifoDepth <= MaxFifoDepth))
 
-
-  import flash_ctrl_reg_pkg::*;
   import prim_mubi_pkg::mubi4_t;
 
   flash_ctrl_core_reg2hw_t reg2hw;
