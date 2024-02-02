@@ -13,17 +13,12 @@
 #include "sw/device/lib/ujson/ujson.h"
 #include "sw/device/tests/crypto/cryptotest/json/hmac_commands.h"
 
-const int MaxKeyBytes = 192;
-const int MaxKeyWords = MaxKeyBytes / sizeof(uint32_t);
-
-const int MaxMessageBytes = 256;
-
-const int MaxTagBytes = 64;
-const int MaxTagWords = MaxTagBytes / sizeof(uint32_t);
-
 const unsigned int kOtcryptoHmacTagBytesSha256 = 32;
 const unsigned int kOtcryptoHmacTagBytesSha384 = 48;
 const unsigned int kOtcryptoHmacTagBytesSha512 = 64;
+
+const int MaxTagBytes = kOtcryptoHmacTagBytesSha512;
+const int MaxTagWords = MaxTagBytes / sizeof(uint32_t);
 
 // Random value for masking, as large as the longest test key. This value
 // should not affect the result.
@@ -63,16 +58,6 @@ status_t handle_hmac(ujson_t *uj) {
       key_mode = kOtcryptoKeyModeHmacSha512;
       tag_bytes = kOtcryptoHmacTagBytesSha512;
       break;
-    case kCryptotestHmacHashAlgSha3_256:
-      // key_mode = kOtcryptoKeyModeHmacSha3_256;
-      // tag_bytes = kOtcryptoHmacTagBytesSha3_256;
-      // break;
-      OT_FALLTHROUGH_INTENDED;
-    case kCryptotestHmacHashAlgSha3_512:
-      // key_mode = kOtcryptoKeyModeHmacSha3_512;
-      // tag_bytes = kOtcryptoHmacTagBytesSha3_512;
-      // break;
-      OT_FALLTHROUGH_INTENDED;
     default:
       LOG_ERROR("Unsupported HMAC key mode: %d", uj_hash_alg);
       return INVALID_ARGUMENT();
@@ -86,7 +71,7 @@ status_t handle_hmac(ujson_t *uj) {
       .security_level = kOtcryptoKeySecurityLevelLow,
   };
   // Create buffer to store key
-  uint32_t key_buf[MaxKeyWords];
+  uint32_t key_buf[uj_key.key_len];
   memcpy(key_buf, uj_key.key, uj_key.key_len);
   // Create keyblob
   uint32_t keyblob[keyblob_num_words(config)];
@@ -99,7 +84,7 @@ status_t handle_hmac(ujson_t *uj) {
   };
 
   // Create input message
-  uint8_t msg_buf[MaxMessageBytes];
+  uint8_t msg_buf[uj_message.message_len];
   memcpy(msg_buf, uj_message.message, uj_message.message_len);
   otcrypto_const_byte_buf_t input_message = {
       .len = uj_message.message_len,
@@ -112,7 +97,7 @@ status_t handle_hmac(ujson_t *uj) {
       .len = tag_bytes / sizeof(uint32_t),
       .data = tag_buf,
   };
-  otcrypto_status_t status = otcrypto_hmac(&key, input_message, &tag);
+  otcrypto_status_t status = otcrypto_hmac(&key, input_message, tag);
   if (status.value != kOtcryptoStatusValueOk) {
     return INTERNAL(status.value);
   }
