@@ -572,6 +572,30 @@ def generate_flash(topcfg: Dict[str, object], out_path: Path) -> None:
     generate_regfile_from_path(hjson_path, rtl_path, original_rtl_path)
 
 
+# generate flash_ctrl with ipgen
+def generate_ipgen_flash(topcfg: Dict[str, object], out_path: Path) -> None:
+    log.info("Generating flash_ctrl with ipgen")
+    topname = topcfg["name"]
+
+    # Parameters needed for generation
+    flash_mems = [
+        module for module in topcfg["module"] if module["type"] == "flash_ctrl"
+    ]
+    if len(flash_mems) > 1:
+        log.error("This design does not currently support multiple flashes")
+        return
+
+    params = vars(flash_mems[0]["memory"]["mem"]["config"])
+    # Additional parameters not provided in the top config.
+    params.update({
+        "metadata_width": 12,
+        "info_types": 3,
+        "infos_per_bank": [10, 1, 2]
+    })
+
+    ipgen_render("flash_ctrl", topname, params, out_path)
+
+
 def generate_top_only(top_only_dict: Dict[str, bool], out_path: Path,
                       top_name: str, alt_hjson_path: str) -> None:
     log.info("Generating top only modules")
@@ -901,6 +925,7 @@ def _process_top(topcfg: Dict[str, object], args: argparse.Namespace,
 
     # Generate flash controller and flash memory
     generate_flash(topcfg, out_path)
+    generate_ipgen_flash(topcfg, out_path)
 
     # Generate PLIC
     if not args.no_plic and \

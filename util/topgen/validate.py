@@ -297,9 +297,8 @@ class Flash:
         # populate size variable
         self.bytes_per_page = self.word_bytes * self.words_per_page
         self.bytes_per_bank = self.bytes_per_page * self.pages_per_bank
-        self.total_bytes = self.bytes_per_bank * self.banks
 
-        size_int = int(self.total_bytes)
+        size_int = int(self.bytes_per_bank * self.banks)
         self.size = hex(size_int)
 
     def is_pow2(self, n):
