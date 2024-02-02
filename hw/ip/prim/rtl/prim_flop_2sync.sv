@@ -2,9 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Generic double-synchronizer flop
-// This may need to be moved to prim_generic if libraries have a specific cell
-// for synchronization
+// Generic double-synchronizer flop.  This module instantiates `prim_sync_cell`,
+// for which tech libraries may have a specific implementation.
 
 module prim_flop_2sync #(
   parameter int               Width      = 16,
@@ -32,29 +31,31 @@ module prim_flop_2sync #(
     .prev_data_i(intq),
     .dst_data_o(d_o)
   );
+
+  // This flop is only used in simulation.
+  // We use this since the prim_sync_cell does not
+  // provide access to the intermediate flop state.
+  always_ff @(posedge clk_i or negedge rst_ni) begin : p_sim_flop
+    if (!rst_ni) begin
+      intq <= ResetValue;
+    end else begin
+      intq <= d_o;
+    end
+  end
+
 `else // !`ifdef SIMULATION
   logic unused_sig;
   assign unused_sig = EnablePrimCdcRand;
   always_comb d_o = d_i;
 `endif // !`ifdef SIMULATION
 
-  prim_flop #(
+  prim_sync_cell #(
     .Width(Width),
     .ResetValue(ResetValue)
-  ) u_sync_1 (
+  ) u_sync (
     .clk_i,
     .rst_ni,
     .d_i(d_o),
-    .q_o(intq)
-  );
-
-  prim_flop #(
-    .Width(Width),
-    .ResetValue(ResetValue)
-  ) u_sync_2 (
-    .clk_i,
-    .rst_ni,
-    .d_i(intq),
     .q_o
   );
 

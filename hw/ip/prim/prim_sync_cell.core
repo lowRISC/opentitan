@@ -3,19 +3,14 @@ CAPI=2:
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-name: "lowrisc:prim:flop_2sync"
-description: "Primitive synchronizer"
+name: "lowrisc:prim:sync_cell"
+description: "Generic sync_cell"
 filesets:
-  files_rtl:
+  primgen_dep:
     depend:
       - lowrisc:prim:prim_pkg
-      # Needed because the generic prim_flop_2sync has a
-      # dependency on prim:sync_cell.
-      - lowrisc:prim:sync_cell
-      - lowrisc:prim:cdc_rand_delay
-    files:
-      - rtl/prim_flop_2sync.sv
-    file_type: systemVerilogSource
+      - lowrisc:prim:primgen
+      - lowrisc:prim:assert
 
   files_verilator_waiver:
     depend:
@@ -29,7 +24,7 @@ filesets:
       # common waivers
       - lowrisc:lint:common
     files:
-      - lint/prim_flop_2sync.waiver
+      - lint/prim_sync_cell.waiver
     file_type: waiver
 
   files_veriblelint_waiver:
@@ -37,10 +32,18 @@ filesets:
       # common waivers
       - lowrisc:lint:common
 
+generate:
+  impl:
+    generator: primgen
+    parameters:
+      prim_name: sync_cell
+
 targets:
   default:
     filesets:
       - tool_verilator   ? (files_verilator_waiver)
       - tool_ascentlint  ? (files_ascentlint_waiver)
       - tool_veriblelint ? (files_veriblelint_waiver)
-      - files_rtl
+      - primgen_dep
+    generate:
+      - impl
