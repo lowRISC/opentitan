@@ -302,7 +302,7 @@
       ]
     },
     { name: "SW_CMD_STS",
-      desc: "EDN command status register",
+      desc: "EDN software command status register",
       swaccess: "ro",
       hwaccess: "hwo",
       tags: [// Internal HW can modify status register
@@ -332,7 +332,7 @@
           name: "CMD_STS",
           desc: '''
                 This one bit field represents the status code returned with the CSRNG application command ack.
-                It is updated each time a command is acknowledged by CSRNG.
+                It is updated each time a SW command is acknowledged by CSRNG.
                 To check whether a command was succesful, wait for !!INTR_STATE.EDN_CMD_REQ_DONE or
                 !!SW_CMD_STS.CMD_ACK to be high and then check the value of this field.
                 0b0: Request completed successfully.
@@ -343,11 +343,69 @@
         { bits: "3",
           name: "CMD_ACK",
           desc: '''
-                This one bit field indicates when a command has been acknowledged by the CSRNG.
+                This one bit field indicates when a SW command has been acknowledged by the CSRNG.
                 It is set to low each time a new command is written to !!SW_CMD_REQ.
                 The field is set to high once a SW command request has been acknowledged by the CSRNG.
-                0b0: The last command has not been acknowledged yet.
-                0b1: The last command has been acknowledged.
+                0b0: The last SW command has not been acknowledged yet.
+                0b1: The last SW command has been acknowledged.
+                '''
+          resval: "0"
+        }
+      ]
+    },
+    { name: "HW_CMD_STS",
+      desc: "EDN hardware command status register",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      tags: [// Internal HW can modify status register
+                 "excl:CsrNonInitTests:CsrExclCheck"]
+      fields: [
+        { bits: "0",
+          name: "BOOT_MODE",
+          desc: '''
+                This one bit field indicates whether the EDN is in the hardware controlled boot mode.
+                0b0: The EDN is not in boot mode.
+                0b1: The EDN is in boot mode.
+                '''
+          resval: "0"
+        }
+        { bits: "1",
+          name: "AUTO_MODE",
+          desc: '''
+                This one bit field indicates whether the EDN is in the hardware controlled part of auto mode.
+                The instantiate command is issued via SW interface and is thus not part of the hardware controlled part of auto mode.
+                0b0: The EDN is not in the hardware controlled part of auto mode.
+                0b1: The EDN is in the hardware controlled part of auto mode.
+                '''
+          resval: "0"
+        }
+        { bits: "2",
+          name: "CMD_STS",
+          desc: '''
+                This one bit field represents the status code returned with the CSRNG application command ack.
+                It is updated each time a HW command is acknowledged by CSRNG.
+                0b0: Request completed successfully.
+                0b1: Request completed with an error.
+                '''
+          resval: "0"
+        }
+        { bits: "3",
+          name: "CMD_ACK",
+          desc: '''
+                This one bit field indicates when a HW command has been acknowledged by the CSRNG.
+                It is set to low each time a new command is sent to the CSRNG.
+                The field is set to high once a HW command request has been acknowledged by the CSRNG.
+                0b0: The last HW command has not been acknowledged yet.
+                0b1: The last HW command has been acknowledged.
+                '''
+          resval: "0"
+        }
+        { bits: "7:4",
+          name: "CMD_TYPE",
+          desc: '''
+                This field contains the application command type of the hardware controlled command issued last.
+                The application command selects one of five operations to perform.
+                A description of the application command types can be found [here](https://opentitan.org/book/hw/ip/csrng/doc/theory_of_operation.html#command-description).
                 '''
           resval: "0"
         }
