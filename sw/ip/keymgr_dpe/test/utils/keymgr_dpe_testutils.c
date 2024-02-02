@@ -108,7 +108,6 @@ status_t keymgr_dpe_testutils_wait_for_operation_done(
   do {
     TRY(dif_keymgr_dpe_get_status_codes(keymgr_dpe, &status));
   } while (status == 0);
-  LOG_INFO("keymgr_dpe_status_code: 0x%x", status);
   TRY_CHECK(status == kDifKeymgrDpeStatusCodeIdle, "Unexpected status: %x",
             status);
   return OK_STATUS();
