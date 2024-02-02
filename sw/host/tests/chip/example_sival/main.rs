@@ -43,7 +43,7 @@ enum Phase {
     TestDone = 3,
 }
 
-/* Wait for the device to be ready to receice ujson message,
+/* Wait for the device to be ready to receive ujson message,
  * read the content of the `kPhase` variable on the device
  * and check that it matches the expected phase. Then set the
  * value of this variable to a new value. */
