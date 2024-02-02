@@ -212,7 +212,6 @@ opentitan_test(
         data = HMAC_TESTVECTOR_TARGETS,
         test_cmd = """
             --bootstrap={firmware}
-            --bitstream={bitstream}
         """ + HMAC_TESTVECTOR_ARGS,
         test_harness = "//sw/host/tests/crypto/hmac_kat:harness",
     ),
