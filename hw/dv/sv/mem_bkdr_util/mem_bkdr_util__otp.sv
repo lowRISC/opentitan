@@ -164,6 +164,12 @@ virtual function void otp_clear_secret2_partition();
   end
 endfunction
 
+virtual function void otp_clear_secret3_partition();
+  for (int i = 0; i < Secret3Size; i += 4) begin
+    write32(i + Secret3Offset, 32'h0);
+  end
+endfunction
+
 virtual function void otp_clear_hw_cfg_partition();
   for (int i = 0; i < HwCfg0Size; i += 4) begin
     write32(i + HwCfg0Offset, 32'h0);
