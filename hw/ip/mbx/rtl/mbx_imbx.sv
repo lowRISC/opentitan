@@ -100,7 +100,7 @@ module mbx_imbx #(
     end
   end
 
-  prim_generic_flop_en #(
+  prim_flop_en #(
     .Width(CfgSramAddrWidth)
   ) u_sram_write_ptr (
     .clk_i ( clk_i                              ),

@@ -80,7 +80,7 @@ module mbx_sramrwarb
   // Update the count of outstanding requests.
   assign update_cnt = inc_cnt | dec_cnt | hostif_control_abort_clear_i;
 
-  prim_generic_flop_en #(
+  prim_flop_en #(
     .Width(LCFG_MAX_REQS_LOG2)
   ) u_outstanding_req_cnt (
     .clk_i  ( clk_i                   ),
