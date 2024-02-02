@@ -573,6 +573,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
       FlashMemInitInvalidate: begin
         wr_data = {flash_ctrl_pkg::DataWidth{1'bx}};
       end
+      default: ; // Do nothing.
     endcase
 
     for (int i = 0; i < flash_op.num_words; i++) begin

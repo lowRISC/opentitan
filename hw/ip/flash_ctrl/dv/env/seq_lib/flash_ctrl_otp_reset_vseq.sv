@@ -105,7 +105,7 @@ class flash_ctrl_otp_reset_vseq extends flash_ctrl_base_vseq;
                 cfg.clk_rst_vif.wait_clks(10);
               end
               case(exception_mode)
-                2'b1: begin
+                2'b01: begin
                   csr_wr(.ptr(ral.dis), .value(get_rand_mubi4_val(.f_weight(0))));
                 end
                 2'b10: begin

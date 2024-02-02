@@ -402,6 +402,7 @@ class flash_ctrl_rand_ops_base_vseq extends flash_ctrl_base_vseq;
         // needs to be erased to all 1s between each successive programming.
         cfg.flash_mem_bkdr_write(.flash_op(flash_op), .scheme(FlashMemInitSet));
       end
+      default: ; // Do nothing
     endcase
   endtask
 
