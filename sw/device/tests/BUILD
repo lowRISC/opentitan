@@ -3074,6 +3074,7 @@ opentitan_test(
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
     },
     deps = [
         ":spi_host_flash_test_impl",

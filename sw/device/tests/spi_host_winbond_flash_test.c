@@ -7,6 +7,7 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_spi_host.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
@@ -29,20 +30,46 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_spi_host_init(
       mmio_region_from_addr(TOP_EARLGREY_SPI_HOST0_BASE_ADDR), &spi_host));
 
+  uint16_t device_id = 0x2180;
+  uint32_t spi_speed = 10000000;  // 10MHz
+  if (kDeviceType == kDeviceSilicon) {
+    device_id = 0x1870;
+    spi_speed = 16000000;  // 16MHz
+
+    dif_pinmux_t pinmux;
+    mmio_region_t base_addr =
+        mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR);
+    CHECK_DIF_OK(dif_pinmux_init(base_addr, &pinmux));
+
+    dif_pinmux_pad_attr_t out_attr;
+    dif_pinmux_pad_attr_t in_attr = {
+        .slew_rate = 0,
+        .drive_strength = 0,
+        .flags = kDifPinmuxPadAttrPullResistorEnable |
+                 kDifPinmuxPadAttrPullResistorUp};
+
+    CHECK_DIF_OK(
+        dif_pinmux_pad_write_attrs(&pinmux, kTopEarlgreyDirectPadsSpiHost0Sd2,
+                                   kDifPinmuxPadKindDio, in_attr, &out_attr));
+
+    CHECK_DIF_OK(
+        dif_pinmux_pad_write_attrs(&pinmux, kTopEarlgreyDirectPadsSpiHost0Sd3,
+                                   kDifPinmuxPadKindDio, in_attr, &out_attr));
+  }
+
   CHECK(kClockFreqHiSpeedPeripheralHz <= UINT32_MAX,
         "kClockFreqHiSpeedPeripheralHz must fit in uint32_t");
-
-  CHECK_DIF_OK(dif_spi_host_configure(&spi_host,
-                                      (dif_spi_host_config_t){
-                                          .spi_clock = 10000000,
-                                          .peripheral_clock_freq_hz =
-                                              (uint32_t)kClockFreqHiSpeedPeripheralHz,
-                                      }),
-               "SPI_HOST config failed!");
+  CHECK_DIF_OK(
+      dif_spi_host_configure(&spi_host,
+                             (dif_spi_host_config_t){
+                                 .spi_clock = spi_speed,
+                                 .peripheral_clock_freq_hz =
+                                     (uint32_t)kClockFreqHiSpeedPeripheralHz,
+                             }),
+      "SPI_HOST config failed!");
   CHECK_DIF_OK(dif_spi_host_output_set_enabled(&spi_host, true));
 
   enum WinbondVendorSpecific {
-    kDeviceId = 0x2180,
     kManufactureId = 0xef,
     kPageQuadProgramOpcode = 0x32,
   };
@@ -51,7 +78,7 @@ bool test_main(void) {
   EXECUTE_TEST(result, test_software_reset, &spi_host);
   EXECUTE_TEST(result, test_read_sfdp, &spi_host);
   EXECUTE_TEST(result, test_sector_erase, &spi_host);
-  EXECUTE_TEST(result, test_read_jedec, &spi_host, kDeviceId, kManufactureId);
+  EXECUTE_TEST(result, test_read_jedec, &spi_host, device_id, kManufactureId);
   EXECUTE_TEST(result, test_enable_quad_mode, &spi_host);
   EXECUTE_TEST(result, test_page_program, &spi_host);
   if (is_4_bytes_address_mode_supported()) {
