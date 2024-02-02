@@ -184,6 +184,24 @@ rom_error_t asn1_push_integer(asn1_state_t *state, uint8_t tag, bool is_signed,
   return asn1_finish_tag(&tag_st);
 }
 
+rom_error_t asn1_push_integer_pad(asn1_state_t *state, bool is_signed,
+                                  const uint8_t *bytes_be, size_t size,
+                                  size_t padded_size) {
+  if (size == 0 || size > padded_size) {
+    return kErrorAsn1InvalidArgument;
+  }
+  // Determine the padding byte.
+  uint8_t padding = 0;
+  if (is_signed && (bytes_be[0] >> 7) == 1) {
+    padding = 0xff;
+  }
+  // Output padding.
+  while (padded_size-- > size) {
+    RETURN_IF_ERROR(asn1_push_byte(state, padding));
+  }
+  return asn1_push_bytes(state, bytes_be, size);
+}
+
 rom_error_t asn1_push_oid_raw(asn1_state_t *state, const uint8_t *bytes,
                               size_t size) {
   asn1_tag_t tag;

@@ -425,7 +425,7 @@ impl Builder for Codegen<'_> {
                         // There is not tag, we are just pushing the data itself.
                         self.max_out_size += size;
                         self.push_str_with_indent(&format!(
-                            "RETURN_IF_ERROR(asn1_push_bytes(&state, {ptr_expr}, {size_expr}));\n"
+                            "RETURN_IF_ERROR(asn1_push_integer_pad(&state, false, {ptr_expr}, {size_expr}, {size}));\n"
                         ))
                     }
                     _ => bail!(

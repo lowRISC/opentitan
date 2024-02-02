@@ -104,7 +104,7 @@ impl SubstValue {
             SubstValue::ByteArray(bytes) => {
                 // Integer are represented as byte arrays.
                 ensure!(
-                    size == 0 || bytes.len() == size,
+                    size == 0 || bytes.len() <= size,
                     "expected an integer that fits on {size} bytes but it uses {} bytes",
                     bytes.len()
                 );
@@ -575,12 +575,15 @@ mod tests {
                 .unwrap(),
             byte_array
         );
+        // Size does not need not match exactly.
+        assert_eq!(
+            byte_array
+                .parse(&VariableType::Integer { size: 5 })
+                .unwrap(),
+            byte_array
+        );
         assert!(byte_array
             .parse(&VariableType::Integer { size: 3 })
-            .is_err());
-        // Size must match exactly.
-        assert!(byte_array
-            .parse(&VariableType::Integer { size: 5 })
             .is_err());
 
         let byte_array_int = SubstValue::Int32(0x3f2e1d0c);
