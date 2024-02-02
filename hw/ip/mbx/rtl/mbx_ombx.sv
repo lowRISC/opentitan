@@ -140,7 +140,7 @@ module mbx_ombx #(
     end
   end
 
-  prim_generic_flop_en #(
+  prim_flop_en #(
     .Width(CfgSramAddrWidth)
   ) u_sram_read_ptr (
     .clk_i ( clk_i                            ),
@@ -164,7 +164,7 @@ module mbx_ombx #(
                            hostif_control_abort_clear_i;  // Abort ack or FW reset from host side
 
   // Advance the SRAM read response to read data
-  prim_generic_flop_en #(
+  prim_flop_en #(
     .Width(CfgSramDataWidth)
   ) u_sram_read_data (
     .clk_i ( clk_i                                                        ),
@@ -216,7 +216,7 @@ module mbx_ombx #(
   assign sram_read_ptr_limit_d = hostif_base_i +
                                  CfgSramAddrWidth'({hostif_ombx_object_size_i, 2'b0});
 
-  prim_generic_flop_en #(
+  prim_flop_en #(
     .Width(CfgSramAddrWidth)
   ) u_sram_read_ptr_limit (
     .clk_i ( clk_i                                                    ),
