@@ -184,3 +184,39 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
     },
 )
+
+HMAC_TESTVECTOR_TARGETS = [
+    "//sw/host/cryptotest/testvectors/data:wycheproof_hmac_{}.json".format(config)
+    for config in [
+        "sha256",
+        "sha384",
+        "sha512",
+        # TODO uncomment when cryptolib supports HMAC with SHA3
+        # "sha3_256",
+        # "sha3_512",
+    ]
+] + [
+    "//sw/host/cryptotest/testvectors/data:nist_cavp_hmac_fips_198_1_json",
+]
+
+HMAC_TESTVECTOR_ARGS = " ".join([
+    "--hmac-json=\"$(rootpath {})\"".format(target)
+    for target in HMAC_TESTVECTOR_TARGETS
+])
+
+opentitan_test(
+    name = "hmac_kat",
+    cw310 = cw310_params(
+        timeout = "long",
+        binaries = {"//sw/device/tests/crypto/cryptotest/firmware:firmware": "firmware"},
+        data = HMAC_TESTVECTOR_TARGETS,
+        test_cmd = """
+            --bootstrap={firmware}
+            --bitstream={bitstream}
+        """ + HMAC_TESTVECTOR_ARGS,
+        test_harness = "//sw/host/tests/crypto/hmac_kat:harness",
+    ),
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+    },
+)

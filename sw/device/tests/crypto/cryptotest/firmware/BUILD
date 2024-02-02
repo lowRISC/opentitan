@@ -108,6 +108,24 @@ cc_library(
 )
 
 cc_library(
+    name = "hmac",
+    srcs = ["hmac.c"],
+    hdrs = ["hmac.h"],
+    deps = [
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/crypto/impl:integrity",
+        "//sw/device/lib/crypto/impl:keyblob",
+        "//sw/device/lib/crypto/impl:mac",
+        "//sw/device/lib/crypto/include:datatypes",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+        "//sw/device/tests/crypto/cryptotest/json:hmac_commands",
+    ],
+)
+
+cc_library(
     name = "aes_sca",
     srcs = ["aes_sca.c"],
     hdrs = ["aes_sca.h"],
@@ -228,6 +246,7 @@ opentitan_binary(
         ":ecdh",
         ":ecdsa",
         ":hash",
+        ":hmac",
         ":ibex_fi",
         ":kmac_sca",
         ":prng_sca",
@@ -244,6 +263,7 @@ opentitan_binary(
         "//sw/device/tests/crypto/cryptotest/json:drbg_commands",
         "//sw/device/tests/crypto/cryptotest/json:ecdh_commands",
         "//sw/device/tests/crypto/cryptotest/json:hash_commands",
+        "//sw/device/tests/crypto/cryptotest/json:hmac_commands",
         "//sw/device/tests/crypto/cryptotest/json:ibex_fi_commands",
     ],
 )
@@ -265,6 +285,7 @@ opentitan_test(
         ":ecdh",
         ":ecdsa",
         ":hash",
+        ":hmac",
         ":ibex_fi",
         ":kmac_sca",
         ":prng_sca",
@@ -282,6 +303,7 @@ opentitan_test(
         "//sw/device/tests/crypto/cryptotest/json:ecdh_commands",
         "//sw/device/tests/crypto/cryptotest/json:ecdsa_commands",
         "//sw/device/tests/crypto/cryptotest/json:hash_commands",
+        "//sw/device/tests/crypto/cryptotest/json:hmac_commands",
         "//sw/device/tests/crypto/cryptotest/json:ibex_fi_commands",
     ],
 )
