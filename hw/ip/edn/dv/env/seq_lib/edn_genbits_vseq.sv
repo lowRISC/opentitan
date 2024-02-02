@@ -79,6 +79,9 @@ class edn_genbits_vseq extends edn_base_vseq;
       // Disable boot mode to enter sw mode which enables sw commands.
       ral.ctrl.boot_req_mode.set(prim_mubi_pkg::MuBi4False);
       csr_update(.csr(ral.ctrl));
+      // Wait for the main SM to enter the Idle state before trying to issue the next command.
+      // This helps to avoid polling the cmd_rdy field while still in boot mode.
+      csr_spinwait(.ptr(ral.main_sm_state), .exp_data(edn_pkg::Idle), .backdoor(1'b1));
     end
 
     if (cfg.auto_req_mode == MuBi4True) begin
