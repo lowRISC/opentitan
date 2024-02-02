@@ -197,6 +197,57 @@ TEST(Asn1, PushIntSigned) {
   EXPECT_EQ_CONST_ARRAY(buf, out_size, kExpectedResult);
 }
 
+// Make sure that we can push big integers with padding.
+TEST(Asn1, PushIntPad) {
+  asn1_state_t state;
+  uint8_t buf[40];
+  // Integers are in big-endian.
+  const uint8_t kBigInt1[] = {0x42};
+  const uint8_t kBigInt2[] = {0x00, 0x80};  // Extra zeroes for testing.
+  const uint8_t kBigInt3[] = {0x80, 0x01};
+  const uint8_t kBigInt4[] = {0x30, 0x47, 0x80, 0x01};
+  const uint8_t kBigInt5[] = {0x30, 0x47, 0x80, 0x01, 0x17};
+  EXPECT_EQ(asn1_start(&state, buf, sizeof(buf)), kErrorOk);
+  EXPECT_EQ(asn1_push_integer_pad(&state, false, kBigInt1, sizeof(kBigInt1), 4),
+            kErrorOk);
+  EXPECT_EQ(asn1_push_integer_pad(&state, true, kBigInt1, sizeof(kBigInt1), 4),
+            kErrorOk);
+  EXPECT_EQ(asn1_push_integer_pad(&state, false, kBigInt2, sizeof(kBigInt2), 4),
+            kErrorOk);
+  EXPECT_EQ(asn1_push_integer_pad(&state, true, kBigInt2, sizeof(kBigInt2), 4),
+            kErrorOk);
+  EXPECT_EQ(asn1_push_integer_pad(&state, false, kBigInt3, sizeof(kBigInt3), 4),
+            kErrorOk);
+  EXPECT_EQ(asn1_push_integer_pad(&state, true, kBigInt3, sizeof(kBigInt3), 4),
+            kErrorOk);
+  EXPECT_EQ(asn1_push_integer_pad(&state, false, kBigInt4, sizeof(kBigInt4), 4),
+            kErrorOk);
+  EXPECT_EQ(asn1_push_integer_pad(&state, true, kBigInt4, sizeof(kBigInt4), 4),
+            kErrorOk);
+  EXPECT_EQ(asn1_push_integer_pad(&state, true, kBigInt5, sizeof(kBigInt5), 4),
+            kErrorAsn1InvalidArgument);
+  size_t out_size;
+  EXPECT_EQ(asn1_finish(&state, &out_size), kErrorOk);
+  const std::array<uint8_t, 32> kExpectedResult = {
+      // Unsigned: padded with 0.
+      0x00, 0x00, 0x00, 0x42,
+      // Signed and non-negative: padded with 0.
+      0x00, 0x00, 0x00, 0x42,
+      // Unsigned: padded with 0.
+      0x00, 0x00, 0x00, 0x80,
+      // Signed and non-negative: padded with 0.
+      0x00, 0x00, 0x00, 0x80,
+      // Unsigned: padded with 0.
+      0x00, 0x00, 0x80, 0x01,
+      // Signed and negative: padded with 0xff.
+      0xff, 0xff, 0x80, 0x01,
+      // Already at maximum size: no padding.
+      0x30, 0x47, 0x80, 0x01,
+      // Already at maximum size: no padding.
+      0x30, 0x47, 0x80, 0x01};
+  EXPECT_EQ_CONST_ARRAY(buf, out_size, kExpectedResult);
+}
+
 // Make sure that we can push strings.
 TEST(Asn1, PushStrings) {
   asn1_state_t state;
