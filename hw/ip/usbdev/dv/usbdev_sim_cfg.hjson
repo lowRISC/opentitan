@@ -60,6 +60,14 @@
       name: usbdev_smoke
       uvm_test_seq: usbdev_smoke_vseq
     }
+    {
+      name: usbdev_pkt_received
+      uvm_test_seq: usbdev_pkt_received_vseq
+    }
+    {
+      name: usbdev_av_buffer
+      uvm_test_seq: usbdev_av_buffer_vseq
+    }
   ]
 
   // List of regressions.
