@@ -38,8 +38,8 @@ class rv_dm_jtag_dmi_debug_disabled_vseq extends rv_dm_base_vseq;
   task body();
     repeat ($urandom_range(1, 10)) begin
       bit [31:0] value0, value1;
-      std::randomize(value0);
-      std::randomize(value1);
+      `DV_CHECK_STD_RANDOMIZE_FATAL(value0)
+      `DV_CHECK_STD_RANDOMIZE_FATAL(value1)
 
       // Write value0 to abstractdata[0], then read it back, checking the value has arrived as
       // expected.
