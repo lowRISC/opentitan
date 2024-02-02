@@ -482,5 +482,20 @@
             So it confirms rma start before flash init start.
             '''
     }
+    {
+      name: phy_rd_cg
+      desc: '''
+            Cover various read sequences on the physical interfaces of each bank.
+            Create bins such as read after read, read after program and read after
+            erase.
+            '''
+    }
+    {
+      name: b2b_read_interval_cg
+      desc: '''
+            Cover interval profile of back to back read operation.
+            Minimum interval of the back to back read is 1 cycle.
+            '''
+    }
   ]
 }
