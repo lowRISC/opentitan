@@ -49,34 +49,19 @@ static const pinmux_testutils_peripheral_pin_t kUartPinmuxPins[] = {
 };
 
 /**
- * This table stores UART pin mappings for different platforms.
- * This is used to connect UART instances to mio pins based on the platform.
+ * This table stores UART pin mappings for synthesized platforms.
  */
 static const pinmux_testutils_mio_pin_t
-    kUartPlatformPins[UartPinmuxPlatformIdCount][UartPinmuxChannelCount] = {
-        // Hyper310 bitstream.
-        [UartPinmuxPlatformIdHyper310] =
-            {[UartPinmuxChannelConsole] =
-                 {
-                     .mio_out = kTopEarlgreyPinmuxMioOutIoc4,
-                     .insel = kTopEarlgreyPinmuxInselIoc3,
-                 },
-             [UartPinmuxChannelDut] =
-                 {
-                     .mio_out = kTopEarlgreyPinmuxMioOutIob5,
-                     .insel = kTopEarlgreyPinmuxInselIob4,
-                 }},
-        // Silicon.
-        [UartPinmuxPlatformIdSilicon] = {
-            [UartPinmuxChannelConsole] =
-                {
-                    .mio_out = kTopEarlgreyPinmuxMioOutIoc4,
-                    .insel = kTopEarlgreyPinmuxInselIoc3,
-                },
-            [UartPinmuxChannelDut] = {
-                .mio_out = kTopEarlgreyPinmuxMioOutIob5,
-                .insel = kTopEarlgreyPinmuxInselIob4,
-            }}};
+    kUartSynthPins[kUartPinmuxChannelCount] = {
+        [kUartPinmuxChannelConsole] =
+            {
+                .mio_out = kTopEarlgreyPinmuxMioOutIoc4,
+                .insel = kTopEarlgreyPinmuxInselIoc3,
+            },
+        [kUartPinmuxChannelDut] = {
+            .mio_out = kTopEarlgreyPinmuxMioOutIob5,
+            .insel = kTopEarlgreyPinmuxInselIob4,
+        }};
 
 /**
  * The DV platform is handled separately at the moment: all four UARTs have
@@ -106,32 +91,29 @@ static const pinmux_testutils_mio_pin_t kUartDvPins[4] = {
     }};
 
 status_t uart_testutils_select_pinmux(const dif_pinmux_t *pinmux,
-                                      uint8_t uart_id,
-                                      uart_pinmux_platform_id_t platform,
+                                      uint8_t uart_idx,
                                       uart_pinmux_channel_t channel) {
-  TRY_CHECK(platform < UartPinmuxPlatformIdCount &&
-                channel < UartPinmuxChannelCount &&
-                uart_id < ARRAYSIZE(kUartPinmuxPins),
+  TRY_CHECK(channel < kUartPinmuxChannelCount &&
+                uart_idx < ARRAYSIZE(kUartPinmuxPins),
             "Index out of bounds");
 
-  pinmux_testutils_mio_pin_t mio_pin =
-      platform == UartPinmuxPlatformIdDvsim
-          ? kUartDvPins[uart_id]
-          : kUartPlatformPins[platform][channel];
+  pinmux_testutils_mio_pin_t mio_pin = kDeviceType == kDeviceSimDV
+                                           ? kUartDvPins[uart_idx]
+                                           : kUartSynthPins[channel];
 
-  TRY(dif_pinmux_input_select(pinmux, kUartPinmuxPins[uart_id].peripheral_in,
+  TRY(dif_pinmux_input_select(pinmux, kUartPinmuxPins[uart_idx].peripheral_in,
                               mio_pin.insel));
   TRY(dif_pinmux_output_select(pinmux, mio_pin.mio_out,
-                               kUartPinmuxPins[uart_id].outsel));
+                               kUartPinmuxPins[uart_idx].outsel));
 
   return OK_STATUS();
 }
 
 status_t uart_testutils_detach_pinmux(const dif_pinmux_t *pinmux,
-                                      uint8_t uart_id) {
-  TRY_CHECK(uart_id < ARRAYSIZE(kUartPinmuxPins), "Index out of bounds");
+                                      uint8_t uart_idx) {
+  TRY_CHECK(uart_idx < ARRAYSIZE(kUartPinmuxPins), "Index out of bounds");
 
-  TRY(dif_pinmux_input_select(pinmux, kUartPinmuxPins[uart_id].peripheral_in,
+  TRY(dif_pinmux_input_select(pinmux, kUartPinmuxPins[uart_idx].peripheral_in,
                               kTopEarlgreyPinmuxInselConstantZero));
 
   return OK_STATUS();
