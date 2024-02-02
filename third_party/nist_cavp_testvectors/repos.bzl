@@ -89,3 +89,9 @@ def nist_cavp_repos():
         sha256 = "8405aeb3572a4f98ed4b1a3ccb3f2f49e725462dd28ec4759d6a15d88855d19c",
         url = "https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/dss/186-3rsatestvectors.zip",
     )
+    http_archive(
+        name = "nist_cavp_hmac_fips_198_1",
+        build_file = Label("//third_party/nist_cavp_testvectors:BUILD.nist_cavp_common.bazel"),
+        sha256 = "418c3837d38f249d6668146bd0090db24dd3c02d2e6797e3de33860a387ae4bd",
+        url = "https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/mac/hmactestvectors.zip",
+    )

@@ -189,6 +189,24 @@ run_binary(
     ]
 ]
 
+run_binary(
+    name = "nist_cavp_hmac_fips_198_1_json",
+    srcs = [
+        "//sw/host/cryptotest/testvectors/data/schemas:hmac_schema.json",
+        "@nist_cavp_hmac_fips_198_1//:HMAC.rsp",
+    ],
+    outs = ["nist_cavp_hmac_fips_198_1.json"],
+    args = [
+        "--src",
+        "$(location @nist_cavp_hmac_fips_198_1//:HMAC.rsp)",
+        "--dst",
+        "$(location :nist_cavp_hmac_fips_198_1.json)",
+        "--schema",
+        "$(location //sw/host/cryptotest/testvectors/data/schemas:hmac_schema.json)",
+    ],
+    tool = "//sw/host/cryptotest/testvectors/parsers:nist_cavp_hmac_parser",
+)
+
 [
     run_binary(
         name = cryptotest_name,
@@ -212,6 +230,36 @@ run_binary(
     for src_name, mode, cryptotest_name in [
         ("kmac128_no_customization_test.json", "128", "wycheproof_kmac_128"),
         ("kmac256_no_customization_test.json", "256", "wycheproof_kmac_256"),
+    ]
+]
+
+[
+    run_binary(
+        name = cryptotest_name,
+        srcs = [
+            "@wycheproof//testvectors_v1:{}".format(src_name),
+            "//sw/host/cryptotest/testvectors/data/schemas:hmac_schema.json",
+        ],
+        outs = [":{}.json".format(cryptotest_name)],
+        args = [
+            "--src",
+            "$(location @wycheproof//testvectors_v1:{})".format(src_name),
+            "--dst",
+            "$(location :{}.json)".format(cryptotest_name),
+            "--schema",
+            "$(location //sw/host/cryptotest/testvectors/data/schemas:hmac_schema.json)",
+            "--hash",
+            hash_alg,
+        ],
+        tool = "//sw/host/cryptotest/testvectors/parsers:wycheproof_hmac_parser",
+    )
+    for src_name, hash_alg, cryptotest_name in [
+        ("hmac_sha256_test.json", "sha-256", "wycheproof_hmac_sha256"),
+        ("hmac_sha384_test.json", "sha-384", "wycheproof_hmac_sha384"),
+        ("hmac_sha512_test.json", "sha-512", "wycheproof_hmac_sha512"),
+        ("hmac_sha3_256_test.json", "sha3-256", "wycheproof_hmac_sha3_256"),
+        ("hmac_sha3_384_test.json", "sha3-384", "wycheproof_hmac_sha3_384"),
+        ("hmac_sha3_512_test.json", "sha3-512", "wycheproof_hmac_sha3_512"),
     ]
 ]
 

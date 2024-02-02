@@ -19,8 +19,6 @@ from cryptotest_util import parse_rsp
 # However, the test vectors only include the longest length for each
 # hash (i.e. the entire hash is the MAC).
 LENGTH_TO_HASH = {
-    "20": "sha-1",
-    "28": "sha-224",
     "32": "sha-256",
     "48": "sha-384",
     "64": "sha-512",
@@ -31,14 +29,18 @@ def parse_testcases(args) -> None:
     raw_testcases = parse_rsp(args.src)
     test_cases = list()
 
-    # NIST splits the rsp files into sections based on tag length
-    # (which implies which hash function should be used)
     for test_vec in raw_testcases:
+        # Tag length indicates which hash function should be used
+        mac_len = test_vec["L"]
+        if mac_len not in LENGTH_TO_HASH:
+            # Some hash functions in the test vector (e.g. SHA-1) are not
+            # supported by OpenTitan.
+            continue
         test_case = {
             "vendor": "nist",
             "test_case_id": int(test_vec["Count"]),
             "algorithm": "hmac",
-            "hash_alg": LENGTH_TO_HASH[test_vec["L"]],
+            "hash_alg": LENGTH_TO_HASH[mac_len],
             "key": list(bytes.fromhex(test_vec["Key"])),
             "message": list(bytes.fromhex(test_vec["Msg"])),
             "tag": list(bytes.fromhex(test_vec["Mac"])),
