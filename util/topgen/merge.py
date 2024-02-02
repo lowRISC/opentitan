@@ -66,9 +66,7 @@ def elaborate_instance(instance, block: IpBlock):
 
     Removed fields:
         - base_addr (this is reflected in base_addrs)
-
     """
-
     # create an empty dict if nothing is there
     if "param_decl" not in instance:
         instance["param_decl"] = {}
@@ -157,8 +155,8 @@ def elaborate_instance(instance, block: IpBlock):
 
     instance["param_list"] = new_params
 
-    # for each module declaration, check to see that the parameter actually exists
-    # and can be set
+    # for each module declaration, check to see that the parameter actually
+    # exists and can be set
     for decl in param_decl_accounting:
         log.error("{} is not a valid parameter of {} that can be "
                   "set from top level".format(decl, block.name))
@@ -523,7 +521,8 @@ def _find_module_name(modules, module_type):
     return None
 
 
-def _get_clock_group_name(clk: Union[str, OrderedDict], default_ep_grp) -> Tuple[str, str]:
+def _get_clock_group_name(clk: Union[str, OrderedDict],
+                          default_ep_grp: str) -> Tuple[str, str]:
     """Return the clock group of a particular clock connection
 
     Checks whether there is a specific clock group associated with this
