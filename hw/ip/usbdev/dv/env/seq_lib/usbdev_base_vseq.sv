@@ -10,6 +10,11 @@ class usbdev_base_vseq extends cip_base_vseq #(
 );
   `uvm_object_utils(usbdev_base_vseq)
 
+  usb20_item    m_usb20_item;
+  usb20_item    rsp_itm;
+  token_pkt     m_token_pkt;
+  data_pkt      m_data_pkt;
+  handshake_pkt m_handshake_pkt;
   // various knobs to enable certain routines
   bit do_usbdev_init = 1'b1;
 
@@ -92,6 +97,54 @@ class usbdev_base_vseq extends cip_base_vseq #(
     ral.usbctrl.enable.set(1'b1);
     ral.usbctrl.device_address.set(device_address);
     csr_update(ral.usbctrl);
+  endtask
+
+  virtual task call_token_seq(input string pkt_type, input string pid_type, bit [3:0] endp);
+    `uvm_create_on(m_token_pkt, p_sequencer.usb20_sequencer_h)
+    m_token_pkt.m_pkt_type = pkt_type;
+    m_token_pkt.m_pid_type = pid_type;
+    assert(m_token_pkt.randomize() with {m_token_pkt.address inside {7'b0};
+                                         m_token_pkt.endpoint == endp;});
+    m_usb20_item = m_token_pkt;
+    start_item(m_token_pkt);
+    finish_item(m_token_pkt);
+  endtask
+
+  virtual task call_data_seq(input string pkt_type, input string pid_type,
+                             input bit rand_or_not, input bit [6:0] num_of_bytes);
+    `uvm_create_on(m_data_pkt, p_sequencer.usb20_sequencer_h)
+    m_data_pkt.m_pkt_type = pkt_type;
+    m_data_pkt.m_pid_type = pid_type;
+    if (rand_or_not) assert(m_data_pkt.randomize());
+    else assert(m_data_pkt.randomize() with {m_data_pkt.data.size() == num_of_bytes;});
+    m_usb20_item = m_data_pkt;
+    start_item(m_data_pkt);
+    finish_item(m_data_pkt);
+  endtask
+
+  virtual task get_out_response_from_device(usb20_item rsp_itm, input string pid_type);
+    `uvm_create_on(m_handshake_pkt, p_sequencer.usb20_sequencer_h)
+    m_handshake_pkt.m_pid_type = pid_type;
+    m_usb20_item = m_handshake_pkt;
+    // DV_CHECK on device reponse
+    `DV_CHECK_EQ(m_usb20_item.m_pid_type, rsp_itm.m_pid_type);
+  endtask
+
+  virtual task get_data_pid_from_device(usb20_item rsp_itm, input string pid_type);
+    `uvm_create_on(m_data_pkt, p_sequencer.usb20_sequencer_h)
+    m_data_pkt.m_pid_type = pid_type;
+    m_usb20_item = m_data_pkt;
+    // DV_CHECK on device reponse
+    `DV_CHECK_EQ(m_usb20_item.m_pid_type, rsp_itm.m_pid_type);
+  endtask
+
+  virtual task call_handshake_sequence(input string pkt_type, input string pid_type);
+    `uvm_create_on(m_handshake_pkt, p_sequencer.usb20_sequencer_h)
+    m_handshake_pkt.m_pkt_type = pkt_type;
+    m_handshake_pkt.m_pid_type = pid_type;
+    m_usb20_item = m_handshake_pkt;
+    start_item(m_handshake_pkt);
+    finish_item(m_handshake_pkt);
   endtask
 
 endclass : usbdev_base_vseq
