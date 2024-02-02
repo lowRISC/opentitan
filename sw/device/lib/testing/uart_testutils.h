@@ -15,19 +15,19 @@
  * Define the available platforms which uart is mapped
  */
 typedef enum uart_pinmux_platform_id {
-  UartPinmuxPlatformIdHyper310 = 0,
-  UartPinmuxPlatformIdDvsim,
-  UartPinmuxPlatformIdSilicon,
-  UartPinmuxPlatformIdCount,
+  kUartPinmuxPlatformIdFpgaCw310 = 0,
+  kUartPinmuxPlatformIdDvsim,
+  kUartPinmuxPlatformIdSilicon,
+  kUartPinmuxPlatformIdCount,
 } uart_pinmux_platform_id_t;
 
 /**
  * Define the available external channels that a UART could be connected to.
  */
 typedef enum uart_pinmux_channel {
-  UartPinmuxChannelConsole,
-  UartPinmuxChannelDut,
-  UartPinmuxChannelCount,
+  kUartPinmuxChannelConsole,
+  kUartPinmuxChannelDut,
+  kUartPinmuxChannelCount,
 } uart_pinmux_channel_t;
 
 /**
@@ -35,25 +35,24 @@ typedef enum uart_pinmux_channel {
  * is running.
  *
  * @param pimmux A pinmux handler.
- * @param kUartIdx The uart instance identifier.
+ * @param uart_idx The index of the UART to configure.
  * @param platform The platform which the test is running.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 status_t uart_testutils_select_pinmux(const dif_pinmux_t *pinmux,
-                                      uint8_t kUartIdx,
-                                      uart_pinmux_platform_id_t platform,
+                                      uint8_t uart_idx,
                                       uart_pinmux_channel_t channel);
 
 /**
  * Disconnect the uart input pins from mio pads and wire it to zero.
  *
  * @param pimmux A pinmux handler.
- * @param uart_id The uart instance identifier.
+ * @param uart_id The index of the UART to configure.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 status_t uart_testutils_detach_pinmux(const dif_pinmux_t *pinmux,
-                                      uint8_t uart_id);
+                                      uint8_t uart_idx);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_UART_TESTUTILS_H_
