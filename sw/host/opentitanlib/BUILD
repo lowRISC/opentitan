@@ -191,6 +191,7 @@ rust_library(
         "src/uart/mod.rs",
         "src/util/bigint.rs",
         "src/util/bitfield.rs",
+        "src/util/bitbang.rs",
         "src/util/file.rs",
         "src/util/mod.rs",
         "src/util/num_de.rs",
