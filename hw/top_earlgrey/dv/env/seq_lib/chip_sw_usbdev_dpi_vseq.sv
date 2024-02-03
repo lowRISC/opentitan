@@ -8,7 +8,7 @@ class chip_sw_usbdev_dpi_vseq extends chip_sw_base_vseq;
   `uvm_object_new
 
   // Zero initialize the usbdev packet memory
-  function init_packet_mem();
+  function void init_packet_mem();
     cfg.mem_bkdr_util_h[UsbdevBuf].clear_mem();
   endfunction
 

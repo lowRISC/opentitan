@@ -15,7 +15,7 @@ class chip_sw_i2c_tx_rx_vseq extends chip_sw_base_vseq;
   int clock_period_cycles = ((i2c_clock_period_nanos - 1) / clock_period_nanos) + 1;
   int half_period_cycles = ((i2c_clock_period_nanos/2 - 1) / clock_period_nanos) + 1;
 
-  function print_i2c_timing_cfg(uint i2c_idx);
+  function void print_i2c_timing_cfg(uint i2c_idx);
     string str;
     str = {str, $sformatf("\n    timing_cfg.tSetupStart       : %d",
               cfg.m_i2c_agent_cfgs[i2c_idx].timing_cfg.tSetupStart)};

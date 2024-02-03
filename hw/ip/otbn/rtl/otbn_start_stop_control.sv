@@ -67,8 +67,6 @@ module otbn_start_stop_control
   output logic fatal_error_o
 );
 
-  import otbn_pkg::*;
-
   // Create lint errors to reduce the risk of accidentally enabling these features.
   `ASSERT_STATIC_LINT_ERROR(OtbnSecMuteUrndNonDefault, SecMuteUrnd == 0)
   `ASSERT_STATIC_LINT_ERROR(OtbnSecSkipUrndReseedAtStartNonDefault, SecSkipUrndReseedAtStart == 0)
