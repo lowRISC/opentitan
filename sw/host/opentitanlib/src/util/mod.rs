@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 pub mod bigint;
+pub mod bitbang;
 pub mod bitfield;
 pub mod file;
 pub mod num_de;
