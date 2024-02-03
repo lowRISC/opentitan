@@ -230,7 +230,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
   // This performs an ecc check at a given address. The address and data need to be de-scrambled,
   // so the actual address to be checked will most likely be different, and at a different tile.
-  local function logic [1:0] _sram_bkdr_inject_ecc_error(
+  local function void _sram_bkdr_inject_ecc_error(
       bit [bus_params_pkg::BUS_AW-1:0] addr,
       bit is_main_ram, // if 1, main ram, otherwise, ret ram
       bit [sram_scrambler_pkg::SRAM_KEY_WIDTH-1:0]   key,
@@ -1146,7 +1146,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
     `DV_SPINWAIT(
       do begin
         @(cfg.clk_rst_vif.cb);
-        uvm_hdl_read(mypath, rma_wipe_idx);
+        `DV_CHECK_EQ(uvm_hdl_read(mypath, rma_wipe_idx), 1, "hdl read failure")
       end while (rma_wipe_idx != 3'h3);,
       "waiting for rma index = 3", 100_000_000
     )
@@ -1160,7 +1160,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
     `DV_SPINWAIT(
       do begin
         @(cfg.clk_rst_vif.cb);
-        uvm_hdl_read(mypath, rma_ack);
+        `DV_CHECK_EQ(uvm_hdl_read(mypath, rma_ack), 1, "hdl read failure")
       end while (rma_ack != lc_ctrl_pkg::On);,
       "waiting for rma ack == On", 120_000_000
     )
