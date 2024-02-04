@@ -109,7 +109,7 @@ static status_t process_block(sha256_otbn_ctx_t *ctx,
   otbn_addr_t dst = kOtbnVarSha256Msg + offset;
 
   // Copy the message block into DMEM.
-  otbn_dmem_write(kSha256MessageBlockWords, block->data, dst);
+  HARDENED_TRY(otbn_dmem_write(kSha256MessageBlockWords, block->data, dst));
   ctx->num_blocks += 1;
 
   // If we've reached the maximum number of message chunks for a single run,
