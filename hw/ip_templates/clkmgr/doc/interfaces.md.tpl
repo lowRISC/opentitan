@@ -1,6 +1,6 @@
 # Hardware Interfaces
 
-<!-- BEGIN CMDGEN util/regtool.py --interfaces ./hw/top_earlgrey/ip/clkmgr/data/autogen/clkmgr.hjson -->
+<!-- BEGIN CMDGEN util/regtool.py --interfaces ./hw/top_${topname}/ip_autogen/clkmgr/data/clkmgr.hjson -->
 Referring to the [Comportable guideline for peripheral device functionality](https://opentitan.org/book/doc/contributing/hw/comportability), the module **`clkmgr`** has the following hardware interfaces defined
 - Primary Clock: **`clk_i`**
 - Other Clocks: **`clk_main_i`**, **`clk_io_i`**, **`clk_usb_i`**, **`clk_aon_i`**, **`clk_io_div2_i`**, **`clk_io_div4_i`**
@@ -9,7 +9,7 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 - Peripheral Pins for Chip IO: *none*
 - Interrupts: *none*
 
-## [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
+${"##"} [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
 
 | Port Name         | Package::Struct          | Type    | Act   |   Width | Description                                              |
 |:------------------|:-------------------------|:--------|:------|--------:|:---------------------------------------------------------|
@@ -30,14 +30,14 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | calib_rdy         | prim_mubi_pkg::mubi4     | uni     | rcv   |       1 | Indicates clocks are calibrated and frequencies accurate |
 | tl                | tlul_pkg::tl             | req_rsp | rsp   |       1 |                                                          |
 
-## Security Alerts
+${"##"} Security Alerts
 
 | Alert Name   | Description                                                                       |
 |:-------------|:----------------------------------------------------------------------------------|
 | recov_fault  | This recoverable alert is triggered when there are measurement errors.            |
 | fatal_fault  | This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected. |
 
-## Security Countermeasures
+${"##"} Security Countermeasures
 
 | Countermeasure ID                          | Description                                                  |
 |:-------------------------------------------|:-------------------------------------------------------------|

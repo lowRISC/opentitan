@@ -14,4 +14,4 @@ To control peripheral clocks, directly change the bits in [`CLK_ENABLES`](regist
 
 ## Device Interface Functions (DIFs)
 
-- [Device Interface Functions](../../../../sw/device/lib/dif/dif_clkmgr.h)
+- [Device Interface Functions](../../../../../sw/device/lib/dif/dif_clkmgr.h)
