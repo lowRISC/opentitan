@@ -155,25 +155,17 @@ typedef enum dif_edn_sm_state {
    */
   kDifEdnSmStateBootLoadIns = 455,
   /**
-   * Boot mode: load the generate command.
-   */
-  kDifEdnSmStateBootLoadGen = 121,
-  /**
    * Boot mode: wait for instantiate command ack.
    */
-  kDifEdnSmStateBootInsAckWait = 3,
+  kDifEdnSmStateBootInsAckWait = 121,
   /**
-   * Boot mode: capture the gen fifo count.
+   * Boot mode: load the generate command.
    */
-  kDifEdnSmStateBootCaptGenCnt = 119,
-  /**
-   * Boot mode: send the generate command.
-   */
-  kDifEdnSmStateBootSendGenCmd = 169,
+  kDifEdnSmStateBootLoadGen = 3,
   /**
    * Boot mode: wait for generate command ack.
    */
-  kDifEdnSmStateBootGenAckWait = 240,
+  kDifEdnSmStateBootGenAckWait = 119,
   /**
    * Boot mode: signal a done pulse.
    */
@@ -185,51 +177,51 @@ typedef enum dif_edn_sm_state {
   /**
    * Boot mode: load the uninstantiate command.
    */
-  kDifEdnSmStateBootLoadUni = 444,
+  kDifEdnSmStateBootLoadUni = 169,
   /**
    * Boot mode: wait for uninstantiate command ack.
    */
-  kDifEdnSmStateBootUniAckWait = 419,
+  kDifEdnSmStateBootUniAckWait = 240,
   /**
    * Auto mode: load the instantiate command.
    */
-  kDifEdnSmStateAutoLoadIns = 146,
+  kDifEdnSmStateAutoLoadIns = 444,
   /**
    * Auto mode: wait for first instantiate command ack.
    */
-  kDifEdnSmStateAutoFirstAckWait = 353,
+  kDifEdnSmStateAutoFirstAckWait = 419,
   /**
    * Auto mode: wait for instantiate command ack.
    */
-  kDifEdnSmStateAutoAckWait = 270,
+  kDifEdnSmStateAutoAckWait = 146,
   /**
    * Auto mode: determine next command to be sent.
    */
-  kDifEdnSmStateAutoDispatch = 477,
+  kDifEdnSmStateAutoDispatch = 353,
   /**
    * Auto mode: capture the gen fifo count.
    */
-  kDifEdnSmStateAutoCaptGenCnt = 191,
+  kDifEdnSmStateAutoCaptGenCnt = 270,
   /**
    * Auto mode: send the generate command.
    */
-  kDifEdnSmStateAutoSendGenCmd = 106,
+  kDifEdnSmStateAutoSendGenCmd = 477,
   /**
    * Auto mode: capture the reseed fifo count.
    */
-  kDifEdnSmStateAutoCaptReseedCnt = 149,
+  kDifEdnSmStateAutoCaptReseedCnt = 191,
   /**
    * Auto mode: send the reseed command.
    */
-  kDifEdnSmStateAutoSendReseedCmd = 24,
+  kDifEdnSmStateAutoSendReseedCmd = 106,
   /**
    * Sw port: no hw request mode.
    */
-  kDifEdnSmStateSWPortMode = 382,
+  kDifEdnSmStateSWPortMode = 149,
   /**
    * Illegal state reached and hang.
    */
-  kDifEdnSmStateError = 68,
+  kDifEdnSmStateError = 24,
 } dif_edn_sm_state_t;
 
 /**
