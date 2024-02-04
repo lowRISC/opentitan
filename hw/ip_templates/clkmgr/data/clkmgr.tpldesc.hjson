@@ -1,0 +1,90 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  template_param_list: [
+    {
+      name: "topname"
+      desc: "Name of top-level design, e.g., 'darjeeling' or 'earlgrey'"
+      type: "string"
+      default: ""
+    }
+    {
+      name: "src_clks"
+      desc: "The source clocks"
+      type: "object"
+      default: {
+        io: {
+          name: "io"
+	  aon:  "False"
+	  freq: "96000000"
+	  ref:  "false"
+	}
+      }
+    }
+    {
+      name: "derived_clks"
+      desc: "The derived clocks via division"
+      type: "object"
+      default: {
+        main: {
+          name: "io_div4"
+	  aon:  "False"
+	  freq: "24000000"
+	  ref:  "false"
+	  div:  "4"
+	  src:  "io"
+	}
+      }
+    }
+    {
+      name: "typed_clocks"
+      desc: "Map of type to clock group"
+      type: "object"
+      default: {
+        hint_clks: {
+	  name: "clk_main_aes"
+	  signal: {
+	    src_name: "main"
+	    endpoint_ip: "aes"
+	  }
+	}
+      }
+    }
+    {
+      name: "hint_names"
+      desc: "Map of hint clocks to their hint names"
+      type: "object"
+      default: {
+        clk_main_aes: "HintMainAes"
+      }
+    }
+    {
+      name: "parent_child_clks"
+      desc: "Map listing the derived for each src clock"
+      type: "object"
+      default: {
+        io: ["io", "io_div2", "io_div4"]
+      }
+    }
+    {
+      name: "exported_clks"
+      desc: "Map of interface to a map of export to a list of clocks"
+      type: "object"
+      default: {
+        intf: {
+	  ep: [
+	    "clk1"
+	    "clk2"
+	  ]
+	}
+      }
+    }
+    {
+      name: "number_of_clock_groups"
+      desc: "The count of clock groups, as in 'ast', 'infra', 'secure', etc."
+      type: "int"
+      default: "2"
+    }
+  ]
+}
