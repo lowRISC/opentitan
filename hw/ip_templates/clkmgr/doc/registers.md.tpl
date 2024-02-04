@@ -1,7 +1,7 @@
 # Registers
 
-<!-- BEGIN CMDGEN util/regtool.py -d ./hw/top_earlgrey/ip/clkmgr/data/autogen/clkmgr.hjson -->
-## Summary
+<!-- BEGIN CMDGEN util/regtool.py -d ./hw/top_${topname}/ip_autogen/clkmgr/data/clkmgr.hjson -->
+${"##"} Summary
 
 | Name                                                               | Offset   |   Length | Description                                                                |
 |:-------------------------------------------------------------------|:---------|---------:|:---------------------------------------------------------------------------|
@@ -28,13 +28,13 @@
 | clkmgr.[`RECOV_ERR_CODE`](#recov_err_code)                         | 0x50     |        4 | Recoverable Error code                                                     |
 | clkmgr.[`FATAL_ERR_CODE`](#fatal_err_code)                         | 0x54     |        4 | Error code                                                                 |
 
-## ALERT_TEST
+${"##"} ALERT_TEST
 Alert Test Register
 - Offset: `0x0`
 - Reset default: `0x0`
 - Reset mask: `0x3`
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "recov_fault", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "fatal_fault", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 30}], "config": {"lanes": 1, "fontsize": 10, "vspace": 130}}
@@ -46,13 +46,13 @@ Alert Test Register
 |   1    |   wo   |   0x0   | fatal_fault | Write 1 to trigger one alert event of this kind. |
 |   0    |   wo   |   0x0   | recov_fault | Write 1 to trigger one alert event of this kind. |
 
-## EXTCLK_CTRL_REGWEN
+${"##"} EXTCLK_CTRL_REGWEN
 External clock control write enable
 - Offset: `0x4`
 - Reset default: `0x1`
 - Reset mask: `0x1`
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "EN", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -63,14 +63,14 @@ External clock control write enable
 |  31:1  |        |         |        | Reserved                                                                                                                        |
 |   0    |  rw0c  |   0x1   | EN     | When 1, the value of [`EXTCLK_CTRL`](#extclk_ctrl) can be set.  When 0, writes to [`EXTCLK_CTRL`](#extclk_ctrl) have no effect. |
 
-## EXTCLK_CTRL
+${"##"} EXTCLK_CTRL
 Select external clock
 - Offset: `0x8`
 - Reset default: `0x99`
 - Reset mask: `0xff`
 - Register enable: [`EXTCLK_CTRL_REGWEN`](#extclk_ctrl_regwen)
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "SEL", "bits": 4, "attr": ["rw"], "rotate": 0}, {"name": "HI_SPEED_SEL", "bits": 4, "attr": ["rw"], "rotate": -90}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 140}}
@@ -82,7 +82,7 @@ Select external clock
 |  7:4   |   rw   |   0x9   | [HI_SPEED_SEL](#extclk_ctrl--hi_speed_sel) |
 |  3:0   |   rw   |   0x9   | [SEL](#extclk_ctrl--sel)                   |
 
-### EXTCLK_CTRL . HI_SPEED_SEL
+${"###"} EXTCLK_CTRL . HI_SPEED_SEL
 A value of kMultiBitBool4True selects nominal speed external clock.
 All other values selects low speed clocks.
 
@@ -100,7 +100,7 @@ while previously divided clocks run at roughly the nominal frequency.
 
 See external clock switch support in documentation for more details.
 
-### EXTCLK_CTRL . SEL
+${"###"} EXTCLK_CTRL . SEL
 When the current value is not kMultiBitBool4True, writing a value of kMultiBitBool4True
 selects external clock as clock for the system.  Writing any other value has
 no impact.
@@ -112,13 +112,13 @@ has no impact.
 While this register can always be programmed, it only takes effect when debug functions are enabled
 in life cycle TEST, DEV or RMA states.
 
-## EXTCLK_STATUS
+${"##"} EXTCLK_STATUS
 Status of requested external clock switch
 - Offset: `0xc`
 - Reset default: `0x9`
 - Reset mask: `0xf`
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "ACK", "bits": 4, "attr": ["ro"], "rotate": 0}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -129,20 +129,20 @@ Status of requested external clock switch
 |  31:4  |        |         | Reserved                   |
 |  3:0   |   ro   |   0x9   | [ACK](#extclk_status--ack) |
 
-### EXTCLK_STATUS . ACK
+${"###"} EXTCLK_STATUS . ACK
 When [`EXTCLK_CTRL.SEL`](#extclk_ctrl) is set to kMultiBitBool4True, this field reflects
 whether the clock has been switched the external source.
 
 kMultiBitBool4True indicates the switch is complete.
 kMultiBitBool4False indicates the switch is either not possible or still ongoing.
 
-## JITTER_REGWEN
+${"##"} JITTER_REGWEN
 Jitter write enable
 - Offset: `0x10`
 - Reset default: `0x1`
 - Reset mask: `0x1`
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "EN", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -153,13 +153,13 @@ Jitter write enable
 |  31:1  |        |         |        | Reserved                                                                                               |
 |   0    |  rw0c  |   0x1   | EN     | When 1, the value of [`JITTER_ENABLE`](#jitter_enable) can be changed.  When 0, writes have no effect. |
 
-## JITTER_ENABLE
+${"##"} JITTER_ENABLE
 Enable jittery clock
 - Offset: `0x14`
 - Reset default: `0x9`
 - Reset mask: `0xf`
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "VAL", "bits": 4, "attr": ["rw"], "rotate": 0}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -170,14 +170,14 @@ Enable jittery clock
 |  31:4  |        |         |        | Reserved                                                                                                                      |
 |  3:0   |   rw   |   0x9   | VAL    | Enable jittery clock. A value of kMultiBitBool4False disables the jittery clock, while all other values enable jittery clock. |
 
-## CLK_ENABLES
+${"##"} CLK_ENABLES
 Clock enable for software gateable clocks.
 These clocks are directly controlled by software.
 - Offset: `0x18`
 - Reset default: `0xf`
 - Reset mask: `0xf`
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "CLK_IO_DIV4_PERI_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "CLK_IO_DIV2_PERI_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "CLK_IO_PERI_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "CLK_USB_PERI_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 210}}
@@ -191,7 +191,7 @@ These clocks are directly controlled by software.
 |   1    |   rw   |   0x1   | CLK_IO_DIV2_PERI_EN | 0 CLK_IO_DIV2_PERI is disabled. 1 CLK_IO_DIV2_PERI is enabled. |
 |   0    |   rw   |   0x1   | CLK_IO_DIV4_PERI_EN | 0 CLK_IO_DIV4_PERI is disabled. 1 CLK_IO_DIV4_PERI is enabled. |
 
-## CLK_HINTS
+${"##"} CLK_HINTS
 Clock hint for software gateable transactional clocks during active mode.
 During low power mode, all clocks are gated off regardless of the software hint.
 
@@ -207,7 +207,7 @@ feedback in this case.
 - Reset default: `0xf`
 - Reset mask: `0xf`
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "CLK_MAIN_AES_HINT", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "CLK_MAIN_HMAC_HINT", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "CLK_MAIN_KMAC_HINT", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "CLK_MAIN_OTBN_HINT", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 200}}
@@ -221,7 +221,7 @@ feedback in this case.
 |   1    |   rw   |   0x1   | CLK_MAIN_HMAC_HINT | 0 CLK_MAIN_HMAC can be disabled. 1 CLK_MAIN_HMAC is enabled. |
 |   0    |   rw   |   0x1   | CLK_MAIN_AES_HINT  | 0 CLK_MAIN_AES can be disabled. 1 CLK_MAIN_AES is enabled.   |
 
-## CLK_HINTS_STATUS
+${"##"} CLK_HINTS_STATUS
 Since the final state of [`CLK_HINTS`](#clk_hints) is not always determined by software,
 this register provides read feedback for the current clock state.
 
@@ -229,7 +229,7 @@ this register provides read feedback for the current clock state.
 - Reset default: `0xf`
 - Reset mask: `0xf`
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "CLK_MAIN_AES_VAL", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CLK_MAIN_HMAC_VAL", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CLK_MAIN_KMAC_VAL", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CLK_MAIN_OTBN_VAL", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 190}}
@@ -243,13 +243,13 @@ this register provides read feedback for the current clock state.
 |   1    |   ro   |   0x1   | CLK_MAIN_HMAC_VAL | 0 CLK_MAIN_HMAC is disabled. 1 CLK_MAIN_HMAC is enabled. |
 |   0    |   ro   |   0x1   | CLK_MAIN_AES_VAL  | 0 CLK_MAIN_AES is disabled. 1 CLK_MAIN_AES is enabled.   |
 
-## MEASURE_CTRL_REGWEN
+${"##"} MEASURE_CTRL_REGWEN
 Measurement control write enable
 - Offset: `0x24`
 - Reset default: `0x1`
 - Reset mask: `0x1`
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "EN", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -260,14 +260,14 @@ Measurement control write enable
 |  31:1  |        |         |        | Reserved                                                                                 |
 |   0    |  rw0c  |   0x1   | EN     | When 1, the value of the measurement control can be set.  When 0, writes have no effect. |
 
-## IO_MEAS_CTRL_EN
+${"##"} IO_MEAS_CTRL_EN
 Enable for measurement control
 - Offset: `0x28`
 - Reset default: `0x9`
 - Reset mask: `0xf`
 - Register enable: [`MEASURE_CTRL_REGWEN`](#measure_ctrl_regwen)
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "EN", "bits": 4, "attr": ["rw"], "rotate": 0}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -278,7 +278,7 @@ Enable for measurement control
 |  31:4  |        |         |        | Reserved                  |
 |  3:0   |   rw   |   0x9   | EN     | Enable measurement for io |
 
-## IO_MEAS_CTRL_SHADOWED
+${"##"} IO_MEAS_CTRL_SHADOWED
 Configuration controls for io measurement.
 
 The threshold fields are made wider than required (by 1 bit) to ensure
@@ -288,7 +288,7 @@ there is room to adjust for measurement inaccuracies.
 - Reset mask: `0xfffff`
 - Register enable: [`MEASURE_CTRL_REGWEN`](#measure_ctrl_regwen)
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "HI", "bits": 10, "attr": ["rw"], "rotate": 0}, {"name": "LO", "bits": 10, "attr": ["rw"], "rotate": 0}, {"bits": 12}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -300,14 +300,14 @@ there is room to adjust for measurement inaccuracies.
 | 19:10  |   rw   |  0x1d6  | LO     | Min threshold for io measurement |
 |  9:0   |   rw   |  0x1ea  | HI     | Max threshold for io measurement |
 
-## IO_DIV2_MEAS_CTRL_EN
+${"##"} IO_DIV2_MEAS_CTRL_EN
 Enable for measurement control
 - Offset: `0x30`
 - Reset default: `0x9`
 - Reset mask: `0xf`
 - Register enable: [`MEASURE_CTRL_REGWEN`](#measure_ctrl_regwen)
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "EN", "bits": 4, "attr": ["rw"], "rotate": 0}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -318,7 +318,7 @@ Enable for measurement control
 |  31:4  |        |         |        | Reserved                       |
 |  3:0   |   rw   |   0x9   | EN     | Enable measurement for io_div2 |
 
-## IO_DIV2_MEAS_CTRL_SHADOWED
+${"##"} IO_DIV2_MEAS_CTRL_SHADOWED
 Configuration controls for io_div2 measurement.
 
 The threshold fields are made wider than required (by 1 bit) to ensure
@@ -328,7 +328,7 @@ there is room to adjust for measurement inaccuracies.
 - Reset mask: `0x3ffff`
 - Register enable: [`MEASURE_CTRL_REGWEN`](#measure_ctrl_regwen)
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "HI", "bits": 9, "attr": ["rw"], "rotate": 0}, {"name": "LO", "bits": 9, "attr": ["rw"], "rotate": 0}, {"bits": 14}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -340,14 +340,14 @@ there is room to adjust for measurement inaccuracies.
 |  17:9  |   rw   |  0xe6   | LO     | Min threshold for io_div2 measurement |
 |  8:0   |   rw   |  0xfa   | HI     | Max threshold for io_div2 measurement |
 
-## IO_DIV4_MEAS_CTRL_EN
+${"##"} IO_DIV4_MEAS_CTRL_EN
 Enable for measurement control
 - Offset: `0x38`
 - Reset default: `0x9`
 - Reset mask: `0xf`
 - Register enable: [`MEASURE_CTRL_REGWEN`](#measure_ctrl_regwen)
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "EN", "bits": 4, "attr": ["rw"], "rotate": 0}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -358,7 +358,7 @@ Enable for measurement control
 |  31:4  |        |         |        | Reserved                       |
 |  3:0   |   rw   |   0x9   | EN     | Enable measurement for io_div4 |
 
-## IO_DIV4_MEAS_CTRL_SHADOWED
+${"##"} IO_DIV4_MEAS_CTRL_SHADOWED
 Configuration controls for io_div4 measurement.
 
 The threshold fields are made wider than required (by 1 bit) to ensure
@@ -368,7 +368,7 @@ there is room to adjust for measurement inaccuracies.
 - Reset mask: `0xffff`
 - Register enable: [`MEASURE_CTRL_REGWEN`](#measure_ctrl_regwen)
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "HI", "bits": 8, "attr": ["rw"], "rotate": 0}, {"name": "LO", "bits": 8, "attr": ["rw"], "rotate": 0}, {"bits": 16}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -380,14 +380,14 @@ there is room to adjust for measurement inaccuracies.
 |  15:8  |   rw   |  0x6e   | LO     | Min threshold for io_div4 measurement |
 |  7:0   |   rw   |  0x82   | HI     | Max threshold for io_div4 measurement |
 
-## MAIN_MEAS_CTRL_EN
+${"##"} MAIN_MEAS_CTRL_EN
 Enable for measurement control
 - Offset: `0x40`
 - Reset default: `0x9`
 - Reset mask: `0xf`
 - Register enable: [`MEASURE_CTRL_REGWEN`](#measure_ctrl_regwen)
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "EN", "bits": 4, "attr": ["rw"], "rotate": 0}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -398,7 +398,7 @@ Enable for measurement control
 |  31:4  |        |         |        | Reserved                    |
 |  3:0   |   rw   |   0x9   | EN     | Enable measurement for main |
 
-## MAIN_MEAS_CTRL_SHADOWED
+${"##"} MAIN_MEAS_CTRL_SHADOWED
 Configuration controls for main measurement.
 
 The threshold fields are made wider than required (by 1 bit) to ensure
@@ -408,7 +408,7 @@ there is room to adjust for measurement inaccuracies.
 - Reset mask: `0xfffff`
 - Register enable: [`MEASURE_CTRL_REGWEN`](#measure_ctrl_regwen)
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "HI", "bits": 10, "attr": ["rw"], "rotate": 0}, {"name": "LO", "bits": 10, "attr": ["rw"], "rotate": 0}, {"bits": 12}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -420,14 +420,14 @@ there is room to adjust for measurement inaccuracies.
 | 19:10  |   rw   |  0x1ea  | LO     | Min threshold for main measurement |
 |  9:0   |   rw   |  0x1fe  | HI     | Max threshold for main measurement |
 
-## USB_MEAS_CTRL_EN
+${"##"} USB_MEAS_CTRL_EN
 Enable for measurement control
 - Offset: `0x48`
 - Reset default: `0x9`
 - Reset mask: `0xf`
 - Register enable: [`MEASURE_CTRL_REGWEN`](#measure_ctrl_regwen)
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "EN", "bits": 4, "attr": ["rw"], "rotate": 0}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -438,7 +438,7 @@ Enable for measurement control
 |  31:4  |        |         |        | Reserved                   |
 |  3:0   |   rw   |   0x9   | EN     | Enable measurement for usb |
 
-## USB_MEAS_CTRL_SHADOWED
+${"##"} USB_MEAS_CTRL_SHADOWED
 Configuration controls for usb measurement.
 
 The threshold fields are made wider than required (by 1 bit) to ensure
@@ -448,7 +448,7 @@ there is room to adjust for measurement inaccuracies.
 - Reset mask: `0x3ffff`
 - Register enable: [`MEASURE_CTRL_REGWEN`](#measure_ctrl_regwen)
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "HI", "bits": 9, "attr": ["rw"], "rotate": 0}, {"name": "LO", "bits": 9, "attr": ["rw"], "rotate": 0}, {"bits": 14}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
@@ -460,13 +460,13 @@ there is room to adjust for measurement inaccuracies.
 |  17:9  |   rw   |  0xe6   | LO     | Min threshold for usb measurement |
 |  8:0   |   rw   |  0xfa   | HI     | Max threshold for usb measurement |
 
-## RECOV_ERR_CODE
+${"##"} RECOV_ERR_CODE
 Recoverable Error code
 - Offset: `0x50`
 - Reset default: `0x0`
 - Reset mask: `0x7ff`
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "SHADOW_UPDATE_ERR", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "IO_MEASURE_ERR", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "IO_DIV2_MEASURE_ERR", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "IO_DIV4_MEASURE_ERR", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "MAIN_MEASURE_ERR", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "USB_MEASURE_ERR", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "IO_TIMEOUT_ERR", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "IO_DIV2_TIMEOUT_ERR", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "IO_DIV4_TIMEOUT_ERR", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "MAIN_TIMEOUT_ERR", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "USB_TIMEOUT_ERR", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 21}], "config": {"lanes": 1, "fontsize": 10, "vspace": 210}}
@@ -487,13 +487,13 @@ Recoverable Error code
 |   1    |  rw1c  |   0x0   | IO_MEASURE_ERR      | io has encountered a measurement error.                  |
 |   0    |  rw1c  |   0x0   | SHADOW_UPDATE_ERR   | One of the shadow registers encountered an update error. |
 
-## FATAL_ERR_CODE
+${"##"} FATAL_ERR_CODE
 Error code
 - Offset: `0x54`
 - Reset default: `0x0`
 - Reset mask: `0x7`
 
-### Fields
+${"###"} Fields
 
 ```wavejson
 {"reg": [{"name": "REG_INTG", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "IDLE_CNT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SHADOW_STORAGE_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 29}], "config": {"lanes": 1, "fontsize": 10, "vspace": 200}}
