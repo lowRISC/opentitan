@@ -223,14 +223,14 @@ class FlashCtrlSim {
     return absl::nullopt;
   }
   // Returns true iff memory protection rules allow this address to be erased.
-  // If there is no matching rule, it returns the the last flash-wide
+  // If there is no matching rule, it returns the last flash-wide
   // erasability configured with `flash_ctrl_bank_erase_perms_set()`.
   bool ErasePageOk(uint32_t addr) const {
     absl::optional<MpRegion> region = FindMpRegion(addr);
     return region ? region->erase_enabled : bank_erase_perms_;
   }
   // Returns true iff memory protection rules allow this address to be read.
-  // If there is no matching rule, it returns the the last flash-wide
+  // If there is no matching rule, it returns the last flash-wide
   // readability configured with `flash_ctrl_bank_erase_perms_set()`.
   bool ReadPageOk(uint32_t addr) const {
     absl::optional<MpRegion> region = FindMpRegion(addr);

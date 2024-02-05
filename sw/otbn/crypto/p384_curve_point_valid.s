@@ -8,7 +8,7 @@
  * Checks if a given curve point (e.g. public key for ECDH shared key
  * generation) is a valid curve point on the P-384 curve.
  *
- * The check is successful when the the binary execution completes without
+ * The check is successful when the binary execution completes without
  * error. In case of an unvalid point, a software error is raised and execution
  * is halted.
  */
