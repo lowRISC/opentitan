@@ -25,3 +25,13 @@ pub fn symbol_data(object: &object::read::File, name: &str) -> Result<Vec<u8>> {
 
     Ok(data.to_vec())
 }
+
+/// Get a symbol's address from an object file.
+pub fn symbol_addr(object: &object::read::File, name: &str) -> Result<u32> {
+    let addr = object
+        .symbols()
+        .find(|symbol| symbol.name() == Ok(name))
+        .with_context(|| format!("failed to find {name} symbol"))?
+        .address();
+    Ok(addr as u32)
+}
