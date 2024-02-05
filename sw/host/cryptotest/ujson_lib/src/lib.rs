@@ -8,3 +8,4 @@ pub mod ecdh_commands;
 pub mod ecdsa_commands;
 pub mod hash_commands;
 pub mod hmac_commands;
+pub mod kmac_commands;

@@ -42,6 +42,11 @@ ujson_rust(
     srcs = ["//sw/device/tests/crypto/cryptotest/json:hmac_commands"],
 )
 
+ujson_rust(
+    name = "kmac_commands_rust",
+    srcs = ["//sw/device/tests/crypto/cryptotest/json:kmac_commands"],
+)
+
 rust_library(
     name = "cryptotest_commands",
     srcs = [
@@ -52,6 +57,7 @@ rust_library(
         "src/ecdsa_commands.rs",
         "src/hash_commands.rs",
         "src/hmac_commands.rs",
+        "src/kmac_commands.rs",
         "src/lib.rs",
     ],
     compile_data = [
@@ -62,6 +68,7 @@ rust_library(
         ":ecdsa_commands_rust",
         ":hash_commands_rust",
         ":hmac_commands_rust",
+        ":kmac_commands_rust",
     ],
     rustc_env = {
         "commands_loc": "$(execpath :commands_rust)",
@@ -71,6 +78,7 @@ rust_library(
         "ecdsa_commands_loc": "$(execpath :ecdsa_commands_rust)",
         "hash_commands_loc": "$(execpath :hash_commands_rust)",
         "hmac_commands_loc": "$(execpath :hmac_commands_rust)",
+        "kmac_commands_loc": "$(execpath :kmac_commands_rust)",
     },
     deps = [
         "//sw/host/opentitanlib",
