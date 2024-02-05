@@ -32,8 +32,7 @@ class csrng_device_driver extends csrng_driver;
       `DV_SPINWAIT_EXIT(
           repeat(cmd_ack_dly) @(cfg.vif.device_cb);
           cfg.vif.device_cb.cmd_rsp_int.csrng_rsp_ack <= 1'b1;
-          `DV_CHECK_STD_RANDOMIZE_FATAL(rsp_sts)
-          cfg.vif.device_cb.cmd_rsp_int.csrng_rsp_sts <= rsp_sts;
+          cfg.vif.device_cb.cmd_rsp_int.csrng_rsp_sts <= cfg.rsp_sts_err;
           @(cfg.vif.device_cb);
           cfg.vif.device_cb.cmd_rsp_int.csrng_rsp_ack <= 1'b0;
           cfg.vif.device_cb.cmd_rsp_int.csrng_rsp_sts <= 1'b0;,

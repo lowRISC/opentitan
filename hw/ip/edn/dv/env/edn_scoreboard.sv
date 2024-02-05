@@ -310,6 +310,9 @@ class edn_scoreboard extends cip_base_scoreboard #(
           end
         end
       end
+      "hw_cmd_sts": begin
+        do_read_check = 1'b0;
+      end
       "boot_ins_cmd": begin
         if (addr_phase_write) begin
           boot_ins_cmd_comp = item.a_data;
