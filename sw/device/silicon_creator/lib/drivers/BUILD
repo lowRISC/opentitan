@@ -118,6 +118,35 @@ cc_test(
 )
 
 dual_cc_library(
+    name = "ctn_sram",
+    srcs = dual_inputs(
+        device = ["ctn_sram.c"],
+        host = ["mock_ctn_sram.cc"],
+    ),
+    hdrs = dual_inputs(
+        host = ["mock_ctn_sram.h"],
+        shared = ["ctn_sram.h"],
+    ),
+    deps = dual_inputs(
+        host = [
+            "//sw/lib/sw/device/silicon_creator/testing:rom_test",
+            "//sw/lib/sw/device/base:global_mock",
+            "@googletest//:gtest",
+        ],
+        shared = [
+            "//hw/ip/sram_ctrl/data:sram_ctrl_regs",
+            "//hw/top_darjeeling/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
+            "//hw/top_darjeeling/sw/autogen:top_darjeeling",
+            "//sw/lib/sw/device/base:abs_mmio",
+            "//sw/lib/sw/device/base:hardened",
+            "//sw/lib/sw/device/base:memory",
+            "//sw/lib/sw/device/base:multibits",
+            "//sw/lib/sw/device/silicon_creator:error",
+        ],
+    ),
+)
+
+dual_cc_library(
     name = "flash_ctrl",
     srcs = dual_inputs(
         device = ["flash_ctrl.c"],

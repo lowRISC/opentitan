@@ -4,8 +4,9 @@
 
 #include "sw/device/silicon_creator/rom/bootstrap.h"
 
-#include <string.h>
+#include <stdalign.h>
 
+#include "sw/device/silicon_creator/lib/drivers/ctn_sram.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/device/silicon_creator/lib/drivers/spi_device.h"
@@ -15,20 +16,20 @@
 #include "sw/lib/sw/device/silicon_creator/base/chip.h"
 #include "sw/lib/sw/device/silicon_creator/error.h"
 
+#include "flash_ctrl_regs.h"
 #include "gpio_regs.h"
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "otp_ctrl_regs.h"
 
 enum {
   /*
-   * Base ctn sram address, exclusive.
+   * Maximum flash address, exclusive.
    */
-  kBaseAddress = TOP_DARJEELING_RAM_CTN_BASE_ADDR,
-  /*
-   * Maximum ctn sram size, exclusive.
-   */
-  kMaxSize = TOP_DARJEELING_RAM_CTN_SIZE_BYTES,
+  kMaxAddress =
+      FLASH_CTRL_PARAM_BYTES_PER_BANK * FLASH_CTRL_PARAM_REG_NUM_BANKS,
 };
+
+static_assert(FLASH_CTRL_PARAM_REG_NUM_BANKS == 2, "Flash must have 2 banks");
 
 /**
  * Bootstrap states.
@@ -70,9 +71,14 @@ typedef enum bootstrap_state {
  */
 OT_WARN_UNUSED_RESULT
 static rom_error_t bootstrap_chip_erase(void) {
-  memset((void *)kBaseAddress, 0x0, kMaxSize);
+  ctn_sram_bank_erase_perms_set(kHardenedBoolTrue);
+  rom_error_t err_0 = ctn_sram_data_erase(0, kCtnSramEraseTypeBank);
+  rom_error_t err_1 = ctn_sram_data_erase(FLASH_CTRL_PARAM_BYTES_PER_BANK,
+                                          kCtnSramEraseTypeBank);
+  ctn_sram_bank_erase_perms_set(kHardenedBoolFalse);
 
-  return kErrorOk;
+  HARDENED_RETURN_IF_ERROR(err_0);
+  return err_1;
 }
 
 /**
@@ -84,6 +90,8 @@ static rom_error_t bootstrap_chip_erase(void) {
  */
 OT_WARN_UNUSED_RESULT
 static rom_error_t bootstrap_sector_erase(uint32_t addr) {
+  static_assert(FLASH_CTRL_PARAM_BYTES_PER_PAGE == 2048,
+                "Page size must be 2 KiB");
   enum {
     /**
      * Mask for truncating `addr` to the lower 4 KiB aligned address.
@@ -91,21 +99,34 @@ static rom_error_t bootstrap_sector_erase(uint32_t addr) {
     kPageAddrMask = ~UINT32_C(4096) + 1,
   };
 
-  if (addr >= kMaxSize) {
+  if (addr >= kMaxAddress) {
     return kErrorBootstrapEraseAddress;
   }
   addr &= kPageAddrMask;
 
-  memset((void *)(kBaseAddress + addr), 0x0, 4096);
+  ctn_sram_data_default_perms_set((ctn_sram_perms_t){
+      .read = kMultiBitBool4False,
+      .write = kMultiBitBool4False,
+      .erase = kMultiBitBool4True,
+  });
+  rom_error_t err_0 = ctn_sram_data_erase(addr, kCtnSramEraseTypePage);
+  rom_error_t err_1 = ctn_sram_data_erase(
+      addr + FLASH_CTRL_PARAM_BYTES_PER_PAGE, kCtnSramEraseTypePage);
+  ctn_sram_data_default_perms_set((ctn_sram_perms_t){
+      .read = kMultiBitBool4False,
+      .write = kMultiBitBool4False,
+      .erase = kMultiBitBool4False,
+  });
 
-  return kErrorOk;
+  HARDENED_RETURN_IF_ERROR(err_0);
+  return err_1;
 }
 
 /**
  * Handles access permissions and programs up to 256 bytes of memory
  * starting at `addr`.
  *
- * @param addr Address to write to data into memory.
+ * @param addr Address to write data into memory.
  * @param byte_count Number of bytes to write into memory.
  * @param data Data to write into memory.
  * @return Result of the operation.
@@ -113,11 +134,75 @@ static rom_error_t bootstrap_sector_erase(uint32_t addr) {
 OT_WARN_UNUSED_RESULT
 static rom_error_t bootstrap_page_program(uint32_t addr, size_t byte_count,
                                           uint8_t *data) {
-  if (addr + byte_count >= kMaxSize) {
+  static_assert(__builtin_popcount(FLASH_CTRL_PARAM_BYTES_PER_WORD) == 1,
+                "Bytes per flash word must be a power of two.");
+  enum {
+    /**
+     * Mask for checking that `addr` is flash word aligned.
+     */
+    kFlashWordMask = FLASH_CTRL_PARAM_BYTES_PER_WORD - 1,
+    /**
+     * SPI flash programming page size in bytes.
+     */
+    kFlashProgPageSize = 256,
+    /**
+     * Mask for checking whether `addr` is flash programming page aligned.
+     *
+     * Flash programming page size is 256 bytes, writes that start at an `addr`
+     * with a non-zero LSB wrap to the start of the 256 byte region.
+     */
+    kFlashProgPageMask = kFlashProgPageSize - 1,
+  };
+
+  if (addr & kFlashWordMask || addr >= kMaxAddress) {
     return kErrorBootstrapProgramAddress;
   }
-  memcpy((void *)(kBaseAddress + addr), data, byte_count);
-  return kErrorOk;
+
+  // Round up to next flash word and fill missing bytes with `0xff`.
+  size_t flash_word_misalignment = byte_count & kFlashWordMask;
+  if (flash_word_misalignment > 0) {
+    size_t padding_byte_count =
+        FLASH_CTRL_PARAM_BYTES_PER_WORD - flash_word_misalignment;
+    for (size_t i = 0; i < padding_byte_count; ++i) {
+      data[byte_count++] = 0xff;
+    }
+  }
+  size_t rem_word_count = byte_count / sizeof(uint32_t);
+
+  ctn_sram_data_default_perms_set((ctn_sram_perms_t){
+      .read = kMultiBitBool4False,
+      .write = kMultiBitBool4True,
+      .erase = kMultiBitBool4False,
+  });
+  // Perform two writes if the start address is not page-aligned (256 bytes).
+  // Note: Address is flash-word-aligned (8 bytes) due to the check above.
+  rom_error_t err_0 = kErrorOk;
+  size_t prog_page_misalignment = addr & kFlashProgPageMask;
+  if (prog_page_misalignment > 0) {
+    size_t word_count =
+        (kFlashProgPageSize - prog_page_misalignment) / sizeof(uint32_t);
+    if (word_count > rem_word_count) {
+      word_count = rem_word_count;
+    }
+    err_0 = ctn_sram_data_write(addr, word_count, data);
+    rem_word_count -= word_count;
+    data += word_count * sizeof(uint32_t);
+    // Wrap to the beginning of the current page since PAGE_PROGRAM modifies
+    // a single page only.
+    addr &= ~(uint32_t)kFlashProgPageMask;
+  }
+  rom_error_t err_1 = kErrorOk;
+  if (rem_word_count > 0) {
+    err_1 = ctn_sram_data_write(addr, rem_word_count, data);
+  }
+  ctn_sram_data_default_perms_set((ctn_sram_perms_t){
+      .read = kMultiBitBool4False,
+      .write = kMultiBitBool4False,
+      .erase = kMultiBitBool4False,
+  });
+
+  HARDENED_RETURN_IF_ERROR(err_0);
+  return err_1;
 }
 
 /**
@@ -170,28 +255,11 @@ OT_WARN_UNUSED_RESULT
 static rom_error_t bootstrap_handle_erase_verify(bootstrap_state_t *state) {
   HARDENED_CHECK_EQ(*state, kBootstrapStateEraseVerify);
 
-  memset((void *)kBaseAddress, 0x0, kMaxSize);
-
-  rom_error_t err_0 = kErrorOk;
-  // Check first page for zero
-  for (uint32_t i = 0; i < 4096 / 4; i++) {
-    uint32_t zero = 0x0;
-    if (memcmp((void *)(kBaseAddress + 4 * i), (void *)&zero, 4)) {
-      err_0 = kErrorFlashCtrlDataEraseVerify;
-      break;
-    }
-  }
-  if (err_0 == kErrorOk) {
-    // Check subsequent pages for zero
-    for (uint32_t i = 1; i < kMaxSize / 4096; i++) {
-      if (memcmp((void *)(kBaseAddress), (void *)(kBaseAddress + 4096 * i),
-                 4096)) {
-        err_0 = kErrorFlashCtrlDataEraseVerify;
-        break;
-      }
-    }
-  }
+  rom_error_t err_0 = ctn_sram_data_erase_verify(0, kCtnSramEraseTypeBank);
+  rom_error_t err_1 = ctn_sram_data_erase_verify(
+      FLASH_CTRL_PARAM_BYTES_PER_BANK, kCtnSramEraseTypeBank);
   HARDENED_RETURN_IF_ERROR(err_0);
+  HARDENED_RETURN_IF_ERROR(err_1);
 
   *state = kBootstrapStateProgram;
   spi_device_flash_status_clear();
@@ -209,6 +277,11 @@ static rom_error_t bootstrap_handle_program(bootstrap_state_t *state) {
   static_assert(alignof(spi_device_cmd_t) >= sizeof(uint32_t) &&
                     offsetof(spi_device_cmd_t, payload) >= sizeof(uint32_t),
                 "Payload must be word aligned.");
+  static_assert(
+      sizeof((spi_device_cmd_t){0}.payload) % FLASH_CTRL_PARAM_BYTES_PER_WORD ==
+          0,
+      "Payload size must be a multiple of flash word size.");
+
   HARDENED_CHECK_EQ(*state, kBootstrapStateProgram);
 
   spi_device_cmd_t cmd;
