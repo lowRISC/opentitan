@@ -219,3 +219,32 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
     },
 )
+
+KMAC_TESTVECTOR_TARGETS = [
+    "//sw/host/cryptotest/testvectors/data:wycheproof_kmac_{}.json".format(config)
+    for config in [
+        "128",
+        "256",
+    ]
+]
+
+KMAC_TESTVECTOR_ARGS = " ".join([
+    "--kmac-json=\"$(rootpath {})\"".format(target)
+    for target in KMAC_TESTVECTOR_TARGETS
+])
+
+opentitan_test(
+    name = "kmac_kat",
+    cw310 = cw310_params(
+        timeout = "long",
+        binaries = {"//sw/device/tests/crypto/cryptotest/firmware:firmware": "firmware"},
+        data = KMAC_TESTVECTOR_TARGETS,
+        test_cmd = """
+            --bootstrap={firmware}
+        """ + KMAC_TESTVECTOR_ARGS,
+        test_harness = "//sw/host/tests/crypto/kmac_kat:harness",
+    ),
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+    },
+)
