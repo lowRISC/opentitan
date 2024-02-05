@@ -4,15 +4,11 @@
 
 package(default_visibility = ["//visibility:public"])
 
-load("//rules:opentitan.bzl", "OPENTITAN_CPU", "OPENTITAN_PLATFORM", "opentitan_binary")
+load("//rules/opentitan:static_library.bzl", "ot_static_library")
 
 # Top-level cryptolib target.
-cc_library(
+ot_static_library(
     name = "otcrypto",
-    hdrs = [
-        "otcrypto.h",
-    ],
-    target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//sw/device/lib/crypto/impl:aes",
         "//sw/device/lib/crypto/impl:drbg",
@@ -24,5 +20,4 @@ cc_library(
         "//sw/device/lib/crypto/impl:rsa",
         "//sw/device/lib/crypto/include:datatypes",
     ],
-    alwayslink = True,
 )
