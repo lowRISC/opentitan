@@ -246,6 +246,12 @@ class edn_err_vseq extends edn_base_vseq;
 
     // Insert the selected error.
     `uvm_info(`gfn, $sformatf("which_err_code = %s", cfg.which_err_code.name()), UVM_HIGH)
+    // CSRNG requests can drop if the SM reaches an error state.
+    // The corresponding assertions can be disabled shortly since CSRNG must be disabled
+    // any time the EDN is disabled according to specification.
+    // https://opentitan.org/book/hw/ip/edn/doc/programmers_guide.html
+    $assertoff(0, "tb.csrng_if.cmd_push_if.H_DataStableWhenValidAndNotReady_A");
+    $assertoff(0, "tb.csrng_if.cmd_push_if.ValidHighUntilReady_A");
     case (cfg.which_err_code) inside
       sfifo_rescmd_err, sfifo_gencmd_err, sfifo_output_err: begin
         fld = csr.get_field_by_name(fld_name);
@@ -326,6 +332,8 @@ class edn_err_vseq extends edn_base_vseq;
     endcase // case (cfg.which_err_code)
 
     // Turn assertions back on
+    $asserton(0, "tb.csrng_if.cmd_push_if.H_DataStableWhenValidAndNotReady_A");
+    $asserton(0, "tb.csrng_if.cmd_push_if.ValidHighUntilReady_A");
     cfg.edn_assert_vif.assert_on();
   endtask
 

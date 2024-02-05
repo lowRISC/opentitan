@@ -22,5 +22,6 @@ class csrng_agent_cfg extends dv_base_agent_cfg;
          reseed_cnt, generate_cnt, generate_between_reseeds_cnt;
   bit    cmd_zero_delays;
   bit    under_reset;
+  bit    rsp_sts_err;
 
 endclass
