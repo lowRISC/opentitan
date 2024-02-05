@@ -18,6 +18,7 @@ extern "C" {
     value(_, Ecdh) \
     value(_, Hash) \
     value(_, Hmac) \
+    value(_, Kmac) \
     value(_, AesSca) \
     value(_, IbexFi) \
     value(_, KmacSca) \
