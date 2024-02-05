@@ -214,6 +214,8 @@ jobs:
       echo -//sw/otbn/crypto/... >> "${TARGET_PATTERN_FILE}"
       echo -//third_party/riscv-compliance/... >> "${TARGET_PATTERN_FILE}"
       echo -//hw:all >> "${TARGET_PATTERN_FILE}"
+      echo -//hw/ip_templates/clkmgr/data:clkmgr_regs \
+        >> "${TARGET_PATTERN_FILE}"
       echo -//hw/ip_templates/flash_ctrl/data:flash_ctrl_regs \
         >> "${TARGET_PATTERN_FILE}"
       echo -//hw/ip_templates/pwrmgr/data:pwrmgr_regs \
