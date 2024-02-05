@@ -400,17 +400,18 @@ automatic reseed when it reaches zero.
 Recoverable alert status register
 - Offset: `0x38`
 - Reset default: `0x0`
-- Reset mask: `0x100f`
+- Reset mask: `0x300f`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "EDN_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "BOOT_REQ_MODE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "AUTO_REQ_MODE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CMD_FIFO_RST_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 8}, {"name": "EDN_BUS_CMP_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 19}], "config": {"lanes": 1, "fontsize": 10, "vspace": 270}}
+{"reg": [{"name": "EDN_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "BOOT_REQ_MODE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "AUTO_REQ_MODE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CMD_FIFO_RST_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 8}, {"name": "EDN_BUS_CMP_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CSRNG_ACK_ERR", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 18}], "config": {"lanes": 1, "fontsize": 10, "vspace": 270}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                      | Description                                                                                                                                                                                     |
 |:------:|:------:|:-------:|:--------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 31:13  |        |         |                           | Reserved                                                                                                                                                                                        |
+| 31:14  |        |         |                           | Reserved                                                                                                                                                                                        |
+|   13   |  rw0c  |   0x0   | CSRNG_ACK_ERR             | This bit is set when the CSRNG returns an acknowledgement where the status signal is high. Writing a zero resets this status bit.                                                               |
 |   12   |  rw0c  |   0x0   | EDN_BUS_CMP_ALERT         | This bit is set when the interal entropy bus value is equal to the prior valid value on the bus, indicating a possible attack. Writing a zero resets this status bit.                           |
 |  11:4  |        |         |                           | Reserved                                                                                                                                                                                        |
 |   3    |  rw0c  |   0x0   | CMD_FIFO_RST_FIELD_ALERT  | This bit is set when the CMD_FIFO_RST field is set to an illegal value, something other than kMultiBitBool4True or kMultiBitBool4False. Writing a zero resets this status bit.                  |

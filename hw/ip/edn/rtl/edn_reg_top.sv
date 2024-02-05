@@ -184,6 +184,8 @@ module edn_reg_top (
   logic recov_alert_sts_cmd_fifo_rst_field_alert_wd;
   logic recov_alert_sts_edn_bus_cmp_alert_qs;
   logic recov_alert_sts_edn_bus_cmp_alert_wd;
+  logic recov_alert_sts_csrng_ack_err_qs;
+  logic recov_alert_sts_csrng_ack_err_wd;
   logic err_code_sfifo_rescmd_err_qs;
   logic err_code_sfifo_gencmd_err_qs;
   logic err_code_edn_ack_sm_err_qs;
@@ -1064,6 +1066,33 @@ module edn_reg_top (
     .qs     (recov_alert_sts_edn_bus_cmp_alert_qs)
   );
 
+  //   F[csrng_ack_err]: 13:13
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_recov_alert_sts_csrng_ack_err (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (recov_alert_sts_we),
+    .wd     (recov_alert_sts_csrng_ack_err_wd),
+
+    // from internal hardware
+    .de     (hw2reg.recov_alert_sts.csrng_ack_err.de),
+    .d      (hw2reg.recov_alert_sts.csrng_ack_err.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (recov_alert_sts_csrng_ack_err_qs)
+  );
+
 
   // R[err_code]: V(False)
   //   F[sfifo_rescmd_err]: 0:0
@@ -1462,6 +1491,8 @@ module edn_reg_top (
   assign recov_alert_sts_cmd_fifo_rst_field_alert_wd = reg_wdata[3];
 
   assign recov_alert_sts_edn_bus_cmp_alert_wd = reg_wdata[12];
+
+  assign recov_alert_sts_csrng_ack_err_wd = reg_wdata[13];
   assign err_code_test_we = addr_hit[16] & reg_we & !reg_error;
 
   assign err_code_test_wd = reg_wdata[4:0];
@@ -1569,6 +1600,7 @@ module edn_reg_top (
         reg_rdata_next[2] = recov_alert_sts_auto_req_mode_field_alert_qs;
         reg_rdata_next[3] = recov_alert_sts_cmd_fifo_rst_field_alert_qs;
         reg_rdata_next[12] = recov_alert_sts_edn_bus_cmp_alert_qs;
+        reg_rdata_next[13] = recov_alert_sts_csrng_ack_err_qs;
       end
 
       addr_hit[15]: begin

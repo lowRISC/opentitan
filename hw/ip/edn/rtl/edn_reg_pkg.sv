@@ -182,6 +182,10 @@ package edn_reg_pkg;
       logic        d;
       logic        de;
     } edn_bus_cmp_alert;
+    struct packed {
+      logic        d;
+      logic        de;
+    } csrng_ack_err;
   } edn_hw2reg_recov_alert_sts_reg_t;
 
   typedef struct packed {
@@ -242,10 +246,10 @@ package edn_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    edn_hw2reg_intr_state_reg_t intr_state; // [60:57]
-    edn_hw2reg_sw_cmd_sts_reg_t sw_cmd_sts; // [56:49]
-    edn_hw2reg_hw_cmd_sts_reg_t hw_cmd_sts; // [48:36]
-    edn_hw2reg_recov_alert_sts_reg_t recov_alert_sts; // [35:26]
+    edn_hw2reg_intr_state_reg_t intr_state; // [62:59]
+    edn_hw2reg_sw_cmd_sts_reg_t sw_cmd_sts; // [58:51]
+    edn_hw2reg_hw_cmd_sts_reg_t hw_cmd_sts; // [50:38]
+    edn_hw2reg_recov_alert_sts_reg_t recov_alert_sts; // [37:26]
     edn_hw2reg_err_code_reg_t err_code; // [25:10]
     edn_hw2reg_main_sm_state_reg_t main_sm_state; // [9:0]
   } edn_hw2reg_t;
