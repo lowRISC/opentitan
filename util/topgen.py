@@ -34,7 +34,7 @@ from topgen import intermodule as im
 from topgen import lib as lib
 from topgen import merge_top, search_ips, secure_prng, validate_top
 from topgen.c_test import TopGenCTest
-from topgen.clocks import Clocks
+from topgen.clocks import Clocks, ClockSignal
 from topgen.gen_dv import gen_dv
 from topgen.gen_top_docs import gen_top_docs
 from topgen.merge import connect_clocks, create_alert_lpgs, extract_clocks
@@ -428,6 +428,37 @@ def generate_clkmgr(top: Dict[str, object], cfg_path: Path,
     generate_regfile_from_path(hjson_out, rtl_path, original_rtl_path)
 
 
+# generate clkmgr with ipgen
+def generate_ipgen_clkmgr(topcfg: Dict[str, object], out_path: Path) -> None:
+    log.info("Generating clkmgr with ipgen")
+    topname = topcfg["name"]
+
+    clocks = topcfg["clocks"]
+    assert isinstance(clocks, Clocks)
+
+    typed_clocks = clocks.typed_clocks()
+    hint_names = typed_clocks.hint_names()
+
+    typed_clks = OrderedDict({
+        ty: {nm: {"src_name": sig.src.name, "endpoint_ip": sig.endpoints[0][0]}
+             for nm, sig in mp.items() if isinstance(sig, ClockSignal)}
+        for ty, mp in typed_clocks._asdict().items() if isinstance(mp, dict)})
+    params = {
+        "src_clks": OrderedDict({
+            name: vars(obj) for name, obj in clocks.srcs.items()}),
+        "derived_clks": OrderedDict({
+            name: vars(obj) for name, obj in clocks.derived_srcs.items()}),
+        "typed_clocks": OrderedDict({
+            ty: d for ty, d in typed_clks.items() if d}),
+        "hint_names": hint_names,
+        "parent_child_clks": typed_clocks.parent_child_clks,
+        "exported_clks": topcfg["exported_clks"],
+        "number_of_clock_groups": len(clocks.groups)
+    }
+
+    ipgen_render("clkmgr", topname, params, out_path)
+
+
 def generate_pwrmgr(top: Dict[str, object], out_path: Path) -> None:
     log.info("Generating pwrmgr with ipgen")
     topname = top["name"]
@@ -794,6 +825,7 @@ def _process_top(topcfg: Dict[str, object], args: argparse.Namespace,
     topcfg["clocks"] = Clocks(topcfg["clocks"])
     extract_clocks(topcfg)
     generate_clkmgr(topcfg, cfg_path, out_path)
+    generate_ipgen_clkmgr(topcfg, out_path)
 
     # It may require two passes to check if the module is needed.
     # TODO: first run of topgen will fail due to the absent of rv_plic.
@@ -1165,7 +1197,8 @@ def main():
         log.debug("Generation pass {}".format(pass_idx))
         if pass_idx < process_dependencies:
             cfg_copy = deepcopy(topcfg)
-            _process_top(cfg_copy, args, cfg_path, out_path_gen, pass_idx)
+            _, _ = _process_top(cfg_copy, args, cfg_path, out_path_gen,
+                                pass_idx)
         else:
             completecfg, name_to_block = _process_top(topcfg, args, cfg_path,
                                                       out_path_gen, pass_idx)
