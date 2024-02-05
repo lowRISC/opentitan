@@ -19,7 +19,7 @@ use std::marker::PhantomData;
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
 
-use crate::io::gpio::{GpioMonitoring, GpioPin};
+use crate::io::gpio::{GpioBitbanging, GpioMonitoring, GpioPin};
 use crate::io::i2c::Bus;
 use crate::io::jtag::{JtagChain, JtagParams};
 use crate::io::spi::Target;
@@ -122,6 +122,7 @@ impl<T: Flavor> Hyperdebug<T> {
     const GOOGLE_CAP_I2C: u16 = 0x0001;
     const GOOGLE_CAP_I2C_DEVICE: u16 = 0x0002;
     const GOOGLE_CAP_GPIO_MONITORING: u16 = 0x0004;
+    const GOOGLE_CAP_GPIO_BITBANGING: u16 = 0x0008;
 
     /// Establish connection with a particular HyperDebug.
     pub fn open(
@@ -550,6 +551,7 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
                 | Capability::UART_NONBLOCKING
                 | Capability::GPIO
                 | Capability::GPIO_MONITORING
+                | Capability::GPIO_BITBANGING
                 | Capability::SPI
                 | Capability::SPI_DUAL
                 | Capability::SPI_QUAD
@@ -690,6 +692,24 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
                 None,
             )?))
         }
+    }
+
+    fn gpio_bitbanging(&self) -> Result<Rc<dyn GpioBitbanging>> {
+        ensure!(
+            self.get_cmsis_google_capabilities()? & Self::GOOGLE_CAP_GPIO_BITBANGING != 0,
+            TransportError::InvalidInterface(TransportInterfaceType::GpioBitbanging),
+        );
+        // GpioBitbanging does not carry any state, so returning a new instance every time is
+        // harmless (save for some memory usage).
+        let Some(cmsis_interface) = self.cmsis_interface else {
+            bail!(TransportError::InvalidInterface(
+                TransportInterfaceType::GpioBitbanging
+            ));
+        };
+        Ok(Rc::new(gpio::HyperdebugGpioBitbanging::open(
+            &self.inner,
+            cmsis_interface,
+        )?))
     }
 
     fn dispatch(&self, action: &dyn Any) -> Result<Option<Box<dyn Annotate>>> {
