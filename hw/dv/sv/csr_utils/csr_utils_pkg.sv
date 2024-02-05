@@ -391,23 +391,23 @@ package csr_utils_pkg;
     csr_field_t csr_or_fld = decode_csr_or_field(ptr);
     uvm_reg     csr = csr_or_fld.csr;
 
-    if (csr.has_hdl_path(kind.name)) begin
-      uvm_hdl_path_concat paths[$];
+    uvm_hdl_path_concat paths[$];
+    csr.get_full_hdl_path(paths, kind.name);
 
-      csr.get_full_hdl_path(paths, kind.name);
-      foreach (paths[0].slices[i]) begin
-        uvm_reg_data_t field_val;
-        `DV_CHECK_FATAL(uvm_hdl_read(paths[0].slices[i].path, field_val),
-                        $sformatf("Failed to read %s, slice %d, at path %s",
-                                  csr.get_full_name(), i, paths[0].slices[i].path),
-                        msg_id)
-        if (check == UVM_CHECK) `DV_CHECK_EQ($isunknown(field_val), 0, "", error, msg_id)
+    `DV_CHECK_FATAL(paths.size() > 0,
+                    $sformatf("No backdoor defined for %0s path's %0s",
+                              csr.get_full_name(), kind.name),
+                    msg_id)
 
-        value |= field_val << paths[0].slices[i].offset;
-      end
-    end else begin
-      `uvm_fatal(msg_id, $sformatf("No backdoor defined for %0s path's %0s",
-                                   csr.get_full_name(), kind.name))
+    foreach (paths[0].slices[i]) begin
+      uvm_reg_data_t field_val;
+      `DV_CHECK_FATAL(uvm_hdl_read(paths[0].slices[i].path, field_val),
+                      $sformatf("Failed to read %s, slice %d, at path %s",
+                                csr.get_full_name(), i, paths[0].slices[i].path),
+                      msg_id)
+      if (check == UVM_CHECK) `DV_CHECK_EQ($isunknown(field_val), 0, "", error, msg_id)
+
+      value |= field_val << paths[0].slices[i].offset;
     end
 
     // if it's field, only return field value
