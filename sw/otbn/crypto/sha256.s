@@ -257,7 +257,7 @@ sha256_process_block:
     bn.sid   x22, 0(x11++)
 
   /* Copy the state register to use as working variables. The state is 8 32-bit
-     words, named a-h in the spec. Note the the representation is big-endian,
+     words, named a-h in the spec. Note that the representation is big-endian,
      so a is in bits 224..255.
        w23 <= w30 = a || b || c || d || e || f || g || h */
   bn.mov     w23, w30
