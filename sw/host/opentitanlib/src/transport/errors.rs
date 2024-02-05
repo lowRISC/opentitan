@@ -87,6 +87,7 @@ pub enum TransportInterfaceType {
     Emulator,
     ProxyOps,
     GpioMonitoring,
+    GpioBitbanging,
     IoExpander,
     Provides,
 }
