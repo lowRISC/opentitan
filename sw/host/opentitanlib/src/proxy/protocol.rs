@@ -38,6 +38,7 @@ pub enum Request {
     ApplyDefaultConfiguration,
     Gpio { id: String, command: GpioRequest },
     GpioMonitoring { command: GpioMonRequest },
+    GpioBitbanging { command: GpioBitRequest },
     Uart { id: String, command: UartRequest },
     Spi { id: String, command: SpiRequest },
     I2c { id: String, command: I2cRequest },
@@ -51,6 +52,7 @@ pub enum Response {
     ApplyDefaultConfiguration,
     Gpio(GpioResponse),
     GpioMonitoring(GpioMonResponse),
+    GpioBitbanging(GpioBitResponse),
     Uart(UartResponse),
     Spi(SpiResponse),
     I2c(I2cResponse),
@@ -104,6 +106,34 @@ pub enum GpioMonResponse {
     GetClockNature { resp: ClockNature },
     Start { resp: MonitoringStartResponse },
     Read { resp: MonitoringReadResponse },
+}
+
+#[derive(Serialize, Deserialize)]
+pub enum BitbangEntryRequest {
+    Write { data: Vec<u8> },
+    Both { data: Vec<u8> },
+    Delay { clock_ticks: u32 },
+}
+
+#[derive(Serialize, Deserialize)]
+pub enum BitbangEntryResponse {
+    Write,
+    Both { data: Vec<u8> },
+    Delay,
+}
+
+#[derive(Serialize, Deserialize)]
+pub enum GpioBitRequest {
+    Run {
+        pins: Vec<String>,
+        clock_ns: u64,
+        entries: Vec<BitbangEntryRequest>,
+    },
+}
+
+#[derive(Serialize, Deserialize)]
+pub enum GpioBitResponse {
+    Run { entries: Vec<BitbangEntryResponse> },
 }
 
 #[derive(Serialize, Deserialize)]
