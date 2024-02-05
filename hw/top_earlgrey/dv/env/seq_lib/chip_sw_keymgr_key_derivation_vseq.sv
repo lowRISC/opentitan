@@ -224,8 +224,7 @@ class chip_sw_keymgr_key_derivation_vseq extends chip_sw_base_vseq;
     creator_data.HardwareRevisionSecret = top_earlgrey_rnd_cnst_pkg::RndCnstKeymgrRevisionSeed;
 
     for (int i = 0; i < keymgr_pkg::DevIdWidth / TL_DW; i++) begin
-      bit [TL_DW-1:0] rdata;
-      csr_peek(ral.lc_ctrl.device_id[i], rdata);
+      bit [TL_DW-1:0] rdata = csr_peek(ral.lc_ctrl.device_id[i]);
       creator_data.DeviceIdentifier[TL_DW * i +: TL_DW] = rdata;
     end
     `uvm_info(`gfn, $sformatf("DeviceIdentifier 0x%0h", creator_data.DeviceIdentifier),
@@ -241,8 +240,7 @@ class chip_sw_keymgr_key_derivation_vseq extends chip_sw_base_vseq;
     end
 
     for (int i = 0; i < keymgr_pkg::KeyWidth / TL_DW; i++) begin
-      bit [TL_DW-1:0] rdata;
-      csr_peek(ral.rom_ctrl_regs.digest[i], rdata);
+      bit [TL_DW-1:0] rdata = csr_peek(ral.rom_ctrl_regs.digest[i]);
       creator_data.RomDigest[TL_DW * i +: TL_DW] = rdata;
     end
     `uvm_info(`gfn, $sformatf("RomDigest 0x%0h", creator_data.RomDigest),
@@ -351,13 +349,11 @@ class chip_sw_keymgr_key_derivation_vseq extends chip_sw_base_vseq;
   virtual task get_sw_shares(output bit [keymgr_pkg::KeyWidth-1:0] sw_shares);
     key_shares_t key_shares;
     for (int i = 0; i < keymgr_pkg::KeyWidth / TL_DW; i++) begin
-      bit [TL_DW-1:0] rdata;
-      csr_peek(ral.keymgr.sw_share0_output[i], rdata);
+      bit [TL_DW-1:0] rdata = csr_peek(ral.keymgr.sw_share0_output[i]);
       key_shares[0][TL_DW * i +: TL_DW] = rdata;
     end
     for (int i = 0; i < keymgr_pkg::KeyWidth / TL_DW; i++) begin
-      bit [TL_DW-1:0] rdata;
-      csr_peek(ral.keymgr.sw_share1_output[i], rdata);
+      bit [TL_DW-1:0] rdata = csr_peek(ral.keymgr.sw_share1_output[i]);
       key_shares[1][TL_DW * i +: TL_DW] = rdata;
     end
     `uvm_info(`gfn, $sformatf("Read SW shares 0x%0h, 0x%0h", key_shares[0], key_shares[1]),
