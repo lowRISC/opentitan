@@ -63,6 +63,7 @@ module edn_core import edn_pkg::*;
     CsrngCmdReqOut,
     CsrngCmdReqValidOut,
     SwCmdSts,
+    HwCmdSts,
     MainFsmEn,
     CmdFifoCnt,
     CsrngPackerClr,
@@ -200,7 +201,12 @@ module edn_core import edn_pkg::*;
   logic                               cs_rdata_capt_vld_q, cs_rdata_capt_vld_d;
   logic                               cmd_rdy_q, cmd_rdy_d;
   logic                               csrng_cmd_sts_q, csrng_cmd_sts_d;
-  logic                               csrng_cmd_ack_q, csrng_cmd_ack_d;
+  logic                               csrng_sw_cmd_ack_q, csrng_sw_cmd_ack_d;
+  logic                               csrng_hw_cmd_ack_q, csrng_hw_cmd_ack_d;
+  logic                               csrng_hw_cmd_sts_q, csrng_hw_cmd_sts_d;
+  logic                               boot_mode_q, boot_mode_d,
+                                      auto_mode_q, auto_mode_d;
+  logic [3:0]                         cmd_type_q, cmd_type_d;
   logic                               cmd_reg_rdy_d, cmd_reg_rdy_q;
 
   always_ff @(posedge clk_i or negedge rst_ni)
@@ -216,7 +222,11 @@ module edn_core import edn_pkg::*;
       cs_rdata_capt_vld_q <= '0;
       cmd_rdy_q   <= '0;
       csrng_cmd_sts_q   <= '0;
-      csrng_cmd_ack_q   <= '0;
+      csrng_sw_cmd_ack_q   <= '0;
+      csrng_hw_cmd_sts_q   <= '0;
+      boot_mode_q   <= '0;
+      auto_mode_q   <= '0;
+      cmd_type_q   <= '0;
       cmd_reg_rdy_q   <= '0;
     end else begin
       cs_cmd_req_q  <= cs_cmd_req_d;
@@ -230,7 +240,12 @@ module edn_core import edn_pkg::*;
       cs_rdata_capt_vld_q <= cs_rdata_capt_vld_d;
       cmd_rdy_q   <= cmd_rdy_d;
       csrng_cmd_sts_q   <= csrng_cmd_sts_d;
-      csrng_cmd_ack_q   <= csrng_cmd_ack_d;
+      csrng_sw_cmd_ack_q   <= csrng_sw_cmd_ack_d;
+      csrng_hw_cmd_ack_q   <= csrng_hw_cmd_ack_d;
+      csrng_hw_cmd_sts_q   <= csrng_hw_cmd_sts_d;
+      boot_mode_q   <= boot_mode_d;
+      auto_mode_q   <= auto_mode_d;
+      cmd_type_q   <= cmd_type_d;
       cmd_reg_rdy_q   <= cmd_reg_rdy_d;
     end
 
@@ -557,12 +572,54 @@ module edn_core import edn_pkg::*;
 
   // cmd_ack goes high only when a command is acknowledged that has been loaded into sw_cmd_req.
   assign hw2reg.sw_cmd_sts.cmd_ack.de = 1'b1;
-  assign hw2reg.sw_cmd_sts.cmd_ack.d = csrng_cmd_ack_d;
-  assign csrng_cmd_ack_d =
+  assign hw2reg.sw_cmd_sts.cmd_ack.d = csrng_sw_cmd_ack_d;
+  assign csrng_sw_cmd_ack_d =
          !edn_enable_fo[SwCmdSts] ? 1'b0 :
          sw_cmd_req_load ? 1'b0 :
          (csrng_cmd_i.csrng_rsp_ack && sw_cmd_valid) ? 1'b1 :
-         csrng_cmd_ack_q;
+         csrng_sw_cmd_ack_q;
+
+  //--------------------------------------------
+  // hw_cmd_sts register
+  //--------------------------------------------
+  // Set the boot_mode field to one when boot mode is entered and to zero when it is left.
+  assign hw2reg.hw_cmd_sts.boot_mode.de = 1'b1;
+  assign hw2reg.hw_cmd_sts.boot_mode.d = boot_mode_d;
+  assign boot_mode_d = main_sm_done_pulse || !edn_enable_fo[HwCmdSts] ? 1'b0 :
+                       boot_wr_ins_cmd ? 1'b1 :
+                       boot_mode_q;
+  // Set the auto_mode field to one when auto mode is entered and to zero when it is left.
+  assign hw2reg.hw_cmd_sts.auto_mode.de = 1'b1;
+  assign hw2reg.hw_cmd_sts.auto_mode.d = auto_mode_d;
+  assign auto_mode_d = main_sm_done_pulse || !edn_enable_fo[HwCmdSts] ? 1'b0 :
+                       auto_req_mode_busy ? 1'b1 :
+                       auto_mode_q;
+  // Record the cmd_sts signal each time a hardware command is acknowledged.
+  // Reset it each time a new hardware command is issued.
+  assign hw2reg.hw_cmd_sts.cmd_sts.de = 1'b1;
+  assign hw2reg.hw_cmd_sts.cmd_sts.d = csrng_hw_cmd_sts_d;
+  assign csrng_hw_cmd_sts_d =
+         !edn_enable_fo[HwCmdSts] ? 1'b0 :
+         sw_cmd_valid ? csrng_hw_cmd_sts_q :
+         (cs_cmd_req_vld_out_q && csrng_cmd_i.csrng_req_ready) ? 1'b0 :
+         csrng_cmd_i.csrng_rsp_ack && csrng_cmd_i.csrng_rsp_sts ? 1'b1 :
+         csrng_hw_cmd_sts_q;
+  // Set the cmd_ack signal to high whenever a hardware command is acknowledged and set it
+  // to low whenever a new hardware command is issued to the CSRNG.
+  assign hw2reg.hw_cmd_sts.cmd_ack.de = 1'b1;
+  assign hw2reg.hw_cmd_sts.cmd_ack.d = csrng_hw_cmd_ack_d;
+  assign csrng_hw_cmd_ack_d =
+         !edn_enable_fo[HwCmdSts] ? 1'b0 :
+         sw_cmd_valid ? csrng_hw_cmd_ack_q :
+         (cs_cmd_req_vld_out_q && csrng_cmd_i.csrng_req_ready) ? 1'b0 :
+         csrng_cmd_i.csrng_rsp_ack ? 1'b1 :
+         csrng_hw_cmd_ack_q;
+  // Set the cmd_type to the application command type value of the hardware controlled
+  // command issued last.
+  assign hw2reg.hw_cmd_sts.cmd_type.de = 1'b1;
+  assign hw2reg.hw_cmd_sts.cmd_type.d = cmd_type_d;
+  assign cmd_type_d = (edn_enable_fo[HwCmdSts] && !sw_cmd_valid && cs_cmd_req_vld_out_q
+                       && csrng_cmd_i.csrng_req_ready) ? cs_cmd_req_out_q[3:0] : cmd_type_q;
 
   // rescmd fifo
   prim_fifo_sync #(

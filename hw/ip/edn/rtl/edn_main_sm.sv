@@ -92,7 +92,6 @@ module edn_main_sm import edn_pkg::*; #(
         end
       end
       BootPulse: begin
-        main_sm_done_pulse_o = 1'b1;
         state_d = BootDone;
       end
       BootDone: begin
@@ -106,6 +105,7 @@ module edn_main_sm import edn_pkg::*; #(
       end
       BootUniAckWait: begin
         if (csrng_cmd_ack_i) begin
+          main_sm_done_pulse_o = 1'b1;
           state_d = Idle;
         end
       end
