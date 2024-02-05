@@ -29,9 +29,11 @@ module edn_main_sm import edn_pkg::*; #(
   output logic                  capt_rescmd_fifo_cnt_o,
   output logic                  send_rescmd_o,
   input logic                   cmd_sent_i,
-  input logic                   local_escalate_i,
   output logic                  auto_req_mode_busy_o,
   output logic [StateWidth-1:0] main_sm_state_o,
+  input logic                   csrng_ack_err_i,
+  output logic                  reject_csrng_entropy_o,
+  input logic                   local_escalate_i,
   output logic                  main_sm_err_o
 );
 
@@ -54,6 +56,7 @@ module edn_main_sm import edn_pkg::*; #(
     send_rescmd_o          = 1'b0;
     main_sm_done_pulse_o   = 1'b0;
     main_sm_err_o          = 1'b0;
+    reject_csrng_entropy_o = 1'b0;
     sw_cmd_valid_o         = 1'b0;
     unique case (state_q)
       Idle: begin
@@ -165,6 +168,9 @@ module edn_main_sm import edn_pkg::*; #(
       SWPortMode: begin
         sw_cmd_valid_o = 1'b1;
       end
+      RejectCsrngEntropy: begin
+        reject_csrng_entropy_o = 1'b1;
+      end
       Error: begin
         main_sm_err_o = 1'b1;
       end
@@ -174,9 +180,9 @@ module edn_main_sm import edn_pkg::*; #(
       end
     endcase
 
-    if (local_escalate_i) begin
-      state_d = Error;
-      // Tie off outputs, except for main_sm_err_o.
+    if (local_escalate_i || csrng_ack_err_i) begin
+      state_d = local_escalate_i ? Error : RejectCsrngEntropy;
+      // Tie off outputs, except for main_sm_err_o and reject_csrng_entropy_o.
       boot_wr_ins_cmd_o      = 1'b0;
       boot_wr_gen_cmd_o      = 1'b0;
       boot_wr_uni_cmd_o      = 1'b0;
@@ -193,7 +199,8 @@ module edn_main_sm import edn_pkg::*; #(
                                                   BootPulse, BootDone,
                                                   AutoLoadIns, AutoFirstAckWait, AutoAckWait,
                                                   AutoDispatch, AutoCaptGenCnt, AutoSendGenCmd,
-                                                  AutoCaptReseedCnt, AutoSendReseedCmd, SWPortMode
+                                                  AutoCaptReseedCnt, AutoSendReseedCmd,
+                                                  SWPortMode, RejectCsrngEntropy
                                                  }) begin
       // Only go to idle if the state is legal and not Idle or Error.
       // Even when disabled, illegal states must result in a transition to Error.
@@ -209,6 +216,7 @@ module edn_main_sm import edn_pkg::*; #(
       capt_rescmd_fifo_cnt_o = 1'b0;
       send_rescmd_o          = 1'b0;
       sw_cmd_valid_o         = 1'b0;
+      reject_csrng_entropy_o = 1'b0;
       main_sm_done_pulse_o   = 1'b1;
     end
   end
