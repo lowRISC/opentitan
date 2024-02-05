@@ -327,7 +327,7 @@ def common_test_setup(ctx, exec_env, firmware):
     data_files.append(test_harness.executable)
 
     # Construct a param dictionary by combining the exec_env.param, the rule's
-    # param and and some extra file references.
+    # param and some extra file references.
     param = dict(exec_env.param)
     param.update(ctx.attr.param)
     action_param = dict(param)
