@@ -99,7 +99,7 @@ class usbdev_base_vseq extends cip_base_vseq #(
     csr_update(ral.usbctrl);
   endtask
 
-  virtual task call_token_seq(input string pkt_type, input string pid_type, bit [3:0] endp);
+  virtual task call_token_seq(input pkt_type_e pkt_type, input pid_type_e pid_type, bit [3:0] endp);
     `uvm_create_on(m_token_pkt, p_sequencer.usb20_sequencer_h)
     m_token_pkt.m_pkt_type = pkt_type;
     m_token_pkt.m_pid_type = pid_type;
@@ -110,7 +110,7 @@ class usbdev_base_vseq extends cip_base_vseq #(
     finish_item(m_token_pkt);
   endtask
 
-  virtual task call_data_seq(input string pkt_type, input string pid_type,
+  virtual task call_data_seq(input pkt_type_e pkt_type, input pid_type_e pid_type,
                              input bit rand_or_not, input bit [6:0] num_of_bytes);
     `uvm_create_on(m_data_pkt, p_sequencer.usb20_sequencer_h)
     m_data_pkt.m_pkt_type = pkt_type;
@@ -122,7 +122,7 @@ class usbdev_base_vseq extends cip_base_vseq #(
     finish_item(m_data_pkt);
   endtask
 
-  virtual task get_out_response_from_device(usb20_item rsp_itm, input string pid_type);
+  virtual task get_out_response_from_device(usb20_item rsp_itm, input pid_type_e pid_type);
     `uvm_create_on(m_handshake_pkt, p_sequencer.usb20_sequencer_h)
     m_handshake_pkt.m_pid_type = pid_type;
     m_usb20_item = m_handshake_pkt;
@@ -130,7 +130,7 @@ class usbdev_base_vseq extends cip_base_vseq #(
     `DV_CHECK_EQ(m_usb20_item.m_pid_type, rsp_itm.m_pid_type);
   endtask
 
-  virtual task get_data_pid_from_device(usb20_item rsp_itm, input string pid_type);
+  virtual task get_data_pid_from_device(usb20_item rsp_itm, input pid_type_e pid_type);
     `uvm_create_on(m_data_pkt, p_sequencer.usb20_sequencer_h)
     m_data_pkt.m_pid_type = pid_type;
     m_usb20_item = m_data_pkt;
@@ -138,7 +138,7 @@ class usbdev_base_vseq extends cip_base_vseq #(
     `DV_CHECK_EQ(m_usb20_item.m_pid_type, rsp_itm.m_pid_type);
   endtask
 
-  virtual task call_handshake_sequence(input string pkt_type, input string pid_type);
+  virtual task call_handshake_sequence(input pkt_type_e pkt_type, input pid_type_e pid_type);
     `uvm_create_on(m_handshake_pkt, p_sequencer.usb20_sequencer_h)
     m_handshake_pkt.m_pkt_type = pkt_type;
     m_handshake_pkt.m_pid_type = pid_type;
