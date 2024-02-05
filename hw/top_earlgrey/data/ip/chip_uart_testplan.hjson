@@ -45,7 +45,7 @@
       desc: '''Verify UART transmission of data at various speeds.
 
             Randomly pick one of the UART instances and configure it to run with any of these baud
-            rates - 9600bps, 115200bps, 230400bps, 128Kbps, 256Kbps, 1Mkbps, 1.5Mkbps.
+            rates - 9600bps, 115200bps, 230400bps, 128Kbps, 256Kbps, 1Mbps, 1.5Mbps.
 
             '''
       stage: V1
