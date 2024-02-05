@@ -397,12 +397,13 @@ package csr_utils_pkg;
       csr.get_full_hdl_path(paths, kind.name);
       foreach (paths[0].slices[i]) begin
         uvm_reg_data_t field_val;
-        if (uvm_hdl_read(paths[0].slices[i].path, field_val)) begin
-          if (check == UVM_CHECK) `DV_CHECK_EQ($isunknown(field_val), 0, "", error, msg_id)
-          value |= field_val << paths[0].slices[i].offset;
-        end else begin
-          `uvm_fatal(msg_id, $sformatf("uvm_hdl_read failed for %0s", csr.get_full_name()))
-        end
+        `DV_CHECK_FATAL(uvm_hdl_read(paths[0].slices[i].path, field_val),
+                        $sformatf("Failed to read %s, slice %d, at path %s",
+                                  csr.get_full_name(), i, paths[0].slices[i].path),
+                        msg_id)
+        if (check == UVM_CHECK) `DV_CHECK_EQ($isunknown(field_val), 0, "", error, msg_id)
+
+        value |= field_val << paths[0].slices[i].offset;
       end
     end else begin
       `uvm_fatal(msg_id, $sformatf("No backdoor defined for %0s path's %0s",
