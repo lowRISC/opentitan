@@ -76,6 +76,7 @@ module edn_core import edn_pkg::*;
   // signals
   logic event_edn_cmd_req_done;
   logic event_edn_fatal_err;
+  logic event_edn_recov_err;
   logic [EdnEnableCopies-1:FatalErr] edn_enable_fo;
   logic [FifoRstCopies-1:1] cmd_fifo_rst_fo;
   logic [BootReqCopies-1:1] boot_req_mode_fo;
@@ -343,6 +344,25 @@ module edn_core import edn_pkg::*;
     assign err_code_test_bit[i] = (reg2hw.err_code_test.q == i) && reg2hw.err_code_test.qe;
   end : gen_err_code_test_bit
 
+
+  // Combine all recoverable alert signals into one singular signal.
+  assign event_edn_recov_err = edn_bus_cmp_alert || cmd_fifo_rst_pfa || auto_req_mode_pfa ||
+                               boot_req_mode_pfa || edn_enable_pfa;
+
+  // Turn event_edn_recov_err into a pulse for the case when
+  // the signals are high for more then one cycle.
+  prim_edge_detector #(
+    .Width(1),
+    .ResetValue(0),
+    .EnSync(0)
+  ) u_prim_edge_detector_recov_alert (
+    .clk_i,
+    .rst_ni,
+    .d_i(event_edn_recov_err),
+    .q_sync_o(),
+    .q_posedge_pulse_o(recov_alert_o),
+    .q_negedge_pulse_o()
+  );
 
   // alert - send all interrupt sources to the alert for the fatal case
   assign fatal_alert_o = event_edn_fatal_err;
@@ -790,21 +810,6 @@ module edn_core import edn_pkg::*;
   // continuous compare of the entropy data
   assign edn_bus_cmp_alert = cs_rdata_capt_vld && cs_rdata_capt_vld_q &&
          (cs_rdata_capt_q == packer_cs_rdata[63:0]);
-
-
-
-  prim_edge_detector #(
-    .Width(1),
-    .ResetValue(0),
-    .EnSync(0)
-  ) u_prim_edge_detector_recov_alert (
-    .clk_i,
-    .rst_ni,
-    .d_i(edn_bus_cmp_alert),
-    .q_sync_o(),
-    .q_posedge_pulse_o(recov_alert_o),
-    .q_negedge_pulse_o()
-  );
 
   assign hw2reg.recov_alert_sts.edn_bus_cmp_alert.de = edn_bus_cmp_alert;
   assign hw2reg.recov_alert_sts.edn_bus_cmp_alert.d  = edn_bus_cmp_alert;
