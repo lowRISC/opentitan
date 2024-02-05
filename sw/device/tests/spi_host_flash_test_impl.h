@@ -92,8 +92,8 @@ status_t test_quad_read(dif_spi_host_t *spi);
 bool is_4_bytes_address_mode_supported(void);
 
 /**
- * Enable 4-byte addressing mode, write and read to a page that needs 4 byes to
- * be addressed and disables the the 4-bytes addressing mode.
+ * Enable 4-byte addressing mode, write and read to a page that needs 4 bytes to
+ * be addressed and disables the 4-bytes addressing mode.
  *
  * @param spi A spi host handler.
  * @return status_t containing either OK or an error.

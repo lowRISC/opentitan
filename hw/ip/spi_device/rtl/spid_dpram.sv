@@ -117,8 +117,8 @@ module spid_dpram
   assign spi2sys_rd_addr = sys_addr_i - Spi2SysOffset;
 
   // The SPI -> core buffer for the payload uses parity and SW has no way of initializing it since
-  // the the write port is in the SPI domain. Since the SPI side writes the payload byte by byte,
-  // we need to guard against partially initialized 32bit wordd, because these could cause TL-UL
+  // the write port is in the SPI domain. Since the SPI side writes the payload byte by byte,
+  // we need to guard against partially initialized 32bit words, because these could cause TL-UL
   // bus errors upon readout. Unfortunately, an initialization circuit that initializes the entire
   // SRAM on the SPI clock domain is infeasible since that clock is only intermittently available.
   // Hence, we keep track of uninitialized words using a valid bit array, and upon the first write

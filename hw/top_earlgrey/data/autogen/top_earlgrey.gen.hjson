@@ -6548,7 +6548,7 @@
           desc:
             '''
             Flag indicating whether to use the creator / owner seeds provided
-            via otp_key_i instead of the the ones provided in flash_i. This option
+            via otp_key_i instead of the ones provided in flash_i. This option
             can be used in integrations where that do not have an embedded flash
             controller (in which case flash_i should just be tied off).
             '''
