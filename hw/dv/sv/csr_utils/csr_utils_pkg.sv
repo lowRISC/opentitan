@@ -398,7 +398,7 @@ package csr_utils_pkg;
       foreach (paths[0].slices[i]) begin
         uvm_reg_data_t field_val;
         if (uvm_hdl_read(paths[0].slices[i].path, field_val)) begin
-          if (check == UVM_CHECK) `DV_CHECK_EQ($isunknown(value), 0, "", error, msg_id)
+          if (check == UVM_CHECK) `DV_CHECK_EQ($isunknown(field_val), 0, "", error, msg_id)
           value |= field_val << paths[0].slices[i].offset;
         end else begin
           `uvm_fatal(msg_id, $sformatf("uvm_hdl_read failed for %0s", csr.get_full_name()))
