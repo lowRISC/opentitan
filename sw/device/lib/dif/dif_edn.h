@@ -169,19 +169,19 @@ typedef enum dif_edn_sm_state {
   /**
    * Boot mode: signal a done pulse.
    */
-  kDifEdnSmStateBootPulse = 309,
+  kDifEdnSmStateBootPulse = 169,
   /**
    * Boot mode: stay in done state until reset.
    */
-  kDifEdnSmStateBootDone = 44,
+  kDifEdnSmStateBootDone = 240,
   /**
    * Boot mode: load the uninstantiate command.
    */
-  kDifEdnSmStateBootLoadUni = 169,
+  kDifEdnSmStateBootLoadUni = 309,
   /**
    * Boot mode: wait for uninstantiate command ack.
    */
-  kDifEdnSmStateBootUniAckWait = 240,
+  kDifEdnSmStateBootUniAckWait = 44,
   /**
    * Auto mode: load the instantiate command.
    */
@@ -219,9 +219,13 @@ typedef enum dif_edn_sm_state {
    */
   kDifEdnSmStateSWPortMode = 149,
   /**
+   * Stop accepting entropy from CSRNG.
+   */
+  kDifEdnSmStateRejectCsrngEntropy = 24,
+  /**
    * Illegal state reached and hang.
    */
-  kDifEdnSmStateError = 24,
+  kDifEdnSmStateError = 382,
 } dif_edn_sm_state_t;
 
 /**
