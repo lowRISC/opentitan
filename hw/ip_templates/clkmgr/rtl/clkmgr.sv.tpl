@@ -5,7 +5,14 @@
 // The overall clock manager
 
 <%
+from collections import OrderedDict
 from topgen.lib import Name
+all_derived_srcs = list(sorted(set([dc['src']['name']
+                                    for dc in derived_clks.values()])))
+all_srcs = src_clks.copy()
+all_srcs.update(derived_clks)
+rg_srcs = list(sorted({sig['src_name'] for sig
+                       in typed_clocks['rg_clks'].values()}))
 %>\
 
 `include "prim_assert.sv"
@@ -26,20 +33,20 @@ from topgen.lib import Name
 
   // System clocks and resets
   // These are the source clocks for the system
-% for src in clocks.srcs.values():
-  input clk_${src.name}_i,
-  input rst_${src.name}_ni,
+% for src in src_clks.values():
+  input clk_${src['name']}_i,
+  input rst_${src['name']}_ni,
 % endfor
 
   // Resets for derived clocks
   // clocks are derived locally
-% for src_name in clocks.derived_srcs:
+% for src_name in derived_clks.keys():
   input rst_${src_name}_ni,
 % endfor
 
   // Resets for derived clock generation, root clock gating and related status
   input rst_root_ni,
-% for root, clk_family in typed_clocks.parent_child_clks.items():
+% for clk_family in parent_child_clks.values():
   % for src in clk_family:
   input rst_root_${src}_ni,
   % endfor
@@ -62,7 +69,7 @@ from topgen.lib import Name
 
   // idle hints
   // SEC_CM: IDLE.INTERSIG.MUBI
-  input prim_mubi_pkg::mubi4_t [${len(typed_clocks.hint_clks)-1}:0] idle_i,
+  input prim_mubi_pkg::mubi4_t [${len(hint_names)-1}:0] idle_i,
 
   // life cycle state output
   // SEC_CM: LC_CTRL.INTERSIG.MUBI
@@ -97,7 +104,7 @@ from topgen.lib import Name
   output clkmgr_cg_en_t cg_en_o,
 
   // clock output interface
-% for intf in cfg['exported_clks']:
+% for intf in exported_clks:
   output clkmgr_${intf}_out_t clocks_${intf}_o,
 % endfor
   output clkmgr_out_t clocks_o
@@ -111,20 +118,21 @@ from topgen.lib import Name
   import prim_mubi_pkg::mubi4_test_false_strict;
 
   // Hookup point for OCC's on root clocks.
-% for src in clocks.srcs.values():
-  logic clk_${src.name};
+% for src in src_clks.values():
+<% clk_name = src['name'] %>\
+  logic clk_${clk_name};
   prim_clock_buf #(
     .NoFpgaBuf(1'b1)
-  ) u_clk_${src.name}_buf (
-    .clk_i(clk_${src.name}_i),
-    .clk_o(clk_${src.name})
+  ) u_clk_${clk_name}_buf (
+    .clk_i(clk_${clk_name}_i),
+    .clk_o(clk_${clk_name})
   );
 % endfor
 
   ////////////////////////////////////////////////////
   // External step down request
   ////////////////////////////////////////////////////
-% for src_name in clocks.all_derived_srcs():
+% for src_name in all_derived_srcs:
   mubi4_t ${src_name}_step_down_req;
   prim_mubi4_sync #(
     .NumCopies(1),
@@ -147,36 +155,36 @@ from topgen.lib import Name
   // can happen without any dependency
   ////////////////////////////////////////////////////
 
-  logic [${len(clocks.derived_srcs)-1}:0] step_down_acks;
+  logic [${len(derived_clks)-1}:0] step_down_acks;
 
-% for src_name in clocks.derived_srcs:
+% for src_name in derived_clks:
   logic clk_${src_name};
 % endfor
 
-% for src in clocks.derived_srcs.values():
+% for src in derived_clks.values():
 
   // Declared as size 1 packed array to avoid FPV warning.
-  prim_mubi_pkg::mubi4_t [0:0] ${src.name}_div_scanmode;
+  prim_mubi_pkg::mubi4_t [0:0] ${src['name']}_div_scanmode;
   prim_mubi4_sync #(
     .NumCopies(1),
     .AsyncOn(0)
-  ) u_${src.name}_div_scanmode_sync  (
+  ) u_${src['name']}_div_scanmode_sync  (
     .clk_i,
     .rst_ni,
     .mubi_i(scanmode_i),
-    .mubi_o({${src.name}_div_scanmode})
+    .mubi_o({${src['name']}_div_scanmode})
   );
 
   prim_clock_div #(
-    .Divisor(${src.div})
-  ) u_no_scan_${src.name}_div (
+    .Divisor(${src['div']})
+  ) u_no_scan_${src['name']}_div (
     // We're using the pre-occ hookup (*_i) version for clock derivation.
-    .clk_i(clk_${src.src.name}_i),
-    .rst_ni(rst_root_${src.src.name}_ni),
-    .step_down_req_i(mubi4_test_true_strict(${src.src.name}_step_down_req)),
+    .clk_i(clk_${src['src']['name']}_i),
+    .rst_ni(rst_root_${src['src']['name']}_ni),
+    .step_down_req_i(mubi4_test_true_strict(${src['src']['name']}_step_down_req)),
     .step_down_ack_o(step_down_acks[${loop.index}]),
-    .test_en_i(mubi4_test_true_strict(${src.name}_div_scanmode[0])),
-    .clk_o(clk_${src.name})
+    .test_en_i(mubi4_test_true_strict(${src['name']}_div_scanmode[0])),
+    .clk_o(clk_${src['name']})
   );
 % endfor
 
@@ -195,7 +203,7 @@ from topgen.lib import Name
     .clk_i,
     .rst_ni,
     .rst_shadowed_ni,
-% for src in typed_clocks.rg_srcs:
+% for src in rg_srcs:
     .clk_${src}_i(clk_${src}),
     .rst_${src}_ni,
 % endfor
@@ -223,7 +231,7 @@ from topgen.lib import Name
 
   logic recov_alert;
   assign recov_alert =
-% for src in typed_clocks.rg_srcs:
+% for src in rg_srcs:
     hw2reg.recov_err_code.${src}_measure_err.de |
     hw2reg.recov_err_code.${src}_timeout_err.de |
 % endfor
@@ -263,7 +271,7 @@ from topgen.lib import Name
   assign extclk_ctrl_hi_speed_sel = mubi4_t'(reg2hw.extclk_ctrl.hi_speed_sel.q);
 
   clkmgr_byp #(
-    .NumDivClks(${len(clocks.derived_srcs)})
+    .NumDivClks(${len(derived_clks)})
   ) u_clkmgr_byp (
     .clk_i,
     .rst_ni,
@@ -289,9 +297,9 @@ from topgen.lib import Name
   // completely untouched. The only reason they are here is for easier
   // bundling management purposes through clocks_o
   ////////////////////////////////////////////////////
-% for k,v in typed_clocks.ft_clks.items():
+% for k,v in typed_clocks['ft_clks'].items():
   prim_clock_buf u_${k}_buf (
-    .clk_i(clk_${v.src.name}),
+    .clk_i(clk_${v['src_name']}),
     .clk_o(clocks_o.${k})
   );
 
@@ -302,7 +310,7 @@ from topgen.lib import Name
   ////////////////////////////////////////////////////
   // Distribute pwrmgr ip_clk_en requests to each family
   ////////////////////////////////////////////////////
-% for root, clk_family in typed_clocks.parent_child_clks.items():
+% for root, clk_family in parent_child_clks.items():
   // clk_${root} family
   % for clk in clk_family:
   logic pwrmgr_${clk}_en;
@@ -316,7 +324,7 @@ from topgen.lib import Name
   // Root gating
   ////////////////////////////////////////////////////
 
-% for root, clk_family in typed_clocks.parent_child_clks.items():
+% for root, clk_family in parent_child_clks.items():
   // clk_${root} family
   logic [${len(clk_family)-1}:0] ${root}_ens;
 
@@ -350,9 +358,9 @@ from topgen.lib import Name
   // SEC_CM: TIMEOUT.CLK.BKGN_CHK, MEAS.CLK.BKGN_CHK
   ////////////////////////////////////////////////////
 
-  typedef enum logic [${(len(typed_clocks.rg_srcs) + 1).bit_length() - 1}:0] {
+  typedef enum logic [${(len(rg_srcs) + 1).bit_length() - 1}:0] {
     BaseIdx,
-% for src in typed_clocks.rg_srcs:
+% for src in rg_srcs:
     Clk${Name.from_snake_case(src).as_camel_case()}Idx,
 % endfor
     CalibRdyLastIdx
@@ -380,10 +388,10 @@ from topgen.lib import Name
       hw2reg.measure_ctrl_regwen.d = 1'b1;
     end
   end
-<% aon_freq = clocks.all_srcs['aon'].freq %>\
-% for i, src in enumerate(typed_clocks.rg_srcs):
+<% aon_freq = src_clks['aon']['freq'] %>\
+% for i, src in enumerate(rg_srcs):
 <%
- freq = clocks.all_srcs[src].freq
+ freq = all_srcs[src]['freq']
  cnt = int(freq*2 / aon_freq)
  sel_idx = f"Clk{Name.from_snake_case(src).as_camel_case()}Idx"
 %>
@@ -418,16 +426,16 @@ from topgen.lib import Name
   ////////////////////////////////////////////////////
   // Clocks with only root gate
   ////////////////////////////////////////////////////
-% for k,v in typed_clocks.rg_clks.items():
-  assign clocks_o.${k} = clk_${v.src.name}_root;
+% for k,v in typed_clocks['rg_clks'].items():
+  assign clocks_o.${k} = clk_${v['src_name']}_root;
 
   // clock gated indication for alert handler
   prim_mubi4_sender #(
     .ResetValue(MuBi4True)
   ) u_prim_mubi4_sender_${k} (
-    .clk_i(clk_${v.src.name}),
-    .rst_ni(rst_${v.src.name}_ni),
-    .mubi_i(((clk_${v.src.name}_en) ? MuBi4False : MuBi4True)),
+    .clk_i(clk_${v['src_name']}),
+    .rst_ni(rst_${v['src_name']}_ni),
+    .mubi_i(((clk_${v['src_name']}_en) ? MuBi4False : MuBi4True)),
     .mubi_o(cg_en_o.${k.split('clk_')[-1]})
   );
 % endfor
@@ -436,16 +444,16 @@ from topgen.lib import Name
   // Software direct control group
   ////////////////////////////////////////////////////
 
-% for k in typed_clocks.sw_clks:
+% for k in typed_clocks['sw_clks']:
   logic ${k}_sw_en;
 % endfor
 
-% for k,v in typed_clocks.sw_clks.items():
+% for k,v in typed_clocks['sw_clks'].items():
   prim_flop_2sync #(
     .Width(1)
   ) u_${k}_sw_en_sync (
-    .clk_i(clk_${v.src.name}),
-    .rst_ni(rst_${v.src.name}_ni),
+    .clk_i(clk_${v['src_name']}),
+    .rst_ni(rst_${v['src_name']}_ni),
     .d_i(reg2hw.clk_enables.${k}_en.q),
     .q_o(${k}_sw_en)
   );
@@ -463,11 +471,11 @@ from topgen.lib import Name
   );
 
   logic ${k}_combined_en;
-  assign ${k}_combined_en = ${k}_sw_en & clk_${v.src.name}_en;
+  assign ${k}_combined_en = ${k}_sw_en & clk_${v['src_name']}_en;
   prim_clock_gating #(
     .FpgaBufGlobal(1'b1) // This clock spans across multiple clock regions.
   ) u_${k}_cg (
-    .clk_i(clk_${v.src.name}),
+    .clk_i(clk_${v['src_name']}),
     .en_i(${k}_combined_en),
     .test_en_i(mubi4_test_true_strict(${k}_scanmode[0])),
     .clk_o(clocks_o.${k})
@@ -477,8 +485,8 @@ from topgen.lib import Name
   prim_mubi4_sender #(
     .ResetValue(MuBi4True)
   ) u_prim_mubi4_sender_${k} (
-    .clk_i(clk_${v.src.name}),
-    .rst_ni(rst_${v.src.name}_ni),
+    .clk_i(clk_${v['src_name']}),
+    .rst_ni(rst_${v['src_name']}_ni),
     .mubi_i(((${k}_combined_en) ? MuBi4False : MuBi4True)),
     .mubi_o(cg_en_o.${k.split('clk_')[-1]})
   );
@@ -491,8 +499,8 @@ from topgen.lib import Name
   // clock target
   ////////////////////////////////////////////////////
 
-  logic [${len(typed_clocks.hint_clks)-1}:0] idle_cnt_err;
-% for clk, sig in typed_clocks.hint_clks.items():
+  logic [${len(typed_clocks['hint_clks'])-1}:0] idle_cnt_err;
+% for clk, sig in typed_clocks['hint_clks'].items():
 <%assert_name = Name.from_snake_case(clk)
 %>
   clkmgr_trans #(
@@ -502,12 +510,12 @@ from topgen.lib import Name
     .FpgaBufGlobal(1'b0) // This clock is used primarily locally.
 % endif
   ) u_${clk}_trans (
-    .clk_i(clk_${sig.src.name}),
-    .clk_gated_i(clk_${sig.src.name}_root),
-    .rst_ni(rst_${sig.src.name}_ni),
-    .en_i(clk_${sig.src.name}_en),
+    .clk_i(clk_${sig['src_name']}),
+    .clk_gated_i(clk_${sig['src_name']}_root),
+    .rst_ni(rst_${sig['src_name']}_ni),
+    .en_i(clk_${sig['src_name']}_en),
     .idle_i(idle_i[${hint_names[clk]}]),
-% if len(typed_clocks.hint_clks.items()) > 1:
+% if len(typed_clocks['hint_clks'].items()) > 1:
     .sw_hint_i(reg2hw.clk_hints.${clk}_hint.q),
 % else:
     .sw_hint_i(reg2hw.clk_hints.q),
@@ -517,7 +525,7 @@ from topgen.lib import Name
     .clk_o(clocks_o.${clk}),
     .clk_reg_i(clk_i),
     .rst_reg_ni(rst_ni),
-% if len(typed_clocks.hint_clks.items()) > 1:
+% if len(typed_clocks['hint_clks'].items()) > 1:
     .reg_en_o(hw2reg.clk_hints_status.${clk}_val.d),
 % else:
     .reg_en_o(hw2reg.clk_hints_status.d),
@@ -533,8 +541,8 @@ from topgen.lib import Name
   assign hw2reg.fatal_err_code.idle_cnt.de = |idle_cnt_err;
 
   // state readback
-% if len(typed_clocks.hint_clks.items()) > 1:
-% for clk in typed_clocks.hint_clks.keys():
+% if len(typed_clocks['hint_clks'].items()) > 1:
+% for clk in typed_clocks['hint_clks'].keys():
   assign hw2reg.clk_hints_status.${clk}_val.de = 1'b1;
 % endfor
 % else:
@@ -548,7 +556,7 @@ from topgen.lib import Name
   // Exported clocks
   ////////////////////////////////////////////////////
 
-% for intf, eps in cfg['exported_clks'].items():
+% for intf, eps in exported_clks.items():
   % for ep, clks in eps.items():
     % for clk in clks:
   assign clocks_${intf}_o.clk_${intf}_${ep}_${clk} = clocks_o.clk_${clk};
@@ -568,7 +576,7 @@ from topgen.lib import Name
   `ASSERT_KNOWN(IoClkBypReqKnownO_A, io_clk_byp_req_o)
   `ASSERT_KNOWN(LcCtrlClkBypAckKnownO_A, lc_clk_byp_ack_o)
   `ASSERT_KNOWN(JitterEnableKnownO_A, jitter_en_o)
-% for intf in cfg['exported_clks']:
+% for intf in exported_clks:
   `ASSERT_KNOWN(ExportClocksKownO_A, clocks_${intf}_o)
 % endfor
   `ASSERT_KNOWN(ClocksKownO_A, clocks_o)
