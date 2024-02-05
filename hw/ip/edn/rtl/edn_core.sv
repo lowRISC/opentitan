@@ -68,6 +68,7 @@ module edn_core import edn_pkg::*;
     CsrngPackerClr,
     CsrngFipsEn,
     CsrngDataVld,
+    CsrngAckErr,
     AckFsmEn,
     LastEdnEntry
   } edn_enable_e;
@@ -159,6 +160,8 @@ module edn_core import edn_pkg::*;
   logic                               edn_main_sm_err_sum;
   logic [8:0]                         edn_main_sm_state;
   logic                               edn_main_sm_err;
+  logic                               csrng_ack_err;
+  logic                               reject_csrng_entropy;
   logic [30:0]                        err_code_test_bit;
   logic                               fifo_write_err_sum;
   logic                               fifo_read_err_sum;
@@ -344,10 +347,15 @@ module edn_core import edn_pkg::*;
     assign err_code_test_bit[i] = (reg2hw.err_code_test.q == i) && reg2hw.err_code_test.qe;
   end : gen_err_code_test_bit
 
+  // CSRNG acknowledgement error status
+  assign csrng_ack_err = edn_enable_fo[CsrngAckErr] &&
+                         csrng_cmd_i.csrng_rsp_sts && csrng_cmd_i.csrng_rsp_ack;
+  assign hw2reg.recov_alert_sts.csrng_ack_err.de = csrng_ack_err;
+  assign hw2reg.recov_alert_sts.csrng_ack_err.d  = csrng_ack_err;
 
   // Combine all recoverable alert signals into one singular signal.
   assign event_edn_recov_err = edn_bus_cmp_alert || cmd_fifo_rst_pfa || auto_req_mode_pfa ||
-                               boot_req_mode_pfa || edn_enable_pfa;
+                               boot_req_mode_pfa || edn_enable_pfa || csrng_ack_err;
 
   // Turn event_edn_recov_err into a pulse for the case when
   // the signals are high for more then one cycle.
@@ -659,9 +667,11 @@ module edn_core import edn_pkg::*;
     .capt_rescmd_fifo_cnt_o (capt_rescmd_fifo_cnt),
     .send_rescmd_o          (send_rescmd),
     .cmd_sent_i             (cmd_sent),
-    .local_escalate_i       (fatal_loc_events),
     .auto_req_mode_busy_o   (auto_req_mode_busy),
     .main_sm_state_o        (edn_main_sm_state),
+    .csrng_ack_err_i        (csrng_ack_err),
+    .reject_csrng_entropy_o (reject_csrng_entropy),
+    .local_escalate_i       (fatal_loc_events),
     .main_sm_err_o          (edn_main_sm_err)
   );
 
@@ -777,9 +787,10 @@ module edn_core import edn_pkg::*;
   );
 
   assign packer_cs_clr = !edn_enable_fo[CsrngPackerClr];
-  assign packer_cs_push = csrng_cmd_i.genbits_valid;
+  assign packer_cs_push = csrng_cmd_i.genbits_valid && !reject_csrng_entropy &&
+                          !(csrng_cmd_i.csrng_rsp_sts && csrng_cmd_i.csrng_rsp_ack);
   assign packer_cs_wdata = csrng_cmd_i.genbits_bus;
-  assign csrng_cmd_o.genbits_ready = packer_cs_wready;
+  assign csrng_cmd_o.genbits_ready = packer_cs_wready && !reject_csrng_entropy;
   assign packer_cs_rready = packer_arb_valid;
   assign packer_arb_ready = packer_cs_rvalid;
 
