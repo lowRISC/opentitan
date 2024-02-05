@@ -1,7 +1,12 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-
+<%
+  all_srcs = src_clks.copy()
+  all_srcs.update(derived_clks)
+  rg_srcs = list(sorted({sig['src_name'] for sig
+                         in typed_clocks['rg_clks'].values()}))
+%>
 # CLKMGR register template
 #
 {
@@ -34,13 +39,13 @@
   clocking: [
     {clock: "clk_i", reset: "rst_ni", primary: true},
     {reset: "rst_root_ni"},
-% for src in clocks.srcs.values():
-    {clock: "clk_${src.name}_i", reset: "rst_${src.name}_ni"},
+% for src in src_clks.values():
+    {clock: "clk_${src['name']}_i", reset: "rst_${src['name']}_ni"},
 % endfor
-% for src in clocks.derived_srcs.values():
-    {clock: "clk_${src.name}_i", reset: "rst_${src.name}_ni", internal: true},
+% for src in derived_clks.values():
+    {clock: "clk_${src['name']}_i", reset: "rst_${src['name']}_ni", internal: true},
 % endfor
-% for root, clk_family in typed_clocks.parent_child_clks.items():
+% for root, clk_family in parent_child_clks.items():
   % for clk in clk_family:
     {reset: "rst_root_${clk}_ni"},
   % endfor
@@ -66,13 +71,13 @@
     { name: "NumGroups",
       desc: "Number of clock groups",
       type: "int",
-      default: "${len(clocks.groups)}",
+      default: "${number_of_clock_groups}",
       local: "true"
     },
     { name: "NumSwGateableClocks",
       desc: "Number of SW gateable clocks",
       type: "int",
-      default: "${len(typed_clocks.sw_clks)}",
+      default: "${len(typed_clocks['sw_clks'])}",
       local: "true"
     },
     { name: "NumHintableClocks",
@@ -84,18 +89,17 @@
   ],
 
   features: [
-% for clk  in typed_clocks.sw_clks.values():
+% for signal in typed_clocks['sw_clks'].values():
 <%
-  src_name = clk.src.name.upper()
+  src_name = signal['src_name'].upper()
 %>\
     { name: "CLKMGR.ENABLE.${src_name}",
       desc: "Gating of ${src_name} peripheral clock."
     }
 % endfor
-% for clk in typed_clocks.hint_clks.values():
+% for sig in typed_clocks['hint_clks'].values():
 <%
-  endpoints = clk.endpoints
-  target_unit = endpoints[0][0].upper()
+  target_unit = sig['endpoint_ip'].upper()
 %>\
     { name: "CLKMGR.HINT.${target_unit}",
       desc: "Gating of ${target_unit} transactional clock."
@@ -106,7 +110,7 @@
             measurements.
             '''
     }
-% for clk in typed_clocks.rg_srcs:
+% for clk in rg_srcs:
     { name: "CLKMGR.MEAS_CTRL.${clk.upper()}",
       desc: "Frequency and timeout measurements of ${clk.upper()} clock."
     }
@@ -223,7 +227,7 @@
     },
 
   // Exported clocks
-% for intf in cfg['exported_clks']:
+% for intf in exported_clks:
     { struct:  "clkmgr_${intf}_out",
       type:    "uni",
       name:    "clocks_${intf}",
@@ -444,7 +448,7 @@
       swaccess: "rw",
       hwaccess: "hro",
       fields: [
-% for clk in typed_clocks.sw_clks:
+% for clk in typed_clocks['sw_clks']:
         {
           bits: "${loop.index}",
           name: "${clk.upper()}_EN",
@@ -538,8 +542,8 @@
         },
       ]
     },
-<% aon_freq = clocks.all_srcs['aon'].freq %>\
-% for src in typed_clocks.rg_srcs:
+<% aon_freq = all_srcs['aon']['freq'] %>\
+% for src in rg_srcs:
     { name: "${src.upper()}_MEAS_CTRL_EN",
       desc: '''
         Enable for measurement control
@@ -564,7 +568,7 @@
       tags: ["excl:CsrAllTests:CsrExclWrite"]
     },
 <%
-  freq = clocks.all_srcs[src].freq
+  freq = all_srcs[src]['freq']
   ratio = int(freq / aon_freq)
   # Add extra bit to width for margin
   width = ratio.bit_length() + 1
@@ -615,7 +619,7 @@
             One of the shadow registers encountered an update error.
           '''
         },
-% for src in typed_clocks.rg_srcs:
+% for src in rg_srcs:
         {
           bits: "${loop.index+1}",
           name: "${src.upper()}_MEASURE_ERR",
@@ -625,9 +629,9 @@
           '''
         },
 % endfor
-% for src in typed_clocks.rg_srcs:
+% for src in rg_srcs:
         {
-          bits: "${loop.index + len(typed_clocks.rg_srcs)+1}",
+          bits: "${loop.index + len(rg_srcs)+1}",
           name: "${src.upper()}_TIMEOUT_ERR",
           resval: 0,
           desc: '''

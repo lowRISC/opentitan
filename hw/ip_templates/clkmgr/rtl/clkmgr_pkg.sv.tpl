@@ -3,7 +3,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 <%
-num_hints = len(typed_clocks.hint_clks)
+from collections import OrderedDict
+num_hints = len(hint_names)
+all_clocks = OrderedDict({clk: None for clk in typed_clocks['ft_clks'].keys()})
+all_clocks.update({clk: None for clk in typed_clocks['hint_clks'].keys()})
+all_clocks.update({clk: None for clk in typed_clocks['rg_clks'].keys()})
+all_clocks.update({clk: None for clk in typed_clocks['sw_clks'].keys()})
 %>
 
 package clkmgr_pkg;
@@ -16,7 +21,7 @@ package clkmgr_pkg;
 
   // clocks generated and broadcast
   typedef struct packed {
-% for clk in typed_clocks.all_clocks():
+% for clk in all_clocks.keys():
     logic ${clk};
 % endfor
   } clkmgr_out_t;
@@ -24,14 +29,14 @@ package clkmgr_pkg;
   // clock gating indication for alert handler
   typedef struct packed {
 <% n_clk = 0 %>\
-% for clk in typed_clocks.all_clocks():
+% for clk in all_clocks.keys():
     prim_mubi_pkg::mubi4_t ${clk.split('clk_')[-1]};<% n_clk += 1 %>
 % endfor
   } clkmgr_cg_en_t;
 
   parameter int NumOutputClk = ${n_clk};
 
-% for intf, eps in cfg['exported_clks'].items():
+% for intf, eps in exported_clks.items():
   typedef struct packed {
   % for ep, clks in eps.items():
     % for clk in clks:
