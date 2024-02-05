@@ -150,7 +150,7 @@ OpenTitan Darjeeling is currently developed on a side branch named [opentitan/in
 Certain functions and blocks remain under active development.
 Contributions are welcome, but this design is provided as-is.
 
-- DV and and SoC wrapper infrastructure is being developed to enable the debug crossbar.
+- DV and SoC wrapper infrastructure is being developed to enable the debug crossbar.
 - The binary translation logic and the SoC DFx control module are under development. The former will allow for granular filtering and remapping of TL-UL requests, while the latter will provide SoC level gating functionality for DFT and debug infrastructure.
 - Crossbar generation support at the SoC-integration is not yet mature, so some TL-UL connections have not been made at this point.
 
