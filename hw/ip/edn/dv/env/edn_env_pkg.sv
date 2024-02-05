@@ -101,7 +101,8 @@ package edn_env_pkg;
     boot_req_mode_field_alert = 1,
     auto_req_mode_field_alert = 2,
     cmd_fifo_rst_field_alert  = 3,
-    edn_bus_cmp_alert         = 12
+    edn_bus_cmp_alert         = 12,
+    csrng_ack_err             = 13
   } recov_alert_bit_e;
 
   typedef enum int {

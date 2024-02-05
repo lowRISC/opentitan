@@ -525,6 +525,14 @@
                 Writing a zero resets this status bit.
                 '''
         }
+        { bits: "13",
+          name: "CSRNG_ACK_ERR",
+          desc: '''
+                This bit is set when the CSRNG returns an acknowledgement where the status
+                signal is high.
+                Writing a zero resets this status bit.
+                '''
+        }
       ]
     },
     {
