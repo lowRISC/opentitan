@@ -10,7 +10,7 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 void setup_dio_pins(dif_pinmux_t *pinmux, dif_sysrst_ctrl_t *sysrst_ctrl) {
-  // Make sure the the DIO pins EC reset and flash WP are configured correctly:
+  // Make sure the DIO pins EC reset and flash WP are configured correctly:
   // https://opentitan.org/book/hw/ip/sysrst_ctrl/doc/theory_of_operation.html#ec-and-power-on-reset
   // https://opentitan.org/book/hw/ip/sysrst_ctrl/doc/theory_of_operation.html#flash-write-protect-output
   //

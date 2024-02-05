@@ -39,7 +39,7 @@ be subsequently edited. Specifically, the script will create:
   `autogen/dif_<ip>_autogen_unittest.cc`, based on
   `util/make_new_dif/templates/dif_autogen_unittest.cc.tpl`.
 2. boilerplate templates (that should be manually edited/enhanced) for the
-   the portion of the IP DIF library that is manually implemented, including:
+   portion of the IP DIF library that is manually implemented, including:
   * a (public) header for the DIF, based on
   `util/make_new_dif/templates/dif_template.h.tpl`], and
   * a checklist for the DIF, based on `doc/project/sw_checklist.md.tpl`.

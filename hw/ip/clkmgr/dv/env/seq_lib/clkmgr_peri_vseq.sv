@@ -31,7 +31,7 @@ class clkmgr_peri_vseq extends clkmgr_base_vseq;
       flipped_enables = initial_enables ^ ((1 << ral.clk_enables.get_n_bits()) - 1);
       csr_wr(.ptr(ral.clk_enables), .value(flipped_enables));
       // Allow some time for the side-effects to be observed: the dv environment sets the CSRs
-      // clock frequency randomly, so it may run too fast and the the updates may become a glitch
+      // clock frequency randomly, so it may run too fast and the updates may become a glitch
       // that ends up not sampled in the SVAs.
       cfg.clk_rst_vif.wait_clks(4);
     end

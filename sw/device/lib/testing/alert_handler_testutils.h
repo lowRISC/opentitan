@@ -42,7 +42,7 @@ typedef struct alert_info_testutils_info {
  * `alert_handler_testutils_info_t`. This makes it easier to compare and display
  * the different fields.
  * @param dump Buffer containing the dump.
- * @param dump_size The size of the the `dump` in words.
+ * @param dump_size The size of the `dump` in words.
  * @param[out] info The parsed info.
  * @return The result of the operation.
  */

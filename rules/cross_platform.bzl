@@ -54,7 +54,7 @@ def dual_cc_library(
       @param hdrs: `cc_library()` headers; may be a list or a `dual_inputs()`.
       @params copts: `cc_library() copts; may be a list or a `dual_inputs()`.
       @param deps: `cc_library()` dependencies; may be a list or a `dual_inputs()`.
-      @param visibility: The visibility to be used for the the targets.
+      @param visibility: The visibility to be used for the targets.
       @param **kwargs: Arguments to forward to each `cc_library()`.
 
     Emits rules:
