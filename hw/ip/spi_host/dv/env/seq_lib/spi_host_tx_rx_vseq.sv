@@ -15,7 +15,7 @@ class spi_host_tx_rx_vseq extends spi_host_base_vseq;
   `uvm_object_utils(spi_host_tx_rx_vseq)
   `uvm_object_new
 
-  // This lock can be used to control access the the DUT TL-interface between testbench tasks.
+  // This lock can be used to control access to the DUT TL-interface between testbench tasks.
   semaphore spi_host_atomic = new(1);
 
   virtual task start_spi_host_trans(int num_transactions, bit wait_ready = 1'b1);

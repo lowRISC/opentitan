@@ -1031,10 +1031,10 @@ def get_dangling_im_def(objs: OrderedDict) -> str:
     as those used by im_netname.
 
     When the direction of the net is the same as the active direction of the
-    the connecting module, it is "unused".
+    connecting module, it is "unused".
 
     When the direction of the net is opposite of the active direction of the
-    the connecting module, it is "undriven".
+    connecting module, it is "undriven".
 
     As an example, edn is defined as "rsp" of a "req_rsp" pair. It is also used
     as the "active" module in inter-module connection. If there are not enough
