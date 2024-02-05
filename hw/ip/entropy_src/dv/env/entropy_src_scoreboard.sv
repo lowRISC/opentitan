@@ -1522,7 +1522,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
                   `DV_SPINWAIT(forever begin
                     sw_regupd = `gmv(ral.sw_regupd.sw_regupd);
                     if (!sw_regupd) break; // Device will be conlusively locked via sw_regupd
-                    csr_peek(.ptr(ral.regwen.regwen), .value(regwen_obs));
+                    regwen_obs = csr_peek(.ptr(ral.regwen.regwen));
                     if (regwen_obs == do_disable) break;
                     cfg.clk_rst_vif.wait_clks(1);
                     obs_delay++;

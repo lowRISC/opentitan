@@ -246,10 +246,10 @@ class chip_sw_flash_init_vseq extends chip_sw_base_vseq;
           `DV_CHECK(lc_seed_hw_rd_en, lc_ctrl_pkg::On)
         end else begin
           bit [63:0] secret0_digest, secret2_digest;
-          csr_peek(ral.otp_ctrl_core.secret0_digest[0], secret0_digest[31:0]);
-          csr_peek(ral.otp_ctrl_core.secret0_digest[1], secret0_digest[63:32]);
-          csr_peek(ral.otp_ctrl_core.secret2_digest[0], secret2_digest[31:0]);
-          csr_peek(ral.otp_ctrl_core.secret2_digest[1], secret2_digest[63:32]);
+          secret0_digest = {csr_peek(ral.otp_ctrl_core.secret0_digest[1]),
+                            csr_peek(ral.otp_ctrl_core.secret0_digest[0])};
+          secret2_digest = {csr_peek(ral.otp_ctrl_core.secret2_digest[1]),
+                            csr_peek(ral.otp_ctrl_core.secret2_digest[0])};
           `uvm_info("SEQ", $sformatf("read secret digest:  digest0:0x%16x  digest2:0x%16x",
                                      secret0_digest, secret2_digest), UVM_MEDIUM)
           if (secret0_digest == 0 || secret2_digest == 0) begin

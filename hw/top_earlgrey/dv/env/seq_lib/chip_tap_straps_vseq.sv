@@ -190,7 +190,7 @@ class chip_tap_straps_vseq extends chip_sw_base_vseq;
   virtual task test_lc_access_via_jtag();
     foreach (ral.lc_ctrl.device_id[i]) begin
       bit [31:0] act_device_id, exp_device_id;
-      csr_peek(ral.lc_ctrl.device_id[i], exp_device_id);
+      exp_device_id = csr_peek(ral.lc_ctrl.device_id[i]);
       jtag_riscv_agent_pkg::jtag_read_csr(ral.lc_ctrl.device_id[i].get_offset(),
                                           p_sequencer.jtag_sequencer_h,
                                           act_device_id);
