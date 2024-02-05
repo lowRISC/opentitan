@@ -31,11 +31,11 @@ waive -rules CLOCK_DRIVER -location {prim_clock_div.sv} -msg {'gen_div2.q_p' is 
 waive -rules CLOCK_USE -location {prim_clock_div.sv} -msg {'gen_div2.q_n' is connected to 'prim_flop' port 'd_i[0]', and used as a clock} \
       -comment "This is an internal clock signal."
 
-waive -rules CLOCK_USE -location {prim_clock_div.sv} -msg {'clk_o' is used for some other purpose, and as clock} \
+waive -rules CLOCK_USE -location {prim_clock_div.sv} -msg {'clk_muxed' is used for some other purpose, and as clock} \
       -comment "This is the divided clock output - but internally it is fed back into the division register as a logic signal."
 
 waive -rules INV_CLOCK -location {prim_clock_div.sv} -msg {'gen_div2.q_p' is inverted, used as clock} \
       -comment "Clock inversion is ok here."
 
-waive -rules INV_CLOCK -location {prim_clock_div.sv} -msg {'clk_o' is inverted, used as clock} \
+waive -rules INV_CLOCK -location {prim_clock_div.sv} -msg {'clk_muxed' is inverted, used as clock} \
       -comment "Clock inversion is ok here."
