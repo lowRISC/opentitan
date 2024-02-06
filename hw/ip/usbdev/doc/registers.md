@@ -49,17 +49,18 @@
 Interrupt State Register
 - Offset: `0x0`
 - Reset default: `0x0`
-- Reset mask: `0x1ffff`
+- Reset mask: `0x3ffff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "pkt_received", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "pkt_sent", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "disconnected", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "host_lost", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "link_reset", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "link_suspend", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "link_resume", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "av_out_empty", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "rx_full", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "av_overflow", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "link_in_err", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "rx_crc_err", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "rx_pid_err", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "rx_bitstuff_err", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "frame", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "powered", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "link_out_err", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 15}], "config": {"lanes": 1, "fontsize": 10, "vspace": 170}}
+{"reg": [{"name": "pkt_received", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "pkt_sent", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "disconnected", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "host_lost", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "link_reset", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "link_suspend", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "link_resume", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "av_out_empty", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "rx_full", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "av_overflow", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "link_in_err", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "rx_crc_err", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "rx_pid_err", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "rx_bitstuff_err", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "frame", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "powered", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "link_out_err", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "av_setup_empty", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 14}], "config": {"lanes": 1, "fontsize": 10, "vspace": 170}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                            |
 |:------:|:------:|:-------:|:------------------------------------------------|
-| 31:17  |        |         | Reserved                                        |
+| 31:18  |        |         | Reserved                                        |
+|   17   |  rw1c  |   0x0   | [av_setup_empty](#intr_state--av_setup_empty)   |
 |   16   |  rw1c  |   0x0   | [link_out_err](#intr_state--link_out_err)       |
 |   15   |  rw1c  |   0x0   | [powered](#intr_state--powered)                 |
 |   14   |  rw1c  |   0x0   | [frame](#intr_state--frame)                     |
@@ -77,6 +78,11 @@ Interrupt State Register
 |   2    |  rw1c  |   0x0   | [disconnected](#intr_state--disconnected)       |
 |   1    |  rw1c  |   0x0   | [pkt_sent](#intr_state--pkt_sent)               |
 |   0    |  rw1c  |   0x0   | [pkt_received](#intr_state--pkt_received)       |
+
+### INTR_STATE . av_setup_empty
+Raised when the Available SETUP Buffer FIFO is empty and the device interface is enabled.
+This interrupt is directly tied to the FIFO status, so the AV FIFO must be provided a free buffer before the interrupt is cleared.
+If the condition is not cleared, the interrupt can re-assert.
 
 ### INTR_STATE . link_out_err
 Raised if a packet to an OUT endpoint started to be received but was then dropped due to an error.
@@ -145,17 +151,18 @@ This interrupt is directly tied to whether the RX FIFO is empty, so it should be
 Interrupt Enable Register
 - Offset: `0x4`
 - Reset default: `0x0`
-- Reset mask: `0x1ffff`
+- Reset mask: `0x3ffff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "pkt_received", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "pkt_sent", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "disconnected", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "host_lost", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "link_reset", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "link_suspend", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "link_resume", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "av_out_empty", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "rx_full", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "av_overflow", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "link_in_err", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "rx_crc_err", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "rx_pid_err", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "rx_bitstuff_err", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "frame", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "powered", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "link_out_err", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 15}], "config": {"lanes": 1, "fontsize": 10, "vspace": 170}}
+{"reg": [{"name": "pkt_received", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "pkt_sent", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "disconnected", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "host_lost", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "link_reset", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "link_suspend", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "link_resume", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "av_out_empty", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "rx_full", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "av_overflow", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "link_in_err", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "rx_crc_err", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "rx_pid_err", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "rx_bitstuff_err", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "frame", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "powered", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "link_out_err", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "av_setup_empty", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 14}], "config": {"lanes": 1, "fontsize": 10, "vspace": 170}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name            | Description                                                               |
 |:------:|:------:|:-------:|:----------------|:--------------------------------------------------------------------------|
-| 31:17  |        |         |                 | Reserved                                                                  |
+| 31:18  |        |         |                 | Reserved                                                                  |
+|   17   |   rw   |   0x0   | av_setup_empty  | Enable interrupt when [`INTR_STATE.av_setup_empty`](#intr_state) is set.  |
 |   16   |   rw   |   0x0   | link_out_err    | Enable interrupt when [`INTR_STATE.link_out_err`](#intr_state) is set.    |
 |   15   |   rw   |   0x0   | powered         | Enable interrupt when [`INTR_STATE.powered`](#intr_state) is set.         |
 |   14   |   rw   |   0x0   | frame           | Enable interrupt when [`INTR_STATE.frame`](#intr_state) is set.           |
@@ -178,17 +185,18 @@ Interrupt Enable Register
 Interrupt Test Register
 - Offset: `0x8`
 - Reset default: `0x0`
-- Reset mask: `0x1ffff`
+- Reset mask: `0x3ffff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "pkt_received", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "pkt_sent", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "disconnected", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "host_lost", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "link_reset", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "link_suspend", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "link_resume", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "av_out_empty", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "rx_full", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "av_overflow", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "link_in_err", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "rx_crc_err", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "rx_pid_err", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "rx_bitstuff_err", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "frame", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "powered", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "link_out_err", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 15}], "config": {"lanes": 1, "fontsize": 10, "vspace": 170}}
+{"reg": [{"name": "pkt_received", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "pkt_sent", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "disconnected", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "host_lost", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "link_reset", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "link_suspend", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "link_resume", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "av_out_empty", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "rx_full", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "av_overflow", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "link_in_err", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "rx_crc_err", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "rx_pid_err", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "rx_bitstuff_err", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "frame", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "powered", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "link_out_err", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "av_setup_empty", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 14}], "config": {"lanes": 1, "fontsize": 10, "vspace": 170}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name            | Description                                                        |
 |:------:|:------:|:-------:|:----------------|:-------------------------------------------------------------------|
-| 31:17  |        |         |                 | Reserved                                                           |
+| 31:18  |        |         |                 | Reserved                                                           |
+|   17   |   wo   |   0x0   | av_setup_empty  | Write 1 to force [`INTR_STATE.av_setup_empty`](#intr_state) to 1.  |
 |   16   |   wo   |   0x0   | link_out_err    | Write 1 to force [`INTR_STATE.link_out_err`](#intr_state) to 1.    |
 |   15   |   wo   |   0x0   | powered         | Write 1 to force [`INTR_STATE.powered`](#intr_state) to 1.         |
 |   14   |   wo   |   0x0   | frame           | Write 1 to force [`INTR_STATE.frame`](#intr_state) to 1.           |

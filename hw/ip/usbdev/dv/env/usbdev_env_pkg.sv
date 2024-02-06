@@ -44,6 +44,7 @@ package usbdev_env_pkg;
     IntrFrame = 14,
     IntrPowered = 15,
     IntrLinkOutErr = 16,
+    IntrAvSetupEmpty = 17,
     NumUsbdevInterrupts
   } usbdev_intr_e;
 

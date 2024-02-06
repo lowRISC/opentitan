@@ -1155,72 +1155,74 @@ pub enum PlicIrqId {
     UsbdevPowered = 144,
     /// usbdev_link_out_err
     UsbdevLinkOutErr = 145,
+    /// usbdev_av_setup_empty
+    UsbdevAvSetupEmpty = 146,
     /// pwrmgr_aon_wakeup
-    PwrmgrAonWakeup = 146,
+    PwrmgrAonWakeup = 147,
     /// sysrst_ctrl_aon_event_detected
-    SysrstCtrlAonEventDetected = 147,
+    SysrstCtrlAonEventDetected = 148,
     /// adc_ctrl_aon_match_done
-    AdcCtrlAonMatchDone = 148,
+    AdcCtrlAonMatchDone = 149,
     /// aon_timer_aon_wkup_timer_expired
-    AonTimerAonWkupTimerExpired = 149,
+    AonTimerAonWkupTimerExpired = 150,
     /// aon_timer_aon_wdog_timer_bark
-    AonTimerAonWdogTimerBark = 150,
+    AonTimerAonWdogTimerBark = 151,
     /// sensor_ctrl_aon_io_status_change
-    SensorCtrlAonIoStatusChange = 151,
+    SensorCtrlAonIoStatusChange = 152,
     /// sensor_ctrl_aon_init_status_change
-    SensorCtrlAonInitStatusChange = 152,
+    SensorCtrlAonInitStatusChange = 153,
     /// flash_ctrl_prog_empty
-    FlashCtrlProgEmpty = 153,
+    FlashCtrlProgEmpty = 154,
     /// flash_ctrl_prog_lvl
-    FlashCtrlProgLvl = 154,
+    FlashCtrlProgLvl = 155,
     /// flash_ctrl_rd_full
-    FlashCtrlRdFull = 155,
+    FlashCtrlRdFull = 156,
     /// flash_ctrl_rd_lvl
-    FlashCtrlRdLvl = 156,
+    FlashCtrlRdLvl = 157,
     /// flash_ctrl_op_done
-    FlashCtrlOpDone = 157,
+    FlashCtrlOpDone = 158,
     /// flash_ctrl_corr_err
-    FlashCtrlCorrErr = 158,
+    FlashCtrlCorrErr = 159,
     /// hmac_hmac_done
-    HmacHmacDone = 159,
+    HmacHmacDone = 160,
     /// hmac_fifo_empty
-    HmacFifoEmpty = 160,
+    HmacFifoEmpty = 161,
     /// hmac_hmac_err
-    HmacHmacErr = 161,
+    HmacHmacErr = 162,
     /// kmac_kmac_done
-    KmacKmacDone = 162,
+    KmacKmacDone = 163,
     /// kmac_fifo_empty
-    KmacFifoEmpty = 163,
+    KmacFifoEmpty = 164,
     /// kmac_kmac_err
-    KmacKmacErr = 164,
+    KmacKmacErr = 165,
     /// otbn_done
-    OtbnDone = 165,
+    OtbnDone = 166,
     /// keymgr_op_done
-    KeymgrOpDone = 166,
+    KeymgrOpDone = 167,
     /// csrng_cs_cmd_req_done
-    CsrngCsCmdReqDone = 167,
+    CsrngCsCmdReqDone = 168,
     /// csrng_cs_entropy_req
-    CsrngCsEntropyReq = 168,
+    CsrngCsEntropyReq = 169,
     /// csrng_cs_hw_inst_exc
-    CsrngCsHwInstExc = 169,
+    CsrngCsHwInstExc = 170,
     /// csrng_cs_fatal_err
-    CsrngCsFatalErr = 170,
+    CsrngCsFatalErr = 171,
     /// entropy_src_es_entropy_valid
-    EntropySrcEsEntropyValid = 171,
+    EntropySrcEsEntropyValid = 172,
     /// entropy_src_es_health_test_failed
-    EntropySrcEsHealthTestFailed = 172,
+    EntropySrcEsHealthTestFailed = 173,
     /// entropy_src_es_observe_fifo_ready
-    EntropySrcEsObserveFifoReady = 173,
+    EntropySrcEsObserveFifoReady = 174,
     /// entropy_src_es_fatal_err
-    EntropySrcEsFatalErr = 174,
+    EntropySrcEsFatalErr = 175,
     /// edn0_edn_cmd_req_done
-    Edn0EdnCmdReqDone = 175,
+    Edn0EdnCmdReqDone = 176,
     /// edn0_edn_fatal_err
-    Edn0EdnFatalErr = 176,
+    Edn0EdnFatalErr = 177,
     /// edn1_edn_cmd_req_done
-    Edn1EdnCmdReqDone = 177,
+    Edn1EdnCmdReqDone = 178,
     /// edn1_edn_fatal_err
-    Edn1EdnFatalErr = 178,
+    Edn1EdnFatalErr = 179,
 }
 
 impl TryFrom<u32> for PlicIrqId {
@@ -1373,39 +1375,40 @@ impl TryFrom<u32> for PlicIrqId {
             143 => Ok(Self::UsbdevFrame),
             144 => Ok(Self::UsbdevPowered),
             145 => Ok(Self::UsbdevLinkOutErr),
-            146 => Ok(Self::PwrmgrAonWakeup),
-            147 => Ok(Self::SysrstCtrlAonEventDetected),
-            148 => Ok(Self::AdcCtrlAonMatchDone),
-            149 => Ok(Self::AonTimerAonWkupTimerExpired),
-            150 => Ok(Self::AonTimerAonWdogTimerBark),
-            151 => Ok(Self::SensorCtrlAonIoStatusChange),
-            152 => Ok(Self::SensorCtrlAonInitStatusChange),
-            153 => Ok(Self::FlashCtrlProgEmpty),
-            154 => Ok(Self::FlashCtrlProgLvl),
-            155 => Ok(Self::FlashCtrlRdFull),
-            156 => Ok(Self::FlashCtrlRdLvl),
-            157 => Ok(Self::FlashCtrlOpDone),
-            158 => Ok(Self::FlashCtrlCorrErr),
-            159 => Ok(Self::HmacHmacDone),
-            160 => Ok(Self::HmacFifoEmpty),
-            161 => Ok(Self::HmacHmacErr),
-            162 => Ok(Self::KmacKmacDone),
-            163 => Ok(Self::KmacFifoEmpty),
-            164 => Ok(Self::KmacKmacErr),
-            165 => Ok(Self::OtbnDone),
-            166 => Ok(Self::KeymgrOpDone),
-            167 => Ok(Self::CsrngCsCmdReqDone),
-            168 => Ok(Self::CsrngCsEntropyReq),
-            169 => Ok(Self::CsrngCsHwInstExc),
-            170 => Ok(Self::CsrngCsFatalErr),
-            171 => Ok(Self::EntropySrcEsEntropyValid),
-            172 => Ok(Self::EntropySrcEsHealthTestFailed),
-            173 => Ok(Self::EntropySrcEsObserveFifoReady),
-            174 => Ok(Self::EntropySrcEsFatalErr),
-            175 => Ok(Self::Edn0EdnCmdReqDone),
-            176 => Ok(Self::Edn0EdnFatalErr),
-            177 => Ok(Self::Edn1EdnCmdReqDone),
-            178 => Ok(Self::Edn1EdnFatalErr),
+            146 => Ok(Self::UsbdevAvSetupEmpty),
+            147 => Ok(Self::PwrmgrAonWakeup),
+            148 => Ok(Self::SysrstCtrlAonEventDetected),
+            149 => Ok(Self::AdcCtrlAonMatchDone),
+            150 => Ok(Self::AonTimerAonWkupTimerExpired),
+            151 => Ok(Self::AonTimerAonWdogTimerBark),
+            152 => Ok(Self::SensorCtrlAonIoStatusChange),
+            153 => Ok(Self::SensorCtrlAonInitStatusChange),
+            154 => Ok(Self::FlashCtrlProgEmpty),
+            155 => Ok(Self::FlashCtrlProgLvl),
+            156 => Ok(Self::FlashCtrlRdFull),
+            157 => Ok(Self::FlashCtrlRdLvl),
+            158 => Ok(Self::FlashCtrlOpDone),
+            159 => Ok(Self::FlashCtrlCorrErr),
+            160 => Ok(Self::HmacHmacDone),
+            161 => Ok(Self::HmacFifoEmpty),
+            162 => Ok(Self::HmacHmacErr),
+            163 => Ok(Self::KmacKmacDone),
+            164 => Ok(Self::KmacFifoEmpty),
+            165 => Ok(Self::KmacKmacErr),
+            166 => Ok(Self::OtbnDone),
+            167 => Ok(Self::KeymgrOpDone),
+            168 => Ok(Self::CsrngCsCmdReqDone),
+            169 => Ok(Self::CsrngCsEntropyReq),
+            170 => Ok(Self::CsrngCsHwInstExc),
+            171 => Ok(Self::CsrngCsFatalErr),
+            172 => Ok(Self::EntropySrcEsEntropyValid),
+            173 => Ok(Self::EntropySrcEsHealthTestFailed),
+            174 => Ok(Self::EntropySrcEsObserveFifoReady),
+            175 => Ok(Self::EntropySrcEsFatalErr),
+            176 => Ok(Self::Edn0EdnCmdReqDone),
+            177 => Ok(Self::Edn0EdnFatalErr),
+            178 => Ok(Self::Edn1EdnCmdReqDone),
+            179 => Ok(Self::Edn1EdnFatalErr),
             _ => Err(val),
         }
     }
@@ -1730,7 +1733,7 @@ impl TryFrom<u32> for AlertId {
 ///
 /// This array is a mapping from `PlicIrqId` to
 /// `PlicPeripheral`.
-pub const PLIC_INTERRUPT_FOR_PERIPHERAL: [PlicPeripheral; 179] = [
+pub const PLIC_INTERRUPT_FOR_PERIPHERAL: [PlicPeripheral; 180] = [
     // None -> PlicPeripheral::Unknown
     PlicPeripheral::Unknown,
     // Uart0TxWatermark -> PlicPeripheral::Uart0
@@ -2022,6 +2025,8 @@ pub const PLIC_INTERRUPT_FOR_PERIPHERAL: [PlicPeripheral; 179] = [
     // UsbdevPowered -> PlicPeripheral::Usbdev
     PlicPeripheral::Usbdev,
     // UsbdevLinkOutErr -> PlicPeripheral::Usbdev
+    PlicPeripheral::Usbdev,
+    // UsbdevAvSetupEmpty -> PlicPeripheral::Usbdev
     PlicPeripheral::Usbdev,
     // PwrmgrAonWakeup -> PlicPeripheral::PwrmgrAon
     PlicPeripheral::PwrmgrAon,

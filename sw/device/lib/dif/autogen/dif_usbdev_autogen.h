@@ -164,6 +164,13 @@ typedef enum dif_usbdev_irq {
    * the Received Buffer FIFO is full.
    */
   kDifUsbdevIrqLinkOutErr = 16,
+  /**
+   * Raised when the Available SETUP Buffer FIFO is empty and the device
+   * interface is enabled. This interrupt is directly tied to the FIFO status,
+   * so the AV FIFO must be provided a free buffer before the interrupt is
+   * cleared. If the condition is not cleared, the interrupt can re-assert.
+   */
+  kDifUsbdevIrqAvSetupEmpty = 17,
 } dif_usbdev_irq_t;
 
 /**

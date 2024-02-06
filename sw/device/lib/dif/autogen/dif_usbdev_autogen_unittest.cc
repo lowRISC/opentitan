@@ -73,7 +73,7 @@ TEST_F(IrqGetTypeTest, BadIrq) {
   dif_irq_type_t type;
 
   EXPECT_DIF_BADARG(dif_usbdev_irq_get_type(
-      &usbdev_, static_cast<dif_usbdev_irq_t>(kDifUsbdevIrqLinkOutErr + 1),
+      &usbdev_, static_cast<dif_usbdev_irq_t>(kDifUsbdevIrqAvSetupEmpty + 1),
       &type));
 }
 
@@ -150,9 +150,9 @@ TEST_F(IrqIsPendingTest, Success) {
   // Get the last IRQ state.
   irq_state = true;
   EXPECT_READ32(USBDEV_INTR_STATE_REG_OFFSET,
-                {{USBDEV_INTR_STATE_LINK_OUT_ERR_BIT, false}});
-  EXPECT_DIF_OK(
-      dif_usbdev_irq_is_pending(&usbdev_, kDifUsbdevIrqLinkOutErr, &irq_state));
+                {{USBDEV_INTR_STATE_AV_SETUP_EMPTY_BIT, false}});
+  EXPECT_DIF_OK(dif_usbdev_irq_is_pending(&usbdev_, kDifUsbdevIrqAvSetupEmpty,
+                                          &irq_state));
   EXPECT_FALSE(irq_state);
 }
 
@@ -164,7 +164,7 @@ TEST_F(AcknowledgeStateTest, NullArgs) {
 }
 
 TEST_F(AcknowledgeStateTest, AckSnapshot) {
-  constexpr uint32_t num_irqs = 17;
+  constexpr uint32_t num_irqs = 18;
   constexpr uint32_t irq_mask = (uint64_t{1} << num_irqs) - 1;
   dif_usbdev_irq_state_snapshot_t irq_snapshot = 1;
 
@@ -218,8 +218,9 @@ TEST_F(IrqAcknowledgeTest, Success) {
 
   // Clear the last IRQ state.
   EXPECT_WRITE32(USBDEV_INTR_STATE_REG_OFFSET,
-                 {{USBDEV_INTR_STATE_LINK_OUT_ERR_BIT, true}});
-  EXPECT_DIF_OK(dif_usbdev_irq_acknowledge(&usbdev_, kDifUsbdevIrqLinkOutErr));
+                 {{USBDEV_INTR_STATE_AV_SETUP_EMPTY_BIT, true}});
+  EXPECT_DIF_OK(
+      dif_usbdev_irq_acknowledge(&usbdev_, kDifUsbdevIrqAvSetupEmpty));
 }
 
 class IrqForceTest : public UsbdevTest {};
@@ -242,8 +243,9 @@ TEST_F(IrqForceTest, Success) {
 
   // Force last IRQ.
   EXPECT_WRITE32(USBDEV_INTR_TEST_REG_OFFSET,
-                 {{USBDEV_INTR_TEST_LINK_OUT_ERR_BIT, true}});
-  EXPECT_DIF_OK(dif_usbdev_irq_force(&usbdev_, kDifUsbdevIrqLinkOutErr, true));
+                 {{USBDEV_INTR_TEST_AV_SETUP_EMPTY_BIT, true}});
+  EXPECT_DIF_OK(
+      dif_usbdev_irq_force(&usbdev_, kDifUsbdevIrqAvSetupEmpty, true));
 }
 
 class IrqGetEnabledTest : public UsbdevTest {};
@@ -282,8 +284,8 @@ TEST_F(IrqGetEnabledTest, Success) {
   // Last IRQ is disabled.
   irq_state = kDifToggleEnabled;
   EXPECT_READ32(USBDEV_INTR_ENABLE_REG_OFFSET,
-                {{USBDEV_INTR_ENABLE_LINK_OUT_ERR_BIT, false}});
-  EXPECT_DIF_OK(dif_usbdev_irq_get_enabled(&usbdev_, kDifUsbdevIrqLinkOutErr,
+                {{USBDEV_INTR_ENABLE_AV_SETUP_EMPTY_BIT, false}});
+  EXPECT_DIF_OK(dif_usbdev_irq_get_enabled(&usbdev_, kDifUsbdevIrqAvSetupEmpty,
                                            &irq_state));
   EXPECT_EQ(irq_state, kDifToggleDisabled);
 }
@@ -317,9 +319,9 @@ TEST_F(IrqSetEnabledTest, Success) {
   // Disable last IRQ.
   irq_state = kDifToggleDisabled;
   EXPECT_MASK32(USBDEV_INTR_ENABLE_REG_OFFSET,
-                {{USBDEV_INTR_ENABLE_LINK_OUT_ERR_BIT, 0x1, false}});
-  EXPECT_DIF_OK(
-      dif_usbdev_irq_set_enabled(&usbdev_, kDifUsbdevIrqLinkOutErr, irq_state));
+                {{USBDEV_INTR_ENABLE_AV_SETUP_EMPTY_BIT, 0x1, false}});
+  EXPECT_DIF_OK(dif_usbdev_irq_set_enabled(&usbdev_, kDifUsbdevIrqAvSetupEmpty,
+                                           irq_state));
 }
 
 class IrqDisableAllTest : public UsbdevTest {};

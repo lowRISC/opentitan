@@ -207,6 +207,8 @@ module usbdev_reg_top (
   logic intr_state_powered_wd;
   logic intr_state_link_out_err_qs;
   logic intr_state_link_out_err_wd;
+  logic intr_state_av_setup_empty_qs;
+  logic intr_state_av_setup_empty_wd;
   logic intr_enable_we;
   logic intr_enable_pkt_received_qs;
   logic intr_enable_pkt_received_wd;
@@ -242,6 +244,8 @@ module usbdev_reg_top (
   logic intr_enable_powered_wd;
   logic intr_enable_link_out_err_qs;
   logic intr_enable_link_out_err_wd;
+  logic intr_enable_av_setup_empty_qs;
+  logic intr_enable_av_setup_empty_wd;
   logic intr_test_we;
   logic intr_test_pkt_received_wd;
   logic intr_test_pkt_sent_wd;
@@ -260,6 +264,7 @@ module usbdev_reg_top (
   logic intr_test_frame_wd;
   logic intr_test_powered_wd;
   logic intr_test_link_out_err_wd;
+  logic intr_test_av_setup_empty_wd;
   logic alert_test_we;
   logic alert_test_wd;
   logic usbctrl_we;
@@ -1251,6 +1256,33 @@ module usbdev_reg_top (
     .qs     (intr_state_link_out_err_qs)
   );
 
+  //   F[av_setup_empty]: 17:17
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_intr_state_av_setup_empty (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (intr_state_we),
+    .wd     (intr_state_av_setup_empty_wd),
+
+    // from internal hardware
+    .de     (hw2reg.intr_state.av_setup_empty.de),
+    .d      (hw2reg.intr_state.av_setup_empty.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_state.av_setup_empty.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (intr_state_av_setup_empty_qs)
+  );
+
 
   // R[intr_enable]: V(False)
   //   F[pkt_received]: 0:0
@@ -1712,10 +1744,37 @@ module usbdev_reg_top (
     .qs     (intr_enable_link_out_err_qs)
   );
 
+  //   F[av_setup_empty]: 17:17
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_intr_enable_av_setup_empty (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (intr_enable_we),
+    .wd     (intr_enable_av_setup_empty_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_enable.av_setup_empty.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (intr_enable_av_setup_empty_qs)
+  );
+
 
   // R[intr_test]: V(True)
   logic intr_test_qe;
-  logic [16:0] intr_test_flds_we;
+  logic [17:0] intr_test_flds_we;
   assign intr_test_qe = &intr_test_flds_we;
   //   F[pkt_received]: 0:0
   prim_subreg_ext #(
@@ -1988,6 +2047,22 @@ module usbdev_reg_top (
     .qs     ()
   );
   assign reg2hw.intr_test.link_out_err.qe = intr_test_qe;
+
+  //   F[av_setup_empty]: 17:17
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_intr_test_av_setup_empty (
+    .re     (1'b0),
+    .we     (intr_test_we),
+    .wd     (intr_test_av_setup_empty_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (intr_test_flds_we[17]),
+    .q      (reg2hw.intr_test.av_setup_empty.q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.intr_test.av_setup_empty.qe = intr_test_qe;
 
 
   // R[alert_test]: V(True)
@@ -7868,6 +7943,8 @@ module usbdev_reg_top (
   assign intr_state_powered_wd = reg_wdata[15];
 
   assign intr_state_link_out_err_wd = reg_wdata[16];
+
+  assign intr_state_av_setup_empty_wd = reg_wdata[17];
   assign intr_enable_we = addr_hit[1] & reg_we & !reg_error;
 
   assign intr_enable_pkt_received_wd = reg_wdata[0];
@@ -7903,6 +7980,8 @@ module usbdev_reg_top (
   assign intr_enable_powered_wd = reg_wdata[15];
 
   assign intr_enable_link_out_err_wd = reg_wdata[16];
+
+  assign intr_enable_av_setup_empty_wd = reg_wdata[17];
   assign intr_test_we = addr_hit[2] & reg_we & !reg_error;
 
   assign intr_test_pkt_received_wd = reg_wdata[0];
@@ -7938,6 +8017,8 @@ module usbdev_reg_top (
   assign intr_test_powered_wd = reg_wdata[15];
 
   assign intr_test_link_out_err_wd = reg_wdata[16];
+
+  assign intr_test_av_setup_empty_wd = reg_wdata[17];
   assign alert_test_we = addr_hit[3] & reg_we & !reg_error;
 
   assign alert_test_wd = reg_wdata[0];
@@ -8428,6 +8509,7 @@ module usbdev_reg_top (
         reg_rdata_next[14] = intr_state_frame_qs;
         reg_rdata_next[15] = intr_state_powered_qs;
         reg_rdata_next[16] = intr_state_link_out_err_qs;
+        reg_rdata_next[17] = intr_state_av_setup_empty_qs;
       end
 
       addr_hit[1]: begin
@@ -8448,6 +8530,7 @@ module usbdev_reg_top (
         reg_rdata_next[14] = intr_enable_frame_qs;
         reg_rdata_next[15] = intr_enable_powered_qs;
         reg_rdata_next[16] = intr_enable_link_out_err_qs;
+        reg_rdata_next[17] = intr_enable_av_setup_empty_qs;
       end
 
       addr_hit[2]: begin
@@ -8468,6 +8551,7 @@ module usbdev_reg_top (
         reg_rdata_next[14] = '0;
         reg_rdata_next[15] = '0;
         reg_rdata_next[16] = '0;
+        reg_rdata_next[17] = '0;
       end
 
       addr_hit[3]: begin

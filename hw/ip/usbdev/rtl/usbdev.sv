@@ -86,7 +86,8 @@ module usbdev
   output logic       intr_rx_crc_err_o,
   output logic       intr_rx_pid_err_o,
   output logic       intr_rx_bitstuff_err_o,
-  output logic       intr_frame_o
+  output logic       intr_frame_o,
+  output logic       intr_av_setup_empty_o
 );
 
   // Could make SramDepth, MaxPktSizeByte, AVFifoDepth and RXFifoDepth
@@ -906,7 +907,7 @@ module usbdev
     .intr_o                 (intr_link_resume_o)
   );
 
-  prim_intr_hw #(.Width(1), .IntrT("Status")) intr_av_empty (
+  prim_intr_hw #(.Width(1), .IntrT("Status")) intr_av_out_empty (
     .clk_i,
     .rst_ni, // not stubbed off so that the interrupt regs still work.
     .event_intr_i           (event_av_empty),
@@ -1021,6 +1022,21 @@ module usbdev
     .hw2reg_intr_state_de_o (hw2reg.intr_state.frame.de),
     .hw2reg_intr_state_d_o  (hw2reg.intr_state.frame.d),
     .intr_o                 (intr_frame_o)
+  );
+
+  // TODO: tie offs for newly-introduced Available SETUP Buffer FIFO
+  wire event_av_setup_empty = 1'b0;
+  prim_intr_hw #(.Width(1), .IntrT("Status")) intr_av_setup_empty (
+    .clk_i,
+    .rst_ni, // not stubbed off so that the interrupt regs still work.
+    .event_intr_i           (event_av_setup_empty),
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.av_setup_empty.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.av_setup_empty.q),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.av_setup_empty.qe),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.av_setup_empty.q),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.av_setup_empty.de),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.av_setup_empty.d),
+    .intr_o                 (intr_av_setup_empty_o)
   );
 
   /////////////////////////////////
@@ -1191,6 +1207,7 @@ module usbdev
   `ASSERT_KNOWN(USBIntrRxPidErrKnown_A, intr_rx_pid_err_o)
   `ASSERT_KNOWN(USBIntrRxBitstuffErrKnown_A, intr_rx_bitstuff_err_o)
   `ASSERT_KNOWN(USBIntrFrameKnown_A, intr_frame_o)
+  `ASSERT_KNOWN(USBIntrAvSetupEmptyKnown_A, intr_av_setup_empty_o)
 
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
