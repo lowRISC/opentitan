@@ -95,6 +95,7 @@ cc_library(
         ":mac",
         ":status",
         "//sw/device/lib/base:math",
+        "//sw/device/lib/crypto/drivers:kmac",
         "//sw/device/lib/crypto/include:datatypes",
     ],
 )
