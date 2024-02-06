@@ -7,6 +7,7 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
 #include "sw/device/lib/dif/dif_spi_host.h"
 #include "sw/device/lib/runtime/hart.h"
@@ -86,8 +87,8 @@ static status_t check_irq_eq(uint32_t irq) {
   irq_global_ctrl(false);
   if (irq_fired == UINT32_MAX) {
     wait_for_interrupt();
-    irq_global_ctrl(true);
   }
+  irq_global_ctrl(true);
   TRY_CHECK(irq_fired == irq);
   return OK_STATUS();
 }
