@@ -3600,10 +3600,23 @@ opentitan_test(
 opentitan_test(
     name = "rstmgr_alert_info_test",
     srcs = ["rstmgr_alert_info_test.c"],
+    ############
+    # Uncomment this for exec_env = "//hw/top_earlgrey:fpga_cw310_sival": None,
+    # Once you assign rsa_key, it will override rsa_key parameters for all exec_env.
+    # That will causes signiture verify failure for other exec_env.
+    #    cw310 = new_cw310_params(
+    #       # This is secret2 unlocked image
+    #       otp = "//hw/ip/otp_ctrl/data:img_prod",
+    #    ),
+    #    rsa_key = rsa_key_for_lc_state(
+    #        RSA_ONLY_KEY_STRUCTS,
+    #        CONST.LCV.PROD,
+    #    ),
+    ############
     exec_env = {
         # TODO(lowrisc/opentitan#20589): Enable _sival* tests when bug is fixed
-        # "//hw/top_earlgrey:fpga_cw310_sival": None,
         # "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+        #"//hw/top_earlgrey:fpga_cw310_sival": None,
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
         "//hw/top_earlgrey:silicon_creator": None,
         "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon_owner",
