@@ -449,7 +449,7 @@ status_t handle_kmac_sca_init(ujson_t *uj) {
   // Read mode. FPGA or discrete.
   cryptotest_kmac_sca_fpga_mode_t uj_data;
   TRY(ujson_deserialize_cryptotest_kmac_sca_fpga_mode_t(uj, &uj_data));
-  if (read_32(uj_data.fpga_mode) == 0x01) {
+  if (uj_data.fpga_mode == 0x01) {
     fpga_mode = true;
   }
   // Setup the trigger.
@@ -665,6 +665,7 @@ status_t handle_kmac_sca_batch(ujson_t *uj) {
   }
 
   for (uint32_t i = 0; i < num_encryptions; ++i) {
+    kmac_reset();
     memcpy(kmac_key.share0, kmac_batch_keys[i], kKeyLength);
 
     sca_set_trigger_high();

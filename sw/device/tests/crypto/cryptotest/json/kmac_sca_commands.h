@@ -11,7 +11,6 @@ extern "C" {
 
 #define KMACSCA_CMD_MAX_BATCH_DIGEST_BYTES 32
 #define KMACSCA_CMD_MAX_DATA_BYTES 16
-#define KMACSCA_CMD_MAX_FPGA_MODE_BYTES 1
 #define KMACSCA_CMD_MAX_KEY_BYTES 16
 #define KMACSCA_CMD_MAX_LFSR_BYTES 4
 #define KMACSCA_CMD_MAX_MSG_BYTES 16
@@ -37,7 +36,7 @@ UJSON_SERDE_STRUCT(CryptotestKmacScaKey, cryptotest_kmac_sca_key_t, KMAC_SCA_KEY
 UJSON_SERDE_STRUCT(CryptotestKmacScaLfsr, cryptotest_kmac_sca_lfsr_t, KMAC_SCA_LFSR);
 
 #define KMAC_SCA_FPGA_MODE(field, string) \
-    field(fpga_mode, uint8_t, KMACSCA_CMD_MAX_FPGA_MODE_BYTES)
+    field(fpga_mode, uint8_t)
 UJSON_SERDE_STRUCT(CryptotestKmacScaFpgaMode, cryptotest_kmac_sca_fpga_mode_t, KMAC_SCA_FPGA_MODE);
 
 #define KMAC_SCA_DATA(field, string) \
