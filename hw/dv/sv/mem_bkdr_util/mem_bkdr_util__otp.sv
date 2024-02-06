@@ -124,9 +124,7 @@ virtual function void otp_write_secret2_partition(bit [RmaTokenSize*8-1:0] rma_u
 endfunction
 
 virtual function void otp_write_hw_cfg0_partition(
-    bit [DeviceIdSize*8-1:0] device_id, bit [ManufStateSize*8-1:0] manuf_state,
-    bit [EnCsrngSwAppReadSize*8-1:0] en_csrng_sw_app_read,
-    bit [EnSramIfetchSize*8-1:0] en_sram_ifetch);
+    bit [DeviceIdSize*8-1:0] device_id, bit [ManufStateSize*8-1:0] manuf_state);
   bit [HwCfg0DigestSize*8-1:0] digest;
 
   bit [bus_params_pkg::BUS_DW-1:0] hw_cfg0_data[$];
@@ -137,12 +135,26 @@ virtual function void otp_write_hw_cfg0_partition(
   for (int i = 0; i < ManufStateSize; i += 4) begin
     write32(i + ManufStateOffset, manuf_state[i*8+:32]);
   end
-  write32(EnSramIfetchOffset, {en_csrng_sw_app_read, en_sram_ifetch});
 
-  hw_cfg0_data = {<<32 {32'h0, en_csrng_sw_app_read, en_sram_ifetch, manuf_state, device_id}};
+  hw_cfg0_data = {<<32 {32'h0, manuf_state, device_id}};
   digest = cal_digest(HwCfg0Idx, hw_cfg0_data);
 
   write64(HwCfg0DigestOffset, digest);
+endfunction
+
+virtual function void otp_write_hw_cfg1_partition(
+    bit [EnCsrngSwAppReadSize*8-1:0] en_csrng_sw_app_read,
+    bit [EnSramIfetchSize*8-1:0] en_sram_ifetch);
+  bit [HwCfg1DigestSize*8-1:0] digest;
+
+  bit [bus_params_pkg::BUS_DW-1:0] hw_cfg1_data[$];
+
+  write32(EnSramIfetchOffset, {en_csrng_sw_app_read, en_sram_ifetch});
+
+  hw_cfg1_data = {<<32 {32'h0, en_csrng_sw_app_read, en_sram_ifetch}};
+  digest = cal_digest(HwCfg1Idx, hw_cfg1_data);
+
+  write64(HwCfg1DigestOffset, digest);
 endfunction
 
 // Functions that clear the provisioning state of the buffered partitions.

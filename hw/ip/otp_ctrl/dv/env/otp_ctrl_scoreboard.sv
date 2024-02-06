@@ -141,6 +141,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                 cfg.otp_ctrl_vif.alert_reqs) begin
         if (!cfg.under_reset && !cfg.otp_ctrl_vif.alert_reqs && cfg.en_scb) begin
           otp_ctrl_part_pkg::otp_hw_cfg0_data_t  exp_hw_cfg0_data;
+          otp_ctrl_part_pkg::otp_hw_cfg1_data_t  exp_hw_cfg1_data;
           otp_ctrl_pkg::otp_keymgr_key_t         exp_keymgr_data;
           otp_ctrl_pkg::otp_lc_data_t            exp_lc_data;
           bit [otp_ctrl_pkg::KeyMgrKeyWidth-1:0] exp_keymgr_key0, exp_keymgr_key1;
@@ -167,6 +168,13 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                              otp_hw_cfg0_data_t'({<<32 {otp_a[HwCfg0Offset/4 +: HwCfg0Size/4]}});
           `DV_CHECK_EQ(cfg.otp_ctrl_vif.otp_broadcast_o.valid, lc_ctrl_pkg::On)
           `DV_CHECK_EQ(cfg.otp_ctrl_vif.otp_broadcast_o.hw_cfg0_data, exp_hw_cfg0_data)
+
+          // Hwcfg_o gets data from OTP HW cfg partition
+          exp_hw_cfg1_data = cfg.otp_ctrl_vif.under_error_states() ?
+                             otp_ctrl_part_pkg::PartInvDefault[HwCfg1Offset*8 +: HwCfg1Size*8] :
+                             otp_hw_cfg1_data_t'({<<32 {otp_a[HwCfg1Offset/4 +: HwCfg1Size/4]}});
+          `DV_CHECK_EQ(cfg.otp_ctrl_vif.otp_broadcast_o.valid, lc_ctrl_pkg::On)
+          `DV_CHECK_EQ(cfg.otp_ctrl_vif.otp_broadcast_o.hw_cfg1_data, exp_hw_cfg1_data)
 
           if (!cfg.otp_ctrl_vif.under_error_states()) begin
             // ---------------------- Check lc_data_o output -----------------------------------
@@ -1050,10 +1058,19 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
           cov.collect_err_code_cov(9, item.d_data, access_part_idx);
         end
       end
+      "err_code_10": begin
+        if (cfg.m_lc_prog_pull_agent_cfg.vif.req) do_read_check = 0;
+        if (cfg.en_cov && do_read_check && data_phase_read) begin
+          bit [TL_DW-1:0] dai_addr = `gmv(ral.direct_access_address) >> 2 << 2;
+          int access_part_idx = get_part_index(dai_addr);
+          cov.collect_err_code_cov(10, item.d_data, access_part_idx);
+        end
+      end
       "vendor_test_digest_0", "vendor_test_digest_1",
       "creator_sw_cfg_digest_0", "creator_sw_cfg_digest_1",
       "owner_sw_cfg_digest_0", "owner_sw_cfg_digest_1",
       "hw_cfg0_digest_0", "hw_cfg0_digest_1",
+      "hw_cfg1_digest_0", "hw_cfg1_digest_1",
       "secret0_digest_0", "secret0_digest_1",
       "secret1_digest_0", "secret1_digest_1",
       "secret2_digest_0", "secret2_digest_1": begin
@@ -1245,6 +1262,13 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
           .value(otp_a[PART_OTP_DIGEST_ADDRS[HwCfg0Idx] + 1]),
           .kind(UVM_PREDICT_DIRECT)));
 
+    void'(ral.hw_cfg1_digest[0].predict(
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[HwCfg1Idx]]),
+          .kind(UVM_PREDICT_DIRECT)));
+    void'(ral.hw_cfg1_digest[1].predict(
+          .value(otp_a[PART_OTP_DIGEST_ADDRS[HwCfg1Idx] + 1]),
+          .kind(UVM_PREDICT_DIRECT)));
+
     void'(ral.secret0_digest[0].predict(
           .value(otp_a[PART_OTP_DIGEST_ADDRS[Secret0Idx]]),
           .kind(UVM_PREDICT_DIRECT)));
@@ -1306,6 +1330,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
     end
     case (part_idx)
       HwCfg0Idx: mem_q = otp_a[HwCfg0Offset / TL_SIZE : HwCfg0DigestOffset / TL_SIZE - 1];
+      HwCfg1Idx: mem_q = otp_a[HwCfg1Offset / TL_SIZE : HwCfg1DigestOffset / TL_SIZE - 1];
       Secret0Idx: mem_q = otp_a[Secret0Offset / TL_SIZE : Secret0DigestOffset / TL_SIZE - 1];
       Secret1Idx: mem_q = otp_a[Secret1Offset / TL_SIZE : Secret1DigestOffset / TL_SIZE - 1];
       Secret2Idx: mem_q = otp_a[Secret2Offset / TL_SIZE : Secret2DigestOffset / TL_SIZE - 1];
@@ -1460,6 +1485,10 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
       HwCfg0Idx: begin
         digest = {`gmv(ral.hw_cfg0_digest[1]),
                   `gmv(ral.hw_cfg0_digest[0])};
+      end
+      HwCfg1Idx: begin
+        digest = {`gmv(ral.hw_cfg1_digest[1]),
+                  `gmv(ral.hw_cfg1_digest[0])};
       end
       Secret0Idx: begin
         digest = {`gmv(ral.secret0_digest[1]),

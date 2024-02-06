@@ -69,7 +69,8 @@ class chip_sw_flash_rma_unlocked_vseq extends chip_sw_base_vseq;
     // Override Device ID and Manufacturing state with random values.
     cfg.mem_bkdr_util_h[Otp].otp_write_hw_cfg0_partition(
       .device_id(device_id),
-      .manuf_state(manuf_state),
+      .manuf_state(manuf_state));
+    cfg.mem_bkdr_util_h[Otp].otp_write_hw_cfg1_partition(
       // Use same default config as in otp_ctrl_img_hw_cfg.hjson
       .en_sram_ifetch(prim_mubi_pkg::MuBi8False),
       .en_csrng_sw_app_read(prim_mubi_pkg::MuBi8True));

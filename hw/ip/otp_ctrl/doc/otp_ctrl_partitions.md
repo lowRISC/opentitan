@@ -22,6 +22,8 @@ It has been generated with ./util/design/gen-otp-mmap.py
 |                |          |            |             |               |               | This contains                                                       |
 |                |          |            |             |               |               | - DEVICE_ID: Unique device identifier.                              |
 |                |          |            |             |               |               | - MANUF_STATE: Vector for capturing the manufacturing status.       |
+|    HW_CFG1     |    no    |    yes     |     yes     | yes (Digest)  |      no       | Hardware configuration 1 partition.                                 |
+|                |          |            |             |               |               | This contains                                                       |
 |                |          |            |             |               |               | - EN_SRAM_IFETCH: Enable / disable execute from SRAM CSR switch.    |
 |                |          |            |             |               |               | - EN_CSRNG_SW_APP_READ: This input efuse is used to enable access   |
 |                |          |            |             |               |               | to the NIST internal state per instance.                            |

@@ -247,6 +247,18 @@ otp_json(
             name = "HW_CFG0",
             items = {
                 "DEVICE_ID": "<random>",
+            },
+            lock = True,
+        ),
+    ],
+)
+
+otp_json(
+    name = "otp_json_hw_cfg1",
+    partitions = [
+        otp_partition(
+            name = "HW_CFG1",
+            items = {
                 # Enable code execution from SRAM in PROD state.
                 "EN_SRAM_IFETCH": True,
                 # Cryptolib and chip-level tests require access to the CSRNG
@@ -490,7 +502,7 @@ otp_image(
 # after the test tokens have been applied and before running individualization.
 # The following partitions are missing to ensure the image is initialized with
 # values that would be present prior to the final individualization
-# manufacturing stage: SECRET1, SECRET2, HW_CFG0.
+# manufacturing stage: SECRET1, SECRET2, HW_CFG0/1.
 # The following partitions are expected to be configured in previous
 # manufacturing stages: SECRET0, CREATOR_SW, OWNER_SW.
 otp_image(

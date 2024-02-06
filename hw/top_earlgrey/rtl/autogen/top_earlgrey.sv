@@ -784,9 +784,9 @@ module top_earlgrey #(
   // TODO(#6713): The actual struct breakout and mapping currently needs to
   // be performed by hand.
   assign csrng_otp_en_csrng_sw_app_read =
-      otp_ctrl_otp_broadcast.hw_cfg0_data.en_csrng_sw_app_read;
+      otp_ctrl_otp_broadcast.hw_cfg1_data.en_csrng_sw_app_read;
   assign sram_ctrl_main_otp_en_sram_ifetch =
-      otp_ctrl_otp_broadcast.hw_cfg0_data.en_sram_ifetch;
+      otp_ctrl_otp_broadcast.hw_cfg1_data.en_sram_ifetch;
   assign lc_ctrl_otp_device_id =
       otp_ctrl_otp_broadcast.hw_cfg0_data.device_id;
   assign lc_ctrl_otp_manuf_state =
@@ -798,7 +798,8 @@ module top_earlgrey #(
   assign unused_otp_broadcast_bits = ^{
     otp_ctrl_otp_broadcast.valid,
     otp_ctrl_otp_broadcast.hw_cfg0_data.hw_cfg0_digest,
-    otp_ctrl_otp_broadcast.hw_cfg0_data.unallocated
+    otp_ctrl_otp_broadcast.hw_cfg1_data.hw_cfg1_digest,
+    otp_ctrl_otp_broadcast.hw_cfg1_data.unallocated
   };
 
   // See #7978 This below is a hack.

@@ -9,6 +9,7 @@ It has been generated with ./util/design/gen-otp-mmap.py
 | [CREATOR_SW_CFG_DIGEST](#Reg_creator_sw_cfg_digest_0) |    CREATOR_SW_CFG     |         no         |
 |   [OWNER_SW_CFG_DIGEST](#Reg_owner_sw_cfg_digest_0)   |     OWNER_SW_CFG      |         no         |
 |        [HW_CFG0_DIGEST](#Reg_hw_cfg0_digest_0)        |        HW_CFG0        |        yes         |
+|        [HW_CFG1_DIGEST](#Reg_hw_cfg1_digest_0)        |        HW_CFG1        |        yes         |
 |        [SECRET0_DIGEST](#Reg_secret0_digest_0)        |        SECRET0        |        yes         |
 |        [SECRET1_DIGEST](#Reg_secret1_digest_0)        |        SECRET1        |        yes         |
 |        [SECRET2_DIGEST](#Reg_secret2_digest_0)        |        SECRET2        |        yes         |

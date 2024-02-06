@@ -61,11 +61,17 @@ typedef enum dif_otp_ctrl_partition {
    * This contains
    * - DEVICE_ID: Unique device identifier.
    * - MANUF_STATE: Vector for capturing the manufacturing status.
+   */
+  kDifOtpCtrlPartitionHwCfg0,
+  /**
+   * Hardware configuration 1 partition.
+   *
+   * This contains
    * - EN_SRAM_IFETCH: Enable / disable execute from SRAM CSR switch.
    * - EN_CSRNG_SW_APP_READ: This input efuse is used to enable access
    * to the NIST internal state per instance.
    */
-  kDifOtpCtrlPartitionHwCfg0,
+  kDifOtpCtrlPartitionHwCfg1,
   /**
    * Secret partition 0.
    *
@@ -162,6 +168,10 @@ typedef enum dif_otp_ctrl_status_code {
    * Indicates an error occurred in the `HwCfg0` partition.
    */
   kDifOtpCtrlStatusCodeHwCfg0Error,
+  /**
+   * Indicates an error occurred in the `HwCfg1` partition.
+   */
+  kDifOtpCtrlStatusCodeHwCfg1Error,
   /**
    * Indicates an error occurred in the `Secret0` partition.
    */
