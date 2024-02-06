@@ -57,6 +57,7 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | frame            | Event  | Raised when the USB frame number is updated with a valid SOF.                                                                                                                                                                                                                                        |
 | powered          | Event  | Raised if VBUS is applied.                                                                                                                                                                                                                                                                           |
 | link_out_err     | Event  | Raised if a packet to an OUT endpoint started to be received but was then dropped due to an error. This error is raised if the data toggle, token, packet and/or CRC are invalid, if the Available Buffer FIFO is empty or if the Received Buffer FIFO is full.                                      |
+| av_setup_empty   | Event  | Raised when the Available SETUP Buffer FIFO is empty and the device interface is enabled. This interrupt is directly tied to the FIFO status, so the AV FIFO must be provided a free buffer before the interrupt is cleared. If the condition is not cleared, the interrupt can re-assert.           |
 
 ## Security Alerts
 

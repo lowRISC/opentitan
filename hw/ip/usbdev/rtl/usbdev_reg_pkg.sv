@@ -20,6 +20,9 @@ package usbdev_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
+    } av_setup_empty;
+    struct packed {
+      logic        q;
     } link_out_err;
     struct packed {
       logic        q;
@@ -74,6 +77,9 @@ package usbdev_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
+    } av_setup_empty;
+    struct packed {
+      logic        q;
     } link_out_err;
     struct packed {
       logic        q;
@@ -126,6 +132,10 @@ package usbdev_reg_pkg;
   } usbdev_reg2hw_intr_enable_reg_t;
 
   typedef struct packed {
+    struct packed {
+      logic        q;
+      logic        qe;
+    } av_setup_empty;
     struct packed {
       logic        q;
       logic        qe;
@@ -451,6 +461,10 @@ package usbdev_reg_pkg;
       logic        d;
       logic        de;
     } link_out_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } av_setup_empty;
   } usbdev_hw2reg_intr_state_reg_t;
 
   typedef struct packed {
@@ -604,9 +618,9 @@ package usbdev_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    usbdev_reg2hw_intr_state_reg_t intr_state; // [471:455]
-    usbdev_reg2hw_intr_enable_reg_t intr_enable; // [454:438]
-    usbdev_reg2hw_intr_test_reg_t intr_test; // [437:404]
+    usbdev_reg2hw_intr_state_reg_t intr_state; // [475:458]
+    usbdev_reg2hw_intr_enable_reg_t intr_enable; // [457:440]
+    usbdev_reg2hw_intr_test_reg_t intr_test; // [439:404]
     usbdev_reg2hw_alert_test_reg_t alert_test; // [403:402]
     usbdev_reg2hw_usbctrl_reg_t usbctrl; // [401:392]
     usbdev_reg2hw_ep_out_enable_mreg_t [11:0] ep_out_enable; // [391:380]
@@ -632,7 +646,7 @@ package usbdev_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    usbdev_hw2reg_intr_state_reg_t intr_state; // [295:262]
+    usbdev_hw2reg_intr_state_reg_t intr_state; // [297:262]
     usbdev_hw2reg_usbctrl_reg_t usbctrl; // [261:254]
     usbdev_hw2reg_usbstat_reg_t usbstat; // [253:224]
     usbdev_hw2reg_rxfifo_reg_t rxfifo; // [223:207]
@@ -688,7 +702,7 @@ package usbdev_reg_pkg;
   parameter logic [BlockAw-1:0] USBDEV_WAKE_EVENTS_OFFSET = 12'h 94;
 
   // Reset values for hwext registers and their fields
-  parameter logic [16:0] USBDEV_INTR_TEST_RESVAL = 17'h 0;
+  parameter logic [17:0] USBDEV_INTR_TEST_RESVAL = 18'h 0;
   parameter logic [0:0] USBDEV_INTR_TEST_PKT_RECEIVED_RESVAL = 1'h 0;
   parameter logic [0:0] USBDEV_INTR_TEST_PKT_SENT_RESVAL = 1'h 0;
   parameter logic [0:0] USBDEV_INTR_TEST_DISCONNECTED_RESVAL = 1'h 0;
@@ -706,6 +720,7 @@ package usbdev_reg_pkg;
   parameter logic [0:0] USBDEV_INTR_TEST_FRAME_RESVAL = 1'h 0;
   parameter logic [0:0] USBDEV_INTR_TEST_POWERED_RESVAL = 1'h 0;
   parameter logic [0:0] USBDEV_INTR_TEST_LINK_OUT_ERR_RESVAL = 1'h 0;
+  parameter logic [0:0] USBDEV_INTR_TEST_AV_SETUP_EMPTY_RESVAL = 1'h 0;
   parameter logic [0:0] USBDEV_ALERT_TEST_RESVAL = 1'h 0;
   parameter logic [0:0] USBDEV_ALERT_TEST_FATAL_FAULT_RESVAL = 1'h 0;
   parameter logic [31:0] USBDEV_USBSTAT_RESVAL = 32'h 80000000;

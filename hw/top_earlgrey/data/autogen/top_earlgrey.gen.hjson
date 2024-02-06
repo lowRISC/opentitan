@@ -14015,6 +14015,12 @@
       module_name: usbdev
     }
     {
+      name: usbdev_av_setup_empty
+      width: 1
+      type: interrupt
+      module_name: usbdev
+    }
+    {
       name: pwrmgr_aon_wakeup
       width: 1
       type: interrupt

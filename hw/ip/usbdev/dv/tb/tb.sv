@@ -34,6 +34,7 @@ module tb;
   wire intr_rx_pid_err;
   wire intr_rx_bitstuff_err;
   wire intr_frame;
+  wire intr_av_setup_empty;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
   wire usb_vbus;
   wire usb_p;
@@ -110,7 +111,8 @@ module tb;
     .intr_rx_crc_err_o      (intr_rx_crc_err      ),
     .intr_rx_pid_err_o      (intr_rx_pid_err      ),
     .intr_rx_bitstuff_err_o (intr_rx_bitstuff_err ),
-    .intr_frame_o           (intr_frame           )
+    .intr_frame_o           (intr_frame           ),
+    .intr_av_setup_empty_o  (intr_av_setup_empty  )
   );
 
   Clock_Divider clk_div (
@@ -136,6 +138,7 @@ module tb;
   assign interrupts[IntrRxPidErr]       = intr_rx_pid_err;
   assign interrupts[IntrRxBitstuffErr]  = intr_rx_bitstuff_err;
   assign interrupts[IntrFrame]          = intr_frame;
+  assign interrupts[IntrAvSetupEmpty]   = intr_av_setup_empty;
   //assign usb_vbus = 1'b1;
 
   initial begin

@@ -103,6 +103,9 @@ static bool usbdev_get_irq_bit_index(dif_usbdev_irq_t irq,
     case kDifUsbdevIrqLinkOutErr:
       *index_out = USBDEV_INTR_COMMON_LINK_OUT_ERR_BIT;
       break;
+    case kDifUsbdevIrqAvSetupEmpty:
+      *index_out = USBDEV_INTR_COMMON_AV_SETUP_EMPTY_BIT;
+      break;
     default:
       return false;
   }
@@ -115,14 +118,14 @@ static dif_irq_type_t irq_types[] = {
     kDifIrqTypeEvent, kDifIrqTypeEvent, kDifIrqTypeEvent, kDifIrqTypeEvent,
     kDifIrqTypeEvent, kDifIrqTypeEvent, kDifIrqTypeEvent, kDifIrqTypeEvent,
     kDifIrqTypeEvent, kDifIrqTypeEvent, kDifIrqTypeEvent, kDifIrqTypeEvent,
-    kDifIrqTypeEvent,
+    kDifIrqTypeEvent, kDifIrqTypeEvent,
 };
 
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_usbdev_irq_get_type(const dif_usbdev_t *usbdev,
                                      dif_usbdev_irq_t irq,
                                      dif_irq_type_t *type) {
-  if (usbdev == NULL || type == NULL || irq == kDifUsbdevIrqLinkOutErr + 1) {
+  if (usbdev == NULL || type == NULL || irq == kDifUsbdevIrqAvSetupEmpty + 1) {
     return kDifBadArg;
   }
 
