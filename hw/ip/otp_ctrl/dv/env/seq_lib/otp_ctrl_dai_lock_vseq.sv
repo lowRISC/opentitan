@@ -33,6 +33,7 @@ class otp_ctrl_dai_lock_vseq extends otp_ctrl_smoke_vseq;
     if (part_idx == CreatorSwCfgIdx) dai_addr inside `PART_ADDR_RANGE(CreatorSwCfgIdx);
     if (part_idx == OwnerSwCfgIdx) dai_addr inside `PART_ADDR_RANGE(OwnerSwCfgIdx);
     if (part_idx == HwCfg0Idx) dai_addr inside `PART_ADDR_RANGE(HwCfg0Idx);
+    if (part_idx == HwCfg1Idx) dai_addr inside `PART_ADDR_RANGE(HwCfg1Idx);
     if (part_idx == Secret0Idx) dai_addr inside `PART_ADDR_RANGE(Secret0Idx);
     if (part_idx == Secret1Idx) dai_addr inside `PART_ADDR_RANGE(Secret1Idx);
     if (part_idx == Secret2Idx) dai_addr inside `PART_ADDR_RANGE(Secret2Idx);
@@ -53,6 +54,7 @@ class otp_ctrl_dai_lock_vseq extends otp_ctrl_smoke_vseq;
         CreatorSwCfgDigestOffset,
         OwnerSwCfgDigestOffset,
         HwCfg0DigestOffset,
+        HwCfg1DigestOffset,
         Secret0DigestOffset,
         Secret1DigestOffset,
         Secret2DigestOffset

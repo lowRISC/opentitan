@@ -77,6 +77,7 @@ package otp_ctrl_env_pkg;
     CreatorSwCfgOffset,
     OwnerSwCfgOffset,
     HwCfg0Offset,
+    HwCfg1Offset,
     Secret0Offset,
     Secret1Offset,
     Secret2Offset
@@ -88,6 +89,7 @@ package otp_ctrl_env_pkg;
     CreatorSwCfgDigestOffset >> 2,
     OwnerSwCfgDigestOffset >> 2,
     HwCfg0DigestOffset >> 2,
+    HwCfg1DigestOffset >> 2,
     Secret0DigestOffset >> 2,
     Secret1DigestOffset >> 2,
     Secret2DigestOffset >> 2
@@ -105,6 +107,7 @@ package otp_ctrl_env_pkg;
     OtpCreatorSwCfgErrIdx,
     OtpOwnerSwCfgErrIdx,
     OtpHwCfg0ErrIdx,
+    OtpHwCfg1ErrIdx,
     OtpSecret0ErrIdx,
     OtpSecret1ErrIdx,
     OtpSecret2ErrIdx,

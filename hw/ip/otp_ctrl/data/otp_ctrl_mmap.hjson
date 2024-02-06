@@ -369,6 +369,25 @@
                     size:        "32",
                     inv_default: "<random>",
                 },
+            ],
+            desc: '''Hardware configuration 0 partition.
+            This contains
+            - DEVICE_ID: Unique device identifier.
+            - MANUF_STATE: Vector for capturing the manufacturing status.
+            '''
+        }
+        {
+            name:       "HW_CFG1",
+            variant:    "Buffered",
+            secret:     false,
+            sw_digest:  false,
+            hw_digest:  true,
+            write_lock: "Digest",
+            read_lock:  "None",
+            key_sel:    "NoKey",
+            integrity:  true,
+            bkout_type: true,
+            items: [
                 {
                     name:        "EN_SRAM_IFETCH",
                     size:        "1",
@@ -382,10 +401,8 @@
                     inv_default: false
                 },
             ],
-            desc: '''Hardware configuration 0 partition.
+            desc: '''Hardware configuration 1 partition.
             This contains
-            - DEVICE_ID: Unique device identifier.
-            - MANUF_STATE: Vector for capturing the manufacturing status.
             - EN_SRAM_IFETCH: Enable / disable execute from SRAM CSR switch.
             - EN_CSRNG_SW_APP_READ: This input efuse is used to enable access
             to the NIST internal state per instance.

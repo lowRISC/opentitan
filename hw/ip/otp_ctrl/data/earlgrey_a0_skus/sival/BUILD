@@ -220,6 +220,18 @@ otp_json(
             name = "HW_CFG0",
             items = {
                 "DEVICE_ID": "<random>",
+            },
+            lock = True,
+        ),
+    ],
+)
+
+otp_json(
+    name = "otp_json_hw_cfg1",
+    partitions = [
+        otp_partition(
+            name = "HW_CFG1",
+            items = {
                 # Enable code execution from SRAM in PROD state.
                 "EN_SRAM_IFETCH": True,
                 # Cryptolib and chip-level tests require access to the CSRNG
@@ -286,10 +298,11 @@ MANUF_SW_INITIALIZED = [
     ":otp_json_owner_sw_cfg",
 ]
 
-# The `MANUF_INDIVIDUALIZED` OTP profile configures the HW_CFG, CREATOR_SW and
+# The `MANUF_INDIVIDUALIZED` OTP profile configures the HW_CFG0/1, CREATOR_SW and
 # OWNER_SW OTP partitions. It also includes the `MANUF_INITIALIZED`.
 MANUF_INDIVIDUALIZED = MANUF_INITIALIZED + MANUF_SW_INITIALIZED + [
     ":otp_json_hw_cfg0",
+    ":otp_json_hw_cfg1",
 ]
 
 # The `MANUF_PERSONALIZED` OTP profile configures the SECRET1 and SECRET2 OTP

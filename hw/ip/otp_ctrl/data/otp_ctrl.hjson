@@ -146,7 +146,7 @@
     { name: "NumErrorEntries",
       desc: "Number of error register entries.",
       type: "int",
-      default: "10", // partitions + DAI/LCI
+      default: "11", // partitions + DAI/LCI
       local: "true"
     },
     { name: "NumDaiWords",
@@ -172,7 +172,7 @@
     { name: "NumPart",
       desc: "Number of partitions",
       type: "int",
-      default: "8",
+      default: "9",
       local: "true"
     },
     { name: "NumPartUnbuf",
@@ -184,7 +184,7 @@
     { name: "NumPartBuf",
       desc: "Number of buffered partitions (including 1 lifecycle partition)",
       type: "int",
-      default: "5",
+      default: "6",
       local: "true"
     },
     { name: "VendorTestOffset",
@@ -652,7 +652,7 @@
     { name: "OwnerSwCfgSize",
       desc: "Size of the OWNER_SW_CFG partition",
       type: "int",
-      default: "800",
+      default: "792",
       local: "true"
     },
     { name: "OwnerSwCfgRomErrorReportingOffset",
@@ -874,7 +874,7 @@
     { name: "OwnerSwCfgDigestOffset",
       desc: "Offset of OWNER_SW_CFG_DIGEST",
       type: "int",
-      default: "1656",
+      default: "1648",
       local: "true"
     },
     { name: "OwnerSwCfgDigestSize",
@@ -886,19 +886,19 @@
     { name: "HwCfg0Offset",
       desc: "Offset of the HW_CFG0 partition",
       type: "int",
-      default: "1664",
+      default: "1656",
       local: "true"
     },
     { name: "HwCfg0Size",
       desc: "Size of the HW_CFG0 partition",
       type: "int",
-      default: "80",
+      default: "72",
       local: "true"
     },
     { name: "DeviceIdOffset",
       desc: "Offset of DEVICE_ID",
       type: "int",
-      default: "1664",
+      default: "1656",
       local: "true"
     },
     { name: "DeviceIdSize",
@@ -910,13 +910,37 @@
     { name: "ManufStateOffset",
       desc: "Offset of MANUF_STATE",
       type: "int",
-      default: "1696",
+      default: "1688",
       local: "true"
     },
     { name: "ManufStateSize",
       desc: "Size of MANUF_STATE",
       type: "int",
       default: "32",
+      local: "true"
+    },
+    { name: "HwCfg0DigestOffset",
+      desc: "Offset of HW_CFG0_DIGEST",
+      type: "int",
+      default: "1720",
+      local: "true"
+    },
+    { name: "HwCfg0DigestSize",
+      desc: "Size of HW_CFG0_DIGEST",
+      type: "int",
+      default: "8",
+      local: "true"
+    },
+    { name: "HwCfg1Offset",
+      desc: "Offset of the HW_CFG1 partition",
+      type: "int",
+      default: "1728",
+      local: "true"
+    },
+    { name: "HwCfg1Size",
+      desc: "Size of the HW_CFG1 partition",
+      type: "int",
+      default: "16",
       local: "true"
     },
     { name: "EnSramIfetchOffset",
@@ -943,14 +967,14 @@
       default: "1",
       local: "true"
     },
-    { name: "HwCfg0DigestOffset",
-      desc: "Offset of HW_CFG0_DIGEST",
+    { name: "HwCfg1DigestOffset",
+      desc: "Offset of HW_CFG1_DIGEST",
       type: "int",
       default: "1736",
       local: "true"
     },
-    { name: "HwCfg0DigestSize",
-      desc: "Size of HW_CFG0_DIGEST",
+    { name: "HwCfg1DigestSize",
+      desc: "Size of HW_CFG1_DIGEST",
       type: "int",
       default: "8",
       local: "true"
@@ -1668,87 +1692,94 @@
                   '''
           }
           { bits: "4"
-            name: "SECRET0_ERROR"
+            name: "HW_CFG1_ERROR"
             desc: '''
                   Set to 1 if an error occurred in this partition.
                   If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
                   '''
           }
           { bits: "5"
-            name: "SECRET1_ERROR"
+            name: "SECRET0_ERROR"
             desc: '''
                   Set to 1 if an error occurred in this partition.
                   If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
                   '''
           }
           { bits: "6"
-            name: "SECRET2_ERROR"
+            name: "SECRET1_ERROR"
             desc: '''
                   Set to 1 if an error occurred in this partition.
                   If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
                   '''
           }
           { bits: "7"
-            name: "LIFE_CYCLE_ERROR"
+            name: "SECRET2_ERROR"
             desc: '''
                   Set to 1 if an error occurred in this partition.
                   If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
                   '''
           }
           { bits: "8"
+            name: "LIFE_CYCLE_ERROR"
+            desc: '''
+                  Set to 1 if an error occurred in this partition.
+                  If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
+                  '''
+          }
+          { bits: "9"
             name: "DAI_ERROR"
             desc: '''
                   Set to 1 if an error occurred in the DAI.
                   If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
                   '''
           }
-          { bits: "9"
+          { bits: "10"
             name: "LCI_ERROR"
             desc: '''
                   Set to 1 if an error occurred in the LCI.
                   If set to 1, SW should check the !!ERR_CODE register at the corresponding index.
                   '''
           }
-          { bits: "10"
+          { bits: "11"
             name: "TIMEOUT_ERROR"
             desc: '''
                   Set to 1 if an integrity or consistency check times out.
                   This raises an fatal_check_error alert and is an unrecoverable error condition.
                   '''
           }
-          { bits: "11"
+          { bits: "12"
             name: "LFSR_FSM_ERROR"
             desc: '''
                   Set to 1 if the LFSR timer FSM has reached an invalid state.
                   This raises an fatal_check_error alert and is an unrecoverable error condition.
                   '''
           }
-          { bits: "12"
+          { bits: "13"
             name: "SCRAMBLING_FSM_ERROR"
             desc: '''
                   Set to 1 if the scrambling datapath FSM has reached an invalid state.
                   This raises an fatal_check_error alert and is an unrecoverable error condition.
                   '''
           }
-          { bits: "13"
+          { bits: "14"
             name: "KEY_DERIV_FSM_ERROR"
             desc: '''
                   Set to 1 if the key derivation FSM has reached an invalid state.
                   This raises an fatal_check_error alert and is an unrecoverable error condition.
                   '''
           }
-          { bits: "14"
+          { bits: "15"
             name: "BUS_INTEG_ERROR"
             desc: '''
                   This bit is set to 1 if a fatal bus integrity fault is detected.
                   This error triggers a fatal_bus_integ_error alert.
                   '''
           }
-          { bits: "15"
+          { bits: "16"
             name: "DAI_IDLE"
             desc: "Set to 1 if the DAI is idle and ready to accept commands."
           }
-          { bits: "16"
+          { bits: "17"
             name: "CHECK_PENDING"
             desc: "Set to 1 if an integrity or consistency check triggered by the LFSR timer or via !!CHECK_TRIGGER is pending."
           }
@@ -2253,6 +2284,27 @@
           name:     "HW_CFG0_DIGEST",
           desc:     '''
                     Integrity digest for the HW_CFG0 partition.
+                    The integrity digest is 0 by default. The digest calculation can be triggered via the !!DIRECT_ACCESS_CMD.
+                    After a reset, the digest then becomes visible in this CSR, and the corresponding partition becomes write-locked.
+                    ''',
+          count:     "NumDigestWords",
+          swaccess:  "ro",
+          hwaccess:  "hwo",
+          hwext:     "true",
+          cname:     "WORD",
+          resval:    0,
+          tags: [ // OTP internal HW will update status so can not auto-predict its value.
+                  "excl:CsrAllTests:CsrExclCheck"],
+          fields: [
+            { bits: "31:0"
+            }
+          ]
+        }
+      },
+      { multireg: {
+          name:     "HW_CFG1_DIGEST",
+          desc:     '''
+                    Integrity digest for the HW_CFG1 partition.
                     The integrity digest is 0 by default. The digest calculation can be triggered via the !!DIRECT_ACCESS_CMD.
                     After a reset, the digest then becomes visible in this CSR, and the corresponding partition becomes write-locked.
                     ''',

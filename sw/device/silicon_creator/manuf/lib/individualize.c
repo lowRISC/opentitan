@@ -23,7 +23,7 @@
 
 #include "otp_ctrl_regs.h"
 
-typedef struct hw_cfg0_settings {
+typedef struct hw_cfg1_settings {
   /**
    * Enable / disable execute from SRAM CSR switch.
    */
@@ -33,17 +33,7 @@ typedef struct hw_cfg0_settings {
    * instance.
    */
   multi_bit_bool_t en_csrng_sw_app_read;
-  /**
-   * This input efuse is used to enable access to the ENTROPY_DATA register
-   * directly.
-   */
-  multi_bit_bool_t en_entropy_src_fw_read;
-  /**
-   * This input efuse is used to enable access to the firmware override FIFO and
-   * other related functions.
-   */
-  multi_bit_bool_t en_entropy_src_fw_over;
-} hw_cfg0_settings_t;
+} hw_cfg1_settings_t;
 
 // Changing any of the following values may result in unexpected device
 // behavior.
@@ -51,112 +41,112 @@ typedef struct hw_cfg0_settings {
 // - en_sram_ifetch: required to enable SRAM code execution during
 //   manufacturing.
 // - en_csrng_sw_app_read: required to be able to extract output from CSRNG.
-// - en_entropy_src_fw_read and en_entropy_src_fw_over: Required to implement
-//   entropy_src conditioner KAT.
-const hw_cfg0_settings_t kHwCfg0Settings = {
+const hw_cfg1_settings_t kHwCfg1Settings = {
     .en_sram_ifetch = kMultiBitBool8True,
-    .en_csrng_sw_app_read = kMultiBitBool8True,
-    .en_entropy_src_fw_read = kMultiBitBool8True,
-    .en_entropy_src_fw_over = kMultiBitBool8True,
-};
+    .en_csrng_sw_app_read = kMultiBitBool8True};
 
 /**
- * Configures digital logic settings in the HW_CFG0 partition.
+ * Configures digital logic settings in the HW_CFG1 partition.
  *
  * @param otp OTP controller instance.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-static status_t hw_cfg0_enable_knobs_set(const dif_otp_ctrl_t *otp_ctrl) {
+static status_t hw_cfg1_enable_knobs_set(const dif_otp_ctrl_t *otp_ctrl) {
   uint32_t val =
-      bitfield_field32_write(0, kSramFetch, kHwCfg0Settings.en_sram_ifetch);
+      bitfield_field32_write(0, kSramFetch, kHwCfg1Settings.en_sram_ifetch);
   val = bitfield_field32_write(val, kCsrngAppRead,
-                               kHwCfg0Settings.en_csrng_sw_app_read);
-  val = bitfield_field32_write(val, kEntropySrcFwRd,
-                               kHwCfg0Settings.en_entropy_src_fw_read);
-  val = bitfield_field32_write(val, kEntropySrcFwOvr,
-                               kHwCfg0Settings.en_entropy_src_fw_over);
+                               kHwCfg1Settings.en_csrng_sw_app_read);
 
-  TRY(otp_ctrl_testutils_dai_write32(otp_ctrl, kDifOtpCtrlPartitionHwCfg0,
+  TRY(otp_ctrl_testutils_dai_write32(otp_ctrl, kDifOtpCtrlPartitionHwCfg1,
                                      kHwCfgEnSramIfetchOffset, &val,
                                      /*len=*/1));
   return OK_STATUS();
 }
 
-status_t manuf_individualize_device_hw_cfg0(
+status_t manuf_individualize_device_hw_cfg(
     dif_flash_ctrl_state_t *flash_state, const dif_otp_ctrl_t *otp_ctrl,
     dif_flash_ctrl_region_properties_t flash_info_page_0_permissions,
     uint32_t *device_id) {
   bool is_locked;
+
+  // Provision HW_CFG0 if it is not locked.
   TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kDifOtpCtrlPartitionHwCfg0,
                                       &is_locked));
-  if (is_locked) {
-    return OK_STATUS();
+  if (!is_locked) {
+    // Configure flash info page permissions in case we started from a cold
+    // boot. Note: device_id and manuf_state are on the same flash info page.
+    TRY(flash_ctrl_testutils_info_region_setup_properties(
+        flash_state, kFlashInfoFieldDeviceId.page, kFlashInfoFieldDeviceId.bank,
+        kFlashInfoFieldDeviceId.partition, flash_info_page_0_permissions,
+        /*offset=*/NULL));
+
+    // Configure DeviceID
+    uint32_t device_id_from_flash[kHwCfgDeviceIdSizeIn32BitWords];
+    uint32_t empty_device_id[kHwCfgDeviceIdSizeIn32BitWords] = {0};
+    TRY(manuf_flash_info_field_read(flash_state, kFlashInfoFieldDeviceId,
+                                    device_id_from_flash,
+                                    kHwCfgDeviceIdSizeIn32BitWords));
+    bool flash_device_id_empty = true;
+    for (size_t i = 0;
+         flash_device_id_empty && i < kHwCfgDeviceIdSizeIn32BitWords; ++i) {
+      flash_device_id_empty &= device_id_from_flash[i] == 0;
+    }
+
+    // If the device ID read from flash is non-empty, then it must match the
+    // device ID provided. If the device ID read from flash is empty, we check
+    // to ensure the device ID provided is also not empty. An empty (all zero)
+    // device ID will prevent the keymgr from advancing.
+    if (!flash_device_id_empty) {
+      TRY_CHECK_ARRAYS_EQ(device_id_from_flash, device_id,
+                          kHwCfgDeviceIdSizeIn32BitWords);
+    } else {
+      TRY_CHECK_ARRAYS_NE(device_id, empty_device_id,
+                          kHwCfgDeviceIdSizeIn32BitWords);
+    }
+    TRY(otp_ctrl_testutils_dai_write32(otp_ctrl, kDifOtpCtrlPartitionHwCfg0,
+                                       kHwCfgDeviceIdOffset, device_id,
+                                       kHwCfgDeviceIdSizeIn32BitWords));
+
+    // Configure ManufState
+    uint32_t manuf_state[kHwCfgManufStateSizeIn32BitWords];
+    TRY(manuf_flash_info_field_read(flash_state, kFlashInfoFieldManufState,
+                                    manuf_state,
+                                    kHwCfgManufStateSizeIn32BitWords));
+    TRY(otp_ctrl_testutils_dai_write32(otp_ctrl, kDifOtpCtrlPartitionHwCfg0,
+                                       kHwCfgManufStateOffset, manuf_state,
+                                       kHwCfgManufStateSizeIn32BitWords));
+    TRY(otp_ctrl_testutils_lock_partition(otp_ctrl, kDifOtpCtrlPartitionHwCfg0,
+                                          /*digest=*/0));
   }
 
-  // Configure flash info page permissions in case we started from a cold boot.
-  // Note: device_id and manuf_state are on the same flash info page.
-  TRY(flash_ctrl_testutils_info_region_setup_properties(
-      flash_state, kFlashInfoFieldDeviceId.page, kFlashInfoFieldDeviceId.bank,
-      kFlashInfoFieldDeviceId.partition, flash_info_page_0_permissions,
-      /*offset=*/NULL));
+  // Provision HW_CFG1 if it is not locked.
+  TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kDifOtpCtrlPartitionHwCfg1,
+                                      &is_locked));
+  if (!is_locked) {
+    // Configure byte-sized hardware enable knobs.
+    TRY(hw_cfg1_enable_knobs_set(otp_ctrl));
 
-  // Configure DeviceID
-  uint32_t device_id_from_flash[kHwCfgDeviceIdSizeIn32BitWords];
-  uint32_t empty_device_id[kHwCfgDeviceIdSizeIn32BitWords] = {0};
-  TRY(manuf_flash_info_field_read(flash_state, kFlashInfoFieldDeviceId,
-                                  device_id_from_flash,
-                                  kHwCfgDeviceIdSizeIn32BitWords));
-  bool flash_device_id_empty = true;
-  for (size_t i = 0;
-       flash_device_id_empty && i < kHwCfgDeviceIdSizeIn32BitWords; ++i) {
-    flash_device_id_empty &= device_id_from_flash[i] == 0;
+    TRY(otp_ctrl_testutils_lock_partition(otp_ctrl, kDifOtpCtrlPartitionHwCfg1,
+                                          /*digest=*/0));
   }
-
-  // If the device ID read from flash is non-empty, then it must match the
-  // device ID provided. If the device ID read from flash is empty, we check to
-  // ensure the device ID provided is also not empty. An empty (all zero) device
-  // ID will prevent the keymgr from advancing.
-  if (!flash_device_id_empty) {
-    TRY_CHECK_ARRAYS_EQ(device_id_from_flash, device_id,
-                        kHwCfgDeviceIdSizeIn32BitWords);
-  } else {
-    TRY_CHECK_ARRAYS_NE(device_id, empty_device_id,
-                        kHwCfgDeviceIdSizeIn32BitWords);
-  }
-  TRY(otp_ctrl_testutils_dai_write32(otp_ctrl, kDifOtpCtrlPartitionHwCfg0,
-                                     kHwCfgDeviceIdOffset, device_id,
-                                     kHwCfgDeviceIdSizeIn32BitWords));
-
-  // Configure ManufState
-  uint32_t manuf_state[kHwCfgManufStateSizeIn32BitWords];
-  TRY(manuf_flash_info_field_read(flash_state, kFlashInfoFieldManufState,
-                                  manuf_state,
-                                  kHwCfgManufStateSizeIn32BitWords));
-  TRY(otp_ctrl_testutils_dai_write32(otp_ctrl, kDifOtpCtrlPartitionHwCfg0,
-                                     kHwCfgManufStateOffset, manuf_state,
-                                     kHwCfgManufStateSizeIn32BitWords));
-
-  // Configure byte-sized hardware enable knobs.
-  TRY(hw_cfg0_enable_knobs_set(otp_ctrl));
-
-  TRY(otp_ctrl_testutils_lock_partition(otp_ctrl, kDifOtpCtrlPartitionHwCfg0,
-                                        /*digest=*/0));
-
   return OK_STATUS();
 }
 
-status_t manuf_individualize_device_hw_cfg0_check(
+status_t manuf_individualize_device_hw_cfg_check(
     const dif_otp_ctrl_t *otp_ctrl) {
   // TODO: Add DeviceId by comparing OTP flash value against the value reported
   // by lc_ctrl. Consider erasing the data from the flash info pages.
-  bool is_locked;
+  bool is_locked0, is_locked1;
   TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kDifOtpCtrlPartitionHwCfg0,
-                                      &is_locked));
-  uint64_t digest;
-  TRY(dif_otp_ctrl_get_digest(otp_ctrl, kDifOtpCtrlPartitionHwCfg0, &digest));
+                                      &is_locked0));
+  TRY(dif_otp_ctrl_is_digest_computed(otp_ctrl, kDifOtpCtrlPartitionHwCfg1,
+                                      &is_locked1));
+  uint64_t digest0, digest1;
+  TRY(dif_otp_ctrl_get_digest(otp_ctrl, kDifOtpCtrlPartitionHwCfg0, &digest0));
+  TRY(dif_otp_ctrl_get_digest(otp_ctrl, kDifOtpCtrlPartitionHwCfg1, &digest1));
 
-  return is_locked ? OK_STATUS() : INTERNAL();
+  return is_locked0 && is_locked1 ? OK_STATUS() : INTERNAL();
 }
 
 status_t manuf_individualize_device_secret0(

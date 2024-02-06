@@ -236,6 +236,7 @@ dif_result_t dif_otp_ctrl_get_status(const dif_otp_ctrl_t *otp,
       [kDifOtpCtrlStatusCodeOwnerSwCfgError] =
           OTP_CTRL_STATUS_OWNER_SW_CFG_ERROR_BIT,
       [kDifOtpCtrlStatusCodeHwCfg0Error] = OTP_CTRL_STATUS_HW_CFG0_ERROR_BIT,
+      [kDifOtpCtrlStatusCodeHwCfg1Error] = OTP_CTRL_STATUS_HW_CFG1_ERROR_BIT,
       [kDifOtpCtrlStatusCodeSecret0Error] = OTP_CTRL_STATUS_SECRET0_ERROR_BIT,
       [kDifOtpCtrlStatusCodeSecret1Error] = OTP_CTRL_STATUS_SECRET1_ERROR_BIT,
       [kDifOtpCtrlStatusCodeSecret2Error] = OTP_CTRL_STATUS_SECRET2_ERROR_BIT,
@@ -382,6 +383,13 @@ static const partition_info_t kPartitions[] = {
     [kDifOtpCtrlPartitionHwCfg0] = {
         .start_addr = OTP_CTRL_PARAM_HW_CFG0_OFFSET,
         .len = OTP_CTRL_PARAM_HW_CFG0_SIZE,
+        .align_mask = 0x3,
+        .is_software = false,
+        .has_digest = true,
+        .is_lifecycle = false},
+    [kDifOtpCtrlPartitionHwCfg1] = {
+        .start_addr = OTP_CTRL_PARAM_HW_CFG1_OFFSET,
+        .len = OTP_CTRL_PARAM_HW_CFG1_SIZE,
         .align_mask = 0x3,
         .is_software = false,
         .has_digest = true,
@@ -685,6 +693,10 @@ static bool get_digest_regs(dif_otp_ctrl_partition_t partition, ptrdiff_t *reg0,
     case kDifOtpCtrlPartitionHwCfg0:
       *reg0 = OTP_CTRL_HW_CFG0_DIGEST_0_REG_OFFSET;
       *reg1 = OTP_CTRL_HW_CFG0_DIGEST_1_REG_OFFSET;
+      break;
+    case kDifOtpCtrlPartitionHwCfg1:
+      *reg0 = OTP_CTRL_HW_CFG1_DIGEST_0_REG_OFFSET;
+      *reg1 = OTP_CTRL_HW_CFG1_DIGEST_1_REG_OFFSET;
       break;
     case kDifOtpCtrlPartitionSecret0:
       *reg0 = OTP_CTRL_SECRET0_DIGEST_0_REG_OFFSET;

@@ -41,7 +41,7 @@ It has been generated with ./util/design/gen-otp-mmap.py
 |         |                |            |      32bit       |        CREATOR_SW_CFG_RNG_HEALTH_CONFIG_DIGEST        |     0x15C      |     4      |
 |         |                |            |      32bit       |           CREATOR_SW_CFG_SRAM_KEY_RENEW_EN            |     0x160      |     4      |
 |         |                |            |      64bit       | [CREATOR_SW_CFG_DIGEST](#Reg_creator_sw_cfg_digest_0) |     0x358      |     8      |
-|    2    |  OWNER_SW_CFG  |    800     |      32bit       |           OWNER_SW_CFG_ROM_ERROR_REPORTING            |     0x360      |     4      |
+|    2    |  OWNER_SW_CFG  |    792     |      32bit       |           OWNER_SW_CFG_ROM_ERROR_REPORTING            |     0x360      |     4      |
 |         |                |            |      32bit       |            OWNER_SW_CFG_ROM_BOOTSTRAP_DIS             |     0x364      |     4      |
 |         |                |            |      32bit       |            OWNER_SW_CFG_ROM_ALERT_CLASS_EN            |     0x368      |     4      |
 |         |                |            |      32bit       |           OWNER_SW_CFG_ROM_ALERT_ESCALATION           |     0x36C      |     4      |
@@ -59,22 +59,23 @@ It has been generated with ./util/design/gen-otp-mmap.py
 |         |                |            |      32bit       |               OWNER_SW_CFG_MANUF_STATE                |     0x568      |     4      |
 |         |                |            |      32bit       |            OWNER_SW_CFG_ROM_RSTMGR_INFO_EN            |     0x56C      |     4      |
 |         |                |            |      32bit       |           OWNER_SW_CFG_ROM_EXT_BOOTSTRAP_EN           |     0x570      |     4      |
-|         |                |            |      64bit       |   [OWNER_SW_CFG_DIGEST](#Reg_owner_sw_cfg_digest_0)   |     0x678      |     8      |
-|    3    |    HW_CFG0     |     80     |      32bit       |                       DEVICE_ID                       |     0x680      |     32     |
-|         |                |            |      32bit       |                      MANUF_STATE                      |     0x6A0      |     32     |
-|         |                |            |      32bit       |                    EN_SRAM_IFETCH                     |     0x6C0      |     1      |
+|         |                |            |      64bit       |   [OWNER_SW_CFG_DIGEST](#Reg_owner_sw_cfg_digest_0)   |     0x670      |     8      |
+|    3    |    HW_CFG0     |     72     |      32bit       |                       DEVICE_ID                       |     0x678      |     32     |
+|         |                |            |      32bit       |                      MANUF_STATE                      |     0x698      |     32     |
+|         |                |            |      64bit       |        [HW_CFG0_DIGEST](#Reg_hw_cfg0_digest_0)        |     0x6B8      |     8      |
+|    4    |    HW_CFG1     |     16     |      32bit       |                    EN_SRAM_IFETCH                     |     0x6C0      |     1      |
 |         |                |            |      32bit       |                 EN_CSRNG_SW_APP_READ                  |     0x6C1      |     1      |
-|         |                |            |      64bit       |        [HW_CFG0_DIGEST](#Reg_hw_cfg0_digest_0)        |     0x6C8      |     8      |
-|    4    |    SECRET0     |     40     |      64bit       |                   TEST_UNLOCK_TOKEN                   |     0x6D0      |     16     |
+|         |                |            |      64bit       |        [HW_CFG1_DIGEST](#Reg_hw_cfg1_digest_0)        |     0x6C8      |     8      |
+|    5    |    SECRET0     |     40     |      64bit       |                   TEST_UNLOCK_TOKEN                   |     0x6D0      |     16     |
 |         |                |            |      64bit       |                    TEST_EXIT_TOKEN                    |     0x6E0      |     16     |
 |         |                |            |      64bit       |        [SECRET0_DIGEST](#Reg_secret0_digest_0)        |     0x6F0      |     8      |
-|    5    |    SECRET1     |     88     |      64bit       |                  FLASH_ADDR_KEY_SEED                  |     0x6F8      |     32     |
+|    6    |    SECRET1     |     88     |      64bit       |                  FLASH_ADDR_KEY_SEED                  |     0x6F8      |     32     |
 |         |                |            |      64bit       |                  FLASH_DATA_KEY_SEED                  |     0x718      |     32     |
 |         |                |            |      64bit       |                  SRAM_DATA_KEY_SEED                   |     0x738      |     16     |
 |         |                |            |      64bit       |        [SECRET1_DIGEST](#Reg_secret1_digest_0)        |     0x748      |     8      |
-|    6    |    SECRET2     |     88     |      64bit       |                       RMA_TOKEN                       |     0x750      |     16     |
+|    7    |    SECRET2     |     88     |      64bit       |                       RMA_TOKEN                       |     0x750      |     16     |
 |         |                |            |      64bit       |                CREATOR_ROOT_KEY_SHARE0                |     0x760      |     32     |
 |         |                |            |      64bit       |                CREATOR_ROOT_KEY_SHARE1                |     0x780      |     32     |
 |         |                |            |      64bit       |        [SECRET2_DIGEST](#Reg_secret2_digest_0)        |     0x7A0      |     8      |
-|    7    |   LIFE_CYCLE   |     88     |      32bit       |                   LC_TRANSITION_CNT                   |     0x7A8      |     48     |
+|    8    |   LIFE_CYCLE   |     88     |      32bit       |                   LC_TRANSITION_CNT                   |     0x7A8      |     48     |
 |         |                |            |      32bit       |                       LC_STATE                        |     0x7D8      |     40     |

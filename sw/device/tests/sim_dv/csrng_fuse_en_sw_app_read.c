@@ -21,13 +21,9 @@ OTTF_DEFINE_TEST_CONFIG();
 
 /**
  * OTP HW partition relative IFETCH offset in bytes.
- *
- * x = OTP_CTRL_PARAM_EN_SRAM_IFETCH_OFFSET (1728)
- * y = OTP_CTRL_PARAM_HW_CFG0_OFFSET (1664)
- * IFETCH_OFFSET = (x - y) = 64
  */
 static const uint32_t kOtpIfetchHwRelativeOffset =
-    OTP_CTRL_PARAM_EN_SRAM_IFETCH_OFFSET - OTP_CTRL_PARAM_HW_CFG0_OFFSET;
+    OTP_CTRL_PARAM_EN_SRAM_IFETCH_OFFSET - OTP_CTRL_PARAM_HW_CFG1_OFFSET;
 
 /**
  * OTP can only be accessed by 32b aligned addresses. As `csrng_sw_app_read` is
@@ -58,7 +54,7 @@ static void test_fuse_disable(const dif_csrng_t *csrng) {
 }
 
 /**
- * Read the otp at `HW_CFG.OTP_CTRL_PARAM_EN_CSRNG_SW_APP_READ_OFFSET` address
+ * Read the otp at `HW_CFG1.OTP_CTRL_PARAM_EN_CSRNG_SW_APP_READ_OFFSET` address
  * and check whether is configured by the `uvm_test_seq` as expected.
  *
  * @param expected Define the expected value for the
@@ -79,7 +75,7 @@ static void check_csrng_fuse_enabled(bool expected) {
 
   uint32_t value;
   // Read the current value of the partition.
-  CHECK_DIF_OK(dif_otp_ctrl_dai_read_start(&otp, kDifOtpCtrlPartitionHwCfg0,
+  CHECK_DIF_OK(dif_otp_ctrl_dai_read_start(&otp, kDifOtpCtrlPartitionHwCfg1,
                                            kOtpIfetchHwRelativeOffset));
   CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp));
   CHECK_DIF_OK(dif_otp_ctrl_dai_read32_end(&otp, &value));

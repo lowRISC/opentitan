@@ -319,6 +319,7 @@ STD_OTP_OVERLAYS_WITHOUT_SECRET_PARTITIONS = [
     "//hw/ip/otp_ctrl/data:otp_json_owner_sw_cfg",
     "//hw/ip/otp_ctrl/data:otp_json_alert_digest_cfg",
     "//hw/ip/otp_ctrl/data:otp_json_hw_cfg0",
+    "//hw/ip/otp_ctrl/data:otp_json_hw_cfg1",
 ]
 
 # This is a set of overlays to generate a generic, standard OTP image.
