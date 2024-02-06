@@ -89,4 +89,15 @@ OT_WARN_UNUSED_RESULT
 status_t ret_sram_testutils_scratch_write(size_t offset, size_t size,
                                           uint32_t *src);
 
+/**
+ * Read rom identity from retention_sram and indicate
+ * whether current test platform uses test_rom.c or not.
+ *
+ * @param true : current test platform uses test_rom.c
+ *        false : current test platform doesn't use test_rom.c
+ *                which can imply it uses rom.c
+ */
+OT_WARN_UNUSED_RESULT
+status_t ret_sram_testutils_is_testrom(bool *is_testrom);
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_RET_SRAM_TESTUTILS_H_

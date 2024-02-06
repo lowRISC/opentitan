@@ -275,5 +275,4 @@ status_t flash_ctrl_testutils_backdoor_wait_update(const volatile uint8_t *addr,
 OT_WARN_UNUSED_RESULT
 status_t flash_ctrl_testutils_show_faults(
     const dif_flash_ctrl_state_t *flash_state);
-
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_FLASH_CTRL_TESTUTILS_H_

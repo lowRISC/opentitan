@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/silicon_creator/lib/base/chip.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -89,5 +90,15 @@ status_t ret_sram_testutils_scratch_write(size_t offset, size_t size,
   for (size_t i = 0; i < size; ++i) {
     testing_utilities->scratch[offset + i] = src[i];
   }
+  return OK_STATUS();
+}
+
+status_t ret_sram_testutils_is_testrom(bool *is_testrom) {
+  *is_testrom =
+      retention_sram_get()
+          ->creator
+          .reserved[ARRAYSIZE((retention_sram_t){0}.creator.reserved) - 1] ==
+      TEST_ROM_IDENTIFIER;
+
   return OK_STATUS();
 }
