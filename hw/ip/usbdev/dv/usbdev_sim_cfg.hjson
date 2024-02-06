@@ -68,6 +68,10 @@
       name: usbdev_av_buffer
       uvm_test_seq: usbdev_av_buffer_vseq
     }
+    {
+      name: setup_trans_ignored
+      uvm_test_seq: usbdev_setup_trans_ignored_vseq
+    }
   ]
 
   // List of regressions.
