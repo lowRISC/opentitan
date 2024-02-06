@@ -98,7 +98,8 @@ module hmac
   err_code_e   err_code;
   logic        err_valid;
 
-  sha_word64_t [7:0] digest;
+  sha_word64_t [7:0] digest, digest_sw;
+  logic [7:0] digest_sw_we;
 
   hmac_reg2hw_cfg_reg_t cfg_reg;
   logic                 cfg_block;  // Prevent changing config
@@ -135,8 +136,11 @@ module hmac
 
   for (genvar i = 0; i < 8; i++) begin : gen_key_digest
     assign hw2reg.key[7-i].d      = '0;
-    // digest
+    // digest HW -> SW
     assign hw2reg.digest[i].d = conv_endian32(digest[i][31:0], digest_swap);
+    // digest SW -> HW
+    assign digest_sw[i] = {32'h0, conv_endian32(reg2hw.digest[i].q, digest_swap)};
+    assign digest_sw_we[i] = reg2hw.digest[i].qe;
   end
 
   logic [3:0] unused_cfg_qe;
@@ -439,8 +443,8 @@ module hmac
     .hash_process_i       (sha_hash_process),
     .hash_done_o          (sha_hash_done),
     .message_length_i     ({{64'b0},sha_message_length}),
-    .digest_i             ('0),
-    .digest_we_i          ('0),
+    .digest_i             (digest_sw),
+    .digest_we_i          (digest_sw_we),
     .digest_o             (digest), // digest[0:7][63:32] not read and tied out in unused_signals
     .idle_o               (sha_core_idle)
   );
