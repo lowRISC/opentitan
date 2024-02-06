@@ -439,6 +439,8 @@ module hmac
     .hash_process_i       (sha_hash_process),
     .hash_done_o          (sha_hash_done),
     .message_length_i     ({{64'b0},sha_message_length}),
+    .digest_i             ('0),
+    .digest_we_i          ('0),
     .digest_o             (digest), // digest[0:7][63:32] not read and tied out in unused_signals
     .idle_o               (sha_core_idle)
   );
