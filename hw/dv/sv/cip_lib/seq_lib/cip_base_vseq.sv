@@ -707,6 +707,13 @@ class cip_base_vseq #(
             end
             begin : issue_rand_reset
               wait_to_issue_reset(reset_delay_bound);
+
+              // Check that there are no CSR requests in flight as we trigger the reset. If any
+              // exist, they won't manage to complete (because apply_resets_concurrently will kill
+              // the task that is driving them) and everything will end up out of sync.
+              `DV_CHECK(!has_outstanding_access(),
+                        "Trying to trigger a reset with outstanding CSR items.")
+
               ongoing_reset = 1'b1;
               `uvm_info(`gfn, $sformatf("\nReset is issued for run %0d/%0d", i, num_times), UVM_LOW)
               apply_resets_concurrently();
@@ -714,7 +721,6 @@ class cip_base_vseq #(
               ongoing_reset = 1'b0;
             end
           join_any
-          `DV_CHECK_EQ(has_outstanding_access(),  0, "No CSR outstanding items after reset!")
           disable fork;
           `uvm_info(`gfn, $sformatf("\nStress w/ reset is done for run %0d/%0d", i, num_times),
                     UVM_LOW)
