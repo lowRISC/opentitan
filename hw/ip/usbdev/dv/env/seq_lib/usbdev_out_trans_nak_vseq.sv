@@ -11,7 +11,7 @@ class usbdev_out_trans_nak_vseq extends usbdev_base_vseq;
   task body();
     super.dut_init("HARD");
     cfg.clk_rst_vif.wait_clks(200);
-    csr_wr(.ptr(ral.intr_state), .value(32'h0001_ffff));  // clear interrupts
+    clear_all_interrupts();
     // Configure out transaction
     configure_out_trans();
     // Clear RX Out
@@ -25,8 +25,5 @@ class usbdev_out_trans_nak_vseq extends usbdev_base_vseq;
     get_response(m_response_item);
     $cast(m_usb20_item, m_response_item);
     get_out_response_from_device(m_usb20_item, PidTypeNak);
-    // change available buffer id
-    ral.avbuffer.buffer.set(set_buffer_id + 1);
-    csr_update(ral.avbuffer);
   endtask
 endclass

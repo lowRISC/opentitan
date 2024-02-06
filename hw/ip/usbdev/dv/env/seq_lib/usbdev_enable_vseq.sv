@@ -36,9 +36,6 @@ class usbdev_enable_vseq extends usbdev_base_vseq;
     cfg.clk_rst_vif.wait_clks(20);
     // Verifies that usb device is enabled and received packet and sends ACK.
     check_trans_accuracy();
-    ral.avoutbuffer.buffer.set(set_buffer_id + 1); // Set available buffer id
-    csr_update(ral.avoutbuffer);
-    csr_wr(.ptr(ral.intr_state), .value(32'h0001_ffff)); // Clear interrupts
   endtask
 
   task check_trans_accuracy();

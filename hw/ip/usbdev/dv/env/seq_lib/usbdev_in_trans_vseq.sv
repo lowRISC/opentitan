@@ -12,7 +12,7 @@ class usbdev_in_trans_vseq extends usbdev_base_vseq;
     uvm_reg_data_t rxfifo;
     bit in_sent;
     super.dut_init("HARD");
-    csr_wr(.ptr(ral.intr_state), .value(32'h0001_ffff));
+    clear_all_interrupts();
     ral.intr_enable.pkt_sent.set(1'b1); // Enable pkt_sent interrupt
     csr_update(ral.intr_enable);
     // For IN transaction need to do first OUT transaction
@@ -29,10 +29,11 @@ class usbdev_in_trans_vseq extends usbdev_base_vseq;
     // Read rxfifo reg
     csr_rd(.ptr(ral.rxfifo), .value(rxfifo));
     // Make sure buffer is availabe for next trans
-    ral.avbuffer.buffer.set(set_buffer_id + 1);
-    csr_update(ral.avbuffer);
+    ral.avoutbuffer.buffer.set(out_buffer_id + 1);
+    csr_update(ral.avoutbuffer);
     num_of_bytes = m_data_pkt.data.size();
-    configure_in_trans();  // register configurations for IN Trans.
+    // Note: data should have been written into the current OUT buffer by the above transaction
+    configure_in_trans(out_buffer_id);  // register configurations for IN Trans.
     // Token pkt followed by handshake pkt
     call_token_seq(PktTypeToken, PidTypeInToken, endp);
     get_response(m_response_item);
