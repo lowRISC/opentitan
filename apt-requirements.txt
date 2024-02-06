@@ -34,6 +34,7 @@ libssl-dev
 libudev-dev
 libusb-1.0-0
 lld
+lrzsz
 lsb-release
 make
 ninja-build
