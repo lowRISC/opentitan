@@ -369,7 +369,7 @@ status_t handle_sha3_sca_disable_masking(ujson_t *uj) {
   UJSON_CHECK_DIF_OK(
       dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
 
-  if (read_32(uj_data.masks_off) == 0x01) {
+  if (uj_data.masks_off == 0x01) {
     config.entropy_fast_process = kDifToggleEnabled;
     config.msg_mask = kDifToggleDisabled;
   } else {
@@ -381,7 +381,7 @@ status_t handle_sha3_sca_disable_masking(ujson_t *uj) {
   kmac_block_until_idle();
   // Acknowledge the command. This is crucial to be in sync with the host.
   cryptotest_sha3_sca_status_t uj_status;
-  *uj_status.status = 0;
+  uj_status.status = 0;
   RESP_OK(ujson_serialize_cryptotest_sha3_sca_status_t, uj, &uj_status);
 
   return OK_STATUS(0);
@@ -554,7 +554,7 @@ status_t handle_sha3_sca_batch(ujson_t *uj) {
 
   // Acknowledge the batch command. This is crucial to be in sync with the host
   cryptotest_sha3_sca_status_t uj_status;
-  *uj_status.status = 0;
+  uj_status.status = 0;
   RESP_OK(ujson_serialize_cryptotest_sha3_sca_status_t, uj, &uj_status);
   // Send the batch digest to the host for verification.
   cryptotest_sha3_sca_batch_digest_t uj_output;
