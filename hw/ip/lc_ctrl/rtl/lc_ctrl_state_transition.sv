@@ -110,9 +110,15 @@ module lc_ctrl_state_transition
         default:  trans_cnt_oflw_error_o = 1'b1;
       endcase // lc_cnt_i
 
-      // In case the transition target is SCRAP, max out the counter.
+      // We always allow transitions into the SCRAP state, so the overflow error is silenced in that
+      // particular case. In that case we max out the transition counter and force the
+      // next_lc_state already into SCRAP so that the error silencing above cannot be abused. This
+      // means that when moving to SCRAP state, we program LcStScrap twice: once during the counter
+      // increment phase, and once during the actual state programming phase.
       if (trans_target_i == {DecLcStateNumRep{DecLcStScrap}}) begin
         next_lc_cnt_o = LcCnt24;
+        next_lc_state_o = LcStScrap;
+        trans_cnt_oflw_error_o = 1'b0;
       end
     end
 

@@ -338,8 +338,13 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
       // SW transition request
       // verilog_format: off - avoid bad formatting
       if ((err_inj.state_err || valid_state_for_trans(lc_state)) &&
-          (err_inj.count_err || err_inj.transition_count_err ||
-          (lc_cnt != LcCnt24 && lc_state != LcStScrap))) begin
+          (err_inj.count_err ||
+           // We can't inject a transition count error if we're in RMA or PROD_END since the only
+           // valid transition from those states is into SCRAP, which is always allowed (even when
+           // the transition counter is maxed out).
+           (err_inj.transition_count_err && !(lc_state inside {LcStRma, LcStProdEnd})) ||
+           (!err_inj.transition_count_err && lc_state inside {LcStRma, LcStProdEnd})   ||
+           (lc_cnt != LcCnt24 && lc_state != LcStScrap))) begin
         lc_ctrl_state_pkg::lc_token_t token_val = get_random_token();
         randomize_next_lc_state(dec_lc_state(lc_state));
         `uvm_info(`gfn, $sformatf(
@@ -485,10 +490,21 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
         if (!err_inj.transition_err && !err_inj.state_err) {
           // Valid transition
           next_lc_state inside {VALID_NEXT_STATES[curr_lc_state]};
+          // The constraints cannot be solved for if the only valid transition is into SCRAP, hence
+          // we specifically allow those cases and make sure we're not using RMA and PROD_END to
+          // test transition counter errors.
+          if (err_inj.transition_count_err &&
+              !(curr_lc_state inside {DecLcStRma, DecLcStProdEnd})) {
+            // Transition count errors due to counter saturation are injected by requesting a
+            // transition into any state with a saturated counter in OTP. This does not work if the
+            // target state is SCRAP, though, since a transition into SCRAP is always allowed.
+            next_lc_state != DecLcStScrap;
+          }
         } else if (!err_inj.state_err) {
           // Invalid transition
           !(next_lc_state inside {VALID_NEXT_STATES[curr_lc_state]});
-        })
+        }
+        )
     `uvm_info(`gfn,$sformatf("randomize_next_lc_state: next_lc_state=%s",
         next_lc_state.name()), UVM_MEDIUM)
   endfunction
@@ -570,7 +586,15 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
       if (!err_inj.state_err && !err_inj.state_illegal_err) begin
         `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(lc_state,
                                            // lc_state should be valid for transition
-                                           lc_state inside {LcValidStateForTrans};)
+                                           lc_state inside {LcValidStateForTrans};
+                                           // The only valid transitions from PROD_END and RMA are
+                                           // into SCRAP. Since transitioning into SCRAP is always
+                                           // allowed, we cannot use these states as base states to
+                                           // test the transition counter saturation error.
+                                           if (err_inj.transition_count_err) {
+                                             !(lc_state inside {DecLcStProdEnd, DecLcStRma});
+                                           }
+                                           )
         `uvm_info(`gfn, $sformatf("drive_otp_i: driving lc_state=%s", lc_state.name), UVM_MEDIUM)
       end else begin
         // Force invalid state on input optionally with illegal coding
