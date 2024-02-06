@@ -179,13 +179,9 @@ module flash_ctrl_core_reg_top (
   //        or <reg>_{wd|we|qs} if field == 1 or 0
   logic intr_state_we;
   logic intr_state_prog_empty_qs;
-  logic intr_state_prog_empty_wd;
   logic intr_state_prog_lvl_qs;
-  logic intr_state_prog_lvl_wd;
   logic intr_state_rd_full_qs;
-  logic intr_state_rd_full_wd;
   logic intr_state_rd_lvl_qs;
-  logic intr_state_rd_lvl_wd;
   logic intr_state_op_done_qs;
   logic intr_state_op_done_wd;
   logic intr_state_corr_err_qs;
@@ -1023,7 +1019,7 @@ module flash_ctrl_core_reg_top (
   //   F[prog_empty]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_intr_state_prog_empty (
@@ -1031,8 +1027,8 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_we),
-    .wd     (intr_state_prog_empty_wd),
+    .we     (1'b0),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.intr_state.prog_empty.de),
@@ -1050,7 +1046,7 @@ module flash_ctrl_core_reg_top (
   //   F[prog_lvl]: 1:1
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_intr_state_prog_lvl (
@@ -1058,8 +1054,8 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_we),
-    .wd     (intr_state_prog_lvl_wd),
+    .we     (1'b0),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.intr_state.prog_lvl.de),
@@ -1077,7 +1073,7 @@ module flash_ctrl_core_reg_top (
   //   F[rd_full]: 2:2
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_intr_state_rd_full (
@@ -1085,8 +1081,8 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_we),
-    .wd     (intr_state_rd_full_wd),
+    .we     (1'b0),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.intr_state.rd_full.de),
@@ -1104,7 +1100,7 @@ module flash_ctrl_core_reg_top (
   //   F[rd_lvl]: 3:3
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_intr_state_rd_lvl (
@@ -1112,8 +1108,8 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_we),
-    .wd     (intr_state_rd_lvl_wd),
+    .we     (1'b0),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.intr_state.rd_lvl.de),
@@ -12049,14 +12045,6 @@ module flash_ctrl_core_reg_top (
 
   // Generate write-enables
   assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
-
-  assign intr_state_prog_empty_wd = reg_wdata[0];
-
-  assign intr_state_prog_lvl_wd = reg_wdata[1];
-
-  assign intr_state_rd_full_wd = reg_wdata[2];
-
-  assign intr_state_rd_lvl_wd = reg_wdata[3];
 
   assign intr_state_op_done_wd = reg_wdata[4];
 

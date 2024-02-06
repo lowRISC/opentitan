@@ -648,13 +648,14 @@ void isr_testutils_entropy_src_isr(
  *
  * @param plic_ctx A PLIC ISR context handle.
  * @param flash_ctrl_ctx A(n) flash_ctrl ISR context handle.
+ * @param mute_status_irq set to true to disable the serviced status type IRQ.
  * @param[out] peripheral_serviced Out param for the peripheral that was
  * serviced.
  * @param[out] irq_serviced Out param for the IRQ that was serviced.
  */
 void isr_testutils_flash_ctrl_isr(
     plic_isr_ctx_t plic_ctx, flash_ctrl_isr_ctx_t flash_ctrl_ctx,
-    top_earlgrey_plic_peripheral_t *peripheral_serviced,
+    bool mute_status_irq, top_earlgrey_plic_peripheral_t *peripheral_serviced,
     dif_flash_ctrl_irq_t *irq_serviced);
 
 /**
