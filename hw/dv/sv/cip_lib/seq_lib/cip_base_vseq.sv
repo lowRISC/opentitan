@@ -743,7 +743,21 @@ class cip_base_vseq #(
         rand_reset_delay inside {[1:reset_delay_bound]};
     )
 
+    // Wait a random number of cycles (up to reset_delay_bound) before triggering the reset.
     cfg.clk_rst_vif.wait_clks(rand_reset_delay);
+
+    // If there is an outstanding access, wait up to 1000 more cycles to allow it to clear. If it
+    // doesn't clear, something has gone wrong: we don't expect there to permanently be CSR
+    // accesses.
+    for (int i = 0; i < 1000; i++) begin
+      if (!has_outstanding_access()) break;
+      cfg.clk_rst_vif.wait_clks(1);
+    end
+    `DV_CHECK(!has_outstanding_access(),
+              "Outstanding access never cleared to allow us to reset.")
+
+    // Wait a portion of the clock period, to avoid the reset being synchronised with an edge of the
+    // clock.
     #($urandom_range(0, cfg.clk_rst_vif.clk_period_ps) * 1ps);
   endtask
 
