@@ -71,6 +71,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
           update_wr_msg_length(msg_q.size());
         end
       end else begin
+        bit do_predict = 1'b1;
         case (csr_name)
           "cmd": begin
             if (sha_en && !(hmac_start && item.a_data[HashStart])) begin
@@ -112,8 +113,11 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
           "cfg": begin
             if (hmac_start) return; // won't update configs if hash start
             if (cfg.en_cov) cov.cfg_cg.sample(item.a_data);
+            if (sha_en && !item.a_data[ShaEn]) begin
+              // Digest gets cleared on disabling.
+              exp_digest = {default: '0};
+            end
             sha_en = item.a_data[ShaEn];
-            if (!sha_en) predict_digest(msg_q, item.a_data[ShaEn], item.a_data[HmacEn]);
           end
           "key_0", "key_1", "key_2", "key_3", "key_4", "key_5", "key_6", "key_7": begin
             string str_index;
@@ -128,7 +132,11 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
             // Do nothing
           end
           "digest_0", "digest_1", "digest_2", "digest_3", "digest_4", "digest_5", "digest_6",
-          "digest_7", "status", "msg_length_lower", "msg_length_upper": begin
+          "digest_7": begin
+            // Predict updated value coming from write iff SHA core is disabled.
+            do_predict = !sha_en;
+          end
+          "status", "msg_length_lower", "msg_length_upper": begin
             `uvm_error(`gfn, $sformatf("this reg does not have write access: %0s",
                                        csr.get_full_name()))
           end
@@ -136,8 +144,20 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
             `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
           end
         endcase
-        // csr write: predict and update according to the csr names
-        void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
+        if (do_predict) begin
+          // csr write: predict and update according to the csr names
+          void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
+          if (csr_name.substr(0, 5) == "digest") begin
+            // When predicting a new value of the DIGEST registers due to a write, also update
+            // `exp_digest` with the prediction.
+            int digest_idx = get_digest_index(csr_name);
+            if (ral.cfg.digest_swap.get_mirrored_value() == 1'b1) begin
+              exp_digest[digest_idx] = {<<8{`gmv(csr)}};
+            end else begin
+              exp_digest[digest_idx] = `gmv(csr);
+            end
+          end
+        end
       end
     end
 
@@ -388,20 +408,12 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
   // query the sha / hmac c model to get expected digest
   // update predicted digest to ral mirrored value
   virtual function void predict_digest(bit [7:0] msg_q[],
-                                       bit       sha_en  = ral.cfg.sha_en.get_mirrored_value(),
                                        bit       hmac_en = ral.cfg.hmac_en.get_mirrored_value());
-    case ({hmac_en, sha_en})
-      2'b11: begin
-        cryptoc_dpi_pkg::sv_dpi_get_hmac_sha256(key, msg_q, exp_digest);
-      end
-      2'b01: begin
-        cryptoc_dpi_pkg::sv_dpi_get_sha256_digest(msg_q, exp_digest);
-      end
-      default: begin
-        // disgest is cleared if sha_en = 0
-        exp_digest = '{default:0};
-      end
-    endcase
+    if (hmac_en) begin
+      cryptoc_dpi_pkg::sv_dpi_get_hmac_sha256(key, msg_q, exp_digest);
+    end else begin
+      cryptoc_dpi_pkg::sv_dpi_get_sha256_digest(msg_q, exp_digest);
+    end
   endfunction
 
   virtual function void update_wr_msg_length(int size_bytes);
