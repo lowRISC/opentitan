@@ -9,8 +9,8 @@ filesets:
     depend:
       - lowrisc:ip:tlul
       - lowrisc:constants:top_pkg
-      - lowrisc:ip:flash_ctrl_pkg
-      - lowrisc:ip:flash_ctrl:0.1
+      - lowrisc:ip_interfaces:flash_ctrl_pkg
+      - lowrisc:ip_interfaces:flash_ctrl:0.1
     file_type: systemVerilogSource
 
   files_dv:

@@ -2,8 +2,10 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:ip:flash_ctrl:0.1"
+name: ${instance_vlnv("lowrisc:ip:flash_ctrl:0.1")}
 description: "Flash Controller"
+virtual:
+  - lowrisc:ip_interfaces:flash_ctrl
 
 filesets:
   files_rtl:
@@ -20,13 +22,11 @@ filesets:
       - lowrisc:prim:secded
       - lowrisc:prim:sparse_fsm
       - lowrisc:ip:otp_ctrl_pkg
-      - lowrisc:ip:flash_ctrl_pkg
+      - ${instance_vlnv("lowrisc:ip:flash_ctrl_pkg")}
+      - ${instance_vlnv("lowrisc:ip:flash_ctrl_reg")}
       - lowrisc:ip:jtag_pkg
-      - "fileset_top    ? (lowrisc:systems:flash_ctrl)"
-      - "fileset_topgen ? (lowrisc:systems:topgen)"
     files:
-      - "fileset_ip ? (rtl/flash_ctrl_core_reg_top.sv)"
-      - "fileset_ip ? (rtl/flash_ctrl.sv)"
+      - rtl/flash_ctrl.sv
       - rtl/flash_ctrl_erase.sv
       - rtl/flash_ctrl_prog.sv
       - rtl/flash_ctrl_rd.sv

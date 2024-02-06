@@ -12,15 +12,14 @@ filesets:
       - lowrisc:prim:util
       - lowrisc:ip:lc_ctrl_pkg
       - lowrisc:ip_interfaces:pwrmgr_pkg
+      - lowrisc:ip_interfaces:flash_ctrl_reg
       - lowrisc:ip:jtag_pkg
       - lowrisc:ip:edn_pkg
+      - lowrisc:tlul:headers
       - "fileset_partner  ? (partner:systems:ast_pkg)"
       - "!fileset_partner ? (lowrisc:systems:ast_pkg)"
-      - "fileset_top    ? (lowrisc:systems:flash_ctrl_pkg)"
-      - "fileset_topgen ? (lowrisc:systems:topgen)"
     files:
-      - "fileset_ip ? (rtl/flash_ctrl_reg_pkg.sv)"
-      - "fileset_ip ? (rtl/flash_ctrl_pkg.sv)"
+      - rtl/flash_ctrl_pkg.sv
       - rtl/flash_phy_pkg.sv
     file_type: systemVerilogSource
 
