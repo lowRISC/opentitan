@@ -447,6 +447,7 @@ module hmac
     .fifo_rready_o        (shaf_rready),
     .sha_en_i             (sha_en),
     .hash_start_i         (sha_hash_start),
+    .hash_continue_i      (1'b0),
     .digest_mode_i        (None),    // unused input port tied to ground
     .hash_process_i       (sha_hash_process),
     .hash_done_o          (sha_hash_done),

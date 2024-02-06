@@ -22,6 +22,7 @@ module prim_sha2_32 import prim_sha2_pkg::*;
   // Control signals
   input                     sha_en_i, // if disabled, it clears internal content
   input                     hash_start_i,
+  input                     hash_continue_i,
   input digest_mode_e       digest_mode_i,
   input                     hash_process_i,
   output logic              hash_done_o,
@@ -33,12 +34,16 @@ module prim_sha2_32 import prim_sha2_pkg::*;
 );
   // signal definitions shared for both 256-bit and multi-mode
   sha_fifo64_t  full_word;
-  logic sha_ready;
+  logic sha_ready, hash_go;
+
+  // Most operations and control signals are identical no matter if we are starting or re-starting
+  // to hash.
+  assign hash_go = hash_start_i | hash_continue_i;
 
   // tie off unused ports/port slices
   if (!MultimodeEn) begin : gen_tie_unused
     logic unused_signals;
-    assign unused_signals = ^{message_length_i[127:64], digest_mode_i};
+    assign unused_signals = ^{message_length_i[127:64], digest_mode_i, hash_go};
   end
 
   // logic and prim_sha2 instantiation for MultimodeEn = 1
@@ -61,8 +66,8 @@ module prim_sha2_32 import prim_sha2_pkg::*;
       fifo_rready_o    = 1'b0;
 
       // assign word_buffer
-      if (!sha_en_i || hash_start_i) word_buffer_d = 0;
-      else                           word_buffer_d = word_buffer_q;
+      if (!sha_en_i || hash_go) word_buffer_d = 0;
+      else                      word_buffer_d = word_buffer_q;
 
       if (sha_en_i && fifo_rvalid_i) begin // valid incoming word part and SHA engine is enabled
         if (word_part_count_q == 2'b00) begin
@@ -172,7 +177,7 @@ module prim_sha2_32 import prim_sha2_pkg::*;
       end
 
       // assign word_part_count_d
-      if ((word_part_reset || hash_start_i || !sha_en_i)) begin
+      if ((word_part_reset || hash_go || !sha_en_i)) begin
         word_part_count_d = '0;
       end else if (word_part_inc) begin
         word_part_count_d = word_part_count_q + 1'b1;
@@ -181,14 +186,14 @@ module prim_sha2_32 import prim_sha2_pkg::*;
       end
 
       // assign digest_mode_flag_d
-      if (hash_start_i)     digest_mode_flag_d = digest_mode_i;      // latch in configured mode
+      if (hash_go)          digest_mode_flag_d = digest_mode_i;      // latch in configured mode
       else if (hash_done_o) digest_mode_flag_d = None;               // clear
       else                  digest_mode_flag_d = digest_mode_flag_q; // keep
 
       // assign process_flag
-      if (!sha_en_i || hash_start_i) process_flag_d = 1'b0;
-      else if (hash_process_i)       process_flag_d = 1'b1;
-      else                           process_flag_d = process_flag_q;
+      if (!sha_en_i || hash_go) process_flag_d = 1'b0;
+      else if (hash_process_i)  process_flag_d = 1'b1;
+      else                      process_flag_d = process_flag_q;
     end : multimode_combinational
 
     prim_sha2 #(
@@ -203,6 +208,7 @@ module prim_sha2_32 import prim_sha2_pkg::*;
       .fifo_rready_o      (sha_ready),
       .sha_en_i           (sha_en_i),
       .hash_start_i       (hash_start_i),
+      .hash_continue_i    (hash_continue_i),
       .digest_mode_i      (digest_mode_i),
       .hash_process_i     (sha_process),
       .hash_done_o        (hash_done_o),
@@ -252,6 +258,7 @@ module prim_sha2_32 import prim_sha2_pkg::*;
       .fifo_rready_o      (sha_ready),
       .sha_en_i           (sha_en_i),
       .hash_start_i       (hash_start_i),
+      .hash_continue_i    (hash_continue_i),
       .digest_mode_i      (None),           // unused input port tied to ground
       .hash_process_i     (hash_process_i), // feed input port directly to SHA-2 engine
       .hash_done_o        (hash_done_o),

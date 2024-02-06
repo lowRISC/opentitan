@@ -25,7 +25,10 @@ module prim_sha2 import prim_sha2_pkg::*;
                                      // words from the message FIFO
   // control signals
   input               sha_en_i,   // if disabled, it clears internal content
-  input               hash_start_i,
+  input               hash_start_i, // start hashing: initialize data counter to zero and clear
+                                    // digest
+  input               hash_continue_i, // continue hashing: set data counter to `message_length_i`
+                                       // and use current digest
   input digest_mode_e digest_mode_i,
   input               hash_process_i,
   output logic        hash_done_o,
@@ -46,6 +49,7 @@ module prim_sha2 import prim_sha2_pkg::*;
   logic init_hash, run_hash, one_chunk_done;
   logic update_digest, clear_digest;
   logic hash_done_next; // to meet the phase with digest value
+  logic hash_go;
 
   // datapath signals - shared for both modes
   logic [RndWidth512-1:0] round_d, round_q;
@@ -63,9 +67,13 @@ module prim_sha2 import prim_sha2_pkg::*;
     assign unused_signals = ^{wipe_v_i[63:32], shaf_rdata[63:32], unused_digest_upper};
   end
 
-  assign digest_mode_flag_d = hash_start_i  ? digest_mode_i   :    // latch in configured mode
-                              hash_done_o   ? None            :    // clear
-                                              digest_mode_flag_q;  // keep
+  // Most operations and control signals are identical no matter if we are starting or continuing
+  // to hash.
+  assign hash_go = hash_start_i | hash_continue_i;
+
+  assign digest_mode_flag_d = hash_go     ? digest_mode_i   :    // latch in configured mode
+                              hash_done_o ? None            :    // clear
+                                            digest_mode_flag_q;  // keep
 
   if (MultimodeEn) begin : gen_multimode
     // datapath signal definitions for multi-mode
@@ -78,7 +86,7 @@ module prim_sha2 import prim_sha2_pkg::*;
       w_d = w_q;
       if (wipe_secret_i) begin
         w_d = w_q ^ {16{wipe_v_i[63:0]}};
-      end else if (!sha_en_i || hash_start_i) begin
+      end else if (!sha_en_i || hash_go) begin
         w_d = '0;
       end else if (!run_hash && update_w_from_fifo) begin
         // this logic runs at the first stage of SHA: hash not running yet,
@@ -192,7 +200,7 @@ module prim_sha2 import prim_sha2_pkg::*;
       w256_d = w256_q;
       if (wipe_secret_i) begin
         w256_d = w256_q ^ {16{wipe_v_i[31:0]}};
-      end else if (!sha_en_i || hash_start_i) begin
+      end else if (!sha_en_i || hash_go) begin
         w256_d = '0;
       end else if (!run_hash && update_w_from_fifo) begin
         // this logic runs at the first stage of SHA: hash not running yet,
@@ -273,7 +281,7 @@ module prim_sha2 import prim_sha2_pkg::*;
   // compute round counter (shared)
   always_comb begin : round_counter
     round_d = round_q;
-    if (!sha_en_i || hash_start_i) begin
+    if (!sha_en_i || hash_go) begin
       round_d = '0;
     end else if (run_hash) begin
       if (((round_q[RndWidth256-1:0] == RndWidth256'(unsigned'(NumRound256-1))) &&
@@ -294,9 +302,9 @@ module prim_sha2 import prim_sha2_pkg::*;
   end
 
   // compute w_index (shared)
-  assign w_index_d = (~sha_en_i || hash_start_i)  ? '0            :  // clear
-                     update_w_from_fifo           ? w_index_q + 1 :  // increment
-                                                    w_index_q;       // keep
+  assign w_index_d = (~sha_en_i || hash_go) ? '0            :  // clear
+                     update_w_from_fifo     ? w_index_q + 1 :  // increment
+                                              w_index_q;       // keep
   // update w_index (shared)
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) w_index_q <= '0;
@@ -331,8 +339,8 @@ module prim_sha2 import prim_sha2_pkg::*;
 
     unique case (fifo_st_q)
       FifoIdle: begin
-        if (hash_start_i) fifo_st_d = FifoLoadFromFifo;
-        else              fifo_st_d = FifoIdle;
+        if (hash_go) fifo_st_d = FifoLoadFromFifo;
+        else         fifo_st_d = FifoIdle;
       end
 
       FifoLoadFromFifo: begin
@@ -370,7 +378,7 @@ module prim_sha2 import prim_sha2_pkg::*;
     if (!sha_en_i)  begin
       fifo_st_d          = FifoIdle;
       update_w_from_fifo = 1'b0;
-    end else if (hash_start_i) begin
+    end else if (hash_go) begin
       fifo_st_d          = FifoLoadFromFifo;
     end
   end
@@ -448,7 +456,7 @@ module prim_sha2 import prim_sha2_pkg::*;
       end
     endcase
 
-    if (!sha_en_i || hash_start_i) sha_st_d  = ShaIdle;
+    if (!sha_en_i || hash_go) sha_st_d  = ShaIdle;
   end
 
   assign one_chunk_done = ((digest_mode_flag_q == SHA2_256 || ~MultimodeEn)
@@ -469,6 +477,7 @@ module prim_sha2 import prim_sha2_pkg::*;
     .shaf_rready_i (shaf_rready), // indicates that w is ready for more words from padding buffer
     .sha_en_i,
     .hash_start_i,
+    .hash_continue_i,
     .digest_mode_i,
     .hash_process_i,
     .hash_done_o,
@@ -477,5 +486,5 @@ module prim_sha2 import prim_sha2_pkg::*;
   );
 
   // Idle
-  assign idle_o = (fifo_st_q == FifoIdle) && (sha_st_q == ShaIdle) && !hash_start_i;
+  assign idle_o = (fifo_st_q == FifoIdle) && (sha_st_q == ShaIdle) && !hash_go;
 endmodule : prim_sha2
