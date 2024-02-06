@@ -126,11 +126,19 @@ package edn_env_pkg;
   } state_ack_e;
 
   typedef enum int {
-    cmd_reg_rdy = 0,
-    cmd_rdy  = 1,
-    cmd_sts = 2,
-    cmd_ack = 3
+    sw_cmd_reg_rdy = 0,
+    sw_cmd_rdy  = 1,
+    sw_cmd_sts = 2,
+    sw_cmd_ack = 3
   } sw_cmd_sts_e;
+
+  typedef enum int {
+    hw_cmd_boot_mode = 0,
+    hw_cmd_auto_mode = 1,
+    hw_cmd_sts = 2,
+    hw_cmd_ack = 3,
+    hw_cmd_type = 4
+  } hw_cmd_sts_e;
 
   // package sources
   `include "edn_env_cfg.sv"
