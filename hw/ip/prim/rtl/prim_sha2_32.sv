@@ -26,6 +26,8 @@ module prim_sha2_32 import prim_sha2_pkg::*;
   input                     hash_process_i,
   output logic              hash_done_o,
   input [127:0]             message_length_i, // use extended message length 128 bits
+  input  sha_word64_t [7:0] digest_i,
+  input  logic [7:0]        digest_we_i,
   output sha_word64_t [7:0] digest_o,         // use extended digest length
   output logic              idle_o
 );
@@ -205,6 +207,8 @@ module prim_sha2_32 import prim_sha2_pkg::*;
       .hash_process_i     (sha_process),
       .hash_done_o        (hash_done_o),
       .message_length_i   (message_length_i),
+      .digest_i           (digest_i),
+      .digest_we_i        (digest_we_i),
       .digest_o           (digest_o),
       .idle_o             (idle_o)
     );
@@ -252,6 +256,8 @@ module prim_sha2_32 import prim_sha2_pkg::*;
       .hash_process_i     (hash_process_i), // feed input port directly to SHA-2 engine
       .hash_done_o        (hash_done_o),
       .message_length_i   ({{64'b0}, message_length_i[63:0]}),
+      .digest_i           (digest_i),
+      .digest_we_i        (digest_we_i),
       .digest_o           (digest_o),
       .idle_o             (idle_o)
     );
