@@ -14,6 +14,7 @@ pub mod printer;
 pub mod raw_tty;
 pub mod rom_detect;
 pub mod status;
+pub mod testing;
 pub mod unknown;
 pub mod usb;
 pub mod usr_access;
@@ -53,6 +54,18 @@ macro_rules! testdata {
         path.push($f);
         path
     }};
+}
+
+/// Create a filename in a temporary directory.
+///
+/// When running under bazel, the filename will exist in the test's undeclared outputs directory.
+pub fn tmpfilename(name: &str) -> String {
+    let mut dir = match std::env::var("TEST_UNDECLARED_OUTPUTS_DIR") {
+        Ok(name) => std::path::PathBuf::from(name),
+        Err(_) => std::env::temp_dir(),
+    };
+    dir.push(name);
+    dir.to_str().unwrap().into()
 }
 
 #[cfg(test)]
