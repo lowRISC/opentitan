@@ -78,7 +78,7 @@ class lc_ctrl_smoke_vseq extends lc_ctrl_base_vseq;
       cfg.set_test_phase(LcCtrlDutReady);
 
       // SW transition request
-      if (valid_state_for_trans(lc_state) && lc_cnt != LcCnt24) begin
+      if (valid_state_for_trans(lc_state)) begin
         lc_ctrl_state_pkg::lc_token_t token_val = get_random_token();
         randomize_next_lc_state(dec_lc_state(lc_state));
         `uvm_info(`gfn, $sformatf(
@@ -109,7 +109,10 @@ class lc_ctrl_smoke_vseq extends lc_ctrl_base_vseq;
   // need to randomize here because associative array's index cannot be a rand input in constraint
   virtual function void randomize_next_lc_state(dec_lc_state_e curr_lc_state);
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(next_lc_state,
-                                       next_lc_state inside {VALID_NEXT_STATES[curr_lc_state]};)
+                                       next_lc_state inside {VALID_NEXT_STATES[curr_lc_state]};
+                                       // The only valid transition when the counter is maxed is
+                                       // a transition into scrap.
+                                       if (lc_cnt == LcCnt24) next_lc_state == DecLcStScrap;)
   endfunction
 
   // This function add otp_program_i's error bit field from the otp_prog_pull_agent device driver.

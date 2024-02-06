@@ -545,7 +545,10 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
     end
 
     // Transition to SCRAP state always programs LcCnt24
-    if (LcTargetState == LcStScrap) lc_cnt_exp = LcCnt24;
+    if (LcTargetState == LcStScrap) begin
+      lc_cnt_exp = LcCnt24;
+      lc_state_exp = LcStScrap;
+    end
 
     `uvm_info(`gfn, $sformatf(
               "predict_otp_prog_req: state=%s count=%s", lc_state_exp.name(), lc_cnt_exp.name),
