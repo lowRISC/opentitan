@@ -93,7 +93,7 @@
       ]
       stage: V3
       si_stage: SV3
-      tests: []
+      tests: ["//sw/device/tests:spi_host_irq_test"]
     }
   ]
 }

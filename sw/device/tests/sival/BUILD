@@ -139,6 +139,7 @@ test_suite(
         "//sw/device/tests:sensor_ctrl_alert_test",
         "//sw/device/tests:sensor_ctrl_wakeup_test",
         "//sw/device/tests:sleep_pwm_pulses_test",
+        "//sw/device/tests:spi_host_irq_test",
         "//sw/device/tests:sram_ctrl_memset_test",
         "//sw/device/tests:sram_ctrl_sleep_sram_ret_contents_no_scramble_test",
         "//sw/device/tests:sram_ctrl_subword_access_test",
