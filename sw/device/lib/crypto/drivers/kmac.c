@@ -70,7 +70,10 @@ enum {
 // "KMAC" string in little endian
 static const uint8_t kKmacFuncNameKMAC[] = {0x4b, 0x4d, 0x41, 0x43};
 
-OT_ASSERT_ENUM_VALUE(kKmacPrefixMaxSize, 4 * KMAC_PREFIX_MULTIREG_COUNT - 4);
+// We need 5 bytes at most for encoding the length of cust_str and func_name.
+// That leaves 39 bytes for the string. We simply truncate it to 36 bytes.
+OT_ASSERT_ENUM_VALUE(kKmacPrefixMaxSize, 4 * KMAC_PREFIX_MULTIREG_COUNT - 8);
+OT_ASSERT_ENUM_VALUE(kKmacCustStrMaxSize, kKmacPrefixMaxSize - 4);
 
 static const uint32_t prefix_offsets[] = {
     KMAC_PREFIX_0_REG_OFFSET,  KMAC_PREFIX_1_REG_OFFSET,
@@ -369,6 +372,9 @@ static status_t wait_status_bit(uint32_t bit_position, bool bit_value) {
  * The caller must ensure that `encoding_buf` and `encoding_header` are not
  * NULL pointers. This is not checked within this function.
  *
+ * The maximum `value` that can be encoded is restricted to the maximum value
+ * that can be stored with `size_t` type.
+ *
  * @param value Integer to be encoded.
  * @param[out] encoding_buf The output byte array representing `value`.
  * @param[out] encoding_header The number of bytes written to `encoded_value`.
@@ -378,12 +384,17 @@ OT_WARN_UNUSED_RESULT
 static status_t little_endian_encode(size_t value, uint8_t *encoding_buf,
                                      uint8_t *encoding_header) {
   uint8_t len = 0;
+  uint8_t reverse_buf[sizeof(size_t)];
   do {
-    encoding_buf[len] = value & UINT8_MAX;
+    reverse_buf[len] = value & UINT8_MAX;
     value >>= 8;
     len++;
   } while (value > 0);
   *encoding_header = len;
+
+  for (size_t idx = 0; idx < len; idx++) {
+    encoding_buf[idx] = reverse_buf[len - 1 - idx];
+  }
 
   return OTCRYPTO_OK;
 }
@@ -392,6 +403,8 @@ static status_t little_endian_encode(size_t value, uint8_t *encoding_buf,
  * Set prefix registers.
  *
  * This function directly writes to PREFIX registers of KMAC HWIP.
+ * The combined size of customization string and the function name
+ * must not exceed `kKmacPrefixMaxSize`.
  *
  * @param func_name Function name input in cSHAKE.
  * @param cust_str Customization string input in cSHAKE.
@@ -621,25 +634,16 @@ static status_t kmac_process_msg_blocks(kmac_operation_t operation,
     }
 
     // right_encode(`digest_len_bit`) below
-    // The encoded buffer in total occupies at most 256 bytes according to
-    // NIST SP 800-185 (1 byte for encoding header and 255 byte for the encoded
-    // buffer at max)
-    uint8_t buf[256] = {0};
+    // According to NIST SP 800-185, the maximum integer that can be encoded
+    // with `right_encode` is the value represented with 255 bytes. However,
+    // this driver supports only up to `digest_len_bits` that can be represented
+    // with `size_t`.
+    uint8_t buf[sizeof(size_t) + 1] = {0};
     uint8_t bytes_written;
     HARDENED_TRY(little_endian_encode(digest_len_bits, buf, &bytes_written));
     buf[bytes_written] = bytes_written;
-
-    // Because the MSG_FIFO is interpreted as little endian, we need to write
-    // in reverse order.
-    for (size_t i = 0; i < bytes_written; i++) {
-      abs_mmio_write8(
-          kKmacBaseAddr + KMAC_MSG_FIFO_REG_OFFSET + (i % sizeof(uint32_t)),
-          buf[bytes_written - i - 1]);
-    }
-
-    // Finally write `bytes_written` as the last byte.
-    abs_mmio_write8(kKmacBaseAddr + KMAC_MSG_FIFO_REG_OFFSET,
-                    buf[bytes_written]);
+    uint8_t *fifo_dst = (uint8_t *)(kKmacBaseAddr + KMAC_MSG_FIFO_REG_OFFSET);
+    memcpy(fifo_dst, buf, bytes_written + 1);
   }
 
   // Issue the process command, so that squeezing phase can start
