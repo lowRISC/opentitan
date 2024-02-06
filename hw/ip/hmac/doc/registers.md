@@ -282,6 +282,9 @@ Digest output. If HMAC is disabled, the register shows result of SHA256
 
 Order of the digest is:
 digest[255:0] = {DIGEST0, DIGEST1, DIGEST2, ... , DIGEST7};
+
+The digest gets cleared when `CFG.sha_en` transitions from 1 to 0.
+When `CFG.sha_en` is 0, these registers can be written by software.
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -302,12 +305,12 @@ digest[255:0] = {DIGEST0, DIGEST1, DIGEST2, ... , DIGEST7};
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "digest", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "digest", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name   | Description                    |
 |:------:|:------:|:-------:|:-------|:-------------------------------|
-|  31:0  |   ro   |    x    | digest | 32-bit chunk of 256-bit Digest |
+|  31:0  |   rw   |    x    | digest | 32-bit chunk of 256-bit Digest |
 
 ## MSG_LENGTH_LOWER
 Received Message Length calculated by the HMAC in bits [31:0]

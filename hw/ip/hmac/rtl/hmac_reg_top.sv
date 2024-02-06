@@ -227,21 +227,37 @@ module hmac_reg_top (
   logic key_7_we;
   logic [31:0] key_7_wd;
   logic digest_0_re;
+  logic digest_0_we;
   logic [31:0] digest_0_qs;
+  logic [31:0] digest_0_wd;
   logic digest_1_re;
+  logic digest_1_we;
   logic [31:0] digest_1_qs;
+  logic [31:0] digest_1_wd;
   logic digest_2_re;
+  logic digest_2_we;
   logic [31:0] digest_2_qs;
+  logic [31:0] digest_2_wd;
   logic digest_3_re;
+  logic digest_3_we;
   logic [31:0] digest_3_qs;
+  logic [31:0] digest_3_wd;
   logic digest_4_re;
+  logic digest_4_we;
   logic [31:0] digest_4_qs;
+  logic [31:0] digest_4_wd;
   logic digest_5_re;
+  logic digest_5_we;
   logic [31:0] digest_5_qs;
+  logic [31:0] digest_5_wd;
   logic digest_6_re;
+  logic digest_6_we;
   logic [31:0] digest_6_qs;
+  logic [31:0] digest_6_wd;
   logic digest_7_re;
+  logic digest_7_we;
   logic [31:0] digest_7_qs;
+  logic [31:0] digest_7_wd;
   logic [31:0] msg_length_lower_qs;
   logic [31:0] msg_length_upper_qs;
 
@@ -856,138 +872,170 @@ module hmac_reg_top (
 
   // Subregister 0 of Multireg digest
   // R[digest_0]: V(True)
+  logic digest_0_qe;
+  logic [0:0] digest_0_flds_we;
+  assign digest_0_qe = &digest_0_flds_we;
   prim_subreg_ext #(
     .DW    (32)
   ) u_digest_0 (
     .re     (digest_0_re),
-    .we     (1'b0),
-    .wd     ('0),
+    .we     (digest_0_we),
+    .wd     (digest_0_wd),
     .d      (hw2reg.digest[0].d),
     .qre    (),
-    .qe     (),
-    .q      (),
+    .qe     (digest_0_flds_we[0]),
+    .q      (reg2hw.digest[0].q),
     .ds     (),
     .qs     (digest_0_qs)
   );
+  assign reg2hw.digest[0].qe = digest_0_qe;
 
 
   // Subregister 1 of Multireg digest
   // R[digest_1]: V(True)
+  logic digest_1_qe;
+  logic [0:0] digest_1_flds_we;
+  assign digest_1_qe = &digest_1_flds_we;
   prim_subreg_ext #(
     .DW    (32)
   ) u_digest_1 (
     .re     (digest_1_re),
-    .we     (1'b0),
-    .wd     ('0),
+    .we     (digest_1_we),
+    .wd     (digest_1_wd),
     .d      (hw2reg.digest[1].d),
     .qre    (),
-    .qe     (),
-    .q      (),
+    .qe     (digest_1_flds_we[0]),
+    .q      (reg2hw.digest[1].q),
     .ds     (),
     .qs     (digest_1_qs)
   );
+  assign reg2hw.digest[1].qe = digest_1_qe;
 
 
   // Subregister 2 of Multireg digest
   // R[digest_2]: V(True)
+  logic digest_2_qe;
+  logic [0:0] digest_2_flds_we;
+  assign digest_2_qe = &digest_2_flds_we;
   prim_subreg_ext #(
     .DW    (32)
   ) u_digest_2 (
     .re     (digest_2_re),
-    .we     (1'b0),
-    .wd     ('0),
+    .we     (digest_2_we),
+    .wd     (digest_2_wd),
     .d      (hw2reg.digest[2].d),
     .qre    (),
-    .qe     (),
-    .q      (),
+    .qe     (digest_2_flds_we[0]),
+    .q      (reg2hw.digest[2].q),
     .ds     (),
     .qs     (digest_2_qs)
   );
+  assign reg2hw.digest[2].qe = digest_2_qe;
 
 
   // Subregister 3 of Multireg digest
   // R[digest_3]: V(True)
+  logic digest_3_qe;
+  logic [0:0] digest_3_flds_we;
+  assign digest_3_qe = &digest_3_flds_we;
   prim_subreg_ext #(
     .DW    (32)
   ) u_digest_3 (
     .re     (digest_3_re),
-    .we     (1'b0),
-    .wd     ('0),
+    .we     (digest_3_we),
+    .wd     (digest_3_wd),
     .d      (hw2reg.digest[3].d),
     .qre    (),
-    .qe     (),
-    .q      (),
+    .qe     (digest_3_flds_we[0]),
+    .q      (reg2hw.digest[3].q),
     .ds     (),
     .qs     (digest_3_qs)
   );
+  assign reg2hw.digest[3].qe = digest_3_qe;
 
 
   // Subregister 4 of Multireg digest
   // R[digest_4]: V(True)
+  logic digest_4_qe;
+  logic [0:0] digest_4_flds_we;
+  assign digest_4_qe = &digest_4_flds_we;
   prim_subreg_ext #(
     .DW    (32)
   ) u_digest_4 (
     .re     (digest_4_re),
-    .we     (1'b0),
-    .wd     ('0),
+    .we     (digest_4_we),
+    .wd     (digest_4_wd),
     .d      (hw2reg.digest[4].d),
     .qre    (),
-    .qe     (),
-    .q      (),
+    .qe     (digest_4_flds_we[0]),
+    .q      (reg2hw.digest[4].q),
     .ds     (),
     .qs     (digest_4_qs)
   );
+  assign reg2hw.digest[4].qe = digest_4_qe;
 
 
   // Subregister 5 of Multireg digest
   // R[digest_5]: V(True)
+  logic digest_5_qe;
+  logic [0:0] digest_5_flds_we;
+  assign digest_5_qe = &digest_5_flds_we;
   prim_subreg_ext #(
     .DW    (32)
   ) u_digest_5 (
     .re     (digest_5_re),
-    .we     (1'b0),
-    .wd     ('0),
+    .we     (digest_5_we),
+    .wd     (digest_5_wd),
     .d      (hw2reg.digest[5].d),
     .qre    (),
-    .qe     (),
-    .q      (),
+    .qe     (digest_5_flds_we[0]),
+    .q      (reg2hw.digest[5].q),
     .ds     (),
     .qs     (digest_5_qs)
   );
+  assign reg2hw.digest[5].qe = digest_5_qe;
 
 
   // Subregister 6 of Multireg digest
   // R[digest_6]: V(True)
+  logic digest_6_qe;
+  logic [0:0] digest_6_flds_we;
+  assign digest_6_qe = &digest_6_flds_we;
   prim_subreg_ext #(
     .DW    (32)
   ) u_digest_6 (
     .re     (digest_6_re),
-    .we     (1'b0),
-    .wd     ('0),
+    .we     (digest_6_we),
+    .wd     (digest_6_wd),
     .d      (hw2reg.digest[6].d),
     .qre    (),
-    .qe     (),
-    .q      (),
+    .qe     (digest_6_flds_we[0]),
+    .q      (reg2hw.digest[6].q),
     .ds     (),
     .qs     (digest_6_qs)
   );
+  assign reg2hw.digest[6].qe = digest_6_qe;
 
 
   // Subregister 7 of Multireg digest
   // R[digest_7]: V(True)
+  logic digest_7_qe;
+  logic [0:0] digest_7_flds_we;
+  assign digest_7_qe = &digest_7_flds_we;
   prim_subreg_ext #(
     .DW    (32)
   ) u_digest_7 (
     .re     (digest_7_re),
-    .we     (1'b0),
-    .wd     ('0),
+    .we     (digest_7_we),
+    .wd     (digest_7_wd),
     .d      (hw2reg.digest[7].d),
     .qre    (),
-    .qe     (),
-    .q      (),
+    .qe     (digest_7_flds_we[0]),
+    .q      (reg2hw.digest[7].q),
     .ds     (),
     .qs     (digest_7_qs)
   );
+  assign reg2hw.digest[7].qe = digest_7_qe;
 
 
   // R[msg_length_lower]: V(False)
@@ -1182,13 +1230,37 @@ module hmac_reg_top (
 
   assign key_7_wd = reg_wdata[31:0];
   assign digest_0_re = addr_hit[17] & reg_re & !reg_error;
+  assign digest_0_we = addr_hit[17] & reg_we & !reg_error;
+
+  assign digest_0_wd = reg_wdata[31:0];
   assign digest_1_re = addr_hit[18] & reg_re & !reg_error;
+  assign digest_1_we = addr_hit[18] & reg_we & !reg_error;
+
+  assign digest_1_wd = reg_wdata[31:0];
   assign digest_2_re = addr_hit[19] & reg_re & !reg_error;
+  assign digest_2_we = addr_hit[19] & reg_we & !reg_error;
+
+  assign digest_2_wd = reg_wdata[31:0];
   assign digest_3_re = addr_hit[20] & reg_re & !reg_error;
+  assign digest_3_we = addr_hit[20] & reg_we & !reg_error;
+
+  assign digest_3_wd = reg_wdata[31:0];
   assign digest_4_re = addr_hit[21] & reg_re & !reg_error;
+  assign digest_4_we = addr_hit[21] & reg_we & !reg_error;
+
+  assign digest_4_wd = reg_wdata[31:0];
   assign digest_5_re = addr_hit[22] & reg_re & !reg_error;
+  assign digest_5_we = addr_hit[22] & reg_we & !reg_error;
+
+  assign digest_5_wd = reg_wdata[31:0];
   assign digest_6_re = addr_hit[23] & reg_re & !reg_error;
+  assign digest_6_we = addr_hit[23] & reg_we & !reg_error;
+
+  assign digest_6_wd = reg_wdata[31:0];
   assign digest_7_re = addr_hit[24] & reg_re & !reg_error;
+  assign digest_7_we = addr_hit[24] & reg_we & !reg_error;
+
+  assign digest_7_wd = reg_wdata[31:0];
 
   // Assign write-enables to checker logic vector.
   always_comb begin
@@ -1210,14 +1282,14 @@ module hmac_reg_top (
     reg_we_check[14] = key_5_we;
     reg_we_check[15] = key_6_we;
     reg_we_check[16] = key_7_we;
-    reg_we_check[17] = 1'b0;
-    reg_we_check[18] = 1'b0;
-    reg_we_check[19] = 1'b0;
-    reg_we_check[20] = 1'b0;
-    reg_we_check[21] = 1'b0;
-    reg_we_check[22] = 1'b0;
-    reg_we_check[23] = 1'b0;
-    reg_we_check[24] = 1'b0;
+    reg_we_check[17] = digest_0_we;
+    reg_we_check[18] = digest_1_we;
+    reg_we_check[19] = digest_2_we;
+    reg_we_check[20] = digest_3_we;
+    reg_we_check[21] = digest_4_we;
+    reg_we_check[22] = digest_5_we;
+    reg_we_check[23] = digest_6_we;
+    reg_we_check[24] = digest_7_we;
     reg_we_check[25] = 1'b0;
     reg_we_check[26] = 1'b0;
   end
