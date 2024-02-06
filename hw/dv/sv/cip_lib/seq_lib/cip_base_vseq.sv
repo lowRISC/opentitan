@@ -419,6 +419,7 @@ class cip_base_vseq #(
 
   // generic task to check interrupt test reg functionality
   virtual task run_intr_test_vseq(int num_times = 1);
+    import dv_utils_pkg::interrupt_t;
     dv_base_reg intr_csrs[$];
     dv_base_reg intr_test_csrs[$];
 
@@ -461,9 +462,9 @@ class cip_base_vseq #(
 
         // if it's intr_state, also check the interrupt pin value
         if (!uvm_re_match("intr_state*", intr_csrs[i].get_name())) begin
-          dv_utils_pkg::interrupt_t exp_intr_pin = intr_csrs[i].get_intr_pins_exp_value();
-          dv_utils_pkg::interrupt_t act_intr_pin = cfg.intr_vif.sample();
-          act_intr_pin &= dv_utils_pkg::interrupt_t'((1 << cfg.num_interrupts) - 1);
+          interrupt_t exp_intr_pin = intr_csrs[i].get_intr_pins_exp_value();
+          interrupt_t act_intr_pin = cfg.intr_vif.sample();
+          act_intr_pin &= interrupt_t'((1 << cfg.num_interrupts) - 1);
           `DV_CHECK_CASE_EQ(exp_intr_pin, act_intr_pin)
         end // if (!uvm_re_match
       end // foreach (intr_csrs[i])
@@ -476,22 +477,39 @@ class cip_base_vseq #(
   endtask
 
   // Task to clear register intr status bits
-  virtual task clear_all_interrupts();
-    if (cfg.num_interrupts == 0) return;
-    foreach (intr_state_csrs[i]) begin
-      bit [BUS_DW-1:0] data;
-      csr_rd(.ptr(intr_state_csrs[i]), .value(data));
-      if (data != 0) begin
-        `uvm_info(`gtn, $sformatf("Clearing %0s", intr_state_csrs[i].get_name()), UVM_HIGH)
-        csr_wr(.ptr(intr_state_csrs[i]), .value(data));
-        csr_rd(.ptr(intr_state_csrs[i]), .value(data));
-        if (!cfg.under_reset) `DV_CHECK_EQ(data, 0)
-        else break;
-      end
+  virtual task clear_interrupt_reg(dv_base_reg register, uvm_reg_data_t ro_mask);
+    bit [BUS_DW-1:0] data;
+    // Status type interrupts are read-only and cannot be cleared by writing 1 to them.
+    // Instead, the underlying condition needs to be resolved (e.g. drain a FIFO that is full).
+    // Therefore, we use the RO bitmask to mask the writes / reads below.
+    csr_rd(.ptr(register), .value(data));
+    if (data & ~ro_mask != 0) begin
+      `uvm_info(`gtn, $sformatf("Clearing status bits in %0s", register.get_name()),
+                UVM_HIGH)
+      csr_wr(.ptr(register), .value(data & ~ro_mask));
+      csr_rd(.ptr(register), .value(data));
+      if (!cfg.under_reset) `DV_CHECK_EQ(data & ~ro_mask, 0)
     end
+  endtask
+
+  // Task to clear register intr status bits
+  virtual task clear_all_interrupts();
+    import dv_utils_pkg::interrupt_t;
+    interrupt_t irq_ro_mask = '0;
+    if (cfg.num_interrupts == 0) return;
+
+    // Iterate over all interrupt registers (typically there is only one).
+    foreach (intr_state_csrs[i]) begin
+      irq_ro_mask[i*BUS_DW +: BUS_DW] = interrupt_t'(intr_state_csrs[i].get_ro_mask());
+      clear_interrupt_reg(intr_state_csrs[i], uvm_reg_data_t'(irq_ro_mask[i*BUS_DW +: BUS_DW]));
+      if (cfg.under_reset) break;
+    end
+
     if (!cfg.under_reset) begin
-      dv_utils_pkg::interrupt_t mask = dv_utils_pkg::interrupt_t'((1 << cfg.num_interrupts) - 1);
-      `DV_CHECK_EQ(cfg.intr_vif.sample() & mask, '0)
+      // Status type interrupts may remain asserted, hence we have to mask them away.
+      interrupt_t all_interrupts = interrupt_t'((1 << cfg.num_interrupts) - 1);
+      interrupt_t clearable_mask = all_interrupts & ~irq_ro_mask;
+      `DV_CHECK_EQ(cfg.intr_vif.sample() & clearable_mask, '0)
     end
   endtask
 
