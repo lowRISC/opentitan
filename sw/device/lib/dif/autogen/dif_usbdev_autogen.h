@@ -112,12 +112,12 @@ typedef enum dif_usbdev_irq {
    */
   kDifUsbdevIrqLinkResume = 6,
   /**
-   * Raised when the AV FIFO is empty and the device interface is enabled. This
-   * interrupt is directly tied to the FIFO status, so the AV FIFO must be
-   * provided a free buffer before the interrupt is cleared. If the condition is
-   * not cleared, the interrupt can re-assert.
+   * Raised when the Available OUT FIFO is empty and the device interface is
+   * enabled. This interrupt is directly tied to the FIFO status, so the AV FIFO
+   * must be provided a free buffer before the interrupt is cleared. If the
+   * condition is not cleared, the interrupt can re-assert.
    */
-  kDifUsbdevIrqAvEmpty = 7,
+  kDifUsbdevIrqAvOutEmpty = 7,
   /**
    * Raised when the RX FIFO is full and the device interface is enabled. This
    * interrupt is directly tied to the FIFO status, so the RX FIFO must have an
@@ -126,8 +126,8 @@ typedef enum dif_usbdev_irq {
    */
   kDifUsbdevIrqRxFull = 8,
   /**
-   * Raised if a write was done to the Available Buffer FIFO when the FIFO was
-   * full.
+   * Raised if a write was done to either the Available OUT Buffer FIFO or the
+   * Available SETUP Buffer FIFO when the FIFO was full.
    */
   kDifUsbdevIrqAvOverflow = 9,
   /**

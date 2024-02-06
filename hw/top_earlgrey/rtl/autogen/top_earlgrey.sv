@@ -473,7 +473,7 @@ module top_earlgrey #(
   logic intr_usbdev_link_reset;
   logic intr_usbdev_link_suspend;
   logic intr_usbdev_link_resume;
-  logic intr_usbdev_av_empty;
+  logic intr_usbdev_av_out_empty;
   logic intr_usbdev_rx_full;
   logic intr_usbdev_av_overflow;
   logic intr_usbdev_link_in_err;
@@ -1635,7 +1635,7 @@ module top_earlgrey #(
       .intr_link_reset_o      (intr_usbdev_link_reset),
       .intr_link_suspend_o    (intr_usbdev_link_suspend),
       .intr_link_resume_o     (intr_usbdev_link_resume),
-      .intr_av_empty_o        (intr_usbdev_av_empty),
+      .intr_av_out_empty_o    (intr_usbdev_av_out_empty),
       .intr_rx_full_o         (intr_usbdev_rx_full),
       .intr_av_overflow_o     (intr_usbdev_av_overflow),
       .intr_link_in_err_o     (intr_usbdev_link_in_err),
@@ -2665,7 +2665,7 @@ module top_earlgrey #(
       intr_usbdev_link_in_err, // IDs [139 +: 1]
       intr_usbdev_av_overflow, // IDs [138 +: 1]
       intr_usbdev_rx_full, // IDs [137 +: 1]
-      intr_usbdev_av_empty, // IDs [136 +: 1]
+      intr_usbdev_av_out_empty, // IDs [136 +: 1]
       intr_usbdev_link_resume, // IDs [135 +: 1]
       intr_usbdev_link_suspend, // IDs [134 +: 1]
       intr_usbdev_link_reset, // IDs [133 +: 1]

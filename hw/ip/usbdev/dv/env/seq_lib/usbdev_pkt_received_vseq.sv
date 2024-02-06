@@ -36,8 +36,8 @@ class usbdev_pkt_received_vseq extends usbdev_base_vseq;
     // Check transaction accuracy
     check_trans_accuracy();
     // Make sure buffer is availabe for next trans
-    ral.avbuffer.buffer.set(set_buffer_id + 1);
-    csr_update(ral.avbuffer);
+    ral.avoutbuffer.buffer.set(set_buffer_id + 1);
+    csr_update(ral.avoutbuffer);
   endtask
 
   task configure_trans();
@@ -53,8 +53,8 @@ class usbdev_pkt_received_vseq extends usbdev_base_vseq;
     ral.rxenable_out[0].out[endp].set(1'b1);
     csr_update(ral.rxenable_out[0]);
     // Set buffer
-    ral.avbuffer.buffer.set(set_buffer_id);
-    csr_update(ral.avbuffer);
+    ral.avoutbuffer.buffer.set(set_buffer_id);
+    csr_update(ral.avoutbuffer);
     // Enable pkt_received interrupt
     ral.intr_enable.pkt_received.set(1'b1);
     csr_update(ral.intr_enable);

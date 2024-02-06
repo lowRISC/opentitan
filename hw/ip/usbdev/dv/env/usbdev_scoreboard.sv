@@ -232,7 +232,12 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
           do_read_check = 1'b0;
         end
       end
-      "avbuffer": begin
+      "avoutbuffer": begin
+        if (!write && channel == DataChannel) begin
+          do_read_check = 1'b0;
+        end
+      end
+      "avsetupbuffer": begin
         if (!write && channel == DataChannel) begin
           do_read_check = 1'b0;
         end

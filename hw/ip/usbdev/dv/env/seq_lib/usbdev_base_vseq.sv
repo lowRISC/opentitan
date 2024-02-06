@@ -164,8 +164,8 @@ virtual task configure_out_trans();
   ral.rxenable_out[0].out[endp].set(1'b1);
   csr_update(ral.rxenable_out[0]);
   // Set buffer
-  ral.avbuffer.buffer.set(set_buffer_id);
-  csr_update(ral.avbuffer);
+  ral.avoutbuffer.buffer.set(set_buffer_id);
+  csr_update(ral.avoutbuffer);
 endtask
 
 virtual task configure_setup_trans();
@@ -176,8 +176,8 @@ virtual task configure_setup_trans();
   ral.rxenable_setup[0].setup[0].set(1'b1);
   csr_update(ral.rxenable_setup[0]);
   // Set buffer
-  ral.avbuffer.buffer.set(set_buffer_id);
-  csr_update(ral.avbuffer);
+  ral.avoutbuffer.buffer.set(set_buffer_id);
+  csr_update(ral.avoutbuffer);
 endtask
 
 virtual task configure_in_trans();

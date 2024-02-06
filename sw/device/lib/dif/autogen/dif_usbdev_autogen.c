@@ -73,8 +73,8 @@ static bool usbdev_get_irq_bit_index(dif_usbdev_irq_t irq,
     case kDifUsbdevIrqLinkResume:
       *index_out = USBDEV_INTR_COMMON_LINK_RESUME_BIT;
       break;
-    case kDifUsbdevIrqAvEmpty:
-      *index_out = USBDEV_INTR_COMMON_AV_EMPTY_BIT;
+    case kDifUsbdevIrqAvOutEmpty:
+      *index_out = USBDEV_INTR_COMMON_AV_OUT_EMPTY_BIT;
       break;
     case kDifUsbdevIrqRxFull:
       *index_out = USBDEV_INTR_COMMON_RX_FULL_BIT;

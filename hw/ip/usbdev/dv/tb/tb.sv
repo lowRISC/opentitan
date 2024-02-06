@@ -25,7 +25,7 @@ module tb;
   wire intr_link_reset;
   wire intr_link_suspend;
   wire intr_link_resume;
-  wire intr_av_empty;
+  wire intr_av_out_empty;
   wire intr_rx_full;
   wire intr_av_overflow;
   wire intr_link_in_err;
@@ -102,7 +102,7 @@ module tb;
     .intr_link_reset_o      (intr_link_reset      ),
     .intr_link_suspend_o    (intr_link_suspend    ),
     .intr_link_resume_o     (intr_link_resume     ),
-    .intr_av_empty_o        (intr_av_empty        ),
+    .intr_av_out_empty_o    (intr_av_out_empty    ),
     .intr_rx_full_o         (intr_rx_full         ),
     .intr_av_overflow_o     (intr_av_overflow     ),
     .intr_link_in_err_o     (intr_link_in_err     ),
@@ -127,7 +127,7 @@ module tb;
   assign interrupts[IntrLinkReset]      = intr_link_reset;
   assign interrupts[IntrLinkSuspend]    = intr_link_suspend;
   assign interrupts[IntrLinkResume]     = intr_link_resume;
-  assign interrupts[IntrAvEmpty]        = intr_av_empty;
+  assign interrupts[IntrAvOutEmpty]     = intr_av_out_empty;
   assign interrupts[IntrRxFull]         = intr_rx_full;
   assign interrupts[IntrAvOverflow]     = intr_av_overflow;
   assign interrupts[IntrLinkInErr]      = intr_link_in_err;

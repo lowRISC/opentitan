@@ -23,7 +23,7 @@ class usbdev_setup_trans_ignored_vseq extends usbdev_base_vseq;
     // Verify the packet received bit must be zero.
     // That ensures that device ignored the setup transaction.
     `DV_CHECK_EQ(0, pkt_received);
-    ral.avbuffer.buffer.set(set_buffer_id + 1); // change available bufer id
-    csr_update(ral.avbuffer);
+    ral.avoutbuffer.buffer.set(set_buffer_id + 1); // change available bufer id
+    csr_update(ral.avoutbuffer);
   endtask
 endclass

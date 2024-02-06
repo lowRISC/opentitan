@@ -36,8 +36,8 @@ class usbdev_pkt_sent_vseq extends usbdev_base_vseq;
     // Read rxfifo reg
     csr_rd(.ptr(ral.rxfifo), .value(read_rxfifo));
     // Make sure buffer is availabe for next trans
-    ral.avbuffer.buffer.set(set_buffer_id + 1);
-    csr_update(ral.avbuffer);
+    ral.avoutbuffer.buffer.set(set_buffer_id + 1);
+    csr_update(ral.avoutbuffer);
 
     // IN TRANS
     // --------------------------------
