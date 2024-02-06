@@ -20,7 +20,9 @@ extern "C" {
  */
 enum {
   // The total size of prefix registers (in bytes), after removing len encodings
-  kKmacPrefixMaxSize = 40,
+  kKmacPrefixMaxSize = 36,
+  // The max size of customization string for KMAC.
+  kKmacCustStrMaxSize = 32,
 };
 
 /**
@@ -209,6 +211,8 @@ status_t kmac_cshake_256(const uint8_t *message, size_t message_len,
  * The caller must ensure that `digest_len` words are allocated at the location
  * pointed to by `digest`.
  *
+ * `cust_str_len` cannot exceed `kKmacCustStrMaxSize`.
+ *
  * @param message The input message.
  * @param message_len The input message length in bytes.
  * @param cust_str The customization string.
@@ -228,6 +232,8 @@ status_t kmac_kmac_128(kmac_blinded_key_t *key, const uint8_t *message,
  *
  * The caller must ensure that `digest_len` words are allocated at the location
  * pointed to by `digest`.
+ *
+ * `cust_str_len` cannot exceed `kKmacCustStrMaxSize`.
  *
  * @param message The input message.
  * @param message_len The input message length in bytes.
