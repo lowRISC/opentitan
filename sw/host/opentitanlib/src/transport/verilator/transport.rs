@@ -22,11 +22,14 @@ use crate::transport::{
     Capabilities, Capability, Transport, TransportError, TransportInterfaceType,
 };
 use crate::util::parse_int::ParseInt;
+use crate::io::jtag::{Jtag, JtagParams};
+use crate::util::openocd::OpenOcdServer;
 
 pub(crate) struct Inner {
     uart: Option<Rc<dyn Uart>>,
     spi: Option<Rc<dyn Target>>,
     pub gpio: GpioInner,
+    jtag: Option<Rc<dyn Jtag>>,
 }
 
 /// Represents the verilator transport object.
@@ -78,6 +81,7 @@ impl Verilator {
                 gpio,
                 spi: None,
                 uart: None,
+                jtag: None,
             })),
         })
     }
@@ -147,6 +151,14 @@ impl Transport for Verilator {
         } else {
             Err(TransportError::UnsupportedOperation.into())
         }
+    }
+
+    fn jtag(&self, opts: &JtagParams) -> Result<Rc<dyn Jtag>> {
+        let mut inner = self.inner.borrow_mut();
+        if inner.jtag.is_none() {
+            inner.jtag = Some(Rc::new(OpenOcdServer::new(opts)?));
+        }
+        Ok(Rc::clone(inner.jtag.as_ref().unwrap()))
     }
 }
 

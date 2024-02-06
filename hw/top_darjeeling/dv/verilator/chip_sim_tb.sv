@@ -70,7 +70,9 @@ module chip_sim_tb (
 
 `ifdef DMIDirectTAP
   // OpenOCD direct DMI TAP
-  bind rv_dm dmidpi u_dmidpi (
+  bind rv_dm dmidpi #(
+    .IdCode('h1000_1cdf)
+  ) u_dmidpi (
     .clk_i,
     .rst_ni         (cio_gpio_rst_n),
     .dmi_req_valid,
