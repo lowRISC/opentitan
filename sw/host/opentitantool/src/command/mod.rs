@@ -25,6 +25,7 @@ pub mod tpm;
 pub mod transport;
 pub mod update_usr_access;
 pub mod version;
+pub mod xmodem;
 
 use anyhow::Result;
 use clap::Args;

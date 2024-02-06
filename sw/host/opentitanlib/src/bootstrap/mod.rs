@@ -21,6 +21,7 @@ mod eeprom;
 mod legacy;
 mod legacy_rescue;
 mod primitive;
+pub mod xmodem;
 
 pub use legacy::LegacyBootstrapError;
 pub use legacy_rescue::LegacyRescueError;
