@@ -289,7 +289,7 @@ void isr_testutils_entropy_src_isr(
 
 void isr_testutils_flash_ctrl_isr(
     plic_isr_ctx_t plic_ctx, flash_ctrl_isr_ctx_t flash_ctrl_ctx,
-    top_earlgrey_plic_peripheral_t *peripheral_serviced,
+    bool mute_status_irq, top_earlgrey_plic_peripheral_t *peripheral_serviced,
     dif_flash_ctrl_irq_t *irq_serviced) {
   // Claim the IRQ at the PLIC.
   dif_rv_plic_irq_id_t plic_irq_id;
@@ -323,6 +323,9 @@ void isr_testutils_flash_ctrl_isr(
   if (type == kDifIrqTypeEvent) {
     CHECK_DIF_OK(
         dif_flash_ctrl_irq_acknowledge(flash_ctrl_ctx.flash_ctrl, irq));
+  } else if (mute_status_irq) {
+    CHECK_DIF_OK(dif_flash_ctrl_irq_set_enabled(flash_ctrl_ctx.flash_ctrl, irq,
+                                                kDifToggleDisabled));
   }
 
   // Complete the IRQ at the PLIC.

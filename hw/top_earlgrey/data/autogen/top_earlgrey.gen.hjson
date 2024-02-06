@@ -14327,23 +14327,23 @@
       width: 1
       type: interrupt
       module_name: flash_ctrl
-      intr_type: IntrType.Event
-      default_val: false
+      intr_type: IntrType.Status
+      default_val: true
     }
     {
       name: flash_ctrl_prog_lvl
       width: 1
       type: interrupt
       module_name: flash_ctrl
-      intr_type: IntrType.Event
-      default_val: false
+      intr_type: IntrType.Status
+      default_val: true
     }
     {
       name: flash_ctrl_rd_full
       width: 1
       type: interrupt
       module_name: flash_ctrl
-      intr_type: IntrType.Event
+      intr_type: IntrType.Status
       default_val: false
     }
     {
@@ -14351,7 +14351,7 @@
       width: 1
       type: interrupt
       module_name: flash_ctrl
-      intr_type: IntrType.Event
+      intr_type: IntrType.Status
       default_val: false
     }
     {

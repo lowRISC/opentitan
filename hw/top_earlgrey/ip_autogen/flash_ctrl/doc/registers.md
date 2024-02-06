@@ -122,13 +122,13 @@ It is implemented this way because the access window supports transaction back-p
 ## INTR_STATE
 Interrupt State Register
 - Offset: `0x0`
-- Reset default: `0x0`
+- Reset default: `0x3`
 - Reset mask: `0x3f`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "prog_empty", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "prog_lvl", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "rd_full", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "rd_lvl", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "op_done", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "corr_err", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 26}], "config": {"lanes": 1, "fontsize": 10, "vspace": 120}}
+{"reg": [{"name": "prog_empty", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "prog_lvl", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "rd_full", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "rd_lvl", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "op_done", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "corr_err", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 26}], "config": {"lanes": 1, "fontsize": 10, "vspace": 120}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name       | Description                   |
@@ -136,10 +136,10 @@ Interrupt State Register
 |  31:6  |        |         |            | Reserved                      |
 |   5    |  rw1c  |   0x0   | corr_err   | Correctable error encountered |
 |   4    |  rw1c  |   0x0   | op_done    | Operation complete            |
-|   3    |  rw1c  |   0x0   | rd_lvl     | Read FIFO filled to level     |
-|   2    |  rw1c  |   0x0   | rd_full    | Read FIFO full                |
-|   1    |  rw1c  |   0x0   | prog_lvl   | Program FIFO drained to level |
-|   0    |  rw1c  |   0x0   | prog_empty | Program FIFO empty            |
+|   3    |   ro   |   0x0   | rd_lvl     | Read FIFO filled to level     |
+|   2    |   ro   |   0x0   | rd_full    | Read FIFO full                |
+|   1    |   ro   |   0x1   | prog_lvl   | Program FIFO drained to level |
+|   0    |   ro   |   0x1   | prog_empty | Program FIFO empty            |
 
 ## INTR_ENABLE
 Interrupt Enable Register

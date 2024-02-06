@@ -48,10 +48,10 @@ ${"##"} Interrupts
 
 | Interrupt Name   | Type   | Description                   |
 |:-----------------|:-------|:------------------------------|
-| prog_empty       | Event  | Program FIFO empty            |
-| prog_lvl         | Event  | Program FIFO drained to level |
-| rd_full          | Event  | Read FIFO full                |
-| rd_lvl           | Event  | Read FIFO filled to level     |
+| prog_empty       | Status | Program FIFO empty            |
+| prog_lvl         | Status | Program FIFO drained to level |
+| rd_full          | Status | Read FIFO full                |
+| rd_lvl           | Status | Read FIFO filled to level     |
 | op_done          | Event  | Operation complete            |
 | corr_err         | Event  | Correctable error encountered |
 

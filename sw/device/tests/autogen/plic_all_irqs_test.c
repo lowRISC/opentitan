@@ -526,11 +526,23 @@ void ottf_external_isr(uint32_t *exc_info) {
 
         dif_flash_ctrl_irq_state_snapshot_t snapshot;
         CHECK_DIF_OK(dif_flash_ctrl_irq_get_state(&flash_ctrl, &snapshot));
-        CHECK(snapshot == (dif_flash_ctrl_irq_state_snapshot_t)(1 << irq),
-              "Only flash_ctrl IRQ %d expected to fire. Actual interrupt "
-              "status = %x", irq, snapshot);
+        CHECK(snapshot == (dif_flash_ctrl_irq_state_snapshot_t)((1 << irq) | 0x3),
+              "Expected flash_ctrl interrupt status %x. Actual interrupt "
+              "status = %x", (1 << irq) | 0x3, snapshot);
 
-        CHECK_DIF_OK(dif_flash_ctrl_irq_acknowledge(&flash_ctrl, irq));
+        // If this is a status type interrupt, we do not have to acknowledge the interrupt at
+        // the IP side, but we need to clear the test force register.
+        if (0xf & (1 << irq)) {
+          CHECK_DIF_OK(dif_flash_ctrl_irq_force(&flash_ctrl, irq, false));
+          // In case this status interrupt is asserted by default, we also disable it at
+          // this point so that it does not interfere with the rest of the test.
+          if ((0x3 & (1 << irq))) {
+            CHECK_DIF_OK(dif_flash_ctrl_irq_set_enabled(&flash_ctrl, irq, false));
+          }
+        // If this is a regular event type interrupt, we acknowledge it at this point.
+        } else {
+          CHECK_DIF_OK(dif_flash_ctrl_irq_acknowledge(&flash_ctrl, irq));
+        }
         break;
       }
 #endif
@@ -1383,8 +1395,12 @@ static void peripheral_irqs_enable(void) {
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 6 && 6 < TEST_MAX_IRQ_PERIPHERAL
+  // Note: this peripheral contains status interrupts that are asserted by
+  // default. Therefore, not all interrupts are enabled here, since that
+  // would interfere with this test. Instead, these interrupts are enabled on
+  // demand once they are being tested.
   dif_flash_ctrl_irq_state_snapshot_t flash_ctrl_irqs =
-      (dif_flash_ctrl_irq_state_snapshot_t)0xffffffff;
+      (dif_flash_ctrl_irq_state_snapshot_t)0xfffffffc;
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 7 && 7 < TEST_MAX_IRQ_PERIPHERAL
@@ -1755,12 +1771,21 @@ static void peripheral_irqs_trigger(void) {
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 6 && 6 < TEST_MAX_IRQ_PERIPHERAL
   peripheral_expected = kTopEarlgreyPlicPeripheralFlashCtrl;
+  status_default_mask = 0x3;
   for (dif_flash_ctrl_irq_t irq = kDifFlashCtrlIrqProgEmpty;
        irq <= kDifFlashCtrlIrqCorrErr; ++irq) {
 
     flash_ctrl_irq_expected = irq;
     LOG_INFO("Triggering flash_ctrl IRQ %d.", irq);
     CHECK_DIF_OK(dif_flash_ctrl_irq_force(&flash_ctrl, irq, true));
+
+    // In this case, the interrupt has not been enabled yet because that would
+    // interfere with testing other interrupts. We enable it here and let the
+    // interrupt handler disable it again.
+    if ((status_default_mask & 0x1)) {
+       CHECK_DIF_OK(dif_flash_ctrl_irq_set_enabled(&flash_ctrl, irq, true));
+    }
+    status_default_mask >>= 1;
 
     // This avoids a race where *irq_serviced is read before
     // entering the ISR.
