@@ -108,6 +108,24 @@ run_binary(
     ] + extra_msg_types
 ]
 
+run_binary(
+    name = "nist_cavp_ecdh_sp_800_56a_json",
+    srcs = [
+        "//sw/host/cryptotest/testvectors/data/schemas:ecdh_schema.json",
+        "@nist_cavp_ecdh_sp_800_56a//:KAS_ECC_CDH_PrimitiveTest.txt",
+    ],
+    outs = [":nist_cavp_ecdh_sp_800_56a.json"],
+    args = [
+        "--src",
+        "$(location @nist_cavp_ecdh_sp_800_56a//:KAS_ECC_CDH_PrimitiveTest.txt)",
+        "--dst",
+        "$(location :nist_cavp_ecdh_sp_800_56a.json)",
+        "--schema",
+        "$(location //sw/host/cryptotest/testvectors/data/schemas:ecdh_schema.json)",
+    ],
+    tool = "//sw/host/cryptotest/testvectors/parsers:nist_cavp_ecdh_parser",
+)
+
 [
     run_binary(
         name = cryptotest_name,

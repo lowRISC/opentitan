@@ -43,7 +43,7 @@
         "enum": ["p256", "p384"]
       },
       "d": {
-        "description": "Private key d",
+        "description": "Private key d, in big-endian two's-complement notation",
         "$ref": "#/$defs/byte_array"
       },
       "qx": {
