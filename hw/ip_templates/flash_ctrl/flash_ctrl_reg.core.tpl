@@ -2,25 +2,21 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:ip:flash_ctrl_prim_reg_top:1.0"
-description: "Generic register top for the FLASH wrapper"
+name: ${instance_vlnv("lowrisc:ip:flash_ctrl_reg:0.1")}
+description: "Flash registers"
+virtual:
+  - lowrisc:ip_interfaces:flash_ctrl_reg
+
 filesets:
   files_rtl:
-    depend:
-      - lowrisc:ip_interfaces:flash_ctrl_pkg
     files:
+      - rtl/flash_ctrl_reg_pkg.sv
+      - rtl/flash_ctrl_core_reg_top.sv
+      - rtl/flash_ctrl_mem_reg_top.sv
       - rtl/flash_ctrl_prim_reg_top.sv
     file_type: systemVerilogSource
 
-
-parameters:
-  SYNTHESIS:
-    datatype: bool
-    paramtype: vlogdefine
-
-
 targets:
-  default: &default_target
+  default:
     filesets:
       - files_rtl
-    toplevel: lc_ctrl
