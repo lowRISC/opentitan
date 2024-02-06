@@ -255,28 +255,44 @@ dif_result_t dif_usbdev_configure(const dif_usbdev_t *usbdev,
   return kDifOk;
 }
 
-dif_result_t dif_usbdev_fill_available_fifo(
+dif_result_t dif_usbdev_fill_available_fifos(
     const dif_usbdev_t *usbdev, dif_usbdev_buffer_pool_t *buffer_pool) {
   if (usbdev == NULL || buffer_pool == NULL) {
     return kDifBadArg;
   }
 
-  // Remove buffers from the pool and write them to the AV FIFO until it is full
-  while (true) {
+  // Remove buffers from the pool and write as many as possible into the FIFOs
+  while (!buffer_pool_is_empty(buffer_pool)) {
     uint32_t status =
         mmio_region_read32(usbdev->base_addr, USBDEV_USBSTAT_REG_OFFSET);
-    bool av_full = bitfield_bit32_read(status, USBDEV_USBSTAT_AV_OUT_FULL_BIT);
-    if (av_full || buffer_pool_is_empty(buffer_pool)) {
-      break;
+    // Prioritize available SETUP buffers
+    uint32_t av_setup_depth =
+        bitfield_field32_read(status, USBDEV_USBSTAT_AV_SETUP_DEPTH_FIELD);
+    if (av_setup_depth >= 2) {
+      // Available SETUP Buffer FIFO is okay, what about the OUT buffers?
+      bool av_out_full =
+          bitfield_bit32_read(status, USBDEV_USBSTAT_AV_OUT_FULL_BIT);
+      if (av_out_full) {
+        break;
+      }
     }
     uint8_t buffer_id;
     if (!buffer_pool_remove(buffer_pool, &buffer_id)) {
       return kDifError;
     }
-    uint32_t reg_val =
-        bitfield_field32_write(0, USBDEV_AVOUTBUFFER_BUFFER_FIELD, buffer_id);
-    mmio_region_write32(usbdev->base_addr, USBDEV_AVOUTBUFFER_REG_OFFSET,
-                        reg_val);
+    if (av_setup_depth >= 2) {
+      // Supply Available OUT Buffer
+      uint32_t reg_val =
+          bitfield_field32_write(0, USBDEV_AVOUTBUFFER_BUFFER_FIELD, buffer_id);
+      mmio_region_write32(usbdev->base_addr, USBDEV_AVOUTBUFFER_REG_OFFSET,
+                          reg_val);
+    } else {
+      // Supply Available SETUP Buffer
+      uint32_t reg_val = bitfield_field32_write(
+          0, USBDEV_AVSETUPBUFFER_BUFFER_FIELD, buffer_id);
+      mmio_region_write32(usbdev->base_addr, USBDEV_AVSETUPBUFFER_REG_OFFSET,
+                          reg_val);
+    }
   }
 
   return kDifOk;
@@ -816,30 +832,35 @@ dif_result_t dif_usbdev_status_get_sense(const dif_usbdev_t *usbdev,
   return kDifOk;
 }
 
-dif_result_t dif_usbdev_status_get_available_fifo_depth(
-    const dif_usbdev_t *usbdev, uint8_t *depth) {
-  if (usbdev == NULL || depth == NULL) {
+dif_result_t dif_usbdev_status_get_available_fifo_depths(
+    const dif_usbdev_t *usbdev, uint8_t *setup_depth, uint8_t *out_depth) {
+  if (usbdev == NULL || setup_depth == NULL || out_depth == NULL) {
     return kDifBadArg;
   }
 
   uint32_t reg_val =
       mmio_region_read32(usbdev->base_addr, USBDEV_USBSTAT_REG_OFFSET);
-  // Note: Size of available FIFO depth is 4 bits.
-  *depth = (uint8_t)bitfield_field32_read(reg_val,
-                                          USBDEV_USBSTAT_AV_OUT_DEPTH_FIELD);
+  // Note: Size of Available SETUP FIFO depth is 3 bits.
+  *setup_depth = (uint8_t)bitfield_field32_read(
+      reg_val, USBDEV_USBSTAT_AV_SETUP_DEPTH_FIELD);
+  // Note: Size of Available OUT FIFO depth is 4 bits.
+  *out_depth = (uint8_t)bitfield_field32_read(
+      reg_val, USBDEV_USBSTAT_AV_OUT_DEPTH_FIELD);
 
   return kDifOk;
 }
 
 dif_result_t dif_usbdev_status_get_available_fifo_full(
-    const dif_usbdev_t *usbdev, bool *is_full) {
-  if (usbdev == NULL || is_full == NULL) {
+    const dif_usbdev_t *usbdev, bool *setup_is_full, bool *out_is_full) {
+  if (usbdev == NULL || setup_is_full == NULL || out_is_full == NULL) {
     return kDifBadArg;
   }
 
   uint32_t reg_val =
       mmio_region_read32(usbdev->base_addr, USBDEV_USBSTAT_REG_OFFSET);
-  *is_full = bitfield_bit32_read(reg_val, USBDEV_USBSTAT_AV_OUT_FULL_BIT);
+  *setup_is_full =
+      bitfield_bit32_read(reg_val, USBDEV_USBSTAT_AV_SETUP_FULL_BIT);
+  *out_is_full = bitfield_bit32_read(reg_val, USBDEV_USBSTAT_AV_OUT_FULL_BIT);
 
   return kDifOk;
 }
