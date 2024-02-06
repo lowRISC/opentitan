@@ -2,19 +2,18 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Random length out transaction vseq
-class usbdev_random_length_out_transaction_vseq extends usbdev_base_vseq;
-  `uvm_object_utils(usbdev_random_length_out_transaction_vseq)
+// Max length out transaction_vseq
+class usbdev_max_length_out_transaction_vseq extends usbdev_random_length_out_transaction_vseq;
+  `uvm_object_utils(usbdev_max_length_out_transaction_vseq)
 
   `uvm_object_new
 
   usb20_item     m_usb20_item;
   RSP            rsp_item;
   rand bit [3:0] ep;
-  bit            rand_or_not = 1;
-  bit      [6:0] num_of_bytes;
+  bit            rand_or_not = 0;
+  bit      [6:0] num_of_bytes = 64;
   bit      [6:0] data_size;
-  bit      [6:0] rx_fifo_data_size;
   bit      [4:0] buffer_id = 5'd1;
 
   constraint ep_c{
@@ -22,8 +21,9 @@ class usbdev_random_length_out_transaction_vseq extends usbdev_base_vseq;
   }
 
   task body();
+    bit [6:0] rx_fifo_data_size;
     configure_trans();
-    // Out token packet followed by a data packet of random bytes
+    // Out token packet followed by a data packet of max bytes
     call_token_seq(PktTypeToken, PidTypeOutToken, ep);
     cfg.clk_rst_vif.wait_clks(20);
     call_data_seq(PktTypeData, PidTypeData0, rand_or_not, num_of_bytes);
@@ -31,11 +31,9 @@ class usbdev_random_length_out_transaction_vseq extends usbdev_base_vseq;
     $cast(m_usb20_item, rsp_item);
     get_out_response_from_device(m_usb20_item, PidTypeAck);
     cfg.clk_rst_vif.wait_clks(20);
-    // Checking that data is of random length (0-64 bytes)
+    // Checking that data is of maximum length (64 bytes)
     csr_rd(.ptr(ral.rxfifo.size), .value(rx_fifo_data_size));
-    `uvm_info(`gfn, $sformatf("RX fifo size =  %d", rx_fifo_data_size), UVM_DEBUG)
-    `uvm_info(`gfn, $sformatf("Data size =  %d", super.m_data_pkt.data.size()), UVM_DEBUG)
-    `DV_CHECK_EQ(rx_fifo_data_size, super.m_data_pkt.data.size());
+    `DV_CHECK_EQ(rx_fifo_data_size, num_of_bytes);
     // change available buffer id
     ral.avbuffer.buffer.set(buffer_id + 1);
     csr_update(ral.avbuffer);

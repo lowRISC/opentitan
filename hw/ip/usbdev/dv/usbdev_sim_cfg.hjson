@@ -64,6 +64,22 @@
       name: usbdev_pkt_received
       uvm_test_seq: usbdev_pkt_received_vseq
     }
+
+
+
+
+    {
+      name: usbdev_random_length_in_transaction
+      uvm_test_seq: usbdev_random_length_out_transaction_vseq
+    }
+    {
+      name: usbdev_min_length_in_transaction
+      uvm_test_seq: usbdev_min_length_out_transaction_vseq
+    }
+    {
+      name: usbdev_max_length_out_trans
+      uvm_test_seq: usbdev_max_length_out_transaction_vseq
+    }
   ]
 
   // List of regressions.

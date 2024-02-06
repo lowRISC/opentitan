@@ -29,6 +29,10 @@ filesets:
       - seq_lib/usbdev_smoke_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_csr_test_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_pkt_received_vseq.sv: {is_include_file: true}
+
+      - seq_lib/usbdev_random_length_out_transaction_vseq.sv: {is_include_file: true}
+      - seq_lib/usbdev_min_length_out_transaction_vseq.sv: {is_include_file: true}
+      - seq_lib/usbdev_max_length_out_transaction_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:
