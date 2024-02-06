@@ -193,29 +193,34 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
   task sample_freq_measurement_covs();
     fork
       forever
-        @(posedge cfg.clkmgr_vif.io_freq_measurement.valid or posedge cfg.clkmgr_vif.io_timeout_err) begin
+        @(posedge cfg.clkmgr_vif.io_freq_measurement.valid or
+          posedge cfg.clkmgr_vif.io_timeout_err) begin
           sample_freq_measurement_cov(ClkMesrIo, cfg.clkmgr_vif.io_freq_measurement,
                                       cfg.clkmgr_vif.io_timeout_err);
         end
 
       forever
-        @(posedge cfg.clkmgr_vif.io_div2_freq_measurement.valid or posedge cfg.clkmgr_vif.io_div2_timeout_err) begin
+        @(posedge cfg.clkmgr_vif.io_div2_freq_measurement.valid or
+          posedge cfg.clkmgr_vif.io_div2_timeout_err) begin
           sample_freq_measurement_cov(ClkMesrIoDiv2, cfg.clkmgr_vif.io_div2_freq_measurement,
                                       cfg.clkmgr_vif.io_div2_timeout_err);
 
         end
       forever
-        @(posedge cfg.clkmgr_vif.io_div4_freq_measurement.valid or posedge cfg.clkmgr_vif.io_div4_timeout_err) begin
+        @(posedge cfg.clkmgr_vif.io_div4_freq_measurement.valid or
+          posedge cfg.clkmgr_vif.io_div4_timeout_err) begin
           sample_freq_measurement_cov(ClkMesrIoDiv4, cfg.clkmgr_vif.io_div4_freq_measurement,
                                       cfg.clkmgr_vif.io_div4_timeout_err);
         end
       forever
-        @(posedge cfg.clkmgr_vif.main_freq_measurement.valid or posedge cfg.clkmgr_vif.main_timeout_err) begin
+        @(posedge cfg.clkmgr_vif.main_freq_measurement.valid or
+          posedge cfg.clkmgr_vif.main_timeout_err) begin
           sample_freq_measurement_cov(ClkMesrMain, cfg.clkmgr_vif.main_freq_measurement,
                                       cfg.clkmgr_vif.main_timeout_err);
         end
       forever
-        @(posedge cfg.clkmgr_vif.usb_freq_measurement.valid or posedge cfg.clkmgr_vif.usb_timeout_err) begin
+        @(posedge cfg.clkmgr_vif.usb_freq_measurement.valid or
+          posedge cfg.clkmgr_vif.usb_timeout_err) begin
           sample_freq_measurement_cov(ClkMesrUsb, cfg.clkmgr_vif.usb_freq_measurement,
                                       cfg.clkmgr_vif.usb_timeout_err);
         end
