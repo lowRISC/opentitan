@@ -71,3 +71,9 @@ def nist_cavp_repos():
             "https://storage.googleapis.com/ot-crypto-test-vectors/nist/gcmtestvectors.zip",
         ],
     )
+    http_archive(
+        name = "nist_cavp_ecdh_sp_800_56a",
+        build_file = Label("//third_party/nist_cavp_testvectors:BUILD.nist_cavp_common.bazel"),
+        sha256 = "5fff092551f2d72e89a3d9362711878708f9a14b502f0dfae819649105b0ea39",
+        url = "https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/components/ecccdhtestvectors.zip",
+    )
