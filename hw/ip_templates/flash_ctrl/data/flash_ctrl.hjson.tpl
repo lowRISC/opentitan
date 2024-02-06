@@ -41,10 +41,10 @@
           commit_id:          "7049fd0d5d48e20772f8ebf32b240faa0dad5528",
       },
       {
-          version:            "1.0.0",
+          version:            "2.0.0",
           life_stage:         "L1",
-          design_stage:       "D2S",
-          verification_stage: "V2S",
+          design_stage:       "D1",
+          verification_stage: "V1",
           dif_stage:          "S2",
       },
   ]
