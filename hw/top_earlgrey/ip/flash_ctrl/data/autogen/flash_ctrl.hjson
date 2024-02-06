@@ -61,12 +61,14 @@
     { name: "tdo", desc: "jtag output" },
   ],
   interrupt_list: [
-    { name: "prog_empty", desc: "Program FIFO empty" },
-    { name: "prog_lvl",   desc: "Program FIFO drained to level" },
-    { name: "rd_full",    desc: "Read FIFO full" },
-    { name: "rd_lvl",     desc: "Read FIFO filled to level" },
-    { name: "op_done",    desc: "Operation complete" },
-    { name: "corr_err",   desc: "Correctable error encountered"},
+    // The first two status interrupts assert by default, since the FIFO is empty.
+    // This is captured in the Hjson via the `default` key so that automatically generated tests can incorporate this information.
+    { name: "prog_empty", type: "status", desc: "Program FIFO empty",            default: "1"},
+    { name: "prog_lvl",   type: "status", desc: "Program FIFO drained to level", default: "1"},
+    { name: "rd_full",    type: "status", desc: "Read FIFO full",                            },
+    { name: "rd_lvl",     type: "status", desc: "Read FIFO filled to level",                 },
+    { name: "op_done",    type: "event",  desc: "Operation complete",                        },
+    { name: "corr_err",   type: "event",  desc: "Correctable error encountered",             },
   ],
 
   alert_list: [
