@@ -102,6 +102,15 @@ class dv_base_reg extends uvm_reg;
     end
   endfunction
 
+  // Return a mask of read-only bits in the register.
+  virtual function uvm_reg_data_t get_ro_mask();
+    dv_base_reg_field flds[$];
+    this.get_dv_base_reg_fields(flds);
+    foreach (flds[i]) begin
+      get_ro_mask |= flds[i].get_ro_mask();
+    end
+  endfunction
+
   // this function can only be called when this reg is intr_state reg
   // Example: ral.intr_state.get_intr_pins_exp_value(). And it returns value of
   // intr_state & intr_enable, which represents value of interrupt pins

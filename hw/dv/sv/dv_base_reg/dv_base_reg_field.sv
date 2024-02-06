@@ -188,9 +188,17 @@ class dv_base_reg_field extends uvm_reg_field;
     return m_original_access;
   endfunction
 
+  // Return a mask of valid bits in the field.
   virtual function uvm_reg_data_t get_field_mask();
     get_field_mask = (1'b1 << this.get_n_bits()) - 1;
     get_field_mask = get_field_mask << this.get_lsb_pos();
+  endfunction
+
+  // Return a mask of read-only bits in the field.
+  virtual function uvm_reg_data_t get_ro_mask();
+    bit is_ro = (this.get_access() == "RO");
+    get_ro_mask = (is_ro << this.get_n_bits()) - is_ro;
+    get_ro_mask = get_ro_mask << this.get_lsb_pos();
   endfunction
 
   virtual function void set_original_access(string access);
