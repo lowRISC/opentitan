@@ -1,0 +1,75 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: ${instance_vlnv("lowrisc:ip:clkmgr:0.1")}
+description: "Top specific clock manager "
+virtual:
+  - lowrisc:ip_interfaces:clkmgr
+
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:ip:lc_ctrl_pkg
+      - lowrisc:ip_interfaces:pwrmgr_pkg
+      - lowrisc:ip:tlul
+      - lowrisc:prim:all
+      - lowrisc:prim:buf
+      - lowrisc:prim:clock_buf
+      - lowrisc:prim:clock_div
+      - lowrisc:prim:clock_gating
+      - lowrisc:prim:edge_detector
+      - lowrisc:prim:lc_sync
+      - lowrisc:prim:lc_sender
+      - lowrisc:prim:measure
+      - ${instance_vlnv("lowrisc:ip:clkmgr_pkg:0.1")}
+      - ${instance_vlnv("lowrisc:ip:clkmgr_reg:0.1")}
+    files:
+      - rtl/clkmgr.sv
+      - rtl/clkmgr_byp.sv
+      - rtl/clkmgr_clk_status.sv
+      - rtl/clkmgr_meas_chk.sv
+      - rtl/clkmgr_root_ctrl.sv
+      - rtl/clkmgr_trans.sv
+    file_type: systemVerilogSource
+
+  files_verilator_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    files:
+    file_type: vlt
+
+  files_ascentlint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    files:
+      - lint/clkmgr.waiver
+    file_type: waiver
+
+parameters:
+  SYNTHESIS:
+    datatype: bool
+    paramtype: vlogdefine
+
+targets:
+  default: &default_target
+    filesets:
+      - tool_verilator  ? (files_verilator_waiver)
+      - tool_ascentlint ? (files_ascentlint_waiver)
+      - files_rtl
+    toplevel: clkmgr
+
+  lint:
+    <<: *default_target
+    default_tool: verilator
+    parameters:
+      - SYNTHESIS=true
+    tools:
+      verilator:
+        mode: lint-only
+        verilator_options:
+          - "-Wall"

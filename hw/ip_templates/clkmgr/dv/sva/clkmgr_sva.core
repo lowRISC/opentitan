@@ -17,13 +17,13 @@ filesets:
 
   files_formal:
     depend:
-      - lowrisc:systems:clkmgr
+      - lowrisc:ip_interfaces:clkmgr
 
 generate:
   csr_assert_gen:
     generator: csr_assert_gen
     parameters:
-      spec: ../../../../top_earlgrey/ip/clkmgr/data/autogen/clkmgr.hjson
+      spec: ../../data/clkmgr.hjson
 
 targets:
   default: &default_target
