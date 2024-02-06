@@ -296,12 +296,16 @@
 
               Order of the digest is:
               digest[255:0] = {DIGEST0, DIGEST1, DIGEST2, ... , DIGEST7};
+
+              The digest gets cleared when `CFG.sha_en` transitions from 1 to 0.
+              When `CFG.sha_en` is 0, these registers can be written by software.
               ''',
         count: "NumWords",
         cname: "HMAC",
-        swaccess: "ro",
-        hwaccess: "hwo",
+        swaccess: "rw",
+        hwaccess: "hrw",
         hwext: "true",
+        hwqe: "true",
         fields: [
           { bits: "31:0", name: "digest", desc: "32-bit chunk of 256-bit Digest" }
         ]
