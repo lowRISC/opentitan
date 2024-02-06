@@ -10,7 +10,6 @@ class usbdev_pkt_received_vseq extends usbdev_base_vseq;
 
   usb20_item     item;
   RSP            rsp_item;
-  bit      [4:0] set_buffer_id = 5'd1;
   rand bit [3:0] endp;
   bit            rand_or_not = 1;
   bit      [6:0] num_of_bytes;
@@ -35,17 +34,13 @@ class usbdev_pkt_received_vseq extends usbdev_base_vseq;
     cfg.clk_rst_vif.wait_clks(20);
     // Check transaction accuracy
     check_trans_accuracy();
-    // Make sure buffer is availabe for next trans
-    ral.avoutbuffer.buffer.set(set_buffer_id + 1);
-    csr_update(ral.avoutbuffer);
   endtask
 
   task configure_trans();
     super.apply_reset("HARD");
     super.dut_init("HARD");
     cfg.clk_rst_vif.wait_clks(200);
-    // Clear interrupts
-    csr_wr(.ptr(ral.intr_state), .value(32'h0001_ffff));
+    clear_all_interrupts();
     // Enable EP0 Out
     csr_wr(.ptr(ral.ep_out_enable[0].enable[endp]), .value(1'b1));
     csr_update(ral.ep_out_enable[0]);
@@ -53,7 +48,7 @@ class usbdev_pkt_received_vseq extends usbdev_base_vseq;
     ral.rxenable_out[0].out[endp].set(1'b1);
     csr_update(ral.rxenable_out[0]);
     // Set buffer
-    ral.avoutbuffer.buffer.set(set_buffer_id);
+    ral.avoutbuffer.buffer.set(out_buffer_id);
     csr_update(ral.avoutbuffer);
     // Enable pkt_received interrupt
     ral.intr_enable.pkt_received.set(1'b1);

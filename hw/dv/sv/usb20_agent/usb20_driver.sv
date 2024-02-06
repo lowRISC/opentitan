@@ -146,8 +146,8 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     $cast(m_sof_pkt, seq_item);
     m_sof_pkt.print();
     // Modified each field of the packet to start with the Least Significant Bit (LSB)
-    m_sof_pkt.m_pid_type = {<<4{m_sof_pkt.m_pid_type}};
-    m_sof_pkt.m_pid_type = {<<{m_sof_pkt.m_pid_type}};
+    m_sof_pkt.m_pid_type = pid_type_e'({<<4{m_sof_pkt.m_pid_type}});
+    m_sof_pkt.m_pid_type = pid_type_e'({<<{m_sof_pkt.m_pid_type}});
     m_sof_pkt.framecnt = {<<{m_sof_pkt.framecnt}};
     m_sof_pkt.crc5 = {<<{m_sof_pkt.crc5}};
     m_sof_pkt.pack(driver_sof_pkt);

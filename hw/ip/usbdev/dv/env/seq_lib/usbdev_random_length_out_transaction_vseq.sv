@@ -21,9 +21,6 @@ class usbdev_random_length_out_transaction_vseq extends usbdev_base_vseq;
     cfg.clk_rst_vif.wait_clks(20);
     // Verifies the data size is of random length
     check_trans_accuracy();
-    // Change available buffer id
-    ral.avbuffer.buffer.set(set_buffer_id + 1);
-    csr_update(ral.avbuffer);
   endtask
 
   task check_trans_accuracy();

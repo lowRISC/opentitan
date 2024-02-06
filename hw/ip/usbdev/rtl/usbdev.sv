@@ -109,6 +109,8 @@ module usbdev
   // RX fifo stores              buf# +  size(0-MaxPktSizeByte)  + EP# + Type
   localparam int RXFifoWidth = NBufWidth + (1+SizeWidth)         +  4  + 1;
   localparam int RXFifoDepth = 8;
+  // derived parameter
+  localparam int RXFifoDepthW = prim_util_pkg::vbits(RXFifoDepth+1);
 
   usbdev_reg2hw_t reg2hw, reg2hw_regtop;
   usbdev_hw2reg_t hw2reg, hw2reg_regtop;
@@ -227,6 +229,7 @@ module usbdev
   logic              avsetup_rvalid, avsetup_rready;
   logic              avout_rvalid, avout_rready;
   logic              rx_wvalid, rx_wready;
+  logic              rx_wready_setup, rx_wready_out;
   logic              rx_fifo_rvalid;
   logic              rx_fifo_re;
 
@@ -294,6 +297,17 @@ module usbdev
   assign rx_fifo_re = reg2hw.rxfifo.ep.re | reg2hw.rxfifo.setup.re |
                       reg2hw.rxfifo.size.re | reg2hw.rxfifo.buffer.re;
 
+  // The number of used entries in the Received Buffer FIFO is presented to the software
+  logic [RXFifoDepthW-1:0] rx_depth;
+  assign hw2reg.usbstat.rx_depth.d = rx_depth;
+
+  // We can always accept a SETUP packet if the Received Buffer FIFO is not full...
+  assign rx_wready_setup = rx_wready;
+  // ... but regular OUT packets are not permitted to use the final entry; still qualified
+  // with 'rx_wready' for when reset is asserted.
+  assign rx_wready_out   = rx_wready & (rx_depth < (RXFifoDepth - 1));
+
+  // Received Buffer FIFO
   prim_fifo_sync #(
     .Width(RXFifoWidth),
     .Pass(1'b0),
@@ -312,7 +326,7 @@ module usbdev
     .rready_i  (rx_fifo_re),
     .rdata_o   (rx_rdata),
     .full_o    (event_rx_full),
-    .depth_o   (hw2reg.usbstat.rx_depth.d),
+    .depth_o   (rx_depth),
     .err_o     ()
   );
 
@@ -527,7 +541,8 @@ module usbdev
     .avout_rdata_i        (avout_rdata),
 
     .rx_wvalid_o          (rx_wvalid),
-    .rx_wready_i          (rx_wready),
+    .rx_wready_setup_i    (rx_wready_setup),
+    .rx_wready_out_i      (rx_wready_out),
     .rx_wdata_o           (rx_wdata),
     .setup_received_o     (setup_received),
     .out_endpoint_o       (out_endpoint),  // will be stable for several cycles

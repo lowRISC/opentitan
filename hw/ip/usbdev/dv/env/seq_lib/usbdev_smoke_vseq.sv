@@ -21,18 +21,16 @@ class usbdev_smoke_vseq extends usbdev_base_vseq;
     uvm_reg_data_t usbstat;
     uvm_reg_data_t data;
     uvm_status_e status;
-    bit [4:0] out_buffer_id = 5'd1;
-    bit [4:0] setup_buffer_id = 5'd7;
     super.apply_reset("HARD");
     super.dut_init("HARD");
     cfg.clk_rst_vif.wait_clks(200);
-    csr_wr(.ptr(ral.intr_state), .value(32'h0001_ffff));  // clear interrupts
+    clear_all_interrupts();
     csr_wr(.ptr(ral.ep_out_enable[0].enable[0]), .value(1'b1)); // Enable EP0 Out
     csr_update(ral.ep_out_enable[0]);
     ral.rxenable_setup[0].setup[0].set(1'b1); // Enable rx setup
     csr_update(ral.rxenable_setup[0]);
-    ral.avoutbuffer.buffer.set(out_buffer_id); // set buffer id =1
-    csr_update(ral.avoutbuffer);
+    ral.avsetupbuffer.buffer.set(setup_buffer_id); // set buffer id =1
+    csr_update(ral.avsetupbuffer);
     ral.intr_enable.pkt_received.set(1'b1); // Enable pkt_received interrupt
     csr_update(ral.intr_enable);
     // Setup token packet followed by a data packet of 8 bytes
@@ -45,14 +43,6 @@ class usbdev_smoke_vseq extends usbdev_base_vseq;
     // expected value of rx_fifof reg is (32'h80801)[setup = 1, payload size = 8 bytes buffid = 1]
     rx_fifo_expected = 32'h80801;
     `DV_CHECK_EQ(rx_fifo_expected, rx_fifo_read);
-    // TODO: This ensures that the Available Buffer FIFOs are not empty at the point of
-    // this sequence terminating, and thus 'clear_interrupts' in the cip_base_vseq can
-    // complete successfully. Otherwise, the interrupt STATE bits would be set again
-    // immediately upon clearing.
-    ral.avsetupbuffer.buffer.set(setup_buffer_id + 1); // change available buffer id
-    csr_update(ral.avsetupbuffer);
-    ral.avoutbuffer.buffer.set(out_buffer_id + 1); // change available buffer id
-    csr_update(ral.avoutbuffer);
   endtask
 
   task call_token_sequence(input pkt_type_e pkt_type, input pid_type_e pid_type);

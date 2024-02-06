@@ -17,7 +17,12 @@ data_pkt       m_data_pkt;
 handshake_pkt  m_handshake_pkt;
 sof_pkt        m_sof_pkt;
 rand bit [3:0] endp;
-bit      [4:0] set_buffer_id = 5'd1;
+// Current SETUP buffer number
+bit [4:0] setup_buffer_id = 5'd1;
+// Current OUT buffer number
+bit [4:0] out_buffer_id = 5'd7;
+// Current IN buffer number
+bit [4:0] in_buffer_id = 5'd13;
 bit      [6:0] num_of_bytes;
 bit            rand_or_not = 1;
 
@@ -95,6 +100,47 @@ virtual task dut_init(string reset_kind = "HARD");
   if (do_usbdev_init) usbdev_init();
 endtask
 
+  // TODO: Temporary override of the task in cip_base_vseq, because it requires modification to
+  // support Status Type interrupts. Remove this when cip_base_vseq has been updated.
+  //
+  // Task to clear register intr status bits
+  virtual task clear_all_interrupts();
+    dv_utils_pkg::interrupt_t signal_ro_mask = '0;
+    int sig_idx = 0;
+    if (cfg.num_interrupts == 0) return;
+    foreach (intr_state_csrs[i]) begin
+      dv_base_reg_field flds[$];
+      bit [bus_params_pkg::BUS_DW-1:0] csr_ro_mask = 0;
+      bit [bus_params_pkg::BUS_DW-1:0] data;
+      // Status type interrupts are read-only and cannot be cleared by writing 1 to them.
+      // Instead, the underlying condition needs to be resolved (e.g. drain a FIFO that is full).
+      // Therefore, we extract the RO bitmask so that we can mask the writes / reads below.
+      intr_state_csrs[i].get_dv_base_reg_fields(flds);
+      foreach (flds[j]) begin
+        if (flds[j].get_access() == "RO") begin
+          csr_ro_mask[j] = 1'b1;
+          // Remember the mask for the interrupt signals below.
+          signal_ro_mask[sig_idx] = 1'b1;
+        end
+        sig_idx++;
+      end
+      csr_rd(.ptr(intr_state_csrs[i]), .value(data));
+      if (data & ~csr_ro_mask != 0) begin
+        `uvm_info(`gtn, $sformatf("Clearing %0s", intr_state_csrs[i].get_name()), UVM_HIGH)
+        csr_wr(.ptr(intr_state_csrs[i]), .value(data & ~csr_ro_mask));
+        csr_rd(.ptr(intr_state_csrs[i]), .value(data));
+        if (!cfg.under_reset) `DV_CHECK_EQ(data & ~csr_ro_mask, 0)
+        else break;
+      end
+    end
+    if (!cfg.under_reset) begin
+      // Status type interrupts may remain asserted, hence we have to mask them away.
+      dv_utils_pkg::interrupt_t mask = dv_utils_pkg::interrupt_t'((1 << cfg.num_interrupts) - 1) &
+                                       ~signal_ro_mask;
+      `DV_CHECK_EQ(cfg.intr_vif.sample() & mask, '0)
+    end
+  endtask
+
   virtual task call_token_seq(input pkt_type_e pkt_type, input pid_type_e pid_type, bit [3:0] endp);
     `uvm_create_on(m_token_pkt, p_sequencer.usb20_sequencer_h)
     m_token_pkt.m_pkt_type = pkt_type;
@@ -164,7 +210,7 @@ virtual task configure_out_trans();
   ral.rxenable_out[0].out[endp].set(1'b1);
   csr_update(ral.rxenable_out[0]);
   // Set buffer
-  ral.avoutbuffer.buffer.set(set_buffer_id);
+  ral.avoutbuffer.buffer.set(out_buffer_id);
   csr_update(ral.avoutbuffer);
 endtask
 
@@ -176,11 +222,11 @@ virtual task configure_setup_trans();
   ral.rxenable_setup[0].setup[0].set(1'b1);
   csr_update(ral.rxenable_setup[0]);
   // Set buffer
-  ral.avoutbuffer.buffer.set(set_buffer_id);
+  ral.avoutbuffer.buffer.set(setup_buffer_id);
   csr_update(ral.avoutbuffer);
 endtask
 
-virtual task configure_in_trans();
+virtual task configure_in_trans(bit [4:0] buffer_id);
   // Enable Endp IN
   csr_wr(.ptr(ral.ep_in_enable[0].enable[endp]),  .value(1'b1));
   csr_update(ral.ep_in_enable[0]);
@@ -189,7 +235,7 @@ virtual task configure_in_trans();
   csr_update(ral.configin[endp]);
   ral.configin[endp].size.set(num_of_bytes);
   csr_update(ral.configin[endp]);
-  ral.configin[endp].buffer.set(set_buffer_id);
+  ral.configin[endp].buffer.set(buffer_id);
   csr_update(ral.configin[endp]);
 endtask
 
