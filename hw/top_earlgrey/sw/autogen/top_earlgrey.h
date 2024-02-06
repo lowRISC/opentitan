@@ -1151,7 +1151,7 @@ typedef enum top_earlgrey_plic_irq_id {
   kTopEarlgreyPlicIrqIdUsbdevLinkReset = 133, /**< usbdev_link_reset */
   kTopEarlgreyPlicIrqIdUsbdevLinkSuspend = 134, /**< usbdev_link_suspend */
   kTopEarlgreyPlicIrqIdUsbdevLinkResume = 135, /**< usbdev_link_resume */
-  kTopEarlgreyPlicIrqIdUsbdevAvEmpty = 136, /**< usbdev_av_empty */
+  kTopEarlgreyPlicIrqIdUsbdevAvOutEmpty = 136, /**< usbdev_av_out_empty */
   kTopEarlgreyPlicIrqIdUsbdevRxFull = 137, /**< usbdev_rx_full */
   kTopEarlgreyPlicIrqIdUsbdevAvOverflow = 138, /**< usbdev_av_overflow */
   kTopEarlgreyPlicIrqIdUsbdevLinkInErr = 139, /**< usbdev_link_in_err */

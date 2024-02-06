@@ -1135,8 +1135,8 @@ pub enum PlicIrqId {
     UsbdevLinkSuspend = 134,
     /// usbdev_link_resume
     UsbdevLinkResume = 135,
-    /// usbdev_av_empty
-    UsbdevAvEmpty = 136,
+    /// usbdev_av_out_empty
+    UsbdevAvOutEmpty = 136,
     /// usbdev_rx_full
     UsbdevRxFull = 137,
     /// usbdev_av_overflow
@@ -1363,7 +1363,7 @@ impl TryFrom<u32> for PlicIrqId {
             133 => Ok(Self::UsbdevLinkReset),
             134 => Ok(Self::UsbdevLinkSuspend),
             135 => Ok(Self::UsbdevLinkResume),
-            136 => Ok(Self::UsbdevAvEmpty),
+            136 => Ok(Self::UsbdevAvOutEmpty),
             137 => Ok(Self::UsbdevRxFull),
             138 => Ok(Self::UsbdevAvOverflow),
             139 => Ok(Self::UsbdevLinkInErr),
@@ -2003,7 +2003,7 @@ pub const PLIC_INTERRUPT_FOR_PERIPHERAL: [PlicPeripheral; 179] = [
     PlicPeripheral::Usbdev,
     // UsbdevLinkResume -> PlicPeripheral::Usbdev
     PlicPeripheral::Usbdev,
-    // UsbdevAvEmpty -> PlicPeripheral::Usbdev
+    // UsbdevAvOutEmpty -> PlicPeripheral::Usbdev
     PlicPeripheral::Usbdev,
     // UsbdevRxFull -> PlicPeripheral::Usbdev
     PlicPeripheral::Usbdev,

@@ -13955,7 +13955,7 @@
       module_name: usbdev
     }
     {
-      name: usbdev_av_empty
+      name: usbdev_av_out_empty
       width: 1
       type: interrupt
       module_name: usbdev

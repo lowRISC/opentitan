@@ -206,7 +206,7 @@ status_t usb_testutils_poll(usb_testutils_ctx_t *ctx) {
   if (istate &
       ~((1u << kDifUsbdevIrqLinkReset) | (1u << kDifUsbdevIrqPktReceived) |
         (1u << kDifUsbdevIrqPktSent) | (1u << kDifUsbdevIrqFrame) |
-        (1u << kDifUsbdevIrqAvEmpty) | (1u << kDifUsbdevIrqRxFull) |
+        (1u << kDifUsbdevIrqAvOutEmpty) | (1u << kDifUsbdevIrqRxFull) |
         (1u << kDifUsbdevIrqLinkOutErr) | (1u << kDifUsbdevIrqLinkInErr))) {
     // Report anything that really should not be happening during testing,
     //   at least for now

@@ -30,8 +30,8 @@ class usbdev_smoke_vseq extends usbdev_base_vseq;
     csr_update(ral.ep_out_enable[0]);
     ral.rxenable_setup[0].setup[0].set(1'b1); // Enable rx setup
     csr_update(ral.rxenable_setup[0]);
-    ral.avbuffer.buffer.set(buffer_id); // set buffer id =1
-    csr_update(ral.avbuffer);
+    ral.avoutbuffer.buffer.set(buffer_id); // set buffer id =1
+    csr_update(ral.avoutbuffer);
     ral.intr_enable.pkt_received.set(1'b1); // Enable pkt_received interrupt
     csr_update(ral.intr_enable);
     // Setup token packet followed by a data packet of 8 bytes
@@ -44,8 +44,8 @@ class usbdev_smoke_vseq extends usbdev_base_vseq;
     // expected value of rx_fifof reg is (32'h80801)[setup = 1, payload size = 8 bytes buffid = 1]
     rx_fifo_expected = 32'h80801;
     `DV_CHECK_EQ(rx_fifo_expected, rx_fifo_read);
-    ral.avbuffer.buffer.set(buffer_id + 1); // change available buffer id
-    csr_update(ral.avbuffer);
+    ral.avoutbuffer.buffer.set(buffer_id + 1); // change available buffer id
+    csr_update(ral.avoutbuffer);
   endtask
 
   task call_token_sequence(input pkt_type_e pkt_type, input pid_type_e pid_type);

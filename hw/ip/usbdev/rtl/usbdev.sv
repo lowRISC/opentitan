@@ -78,7 +78,7 @@ module usbdev
   output logic       intr_link_reset_o,
   output logic       intr_link_suspend_o,
   output logic       intr_link_resume_o,
-  output logic       intr_av_empty_o,
+  output logic       intr_av_out_empty_o,
   output logic       intr_rx_full_o,
   output logic       intr_av_overflow_o,
   output logic       intr_link_in_err_o,
@@ -232,8 +232,12 @@ module usbdev
   logic [NEndpoints-1:0] clear_rxenable_out;
 
   assign event_av_empty = connect_en & ~av_rvalid;
-  assign event_av_overflow = reg2hw.avbuffer.qe & (~av_fifo_wready);
+  assign event_av_overflow = reg2hw.avoutbuffer.qe & (~av_fifo_wready);
   assign hw2reg.usbstat.rx_empty.d = connect_en & ~rx_fifo_rvalid;
+
+  // TODO: tie offs for newly-introduced Available SETUP Buffer FIFO
+  assign hw2reg.usbstat.av_setup_full.d = 'b0;
+  assign hw2reg.usbstat.av_setup_depth.d = 'b0;
 
   prim_fifo_sync #(
     .Width(AVFifoWidth),
@@ -245,15 +249,15 @@ module usbdev
     .rst_ni    (rst_n),
     .clr_i     (1'b0),
 
-    .wvalid_i  (reg2hw.avbuffer.qe),
+    .wvalid_i  (reg2hw.avoutbuffer.qe),
     .wready_o  (av_fifo_wready),
-    .wdata_i   (reg2hw.avbuffer.q),
+    .wdata_i   (reg2hw.avoutbuffer.q),
 
     .rvalid_o  (av_rvalid),
     .rready_i  (av_rready),
     .rdata_o   (av_rdata),
-    .full_o    (hw2reg.usbstat.av_full.d),
-    .depth_o   (hw2reg.usbstat.av_depth.d),
+    .full_o    (hw2reg.usbstat.av_out_full.d),
+    .depth_o   (hw2reg.usbstat.av_out_depth.d),
     .err_o     ()
   );
 
@@ -906,13 +910,13 @@ module usbdev
     .clk_i,
     .rst_ni, // not stubbed off so that the interrupt regs still work.
     .event_intr_i           (event_av_empty),
-    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.av_empty.q),
-    .reg2hw_intr_test_q_i   (reg2hw.intr_test.av_empty.q),
-    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.av_empty.qe),
-    .reg2hw_intr_state_q_i  (reg2hw.intr_state.av_empty.q),
-    .hw2reg_intr_state_de_o (hw2reg.intr_state.av_empty.de),
-    .hw2reg_intr_state_d_o  (hw2reg.intr_state.av_empty.d),
-    .intr_o                 (intr_av_empty_o)
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.av_out_empty.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.av_out_empty.q),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.av_out_empty.qe),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.av_out_empty.q),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.av_out_empty.de),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.av_out_empty.d),
+    .intr_o                 (intr_av_out_empty_o)
   );
 
   prim_intr_hw #(.Width(1), .IntrT("Status")) intr_rx_full (
@@ -1178,7 +1182,7 @@ module usbdev
   `ASSERT_KNOWN(USBIntrLinkRstKnown_A, intr_link_reset_o)
   `ASSERT_KNOWN(USBIntrLinkSusKnown_A, intr_link_suspend_o)
   `ASSERT_KNOWN(USBIntrLinkResKnown_A, intr_link_resume_o)
-  `ASSERT_KNOWN(USBIntrAvEmptyKnown_A, intr_av_empty_o)
+  `ASSERT_KNOWN(USBIntrAvOutEmptyKnown_A, intr_av_out_empty_o)
   `ASSERT_KNOWN(USBIntrRxFullKnown_A, intr_rx_full_o)
   `ASSERT_KNOWN(USBIntrAvOverKnown_A, intr_av_overflow_o)
   `ASSERT_KNOWN(USBIntrLinkInErrKnown_A, intr_link_in_err_o)
