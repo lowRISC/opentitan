@@ -60,6 +60,8 @@ class edn_scoreboard extends cip_base_scoreboard #(
   // Due tue the high volatility and constant polling requests to the sw_cmd_sts register,
   // it is preferrable to not use uvm_reg predictions.
   bit [31:0] sw_cmd_sts;
+  // Variable for hw_cmd_sts predictions.
+  bit [31:0] hw_cmd_sts;
   // MAX_NUM_REQS_BETWEEN_RESEEDS state and ctr
   bit [31:0] max_num_reqs_between_reseeds = edn_reg_pkg::MaxNumReqsBetweenReseedsResval;
   bit [31:0] reqs_between_reseeds_ctr     = edn_reg_pkg::MaxNumReqsBetweenReseedsResval;
@@ -209,6 +211,7 @@ class edn_scoreboard extends cip_base_scoreboard #(
           // boot mode has priority over auto mode if they are turned on at the same time
           if (edn_ctrl.boot_req_mode.q == MuBi4True && !auto_mode) begin
             boot_mode = 1'b1;
+            void'(ral.hw_cmd_sts.boot_mode.predict(.value(1'b1)));
           end
           // set auto mode flag if auto_req_mode is true and we are not already in boot mode
           if (edn_ctrl.auto_req_mode.q == MuBi4True && !boot_mode)  begin
@@ -235,10 +238,10 @@ class edn_scoreboard extends cip_base_scoreboard #(
             cfg.backdoor_disable = 1'b0;
             backdoor_disable_fifo_clr = 1'b0;
             reset_happened = 1'b0;
-            sw_cmd_sts[cmd_ack] = 1'b0;
-            sw_cmd_sts[cmd_sts] = 1'b0;
-            sw_cmd_sts[cmd_rdy] = !boot_mode;
-            sw_cmd_sts[cmd_reg_rdy] = !boot_mode;
+            sw_cmd_sts[sw_cmd_ack] = 1'b0;
+            sw_cmd_sts[sw_cmd_sts] = 1'b0;
+            sw_cmd_sts[sw_cmd_rdy] = !boot_mode;
+            sw_cmd_sts[sw_cmd_reg_rdy] = !boot_mode;
 
           // If boot mode is being disabled, wait for SM to enter the Idle state
           // and predict the status ready signals to be high.
@@ -252,8 +255,8 @@ class edn_scoreboard extends cip_base_scoreboard #(
                   if (edn_ctrl.auto_req_mode.q == MuBi4True) begin
                     auto_mode = 1'b1;
                   end
-                  sw_cmd_sts[cmd_rdy] = 1'b1;
-                  sw_cmd_sts[cmd_reg_rdy] = 1'b1;,
+                  sw_cmd_sts[sw_cmd_rdy] = 1'b1;
+                  sw_cmd_sts[sw_cmd_reg_rdy] = 1'b1;,
                   wait (cfg.backdoor_disable || reset_happened);
               )
             join_none
@@ -271,10 +274,15 @@ class edn_scoreboard extends cip_base_scoreboard #(
                   // Check if the EDN will enter boot or SW mode.
                   if (edn_ctrl.boot_req_mode.q == MuBi4True) begin
                     boot_mode = 1'b1;
+                    void'(ral.hw_cmd_sts.boot_mode.predict(.value(1'b1)));
                   // If the EDN enters SW mode, set the prediction for sw_cmd_sts accordingly.
                   end else begin
-                    sw_cmd_sts[cmd_rdy] = 1'b1;
-                    sw_cmd_sts[cmd_reg_rdy] = 1'b1;
+                    sw_cmd_sts[sw_cmd_rdy] = 1'b1;
+                    sw_cmd_sts[sw_cmd_reg_rdy] = 1'b1;
+                  end
+                  // Predict the EDN to have left the HW controlled part of auto mode.
+                  if (auto_mode) begin
+                    void'(ral.hw_cmd_sts.auto_mode.predict(.value(1'b0)));
                   end,
                   wait (cfg.backdoor_disable || reset_happened);
               )
@@ -287,11 +295,11 @@ class edn_scoreboard extends cip_base_scoreboard #(
         bit sw_cmd_allowed = (!boot_mode && !auto_mode) ||
                              (auto_mode && !instantiated);
 
-        if (addr_phase_write && sw_cmd_sts[cmd_reg_rdy] && sw_cmd_allowed) begin
+        if (addr_phase_write && sw_cmd_sts[sw_cmd_reg_rdy] && sw_cmd_allowed) begin
           // If a SW command is issued, reset the SW_CMD_STS register (apart from the cmd_sts field).
-          sw_cmd_sts[cmd_ack] = 1'b0;
-          sw_cmd_sts[cmd_rdy] = 1'b0;
-          sw_cmd_sts[cmd_reg_rdy]= 1'b0;
+          sw_cmd_sts[sw_cmd_ack] = 1'b0;
+          sw_cmd_sts[sw_cmd_rdy] = 1'b0;
+          sw_cmd_sts[sw_cmd_reg_rdy]= 1'b0;
           sw_cmd_req_q.push_back(item.a_data);
         end
       end
@@ -305,13 +313,12 @@ class edn_scoreboard extends cip_base_scoreboard #(
           `DV_CHECK_EQ(sw_cmd_sts, item.d_data,
                        $sformatf("reg name: %0s", csr.get_full_name()))
           if (cfg.en_cov) begin
-            cov_vif.cg_edn_sw_cmd_sts_sample(item.d_data[cmd_rdy], item.d_data[cmd_reg_rdy],
-                                             item.d_data[cmd_sts], item.d_data[cmd_ack]);
+            cov_vif.cg_edn_sw_cmd_sts_sample(item.d_data[sw_cmd_rdy], item.d_data[sw_cmd_reg_rdy],
+                                             item.d_data[sw_cmd_sts], item.d_data[sw_cmd_ack]);
           end
         end
       end
       "hw_cmd_sts": begin
-        do_read_check = 1'b0;
       end
       "boot_ins_cmd": begin
         if (addr_phase_write) begin
@@ -391,6 +398,10 @@ class edn_scoreboard extends cip_base_scoreboard #(
         if ((acmd_cur == csrng_pkg::INS) && (clen_cntr == 0)) begin
           instantiated = 1'b1;
           inst_ack_outstanding = 1'b1;
+          // Predict the EDN to be in the HW controlled part of auto mode.
+          if (auto_mode) begin
+            void'(ral.hw_cmd_sts.auto_mode.predict(.value(1'b1)));
+          end
         end
 
         // Determine which fifo to compare the additional data with
@@ -471,6 +482,10 @@ class edn_scoreboard extends cip_base_scoreboard #(
             if (clen_cntr == 0) begin
               instantiated = 1'b1;
               inst_ack_outstanding = 1'b1;
+              // Predict the EDN to be in the HW controlled part of auto mode.
+              if (auto_mode) begin
+                void'(ral.hw_cmd_sts.auto_mode.predict(.value(1'b1)));
+              end
             end
 
             // If EDN is in boot_req_mode and boot sequence is not done
@@ -626,20 +641,30 @@ class edn_scoreboard extends cip_base_scoreboard #(
             end
 
             boot_gen_cmd_sent = 1'b0;
-            boot_mode = 1'b0;
             instantiated = 1'b0;
             predict_sts = 1'b0;
+            // Predict the EDN not to be in boot mode.
+            boot_mode = 1'b0;
+            void'(ral.hw_cmd_sts.boot_mode.predict(.value(1'b0)));
           end
           default: begin
             `uvm_error(`gfn, $sformatf("Invalid application command. cmd: 0x%h", cs_cmd))
           end
         endcase
+        // Each time a new command header is sent in a HW controlled mode,
+        // the ack and command type need to be set.
+        if ((auto_mode && instantiated) || boot_mode) begin
+          hw_cmd_sts = `gmv(ral.hw_cmd_sts);
+          hw_cmd_sts[hw_cmd_ack] = 1'b0;
+          hw_cmd_sts[hw_cmd_type:+4] = acmd_cur;
+          void'(ral.hw_cmd_sts.predict(.value(hw_cmd_sts)));
+        end
       end
 
       // Each time a handshake happens in SW mode, the cmd_reg_rdy signal goes high.
       // In auto mode the signal also goes high but only for the initial instantiate command.
       if ((!auto_mode || (!instantiated && clen_cntr)) && !boot_mode && predict_sts) begin
-        sw_cmd_sts[cmd_reg_rdy] = 1'b1;
+        sw_cmd_sts[sw_cmd_reg_rdy] = 1'b1;
       end
     end
 
@@ -677,14 +702,19 @@ class edn_scoreboard extends cip_base_scoreboard #(
           `DV_SPINWAIT_EXIT(
               csr_spinwait(.ptr(ral.sw_cmd_sts.cmd_ack),
                            .exp_data(rsp_sts.csrng_rsp_ack), .backdoor(1'b1));
-              sw_cmd_sts[cmd_ack] = rsp_sts.csrng_rsp_ack;
-              sw_cmd_sts[cmd_sts] = rsp_sts.csrng_rsp_sts;
-              sw_cmd_sts[cmd_rdy] = !auto_mode;
-              sw_cmd_sts[cmd_reg_rdy] = !auto_mode;,
+              sw_cmd_sts[sw_cmd_ack] = rsp_sts.csrng_rsp_ack;
+              sw_cmd_sts[sw_cmd_sts] = rsp_sts.csrng_rsp_sts;
+              sw_cmd_sts[sw_cmd_rdy] = !auto_mode;
+              sw_cmd_sts[sw_cmd_reg_rdy] = !auto_mode;,
               wait (cfg.backdoor_disable || reset_happened);
           )
         join_none
         inst_ack_outstanding = 0;
+      end else begin
+        hw_cmd_sts = `gmv(ral.hw_cmd_sts);
+        hw_cmd_sts[hw_cmd_ack] = rsp_sts.csrng_rsp_ack;
+        hw_cmd_sts[hw_cmd_sts] = rsp_sts.csrng_rsp_sts;
+        void'(ral.hw_cmd_sts.predict(.value(hw_cmd_sts)));
       end
     end
   endtask
