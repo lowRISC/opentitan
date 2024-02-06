@@ -40,9 +40,12 @@ module usbdev_usbif  #(
   input  logic [NEndpoints-1:0]    rx_setup_i,
   input  logic [NEndpoints-1:0]    rx_out_i,
   input  logic [NEndpoints-1:0]    rx_stall_i,
-  input  logic                     av_rvalid_i,
-  output logic                     av_rready_o,
-  input  logic [AVFifoWidth - 1: 0]av_rdata_i,
+  input  logic                     avsetup_rvalid_i,
+  output logic                     avsetup_rready_o,
+  input  logic [AVFifoWidth - 1: 0]avsetup_rdata_i,
+  input  logic                     avout_rvalid_i,
+  output logic                     avout_rready_o,
+  input  logic [AVFifoWidth - 1: 0]avout_rdata_i,
 
   output logic                     rx_wvalid_o,
   input  logic                     rx_wready_i,
@@ -194,9 +197,9 @@ module usbdev_usbif  #(
   end // always_ff @ (posedge clk_48mhz_i)
 
   // need extra write at end if packet not multiple of 4 bytes
-  assign mem_write_o = av_rvalid_i & (std_write_q |
+  assign mem_write_o = avout_rvalid_i & (std_write_q |
                        (~out_max_used_q[PktW] & (out_max_used_q[1:0] != 2'b11) & out_ep_acked));
-  assign mem_waddr = {av_rdata_i, out_max_used_q[PktW-1:2]};
+  assign mem_waddr = {avout_rdata_i, out_max_used_q[PktW-1:2]};
   assign mem_wdata_o = wdata_q;
   assign mem_addr_o = mem_write_o ? mem_waddr : mem_raddr;
   assign mem_req_o = mem_read | mem_write_o;
@@ -210,22 +213,24 @@ module usbdev_usbif  #(
       out_endpoint_o,
       current_setup,
       out_max_minus1,
-      av_rdata_i
+      avout_rdata_i
   };
   assign rx_wvalid_o = out_ep_acked;
   // Pop the available fifo after the write that used the previous value
   always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      av_rready_o <= 1'b0;
+      avout_rready_o <= 1'b0;
     end else begin
-      av_rready_o <= rx_wvalid_o;
+      avout_rready_o <= rx_wvalid_o;
     end
   end
+  // TODO: tie off because Available SETUP Buffer FIFO remains unused
+  assign avsetup_rready_o = 1'b0;
 
   // full here covers the software blocking by clearing the enable
   assign out_blocked = ~out_ep_setup & ~rx_out_i;
   // full also covers being blocked because the hardware can't take any transaction
-  assign all_out_blocked = (~rx_wready_i) | (~av_rvalid_i);
+  assign all_out_blocked = (~rx_wready_i) | (~avout_rvalid_i);
 
   assign out_ep_full = {NEndpoints{all_out_blocked}} | out_blocked;
   assign out_ep_stall = rx_stall_i;
