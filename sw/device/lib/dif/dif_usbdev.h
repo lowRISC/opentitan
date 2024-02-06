@@ -179,7 +179,7 @@ dif_result_t dif_usbdev_configure(const dif_usbdev_t *usbdev,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_usbdev_fill_available_fifo(
+dif_result_t dif_usbdev_fill_available_fifos(
     const dif_usbdev_t *usbdev, dif_usbdev_buffer_pool_t *buffer_pool);
 
 /**
@@ -737,29 +737,33 @@ dif_result_t dif_usbdev_status_get_sense(const dif_usbdev_t *usbdev,
                                          bool *sense);
 
 /**
- * Get the depth of the AV FIFO.
+ * Get the depths of the AV OUT and AV SETUP FIFOs.
  *
- * See also: `dif_usbdev_fill_available_fifo`.
+ * See also: `dif_usbdev_fill_available_fifos`.
  *
  * @param usbdev A USB device.
- * @param[out] depth Depth of the AV FIFO.
+ * @param[out] setup_depth Depth of the AV SETUP FIFO.
+ * @param[out] out_depth Depth of the AV OUT FIFO.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_usbdev_status_get_available_fifo_depth(
-    const dif_usbdev_t *usbdev, uint8_t *depth);
+dif_result_t dif_usbdev_status_get_available_fifo_depths(
+    const dif_usbdev_t *usbdev, uint8_t *setup_depth, uint8_t *out_depth);
 /**
- * Check if AV FIFO is full.
+ * Check if AV OUT and AV SETUP FIFOs are full.
  *
- * See also: `dif_usbdev_fill_available_fifo`.
+ * See also: `dif_usbdev_fill_available_fifos`.
  *
  * @param usbdev A USB device.
- * @param[out] is_full State of the AV FIFO. `true` if full, false otherwise.
+ * @param[out] setup_is_full State of the AV SETUP FIFO. `true` if full, false
+ * otherwise.
+ * @param[out] out_is_full State of the AV OUT FIFO. `true` if full, false
+ * otherwise.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_usbdev_status_get_available_fifo_full(
-    const dif_usbdev_t *usbdev, bool *is_full);
+    const dif_usbdev_t *usbdev, bool *setup_is_full, bool *out_is_full);
 /**
  * Get the depth of the RX FIFO.
  *

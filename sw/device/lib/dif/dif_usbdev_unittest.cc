@@ -29,10 +29,10 @@ class UsbdevTest : public Test, public MmioTest {
 TEST_F(UsbdevTest, NullArgsTest) {
   dif_usbdev_config_t config;
   dif_usbdev_buffer_pool_t buffer_pool;
-  bool bool_arg;
+  bool bool_arg, bool_arg2;
   dif_usbdev_rx_packet_info_t packet_info;
   dif_usbdev_buffer_t buffer;
-  uint8_t uint8_arg;
+  uint8_t uint8_arg, uint8_arg2;
   size_t size_arg;
   dif_usbdev_endpoint_id_t endpoint_id;
   dif_usbdev_tx_status_t tx_status;
@@ -44,8 +44,8 @@ TEST_F(UsbdevTest, NullArgsTest) {
 
   EXPECT_DIF_BADARG(dif_usbdev_configure(nullptr, &buffer_pool, config));
   EXPECT_DIF_BADARG(dif_usbdev_configure(&usbdev_, nullptr, config));
-  EXPECT_DIF_BADARG(dif_usbdev_fill_available_fifo(nullptr, &buffer_pool));
-  EXPECT_DIF_BADARG(dif_usbdev_fill_available_fifo(&usbdev_, nullptr));
+  EXPECT_DIF_BADARG(dif_usbdev_fill_available_fifos(nullptr, &buffer_pool));
+  EXPECT_DIF_BADARG(dif_usbdev_fill_available_fifos(&usbdev_, nullptr));
   EXPECT_DIF_BADARG(dif_usbdev_endpoint_setup_enable(nullptr, /*endpoint=*/0,
                                                      kDifToggleEnabled));
   EXPECT_DIF_BADARG(dif_usbdev_endpoint_out_enable(nullptr, /*endpoint=*/0,
@@ -114,14 +114,18 @@ TEST_F(UsbdevTest, NullArgsTest) {
   EXPECT_DIF_BADARG(dif_usbdev_status_get_link_state(&usbdev_, nullptr));
   EXPECT_DIF_BADARG(dif_usbdev_status_get_sense(nullptr, &bool_arg));
   EXPECT_DIF_BADARG(dif_usbdev_status_get_sense(&usbdev_, nullptr));
+  EXPECT_DIF_BADARG(dif_usbdev_status_get_available_fifo_depths(
+      nullptr, &uint8_arg, &uint8_arg2));
+  EXPECT_DIF_BADARG(dif_usbdev_status_get_available_fifo_depths(
+      &usbdev_, nullptr, &uint8_arg));
+  EXPECT_DIF_BADARG(dif_usbdev_status_get_available_fifo_depths(
+      &usbdev_, &uint8_arg, nullptr));
+  EXPECT_DIF_BADARG(dif_usbdev_status_get_available_fifo_full(
+      nullptr, &bool_arg, &bool_arg2));
   EXPECT_DIF_BADARG(
-      dif_usbdev_status_get_available_fifo_depth(nullptr, &uint8_arg));
+      dif_usbdev_status_get_available_fifo_full(&usbdev_, nullptr, &bool_arg));
   EXPECT_DIF_BADARG(
-      dif_usbdev_status_get_available_fifo_depth(&usbdev_, nullptr));
-  EXPECT_DIF_BADARG(
-      dif_usbdev_status_get_available_fifo_full(nullptr, &bool_arg));
-  EXPECT_DIF_BADARG(
-      dif_usbdev_status_get_available_fifo_full(&usbdev_, nullptr));
+      dif_usbdev_status_get_available_fifo_full(&usbdev_, &bool_arg, nullptr));
   EXPECT_DIF_BADARG(dif_usbdev_status_get_rx_fifo_depth(nullptr, &uint8_arg));
   EXPECT_DIF_BADARG(dif_usbdev_status_get_rx_fifo_depth(&usbdev_, nullptr));
   EXPECT_DIF_BADARG(dif_usbdev_status_get_rx_fifo_empty(nullptr, &bool_arg));
@@ -466,7 +470,11 @@ TEST_F(UsbdevTest, StallConfig) {
 }
 
 TEST_F(UsbdevTest, OutPacket) {
-  constexpr uint32_t kMaxAvBuffers = 4;
+  // Note: the DIF only strives to ensure that at least 2 SETUP buffers are
+  // available, in an effort to prevent buffer exhaustion; the FIFO physically
+  // has more entries, as a contingency.
+  constexpr uint32_t kMaxAvSetupBuffers = 2u;
+  constexpr uint32_t kMaxAvOutBuffers = 8u;
   dif_usbdev_buffer_pool_t buffer_pool;
   dif_usbdev_config_t phy_config = {
       .have_differential_receiver = kDifToggleEnabled,
@@ -485,8 +493,11 @@ TEST_F(UsbdevTest, OutPacket) {
                  });
   EXPECT_DIF_OK(dif_usbdev_configure(&usbdev_, &buffer_pool, phy_config));
 
-  // Add buffers to the AV FIFO to receive.
-  for (uint32_t i = 0; i < kMaxAvBuffers; i++) {
+  // Add buffers to the AV SETUP FIFO and Av OUT FIFO to receive.
+  for (uint32_t i = 0u; i < kMaxAvSetupBuffers + kMaxAvOutBuffers; ++i) {
+    uint8_t setup_depth = (i >= kMaxAvSetupBuffers) ? kMaxAvSetupBuffers : i;
+    uint8_t out_depth =
+        (i >= kMaxAvSetupBuffers) ? (i - kMaxAvSetupBuffers) : 0u;
     int top = buffer_pool.top;
     EXPECT_READ32(USBDEV_USBSTAT_REG_OFFSET,
                   {
@@ -494,23 +505,34 @@ TEST_F(UsbdevTest, OutPacket) {
                       {USBDEV_USBSTAT_LINK_STATE_OFFSET,
                        USBDEV_USBSTAT_LINK_STATE_VALUE_ACTIVE},
                       {USBDEV_USBSTAT_SENSE_BIT, 1},
-                      {USBDEV_USBSTAT_AV_OUT_DEPTH_OFFSET, i},
+                      {USBDEV_USBSTAT_AV_OUT_DEPTH_OFFSET, out_depth},
+                      {USBDEV_USBSTAT_AV_SETUP_DEPTH_OFFSET, setup_depth},
                       {USBDEV_USBSTAT_AV_OUT_FULL_BIT, 0},
+                      {USBDEV_USBSTAT_AV_SETUP_FULL_BIT, 0},
                   });
-    EXPECT_WRITE32(
-        USBDEV_AVOUTBUFFER_REG_OFFSET,
-        {{USBDEV_AVOUTBUFFER_BUFFER_OFFSET, buffer_pool.buffers[top - i]}});
+    if (i >= kMaxAvSetupBuffers) {
+      EXPECT_WRITE32(
+          USBDEV_AVOUTBUFFER_REG_OFFSET,
+          {{USBDEV_AVOUTBUFFER_BUFFER_OFFSET, buffer_pool.buffers[top - i]}});
+    } else {
+      EXPECT_WRITE32(
+          USBDEV_AVSETUPBUFFER_REG_OFFSET,
+          {{USBDEV_AVSETUPBUFFER_BUFFER_OFFSET, buffer_pool.buffers[top - i]}});
+    }
   }
-  EXPECT_READ32(USBDEV_USBSTAT_REG_OFFSET,
-                {
-                    {USBDEV_USBSTAT_FRAME_OFFSET, 10},
-                    {USBDEV_USBSTAT_LINK_STATE_OFFSET,
-                     USBDEV_USBSTAT_LINK_STATE_VALUE_ACTIVE},
-                    {USBDEV_USBSTAT_SENSE_BIT, 1},
-                    {USBDEV_USBSTAT_AV_OUT_DEPTH_OFFSET, kMaxAvBuffers},
-                    {USBDEV_USBSTAT_AV_OUT_FULL_BIT, 1},
-                });
-  EXPECT_DIF_OK(dif_usbdev_fill_available_fifo(&usbdev_, &buffer_pool));
+  EXPECT_READ32(
+      USBDEV_USBSTAT_REG_OFFSET,
+      {
+          {USBDEV_USBSTAT_FRAME_OFFSET, 10},
+          {USBDEV_USBSTAT_LINK_STATE_OFFSET,
+           USBDEV_USBSTAT_LINK_STATE_VALUE_ACTIVE},
+          {USBDEV_USBSTAT_SENSE_BIT, 1},
+          {USBDEV_USBSTAT_AV_OUT_DEPTH_OFFSET, kMaxAvOutBuffers},
+          {USBDEV_USBSTAT_AV_SETUP_DEPTH_OFFSET, kMaxAvSetupBuffers},
+          {USBDEV_USBSTAT_AV_OUT_FULL_BIT, 1},
+          {USBDEV_USBSTAT_AV_SETUP_FULL_BIT, 0},  // FIFO is physically larger
+      });
+  EXPECT_DIF_OK(dif_usbdev_fill_available_fifos(&usbdev_, &buffer_pool));
 
   // No read data available yet.
   dif_usbdev_rx_packet_info_t rx_packet_info;
@@ -521,8 +543,10 @@ TEST_F(UsbdevTest, OutPacket) {
                     {USBDEV_USBSTAT_LINK_STATE_OFFSET,
                      USBDEV_USBSTAT_LINK_STATE_VALUE_ACTIVE},
                     {USBDEV_USBSTAT_SENSE_BIT, 1},
-                    {USBDEV_USBSTAT_AV_OUT_DEPTH_OFFSET, kMaxAvBuffers},
+                    {USBDEV_USBSTAT_AV_OUT_DEPTH_OFFSET, kMaxAvOutBuffers},
+                    {USBDEV_USBSTAT_AV_SETUP_DEPTH_OFFSET, kMaxAvSetupBuffers},
                     {USBDEV_USBSTAT_AV_OUT_FULL_BIT, 1},
+                    {USBDEV_USBSTAT_AV_SETUP_FULL_BIT, 0},
                     {USBDEV_USBSTAT_RX_EMPTY_BIT, 1},
                 });
   EXPECT_EQ(dif_usbdev_recv(&usbdev_, &rx_packet_info, &buffer),
@@ -540,8 +564,10 @@ TEST_F(UsbdevTest, OutPacket) {
                     {USBDEV_USBSTAT_LINK_STATE_OFFSET,
                      USBDEV_USBSTAT_LINK_STATE_VALUE_ACTIVE},
                     {USBDEV_USBSTAT_SENSE_BIT, 1},
-                    {USBDEV_USBSTAT_AV_OUT_DEPTH_OFFSET, kMaxAvBuffers - 1},
+                    {USBDEV_USBSTAT_AV_OUT_DEPTH_OFFSET, kMaxAvOutBuffers - 1},
+                    {USBDEV_USBSTAT_AV_SETUP_DEPTH_OFFSET, kMaxAvSetupBuffers},
                     {USBDEV_USBSTAT_AV_OUT_FULL_BIT, 0},
+                    {USBDEV_USBSTAT_AV_SETUP_FULL_BIT, 0},
                     {USBDEV_USBSTAT_RX_EMPTY_BIT, 0},
                 });
   EXPECT_READ32(USBDEV_RXFIFO_REG_OFFSET,
@@ -572,21 +598,24 @@ TEST_F(UsbdevTest, OutPacket) {
   EXPECT_EQ(bytes_written, sizeof(recvd_data));
   EXPECT_EQ(memcmp(expected_data, recvd_data, sizeof(expected_data)), 0);
 
-  // One more received packet to test other offsets.
-  EXPECT_READ32(USBDEV_USBSTAT_REG_OFFSET,
-                {
-                    {USBDEV_USBSTAT_FRAME_OFFSET, 25},
-                    {USBDEV_USBSTAT_LINK_STATE_OFFSET,
-                     USBDEV_USBSTAT_LINK_STATE_VALUE_ACTIVE},
-                    {USBDEV_USBSTAT_SENSE_BIT, 1},
-                    {USBDEV_USBSTAT_AV_OUT_DEPTH_OFFSET, kMaxAvBuffers - 2},
-                    {USBDEV_USBSTAT_AV_OUT_FULL_BIT, 1},
-                    {USBDEV_USBSTAT_RX_EMPTY_BIT, 0},
-                });
+  // One more received packet to test other offsets and the Av SETUP Buffer FIFO
+  EXPECT_READ32(
+      USBDEV_USBSTAT_REG_OFFSET,
+      {
+          {USBDEV_USBSTAT_FRAME_OFFSET, 25},
+          {USBDEV_USBSTAT_LINK_STATE_OFFSET,
+           USBDEV_USBSTAT_LINK_STATE_VALUE_ACTIVE},
+          {USBDEV_USBSTAT_SENSE_BIT, 1},
+          {USBDEV_USBSTAT_AV_OUT_DEPTH_OFFSET, kMaxAvOutBuffers - 1},
+          {USBDEV_USBSTAT_AV_SETUP_DEPTH_OFFSET, kMaxAvSetupBuffers - 1},
+          {USBDEV_USBSTAT_AV_OUT_FULL_BIT, 0},
+          {USBDEV_USBSTAT_AV_SETUP_FULL_BIT, 0},
+          {USBDEV_USBSTAT_RX_EMPTY_BIT, 0},
+      });
   EXPECT_READ32(USBDEV_RXFIFO_REG_OFFSET,
                 {
                     {USBDEV_RXFIFO_EP_OFFSET, 0},
-                    {USBDEV_RXFIFO_SETUP_BIT, 1},
+                    {USBDEV_RXFIFO_SETUP_BIT, 1},  // SETUP packet this time
                     {USBDEV_RXFIFO_SIZE_OFFSET, sizeof(expected_data) - 1},
                     {USBDEV_RXFIFO_BUFFER_OFFSET, 1},
                 });
@@ -931,7 +960,8 @@ TEST_F(UsbdevTest, Status) {
   EXPECT_DIF_OK(dif_usbdev_status_get_sense(&usbdev_, &vbus_sense));
   EXPECT_FALSE(vbus_sense);
 
-  uint8_t av_fifo_depth;
+  uint8_t av_setup_fifo_depth;
+  uint8_t av_out_fifo_depth;
   EXPECT_READ32(USBDEV_USBSTAT_REG_OFFSET,
                 {
                     {USBDEV_USBSTAT_FRAME_OFFSET, 11},
@@ -941,11 +971,12 @@ TEST_F(UsbdevTest, Status) {
                     {USBDEV_USBSTAT_AV_OUT_DEPTH_OFFSET, 3},
                     {USBDEV_USBSTAT_RX_EMPTY_BIT, 1},
                 });
-  EXPECT_DIF_OK(
-      dif_usbdev_status_get_available_fifo_depth(&usbdev_, &av_fifo_depth));
-  EXPECT_EQ(av_fifo_depth, 3);
+  EXPECT_DIF_OK(dif_usbdev_status_get_available_fifo_depths(
+      &usbdev_, &av_setup_fifo_depth, &av_out_fifo_depth));
+  EXPECT_EQ(av_out_fifo_depth, 3);
 
-  bool av_fifo_full;
+  bool av_setup_fifo_full;
+  bool av_out_fifo_full;
   EXPECT_READ32(USBDEV_USBSTAT_REG_OFFSET,
                 {
                     {USBDEV_USBSTAT_FRAME_OFFSET, 12},
@@ -956,9 +987,9 @@ TEST_F(UsbdevTest, Status) {
                     {USBDEV_USBSTAT_AV_OUT_FULL_BIT, 1},
                     {USBDEV_USBSTAT_RX_EMPTY_BIT, 1},
                 });
-  EXPECT_DIF_OK(
-      dif_usbdev_status_get_available_fifo_full(&usbdev_, &av_fifo_full));
-  EXPECT_TRUE(av_fifo_full);
+  EXPECT_DIF_OK(dif_usbdev_status_get_available_fifo_full(
+      &usbdev_, &av_setup_fifo_full, &av_out_fifo_full));
+  EXPECT_TRUE(av_out_fifo_full);
 
   uint8_t rx_fifo_depth;
   EXPECT_READ32(USBDEV_USBSTAT_REG_OFFSET,

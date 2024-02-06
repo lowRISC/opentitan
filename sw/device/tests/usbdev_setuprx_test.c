@@ -156,7 +156,7 @@ bool test_main(void) {
   CHECK_STATUS_OK(config_set(false));
 
   // Make some buffers available for received packets.
-  CHECK_DIF_OK(dif_usbdev_fill_available_fifo(&usbdev, &buffer_pool));
+  CHECK_DIF_OK(dif_usbdev_fill_available_fifos(&usbdev, &buffer_pool));
 
   // Initially, if VBUS is low then prompt the user to establish the connection.
   if (prompt) {
