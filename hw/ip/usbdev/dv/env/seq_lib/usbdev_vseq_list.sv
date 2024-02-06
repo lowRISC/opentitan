@@ -9,3 +9,7 @@
 `include "usbdev_pkt_received_vseq.sv"
 
 `include "usbdev_random_length_out_transaction_vseq.sv"
+`include "usbdev_min_length_out_transaction_vseq"
+`include "usbdev_max_length_out_transaction_vseq"
+`include "usbdev_out_stall_vseq"
+`include "usbdev_out_trans_nak_vseq"

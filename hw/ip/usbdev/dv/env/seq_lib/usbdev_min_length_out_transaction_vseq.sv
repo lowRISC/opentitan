@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // Min length out transaction_vseq
-class usbdev_min_length_out_transaction_vseq extends usbdev_random_length_out_transaction_vseq;
+class usbdev_min_length_out_transaction_vseq extends usbdev_base_vseq;
   `uvm_object_utils(usbdev_min_length_out_transaction_vseq)
 
   `uvm_object_new

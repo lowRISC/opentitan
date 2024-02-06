@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // Max length out transaction_vseq
-class usbdev_max_length_out_transaction_vseq extends usbdev_random_length_out_transaction_vseq;
+class usbdev_max_length_out_transaction_vseq extends usbdev_base_vseq;
   `uvm_object_utils(usbdev_max_length_out_transaction_vseq)
 
   `uvm_object_new
