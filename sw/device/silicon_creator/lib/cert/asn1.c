@@ -269,6 +269,10 @@ rom_error_t asn1_bitstring_push_bit(asn1_bitstring_t *bitstring, bool bit) {
 }
 
 rom_error_t asn1_finish_bitstring(asn1_bitstring_t *bitstring) {
+  if (bitstring->used_bits >= 8) {
+    bitstring->state = NULL;
+    return kErrorAsn1InvalidArgument;
+  }
   // If the last byte contains some bits, we need to push it and update
   // the number of unused bits. If the string length was a multiple of 8
   // (ie used_bits = 0) then there are 0 unused bits which is the value pushed
@@ -277,7 +281,7 @@ rom_error_t asn1_finish_bitstring(asn1_bitstring_t *bitstring) {
     RETURN_IF_ERROR(asn1_push_byte(bitstring->state, bitstring->current_byte));
     // Update the "unused bits value"
     bitstring->state->buffer[bitstring->unused_bits_offset] =
-        8 - bitstring->used_bits;
+        8 - (uint8_t)bitstring->used_bits;
   }
   // Hardening: clear out the tag structure to prevent accidental reuse.
   bitstring->state = NULL;
