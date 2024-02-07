@@ -93,17 +93,6 @@ void ottf_external_isr(uint32_t *exc_info) {
   }
 }
 
-// We make this a macro to show the caller line number when printing a error.
-#define CHECK_IRQ_EQ(irq)                                                \
-  do {                                                                   \
-    irq_global_ctrl(false);                                              \
-    if (irq_fired == kIrqVoid) {                                         \
-      wait_for_interrupt();                                              \
-      irq_global_ctrl(true);                                             \
-    }                                                                    \
-    TRY_CHECK(irq_fired == irq, "Got %d, expected %d.", irq_fired, irq); \
-  } while (false)
-
 static status_t write_byte(const uint8_t addr[2], uint8_t byte) {
   uint8_t data[3] = {addr[0], addr[1], byte};
   return i2c_testutils_write(&i2c, kDeviceAddr, sizeof(data), data, false);
@@ -125,7 +114,7 @@ static status_t nak_irq(void) {
   // Wait for the write to finish.
   uint8_t dummy = 0;
   TRY(i2c_testutils_read(&i2c, kDeviceAddr, sizeof(dummy), &dummy, 1));
-  CHECK_IRQ_EQ(kDifI2cIrqNak);
+  ATOMIC_WAIT_FOR_INTERRUPT(irq_fired == kDifI2cIrqNak);
 
   TRY(dif_i2c_irq_set_enabled(&i2c, kDifI2cIrqNak, kDifToggleDisabled));
   return OK_STATUS();
@@ -174,7 +163,7 @@ static status_t cmd_complete_irq(void) {
   const uint8_t kAddr[2] = {0x03, 0x21};
   TRY(write_byte(kAddr, 0xAB));
 
-  CHECK_IRQ_EQ(kDifI2cIrqCmdComplete);
+  ATOMIC_WAIT_FOR_INTERRUPT(irq_fired == kDifI2cIrqCmdComplete);
 
   TRY(dif_i2c_irq_set_enabled(&i2c, kDifI2cIrqCmdComplete, kDifToggleDisabled));
   return OK_STATUS();
@@ -198,7 +187,7 @@ static status_t fmt_threshold_irq(void) {
     TRY(write_byte(kAddr, 0xAB));
   }
 
-  CHECK_IRQ_EQ(kDifI2cIrqFmtThreshold);
+  ATOMIC_WAIT_FOR_INTERRUPT(irq_fired == kDifI2cIrqFmtThreshold);
 
   TRY(dif_i2c_irq_set_enabled(&i2c, kDifI2cIrqFmtThreshold,
                               kDifToggleDisabled));
@@ -219,7 +208,7 @@ static status_t fmt_overflow_irq(void) {
     TRY(write_byte(kAddr, 0xAB));
   }
 
-  CHECK_IRQ_EQ(kDifI2cIrqFmtOverflow);
+  ATOMIC_WAIT_FOR_INTERRUPT(irq_fired == kDifI2cIrqFmtOverflow);
 
   TRY(dif_i2c_irq_set_enabled(&i2c, kDifI2cIrqFmtOverflow, kDifToggleDisabled));
   return OK_STATUS();
@@ -243,7 +232,7 @@ static status_t rx_threshold_irq(void) {
   TRY(i2c_testutils_read(&i2c, kDeviceAddr, sizeof(bytes), bytes,
                          kDefaultTimeoutMicros));
 
-  CHECK_IRQ_EQ(kDifI2cIrqRxThreshold);
+  ATOMIC_WAIT_FOR_INTERRUPT(irq_fired == kDifI2cIrqRxThreshold);
 
   TRY(dif_i2c_irq_set_enabled(&i2c, kDifI2cIrqRxThreshold, kDifToggleDisabled));
   return OK_STATUS();
@@ -265,7 +254,7 @@ static status_t rx_overflow_irq(void) {
   TRY(i2c_testutils_read(&i2c, kDeviceAddr, sizeof(bytes), bytes,
                          kDefaultTimeoutMicros));
 
-  CHECK_IRQ_EQ(kDifI2cIrqRxOverflow);
+  ATOMIC_WAIT_FOR_INTERRUPT(irq_fired == kDifI2cIrqRxOverflow);
 
   TRY(dif_i2c_irq_set_enabled(&i2c, kDifI2cIrqRxOverflow, kDifToggleDisabled));
   return OK_STATUS();
