@@ -87,19 +87,7 @@ static void run_test_with_irqs(dif_otbn_t *otbn, otbn_app_t app,
 
   // At this point, OTBN should be running. Wait for an interrupt that says
   // it's done.
-  for (;;) {
-    // This looks a bit odd, but is needed to avoid a race condition where the
-    // OTBN interrupt comes in after we load the otbn_finished flag but before
-    // we run the WFI instruction. The trick is that WFI returns when an
-    // interrupt comes in even if interrupts are globally disabled, which means
-    // that the WFI can actually sit *inside* the critical section.
-    irq_global_ctrl(false);
-    if (otbn_finished)
-      break;
-    wait_for_interrupt();
-    irq_global_ctrl(true);
-  }
-  irq_global_ctrl(true);
+  ATOMIC_WAIT_FOR_INTERRUPT(otbn_finished);
 
   check_otbn_status(otbn, expected_status);
   check_otbn_err_bits(otbn, expected_insn_cnt);
