@@ -530,69 +530,46 @@ module spi_host
     .intr_o                 (intr_error_o)
   );
 
-  logic event_spi_event;
-  logic event_idle, event_ready, event_tx_wm, event_rx_wm, event_tx_empty, event_rx_full;
+  logic status_spi_event;
+  logic status_idle, status_ready, status_tx_wm, status_rx_wm, status_tx_empty, status_rx_full;
   logic [5:0] event_vector;
   logic [5:0] event_mask;
 
-  assign event_vector= {
-      event_idle, event_ready, event_tx_wm,
-      event_rx_wm, event_tx_empty, event_rx_full
+  assign status_idle     = ~active;
+  assign status_ready    = ~command_busy;
+  assign status_tx_wm    = tx_wm;
+  assign status_rx_wm    = rx_wm;
+  assign status_tx_empty = tx_empty;
+  assign status_rx_full  = rx_full;
+
+  assign event_vector = {
+    status_idle,
+    status_ready,
+    status_tx_wm,
+    status_rx_wm,
+    status_tx_empty,
+    status_rx_full
   };
 
   assign event_mask = {
-      reg2hw.event_enable.idle.q,
-      reg2hw.event_enable.ready.q,
-      reg2hw.event_enable.txwm.q,
-      reg2hw.event_enable.rxwm.q,
-      reg2hw.event_enable.txempty.q,
-      reg2hw.event_enable.rxfull.q
+    reg2hw.event_enable.idle.q,
+    reg2hw.event_enable.ready.q,
+    reg2hw.event_enable.txwm.q,
+    reg2hw.event_enable.rxwm.q,
+    reg2hw.event_enable.txempty.q,
+    reg2hw.event_enable.rxfull.q
   };
 
-  assign event_spi_event = |(event_vector & event_mask);
+  // Qualify interrupt sources individually with dedicated mask register CSR.EVENT_ENABLE
+  assign status_spi_event = |(event_vector & event_mask);
 
-  logic idle_d, idle_q;
-  logic ready_d, ready_q;
-  logic tx_wm_d, tx_wm_q;
-  logic rx_wm_d, rx_wm_q;
-  logic tx_empty_d, tx_empty_q;
-  logic rx_full_d, rx_full_q;
-
-  assign event_idle     = idle_d & ~idle_q;
-  assign idle_d         = ~active;
-  assign event_ready    = ready_d & ~ready_q;
-  assign ready_d        = ~command_busy;
-  assign event_tx_wm    = tx_wm_d & ~tx_wm_q;
-  assign tx_wm_d        = tx_wm;
-  assign event_rx_wm    = rx_wm_d & ~rx_wm_q;
-  assign rx_wm_d        = rx_wm;
-  assign event_tx_empty = tx_empty_d & ~tx_empty_q;
-  assign tx_empty_d     = tx_empty;
-  assign event_rx_full  = rx_full_d & ~rx_full_q;
-  assign rx_full_d      = rx_full;
-
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      idle_q     <= 1'b0;
-      ready_q    <= 1'b0;
-      tx_wm_q    <= 1'b0;
-      rx_wm_q    <= 1'b0;
-      tx_empty_q <= 1'b0;
-      rx_full_q  <= 1'b0;
-    end else begin
-      idle_q     <= idle_d;
-      ready_q    <= ready_d;
-      tx_wm_q    <= tx_wm_d;
-      rx_wm_q    <= rx_wm_d;
-      tx_empty_q <= tx_empty_d;
-      rx_full_q  <= rx_full_d;
-    end
-  end
-
-  prim_intr_hw #(.Width(1)) intr_hw_spi_event (
+  prim_intr_hw #(
+    .Width(1),
+    .IntrT("Status")
+  ) intr_hw_spi_event (
     .clk_i,
     .rst_ni,
-    .event_intr_i           (event_spi_event),
+    .event_intr_i           (status_spi_event),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.spi_event.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.spi_event.q),
     .reg2hw_intr_test_qe_i  (reg2hw.intr_test.spi_event.qe),

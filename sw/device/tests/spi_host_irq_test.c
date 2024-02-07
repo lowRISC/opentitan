@@ -1,6 +1,19 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+
+// Test all 'spi_host' CIP interrupts
+// This includes both 'error' and 'spi_event' interrupts, as well as all of the
+// different event components that make up the spi_event irq.
+//
+// One test routine is defined per interrupt component, which are executed in
+// sequence by test_main(). Each routine starts with all interrupts masked. The
+// test routine then generates some stimulus which activates the spi_host block,
+// and unmasks only the interrupt we wish to see. After observing this
+// interrupt, the test masks all interrupts again, and waits for the stimulus to
+// complete. Note that the DUT is not reset/cleared between test routines unless
+// done so explicity.
+
 #include <assert.h>
 
 #include "sw/device/lib/arch/device.h"
@@ -61,7 +74,6 @@ enum {
 static status_t external_isr(void) {
   dif_rv_plic_irq_id_t plic_irq_id;
   TRY(dif_rv_plic_irq_claim(&plic, kHart, &plic_irq_id));
-  LOG_INFO("%s: %d", __func__, plic_irq_id);
 
   top_earlgrey_plic_peripheral_t peripheral = (top_earlgrey_plic_peripheral_t)
       top_earlgrey_plic_interrupt_for_peripheral[plic_irq_id];
@@ -73,7 +85,26 @@ static status_t external_isr(void) {
                                    (dif_rv_plic_irq_id_t)
                                        kTopEarlgreyPlicIrqIdSpiHost0Error);
 
-  TRY(dif_spi_host_irq_acknowledge(&spi_host, irq_fired));
+  // Clear or Disable the interrupt as appropriate.
+  dif_irq_type_t irq_type = kDifIrqTypeEvent;
+  TRY(dif_spi_host_irq_get_type(&spi_host, irq_fired, &irq_type));
+  switch (irq_type) {
+    case kDifIrqTypeEvent:
+      TRY(dif_spi_host_irq_acknowledge(&spi_host, irq_fired));
+      break;
+    case kDifIrqTypeStatus:
+      // As the event interrupt aggregates the different events, each event has
+      // their own independent disable/mask bits (CSR.EVENT_ENABLE.x). However,
+      // we need to mask the aggregated interrupt here, and each test can handle
+      // unmasking it when it has cleared the cause or masked the individual
+      // component.
+      TRY(dif_spi_host_irq_set_enabled(&spi_host, irq_fired,
+                                       kDifToggleDisabled));
+      break;
+    default:
+      LOG_ERROR("Unexpected interrupt type: %d", irq_type);
+      break;
+  }
 
   // Complete the IRQ at PLIC.
   TRY(dif_rv_plic_irq_complete(&plic, kHart, plic_irq_id));
@@ -87,13 +118,12 @@ static status_t active_event_irq(void) {
   memset(data, 0xA5, sizeof(data));
 
   irq_fired = UINT32_MAX;
-  TRY(dif_spi_host_event_set_enabled(&spi_host, kDifSpiHostEvtIdle, true));
 
   dif_spi_host_status_t status;
   TRY(dif_spi_host_get_status(&spi_host, &status));
   TRY_CHECK(!status.active);
 
-  // Issue a command and check that the `STATUS.active` go low.
+  // Issue a command and check that the `STATUS.active` goes high.
   TRY(dif_spi_host_fifo_write(&spi_host, data, sizeof(data)));
   TRY(dif_spi_host_write_command(&spi_host, sizeof(data),
                                  kDifSpiHostWidthStandard,
@@ -101,14 +131,18 @@ static status_t active_event_irq(void) {
   TRY(dif_spi_host_get_status(&spi_host, &status));
   TRY_CHECK(status.active);
 
-  // Wait for the event irq and check that it was triggered by `STATUS.active`.
+  // Unmask the irq we want to test, then await it.
+  TRY(dif_spi_host_event_set_enabled(&spi_host, kDifSpiHostEvtIdle, true));
   ATOMIC_WAIT_FOR_INTERRUPT(irq_fired == kDifSpiHostIrqSpiEvent);
-  TRY(dif_spi_host_get_status(&spi_host, &status));
-  TRY_CHECK(!status.active);
-
   TRY(dif_spi_host_event_set_enabled(&spi_host, kDifSpiHostEvtIdle, false));
+
+  // Wait until the block becomes inactive, when the stimulus has completed.
   IBEX_TRY_SPIN_FOR(TRY(spi_host_testutils_is_active(&spi_host)) == false,
-                    1000);
+                    100000);
+  // Unmask the whole interrupt for the next test.
+  CHECK_DIF_OK(dif_spi_host_irq_set_enabled(&spi_host, kDifSpiHostIrqSpiEvent,
+                                            kDifToggleEnabled));
+
   return OK_STATUS();
 }
 
@@ -121,13 +155,12 @@ static status_t ready_event_irq(void) {
   dif_spi_host_status_t status;
 
   irq_fired = UINT32_MAX;
-  TRY(dif_spi_host_event_set_enabled(&spi_host, kDifSpiHostEvtReady, true));
 
   TRY(dif_spi_host_get_status(&spi_host, &status));
   TRY_CHECK(status.ready);
   TRY_CHECK(!status.active);
 
-  // Overwhelm the cmd fifo to make the `STATUS.ready` go low.
+  // Overwhelm the cmd fifo to make `STATUS.ready` go low.
   TRY(dif_spi_host_fifo_write(&spi_host, data, kDataSize));
   for (size_t i = 0; i < kCommands; ++i) {
     TRY(dif_spi_host_write_command(&spi_host, kDataSize / kCommands,
@@ -135,18 +168,18 @@ static status_t ready_event_irq(void) {
                                    kDifSpiHostDirectionTx, true));
   }
 
-  TRY(dif_spi_host_get_status(&spi_host, &status));
-  TRY_CHECK(!status.ready);
-  TRY_CHECK(status.active);
-
-  // Wait for the event irq and check that it was triggered by `STATUS.ready`.
+  // Unmask the irq we want to test, then await it.
+  TRY(dif_spi_host_event_set_enabled(&spi_host, kDifSpiHostEvtReady, true));
   ATOMIC_WAIT_FOR_INTERRUPT(irq_fired == kDifSpiHostIrqSpiEvent);
-  TRY(dif_spi_host_get_status(&spi_host, &status));
-  TRY_CHECK(status.ready);
-
   TRY(dif_spi_host_event_set_enabled(&spi_host, kDifSpiHostEvtReady, false));
+
+  // Wait until the block becomes inactive, when the stimulus has completed.
   IBEX_TRY_SPIN_FOR(TRY(spi_host_testutils_is_active(&spi_host)) == false,
-                    1000);
+                    100000);
+  // Unmask the whole interrupt for the next test.
+  CHECK_DIF_OK(dif_spi_host_irq_set_enabled(&spi_host, kDifSpiHostIrqSpiEvent,
+                                            kDifToggleEnabled));
+
   return OK_STATUS();
 }
 
@@ -155,7 +188,6 @@ static status_t tx_empty_event_irq(void) {
   memset(data, 0xA5, sizeof(data));
 
   irq_fired = UINT32_MAX;
-  TRY(dif_spi_host_event_set_enabled(&spi_host, kDifSpiHostEvtTxEmpty, true));
 
   dif_spi_host_status_t status;
   TRY(dif_spi_host_get_status(&spi_host, &status));
@@ -166,17 +198,18 @@ static status_t tx_empty_event_irq(void) {
   TRY(dif_spi_host_write_command(&spi_host, sizeof(data),
                                  kDifSpiHostWidthStandard,
                                  kDifSpiHostDirectionTx, true));
-  TRY(dif_spi_host_get_status(&spi_host, &status));
-  TRY_CHECK(!status.tx_empty);
 
-  // Wait for the irq and check that it was triggered by `STATUS.tx_empty`.
+  // Unmask the irq we want to test, then await it.
+  TRY(dif_spi_host_event_set_enabled(&spi_host, kDifSpiHostEvtTxEmpty, true));
   ATOMIC_WAIT_FOR_INTERRUPT(irq_fired == kDifSpiHostIrqSpiEvent);
-  TRY(dif_spi_host_get_status(&spi_host, &status));
-  TRY_CHECK(status.tx_empty);
-
   TRY(dif_spi_host_event_set_enabled(&spi_host, kDifSpiHostEvtTxEmpty, false));
+
+  // Wait until the block becomes inactive, when the stimulus has completed.
   IBEX_TRY_SPIN_FOR(TRY(spi_host_testutils_is_active(&spi_host)) == false,
-                    1000);
+                    100000);
+  // Unmask the whole interrupt for the next test.
+  CHECK_DIF_OK(dif_spi_host_irq_set_enabled(&spi_host, kDifSpiHostIrqSpiEvent,
+                                            kDifToggleEnabled));
   return OK_STATUS();
 }
 
@@ -185,7 +218,6 @@ static status_t tx_wm_event_irq(void) {
   memset(data, 0xA5, sizeof(data));
 
   irq_fired = UINT32_MAX;
-  TRY(dif_spi_host_event_set_enabled(&spi_host, kDifSpiHostEvtTxWm, true));
 
   dif_spi_host_status_t status;
   TRY(dif_spi_host_get_status(&spi_host, &status));
@@ -201,14 +233,17 @@ static status_t tx_wm_event_irq(void) {
                                  kDifSpiHostWidthStandard,
                                  kDifSpiHostDirectionTx, true));
 
-  // Wait for the event irq and check that it was triggered by `STATUS.txwm`.
+  // Unmask the irq we want to test, then await it.
+  TRY(dif_spi_host_event_set_enabled(&spi_host, kDifSpiHostEvtTxWm, true));
   ATOMIC_WAIT_FOR_INTERRUPT(irq_fired == kDifSpiHostIrqSpiEvent);
-  TRY(dif_spi_host_get_status(&spi_host, &status));
-  TRY_CHECK(status.tx_water_mark);
-
   TRY(dif_spi_host_event_set_enabled(&spi_host, kDifSpiHostEvtTxWm, false));
+
+  // Wait until the block becomes inactive, when the stimulus has completed.
   IBEX_TRY_SPIN_FOR(TRY(spi_host_testutils_is_active(&spi_host)) == false,
-                    1000);
+                    100000);
+  // Unmask the whole interrupt for the next test.
+  CHECK_DIF_OK(dif_spi_host_irq_set_enabled(&spi_host, kDifSpiHostIrqSpiEvent,
+                                            kDifToggleEnabled));
   return OK_STATUS();
 }
 
@@ -238,24 +273,26 @@ static status_t dummy_read_from_flash(uint32_t address, uint16_t len) {
 
 static status_t rx_full_event_irq(void) {
   enum { kRxFifoLen = SPI_HOST_PARAM_RX_DEPTH * sizeof(uint32_t) };
+  static_assert(kRxFifoLen <= UINT16_MAX, "kRxFifoLen must fit in uint16_t");
   irq_fired = UINT32_MAX;
-  TRY(dif_spi_host_event_set_enabled(&spi_host, kDifSpiHostEvtRxFull, true));
 
   dif_spi_host_status_t status;
   TRY(dif_spi_host_get_status(&spi_host, &status));
   TRY_CHECK(!status.rx_full);
 
-  static_assert(kRxFifoLen <= UINT16_MAX, "kRxFifoLen must fit in uint16_t");
   TRY(dummy_read_from_flash(/*address=*/0x00, /*len=*/kRxFifoLen));
 
-  // Wait for the event irq and check that it was triggered by `STATUS.rx_full`.
+  // Unmask the irq we want to test, then await it.
+  TRY(dif_spi_host_event_set_enabled(&spi_host, kDifSpiHostEvtRxFull, true));
   ATOMIC_WAIT_FOR_INTERRUPT(irq_fired == kDifSpiHostIrqSpiEvent);
-  TRY(dif_spi_host_get_status(&spi_host, &status));
-  TRY_CHECK(status.rx_full);
-
   TRY(dif_spi_host_event_set_enabled(&spi_host, kDifSpiHostEvtRxFull, false));
+
+  // Wait until the block becomes inactive, when the stimulus has completed.
   IBEX_TRY_SPIN_FOR(TRY(spi_host_testutils_is_active(&spi_host)) == false,
-                    1000);
+                    100000);
+  // Unmask the whole interrupt for the next test.
+  CHECK_DIF_OK(dif_spi_host_irq_set_enabled(&spi_host, kDifSpiHostIrqSpiEvent,
+                                            kDifToggleEnabled));
   return spi_host_testutils_flush(&spi_host);
 }
 
@@ -263,7 +300,6 @@ static status_t rx_wm_event_irq(void) {
   enum { kRxWmLen = kRxWatermark * sizeof(uint32_t) };
 
   irq_fired = UINT32_MAX;
-  TRY(dif_spi_host_event_set_enabled(&spi_host, kDifSpiHostEvtRxWm, true));
 
   dif_spi_host_status_t status;
   TRY(dif_spi_host_get_status(&spi_host, &status));
@@ -271,13 +307,18 @@ static status_t rx_wm_event_irq(void) {
 
   TRY(dummy_read_from_flash(/*address=*/0x00, /*len=*/kRxWmLen));
 
+  // Unmask the irq we want to test, then await it.
+  TRY(dif_spi_host_event_set_enabled(&spi_host, kDifSpiHostEvtRxWm, true));
   ATOMIC_WAIT_FOR_INTERRUPT(irq_fired == kDifSpiHostIrqSpiEvent);
-  TRY(dif_spi_host_get_status(&spi_host, &status));
-  TRY_CHECK(status.rx_water_mark);
-
   TRY(dif_spi_host_event_set_enabled(&spi_host, kDifSpiHostEvtRxWm, false));
+
+  // Wait until the block becomes inactive, when the stimulus has completed.
   IBEX_TRY_SPIN_FOR(TRY(spi_host_testutils_is_active(&spi_host)) == false,
-                    1000);
+                    100000);
+  // Unmask the whole interrupt for the next test.
+  CHECK_DIF_OK(dif_spi_host_irq_set_enabled(&spi_host, kDifSpiHostIrqSpiEvent,
+                                            kDifToggleEnabled));
+
   return OK_STATUS();
 }
 
@@ -361,12 +402,14 @@ static status_t test_init(void) {
 bool test_main(void) {
   CHECK_STATUS_OK(test_init());
   test_result = OK_STATUS();
+  // -> kDifSpiHostIrqSpiEvent
   EXECUTE_TEST(test_result, active_event_irq);
   EXECUTE_TEST(test_result, ready_event_irq);
   EXECUTE_TEST(test_result, tx_empty_event_irq);
   EXECUTE_TEST(test_result, tx_wm_event_irq);
   EXECUTE_TEST(test_result, rx_full_event_irq);
   EXECUTE_TEST(test_result, rx_wm_event_irq);
+  // -> kDifSpiHostIrqError
   EXECUTE_TEST(test_result, cmd_busy_error_irq);
   return status_ok(test_result);
 }

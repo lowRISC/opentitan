@@ -29,13 +29,13 @@ Interrupt State Register
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "error", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "spi_event", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 30}], "config": {"lanes": 1, "fontsize": 10, "vspace": 110}}
+{"reg": [{"name": "error", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "spi_event", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 30}], "config": {"lanes": 1, "fontsize": 10, "vspace": 110}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name      | Description                                                                                  |
 |:------:|:------:|:-------:|:----------|:---------------------------------------------------------------------------------------------|
 |  31:2  |        |         |           | Reserved                                                                                     |
-|   1    |  rw1c  |   0x0   | spi_event | Event-related interrupts, see [`EVENT_ENABLE`](#event_enable) register for more information. |
+|   1    |   ro   |   0x0   | spi_event | Event-related interrupts, see [`EVENT_ENABLE`](#event_enable) register for more information. |
 |   0    |  rw1c  |   0x0   | error     | Error-related interrupts, see [`ERROR_ENABLE`](#error_enable) register for more information. |
 
 ## INTR_ENABLE

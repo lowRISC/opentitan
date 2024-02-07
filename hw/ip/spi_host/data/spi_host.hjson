@@ -96,6 +96,7 @@
                information.'''
     },
     { name: "spi_event",
+      type: "status",
       desc: '''Event-related interrupts, see !!EVENT_ENABLE register for more
                information.'''
     }

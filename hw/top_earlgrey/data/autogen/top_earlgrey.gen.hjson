@@ -14199,7 +14199,7 @@
       width: 1
       type: interrupt
       module_name: spi_host0
-      intr_type: IntrType.Event
+      intr_type: IntrType.Status
       default_val: false
     }
     {
@@ -14215,7 +14215,7 @@
       width: 1
       type: interrupt
       module_name: spi_host1
-      intr_type: IntrType.Event
+      intr_type: IntrType.Status
       default_val: false
     }
     {

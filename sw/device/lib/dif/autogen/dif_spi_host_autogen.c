@@ -69,7 +69,7 @@ static bool spi_host_get_irq_bit_index(dif_spi_host_irq_t irq,
 
 static dif_irq_type_t irq_types[] = {
     kDifIrqTypeEvent,
-    kDifIrqTypeEvent,
+    kDifIrqTypeStatus,
 };
 
 OT_WARN_UNUSED_RESULT

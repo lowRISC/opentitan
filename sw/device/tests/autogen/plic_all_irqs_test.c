@@ -941,7 +941,19 @@ void ottf_external_isr(uint32_t *exc_info) {
               "Only spi_host0 IRQ %d expected to fire. Actual interrupt "
               "status = %x", irq, snapshot);
 
-        CHECK_DIF_OK(dif_spi_host_irq_acknowledge(&spi_host0, irq));
+        // If this is a status type interrupt, we do not have to acknowledge the interrupt at
+        // the IP side, but we need to clear the test force register.
+        if (0x2 & (1 << irq)) {
+          CHECK_DIF_OK(dif_spi_host_irq_force(&spi_host0, irq, false));
+          // In case this status interrupt is asserted by default, we also disable it at
+          // this point so that it does not interfere with the rest of the test.
+          if ((0x0 & (1 << irq))) {
+            CHECK_DIF_OK(dif_spi_host_irq_set_enabled(&spi_host0, irq, false));
+          }
+        // If this is a regular event type interrupt, we acknowledge it at this point.
+        } else {
+          CHECK_DIF_OK(dif_spi_host_irq_acknowledge(&spi_host0, irq));
+        }
         break;
       }
 #endif
@@ -962,7 +974,19 @@ void ottf_external_isr(uint32_t *exc_info) {
               "Only spi_host1 IRQ %d expected to fire. Actual interrupt "
               "status = %x", irq, snapshot);
 
-        CHECK_DIF_OK(dif_spi_host_irq_acknowledge(&spi_host1, irq));
+        // If this is a status type interrupt, we do not have to acknowledge the interrupt at
+        // the IP side, but we need to clear the test force register.
+        if (0x2 & (1 << irq)) {
+          CHECK_DIF_OK(dif_spi_host_irq_force(&spi_host1, irq, false));
+          // In case this status interrupt is asserted by default, we also disable it at
+          // this point so that it does not interfere with the rest of the test.
+          if ((0x0 & (1 << irq))) {
+            CHECK_DIF_OK(dif_spi_host_irq_set_enabled(&spi_host1, irq, false));
+          }
+        // If this is a regular event type interrupt, we acknowledge it at this point.
+        } else {
+          CHECK_DIF_OK(dif_spi_host_irq_acknowledge(&spi_host1, irq));
+        }
         break;
       }
 #endif
@@ -2187,12 +2211,21 @@ static void peripheral_irqs_trigger(void) {
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 19 && 19 < TEST_MAX_IRQ_PERIPHERAL
   peripheral_expected = kTopEarlgreyPlicPeripheralSpiHost0;
+  status_default_mask = 0x0;
   for (dif_spi_host_irq_t irq = kDifSpiHostIrqError;
        irq <= kDifSpiHostIrqSpiEvent; ++irq) {
 
     spi_host_irq_expected = irq;
     LOG_INFO("Triggering spi_host0 IRQ %d.", irq);
     CHECK_DIF_OK(dif_spi_host_irq_force(&spi_host0, irq, true));
+
+    // In this case, the interrupt has not been enabled yet because that would
+    // interfere with testing other interrupts. We enable it here and let the
+    // interrupt handler disable it again.
+    if ((status_default_mask & 0x1)) {
+       CHECK_DIF_OK(dif_spi_host_irq_set_enabled(&spi_host0, irq, true));
+    }
+    status_default_mask >>= 1;
 
     // This avoids a race where *irq_serviced is read before
     // entering the ISR.
@@ -2203,12 +2236,21 @@ static void peripheral_irqs_trigger(void) {
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 19 && 19 < TEST_MAX_IRQ_PERIPHERAL
   peripheral_expected = kTopEarlgreyPlicPeripheralSpiHost1;
+  status_default_mask = 0x0;
   for (dif_spi_host_irq_t irq = kDifSpiHostIrqError;
        irq <= kDifSpiHostIrqSpiEvent; ++irq) {
 
     spi_host_irq_expected = irq;
     LOG_INFO("Triggering spi_host1 IRQ %d.", irq);
     CHECK_DIF_OK(dif_spi_host_irq_force(&spi_host1, irq, true));
+
+    // In this case, the interrupt has not been enabled yet because that would
+    // interfere with testing other interrupts. We enable it here and let the
+    // interrupt handler disable it again.
+    if ((status_default_mask & 0x1)) {
+       CHECK_DIF_OK(dif_spi_host_irq_set_enabled(&spi_host1, irq, true));
+    }
+    status_default_mask >>= 1;
 
     // This avoids a race where *irq_serviced is read before
     // entering the ISR.
