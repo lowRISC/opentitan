@@ -74,6 +74,7 @@ class usbdev_packet_classifier extends uvm_object;
           end
         end
         DATA_0, DATA_1: begin
+          data.delete();
           for(int i = 8; i < pkt.size()-16; i++) begin
             data = new[data.size() +1](data);
             data[data.size() - 1] = pkt[i];
