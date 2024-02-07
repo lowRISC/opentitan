@@ -110,6 +110,8 @@ bool test_main(void) {
       // DV simulation can exercise pin-flipping and differential rcvr on/off
       // but there's no point wasting simulation time trying both tx modes;
       // D+/D- are always used directly as differential signals.
+      OT_FALLTHROUGH_INTENDED;
+    case kDeviceSilicon:
       ntests = 4U;
       for (unsigned test = 0U; test < ntests; ++test) {
         test_cfg[test].pinflip = ((test & 1U) != 0U);
