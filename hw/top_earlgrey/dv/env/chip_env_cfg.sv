@@ -44,6 +44,10 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   // before invoking super.dut_init(), or any other suitable place.
   rand uint creator_sw_cfg_ast_cfg_data[ast_pkg::AstRegsNum];
 
+  // A knob that controls whether the AST initialization is done, enabled by default.
+  // Can be updated with plusarg.
+  bit do_creator_sw_cfg_ast_cfg = 1;
+
   // sw related
   // In OpenTitan, the same SW test image can be built for DV, Verilator and FPGA. SW build for
   // other platforms can be run on DV as well. We allow that by specifying the SW build device.
