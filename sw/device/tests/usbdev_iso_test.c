@@ -34,9 +34,9 @@
 //
 // Note: because Isochronous streams are guaranteed the requested amount of
 // bus bandwidth, the number of concurrent streams that may be supported is
-// limited to six.
-#if !defined(NUM_STREAMS) || NUM_STREAMS > 6U
-#define NUM_STREAMS 6U
+// limited to four if connected through a hub (6 without hub(s)).
+#if !defined(NUM_STREAMS) || NUM_STREAMS > 4U
+#define NUM_STREAMS 4U
 #endif
 
 // This takes about 256s presently with 10MHz CPU in CW310 FPGA and physical
@@ -172,6 +172,8 @@ bool test_main(void) {
       break;
     case kDeviceSimDV:
       transfer_bytes = TRANSFER_BYTES_DVSIM;
+      break;
+    case kDeviceSilicon:
       break;
     case kDeviceFpgaCw340:
       break;
