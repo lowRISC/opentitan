@@ -77,8 +77,8 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
       usbdev_expected_pkt();
       item.pack(actual_pkt);
       actual_pkt_q.push_back(actual_pkt);
-      `uvm_info(`gfn, $sformatf("received usb20 item :\n%0s", item.sprint()), UVM_DEBUG)
-      `uvm_info(`gfn, $sformatf("ACTUAL PACKET : %p", actual_pkt), UVM_DEBUG)
+      `uvm_info(`gfn, $sformatf("req port item :\n%0s", item.sprint()), UVM_DEBUG)
+      compare_usb20_pkt();
     end
   endtask
 
@@ -89,19 +89,21 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
                                        m_packetiser.handshake_pkt_arr);
     m_pkt_manager.pop_packet(expected_pkt);
     expected_pkt_q.push_back(expected_pkt);
-    `uvm_info(`gfn, $sformatf("EXPECTED PACKET : %p", expected_pkt), UVM_DEBUG)
   endtask
 
   // process_usb20_pkt task : Process queue
-  // and compare the actual pkt with expected pkt
+  // and compare the actual pkt with the expected pkt
   // -------------------------------
   virtual task process_usb20_pkt();
     usb20_item item;
-    rsp_usb20_fifo.get(item);
-    usbdev_expected_pkt();
-    item.pack(expected_pkt);
-    actual_pkt_q.push_back(expected_pkt);
-    compare_usb20_pkt();
+    forever begin
+      rsp_usb20_fifo.get(item);
+      usbdev_expected_pkt();
+      item.pack(expected_pkt);
+      actual_pkt_q.push_back(expected_pkt);
+      `uvm_info(`gfn, $sformatf("rsp port item :\n%0s", item.sprint()), UVM_DEBUG)
+      compare_usb20_pkt();
+    end
   endtask
 
   // compare_usb20_pkt task : To check pkt transmission accuracy
@@ -197,7 +199,9 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
         // TODO
       end
       "ep_out_enable": begin
-        do_read_check = 1'b0;
+        if (!write && channel == DataChannel) begin
+          do_read_check = 1'b0;
+        end
         ep_out_enable_reg = ral.ep_out_enable[0].get_mirrored_value();
         foreach(ep_out_enable_reg[i]) begin
           if (ep_out_enable_reg[i]==1'b1) begin
@@ -205,39 +209,58 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
             endp_index = i;
             break;
           end
+         else ep_out_enable = 1'b0;
         end
       end
       "ep_in_enable": begin
-        // TODO
+        if (!write && channel == DataChannel) begin
+          do_read_check = 1'b0;
+        end
       end
       "usbstat": begin
-        do_read_check = 1'b0;
+        if (!write && channel == DataChannel) begin
+          do_read_check = 1'b0;
+        end
       end
       "avbuffer": begin
-        // TODO
+        if (!write && channel == DataChannel) begin
+          do_read_check = 1'b0;
+        end
       end
       "rxfifo": begin
-        do_read_check = 1'b0;
+        if (!write && channel == DataChannel) begin
+          do_read_check = 1'b0;
+        end
       end
       "rxenable_setup": begin
-        do_read_check = 1'b0;
+        if (!write && channel == DataChannel) begin
+          do_read_check = 1'b0;
+        end
         rx_enable_setup_reg = ral.rxenable_setup[0].get_mirrored_value();
         if (rx_enable_setup_reg[endp_index]) begin
           rx_enable_setup = 1'b1;
         end
+        else rx_enable_setup = 1'b0;
       end
       "rxenable_out": begin
-        do_read_check = 1'b0;
+        if (!write && channel == DataChannel) begin
+          do_read_check = 1'b0;
+        end
         rx_enable_out_reg = ral.rxenable_out[0].get_mirrored_value();
         if (rx_enable_out_reg[endp_index]) begin
           rx_enable_out = 1'b1;
         end
+        else rx_enable_out = 1'b0;
       end
       "set_nak_out": begin
-        // TODO
+        if (!write && channel == DataChannel) begin
+          do_read_check = 1'b0;
+        end
       end
       "in_sent": begin
-        // TODO
+        if (!write && channel == DataChannel) begin
+          do_read_check = 1'b0;
+        end
       end
       "out_stall": begin
         out_stall_reg = ral.out_stall[0].get_mirrored_value();
@@ -246,17 +269,79 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
         end
       end
       "in_stall": begin
-        // TODO
+        if (!write && channel == DataChannel) begin
+          do_read_check = 1'b0;
+        end
       end
       "configin_0": begin
-        // TODO
+        if (!write && channel == DataChannel) begin
+          do_read_check = 1'b0;
+        end
+      end
+      "configin_1": begin
+        if (!write && channel == DataChannel) begin
+          do_read_check = 1'b0;
+        end
+      end
+      "configin_2": begin
+        if (!write && channel == DataChannel) begin
+          do_read_check = 1'b0;
+        end
+      end
+      "configin_3": begin
+       if (!write && channel == DataChannel) begin
+          do_read_check = 1'b0;
+        end
+      end
+      "configin_4": begin
+        if (!write && channel == DataChannel) begin
+          do_read_check = 1'b0;
+        end
+      end
+      "configin_5": begin
+        if (!write && channel == DataChannel) begin
+          do_read_check = 1'b0;
+        end
+      end
+      "configin_6": begin
+        if (!write && channel == DataChannel) begin
+          do_read_check = 1'b0;
+        end
+      end
+      "configin_7": begin
+        if (!write && channel == DataChannel) begin
+          do_read_check = 1'b0;
+        end
+      end
+      "configin_8": begin
+        if (!write && channel == DataChannel) begin
+          do_read_check = 1'b0;
+        end
+      end
+      "configin_9": begin
+        if (!write && channel == DataChannel) begin
+          do_read_check = 1'b0;
+        end
+      end
+      "configin_10": begin
+        if (!write && channel == DataChannel) begin
+          do_read_check = 1'b0;
+        end
+      end
+      "configin_11": begin
+        if (!write && channel == DataChannel) begin
+          do_read_check = 1'b0;
+        end
       end
       "out_iso": begin
-        // TODO
+        if (!write && channel == DataChannel) begin
+          do_read_check = 1'b0;
+        end
       end
       "in_iso": begin
-        // TODO
-      end
+        if (!write && channel == DataChannel) begin
+          do_read_check = 1'b0;
+        end      end
       "data_toggle_clear": begin
         // TODO
       end
