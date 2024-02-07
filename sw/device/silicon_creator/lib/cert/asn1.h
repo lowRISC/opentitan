@@ -98,7 +98,7 @@ typedef struct asn1_bitstring {
   // How many bits have been added to the current byte (between 0 and 7).
   size_t used_bits;
   // Current value of the last byte of the string.
-  size_t current_byte;
+  uint8_t current_byte;
 } asn1_bitstring_t;
 
 // ASN1 tag classes.
