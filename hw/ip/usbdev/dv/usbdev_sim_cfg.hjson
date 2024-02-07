@@ -88,6 +88,10 @@
       name: usbdev_out_trans_nak
       uvm_test_seq: usbdev_out_trans_nak_vseq
     }
+    {
+      name: usbdev_stall_priority_over_NAK
+      uvm_test_seq: usbdev_stall_priority_over_nak_vseq
+    }
   ]
 
   // List of regressions.
