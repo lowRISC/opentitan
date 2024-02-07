@@ -14,6 +14,7 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
   token_pkt m_token_pkt;
   data_pkt  m_data_pkt ;
   handshake_pkt m_handshake_pkt;
+  sof_pkt m_sof_pkt;
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
@@ -107,8 +108,15 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     end
     `uvm_info(`gfn, $sformatf("Complete Data_Packet = %p", comp_data_pkt), UVM_DEBUG)
     drive_pkt(comp_data_pkt);
-    get_dut_response(rsp_item);
-    seq_item_port.item_done(rsp_item);
+    `uvm_info(`gfn, $sformatf("\n\nTransfer Type = %s", seq_item.m_usb_transfer), UVM_HIGH)
+    if (seq_item.m_usb_transfer == IsoTrans) begin
+      seq_item_port.item_done();
+      `uvm_info(`gfn, $sformatf("\n\nTransfer Type = %s", seq_item.m_usb_transfer), UVM_HIGH)
+    end else begin
+      `uvm_info(`gfn, $sformatf("\n\nTransfer Type = %s", seq_item.m_usb_transfer), UVM_HIGH)
+      get_dut_response(rsp_item);
+      seq_item_port.item_done(rsp_item);
+    end
   endtask
 
   task prepare_handshake_packet(usb20_item seq_item, usb20_item rsp_item);
@@ -133,7 +141,27 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
   endtask
 
   task  prepare_sof_packet( usb20_item seq_item, usb20_item rsp_item);
-    // TODO: Drive method to drive SOF packet
+    bit driver_sof_pkt[];
+    bit comp_sof_pkt[];
+    $cast(m_sof_pkt, seq_item);
+    m_sof_pkt.print();
+    // Modified each field of the packet to start with the Least Significant Bit (LSB)
+    m_sof_pkt.m_pid_type = {<<4{m_sof_pkt.m_pid_type}};
+    m_sof_pkt.m_pid_type = {<<{m_sof_pkt.m_pid_type}};
+    m_sof_pkt.framecnt = {<<{m_sof_pkt.framecnt}};
+    m_sof_pkt.crc5 = {<<{m_sof_pkt.crc5}};
+    m_sof_pkt.pack(driver_sof_pkt);
+    // to make complete packet need to attach SYNC at start of packet
+    comp_sof_pkt = new[driver_sof_pkt.size() + 8];
+    for (int i = 0; i < 8; i++) begin
+      comp_sof_pkt[i] = SYNC_PATTERN[i];
+    end
+    for (int i = 0; i < driver_sof_pkt.size(); i++) begin
+      comp_sof_pkt[i + 8] = driver_sof_pkt[i];
+    end
+    `uvm_info(`gfn, $sformatf("Complete Sof_Packet = %p", comp_sof_pkt), UVM_HIGH)
+    drive_pkt(comp_sof_pkt);
+    seq_item_port.item_done();
   endtask
 
   task drive_pkt(bit comp_pkt[]);
