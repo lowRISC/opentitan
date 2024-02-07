@@ -101,17 +101,6 @@ void ottf_external_isr(uint32_t *exc_info) {
   }
 }
 
-// We make this a macro to show the caller line number when printing a error.
-#define CHECK_IRQ_EQ(irq)                                                \
-  do {                                                                   \
-    irq_global_ctrl(false);                                              \
-    if (irq_fired == UINT32_MAX) {                                       \
-      wait_for_interrupt();                                              \
-      irq_global_ctrl(true);                                             \
-    }                                                                    \
-    TRY_CHECK(irq_fired == irq, "Got %d, expected %d.", irq_fired, irq); \
-  } while (false)
-
 static status_t read_manufacture_id(void) {
   uint8_t reg = kManufacturerIdReg, data = 0;
   TRY(i2c_testutils_write(&i2c, kDeviceAddr, 1, &reg, true));
@@ -148,9 +137,8 @@ static status_t rx_stretch_timeout(void) {
 
   irq_global_ctrl(false);
   irq_fired = UINT32_MAX;
-  irq_global_ctrl(true);
   TRY(i2c_testutils_issue_read(&i2c, kDeviceAddr, 1));
-  CHECK_IRQ_EQ(kDifI2cIrqStretchTimeout);
+  ATOMIC_WAIT_FOR_INTERRUPT(irq_fired == kDifI2cIrqStretchTimeout);
 
   TRY(dif_i2c_irq_set_enabled(&i2c, kDifI2cIrqStretchTimeout,
                               kDifToggleDisabled));
