@@ -177,7 +177,6 @@ module spi_host_reg_top (
   logic intr_state_error_qs;
   logic intr_state_error_wd;
   logic intr_state_spi_event_qs;
-  logic intr_state_spi_event_wd;
   logic intr_enable_we;
   logic intr_enable_error_qs;
   logic intr_enable_error_wd;
@@ -306,7 +305,7 @@ module spi_host_reg_top (
   //   F[spi_event]: 1:1
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_intr_state_spi_event (
@@ -314,8 +313,8 @@ module spi_host_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_we),
-    .wd     (intr_state_spi_event_wd),
+    .we     (1'b0),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.intr_state.spi_event.de),
@@ -1756,8 +1755,6 @@ module spi_host_reg_top (
   assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
 
   assign intr_state_error_wd = reg_wdata[0];
-
-  assign intr_state_spi_event_wd = reg_wdata[1];
   assign intr_enable_we = addr_hit[1] & reg_we & !reg_error;
 
   assign intr_enable_error_wd = reg_wdata[0];

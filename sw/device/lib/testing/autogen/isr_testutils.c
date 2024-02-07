@@ -826,7 +826,7 @@ void isr_testutils_spi_device_isr(
 
 void isr_testutils_spi_host_isr(
     plic_isr_ctx_t plic_ctx, spi_host_isr_ctx_t spi_host_ctx,
-    top_earlgrey_plic_peripheral_t *peripheral_serviced,
+    bool mute_status_irq, top_earlgrey_plic_peripheral_t *peripheral_serviced,
     dif_spi_host_irq_t *irq_serviced) {
   // Claim the IRQ at the PLIC.
   dif_rv_plic_irq_id_t plic_irq_id;
@@ -857,6 +857,9 @@ void isr_testutils_spi_host_isr(
   CHECK_DIF_OK(dif_spi_host_irq_get_type(spi_host_ctx.spi_host, irq, &type));
   if (type == kDifIrqTypeEvent) {
     CHECK_DIF_OK(dif_spi_host_irq_acknowledge(spi_host_ctx.spi_host, irq));
+  } else if (mute_status_irq) {
+    CHECK_DIF_OK(dif_spi_host_irq_set_enabled(spi_host_ctx.spi_host, irq,
+                                              kDifToggleDisabled));
   }
 
   // Complete the IRQ at the PLIC.
