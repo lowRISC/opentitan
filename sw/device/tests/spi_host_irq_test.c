@@ -82,16 +82,6 @@ static status_t external_isr(void) {
 
 void ottf_external_isr(uint32_t *exc_info) { test_result = external_isr(); }
 
-static status_t check_irq_eq(uint32_t irq) {
-  irq_global_ctrl(false);
-  if (irq_fired == UINT32_MAX) {
-    wait_for_interrupt();
-    irq_global_ctrl(true);
-  }
-  TRY_CHECK(irq_fired == irq);
-  return OK_STATUS();
-}
-
 static status_t ready_event_irq(void) {
   enum { kDataSize = 260, kCommands = 5 };
   static_assert(kDataSize % kCommands == 0, "Must be multiple.");
@@ -120,7 +110,7 @@ static status_t ready_event_irq(void) {
   TRY_CHECK(status.active);
 
   // Wait for the event irq and check that it was triggered by `STATUS.ready`.
-  TRY(check_irq_eq(kDifSpiHostIrqSpiEvent));
+  ATOMIC_WAIT_FOR_INTERRUPT(irq_fired == kDifSpiHostIrqSpiEvent);
   TRY(dif_spi_host_get_status(&spi_host, &status));
   TRY_CHECK(status.ready);
 
@@ -150,7 +140,7 @@ static status_t active_event_irq(void) {
   TRY_CHECK(status.active);
 
   // Wait for the event irq and check that it was triggered by `STATUS.active`.
-  check_irq_eq(kDifSpiHostIrqSpiEvent);
+  ATOMIC_WAIT_FOR_INTERRUPT(irq_fired == kDifSpiHostIrqSpiEvent);
   TRY(dif_spi_host_get_status(&spi_host, &status));
   TRY_CHECK(!status.active);
 
@@ -180,7 +170,7 @@ static status_t tx_empty_event_irq(void) {
   TRY_CHECK(!status.tx_empty);
 
   // Wait for the irq and check that it was triggered by `STATUS.tx_empty`.
-  check_irq_eq(kDifSpiHostIrqSpiEvent);
+  ATOMIC_WAIT_FOR_INTERRUPT(irq_fired == kDifSpiHostIrqSpiEvent);
   TRY(dif_spi_host_get_status(&spi_host, &status));
   TRY_CHECK(status.tx_empty);
 
@@ -212,7 +202,7 @@ static status_t tx_wm_event_irq(void) {
                                  kDifSpiHostDirectionTx, true));
 
   // Wait for the event irq and check that it was triggered by `STATUS.txwm`.
-  check_irq_eq(kDifSpiHostIrqSpiEvent);
+  ATOMIC_WAIT_FOR_INTERRUPT(irq_fired == kDifSpiHostIrqSpiEvent);
   TRY(dif_spi_host_get_status(&spi_host, &status));
   TRY_CHECK(status.tx_water_mark);
 
@@ -259,7 +249,7 @@ static status_t rx_full_event_irq(void) {
   TRY(dummy_read_from_flash(/*address=*/0x00, /*len=*/kRxFifoLen));
 
   // Wait for the event irq and check that it was triggered by `STATUS.rx_full`.
-  check_irq_eq(kDifSpiHostIrqSpiEvent);
+  ATOMIC_WAIT_FOR_INTERRUPT(irq_fired == kDifSpiHostIrqSpiEvent);
   TRY(dif_spi_host_get_status(&spi_host, &status));
   TRY_CHECK(status.rx_full);
 
@@ -281,7 +271,7 @@ static status_t rx_wm_event_irq(void) {
 
   TRY(dummy_read_from_flash(/*address=*/0x00, /*len=*/kRxWmLen));
 
-  check_irq_eq(kDifSpiHostIrqSpiEvent);
+  ATOMIC_WAIT_FOR_INTERRUPT(irq_fired == kDifSpiHostIrqSpiEvent);
   TRY(dif_spi_host_get_status(&spi_host, &status));
   TRY_CHECK(status.rx_water_mark);
 
@@ -323,7 +313,7 @@ static status_t cmd_busy_error_irq(void) {
 
   // Wait for the error irq and check that it was triggered by
   // command busy.
-  TRY(check_irq_eq(kDifSpiHostIrqError));
+  ATOMIC_WAIT_FOR_INTERRUPT(irq_fired == kDifSpiHostIrqError);
   dif_spi_host_errors_t errors;
   TRY(dif_spi_host_get_error(&spi_host, &errors));
   TRY_CHECK(errors & kDifSpiHostErrorCmdBusy, "Expect 0x%x, got 0x%x",
