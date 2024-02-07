@@ -50,6 +50,7 @@ enum module_ {
   kModuleRomExtInterrupt = MODULE_CODE('R', 'I'),
   kModuleAsn1 =            MODULE_CODE('A', '1'),
   kModuleRetRam =          MODULE_CODE('R', 'R'),
+  kModuleXModem =          MODULE_CODE('X', 'M'),
   // clang-format on
 };
 
@@ -154,6 +155,18 @@ enum module_ {
   X(kErrorBootSvcBadSlot,             ERROR_(2, kModuleBootSvc, kInvalidArgument)), \
   \
   X(kErrorRomExtBootFailed,           ERROR_(1, kModuleRomExt, kFailedPrecondition)), \
+  \
+  X(kErrorXModemTimeoutStart,         ERROR_(1, kModuleXModem, kDeadlineExceeded)), \
+  X(kErrorXModemTimeoutPacket,        ERROR_(2, kModuleXModem, kDeadlineExceeded)), \
+  X(kErrorXModemTimeoutData,          ERROR_(3, kModuleXModem, kDeadlineExceeded)), \
+  X(kErrorXModemTimeoutCrc,           ERROR_(4, kModuleXModem, kDeadlineExceeded)), \
+  X(kErrorXModemTimeoutAck,           ERROR_(5, kModuleXModem, kDeadlineExceeded)), \
+  X(kErrorXModemCrc,                  ERROR_(6, kModuleXModem, kDataLoss)), \
+  X(kErrorXModemEndOfFile,            ERROR_(7, kModuleXModem, kOutOfRange)), \
+  X(kErrorXModemCancel,               ERROR_(8, kModuleXModem, kCancelled)), \
+  X(kErrorXModemUnknown,              ERROR_(9, kModuleXModem, kUnknown)), \
+  X(kErrorXModemProtocol,             ERROR_(10, kModuleXModem, kInvalidArgument)), \
+  X(kErrorXModemTooManyErrors,        ERROR_(11, kModuleXModem, kFailedPrecondition)), \
   \
   /* The high-byte of kErrorInterrupt is modified with the interrupt cause */ \
   X(kErrorRomExtInterrupt,            ERROR_(0, kModuleRomExtInterrupt, kUnknown)), \
