@@ -891,6 +891,7 @@
       ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
       run_opts: [
+        "+do_creator_sw_cfg_ast_cfg=0",
         "+sw_test_timeout_ns=200_000_000",
         "+use_otp_image=OtpTypeLcStRaw",
         "+chip_clock_source=ChipClockSourceExternal48Mhz",
