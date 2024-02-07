@@ -168,6 +168,7 @@ opentitan_test(
     srcs = [":firmware.c"],
     exec_env = {
         "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon_owner",
+        "//hw/top_earlgrey:silicon_owner_prodc_rom_ext": "silicon_owner",
     },
     silicon_owner = silicon_params(
         tags = ["broken"],
