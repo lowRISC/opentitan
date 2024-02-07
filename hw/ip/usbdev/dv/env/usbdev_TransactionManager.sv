@@ -110,21 +110,24 @@ class usbdev_transaction_manager extends uvm_object;
       2 : begin
         m_usbdev_packet_classifier.checkPacket(h_pkt);
         if (m_usbdev_packet_classifier.pid == PidTypeAck) begin
-          `uvm_info(get_type_name(), "ACK Handshake", UVM_DEBUG);
+          pid = m_usbdev_packet_classifier.pid;
+          m_handshake_pkt.send_handshake_packet(pid);
           state = 0;
         end
         else if (m_usbdev_packet_classifier.pid == PidTypeNak) begin
-          `uvm_info(get_type_name(), "NAK Handshake", UVM_DEBUG);
+          pid = m_usbdev_packet_classifier.pid;
+          m_handshake_pkt.send_handshake_packet(pid);
           state = 0;
         end
         else if (m_usbdev_packet_classifier.pid == PidTypeStall) begin
-          `uvm_info(get_type_name(), "STALL Handshake", UVM_DEBUG);
+          pid = m_usbdev_packet_classifier.pid;
+          m_handshake_pkt.send_handshake_packet(pid);
           state = 0;
         end
       end
       default : state = 0;
     endcase
-  endtask
+  endtask  
 
   task out_transaction(input bit d_pkt[], input bit h_pkt[]);
     case(state)
