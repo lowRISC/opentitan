@@ -187,6 +187,8 @@ RUST_TARGETS = [
     "//sw/host/tests/rom/e2e_chip_specific_startup:e2e_chip_specific_startup",
     "//sw/host/tests/rom/sw_strap_value:sw_strap_value",
     "//sw/host/tests/chip/spi_passthru:spi_passthru",
+    "//sw/host/tests/xmodem:lrzsz_test",
+    "//sw/host/tests/xmodem:xmodem",
 ]
 
 rustfmt_test(
