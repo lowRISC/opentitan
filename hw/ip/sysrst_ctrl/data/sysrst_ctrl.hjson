@@ -196,9 +196,8 @@
         { bits: "TimerWidth-1:0",
           name: "ec_rst_pulse",
           desc: '''
-            Configure the debounce timer in number of clock cycles.
+            Configure the pulse width of ec_rst_l.
             Each step is 5 us for a 200 kHz clock.
-            The signal must exceed the debounce time by at least one clock cycle to be detected.
           '''
         }
       ],
