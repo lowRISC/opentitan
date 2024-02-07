@@ -76,21 +76,7 @@ static void otbn_wait_for_done_irq(dif_otbn_t *otbn) {
 
   // OTBN should be running. Wait for an interrupt that says
   // it's done.
-  while (true) {
-    // This looks a bit odd, but is needed to avoid a race condition where the
-    // OTBN interrupt comes in after we load the otbn_finished flag but before
-    // we run the WFI instruction. The trick is that WFI returns when an
-    // interrupt comes in even if interrupts are globally disabled, which means
-    // that the WFI can actually sit *inside* the critical section.
-    irq_global_ctrl(false);
-    if (plic_peripheral != UINT32_MAX) {
-      break;
-    }
-
-    wait_for_interrupt();
-    irq_global_ctrl(true);
-  }
-
+  ATOMIC_WAIT_FOR_INTERRUPT(plic_peripheral != UINT32_MAX);
   CHECK(plic_peripheral == kTopEarlgreyPlicPeripheralOtbn,
         "Interrupt from incorrect peripheral: (exp: %d, obs: %s)",
         kTopEarlgreyPlicPeripheralOtbn, plic_peripheral);
