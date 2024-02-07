@@ -79,37 +79,6 @@ void test_phase_sync(void) {
 }
 
 /**
- * Wait for `peripheral` to become different from `UINT32_MAX`.
- *
- * The reason for this contraption is that the interrupt may or
- * may not have already fired. If it did then `wait_for_interrupt`
- * will block forever since the interrupt will only fire once
- * in the whole test. Hence we need to check the value of `peripheral`
- * before WFI but there is a race condition between the check and the
- * WFI. We resolve this by disabling global interrupts, doing the check
- * and then going to sleep. This works because WFI ignores the global
- * interrupt enabled flag so that if an interrupt occurs between the check
- * and the WFI, it will cause the WFI to wakeup (since the interrupt hasn't
- * been serviced). After wakeup, we re-enabled interrupts so that any pending
- * interrupt is serviced. We need to do this in a loop because technically a
- * WFI can wakeup for any reason, not just an interrupt.
- */
-static void wait_for_any_interrupt(void) {
-  // Disable global interrupts.
-  irq_global_ctrl(false);
-  // Check if interrupt has occured yet.
-  while (peripheral == UINT32_MAX) {
-    // If interrupt is triggered at this point, it will not be serviced
-    // and cause the WFI to immediately wakeup.
-    wait_for_interrupt();
-    // Re-enable interrupts to service any interrupt that could have occured.
-    irq_global_ctrl(true);
-    irq_global_ctrl(false);
-  }
-  irq_global_ctrl(true);
-}
-
-/**
  * Configure for input change detection, sync with DV side, wait for input
  * change interrupt, check the interrupt cause and clear it.
  */
@@ -147,10 +116,9 @@ void sysrst_ctrl_input_change_detect(
   LOG_INFO("Tell host we did not detect the glitch");
   test_phase_sync();
 
-  wait_for_any_interrupt();
+  ATOMIC_WAIT_FOR_INTERRUPT(peripheral ==
+                            kTopEarlgreyPlicPeripheralSysrstCtrlAon);
   // Check that the interrupt is triggered at the second part of the test.
-  CHECK(peripheral == kTopEarlgreyPlicPeripheralSysrstCtrlAon,
-        "The interrupt is not triggered during the test.");
   CHECK(irq_id == kTopEarlgreyPlicIrqIdSysrstCtrlAonEventDetected,
         "Wrong irq_id");
 
@@ -215,11 +183,10 @@ void sysrst_ctrl_key_combo_detect(dif_sysrst_ctrl_key_combo_t key_combo,
   test_phase_sync();
 
   LOG_INFO("wait for interrupt");
-  wait_for_any_interrupt();
+  ATOMIC_WAIT_FOR_INTERRUPT(peripheral ==
+                            kTopEarlgreyPlicPeripheralSysrstCtrlAon);
   LOG_INFO("interrupt triggered, checks causes");
   // Check that the interrupt is triggered at the second part of the test.
-  CHECK(peripheral == kTopEarlgreyPlicPeripheralSysrstCtrlAon,
-        "The interrupt is not triggered during the test.");
   CHECK(irq_id == kTopEarlgreyPlicIrqIdSysrstCtrlAonEventDetected,
         "Wrong irq_id");
 
