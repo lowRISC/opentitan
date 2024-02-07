@@ -14,3 +14,4 @@
 `include "usbdev_out_stall_vseq"
 `include "usbdev_out_trans_nak_vseq"
 `include "usbdev_stall_priority_over_nak_vseq"
+`include "usbdev_rx_fifo_vseq"
