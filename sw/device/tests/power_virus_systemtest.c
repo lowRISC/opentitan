@@ -96,6 +96,10 @@ static const dif_pwm_channel_t pwm_channels[PWM_PARAM_N_OUTPUTS] = {
  */
 enum {
   /**
+   * Maximum number of test iterations in silicon targets.
+   */
+  kMaxIterationsSilicon = 10000,
+  /**
    * Test timeout parameter.
    */
   kTestTimeoutMicros = 1000,  // 1ms
@@ -167,6 +171,15 @@ enum {
   kSpiHost1Csid = 0x0,
   kSpiHost1TxDataWord = 0xaaaaaaaa,
 };
+
+typedef enum power_virus_test_stage {
+  kPowerVirusTestStageCryptoDataLoad,
+  kPowerVirusTestStageCommsDataLoad,
+  kPowerVirusTestStageMaxPower,
+  kPowerVirusTestStageComplete,
+} power_virus_test_stage_t;
+
+power_virus_test_stage_t test_stage;
 
 static uint32_t csrng_reseed_cmd_header;
 
@@ -1053,8 +1066,12 @@ static status_t aes_wait_for_status_ready(dif_aes_t *aes) {
   return OK_STATUS();
 }
 
-static void crypto_data_load_task(void *task_parameters) {
+static void crypto_data_load(void) {
   LOG_INFO("Loading crypto block FIFOs with data ...");
+
+  configure_hmac();
+  configure_kmac();
+  CHECK_STATUS_OK(configure_aes());
 
   // Load data into AES block.
   dif_aes_data_t aes_plain_text;
@@ -1098,11 +1115,20 @@ static void crypto_data_load_task(void *task_parameters) {
                        (uint8_t)kmac_output_length_bits);
     mmio_region_write8(kmac.base_addr, KMAC_MSG_FIFO_REG_OFFSET, (uint8_t)len);
   }
+}
 
+static void crypto_data_load_task(void *task_parameters) {
+  while (test_stage != kPowerVirusTestStageComplete) {
+    if (test_stage == kPowerVirusTestStageCryptoDataLoad) {
+      crypto_data_load();
+      test_stage = kPowerVirusTestStageCommsDataLoad;
+      ottf_task_yield();
+    }
+  }
   OTTF_TASK_DELETE_SELF_OR_DIE;
 }
 
-static void comms_data_load_task(void *task_parameters) {
+static void comms_data_load(void) {
   LOG_INFO("Loading communication block FIFOs with data ...");
   size_t bytes_written;
   CHECK(ARRAYSIZE(kUartMessage) == kUartFifoDepth);
@@ -1139,11 +1165,20 @@ static void comms_data_load_task(void *task_parameters) {
       }};
   CHECK_DIF_OK(dif_spi_host_transaction(&spi_host_1, kSpiHost1Csid,
                                         &spi_host_tx_segment, 1));
+}
 
+static void comms_data_load_task(void *task_parameters) {
+  while (test_stage != kPowerVirusTestStageComplete) {
+    if (test_stage == kPowerVirusTestStageCommsDataLoad) {
+      comms_data_load();
+      test_stage = kPowerVirusTestStageMaxPower;
+      ottf_task_yield();
+    }
+  }
   OTTF_TASK_DELETE_SELF_OR_DIE;
 }
 
-static void max_power_task(void *task_parameters) {
+static void max_power(void) {
   LOG_INFO("Starting the max power task ...");
   // ***************************************************************************
   // Trigger all chip operations.
@@ -1351,6 +1386,23 @@ static void max_power_task(void *task_parameters) {
       };
     };
   }
+}
+
+static void max_power_task(void *task_parameters) {
+  uint32_t max_iterations = 1;
+  if (kDeviceType == kDeviceSilicon) {
+    max_iterations = kMaxIterationsSilicon;
+  }
+
+  for (size_t i = 0; i < max_iterations; ++i) {
+    if (test_stage == kPowerVirusTestStageMaxPower) {
+      max_power();
+      test_stage = (i + 1 == max_iterations)
+                       ? kPowerVirusTestStageComplete
+                       : kPowerVirusTestStageCryptoDataLoad;
+      ottf_task_yield();
+    }
+  }
 
   OTTF_TASK_DELETE_SELF_OR_DIE;
 }
@@ -1385,10 +1437,7 @@ bool test_main(void) {
       dif_gpio_output_set_enabled(&gpio, /*pin=*/0, kDifToggleEnabled));
   configure_adc_ctrl_to_continuously_sample();
   configure_entropy_complex();
-  CHECK_STATUS_OK(configure_aes());
   configure_otbn();
-  configure_hmac();
-  configure_kmac();
   configure_uart(&uart_1);
   configure_uart(&uart_2);
   configure_uart(&uart_3);
@@ -1414,6 +1463,8 @@ bool test_main(void) {
   // ***************************************************************************
   // Kick off test tasks.
   // ***************************************************************************
+  test_stage = kPowerVirusTestStageCryptoDataLoad;
+
   CHECK(ottf_task_create(crypto_data_load_task, "CryptoDataLoadTask",
                          kOttfFreeRtosMinStackSize, 1));
   CHECK(ottf_task_create(comms_data_load_task, "CommsDataLoadTask",

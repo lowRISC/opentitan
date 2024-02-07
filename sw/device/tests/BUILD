@@ -3734,6 +3734,7 @@ opentitan_test(
         },
     ),
     silicon = silicon_params(
+        timeout = "long",
         tags = ["broken"],
     ),
     deps = [
