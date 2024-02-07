@@ -72,6 +72,10 @@
       name: usbdev_pkt_sent
       uvm_test_seq: usbdev_pkt_sent_vseq
     }
+    {
+      name: usbdev_nak_trans
+      uvm_test_seq: usbdev_nak_trans_vseq
+    }
   ]
 
   // List of regressions.

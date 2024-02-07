@@ -9,3 +9,4 @@
 `include "usbdev_pkt_received_vseq.sv"
 `include "usbdev_av_buffer_vseq.sv"
 `include "usbdev_pkt_sent_vseq.sv"
+`include "usbdev_nak_trans_vseq.sv"

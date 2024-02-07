@@ -31,6 +31,7 @@ filesets:
       - seq_lib/usbdev_pkt_received_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_av_buffer_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_pkt_sent_vseq.sv: {is_include_file: true}
+      - seq_lib/usbdev_nak_trans_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:
