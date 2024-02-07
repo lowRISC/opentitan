@@ -523,4 +523,17 @@ class SignConverter {
 #endif  // !defined(__ASSEMBLER__) && !defined(NOSTDINC) &&
         // !defined(RUST_PREPROCESSOR_EMIT)
 
+// This routine makes sure that a condition that can be changed by IRQs
+// is evaluated inside a critical session. It executes a `wfi` between
+// evaluations.
+#define ATOMIC_WAIT_FOR_INTERRUPT(_volatile_condition) \
+  while (true) {                                       \
+    irq_global_ctrl(false);                            \
+    if ((_volatile_condition)) {                       \
+      break;                                           \
+    }                                                  \
+    wait_for_interrupt();                              \
+    irq_global_ctrl(true);                             \
+  }                                                    \
+  irq_global_ctrl(true)
 #endif  // OPENTITAN_SW_DEVICE_LIB_BASE_MACROS_H_
