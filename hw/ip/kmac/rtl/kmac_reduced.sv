@@ -160,7 +160,7 @@ module kmac_reduced
   assign msg_mask_en = msg_mask_en_i & msg_valid & msg_ready;
 
   // SHA3 entropy interface
-  logic sha3_rand_valid, sha3_rand_early, sha3_rand_consumed;
+  logic sha3_rand_valid, sha3_rand_early, sha3_rand_update, sha3_rand_consumed;
   logic [StateW/2-1:0] sha3_rand_data;
   logic sha3_rand_aux;
 
@@ -207,6 +207,7 @@ module kmac_reduced
     .rand_early_i    (sha3_rand_early),
     .rand_data_i     (sha3_rand_data),
     .rand_aux_i      (sha3_rand_aux),
+    .rand_update_o   (sha3_rand_update),
     .rand_consumed_o (sha3_rand_consumed),
 
     // N, S: Used in cSHAKE mode
@@ -261,6 +262,7 @@ module kmac_reduced
     .rand_early_o   (sha3_rand_early),
     .rand_data_o    (sha3_rand_data),
     .rand_aux_o     (sha3_rand_aux),
+    .rand_update_i  (sha3_rand_update),
     .rand_consumed_i(sha3_rand_consumed),
 
     // Message Masking
