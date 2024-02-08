@@ -124,21 +124,6 @@ static void ack_spi_tpm_header_irq(dif_spi_device_handle_t *spi_device) {
       &spi_device->dev, kDifSpiDeviceIrqTpmHeaderNotEmpty, kDifToggleEnabled));
 }
 
-// This routine is needed to make sure that an interrupt does not sneak in
-// and jump execution away between the boolean check and the actual invocation
-// of wait_for_interrupt.
-static void atomic_wait_for_interrupt(void) {
-  while (true) {
-    irq_global_ctrl(false);
-    if (header_interrupt_received) {
-      break;
-    }
-    wait_for_interrupt();
-    irq_global_ctrl(true);
-  }
-  irq_global_ctrl(true);
-}
-
 bool test_main(void) {
   CHECK_DIF_OK(dif_pinmux_init(
       mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
@@ -183,7 +168,7 @@ bool test_main(void) {
     LOG_INFO("Iteration %d", i);
 
     // Wait for write interrupt.
-    atomic_wait_for_interrupt();
+    ATOMIC_WAIT_FOR_INTERRUPT(header_interrupt_received);
 
     // Check what command we have received. Store it as expected variables
     // and compare when the read command is issued.
@@ -211,7 +196,7 @@ bool test_main(void) {
     LOG_INFO("SYNC: Waiting Read");
     // Send the written data right back out for reads.
     // Wait for read interrupt.
-    atomic_wait_for_interrupt();
+    ATOMIC_WAIT_FOR_INTERRUPT(header_interrupt_received);
     // Send the written data right back out for reads.
     CHECK_DIF_OK(dif_spi_device_tpm_write_data(&spi_device, num_bytes, buf));
 
