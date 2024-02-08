@@ -18,9 +18,16 @@ In this mode, once the raw entropy has been health checked, it will be passed in
 This block will compress the bits such that the entropy bits/physical bits, or min-entropy value, should be improved over the raw data source min-entropy value.
 The compression operation will compress every [`HEALTH_TEST_WINDOWS.FIPS_WINDOW`](registers.md#health_test_windows--fips_window) x 4 tested bits into 384 full-entropy bits.
 By default, 2048 tested bits are used.
+Note that a seed is only produced if the last [`HEALTH_TEST_WINDOWS.FIPS_WINDOW`](registers.md#health_test_windows--fips_window) x 4 tested bits have passed the health tests.
+If a health test fails, the conditioner block continues absorbing the next window unless [`ALERT_SUMMARY_FAIL_COUNTS`](registers.md#alert_summary_fail_counts) reaches the configured [`ALERT_THRESHOLD`](registers.md#alert_threshold).
+Once the threshold is reached, the ENTROPY_SRC block stops serving entropy and signals a recoverable alert.
+Firmware then needs to disable/re-enable the block to restart operation.
 
 Note that after enabling the ENTROPY_SRC block, the health tests need to pass for two subsequent windows of [`HEALTH_TEST_WINDOWS.FIPS_WINDOW`](registers.md#health_test_windows--fips_window) x 4 tested bits (startup health testing).
 By default, 1024 samples of 4 bits (4096 1-bit samples when running in single-channel mode), i.e., 4096 tested bits, are used for producing the startup seed.
+If a health test fails, the startup health testing starts over and the conditioner block continues absorbing the next window.
+If the health tests don't pass for two subsequent windows, the ENTROPY_SRC block stops operating and signals a recoverable alert.
+Firmware then needs to disable/re-enable the block to restart operation including the startup health testing.
 
 The hardware conditioning can also be bypassed and replaced in normal operation with a firmware-defined conditioning algorithm.
 This firmware conditioning algorithm can be disabled on boot for security purposes.
