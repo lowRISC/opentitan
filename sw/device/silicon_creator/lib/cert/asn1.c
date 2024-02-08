@@ -9,7 +9,7 @@
 rom_error_t asn1_start(asn1_state_t *new_state, uint8_t *buffer, size_t size) {
   // Make sure that the buffer is not too large to prevent overflows.
   if (new_state == NULL || buffer == NULL || size > PTRDIFF_MAX) {
-    return kErrorAsn1InvalidArgument;
+    return kErrorAsn1StartInvalidArgument;
   }
   new_state->buffer = buffer;
   new_state->size = size;
@@ -33,7 +33,7 @@ rom_error_t asn1_push_bytes(asn1_state_t *state, const uint8_t *bytes,
                             size_t size) {
   // Make sure that the addition will not overflow
   if (size > PTRDIFF_MAX) {
-    return kErrorAsn1InvalidArgument;
+    return kErrorAsn1PushBytesInvalidArgument;
   }
   if (state->offset + size > state->size) {
     return kErrorAsn1BufferExhausted;
@@ -153,8 +153,8 @@ rom_error_t asn1_push_uint32(asn1_state_t *state, uint8_t tag, uint32_t value) {
 
 rom_error_t asn1_push_integer(asn1_state_t *state, uint8_t tag, bool is_signed,
                               const uint8_t *bytes_be, size_t size) {
-  if (size == 0) {
-    return kErrorAsn1InvalidArgument;
+  if (size == 0 || (bytes_be == NULL && size > 0)) {
+    return kErrorAsn1PushIntegerInvalidArgument;
   }
   asn1_tag_t tag_st;
   RETURN_IF_ERROR(asn1_start_tag(state, &tag_st, tag));
@@ -188,7 +188,7 @@ rom_error_t asn1_push_integer_pad(asn1_state_t *state, bool is_signed,
                                   const uint8_t *bytes_be, size_t size,
                                   size_t padded_size) {
   if (size == 0 || size > padded_size) {
-    return kErrorAsn1InvalidArgument;
+    return kErrorAsn1PushIntegerPadInvalidArgument;
   }
   // Determine the padding byte.
   uint8_t padding = 0;
@@ -271,7 +271,7 @@ rom_error_t asn1_bitstring_push_bit(asn1_bitstring_t *bitstring, bool bit) {
 rom_error_t asn1_finish_bitstring(asn1_bitstring_t *bitstring) {
   if (bitstring->used_bits >= 8) {
     bitstring->state = NULL;
-    return kErrorAsn1InvalidArgument;
+    return kErrorAsn1FinishBitstringInvalidArgument;
   }
   // If the last byte contains some bits, we need to push it and update
   // the number of unused bits. If the string length was a multiple of 8

@@ -174,9 +174,13 @@ enum module_ {
   \
   X(kErrorBootLogInvalid,             ERROR_(1, kModuleBootLog, kInternal)), \
   \
-  X(kErrorAsn1Internal,               ERROR_(1, kModuleAsn1, kInternal)), \
-  X(kErrorAsn1InvalidArgument,        ERROR_(2, kModuleAsn1, kInvalidArgument)), \
-  X(kErrorAsn1BufferExhausted,        ERROR_(3, kModuleAsn1, kResourceExhausted)), \
+  X(kErrorAsn1Internal,                       ERROR_(1, kModuleAsn1, kInternal)), \
+  X(kErrorAsn1StartInvalidArgument,           ERROR_(2, kModuleAsn1, kInvalidArgument)), \
+  X(kErrorAsn1PushBytesInvalidArgument,       ERROR_(3, kModuleAsn1, kInvalidArgument)), \
+  X(kErrorAsn1PushIntegerPadInvalidArgument,  ERROR_(4, kModuleAsn1, kInvalidArgument)), \
+  X(kErrorAsn1PushIntegerInvalidArgument,     ERROR_(5, kModuleAsn1, kInvalidArgument)), \
+  X(kErrorAsn1FinishBitstringInvalidArgument, ERROR_(6, kModuleAsn1, kInvalidArgument)), \
+  X(kErrorAsn1BufferExhausted,                ERROR_(7, kModuleAsn1, kResourceExhausted)), \
   \
   X(kErrorRetRamBadVersion,           ERROR_(1, kModuleRetRam, kUnknown)), \
   \
