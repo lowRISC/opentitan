@@ -19,6 +19,7 @@ extern "C" {
  * This function only supports the format specifiers required by the
  * ROM:
  * - %c, which prints a single character.
+ * - %C, which prints a printable character or a C-style hex escape.
  * - %d, which prints a signed int in decimal.
  * - %u, which prints an unsigned int in decimal.
  * - %s, which prints a nul-terminated string.

@@ -51,6 +51,7 @@ enum module_ {
   kModuleAsn1 =            MODULE_CODE('A', '1'),
   kModuleRetRam =          MODULE_CODE('R', 'R'),
   kModuleXModem =          MODULE_CODE('X', 'M'),
+  kModuleRescue =          MODULE_CODE('R', 'S'),
   // clang-format on
 };
 
@@ -182,6 +183,11 @@ enum module_ {
   X(kErrorAsn1BufferExhausted,                ERROR_(7, kModuleAsn1, kResourceExhausted)), \
   \
   X(kErrorRetRamBadVersion,           ERROR_(1, kModuleRetRam, kUnknown)), \
+  \
+  X(kErrorRescueReboot,               ERROR_(0, kModuleRescue, kInternal)), \
+  X(kErrorRescueBadMode,              ERROR_(1, kModuleRescue, kInvalidArgument)), \
+  X(kErrorRescueImageTooBig,          ERROR_(2, kModuleRescue, kFailedPrecondition)), \
+  \
   /* This comment prevent clang from trying to format the macro. */
 
 // clang-format on
