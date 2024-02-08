@@ -15,7 +15,7 @@ use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::lc::read_lc_state;
 use opentitanlib::test_utils::load_sram_program::SramProgramParams;
 use ujson_lib::provisioning_data::{ManufCertPersoDataIn, ManufFtIndividualizeData};
-use util_lib::hex_string_to_u32_arrayvec;
+use util_lib::{hex_string_to_u32_arrayvec, hex_string_to_u8_arrayvec};
 
 /// Provisioning data command-line parameters.
 #[derive(Debug, Args, Clone)]
@@ -41,6 +41,10 @@ pub struct ManufFtProvisioningDataInput {
     /// Host (HSM) generated ECC (P256) private key DER file.
     #[arg(long)]
     host_ecc_sk: PathBuf,
+
+    /// UDS authority (endorsement) key ID hexstring.
+    #[arg(long)]
+    pub uds_auth_key_id: String,
 
     /// Measurement of the ROM_EXT image to be loaded onto the device.
     #[arg(long)]
@@ -106,10 +110,13 @@ fn main() -> Result<()> {
     )?;
     let owner_measurement =
         hex_string_to_u32_arrayvec::<8>(opts.provisioning_data.owner_measurement.as_str())?;
-    let _attestation_tcb_measurements = ManufCertPersoDataIn {
+    let uds_auth_key_id =
+        hex_string_to_u8_arrayvec::<20>(opts.provisioning_data.uds_auth_key_id.as_str())?;
+    let _perso_data_in = ManufCertPersoDataIn {
         rom_ext_measurement: rom_ext_measurement.clone(),
         owner_manifest_measurement: owner_manifest_measurement.clone(),
         owner_measurement: owner_measurement.clone(),
+        auth_key_key_id: uds_auth_key_id.clone(),
     };
 
     // Only run test unlock operation if we are in a locked LC state.
@@ -184,7 +191,7 @@ fn main() -> Result<()> {
         opts.second_bootstrap,
         opts.third_bootstrap,
         opts.provisioning_data.host_ecc_sk,
-        &_attestation_tcb_measurements,
+        &_perso_data_in,
         opts.timeout,
     )?;
 

@@ -5,10 +5,6 @@
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 load("//rules:const.bzl", "CONST", "hex")
 load("//rules:manifest.bzl", "manifest")
-load(
-    "//rules:opentitan.bzl",
-    "RSA_ONLY_KEY_STRUCTS",
-)
 load("//rules:signing.bzl", "offline_presigning_artifacts", "offline_signature_attach")
 load(
     "//rules/opentitan:defs.bzl",
@@ -16,7 +12,6 @@ load(
     "hyper310_jtag_params",
     "opentitan_binary",
     "opentitan_test",
-    "rsa_key_for_lc_state",
     "silicon_jtag_params",
 )
 load(
@@ -277,6 +272,7 @@ opentitan_binary(
         "//sw/device/silicon_creator/lib:attestation_key_diversifiers",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:otbn_boot_services",
+        "//sw/device/silicon_creator/lib/cert:uds_template_library",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:hmac",
         "//sw/device/silicon_creator/lib/drivers:keymgr",
@@ -317,10 +313,6 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw310_sival": None,
         "//hw/top_earlgrey:silicon_creator": None,
     },
-    rsa_key = rsa_key_for_lc_state(
-        RSA_ONLY_KEY_STRUCTS,
-        CONST.LCV.PROD,
-    ),
     silicon = silicon_jtag_params(
         binaries = _FT_PROVISIONING_BINARIES,
         data = ["//sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der"],
