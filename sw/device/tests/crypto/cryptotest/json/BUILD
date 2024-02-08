@@ -33,6 +33,13 @@ cc_library(
 )
 
 cc_library(
+    name = "hash_commands",
+    srcs = ["hash_commands.c"],
+    hdrs = ["hash_commands.h"],
+    deps = ["//sw/device/lib/ujson"],
+)
+
+cc_library(
     name = "aes_sca_commands",
     srcs = ["aes_sca_commands.c"],
     hdrs = ["aes_sca_commands.h"],
