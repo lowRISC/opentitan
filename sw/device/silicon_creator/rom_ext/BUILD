@@ -24,6 +24,22 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "rescue",
+    srcs = ["rescue.c"],
+    hdrs = ["rescue.h"],
+    deps = [
+        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
+        "//sw/device/lib/base:memory",
+        "//sw/device/silicon_creator/lib:dbg_print",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib:xmodem",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+        "//sw/device/silicon_creator/lib/drivers:rstmgr",
+    ],
+)
+
 dual_cc_library(
     name = "rom_ext_boot_policy_ptrs",
     srcs = dual_inputs(
@@ -195,7 +211,7 @@ cc_library(
     hdrs = ["rom_ext.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        ":bootstrap",
+        ":rescue",
         ":rom_ext_boot_policy",
         ":rom_ext_boot_policy_ptrs",
         ":rom_ext_epmp",

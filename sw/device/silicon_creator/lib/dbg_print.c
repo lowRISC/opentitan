@@ -53,6 +53,18 @@ void dbg_printf(const char *format, ...) {
         uart_putchar((char)ch);
         break;
       }
+      case 'C': {
+        uint8_t ch = (uint8_t)va_arg(args, int);
+        if (ch >= 32 && ch < 127) {
+          uart_putchar((char)ch);
+        } else {
+          uart_putchar('\\');
+          uart_putchar('x');
+          uart_putchar(kHexTable[ch >> 4]);
+          uart_putchar(kHexTable[ch & 15]);
+        }
+        break;
+      }
       case 's': {
         // Print a null-terminated string.
         const char *str = va_arg(args, const char *);
