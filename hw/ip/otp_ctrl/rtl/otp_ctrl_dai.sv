@@ -161,6 +161,18 @@ module otp_ctrl_dai
   logic [NumPart-1:0][OtpAddrWidth-1:0] digest_addr_lut;
   logic part_sel_valid;
 
+  // Depending on the partition configuration, the wrapper is instructed to ignore integrity
+  // calculations and checks. To be on the safe side, the partition filters error responses at this
+  // point and does not report any integrity errors if integrity is disabled.
+  otp_err_e otp_err;
+  always_comb begin
+    otp_err = otp_err_e'(otp_err_i);
+    if (!PartInfo[part_idx].integrity &&
+        otp_err_i inside {MacroEccCorrError, MacroEccUncorrError}) begin
+      otp_err = NoError;
+    end
+  end
+
   // Output partition error state.
   assign error_o       = error_q;
   // Working register is connected to data outputs.
@@ -235,9 +247,9 @@ module otp_ctrl_dai
         init_done_o = 1'b0;
         dai_prog_idle_o = 1'b0;
         if (otp_rvalid_i) begin
-          if ((!(otp_err_e'(otp_err_i) inside {NoError, MacroEccCorrError}))) begin
+          if ((!(otp_err inside {NoError, MacroEccCorrError}))) begin
             state_d = ErrorSt;
-            error_d = otp_err_e'(otp_err_i);
+            error_d = otp_err;
           end else begin
             state_d = InitPartSt;
           end
@@ -332,7 +344,7 @@ module otp_ctrl_dai
                                                                digest_addr_lut[part_idx])) begin
           if (otp_rvalid_i) begin
             // Check OTP return code.
-            if (otp_err_e'(otp_err_i) inside {NoError, MacroEccCorrError}) begin
+            if (otp_err inside {NoError, MacroEccCorrError}) begin
               data_en = 1'b1;
               // We do not need to descramble the digest values.
               if (PartInfo[part_idx].secret && otp_addr_o != digest_addr_lut[part_idx]) begin
@@ -342,12 +354,12 @@ module otp_ctrl_dai
                 dai_cmd_done_o = 1'b1;
               end
               // At this point the only error that we could have gotten are correctable ECC errors.
-              if (otp_err_e'(otp_err_i) != NoError) begin
+              if (otp_err != NoError) begin
                 error_d = MacroEccCorrError;
               end
             end else begin
               state_d = ErrorSt;
-              error_d = otp_err_e'(otp_err_i);
+              error_d = otp_err;
             end
           end
         // At this point, this check MUST succeed - otherwise this means that
@@ -443,17 +455,17 @@ module otp_ctrl_dai
 
           if (otp_rvalid_i) begin
             // Check OTP return code. Note that non-blank errors are recoverable.
-            if ((!(otp_err_e'(otp_err_i) inside {NoError, MacroWriteBlankError}))) begin
+            if ((!(otp_err inside {NoError, MacroWriteBlankError}))) begin
               state_d = ErrorSt;
-              error_d = otp_err_e'(otp_err_i);
+              error_d = otp_err;
             end else begin
               // Clear working register state.
               data_clr = 1'b1;
               state_d = IdleSt;
               dai_cmd_done_o = 1'b1;
               // Signal non-blank state, but do not go to terminal error state.
-              if (otp_err_e'(otp_err_i) == MacroWriteBlankError) begin
-                error_d = otp_err_e'(otp_err_i);
+              if (otp_err == MacroWriteBlankError) begin
+                error_d = otp_err;
               end
             end
           end
@@ -566,15 +578,15 @@ module otp_ctrl_dai
         if (otp_rvalid_i) begin
           cnt_en = 1'b1;
           // Check OTP return code.
-          if ((!(otp_err_e'(otp_err_i) inside {NoError, MacroEccCorrError}))) begin
+          if ((!(otp_err inside {NoError, MacroEccCorrError}))) begin
             state_d = ErrorSt;
-            error_d = otp_err_e'(otp_err_i);
+            error_d = otp_err;
           end else begin
             data_en = 1'b1;
             state_d = DigSt;
             // Signal soft ECC errors, but do not go into terminal error state.
-            if (otp_err_e'(otp_err_i) == MacroEccCorrError) begin
-              error_d = otp_err_e'(otp_err_i);
+            if (otp_err == MacroEccCorrError) begin
+              error_d = otp_err;
             end
           end
         end
@@ -839,8 +851,8 @@ module otp_ctrl_dai
   // OTP error response
   `ASSERT(OtpErrorState_A,
       state_q inside {InitOtpSt, ReadWaitSt, WriteWaitSt, DigReadWaitSt} && otp_rvalid_i &&
-      !(otp_err_e'(otp_err_i) inside {NoError, MacroEccCorrError, MacroWriteBlankError})
+      !(otp_err inside {NoError, MacroEccCorrError, MacroWriteBlankError})
       |=>
-      state_q == ErrorSt && error_o == $past(otp_err_e'(otp_err_i)))
+      state_q == ErrorSt && error_o == $past(otp_err))
 
 endmodule : otp_ctrl_dai
