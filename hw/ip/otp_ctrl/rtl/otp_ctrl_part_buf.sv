@@ -184,11 +184,22 @@ module otp_ctrl_part_buf
   // This partition cannot do any write accesses, hence we tie this
   // constantly off.
   assign otp_wdata_o = '0;
-  // Depending on the partition configuration, the wrapper is instructed to ignore integrity errors.
+  // Depending on the partition configuration, the wrapper is instructed to ignore integrity
+  // calculations and checks. To be on the safe side, the partition filters error responses at this
+  // point and does not report any integrity errors if integrity is disabled.
+  otp_err_e otp_err;
   if (Info.integrity) begin : gen_integrity
     assign otp_cmd_o = prim_otp_pkg::Read;
+    assign otp_err = otp_err_e'(otp_err_i);
   end else begin : gen_no_integrity
     assign otp_cmd_o = prim_otp_pkg::ReadRaw;
+    always_comb begin
+      if (otp_err_i inside {MacroEccCorrError, MacroEccUncorrError}) begin
+        otp_err = NoError;
+      end else begin
+        otp_err = otp_err_e'(otp_err_i);
+      end
+    end
   end
 
   always_comb begin : p_fsm
@@ -253,7 +264,7 @@ module otp_ctrl_part_buf
       InitWaitSt: begin
         if (otp_rvalid_i) begin
           buffer_reg_en = 1'b1;
-          if (otp_err_e'(otp_err_i) inside {NoError, MacroEccCorrError}) begin
+          if (otp_err inside {NoError, MacroEccCorrError}) begin
             // Once we've read and descrambled the whole partition, we can go to integrity
             // verification. Note that the last block is the digest value, which does not
             // have to be descrambled.
@@ -268,12 +279,12 @@ module otp_ctrl_part_buf
               cnt_en = 1'b1;
             end
             // At this point the only error that we could have gotten are correctable ECC errors.
-            if (otp_err_e'(otp_err_i) != NoError) begin
+            if (otp_err != NoError) begin
               error_d = MacroEccCorrError;
             end
           end else begin
             state_d = ErrorSt;
-            error_d = otp_err_e'(otp_err_i);
+            error_d = otp_err;
           end
         end
       end
@@ -349,7 +360,7 @@ module otp_ctrl_part_buf
       // SEC_CM: PART.DATA_REG.BKGN_CHK
       CnstyReadWaitSt: begin
         if (otp_rvalid_i) begin
-          if (otp_err_e'(otp_err_i) inside {NoError, MacroEccCorrError}) begin
+          if (otp_err inside {NoError, MacroEccCorrError}) begin
             // Check whether we need to compare the digest or the full partition
             // contents here.
             if (Info.hw_digest) begin
@@ -387,12 +398,12 @@ module otp_ctrl_part_buf
               end
             end
             // At this point the only error that we could have gotten are correctable ECC errors.
-            if (otp_err_e'(otp_err_i) != NoError) begin
+            if (otp_err != NoError) begin
               error_d = MacroEccCorrError;
             end
           end else begin
             state_d = ErrorSt;
-            error_d = otp_err_e'(otp_err_i);
+            error_d = otp_err;
             // The check has finished and found an error.
             cnsty_chk_ack_o = 1'b1;
           end
@@ -799,8 +810,8 @@ module otp_ctrl_part_buf
   // OTP error response
   `ASSERT(OtpErrorState_A,
       state_q inside {InitWaitSt, CnstyReadWaitSt} && otp_rvalid_i &&
-      !(otp_err_e'(otp_err_i) inside {NoError, MacroEccCorrError}) && !ecc_err
+      !(otp_err inside {NoError, MacroEccCorrError}) && !ecc_err
       |=>
-      state_q == ErrorSt && error_o == $past(otp_err_e'(otp_err_i)))
+      state_q == ErrorSt && error_o == $past(otp_err))
 
 endmodule : otp_ctrl_part_buf
