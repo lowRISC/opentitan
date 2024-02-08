@@ -271,7 +271,11 @@ module tb;
                   kmac_app_if.req_data_if.H_DataStableWhenValidAndNotReady_A)
   `DV_ASSERT_CTRL("KmacIfSyncReqAckAckNeedsReq", kmac_app_if.req_data_if.ValidHighUntilReady_A)
   `DV_ASSERT_CTRL("FsmClkBypAckSync", dut.u_lc_ctrl_fsm.u_prim_lc_sync_clk_byp_ack)
-  `DV_ASSERT_CTRL("FsmClkFlashRmaAckSync", dut.u_lc_ctrl_fsm.u_prim_lc_sync_flash_rma_ack)
+  `DV_ASSERT_CTRL("FsmClkFlashRmaAckSync0",
+                  dut.u_lc_ctrl_fsm.gen_syncs[0].u_prim_lc_sync_flash_rma_ack)
+  `DV_ASSERT_CTRL("FsmClkFlashRmaAckSync1",
+                  dut.u_lc_ctrl_fsm.gen_syncs[1].u_prim_lc_sync_flash_rma_ack)
+  `DV_ASSERT_CTRL("FsmClkFlashRmaAckBuf", dut.u_lc_ctrl_fsm.u_prim_lc_sync_flash_rma_ack_buf)
   `DV_ASSERT_CTRL("FsmOtpTestTokensValidSync", dut.u_lc_ctrl_fsm.u_prim_lc_sync_test_token_valid)
   `DV_ASSERT_CTRL("FsmOtpRmaTokenValidSync", dut.u_lc_ctrl_fsm.u_prim_lc_sync_rma_token_valid)
   `DV_ASSERT_CTRL("StateRegs_A", tb.dut.u_lc_ctrl_fsm.u_state_regs_A)

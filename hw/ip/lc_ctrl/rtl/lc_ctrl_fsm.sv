@@ -8,6 +8,7 @@
 
 module lc_ctrl_fsm
   import lc_ctrl_pkg::*;
+  import lc_ctrl_reg_pkg::*;
   import lc_ctrl_state_pkg::*;
 #(// Random netlist constants
   parameter lc_keymgr_div_t RndCnstLcKeymgrDivInvalid    = LcKeymgrDivWidth'(0),
@@ -97,8 +98,8 @@ module lc_ctrl_fsm
   output lc_tx_t                lc_clk_byp_req_o,
   input  lc_tx_t                lc_clk_byp_ack_i,
   // Request and feedback to/from flash controller
-  output lc_tx_t                lc_flash_rma_req_o,
-  input  lc_tx_t                lc_flash_rma_ack_i,
+  output lc_tx_t                     lc_flash_rma_req_o,
+  input  lc_tx_t [NumRmaAckSigs-1:0] lc_flash_rma_ack_i,
   // State group diversification value for keymgr
   output lc_keymgr_div_t        lc_keymgr_div_o
 );
@@ -110,8 +111,6 @@ module lc_ctrl_fsm
   // We use multiple copies of these signals in the
   // FSM checks below.
   lc_tx_t [3:0] lc_clk_byp_ack;
-  lc_tx_t [1:0] lc_flash_rma_ack;
-
   prim_lc_sync #(
     .NumCopies(4)
   ) u_prim_lc_sync_clk_byp_ack (
@@ -124,13 +123,40 @@ module lc_ctrl_fsm
   // Indication for CSRs
   assign ext_clock_switched_o = lc_tx_test_true_strict(lc_clk_byp_ack[3]);
 
+  // We have multiple response channels for this signal since the RMA wiping requests can go to
+  // multiple modules that perform wiping in parallel. For security reasons, this signal is not
+  // daisy-chained - see #19136 for context. Synchronize ACK signals separately, combine with
+  // bitwise LC AND function and feed into FSM.
+  lc_tx_t [NumRmaAckSigs-1:0] lc_flash_rma_ack;
+  for (genvar k = 0; k < NumRmaAckSigs; k++) begin : gen_syncs
+    prim_lc_sync #(
+      .NumCopies(1)
+    ) u_prim_lc_sync_flash_rma_ack(
+      .clk_i,
+      .rst_ni,
+      .lc_en_i(lc_flash_rma_ack_i[k]),
+      .lc_en_o({lc_flash_rma_ack[k]})
+    );
+  end
+
+  lc_tx_t lc_flash_rma_ack_combined;
+  always_comb begin
+    lc_flash_rma_ack_combined = On;
+    for (int k = 0; k < NumRmaAckSigs; k++) begin
+      lc_flash_rma_ack_combined = lc_tx_and_hi(lc_flash_rma_ack_combined, lc_flash_rma_ack[k]);
+    end
+  end
+
+  // Make buffered copies for consumption in the FSM below.
+  lc_tx_t [2:0] lc_flash_rma_ack_buf;
   prim_lc_sync #(
-    .NumCopies(2)
-  ) u_prim_lc_sync_flash_rma_ack (
+    .NumCopies(3),
+    .AsyncOn(0)
+  ) u_prim_lc_sync_flash_rma_ack_buf (
     .clk_i,
     .rst_ni,
-    .lc_en_i(lc_flash_rma_ack_i),
-    .lc_en_o(lc_flash_rma_ack)
+    .lc_en_i(lc_flash_rma_ack_combined),
+    .lc_en_o(lc_flash_rma_ack_buf)
   );
 
   ///////////////
@@ -437,7 +463,7 @@ module lc_ctrl_fsm
       FlashRmaSt: begin
         if (trans_target_i == {DecLcStateNumRep{DecLcStRma}}) begin
           lc_flash_rma_req = On;
-          if (lc_tx_test_true_strict(lc_flash_rma_ack[0])) begin
+          if (lc_tx_test_true_strict(lc_flash_rma_ack_buf[0])) begin
             fsm_state_d = TokenCheck0St;
           end
         end else begin
@@ -458,10 +484,10 @@ module lc_ctrl_fsm
           // all of them must be true at the same time.
           if ((trans_target_i != {DecLcStateNumRep{DecLcStRma}} &&
                lc_tx_test_false_strict(lc_flash_rma_req_o) &&
-               lc_tx_test_false_strict(lc_flash_rma_ack[1])) ||
+               lc_tx_test_false_strict(lc_flash_rma_ack_buf[1])) ||
               (trans_target_i == {DecLcStateNumRep{DecLcStRma}} &&
                lc_tx_test_true_strict(lc_flash_rma_req_o) &&
-               lc_tx_test_true_strict(lc_flash_rma_ack[1]))) begin
+               lc_tx_test_true_strict(lc_flash_rma_ack_buf[1]))) begin
             if (hashed_token_i == hashed_token_mux &&
                 !token_hash_err_i &&
                 &hashed_token_valid_mux) begin
@@ -499,9 +525,9 @@ module lc_ctrl_fsm
         // Also double check that the RMA signals remain stable.
         // Otherwise abort the transition operation.
         end else if ((trans_target_i != {DecLcStateNumRep{DecLcStRma}} &&
-                      (lc_flash_rma_req_o != Off || lc_flash_rma_ack[1] != Off)) ||
+                      (lc_flash_rma_req_o != Off || lc_flash_rma_ack_buf[2] != Off)) ||
                      (trans_target_i == {DecLcStateNumRep{DecLcStRma}} &&
-                      (lc_flash_rma_req_o != On || lc_flash_rma_ack[1] != On))) begin
+                      (lc_flash_rma_req_o != On || lc_flash_rma_ack_buf[2] != On))) begin
           fsm_state_d = PostTransSt;
           flash_rma_error_o = 1'b1;
         end else if (otp_prog_ack_i) begin

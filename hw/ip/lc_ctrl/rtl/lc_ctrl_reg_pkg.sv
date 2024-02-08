@@ -18,6 +18,7 @@ package lc_ctrl_reg_pkg;
   parameter int CsrOtpTestStatusWidth = 32;
   parameter int NumDeviceIdWords = 8;
   parameter int NumManufStateWords = 8;
+  parameter int NumRmaAckSigs = 2;
   parameter int NumAlerts = 3;
 
   // Address widths within the block

@@ -191,6 +191,12 @@
       default: "8",
       local:   "true"
     }
+    { name: "NumRmaAckSigs",
+      desc: "Number of Flash RMA wiping response signals",
+      type: "int",
+      default: "2",
+      local: "true"
+    },
   ]
 
   /////////////////////////////
@@ -333,18 +339,25 @@
       default: "lc_ctrl_pkg::Off"
       package: "lc_ctrl_pkg"
     }
+    { struct:  "lc_tx"
+      type:    "uni"
+      # We have multiple response channels for this signal since the RMA wiping
+      # requests can go to multiple modules that perform wiping in parallel.
+      # For security reasons, this signal is not daisy-chained - see #19136 for
+      # context. This needs to be aligned with the NumRmaAckSigs parameter.
+      width:   "2"
+      name:    "lc_flash_rma_ack"
+      act:     "rcv"
+      # Default to ON so that this still works even if not all channels are
+      # connected.
+      default: "lc_ctrl_pkg::On"
+      package: "lc_ctrl_pkg"
+    }
     { struct:  "lc_flash_rma_seed"
       type:    "uni"
       name:    "lc_flash_rma_seed"
       act:     "req"
       default: "'0"
-      package: "lc_ctrl_pkg"
-    }
-    { struct:  "lc_tx"
-      type:    "uni"
-      name:    "lc_flash_rma_ack"
-      act:     "rcv"
-      default: "lc_ctrl_pkg::Off"
       package: "lc_ctrl_pkg"
     }
     { struct:  "lc_tx"
