@@ -42,6 +42,7 @@ module keccak_round
   input                    rand_early_i,
   input      [Width/2-1:0] rand_data_i,
   input                    rand_aux_i,
+  output logic             rand_update_o,
   output logic             rand_consumed_o,
 
   output logic             complete_o, // Indicates full round is done
@@ -122,6 +123,7 @@ module keccak_round
   logic [RndW-1:0] round;
 
   // Random value and valid signal used in Keccak_p
+  logic               keccak_rand_update;
   logic               keccak_rand_consumed;
   logic [Width/2-1:0] keccak_rand_data;
   logic               keccak_rand_aux;
@@ -149,6 +151,7 @@ module keccak_round
     inc_rnd_num = 1'b 0;
     rst_rnd_num = 1'b 0;
 
+    keccak_rand_update   = 1'b 0;
     keccak_rand_consumed = 1'b 0;
 
     phase_sel = MuBi4False;
@@ -204,18 +207,21 @@ module keccak_round
       KeccakStPhase1: begin
         // Theta, Rho and Pi
         phase_sel = MuBi4False;
-        cycle =  2'h 0;
+        cycle = 2'h 0;
 
-        // Only update state and move on once we know the randomness required
-        // for Phase2 will be available in the next clock cycle. This way the
-        // DOM multipliers inside keccak_2share will be presented the new
-        // state (updated with update_storage) at the same time as the new
-        // randomness (updated with rand_early_i). Otherwise, stale entropy is
-        // paired with fresh data or vice versa. This could lead to undesired
-        // SCA leakage.
+        // Only update the state and move on once we know the auxiliary
+        // randomness required for Phase2 will be available in the next clock
+        // cycle.
+        //
+        // It's important that the DOM multipliers inside keccak_2share are
+        // presented the new state (updated with update_storage) at the same
+        // time as the new randomness (updated with rand_update_o). Otherwise,
+        // stale entropy is paired with fresh data or vice versa. This could
+        // lead to undesired SCA leakage.
         if (rand_early_i || rand_valid_i) begin
           keccak_st_d = KeccakStPhase2Cycle1;
           update_storage = 1'b 1;
+          keccak_rand_update = 1'b 1;
         end else begin
           keccak_st_d = KeccakStPhase1;
         end
@@ -224,10 +230,15 @@ module keccak_round
       KeccakStPhase2Cycle1: begin
         // Chi Stage 1 for first lane halves.
         phase_sel = MuBi4True;
-        cycle =  2'h 1;
+        cycle = 2'h 1;
 
         // Trigger randomness update for next cycle.
-        keccak_rand_consumed = 1'b 1;
+        // It's important that the DOM multipliers inside keccak_2share are
+        // presented the second lane halves at the same time as the new
+        // randomness (updated with rand_update_o). Otherwise, stale entropy
+        // is paired with fresh data or vice versa. This could lead to
+        // undesired SCA leakage.
+        keccak_rand_update = 1'b 1;
 
         // Unconditionally move to next phase/cycle.
         keccak_st_d = KeccakStPhase2Cycle2;
@@ -237,26 +248,28 @@ module keccak_round
         // Chi Stage 1 for second lane halves.
         // Chi Stage 2 and Iota for first lane halves.
         phase_sel = MuBi4True;
+        cycle = 2'h 2;
 
-        // Only update state and move on if the required randomness is
-        // available. This way the DOM multipliers inside keccak_2share will be
-        // presented the second lane halves at the same time as the new
-        // randomness. Otherwise, stale entropy is paired with fresh data or
-        // vice versa. This could lead to undesired SCA leakage.
-        if (rand_valid_i) begin
-          cycle =  2'h 2;
+        // Trigger randomness update for next cycle.
+        // It's important that the DOM multipliers inside keccak_2share are
+        // presented the updated state at the same as the new randomness
+        // (updated with rand_update_o) - even if the DOM multipliers don't
+        // update the pipeline registers in the next cycle. Otherwise, stale
+        // entropy is paired with fresh data or vice versa. This could lead to
+        // undesired SCA leakage.
+        keccak_rand_update = 1'b 1;
 
-          // Trigger randomness update for next round.
-          keccak_rand_consumed = 1'b 1;
+        // Trigger auxiliary randomness update for next round. The rand_aux_i
+        // signal is actually going to change in 2 clock cycles from now
+        // (Phase1) based on the PRNG output in the next cycle (Phase2Cycle3)
+        // in which the DOM multipliers don't update the pipeline registers.
+        keccak_rand_consumed = 1'b 1;
 
-          // Update first lane halves.
-          update_storage = 1'b 1;
+        // Update first lane halves.
+        update_storage = 1'b 1;
 
-          keccak_st_d = KeccakStPhase2Cycle3;
-        end else begin
-          cycle =  2'h 1;
-          keccak_st_d = KeccakStPhase2Cycle2;
-        end
+        // Unconditionally move to next phase/cycle.
+        keccak_st_d = KeccakStPhase2Cycle3;
       end
 
       KeccakStPhase2Cycle3: begin
@@ -265,6 +278,11 @@ module keccak_round
         cycle =  2'h 3;
 
         // Update second lane halves.
+        // We don't need fresh randomness for the next cycle as the DOM
+        // multipliers inside keccak_2share will keep seeing the first
+        // lane halves in the next cycle. If we updated the randomness,
+        // old data got combined with frash randomness which is not
+        // desirable as it could lead to SCA leakage.
         update_storage = 1'b 1;
 
         if (rnd_eq_end) begin
@@ -398,6 +416,7 @@ module keccak_round
   );
 
   // keccak entropy handling
+  assign rand_update_o   = keccak_rand_update;
   assign rand_consumed_o = keccak_rand_consumed;
 
   assign keccak_rand_data = rand_data_i;

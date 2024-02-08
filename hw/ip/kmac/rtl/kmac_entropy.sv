@@ -27,6 +27,7 @@ module kmac_entropy
   output logic                          rand_early_o,
   output logic [sha3_pkg::StateW/2-1:0] rand_data_o,
   output logic                          rand_aux_o,
+  input                                 rand_update_i,
   input                                 rand_consumed_i,
 
   // Status
@@ -212,10 +213,6 @@ module kmac_entropy
   // signal. Split the set, clear to make entropy valid while FSM is processing
   // other tasks.
   logic rand_valid_set, rand_valid_clear;
-
-  // Signal to track whether the FSM should stay in the StRandReady state or
-  // move to StRandGenerate upon getting the next rand_consumed_i.
-  logic ready_phase_d, ready_phase_q;
 
   // FSM latches the mode and stores into mode_q when the FSM is out from
   // StReset. The following states, or internal datapath uses mode_q after that.
@@ -515,7 +512,7 @@ module kmac_entropy
   // might be used for both remasking and as auxiliary randomness which isn't ideal
   // but given this happens only very rarely it should be okay.
   `ASSUME(ConsumeNotAssertWhenNotValid_M,
-      rand_consumed_i |-> rand_valid_o || $past(lfsr_seed_done))
+      rand_update_i | rand_consumed_i |-> rand_valid_o || $past(lfsr_seed_done))
 
   // Upon escalation or in case the EDN wait timer expires the entropy_req signal
   // can be dropped before getting acknowledged. This may leave EDN in a strange
@@ -581,9 +578,6 @@ module kmac_entropy
     // LFSR seed can be updated by EDN or SW.
     lfsr_seed_en_red = '0;
 
-    // Signal to track whether FSM should stay in StRandReady state or move on.
-    ready_phase_d = ready_phase_q;
-
     // Auxiliary randomness control signals
     aux_update = 1'b 0;
 
@@ -632,19 +626,15 @@ module kmac_entropy
 
         lfsr_en = lfsr_en_rand_q[0];
 
-        if (rand_consumed_i &&
+        if ((rand_update_i || rand_consumed_i) &&
             ((fast_process_i && in_keyblock_i) || !fast_process_i)) begin
           // If fast_process is set, don't clear the rand valid, even
           // consumed. So, the logic does not expand the entropy again.
           // If fast_process is not set, then every rand_consume signal
           // triggers rand expansion.
-
-          // Allow for two reads from the Keccak core. This is what is needed
-          // per round.
           lfsr_en = 1'b 1;
-          ready_phase_d = ~ready_phase_q;
 
-          if (ready_phase_q) begin
+          if (rand_consumed_i) begin
             st_d = StRandGenerate;
 
             rand_valid_clear = 1'b 1;
@@ -689,7 +679,7 @@ module kmac_entropy
           end else begin
             st_d = StRandEdn;
           end
-        end else if (rand_consumed_i &&
+        end else if ((rand_update_i || rand_consumed_i) &&
             ((fast_process_i && in_keyblock_i) || !fast_process_i)) begin
           // Somehow, while waiting the EDN entropy, the KMAC or SHA3 logic
           // consumed the remained entropy. This can happen when the previous
@@ -699,7 +689,7 @@ module kmac_entropy
           st_d = StRandEdn;
 
           lfsr_en = 1'b 1;
-          rand_valid_clear = 1'b 1;
+          rand_valid_clear = rand_consumed_i;
         end else begin
           st_d = StRandEdn;
         end
@@ -720,13 +710,19 @@ module kmac_entropy
       end
 
       StRandGenerate: begin
-        // The current LFSR output is used as auxiliary randomness.
+        // The current PRNG output is used as auxiliary randomness. We don't
+        // need to advance the PRNG as there is no risk of accidentally
+        // re-using the same randomness twice since after the current cycle:
+        // - We either load and re-mask the message/key which will use
+        //   different PRNG output bits. The PRNG is advanced once per 64 bits
+        //   loaded.
+        // - Or, the Keccak/SHA3 core is operated but it always starts with
+        //   the linear layers which don't require fresh randomness. While
+        //   processing the linear layers, the PRNG is advanced to have fresh
+        //   randomness for the non-linear layer requiring it.
         aux_update = 1'b 1;
-
-        // Advance the LFSR and set the valid bit. The next LFSR output will be
-        // used for re-masking.
-        lfsr_en = 1'b 1;
         rand_valid_set = 1'b 1;
+        lfsr_en = lfsr_en_rand_q[0];
 
         st_d = StRandReady;
       end
@@ -754,7 +750,8 @@ module kmac_entropy
         rand_valid_set = 1'b 1;
 
         // Advance the LFSR after the entropy has been used.
-        lfsr_en = rand_consumed_i & ((fast_process_i & in_keyblock_i) | ~fast_process_i);
+        lfsr_en = (rand_update_i | rand_consumed_i) &
+            ((fast_process_i & in_keyblock_i) | ~fast_process_i);
 
         if (err_processed_i) begin
           st_d = StRandReset;
@@ -785,14 +782,6 @@ module kmac_entropy
     end
   end
   `ASSERT_KNOWN(RandStKnown_A, st)
-
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      ready_phase_q <= '0;
-    end else begin
-      ready_phase_q <= ready_phase_d;
-    end
-  end
 
   // mubi4 sender
 
