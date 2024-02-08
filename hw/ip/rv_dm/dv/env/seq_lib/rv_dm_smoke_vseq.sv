@@ -15,51 +15,61 @@ class rv_dm_smoke_vseq extends rv_dm_base_vseq;
     scanmode == prim_mubi_pkg::MuBi4False;
   }
 
-  task body();
-    // Read the JTAG IDCODE register and verify that it matches the expected value.
+  // Read the JTAG IDCODE register and verify that it matches the expected value.
+  task check_idcode();
     uvm_reg_data_t data;
-    repeat ($urandom_range(1, 10)) begin
-      `DV_CHECK_STD_RANDOMIZE_FATAL(data)
-      csr_wr(.ptr(jtag_dtm_ral.idcode), .value(data));
-      csr_rd(.ptr(jtag_dtm_ral.idcode), .value(data));
-      `DV_CHECK_EQ(data, RV_DM_JTAG_IDCODE)
-      cfg.clk_rst_vif.wait_clks($urandom_range(1, 10));
-    end
-    repeat ($urandom_range(1, 10)) begin
-      data = $urandom_range(0, 1);
-      // Verify that writing to haltreq results in debug_req output to be set.
-      csr_wr(.ptr(jtag_dmi_ral.dmcontrol.haltreq), .value(data));
-      cfg.clk_rst_vif.wait_clks($urandom_range(0, 1000));
-      `DV_CHECK_EQ(cfg.rv_dm_vif.cb.debug_req, data)
-      cfg.clk_rst_vif.wait_clks($urandom_range(1, 10));
-    end
-    repeat ($urandom_range(1, 10)) begin
-      data = $urandom_range(0, 1);
-      // Verify that writing to ndmreset results in ndmreset output to be set.
-      csr_wr(.ptr(jtag_dmi_ral.dmcontrol.ndmreset), .value(data));
-      cfg.clk_rst_vif.wait_clks($urandom_range(0, 1000));
-      `DV_CHECK_EQ(cfg.rv_dm_vif.cb.ndmreset_req, data)
-      cfg.clk_rst_vif.wait_clks($urandom_range(1, 10));
-    end
-    repeat ($urandom_range(1, 10)) begin
-      data = $urandom_range(0, 1);
-      // Verify that the dmstatus[*unavail] field tracks the unavailable_i input.
-      cfg.rv_dm_vif.cb.unavailable <= data;
-      csr_rd(.ptr(jtag_dmi_ral.dmstatus), .value(data));
-      `DV_CHECK_EQ(cfg.rv_dm_vif.unavailable,
-                   get_field_val(jtag_dmi_ral.dmstatus.anyunavail, data))
-      `DV_CHECK_EQ(cfg.rv_dm_vif.unavailable,
-                   get_field_val(jtag_dmi_ral.dmstatus.allunavail, data))
-      cfg.clk_rst_vif.wait_clks($urandom_range(1, 10));
-    end
-    repeat ($urandom_range(1, 10)) begin
-      data = $urandom_range(0, 1);
-      // Verify that writing to dmactive results in dmactive output to be set.
-      csr_wr(.ptr(jtag_dmi_ral.dmcontrol.dmactive), .value(data));
-      cfg.clk_rst_vif.wait_clks($urandom_range(0, 1000));
-      `DV_CHECK_EQ(cfg.rv_dm_vif.cb.dmactive, data)
-      cfg.clk_rst_vif.wait_clks($urandom_range(1, 10));
-    end
+    `DV_CHECK_STD_RANDOMIZE_FATAL(data)
+    csr_wr(.ptr(jtag_dtm_ral.idcode), .value(data));
+    csr_rd(.ptr(jtag_dtm_ral.idcode), .value(data));
+    `DV_CHECK_EQ(data, RV_DM_JTAG_IDCODE)
+    cfg.clk_rst_vif.wait_clks($urandom_range(1, 10));
+  endtask
+
+  // Verify that writing to haltreq causes debug_req output to be set.
+  task check_haltreq();
+    uvm_reg_data_t data = $urandom_range(0, 1);
+    csr_wr(.ptr(jtag_dmi_ral.dmcontrol.haltreq), .value(data));
+    cfg.clk_rst_vif.wait_clks($urandom_range(0, 1000));
+    `DV_CHECK_EQ(cfg.rv_dm_vif.cb.debug_req, data)
+    cfg.clk_rst_vif.wait_clks($urandom_range(1, 10));
+  endtask
+
+  // Verify that writing to ndmreset causes ndmreset output to be set.
+  task check_ndmreset();
+    uvm_reg_data_t data = $urandom_range(0, 1);
+    csr_wr(.ptr(jtag_dmi_ral.dmcontrol.ndmreset), .value(data));
+    cfg.clk_rst_vif.wait_clks($urandom_range(0, 1000));
+    `DV_CHECK_EQ(cfg.rv_dm_vif.cb.ndmreset_req, data)
+    cfg.clk_rst_vif.wait_clks($urandom_range(1, 10));
+  endtask
+
+  // Verify that the dmstatus[*unavail] field tracks the unavailable_i input.
+  task check_unavailable();
+    uvm_reg_data_t data = $urandom_range(0, 1);
+    cfg.rv_dm_vif.cb.unavailable <= data;
+    csr_rd(.ptr(jtag_dmi_ral.dmstatus), .value(data));
+    `DV_CHECK_EQ(cfg.rv_dm_vif.unavailable,
+                 get_field_val(jtag_dmi_ral.dmstatus.anyunavail, data))
+    `DV_CHECK_EQ(cfg.rv_dm_vif.unavailable,
+                 get_field_val(jtag_dmi_ral.dmstatus.allunavail, data))
+    cfg.clk_rst_vif.wait_clks($urandom_range(1, 10));
+  endtask
+
+  // Verify that writing to dmactive causes dmactive output to be set.
+  task check_dmactive();
+    uvm_reg_data_t data = $urandom_range(0, 1);
+    csr_wr(.ptr(jtag_dmi_ral.dmcontrol.dmactive), .value(data));
+    cfg.clk_rst_vif.wait_clks($urandom_range(0, 1000));
+    `DV_CHECK_EQ(cfg.rv_dm_vif.cb.dmactive, data)
+    cfg.clk_rst_vif.wait_clks($urandom_range(1, 10));
+  endtask
+
+  task body();
+    repeat ($urandom_range(1, 10)) check_idcode();
+    repeat ($urandom_range(1, 10)) check_haltreq();
+    repeat ($urandom_range(1, 10)) check_ndmreset();
+    repeat ($urandom_range(1, 10)) check_unavailable();
+    repeat ($urandom_range(1, 10)) check_dmactive();
   endtask : body
 
 endclass : rv_dm_smoke_vseq
