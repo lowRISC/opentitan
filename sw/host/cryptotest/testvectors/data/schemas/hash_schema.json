@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/lowRISC/opentitan/master/sw/host/cryptotest/testvectors/data/schemas/hash_schema.json",
+  "title": "Cryptotest Hash Function Test Vector",
+  "description": "A list of testvectors for SHA-2, SHA-3, SHAKE, and cSHAKE testing",
+  "$defs": {
+    "byte_array": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 255
+      }
+    }
+  },
+  "type": "array",
+  "minItems": 1,
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "vendor": {
+        "description": "Test vector vendor name",
+        "type": "string"
+      },
+      "test_case_id": {
+        "description": "Test_case_id",
+        "type": "integer"
+      },
+      "algorithm": {
+        "description": "The hash algorithm being tested",
+        "type": "string",
+          "enum": ["sha-224", "sha-256", "sha-384", "sha-512", "sha3-256", "sha3-384", "sha3-512", "shake-128", "shake-256"]
+      },
+      "message": {
+        "description": "Message to be hashed",
+        "$ref": "#/$defs/byte_array"
+      },
+      "digest": {
+        "description": "Digest output by the hash function",
+        "$ref": "#/$defs/byte_array"
+      },
+      "result": {
+        "description": "Whether the hash of `message` should be equal to `digest`",
+        "type": "boolean"
+      }
+    }
+  }
+}
