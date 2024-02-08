@@ -24,7 +24,7 @@ use crate::transport::{
 };
 use crate::util::openocd::OpenOcdJtagChain;
 
-use anyhow::{anyhow, bail, ensure, Result};
+use anyhow::{bail, ensure, Result};
 use indicatif::{ProgressBar, ProgressStyle};
 use serde_annotate::Annotate;
 use std::any::Any;
@@ -222,10 +222,19 @@ pub struct TransportWrapper {
     spi_conf_map: HashMap<String, SpiConfiguration>,
     i2c_conf_map: HashMap<String, I2cConfiguration>,
     strapping_conf_map: HashMap<String, HashMap<String, PinConfiguration>>,
+    //
     // Below fields are lazily populated, as instances are requested.
+    //
+    // Caching SPI and I2C wrapper instances is necessary to avoid repeatedly re-applying settings
+    // such as speed and chip select pin declared along with an alias of the physical port of the
+    // debugger.  This is both an optimization, as well as necessary to not "lose" the asserted
+    // state of the chip select.
+    //
     pin_instance_map: RefCell<HashMap<String, Rc<gpio::GpioPinWrapper>>>,
-    spi_instance_map: RefCell<HashMap<String, Rc<spi::PhysicalSpiWrapper>>>,
-    i2c_instance_map: RefCell<HashMap<String, Rc<i2c::PhysicalI2cWrapper>>>,
+    spi_physical_map: RefCell<HashMap<String, Rc<spi::PhysicalSpiWrapper>>>,
+    spi_logical_map: RefCell<HashMap<String, Rc<spi::LogicalSpiWrapper>>>,
+    i2c_physical_map: RefCell<HashMap<String, Rc<i2c::PhysicalI2cWrapper>>>,
+    i2c_logical_map: RefCell<HashMap<String, Rc<i2c::LogicalI2cWrapper>>>,
 }
 
 impl TransportWrapperBuilder {
@@ -637,8 +646,10 @@ impl TransportWrapperBuilder {
             i2c_conf_map,
             strapping_conf_map,
             pin_instance_map: RefCell::new(HashMap::new()),
-            spi_instance_map: RefCell::new(HashMap::new()),
-            i2c_instance_map: RefCell::new(HashMap::new()),
+            spi_physical_map: RefCell::new(HashMap::new()),
+            spi_logical_map: RefCell::new(HashMap::new()),
+            i2c_physical_map: RefCell::new(HashMap::new()),
+            i2c_logical_map: RefCell::new(HashMap::new()),
         };
         let mut io_expanders: HashMap<String, IoExpander> = HashMap::new();
         for (name, conf) in self.io_expander_conf_map {
@@ -720,29 +731,35 @@ impl TransportWrapper {
     /// Returns a SPI [`Target`] implementation.
     pub fn spi(&self, name: &str) -> Result<Rc<dyn Target>> {
         let name = name.to_uppercase();
+        let mut spi_logical_map = self.spi_logical_map.borrow_mut();
+        if let Some(instance) = spi_logical_map.get(&name) {
+            return Ok(Rc::clone(instance) as Rc<dyn Target>);
+        }
         if let Some(spi_conf) = self.spi_conf_map.get(&name) {
-            let mut spi_instance_map = self.spi_instance_map.borrow_mut();
+            let mut spi_physical_map = self.spi_physical_map.borrow_mut();
             // Find if we already have a PhysicalSpiWrapper around the requested instance.  If
             // not, create one.
             let physical_wrapper = if let Some(instance) =
-                spi_instance_map.get(&spi_conf.underlying_instance)
+                spi_physical_map.get(&spi_conf.underlying_instance)
             {
                 Rc::clone(instance)
             } else {
                 let instance = Rc::new(spi::PhysicalSpiWrapper::new(
                     self.transport.spi(spi_conf.underlying_instance.as_str())?,
                 ));
-                spi_instance_map.insert(spi_conf.underlying_instance.clone(), Rc::clone(&instance));
+                spi_physical_map.insert(spi_conf.underlying_instance.clone(), Rc::clone(&instance));
                 instance
             };
 
             // Create a LogicalSpiWrapper referring to the physical port, and carrying the
             // particular speed and other settings.
-            Ok(Rc::new(spi::LogicalSpiWrapper::new(
+            let new_wrapper = Rc::new(spi::LogicalSpiWrapper::new(
                 &*self.transport,
                 spi_conf,
                 physical_wrapper,
-            )?))
+            )?);
+            spi_logical_map.insert(name, Rc::clone(&new_wrapper));
+            Ok(new_wrapper)
         } else {
             self.transport.spi(name.as_str())
         }
@@ -751,29 +768,35 @@ impl TransportWrapper {
     /// Returns a I2C [`Bus`] implementation.
     pub fn i2c(&self, name: &str) -> Result<Rc<dyn Bus>> {
         let name = name.to_uppercase();
+        let mut i2c_logical_map = self.i2c_logical_map.borrow_mut();
+        if let Some(instance) = i2c_logical_map.get(&name) {
+            return Ok(Rc::clone(instance) as Rc<dyn Bus>);
+        }
         if let Some(i2c_conf) = self.i2c_conf_map.get(&name) {
-            let mut i2c_instance_map = self.i2c_instance_map.borrow_mut();
+            let mut i2c_physical_map = self.i2c_physical_map.borrow_mut();
             // Find if we already have a PhysicalI2cWrapper around the requested instance.  If
             // not, create one.
             let physical_wrapper = if let Some(instance) =
-                i2c_instance_map.get(&i2c_conf.underlying_instance)
+                i2c_physical_map.get(&i2c_conf.underlying_instance)
             {
                 Rc::clone(instance)
             } else {
                 let instance = Rc::new(i2c::PhysicalI2cWrapper::new(
                     self.transport.i2c(i2c_conf.underlying_instance.as_str())?,
                 ));
-                i2c_instance_map.insert(i2c_conf.underlying_instance.clone(), Rc::clone(&instance));
+                i2c_physical_map.insert(i2c_conf.underlying_instance.clone(), Rc::clone(&instance));
                 instance
             };
 
             // Create a LogicalI2cWrapper referring to the physical port, and carrying the
             // particular speed and other settings.
-            Ok(Rc::new(i2c::LogicalI2cWrapper::new(
+            let new_wrapper = Rc::new(i2c::LogicalI2cWrapper::new(
                 &*self.transport,
                 i2c_conf,
                 physical_wrapper,
-            )?))
+            )?);
+            i2c_logical_map.insert(name, Rc::clone(&new_wrapper));
+            Ok(new_wrapper)
         } else {
             self.transport.i2c(name.as_str())
         }
@@ -916,7 +939,7 @@ impl TransportWrapper {
         if let Some(strapping_name) = strapping_name {
             if self.capabilities()?.request(Capability::PROXY).ok().is_ok() {
                 self.proxy_ops()?
-                    .apply_default_configuration_with_strap(strapping_name)
+                    .apply_default_configuration_with_strap(strapping_name)?;
             } else if let Some(strapping_conf_map) = self.strapping_conf_map.get(strapping_name) {
                 // Apply the debugger's default pin configuration (e.g. hyperdebug pin set to HighZ)
                 self.transport.apply_default_configuration()?;
@@ -924,16 +947,24 @@ impl TransportWrapper {
                 // typically specific to a certain logical chip (not debugger/interface)
                 // configuration. Apply the named gpio strap as an override to the normal default
                 // configuration.
-                self.apply_pin_configurations(&self.pin_conf_map, Some(strapping_conf_map))
+                self.apply_pin_configurations(&self.pin_conf_map, Some(strapping_conf_map))?;
             } else {
-                Err(anyhow!(TransportError::InvalidStrappingName(
+                bail!(TransportError::InvalidStrappingName(
                     strapping_name.to_string(),
-                )))
+                ));
             }
         } else {
             self.transport.apply_default_configuration()?;
-            self.apply_pin_configurations(&self.pin_conf_map, None)
+            self.apply_pin_configurations(&self.pin_conf_map, None)?;
         }
+        // Clear cache, which could contain settings manually overriden to deviate from the
+        // defaults in configuration files.
+        self.pin_instance_map.borrow_mut().clear();
+        self.spi_physical_map.borrow_mut().clear();
+        self.spi_logical_map.borrow_mut().clear();
+        self.i2c_physical_map.borrow_mut().clear();
+        self.i2c_logical_map.borrow_mut().clear();
+        Ok(())
     }
 
     pub fn reset_target(&self, reset_delay: Duration, clear_uart_rx: bool) -> Result<()> {
