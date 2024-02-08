@@ -19,3 +19,16 @@ pub fn hex_string_to_u32_arrayvec<const N: usize>(hex_str: &str) -> Result<Array
         .map(|bytes| u32::from_be_bytes(bytes.try_into().unwrap()))
         .collect::<ArrayVec<u32, N>>())
 }
+
+pub fn hex_string_to_u8_arrayvec<const N: usize>(hex_str: &str) -> Result<ArrayVec<u8, N>> {
+    let hex_str_no_sep = hex_str.replace('_', "");
+    let hex_str_prefix = "0x";
+    let sanitized_hex_str = if hex_str.starts_with(hex_str_prefix) {
+        hex_str_no_sep.strip_prefix(hex_str_prefix).unwrap()
+    } else {
+        hex_str_no_sep.as_str()
+    };
+    Ok(decode(sanitized_hex_str)?
+        .into_iter()
+        .collect::<ArrayVec<u8, N>>())
+}
