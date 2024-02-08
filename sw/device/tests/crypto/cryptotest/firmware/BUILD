@@ -30,6 +30,27 @@ cc_library(
 )
 
 cc_library(
+    name = "hash",
+    srcs = ["hash.c"],
+    hdrs = ["hash.h"],
+    deps = [
+        "//sw/device/lib/base:math",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/crypto/impl:hash",
+        "//sw/device/lib/crypto/impl:integrity",
+        "//sw/device/lib/crypto/impl:keyblob",
+        "//sw/device/lib/crypto/impl/sha2:sha256",
+        "//sw/device/lib/crypto/impl/sha2:sha512",
+        "//sw/device/lib/crypto/include:datatypes",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+        "//sw/device/tests/crypto/cryptotest/json:hash_commands",
+    ],
+)
+
+cc_library(
     name = "aes_sca",
     srcs = ["aes_sca.c"],
     hdrs = ["aes_sca.h"],
@@ -146,6 +167,7 @@ opentitan_binary(
     deps = [
         ":aes",
         ":aes_sca",
+        ":hash",
         ":ibex_fi",
         ":kmac_sca",
         ":prng_sca",
@@ -159,6 +181,7 @@ opentitan_binary(
         "//sw/device/lib/ujson",
         "//sw/device/tests/crypto/cryptotest/json:aes_commands",
         "//sw/device/tests/crypto/cryptotest/json:commands",
+        "//sw/device/tests/crypto/cryptotest/json:hash_commands",
         "//sw/device/tests/crypto/cryptotest/json:ibex_fi_commands",
     ],
 )
