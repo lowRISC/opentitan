@@ -15,6 +15,7 @@ interface lc_ctrl_if (
 
   import uvm_pkg::*;
   import lc_ctrl_pkg::*;
+  import lc_ctrl_reg_pkg::*;
   import lc_ctrl_state_pkg::*;
   import otp_ctrl_pkg::*;
   import otp_ctrl_part_pkg::*;
@@ -44,7 +45,7 @@ interface lc_ctrl_if (
   lc_tx_t clk_byp_req_o;
   lc_tx_t clk_byp_ack_i;
   lc_tx_t flash_rma_req_o;
-  lc_tx_t flash_rma_ack_i;
+  lc_tx_t [NumRmaAckSigs-1:0] flash_rma_ack_i;
 
   lc_keymgr_div_t keymgr_div_o;
   lc_flash_rma_seed_t flash_rma_seed_o;
@@ -92,7 +93,7 @@ interface lc_ctrl_if (
   task automatic init(lc_state_e                     lc_state = LcStRaw,
                       lc_cnt_e                       lc_cnt = LcCnt0,
                       lc_tx_t                        clk_byp_ack = Off,
-                      lc_tx_t                        flash_rma_ack = Off,
+                      lc_tx_t [NumRmaAckSigs-1:0]    flash_rma_ack = {NumRmaAckSigs{Off}},
                       logic                          otp_partition_err = 0,
                       otp_device_id_t                otp_device_id = 0,
                       logic                          otp_lc_data_i_valid = 1,
@@ -133,7 +134,10 @@ interface lc_ctrl_if (
   endtask
 
   task automatic set_flash_rma_ack(lc_tx_t val);
-    flash_rma_ack_i = val;
+    // TODO(#21268): Note that we do get some level of signal latencies between the channels due to
+    // CDC randomization. However, it would be good to introduce some more latency between the
+    // channels at least in some sequences in order to model the reality more closely.
+    flash_rma_ack_i = {NumRmaAckSigs{val}};
   endtask
 
   function automatic void clear_static_signals();

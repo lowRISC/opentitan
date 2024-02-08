@@ -99,7 +99,7 @@ module lc_ctrl
   output lc_flash_rma_seed_t                         lc_flash_rma_seed_o,
   // SEC_CM: INTERSIG.MUBI
   output lc_tx_t                                     lc_flash_rma_req_o,
-  input  lc_tx_t                                     lc_flash_rma_ack_i,
+  input  lc_tx_t [NumRmaAckSigs-1:0]                 lc_flash_rma_ack_i,
   // State group diversification value for keymgr.
   output lc_keymgr_div_t                             lc_keymgr_div_o,
   // Hardware config input, needed for the DEVICE_ID field.

@@ -559,8 +559,7 @@ module top_earlgrey #(
   rom_ctrl_pkg::pwrmgr_data_t       rom_ctrl_pwrmgr_data;
   rom_ctrl_pkg::keymgr_data_t       rom_ctrl_keymgr_data;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_flash_rma_req;
-  lc_ctrl_pkg::lc_tx_t       flash_ctrl_rma_ack;
-  lc_ctrl_pkg::lc_tx_t       otbn_lc_rma_ack;
+  lc_ctrl_pkg::lc_tx_t [1:0] lc_ctrl_lc_flash_rma_ack;
   logic       usbdev_usb_dp_pullup;
   logic       usbdev_usb_dn_pullup;
   logic       usbdev_usb_aon_suspend_req;
@@ -1487,8 +1486,8 @@ module top_earlgrey #(
       .lc_clk_byp_req_o(lc_ctrl_lc_clk_byp_req),
       .lc_clk_byp_ack_i(lc_ctrl_lc_clk_byp_ack),
       .lc_flash_rma_req_o(lc_ctrl_lc_flash_rma_req),
+      .lc_flash_rma_ack_i(lc_ctrl_lc_flash_rma_ack),
       .lc_flash_rma_seed_o(flash_ctrl_rma_seed),
-      .lc_flash_rma_ack_i(otbn_lc_rma_ack),
       .lc_check_byp_en_o(lc_ctrl_lc_check_byp_en),
       .lc_creator_seed_sw_rw_en_o(lc_ctrl_lc_creator_seed_sw_rw_en),
       .lc_owner_seed_sw_rw_en_o(lc_ctrl_lc_owner_seed_sw_rw_en),
@@ -2110,7 +2109,7 @@ module top_earlgrey #(
       .lc_seed_hw_rd_en_i(lc_ctrl_lc_seed_hw_rd_en),
       .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
       .rma_req_i(lc_ctrl_lc_flash_rma_req),
-      .rma_ack_o(flash_ctrl_rma_ack),
+      .rma_ack_o(lc_ctrl_lc_flash_rma_ack[0]),
       .rma_seed_i(flash_ctrl_rma_seed),
       .pwrmgr_o(pwrmgr_aon_pwr_flash),
       .keymgr_o(flash_ctrl_keymgr),
@@ -2306,8 +2305,8 @@ module top_earlgrey #(
       .idle_o(clkmgr_aon_idle[3]),
       .ram_cfg_i(ast_ram_1p_cfg),
       .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
-      .lc_rma_req_i(flash_ctrl_rma_ack),
-      .lc_rma_ack_o(otbn_lc_rma_ack),
+      .lc_rma_req_i(lc_ctrl_lc_flash_rma_req),
+      .lc_rma_ack_o(lc_ctrl_lc_flash_rma_ack[1]),
       .keymgr_key_i(keymgr_otbn_key),
       .tl_i(otbn_tl_req),
       .tl_o(otbn_tl_rsp),
