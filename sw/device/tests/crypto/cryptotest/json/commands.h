@@ -14,6 +14,7 @@ extern "C" {
 #define COMMAND(_, value) \
     value(_, Aes) \
     value(_, Ecdsa) \
+    value(_, Hash) \
     value(_, Hmac) \
     value(_, AesSca) \
     value(_, IbexFi) \
