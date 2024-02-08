@@ -39,7 +39,7 @@
 #include "sw/device/silicon_creator/lib/otbn_boot_services.h"
 #include "sw/device/silicon_creator/lib/shutdown.h"
 #include "sw/device/silicon_creator/lib/sigverify/sigverify.h"
-#include "sw/device/silicon_creator/rom_ext/bootstrap.h"
+#include "sw/device/silicon_creator/rom_ext/rescue.h"
 #include "sw/device/silicon_creator/rom_ext/rom_ext_boot_policy.h"
 #include "sw/device/silicon_creator/rom_ext/rom_ext_boot_policy_ptrs.h"
 #include "sw/device/silicon_creator/rom_ext/rom_ext_epmp.h"
@@ -588,8 +588,6 @@ static rom_error_t rom_ext_try_boot(void) {
     }
 
     boot_log_t *boot_log = &retention_sram_get()->creator.boot_log;
-    const chip_info_t *rom_chip_info = (const chip_info_t *)_chip_info_start;
-    boot_log_check_or_init(boot_log, rom_ext_current_slot(), rom_chip_info);
     if (manifests.ordered[i] == rom_ext_boot_policy_manifest_a_get()) {
       boot_log->bl0_slot = kBl0BootSlotA;
     } else if (manifests.ordered[i] == rom_ext_boot_policy_manifest_b_get()) {
@@ -622,13 +620,18 @@ void rom_ext_main(void) {
   rom_ext_check_rom_expectations();
   SHUTDOWN_IF_ERROR(rom_ext_init());
   dbg_printf("Starting ROM_EXT\r\n");
-  rom_error_t error = rom_ext_try_boot();
-  // If the boot failed, enter bootstrap if it's enabled.
-  if (launder32(error) != kErrorOk &&
-      launder32(rom_ext_bootstrap_enabled()) == kHardenedBoolTrue) {
-    HARDENED_CHECK_NE(error, kErrorOk);
-    HARDENED_CHECK_EQ(rom_ext_bootstrap_enabled(), kHardenedBoolTrue);
-    shutdown_finalize(rom_ext_bootstrap());
+
+  boot_log_t *boot_log = &retention_sram_get()->creator.boot_log;
+  const chip_info_t *rom_chip_info = (const chip_info_t *)_chip_info_start;
+  boot_log_check_or_init(boot_log, rom_ext_current_slot(), rom_chip_info);
+
+  rom_error_t error;
+  if (uart_break_detect(kRescueDetectTime) == kHardenedBoolTrue) {
+    dbg_printf("rescue: remember to clear break\r\n");
+    uart_enable_receiver();
+    error = rescue_protocol();
+  } else {
+    error = rom_ext_try_boot();
   }
   shutdown_finalize(error);
 }
