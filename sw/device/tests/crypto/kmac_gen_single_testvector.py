@@ -27,18 +27,21 @@ def validate_lengths(input_msg_len, cust_str_len, digest_len):
     # function `kmac_kmac_128`, where the digest_len represent number of words
     # but not bytes.
     if digest_len % 32 != 0:
-        raise ValueError("digest_len needs to be divisible by 8")
+        raise ValueError("digest_len needs to be divisible by 32")
 
 
+# Generate a KMAC test vector and return it as string in hjson format.
+# The input length arguments are all in bit size.
 def gen_random_test(seed, key_len, security_str, input_msg_len, cust_str_len,
                     digest_len):
 
     validate_lengths(input_msg_len, cust_str_len, digest_len)
 
-    random.seed(seed)
-    input_msg = random.randbytes(input_msg_len // 8)
-    cust_str = random.randbytes(cust_str_len // 8)
-    key = random.randbytes(key_len // 8)
+    random_instance = random.Random(seed)
+    random_instance.seed(seed)
+    input_msg = random_instance.randbytes(input_msg_len // 8)
+    cust_str = random_instance.randbytes(cust_str_len // 8)
+    key = random_instance.randbytes(key_len // 8)
 
     if security_str == 128:
         kmac = KMAC128.new(key = key,
@@ -53,10 +56,10 @@ def gen_random_test(seed, key_len, security_str, input_msg_len, cust_str_len,
 
     digest = kmac.hexdigest()
     vector_identifier = \
-        "./sw/device/tests/crypto/kmac_gen_single_testvector.py"\
+        "./sw/device/tests/crypto/kmac_gen_single_testvector.py "\
         "--seed={} --key_len={} --sec_str={} --input_msg_len={} "\
         "--cust_str_len={} --digest_len={} <output-file>"\
-        .format(seed, security_str, key_len, input_msg_len,
+        .format(seed, key_len, security_str, input_msg_len,
                 cust_str_len, digest_len)
 
     print(vector_identifier)
