@@ -149,14 +149,15 @@ class flash_ctrl_host_dir_rd_vseq extends flash_ctrl_fetch_code_vseq;
 
     cfg.block_host_rd = 0;
 
-    // Configure the flash with scramble enable.
+    // Configure the flash with scramble disable as this particular test does not support it.
+    // Configurations where scrambling and ECC are enabled are tested in the *_otf environment.
     foreach (mp_regions[k]) begin
-      mp_regions[k].scramble_en = 1;
+      mp_regions[k].scramble_en = MuBi4False;
       flash_ctrl_mp_region_cfg(k, mp_regions[k]);
       `uvm_info(`gfn, $sformatf("MP regions values %p", mp_regions[k]), UVM_HIGH)
     end
 
-    default_region_scramble_en = 1;
+    default_region_scramble_en = MuBi4False;
     flash_ctrl_default_region_cfg(
         .read_en(default_region_read_en), .program_en(default_region_program_en),
         .erase_en(default_region_erase_en), .scramble_en(default_region_scramble_en),

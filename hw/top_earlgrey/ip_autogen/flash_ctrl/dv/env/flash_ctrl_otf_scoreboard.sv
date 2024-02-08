@@ -459,7 +459,7 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
   endtask // monitor_tb_mem
 
   task lm_wdata_comp(flash_phy_prim_item exp, flash_otf_mem_entry rcv, int bank);
-    bit[flash_phy_pkg::FullDataWidth] rd_data;
+    bit[flash_phy_pkg::FullDataWidth-1:0] rd_data;
     rd_cache_t entry;
     string name = $sformatf("lm_wdata_comp_bank%0d", bank);
 

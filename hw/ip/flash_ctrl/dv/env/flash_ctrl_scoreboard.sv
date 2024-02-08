@@ -298,8 +298,8 @@ class flash_ctrl_scoreboard #(
                 if (cfg.en_cov) begin
                   flash_op_t     flash_op_cov;
                   flash_op_cov.partition  = part;
-                  flash_op_cov.erase_type = erase_sel;
-                  flash_op_cov.op = curr_op;
+                  flash_op_cov.erase_type = flash_erase_e'(erase_sel);
+                  flash_op_cov.op = flash_op_e'(curr_op);
                   cov.control_cg.sample(flash_op_cov);
                 end
               end
@@ -554,10 +554,10 @@ class flash_ctrl_scoreboard #(
         for (int i = 0; i < cfg.seq_cfg.num_en_mp_regions; i++) begin
           if (!wr_access_found) begin
             csr_rd(.ptr(ral.mp_region_cfg[i]), .value(data), .backdoor(1'b1));
-            en = mubi4_test_true_strict(
-                     get_field_val(ral.mp_region_cfg[i].en, data));
-            prog_en = mubi4_test_true_strict(
-                          get_field_val(ral.mp_region_cfg[i].prog_en, data));
+            en = mubi4_test_true_strict(mubi4_t'(
+                     get_field_val(ral.mp_region_cfg[i].en, data)));
+            prog_en = mubi4_test_true_strict(mubi4_t'(
+                          get_field_val(ral.mp_region_cfg[i].prog_en, data)));
             csr_rd(.ptr(ral.mp_region[i]), .value(data), .backdoor(1'b1));
             base = get_field_val(ral.mp_region[i].base, data);
             size = get_field_val(ral.mp_region[i].size, data);
@@ -571,8 +571,8 @@ class flash_ctrl_scoreboard #(
         end
         if (!wr_access_found) begin
           csr_rd(.ptr(ral.default_region), .value(data), .backdoor(1'b1));
-          prog_en_def = mubi4_test_true_strict(
-                            get_field_val(ral.default_region.prog_en, data));
+          prog_en_def = mubi4_test_true_strict(mubi4_t'(
+                            get_field_val(ral.default_region.prog_en, data)));
           wr_access = prog_en_def;
           wr_access_found = 1'b1;
         end
@@ -615,10 +615,10 @@ class flash_ctrl_scoreboard #(
         for (int i = 0; i < cfg.seq_cfg.num_en_mp_regions; i++) begin
           if (!rd_access_found) begin
             csr_rd(.ptr(ral.mp_region_cfg[i]), .value(data), .backdoor(1'b1));
-            en = mubi4_test_true_strict(
-                     get_field_val(ral.mp_region_cfg[i].en, data));
-            read_en = mubi4_test_true_strict(
-                          get_field_val(ral.mp_region_cfg[i].rd_en, data));
+            en = mubi4_test_true_strict(mubi4_t'(
+                     get_field_val(ral.mp_region_cfg[i].en, data)));
+            read_en = mubi4_test_true_strict(mubi4_t'(
+                          get_field_val(ral.mp_region_cfg[i].rd_en, data)));
             csr_rd(.ptr(ral.mp_region[i]), .value(data), .backdoor(1'b1));
             base = get_field_val(ral.mp_region[i].base, data);
             size = get_field_val(ral.mp_region[i].size, data);
@@ -631,8 +631,8 @@ class flash_ctrl_scoreboard #(
         end
         if (!rd_access_found) begin
           csr_rd(.ptr(ral.default_region), .value(data), .backdoor(1'b1));
-          read_en_def = mubi4_test_true_strict(
-                            get_field_val(ral.default_region.rd_en, data));
+          read_en_def = mubi4_test_true_strict(mubi4_t'(
+                            get_field_val(ral.default_region.rd_en, data)));
           rd_access = read_en_def;
           rd_access_found = 1'b1;
         end
@@ -677,8 +677,9 @@ class flash_ctrl_scoreboard #(
           for (int i = 0; i < cfg.seq_cfg.num_en_mp_regions; i++) begin
             if (!erase_access_found) begin
               csr_rd(.ptr(ral.mp_region_cfg[i]), .value(data), .backdoor(1'b1));
-              en = mubi4_test_true_strict(get_field_val(ral.mp_region_cfg[i].en, data));
-              erase_en = mubi4_test_true_strict(get_field_val(ral.mp_region_cfg[i].erase_en, data));
+              en = mubi4_test_true_strict(mubi4_t'(get_field_val(ral.mp_region_cfg[i].en, data)));
+              erase_en = mubi4_test_true_strict(mubi4_t'(
+                         get_field_val(ral.mp_region_cfg[i].erase_en, data)));
               csr_rd(.ptr(ral.mp_region[i]), .value(data), .backdoor(1'b1));
               base = get_field_val(ral.mp_region[i].base, data);
               size = get_field_val(ral.mp_region[i].size, data);
@@ -693,7 +694,8 @@ class flash_ctrl_scoreboard #(
           end
           if (!erase_access_found) begin
             csr_rd(.ptr(ral.default_region), .value(data), .backdoor(1'b1));
-            erase_en_def = mubi4_test_true_strict(get_field_val(ral.default_region.erase_en, data));
+            erase_en_def = mubi4_test_true_strict(mubi4_t'(
+                           get_field_val(ral.default_region.erase_en, data)));
             erase_access       = erase_en_def;
             erase_access_found = 1'b1;
           end
@@ -743,10 +745,10 @@ class flash_ctrl_scoreboard #(
 
     csr = ral.get_reg_by_name(csr_name);
     csr_rd(.ptr(csr), .value(data), .backdoor(1'b1));
-    en = mubi4_test_true_strict(
-             get_field_val(csr.get_field_by_name("en"), data));
-    prog_en = mubi4_test_true_strict(
-                  get_field_val(csr.get_field_by_name("prog_en"), data));
+    en = mubi4_test_true_strict(mubi4_t'(
+             get_field_val(csr.get_field_by_name("en"), data)));
+    prog_en = mubi4_test_true_strict(mubi4_t'(
+                  get_field_val(csr.get_field_by_name("prog_en"), data)));
     if (en) begin
       wr_access = prog_en;
     end else begin
@@ -760,10 +762,10 @@ class flash_ctrl_scoreboard #(
 
     csr = ral.get_reg_by_name(csr_name);
     csr_rd(.ptr(csr), .value(data), .backdoor(1'b1));
-    en = mubi4_test_true_strict(
-             get_field_val(csr.get_field_by_name("en"), data));
-    read_en = mubi4_test_true_strict(
-                  get_field_val(csr.get_field_by_name("rd_en"), data));
+    en = mubi4_test_true_strict(mubi4_t'(
+             get_field_val(csr.get_field_by_name("en"), data)));
+    read_en = mubi4_test_true_strict(mubi4_t'(
+                  get_field_val(csr.get_field_by_name("rd_en"), data)));
     if (en) begin
       rd_access = read_en;
     end else begin
@@ -777,10 +779,10 @@ class flash_ctrl_scoreboard #(
 
     csr = ral.get_reg_by_name(csr_name);
     csr_rd(.ptr(csr), .value(data), .backdoor(1'b1));
-    en = mubi4_test_true_strict(
-             get_field_val(csr.get_field_by_name("en"), data));
-    erase_en = mubi4_test_true_strict(
-             get_field_val(csr.get_field_by_name("erase_en"),data));
+    en = mubi4_test_true_strict(mubi4_t'(
+             get_field_val(csr.get_field_by_name("en"), data)));
+    erase_en = mubi4_test_true_strict(mubi4_t'(
+             get_field_val(csr.get_field_by_name("erase_en"),data)));
     if (en) begin
       erase_access = erase_en;
     end else begin

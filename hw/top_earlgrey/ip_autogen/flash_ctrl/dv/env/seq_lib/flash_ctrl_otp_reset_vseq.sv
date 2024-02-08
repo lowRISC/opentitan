@@ -69,7 +69,8 @@ class flash_ctrl_otp_reset_vseq extends flash_ctrl_base_vseq;
             // 2. rma_req[1] == true at StReqAddrKey, StReqDataKey
             // 3. StReqDataKey, data_key_ack_q = 1, provision_en_i = 0
             bit[1:0] exception_mode;
-            reset_index_e reset_index = $urandom_range(DVWaitAddrKey, DVWaitEntropyReseed);
+            reset_index_e reset_index = reset_index_e'($urandom_range(DVWaitAddrKey,
+                                                                      DVWaitEntropyReseed));
             `DV_CHECK_STD_RANDOMIZE_FATAL(exception_mode)
 
             `uvm_info("Test", $sformatf("index: %s exception_mode: %0d",

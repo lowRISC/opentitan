@@ -1242,7 +1242,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     // direct rd tgt region: cfg.tgt_pre[1]
     part = part.first;
     do begin
-      for (flash_tgt_prefix_e j = TgtRd; j <= TgtDr; j++) begin
+      for (flash_tgt_prefix_e j = TgtRd; j <= TgtDr; j = j.next()) begin
         st_addr = 'h0;
         if (part == FlashPartData) begin
           st_addr[18:17] = cfg.tgt_pre[part][j];

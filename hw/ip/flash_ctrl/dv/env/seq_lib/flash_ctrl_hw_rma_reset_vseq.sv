@@ -52,7 +52,8 @@ class flash_ctrl_hw_rma_reset_vseq extends flash_ctrl_hw_rma_vseq;
           rma_done = 1;
         end
         begin
-          reset_state_index_e reset_state_index = $urandom_range(DVStRmaPageSel, DVStRmaRdVerify);
+          reset_state_index_e reset_state_index = reset_state_index_e'(
+                                                  $urandom_range(DVStRmaPageSel, DVStRmaRdVerify));
           // Assert reset during RMA state transition
           `uvm_info("Test", $sformatf("Reset index: %s", reset_state_index.name), UVM_LOW)
           `DV_SPINWAIT(wait(cfg.flash_ctrl_vif.rma_state == dv2rma_st(reset_state_index));,
