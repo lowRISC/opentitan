@@ -23,6 +23,7 @@ class rv_dm_smoke_vseq extends rv_dm_base_vseq;
       csr_wr(.ptr(jtag_dtm_ral.idcode), .value(data));
       csr_rd(.ptr(jtag_dtm_ral.idcode), .value(data));
       `DV_CHECK_EQ(data, RV_DM_JTAG_IDCODE)
+      cfg.clk_rst_vif.wait_clks($urandom_range(1, 10));
     end
     repeat ($urandom_range(1, 10)) begin
       data = $urandom_range(0, 1);
