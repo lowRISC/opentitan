@@ -22,7 +22,6 @@ class rv_dm_smoke_vseq extends rv_dm_base_vseq;
     csr_wr(.ptr(jtag_dtm_ral.idcode), .value(data));
     csr_rd(.ptr(jtag_dtm_ral.idcode), .value(data));
     `DV_CHECK_EQ(data, RV_DM_JTAG_IDCODE)
-    cfg.clk_rst_vif.wait_clks($urandom_range(1, 10));
   endtask
 
   // Verify that writing to haltreq causes debug_req output to be set.
@@ -31,7 +30,6 @@ class rv_dm_smoke_vseq extends rv_dm_base_vseq;
     csr_wr(.ptr(jtag_dmi_ral.dmcontrol.haltreq), .value(data));
     cfg.clk_rst_vif.wait_clks($urandom_range(0, 1000));
     `DV_CHECK_EQ(cfg.rv_dm_vif.cb.debug_req, data)
-    cfg.clk_rst_vif.wait_clks($urandom_range(1, 10));
   endtask
 
   // Verify that writing to ndmreset causes ndmreset output to be set.
@@ -40,7 +38,6 @@ class rv_dm_smoke_vseq extends rv_dm_base_vseq;
     csr_wr(.ptr(jtag_dmi_ral.dmcontrol.ndmreset), .value(data));
     cfg.clk_rst_vif.wait_clks($urandom_range(0, 1000));
     `DV_CHECK_EQ(cfg.rv_dm_vif.cb.ndmreset_req, data)
-    cfg.clk_rst_vif.wait_clks($urandom_range(1, 10));
   endtask
 
   // Verify that the dmstatus[*unavail] field tracks the unavailable_i input.
@@ -52,7 +49,6 @@ class rv_dm_smoke_vseq extends rv_dm_base_vseq;
                  get_field_val(jtag_dmi_ral.dmstatus.anyunavail, data))
     `DV_CHECK_EQ(cfg.rv_dm_vif.unavailable,
                  get_field_val(jtag_dmi_ral.dmstatus.allunavail, data))
-    cfg.clk_rst_vif.wait_clks($urandom_range(1, 10));
   endtask
 
   // Verify that writing to dmactive causes dmactive output to be set.
@@ -61,15 +57,24 @@ class rv_dm_smoke_vseq extends rv_dm_base_vseq;
     csr_wr(.ptr(jtag_dmi_ral.dmcontrol.dmactive), .value(data));
     cfg.clk_rst_vif.wait_clks($urandom_range(0, 1000));
     `DV_CHECK_EQ(cfg.rv_dm_vif.cb.dmactive, data)
-    cfg.clk_rst_vif.wait_clks($urandom_range(1, 10));
   endtask
 
   task body();
-    repeat ($urandom_range(1, 10)) check_idcode();
-    repeat ($urandom_range(1, 10)) check_haltreq();
-    repeat ($urandom_range(1, 10)) check_ndmreset();
-    repeat ($urandom_range(1, 10)) check_unavailable();
-    repeat ($urandom_range(1, 10)) check_dmactive();
+    repeat ($urandom_range(20, 50)) begin
+      randcase
+        1: check_idcode();
+        1: check_haltreq();
+        1: check_ndmreset();
+        1: check_unavailable();
+      endcase
+      cfg.clk_rst_vif.wait_clks($urandom_range(1, 10));
+    end
+
+    repeat ($urandom_range(1, 5)) begin
+      check_dmactive();
+      cfg.clk_rst_vif.wait_clks($urandom_range(1, 10));
+    end
+
   endtask : body
 
 endclass : rv_dm_smoke_vseq
