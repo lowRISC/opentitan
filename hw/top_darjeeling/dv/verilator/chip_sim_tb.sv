@@ -63,7 +63,7 @@ module chip_sim_tb (
     .FREQ('d500_000)
   ) u_uart (
     .clk_i  (clk_i),
-    .rst_ni (rst_ni),
+    .rst_ni (cio_gpio_rst_n),
     .tx_o   (cio_uart_rx_p2d),
     .rx_i   (cio_uart_tx_d2p)
   );

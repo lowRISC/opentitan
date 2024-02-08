@@ -9,7 +9,7 @@ use std::fs::File;
 use std::fs::OpenOptions;
 use std::io;
 use std::io::{ErrorKind, Read, Write};
-use std::io::{Seek, SeekFrom};
+//use std::io::{Seek, SeekFrom};
 use std::net::TcpStream;
 use std::time::Duration;
 
@@ -290,8 +290,9 @@ impl Uart for VerilatorUart {
             } else {
                 return Err(anyhow!("TCP socket not connected")).context("UART reset error");
             }
-        } else if let Some(ref ref_pipe) = self.pipe {
-            ref_pipe.borrow_mut().seek(SeekFrom::End(0))?;
+        // TODO: Seek on pipe causes error. Find a different method for draining pipe
+        } else if let Some(ref _ref_pipe) = self.pipe {
+            //ref_pipe.borrow_mut().seek(SeekFrom::End(0))?;
         } else {
             return Err(anyhow!("Pipe not opened")).context("UART reset error");
         }

@@ -276,12 +276,14 @@ static void xfer_respond_next_trans(void *ctx_void) {
     char value[16];
 
     strcat(ctx->xfer_buf_out, "{\"Read\":{\"data\":[");
-    for (int i = 0; i < (ctx->nmax - 1); i++) {
-      sprintf(value, "%u,", (uint8_t)ctx->buf[i]);
+    if (ctx->nmax > 0) {
+      for (int i = 0; i < (ctx->nmax - 1); i++) {
+        sprintf(value, "%u,", (uint8_t)ctx->buf[i]);
+        strcat(ctx->xfer_buf_out, value);
+      }
+      sprintf(value, "%u", (uint8_t)ctx->buf[ctx->nmax - 1]);
       strcat(ctx->xfer_buf_out, value);
     }
-    sprintf(value, "%u", (uint8_t)ctx->buf[ctx->nmax - 1]);
-    strcat(ctx->xfer_buf_out, value);
     strcat(ctx->xfer_buf_out, "]}}");
   } else {
     assert(false && "Response to No transaction not supported.");
@@ -310,7 +312,7 @@ static void xfer_respond(void *ctx_void, bool error) {
     }
   } else {
     int rv = write(ctx->host, ctx->xfer_buf_out, count);
-    assert(rv == 1 && "write() failed.");
+    assert(rv == count && "write() failed.");
   }
 }
 
@@ -557,10 +559,14 @@ char spidpi_tick(void *ctx_void, const svLogicVecVal *d2p_data) {
         ctx->driving = set_sck | (ctx->driving & ~P2D_SCK);
         break;
       case SP_CSFALL:
-        // CSB low, drive SDI to first bit
-        ctx->driving =
-            (set_sck | (ctx->buf[ctx->nout] & ctx->bout) ? P2D_SDI : 0);
-        ctx->state = SP_DMOVE;
+        if (ctx->nmax > 0) {
+          // CSB low, drive SDI to first bit
+          ctx->driving =
+              (set_sck | (ctx->buf[ctx->nout] & ctx->bout) ? P2D_SDI : 0);
+          ctx->state = SP_DMOVE;
+        } else {
+          ctx->state = SP_CSRISE;
+        }
         break;
       case SP_CSRISE:
         xfer_respond_next_trans(ctx);

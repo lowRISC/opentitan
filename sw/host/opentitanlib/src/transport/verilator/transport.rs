@@ -12,6 +12,7 @@ use std::rc::Rc;
 use std::time::{Duration, Instant};
 
 use crate::io::gpio::{GpioError, GpioPin};
+use crate::io::jtag::{Jtag, JtagParams};
 use crate::io::spi::Target;
 use crate::io::uart::Uart;
 use crate::transport::verilator::gpio::{GpioInner, VerilatorGpioPin};
@@ -21,9 +22,8 @@ use crate::transport::verilator::uart::VerilatorUart;
 use crate::transport::{
     Capabilities, Capability, Transport, TransportError, TransportInterfaceType,
 };
-use crate::util::parse_int::ParseInt;
-use crate::io::jtag::{Jtag, JtagParams};
 use crate::util::openocd::OpenOcdServer;
+use crate::util::parse_int::ParseInt;
 
 pub(crate) struct Inner {
     uart: Option<Rc<dyn Uart>>,
