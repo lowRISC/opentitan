@@ -119,6 +119,11 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
     foreach (digest[i]) csr_rd(.ptr(ral.digest[i]), .value(digest[i]));
   endtask
 
+  // write digest value
+  virtual task csr_wr_digest(bit [TL_DW-1:0] digest[8]);
+    foreach (digest[i]) csr_wr(.ptr(ral.digest[i]), .value(digest[i]));
+  endtask
+
   // write 256-bit hashed key
   //
   // can safely assume that the input array will always have 8 elements
