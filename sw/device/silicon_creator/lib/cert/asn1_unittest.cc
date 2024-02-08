@@ -225,7 +225,7 @@ TEST(Asn1, PushIntPad) {
   EXPECT_EQ(asn1_push_integer_pad(&state, true, kBigInt4, sizeof(kBigInt4), 4),
             kErrorOk);
   EXPECT_EQ(asn1_push_integer_pad(&state, true, kBigInt5, sizeof(kBigInt5), 4),
-            kErrorAsn1InvalidArgument);
+            kErrorAsn1PushIntegerPadInvalidArgument);
   size_t out_size;
   EXPECT_EQ(asn1_finish(&state, &out_size), kErrorOk);
   const std::array<uint8_t, 32> kExpectedResult = {
