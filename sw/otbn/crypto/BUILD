@@ -157,6 +157,13 @@ otbn_library(
 )
 
 otbn_library(
+    name = "p384_b2a",
+    srcs = [
+        "p384_b2a.s",
+    ],
+)
+
+otbn_library(
     name = "p384_isoncurve",
     srcs = [
         "p384_isoncurve.s",

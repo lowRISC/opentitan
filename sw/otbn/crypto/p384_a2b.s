@@ -19,12 +19,12 @@
  *
  * The logic behind the carry bit handling is as follows:
  * If x >= r, then  A = (x - r) mod p = x - r exactly.
- * So when we add 2^385 - p and then add A and x, we get
+ * So when we add 2^385 - p and then add A and r, we get
  * (2^385 - p + x - r + r) mod 2^385 = 2^385 - p + x.
  * In this case, the high bit is always true since p - x <= p < 2^384,
  * so we choose the A2B conversion without the 2^385 - p added.
  * On the other hand, if x < r, then A = (x - r) mod p = x - r + p.
- * When we add 2^385 - p and then add A and x, we get
+ * When we add 2^385 - p and then add A and r, we get
  * (2^385 - p + x - r + p + r) mod 2^385 = (2^385 + x) mod 2^385 = x.
  * In this case, the high bit is always false since x < p < 2^384, so we
  * choose this second A2B conversion.
