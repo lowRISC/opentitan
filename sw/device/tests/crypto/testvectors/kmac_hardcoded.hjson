@@ -113,7 +113,7 @@
     digest: 0x20c570c31346f703c9ac36c61c03cb64c3970d0cfc787e9b79599d273a68d2f7f69d4cc3de9d104a351689f27cf6f5951f0103f33f4f24871024d9c27773a8dd
   }
   {
-    vector_identifier: ./sw/device/tests/crypto/kmac_gen_single_testvector.py--seed=1 --key_len=128 --sec_str=128 --input_msg_len=256 --cust_str_len=256 --digest_len=160 <output-file>
+    vector_identifier: ./sw/device/tests/crypto/kmac_gen_single_testvector.py --seed=1 --key_len=128 --sec_str=128 --input_msg_len=256 --cust_str_len=256 --digest_len=160 <output-file>
     operation: KMAC
     security_str: 128
     key: 0x8c2e0718822ce47ca8c74107e66cb0e4
