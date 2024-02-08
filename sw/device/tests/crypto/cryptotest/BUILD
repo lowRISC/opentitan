@@ -38,3 +38,55 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
     },
 )
+
+HASH_TESTVECTOR_TARGETS = [
+    "//sw/host/cryptotest/testvectors/data:nist_cavp_{}_{}_{}_json".format(
+        src_repo,
+        algorithm.lower(),
+        msg_type.lower(),
+    )
+    for algorithm, src_repo, extra_msg_types in [
+        ("SHA256", "sha2_fips_180_4", []),
+        ("SHA384", "sha2_fips_180_4", []),
+        ("SHA512", "sha2_fips_180_4", []),
+        ("SHA3_256", "sha3_fips_202", []),
+        ("SHA3_384", "sha3_fips_202", []),
+        ("SHA3_512", "sha3_fips_202", []),
+        (
+            "SHAKE128",
+            "shake_fips_202",
+            ["VariableOut"],
+        ),
+        (
+            "SHAKE256",
+            "shake_fips_202",
+            ["VariableOut"],
+        ),
+    ]
+    for msg_type in [
+        "ShortMsg",
+        #        "LongMsg",
+    ] + extra_msg_types
+]
+
+HASH_TESTVECTOR_ARGS = " ".join([
+    "--hash-json=\"$(rootpath {})\"".format(target)
+    for target in HASH_TESTVECTOR_TARGETS
+])
+
+opentitan_test(
+    name = "hash_kat",
+    cw310 = cw310_params(
+        timeout = "long",
+        binaries = {"//sw/device/tests/crypto/cryptotest/firmware:firmware": "firmware"},
+        data = HASH_TESTVECTOR_TARGETS,
+        test_cmd = """
+                --bootstrap={firmware}
+                --bitstream={bitstream}
+            """ + HASH_TESTVECTOR_ARGS,
+        test_harness = "//sw/host/tests/crypto/hash_kat:harness",
+    ),
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+    },
+)
