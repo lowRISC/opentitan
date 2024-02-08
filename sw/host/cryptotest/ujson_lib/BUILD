@@ -17,20 +17,28 @@ ujson_rust(
     srcs = ["//sw/device/tests/crypto/cryptotest/json:aes_commands"],
 )
 
+ujson_rust(
+    name = "hash_commands_rust",
+    srcs = ["//sw/device/tests/crypto/cryptotest/json:hash_commands"],
+)
+
 rust_library(
     name = "cryptotest_commands",
     srcs = [
         "src/aes_commands.rs",
         "src/commands.rs",
+        "src/hash_commands.rs",
         "src/lib.rs",
     ],
     compile_data = [
         ":commands_rust",
         ":aes_commands_rust",
+        ":hash_commands_rust",
     ],
     rustc_env = {
         "commands_loc": "$(execpath :commands_rust)",
         "aes_commands_loc": "$(execpath :aes_commands_rust)",
+        "hash_commands_loc": "$(execpath :hash_commands_rust)",
     },
     deps = [
         "//sw/host/opentitanlib",
