@@ -71,7 +71,7 @@ class flash_ctrl_prog_reset_vseq extends flash_ctrl_otf_base_vseq;
         end
         begin
           string path1, path2;
-          reset_index_e reset_index = $urandom_range(DVStPrePack, DVStCalcEcc);
+          reset_index_e reset_index = reset_index_e'($urandom_range(DVStPrePack, DVStCalcEcc));
           `uvm_info("Test", $sformatf("reset_idx: %s", reset_index.name), UVM_MEDIUM)
           `DV_SPINWAIT(wait(cfg.flash_ctrl_vif.prog_state0 == dv2rtl_st(reset_index) ||
                             cfg.flash_ctrl_vif.prog_state1 == dv2rtl_st(reset_index));,

@@ -308,7 +308,7 @@ class flash_ctrl_hw_sec_otp_vseq extends flash_ctrl_base_vseq;
     `DV_CHECK_EQ(key, expected_key, $sformatf(
                  {"Flash OTP Scramble Key Mismatch, Key : %s[%0d], Read : ",
                   "0x%0x, Expected : 0x%0x, FAIL"},
-                 dut_prb, i, key, expected_key))
+                   dut_prb, i, key, expected_key))
 
   endtask : compare_key_probe
 

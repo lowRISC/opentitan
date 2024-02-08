@@ -353,7 +353,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     //  FlashPartInfo1       = 2 | FlashPartInfo=1 |         1           |
     //  FlashPartInfo2       = 4 | FlashPartInfo=1 |         2           |
 
-    partition_sel = |flash_op.partition;
+    partition_sel = flash_part_e'(|flash_op.partition);
     info_sel = flash_op.partition >> 1;
     data = get_csr_val_with_updated_field(ral.control.start, data, 1'b1);
     data = data | get_csr_val_with_updated_field(ral.control.op, data, flash_op.op);
@@ -955,7 +955,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     num_part      = num % FIFO_DEPTH;
 
     // Other
-    partition_sel = |flash_op.partition;
+    partition_sel = flash_part_e'(|flash_op.partition);
     info_sel      = flash_op.partition >> 1;
     flash_addr    = flash_op.addr;
 
@@ -1055,7 +1055,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
               ), UVM_LOW)
 
     // Other
-    partition_sel = |flash_op.partition;
+    partition_sel = flash_part_e'(|flash_op.partition);
     info_sel      = flash_op.partition >> 1;
     num_words     = flash_op.num_words;
     flash_addr    = flash_op.addr;
@@ -1157,7 +1157,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
                             bit ignore_short_rma = 0);
 
     // Local Variables
-    lc_ctrl_pkg::lc_tx_t done;
+    bit  done;
     time timeout = 15s;
     time start_time;
     bit  rma_ack_seen;

@@ -16,6 +16,7 @@ class flash_ctrl_connect_vseq extends flash_ctrl_base_vseq;
     bit [7:0]      fla_src, fla_dst;
 
     string         mystr;
+    uvm_hdl_data_t data;
     `uvm_info("seq", "connectivity test starts...", UVM_MEDIUM)
 
     // jtag
@@ -71,9 +72,11 @@ class flash_ctrl_connect_vseq extends flash_ctrl_base_vseq;
     mystr = {cfg.seq_cfg.flash_path_str, ".obs_ctrl_i.obgsl"};
     `DV_CHECK(uvm_hdl_read(mystr, obs_dst.obgsl))
     mystr = {cfg.seq_cfg.flash_path_str, ".obs_ctrl_i.obmsl"};
-    `DV_CHECK(uvm_hdl_read(mystr, obs_dst.obmsl))
+    `DV_CHECK(uvm_hdl_read(mystr, data))
+    obs_dst.obmsl = ast_pkg::ast_omdl_e'(data);
     mystr = {cfg.seq_cfg.flash_path_str, ".obs_ctrl_i.obmen"};
-    `DV_CHECK(uvm_hdl_read(mystr, obs_dst.obmen))
+    `DV_CHECK(uvm_hdl_read(mystr, data))
+    obs_dst.obmen = mubi4_t'(data);
     mystr = {dut_path, ".fla_obs_o"};
     `DV_CHECK(uvm_hdl_read(mystr, fla_dst))
     `DV_CHECK_EQ(obs_dst, obs_src)
