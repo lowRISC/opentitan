@@ -317,6 +317,8 @@ Received Message Length calculated by the HMAC in bits [31:0]
 
 Message is byte granularity.
 lower 3bits [2:0] are ignored.
+
+When `CFG.sha_en` is 0, this register can be written by software.
 - Offset: `0x64`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
@@ -324,15 +326,17 @@ lower 3bits [2:0] are ignored.
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "v", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "v", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name   | Description           |
 |:------:|:------:|:-------:|:-------|:----------------------|
-|  31:0  |   ro   |   0x0   | v      | Message Length [31:0] |
+|  31:0  |   rw   |    x    | v      | Message Length [31:0] |
 
 ## MSG_LENGTH_UPPER
 Received Message Length calculated by the HMAC in bits [63:32]
+
+When `CFG.sha_en` is 0, this register can be written by software.
 - Offset: `0x68`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
@@ -340,12 +344,12 @@ Received Message Length calculated by the HMAC in bits [63:32]
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "v", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "v", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name   | Description            |
 |:------:|:------:|:-------:|:-------|:-----------------------|
-|  31:0  |   ro   |   0x0   | v      | Message Length [63:32] |
+|  31:0  |   rw   |    x    | v      | Message Length [63:32] |
 
 ## MSG_FIFO
 Message FIFO. Any write to this window will be appended to the FIFO. Only the lower [1:0] bits of the address matter to writes within the window (for correctly dealing with non 32-bit writes)

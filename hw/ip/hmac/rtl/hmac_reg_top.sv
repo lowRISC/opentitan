@@ -258,8 +258,14 @@ module hmac_reg_top (
   logic digest_7_we;
   logic [31:0] digest_7_qs;
   logic [31:0] digest_7_wd;
+  logic msg_length_lower_re;
+  logic msg_length_lower_we;
   logic [31:0] msg_length_lower_qs;
+  logic [31:0] msg_length_lower_wd;
+  logic msg_length_upper_re;
+  logic msg_length_upper_we;
   logic [31:0] msg_length_upper_qs;
+  logic [31:0] msg_length_upper_wd;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -1038,60 +1044,44 @@ module hmac_reg_top (
   assign reg2hw.digest[7].qe = digest_7_qe;
 
 
-  // R[msg_length_lower]: V(False)
-  prim_subreg #(
-    .DW      (32),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+  // R[msg_length_lower]: V(True)
+  logic msg_length_lower_qe;
+  logic [0:0] msg_length_lower_flds_we;
+  assign msg_length_lower_qe = &msg_length_lower_flds_we;
+  prim_subreg_ext #(
+    .DW    (32)
   ) u_msg_length_lower (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (1'b0),
-    .wd     ('0),
-
-    // from internal hardware
-    .de     (hw2reg.msg_length_lower.de),
+    .re     (msg_length_lower_re),
+    .we     (msg_length_lower_we),
+    .wd     (msg_length_lower_wd),
     .d      (hw2reg.msg_length_lower.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
+    .qre    (),
+    .qe     (msg_length_lower_flds_we[0]),
+    .q      (reg2hw.msg_length_lower.q),
     .ds     (),
-
-    // to register interface (read)
     .qs     (msg_length_lower_qs)
   );
+  assign reg2hw.msg_length_lower.qe = msg_length_lower_qe;
 
 
-  // R[msg_length_upper]: V(False)
-  prim_subreg #(
-    .DW      (32),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0),
-    .Mubi    (1'b0)
+  // R[msg_length_upper]: V(True)
+  logic msg_length_upper_qe;
+  logic [0:0] msg_length_upper_flds_we;
+  assign msg_length_upper_qe = &msg_length_upper_flds_we;
+  prim_subreg_ext #(
+    .DW    (32)
   ) u_msg_length_upper (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (1'b0),
-    .wd     ('0),
-
-    // from internal hardware
-    .de     (hw2reg.msg_length_upper.de),
+    .re     (msg_length_upper_re),
+    .we     (msg_length_upper_we),
+    .wd     (msg_length_upper_wd),
     .d      (hw2reg.msg_length_upper.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
+    .qre    (),
+    .qe     (msg_length_upper_flds_we[0]),
+    .q      (reg2hw.msg_length_upper.q),
     .ds     (),
-
-    // to register interface (read)
     .qs     (msg_length_upper_qs)
   );
+  assign reg2hw.msg_length_upper.qe = msg_length_upper_qe;
 
 
 
@@ -1261,6 +1251,14 @@ module hmac_reg_top (
   assign digest_7_we = addr_hit[24] & reg_we & !reg_error;
 
   assign digest_7_wd = reg_wdata[31:0];
+  assign msg_length_lower_re = addr_hit[25] & reg_re & !reg_error;
+  assign msg_length_lower_we = addr_hit[25] & reg_we & !reg_error;
+
+  assign msg_length_lower_wd = reg_wdata[31:0];
+  assign msg_length_upper_re = addr_hit[26] & reg_re & !reg_error;
+  assign msg_length_upper_we = addr_hit[26] & reg_we & !reg_error;
+
+  assign msg_length_upper_wd = reg_wdata[31:0];
 
   // Assign write-enables to checker logic vector.
   always_comb begin
@@ -1290,8 +1288,8 @@ module hmac_reg_top (
     reg_we_check[22] = digest_5_we;
     reg_we_check[23] = digest_6_we;
     reg_we_check[24] = digest_7_we;
-    reg_we_check[25] = 1'b0;
-    reg_we_check[26] = 1'b0;
+    reg_we_check[25] = msg_length_lower_we;
+    reg_we_check[26] = msg_length_upper_we;
   end
 
   // Read data return

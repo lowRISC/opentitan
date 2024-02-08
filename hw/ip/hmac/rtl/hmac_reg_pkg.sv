@@ -107,6 +107,16 @@ package hmac_reg_pkg;
   } hmac_reg2hw_digest_mreg_t;
 
   typedef struct packed {
+    logic [31:0] q;
+    logic        qe;
+  } hmac_reg2hw_msg_length_lower_reg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+    logic        qe;
+  } hmac_reg2hw_msg_length_upper_reg_t;
+
+  typedef struct packed {
     struct packed {
       logic        d;
       logic        de;
@@ -163,37 +173,37 @@ package hmac_reg_pkg;
 
   typedef struct packed {
     logic [31:0] d;
-    logic        de;
   } hmac_hw2reg_msg_length_lower_reg_t;
 
   typedef struct packed {
     logic [31:0] d;
-    logic        de;
   } hmac_hw2reg_msg_length_upper_reg_t;
 
   // Register -> HW type
   typedef struct packed {
-    hmac_reg2hw_intr_state_reg_t intr_state; // [586:584]
-    hmac_reg2hw_intr_enable_reg_t intr_enable; // [583:581]
-    hmac_reg2hw_intr_test_reg_t intr_test; // [580:575]
-    hmac_reg2hw_alert_test_reg_t alert_test; // [574:573]
-    hmac_reg2hw_cfg_reg_t cfg; // [572:565]
-    hmac_reg2hw_cmd_reg_t cmd; // [564:561]
-    hmac_reg2hw_wipe_secret_reg_t wipe_secret; // [560:528]
-    hmac_reg2hw_key_mreg_t [7:0] key; // [527:264]
-    hmac_reg2hw_digest_mreg_t [7:0] digest; // [263:0]
+    hmac_reg2hw_intr_state_reg_t intr_state; // [652:650]
+    hmac_reg2hw_intr_enable_reg_t intr_enable; // [649:647]
+    hmac_reg2hw_intr_test_reg_t intr_test; // [646:641]
+    hmac_reg2hw_alert_test_reg_t alert_test; // [640:639]
+    hmac_reg2hw_cfg_reg_t cfg; // [638:631]
+    hmac_reg2hw_cmd_reg_t cmd; // [630:627]
+    hmac_reg2hw_wipe_secret_reg_t wipe_secret; // [626:594]
+    hmac_reg2hw_key_mreg_t [7:0] key; // [593:330]
+    hmac_reg2hw_digest_mreg_t [7:0] digest; // [329:66]
+    hmac_reg2hw_msg_length_lower_reg_t msg_length_lower; // [65:33]
+    hmac_reg2hw_msg_length_upper_reg_t msg_length_upper; // [32:0]
   } hmac_reg2hw_t;
 
   // HW -> register type
   typedef struct packed {
-    hmac_hw2reg_intr_state_reg_t intr_state; // [627:622]
-    hmac_hw2reg_cfg_reg_t cfg; // [621:618]
-    hmac_hw2reg_status_reg_t status; // [617:611]
-    hmac_hw2reg_err_code_reg_t err_code; // [610:578]
-    hmac_hw2reg_key_mreg_t [7:0] key; // [577:322]
-    hmac_hw2reg_digest_mreg_t [7:0] digest; // [321:66]
-    hmac_hw2reg_msg_length_lower_reg_t msg_length_lower; // [65:33]
-    hmac_hw2reg_msg_length_upper_reg_t msg_length_upper; // [32:0]
+    hmac_hw2reg_intr_state_reg_t intr_state; // [625:620]
+    hmac_hw2reg_cfg_reg_t cfg; // [619:616]
+    hmac_hw2reg_status_reg_t status; // [615:609]
+    hmac_hw2reg_err_code_reg_t err_code; // [608:576]
+    hmac_hw2reg_key_mreg_t [7:0] key; // [575:320]
+    hmac_hw2reg_digest_mreg_t [7:0] digest; // [319:64]
+    hmac_hw2reg_msg_length_lower_reg_t msg_length_lower; // [63:32]
+    hmac_hw2reg_msg_length_upper_reg_t msg_length_upper; // [31:0]
   } hmac_hw2reg_t;
 
   // Register offsets
@@ -255,6 +265,8 @@ package hmac_reg_pkg;
   parameter logic [31:0] HMAC_DIGEST_5_RESVAL = 32'h 0;
   parameter logic [31:0] HMAC_DIGEST_6_RESVAL = 32'h 0;
   parameter logic [31:0] HMAC_DIGEST_7_RESVAL = 32'h 0;
+  parameter logic [31:0] HMAC_MSG_LENGTH_LOWER_RESVAL = 32'h 0;
+  parameter logic [31:0] HMAC_MSG_LENGTH_UPPER_RESVAL = 32'h 0;
 
   // Window parameters
   parameter logic [BlockAw-1:0] HMAC_MSG_FIFO_OFFSET = 12'h 800;
