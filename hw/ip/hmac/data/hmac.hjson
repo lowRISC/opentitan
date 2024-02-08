@@ -306,17 +306,27 @@
       desc: '''Received Message Length calculated by the HMAC in bits [31:0]
 
             Message is byte granularity.
-            lower 3bits [2:0] are ignored.''',
-      swaccess: "ro",
-      hwaccess: "hwo",
+            lower 3bits [2:0] are ignored.
+
+            When `CFG.sha_en` is 0, this register can be written by software.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
       fields: [
         { bits: "31:0", name: "v", desc: "Message Length [31:0]" }
       ]
     }
     { name: "MSG_LENGTH_UPPER",
-      desc: "Received Message Length calculated by the HMAC in bits [63:32]",
-      swaccess: "ro",
-      hwaccess: "hwo",
+      desc: '''Received Message Length calculated by the HMAC in bits [63:32]
+
+            When `CFG.sha_en` is 0, this register can be written by software.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
       fields: [
         { bits: "31:0", name: "v", desc: "Message Length [63:32]" }
       ]
