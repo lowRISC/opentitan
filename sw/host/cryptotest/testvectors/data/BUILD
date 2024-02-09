@@ -131,3 +131,29 @@ run_binary(
         ("ecdh_secp384r1_test.json", "wycheproof_ecdh_p384"),
     ]
 ]
+
+[
+    run_binary(
+        name = cryptotest_name,
+        srcs = [
+            "@wycheproof//testvectors_v1:{}".format(src_name),
+            "//sw/host/cryptotest/testvectors/data/schemas:kmac_schema.json",
+        ],
+        outs = [":{}.json".format(cryptotest_name)],
+        args = [
+            "--src",
+            "$(location @wycheproof//testvectors_v1:{})".format(src_name),
+            "--dst",
+            "$(location :{}.json)".format(cryptotest_name),
+            "--schema",
+            "$(location //sw/host/cryptotest/testvectors/data/schemas:kmac_schema.json)",
+            "--mode",
+            mode,
+        ],
+        tool = "//sw/host/cryptotest/testvectors/parsers:wycheproof_kmac_parser",
+    )
+    for src_name, mode, cryptotest_name in [
+        ("kmac128_no_customization_test.json", "128", "wycheproof_kmac_128"),
+        ("kmac256_no_customization_test.json", "256", "wycheproof_kmac_256"),
+    ]
+]
