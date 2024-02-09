@@ -263,6 +263,53 @@ interface edn_cov_if (
     }
   endgroup : edn_sw_cmd_sts_cg
 
+  covergroup edn_hw_cmd_sts_cg with function sample(bit boot_mode, bit auto_mode,
+                                                    bit cmd_sts, bit cmd_ack,
+                                                    csrng_pkg::acmd_e acmd);
+    option.name         = "edn_hw_cmd_sts_cg";
+    option.per_instance = 1;
+
+    cp_boot_mode: coverpoint boot_mode {
+      bins boot_mode     = { 1'b1 };
+      bins not_boot_mode = { 1'b0 };
+    }
+
+    cp_auto_mode: coverpoint auto_mode {
+      bins auto_mode     = { 1'b1 };
+      bins not_auto_mode = { 1'b0 };
+    }
+
+    cp_cmd_sts: coverpoint cmd_sts {
+      bins error   = { 1'b1 };
+      bins success = { 1'b0 };
+    }
+
+    cp_cmd_ack: coverpoint cmd_ack {
+      bins ack    = { 1'b1 };
+      bins no_ack = { 1'b0 };
+    }
+
+    cp_acmd: coverpoint acmd {
+      // Ignore unused/invalid HW commands.
+      ignore_bins unused = { csrng_pkg::GENB, csrng_pkg::GENU, csrng_pkg::INV, csrng_pkg::UPD };
+    }
+
+    // We want to see all of the boot commands in boot mode.
+    cr_acmd_boot_mode: cross cp_acmd, cp_boot_mode {
+      ignore_bins not_boot_mode = ! binsof(cp_boot_mode) intersect { 1'b1 };
+      ignore_bins not_valid_boot_commands = ! binsof(cp_acmd) intersect { csrng_pkg::INS,
+                                                                          csrng_pkg::GEN,
+                                                                          csrng_pkg::UNI };
+    }
+
+    // We want to see all of the HW controlled auto mode commands in auto mode.
+    cr_acmd_auto_mode: cross cp_acmd, cp_auto_mode {
+      ignore_bins not_auto_mode = ! binsof(cp_auto_mode) intersect { 1'b1 };
+      ignore_bins not_valid_boot_commands = ! binsof(cp_acmd) intersect { csrng_pkg::RES,
+                                                                          csrng_pkg::GEN };
+    }
+  endgroup : edn_hw_cmd_sts_cg
+
   `DV_FCOV_INSTANTIATE_CG(edn_cfg_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(edn_endpoints_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(edn_cs_cmds_cg, en_full_cov)
@@ -270,6 +317,7 @@ interface edn_cov_if (
   `DV_FCOV_INSTANTIATE_CG(edn_alert_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(edn_cs_cmd_response_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(edn_sw_cmd_sts_cg, en_full_cov)
+  `DV_FCOV_INSTANTIATE_CG(edn_hw_cmd_sts_cg, en_full_cov)
 
   // Sample functions needed for xcelium
   function automatic void cg_cfg_sample(edn_env_cfg cfg);
@@ -323,5 +371,11 @@ interface edn_cov_if (
                                                    bit cmd_sts, bit cmd_ack);
     edn_sw_cmd_sts_cg_inst.sample(cmd_rdy, cmd_reg_rdy, cmd_sts, cmd_ack);
   endfunction : cg_edn_sw_cmd_sts_sample
+
+  function automatic void cg_edn_hw_cmd_sts_sample(bit boot_mode, bit auto_mode,
+                                                   bit cmd_sts, bit cmd_ack,
+                                                   csrng_pkg::acmd_e acmd);
+    edn_hw_cmd_sts_cg_inst.sample(boot_mode, auto_mode, cmd_sts, cmd_ack, acmd);
+  endfunction : cg_edn_hw_cmd_sts_sample
 
 endinterface : edn_cov_if
