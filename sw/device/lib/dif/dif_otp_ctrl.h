@@ -56,6 +56,32 @@ typedef enum dif_otp_ctrl_partition {
    */
   kDifOtpCtrlPartitionOwnerSwCfg,
   /**
+   * This OTP partition is used to store four P-256 keys and four Sphincs+ keys.
+   *
+   * The partition requires 464
+   * bytes of software visible storage. The partition is
+   * locked at manufacturing time to protect against
+   * malicious write attempts.
+   */
+  kDifOtpCtrlPartitionRotCreatorAuthCodesign,
+  /**
+   * This OTP partition is used to capture the state of each key slot.
+   *
+   * Each key can be in one of the
+   * following states: BLANK, ENABLED, DISABLED. The
+   * encoded values are such that transitions between
+   * BLANK -> ENABLED ->  DISABLED are possible without
+   * causing ECC errors (this is a mechanism similar to
+   * how we manage life cycle state transitions). The
+   * partition is left unlocked to allow STATE updates in
+   * the field. The ROM_EXT is required to lock access to
+   * the OTP Direct Access Interface to prevent DoS
+   * attacks from malicious code executing on Silicon
+   * Owner partitions. DAI write locking is available in
+   * EarlGrey.
+   */
+  kDifOtpCtrlPartitionRotCreatorAuthState,
+  /**
    * Hardware configuration 0 partition.
    *
    * This contains
@@ -164,6 +190,14 @@ typedef enum dif_otp_ctrl_status_code {
    * Indicates an error occurred in the `OwnerSwCfg` partition.
    */
   kDifOtpCtrlStatusCodeOwnerSwCfgError,
+  /**
+   * Indicates an error occurred in the `RotCreatorAuthCodesign` partition.
+   */
+  kDifOtpCtrlStatusCodeRotCreatorAuthCodesignError,
+  /**
+   * Indicates an error occurred in the `RotCreatorAuthState` partition.
+   */
+  kDifOtpCtrlStatusCodeRotCreatorAuthStateError,
   /**
    * Indicates an error occurred in the `HwCfg0` partition.
    */

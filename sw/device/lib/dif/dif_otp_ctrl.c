@@ -173,6 +173,16 @@ static bool sw_read_lock_reg_offset(dif_otp_ctrl_partition_t partition,
       *reg_offset = OTP_CTRL_OWNER_SW_CFG_READ_LOCK_REG_OFFSET;
       *index = OTP_CTRL_OWNER_SW_CFG_READ_LOCK_OWNER_SW_CFG_READ_LOCK_BIT;
       break;
+    case kDifOtpCtrlPartitionRotCreatorAuthCodesign:
+      *reg_offset = OTP_CTRL_ROT_CREATOR_AUTH_CODESIGN_READ_LOCK_REG_OFFSET;
+      *index =
+          OTP_CTRL_ROT_CREATOR_AUTH_CODESIGN_READ_LOCK_ROT_CREATOR_AUTH_CODESIGN_READ_LOCK_BIT;
+      break;
+    case kDifOtpCtrlPartitionRotCreatorAuthState:
+      *reg_offset = OTP_CTRL_ROT_CREATOR_AUTH_STATE_READ_LOCK_REG_OFFSET;
+      *index =
+          OTP_CTRL_ROT_CREATOR_AUTH_STATE_READ_LOCK_ROT_CREATOR_AUTH_STATE_READ_LOCK_BIT;
+      break;
     default:
       return false;
   }
@@ -235,6 +245,10 @@ dif_result_t dif_otp_ctrl_get_status(const dif_otp_ctrl_t *otp,
           OTP_CTRL_STATUS_CREATOR_SW_CFG_ERROR_BIT,
       [kDifOtpCtrlStatusCodeOwnerSwCfgError] =
           OTP_CTRL_STATUS_OWNER_SW_CFG_ERROR_BIT,
+      [kDifOtpCtrlStatusCodeRotCreatorAuthCodesignError] =
+          OTP_CTRL_STATUS_ROT_CREATOR_AUTH_CODESIGN_ERROR_BIT,
+      [kDifOtpCtrlStatusCodeRotCreatorAuthStateError] =
+          OTP_CTRL_STATUS_ROT_CREATOR_AUTH_STATE_ERROR_BIT,
       [kDifOtpCtrlStatusCodeHwCfg0Error] = OTP_CTRL_STATUS_HW_CFG0_ERROR_BIT,
       [kDifOtpCtrlStatusCodeHwCfg1Error] = OTP_CTRL_STATUS_HW_CFG1_ERROR_BIT,
       [kDifOtpCtrlStatusCodeSecret0Error] = OTP_CTRL_STATUS_SECRET0_ERROR_BIT,
@@ -376,6 +390,20 @@ static const partition_info_t kPartitions[] = {
     [kDifOtpCtrlPartitionOwnerSwCfg] = {
         .start_addr = OTP_CTRL_PARAM_OWNER_SW_CFG_OFFSET,
         .len = OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE,
+        .align_mask = 0x3,
+        .is_software = true,
+        .has_digest = true,
+        .is_lifecycle = false},
+    [kDifOtpCtrlPartitionRotCreatorAuthCodesign] = {
+        .start_addr = OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_OFFSET,
+        .len = OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_SIZE,
+        .align_mask = 0x3,
+        .is_software = true,
+        .has_digest = true,
+        .is_lifecycle = false},
+    [kDifOtpCtrlPartitionRotCreatorAuthState] = {
+        .start_addr = OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_OFFSET,
+        .len = OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_SIZE,
         .align_mask = 0x3,
         .is_software = true,
         .has_digest = true,
@@ -689,6 +717,14 @@ static bool get_digest_regs(dif_otp_ctrl_partition_t partition, ptrdiff_t *reg0,
     case kDifOtpCtrlPartitionOwnerSwCfg:
       *reg0 = OTP_CTRL_OWNER_SW_CFG_DIGEST_0_REG_OFFSET;
       *reg1 = OTP_CTRL_OWNER_SW_CFG_DIGEST_1_REG_OFFSET;
+      break;
+    case kDifOtpCtrlPartitionRotCreatorAuthCodesign:
+      *reg0 = OTP_CTRL_ROT_CREATOR_AUTH_CODESIGN_DIGEST_0_REG_OFFSET;
+      *reg1 = OTP_CTRL_ROT_CREATOR_AUTH_CODESIGN_DIGEST_1_REG_OFFSET;
+      break;
+    case kDifOtpCtrlPartitionRotCreatorAuthState:
+      *reg0 = OTP_CTRL_ROT_CREATOR_AUTH_STATE_DIGEST_0_REG_OFFSET;
+      *reg1 = OTP_CTRL_ROT_CREATOR_AUTH_STATE_DIGEST_1_REG_OFFSET;
       break;
     case kDifOtpCtrlPartitionHwCfg0:
       *reg0 = OTP_CTRL_HW_CFG0_DIGEST_0_REG_OFFSET;

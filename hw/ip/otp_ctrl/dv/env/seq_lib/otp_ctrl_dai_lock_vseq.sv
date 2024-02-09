@@ -38,6 +38,12 @@ class otp_ctrl_dai_lock_vseq extends otp_ctrl_smoke_vseq;
     if (part_idx == OwnerSwCfgIdx) {
       dai_addr inside `PART_ADDR_RANGE(OwnerSwCfgIdx);
     }
+    if (part_idx == RotCreatorAuthCodesignIdx) {
+      dai_addr inside `PART_ADDR_RANGE(RotCreatorAuthCodesignIdx);
+    }
+    if (part_idx == RotCreatorAuthStateIdx) {
+      dai_addr inside `PART_ADDR_RANGE(RotCreatorAuthStateIdx);
+    }
     if (part_idx == HwCfg0Idx) {
       dai_addr inside `PART_ADDR_RANGE(HwCfg0Idx);
     }
@@ -69,6 +75,8 @@ class otp_ctrl_dai_lock_vseq extends otp_ctrl_smoke_vseq;
         VendorTestDigestOffset,
         CreatorSwCfgDigestOffset,
         OwnerSwCfgDigestOffset,
+        RotCreatorAuthCodesignDigestOffset,
+        RotCreatorAuthStateDigestOffset,
         HwCfg0DigestOffset,
         HwCfg1DigestOffset,
         Secret0DigestOffset,

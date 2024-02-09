@@ -265,12 +265,22 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
       `DV_CHECK_STD_RANDOMIZE_FATAL(wdata);
       dai_wr(OwnerSwCfgDigestOffset, wdata[TL_DW-1:0], wdata[TL_DW*2-1:TL_DW]);
     end
+    if (wr_digest[RotCreatorAuthCodesignIdx]) begin
+      `DV_CHECK_STD_RANDOMIZE_FATAL(wdata);
+      dai_wr(RotCreatorAuthCodesignDigestOffset, wdata[TL_DW-1:0], wdata[TL_DW*2-1:TL_DW]);
+    end
+    if (wr_digest[RotCreatorAuthStateIdx]) begin
+      `DV_CHECK_STD_RANDOMIZE_FATAL(wdata);
+      dai_wr(RotCreatorAuthStateDigestOffset, wdata[TL_DW-1:0], wdata[TL_DW*2-1:TL_DW]);
+    end
   endtask
 
   virtual task write_sw_rd_locks(bit [NumPartUnbuf-1:0] do_rd_lock= $urandom());
     if (do_rd_lock[VendorTestIdx]) csr_wr(ral.vendor_test_read_lock, 0);
     if (do_rd_lock[CreatorSwCfgIdx]) csr_wr(ral.creator_sw_cfg_read_lock, 0);
     if (do_rd_lock[OwnerSwCfgIdx]) csr_wr(ral.owner_sw_cfg_read_lock, 0);
+    if (do_rd_lock[RotCreatorAuthCodesignIdx]) csr_wr(ral.rot_creator_auth_codesign_read_lock, 0);
+    if (do_rd_lock[RotCreatorAuthStateIdx]) csr_wr(ral.rot_creator_auth_state_read_lock, 0);
   endtask
 
   // The digest CSR values are verified in otp_ctrl_scoreboard
@@ -282,6 +292,10 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     csr_rd(.ptr(ral.creator_sw_cfg_digest[1]), .value(val));
     csr_rd(.ptr(ral.owner_sw_cfg_digest[0]), .value(val));
     csr_rd(.ptr(ral.owner_sw_cfg_digest[1]), .value(val));
+    csr_rd(.ptr(ral.rot_creator_auth_codesign_digest[0]), .value(val));
+    csr_rd(.ptr(ral.rot_creator_auth_codesign_digest[1]), .value(val));
+    csr_rd(.ptr(ral.rot_creator_auth_state_digest[0]), .value(val));
+    csr_rd(.ptr(ral.rot_creator_auth_state_digest[1]), .value(val));
     csr_rd(.ptr(ral.hw_cfg0_digest[0]), .value(val));
     csr_rd(.ptr(ral.hw_cfg0_digest[1]), .value(val));
     csr_rd(.ptr(ral.hw_cfg1_digest[0]), .value(val));
@@ -318,6 +332,16 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
           !$urandom_range(0, 4)) begin
         forced_mubi_part_access[OwnerSwCfgIdx].write_lock = 1;
       end
+      if ((`gmv(ral.rot_creator_auth_codesign_digest[0]) ||
+           `gmv(ral.rot_creator_auth_codesign_digest[1])) &&
+          !$urandom_range(0, 4)) begin
+        forced_mubi_part_access[RotCreatorAuthCodesignIdx].write_lock = 1;
+      end
+      if ((`gmv(ral.rot_creator_auth_state_digest[0]) ||
+           `gmv(ral.rot_creator_auth_state_digest[1])) &&
+          !$urandom_range(0, 4)) begin
+        forced_mubi_part_access[RotCreatorAuthStateIdx].write_lock = 1;
+      end
       if ((`gmv(ral.hw_cfg0_digest[0]) ||
            `gmv(ral.hw_cfg0_digest[1])) &&
           !$urandom_range(0, 4)) begin
@@ -353,6 +377,12 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
       end
       if ((`gmv(ral.owner_sw_cfg_read_lock) == 0) && !$urandom_range(0, 4)) begin
         forced_mubi_part_access[OwnerSwCfgIdx].read_lock = 1;
+      end
+      if ((`gmv(ral.rot_creator_auth_codesign_read_lock) == 0) && !$urandom_range(0, 4)) begin
+        forced_mubi_part_access[RotCreatorAuthCodesignIdx].read_lock = 1;
+      end
+      if ((`gmv(ral.rot_creator_auth_state_read_lock) == 0) && !$urandom_range(0, 4)) begin
+        forced_mubi_part_access[RotCreatorAuthStateIdx].read_lock = 1;
       end
 
 

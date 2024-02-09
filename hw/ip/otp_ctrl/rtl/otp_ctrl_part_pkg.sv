@@ -140,7 +140,7 @@ package otp_ctrl_part_pkg;
     '{
       variant:          Unbuffered,
       offset:           11'd64,
-      size:             800,
+      size:             424,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
       sw_digest:        1'b1,
@@ -154,8 +154,38 @@ package otp_ctrl_part_pkg;
     // OWNER_SW_CFG
     '{
       variant:          Unbuffered,
-      offset:           11'd864,
-      size:             792,
+      offset:           11'd488,
+      size:             656,
+      key_sel:          key_sel_e'('0),
+      secret:           1'b0,
+      sw_digest:        1'b1,
+      hw_digest:        1'b0,
+      write_lock:       1'b1,
+      read_lock:        1'b0,
+      integrity:        1'b1,
+      iskeymgr_creator: 1'b0,
+      iskeymgr_owner:   1'b0
+    },
+    // ROT_CREATOR_AUTH_CODESIGN
+    '{
+      variant:          Unbuffered,
+      offset:           11'd1144,
+      size:             472,
+      key_sel:          key_sel_e'('0),
+      secret:           1'b0,
+      sw_digest:        1'b1,
+      hw_digest:        1'b0,
+      write_lock:       1'b1,
+      read_lock:        1'b0,
+      integrity:        1'b1,
+      iskeymgr_creator: 1'b0,
+      iskeymgr_owner:   1'b0
+    },
+    // ROT_CREATOR_AUTH_STATE
+    '{
+      variant:          Unbuffered,
+      offset:           11'd1616,
+      size:             40,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
       sw_digest:        1'b1,
@@ -262,6 +292,8 @@ package otp_ctrl_part_pkg;
     VendorTestIdx,
     CreatorSwCfgIdx,
     OwnerSwCfgIdx,
+    RotCreatorAuthCodesignIdx,
+    RotCreatorAuthStateIdx,
     HwCfg0Idx,
     HwCfg1Idx,
     Secret0Idx,
@@ -288,7 +320,7 @@ package otp_ctrl_part_pkg;
 
   // default value used for intermodule
   parameter otp_hw_cfg0_data_t OTP_HW_CFG0_DATA_DEFAULT = '{
-    hw_cfg0_digest: 64'h15F164D7930C9D19,
+    hw_cfg0_digest: 64'hF87BED95CFBA3727,
     manuf_state: 256'hDF3888886BD10DC67ABB319BDA0529AE40119A3C6E63CDF358840E458E4029A6,
     device_id: 256'h63B9485A3856C417CF7A50A9A91EF7F7B3A5B4421F462370FFF698183664DC7E
   };
@@ -301,7 +333,7 @@ package otp_ctrl_part_pkg;
 
   // default value used for intermodule
   parameter otp_hw_cfg1_data_t OTP_HW_CFG1_DATA_DEFAULT = '{
-    hw_cfg1_digest: 64'h20440F25BB053FB5,
+    hw_cfg1_digest: 64'hBBF4A76885E754F2,
     unallocated: 48'h0,
     en_csrng_sw_app_read: prim_mubi_pkg::mubi8_t'(8'h69),
     en_sram_ifetch: prim_mubi_pkg::mubi8_t'(8'h69)
@@ -328,36 +360,59 @@ package otp_ctrl_part_pkg;
       384'hA0D1E90E8C9FDDFA01E46311FD36D95401136C663A36C3E3E817E760B27AE937BFCDF15A3429452A851B80674A2B6FBE
     }),
     704'({
-      64'hBE193854E9CA60A0,
+      64'h8CBBAD02BB4CA928,
       256'hD68C96F0B3D1FEED688098A43C33459F0279FC51CC7C626E315FD2B871D88819,
       256'hD0BAC511D08ECE0E2C0DBDDEDF7A854D5E58D0AA97A0F8F6D3D58610F4851667,
       128'h94CD3DED94B578192A4D8B51F5D41C8A
     }),
     704'({
-      64'hBBF4A76885E754F2,
+      64'hC469C593E5DC0DA8,
       128'hE00E9680BD9B70291C752824C7DDC896,
       256'h105733EAA3880C5A234729143F97B62A55D0320379A0D260426D99D374E699CA,
       256'hDBC827839FE2DCC27E17D06B5D4E0DDDDBB9844327F20FB5D396D1CE085BDC31
     }),
     320'({
-      64'hF87BED95CFBA3727,
+      64'hBE193854E9CA60A0,
       128'h711D135F59A50322B6711DB6F5D40A37,
       128'hB5AC1F53D00A08C3B28B5C0FEE5F4C02
     }),
     128'({
-      64'h20440F25BB053FB5,
+      64'hBBF4A76885E754F2,
       48'h0, // unallocated space
       8'h69,
       8'h69
     }),
     576'({
-      64'h15F164D7930C9D19,
+      64'hF87BED95CFBA3727,
       256'hDF3888886BD10DC67ABB319BDA0529AE40119A3C6E63CDF358840E458E4029A6,
       256'h63B9485A3856C417CF7A50A9A91EF7F7B3A5B4421F462370FFF698183664DC7E
     }),
-    6336'({
+    320'({
+      64'h20440F25BB053FB5,
+      32'h0,
+      32'h0,
+      32'h0,
+      32'h0,
+      32'h0,
+      32'h0,
+      32'h0,
+      32'h0
+    }),
+    3776'({
+      64'h15F164D7930C9D19,
+      256'h0,
+      320'h0,
+      320'h0,
+      320'h0,
+      320'h0,
+      544'h0,
+      544'h0,
+      544'h0,
+      544'h0
+    }),
+    5248'({
       64'hE29749216775E8A5,
-      2016'h0, // unallocated space
+      928'h0, // unallocated space
       32'h0,
       32'h0,
       32'h0,
@@ -377,9 +432,9 @@ package otp_ctrl_part_pkg;
       32'h0,
       32'h0
     }),
-    6400'({
+    3392'({
       64'h340A5B93BB19342,
-      4000'h0, // unallocated space
+      992'h0, // unallocated space
       32'h0,
       32'h0,
       32'h0,
@@ -432,6 +487,8 @@ package otp_ctrl_part_pkg;
     hw2reg.vendor_test_digest = part_digest[VendorTestIdx];
     hw2reg.creator_sw_cfg_digest = part_digest[CreatorSwCfgIdx];
     hw2reg.owner_sw_cfg_digest = part_digest[OwnerSwCfgIdx];
+    hw2reg.rot_creator_auth_codesign_digest = part_digest[RotCreatorAuthCodesignIdx];
+    hw2reg.rot_creator_auth_state_digest = part_digest[RotCreatorAuthStateIdx];
     hw2reg.hw_cfg0_digest = part_digest[HwCfg0Idx];
     hw2reg.hw_cfg1_digest = part_digest[HwCfg1Idx];
     hw2reg.secret0_digest = part_digest[Secret0Idx];
@@ -461,6 +518,14 @@ package otp_ctrl_part_pkg;
     if (!reg2hw.owner_sw_cfg_read_lock) begin
       part_access_pre[OwnerSwCfgIdx].read_lock = prim_mubi_pkg::MuBi8True;
     end
+    // ROT_CREATOR_AUTH_CODESIGN
+    if (!reg2hw.rot_creator_auth_codesign_read_lock) begin
+      part_access_pre[RotCreatorAuthCodesignIdx].read_lock = prim_mubi_pkg::MuBi8True;
+    end
+    // ROT_CREATOR_AUTH_STATE
+    if (!reg2hw.rot_creator_auth_state_read_lock) begin
+      part_access_pre[RotCreatorAuthStateIdx].read_lock = prim_mubi_pkg::MuBi8True;
+    end
     return part_access_pre;
   endfunction : named_part_access_pre
 
@@ -480,6 +545,12 @@ package otp_ctrl_part_pkg;
     // OWNER_SW_CFG
     unused ^= ^{part_init_done[OwnerSwCfgIdx],
                 part_buf_data[OwnerSwCfgOffset +: OwnerSwCfgSize]};
+    // ROT_CREATOR_AUTH_CODESIGN
+    unused ^= ^{part_init_done[RotCreatorAuthCodesignIdx],
+                part_buf_data[RotCreatorAuthCodesignOffset +: RotCreatorAuthCodesignSize]};
+    // ROT_CREATOR_AUTH_STATE
+    unused ^= ^{part_init_done[RotCreatorAuthStateIdx],
+                part_buf_data[RotCreatorAuthStateOffset +: RotCreatorAuthStateSize]};
     // HW_CFG0
     valid &= part_init_done[HwCfg0Idx];
     otp_broadcast.hw_cfg0_data = otp_hw_cfg0_data_t'(part_buf_data[HwCfg0Offset +: HwCfg0Size]);
@@ -522,6 +593,12 @@ package otp_ctrl_part_pkg;
     // OWNER_SW_CFG
     unused ^= ^{part_digest[OwnerSwCfgIdx],
                 part_buf_data[OwnerSwCfgOffset +: OwnerSwCfgSize]};
+    // ROT_CREATOR_AUTH_CODESIGN
+    unused ^= ^{part_digest[RotCreatorAuthCodesignIdx],
+                part_buf_data[RotCreatorAuthCodesignOffset +: RotCreatorAuthCodesignSize]};
+    // ROT_CREATOR_AUTH_STATE
+    unused ^= ^{part_digest[RotCreatorAuthStateIdx],
+                part_buf_data[RotCreatorAuthStateOffset +: RotCreatorAuthStateSize]};
     // HW_CFG0
     unused ^= ^{part_digest[HwCfg0Idx],
                 part_buf_data[HwCfg0Offset +: HwCfg0Size]};
