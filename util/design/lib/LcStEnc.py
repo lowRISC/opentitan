@@ -23,7 +23,8 @@ LC_STATE_TYPES = {
     'lc_state': ['0', 'A{}', 'B{}'],
     'lc_cnt': ['0', 'C{}', 'D{}'],
     'soc_dbg_state': ['0', 'E{}', 'F{}'],
-    'ownership_state': ['0', 'G{}', 'H{}']
+    'ownership_state': ['0', 'G{}', 'H{}'],
+    'auth_state': ['0', 'I{}', 'J{}']
 }
 
 
