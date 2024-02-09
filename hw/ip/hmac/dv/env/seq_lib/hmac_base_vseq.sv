@@ -161,6 +161,7 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
 
   // write msg to DUT, read status FIFO FULL and check intr FIFO FULL
   virtual task wr_msg(bit [7:0] msg[], bit non_blocking = $urandom_range(0, 1));
+    int bits_written = 0;
     bit [7:0] msg_q[$] = msg;
     // randomly pick the size of bytes to write
     // unless msg size is smaller than randomized size
@@ -178,6 +179,45 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
                                 wr_addr, wr_mask, word), UVM_HIGH)
       tl_access(.addr(cfg.ral.get_addr_from_offset(wr_addr)),
                 .write(1'b1), .data(word), .mask(wr_mask), .blocking(non_blocking));
+      bits_written += $countones(wr_mask) * 8;
+
+      `uvm_info(`gfn, $sformatf("bits written: %0d", bits_written), UVM_HIGH)
+
+      if (bits_written % 512 == 0 && msg_q.size() > 0 &&
+          cfg.save_and_restore_pct > $urandom_range(0, 99)) begin
+        // Multiple of block size reached; this is an opportunity to save the digest by reading it
+        // from SW, then disable SHA, reload the digest, and continue message processing.
+        // TODO: When adding SHA-384/512, the `512` (i.e., the block size) above must be dynamically
+        // changed between 512 (for SHA-256) and 1024 (for SHA-384/512).
+        bit [TL_DW-1:0] digest[8];
+        bit [2*TL_DW-1:0] msg_length;
+        `uvm_info(`gfn, $sformatf("Saving and restoring context"), UVM_LOW)
+        // Ensure all messages have been written to FIFO (in case the `tl_access`es above were
+        // non-blocking).
+        csr_utils_pkg::wait_no_outstanding_access();
+        // Stop hash operations.
+        trigger_hash_stop();
+        // Wait for hash to be done so the digest is updated.
+        csr_spinwait(.ptr(ral.intr_state.hmac_done), .exp_data(1'b1));
+        // Clear the interrupt.
+        csr_wr(.ptr(ral.intr_state.hmac_done), .value(1'b1));
+        // Read the digest to save it.
+        csr_rd_digest(digest);
+        // Read message length.
+        csr_rd_msg_length(msg_length);
+        // Disable SHA so we can write digest and message length.
+        csr_wr(.ptr(ral.cfg.sha_en), .value(1'b0));
+        // Clearing the message length is not strictly necessary but currently done to ensure the
+        // previous value does not persist.
+        csr_wr_msg_length('0); //
+        // Reload the digest by writing it back.
+        csr_wr_digest(digest);
+        // Reload the message length by writing it back.
+        csr_wr_msg_length(msg_length);
+        // Re-enable SHA and continue hashing.
+        csr_wr(.ptr(ral.cfg.sha_en), .value(1'b1));
+        trigger_hash_continue();
+      end
 
       if (ral.cfg.sha_en.get_mirrored_value()) begin
         if (!do_back_pressure) begin
