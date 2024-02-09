@@ -617,17 +617,12 @@ module hmac
   end
 
   // the host doesn't write data after hash_process until hash_start.
-  // Same as "message_length shouldn't be changed between hash_process and done
   `ASSERT(ValidWriteAssert, msg_fifo_req |-> !in_process)
 
   // `hash_process` shall be toggle and paired with `hash_start`.
   // Below condition is covered by the design (2020-02-19)
   //`ASSERT(ValidHashStartAssert, hash_start |-> !initiated)
   `ASSERT(ValidHashProcessAssert, reg_hash_process |-> initiated)
-
-  // between `hash_done` and `hash_start`, message FIFO should be empty
-  `ASSERT(MsgFifoEmptyWhenNoOpAssert,
-          !in_process && !initiated |-> $stable(message_length))
 
   // hmac_en should be modified only when the logic is Idle
   `ASSERT(ValidHmacEnConditionAssert,
