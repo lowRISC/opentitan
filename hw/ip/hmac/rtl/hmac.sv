@@ -85,7 +85,11 @@ module hmac
 
   logic        reg_hash_start;
   logic        sha_hash_start;
-  logic        hash_start;      // Valid hash_start_signal
+  logic        reg_hash_continue;
+  logic        sha_hash_continue;
+  logic        hash_start; // reg_hash_start gated with when it is allowed
+  logic        hash_continue; // reg_hash_continue gated with when it is allowed
+  logic        hash_start_or_continue;
   logic        reg_hash_process;
   logic        sha_hash_process;
 
@@ -157,8 +161,9 @@ module hmac
   assign hw2reg.cfg.endian_swap.d = cfg_reg.endian_swap.q;
   assign hw2reg.cfg.digest_swap.d = cfg_reg.digest_swap.q;
 
-  assign reg_hash_start   = reg2hw.cmd.hash_start.qe   & reg2hw.cmd.hash_start.q;
-  assign reg_hash_process = reg2hw.cmd.hash_process.qe & reg2hw.cmd.hash_process.q;
+  assign reg_hash_start    = reg2hw.cmd.hash_start.qe & reg2hw.cmd.hash_start.q;
+  assign reg_hash_continue = reg2hw.cmd.hash_continue.qe & reg2hw.cmd.hash_continue.q;
+  assign reg_hash_process  = reg2hw.cmd.hash_process.qe & reg2hw.cmd.hash_process.q;
 
   // Error code register
   assign hw2reg.err_code.de = err_valid;
@@ -168,11 +173,13 @@ module hmac
   // Control signals //
   /////////////////////
   assign hash_start = reg_hash_start & sha_en & ~cfg_block;
+  assign hash_continue = reg_hash_continue & sha_en & ~cfg_block;
+  assign hash_start_or_continue = hash_start | hash_continue;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       cfg_block <= '0;
-    end else if (hash_start) begin
+    end else if (hash_start_or_continue) begin
       cfg_block <= 1'b 1;
     end else if (reg_hash_done) begin
       cfg_block <= 1'b 0;
@@ -197,7 +204,7 @@ module hmac
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       msg_allowed <= '0;
-    end else if (hash_start) begin
+    end else if (hash_start_or_continue) begin
       msg_allowed <= 1'b 1;
     end else if (packer_flush_done) begin
       msg_allowed <= 1'b 0;
@@ -409,11 +416,11 @@ module hmac
     .hmac_en,
 
     .reg_hash_start    (hash_start),
-    .reg_hash_continue (1'b0),
+    .reg_hash_continue (hash_continue),
     .reg_hash_process  (packer_flush_done), // Trigger after all msg written
     .hash_done         (reg_hash_done),
     .sha_hash_start,
-    .sha_hash_continue (),
+    .sha_hash_continue,
     .sha_hash_process,
     .sha_hash_done,
 
@@ -449,7 +456,7 @@ module hmac
     .fifo_rready_o        (shaf_rready),
     .sha_en_i             (sha_en),
     .hash_start_i         (sha_hash_start),
-    .hash_continue_i      (1'b0),
+    .hash_continue_i      (sha_hash_continue),
     .digest_mode_i        (None),    // unused input port tied to ground
     .hash_process_i       (sha_hash_process),
     .hash_done_o          (sha_hash_done),
@@ -506,10 +513,10 @@ module hmac
   // HMAC Error Handling //
   /////////////////////////
   logic hash_start_sha_disabled, update_seckey_inprocess;
-  logic hash_start_active;  // `reg_hash_start` set when hash already in active
-  logic msg_push_not_allowed; // Message is received when `hash_start` isn't set
-  assign hash_start_sha_disabled = reg_hash_start & ~sha_en;
-  assign hash_start_active = reg_hash_start & cfg_block;
+  logic hash_start_active;  // `reg_hash_start` or `reg_hash_continue` set when hash already active
+  logic msg_push_not_allowed; // Message is received when `hash_start_or_continue` isn't set
+  assign hash_start_sha_disabled = (reg_hash_start | reg_hash_continue) & ~sha_en;
+  assign hash_start_active = (reg_hash_start | reg_hash_continue) & cfg_block;
   assign msg_push_not_allowed = msg_fifo_req & ~msg_allowed;
 
   always_comb begin
@@ -622,17 +629,17 @@ module hmac
 
   logic initiated;
   always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni)               initiated <= 1'b0;
-    else if (hash_start)       initiated <= 1'b1;
-    else if (reg_hash_process) initiated <= 1'b0;
+    if (!rst_ni)                     initiated <= 1'b0;
+    else if (hash_start_or_continue) initiated <= 1'b1;
+    else if (reg_hash_process)       initiated <= 1'b0;
   end
 
-  // the host doesn't write data after hash_process until hash_start.
+  // the host doesn't write data after hash_process until hash_start_or_continue.
   `ASSERT(ValidWriteAssert, msg_fifo_req |-> !in_process)
 
-  // `hash_process` shall be toggle and paired with `hash_start`.
+  // `hash_process` shall be toggle and paired with `hash_start_or_continue`.
   // Below condition is covered by the design (2020-02-19)
-  //`ASSERT(ValidHashStartAssert, hash_start |-> !initiated)
+  //`ASSERT(ValidHashStartAssert, hash_start_or_continue |-> !initiated)
   `ASSERT(ValidHashProcessAssert, reg_hash_process |-> initiated)
 
   // hmac_en should be modified only when the logic is Idle
