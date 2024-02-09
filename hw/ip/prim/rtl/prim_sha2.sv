@@ -37,6 +37,8 @@ module prim_sha2 import prim_sha2_pkg::*;
   input  sha_word64_t [7:0] digest_i,
   input  logic [7:0]        digest_we_i,
   output sha_word64_t [7:0] digest_o, // tie off unused port slice when MultimodeEn = 0
+  output logic hash_running_o, // `1` iff hash computation is active (as opposed to `idle_o`, which
+                               // is also `0` and thus 'busy' when waiting for a FIFO input)
   output logic idle_o
 );
 
@@ -484,6 +486,8 @@ module prim_sha2 import prim_sha2_pkg::*;
     .message_length_i,
     .msg_feed_complete_o (msg_feed_complete)
   );
+
+  assign hash_running_o = init_hash | run_hash | update_digest;
 
   // Idle
   assign idle_o = (fifo_st_q == FifoIdle) && (sha_st_q == ShaIdle) && !hash_go;
