@@ -10,7 +10,7 @@ use std::any::Any;
 
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
-use opentitanlib::bootstrap::xmodem::Xmodem;
+use opentitanlib::rescue::xmodem::Xmodem;
 
 #[derive(Debug, Args)]
 pub struct XmodemSend {
