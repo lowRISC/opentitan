@@ -7,4 +7,9 @@ class hmac_base_test extends cip_base_test #(.ENV_T(hmac_env),
   `uvm_component_utils(hmac_base_test)
   `uvm_component_new
 
+  virtual function void build_phase(uvm_phase phase);
+    super.build_phase(phase);
+    cfg.save_and_restore_pct = 0;
+  endfunction
+
 endclass : hmac_base_test
