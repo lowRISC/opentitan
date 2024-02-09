@@ -411,8 +411,10 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
                                        bit       hmac_en = ral.cfg.hmac_en.get_mirrored_value());
     if (hmac_en) begin
       cryptoc_dpi_pkg::sv_dpi_get_hmac_sha256(key, msg_q, exp_digest);
+      `uvm_info(`gfn, $sformatf("HMAC of key=%p, msq_q=%p: %p", key, msg_q, exp_digest), UVM_LOW)
     end else begin
       cryptoc_dpi_pkg::sv_dpi_get_sha256_digest(msg_q, exp_digest);
+      `uvm_info(`gfn, $sformatf("SHA256 digest of msq_q=%p: %p", msg_q, exp_digest), UVM_LOW)
     end
   endfunction
 
