@@ -221,6 +221,38 @@ TEST_F(ReadLockTest, IsLocked) {
   EXPECT_DIF_OK(dif_otp_ctrl_reading_is_locked(
       &otp_, kDifOtpCtrlPartitionOwnerSwCfg, &flag));
   EXPECT_TRUE(flag);
+
+  EXPECT_READ32(
+      OTP_CTRL_ROT_CREATOR_AUTH_CODESIGN_READ_LOCK_REG_OFFSET,
+      {{OTP_CTRL_ROT_CREATOR_AUTH_CODESIGN_READ_LOCK_ROT_CREATOR_AUTH_CODESIGN_READ_LOCK_BIT,
+        true}});
+  EXPECT_DIF_OK(dif_otp_ctrl_reading_is_locked(
+      &otp_, kDifOtpCtrlPartitionRotCreatorAuthCodesign, &flag));
+  EXPECT_FALSE(flag);
+
+  EXPECT_READ32(
+      OTP_CTRL_ROT_CREATOR_AUTH_CODESIGN_READ_LOCK_REG_OFFSET,
+      {{OTP_CTRL_ROT_CREATOR_AUTH_CODESIGN_READ_LOCK_ROT_CREATOR_AUTH_CODESIGN_READ_LOCK_BIT,
+        false}});
+  EXPECT_DIF_OK(dif_otp_ctrl_reading_is_locked(
+      &otp_, kDifOtpCtrlPartitionRotCreatorAuthCodesign, &flag));
+  EXPECT_TRUE(flag);
+
+  EXPECT_READ32(
+      OTP_CTRL_ROT_CREATOR_AUTH_STATE_READ_LOCK_REG_OFFSET,
+      {{OTP_CTRL_ROT_CREATOR_AUTH_STATE_READ_LOCK_ROT_CREATOR_AUTH_STATE_READ_LOCK_BIT,
+        true}});
+  EXPECT_DIF_OK(dif_otp_ctrl_reading_is_locked(
+      &otp_, kDifOtpCtrlPartitionRotCreatorAuthState, &flag));
+  EXPECT_FALSE(flag);
+
+  EXPECT_READ32(
+      OTP_CTRL_ROT_CREATOR_AUTH_STATE_READ_LOCK_REG_OFFSET,
+      {{OTP_CTRL_ROT_CREATOR_AUTH_STATE_READ_LOCK_ROT_CREATOR_AUTH_STATE_READ_LOCK_BIT,
+        false}});
+  EXPECT_DIF_OK(dif_otp_ctrl_reading_is_locked(
+      &otp_, kDifOtpCtrlPartitionRotCreatorAuthState, &flag));
+  EXPECT_TRUE(flag);
 }
 
 TEST_F(ReadLockTest, Lock) {
@@ -247,6 +279,22 @@ TEST_F(ReadLockTest, Lock) {
         false}});
   EXPECT_DIF_OK(dif_otp_ctrl_lock_reading(
       &otp_, kDifOtpCtrlPartitionOwnerSwCfg));
+
+  EXPECT_READ32(OTP_CTRL_DIRECT_ACCESS_REGWEN_REG_OFFSET, 1);
+  EXPECT_WRITE32(
+      OTP_CTRL_ROT_CREATOR_AUTH_CODESIGN_READ_LOCK_REG_OFFSET,
+      {{OTP_CTRL_ROT_CREATOR_AUTH_CODESIGN_READ_LOCK_ROT_CREATOR_AUTH_CODESIGN_READ_LOCK_BIT,
+        false}});
+  EXPECT_DIF_OK(dif_otp_ctrl_lock_reading(
+      &otp_, kDifOtpCtrlPartitionRotCreatorAuthCodesign));
+
+  EXPECT_READ32(OTP_CTRL_DIRECT_ACCESS_REGWEN_REG_OFFSET, 1);
+  EXPECT_WRITE32(
+      OTP_CTRL_ROT_CREATOR_AUTH_STATE_READ_LOCK_REG_OFFSET,
+      {{OTP_CTRL_ROT_CREATOR_AUTH_STATE_READ_LOCK_ROT_CREATOR_AUTH_STATE_READ_LOCK_BIT,
+        false}});
+  EXPECT_DIF_OK(dif_otp_ctrl_lock_reading(
+      &otp_, kDifOtpCtrlPartitionRotCreatorAuthState));
 }
 
 TEST_F(ReadLockTest, NotLockablePartitions) {
@@ -305,6 +353,20 @@ TEST_F(ReadLockTest, NullArgs) {
       &otp_, kDifOtpCtrlPartitionOwnerSwCfg, nullptr));
   EXPECT_DIF_BADARG(
       dif_otp_ctrl_lock_reading(nullptr, kDifOtpCtrlPartitionOwnerSwCfg));
+
+  EXPECT_DIF_BADARG(dif_otp_ctrl_reading_is_locked(
+      nullptr, kDifOtpCtrlPartitionRotCreatorAuthCodesign, &flag));
+  EXPECT_DIF_BADARG(dif_otp_ctrl_reading_is_locked(
+      &otp_, kDifOtpCtrlPartitionRotCreatorAuthCodesign, nullptr));
+  EXPECT_DIF_BADARG(dif_otp_ctrl_lock_reading(
+      nullptr, kDifOtpCtrlPartitionRotCreatorAuthCodesign));
+
+  EXPECT_DIF_BADARG(dif_otp_ctrl_reading_is_locked(
+      nullptr, kDifOtpCtrlPartitionRotCreatorAuthState, &flag));
+  EXPECT_DIF_BADARG(dif_otp_ctrl_reading_is_locked(
+      &otp_, kDifOtpCtrlPartitionRotCreatorAuthState, nullptr));
+  EXPECT_DIF_BADARG(dif_otp_ctrl_lock_reading(
+      nullptr, kDifOtpCtrlPartitionRotCreatorAuthState));
 }
 
 class StatusTest : public OtpTest {};
@@ -330,10 +392,10 @@ TEST_F(StatusTest, Errors) {
                     {OTP_CTRL_STATUS_LCI_ERROR_BIT, true},
                 });
 
-  EXPECT_READ32(OTP_CTRL_ERR_CODE_3_REG_OFFSET,
+  EXPECT_READ32(OTP_CTRL_ERR_CODE_5_REG_OFFSET,
                 {{OTP_CTRL_ERR_CODE_0_ERR_CODE_0_OFFSET,
                   OTP_CTRL_ERR_CODE_0_ERR_CODE_0_VALUE_MACRO_ECC_CORR_ERROR}});
-  EXPECT_READ32(OTP_CTRL_ERR_CODE_10_REG_OFFSET,
+  EXPECT_READ32(OTP_CTRL_ERR_CODE_12_REG_OFFSET,
                 {{OTP_CTRL_ERR_CODE_0_ERR_CODE_0_OFFSET,
                   OTP_CTRL_ERR_CODE_0_ERR_CODE_0_VALUE_MACRO_ERROR}});
 
@@ -453,6 +515,64 @@ INSTANTIATE_TEST_SUITE_P(
             kDifOtpCtrlPartitionOwnerSwCfg,
             OTP_CTRL_PARAM_OWNER_SW_CFG_OFFSET +
                 OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE,
+            kDifOutOfRange,
+            0,
+        },
+        RelativeAddressParams{
+            "RotCreatorAuthCodesignOkay",
+            kDifOtpCtrlPartitionRotCreatorAuthCodesign,
+            OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_OFFSET + 4,
+            kDifOk,
+            4,
+        },
+        RelativeAddressParams{
+            "RotCreatorAuthCodesignUnaligned",
+            kDifOtpCtrlPartitionRotCreatorAuthCodesign,
+            OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_OFFSET + 1,
+            kDifUnaligned,
+            0,
+        },
+        RelativeAddressParams{
+            "RotCreatorAuthCodesignOutOfRangeBeforeStart",
+            kDifOtpCtrlPartitionRotCreatorAuthCodesign,
+            OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_OFFSET - 4,
+            kDifOutOfRange,
+            0,
+        },
+        RelativeAddressParams{
+            "RotCreatorAuthCodesignOutOfRangePastEnd",
+            kDifOtpCtrlPartitionRotCreatorAuthCodesign,
+            OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_OFFSET +
+                OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_SIZE,
+            kDifOutOfRange,
+            0,
+        },
+        RelativeAddressParams{
+            "RotCreatorAuthStateOkay",
+            kDifOtpCtrlPartitionRotCreatorAuthState,
+            OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_OFFSET + 4,
+            kDifOk,
+            4,
+        },
+        RelativeAddressParams{
+            "RotCreatorAuthStateUnaligned",
+            kDifOtpCtrlPartitionRotCreatorAuthState,
+            OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_OFFSET + 1,
+            kDifUnaligned,
+            0,
+        },
+        RelativeAddressParams{
+            "RotCreatorAuthStateOutOfRangeBeforeStart",
+            kDifOtpCtrlPartitionRotCreatorAuthState,
+            OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_OFFSET - 4,
+            kDifOutOfRange,
+            0,
+        },
+        RelativeAddressParams{
+            "RotCreatorAuthStateOutOfRangePastEnd",
+            kDifOtpCtrlPartitionRotCreatorAuthState,
+            OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_OFFSET +
+                OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_SIZE,
             kDifOutOfRange,
             0,
         },
@@ -902,6 +1022,34 @@ TEST_F(DaiDigestTest, DigestSw) {
 
   EXPECT_DIF_OK(dif_otp_ctrl_dai_digest(&otp_, kDifOtpCtrlPartitionOwnerSwCfg,
                                         /*digest=*/0xabcdef0000abcdef));
+
+  EXPECT_READ32(
+      OTP_CTRL_DIRECT_ACCESS_REGWEN_REG_OFFSET,
+      {{OTP_CTRL_DIRECT_ACCESS_REGWEN_DIRECT_ACCESS_REGWEN_BIT, true}});
+  EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET,
+                 OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_DIGEST_OFFSET);
+  EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_WDATA_0_REG_OFFSET, 0x00abcdef);
+  EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_WDATA_1_REG_OFFSET, 0xabcdef00);
+  EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET,
+                 {{OTP_CTRL_DIRECT_ACCESS_CMD_WR_BIT, true}});
+
+  EXPECT_DIF_OK(
+      dif_otp_ctrl_dai_digest(&otp_, kDifOtpCtrlPartitionRotCreatorAuthCodesign,
+                              /*digest=*/0xabcdef0000abcdef));
+
+  EXPECT_READ32(
+      OTP_CTRL_DIRECT_ACCESS_REGWEN_REG_OFFSET,
+      {{OTP_CTRL_DIRECT_ACCESS_REGWEN_DIRECT_ACCESS_REGWEN_BIT, true}});
+  EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET,
+                 OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_DIGEST_OFFSET);
+  EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_WDATA_0_REG_OFFSET, 0x00abcdef);
+  EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_WDATA_1_REG_OFFSET, 0xabcdef00);
+  EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET,
+                 {{OTP_CTRL_DIRECT_ACCESS_CMD_WR_BIT, true}});
+
+  EXPECT_DIF_OK(dif_otp_ctrl_dai_digest(&otp_,
+                                        kDifOtpCtrlPartitionRotCreatorAuthState,
+                                        /*digest=*/0xabcdef0000abcdef));
 }
 
 TEST_F(DaiDigestTest, DigestHw) {
@@ -1094,6 +1242,18 @@ INSTANTIATE_TEST_SUITE_P(
             true,
             OTP_CTRL_OWNER_SW_CFG_DIGEST_0_REG_OFFSET,
             OTP_CTRL_OWNER_SW_CFG_DIGEST_1_REG_OFFSET,
+        },
+        DigestParams{
+            kDifOtpCtrlPartitionRotCreatorAuthCodesign,
+            true,
+            OTP_CTRL_ROT_CREATOR_AUTH_CODESIGN_DIGEST_0_REG_OFFSET,
+            OTP_CTRL_ROT_CREATOR_AUTH_CODESIGN_DIGEST_1_REG_OFFSET,
+        },
+        DigestParams{
+            kDifOtpCtrlPartitionRotCreatorAuthState,
+            true,
+            OTP_CTRL_ROT_CREATOR_AUTH_STATE_DIGEST_0_REG_OFFSET,
+            OTP_CTRL_ROT_CREATOR_AUTH_STATE_DIGEST_1_REG_OFFSET,
         },
         DigestParams{
             kDifOtpCtrlPartitionHwCfg0,

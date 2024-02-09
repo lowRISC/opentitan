@@ -103,7 +103,6 @@
             name:       "CREATOR_SW_CFG",
             variant:    "Unbuffered",
             absorb:     true,
-            size:       "768", // in bytes
             secret:     false,
             sw_digest:  true,
             hw_digest:  false,
@@ -255,7 +254,6 @@
             name:       "OWNER_SW_CFG",
             variant:    "Unbuffered",
             absorb:     true,
-            size:       "768", // in bytes
             secret:     false,
             sw_digest:  true,
             hw_digest:  false,
@@ -343,6 +341,126 @@
             example enabling defensive features in ROM or selecting failure
             modes if verification fails.
             '''
+        }
+        {
+                    name:       "ROT_CREATOR_AUTH_CODESIGN",
+                    variant:    "Unbuffered",
+                    absorb:     false,
+                    secret:     false,
+                    sw_digest:  true,
+                    hw_digest:  false,
+                    write_lock: "Digest",
+                    read_lock:  "CSR",
+                    key_sel:    "NoKey",
+                    integrity:  true,
+                    bkout_type: false,
+                    items: [
+                        {
+                            name: "ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY0",
+                            size: "68"
+                        },
+                        {
+                            name: "ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY1",
+                            size: "68"
+                        },
+                        {
+                            name: "ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY2",
+                            size: "68"
+                        },
+                        {
+                            name: "ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY3",
+                            size: "68"
+                        },
+                        {
+                            name: "ROT_CREATOR_AUTH_CODESIGN_SPX_KEY0",
+                            size: "40"
+                        },
+                        {
+                            name: "ROT_CREATOR_AUTH_CODESIGN_SPX_KEY1",
+                            size: "40"
+                        },
+                        {
+                            name: "ROT_CREATOR_AUTH_CODESIGN_SPX_KEY2",
+                            size: "40"
+                        },
+                        {
+                            name: "ROT_CREATOR_AUTH_CODESIGN_SPX_KEY3",
+                            size: "40"
+                        },
+                        {
+                            name: "ROT_CREATOR_AUTH_CODESIGN_BLOCK_SHA2_256_HASH",
+                            size: "32"
+                        }
+                   ]
+                   desc: '''
+                         This OTP partition is used to store four P-256 keys
+                         and four Sphincs+ keys. The partition requires 464
+                         bytes of software visible storage. The partition is
+                         locked at manufacturing time to protect against
+                         malicious write attempts.
+                         '''
+        }
+        {
+                    name:       "ROT_CREATOR_AUTH_STATE",
+                    variant:    "Unbuffered",
+                    absorb:     false,
+                    secret:     false,
+                    sw_digest:  true,
+                    hw_digest:  false,
+                    write_lock: "Digest",
+                    read_lock:  "CSR",
+                    key_sel:    "NoKey",
+                    integrity:  true,
+                    bkout_type: false,
+                    items: [
+                        {
+                            name: "ROT_CREATOR_AUTH_STATE_ECDSA_KEY0",
+                            size: "4"
+                        },
+                        {
+                            name: "ROT_CREATOR_AUTH_STATE_ECDSA_KEY1",
+                            size: "4"
+                        },
+                        {
+                            name: "ROT_CREATOR_AUTH_STATE_ECDSA_KEY2",
+                            size: "4"
+                        },
+                        {
+                            name: "ROT_CREATOR_AUTH_STATE_ECDSA_KEY3",
+                            size: "4"
+                        },
+                        {
+                            name: "ROT_CREATOR_AUTH_STATE_SPX_KEY0",
+                            size: "4"
+                        },
+                        {
+                            name: "ROT_CREATOR_AUTH_STATE_SPX_KEY1",
+                            size: "4"
+                        },
+                        {
+                            name: "ROT_CREATOR_AUTH_STATE_SPX_KEY2",
+                            size: "4"
+                        },
+                        {
+                            name: "ROT_CREATOR_AUTH_STATE_SPX_KEY3",
+                            size: "4"
+                        },
+                   ]
+                   desc: '''
+                         This OTP partition is used to capture the state of
+                         each key slot. Each key can be in one of the
+                         following states: BLANK, ENABLED, DISABLED. The
+                         encoded values are such that transitions between
+                         BLANK -> ENABLED ->  DISABLED are possible without
+                         causing ECC errors (this is a mechanism similar to
+                         how we manage life cycle state transitions). The
+                         partition is left unlocked to allow STATE updates in
+                         the field. The ROM_EXT is required to lock access to
+                         the OTP Direct Access Interface to prevent DoS
+                         attacks from malicious code executing on Silicon
+                         Owner partitions. DAI write locking is available in
+                         EarlGrey.
+                         '''
         }
         {
             name:       "HW_CFG0",

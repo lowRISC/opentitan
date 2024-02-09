@@ -175,6 +175,16 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
             u_part_unbuf.`ECC_REG_PATH.data_i[0] = 1;
       force_sw_parts_ecc_reg[OwnerSwCfgIdx] = 1;
     end
+    if (fail_idx[RotCreatorAuthCodesignIdx]) begin
+      force tb.dut.gen_partitions[RotCreatorAuthCodesignIdx].gen_unbuffered.
+            u_part_unbuf.`ECC_REG_PATH.data_i[0] = 1;
+      force_sw_parts_ecc_reg[RotCreatorAuthCodesignIdx] = 1;
+    end
+    if (fail_idx[RotCreatorAuthStateIdx]) begin
+      force tb.dut.gen_partitions[RotCreatorAuthStateIdx].gen_unbuffered.
+            u_part_unbuf.`ECC_REG_PATH.data_i[0] = 1;
+      force_sw_parts_ecc_reg[RotCreatorAuthStateIdx] = 1;
+    end
   endtask
 
   task automatic release_sw_check_fail();
@@ -193,6 +203,16 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
       release tb.dut.gen_partitions[OwnerSwCfgIdx].gen_unbuffered.
               u_part_unbuf.`ECC_REG_PATH.data_i[0];
       force_sw_parts_ecc_reg[OwnerSwCfgIdx] = 0;
+    end
+    if (force_sw_parts_ecc_reg[RotCreatorAuthCodesignIdx]) begin
+      release tb.dut.gen_partitions[RotCreatorAuthCodesignIdx].gen_unbuffered.
+              u_part_unbuf.`ECC_REG_PATH.data_i[0];
+      force_sw_parts_ecc_reg[RotCreatorAuthCodesignIdx] = 0;
+    end
+    if (force_sw_parts_ecc_reg[RotCreatorAuthStateIdx]) begin
+      release tb.dut.gen_partitions[RotCreatorAuthStateIdx].gen_unbuffered.
+              u_part_unbuf.`ECC_REG_PATH.data_i[0];
+      force_sw_parts_ecc_reg[RotCreatorAuthStateIdx] = 0;
     end
   endtask
 
@@ -248,6 +268,8 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
     `FORCE_OTP_PART_LOCK_WITH_RAND_NON_MUBI_VAL(VendorTestIdx)
     `FORCE_OTP_PART_LOCK_WITH_RAND_NON_MUBI_VAL(CreatorSwCfgIdx)
     `FORCE_OTP_PART_LOCK_WITH_RAND_NON_MUBI_VAL(OwnerSwCfgIdx)
+    `FORCE_OTP_PART_LOCK_WITH_RAND_NON_MUBI_VAL(RotCreatorAuthCodesignIdx)
+    `FORCE_OTP_PART_LOCK_WITH_RAND_NON_MUBI_VAL(RotCreatorAuthStateIdx)
     `FORCE_OTP_PART_LOCK_WITH_RAND_NON_MUBI_VAL(HwCfg0Idx)
     `FORCE_OTP_PART_LOCK_WITH_RAND_NON_MUBI_VAL(HwCfg1Idx)
     `FORCE_OTP_PART_LOCK_WITH_RAND_NON_MUBI_VAL(Secret0Idx)
