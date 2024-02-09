@@ -8,6 +8,8 @@
 //    end points.
 //
 
+`include "prim_assert.sv"
+
 module edn_core import edn_pkg::*;
 #(
   parameter int NumEndPoints = 4
@@ -936,6 +938,16 @@ module edn_core import edn_pkg::*;
   // state machine status
   assign hw2reg.main_sm_state.de = 1'b1;
   assign hw2reg.main_sm_state.d = edn_main_sm_state;
+
+  //--------------------------------------------
+  // Assertions
+  //--------------------------------------------
+  // Do not accept new genbits into the CSRNG interface genbits FIFO if we are in the alert state
+  // due to a CSRNG status error response.
+  `ASSERT(CsErrAcceptNoEntropy_A, reject_csrng_entropy |-> packer_cs_push == 0)
+  // Do not issue new commands to the CSRNG if we are in the alert state
+  // due to a CSRNG status error response.
+  `ASSERT(CsErrIssueNoCommands_A, reject_csrng_entropy |-> csrng_cmd_o.csrng_req_valid == 0)
 
   //--------------------------------------------
   // unused signals
