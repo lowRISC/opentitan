@@ -116,7 +116,10 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
 
     // read digest value and output read value
   virtual task csr_rd_digest(output bit [TL_DW-1:0] digest[8]);
-    foreach (digest[i]) csr_rd(.ptr(ral.digest[i]), .value(digest[i]));
+    foreach (digest[i]) begin
+      csr_rd(.ptr(ral.digest[i]), .value(digest[i]));
+      `uvm_info(`gfn, $sformatf("digest[%0d]=32'h%08x", i, digest[i]), UVM_MEDIUM)
+    end
   endtask
 
   // write digest value
