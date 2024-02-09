@@ -201,6 +201,24 @@
                 based on currently received message.
                 '''
         }
+        { bits: "2",
+          name: "hash_stop",
+          desc: '''
+                When 1 is written to this field, SHA or HMAC will afterwards set the `hmac_done`
+                interrupt as soon as the current block has been hashed. The hash can then be read
+                from the registers !!DIGEST_0 to !!DIGEST_7. Together with the message length in
+                !!MSG_LENGTH_LOWER and !!MSG_LENGTH_UPPER, this forms the information that has to be
+                saved before switching context.
+                '''
+        }
+        { bits: "3",
+          name: "hash_continue",
+          desc: '''
+                When 1 is written to this field, SHA or HMAC will continue hashing based on the
+                current hash in the digest registers and the message length, which both have to be
+                restored to switch context.
+                '''
+        }
       ],
     }
     { name: "STATUS",

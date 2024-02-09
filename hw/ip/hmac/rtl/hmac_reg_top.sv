@@ -203,6 +203,8 @@ module hmac_reg_top (
   logic cmd_we;
   logic cmd_hash_start_wd;
   logic cmd_hash_process_wd;
+  logic cmd_hash_stop_wd;
+  logic cmd_hash_continue_wd;
   logic status_re;
   logic status_fifo_empty_qs;
   logic status_fifo_full_qs;
@@ -578,7 +580,7 @@ module hmac_reg_top (
 
   // R[cmd]: V(True)
   logic cmd_qe;
-  logic [1:0] cmd_flds_we;
+  logic [3:0] cmd_flds_we;
   assign cmd_qe = &cmd_flds_we;
   //   F[hash_start]: 0:0
   prim_subreg_ext #(
@@ -611,6 +613,38 @@ module hmac_reg_top (
     .qs     ()
   );
   assign reg2hw.cmd.hash_process.qe = cmd_qe;
+
+  //   F[hash_stop]: 2:2
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_cmd_hash_stop (
+    .re     (1'b0),
+    .we     (cmd_we),
+    .wd     (cmd_hash_stop_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (cmd_flds_we[2]),
+    .q      (reg2hw.cmd.hash_stop.q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.cmd.hash_stop.qe = cmd_qe;
+
+  //   F[hash_continue]: 3:3
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_cmd_hash_continue (
+    .re     (1'b0),
+    .we     (cmd_we),
+    .wd     (cmd_hash_continue_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (cmd_flds_we[3]),
+    .q      (reg2hw.cmd.hash_continue.q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.cmd.hash_continue.qe = cmd_qe;
 
 
   // R[status]: V(True)
@@ -1191,6 +1225,10 @@ module hmac_reg_top (
   assign cmd_hash_start_wd = reg_wdata[0];
 
   assign cmd_hash_process_wd = reg_wdata[1];
+
+  assign cmd_hash_stop_wd = reg_wdata[2];
+
+  assign cmd_hash_continue_wd = reg_wdata[3];
   assign status_re = addr_hit[6] & reg_re & !reg_error;
   assign wipe_secret_we = addr_hit[8] & reg_we & !reg_error;
 
@@ -1328,6 +1366,8 @@ module hmac_reg_top (
       addr_hit[5]: begin
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = '0;
+        reg_rdata_next[2] = '0;
+        reg_rdata_next[3] = '0;
       end
 
       addr_hit[6]: begin
