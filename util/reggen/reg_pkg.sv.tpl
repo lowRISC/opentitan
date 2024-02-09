@@ -275,7 +275,8 @@ value = "{}'h {:x}".format(aw, r.offset)
 %>\
     % if len(resval_str) > 100-2:
   parameter logic [${reg_msb}:0]
-      ${reg_resname(reg)} = ${reg_resval};
+      ${reg_resname(reg)} =
+      ${reg_resval};
     % else:
   ${resval_str}
     % endif
@@ -289,7 +290,8 @@ value = "{}'h {:x}".format(aw, r.offset)
 %>\
         % if len(resval_str) > 100-2:
   parameter logic [${field_msb}:0]
-      ${field_resname(reg, field)} = ${field_resval};
+      ${field_resname(reg, field)} =
+      ${field_resval};
         % else:
   ${resval_str}
         % endif

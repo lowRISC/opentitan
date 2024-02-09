@@ -29,14 +29,30 @@ class otp_ctrl_dai_lock_vseq extends otp_ctrl_smoke_vseq;
   constraint partition_index_c {part_idx inside {[0:LifeCycleIdx]};}
 
   constraint dai_wr_legal_addr_c {
-    if (part_idx == VendorTestIdx) dai_addr inside `PART_ADDR_RANGE(VendorTestIdx);
-    if (part_idx == CreatorSwCfgIdx) dai_addr inside `PART_ADDR_RANGE(CreatorSwCfgIdx);
-    if (part_idx == OwnerSwCfgIdx) dai_addr inside `PART_ADDR_RANGE(OwnerSwCfgIdx);
-    if (part_idx == HwCfg0Idx) dai_addr inside `PART_ADDR_RANGE(HwCfg0Idx);
-    if (part_idx == HwCfg1Idx) dai_addr inside `PART_ADDR_RANGE(HwCfg1Idx);
-    if (part_idx == Secret0Idx) dai_addr inside `PART_ADDR_RANGE(Secret0Idx);
-    if (part_idx == Secret1Idx) dai_addr inside `PART_ADDR_RANGE(Secret1Idx);
-    if (part_idx == Secret2Idx) dai_addr inside `PART_ADDR_RANGE(Secret2Idx);
+    if (part_idx == VendorTestIdx) {
+      dai_addr inside `PART_ADDR_RANGE(VendorTestIdx);
+    }
+    if (part_idx == CreatorSwCfgIdx) {
+      dai_addr inside `PART_ADDR_RANGE(CreatorSwCfgIdx);
+    }
+    if (part_idx == OwnerSwCfgIdx) {
+      dai_addr inside `PART_ADDR_RANGE(OwnerSwCfgIdx);
+    }
+    if (part_idx == HwCfg0Idx) {
+      dai_addr inside `PART_ADDR_RANGE(HwCfg0Idx);
+    }
+    if (part_idx == HwCfg1Idx) {
+      dai_addr inside `PART_ADDR_RANGE(HwCfg1Idx);
+    }
+    if (part_idx == Secret0Idx) {
+      dai_addr inside `PART_ADDR_RANGE(Secret0Idx);
+    }
+    if (part_idx == Secret1Idx) {
+      dai_addr inside `PART_ADDR_RANGE(Secret1Idx);
+    }
+    if (part_idx == Secret2Idx) {
+      dai_addr inside `PART_ADDR_RANGE(Secret2Idx);
+    }
     if (part_idx == LifeCycleIdx) {
       if (write_unused_addr) {
         dai_addr inside {[PartInfo[LifeCycleIdx].offset : {OTP_ADDR_WIDTH{1'b1}}]};
