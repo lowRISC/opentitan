@@ -408,10 +408,12 @@ module hmac
 
     .hmac_en,
 
-    .reg_hash_start   (hash_start),
-    .reg_hash_process (packer_flush_done), // Trigger after all msg written
-    .hash_done        (reg_hash_done),
+    .reg_hash_start    (hash_start),
+    .reg_hash_continue (1'b0),
+    .reg_hash_process  (packer_flush_done), // Trigger after all msg written
+    .hash_done         (reg_hash_done),
     .sha_hash_start,
+    .sha_hash_continue (),
     .sha_hash_process,
     .sha_hash_done,
 

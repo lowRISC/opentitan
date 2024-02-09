@@ -16,9 +16,11 @@ module hmac_core import prim_sha2_pkg::*; (
   input        hmac_en,
 
   input        reg_hash_start,
+  input        reg_hash_continue,
   input        reg_hash_process,
   output logic hash_done,
   output logic sha_hash_start,
+  output logic sha_hash_continue,
   output logic sha_hash_process,
   input        sha_hash_done,
 
@@ -51,6 +53,7 @@ module hmac_core import prim_sha2_pkg::*; (
   localparam bit [BlockSizeBits:0] BlockSizeBSB = BlockSize[BlockSizeBits:0];
 
   logic hash_start; // generated from internal state machine
+  logic hash_continue; // generated from internal state machine
   logic hash_process; // generated from internal state machine to trigger hash
   logic hmac_hash_done;
 
@@ -59,7 +62,7 @@ module hmac_core import prim_sha2_pkg::*; (
 
   logic [63:0] txcount;
   logic [BlockSizeBits-HashWordBits-1:0] pad_index;
-  logic clr_txcount, inc_txcount;
+  logic clr_txcount, load_txcount, inc_txcount;
 
   logic hmac_sha_rvalid;
 
@@ -103,9 +106,10 @@ module hmac_core import prim_sha2_pkg::*; (
 
   logic reg_hash_process_flag;
 
-  assign sha_hash_start   = (hmac_en) ? hash_start                       : reg_hash_start ;
-  assign sha_hash_process = (hmac_en) ? reg_hash_process | hash_process  : reg_hash_process ;
-  assign hash_done        = (hmac_en) ? hmac_hash_done                   : sha_hash_done  ;
+  assign sha_hash_start    = (hmac_en) ? hash_start                       : reg_hash_start ;
+  assign sha_hash_continue = (hmac_en) ? hash_continue                    : reg_hash_continue ;
+  assign sha_hash_process  = (hmac_en) ? reg_hash_process | hash_process  : reg_hash_process ;
+  assign hash_done         = (hmac_en) ? hmac_hash_done                   : sha_hash_done  ;
 
   assign pad_index = txcount[BlockSizeBits-1:HashWordBits];
 
@@ -142,6 +146,10 @@ module hmac_core import prim_sha2_pkg::*; (
       txcount <= '0;
     end else if (clr_txcount) begin
       txcount <= '0;
+    end else if (load_txcount) begin
+      // When loading, add block size to the message length because the SW-visible message length
+      // does not include the block containing the key xor'ed with the inner pad.
+      txcount <= message_length + BlockSize;
     end else if (inc_txcount) begin
       txcount[63:5] <= txcount[63:5] + 1'b1;
     end
@@ -153,7 +161,7 @@ module hmac_core import prim_sha2_pkg::*; (
       reg_hash_process_flag <= 1'b0;
     end else if (reg_hash_process) begin
       reg_hash_process_flag <= 1'b1;
-    end else if (hmac_hash_done || reg_hash_start) begin
+    end else if (hmac_hash_done || reg_hash_start || reg_hash_continue) begin
       reg_hash_process_flag <= 1'b0;
     end
   end
@@ -187,7 +195,8 @@ module hmac_core import prim_sha2_pkg::*; (
     hmac_hash_done  = 1'b0;
     hmac_sha_rvalid = 1'b0;
 
-    clr_txcount = 1'b0;
+    clr_txcount  = 1'b0;
+    load_txcount = 1'b0;
 
     update_round = 1'b0;
     round_d      = Inner;
@@ -199,8 +208,9 @@ module hmac_core import prim_sha2_pkg::*; (
 
     sel_rdata = SelFifo;
 
-    hash_start   = 1'b0;
-    hash_process = 1'b0;
+    hash_start    = 1'b0;
+    hash_continue = 1'b0;
+    hash_process  = 1'b0;
 
     unique case (st_q)
       StIdle: begin
@@ -233,6 +243,11 @@ module hmac_core import prim_sha2_pkg::*; (
       StMsg: begin
         sel_rdata = SelFifo;
         fifo_wsel = (round_q == Outer);
+
+        if (round_q == Inner && reg_hash_continue) begin
+          load_txcount  = 1'b1;
+          hash_continue = 1'b1;
+        end
 
         if ( (((round_q == Inner) && reg_hash_process_flag) || (round_q == Outer))
             && (txcount >= sha_message_length)) begin
@@ -311,5 +326,5 @@ module hmac_core import prim_sha2_pkg::*; (
 
   // Idle: Idle in HMAC_CORE only represents the idle status when hmac mode is
   // set. If hmac_en is 0, this logic sends the idle signal always.
-  assign idle = (st_q == StIdle) && !reg_hash_start;
+  assign idle = (st_q == StIdle) && !(reg_hash_start || reg_hash_continue);
 endmodule
