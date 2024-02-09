@@ -61,7 +61,9 @@ package hmac_env_pkg;
 
   typedef enum {
     HashStart,
-    HashProcess
+    HashProcess,
+    HashStop,
+    HashContinue
   } hmac_cmd_e;
 
   typedef enum bit [TL_DW-1:0] {
