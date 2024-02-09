@@ -171,19 +171,43 @@ If this bit is 1, HMAC operates when `hash_start` toggles.
 HMAC command register
 - Offset: `0x14`
 - Reset default: `0x0`
-- Reset mask: `0x3`
+- Reset mask: `0xf`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "hash_start", "bits": 1, "attr": ["r0w1c"], "rotate": -90}, {"name": "hash_process", "bits": 1, "attr": ["r0w1c"], "rotate": -90}, {"bits": 30}], "config": {"lanes": 1, "fontsize": 10, "vspace": 140}}
+{"reg": [{"name": "hash_start", "bits": 1, "attr": ["r0w1c"], "rotate": -90}, {"name": "hash_process", "bits": 1, "attr": ["r0w1c"], "rotate": -90}, {"name": "hash_stop", "bits": 1, "attr": ["r0w1c"], "rotate": -90}, {"name": "hash_continue", "bits": 1, "attr": ["r0w1c"], "rotate": -90}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 150}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name         | Description                                                                                                                                            |
-|:------:|:------:|:-------:|:-------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------|
-|  31:2  |        |         |              | Reserved                                                                                                                                               |
-|   1    | r0w1c  |    x    | hash_process | If writes 1 into this field, SHA256 or HMAC calculates the digest or signing based on currently received message.                                      |
-|   0    | r0w1c  |    x    | hash_start   | If writes 1 into this field, SHA256 or HMAC begins its operation. CPU should configure relative information first, such as message_length, secret_key. |
+|  Bits  |  Type  |  Reset  | Name                                 |
+|:------:|:------:|:-------:|:-------------------------------------|
+|  31:4  |        |         | Reserved                             |
+|   3    | r0w1c  |    x    | [hash_continue](#cmd--hash_continue) |
+|   2    | r0w1c  |    x    | [hash_stop](#cmd--hash_stop)         |
+|   1    | r0w1c  |    x    | [hash_process](#cmd--hash_process)   |
+|   0    | r0w1c  |    x    | [hash_start](#cmd--hash_start)       |
+
+### CMD . hash_continue
+When 1 is written to this field, SHA or HMAC will continue hashing based on the
+current hash in the digest registers and the message length, which both have to be
+restored to switch context.
+
+### CMD . hash_stop
+When 1 is written to this field, SHA or HMAC will afterwards set the `hmac_done`
+interrupt as soon as the current block has been hashed. The hash can then be read
+from the registers [`DIGEST_0`](#digest_0) to [`DIGEST_7.`](#digest_7) Together with the message length in
+[`MSG_LENGTH_LOWER`](#msg_length_lower) and [`MSG_LENGTH_UPPER`](#msg_length_upper), this forms the information that has to be
+saved before switching context.
+
+### CMD . hash_process
+If writes 1 into this field, SHA256 or HMAC calculates the digest or signing
+based on currently received message.
+
+### CMD . hash_start
+If writes 1 into this field, SHA256 or HMAC begins its operation.
+
+CPU should configure relative information first, such as message_length,
+secret_key.
 
 ## STATUS
 HMAC Status register

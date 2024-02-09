@@ -84,6 +84,14 @@ package hmac_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
+    } hash_continue;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } hash_stop;
+    struct packed {
+      logic        q;
+      logic        qe;
     } hash_process;
     struct packed {
       logic        q;
@@ -181,12 +189,12 @@ package hmac_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    hmac_reg2hw_intr_state_reg_t intr_state; // [652:650]
-    hmac_reg2hw_intr_enable_reg_t intr_enable; // [649:647]
-    hmac_reg2hw_intr_test_reg_t intr_test; // [646:641]
-    hmac_reg2hw_alert_test_reg_t alert_test; // [640:639]
-    hmac_reg2hw_cfg_reg_t cfg; // [638:631]
-    hmac_reg2hw_cmd_reg_t cmd; // [630:627]
+    hmac_reg2hw_intr_state_reg_t intr_state; // [656:654]
+    hmac_reg2hw_intr_enable_reg_t intr_enable; // [653:651]
+    hmac_reg2hw_intr_test_reg_t intr_test; // [650:645]
+    hmac_reg2hw_alert_test_reg_t alert_test; // [644:643]
+    hmac_reg2hw_cfg_reg_t cfg; // [642:635]
+    hmac_reg2hw_cmd_reg_t cmd; // [634:627]
     hmac_reg2hw_wipe_secret_reg_t wipe_secret; // [626:594]
     hmac_reg2hw_key_mreg_t [7:0] key; // [593:330]
     hmac_reg2hw_digest_mreg_t [7:0] digest; // [329:66]
@@ -245,7 +253,7 @@ package hmac_reg_pkg;
   parameter logic [3:0] HMAC_CFG_RESVAL = 4'h 0;
   parameter logic [0:0] HMAC_CFG_ENDIAN_SWAP_RESVAL = 1'h 0;
   parameter logic [0:0] HMAC_CFG_DIGEST_SWAP_RESVAL = 1'h 0;
-  parameter logic [1:0] HMAC_CMD_RESVAL = 2'h 0;
+  parameter logic [3:0] HMAC_CMD_RESVAL = 4'h 0;
   parameter logic [8:0] HMAC_STATUS_RESVAL = 9'h 1;
   parameter logic [0:0] HMAC_STATUS_FIFO_EMPTY_RESVAL = 1'h 1;
   parameter logic [31:0] HMAC_WIPE_SECRET_RESVAL = 32'h 0;
