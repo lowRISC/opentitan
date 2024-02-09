@@ -11,20 +11,18 @@ class usb20_monitor extends dv_base_monitor #(
 );
   `uvm_component_utils(usb20_monitor)
 
+   usb20_item     m_usb20_item;
    sof_pkt        m_sof_pkt;
    token_pkt      m_token_pkt;
    data_pkt       m_data_pkt;
    handshake_pkt  m_handshake_pkt;
-   typedef bit destuffed_t[];
-   bit token_packet[$];
-   bit data_packet[$];
-   bit handshake_packet[$];
-   bit sof_packet[$];
+   bit packet[$];
    bit sync_pattern[];
    bit decoded_packet[];
    bit monitored_decoded_packet[];
-   bit bit_destuffed[];
+   bit bit_destuffed[$];
    bit [2:0] eop_cnt = 3'b000;
+   bit [7:0] packet_type;
 
   `uvm_component_new
 
@@ -45,132 +43,99 @@ class usb20_monitor extends dv_base_monitor #(
   endfunction
 
   task run_phase(uvm_phase phase);
+    detect_reset();
     forever begin
       collect_trans(phase);
-      collect_data_packet();
-      collect_handshake_packet();
     end
   endtask
 
-  // For future use (task written but not used yet)
+//-----------------------------------------Collect Trans------------------------------------------//
+  virtual protected task collect_trans(uvm_phase phase);
+    // Idle state detected here
+    while(!(cfg.bif.usb_p & ~cfg.bif.usb_n)) @(posedge cfg.bif.usb_clk);
+    @(posedge cfg.bif.usb_clk);
+    wait(~cfg.bif.usb_p);
+
+    // Collecting usb_p from interface
+    @(posedge cfg.bif.usb_clk);
+    while (cfg.bif.usb_p || cfg.bif.usb_n) begin
+      packet.push_back(cfg.bif.usb_p);
+      @(posedge cfg.bif.usb_clk);
+    end
+    repeat (3) packet.push_back(cfg.bif.usb_p);
+    `uvm_info(`gfn, $sformatf("Complete monitored packet = %p ", packet), UVM_DEBUG)
+    nrzi_decoder(packet, monitored_decoded_packet);
+    bit_destuffing(monitored_decoded_packet, bit_destuffed);
+    classifies_packet();
+    packet.delete();
+  endtask
+
+//----------------------------------------Classifies Trans----------------------------------------//
+  virtual task classifies_packet();
+    for (int i = 0; i < 8; i++) begin
+    packet_type[i] = bit_destuffed[i + 8];
+    end
+    packet_type = {<<4{packet_type}};
+    `uvm_info(`gfn, $sformatf(".......Packet PID = %b ", packet_type), UVM_DEBUG)
+    case (packet_type)
+      PidTypeOutToken: token_packet();
+      PidTypeInToken: token_packet();
+      PidTypeSetupToken: token_packet();
+      PidTypeData0: data_packet();
+      PidTypeData1: data_packet();
+      PidTypeAck: handshake_packet();
+      PidTypeNak: handshake_packet();
+      PidTypeStall: handshake_packet();
+      default: `uvm_info(`gfn, $sformatf("Invalid packet type"), UVM_DEBUG)
+    endcase
+  endtask
+
+//------------------------------------------SOF Packet------------------------------------------//
+
+   // For future use (task written but not used yet)
   // Monitor start of frame packet
-  virtual protected task collect_sof_packet();
+  virtual task sof_packet();
     typedef bit [34:0] sof_p;
     sof_p sof_result;
 
-    // While driving the packet before vbus gets active the reset toggle 2,3 times so below wait
-    // Conditions waits for the those reset and than it detected the vbus
-    detect_reset();
-
-    // Idle state detected here
-    while(!(cfg.bif.usb_p & ~cfg.bif.usb_n)) @(posedge cfg.bif.usb_clk);
-    `uvm_info(`gfn, $sformatf("Idle State_usb_p Monitored = %b Idle State_usb_n Monitored = %b",
-                               cfg.bif.usb_p, cfg.bif.usb_n), UVM_DEBUG)
-    @(posedge cfg.bif.usb_clk);
-    wait(~cfg.bif.usb_p);
-
-    // Collecting usb_p from interface
-    @(posedge cfg.bif.usb_clk);
-    while (cfg.bif.usb_p || cfg.bif.usb_n) begin
-      sof_packet.push_back(cfg.bif.usb_p);
-      @(posedge cfg.bif.usb_clk);
-    end
-    repeat (3) sof_packet.push_back(cfg.bif.usb_p);
-
-    `uvm_info(`gfn, $sformatf("Complete Monitored Sof_Packet = %p", sof_packet), UVM_DEBUG)
-    nrzi_decoder(sof_packet, monitored_decoded_packet);
-    bit_destuffed = bit_destuffing(monitored_decoded_packet);
-
-    // Bits to binary conversion
+    // bits to binary conversion
     sof_result = sof_p'(bit_destuffed);
-
-    `uvm_info(`gfn, $sformatf("Final Sof Packet = %b", sof_result), UVM_DEBUG)
-    m_sof_pkt.m_pid_type = pid_type_e'(sof_result[9:2]);
-    `uvm_info(`gfn, $sformatf("Sof Pid = %b", m_sof_pkt.m_pid_type), UVM_DEBUG)
+    m_sof_pkt.m_pid_type = pid_type_e'(packet_type);
     m_sof_pkt.framecnt = sof_result[20:10];
-    `uvm_info(`gfn, $sformatf("Sof framecnt = %b", m_sof_pkt.framecnt), UVM_DEBUG)
     m_sof_pkt.crc5 = sof_result[25:21];
-    `uvm_info(`gfn, $sformatf("Sof crc5 = %b", m_sof_pkt.crc5), UVM_DEBUG)
     req_analysis_port.write(m_sof_pkt);
   endtask
 
-  // Monitor token packet
-  virtual protected task collect_trans(uvm_phase phase);
+//------------------------------------------Token Packet------------------------------------------//
+  virtual task token_packet();
     typedef bit [34:0] token_p;
     token_p token_result;
 
-    detect_reset();
-    while(!(cfg.bif.usb_p & ~cfg.bif.usb_n)) @(posedge cfg.bif.usb_clk);
-    `uvm_info(`gfn, $sformatf("After EOP Idle State Monitored"), UVM_DEBUG)
-    @(posedge cfg.bif.usb_clk);
-    wait(~cfg.bif.usb_p);
-
-    // Collecting usb_p from interface
-    @(posedge cfg.bif.usb_clk);
-    while (cfg.bif.usb_p || cfg.bif.usb_n) begin
-      token_packet.push_back(cfg.bif.usb_p);
-      @(posedge cfg.bif.usb_clk);
-    end
-    repeat (3) token_packet.push_back(cfg.bif.usb_p);
-
-    `uvm_info(`gfn, $sformatf("Complete monitored token_packet = %p ", token_packet), UVM_DEBUG)
-    nrzi_decoder(token_packet, monitored_decoded_packet);
-    bit_destuffed = bit_destuffing(monitored_decoded_packet);
-
-    // Bits to binary conversion
+    // bits to binary conversion
     token_result = token_p'(bit_destuffed);
-
-    `uvm_info(`gfn, $sformatf("Final Token Packet = %b", token_result), UVM_DEBUG)
-    m_token_pkt.m_pid_type = pid_type_e'(token_result[26:19]);
-    m_token_pkt.m_pid_type = pid_type_e'({<<4{m_token_pkt.m_pid_type}});
-    m_token_pkt.m_pid_type = pid_type_e'({<<{m_token_pkt.m_pid_type}});
-    `uvm_info(`gfn, $sformatf("Token Pid = %b", m_token_pkt.m_pid_type), UVM_DEBUG)
+    m_token_pkt.m_pid_type =  pid_type_e'(packet_type);
     m_token_pkt.address = token_result[18:12];
     m_token_pkt.address = {<<{m_token_pkt.address}};
-    `uvm_info(`gfn, $sformatf("Token Address = %b", m_token_pkt.address), UVM_DEBUG)
     m_token_pkt.endpoint = token_result[11:8];
     m_token_pkt.endpoint = {<<{m_token_pkt.endpoint}};
-    `uvm_info(`gfn, $sformatf("Token Endpoint = %b", m_token_pkt.endpoint), UVM_DEBUG)
     m_token_pkt.crc5 = token_result[7:3];
     m_token_pkt.crc5 = {<<{m_token_pkt.crc5}};
-    `uvm_info(`gfn, $sformatf("Token Crc5 = %b", m_token_pkt.crc5), UVM_DEBUG)
     req_analysis_port.write(m_token_pkt);
   endtask
 
-  // Monitor data packet
-  virtual protected task collect_data_packet();
+//------------------------------------------Data Packet-------------------------------------------//
+  virtual task data_packet();
     bit [7:0] data_pid;
     bit [7:0] data_temp[];
     bit data[];
+    bit [6:0] size;
     bit [63:0] data_result;
     bit [15:0] data_crc16;
     byte unsigned byte_data[];
 
-    while(!(cfg.bif.usb_p & ~cfg.bif.usb_n)) @(posedge cfg.bif.usb_clk);
-    `uvm_info(`gfn, $sformatf("After EOP Idle State Monitored"), UVM_DEBUG)
-    @(posedge cfg.bif.usb_clk);
-    wait(~cfg.bif.usb_p);
-
-    // Collecting usb_p from interface
-    @(posedge cfg.bif.usb_clk);
-    while (cfg.bif.usb_p || cfg.bif.usb_n) begin
-      data_packet.push_back(cfg.bif.usb_p);
-      @(posedge cfg.bif.usb_clk);
-    end
-    repeat (3) data_packet.push_back(cfg.bif.usb_p);
-    `uvm_info(`gfn, $sformatf("Complete Monitored Data_Packet = %p", data_packet), UVM_DEBUG)
-    nrzi_decoder(data_packet, monitored_decoded_packet);
-    bit_destuffed = bit_destuffing(monitored_decoded_packet);
-
     // Converting complete packet into transaction level (field wise)
     // Data_PID
-    for (int i = 0; i < 8; i++) begin
-      data_pid[i] = bit_destuffed[i + 8];
-    end
-    m_data_pkt.m_pid_type = pid_type_e'(data_pid);
-    m_data_pkt.m_pid_type = pid_type_e'({<<4{m_data_pkt.m_pid_type}});
-    m_data_pkt.m_pid_type = pid_type_e'({<<{m_data_pkt.m_pid_type}});
-    `uvm_info(`gfn, $sformatf("Data Pid = %b", m_data_pkt.m_pid_type), UVM_DEBUG)
+    m_data_pkt.m_pid_type = pid_type_e'(packet_type);
     // Data_in_bits
     for (int i = 0 ; i < bit_destuffed.size() - 35; i++) begin
       data = new[data.size() + 1](data);
@@ -181,47 +146,23 @@ class usb20_monitor extends dv_base_monitor #(
     // Bits_to_byte conversion of data
     byte_data = {>>byte{data}};
     m_data_pkt.data = byte_data;
-    `uvm_info(`gfn, $sformatf("Data = %p", m_data_pkt.data), UVM_DEBUG)
     // Crc16
     for (int i= 0; i < 16; i = i+1) begin
       data_crc16[i] = bit_destuffed[i + 16 + data.size()];
     end
     m_data_pkt.crc16 = data_crc16;
-    `uvm_info(`gfn, $sformatf("Data Crc16 = %b", m_data_pkt.crc16), UVM_DEBUG)
-    if (cfg.bif.usb_dp_en_o) rsp_analysis_port.write(m_data_pkt);
+     if (cfg.bif.usb_dp_en_o) rsp_analysis_port.write(m_data_pkt);
     else req_analysis_port.write(m_data_pkt);
   endtask
 
-  // Monitor handshake packet
-  virtual protected task collect_handshake_packet();
+//----------------------------------------Handshake Packet----------------------------------------//
+  virtual task handshake_packet();
     typedef bit [18:0] handshake_p;
     handshake_p handshake_result;
 
-    while(!(cfg.bif.usb_p & ~cfg.bif.usb_n)) @(posedge cfg.bif.usb_clk);
-    `uvm_info(`gfn, $sformatf("\n After EOP Idle State Monitored"), UVM_DEBUG)
-    @(posedge cfg.bif.usb_clk);
-    wait(~cfg.bif.usb_p);
-
-    // Collecting usb_p from interface
-    @(posedge cfg.bif.usb_clk);
-    while (cfg.bif.usb_p || cfg.bif.usb_n) begin
-      handshake_packet.push_back(cfg.bif.usb_p);
-      @(posedge cfg.bif.usb_clk);
-    end
-    repeat (3) handshake_packet.push_back(cfg.bif.usb_p);
-    `uvm_info(`gfn, $sformatf("Complete Monitored Handshake_Packet = %p ", handshake_packet),
-              UVM_DEBUG)
-    nrzi_decoder(handshake_packet, monitored_decoded_packet);
-    bit_destuffed = bit_destuffing(monitored_decoded_packet);
-
     // bits to binary conversion
     handshake_result = handshake_p'(bit_destuffed);
-
-    `uvm_info(`gfn, $sformatf("Final Handshake Packet = %b", handshake_result), UVM_DEBUG)
-    m_handshake_pkt.m_pid_type = pid_type_e'(handshake_result[10:3]);
-    m_handshake_pkt.m_pid_type = pid_type_e'({<<4{m_handshake_pkt.m_pid_type}});
-    m_handshake_pkt.m_pid_type = pid_type_e'({<<{m_handshake_pkt.m_pid_type}});
-    `uvm_info(`gfn, $sformatf("Handshake Pid = %b", m_handshake_pkt.m_pid_type), UVM_DEBUG)
+    m_handshake_pkt.m_pid_type = pid_type_e'(packet_type);
     if (cfg.bif.usb_dp_en_o) rsp_analysis_port.write(m_handshake_pkt);
     else req_analysis_port.write(m_handshake_pkt);
   endtask
@@ -245,27 +186,29 @@ class usb20_monitor extends dv_base_monitor #(
   endtask
 
   // bit destuffing
-  function destuffed_t bit_destuffing(bit packet[]);
+  task bit_destuffing (input bit packet[], output bit packet_destuffed[$]);
     int consecutive_ones_count = 0;
-    for (int i = 0; i < packet.size(); i++) begin
+    int i;
+    for (i = 0; i < packet.size(); i++) begin
       if (packet[i] == 1'b1) begin
         consecutive_ones_count = consecutive_ones_count + 1;
         if (consecutive_ones_count == 6) begin
-          packet = new[packet.size() - 1](packet);
-          i++;
-          for (int j = i; j < packet.size(); j++) begin
-            packet[j] = packet[j + 1];
+          if(i <= packet.size()) begin
+            packet_destuffed.push_back(packet[i]);
+            i += 2; // Skip the next bit as it was part of the stuffing
+            consecutive_ones_count = 0;
           end
-          consecutive_ones_count = 0;
+          else break;
         end
-      end else if (packet[i] == 1'b0) begin
+      end else begin
         consecutive_ones_count = 0;
       end
+      if(i <= packet.size()) begin
+        packet_destuffed.push_back(packet[i]); // Add the current bit to the destuffed packet
+      end
     end
-    `uvm_info(`gfn, $sformatf("Monitored Destuffed Packet = %p", packet), UVM_DEBUG)
-    return packet;
-  endfunction
-
+    `uvm_info(`gfn, $sformatf("Monitored Destuffed Packet = %p", packet_destuffed), UVM_DEBUG)
+  endtask
 
   // Reset detection
   task detect_reset();
