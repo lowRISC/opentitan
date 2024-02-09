@@ -132,11 +132,11 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
             // Do nothing
           end
           "digest_0", "digest_1", "digest_2", "digest_3", "digest_4", "digest_5", "digest_6",
-          "digest_7": begin
+          "digest_7", "msg_length_upper", "msg_length_lower": begin
             // Predict updated value coming from write iff SHA core is disabled.
             do_predict = !sha_en;
           end
-          "status", "msg_length_lower", "msg_length_upper": begin
+          "status": begin
             `uvm_error(`gfn, $sformatf("this reg does not have write access: %0s",
                                        csr.get_full_name()))
           end
