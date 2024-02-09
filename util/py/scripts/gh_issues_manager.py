@@ -92,7 +92,7 @@ class GithubWrapper():
 
     def get_milestone(self, name):
         res = list(filter(lambda ms: ms.title == name, self.milestones))
-        return len(res) > 0, res[0]
+        return res[0] if len(res) > 0 else NotSet
 
     def create_issue(
         self,
@@ -104,7 +104,7 @@ class GithubWrapper():
         assignees=NotSet,
     ):
         if milestone != NotSet:
-            _, milestone = self.get_milestone(milestone)
+            milestone = self.get_milestone(milestone)
         return self.repo.create_issue(title, body, assignee, milestone, labels,
                                       assignees)
 

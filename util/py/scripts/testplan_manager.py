@@ -73,6 +73,11 @@ export_parser.add_argument(
     help="""Token""",
 )
 export_parser.add_argument(
+    "--dry-run",
+    action='store_true',
+    help="""Dry run for github issues""",
+)
+export_parser.add_argument(
     "--issue-template",
     help="""Template""",
 )
@@ -250,24 +255,41 @@ def create_issues(args, df: pd.DataFrame):
     repo.load_issues(labels=["Component:ChipLevelTest"])
     issue_template = Template(filename=args.issue_template)
 
+    _filter = (df["bazel"] == "") | (df["bazel"] == " ") | (df["bazel"].isnull())
+    _filter &= df["si_stage"] != "NA"
+    df = df[_filter]
+
+    updated = created = 0
     for _, row in df.fillna("None").iterrows():
         new_issue = hjson.loads(
             issue_template.render(ip_block=row["hw_ip_block"],
                                   test_name=row["name"],
-                                  check_list=row["lc_states"].split(", "),
                                   stage=row["si_stage"]))
 
         if repo.issue_exist(new_issue["title"]):
-            print(f"Issue already exists: {new_issue['title']}")
+            logging.info(f"Issue already exists: {new_issue['title']}")
             repo_issue = repo.get_issues(new_issue["title"])[0]
             if repo_issue.body != new_issue["body"]:
-                print("Updating the issue")
-                repo_issue.edit(body=new_issue["body"],
+                logging.info("Updating the issue")
+                if args.dry_run:
+                    logging.info("Dry-run: Updating body: \r\n%s", new_issue["body"])
+                else:
+                    repo_issue.edit(body=new_issue["body"],
                                 labels=new_issue["labels"])
         else:
-            print(f'Create issue: {new_issue["title"]}')
-            repo.create_issue(title=new_issue["title"], body=new_issue["body"],\
-                                labels=new_issue["labels"], milestone=new_issue["milestone"])
+            logging.info(f'Create issue: {new_issue["title"]}')
+            logging.info("Updating the issue")
+            if args.dry_run:
+                logging.info(f'''Dryrun: Creating new issue: \r\n
+                 {new_issue["title"]}\r\n
+                 Body:\r\n{new_issue["body"]}\r\n
+                 Labels: {new_issue["labels"]}\r\n
+                 Milestone: {new_issue["milestone"]}
+                 ''')
+            else:
+                repo.create_issue(title=new_issue["title"], body=new_issue["body"],\
+                                labels=new_issue["labels"], milestone=new_issue["milestone"].upper())
+        
 
         created += 1
     logging.info(
