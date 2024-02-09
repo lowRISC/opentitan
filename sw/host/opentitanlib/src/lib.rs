@@ -19,6 +19,7 @@ pub mod image;
 pub mod io;
 pub mod otp;
 pub mod proxy;
+pub mod rescue;
 pub mod spiflash;
 pub mod test_utils;
 pub mod tpm;
