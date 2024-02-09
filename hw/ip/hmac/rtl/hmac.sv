@@ -91,6 +91,7 @@ module hmac
   logic        hash_start; // reg_hash_start gated with when it is allowed
   logic        hash_continue; // reg_hash_continue gated with when it is allowed
   logic        hash_start_or_continue;
+  logic        hash_done_event;
   logic        reg_hash_process;
   logic        sha_hash_process;
 
@@ -112,6 +113,7 @@ module hmac
 
   logic hmac_core_idle;
   logic sha_core_idle;
+  logic hash_running;
 
   ///////////////////////
   // Connect registers //
@@ -119,6 +121,65 @@ module hmac
   assign hw2reg.status.fifo_full.d  = fifo_full;
   assign hw2reg.status.fifo_empty.d = fifo_empty;
   assign hw2reg.status.fifo_depth.d = fifo_depth;
+
+  typedef enum logic [1:0] {
+    DoneAwaitCmd,
+    DoneAwaitHashDone,
+    DoneAwaitMessageComplete,
+    DoneAwaitHashComplete
+  } done_state_e;
+
+  done_state_e done_state_d, done_state_q;
+
+  always_comb begin
+    done_state_d = done_state_q;
+    hash_done_event = 1'b0;
+
+    unique case (done_state_q)
+      DoneAwaitCmd: begin
+        if (sha_hash_process) begin
+          // SHA has been told to process the message, so signal *done* when the hash is done.
+          done_state_d = DoneAwaitHashDone;
+        end else if (reg_hash_stop) begin
+          // SHA has been told to stop, so first wait for the current message block to be complete.
+          done_state_d = DoneAwaitMessageComplete;
+        end
+      end
+
+      DoneAwaitHashDone: begin
+        if (reg_hash_done) begin
+          hash_done_event = 1'b1;
+          done_state_d = DoneAwaitCmd;
+        end
+      end
+
+      DoneAwaitMessageComplete: begin
+        if (sha_message_length[8:0] == '0 /* <=> sha_message_length % 512 == 0 */) begin
+          // Once the current message block is complete, wait for the hash to complete.
+          // TODO: When adding SHA-384/512, the `512` (i.e., the block size) above must be
+          // dynamically changed between 512 (for SHA-256) and 1024 (for SHA-384/512).
+          done_state_d = DoneAwaitHashComplete;
+        end
+      end
+
+      DoneAwaitHashComplete: begin
+        if (!hash_running) begin
+          hash_done_event = 1'b1;
+          done_state_d = DoneAwaitCmd;
+        end
+      end
+
+      default: ;
+    endcase
+  end
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      done_state_q <= DoneAwaitCmd;
+    end else begin
+      done_state_q <= done_state_d;
+    end
+  end
 
   // secret key
   assign wipe_secret = reg2hw.wipe_secret.qe;
@@ -229,7 +290,7 @@ module hmac
   prim_intr_hw #(.Width(1)) intr_hw_hmac_done (
     .clk_i,
     .rst_ni,
-    .event_intr_i           (reg_hash_done),
+    .event_intr_i           (hash_done_event),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.hmac_done.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.hmac_done.q),
     .reg2hw_intr_test_qe_i  (reg2hw.intr_test.hmac_done.qe),
@@ -463,7 +524,7 @@ module hmac
     .digest_i             (digest_sw),
     .digest_we_i          (digest_sw_we),
     .digest_o             (digest), // digest[0:7][63:32] not read and tied out in unused_signals
-    .hash_running_o       (),
+    .hash_running_o       (hash_running),
     .idle_o               (sha_core_idle)
   );
 
