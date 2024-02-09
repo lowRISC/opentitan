@@ -85,6 +85,7 @@ module hmac
 
   logic        reg_hash_start;
   logic        sha_hash_start;
+  logic        reg_hash_stop;
   logic        reg_hash_continue;
   logic        sha_hash_continue;
   logic        hash_start; // reg_hash_start gated with when it is allowed
@@ -162,6 +163,7 @@ module hmac
   assign hw2reg.cfg.digest_swap.d = cfg_reg.digest_swap.q;
 
   assign reg_hash_start    = reg2hw.cmd.hash_start.qe & reg2hw.cmd.hash_start.q;
+  assign reg_hash_stop     = reg2hw.cmd.hash_stop.qe & reg2hw.cmd.hash_stop.q;
   assign reg_hash_continue = reg2hw.cmd.hash_continue.qe & reg2hw.cmd.hash_continue.q;
   assign reg_hash_process  = reg2hw.cmd.hash_process.qe & reg2hw.cmd.hash_process.q;
 
@@ -181,7 +183,7 @@ module hmac
       cfg_block <= '0;
     end else if (hash_start_or_continue) begin
       cfg_block <= 1'b 1;
-    end else if (reg_hash_done) begin
+    end else if (reg_hash_done || reg_hash_stop) begin
       cfg_block <= 1'b 0;
     end
   end
