@@ -124,6 +124,10 @@ hsm_repos()
 load("//third_party/nist_cavp_testvectors:repos.bzl", "nist_cavp_repos")
 nist_cavp_repos()
 
+# Wycheproof Test Vectors
+load("//third_party/wycheproof:repos.bzl", "wycheproof_repos")
+wycheproof_repos()
+
 # Bitstreams from https://storage.googleapis.com/opentitan-bitstreams/
 load("//rules:bitstreams.bzl", "bitstreams_repo")
 bitstreams_repo(name = "bitstreams")
