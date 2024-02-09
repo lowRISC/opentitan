@@ -26,6 +26,8 @@ package lc_ctrl_state_pkg;
   parameter int SocDbgStateWidth = NumSocDbgStateValues * LcValueWidth;
   parameter int NumOwnershipStateValues = 8;
   parameter int OwnershipStateWidth = NumOwnershipStateValues * LcValueWidth;
+  parameter int NumAuthStateValues = 2;
+  parameter int AuthStateWidth = NumAuthStateValues * LcValueWidth;
 
   // Redundant version used in the CSRs.
   parameter int DecLcStateNumRep = 32/DecLcStateWidth;
@@ -69,19 +71,19 @@ package lc_ctrl_state_pkg;
   //  3: --
   //  4: --
   //  5: --
-  //  6: ||| (5.19%)
+  //  6: ||| (5.04%)
   //  7: --
-  //  8: ||||||||||| (17.06%)
+  //  8: ||||||||||| (16.97%)
   //  9: --
-  // 10: |||||||||||||||||||| (30.24%)
+  // 10: |||||||||||||||||||| (30.12%)
   // 11: --
-  // 12: ||||||||||||||||||| (29.02%)
+  // 12: ||||||||||||||||||| (29.34%)
   // 13: --
-  // 14: ||||||||| (14.28%)
+  // 14: ||||||||| (14.35%)
   // 15: --
-  // 16: || (3.79%)
+  // 16: || (3.80%)
   // 17: --
-  // 18:  (0.42%)
+  // 18:  (0.39%)
   // 19: --
   // 20: --
   // 21: --
@@ -263,6 +265,14 @@ package lc_ctrl_state_pkg;
   parameter logic [15:0] H7 = 16'b1100111110111110; // ECC: 6'b010111
 
 
+  // The I/Jvalues are used for the encoded AUTH state.
+  parameter logic [15:0] I0 = 16'b0110011110000001; // ECC: 6'b000100
+  parameter logic [15:0] J0 = 16'b0111111110100001; // ECC: 6'b101101
+
+  parameter logic [15:0] I1 = 16'b1110100010100001; // ECC: 6'b100110
+  parameter logic [15:0] J1 = 16'b1110100111110101; // ECC: 6'b101111
+
+
   parameter logic [15:0] ZRO = 16'h0;
 
   ////////////////////////
@@ -330,14 +340,14 @@ package lc_ctrl_state_pkg;
 
   typedef logic [SocDbgStateWidth-1:0] soc_dbg_state_t;
   typedef enum soc_dbg_state_t {
-    SocDbgStRaw     = {ZRO, ZRO},
+    SocDbgStBlank   = {ZRO, ZRO},
     SocDbgStPreProd = { E1,  E0},
     SocDbgStProd    = { F1,  F0}
   } soc_dbg_state_e;
 
   typedef logic [OwnershipStateWidth-1:0] ownership_state_t;
   typedef enum ownership_state_t {
-    OwnershipStRaw       = {ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO},
+    OwnershipStBlank     = {ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO, ZRO},
     OwnershipStLocked0   = { G7,  G6,  G5,  G4,  G3,  G2,  G1,  G0},
     OwnershipStReleased0 = { G7,  G6,  G5,  G4,  G3,  G2,  G1,  H0},
     OwnershipStLocked1   = { G7,  G6,  G5,  G4,  G3,  G2,  H1,  H0},
@@ -347,6 +357,13 @@ package lc_ctrl_state_pkg;
     OwnershipStLocked3   = { G7,  G6,  H5,  H4,  H3,  H2,  H1,  H0},
     OwnershipStScrapped  = { H7,  H6,  H5,  H4,  H3,  H2,  H1,  H0}
   } ownership_state_e;
+
+  typedef logic [AuthStateWidth-1:0] auth_state_t;
+  typedef enum auth_state_t {
+    AuthStBlank    = {ZRO, ZRO},
+    AuthStEnabled  = { I1,  I0},
+    AuthStDisabled = { J1,  J0}
+  } auth_state_e;
 
   // Decoded life cycle state, used to interface with CSRs and TAP.
   typedef enum logic [DecLcStateWidth-1:0] {
