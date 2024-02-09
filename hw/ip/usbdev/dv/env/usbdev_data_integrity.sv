@@ -20,9 +20,9 @@ class usbdev_data_integrity extends uvm_object;
       m_ad_buff[address][endpoint][i] = payload_in[i];
       // Count number of byte in payload
       byte_count[address][endpoint] = i;
-      // Store PID to specific address and endpoint
-      pid_array[address][endpoint] = pid;
     end
+    // Store PID to specific address and endpoint
+    pid_array[address][endpoint] = pid;
   endtask
 
   // This task will read the payload and pid from specific address and endpoint
@@ -33,5 +33,6 @@ class usbdev_data_integrity extends uvm_object;
       payload_out = new[payload_out.size() + 1] (payload_out);
       payload_out[payload_out.size() - 1] = m_ad_buff[address][endpoint][i];
     end
+    if (byte_count[address][endpoint] == 0) payload_out.delete();
   endtask
 endclass
