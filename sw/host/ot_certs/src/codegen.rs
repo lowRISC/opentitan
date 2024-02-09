@@ -104,10 +104,12 @@ pub fn generate_cert(from_file: &str, tmpl: &Template) -> Result<Codegen> {
 
     // Generate TBS function.
     let generate_tbs_fn_name = format!("{}_build_tbs", tmpl.name);
+    let generate_tbs_fn_params =
+        format!("{tbs_value_struct_name} *values, uint8_t *tbs, size_t *tbs_inout_size");
     let (generate_tbs_fn_def, generate_tbs_fn_impl, max_tbs_size) = generate_builder(
-        "Generate a TBS certificate.",
+        CertificateComponent::Tbs,
         &generate_tbs_fn_name,
-        &tbs_value_struct_name,
+        &generate_tbs_fn_params,
         &mut const_pool,
         &tbs_vars,
         |builder| X509::push_tbs_certificate(builder, &tmpl.certificate),
@@ -131,10 +133,12 @@ pub fn generate_cert(from_file: &str, tmpl: &Template) -> Result<Codegen> {
 
     // Generate sig function.
     let generate_cert_fn_name = format!("{}_build_cert", tmpl.name);
+    let generate_cert_fn_params =
+        format!("{sig_value_struct_name} *values, uint8_t *cert, size_t *cert_inout_size");
     let (generate_cert_fn_def, generate_cert_fn_impl, max_cert_size) = generate_builder(
-        "Generate a certificate from a TBS and a signature.",
+        CertificateComponent::Certificate,
         &generate_cert_fn_name,
-        &sig_value_struct_name,
+        &generate_cert_fn_params,
         &mut const_pool,
         &sig_vars,
         |builder| X509::push_certificate(builder, &tbs_binary_val, &tmpl.certificate.signature),
@@ -310,34 +314,28 @@ fn var_appears_in_sig(var_name: &str, sig: &Signature) -> bool {
     }
 }
 
+#[derive(Debug, PartialEq)]
+enum CertificateComponent {
+    Certificate,
+    Tbs,
+}
+
 // Generate a function that generates a TBS/cert. This functions returns three
 // elements: the header definition, the implementation and the maximum size of
 // the produced TBS/cert.
 fn generate_builder(
-    top_comment: &str,
-    fnname: &str,
-    value_struct_name: &str,
+    component: CertificateComponent,
+    fn_name: &str,
+    fn_params_str: &str,
     constants: &mut ConstantPool,
     variables: &HashMap<String, VariableType>,
     gen: impl FnOnce(&mut codegen::Codegen) -> Result<()>,
 ) -> Result<(String, String, usize)> {
-    let generate_fn_def = indoc::formatdoc! { r#"
-        /**
-         * {top_comment}
-         *
-         * @param values Pointer to a structure giving the values to use.
-         * @param[out] tbs Pointer to a user-allocated buffer that will contain the
-         * result.
-         * @param[in,out] tbs_inout_size Pointer to an integer holding the size of
-         * the provided buffer, this value will be updated to reflect the actual size of
-         * the output.
-         * @return The result of the operation.
-         */
-        rom_error_t {fnname}({value_struct_name} *values, uint8_t *tbs, size_t *tbs_inout_size);
-        "#
-    };
     let mut generate_fn_impl = String::new();
-    writeln!(generate_fn_impl, "rom_error_t {fnname}({value_struct_name} *values, uint8_t *tbs, size_t *tbs_inout_size) {{")?;
+    writeln!(
+        generate_fn_impl,
+        "rom_error_t {fn_name}({fn_params_str}) {{"
+    )?;
     let get_var_info = |var_name: &str| -> Result<VariableInfo> {
         let var_type = variables
             .get(var_name)
@@ -346,15 +344,64 @@ fn generate_builder(
         let (codegen, _) = c_variable_info(var_name, "values->", &var_type);
         Ok(VariableInfo { var_type, codegen })
     };
-    let (implementation, max_size) = codegen::Codegen::generate(
-        /* buf_name */ "tbs",
-        /* buf_size_name */ "tbs_inout_size",
-        /* indent */ INDENT,
-        /* indent_lvl */ 1,
-        constants,
-        &get_var_info,
-        gen,
-    )?;
+    let generate_fn_def: String;
+    let implementation: String;
+    let max_size: usize;
+    if component == CertificateComponent::Tbs {
+        generate_fn_def = indoc::formatdoc! { r#"
+        /**
+         * Generates a TBS certificate.
+         *
+         * @param values Pointer to a structure giving the values to use to generate the TBS
+         * portion of the certificate.
+         * @param[out] tbs Pointer to a user-allocated buffer that will contain the TBS portion of
+         * the certificate.
+         * @param[in,out] tbs_inout_size Pointer to an integer holding the size of
+         * the provided buffer; this value will be updated to reflect the actual size of
+         * the output.
+         * @return The result of the operation.
+         */
+        rom_error_t {fn_name}({fn_params_str});
+
+        "#
+        };
+        (implementation, max_size) = codegen::Codegen::generate(
+            /* buf_name */ "tbs",
+            /* buf_size_name */ "tbs_inout_size",
+            /* indent */ INDENT,
+            /* indent_lvl */ 1,
+            constants,
+            &get_var_info,
+            gen,
+        )?;
+    } else {
+        generate_fn_def = indoc::formatdoc! { r#"
+        /**
+         * Generates an endorsed certificate from a TBS certificate and a signature.
+         *
+         * @param values Pointer to a structure giving the values to use to generate the
+         * certificate (TBS and signature).
+         * @param[out] cert Pointer to a user-allocated buffer that will contain the
+         * result.
+         * @param[in,out] cert_inout_size Pointer to an integer holding the size of
+         * the provided buffer, this value will be updated to reflect the actual size of
+         * the output.
+         * @return The result of the operation.
+         */
+        rom_error_t {fn_name}({fn_params_str});
+
+        "#
+        };
+        (implementation, max_size) = codegen::Codegen::generate(
+            /* buf_name */ "cert",
+            /* buf_size_name */ "cert_inout_size",
+            /* indent */ INDENT,
+            /* indent_lvl */ 1,
+            constants,
+            &get_var_info,
+            gen,
+        )?;
+    }
     generate_fn_impl.push_str(&implementation);
     generate_fn_impl.push_str("  return kErrorOk;\n");
     generate_fn_impl.push_str("}\n\n");
