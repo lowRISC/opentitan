@@ -3032,6 +3032,48 @@ opentitan_test(
     ],
 )
 
+opentitan_test(
+    name = "spi_device_flash_smoketest",
+    srcs = ["spi_device_flash_smoketest.c"],
+    cw310 = new_cw310_params(
+        test_cmd = """
+            --bitstream="{bitstream}"
+            --bootstrap="{firmware}"
+            "{firmware:elf}"
+        """,
+        test_harness = "//sw/host/tests/chip/spi_device_flash_smoketest",
+    ),
+    exec_env = dicts.add(
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        },
+    ),
+    silicon = silicon_params(
+        test_cmd = """
+            --bootstrap={firmware}
+            "{firmware:elf}"
+        """,
+        test_harness = "//sw/host/tests/chip/spi_device_flash_smoketest",
+    ),
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:base",
+        "//sw/device/lib/dif:rv_plic",
+        "//sw/device/lib/dif:spi_device",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:irq",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:spi_device_testutils",
+        "//sw/device/lib/testing:spi_flash_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/testing/test_framework:status",
+    ],
+)
+
 cc_library(
     name = "spi_host_flash_test_impl",
     srcs = ["spi_host_flash_test_impl.c"],
