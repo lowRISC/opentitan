@@ -461,6 +461,7 @@ module hmac
     .digest_i             (digest_sw),
     .digest_we_i          (digest_sw_we),
     .digest_o             (digest), // digest[0:7][63:32] not read and tied out in unused_signals
+    .hash_running_o       (),
     .idle_o               (sha_core_idle)
   );
 
