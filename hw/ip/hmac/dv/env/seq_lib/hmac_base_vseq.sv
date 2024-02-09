@@ -228,6 +228,12 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
     csr_rd(ral.msg_length_lower, msg_length[TL_DW-1:0]);
   endtask
 
+  // write message length to the DUT reg
+  virtual task csr_wr_msg_length(bit [2*TL_DW-1:0] msg_length);
+    csr_wr(.ptr(ral.msg_length_upper), .value(msg_length[2*TL_DW-1:TL_DW]));
+    csr_wr(.ptr(ral.msg_length_lower), .value(msg_length[TL_DW-1:0]));
+  endtask
+
   // read status FIFO FULL and check intr FIFO FULL
   // if intr_fifo_full_enable is disable, check intr_fifo_full_state and clear it
   virtual task check_status_intr();
