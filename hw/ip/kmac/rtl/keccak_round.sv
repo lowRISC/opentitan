@@ -122,11 +122,11 @@ module keccak_round
   logic low_then_high_d, low_then_high_q;
   // 0: drive/select upper lane halves
   // 1: drive/select lower lane halves
-  logic dom_out_low;
-  logic dom_in_low;
+  logic dom_out_low_d, dom_out_low_q;
+  logic dom_in_low_d, dom_in_low_q;
   // 0: forward external randomness input
   // 1: forward partial intermediate results
-  logic dom_in_rand_ext;
+  logic dom_in_rand_ext_d, dom_in_rand_ext_q;
   // 0: keep current intermediate results in pipeline registers
   // 1: latch new intermediate results into pipeline registers
   logic dom_update;
@@ -194,8 +194,8 @@ module keccak_round
 
     phase_sel = MuBi4False;
     low_then_high_d = low_then_high_q;
-    dom_in_low = 1'b 0;
-    dom_in_rand_ext = 1'b 0;
+    dom_in_low_d = dom_in_low_q;
+    dom_in_rand_ext_d = dom_in_rand_ext_q;
     dom_update = 1'b 0;
 
     complete_d = 1'b 0;
@@ -221,6 +221,10 @@ module keccak_round
         end else if (EnMasking && run_i) begin
           // Masked version of Keccak handling
           keccak_st_d = KeccakStPhase1;
+
+          // Drive DOM multiplier I/O mux signals for Phase 1.
+          dom_in_low_d = low_then_high_q;
+          dom_in_rand_ext_d = 1'b 0;
         end else if (!EnMasking && run_i) begin
           // Unmasked version of Keccak handling
           keccak_st_d = KeccakStActive;
@@ -251,8 +255,6 @@ module keccak_round
         // as in Phase2Cycle3 of the last round). Also, the intermediate
         // results we already had in Phase2Cycle3 didn't change.
         phase_sel = MuBi4False;
-        dom_in_low = low_then_high_q;
-        dom_in_rand_ext = 1'b 0;
         dom_update = 1'b 0;
 
         // Only update the state and move on once we know the auxiliary
@@ -271,6 +273,10 @@ module keccak_round
 
           // Update lane halves processing order for this round.
           low_then_high_d = rand_aux_i;
+
+          // Drive DOM multiplier I/O mux signals for next phase.
+          dom_in_low_d = low_then_high_d;
+          dom_in_rand_ext_d = 1'b 1;
         end else begin
           keccak_st_d = KeccakStPhase1;
         end
@@ -281,8 +287,6 @@ module keccak_round
         // multipliers. Use the fresh randomness provided by the PRNG for
         // remasking.
         phase_sel = MuBi4True;
-        dom_in_low = low_then_high_q;
-        dom_in_rand_ext = 1'b 1;
         dom_update = 1'b 1;
 
         // Trigger randomness update for next cycle.
@@ -295,6 +299,10 @@ module keccak_round
 
         // Unconditionally move to next phase/cycle.
         keccak_st_d = KeccakStPhase2Cycle2;
+
+        // Drive DOM multiplier I/O mux signals for next phase.
+        dom_in_low_d = ~low_then_high_q;
+        dom_in_rand_ext_d = 1'b 1;
       end
 
       KeccakStPhase2Cycle2: begin
@@ -304,8 +312,6 @@ module keccak_round
         // Compute first stage of Chi for second lane halves. Use the fresh
         // randomness provided by the PRNG for remasking the DOM multipliers.
         phase_sel = MuBi4True;
-        dom_in_low = ~low_then_high_q;
-        dom_in_rand_ext = 1'b 1;
         dom_update = 1'b 1;
 
         // Trigger randomness update for next cycle.
@@ -328,6 +334,10 @@ module keccak_round
 
         // Unconditionally move to next phase/cycle.
         keccak_st_d = KeccakStPhase2Cycle3;
+
+        // Drive DOM multiplier I/O mux signals for next phase.
+        dom_in_low_d = low_then_high_q;
+        dom_in_rand_ext_d = 1'b 0;
       end
 
       KeccakStPhase2Cycle3: begin
@@ -337,8 +347,6 @@ module keccak_round
         // results of Phase2Cycle2. Don't update the register stage inside
         // the DOM multipliers.
         phase_sel = MuBi4True;
-        dom_in_low = low_then_high_q;
-        dom_in_rand_ext = 1'b 0;
         dom_update = 1'b 0;
 
         // Update second lane halves.
@@ -350,14 +358,20 @@ module keccak_round
         update_storage = 1'b 1;
 
         if (rnd_eq_end) begin
+          // We're done.
           keccak_st_d = KeccakStIdle;
 
           rst_rnd_num    = 1'b 1;
           complete_d     = 1'b 1;
         end else begin
+          // Continue to the next round.
           keccak_st_d = KeccakStPhase1;
 
           inc_rnd_num = 1'b 1;
+
+          // Drive DOM multiplier I/O mux signals for next phase.
+          dom_in_low_d = low_then_high_q;
+          dom_in_rand_ext_d = 1'b 0;
         end
       end
 
@@ -385,23 +399,33 @@ module keccak_round
     end
   end
 
-  if (EnMasking) begin : gen_reg_low_then_high
+  // When taking the lower lane halves in, the upper lane halves are output and
+  // vice versa.
+  assign dom_out_low_d = ~dom_in_low_d;
+
+  if (EnMasking) begin : gen_regs_dom_ctrl
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) begin
         low_then_high_q <= 1'b 0;
+        dom_out_low_q <= 1'b 0;
+        dom_in_low_q <= 1'b 0;
+        dom_in_rand_ext_q <= 1'b 0;
       end else begin
         low_then_high_q <= low_then_high_d;
+        dom_out_low_q <= dom_out_low_d;
+        dom_in_low_q <= dom_in_low_d;
+        dom_in_rand_ext_q <= dom_in_rand_ext_d;
       end
     end
-  end else begin : gen_no_reg_low_then_high
-    logic unused_low_then_high_d;
-    assign unused_low_then_high_d = low_then_high_d;
+  end else begin : gen_no_regs_dom_ctrl
+    logic unused_dom_ctrl;
+    assign unused_dom_ctrl =
+        ^{low_then_high_d, dom_out_low_d, dom_in_low_d, dom_in_rand_ext_d};
     assign low_then_high_q = 1'b 0;
+    assign dom_out_low_q = 1'b 0;
+    assign dom_in_low_q = 1'b 0;
+    assign dom_in_rand_ext_q = 1'b 0;
   end
-
-  // When taking the lower lane halves in, the upper lane halves are output and
-  // vice versa.
-  assign dom_out_low = ~dom_in_low;
 
   // Ready indicates the keccak_round is able to receive new message.
   // While keccak_round is processing the data, it blocks the new message to be
@@ -491,10 +515,10 @@ module keccak_round
     .rnd_i(round),
 
     .phase_sel_i      (phase_sel),
-    .dom_out_low_i    (dom_out_low    ),
-    .dom_in_low_i     (dom_in_low     ),
-    .dom_in_rand_ext_i(dom_in_rand_ext),
-    .dom_update_i     (dom_update     ),
+    .dom_out_low_i    (dom_out_low_q),
+    .dom_in_low_i     (dom_in_low_q),
+    .dom_in_rand_ext_i(dom_in_rand_ext_q),
+    .dom_update_i     (dom_update),
 
     .rand_i    (keccak_rand_data),
 
