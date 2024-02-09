@@ -97,7 +97,16 @@ class edn_alert_vseq extends edn_base_vseq;
     ral.ctrl.auto_req_mode.set(cfg.auto_req_mode);
     ral.ctrl.cmd_fifo_rst.set(cfg.cmd_fifo_rst);
     csr_update(.csr(ral.ctrl));
-
+    // Read the hw_cmd_sts for coverage.
+    csr_rd(.ptr(ral.hw_cmd_sts), .value(value));
+    // If coverage is enabled, record the values of the hw_cmd_sts register.
+    if (cfg.en_cov) begin
+      cov_vif.cg_edn_hw_cmd_sts_sample(.boot_mode(value[hw_cmd_boot_mode]),
+                                       .auto_mode(value[hw_cmd_auto_mode]),
+                                       .cmd_sts(value[hw_cmd_sts]),
+                                       .cmd_ack(value[hw_cmd_ack]),
+                                       .acmd(csrng_pkg::acmd_e'(value[hw_cmd_type+:4])));
+    end
     // Issue the commands that are needed to get to exp_state in a fork.
     start_transition_to_main_sm_state(exp_state);
     send_generate = (exp_state inside {BootLoadGen, BootGenAckWait, BootPulse, BootDone,
@@ -134,6 +143,14 @@ class edn_alert_vseq extends edn_base_vseq;
         (exp_state inside {AutoCaptReseedCnt, AutoSendReseedCmd}) ? csrng_pkg::RES :
         csrng_pkg::GEN;
     csr_rd_check(.ptr(ral.hw_cmd_sts), .compare_value(exp_hw_cmd_sts));
+    // If coverage is enabled, record the values of the hw_cmd_sts register.
+    if (cfg.en_cov) begin
+      cov_vif.cg_edn_hw_cmd_sts_sample(.boot_mode(exp_hw_cmd_sts[hw_cmd_boot_mode]),
+                                       .auto_mode(exp_hw_cmd_sts[hw_cmd_auto_mode]),
+                                       .cmd_sts(exp_hw_cmd_sts[hw_cmd_sts]),
+                                       .cmd_ack(exp_hw_cmd_sts[hw_cmd_ack]),
+                                       .acmd(csrng_pkg::acmd_e'(exp_hw_cmd_sts[hw_cmd_type+:4])));
+    end
     csr_rd_check(.ptr(ral.main_sm_state), .compare_value(edn_pkg::RejectCsrngEntropy));
     // See if we can request some data if the generate has been issued.
     if (send_generate) begin
