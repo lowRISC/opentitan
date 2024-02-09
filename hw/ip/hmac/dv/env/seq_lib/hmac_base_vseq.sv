@@ -89,13 +89,26 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
     csr_wr(ral.key[key_idx], rand_key_value);
   endtask
 
-  // trigger hash computation to start
+  // start hash computations
   virtual task trigger_hash();
     csr_wr(.ptr(ral.cmd), .value(1'b1 << HashStart));
-    // if sha is not enabled, assert error interrupt and check error code
+    // If SHA is not enabled, check that an error is signaled.
     if (!ral.cfg.sha_en.get_mirrored_value()) check_error_code();
   endtask
 
+  // continue hash computations
+  virtual task trigger_hash_continue();
+    csr_wr(.ptr(ral.cmd), .value(1'b1 << HashContinue));
+    // If SHA is not enabled, check that an error is signaled.
+    if (!ral.cfg.sha_en.get_mirrored_value()) check_error_code();
+  endtask
+
+  // stop hash computations
+  virtual task trigger_hash_stop();
+    csr_wr(.ptr(ral.cmd), .value(1'b1 << HashStop));
+  endtask
+
+  // trigger calculation of digest at the end of a message
   virtual task trigger_process();
     csr_wr(.ptr(ral.cmd), .value(1'b1 << HashProcess));
     cfg.hash_process_triggered = 1;
