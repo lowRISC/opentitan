@@ -86,3 +86,11 @@ py_binary(
         requirement("pycryptodome"),
     ],
 )
+
+py_binary(
+    name = "wycheproof_kmac_parser",
+    srcs = ["wycheproof_kmac_parser.py"],
+    deps = [
+        requirement("jsonschema"),
+    ],
+)
