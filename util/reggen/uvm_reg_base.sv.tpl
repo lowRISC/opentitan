@@ -430,10 +430,10 @@ reg_field_name, field)">\
   field_tags = field.tags
 
   fname = reg_field_name
-  type_id_indent = ' ' * (len(fname) + 4)
 %>\
-      ${fname} = (${dv_base_reg_field_name}::
-      ${type_id_indent}type_id::create("${field.name.lower()}"));
+      ${fname} =
+          (${dv_base_reg_field_name}::
+           type_id::create("${field.name.lower()}"));
       ${fname}.configure(
         .parent(this),
         .size(${field_size}),
@@ -565,11 +565,10 @@ reg_field_name, field)">\
 <%
       reg_name = reg.name.lower()
       reg_offset = "{}'h{:x}".format(reg_width, reg.offset)
-
-      inst_id_indent = ' ' * (len(reg_inst) + 4)
 %>\
-      ${reg_inst} = (${reg_type}::
-      ${inst_id_indent}type_id::create("${reg_name}"));
+      ${reg_inst} =
+          (${reg_type}::
+           type_id::create("${reg_name}"));
       ${reg_inst}.configure(.blk_parent(this));
       ${reg_inst}.build(csr_excl);
       default_map.add_reg(.rg(${reg_inst}),
@@ -648,7 +647,8 @@ reg_field_name, field)">\
         tag = reg_tag.split(":")
 %>\
 %         if tag[0] == "excl":
-      csr_excl.add_excl(${reg_inst}.get_full_name(), ${tag[2]}, ${tag[1]});
+      csr_excl.add_excl(${reg_inst}.get_full_name(),
+                        ${tag[2]}, ${tag[1]});
 %         endif
 %       endfor
 %     endif

@@ -41,7 +41,9 @@ class otp_ctrl_dai_lock_vseq extends otp_ctrl_smoke_vseq;
   part_name = Name.from_snake_case(part["name"])
   part_name_camel = part_name.as_camel_case()
 %>\
-    if (part_idx == ${part_name_camel}Idx) dai_addr inside `PART_ADDR_RANGE(${part_name_camel}Idx);
+    if (part_idx == ${part_name_camel}Idx) {
+      dai_addr inside `PART_ADDR_RANGE(${part_name_camel}Idx);
+    }
 % endfor
     if (part_idx == LifeCycleIdx) {
       if (write_unused_addr) {

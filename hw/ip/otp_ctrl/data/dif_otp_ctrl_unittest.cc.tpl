@@ -623,12 +623,20 @@ TEST_F(DaiDigestTest, DigestSw) {
                  {{OTP_CTRL_DIRECT_ACCESS_CMD_WR_BIT, true}});
 
   % if len(dai_digest_line) > 80 - 2:
+<% dai_digest_line = (f"kDifOtpCtrlPartition{part_name_camel},") %>\
+    % if len(dai_digest_line) > 80 - 40:
+  EXPECT_DIF_OK(
+      dif_otp_ctrl_dai_digest(&otp_, kDifOtpCtrlPartition${part_name_camel},
+                              /*digest=*/0xabcdef0000abcdef));
+    % else:
   EXPECT_DIF_OK(dif_otp_ctrl_dai_digest(&otp_,
                                         kDifOtpCtrlPartition${part_name_camel},
+                                        /*digest=*/0xabcdef0000abcdef));
+    % endif
   % else:
   ${dai_digest_line}
-  % endif
                                         /*digest=*/0xabcdef0000abcdef));
+  % endif
   % if not loop.last:
 
   % endif
