@@ -223,14 +223,11 @@ module hmac
   end
   assign fifo_empty_event = fifo_empty & ~fifo_empty_q;
 
-  logic [2:0] event_intr;
-  assign event_intr = {err_valid, fifo_empty_event, reg_hash_done};
-
   // instantiate interrupt hardware primitive
   prim_intr_hw #(.Width(1)) intr_hw_hmac_done (
     .clk_i,
     .rst_ni,
-    .event_intr_i           (event_intr[0]),
+    .event_intr_i           (reg_hash_done),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.hmac_done.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.hmac_done.q),
     .reg2hw_intr_test_qe_i  (reg2hw.intr_test.hmac_done.qe),
@@ -242,7 +239,7 @@ module hmac
   prim_intr_hw #(.Width(1)) intr_hw_fifo_empty (
     .clk_i,
     .rst_ni,
-    .event_intr_i           (event_intr[1]),
+    .event_intr_i           (fifo_empty_event),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.fifo_empty.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.fifo_empty.q),
     .reg2hw_intr_test_qe_i  (reg2hw.intr_test.fifo_empty.qe),
@@ -254,7 +251,7 @@ module hmac
   prim_intr_hw #(.Width(1)) intr_hw_hmac_err (
     .clk_i,
     .rst_ni,
-    .event_intr_i           (event_intr[2]),
+    .event_intr_i           (err_valid),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.hmac_err.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.hmac_err.q),
     .reg2hw_intr_test_qe_i  (reg2hw.intr_test.hmac_err.qe),
