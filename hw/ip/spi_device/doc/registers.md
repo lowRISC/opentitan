@@ -78,25 +78,25 @@
 | spi_device.[`TPM_RID`](#tpm_rid)                         | 0x82c    |        4 | TPM_RID                                         |
 | spi_device.[`TPM_CMD_ADDR`](#tpm_cmd_addr)               | 0x830    |        4 | TPM Command and Address buffer                  |
 | spi_device.[`TPM_READ_FIFO`](#tpm_read_fifo)             | 0x834    |        4 | TPM Read command return data FIFO.              |
-| spi_device.[`TPM_WRITE_FIFO`](#tpm_write_fifo)           | 0x838    |        4 | TPM Write command received data FIFO.           |
-| spi_device.[`egress_buffer`](#egress_buffer)             | 0x1000   |     3328 | SPI internal egress buffer.                     |
-| spi_device.[`ingress_buffer`](#ingress_buffer)           | 0x1e00   |      384 | SPI internal ingress buffer.                    |
+| spi_device.[`egress_buffer`](#egress_buffer)             | 0x1000   |     3392 | SPI internal egress buffer.                     |
+| spi_device.[`ingress_buffer`](#ingress_buffer)           | 0x1e00   |      448 | SPI internal ingress buffer.                    |
 
 ## INTR_STATE
 Interrupt State Register
 - Offset: `0x0`
 - Reset default: `0x0`
-- Reset mask: `0x3f`
+- Reset mask: `0x7f`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "upload_cmdfifo_not_empty", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "upload_payload_not_empty", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "upload_payload_overflow", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "readbuf_watermark", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "readbuf_flip", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "tpm_header_not_empty", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 26}], "config": {"lanes": 1, "fontsize": 10, "vspace": 260}}
+{"reg": [{"name": "upload_cmdfifo_not_empty", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "upload_payload_not_empty", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "upload_payload_overflow", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "readbuf_watermark", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "readbuf_flip", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "tpm_header_not_empty", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "tpm_rdfifo_drop", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 25}], "config": {"lanes": 1, "fontsize": 10, "vspace": 260}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                     | Description                                                                                                                                                                                                                                         |
 |:------:|:------:|:-------:|:-------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|  31:6  |        |         |                          | Reserved                                                                                                                                                                                                                                            |
+|  31:7  |        |         |                          | Reserved                                                                                                                                                                                                                                            |
+|   6    |  rw1c  |   0x0   | tpm_rdfifo_drop          | TPM RdFIFO data dropped. Data was dropped from the RdFIFO. Either data was written while a read command was not active, or the read command was aborted while data was left in the RdFIFO.                                                          |
 |   5    |   ro   |   0x0   | tpm_header_not_empty     | TPM Header(Command/Address) buffer available                                                                                                                                                                                                        |
 |   4    |  rw1c  |   0x0   | readbuf_flip             | Read buffer flipped event. The host system accesses other side of buffer.                                                                                                                                                                           |
 |   3    |  rw1c  |   0x0   | readbuf_watermark        | Read Buffer Threshold event. The host system accesses greater than or equal to the threshold of a buffer.                                                                                                                                           |
@@ -108,17 +108,18 @@ Interrupt State Register
 Interrupt Enable Register
 - Offset: `0x4`
 - Reset default: `0x0`
-- Reset mask: `0x3f`
+- Reset mask: `0x7f`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "upload_cmdfifo_not_empty", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "upload_payload_not_empty", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "upload_payload_overflow", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "readbuf_watermark", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "readbuf_flip", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "tpm_header_not_empty", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 26}], "config": {"lanes": 1, "fontsize": 10, "vspace": 260}}
+{"reg": [{"name": "upload_cmdfifo_not_empty", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "upload_payload_not_empty", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "upload_payload_overflow", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "readbuf_watermark", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "readbuf_flip", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "tpm_header_not_empty", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "tpm_rdfifo_drop", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 25}], "config": {"lanes": 1, "fontsize": 10, "vspace": 260}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                     | Description                                                                        |
 |:------:|:------:|:-------:|:-------------------------|:-----------------------------------------------------------------------------------|
-|  31:6  |        |         |                          | Reserved                                                                           |
+|  31:7  |        |         |                          | Reserved                                                                           |
+|   6    |   rw   |   0x0   | tpm_rdfifo_drop          | Enable interrupt when [`INTR_STATE.tpm_rdfifo_drop`](#intr_state) is set.          |
 |   5    |   rw   |   0x0   | tpm_header_not_empty     | Enable interrupt when [`INTR_STATE.tpm_header_not_empty`](#intr_state) is set.     |
 |   4    |   rw   |   0x0   | readbuf_flip             | Enable interrupt when [`INTR_STATE.readbuf_flip`](#intr_state) is set.             |
 |   3    |   rw   |   0x0   | readbuf_watermark        | Enable interrupt when [`INTR_STATE.readbuf_watermark`](#intr_state) is set.        |
@@ -130,17 +131,18 @@ Interrupt Enable Register
 Interrupt Test Register
 - Offset: `0x8`
 - Reset default: `0x0`
-- Reset mask: `0x3f`
+- Reset mask: `0x7f`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "upload_cmdfifo_not_empty", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "upload_payload_not_empty", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "upload_payload_overflow", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "readbuf_watermark", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "readbuf_flip", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "tpm_header_not_empty", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 26}], "config": {"lanes": 1, "fontsize": 10, "vspace": 260}}
+{"reg": [{"name": "upload_cmdfifo_not_empty", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "upload_payload_not_empty", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "upload_payload_overflow", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "readbuf_watermark", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "readbuf_flip", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "tpm_header_not_empty", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "tpm_rdfifo_drop", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 25}], "config": {"lanes": 1, "fontsize": 10, "vspace": 260}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                     | Description                                                                 |
 |:------:|:------:|:-------:|:-------------------------|:----------------------------------------------------------------------------|
-|  31:6  |        |         |                          | Reserved                                                                    |
+|  31:7  |        |         |                          | Reserved                                                                    |
+|   6    |   wo   |   0x0   | tpm_rdfifo_drop          | Write 1 to force [`INTR_STATE.tpm_rdfifo_drop`](#intr_state) to 1.          |
 |   5    |   wo   |   0x0   | tpm_header_not_empty     | Write 1 to force [`INTR_STATE.tpm_header_not_empty`](#intr_state) to 1.     |
 |   4    |   wo   |   0x0   | readbuf_flip             | Write 1 to force [`INTR_STATE.readbuf_flip`](#intr_state) to 1.             |
 |   3    |   wo   |   0x0   | readbuf_watermark        | Write 1 to force [`INTR_STATE.readbuf_watermark`](#intr_state) to 1.        |
@@ -1395,20 +1397,29 @@ TPM submodule state register.
 The TPM_STATUS CSR provides the current TPM status, mostly the buffer and FIFO status.
 - Offset: `0x808`
 - Reset default: `0x0`
-- Reset mask: `0x7f0001`
+- Reset mask: `0x3`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "cmdaddr_notempty", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 15}, {"name": "wrfifo_depth", "bits": 7, "attr": ["ro"], "rotate": 0}, {"bits": 9}], "config": {"lanes": 1, "fontsize": 10, "vspace": 180}}
+{"reg": [{"name": "cmdaddr_notempty", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "wrfifo_pending", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 30}], "config": {"lanes": 1, "fontsize": 10, "vspace": 180}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name             | Description                                                                              |
-|:------:|:------:|:-------:|:-----------------|:-----------------------------------------------------------------------------------------|
-| 31:23  |        |         |                  | Reserved                                                                                 |
-| 22:16  |   ro   |   0x0   | wrfifo_depth     | This field represents the current write FIFO depth.                                      |
-|  15:1  |        |         |                  | Reserved                                                                                 |
-|   0    |   ro   |   0x0   | cmdaddr_notempty | If 1, the TPM_CMD_ADDR has a valid data. This status is reported via the interrupt also. |
+|  Bits  |  Type  |  Reset  | Name                                              |
+|:------:|:------:|:-------:|:--------------------------------------------------|
+|  31:2  |        |         | Reserved                                          |
+|   1    |  rw0c  |    x    | [wrfifo_pending](#tpm_status--wrfifo_pending)     |
+|   0    |   ro   |    x    | [cmdaddr_notempty](#tpm_status--cmdaddr_notempty) |
+
+### TPM_STATUS . wrfifo_pending
+If 1, the Write FIFO is reserved for software processing.
+
+This bit becomes 1 when a complete write command is received.
+While it remains 1, subsequent write commands will block at the wait state until it is cleared.
+Write 0 to release the Write FIFO back to the TPM module.
+
+### TPM_STATUS . cmdaddr_notempty
+If 1, the TPM_CMD_ADDR has a valid data. This status is reported via the interrupt also.
 
 ## TPM_ACCESS_0
 TPM_ACCESS_x register.
@@ -1602,31 +1613,16 @@ The write port of the read command FIFO.
 |:------:|:------:|:-------:|:-------|:----------------------------|
 |  31:0  |   wo   |    x    | value  | write port of the read FIFO |
 
-## TPM_WRITE_FIFO
-TPM Write command received data FIFO.
-- Offset: `0x838`
-- Reset default: `0x0`
-- Reset mask: `0xff`
-
-### Fields
-
-```wavejson
-{"reg": [{"name": "value", "bits": 8, "attr": ["ro"], "rotate": 0}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
-```
-
-|  Bits  |  Type  |  Reset  | Name   | Description                      |
-|:------:|:------:|:-------:|:-------|:---------------------------------|
-|  31:8  |        |         |        | Reserved                         |
-|  7:0   |   ro   |    x    | value  | Read only port of the write FIFO |
-
 ## egress_buffer
 SPI internal egress buffer.
 
 The lower 2 kB is for Read content emulating eFlash.
 The next 1 kB is for the Mailbox buffer.
+Then the next 256 B is for the SFDP buffer.
+Finally, the buffer spaces end with a 64 B TPM Read FIFO.
 
-- Word Aligned Offset Range: `0x1000`to`0x1cfc`
-- Size (words): `832`
+- Word Aligned Offset Range: `0x1000`to`0x1d3c`
+- Size (words): `848`
 - Access: `wo`
 - Byte writes are *not* supported.
 
@@ -1638,9 +1634,10 @@ The layout is as follows (starting from offset 0):
 - 32 B CmdFIFO
 - 32 B AddrFIFO
 - 256 B payload FIFO
+- 64 B TPM Write FIFO
 
-- Word Aligned Offset Range: `0x1e00`to`0x1f7c`
-- Size (words): `96`
+- Word Aligned Offset Range: `0x1e00`to`0x1fbc`
+- Size (words): `112`
 - Access: `ro`
 - Byte writes are *not* supported.
 

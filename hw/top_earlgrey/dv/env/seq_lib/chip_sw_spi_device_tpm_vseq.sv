@@ -41,7 +41,7 @@ class chip_sw_spi_device_tpm_vseq extends chip_sw_base_vseq;
     super.body();
 
     // Enable desired modes
-    cfg.chip_vif.enable_spi_host = 0;
+    cfg.chip_vif.enable_spi_host = 1; // Must be enabled to drive CSB inactive.
     cfg.chip_vif.enable_spi_tpm = 1;
 
     // Directly set the expected cs_id

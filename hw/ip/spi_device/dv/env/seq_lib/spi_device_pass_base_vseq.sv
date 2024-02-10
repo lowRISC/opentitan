@@ -410,7 +410,7 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     config_all_cmd_infos();
 
     // TODO: Randomize the ingress buffer too.
-    random_write_spi_mem(.start_addr(0), .end_addr(SRAM_EGRESS_SIZE - 1));
+    random_write_spi_mem(.start_addr(0), .end_addr(SRAM_FLASH_EGRESS_SIZE - 1));
     randomize_all_cmd_filters();
   endtask : spi_device_flash_pass_init
 

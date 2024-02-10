@@ -20,6 +20,8 @@ enum {
   kDifSpiDeviceSfdpLen = SPI_DEVICE_PARAM_SRAM_SFDP_DEPTH * sizeof(uint32_t),
   kDifSpiDevicePayloadLen =
       SPI_DEVICE_PARAM_SRAM_PAYLOAD_DEPTH * sizeof(uint32_t),
+  kDifSpiDeviceTpmWriteFifoLen =
+      SPI_DEVICE_PARAM_SRAM_TPM_WR_FIFO_DEPTH * sizeof(uint32_t),
 };
 
 enum {
@@ -31,6 +33,8 @@ enum {
       SPI_DEVICE_PARAM_SRAM_SFDP_OFFSET * sizeof(uint32_t),
   kDifSpiDevicePayloadOffset =
       SPI_DEVICE_PARAM_SRAM_PAYLOAD_OFFSET * sizeof(uint32_t),
+  kDifSpiDeviceTpmWriteFifoOffset =
+      SPI_DEVICE_PARAM_SRAM_TPM_WR_FIFO_OFFSET * sizeof(uint32_t),
 };
 
 /**
@@ -654,14 +658,14 @@ dif_result_t dif_spi_device_pop_flash_address_fifo(dif_spi_device_handle_t *spi,
   return kDifOk;
 }
 
-typedef struct dif_spi_device_flash_buffer_info {
+typedef struct dif_spi_device_buffer_info {
   size_t buffer_len;
   ptrdiff_t buffer_offset;
-} dif_spi_device_flash_buffer_info_t;
+} dif_spi_device_buffer_info_t;
 
 static dif_result_t dif_spi_device_get_flash_buffer_info(
     dif_spi_device_flash_buffer_type_t buffer_type,
-    dif_spi_device_flash_buffer_info_t *info) {
+    dif_spi_device_buffer_info_t *info) {
   switch (buffer_type) {
     case kDifSpiDeviceFlashBufferTypeEFlash:
       info->buffer_len = kDifSpiDeviceEFlashLen;
@@ -687,7 +691,7 @@ dif_result_t dif_spi_device_read_flash_payload_buffer(
   if (spi == NULL || buf == NULL) {
     return kDifBadArg;
   }
-  const dif_spi_device_flash_buffer_info_t info = {
+  const dif_spi_device_buffer_info_t info = {
       .buffer_len = kDifSpiDevicePayloadLen,
       .buffer_offset = kDifSpiDevicePayloadOffset,
   };
@@ -710,7 +714,7 @@ dif_result_t dif_spi_device_write_flash_buffer(
   if (spi == NULL || buf == NULL) {
     return kDifBadArg;
   }
-  dif_spi_device_flash_buffer_info_t info;
+  dif_spi_device_buffer_info_t info;
   dif_result_t status =
       dif_spi_device_get_flash_buffer_info(buffer_type, &info);
   if (status != kDifOk) {
@@ -873,8 +877,8 @@ dif_result_t dif_spi_device_tpm_get_data_status(
       mmio_region_read32(spi->dev.base_addr, SPI_DEVICE_TPM_STATUS_REG_OFFSET);
   status->cmd_addr_valid =
       bitfield_bit32_read(reg_val, SPI_DEVICE_TPM_STATUS_CMDADDR_NOTEMPTY_BIT);
-  status->write_fifo_occupancy = (uint8_t)bitfield_field32_read(
-      reg_val, SPI_DEVICE_TPM_STATUS_WRFIFO_DEPTH_FIELD);
+  status->wrfifo_acquired =
+      bitfield_bit32_read(reg_val, SPI_DEVICE_TPM_STATUS_WRFIFO_PENDING_BIT);
   return kDifOk;
 }
 
@@ -1117,16 +1121,28 @@ dif_result_t dif_spi_device_tpm_read_data(dif_spi_device_handle_t *spi,
   if (spi == NULL || buf == NULL) {
     return kDifBadArg;
   }
-  dif_spi_device_tpm_data_status_t status;
-  DIF_RETURN_IF_ERROR(dif_spi_device_tpm_get_data_status(spi, &status));
-  if (status.write_fifo_occupancy < length) {
-    return kDifOutOfRange;
+  const uint32_t kOffset = 0;
+  const dif_spi_device_buffer_info_t kInfo = {
+      .buffer_len = kDifSpiDeviceTpmWriteFifoLen,
+      .buffer_offset = kDifSpiDeviceTpmWriteFifoOffset,
+  };
+  if (kOffset >= (kInfo.buffer_offset + (ptrdiff_t)kInfo.buffer_len) ||
+      length > (kInfo.buffer_offset + (ptrdiff_t)kInfo.buffer_len -
+                (ptrdiff_t)kOffset)) {
+    return kDifBadArg;
   }
-  for (int i = 0; i < length; i++) {
-    uint32_t fifo_val = mmio_region_read32(
-        spi->dev.base_addr, SPI_DEVICE_TPM_WRITE_FIFO_REG_OFFSET);
-    buf[i] = (uint8_t)bitfield_field32_read(
-        fifo_val, SPI_DEVICE_TPM_WRITE_FIFO_VALUE_FIELD);
+  ptrdiff_t offset_from_base = SPI_DEVICE_INGRESS_BUFFER_REG_OFFSET +
+                               kInfo.buffer_offset + (ptrdiff_t)kOffset;
+  mmio_region_memcpy_from_mmio32(spi->dev.base_addr, (uint32_t)offset_from_base,
+                                 buf, length);
+  return kDifOk;
+}
+
+dif_result_t dif_spi_device_tpm_free_write_fifo(dif_spi_device_handle_t *spi) {
+  if (spi == NULL) {
+    return kDifBadArg;
   }
+  // TPM_STATUS.wrfifo_pending is the only writeable CSR, and it's RW0C.
+  mmio_region_write32(spi->dev.base_addr, SPI_DEVICE_TPM_STATUS_REG_OFFSET, 0);
   return kDifOk;
 }

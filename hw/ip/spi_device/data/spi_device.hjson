@@ -103,6 +103,14 @@
       desc: "TPM Header(Command/Address) buffer available"
       type: "status"
     }
+    { name: "tpm_rdfifo_drop"
+      desc: '''TPM RdFIFO data dropped.
+
+        Data was dropped from the RdFIFO.
+        Either data was written while a read command was not active, or the read command was aborted while data was left in the RdFIFO.
+        '''
+      type: "event"
+    }
   ],
   alert_list: [
     { name: "fatal_fault",
@@ -130,13 +138,13 @@
     { name:    "SramEgressDepth"
       desc:    "Sram Egress Entries. Word size is 32bit width."
       type:    "int unsigned"
-      default: "832"
+      default: "848"
       local:   "true"
     }
     { name:    "SramIngressDepth"
       desc:    "Sram Ingress Entries. Word size is 32bit width."
       type:    "int unsigned"
-      default: "96"
+      default: "112"
       local:   "true"
     }
     { name:    "SramReadBufferOffset"
@@ -175,6 +183,18 @@
       default: "64"
       local:   "true"
     }
+    { name:    "SramTpmRdFifoOffset"
+      desc:    "Sram TPM RdFIFO offset (from egress buffer start). Word size is 32bit width."
+      type:    "int unsigned"
+      default: "832"
+      local:   "true"
+    }
+    { name:    "SramTpmRdFifoDepth"
+      desc:    "Sram TPM RdFIFO entries. Word size is 32bit width."
+      type:    "int unsigned"
+      default: "16"
+      local:   "true"
+    }
     { name:    "SramPayloadOffset"
       desc:    "Sram payload FIFO offset (from ingress buffer start). Word size is 32bit width."
       type:    "int unsigned"
@@ -211,6 +231,18 @@
       default: "16"
       local:   "true"
     }
+    { name:    "SramTpmWrFifoOffset"
+      desc:    "Sram TPM Write FIFO offset (from ingress buffer start). Word size is 32bit width."
+      type:    "int unsigned"
+      default: "96"
+      local:   "true"
+    }
+    { name:    "SramTpmWrFifoDepth"
+      desc:    "Sram TPM Write FIFO entries. Word size is 32bit width."
+      type:    "int unsigned"
+      default: "16"
+      local:   "true"
+    }
     { name:    "NumCmdInfo"
       desc:    "Define the number of Command Info slots."
       type:    "int unsigned"
@@ -223,12 +255,6 @@
       default: "5"
       local:   "true"
     } // p: NumLocality
-    { name:    "TpmWrFifoPtrW"
-      desc:    "TPM WrFIFO Pointer Bit Width. clog2(Depth(64+1))"
-      type:    "int unsigned"
-      default: "7"
-      local:   "true"
-    } // p: TpmWrFifoPtrW
     { name:    "TpmRdFifoPtrW"
       desc:    "TPM RdFIFO Pointer Bit Width. clog2(Depth(16+1))"
       type:    "int unsigned"
@@ -1322,16 +1348,31 @@
         The TPM_STATUS CSR provides the current TPM status, mostly the buffer and FIFO status.
         '''
       swaccess: "ro"
-      hwaccess: "hwo"
+      hwaccess: "hrw"
+      hwext: true
+      hwqe: true
+      tags: [
+        // SW is not able to read back the TPM_STATUS register right after write.
+        // The read back value is the committed value, which needs at least some SPI cycles.
+        // So excluded from CSR automation test.
+        "excl:CsrNonInitTests:CsrExclWrite"
+      ]
       fields: [
         { bits: "0"
           name: "cmdaddr_notempty"
+          hwaccess: "hwo"
           desc: "If 1, the TPM_CMD_ADDR has a valid data. This status is reported via the interrupt also."
         } // f: cmdaddr_notempty
-        { bits: "15+TpmWrFifoPtrW:16"
-          name: "wrfifo_depth"
-          desc: "This field represents the current write FIFO depth."
-        } // f: wrfifo_depth
+        { bits: "1"
+          name: "wrfifo_pending"
+          swaccess: "rw0c"
+          desc: '''If 1, the Write FIFO is reserved for software processing.
+
+            This bit becomes 1 when a complete write command is received.
+            While it remains 1, subsequent write commands will block at the wait state until it is cleared.
+            Write 0 to release the Write FIFO back to the TPM module.
+            '''
+        } // f: cmdaddr_notempty
       ]
     } // R: TPM_STATUS
     { multireg: {
@@ -1475,21 +1516,6 @@
       tags: [// Updating FIFO randomly can result in tpm_status value change
              "excl:CsrNonInitTests:CsrExclWrite"]
     } // R: TPM_READ_FIFO
-    { name: "TPM_WRITE_FIFO"
-      desc: '''TPM Write command received data FIFO.
-        '''
-      swaccess: "ro"
-      hwaccess: "hrw"
-      hwext: "true"
-      hwqe: "true"
-      hwre: "true"
-      fields: [
-        { bits: "7:0"
-          name: "value"
-          desc: "Read only port of the write FIFO"
-        }
-      ]
-    } // R: TPM_WRITE_FIFO
     //---------------------------------------------------------------
     { skipto: "0x1000" }
     { window: {
@@ -1504,6 +1530,8 @@
 
           The lower 2 kB is for Read content emulating eFlash.
           The next 1 kB is for the Mailbox buffer.
+          Then the next 256 B is for the SFDP buffer.
+          Finally, the buffer spaces end with a 64 B TPM Read FIFO.
           '''
       },
     },
@@ -1522,6 +1550,7 @@
               - 32 B CmdFIFO
               - 32 B AddrFIFO
               - 256 B payload FIFO
+              - 64 B TPM Write FIFO
           '''
       },
     },

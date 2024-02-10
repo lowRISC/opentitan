@@ -50,7 +50,8 @@ module spid_dpram
 
   // SYS Wr, SPI Rd is for eFlash, Mailbox, and SFDP
   localparam sram_addr_t     Sys2SpiOffset   = SramEgressIdx;
-  localparam int unsigned    Sys2SpiMinDepth = SramMsgDepth + SramMailboxDepth + SramSfdpDepth;
+  localparam int unsigned    Sys2SpiMinDepth = SramMsgDepth + SramMailboxDepth
+                                               + SramSfdpDepth + SramTpmRdFifoDepth;
   localparam int unsigned    Sys2SpiAw       = $clog2(Sys2SpiMinDepth);
   localparam int unsigned    Sys2SpiDepth    = 1 << Sys2SpiAw;
   localparam sram_addr_t     Sys2SpiEnd      = SramReadBufferIdx + sram_addr_t'(Sys2SpiMinDepth);
@@ -71,7 +72,8 @@ module spid_dpram
 
   // SPI Wr, SYS Rd is for payload upload
   localparam sram_addr_t  Spi2SysOffset   = SramIngressIdx;
-  localparam int unsigned Spi2SysMinDepth = SramPayloadDepth + SramCmdFifoDepth + SramAddrFifoDepth;
+  localparam int unsigned Spi2SysMinDepth = SramPayloadDepth + SramCmdFifoDepth
+                                            + SramAddrFifoDepth + SramTpmWrFifoDepth;
   localparam int unsigned Spi2SysAw       = $clog2(Spi2SysMinDepth);
   localparam int unsigned Spi2SysDepth    = 1 << Spi2SysAw;
 

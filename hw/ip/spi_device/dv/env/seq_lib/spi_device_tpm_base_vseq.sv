@@ -122,19 +122,24 @@ class spi_device_tpm_base_vseq extends spi_device_base_vseq;
 
     // Upon receiving read command, set read fifo contents
     if (write) begin
-      bit [7:0] wrfifo_byte;
+      bit [7:0] wrfifo_bytes[$];
       int idx;
-      while (idx < exp_num_bytes) begin
-        // wait until fifo size > 0
-        csr_spinwait(.ptr(ral.tpm_status.wrfifo_depth), .exp_data(0), .compare_op(CompareOpGt));
-        `DV_CHECK_LE(idx + `gmv(ral.tpm_status.wrfifo_depth), exp_num_bytes)
-
-        repeat (`gmv(ral.tpm_status.wrfifo_depth)) begin
-          csr_rd(.ptr(ral.tpm_write_fifo), .value(wrfifo_byte));
-          `uvm_info(`gfn, $sformatf("TPM Write FIFO Content = 0x%0h", wrfifo_byte), UVM_MEDIUM)
-          byte_q.push_back(wrfifo_byte);
-          idx++;
+      uint wrfifo_base_offset = spi_device_reg_pkg::SramTpmWrFifoOffset;
+      uint exp_num_words = (exp_num_bytes + 3) >> 2;
+      for (int i = 0; i < exp_num_words; i++) begin
+        bit [TL_DW-1:0] val;
+        int offset = i + wrfifo_base_offset;
+        mem_rd(.ptr(ral.ingress_buffer), .offset(offset), .data(val));
+        wrfifo_bytes = {<<byte{val}};
+        while (wrfifo_bytes.size() != 0) begin
+          bit [7:0] wrfifo_byte = wrfifo_bytes.pop_front();
+          if (byte_q.size() < exp_num_bytes) begin
+            `uvm_info(`gfn, $sformatf("TPM Write FIFO Content = 0x%0h", wrfifo_byte), UVM_MEDIUM)
+            byte_q.push_back(wrfifo_byte);
+          end
         end
+        // Release the WrFIFO buffer.
+        csr_wr(.ptr(ral.tpm_status), .value(0));
       end
     end else begin
       bit [31:0] word_q[$];

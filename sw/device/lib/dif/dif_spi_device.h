@@ -792,8 +792,8 @@ dif_result_t dif_spi_device_tpm_configure(dif_spi_device_handle_t *spi,
 typedef struct dif_spi_device_tpm_data_status {
   /** True if a command and address have been captured and are can be read. */
   bool cmd_addr_valid;
-  /** Current Write FIFO occupancy. */
-  uint8_t write_fifo_occupancy;
+  /** True if the write FIFO is under software's exclusive use. */
+  bool wrfifo_acquired;
 } dif_spi_device_tpm_data_status_t;
 
 /**
@@ -1026,6 +1026,15 @@ dif_result_t dif_spi_device_tpm_write_data(dif_spi_device_handle_t *spi,
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_spi_device_tpm_read_data(dif_spi_device_handle_t *spi,
                                           size_t length, uint8_t *buf);
+
+/**
+ * Release the TPM's WriteFIFO back to hardware.
+ *
+ * @param spi A handle to a spi device.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_device_tpm_free_write_fifo(dif_spi_device_handle_t *spi);
 
 #ifdef __cplusplus
 }  // extern "C"

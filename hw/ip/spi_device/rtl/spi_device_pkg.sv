@@ -435,9 +435,14 @@ package spi_device_pkg;
   export spi_device_reg_pkg::SramCmdFifoDepth;
   import spi_device_reg_pkg::SramAddrFifoDepth;
   export spi_device_reg_pkg::SramAddrFifoDepth;
+  import spi_device_reg_pkg::SramTpmWrFifoDepth;
+  export spi_device_reg_pkg::SramTpmWrFifoDepth;
+  import spi_device_reg_pkg::SramTpmRdFifoDepth;
+  export spi_device_reg_pkg::SramTpmRdFifoDepth;
   parameter int unsigned SramTotalDepth = SramMsgDepth + SramMailboxDepth
-                                        + SramSfdpDepth + SramPayloadDepth
-                                        + SramCmdFifoDepth + SramAddrFifoDepth ;
+                                        + SramSfdpDepth + SramTpmRdFifoDepth
+                                        + SramPayloadDepth + SramCmdFifoDepth
+                                        + SramAddrFifoDepth + SramTpmWrFifoDepth;
 
   // Sram Depth is set to 1024 to satisfy DPSRAM parameter even though
   // SramTotalDepth above is 928.
@@ -513,6 +518,11 @@ package spi_device_pkg;
   `ASSERT_STATIC_IN_PACKAGE(CheckSfdpOffset,
       SramSfdpIdx == spi_device_reg_pkg::SramSfdpOffset)
 
+  parameter sram_addr_t SramTpmRdFifoIdx  = SramSfdpIdx + SramSfdpSize;
+  parameter sram_addr_t SramTpmRdFifoSize = sram_addr_t'(SramTpmRdFifoDepth);
+  `ASSERT_STATIC_IN_PACKAGE(CheckTpmRdFifoOffset,
+      SramTpmRdFifoIdx == spi_device_reg_pkg::SramTpmRdFifoOffset)
+
   parameter sram_addr_t SramIngressIdx =
     sram_addr_t'(SramIngressByteOffset[$clog2(SramDw / 8) +: SramAw]);
   parameter sram_addr_t SramPayloadIdx  = SramIngressIdx;
@@ -529,6 +539,11 @@ package spi_device_pkg;
   parameter sram_addr_t SramAddrFifoSize = sram_addr_t'(SramAddrFifoDepth);
   `ASSERT_STATIC_IN_PACKAGE(CheckAddrFifoOffset,
       (SramAddrFifoIdx - SramIngressIdx) == spi_device_reg_pkg::SramAddrFifoOffset)
+
+  parameter sram_addr_t SramTpmWrFifoIdx  = SramAddrFifoIdx + SramAddrFifoSize;
+  parameter sram_addr_t SramTpmWrFifoSize = sram_addr_t'(SramTpmWrFifoDepth);
+  `ASSERT_STATIC_IN_PACKAGE(CheckTpmWrFifoOffset,
+      (SramTpmWrFifoIdx - SramIngressIdx) == spi_device_reg_pkg::SramTpmWrFifoOffset)
 
   // Max BitCount in a transaction
   parameter int unsigned BitLength = SramMsgDepth * 32;
@@ -550,6 +565,13 @@ package spi_device_pkg;
     logic [2:0] max_wr_size;
     logic [2:0] max_rd_size;
   } tpm_cap_t;
+
+  typedef struct packed {
+    logic rnw;
+    logic rsvd;
+    logic [5:0] xfer_size_minus_one;
+    logic [23:0] address;
+  } tpm_cmdaddr_t;
   // TPM ----------------------------------------------------------------------
 
 endpackage : spi_device_pkg

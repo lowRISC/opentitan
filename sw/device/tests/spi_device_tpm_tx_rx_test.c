@@ -191,19 +191,19 @@ bool test_main(void) {
     CHECK_DIF_OK(status);
 
     // Finished processing the write command
+    CHECK_DIF_OK(dif_spi_device_tpm_free_write_fifo(&spi_device));
     ack_spi_tpm_header_irq(&spi_device);
 
     LOG_INFO("SYNC: Waiting Read");
-    // Send the written data right back out for reads.
     // Wait for read interrupt.
     ATOMIC_WAIT_FOR_INTERRUPT(header_interrupt_received);
-    // Send the written data right back out for reads.
-    CHECK_DIF_OK(dif_spi_device_tpm_write_data(&spi_device, num_bytes, buf));
 
     uint8_t read_command = 0;
     uint32_t read_addr = 0;
     CHECK_DIF_OK(
         dif_spi_device_tpm_get_command(&spi_device, &read_command, &read_addr));
+    // Send the written data right back out for reads.
+    CHECK_DIF_OK(dif_spi_device_tpm_write_data(&spi_device, num_bytes, buf));
     ack_spi_tpm_header_irq(&spi_device);
 
     // Make sure the received command matches expectation

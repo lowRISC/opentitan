@@ -60,8 +60,6 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
 
   // for TPM mode
   local spi_item tpm_read_sw_q[$];
-  local spi_item tpm_write_spi_q[$];
-  local spi_item tpm_write_sw_q[$];
   // when host reads a TPM HW reg, SW may update its value at the same time
   // it's ok that host reads either the old value or the new one.
   // Store the old value here and clear this array when the SPI transaction is completed
@@ -239,9 +237,16 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
           bit [TPM_ADDR_WIDTH-1:0] addr = convert_addr_from_byte_queue(item.address_q);
           bit is_hw_return;
           if (item.write_command) begin
-            // TLUL may respond too slow and we may have 2 items in this queue
-            `DV_CHECK_LE(tpm_write_spi_q.size, 1)
-            tpm_write_spi_q.push_back(item);
+            bit [31:0] wrfifo_start_addr = get_converted_addr(
+              ral.ingress_buffer.get_offset() + 4 * spi_device_reg_pkg::SramTpmWrFifoOffset);
+            foreach (item.data[i]) begin
+              uvm_reg_addr_t addr = wrfifo_start_addr + i;
+
+              spi_mem.write_byte(addr, item.data[i]);
+              `uvm_info(`gfn, $sformatf("write tpm payload idx %0d, mem addr 0x%0x, val: 0x%0x",
+                        i, addr, item.data[i]), UVM_MEDIUM)
+            end
+            update_pending_intr_w_delay(TpmHeaderNotEmpty);
           end else begin
             bit [TL_DW-1:0] exp_q[$];
             is_hw_return = is_tpm_reg(addr, item.read_size, exp_q);
@@ -872,7 +877,9 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
         bit [TPM_ADDR_WIDTH-1:0] addr = convert_addr_from_byte_queue(item.address_q);
         // comparison is done when the item is transfered completedly
         bit [TL_DW-1:0] ignored_returned_q[$];
-        if (item.write_command || !is_tpm_reg(addr, item.read_size, ignored_returned_q)) begin
+        // Write commands trigger interrupts when the item is transferred
+        // completely. Return-by-hw reads don't trigger interrupts.
+        if (!item.write_command && !is_tpm_reg(addr, item.read_size, ignored_returned_q)) begin
           update_pending_intr_w_delay(TpmHeaderNotEmpty);
         end
         continue;
@@ -1119,8 +1126,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
             tpm_item.address_q.push_front(addr[8*i +: 8]);
           end
           if (tpm_item.write_command) begin // TPM write
-            `DV_CHECK_EQ_FATAL(tpm_write_sw_q.size, 0)
-            tpm_write_sw_q.push_back(tpm_item);
+            // TODO: Anything to do here?
           end else begin // TPM read
             // before we receive a new cmd for read, the previous one should be done
             `DV_CHECK_EQ_FATAL(tpm_read_sw_q.size, 0)
@@ -1149,20 +1155,9 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
           end
         end
       end
-      "tpm_write_fifo": begin
-        if (!write && channel == DataChannel) begin
-          do_read_check = 0;
-          // the 2nd item's addr and cmd may be already ready before the 1st item to be read out
-          `DV_CHECK_LE(tpm_write_sw_q.size, 2)
-          tpm_write_sw_q[0].data.push_back(item.d_data);
-          `DV_CHECK_LE(tpm_write_sw_q[0].data.size, tpm_write_sw_q[0].read_size)
-          // clear read_size after finishing collecting the write item and then compare
-          if (tpm_write_sw_q[0].data.size == tpm_write_sw_q[0].read_size) begin
-            tpm_write_sw_q[0].read_size = 0;
-            `DV_CHECK_LE(tpm_write_spi_q.size, 2)
-            tpm_item_compare(tpm_write_spi_q.pop_front(), tpm_write_sw_q.pop_front(), "write");
-          end
-        end
+      "tpm_status": begin
+        // TODO: Check whether the cmdaddr fifo should have something in it on
+        // reads, and track wrfifo buffer acquisition and release.
       end
       default: begin
         // TODO the other regs
@@ -1256,8 +1251,6 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     flash_status_settle_q.delete();
     flash_status_tl_pre_val_q.delete();
     tpm_read_sw_q.delete();
-    tpm_write_spi_q.delete();
-    tpm_write_sw_q.delete();
     tpm_hw_reg_pre_val_aa.delete();
 
     // used in seq
@@ -1284,7 +1277,5 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     `DV_CHECK_EQ(flash_status_settle_q.size, 0)
     `DV_CHECK_EQ(flash_status_tl_pre_val_q.size, 0)
     `DV_CHECK_EQ(tpm_read_sw_q.size, 0)
-    `DV_CHECK_EQ(tpm_write_spi_q.size, 0)
-    `DV_CHECK_EQ(tpm_write_spi_q.size, 0)
   endfunction
 endclass

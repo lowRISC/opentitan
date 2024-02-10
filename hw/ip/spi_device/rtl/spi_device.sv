@@ -49,6 +49,7 @@ module spi_device
 
   // INTR: TPM mode
   output logic intr_tpm_header_not_empty_o, // TPM Command/Address buffer
+  output logic intr_tpm_rdfifo_drop_o,
 
   // Memory configuration
   input prim_ram_2p_pkg::ram_2p_cfg_t ram_cfg_i,
@@ -69,11 +70,6 @@ module spi_device
   localparam int unsigned BufferAw        = $clog2(ReadBufferDepth);
 
   localparam int unsigned TpmRdFifoWidth  = spi_device_reg_pkg::TpmRdFifoWidth;
-  localparam int unsigned TpmWrFifoDepth  = 64; // 64B
-  localparam int unsigned TpmRdFifoDepth  = 16;
-  localparam int unsigned TpmWrFifoPtrW   = $clog2(TpmWrFifoDepth+1);
-  `ASSERT_INIT(TpmWrPtrMatch_A,
-    TpmWrFifoPtrW == spi_device_reg_pkg::TpmWrFifoPtrW)
 
   // Derived parameters
 
@@ -129,7 +125,8 @@ module spi_device
     SysSramFwIngress = 1,
     SysSramCmdFifo   = 2,
     SysSramAddrFifo  = 3,
-    SysSramEnd       = 4
+    SysSramTpmRdFifo = 4,
+    SysSramEnd       = 5
   } sys_sram_e;
 
   sram_l2m_t sys_sram_l2m [SysSramEnd]; // FW, CMDFIFO, ADDRFIFO
@@ -317,12 +314,13 @@ module spi_device
   logic [7:0]                                   tpm_rid;
 
   // Buffer and FIFO signals
+  sram_l2m_t                  tpm_sram_l2m;
+  sram_m2l_t                  tpm_sram_m2l;
   logic                       tpm_cmdaddr_rvalid, tpm_cmdaddr_rready;
   logic [31:0]                tpm_cmdaddr_rdata;
-  logic                       tpm_wrfifo_rvalid, tpm_wrfifo_rready;
-  logic [7:0]                 tpm_wrfifo_rdata;
   logic                       tpm_rdfifo_wvalid, tpm_rdfifo_wready;
   logic [TpmRdFifoWidth-1:0]  tpm_rdfifo_wdata;
+  logic                       tpm_event_rdfifo_drop;
 
   tpm_cap_t tpm_cap;
 
@@ -332,7 +330,8 @@ module spi_device
 
   // TPM_STATUS
   logic tpm_status_cmdaddr_notempty;
-  logic [TpmWrFifoPtrW-1:0] tpm_status_wrfifo_depth;
+  logic tpm_status_wrfifo_pending;
+  logic tpm_status_wrfifo_release;
 
   // TPM ---------------------------------------------------------------
 
@@ -485,6 +484,21 @@ module spi_device
     .intr_o                 (intr_tpm_header_not_empty_o              )
   );
 
+  prim_intr_hw #(
+    .Width (1      ),
+    .IntrT ("Event")
+  ) u_intr_tpm_rdfifo_drop (
+    .clk_i,
+    .rst_ni,
+    .event_intr_i           (tpm_event_rdfifo_drop               ),
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.tpm_rdfifo_drop.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.tpm_rdfifo_drop.q  ),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.tpm_rdfifo_drop.qe ),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.tpm_rdfifo_drop.q ),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.tpm_rdfifo_drop.d ),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.tpm_rdfifo_drop.de),
+    .intr_o                 (intr_tpm_rdfifo_drop_o              )
+  );
   // SPI Flash commands registers
 
   assign cfg_intercept_en = '{
@@ -868,13 +882,8 @@ module spi_device
     endcase
   end
 
-  // inverted SCK clock domain MUX for IO Mode and P2S
   always_comb begin
-    io_mode = SingleIO;
-    p2s_valid = 1'b 0;
-    p2s_data  = 8'h 0;
-    sub_p2s_sent = '{default: 1'b 0};
-
+    // SRAM comb logic is in SCK clock domain
     mem_b_l2m = '{ default: '0 };
 
     flash_sram_m2l = '{
@@ -882,13 +891,30 @@ module spi_device
       rdata: '0,
       rerror: '{uncorr: 1'b 0, corr: 1'b 0}
     };
+    tpm_sram_m2l = '{
+      rvalid: 1'b 0,
+      rdata: '0,
+      rerror: '{uncorr: 1'b 0, corr: 1'b 0}
+    };
+
+    if (!sck_csb && ((spi_mode == FlashMode) || (spi_mode == PassThrough))) begin
+      mem_b_l2m = flash_sram_l2m;
+      flash_sram_m2l = mem_b_m2l;
+    end else if (cfg_tpm_en) begin
+      mem_b_l2m = tpm_sram_l2m;
+      tpm_sram_m2l = mem_b_m2l;
+    end
+  end
+
+  // inverted SCK clock domain MUX for IO Mode and P2S
+  always_comb begin
+    io_mode = SingleIO;
+    p2s_valid = 1'b 0;
+    p2s_data  = 8'h 0;
+    sub_p2s_sent = '{default: 1'b 0};
 
     unique case (spi_mode)
       FlashMode, PassThrough: begin
-        // SRAM comb logic is in SCK clock domain
-        mem_b_l2m = flash_sram_l2m;
-        flash_sram_m2l = mem_b_m2l;
-
         unique case (cmd_dp_sel)
           DpNone: begin
             io_mode = sub_iomode[IoModeCmdParse];
@@ -1479,9 +1505,6 @@ module spi_device
   // Instance of spi_tpm
   spi_tpm #(
     // CmdAddrFifoDepth
-    .WrFifoDepth (TpmWrFifoDepth),
-    .RdFifoDepth (TpmRdFifoDepth),
-    .RdFifoWidth (TpmRdFifoWidth),
     .EnLocality  (1)
   ) u_spi_tpm (
     .clk_in_i  (clk_spi_in_buf ),
@@ -1515,20 +1538,25 @@ module spi_device
     .sys_id_reg_i              (tpm_did_vid        ),
     .sys_rid_reg_i             (tpm_rid            ),
 
+    .sck_sram_o                (tpm_sram_l2m),
+    .sck_sram_i                (tpm_sram_m2l),
+    .sys_sram_o                (sys_sram_l2m[SysSramTpmRdFifo]),
+    .sys_sram_i                (sys_sram_m2l[SysSramTpmRdFifo]),
+    .sys_sram_gnt_i            (sys_sram_gnt[SysSramTpmRdFifo]),
+
     .sys_cmdaddr_rvalid_o (tpm_cmdaddr_rvalid),
     .sys_cmdaddr_rdata_o  (tpm_cmdaddr_rdata ),
     .sys_cmdaddr_rready_i (tpm_cmdaddr_rready),
 
-    .sys_wrfifo_rvalid_o (tpm_wrfifo_rvalid),
-    .sys_wrfifo_rdata_o  (tpm_wrfifo_rdata ),
-    .sys_wrfifo_rready_i (tpm_wrfifo_rready),
+    .sys_rdfifo_wvalid_i   (tpm_rdfifo_wvalid    ),
+    .sys_rdfifo_wdata_i    (tpm_rdfifo_wdata     ),
+    .sys_rdfifo_wready_o   (tpm_rdfifo_wready    ),
+    .sys_tpm_rdfifo_drop_o (tpm_event_rdfifo_drop),
 
-    .sys_rdfifo_wvalid_i (tpm_rdfifo_wvalid),
-    .sys_rdfifo_wdata_i  (tpm_rdfifo_wdata ),
-    .sys_rdfifo_wready_o (tpm_rdfifo_wready),
+    .sys_wrfifo_release_i(tpm_status_wrfifo_release),
 
     .sys_cmdaddr_notempty_o (tpm_status_cmdaddr_notempty),
-    .sys_wrfifo_depth_o     (tpm_status_wrfifo_depth    )
+    .sys_wrfifo_pending_o   (tpm_status_wrfifo_pending)
   );
 
   // Register connection
@@ -1549,9 +1577,13 @@ module spi_device
 
   //  STATUS:
   assign hw2reg.tpm_status = '{
-    cmdaddr_notempty: '{ de: 1'b 1, d: tpm_status_cmdaddr_notempty },
-    wrfifo_depth:     '{ de: 1'b 1, d: tpm_status_wrfifo_depth     }
+    wrfifo_pending:   '{ d: tpm_status_wrfifo_pending },
+    cmdaddr_notempty: '{ d: tpm_status_cmdaddr_notempty }
   };
+
+  // wrfifo_release is RW0C
+  assign tpm_status_wrfifo_release = reg2hw.tpm_status.wrfifo_pending.qe &
+                                     ~reg2hw.tpm_status.wrfifo_pending.q;
 
   //  Return-by-HW registers:
   //    TPM_ACCESS_x, TPM_STS_x, TPM_INT_ENABLE, TPM_INT_VECTOR,
@@ -1578,14 +1610,6 @@ module spi_device
     addr: tpm_cmdaddr_rdata[23: 0],
     cmd:  tpm_cmdaddr_rdata[31:24]
   };
-
-  // Write FIFO (read by SW)
-  logic  unused_tpm_wrfifo;
-  assign unused_tpm_wrfifo= ^{tpm_wrfifo_rvalid, reg2hw.tpm_write_fifo};
-
-  assign tpm_wrfifo_rready = reg2hw.tpm_write_fifo.re;
-
-  assign hw2reg.tpm_write_fifo.d = tpm_wrfifo_rdata;
 
   // Read FIFO (write by SW)
   logic  unused_tpm_rdfifo;
@@ -1742,6 +1766,10 @@ module spi_device
   );
 
   // SRAM Wrapper
+  // The SRAM should only be reset if both modes are inactive.
+  logic spi_dpram_rst_n;
+  assign spi_dpram_rst_n = tpm_rst_n | rst_spi_n;
+
   assign mem_b_req   = mem_b_l2m.req;
   assign mem_b_write = mem_b_l2m.we;
   assign mem_b_addr  = mem_b_l2m.addr;
@@ -1763,7 +1791,7 @@ module spi_device
     .rst_sys_ni     (rst_ni),
 
     .clk_spi_i      (clk_spi_in_buf),
-    .rst_spi_ni     (rst_spi_n),
+    .rst_spi_ni     (spi_dpram_rst_n),
 
     .sys_req_i      (mem_a_req),
     .sys_write_i    (mem_a_write),

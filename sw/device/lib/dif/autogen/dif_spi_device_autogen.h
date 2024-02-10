@@ -106,6 +106,12 @@ typedef enum dif_spi_device_irq {
    * TPM Header(Command/Address) buffer available
    */
   kDifSpiDeviceIrqTpmHeaderNotEmpty = 5,
+  /**
+   * TPM RdFIFO data dropped.  Data was dropped from the RdFIFO. Either data was
+   * written while a read command was not active, or the read command was
+   * aborted while data was left in the RdFIFO.
+   */
+  kDifSpiDeviceIrqTpmRdfifoDrop = 6,
 } dif_spi_device_irq_t;
 
 /**
