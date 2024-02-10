@@ -20,7 +20,7 @@
         "chip_sw_kmac_mode_kmac_jitter_en",
       ]
       lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
-      bazel: []
+      bazel: ["//sw/device/tests:kmac_mode_kmac_test"]
     }
     {
       name: chip_sw_kmac_app_keymgr

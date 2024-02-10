@@ -18,7 +18,7 @@
       lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
       tests: ["chip_sw_hmac_enc",
               "chip_sw_hmac_enc_jitter_en"]
-      bazel: []
+      bazel: ["//sw/device/tests:hmac_enc_test"]
     }
     {
       name: chip_sw_hmac_idle
