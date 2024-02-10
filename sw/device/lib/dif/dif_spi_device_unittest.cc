@@ -779,6 +779,7 @@ TEST_F(TpmTest, NullArgs) {
   EXPECT_DIF_BADARG(
       dif_spi_device_tpm_read_data(nullptr, /*length=*/0, &uint8_arg));
   EXPECT_DIF_BADARG(dif_spi_device_tpm_read_data(&spi_, /*length=*/0, nullptr));
+  EXPECT_DIF_BADARG(dif_spi_device_tpm_free_write_fifo(nullptr));
 }
 
 TEST_F(TpmTest, InitDevice) {
@@ -923,23 +924,24 @@ TEST_F(TpmTest, CommandAndData) {
   uint8_t command;
   uint32_t address;
   uint8_t data[4] = {17, 34, 51, 68};
+  uint32_t read_data[4];
   EXPECT_READ32(SPI_DEVICE_TPM_STATUS_REG_OFFSET,
                 {
                     {SPI_DEVICE_TPM_STATUS_CMDADDR_NOTEMPTY_BIT, 0},
-                    {SPI_DEVICE_TPM_STATUS_WRFIFO_DEPTH_OFFSET, 4},
+                    {SPI_DEVICE_TPM_STATUS_WRFIFO_PENDING_BIT, 1},
                 });
   EXPECT_DIF_OK(dif_spi_device_tpm_get_data_status(&spi_, &status));
   EXPECT_FALSE(status.cmd_addr_valid);
-  EXPECT_EQ(status.write_fifo_occupancy, 4);
+  EXPECT_TRUE(status.wrfifo_acquired);
 
   EXPECT_READ32(SPI_DEVICE_TPM_STATUS_REG_OFFSET,
                 {
                     {SPI_DEVICE_TPM_STATUS_CMDADDR_NOTEMPTY_BIT, 1},
-                    {SPI_DEVICE_TPM_STATUS_WRFIFO_DEPTH_OFFSET, 2},
+                    {SPI_DEVICE_TPM_STATUS_WRFIFO_PENDING_BIT, 0},
                 });
   EXPECT_DIF_OK(dif_spi_device_tpm_get_data_status(&spi_, &status));
   EXPECT_TRUE(status.cmd_addr_valid);
-  EXPECT_EQ(status.write_fifo_occupancy, 2);
+  EXPECT_FALSE(status.wrfifo_acquired);
 
   EXPECT_READ32(SPI_DEVICE_TPM_CMD_ADDR_REG_OFFSET,
                 {
@@ -953,33 +955,26 @@ TEST_F(TpmTest, CommandAndData) {
   EXPECT_READ32(SPI_DEVICE_TPM_STATUS_REG_OFFSET,
                 {
                     {SPI_DEVICE_TPM_STATUS_CMDADDR_NOTEMPTY_BIT, 0},
-                    {SPI_DEVICE_TPM_STATUS_WRFIFO_DEPTH_OFFSET, 4},
+                    {SPI_DEVICE_TPM_STATUS_WRFIFO_PENDING_BIT, 0},
                 });
   EXPECT_WRITE32(SPI_DEVICE_TPM_READ_FIFO_REG_OFFSET,
                  (data[3] << 24) | (data[2] << 16) | (data[1] << 8) | data[0]);
 
   EXPECT_DIF_OK(dif_spi_device_tpm_write_data(&spi_, /*length=*/3, data));
 
-  EXPECT_READ32(SPI_DEVICE_TPM_STATUS_REG_OFFSET,
-                {
-                    {SPI_DEVICE_TPM_STATUS_CMDADDR_NOTEMPTY_BIT, 1},
-                    {SPI_DEVICE_TPM_STATUS_WRFIFO_DEPTH_OFFSET, 0},
-                });
-  EXPECT_EQ(dif_spi_device_tpm_read_data(&spi_, /*length=*/1, data),
-            kDifOutOfRange);
-
-  EXPECT_READ32(SPI_DEVICE_TPM_STATUS_REG_OFFSET,
-                {
-                    {SPI_DEVICE_TPM_STATUS_CMDADDR_NOTEMPTY_BIT, 1},
-                    {SPI_DEVICE_TPM_STATUS_WRFIFO_DEPTH_OFFSET, 4},
-                });
-  for (int i = 0; i < 4; i++) {
-    EXPECT_READ32(SPI_DEVICE_TPM_WRITE_FIFO_REG_OFFSET, 18 * i);
+  for (uint32_t i = 0; i < 4; i++) {
+    constexpr uint32_t kSpiDeviceTpmWriteFifoOffset =
+        SPI_DEVICE_INGRESS_BUFFER_REG_OFFSET +
+        SPI_DEVICE_PARAM_SRAM_TPM_WR_FIFO_OFFSET * sizeof(uint32_t);
+    EXPECT_READ32(kSpiDeviceTpmWriteFifoOffset + i * sizeof(uint32_t), 18 * i);
   }
-  EXPECT_DIF_OK(dif_spi_device_tpm_read_data(&spi_, /*length=*/4, data));
+  EXPECT_DIF_OK(
+      dif_spi_device_tpm_read_data(&spi_, /*length=*/16, (uint8_t *)read_data));
   for (int i = 0; i < 4; i++) {
-    EXPECT_EQ(data[i], 18 * i);
+    EXPECT_EQ(read_data[i], 18 * i);
   }
+  EXPECT_WRITE32(SPI_DEVICE_TPM_STATUS_REG_OFFSET, 0);
+  EXPECT_DIF_OK(dif_spi_device_tpm_free_write_fifo(&spi_));
 }
 
 }  // namespace

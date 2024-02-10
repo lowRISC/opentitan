@@ -347,8 +347,8 @@ Other than Read command accessing mailbox space, it is recommended to filter the
 
 ![TPM over SPI block diagram](../doc/tpm-blockdiagram.svg)
 
-The TPM over SPI submodule processes the low level data only.
-The TPM submodule parses the incoming SPI MOSI line and stacks the stream up to the SW accessible registers, such as TPM_CMD_ADDR, and TPM_WRITE_FIFO.
+The TPM over SPI submodule processes the low level data only, and it is not compliant with the SPI TPM command timing specifications.
+The TPM submodule parses the incoming SPI MOSI line and stacks the stream up to the SW accessible registers, such as TPM_CMD_ADDR and the write FIFO buffer.
 The SW must decode the command and the address.
 Then the SW reads the data from the write FIFO or pushes data into the read FIFO depending on the command.
 
@@ -367,8 +367,8 @@ The module stays in the wait state until the read FIFO has the data >= requested
 The module sends `START` at the next byte when the read FIFO has enough data.
 Then the module pops data from the read FIFO and sends the data over SPI.
 
-The TPM submodule accepts the payload for the TPM write command without the `WAIT` state if the write FIFO is empty.
-In other case, the TPM submodule sends `WAIT` until the write FIFO becomes available (empty).
+The TPM submodule accepts the payload for the TPM write command without the `WAIT` state if the write and command FIFOs are empty.
+In other case, the TPM submodule sends `WAIT` until the write and command FIFOs become available (empty).
 
 ### Configuring Return-by-HW registers
 
@@ -381,6 +381,10 @@ The HW uses `TPM_ACCESS_x.activeLocaltiy` and the address bit 15:12 to determine
 If `invalid_locality` configuration is set, the logic returns `INVALID` value to the host system, when the host system sends a read request to the Locality greater than 4.
 If the request is in the supported locality (0-4), the logic checks `TPM_ACCESS_x.activeLocality` then returns data based on the table 39 in the spec for Return-by-HW registers.
 Other registers in the table should be processed by SW.
+
+Note that firmware is in the loop to process write commands to these registers.
+Consequently, the TPM over SPI submodule cannot meet timing requirements for updated data to be available within one wait state.
+Once firmware writes the CSRs, the submodule can return the data as specified, however.
 
 ## Detecting Reliability Errors
 

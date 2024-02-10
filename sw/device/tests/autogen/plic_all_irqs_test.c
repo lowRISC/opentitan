@@ -1991,7 +1991,7 @@ static void peripheral_irqs_trigger(void) {
 #if TEST_MIN_IRQ_PERIPHERAL <= 18 && 18 < TEST_MAX_IRQ_PERIPHERAL
   peripheral_expected = kTopEarlgreyPlicPeripheralSpiDevice;
   for (dif_spi_device_irq_t irq = kDifSpiDeviceIrqUploadCmdfifoNotEmpty;
-       irq <= kDifSpiDeviceIrqTpmHeaderNotEmpty; ++irq) {
+       irq <= kDifSpiDeviceIrqTpmRdfifoDrop; ++irq) {
     spi_device_irq_expected = irq;
     LOG_INFO("Triggering spi_device IRQ %d.", irq);
     CHECK_DIF_OK(dif_spi_device_irq_force(&spi_device, irq, true));
