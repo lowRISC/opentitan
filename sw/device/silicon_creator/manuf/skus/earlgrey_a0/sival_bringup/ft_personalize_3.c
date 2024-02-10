@@ -49,8 +49,7 @@ static manuf_cert_perso_data_out_t out_data = {
     .uds_certificate = {0},
     .uds_certificate_size = kUdsMaxCertSizeBytes,
 };
-static uint8_t curr_attestation_pubkey_x_bytes[kAttestationPublicKeyCoordBytes];
-static uint8_t curr_attestation_pubkey_y_bytes[kAttestationPublicKeyCoordBytes];
+static attestation_public_key_t curr_pubkey = {.x = {0}, .y = {0}};
 // UDS.
 static uint8_t uds_tbs_buffer[kUdsMaxTbsSizeBytes];
 static uds_sig_values_t uds_cert_tbs = {
@@ -86,34 +85,32 @@ static status_t config_certificate_flash_pages(void) {
 
 static status_t gen_uds_keys_and_cert(void) {
   // Generate the UDS key.
-  attestation_public_key_t uds_pubkey = {.x = {0}, .y = {0}};
   TRY(otbn_boot_attestation_keygen(kUdsAttestationKeySeed,
-                                   kUdsKeymgrDiversifier, &uds_pubkey));
-  memcpy(curr_attestation_pubkey_x_bytes, uds_pubkey.x,
-         kAttestationPublicKeyCoordBytes);
-  memcpy(curr_attestation_pubkey_y_bytes, uds_pubkey.y,
-         kAttestationPublicKeyCoordBytes);
+                                   kUdsKeymgrDiversifier, &curr_pubkey));
   TRY(otbn_boot_attestation_key_save(kUdsAttestationKeySeed,
                                      kUdsKeymgrDiversifier));
-  uint8_t creator_pub_key_id[kCertKeyIdSizeInBytes] = {0};
+
+  // Generate the UDS key ID.
+  hmac_digest_t creator_pub_key_id;
+  hmac_sha256(&curr_pubkey, kAttestationPublicKeyCoordBytes * 2,
+              &creator_pub_key_id);
 
   // Generate the UDS (unendorsed) UDS certificate.
   uds_tbs_values_t uds_cert_tbs_params = {
       // TODO(#19455): include OTP measurements in attestation keygen / cert.
-      // TODO(#19455): include creator pub key ID in cert.
       .otp_creator_sw_cfg_hash = NULL,
       .otp_creator_sw_cfg_hash_size = 0,
       .otp_owner_sw_cfg_hash = NULL,
       .otp_owner_sw_cfg_hash_size = 0,
       .otp_hw_cfg_hash = NULL,
       .otp_hw_cfg_hash_size = 0,
-      .creator_pub_key_id = creator_pub_key_id,
+      .creator_pub_key_id = (unsigned char *)creator_pub_key_id.digest,
       .creator_pub_key_id_size = kCertKeyIdSizeInBytes,
       .auth_key_key_id = in_data.auth_key_key_id,
       .auth_key_key_id_size = kCertKeyIdSizeInBytes,
-      .creator_pub_key_ec_x = curr_attestation_pubkey_x_bytes,
+      .creator_pub_key_ec_x = (unsigned char *)curr_pubkey.x,
       .creator_pub_key_ec_x_size = kAttestationPublicKeyCoordBytes,
-      .creator_pub_key_ec_y = curr_attestation_pubkey_y_bytes,
+      .creator_pub_key_ec_y = (unsigned char *)curr_pubkey.y,
       .creator_pub_key_ec_y_size = kAttestationPublicKeyCoordBytes,
   };
   TRY(uds_build_tbs(&uds_cert_tbs_params, uds_cert_tbs.tbs,
@@ -151,11 +148,9 @@ static status_t personalize(ujson_t *uj) {
   TRY(keymgr_state_check(kKeymgrStateInit));
 
   // Load OTBN attestation keygen program.
-  attestation_public_key_t curr_pubkey = {.x = {0}, .y = {0}};
   TRY(otbn_boot_app_load());
 
   // Advance keymgr and generate UDS attestation keys / cert.
-  // TODO(#19455): set attestation binding to OTP *Cfg partition measurements.
   keymgr_advance_state();
   TRY(keymgr_state_check(kKeymgrStateCreatorRootKey));
   TRY(gen_uds_keys_and_cert());
