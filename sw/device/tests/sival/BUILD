@@ -20,7 +20,7 @@ test_suite(
 test_suite(
     name = "sv2_tests",
     tests = [
-        "//sw/device/tests:aes_new_smoketest",
+        "//sw/device/tests:aes_smoketest",
         "//sw/device/tests:alert_handler_lpg_clkoff_test",
         "//sw/device/tests:alert_handler_lpg_reset_toggle_test",
         "//sw/device/tests:aon_timer_irq_test",
