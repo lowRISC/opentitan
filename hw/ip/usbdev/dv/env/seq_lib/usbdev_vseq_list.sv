@@ -18,3 +18,4 @@
 `include "usbdev_max_length_out_transaction_vseq.sv"
 `include "usbdev_out_stall_vseq.sv"
 `include "usbdev_out_trans_nak_vseq.sv"
+`include "usbdev_in_rand_trans_vseq.sv"

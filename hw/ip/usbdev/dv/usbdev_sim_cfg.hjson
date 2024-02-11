@@ -79,8 +79,8 @@
     {
       name: usbdev_nak_trans
       uvm_test_seq: usbdev_nak_trans_vseq
-    }
     {
+    }
       name: usbdev_enable
       uvm_test_seq: usbdev_enable_vseq
     }
@@ -89,8 +89,18 @@
       uvm_test_seq: usbdev_in_trans_vseq
     }
     {
-      name: usbdev_enable
-      uvm_test_seq: usbdev_enable_vseq
+      name: in_rand_trans
+      uvm_test_seq: usbdev_in_rand_trans_vseq
+    }
+    {
+      name: in_rand_trans
+      uvm_test_seq: usbdev_in_rand_trans_vseq
+      run_opts: ["+rand_or_not=0", "+num_of_bytes=0"]
+    }
+    {
+      name: in_rand_trans
+      uvm_test_seq: usbdev_in_rand_trans_vseq
+      run_opts: ["+rand_or_not=0", "+num_of_bytes=64"]
     }
     {
       name: usbdev_random_length_out_trans
