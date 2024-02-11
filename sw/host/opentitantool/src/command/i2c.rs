@@ -270,9 +270,10 @@ impl CommandDispatch for I2cTpm {
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
         let context = context.downcast_ref::<I2cCommand>().unwrap();
-        let tpm_driver = tpm::I2cDriver::new(context.params.create(transport, "TPM")?);
-        let bus: Box<dyn tpm::Driver> = Box::new(tpm_driver);
-        self.command.run(&bus, transport)
+        let tpm_driver = Box::new(tpm::I2cDriver::new(
+            context.params.create(transport, "TPM")?,
+        )?);
+        self.command.run(&tpm_driver, transport)
     }
 }
 

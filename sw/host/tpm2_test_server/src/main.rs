@@ -49,7 +49,7 @@ struct Opts {
 const CMD_TOKEN: Token = Token(0);
 const PLATFORM_TOKEN: Token = Token(1);
 
-pub fn main() -> std::io::Result<()> {
+pub fn main() -> anyhow::Result<()> {
     let options = Opts::parse();
     env_logger::Builder::from_default_env()
         .filter(None, options.logging)
@@ -72,18 +72,22 @@ pub fn main() -> std::io::Result<()> {
     poll.registry()
         .register(&mut cmd_stream, CMD_TOKEN, Interest::READABLE)?;
 
-    let transport = backend::create(&options.backend_opts).unwrap();
+    let transport = backend::create(&options.backend_opts)?;
     let bus: Box<dyn Driver> = match options.bus {
         TpmBus::Spi { params } => {
-            let spi = params.create(&transport, "TPM").unwrap();
-            Box::new(SpiDriver::new(spi))
+            let spi = params.create(&transport, "TPM")?;
+            Box::new(SpiDriver::new(
+                spi,
+            )?)
         }
         TpmBus::I2C { params } => {
-            let i2c = params.create(&transport, "TPM").unwrap();
-            Box::new(I2cDriver::new(i2c))
+            let i2c = params.create(&transport, "TPM")?;
+            Box::new(I2cDriver::new(
+                i2c,
+            )?)
         }
     };
-    bus.init().unwrap();
+    bus.init()?;
 
     loop {
         poll.poll(&mut events, None)?;
@@ -91,12 +95,12 @@ pub fn main() -> std::io::Result<()> {
         for event in events.iter() {
             match event.token() {
                 CMD_TOKEN => {
-                    if serve_command(&mut cmd_stream, &*bus).unwrap() {
+                    if serve_command(&mut cmd_stream, &*bus)? {
                         return Ok(());
                     }
                 }
                 PLATFORM_TOKEN => {
-                    if serve_command(&mut platform_stream, &*bus).unwrap() {
+                    if serve_command(&mut platform_stream, &*bus)? {
                         return Ok(());
                     }
                 }

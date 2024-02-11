@@ -319,10 +319,10 @@ impl CommandDispatch for SpiTpm {
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
         let context = context.downcast_ref::<SpiCommand>().unwrap();
-        let bus: Box<dyn tpm::Driver> = Box::new(tpm::SpiDriver::new(
+        let tpm_driver: Box<dyn tpm::Driver> = Box::new(tpm::SpiDriver::new(
             context.params.create(transport, "TPM")?,
-        ));
-        self.command.run(&bus, transport)
+        )?);
+        self.command.run(&tpm_driver, transport)
     }
 }
 
