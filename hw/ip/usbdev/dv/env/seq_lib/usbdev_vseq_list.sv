@@ -12,3 +12,4 @@
 `include "usbdev_pkt_sent_vseq.sv"
 `include "usbdev_nak_trans_vseq.sv"
 `include "usbdev_enable_vseq.sv"
+`include "usbdev_in_trans_vseq.sv"
