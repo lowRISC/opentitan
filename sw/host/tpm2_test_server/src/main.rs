@@ -19,10 +19,18 @@ pub enum TpmBus {
     Spi {
         #[command(flatten)]
         params: SpiParams,
+
+        /// Pin used for signalling by Google security chips
+        #[arg(long)]
+        gsc_ready: Option<String>,
     },
     I2C {
         #[command(flatten)]
         params: I2cParams,
+
+        /// Pin used for signalling by Google security chips
+        #[arg(long)]
+        gsc_ready: Option<String>,
     },
 }
 
@@ -74,16 +82,26 @@ pub fn main() -> anyhow::Result<()> {
 
     let transport = backend::create(&options.backend_opts)?;
     let bus: Box<dyn Driver> = match options.bus {
-        TpmBus::Spi { params } => {
+        TpmBus::Spi { params, gsc_ready } => {
             let spi = params.create(&transport, "TPM")?;
+            let ready_pin = match &gsc_ready {
+                Some(pin) => Some((transport.gpio_pin(pin)?, transport.gpio_monitoring()?)),
+                None => None,
+            };
             Box::new(SpiDriver::new(
                 spi,
+                ready_pin,
             )?)
         }
-        TpmBus::I2C { params } => {
+        TpmBus::I2C { params, gsc_ready } => {
             let i2c = params.create(&transport, "TPM")?;
+            let ready_pin = match &gsc_ready {
+                Some(pin) => Some((transport.gpio_pin(pin)?, transport.gpio_monitoring()?)),
+                None => None,
+            };
             Box::new(I2cDriver::new(
                 i2c,
+                ready_pin,
             )?)
         }
     };
