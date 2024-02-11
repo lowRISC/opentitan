@@ -116,7 +116,7 @@ set_input_delay  -add_delay -clock_fall -clock jtag_tck -min  0.0 [get_ports {IO
 set_input_delay  -add_delay -clock_fall -clock jtag_tck -max 15.0 [get_ports {IOR0 IOR2}]
 
 ## SPI clocks
-set spi_dev_period 50.0
+set spi_dev_period 80.00
 set spi_dev_half_period [expr ${spi_dev_period} / 2]
 # Max board skew between signals
 set spi_dev_board_skew  0.5
