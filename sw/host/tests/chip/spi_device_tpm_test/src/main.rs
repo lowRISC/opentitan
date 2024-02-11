@@ -39,7 +39,7 @@ fn tpm_read_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
 
     /* Wait sync message. */
     let _ = UartConsole::wait_for(&*uart, r"SYNC: Begin TPM Test\r\n", opts.timeout)?;
-    let tpm = tpm::SpiDriver::new(spi);
+    let tpm = tpm::SpiDriver::new(spi, None)?;
     const SIZE: usize = 10;
 
     for _ in 0..10 {
