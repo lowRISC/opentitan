@@ -79,8 +79,8 @@
     {
       name: usbdev_nak_trans
       uvm_test_seq: usbdev_nak_trans_vseq
-    {
     }
+    {
       name: usbdev_enable
       uvm_test_seq: usbdev_enable_vseq
     }
