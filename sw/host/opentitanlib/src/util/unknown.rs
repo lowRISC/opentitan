@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use thiserror::Error;
+
 /// Creates C-like enums which preserve unknown (un-enumerated) values.
 ///
 /// If you wanted an enum like:
@@ -44,6 +46,13 @@
 /// In addition, `serde::Serialize` and `serde::Deserialize` are
 /// implemented.  The serialized form is a string for known values and an
 /// integer for all unknown values.
+
+#[derive(Debug, Error)]
+pub enum ParseError {
+    #[error("Unknown enum variant: {0}")]
+    Unknown(String),
+}
+
 #[macro_export]
 macro_rules! with_unknown {
     (
@@ -72,6 +81,11 @@ macro_rules! with_unknown {
 
         #[allow(dead_code)]
         impl $Enum {
+            pub const VARIANTS: &[&'static str] = &[
+                $(
+                    stringify!($enumerator),
+                )*
+            ];
             pub fn is_known_value(&self) -> bool {
                 match *self {
                     $(
@@ -109,9 +123,23 @@ macro_rules! with_unknown {
         // Manually implement Serialize and Deserialize to have tight control over how
         // the struct is serialized.
         const _: () = {
+            use std::str::FromStr;
             use serde::ser::{Serialize, Serializer};
             use serde::de::{Deserialize, Deserializer, Error, Visitor};
             use std::convert::TryFrom;
+            use $crate::util::unknown::ParseError;
+
+            impl FromStr for $Enum {
+                type Err = ParseError;
+                fn from_str(value: &str) -> Result<Self, Self::Err> {
+                    match value {
+                        $(
+                            stringify!($enumerator) => Ok($Enum::$enumerator),
+                        )*
+                        _ => Err(ParseError::Unknown(value.to_string()))
+                    }
+                }
+            }
 
             impl Serialize for $Enum {
                 /// Serializes the enumerated values.  All named discriminants are
