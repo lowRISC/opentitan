@@ -26,7 +26,7 @@ module hmac_reg_top (
 
   import hmac_reg_pkg::* ;
 
-  localparam int AW = 12;
+  localparam int AW = 13;
   localparam int DW = 32;
   localparam int DBW = DW/8;                    // Byte Width
 
@@ -57,9 +57,9 @@ module hmac_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [26:0] reg_we_check;
+  logic [58:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(27)
+    .OneHotWidth(59)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -128,7 +128,7 @@ module hmac_reg_top (
   // Create steering logic
   always_comb begin
     reg_steer =
-        tl_i.a_address[AW-1:0] inside {[2048:4095]} ? 1'd0 :
+        tl_i.a_address[AW-1:0] inside {[4096:8191]} ? 1'd0 :
         // Default set to register
         1'd1;
 
@@ -199,6 +199,10 @@ module hmac_reg_top (
   logic cfg_endian_swap_wd;
   logic cfg_digest_swap_qs;
   logic cfg_digest_swap_wd;
+  logic [3:0] cfg_digest_size_qs;
+  logic [3:0] cfg_digest_size_wd;
+  logic [4:0] cfg_key_length_qs;
+  logic [4:0] cfg_key_length_wd;
   logic cmd_we;
   logic cmd_hash_start_wd;
   logic cmd_hash_process_wd;
@@ -207,7 +211,7 @@ module hmac_reg_top (
   logic status_re;
   logic status_fifo_empty_qs;
   logic status_fifo_full_qs;
-  logic [4:0] status_fifo_depth_qs;
+  logic [5:0] status_fifo_depth_qs;
   logic [31:0] err_code_qs;
   logic wipe_secret_we;
   logic [31:0] wipe_secret_wd;
@@ -227,6 +231,54 @@ module hmac_reg_top (
   logic [31:0] key_6_wd;
   logic key_7_we;
   logic [31:0] key_7_wd;
+  logic key_8_we;
+  logic [31:0] key_8_wd;
+  logic key_9_we;
+  logic [31:0] key_9_wd;
+  logic key_10_we;
+  logic [31:0] key_10_wd;
+  logic key_11_we;
+  logic [31:0] key_11_wd;
+  logic key_12_we;
+  logic [31:0] key_12_wd;
+  logic key_13_we;
+  logic [31:0] key_13_wd;
+  logic key_14_we;
+  logic [31:0] key_14_wd;
+  logic key_15_we;
+  logic [31:0] key_15_wd;
+  logic key_16_we;
+  logic [31:0] key_16_wd;
+  logic key_17_we;
+  logic [31:0] key_17_wd;
+  logic key_18_we;
+  logic [31:0] key_18_wd;
+  logic key_19_we;
+  logic [31:0] key_19_wd;
+  logic key_20_we;
+  logic [31:0] key_20_wd;
+  logic key_21_we;
+  logic [31:0] key_21_wd;
+  logic key_22_we;
+  logic [31:0] key_22_wd;
+  logic key_23_we;
+  logic [31:0] key_23_wd;
+  logic key_24_we;
+  logic [31:0] key_24_wd;
+  logic key_25_we;
+  logic [31:0] key_25_wd;
+  logic key_26_we;
+  logic [31:0] key_26_wd;
+  logic key_27_we;
+  logic [31:0] key_27_wd;
+  logic key_28_we;
+  logic [31:0] key_28_wd;
+  logic key_29_we;
+  logic [31:0] key_29_wd;
+  logic key_30_we;
+  logic [31:0] key_30_wd;
+  logic key_31_we;
+  logic [31:0] key_31_wd;
   logic digest_0_re;
   logic digest_0_we;
   logic [31:0] digest_0_qs;
@@ -259,6 +311,38 @@ module hmac_reg_top (
   logic digest_7_we;
   logic [31:0] digest_7_qs;
   logic [31:0] digest_7_wd;
+  logic digest_8_re;
+  logic digest_8_we;
+  logic [31:0] digest_8_qs;
+  logic [31:0] digest_8_wd;
+  logic digest_9_re;
+  logic digest_9_we;
+  logic [31:0] digest_9_qs;
+  logic [31:0] digest_9_wd;
+  logic digest_10_re;
+  logic digest_10_we;
+  logic [31:0] digest_10_qs;
+  logic [31:0] digest_10_wd;
+  logic digest_11_re;
+  logic digest_11_we;
+  logic [31:0] digest_11_qs;
+  logic [31:0] digest_11_wd;
+  logic digest_12_re;
+  logic digest_12_we;
+  logic [31:0] digest_12_qs;
+  logic [31:0] digest_12_wd;
+  logic digest_13_re;
+  logic digest_13_we;
+  logic [31:0] digest_13_qs;
+  logic [31:0] digest_13_wd;
+  logic digest_14_re;
+  logic digest_14_we;
+  logic [31:0] digest_14_qs;
+  logic [31:0] digest_14_wd;
+  logic digest_15_re;
+  logic digest_15_we;
+  logic [31:0] digest_15_qs;
+  logic [31:0] digest_15_wd;
   logic msg_length_lower_re;
   logic msg_length_lower_we;
   logic [31:0] msg_length_lower_qs;
@@ -510,7 +594,7 @@ module hmac_reg_top (
 
   // R[cfg]: V(True)
   logic cfg_qe;
-  logic [3:0] cfg_flds_we;
+  logic [5:0] cfg_flds_we;
   assign cfg_qe = &cfg_flds_we;
   //   F[hmac_en]: 0:0
   prim_subreg_ext #(
@@ -575,6 +659,38 @@ module hmac_reg_top (
     .qs     (cfg_digest_swap_qs)
   );
   assign reg2hw.cfg.digest_swap.qe = cfg_qe;
+
+  //   F[digest_size]: 7:4
+  prim_subreg_ext #(
+    .DW    (4)
+  ) u_cfg_digest_size (
+    .re     (cfg_re),
+    .we     (cfg_we),
+    .wd     (cfg_digest_size_wd),
+    .d      (hw2reg.cfg.digest_size.d),
+    .qre    (),
+    .qe     (cfg_flds_we[4]),
+    .q      (reg2hw.cfg.digest_size.q),
+    .ds     (),
+    .qs     (cfg_digest_size_qs)
+  );
+  assign reg2hw.cfg.digest_size.qe = cfg_qe;
+
+  //   F[key_length]: 12:8
+  prim_subreg_ext #(
+    .DW    (5)
+  ) u_cfg_key_length (
+    .re     (cfg_re),
+    .we     (cfg_we),
+    .wd     (cfg_key_length_wd),
+    .d      (hw2reg.cfg.key_length.d),
+    .qre    (),
+    .qe     (cfg_flds_we[5]),
+    .q      (reg2hw.cfg.key_length.q),
+    .ds     (),
+    .qs     (cfg_key_length_qs)
+  );
+  assign reg2hw.cfg.key_length.qe = cfg_qe;
 
 
   // R[cmd]: V(True)
@@ -677,9 +793,9 @@ module hmac_reg_top (
     .qs     (status_fifo_full_qs)
   );
 
-  //   F[fifo_depth]: 8:4
+  //   F[fifo_depth]: 9:4
   prim_subreg_ext #(
-    .DW    (5)
+    .DW    (6)
   ) u_status_fifo_depth (
     .re     (status_re),
     .we     (1'b0),
@@ -909,6 +1025,510 @@ module hmac_reg_top (
   assign reg2hw.key[7].qe = key_7_qe;
 
 
+  // Subregister 8 of Multireg key
+  // R[key_8]: V(True)
+  logic key_8_qe;
+  logic [0:0] key_8_flds_we;
+  assign key_8_qe = &key_8_flds_we;
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_key_8 (
+    .re     (1'b0),
+    .we     (key_8_we),
+    .wd     (key_8_wd),
+    .d      (hw2reg.key[8].d),
+    .qre    (),
+    .qe     (key_8_flds_we[0]),
+    .q      (reg2hw.key[8].q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.key[8].qe = key_8_qe;
+
+
+  // Subregister 9 of Multireg key
+  // R[key_9]: V(True)
+  logic key_9_qe;
+  logic [0:0] key_9_flds_we;
+  assign key_9_qe = &key_9_flds_we;
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_key_9 (
+    .re     (1'b0),
+    .we     (key_9_we),
+    .wd     (key_9_wd),
+    .d      (hw2reg.key[9].d),
+    .qre    (),
+    .qe     (key_9_flds_we[0]),
+    .q      (reg2hw.key[9].q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.key[9].qe = key_9_qe;
+
+
+  // Subregister 10 of Multireg key
+  // R[key_10]: V(True)
+  logic key_10_qe;
+  logic [0:0] key_10_flds_we;
+  assign key_10_qe = &key_10_flds_we;
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_key_10 (
+    .re     (1'b0),
+    .we     (key_10_we),
+    .wd     (key_10_wd),
+    .d      (hw2reg.key[10].d),
+    .qre    (),
+    .qe     (key_10_flds_we[0]),
+    .q      (reg2hw.key[10].q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.key[10].qe = key_10_qe;
+
+
+  // Subregister 11 of Multireg key
+  // R[key_11]: V(True)
+  logic key_11_qe;
+  logic [0:0] key_11_flds_we;
+  assign key_11_qe = &key_11_flds_we;
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_key_11 (
+    .re     (1'b0),
+    .we     (key_11_we),
+    .wd     (key_11_wd),
+    .d      (hw2reg.key[11].d),
+    .qre    (),
+    .qe     (key_11_flds_we[0]),
+    .q      (reg2hw.key[11].q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.key[11].qe = key_11_qe;
+
+
+  // Subregister 12 of Multireg key
+  // R[key_12]: V(True)
+  logic key_12_qe;
+  logic [0:0] key_12_flds_we;
+  assign key_12_qe = &key_12_flds_we;
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_key_12 (
+    .re     (1'b0),
+    .we     (key_12_we),
+    .wd     (key_12_wd),
+    .d      (hw2reg.key[12].d),
+    .qre    (),
+    .qe     (key_12_flds_we[0]),
+    .q      (reg2hw.key[12].q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.key[12].qe = key_12_qe;
+
+
+  // Subregister 13 of Multireg key
+  // R[key_13]: V(True)
+  logic key_13_qe;
+  logic [0:0] key_13_flds_we;
+  assign key_13_qe = &key_13_flds_we;
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_key_13 (
+    .re     (1'b0),
+    .we     (key_13_we),
+    .wd     (key_13_wd),
+    .d      (hw2reg.key[13].d),
+    .qre    (),
+    .qe     (key_13_flds_we[0]),
+    .q      (reg2hw.key[13].q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.key[13].qe = key_13_qe;
+
+
+  // Subregister 14 of Multireg key
+  // R[key_14]: V(True)
+  logic key_14_qe;
+  logic [0:0] key_14_flds_we;
+  assign key_14_qe = &key_14_flds_we;
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_key_14 (
+    .re     (1'b0),
+    .we     (key_14_we),
+    .wd     (key_14_wd),
+    .d      (hw2reg.key[14].d),
+    .qre    (),
+    .qe     (key_14_flds_we[0]),
+    .q      (reg2hw.key[14].q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.key[14].qe = key_14_qe;
+
+
+  // Subregister 15 of Multireg key
+  // R[key_15]: V(True)
+  logic key_15_qe;
+  logic [0:0] key_15_flds_we;
+  assign key_15_qe = &key_15_flds_we;
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_key_15 (
+    .re     (1'b0),
+    .we     (key_15_we),
+    .wd     (key_15_wd),
+    .d      (hw2reg.key[15].d),
+    .qre    (),
+    .qe     (key_15_flds_we[0]),
+    .q      (reg2hw.key[15].q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.key[15].qe = key_15_qe;
+
+
+  // Subregister 16 of Multireg key
+  // R[key_16]: V(True)
+  logic key_16_qe;
+  logic [0:0] key_16_flds_we;
+  assign key_16_qe = &key_16_flds_we;
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_key_16 (
+    .re     (1'b0),
+    .we     (key_16_we),
+    .wd     (key_16_wd),
+    .d      (hw2reg.key[16].d),
+    .qre    (),
+    .qe     (key_16_flds_we[0]),
+    .q      (reg2hw.key[16].q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.key[16].qe = key_16_qe;
+
+
+  // Subregister 17 of Multireg key
+  // R[key_17]: V(True)
+  logic key_17_qe;
+  logic [0:0] key_17_flds_we;
+  assign key_17_qe = &key_17_flds_we;
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_key_17 (
+    .re     (1'b0),
+    .we     (key_17_we),
+    .wd     (key_17_wd),
+    .d      (hw2reg.key[17].d),
+    .qre    (),
+    .qe     (key_17_flds_we[0]),
+    .q      (reg2hw.key[17].q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.key[17].qe = key_17_qe;
+
+
+  // Subregister 18 of Multireg key
+  // R[key_18]: V(True)
+  logic key_18_qe;
+  logic [0:0] key_18_flds_we;
+  assign key_18_qe = &key_18_flds_we;
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_key_18 (
+    .re     (1'b0),
+    .we     (key_18_we),
+    .wd     (key_18_wd),
+    .d      (hw2reg.key[18].d),
+    .qre    (),
+    .qe     (key_18_flds_we[0]),
+    .q      (reg2hw.key[18].q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.key[18].qe = key_18_qe;
+
+
+  // Subregister 19 of Multireg key
+  // R[key_19]: V(True)
+  logic key_19_qe;
+  logic [0:0] key_19_flds_we;
+  assign key_19_qe = &key_19_flds_we;
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_key_19 (
+    .re     (1'b0),
+    .we     (key_19_we),
+    .wd     (key_19_wd),
+    .d      (hw2reg.key[19].d),
+    .qre    (),
+    .qe     (key_19_flds_we[0]),
+    .q      (reg2hw.key[19].q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.key[19].qe = key_19_qe;
+
+
+  // Subregister 20 of Multireg key
+  // R[key_20]: V(True)
+  logic key_20_qe;
+  logic [0:0] key_20_flds_we;
+  assign key_20_qe = &key_20_flds_we;
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_key_20 (
+    .re     (1'b0),
+    .we     (key_20_we),
+    .wd     (key_20_wd),
+    .d      (hw2reg.key[20].d),
+    .qre    (),
+    .qe     (key_20_flds_we[0]),
+    .q      (reg2hw.key[20].q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.key[20].qe = key_20_qe;
+
+
+  // Subregister 21 of Multireg key
+  // R[key_21]: V(True)
+  logic key_21_qe;
+  logic [0:0] key_21_flds_we;
+  assign key_21_qe = &key_21_flds_we;
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_key_21 (
+    .re     (1'b0),
+    .we     (key_21_we),
+    .wd     (key_21_wd),
+    .d      (hw2reg.key[21].d),
+    .qre    (),
+    .qe     (key_21_flds_we[0]),
+    .q      (reg2hw.key[21].q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.key[21].qe = key_21_qe;
+
+
+  // Subregister 22 of Multireg key
+  // R[key_22]: V(True)
+  logic key_22_qe;
+  logic [0:0] key_22_flds_we;
+  assign key_22_qe = &key_22_flds_we;
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_key_22 (
+    .re     (1'b0),
+    .we     (key_22_we),
+    .wd     (key_22_wd),
+    .d      (hw2reg.key[22].d),
+    .qre    (),
+    .qe     (key_22_flds_we[0]),
+    .q      (reg2hw.key[22].q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.key[22].qe = key_22_qe;
+
+
+  // Subregister 23 of Multireg key
+  // R[key_23]: V(True)
+  logic key_23_qe;
+  logic [0:0] key_23_flds_we;
+  assign key_23_qe = &key_23_flds_we;
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_key_23 (
+    .re     (1'b0),
+    .we     (key_23_we),
+    .wd     (key_23_wd),
+    .d      (hw2reg.key[23].d),
+    .qre    (),
+    .qe     (key_23_flds_we[0]),
+    .q      (reg2hw.key[23].q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.key[23].qe = key_23_qe;
+
+
+  // Subregister 24 of Multireg key
+  // R[key_24]: V(True)
+  logic key_24_qe;
+  logic [0:0] key_24_flds_we;
+  assign key_24_qe = &key_24_flds_we;
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_key_24 (
+    .re     (1'b0),
+    .we     (key_24_we),
+    .wd     (key_24_wd),
+    .d      (hw2reg.key[24].d),
+    .qre    (),
+    .qe     (key_24_flds_we[0]),
+    .q      (reg2hw.key[24].q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.key[24].qe = key_24_qe;
+
+
+  // Subregister 25 of Multireg key
+  // R[key_25]: V(True)
+  logic key_25_qe;
+  logic [0:0] key_25_flds_we;
+  assign key_25_qe = &key_25_flds_we;
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_key_25 (
+    .re     (1'b0),
+    .we     (key_25_we),
+    .wd     (key_25_wd),
+    .d      (hw2reg.key[25].d),
+    .qre    (),
+    .qe     (key_25_flds_we[0]),
+    .q      (reg2hw.key[25].q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.key[25].qe = key_25_qe;
+
+
+  // Subregister 26 of Multireg key
+  // R[key_26]: V(True)
+  logic key_26_qe;
+  logic [0:0] key_26_flds_we;
+  assign key_26_qe = &key_26_flds_we;
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_key_26 (
+    .re     (1'b0),
+    .we     (key_26_we),
+    .wd     (key_26_wd),
+    .d      (hw2reg.key[26].d),
+    .qre    (),
+    .qe     (key_26_flds_we[0]),
+    .q      (reg2hw.key[26].q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.key[26].qe = key_26_qe;
+
+
+  // Subregister 27 of Multireg key
+  // R[key_27]: V(True)
+  logic key_27_qe;
+  logic [0:0] key_27_flds_we;
+  assign key_27_qe = &key_27_flds_we;
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_key_27 (
+    .re     (1'b0),
+    .we     (key_27_we),
+    .wd     (key_27_wd),
+    .d      (hw2reg.key[27].d),
+    .qre    (),
+    .qe     (key_27_flds_we[0]),
+    .q      (reg2hw.key[27].q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.key[27].qe = key_27_qe;
+
+
+  // Subregister 28 of Multireg key
+  // R[key_28]: V(True)
+  logic key_28_qe;
+  logic [0:0] key_28_flds_we;
+  assign key_28_qe = &key_28_flds_we;
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_key_28 (
+    .re     (1'b0),
+    .we     (key_28_we),
+    .wd     (key_28_wd),
+    .d      (hw2reg.key[28].d),
+    .qre    (),
+    .qe     (key_28_flds_we[0]),
+    .q      (reg2hw.key[28].q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.key[28].qe = key_28_qe;
+
+
+  // Subregister 29 of Multireg key
+  // R[key_29]: V(True)
+  logic key_29_qe;
+  logic [0:0] key_29_flds_we;
+  assign key_29_qe = &key_29_flds_we;
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_key_29 (
+    .re     (1'b0),
+    .we     (key_29_we),
+    .wd     (key_29_wd),
+    .d      (hw2reg.key[29].d),
+    .qre    (),
+    .qe     (key_29_flds_we[0]),
+    .q      (reg2hw.key[29].q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.key[29].qe = key_29_qe;
+
+
+  // Subregister 30 of Multireg key
+  // R[key_30]: V(True)
+  logic key_30_qe;
+  logic [0:0] key_30_flds_we;
+  assign key_30_qe = &key_30_flds_we;
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_key_30 (
+    .re     (1'b0),
+    .we     (key_30_we),
+    .wd     (key_30_wd),
+    .d      (hw2reg.key[30].d),
+    .qre    (),
+    .qe     (key_30_flds_we[0]),
+    .q      (reg2hw.key[30].q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.key[30].qe = key_30_qe;
+
+
+  // Subregister 31 of Multireg key
+  // R[key_31]: V(True)
+  logic key_31_qe;
+  logic [0:0] key_31_flds_we;
+  assign key_31_qe = &key_31_flds_we;
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_key_31 (
+    .re     (1'b0),
+    .we     (key_31_we),
+    .wd     (key_31_wd),
+    .d      (hw2reg.key[31].d),
+    .qre    (),
+    .qe     (key_31_flds_we[0]),
+    .q      (reg2hw.key[31].q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.key[31].qe = key_31_qe;
+
+
   // Subregister 0 of Multireg digest
   // R[digest_0]: V(True)
   logic digest_0_qe;
@@ -1077,6 +1697,174 @@ module hmac_reg_top (
   assign reg2hw.digest[7].qe = digest_7_qe;
 
 
+  // Subregister 8 of Multireg digest
+  // R[digest_8]: V(True)
+  logic digest_8_qe;
+  logic [0:0] digest_8_flds_we;
+  assign digest_8_qe = &digest_8_flds_we;
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_digest_8 (
+    .re     (digest_8_re),
+    .we     (digest_8_we),
+    .wd     (digest_8_wd),
+    .d      (hw2reg.digest[8].d),
+    .qre    (),
+    .qe     (digest_8_flds_we[0]),
+    .q      (reg2hw.digest[8].q),
+    .ds     (),
+    .qs     (digest_8_qs)
+  );
+  assign reg2hw.digest[8].qe = digest_8_qe;
+
+
+  // Subregister 9 of Multireg digest
+  // R[digest_9]: V(True)
+  logic digest_9_qe;
+  logic [0:0] digest_9_flds_we;
+  assign digest_9_qe = &digest_9_flds_we;
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_digest_9 (
+    .re     (digest_9_re),
+    .we     (digest_9_we),
+    .wd     (digest_9_wd),
+    .d      (hw2reg.digest[9].d),
+    .qre    (),
+    .qe     (digest_9_flds_we[0]),
+    .q      (reg2hw.digest[9].q),
+    .ds     (),
+    .qs     (digest_9_qs)
+  );
+  assign reg2hw.digest[9].qe = digest_9_qe;
+
+
+  // Subregister 10 of Multireg digest
+  // R[digest_10]: V(True)
+  logic digest_10_qe;
+  logic [0:0] digest_10_flds_we;
+  assign digest_10_qe = &digest_10_flds_we;
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_digest_10 (
+    .re     (digest_10_re),
+    .we     (digest_10_we),
+    .wd     (digest_10_wd),
+    .d      (hw2reg.digest[10].d),
+    .qre    (),
+    .qe     (digest_10_flds_we[0]),
+    .q      (reg2hw.digest[10].q),
+    .ds     (),
+    .qs     (digest_10_qs)
+  );
+  assign reg2hw.digest[10].qe = digest_10_qe;
+
+
+  // Subregister 11 of Multireg digest
+  // R[digest_11]: V(True)
+  logic digest_11_qe;
+  logic [0:0] digest_11_flds_we;
+  assign digest_11_qe = &digest_11_flds_we;
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_digest_11 (
+    .re     (digest_11_re),
+    .we     (digest_11_we),
+    .wd     (digest_11_wd),
+    .d      (hw2reg.digest[11].d),
+    .qre    (),
+    .qe     (digest_11_flds_we[0]),
+    .q      (reg2hw.digest[11].q),
+    .ds     (),
+    .qs     (digest_11_qs)
+  );
+  assign reg2hw.digest[11].qe = digest_11_qe;
+
+
+  // Subregister 12 of Multireg digest
+  // R[digest_12]: V(True)
+  logic digest_12_qe;
+  logic [0:0] digest_12_flds_we;
+  assign digest_12_qe = &digest_12_flds_we;
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_digest_12 (
+    .re     (digest_12_re),
+    .we     (digest_12_we),
+    .wd     (digest_12_wd),
+    .d      (hw2reg.digest[12].d),
+    .qre    (),
+    .qe     (digest_12_flds_we[0]),
+    .q      (reg2hw.digest[12].q),
+    .ds     (),
+    .qs     (digest_12_qs)
+  );
+  assign reg2hw.digest[12].qe = digest_12_qe;
+
+
+  // Subregister 13 of Multireg digest
+  // R[digest_13]: V(True)
+  logic digest_13_qe;
+  logic [0:0] digest_13_flds_we;
+  assign digest_13_qe = &digest_13_flds_we;
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_digest_13 (
+    .re     (digest_13_re),
+    .we     (digest_13_we),
+    .wd     (digest_13_wd),
+    .d      (hw2reg.digest[13].d),
+    .qre    (),
+    .qe     (digest_13_flds_we[0]),
+    .q      (reg2hw.digest[13].q),
+    .ds     (),
+    .qs     (digest_13_qs)
+  );
+  assign reg2hw.digest[13].qe = digest_13_qe;
+
+
+  // Subregister 14 of Multireg digest
+  // R[digest_14]: V(True)
+  logic digest_14_qe;
+  logic [0:0] digest_14_flds_we;
+  assign digest_14_qe = &digest_14_flds_we;
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_digest_14 (
+    .re     (digest_14_re),
+    .we     (digest_14_we),
+    .wd     (digest_14_wd),
+    .d      (hw2reg.digest[14].d),
+    .qre    (),
+    .qe     (digest_14_flds_we[0]),
+    .q      (reg2hw.digest[14].q),
+    .ds     (),
+    .qs     (digest_14_qs)
+  );
+  assign reg2hw.digest[14].qe = digest_14_qe;
+
+
+  // Subregister 15 of Multireg digest
+  // R[digest_15]: V(True)
+  logic digest_15_qe;
+  logic [0:0] digest_15_flds_we;
+  assign digest_15_qe = &digest_15_flds_we;
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_digest_15 (
+    .re     (digest_15_re),
+    .we     (digest_15_we),
+    .wd     (digest_15_wd),
+    .d      (hw2reg.digest[15].d),
+    .qre    (),
+    .qe     (digest_15_flds_we[0]),
+    .q      (reg2hw.digest[15].q),
+    .ds     (),
+    .qs     (digest_15_qs)
+  );
+  assign reg2hw.digest[15].qe = digest_15_qe;
+
+
   // R[msg_length_lower]: V(True)
   logic msg_length_lower_qe;
   logic [0:0] msg_length_lower_flds_we;
@@ -1118,7 +1906,7 @@ module hmac_reg_top (
 
 
 
-  logic [26:0] addr_hit;
+  logic [58:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == HMAC_INTR_STATE_OFFSET);
@@ -1138,16 +1926,48 @@ module hmac_reg_top (
     addr_hit[14] = (reg_addr == HMAC_KEY_5_OFFSET);
     addr_hit[15] = (reg_addr == HMAC_KEY_6_OFFSET);
     addr_hit[16] = (reg_addr == HMAC_KEY_7_OFFSET);
-    addr_hit[17] = (reg_addr == HMAC_DIGEST_0_OFFSET);
-    addr_hit[18] = (reg_addr == HMAC_DIGEST_1_OFFSET);
-    addr_hit[19] = (reg_addr == HMAC_DIGEST_2_OFFSET);
-    addr_hit[20] = (reg_addr == HMAC_DIGEST_3_OFFSET);
-    addr_hit[21] = (reg_addr == HMAC_DIGEST_4_OFFSET);
-    addr_hit[22] = (reg_addr == HMAC_DIGEST_5_OFFSET);
-    addr_hit[23] = (reg_addr == HMAC_DIGEST_6_OFFSET);
-    addr_hit[24] = (reg_addr == HMAC_DIGEST_7_OFFSET);
-    addr_hit[25] = (reg_addr == HMAC_MSG_LENGTH_LOWER_OFFSET);
-    addr_hit[26] = (reg_addr == HMAC_MSG_LENGTH_UPPER_OFFSET);
+    addr_hit[17] = (reg_addr == HMAC_KEY_8_OFFSET);
+    addr_hit[18] = (reg_addr == HMAC_KEY_9_OFFSET);
+    addr_hit[19] = (reg_addr == HMAC_KEY_10_OFFSET);
+    addr_hit[20] = (reg_addr == HMAC_KEY_11_OFFSET);
+    addr_hit[21] = (reg_addr == HMAC_KEY_12_OFFSET);
+    addr_hit[22] = (reg_addr == HMAC_KEY_13_OFFSET);
+    addr_hit[23] = (reg_addr == HMAC_KEY_14_OFFSET);
+    addr_hit[24] = (reg_addr == HMAC_KEY_15_OFFSET);
+    addr_hit[25] = (reg_addr == HMAC_KEY_16_OFFSET);
+    addr_hit[26] = (reg_addr == HMAC_KEY_17_OFFSET);
+    addr_hit[27] = (reg_addr == HMAC_KEY_18_OFFSET);
+    addr_hit[28] = (reg_addr == HMAC_KEY_19_OFFSET);
+    addr_hit[29] = (reg_addr == HMAC_KEY_20_OFFSET);
+    addr_hit[30] = (reg_addr == HMAC_KEY_21_OFFSET);
+    addr_hit[31] = (reg_addr == HMAC_KEY_22_OFFSET);
+    addr_hit[32] = (reg_addr == HMAC_KEY_23_OFFSET);
+    addr_hit[33] = (reg_addr == HMAC_KEY_24_OFFSET);
+    addr_hit[34] = (reg_addr == HMAC_KEY_25_OFFSET);
+    addr_hit[35] = (reg_addr == HMAC_KEY_26_OFFSET);
+    addr_hit[36] = (reg_addr == HMAC_KEY_27_OFFSET);
+    addr_hit[37] = (reg_addr == HMAC_KEY_28_OFFSET);
+    addr_hit[38] = (reg_addr == HMAC_KEY_29_OFFSET);
+    addr_hit[39] = (reg_addr == HMAC_KEY_30_OFFSET);
+    addr_hit[40] = (reg_addr == HMAC_KEY_31_OFFSET);
+    addr_hit[41] = (reg_addr == HMAC_DIGEST_0_OFFSET);
+    addr_hit[42] = (reg_addr == HMAC_DIGEST_1_OFFSET);
+    addr_hit[43] = (reg_addr == HMAC_DIGEST_2_OFFSET);
+    addr_hit[44] = (reg_addr == HMAC_DIGEST_3_OFFSET);
+    addr_hit[45] = (reg_addr == HMAC_DIGEST_4_OFFSET);
+    addr_hit[46] = (reg_addr == HMAC_DIGEST_5_OFFSET);
+    addr_hit[47] = (reg_addr == HMAC_DIGEST_6_OFFSET);
+    addr_hit[48] = (reg_addr == HMAC_DIGEST_7_OFFSET);
+    addr_hit[49] = (reg_addr == HMAC_DIGEST_8_OFFSET);
+    addr_hit[50] = (reg_addr == HMAC_DIGEST_9_OFFSET);
+    addr_hit[51] = (reg_addr == HMAC_DIGEST_10_OFFSET);
+    addr_hit[52] = (reg_addr == HMAC_DIGEST_11_OFFSET);
+    addr_hit[53] = (reg_addr == HMAC_DIGEST_12_OFFSET);
+    addr_hit[54] = (reg_addr == HMAC_DIGEST_13_OFFSET);
+    addr_hit[55] = (reg_addr == HMAC_DIGEST_14_OFFSET);
+    addr_hit[56] = (reg_addr == HMAC_DIGEST_15_OFFSET);
+    addr_hit[57] = (reg_addr == HMAC_MSG_LENGTH_LOWER_OFFSET);
+    addr_hit[58] = (reg_addr == HMAC_MSG_LENGTH_UPPER_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -1181,7 +2001,39 @@ module hmac_reg_top (
                (addr_hit[23] & (|(HMAC_PERMIT[23] & ~reg_be))) |
                (addr_hit[24] & (|(HMAC_PERMIT[24] & ~reg_be))) |
                (addr_hit[25] & (|(HMAC_PERMIT[25] & ~reg_be))) |
-               (addr_hit[26] & (|(HMAC_PERMIT[26] & ~reg_be)))));
+               (addr_hit[26] & (|(HMAC_PERMIT[26] & ~reg_be))) |
+               (addr_hit[27] & (|(HMAC_PERMIT[27] & ~reg_be))) |
+               (addr_hit[28] & (|(HMAC_PERMIT[28] & ~reg_be))) |
+               (addr_hit[29] & (|(HMAC_PERMIT[29] & ~reg_be))) |
+               (addr_hit[30] & (|(HMAC_PERMIT[30] & ~reg_be))) |
+               (addr_hit[31] & (|(HMAC_PERMIT[31] & ~reg_be))) |
+               (addr_hit[32] & (|(HMAC_PERMIT[32] & ~reg_be))) |
+               (addr_hit[33] & (|(HMAC_PERMIT[33] & ~reg_be))) |
+               (addr_hit[34] & (|(HMAC_PERMIT[34] & ~reg_be))) |
+               (addr_hit[35] & (|(HMAC_PERMIT[35] & ~reg_be))) |
+               (addr_hit[36] & (|(HMAC_PERMIT[36] & ~reg_be))) |
+               (addr_hit[37] & (|(HMAC_PERMIT[37] & ~reg_be))) |
+               (addr_hit[38] & (|(HMAC_PERMIT[38] & ~reg_be))) |
+               (addr_hit[39] & (|(HMAC_PERMIT[39] & ~reg_be))) |
+               (addr_hit[40] & (|(HMAC_PERMIT[40] & ~reg_be))) |
+               (addr_hit[41] & (|(HMAC_PERMIT[41] & ~reg_be))) |
+               (addr_hit[42] & (|(HMAC_PERMIT[42] & ~reg_be))) |
+               (addr_hit[43] & (|(HMAC_PERMIT[43] & ~reg_be))) |
+               (addr_hit[44] & (|(HMAC_PERMIT[44] & ~reg_be))) |
+               (addr_hit[45] & (|(HMAC_PERMIT[45] & ~reg_be))) |
+               (addr_hit[46] & (|(HMAC_PERMIT[46] & ~reg_be))) |
+               (addr_hit[47] & (|(HMAC_PERMIT[47] & ~reg_be))) |
+               (addr_hit[48] & (|(HMAC_PERMIT[48] & ~reg_be))) |
+               (addr_hit[49] & (|(HMAC_PERMIT[49] & ~reg_be))) |
+               (addr_hit[50] & (|(HMAC_PERMIT[50] & ~reg_be))) |
+               (addr_hit[51] & (|(HMAC_PERMIT[51] & ~reg_be))) |
+               (addr_hit[52] & (|(HMAC_PERMIT[52] & ~reg_be))) |
+               (addr_hit[53] & (|(HMAC_PERMIT[53] & ~reg_be))) |
+               (addr_hit[54] & (|(HMAC_PERMIT[54] & ~reg_be))) |
+               (addr_hit[55] & (|(HMAC_PERMIT[55] & ~reg_be))) |
+               (addr_hit[56] & (|(HMAC_PERMIT[56] & ~reg_be))) |
+               (addr_hit[57] & (|(HMAC_PERMIT[57] & ~reg_be))) |
+               (addr_hit[58] & (|(HMAC_PERMIT[58] & ~reg_be)))));
   end
 
   // Generate write-enables
@@ -1217,6 +2069,10 @@ module hmac_reg_top (
   assign cfg_endian_swap_wd = reg_wdata[2];
 
   assign cfg_digest_swap_wd = reg_wdata[3];
+
+  assign cfg_digest_size_wd = reg_wdata[7:4];
+
+  assign cfg_key_length_wd = reg_wdata[12:8];
   assign cmd_we = addr_hit[5] & reg_we & !reg_error;
 
   assign cmd_hash_start_wd = reg_wdata[0];
@@ -1254,44 +2110,148 @@ module hmac_reg_top (
   assign key_7_we = addr_hit[16] & reg_we & !reg_error;
 
   assign key_7_wd = reg_wdata[31:0];
-  assign digest_0_re = addr_hit[17] & reg_re & !reg_error;
-  assign digest_0_we = addr_hit[17] & reg_we & !reg_error;
+  assign key_8_we = addr_hit[17] & reg_we & !reg_error;
+
+  assign key_8_wd = reg_wdata[31:0];
+  assign key_9_we = addr_hit[18] & reg_we & !reg_error;
+
+  assign key_9_wd = reg_wdata[31:0];
+  assign key_10_we = addr_hit[19] & reg_we & !reg_error;
+
+  assign key_10_wd = reg_wdata[31:0];
+  assign key_11_we = addr_hit[20] & reg_we & !reg_error;
+
+  assign key_11_wd = reg_wdata[31:0];
+  assign key_12_we = addr_hit[21] & reg_we & !reg_error;
+
+  assign key_12_wd = reg_wdata[31:0];
+  assign key_13_we = addr_hit[22] & reg_we & !reg_error;
+
+  assign key_13_wd = reg_wdata[31:0];
+  assign key_14_we = addr_hit[23] & reg_we & !reg_error;
+
+  assign key_14_wd = reg_wdata[31:0];
+  assign key_15_we = addr_hit[24] & reg_we & !reg_error;
+
+  assign key_15_wd = reg_wdata[31:0];
+  assign key_16_we = addr_hit[25] & reg_we & !reg_error;
+
+  assign key_16_wd = reg_wdata[31:0];
+  assign key_17_we = addr_hit[26] & reg_we & !reg_error;
+
+  assign key_17_wd = reg_wdata[31:0];
+  assign key_18_we = addr_hit[27] & reg_we & !reg_error;
+
+  assign key_18_wd = reg_wdata[31:0];
+  assign key_19_we = addr_hit[28] & reg_we & !reg_error;
+
+  assign key_19_wd = reg_wdata[31:0];
+  assign key_20_we = addr_hit[29] & reg_we & !reg_error;
+
+  assign key_20_wd = reg_wdata[31:0];
+  assign key_21_we = addr_hit[30] & reg_we & !reg_error;
+
+  assign key_21_wd = reg_wdata[31:0];
+  assign key_22_we = addr_hit[31] & reg_we & !reg_error;
+
+  assign key_22_wd = reg_wdata[31:0];
+  assign key_23_we = addr_hit[32] & reg_we & !reg_error;
+
+  assign key_23_wd = reg_wdata[31:0];
+  assign key_24_we = addr_hit[33] & reg_we & !reg_error;
+
+  assign key_24_wd = reg_wdata[31:0];
+  assign key_25_we = addr_hit[34] & reg_we & !reg_error;
+
+  assign key_25_wd = reg_wdata[31:0];
+  assign key_26_we = addr_hit[35] & reg_we & !reg_error;
+
+  assign key_26_wd = reg_wdata[31:0];
+  assign key_27_we = addr_hit[36] & reg_we & !reg_error;
+
+  assign key_27_wd = reg_wdata[31:0];
+  assign key_28_we = addr_hit[37] & reg_we & !reg_error;
+
+  assign key_28_wd = reg_wdata[31:0];
+  assign key_29_we = addr_hit[38] & reg_we & !reg_error;
+
+  assign key_29_wd = reg_wdata[31:0];
+  assign key_30_we = addr_hit[39] & reg_we & !reg_error;
+
+  assign key_30_wd = reg_wdata[31:0];
+  assign key_31_we = addr_hit[40] & reg_we & !reg_error;
+
+  assign key_31_wd = reg_wdata[31:0];
+  assign digest_0_re = addr_hit[41] & reg_re & !reg_error;
+  assign digest_0_we = addr_hit[41] & reg_we & !reg_error;
 
   assign digest_0_wd = reg_wdata[31:0];
-  assign digest_1_re = addr_hit[18] & reg_re & !reg_error;
-  assign digest_1_we = addr_hit[18] & reg_we & !reg_error;
+  assign digest_1_re = addr_hit[42] & reg_re & !reg_error;
+  assign digest_1_we = addr_hit[42] & reg_we & !reg_error;
 
   assign digest_1_wd = reg_wdata[31:0];
-  assign digest_2_re = addr_hit[19] & reg_re & !reg_error;
-  assign digest_2_we = addr_hit[19] & reg_we & !reg_error;
+  assign digest_2_re = addr_hit[43] & reg_re & !reg_error;
+  assign digest_2_we = addr_hit[43] & reg_we & !reg_error;
 
   assign digest_2_wd = reg_wdata[31:0];
-  assign digest_3_re = addr_hit[20] & reg_re & !reg_error;
-  assign digest_3_we = addr_hit[20] & reg_we & !reg_error;
+  assign digest_3_re = addr_hit[44] & reg_re & !reg_error;
+  assign digest_3_we = addr_hit[44] & reg_we & !reg_error;
 
   assign digest_3_wd = reg_wdata[31:0];
-  assign digest_4_re = addr_hit[21] & reg_re & !reg_error;
-  assign digest_4_we = addr_hit[21] & reg_we & !reg_error;
+  assign digest_4_re = addr_hit[45] & reg_re & !reg_error;
+  assign digest_4_we = addr_hit[45] & reg_we & !reg_error;
 
   assign digest_4_wd = reg_wdata[31:0];
-  assign digest_5_re = addr_hit[22] & reg_re & !reg_error;
-  assign digest_5_we = addr_hit[22] & reg_we & !reg_error;
+  assign digest_5_re = addr_hit[46] & reg_re & !reg_error;
+  assign digest_5_we = addr_hit[46] & reg_we & !reg_error;
 
   assign digest_5_wd = reg_wdata[31:0];
-  assign digest_6_re = addr_hit[23] & reg_re & !reg_error;
-  assign digest_6_we = addr_hit[23] & reg_we & !reg_error;
+  assign digest_6_re = addr_hit[47] & reg_re & !reg_error;
+  assign digest_6_we = addr_hit[47] & reg_we & !reg_error;
 
   assign digest_6_wd = reg_wdata[31:0];
-  assign digest_7_re = addr_hit[24] & reg_re & !reg_error;
-  assign digest_7_we = addr_hit[24] & reg_we & !reg_error;
+  assign digest_7_re = addr_hit[48] & reg_re & !reg_error;
+  assign digest_7_we = addr_hit[48] & reg_we & !reg_error;
 
   assign digest_7_wd = reg_wdata[31:0];
-  assign msg_length_lower_re = addr_hit[25] & reg_re & !reg_error;
-  assign msg_length_lower_we = addr_hit[25] & reg_we & !reg_error;
+  assign digest_8_re = addr_hit[49] & reg_re & !reg_error;
+  assign digest_8_we = addr_hit[49] & reg_we & !reg_error;
+
+  assign digest_8_wd = reg_wdata[31:0];
+  assign digest_9_re = addr_hit[50] & reg_re & !reg_error;
+  assign digest_9_we = addr_hit[50] & reg_we & !reg_error;
+
+  assign digest_9_wd = reg_wdata[31:0];
+  assign digest_10_re = addr_hit[51] & reg_re & !reg_error;
+  assign digest_10_we = addr_hit[51] & reg_we & !reg_error;
+
+  assign digest_10_wd = reg_wdata[31:0];
+  assign digest_11_re = addr_hit[52] & reg_re & !reg_error;
+  assign digest_11_we = addr_hit[52] & reg_we & !reg_error;
+
+  assign digest_11_wd = reg_wdata[31:0];
+  assign digest_12_re = addr_hit[53] & reg_re & !reg_error;
+  assign digest_12_we = addr_hit[53] & reg_we & !reg_error;
+
+  assign digest_12_wd = reg_wdata[31:0];
+  assign digest_13_re = addr_hit[54] & reg_re & !reg_error;
+  assign digest_13_we = addr_hit[54] & reg_we & !reg_error;
+
+  assign digest_13_wd = reg_wdata[31:0];
+  assign digest_14_re = addr_hit[55] & reg_re & !reg_error;
+  assign digest_14_we = addr_hit[55] & reg_we & !reg_error;
+
+  assign digest_14_wd = reg_wdata[31:0];
+  assign digest_15_re = addr_hit[56] & reg_re & !reg_error;
+  assign digest_15_we = addr_hit[56] & reg_we & !reg_error;
+
+  assign digest_15_wd = reg_wdata[31:0];
+  assign msg_length_lower_re = addr_hit[57] & reg_re & !reg_error;
+  assign msg_length_lower_we = addr_hit[57] & reg_we & !reg_error;
 
   assign msg_length_lower_wd = reg_wdata[31:0];
-  assign msg_length_upper_re = addr_hit[26] & reg_re & !reg_error;
-  assign msg_length_upper_we = addr_hit[26] & reg_we & !reg_error;
+  assign msg_length_upper_re = addr_hit[58] & reg_re & !reg_error;
+  assign msg_length_upper_we = addr_hit[58] & reg_we & !reg_error;
 
   assign msg_length_upper_wd = reg_wdata[31:0];
 
@@ -1315,16 +2275,48 @@ module hmac_reg_top (
     reg_we_check[14] = key_5_we;
     reg_we_check[15] = key_6_we;
     reg_we_check[16] = key_7_we;
-    reg_we_check[17] = digest_0_we;
-    reg_we_check[18] = digest_1_we;
-    reg_we_check[19] = digest_2_we;
-    reg_we_check[20] = digest_3_we;
-    reg_we_check[21] = digest_4_we;
-    reg_we_check[22] = digest_5_we;
-    reg_we_check[23] = digest_6_we;
-    reg_we_check[24] = digest_7_we;
-    reg_we_check[25] = msg_length_lower_we;
-    reg_we_check[26] = msg_length_upper_we;
+    reg_we_check[17] = key_8_we;
+    reg_we_check[18] = key_9_we;
+    reg_we_check[19] = key_10_we;
+    reg_we_check[20] = key_11_we;
+    reg_we_check[21] = key_12_we;
+    reg_we_check[22] = key_13_we;
+    reg_we_check[23] = key_14_we;
+    reg_we_check[24] = key_15_we;
+    reg_we_check[25] = key_16_we;
+    reg_we_check[26] = key_17_we;
+    reg_we_check[27] = key_18_we;
+    reg_we_check[28] = key_19_we;
+    reg_we_check[29] = key_20_we;
+    reg_we_check[30] = key_21_we;
+    reg_we_check[31] = key_22_we;
+    reg_we_check[32] = key_23_we;
+    reg_we_check[33] = key_24_we;
+    reg_we_check[34] = key_25_we;
+    reg_we_check[35] = key_26_we;
+    reg_we_check[36] = key_27_we;
+    reg_we_check[37] = key_28_we;
+    reg_we_check[38] = key_29_we;
+    reg_we_check[39] = key_30_we;
+    reg_we_check[40] = key_31_we;
+    reg_we_check[41] = digest_0_we;
+    reg_we_check[42] = digest_1_we;
+    reg_we_check[43] = digest_2_we;
+    reg_we_check[44] = digest_3_we;
+    reg_we_check[45] = digest_4_we;
+    reg_we_check[46] = digest_5_we;
+    reg_we_check[47] = digest_6_we;
+    reg_we_check[48] = digest_7_we;
+    reg_we_check[49] = digest_8_we;
+    reg_we_check[50] = digest_9_we;
+    reg_we_check[51] = digest_10_we;
+    reg_we_check[52] = digest_11_we;
+    reg_we_check[53] = digest_12_we;
+    reg_we_check[54] = digest_13_we;
+    reg_we_check[55] = digest_14_we;
+    reg_we_check[56] = digest_15_we;
+    reg_we_check[57] = msg_length_lower_we;
+    reg_we_check[58] = msg_length_upper_we;
   end
 
   // Read data return
@@ -1358,6 +2350,8 @@ module hmac_reg_top (
         reg_rdata_next[1] = cfg_sha_en_qs;
         reg_rdata_next[2] = cfg_endian_swap_qs;
         reg_rdata_next[3] = cfg_digest_swap_qs;
+        reg_rdata_next[7:4] = cfg_digest_size_qs;
+        reg_rdata_next[12:8] = cfg_key_length_qs;
       end
 
       addr_hit[5]: begin
@@ -1370,7 +2364,7 @@ module hmac_reg_top (
       addr_hit[6]: begin
         reg_rdata_next[0] = status_fifo_empty_qs;
         reg_rdata_next[1] = status_fifo_full_qs;
-        reg_rdata_next[8:4] = status_fifo_depth_qs;
+        reg_rdata_next[9:4] = status_fifo_depth_qs;
       end
 
       addr_hit[7]: begin
@@ -1414,42 +2408,170 @@ module hmac_reg_top (
       end
 
       addr_hit[17]: begin
-        reg_rdata_next[31:0] = digest_0_qs;
+        reg_rdata_next[31:0] = '0;
       end
 
       addr_hit[18]: begin
-        reg_rdata_next[31:0] = digest_1_qs;
+        reg_rdata_next[31:0] = '0;
       end
 
       addr_hit[19]: begin
-        reg_rdata_next[31:0] = digest_2_qs;
+        reg_rdata_next[31:0] = '0;
       end
 
       addr_hit[20]: begin
-        reg_rdata_next[31:0] = digest_3_qs;
+        reg_rdata_next[31:0] = '0;
       end
 
       addr_hit[21]: begin
-        reg_rdata_next[31:0] = digest_4_qs;
+        reg_rdata_next[31:0] = '0;
       end
 
       addr_hit[22]: begin
-        reg_rdata_next[31:0] = digest_5_qs;
+        reg_rdata_next[31:0] = '0;
       end
 
       addr_hit[23]: begin
-        reg_rdata_next[31:0] = digest_6_qs;
+        reg_rdata_next[31:0] = '0;
       end
 
       addr_hit[24]: begin
-        reg_rdata_next[31:0] = digest_7_qs;
+        reg_rdata_next[31:0] = '0;
       end
 
       addr_hit[25]: begin
-        reg_rdata_next[31:0] = msg_length_lower_qs;
+        reg_rdata_next[31:0] = '0;
       end
 
       addr_hit[26]: begin
+        reg_rdata_next[31:0] = '0;
+      end
+
+      addr_hit[27]: begin
+        reg_rdata_next[31:0] = '0;
+      end
+
+      addr_hit[28]: begin
+        reg_rdata_next[31:0] = '0;
+      end
+
+      addr_hit[29]: begin
+        reg_rdata_next[31:0] = '0;
+      end
+
+      addr_hit[30]: begin
+        reg_rdata_next[31:0] = '0;
+      end
+
+      addr_hit[31]: begin
+        reg_rdata_next[31:0] = '0;
+      end
+
+      addr_hit[32]: begin
+        reg_rdata_next[31:0] = '0;
+      end
+
+      addr_hit[33]: begin
+        reg_rdata_next[31:0] = '0;
+      end
+
+      addr_hit[34]: begin
+        reg_rdata_next[31:0] = '0;
+      end
+
+      addr_hit[35]: begin
+        reg_rdata_next[31:0] = '0;
+      end
+
+      addr_hit[36]: begin
+        reg_rdata_next[31:0] = '0;
+      end
+
+      addr_hit[37]: begin
+        reg_rdata_next[31:0] = '0;
+      end
+
+      addr_hit[38]: begin
+        reg_rdata_next[31:0] = '0;
+      end
+
+      addr_hit[39]: begin
+        reg_rdata_next[31:0] = '0;
+      end
+
+      addr_hit[40]: begin
+        reg_rdata_next[31:0] = '0;
+      end
+
+      addr_hit[41]: begin
+        reg_rdata_next[31:0] = digest_0_qs;
+      end
+
+      addr_hit[42]: begin
+        reg_rdata_next[31:0] = digest_1_qs;
+      end
+
+      addr_hit[43]: begin
+        reg_rdata_next[31:0] = digest_2_qs;
+      end
+
+      addr_hit[44]: begin
+        reg_rdata_next[31:0] = digest_3_qs;
+      end
+
+      addr_hit[45]: begin
+        reg_rdata_next[31:0] = digest_4_qs;
+      end
+
+      addr_hit[46]: begin
+        reg_rdata_next[31:0] = digest_5_qs;
+      end
+
+      addr_hit[47]: begin
+        reg_rdata_next[31:0] = digest_6_qs;
+      end
+
+      addr_hit[48]: begin
+        reg_rdata_next[31:0] = digest_7_qs;
+      end
+
+      addr_hit[49]: begin
+        reg_rdata_next[31:0] = digest_8_qs;
+      end
+
+      addr_hit[50]: begin
+        reg_rdata_next[31:0] = digest_9_qs;
+      end
+
+      addr_hit[51]: begin
+        reg_rdata_next[31:0] = digest_10_qs;
+      end
+
+      addr_hit[52]: begin
+        reg_rdata_next[31:0] = digest_11_qs;
+      end
+
+      addr_hit[53]: begin
+        reg_rdata_next[31:0] = digest_12_qs;
+      end
+
+      addr_hit[54]: begin
+        reg_rdata_next[31:0] = digest_13_qs;
+      end
+
+      addr_hit[55]: begin
+        reg_rdata_next[31:0] = digest_14_qs;
+      end
+
+      addr_hit[56]: begin
+        reg_rdata_next[31:0] = digest_15_qs;
+      end
+
+      addr_hit[57]: begin
+        reg_rdata_next[31:0] = msg_length_lower_qs;
+      end
+
+      addr_hit[58]: begin
         reg_rdata_next[31:0] = msg_length_upper_qs;
       end
 
