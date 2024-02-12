@@ -109,9 +109,9 @@ def str_to_byte_array(s: str) -> list:
     For example, str_to_byte_array("01020a0b") -> [1, 2, 10, 11]
     """
     if s.startswith("0x"):
-        s = s[1:]
+        s = s[2:]
     if len(s) % 2 != 0:
-        raise ValueError(f"String {s} has an odd number of digits; cannot convert into byte array.")
+        s = "0" + s
 
     byte_array = list()
     for i in range(0, len(s), 2):
