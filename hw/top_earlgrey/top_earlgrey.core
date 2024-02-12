@@ -43,13 +43,13 @@ filesets:
       - lowrisc:ip:usbdev
       - lowrisc:top_earlgrey:xbar_main
       - lowrisc:top_earlgrey:xbar_peri
+      - lowrisc:opentitan:top_earlgrey_clkmgr
       - lowrisc:opentitan:top_earlgrey_rstmgr
       - lowrisc:opentitan:top_earlgrey_pwrmgr
       - lowrisc:ip:aon_timer
       - lowrisc:ip:adc_ctrl
       - lowrisc:ip:sysrst_ctrl
       - lowrisc:ip:rom_ctrl
-      - lowrisc:systems:clkmgr
       - lowrisc:systems:sensor_ctrl
       - lowrisc:tlul:headers
       - lowrisc:prim:all

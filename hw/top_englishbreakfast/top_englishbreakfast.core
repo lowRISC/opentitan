@@ -38,6 +38,7 @@ filesets:
       - lowrisc:ip:usbdev
       - lowrisc:top_englishbreakfast:xbar_main
       - lowrisc:top_englishbreakfast:xbar_peri
+      - lowrisc:opentitan:top_englishbreakfast_clkmgr
       - lowrisc:opentitan:top_englishbreakfast_pwrmgr
       - lowrisc:opentitan:top_englishbreakfast_rstmgr
       - lowrisc:ip:rom_ctrl
