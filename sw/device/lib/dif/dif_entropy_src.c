@@ -474,7 +474,7 @@ dif_result_t dif_entropy_src_observe_fifo_blocking_read(
   }
 
   // Check that we are in firmware override mode. We can only read from the
-  // override FIFO if we are.
+  // observe FIFO if we are.
   reg = mmio_region_read32(entropy_src->base_addr,
                            ENTROPY_SRC_FW_OV_CONTROL_REG_OFFSET);
   if (bitfield_field32_read(reg, ENTROPY_SRC_FW_OV_CONTROL_FW_OV_MODE_FIELD) !=
@@ -503,6 +503,38 @@ dif_result_t dif_entropy_src_observe_fifo_blocking_read(
       0, ENTROPY_SRC_INTR_STATE_ES_OBSERVE_FIFO_READY_BIT, true);
   mmio_region_write32(entropy_src->base_addr, ENTROPY_SRC_INTR_STATE_REG_OFFSET,
                       reg);
+
+  return kDifOk;
+}
+
+dif_result_t dif_entropy_src_observe_fifo_nonblocking_read(
+    const dif_entropy_src_t *entropy_src, uint32_t *buf, size_t *len) {
+  if (entropy_src == NULL || len == NULL) {
+    return kDifBadArg;
+  }
+
+  // Check that we are in firmware override mode. We can only read from the
+  // observe FIFO if we are.
+  uint32_t reg = mmio_region_read32(entropy_src->base_addr,
+                                    ENTROPY_SRC_FW_OV_CONTROL_REG_OFFSET);
+  if (bitfield_field32_read(reg, ENTROPY_SRC_FW_OV_CONTROL_FW_OV_MODE_FIELD) !=
+      kMultiBitBool4True) {
+    return kDifError;
+  }
+
+  // Read until FIFO is empty or we have read `*len` words.
+  size_t read_count = 0;
+  while (read_count < *len &&
+         mmio_region_read32(entropy_src->base_addr,
+                            ENTROPY_SRC_OBSERVE_FIFO_DEPTH_REG_OFFSET) > 0) {
+    uint32_t reg = mmio_region_read32(entropy_src->base_addr,
+                                      ENTROPY_SRC_FW_OV_RD_DATA_REG_OFFSET);
+    if (buf != NULL) {
+      buf[read_count++] = reg;
+    }
+  }
+  // Update `*len`.
+  *len = read_count;
 
   return kDifOk;
 }
