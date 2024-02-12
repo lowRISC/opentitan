@@ -61,7 +61,7 @@ def main(args):
 
     if repo.issue_exist(new_issue["title"]):
         print(f"Issue already exists")
-        repo_issue = repo.get_issues(new_issue["title"])[0]
+        repo_issue = repo.issues_by_title(new_issue["title"])[0]
         if repo_issue.body != new_issue["body"]:
             print("Updating the issue")
             repo_issue.edit(body=new_issue["body"],
@@ -84,11 +84,14 @@ class GithubWrapper():
     def load_issues(self, labels=NotSet, milestone=NotSet):
         self.issues = self.repo.get_issues(labels=labels, milestone=milestone)
 
-    def get_issues(self, title):
+    def issues_by_title(self, title):
         return list(filter(lambda ms: ms.title == title, self.issues))
 
+    def search_issues(self, text):
+        return list(filter(lambda ms: text in (str(ms.title) + str(ms.body)), self.issues))
+
     def issue_exist(self, title):
-        return len(self.get_issues(title)) > 0
+        return len(self.issues_by_title(title)) > 0
 
     def get_milestone(self, name):
         res = list(filter(lambda ms: ms.title == name, self.milestones))

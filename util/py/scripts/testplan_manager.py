@@ -49,6 +49,13 @@ parser.add_argument(
     "--dir", required=False, help="Path of a dir containing the testplan files."
 )
 
+parser.add_argument(
+    "--config",
+    required=False,
+    default="~/.config/opentitan/testplan_manager_config.json",
+    help="Path to the config.json.",
+)
+
 # Create subparsers for each subcommand
 subparsers = parser.add_subparsers(
     title="subcommands", dest="command", help="subcommand help"
@@ -65,30 +72,26 @@ export_parser.add_argument(
     help="Path of the output csv file.",
 )
 export_parser.add_argument(
-    "--url",
-    help="url of a google sheet.",
+    "--bazel-suite",
+    help="""Output the bazel test suite as an output""",
 )
+
 export_parser.add_argument(
-    "--credentials",
-    help="""Path to a json file with the google credentials.
-          Check https://docs.gspread.org/en/latest/oauth2.html for more details.""",
+    "--spreadsheet",
+    action=argparse.BooleanOptionalAction,
+    help="""Output the bazel test suite as an output""",
 )
+
 export_parser.add_argument(
-    "--github-token",
-    help="""Token""",
+    "--github",
+    action=argparse.BooleanOptionalAction,
+    help="""Generate github issues""",
 )
+
 export_parser.add_argument(
     "--dry-run",
     action="store_true",
     help="""Dry run for github issues""",
-)
-export_parser.add_argument(
-    "--issue-template",
-    help="""Template""",
-)
-export_parser.add_argument(
-    "--bazel-suite",
-    help="""Output the bazel test suite as an output""",
 )
 
 # Subparser for the 'update' command
@@ -165,9 +168,7 @@ def update_testpoint(testplan, row):
                 f"Checking { row['name']}.{field} --> {testpoint.get(field)} == {row[field]}"
             )
             if row[field] != testpoint.get(field):
-                logging.info(
-                    f"Updating {row['name']} ->{field} to [{row[field]}]"
-                )
+                logging.info(f"Updating {row['name']} ->{field} to [{row[field]}]")
                 testpoint[field] = row[field]
                 updated = True
     return updated
@@ -182,29 +183,49 @@ def get_testplan_filename(ip_name, files):
 
 def export_cmd(args, df: pd.DataFrame):
     df = sort_columns(df)
-    df = insert_lc_states_columns(df)
+
+    config = {}
+    with open(os.path.expanduser(args.config), "r", encoding="utf-8") as f:
+        config = json.load(f)
 
     output_generated = False
-    _, extension = os.path.splitext(args.csv)
-    if extension == ".csv":
-        df.to_csv(args.csv)
+    if args.spreadsheet:
+        sheet_id = config["spreadsheet"]["sheet_id"]
+        sheet_tab = config["spreadsheet"]["sheet_tab"]
+        oauth = config["spreadsheet"]["oauth"]
+        gs = GoogleSheet(sheet_id, sheet_tab, AuthType.CLIENT_ID, oauth)
+
+
+        df_sheet = df.copy(deep=True)
+        df_sheet = df_sheet["hw_ip_block name si_stage bazel".split()]
+
+        # For each cell containing a list transform it into a string.
+        def string_to_list(val):
+            if isinstance(val, str) and "," in val:
+                val = [item.strip() for item in val.split(",")]
+            return val 
+
+        df_sheet = df_sheet.map(string_to_list)
+
+        df_sheet = df_sheet.explode("bazel", ignore_index=True)
+
+        gs.update(df_sheet)
+
         output_generated = True
-        print(f"File {args.csv} generated.")
-    if args.url:
-        gs = (
-            GoogleSheet(args.url)
-            if not args.credentials
-            else GoogleSheet(args.url, credentials=args.credentials)
-        )
-        gs.update(df)
-        output_generated = True
-        print(f"Updated spreadsheet {args.url}")
-    if args.github_token and args.issue_template:
-        create_issues(args, df)
+        print("Updated spreadsheet ", config['spreadsheet']['sheet_id'])
+    if args.github:
+        create_issues(args, config["github"], df)
         output_generated = True
     if args.bazel_suite:
         export_bazel_suite(args, df)
         output_generated = True
+
+    _, extension = os.path.splitext(args.csv)
+    if extension == ".csv":
+        df_csv = insert_lc_states_columns(df.copy(deep=True))
+        df_csv.to_csv(args.csv)
+        output_generated = True
+        print(f"File {args.csv} generated.")
 
     if not output_generated:
         print("No output specified.")
@@ -257,11 +278,11 @@ def export_bazel_suite(args, df: pd.DataFrame):
     return 0
 
 
-def create_issues(args, df: pd.DataFrame):
-    repo = hjson.load(open(args.issue_template, "r"))["repository"]
-    repo = GithubWrapper(args.github_token, repo)
+def create_issues(args, config, df: pd.DataFrame):
+    repo = hjson.load(open(config["issue_template"], "r"))["repository"]
+    repo = GithubWrapper(config.github_token, repo)
     repo.load_issues(labels=["Component:ChipLevelTest"])
-    issue_template = Template(filename=args.issue_template)
+    issue_template = Template(filename=config["issue_template"])
 
     _filter = (df["bazel"] == "") | (df["bazel"] == " ") | (df["bazel"].isnull())
     _filter &= df["si_stage"] != "NA"
@@ -269,42 +290,91 @@ def create_issues(args, df: pd.DataFrame):
 
     updated = created = 0
     for _, row in df.fillna("None").iterrows():
+        priority = row.get("Priority", "P2")
+        priority = "P2" if priority == "" else priority
+        ip_block = re.sub("chip_", "", row["hw_ip_block"])
         new_issue = hjson.loads(
             issue_template.render(
-                ip_block=row["hw_ip_block"],
+                ip_block=ip_block,
                 test_name=row["name"],
                 stage=row["si_stage"],
+                priority=priority,
             )
         )
 
         if repo.issue_exist(new_issue["title"]):
-            logging.info(f"Issue already exists: {new_issue['title']}")
-            repo_issue = repo.get_issues(new_issue["title"])[0]
-            if repo_issue.body != new_issue["body"]:
+            logging.info("Issue already exists: %s", new_issue["title"])
+            repo_issue = repo.issues_by_title(new_issue["title"])[0]
+            if (
+                repo_issue.body != new_issue["body"]
+                or repo_issue.labels != new_issue["labels"]
+                or repo_issue.milestone != new_issue["milestone"]
+            ):
                 logging.info("Updating the issue")
                 if args.dry_run:
                     logging.info("Dry-run: Updating body: \r\n%s", new_issue["body"])
                 else:
-                    repo_issue.edit(body=new_issue["body"], labels=new_issue["labels"])
+                    try:
+                        repo_issue.edit(
+                            body=new_issue["body"],
+                            labels=new_issue["labels"],
+                            milestone=new_issue["milestone"].upper(),
+                        )
+                    except Exception as e:
+                        logging.info(
+                            "Could not update the issue, debug level to see the error"
+                        )
+                        logging.debug("%s", e)
+                updated += 1
+                continue
+
+        # Search for test created manually contained the test name.
+        issues = (
+            repo.search_issues("sival")
+            + repo.search_issues("si-val")
+            + repo.search_issues("chip-test")
+        )
+        if len(issues) > 0:
+            filtered = list(
+                filter(lambda ms: row["name"] in (str(ms.title) + str(ms.body)), issues)
+            )
+            if len(filtered) > 0:
+                logging.info("Found issue with the test name: %s", filtered[0])
+                if not args.dry_run:
+                    try:
+                        issues[0].edit(
+                            body=new_issue["body"],
+                            labels=new_issue["labels"],
+                            milestone=new_issue["milestone"].upper(),
+                        )
+                    except Exception as e:
+                        logging.info(
+                            "Could not update the issue, debug level to see the error"
+                        )
+                        logging.debug("%s", e)
+
+                updated += 1
+                continue
+
+        logging.info("Creating issue: %s", new_issue["title"])
+        if args.dry_run:
+            logging.debug(
+                "Dry-run:\r\n\rBody:\r\n%s\r\n\rLabels: %s\r\n\rMilestone: %s",
+                new_issue["body"],
+                new_issue["labels"],
+                new_issue["milestone"],
+            )
         else:
-            logging.info(f'Create issue: {new_issue["title"]}')
-            logging.info("Updating the issue")
-            if args.dry_run:
-                logging.info(
-                    f"""Dryrun: Creating new issue: \r\n
-                 {new_issue["title"]}\r\n
-                 Body:\r\n{new_issue["body"]}\r\n
-                 Labels: {new_issue["labels"]}\r\n
-                 Milestone: {new_issue["milestone"]}
-                 """
-                )
-            else:
+            try:
                 repo.create_issue(
                     title=new_issue["title"],
                     body=new_issue["body"],
                     labels=new_issue["labels"],
                     milestone=new_issue["milestone"].upper(),
                 )
+            except Exception as e:
+                logging.info("Could not create the issue, debug level to see the error")
+                logging.debug("%s", e)
 
         created += 1
     logging.info(
@@ -326,20 +396,16 @@ class AuthType(Enum):
 
 class GoogleSheet:
     def __init__(
-        self, url: str, credentials: str = "~/.config/gspread/credentials.json"
+        self, sheet_id: str, tab_name: str, auth_type: AuthType, credentials: str = ""
     ):
-        self.url = url
+        self.sheet_id = sheet_id
+        self.tab_name = tab_name
+
         self.credentials = credentials
-        self.auth_type = AuthType.CLIENT_ID
-
-        data = json.load(open(os.path.expanduser(self.credentials), "r"))
-
-        if "type" in data.keys() and data["type"] == "service_account":
-            self.auth_type = AuthType.SERVICE_ACCOUNT
+        self.auth_type = auth_type
 
     def update(self, df: pd.DataFrame):
         import warnings
-
         import gspread
 
         warnings.filterwarnings("ignore")
@@ -350,12 +416,12 @@ class GoogleSheet:
             else gspread.service_account(filename=self.credentials)
         )
 
-        spreadsheet = gc.open_by_url(args.url)
+        spreadsheet = gc.open_by_key(self.sheet_id)
         try:
-            sheet = spreadsheet.worksheet("AutoGenerated")
+            sheet = spreadsheet.worksheet(self.tab_name)
         except gspread.exceptions.WorksheetNotFound:
             sheet = spreadsheet.add_worksheet(
-                title="AutoGenerated", rows=len(df), cols=len(df.columns)
+                title=self.tab_name, rows=1000, cols=64
             )
 
         sheet.update([df.columns.values.tolist()] + df.fillna("None").values.tolist())
@@ -382,9 +448,14 @@ def unique_list(df: pd.DataFrame, column: str, fillna: str = "NONE") -> list[str
 
 
 def sort_columns(df: pd.DataFrame) -> pd.DataFrame:
-    colum_order = "hw_ip_block name si_stage desc stage tests features bazel\
-                   host_support otp_mutate lc_states tags".split()
-    return df[colum_order]
+    column_order = []
+    for (
+        col
+    ) in "hw_ip_block name Priority si_stage desc stage tests features bazel host_support otp_mutate lc_states tags".split():
+        if col in df.columns:
+            column_order.append(col)
+
+    return df[column_order]
 
 
 def dataframe_from_testplan(testplan_hjson: str) -> pd.DataFrame:
