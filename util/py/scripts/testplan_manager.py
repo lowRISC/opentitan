@@ -36,23 +36,28 @@ parser.add_argument(
     help="Logging level",
 )
 
-parser.add_argument("--file",
-                    required=False,
-                    help="Path of a single testplan hjson file.")
-parser.add_argument("--dir",
-                    required=False,
-                    help="Path of a dir containing the testplan files.")
+parser.add_argument(
+    "--logging_file",
+    default="",
+    help="Logging to file rather than stdout",
+)
+
+parser.add_argument(
+    "--file", required=False, help="Path of a single testplan hjson file."
+)
+parser.add_argument(
+    "--dir", required=False, help="Path of a dir containing the testplan files."
+)
 
 # Create subparsers for each subcommand
-subparsers = parser.add_subparsers(title='subcommands',
-                                   dest='command',
-                                   help='subcommand help')
+subparsers = parser.add_subparsers(
+    title="subcommands", dest="command", help="subcommand help"
+)
 
 # Subparser for the 'export' command
 export_parser = subparsers.add_parser(
-    'export',
-    help=
-    'Export the testplan in different formats [csv, google sheet, github issues] '
+    "export",
+    help="Export the testplan in different formats [csv, google sheet, github issues] ",
 )
 export_parser.add_argument(
     "--csv",
@@ -74,7 +79,7 @@ export_parser.add_argument(
 )
 export_parser.add_argument(
     "--dry-run",
-    action='store_true',
+    action="store_true",
     help="""Dry run for github issues""",
 )
 export_parser.add_argument(
@@ -88,7 +93,8 @@ export_parser.add_argument(
 
 # Subparser for the 'update' command
 update_parser = subparsers.add_parser(
-    'update', help='Update the testplans based on a csv')
+    "update", help="Update the testplans based on a csv"
+)
 update_parser.add_argument(
     "--csv",
     required=True,
@@ -108,9 +114,9 @@ def main(args):
     for file in files:
         df = pd.concat([df, dataframe_from_testplan(file)])
 
-    if args.command == 'export':
+    if args.command == "export":
         return export_cmd(args, df)
-    elif args.command == 'update':
+    elif args.command == "update":
         return update_cmd(args)
 
     return -1
@@ -125,9 +131,8 @@ LICENSE_HEADER = """// Copyright lowRISC contributors.
 def update_cmd(args):
     files = [f for f in glob.glob(f"{args.dir}/*.hjson")]
 
-    df = pd.read_csv(args.csv).fillna("None")
-    df.groupby("hw_ip_block").apply(
-        lambda block: update_ip_block(files, block))
+    df = pd.read_csv(args.csv, keep_default_na=False).fillna("None")
+    df.groupby("hw_ip_block").apply(lambda block: update_ip_block(files, block))
 
 
 def update_ip_block(files, block_dataframe):
@@ -137,9 +142,10 @@ def update_ip_block(files, block_dataframe):
     if filename:
         testplan = hjson.load(open(filename, "r"))
         updated = block_dataframe.apply(
-            lambda row: update_testpoint(testplan, row), axis=1)
-        if any(updated):  #Update if there was a change.
-            logging.info(f"Updating {filename}.")
+            lambda row: update_testpoint(testplan, row), axis=1
+        )
+        if any(updated):  # Update if there was a change.
+            logging.info("Updating %s", filename)
             with open(filename, "w") as f:
                 f.write(LICENSE_HEADER)
                 hjson.dump(testplan, f, indent=2, for_json=True)
@@ -151,14 +157,12 @@ def update_ip_block(files, block_dataframe):
 def update_testpoint(testplan, row):
     updated = False
     for testpoint in testplan["testpoints"]:
-        logging.debug(
-            f"Checking {testpoint['name']} == {row['name']} --> {testpoint.get('si_stage')} == {row['si_stage']}"
-        )
-        if row["name"] == testpoint["name"] and row[
-                "si_stage"] != "None" and row["si_stage"] != testpoint.get(
-                    "si_stage"):
+        if row["name"] != testpoint["name"]:
+            continue
+
+        for field in "si_stage Priority".split():
             logging.debug(
-                f"Test {row['name']} should be updated from { testpoint.get('si_stage')} to {row['si_stage']}"
+                f"Checking { row['name']}.{field} --> {testpoint.get(field)} == {row[field]}"
             )
             if row[field] != testpoint.get(field):
                 logging.info(
@@ -187,8 +191,11 @@ def export_cmd(args, df: pd.DataFrame):
         output_generated = True
         print(f"File {args.csv} generated.")
     if args.url:
-        gs = (GoogleSheet(args.url) if not args.credentials else GoogleSheet(
-            args.url, credentials=args.credentials))
+        gs = (
+            GoogleSheet(args.url)
+            if not args.credentials
+            else GoogleSheet(args.url, credentials=args.credentials)
+        )
         gs.update(df)
         output_generated = True
         print(f"Updated spreadsheet {args.url}")
@@ -219,6 +226,7 @@ test_suite(
 def export_bazel_suite(args, df: pd.DataFrame):
     import numpy as np
     from mako.template import Template
+
     template = Template(TEST_SUITE_TEMPLATE)
     with open(args.bazel_suite, "w") as file:
         file.write(LICENSE_HEADER.replace("//", "#"))
@@ -262,9 +270,12 @@ def create_issues(args, df: pd.DataFrame):
     updated = created = 0
     for _, row in df.fillna("None").iterrows():
         new_issue = hjson.loads(
-            issue_template.render(ip_block=row["hw_ip_block"],
-                                  test_name=row["name"],
-                                  stage=row["si_stage"]))
+            issue_template.render(
+                ip_block=row["hw_ip_block"],
+                test_name=row["name"],
+                stage=row["si_stage"],
+            )
+        )
 
         if repo.issue_exist(new_issue["title"]):
             logging.info(f"Issue already exists: {new_issue['title']}")
@@ -274,22 +285,26 @@ def create_issues(args, df: pd.DataFrame):
                 if args.dry_run:
                     logging.info("Dry-run: Updating body: \r\n%s", new_issue["body"])
                 else:
-                    repo_issue.edit(body=new_issue["body"],
-                                labels=new_issue["labels"])
+                    repo_issue.edit(body=new_issue["body"], labels=new_issue["labels"])
         else:
             logging.info(f'Create issue: {new_issue["title"]}')
             logging.info("Updating the issue")
             if args.dry_run:
-                logging.info(f'''Dryrun: Creating new issue: \r\n
+                logging.info(
+                    f"""Dryrun: Creating new issue: \r\n
                  {new_issue["title"]}\r\n
                  Body:\r\n{new_issue["body"]}\r\n
                  Labels: {new_issue["labels"]}\r\n
                  Milestone: {new_issue["milestone"]}
-                 ''')
+                 """
+                )
             else:
-                repo.create_issue(title=new_issue["title"], body=new_issue["body"],\
-                                labels=new_issue["labels"], milestone=new_issue["milestone"].upper())
-        
+                repo.create_issue(
+                    title=new_issue["title"],
+                    body=new_issue["body"],
+                    labels=new_issue["labels"],
+                    milestone=new_issue["milestone"].upper(),
+                )
 
         created += 1
     logging.info(
@@ -310,10 +325,9 @@ class AuthType(Enum):
 
 
 class GoogleSheet:
-
-    def __init__(self,
-                 url: str,
-                 credentials: str = "~/.config/gspread/credentials.json"):
+    def __init__(
+        self, url: str, credentials: str = "~/.config/gspread/credentials.json"
+    ):
         self.url = url
         self.credentials = credentials
         self.auth_type = AuthType.CLIENT_ID
@@ -330,21 +344,21 @@ class GoogleSheet:
 
         warnings.filterwarnings("ignore")
 
-        gc = gspread.oauth(
-            credentials_filename=self.credentials
-        ) if self.auth_type == AuthType.CLIENT_ID else gspread.service_account(
-            filename=self.credentials)
+        gc = (
+            gspread.oauth(credentials_filename=self.credentials)
+            if self.auth_type == AuthType.CLIENT_ID
+            else gspread.service_account(filename=self.credentials)
+        )
 
         spreadsheet = gc.open_by_url(args.url)
         try:
             sheet = spreadsheet.worksheet("AutoGenerated")
         except gspread.exceptions.WorksheetNotFound:
-            sheet = spreadsheet.add_worksheet(title="AutoGenerated",
-                                              rows=len(df),
-                                              cols=len(df.columns))
+            sheet = spreadsheet.add_worksheet(
+                title="AutoGenerated", rows=len(df), cols=len(df.columns)
+            )
 
-        sheet.update([df.columns.values.tolist()] +
-                     df.fillna("None").values.tolist())
+        sheet.update([df.columns.values.tolist()] + df.fillna("None").values.tolist())
 
 
 def insert_lc_states_columns(df: pd.DataFrame) -> pd.DataFrame:
@@ -361,12 +375,10 @@ def insert_lc_states_columns(df: pd.DataFrame) -> pd.DataFrame:
     return df.apply(lambda row: fill_lc_state_column(row), axis="columns")
 
 
-def unique_list(df: pd.DataFrame,
-                column: str,
-                fillna: str = "NONE") -> list[str]:
+def unique_list(df: pd.DataFrame, column: str, fillna: str = "NONE") -> list[str]:
     return list(
-        set(" ".join(df[column].fillna(fillna).values).replace(",",
-                                                               " ").split()))
+        set(" ".join(df[column].fillna(fillna).values).replace(",", " ").split())
+    )
 
 
 def sort_columns(df: pd.DataFrame) -> pd.DataFrame:
