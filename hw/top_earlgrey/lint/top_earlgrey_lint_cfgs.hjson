@@ -59,9 +59,9 @@
                   rel_path: "hw/ip/entropy_src/lint/{tool}"
              },
              {    name: clkmgr
-                  fusesoc_core: lowrisc:systems:clkmgr
+                  fusesoc_core: lowrisc:opentitan:top_earlgrey_clkmgr
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"],
-                  rel_path: "hw/top_earlgrey/ip/clkmgr/lint/{tool}",
+                  rel_path: "hw/top_earlgrey/ip_autogen/clkmgr/lint/{tool}",
                   overrides: [
                     {
                       name: design_level

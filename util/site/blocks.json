@@ -166,8 +166,8 @@
     },
     "clkrst-managers": {
         "name": "CLK/RST Managers",
-        "data_file": "hw/ip/clkmgr/data/clkmgr.hjson",
-        "report": "/hw/ip/clkmgr/dv"
+        "data_file": "hw/top_earlgrey/ip_autogen/clkmgr/data/clkmgr.hjson",
+        "report": "hw/top_earlgey/ip_autogen/clkmgr/dv"
     },
     "pinmux-padctrl": {
         "name": "PINMUX/PADCTRL",
