@@ -297,7 +297,7 @@
                          },
       domain: ["Aon"],
       base_addr: "0x40420000",
-      attr: "templated",
+      attr: "ipgen",
     },
     { name: "pinmux_aon",
       type: "pinmux",

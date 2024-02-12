@@ -449,7 +449,7 @@
                          },
       domain: ["Aon"],
       base_addr: "0x40420000",
-      attr: "templated",
+      attr: "ipgen",
     },
     { name: "sysrst_ctrl_aon",
       type: "sysrst_ctrl",
