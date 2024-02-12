@@ -263,7 +263,7 @@ An example of this is the [TLUL Protocol Checker](../../../../hw/ip/tlul/doc/Tlu
 
 Unlike design assertions, in DV assertions are typically created within SV interfaces bound to the DUT.
 This way assertions and any collateral code don't affect the design, and can reach any internal design signal if needed.
-For an example of this see the [clkmgr assertions](https://github.com/lowRISC/opentitan/tree/master/hw/ip/clkmgr/dv/sva).
+For an example of this see the [clkmgr assertions](https://github.com/lowRISC/opentitan/tree/master/hw/top_earlgrey/ip_autogen/clkmgr/dv/sva).
 
 ## Regressions
 

@@ -11,7 +11,7 @@ ${"##"} Goals
 ${"##"} Current status
 * [Design & verification stage](../../../../README.md)
   * [HW development stages](../../../../../doc/project_governance/development_stages.md)
-* [Simulation results](https://reports.opentitan.org/hw/ip/clkmgr/dv/latest/report.html)
+* [Simulation results](https://reports.opentitan.org/hw/top_${topname}/ip_autogen/clkmgr/dv/latest/report.html)
 
 ${"##"} Design features
 The detailed information on CLKMGR design features is at [CLKMGR HWIP technical specification](../README.md).
@@ -71,7 +71,7 @@ The external pins controlling the external clock selection need no synchronizati
 The tests randomize the inputs and issue CSR updates affecting the specific functions being tested.
 
 ${"###"} Test sequences
-All test sequences reside in `hw/ip/clkmgr/dv/env/seq_lib`.
+All test sequences reside in `hw/top_${topname}/ip_autogen/clkmgr/dv/env/seq_lib`.
 The `clkmgr_base_vseq` virtual sequence is extended from `cip_base_vseq` and serves as a starting point.
 It provides commonly used handles, variables, functions and tasks that the test sequences can use or call.
 Some of the most commonly used tasks / functions are as follows:
@@ -138,7 +138,7 @@ The following covergroups have been developed to prove that the test intent has 
   These are wrapped in class `freq_measure_cg_wrap` and instantiated in `clkmgr_env_cov`.
 * Covergroup for the external clock selection logic: `extclk_cg` in `clkmgr_env_cov`.
 
-See more detailed description at `hw/ip/clkmgr/data/clkmgr_testplan.hjson`.
+See more detailed description at `hw/top_${topname}/ip_autogen/clkmgr/data/clkmgr_testplan.hjson`.
 
 ${"##"} Self-checking strategy
 
