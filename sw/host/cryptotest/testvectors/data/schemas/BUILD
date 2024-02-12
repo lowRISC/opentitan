@@ -21,4 +21,5 @@ exports_files([
     "hash_schema.json",
     "hmac_schema.json",
     "kmac_schema.json",
+    "rsa_schema.json",
 ])
