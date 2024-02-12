@@ -73,7 +73,7 @@ This allows the [OTP](../../../../ip/otp_ctrl/README.md) to begin sensing.
 Once OTP sensing completes, the life cycle controller is initialized.
 The initialization of the life cycle controller puts the device into its allowed operating state (see [life cycle controller](../../../../ip/lc_ctrl/README.md) for more details).
 
-Once life cycle initialization is done, the fast FSM enables all second level clock gating (see [clock controller](../../../../ip/clkmgr/README.md) for more details) and initiates strap sampling.
+Once life cycle initialization is done, the fast FSM enables all second level clock gating (see [clock controller](../../clkmgr/README.md) for more details) and initiates strap sampling.
 For more details on what exactly the strap samples, please see [here](https://docs.google.com/spreadsheets/d/1pH8T1MhQ7TXtP_bFNT85T9jSVIHlxHAfbMnPbsMdjc0/edit?usp=sharing).
 
 Once strap sampling is complete, the system is ready to begin normal operations (note `flash_ctrl` initialization is explicitly not done here, please see [sections below](#flash-handling) for more details).

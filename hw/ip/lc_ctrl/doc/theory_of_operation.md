@@ -178,7 +178,7 @@ This functionality is needed in certain life cycle states where the internal clo
 Note that the [`TRANSITION_CTRL.EXT_CLOCK_EN`](registers.md#transition_ctrl) register can only be set to one if the transition interface has been claimed via the [`CLAIM_TRANSITION_IF`](registers.md#claim_transition_if) mutex.
 This function is not available in production life cycle states.
 
-For details on the clock switch, please see [clkmgr](../../clkmgr/README.md#life-cycle-requested-external-clock).
+For details on the clock switch, please see top_earlgrey's [clkmgr](../../../top_earlgrey/ip_autogen/clkmgr/README.md#life-cycle-requested-external-clock).
 
 
 ### Life Cycle Access Control Signals

@@ -1,6 +1,6 @@
 # Clock Manager HWIP Technical Specification
 
-[`clkmgr`](https://reports.opentitan.org/hw/ip/clkmgr/dv/latest/report.html):
+[`clkmgr`](https://reports.opentitan.org/hw/top_${topname}/ip_autogen/clkmgr/dv/latest/report.html):
 ![](https://dashboards.lowrisc.org/badges/dv/clkmgr/test.svg)
 ![](https://dashboards.lowrisc.org/badges/dv/clkmgr/passing.svg)
 ![](https://dashboards.lowrisc.org/badges/dv/clkmgr/functional.svg)
@@ -10,7 +10,7 @@
 
 This document specifies the functionality of the OpenTitan clock manager.
 
-## Features
+${"##"} Features
 
 - Attribute based controls of OpenTitan clocks.
 - Minimal software clock controls to reduce risks in clock manipulation.

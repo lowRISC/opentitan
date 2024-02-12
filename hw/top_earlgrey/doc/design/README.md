@@ -28,7 +28,7 @@ Clocks and resets are supplied from the Analog Sensor Top, referred to as [ast](
 - aon: an always on, low frequency clock used for power management and low speed timers.
 
 These clocks are then divided down and distributed to the rest of the system.
-See [clock manager](../../../ip/clkmgr/README.md)) for more details.
+See [clock manager](../../ip_autogen/clkmgr/README.md)) for more details.
 
 `ast` also supplies a number of power-okay signals to `top_earlgrey`, and these are used as asynchronous root resets.
 - vcaon_pok: The always on domain of the system is ready.

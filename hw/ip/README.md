@@ -7,7 +7,6 @@
 | [`adc_ctrl`]     | Low-power controller for a dual-channel ADC with filtering and debouncing capability                                              |
 | [`aes`]          | AES encryption and decryption engine with SCA and FI countermeasures                                                              |
 | [`aon_timer`]    | Wakeup and watchdog timers running on a low-power, always-on clock                                                                |
-| [`clkmgr`]       | Derives and monitors on-chip clock signals, handles clock gating requests from power manager and software                         |
 | [`csrng`]        | Takes entropy bits to produce cryptographically secure random numbers for consumption by hardware blocks and by software          |
 | [`edn`]          | Distributes random numbers produced by CSRNG to hardware blocks                                                                   |
 | [`entropy_src`]  | Filters and checks raw entropy bits from a random noise source and forwards them to CSRNG                                         |
@@ -40,7 +39,6 @@
 [`adc_ctrl`]: ./adc_ctrl/README.md
 [`aes`]: ./aes/README.md
 [`aon_timer`]: ./aon_timer/README.md
-[`clkmgr`]: ./clkmgr/README.md
 [`csrng`]: ./csrng/README.md
 [`edn`]: ./edn/README.md
 [`entropy_src`]: ./entropy_src/README.md
