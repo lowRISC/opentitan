@@ -548,6 +548,129 @@ run_binary(
     ]
 ]
 
+WYCHEPROOF_RSA_OAEP_SUFFIXES = {
+    2048: [
+        "sha256_mgf1sha256",
+        "sha384_mgf1sha384",
+        "sha512_mgf1sha512",
+    ],
+    3072: [
+        "sha256_mgf1sha256",
+        "sha512_mgf1sha512",
+    ],
+    4096: [
+        "sha256_mgf1sha256",
+        "sha512_mgf1sha512",
+    ],
+}
+
+WYCHEPROOF_RSA_PKCS1_15_SUFFIXES = {
+    2048: [
+        "sha256",
+        "sha384",
+        "sha512",
+        "sha3_256",
+        "sha3_384",
+        "sha3_512",
+    ],
+    3072: [
+        "sha256",
+        "sha384",
+        "sha512",
+        "sha3_256",
+        "sha3_384",
+        "sha3_512",
+    ],
+    4096: [
+        "sha256",
+        "sha384",
+        "sha512",
+    ],
+}
+
+WYCHEPROOF_RSA_PSS_SUFFIXES = {
+    2048: [
+        "sha256_mgf1_0",
+        "sha256_mgf1_32",
+        "sha384_mgf1_48",
+    ],
+    3072: [
+        "sha256_mgf1_32",
+        "shake128",
+    ],
+    4096: [
+        "sha256_mgf1_32",
+        "sha384_mgf1_48",
+        "sha512_mgf1_32",
+        "sha512_mgf1_64",
+        "shake256",
+    ],
+}
+
+[
+    run_binary(
+        name = "wycheproof_rsa_{}_{}_{}_json".format(
+            padding_mode,
+            security_level,
+            wy_suffix,
+        ),
+        srcs = [
+            "@wycheproof//testvectors_v1:rsa_{}_{}_{}_test.json".format(wy_padding_mode, security_level, wy_suffix),
+            "//sw/host/cryptotest/testvectors/data/schemas:rsa_schema.json",
+        ],
+        outs = [":wycheproof_rsa_{}_{}_{}.json".format(
+            padding_mode,
+            security_level,
+            wy_suffix,
+        )],
+        args = [
+            "--src",
+            "$(location @wycheproof//testvectors_v1:rsa_{}_{}_{}_test.json)".format(wy_padding_mode, security_level, wy_suffix),
+            "--dst",
+            "$(location :wycheproof_rsa_{}_{}_{}.json)".format(
+                padding_mode,
+                security_level,
+                wy_suffix,
+            ),
+            "--schema",
+            "$(location //sw/host/cryptotest/testvectors/data/schemas:rsa_schema.json)",
+            "--operation",
+            operation,
+            "--padding",
+            padding_mode,
+            "--security_level",
+            str(security_level),
+        ],
+        tool = "//sw/host/cryptotest/testvectors/parsers:wycheproof_rsa_parser",
+    )
+    for security_level in [
+        2048,
+        3072,
+        4096,
+    ]
+    for padding_mode, wy_padding_mode, operation, suffixes in [
+        (
+            "oaep",
+            "oaep",
+            "decrypt",
+            WYCHEPROOF_RSA_OAEP_SUFFIXES[security_level],
+        ),
+        (
+            "pkcs1_1.5",
+            "signature",
+            "verify",
+            WYCHEPROOF_RSA_PKCS1_15_SUFFIXES[security_level],
+        ),
+        (
+            "pss",
+            "pss",
+            "verify",
+            WYCHEPROOF_RSA_PSS_SUFFIXES[security_level],
+        ),
+    ]
+    for wy_suffix in suffixes
+]
+
 run_binary(
     name = "rsp_sphincsplus_shake256_128s_simple_json",
     srcs = [
