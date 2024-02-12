@@ -237,7 +237,7 @@
       si_stage: SV3
       lc_states: ["TEST_UNLOCKED", "PROD"]
       tests: []
-      bazel: []
+      bazel: ["//sw/device/tests:entropy_src_fw_observe_many_contiguous_test"]
     },
     {
       name: chip_sw_entropy_src_fw_extract_and_insert
