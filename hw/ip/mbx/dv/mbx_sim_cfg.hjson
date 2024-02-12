@@ -30,7 +30,10 @@
                 "{proj_root}/hw/dv/tools/dvsim/tests/alert_test.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/sec_cm_tests.hjson",
-                "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson"]
+                // Disable stress_all and stress_all_with_rand_reset tests as they are not
+                // implemented yet #21298
+                // "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson"
+                ]
 
   // Add additional tops for simulation.
 //  sim_tops: ["mbx_bind", "mbx_cov_bind"]
