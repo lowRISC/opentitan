@@ -23,6 +23,7 @@ module spi_host_data_fifos #(
   output logic [3:0]  core_tx_be_o,
   output logic        core_tx_valid_o,
   input               core_tx_ready_i,
+  input               core_tx_byte_select_full_i,
 
   input        [31:0] core_rx_data_i,
   input               core_rx_valid_i,
@@ -67,7 +68,9 @@ module spi_host_data_fifos #(
 
   logic [TxDepthW-1:0] tx_depth;
 
-  assign tx_qd_o = 8'(tx_depth);
+  // The byte_select module greedily pops data from the TX FIFO, so
+  // the FIFO should be observed as having an effective depth of N+1.
+  assign tx_qd_o = 8'(tx_depth) + {7'b0, core_tx_byte_select_full_i};
 
   assign tx_data_be = { tx_data_ordered, tx_be_ordered };
   assign { core_tx_data_o, core_tx_be_o } = core_tx_data_be;
@@ -114,11 +117,17 @@ module spi_host_data_fifos #(
     .err_o    ()
   );
 
+  // Create the status outputs
+  // - Include the 1-word storage in byte_select for the TX datapath
   assign tx_empty_o = (tx_qd_o == 0);
   assign rx_empty_o = (rx_qd_o == 0);
-  assign tx_full_o  = (tx_qd_o >= 8'(TxDepth));
+  assign tx_full_o  = (tx_qd_o >= 8'(TxDepth) + 1); // inc. byte_sel
   assign rx_full_o  = (rx_qd_o >= 8'(RxDepth));
   assign tx_wm_o    = (tx_qd_o <  tx_watermark_i);
   assign rx_wm_o    = (rx_qd_o >= rx_watermark_i);
+
+  // Due to the addition of the byte_sel as a N+1'th fifo stage, ensure
+  // we have adequate resolution in our counter (tx_qd_o) to represent this.
+  `ASSERT_INIT(TxDepth_A, TxDepth < (2**$size(tx_qd_o)) - 1)
 
 endmodule : spi_host_data_fifos

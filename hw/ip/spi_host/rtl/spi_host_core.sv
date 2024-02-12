@@ -20,6 +20,7 @@ module spi_host_core #(
   input        [3:0]                tx_be_i,
   input                             tx_valid_i,
   output logic                      tx_ready_o,
+  output logic                      tx_byte_select_full_o,
 
   output logic [31:0]               rx_data_o,
   output logic                      rx_valid_o,
@@ -87,6 +88,12 @@ module spi_host_core #(
     .flush_i      (tx_flush_sr),
     .sw_rst_i
   );
+  // The byte_select module greedily pops data from the TX FIFO, so
+  // the FIFO is observed as having an effective depth of N+1.
+  // The byte_valid_o signal indicates when the byte_select contains
+  // a valid word. Pass this on up to the TX FIFO to adjust the
+  // reported depth/full/empty flags.
+  assign tx_byte_select_full_o = tx_valid_sr;
 
   spi_host_shift_register u_shift_reg (
     .clk_i,
