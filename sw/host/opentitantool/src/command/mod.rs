@@ -15,6 +15,7 @@ pub mod image;
 pub mod lc;
 pub mod load_bitstream;
 pub mod otp;
+pub mod rescue;
 pub mod reset_sam3x;
 pub mod rsa;
 pub mod set_pll;
