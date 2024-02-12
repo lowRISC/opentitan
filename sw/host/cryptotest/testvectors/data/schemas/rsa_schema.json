@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/lowRISC/opentitan/master/sw/host/cryptotest/testvectors/data/schemas/rsa_schema.json",
+  "title": "Cryptotest RSA Signature Verification Test Vector",
+  "description": "A list of testvectors for RSA Signature Verification testing",
+  "$defs": {
+    "byte_array": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 255
+      }
+    }
+  },
+  "type": "array",
+  "minItems": 1,
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "vendor": {
+        "description": "Test vector vendor name",
+        "type": "string"
+      },
+      "test_case_id": {
+        "description": "Test case ID from test vector source -- used for debugging",
+        "type": "integer"
+      },
+      "algorithm": {
+        "description": "Should be rsa",
+        "type": "string",
+        "enum": ["rsa"]
+      },
+      "operation": {
+        "description": "RSA operation",
+        "type": "string",
+        "enum": ["sign", "verify", "encrypt", "decrypt"]
+      },
+      "padding": {
+        "description": "RSA padding type",
+        "type": "string",
+        "enum": ["pkcs1_1.5", "pss", "oaep"]
+      },
+      "security_level": {
+        "description": "RSA security level",
+        "type": "integer",
+        "enum": [2048, 3072, 4096]
+      },
+      "hash_alg": {
+        "description": "Hash algorithm for message encoding",
+        "type": "string",
+        "enum": ["sha-256", "sha-384", "sha-512", "sha3-224", "sha3-256", "sha3-384", "sha3-512", "shake-128", "shake-256"]
+      },
+      "message": {
+        "description": "Un-hashed plaintext message",
+        "$ref": "#/$defs/byte_array"
+      },
+      "label": {
+        "description": "Label for OAEP encryption",
+        "$ref": "#/$defs/byte_array"
+      },
+      "n": {
+        "description": "RSA public value n",
+        "$ref": "#/$defs/byte_array"
+      },
+      "e": {
+        "description": "RSA exponent e",
+        "type": "integer"
+      },
+      "d": {
+        "description": "RSA private value d",
+        "$ref": "#/$defs/byte_array"
+      },
+      "signature": {
+        "description": "RSA signature",
+        "$ref": "#/$defs/byte_array"
+      },
+      "ciphertext": {
+        "description": "Ciphertext to decrypt",
+        "$ref": "#/$defs/byte_array"
+      },
+      "result": {
+        "description": "Expected signature verification result",
+        "type": "boolean"
+      }
+    }
+  }
+}
