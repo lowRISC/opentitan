@@ -51,7 +51,7 @@
               separately.
             '''
       stage: V3
-      si_stage: None
+      si_stage: NA
       tests: ["chip_sw_all_escalation_resets"]
     }
   ]

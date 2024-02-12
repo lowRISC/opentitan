@@ -58,6 +58,7 @@
               - Check `fault_status.kmac_done` is set to 1.
             '''
       stage: V3
+      si_stage: NA
       tests: []
     }
     {
