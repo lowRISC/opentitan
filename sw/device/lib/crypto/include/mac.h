@@ -76,7 +76,7 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
  * This function computes the KMAC on the `input_message` using the `key` and
  * returns a `tag` of `required_output_len`. The customization string is passed
  * through `customization_string` parameter. If no customization is desired it
- * can be empty.
+ * can be be left empty (by settings its `data` to NULL and `length` to 0).
  *
  * The caller should set the `key_length` field of `key.config` to the number
  * of bytes in the key. Only the following key sizes (in bytes) are supported:

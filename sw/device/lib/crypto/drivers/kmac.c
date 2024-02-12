@@ -460,13 +460,25 @@ static status_t kmac_set_prefix_regs(const unsigned char *func_name,
  * capacity). For instance, if we want to run SHA-3 with 224-bit digest size,
  * then `operation_type` = kSHA3_224.
  *
+ * `hw_backed` must be either `kHardenedBoolFalse` or `kHardenedBoolTrue`. For
+ * other values, this function returns an error.
+ * For KMAC operations, if `hw_backed = kHardenedBoolTrue` the sideloaded key
+ * coming from Keymgr is used. If `hw_backed = kHardenedBoolFalse`, the key
+ * configured by SW is used.
+ *
+ * For non-KMAC operations, the value of `hw_backed` can be either of
+ * `kHardenedBoolFalse` or `kHardenedBoolTrue`. It is recommended to set it to
+ * `kHardenedBoolFalse` for consistency.
  *
  * @param operation The chosen operation, see kmac_operation_t struct.
+ * @param security_str Security strength for KMAC (128 or 256).
+ * @param hw_backed Whether the key comes from the sideload port.
  * @return Error code.
  */
 OT_WARN_UNUSED_RESULT
 static status_t kmac_init(kmac_operation_t operation,
-                          kmac_security_str_t security_str) {
+                          kmac_security_str_t security_str,
+                          hardened_bool_t hw_backed) {
   HARDENED_TRY(wait_status_bit(KMAC_STATUS_SHA3_IDLE_BIT, 1));
 
   // If the operation is KMAC, ensure that the entropy complex has been
@@ -485,7 +497,13 @@ static status_t kmac_init(kmac_operation_t operation,
   // These bits should be set to 1 only if needed by the rest of the code
   // in this function.
   cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_KMAC_EN_BIT, 0);
-  cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_SIDELOAD_BIT, 0);
+  if (hw_backed == kHardenedBoolTrue) {
+    cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_SIDELOAD_BIT, 1);
+  } else if (hw_backed == kHardenedBoolFalse) {
+    cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_SIDELOAD_BIT, 0);
+  } else {
+    return OTCRYPTO_BAD_ARGS;
+  };
 
   // operation bit fields: Bit 0: `kmac_en`, Bit 1-2: `mode`
   cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_KMAC_EN_BIT,
@@ -712,7 +730,8 @@ static status_t kmac_process_msg_blocks(kmac_operation_t operation,
 
 status_t kmac_sha3_224(const uint8_t *message, size_t message_len,
                        uint32_t *digest) {
-  HARDENED_TRY(kmac_init(kKmacOperationSHA3, kKmacSecurityStrength224));
+  HARDENED_TRY(kmac_init(kKmacOperationSHA3, kKmacSecurityStrength224,
+                         /*hw_backed=*/kHardenedBoolFalse));
 
   size_t digest_len_words = 224 / 32;
   return kmac_process_msg_blocks(kKmacOperationSHA3, message, message_len,
@@ -721,7 +740,8 @@ status_t kmac_sha3_224(const uint8_t *message, size_t message_len,
 
 status_t kmac_sha3_256(const uint8_t *message, size_t message_len,
                        uint32_t *digest) {
-  HARDENED_TRY(kmac_init(kKmacOperationSHA3, kKmacSecurityStrength256));
+  HARDENED_TRY(kmac_init(kKmacOperationSHA3, kKmacSecurityStrength256,
+                         /*hw_backed=*/kHardenedBoolFalse));
 
   size_t digest_len_words = 256 / 32;
   return kmac_process_msg_blocks(kKmacOperationSHA3, message, message_len,
@@ -730,7 +750,8 @@ status_t kmac_sha3_256(const uint8_t *message, size_t message_len,
 
 status_t kmac_sha3_384(const uint8_t *message, size_t message_len,
                        uint32_t *digest) {
-  HARDENED_TRY(kmac_init(kKmacOperationSHA3, kKmacSecurityStrength384));
+  HARDENED_TRY(kmac_init(kKmacOperationSHA3, kKmacSecurityStrength384,
+                         /*hw_backed=*/kHardenedBoolFalse));
 
   size_t digest_len_words = 384 / 32;
   return kmac_process_msg_blocks(kKmacOperationSHA3, message, message_len,
@@ -739,7 +760,8 @@ status_t kmac_sha3_384(const uint8_t *message, size_t message_len,
 
 status_t kmac_sha3_512(const uint8_t *message, size_t message_len,
                        uint32_t *digest) {
-  HARDENED_TRY(kmac_init(kKmacOperationSHA3, kKmacSecurityStrength512));
+  HARDENED_TRY(kmac_init(kKmacOperationSHA3, kKmacSecurityStrength512,
+                         /*hw_backed=*/kHardenedBoolFalse));
 
   size_t digest_len_words = 512 / 32;
   return kmac_process_msg_blocks(kKmacOperationSHA3, message, message_len,
@@ -748,7 +770,8 @@ status_t kmac_sha3_512(const uint8_t *message, size_t message_len,
 
 status_t kmac_shake_128(const uint8_t *message, size_t message_len,
                         uint32_t *digest, size_t digest_len) {
-  HARDENED_TRY(kmac_init(kKmacOperationSHAKE, kKmacSecurityStrength128));
+  HARDENED_TRY(kmac_init(kKmacOperationSHAKE, kKmacSecurityStrength128,
+                         /*hw_backed=*/kHardenedBoolFalse));
 
   return kmac_process_msg_blocks(kKmacOperationSHAKE, message, message_len,
                                  digest, digest_len);
@@ -756,7 +779,8 @@ status_t kmac_shake_128(const uint8_t *message, size_t message_len,
 
 status_t kmac_shake_256(const uint8_t *message, size_t message_len,
                         uint32_t *digest, size_t digest_len) {
-  HARDENED_TRY(kmac_init(kKmacOperationSHAKE, kKmacSecurityStrength256));
+  HARDENED_TRY(kmac_init(kKmacOperationSHAKE, kKmacSecurityStrength256,
+                         /*hw_backed=*/kHardenedBoolFalse));
 
   return kmac_process_msg_blocks(kKmacOperationSHAKE, message, message_len,
                                  digest, digest_len);
@@ -766,7 +790,8 @@ status_t kmac_cshake_128(const uint8_t *message, size_t message_len,
                          const unsigned char *func_name, size_t func_name_len,
                          const unsigned char *cust_str, size_t cust_str_len,
                          uint32_t *digest, size_t digest_len) {
-  HARDENED_TRY(kmac_init(kKmacOperationCSHAKE, kKmacSecurityStrength128));
+  HARDENED_TRY(kmac_init(kKmacOperationCSHAKE, kKmacSecurityStrength128,
+                         /*hw_backed=*/kHardenedBoolFalse));
 
   HARDENED_TRY(kmac_write_prefix_block(kKmacOperationCSHAKE, func_name,
                                        func_name_len, cust_str, cust_str_len));
@@ -779,7 +804,8 @@ status_t kmac_cshake_256(const uint8_t *message, size_t message_len,
                          const unsigned char *func_name, size_t func_name_len,
                          const unsigned char *cust_str, size_t cust_str_len,
                          uint32_t *digest, size_t digest_len) {
-  HARDENED_TRY(kmac_init(kKmacOperationCSHAKE, kKmacSecurityStrength256));
+  HARDENED_TRY(kmac_init(kKmacOperationCSHAKE, kKmacSecurityStrength256,
+                         /*hw_backed=*/kHardenedBoolFalse));
 
   HARDENED_TRY(kmac_write_prefix_block(kKmacOperationCSHAKE, func_name,
                                        func_name_len, cust_str, cust_str_len));
@@ -792,9 +818,22 @@ status_t kmac_kmac_128(kmac_blinded_key_t *key, const uint8_t *message,
                        size_t message_len, const unsigned char *cust_str,
                        size_t cust_str_len, uint32_t *digest,
                        size_t digest_len) {
-  HARDENED_TRY(kmac_init(kKmacOperationKMAC, kKmacSecurityStrength128));
+  HARDENED_TRY(
+      kmac_init(kKmacOperationKMAC, kKmacSecurityStrength128, key->hw_backed));
 
-  HARDENED_TRY(kmac_write_key_block(key));
+  if (key->hw_backed == kHardenedBoolTrue) {
+    if (key->share0 != NULL || key->share1 != NULL ||
+        key->len != kKmacSideloadKeyLength / 8) {
+      return OTCRYPTO_BAD_ARGS;
+    }
+  } else if (key->hw_backed == kHardenedBoolFalse) {
+    if (key->share0 == NULL || key->share1 == NULL) {
+      return OTCRYPTO_BAD_ARGS;
+    }
+    HARDENED_TRY(kmac_write_key_block(key));
+  } else {
+    return OTCRYPTO_BAD_ARGS;
+  }
 
   HARDENED_TRY(kmac_write_prefix_block(kKmacOperationKMAC, /*func_name=*/NULL,
                                        /*func_name_len=*/0, cust_str,
@@ -808,9 +847,22 @@ status_t kmac_kmac_256(kmac_blinded_key_t *key, const uint8_t *message,
                        size_t message_len, const unsigned char *cust_str,
                        size_t cust_str_len, uint32_t *digest,
                        size_t digest_len) {
-  HARDENED_TRY(kmac_init(kKmacOperationKMAC, kKmacSecurityStrength256));
+  HARDENED_TRY(
+      kmac_init(kKmacOperationKMAC, kKmacSecurityStrength256, key->hw_backed));
 
-  HARDENED_TRY(kmac_write_key_block(key));
+  if (key->hw_backed == kHardenedBoolTrue) {
+    if (key->share0 != NULL || key->share1 != NULL ||
+        key->len != kKmacSideloadKeyLength / 8) {
+      return OTCRYPTO_BAD_ARGS;
+    }
+  } else if (key->hw_backed == kHardenedBoolFalse) {
+    if (key->share0 == NULL || key->share1 == NULL) {
+      return OTCRYPTO_BAD_ARGS;
+    }
+    HARDENED_TRY(kmac_write_key_block(key));
+  } else {
+    return OTCRYPTO_BAD_ARGS;
+  }
 
   HARDENED_TRY(kmac_write_prefix_block(kKmacOperationKMAC, /*func_name=*/NULL,
                                        /*func_name_len=*/0, cust_str,
