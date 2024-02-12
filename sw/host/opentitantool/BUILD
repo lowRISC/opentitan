@@ -25,6 +25,7 @@ rust_binary(
         "src/command/load_bitstream.rs",
         "src/command/mod.rs",
         "src/command/otp.rs",
+        "src/command/rescue.rs",
         "src/command/reset_sam3x.rs",
         "src/command/rsa.rs",
         "src/command/set_pll.rs",

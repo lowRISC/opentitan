@@ -48,6 +48,8 @@ enum RootCommandHierarchy {
     #[command(subcommand)]
     Otp(command::otp::Otp),
     #[command(subcommand)]
+    Rescue(command::rescue::RescueCommand),
+    #[command(subcommand)]
     Rsa(command::rsa::Rsa),
     Spi(command::spi::SpiCommand),
     #[command(subcommand)]
