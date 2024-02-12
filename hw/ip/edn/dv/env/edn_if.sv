@@ -36,4 +36,8 @@ interface edn_if(input clk, input rst_n);
     edn_disable_o = val;
   endfunction
 
+  function automatic string genbits_valid_path();
+    return {core_path, ".csrng_cmd_i.genbits_valid"};
+  endfunction // genbits_valid_path
+
 endinterface // edn_if

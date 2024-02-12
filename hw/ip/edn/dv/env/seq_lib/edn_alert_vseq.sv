@@ -32,10 +32,12 @@ class edn_alert_vseq extends edn_base_vseq;
 
   task test_edn_cs_sts_alert();
     string state_path;
+    string genbits_valid_path;
     state_e exp_state;
     bit [31:0] exp_hw_cmd_sts;
     bit send_generate;
     state_path = cfg.edn_vif.sm_err_path("edn_main_sm");
+    genbits_valid_path = cfg.edn_vif.genbits_valid_path();
     // Re-randomize config without invalid mubi values and without clearing the FIFOs.
     cfg.use_invalid_mubi  = 0;
     cfg.cmd_fifo_rst_pct  = 0;
@@ -160,13 +162,14 @@ class edn_alert_vseq extends edn_base_vseq;
     end
     // From now on we want the CSRNG status responses to be valid again.
     cfg.m_csrng_agent_cfg.rsp_sts_err = 0;
-    `DV_CHECK_STD_RANDOMIZE_FATAL(fips)
-    `DV_CHECK_STD_RANDOMIZE_FATAL(genbits)
-    // Load constant genbits data to check that the EDN does not accept any entropy.
-    // We wait for more than max_genbits_dly to see that the assertion CsErrAcceptNoEntropy_A
-    // does not trigger.
-    cfg.m_csrng_agent_cfg.m_genbits_push_agent_cfg.add_h_user_data({fips, genbits});
-    cfg.clk_rst_vif.wait_clks(1000);
+    // Force the genbits valid signal to high and verify that the EDN does not accept
+    // any further genbits.
+    `DV_SPINWAIT_EXIT(`DV_CHECK(uvm_hdl_force(cfg.edn_vif.genbits_valid_path(), 1'b1));
+                      cfg.clk_rst_vif.wait_clks(100);
+                      `DV_CHECK(uvm_hdl_release(cfg.edn_vif.genbits_valid_path()));,
+                      wait(cfg.m_csrng_agent_cfg.vif.genbits_push_if.ready);
+                      `uvm_fatal(`gfn, $sformatf({"The genbits ready signal should stay low after",
+                                                  " receiving an error sts signal from CSRNG."})))
     // Clear the genbits user data to prepare for the next test.
     cfg.m_csrng_agent_cfg.m_genbits_push_agent_cfg.clear_h_user_data();
     // Disable the EDN to prepare for the next test.
