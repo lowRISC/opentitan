@@ -11,8 +11,8 @@ load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
 load("@lowrisc_opentitan//rules:rv.bzl", "rv_rule")
 
 def _ot_static_library_impl(ctx):
-    output_lib = ctx.actions.declare_file("{}.a".format(ctx.attr.name))
-    output_flags = ctx.actions.declare_file("{}.link".format(ctx.attr.name))
+    output_lib = ctx.actions.declare_file("lib{}.a".format(ctx.attr.name))
+    output_flags = ctx.actions.declare_file("lib{}.link".format(ctx.attr.name))
 
     cc_toolchain = find_cc_toolchain(ctx).cc
 
