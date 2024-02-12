@@ -11,7 +11,7 @@ opentitan_test(
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/ip/lc_ctrl/data:lc_ctrl_regs",
-        "//hw/top_earlgrey/ip/clkmgr/data/autogen:clkmgr_regs",
+        "//hw/top_earlgrey/ip_autogen/clkmgr/data:clkmgr_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:i2c",
@@ -33,7 +33,7 @@ opentitan_test(
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/ip/lc_ctrl/data:lc_ctrl_regs",
-        "//hw/top_earlgrey/ip/clkmgr/data/autogen:clkmgr_regs",
+        "//hw/top_earlgrey/ip_autogen/clkmgr/data:clkmgr_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:i2c",

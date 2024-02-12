@@ -10,7 +10,6 @@ filegroup(
         "//hw/ip/adc_ctrl:all_files",
         "//hw/ip/aes:all_files",
         "//hw/ip/aon_timer:all_files",
-        "//hw/ip/clkmgr:all_files",
         "//hw/ip/csrng:all_files",
         "//hw/ip/edn:all_files",
         "//hw/ip/entropy_src:all_files",
