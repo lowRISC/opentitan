@@ -14,6 +14,7 @@ OT_WEAK epmp_state_t epmp_state;
 /**
  * Extern declarations of inline functions.
  */
+extern void epmp_state_unconfigure(uint32_t entry);
 extern void epmp_state_configure_tor(uint32_t entry, epmp_region_t region,
                                      epmp_perm_t perm);
 extern void epmp_state_configure_na4(uint32_t entry, epmp_region_t region,

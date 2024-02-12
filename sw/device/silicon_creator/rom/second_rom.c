@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/silicon_creator/rom/rom.h"
+#include "sw/device/silicon_creator/rom/second_rom.h"
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -23,7 +23,7 @@
 #include "sw/device/silicon_creator/lib/drivers/watchdog.h"
 #include "sw/device/silicon_creator/rom/boot_policy.h"
 #include "sw/device/silicon_creator/rom/bootstrap.h"
-#include "sw/device/silicon_creator/rom/rom_epmp.h"
+#include "sw/device/silicon_creator/rom/second_rom_epmp.h"
 #include "sw/device/silicon_creator/rom/sigverify_keys_rsa.h"
 #include "sw/device/silicon_creator/rom/sigverify_keys_spx.h"
 #include "sw/lib/sw/device/arch/device.h"
@@ -36,14 +36,23 @@
 #include "sw/lib/sw/device/silicon_creator/base/boot_measurements.h"
 #include "sw/lib/sw/device/silicon_creator/base/sec_mmio.h"
 #include "sw/lib/sw/device/silicon_creator/base/static_critical_version.h"
-#include "sw/lib/sw/device/silicon_creator/boot_data.h"
 #include "sw/lib/sw/device/silicon_creator/cfi.h"
+#include "sw/lib/sw/device/silicon_creator/epmp_state.h"
 #include "sw/lib/sw/device/silicon_creator/error.h"
+#include "sw/lib/sw/device/silicon_creator/rom_print.h"
 #include "sw/lib/sw/device/silicon_creator/shutdown.h"
 #include "sw/lib/sw/device/silicon_creator/sigverify/sigverify.h"
 
 #include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 #include "otp_ctrl_regs.h"
+
+/**
+ * Type alias for the ROM_EXT entry point.
+ *
+ * The entry point address obtained from the ROM_EXT manifest must be cast to a
+ * pointer to this type before being called.
+ */
+typedef void rom_ext_entry_point(void);
 
 /**
  * Table of forward branch Control Flow Integrity (CFI) counters.
@@ -78,8 +87,6 @@ CFI_DEFINE_COUNTERS(rom_counters, ROM_CFI_FUNC_COUNTERS_TABLE);
 
 // Life cycle state of the chip.
 lifecycle_state_t lc_state = (lifecycle_state_t)0;
-// Boot data from flash.
-boot_data_t boot_data = {0};
 
 OT_ALWAYS_INLINE
 OT_WARN_UNUSED_RESULT
@@ -125,62 +132,27 @@ static void rom_bootstrap_message(void) {
 OT_WARN_UNUSED_RESULT
 static rom_error_t rom_init(void) {
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomInit, 1);
-  sec_mmio_init();
-  // Initialize pinmux configuration so we can use the UART.
-  pinmux_init();
-  // Configure UART0 as stdout.
-  uart_init(kUartNCOValue);
+
+  OT_DISCARD(rom_printf("Starting 2nd stage ROM\r\n"));
+
+  // Reset MMIO counters
+  sec_mmio_next_stage_init();
 
   // Set static_critical region format version.
   static_critical_version = kStaticCriticalVersion1;
 
-  // There are no conditional checks before writing to this CSR because it is
-  // expected that if relevant Ibex countermeasures are disabled, this will
-  // result in a nop.
-  CSR_WRITE(CSR_REG_SECURESEED, rnd_uint32());
-
-  // Write the OTP value to bits 0 to 5 of the cpuctrl CSR.
-  uint32_t cpuctrl_csr;
-  CSR_READ(CSR_REG_CPUCTRL, &cpuctrl_csr);
-  cpuctrl_csr = bitfield_field32_write(
-      cpuctrl_csr, (bitfield_field32_t){.mask = 0x3f, .index = 0},
-      otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_CPUCTRL_OFFSET));
-  CSR_WRITE(CSR_REG_CPUCTRL, cpuctrl_csr);
-
   lc_state = lifecycle_state_get();
-
-  // Update epmp config for debug rom according to lifecycle state.
-  rom_epmp_config_debug_rom(lc_state);
 
   // Re-initialize the watchdog timer.
   watchdog_init(lc_state);
   SEC_MMIO_WRITE_INCREMENT(kWatchdogSecMmioInit);
 
-  // Initialize the shutdown policy.
-  HARDENED_RETURN_IF_ERROR(shutdown_init(lc_state));
-
-  flash_ctrl_init();
-  SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioInit);
-
-  // Initialize in-memory copy of the ePMP register configuration.
-  rom_epmp_state_init(lc_state);
+  // Update in-memory copy of the ePMP register configuration.
+  second_rom_epmp_state_init(lc_state);
+  HARDENED_RETURN_IF_ERROR(epmp_state_check());
 
   // Check that AST is in the expected state.
   HARDENED_RETURN_IF_ERROR(ast_check(lc_state));
-
-  // Initialize the retention RAM based on the reset reason and the OTP value.
-  // Note: Retention RAM is always reset on PoR regardless of the OTP value.
-  uint32_t reset_reasons = rstmgr_reason_get();
-  uint32_t reset_mask =
-      (1 << kRstmgrReasonPowerOn) |
-      otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_RET_RAM_RESET_MASK_OFFSET);
-  if ((reset_reasons & reset_mask) != 0) {
-    retention_sram_init();
-    retention_sram_get()->version = kRetentionSramVersion1;
-  }
-  // Store the reset reason in retention RAM and clear the register.
-  retention_sram_get()->creator.reset_reasons = reset_reasons;
-  rstmgr_reason_clear(reset_reasons);
 
   // This function is a NOP unless ROM is built for an fpga.
   device_fpga_version_print();
@@ -192,121 +164,12 @@ static rom_error_t rom_init(void) {
   return kErrorOk;
 }
 
-/**
- * Verifies a ROM_EXT.
- *
- * This function performs bounds checks on the fields of the manifest, checks
- * its `identifier` and `security_version` fields, and verifies its signature.
- *
- * @param Manifest of the ROM_EXT to be verified.
- * @param[out] flash_exec Value to write to the flash_ctrl EXEC register.
- * @return Result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-static rom_error_t rom_verify(const manifest_t *manifest,
-                              uint32_t *flash_exec) {
-  // Used for invalidating signatures if the security version of the manifest is
-  // smaller than the minimum required security version.
-  const uint32_t extra_word = UINT32_MAX;
-  const uint32_t *anti_rollback = NULL;
-  size_t anti_rollback_len = 0;
-  if (launder32(manifest->security_version) <
-      boot_data.min_security_version_rom_ext) {
-    anti_rollback = &extra_word;
-    anti_rollback_len = sizeof(extra_word);
-  }
-
-  CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomVerify, 1);
-  *flash_exec = 0;
-  HARDENED_RETURN_IF_ERROR(boot_policy_manifest_check(manifest, &boot_data));
-
-  const sigverify_rsa_key_t *rsa_key;
-  HARDENED_RETURN_IF_ERROR(sigverify_rsa_key_get(
-      sigverify_rsa_key_id_get(&manifest->rsa_modulus), lc_state, &rsa_key));
-
-  const sigverify_spx_key_t *spx_key;
-  const sigverify_spx_signature_t *spx_signature;
-  uint32_t sigverify_spx_en = sigverify_spx_verify_enabled(lc_state);
-  if (launder32(sigverify_spx_en) != kSigverifySpxDisabledOtp) {
-    const manifest_ext_spx_key_t *ext_spx_key;
-    HARDENED_RETURN_IF_ERROR(manifest_ext_get_spx_key(manifest, &ext_spx_key));
-    HARDENED_RETURN_IF_ERROR(sigverify_spx_key_get(
-        sigverify_spx_key_id_get(&ext_spx_key->key), lc_state, &spx_key));
-
-    const manifest_ext_spx_signature_t *ext_spx_signature;
-    HARDENED_RETURN_IF_ERROR(
-        manifest_ext_get_spx_signature(manifest, &ext_spx_signature));
-    spx_signature = &ext_spx_signature->signature;
-  } else {
-    HARDENED_CHECK_EQ(sigverify_spx_en, kSigverifySpxDisabledOtp);
-  }
-
-  memset(boot_measurements.rom_ext.data, (int)rnd_uint32(),
-         sizeof(boot_measurements.rom_ext.data));
-
-  hmac_sha256_init();
-  hmac_sha256_update(anti_rollback, anti_rollback_len);
-  HARDENED_CHECK_GE(manifest->security_version,
-                    boot_data.min_security_version_rom_ext);
-
-  // Hash usage constraints.
-  manifest_usage_constraints_t usage_constraints_from_hw;
-  sigverify_usage_constraints_get(manifest->usage_constraints.selector_bits,
-                                  &usage_constraints_from_hw);
-  hmac_sha256_update(&usage_constraints_from_hw,
-                     sizeof(usage_constraints_from_hw));
-  // Hash the remaining part of the image.
-  manifest_digest_region_t digest_region = manifest_digest_region_get(manifest);
-
-  hmac_sha256_update(digest_region.start, digest_region.length);
-  // Verify signature
-  hmac_digest_t act_digest;
-  hmac_sha256_final(&act_digest);
-
-  static_assert(sizeof(boot_measurements.rom_ext) == sizeof(act_digest),
-                "Unexpected ROM_EXT digest size.");
-  memcpy(&boot_measurements.rom_ext, &act_digest,
-         sizeof(boot_measurements.rom_ext));
-
-  CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomVerify, 2);
-  // Swap the order of signature verifications randomly.
-  *flash_exec = 0;
-  if (rnd_uint32() < 0x80000000) {
-    HARDENED_RETURN_IF_ERROR(sigverify_rsa_verify(
-        &manifest->rsa_signature, rsa_key, &act_digest, lc_state, flash_exec));
-    return sigverify_spx_verify(
-        spx_signature, spx_key, lc_state, &usage_constraints_from_hw,
-        sizeof(usage_constraints_from_hw), anti_rollback, anti_rollback_len,
-        digest_region.start, digest_region.length, flash_exec);
-  } else {
-    HARDENED_RETURN_IF_ERROR(sigverify_spx_verify(
-        spx_signature, spx_key, lc_state, &usage_constraints_from_hw,
-        sizeof(usage_constraints_from_hw), anti_rollback, anti_rollback_len,
-        digest_region.start, digest_region.length, flash_exec));
-    return sigverify_rsa_verify(&manifest->rsa_signature, rsa_key, &act_digest,
-                                lc_state, flash_exec);
-  }
-}
-
 /* These symbols are defined in
- * `opentitan/sw/device/silicon_creator/rom/rom.ld`, and describes the
+ * `opentitan/sw/device/silicon_creator/rom/second_rom.ld`, and describes the
  * location of the flash header.
  */
-extern char _rom_ext_virtual_start_address[];
+extern char _rom_ext_virtual_start[];
 extern char _rom_ext_virtual_size[];
-/**
- * Compute the virtual address corresponding to the physical address `lma_addr`.
- *
- * @param manifest Pointer to the current manifest.
- * @param lma_addr Load address or physical address.
- * @return the computed virtual address.
- */
-OT_WARN_UNUSED_RESULT
-static inline uintptr_t rom_ext_vma_get(const manifest_t *manifest,
-                                        uintptr_t lma_addr) {
-  return (lma_addr - (uintptr_t)manifest +
-          (uintptr_t)_rom_ext_virtual_start_address);
-}
 
 /**
  * Performs consistency checks before booting a ROM_EXT.
@@ -329,12 +192,6 @@ static void rom_pre_boot_check(void) {
   HARDENED_CHECK_EQ(lc_state_check, lc_state);
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomPreBootCheck, 3);
 
-  // Check cached boot data.
-  rom_error_t boot_data_ok = boot_data_check(&boot_data);
-  if (launder32(boot_data_ok) != kErrorOk) {
-    HARDENED_TRAP();
-  }
-  HARDENED_CHECK_EQ(boot_data_ok, kErrorOk);
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomPreBootCheck, 4);
 
   // Check the ePMP state
@@ -358,176 +215,55 @@ static void rom_pre_boot_check(void) {
       rstmgr_info_en_check(retention_sram_get()->creator.reset_reasons));
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomPreBootCheck, 6);
 
-  sec_mmio_check_counters(/*expected_check_count=*/3);
+  sec_mmio_check_counters(/*expected_check_count=*/2);
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomPreBootCheck, 7);
 }
 
 /**
- * Boots a ROM_EXT.
- *
- * Note: This function should not return under normal conditions. Any returns
- * from this function must result in shutdown.
- *
- * @param manifest Manifest of the ROM_EXT to boot.
- * @param flash_exec Value to write to the flash_ctrl EXEC register.
- * @return rom_error_t Result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-static rom_error_t rom_boot(const manifest_t *manifest, uint32_t flash_exec) {
-  CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomBoot, 1);
-  HARDENED_RETURN_IF_ERROR(keymgr_state_check(kKeymgrStateReset));
-
-  const keymgr_binding_value_t *attestation_measurement =
-      &manifest->binding_value;
-  uint32_t use_rom_ext_measurement =
-      otp_read32(OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_KEYMGR_ROM_EXT_MEAS_EN_OFFSET);
-  if (launder32(use_rom_ext_measurement) == kHardenedBoolTrue) {
-    HARDENED_CHECK_EQ(use_rom_ext_measurement, kHardenedBoolTrue);
-    attestation_measurement =
-        (const keymgr_binding_value_t *)&boot_measurements.rom_ext;
-  } else {
-    HARDENED_CHECK_NE(use_rom_ext_measurement, kHardenedBoolTrue);
-  }
-  keymgr_sw_binding_set(&manifest->binding_value, attestation_measurement);
-  keymgr_creator_max_ver_set(manifest->max_key_version);
-  SEC_MMIO_WRITE_INCREMENT(kKeymgrSecMmioSwBindingSet +
-                           kKeymgrSecMmioCreatorMaxVerSet);
-
-  sec_mmio_check_counters(/*expected_check_count=*/2);
-
-  // Configure address translation, compute the epmp regions and the entry
-  // point for the virtual address in case the address translation is enabled.
-  // Otherwise, compute the epmp regions and the entry point for the load
-  // address.
-  epmp_region_t text_region = manifest_code_region_get(manifest);
-  uintptr_t entry_point = manifest_entry_point_get(manifest);
-  switch (launder32(manifest->address_translation)) {
-    case kHardenedBoolTrue:
-      HARDENED_CHECK_EQ(manifest->address_translation, kHardenedBoolTrue);
-      ibex_addr_remap_0_set((uintptr_t)_rom_ext_virtual_start_address,
-                            (uintptr_t)manifest, (size_t)_rom_ext_virtual_size);
-      SEC_MMIO_WRITE_INCREMENT(kAddressTranslationSecMmioConfigure);
-
-      // Unlock read-only for the whole rom_ext virtual memory.
-      HARDENED_RETURN_IF_ERROR(epmp_state_check());
-      rom_epmp_unlock_rom_ext_r(
-          (epmp_region_t){.start = (uintptr_t)_rom_ext_virtual_start_address,
-                          .end = (uintptr_t)_rom_ext_virtual_start_address +
-                                 (uintptr_t)_rom_ext_virtual_size});
-
-      // Move the ROM_EXT execution section from the load address to the virtual
-      // address.
-      text_region.start = rom_ext_vma_get(manifest, text_region.start);
-      text_region.end = rom_ext_vma_get(manifest, text_region.end);
-      entry_point = rom_ext_vma_get(manifest, entry_point);
-      break;
-    case kHardenedBoolFalse:
-      HARDENED_CHECK_EQ(manifest->address_translation, kHardenedBoolFalse);
-      break;
-    default:
-      HARDENED_TRAP();
-  }
-
-  // Unlock execution of ROM_EXT executable code (text) sections.
-  HARDENED_RETURN_IF_ERROR(epmp_state_check());
-  rom_epmp_unlock_rom_ext_rx(text_region);
-
-  CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomBoot, 2, kCfiRomPreBootCheck);
-  rom_pre_boot_check();
-  CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomBoot, 4);
-  CFI_FUNC_COUNTER_CHECK(rom_counters, kCfiRomPreBootCheck, 8);
-
-  // Enable execution of code from flash if signature is verified.
-  flash_ctrl_exec_set(flash_exec);
-  SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioExecSet);
-
-  sec_mmio_check_values(rnd_uint32());
-  sec_mmio_check_counters(/*expected_check_count=*/5);
-
-  // Jump to ROM_EXT entry point.
-  enum {
-    /**
-     * Expected value of the `kCfiRomTryBoot` counter when jumping to the first
-     * ROM_EXT image.
-     */
-    kCfiRomTryBootManifest0Val = 3 * kCfiIncrement + kCfiRomTryBootVal0,
-    /**
-     * Expected value of the `kCfiRomTryBoot` counter when jumping to the second
-     * ROM_EXT image.
-     */
-    kCfiRomTryBootManifest1Val = 10 * kCfiIncrement + kCfiRomTryBootVal0,
-  };
-  const manifest_t *manifest_check = NULL;
-  switch (launder32(rom_counters[kCfiRomTryBoot])) {
-    case kCfiRomTryBootManifest0Val:
-      HARDENED_CHECK_EQ(rom_counters[kCfiRomTryBoot],
-                        kCfiRomTryBootManifest0Val);
-      manifest_check = boot_policy_manifests_get().ordered[0];
-      break;
-    case kCfiRomTryBootManifest1Val:
-      HARDENED_CHECK_EQ(rom_counters[kCfiRomTryBoot],
-                        kCfiRomTryBootManifest1Val);
-      manifest_check = boot_policy_manifests_get().ordered[1];
-      break;
-    default:
-      HARDENED_TRAP();
-  }
-  HARDENED_CHECK_EQ(manifest, manifest_check);
-
-  if (launder32(manifest_check->address_translation) == kHardenedBoolTrue) {
-    HARDENED_CHECK_EQ(manifest_check->address_translation, kHardenedBoolTrue);
-    HARDENED_CHECK_EQ(rom_ext_vma_get(manifest_check,
-                                      manifest_entry_point_get(manifest_check)),
-                      entry_point);
-  } else {
-    HARDENED_CHECK_EQ(manifest_check->address_translation, kHardenedBoolFalse);
-    HARDENED_CHECK_EQ(manifest_entry_point_get(manifest_check), entry_point);
-  }
-  CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomBoot, 5);
-  ((rom_ext_entry_point *)entry_point)();
-
-  return kErrorRomBootFailed;
-}
-
-/**
- * Attempts to boot ROM_EXTs in the order given by the boot policy module.
+ * Attempts to boot ROM_EXT.
  *
  * @return Result of the last attempt.
  */
 OT_WARN_UNUSED_RESULT
 static rom_error_t rom_try_boot(void) {
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomTryBoot, 1);
-
-  // Read boot data from flash
-  HARDENED_RETURN_IF_ERROR(boot_data_read(lc_state, &boot_data));
-
-  boot_policy_manifests_t manifests = boot_policy_manifests_get();
-  uint32_t flash_exec = 0;
-
-  CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomTryBoot, 2, kCfiRomVerify);
-  rom_error_t error = rom_verify(manifests.ordered[0], &flash_exec);
+  CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomTryBoot, 2,
+                            kCfiRomPreBootCheck);
+  rom_pre_boot_check();
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomTryBoot, 4);
+  CFI_FUNC_COUNTER_CHECK(rom_counters, kCfiRomPreBootCheck, 8);
 
-  if (launder32(error) == kErrorOk) {
-    HARDENED_CHECK_EQ(error, kErrorOk);
-    CFI_FUNC_COUNTER_CHECK(rom_counters, kCfiRomVerify, 3);
-    CFI_FUNC_COUNTER_INIT(rom_counters, kCfiRomTryBoot);
-    CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomTryBoot, 1, kCfiRomBoot);
-    HARDENED_RETURN_IF_ERROR(rom_boot(manifests.ordered[0], flash_exec));
-    return kErrorRomBootFailed;
-  }
+  // TODO: Do not hardcode that.
+  uintptr_t rom_ext_lma = 0x41080000;
 
-  CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomTryBoot, 5, kCfiRomVerify);
-  HARDENED_RETURN_IF_ERROR(rom_verify(manifests.ordered[1], &flash_exec));
-  CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomTryBoot, 7);
-  CFI_FUNC_COUNTER_CHECK(rom_counters, kCfiRomVerify, 3);
+  // TODO: Load ROM extension from flash, through SPI host,
+  //       at rom_ext_lma (shared SRAM).
 
-  CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomTryBoot, 8, kCfiRomBoot);
-  HARDENED_RETURN_IF_ERROR(rom_boot(manifests.ordered[1], flash_exec));
+  // TODO: Verify ROM extension.
+
+  // TODO: Remap the ROM ext virtual region to shared SRAM.
+  // Use a reserved remapper, that must not be used by ROM patches.
+  // ibex_addr_remap_1_set((uintptr_t)_rom_ext_virtual_start,
+  //                       rom_ext_lma, (size_t)_rom_ext_virtual_size);
+  HARDENED_RETURN_IF_ERROR(epmp_state_check());
+
+  // TODO: Do not hardcode the start and end offset for the ePMP region.
+  second_rom_epmp_unlock_rom_ext(
+      (epmp_region_t){.start = (uintptr_t)_rom_ext_virtual_start + 0x400,
+                      .end = (uintptr_t)_rom_ext_virtual_start + 0x177c},
+      (epmp_region_t){.start = rom_ext_lma,
+                      .end = rom_ext_lma + (uintptr_t)_rom_ext_virtual_size});
+
+  // TODO: Entry point should come from the manifest.
+  uintptr_t entry_point = (uintptr_t)_rom_ext_virtual_start + 0x480;
+  OT_DISCARD(rom_printf("Jumping to ROM_EXT entry point at 0x%x\r\n",
+                        (unsigned)entry_point));
+  ((rom_ext_entry_point *)entry_point)();
+
   return kErrorRomBootFailed;
 }
 
-void rom_main(void) {
+void second_rom_main(void) {
   CFI_FUNC_COUNTER_INIT(rom_counters, kCfiRomMain);
 
   CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomMain, 1, kCfiRomInit);

@@ -18,18 +18,18 @@ __DYNAMIC = 0;
 INCLUDE hw/top_darjeeling/sw/autogen/top_darjeeling_memory.ld
 
 /**
- * The boot address, which indicates the location of the initial interrupt
- * vector.
+ * The Second ROM boot address, which indicates the location of the initial
+ * interrupt vector.
  */
-_rom_boot_address = ORIGIN(rom0);
+_second_rom_boot_address = ORIGIN(rom1);
 
 /**
  * Symbols to be used in the setup of the address translation for ROM_EXT.
  */
-_rom_ext_virtual_start_address = ORIGIN(rom_ext_virtual);
+_rom_ext_virtual_start = ORIGIN(rom_ext_virtual);
 _rom_ext_virtual_size = LENGTH(rom_ext_virtual);
 ASSERT((_rom_ext_virtual_size <= (LENGTH(ram_ctn) / 2)),
-  "Error: rom ext flash is bigger than slot.");
+  "Error: rom ext is bigger than slot.");
 
 /* DV Log offset (has to be different to other boot stages). */
 _dv_log_offset = 0x0;
@@ -54,11 +54,10 @@ __abi_shutdown$ = 0x0;
  * See The RISC-V Instruction Set Manual Volume II: Privileged Architecture
  * for more information about PMP address register encodings.
  */
-_epmp_text_tor_lo = _text_start / 4;
-_epmp_text_tor_hi = _text_end / 4;
-_epmp_stack_guard_na4 = _stack_start / 4;
+_epmp_second_text_tor_lo = _text_start / 4;
+_epmp_second_text_tor_hi = _text_end / 4;
 
-ENTRY(_rom_start_boot);
+ENTRY(_second_rom_start_boot);
 
 /**
  * NOTE: We have to align each section to word boundaries as our current
@@ -71,10 +70,10 @@ SECTIONS {
    * This has to be set up at the boot address, so that execution jumps to the
    * reset handler correctly.
    */
-  .vectors _rom_boot_address : ALIGN(256) {
+  .vectors _second_rom_boot_address : ALIGN(256) {
     _text_start = .;
     KEEP(*(.vectors))
-  } > rom0
+  } > rom1
 
   /**
    * C runtime (CRT) section, containing program initialization code.
@@ -91,7 +90,7 @@ SECTIONS {
         SIZEOF(.vectors) + SIZEOF(.crt) <= _epmp_reset_rx_size,
         "Error: .crt overflows reset ePMP region");
     . = MAX(., _epmp_reset_rx_size - SIZEOF(.vectors));
-  } > rom0
+  } > rom1
 
   /**
    * Standard text section, containing program code.
@@ -103,7 +102,7 @@ SECTIONS {
 
     /* Ensure section end is word-aligned. */
     . = ALIGN(4);
-  } > rom0
+  } > rom1
 
   /**
    * Shutdown text section, containing shutdown function(s).
@@ -117,7 +116,7 @@ SECTIONS {
     /* Ensure section end is word-aligned. */
     . = ALIGN(4);
     _text_end = .;
-  } > rom0
+  } > rom1
 
   /**
    * Read-only data section, containing all large compile-time constants, like
@@ -130,7 +129,7 @@ SECTIONS {
     *(.srodata.*)
     *(.rodata)
     *(.rodata.*)
-  } > rom0
+  } > rom1
 
   /**
    * Critical static data that is accessible by both the ROM and the ROM
@@ -185,9 +184,9 @@ SECTIONS {
    *
    * This is the last thing in rom.
    */
-  .chip_info _rom0_chip_info_start : ALIGN(4) {
+  .chip_info _rom1_chip_info_start : ALIGN(4) {
     KEEP(*(.chip_info))
-  } > rom0
+  } > rom1
 
   INCLUDE sw/device/info_sections.ld
 }

@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_ROM_ROM_EPMP_H_
-#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_ROM_ROM_EPMP_H_
+#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_ROM_SECOND_ROM_EPMP_H_
+#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_ROM_SECOND_ROM_EPMP_H_
 
 #include <stdint.h>
 
@@ -45,39 +45,35 @@ extern "C" {
  *
  * @param lc_state The current lifecycle state to check for debug enable.
  */
-void rom_epmp_state_init(lifecycle_state_t lc_state);
+void second_rom_epmp_state_init(lifecycle_state_t lc_state);
 
 /**
- * Unlocks the provided ROM_EXT image region with read-execute permissions.
+ * Unlocks the provided ROM_EXT image regions.
+ *
+ * ROM_EXT is loaded into rom_ext_lma region (i.e. CTN RAM) and it is expected
+ * that a remap has been configured from there to rom_ext_virtual region.
+ *
+ * This function will configure the following PMP rules:
+ * - rom_ext_text region: read-execute
+ * - rom_ext_virtual region: read-only
+ * - rom_ext_lma region: read-only
+ * It will also ensure that rom_ext_text region is contained into
+ * rom_ext_virtual region.
  *
  * The provided ePMP state is also updated to reflect the changes made to the
  * hardware configuration.
- *
- * @param region Region for executable sections in ROM_EXT image.
- */
-void rom_epmp_unlock_rom_ext_rx(epmp_region_t region);
-
-/**
- * Unlocks the provided ROM_EXT image region with read-only permissions.
- *
- * The provided ePMP state is also updated to reflect the changes made to the
- * hardware configuration.
- * The image size must be power of 2 as this function uses NAPOT
+ * The physical region size must be power of 2 as this function uses NAPOT
  * (Naturally-Aligned-Power-Of-Two) addressing mode.
  *
- * @param region Region in the ROM_EXT image to receive read-only permission.
+ * @param rom_ext_text Region in the ROM_EXT image to receive read-execute
+ *                     permission (VMA).
+ * @param rom_ext_lma Region in the ROM_EXT image to receive read-only
+ *                     permission (LMA).
  */
-void rom_epmp_unlock_rom_ext_r(epmp_region_t region);
-/**
- * Configure the ePMP entry to manage access to Debug ROM based on life cycle
- * state.
- *
- * @param lc_state The current lifecycle state to check for debug enable.
- */
-void rom_epmp_config_debug_rom(lifecycle_state_t lc_state);
-
+void second_rom_epmp_unlock_rom_ext(epmp_region_t rom_ext_text,
+                                    epmp_region_t rom_ext_lma);
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
 
-#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_ROM_ROM_EPMP_H_
+#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_ROM_SECOND_ROM_EPMP_H_
