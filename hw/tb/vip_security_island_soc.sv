@@ -22,8 +22,6 @@ module vip_security_island_soc
 ) (
   output logic       clk_vip,
   output logic       rst_n_vip,
-  // secure boot enabled
-  output logic       secure_boot,
   output logic [1:0] bootmode,
   // UART interface
   input logic        uart_tx,
@@ -34,14 +32,11 @@ module vip_security_island_soc
   output logic       jtag_tms,
   output logic       jtag_tdi,
   input logic        jtag_tdo,
-  // SPI hots
-  output logic [3:0] spi_secd_sd_o,
-  input logic [3:0]  spi_secd_sd_i,
-  input logic [3:0]  spi_secd_sd_oe_i,
-  input logic        spi_secd_csb_oe_i,
-  input logic        spi_secd_csb_i,
-  input logic        spi_secd_sck_oe_i,
-  input logic        spi_secd_sck_i
+  // SPI host wires
+  inout wire SPI_D0,
+  inout wire SPI_D1,
+  inout wire SPI_SCK,
+  inout wire SPI_CSB
 );
 
   ///////////////////////////////
@@ -73,35 +68,13 @@ module vip_security_island_soc
     bootmode = mode;
   endtask
 
-  /////////////////
-  // Secure boot //
-  /////////////////
-
-  // TODO: secure boot emulation mode is currently not tested
-  assign secure_boot = bootmode[0];
-
   ////////////////
   //  SPI Host  //
   ////////////////
 
-  wire  SPI_D0, SPI_D1, SPI_SCK, SPI_CSB, WPNeg, RESETNeg;
-  wire  PWROK_S, IOPWROK_S, BIAS_S, RETC_S;
-
+  wire  WPNeg, RESETNeg;
   assign RESETNeg = 1'b1;
   assign WPNeg    = 1'b0;
-
-  pad_alsaqr i_I0 ( .OEN(~spi_secd_sd_oe_i[0]), .I(spi_secd_sd_i[0]), .O(), .PUEN(1'b1), .PAD(SPI_D0),
-                    .DRV(2'b00), .SLW(1'b0), .SMT(1'b0), .PWROK(PWROK_S),
-                    .IOPWROK(IOPWROK_S), .BIAS(BIAS_S), .RETC(RETC_S)   );
-  pad_alsaqr i_I1 ( .OEN(~spi_secd_sd_oe_i[1]), .I(), .O(spi_secd_sd_o[1]), .PUEN(1'b1), .PAD(SPI_D1),
-                    .DRV(2'b00), .SLW(1'b0), .SMT(1'b0), .PWROK(PWROK_S),
-                    .IOPWROK(IOPWROK_S), .BIAS(BIAS_S), .RETC(RETC_S)   );
-  pad_alsaqr i_SCK (.OEN(~spi_secd_sck_oe_i), .I(spi_secd_sck_i), .O(), .PUEN(1'b1), .PAD(SPI_SCK),
-                    .DRV(2'b00), .SLW(1'b0), .SMT(1'b0), .PWROK(PWROK_S),
-                    .IOPWROK(IOPWROK_S), .BIAS(BIAS_S), .RETC(RETC_S)   );
-  pad_alsaqr i_CSB (.OEN(~spi_secd_csb_oe_i), .I(spi_secd_csb_i), .O(), .PUEN(1'b1), .PAD(SPI_CSB),
-                    .DRV(2'b00), .SLW(1'b0), .SMT(1'b0), .PWROK(PWROK_S),
-                    .IOPWROK(IOPWROK_S), .BIAS(BIAS_S), .RETC(RETC_S)   );
 
   s25fs512s #(
     .UserPreload ( 0 )
@@ -325,11 +298,11 @@ module vip_security_island_soc
     jtag_secd_dbg.write_dmi(dm_ot::SBAddress0, to_host_addr); // tohost address
     jtag_secd_dbg.wait_idle(10);
     do begin
-	     do jtag_secd_dbg.read_dmi(dm_ot::SBCS, sbcs);
-	     while (sbcs.sbbusy);
+             do jtag_secd_dbg.read_dmi(dm_ot::SBCS, sbcs);
+             while (sbcs.sbbusy);
        jtag_secd_dbg.write_dmi(dm_ot::SBAddress0, to_host_addr); // tohost address
-	     do jtag_secd_dbg.read_dmi(dm_ot::SBCS, sbcs);
-	     while (sbcs.sbbusy);
+             do jtag_secd_dbg.read_dmi(dm_ot::SBCS, sbcs);
+             while (sbcs.sbbusy);
        jtag_secd_dbg.read_dmi(dm_ot::SBData0, retval);
        # 400ns;
     end while (~retval[0]);
@@ -514,5 +487,39 @@ module vip_security_island_soc
     if (exit_code) $error("[UART] FAILED: return code %0d", exit_code);
     else $display("[UART] SUCCESS");
   endtask
-*/ 
+*/
+endmodule
+
+// Map pad IO to tristate wires to adapt from SoC IO (not needed for chip instances).
+
+module vip_security_island_tristate (
+  // SPI host pad IO
+  output logic [3:0] spi_secd_sd_o,
+  input logic  [3:0] spi_secd_sd_i,
+  input logic  [3:0] spi_secd_sd_oe_i,
+  input logic        spi_secd_csb_oe_i,
+  input logic        spi_secd_csb_i,
+  input logic        spi_secd_sck_oe_i,
+  input logic        spi_secd_sck_i,
+  // SPI host wires
+  inout wire SPI_D0,
+  inout wire SPI_D1,
+  inout wire SPI_SCK,
+  inout wire SPI_CSB
+);
+
+  wire  PWROK_S, IOPWROK_S, BIAS_S, RETC_S;
+
+  pad_alsaqr i_I0 ( .OEN(~spi_secd_sd_oe_i[0]), .I(spi_secd_sd_i[0]), .O(), .PUEN(1'b1), .PAD(SPI_D0),
+                    .DRV(2'b00), .SLW(1'b0), .SMT(1'b0), .PWROK(PWROK_S),
+                    .IOPWROK(IOPWROK_S), .BIAS(BIAS_S), .RETC(RETC_S)   );
+  pad_alsaqr i_I1 ( .OEN(~spi_secd_sd_oe_i[1]), .I(), .O(spi_secd_sd_o[1]), .PUEN(1'b1), .PAD(SPI_D1),
+                    .DRV(2'b00), .SLW(1'b0), .SMT(1'b0), .PWROK(PWROK_S),
+                    .IOPWROK(IOPWROK_S), .BIAS(BIAS_S), .RETC(RETC_S)   );
+  pad_alsaqr i_SCK (.OEN(~spi_secd_sck_oe_i), .I(spi_secd_sck_i), .O(), .PUEN(1'b1), .PAD(SPI_SCK),
+                    .DRV(2'b00), .SLW(1'b0), .SMT(1'b0), .PWROK(PWROK_S),
+                    .IOPWROK(IOPWROK_S), .BIAS(BIAS_S), .RETC(RETC_S)   );
+  pad_alsaqr i_CSB (.OEN(~spi_secd_csb_oe_i), .I(spi_secd_csb_i), .O(), .PUEN(1'b1), .PAD(SPI_CSB),
+                    .DRV(2'b00), .SLW(1'b0), .SMT(1'b0), .PWROK(PWROK_S),
+                    .IOPWROK(IOPWROK_S), .BIAS(BIAS_S), .RETC(RETC_S)   );
 endmodule

@@ -6,7 +6,7 @@ dependencies:
 
   axi:                  { git: "https://github.com/pulp-platform/axi.git", version: =0.39.1  }
   cluster_interconnect: { git: "https://github.com/pulp-platform/cluster_interconnect.git", version: "1.1.2" }
-  idma:                 { git: "git@github.com:alSaqr-platform/idma.git", version: 0.5.1 }
+  idma:                 { git: "git@github.com:pulp-platform/idma.git", version: 0.5.1 }
   register_interface:   { git: "https://github.com/pulp-platform/register_interface.git", version: 0.3.2 }
 
 export_include_dirs:
@@ -809,8 +809,11 @@ sources:
 ##### top module
 
       - hw/top_earlgrey/rtl/autogen/top_earlgrey_pkg.sv
-      - hw/top_earlgrey/rtl/autogen/top_earlgrey_rnd_cnst_pkg.sv    
+      - hw/top_earlgrey/rtl/autogen/top_earlgrey_rnd_cnst_pkg.sv
       - hw/top_earlgrey/rtl/jtag_id_pkg.sv
+      - hw/top_earlgrey/top/top_earlgrey_astral.sv
+      - hw/top_earlgrey/top/secure_subsystem_synth_astral_pkg.sv
+      - hw/top_earlgrey/top/secure_subsystem_asynch_synth_wrap_astral.sv
       - hw/top_earlgrey/top/top_earlgrey.sv
       - hw/top_earlgrey/top/secure_subsystem_synth_pkg.sv
       - hw/top_earlgrey/top/secure_subsystem_asynch_synth_wrap.sv
@@ -837,4 +840,5 @@ sources:
            - hw/vendor/pulp_riscv_dbg/src/jtag_test.sv
            - hw/vendor/common_pads/src/pad_alsaqr.sv
            - hw/tb/testbench.sv
-           - hw/tb/testbench_asynch.sv          
+           - hw/tb/testbench_asynch.sv
+           - hw/tb/testbench_asynch_astral.sv

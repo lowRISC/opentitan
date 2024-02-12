@@ -17,11 +17,14 @@ target     ?= opentitan
 common_test_path  := sw/tests/$(target)
 
 # MUST PROVIDE TEST NAME
+defines     ?=
+mem         ?= l3
+PAYLOAD     ?= 1024
 test_name   ?=
 test_path   := $(common_test_path)/$(test_name)
 destination := $(OT_ROOT)/$(test_path)/bazel-out/
 
-bazel        := ./bazelisk.sh --output_user_root=/scratch2/$(whoami)/.local/bazel build
+bazel        := ./bazelisk.sh --output_user_root=/scratch2/$(whoami)/.local/bazel build $(defines)
 bazel_tests  := $(common_test_path)/$(test_name)
 
 rom_path     := sw/device/silicon_creator/rom
