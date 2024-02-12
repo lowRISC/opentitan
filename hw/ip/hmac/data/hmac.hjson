@@ -255,6 +255,11 @@
       fields: [
         { bits: "31:0", name:"secret", desc: "Secret value" }
       ]
+      tags: [
+        // Exclude automated tests that write this register, which will have side effects that the
+        // automated tests don't understand.
+        "excl:CsrAllTests:CsrExclWrite"
+      ]
     }
     { multireg: {
         name: "KEY",
