@@ -1752,24 +1752,26 @@ opentitan_test(
     ],
 )
 
-opentitan_functest(
+opentitan_test(
     name = "gpio_pinmux_test",
     srcs = ["gpio_pinmux_test.c"],
-    cw310 = cw310_params(
-        interface = "hyper310",
-        test_cmds = [
-            "--bitstream=\"$(location {bitstream})\"",
-            "--bootstrap=\"$(location {flash})\"",
-        ],
+    cw310 = new_cw310_params(
+        test_cmd = """
+            --bitstream={bitstream}
+            --bootstrap="{firmware}"
+        """,
+        test_harness = "//sw/host/tests/chip/gpio",
     ),
-    targets = [
-        "verilator",
-        "cw310_test_rom",
-    ],
-    test_harness = "//sw/host/tests/chip/gpio",
-    verilator = verilator_params(
-        timeout = "eternal",
-        test_cmds = [],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_sival": None,
+        "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+        "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon_owner",
+    },
+    silicon_owner = silicon_params(
+        test_cmd = """
+            --bootstrap={firmware}
+        """,
+        test_harness = "//sw/host/tests/chip/gpio",
     ),
     deps = [
         "//sw/device/lib/dif:gpio",
