@@ -168,6 +168,12 @@
                 the digest.
                 ''',
           resval: "0",
+          tags: [
+            // Don't enable/disable digest swap in automated CSR tests because it will have side
+            // effects on the DIGEST_* CSRs that the automated tests don't know of.  This field is
+            // covered in functional tests instead.
+            "excl:CsrAllTests:CsrExclWrite"
+          ]
         }
       ]
     }
