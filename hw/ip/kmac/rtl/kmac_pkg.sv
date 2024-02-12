@@ -68,6 +68,7 @@ package kmac_pkg;
   } key_len_e;
 
 
+  // SEC_CM: SW_CMD.CTRL.SPARSE
   // kmac_cmd_e defines the possible command sets that software issues via
   // !!CMD register. This is mainly to limit the error scenario that SW writes
   // multiple commands at once. Additionally they are sparse encoded to harden
