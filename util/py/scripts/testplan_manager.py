@@ -165,9 +165,7 @@ def update_testpoint(testplan, row):
                 f"Checking { row['name']}.{field} --> {testpoint.get(field)} == {row[field]}"
             )
             if row[field] != testpoint.get(field):
-                logging.info(
-                    f"Updating {row['name']} ->{field} to [{row[field]}]"
-                )
+                logging.info(f"Updating {row['name']} ->{field} to [{row[field]}]")
                 testpoint[field] = row[field]
                 updated = True
     return updated
@@ -269,42 +267,83 @@ def create_issues(args, df: pd.DataFrame):
 
     updated = created = 0
     for _, row in df.fillna("None").iterrows():
+        priority = row.get("Priority", "P2")
+        priority = "P2" if priority == "" else priority
+        ip_block = re.sub("chip_", "", row["hw_ip_block"])
         new_issue = hjson.loads(
             issue_template.render(
-                ip_block=row["hw_ip_block"],
+                ip_block=ip_block,
                 test_name=row["name"],
                 stage=row["si_stage"],
+                priority=priority,
             )
         )
 
         if repo.issue_exist(new_issue["title"]):
-            logging.info(f"Issue already exists: {new_issue['title']}")
-            repo_issue = repo.get_issues(new_issue["title"])[0]
-            if repo_issue.body != new_issue["body"]:
+            logging.info("Issue already exists: %s", new_issue["title"])
+            repo_issue = repo.issues_by_title(new_issue["title"])[0]
+            if (
+                repo_issue.body != new_issue["body"]
+                or repo_issue.labels != new_issue["labels"]
+                or repo_issue.milestone != new_issue["milestone"]
+            ):
                 logging.info("Updating the issue")
                 if args.dry_run:
                     logging.info("Dry-run: Updating body: \r\n%s", new_issue["body"])
                 else:
-                    repo_issue.edit(body=new_issue["body"], labels=new_issue["labels"])
+                    try:
+                        repo_issue.edit(
+                            body=new_issue["body"],
+                            labels=new_issue["labels"],
+                            milestone=new_issue["milestone"].upper(),
+                        )
+                    except Exception as e:
+                        logging.info("Could not update the issue, debug level to see the error")
+                        logging.debug("%s", e)
+                updated += 1
+                continue
+
+        # Search for test created manually contained the test name.
+        issues = repo.search_issues("sival") + repo.search_issues("si-val") + repo.search_issues("chip-test")
+        if len(issues) > 0:
+            filtered = list(
+                filter(lambda ms: row["name"] in (str(ms.title) + str(ms.body)), issues)
+            )
+            if len(filtered) > 0:
+                logging.info("Found issue with the test name: %s", filtered[0])
+                if not args.dry_run:
+                    try:
+                        issues[0].edit(
+                            body=new_issue["body"],
+                            labels=new_issue["labels"],
+                            milestone=new_issue["milestone"].upper(),
+                        )
+                    except Exception as e:
+                        logging.info("Could not update the issue, debug level to see the error")
+                        logging.debug("%s", e)
+
+                updated += 1
+                continue
+
+        logging.info("Creating issue: %s", new_issue["title"])
+        if args.dry_run:
+            logging.debug(
+                "Dry-run:\r\n\rBody:\r\n%s\r\n\rLabels: %s\r\n\rMilestone: %s",
+                new_issue["body"],
+                new_issue["labels"],
+                new_issue["milestone"],
+            )
         else:
-            logging.info(f'Create issue: {new_issue["title"]}')
-            logging.info("Updating the issue")
-            if args.dry_run:
-                logging.info(
-                    f"""Dryrun: Creating new issue: \r\n
-                 {new_issue["title"]}\r\n
-                 Body:\r\n{new_issue["body"]}\r\n
-                 Labels: {new_issue["labels"]}\r\n
-                 Milestone: {new_issue["milestone"]}
-                 """
-                )
-            else:
+            try:
                 repo.create_issue(
                     title=new_issue["title"],
                     body=new_issue["body"],
                     labels=new_issue["labels"],
                     milestone=new_issue["milestone"].upper(),
                 )
+            except Exception as e:
+                logging.info("Could not create the issue, debug level to see the error")
+                logging.debug("%s", e)
 
         created += 1
     logging.info(
@@ -382,9 +421,14 @@ def unique_list(df: pd.DataFrame, column: str, fillna: str = "NONE") -> list[str
 
 
 def sort_columns(df: pd.DataFrame) -> pd.DataFrame:
-    colum_order = "hw_ip_block name si_stage desc stage tests features bazel\
-                   host_support otp_mutate lc_states tags".split()
-    return df[colum_order]
+    column_order = []
+    for (
+        col
+    ) in "hw_ip_block name Priority si_stage desc stage tests features bazel host_support otp_mutate lc_states tags".split():
+        if col in df.columns:
+            column_order.append(col)
+
+    return df[column_order]
 
 
 def dataframe_from_testplan(testplan_hjson: str) -> pd.DataFrame:
