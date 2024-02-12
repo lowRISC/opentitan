@@ -419,6 +419,7 @@ module otbn_start_stop_control
   assign sec_wipe_addr_o = addr_cnt_q[4:0];
   `ASSERT(NoSecWipeAbove32Bit_A, addr_cnt_q[5] |-> (!sec_wipe_wdr_o && !sec_wipe_acc_urnd_o))
 
+  // SEC_CM: START_STOP_CTRL.STATE.CONSISTENCY
   // A check for spurious or dropped secure wipe requests.
   // We only expect to start a secure wipe when running.
   assign spurious_secure_wipe_req = secure_wipe_req_i & ~allow_secure_wipe;
