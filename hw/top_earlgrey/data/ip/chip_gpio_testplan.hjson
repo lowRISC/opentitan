@@ -16,6 +16,7 @@
       stage: V1
       si_stage: SV2
       tests: ["chip_sw_gpio"]
+      bazel: ["//sw/device/tests:gpio_pinmux_test"]
     }
     {
       name: chip_sw_gpio_in
@@ -28,6 +29,7 @@
       stage: V1
       si_stage: SV2
       tests: ["chip_sw_gpio"]
+      bazel: ["//sw/device/tests:gpio_pinmux_test"]
     }
     {
       name: chip_sw_gpio_irq
