@@ -1,0 +1,16 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// Max length out transaction vseq
+class usbdev_max_length_out_transaction_vseq extends usbdev_random_length_out_transaction_vseq;
+  `uvm_object_utils(usbdev_max_length_out_transaction_vseq)
+
+  `uvm_object_new
+
+  task body();
+    num_of_bytes = 64;
+    rand_or_not = 0;
+    super.body();
+  endtask
+endclass
