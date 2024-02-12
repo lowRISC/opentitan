@@ -171,7 +171,7 @@ cc_library(
     hdrs = ["dif_clkmgr.h"],
     deps = [
         ":base",
-        "//hw/top_earlgrey/ip/clkmgr/data/autogen:clkmgr_c_regs",
+        "//hw/top_earlgrey/ip_autogen/clkmgr/data:clkmgr_c_regs",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",

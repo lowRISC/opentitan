@@ -7,6 +7,6 @@ package(default_visibility = ["//visibility:public"])
 filegroup(
     name = "all_files",
     srcs = glob(["**"]) + [
-        "//hw/ip/clkmgr/data:all_files",
+        "//hw/ip_templates/clkmgr/data:all_files",
     ],
 )
