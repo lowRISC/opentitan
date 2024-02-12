@@ -72,6 +72,22 @@
       name: setup_trans_ignored
       uvm_test_seq: usbdev_setup_trans_ignored_vseq
     }
+    {
+      name: usbdev_pkt_sent
+      uvm_test_seq: usbdev_pkt_sent_vseq
+    }
+    {
+      name: random_length_out_trans
+      uvm_test_seq: usbdev_random_length_out_transaction_vseq
+    }
+    {
+      name: min_length_out_transaction
+      uvm_test_seq: usbdev_min_length_out_transaction_vseq
+    }
+    {
+      name: max_length_out_transaction
+      uvm_test_seq: usbdev_max_length_out_transaction_vseq
+    }
   ]
 
   // List of regressions.
