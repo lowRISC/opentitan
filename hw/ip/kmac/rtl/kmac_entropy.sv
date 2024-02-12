@@ -730,7 +730,10 @@ module kmac_entropy
       end
 
       StRandGenerate: begin
-        // The current buffer output is used as auxiliary randomness. We don't
+        // The current buffer output is used as auxiliary randomness and -
+        // depending on whether keccak_round is parametrized to always forward
+        // the buffer output and not use intermediate randomness - forwarded
+        // to the DOM multipliers without them updating in this cycle. We don't
         // need to advance the PRNG as there is no risk of accidentally
         // re-using the same randomness twice since after the current cycle:
         // - We either load and re-mask the message/key which will use
