@@ -276,6 +276,7 @@ module kmac
   // Indicating AppIntf is active. This signal is used to check SW error
   logic app_active;
 
+  // SEC_CM: SW_CMD.CTRL.SPARSE
   // Command
   // sw_cmd is the command written by SW
   // checked_sw_cmd is checked in the kmac_errchk module.
