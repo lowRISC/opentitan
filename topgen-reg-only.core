@@ -8,7 +8,6 @@ description: "Top-level generator tool."
 filesets:
   rtl:
     depend:
-      - lowrisc:ip:clkmgr_reggen
       - lowrisc:ip:flash_ctrl_reggen
       - lowrisc:ip:pinmux_reggen
 
