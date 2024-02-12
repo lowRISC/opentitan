@@ -19,8 +19,11 @@ module keccak_2share
   localparam int RndW     = $clog2(MaxRound+1), // Representing up to MaxRound
 
   // Control parameters
-  parameter  bit EnMasking = 0,                // Enable secure hardening
-  localparam int Share     = EnMasking ? 2 : 1
+  parameter  bit EnMasking    = 1'b0, // Enable secure hardening
+  parameter  bit ForceRandExt = 1'b0, // 1: Always forward externally provided randomness.
+                                      // 0: Switch between external randomness and internal
+                                      //    intermediate state according to dom_in_rand_ext_i.
+  localparam int Share        = EnMasking ? 2 : 1
 ) (
   input clk_i,
   input rst_ni,
@@ -221,11 +224,19 @@ module keccak_2share
       assign b1 = dom_in_low_i ? b1_l : b1_h;
 
       // Randomness muxing
-      // Intermediate results are rotated across rows. The new Row x depends on
-      // data from Rows x + 1 and x + 2. Hence we don't want to use intermediate
-      // results from Rows x, x + 1, and x + 2 for remasking.
-      assign in_prd[x] = dom_in_rand_ext_i ? rand_i[x * WSheetHalf +: WSheetHalf] :
-                                             out_prd[rot_int(x, 5)];
+      if (!ForceRandExt) begin : gen_in_prd_mux
+        // Intermediate results are rotated across rows. The new Row x depends on
+        // data from Rows x + 1 and x + 2. Hence we don't want to use intermediate
+        // results from Rows x, x + 1, and x + 2 for remasking.
+        assign in_prd[x] = dom_in_rand_ext_i ? rand_i[x * WSheetHalf +: WSheetHalf] :
+                                               out_prd[rot_int(x, 5)];
+      end else begin : gen_no_in_prd_mux
+        // Always use the externally provided randomness.
+        assign in_prd[x] = rand_i[x * WSheetHalf +: WSheetHalf];
+        // Tie off unused signals.
+        logic unused_out_prd;
+        assign unused_out_prd = ^{dom_in_rand_ext_i, out_prd[rot_int(x, 5)]};
+      end
 
       prim_dom_and_2share #(
         .DW (WSheetHalf), // a half sheet

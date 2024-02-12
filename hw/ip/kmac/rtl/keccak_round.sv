@@ -52,8 +52,11 @@ module keccak_round
   localparam int DInAddr  = $clog2(DInEntry),
 
   // Control parameters
-  parameter  bit EnMasking = 1'b0,  // Enable SCA hardening, requires Width >= 50
-  localparam int Share     = EnMasking ? 2 : 1
+  parameter  bit EnMasking    = 1'b0,  // Enable SCA hardening, requires Width >= 50
+  parameter  bit ForceRandExt = 1'b0,  // 1: Always forward externally provided randomness.
+                                       // 0: Switch between external randomness and internal
+                                       //    intermediate state according to schedule.
+  localparam int Share        = EnMasking ? 2 : 1
 ) (
   input clk_i,
   input rst_ni,
@@ -409,13 +412,27 @@ module keccak_round
         low_then_high_q <= 1'b 0;
         dom_out_low_q <= 1'b 0;
         dom_in_low_q <= 1'b 0;
-        dom_in_rand_ext_q <= 1'b 0;
       end else begin
         low_then_high_q <= low_then_high_d;
         dom_out_low_q <= dom_out_low_d;
         dom_in_low_q <= dom_in_low_d;
-        dom_in_rand_ext_q <= dom_in_rand_ext_d;
       end
+    end
+
+    if (!ForceRandExt) begin : gen_reg_dom_in_rand_ext
+      always_ff @(posedge clk_i or negedge rst_ni) begin
+        if (!rst_ni) begin
+          dom_in_rand_ext_q <= 1'b 0;
+        end else begin
+          dom_in_rand_ext_q <= dom_in_rand_ext_d;
+        end
+      end
+    end else begin : gen_force_dom_in_rand_ext
+      // Always forward the externally provided randomness.
+      assign dom_in_rand_ext_q = 1'b 1;
+      // Tie off unused signals.
+      logic unused_dom_in_rand_ext;
+      assign unused_dom_in_rand_ext = dom_in_rand_ext_d;
     end
   end else begin : gen_no_regs_dom_ctrl
     logic unused_dom_ctrl;
@@ -504,8 +521,9 @@ module keccak_round
   // Datapath //
   //////////////
   keccak_2share #(
-    .Width     (Width),
-    .EnMasking (EnMasking)
+    .Width(Width),
+    .EnMasking(EnMasking),
+    .ForceRandExt(ForceRandExt)
   ) u_keccak_p (
     .clk_i,
     .rst_ni,
@@ -520,7 +538,7 @@ module keccak_round
     .dom_in_rand_ext_i(dom_in_rand_ext_q),
     .dom_update_i     (dom_update),
 
-    .rand_i    (keccak_rand_data),
+    .rand_i(keccak_rand_data),
 
     .s_i(storage),
     .s_o(keccak_out)
