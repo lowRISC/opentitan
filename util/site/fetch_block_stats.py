@@ -23,7 +23,7 @@ block_level_urls = {
     "aes": "hw/ip/aes_masked/dv/2024.01.22_10.46.01/",
     "alert-handler": "hw/top_earlgrey/ip_autogen/alert_handler/dv/2024.01.22_11.16.07/",
     "aon-timers": "hw/ip/aon_timer/dv/2024.01.22_10.46.17/",
-    "clkrst-managers": "hw/ip/clkmgr/dv/2024.01.22_10.47.21/",
+    "clkrst-managers": "hw/top_earlgrey/ip_autogen/clkmgr/dv/2024.01.22_10.47.21/",
     "csrng": "hw/ip/csrng/dv/2024.01.22_10.48.06/",
     "edn": "hw/ip/edn/dv/2024.01.22_10.48.55/",
     "entropy-source": "hw/ip/entropy_src/dv/2024.01.22_10.49.35/",
