@@ -14,6 +14,11 @@ load("//rules:manifest.bzl", "manifest")
 
 package(default_visibility = ["//visibility:public"])
 
+filegroup(
+    name = "boot_test",
+    srcs = ["boot_test.c"],
+)
+
 _POSITIONS = {
     "slot_a": {
         "linker_script": "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
@@ -40,7 +45,7 @@ _POSITIONS = {
 [
     opentitan_test(
         name = "position_{}".format(name),
-        srcs = ["boot_test.c"],
+        srcs = [":boot_test"],
         cw310 = cw310_params(
             assemble = "{rom_ext}@0 {firmware}@{offset}",
             offset = position["offset"],
@@ -76,7 +81,7 @@ manifest(d = {
 
 opentitan_test(
     name = "bad_manifest_test",
-    srcs = ["boot_test.c"],
+    srcs = [":boot_test"],
     cw310 = cw310_params(
         exit_failure = "PASS|FAIL|FAULT|BFV:.{8}",
         # Because our bad manifest has an invalid manifest version, we should
@@ -121,7 +126,7 @@ _KEYS = {
 [
     opentitan_test(
         name = "key_{}".format(name),
-        srcs = ["boot_test.c"],
+        srcs = [":boot_test"],
         cw310 = cw310_params(
             exit_failure = keyinfo["exit_failure"],
             exit_success = keyinfo["exit_success"],
