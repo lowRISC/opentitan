@@ -641,7 +641,7 @@ dif_result_t dif_entropy_src_non_blocking_read(
 
 /**
  * Performs a blocking read from the entropy pipeline through the observe FIFO,
- * which contains post-test, unconditioned entropy.
+ * which contains post health-test, unconditioned entropy.
  *
  * The entropy source must be configured with firmware override mode enabled,
  * and the `len` parameter must be less than or equal to the FIFO threshold set
@@ -657,6 +657,26 @@ dif_result_t dif_entropy_src_non_blocking_read(
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_entropy_src_observe_fifo_blocking_read(
     const dif_entropy_src_t *entropy_src, uint32_t *buf, size_t len);
+
+/**
+ * Performs a nonblocking read from the entropy pipeline through the observe
+ * FIFO, which contains  post health-test, unconditioned entropy.
+ *
+ * The entropy source must be configured with firmware override mode enabled.
+ * This function will read at most `*len` words from the observe FIFO and store
+ * them in `buf` if it is not `NULL`. If `buf` is `NULL` then the reads will be
+ * discarded instead. This function never blocks and returns as soon as the FIFO
+ * is empty. It updates `*len` to store the number of actually read words.
+ *
+ * @param entropy_src An entropy source handle.
+ * @param[out] buf A buffer to fill with words from the pipeline.
+ * @param[inout] len A pointer to the maximum number of words to reads. This
+ * value is updated to contain the number of words acually read.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_entropy_src_observe_fifo_nonblocking_read(
+    const dif_entropy_src_t *entropy_src, uint32_t *buf, size_t *len);
 
 /**
  * Performs a write to the entropy pipeline through the observe FIFO.
