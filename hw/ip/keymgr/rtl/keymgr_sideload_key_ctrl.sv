@@ -60,6 +60,7 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
 
   keymgr_sideload_e state_q, state_d;
 
+  // SEC_CM: SIDELOAD_CTRL.FSM.SPARSE
   // This primitive is used to place a size-only constraint on the
   // flops in order to prevent FSM state encoding optimizations.
   `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, keymgr_sideload_e, StSideloadReset)
