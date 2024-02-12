@@ -7,8 +7,8 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/clkmgr/doc/">Clock Manager</a> Device Interface
- * Functions
+ * @brief <a href="/hw/top_earlgrey/ip_autogen/clkmgr/doc/">Clock Manager</a>
+ * Device Interface Functions
  */
 
 #include <stdint.h>
