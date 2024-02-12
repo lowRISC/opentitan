@@ -53,9 +53,10 @@ module rom_ctrl
   localparam int unsigned RomSizeWords = RomSizeByte >> 2;
   localparam int unsigned RomIndexWidth = vbits(RomSizeWords);
 
-  // DataWidth is normally 39, representing 32 bits of actual data plus 7 ECC check bits. If
-  // scrambling is disabled ("insecure mode"), we store a raw 32-bit image and generate ECC check
-  // bits on the fly.
+  // SEC_CM: CTRL.MEM.INTEGRITY
+  // DataWidth is normally 39, representing 32 bits of actual data plus 7 ECC check bits for the bus
+  // end-to-end integrity scheme. If scrambling is disabled("insecure mode"), we store a raw 32-bit
+  // image and generate ECC check bits on the fly.
   localparam int unsigned DataWidth = SecDisableScrambling ? 32 : 39;
 
   mubi4_t                   rom_select_bus;
