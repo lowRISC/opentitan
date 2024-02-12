@@ -20,6 +20,9 @@
       tests: ["chip_sw_edn_entropy_reqs",
               "chip_sw_csrng_edn_concurrency",
               "chip_sw_entropy_src_ast_rng_req",]
+      bazel: ["//sw/device/tests:entropy_src_edn_reqs_test",
+              "//sw/device/tests:csrng_edn_concurrency_test",
+              "//sw/device/tests:entropy_src_ast_rng_req_test",]
     },
     {
       name: chip_sw_edn_boot_mode
@@ -67,6 +70,7 @@
       lc_states: ["PROD"]
       bazel: []
       tests: ["chip_sw_edn_boot_mode"]
+      bazel: ["//sw/device/tests:edn_boot_mode"]
     },
     {
       name: chip_sw_edn_auto_mode
@@ -95,6 +99,7 @@
       lc_states: ["PROD"]
       bazel: []
       tests: ["chip_sw_edn_auto_mode"]
+      bazel: ["//sw/device/tests:edn_auto_mode"]
     },
     {
       name: chip_sw_edn_sw_mode
@@ -121,6 +126,7 @@
       lc_states: ["PROD"]
       bazel: []
       tests: ["chip_sw_edn_sw_mode"]
+      bazel: ["//sw/device/tests:edn_sw_mode"]
     },
     {
       name: chip_sw_edn_kat
@@ -163,6 +169,7 @@
       lc_states: ["PROD"]
       bazel: []
       tests: ["chip_sw_edn_kat"]
+      bazel: ["//sw/device/tests:edn_kat"]
     },
   ]
 }
