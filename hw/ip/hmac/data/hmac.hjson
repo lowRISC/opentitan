@@ -4,11 +4,14 @@
 {
   name:               "hmac",
   human_name:         "HMAC Accelerator",
-  one_line_desc:      "Accelerator for SHA-256-based keyed hash message authentication code and the SHA-256 hash function",
+  one_line_desc:      "Accelerator for SHA-2 256/384/512-based keyed HMAC and the hash function",
   one_paragraph_desc: '''
-  HMAC Accelerator is a keyed hash based message authentication code generator using [SHA-256][nist-fips-180-4] to check the integrity of an incoming message and optionally a signature signed with the same secret key.
-  This HMAC implementation is not hardened against side-channel analysis (SCA) or fault injection (FI) attacks; it is meant purely for hashing acceleration.
-  If hardened MAC operations are required, either KMAC Accelerator or a software implementation should be used.
+  HMAC Accelerator is a keyed hash based message authentication code generator using
+  [SHA-256/384/512][nist-fips-180-4] to check the integrity of an incoming message and optionally
+  a signature signed with the same secret key. This HMAC implementation is not hardened against
+  side-channel analysis (SCA) or fault injection (FI) attacks; it is meant purely for
+  hashing acceleration. If hardened MAC operations are required, either the KMAC Accelerator
+  or a software implementation should be used.
 
   [nist-fips-180-4]: https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf
   '''
@@ -85,10 +88,16 @@
     }
   ],
   param_list: [
-    { name:    "NumWords",
+    { name:    "NumDigestWords",
       type:    "int",
-      default: "8",
-      desc:    "Number of words for digest/ key",
+      default: "16",
+      desc:    "Number of words for digest",
+      local:   "true"
+    }
+    { name:    "NumKeyWords",
+      type:    "int",
+      default: "32",
+      desc:    "Number of words for key",
       local:   "true"
     }
   ],
@@ -96,14 +105,55 @@
     {
       name: "HMAC.MODE.SHA2",
       desc: '''SHA2 hashing algorithm supporting the following security strength configurations:
-            SHA2-256. Compliant with NIST FIPS 180-4.
+            SHA-2 256/384/512. Compliant with NIST FIPS 180-4.
+            '''
+    }
+    {
+      name: "HMAC.DIGEST_SIZE.SHA2-256",
+      desc: '''SHA-2 256 hashing algorithm for SHA-2 and keyed HMAC.
+            '''
+    }
+    {
+      name: "HMAC.DIGEST_SIZE.SHA2-384",
+      desc: '''SHA-2 384 hashing algorithm for SHA-2 and keyed HMAC.
+            '''
+    }
+    {
+      name: "HMAC.DIGEST_SIZE.SHA2-512",
+      desc: '''SHA-2 512 hashing algorithm or SHA-2 and keyed HMAC.
+            '''
+    }
+    {
+      name: "HMAC.KEY_LENGTH.KEY_128",
+      desc: '''HMAC based on any digest size using 128-bit key.
+            '''
+    }
+    {
+      name: "HMAC.KEY_LENGTH.KEY_256",
+      desc: '''HMAC based on any digest size using 256-bit key.
+            '''
+    }
+    {
+      name: "HMAC.KEY_LENGTH.KEY_384",
+      desc: '''HMAC based on any digest size using 384-bit key.
+            '''
+    }
+    {
+      name: "HMAC.KEY_LENGTH.KEY_512",
+      desc: '''HMAC based on any digest size using 512-bit key.
+            '''
+    }
+    {
+      name: "HMAC.KEY_LENGTH.KEY_1024",
+      desc: '''HMAC based on SHA-2 384/SHA-2 512 using 1024-bit key. If configured with SHA-2 256,
+            KEY_LENGTH defaults to Key_512.
             '''
     }
     {
       name: "HMAC.MODE.HMAC",
       desc: '''Keyed-Hash Message Authentication Code (HMAC) supporting the following security
-            strength configurations: HMAC-SHA2-256. Compliant with NIST FIPS 198-1 which will be
-            superseded by NIST SP 800-224.
+            strength configurations: HMAC/SHA-2 256/384/512. Compliant with NIST FIPS 198-1
+            which will be superseded by NIST SP 800-224.
             '''
     }
     {
@@ -192,7 +242,92 @@
             "excl:CsrAllTests:CsrExclWrite"
           ]
         }
-      ]
+        { bits: "7:4",
+          name: "digest_size",
+          resval: "0x01",
+          desc: '''Digest size configuration.
+
+                This is a 4-bit one-hot encoded field to select digest size for either HMAC or SHA-2.
+                Invalid values, i.e., values with multiple bits set and value 4'b0000 are
+                mapped in HMAC to SHA2_NONE (4'b0001).
+                '''
+          enum: [
+            { value: "1",
+              name: "SHA2_None",
+              desc: '''
+              4'b0001: Unsupported/invalid values and all-zero values are mapped to SHA2_None.
+              '''
+            },
+            { value: "2",
+              name: "SHA2_256",
+              desc: '''
+              4'b0010: SHA-2 256 digest.
+              '''
+            },
+            { value: "4",
+              name: "SHA2_384",
+              desc: '''
+              4'b0100: SHA-2 384 digest.
+              '''
+            },
+            { value: "8",
+              name: "SHA2_512",
+              desc: '''
+              4'b1000: SHA-2 512 digest.
+              '''
+            },
+          ]
+          tags: [// Exclude fields with non-zero reset value from write-read checks.
+               "excl:CsrNonInitTests:CsrExclWriteCheck"]
+        }
+        { bits: "12:8",
+          name: "key_length",
+          resval: "0x02",
+          desc: '''Key length configuration.
+
+                This is a 5-bit one-hot encoded field to configure the key length for HMAC. The HMAC
+                supports key lengths of 128-bit, 256-bit, 384-bit, 512-bit and 1024-bit, but will
+                to block size if key length is greater than block size, i.e. max of 1024 bits
+                for digest size SHA-2 384/512 and respectively 512 bits for SHA-2 256. The value of
+                this register is irrelevant when only SHA-2 (not keyed HMAC) is configured.
+                '''
+          enum: [
+            { value: "1",
+              name: "Key_128",
+              desc: '''
+              5'b0_0001: 128-bit secret key.
+              '''
+            },
+            { value: "2",
+              name: "Key_256",
+              desc: '''
+              5'b0_0010: 256-bit secret key. Unsupported/invalid values and all-zero values
+              are mapped to Key_256.
+              '''
+            },
+            { value: "4",
+              name: "Key_384",
+              desc: '''
+              5'b0_0100: 384-bit secret key.
+              '''
+            },
+            { value: "8",
+              name: "Key_512",
+              desc: '''
+              5'b0_1000: 512-bit secret key.
+              '''
+            },
+            { value: "16",
+              name: "Key_1024",
+              desc: '''
+              5'b1_0000: 1024-bit secret key.
+              '''
+            },
+          ]
+          tags: [// Exclude fields with non-zero reset value from write-read checks.
+                 "excl:CsrNonInitTests:CsrExclWriteCheck"]
+        }
+      ],
     }
     { name: "CMD",
       desc: "HMAC command register",
@@ -206,15 +341,15 @@
       fields: [
         { bits: "0",
           name: "hash_start",
-          desc: '''If writes 1 into this field, SHA256 or HMAC begins its operation.
+          desc: '''If writes 1 into this field, SHA-2 or HMAC begins its operation.
 
-                CPU should configure relative information first, such as message_length,
-                secret_key.
+                CPU must configure relative information first, such as the digest size, secret key
+                and the key length.
                 ''',
         }
         { bits: "1",
           name: "hash_process",
-          desc: '''If writes 1 into this field, SHA256 or HMAC calculates the digest or signing
+          desc: '''If writes 1 into this field, SHA-2 or HMAC calculates the digest or signing
                 based on currently received message.
                 '''
         }
@@ -253,7 +388,7 @@
           name: "fifo_full",
           desc: "FIFO full. Data written to the FIFO whilst it is full will cause back-pressure on the interconnect"
         }
-        { bits: "8:4",
+        { bits: "9:4",
           name: "fifo_depth",
           desc: "FIFO entry count."
         }
@@ -297,44 +432,53 @@
         name: "KEY",
         desc: '''HMAC Secret Key
 
-              SHA256 assumes secret key is hashed 256bit key.
-              Order of the secret key is:
-              key[255:0] = {KEY0, KEY1, KEY2, ... , KEY7};
+              HMAC using SHA-256/384/512 assumes any hashed secret key length up to the block size,
+              thus capped at 1024-bit. !!key_length determines how many of these registers are
+              relevant for the HMAC operation. Order of the secret key is:
+              key[1023:0] = {KEY0, KEY1, KEY2, ... , KEY31};
 
-              The registers are allowed to be updated when the engine is in Idle state.
+              The registers are allowed to be updated only when the engine is in Idle state.
               If the engine computes the hash, it discards any attempts to update the secret keys
               and report an error.
               ''',
-        count: "NumWords",
+        count: "NumKeyWords",
         cname: "HMAC",
         hwext: "true",
         hwqe : "true",
         swaccess: "wo",
         hwaccess: "hrw",
         fields: [
-          { bits: "31:0", name: "key", desc: "32-bit chunk of 256-bit Secret Key" }
+          { bits: "31:0", name: "key", desc: "32-bit chunk of 1024-bit secret key" }
         ],
       }
     }
     { multireg: {
         name: "DIGEST",
-        desc: '''Digest output. If HMAC is disabled, the register shows result of SHA256
+        desc: '''Digest output.
 
+              If HMAC is disabled, the register shows result of SHA-2 256/384/512.
               Order of the digest is:
-              digest[255:0] = {DIGEST0, DIGEST1, DIGEST2, ... , DIGEST7};
+              digest[511:0] = {DIGEST0, DIGEST1, DIGEST2, ... , DIGEST15}. For SHA-2 256
+              256-bit digest = {DIGEST0, DIGEST1, DIGEST2, DIGEST3, DIGEST4, DIGEST5, DIGEST6,
+              DIGEST7} and {DIGEST8 - DIGEST15} are all-zero. For SHA-2 384, {DIGEST12-DIGEST15} are
+              truncated and are all-zero.
 
               The digest gets cleared when `CFG.sha_en` transitions from 1 to 0.
               When `CFG.sha_en` is 0, these registers can be written by software.
               ''',
-        count: "NumWords",
+        count: "NumDigestWords",
         cname: "HMAC",
         swaccess: "rw",
         hwaccess: "hrw",
         hwext: "true",
         hwqe: "true",
         fields: [
-          { bits: "31:0", name: "digest", desc: "32-bit chunk of 256-bit Digest" }
+          { bits: "31:0", name: "digest", desc: "32-bit chunk of 512-bit digest" }
         ]
+        tags: [// Exclude digest from write-read checks because it does not write value
+               // to CSRs when digest_mode is SHA2_None.
+               "excl:CsrNonInitTests:CsrExclWriteCheck"]
+
       }
     }
     { name: "MSG_LENGTH_LOWER",
@@ -357,6 +501,10 @@
       desc: '''Received Message Length calculated by the HMAC in bits [63:32]
 
             When `CFG.sha_en` is 0, this register can be written by software.
+            For SHA-2-2 256 computations, message length is 64-bit
+            {MSG_LENGTH_UPPER, MSG_LENGTH_LOWER}, and for SHA-2 384/512,
+            message length is extended to 128-bit in line with [nist-fips-180-4] where the
+            upper 64 bits get zero-padded: {32'b0, 32'b0, MSG_LENGTH_UPPER, MSG_LENGTH_LOWER}.
             ''',
       swaccess: "rw",
       hwaccess: "hrw",
@@ -366,13 +514,15 @@
         { bits: "31:0", name: "v", desc: "Message Length [63:32]" }
       ]
     }
-    { skipto: "0x800" }
+    { skipto: "0x1000" }
     { window: {
         name: "MSG_FIFO"
-        items: "512"      // 2kB
+        items: "1024"      // 4kB
         swaccess: "wo",
         byte-write: "true",
-        desc: '''Message FIFO. Any write to this window will be appended to the FIFO. Only the lower [1:0] bits of the address matter to writes within the window (for correctly dealing with non 32-bit writes)
+        desc: '''Message FIFO. Any write to this window will be appended to the FIFO.
+        Only the lower [1:0] bits of the address matter to writes within the window
+        (for correctly dealing with non 32-bit writes)
               '''
       }
     }
