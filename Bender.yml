@@ -811,7 +811,6 @@ sources:
       - hw/top_earlgrey/rtl/autogen/top_earlgrey_pkg.sv
       - hw/top_earlgrey/rtl/autogen/top_earlgrey_rnd_cnst_pkg.sv
       - hw/top_earlgrey/rtl/jtag_id_pkg.sv
-      - hw/top_earlgrey/top/top_earlgrey_astral.sv
       - hw/top_earlgrey/top/secure_subsystem_synth_astral_pkg.sv
       - hw/top_earlgrey/top/secure_subsystem_asynch_synth_wrap_astral.sv
       - hw/top_earlgrey/top/top_earlgrey.sv
