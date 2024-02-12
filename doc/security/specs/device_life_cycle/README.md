@@ -235,8 +235,10 @@ During this state
 
 Transition from any manufacturing state via OTP write.
 
-During SCRAP state the device is completely dead.  All functions, including CPU
-execution are disabled.
+During SCRAP state the device is completely dead.  All functions, including
+CPU execution are disabled.  The only exception is the TAP of the life cycle
+controller which is always accessible so that the device state can be read
+out.
 
 No owner consent is required to transition to SCRAP.
 
