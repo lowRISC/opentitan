@@ -312,6 +312,7 @@ module spi_host
   logic [3:0]  core_tx_be;
   logic        core_tx_valid;
   logic        core_tx_ready;
+  logic        core_tx_byte_select_full;
 
   logic [31:0] core_rx_data;
   logic        core_rx_valid;
@@ -391,36 +392,37 @@ module spi_host
     .clk_i,
     .rst_ni,
 
-    .tx_data_i         (tx_data),
-    .tx_be_i           (tx_be),
-    .tx_valid_i        (tx_valid_checked),
-    .tx_ready_o        (tx_ready),
-    .tx_watermark_i    (tx_watermark),
+    .tx_data_i                  (tx_data),
+    .tx_be_i                    (tx_be),
+    .tx_valid_i                 (tx_valid_checked),
+    .tx_ready_o                 (tx_ready),
+    .tx_watermark_i             (tx_watermark),
 
-    .core_tx_data_o    (core_tx_data),
-    .core_tx_be_o      (core_tx_be),
-    .core_tx_valid_o   (core_tx_valid),
-    .core_tx_ready_i   (core_tx_ready),
+    .core_tx_data_o             (core_tx_data),
+    .core_tx_be_o               (core_tx_be),
+    .core_tx_valid_o            (core_tx_valid),
+    .core_tx_ready_i            (core_tx_ready),
+    .core_tx_byte_select_full_i (core_tx_byte_select_full),
 
-    .core_rx_data_i    (core_rx_data),
-    .core_rx_valid_i   (core_rx_valid),
-    .core_rx_ready_o   (core_rx_ready),
+    .core_rx_data_i             (core_rx_data),
+    .core_rx_valid_i            (core_rx_valid),
+    .core_rx_ready_o            (core_rx_ready),
 
-    .rx_data_o         (rx_data),
-    .rx_valid_o        (rx_valid),
-    .rx_ready_i        (rx_ready),
-    .rx_watermark_i    (rx_watermark),
+    .rx_data_o                  (rx_data),
+    .rx_valid_o                 (rx_valid),
+    .rx_ready_i                 (rx_ready),
+    .rx_watermark_i             (rx_watermark),
 
-    .tx_empty_o        (tx_empty),
-    .tx_full_o         (tx_full),
-    .tx_qd_o           (tx_qd),
-    .tx_wm_o           (tx_wm),
-    .rx_empty_o        (rx_empty),
-    .rx_full_o         (rx_full),
-    .rx_qd_o           (rx_qd),
-    .rx_wm_o           (rx_wm),
+    .tx_empty_o                 (tx_empty),
+    .tx_full_o                  (tx_full),
+    .tx_qd_o                    (tx_qd),
+    .tx_wm_o                    (tx_wm),
+    .rx_empty_o                 (rx_empty),
+    .rx_full_o                  (rx_full),
+    .rx_qd_o                    (rx_qd),
+    .rx_wm_o                    (rx_wm),
 
-    .sw_rst_i          (sw_rst)
+    .sw_rst_i                   (sw_rst)
 );
 
   logic en_sw;
@@ -437,26 +439,27 @@ module spi_host
     .clk_i,
     .rst_ni,
 
-    .command_i       (core_command),
-    .command_valid_i (core_command_valid),
-    .command_ready_o (core_command_ready),
-    .en_i            (en),
-    .tx_data_i       (core_tx_data),
-    .tx_be_i         (core_tx_be),
-    .tx_valid_i      (core_tx_valid),
-    .tx_ready_o      (core_tx_ready),
-    .rx_data_o       (core_rx_data),
-    .rx_valid_o      (core_rx_valid),
-    .rx_ready_i      (core_rx_ready),
-    .sck_o           (sck),
-    .csb_o           (csb),
-    .sd_o            (sd_out),
-    .sd_en_o         (sd_en_core),
+    .command_i             (core_command),
+    .command_valid_i       (core_command_valid),
+    .command_ready_o       (core_command_ready),
+    .en_i                  (en),
+    .tx_data_i             (core_tx_data),
+    .tx_be_i               (core_tx_be),
+    .tx_valid_i            (core_tx_valid),
+    .tx_ready_o            (core_tx_ready),
+    .tx_byte_select_full_o (core_tx_byte_select_full),
+    .rx_data_o             (core_rx_data),
+    .rx_valid_o            (core_rx_valid),
+    .rx_ready_i            (core_rx_ready),
+    .sck_o                 (sck),
+    .csb_o                 (csb),
+    .sd_o                  (sd_out),
+    .sd_en_o               (sd_en_core),
     .sd_i,
-    .rx_stall_o      (rx_stall),
-    .tx_stall_o      (tx_stall),
-    .sw_rst_i        (sw_rst),
-    .active_o        (active)
+    .rx_stall_o            (rx_stall),
+    .tx_stall_o            (tx_stall),
+    .sw_rst_i              (sw_rst),
+    .active_o              (active)
   );
 
   logic event_error;

@@ -431,7 +431,6 @@ The SPI_HOST supports interrupts for the following SPI events:
 - `RXFULL`: The SPI_HOST has run out of room in the RXFIFO.
 - `RXWM`: The number of 32-bit words in the RXFIFO currently exceeds the value set in [`CONTROL.RX_WATERMARK`](registers.md#control).
 - `TXEMPTY`: The SPI_HOST has transmitted all the data in the TX FIFO.
-  Note the transmit FIFO may be empty while there is still one packet pending in the internal transmit datapath (inside the `spi_host_byte_select` module).
 - `TXWM`: The number of 32-bit words in the TX FIFO currently is currently less than the value set in [`CONTROL.TX_WATERMARK`](registers.md#control)
 
 Most SPI events signal a particular condition that persists until it is fixed, and these conditions can be detected by polling the corresponding field in the [`STATUS`](registers.md#status) register.
@@ -546,7 +545,11 @@ The RX and TX FIFOs store the transmitted and received data, which are stored in
 The RX FIFO is 32 bits wide, matching the width of the TLUL register bus.
 The TX FIFO on the other hand is 36 bits wide, with 32 bits of SPI data (again to match the TLUL bus width) plus 4 byte enable-bits, which are passed into the core to allow the processing of unaligned writes.
 
-The depth of these FIFOs is controlled by two independent parameters for the RX and TX queues.
+The depth of these FIFOs is controlled by two independent parameters for the RX and TX queues, .
+
+Note that the [`Byte Select`](#byte-select) module greedily pops data from the TX FIFO, so the fifo is observed as having an effective depth of N+1 where N is the parameterized depth.
+This extra word of data is incorporated into the TX FIFO status signals, and is also reset/cleared in tandem with the fifo.
+Therefore, this extra storage is transparent to software.
 
 ## Byte Select
 

@@ -33,7 +33,7 @@ class spi_host_event_vseq extends spi_host_tx_rx_vseq;
     program_spi_host_regs();
     check_event(ral.status.ready, 1, 1);
 
-    while (segms_words <=  spi_host_ctrl_reg.tx_watermark)  begin
+    while (segms_words < spi_host_ctrl_reg.tx_watermark) begin
       gen_trans();
     end
     check_event(ral.status.txwm, 0, 0);
