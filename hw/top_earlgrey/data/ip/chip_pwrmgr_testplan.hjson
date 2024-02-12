@@ -146,7 +146,7 @@
             SiVal: No need to run this, run chip_sw_pwrmgr_random_sleep_all_wake_ups instead.
             '''
       stage: V2
-      si_stage: None
+      si_stage: NA
       tests: ["chip_sw_pwrmgr_deep_sleep_all_wake_ups"]
       bazel: []
     }
@@ -168,7 +168,7 @@
             No need to run this, run chip_sw_pwrmgr_random_sleep_all_reset_reqs instead.
             '''
       stage: V2
-      si_stage: None
+      si_stage: NA
       features: [
         "PWRMGR.LOW_POWER.ENTRY",
         "PWRMGR.LOW_POWER.DISABLE_POWER"

@@ -7,6 +7,7 @@ class usb20_item extends uvm_sequence_item;
   pkt_type_e m_pkt_type;
   bmrequesttype_e m_bmRT;
   brequest_e m_bR;
+  usb_transfer_e m_usb_transfer;
 
   `uvm_object_new
 

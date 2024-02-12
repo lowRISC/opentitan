@@ -29,6 +29,7 @@ package usb20_agent_pkg;
       bRequestSET_DESCRIPTOR = 8'h07, bRequestGET_CONFIGURATION = 8'h08,
       bRequestSET_CONFIGURATION = 8'h09, bRequestGET_INTERFACE = 8'h0A,
       bRequestSET_INTERFACE = 8'h0B, bRequestSYNCH_FRAME = 8'h0C} brequest_e;
+  typedef enum bit [2:0] {CtrlTrans, IsoTrans, IntrptTrans, BulkTrans} usb_transfer_e;
   // local types
   // forward declare classes to allow typedefs below
   typedef class usb20_item;
