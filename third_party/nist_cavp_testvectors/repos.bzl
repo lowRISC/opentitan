@@ -77,3 +77,9 @@ def nist_cavp_repos():
         sha256 = "5fff092551f2d72e89a3d9362711878708f9a14b502f0dfae819649105b0ea39",
         url = "https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/components/ecccdhtestvectors.zip",
     )
+    http_archive(
+        name = "nist_cavp_rsa_fips_186_3",
+        build_file = Label("//third_party/nist_cavp_testvectors:BUILD.nist_cavp_common.bazel"),
+        sha256 = "8405aeb3572a4f98ed4b1a3ccb3f2f49e725462dd28ec4759d6a15d88855d19c",
+        url = "https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/dss/186-3rsatestvectors.zip",
+    )
