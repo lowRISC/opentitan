@@ -15,6 +15,12 @@
     { name: mbx_smoke
       desc: '''
             Smoke test
+            -REQ/RSP transactions
+            -Variable latency and lengths
+            -Valid configurations
+            -Support for Abort/Errors/Panic
+            -Support for Abort/Errors/Panic
+            -Zero Access Delay option for TL agents
             '''
       stage: V1
       tests: ["mbx_smoke"]
@@ -22,9 +28,38 @@
     { name: mbx_stress
       desc: '''
             Stress test
+            -Smoke REQ/RSP transactions with Abort/Errors/Panic constrained on
+            -Zero Access Delay option for TL agents
             '''
       stage: V3
-      tests: ["mbx_stress_all"]
+      tests: ["mbx_stress"]
+    }
+  ]
+
+  covergroups: [
+    {
+      name: err_inj_cg
+      desc: '''
+        Indicates what error conditions have been injected.
+      '''
+    }
+    {
+      name: mbx_fsm_cg
+      desc: '''
+        mbx_fsm states and arcs
+      '''
+    }
+    {
+      name: mbx_host_if_cg
+      desc: '''
+        mbx_host reg2hw, hw2reg covergroups
+      '''
+    }
+    {
+      name: mbx_sys_if_cg
+      desc: '''
+        mbx_sys reg2hw, hw2reg covergroups
+      '''
     }
   ]
 }

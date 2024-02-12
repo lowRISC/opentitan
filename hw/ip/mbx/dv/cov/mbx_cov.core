@@ -2,8 +2,8 @@ CAPI=2:
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:dv:mbx_sim:0.1"
-description: "MBX DV sim target"
+name: "lowrisc:dv:mbx_cov"
+description: "MBX functional coverage and bind files"
 filesets:
   files_rtl:
     depend:
@@ -11,20 +11,17 @@ filesets:
 
   files_dv:
     depend:
-      - lowrisc:dv:mbx_test
-      - lowrisc:dv:mbx_sva
-      - lowrisc:dv:mbx_cov
+      - lowrisc:dv:dv_utils
     files:
-      - tb.sv
+      - mbx_fsm_cov_if.sv
+      - mbx_host_cov_if.sv
+      - mbx_sys_cov_if.sv
+      - mbx_cov_if.sv
+      - mbx_cov_bind.sv
     file_type: systemVerilogSource
 
 targets:
-  sim: &sim_target
-    toplevel: tb
+  default:
     filesets:
       - files_rtl
       - files_dv
-    default_tool: vcs
-
-  lint:
-    <<: *sim_target
