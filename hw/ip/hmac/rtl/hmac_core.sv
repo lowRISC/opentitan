@@ -8,12 +8,12 @@ module hmac_core import prim_sha2_pkg::*; (
   input clk_i,
   input rst_ni,
 
-  input [255:0] secret_key, // {word0, word1, ..., word7}
-
-  input        wipe_secret,
-  input [31:0] wipe_v,
-
-  input        hmac_en,
+  input [1023:0]      secret_key, // {word0, word1, ..., word7}
+  input               wipe_secret,
+  input [31:0]        wipe_v,
+  input               hmac_en,
+  input digest_mode_e digest_size,
+  input key_length_e  key_length,
 
   input        reg_hash_start,
   input        reg_hash_continue,
@@ -36,32 +36,46 @@ module hmac_core import prim_sha2_pkg::*; (
   // fifo control (select and fifo write data)
   output logic       fifo_wsel,      // 0: from reg, 1: from digest
   output logic       fifo_wvalid,
-  output logic [2:0] fifo_wdata_sel, // 0: digest[0] .. 7: digest[7]
+  // 0: digest[0][upper], 1:digest[0][lower] .. 14: digest[7][upper], 15: digest[7][lower]
+  output logic [3:0] fifo_wdata_sel,
   input              fifo_wready,
 
-  input  [63:0] message_length,
-  output [63:0] sha_message_length,
+  input  [127:0] message_length,
+  output [127:0] sha_message_length,
 
   output logic idle
 );
 
-  localparam int unsigned BlockSize     = 512;
-  localparam int unsigned BlockSizeBits = $clog2(BlockSize);
-  localparam int unsigned HashWordBits  = $clog2($bits(sha_word32_t));
+  localparam int unsigned BlockSizeSHA256     = 512;
+  localparam int unsigned BlockSizeSHA512     = 1024;
 
-  localparam bit [63:0]            BlockSize64  = 64'(BlockSize);
-  localparam bit [BlockSizeBits:0] BlockSizeBSB = BlockSize[BlockSizeBits:0];
+  localparam int unsigned BlockSizeBitsSHA256 = $clog2(BlockSizeSHA256);
+  localparam int unsigned BlockSizeBitsSHA512 = $clog2(BlockSizeSHA512);
 
-  logic hash_start; // generated from internal state machine
+  localparam int unsigned HashWordBitsSHA256  = $clog2($bits(sha_word32_t));
+
+  localparam bit [127:0] BlockSizeSHA256in128  = 128'(BlockSizeSHA256);
+  localparam bit [127:0] BlockSizeSHA512in128  = 128'(BlockSizeSHA512);
+
+  localparam bit [BlockSizeBitsSHA256:0] BlockSizeBSBSHA256 =
+                                                            BlockSizeSHA256[BlockSizeBitsSHA256:0];
+  localparam bit [BlockSizeBitsSHA512:0] BlockSizeBSBSHA512 =
+                                                            BlockSizeSHA512[BlockSizeBitsSHA512:0];
+
+  logic hash_start;    // generated from internal state machine
   logic hash_continue; // generated from internal state machine
-  logic hash_process; // generated from internal state machine to trigger hash
+  logic hash_process;  // generated from internal state machine to trigger hash
   logic hmac_hash_done;
 
-  logic [BlockSize-1:0] i_pad ;
-  logic [BlockSize-1:0] o_pad ;
+  logic [BlockSizeSHA256-1:0] i_pad_256;
+  logic [BlockSizeSHA512-1:0] i_pad_512;
+  logic [BlockSizeSHA256-1:0] o_pad_256;
+  logic [BlockSizeSHA512-1:0] o_pad_512;
 
-  logic [63:0] txcount;
-  logic [BlockSizeBits-HashWordBits-1:0] pad_index;
+  logic [127:0] txcount; // works for both digest lengths
+
+  logic [BlockSizeBitsSHA512-HashWordBitsSHA256-1:0] pad_index_512;
+  logic [BlockSizeBitsSHA256-HashWordBitsSHA256-1:0] pad_index_256;
   logic clr_txcount, load_txcount, inc_txcount;
 
   logic hmac_sha_rvalid;
@@ -102,7 +116,7 @@ module hmac_core import prim_sha2_pkg::*; (
   st_e st_q, st_d;
 
   logic clr_fifo_wdata_sel;
-  logic txcnt_eq_blksz ;
+  logic txcnt_eq_blksz;
 
   logic reg_hash_process_flag;
 
@@ -111,28 +125,121 @@ module hmac_core import prim_sha2_pkg::*; (
   assign sha_hash_process  = (hmac_en) ? reg_hash_process | hash_process  : reg_hash_process ;
   assign hash_done         = (hmac_en) ? hmac_hash_done                   : sha_hash_done  ;
 
-  assign pad_index = txcount[BlockSizeBits-1:HashWordBits];
+  assign pad_index_512 = txcount[BlockSizeBitsSHA512-1:HashWordBitsSHA256];
+  assign pad_index_256 = txcount[BlockSizeBitsSHA256-1:HashWordBitsSHA256];
 
-  assign i_pad = {secret_key, {(BlockSize-256){1'b0}}} ^ {(BlockSize/8){8'h36}};
-  assign o_pad = {secret_key, {(BlockSize-256){1'b0}}} ^ {(BlockSize/8){8'h5c}};
-
+  // defaults key length to block size if supplied key length is larger than block size
+  always_comb begin : adjust_key_pad_length
+    unique case (key_length)
+      Key_128: begin
+        i_pad_256 = {secret_key[1023:896],
+                    {(BlockSizeSHA256-128){1'b0}}} ^ {(BlockSizeSHA256/8){8'h36}};
+        i_pad_512 = {secret_key[1023:896],
+                    {(BlockSizeSHA512-128){1'b0}}} ^ {(BlockSizeSHA512/8){8'h36}};
+        o_pad_256 = {secret_key[1023:896],
+                    {(BlockSizeSHA256-128){1'b0}}} ^ {(BlockSizeSHA256/8){8'h5c}};
+        o_pad_512 = {secret_key[1023:896],
+                    {(BlockSizeSHA512-128){1'b0}}} ^ {(BlockSizeSHA512/8){8'h5c}};
+      end
+      Key_256: begin
+        i_pad_256 = {secret_key[1023:768],
+                    {(BlockSizeSHA256-256){1'b0}}} ^ {(BlockSizeSHA256/8){8'h36}};
+        i_pad_512 = {secret_key[1023:768],
+                    {(BlockSizeSHA512-256){1'b0}}} ^ {(BlockSizeSHA512/8){8'h36}};
+        o_pad_256 = {secret_key[1023:768],
+                    {(BlockSizeSHA256-256){1'b0}}} ^ {(BlockSizeSHA256/8){8'h5c}};
+        o_pad_512 = {secret_key[1023:768],
+                    {(BlockSizeSHA512-256){1'b0}}} ^ {(BlockSizeSHA512/8){8'h5c}};
+      end
+      Key_384: begin
+        i_pad_256 = {secret_key[1023:640],
+                    {(BlockSizeSHA256-384){1'b0}}} ^ {(BlockSizeSHA256/8){8'h36}};
+        i_pad_512 = {secret_key[1023:640],
+                    {(BlockSizeSHA512-384){1'b0}}} ^ {(BlockSizeSHA512/8){8'h36}};
+        o_pad_256 = {secret_key[1023:640],
+                    {(BlockSizeSHA256-384){1'b0}}} ^ {(BlockSizeSHA256/8){8'h5c}};
+        o_pad_512 = {secret_key[1023:640],
+                    {(BlockSizeSHA512-384){1'b0}}} ^ {(BlockSizeSHA512/8){8'h5c}};
+      end
+      Key_512: begin
+        i_pad_256 = secret_key[1023:512] ^ {(BlockSizeSHA256/8){8'h36}};
+        i_pad_512 = {secret_key[1023:512],
+                    {(BlockSizeSHA512-512){1'b0}}} ^ {(BlockSizeSHA512/8){8'h36}};
+        o_pad_256 = secret_key[1023:512] ^ {(BlockSizeSHA256/8){8'h5c}};
+        o_pad_512 = {secret_key[1023:512],
+                    {(BlockSizeSHA512-512){1'b0}}} ^ {(BlockSizeSHA512/8){8'h5c}};
+      end
+      Key_1024: begin
+        // cap key to 512-bit for SHA-256
+        i_pad_256 = secret_key[1023:512] ^ {(BlockSizeSHA256/8){8'h36}};
+        i_pad_512 = secret_key[1023:0]   ^ {(BlockSizeSHA512/8){8'h36}};
+        // cap key to 512-bit for SHA-256
+        o_pad_256 = secret_key[1023:512] ^ {(BlockSizeSHA256/8){8'h5c}};
+        o_pad_512 = secret_key[1023:0]   ^ {(BlockSizeSHA512/8){8'h5c}};
+      end
+      default: begin // TODO: in case of unsupported lengths, default to 256-bit key or flag error?
+        i_pad_256 = {secret_key[1023:768],
+                    {(BlockSizeSHA256-256){1'b0}}} ^ {(BlockSizeSHA256/8){8'h36}};
+        i_pad_512 = {secret_key[1023:768],
+                    {(BlockSizeSHA512-256){1'b0}}} ^ {(BlockSizeSHA512/8){8'h36}};
+        o_pad_256 = {secret_key[1023:768],
+                    {(BlockSizeSHA256-256){1'b0}}} ^ {(BlockSizeSHA256/8){8'h5c}};
+        o_pad_512 = {secret_key[1023:768],
+                    {(BlockSizeSHA512-256){1'b0}}} ^ {(BlockSizeSHA512/8){8'h5c}};
+      end
+    endcase
+  end
 
   assign fifo_rready  = (hmac_en) ? (st_q == StMsg) & sha_rready : sha_rready ;
   // sha_rvalid is controlled by State Machine below.
   assign sha_rvalid = (!hmac_en) ? fifo_rvalid : hmac_sha_rvalid ;
   assign sha_rdata =
-    (!hmac_en)             ? fifo_rdata                                               :
-    (sel_rdata == SelIPad) ? '{data: i_pad[(BlockSize-1)-32*pad_index-:32], mask: '1} :
-    (sel_rdata == SelOPad) ? '{data: o_pad[(BlockSize-1)-32*pad_index-:32], mask: '1} :
-    (sel_rdata == SelFifo) ? fifo_rdata                                               :
-    '{default: '0};
+    (!hmac_en)    ? fifo_rdata                                                             :
+    (sel_rdata == SelIPad && digest_size == SHA2_256)
+                  ? '{data: i_pad_256[(BlockSizeSHA256-1)-32*pad_index_256-:32], mask: '1} :
+    (sel_rdata == SelIPad && ((digest_size == SHA2_384) || (digest_size == SHA2_512)))
+                  ? '{data: i_pad_512[(BlockSizeSHA512-1)-32*pad_index_512-:32], mask: '1} :
+    (sel_rdata == SelOPad && digest_size == SHA2_256)
+                  ? '{data: o_pad_256[(BlockSizeSHA256-1)-32*pad_index_256-:32], mask: '1} :
+    (sel_rdata == SelOPad && ((digest_size == SHA2_384) || (digest_size == SHA2_512)))
+                  ? '{data: o_pad_512[(BlockSizeSHA512-1)-32*pad_index_512-:32], mask: '1} :
+    (sel_rdata == SelFifo) ? fifo_rdata                                                    :
+                  '{default: '0};
 
-  assign sha_message_length = (!hmac_en)                 ? message_length               :
-                              (sel_msglen == SelIPadMsg) ? message_length + BlockSize64 :
-                              (sel_msglen == SelOPadMsg) ? BlockSize64 + 64'd256        :
-                              '0 ;
+  logic [127:0] sha_msg_len;
 
-  assign txcnt_eq_blksz = (txcount[BlockSizeBits:0] == BlockSizeBSB);
+  always_comb begin: assign_sha_message_length
+    sha_msg_len = '0;
+    if (!hmac_en) begin
+      sha_msg_len = message_length;
+    // HASH = (o_pad || HASH_INTERMEDIATE (i_pad || msg))
+    // message length for HASH_INTERMEDIATE = block size (i_pad) + message length
+    end else if (sel_msglen == SelIPadMsg) begin
+      if (digest_size == SHA2_256) begin
+        sha_msg_len = message_length + BlockSizeSHA256in128;
+      end else if ((digest_size == SHA2_384) || (digest_size == SHA2_512)) begin
+        sha_msg_len = message_length + BlockSizeSHA512in128;
+      end
+    end else if (sel_msglen == SelOPadMsg) begin
+    // message length for HASH = block size (o_pad) + HASH_INTERMEDIATE digest length
+      if (digest_size == SHA2_256) begin
+        sha_msg_len = BlockSizeSHA256in128 + 128'd256;
+      end else if (digest_size == SHA2_384) begin
+        sha_msg_len = BlockSizeSHA512in128 + 128'd384;
+      end else if (digest_size == SHA2_512) begin
+        sha_msg_len = BlockSizeSHA512in128 + 128'd512;
+      end
+    end else
+      sha_msg_len = '0;
+  end
+
+  assign sha_message_length = sha_msg_len;
+
+  assign txcnt_eq_blksz = (digest_size == SHA2_256) ?
+                                      (txcount[BlockSizeBitsSHA256:0] == BlockSizeBSBSHA256) :
+                          ((digest_size == SHA2_384) || (digest_size == SHA2_512)) ?
+                                      (txcount[BlockSizeBitsSHA512:0] == BlockSizeBSBSHA512) :
+                                      '0;
 
   assign inc_txcount = sha_rready && sha_rvalid;
 
@@ -149,9 +256,15 @@ module hmac_core import prim_sha2_pkg::*; (
     end else if (load_txcount) begin
       // When loading, add block size to the message length because the SW-visible message length
       // does not include the block containing the key xor'ed with the inner pad.
-      txcount <= message_length + 64'(BlockSize);
+      if (digest_size == SHA2_256) begin
+        txcount <= message_length + BlockSizeSHA256in128;
+      end else if ((digest_size == SHA2_384) || (digest_size == SHA2_512)) begin
+        txcount <= message_length + BlockSizeSHA512in128;
+      end else begin
+        txcount <= message_length + '0;
+      end
     end else if (inc_txcount) begin
-      txcount[63:5] <= txcount[63:5] + 1'b1;
+      txcount[63:5] <= txcount[63:5] + 1'b1; // increment by 32 (data word size)
     end
   end
 
@@ -180,7 +293,7 @@ module hmac_core import prim_sha2_pkg::*; (
     end else if (clr_fifo_wdata_sel) begin
       fifo_wdata_sel <= 3'h 0;
     end else if (fifo_wsel && fifo_wvalid) begin
-      fifo_wdata_sel <= fifo_wdata_sel + 1'b1;
+      fifo_wdata_sel <= fifo_wdata_sel + 1'b1; // increment by 1
     end
   end
 
@@ -251,13 +364,11 @@ module hmac_core import prim_sha2_pkg::*; (
 
         if ( (((round_q == Inner) && reg_hash_process_flag) || (round_q == Outer))
             && (txcount >= sha_message_length)) begin
-          st_d = StWaitResp;
-
+          st_d    = StWaitResp;
           hmac_sha_rvalid = 1'b0; // block
           hash_process = (round_q == Outer);
         end else begin
-          st_d = StMsg;
-
+          st_d            = StMsg;
           hmac_sha_rvalid = fifo_rvalid;
         end
       end
@@ -282,7 +393,10 @@ module hmac_core import prim_sha2_pkg::*; (
         fifo_wvalid        = 1'b1;
         clr_fifo_wdata_sel = 1'b0;
 
-        if (fifo_wready && fifo_wdata_sel == 3'h7) begin
+        if (fifo_wready && (((fifo_wdata_sel == 4'd7)  && (digest_size == SHA2_256)) ||
+                            ((fifo_wdata_sel == 4'd15) && (digest_size == SHA2_512)) ||
+                            ((fifo_wdata_sel == 4'd11) && (digest_size == SHA2_384)))) begin
+
           st_d = StOPad;
 
           clr_txcount  = 1'b1;
