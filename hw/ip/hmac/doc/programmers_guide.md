@@ -77,6 +77,29 @@ Such attempts are discarded.
 The [`KEY`](registers.md#key) register ignores any attempt to access the secret key in the middle of the process.
 If the software tries to update the KEY, the IP reports an error through the Error FIFO. The error code is `SwUpdateSecretKeyInProcess`, `0x0003`.
 
+## Saving and restoring the context
+
+Software can let the HMAC IP process multiple message streams in a time-interleaved fashion by saving and restoring the context (i.e., parts of the hardware-internal state).
+
+Such context switches are possible only at the boundary of complete message blocks (512 bit for SHA-256).
+When SW doesn't know each instant at which a full message block is available, it can buffer data in memory until a block is full and only write HMAC's FIFOs once the buffer in memory contains a full message block.
+
+The context that needs to be saved and restored is in the following registers: [`CFG`](registers.md#cfg), [`DIGEST_*`](registers.md#digest), and [`MSG_LENGTH_*`](registers.md#msg_length_lower).
+
+Each message stream needs to be started *once* by setting the `CMD.hash_start` bit and finalized *once* by setting the `CMD.hash_process` bit.
+To switch from one message stream to another, set the `CMD.hash_stop` bit, wait for the `hmac_done` interrupt (or status bit), save one context and restore the other, and then set the `CMD.hash_continue` bit.
+
+Here is an example usage pattern of this feature:
+1. Start processing message stream A by configuring HMAC and then setting the `CMD.hash_start` bit.
+2. Write an arbitrary number of message blocks to HMAC's `MSG_FIFO`.
+3. Stop HMAC by setting the `CMD.hash_stop` bit and wait for the `hmac_done` interrupt (or poll the interrupt status register).
+4. Save the context by reading the `DIGEST_0`..`7` and `MSG_LENGTH_`{`LOWER`,`UPPER`} registers. (The values in the `CFG` register must also be preserved, but that is purely SW-controlled so doesn't need to be read from HW.)
+5. Repeat steps 1-4 for message stream B.
+6. Restore the context of message stream A by writing the `CFG`, `DIGEST_0`..`7`, and `MSG_LENGTH_`{`LOWER`,`UPPER`} registers.
+7. Continue processing message stream A by setting the `CMD.hash_continue` bit.
+8. Write an arbitrary number of message blocks to HMAC's `MSG_FIFO`.
+9. Continue this with as many message blocks and parallel message streams as needed. The final hash for any message stream can be obtained at any time (no need for complete blocks) by setting `CMD.hash_process` and waiting for the `hmac_done` interrupt / status bit, finally reading the digest from the `DIGEST` registers.
+
 ## Errors
 
 When HMAC sees errors, the IP reports the error via [`INTR_STATE.hmac_err`](registers.md#intr_state).
