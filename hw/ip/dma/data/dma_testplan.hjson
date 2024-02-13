@@ -236,7 +236,7 @@
               - Check if there all outstanding transactions on OT internal TLUL interface are complete
               '''
         stage: V2
-        tests: ["dma_memory_abort"]
+        tests: ["dma_abort"]
       }
       {
         name: dma_illegal_transfer
