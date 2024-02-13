@@ -37,6 +37,8 @@ The 256-bit secret key is written in [`KEY_0`](doc/registers.md#key) to [`KEY_7`
 The message to authenticate is written to [`MSG_FIFO`](doc/registers.md#msg_fifo) and the HMAC generates a 256-bit digest value which can be read from [`DIGEST_0`](doc/registers.md#digest) to [`DIGEST_7`](doc/registers.md#digest).
 The `hash_done` interrupt is raised to report to software that the final digest is available.
 
+This module allows software to save and restore the hashing context so that different message streams can be interleaved; please check the [Programmer's Guide](doc/programmers_guide.md#saving-and-restoring-the-context) for more information.
+
 The HMAC IP can run in SHA-256-only mode, whose purpose is to check the
 correctness of the received message. The same digest registers above are used to
 represent the hash result. SHA-256 mode doesn't use the given secret key. It
