@@ -746,10 +746,10 @@ class cip_base_vseq #(
     // Wait a random number of cycles (up to reset_delay_bound) before triggering the reset.
     cfg.clk_rst_vif.wait_clks(rand_reset_delay);
 
-    // If there is an outstanding access, wait up to 1000 more cycles to allow it to clear. If it
+    // If there is an outstanding access, wait up to 10000 more cycles to allow it to clear. If it
     // doesn't clear, something has gone wrong: we don't expect there to permanently be CSR
     // accesses.
-    for (int i = 0; i < 1000; i++) begin
+    for (int i = 0; i < 10000; i++) begin
       if (!has_outstanding_access()) break;
       cfg.clk_rst_vif.wait_clks(1);
     end
