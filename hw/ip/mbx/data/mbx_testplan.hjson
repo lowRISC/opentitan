@@ -33,5 +33,12 @@
       stage: V2
       tests: ["mbx_stress_all"]
     }
+    { name: mbx_imbx_oob
+      desc: '''
+            Test accesses that are out of bounds for the inbound mailbox.
+            '''
+      stage: V2
+      tests: ["mbx_imbx_oob"]
+    }
   ]
 }
