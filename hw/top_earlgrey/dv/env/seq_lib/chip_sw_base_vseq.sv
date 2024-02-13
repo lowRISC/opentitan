@@ -801,9 +801,18 @@ class chip_sw_base_vseq extends chip_base_vseq;
     cfg.m_jtag_riscv_agent_cfg.allow_errors = 0;
   endtask
 
+  virtual task wait_lc_token_error(bit allow_err = 1, int max_attempt = 5000);
+    cfg.m_jtag_riscv_agent_cfg.allow_errors = allow_err;
+    wait_lc_status(LcTokenError, max_attempt);
+    cfg.m_jtag_riscv_agent_cfg.allow_errors = 0;
+  endtask
+
   // Use JTAG interface to transit LC_CTRL from RAW to TEST_UNLOCKED* states
   // using the VOLATILE_RAW_UNLOCK mode of operation.
-  virtual task jtag_lc_state_volatile_raw_unlock(chip_jtag_tap_e target_strap);
+  // If this operation is expected to fail due to the absence of the mechanism in HW, set the
+  // expect_success argument to 0.
+  virtual task jtag_lc_state_volatile_raw_unlock(chip_jtag_tap_e target_strap,
+                                                 bit expect_success = 1);
     bit [TL_DW-1:0] current_lc_state;
     bit [TL_DW-1:0] transition_ctrl;
     bit use_ext_clk = 1'b0;
@@ -840,8 +849,15 @@ class chip_sw_base_vseq extends chip_base_vseq;
       ral.lc_ctrl.transition_ctrl.get_offset(),
       p_sequencer.jtag_sequencer_h,
       transition_ctrl);
-    `DV_CHECK_FATAL(transition_ctrl & (1 << 1), {"VOLATILE_RAW_UNLOCK is not supported by this ",
-                    "top level. Check the SecVolatileRawUnlockEn parameter configuration."})
+    // In this case we expect the transition_ctrl bit to stay 0.
+    if (expect_success) begin
+      `DV_CHECK_FATAL(transition_ctrl & (1 << 1), {"VOLATILE_RAW_UNLOCK is not supported by this ",
+                      "top level. Check the SecVolatileRawUnlockEn parameter configuration."})
+    end else begin
+      `DV_CHECK_FATAL(!(transition_ctrl & (1 << 1)), {"VOLATILE_RAW_UNLOCK is not expected to be ",
+                      "supported by this top-level. Check the SecVolatileRawUnlockEn parameter ",
+                      "configuration."})
+    end
 
     if (use_ext_clk) begin
       wait_lc_ext_clk_switched();
@@ -869,10 +885,16 @@ class chip_sw_base_vseq extends chip_base_vseq;
                                          1);
 
     if (target_strap == JtagTapLc) begin
-      wait_lc_transition_successful(.max_attempt(max_attempt));
-      jtag_riscv_agent_pkg::jtag_write_csr(ral.lc_ctrl.claim_transition_if.get_offset(),
-                                         p_sequencer.jtag_sequencer_h,
-                                         prim_mubi_pkg::MuBi8False);
+      if (expect_success) begin
+        wait_lc_transition_successful(.max_attempt(max_attempt));
+        jtag_riscv_agent_pkg::jtag_write_csr(ral.lc_ctrl.claim_transition_if.get_offset(),
+                                             p_sequencer.jtag_sequencer_h,
+                                             prim_mubi_pkg::MuBi8False);
+      end else begin
+        // The hashed token should be invalid if volatile unlock is not supported, since the
+        // regular transition expects that the unhashed token is provided.
+        wait_lc_token_error(.max_attempt(max_attempt));
+      end
     end else begin
       cfg.clk_rst_vif.wait_clks($urandom_range(10000, 20000));
     end
