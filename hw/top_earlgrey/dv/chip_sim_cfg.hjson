@@ -925,7 +925,11 @@
       uvm_test_seq: chip_sw_lc_volatile_raw_unlock_vseq
       sw_images: ["//sw/device/tests/sim_dv:lc_ctrl_volatile_raw_unlock_test:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+use_otp_image=OtpTypeLcStRaw"]
+      run_opts: [
+        "+use_otp_image=OtpTypeLcStRaw",
+        // We set this to zero if the volatile RAW unlock mechanism is expected
+        // to be disabled (this should be the case in production silicon).
+        "+exp_volatile_raw_unlock_en=0"]
       run_timeout_mins: 120
     }
     {
@@ -935,7 +939,10 @@
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: [
         "+use_otp_image=OtpTypeLcStRaw",
-        "+chip_clock_source=ChipClockSourceExternal48Mhz"]
+        "+chip_clock_source=ChipClockSourceExternal48Mhz",
+        // We set this to zero if the volatile RAW unlock mechanism is expected
+        // to be disabled (this should be the case in production silicon).
+        "+exp_volatile_raw_unlock_en=0"]
       run_timeout_mins: 120
     }
     {
