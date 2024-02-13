@@ -23,7 +23,14 @@
       desc: '''
             Stress test
             '''
-      stage: V3
+      stage: V2
+      tests: ["mbx_stress"]
+    }
+    { name: mbx_stress_all
+      desc: '''
+            Run the other tests in random order while injecting TL errors and running automated CSR tests in parallel.
+            '''
+      stage: V2
       tests: ["mbx_stress_all"]
     }
   ]
