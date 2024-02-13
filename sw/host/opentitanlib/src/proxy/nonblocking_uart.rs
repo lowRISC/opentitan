@@ -8,7 +8,7 @@ use mio::{Registry, Token};
 use std::collections::hash_map::Entry::{Occupied, Vacant};
 use std::collections::{HashMap, HashSet};
 use std::hash::{Hash, Hasher};
-use std::ptr::hash;
+use std::ptr;
 use std::rc::Rc;
 use std::time::Duration;
 
@@ -133,21 +133,68 @@ impl NonblockingUart {
     }
 }
 
-/// Struct allowing `HashMap` to use `Uart` object identity as the key.
+/// Struct allowing `HashMap` to use the address of a `Uart` as the key.
 #[derive(Clone)]
 pub struct UartKey(pub Rc<dyn Uart>);
 
 impl Hash for UartKey {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        hash(&*self.0, state)
+        state.write_usize(Rc::as_ptr(&self.0).cast::<()>() as usize)
     }
 }
 impl PartialEq for UartKey {
     /// Determines whether the two `Rc`s point to the same `Uart` instance.
-    #[allow(clippy::vtable_address_comparisons)]
     fn eq(&self, other: &Self) -> bool {
-        Rc::as_ptr(&self.0) == Rc::as_ptr(&other.0)
+        // Note: We cast to a thin pointer to avoid comparing pointer metadata.
+        ptr::eq(
+            Rc::as_ptr(&self.0).cast::<()>(),
+            Rc::as_ptr(&other.0).cast::<()>(),
+        )
     }
 }
 
 impl Eq for UartKey {}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Verifies UartKey's Hash impl only hashes the address of the `dyn Uart`
+    /// and not its metadata.
+    #[test]
+    fn uartkey_hash() {
+        struct StubUart;
+        impl Uart for StubUart {
+            fn get_baudrate(&self) -> Result<u32> {
+                unimplemented!()
+            }
+            fn set_baudrate(&self, _: u32) -> Result<()> {
+                unimplemented!()
+            }
+            fn read(&self, _: &mut [u8]) -> Result<usize> {
+                unimplemented!()
+            }
+            fn read_timeout(&self, _: &mut [u8], _: Duration) -> Result<usize> {
+                unimplemented!()
+            }
+            fn write(&self, _: &[u8]) -> Result<()> {
+                unimplemented!()
+            }
+        }
+        // A Hasher that counts the number of bytes written.
+        struct CountingHasher {
+            bytes: usize,
+        }
+        impl Hasher for CountingHasher {
+            fn finish(&self) -> u64 {
+                unimplemented!()
+            }
+            fn write(&mut self, bytes: &[u8]) {
+                self.bytes += bytes.len();
+            }
+        }
+        let mut hasher = CountingHasher { bytes: 0 };
+        UartKey(Rc::new(StubUart)).hash(&mut hasher);
+        assert_eq!(hasher.bytes, std::mem::size_of::<usize>());
+    }
+}

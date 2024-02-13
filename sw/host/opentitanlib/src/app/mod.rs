@@ -57,8 +57,9 @@ impl Default for StagedProgressBar {
 }
 
 impl StagedProgressBar {
-    const DEFAULT_TEMPLATE: &str = "[{elapsed_precise}] [{wide_bar}] {bytes}/{total_bytes} ({eta})";
-    const STAGE_TEMPLATE: &str =
+    const DEFAULT_TEMPLATE: &'static str =
+        "[{elapsed_precise}] [{wide_bar}] {bytes}/{total_bytes} ({eta})";
+    const STAGE_TEMPLATE: &'static str =
         "{msg}: [{elapsed_precise}] [{wide_bar}] {bytes}/{total_bytes} ({eta})";
 
     pub fn new() -> Self {

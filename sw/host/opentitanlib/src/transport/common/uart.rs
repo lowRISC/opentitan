@@ -247,20 +247,18 @@ impl SerialPortExclusiveLock {
             // is still running (no actual signal will be delivered), and we should refrain from
             // also opening the same port.  On any parsing error or failure to deliver the signal,
             // we proceed to overwrite the lock file with our own PID.
-            match (|| -> Result<()> {
+            let mut find_existing_proc = || {
                 let mut buf = [0u8; PID_FILE_LEN];
-                match lockfile.read(&mut buf) {
-                    Ok(PID_FILE_LEN) => {
-                        let line = std::str::from_utf8(&buf)?;
-                        let pid = line.trim().parse()?;
-                        let pid =
-                            rustix::process::Pid::from_raw(pid).context("Pid is not valid")?;
-                        rustix::process::test_kill_process(pid)?;
-                        Ok(()) // This will result in "Device is locked" error.
-                    }
-                    _ => bail!(""),
-                }
-            })() {
+                let Ok(PID_FILE_LEN) = lockfile.read(&mut buf) else {
+                    bail!("")
+                };
+                let line = std::str::from_utf8(&buf)?;
+                let pid = line.trim().parse()?;
+                let pid = rustix::process::Pid::from_raw(pid).context("Pid is not valid")?;
+                rustix::process::test_kill_process(pid)?;
+                Ok(()) // This will result in a "Device is locked" error.
+            };
+            match find_existing_proc() {
                 Ok(()) => bail!(TransportError::OpenError(
                     port_name.to_string(),
                     "Device is locked".to_string()
