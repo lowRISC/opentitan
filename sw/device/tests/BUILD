@@ -4188,11 +4188,14 @@ opentitan_test(
         """,
         test_harness = "//sw/host/tests/chip/spi_passthru",
     ),
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-        "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "hyper310",
-        "//hw/top_earlgrey:fpga_hyper310_rom_ext": "hyper310",
-    },
+    exec_env = dicts.add(
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "hyper310",
+            "//hw/top_earlgrey:fpga_hyper310_rom_ext": "hyper310",
+        },
+    ),
     hyper310 = cw310_params(
         tags = ["manual"],  # TODO: QE bit handling
         test_cmd = """
@@ -4201,9 +4204,16 @@ opentitan_test(
         """,
         test_harness = "//sw/host/tests/chip/spi_passthru",
     ),
+    silicon = silicon_params(
+        test_cmd = """
+            --bootstrap="{firmware}"
+        """,
+        test_harness = "//sw/host/tests/chip/spi_passthru",
+    ),
     deps = [
         "//sw/device/lib/arch:device",
         "//sw/device/lib/dif:gpio",
+        "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:spi_device",
         "//sw/device/lib/testing:spi_device_testutils",
         "//sw/device/lib/testing:spi_flash_testutils",
