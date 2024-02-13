@@ -23,7 +23,7 @@ extern "C" {
 typedef struct boot_log {
   /** Digest to indicate validity of the boot_log. */
   hmac_digest_t digest;
-  /** Identifier (`BOLG`). */
+  /** Identifier (`BLOG`). */
   uint32_t identifier;
   /** Chip version (from the ROM). */
   chip_info_scm_revision_t chip_version;
@@ -56,9 +56,9 @@ OT_ASSERT_MEMBER_OFFSET(boot_log_t, reserved, 68);
 
 enum {
   /**
-   * Boot log identifier value (ASCII "BOLG").
+   * Boot log identifier value (ASCII "BLOG").
    */
-  kBootLogIdentifier = 0x474c4f42,
+  kBootLogIdentifier = 0x474f4c42,
 
   /**
    * Boot Slot designators
