@@ -434,7 +434,7 @@ def _generate_abstract_impl(gapi):
     # Create core file depending on all primitive implementations we have in the
     # techlibs.
     print("Creating core file for primitive %s." % (prim_name, ))
-    abstract_prim_core_filepath = os.path.abspath('prim_%s.core' % (prim_name))
+    abstract_prim_core_filepath = os.path.abspath('prim_abstract_%s.core' % (prim_name))
     dependencies = []
     dependencies.append('lowrisc:prim:prim_pkg')
     dependencies += [
