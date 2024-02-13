@@ -7,6 +7,7 @@ use rusb::{Direction, Recipient, RequestType};
 use std::cell::Cell;
 use std::mem::size_of;
 use std::rc::Rc;
+use std::time::Duration;
 use zerocopy::{AsBytes, FromBytes, FromZeroes};
 
 use crate::io::eeprom;
@@ -26,6 +27,12 @@ pub struct HyperdebugSpiTarget {
     max_sizes: MaxSizes,
     cs_asserted_count: Cell<u32>,
 }
+
+/// HyperDebug will wait up to one second for EEPROM chip to report "ready" after a write
+/// operation, sending a response if it gives up.  Make sure that we leave a little time for USB
+/// latency, so that we will receive the "giving up" response, rather than timeout ourselves in
+/// opentitanlib.
+const TRANSFER_START_TIMEOUT: Duration = Duration::from_millis(1100);
 
 const USB_SPI_PKT_ID_CMD_GET_USB_SPI_CONFIG: u16 = 0;
 const USB_SPI_PKT_ID_RSP_USB_SPI_CONFIG: u16 = 1;
@@ -70,6 +77,39 @@ const EEPROM_FLAGS_WRITE_ENABLE: u32 = 0x10000000;
 const EEPROM_FLAGS_POLL_BUSY: u32 = 0x20000000;
 const EEPROM_FLAGS_DOUBLE_BUFFER: u32 = 0x40000000;
 const EEPROM_FLAGS_WRITE: u32 = 0x80000000;
+
+const STATUS_SUCCESS: u16 = 0x0000;
+const STATUS_TIMEOUT: u16 = 0x0001;
+const STATUS_BUSY: u16 = 0x0002;
+const STATUS_WRITE_COUNT_INVALID: u16 = 0x0003;
+const STATUS_READ_COUNT_INVALID: u16 = 0x0004;
+const STATUS_DISABLED: u16 = 0x0005;
+const STATUS_RX_BAD_DATA_INDEX: u16 = 0x0006;
+const STATUS_RX_DATA_OVERFLOW: u16 = 0x0007;
+const STATUS_RX_UNEXPECTED_PACKET: u16 = 0x0008;
+const STATUS_UNSUPPORTED_FULL_DUPLEX: u16 = 0x0009;
+const STATUS_UNSUPPORTED_FLASH_MODE: u16 = 0x000A;
+const STATUS_STREAMING_FIRST_SUCCESS: u16 = 0x000B;
+
+fn status_code_description(status_code: u16) -> String {
+    match status_code {
+        STATUS_SUCCESS => "success",
+        STATUS_TIMEOUT => "timeout",
+        STATUS_BUSY => "busy",
+        STATUS_WRITE_COUNT_INVALID => "protocol corruption (WRITE_COUNT_INVALID)",
+        STATUS_READ_COUNT_INVALID => "protocol corruption (READ_COUNT_INVALID)",
+        STATUS_DISABLED => "port not enabled",
+        STATUS_RX_BAD_DATA_INDEX => "protocol corruption (RX_BAD_DATA_INDEX)",
+        STATUS_RX_DATA_OVERFLOW => "protocol corruption (RX_DATA_OVERFLOW)",
+        STATUS_RX_UNEXPECTED_PACKET => "protocol corruption (RX_UNEXPECTED_PACKET)",
+        STATUS_UNSUPPORTED_FULL_DUPLEX => "full duplex not supported",
+        STATUS_UNSUPPORTED_FLASH_MODE => "requested flash mode not supported",
+        _ => {
+            return format!("unknown error {:04x}", status_code);
+        }
+    }
+    .to_string()
+}
 
 #[derive(AsBytes, FromBytes, FromZeroes, Debug, Default)]
 #[repr(C)]
@@ -301,7 +341,7 @@ impl HyperdebugSpiTarget {
     /// Receive data for a single SPI operation, using one or more USB packets.
     fn receive(&self, rbuf: &mut [u8]) -> Result<()> {
         let mut resp = RspTransferStart::new();
-        let bytecount = self.usb_read_bulk(resp.as_bytes_mut())?;
+        let bytecount = self.usb_read_bulk_timeout(resp.as_bytes_mut(), TRANSFER_START_TIMEOUT)?;
         ensure!(
             bytecount >= 4,
             TransportError::CommunicationError("Short reponse to TRANSFER_START".to_string())
@@ -314,8 +354,11 @@ impl HyperdebugSpiTarget {
             ))
         );
         ensure!(
-            resp.status_code == 0,
-            TransportError::CommunicationError(format!("SPI error ({})", resp.status_code))
+            resp.status_code == STATUS_SUCCESS,
+            TransportError::CommunicationError(format!(
+                "SPI error: {}",
+                status_code_description(resp.status_code)
+            ))
         );
         let databytes = bytecount - 4;
         rbuf[0..databytes].clone_from_slice(&resp.data[0..databytes]);
@@ -364,10 +407,10 @@ impl HyperdebugSpiTarget {
             ))
         );
         ensure!(
-            resp.status_code == 0x0B,
+            resp.status_code == STATUS_STREAMING_FIRST_SUCCESS,
             TransportError::CommunicationError(format!(
-                "SPI error ({}), expected streaming response",
-                resp.status_code
+                "SPI error: {}, expected streaming response",
+                status_code_description(resp.status_code)
             ))
         );
         Ok(())
@@ -574,8 +617,8 @@ impl HyperdebugSpiTarget {
             TransportError::CommunicationError("Unrecognized reponse to CHIP_SELECT".to_string())
         );
         ensure!(
-            resp.status_code == 0,
-            TransportError::CommunicationError("SPI error".to_string())
+            resp.status_code == STATUS_SUCCESS,
+            TransportError::CommunicationError(format!("SPI error: {}", resp.status_code))
         );
         Ok(())
     }
@@ -595,6 +638,14 @@ impl HyperdebugSpiTarget {
             .usb_device
             .borrow()
             .read_bulk(self.interface.in_endpoint, buf)
+    }
+
+    /// Receive one USB packet, with particular timeout.
+    fn usb_read_bulk_timeout(&self, buf: &mut [u8], timeout: Duration) -> Result<usize> {
+        self.inner
+            .usb_device
+            .borrow()
+            .read_bulk_timeout(self.interface.in_endpoint, buf, timeout)
     }
 }
 
