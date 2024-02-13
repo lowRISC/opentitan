@@ -62,6 +62,10 @@ The following four combo actions can be triggered:
 - Issue a reset request via `rst_req_o` to the reset manager of the OpenTitan system. Note that once a reset request is issued, it will remain asserted until the next reset.
 
 These actions can be configured via the [`COM_OUT_CTL_0`](registers.md#com_out_ctl) register for each of the combo blocks as described in the previous section.
+Note that configuring both the assertion of `ec_rst_l_o` and the issue of a reset request may have unexpected effects.
+This is because the hardware will start counting cycles in parallel to the reset request being sent. If the reset request leads to the `sysrst_ctrl`
+block being reset, the `ec_rst_l_o` pulse might be interrupted or cancelled, depending on the relative timing of the pulse width
+and the reset.
 
 ### Hardwired reset stretching functionality
 
