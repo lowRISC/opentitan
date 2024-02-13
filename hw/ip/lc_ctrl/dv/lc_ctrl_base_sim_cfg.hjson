@@ -59,9 +59,16 @@
     }
   ]
 
-  // Add LC_CTRL specific exclusion files.
-  vcs_cov_excl_files: ["{proj_root}/hw/ip/lc_ctrl/dv/cov/lc_ctrl_cov_unr_excl.el",
-                       "{proj_root}/hw/ip/lc_ctrl/dv/cov/lc_ctrl_terminal_st_excl.el"]
+  build_modes: [
+    {
+      name: volatile_unlock_disabled
+      build_opts: ["+define+SEC_VOLATILE_RAW_UNLOCK_EN=0"]
+    }
+    {
+      name: volatile_unlock_enabled
+        build_opts: ["+define+SEC_VOLATILE_RAW_UNLOCK_EN=1"]
+    }
+  ]
 
   // Default UVM test and seq class name.
   uvm_test: lc_ctrl_base_test
@@ -157,14 +164,14 @@
     {
       name: lc_ctrl_jtag_access
       uvm_test_seq: lc_ctrl_jtag_access_vseq
-      run_opts: ["+en_scb=0", "+create_jtag_riscv_map=1"]
+      run_opts: ["+create_jtag_riscv_map=1"]
       reseed: 50
     }
 
     {
       name: lc_ctrl_jtag_priority
       uvm_test_seq: lc_ctrl_jtag_priority_vseq
-      run_opts: ["+en_scb=0", "+create_jtag_riscv_map=1"]
+      run_opts: ["+create_jtag_riscv_map=1"]
       reseed: 10
     }
 

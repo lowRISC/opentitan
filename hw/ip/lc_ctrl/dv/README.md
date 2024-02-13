@@ -101,9 +101,9 @@ It also updates the UVM register model.
 ## Building and running tests
 We are using our in-house developed [regression tool](../../../../util/dvsim/README.md) for building and running our tests and regressions.
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
-Here's how to run a smoke test:
+Here's how to run a smoke test for the LC_CTRL variant with volatile RAW unlock disabled:
 ```console
-$ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/lc_ctrl/dv/lc_ctrl_sim_cfg.hjson -i lc_ctrl_smoke
+$ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/lc_ctrl/dv/lc_ctrl_volatile_unlock_disabled_sim.hjson -i lc_ctrl_smoke
 ```
 
 ## Testplan

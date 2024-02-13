@@ -251,7 +251,6 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
     bit            write = item.is_write();
     uvm_reg_addr_t csr_addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
     lc_outputs_t   exp = '{default: lc_ctrl_pkg::Off};
-
     bit            addr_phase_read = (!write && channel == AddrChannel);
     bit            addr_phase_write = (write && channel == AddrChannel);
     bit            data_phase_read = (!write && channel == DataChannel);
@@ -276,6 +275,12 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
               if (item.a_data[0]) exp_clk_byp_req = lc_ctrl_pkg::On;
               else                exp_clk_byp_req = lc_ctrl_pkg::Off;
             end
+          end
+          // In case the volatile unlock feature is disabled, the register is hardwired to zero.
+          // Since the RAL models this as an RW register, we have to override that model here.
+          if (!`SEC_VOLATILE_RAW_UNLOCK_EN) begin
+            bit [DataWidth-1:0] mask = 'h2;
+            item.a_data &= ~mask;
           end
         end
         default: begin
