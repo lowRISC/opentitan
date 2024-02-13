@@ -69,6 +69,27 @@
         tests: ["dma_handshake_smoke"]
       }
       {
+        name: dma_generic_smoke
+        desc: '''
+              Smoke test with both 'memory-to-memory' and 'hardware handshaking' transfers.
+
+              Stimulus:
+              - FW allocates DMA enabled Memory Space for the data movement
+              - FW configures Source Address and ASID
+              - FW configures Destination Address and ASID
+              - FW completes other configuration such as:
+                  i)    Operation Size
+                  ii)   Opcode
+              - FW triggers the DMA operation
+              - FW either
+                  i)    Poll for completion
+                  ii)   Waits for Completion Interrupt
+              - Reset memory contents at the end of iteration
+              '''
+        stage: V1
+        tests: ["dma_generic_smoke"]
+      }
+      {
         name: dma_memory_region_lock
         desc:'''
               Test to check DMA memory region lock functionality
