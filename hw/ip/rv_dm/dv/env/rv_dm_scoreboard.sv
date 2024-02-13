@@ -294,6 +294,7 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
     bit addr_phase_write  = (write && channel == AddrChannel);
     bit data_phase_read   = (!write && channel == DataChannel);
     bit data_phase_write  = (write && channel == DataChannel);
+    if (is_mem_addr(item, ral_name)) return;
 
     // if access was to a valid csr, get the csr handle
     if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
