@@ -276,28 +276,6 @@
         tests: ["dma_stress_all"]
       }
       {
-        name: dma_illegal_transfer
-        desc: '''
-              Test to check DMA hardware enforced security check for direct transfer between CTN and SYS address spaces
-
-              Stimulus:
-              - Configure DMA
-                * Randomize DMA memory region base and limit
-                * Randomize source and destination address pointers and address space IDs such that the transfer happens between CTN and SYS address spaces
-                * Randomize total transfer width and transaction size
-                * Enable 'hardware handshake' mode and set DMAC.direction randomly
-                * Update the OPcode in DMAC register
-              - Start DMA operation
-              - Wait for PLIC interrupt assertion if INTR_ENABLE.int_enable is set else poll for STATUS.abort bit
-
-              Checking:
-              - Check if STATUS.aborted bit is set (This indicates DMA operation is aborted)
-              - Check if DMA generates an alert
-              '''
-        stage: V2S
-        tests: ["dma_illegal_transfer"]
-      }
-      {
         name: dma_illegal_addr_range
         desc: '''
               Test to check DMA hardware enforced security check for illegal source or destination address
