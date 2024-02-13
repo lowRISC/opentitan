@@ -25,166 +25,81 @@
   testpoints: [
     {
       name: sec_cm_bus_integrity
-      desc: '''Verify the countermeasure(s) BUS.INTEGRITY.
-            This entry is covered by tl_access_test.
-            '''
+      desc: "Verify the countermeasure(s) BUS.INTEGRITY."
       stage: V2S
-      tests: ["clkmgr_tl_intg_err"]
-    }
-    {
-      name: sec_cm_meas_clk_bkgn_chk
-      desc: '''Verify the countermeasure(s) MEAS.CLK.BKGN_CHK.
-            - Test measurement feature of clkmgr_meas_chk modules.
-              For all test clocks (clk_main, clk_usb, clk_io, clk_io_div2
-              and clk_io_div4), do measurement with normal configuration.
-              Then change either min or max threshold value to see
-              whether the module can detect measurement error for each test
-              clock.
-            - Measurement error should trigger a recoverable alert
-            '''
-      stage: V2S
-      tests: ["clkmgr_frequency"]
+      tests: []
     }
     {
       name: sec_cm_timeout_clk_bkgn_chk
-      desc: '''Verify the countermeasure(s) TIMEOUT.CLK.BKGN_CHK.
-            - Test timeout feature of clkmgr_meas_chk modules.
-              While frequency measurement, one of
-              clk_main, clk_usb, clk_io, clk_io_div2 and clk_io_div4 are choose
-              and stopped. This will leads to timeout event.
-            - Timeout should cause a recoverable alert
-            '''
+      desc: "Verify the countermeasure(s) TIMEOUT.CLK.BKGN_CHK."
       stage: V2S
-      tests: ["clkmgr_frequency_timeout"]
+      tests: []
+    }
+    {
+      name: sec_cm_meas_clk_bkgn_chk
+      desc: "Verify the countermeasure(s) MEAS.CLK.BKGN_CHK."
+      stage: V2S
+      tests: []
     }
     {
       name: sec_cm_meas_config_shadow
-      desc: '''
-            Verify the countermeasure(s) MEAS.CONFIG.SHADOW.
-
-            This is covered by shadow_reg_errors_tests
-            (https://github.com/lowRISC/opentitan/blob/master/
-            hw/dv/tools/dvsim/testplans/shadow_reg_errors_testplan.hjson)
-            '''
+      desc: "Verify the countermeasure(s) MEAS.CONFIG.SHADOW."
       stage: V2S
-      tests: ["clkmgr_shadow_reg_errors"]
+      tests: []
     }
     {
       name: sec_cm_idle_intersig_mubi
-      desc: '''Verify the countermeasure(s) IDLE.INTERSIG.MUBI.
-            It uses true_strict and false_loose.
-            **Stimulus**:
-            Use same sequence as trans_enables test.
-            Randomize dut.idle_i ports with illegal values.
-            **Check**:
-            - hins_status check:
-              When clk_hints update from '1' to '0',
-              clk_hints_status has to wait idle becomes 'true'. So check
-              clk_hints_status with random idle value, then check again
-              after set all idle values to 'true'.
-
-            - clock output check:
-              When clk_hints_status go to '0', check clocks_o
-              to see if clock is really off
-            '''
+      desc: "Verify the countermeasure(s) IDLE.INTERSIG.MUBI."
       stage: V2S
-      tests: ["clkmgr_idle_intersig_mubi"]
+      tests: []
     }
     {
       name: sec_cm_lc_ctrl_intersig_mubi
-      desc: '''Verify the countermeasure(s) LC_CTRL.INTERSIG.MUBI.
-            It compares to lc_ctrl_pkg::On only.
-            Use clkmgr_extclk test as in testplan.extclk but randomize
-            dut.lc_hw_debug_en_i s.t. all 16 values can be generated with equal priority.
-
-            **Checks**:
-            When dut sees invalid values of lc_hw_debug_en_i,
-            all_clk_byp_req should not be asserted. Covered by assertion checker.
-            '''
+      desc: "Verify the countermeasure(s) LC_CTRL.INTERSIG.MUBI."
       stage: V2S
-      tests: ["clkmgr_lc_ctrl_intersig_mubi"]
+      tests: []
     }
     {
       name: sec_cm_lc_ctrl_clk_handshake_intersig_mubi
-      desc: '''Verify the countermeasure(s) LC_CTRL_CLK_HANDSHAKE.INTERSIG.MUBI.
-            It compared to lc_ctrl_pkg::On only.
-            Use clkmgr_extclk test but randomize lc_clk_byp_req s.t.
-            all 16 values can be generated with equal priority.
-            lc_clk_byp_req drives dut.lc_clk_byp_req_i in the test.
-            **Checks**:
-            When dut sees invalid values of lc_clk_byp_req_i,
-            io_clk_byp_req_o should not be asserted. Covered by assertion checker.
-            '''
+      desc: "Verify the countermeasure(s) LC_CTRL_CLK_HANDSHAKE.INTERSIG.MUBI."
       stage: V2S
-      tests: ["clkmgr_lc_clk_byp_req_intersig_mubi"]
+      tests: []
     }
     {
       name: sec_cm_clk_handshake_intersig_mubi
-      desc: '''Verify the countermeasure(s) CLK_HANDSHAKE.INTERSIG.MUBI.
-            It uses true_strict.
-            Use clkmgr_extclk test. Upon receiving [io|all]_clk_byp_req_o from dut,
-            assert invalid [io|all]_clk_byp_ack values to dut.
-
-            **Check**:
-            all_clk_byp_ack is copied to CLKGMR.EXTCLK_STATUS as is. So read extclk
-            status and compare.
-            io_clk_byp_ack is evaluated with step_down_acks_syn.
-            When both are true, lc_clk_byp_req is assigned to lc_clk_byp_ack.
-            Covered by assertion checker.
-            '''
+      desc: "Verify the countermeasure(s) CLK_HANDSHAKE.INTERSIG.MUBI."
       stage: V2S
-      tests: ["clkmgr_clk_handshake_intersig_mubi"]
+      tests: []
     }
     {
       name: sec_cm_div_intersig_mubi
-      desc: '''Verify the countermeasure(s) DIV.INTERSIG.MUBI.
-            use true_strict.
-            Use clkmgr_extclk test. Before, test drive dut.div_step_down_req_i
-            with 'true', sends invalid values.
-            **Check**:
-            dut should ignore invalid req values. Covered by assertion checker.
-            '''
+      desc: "Verify the countermeasure(s) DIV.INTERSIG.MUBI."
       stage: V2S
-      tests: ["clkmgr_div_intersig_mubi"]
+      tests: []
     }
     {
       name: sec_cm_jitter_config_mubi
-      desc: '''Verify the countermeasure(s) JITTER.CONFIG.MUBI.
-            use false_strict.
-            This doesn't do any function in the dut but indicating
-            jittery clock is enabled. So it can be covered by default
-            csr test.
-            '''
+      desc: "Verify the countermeasure(s) JITTER.CONFIG.MUBI."
       stage: V2S
-      tests: ["clkmgr_csr_rw"]
+      tests: []
     }
     {
       name: sec_cm_idle_ctr_redun
-      desc: '''Verify the countermeasure(s) IDLE.CTR.REDUN.
-            This is triggered by common cm primitives (SecCmPrimCount).
-            **Check**:
-            read check CLKMGR.FATAL_ERR_CODE.IDLE_CNT == 1
-            '''
+      desc: "Verify the countermeasure(s) IDLE.CTR.REDUN."
       stage: V2S
-      tests: ["clkmgr_sec_cm"]
+      tests: []
     }
     {
       name: sec_cm_meas_config_regwen
-      desc: '''Verify the countermeasure(s) MEAS.CONFIG.REGWEN.
-
-            This is covered by auto csr test.
-            '''
+      desc: "Verify the countermeasure(s) MEAS.CONFIG.REGWEN."
       stage: V2S
-      tests: ["clkmgr_csr_rw"]
+      tests: []
     }
     {
       name: sec_cm_clk_ctrl_config_regwen
-      desc: '''Verify the countermeasure(s) CLK_CTRL.CONFIG.REGWEN.
-
-            This is covered by auto csr test.
-            '''
+      desc: "Verify the countermeasure(s) CLK_CTRL.CONFIG.REGWEN."
       stage: V2S
-      tests: ["clkmgr_csr_rw"]
+      tests: []
     }
   ]
 }
