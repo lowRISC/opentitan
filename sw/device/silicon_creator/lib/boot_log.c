@@ -43,7 +43,7 @@ void boot_log_digest_update(boot_log_t *boot_log) {
 
 static const uint32_t kCheckShares[kHmacDigestNumWords + 1] = {
     0x7b00d08e, 0xfdb69374, 0x336c86df, 0xff2ef417, 0xe1517012,
-    0x4bf5408c, 0x9c6a7b25, 0xf771f8fa, 0xcd458605,
+    0x4bf5408c, 0x9c6a7b25, 0xf771f8fa, 0xcd468505,
 };
 
 rom_error_t boot_log_check(const boot_log_t *boot_log) {
