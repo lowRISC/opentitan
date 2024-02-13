@@ -17,6 +17,6 @@ localparam int TL_SZW=$clog2($clog2(TL_DBW)+1);
 // NOTE THAT THIS IS A FEATURE FOR TEST CHIPS ONLY TO MITIGATE
 // THE RISK OF A BROKEN OTP MACRO. THIS WILL BE DISABLED FOR
 // PRODUCTION DEVICES.
-localparam int SecVolatileRawUnlockEn = 1;
+localparam int SecVolatileRawUnlockEn = 0;
 
 endpackage
