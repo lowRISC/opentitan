@@ -245,7 +245,7 @@
               - Check if PLIC interrupt is asserted when memory_buffer_auto_increment is enabled
               '''
         stage: V2
-        tests: ["dma_handshake_mem_buffer_overflow"]
+        tests: ["dma_handshake_stress", "dma_mem_limit"]
       }
       {
         name: dma_abort
