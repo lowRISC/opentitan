@@ -294,7 +294,7 @@
               - Check if DMA generates an alert
               '''
         stage: V2S
-        tests: ["dma_illegal_addr_range"]
+        tests: ["dma_generic_stress", "dma_handshake_stress", "dma_mem_enabled"]
       }
     ]
     covergroups: [
