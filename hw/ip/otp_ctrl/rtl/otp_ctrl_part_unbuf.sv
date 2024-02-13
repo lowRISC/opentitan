@@ -150,7 +150,7 @@ module otp_ctrl_part_unbuf
   end else begin : gen_no_integrity
     assign otp_cmd_o = prim_otp_pkg::ReadRaw;
     always_comb begin
-      if (otp_err_i inside {MacroEccCorrError, MacroEccUncorrError}) begin
+      if (otp_err_e'(otp_err_i) inside {MacroEccCorrError, MacroEccUncorrError}) begin
         otp_err = NoError;
       end else begin
         otp_err = otp_err_e'(otp_err_i);

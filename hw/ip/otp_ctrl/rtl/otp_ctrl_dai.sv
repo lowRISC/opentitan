@@ -168,7 +168,7 @@ module otp_ctrl_dai
   always_comb begin
     otp_err = otp_err_e'(otp_err_i);
     if (!PartInfo[part_idx].integrity &&
-        otp_err_i inside {MacroEccCorrError, MacroEccUncorrError}) begin
+        otp_err_e'(otp_err_i) inside {MacroEccCorrError, MacroEccUncorrError}) begin
       otp_err = NoError;
     end
   end
