@@ -131,15 +131,13 @@ class rom_ctrl_corrupt_sig_fatal_chk_vseq extends rom_ctrl_base_vseq;
         // module. To test this rom_select_bus_o is forced with any value other than MuBi4True and
         // MuBi4False.
         MuxMubi: begin
-          bit [3:0] rand_var;
           pick_err_inj_point();
-          mubi4_test_invalid(prim_mubi_pkg::mubi4_t'(rand_var));
-          force_sig("tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.rom_select_bus_o", rand_var);
+          force_sig("tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.rom_select_bus_o",
+                    get_invalid_mubi4());
           check_for_alert();
           dut_init();
           pick_err_inj_point();
-          mubi4_test_invalid(prim_mubi_pkg::mubi4_t'(rand_var));
-          force_sig("tb.dut.u_mux.sel_bus_q", rand_var);
+          force_sig("tb.dut.u_mux.sel_bus_q", get_invalid_mubi4());
           check_for_alert();
         end
         // The mux that arbitrates between the checker and the bus gives access to the checker at
@@ -302,5 +300,11 @@ class rom_ctrl_corrupt_sig_fatal_chk_vseq extends rom_ctrl_base_vseq;
     end
     wait_with_bound(wait_clks);
   endtask
+
+  function prim_mubi_pkg::mubi4_t get_invalid_mubi4();
+    logic [3:0] val;
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(val, mubi4_test_invalid(mubi4_t'(val));)
+    return mubi4_t'(val);
+  endfunction
 
 endclass : rom_ctrl_corrupt_sig_fatal_chk_vseq
