@@ -395,10 +395,10 @@
     {
       "name": "SPI_TPM",
       "pins": [
-	{
-	  "name": "SPI_MUX_SEL",
-	  "level": true,
-	},
+        {
+          "name": "SPI_MUX_SEL",
+          "level": true
+        },
         {
           "name": "SPI1_SCK",
           "mode": "Alternate"
@@ -417,5 +417,5 @@
         }
       ]
     }
-  ],
+  ]
 }
