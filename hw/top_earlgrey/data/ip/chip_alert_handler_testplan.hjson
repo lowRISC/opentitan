@@ -120,6 +120,7 @@
       si_stage: SV3
       lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
       tests: ["chip_plic_all_irqs"]
+      bazel: ["//sw/device/tests/autogen:plic_all_irqs_test_0"]
     }
     {
       name: chip_sw_alert_handler_entropy
