@@ -449,12 +449,13 @@ fn main() -> Result<()> {
     let _ = UartConsole::wait_for(&*uart, r"Running [^\r\n]*", opts.timeout)?;
     uart.clear_rx_buffer()?;
 
+    execute_test!(test_enter_exit_4b_mode, &opts, &transport);
+
     execute_test!(test_read_flash, &opts, &transport, ReadMode::Standard);
     execute_test!(test_read_flash, &opts, &transport, ReadMode::Fast);
     execute_test!(test_read_flash, &opts, &transport, ReadMode::Dual);
     execute_test!(test_read_flash, &opts, &transport, ReadMode::Quad);
     execute_test!(test_jedec_id, &opts, &transport);
-    execute_test!(test_enter_exit_4b_mode, &opts, &transport);
     execute_test!(test_write_enable_disable, &opts, &transport);
     execute_test!(test_read_status_extended, &opts, &transport);
     execute_test!(test_read_sfdp, &opts, &transport);

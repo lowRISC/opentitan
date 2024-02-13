@@ -3844,23 +3844,39 @@ opentitan_test(
     name = "spi_passthru_test",
     srcs = ["spi_passthru_test.c"],
     cw310 = new_cw310_params(
-        # TODO: This test will need hyperdebug once we start using multi-lane
-        # SPI modes.
-        # interface = "hyper310",
-        # tags = ["manual"],
         test_cmd = """
             --bitstream={bitstream}
             --bootstrap="{firmware}"
         """,
         test_harness = "//sw/host/tests/chip/spi_passthru",
     ),
+    hyper_cw310 = new_cw310_params(
+        # TODO: This test will need hyperdebug once we start using multi-lane
+        # SPI modes.
+        tags = ["manual", "broken"],
+        test_cmd = """
+            --bitstream={bitstream}
+            --bootstrap="{firmware}"
+        """,
+        test_harness = "//sw/host/tests/chip/spi_passthru",
+    ),
+    silicon = silicon_params(
+        test_cmd = """
+            --bootstrap="{firmware}"
+        """,
+        test_harness = "//sw/host/tests/chip/spi_passthru",
+    ),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:fpga_cw310_sival": "hyper_cw310",
+        "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon",
+
     },
     deps = [
         "//sw/device/lib/arch:device",
         "//sw/device/lib/dif:gpio",
         "//sw/device/lib/dif:spi_device",
+        "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/testing:spi_device_testutils",
         "//sw/device/lib/testing:spi_flash_testutils",
         "//sw/device/lib/testing/json:command",
