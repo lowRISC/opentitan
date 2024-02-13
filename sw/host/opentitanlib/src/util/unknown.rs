@@ -81,7 +81,7 @@ macro_rules! with_unknown {
 
         #[allow(dead_code)]
         impl $Enum {
-            pub const VARIANTS: &[&'static str] = &[
+            pub const VARIANTS: &'static [&'static str] = &[
                 $(
                     stringify!($enumerator),
                 )*
