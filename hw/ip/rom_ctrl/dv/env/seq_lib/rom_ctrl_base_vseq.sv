@@ -186,4 +186,37 @@ class rom_ctrl_base_vseq extends cip_base_vseq #(
     cfg.m_kmac_agent_cfg.add_user_digest_share(rsp_digest_h);
   endfunction
 
+  // Wait for a fatal alert to be raised
+  //
+  // We expect the FATAL_ALERT_CAUSE register to contain 32'd1, which means that the checker_error
+  // field is true, but the integrity_error field is false.
+  task wait_for_fatal_alert(bit check_fsm_state = 1'b1,
+                            int max_delay = 10000,
+                            int max_wait_cycle = 1000);
+    uvm_reg_data_t act_val;
+    cfg.scoreboard.set_exp_alert("fatal", .is_fatal(1'b1), .max_delay(max_delay));
+
+    fork
+      begin
+        void'(ral.fatal_alert_cause.predict(.value(32'd1), .kind(UVM_PREDICT_READ), .be(4'hF)));
+        wait_alert_trigger ("fatal", .max_wait_cycle(1000), .wait_complete(1));
+        csr_utils_pkg::csr_rd(.ptr(ral.fatal_alert_cause), .value(act_val), .check(UVM_CHECK));
+      end
+      begin
+        repeat(3) wait_alert_trigger ("fatal", .max_wait_cycle(max_wait_cycle), .wait_complete(1));
+      end
+    join
+
+    if (check_fsm_state) begin
+      string alert_o_path = "tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.alert_o";
+      string state_q_path = "tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.state_q";
+      bit    rdata_alert;
+      bit [$bits(rom_ctrl_pkg::fsm_state_e)-1:0] rdata_state;
+      `DV_CHECK(uvm_hdl_read(alert_o_path, rdata_alert))
+      `DV_CHECK_EQ(rdata_alert, 1)
+      `DV_CHECK(uvm_hdl_read(state_q_path, rdata_state))
+      `DV_CHECK_EQ(rdata_state, rom_ctrl_pkg::Invalid)
+    end
+  endtask: wait_for_fatal_alert
+
 endclass : rom_ctrl_base_vseq
