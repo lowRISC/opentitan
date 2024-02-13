@@ -947,10 +947,10 @@ def amend_wkup(topcfg: OrderedDict, name_to_block: Dict[str, IpBlock]):
 
     # create list of wakeup signals
     for m in topcfg["module"]:
-        log.info("Adding wakeup from module %s" % m["name"])
         block = name_to_block[m['type']]
         for signal in block.wakeups:
-            log.info("Adding signal %s" % signal.name)
+            log.info("Adding wakeup signal %s from module %s", signal.name,
+                     m["name"])
             topcfg["wakeups"].append({
                 'name': signal.name,
                 'width': str(signal.bits.width()),
@@ -959,8 +959,7 @@ def amend_wkup(topcfg: OrderedDict, name_to_block: Dict[str, IpBlock]):
 
     # add wakeup signals to pwrmgr connections
     signal_names = [
-        "{}.{}".format(s["module"].lower(), s["name"].lower())
-        for s in topcfg["wakeups"]
+        f"{s['module'].lower()}.{s['name'].lower()}" for s in topcfg["wakeups"]
     ]
 
     topcfg["inter_module"]["connect"]["{}.wakeups".format(pwrmgr_name)] = signal_names

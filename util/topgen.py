@@ -373,63 +373,8 @@ def generate_pinmux(top: Dict[str, object], out_path: Path) -> None:
     generate_regfile_from_path(hjson_gen_path, rtl_path, original_rtl_path)
 
 
-def generate_clkmgr(top: Dict[str, object], cfg_path: Path,
-                    out_path: Path) -> None:
-
-    # Target paths
-    spec_ip_path = out_path / "ip" / "clkmgr"
-    rtl_path = spec_ip_path / "rtl" / "autogen"
-    rtl_path.mkdir(parents=True, exist_ok=True)
-    data_path = spec_ip_path / "data" / "autogen"
-    data_path.mkdir(parents=True, exist_ok=True)
-
-    # Template paths
-    orig_ip_path = SRCTREE_TOP / "hw" / "ip" / "clkmgr"
-    tpl_path = orig_ip_path / "data"
-    hjson_tpl = tpl_path / "clkmgr.hjson.tpl"
-    rtl_tpl = tpl_path / "clkmgr.sv.tpl"
-    pkg_tpl = tpl_path / "clkmgr_pkg.sv.tpl"
-    original_rtl_path = orig_ip_path / "rtl"
-
-    hjson_out = data_path / "clkmgr.hjson"
-    rtl_out = rtl_path / "clkmgr.sv"
-    pkg_out = rtl_path / "clkmgr_pkg.sv"
-
-    tpls = [hjson_tpl, rtl_tpl, pkg_tpl]
-    outputs = [hjson_out, rtl_out, pkg_out]
-    names = ["clkmgr.hjson", "clkmgr.sv", "clkmgr_pkg.sv"]
-
-    clocks = top["clocks"]
-    assert isinstance(clocks, Clocks)
-
-    typed_clocks = clocks.typed_clocks()
-    hint_names = typed_clocks.hint_names()
-
-    for idx, tpl in enumerate(tpls):
-        out = ""
-        with tpl.open(mode="r", encoding="UTF-8") as fin:
-            tpl = Template(fin.read())
-            try:
-                out = tpl.render(cfg=top,
-                                 clocks=clocks,
-                                 typed_clocks=typed_clocks,
-                                 hint_names=hint_names)
-            except:  # noqa: E722
-                log.error(exceptions.text_error_template().render())
-
-        if out == "":
-            log.error("Cannot generate {}".format(names[idx]))
-            return
-
-        with outputs[idx].open(mode="w", encoding="UTF-8") as fout:
-            fout.write(genhdr + out)
-
-    # Generate reg files
-    generate_regfile_from_path(hjson_out, rtl_path, original_rtl_path)
-
-
 # generate clkmgr with ipgen
-def generate_ipgen_clkmgr(topcfg: Dict[str, object], out_path: Path) -> None:
+def generate_clkmgr(topcfg: Dict[str, object], out_path: Path) -> None:
     log.info("Generating clkmgr with ipgen")
     topname = topcfg["name"]
 
@@ -824,8 +769,7 @@ def _process_top(topcfg: Dict[str, object], args: argparse.Namespace,
     # the top hjson file
     topcfg["clocks"] = Clocks(topcfg["clocks"])
     extract_clocks(topcfg)
-    generate_clkmgr(topcfg, cfg_path, out_path)
-    generate_ipgen_clkmgr(topcfg, out_path)
+    generate_clkmgr(topcfg, out_path)
 
     # It may require two passes to check if the module is needed.
     # TODO: first run of topgen will fail due to the absent of rv_plic.

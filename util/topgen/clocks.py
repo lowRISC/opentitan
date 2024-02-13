@@ -29,12 +29,13 @@ def _to_int(val: object) -> int:
 def _check_choices(val: str, what: str, choices: List[str]) -> str:
     if val in choices:
         return val
-    raise ValueError('{} is {!r}, which is not one of the expected values: {}.'
-                     .format(what, val, choices))
+    raise ValueError(
+        f'{what} is {val!r}, which is none of the expected values: {choices}.')
 
 
 class SourceClock:
-    '''A clock source (input to the top-level)'''
+    '''A clock source (input to the top-level).'''
+
     def __init__(self, raw: Dict[str, object]):
         self.name = str(raw['name'])
         self.aon = _yn_to_bool(raw['aon'])
@@ -51,10 +52,10 @@ class SourceClock:
 
 
 class DerivedSourceClock(SourceClock):
-    '''A derived source clock (divided down from some other clock)'''
-    def __init__(self,
-                 raw: Dict[str, object],
-                 sources: Dict[str, SourceClock]):
+    '''A derived source clock (divided down from some other clock).'''
+
+    def __init__(self, raw: Dict[str, object], sources: Dict[str,
+                                                             SourceClock]):
         super().__init__(raw)
         self.div = _to_int(raw['div'])
         self.src = sources[str(raw['src'])]
@@ -67,7 +68,8 @@ class DerivedSourceClock(SourceClock):
 
 
 class ClockSignal:
-    '''A clock signal in the design'''
+    '''A clock signal in the design.'''
+
     def __init__(self, name: str, src: SourceClock):
         self.name = name
         self.src = src
@@ -78,9 +80,8 @@ class ClockSignal:
 
 
 class Group:
-    def __init__(self,
-                 raw: Dict[str, object],
-                 what: str):
+
+    def __init__(self, raw: Dict[str, object], what: str):
         self.name = str(raw['name'])
         self.src = str(raw['src'])
         self.sw_cg = _check_choices(str(raw['sw_cg']), 'sw_cg for ' + what,
@@ -119,8 +120,9 @@ class Group:
             'src': self.src,
             'sw_cg': self.sw_cg,
             'unique': _bool_to_yn(self.unique),
-            'clocks': {name: sig.src.name
-                       for name, sig in self.clocks.items()}
+            'clocks':
+            {name: sig.src.name
+             for name, sig in self.clocks.items()}
         }
 
 
@@ -201,7 +203,8 @@ class TypedClocks(NamedTuple):
 
 
 class Clocks:
-    '''Clock connections for the chip'''
+    '''Clock connections for the chip.'''
+
     def __init__(self, raw: Dict[str, object]):
         self.hier_paths = {}
         assert isinstance(raw['hier_paths'], dict)
@@ -238,9 +241,7 @@ class Clocks:
             'groups': list(self.groups.values())
         }
 
-    def add_clock_to_group(self,
-                           grp: Group,
-                           clk_name: str,
+    def add_clock_to_group(self, grp: Group, clk_name: str,
                            src_name: str) -> ClockSignal:
         src = self.all_srcs.get(src_name)
         if src is None:
@@ -256,11 +257,10 @@ class Clocks:
         return ret
 
     def reset_signals(self) -> List[str]:
-        '''Return the list of clock reset signal names
+        '''Return the list of clock reset signal names.
 
         These signals are inputs to the clock manager (from the reset
-        manager)
-
+        manager).
         '''
         ret = []
         for src in self.srcs.values():
@@ -270,7 +270,7 @@ class Clocks:
         return ret
 
     def typed_clocks(self) -> TypedClocks:
-        '''Split the clocks by type'''
+        '''Split the clocks by type.'''
         ast_clks = {}
         ft_clks = {}
         rg_clks = {}
@@ -313,7 +313,7 @@ class Clocks:
                 hint_clks[clk] = sig
                 continue
 
-        # Define a canonical ordering for rg_srcs
+        # Define a canonical ordering for rg_srcs.
         rg_srcs = list(sorted(rg_srcs_set))
 
         # Define a list for each "family" of clocks
@@ -333,7 +333,7 @@ class Clocks:
                            parent_child_clks=parent_child_clks)
 
     def make_clock_to_group(self) -> Dict[str, Group]:
-        '''Return a map from clock name to the group containing the clock'''
+        '''Return a map from clock name to the group containing the clock.'''
         c2g = {}
         for grp in self.groups.values():
             for clk_name in grp.clocks.keys():
