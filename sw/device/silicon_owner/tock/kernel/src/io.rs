@@ -42,9 +42,8 @@ use kernel::hil::led;
 
 /// Panic handler.
 #[cfg(not(test))]
-#[no_mangle]
 #[panic_handler]
-pub unsafe extern "C" fn panic_fmt(pi: &PanicInfo) -> ! {
+fn panic_fmt(pi: &PanicInfo) -> ! {
     let first_led_pin = &mut earlgrey::gpio::GpioPin::new(
         earlgrey::gpio::GPIO_BASE,
         earlgrey::pinmux::PadConfig::Output(
@@ -55,48 +54,51 @@ pub unsafe extern "C" fn panic_fmt(pi: &PanicInfo) -> ! {
     );
     first_led_pin.make_output();
     let first_led = &mut led::LedLow::new(first_led_pin);
-    let writer = &mut WRITER;
+    let writer = unsafe { &mut WRITER };
 
-    #[cfg(feature = "sim_verilator")]
-    debug::panic(
-        &mut [first_led],
-        writer,
-        pi,
-        &|| {},
-        &PROCESSES,
-        &CHIP,
-        &PROCESS_PRINTER,
-    );
+    unsafe {
+        #[cfg(feature = "sim_verilator")]
+        debug::panic(
+            &mut [first_led],
+            writer,
+            pi,
+            &|| {},
+            &PROCESSES,
+            &CHIP,
+            &PROCESS_PRINTER,
+        );
 
-    #[cfg(not(feature = "sim_verilator"))]
-    debug::panic(
-        &mut [first_led],
-        writer,
-        pi,
-        &rv32i::support::nop,
-        &PROCESSES,
-        &CHIP,
-        &PROCESS_PRINTER,
-    );
+        #[cfg(not(feature = "sim_verilator"))]
+        debug::panic(
+            &mut [first_led],
+            writer,
+            pi,
+            &rv32i::support::nop,
+            &PROCESSES,
+            &CHIP,
+            &PROCESS_PRINTER,
+        );
+    }
 }
 
 #[cfg(test)]
-#[no_mangle]
 #[panic_handler]
-pub unsafe extern "C" fn panic_fmt(pi: &PanicInfo) -> ! {
+fn panic_fmt(pi: &PanicInfo) -> ! {
     let writer = &mut WRITER;
 
-    #[cfg(feature = "sim_verilator")]
-    debug::panic_print(writer, pi, &|| {}, &PROCESSES, &CHIP, &PROCESS_PRINTER);
-    #[cfg(not(feature = "sim_verilator"))]
-    debug::panic_print(
-        writer,
-        pi,
-        &rv32i::support::nop,
-        &PROCESSES,
-        &CHIP,
-        &PROCESS_PRINTER,
-    );
+    unsafe {
+        #[cfg(feature = "sim_verilator")]
+        debug::panic_print(writer, pi, &|| {}, &PROCESSES, &CHIP, &PROCESS_PRINTER);
+        #[cfg(not(feature = "sim_verilator"))]
+        debug::panic_print(
+            writer,
+            pi,
+            &rv32i::support::nop,
+            &PROCESSES,
+            &CHIP,
+            &PROCESS_PRINTER,
+        );
+    }
 
     let _ = writeln!(writer, "{}", pi);
     // Exit QEMU with a return code of 1

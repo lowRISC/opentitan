@@ -51,17 +51,17 @@ impl CommandDispatch for ListCommand {
             return Ok(Some(Box::new(records)));
         }
         // Gather things together and do some pretty-printing of module IDs.
-        let filemap = records
-            .records
-            .into_iter()
-            .try_fold(HashMap::new(), |mut tbl, record| {
+        let filemap = records.records.into_iter().try_fold(
+            HashMap::<_, Vec<_>>::new(),
+            |mut tbl, record| {
                 tbl.entry(record.filename.clone())
-                    .or_insert_with(Vec::new)
+                    .or_default()
                     .push(ConsolidateRecord {
                         module_id: record.get_module_id()?,
                     });
                 Ok::<_, anyhow::Error>(tbl)
-            })?;
+            },
+        )?;
         Ok(Some(Box::new(filemap)))
     }
 }
@@ -104,7 +104,7 @@ impl CommandDispatch for LintCommand {
             for record in records.records {
                 mod_id_map
                     .entry(record.get_module_id()?)
-                    .or_insert_with(HashSet::new)
+                    .or_default()
                     .insert(ModuleIdProvenance {
                         filename: record.filename.into(),
                         overriden: record.module_id.is_some(),

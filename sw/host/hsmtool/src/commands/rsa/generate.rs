@@ -41,14 +41,14 @@ pub struct Generate {
 }
 
 impl Generate {
-    const PUBLIC_TEMPLATE: &str = r#"{
+    const PUBLIC_TEMPLATE: &'static str = r#"{
         "CKA_CLASS": "CKO_PUBLIC_KEY",
         "CKA_TOKEN": true,
         "CKA_ENCRYPT": true,
         "CKA_VERIFY": true
     }"#;
 
-    const PRIVATE_TEMPLATE: &str = r#"{
+    const PRIVATE_TEMPLATE: &'static str = r#"{
         "CKA_CLASS": "CKO_PRIVATE_KEY",
         "CKA_TOKEN": true,
         "CKA_PRIVATE": true,
