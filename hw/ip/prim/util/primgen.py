@@ -441,7 +441,7 @@ def _generate_abstract_impl(gapi):
         _core_info_for_techlib(prim_cores, t)[0] for t in techlibs
     ]
     abstract_prim_core = {
-        'name': "lowrisc:prim_abstract:%s" % (prim_name, ),
+        'name': "lowrisc:prim_abstract:%s:0.1" % (prim_name, ),
         'filesets': {
             'files_rtl': {
                 'depend': dependencies,
