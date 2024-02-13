@@ -211,6 +211,14 @@
         tests: ["dma_memory_stress"]
       }
       {
+        name: dma_generic_stress
+        desc: '''
+              Stress test which combines `dma_memory_stress` and `dma_handshake_stress` to ensure that both 'memory-to-memory' and 'hardware handshaking' modes are exercised together without intervening resets.
+              '''
+        stage: V2
+        tests: ["dma_generic_stress"]
+      }
+      {
         name: dma_handshake_mem_buffer_overflow
         desc: '''
               Test to check DMA memory buffer threshold and limit behavior with 'hardware handshake' mode
