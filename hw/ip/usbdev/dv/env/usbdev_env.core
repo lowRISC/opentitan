@@ -36,6 +36,7 @@ filesets:
       - seq_lib/usbdev_pkt_sent_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_nak_trans_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_enable_vseq.sv: {is_include_file: true}
+      - seq_lib/usbdev_in_rand_trans_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_in_trans_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_random_length_out_transaction_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_min_length_out_transaction_vseq.sv: {is_include_file: true}
