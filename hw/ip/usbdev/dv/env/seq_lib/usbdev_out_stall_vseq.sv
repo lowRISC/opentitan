@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Out_stall vseq
+// out stall vseq
 class usbdev_out_stall_vseq extends usbdev_base_vseq;
   `uvm_object_utils(usbdev_out_stall_vseq)
 
