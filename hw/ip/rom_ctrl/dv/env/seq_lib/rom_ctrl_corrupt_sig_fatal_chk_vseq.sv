@@ -94,13 +94,14 @@ class rom_ctrl_corrupt_sig_fatal_chk_vseq extends rom_ctrl_base_vseq;
         // set the external 'done' signal for pwrmgr to continue boot. To test this start_checker_q
         // signal from rom_ctrl_fsm is asserted randomly.
         CompareCtrlFlowConsistency: begin
+          string start_chk_path = "tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.start_checker_q";
           bit rdata;
           pick_err_inj_point();
           do begin
-            uvm_hdl_read("tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.start_checker_q", rdata);
+            `DV_CHECK(uvm_hdl_read(start_chk_path, rdata))
             @(posedge cfg.clk_rst_vif.clk);
           end while (rdata != 0);
-          force_sig("tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.start_checker_q", 1'b1);
+          force_sig(start_chk_path, 1'b1);
           check_for_alert();
           chk_fsm_state();
         end
@@ -262,11 +263,13 @@ class rom_ctrl_corrupt_sig_fatal_chk_vseq extends rom_ctrl_base_vseq;
   endtask: force_sig
 
   task chk_fsm_state();
+    string alert_o_path = "tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.alert_o";
+    string state_q_path = "tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.state_q";
     bit rdata_alert;
     bit [$bits(rom_ctrl_pkg::fsm_state_e)-1:0] rdata_state;
-    uvm_hdl_read("tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.alert_o", rdata_alert);
+    `DV_CHECK(uvm_hdl_read(alert_o_path, rdata_alert))
     `DV_CHECK_EQ(rdata_alert, 1)
-    uvm_hdl_read("tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.state_q", rdata_state);
+    `DV_CHECK(uvm_hdl_read(state_q_path, rdata_state))
     `DV_CHECK_EQ(rdata_state, rom_ctrl_pkg::Invalid)
   endtask: chk_fsm_state
 
@@ -274,10 +277,11 @@ class rom_ctrl_corrupt_sig_fatal_chk_vseq extends rom_ctrl_base_vseq;
   // The task removes all previous states including the one that has been reached afterwards.
   // Note that this assumes no loops and linear progression through the state enum entries.
   task wait_for_fsm_state_inside(ref rom_ctrl_pkg::fsm_state_e states_to_visit[$]);
+    string state_q_path = "tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.state_q";
     bit [$bits(rom_ctrl_pkg::fsm_state_e)-1:0] rdata_state;
     do begin
       @(negedge cfg.clk_rst_vif.clk);
-      uvm_hdl_read("tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.state_q", rdata_state);
+      `DV_CHECK(uvm_hdl_read(state_q_path, rdata_state))
     end while (!(rdata_state inside {states_to_visit}));
     `uvm_info(`gfn, $sformatf("reached FSM state %x", rdata_state), UVM_LOW)
     // Remove previous states from queue, including the one that has been reached.
