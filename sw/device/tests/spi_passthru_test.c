@@ -9,6 +9,7 @@
 
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/status.h"
+#include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_spi_device.h"
 #include "sw/device/lib/dif/dif_spi_host.h"
 #include "sw/device/lib/runtime/log.h"
@@ -240,6 +241,40 @@ status_t command_processor(ujson_t *uj) {
 }
 
 bool test_main(void) {
+  if (kDeviceType == kDeviceSilicon) {
+    // On teacup board, we need to enable pull-ups on the pins connected to `WP`
+    // and `HOLD`.
+    dif_pinmux_t pinmux;
+    mmio_region_t base_addr =
+        mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR);
+    CHECK_DIF_OK(dif_pinmux_init(base_addr, &pinmux));
+
+    dif_pinmux_pad_attr_t out_attr;
+    dif_pinmux_pad_attr_t in_attr = {
+        .slew_rate = 1,
+        .drive_strength = 3,
+        .flags = kDifPinmuxPadAttrPullResistorEnable |
+                 kDifPinmuxPadAttrPullResistorUp};
+
+    CHECK_DIF_OK(
+        dif_pinmux_pad_write_attrs(&pinmux, kTopEarlgreyDirectPadsSpiHost0Sck,
+                                   kDifPinmuxPadKindDio, in_attr, &out_attr));
+    CHECK_DIF_OK(
+        dif_pinmux_pad_write_attrs(&pinmux, kTopEarlgreyDirectPadsSpiHost0Sd0,
+                                   kDifPinmuxPadKindDio, in_attr, &out_attr));
+    CHECK_DIF_OK(
+        dif_pinmux_pad_write_attrs(&pinmux, kTopEarlgreyDirectPadsSpiHost0Sd1,
+                                   kDifPinmuxPadKindDio, in_attr, &out_attr));
+
+    CHECK_DIF_OK(
+        dif_pinmux_pad_write_attrs(&pinmux, kTopEarlgreyDirectPadsSpiHost0Sd2,
+                                   kDifPinmuxPadKindDio, in_attr, &out_attr));
+
+    CHECK_DIF_OK(
+        dif_pinmux_pad_write_attrs(&pinmux, kTopEarlgreyDirectPadsSpiHost0Sd3,
+                                   kDifPinmuxPadKindDio, in_attr, &out_attr));
+  }
+
   const uint32_t spi_host_clock_freq_hz =
       (uint32_t)kClockFreqHiSpeedPeripheralHz;
   CHECK_DIF_OK(dif_spi_host_init(

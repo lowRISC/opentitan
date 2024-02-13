@@ -429,7 +429,7 @@ silicon(
     name = "silicon_owner_sival_rom_ext",
     testonly = True,
     args = [
-        "--rcfile=",
+        "--rcfile=__builtin__/hyperdebug_teacup.json",
         "--logging=info",
         "--interface={interface}",
     ],
