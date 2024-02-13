@@ -13,7 +13,10 @@ import struct
 import subprocess
 import sys
 
+from google.auth.exceptions import DefaultCredentialsError
+
 from ot_device import OTDevice
+from update_remote_db import update_remote_db
 from util import (format_hex, confirm, bytes_to_int, parse_hexstring_to_int,
                   parse_str_to_ascii_bytes, OT_SQL_TABLE_NAME)
 
@@ -26,11 +29,6 @@ def setup_db(db_filename, log_archive_root):
     Returns:
     db_conn - a database connecion
     """
-    if not os.path.exists(db_filename):
-        logging.error(f"""No DB file found at {db_filename}.
-Download the database from the git bucket with gsutil before continuing.""")
-        exit(1)
-
     db_conn = sqlite3.connect(db_filename)
     cur = db_conn.cursor()
     cur.execute(f"""
@@ -50,7 +48,7 @@ Download the database from the git bucket with gsutil before continuing.""")
                     timestamp STRING)
     """)
 
-    # Create the diretory that holds the logs.
+    # Create the directory that holds the logs.
     os.makedirs(log_archive_root, exist_ok=True)
 
     return db_conn
@@ -161,6 +159,10 @@ def main():
     parser.add_argument("--log_archive_root",
                         default="logs",
                         help="Root directory to store log files under.")
+    parser.add_argument("--cloud_project",
+                        default=None,
+                        help="Name of Google Cloud project with Firestore database to update. "
+                             "If not provided, entries will be cached locally.")
     args = parser.parse_args()
 
     db_conn = setup_db(args.db_file, args.log_archive_root)
@@ -231,7 +233,29 @@ def main():
     chip.parse_logs()
     chip.record_device(db_conn, commit_hash, timestamp, ecc_keyfile_basename)
 
+    if args.cloud_project:
+        try:
+            update_remote_db(args.cloud_project, db_conn)
+        except DefaultCredentialsError:
+            logging.warning(
+                "Updating remote provisioning database failed: not authenticated to gcloud"
+            )
+        except Exception as e:
+            logging.warning(
+                f"Updating remote provisioning database failed: {e}"
+            )
+    else:
+        logging.warning("--cloud_project was not provided. Skipping remote database upload")
+
     logging.info("Provisioning complete")
+
+    res = db_conn.cursor().execute(f"SELECT * FROM {OT_SQL_TABLE_NAME}")
+    rows = res.fetchall()
+    if len(rows) == 0:
+        logging.info(f"All local records uploaded! You may safely delete {args.db_file}")
+    else:
+        logging.warning(f"{len(rows)} record(s) remaining in {args.db_file}")
+        logging.warning("Run update_remote_db.py to upload remaining records")
 
 
 if __name__ == "__main__":
