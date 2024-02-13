@@ -26,19 +26,12 @@ typedef struct retention_sram_creator {
    */
   uint32_t reset_reasons;
   /**
-   * Shutdown reason.
+   * Boot services message area.
    *
-   * Reason of the last shutdown, redacted according to the redaction policy.
-   * This field is initialized to `kErrorOk` on PoR and a value of `kErrorOk`
-   * indicates that no shutdowns since the last PoR.
+   * This is the shared buffer through which ROM_EXT and silicon owner code
+   * communicate with each other.
    */
-  rom_error_t last_shutdown_reason;
-  /**
-   * Boot log area.
-   *
-   * This buffer tracks information about the boot process.
-   */
-  boot_log_t boot_log;
+  boot_svc_msg_t boot_svc_msg;
 
   /**
    * Space reserved for future allocation by the silicon creator.
@@ -47,32 +40,40 @@ typedef struct retention_sram_creator {
    * except for the first word that stores the format version. Hence the total
    * size of this struct must be 2044 bytes.
    *
-   * The remaining space is reserved for future use. Are locating the boot_svc
-   * message at the end so that:
-   * - We can add additional members without affecting the offset of boot_svc
-   * and
-   * - We can resize boot_svc without affecting the upper half of the struct.
+   * The remaining space is reserved for future use.
+   *
+   * We are locating the boot_svc at the beginning and the rest of the members
+   * at the end so that:
+   * - We can grow boot_svc down into the reserved space if needed.
+   * - We can add additional members at the end (growing up into reserved
+   *   space) without affecting the layout of other structures.
    */
   uint32_t reserved[(2044 - (sizeof(uint32_t)          // reset_reason
-                             + sizeof(rom_error_t)     // last_shutdown_reason
-                             + sizeof(boot_log_t)      // boot_log
                              + sizeof(boot_svc_msg_t)  // boot services message
+                             + sizeof(boot_log_t)      // boot_log
+                             + sizeof(rom_error_t)     // last_shutdown_reason
                              )) /
                     sizeof(uint32_t)];
-
   /**
-   * Boot services message area.
+   * Boot log area.
    *
-   * This is the shared buffer through which ROM_EXT and silicon owner code
-   * communicate with each other.
+   * This buffer tracks information about the boot process.
    */
-  boot_svc_msg_t boot_svc_msg;
+  boot_log_t boot_log;
+  /**
+   * Shutdown reason.
+   *
+   * Reason of the last shutdown, redacted according to the redaction policy.
+   * This field is initialized to `kErrorOk` on PoR and a value of `kErrorOk`
+   * indicates that no shutdowns since the last PoR.
+   */
+  rom_error_t last_shutdown_reason;
 } retention_sram_creator_t;
 OT_ASSERT_MEMBER_OFFSET(retention_sram_creator_t, reset_reasons, 0);
-OT_ASSERT_MEMBER_OFFSET(retention_sram_creator_t, last_shutdown_reason, 4);
-OT_ASSERT_MEMBER_OFFSET(retention_sram_creator_t, boot_log, 8);
-OT_ASSERT_MEMBER_OFFSET(retention_sram_creator_t, reserved, 136);
-OT_ASSERT_MEMBER_OFFSET(retention_sram_creator_t, boot_svc_msg, 1788);
+OT_ASSERT_MEMBER_OFFSET(retention_sram_creator_t, boot_svc_msg, 4);
+OT_ASSERT_MEMBER_OFFSET(retention_sram_creator_t, reserved, 260);
+OT_ASSERT_MEMBER_OFFSET(retention_sram_creator_t, boot_log, 1912);
+OT_ASSERT_MEMBER_OFFSET(retention_sram_creator_t, last_shutdown_reason, 2040);
 OT_ASSERT_SIZE(boot_svc_msg_t, 256);
 OT_ASSERT_SIZE(retention_sram_creator_t, 2044);
 
