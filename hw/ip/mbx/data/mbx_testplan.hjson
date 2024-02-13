@@ -24,7 +24,7 @@
             Stress test
             '''
       stage: V2
-      tests: ["mbx_stress"]
+      tests: ["mbx_stress", "mbx_stress_zero_delays"]
     }
     { name: mbx_stress_all
       desc: '''
