@@ -278,7 +278,7 @@ impl CommandDispatch for I2cTpm {
             Some(pin) => Some((transport.gpio_pin(pin)?, transport.gpio_monitoring()?)),
             None => None,
         };
-        let tpm_driver = Box::new(tpm::I2cDriver::new(
+        let tpm_driver: Box<dyn tpm::Driver> = Box::new(tpm::I2cDriver::new(
             context.params.create(transport, "TPM")?,
             ready_pin,
         )?);
