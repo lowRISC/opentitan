@@ -95,6 +95,10 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   logic       fips_enable_pfe;
   logic       fips_enable_pfa;
+  logic       fips_flag_pfe;
+  logic       fips_flag_pfa;
+  logic       rng_fips_pfe;
+  logic       rng_fips_pfa;
 
   logic       rng_bit_en;
   logic       rng_bit_enable_pfe;
@@ -635,6 +639,42 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rst_ni,
     .mubi_i(mubi_fips_en),
     .mubi_o(mubi_fips_en_fanout)
+  );
+
+  mubi4_t mubi_fips_flag;
+  mubi4_t [1:0] mubi_fips_flag_fanout;
+  assign mubi_fips_flag  = mubi4_t'(reg2hw.conf.fips_flag.q);
+  assign fips_flag_pfa = mubi4_test_invalid(mubi_fips_flag_fanout[1]);
+  assign fips_flag_pfe = mubi4_test_true_strict(mubi_fips_flag_fanout[0]);
+  assign hw2reg.recov_alert_sts.fips_flag_field_alert.de = fips_flag_pfa;
+  assign hw2reg.recov_alert_sts.fips_flag_field_alert.d  = fips_flag_pfa;
+
+  prim_mubi4_sync #(
+    .NumCopies(2),
+    .AsyncOn(0)
+  ) u_prim_mubi4_sync_entropy_fips_flag (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(mubi_fips_flag),
+    .mubi_o(mubi_fips_flag_fanout)
+  );
+
+  mubi4_t mubi_rng_fips;
+  mubi4_t [1:0] mubi_rng_fips_fanout;
+  assign mubi_rng_fips  = mubi4_t'(reg2hw.conf.rng_fips.q);
+  assign rng_fips_pfa = mubi4_test_invalid(mubi_rng_fips_fanout[1]);
+  assign rng_fips_pfe = mubi4_test_true_strict(mubi_rng_fips_fanout[0]);
+  assign hw2reg.recov_alert_sts.rng_fips_field_alert.de = rng_fips_pfa;
+  assign hw2reg.recov_alert_sts.rng_fips_field_alert.d  = rng_fips_pfa;
+
+  prim_mubi4_sync #(
+    .NumCopies(2),
+    .AsyncOn(0)
+  ) u_prim_mubi4_sync_entropy_rng_fips (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(mubi_rng_fips),
+    .mubi_o(mubi_rng_fips_fanout)
   );
 
   // SEC_CM: CONFIG.MUBI
@@ -1477,10 +1517,32 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign es_bypass_to_sw = es_type_pfe;
   assign threshold_scope = threshold_scope_pfe;
 
+  // The es_bypass_mode signal determines whether the conditioner is bypassed or not.
+  // It also determines which thresholds are used and which watermarks are recorded.
+  // The conditioner can be bypassed by either disabling fips_enable_pfe or by enabling
+  // both es_bypass_to_sw and es_route_to_sw.
+  // The combination of es_bypass_to_sw and es_route_to_sw allows for four distinct cases:
+  //  _________________ ________________
+  // |                 |                |
+  // | es_bypass_to_sw | es_route_to_sw |
+  // |_________________|________________|
+  // |                 |                |
+  // |        0        |       0        | In this case the entropy passes through the conditioner
+  // |_________________|________________| and the entropy is forwarded to the HW endpoints.
+  // |                 |                |
+  // |        0        |       1        | In this case the entropy passes through the conditioner
+  // |_________________|________________| and the entropy is forwarded to software.
+  // |                 |                |
+  // |        1        |       0        | In this case nothing happens and whether the conditioner
+  // |_________________|________________| is bypassed solely depends on fips_enable_pfe.
+  // |                 |                |
+  // |        1        |       1        | In this case the conditioner is bypassed and the entropy
+  // |_________________|________________| is forwarded to software.
+
   assign es_bypass_mode = (!fips_enable_pfe) || (es_bypass_to_sw && es_route_to_sw);
 
   // send off to AST RNG for possibly faster entropy generation
-  assign rng_fips_o = !es_bypass_mode;
+  assign rng_fips_o = rng_fips_pfe;
 
   //--------------------------------------------
   // common health test window counter
@@ -2110,6 +2172,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign recov_alert_state =
          es_enable_pfa ||
          fips_enable_pfa ||
+         fips_flag_pfa ||
+         rng_fips_pfa ||
          entropy_data_reg_en_pfa ||
          threshold_scope_pfa ||
          rng_bit_enable_pfa ||
@@ -2717,7 +2781,11 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .err_o          ()
   );
 
-  assign fips_compliance = !es_bypass_mode && es_enable_fo[13] && !rng_bit_en;
+  // The FIPS flag is fully determined in SW. This has to be the case since we don't know
+  // which mode of operation will be validated/certified. Another reason is that SW can
+  // set the threshold values arbitrarily, which on its own makes the FIPS bit basically
+  // SW defined.
+  assign fips_compliance = es_enable_fo[13] && fips_flag_pfe;
 
   // fifo controls
   assign sfifo_esfinal_push_enable =
