@@ -11,11 +11,13 @@ module lc_ctrl_fsm
   import lc_ctrl_reg_pkg::*;
   import lc_ctrl_state_pkg::*;
 #(// Random netlist constants
-  parameter lc_keymgr_div_t RndCnstLcKeymgrDivInvalid    = LcKeymgrDivWidth'(0),
-  parameter lc_keymgr_div_t RndCnstLcKeymgrDivTestDevRma = LcKeymgrDivWidth'(1),
-  parameter lc_keymgr_div_t RndCnstLcKeymgrDivProduction = LcKeymgrDivWidth'(2),
-  parameter lc_token_mux_t  RndCnstInvalidTokens         = {TokenMuxBits{1'b1}},
-  parameter bit             SecVolatileRawUnlockEn       = 0
+  parameter lc_keymgr_div_t RndCnstLcKeymgrDivInvalid      = LcKeymgrDivWidth'(0),
+  parameter lc_keymgr_div_t RndCnstLcKeymgrDivTestUnlocked = LcKeymgrDivWidth'(1),
+  parameter lc_keymgr_div_t RndCnstLcKeymgrDivDev          = LcKeymgrDivWidth'(2),
+  parameter lc_keymgr_div_t RndCnstLcKeymgrDivProduction   = LcKeymgrDivWidth'(3),
+  parameter lc_keymgr_div_t RndCnstLcKeymgrDivRma          = LcKeymgrDivWidth'(4),
+  parameter lc_token_mux_t  RndCnstInvalidTokens           = {TokenMuxBits{1'b1}},
+  parameter bit             SecVolatileRawUnlockEn         = 0
 ) (
   // This module is combinational, but we
   // need the clock and reset for the assertions.
@@ -784,9 +786,11 @@ module lc_ctrl_fsm
 
   // LC signal decoder and broadcasting logic.
   lc_ctrl_signal_decode #(
-    .RndCnstLcKeymgrDivInvalid    ( RndCnstLcKeymgrDivInvalid    ),
-    .RndCnstLcKeymgrDivTestDevRma ( RndCnstLcKeymgrDivTestDevRma ),
-    .RndCnstLcKeymgrDivProduction ( RndCnstLcKeymgrDivProduction )
+    .RndCnstLcKeymgrDivInvalid     ( RndCnstLcKeymgrDivInvalid      ),
+    .RndCnstLcKeymgrDivTestUnlocked( RndCnstLcKeymgrDivTestUnlocked ),
+    .RndCnstLcKeymgrDivDev         ( RndCnstLcKeymgrDivDev          ),
+    .RndCnstLcKeymgrDivProduction  ( RndCnstLcKeymgrDivProduction   ),
+    .RndCnstLcKeymgrDivRma         ( RndCnstLcKeymgrDivRma          )
   ) u_lc_ctrl_signal_decode (
     .clk_i,
     .rst_ni,

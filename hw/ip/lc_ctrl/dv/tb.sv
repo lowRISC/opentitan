@@ -22,10 +22,14 @@ module tb;
   // Random netlist constants
   parameter lc_keymgr_div_t RndCnstLcKeymgrDivInvalid    =
     LcKeymgrDivWidth'({(LcKeymgrDivWidth/8){32'h00000000}});
-  parameter lc_keymgr_div_t RndCnstLcKeymgrDivTestDevRma =
+  parameter lc_keymgr_div_t RndCnstLcKeymgrDivTestUnlocked =
     LcKeymgrDivWidth'({(LcKeymgrDivWidth/8){8'h5a}});
-  parameter lc_keymgr_div_t RndCnstLcKeymgrDivProduction =
+  parameter lc_keymgr_div_t RndCnstLcKeymgrDivDev =
     LcKeymgrDivWidth'({(LcKeymgrDivWidth/8){8'ha5}});
+  parameter lc_keymgr_div_t RndCnstLcKeymgrDivProduction =
+    LcKeymgrDivWidth'({(LcKeymgrDivWidth/8){8'h69}});
+  parameter lc_keymgr_div_t RndCnstLcKeymgrDivRma =
+    LcKeymgrDivWidth'({(LcKeymgrDivWidth/8){8'h96}});
 
   // macro includes
   `include "uvm_macros.svh"
@@ -95,8 +99,10 @@ module tb;
     .IdcodeValue(IdcodeValue),
     // Random netlist constants
     .RndCnstLcKeymgrDivInvalid(RndCnstLcKeymgrDivInvalid),
-    .RndCnstLcKeymgrDivTestDevRma(RndCnstLcKeymgrDivTestDevRma),
+    .RndCnstLcKeymgrDivTestUnlocked(RndCnstLcKeymgrDivTestUnlocked),
+    .RndCnstLcKeymgrDivDev(RndCnstLcKeymgrDivDev),
     .RndCnstLcKeymgrDivProduction(RndCnstLcKeymgrDivProduction),
+    .RndCnstLcKeymgrDivRma(RndCnstLcKeymgrDivRma),
     .SiliconCreatorId(LcCtrlSiliconCreatorId[lc_ctrl_reg_pkg::SiliconCreatorIdWidth-1:0]),
     .ProductId(LcCtrlProductId[lc_ctrl_reg_pkg::ProductIdWidth-1:0]),
     .RevisionId(LcCtrlRevisionId[lc_ctrl_reg_pkg::RevisionIdWidth-1:0]),
@@ -226,8 +232,10 @@ module tb;
     parameters_cfg.alert_async_on = AlertAsyncOn;
     parameters_cfg.id_code_value = IdcodeValue;
     parameters_cfg.keymgr_div_invalid = RndCnstLcKeymgrDivInvalid;
-    parameters_cfg.keymgr_div_test_dev_rma = RndCnstLcKeymgrDivTestDevRma;
+    parameters_cfg.keymgr_div_test_unlocked = RndCnstLcKeymgrDivTestUnlocked;
+    parameters_cfg.keymgr_div_dev = RndCnstLcKeymgrDivDev;
     parameters_cfg.keymgr_div_production = RndCnstLcKeymgrDivProduction;
+    parameters_cfg.keymgr_div_rma = RndCnstLcKeymgrDivRma;
     uvm_config_db#(lc_ctrl_parameters_cfg)::set(null, "*", "parameters_cfg", parameters_cfg);
 
     // verilog_format: on
