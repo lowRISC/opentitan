@@ -364,7 +364,7 @@
       si_stage: SV3
       lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
       tests: []
-      bazel: []
+      bazel: ["//sw/device/tests:usbdev_aon_wake_reset"]
     }
     {
       name: chip_sw_usbdev_aon_wake_disconnect
