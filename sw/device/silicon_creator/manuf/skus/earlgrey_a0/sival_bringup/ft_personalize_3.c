@@ -17,6 +17,7 @@
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
 #include "sw/device/silicon_creator/lib/drivers/kmac.h"
+#include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/keymgr_binding_value.h"
 #include "sw/device/silicon_creator/lib/otbn_boot_services.h"
@@ -83,6 +84,17 @@ static status_t config_certificate_flash_pages(void) {
   return OK_STATUS();
 }
 
+/**
+ * Returns true if debug (JTAG) access is exposed in the current LC state.
+ */
+static bool is_debug_exposed(void) {
+  lifecycle_state_t lc_state = lifecycle_state_get();
+  if (lc_state == kLcStateProd || lc_state == kLcStateProdEnd) {
+    return false;
+  }
+  return true;
+}
+
 static status_t gen_uds_keys_and_cert(void) {
   // Generate the UDS key.
   TRY(otbn_boot_attestation_keygen(kUdsAttestationKeySeed,
@@ -104,6 +116,7 @@ static status_t gen_uds_keys_and_cert(void) {
       .otp_owner_sw_cfg_hash_size = 0,
       .otp_hw_cfg_hash = NULL,
       .otp_hw_cfg_hash_size = 0,
+      .debug_flag = is_debug_exposed(),
       .creator_pub_key_id = (unsigned char *)creator_pub_key_id.digest,
       .creator_pub_key_id_size = kCertKeyIdSizeInBytes,
       .auth_key_key_id = in_data.auth_key_key_id,
