@@ -27,7 +27,7 @@ use crate::io::uart::Uart;
 use crate::transport::chip_whisperer::board::Board;
 use crate::transport::chip_whisperer::ChipWhisperer;
 use crate::transport::common::fpga::{ClearBitstream, FpgaProgram};
-use crate::transport::common::uart::{flock_serial, SerialPortExclusiveLock};
+use crate::transport::common::uart::flock_serial;
 use crate::transport::{
     Capabilities, Capability, Transport, TransportError, TransportInterfaceType, UpdateFirmware,
 };
@@ -485,7 +485,6 @@ impl Inner {
             .console_tty
             .to_str()
             .ok_or(TransportError::UnicodePathError)?;
-        let _lock = SerialPortExclusiveLock::lock(port_name)?;
         let mut port = TTYPort::open(
             &serialport::new(port_name, 115_200).timeout(std::time::Duration::from_millis(100)),
         )

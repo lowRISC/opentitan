@@ -2,13 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result};
 use serialport::ClearBuffer;
 //use serialport::{FlowControl, SerialPort};
 use serialport::{SerialPort, TTYPort};
 use std::cell::{Cell, RefCell};
 use std::collections::VecDeque;
-use std::fs::OpenOptions;
 use std::io::{ErrorKind, Read, Write};
 use std::os::fd::{AsRawFd, BorrowedFd};
 use std::time::Duration;
@@ -23,8 +22,6 @@ pub struct SerialPortUart {
     flow_control: Cell<FlowControl>,
     port: RefCell<TTYPort>,
     rxbuf: RefCell<VecDeque<u8>>,
-    /// Lock field, will remove lock file via the `Drop` trait.
-    _lock: SerialPortExclusiveLock,
 }
 
 impl SerialPortUart {
@@ -37,7 +34,6 @@ impl SerialPortUart {
 
     /// Open the given serial device, such as `/dev/ttyUSB0`.
     pub fn open(port_name: &str, baud: u32) -> Result<Self> {
-        let lock = SerialPortExclusiveLock::lock(port_name)?;
         let port = TTYPort::open(&serialport::new(port_name, baud))
             .map_err(|e| UartError::OpenError(e.to_string()))?;
         flock_serial(&port, port_name)?;
@@ -45,7 +41,6 @@ impl SerialPortUart {
             flow_control: Cell::new(FlowControl::None),
             port: RefCell::new(port),
             rxbuf: RefCell::default(),
-            _lock: lock,
         })
     }
 
@@ -219,108 +214,6 @@ impl Uart for SerialPortUart {
             mio::Interest::READABLE,
         )?;
         Ok(())
-    }
-}
-
-const PID_FILE_LEN: usize = 11;
-
-/// Struct for managing a lock file in `/var/lock` corresponding to a particular serial port.  The
-/// `Drop` trait of this struct will delete the lock file, so the `SerialPortExclusiveLock`
-/// instance should be kept alive for as long as the serial port handle it is guarding.  Should
-/// this process terminate without `drop()` getting a chance to run, other processes will
-/// recognize that the lock file is stale, as they verify whether a process with the given PID is
-/// still running.
-pub struct SerialPortExclusiveLock {
-    lockfilename: Option<String>,
-}
-
-impl SerialPortExclusiveLock {
-    pub fn lock(port_name: &str) -> Result<Self> {
-        let start_of_last = match port_name.rfind('/') {
-            Some(n) => n + 1,
-            None => 0,
-        };
-        let lockfilename = format!("/var/lock/LCK..{}", &port_name[start_of_last..]);
-        if let Ok(mut lockfile) = OpenOptions::new().read(true).open(&lockfilename) {
-            // The following code attempts to parse a PID from the lock file, and send a "no-op"
-            // signal to the process identified by it.  If successful, that means that the process
-            // is still running (no actual signal will be delivered), and we should refrain from
-            // also opening the same port.  On any parsing error or failure to deliver the signal,
-            // we proceed to overwrite the lock file with our own PID.
-            match (|| -> Result<()> {
-                let mut buf = [0u8; PID_FILE_LEN];
-                match lockfile.read(&mut buf) {
-                    Ok(PID_FILE_LEN) => {
-                        let line = std::str::from_utf8(&buf)?;
-                        let pid = line.trim().parse()?;
-                        let pid =
-                            rustix::process::Pid::from_raw(pid).context("Pid is not valid")?;
-                        rustix::process::test_kill_process(pid)?;
-                        Ok(()) // This will result in "Device is locked" error.
-                    }
-                    _ => bail!(""),
-                }
-            })() {
-                Ok(()) => bail!(TransportError::OpenError(
-                    port_name.to_string(),
-                    "Device is locked".to_string()
-                )),
-                Err(_) => {
-                    log::info!("Lockfile is stale. Overriding it...");
-                    std::fs::remove_file(&lockfilename)
-                        .context(format!("Cannot remove stale file {}", &lockfilename))?;
-                }
-            }
-        }
-        match OpenOptions::new()
-            .write(true)
-            .create_new(true)
-            .open(&lockfilename)
-        {
-            Ok(mut lockfile) => {
-                writeln!(
-                    lockfile,
-                    "{:10}",
-                    rustix::process::getpid().as_raw_nonzero()
-                )
-                .map_err(|e| {
-                    TransportError::OpenError(
-                        port_name.to_string(),
-                        format!("Error writing lockfile {}: {}", lockfilename, e),
-                    )
-                })?;
-                Ok(Self {
-                    lockfilename: Some(lockfilename),
-                })
-            }
-            Err(e) if e.kind() == ErrorKind::AlreadyExists => {
-                // Possibly some other console created this file in between us unsuccessfuly
-                // attempting to open it, and then attempting to create it.
-                bail!(TransportError::OpenError(
-                    port_name.to_string(),
-                    "Device is locked".to_string()
-                ))
-            }
-            Err(e)
-                if e.kind() == ErrorKind::NotFound || e.kind() == ErrorKind::PermissionDenied =>
-            {
-                // /var/lock may not exist or not allow users to create files.  We proceed without
-                // locking here.  (We will still use flock() in `SerialPortUart::open()`.)
-                Ok(Self { lockfilename: None })
-            }
-            Err(e) => bail!(TransportError::OpenError(
-                port_name.to_string(),
-                format!("Error creating lockfile {}: {}", lockfilename, e)
-            )),
-        }
-    }
-}
-
-impl Drop for SerialPortExclusiveLock {
-    fn drop(&mut self) {
-        if let Some(ref lockfilename) = self.lockfilename {
-            let _ = std::fs::remove_file(lockfilename);
-        }
     }
 }
 
