@@ -394,7 +394,7 @@ impl I2cDriver {
     }
 
     fn try_read_register(&self, register: Register, data: &mut [u8]) -> Result<()> {
-        if self.gsc_ready_pin.is_some() {
+        if self.gsc_ready_pin.is_none() {
             // Do two I2C transfers in one call, for lowest latency.
             self.i2c.run_transaction(
                 None, /* default addr */
