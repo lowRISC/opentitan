@@ -240,26 +240,36 @@ The modules of the entropy complex may only be enabled and disabled in a specifi
 ## CONF
 Configuration register
 - Offset: `0x24`
-- Reset default: `0x909099`
-- Reset mask: `0x3f0f0ff`
+- Reset default: `0x2649999`
+- Reset mask: `0x3ffffff`
 - Register enable: [`REGWEN`](#regwen)
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "FIPS_ENABLE", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "ENTROPY_DATA_REG_ENABLE", "bits": 4, "attr": ["rw"], "rotate": -90}, {"bits": 4}, {"name": "THRESHOLD_SCOPE", "bits": 4, "attr": ["rw"], "rotate": -90}, {"bits": 4}, {"name": "RNG_BIT_ENABLE", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "RNG_BIT_SEL", "bits": 2, "attr": ["rw"], "rotate": -90}, {"bits": 6}], "config": {"lanes": 1, "fontsize": 10, "vspace": 250}}
+{"reg": [{"name": "FIPS_ENABLE", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "FIPS_FLAG", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "RNG_FIPS", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "RNG_BIT_ENABLE", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "RNG_BIT_SEL", "bits": 2, "attr": ["rw"], "rotate": -90}, {"name": "THRESHOLD_SCOPE", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "ENTROPY_DATA_REG_ENABLE", "bits": 4, "attr": ["rw"], "rotate": -90}, {"bits": 6}], "config": {"lanes": 1, "fontsize": 10, "vspace": 250}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                                      |
 |:------:|:------:|:-------:|:----------------------------------------------------------|
 | 31:26  |        |         | Reserved                                                  |
-| 25:24  |   rw   |   0x0   | [RNG_BIT_SEL](#conf--rng_bit_sel)                         |
-| 23:20  |   rw   |   0x9   | [RNG_BIT_ENABLE](#conf--rng_bit_enable)                   |
-| 19:16  |        |         | Reserved                                                  |
-| 15:12  |   rw   |   0x9   | [THRESHOLD_SCOPE](#conf--threshold_scope)                 |
-|  11:8  |        |         | Reserved                                                  |
-|  7:4   |   rw   |   0x9   | [ENTROPY_DATA_REG_ENABLE](#conf--entropy_data_reg_enable) |
+| 25:22  |   rw   |   0x9   | [ENTROPY_DATA_REG_ENABLE](#conf--entropy_data_reg_enable) |
+| 21:18  |   rw   |   0x9   | [THRESHOLD_SCOPE](#conf--threshold_scope)                 |
+| 17:16  |   rw   |   0x0   | [RNG_BIT_SEL](#conf--rng_bit_sel)                         |
+| 15:12  |   rw   |   0x9   | [RNG_BIT_ENABLE](#conf--rng_bit_enable)                   |
+|  11:8  |   rw   |   0x9   | [RNG_FIPS](#conf--rng_fips)                               |
+|  7:4   |   rw   |   0x9   | [FIPS_FLAG](#conf--fips_flag)                             |
 |  3:0   |   rw   |   0x9   | [FIPS_ENABLE](#conf--fips_enable)                         |
+
+### CONF . ENTROPY_DATA_REG_ENABLE
+Setting this field to `kMultiBitBool4True` will enable reading entropy values from the [`ENTROPY_DATA`](#entropy_data) register.
+This function also requires that the otp_en_entropy_src_fw_read input is set to `kMultiBitBool8True`.
+
+### CONF . THRESHOLD_SCOPE
+This field controls the scope (either by-line or by-sum) of the health checks.
+If set to `kMultiBitBool4True`, the Adaptive Proportion and Markov Tests will accumulate all RNG input lines into a single score, and thresholds will be applied to the sum all the entropy input lines.
+If set to `kMultiBitBool4False`, the RNG input lines are all scored individually.
+A statistical deviation in any one input line, be it due to coincidence or failure, will force rejection of the sample, and count toward the total alert count.
 
 ### CONF . RNG_BIT_SEL
 When the above bit iset, this field selects which bit from the RNG bus will
@@ -272,26 +282,24 @@ This two bit field selects the RNG bit stream:
 
 ### CONF . RNG_BIT_ENABLE
 Setting this field to `kMultiBitBool4True` enables the single RNG bit mode, where only one bit is sampled.
-Note that the ENTROPY_SRC block can only generate FIPS qualified entropy if this field is set to `kMultiBitBool4False`.
-Additional requirements to generate FIPS qualified entropy are i) that [`CONF.FIPS_ENABLE`](#conf) is set to `kMultiBitBool4True`, and ii) that at most one of the [`ENTROPY_CONTROL.ES_ROUTE`](#entropy_control) and [`ENTROPY_CONTROL.ES_TYPE`](#entropy_control) fields but not both are set to `kMultiBitBool4True`.
 
-### CONF . THRESHOLD_SCOPE
-This field controls the scope (either by-line or by-sum) of the health checks.
-If set to `kMultiBitBool4True`, the Adaptive Proportion and Markov Tests will accumulate all RNG input lines into a single score, and thresholds will be applied to the sum all the entropy input lines.
-If set to `kMultiBitBool4False`, the RNG input lines are all scored individually.
-A statistical deviation in any one input line, be it due to coincidence or failure, will force rejection of the sample, and count toward the total alert count.
+### CONF . RNG_FIPS
+Setting this field to `kMultiBitBool4True` sets the analog RNG into a conservative operation mode that may reduce the bit rate.
+In this mode, the RNG potentially outputs entropy with higher entropy per bit and with a simpler sampling mechanism.
 
-### CONF . ENTROPY_DATA_REG_ENABLE
-Setting this field to `kMultiBitBool4True` will enable reading entropy values from the [`ENTROPY_DATA`](#entropy_data) register.
-This function also requires that the otp_en_entropy_src_fw_read input is set to `kMultiBitBool8True`.
+### CONF . FIPS_FLAG
+This flag indicates that the ENTROPY_SRC is setup with the configuration used for FIPS/CC validation.
+Setting this field to `kMultiBitBool4True` will set the FIPS flag for the ENTROPY_SRC block output to true.
 
 ### CONF . FIPS_ENABLE
-Setting this field to `kMultiBitBool4True` selects the FIPS/CC compliant mode (or short FIPS mode).
-In this mode, the ENTROPY_SRC block can generate FIPS qualified entropy.
-Additional requirements to generate FIPS qualified entropy are i) that at most one of the [`ENTROPY_CONTROL.ES_ROUTE`](#entropy_control) and [`ENTROPY_CONTROL.ES_TYPE`](#entropy_control) fields are set to `kMultiBitBool4True` but not both, and ii) that [`CONF.RNG_BIT_ENABLE`](#conf) is set to `kMultiBitBool4False`.
+Setting this field to `kMultiBitBool4True` selects the mode targeting FIPS/CC compliance (in short FIPS mode) with hardware conditioning enabled.
+The ENTROPY_SRC block will use the FIPS_WINDOW, FIPS_THRESH and FIPS_WATERMARK values of the [`HEALTH_TEST_WINDOWS`](#health_test_windows), health test thresholds and watermark register, respectively.
+Whether the ENTROPY_SRC block is indeed running with the configuration used for FIPS/CC validation is under the control of firmware.
+Thus, firmware must explicitly mark the produced entropy as FIPS qualified using the [`CONF.FIPS_FLAG`](#conf) field.
+Note that the hardware conditioning can still be disabled in FIPS mode by setting both [`ENTROPY_CONTROL.ES_ROUTE`](#entropy_control) and [`ENTROPY_CONTROL.ES_TYPE`](#entropy_control) fields to `kMultiBitBool4True`.
+However, no entropy is being passed to the block hardware interface in this mode.
 
 Setting this field to `kMultiBitBool4False` selects the boot-time / bypass mode in which the hardware conditioning is bypassed.
-
 
 ## ENTROPY_CONTROL
 Entropy control register
@@ -316,10 +324,8 @@ Entropy control register
 When this field is `kMultiBitBool4False`, the hardware conditioning inside the ENTROPY_SRC block is enabled.
 Setting this field to `kMultiBitBool4True` will bypass the hardware conditioning.
 For this to work, also [`ENTROPY_CONTROL.ES_ROUTE`](#entropy_control) needs to be set to `kMultiBitBool4True` to route the unconditioned, raw entropy to the [`ENTROPY_DATA`](#entropy_data) register.
-Alternatively, the hardware conditioning can be bypassed by setting [`CONF.FIPS_ENABLE`](#conf) to `kMultiBitBool4False` to disable FIPS mode and enable bypass / boot-time mode.
-In both cases, the ENTROPY_SRC block will not generate FIPS qualified entropy.
-
-To generate FIPS qualified entropy, i) [`CONF.FIPS_ENABLE`](#conf) needs to be set to `kMultiBitBool4True`, ii) [`CONF.RNG_BIT_ENABLE`](#conf) needs to be set to `kMultiBitBool4False`, and iii) at most one of the [`ENTROPY_CONTROL.ES_ROUTE`](#entropy_control) and [`ENTROPY_CONTROL.ES_TYPE`](#entropy_control) fields needs to be set to `kMultiBitBool4True` but not both.
+Alternatively, the hardware conditioning can be bypassed by setting [`CONF.FIPS_ENABLE`](#conf) to `kMultiBitBool4False`.
+This enables the bypass / boot-time mode.
 
 ### ENTROPY_CONTROL . ES_ROUTE
 When this field is `kMultiBitBool4False`, the generated entropy will be forwarded out of this module to the hardware interface.
@@ -1351,17 +1357,19 @@ Debug status register
 Recoverable alert status register
 - Offset: `0xd4`
 - Reset default: `0x0`
-- Reset mask: `0x1ffaf`
+- Reset mask: `0x7ffaf`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "FIPS_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ENTROPY_DATA_REG_EN_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "MODULE_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "THRESHOLD_SCOPE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 1}, {"name": "RNG_BIT_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 1}, {"name": "FW_OV_SHA3_START_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "FW_OV_MODE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "FW_OV_ENTROPY_INSERT_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_ROUTE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_TYPE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_MAIN_SM_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_BUS_CMP_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_THRESH_CFG_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_FW_OV_WR_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_FW_OV_DISABLE_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 15}], "config": {"lanes": 1, "fontsize": 10, "vspace": 340}}
+{"reg": [{"name": "FIPS_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ENTROPY_DATA_REG_EN_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "MODULE_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "THRESHOLD_SCOPE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 1}, {"name": "RNG_BIT_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 1}, {"name": "FW_OV_SHA3_START_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "FW_OV_MODE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "FW_OV_ENTROPY_INSERT_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_ROUTE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_TYPE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_MAIN_SM_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_BUS_CMP_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_THRESH_CFG_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_FW_OV_WR_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_FW_OV_DISABLE_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "FIPS_FLAG_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "RNG_FIPS_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 13}], "config": {"lanes": 1, "fontsize": 10, "vspace": 340}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                                                                   |
 |:------:|:------:|:-------:|:---------------------------------------------------------------------------------------|
-| 31:17  |        |         | Reserved                                                                               |
+| 31:19  |        |         | Reserved                                                                               |
+|   18   |  rw0c  |   0x0   | [RNG_FIPS_FIELD_ALERT](#recov_alert_sts--rng_fips_field_alert)                         |
+|   17   |  rw0c  |   0x0   | [FIPS_FLAG_FIELD_ALERT](#recov_alert_sts--fips_flag_field_alert)                       |
 |   16   |  rw0c  |   0x0   | [ES_FW_OV_DISABLE_ALERT](#recov_alert_sts--es_fw_ov_disable_alert)                     |
 |   15   |  rw0c  |   0x0   | [ES_FW_OV_WR_ALERT](#recov_alert_sts--es_fw_ov_wr_alert)                               |
 |   14   |  rw0c  |   0x0   | [ES_THRESH_CFG_ALERT](#recov_alert_sts--es_thresh_cfg_alert)                           |
@@ -1379,6 +1387,14 @@ Recoverable alert status register
 |   2    |  rw0c  |   0x0   | [MODULE_ENABLE_FIELD_ALERT](#recov_alert_sts--module_enable_field_alert)               |
 |   1    |  rw0c  |   0x0   | [ENTROPY_DATA_REG_EN_FIELD_ALERT](#recov_alert_sts--entropy_data_reg_en_field_alert)   |
 |   0    |  rw0c  |   0x0   | [FIPS_ENABLE_FIELD_ALERT](#recov_alert_sts--fips_enable_field_alert)                   |
+
+### RECOV_ALERT_STS . RNG_FIPS_FIELD_ALERT
+This bit is set when the RNG_FIPS field in the [`CONF`](#conf) register is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
+Writing a zero resets this status bit.
+
+### RECOV_ALERT_STS . FIPS_FLAG_FIELD_ALERT
+This bit is set when the FIPS_FLAG field in the [`CONF`](#conf) register is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
+Writing a zero resets this status bit.
 
 ### RECOV_ALERT_STS . ES_FW_OV_DISABLE_ALERT
 This bit is set when [`FW_OV_SHA3_START`](#fw_ov_sha3_start) has been set to `kMultiBitBool4False`, without waiting for the bypass packer FIFO to clear.
