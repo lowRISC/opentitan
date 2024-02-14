@@ -768,7 +768,10 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
         // will likely fail.
         altcfg.bypass_window_size   = cfg.dut_cfg.bypass_window_size;
         altcfg.fips_window_size     = cfg.dut_cfg.fips_window_size;
-        altcfg.ht_threshold_scope   = cfg.dut_cfg.ht_threshold_scope;
+        // Do not pass ht_threshold_scope from cfg to altcfg if it is invalid.
+        altcfg.ht_threshold_scope   = mubi4_test_invalid(cfg.dut_cfg.ht_threshold_scope) ?
+                                          altcfg.ht_threshold_scope :
+                                          cfg.dut_cfg.ht_threshold_scope;
       end
 
       // Force the DUT to not absorb the new config (to test write protect), unless
