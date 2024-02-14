@@ -762,6 +762,8 @@ static void configure_entropy_complex(void) {
       &entropy_src,
       (dif_entropy_src_config_t){
           .fips_enable = true,
+          .fips_flag = true,
+          .rng_fips = true,
           .route_to_firmware = false,
           .bypass_conditioner = false,
           .single_bit_mode = kDifEntropySrcSingleBitModeDisabled,

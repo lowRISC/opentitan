@@ -113,6 +113,15 @@ typedef struct dif_entropy_src_config {
    */
   bool fips_enable;
   /**
+   * If set, the produced output entropy is marked as FIPS compliant
+   * through the FIPS bit being set to high.
+   */
+  bool fips_flag;
+  /**
+   * If set, the noise source is instructed to produce high quality entropy.
+   */
+  bool rng_fips;
+  /**
    * If set, entropy will be routed to a firmware-visible register instead of
    * being distributed to other hardware IPs.
    */
@@ -431,11 +440,21 @@ typedef enum dif_entropy_src_alert_cause {
    */
   kDifEntropySrcAlertFirmwareOverrideDisable = 1U << 16,
   /**
+   * Triggered when the FIPS_FLAG field in the CONF register is set to an
+   * unsupported value.
+   */
+  kDifEntropySrcAlertFipsFlagField = 1U << 17,
+  /**
+   * Triggered when the RNG_FIPS field in the CONF register is set to an
+   * unsupported value.
+   */
+  kDifEntropySrcAlertRngFipsField = 1U << 18,
+  /**
    * All alert reasons.
    *
    * This is useful when clearing all recoverable alerts at once.
    */
-  kDifEntropySrcAlertAllAlerts = (1U << 17) - 1,
+  kDifEntropySrcAlertAllAlerts = (1U << 19) - 1,
 } dif_entropy_src_alert_cause_t;
 
 /**

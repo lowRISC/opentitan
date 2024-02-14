@@ -23,6 +23,8 @@ static status_t setup_entropy_src(const dif_entropy_src_t *entropy_src) {
 dif_entropy_src_config_t entropy_testutils_config_default(void) {
   return (dif_entropy_src_config_t){
       .fips_enable = true,
+      .fips_flag = true,
+      .rng_fips = true,
       .route_to_firmware = false,
       .bypass_conditioner = false,
       .single_bit_mode = kDifEntropySrcSingleBitModeDisabled,
@@ -170,6 +172,8 @@ status_t entropy_testutils_fw_override_enable(dif_entropy_src_t *entropy_src,
 
   const dif_entropy_src_config_t config = {
       .fips_enable = true,
+      .fips_flag = true,
+      .rng_fips = true,
       .route_to_firmware = route_to_firmware,
       .bypass_conditioner = bypass_conditioner,
       .single_bit_mode = kDifEntropySrcSingleBitModeDisabled,
