@@ -111,6 +111,8 @@ interface entropy_src_cov_if
   // Covergroup to confirm that the entropy_data CSR interface works
   // for all configurations
   covergroup seed_output_csr_cg with function sample(mubi4_t   fips_enable,
+                                                     mubi4_t   fips_flag,
+                                                     mubi4_t   rng_fips,
                                                      mubi4_t   threshold_scope,
                                                      mubi4_t   rng_bit_enable,
                                                      bit [1:0] rng_bit_sel,
@@ -128,6 +130,16 @@ interface entropy_src_cov_if
 
     // For the purposes of this CG, ignore coverage of invalid MuBi values
     cp_fips_enable: coverpoint fips_enable iff(full_seed) {
+      bins        mubi_true  = { MuBi4True };
+      bins        mubi_false = { MuBi4False };
+    }
+
+    cp_fips_flag: coverpoint fips_flag iff(full_seed) {
+      bins        mubi_true  = { MuBi4True };
+      bins        mubi_false = { MuBi4False };
+    }
+
+    cp_rng_fips: coverpoint rng_fips iff(full_seed) {
       bins        mubi_true  = { MuBi4True };
       bins        mubi_false = { MuBi4False };
     }
@@ -195,7 +207,8 @@ interface entropy_src_cov_if
     // Cross coverage points
 
     // Large cross covering entropy data interface over all valid configurations
-    cr_config: cross cp_fips_enable, cp_threshold_scope, cp_rng_bit, cp_es_type;
+    cr_config: cross cp_fips_enable, cp_fips_flag, cp_rng_fips, cp_threshold_scope, cp_rng_bit,
+                     cp_es_type;
 
     // Finer crosses
     cr_fips_scope: cross cp_fips_enable, cp_threshold_scope;
@@ -215,6 +228,8 @@ interface entropy_src_cov_if
   // Covergroup to confirm that the CSRNG HW interface works
   // for all configurations
   covergroup csrng_hw_cg with function sample(bit [3:0] fips_enable,
+                                              bit [3:0] fips_flag,
+                                              bit [3:0] rng_fips,
                                               bit [3:0] threshold_scope,
                                               bit [3:0] rng_bit_enable,
                                               bit [1:0] rng_bit_sel,
@@ -231,6 +246,16 @@ interface entropy_src_cov_if
 
     // For the purposes of this CG, ignore coverage of invalid MuBi values
     cp_fips_enable: coverpoint fips_enable {
+      bins        mubi_true  = { MuBi4True };
+      bins        mubi_false = { MuBi4False };
+    }
+
+    cp_fips_flag: coverpoint fips_flag {
+      bins        mubi_true  = { MuBi4True };
+      bins        mubi_false = { MuBi4False };
+    }
+
+    cp_rng_fips: coverpoint rng_fips {
       bins        mubi_true  = { MuBi4True };
       bins        mubi_false = { MuBi4False };
     }
@@ -296,8 +321,9 @@ interface entropy_src_cov_if
     // Cross coverage points
 
     // CSRNG HW interface is tested with all valid configurations
-    cr_config: cross cp_fips_enable, cp_threshold_scope, cp_rng_bit, cp_es_type,
-                     cp_entropy_data_reg_enable, cp_otp_en_es_fw_read, cp_otp_en_es_fw_over;
+    cr_config: cross cp_fips_enable, cp_fips_flag, cp_rng_fips, cp_threshold_scope, cp_rng_bit,
+                     cp_es_type, cp_entropy_data_reg_enable, cp_otp_en_es_fw_read,
+                     cp_otp_en_es_fw_over;
 
     // Smaller crosses
     cr_fips_scope_type: cross cp_fips_enable, cp_threshold_scope, cp_es_type;
@@ -325,6 +351,8 @@ interface entropy_src_cov_if
   // Covergroup to confirm that the Observe FIFO interface works
   // for all configurations
   covergroup observe_fifo_event_cg with function sample(mubi4_t   fips_enable,
+                                                        mubi4_t   fips_flag,
+                                                        mubi4_t   rng_fips,
                                                         mubi4_t   threshold_scope,
                                                         mubi4_t   rng_bit_enable,
                                                         bit [1:0] rng_bit_sel,
@@ -344,6 +372,20 @@ interface entropy_src_cov_if
     // This should have no effect on the Observe FIFO IF
     // but we should cover it anyway.
     cp_fips_enable: coverpoint fips_enable {
+      bins        mubi_true  = { MuBi4True };
+      bins        mubi_false = { MuBi4False };
+     }
+
+    // This should have no effect on the Observe FIFO IF
+    // but we should cover it anyway.
+    cp_fips_flag: coverpoint fips_flag {
+      bins        mubi_true  = { MuBi4True };
+      bins        mubi_false = { MuBi4False };
+     }
+
+    // This should have no effect on the Observe FIFO IF
+    // but we should cover it anyway.
+    cp_rng_fips: coverpoint rng_fips {
       bins        mubi_true  = { MuBi4True };
       bins        mubi_false = { MuBi4False };
      }
@@ -410,8 +452,9 @@ interface entropy_src_cov_if
     // Cross coverage points
 
     // Entropy data interface is tested with all valid configurations
-    cr_config: cross cp_fips_enable, cp_threshold_scope, cp_rng_bit, cp_es_route, cp_es_type,
-                     cp_entropy_data_reg_enable, cp_otp_en_es_fw_read, cp_otp_en_es_fw_over;
+    cr_config: cross cp_fips_enable, cp_fips_flag, cp_rng_fips, cp_threshold_scope, cp_rng_bit,
+                     cp_es_route, cp_es_type, cp_entropy_data_reg_enable, cp_otp_en_es_fw_read,
+                     cp_otp_en_es_fw_over;
 
     // Smaller cross-points
     cr_rng_insert_fips: cross cp_rng_bit, cp_entropy_insert, cp_fips_enable;
@@ -900,6 +943,8 @@ interface entropy_src_cov_if
   endfunction
 
   function automatic void cg_seed_output_csr_sample(mubi4_t   fips_enable,
+                                                    mubi4_t   fips_flag,
+                                                    mubi4_t   rng_fips,
                                                     mubi4_t   threshold_scope,
                                                     mubi4_t   rng_bit_enable,
                                                     bit [1:0] rng_bit_sel,
@@ -911,14 +956,15 @@ interface entropy_src_cov_if
                                                     bit [7:0] otp_en_es_fw_over,
                                                     mubi4_t   entropy_insert,
                                                     bit       full_seed);
-    seed_output_csr_cg_inst.sample(fips_enable, threshold_scope, rng_bit_enable,
-                                   rng_bit_sel, es_route, es_type,
-                                   entropy_data_reg_enable, otp_en_es_fw_read,
-                                   fw_ov_mode, otp_en_es_fw_over, entropy_insert,
-                                   full_seed);
+    seed_output_csr_cg_inst.sample(fips_enable, fips_flag, rng_fips, threshold_scope,
+                                   rng_bit_enable, rng_bit_sel, es_route, es_type,
+                                   entropy_data_reg_enable, otp_en_es_fw_read, fw_ov_mode,
+                                   otp_en_es_fw_over, entropy_insert, full_seed);
   endfunction
 
   function automatic void cg_csrng_hw_sample(bit [3:0] fips_enable,
+                                             bit [3:0] fips_flag,
+                                             bit [3:0] rng_fips,
                                              bit [3:0] threshold_scope,
                                              bit [3:0] rng_bit_enable,
                                              bit [1:0] rng_bit_sel,
@@ -929,13 +975,14 @@ interface entropy_src_cov_if
                                              bit [3:0] fw_ov_mode,
                                              bit [7:0] otp_en_es_fw_over,
                                              bit [3:0] entropy_insert);
-    csrng_hw_cg_inst.sample(fips_enable, threshold_scope, rng_bit_enable,
-                            rng_bit_sel, es_route, es_type,
-                            entropy_data_reg_enable, otp_en_es_fw_read,
-                            fw_ov_mode, otp_en_es_fw_over, entropy_insert);
+    csrng_hw_cg_inst.sample(fips_enable, fips_flag, rng_fips, threshold_scope, rng_bit_enable,
+                            rng_bit_sel, es_route, es_type, entropy_data_reg_enable,
+                            otp_en_es_fw_read, fw_ov_mode, otp_en_es_fw_over, entropy_insert);
   endfunction
 
   function automatic void cg_observe_fifo_event_sample(mubi4_t   fips_enable,
+                                                       mubi4_t   fips_flag,
+                                                       mubi4_t   rng_fips,
                                                        mubi4_t   threshold_scope,
                                                        mubi4_t   rng_bit_enable,
                                                        bit [1:0] rng_bit_sel,
@@ -946,10 +993,10 @@ interface entropy_src_cov_if
                                                        mubi4_t   fw_ov_mode,
                                                        bit [7:0] otp_en_es_fw_over,
                                                        mubi4_t   entropy_insert);
-    observe_fifo_event_cg_inst.sample(fips_enable, threshold_scope, rng_bit_enable,
-                                      rng_bit_sel, es_route, es_type,
-                                      entropy_data_reg_enable, otp_en_es_fw_read,
-                                      fw_ov_mode, otp_en_es_fw_over, entropy_insert);
+    observe_fifo_event_cg_inst.sample(fips_enable, fips_flag, rng_fips, threshold_scope,
+                                      rng_bit_enable, rng_bit_sel, es_route, es_type,
+                                      entropy_data_reg_enable, otp_en_es_fw_read, fw_ov_mode,
+                                      otp_en_es_fw_over, entropy_insert);
   endfunction
 
   function automatic void cg_sw_update_sample(uvm_pkg::uvm_reg_addr_t offset,
@@ -1049,6 +1096,8 @@ interface entropy_src_cov_if
 
       if(csrng_if_req && csrng_if_ack) begin
         cg_csrng_hw_sample(tb.dut.reg2hw.conf.fips_enable.q,
+                           tb.dut.reg2hw.conf.fips_flag.q,
+                           tb.dut.reg2hw.conf.rng_fips.q,
                            tb.dut.reg2hw.conf.threshold_scope.q,
                            tb.dut.reg2hw.conf.rng_bit_enable.q,
                            tb.dut.reg2hw.conf.rng_bit_sel.q,
