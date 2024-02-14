@@ -72,28 +72,40 @@
     },
     // Random netlist constants
     { name:      "RndCnstLcKeymgrDivInvalid",
-      desc:      "Compile-time random bits for lc state group diversification value",
+      desc:      "Diversification value used for all invalid life cycle states.",
       type:      "lc_ctrl_pkg::lc_keymgr_div_t",
       randcount: "128",
-      randtype:  "data",
+      randtype:  "data", // Compile-time random bits
     }
-    { name:      "RndCnstLcKeymgrDivTestDevRma",
-      desc:      "Compile-time random bits for lc state group diversification value",
+    { name:      "RndCnstLcKeymgrDivTestUnlocked",
+      desc:      "Diversification value used for the TEST_UNLOCKED* life cycle states.",
       type:      "lc_ctrl_pkg::lc_keymgr_div_t",
       randcount: "128",
-      randtype:  "data",
+      randtype:  "data", // Compile-time random bits
+    }
+    { name:      "RndCnstLcKeymgrDivDev",
+      desc:      "Diversification value used for the DEV life cycle state.",
+      type:      "lc_ctrl_pkg::lc_keymgr_div_t",
+      randcount: "128",
+      randtype:  "data", // Compile-time random bits
     }
     { name:      "RndCnstLcKeymgrDivProduction",
-      desc:      "Compile-time random bits for lc state group diversification value",
+      desc:      "Diversification value used for the PROD/PROD_END life cycle states.",
       type:      "lc_ctrl_pkg::lc_keymgr_div_t",
       randcount: "128",
-      randtype:  "data",
+      randtype:  "data", // Compile-time random bits
+    }
+    { name:      "RndCnstLcKeymgrDivRma",
+      desc:      "Diversification value used for the RMA life cycle state.",
+      type:      "lc_ctrl_pkg::lc_keymgr_div_t",
+      randcount: "128",
+      randtype:  "data", // Compile-time random bits
     }
     { name:      "RndCnstInvalidTokens",
       desc:      "Compile-time random bits used for invalid tokens in the token mux",
       type:      "lc_ctrl_pkg::lc_token_mux_t",
       randcount: "1024",
-      randtype:  "data",
+      randtype:  "data", // Compile-time random bits
     }
     // Hardware revision, meant to be overridden at the top-level
     { name:    "SiliconCreatorIdWidth",

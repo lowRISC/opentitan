@@ -65,8 +65,9 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
     forever begin
       @(posedge cfg.pwr_lc_vif.pins[LcPwrDoneRsp] && cfg.en_scb) begin
         dec_lc_state_e lc_state = dec_lc_state(lc_state_e'(cfg.lc_ctrl_vif.otp_i.state));
-        lc_outputs_t   exp_lc_o = EXP_LC_OUTPUTS[int'(lc_state)];
-        string         err_msg = $sformatf("LC_St %0s", lc_state.name);
+        lc_outputs_t    exp_lc_o = EXP_LC_OUTPUTS[int'(lc_state)];
+        lc_keymgr_div_t exp_div_o = cfg.parameters_cfg.get_exp_div(lc_state);
+        string          err_msg = $sformatf("LC_St %0s", lc_state.name);
         cfg.clk_rst_vif.wait_n_clks(1);
 
         // lc_creator_seed_sw_rw_en_o is ON only when device has NOT been personalized or RMA state
@@ -87,6 +88,7 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
 
         if (cfg.escalate_injected) begin
           exp_lc_o = EXP_LC_OUTPUTS[int'(DecLcStEscalate)];
+          exp_div_o = cfg.parameters_cfg.keymgr_div_invalid;
         end
 
         fork
@@ -94,7 +96,8 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
             // Delay a some of cycles to allow escalate to be recognised
             if (cfg.escalate_injected) cfg.clk_rst_vif.wait_clks(5);
             ->check_lc_output_ev;
-            check_lc_outputs(exp_lc_o, {$sformatf("Called from line: %0d, ", `__LINE__), err_msg});
+            check_lc_outputs(exp_lc_o, exp_div_o,
+                             {$sformatf("Called from line: %0d, ", `__LINE__), err_msg});
           end
         join_none
 
@@ -230,6 +233,7 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
 
   // check lc outputs, default all off
   virtual function void check_lc_outputs(lc_outputs_t exp_o = '{default: lc_ctrl_pkg::Off},
+                                         lc_keymgr_div_t exp_div_o = '0,
                                          string msg = "expect all output OFF");
     `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_dft_en_o, exp_o.lc_dft_en_o, msg)
     `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_nvm_debug_en_o, exp_o.lc_nvm_debug_en_o, msg)
@@ -243,18 +247,20 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
     `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_seed_hw_rd_en_o, exp_o.lc_seed_hw_rd_en_o, msg)
     `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_creator_seed_sw_rw_en_o, exp_o.lc_creator_seed_sw_rw_en_o, msg)
     `DV_CHECK_EQ(cfg.lc_ctrl_vif.clk_byp_req_o, exp_clk_byp_req, msg)
+    `DV_CHECK_EQ(cfg.lc_ctrl_vif.keymgr_div_o, exp_div_o, msg)
   endfunction
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
-    uvm_reg        csr;
-    bit            do_read_check = 1'b0;
-    bit            write = item.is_write();
-    uvm_reg_addr_t csr_addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
-    lc_outputs_t   exp = '{default: lc_ctrl_pkg::Off};
-    bit            addr_phase_read = (!write && channel == AddrChannel);
-    bit            addr_phase_write = (write && channel == AddrChannel);
-    bit            data_phase_read = (!write && channel == DataChannel);
-    bit            data_phase_write = (write && channel == DataChannel);
+    uvm_reg         csr;
+    bit             do_read_check = 1'b0;
+    bit             write = item.is_write();
+    uvm_reg_addr_t  csr_addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
+    lc_outputs_t    exp = '{default: lc_ctrl_pkg::Off};
+    lc_keymgr_div_t exp_div = cfg.parameters_cfg.keymgr_div_invalid;
+    bit             addr_phase_read = (!write && channel == AddrChannel);
+    bit             addr_phase_write = (write && channel == AddrChannel);
+    bit             data_phase_read = (!write && channel == DataChannel);
+    bit             data_phase_write = (write && channel == DataChannel);
 
     // if access was to a valid csr, get the csr handle
     if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
@@ -403,7 +409,7 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
           begin
             // Wait for escalate to be recognise
             if (cfg.err_inj.security_escalation_err) cfg.clk_rst_vif.wait_clks(5);
-            check_lc_outputs(exp, $sformatf("Called from line: %0d", `__LINE__));
+            check_lc_outputs(exp, exp_div, $sformatf("Called from line: %0d", `__LINE__));
           end
         join_none
       end

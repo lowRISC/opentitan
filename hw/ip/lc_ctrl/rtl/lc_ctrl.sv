@@ -21,11 +21,13 @@ module lc_ctrl
   // Idcode value for the JTAG.
   parameter logic [31:0] IdcodeValue = 32'h00000001,
   // Random netlist constants
-  parameter lc_keymgr_div_t RndCnstLcKeymgrDivInvalid    = LcKeymgrDivWidth'(0),
-  parameter lc_keymgr_div_t RndCnstLcKeymgrDivTestDevRma = LcKeymgrDivWidth'(1),
-  parameter lc_keymgr_div_t RndCnstLcKeymgrDivProduction = LcKeymgrDivWidth'(2),
-  parameter lc_token_mux_t  RndCnstInvalidTokens         = {TokenMuxBits{1'b1}},
-  parameter bit             SecVolatileRawUnlockEn       = 0
+  parameter lc_keymgr_div_t RndCnstLcKeymgrDivInvalid      = LcKeymgrDivWidth'(0),
+  parameter lc_keymgr_div_t RndCnstLcKeymgrDivTestUnlocked = LcKeymgrDivWidth'(1),
+  parameter lc_keymgr_div_t RndCnstLcKeymgrDivDev          = LcKeymgrDivWidth'(2),
+  parameter lc_keymgr_div_t RndCnstLcKeymgrDivProduction   = LcKeymgrDivWidth'(3),
+  parameter lc_keymgr_div_t RndCnstLcKeymgrDivRma          = LcKeymgrDivWidth'(4),
+  parameter lc_token_mux_t  RndCnstInvalidTokens           = {TokenMuxBits{1'b1}},
+  parameter bit             SecVolatileRawUnlockEn         = 0
 ) (
   // Life cycle controller clock
   input                                              clk_i,
@@ -700,11 +702,13 @@ module lc_ctrl
   ////////////
 
   lc_ctrl_fsm #(
-    .RndCnstLcKeymgrDivInvalid     ( RndCnstLcKeymgrDivInvalid     ),
-    .RndCnstLcKeymgrDivTestDevRma  ( RndCnstLcKeymgrDivTestDevRma  ),
-    .RndCnstLcKeymgrDivProduction  ( RndCnstLcKeymgrDivProduction  ),
-    .RndCnstInvalidTokens          ( RndCnstInvalidTokens          ),
-    .SecVolatileRawUnlockEn        ( SecVolatileRawUnlockEn        )
+    .RndCnstLcKeymgrDivInvalid     ( RndCnstLcKeymgrDivInvalid      ),
+    .RndCnstLcKeymgrDivTestUnlocked( RndCnstLcKeymgrDivTestUnlocked ),
+    .RndCnstLcKeymgrDivDev         ( RndCnstLcKeymgrDivDev          ),
+    .RndCnstLcKeymgrDivProduction  ( RndCnstLcKeymgrDivProduction   ),
+    .RndCnstLcKeymgrDivRma         ( RndCnstLcKeymgrDivRma          ),
+    .RndCnstInvalidTokens          ( RndCnstInvalidTokens           ),
+    .SecVolatileRawUnlockEn        ( SecVolatileRawUnlockEn         )
   ) u_lc_ctrl_fsm (
     .clk_i,
     .rst_ni,
