@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // This sequence generates a mix of short and long msgs.
-// During the transaction, this sequence randomly trigger wipe_secret and use scb to check if
+// During the transaction, this sequence randomly triggers wipe_secret and uses scb to check if
 // digest value has been updated.
 
 class hmac_wipe_secret_vseq extends hmac_smoke_vseq;
@@ -13,8 +13,8 @@ class hmac_wipe_secret_vseq extends hmac_smoke_vseq;
   constraint msg_c {
     msg.size() dist {
         0             :/ 1,
-        [1   :64]     :/ 1, // 64 bytes is the FIFO depth
-        [65  :999]    :/ 1,
+        [1   :128]    :/ 1, // 128 bytes is the FIFO depth
+        [119 :999]    :/ 1,
         [1000:3000]   :/ 7 // 1KB - 2KB according to SW immediate usage
     };
   }

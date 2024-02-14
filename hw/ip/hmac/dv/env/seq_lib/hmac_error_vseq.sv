@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// this sequence test error cases in hmac, and making sure the core is not locked
+// this sequence tests error cases in HMAC and makes sure the core is not locked
 
 class hmac_error_vseq extends hmac_long_msg_vseq;
   `uvm_object_utils(hmac_error_vseq)

@@ -3,8 +3,11 @@ CAPI=2:
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 name: "lowrisc:dv:hmac_env:0.1"
-description: "hmac DV UVM environmnt"
+description: "HMAC DV UVM environmnt"
 filesets:
+  files_rtl:
+    depend:
+        - lowrisc:ip:hmac
   files_dv:
     depend:
       - lowrisc:dv:ralgen
