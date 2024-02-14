@@ -3510,6 +3510,37 @@ opentitan_test(
     ],
 )
 
+# This test requires that the harness has sufficient permissions to
+# open the USB parent hub of the device under test so it can issue
+# requests directly. For this reason, the test is tagged as manual
+# until the CI can provide such an access.
+opentitan_test(
+    name = "usbdev_aon_wake_reset_test",
+    srcs = ["usbdev_aon_wake_reset_test.c"],
+    cw310 = new_cw310_params(
+        tags = ["manual"],
+        test_cmd = """
+            --bitstream="{bitstream}"
+            --bootstrap="{firmware}"
+        """,
+        test_harness = "//sw/host/tests/chip/usb:usbdev_aon_wake",
+    ),
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+    ),
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/dif:usbdev",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing:pinmux_testutils",
+        "//sw/device/lib/testing:usb_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
 opentitan_test(
     name = "usbdev_setuprx_test",
     srcs = ["usbdev_setuprx_test.c"],
