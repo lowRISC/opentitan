@@ -21,6 +21,8 @@
 #define NOP1 "addi x0, x0, 0\n"
 #define NOP10 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1
 #define NOP100 NOP10 NOP10 NOP10 NOP10 NOP10 NOP10 NOP10 NOP10 NOP10 NOP10
+#define NOP1000 \
+  NOP100 NOP100 NOP100 NOP100 NOP100 NOP100 NOP100 NOP100 NOP100 NOP100
 
 // Init x5 = 0 macro.
 #define INITX5 "addi x5, x0, 0"
@@ -54,6 +56,15 @@
 
 // Load word, subi, sw macro.
 #define LWSUBISW1 "lw x6, (%0)\n addi x6, x6, -1\n sw x6, (%0)\n"
+
+// Reference values.
+const uint32_t ref_values[32] = {
+    0x1BADB002, 0x8BADF00D, 0xA5A5A5A5, 0xABABABAB, 0xABBABABE, 0xABADCAFE,
+    0xBAAAAAAD, 0xBAD22222, 0xBBADBEEF, 0xBEBEBEBE, 0xBEEFCACE, 0xC00010FF,
+    0xCAFED00D, 0xCAFEFEED, 0xCCCCCCCC, 0xCDCDCDCD, 0x0D15EA5E, 0xDEAD10CC,
+    0xDEADBEEF, 0xDEADCAFE, 0xDEADC0DE, 0xDEADFA11, 0xDEADF00D, 0xDEFEC8ED,
+    0xDEADDEAD, 0xD00D2BAD, 0xEBEBEBEB, 0xFADEDEAD, 0xFDFDFDFD, 0xFEE1DEAD,
+    0xFEEDFACE, 0xFEEEFEEE};
 
 /**
  * ibex.char.mem_op_loop command handler.
@@ -255,6 +266,135 @@ status_t handle_ibex_fi_char_unrolled_reg_op_loop(ujson_t *uj) {
 }
 
 /**
+ * ibex.char.register_file command handler.
+ *
+ * This FI penetration test executes the following instructions:
+ * - Initialize temp. registers with reference values
+ * - Execute 1000 NOPs
+ * - Read back temp. register values and compare against reference values
+ *
+ * Faults are injected during the trigger_high & trigger_low.
+ * It needs to be ensured that the compiler does not optimize this code.
+ *
+ * @param uj The received uJSON data.
+ */
+status_t handle_ibex_fi_char_register_file(ujson_t *uj) {
+  // Configure Ibex to allow reading ERR_STATUS register.
+  dif_rv_core_ibex_t rv_core_ibex;
+  UJSON_CHECK_DIF_OK(dif_rv_core_ibex_init(
+      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
+      &rv_core_ibex));
+
+  uint32_t res_values[7];
+
+  // Initialize temporary registers with reference values.
+  asm volatile("li x5, %0" : : "i"(ref_values[0]));
+  asm volatile("li x6, %0" : : "i"(ref_values[1]));
+  asm volatile("li x7, %0" : : "i"(ref_values[2]));
+  asm volatile("li x28, %0" : : "i"(ref_values[3]));
+  asm volatile("li x29, %0" : : "i"(ref_values[4]));
+  asm volatile("li x30, %0" : : "i"(ref_values[5]));
+  asm volatile("li x31, %0" : : "i"(ref_values[6]));
+
+  // FI code target.
+  sca_set_trigger_high();
+  asm volatile(NOP1000);
+  sca_set_trigger_low();
+
+  // Load register values.
+  asm volatile("mv %0, x5" : "=r"(res_values[0]));
+  asm volatile("mv %0, x6" : "=r"(res_values[1]));
+  asm volatile("mv %0, x7" : "=r"(res_values[2]));
+  asm volatile("mv %0, x28" : "=r"(res_values[3]));
+  asm volatile("mv %0, x29" : "=r"(res_values[4]));
+  asm volatile("mv %0, x30" : "=r"(res_values[5]));
+  asm volatile("mv %0, x31" : "=r"(res_values[6]));
+
+  // Check if one or multiple registers values are faulty.
+  uint32_t res = 0;
+  for (int it = 0; it < 7; it++) {
+    if (res_values[it] != ref_values[it]) {
+      res |= 1;
+      LOG_ERROR("reg %d exp=%u got=%u", it, ref_values[it], res_values[it]);
+    }
+  }
+
+  // Read ERR_STATUS register.
+  dif_rv_core_ibex_error_status_t codes;
+  UJSON_CHECK_DIF_OK(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
+
+  // Send result & ERR_STATUS to host.
+  ibex_fi_test_result_t uj_output;
+  uj_output.result = res;
+  uj_output.err_status = codes;
+  RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
+  return OK_STATUS(0);
+}
+
+/**
+ * ibex.char.register_file_read command handler.
+ *
+ * This FI penetration test executes the following instructions:
+ * - Initialize temp. registers with reference values
+ * - Read these registers.
+ * - Compare against reference values
+ *
+ * Faults are injected during the trigger_high & trigger_low.
+ * It needs to be ensured that the compiler does not optimize this code.
+ *
+ * @param uj The received uJSON data.
+ */
+status_t handle_ibex_fi_char_register_file_read(ujson_t *uj) {
+  // Configure Ibex to allow reading ERR_STATUS register.
+  dif_rv_core_ibex_t rv_core_ibex;
+  UJSON_CHECK_DIF_OK(dif_rv_core_ibex_init(
+      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
+      &rv_core_ibex));
+
+  uint32_t res_values[3];
+
+  // Initialize temporary registers with reference values.
+  asm volatile("li x5, %0" : : "i"(ref_values[0]));
+  asm volatile("li x6, %0" : : "i"(ref_values[1]));
+  asm volatile("li x7, %0" : : "i"(ref_values[2]));
+  asm volatile("li x28, 0");
+  asm volatile("li x29, 0");
+  asm volatile("li x30, 0");
+
+  // FI code target.
+  sca_set_trigger_high();
+  asm volatile("mv x28, x5");
+  asm volatile("mv x29, x6");
+  asm volatile("mv x30, x7");
+  sca_set_trigger_low();
+
+  // Load register values.
+  asm volatile("mv %0, x28" : "=r"(res_values[0]));
+  asm volatile("mv %0, x29" : "=r"(res_values[1]));
+  asm volatile("mv %0, x30" : "=r"(res_values[2]));
+
+  // Check if one or multiple registers values are faulty.
+  uint32_t res = 0;
+  for (int it = 0; it < 3; it++) {
+    if (res_values[it] != ref_values[it]) {
+      res |= 1;
+      LOG_ERROR("reg %d exp=%u got=%u", it, ref_values[it], res_values[it]);
+    }
+  }
+
+  // Read ERR_STATUS register.
+  dif_rv_core_ibex_error_status_t codes;
+  UJSON_CHECK_DIF_OK(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
+
+  // Send result & ERR_STATUS to host.
+  ibex_fi_test_result_t uj_output;
+  uj_output.result = res;
+  uj_output.err_status = codes;
+  RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
+  return OK_STATUS(0);
+}
+
+/**
  * Initializes the SCA trigger.
  *
  *
@@ -289,6 +429,10 @@ status_t handle_ibex_fi(ujson_t *uj) {
       return handle_ibex_fi_char_unrolled_mem_op_loop(uj);
     case kIbexFiSubcommandCharMemOpLoop:
       return handle_ibex_fi_char_mem_op_loop(uj);
+    case kIbexFiSubcommandCharRegisterFile:
+      return handle_ibex_fi_char_register_file(uj);
+    case kIbexFiSubcommandCharRegisterFileRead:
+      return handle_ibex_fi_char_register_file_read(uj);
     default:
       LOG_ERROR("Unrecognized IBEX FI subcommand: %d", cmd);
       return INVALID_ARGUMENT();
