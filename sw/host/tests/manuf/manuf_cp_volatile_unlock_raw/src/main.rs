@@ -57,6 +57,9 @@ fn volatile_raw_unlock_with_reconnection_to_lc_tap(
         /*use_external_clk=*/ true,
         JtagTap::LcTap,
         &opts.init.jtag_params,
+        // whether we expect the RAW unlock feature to be present or not.
+        // on prod silicon this should be disabled.
+        false,
     )
     .context("failed to transition to TEST_UNLOCKED0")?;
 
@@ -102,6 +105,9 @@ fn volatile_raw_unlock_with_reconnection_to_rv_tap(
         /*use_external_clk=*/ true,
         JtagTap::RiscvTap,
         &opts.init.jtag_params,
+        // whether we expect the RAW unlock feature to be present or not.
+        // on prod silicon this should be disabled.
+        false,
     )
     .context("failed to transition to TEST_UNLOCKED0")?;
 
