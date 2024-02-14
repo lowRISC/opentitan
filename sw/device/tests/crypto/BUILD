@@ -287,6 +287,7 @@ opentitan_test(
         "//sw/device/lib/base:macros",
         "//sw/device/lib/crypto/drivers:kmac",
         "//sw/device/lib/crypto/impl:hash",
+        "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:mac",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -307,6 +308,27 @@ opentitan_test(
         "//sw/device/lib/crypto/impl:hash",
         "//sw/device/lib/crypto/impl:kdf",
         "//sw/device/lib/crypto/impl:mac",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
+    name = "kmac_sideload_functest_hardcoded",
+    srcs = ["kmac_sideload_functest.c"],
+    exec_env = EARLGREY_TEST_ENVS,
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/crypto/drivers:kmac",
+        "//sw/device/lib/crypto/impl:hash",
+        "//sw/device/lib/crypto/impl:integrity",
+        "//sw/device/lib/crypto/impl:mac",
+        "//sw/device/lib/dif:keymgr",
+        "//sw/device/lib/dif:kmac",
+        "//sw/device/lib/testing:keymgr_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
