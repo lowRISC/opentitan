@@ -80,6 +80,16 @@ dif_result_t dif_entropy_src_configure(const dif_entropy_src_t *entropy_src,
       0, ENTROPY_SRC_CONF_FIPS_ENABLE_FIELD,
       config.fips_enable ? kMultiBitBool4True : kMultiBitBool4False);
 
+  // Configure FIPS flag.
+  entropy_conf_reg = bitfield_field32_write(
+      entropy_conf_reg, ENTROPY_SRC_CONF_FIPS_FLAG_FIELD,
+      config.fips_flag ? kMultiBitBool4True : kMultiBitBool4False);
+
+  // Configure RNG FIPS.
+  entropy_conf_reg = bitfield_field32_write(
+      entropy_conf_reg, ENTROPY_SRC_CONF_RNG_FIPS_FIELD,
+      config.rng_fips ? kMultiBitBool4True : kMultiBitBool4False);
+
   // Configure entropy data register enable (enables firmware to read entropy).
   entropy_conf_reg = bitfield_field32_write(
       entropy_conf_reg, ENTROPY_SRC_CONF_ENTROPY_DATA_REG_ENABLE_FIELD,

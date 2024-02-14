@@ -121,6 +121,15 @@ typedef struct entropy_src_config {
    */
   multi_bit_bool_t fips_enable;
   /**
+   * If set, the produced output entropy is marked as FIPS compliant
+   * through the FIPS bit being set to high.
+   */
+  multi_bit_bool_t fips_flag;
+  /**
+   * If set, the noise source is instructed to produce high quality entropy.
+   */
+  multi_bit_bool_t rng_fips;
+  /**
    * If set, entropy will be routed to a firmware-visible register instead of
    * being distributed to other hardware IPs.
    */
@@ -216,6 +225,8 @@ static const entropy_complex_config_t
                 .entropy_src =
                     {
                         .fips_enable = kMultiBitBool4True,
+                        .fips_flag = kMultiBitBool4True,
+                        .rng_fips = kMultiBitBool4True,
                         .route_to_firmware = kMultiBitBool4False,
                         .bypass_conditioner = kMultiBitBool4False,
                         .single_bit_mode = kMultiBitBool4False,
@@ -633,6 +644,10 @@ static status_t entropy_src_configure(const entropy_src_config_t *config) {
   // Config register configuration
   reg = bitfield_field32_write(0, ENTROPY_SRC_CONF_FIPS_ENABLE_FIELD,
                                config->fips_enable);
+  reg = bitfield_field32_write(reg, ENTROPY_SRC_CONF_FIPS_FLAG_FIELD,
+                               config->fips_flag);
+  reg = bitfield_field32_write(reg, ENTROPY_SRC_CONF_RNG_FIPS_FIELD,
+                               config->rng_fips);
   reg = bitfield_field32_write(reg,
                                ENTROPY_SRC_CONF_ENTROPY_DATA_REG_ENABLE_FIELD,
                                config->route_to_firmware);

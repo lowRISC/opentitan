@@ -35,6 +35,8 @@ static dif_rv_core_ibex_t rv_core_ibex;
 
 dif_entropy_src_config_t entropy_src_config = {
     .fips_enable = false,
+    .fips_flag = false,
+    .rng_fips = false,
     .route_to_firmware = false,
     .bypass_conditioner = false,
     .single_bit_mode = kDifEntropySrcSingleBitModeDisabled,
@@ -90,6 +92,8 @@ static status_t entropy_config(unsigned int round) {
     // Re-enable ENTROPY_SRC in FIPS mode.
     CHECK_DIF_OK(dif_entropy_src_stop(&entropy_src));
     entropy_src_config.fips_enable = true;
+    entropy_src_config.fips_flag = true;
+    entropy_src_config.rng_fips = true;
     CHECK_DIF_OK(dif_entropy_src_configure(&entropy_src, entropy_src_config,
                                            kDifToggleEnabled));
     // Enable EDN0 in auto request mode.
@@ -104,6 +108,8 @@ static status_t entropy_config(unsigned int round) {
     // Re-enable ENTROPY_SRC in Non-FIPS mode.
     CHECK_DIF_OK(dif_entropy_src_stop(&entropy_src));
     entropy_src_config.fips_enable = false;
+    entropy_src_config.fips_flag = false;
+    entropy_src_config.rng_fips = false;
     CHECK_DIF_OK(dif_entropy_src_configure(&entropy_src, entropy_src_config,
                                            kDifToggleEnabled));
     // Enable EDN0 in boot-time request mode.
@@ -111,6 +117,9 @@ static status_t entropy_config(unsigned int round) {
     CHECK_DIF_OK(dif_edn_configure(&edn0));
     EDN_TESTUTILS_WAIT_FOR_STATUS(&edn0, kDifEdnSmStateBootGenAckWait, true,
                                   kEdnBootModeTimeout);
+    // Set rng_fips and fips_flag to true for the next round.
+    entropy_src_config.fips_flag = true;
+    entropy_src_config.rng_fips = true;
   }
 
   if (round == 3) {

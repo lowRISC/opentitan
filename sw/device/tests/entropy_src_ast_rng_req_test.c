@@ -45,6 +45,8 @@ bool test_main(void) {
   // Program the entropy src in normal RNG mode.
   const dif_entropy_src_config_t config = {
       .fips_enable = true,
+      .fips_flag = true,
+      .rng_fips = true,
       // Route the entropy data received from RNG to the FIFO.
       .route_to_firmware = true,
       .single_bit_mode = kDifEntropySrcSingleBitModeDisabled,
