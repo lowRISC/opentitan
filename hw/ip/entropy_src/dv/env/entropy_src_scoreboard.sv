@@ -1573,6 +1573,10 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
               check_redundancy_val("conf", "entropy_data_reg_enable",
                                    "entropy_data_reg_en_field_alert",
                                    invalid_entropy_data_reg_enable);
+              check_redundancy_val("conf", "fips_flag", "fips_flag_field_alert",
+                                   invalid_fips_flag);
+              check_redundancy_val("conf", "rng_fips", "rng_fips_field_alert",
+                                   invalid_rng_fips);
               check_redundancy_val("conf", "threshold_scope", "threshold_scope_field_alert",
                                    invalid_threshold_scope);
               check_redundancy_val("conf", "rng_bit_enable", "rng_bit_enable_field_alert",
@@ -1960,7 +1964,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
     `uvm_info(`gfn, msg, UVM_FULL);
 
-    fips_data = predict_conditioned && (rng_single_bit == MuBi4False);
+    fips_data = (`gmv(ral.conf.fips_flag) == MuBi4True) &&
+                (`gmv(ral.module_enable.module_enable) == MuBi4True);
 
     if (predict_conditioned) begin
       localparam int BytesPerSHAWord = SHACondWidth / 8;

@@ -198,6 +198,8 @@ class entropy_src_base_vseq extends cip_base_vseq #(
 
     ral.conf.fips_enable.set(newcfg.fips_enable);
     ral.conf.entropy_data_reg_enable.set(newcfg.entropy_data_reg_enable);
+    ral.conf.fips_flag.set(newcfg.fips_flag);
+    ral.conf.rng_fips.set(newcfg.rng_fips);
     ral.conf.rng_bit_enable.set(newcfg.rng_bit_enable);
     ral.conf.rng_bit_sel.set(newcfg.rng_bit_sel);
     ral.conf.threshold_scope.set(newcfg.ht_threshold_scope);
@@ -319,6 +321,8 @@ class entropy_src_base_vseq extends cip_base_vseq #(
 
     ral.conf.fips_enable.set(MuBi4False);
     ral.conf.entropy_data_reg_enable.set(MuBi4False);
+    ral.conf.fips_flag.set(MuBi4False);
+    ral.conf.rng_fips.set(MuBi4False);
     ral.conf.rng_bit_enable.set(MuBi4False);
     ral.conf.threshold_scope.set(MuBi4False);
     csr_update(.csr(ral.conf));

@@ -49,7 +49,9 @@ package entropy_src_env_pkg;
     invalid_fw_ov_insert_start      = 7,
     invalid_es_route                = 8,
     invalid_es_type                 = 9,
-    invalid_alert_threshold         = 10
+    invalid_alert_threshold         = 10,
+    invalid_fips_flag               = 11,
+    invalid_rng_fips                = 12
   } invalid_mubi_e;
 
   typedef enum int {

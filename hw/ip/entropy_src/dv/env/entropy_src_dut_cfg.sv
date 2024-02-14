@@ -36,8 +36,8 @@ class entropy_src_dut_cfg extends uvm_object;
 
   // Constraint knobs for Boolean fields in CONF register
   // (RNG_BIT_SEL is always uniform)
-  uint          fips_enable_pct, entropy_data_reg_enable_pct, ht_threshold_scope_pct,
-                rng_bit_enable_pct;
+  uint          fips_enable_pct, entropy_data_reg_enable_pct, fips_flag_pct,
+                rng_fips_pct, ht_threshold_scope_pct, rng_bit_enable_pct;
 
   // Constraint knobs for Boolean fields in ENTROPY_CONTROL register
   uint          route_software_pct, type_bypass_pct;
@@ -75,8 +75,9 @@ class entropy_src_dut_cfg extends uvm_object;
   rand bit                      preconfig_disable;
   rand bit [1:0]                rng_bit_sel;
 
-  rand prim_mubi_pkg::mubi4_t   module_enable, fips_enable, route_software, type_bypass,
-                                entropy_data_reg_enable, rng_bit_enable, ht_threshold_scope;
+  rand prim_mubi_pkg::mubi4_t   module_enable, fips_enable, fips_flag, route_software, type_bypass,
+                                rng_fips, entropy_data_reg_enable, rng_bit_enable,
+                                ht_threshold_scope;
 
   rand int                      observe_fifo_thresh;
 
@@ -183,6 +184,14 @@ class entropy_src_dut_cfg extends uvm_object;
   constraint fips_enable_c {fips_enable dist {
       prim_mubi_pkg::MuBi4True  :/ fips_enable_pct,
       prim_mubi_pkg::MuBi4False :/ (100 - fips_enable_pct) };}
+
+  constraint fips_flag_c {fips_flag dist {
+      prim_mubi_pkg::MuBi4True  :/ fips_flag_pct,
+      prim_mubi_pkg::MuBi4False :/ (100 - fips_flag_pct) };}
+
+  constraint rng_fips_c {rng_fips dist {
+      prim_mubi_pkg::MuBi4True  :/ rng_fips_pct,
+      prim_mubi_pkg::MuBi4False :/ (100 - rng_fips_pct) };}
 
   constraint route_c {route_software dist {
       prim_mubi_pkg::MuBi4True  :/ route_software_pct,
@@ -339,6 +348,10 @@ class entropy_src_dut_cfg extends uvm_object;
                   module_enable.name()),
         $sformatf("\n\t |***** fips_enable                 : %12s *****| \t",
                   fips_enable.name()),
+        $sformatf("\n\t |***** fips_flag                   : %12s *****| \t",
+                  fips_flag.name()),
+        $sformatf("\n\t |***** rng_fips                    : %12s *****| \t",
+                  rng_fips.name()),
         $sformatf("\n\t |***** route_software              : %12s *****| \t",
                   route_software.name()),
         $sformatf("\n\t |***** type_bypass                 : %12s *****| \t",
@@ -359,6 +372,8 @@ class entropy_src_dut_cfg extends uvm_object;
                   fw_over_enable.name()),
         $sformatf("\n\t |***** observe_fifo_threshold      : %12d *****| \t",
                   observe_fifo_thresh),
+        $sformatf("\n\t |***** ht_threshold_scope          : %12d *****| \t",
+                  ht_threshold_scope),
         $sformatf("\n\t |***** adaptp_sigma                : %12.3f *****| \t",
                   adaptp_sigma),
         $sformatf("\n\t |***** bucket_sigma                : %12.3f *****| \t",
@@ -379,6 +394,10 @@ class entropy_src_dut_cfg extends uvm_object;
                   module_enable_pct),
         $sformatf("\n\t |***** fips_enable_pct             : %12d *****| \t",
                   fips_enable_pct),
+        $sformatf("\n\t |***** fips_flag_pct               : %12d *****| \t",
+                  fips_flag_pct),
+        $sformatf("\n\t |***** rng_fips_pct               : %12d *****| \t",
+                  rng_fips_pct),
         $sformatf("\n\t |***** route_software_pct          : %12d *****| \t",
                   route_software_pct),
         $sformatf("\n\t |***** type_bypass_pct             : %12d *****| \t",
@@ -387,6 +406,8 @@ class entropy_src_dut_cfg extends uvm_object;
                   entropy_data_reg_enable_pct),
         $sformatf("\n\t |***** rng_bit_enable_pct          : %12d *****| \t",
                   rng_bit_enable_pct),
+        $sformatf("\n\t |***** ht_threshold_scope_pct      : %12d *****| \t",
+                  ht_threshold_scope_pct),
         $sformatf("\n\t |***** adaptp_sigma range          : (%04.2f, %04.2f) *****| \t",
                   adaptp_sigma_min, adaptp_sigma_max),
         $sformatf("\n\t |***** bucket_sigma range          : (%04.2f, %04.2f) *****| \t",
@@ -435,6 +456,8 @@ class entropy_src_dut_cfg extends uvm_object;
       case (which_invalid_mubi)
         invalid_fips_enable: fips_enable = invalid_mubi_val;
         invalid_entropy_data_reg_enable: entropy_data_reg_enable = invalid_mubi_val;
+        invalid_fips_flag: fips_flag = invalid_mubi_val;
+        invalid_rng_fips: fips_flag = invalid_mubi_val;
         invalid_module_enable: module_enable = invalid_mubi_val;
         invalid_threshold_scope: ht_threshold_scope = invalid_mubi_val;
         invalid_rng_bit_enable: rng_bit_enable = invalid_mubi_val;
@@ -476,6 +499,8 @@ class entropy_src_dut_cfg extends uvm_object;
     `DV_CHECK(sw_regupd_pct <= 100);
     `DV_CHECK(fips_enable_pct <= 100);
     `DV_CHECK(entropy_data_reg_enable_pct <= 100);
+    `DV_CHECK(fips_flag_pct <= 100);
+    `DV_CHECK(rng_fips_pct <= 100);
     `DV_CHECK(ht_threshold_scope_pct <= 100);
     `DV_CHECK(rng_bit_enable_pct <= 100);
     `DV_CHECK(route_software_pct <= 100);
