@@ -943,6 +943,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
           end
           cov_vif.cg_seed_output_csr_sample(
               mubi4_t'(ral.conf.fips_enable.get_mirrored_value()),
+              mubi4_t'(ral.conf.fips_flag.get_mirrored_value()),
+              mubi4_t'(ral.conf.rng_fips.get_mirrored_value()),
               mubi4_t'(ral.conf.threshold_scope.get_mirrored_value()),
               mubi4_t'(ral.conf.rng_bit_enable.get_mirrored_value()),
               ral.conf.rng_bit_sel.get_mirrored_value(),
@@ -2446,6 +2448,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
           match_found = 1;
           cov_vif.cg_observe_fifo_event_sample(
               mubi4_t'(ral.conf.fips_enable.get_mirrored_value()),
+              mubi4_t'(ral.conf.fips_flag.get_mirrored_value()),
+              mubi4_t'(ral.conf.rng_fips.get_mirrored_value()),
               mubi4_t'(ral.conf.threshold_scope.get_mirrored_value()),
               mubi4_t'(ral.conf.rng_bit_enable.get_mirrored_value()),
               ral.conf.rng_bit_sel.get_mirrored_value(),
