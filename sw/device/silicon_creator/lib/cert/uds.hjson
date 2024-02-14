@@ -44,7 +44,7 @@
             type: "byte-array",
             size: 32,
         },
-        // Debug?
+        // Debug (whether LC state exposes JTAG access or not).
         debug_flag: {
             type: "boolean",
         }

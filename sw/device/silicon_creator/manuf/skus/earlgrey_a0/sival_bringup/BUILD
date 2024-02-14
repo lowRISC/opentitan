@@ -278,6 +278,7 @@ opentitan_binary(
         "//sw/device/silicon_creator/lib/drivers:hmac",
         "//sw/device/silicon_creator/lib/drivers:keymgr",
         "//sw/device/silicon_creator/lib/drivers:kmac",
+        "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
         "//sw/otbn/crypto:boot",
     ],
