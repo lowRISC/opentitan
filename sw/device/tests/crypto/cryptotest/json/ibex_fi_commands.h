@@ -16,8 +16,15 @@ extern "C" {
     value(_, CharUnrolledRegOpLoop) \
     value(_, CharRegOpLoop) \
     value(_, CharUnrolledMemOpLoop) \
-    value(_, CharMemOpLoop)
+    value(_, CharMemOpLoop) \
+    value(_, CharRegisterFile) \
+    value(_, CharRegisterFileRead)
 UJSON_SERDE_ENUM(IbexFiSubcommand, ibex_fi_subcommand_t, IBEXFI_SUBCOMMAND);
+
+#define IBEXFI_TEST_RESULT(field, string) \
+    field(result, uint32_t) \
+    field(err_status, uint32_t)
+UJSON_SERDE_STRUCT(IbexFiTestResult, ibex_fi_test_result_t, IBEXFI_TEST_RESULT);
 
 #define IBEXFI_LOOP_COUNTER_OUTPUT(field, string) \
     field(loop_counter, uint32_t) \
