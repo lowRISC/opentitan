@@ -33,8 +33,8 @@
             type: "byte-array",
             size: 32,
         },
-        // Hash of the ownership manifest (SHA256).
-        ownership_manifest_hash: {
+        // Hash of the owner manifest (SHA256).
+        owner_manifest_hash: {
             type: "byte-array",
             size: 32,
         },
@@ -79,7 +79,7 @@
         layer: 1,
         fw_ids: [
             { hash_algorithm: "sha256", digest: { var: "rom_ext_hash" } },
-            { hash_algorithm: "sha256", digest: { var: "ownership_manifest_hash" } },
+            { hash_algorithm: "sha256", digest: { var: "owner_manifest_hash" } },
         ],
         flags: {
             not_configured: false,
