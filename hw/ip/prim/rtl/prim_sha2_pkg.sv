@@ -26,12 +26,22 @@ package prim_sha2_pkg;
                                  // set to all-1 for word-aligned input
   } sha_fifo64_t;
 
-  typedef enum logic [1:0] {
-    None,
-    SHA2_256,
-    SHA2_384,
-    SHA2_512
+  // one-hot encoded
+  typedef enum logic [3:0] {
+    SHA2_None = 4'b0001,
+    SHA2_256  = 4'b0010,
+    SHA2_384  = 4'b0100,
+    SHA2_512  = 4'b1000
   } digest_mode_e;
+
+  // one-hot encoded
+  typedef enum logic [4:0] {
+    Key_128  = 5'b0_0001,
+    Key_256  = 5'b0_0010,
+    Key_384  = 5'b0_0100,
+    Key_512  = 5'b0_1000,
+    Key_1024 = 5'b1_0000
+  } key_length_e;
 
   localparam sha_word32_t InitHash_256 [8]= '{
     32'h 6a09_e667, 32'h bb67_ae85, 32'h 3c6e_f372, 32'h a54f_f53a,
