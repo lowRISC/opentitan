@@ -12,6 +12,8 @@ After a reset, the ENTROPY_SRC block will start up in boot-time / bypass mode by
 This feature is designed to provide an initial seed's worth of entropy with lower latency than the normal FIPS/CC compliant health check process.
 Health testing will still be performed on boot-time mode entropy, but the window of checking is, by default, 384 bits instead of 2048 bits.
 When entropy is delivered to the downstream hardware block, a signal will indicate what type of entropy it is - FIPS/CC compliant or not.
+This signal is determined by the `FIPS_FLAG` field in the [`CONF`](registers.md#conf) register.
+When `RNG_FIPS` field in the [`CONF`](registers.md#conf) register is set to `kMultiBitBool4True`, the ENTROPY_SRC block will request higher quality entropy from the noise source by asserting the `rng_fips` output signal.
 
 Once the initial boot-time mode phase has completed, the ENTROPY_SRC block can be switched to FIPS/CC compliant mode (for simplicity referred to as FIPS mode) by setting the `FIPS_ENABLE` field in the [`CONF`](registers.md#conf) register to `kMultiBitBool4True`.
 In this mode, once the raw entropy has been health checked, it will be passed into a conditioner block.
