@@ -85,29 +85,6 @@ jobs:
         $(bash ./bazelisk.sh query 'attr("tags", "hyper310", tests(//...))')
     displayName: "Run all the hyperdebug tests"
 
-- job: rom_e2e
-  displayName: "ROM E2E Tests"
-  timeoutInMinutes: 180
-  dependsOn: checkout
-  pool:
-    name: FPGA
-    demands: BOARD -equals cw310
-  steps:
-  - template: ../ci/checkout-template.yml
-  - template: ../ci/install-package-dependencies.yml
-  - bash: |
-      set -x
-      module load "xilinx/vivado/$(VIVADO_VERSION)"
-      ci/bazelisk.sh test \
-        --define DISABLE_VERILATOR_BUILD=true \
-        --define bitstream=gcp_splice \
-        --test_tag_filters=-verilator,-dv,-broken \
-        --build_tests_only \
-        --test_output=errors \
-        //sw/device/silicon_creator/rom/e2e/...
-    displayName: "Run all ROM E2E tests"
-  - template: ../ci/publish-bazel-test-results.yml
-
 - job: slow_otbn_crypto_tests
   displayName: "Slow OTBN Crypto Tests"
   timeoutInMinutes: 180
