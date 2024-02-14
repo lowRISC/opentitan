@@ -11,9 +11,9 @@ class hmac_back_pressure_vseq extends hmac_smoke_vseq;
 
   constraint msg_c {
     msg.size() dist {
-        [65  :999]    :/ 1,
-        [1000:3000]   :/ 8, // 1KB - 2KB according to SW immediate usage
-        [3001:10_000] :/ 1  // temp set to 10KB as max length, spec max size is 2^64 bits
+        [129  :999]      :/ 1, // larger than input FIFO depth
+        [1000 :3000]     :/ 8, // 1KB - 2KB according to SW immediate usage
+        [3001 :10_000]   :/ 1  // temp set to 10KB as max length, spec max size is 2^64 bits
     };
   }
   constraint wr_mask_c {

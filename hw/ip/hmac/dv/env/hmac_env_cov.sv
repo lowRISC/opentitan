@@ -9,6 +9,8 @@ class hmac_env_cov extends cip_base_env_cov #(.CFG_T(hmac_env_cfg));
     hmac_en:     coverpoint cfg[HmacEn];
     endian_swap: coverpoint cfg[EndianSwap];
     digest_swap: coverpoint cfg[DigestSwap];
+    digest_size: coverpoint cfg[DigestSize];
+    key_length : coverpoint cfg[KeyLength];
     cfg_cross:   cross hmac_en, endian_swap, digest_swap;
   endgroup : cfg_cg
 

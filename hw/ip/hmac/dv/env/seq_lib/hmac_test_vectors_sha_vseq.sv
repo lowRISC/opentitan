@@ -8,15 +8,40 @@ class hmac_test_vectors_sha_vseq extends hmac_base_vseq;
   `uvm_object_utils(hmac_test_vectors_sha_vseq)
   `uvm_object_new
 
-  rand bit [31:0] key[]; // random because sha256 will not calculate key
-  bit hmac_en; // sha256 only
+  rand bit [31:0] key[]; // random because SHA-2 will not use the key
+  rand bit [4:0]  key_length;
+  rand bit [3:0]  digest_size;
+
+  bit hmac_en;           // SHA-2 only
+
   string vector_list[] = test_vectors_pkg::sha_file_list;
 
-  // SHA256 key will always be 256 bits.
+  // HMAC key size will always be 1024 bits.
+  // key_length determines actual key size used in HW and scoreboard.
   constraint key_c {
-    key.size() == 8;
+    key.size() == NUM_KEYS;
   }
 
+  // key length only factors in for testing HMAC
+  // only testing 256-bit key now
+  // TODO: extend to test other key lengths
+  constraint key_digest_c {
+    key_length dist {
+      5'b0_0001 := 0,
+      5'b0_0010 := 10, // 256-bit key
+      5'b0_0100 := 0,
+      5'b0_1000 := 0,
+      5'b1_0000 := 0
+    };
+    // only testing SHA-2 256 now
+    // TODO: extend to test other digest sizes
+    digest_size dist {
+      4'b0010 := 10, // SHA-2 256
+      4'b0100 := 0, // SHA-2 384
+      4'b1000 := 0, // SHA-2 512
+      4'b0001 := 0  // SHA-2 None
+    };
+  }
   virtual task pre_start();
     do_hmac_init = 1'b0;
     super.pre_start();
@@ -38,13 +63,17 @@ class hmac_test_vectors_sha_vseq extends hmac_base_vseq;
 
       foreach (parsed_vectors[j]) begin
         bit [TL_DW-1:0] intr_state_val;
-        `uvm_info(`gfn, $sformatf("vector[%0d]: %0p", j, parsed_vectors[j]), UVM_HIGH)
-        // wr init: SHA256 only. HMAC, endian swap, digest swap all disabled
-        hmac_init(.hmac_en(hmac_en), .endian_swap(1'b1), .digest_swap(1'b0));
+        `uvm_info(`gfn, $sformatf("vector[%0d]: %0p", j, parsed_vectors[j]), UVM_LOW)
+        // wr init: SHA256 only. HMAC, endian swap, digest swap all disabled.
+        hmac_init(.hmac_en(hmac_en), .endian_swap(1'b1), .digest_swap(1'b0),
+                  .digest_size(digest_size), .key_length(key_length));
+
+        `uvm_info(`gfn, $sformatf("digest size=%4b, key length=%5b",
+                digest_size, key_length), UVM_LOW)
 
         `uvm_info(`gtn, $sformatf("%s, starting seq %0d, msg size = %0d",
                                   vector_list[i], j, parsed_vectors[j].msg_length_byte),
-                                  UVM_MEDIUM)
+                                  UVM_LOW)
 
         if ($urandom_range(0, 1) && !hmac_en) begin
           `DV_CHECK_RANDOMIZE_FATAL(this) // only key is randomized

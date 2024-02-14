@@ -14,16 +14,17 @@ package hmac_env_pkg;
   import cip_base_pkg::*;
   import test_vectors_pkg::*;
   import hmac_ral_pkg::*;
+  import prim_sha2_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
   // local parameters and types
-  parameter uint32 HMAC_MSG_FIFO_DEPTH       = 16;
+  parameter uint32 HMAC_MSG_FIFO_DEPTH       = 32;
   parameter uint32 HMAC_MSG_FIFO_DEPTH_BYTES = HMAC_MSG_FIFO_DEPTH * 4;
   parameter uint32 HMAC_MSG_FIFO_SIZE        = 2048;
-  parameter uint32 HMAC_MSG_FIFO_BASE        = 32'h800;
+  parameter uint32 HMAC_MSG_FIFO_BASE        = 32'h1000;
   parameter uint32 HMAC_MSG_FIFO_LAST_ADDR   = HMAC_MSG_FIFO_BASE + HMAC_MSG_FIFO_SIZE - 1;
   parameter uint32 HMAC_HASH_SIZE            = 64;
   // 48 cycles of hashing, 16 cycles to rd next 16 words, 1 cycle to update digest
@@ -33,8 +34,8 @@ package hmac_env_pkg;
   // 1 cycles to write a msg word to hmac_msg_fifo
   parameter uint32 HMAC_WR_WORD_CYCLE        = 1;
 
-  parameter uint NUM_DIGESTS = 8;
-  parameter uint NUM_KEYS = 8;
+  parameter uint NUM_DIGESTS = 16;
+  parameter uint NUM_KEYS = 32;
 
   // alerts
   parameter uint NUM_ALERTS = 1;
@@ -56,7 +57,9 @@ package hmac_env_pkg;
     HmacEn,
     ShaEn,
     EndianSwap,
-    DigestSwap
+    DigestSwap,
+    DigestSize,
+    KeyLength
   } hmac_cfg_e;
 
   typedef enum {
@@ -100,7 +103,53 @@ package hmac_env_pkg;
       "digest_5": return 5;
       "digest_6": return 6;
       "digest_7": return 7;
+      "digest_8": return 8;
+      "digest_9": return 9;
+      "digest_10": return 10;
+      "digest_11": return 11;
+      "digest_12": return 12;
+      "digest_13": return 13;
+      "digest_14": return 14;
+      "digest_15": return 15;
       default: `uvm_fatal("get_digest_index", $sformatf("invalid digest csr name: %0s", csr_name))
+    endcase
+  endfunction
+
+  function automatic int get_key_index(string csr_name);
+    case (csr_name)
+      "key_0": return 0;
+      "key_1": return 1;
+      "key_2": return 2;
+      "key_3": return 3;
+      "key_4": return 4;
+      "key_5": return 5;
+      "key_6": return 6;
+      "key_7": return 7;
+      "key_8": return 8;
+      "key_9": return 9;
+      "key_10": return 10;
+      "key_11": return 11;
+      "key_12": return 12;
+      "key_13": return 13;
+      "key_14": return 14;
+      "key_15": return 15;
+      "key_16": return 16;
+      "key_17": return 17;
+      "key_18": return 18;
+      "key_19": return 19;
+      "key_20": return 20;
+      "key_21": return 21;
+      "key_22": return 22;
+      "key_23": return 23;
+      "key_24": return 24;
+      "key_25": return 25;
+      "key_26": return 26;
+      "key_27": return 27;
+      "key_28": return 28;
+      "key_29": return 29;
+      "key_30": return 30;
+      "key_31": return 31;
+      default: `uvm_fatal("get_key_index", $sformatf("invalid key csr name: %0s", csr_name))
     endcase
   endfunction
 

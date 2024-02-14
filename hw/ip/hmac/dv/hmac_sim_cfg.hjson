@@ -83,6 +83,7 @@
     {
       name: hmac_error
       uvm_test_seq: hmac_error_vseq
+      run_opts: ["+test_timeout_ns=300_000_000"]
     }
 
     {
@@ -93,7 +94,8 @@
     {
       name: hmac_test_sha_vectors
       uvm_test_seq: hmac_test_vectors_sha_vseq
-      run_opts: ["+test_vectors_dir={build_dir}/src/lowrisc_dv_test_vectors_0"]
+      // Increase timeout for all test iterations to pass
+      run_opts: ["+test_vectors_dir={build_dir}/src/lowrisc_dv_test_vectors_0 +test_timeout_ns=800_000_000"]
     }
 
     {

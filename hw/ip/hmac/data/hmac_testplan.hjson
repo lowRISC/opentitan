@@ -108,6 +108,7 @@
     }
   ]
 
+  // TODO: probably need to extend cfg_cg to include digest_size and key_length or another cg
   covergroups: [
     {
       name: cfg_cg

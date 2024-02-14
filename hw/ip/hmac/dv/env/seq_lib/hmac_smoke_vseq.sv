@@ -14,10 +14,12 @@ class hmac_smoke_vseq extends hmac_base_vseq;
   rand bit               sha_en;
   rand bit               endian_swap;
   rand bit               digest_swap;
+  rand bit [3:0]         digest_size;
   rand bit               intr_fifo_empty_en;
   rand bit               intr_hmac_done_en;
   rand bit               intr_hmac_err_en;
   rand bit [31:0]        key[];
+  rand bit [4:0]         key_length;
   rand bit [7:0]         msg[];
   rand int               burst_wr_length;
   rand bit               do_hash_start_when_active;
@@ -26,7 +28,8 @@ class hmac_smoke_vseq extends hmac_base_vseq;
   rand bit               do_sha_hash;
   rand wipe_secret_req_e do_wipe_secret;
 
-  // HMAC key size will always be 256 bits.
+  // HMAC key size will always be 1024 bits.
+  // key_length determines actual key size used in HW and scoreboard.
   constraint key_c {
     key.size() == NUM_KEYS;
   }
@@ -39,6 +42,7 @@ class hmac_smoke_vseq extends hmac_base_vseq;
     wr_config_during_hash == 0;
   }
 
+  //msg[] is a streaming msg input so can be of any size and needs its size dist-constrained
   constraint msg_c {
     msg.size() dist {
         0       :/ 1,
@@ -49,6 +53,24 @@ class hmac_smoke_vseq extends hmac_base_vseq;
 
   constraint burst_wr_c {
     burst_wr_length inside {[1 : HMAC_MSG_FIFO_DEPTH]};
+  }
+
+  constraint key_digest_c {
+    key_length dist {
+      5'b0_0001 := 0,
+      5'b0_0010 := 10, // 256-bit key
+      5'b0_0100 := 0,
+      5'b0_1000 := 0,
+      5'b1_0000 := 0
+    };
+    // smoke passes for all digest sizes and key lengths but
+    // only testing 256 for rest of tests for M2 milestone
+    digest_size dist {
+      4'b0010 := 10, // SHA-2 256
+      4'b0100 := 0, // SHA-2 384
+      4'b1000 := 0, // SHA-2 512
+      4'b0001 := 0  // SHA-2 None //TODO: test unsupported config
+    };
   }
 
   constraint intr_enable_c {
@@ -80,21 +102,25 @@ class hmac_smoke_vseq extends hmac_base_vseq;
       bit [7:0] msg_q[$];
       `DV_CHECK_RANDOMIZE_FATAL(this)
       `uvm_info(`gfn, $sformatf("starting seq %0d/%0d, message size %0d, hmac=%0d, sha=%0d",
-                                i, num_trans, msg.size(), hmac_en, sha_en), UVM_LOW)
+                i, num_trans, msg.size(), hmac_en, sha_en), UVM_LOW)
+      `uvm_info(`gfn, $sformatf("digest size=%4b, key length=%5b",
+                digest_size, key_length), UVM_LOW)
       `uvm_info(`gfn, $sformatf("intr_fifo_empty/hmac_done/hmac_err_en=%b, endian/digest_swap=%b",
-                                {intr_fifo_empty_en, intr_hmac_done_en, intr_hmac_err_en},
-                                {endian_swap, digest_swap}), UVM_HIGH)
-      `uvm_info(`gfn, $sformatf("wipe secret condition is: %0s", do_wipe_secret.name()), UVM_HIGH)
+                {intr_fifo_empty_en, intr_hmac_done_en, intr_hmac_err_en},
+                {endian_swap, digest_swap}), UVM_LOW)
+      `uvm_info(`gfn, $sformatf("wipe secret condition is: %0s", do_wipe_secret.name()), UVM_LOW)
 
       // initialize hmac configs
       hmac_init(.sha_en(sha_en), .hmac_en(hmac_en), .endian_swap(endian_swap),
-                .digest_swap(digest_swap), .intr_fifo_empty_en(intr_fifo_empty_en),
+                .digest_swap(digest_swap), .digest_size(digest_size), .key_length(key_length),
+                .intr_fifo_empty_en(intr_fifo_empty_en),
                 .intr_hmac_done_en(intr_hmac_done_en), .intr_hmac_err_en(intr_hmac_err_en));
 
       // can randomly read previous digest
       if (i != 1 && $urandom_range(0, 1)) rd_digest();
 
       if (do_wipe_secret == WipeSecretBeforeKey) begin
+        `uvm_info(`gfn, $sformatf("wiping before key"), UVM_LOW)
         wipe_secrets();
         // Check if digest data are corrupted by wiping secrets.
         rd_digest();
@@ -107,6 +133,8 @@ class hmac_smoke_vseq extends hmac_base_vseq;
       if (i != 1 && $urandom_range(0, 1)) rd_digest();
 
       if (do_wipe_secret == WipeSecretBeforeStart) begin
+      `uvm_info(`gfn, $sformatf("wiping before start"), UVM_LOW)
+
         wipe_secrets();
         // Here the wipe secret will only corrupt secret keys and current digests.
         // If HMAC is not enabled, check if digest is corrupted.
@@ -126,6 +154,7 @@ class hmac_smoke_vseq extends hmac_base_vseq;
          end
           begin
             if (do_wipe_secret == WipeSecretBeforeProcess) begin
+              `uvm_info(`gfn, $sformatf("wiping before process"), UVM_LOW)
               cfg.clk_rst_vif.wait_clks($urandom_range(0, msg.size() * 10));
               wipe_secrets();
             end
@@ -175,6 +204,8 @@ class hmac_smoke_vseq extends hmac_base_vseq;
             end
             begin
               if (do_wipe_secret == WipeSecretBeforeDone) begin
+                        `uvm_info(`gfn, $sformatf("wiping before done"), UVM_LOW)
+
                 cfg.clk_rst_vif.wait_clks($urandom_range(0, 100));
                 wipe_secrets();
               end
@@ -190,6 +221,7 @@ class hmac_smoke_vseq extends hmac_base_vseq;
       if ($urandom_range(0, 1)) rd_msg_length();
 
       // read digest from DUT
+      `uvm_info(`gfn, $sformatf("will read digest now"), UVM_LOW)
       rd_digest();
     end
   endtask : body
