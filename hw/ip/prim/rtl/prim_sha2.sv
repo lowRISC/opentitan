@@ -74,7 +74,7 @@ module prim_sha2 import prim_sha2_pkg::*;
   assign hash_go = hash_start_i | hash_continue_i;
 
   assign digest_mode_flag_d = hash_go     ? digest_mode_i   :    // latch in configured mode
-                              hash_done_o ? None            :    // clear
+                              hash_done_o ? SHA2_None       :    // clear
                                             digest_mode_flag_q;  // keep
 
   if (MultimodeEn) begin : gen_multimode
@@ -141,10 +141,10 @@ module prim_sha2 import prim_sha2_pkg::*;
 
     // compute digest
     always_comb begin : compute_digest_multimode
-      digest_d = digest_q;
+      digest_d          = digest_q;
       if (wipe_secret_i) begin
         for (int i = 0 ; i < 8 ; i++) begin
-          digest_d[i] = digest_q[i] ^ wipe_v_i;
+          digest_d[i]       = digest_q[i] ^ wipe_v_i;
         end
       end else if (hash_start_i) begin
         for (int i = 0 ; i < 8 ; i++) begin
@@ -165,6 +165,7 @@ module prim_sha2 import prim_sha2_pkg::*;
       end else if (update_digest) begin
         for (int i = 0 ; i < 8 ; i++) begin
           digest_d[i] = digest_q[i] + hash_q[i];
+          if (digest_mode_flag_q == SHA2_256) digest_d[i][63:32] = 32'b0;
         end
         if (hash_done_o == 1'b1 && digest_mode_flag_q == SHA2_384) begin
           // final digest truncation for SHA-2 384
@@ -386,7 +387,7 @@ module prim_sha2 import prim_sha2_pkg::*;
   end
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) digest_mode_flag_q <= None;
+    if (!rst_ni) digest_mode_flag_q <= SHA2_None;
     else         digest_mode_flag_q <= digest_mode_flag_d;
   end
 
@@ -482,7 +483,7 @@ module prim_sha2 import prim_sha2_pkg::*;
     .hash_continue_i,
     .digest_mode_i,
     .hash_process_i,
-    .hash_done_o,
+    .hash_done_i (hash_done_o),
     .message_length_i,
     .msg_feed_complete_o (msg_feed_complete)
   );

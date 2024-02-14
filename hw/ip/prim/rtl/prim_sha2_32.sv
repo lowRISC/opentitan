@@ -18,7 +18,7 @@ module prim_sha2_32 import prim_sha2_pkg::*;
                                           // ready to write into the SHA-2 padding buffer
   input  sha_fifo32_t fifo_rdata_i,
   output logic        fifo_rready_o,      // indicates that the wrapper word accumulation buffer is
-                                        // ready to receive words to feed into the SHA-2 engine
+                                          // ready to receive words to feed into the SHA-2 engine
   // Control signals
   input                     sha_en_i, // if disabled, it clears internal content
   input                     hash_start_i,
@@ -78,7 +78,7 @@ module prim_sha2_32 import prim_sha2_pkg::*;
             word_buffer_d.mask[7:4]   = fifo_rdata_i.mask;
             word_part_inc             = 1'b1;
             fifo_rready_o             = 1'b1;
-            if (hash_process_i || process_flag_q) begin // ready to push out word (partial)
+            /* if (hash_process_i || process_flag_q) begin // ready to push out word (partial)
               word_valid      = 1'b1;
               // add least significant padding
               full_word.data  =  {fifo_rdata_i.data, 32'b0};
@@ -91,7 +91,7 @@ module prim_sha2_32 import prim_sha2_pkg::*;
               end else begin
                 fifo_rready_o = 1'b0;
               end
-            end
+            end */
           end else begin   // SHA2_256 so pad and push out the word
             word_valid = 1'b1;
             // store the word with most significant padding
@@ -188,7 +188,7 @@ module prim_sha2_32 import prim_sha2_pkg::*;
 
       // assign digest_mode_flag_d
       if (hash_go)          digest_mode_flag_d = digest_mode_i;      // latch in configured mode
-      else if (hash_done_o) digest_mode_flag_d = None;               // clear
+      else if (hash_done_o) digest_mode_flag_d = SHA2_None;               // clear
       else                  digest_mode_flag_d = digest_mode_flag_q; // keep
 
       // assign process_flag
@@ -237,7 +237,7 @@ module prim_sha2_32 import prim_sha2_pkg::*;
     end
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
-      if (!rst_ni) digest_mode_flag_q <= None;
+      if (!rst_ni) digest_mode_flag_q <= SHA2_None;
       else         digest_mode_flag_q <= digest_mode_flag_d;
     end
   // logic and prim_sha2 instantiation for MultimodeEn = 0
@@ -261,7 +261,7 @@ module prim_sha2_32 import prim_sha2_pkg::*;
       .sha_en_i           (sha_en_i),
       .hash_start_i       (hash_start_i),
       .hash_continue_i    (hash_continue_i),
-      .digest_mode_i      (None),           // unused input port tied to ground
+      .digest_mode_i      (SHA2_None),      // unused input port tied to ground
       .hash_process_i     (hash_process_i), // feed input port directly to SHA-2 engine
       .hash_done_o        (hash_done_o),
       .message_length_i   ({{64'b0}, message_length_i[63:0]}),

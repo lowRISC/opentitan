@@ -26,7 +26,7 @@ module prim_sha2_pad import prim_sha2_pkg::*;
   input                 hash_continue_i,
   input digest_mode_e   digest_mode_i,
   input                 hash_process_i,
-  input                 hash_done_o,
+  input                 hash_done_i,
   input        [127:0]  message_length_i,   // # of bytes in bits (8 bits granularity)
   output logic          msg_feed_complete_o // indicates all message is feeded
 );
@@ -60,9 +60,9 @@ module prim_sha2_pad import prim_sha2_pkg::*;
                                                                         (tx_count[9:0] == 10'h340) :
                                                                         '0;
 
-  assign hash_process_flag_d = (~sha_en_i || hash_go || hash_done_o) ? 1'b0 :
+  assign hash_process_flag_d = (~sha_en_i || hash_go || hash_done_i) ? 1'b0 :
                                hash_process_i                        ? 1'b1 :
-                                                                          hash_process_flag_q;
+                                                                       hash_process_flag_q;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni)  hash_process_flag_q <= 1'b0;
@@ -342,11 +342,11 @@ module prim_sha2_pad import prim_sha2_pkg::*;
   end
 
   assign digest_mode_flag_d = hash_start_i ? digest_mode_i  :    // latch in configured mode
-                              hash_done_o  ? None           :    // clear
+                              hash_done_i  ? SHA2_None      :    // clear
                                              digest_mode_flag_q; // keep
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni)  digest_mode_flag_q <= None;
+    if (!rst_ni)  digest_mode_flag_q <= SHA2_None;
     else          digest_mode_flag_q <= digest_mode_flag_d;
   end
 
