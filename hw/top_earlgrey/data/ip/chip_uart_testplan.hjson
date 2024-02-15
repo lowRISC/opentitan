@@ -51,6 +51,7 @@
       si_stage: SV3
       features: ["UART.BAUD_RATE_CONTROL"]
       tests: ["chip_sw_uart_rand_baudrate"]
+      bazel: ["//sw/device/tests:uart_baud_rate_test"]
     }
     {
       name: chip_sw_uart_tx_rx_alt_clk_freq
