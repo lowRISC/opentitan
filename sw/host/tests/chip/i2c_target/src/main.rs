@@ -38,13 +38,12 @@ proposition that all men are created equal."#;
 
 fn test_set_target_address(_opts: &Opts, transport: &TransportWrapper, instance: u8) -> Result<()> {
     let uart = transport.uart("console")?;
-    //let i2c = transport.i2c(&opts.i2c)?;
     let address = I2cTargetAddress {
         instance,
         // Respond to address 0x33.
         id0: 0x33,
         mask0: 0x7f,
-        // Respond to addressess 0x70-0x73.
+        // Respond to addresses 0x70-0x73.
         id1: 0x70,
         mask1: 0x7c,
     };
