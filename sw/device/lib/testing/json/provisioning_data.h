@@ -43,6 +43,7 @@ UJSON_SERDE_STRUCT(ManufRmaTokenPersoDataIn, \
 // clang-format off
 #define STRUCT_MANUF_CERT_PERSO_DATA_IN(field, string) \
     field(rom_ext_measurement, uint32_t, 8) \
+    field(rom_ext_security_version, uint32_t) \
     field(owner_manifest_measurement, uint32_t, 8) \
     field(owner_measurement, uint32_t, 8) \
     field(auth_key_key_id, uint8_t, 20)
@@ -100,7 +101,8 @@ UJSON_SERDE_STRUCT(ManufRmaTokenPersoDataOut, \
 #define STRUCT_MANUF_CERT_PERSO_DATA_OUT(field, string) \
     field(uds_certificate, uint8_t, 596) \
     field(uds_certificate_size, size_t) \
-    field(cdi_0_certificate, ecc_p256_public_key_t) \
+    field(cdi_0_certificate, uint8_t, 634) \
+    field(cdi_0_certificate_size, size_t) \
     field(cdi_1_certificate, ecc_p256_public_key_t)
 UJSON_SERDE_STRUCT(ManufCertPersoDataOut, \
                    manuf_cert_perso_data_out_t, \
