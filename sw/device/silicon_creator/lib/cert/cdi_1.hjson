@@ -29,7 +29,7 @@
             size: 20,
         },
         // Hash of the owner stage firmware (SHA256).
-        owner_firmware_hash: {
+        owner_hash: {
             type: "byte-array",
             size: 32,
         },
@@ -73,7 +73,7 @@
         svn: { var: "owner_security_version" },
         layer: 2,
         fw_ids: [
-            { hash_algorithm: "sha256", digest: { var: "owner_firmware_hash" } },
+            { hash_algorithm: "sha256", digest: { var: "owner_hash" } },
         ],
         flags: {
             not_configured: false,
