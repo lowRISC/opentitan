@@ -241,12 +241,12 @@ bool test_main(void) {
                        &num_matches_imem, &num_intg_errors_imem);
   CHECK(num_intg_errors_imem >= kNumIntgErrorsThreshold,
         "Expecting at least %i IMEM integrity errors, got %i",
-        kNumIntgErrorsThreshold, num_matches_imem);
+        kNumIntgErrorsThreshold, num_intg_errors_imem);
   otbn_check_mem_words(&otbn, kNumAddrs, dmem_offsets, dif_otbn_dmem_read,
                        &num_matches_dmem, &num_intg_errors_dmem);
   CHECK(num_intg_errors_dmem >= kNumIntgErrorsThreshold,
         "Expecting at least %i DMEM integrity errors, got %i",
-        kNumIntgErrorsThreshold, num_matches_dmem);
+        kNumIntgErrorsThreshold, num_intg_errors_dmem);
 
   return true;
 }
