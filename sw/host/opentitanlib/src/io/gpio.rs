@@ -230,7 +230,7 @@ pub enum BitbangEntry<'rd, 'wr> {
     /// offset by one sample.
     Both(&'wr [u8], &'rd mut [u8]),
     /// Represents a delay of the given number of clock ticks in which the output levels are held
-    /// as indicated by the last byte of the preceeding `Write`/`Both` entry.
+    /// as indicated by the last byte of the preceding `Write`/`Both` entry.
     ///
     /// A delay of zero is invalid.  A delay of one tick is equivalent to not specifying any
     /// `Delay` between two `Write` blocks, which is also equivalent to concatenating the two into
@@ -239,7 +239,7 @@ pub enum BitbangEntry<'rd, 'wr> {
 }
 
 /// A trait implemented by transports which support synchronous bit-banging on GPIO pins, similar
-/// to FTDI devices.  This trait allows generation of arbitraty waveforms on a set of pins, and
+/// to FTDI devices.  This trait allows generation of arbitrary waveforms on a set of pins, and
 /// optionally getting back samples from same or other pins, taken at precise times.
 pub trait GpioBitbanging {
     /// Apply the given sequence of values to the given set of GPIO pins, by each tick of a clock
