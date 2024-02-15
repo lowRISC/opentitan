@@ -46,6 +46,7 @@ UJSON_SERDE_STRUCT(ManufRmaTokenPersoDataIn, \
     field(rom_ext_security_version, uint32_t) \
     field(owner_manifest_measurement, uint32_t, 8) \
     field(owner_measurement, uint32_t, 8) \
+    field(owner_security_version, uint32_t) \
     field(auth_key_key_id, uint8_t, 20)
 UJSON_SERDE_STRUCT(ManufCertPersoDataIn, \
                    manuf_cert_perso_data_in_t, \
@@ -92,10 +93,7 @@ UJSON_SERDE_STRUCT(ManufRmaTokenPersoDataOut, \
 // clang-format on
 
 /**
- * Data exported during device (attestation) certificate personalization.
- *
- * TODO(#19455): replace the certificate fields with actual X.509 certificates
- * instead of just the public keys.
+ * Certificates exported during device personalization.
  */
 // clang-format off
 #define STRUCT_MANUF_CERT_PERSO_DATA_OUT(field, string) \
@@ -103,7 +101,8 @@ UJSON_SERDE_STRUCT(ManufRmaTokenPersoDataOut, \
     field(uds_certificate_size, size_t) \
     field(cdi_0_certificate, uint8_t, 634) \
     field(cdi_0_certificate_size, size_t) \
-    field(cdi_1_certificate, ecc_p256_public_key_t)
+    field(cdi_1_certificate, uint8_t, 580) \
+    field(cdi_1_certificate_size, size_t)
 UJSON_SERDE_STRUCT(ManufCertPersoDataOut, \
                    manuf_cert_perso_data_out_t, \
                    STRUCT_MANUF_CERT_PERSO_DATA_OUT);
