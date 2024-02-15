@@ -405,15 +405,16 @@ static void sha3_serial_absorb(const uint8_t *msg, size_t msg_len) {
   // configured to start operation 40 cycles after receiving the START and PROC
   // commands. This allows Ibex to go to sleep in order to not disturb the
   // capture.
+  sca_set_trigger_high();
   sca_call_and_sleep(kmac_msg_proc, kIbexSha3SleepCycles);
+  sca_set_trigger_low();
 }
 
 /**
  * Simple serial 'p' (absorb) command handler.
  *
  * Absorbs the given message without a customization string,
- * and sends the digest over UART. This function also handles the trigger
- * signal.
+ * and sends the digest over UART.
  *
  * @param msg Message.
  * @param msg_len Message length.
@@ -421,10 +422,8 @@ static void sha3_serial_absorb(const uint8_t *msg, size_t msg_len) {
 static void sha3_serial_single_absorb(const uint8_t *msg, size_t msg_len) {
   SS_CHECK(msg_len == kMessageLength);
 
-  // Ungate the capture trigger signal and then start the operation.
-  sca_set_trigger_high();
+  // Start the operation.
   sha3_serial_absorb(msg, msg_len);
-  sca_set_trigger_low();
 
   // Check KMAC has finsihed processing the message.
   kmac_msg_done();
@@ -470,9 +469,7 @@ static void sha3_serial_batch(const uint8_t *data, size_t data_len) {
   for (uint32_t i = 0; i < num_hashes; ++i) {
     kmac_reset();
 
-    sca_set_trigger_high();
     sha3_serial_absorb(batch_messages[i], kMessageLength);
-    sca_set_trigger_low();
 
     kmac_msg_done();
     SS_CHECK_DIF_OK(sha3_get_digest(out, kDigestLength));
