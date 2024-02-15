@@ -12,6 +12,7 @@
 #include "sw/device/silicon_creator/lib/attestation.h"
 #include "sw/device/silicon_creator/lib/attestation_key_diversifiers.h"
 #include "sw/device/silicon_creator/lib/cert/cdi_0.h"  // Generated.
+#include "sw/device/silicon_creator/lib/cert/cdi_1.h"  // Generated.
 #include "sw/device/silicon_creator/lib/cert/uds.h"    // Generated.
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
@@ -30,6 +31,11 @@ static uint8_t cdi_0_tbs_buffer[kCdi0MaxTbsSizeBytes];
 static cdi_0_sig_values_t cdi_0_cert_params = {
     .tbs = cdi_0_tbs_buffer,
     .tbs_size = kCdi0MaxTbsSizeBytes,
+};
+static uint8_t cdi_1_tbs_buffer[kCdi1MaxTbsSizeBytes];
+static cdi_1_sig_values_t cdi_1_cert_params = {
+    .tbs = cdi_1_tbs_buffer,
+    .tbs_size = kCdi1MaxTbsSizeBytes,
 };
 
 static_assert(kAttestMeasurementSizeInBytes == 32,
@@ -156,6 +162,66 @@ status_t gen_cdi_0_keys_and_cert(manuf_cert_perso_data_in_t *perso_data_in,
   // Save the CDI_0 private key to OTBN DMEM so it can endorse the next stage.
   TRY(otbn_boot_attestation_key_save(kCdi0AttestationKeySeed,
                                      kCdi0KeymgrDiversifier));
+
+  return OK_STATUS();
+}
+
+status_t gen_cdi_1_keys_and_cert(manuf_cert_perso_data_in_t *perso_data_in,
+                                 hmac_digest_t *cdi_0_pubkey_id, uint8_t *cert,
+                                 size_t *cert_size) {
+  TRY(keymgr_state_check(kKeymgrStateOwnerIntermediateKey));
+
+  // Set attestation binding to OWNER measurement.
+  memcpy(attestation_binding_value.data, perso_data_in->owner_measurement,
+         kAttestMeasurementSizeInBytes);
+  // We set the sealing binding value to all zeros as it is unused in the
+  // current personalization flow. This may be changed in the future.
+  memset(sealing_binding_value.data, 0, kAttestMeasurementSizeInBytes);
+  keymgr_sw_binding_unlock_wait();
+  keymgr_sw_binding_set(&sealing_binding_value, &attestation_binding_value);
+
+  // Generate the CDI_1 key.
+  keymgr_advance_state();
+  TRY(keymgr_state_check(kKeymgrStateOwnerKey));
+  TRY(otbn_boot_attestation_keygen(kCdi1AttestationKeySeed,
+                                   kCdi1KeymgrDiversifier, &curr_pubkey));
+
+  // Generate the key ID.
+  hmac_digest_t cdi_1_pubkey_id;
+  hmac_sha256(&curr_pubkey, kAttestationPublicKeyCoordBytes * 2,
+              &cdi_1_pubkey_id);
+
+  // Generate the TBS certificate.
+  cdi_1_tbs_values_t cdi_1_cert_tbs_params = {
+      .owner_hash = (unsigned char *)perso_data_in->owner_measurement,
+      .owner_hash_size = kAttestMeasurementSizeInBytes,
+      .owner_security_version = perso_data_in->owner_security_version,
+      .owner_pub_key_id = (unsigned char *)cdi_1_pubkey_id.digest,
+      .owner_pub_key_id_size = kCertKeyIdSizeInBytes,
+      .owner_intermediate_pub_key_id = (unsigned char *)cdi_0_pubkey_id->digest,
+      .owner_intermediate_pub_key_id_size = kCertKeyIdSizeInBytes,
+      .owner_pub_key_ec_x = (unsigned char *)curr_pubkey.x,
+      .owner_pub_key_ec_x_size = kAttestationPublicKeyCoordBytes,
+      .owner_pub_key_ec_y = (unsigned char *)curr_pubkey.y,
+      .owner_pub_key_ec_y_size = kAttestationPublicKeyCoordBytes,
+  };
+  TRY(cdi_1_build_tbs(&cdi_1_cert_tbs_params, cdi_1_cert_params.tbs,
+                      &cdi_1_cert_params.tbs_size));
+
+  // Sign the TBS and generate the certificate.
+  hmac_digest_t tbs_digest;
+  hmac_sha256(cdi_1_cert_params.tbs, cdi_1_cert_params.tbs_size, &tbs_digest);
+  attestation_signature_t tbs_signature;
+  TRY(otbn_boot_attestation_endorse(&tbs_digest, &tbs_signature));
+  cdi_1_cert_params.cert_signature_r = (unsigned char *)tbs_signature.r;
+  cdi_1_cert_params.cert_signature_r_size = kAttestationSignatureBytes / 2;
+  cdi_1_cert_params.cert_signature_s = (unsigned char *)tbs_signature.s;
+  cdi_1_cert_params.cert_signature_s_size = kAttestationSignatureBytes / 2;
+  TRY(cdi_1_build_cert(&cdi_1_cert_params, cert, cert_size));
+
+  // Save the CDI_1 private key to OTBN DMEM so it can endorse the next stage.
+  TRY(otbn_boot_attestation_key_save(kCdi1AttestationKeySeed,
+                                     kCdi1KeymgrDiversifier));
 
   return OK_STATUS();
 }

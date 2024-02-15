@@ -235,7 +235,7 @@ pub fn run_ft_personalize(
     perso_data_in.send(&*uart)?;
 
     // Wait until device exports the attestation certificates.
-    let _ = UartConsole::wait_for(&*uart, r"Exporting attestation certificates ...", timeout)?;
+    let _ = UartConsole::wait_for(&*uart, r"Exporting certificates ...", timeout)?;
     let _ = ManufCertPersoDataOut::recv(&*uart, timeout, false)?;
     let _ = UartConsole::wait_for(&*uart, r"PASS.*\n", timeout)?;
 
