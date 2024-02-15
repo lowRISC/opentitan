@@ -44,11 +44,13 @@ class rv_dm_smoke_vseq extends rv_dm_base_vseq;
     `DV_CHECK_EQ(cfg.rv_dm_vif.cb.debug_req, data)
   endtask
 
-  // Verify that writing to ndmreset causes ndmreset output to be set.
+  // Check that the ndmreset field controls the ndmreset_req_o output
+  //
+  // This is analogous to check_haltreq. Here, we expect the ndmreset field in the dmcontrol
+  // register to control the ndmreset_req_o output signal.
   task check_ndmreset();
     uvm_reg_data_t data = $urandom_range(0, 1);
     csr_wr(.ptr(jtag_dmi_ral.dmcontrol.ndmreset), .value(data));
-    cfg.clk_rst_vif.wait_clks($urandom_range(0, 1000));
     `DV_CHECK_EQ(cfg.rv_dm_vif.cb.ndmreset_req, data)
   endtask
 
