@@ -41,12 +41,11 @@
       bazel: ["//sw/device/tests:uart_tx_rx_test"]
     }
     {
-      name: chip_sw_uart_rand_baudrate
+      name: chip_sw_uart_baud_rate
       desc: '''Verify UART transmission of data at various speeds.
 
-            Randomly pick one of the UART instances and configure it to run with any of these baud
-            rates - 9600bps, 115200bps, 230400bps, 128Kbps, 256Kbps, 1Mbps, 1.5Mbps.
-
+            Test data transfer in both directions for each UART instance configured for each of
+            these baud rates: 9600Bd, 115200Bd, 230400Bd, 128kBd, 256kBd, 1MBd, 1.5MBd.
             '''
       stage: V1
       si_stage: SV3
