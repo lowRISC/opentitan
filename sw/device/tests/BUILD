@@ -4750,7 +4750,6 @@ opentitan_test(
         "i2c_target_test.c",
     ],
     cw310 = new_cw310_params(
-        # otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_prod_manuf_personalized",
         test_cmd = """
             --bootstrap="{firmware}"
         """,
