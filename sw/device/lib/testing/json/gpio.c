@@ -39,6 +39,20 @@ status_t gpio_set(ujson_t *uj, const dif_gpio_t *gpio) {
       TRY(dif_gpio_input_noise_filter_set_enabled(
           gpio, (dif_gpio_mask_t)op.pin_mask, (dif_gpio_state_t)op.state));
       break;
+    case kGpioActionIrqRestoreAll:
+      TRY(dif_gpio_irq_restore_all(gpio, (dif_gpio_mask_t *)&op.state));
+      break;
+    case kGpioActionIrqDisableAll:
+      TRY(dif_gpio_irq_disable_all(gpio, (dif_gpio_mask_t *)&op.state));
+      break;
+    case kGpioActionIrqSetTriggerRisingEdge:
+      TRY(dif_gpio_irq_set_trigger(gpio, (dif_gpio_mask_t)op.state,
+                                   kDifGpioIrqTriggerEdgeRising));
+      break;
+    case kGpioActionIrqSetTriggerFallingEdge:
+      TRY(dif_gpio_irq_set_trigger(gpio, (dif_gpio_mask_t)op.state,
+                                   kDifGpioIrqTriggerEdgeFalling));
+      break;
     default:
       return INVALID_ARGUMENT();
   }

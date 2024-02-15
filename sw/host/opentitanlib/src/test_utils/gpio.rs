@@ -79,6 +79,46 @@ impl GpioSet {
         };
         payload.execute(uart)
     }
+    pub fn irq_restore_all(uart: &dyn Uart, state: u32) -> Result<()> {
+        let payload = GpioSet {
+            action: GpioAction::IrqRestoreAll,
+            pin_mask: 0,
+            state,
+        };
+        payload.execute(uart)
+    }
+    pub fn irq_disable_all(uart: &dyn Uart, state: u32) -> Result<()> {
+        let payload = GpioSet {
+            action: GpioAction::IrqDisableAll,
+            pin_mask: 0,
+            state,
+        };
+        payload.execute(uart)
+    }
+    pub fn irq_set_trigger(uart: &dyn Uart, state: u32, trigger: String) -> Result<()> {
+        match trigger.as_str() {
+            "rising" => {
+                let payload = GpioSet {
+                    action: GpioAction::IrqSetTriggerRisingEdge,
+                    pin_mask: 0,
+                    state,
+                };
+                payload.execute(uart)
+            }
+            "falling" => {
+                let payload = GpioSet {
+                    action: GpioAction::IrqSetTriggerFallingEdge,
+                    pin_mask: 0,
+                    state,
+                };
+                payload.execute(uart)
+            }
+            _ => {
+                log::error!("unsupport trigger: {:?}", trigger);
+                Ok(())
+            }
+        }
+    }
 }
 
 impl GpioGet {
