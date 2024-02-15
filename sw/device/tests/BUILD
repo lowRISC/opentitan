@@ -1797,6 +1797,42 @@ opentitan_test(
 )
 
 opentitan_test(
+    name = "gpio_intr_test",
+    srcs = ["gpio_intr_test.c"],
+    cw310 = new_cw310_params(
+        test_cmd = """
+            --bitstream={bitstream}
+            --bootstrap="{firmware}"
+        """,
+        test_harness = "//sw/host/tests/chip/gpio_intr",
+    ),
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_sival": None,
+        "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+        "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon_owner",
+    },
+    silicon_owner = silicon_params(
+        test_cmd = """
+            --bootstrap={firmware}
+        """,
+        test_harness = "//sw/host/tests/chip/gpio_intr",
+    ),
+    deps = [
+        "//sw/device/lib/dif:gpio",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/dif:rv_plic",
+        "//sw/device/lib/dif:uart",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:irq",
+        "//sw/device/lib/testing:rv_plic_testutils",
+        "//sw/device/lib/testing/json:command",
+        "//sw/device/lib/testing/json:gpio",
+        "//sw/device/lib/testing/json:pinmux_config",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
     name = "hmac_enc_test",
     srcs = ["hmac_enc_test.c"],
     exec_env = dicts.add(
