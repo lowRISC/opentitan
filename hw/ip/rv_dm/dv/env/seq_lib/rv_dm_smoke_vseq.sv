@@ -15,7 +15,11 @@ class rv_dm_smoke_vseq extends rv_dm_base_vseq;
     scanmode == prim_mubi_pkg::MuBi4False;
   }
 
-  // Read the JTAG IDCODE register and verify that it matches the expected value.
+  // Check that the IDCODE register works as expected.
+  //
+  // Write an arbitrary value to the register, which should be ignored because this is a read-only
+  // register. Then read the value back. We expect to see RV_DM_JTAG_IDCODE, which the testbench has
+  // passed to the DUT as the IdcodeValue parameter.
   task check_idcode();
     uvm_reg_data_t data;
     `DV_CHECK_STD_RANDOMIZE_FATAL(data)
