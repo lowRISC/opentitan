@@ -36,7 +36,11 @@ class rv_dm_smoke_vseq extends rv_dm_base_vseq;
   task check_haltreq();
     uvm_reg_data_t data = $urandom_range(0, 1);
     csr_wr(.ptr(jtag_dmi_ral.dmcontrol.haltreq), .value(data));
-    cfg.clk_rst_vif.wait_clks($urandom_range(0, 1000));
+
+    // Check immediately that the write has been reflected in the debug_req_o output. There's no
+    // need to wait because the write goes through a jtag_dmi_agent, which follows the write
+    // operation with a read operation (polling) to check that it was applied.
+
     `DV_CHECK_EQ(cfg.rv_dm_vif.cb.debug_req, data)
   endtask
 
