@@ -147,10 +147,14 @@
                      "-full64",
                      // No need of generating report when merging coverage.
                      "-noreport",
+                     // Parallel merge is slower than serial merge for most
+                     // small blocks, and the corresponding flags are commented
+                     // out. If this becomes problematic and you have a powerful
+                     // machine available, uncomment the three flags below.
                      // Merge results from tests in parallel.
-                     "-parallel",
-                     "-parallel_split 20",
-                     "-parallel_temproot {cov_merge_dir}",
+                     // "-parallel",
+                     // "-parallel_split 20",
+                     // "-parallel_temproot {cov_merge_dir}",
                      "+urg+lic+wait",
                      // Merge same assert instances found in different VDBs.
                      "-merge_across_libs",
