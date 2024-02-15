@@ -388,7 +388,8 @@ status_t handle_sha3_sca_disable_masking(ujson_t *uj) {
 }
 
 /**
- * Absorbs a message without a customization string.
+ * Absorbs a message without a customization string. Arms & disarms the trigger
+ * before and after the PROCESS command is issued.
  *
  * @param msg Message.
  * @param msg_len Message length.
@@ -416,11 +417,15 @@ sha3_sca_error_t sha3_serial_absorb(const uint8_t *msg, size_t msg_len) {
     // configured to start operation 320 cycles after receiving the START and
     // PROC commands. This allows Ibex to go to sleep in order to not disturb
     // the capture.
+    sca_set_trigger_high();
     sca_call_and_sleep(kmac_start_process_cmd, kIbexSha3SleepCycles);
+    sca_set_trigger_low();
   } else {
     // On the chip, issue a PROCESS command to start operation and put Ibex
     // into sleep.
+    sca_set_trigger_high();
     sca_call_and_sleep(kmac_process_cmd, kIbexLoadHashMessageSleepCycles);
+    sca_set_trigger_low();
   }
 
   return sha3ScaOk;
@@ -430,8 +435,7 @@ sha3_sca_error_t sha3_serial_absorb(const uint8_t *msg, size_t msg_len) {
  * Absorb command handler.
  *
  * Absorbs the given message without a customization string,
- * and sends the digest over UART. This function also handles the trigger
- * signal.
+ * and sends the digest over UART.
  *
  * The uJSON data contains:
  *  - msg: Message.
@@ -445,12 +449,10 @@ status_t handle_sha3_sca_single_absorb(ujson_t *uj) {
     return OUT_OF_RANGE();
   }
 
-  // Ungate the capture trigger signal and then start the operation.
-  sca_set_trigger_high();
+  // Start the operation.
   if (sha3_serial_absorb(uj_msg.msg, uj_msg.msg_length) != sha3ScaOk) {
     return ABORTED();
   }
-  sca_set_trigger_low();
 
   // Check KMAC has finished processing the message.
   kmac_msg_done();
@@ -532,12 +534,10 @@ status_t handle_sha3_sca_batch(ujson_t *uj) {
   for (uint32_t i = 0; i < num_hashes; ++i) {
     kmac_reset();
 
-    sca_set_trigger_high();
     if (sha3_serial_absorb(sha3_batch_messages[i], kMessageLength) !=
         sha3ScaOk) {
       return ABORTED();
     }
-    sca_set_trigger_low();
 
     kmac_msg_done();
     if (sha3_get_digest(out, kDigestLength) != kDifOk) {
