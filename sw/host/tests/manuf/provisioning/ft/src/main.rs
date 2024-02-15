@@ -51,7 +51,7 @@ pub struct ManufFtProvisioningDataInput {
     pub rom_ext_measurement: String,
 
     /// Security version the ROM_EXT image to be loaded onto the device.
-    #[arg(long)]
+    #[arg(long, default_value = "0")]
     pub rom_ext_security_version: u32,
 
     /// Measurement of the Ownership Manifest to be loaded onto the device.
@@ -61,6 +61,10 @@ pub struct ManufFtProvisioningDataInput {
     /// Measurement of the Owner image to be loaded onto the device.
     #[arg(long)]
     pub owner_measurement: String,
+
+    /// Security version the Owner image to be loaded onto the device.
+    #[arg(long, default_value = "0")]
+    pub owner_security_version: u32,
 }
 
 #[derive(Debug, Parser)]
@@ -115,6 +119,7 @@ fn main() -> Result<()> {
     )?;
     let owner_measurement =
         hex_string_to_u32_arrayvec::<8>(opts.provisioning_data.owner_measurement.as_str())?;
+    let owner_security_version = opts.provisioning_data.owner_security_version;
     let uds_auth_key_id =
         hex_string_to_u8_arrayvec::<20>(opts.provisioning_data.uds_auth_key_id.as_str())?;
     let _perso_data_in = ManufCertPersoDataIn {
@@ -122,6 +127,7 @@ fn main() -> Result<()> {
         rom_ext_security_version: rom_ext_security_version,
         owner_manifest_measurement: owner_manifest_measurement.clone(),
         owner_measurement: owner_measurement.clone(),
+        owner_security_version: owner_security_version,
         auth_key_key_id: uds_auth_key_id.clone(),
     };
 
