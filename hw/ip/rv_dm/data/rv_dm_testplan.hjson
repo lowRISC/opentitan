@@ -464,6 +464,22 @@
       tests: ["rv_dm_halt_resume_whereto"]
     }
     {
+      name: abstractcmd_status
+      desc: '''
+            Verify the functionality of abstract commands by reading memory interface abstract
+            command registers.
+
+            - Program jtag_dmi_ral.dmcontrol.haltreq to 1'b1.
+            - Acknowledge haltreq by setting tl_mem_ral.halted to 0.
+            - Send a valid abstract command (command type AccessRegister).
+            - check jtag_dmi_ral.abstractcs.busy is 1.
+            - Read tl_mem_ral.abstractcmd_* registers to verify that the abstract command is
+              landed on expected location.
+            '''
+      stage: V2
+      tests: ["rv_dm_abstractcmd_status"]
+    }
+    {
       name: stress_all
       desc: '''
             A 'bug hunt' test that stresses the DUT to its limits.
