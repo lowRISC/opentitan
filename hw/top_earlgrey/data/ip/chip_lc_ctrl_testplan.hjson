@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-  name: chip_hmac
+  name: chip_lc_ctrl
   testpoints: [
     // LC_CTRL integration tests
     {
