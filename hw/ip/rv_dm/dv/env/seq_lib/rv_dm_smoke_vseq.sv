@@ -28,7 +28,11 @@ class rv_dm_smoke_vseq extends rv_dm_base_vseq;
     `DV_CHECK_EQ(data, RV_DM_JTAG_IDCODE)
   endtask
 
-  // Verify that writing to haltreq causes debug_req output to be set.
+  // Check that writing to haltreq controls the debug_req_o output.
+  //
+  // The haltreq bit is supposed to tell the (only) hart to halt and allow debug. This is
+  // implemented in OpenTitan with a debug_req_o signal coming out of rv_dm. Check that it's wired
+  // up correctly.
   task check_haltreq();
     uvm_reg_data_t data = $urandom_range(0, 1);
     csr_wr(.ptr(jtag_dmi_ral.dmcontrol.haltreq), .value(data));
