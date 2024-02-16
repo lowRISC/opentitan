@@ -72,6 +72,21 @@ dif_result_t dif_mbx_is_busy(const dif_mbx_t *mbx, bool *is_busy) {
   return kDifOk;
 }
 
+dif_result_t dif_mbx_ipi_configuration_get(const dif_mbx_t *mbx,
+                                           uint32_t *doe_intr_addr,
+                                           uint32_t *doe_intr_data) {
+  if (mbx == NULL || doe_intr_addr == NULL || doe_intr_data == NULL) {
+    return kDifBadArg;
+  }
+
+  *doe_intr_addr =
+      mmio_region_read32(mbx->base_addr, MBX_DOE_INTR_MSG_ADDR_REG_OFFSET);
+  *doe_intr_data =
+      mmio_region_read32(mbx->base_addr, MBX_DOE_INTR_MSG_DATA_REG_OFFSET);
+
+  return kDifOk;
+}
+
 dif_result_t dif_mbx_process_request(const dif_mbx_t *mbx,
                                      dif_mbx_transaction_t *request) {
   if (mbx == NULL || request == NULL || request->data_dwords == NULL) {
