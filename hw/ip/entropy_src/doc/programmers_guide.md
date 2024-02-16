@@ -65,6 +65,12 @@ The `cs_aes_halt` interface that should halt CSRNG's AES while Entropy Source's 
 In this case, SHA3 activity is controlled by software.
 Thus, if power peaks are a concern, software must ensure that SHA3 is not active too frequently or not together with CSRNG's AES.
 
+If firmware does not want to use hardware conditioning for the inserted entropy bits, it has to do one of the two following points:
+1. Set the `FIPS_ENABLE` field in the [`CONF`](registers.md#conf) register to `kMultiBitBool4False`.
+In this case, the entropy is routed to the hardware endpoints.
+1. Set `ES_TYPE` and `ES_ROUTE` in [`ENTROPY_CONTROL`](registers.md#entropy_control) to `kMultiBitBool4True`.
+In this case, the unconditioned entropy is not routed to the hardware endpoints but instead to the  [`ENTROPY_DATA`](registers.md#entropy_data) register.
+
 ### Hardware Conditioning Bypass
 
 Firmware can enable bypassing of the hardware conditioning inside the ENTROPY_SRC block.
