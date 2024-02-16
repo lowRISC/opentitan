@@ -15,7 +15,7 @@ package(default_visibility = ["//visibility:public"])
 # ])
 
 rust_library(
-    name = "ecdsa",
+    name = "zeroize",
     srcs = glob(["**/*.rs"]),
     compile_data = glob(
         include = ["**"],
@@ -30,24 +30,14 @@ rust_library(
     ),
     crate_features = [
         "alloc",
-        "arithmetic",
-        "der",
-        "digest",
-        "hazmat",
-        "pem",
-        "pkcs8",
-        "rfc6979",
-        "signing",
-        "spki",
-        "std",
-        "verifying",
+        "default",
     ],
     crate_root = "src/lib.rs",
     edition = "2021",
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
-        "crate-name=ecdsa",
+        "crate-name=zeroize",
         "manual",
         "noclippy",
         "norustfmt",
@@ -86,13 +76,5 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-none": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.16.8",
-    deps = [
-        "@crate_index__der-0.7.8//:der",
-        "@crate_index__digest-0.10.7//:digest",
-        "@crate_index__elliptic-curve-0.13.5//:elliptic_curve",
-        "@crate_index__rfc6979-0.4.0//:rfc6979",
-        "@crate_index__signature-2.1.0//:signature",
-        "@crate_index__spki-0.7.2//:spki",
-    ],
+    version = "1.7.0",
 )
