@@ -49,15 +49,29 @@ _manifest_code_end = _text_end - _ottf_start_address;
  */
 _manifest_entry_point = _ottf_start - _ottf_start_address;
 
+PHDRS {
+  static_critical_segment PT_LOAD;
+  manifest_segment PT_LOAD;
+  data_segment PT_LOAD;
+  freertos_segment PT_LOAD;
+  scratch_segment PT_LOAD;
+}
+
 /**
  * NOTE: We have to align each section to word boundaries as our current
  * s19->slm conversion scripts are not able to handle non-word aligned sections.
  */
 SECTIONS {
+  /**
+   * Critical static data that is accessible by both the ROM and the ROM
+   * extension.
+   */
+  INCLUDE sw/device/silicon_creator/lib/base/static_critical.ld
+
   .manifest _ottf_start_address : {
     KEEP(*(.manifest))
     . = ALIGN(256);
-  } > ottf_flash
+  } > ottf_flash : manifest_segment
 
   /**
    * Ibex interrupt vector. See 'ottf_start.S' for more information.
@@ -137,12 +151,6 @@ SECTIONS {
   } > ottf_flash
 
   /**
-   * Critical static data that is accessible by both the ROM and the ROM
-   * extension.
-   */
-  INCLUDE sw/device/silicon_creator/lib/base/static_critical.ld
-
-  /**
    * Standard mutable data section, at the bottom of RAM. This will be
    * initialized from the .idata section at runtime by the CRT.
    */
@@ -194,7 +202,7 @@ SECTIONS {
      * Using `AT>` means we don't have to keep track of the next free part of
      * flash, as we do in our other linker scripts.
      */
-  } > ram_main AT> ottf_flash
+  } > ram_main AT> ottf_flash :data_segment
 
   /**
    * Standard BSS section. This will be zeroed at runtime by the CRT.
@@ -226,7 +234,7 @@ SECTIONS {
   .freertos.heap (NOLOAD): ALIGN(4) {
     _freertos_heap_start = .;
     *(.freertos.heap)
-  } > ram_main
+  } > ram_main :freertos_segment
 
   /**
    * Non-volatile scratch and counter areas for tests.
@@ -271,7 +279,7 @@ SECTIONS {
     KEEP(*(.non_volatile_counter_3))
     KEEP(*(.non_volatile_counter_3.*))
     . = ABSOLUTE(_non_volatile_counter_3_end);
-  } > ottf_flash
+  } > ottf_flash :scratch_segment
 
   .non_volatile_counter_2 _non_volatile_counter_2_start (NOLOAD) : ALIGN(2048) {
     KEEP(*(.non_volatile_counter_2))
