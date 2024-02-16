@@ -39,11 +39,11 @@ static CONFIG: Lazy<HashMap<&'static str, Config>> = Lazy::new(|| {
     collection! {
         "hyper310" => Config {
             // key0, key1, key2, pwrb_in, ac_present_in, lid_open, ec_rst, flash_wp
-            output_pins: vec!["IOR10", "IOR11", "IOR12", "IOR5", "IOR6", "IOR7", "IOR8", "IOR9"],
+            output_pins: vec!["IOR10", "IOR11", "IOR12", "IOR5", "IOR6", "IOR7", "SYSRST_CTRL_EC_RST_L", "SYSRST_CTRL_FLASH_WP_L"],
             open_drain: vec![false, false, false, false, false, false, true, true],
             input_pins: vec![],
             //  ec_rst, flash_wp
-            pullup_pins: vec!["IOR8", "IOR9"],
+            pullup_pins: vec!["SYSRST_CTRL_EC_RST_L", "SYSRST_CTRL_FLASH_WP_L"],
         },
     }
 });
