@@ -128,6 +128,12 @@ alias(
 )
 
 alias(
+    name = "ecdsa",
+    actual = "@crate_index__ecdsa-0.16.9//:ecdsa",
+    tags = ["manual"],
+)
+
+alias(
     name = "elf",
     actual = "@crate_index__elf-0.7.2//:elf",
     tags = ["manual"],
@@ -135,7 +141,7 @@ alias(
 
 alias(
     name = "elliptic-curve",
-    actual = "@crate_index__elliptic-curve-0.13.5//:elliptic_curve",
+    actual = "@crate_index__elliptic-curve-0.13.8//:elliptic_curve",
     tags = ["manual"],
 )
 
