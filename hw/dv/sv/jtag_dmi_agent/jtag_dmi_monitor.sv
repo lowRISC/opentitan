@@ -38,44 +38,51 @@ class jtag_dmi_monitor #(type ITEM_T = jtag_dmi_item) extends dv_base_monitor#(
 
   virtual protected task collect_trans();
     jtag_item jtag_item;
-    bit dmi_selected;
+
+    // This bit is set if the JTAG FSM currently has an instruction register equal to the DMI
+    // address.
+    bit dmi_selected = 1'b0;
 
     forever begin
-      bit busy;
+      bit is_ir_update, is_dr_update;
+
       jtag_item_fifo.get(jtag_item);
-      // jtag_item can either be an IR update or a DR update. Check packet for validity.
-      if ((jtag_item.ir_len > 0) ~^ (jtag_item.dr_len > 0)) begin
+
+      is_ir_update = jtag_item.ir_len > 0;
+      is_dr_update = jtag_item.dr_len > 0;
+
+      // A JTAG item can either be an IR update or a DR update. Check packet for validity.
+      if (is_ir_update ~^ is_dr_update) begin
         `uvm_error(`gfn, $sformatf("Bad packet: %0s. ir_len & dr_len are both zero, or non-zero.",
                                    jtag_item.sprint(uvm_default_line_printer)))
         continue;
       end
-      if (jtag_item.ir_len) begin
-        dmi_selected = is_dmi_selected(jtag_item);
-        if (!dmi_selected) non_dmi_jtag_dtm_analysis_port.write(jtag_item);
-        continue;
+
+      // If this is an IR update, update our dmi_selected flag to reflect the new IR.
+      if (is_ir_update) begin
+        dmi_selected = (jtag_item.ir == cfg.jtag_dtm_ral.dmi.get_address());
       end
+
+      // If we're not currently operating on the DMI register, pass the item to our non-DMI analysis
+      // port.
       if (!dmi_selected) begin
         non_dmi_jtag_dtm_analysis_port.write(jtag_item);
         continue;
       end
 
-      // Item has both, the new DMI request, as well as the response for the previous request.
-      // Capture the response first, then the request.
-      busy = capture_response(jtag_item);
+      // At this point, we know we're operating on the DMI register. Handle any DR update.
+      if (is_dr_update) begin
 
-      // A new DMI request is accepted only if the previous DMI transaction completed.
-      if (!busy) capture_request(jtag_item);
+        // Item has both the response for the previous request and a new DMI request. Capture the
+        // response first.
+        bit busy = capture_response(jtag_item);
+
+        // If the TAP was not busy, any previous DMI transaction has completed so the TAP will also
+        // have seen the request.
+        if (!busy) capture_request(jtag_item);
+      end
     end
   endtask
-
-  // Checks if the DMI IR is chosen.
-  virtual function bit is_dmi_selected(jtag_item item);
-    // A non-zero IR length indicates an IR update transacrtion.
-    if (!item.ir_len) return 0;
-    // If IR value matches DTM DMI address, return 1, else 0.
-    if (item.ir == cfg.jtag_dtm_ral.dmi.get_address()) return 1;
-    return 0;
-  endfunction
 
   // Capture a new DMI request, if the previous DMI transaction is not in progress.
   //
