@@ -40,11 +40,11 @@ static CONFIG: Lazy<HashMap<&'static str, Config>> = Lazy::new(|| {
         "hyper310" => Config {
             /* The order of those pins must match the order in the DV's set_pad
              * function, that is:  power button, key0, key1, key2, AC, EC, WP. */
-            output_pins: vec!["IOR5", "IOR10", "IOR11", "IOR12", "IOR6", "IOR8", "IOR9"],
+            output_pins: vec!["IOR5", "IOR10", "IOR11", "IOR12", "IOR6", "SYSRST_CTRL_EC_RST_L", "SYSRST_CTRL_FLASH_WP_L"],
             open_drain: vec![false, false, false, false, false, true, true],
             input_pins: vec![],
             //  ec_rst, flash_wp
-            pullup_pins: vec!["IOR8", "IOR9"],
+            pullup_pins: vec!["SYSRST_CTRL_EC_RST_L", "SYSRST_CTRL_FLASH_WP_L"],
         },
     }
 });

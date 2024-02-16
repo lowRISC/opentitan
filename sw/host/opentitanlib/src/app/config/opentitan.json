@@ -38,6 +38,14 @@
       "level": false,
       "pull_mode": "None",
       "alias_of": "IOC5"
+    },
+    {
+      "name": "SYSRST_CTRL_EC_RST_L",
+      "alias_of": "IOR8"
+    },
+    {
+      "name": "SYSRST_CTRL_FLASH_WP_L",
+      "alias_of": "IOR9"
     }
   ],
   "strappings": [
