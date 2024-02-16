@@ -5,6 +5,7 @@
 pub mod bootstrap;
 pub mod clear_bitstream;
 pub mod console;
+pub mod ecdsa;
 pub mod emulator;
 pub mod fpga;
 pub mod gpio;
