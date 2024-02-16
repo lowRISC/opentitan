@@ -75,6 +75,19 @@ dif_result_t dif_mbx_range_get(const dif_mbx_t *mbx,
                                dif_mbx_range_config_t *config);
 
 /**
+ * Reads the DOE interrupt configuration for inter-processor interrupts (IPI).
+ *
+ * @param mbx A DOE Mailbox handle.
+ * @param[out] doe_intr_addr Mailbox interrupt address.
+ * @param[out] doe_intr_data Mailbox interrupt value.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_mbx_ipi_configuration_get(const dif_mbx_t *mbx,
+                                           uint32_t *doe_intr_addr,
+                                           uint32_t *doe_intr_data);
+
+/**
  * Host reads the DoE Mailbox request from internal SRAM.
  *
  * @param mbx A DOE Mailbox handle.
