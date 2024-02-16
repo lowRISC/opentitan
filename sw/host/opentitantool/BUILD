@@ -13,6 +13,7 @@ rust_binary(
         "src/command/bootstrap.rs",
         "src/command/clear_bitstream.rs",
         "src/command/console.rs",
+        "src/command/ecdsa.rs",
         "src/command/emulator.rs",
         "src/command/fpga.rs",
         "src/command/gpio.rs",
