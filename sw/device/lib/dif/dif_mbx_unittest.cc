@@ -131,6 +131,32 @@ TEST_F(MemoryRangeTests, GetBadArg) {
   EXPECT_DIF_BADARG(dif_mbx_range_get(&mbx_, nullptr));
 }
 
+class IpiConfigurationTests : public MbxTestInitialized {};
+
+TEST_F(IpiConfigurationTests, GetSuccess) {
+  uint32_t doe_intr_addr, doe_intr_data;
+
+  EXPECT_READ32(MBX_DOE_INTR_MSG_ADDR_REG_OFFSET, 0x52001234);
+  EXPECT_READ32(MBX_DOE_INTR_MSG_DATA_REG_OFFSET, 0xFFABCDEF);
+
+  EXPECT_DIF_OK(
+      dif_mbx_ipi_configuration_get(&mbx_, &doe_intr_addr, &doe_intr_data));
+
+  EXPECT_EQ(doe_intr_addr, 0x52001234);
+  EXPECT_EQ(doe_intr_data, 0xFFABCDEF);
+}
+
+TEST_F(IpiConfigurationTests, GetBadArg) {
+  uint32_t doe_intr_addr, doe_intr_data;
+
+  EXPECT_DIF_BADARG(
+      dif_mbx_ipi_configuration_get(nullptr, &doe_intr_addr, &doe_intr_data));
+  EXPECT_DIF_BADARG(
+      dif_mbx_ipi_configuration_get(&mbx_, nullptr, &doe_intr_data));
+  EXPECT_DIF_BADARG(
+      dif_mbx_ipi_configuration_get(&mbx_, &doe_intr_addr, nullptr));
+}
+
 typedef struct status_reg {
   uint32_t reg;
   bool is_busy;
