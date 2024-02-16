@@ -33,6 +33,8 @@ enum RootCommandHierarchy {
     #[command(subcommand)]
     Gpio(command::gpio::GpioCommand),
     #[command(subcommand)]
+    Ecdsa(command::ecdsa::Ecdsa),
+    #[command(subcommand)]
     Emulator(command::emulator::EmuCommand),
 
     #[command(subcommand)]
