@@ -8,6 +8,7 @@
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
+#include "sw/device/lib/crypto/drivers/kmac.h"
 #include "sw/device/lib/crypto/impl/sha2/sha256.h"
 #include "sw/device/lib/crypto/impl/sha2/sha512.h"
 #include "sw/device/lib/crypto/include/hash.h"
@@ -30,6 +31,27 @@ static const uint8_t kSha384DigestIdentifier[] = {
 };
 static const uint8_t kSha512DigestIdentifier[] = {
     0x40, 0x04, 0x00, 0x05, 0x03, 0x02, 0x04, 0x03, 0x65, 0x01,
+    0x48, 0x86, 0x60, 0x09, 0x06, 0x0d, 0x30, 0x51, 0x30,
+};
+/*
+ * SHA-3 digest identifiers adapted from the SHA-2 identifers based on the
+ * algorithm identifiers on
+ * https://csrc.nist.gov/projects/computer-security-objects-register/algorithm-registration
+ */
+static const uint8_t kSha3_224DigestIdentifier[] = {
+    0x1c, 0x04, 0x00, 0x05, 0x07, 0x02, 0x04, 0x03, 0x65, 0x01,
+    0x48, 0x86, 0x60, 0x09, 0x06, 0x0d, 0x30, 0x2d, 0x30,
+};
+static const uint8_t kSha3_256DigestIdentifier[] = {
+    0x20, 0x04, 0x00, 0x05, 0x08, 0x02, 0x04, 0x03, 0x65, 0x01,
+    0x48, 0x86, 0x60, 0x09, 0x06, 0x0d, 0x30, 0x31, 0x30,
+};
+static const uint8_t kSha3_384DigestIdentifier[] = {
+    0x30, 0x04, 0x00, 0x05, 0x09, 0x02, 0x04, 0x03, 0x65, 0x01,
+    0x48, 0x86, 0x60, 0x09, 0x06, 0x0d, 0x30, 0x41, 0x30,
+};
+static const uint8_t kSha3_512DigestIdentifier[] = {
+    0x40, 0x04, 0x00, 0x05, 0x0a, 0x02, 0x04, 0x03, 0x65, 0x01,
     0x48, 0x86, 0x60, 0x09, 0x06, 0x0d, 0x30, 0x51, 0x30,
 };
 
@@ -55,6 +77,18 @@ static status_t digest_info_length_get(const otcrypto_hash_mode_t hash_mode,
       return OTCRYPTO_OK;
     case kOtcryptoHashModeSha512:
       *len = sizeof(kSha512DigestIdentifier) + kSha512DigestBytes;
+      return OTCRYPTO_OK;
+    case kOtcryptoHashModeSha3_224:
+      *len = sizeof(kSha3_224DigestIdentifier) + kSha3_224DigestBytes;
+      return OTCRYPTO_OK;
+    case kOtcryptoHashModeSha3_256:
+      *len = sizeof(kSha3_256DigestIdentifier) + kSha3_256DigestBytes;
+      return OTCRYPTO_OK;
+    case kOtcryptoHashModeSha3_384:
+      *len = sizeof(kSha3_384DigestIdentifier) + kSha3_384DigestBytes;
+      return OTCRYPTO_OK;
+    case kOtcryptoHashModeSha3_512:
+      *len = sizeof(kSha512DigestIdentifier) + kSha3_512DigestBytes;
       return OTCRYPTO_OK;
     default:
       // Unsupported or unrecognized hash function.
@@ -106,17 +140,45 @@ static status_t digest_info_write(const otcrypto_hash_digest_t message_digest,
       memcpy(encoding + kSha512DigestWords, &kSha512DigestIdentifier,
              sizeof(kSha512DigestIdentifier));
       break;
+    case kOtcryptoHashModeSha3_224:
+      if (message_digest.len != kSha3_224DigestWords) {
+        return OTCRYPTO_BAD_ARGS;
+      }
+      memcpy(encoding + kSha3_224DigestWords, &kSha3_224DigestIdentifier,
+             sizeof(kSha3_224DigestIdentifier));
+      break;
+    case kOtcryptoHashModeSha3_256:
+      if (message_digest.len != kSha3_256DigestWords) {
+        return OTCRYPTO_BAD_ARGS;
+      }
+      memcpy(encoding + kSha3_256DigestWords, &kSha3_256DigestIdentifier,
+             sizeof(kSha3_256DigestIdentifier));
+      break;
+    case kOtcryptoHashModeSha3_384:
+      if (message_digest.len != kSha3_384DigestWords) {
+        return OTCRYPTO_BAD_ARGS;
+      }
+      memcpy(encoding + kSha3_384DigestWords, &kSha3_384DigestIdentifier,
+             sizeof(kSha3_384DigestIdentifier));
+      break;
+    case kOtcryptoHashModeSha3_512:
+      if (message_digest.len != kSha3_512DigestWords) {
+        return OTCRYPTO_BAD_ARGS;
+      }
+      memcpy(encoding + kSha3_512DigestWords, &kSha3_512DigestIdentifier,
+             sizeof(kSha3_512DigestIdentifier));
+      break;
     default:
       // Unsupported or unrecognized hash function.
       return OTCRYPTO_BAD_ARGS;
   };
 
   // Copy the digest into the encoding, reversing the order of bytes.
-  for (size_t i = 0; i < message_digest.len / 2; i++) {
-    uint32_t tmp = __builtin_bswap32(message_digest.data[i]);
+  for (size_t i = 0; i < ceil_div(message_digest.len, 2); i++) {
     encoding[i] =
         __builtin_bswap32(message_digest.data[message_digest.len - 1 - i]);
-    encoding[message_digest.len - 1 - i] = tmp;
+    encoding[message_digest.len - 1 - i] =
+        __builtin_bswap32(message_digest.data[i]);
   }
 
   return OTCRYPTO_OK;
@@ -145,7 +207,6 @@ status_t rsa_padding_pkcs1v15_encode(
     // specifies that the 0xff padding must be at least 8 octets.
     return OTCRYPTO_BAD_ARGS;
   }
-
   // Write the digest info to the start of the buffer.
   HARDENED_TRY(digest_info_write(message_digest, encoded_message));
 
@@ -163,7 +224,6 @@ status_t rsa_padding_pkcs1v15_verify(
   uint32_t expected_encoded_message[encoded_message_len];
   HARDENED_TRY(rsa_padding_pkcs1v15_encode(message_digest, encoded_message_len,
                                            expected_encoded_message));
-
   // Compare with the expected value.
   *result = hardened_memeq(encoded_message, expected_encoded_message,
                            ARRAYSIZE(expected_encoded_message));

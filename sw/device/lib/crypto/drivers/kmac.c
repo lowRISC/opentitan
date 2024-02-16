@@ -733,7 +733,7 @@ status_t kmac_sha3_224(const uint8_t *message, size_t message_len,
   HARDENED_TRY(kmac_init(kKmacOperationSHA3, kKmacSecurityStrength224,
                          /*hw_backed=*/kHardenedBoolFalse));
 
-  size_t digest_len_words = 224 / 32;
+  size_t digest_len_words = kSha3_224DigestWords;
   return kmac_process_msg_blocks(kKmacOperationSHA3, message, message_len,
                                  digest, digest_len_words);
 }
@@ -743,7 +743,7 @@ status_t kmac_sha3_256(const uint8_t *message, size_t message_len,
   HARDENED_TRY(kmac_init(kKmacOperationSHA3, kKmacSecurityStrength256,
                          /*hw_backed=*/kHardenedBoolFalse));
 
-  size_t digest_len_words = 256 / 32;
+  size_t digest_len_words = kSha3_256DigestWords;
   return kmac_process_msg_blocks(kKmacOperationSHA3, message, message_len,
                                  digest, digest_len_words);
 }
@@ -753,7 +753,7 @@ status_t kmac_sha3_384(const uint8_t *message, size_t message_len,
   HARDENED_TRY(kmac_init(kKmacOperationSHA3, kKmacSecurityStrength384,
                          /*hw_backed=*/kHardenedBoolFalse));
 
-  size_t digest_len_words = 384 / 32;
+  size_t digest_len_words = kSha3_384DigestWords;
   return kmac_process_msg_blocks(kKmacOperationSHA3, message, message_len,
                                  digest, digest_len_words);
 }
@@ -763,7 +763,7 @@ status_t kmac_sha3_512(const uint8_t *message, size_t message_len,
   HARDENED_TRY(kmac_init(kKmacOperationSHA3, kKmacSecurityStrength512,
                          /*hw_backed=*/kHardenedBoolFalse));
 
-  size_t digest_len_words = 512 / 32;
+  size_t digest_len_words = kSha3_512DigestWords;
   return kmac_process_msg_blocks(kKmacOperationSHA3, message, message_len,
                                  digest, digest_len_words);
 }
