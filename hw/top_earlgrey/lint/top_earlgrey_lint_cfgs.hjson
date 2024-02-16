@@ -42,6 +42,11 @@
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/aon_timer/lint/{tool}"
              },
+             {    name: ascon
+                  fusesoc_core: lowrisc:ip:ascon
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/ascon/lint/{tool}"
+             },
              {    name: ast
                   fusesoc_core: lowrisc:systems:ast
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
