@@ -213,6 +213,3 @@ This leaves 15 buffers for preparation of future transmissions (which would need
 The size of 64 bytes per buffer satisfies the maximum USB packet size for a Full-Speed interface for Control transfers (max may be 8, 16, 32 or 64 bytes), Bulk Transfers (max is 64 bytes) and Interrupt transfers (max is 64 bytes).
 It is small for Isochronous transfers (which have a max size of 1023 bytes).
 The interface will need extending for high rate isochronous use (a possible option would be to allow up to 8 or 16 64-byte buffers to be aggregated as the isochronous buffer).
-
-
-# Design Details
