@@ -98,6 +98,12 @@ alias(
 )
 
 alias(
+    name = "const-oid",
+    actual = "@crate_index__const-oid-0.9.6//:const_oid",
+    tags = ["manual"],
+)
+
+alias(
     name = "crc",
     actual = "@crate_index__crc-3.0.1//:crc",
     tags = ["manual"],
