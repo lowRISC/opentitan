@@ -124,10 +124,10 @@ fn main() -> Result<()> {
         hex_string_to_u8_arrayvec::<20>(opts.provisioning_data.uds_auth_key_id.as_str())?;
     let _perso_data_in = ManufCertPersoDataIn {
         rom_ext_measurement: rom_ext_measurement.clone(),
-        rom_ext_security_version: rom_ext_security_version,
+        rom_ext_security_version,
         owner_manifest_measurement: owner_manifest_measurement.clone(),
         owner_measurement: owner_measurement.clone(),
-        owner_security_version: owner_security_version,
+        owner_security_version,
         auth_key_key_id: uds_auth_key_id.clone(),
     };
 
