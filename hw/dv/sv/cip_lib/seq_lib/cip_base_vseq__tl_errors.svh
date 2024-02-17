@@ -36,7 +36,7 @@ virtual task tl_access_unmapped_addr(string ral_name);
     // Randomly pick which unmapped address range to target
     int idx = $urandom_range(0, loc_unmapped_addr_ranges.size()-1);
 
-    if (cfg.under_reset) return;
+    if (cfg.stop_transaction_generators()) return;
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(unmapped_addr,
         (unmapped_addr & csr_addr_mask[ral_name])
             inside {[loc_unmapped_addr_ranges[idx].start_addr :
@@ -60,7 +60,7 @@ virtual task tl_write_less_than_csr_width(string ral_name);
     uint             msb_pos;
     bit [BUS_AW-1:0] addr;
 
-    if (cfg.under_reset) return;
+    if (cfg.stop_transaction_generators()) return;
     `DV_CHECK_FATAL($cast(csr, all_csrs[i]))
     msb_pos = csr.get_msb_pos();
     addr    = csr.get_address();
@@ -85,7 +85,7 @@ endtask
 
 virtual task tl_protocol_err(tl_sequencer tl_sequencer_h = p_sequencer.tl_sequencer_h);
   repeat ($urandom_range(10, 100)) begin
-    if (cfg.under_reset) return;
+    if (cfg.stop_transaction_generators()) return;
     `create_tl_access_error_case(
         tl_protocol_err, , tl_host_protocol_err_seq #(cip_tl_seq_item), tl_sequencer_h
         )
@@ -97,7 +97,7 @@ virtual task tl_write_mem_less_than_word(string ral_name);
   dv_base_mem mem;
   addr_range_t loc_mem_ranges[$] = updated_mem_ranges[ral_name];
   repeat ($urandom_range(10, 100)) begin
-    if (cfg.under_reset) return;
+    if (cfg.stop_transaction_generators()) return;
     // if more than one memories, randomly select one memory
     mem_idx = $urandom_range(0, loc_mem_ranges.size - 1);
     // only test when mem doesn't support partial write
@@ -121,7 +121,7 @@ virtual task tl_read_wo_mem_err(string ral_name);
   uint mem_idx;
   addr_range_t loc_mem_ranges[$] = updated_mem_ranges[ral_name];
   repeat ($urandom_range(10, 100)) begin
-    if (cfg.under_reset) return;
+    if (cfg.stop_transaction_generators()) return;
     // if more than one memories, randomly select one memory
     mem_idx = $urandom_range(0, loc_mem_ranges.size - 1);
     if (get_mem_access_by_addr(cfg.ral_models[ral_name],
@@ -141,7 +141,7 @@ virtual task tl_write_ro_mem_err(string ral_name);
   uint mem_idx;
   addr_range_t loc_mem_ranges[$] = updated_mem_ranges[ral_name];
   repeat ($urandom_range(10, 100)) begin
-    if (cfg.under_reset) return;
+    if (cfg.stop_transaction_generators()) return;
     // if more than one memories, randomly select one memory
     mem_idx = $urandom_range(0, loc_mem_ranges.size - 1);
     if (get_mem_access_by_addr(cfg.ral_models[ral_name],
@@ -164,7 +164,7 @@ virtual task tl_instr_type_err(string ral_name);
     bit [BUS_DW-1:0] data;
     mubi4_t          instr_type;
 
-    if (cfg.under_reset) return;
+    if (cfg.stop_transaction_generators()) return;
     `DV_CHECK_STD_RANDOMIZE_FATAL(addr);
     `DV_CHECK_STD_RANDOMIZE_FATAL(data);
 
@@ -192,7 +192,7 @@ endtask
 virtual task run_tl_errors_vseq(int num_times = 1, bit do_wait_clk = 0);
   set_tl_assert_en(.enable(0));
   for (int trans = 1; trans <= num_times; trans++) begin
-    if (cfg.under_reset) return;
+    if (cfg.stop_transaction_generators()) return;
     `uvm_info(`gfn, $sformatf("Running run_tl_errors_vseq %0d/%0d", trans, num_times), UVM_LOW)
     `loop_ral_models_to_create_threads(run_tl_errors_vseq_sub(do_wait_clk, ral_name);)
   end

@@ -24,6 +24,11 @@ class cip_base_vseq #(
   type VIRTUAL_SEQUENCER_T = cip_base_virtual_sequencer
 ) extends dv_base_vseq #(RAL_T, CFG_T, COV_T, VIRTUAL_SEQUENCER_T);
   `uvm_object_new
+
+  // This is the number of consecutive cycles with no outstanding accesses before
+  // a random reset can fire.
+  parameter int CyclesWithNoAccessesThreshold = 80;
+
   // knobs to disable post_start clear interrupt routine
   bit do_clear_all_interrupts = 1'b1;
 
@@ -253,13 +258,13 @@ class cip_base_vseq #(
           tl_seq.max_req_delay = 0;
         end
         tl_seq.req_abort_pct = req_abort_pct;
-        csr_utils_pkg::increment_outstanding_access();
         `DV_CHECK_RANDOMIZE_WITH_FATAL(tl_seq,
             addr  == local::addr;
             write == local::write;
             mask  == local::mask;
             data  == local::data;)
 
+        csr_utils_pkg::increment_outstanding_access();
         `uvm_send_pri(tl_seq, 100)
         rsp = tl_seq.rsp;
 
@@ -738,6 +743,7 @@ class cip_base_vseq #(
   // Helper function for stress_all_with_rand_reset task to wait for random time before issuing
   // reset. This function can be extended to wait for certain special timing to issue reset.
   virtual task wait_to_issue_reset(uint reset_delay_bound = 10_000_000);
+    int cycles_with_no_accesses = 0;
     `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(
         rand_reset_delay,
         rand_reset_delay inside {[1:reset_delay_bound]};
@@ -746,15 +752,27 @@ class cip_base_vseq #(
     // Wait a random number of cycles (up to reset_delay_bound) before triggering the reset.
     cfg.clk_rst_vif.wait_clks(rand_reset_delay);
 
-    // If there is an outstanding access, wait up to 10000 more cycles to allow it to clear. If it
-    // doesn't clear, something has gone wrong: we don't expect there to permanently be CSR
-    // accesses.
-    for (int i = 0; i < 10000; i++) begin
-      if (!has_outstanding_access()) break;
+    cfg.set_intention_to_reset();
+
+    // Wait up to 10000 more cycles for a run of enough consecutive cycles with no outstanding
+    // accesses. If the wait doesn't clear something is probably wrong: perhaps some loop
+    // sending CSR transactions is missing a break if stop_transaction_generators() is set.
+    for (int i = 0; i < 10000 || cycles_with_no_accesses > 0; i++) begin
+      if (!has_outstanding_access()) begin
+        ++cycles_with_no_accesses;
+        if (cycles_with_no_accesses > CyclesWithNoAccessesThreshold) begin
+          break;
+        end
+      end else begin
+        // And reset the count if there are outstanding accesses to count only consecutive
+        // cycles with no accesses. This will also break out of the loop if the wait has been
+        // too long.
+        cycles_with_no_accesses = 0;
+      end
       cfg.clk_rst_vif.wait_clks(1);
     end
     `DV_CHECK(!has_outstanding_access(),
-              "Outstanding access never cleared to allow us to reset.")
+              "Waited too long to issue a reset with no outstanding accesses.")
 
     // Wait a portion of the clock period, to avoid the reset being synchronised with an edge of the
     // clock.
