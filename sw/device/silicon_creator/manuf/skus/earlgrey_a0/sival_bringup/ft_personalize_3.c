@@ -28,8 +28,8 @@ static manuf_cert_perso_data_in_t in_data;
 hmac_digest_t uds_pubkey_id;
 hmac_digest_t cdi_0_pubkey_id;
 static manuf_cert_perso_data_out_t out_data = {
-    .uds_certificate = {0},
-    .uds_certificate_size = kUdsMaxCertSizeBytes,
+    .uds_tbs_certificate = {0},
+    .uds_tbs_certificate_size = kUdsMaxTbsSizeBytes,
     .cdi_0_certificate = {0},
     .cdi_0_certificate_size = kCdi0MaxCertSizeBytes,
     .cdi_1_certificate = {0},
@@ -84,15 +84,17 @@ static status_t personalize(ujson_t *uj) {
   // Load OTBN attestation keygen program.
   TRY(otbn_boot_app_load());
 
-  // Generate UDS keys and cert.
-  TRY(gen_uds_keys_and_cert(&in_data, &uds_pubkey_id, out_data.uds_certificate,
-                            &out_data.uds_certificate_size));
+  // Generate UDS keys and (TBS) cert.
+  TRY(gen_uds_keys_and_cert(&in_data, &uds_pubkey_id,
+                            out_data.uds_tbs_certificate,
+                            &out_data.uds_tbs_certificate_size));
   TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageUdsCertificate,
                             kFlashCtrlEraseTypePage));
-  TRY(flash_ctrl_info_write(&kFlashCtrlInfoPageUdsCertificate,
-                            kFlashInfoFieldUdsCertificate.byte_offset,
-                            out_data.uds_certificate_size / sizeof(uint32_t),
-                            out_data.uds_certificate));
+  TRY(flash_ctrl_info_write(
+      &kFlashCtrlInfoPageUdsCertificate,
+      kFlashInfoFieldUdsCertificate.byte_offset,
+      out_data.uds_tbs_certificate_size / sizeof(uint32_t),
+      out_data.uds_tbs_certificate));
   LOG_INFO("Generated UDS certificate.");
 
   // Generate CDI_0 keys and cert.
@@ -124,7 +126,6 @@ static status_t personalize(ujson_t *uj) {
   RESP_OK(ujson_serialize_manuf_cert_perso_data_out_t, uj, &out_data);
 
   // TODO(#19455): Load endorsed UDS certificate and write it to flash.
-  /*LOG_INFO("Waiting to load endorsed certificates ...");*/
 
   return OK_STATUS();
 }
