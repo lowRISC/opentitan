@@ -89,7 +89,7 @@ class pwrmgr_scoreboard extends cip_base_scoreboard #(
           if (|cfg.pwrmgr_vif.pwr_rst_req.rst_lc_req) begin
             // Start of d0 reset request.
             `uvm_info(`gfn, "pwrmgr start reset in reset_cip_helper", UVM_MEDIUM)
-            cfg.under_reset = 1;
+            cfg.reset_asserted();
           end
         end
       forever
