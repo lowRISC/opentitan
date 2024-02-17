@@ -286,6 +286,7 @@ dependencies = [
  "chrono",
  "clap",
  "clap-num",
+ "const-oid",
  "crc",
  "cryptoki",
  "cryptoki-sys",
@@ -476,9 +477,9 @@ dependencies = [
 
 [[package]]
 name = "const-oid"
-version = "0.9.5"
+version = "0.9.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "28c122c3980598d243d63d9a704629a2d748d101f278052ff068be5a4423ab6f"
+checksum = "c2459377285ad874054d797f3ccebf984978aa39129f6eafde5cdc8315b612f8"
 
 [[package]]
 name = "core-foundation-sys"

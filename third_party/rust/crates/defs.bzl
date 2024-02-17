@@ -306,6 +306,7 @@ _NORMAL_DEPENDENCIES = {
             "chrono": "@crate_index__chrono-0.4.31//:chrono",
             "clap": "@crate_index__clap-4.4.7//:clap",
             "clap-num": "@crate_index__clap-num-1.0.2//:clap_num",
+            "const-oid": "@crate_index__const-oid-0.9.6//:const_oid",
             "crc": "@crate_index__crc-3.0.1//:crc",
             "cryptoki": "@crate_index__cryptoki-0.5.0//:cryptoki",
             "cryptoki-sys": "@crate_index__cryptoki-sys-0.1.6//:cryptoki_sys",
@@ -956,12 +957,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "crate_index__const-oid-0.9.5",
-        sha256 = "28c122c3980598d243d63d9a704629a2d748d101f278052ff068be5a4423ab6f",
+        name = "crate_index__const-oid-0.9.6",
+        sha256 = "c2459377285ad874054d797f3ccebf984978aa39129f6eafde5cdc8315b612f8",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/const-oid/0.9.5/download"],
-        strip_prefix = "const-oid-0.9.5",
-        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.const-oid-0.9.5.bazel"),
+        urls = ["https://crates.io/api/v1/crates/const-oid/0.9.6/download"],
+        strip_prefix = "const-oid-0.9.6",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.const-oid-0.9.6.bazel"),
     )
 
     maybe(
