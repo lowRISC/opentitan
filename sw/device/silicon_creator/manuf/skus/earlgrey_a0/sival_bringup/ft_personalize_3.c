@@ -28,11 +28,11 @@ static_assert(kUdsMaxTbsSizeBytes == 569,
               "The `uds_tbs_certificate` buffer size in the "
               "`manuf_cert_perso_data_out_t` struct should match the value of "
               "`kUdsMaxTbsSizeBytes`.");
-static_assert(kCdi0MaxCertSizeBytes == 634,
+static_assert(kCdi0MaxCertSizeBytes == 582,
               "The `cdi_0_certificate` buffer size in the "
               "`manuf_cert_perso_data_out_t` struct should match the value of "
               "`kCdi0MaxCertSizeBytes`.");
-static_assert(kCdi1MaxCertSizeBytes == 580,
+static_assert(kCdi1MaxCertSizeBytes == 631,
               "The `cdi_1_certificate` buffer size in the "
               "`manuf_cert_perso_data_out_t` struct should match the value of "
               "`kCdi1MaxCertSizeBytes`.");

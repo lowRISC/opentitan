@@ -33,11 +33,6 @@
             type: "byte-array",
             size: 32,
         },
-        // Hash of the owner manifest (SHA256).
-        owner_manifest_hash: {
-            type: "byte-array",
-            size: 32,
-        },
         // ROM_EXT security version, used to prevent rollback.
         rom_ext_security_version: {
             type: "integer",
@@ -79,7 +74,6 @@
         layer: 1,
         fw_ids: [
             { hash_algorithm: "sha256", digest: { var: "rom_ext_hash" } },
-            { hash_algorithm: "sha256", digest: { var: "owner_manifest_hash" } },
         ],
         flags: {
             not_configured: false,
