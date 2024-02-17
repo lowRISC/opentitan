@@ -19,3 +19,7 @@
 `include "usbdev_out_stall_vseq.sv"
 `include "usbdev_out_trans_nak_vseq.sv"
 `include "usbdev_in_rand_trans_vseq.sv"
+`include "usbdev_out_data_stage_vseq.sv"
+`include "usbdev_endp_acc_vseq.sv"
+`include "usbdev_link_rst_vseq.sv"
+`include "usbdev_link_suspend_vseq.sv"
