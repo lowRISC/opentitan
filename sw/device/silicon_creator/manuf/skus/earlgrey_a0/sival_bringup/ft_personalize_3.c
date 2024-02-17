@@ -12,7 +12,7 @@
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/silicon_creator/lib/cert/cdi_0.h"  // Generated.
 #include "sw/device/silicon_creator/lib/cert/cdi_1.h"  // Generated.
-#include "sw/device/silicon_creator/lib/cert/cert.h"
+#include "sw/device/silicon_creator/lib/cert/dice.h"
 #include "sw/device/silicon_creator/lib/cert/uds.h"  // Generated.
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
@@ -98,9 +98,9 @@ static status_t personalize(ujson_t *uj) {
   TRY(otbn_boot_app_load());
 
   // Generate UDS keys and (TBS) cert.
-  TRY(gen_uds_keys_and_cert(&in_data, &uds_pubkey_id,
-                            out_data.uds_tbs_certificate,
-                            &out_data.uds_tbs_certificate_size));
+  TRY(dice_uds_cert_build(&in_data, &uds_pubkey_id,
+                          out_data.uds_tbs_certificate,
+                          &out_data.uds_tbs_certificate_size));
   TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageUdsCertificate,
                             kFlashCtrlEraseTypePage));
   TRY(flash_ctrl_info_write(
@@ -111,9 +111,9 @@ static status_t personalize(ujson_t *uj) {
   LOG_INFO("Generated UDS certificate.");
 
   // Generate CDI_0 keys and cert.
-  TRY(gen_cdi_0_keys_and_cert(&in_data, &uds_pubkey_id, &cdi_0_pubkey_id,
-                              out_data.cdi_0_certificate,
-                              &out_data.cdi_0_certificate_size));
+  TRY(dice_cdi_0_cert_build(&in_data, &uds_pubkey_id, &cdi_0_pubkey_id,
+                            out_data.cdi_0_certificate,
+                            &out_data.cdi_0_certificate_size));
   TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageCdi0Certificate,
                             kFlashCtrlEraseTypePage));
   TRY(flash_ctrl_info_write(&kFlashCtrlInfoPageCdi0Certificate,
@@ -123,9 +123,9 @@ static status_t personalize(ujson_t *uj) {
   LOG_INFO("Generated CDI_0 certificate.");
 
   // Generate CDI_1 keys and cert.
-  TRY(gen_cdi_1_keys_and_cert(&in_data, &cdi_0_pubkey_id,
-                              out_data.cdi_1_certificate,
-                              &out_data.cdi_1_certificate_size));
+  TRY(dice_cdi_1_cert_build(&in_data, &cdi_0_pubkey_id,
+                            out_data.cdi_1_certificate,
+                            &out_data.cdi_1_certificate_size));
   TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageCdi1Certificate,
                             kFlashCtrlEraseTypePage));
   TRY(flash_ctrl_info_write(&kFlashCtrlInfoPageCdi1Certificate,

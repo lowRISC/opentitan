@@ -55,9 +55,9 @@ cc_test(
 )
 
 cc_library(
-    name = "cert",
-    srcs = ["cert.c"],
-    hdrs = ["cert.h"],
+    name = "dice",
+    srcs = ["dice.c"],
+    hdrs = ["dice.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//sw/device/lib/base:memory",
