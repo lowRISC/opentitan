@@ -97,8 +97,8 @@ UJSON_SERDE_STRUCT(ManufRmaTokenPersoDataOut, \
  */
 // clang-format off
 #define STRUCT_MANUF_CERT_PERSO_DATA_OUT(field, string) \
-    field(uds_certificate, uint8_t, 596) \
-    field(uds_certificate_size, size_t) \
+    field(uds_tbs_certificate, uint8_t, 569) \
+    field(uds_tbs_certificate_size, size_t) \
     field(cdi_0_certificate, uint8_t, 634) \
     field(cdi_0_certificate_size, size_t) \
     field(cdi_1_certificate, uint8_t, 580) \
