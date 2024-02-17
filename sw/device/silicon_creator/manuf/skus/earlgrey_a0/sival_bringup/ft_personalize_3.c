@@ -24,6 +24,19 @@
 
 OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 
+static_assert(kUdsMaxTbsSizeBytes == 569,
+              "The `uds_tbs_certificate` buffer size in the "
+              "`manuf_cert_perso_data_out_t` struct should match the value of "
+              "`kUdsMaxTbsSizeBytes`.");
+static_assert(kCdi0MaxCertSizeBytes == 634,
+              "The `cdi_0_certificate` buffer size in the "
+              "`manuf_cert_perso_data_out_t` struct should match the value of "
+              "`kCdi0MaxCertSizeBytes`.");
+static_assert(kCdi1MaxCertSizeBytes == 580,
+              "The `cdi_1_certificate` buffer size in the "
+              "`manuf_cert_perso_data_out_t` struct should match the value of "
+              "`kCdi1MaxCertSizeBytes`.");
+
 static manuf_cert_perso_data_in_t in_data;
 hmac_digest_t uds_pubkey_id;
 hmac_digest_t cdi_0_pubkey_id;
