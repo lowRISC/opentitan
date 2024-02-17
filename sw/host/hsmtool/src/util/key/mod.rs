@@ -5,6 +5,7 @@
 use clap;
 use serde::{Deserialize, Serialize};
 
+pub mod ecdsa;
 pub mod rsa;
 
 #[derive(clap::ValueEnum, Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]

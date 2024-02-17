@@ -51,8 +51,8 @@ impl Dispatch for Sign {
         if self.little_endian {
             data.reverse();
         }
-        let data = self.format.prepare(&data)?;
-        let mechanism = self.format.mechanism()?;
+        let data = self.format.prepare(KeyType::Rsa, &data)?;
+        let mechanism = self.format.mechanism(KeyType::Rsa)?;
         let mut result = session.sign(&mechanism, object, &data)?;
         if self.little_endian {
             result.reverse();
