@@ -93,17 +93,8 @@ status_t dice_cdi_0_cert_build(manuf_cert_perso_data_in_t *perso_data_in,
                                size_t *cert_size) {
   TRY(keymgr_state_check(kKeymgrStateCreatorRootKey));
 
-  // Set attestation binding to the ROM_EXT / Ownership Manifest measurements.
-  hmac_digest_t combined_measurements;
-  uint32_t rom_ext_measurements[kAttestMeasurementSizeIn32BitWords * 2];
-  memcpy(rom_ext_measurements, perso_data_in->rom_ext_measurement,
-         kAttestMeasurementSizeInBytes);
-  memcpy(&rom_ext_measurements[kAttestMeasurementSizeIn32BitWords],
-         perso_data_in->owner_manifest_measurement,
-         kAttestMeasurementSizeInBytes);
-  hmac_sha256(rom_ext_measurements, kAttestMeasurementSizeInBytes * 2,
-              &combined_measurements);
-  memcpy(attestation_binding_value.data, combined_measurements.digest,
+  // Set attestation binding to the ROM_EXT measurement.
+  memcpy(attestation_binding_value.data, perso_data_in->rom_ext_measurement,
          kAttestMeasurementSizeInBytes);
   // We set the sealing binding value to all zeros as it is unused in the
   // current personalization flow. This may be changed in the future.
@@ -125,9 +116,6 @@ status_t dice_cdi_0_cert_build(manuf_cert_perso_data_in_t *perso_data_in,
   cdi_0_tbs_values_t cdi_0_cert_tbs_params = {
       .rom_ext_hash = (unsigned char *)perso_data_in->rom_ext_measurement,
       .rom_ext_hash_size = kAttestMeasurementSizeInBytes,
-      .owner_manifest_hash =
-          (unsigned char *)perso_data_in->owner_manifest_measurement,
-      .owner_manifest_hash_size = kAttestMeasurementSizeInBytes,
       .rom_ext_security_version = perso_data_in->rom_ext_security_version,
       .owner_intermediate_pub_key_id = (unsigned char *)cdi_0_pubkey_id->digest,
       .owner_intermediate_pub_key_id_size = kCertKeyIdSizeInBytes,
@@ -164,8 +152,18 @@ status_t dice_cdi_1_cert_build(manuf_cert_perso_data_in_t *perso_data_in,
                                size_t *cert_size) {
   TRY(keymgr_state_check(kKeymgrStateOwnerIntermediateKey));
 
-  // Set attestation binding to OWNER measurement.
-  memcpy(attestation_binding_value.data, perso_data_in->owner_measurement,
+  // Set attestation binding to combination of Owner firmware and Ownership
+  // Manifest measurements.
+  hmac_digest_t combined_measurements;
+  uint32_t owner_measurements[kAttestMeasurementSizeIn32BitWords * 2];
+  memcpy(owner_measurements, perso_data_in->owner_measurement,
+         kAttestMeasurementSizeInBytes);
+  memcpy(&owner_measurements[kAttestMeasurementSizeIn32BitWords],
+         perso_data_in->owner_manifest_measurement,
+         kAttestMeasurementSizeInBytes);
+  hmac_sha256(owner_measurements, kAttestMeasurementSizeInBytes * 2,
+              &combined_measurements);
+  memcpy(attestation_binding_value.data, combined_measurements.digest,
          kAttestMeasurementSizeInBytes);
   // We set the sealing binding value to all zeros as it is unused in the
   // current personalization flow. This may be changed in the future.
@@ -188,6 +186,9 @@ status_t dice_cdi_1_cert_build(manuf_cert_perso_data_in_t *perso_data_in,
   cdi_1_tbs_values_t cdi_1_cert_tbs_params = {
       .owner_hash = (unsigned char *)perso_data_in->owner_measurement,
       .owner_hash_size = kAttestMeasurementSizeInBytes,
+      .owner_manifest_hash =
+          (unsigned char *)perso_data_in->owner_manifest_measurement,
+      .owner_manifest_hash_size = kAttestMeasurementSizeInBytes,
       .owner_security_version = perso_data_in->owner_security_version,
       .owner_pub_key_id = (unsigned char *)cdi_1_pubkey_id.digest,
       .owner_pub_key_id_size = kCertKeyIdSizeInBytes,
