@@ -12,6 +12,7 @@ use std::io::IsTerminal;
 use crate::module::Module;
 use crate::util::attribute::AttrData;
 
+mod ecdsa;
 mod exec;
 mod object;
 mod rsa;
@@ -36,6 +37,8 @@ pub trait Dispatch {
 
 #[derive(clap::Subcommand, Debug, Serialize, Deserialize)]
 pub enum Commands {
+    #[command(subcommand)]
+    Ecdsa(ecdsa::Ecdsa),
     Exec(exec::Exec),
     #[command(subcommand)]
     Object(object::Object),
@@ -54,6 +57,7 @@ impl Dispatch for Commands {
         session: Option<&Session>,
     ) -> Result<Box<dyn Annotate>> {
         match self {
+            Commands::Ecdsa(x) => x.run(context, hsm, session),
             Commands::Exec(x) => x.run(context, hsm, session),
             Commands::Object(x) => x.run(context, hsm, session),
             Commands::Rsa(x) => x.run(context, hsm, session),
@@ -66,6 +70,7 @@ impl Dispatch for Commands {
         Self: Sized,
     {
         match self {
+            Commands::Ecdsa(x) => x.leaf(),
             Commands::Exec(x) => x.leaf(),
             Commands::Object(x) => x.leaf(),
             Commands::Rsa(x) => x.leaf(),
@@ -83,6 +88,16 @@ pub struct BasicResult {
     label: AttrData,
     #[serde(skip_serializing_if = "Option::is_none")]
     error: Option<String>,
+}
+
+#[derive(Debug, Serialize, Annotate)]
+pub struct SignResult {
+    #[serde(with = "serde_bytes")]
+    #[annotate(format = hexstr)]
+    pub digest: Vec<u8>,
+    #[serde(with = "serde_bytes")]
+    #[annotate(format = hexstr)]
+    pub signature: Vec<u8>,
 }
 
 impl Default for BasicResult {
