@@ -22,11 +22,6 @@
 static keymgr_binding_value_t attestation_binding_value = {.data = {0}};
 static keymgr_binding_value_t sealing_binding_value = {.data = {0}};
 static attestation_public_key_t curr_pubkey = {.x = {0}, .y = {0}};
-static uint8_t uds_tbs_buffer[kUdsMaxTbsSizeBytes];
-static uds_sig_values_t uds_cert_params = {
-    .tbs = uds_tbs_buffer,
-    .tbs_size = kUdsMaxTbsSizeBytes,
-};
 static uint8_t cdi_0_tbs_buffer[kCdi0MaxTbsSizeBytes];
 static cdi_0_sig_values_t cdi_0_cert_params = {
     .tbs = cdi_0_tbs_buffer,
@@ -54,8 +49,8 @@ static bool is_debug_exposed(void) {
 }
 
 status_t gen_uds_keys_and_cert(manuf_cert_perso_data_in_t *perso_data_in,
-                               hmac_digest_t *uds_pubkey_id, uint8_t *cert,
-                               size_t *cert_size) {
+                               hmac_digest_t *uds_pubkey_id, uint8_t *tbs_cert,
+                               size_t *tbs_cert_size) {
   // Generate the UDS key.
   TRY(keymgr_state_check(kKeymgrStateInit));
   keymgr_advance_state();
@@ -68,7 +63,7 @@ status_t gen_uds_keys_and_cert(manuf_cert_perso_data_in_t *perso_data_in,
   // Generate the key ID.
   hmac_sha256(&curr_pubkey, kAttestationPublicKeyCoordBytes * 2, uds_pubkey_id);
 
-  // Generate the (unendorsed) certificate.
+  // Generate the TBS certificate.
   uds_tbs_values_t uds_cert_tbs_params = {
       // TODO(#19455): include OTP measurements in attestation keygen / cert.
       .otp_creator_sw_cfg_hash = NULL,
@@ -87,9 +82,7 @@ status_t gen_uds_keys_and_cert(manuf_cert_perso_data_in_t *perso_data_in,
       .creator_pub_key_ec_y = (unsigned char *)curr_pubkey.y,
       .creator_pub_key_ec_y_size = kAttestationPublicKeyCoordBytes,
   };
-  TRY(uds_build_tbs(&uds_cert_tbs_params, uds_cert_params.tbs,
-                    &uds_cert_params.tbs_size));
-  TRY(uds_build_cert(&uds_cert_params, cert, cert_size));
+  TRY(uds_build_tbs(&uds_cert_tbs_params, tbs_cert, tbs_cert_size));
 
   return OK_STATUS();
 }
