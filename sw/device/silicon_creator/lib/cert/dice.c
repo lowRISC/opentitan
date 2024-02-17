@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/silicon_creator/lib/cert/cert.h"
+#include "sw/device/silicon_creator/lib/cert/dice.h"
 
 #include <stdint.h>
 
@@ -48,9 +48,9 @@ static bool is_debug_exposed(void) {
   return true;
 }
 
-status_t gen_uds_keys_and_cert(manuf_cert_perso_data_in_t *perso_data_in,
-                               hmac_digest_t *uds_pubkey_id, uint8_t *tbs_cert,
-                               size_t *tbs_cert_size) {
+status_t dice_uds_cert_build(manuf_cert_perso_data_in_t *perso_data_in,
+                             hmac_digest_t *uds_pubkey_id, uint8_t *tbs_cert,
+                             size_t *tbs_cert_size) {
   // Generate the UDS key.
   TRY(keymgr_state_check(kKeymgrStateInit));
   keymgr_advance_state();
@@ -87,10 +87,10 @@ status_t gen_uds_keys_and_cert(manuf_cert_perso_data_in_t *perso_data_in,
   return OK_STATUS();
 }
 
-status_t gen_cdi_0_keys_and_cert(manuf_cert_perso_data_in_t *perso_data_in,
-                                 hmac_digest_t *uds_pubkey_id,
-                                 hmac_digest_t *cdi_0_pubkey_id, uint8_t *cert,
-                                 size_t *cert_size) {
+status_t dice_cdi_0_cert_build(manuf_cert_perso_data_in_t *perso_data_in,
+                               hmac_digest_t *uds_pubkey_id,
+                               hmac_digest_t *cdi_0_pubkey_id, uint8_t *cert,
+                               size_t *cert_size) {
   TRY(keymgr_state_check(kKeymgrStateCreatorRootKey));
 
   // Set attestation binding to the ROM_EXT / Ownership Manifest measurements.
@@ -159,9 +159,9 @@ status_t gen_cdi_0_keys_and_cert(manuf_cert_perso_data_in_t *perso_data_in,
   return OK_STATUS();
 }
 
-status_t gen_cdi_1_keys_and_cert(manuf_cert_perso_data_in_t *perso_data_in,
-                                 hmac_digest_t *cdi_0_pubkey_id, uint8_t *cert,
-                                 size_t *cert_size) {
+status_t dice_cdi_1_cert_build(manuf_cert_perso_data_in_t *perso_data_in,
+                               hmac_digest_t *cdi_0_pubkey_id, uint8_t *cert,
+                               size_t *cert_size) {
   TRY(keymgr_state_check(kKeymgrStateOwnerIntermediateKey));
 
   // Set attestation binding to OWNER measurement.
