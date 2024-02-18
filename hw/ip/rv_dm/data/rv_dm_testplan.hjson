@@ -505,12 +505,11 @@
             - Acknowledge haltreq by setting tl_mem_ral.halted to 0.
             - Fill the program buffer by writing random data to jtag_dmi_ral.progbuf0-7
               registers.
-            - Send a valid abstract command (AccessRegister) by setting postexec bit.
-            - Read tl_mem_ral.program_buffer0-7 registers and verify that the data we wrote is
-              what we read back.
+            - Read tl_mem_ral.program_buffer0-7 registers to
+              verify that the data we wrote is what we read back.
             '''
       stage: V1
-      tests: []
+      tests: ["rv_dm_progbuf_read_write_execute"]
     }
     {
       name: progbuf_exception
