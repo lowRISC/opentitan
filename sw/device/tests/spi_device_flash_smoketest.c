@@ -52,8 +52,6 @@ static status_t configure_jedec_id(dif_spi_device_handle_t *spid) {
 
 static status_t configure_flash_mode(dif_spi_device_handle_t *spid) {
   dif_spi_device_config_t spi_device_config = {
-      .clock_polarity = kDifSpiDeviceEdgePositive,
-      .data_phase = kDifSpiDeviceEdgeNegative,
       .tx_order = kDifSpiDeviceBitOrderMsbToLsb,
       .rx_order = kDifSpiDeviceBitOrderMsbToLsb,
       .device_mode = kDifSpiDeviceModeFlashEmulation,
