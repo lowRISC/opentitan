@@ -535,6 +535,21 @@ dif_result_t dif_entropy_src_fw_override_configure(
     dif_entropy_src_fw_override_config_t config, dif_toggle_t enabled);
 
 /**
+ * Configures whether to start the entropy source's SHA3 process and be ready to
+ * accept entropy data.
+ *
+ * This is used in firmware override mode and should be enabled before writing
+ * to the override FIFO. Disable this after writing has finished to ensure the
+ * SHA3 block finishes processing and pushes the results to the `esfinal` FIFO.
+ *
+ * @param entropy_src An entropy source handle.
+ * @param enabled Whether to start the SHA3 process.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_entropy_src_fw_override_sha3_start_insert(
+    const dif_entropy_src_t *entropy_src, dif_toggle_t enabled);
+
+/**
  * Configures an entropy source health test feature with runtime information.
  *
  * This function should only need to be called once for each health test that
