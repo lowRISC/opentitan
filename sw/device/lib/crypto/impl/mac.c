@@ -76,13 +76,14 @@ otcrypto_status_t otcrypto_kmac(const otcrypto_blinded_key_t *key,
   };
 
   if (key->config.hw_backed == kHardenedBoolTrue) {
-    if (key_len != kKmacSideloadKeyLength / 8 ||
-        key->keyblob_length != 8 * sizeof(uint32_t)) {
+    if (key_len != kKmacSideloadKeyLength / 8) {
       return OTCRYPTO_BAD_ARGS;
     }
     // Configure keymgr with diversification input and then generate the
     // sideload key.
     keymgr_diversification_t diversification;
+    // Diversification call also checks that `key->keyblob_length` is 8 words
+    // long.
     HARDENED_TRY(keyblob_to_keymgr_diversification(key, &diversification));
     HARDENED_TRY(keymgr_generate_key_kmac(diversification));
   } else if (key->config.hw_backed == kHardenedBoolFalse) {
