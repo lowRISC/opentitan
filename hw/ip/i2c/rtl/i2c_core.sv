@@ -102,10 +102,10 @@ module i2c_core import i2c_pkg::*;
   logic        rx_fifo_rready;
   logic [7:0]  rx_fifo_rdata;
 
-  logic        fmt_threshold_d;
-  logic        fmt_threshold_q;
-  logic        rx_threshold_d;
-  logic        rx_threshold_q;
+  // FMT FIFO level at or below programmed threshold
+  logic        fmt_le_threshold;
+  // Rx FIFO level at or above programmed threshold
+  logic        rx_ge_threshold;
 
   logic        tx_fifo_wvalid;
   logic        tx_fifo_wready;
@@ -220,39 +220,27 @@ module i2c_core import i2c_pkg::*;
   assign i2c_fifo_txrst   = reg2hw.fifo_ctrl.txrst.q & reg2hw.fifo_ctrl.txrst.qe;
   assign i2c_fifo_acqrst  = reg2hw.fifo_ctrl.acqrst.q & reg2hw.fifo_ctrl.acqrst.qe;
 
-  always_ff @ (posedge clk_i or negedge rst_ni) begin : threshold_transition
-    if (!rst_ni) begin
-      fmt_threshold_q <= 1'b1; // true by default
-      rx_threshold_q  <= 1'b0; // false by default
-    end else begin
-      fmt_threshold_q <= fmt_threshold_d;
-      rx_threshold_q  <= rx_threshold_d;
-    end
-  end
-
+  // FMT FIFO level at or below programmed threshold
   always_comb begin
     unique case(i2c_fifo_fmtilvl)
-      2'h0:    fmt_threshold_d = (fmt_fifo_depth <= 7'd1);
-      2'h1:    fmt_threshold_d = (fmt_fifo_depth <= 7'd4);
-      2'h2:    fmt_threshold_d = (fmt_fifo_depth <= 7'd8);
-      default: fmt_threshold_d = (fmt_fifo_depth <= 7'd16);
+      2'h0:    fmt_le_threshold = (fmt_fifo_depth <= 7'd1);
+      2'h1:    fmt_le_threshold = (fmt_fifo_depth <= 7'd4);
+      2'h2:    fmt_le_threshold = (fmt_fifo_depth <= 7'd8);
+      default: fmt_le_threshold = (fmt_fifo_depth <= 7'd16);
     endcase
   end
 
-  assign event_fmt_threshold = fmt_threshold_d & ~fmt_threshold_q;
-
+  // Rx FIFO level at or above programmed threshold
   always_comb begin
     unique case(i2c_fifo_rxilvl)
-      3'h0:    rx_threshold_d = (rx_fifo_depth >= 7'd1);
-      3'h1:    rx_threshold_d = (rx_fifo_depth >= 7'd4);
-      3'h2:    rx_threshold_d = (rx_fifo_depth >= 7'd8);
-      3'h3:    rx_threshold_d = (rx_fifo_depth >= 7'd16);
-      3'h4:    rx_threshold_d = (rx_fifo_depth >= 7'd30);
-      default: rx_threshold_d = 1'b0;
+      3'h0:    rx_ge_threshold = (rx_fifo_depth >= 7'd1);
+      3'h1:    rx_ge_threshold = (rx_fifo_depth >= 7'd4);
+      3'h2:    rx_ge_threshold = (rx_fifo_depth >= 7'd8);
+      3'h3:    rx_ge_threshold = (rx_fifo_depth >= 7'd16);
+      3'h4:    rx_ge_threshold = (rx_fifo_depth >= 7'd30);
+      default: rx_ge_threshold = 1'b0;
     endcase
   end
-
-  assign event_rx_threshold = rx_threshold_d & ~rx_threshold_q;
 
   assign event_fmt_overflow = fmt_fifo_wvalid & ~fmt_fifo_wready;
   assign event_rx_overflow = rx_fifo_wvalid & ~rx_fifo_wready;
@@ -480,10 +468,13 @@ module i2c_core import i2c_pkg::*;
     .event_host_timeout_o    (event_host_timeout)
   );
 
-  prim_intr_hw #(.Width(1)) intr_hw_fmt_threshold (
+  prim_intr_hw #(
+    .Width(1),
+    .IntrT("Status")
+  ) intr_hw_fmt_threshold (
     .clk_i,
     .rst_ni,
-    .event_intr_i           (event_fmt_threshold),
+    .event_intr_i           (fmt_le_threshold),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.fmt_threshold.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.fmt_threshold.q),
     .reg2hw_intr_test_qe_i  (reg2hw.intr_test.fmt_threshold.qe),
@@ -493,10 +484,13 @@ module i2c_core import i2c_pkg::*;
     .intr_o                 (intr_fmt_threshold_o)
   );
 
-  prim_intr_hw #(.Width(1)) intr_hw_rx_threshold (
+  prim_intr_hw #(
+    .Width(1),
+    .IntrT("Status")
+  ) intr_hw_rx_threshold (
     .clk_i,
     .rst_ni,
-    .event_intr_i           (event_rx_threshold),
+    .event_intr_i           (rx_ge_threshold),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.rx_threshold.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.rx_threshold.q),
     .reg2hw_intr_test_qe_i  (reg2hw.intr_test.rx_threshold.qe),
@@ -612,7 +606,7 @@ module i2c_core import i2c_pkg::*;
 
   prim_intr_hw #(
     .Width(1),
-    .IntrT ("Status")
+    .IntrT("Status")
   ) intr_hw_tx_stretch (
     .clk_i,
     .rst_ni,
@@ -641,7 +635,7 @@ module i2c_core import i2c_pkg::*;
 
   prim_intr_hw #(
     .Width(1),
-    .IntrT ("Status")
+    .IntrT("Status")
   ) intr_hw_acq_overflow (
     .clk_i,
     .rst_ni,
