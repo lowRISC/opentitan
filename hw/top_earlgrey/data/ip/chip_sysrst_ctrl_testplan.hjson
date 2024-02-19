@@ -28,6 +28,7 @@
       si_stage: SV3
       lc_states: ["DEV", "PROD", "PROD_END", "RMA"]
       tests: ["chip_sw_pwrmgr_sysrst_ctrl_reset", "chip_sw_sysrst_ctrl_reset"]
+      bazel: ["//sw/device/tests:sysrst_ctrl_reset_test"]
     }
     {
       name: chip_sw_sysrst_ctrl_inputs
@@ -113,6 +114,7 @@
       si_stage:SV3
       lc_states: ["DEV", "PROD", "PROD_END", "RMA"]
       tests: ["chip_sw_sysrst_ctrl_reset"]
+      bazel: ["//sw/device/tests:sysrst_ctrl_reset_test"]
     }
     {
       name: chip_sw_sysrst_ctrl_sleep_reset
@@ -140,6 +142,7 @@
       si_stage:SV3
       lc_states: ["DEV", "PROD", "PROD_END", "RMA"]
       tests: ["chip_sw_sysrst_ctrl_reset"]
+      bazel: ["//sw/device/tests:sysrst_ctrl_reset_test"]
     }
     {
       name: chip_sw_sysrst_ctrl_ec_rst_l
