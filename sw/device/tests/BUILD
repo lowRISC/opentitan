@@ -4836,8 +4836,49 @@ opentitan_test(
     ],
 )
 
-# TODO(#19902): Migrate to `opentitan_test` once there is support for the
-# hyperdebug310 target.
+opentitan_test(
+    name = "i2c_host_override_test",
+    srcs = [
+        "i2c_host_override_test.c",
+    ],
+    cw310 = cw310_params(
+        test_cmd = """
+            --bootstrap="{firmware}"
+            "{firmware:elf}"
+        """,
+        test_harness = "//sw/host/tests/chip/i2c_host_override",
+    ),
+    exec_env = dicts.add(
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw310_sival": None,
+        },
+    ),
+    silicon = silicon_params(
+        test_cmd = """
+            --bootstrap="{firmware}"
+            "{firmware:elf}"
+        """,
+        test_harness = "//sw/host/tests/chip/i2c_host_override",
+    ),
+    deps = [
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/dif:gpio",
+        "//sw/device/lib/dif:i2c",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/dif:pwrmgr",
+        "//sw/device/lib/dif:rv_plic",
+        "//sw/device/lib/testing:i2c_testutils",
+        "//sw/device/lib/testing:isr_testutils",
+        "//sw/device/lib/testing:pwrmgr_testutils",
+        "//sw/device/lib/testing:rv_plic_testutils",
+        "//sw/device/lib/testing/json:command",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/testing/test_framework:ottf_utils",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+    ],
+)
+
 opentitan_test(
     name = "i2c_target_test",
     srcs = [

@@ -148,7 +148,6 @@ fn test_write_repeated_start(
 
     log::info!("Emulating start with bit-banging");
     let gpio_bitbanging = transport.gpio_bitbanging()?;
-    let gpio_pins = transport.gpio_pins(&["IOA7", "IOA8"].map(|s| s.to_string()))?;
     let i2c_bitbang = test_utils::bitbanging::i2c::encoder::Encoder::<0, 1> {};
 
     const REFERENCE_DATA: &[u8] = b"Hello World!";
