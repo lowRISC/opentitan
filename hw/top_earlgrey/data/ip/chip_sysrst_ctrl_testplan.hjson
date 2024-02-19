@@ -65,6 +65,7 @@
       si_stage: SV3
       lc_states: ["DEV", "PROD", "PROD_END", "RMA"]
       tests: ["chip_sw_sysrst_ctrl_outputs"]
+      bazel: ["//sw/device/tests:sysrst_ctrl_outputs_test"]
     }
     {
       name: chip_sw_sysrst_ctrl_in_irq
@@ -86,6 +87,7 @@
       si_stage: SV3
       lc_states: ["DEV", "PROD", "PROD_END", "RMA"]
       tests: ["chip_sw_sysrst_ctrl_in_irq"]
+      bazel: ["//sw/device/tests:sysrst_ctrl_in_irq_test"]
     }
     {
       name: chip_sw_sysrst_ctrl_sleep_wakeup
