@@ -86,6 +86,9 @@ fn chip_sw_sysrst_ctrl_ulp_z3_wakeup(
     // Set pins to zero.
     set_pins(transport, config, pins_initial)?;
 
+    // Wait until device is ready to accept commands.
+    UartConsole::wait_for(uart, &TestStatus::InWfi.wait_pattern(), opts.timeout)?;
+
     // Tell device that we have driven pins to the initial value.
     log::info!("Go to PhaseDriveInitial");
     MemWriteReq::execute(uart, test_phase_addr, &[TestPhase::DriveInitial as u8])?;
