@@ -4420,10 +4420,20 @@ opentitan_test(
         """,
         test_harness = "//sw/host/tests/chip/sysrst_ctrl:sysrst_ctrl_inputs",
     ),
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_sival": None,
-        "//hw/top_earlgrey:sim_dv": None,
-    },
+    exec_env = dicts.add(
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:sim_dv": None,
+        },
+    ),
+    silicon = silicon_params(
+        test_cmd = """
+            --bootstrap="{firmware}"
+            "{firmware:elf}"
+        """,
+        test_harness = "//sw/host/tests/chip/sysrst_ctrl:sysrst_ctrl_inputs",
+    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
@@ -4448,10 +4458,20 @@ opentitan_test(
         """,
         test_harness = "//sw/host/tests/chip/sysrst_ctrl:sysrst_ctrl_outputs",
     ),
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_sival": None,
-        "//hw/top_earlgrey:sim_dv": None,
-    },
+    exec_env = dicts.add(
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:sim_dv": None,
+        },
+    ),
+    silicon = silicon_params(
+        test_cmd = """
+            --bootstrap="{firmware}"
+            "{firmware:elf}"
+        """,
+        test_harness = "//sw/host/tests/chip/sysrst_ctrl:sysrst_ctrl_outputs",
+    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
@@ -4477,10 +4497,20 @@ opentitan_test(
         """,
         test_harness = "//sw/host/tests/chip/sysrst_ctrl:sysrst_ctrl_in_irq",
     ),
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_sival": None,
-        "//hw/top_earlgrey:sim_dv": None,
-    },
+    exec_env = dicts.add(
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:sim_dv": None,
+        },
+    ),
+    silicon = silicon_params(
+        test_cmd = """
+            --bootstrap="{firmware}"
+            "{firmware:elf}"
+        """,
+        test_harness = "//sw/host/tests/chip/sysrst_ctrl:sysrst_ctrl_in_irq",
+    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
@@ -4506,10 +4536,19 @@ opentitan_test(
         """,
         test_harness = "//sw/host/tests/chip/sysrst_ctrl:sysrst_ctrl_ec_rst_l",
     ),
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_sival": None,
-        "//hw/top_earlgrey:sim_dv": None,
-    },
+    exec_env = dicts.add(
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:sim_dv": None,
+        },
+    ),
+    silicon = silicon_params(
+        test_cmd = """
+            --bootstrap="{firmware}"
+        """,
+        test_harness = "//sw/host/tests/chip/sysrst_ctrl:sysrst_ctrl_ec_rst_l",
+    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
@@ -4537,10 +4576,20 @@ opentitan_test(
         """,
         test_harness = "//sw/host/tests/chip/sysrst_ctrl:sysrst_ctrl_ulp_z3_wakeup",
     ),
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_sival": None,
-        "//hw/top_earlgrey:sim_dv": None,
-    },
+    exec_env = dicts.add(
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:sim_dv": None,
+        },
+    ),
+    silicon = silicon_params(
+        test_cmd = """
+            --bootstrap="{firmware}"
+            "{firmware:elf}"
+        """,
+        test_harness = "//sw/host/tests/chip/sysrst_ctrl:sysrst_ctrl_ulp_z3_wakeup",
+    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
