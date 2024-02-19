@@ -15,6 +15,8 @@ module entropy_src_repcnt_ht #(
    // ins req interface
   input logic [RngBusWidth-1:0] entropy_bit_i,
   input logic                   entropy_bit_vld_i,
+  input logic                   rng_bit_en_i,
+  input logic [1:0]             rng_bit_sel_i,
   input logic                   clear_i,
   input logic                   active_i,
   input logic [RegWidth-1:0]    thresh_i,
@@ -27,9 +29,11 @@ module entropy_src_repcnt_ht #(
   logic [RngBusWidth-1:0]               samples_match_pulse;
   logic [RngBusWidth-1:0]               samples_no_match_pulse;
   logic [RngBusWidth-1:0]               rep_cnt_fail;
+  logic                                 rng_bit_cnt_fail;
   logic [RngBusWidth-1:0][RegWidth-1:0] rep_cntr;
   logic [RngBusWidth-1:0]               rep_cntr_err;
   logic [RegWidth-1:0]                  cntr_max;
+  logic [RegWidth-1:0]                  rng_bit_cnt;
   logic                                 fail_sampled;
 
   // flops
@@ -102,15 +106,26 @@ module entropy_src_repcnt_ht #(
     .max_valid_o()
   );
 
+  assign rng_bit_cnt = (rng_bit_sel_i == 2'h0) ? rep_cntr[0] :
+                       (rng_bit_sel_i == 2'h1) ? rep_cntr[1] :
+                       (rng_bit_sel_i == 2'h2) ? rep_cntr[2] :
+                       rep_cntr[3];
+
+  assign rng_bit_cnt_fail = (rng_bit_sel_i == 2'h0) ? rep_cnt_fail[0] :
+                            (rng_bit_sel_i == 2'h1) ? rep_cnt_fail[1] :
+                            (rng_bit_sel_i == 2'h2) ? rep_cnt_fail[2] :
+                            rep_cnt_fail[3];
+
   // For the purposes of failure pulse generation, we want to sample
   // the test output for only one cycle and do it immediately after
   // the counter has been updated.
   assign fail_sample_mask_d = entropy_bit_vld_i;
-  assign fail_sampled       = |rep_cnt_fail & fail_sample_mask_q;
+  assign fail_sampled       = fail_sample_mask_q && (rng_bit_en_i ? rng_bit_cnt_fail :
+                                                                    |rep_cnt_fail);
 
   assign test_fail_pulse_o = active_i & fail_sampled;
 
-  assign test_cnt_o = cntr_max;
+  assign test_cnt_o = rng_bit_en_i ? rng_bit_cnt : cntr_max;
   assign count_err_o = (|rep_cntr_err);
 
 
