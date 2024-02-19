@@ -173,6 +173,21 @@ dif_result_t dif_entropy_src_fw_override_configure(
   return kDifOk;
 }
 
+dif_result_t dif_entropy_src_fw_override_sha3_start_insert(
+    const dif_entropy_src_t *entropy_src, dif_toggle_t enabled) {
+  if (entropy_src == NULL) {
+    return kDifBadArg;
+  }
+
+  uint32_t reg = bitfield_field32_write(
+      0, ENTROPY_SRC_FW_OV_SHA3_START_FW_OV_INSERT_START_FIELD,
+      dif_toggle_to_multi_bit_bool4(enabled));
+  mmio_region_write32(entropy_src->base_addr,
+                      ENTROPY_SRC_FW_OV_SHA3_START_REG_OFFSET, reg);
+
+  return kDifOk;
+}
+
 dif_result_t dif_entropy_src_health_test_configure(
     const dif_entropy_src_t *entropy_src,
     dif_entropy_src_health_test_config_t config) {
