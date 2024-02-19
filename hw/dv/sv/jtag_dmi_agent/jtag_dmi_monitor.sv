@@ -43,6 +43,17 @@ class jtag_dmi_monitor #(type ITEM_T = jtag_dmi_item) extends dv_base_monitor#(
     // address.
     bit dmi_selected = 1'b0;
 
+    // Normally, we consider a request to have gone through if the JTAG transaction has a rsp_op
+    // other than DmiOpInProgress. Unfortunately, there's a confusing window immediately after a
+    // request is made: the first JTAG transaction immediately after a request won't necessarily
+    // realise it should respond with DmiOpInProgress.
+    //
+    // To avoid things getting out of sync, we don't have an opinion about whether that transaction
+    // managed to cause a request. If we see a transaction other than DmiOpNone in that position,
+    // the monitor raises an error. The quiet_period flag is set if we can't trust the response of
+    // the next JTAG transaction.
+    bit quiet_period = 1'b0;
+
     forever begin
       bit is_ir_update, is_dr_update;
 
@@ -72,46 +83,60 @@ class jtag_dmi_monitor #(type ITEM_T = jtag_dmi_item) extends dv_base_monitor#(
 
       // At this point, we know we're operating on the DMI register. Handle any DR update.
       if (is_dr_update) begin
+        jtag_dmi_op_req_e req_op = jtag_dmi_op_req_e'(get_field_val(cfg.jtag_dtm_ral.dmi.op,
+                                                                    jtag_item.dr));
 
-        // Item has both the response for the previous request and a new DMI request. Capture the
-        // response first.
-        bit busy = capture_response(jtag_item);
+        if (quiet_period) begin
+          if (req_op != DmiOpNone) begin
+            `uvm_error(`gfn, $sformatf("JTAG operation %0d != DmiOpNone in quiet period", req_op))
+          end
+          quiet_period = 1'b0;
+        end else begin
+          // The item has both the response for the previous request and a new DMI request. Capture
+          // the response first.
+          bit in_progress = capture_response(jtag_item);
 
-        // If the TAP was not busy, any previous DMI transaction has completed so the TAP will also
-        // have seen the request.
-        if (!busy) capture_request(jtag_item);
+          // Since we know we are not in the quiet period, the DUT will have taken the request if it
+          // did not report an operation in progress. Set the quiet_period flag unless the operation
+          // was DmiOpNone.
+          if (req_op != DmiOpNone && !in_progress) begin
+            capture_request(jtag_item);
+            quiet_period = 1'b1;
+          end
+        end
       end
     end
   endtask
 
   // Capture a new DMI request, if the previous DMI transaction is not in progress.
   //
-  // Returns true if the response was captured, or if there was no previous request, false if the
-  // response returned was busy.
+  // Returns true if there was a previous request which is still in progress. Otherwise returns
+  // false.
   virtual function bit capture_response(jtag_item jtag_item);
     jtag_dmi_op_rsp_e rsp_op = jtag_dmi_op_rsp_e'(
         get_field_val(cfg.jtag_dtm_ral.dmi.op, jtag_item.dout));
 
+    if (rsp_op == DmiOpInProgress) begin
+      return 1;
+    end
+
     if (dmi_req_q.size() != 0) begin
-      if (rsp_op == DmiOpInProgress) begin
-        return 1;
-      end else begin
-        ITEM_T dmi_item = dmi_req_q.pop_front();
-        dmi_item.rsp_op = rsp_op;
-        if (dmi_item.req_op == DmiOpRead) begin
-          uvm_reg_data_t data = get_field_val(cfg.jtag_dtm_ral.dmi.data,
-                                              jtag_item.dout);
-          dmi_item.rdata = data;
-        end
-        `uvm_info(`gfn, $sformatf("Writing DMI item to analysis_port: %0s",
-                                  dmi_item.sprint(uvm_default_line_printer)), UVM_HIGH)
-        analysis_port.write(dmi_item);
+      ITEM_T dmi_item = dmi_req_q.pop_front();
+      dmi_item.rsp_op = rsp_op;
+      if (dmi_item.req_op == DmiOpRead) begin
+        uvm_reg_data_t data = get_field_val(cfg.jtag_dtm_ral.dmi.data,
+                                            jtag_item.dout);
+        dmi_item.rdata = data;
       end
+      `uvm_info(`gfn, $sformatf("Writing DMI item to analysis_port: %0s",
+                                dmi_item.sprint(uvm_default_line_printer)), UVM_HIGH)
+      analysis_port.write(dmi_item);
     end else begin
       if (rsp_op != DmiOpOk) begin
         `uvm_error(`gfn, $sformatf("Non-ok response seen with no previous DMI request."))
       end
     end
+
     return 0;
   endfunction
 
