@@ -23,28 +23,21 @@ class usbdev_enable_vseq extends usbdev_base_vseq;
     ral.usbctrl.enable.set(1'b1);  // Set usbdev control register enable bit.
     ral.usbctrl.device_address.set(0);
     csr_update(ral.usbctrl);
-    cfg.clk_rst_vif.wait_clks(100);
     configure_out_trans(); // register configurations for OUT Trans.
-    cfg.clk_rst_vif.wait_clks(20);
     call_token_seq(PidTypeOutToken);
     cfg.clk_rst_vif.wait_clks(20);
     call_data_seq(PidTypeData0, .randomize_length(1'b0), .num_of_bytes(8));
     get_response(m_response_item);
     $cast(m_usb20_item, m_response_item);
     get_out_response_from_device(m_usb20_item, PidTypeAck);
-    cfg.clk_rst_vif.wait_clks(20);
     // Verifies that usb device is enabled and received packet and sends ACK.
     check_trans_accuracy();
   endtask
 
   task check_trans_accuracy();
-    uvm_reg_data_t read_rxfifo;
     uvm_reg_data_t intr_state;
-    bit            pkt_received;
-    csr_rd(.ptr(ral.rxfifo), .value(read_rxfifo));
     csr_rd(.ptr(ral.intr_state), .value(intr_state));
-    pkt_received = bit'(get_field_val(ral.intr_state.pkt_received, intr_state));
     // DV_CHECK on pkt_received interrupt
-    `DV_CHECK_EQ(pkt_received, 1);
+    `DV_CHECK_EQ(get_field_val(ral.intr_state.pkt_received, intr_state), 1)
   endtask
 endclass
