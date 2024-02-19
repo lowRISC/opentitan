@@ -2191,7 +2191,11 @@ module top_earlgrey #(
       .axi_req_t(axi_req_t),
       .axi_rsp_t(axi_rsp_t),
       .reg_req_t(reg_req_t),
-      .reg_rsp_t(reg_rsp_t)
+      .reg_rsp_t(reg_rsp_t),
+      .AxiAddrWidth(AxiAddrWidth),
+      .AxiDataWidth(64),
+      .AxiIdWidth(AxiIdWidth),
+      .AxiUserWidth(AxiUserWidth)
   ) idma_wrap_i (
       .clk_i          ( clkmgr_aon_clocks.clk_main_infra ),
       .rst_ni         ( rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel] ),

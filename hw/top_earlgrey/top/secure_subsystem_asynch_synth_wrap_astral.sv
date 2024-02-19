@@ -429,7 +429,11 @@ module secure_subsystem_synth_wrap_astral
    top_earlgrey #(
       .HartIdOffs(HartIdOffs),
       .axi_req_t(axi_ot_out_req_t),
-      .axi_rsp_t(axi_ot_out_resp_t)
+      .axi_rsp_t(axi_ot_out_resp_t),
+      .AxiAddrWidth(AxiOtAddrWidth),
+      .AxiDataWidth(AxiOtDataWidth),
+      .AxiIdWidth(AxiOtOutIdWidth),
+      .AxiUserWidth(AxiOtUserWidth)
    ) u_RoT (
       .mio_attr_o                   (                       ),
       .dio_attr_o                   (                       ),
