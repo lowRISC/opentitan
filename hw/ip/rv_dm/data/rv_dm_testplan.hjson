@@ -464,6 +464,21 @@
       tests: ["rv_dm_halt_resume_whereto"]
     }
     {
+      name: progbuf_busy
+      desc: '''
+            Verify that writing on DM progbuf registers while abstract command is executing
+            causes jtag_dmi_ral.abstractcs.busy to be set to 1.
+
+            - Program jtag_dmi_ral.dmcontrol.haltreq to 1'b1.
+            - Acknowledge haltreq by setting tl_mem_ral.halted to 0.
+            - Send access register abstract command with postexec bit set.
+            - Write on any of progbuf registers.
+            - Verify that jtag_dmi_ral.abstractcs.busy is set to 1.
+            '''
+      stage: V1
+      tests: ["rv_dm_progbuf_busy"]
+    }
+    {
       name: stress_all
       desc: '''
             A 'bug hunt' test that stresses the DUT to its limits.
