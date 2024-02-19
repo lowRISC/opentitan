@@ -72,7 +72,9 @@ otcrypto_status_t otcrypto_kdf_hmac_ctr(
  * including populating the key configuration and allocating space for the
  * keyblob. The key length is also checked against `required_byte_len`. The
  * value in the `checksum` field of the blinded key struct will be populated
- * by this function.
+ * by this function. The use case where `keying_material` needs to be hw-backed
+ * is not supported by this function, hence `hw_backed` must be set tofalse.
+ * See `otcrypto_hw_backed_key` from `key_transport` for that specific use case.
  *
  * Note that it is the responsibility of the user of `keying_material` to
  * further validate the key configuration. While populating the key, this

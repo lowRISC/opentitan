@@ -35,37 +35,60 @@ otcrypto_status_t otcrypto_kdf_kmac(
     return OTCRYPTO_BAD_ARGS;
   }
 
-  // Check the private key checksum.
-  if (integrity_blinded_key_check(&key_derivation_key) != kHardenedBoolTrue) {
+  // Check for null label with nonzero length.
+  if (kdf_label.data == NULL && kdf_label.len != 0) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  // Because of KMAC HWIPs prefix limitation, `label` should not exceed
+  // `kKmacCustStrMaxSize` bytes.
+  if (kdf_label.len > kKmacCustStrMaxSize) {
     return OTCRYPTO_BAD_ARGS;
   }
 
-  // The underlying KMAC implementation is not hardened yet.
-  if (key_derivation_key.config.security_level !=
-          kOtcryptoKeySecurityLevelLow ||
-      keying_material->config.security_level != kOtcryptoKeySecurityLevelLow) {
-    return OTCRYPTO_NOT_IMPLEMENTED;
+  // Check for null context with nonzero length.
+  if (kdf_context.data == NULL && kdf_context.len != 0) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Check the private key checksum.
+  if (integrity_blinded_key_check(&key_derivation_key) != kHardenedBoolTrue) {
+    return OTCRYPTO_BAD_ARGS;
   }
 
   // Check `key_len` is supported by KMAC HWIP.
   // The set of supported key sizes is {128, 192, 256, 384, 512).
   HARDENED_TRY(kmac_key_length_check(key_derivation_key.config.key_length));
 
+  kmac_blinded_key_t kmac_key = {
+      .share0 = NULL,
+      .share1 = NULL,
+      .hw_backed = key_derivation_key.config.hw_backed,
+      .len = key_derivation_key.config.key_length,
+  };
   // Validate key length of `key_derivation_key`.
   if (key_derivation_key.config.hw_backed == kHardenedBoolTrue) {
-    return OTCRYPTO_NOT_IMPLEMENTED;
+    // Check that 1) key size matches sideload port size, 2) keyblob length
+    // matches diversification length.
+    if (keyblob_share_num_words(key_derivation_key.config) * sizeof(uint32_t) !=
+        kKmacSideloadKeyLength / 8) {
+      return OTCRYPTO_BAD_ARGS;
+    }
+    // Configure keymgr with diversification input and then generate the
+    // sideload key.
+    keymgr_diversification_t diversification;
+    // Diversification call also checks that `key_derivation_key.keyblob_length`
+    // is 8 words long.
+    HARDENED_TRY(keyblob_to_keymgr_diversification(&key_derivation_key,
+                                                   &diversification));
+    HARDENED_TRY(keymgr_generate_key_kmac(diversification));
   } else if (key_derivation_key.config.hw_backed == kHardenedBoolFalse) {
     if (key_derivation_key.keyblob_length !=
         keyblob_num_words(key_derivation_key.config) * sizeof(uint32_t)) {
       return OTCRYPTO_BAD_ARGS;
     }
+    HARDENED_TRY(keyblob_to_shares(&key_derivation_key, &kmac_key.share0,
+                                   &kmac_key.share1));
   } else {
-    return OTCRYPTO_BAD_ARGS;
-  }
-
-  // Because of KMAC HWIPs prefix limitation, `label` should not exceed
-  // `kKmacCustStrMaxSize` bytes.
-  if (kdf_label.len > kKmacCustStrMaxSize) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -80,8 +103,10 @@ otcrypto_status_t otcrypto_kdf_kmac(
 
   // Check `keying_material` key length.
   if (keying_material->config.hw_backed == kHardenedBoolTrue) {
-    return OTCRYPTO_NOT_IMPLEMENTED;
-  } else if (key_derivation_key.config.hw_backed == kHardenedBoolFalse) {
+    // The case where `keying_material` is hw_backed is addressed by
+    // `otcrypto_hw_backed_key` function in `key_transport.h`.
+    return OTCRYPTO_BAD_ARGS;
+  } else if (keying_material->config.hw_backed == kHardenedBoolFalse) {
     if (keying_material->config.key_length != required_byte_len ||
         keying_material->keyblob_length !=
             keyblob_num_words(keying_material->config) * sizeof(uint32_t)) {
@@ -90,11 +115,6 @@ otcrypto_status_t otcrypto_kdf_kmac(
   } else {
     return OTCRYPTO_BAD_ARGS;
   }
-
-  kmac_blinded_key_t kmac_key;
-  HARDENED_TRY(keyblob_to_shares(&key_derivation_key, &kmac_key.share0,
-                                 &kmac_key.share1));
-  kmac_key.len = key_derivation_key.config.key_length;
 
   if (kmac_mode == kOtcryptoKmacModeKmac128) {
     // Check if `key_mode` of the key derivation key matches `kmac_mode`.
@@ -126,6 +146,12 @@ otcrypto_status_t otcrypto_kdf_kmac(
   }
 
   keying_material->checksum = integrity_blinded_checksum(keying_material);
+
+  if (key_derivation_key.config.hw_backed == kHardenedBoolTrue) {
+    HARDENED_TRY(keymgr_sideload_clear_kmac());
+  } else if (key_derivation_key.config.hw_backed != kHardenedBoolFalse) {
+    return OTCRYPTO_BAD_ARGS;
+  }
 
   return OTCRYPTO_OK;
 }
