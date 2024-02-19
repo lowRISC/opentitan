@@ -23,7 +23,7 @@ package i2c_env_pkg;
   typedef enum int {
     FmtThreshold   = 0,
     RxThreshold    = 1,
-    FmtOverflow    = 2,
+    AcqThreshold   = 2,
     RxOverflow     = 3,
     Nak            = 4,
     SclInference   = 5,
@@ -32,7 +32,7 @@ package i2c_env_pkg;
     SdaUnstable    = 8,
     CmdComplete    = 9,
     TxStretch      = 10,
-    TxOverflow     = 11,
+    TxThreshold    = 11,
     AcqFull        = 12,
     UnexpStop      = 13,
     HostTimeout    = 14,

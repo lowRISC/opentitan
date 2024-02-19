@@ -14,8 +14,8 @@ covergroup i2c_interrupts_cg with function sample(
   cp_fmt_threshold    : coverpoint intr_state[ 0] iff (intr_enable[ 0]);
   // host            mode interrupt: raised if the RX FIFO is greater than the high threshold.
   cp_rx_threshold     : coverpoint intr_state[ 1] iff (intr_enable[ 1]);
-  // host            mode interrupt: raised if the FMT FIFO has overflowed.
-  cp_fmt_overflow     : coverpoint intr_state[ 2] iff (intr_enable[ 2]);
+  //          target mode interrupt: raised if the ACQ FIFO depth is greater than the high threshold.
+  cp_acq_threshold    : coverpoint intr_state[ 2] iff (intr_enable[ 2]);
   // host            mode interrupt: raised if the RX FIFO has overflowed.
   cp_rx_overflow      : coverpoint intr_state[ 3] iff (intr_enable[ 3]);
   // host            mode interrupt: raised if there is no ACK in response to an address or data
@@ -39,8 +39,8 @@ covergroup i2c_interrupts_cg with function sample(
   //          target mode interrupt: raised if the target is stretching clocks for a read command.
   //                                 This is a level status interrupt.
   cp_tx_stretch       : coverpoint intr_state[10] iff (intr_enable[10]);
-  //          target mode interrupt: raised if TX FIFO has overflowed.
-  cp_tx_overflow      : coverpoint intr_state[11] iff (intr_enable[11]);
+  //          target mode interrupt: raised if TX FIFO depth is less than the low threshold.
+  cp_tx_threshold     : coverpoint intr_state[11] iff (intr_enable[11]);
   //          target mode interrupt: raised if ACQ FIFO becomes full. This is a level status
   //                                 interrupt.
   cp_acq_full         : coverpoint intr_state[12] iff (intr_enable[12]);
@@ -53,7 +53,7 @@ covergroup i2c_interrupts_cg with function sample(
 
   cp_fmt_threshold_test    : coverpoint intr_state[ 0] iff (intr_test[ 0]){ ignore_bins dis = {0}; }
   cp_rx_threshold_test     : coverpoint intr_state[ 1] iff (intr_test[ 1]){ ignore_bins dis = {0}; }
-  cp_fmt_overflow_test     : coverpoint intr_state[ 2] iff (intr_test[ 2]){ ignore_bins dis = {0}; }
+  cp_acq_threshold_test    : coverpoint intr_state[ 2] iff (intr_test[ 2]){ ignore_bins dis = {0}; }
   cp_rx_overflow_test      : coverpoint intr_state[ 3] iff (intr_test[ 3]){ ignore_bins dis = {0}; }
   cp_nak_test              : coverpoint intr_state[ 4] iff (intr_test[ 4]){ ignore_bins dis = {0}; }
   cp_scl_interference_test : coverpoint intr_state[ 5] iff (intr_test[ 5]){ ignore_bins dis = {0}; }
@@ -62,7 +62,7 @@ covergroup i2c_interrupts_cg with function sample(
   cp_sda_unstable_test     : coverpoint intr_state[ 8] iff (intr_test[ 8]){ ignore_bins dis = {0}; }
   cp_cmd_complete_test     : coverpoint intr_state[ 9] iff (intr_test[ 9]){ ignore_bins dis = {0}; }
   cp_tx_stretch_test       : coverpoint intr_state[10] iff (intr_test[10]){ ignore_bins dis = {0}; }
-  cp_tx_overflow_test      : coverpoint intr_state[11] iff (intr_test[11]){ ignore_bins dis = {0}; }
+  cp_tx_threshold_test     : coverpoint intr_state[11] iff (intr_test[11]){ ignore_bins dis = {0}; }
   cp_acq_full_test         : coverpoint intr_state[12] iff (intr_test[12]){ ignore_bins dis = {0}; }
   cp_unexp_stop_test       : coverpoint intr_state[13] iff (intr_test[13]){ ignore_bins dis = {0}; }
   cp_host_timeout_test     : coverpoint intr_state[14] iff (intr_test[14]){ ignore_bins dis = {0}; }
@@ -75,10 +75,10 @@ covergroup i2c_fifo_reset_cg with function sample(
   bit txrst,
   bit fmt_threshold,
   bit rx_threshold,
-  bit fmt_overflow,
+  bit acq_threshold,
   bit rx_overflow,
   bit acq_overflow,
-  bit tx_overflow
+  bit tx_threshold
 );
   cp_fmtrst : coverpoint fmtrst;
   cp_rxrst : coverpoint rxrst;
@@ -86,16 +86,16 @@ covergroup i2c_fifo_reset_cg with function sample(
   cp_txrst : coverpoint txrst;
   cp_fmt_threshold : coverpoint fmt_threshold;
   cp_rx_threshold : coverpoint rx_threshold;
-  cp_fmt_overflow : coverpoint fmt_overflow;
+  cp_acq_threshold : coverpoint acq_threshold;
   cp_rx_overflow : coverpoint rx_overflow;
   cp_acq_overflow : coverpoint acq_overflow;
-  cp_tx_overflow : coverpoint tx_overflow;
+  cp_tx_threshold : coverpoint tx_threshold;
   cp_fmt_threshold_cross : cross cp_fmt_threshold, cp_fmtrst;
   cp_rx_threshold_cross : cross cp_rx_threshold, cp_rxrst;
-  cp_fmt_overflow_cross : cross cp_fmt_overflow, cp_fmtrst;
+  cp_acq_threshold_cross : cross cp_acq_threshold, cp_fmtrst;
   cp_rx_overflow_cross : cross cp_rx_overflow, cp_rxrst;
   cp_acq_overflow_cross : cross cp_acq_overflow, cp_acqrst;
-  cp_tx_overflow_cross : cross cp_tx_overflow, cp_txrst;
+  cp_tx_threshold_cross : cross cp_tx_threshold, cp_txrst;
 endgroup
 
 covergroup i2c_fifo_level_cg (uint fifo_depth)

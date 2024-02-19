@@ -19,7 +19,6 @@ class i2c_target_stress_all_vseq extends i2c_target_smoke_vseq;
   string seq_names[$] = {
     "i2c_target_smoke_vseq",
     "i2c_target_stress_wr_vseq",
-    "i2c_target_tx_ovf_vseq",
     "i2c_target_timeout_vseq",
     "i2c_target_ack_stop_vseq",
     "i2c_target_perf_vseq"

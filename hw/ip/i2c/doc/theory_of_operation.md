@@ -204,14 +204,13 @@ In the first two scenarios, it is after the ACK bit sent by the target, in the l
 The I2C module has a few interrupts including general data flow interrupts and unexpected event interrupts.
 
 #### Host Mode
-If the RX FIFO exceeds the designated depth of entries, the interrupt `rx_threshold` is raised to inform firmware.
-Firmware can configure the threshold value via the register [`FIFO_CTRL.RXILVL`](registers.md#fifo_ctrl).
+Whenever the RX FIFO exceeds the designated number of entries, the interrupt `rx_threshold` is asserted to inform firmware.
+Firmware can configure the threshold value via the register [`HOST_FIFO_CONFIG.RX_THRESH`](registers.md#host_fifo_config).
 
-Meanwhile it the FMT FIFO level falls below a designated depth of entries the `fmt_threshold` interrupt is raised.
-(Note that this behavior differs from similar interrupts in other modules, such as the UART IP module.)
-Firmware can configure the threshold value via the register [`FIFO_CTRL.FMTILVL`](registers.md#fifo_ctrl).
+Whilst the FMT FIFO level lies below a designated number of entries, the `fmt_threshold` interrupt is asserted.
+Firmware can configure the threshold value via the register [`HOST_FIFO_CONFIG.FMT_THRESH`](registers.md#host_fifo_config).
 
-If either FIFO receives an additional write request when its FIFO is full, the interrupt `fmt_overflow` or `rx_overflow` is asserted and the format indicator or character is dropped.
+If the RX FIFO receives an additional write request when its FIFO is full, the interrupt `rx_overflow` is asserted and the character is dropped.
 
 If the module transmits a byte, but receives no ACK signal, the `nak` interrupt is usually asserted.
 In cases where a byte is transmitted and no ACK is expected or required, that byte should be submitted with NAKOK flag also asserted.
@@ -275,6 +274,12 @@ When a host receives enough data from a target, it usually signals the end of th
 In a case when a target receives a STOP without the prerequisite NACK, the interrupt `unexp_stop` is asserted.
 This interrupt just means that a STOP was unexpectedly observed during a host read.
 It is not necessarily harmful, but software can be made aware just in case.
+
+If the ACQ FIFO exceeds the designated number of entries, the interrupt `acq_threshold` is raised to inform firmware.
+Firmware can configure the threshold value via the register [`TARGET_FIFO_CONFIG.ACQ_THRESH`](registers.md#target_fifo_config).
+
+Whilst the TX FIFO level is below a designated number of entries the `tx_threshold` interrupt is asserted.
+Firmware can configure the threshold value via the register [`TARGET_FIFO_CONFIG.TX_THRESH`](registers.md#target_fifo_config).
 
 If ACQ FIFO becomes full, the interrupt `acq_full` is asserted.
 

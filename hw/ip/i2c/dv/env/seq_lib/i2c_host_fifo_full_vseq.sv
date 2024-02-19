@@ -63,8 +63,8 @@ class i2c_host_fifo_full_vseq extends i2c_rx_tx_vseq;
     fmt_empty = bit'(get_field_val(ral.status.fmtempty, status));
     rx_full   = bit'(get_field_val(ral.status.rxfull, status));
     rx_empty  = bit'(get_field_val(ral.status.rxempty, status));
-    csr_rd(.ptr(ral.fifo_status.fmtlvl), .value(fmt_lvl), .backdoor(1'b1));
-    csr_rd(.ptr(ral.fifo_status.rxlvl), .value(rx_lvl), .backdoor(1'b1));
+    csr_rd(.ptr(ral.host_fifo_status.fmtlvl), .value(fmt_lvl), .backdoor(1'b1));
+    csr_rd(.ptr(ral.host_fifo_status.rxlvl), .value(rx_lvl), .backdoor(1'b1));
     if (!cfg.under_reset) begin
       if (fmt_full)  begin
         `DV_CHECK_EQ(fmt_lvl, I2C_FMT_FIFO_DEPTH);

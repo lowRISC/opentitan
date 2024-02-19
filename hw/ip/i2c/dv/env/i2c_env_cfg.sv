@@ -43,10 +43,6 @@ class i2c_env_cfg extends cip_base_env_cfg #(.RAL_T(i2c_reg_block));
   // Slow tx process
   bit        slow_txq = 1'b0;
 
-  // For tx fifio overflow test.
-  // If this bit is set, tx fifo is fed by 'drooling_write_tx_fifo()' in i2c_base_vseq.sv
-  bit        use_drooling_tx = 1'b0;
-
   //  ack stop test
   int        sent_ack_stop = 0;
   int        rcvd_ack_stop = 0;
@@ -91,7 +87,6 @@ class i2c_env_cfg extends cip_base_env_cfg #(.RAL_T(i2c_reg_block));
 
   // this function is called after reset or end of vseq run
   virtual function void reset_seq_cfg();
-    seq_cfg.en_fmt_overflow     = 1'b0;
     seq_cfg.en_rx_overflow      = 1'b0;
     seq_cfg.en_rx_threshold     = 1'b0;
     seq_cfg.en_sda_unstable     = 1'b0;
@@ -100,7 +95,6 @@ class i2c_env_cfg extends cip_base_env_cfg #(.RAL_T(i2c_reg_block));
 
     // target mode cfg params.
     slow_acq = 0;
-    use_drooling_tx = 0;
     wr_pct = 1;
     rd_pct = 1;
     min_data = 1;

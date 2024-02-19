@@ -150,16 +150,15 @@
     {
       name: host_fifo_overflow
       desc: '''
-            Test the overflow interrupt for fmt_fifo and rx_fifo.
+            Test the overflow interrupt for rx_fifo.
 
             Stimulus:
               - Configure DUT/Agent to Host/Target mode respectively
-              - DUT keeps sending a number of format byte higher than the size of fmt_fifo and
-                rx_fifo depth
+              - DUT keeps receiving a number of bytes higher than the depth of rx_fifo
 
             Checking:
               - Ensure excess format bytes are dropped
-              - Ensure fmt_overflow and rx_overflow interrupt are asserted
+              - Ensure rx_overflow interrupt are asserted
             '''
       stage: V2
       tests: ["i2c_host_fifo_overflow"]
@@ -360,21 +359,6 @@
       tests: ["i2c_target_perf"]
     }
     {
-      name: target_fifo_overflow
-      desc: '''
-            Test the overflow interrupt for tx_fifo overflow.
-
-            Stimulus:
-              - Configure DUT/Agent to Target/Host mode respectively
-              - Agent keeps sending a number of format byte higher than the size of tx_fifo
-            Checking:
-              - Ensure excess format bytes are dropped
-              - Ensure tx_overflow interrupt are asserted
-            '''
-      stage: V2
-      tests: ["i2c_target_tx_ovf"]
-    }
-    {
       name: target_fifo_empty
       desc: '''
             Test tx_empty and tx_nonempty interrupt.
@@ -509,10 +493,10 @@
             Cover the FIFO reset bits in FIFO_CTL register
             Cross fmt_threshold with FMTRST
             Cross rx_threshold with RXRST
-            Cross fmt_overflow with FMTRST
+            Cross acq_threshold with FMTRST
             Cross rx_overflow with RXRST
             Cross acq_overflow with ACQRST
-            Cross tx_overflow with TXRST
+            Cross tx_threshold with TXRST
             '''
     }
     {

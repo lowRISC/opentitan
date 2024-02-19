@@ -40,15 +40,16 @@
   // INTERRUPT pins
   interrupt_list: [
     { name: "fmt_threshold"
-      desc: "host mode interrupt: raised when the FMT FIFO depth is less than the low threshold."
+      desc: "host mode interrupt: asserted whilst the FMT FIFO level is below the low threshold. This is a level status interrupt."
       type: "status"
     }
     { name: "rx_threshold"
-      desc: "host mode interrupt: raised if the RX FIFO is greater than the high threshold."
+      desc: "host mode interrupt: asserted whilst the RX FIFO level is above the high threshold. This is a level status interrupt."
       type: "status"
     }
-    { name: "fmt_overflow"
-      desc: "host mode interrupt: raised if the FMT FIFO has overflowed."
+    { name: "acq_threshold"
+      desc: "target mode interrupt: asserted whilst the ACQ FIFO level is above the high threshold. This is a level status interrupt."
+      type: "status"
     }
     { name: "rx_overflow"
       desc: "host mode interrupt: raised if the RX FIFO has overflowed."
@@ -76,14 +77,15 @@
       '''
     }
     { name: "tx_stretch"
-      desc: "target mode interrupt: raised if the target is stretching clocks for a read command.  This is a level status interrupt."
+      desc: "target mode interrupt: raised if the target is stretching clocks for a read command. This is a level status interrupt."
       type: "status"
     }
-    { name: "tx_overflow"
-      desc: "target mode interrupt: raised if TX FIFO has overflowed."
+    { name: "tx_threshold"
+      desc: "target mode interrupt: asserted whilst the TX FIFO level is below the low threshold. This is a level status interrupt."
+      type: "status"
     }
     { name: "acq_full"
-      desc: "target mode interrupt: raised if ACQ FIFO becomes full.  This is a level status interrupt."
+      desc: "target mode interrupt: raised if ACQ FIFO becomes full. This is a level status interrupt."
       type: "status"
     }
     { name: "unexp_stop"
@@ -326,58 +328,6 @@
           name: "FMTRST"
           desc: "FMT fifo reset. Write 1 to the register resets FMT_FIFO. Read returns 0"
         }
-        { bits: "4:2"
-          name: "RXILVL"
-          desc: '''Trigger level for RX interrupts. If the FIFO depth exceeds
-                this setting, it raises rx_threshold interrupt.
-                '''
-          enum: [
-            { value: "0",
-              name: "rxlvl1",
-              desc: "1 character"
-            },
-            { value: "1",
-              name: "rxlvl4",
-              desc: "4 characters"
-            },
-            { value: "2",
-              name: "rxlvl8",
-              desc: "8 characters"
-            },
-            { value: "3",
-              name: "rxlvl16",
-              desc: "16 characters"
-            },
-            { value: "4",
-              name: "rxlvl30",
-              desc: "30 characters"
-            },
-          ]
-        }
-        { bits: "6:5"
-          name: "FMTILVL"
-          desc: '''Trigger level for FMT interrupts. If the FIFO depth falls below
-                this setting, it raises fmt_threshold interrupt.
-                '''
-          enum: [
-            { value: "0",
-              name: "fmtlvl1"
-              desc: "1 character"
-            },
-            { value: "1",
-              name: "fmtlvl4",
-              desc: "4 characters"
-            },
-            { value: "2",
-              name: "fmtlvl8",
-              desc: "8 characters"
-            },
-            { value: "3",
-              name: "fmtlvl16",
-              desc: "16 characters"
-            }
-          ]
-        }
         { bits: "7"
           swaccess: "wo"
           name: "ACQRST"
@@ -390,27 +340,83 @@
         }
       ]
     }
-    { name: "FIFO_STATUS"
-      desc: "I2C FIFO status register"
+    {
+      name: "HOST_FIFO_CONFIG"
+      desc: "Host mode FIFO configuration"
+      swaccess: "rw"
+      hwaccess: "hro"
+      hwqe: "true"
+      fields: [
+        { bits: "11:0"
+          name: "RX_THRESH"
+          desc: '''Threshold level for RX interrupts. Whilst the level of data in the RX FIFO
+                is above this setting, the rx_threshold interrupt will be asserted.
+                '''
+          resval: "0"
+        }
+        { bits: "27:16"
+          name: "FMT_THRESH"
+          desc: '''Threshold level for FMT interrupts. Whilst the number of used entries in the
+                FMT FIFO is below this setting, the fmt_threshold interrupt will be asserted.
+                '''
+          resval: "0"
+        }
+      ]
+    }
+    {
+      name: "TARGET_FIFO_CONFIG"
+      desc: "Target mode FIFO configuration"
+      swaccess: "rw"
+      hwaccess: "hro"
+      hwqe: "true"
+      fields: [
+        { bits: "11:0"
+          name: "TX_THRESH"
+          desc: '''Threshold level for TX interrupts. Whilst the number of used entries in the
+                TX FIFO is below this setting, the tx_threshold interrupt will be asserted.
+                '''
+          resval: "0"
+        }
+        { bits: "27:16"
+          name: "ACQ_THRESH"
+          desc: '''Threshold level for ACQ interrupts. Whilst the level of data in the ACQ FIFO
+                is above this setting, the acq_threshold interrupt will be asserted.
+                '''
+          resval: "0"
+        }
+      ]
+    }
+    { name: "HOST_FIFO_STATUS"
+      desc: "Host mode FIFO status register"
       swaccess: "ro"
       hwaccess: "hwo"
       hwext: "true"
       fields: [
-        { bits: "6:0"
+        { bits: "11:0"
           name: "FMTLVL"
-          desc: "Current fill level of FMT fifo (Host mode)"
+          desc: "Current fill level of FMT fifo"
         }
-        { bits: "22:16"
+        { bits: "27:16"
           name: "RXLVL"
-          desc: "Current fill level of RX fifo (Host mode)"
+          desc: "Current fill level of RX fifo"
         }
-        { bits: "14:8"
+      ]
+      tags: [// Updated by the hw. Exclude from write-checks.
+             "excl:CsrNonInitTests:CsrExclWriteCheck"]
+    }
+    { name: "TARGET_FIFO_STATUS"
+      desc: "Target mode FIFO status register"
+      swaccess: "ro"
+      hwaccess: "hwo"
+      hwext: "true"
+      fields: [
+        { bits: "11:0"
           name: "TXLVL"
-          desc: "Current fill level of TX fifo (Target mode)"
+          desc: "Current fill level of TX fifo"
         }
-        { bits: "30:24"
+        { bits: "27:16"
           name: "ACQLVL"
-          desc: "Current fill level of ACQ fifo (Target mode)"
+          desc: "Current fill level of ACQ fifo"
         }
       ]
       tags: [// Updated by the hw. Exclude from write-checks.
