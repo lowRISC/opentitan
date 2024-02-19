@@ -41,9 +41,11 @@
   interrupt_list: [
     { name: "fmt_threshold"
       desc: "host mode interrupt: raised when the FMT FIFO depth is less than the low threshold."
+      type: "status"
     }
     { name: "rx_threshold"
       desc: "host mode interrupt: raised if the RX FIFO is greater than the high threshold."
+      type: "status"
     }
     { name: "fmt_overflow"
       desc: "host mode interrupt: raised if the FMT FIFO has overflowed."
