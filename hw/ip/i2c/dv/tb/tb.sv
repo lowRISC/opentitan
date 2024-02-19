@@ -16,7 +16,7 @@ module tb;
   wire clk, rst_n;
   wire intr_fmt_threshold;
   wire intr_rx_threshold;
-  wire intr_fmt_overflow;
+  wire intr_acq_threshold;
   wire intr_rx_overflow;
   wire intr_nak;
   wire intr_scl_interference;
@@ -25,7 +25,7 @@ module tb;
   wire intr_sda_unstable;
   wire intr_cmd_complete;
   wire intr_tx_stretch;
-  wire intr_tx_overflow;
+  wire intr_tx_threshold;
   wire intr_acq_full;
   wire intr_unexp_stop;
   wire intr_host_timeout;
@@ -98,7 +98,7 @@ module tb;
 
     .intr_fmt_threshold_o    (intr_fmt_threshold    ),
     .intr_rx_threshold_o     (intr_rx_threshold     ),
-    .intr_fmt_overflow_o     (intr_fmt_overflow     ),
+    .intr_acq_threshold_o    (intr_acq_threshold    ),
     .intr_rx_overflow_o      (intr_rx_overflow      ),
     .intr_nak_o              (intr_nak              ),
     .intr_scl_interference_o (intr_scl_interference ),
@@ -107,7 +107,7 @@ module tb;
     .intr_sda_unstable_o     (intr_sda_unstable     ),
     .intr_cmd_complete_o     (intr_cmd_complete     ),
     .intr_tx_stretch_o       (intr_tx_stretch       ),
-    .intr_tx_overflow_o      (intr_tx_overflow      ),
+    .intr_tx_threshold_o     (intr_tx_threshold     ),
     .intr_acq_full_o         (intr_acq_full         ),
     .intr_unexp_stop_o       (intr_unexp_stop       ),
     .intr_host_timeout_o     (intr_host_timeout     )
@@ -116,7 +116,7 @@ module tb;
   // interrupt
   assign interrupts[FmtThreshold]   = intr_fmt_threshold;
   assign interrupts[RxThreshold]    = intr_rx_threshold;
-  assign interrupts[FmtOverflow]    = intr_fmt_overflow;
+  assign interrupts[AcqThreshold]   = intr_acq_threshold;
   assign interrupts[RxOverflow]     = intr_rx_overflow;
   assign interrupts[Nak]            = intr_nak;
   assign interrupts[SclInference]   = intr_scl_interference;
@@ -125,7 +125,7 @@ module tb;
   assign interrupts[SdaUnstable]    = intr_sda_unstable;
   assign interrupts[CmdComplete]    = intr_cmd_complete;
   assign interrupts[TxStretch]      = intr_tx_stretch;
-  assign interrupts[TxOverflow]     = intr_tx_overflow;
+  assign interrupts[TxThreshold]    = intr_tx_threshold;
   assign interrupts[AcqFull]        = intr_acq_full;
   assign interrupts[UnexpStop]      = intr_unexp_stop;
   assign interrupts[HostTimeout]    = intr_host_timeout;

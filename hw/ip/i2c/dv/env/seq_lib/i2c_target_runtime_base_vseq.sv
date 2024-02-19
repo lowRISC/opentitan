@@ -77,7 +77,7 @@ class i2c_target_runtime_base_vseq extends i2c_target_smoke_vseq;
     uvm_reg_data_t data;
     delay = $urandom_range(0, 10);
     cfg.clk_rst_vif.wait_clks(delay * acq_rd_cyc);
-    csr_rd(.ptr(ral.fifo_status.txlvl), .value(data));
+    csr_rd(.ptr(ral.target_fifo_status.txlvl), .value(data));
     data = 64 - data;
 
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(lvl, lvl dist {[1:16] := 7, [17:63] := 1, 64 := 2};)

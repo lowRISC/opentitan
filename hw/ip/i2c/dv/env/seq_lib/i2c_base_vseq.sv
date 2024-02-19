@@ -33,8 +33,10 @@ class i2c_base_vseq extends cip_base_vseq #(
   rand bit   [6:0]            illegal_addr;  // Illegal target address
 
   rand bit   [7:0]            txdata;
-  rand bit   [2:0]            rxilvl;
-  rand bit   [1:0]            fmtilvl;
+  rand bit   [7:0]            rx_thresh;
+  rand bit   [7:0]            fmt_thresh;
+  rand bit   [7:0]            acq_thresh;
+  rand bit   [7:0]            tx_thresh;
 
   // timing property
   rand bit [15:0]             thigh;      // high period of the SCL in clock units
@@ -68,25 +70,13 @@ class i2c_base_vseq extends cip_base_vseq #(
   int exp_rd_id = 0;
   int exp_wr_id = 0;
 
-  // read_txn_q is used differently in drooling tx mode.
-  // Normal mode entry :
-  // a single byte of read data and only wdata is valid.
-  // Drooling tx mode entry :
-  // exp read txn all 'target_rd_comp' methods are valid.
+  // read_txn_q usage: a single byte of read data and only wdata is valid.
   i2c_item read_txn_q[$];
   int tran_id = 0;
   int sent_txn_cnt = 0;
 
   i2c_intr_e intr_q[$];
   bit expected_intr[i2c_intr_e];
-
-  // Used for drooling tx mode
-  bit read_on_going = 0;
-  int drooling_read_size = 0;
-  int drooling_rx_cnt = 0;
-  i2c_item drooling_exp_rd_item;
-  bit [7:0] spill_over_data_q[$];
-  bit       read_cmd_q[$];
 
   // Used for ack stop test
   bit [7:0] pre_feed_rd_data_q[$];
@@ -103,8 +93,13 @@ class i2c_base_vseq extends cip_base_vseq #(
   constraint addr_c {
     addr inside {[cfg.seq_cfg.i2c_min_addr : cfg.seq_cfg.i2c_max_addr]};
   }
-  constraint fmtilvl_c {
-    fmtilvl inside {[0 : cfg.seq_cfg.i2c_max_fmtilvl]};
+  constraint fmt_thresh_c {
+    // Interrupt is asserted when the level is _below_ the threshold
+    fmt_thresh inside {[1 : cfg.seq_cfg.i2c_max_fmt_thresh]};
+  }
+  constraint txi_thresh_c {
+    // Interrupt is asserted when the level is _below_ the threshold
+    tx_thresh inside {[1 : cfg.seq_cfg.i2c_max_tx_thresh]};
   }
   constraint num_trans_c {
     num_trans inside {[cfg.seq_cfg.i2c_min_num_trans : cfg.seq_cfg.i2c_max_num_trans]};
@@ -120,12 +115,20 @@ class i2c_base_vseq extends cip_base_vseq #(
   }
 
   // create uniform assertion distributions of rx_threshold interrupt
-  constraint rxilvl_c {
-    rxilvl dist {
-      [0:4] :/ 5,
-      [5:cfg.seq_cfg.i2c_max_rxilvl] :/ 1
+  constraint rx_thresh_c {
+    rx_thresh dist {
+      [0:cfg.seq_cfg.i2c_max_rx_thresh] :/ cfg.seq_cfg.i2c_max_rx_thresh,
+      [cfg.seq_cfg.i2c_max_rx_thresh+1:255] :/ 1
     };
   }
+  // create uniform assertion distributions of acq_threshold interrupt
+  constraint acq_thresh_c {
+    acq_thresh dist {
+      [0:cfg.seq_cfg.i2c_max_acq_thresh] :/ cfg.seq_cfg.i2c_max_acq_thresh,
+      [cfg.seq_cfg.i2c_max_acq_thresh+1:255] :/ 1
+    };
+  }
+
   constraint num_wr_bytes_c {
     num_wr_bytes dist {
       1       :/ 2,
@@ -418,11 +421,19 @@ class i2c_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, $sformatf("\n  cfg.m_i2c_agent_cfg.timing_cfg\n%p",
         cfg.m_i2c_agent_cfg.timing_cfg), UVM_MEDIUM)
 
-    //*** program ilvl
-    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(fmtilvl)
-    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(rxilvl)
-    ral.fifo_ctrl.rxilvl.set(rxilvl);
-    ral.fifo_ctrl.fmtilvl.set(fmtilvl);
+    //*** program Host mode FIFO thresholds
+    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(rx_thresh)
+    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(fmt_thresh)
+    ral.host_fifo_config.rx_thresh.set(rx_thresh);
+    ral.host_fifo_config.fmt_thresh.set(fmt_thresh);
+    csr_update(ral.host_fifo_config);
+    //*** program Target mode FIFO thresholds
+    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(acq_thresh)
+    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(tx_thresh)
+    ral.target_fifo_config.acq_thresh.set(acq_thresh);
+    ral.target_fifo_config.tx_thresh.set(tx_thresh);
+    csr_update(ral.target_fifo_config);
+    //*** set FIFO_CTRL register
     csr_update(ral.fifo_ctrl);
   endtask : program_registers
 
@@ -435,15 +446,7 @@ class i2c_base_vseq extends cip_base_vseq #(
     ral.fdata.stop.set(item.stop);
     ral.fdata.start.set(item.start);
     ral.fdata.fbyte.set(item.fbyte);
-    // en_fmt_underflow is set to ensure no write data overflow with fmt_fifo
-    // regardless en_fmt_underflow set/unset, the last data (consist of STOP bit) must be
-    // pushed into fmt_fifo to safely complete transaction
-    if (!cfg.seq_cfg.en_fmt_overflow || fmt_item.stop) begin
-      csr_spinwait(.ptr(ral.status.fmtfull), .exp_data(1'b0));
-    end
-    // if fmt_overflow irq is triggered it must be cleared before new fmt data is programmed
-    // otherwise, scoreboard can drop this data while fmt_fifo is not full
-    wait(!cfg.intr_vif.pins[FmtOverflow]);
+    csr_spinwait(.ptr(ral.status.fmtfull), .exp_data(1'b0));
     // program fmt_fifo
     csr_update(.csr(ral.fdata));
 
@@ -463,10 +466,11 @@ class i2c_base_vseq extends cip_base_vseq #(
                                        foreach (intr_clear[i]) {
                                            intr_state[i] -> intr_clear[i] == 1;
                                        })
-
+    // TODO: It is NOT possible to clear this interrupt by a simple INTR_STATE write now!
     if (bit'(get_field_val(ral.intr_state.fmt_threshold, intr_clear))) begin
       `uvm_info(`gfn, "\n  clearing fmt_threshold", UVM_DEBUG)
     end
+    // TODO: It is NOT possible to clear this interrupt by a simple INTR_STATE write now!
     if (bit'(get_field_val(ral.intr_state.rx_threshold, intr_clear))) begin
       `uvm_info(`gfn, "\n  clearing rx_threshold", UVM_DEBUG)
     end
@@ -475,9 +479,6 @@ class i2c_base_vseq extends cip_base_vseq #(
     end
     if (bit'(get_field_val(ral.intr_state.tx_stretch, intr_clear))) begin
       `uvm_info(`gfn, "\n  clearing tx_stretch", UVM_DEBUG)
-    end
-    if (bit'(get_field_val(ral.intr_state.tx_overflow, intr_clear))) begin
-      `uvm_info(`gfn, "\n  clearing tx_overflow", UVM_DEBUG)
     end
 
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(clear_intr_dly)
@@ -497,7 +498,6 @@ class i2c_base_vseq extends cip_base_vseq #(
       str = {str, $sformatf("\n    en_scb                %b", cfg.en_scb)};
       str = {str, $sformatf("\n    en_monitor            %b", cfg.m_i2c_agent_cfg.en_monitor)};
       str = {str, $sformatf("\n    do_apply_reset        %b", do_apply_reset)};
-      str = {str, $sformatf("\n    en_fmt_overflow       %b", cfg.seq_cfg.en_fmt_overflow)};
       str = {str, $sformatf("\n    en_rx_overflow        %b", cfg.seq_cfg.en_rx_overflow)};
       str = {str, $sformatf("\n    en_rx_threshold       %b", cfg.seq_cfg.en_rx_threshold)};
       str = {str, $sformatf("\n    en_sda_unstable       %b", cfg.seq_cfg.en_sda_unstable)};
@@ -557,7 +557,7 @@ class i2c_base_vseq extends cip_base_vseq #(
     bit [7:0] abyte;
     bit [1:0] signal;
     csr_rd_check(.ptr(ral.status.acqempty), .compare_value(0));
-    csr_rd(.ptr(ral.fifo_status.acqlvl), .value(acqlvl));
+    csr_rd(.ptr(ral.target_fifo_status.acqlvl), .value(acqlvl));
     `DV_CHECK_EQ(acqlvl, (num_bytes+2)) // addr byte + data bytes + junk byte
     for (int i = 0; i < (num_bytes+2); i++) begin
       csr_rd(.ptr(ral.acqdata), .value({signal,abyte}));
@@ -849,10 +849,7 @@ class i2c_base_vseq extends cip_base_vseq #(
         // fetch previous full_txn and creat a new one
         if (prv_read) begin
           full_txn.stop = 1;
-          // read data will be created on the fly if cfg.use_drooling tx is set
-          if (!cfg.use_drooling_tx) begin
-             if (prv_valid) p_sequencer.target_mode_rd_exp_port.write(full_txn);
-          end else read_txn_q.push_back(full_txn);
+          if (prv_valid) p_sequencer.target_mode_rd_exp_port.write(full_txn);
         end
         `uvm_create_obj(i2c_item, full_txn)
         `downcast(full_txn, rs_txn);
@@ -874,7 +871,7 @@ class i2c_base_vseq extends cip_base_vseq #(
             else txn.drv_type = HostAck;
           end
           dst_q.push_back(txn);
-          if (!cfg.use_drooling_tx) read_txn_q.push_back(read_txn);
+          read_txn_q.push_back(read_txn);
         end else begin
           `downcast(exp_txn, txn.clone());
           // Write payload
@@ -903,10 +900,7 @@ class i2c_base_vseq extends cip_base_vseq #(
        this.tran_id++;
     end
     if (is_read) begin
-      // read data will be created on the fly if use_drooling_tx is set
-      if (!cfg.use_drooling_tx) begin
-         if (valid_addr) p_sequencer.target_mode_rd_exp_port.write(full_txn);
-      end else read_txn_q.push_back(full_txn);
+      if (valid_addr) p_sequencer.target_mode_rd_exp_port.write(full_txn);
     end
   endfunction
 
@@ -965,16 +959,11 @@ class i2c_base_vseq extends cip_base_vseq #(
           if (!expected_intr.exists(my_intr)) begin
             if (cfg.intr_vif.pins[i] !== 0) begin
               `uvm_error("process_target_interrupts",
-                         $sformatf("Unexpected unterrupt is set %s", my_intr.name))
+                         $sformatf("Unexpected interrupt is set %s", my_intr.name))
             end
           end
         end
       end // else: !if(cfg.intr_vif.pins[CmdComplete])
-      if (cfg.use_drooling_tx & (read_cmd_q.size > 0 || read_on_going == 1)) begin
-        bit dum;
-        if (read_cmd_q.size > 0) dum = read_cmd_q.pop_front();
-        drooling_write_tx_fifo();
-      end
       // When bad command is dropped, expected rd_byte is adjust in 'write_tx_fifo'.
       // But for the last bad read command, we have to adjust expected rd_byte separately
       // because we will not call 'write_tx_fifo'.
@@ -1075,71 +1064,6 @@ class i2c_base_vseq extends cip_base_vseq #(
     end
   endtask
 
-  // Write tx fifo in drooling tx mode (cfg.use_drooling_tx = 1)
-  // When dut received read command, fill up tx fifo with random
-  // number of entries.
-  // This can create 'tx_fifo_full or tx_fifo_empty' depends on
-  // number of filled entries.
-  task drooling_write_tx_fifo();
-    string id = "drooling_write_tx_fifo";
-    bit [7:0] wdata;
-    int       lvl;
-    uvm_reg_data_t data;
-    if (read_rcvd.size == 0 && read_on_going == 0) begin
-      `uvm_error(id, "read_rcvd size is zero and read_on_going is zero")
-    end
-
-    if (read_on_going == 0) begin
-      `uvm_create_obj(i2c_item, drooling_exp_rd_item)
-      drooling_read_size = read_rcvd.pop_front();
-      `uvm_info(id, $sformatf("read_size :%0d", drooling_read_size), UVM_MEDIUM)
-      `DV_WAIT(read_txn_q.size > 0,, cfg.spinwait_timeout_ns, id)
-      drooling_exp_rd_item = read_txn_q.pop_front();
-      drooling_exp_rd_item.tran_id = drooling_rx_cnt++;
-      drooling_exp_rd_item.data_q.delete();
-      read_on_going = 1;
-    end
-
-    // Previously, in tx overflow test, expected data can only be sent when
-    // tx fifo is not full, but since we hae spill_over_data_q which has
-    // 'past' expected data, this can be sent regardless of tx_fifo status.
-    if (read_on_going) begin
-      while (drooling_read_size > 0 && spill_over_data_q.size > 0) begin
-        drooling_exp_rd_item.data_q.push_back(spill_over_data_q.pop_front);
-        drooling_read_size--;
-      end
-      if (drooling_read_size == 0) begin
-        p_sequencer.target_mode_rd_exp_port.write(drooling_exp_rd_item);
-        read_on_going = 0;
-      end
-    end
-
-    lvl = $urandom_range(1, 200);
-    `uvm_info(id, $sformatf("spill %0d entries", lvl), UVM_MEDIUM)
-
-    // Fill up tx fifo with lvl entries.
-    repeat (lvl) begin
-      cfg.clk_rst_vif.wait_clks(1);
-      wdata = $urandom();
-      csr_wr(.ptr(ral.txdata), .value(wdata));
-      // check if tx_fifo is ovf.
-      csr_rd(.ptr(ral.intr_state.tx_overflow), .value(data));
-      if (data == 0) begin
-        spill_over_data_q.push_back(wdata);
-        if (drooling_read_size > 0) begin
-          drooling_exp_rd_item.data_q.push_back(spill_over_data_q.pop_front());
-          drooling_read_size--;
-          if (drooling_read_size == 0) begin
-            p_sequencer.target_mode_rd_exp_port.write(drooling_exp_rd_item);
-            read_on_going = 0;
-          end
-        end
-      end else begin // if (data == 0)
-        clear_interrupt(TxOverflow);
-      end // else: !if(data == 0)
-    end // repeat (lvl)
-  endtask
-
   // when read_one = 1. check acqempty and read a single entry
   // and return acq_fifo_empty.
   // When read_one = 0, read acq fifo up to acqlvl and convert read data
@@ -1153,7 +1077,7 @@ class i2c_base_vseq extends cip_base_vseq #(
     // if fifo is empty.
       csr_rd(.ptr(ral.status.acqempty), .value(acq_fifo_empty));
       read_data = (acq_fifo_empty)? 0 : 1;
-    end else csr_rd(.ptr(ral.fifo_status.acqlvl), .value(read_data));
+    end else csr_rd(.ptr(ral.target_fifo_status.acqlvl), .value(read_data));
 
     repeat(read_data) begin
       // read one entry and compare
@@ -1161,11 +1085,6 @@ class i2c_base_vseq extends cip_base_vseq #(
       `uvm_info("process_acq", $sformatf("acq data %x", read_data), UVM_MEDIUM)
       // Capture the same read data from 'process_tl_access' sb
       obs = acq2item(read_data);
-
-      // Push read command to read_cmd_q to trigger drooling_wr_fifo
-      if (obs.read & cfg.use_drooling_tx) begin
-        read_cmd_q.push_back(1);
-      end
     end
 
     if (read_data == 0) begin
@@ -1224,10 +1143,6 @@ class i2c_base_vseq extends cip_base_vseq #(
     if (cfg.m_i2c_agent_cfg.allow_ack_stop) send_ack_stop();
     // add drain time before stop interrupt handler
     cfg.clk_rst_vif.wait_clks(1000);
-    // Add extra draintime for tx overflow test
-    if (cfg.use_drooling_tx) begin
-       cfg.clk_rst_vif.wait_clks(256 * acq_rd_cyc);
-    end
     cfg.stop_intr_handler = 1;
     `uvm_info(id, "called stop_intr_handler", UVM_MEDIUM)
   endtask // stop_target_interrupt_handler
@@ -1257,9 +1172,7 @@ class i2c_base_vseq extends cip_base_vseq #(
   // txstretch interrupt.
   virtual task proc_intr_txstretch();
     bit acq_fifo_empty;
-    if (!cfg.use_drooling_tx) begin
-      write_tx_fifo();
-    end
+    write_tx_fifo();
     read_acq_fifo(0, acq_fifo_empty);
     // interrupt can't be clear until
     // txfifo get data or acq fifo get entry. So verify_clear can

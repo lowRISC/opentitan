@@ -50,6 +50,10 @@ class i2c_target_smoke_vseq extends i2c_base_vseq;
   virtual task pre_start();
     super.pre_start();
     if (cfg.use_intr_handler) begin
+      // Without populating the FMT FIFO its threshold interrupt will remain asserted.
+      expected_intr[FmtThreshold] = 1;
+      expected_intr[TxThreshold] = 1;
+      expected_intr[AcqThreshold] = 1;
       expected_intr[AcqFull] = 1;
       expected_intr[TxStretch] = 1;
       expected_intr[CmdComplete] = 1;

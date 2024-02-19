@@ -21,7 +21,7 @@ module i2c_core import i2c_pkg::*;
 
   output logic                     intr_fmt_threshold_o,
   output logic                     intr_rx_threshold_o,
-  output logic                     intr_fmt_overflow_o,
+  output logic                     intr_acq_threshold_o,
   output logic                     intr_rx_overflow_o,
   output logic                     intr_nak_o,
   output logic                     intr_scl_interference_o,
@@ -30,11 +30,17 @@ module i2c_core import i2c_pkg::*;
   output logic                     intr_sda_unstable_o,
   output logic                     intr_cmd_complete_o,
   output logic                     intr_tx_stretch_o,
-  output logic                     intr_tx_overflow_o,
+  output logic                     intr_tx_threshold_o,
   output logic                     intr_acq_full_o,
   output logic                     intr_unexp_stop_o,
   output logic                     intr_host_timeout_o
 );
+
+  // Number of bits required to represent the FIFO level/depth.
+  localparam int unsigned FifoDepthW = $clog2(FifoDepth + 1);
+
+  // Maximum number of bits required to represent the level/depth of any FIFO.
+  localparam int unsigned MaxFifoDepthW = 12;
 
   logic [15:0] thigh;
   logic [15:0] tlow;
@@ -55,9 +61,6 @@ module i2c_core import i2c_pkg::*;
   logic scl_out_fsm;
   logic sda_out_fsm;
 
-  logic event_fmt_threshold;
-  logic event_rx_threshold;
-  logic event_fmt_overflow;
   logic event_rx_overflow;
   logic event_nak;
   logic event_scl_interference;
@@ -66,7 +69,6 @@ module i2c_core import i2c_pkg::*;
   logic event_sda_unstable;
   logic event_cmd_complete;
   logic event_tx_stretch;
-  logic event_tx_overflow;
   logic event_unexp_stop;
   logic event_host_timeout;
 
@@ -75,56 +77,63 @@ module i2c_core import i2c_pkg::*;
 
   logic override;
 
-  logic        fmt_fifo_wvalid;
-  logic        fmt_fifo_wready;
-  logic [12:0] fmt_fifo_wdata;
-  logic [6:0]  fmt_fifo_depth;
-  logic        fmt_fifo_rvalid;
-  logic        fmt_fifo_rready;
-  logic [12:0] fmt_fifo_rdata;
-  logic [7:0]  fmt_byte;
-  logic        fmt_flag_start_before;
-  logic        fmt_flag_stop_after;
-  logic        fmt_flag_read_bytes;
-  logic        fmt_flag_read_continue;
-  logic        fmt_flag_nak_ok;
+  logic                     fmt_fifo_wvalid;
+  logic                     fmt_fifo_wready;
+  logic [12:0]              fmt_fifo_wdata;
+  logic [FifoDepthW-1:0]    fmt_fifo_depth;
+  logic                     fmt_fifo_rvalid;
+  logic                     fmt_fifo_rready;
+  logic [12:0]              fmt_fifo_rdata;
+  logic [7:0]               fmt_byte;
+  logic                     fmt_flag_start_before;
+  logic                     fmt_flag_stop_after;
+  logic                     fmt_flag_read_bytes;
+  logic                     fmt_flag_read_continue;
+  logic                     fmt_flag_nak_ok;
 
-  logic        i2c_fifo_rxrst;
-  logic        i2c_fifo_fmtrst;
-  logic [2:0]  i2c_fifo_rxilvl;
-  logic [1:0]  i2c_fifo_fmtilvl;
+  logic                     i2c_fifo_rxrst;
+  logic                     i2c_fifo_fmtrst;
+  logic [MaxFifoDepthW-1:0] i2c_fifo_rx_thresh;
+  logic [MaxFifoDepthW-1:0] i2c_fifo_fmt_thresh;
 
-  logic        rx_fifo_wvalid;
-  logic        rx_fifo_wready;
-  logic [7:0]  rx_fifo_wdata;
-  logic [6:0]  rx_fifo_depth;
-  logic        rx_fifo_rvalid;
-  logic        rx_fifo_rready;
-  logic [7:0]  rx_fifo_rdata;
+  logic                     rx_fifo_wvalid;
+  logic                     rx_fifo_wready;
+  logic [7:0]               rx_fifo_wdata;
+  logic [FifoDepthW-1:0]    rx_fifo_depth;
+  logic                     rx_fifo_rvalid;
+  logic                     rx_fifo_rready;
+  logic [7:0]               rx_fifo_rdata;
 
-  // FMT FIFO level at or below programmed threshold
-  logic        fmt_le_threshold;
-  // Rx FIFO level at or above programmed threshold
-  logic        rx_ge_threshold;
+  // FMT FIFO level below programmed threshold?
+  logic                     fmt_lt_threshold;
+  // Rx FIFO level above programmed threshold?
+  logic                     rx_gt_threshold;
 
-  logic        tx_fifo_wvalid;
-  logic        tx_fifo_wready;
-  logic [7:0]  tx_fifo_wdata;
-  logic [6:0]  tx_fifo_depth;
-  logic        tx_fifo_rvalid;
-  logic        tx_fifo_rready;
-  logic [7:0]  tx_fifo_rdata;
+  logic                     tx_fifo_wvalid;
+  logic                     tx_fifo_wready;
+  logic [7:0]               tx_fifo_wdata;
+  logic [FifoDepthW-1:0]    tx_fifo_depth;
+  logic                     tx_fifo_rvalid;
+  logic                     tx_fifo_rready;
+  logic [7:0]               tx_fifo_rdata;
 
-  logic        acq_fifo_wvalid;
-  logic        acq_fifo_wready;
-  logic [9:0]  acq_fifo_wdata;
-  logic [6:0]  acq_fifo_depth;
-  logic        acq_fifo_rvalid;
-  logic        acq_fifo_rready;
-  logic [9:0]  acq_fifo_rdata;
+  logic                     acq_fifo_wvalid;
+  logic                     acq_fifo_wready;
+  logic [9:0]               acq_fifo_wdata;
+  logic [FifoDepthW-1:0]    acq_fifo_depth;
+  logic                     acq_fifo_rvalid;
+  logic                     acq_fifo_rready;
+  logic [9:0]               acq_fifo_rdata;
 
-  logic        i2c_fifo_txrst;
-  logic        i2c_fifo_acqrst;
+  logic                     i2c_fifo_txrst;
+  logic                     i2c_fifo_acqrst;
+  logic [MaxFifoDepthW-1:0] i2c_fifo_tx_thresh;
+  logic [MaxFifoDepthW-1:0] i2c_fifo_acq_thresh;
+
+  // Tx FIFO level below programmed threshold?
+  logic        tx_lt_threshold;
+  // ACQ FIFO level above programmed threshold?
+  logic        acq_gt_threshold;
 
   logic        host_idle;
   logic        target_idle;
@@ -140,8 +149,10 @@ module i2c_core import i2c_pkg::*;
   logic [6:0]  target_mask1;
 
   // Unused parts of exposed bits
-  logic        unused_fifo_ctrl_rxilvl_qe;
-  logic        unused_fifo_ctrl_fmtilvl_qe;
+  logic        unused_rx_thr_qe;
+  logic        unused_fmt_thr_qe;
+  logic        unused_tx_thr_qe;
+  logic        unused_acq_thr_qe;
   logic [7:0]  unused_rx_fifo_rdata_q;
   logic [7:0]  unused_acq_fifo_adata_q;
   logic [1:0]  unused_acq_fifo_signal_q;
@@ -155,8 +166,8 @@ module i2c_core import i2c_pkg::*;
   assign hw2reg.status.targetidle.d = target_idle;
   assign hw2reg.status.rxempty.d = ~rx_fifo_rvalid;
   assign hw2reg.rdata.d = rx_fifo_rdata;
-  assign hw2reg.fifo_status.fmtlvl.d = fmt_fifo_depth;
-  assign hw2reg.fifo_status.rxlvl.d = rx_fifo_depth;
+  assign hw2reg.host_fifo_status.fmtlvl.d = MaxFifoDepthW'(fmt_fifo_depth);
+  assign hw2reg.host_fifo_status.rxlvl.d = MaxFifoDepthW'(rx_fifo_depth);
   assign hw2reg.val.scl_rx.d = scl_rx_val;
   assign hw2reg.val.sda_rx.d = sda_rx_val;
 
@@ -164,8 +175,8 @@ module i2c_core import i2c_pkg::*;
   assign hw2reg.status.acqfull.d = ~acq_fifo_wready;
   assign hw2reg.status.txempty.d = ~tx_fifo_rvalid;
   assign hw2reg.status.acqempty.d = ~acq_fifo_rvalid;
-  assign hw2reg.fifo_status.txlvl.d = tx_fifo_depth;
-  assign hw2reg.fifo_status.acqlvl.d = acq_fifo_depth;
+  assign hw2reg.target_fifo_status.txlvl.d = MaxFifoDepthW'(tx_fifo_depth);
+  assign hw2reg.target_fifo_status.acqlvl.d = MaxFifoDepthW'(acq_fifo_depth);
   assign hw2reg.acqdata.abyte.d = acq_fifo_rdata[7:0];
   assign hw2reg.acqdata.signal.d = acq_fifo_rdata[9:8];
 
@@ -212,37 +223,25 @@ module i2c_core import i2c_pkg::*;
   assign timeout_enable  = reg2hw.timeout_ctrl.en.q;
   assign host_timeout    = reg2hw.host_timeout_ctrl.q;
 
-  assign i2c_fifo_rxrst   = reg2hw.fifo_ctrl.rxrst.q & reg2hw.fifo_ctrl.rxrst.qe;
-  assign i2c_fifo_fmtrst  = reg2hw.fifo_ctrl.fmtrst.q & reg2hw.fifo_ctrl.fmtrst.qe;
-  assign i2c_fifo_rxilvl  = reg2hw.fifo_ctrl.rxilvl.q;
-  assign i2c_fifo_fmtilvl = reg2hw.fifo_ctrl.fmtilvl.q;
+  assign i2c_fifo_rxrst      = reg2hw.fifo_ctrl.rxrst.q & reg2hw.fifo_ctrl.rxrst.qe;
+  assign i2c_fifo_fmtrst     = reg2hw.fifo_ctrl.fmtrst.q & reg2hw.fifo_ctrl.fmtrst.qe;
+  assign i2c_fifo_rx_thresh  = reg2hw.host_fifo_config.rx_thresh.q;
+  assign i2c_fifo_fmt_thresh = reg2hw.host_fifo_config.fmt_thresh.q;
 
-  assign i2c_fifo_txrst   = reg2hw.fifo_ctrl.txrst.q & reg2hw.fifo_ctrl.txrst.qe;
-  assign i2c_fifo_acqrst  = reg2hw.fifo_ctrl.acqrst.q & reg2hw.fifo_ctrl.acqrst.qe;
+  assign i2c_fifo_txrst      = reg2hw.fifo_ctrl.txrst.q & reg2hw.fifo_ctrl.txrst.qe;
+  assign i2c_fifo_acqrst     = reg2hw.fifo_ctrl.acqrst.q & reg2hw.fifo_ctrl.acqrst.qe;
+  assign i2c_fifo_tx_thresh  = reg2hw.target_fifo_config.tx_thresh.q;
+  assign i2c_fifo_acq_thresh = reg2hw.target_fifo_config.acq_thresh.q;
 
-  // FMT FIFO level at or below programmed threshold
-  always_comb begin
-    unique case(i2c_fifo_fmtilvl)
-      2'h0:    fmt_le_threshold = (fmt_fifo_depth <= 7'd1);
-      2'h1:    fmt_le_threshold = (fmt_fifo_depth <= 7'd4);
-      2'h2:    fmt_le_threshold = (fmt_fifo_depth <= 7'd8);
-      default: fmt_le_threshold = (fmt_fifo_depth <= 7'd16);
-    endcase
-  end
+  // FMT FIFO level below programmed threshold?
+  assign fmt_lt_threshold = (MaxFifoDepthW'(fmt_fifo_depth) < i2c_fifo_fmt_thresh);
+  // Rx FIFO level above programmed threshold?
+  assign rx_gt_threshold  = (MaxFifoDepthW'(rx_fifo_depth)  > i2c_fifo_rx_thresh);
+  // Tx FIFO level below programmed threshold?
+  assign tx_lt_threshold  = (MaxFifoDepthW'(tx_fifo_depth)  < i2c_fifo_tx_thresh);
+  // ACQ FIFO level above programmed threshold?
+  assign acq_gt_threshold = (MaxFifoDepthW'(acq_fifo_depth) > i2c_fifo_acq_thresh);
 
-  // Rx FIFO level at or above programmed threshold
-  always_comb begin
-    unique case(i2c_fifo_rxilvl)
-      3'h0:    rx_ge_threshold = (rx_fifo_depth >= 7'd1);
-      3'h1:    rx_ge_threshold = (rx_fifo_depth >= 7'd4);
-      3'h2:    rx_ge_threshold = (rx_fifo_depth >= 7'd8);
-      3'h3:    rx_ge_threshold = (rx_fifo_depth >= 7'd16);
-      3'h4:    rx_ge_threshold = (rx_fifo_depth >= 7'd30);
-      default: rx_ge_threshold = 1'b0;
-    endcase
-  end
-
-  assign event_fmt_overflow = fmt_fifo_wvalid & ~fmt_fifo_wready;
   assign event_rx_overflow = rx_fifo_wvalid & ~rx_fifo_wready;
 
   // The fifo write enable is controlled by fbyte, start, stop, read, rcont,
@@ -269,8 +268,10 @@ module i2c_core import i2c_pkg::*;
   assign fmt_flag_nak_ok        = fmt_fifo_rvalid ? fmt_fifo_rdata[12] : '0;
 
   // Unused parts of exposed bits
-  assign unused_fifo_ctrl_rxilvl_qe  = reg2hw.fifo_ctrl.rxilvl.qe;
-  assign unused_fifo_ctrl_fmtilvl_qe = reg2hw.fifo_ctrl.fmtilvl.qe;
+  assign unused_rx_thr_qe  = reg2hw.host_fifo_config.rx_thresh.qe;
+  assign unused_fmt_thr_qe = reg2hw.host_fifo_config.fmt_thresh.qe;
+  assign unused_tx_thr_qe  = reg2hw.target_fifo_config.tx_thresh.qe;
+  assign unused_acq_thr_qe = reg2hw.target_fifo_config.acq_thresh.qe;
   assign unused_rx_fifo_rdata_q = reg2hw.rdata.q;
   assign unused_acq_fifo_adata_q = reg2hw.acqdata.abyte.q;
   assign unused_acq_fifo_signal_q = reg2hw.acqdata.signal.q;
@@ -316,9 +317,6 @@ module i2c_core import i2c_pkg::*;
     .full_o  (),
     .err_o   ()
   );
-
-  // Target TX FIFOs
-  assign event_tx_overflow = tx_fifo_wvalid & ~tx_fifo_wready;
 
   // Need to add a valid qualification to write only payload bytes
   logic valid_target_lb_wr;
@@ -474,7 +472,7 @@ module i2c_core import i2c_pkg::*;
   ) intr_hw_fmt_threshold (
     .clk_i,
     .rst_ni,
-    .event_intr_i           (fmt_le_threshold),
+    .event_intr_i           (fmt_lt_threshold),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.fmt_threshold.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.fmt_threshold.q),
     .reg2hw_intr_test_qe_i  (reg2hw.intr_test.fmt_threshold.qe),
@@ -490,7 +488,7 @@ module i2c_core import i2c_pkg::*;
   ) intr_hw_rx_threshold (
     .clk_i,
     .rst_ni,
-    .event_intr_i           (rx_ge_threshold),
+    .event_intr_i           (rx_gt_threshold),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.rx_threshold.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.rx_threshold.q),
     .reg2hw_intr_test_qe_i  (reg2hw.intr_test.rx_threshold.qe),
@@ -500,17 +498,20 @@ module i2c_core import i2c_pkg::*;
     .intr_o                 (intr_rx_threshold_o)
   );
 
-  prim_intr_hw #(.Width(1)) intr_hw_fmt_overflow (
+  prim_intr_hw #(
+    .Width(1),
+    .IntrT("Status")
+  ) intr_hw_acq_threshold (
     .clk_i,
     .rst_ni,
-    .event_intr_i           (event_fmt_overflow),
-    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.fmt_overflow.q),
-    .reg2hw_intr_test_q_i   (reg2hw.intr_test.fmt_overflow.q),
-    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.fmt_overflow.qe),
-    .reg2hw_intr_state_q_i  (reg2hw.intr_state.fmt_overflow.q),
-    .hw2reg_intr_state_de_o (hw2reg.intr_state.fmt_overflow.de),
-    .hw2reg_intr_state_d_o  (hw2reg.intr_state.fmt_overflow.d),
-    .intr_o                 (intr_fmt_overflow_o)
+    .event_intr_i           (acq_gt_threshold),
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.acq_threshold.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.acq_threshold.q),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.acq_threshold.qe),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.acq_threshold.q),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.acq_threshold.de),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.acq_threshold.d),
+    .intr_o                 (intr_acq_threshold_o)
   );
 
   prim_intr_hw #(.Width(1)) intr_hw_rx_overflow (
@@ -620,17 +621,20 @@ module i2c_core import i2c_pkg::*;
     .intr_o                 (intr_tx_stretch_o)
   );
 
-  prim_intr_hw #(.Width(1)) intr_hw_tx_overflow (
+  prim_intr_hw #(
+    .Width(1),
+    .IntrT("Status")
+  ) intr_hw_tx_threshold (
     .clk_i,
     .rst_ni,
-    .event_intr_i           (event_tx_overflow),
-    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.tx_overflow.q),
-    .reg2hw_intr_test_q_i   (reg2hw.intr_test.tx_overflow.q),
-    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.tx_overflow.qe),
-    .reg2hw_intr_state_q_i  (reg2hw.intr_state.tx_overflow.q),
-    .hw2reg_intr_state_de_o (hw2reg.intr_state.tx_overflow.de),
-    .hw2reg_intr_state_d_o  (hw2reg.intr_state.tx_overflow.d),
-    .intr_o                 (intr_tx_overflow_o)
+    .event_intr_i           (tx_lt_threshold),
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.tx_threshold.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.tx_threshold.q),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.tx_threshold.qe),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.tx_threshold.q),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.tx_threshold.de),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.tx_threshold.d),
+    .intr_o                 (intr_tx_threshold_o)
   );
 
   prim_intr_hw #(
@@ -674,5 +678,7 @@ module i2c_core import i2c_pkg::*;
     .hw2reg_intr_state_d_o  (hw2reg.intr_state.host_timeout.d),
     .intr_o                 (intr_host_timeout_o)
   );
+
+  `ASSERT_INIT(FifoDepthValid_A, FifoDepth > 0 && FifoDepthW <= MaxFifoDepthW)
 
 endmodule

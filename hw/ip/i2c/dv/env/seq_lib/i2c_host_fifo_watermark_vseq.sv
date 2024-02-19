@@ -11,9 +11,9 @@ class i2c_host_fifo_watermark_vseq extends i2c_rx_tx_vseq;
   constraint fmt_fifo_access_dly_c { fmt_fifo_access_dly == 0;}
   // fast read data from rd_fifo after crossing threshold level to quickly finish simulation
   constraint rx_fifo_access_dly_c { rx_fifo_access_dly == 0;}
-  // set write transaction size to fmt_fifo depth is enough to cross the highest fmtilvl value
+  // set write transaction size to fmt_fifo depth is enough to cross most fmt_thresh values
   constraint num_wr_bytes_c { num_wr_bytes == I2C_FMT_FIFO_DEPTH; }
-  // read transaction length is equal to rx_fifo depth to cross rxilvl
+  // read transaction length is equal to rx_fifo depth to cross rx_thresh
   constraint num_rd_bytes_c { num_rd_bytes == I2C_RX_FIFO_DEPTH; }
 
   // counting the number of received threshold interrupts
@@ -47,14 +47,12 @@ class i2c_host_fifo_watermark_vseq extends i2c_rx_tx_vseq;
           if (check_fmt_threshold) begin
             host_send_trans(.max_trans(1), .trans_type(WriteOnly));
             check_fmt_threshold = 1'b0;  // gracefully stop process_fmt_threshold_intr
-            // depending the programmed fmtivl and the DUT configuration
-            // (timing regsisters), cnt_fmt_threshold could be
-            //   1: fmtilvl is crossed one   when data drains from fmt_fifo
-            //   2: fmtilvl is crossed twice when data fills up or drains from fmt_fifo
+            // cnt_fmt_threshold could be asserted 0-2 times, depending upon whether
+            // the FMT FIFO ever exceeded the chosen fmt_thresh.
             if (!cfg.under_reset) begin
-              `DV_CHECK_GT(cnt_fmt_threshold, 0)
-              `DV_CHECK_LE(cnt_fmt_threshold, 2)
               `uvm_info(`gfn, $sformatf("\n cnt_fmt_threshold %0d", cnt_fmt_threshold), UVM_DEBUG)
+              `DV_CHECK_GE(cnt_fmt_threshold, 0)
+              `DV_CHECK_LE(cnt_fmt_threshold, 2)
             end
           end
 
@@ -68,86 +66,76 @@ class i2c_host_fifo_watermark_vseq extends i2c_rx_tx_vseq;
             // until rx_fifo becomes full, en_rx_threshold is set to start reading rx_fifo
             host_send_trans(.max_trans(1), .trans_type(ReadOnly));
             check_rx_threshold = 1'b0; // gracefully stop process_rx_threshold_intr
-            // for fmtilvl > 4, rx_threshold is disabled (cnt_rx_threshold = 0)
-            // otherwise, cnt_rx_threshold must be 1
             if (!cfg.under_reset) begin
-              if ( rxilvl <= 4) begin
-                `DV_CHECK_EQ(cnt_rx_threshold, 1)
-              end else begin
-                `DV_CHECK_EQ(cnt_rx_threshold, 0)
-              end
+              // The number of rx_threshold interrupts depends only on whether filling the RX FIFO
+              // exceeded the threshold; 1 if so, otherwise 0.
+              bit [TL_DW-1:0] rx_thresh;
+              csr_rd(.ptr(ral.host_fifo_config.rx_thresh), .value(rx_thresh));
+              `DV_CHECK_EQ(cnt_rx_threshold, rx_thresh < I2C_RX_FIFO_DEPTH);
               // during a read transaction, fmt_threshold could be triggered since read address
-              // and control byte are programmed to fmt_fifo and possibly cross fmtilvl
+              // and control byte are programmed to fmt_fifo and possibly cross fmt_thresh
               // if fmt_threshold is triggered, then it should be cleared to not interfere
               // counting fmt_threshold in the next transaction (no need to verify
               // fmt_threshold again during read)
               `uvm_info(`gfn, $sformatf("\n cnt_rx_threshold %0d", cnt_rx_threshold), UVM_DEBUG)
             end
-            clear_interrupt(FmtThreshold);
           end
         end
         begin
-          while (!cfg.under_reset && check_fmt_threshold) process_fmt_threshold_intr();
+          // Count any rising edges on the fmt_threshold interrupt line
+          bit was_asserted = cfg.intr_vif.pins[FmtThreshold];
+          while (!cfg.under_reset && check_fmt_threshold) process_fmt_threshold_intr(was_asserted);
         end
         begin
-          while (!cfg.under_reset && check_rx_threshold) process_rx_threshold_intr();
+          // Count any rising edges on the rx_threshold interrupt line
+          bit was_asserted = cfg.intr_vif.pins[RxThreshold];
+          while (!cfg.under_reset && check_rx_threshold) process_rx_threshold_intr(was_asserted);
         end
       join
     end
     `uvm_info(`gfn, "\n--> end of i2c_host_fifo_watermark_vseq", UVM_DEBUG)
   endtask : body
 
-  task process_fmt_threshold_intr();
-    bit fmt_threshold;
-    bit [TL_DW-1:0] fmt_lvl, fmt_ilvl, intr_enable;
+  task process_fmt_threshold_intr(ref bit was_asserted);
+    bit [TL_DW-1:0] fmt_lvl, fmt_thresh;
 
     @(posedge cfg.clk_rst_vif.clk);
-    csr_rd(.ptr(ral.intr_enable), .value(intr_enable), .backdoor(1'b1));
-    if (intr_enable[FmtThreshold] && cfg.intr_vif.pins[FmtThreshold]) begin
-      cnt_fmt_threshold++;
-      // read registers
-      csr_rd(.ptr(ral.fifo_ctrl.fmtilvl), .value(fmt_ilvl));
-      csr_rd(.ptr(ral.fifo_status.fmtlvl), .value(fmt_lvl));
-      `uvm_info(`gfn, $sformatf("\n fmtilvl %0d, fmtlvl %0d", fmt_ilvl, fmt_lvl), UVM_DEBUG)
-      // bound checking for fmt_lvl w.r.t fmt_ilvl because rx_fifo can received an extra data
-      // before fmt_threshold intr pin is asserted (corner case)
-      if (!cfg.under_reset) begin
-        case (fmt_ilvl)
-          0: bound_check(fmt_lvl, 1, 2);
-          1: bound_check(fmt_lvl, 4, 5);
-          2: bound_check(fmt_lvl, 8, 9);
-          default: bound_check(fmt_lvl, 16, 17);
-        endcase
+    if (cfg.intr_vif.pins[FmtThreshold]) begin
+      if (!was_asserted) begin
+        cnt_fmt_threshold++;
+        // read registers
+        csr_rd(.ptr(ral.host_fifo_config.fmt_thresh), .value(fmt_thresh));
+        csr_rd(.ptr(ral.host_fifo_status.fmtlvl), .value(fmt_lvl));
+        `uvm_info(`gfn, $sformatf("\n fmt_thresh %0d, fmtlvl %0d", fmt_thresh, fmt_lvl), UVM_DEBUG)
+        if (!cfg.under_reset) begin
+          // TODO: Decide on the bounds here; FIFO could have been drained somewhat by the point
+          // at which we manage to read the CSR (randomized delays).
+          bound_check(fmt_lvl, 0, fmt_thresh);
+        end
       end
-      clear_interrupt(FmtThreshold);
-    end
+      was_asserted = 1'b1;
+    end else was_asserted = 1'b0;
   endtask : process_fmt_threshold_intr
 
-  task process_rx_threshold_intr();
-    bit rx_threshold;
-    bit [TL_DW-1:0] rx_lvl, rx_ilvl, intr_enable;
+  task process_rx_threshold_intr(ref bit was_asserted);
+    bit [TL_DW-1:0] rx_lvl, rx_thresh;
 
     @(posedge cfg.clk_rst_vif.clk);
-    csr_rd(.ptr(ral.intr_enable), .value(intr_enable), .backdoor(1'b1));
-    if (intr_enable[RxThreshold] && cfg.intr_vif.pins[RxThreshold]) begin
-      cnt_rx_threshold++;
-      // read registers
-      csr_rd(.ptr(ral.fifo_status.rxlvl), .value(rx_lvl));
-      csr_rd(.ptr(ral.fifo_ctrl.rxilvl), .value(rx_ilvl));
-      // bound checking for rx_lvl w.r.t rx_ilvl because rx_fifo can received an extra data
-      // before rx_threshold intr pin is asserted (corner case)
-      if (!cfg.under_reset) begin
-        case (rx_ilvl)
-          0: bound_check(rx_lvl, 1, 2);
-          1: bound_check(rx_lvl, 4, 5);
-          2: bound_check(rx_lvl, 8, 9);
-          3: bound_check(rx_lvl, 16, 17);
-          4: bound_check(rx_lvl, 30, 31);
-          default: `uvm_error(`gfn, "\n Invalid rx_ilvl")
-        endcase
+    if (cfg.intr_vif.pins[RxThreshold]) begin
+      if (!was_asserted) begin
+        cnt_rx_threshold++;
+        // read registers
+        csr_rd(.ptr(ral.host_fifo_status.rxlvl), .value(rx_lvl));
+        csr_rd(.ptr(ral.host_fifo_config.rx_thresh), .value(rx_thresh));
+        // bound checking for rx_lvl w.r.t rx_thresh because rx_fifo can receive an extra datum
+        // before rx_threshold intr pin is asserted (corner case)
+        `uvm_info(`gfn, $sformatf("\n rx_thresh %0d, rx_lvl %0d", rx_thresh, rx_lvl), UVM_DEBUG)
+        if (!cfg.under_reset) begin
+          bound_check(rx_lvl, rx_thresh, rx_thresh + 1);
+        end
       end
-      clear_interrupt(RxThreshold);
-    end
+      was_asserted = 1'b1;
+    end else was_asserted = 1'b0;
   endtask : process_rx_threshold_intr
 
 endclass : i2c_host_fifo_watermark_vseq

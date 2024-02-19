@@ -33,7 +33,7 @@ module i2c
   // Interrupts
   output logic              intr_fmt_threshold_o,
   output logic              intr_rx_threshold_o,
-  output logic              intr_fmt_overflow_o,
+  output logic              intr_acq_threshold_o,
   output logic              intr_rx_overflow_o,
   output logic              intr_nak_o,
   output logic              intr_scl_interference_o,
@@ -42,7 +42,7 @@ module i2c
   output logic              intr_sda_unstable_o,
   output logic              intr_cmd_complete_o,
   output logic              intr_tx_stretch_o,
-  output logic              intr_tx_overflow_o,
+  output logic              intr_tx_threshold_o,
   output logic              intr_acq_full_o,
   output logic              intr_unexp_stop_o,
   output logic              intr_host_timeout_o
@@ -101,7 +101,7 @@ module i2c
 
     .intr_fmt_threshold_o,
     .intr_rx_threshold_o,
-    .intr_fmt_overflow_o,
+    .intr_acq_threshold_o,
     .intr_rx_overflow_o,
     .intr_nak_o,
     .intr_scl_interference_o,
@@ -110,7 +110,7 @@ module i2c
     .intr_sda_unstable_o,
     .intr_cmd_complete_o,
     .intr_tx_stretch_o,
-    .intr_tx_overflow_o,
+    .intr_tx_threshold_o,
     .intr_acq_full_o,
     .intr_unexp_stop_o,
     .intr_host_timeout_o
@@ -135,7 +135,7 @@ module i2c
   `ASSERT_KNOWN(CioSdaEnKnownO_A, cio_sda_en_o)
   `ASSERT_KNOWN(IntrFmtWtmkKnownO_A, intr_fmt_threshold_o)
   `ASSERT_KNOWN(IntrRxWtmkKnownO_A, intr_rx_threshold_o)
-  `ASSERT_KNOWN(IntrFmtOflwKnownO_A, intr_fmt_overflow_o)
+  `ASSERT_KNOWN(IntrAcqWtmkKnownO_A, intr_acq_threshold_o)
   `ASSERT_KNOWN(IntrRxOflwKnownO_A, intr_rx_overflow_o)
   `ASSERT_KNOWN(IntrNakKnownO_A, intr_nak_o)
   `ASSERT_KNOWN(IntrSclInterfKnownO_A, intr_scl_interference_o)
@@ -144,7 +144,7 @@ module i2c
   `ASSERT_KNOWN(IntrSdaUnstableKnownO_A, intr_sda_unstable_o)
   `ASSERT_KNOWN(IntrCommandCompleteKnownO_A, intr_cmd_complete_o)
   `ASSERT_KNOWN(IntrTxStretchKnownO_A, intr_tx_stretch_o)
-  `ASSERT_KNOWN(IntrTxOflwKnownO_A, intr_tx_overflow_o)
+  `ASSERT_KNOWN(IntrTxWtmkKnownO_A, intr_tx_threshold_o)
   `ASSERT_KNOWN(IntrAcqFulllwKnownO_A, intr_acq_full_o)
   `ASSERT_KNOWN(IntrUnexpStopKnownO_A, intr_unexp_stop_o)
   `ASSERT_KNOWN(IntrHostTimeoutKnownO_A, intr_host_timeout_o)

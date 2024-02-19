@@ -27,8 +27,11 @@ class i2c_seq_cfg extends uvm_object;
   uint i2c_time_range            = i2c_max_timing - i2c_min_timing;
   uint i2c_min_timeout           = 1;
   uint i2c_max_timeout           = 4;
-  uint i2c_max_rxilvl            = 7;
-  uint i2c_max_fmtilvl           = 3;
+  // maximum values for expected usage
+  uint i2c_max_rx_thresh         = I2C_RX_FIFO_DEPTH - 1;
+  uint i2c_max_fmt_thresh        = I2C_FMT_FIFO_DEPTH;
+  uint i2c_max_acq_thresh        = I2C_ACQ_FIFO_DEPTH - 1;
+  uint i2c_max_tx_thresh         = I2C_TX_FIFO_DEPTH;
 
   // knobs for error_intr test
   // assertion probability of sda_interference, scl_interference, and
@@ -38,8 +41,6 @@ class i2c_seq_cfg extends uvm_object;
   uint i2c_prob_scl_interference = 70;
 
   // bits to control fifos access
-  // set en_fmt_overflow to ensure fmt_overflow irq is triggered
-  bit en_fmt_overflow            = 1'b0;
   // set en_rx_overflow to ensure ensure rx_overflow irq is triggered
   bit en_rx_overflow             = 1'b0;
   // set en_rx_threshold to ensure rx_threshold irq is triggered
