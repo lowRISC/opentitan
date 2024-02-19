@@ -15,6 +15,8 @@ module entropy_src_adaptp_ht #(
    // ins req interface
   input logic [RngBusWidth-1:0] entropy_bit_i,
   input logic                   entropy_bit_vld_i,
+  input logic                   rng_bit_en_i,
+  input logic [1:0]             rng_bit_sel_i,
   input logic                   clear_i,
   input logic                   active_i,
   input logic [RegWidth-1:0]    thresh_hi_i,
@@ -33,6 +35,7 @@ module entropy_src_adaptp_ht #(
   logic [RegWidth-1:0]                  test_cnt_min, test_cnt_min_tmp;
   logic [RegWidth-1:0]                  test_cnt_sum;
   logic [RngBusWidth-1:0][RegWidth-1:0] test_cnt;
+  logic [RegWidth-1:0]                  rng_bit_cnt;
   logic [RngBusWidth-1:0]               test_cnt_err;
 
   // Adaptive Proportion Test
@@ -109,8 +112,17 @@ module entropy_src_adaptp_ht #(
     .sum_valid_o ()
   );
 
-  assign test_cnt_hi_o = threshold_scope_i ? test_cnt_sum : test_cnt_max;
-  assign test_cnt_lo_o = threshold_scope_i ? test_cnt_sum : test_cnt_min;
+  assign rng_bit_cnt = (rng_bit_sel_i == 2'h0) ? test_cnt[0] :
+                       (rng_bit_sel_i == 2'h1) ? test_cnt[1] :
+                       (rng_bit_sel_i == 2'h2) ? test_cnt[2] :
+                       test_cnt[3];
+
+  assign test_cnt_hi_o = rng_bit_en_i ? rng_bit_cnt :
+                         threshold_scope_i ? test_cnt_sum :
+                         test_cnt_max;
+  assign test_cnt_lo_o = rng_bit_en_i ? rng_bit_cnt :
+                         threshold_scope_i ? test_cnt_sum :
+                         test_cnt_min;
 
   // the pulses will be only one clock in length
   assign test_fail_hi_pulse_o = active_i && window_wrap_pulse_i && (test_cnt_hi_o > thresh_hi_i);

@@ -189,6 +189,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic [HalfRegWidth-1:0] health_test_fips_window;
   logic [HalfRegWidth-1:0] health_test_bypass_window;
   logic [HalfRegWidth-1:0] health_test_window;
+  logic [WINDOW_CNTR_WIDTH-1:0] health_test_window_scaled;
 
   logic [HalfRegWidth-1:0] repcnt_fips_threshold;
   logic [HalfRegWidth-1:0] repcnt_fips_threshold_oneway;
@@ -388,36 +389,36 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // For fifo errors that are generated through the
   // ERR_CODE_TEST register, but are not associated
   // with any errors:
-  logic                     sfifo_test_err_sum;
-  logic                     es_ack_sm_err_sum;
-  logic                     es_ack_sm_err;
-  logic                     es_main_sm_err_sum;
-  logic                     es_main_sm_err;
-  logic                     es_main_sm_alert;
-  logic                     es_bus_cmp_alert;
-  logic                     es_thresh_cfg_alert;
-  logic                     es_main_sm_idle;
-  logic [8:0]               es_main_sm_state;
-  logic                     fifo_write_err_sum;
-  logic                     fifo_read_err_sum;
-  logic                     fifo_status_err_sum;
-  logic [30:0]              err_code_test_bit;
-  logic                     sha3_msgfifo_ready;
-  logic                     sha3_state_vld;
-  logic                     sha3_start_raw;
-  logic                     sha3_start;
-  logic                     sha3_process;
-  logic                     sha3_msg_end;
-  logic                     sha3_msg_rdy_mask;
-  logic                     sha3_block_processed;
-  prim_mubi_pkg::mubi4_t    sha3_done;
-  prim_mubi_pkg::mubi4_t    sha3_absorbed;
-  logic                     sha3_squeezing;
-  logic [2:0]               sha3_fsm;
-  logic [32:0]              sha3_err;
-  logic                     cs_aes_halt_req;
-  logic                     sha3_msg_rdy;
-  logic [HalfRegWidth-1:0]  window_cntr;
+  logic                         sfifo_test_err_sum;
+  logic                         es_ack_sm_err_sum;
+  logic                         es_ack_sm_err;
+  logic                         es_main_sm_err_sum;
+  logic                         es_main_sm_err;
+  logic                         es_main_sm_alert;
+  logic                         es_bus_cmp_alert;
+  logic                         es_thresh_cfg_alert;
+  logic                         es_main_sm_idle;
+  logic [8:0]                   es_main_sm_state;
+  logic                         fifo_write_err_sum;
+  logic                         fifo_read_err_sum;
+  logic                         fifo_status_err_sum;
+  logic [30:0]                  err_code_test_bit;
+  logic                         sha3_msgfifo_ready;
+  logic                         sha3_state_vld;
+  logic                         sha3_start_raw;
+  logic                         sha3_start;
+  logic                         sha3_process;
+  logic                         sha3_msg_end;
+  logic                         sha3_msg_rdy_mask;
+  logic                         sha3_block_processed;
+  prim_mubi_pkg::mubi4_t        sha3_done;
+  prim_mubi_pkg::mubi4_t        sha3_absorbed;
+  logic                         sha3_squeezing;
+  logic [2:0]                   sha3_fsm;
+  logic [32:0]                  sha3_err;
+  logic                         cs_aes_halt_req;
+  logic                         sha3_msg_rdy;
+  logic [WINDOW_CNTR_WIDTH-1:0] window_cntr;
 
   logic [sha3_pkg::StateW-1:0] sha3_state[Sha3Share];
   logic [PreCondWidth-1:0] msg_data[Sha3Share];
@@ -1034,7 +1035,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign sfifo_esrng_clr   = ~es_delayed_enable;
   assign sfifo_esrng_wdata = es_rng_bus;
   assign sfifo_esrng_pop   = sfifo_esrng_not_empty & (rng_bit_en ? pfifo_esbit_not_full :
-                                                                   pfifo_postht_not_full );
+                                                                   pfifo_postht_not_full);
 
   // fifo err
   // Note: for prim_fifo_sync is not an error to push to a fifo that is full.  In fact, the
@@ -1095,10 +1096,11 @@ module entropy_src_core import entropy_src_pkg::*; #(
          sfifo_esrng_rdata[3];
 
 
-  // select source for health testing
-
-  assign health_test_esbus     = pfifo_postht_wdata;
-  assign health_test_esbus_vld = pfifo_postht_push & pfifo_postht_not_full & ~pfifo_postht_clr;
+  // Read the health test data from the esrng FIFO.
+  assign health_test_esbus = sfifo_esrng_rdata;
+  // Set the valid signal to true whenever data is pushed into the next FIFO.
+  assign health_test_esbus_vld = rng_bit_en ? pfifo_esbit_push && !pfifo_esbit_clr :
+                                              pfifo_postht_push && !pfifo_postht_clr;
 
   // Health test any data that comes in on the RNG interface.
   assign repcnt_active = 1'b1;
@@ -1182,8 +1184,11 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign hw2reg.extht_lo_thresholds.bypass_thresh.d = extht_lo_bypass_threshold_oneway;
 
 
-
   assign health_test_window = es_bypass_mode ? health_test_bypass_window : health_test_fips_window;
+  // Multiply the health test window by four if we are using the single lane mode.
+  // In single lane mode 4 times as many symbols are tested for the same amount of entropy.
+  assign health_test_window_scaled = rng_bit_en ? health_test_window << 2 :
+                                                  {2'b0, health_test_window};
 
   // Window sizes other than 384 bits (the seed length) are currently not tested nor supported in
   // bypass or boot-time mode.
@@ -1551,16 +1556,16 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // Window counter
   // SEC_CM: CTR.REDUN
   prim_count #(
-    .Width(HalfRegWidth)
+    .Width(WINDOW_CNTR_WIDTH)
   ) u_prim_count_window_cntr (
     .clk_i,
     .rst_ni,
     .clr_i(!es_delayed_enable),
     .set_i(health_test_done_pulse),
-    .set_cnt_i(HalfRegWidth'(0)),
+    .set_cnt_i(WINDOW_CNTR_WIDTH'(0)),
     .incr_en_i(health_test_esbus_vld),
     .decr_en_i(1'b0),
-    .step_i(HalfRegWidth'(1)),
+    .step_i(WINDOW_CNTR_WIDTH'(1)),
     .commit_i(1'b1),
     .cnt_o(window_cntr),
     .cnt_after_commit_o(),
@@ -1568,7 +1573,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   );
 
   // Window wrap condition
-  assign health_test_done_pulse = (window_cntr >= health_test_window);
+  assign health_test_done_pulse = (window_cntr >= health_test_window_scaled);
 
   // Summary of counter errors
   assign es_cntr_err =
@@ -1612,6 +1617,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rst_ni              (rst_ni),
     .entropy_bit_i       (health_test_esbus),
     .entropy_bit_vld_i   (health_test_esbus_vld),
+    .rng_bit_en_i        (rng_bit_en),
+    .rng_bit_sel_i       (rng_bit_sel),
     .clear_i             (health_test_clr),
     .active_i            (repcnt_active),
     .thresh_i            (repcnt_threshold),
@@ -1734,6 +1741,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rst_ni              (rst_ni),
     .entropy_bit_i       (health_test_esbus),
     .entropy_bit_vld_i   (health_test_esbus_vld),
+    .rng_bit_en_i        (rng_bit_en),
+    .rng_bit_sel_i       (rng_bit_sel),
     .clear_i             (health_test_clr),
     .active_i            (adaptp_active),
     .thresh_hi_i         (adaptp_hi_threshold),
@@ -1907,6 +1916,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rst_ni              (rst_ni),
     .entropy_bit_i       (health_test_esbus),
     .entropy_bit_vld_i   (health_test_esbus_vld),
+    .rng_bit_en_i        (rng_bit_en),
+    .rng_bit_sel_i       (rng_bit_sel),
     .clear_i             (health_test_clr),
     .active_i            (markov_active),
     .thresh_hi_i         (markov_hi_threshold),
@@ -2009,12 +2020,14 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // set outputs to external health test
   assign entropy_src_xht_o.entropy_bit = health_test_esbus;
   assign entropy_src_xht_o.entropy_bit_valid = health_test_esbus_vld;
+  assign entropy_src_xht_o.rng_bit_en = rng_bit_en;
+  assign entropy_src_xht_o.rng_bit_sel = rng_bit_sel;
   assign entropy_src_xht_o.clear = health_test_clr;
   assign entropy_src_xht_o.active = extht_active;
   assign entropy_src_xht_o.thresh_hi = extht_hi_threshold;
   assign entropy_src_xht_o.thresh_lo = extht_lo_threshold;
   assign entropy_src_xht_o.window_wrap_pulse = health_test_done_pulse;
-  assign entropy_src_xht_o.health_test_window = health_test_window;
+  assign entropy_src_xht_o.health_test_window = health_test_window_scaled;
   assign entropy_src_xht_o.threshold_scope = threshold_scope;
   // get inputs from external health test
   assign extht_event_cnt_hi = entropy_src_xht_i.test_cnt_hi;
@@ -2358,8 +2371,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .depth_o    ()
   );
 
-  assign pfifo_postht_push = rng_bit_en ? pfifo_esbit_not_empty :
-                             sfifo_esrng_not_empty;
+  assign pfifo_postht_push = rng_bit_en ? pfifo_esbit_not_empty : sfifo_esrng_not_empty;
 
   assign pfifo_postht_wdata = rng_bit_en ? pfifo_esbit_rdata :
                               sfifo_esrng_rdata;
