@@ -165,11 +165,12 @@
       desc: '''Verify RV_DM works after a watchdog or escalated reset.
 
             - Access some RV_DM CSRs both before and after resets.
-            - An activation would be required, and the tap strap would also be sampled again.
+            - An activation would be required, as the tap strap would also be sampled again.
             '''
       stage: V3
       si_stage: SV3
       tests: ["chip_sw_rv_dm_access_after_escalation_reset"]
+      bazel: ["//sw/device/tests:rv_dm_access_after_hw_reset"],
       lc_states: ["TEST_UNLOCKED", "DEV", "RMA"]
       features: [
         "RV_DM.JTAG.FSM",

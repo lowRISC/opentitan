@@ -139,3 +139,18 @@ rust_binary(
         "@crate_index//:log",
     ],
 )
+
+rust_binary(
+    name = "access_after_hw_reset",
+    srcs = [
+        "src/access_after_hw_reset.rs",
+    ],
+    deps = [
+        "//sw/host/opentitanlib",
+        "@crate_index//:anyhow",
+        "@crate_index//:clap",
+        "@crate_index//:humantime",
+        "@crate_index//:log",
+        "@crate_index//:object",
+    ],
+)

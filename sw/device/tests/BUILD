@@ -4709,6 +4709,48 @@ test_suite(
     ],
 )
 
+[
+    opentitan_test(
+        name = "rv_dm_access_after_hw_reset_{}".format(lc_state),
+        srcs = ["rv_dm_access_after_hw_reset.c"],
+        cw310 = new_cw310_params(
+            needs_jtag = True,
+            otp = _SIVAL_OTP_IMAGE[lc_state],
+            tags = [
+                "lc_{}".format(lc_state),
+            ],
+            test_cmd = """
+                --bootstrap="{firmware}"
+                --firmware-elf=\"{firmware:elf}\"
+            """,
+            test_harness = "//sw/host/tests/chip/rv_dm:access_after_hw_reset",
+        ),
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_sival": None,
+        },
+        deps = [
+            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//sw/device/lib/dif:rstmgr",
+            "//sw/device/lib/runtime:hart",
+            "//sw/device/lib/runtime:log",
+            "//sw/device/lib/testing:rstmgr_testutils",
+            "//sw/device/lib/testing/test_framework:check",
+            "//sw/device/lib/testing/test_framework:ottf_main",
+            "//sw/device/lib/testing/test_framework:ottf_utils",
+        ],
+    )
+    for lc_state, lc_state_val in _RV_DM_JTAG_LC_STATES
+]
+
+test_suite(
+    name = "rv_dm_access_after_hw_reset",
+    tags = ["manual"],
+    tests = [
+        ":rv_dm_access_after_hw_reset_{}".format(lc_state)
+        for lc_state, _ in _RV_DM_JTAG_LC_STATES
+    ],
+)
+
 opentitan_test(
     name = "openocd_test",
     srcs = ["example_test_from_flash.c"],
