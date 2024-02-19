@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
@@ -10,6 +11,7 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
+#include "sw/device/lib/testing/sysrst_ctrl_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
@@ -20,6 +22,7 @@ OTTF_DEFINE_TEST_CONFIG();
 static dif_pwrmgr_t pwrmgr;
 static dif_rstmgr_t rstmgr;
 static dif_sysrst_ctrl_t sysrst_ctrl;
+static dif_gpio_t gpio;
 
 enum {
   kTestPhaseCheckComboReset = 0,
@@ -37,7 +40,37 @@ enum {
   kDebounceTimeThreshold = 128,    // ~0.6ms
 };
 
-static volatile const uint8_t kTestPhase = 0;
+enum {
+  kOutputNumMioPads = 6,
+};
+
+static const dif_pinmux_index_t kPeripheralInputs[] = {
+    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey0In,
+    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey1In,
+    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey2In,
+    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonPwrbIn,
+    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonAcPresent,
+    kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonLidOpen,
+};
+
+static const dif_pinmux_index_t kInputPadsDV[] = {
+    kTopEarlgreyPinmuxInselIob3, kTopEarlgreyPinmuxInselIob6,
+    kTopEarlgreyPinmuxInselIob8, kTopEarlgreyPinmuxInselIob9,
+    kTopEarlgreyPinmuxInselIoc7, kTopEarlgreyPinmuxInselIoc9,
+};
+
+// We need different pins on the hyperdebug boards since certain
+// pins are not routed to the hyperdebug.
+static const dif_pinmux_index_t kInputPadsReal[] = {
+    kTopEarlgreyPinmuxInselIor10, kTopEarlgreyPinmuxInselIor11,
+    kTopEarlgreyPinmuxInselIor12, kTopEarlgreyPinmuxInselIor5,
+    kTopEarlgreyPinmuxInselIor6,  kTopEarlgreyPinmuxInselIor7,
+};
+
+// On DV this device is in the flash and written by the testbench.
+static volatile const uint8_t kTestPhaseDV = 0;
+// Mask of the GPIOs used on the real device to read the test phase.
+static const uint32_t kGpioMask = 0x3;
 
 static void check_combo_reset(void) {
   CHECK_DIF_OK(dif_sysrst_ctrl_key_combo_detect_configure(
@@ -131,6 +164,8 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_sysrst_ctrl_init(
       mmio_region_from_addr(TOP_EARLGREY_SYSRST_CTRL_AON_BASE_ADDR),
       &sysrst_ctrl));
+  CHECK_DIF_OK(
+      dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
 
   dif_rstmgr_reset_info_bitfield_t rstmgr_reset_info;
   rstmgr_reset_info = rstmgr_testutils_reason_get();
@@ -138,27 +173,36 @@ bool test_main(void) {
   dif_pinmux_t pinmux;
   CHECK_DIF_OK(dif_pinmux_init(
       mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
-  CHECK_DIF_OK(dif_pinmux_input_select(
-      &pinmux, kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey0In,
-      kTopEarlgreyPinmuxInselIob3));
-  CHECK_DIF_OK(dif_pinmux_input_select(
-      &pinmux, kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey1In,
-      kTopEarlgreyPinmuxInselIob6));
-  CHECK_DIF_OK(dif_pinmux_input_select(
-      &pinmux, kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonKey2In,
-      kTopEarlgreyPinmuxInselIob8));
-  CHECK_DIF_OK(dif_pinmux_input_select(
-      &pinmux, kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonPwrbIn,
-      kTopEarlgreyPinmuxInselIob9));
-  CHECK_DIF_OK(dif_pinmux_input_select(
-      &pinmux, kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonAcPresent,
-      kTopEarlgreyPinmuxInselIoc7));
-  CHECK_DIF_OK(dif_pinmux_input_select(
-      &pinmux, kTopEarlgreyPinmuxPeripheralInSysrstCtrlAonLidOpen,
-      kTopEarlgreyPinmuxInselIoc9));
+  const dif_pinmux_index_t *kInputPads =
+      kDeviceType == kDeviceSimDV ? kInputPadsDV : kInputPadsReal;
+  for (int i = 0; i < kOutputNumMioPads; ++i) {
+    CHECK_DIF_OK(
+        dif_pinmux_input_select(&pinmux, kPeripheralInputs[i], kInputPads[i]));
+  }
+  // On real devices, we also need to configure the DIO pins and two more pins
+  // to read the test phase.
+  if (kDeviceType != kDeviceSimDV) {
+    sysrst_ctrl_testutils_setup_dio(&pinmux);
+    CHECK_DIF_OK(dif_pinmux_input_select(
+        &pinmux, kTopEarlgreyPinmuxPeripheralInGpioGpio0,
+        kTopEarlgreyPinmuxInselIob0));
+    CHECK_DIF_OK(dif_pinmux_input_select(
+        &pinmux, kTopEarlgreyPinmuxPeripheralInGpioGpio1,
+        kTopEarlgreyPinmuxInselIob1));
+  }
 
   CHECK_DIF_OK(dif_sysrst_ctrl_output_pin_override_set_enabled(
       &sysrst_ctrl, kDifSysrstCtrlPinEcResetInOut, kDifToggleDisabled));
+
+  // On real device, we cannot do backdoor writes the flash so we read the
+  // test phase from GPIOs.
+  uint8_t kTestPhase = kTestPhaseDV;
+  if (kDeviceType != kDeviceSimDV) {
+    uint32_t gpio_state;
+    CHECK_DIF_OK(dif_gpio_read_all(&gpio, &gpio_state));
+    kTestPhase = gpio_state & kGpioMask;
+  }
+  LOG_INFO("test phase: %u", kTestPhase);
 
   switch (kTestPhase) {
     case kTestPhaseCheckComboReset:
