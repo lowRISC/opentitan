@@ -130,7 +130,7 @@ class chip_sw_sysrst_ctrl_reset_vseq extends chip_sw_base_vseq;
   virtual task write_test_phase(input int phase);
     bit [7:0] test_phase[1];
     test_phase[0] = phase;
-    sw_symbol_backdoor_overwrite("kTestPhase", test_phase);
+    sw_symbol_backdoor_overwrite("kTestPhaseDV", test_phase);
   endtask
 
   virtual task cpu_init();
