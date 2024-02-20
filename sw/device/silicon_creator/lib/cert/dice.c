@@ -23,6 +23,8 @@ static keymgr_binding_value_t attestation_binding_value = {.data = {0}};
 static keymgr_binding_value_t sealing_binding_value = {.data = {0}};
 static attestation_public_key_t curr_pubkey = {.x = {0}, .y = {0}};
 static attestation_public_key_t curr_pubkey_be = {.x = {0}, .y = {0}};
+static attestation_signature_t curr_tbs_signature = {.r = {0}, .s = {0}};
+static attestation_signature_t curr_tbs_signature_be = {.r = {0}, .s = {0}};
 static uint8_t cdi_0_tbs_buffer[kCdi0MaxTbsSizeBytes];
 static cdi_0_sig_values_t cdi_0_cert_params = {
     .tbs = cdi_0_tbs_buffer,
@@ -69,6 +71,19 @@ static void curr_pubkey_le_to_be_convert(void) {
   le_be_buf_format((unsigned char *)curr_pubkey_be.y,
                    (unsigned char *)curr_pubkey.y,
                    kAttestationPublicKeyCoordBytes);
+}
+
+/**
+ * Helper function to convert an attestation certificate signature from little
+ * to big endian.
+ */
+static void curr_tbs_signature_le_to_be_convert(void) {
+  le_be_buf_format((unsigned char *)curr_tbs_signature_be.r,
+                   (unsigned char *)curr_tbs_signature.r,
+                   kAttestationSignatureBytes / 2);
+  le_be_buf_format((unsigned char *)curr_tbs_signature_be.s,
+                   (unsigned char *)curr_tbs_signature.s,
+                   kAttestationSignatureBytes / 2);
 }
 
 status_t dice_uds_cert_build(manuf_cert_perso_data_in_t *perso_data_in,
@@ -157,11 +172,11 @@ status_t dice_cdi_0_cert_build(manuf_cert_perso_data_in_t *perso_data_in,
   // Sign the TBS and generate the certificate.
   hmac_digest_t tbs_digest;
   hmac_sha256(cdi_0_cert_params.tbs, cdi_0_cert_params.tbs_size, &tbs_digest);
-  attestation_signature_t tbs_signature;
-  TRY(otbn_boot_attestation_endorse(&tbs_digest, &tbs_signature));
-  cdi_0_cert_params.cert_signature_r = (unsigned char *)tbs_signature.r;
+  TRY(otbn_boot_attestation_endorse(&tbs_digest, &curr_tbs_signature));
+  curr_tbs_signature_le_to_be_convert();
+  cdi_0_cert_params.cert_signature_r = (unsigned char *)curr_tbs_signature_be.r;
   cdi_0_cert_params.cert_signature_r_size = kAttestationSignatureBytes / 2;
-  cdi_0_cert_params.cert_signature_s = (unsigned char *)tbs_signature.s;
+  cdi_0_cert_params.cert_signature_s = (unsigned char *)curr_tbs_signature_be.s;
   cdi_0_cert_params.cert_signature_s_size = kAttestationSignatureBytes / 2;
   TRY(cdi_0_build_cert(&cdi_0_cert_params, cert, cert_size));
 
@@ -231,11 +246,11 @@ status_t dice_cdi_1_cert_build(manuf_cert_perso_data_in_t *perso_data_in,
   // Sign the TBS and generate the certificate.
   hmac_digest_t tbs_digest;
   hmac_sha256(cdi_1_cert_params.tbs, cdi_1_cert_params.tbs_size, &tbs_digest);
-  attestation_signature_t tbs_signature;
-  TRY(otbn_boot_attestation_endorse(&tbs_digest, &tbs_signature));
-  cdi_1_cert_params.cert_signature_r = (unsigned char *)tbs_signature.r;
+  TRY(otbn_boot_attestation_endorse(&tbs_digest, &curr_tbs_signature));
+  curr_tbs_signature_le_to_be_convert();
+  cdi_1_cert_params.cert_signature_r = (unsigned char *)curr_tbs_signature_be.r;
   cdi_1_cert_params.cert_signature_r_size = kAttestationSignatureBytes / 2;
-  cdi_1_cert_params.cert_signature_s = (unsigned char *)tbs_signature.s;
+  cdi_1_cert_params.cert_signature_s = (unsigned char *)curr_tbs_signature_be.s;
   cdi_1_cert_params.cert_signature_s_size = kAttestationSignatureBytes / 2;
   TRY(cdi_1_build_cert(&cdi_1_cert_params, cert, cert_size));
 
