@@ -81,10 +81,10 @@ typedef enum dif_entropy_src_main_fsm {
  */
 typedef struct dif_entropy_src_fw_override_config {
   /**
-   * Enables firmware to insert entropy bits back into the pre-conditioner block
-   * via `dif_entropy_fifo_write()` calls. This feature is useful when the
-   * firmware is required to implement additional health checks, and to perform
-   * known answer tests of the preconditioner function.
+   * Enables firmware to insert entropy bits back into the pre-conditioner FIFO
+   * via `dif_entropy_src_fw_ov_data_write()` calls. This feature is useful when
+   * the firmware is required to implement additional health checks, and to
+   * perform known answer tests of the conditioner.
    *
    * To take effect, this requires the firmware override feature to be enabled.
    */
@@ -698,7 +698,7 @@ dif_result_t dif_entropy_src_observe_fifo_nonblocking_read(
     const dif_entropy_src_t *entropy_src, uint32_t *buf, size_t *len);
 
 /**
- * Performs a write to the entropy pipeline through the observe FIFO.
+ * Performs a write to the entropy pipeline through the firmware override FIFO.
  *
  * Entropy source must be configured with firmware override and insert mode
  * enabled, otherwise the function will return `kDifError`.
@@ -710,14 +710,14 @@ dif_result_t dif_entropy_src_observe_fifo_nonblocking_read(
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_entropy_src_observe_fifo_write(
+dif_result_t dif_entropy_src_fw_ov_data_write(
     const dif_entropy_src_t *entropy_src, const uint32_t *buf, size_t len,
     size_t *written);
 
 /**
  * Starts conditioner operation.
  *
- * Initializes the conditioner. Use the `dif_entropy_src_observe_fifo_write()`
+ * Initializes the conditioner. Use the `dif_entropy_src_fw_ov_data_write()`
  * function to send data to the conditioner, and
  * `dif_entropy_src_conditioner_stop()` once ready to stop the conditioner
  * operation.

@@ -242,7 +242,7 @@ static void fw_override_conditioner_write(
   uint32_t total = 0;
   do {
     uint32_t count;
-    dif_result_t op_result = dif_entropy_src_observe_fifo_write(
+    dif_result_t op_result = dif_entropy_src_fw_ov_data_write(
         entropy_src, kInputMsg + total, ARRAYSIZE(kInputMsg) - total, &count);
     total += count;
     if (op_result == kDifIpFifoFull) {
