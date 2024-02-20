@@ -7,6 +7,14 @@
 
   testpoints: [
     {
+      name: base_rom_e2e_smoke
+      desc: '''Verify that base ROM can boot a second stage ROM.'''
+      tags: ["rom", "verilator", "dv", "silicon"]
+      stage: V1
+      tests: ["base_rom_e2e_smoke"]
+    }
+
+    {
       name: rom_e2e_smoke
       desc: '''Verify that ROM can boot a ROM_EXT with default infrastructure configurations.
 

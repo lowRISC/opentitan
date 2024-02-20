@@ -339,6 +339,11 @@
       en_run_modes: ["sw_test_mode_common"]
     }
     {
+      name: sw_test_mode_base_rom_with_fake_keys
+      sw_images: ["//sw/device/silicon_creator/rom:base_rom_with_fake_keys:0"]
+      en_run_modes: ["sw_test_mode_common"]
+    }
+    {
       name: sw_test_mode_rom_with_real_keys
       sw_images: ["//sw/device/silicon_creator/rom:rom_with_real_keys:0"]
       en_run_modes: ["sw_test_mode_common"]
@@ -1774,6 +1779,7 @@
               // "chip_sw_pwrmgr_sleep_power_glitch_reset",
               "chip_sw_pwrmgr_sleep_disabled",
               "chip_sw_csrng_kat_test",
+              "base_rom_e2e_smoke",
               // TODO(opentitan-integrated/#332): enable this test again once ROM has been
               // refactored to work without embedded flash.
               // "rom_e2e_smoke"
