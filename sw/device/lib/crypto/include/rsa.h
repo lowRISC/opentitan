@@ -5,7 +5,7 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_RSA_H_
 #define OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_RSA_H_
 
-#include "sw/device/lib/crypto/include/datatypes.h"
+#include "datatypes.h"
 
 /**
  * @file
