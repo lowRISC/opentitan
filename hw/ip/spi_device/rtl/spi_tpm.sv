@@ -1284,6 +1284,7 @@ module spi_tpm
   ) u_tpm_wr_buffer (
     .clk_i        (clk_in_i),
     .rst_ni       (rst_n),
+    .clr_i        (1'b0),
 
     .wvalid_i (sck_wrfifo_wvalid),
     .wready_o (sck_wrfifo_wready),
