@@ -572,22 +572,19 @@ set_output_delay -max ${SPI_TPM_MISO_OUT_DEL_MAX} [get_ports SPI_DEV_D1] \
     -clock SPI_TPM_CLK -add_delay
 
 # SPI TPM CSB, the chip-select for TPM mode.
-# Any muxed port could be a SPI TPM CSB.
-set MUXED_IOA_PORTS [get_ports IOA*]
-set MUXED_IOB_PORTS [get_ports IOB*]
-set MUXED_IOC_PORTS [get_ports IOC*]
-set MUXED_IOR_PORTS [get_ports "IOR0 IOR1 IOR2 IOR3 IOR4 IOR5 IOR6 IOR7 IOR10 IOR11 IOR12 IOR13"]
-set ALL_MUXED_PORTS [get_ports "${MUXED_IOA_PORTS} ${MUXED_IOB_PORTS} ${MUXED_IOC_PORTS} ${MUXED_IOR_PORTS}"]
+# Any muxed port could be a SPI TPM CSB, but we only guarantee IOA7 meets
+# timing.
+set TPM_CSB_PORT [get_ports IOA7]
 
 # TPM CSB input delays.
-set_input_delay -min ${SPI_TPM_CSB_IN_DEL_MIN} [get_ports ${ALL_MUXED_PORTS}] \
+set_input_delay -min ${SPI_TPM_CSB_IN_DEL_MIN} [get_ports ${TPM_CSB_PORT}] \
     -clock SPI_TPM_CLK -clock_fall -add_delay
-set_input_delay -max ${SPI_TPM_CSB_IN_DEL_MAX} [get_ports ${ALL_MUXED_PORTS}] \
+set_input_delay -max ${SPI_TPM_CSB_IN_DEL_MAX} [get_ports ${TPM_CSB_PORT}] \
     -clock SPI_TPM_CLK -clock_fall -add_delay
 
 # Relax hold path for TPM CSB, since CSB changes nominally on the same edge as
 # SPI_TPM_OUT_CLK, but the latter isn't actually toggling.
-set_multicycle_path -hold -end 1 -from [get_ports ${ALL_MUXED_PORTS}] \
+set_multicycle_path -hold -end 1 -from [get_ports ${TPM_CSB_PORT}] \
     -to [get_clocks SPI_TPM_OUT_CLK] \
     -through [get_pins -leaf -filter "@pin_direction == in" -of_objects \
         [get_nets -segments -of_objects \
