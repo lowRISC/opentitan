@@ -22,6 +22,7 @@
 static keymgr_binding_value_t attestation_binding_value = {.data = {0}};
 static keymgr_binding_value_t sealing_binding_value = {.data = {0}};
 static attestation_public_key_t curr_pubkey = {.x = {0}, .y = {0}};
+static attestation_public_key_t curr_pubkey_be = {.x = {0}, .y = {0}};
 static uint8_t cdi_0_tbs_buffer[kCdi0MaxTbsSizeBytes];
 static cdi_0_sig_values_t cdi_0_cert_params = {
     .tbs = cdi_0_tbs_buffer,
@@ -48,6 +49,28 @@ static bool is_debug_exposed(void) {
   return true;
 }
 
+/**
+ * Helper function to convert a buffer of bytes from little to big endian.
+ */
+static void le_be_buf_format(unsigned char *dst, unsigned char *src,
+                             size_t num_bytes) {
+  for (size_t i = 0; i < num_bytes; ++i) {
+    dst[i] = src[num_bytes - i - 1];
+  }
+}
+
+/**
+ * Helper function to convert an attestation public from little to big endian.
+ */
+static void curr_pubkey_le_to_be_convert(void) {
+  le_be_buf_format((unsigned char *)curr_pubkey_be.x,
+                   (unsigned char *)curr_pubkey.x,
+                   kAttestationPublicKeyCoordBytes);
+  le_be_buf_format((unsigned char *)curr_pubkey_be.y,
+                   (unsigned char *)curr_pubkey.y,
+                   kAttestationPublicKeyCoordBytes);
+}
+
 status_t dice_uds_cert_build(manuf_cert_perso_data_in_t *perso_data_in,
                              hmac_digest_t *uds_pubkey_id, uint8_t *tbs_cert,
                              size_t *tbs_cert_size) {
@@ -59,6 +82,7 @@ status_t dice_uds_cert_build(manuf_cert_perso_data_in_t *perso_data_in,
                                    kUdsKeymgrDiversifier, &curr_pubkey));
   TRY(otbn_boot_attestation_key_save(kUdsAttestationKeySeed,
                                      kUdsKeymgrDiversifier));
+  curr_pubkey_le_to_be_convert();
 
   // Generate the key ID.
   hmac_sha256(&curr_pubkey, kAttestationPublicKeyCoordBytes * 2, uds_pubkey_id);
@@ -77,9 +101,9 @@ status_t dice_uds_cert_build(manuf_cert_perso_data_in_t *perso_data_in,
       .creator_pub_key_id_size = kCertKeyIdSizeInBytes,
       .auth_key_key_id = perso_data_in->auth_key_key_id,
       .auth_key_key_id_size = kCertKeyIdSizeInBytes,
-      .creator_pub_key_ec_x = (unsigned char *)curr_pubkey.x,
+      .creator_pub_key_ec_x = (unsigned char *)curr_pubkey_be.x,
       .creator_pub_key_ec_x_size = kAttestationPublicKeyCoordBytes,
-      .creator_pub_key_ec_y = (unsigned char *)curr_pubkey.y,
+      .creator_pub_key_ec_y = (unsigned char *)curr_pubkey_be.y,
       .creator_pub_key_ec_y_size = kAttestationPublicKeyCoordBytes,
   };
   TRY(uds_build_tbs(&uds_cert_tbs_params, tbs_cert, tbs_cert_size));
@@ -107,6 +131,7 @@ status_t dice_cdi_0_cert_build(manuf_cert_perso_data_in_t *perso_data_in,
   TRY(keymgr_state_check(kKeymgrStateOwnerIntermediateKey));
   TRY(otbn_boot_attestation_keygen(kCdi0AttestationKeySeed,
                                    kCdi0KeymgrDiversifier, &curr_pubkey));
+  curr_pubkey_le_to_be_convert();
 
   // Generate the key ID.
   hmac_sha256(&curr_pubkey, kAttestationPublicKeyCoordBytes * 2,
@@ -121,9 +146,9 @@ status_t dice_cdi_0_cert_build(manuf_cert_perso_data_in_t *perso_data_in,
       .owner_intermediate_pub_key_id_size = kCertKeyIdSizeInBytes,
       .creator_pub_key_id = (unsigned char *)uds_pubkey_id->digest,
       .creator_pub_key_id_size = kCertKeyIdSizeInBytes,
-      .owner_intermediate_pub_key_ec_x = (unsigned char *)curr_pubkey.x,
+      .owner_intermediate_pub_key_ec_x = (unsigned char *)curr_pubkey_be.x,
       .owner_intermediate_pub_key_ec_x_size = kAttestationPublicKeyCoordBytes,
-      .owner_intermediate_pub_key_ec_y = (unsigned char *)curr_pubkey.y,
+      .owner_intermediate_pub_key_ec_y = (unsigned char *)curr_pubkey_be.y,
       .owner_intermediate_pub_key_ec_y_size = kAttestationPublicKeyCoordBytes,
   };
   TRY(cdi_0_build_tbs(&cdi_0_cert_tbs_params, cdi_0_cert_params.tbs,
@@ -176,6 +201,7 @@ status_t dice_cdi_1_cert_build(manuf_cert_perso_data_in_t *perso_data_in,
   TRY(keymgr_state_check(kKeymgrStateOwnerKey));
   TRY(otbn_boot_attestation_keygen(kCdi1AttestationKeySeed,
                                    kCdi1KeymgrDiversifier, &curr_pubkey));
+  curr_pubkey_le_to_be_convert();
 
   // Generate the key ID.
   hmac_digest_t cdi_1_pubkey_id;
@@ -194,9 +220,9 @@ status_t dice_cdi_1_cert_build(manuf_cert_perso_data_in_t *perso_data_in,
       .owner_pub_key_id_size = kCertKeyIdSizeInBytes,
       .owner_intermediate_pub_key_id = (unsigned char *)cdi_0_pubkey_id->digest,
       .owner_intermediate_pub_key_id_size = kCertKeyIdSizeInBytes,
-      .owner_pub_key_ec_x = (unsigned char *)curr_pubkey.x,
+      .owner_pub_key_ec_x = (unsigned char *)curr_pubkey_be.x,
       .owner_pub_key_ec_x_size = kAttestationPublicKeyCoordBytes,
-      .owner_pub_key_ec_y = (unsigned char *)curr_pubkey.y,
+      .owner_pub_key_ec_y = (unsigned char *)curr_pubkey_be.y,
       .owner_pub_key_ec_y_size = kAttestationPublicKeyCoordBytes,
   };
   TRY(cdi_1_build_tbs(&cdi_1_cert_tbs_params, cdi_1_cert_params.tbs,
