@@ -420,8 +420,7 @@ module spi_tpm
 
   // Indicate if the received address is FIFO/CRB register. Should start with
   // D4_xxxx
-  logic is_tpm_reg;
-  logic check_tpm_reg;
+  logic is_tpm_reg_d, is_tpm_reg_q;
 
   // If the received command falls into the return-by-HW registers, then
   // `is_hw_reg` is set.
@@ -438,8 +437,9 @@ module spi_tpm
   // When the address shifted up to addr[12] (cmdaddr_bitcnt == 5'h 13), the
   // module can decide if the received address is in the Locality or not. If
   // it is not in the locality, the logic may return the invalid and discard
-  // the request.
-  logic latch_locality;
+  // the request. However, this check actually happens at cmdaddr_bitcnt of
+  // 5'h1b.
+  logic check_locality;
 
   // bit[15:12] in the received address is the locality if the address is FIFO
   // addr.
@@ -536,8 +536,6 @@ module spi_tpm
   // Control signals:
   //  latch_cmd_type
   assign latch_cmd_type = (cmdaddr_bitcnt == 5'h 0) && (sck_st_q == StIdle);
-
-  assign check_tpm_reg = (cmdaddr_bitcnt == 5'h 0F);
 
   assign check_hw_reg = (cmdaddr_bitcnt == 5'h 1D);
 
@@ -696,17 +694,11 @@ module spi_tpm
   always_comb begin
     addr = 24'h 00_0000;
     unique case (1'b 1)
-      check_tpm_reg: begin
-        // when checking the tpm_reg, only 8bit address is received.
-        // Look at the assertion TpmRegCondition_A.
-        addr = {sck_cmdaddr_wdata_d[7:0], 16'h 0000};
-      end
-
       // locality in the TPM transaction is in addr[15:12].
-      // latch_locality is asserted at the 16th beat.
+      // check_locality is asserted at the 24th beat.
       // Look at the assertion LocalityLatchCondition_A
-      latch_locality: begin
-        addr = {sck_cmdaddr_wdata_d[11:0], 12'h 000};
+      check_locality: begin
+        addr = {sck_cmdaddr_wdata_d[19:0], 4'h 00};
       end
 
       check_hw_reg: begin
@@ -719,14 +711,21 @@ module spi_tpm
     endcase
   end
 
-  // when the address[16] is received, check if the address is for FIFO/CRB.
-  // If checker is turned off, `is_tpm_reg` becomes 1 regardless of addr
+  // When enough address bits arrive, check if the address is for FIFO/CRB.
+  // If the checker is turned off, `is_tpm_reg` becomes 1 regardless of addr.
+  always_comb begin
+    is_tpm_reg_d = is_tpm_reg_q;
+    if (check_locality &&
+      (sys_clk_tpm_cfg.tpm_reg_chk_dis || (addr[23:16] == TpmAddr))) begin
+      is_tpm_reg_d = 1'b1;
+    end
+  end
+
   always_ff @(posedge clk_in_i or negedge rst_n) begin
     if (!rst_n) begin
-      is_tpm_reg <= 1'b 0;
-    end else if (check_tpm_reg &&
-      (sys_clk_tpm_cfg.tpm_reg_chk_dis || (addr[23:16] == TpmAddr))) begin
-      is_tpm_reg <= 1'b 1;
+      is_tpm_reg_q <= 1'b 0;
+    end else begin
+      is_tpm_reg_q <= is_tpm_reg_d;
     end
   end
 
@@ -739,7 +738,7 @@ module spi_tpm
       is_hw_reg      <= 1'b 0;
       sck_hw_reg_idx <= RegAccess;
     end else if (!sys_clk_tpm_cfg.tpm_mode && check_hw_reg && (cmd_type == Read)
-      && is_tpm_reg && !invalid_locality && !sys_clk_tpm_cfg.hw_reg_dis) begin
+      && is_tpm_reg_q && !invalid_locality && !sys_clk_tpm_cfg.hw_reg_dis) begin
       // HW register is set only when the following conditions are met:
       //
       // 1. TPM is in FIFO mode
@@ -777,7 +776,7 @@ module spi_tpm
     if (!rst_n) begin
       locality         <= '0;
       invalid_locality <= 1'b 0;
-    end else if (latch_locality && is_tpm_reg) begin
+    end else if (check_locality && is_tpm_reg_d) begin
       locality         <= addr[15:12];
       invalid_locality <= (addr[15:12] < 4'(NumLocality)) ? 1'b 0: 1'b 1;
     end
@@ -1016,7 +1015,6 @@ module spi_tpm
   //  - latch_xfer_size
   //  - latch_locality
   //  - check_hw_reg
-  //  - check_tpm_reg
   //  - cmdaddr_shift_en
   //  - wrdata_shift_en
   //  - p2s_valid
@@ -1055,7 +1053,7 @@ module spi_tpm
 
     // Default output values
     latch_xfer_size = 1'b 0;
-    latch_locality  = 1'b 0;
+    check_locality  = 1'b 0;
 
     cmdaddr_shift_en    = 1'b 0;
     wrdata_shift_en     = 1'b 0;
@@ -1095,20 +1093,20 @@ module spi_tpm
         // NOTE: The coding style in this state is ugly. How can we improve?
         cmdaddr_shift_en = 1'b 1;
 
-        // Latch locality
-        if (cmdaddr_bitcnt == 5'h 13) begin
-          latch_locality = 1'b 1;
-        end
-
         if (cmdaddr_bitcnt >= 5'h 18) begin
           // Send Wait byte [18h:1Fh]
           sck_p2s_valid = 1'b 1;
           sck_data_sel  = SelWait;
         end
 
+        // Latch locality
+        if (cmdaddr_bitcnt == 5'h 1B) begin
+          check_locality = 1'b 1;
+        end
+
         // Next state: if is_tpm_reg 1 && !cfg_hw_reg_dis
         if (cmdaddr_bitcnt == 5'h 1F && cmd_type == Read) begin
-          if (!is_tpm_reg || sys_clk_tpm_cfg.tpm_mode) begin
+          if (!is_tpm_reg_q || sys_clk_tpm_cfg.tpm_mode) begin
             // If out of TPM register (not staring with 0xD4_XXXX) or
             // TPM mode is CRB, always processed by SW
             sck_st_d = StWait;
@@ -1121,7 +1119,7 @@ module spi_tpm
             end
           end else if (is_hw_reg) begin
             // If read command and HW REG, then return by HW
-            // is_hw_reg contains (is_tpm_reg && (locality < NumLocality))
+            // is_hw_reg contains (is_tpm_reg_q && (locality < NumLocality))
             sck_st_d = StStartByte;
           end else if (invalid_locality && sys_clk_tpm_cfg.invalid_locality) begin
             // The read request is out of supported Localities.
@@ -1484,19 +1482,14 @@ module spi_tpm
   // If the command and the address have been shifted, the Locality, command
   // type should be matched with the shifted register.
   `ASSERT(CmdAddrInfo_A,
-          $fell(cmdaddr_shift_en) && !csb_i && sys_clk_tpm_cfg.tpm_en && is_tpm_reg |->
+          $fell(cmdaddr_shift_en) && !csb_i && sys_clk_tpm_cfg.tpm_en && is_tpm_reg_q |->
             (locality == sck_cmdaddr_wdata_q[15:12]) &&
             (cmd_type == sck_cmdaddr_wdata_q[31]),
           clk_in_i, !rst_n)
 
-  // The condition of tpm_reg check
-  `ASSERT(TpmRegCondition_A,
-          check_tpm_reg |-> (cmdaddr_bitcnt == 5'h F),
-          clk_in_i, !rst_n)
-
-  // when latch_locality, the address should have 16 bits received.
+  // when latch_locality, the address should have 24 bits received.
   `ASSERT(LocalityLatchCondition_A,
-          latch_locality |-> (cmdaddr_bitcnt == 5'h 13),
+          check_locality|-> (cmdaddr_bitcnt == 5'h 1b),
           clk_in_i, !rst_n)
 
   // when check_hw_reg is set, the address should have a word size
@@ -1507,7 +1500,7 @@ module spi_tpm
   // If is_hw_reg set, then it should be FIFO reg and within locality
   `ASSERT(HwRegCondition2_a,
           $rose(is_hw_reg) |->
-            is_tpm_reg && !invalid_locality && !sys_clk_tpm_cfg.hw_reg_dis,
+            is_tpm_reg_q && !invalid_locality && !sys_clk_tpm_cfg.hw_reg_dis,
           clk_in_i, !rst_n)
 
   // If module returns data in StAddr, the cmdaddr_bitcount should be the last
