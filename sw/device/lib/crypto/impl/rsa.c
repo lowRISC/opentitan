@@ -964,7 +964,7 @@ otcrypto_status_t otcrypto_rsa_decrypt_async_finalize(
                                     plaintext_bytelen));
 
   // Consistency check; this should never happen.
-  if (launder32(*plaintext_bytelen) >= plaintext.len) {
+  if (launder32(*plaintext_bytelen) > plaintext.len) {
     HARDENED_TRAP();
     return OTCRYPTO_FATAL_ERR;
   }
