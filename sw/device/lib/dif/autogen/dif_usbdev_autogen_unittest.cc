@@ -82,7 +82,7 @@ TEST_F(IrqGetTypeTest, Success) {
 
   EXPECT_DIF_OK(
       dif_usbdev_irq_get_type(&usbdev_, kDifUsbdevIrqPktReceived, &type));
-  EXPECT_EQ(type, 0);
+  EXPECT_EQ(type, kDifIrqTypeEvent);
 }
 
 class IrqGetStateTest : public UsbdevTest {};

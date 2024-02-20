@@ -84,7 +84,7 @@ TEST_F(IrqGetTypeTest, Success) {
 
   EXPECT_DIF_OK(
       dif_spi_host_irq_get_type(&spi_host_, kDifSpiHostIrqError, &type));
-  EXPECT_EQ(type, 0);
+  EXPECT_EQ(type, kDifIrqTypeEvent);
 }
 
 class IrqGetStateTest : public SpiHostTest {};

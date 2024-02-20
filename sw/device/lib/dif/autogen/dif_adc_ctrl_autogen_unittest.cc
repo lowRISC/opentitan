@@ -84,7 +84,7 @@ TEST_F(IrqGetTypeTest, Success) {
 
   EXPECT_DIF_OK(
       dif_adc_ctrl_irq_get_type(&adc_ctrl_, kDifAdcCtrlIrqMatchDone, &type));
-  EXPECT_EQ(type, 0);
+  EXPECT_EQ(type, kDifIrqTypeEvent);
 }
 
 class IrqGetStateTest : public AdcCtrlTest {};

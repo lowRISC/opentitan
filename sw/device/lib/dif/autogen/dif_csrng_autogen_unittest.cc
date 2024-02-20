@@ -87,7 +87,7 @@ TEST_F(IrqGetTypeTest, Success) {
 
   EXPECT_DIF_OK(
       dif_csrng_irq_get_type(&csrng_, kDifCsrngIrqCsCmdReqDone, &type));
-  EXPECT_EQ(type, 0);
+  EXPECT_EQ(type, kDifIrqTypeEvent);
 }
 
 class IrqGetStateTest : public CsrngTest {};

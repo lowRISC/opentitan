@@ -65,7 +65,7 @@ TEST_F(IrqGetTypeTest, Success) {
 
   EXPECT_DIF_OK(dif_alert_handler_irq_get_type(
       &alert_handler_, kDifAlertHandlerIrqClassa, &type));
-  EXPECT_EQ(type, 0);
+  EXPECT_EQ(type, kDifIrqTypeEvent);
 }
 
 class IrqGetStateTest : public AlertHandlerTest {};

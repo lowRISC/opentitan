@@ -91,7 +91,7 @@ TEST_F(IrqGetTypeTest, Success) {
 
   EXPECT_DIF_OK(dif_sensor_ctrl_irq_get_type(
       &sensor_ctrl_, kDifSensorCtrlIrqIoStatusChange, &type));
-  EXPECT_EQ(type, 0);
+  EXPECT_EQ(type, kDifIrqTypeEvent);
 }
 
 class IrqGetStateTest : public SensorCtrlTest {};

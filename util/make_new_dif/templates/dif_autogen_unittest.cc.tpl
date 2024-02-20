@@ -146,7 +146,11 @@ namespace {
         kDif${ip.name_camel}Irq${ip.irqs[0].name_camel},
       % endif
         &type));
-    EXPECT_EQ(type, 0);
+      % if ip.irqs[0].type == "event":
+    EXPECT_EQ(type, kDifIrqTypeEvent);
+      % else:
+    EXPECT_EQ(type, kDifIrqTypeStatus);
+      % endif
   }
 
   class IrqGetStateTest : public ${ip.name_camel}Test {};

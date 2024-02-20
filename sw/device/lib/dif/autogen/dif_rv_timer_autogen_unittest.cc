@@ -86,7 +86,7 @@ TEST_F(IrqGetTypeTest, Success) {
 
   EXPECT_DIF_OK(dif_rv_timer_irq_get_type(
       &rv_timer_, kDifRvTimerIrqTimerExpiredHart0Timer0, &type));
-  EXPECT_EQ(type, 0);
+  EXPECT_EQ(type, kDifIrqTypeEvent);
 }
 
 class IrqGetStateTest : public RvTimerTest {};
