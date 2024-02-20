@@ -419,15 +419,133 @@ set_false_path -from [get_clocks SPI_DEV_CSB_CLK] \
             [get_pins u_ast/u_scan_rst_n/in_i*]]]
 
 
+############################
+# SPI DEV HALF CYCLE clock #
+############################
+# The SPI DEV HALF CYCLE section is for all non-passthrough modes with
+# half-cycle sampling.
+# The half-cycle sampling target frequency is 24 MHz.
+set SPI_DEV_CLK_PIN SPI_DEV_CLK
+# Target is 24 MHz. Overconstrain to 25 MHz.
+set SPI_DEV_HC_TCK 40.0
+set SPI_DEV_HC_TCK_HALF [expr ${SPI_DEV_HC_TCK} / 2]
+
+create_clock -name SPI_DEV_HC_CLK -period ${SPI_DEV_HC_TCK} [get_ports ${SPI_DEV_CLK_PIN}]
+set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks SPI_DEV_CLK]
+set_propagated_clock SPI_DEV_HC_CLK
+
+create_generated_clock -name SPI_DEV_HC_IN_CLK \
+    -source [get_ports ${SPI_DEV_CLK_PIN}] -divide_by 1 \
+    [get_pins top_earlgrey/u_spi_device/u_clk_spi_in_buf/clk_o]
+create_generated_clock -name SPI_DEV_HC_OUT_CLK \
+    -source [get_ports ${SPI_DEV_CLK_PIN}] -divide_by 1 -invert \
+    [get_pins top_earlgrey/u_spi_device/u_clk_spi_out_buf/clk_o]
+
+# bidir ports
+set SPI_DEV_DATA_PORTS [get_ports {SPI_DEV_D0 SPI_DEV_D1 SPI_DEV_D2 SPI_DEV_D3}]
+set_input_delay -min ${SPI_DEV_IN_DEL_MIN} ${SPI_DEV_DATA_PORTS} \
+    -clock_fall -clock SPI_DEV_HC_CLK -add_delay
+set_input_delay -max ${SPI_DEV_IN_DEL_MAX} ${SPI_DEV_DATA_PORTS} \
+    -clock_fall -clock SPI_DEV_HC_CLK -add_delay
+
+# Half-cycle sampling has the host on the next rising edge.
+set_output_delay -min ${SPI_DEV_OUT_DEL_MIN} ${SPI_DEV_DATA_PORTS} \
+    -clock SPI_DEV_HC_CLK -add_delay
+set_output_delay -max ${SPI_DEV_OUT_DEL_MAX} ${SPI_DEV_DATA_PORTS} \
+    -clock SPI_DEV_HC_CLK -add_delay
+
+# SPI DEV CSB, the chip-select for non-TPM modes, acts as clock, data, and
+# reset.
+create_clock -name SPI_DEV_HC_CSB_CLK -period [expr 2 * ${SPI_DEV_HC_TCK}] \
+    -waveform "${SPI_DEV_HC_TCK_HALF} [expr ${SPI_DEV_TCK_HALF} + ${SPI_DEV_TCK}]" \
+    [get_ports SPI_DEV_CS_L]
+set_clock_latency -source -min ${SPI_DEV_IN_DEL_MIN} [get_clocks SPI_DEV_HC_CSB_CLK]
+set_clock_latency -source -max ${SPI_DEV_IN_DEL_MAX} [get_clocks SPI_DEV_HC_CSB_CLK]
+set_propagated_clock [get_clocks SPI_DEV_HC_CSB_CLK]
+set_clock_sense -logical_stop_propagation [get_pins -leaf -of_objects [get_pins top_earlgrey/u_spi_device/u_csb_buf/out_o[0]]]
+
+# CSB-clocked status bits to various negedge-triggered flops, especially in the
+# serializer.
+# Advance the hold edge by one cycle, since CSB changes nominally on the same
+# edge as SPI_DEV_OUT_CLK, but SPI_DEV_OUT_CLK isn't actually toggling.
+#set_ideal_network [get_pins top_earlgrey/u_spi_device/u_csb_rst_scan_mux/clk_o]
+set_multicycle_path -hold -end -from [get_clocks SPI_DEV_HC_CSB_CLK] \
+    -to [get_clocks SPI_DEV_HC_OUT_CLK] 1
+# Because this section does full-cycle sampling, the same moving of the capture
+# edge is needed for SPI_DEV_CSB_CLK -> SPI_DEV_D* hold analysis. The default
+# falling edge of SPI_DEV_CLK would not be active.
+set_multicycle_path -hold -end -from [get_clocks SPI_DEV_HC_CSB_CLK] \
+    -to [get_clocks SPI_DEV_HC_CLK] -through [get_ports ${SPI_DEV_DATA_PORTS}] 1
+# Relax the hold time constraint for the passthrough clock gate. Really this is
+# to accommodate the gate for the inverted clock, which isn't active for the
+# modes used for these constraints. However, it would be an okay outcome if the
+# filter result reached the gate before even the 7th clock edge got out.
+set_multicycle_path -hold -end 1 -from [get_clocks SPI_DEV_HC_CLK] \
+    -to [get_pins -leaf -filter "@pin_direction == in" -of_objects \
+        [get_nets top_earlgrey/u_spi_device/u_passthrough/sck_gate_en]]
+
+##
+# Remove hold analysis from the following paths to ports. Even though the pins
+# can change before the prior data was latched upstream, their effect is held
+# back by other logic on SPI_DEV_HC_OUT_CLK.
+# Note: The final output logic equation must not permit glitches in the presence
+# of changes on the listed pins. Otherwise, any hold time failures could be
+# real.
+##
+
+# These two false paths are slated to be removed. The originating nodes were
+# observed to all come from the generic mode module, which has been removed.
+#set_false_path -hold -from [get_clocks SPI_DEV_HC_IN_CLK] \
+#    -to [get_ports ${SPI_DEV_DATA_PORTS}] \
+#    -through [get_pins -leaf -filter "@pin_direction == out" -of_objects \
+#               [get_nets -segments -of_objects \
+#                 [get_pins top_earlgrey/u_spi_device/u_p2s/data_valid_i]]]
+#set_false_path -hold -from [get_clocks SPI_DEV_HC_IN_CLK] \
+#    -to [get_ports ${SPI_DEV_DATA_PORTS}] \
+#    -through [get_pins -leaf -filter "@pin_direction == out" -of_objects \
+#               [get_nets -segments -of_objects \
+#                 [get_pins top_earlgrey/u_spi_device/u_p2s/data_i*]]]
+
+# This path is from locality logic that is on the *_IN_CLK domain and selects
+# between fixed values or the return-by-hw register value. The flopped bits
+# settle in the middle of the command/address phase, many cycles before the
+# data phase.
+set_false_path -hold -from [get_clocks SPI_DEV_HC_IN_CLK] \
+    -to [get_ports ${SPI_DEV_DATA_PORTS}] \
+    -through [get_pins -leaf -filter "@pin_direction == out" -of_objects \
+               [get_nets -segments -of_objects \
+                 [get_pins top_earlgrey/u_spi_device/u_spi_tpm/miso_o]]]
+
+# Remove scan paths for timing analysis
+set_clock_sense -stop_propagation -clock SPI_DEV_HC_CLK [get_pins -leaf -filter "@pin_direction == in" -of_objects [get_nets -segments -of_objects [get_pins u_ast/u_scan_clk/in_i*]]]
+set_false_path -from [get_clocks SPI_DEV_HC_CSB_CLK] \
+    -through [get_pins -leaf -filter "@pin_direction == in" -of_objects \
+        [get_nets -segments -of_objects \
+            [get_pins u_ast/u_scan_rst_n/in_i*]]]
+
 ####################
 # SPI DEV TPM mode #
 ####################
-# The SPI DEV TPM section is for TPM mode with half-cycle sampling, though it
-# would apply to any non-passthrough mode with half-cycle sampling. For the
-# non-TPM case, there are no constraints below for the SPI_DEV_CS_L port, but it
-# is sufficiently constrained in the 48 MHz case above.
+# The SPI DEV TPM section is for TPM mode with half-cycle sampling. The TPM mode
+# has its own constraint section, since the setup and hold characteristics come
+# from the TPM spec, and these may be substantially different from what are
+# required for flash mode.
 # The half-cycle sampling target frequency is 24 MHz. Over-constrain to 25 MHz.
 set SPI_TPM_TCK 40.0
+set SPI_TPM_TCK_HALF [expr ${SPI_TPM_TCK} / 2]
+set SPI_TPM_CSB_HOLD 5.0
+set SPI_TPM_CSB_SETUP 5.0
+set SPI_TPM_MOSI_HOLD 3.0
+set SPI_TPM_MOSI_SETUP 2.0
+set SPI_TPM_MISO_CLKQ_MIN 0.0
+set SPI_TPM_MISO_CLKQ_MAX 12.6
+set SPI_TPM_CSB_IN_DEL_MIN [expr ${SPI_TPM_CSB_HOLD} - ${SPI_TPM_TCK_HALF}]
+set SPI_TPM_CSB_IN_DEL_MAX [expr ${SPI_TPM_TCK_HALF} - ${SPI_TPM_CSB_SETUP}]
+set SPI_TPM_MOSI_IN_DEL_MIN [expr ${SPI_TPM_MOSI_HOLD} - ${SPI_TPM_TCK_HALF}]
+set SPI_TPM_MOSI_IN_DEL_MAX [expr ${SPI_TPM_TCK_HALF} - ${SPI_TPM_MOSI_SETUP}]
+set SPI_TPM_MISO_OUT_DEL_MIN ${SPI_TPM_MISO_CLKQ_MIN}
+set SPI_TPM_MOSI_OUT_DEL_MAX [expr ${SPI_TPM_TCK_HALF} - ${SPI_TPM_MISO_CLKQ_MAX}]
+
 create_clock -name SPI_TPM_CLK -add -period ${SPI_TPM_TCK} [get_ports ${SPI_DEV_CLK_PIN}]
 set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks SPI_TPM_CLK]
 set_propagated_clock SPI_TPM_CLK
@@ -442,15 +560,15 @@ create_generated_clock -name SPI_TPM_OUT_CLK \
     [get_pins top_earlgrey/u_spi_device/u_clk_spi_out_buf/clk_o]
 
 # bidir ports
-set_input_delay -min ${SPI_DEV_IN_DEL_MIN} ${SPI_DEV_DATA_PORTS} \
+set_input_delay -min ${SPI_TPM_MOSI_IN_DEL_MIN} [get_ports SPI_DEV_D0] \
     -clock_fall -clock SPI_TPM_CLK -add_delay
-set_input_delay -max ${SPI_DEV_IN_DEL_MAX} ${SPI_DEV_DATA_PORTS} \
+set_input_delay -max ${SPI_TPM_MOSI_IN_DEL_MAX} [get_ports SPI_DEV_D0] \
     -clock_fall -clock SPI_TPM_CLK -add_delay
 
 # Half-cycle sampling has the host on the next rising edge.
-set_output_delay -min ${SPI_DEV_OUT_DEL_MIN} ${SPI_DEV_DATA_PORTS} \
+set_output_delay -min ${SPI_TPM_MISO_OUT_DEL_MIN} [get_ports SPI_DEV_D1] \
     -clock SPI_TPM_CLK -add_delay
-set_output_delay -max ${SPI_DEV_OUT_DEL_MAX} ${SPI_DEV_DATA_PORTS} \
+set_output_delay -max ${SPI_TPM_MISO_OUT_DEL_MAX} [get_ports SPI_DEV_D1] \
     -clock SPI_TPM_CLK -add_delay
 
 # SPI TPM CSB, the chip-select for TPM mode.
@@ -462,9 +580,9 @@ set MUXED_IOR_PORTS [get_ports "IOR0 IOR1 IOR2 IOR3 IOR4 IOR5 IOR6 IOR7 IOR10 IO
 set ALL_MUXED_PORTS [get_ports "${MUXED_IOA_PORTS} ${MUXED_IOB_PORTS} ${MUXED_IOC_PORTS} ${MUXED_IOR_PORTS}"]
 
 # TPM CSB input delays.
-set_input_delay -min ${SPI_DEV_IN_DEL_MIN} [get_ports ${ALL_MUXED_PORTS}] \
+set_input_delay -min ${SPI_TPM_CSB_IN_DEL_MIN} [get_ports ${ALL_MUXED_PORTS}] \
     -clock SPI_TPM_CLK -clock_fall -add_delay
-set_input_delay -max ${SPI_DEV_IN_DEL_MAX} [get_ports ${ALL_MUXED_PORTS}] \
+set_input_delay -max ${SPI_TPM_CSB_IN_DEL_MAX} [get_ports ${ALL_MUXED_PORTS}] \
     -clock SPI_TPM_CLK -clock_fall -add_delay
 
 # Relax hold path for TPM CSB, since CSB changes nominally on the same edge as
@@ -482,6 +600,48 @@ set_multicycle_path -hold -end 1 -from [get_clocks SPI_TPM_CLK] \
     -to [get_pins -leaf -filter "@pin_direction == in" -of_objects \
         [get_nets top_earlgrey/u_spi_device/u_passthrough/sck_gate_en]]
 
+# Remove paths originating from flash logic.
+set_false_path -from [get_clocks SPI_TPM_IN_CLK] \
+    -to [get_ports ${SPI_DEV_DATA_PORTS}] \
+    -through [get_pins -leaf -filter "@pin_direction == out" -of_objects \
+               [get_nets -segments -of_objects \
+                 [get_pins top_earlgrey/u_spi_device/u_p2s/data_valid_i]]]
+set_false_path -from [get_clocks SPI_TPM_IN_CLK] \
+    -to [get_ports ${SPI_DEV_DATA_PORTS}] \
+    -through [get_pins -leaf -filter "@pin_direction == out" -of_objects \
+               [get_nets -segments -of_objects \
+                 [get_pins top_earlgrey/u_spi_device/u_p2s/data_i*]]]
+set_false_path -from [get_clocks SPI_TPM_OUT_CLK] \
+    -to [get_ports ${SPI_DEV_DATA_PORTS}] \
+    -through [get_pins -leaf -filter "@pin_direction == out" -of_objects \
+               [get_nets -segments -of_objects \
+                 [get_pins top_earlgrey/u_spi_device/u_p2s/s_o*]]]
+set_false_path -from [get_clocks SPI_TPM_OUT_CLK] \
+    -to [get_ports ${SPI_DEV_DATA_PORTS}] \
+    -through [get_pins -leaf -filter "@pin_direction == out" -of_objects \
+               [get_nets -segments -of_objects \
+                 [get_pins top_earlgrey/u_spi_device/u_p2s/s_en_o*]]]
+set_false_path -from [get_clocks SPI_TPM_OUT_CLK] \
+    -to [get_ports ${SPI_DEV_DATA_PORTS}] \
+    -through [get_pins -leaf -filter "@pin_direction == out" -of_objects \
+               [get_nets -segments -of_objects \
+                 [get_pins top_earlgrey/u_spi_device/u_read_pipe_stg1/q_o*]]]
+set_false_path -from [get_clocks SPI_TPM_OUT_CLK] \
+    -to [get_ports ${SPI_DEV_DATA_PORTS}] \
+    -through [get_pins -leaf -filter "@pin_direction == out" -of_objects \
+               [get_nets -segments -of_objects \
+                 [get_pins top_earlgrey/u_spi_device/u_read_en_pipe_stg1/q_o*]]]
+set_false_path -from [get_clocks SPI_TPM_OUT_CLK] \
+    -to [get_ports ${SPI_DEV_DATA_PORTS}] \
+    -through [get_pins -leaf -filter "@pin_direction == out" -of_objects \
+               [get_nets -segments -of_objects \
+                 [get_pins top_earlgrey/u_spi_device/u_read_pipe_stg2/q_o*]]]
+set_false_path -from [get_clocks SPI_TPM_OUT_CLK] \
+    -to [get_ports ${SPI_DEV_DATA_PORTS}] \
+    -through [get_pins -leaf -filter "@pin_direction == out" -of_objects \
+               [get_nets -segments -of_objects \
+                 [get_pins top_earlgrey/u_spi_device/u_read_en_pipe_stg2/q_o*]]]
+
 ##
 # Remove hold analysis from the following paths to ports. Even though the pins
 # can change before the prior data was latched upstream, their effect is held
@@ -490,19 +650,6 @@ set_multicycle_path -hold -end 1 -from [get_clocks SPI_TPM_CLK] \
 # of changes on the listed pins. Otherwise, any hold time failures could be
 # real.
 ##
-
-# These two false paths are slated to be removed. The originating nodes were
-# observed to all come from the generic mode module, which has been removed.
-#set_false_path -hold -from [get_clocks SPI_TPM_IN_CLK] \
-#    -to [get_ports ${SPI_DEV_DATA_PORTS}] \
-#    -through [get_pins -leaf -filter "@pin_direction == out" -of_objects \
-#               [get_nets -segments -of_objects \
-#                 [get_pins top_earlgrey/u_spi_device/u_p2s/data_valid_i]]]
-#set_false_path -hold -from [get_clocks SPI_TPM_IN_CLK] \
-#    -to [get_ports ${SPI_DEV_DATA_PORTS}] \
-#    -through [get_pins -leaf -filter "@pin_direction == out" -of_objects \
-#               [get_nets -segments -of_objects \
-#                 [get_pins top_earlgrey/u_spi_device/u_p2s/data_i*]]]
 
 # This path is from locality logic that is on the *_IN_CLK domain and selects
 # between fixed values or the return-by-hw register value. The flopped bits
@@ -861,6 +1008,7 @@ set_false_path -from [get_clocks SPI_DEV_FAST_PASS_CSB_CLK] \
 # Only one mode can be active at a time.
 set_clock_groups -physically_exclusive \
     -group {SPI_DEV_CLK SPI_DEV_IN_CLK SPI_DEV_OUT_CLK SPI_DEV_CSB_CLK} \
+    -group {SPI_DEV_HC_CLK SPI_DEV_HC_IN_CLK SPI_DEV_HC_OUT_CLK SPI_DEV_HC_CSB_CLK} \
     -group {SPI_HOST_SLOW_PASS_CLK SPI_DEV_SLOW_PASS_CLK SPI_DEV_SLOW_PASS_IN_CLK SPI_DEV_SLOW_PASS_OUT_CLK SPI_DEV_SLOW_PASS_CSB_CLK} \
     -group {SPI_HOST_FAST_PASS_CLK SPI_DEV_FAST_PASS_CLK SPI_DEV_FAST_PASS_IN_CLK SPI_DEV_FAST_PASS_OUT_CLK SPI_DEV_FAST_PASS_CSB_CLK} \
     -group {SPI_TPM_CLK SPI_TPM_IN_CLK SPI_TPM_OUT_CLK}
@@ -872,6 +1020,7 @@ set_clock_groups -physically_exclusive \
 # SPI_DEV_CSB_CLK -> SPI_HOST_CLK
 #
 set SPI_DEV_CLKS "SPI_DEV_CLK SPI_DEV_IN_CLK SPI_DEV_OUT_CLK SPI_DEV_CSB_CLK"
+set SPI_DEV_HC_CLKS "SPI_DEV_HC_CLK SPI_DEV_HC_IN_CLK SPI_DEV_HC_OUT_CLK SPI_DEV_HC_CSB_CLK"
 set SPI_DEV_SLOW_PASS_CLKS "SPI_HOST_SLOW_PASS_CLK SPI_DEV_SLOW_PASS_CLK SPI_DEV_SLOW_PASS_IN_CLK SPI_DEV_SLOW_PASS_OUT_CLK SPI_DEV_SLOW_PASS_CSB_CLK"
 set SPI_DEV_FAST_PASS_CLKS "SPI_HOST_FAST_PASS_CLK SPI_DEV_FAST_PASS_CLK SPI_DEV_FAST_PASS_IN_CLK SPI_DEV_FAST_PASS_OUT_CLK SPI_DEV_FAST_PASS_CSB_CLK"
 set SPI_TPM_CLKS "SPI_TPM_CLK SPI_TPM_IN_CLK SPI_TPM_OUT_CLK"
@@ -883,7 +1032,7 @@ set SPI_TPM_CLKS "SPI_TPM_CLK SPI_TPM_IN_CLK SPI_TPM_OUT_CLK"
 set_clock_groups -name group1 -async                                  \
     -group [get_clocks MAIN_CLK                                     ] \
     -group [get_clocks USB_CLK                                      ] \
-    -group [get_clocks "${SPI_DEV_CLKS} ${SPI_DEV_SLOW_PASS_CLKS} ${SPI_DEV_FAST_PASS_CLKS} ${SPI_TPM_CLKS}"] \
+    -group [get_clocks "${SPI_DEV_CLKS} ${SPI_DEV_HC_CLKS} ${SPI_DEV_SLOW_PASS_CLKS} ${SPI_DEV_FAST_PASS_CLKS} ${SPI_TPM_CLKS}"] \
     -group [get_clocks {IO_CLK SPI_HOST_CLK}       ] \
     -group [get_clocks IO_DIV2_CLK                                  ] \
     -group [get_clocks IO_DIV4_CLK                                  ] \
