@@ -42,6 +42,7 @@
       si_stage: SV3
       features: ["RV_PLIC.PRIORITY", "RV_PLIC.ENABLE"]
       tests: ["chip_sw_plic_sw_irq"]
+      bazel: ["//sw/device/tests:plic_sw_irq_test"],
     }
     {
       name: chip_sw_plic_alerts
