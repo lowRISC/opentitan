@@ -114,6 +114,9 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
                 UVM_MEDIUM)
       if (cfg.en_cov) begin
         cov.all_modes_cg.sample(device_mode_e'(`gmv(ral.control.mode)), `gmv(ral.tpm_cfg.en));
+
+        cov.cfg_settings_cg.sample(`gmv(ral.cfg.mailbox_en), `gmv(ral.cfg.tx_order),
+                                    `gmv(ral.cfg.rx_order));
       end
 
       case (cfg.spi_host_agent_cfg.spi_func_mode)
