@@ -5,8 +5,8 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_KDF_H_
 #define OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_KDF_H_
 
-#include "sw/device/lib/crypto/include/datatypes.h"
-#include "sw/device/lib/crypto/include/mac.h"
+#include "datatypes.h"
+#include "mac.h"
 
 /**
  * @file
