@@ -22,7 +22,7 @@ class jtag_dmi_reg_frontdoor extends uvm_reg_frontdoor;
 
   virtual task body();
     csr_field_t         csr_or_fld;
-    uvm_reg_data_t      wdata, rdata;
+    uvm_reg_data_t      wdata = 0, rdata;
     jtag_dtm_reg_block  jtag_dtm_ral = jtag_agent_cfg_h.jtag_dtm_ral;
     jtag_dmi_op_rsp_e   op_rsp;
 
@@ -37,14 +37,26 @@ class jtag_dmi_reg_frontdoor extends uvm_reg_frontdoor;
     // Prepare the transaction by setting wdata as concatenated value of {addr, data, op} obtained
     // from this transaction.
     if (rw_info.kind == UVM_WRITE) begin
+      // Extract an intended register value from rw_info.value[0]. If we're updating a field, we'll
+      // put things in the right place next.
       wdata = rw_info.value[0];
+
+      // If we were actually only updating a field, we'll have to do a pretend read-modify-write,
+      // using the CSR's mirrored value.
       if (csr_or_fld.field != null) begin
         wdata = get_csr_val_with_updated_field(csr_or_fld.field,
                                                csr_or_fld.csr.get_mirrored_value(),
                                                rw_info.value[0]);
       end
     end
+
+    // At this point, wdata is zero if this is a UVM_READ and is the write value for the CSR if this
+    // is a UVM_WRITE. Shift the bits as necessary so that they are laid out in the right place for
+    // the data field inside the DMI register.
     wdata = get_csr_val_with_updated_field(jtag_dtm_ral.dmi.data, '0, wdata);
+
+    // Add in the op and address fields. When this is done, wdata is suitable for writing over JTAG
+    // in order to perform the requested DMI operation (read or write).
     wdata = get_csr_val_with_updated_field(jtag_dtm_ral.dmi.op, wdata,
                                            (rw_info.kind == UVM_WRITE ? DmiOpWrite : DmiOpRead));
     wdata = get_csr_val_with_updated_field(jtag_dtm_ral.dmi.address, wdata,
