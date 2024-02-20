@@ -91,7 +91,7 @@ TEST_F(IrqGetTypeTest, Success) {
 
   EXPECT_DIF_OK(dif_entropy_src_irq_get_type(
       &entropy_src_, kDifEntropySrcIrqEsEntropyValid, &type));
-  EXPECT_EQ(type, 0);
+  EXPECT_EQ(type, kDifIrqTypeEvent);
 }
 
 class IrqGetStateTest : public EntropySrcTest {};

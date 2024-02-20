@@ -85,7 +85,7 @@ TEST_F(IrqGetTypeTest, Success) {
 
   EXPECT_DIF_OK(dif_sysrst_ctrl_irq_get_type(
       &sysrst_ctrl_, kDifSysrstCtrlIrqEventDetected, &type));
-  EXPECT_EQ(type, 0);
+  EXPECT_EQ(type, kDifIrqTypeEvent);
 }
 
 class IrqGetStateTest : public SysrstCtrlTest {};

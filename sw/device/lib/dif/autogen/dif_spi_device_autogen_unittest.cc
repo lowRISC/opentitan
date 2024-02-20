@@ -85,7 +85,7 @@ TEST_F(IrqGetTypeTest, Success) {
 
   EXPECT_DIF_OK(dif_spi_device_irq_get_type(
       &spi_device_, kDifSpiDeviceIrqUploadCmdfifoNotEmpty, &type));
-  EXPECT_EQ(type, 0);
+  EXPECT_EQ(type, kDifIrqTypeEvent);
 }
 
 class IrqGetStateTest : public SpiDeviceTest {};

@@ -79,7 +79,7 @@ TEST_F(IrqGetTypeTest, Success) {
   dif_irq_type_t type;
 
   EXPECT_DIF_OK(dif_hmac_irq_get_type(&hmac_, kDifHmacIrqHmacDone, &type));
-  EXPECT_EQ(type, 0);
+  EXPECT_EQ(type, kDifIrqTypeEvent);
 }
 
 class IrqGetStateTest : public HmacTest {};

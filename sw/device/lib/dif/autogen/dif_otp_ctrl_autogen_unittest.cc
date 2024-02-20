@@ -90,7 +90,7 @@ TEST_F(IrqGetTypeTest, Success) {
 
   EXPECT_DIF_OK(dif_otp_ctrl_irq_get_type(
       &otp_ctrl_, kDifOtpCtrlIrqOtpOperationDone, &type));
-  EXPECT_EQ(type, 0);
+  EXPECT_EQ(type, kDifIrqTypeEvent);
 }
 
 class IrqGetStateTest : public OtpCtrlTest {};
