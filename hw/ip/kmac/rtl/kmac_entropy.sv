@@ -200,6 +200,11 @@ module kmac_entropy
   logic [NumChunksEntropyLfsr-1:0][ChunkSizeEntropyLfsr-1:0] lfsr_data_chunked;
   logic [EntropyLfsrW-1:0] lfsr_data, lfsr_data_permuted;
 
+  // Buffer stage to prevent glitches happening inside the PRNG itself from
+  // propagating into the masked processing core.
+  logic [EntropyLfsrW-1:0] rand_data_q;
+  logic data_update;
+
   // Auxliliary randomness
   logic aux_rand_d, aux_rand_q;
   logic aux_update;
@@ -452,13 +457,23 @@ module kmac_entropy
     assign lfsr_data_permuted[i] = lfsr_data[RndCnstLfsrPerm[i]];
   end
 
+  // Buffer stage to prevent glitches happening inside the LFSR primitives
+  // from propagating into the masked processing core.
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      rand_data_q <= RndCnstLfsrSeed;
+    end else if (data_update || msg_mask_en_i) begin
+      rand_data_q <= lfsr_data_permuted;
+    end
+  end
+
   // Forwrad LSBs for masking the message.
-  assign msg_mask_o = lfsr_data_permuted[MsgWidth-1:0];
+  assign msg_mask_o = rand_data_q[MsgWidth-1:0];
 
   // LFSRs --------------------------------------------------------------------
 
   // Auxiliary randomness =====================================================
-  assign aux_rand_d = aux_update ? lfsr_data_permuted[EntropyLfsrW - 1] :
+  assign aux_rand_d = aux_update ? rand_data_q[EntropyLfsrW - 1] :
                                    aux_rand_q;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -472,8 +487,8 @@ module kmac_entropy
 
   // LFSR enable randomness ===================================================
   assign lfsr_en_rand_d =
-      aux_update ? lfsr_data_permuted[EntropyLfsrW - 2 -: 4] : // refresh
-                   {1'b0, lfsr_en_rand_q[3:1]};                // shift out
+      aux_update ? rand_data_q[EntropyLfsrW - 2 -: 4] : // refresh
+                   {1'b0, lfsr_en_rand_q[3:1]};         // shift out
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -486,7 +501,7 @@ module kmac_entropy
   // LFSR enable randomness ---------------------------------------------------
 
   // Randomness outputs =======================================================
-  assign rand_data_o = lfsr_data_permuted;
+  assign rand_data_o = rand_data_q;
   assign rand_aux_o = aux_rand_q;
 
   // entropy valid
@@ -578,7 +593,8 @@ module kmac_entropy
     // LFSR seed can be updated by EDN or SW.
     lfsr_seed_en_red = '0;
 
-    // Auxiliary randomness control signals
+    // Randomness control signals
+    data_update = 1'b 0;
     aux_update = 1'b 0;
 
     // Error
@@ -633,6 +649,7 @@ module kmac_entropy
           // If fast_process is not set, then every rand_consume signal
           // triggers rand expansion.
           lfsr_en = 1'b 1;
+          data_update = 1'b 1;
 
           if (rand_consumed_i) begin
             st_d = StRandGenerate;
@@ -674,6 +691,7 @@ module kmac_entropy
 
             if ((fast_process_i && in_keyblock_i) || !fast_process_i) begin
               lfsr_en = 1'b 1;
+              data_update = 1'b 1;
               rand_valid_clear = 1'b 1;
             end
           end else begin
@@ -689,6 +707,7 @@ module kmac_entropy
           st_d = StRandEdn;
 
           lfsr_en = 1'b 1;
+          data_update = 1'b 1;
           rand_valid_clear = rand_consumed_i;
         end else begin
           st_d = StRandEdn;
@@ -702,6 +721,7 @@ module kmac_entropy
           st_d = StRandGenerate;
 
           lfsr_en = 1'b 1;
+          data_update = 1'b 1;
 
           rand_valid_clear = 1'b 1;
         end else begin
@@ -710,7 +730,7 @@ module kmac_entropy
       end
 
       StRandGenerate: begin
-        // The current PRNG output is used as auxiliary randomness. We don't
+        // The current buffer output is used as auxiliary randomness. We don't
         // need to advance the PRNG as there is no risk of accidentally
         // re-using the same randomness twice since after the current cycle:
         // - We either load and re-mask the message/key which will use
@@ -752,6 +772,7 @@ module kmac_entropy
         // Advance the LFSR after the entropy has been used.
         lfsr_en = (rand_update_i | rand_consumed_i) &
             ((fast_process_i & in_keyblock_i) | ~fast_process_i);
+        data_update = lfsr_en;
 
         if (err_processed_i) begin
           st_d = StRandReset;
