@@ -148,3 +148,13 @@ py_binary(
         requirement("jsonschema"),
     ],
 )
+
+py_binary(
+    name = "hjson_rsa_parser",
+    srcs = ["hjson_rsa_parser.py"],
+    deps = [
+        ":cryptotest_util",
+        requirement("hjson"),
+        requirement("jsonschema"),
+    ],
+)
