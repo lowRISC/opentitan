@@ -323,7 +323,6 @@ set SPI_DEV_OUT_DEL_MIN ${HOST_HOLD_DEL}
 set SPI_DEV_OUT_DEL_MIN_FC ${HOST_HOLD_DEL_FULL_CYCLE}
 set SPI_DEV_OUT_DEL_MAX [expr ${HOST_SETUP_DEL} + 2 * ${PCB_DEL}]
 
-## TODO: Create generated clock for negedge SPI_DEV_CLK. Then make them clock group
 create_clock -name SPI_DEV_CLK  -period ${SPI_DEV_TCK} [get_ports ${SPI_DEV_CLK_PIN}]
 set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks SPI_DEV_CLK]
 set_propagated_clock SPI_DEV_CLK
@@ -380,30 +379,32 @@ set_multicycle_path -hold -end 1 -from [get_clocks SPI_DEV_CLK] \
     -to [get_pins -leaf -filter "@pin_direction == in" -of_objects \
         [get_nets top_earlgrey/u_spi_device/u_passthrough/sck_gate_en]]
 
-# Even though this represents full-cycle sampling, require the data to at least
-# *start* appearing on the output before the posedge. This constraint may
-# optionally be removed. If it is removed, restrict generic mode to the same
-# frequencies as SPI DEV TPM mode in the datasheet.
-set_max_delay -ignore_clock_latency -from [get_clocks SPI_DEV_CSB_CLK] \
-    -to [get_clocks SPI_DEV_CLK] -through [get_ports ${SPI_DEV_DATA_PORTS}] \
-    [expr ${SPI_DEV_TCK_HALF} + ${SPI_DEV_OUT_DEL_MAX} - 2]
-
+##
 # Remove hold analysis from the following paths to ports. Even though the pins
 # can change before the prior data was latched upstream, their effect is held
 # back by other logic on SPI_DEV_OUT_CLK.
 # Note: The final output logic equation must not permit glitches in the presence
 # of changes on the listed pins. Otherwise, any hold time failures could be
 # real.
-set_false_path -hold -from [get_clocks SPI_DEV_IN_CLK] \
-    -to [get_ports ${SPI_DEV_DATA_PORTS}] \
-    -through [get_pins -leaf -filter "@pin_direction == out" -of_objects \
-               [get_nets -segments -of_objects \
-                 [get_pins top_earlgrey/u_spi_device/u_p2s/data_valid_i]]]
-set_false_path -hold -from [get_clocks SPI_DEV_IN_CLK] \
-    -to [get_ports ${SPI_DEV_DATA_PORTS}] \
-    -through [get_pins -leaf -filter "@pin_direction == out" -of_objects \
-               [get_nets -segments -of_objects \
-                 [get_pins top_earlgrey/u_spi_device/u_p2s/data_i*]]]
+##
+
+# These two false paths are slated to be removed. The originating nodes were
+# observed to all come from the generic mode module, which has been removed.
+#set_false_path -hold -from [get_clocks SPI_DEV_IN_CLK] \
+#    -to [get_ports ${SPI_DEV_DATA_PORTS}] \
+#    -through [get_pins -leaf -filter "@pin_direction == out" -of_objects \
+#               [get_nets -segments -of_objects \
+#                 [get_pins top_earlgrey/u_spi_device/u_p2s/data_valid_i]]]
+#set_false_path -hold -from [get_clocks SPI_DEV_IN_CLK] \
+#    -to [get_ports ${SPI_DEV_DATA_PORTS}] \
+#    -through [get_pins -leaf -filter "@pin_direction == out" -of_objects \
+#               [get_nets -segments -of_objects \
+#                 [get_pins top_earlgrey/u_spi_device/u_p2s/data_i*]]]
+
+# This path is from locality logic that is on the *_IN_CLK domain and selects
+# between fixed values or the return-by-hw register value. The flopped bits
+# settle in the middle of the command/address phase, many cycles before the
+# data phase.
 set_false_path -hold -from [get_clocks SPI_DEV_IN_CLK] \
     -to [get_ports ${SPI_DEV_DATA_PORTS}] \
     -through [get_pins -leaf -filter "@pin_direction == out" -of_objects \
@@ -481,23 +482,32 @@ set_multicycle_path -hold -end 1 -from [get_clocks SPI_TPM_CLK] \
     -to [get_pins -leaf -filter "@pin_direction == in" -of_objects \
         [get_nets top_earlgrey/u_spi_device/u_passthrough/sck_gate_en]]
 
-
+##
 # Remove hold analysis from the following paths to ports. Even though the pins
 # can change before the prior data was latched upstream, their effect is held
 # back by other logic on SPI_TPM_OUT_CLK.
 # Note: The final output logic equation must not permit glitches in the presence
 # of changes on the listed pins. Otherwise, any hold time failures could be
 # real.
-set_false_path -hold -from [get_clocks SPI_TPM_IN_CLK] \
-    -to [get_ports ${SPI_DEV_DATA_PORTS}] \
-    -through [get_pins -leaf -filter "@pin_direction == out" -of_objects \
-               [get_nets -segments -of_objects \
-                 [get_pins top_earlgrey/u_spi_device/u_p2s/data_valid_i]]]
-set_false_path -hold -from [get_clocks SPI_TPM_IN_CLK] \
-    -to [get_ports ${SPI_DEV_DATA_PORTS}] \
-    -through [get_pins -leaf -filter "@pin_direction == out" -of_objects \
-               [get_nets -segments -of_objects \
-                 [get_pins top_earlgrey/u_spi_device/u_p2s/data_i*]]]
+##
+
+# These two false paths are slated to be removed. The originating nodes were
+# observed to all come from the generic mode module, which has been removed.
+#set_false_path -hold -from [get_clocks SPI_TPM_IN_CLK] \
+#    -to [get_ports ${SPI_DEV_DATA_PORTS}] \
+#    -through [get_pins -leaf -filter "@pin_direction == out" -of_objects \
+#               [get_nets -segments -of_objects \
+#                 [get_pins top_earlgrey/u_spi_device/u_p2s/data_valid_i]]]
+#set_false_path -hold -from [get_clocks SPI_TPM_IN_CLK] \
+#    -to [get_ports ${SPI_DEV_DATA_PORTS}] \
+#    -through [get_pins -leaf -filter "@pin_direction == out" -of_objects \
+#               [get_nets -segments -of_objects \
+#                 [get_pins top_earlgrey/u_spi_device/u_p2s/data_i*]]]
+
+# This path is from locality logic that is on the *_IN_CLK domain and selects
+# between fixed values or the return-by-hw register value. The flopped bits
+# settle in the middle of the command/address phase, many cycles before the
+# data phase.
 set_false_path -hold -from [get_clocks SPI_TPM_IN_CLK] \
     -to [get_ports ${SPI_DEV_DATA_PORTS}] \
     -through [get_pins -leaf -filter "@pin_direction == out" -of_objects \
@@ -662,30 +672,32 @@ set_multicycle_path -hold -end 1 -from [get_clocks SPI_DEV_PASS_CLK] \
     -to [get_pins -leaf -filter "@pin_direction == in" -of_objects \
         [get_nets top_earlgrey/u_spi_device/u_passthrough/sck_gate_en]]
 
-# Even though this represents full-cycle sampling, require the data to at least
-# *start* appearing on the output before the posedge. This constraint may
-# optionally be removed. If it is removed, restrict generic mode to the same
-# frequencies as SPI DEV TPM mode in the datasheet.
-set_max_delay -ignore_clock_latency -from [get_clocks SPI_DEV_PASS_CSB_CLK] \
-    -to [get_clocks SPI_DEV_PASS_CLK] -through [get_ports ${SPI_DEV_DATA_PORTS}] \
-    [expr ${SPI_DEV_PASS_TCK_HALF} + ${SPI_DEV_OUT_DEL_MAX} - 2]
-
+##
 # Remove hold analysis from the following paths to ports. Even though the pins
 # can change before the prior data was latched upstream, their effect is held
 # back by other logic on SPI_DEV_PASS_OUT_CLK.
 # Note: The final output logic equation must not permit glitches in the presence
 # of changes on the listed pins. Otherwise, any hold time failures could be
 # real.
-set_false_path -hold -from [get_clocks SPI_DEV_PASS_IN_CLK] \
-    -to [get_ports ${SPI_DEV_DATA_PORTS}] \
-    -through [get_pins -leaf -filter "@pin_direction == out" -of_objects \
-               [get_nets -segments -of_objects \
-                 [get_pins top_earlgrey/u_spi_device/u_p2s/data_valid_i]]]
-set_false_path -hold -from [get_clocks SPI_DEV_PASS_IN_CLK] \
-    -to [get_ports ${SPI_DEV_DATA_PORTS}] \
-    -through [get_pins -leaf -filter "@pin_direction == out" -of_objects \
-               [get_nets -segments -of_objects \
-                 [get_pins top_earlgrey/u_spi_device/u_p2s/data_i*]]]
+##
+
+# These two false paths are slated to be removed. The originating nodes were
+# observed to all come from the generic mode module, which has been removed.
+#set_false_path -hold -from [get_clocks SPI_DEV_PASS_IN_CLK] \
+#    -to [get_ports ${SPI_DEV_DATA_PORTS}] \
+#    -through [get_pins -leaf -filter "@pin_direction == out" -of_objects \
+#               [get_nets -segments -of_objects \
+#                 [get_pins top_earlgrey/u_spi_device/u_p2s/data_valid_i]]]
+#set_false_path -hold -from [get_clocks SPI_DEV_PASS_IN_CLK] \
+#    -to [get_ports ${SPI_DEV_DATA_PORTS}] \
+#    -through [get_pins -leaf -filter "@pin_direction == out" -of_objects \
+#               [get_nets -segments -of_objects \
+#                 [get_pins top_earlgrey/u_spi_device/u_p2s/data_i*]]]
+
+# This path is from locality logic that is on the *_IN_CLK domain and selects
+# between fixed values or the return-by-hw register value. The flopped bits
+# settle in the middle of the command/address phase, many cycles before the
+# data phase.
 set_false_path -hold -from [get_clocks SPI_DEV_PASS_IN_CLK] \
     -to [get_ports ${SPI_DEV_DATA_PORTS}] \
     -through [get_pins -leaf -filter "@pin_direction == out" -of_objects \
@@ -702,12 +714,6 @@ set_false_path -from [get_clocks SPI_DEV_PASS_CSB_CLK] \
 ####################
 # SPI-specific CDC #
 ####################
-# CSB and clocks are not active simultaneously, and CSB does not actually sample
-# data from these clocks.
-set_clock_groups -logically_exclusive \
-    -group {SPI_DEV_CLK SPI_DEV_PASS_CLK SPI_TPM_CLK} \
-    -group {SPI_DEV_CSB_CLK SPI_DEV_PASS_CSB_CLK}
-
 # Only one mode can be active at a time.
 set_clock_groups -physically_exclusive \
     -group {SPI_DEV_CLK SPI_DEV_IN_CLK SPI_DEV_OUT_CLK SPI_DEV_CSB_CLK} \
