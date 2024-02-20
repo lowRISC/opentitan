@@ -2805,7 +2805,7 @@
              In reality this can be any rom based test, which requires secure boot.
              '''
       stage: V2
-      tests: ["rom_e2e_smoke"]
+      tests: ["base_rom_e2e_smoke"]
     }
     {
       name: chip_lc_scrap
