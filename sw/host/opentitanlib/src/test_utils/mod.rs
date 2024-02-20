@@ -5,6 +5,9 @@
 pub mod bootstrap;
 pub mod e2e_command;
 pub mod epmp;
+// The "english breakfast" variant of the chip doesn't have the same
+// set of CSRs as the "earlgrey" chip.
+#[cfg(not(feature = "english_breakfast"))]
 pub mod extclk;
 pub mod gpio;
 pub mod gpio_monitor;
