@@ -175,14 +175,14 @@ endtask
 
 virtual task configure_setup_trans();
   // Enable EP0 Out
-  csr_wr(.ptr(ral.ep_out_enable[0].enable[0]), .value(1'b1));
+  csr_wr(.ptr(ral.ep_out_enable[0].enable[endp]), .value(1'b1));
   csr_update(ral.ep_out_enable[0]);
   // Enable rx setup
-  ral.rxenable_setup[0].setup[0].set(1'b1);
+  ral.rxenable_setup[0].setup[endp].set(1'b1);
   csr_update(ral.rxenable_setup[0]);
   // Set buffer
-  ral.avoutbuffer.buffer.set(setup_buffer_id);
-  csr_update(ral.avoutbuffer);
+  ral.avsetupbuffer.buffer.set(setup_buffer_id);
+  csr_update(ral.avsetupbuffer);
 endtask
 
 virtual task configure_in_trans(bit [4:0] buffer_id);
