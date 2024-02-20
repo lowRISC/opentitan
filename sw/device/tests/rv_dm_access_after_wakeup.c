@@ -15,6 +15,7 @@
 #include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
+#include "sw/device/lib/testing/test_framework/ottf_utils.h"
 #include "sw/device/lib/testing/test_framework/status.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -24,14 +25,14 @@
  * RV_DM access after wakeup test.
  */
 
-OTTF_DEFINE_TEST_CONFIG();
+OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 
 enum {
-  kSoftwareBarrierTimeoutUsec = 24,
+  kSoftwareBarrierTimeoutUsec = 1000000,
 };
 
 // This location will be update from SV
-static volatile const uint8_t kSoftwareBarrier = 0;
+static volatile uint8_t kSoftwareBarrier = 0;
 
 // Handle to the plic
 dif_rv_plic_t rv_plic;
@@ -91,7 +92,7 @@ bool test_main(void) {
     case kDifRstmgrResetInfoPor:  // The first power-up.
       LOG_INFO("Software Setup.");
       // Wait for sequence to run its checks.
-      IBEX_SPIN_FOR(kSoftwareBarrier == 1, kSoftwareBarrierTimeoutUsec);
+      OTTF_WAIT_FOR(kSoftwareBarrier == 1, kSoftwareBarrierTimeoutUsec);
 
       // Enable all the AON interrupts used in this test.
       rv_plic_testutils_irq_range_enable(&rv_plic, kTopEarlgreyPlicTargetIbex0,
@@ -121,7 +122,7 @@ bool test_main(void) {
       CHECK_DIF_OK(dif_sysrst_ctrl_ulp_wakeup_clear_status(&sysrst_ctrl));
 
       // Wait for sequence to run its checks.
-      IBEX_SPIN_FOR(kSoftwareBarrier == 2, kSoftwareBarrierTimeoutUsec);
+      OTTF_WAIT_FOR(kSoftwareBarrier == 2, kSoftwareBarrierTimeoutUsec);
 
       // Put the device in a deep sleep.
       put_to_sleep(&pwrmgr, /*deep_sleep=*/true);
@@ -131,7 +132,7 @@ bool test_main(void) {
       LOG_INFO("Waking up from deep sleep.");
 
       // Wait for sequence to finish before returning.
-      IBEX_SPIN_FOR(kSoftwareBarrier == 3, kSoftwareBarrierTimeoutUsec);
+      OTTF_WAIT_FOR(kSoftwareBarrier == 3, kSoftwareBarrierTimeoutUsec);
       return true;
 
     default:
