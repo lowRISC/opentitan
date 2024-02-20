@@ -42,6 +42,15 @@ py_binary(
 )
 
 py_binary(
+    name = "hjson_ecdsa_parser",
+    srcs = ["hjson_ecdsa_parser.py"],
+    deps = [
+        requirement("hjson"),
+        requirement("jsonschema"),
+    ],
+)
+
+py_binary(
     name = "nist_cavp_hash_parser",
     srcs = ["nist_cavp_hash_parser.py"],
     deps = [
