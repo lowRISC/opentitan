@@ -141,6 +141,22 @@ rust_binary(
 )
 
 rust_binary(
+    name = "access_after_wakeup",
+    srcs = [
+        "src/access_after_wakeup.rs",
+    ],
+    deps = [
+        "//sw/host/opentitanlib",
+        "@crate_index//:anyhow",
+        "@crate_index//:clap",
+        "@crate_index//:humantime",
+        "@crate_index//:log",
+        "@crate_index//:object",
+        "@crate_index//:rand",
+    ],
+)
+
+rust_binary(
     name = "access_after_hw_reset",
     srcs = [
         "src/access_after_hw_reset.rs",
