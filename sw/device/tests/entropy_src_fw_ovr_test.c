@@ -78,7 +78,7 @@ void test_firmware_override(dif_entropy_src_t *entropy) {
     for (size_t i = 0; i < kEntropyFifoBufferSize; ++i) {
       CHECK(buf[i] != 0);
     }
-    CHECK_DIF_OK(dif_entropy_src_observe_fifo_write(
+    CHECK_DIF_OK(dif_entropy_src_fw_ov_data_write(
         entropy, buf, kEntropyFifoBufferSize, NULL));
     word_count += kEntropyFifoBufferSize;
   } while (dif_entropy_src_is_entropy_available(entropy) == kDifUnavailable);
