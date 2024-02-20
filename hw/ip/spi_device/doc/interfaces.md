@@ -36,7 +36,8 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | readbuf_watermark        | Event  | Read Buffer Threshold event. The host system accesses greater than or equal to the threshold of a buffer.                                                                                                                                           |
 | readbuf_flip             | Event  | Read buffer flipped event. The host system accesses other side of buffer.                                                                                                                                                                           |
 | tpm_header_not_empty     | Status | TPM Header(Command/Address) buffer available                                                                                                                                                                                                        |
-| tpm_rdfifo_drop          | Event  | TPM RdFIFO data dropped. Data was dropped from the RdFIFO. Either data was written while a read command was not active, or the read command was aborted while data was left in the RdFIFO.                                                          |
+| tpm_rdfifo_cmd_end       | Event  | TPM RdFIFO command ended. The TPM Read command targeting the RdFIFO ended. Check TPM_STATUS.rdfifo_aborted to see if the transaction completed.                                                                                                     |
+| tpm_rdfifo_drop          | Event  | TPM RdFIFO data dropped. Data was dropped from the RdFIFO. Data was written while a read command was not active, and it was not accepted. This can occur when the host aborts a read command.                                                       |
 
 ## Security Alerts
 

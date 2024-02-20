@@ -28,6 +28,7 @@ package spi_device_env_pkg;
     ReadbufWatermark,
     ReadbufFlip,
     TpmHeaderNotEmpty,
+    TpmRdFifoCmdEnd,
     TpmRdFifoDrop,
     NumSpiDevIntr
   } spi_device_intr_e;

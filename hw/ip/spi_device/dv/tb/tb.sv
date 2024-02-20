@@ -34,6 +34,7 @@ module tb;
   wire intr_readbuf_watermark;
   wire intr_readbuf_flip;
   wire intr_tpm_header_not_empty;
+  wire intr_tpm_rdfifo_cmd_end;
   wire intr_tpm_rdfifo_drop;
 
   // interfaces
@@ -72,10 +73,11 @@ module tb;
     .intr_upload_cmdfifo_not_empty_o   (intr_cmdfifo_not_empty),
     .intr_upload_payload_not_empty_o   (intr_payload_not_empty),
     .intr_upload_payload_overflow_o    (intr_payload_overflow),
-    .intr_readbuf_watermark_o   (intr_readbuf_watermark),
-    .intr_readbuf_flip_o        (intr_readbuf_flip),
-    .intr_tpm_header_not_empty_o(intr_tpm_header_not_empty),
-    .intr_tpm_rdfifo_drop_o     (intr_tpm_rdfifo_drop),
+    .intr_readbuf_watermark_o     (intr_readbuf_watermark),
+    .intr_readbuf_flip_o          (intr_readbuf_flip),
+    .intr_tpm_header_not_empty_o  (intr_tpm_header_not_empty),
+    .intr_tpm_rdfifo_cmd_end_o    (intr_tpm_rdfifo_cmd_end),
+    .intr_tpm_rdfifo_drop_o       (intr_tpm_rdfifo_drop),
     .mbist_en_i     (1'b0),
     .scanmode_i     (prim_mubi_pkg::MuBi4False)
   );
@@ -114,6 +116,7 @@ module tb;
   assign interrupts[ReadbufWatermark]  = intr_readbuf_watermark;
   assign interrupts[ReadbufFlip]       = intr_readbuf_flip;
   assign interrupts[TpmHeaderNotEmpty] = intr_tpm_header_not_empty;
+  assign interrupts[TpmRdFifoCmdEnd]   = intr_tpm_rdfifo_cmd_end;
   assign interrupts[TpmRdFifoDrop]     = intr_tpm_rdfifo_drop;
 
   initial begin

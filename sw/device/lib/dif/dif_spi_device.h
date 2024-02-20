@@ -794,6 +794,8 @@ typedef struct dif_spi_device_tpm_data_status {
   bool cmd_addr_valid;
   /** True if the write FIFO is under software's exclusive use. */
   bool wrfifo_acquired;
+  /** True if the last command targeted the Read FIFO and was aborted. */
+  bool rdfifo_aborted;
 } dif_spi_device_tpm_data_status_t;
 
 /**

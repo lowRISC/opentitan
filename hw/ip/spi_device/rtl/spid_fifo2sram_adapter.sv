@@ -86,7 +86,7 @@ module spid_fifo2sram_adapter #(
   end else begin : g_one_entry_per_word
     assign sram_addr_o = SramBaseAddr + SramAw'(fifoptr);
     assign sram_wdata_o = SramDw'(wdata_i);
-    assign sram_wmask_o = SramDw'(2**FifoWidth-1);
+    assign sram_wmask_o = SramDw'({1'b0, {FifoWidth{1'b1}}});
   end
 
   assign sram_ack = sram_req_o && sram_gnt_i;

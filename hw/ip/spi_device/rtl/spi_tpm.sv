@@ -29,6 +29,7 @@ module spi_tpm
 
   localparam int unsigned CmdAddrPtrW = $clog2(CmdAddrFifoDepth+1),
   localparam int unsigned RdFifoPtrW  = $clog2(RdFifoDepth+1),
+  localparam int unsigned RdFifoIdxW  = $clog2(RdFifoDepth),
 
   localparam int unsigned CmdAddrSize    = 32, // Cmd 8bit + Addr 24bit
   localparam int unsigned FifoRegSize    = 12, // lower 12bit excluding locality
@@ -56,12 +57,11 @@ module spi_tpm
 ) (
   input clk_in_i,
   input clk_out_i,
+  input rst_n,
 
   input sys_clk_i,
-
   input sys_rst_ni,
-  input rst_n,
-  input sys_sync_rst_ni,
+  input sys_tpm_rst_ni,
 
   // SPI interface
   input        csb_i, // TPM needs separate CS#
@@ -71,9 +71,6 @@ module spi_tpm
 
   // TPM Capability
   output spi_device_pkg::tpm_cap_t tpm_cap_o,
-
-  // sys_csb_pulse generated from CDC synchronizer
-  input sys_csb_pulse_stretch,
 
   // Configurations
   //  tpm_en to turn on the TPM function
@@ -122,13 +119,15 @@ module spi_tpm
   input                    sys_rdfifo_wvalid_i,
   input  [RdFifoWidth-1:0] sys_rdfifo_wdata_i,
   output logic             sys_rdfifo_wready_o,
+  output logic             sys_rdfifo_cmd_end_o,
   output logic             sys_tpm_rdfifo_drop_o,
 
   input                    sys_wrfifo_release_i,
 
   // TPM_STATUS
   output logic                  sys_cmdaddr_notempty_o,
-  output logic                  sys_wrfifo_pending_o
+  output logic                  sys_wrfifo_pending_o,
+  output logic                  sys_rdfifo_aborted_o
 );
 
   // Capability
@@ -191,7 +190,7 @@ module spi_tpm
     Read  = 1'b 1
   } cmd_type_e;
 
-  typedef enum int unsigned {
+  typedef enum logic {
     SramRdFifo = 0,
     SramWrFifo = 1
   } sramintf_e;
@@ -314,6 +313,9 @@ module spi_tpm
   // Signal//
   ///////////
 
+  // CSB to logic in sys_clk domain
+  logic sys_csb_asserted_pulse, sys_csb_deasserted_pulse;
+
   // SRAM access (to SRAM Arbiter)
   logic [NumSramIntf-1:0] sck_sram_req;
   logic [NumSramIntf-1:0] sck_sram_gnt;
@@ -380,7 +382,8 @@ module spi_tpm
 
   // Read FIFO
   logic                     sck_rdfifo_rvalid, sck_rdfifo_rready;
-  logic [RdFifoPtrW-1:0]    sck_rdfifo_rdepth;
+  logic [RdFifoIdxW-1:0]    sck_rdfifo_offset;
+  logic                     sck_rdfifo_full;
   logic [RdFifoWidth-1:0]   sck_rdfifo_rdata;
 
   logic [RdFifoOffsetW-1:0]     sck_rdfifo_idx;
@@ -447,7 +450,7 @@ module spi_tpm
 
   // Indicate the locality is greater than or equal to NumLocality.
   // with tpm_cfg.invalid_locality, the logic returns FFh if host sends read
-    // requests to unsupported locality.
+  // requests to unsupported locality.
   logic       invalid_locality;
 
 
@@ -492,6 +495,28 @@ module spi_tpm
   // CDC //
   /////////
 
+  // Includes 2FF sync for sys_tpm_rst_ni, which asserts asynchronously to
+  // sys_clk_i. The synchronizer output feeds logic that determines when to
+  // release the RdFIFO to SW. The posedge_pulse output is used to latch the TPM
+  // configuration and return-by-hw register values for use in the current
+  // command.
+  // The outputs of the edge detector are thus delayed another 2 SYS_CLK cycles
+  // after the prim_rst_sync. The configuration latches into SYS_CLK below,
+  // and those outputs are used on the 24th bit of the SPI clock. So, SYS_CLK
+  // must be at least 1/4 the frequency as the SPI clock.
+  prim_edge_detector #(
+    .Width      (1),
+    .ResetValue (1'b 0),
+    .EnSync     (1'b 1)
+  ) u_csb_sync_rst (
+    .clk_i             (sys_clk_i),
+    .rst_ni            (sys_rst_ni),
+    .d_i               (sys_tpm_rst_ni),
+    .q_sync_o          (),
+    .q_posedge_pulse_o (sys_csb_asserted_pulse),
+    .q_negedge_pulse_o (sys_csb_deasserted_pulse)
+  );
+
   assign sys_clk_tpm_en = cfg_tpm_en_i;
 
   // Configuration latched into sys_clk
@@ -500,7 +525,7 @@ module spi_tpm
       sys_clk_tpm_cfg <= '{default: '0};
       sys_clk_tpm_reg <= '{default: '0};
     end else begin
-      if (sys_csb_pulse_stretch) begin
+      if (sys_csb_asserted_pulse) begin
         sys_clk_tpm_cfg <= sys_tpm_cfg;
         sys_clk_tpm_reg <= sys_tpm_reg;
         for (int unsigned i = 0 ; i < NumLocality ; i++) begin
@@ -813,10 +838,53 @@ module spi_tpm
   assign xfer_bytes_d  = xfer_bytes_q + 6'h 1;
   assign xfer_size_met = xfer_bytes_q == xfer_size;
 
+  // The sys_clk domain signals the SPI domain when there is enough data in
+  // the RdFIFO buffer for the current command. The expected transfer size
+  // resets to a value greater than a command could possibly request whenever
+  // a new transaction begins. It then adjusts to the real value once the
+  // cmdaddr FIFO is read, to pass the command from hardware to software.
+  logic [RdFifoPtrW-1:0] sys_rdfifo_wdepth;
+  logic [5:0] sys_xfer_size;
+  logic sys_enough_payload_in_rdfifo;
+
+  always_ff @(posedge sys_clk_i or negedge sys_rst_ni) begin
+    if (!sys_rst_ni) begin
+      sys_rdfifo_wdepth <= '0;
+    end else if (sys_csb_asserted_pulse) begin
+      sys_rdfifo_wdepth <= '0;
+    end else if (sys_rdfifo_wvalid_i & sys_rdfifo_wready_o) begin
+      sys_rdfifo_wdepth <= sys_rdfifo_wdepth + 1;
+    end
+  end
+
   // xfer_size is 0 based. FIFO depth is 1 based. GTE -> Greater than
-  assign enough_payload_in_rdfifo =
-    (7'({sck_rdfifo_rdepth, RdFifoBytesW'(0)}) > {1'b 0, xfer_size})
-    | (7'(RdFifoSize) <= 7'(xfer_size));
+  always_ff @(posedge sys_clk_i or negedge sys_rst_ni) begin
+    if (!sys_rst_ni) begin
+      sys_xfer_size <= '1;
+    end else if (sys_csb_asserted_pulse) begin
+      sys_xfer_size <= '1;
+    end else if (sys_cmdaddr_rvalid_o & sys_cmdaddr_rready_i) begin
+      sys_xfer_size <= sys_cmdaddr.xfer_size_minus_one;
+    end
+  end
+
+  always_ff @(posedge sys_clk_i or negedge sys_rst_ni) begin
+    if (!sys_rst_ni) begin
+      sys_enough_payload_in_rdfifo <= 1'b0;
+    end else begin
+      sys_enough_payload_in_rdfifo <=
+        (7'({sys_rdfifo_wdepth, RdFifoBytesW'(0)}) > {1'b 0, sys_xfer_size});
+    end
+  end
+
+  prim_flop_2sync #(
+    .Width (1)
+  ) u_rdfifo_ready (
+    .clk_i (clk_in_i),
+    .rst_ni(rst_n),
+    .d_i   (sys_enough_payload_in_rdfifo),
+    .q_o   (enough_payload_in_rdfifo)
+  );
 
   // Output data mux
   `ASSERT_KNOWN(DataSelKnown_A, isck_data_sel, clk_out_i, !rst_n)
@@ -999,8 +1067,10 @@ module spi_tpm
     end
   end
 
-  // Only when sck_rdfifo_idx reached end byte, pop the FIFO entry
-  assign sck_rdfifo_rready = isck_rd_byte_sent && (&sck_rdfifo_idx);
+  // Only when sck_rdfifo_idx reaches the end byte, pop the FIFO entry.
+  // The isck_p2s_bitcnt of 1 is used to accommodate the SRAM latency.
+  assign sck_rdfifo_rready = (&sck_rdfifo_idx) && (isck_data_sel == SelRdFifo) &&
+                             sck_p2s_valid && (isck_p2s_bitcnt == 1);
 
   ///////////////////
   // State Machine //
@@ -1308,37 +1378,33 @@ module spi_tpm
   // transaction is completed (CSb deasserted).  So, everytime CSb is
   // deasserted --> rst_n asserted. So, reset the read FIFO. In addition, the
   // reset is extended until a read command is drawn from the FIFO.
-  logic sys_rdfifo_sync_clr_n;
+  assign sys_cmdaddr = tpm_cmdaddr_t'(sys_cmdaddr_rdata_o);
+  logic unused_sys_cmdaddr;
+  assign unused_sys_cmdaddr = ^{
+    sys_cmdaddr.address,
+    sys_cmdaddr.rsvd
+  };
+
+  logic sys_rdfifo_sync_clr;
   always_ff @(posedge sys_clk_i or negedge sys_rst_ni) begin
     if (!sys_rst_ni) begin
-      sys_rdfifo_sync_clr_n <= 1'b0;
-    end else if (!sys_sync_rst_ni) begin
-      sys_rdfifo_sync_clr_n <= 1'b0;
+      sys_rdfifo_sync_clr <= 1'b1;
+    end else if (sys_csb_deasserted_pulse) begin
+      sys_rdfifo_sync_clr <= 1'b1;
     end else if (sys_cmdaddr.rnw & sys_cmdaddr_rvalid_o & sys_cmdaddr_rready_i) begin
-      sys_rdfifo_sync_clr_n <= 1'b1;
+      sys_rdfifo_sync_clr <= 1'b0;
     end
   end
 
-  assign sys_cmdaddr = tpm_cmdaddr_t'(sys_cmdaddr_rdata_o);
-
-  logic sys_rdfifo_written;
-  always_ff @(posedge clk_in_i or negedge sys_rst_ni) begin
-    if (!sys_rst_ni) begin
-      sys_rdfifo_written <= 1'b0;
-    end else if (!sys_sync_rst_ni) begin
-      sys_rdfifo_written <= 1'b0;
-    end else if (sys_rdfifo_wvalid_i & sys_rdfifo_wready_o) begin
-      sys_rdfifo_written <= 1'b1;
-    end
-  end
-
+  // sck_rdfifo_cmd_pending tracks whether a RdFIFO command was not fully
+  // completed in the SCK domain.
   always_ff @(posedge clk_in_i or negedge sys_rst_ni) begin
     if (!sys_rst_ni) begin
       sck_rdfifo_cmd_pending <= 1'b0;
     end else if (cmdaddr_bitcnt == 5'h0f) begin
       // Clearing the command pending bit here should give at least the 16 SPI
       // cycles for the sys_clk domain to sample the event, timed by
-      // sys_sync_rst_ni's falling edge.
+      // sys_tpm_rst_ni falling edge (after a 2FF sync).
       sck_rdfifo_cmd_pending <= 1'b0;
     end else if (sck_cmdaddr_wvalid && (cmd_type == Read)) begin
       sck_rdfifo_cmd_pending <= 1'b1;
@@ -1347,74 +1413,119 @@ module spi_tpm
     end
   end
 
-  logic sys_rdfifo_data_dropped;
   always_ff @(posedge sys_clk_i or negedge sys_rst_ni) begin
     if (!sys_rst_ni) begin
-      sys_rdfifo_data_dropped <= 1'b0;
-    end else if (sys_rdfifo_sync_clr_n & !sys_sync_rst_ni & sys_rdfifo_written) begin
+      sys_rdfifo_aborted_o <= 1'b0;
+    end else if (sys_csb_deasserted_pulse & !sys_rdfifo_sync_clr) begin
       // Sample the command pending bit on the CSB de-assertion edge, which
       // has a safe timing as long as sys_clk_i is fast enough to handle the
       // CSB CDC + this flop in the 16 SPI cycles. sck_rdfifo_cmd_pending will
       // be held steady for at least that long, including however long since the
       // last SPI clock edge of the *previous* command.
-      sys_rdfifo_data_dropped <= sck_rdfifo_cmd_pending;
-    end else begin
-      sys_rdfifo_data_dropped <= 1'b0;
+      sys_rdfifo_aborted_o <= sck_rdfifo_cmd_pending;
+    end else if (sys_cmdaddr_rvalid_o & sys_cmdaddr_rready_i) begin
+      sys_rdfifo_aborted_o <= 1'b0;
     end
   end
 
-  assign sys_tpm_rdfifo_drop_o = (sys_rdfifo_wvalid_i & !sys_rdfifo_sync_clr_n) ||
-                                 sys_rdfifo_data_dropped;
+  // The end of a command doesn't necessarily mean that it completed.
+  // sys_rdfifo_cmd_aborted may be observed for that.
+  assign sys_rdfifo_cmd_end_o = sys_csb_deasserted_pulse & !sys_rdfifo_sync_clr;
 
   logic [SramDw-1:0] sys_sram_wmask;
   assign sys_sram_o.wstrb = sram_mask2strb(sys_sram_wmask);
-  prim_fifo_async_sram_adapter #(
-    .Width        (RdFifoWidth),
-    .Depth        (RdFifoDepth),
+
+  // Read Buffer
+  spid_fifo2sram_adapter #(
+    .FifoWidth (RdFifoWidth),  // 4 bytes
+    .FifoDepth (RdFifoDepth),  // 64 bytes
+
     .SramAw       (SramAw),
     .SramDw       (SramDw),
     .SramBaseAddr (SramTpmRdFifoIdx)
-  ) u_rdfifo (
-    .clk_wr_i  (sys_clk_i),
-    .rst_wr_ni (sys_rdfifo_sync_clr_n),
-    .wvalid_i  (sys_rdfifo_wvalid_i),
-    .wready_o  (sys_rdfifo_wready_o),
-    .wdata_i   (sys_rdfifo_wdata_i),
-    .wdepth_o  (),
+  ) u_tpm_rd_buffer (
+    .clk_i        (sys_clk_i),
+    .rst_ni       (sys_rst_ni),
+    .clr_i        (sys_rdfifo_sync_clr),
 
-    .clk_rd_i  (clk_in_i),
-    .rst_rd_ni (rst_n),
-    .rvalid_o  (sck_rdfifo_rvalid),
-    .rready_i  (sck_rdfifo_rready),
-    .rdata_o   (sck_rdfifo_rdata),
-    .rdepth_o  (sck_rdfifo_rdepth),
+    .wvalid_i (sys_rdfifo_wvalid_i),
+    .wready_o (sys_rdfifo_wready_o),
+    .wdata_i  (sys_rdfifo_wdata_i),
+    .wdepth_o (),
 
-    .r_full_o     (),
-    .r_notempty_o (),
-
-    .w_full_o (),
-
-    .w_sram_req_o    (sys_sram_o.req   ),
-    .w_sram_gnt_i    (sys_sram_gnt_i   ),
-    .w_sram_write_o  (sys_sram_o.we    ),
-    .w_sram_addr_o   (sys_sram_o.addr  ),
-    .w_sram_wdata_o  (sys_sram_o.wdata ),
-    .w_sram_wmask_o  (sys_sram_wmask   ),
-    .w_sram_rvalid_i (sys_sram_i.rvalid),
-    .w_sram_rdata_i  (sys_sram_i.rdata ),
-    .w_sram_rerror_i (sys_sram_i.rerror),
-
-    .r_sram_req_o    (sck_sram_req    [SramRdFifo]),
-    .r_sram_gnt_i    (sck_sram_gnt    [SramRdFifo]),
-    .r_sram_write_o  (sck_sram_write  [SramRdFifo]),
-    .r_sram_addr_o   (sck_sram_addr   [SramRdFifo]),
-    .r_sram_wdata_o  (sck_sram_wdata  [SramRdFifo]),
-    .r_sram_wmask_o  (sck_sram_wmask  [SramRdFifo]),
-    .r_sram_rvalid_i (sck_sram_rvalid [SramRdFifo]),
-    .r_sram_rdata_i  (sck_sram_rdata  [SramRdFifo]),
-    .r_sram_rerror_i (sck_sram_rerror [SramRdFifo])
+    .sram_req_o    (sys_sram_o.req   ),
+    .sram_gnt_i    (sys_sram_gnt_i   ),
+    .sram_write_o  (sys_sram_o.we    ),
+    .sram_addr_o   (sys_sram_o.addr  ),
+    .sram_wdata_o  (sys_sram_o.wdata ),
+    .sram_wmask_o  (sys_sram_wmask   ),
+    .sram_rvalid_i (sys_sram_i.rvalid),
+    .sram_rdata_i  (sys_sram_i.rdata ),
+    .sram_rerror_i (sys_sram_i.rerror)
   );
 
+  assign sys_tpm_rdfifo_drop_o = sys_rdfifo_wvalid_i & !sys_rdfifo_wready_o;
+
+  // RdFIFO SRAM logic. Due to the SRAM latency, the requests need to be
+  // prepared in the output FIFO at least a cycle before the data is used. The
+  // SRAM requests thus must begin even in the StStartByte state.
+  logic rdfifo_active;
+  assign rdfifo_active = enough_payload_in_rdfifo &&
+                         (sck_st_q == StReadFifo || sck_st_q == StStartByte);
+
+  logic sck_rdfifo_req_pending;
+  always_ff @(posedge clk_in_i or negedge rst_n) begin
+    if (!rst_n) begin
+      sck_rdfifo_req_pending <= 1'b0;
+    end else if (sck_sram_req[SramRdFifo] & sck_sram_gnt[SramRdFifo]) begin
+      sck_rdfifo_req_pending <= 1'b1;
+    end else if (sck_sram_rvalid[SramRdFifo]) begin
+      sck_rdfifo_req_pending <= 1'b0;
+    end
+  end
+
+  always_ff @(posedge clk_in_i or negedge rst_n) begin
+    if (!rst_n) begin
+      sck_rdfifo_offset <= '0;
+    end else if (sck_sram_req[SramRdFifo] & sck_sram_gnt[SramRdFifo]) begin
+      sck_rdfifo_offset <= sck_rdfifo_offset + 1;
+    end
+  end
+
+  // Since sck_rdfifo_full only responds once the data arrives and is
+  // committed to the FIFO, avoid sending back-to-back requests.
+  assign sck_sram_req[SramRdFifo] = rdfifo_active && !sck_rdfifo_req_pending && !sck_rdfifo_full;
+  assign sck_sram_addr[SramRdFifo] = SramTpmRdFifoIdx | SramAw'({1'b0, sck_rdfifo_offset});
+  assign sck_sram_write[SramRdFifo] = 1'b0;
+  assign sck_sram_wdata[SramRdFifo] = '0;
+  assign sck_sram_wmask[SramRdFifo] = '0;
+
+  // Shallow FIFO to hold the wide SRAM output.
+  prim_fifo_sync #(
+    .Width ($bits(sram_data_t)),
+    .Pass  (1'b 1),
+    .Depth (1),
+    .OutputZeroIfEmpty (1'b 0)
+  ) u_sram_fifo (
+    .clk_i    (clk_in_i),
+    .rst_ni   (rst_n),
+
+    .clr_i    (1'b 0),
+
+    .wvalid_i (sck_sram_rvalid[SramRdFifo]),
+    .wready_o (),
+    .wdata_i  (sck_sram_rdata[SramRdFifo]),
+
+    .rvalid_o (sck_rdfifo_rvalid),
+    .rready_i (sck_rdfifo_rready),
+    .rdata_o  (sck_rdfifo_rdata),
+
+    .full_o   (sck_rdfifo_full),
+    .depth_o  (),
+    .err_o    ()
+  );
+
+  // SRAM interconnect for the SPI domain
   logic [SramDw-1:0] sck_sram_o_wmask;
   assign sck_sram_o.wstrb = sram_mask2strb(sck_sram_o_wmask);
 
@@ -1451,7 +1562,9 @@ module spi_tpm
   // Logic Not Used
   logic unused_logic;
   assign unused_logic = ^{ sck_cmdaddr_wready,
-                           sck_wrfifo_wready
+                           sck_wrfifo_wready,
+                           sck_rdfifo_rvalid,
+                           sck_sram_rerror[SramRdFifo]
                          };
 
   ///////////////

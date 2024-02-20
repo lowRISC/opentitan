@@ -879,6 +879,8 @@ dif_result_t dif_spi_device_tpm_get_data_status(
       bitfield_bit32_read(reg_val, SPI_DEVICE_TPM_STATUS_CMDADDR_NOTEMPTY_BIT);
   status->wrfifo_acquired =
       bitfield_bit32_read(reg_val, SPI_DEVICE_TPM_STATUS_WRFIFO_PENDING_BIT);
+  status->rdfifo_aborted =
+      bitfield_bit32_read(reg_val, SPI_DEVICE_TPM_STATUS_RDFIFO_ABORTED_BIT);
   return kDifOk;
 }
 
