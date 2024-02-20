@@ -571,10 +571,10 @@ set_output_delay -max ${SPI_HOST_OUT_DEL_MAX} \
     -clock SPI_HOST_CLK -add_delay
 
 
-#####################################
-# SPI DEV clock Passthru Operation  #
-#####################################
-# Passthrough target freq is 33MHz. Using 40MHz to over-constrain
+##########################################
+# SPI DEV SLOW clock Passthru Operation  #
+##########################################
+# Passthrough target freq for slow commands is 24MHz. Using 25MHz to over-constrain
 # For details on SPI passthrough timing, please see
 # https://docs.google.com/presentation/d/1GEPxKaOsr9ZcJwI_MBEL74P7jQvBFzOdzSbgru_yVLQ/edit?usp=sharing
 # See the SPI TPM section for half-cycle sampling with non-passthrough modes.
@@ -586,96 +586,95 @@ set_output_delay -max ${SPI_HOST_OUT_DEL_MAX} \
 # of the incoming passthrough clock, relate the host side pins to this clock in both input/output
 # directions.
 
-set SPI_DEV_PASS_TCK 30.0
-set SPI_DEV_PASS_TCK_HALF [expr ${SPI_DEV_PASS_TCK} / 2]
-create_clock -name SPI_DEV_PASS_CLK -period ${SPI_DEV_PASS_TCK} \
+set SPI_DEV_SLOW_PASS_TCK 40.0
+set SPI_DEV_SLOW_PASS_TCK_HALF [expr ${SPI_DEV_SLOW_PASS_TCK} / 2]
+create_clock -name SPI_DEV_SLOW_PASS_CLK -period ${SPI_DEV_SLOW_PASS_TCK} \
     [get_ports ${SPI_DEV_CLK_PIN}] -add
-set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks SPI_DEV_PASS_CLK]
+set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks SPI_DEV_SLOW_PASS_CLK]
 
 # clocks used by spi device internally
-create_generated_clock -name SPI_DEV_PASS_IN_CLK \
+create_generated_clock -name SPI_DEV_SLOW_PASS_IN_CLK \
     -source [get_ports ${SPI_DEV_CLK_PIN}] -divide_by 1 \
-    -master_clock SPI_DEV_PASS_CLK -add \
+    -master_clock SPI_DEV_SLOW_PASS_CLK -add \
     [get_pins top_earlgrey/u_spi_device/u_clk_spi_in_buf/clk_o]
-create_generated_clock -name SPI_DEV_PASS_OUT_CLK \
+create_generated_clock -name SPI_DEV_SLOW_PASS_OUT_CLK \
     -source [get_ports ${SPI_DEV_CLK_PIN}] -divide_by 1 -invert \
-    -master_clock SPI_DEV_PASS_CLK -add \
+    -master_clock SPI_DEV_SLOW_PASS_CLK -add \
     [get_pins top_earlgrey/u_spi_device/u_clk_spi_out_buf/clk_o]
 
 
 # clocks accounting for propagation delay to the other side
-create_generated_clock -name SPI_HOST_PASS_CLK \
+create_generated_clock -name SPI_HOST_SLOW_PASS_CLK \
     -source [get_ports ${SPI_DEV_CLK_PIN}] -divide_by 1 \
-    -master_clock SPI_DEV_PASS_CLK -add \
+    -master_clock SPI_DEV_SLOW_PASS_CLK -add \
     [get_ports SPI_HOST_CLK]
 
 # The propagated properties are needed to ensure the passthrough clocks assume all passthrough delay.
 # This is done specifically for the passthrough interface to get realistic timing even during
 # pre-layout.
-set_propagated_clock [get_clock SPI_DEV_PASS_CLK]
-set_propagated_clock [get_clock SPI_HOST_PASS_CLK]
+set_propagated_clock [get_clock SPI_DEV_SLOW_PASS_CLK]
+set_propagated_clock [get_clock SPI_HOST_SLOW_PASS_CLK]
 
 # bidir ports facing host, with full-cycle sampling at the upstream host
 set_input_delay -min ${SPI_DEV_IN_DEL_MIN} ${SPI_DEV_DATA_PORTS} \
-    -clock_fall -clock SPI_DEV_PASS_CLK -add_delay
+    -clock_fall -clock SPI_DEV_SLOW_PASS_CLK -add_delay
 set_input_delay -max ${SPI_DEV_IN_DEL_MAX} ${SPI_DEV_DATA_PORTS} \
-    -clock_fall -clock SPI_DEV_PASS_CLK -add_delay
+    -clock_fall -clock SPI_DEV_SLOW_PASS_CLK -add_delay
 set_output_delay -min ${SPI_DEV_OUT_DEL_MIN_FC} ${SPI_DEV_DATA_PORTS} \
-    -clock_fall -clock SPI_DEV_PASS_CLK -add_delay
+    -clock_fall -clock SPI_DEV_SLOW_PASS_CLK -add_delay
 set_output_delay -max ${SPI_DEV_OUT_DEL_MAX} ${SPI_DEV_DATA_PORTS} \
-    -clock_fall -clock SPI_DEV_PASS_CLK -add_delay
-set_multicycle_path -setup 2 -from [get_clocks SPI_DEV_PASS_IN_CLK] \
-    -to [get_clocks SPI_DEV_PASS_CLK] -through [get_ports ${SPI_DEV_DATA_PORTS}]
-
+    -clock_fall -clock SPI_DEV_SLOW_PASS_CLK -add_delay
+set_multicycle_path -setup 2 -from [get_clocks SPI_DEV_SLOW_PASS_IN_CLK] \
+    -to [get_clocks SPI_DEV_SLOW_PASS_CLK] -through [get_ports ${SPI_DEV_DATA_PORTS}]
 
 # bidir ports facing storage device
 set_input_delay -min ${SPI_HOST_IN_DEL_MIN} ${SPI_HOST_DATA_PORTS} \
-    -clock_fall -clock SPI_HOST_PASS_CLK -add_delay
+    -clock_fall -clock SPI_HOST_SLOW_PASS_CLK -add_delay
 set_input_delay -max ${SPI_HOST_IN_DEL_MAX} ${SPI_HOST_DATA_PORTS} \
-    -clock_fall -clock SPI_HOST_PASS_CLK -add_delay
+    -clock_fall -clock SPI_HOST_SLOW_PASS_CLK -add_delay
 set_output_delay -min ${SPI_HOST_OUT_DEL_MIN} \
     [get_ports "SPI_HOST_CS_L ${SPI_HOST_DATA_PORTS}"] \
-    -clock SPI_HOST_PASS_CLK -add_delay
+    -clock SPI_HOST_SLOW_PASS_CLK -add_delay
 set_output_delay -max ${SPI_HOST_OUT_DEL_MAX} \
     [get_ports "SPI_HOST_CS_L ${SPI_HOST_DATA_PORTS}"] \
-    -clock SPI_HOST_PASS_CLK -add_delay
+    -clock SPI_HOST_SLOW_PASS_CLK -add_delay
 
 # CSB clock from top-level port (added to SPI_DEV_CSB_CLK)
-create_clock -name SPI_DEV_PASS_CSB_CLK -add \
-    -period [expr 2 * ${SPI_DEV_PASS_TCK}] \
-    -waveform "${SPI_DEV_PASS_TCK_HALF} [expr ${SPI_DEV_PASS_TCK_HALF} + ${SPI_DEV_PASS_TCK}]" \
+create_clock -name SPI_DEV_SLOW_PASS_CSB_CLK -add \
+    -period [expr 2 * ${SPI_DEV_SLOW_PASS_TCK}] \
+    -waveform "${SPI_DEV_SLOW_PASS_TCK_HALF} [expr ${SPI_DEV_SLOW_PASS_TCK_HALF} + ${SPI_DEV_SLOW_PASS_TCK}]" \
     [get_ports SPI_DEV_CS_L]
 set_clock_latency -source -min ${SPI_DEV_IN_DEL_MIN} \
-    -clock SPI_DEV_PASS_CSB_CLK [get_ports SPI_DEV_CS_L]
+    -clock SPI_DEV_SLOW_PASS_CSB_CLK [get_ports SPI_DEV_CS_L]
 set_clock_latency -source -max ${SPI_DEV_IN_DEL_MAX} \
-    -clock SPI_DEV_PASS_CSB_CLK [get_ports SPI_DEV_CS_L]
-set_propagated_clock [get_clock SPI_DEV_PASS_CSB_CLK]
+    -clock SPI_DEV_SLOW_PASS_CSB_CLK [get_ports SPI_DEV_CS_L]
+set_propagated_clock [get_clock SPI_DEV_SLOW_PASS_CSB_CLK]
 
 # CSB-clocked status bits to various negedge-triggered flops, especially in the
 # serializer.
 # Advance the hold edge by one cycle, since CSB changes nominally on the same
-# edge as SPI_DEV_PASS_OUT_CLK, but SPI_DEV_PASS_OUT_CLK isn't actually
-# toggling.
+# edge as SPI_DEV_SLOW_PASS_OUT_CLK, but SPI_DEV_SLOW_PASS_OUT_CLK isn't
+# actually toggling.
 #set_ideal_network [get_pins top_earlgrey/u_spi_device/u_csb_rst_scan_mux/clk_o]
-set_multicycle_path -hold -end -from [get_clocks SPI_DEV_PASS_CSB_CLK] \
-    -to [get_clocks SPI_DEV_PASS_OUT_CLK] 1
+set_multicycle_path -hold -end -from [get_clocks SPI_DEV_SLOW_PASS_CSB_CLK] \
+    -to [get_clocks SPI_DEV_SLOW_PASS_OUT_CLK] 1
 # Because this section does full-cycle sampling, the same moving of the capture
 # edge is needed for SPI_DEV_CSB_CLK -> SPI_DEV_D* hold analysis. The default
 # falling edge of SPI_DEV_CLK would not be active.
-set_multicycle_path -hold -end -from [get_clocks SPI_DEV_PASS_CSB_CLK] \
-    -to [get_clocks SPI_DEV_PASS_CLK] -through [get_ports ${SPI_DEV_DATA_PORTS}] 1
+set_multicycle_path -hold -end -from [get_clocks SPI_DEV_SLOW_PASS_CSB_CLK] \
+    -to [get_clocks SPI_DEV_SLOW_PASS_CLK] -through [get_ports ${SPI_DEV_DATA_PORTS}] 1
 # Relax the hold time constraint for the passthrough clock gate. Really this is
 # to accommodate the gate for the inverted clock, which isn't active for the
 # modes used for these constraints. However, it would be an okay outcome if the
 # filter result reached the gate before even the 7th clock edge got out.
-set_multicycle_path -hold -end 1 -from [get_clocks SPI_DEV_PASS_CLK] \
+set_multicycle_path -hold -end 1 -from [get_clocks SPI_DEV_SLOW_PASS_CLK] \
     -to [get_pins -leaf -filter "@pin_direction == in" -of_objects \
         [get_nets top_earlgrey/u_spi_device/u_passthrough/sck_gate_en]]
 
 ##
 # Remove hold analysis from the following paths to ports. Even though the pins
 # can change before the prior data was latched upstream, their effect is held
-# back by other logic on SPI_DEV_PASS_OUT_CLK.
+# back by other logic on SPI_DEV_SLOW_PASS_OUT_CLK.
 # Note: The final output logic equation must not permit glitches in the presence
 # of changes on the listed pins. Otherwise, any hold time failures could be
 # real.
@@ -683,12 +682,12 @@ set_multicycle_path -hold -end 1 -from [get_clocks SPI_DEV_PASS_CLK] \
 
 # These two false paths are slated to be removed. The originating nodes were
 # observed to all come from the generic mode module, which has been removed.
-#set_false_path -hold -from [get_clocks SPI_DEV_PASS_IN_CLK] \
+#set_false_path -hold -from [get_clocks SPI_DEV_SLOW_PASS_IN_CLK] \
 #    -to [get_ports ${SPI_DEV_DATA_PORTS}] \
 #    -through [get_pins -leaf -filter "@pin_direction == out" -of_objects \
 #               [get_nets -segments -of_objects \
 #                 [get_pins top_earlgrey/u_spi_device/u_p2s/data_valid_i]]]
-#set_false_path -hold -from [get_clocks SPI_DEV_PASS_IN_CLK] \
+#set_false_path -hold -from [get_clocks SPI_DEV_SLOW_PASS_IN_CLK] \
 #    -to [get_ports ${SPI_DEV_DATA_PORTS}] \
 #    -through [get_pins -leaf -filter "@pin_direction == out" -of_objects \
 #               [get_nets -segments -of_objects \
@@ -698,15 +697,160 @@ set_multicycle_path -hold -end 1 -from [get_clocks SPI_DEV_PASS_CLK] \
 # between fixed values or the return-by-hw register value. The flopped bits
 # settle in the middle of the command/address phase, many cycles before the
 # data phase.
-set_false_path -hold -from [get_clocks SPI_DEV_PASS_IN_CLK] \
+set_false_path -hold -from [get_clocks SPI_DEV_SLOW_PASS_IN_CLK] \
     -to [get_ports ${SPI_DEV_DATA_PORTS}] \
     -through [get_pins -leaf -filter "@pin_direction == out" -of_objects \
                [get_nets -segments -of_objects \
                  [get_pins top_earlgrey/u_spi_device/u_spi_tpm/miso_o]]]
 
 # Remove scan paths for timing analysis
-set_clock_sense -stop_propagation -clock SPI_DEV_PASS_CLK [get_pins -leaf -filter "@pin_direction == in" -of_objects [get_nets -segments -of_objects [get_pins u_ast/u_scan_clk/in_i*]]]
-set_false_path -from [get_clocks SPI_DEV_PASS_CSB_CLK] \
+set_clock_sense -stop_propagation -clock SPI_DEV_SLOW_PASS_CLK [get_pins -leaf -filter "@pin_direction == in" -of_objects [get_nets -segments -of_objects [get_pins u_ast/u_scan_clk/in_i*]]]
+set_false_path -from [get_clocks SPI_DEV_SLOW_PASS_CSB_CLK] \
+    -through [get_pins -leaf -filter "@pin_direction == in" -of_objects \
+        [get_nets -segments -of_objects \
+            [get_pins u_ast/u_scan_rst_n/in_i*]]]
+
+##########################################
+# SPI DEV FAST clock Passthru Operation  #
+##########################################
+# Passthrough target freq for fast commands is 33MHz. Using 40MHz to over-constrain
+# For details on SPI passthrough timing, please see
+# https://docs.google.com/presentation/d/1GEPxKaOsr9ZcJwI_MBEL74P7jQvBFzOdzSbgru_yVLQ/edit?usp=sharing
+# See the SPI TPM section for half-cycle sampling with non-passthrough modes.
+#
+# The constraints below take the following approach:
+# Define incoming passthrough clock on the SPI_DEV_CLK pin and relate all the inputs to it.
+# Define also output delays since all pins are bidirectional.
+# Define outgoing passthrough clock on the SPI_HOST_CLK pin but make sure it is a generated version
+# of the incoming passthrough clock, relate the host side pins to this clock in both input/output
+# directions.
+
+set SPI_DEV_FAST_PASS_TCK 25.0
+set SPI_DEV_FAST_PASS_TCK_HALF [expr ${SPI_DEV_FAST_PASS_TCK} / 2]
+create_clock -name SPI_DEV_FAST_PASS_CLK -period ${SPI_DEV_FAST_PASS_TCK} \
+    [get_ports ${SPI_DEV_CLK_PIN}] -add
+set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks SPI_DEV_FAST_PASS_CLK]
+
+# clocks used by spi device internally
+create_generated_clock -name SPI_DEV_FAST_PASS_IN_CLK \
+    -source [get_ports ${SPI_DEV_CLK_PIN}] -divide_by 1 \
+    -master_clock SPI_DEV_FAST_PASS_CLK -add \
+    [get_pins top_earlgrey/u_spi_device/u_clk_spi_in_buf/clk_o]
+create_generated_clock -name SPI_DEV_FAST_PASS_OUT_CLK \
+    -source [get_ports ${SPI_DEV_CLK_PIN}] -divide_by 1 -invert \
+    -master_clock SPI_DEV_FAST_PASS_CLK -add \
+    [get_pins top_earlgrey/u_spi_device/u_clk_spi_out_buf/clk_o]
+
+
+# clocks accounting for propagation delay to the other side
+create_generated_clock -name SPI_HOST_FAST_PASS_CLK \
+    -source [get_ports ${SPI_DEV_CLK_PIN}] -divide_by 1 \
+    -master_clock SPI_DEV_FAST_PASS_CLK -add \
+    [get_ports SPI_HOST_CLK]
+
+# The propagated properties are needed to ensure the passthrough clocks assume all passthrough delay.
+# This is done specifically for the passthrough interface to get realistic timing even during
+# pre-layout.
+set_propagated_clock [get_clock SPI_DEV_FAST_PASS_CLK]
+set_propagated_clock [get_clock SPI_HOST_FAST_PASS_CLK]
+
+# bidir ports facing host, with full-cycle sampling at the upstream host
+set_input_delay -min ${SPI_DEV_IN_DEL_MIN} ${SPI_DEV_DATA_PORTS} \
+    -clock_fall -clock SPI_DEV_FAST_PASS_CLK -add_delay
+set_input_delay -max ${SPI_DEV_IN_DEL_MAX} ${SPI_DEV_DATA_PORTS} \
+    -clock_fall -clock SPI_DEV_FAST_PASS_CLK -add_delay
+set_output_delay -min ${SPI_DEV_OUT_DEL_MIN_FC} ${SPI_DEV_DATA_PORTS} \
+    -clock_fall -clock SPI_DEV_FAST_PASS_CLK -add_delay
+set_output_delay -max ${SPI_DEV_OUT_DEL_MAX} ${SPI_DEV_DATA_PORTS} \
+    -clock_fall -clock SPI_DEV_FAST_PASS_CLK -add_delay
+set_multicycle_path -setup 2 -from [get_clocks SPI_DEV_FAST_PASS_IN_CLK] \
+    -to [get_clocks SPI_DEV_FAST_PASS_CLK] -through [get_ports ${SPI_DEV_DATA_PORTS}]
+
+# bidir ports facing storage device
+set_input_delay -min ${SPI_HOST_IN_DEL_MIN} ${SPI_HOST_DATA_PORTS} \
+    -clock_fall -clock SPI_HOST_FAST_PASS_CLK -add_delay
+set_input_delay -max ${SPI_HOST_IN_DEL_MAX} ${SPI_HOST_DATA_PORTS} \
+    -clock_fall -clock SPI_HOST_FAST_PASS_CLK -add_delay
+set_output_delay -min ${SPI_HOST_OUT_DEL_MIN} \
+    [get_ports "SPI_HOST_CS_L ${SPI_HOST_DATA_PORTS}"] \
+    -clock SPI_HOST_FAST_PASS_CLK -add_delay
+set_output_delay -max ${SPI_HOST_OUT_DEL_MAX} \
+    [get_ports "SPI_HOST_CS_L ${SPI_HOST_DATA_PORTS}"] \
+    -clock SPI_HOST_FAST_PASS_CLK -add_delay
+
+# Fast commands must use the fast read pipeline. Disable timing for the
+# combinatorial passthrough path.
+set_false_path -from [get_clocks SPI_HOST_FAST_PASS_CLK] \
+    -through [get_ports ${SPI_DEV_DATA_PORTS}] \
+    -to [get_clocks SPI_DEV_FAST_PASS_CLK]
+
+# CSB clock from top-level port (added to SPI_DEV_CSB_CLK)
+create_clock -name SPI_DEV_FAST_PASS_CSB_CLK -add \
+    -period [expr 2 * ${SPI_DEV_FAST_PASS_TCK}] \
+    -waveform "${SPI_DEV_FAST_PASS_TCK_HALF} [expr ${SPI_DEV_FAST_PASS_TCK_HALF} + ${SPI_DEV_FAST_PASS_TCK}]" \
+    [get_ports SPI_DEV_CS_L]
+set_clock_latency -source -min ${SPI_DEV_IN_DEL_MIN} \
+    -clock SPI_DEV_FAST_PASS_CSB_CLK [get_ports SPI_DEV_CS_L]
+set_clock_latency -source -max ${SPI_DEV_IN_DEL_MAX} \
+    -clock SPI_DEV_FAST_PASS_CSB_CLK [get_ports SPI_DEV_CS_L]
+set_propagated_clock [get_clock SPI_DEV_FAST_PASS_CSB_CLK]
+
+# CSB-clocked status bits to various negedge-triggered flops, especially in the
+# serializer.
+# Advance the hold edge by one cycle, since CSB changes nominally on the same
+# edge as SPI_DEV_FAST_PASS_OUT_CLK, but SPI_DEV_FAST_PASS_OUT_CLK isn't
+# actually toggling.
+#set_ideal_network [get_pins top_earlgrey/u_spi_device/u_csb_rst_scan_mux/clk_o]
+set_multicycle_path -hold -end -from [get_clocks SPI_DEV_FAST_PASS_CSB_CLK] \
+    -to [get_clocks SPI_DEV_FAST_PASS_OUT_CLK] 1
+# Because this section does full-cycle sampling, the same moving of the capture
+# edge is needed for SPI_DEV_CSB_CLK -> SPI_DEV_D* hold analysis. The default
+# falling edge of SPI_DEV_CLK would not be active.
+set_multicycle_path -hold -end -from [get_clocks SPI_DEV_FAST_PASS_CSB_CLK] \
+    -to [get_clocks SPI_DEV_FAST_PASS_CLK] -through [get_ports ${SPI_DEV_DATA_PORTS}] 1
+# Relax the hold time constraint for the passthrough clock gate. Really this is
+# to accommodate the gate for the inverted clock, which isn't active for the
+# modes used for these constraints. However, it would be an okay outcome if the
+# filter result reached the gate before even the 7th clock edge got out.
+set_multicycle_path -hold -end 1 -from [get_clocks SPI_DEV_FAST_PASS_CLK] \
+    -to [get_pins -leaf -filter "@pin_direction == in" -of_objects \
+        [get_nets top_earlgrey/u_spi_device/u_passthrough/sck_gate_en]]
+
+##
+# Remove hold analysis from the following paths to ports. Even though the pins
+# can change before the prior data was latched upstream, their effect is held
+# back by other logic on SPI_DEV_FAST_PASS_OUT_CLK.
+# Note: The final output logic equation must not permit glitches in the presence
+# of changes on the listed pins. Otherwise, any hold time failures could be
+# real.
+##
+
+# These two false paths are slated to be removed. The originating nodes were
+# observed to all come from the generic mode module, which has been removed.
+#set_false_path -hold -from [get_clocks SPI_DEV_FAST_PASS_IN_CLK] \
+#    -to [get_ports ${SPI_DEV_DATA_PORTS}] \
+#    -through [get_pins -leaf -filter "@pin_direction == out" -of_objects \
+#               [get_nets -segments -of_objects \
+#                 [get_pins top_earlgrey/u_spi_device/u_p2s/data_valid_i]]]
+#set_false_path -hold -from [get_clocks SPI_DEV_FAST_PASS_IN_CLK] \
+#    -to [get_ports ${SPI_DEV_DATA_PORTS}] \
+#    -through [get_pins -leaf -filter "@pin_direction == out" -of_objects \
+#               [get_nets -segments -of_objects \
+#                 [get_pins top_earlgrey/u_spi_device/u_p2s/data_i*]]]
+
+# This path is from locality logic that is on the *_IN_CLK domain and selects
+# between fixed values or the return-by-hw register value. The flopped bits
+# settle in the middle of the command/address phase, many cycles before the
+# data phase.
+set_false_path -hold -from [get_clocks SPI_DEV_FAST_PASS_IN_CLK] \
+    -to [get_ports ${SPI_DEV_DATA_PORTS}] \
+    -through [get_pins -leaf -filter "@pin_direction == out" -of_objects \
+               [get_nets -segments -of_objects \
+                 [get_pins top_earlgrey/u_spi_device/u_spi_tpm/miso_o]]]
+
+# Remove scan paths for timing analysis
+set_clock_sense -stop_propagation -clock SPI_DEV_FAST_PASS_CLK [get_pins -leaf -filter "@pin_direction == in" -of_objects [get_nets -segments -of_objects [get_pins u_ast/u_scan_clk/in_i*]]]
+set_false_path -from [get_clocks SPI_DEV_FAST_PASS_CSB_CLK] \
     -through [get_pins -leaf -filter "@pin_direction == in" -of_objects \
         [get_nets -segments -of_objects \
             [get_pins u_ast/u_scan_rst_n/in_i*]]]
@@ -717,7 +861,8 @@ set_false_path -from [get_clocks SPI_DEV_PASS_CSB_CLK] \
 # Only one mode can be active at a time.
 set_clock_groups -physically_exclusive \
     -group {SPI_DEV_CLK SPI_DEV_IN_CLK SPI_DEV_OUT_CLK SPI_DEV_CSB_CLK} \
-    -group {SPI_HOST_PASS_CLK SPI_DEV_PASS_CLK SPI_DEV_PASS_IN_CLK SPI_DEV_PASS_OUT_CLK SPI_DEV_PASS_CSB_CLK} \
+    -group {SPI_HOST_SLOW_PASS_CLK SPI_DEV_SLOW_PASS_CLK SPI_DEV_SLOW_PASS_IN_CLK SPI_DEV_SLOW_PASS_OUT_CLK SPI_DEV_SLOW_PASS_CSB_CLK} \
+    -group {SPI_HOST_FAST_PASS_CLK SPI_DEV_FAST_PASS_CLK SPI_DEV_FAST_PASS_IN_CLK SPI_DEV_FAST_PASS_OUT_CLK SPI_DEV_FAST_PASS_CSB_CLK} \
     -group {SPI_TPM_CLK SPI_TPM_IN_CLK SPI_TPM_OUT_CLK}
 
 #####################
@@ -727,7 +872,8 @@ set_clock_groups -physically_exclusive \
 # SPI_DEV_CSB_CLK -> SPI_HOST_CLK
 #
 set SPI_DEV_CLKS "SPI_DEV_CLK SPI_DEV_IN_CLK SPI_DEV_OUT_CLK SPI_DEV_CSB_CLK"
-set SPI_DEV_PASS_CLKS "SPI_HOST_PASS_CLK SPI_DEV_PASS_CLK SPI_DEV_PASS_IN_CLK SPI_DEV_PASS_OUT_CLK SPI_DEV_PASS_CSB_CLK"
+set SPI_DEV_SLOW_PASS_CLKS "SPI_HOST_SLOW_PASS_CLK SPI_DEV_SLOW_PASS_CLK SPI_DEV_SLOW_PASS_IN_CLK SPI_DEV_SLOW_PASS_OUT_CLK SPI_DEV_SLOW_PASS_CSB_CLK"
+set SPI_DEV_FAST_PASS_CLKS "SPI_HOST_FAST_PASS_CLK SPI_DEV_FAST_PASS_CLK SPI_DEV_FAST_PASS_IN_CLK SPI_DEV_FAST_PASS_OUT_CLK SPI_DEV_FAST_PASS_CSB_CLK"
 set SPI_TPM_CLKS "SPI_TPM_CLK SPI_TPM_IN_CLK SPI_TPM_OUT_CLK"
 
 # this may need some refinement (and max delay / skew needs to be constrained)
@@ -737,7 +883,7 @@ set SPI_TPM_CLKS "SPI_TPM_CLK SPI_TPM_IN_CLK SPI_TPM_OUT_CLK"
 set_clock_groups -name group1 -async                                  \
     -group [get_clocks MAIN_CLK                                     ] \
     -group [get_clocks USB_CLK                                      ] \
-    -group [get_clocks "${SPI_DEV_CLKS} ${SPI_DEV_PASS_CLKS} ${SPI_TPM_CLKS}"] \
+    -group [get_clocks "${SPI_DEV_CLKS} ${SPI_DEV_SLOW_PASS_CLKS} ${SPI_DEV_FAST_PASS_CLKS} ${SPI_TPM_CLKS}"] \
     -group [get_clocks {IO_CLK SPI_HOST_CLK}       ] \
     -group [get_clocks IO_DIV2_CLK                                  ] \
     -group [get_clocks IO_DIV4_CLK                                  ] \
