@@ -26,6 +26,12 @@ class jtag_dmi_reg_frontdoor extends uvm_reg_frontdoor;
     jtag_dtm_reg_block  jtag_dtm_ral = jtag_agent_cfg_h.jtag_dtm_ral;
     jtag_dmi_op_rsp_e   op_rsp;
 
+    // If the JTAG agent is sitting in reset, print a debug message and exit early
+    if (jtag_agent_cfg_h.in_reset) begin
+      `uvm_info(`gfn, "DMI CSR req skipped due to reset", UVM_HIGH)
+      return;
+    end
+
     jtag_dtm_ral_sem_h.get();
     `uvm_info(`gfn, $sformatf("DMI CSR req started: %0s", rw_info.convert2string()), UVM_HIGH)
 
@@ -63,14 +69,11 @@ class jtag_dmi_reg_frontdoor extends uvm_reg_frontdoor;
                                            csr_or_fld.csr.get_address());
 
     // Start the DMI request.
-    if (!jtag_agent_cfg_h.in_reset) begin
-      csr_wr(.ptr(jtag_dtm_ral.dmi), .value(wdata), .blocking(1), .predict(1));
-      // Wait 10 tck cycles to allow the DMI req to complete. If we read the DTM DMI register too
-      // soon, it may end up setting the in progress sticky bit, causing more time wasted.
-      jtag_agent_cfg_h.vif.wait_tck(10);
-    end else begin
-      `uvm_info(`gfn, "DMI CSR req skipped due to reset", UVM_HIGH)
-    end
+    csr_wr(.ptr(jtag_dtm_ral.dmi), .value(wdata), .blocking(1), .predict(1));
+
+    // Wait 10 tck cycles to allow the DMI req to complete. If we read the DTM DMI register too
+    // soon, it may end up setting the in progress sticky bit, causing more time wasted.
+    jtag_agent_cfg_h.vif.wait_tck(10);
 
     // Poll for completion. Reset DMI if the sticky bit 'InProgress' is set.
     `DV_SPINWAIT_EXIT(
