@@ -101,7 +101,7 @@ void entropy_src_kat_test(dif_entropy_src_t *entropy_src) {
 
   // Load the input data.
   do {
-    op_result = dif_entropy_src_observe_fifo_write(
+    op_result = dif_entropy_src_fw_ov_data_write(
         entropy_src, kInputMsg + total, ARRAYSIZE(kInputMsg) - total, &count);
     total += count;
     if (op_result == kDifIpFifoFull) {

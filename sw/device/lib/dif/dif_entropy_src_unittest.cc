@@ -570,12 +570,11 @@ class ObserveFifoWriteTest : public EntropySrcTest {};
 
 TEST_F(ObserveFifoWriteTest, NullArgs) {
   uint32_t buf[8] = {0};
+  EXPECT_DIF_BADARG(dif_entropy_src_fw_ov_data_write(nullptr, buf, 8, nullptr));
   EXPECT_DIF_BADARG(
-      dif_entropy_src_observe_fifo_write(nullptr, buf, 8, nullptr));
+      dif_entropy_src_fw_ov_data_write(&entropy_src_, nullptr, 8, nullptr));
   EXPECT_DIF_BADARG(
-      dif_entropy_src_observe_fifo_write(&entropy_src_, nullptr, 8, nullptr));
-  EXPECT_DIF_BADARG(
-      dif_entropy_src_observe_fifo_write(nullptr, nullptr, 8, nullptr));
+      dif_entropy_src_fw_ov_data_write(nullptr, nullptr, 8, nullptr));
 }
 
 TEST_F(ObserveFifoWriteTest, BadConfig) {
@@ -587,7 +586,7 @@ TEST_F(ObserveFifoWriteTest, BadConfig) {
       {{ENTROPY_SRC_FW_OV_CONTROL_FW_OV_ENTROPY_INSERT_OFFSET,
         kMultiBitBool4False},
        {ENTROPY_SRC_FW_OV_CONTROL_FW_OV_MODE_OFFSET, kMultiBitBool4False}});
-  EXPECT_EQ(dif_entropy_src_observe_fifo_write(&entropy_src_, buf, 8, nullptr),
+  EXPECT_EQ(dif_entropy_src_fw_ov_data_write(&entropy_src_, buf, 8, nullptr),
             kDifError);
 
   // Entropy insert mode not set.
@@ -596,7 +595,7 @@ TEST_F(ObserveFifoWriteTest, BadConfig) {
       {{ENTROPY_SRC_FW_OV_CONTROL_FW_OV_ENTROPY_INSERT_OFFSET,
         kMultiBitBool4False},
        {ENTROPY_SRC_FW_OV_CONTROL_FW_OV_MODE_OFFSET, kMultiBitBool4True}});
-  EXPECT_EQ(dif_entropy_src_observe_fifo_write(&entropy_src_, buf, 8, nullptr),
+  EXPECT_EQ(dif_entropy_src_fw_ov_data_write(&entropy_src_, buf, 8, nullptr),
             kDifError);
 }
 
@@ -609,7 +608,7 @@ TEST_F(ObserveFifoWriteTest, FifoFull) {
         kMultiBitBool4True},
        {ENTROPY_SRC_FW_OV_CONTROL_FW_OV_MODE_OFFSET, kMultiBitBool4True}});
   EXPECT_READ32(ENTROPY_SRC_FW_OV_WR_FIFO_FULL_REG_OFFSET, 1);
-  EXPECT_EQ(dif_entropy_src_observe_fifo_write(&entropy_src_, buf, 4, &written),
+  EXPECT_EQ(dif_entropy_src_fw_ov_data_write(&entropy_src_, buf, 4, &written),
             kDifIpFifoFull);
   EXPECT_EQ(written, 0);
 }
@@ -627,7 +626,7 @@ TEST_F(ObserveFifoWriteTest, Success) {
     EXPECT_WRITE32(ENTROPY_SRC_FW_OV_WR_DATA_REG_OFFSET, i + 1);
   }
   EXPECT_DIF_OK(
-      dif_entropy_src_observe_fifo_write(&entropy_src_, buf, 4, &written));
+      dif_entropy_src_fw_ov_data_write(&entropy_src_, buf, 4, &written));
   EXPECT_EQ(written, 4);
 }
 
