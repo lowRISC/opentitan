@@ -9,14 +9,13 @@ set -e
 . util/build_consts.sh
 
 if [ $# == 0 ]; then
-    echo >&2 "Usage: run-fpga-tests.sh <fpga> <tags>"
-    echo >&2 "E.g. ./run-fpga-tests.sh cw310 cw310_rom"
-    echo >&2 "E.g. ./run-fpga-tests.sh cw340 cw340_rom cw340_test_rom"
+    echo >&2 "Usage: run-fpga-tests.sh <fpga> <tags or test set name>"
+    echo >&2 "E.g. ./run-fpga-tests.sh cw310 manuf"
+    echo >&2 "E.g. ./run-fpga-tests.sh cw310 cw310_rom_tests"
     exit 1
 fi
 fpga="$1"
-shift
-fpga_tags=("$@")
+fpga_tags="$2"
 
 # Copy bitstreams and related files into the cache directory so Bazel will have
 # the corresponding targets in the @bitstreams workspace.
@@ -45,14 +44,61 @@ trap 'ci/bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface=${fpga
 ci/bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface="$fpga" --logging debug fpga set-pll || true
 ci/bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface="$fpga" fpga clear-bitstream
 
-for tag in "${fpga_tags[@]}"; do
-    ci/bazelisk.sh test //... @manufacturer_test_hooks//...\
-        --define DISABLE_VERILATOR_BUILD=true \
-        --nokeep_going \
-        --test_tag_filters="${tag}",-broken,-skip_in_ci \
-        --test_timeout_filters=short,moderate \
-        --test_output=all \
-        --build_tests_only \
-        --define "$fpga"=lowrisc \
-        --flaky_test_attempts=2
-done
+pattern_file=$(mktemp)
+# Recognize special test set names, otherwise we interpret it as a list of tags.
+test_args=""
+echo "tags: ${fpga_tags}"
+if [ "${fpga_tags}" == "cw310_sival_but_not_rom_ext_tests" ]
+then
+    # Only consider tests that are tagged `cw310_sival` but not tagged `cw310_sival_rom_ext`.
+    # The difficulty is that, technically, they are different tests since `opentitan_test` creates
+    # one target for each execution environment. The following query relies on the existence
+    # of the test suite created by `opentitan_test` that depends on all per-exec-env tests.
+    ci/bazelisk.sh query \
+    "
+        `# Find all test tagged cw310_sival that are dependencies of the test suite identified`
+        attr(
+            \"tags\",
+            \"cw310_sival([^_]|$)\",
+            deps(
+                `# Find all test suites depending on a test tagged cw310_sival` \
+                kind(
+                    \"test_suite\",
+                    rdeps(
+                        //...,
+                        `# Find all tests tagged cw310_sival`
+                        attr(\"tags\",\"cw310_sival([^_]|$)\", //...),
+                        1
+                    )
+                )
+                except
+                `# Remove all test suites depending on a test tagged cw310_sival_rom_ext`
+                rdeps(
+                    //...,
+                    `# Find all tests tagged cw310_sival_rom_ext`
+                    attr(\"tags\",\"cw310_sival_rom_ext\", //...),
+                    1
+                ),
+                1
+            )
+        )
+    " \
+    > "${pattern_file}"
+    # We need to remove tests tagged as manual since we are not using a wildcard target.
+    test_args="${test_args} --test_tag_filters=-broken,-skip_in_ci,-manual"
+else
+    test_args="${test_args} --test_tag_filters=${fpga_tags},-broken,-skip_in_ci"
+    echo "//..." > "${pattern_file}"
+    echo "@manufacturer_test_hooks//..." >> "${pattern_file}"
+fi
+
+ci/bazelisk.sh test \
+    --define DISABLE_VERILATOR_BUILD=true \
+    --nokeep_going \
+    --test_timeout_filters=short,moderate \
+    --test_output=all \
+    --build_tests_only \
+    --define "$fpga"=lowrisc \
+    --flaky_test_attempts=2 \
+    --target_pattern_file="${pattern_file}" \
+    ${test_args}
