@@ -20,15 +20,31 @@ module ascon_sim import ascon_pkg::*;
   // Bus Interface
   tlul_pkg::tl_h2d_t tl_i;
   tlul_pkg::tl_d2h_t tl_o;
+  tlul_pkg::tl_d2h_t tl_expected_response;
 
-  // Stimuli for tl_ul interface
-  tlul_pkg::tl_d2h_t unused_tl_o;
-  assign tl_i = '0;
-  assign unused_tl_o = tl_o;
+
+  logic stimulus_done;
+  logic pop_stimulus;
+  logic pop_response;
+
+  // only pop new response if previous response was AccessAckData
+  assign pop_response = tl_i.d_ready & tl_o.d_valid
+                        & (tl_o.d_opcode == tlul_pkg::AccessAckData);
+  assign pop_stimulus = tl_o.a_ready & tl_i.a_valid;
+
+  ascon_tl_ul_stim g_ascon_tl_ul_stim (
+    .clk_i,
+    .rst_ni,
+    .expected_tlul_resonse_o (tl_expected_response),
+    .tlul_stimulus_o         (tl_i),
+    .pop_next_stimulus_i     (pop_stimulus),
+    .pop_next_response_i     (pop_response),
+    .done_o                  (stimulus_done)
+  );
 
   // simulation done:
-  assign test_done_o = 1'b1;
-  assign test_passed_o = 1'b1;
+  assign test_done_o = stimulus_done;
+  assign test_passed_o = 1'b1 ? (tl_o == tl_expected_response) : 1'b0;
 
   // All other interfaces are static for the moment
 
