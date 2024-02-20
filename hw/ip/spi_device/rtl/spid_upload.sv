@@ -658,6 +658,7 @@ module spid_upload
   ) u_payload_buffer (
     .clk_i,
     .rst_ni,
+    .clr_i    (1'b0),
 
     .wvalid_i (payload_wvalid),
     .wready_o (payload_wready),

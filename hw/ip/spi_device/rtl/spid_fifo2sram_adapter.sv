@@ -23,6 +23,7 @@ module spid_fifo2sram_adapter #(
 ) (
   input clk_i,
   input rst_ni,
+  input clr_i,
 
   input                        wvalid_i,
   output logic                 wready_o,
@@ -52,8 +53,8 @@ module spid_fifo2sram_adapter #(
 
   logic sram_ack, fifoptr_inc;
 
-  assign sram_req_o = wvalid_i;
-  assign wready_o   = sram_gnt_i;
+  assign sram_req_o = wvalid_i & !clr_i;
+  assign wready_o   = sram_gnt_i & !clr_i;
 
   assign sram_write_o = 1'b 1;
 
@@ -94,6 +95,8 @@ module spid_fifo2sram_adapter #(
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
+      fifoptr <= '0;
+    end else if (clr_i) begin
       fifoptr <= '0;
     end else if (fifoptr_inc) begin
       fifoptr <= (fifoptr == FifoPtrW'(FifoDepth-1))
