@@ -81,6 +81,7 @@ class usb20_monitor extends dv_base_monitor #(
       PidTypeOutToken: token_packet();
       PidTypeInToken: token_packet();
       PidTypeSetupToken: token_packet();
+      PidTypeSofToken: sof_packet();
       PidTypeData0: data_packet();
       PidTypeData1: data_packet();
       PidTypeAck: handshake_packet();
@@ -90,10 +91,7 @@ class usb20_monitor extends dv_base_monitor #(
     endcase
   endtask
 
-//------------------------------------------SOF Packet------------------------------------------//
-
-   // For future use (task written but not used yet)
-  // Monitor start of frame packet
+//-------------------------------------------SOF Packet-------------------------------------------//
   virtual task sof_packet();
     typedef bit [34:0] sof_p;
     sof_p sof_result;
@@ -101,8 +99,8 @@ class usb20_monitor extends dv_base_monitor #(
     // bits to binary conversion
     sof_result = sof_p'(bit_destuffed);
     m_sof_pkt.m_pid_type = pid_type_e'(packet_type);
-    m_sof_pkt.framecnt = sof_result[20:10];
-    m_sof_pkt.crc5 = sof_result[25:21];
+    m_sof_pkt.framecnt = {<<{sof_result[18:8]}};
+    m_sof_pkt.crc5 = {<<{sof_result[7:3]}};
     req_analysis_port.write(m_sof_pkt);
   endtask
 
@@ -114,12 +112,9 @@ class usb20_monitor extends dv_base_monitor #(
     // bits to binary conversion
     token_result = token_p'(bit_destuffed);
     m_token_pkt.m_pid_type =  pid_type_e'(packet_type);
-    m_token_pkt.address = token_result[18:12];
-    m_token_pkt.address = {<<{m_token_pkt.address}};
-    m_token_pkt.endpoint = token_result[11:8];
-    m_token_pkt.endpoint = {<<{m_token_pkt.endpoint}};
-    m_token_pkt.crc5 = token_result[7:3];
-    m_token_pkt.crc5 = {<<{m_token_pkt.crc5}};
+    m_token_pkt.address = {<<{token_result[18:12]}};
+    m_token_pkt.endpoint = {<<{token_result[11:8]}};
+    m_token_pkt.crc5 = {<<{token_result[7:3]}};
     req_analysis_port.write(m_token_pkt);
   endtask
 
@@ -197,8 +192,9 @@ class usb20_monitor extends dv_base_monitor #(
             packet_destuffed.push_back(packet[i]);
             i += 2; // Skip the next bit as it was part of the stuffing
             consecutive_ones_count = 0;
-          end
-          else break;
+            if (packet[i] == 1'b1)
+              consecutive_ones_count = consecutive_ones_count + 1;
+          end else break;
         end
       end else begin
         consecutive_ones_count = 0;

@@ -49,6 +49,7 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
   local bit [31:0] out_iso_reg;
   local bit [31:0] in_iso_reg;
   local bit [3:0]  endp_index;
+  local bit [7:0]  act_pid, exp_pid;
 
   `uvm_component_new
 
@@ -78,12 +79,17 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
     usb20_item item;
     forever begin
       req_usb20_fifo.get(item);
-      m_packetiser.pack_pkt(item);
-      usbdev_expected_pkt();
-      item.pack(actual_pkt);
-      actual_pkt_q.push_back(actual_pkt);
-      `uvm_info(`gfn, $sformatf("req port item :\n%0s", item.sprint()), UVM_DEBUG)
-      compare_usb20_pkt();
+      if (item.m_pid_type != PidTypeSofToken) begin
+        m_packetiser.pack_pkt(item);
+        usbdev_expected_pkt();
+        item.pack(actual_pkt);
+        actual_pkt_q.push_back(actual_pkt);
+        for (int i = 0; i <= 7; i++) begin
+          act_pid = {act_pid, actual_pkt[i]};
+        end
+        `uvm_info(`gfn, $sformatf("req port item :\n%0s", item.sprint()), UVM_DEBUG)
+        compare_usb20_pkt(item);
+      end
     end
   endtask
 
@@ -94,6 +100,9 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
                                        m_packetiser.handshake_pkt_arr);
     m_pkt_manager.pop_packet(expected_pkt);
     expected_pkt_q.push_back(expected_pkt);
+    for (int i = 0; i <= 7; i++) begin
+      exp_pid = {exp_pid, expected_pkt[i]};
+    end
   endtask
 
   // process_usb20_pkt task : Process queue
@@ -104,21 +113,60 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
     forever begin
       rsp_usb20_fifo.get(item);
       usbdev_expected_pkt();
-      item.pack(expected_pkt);
-      actual_pkt_q.push_back(expected_pkt);
+      item.pack(actual_pkt);
+      actual_pkt_q.push_back(actual_pkt);
+      for (int i = 0; i <= 7; i++) begin
+        act_pid = {act_pid, actual_pkt[i]};
+      end
       `uvm_info(`gfn, $sformatf("rsp port item :\n%0s", item.sprint()), UVM_DEBUG)
-      compare_usb20_pkt();
+      compare_usb20_pkt(item);
     end
   endtask
 
   // compare_usb20_pkt task : To check pkt transmission accuracy
   // -------------------------------
-  virtual task compare_usb20_pkt();
+  virtual task compare_usb20_pkt(usb20_item item);
+    if (predict_errors(item)) begin
+      actual_pkt_q.pop_front();
+      expected_pkt_q.pop_front();
+      return;
+    end
     if (actual_pkt_q.size() > 0) begin
       `DV_CHECK_EQ(actual_pkt_q.pop_front(), expected_pkt_q.pop_front());
       `uvm_info(`gfn,"item match",UVM_DEBUG)
     end
   endtask
+
+  // predict_errors function : To Predict error type
+  // -------------------------------
+  virtual function bit predict_errors(usb20_item item);
+    bit [15:0] act_crc16, exp_crc16;
+    bit [4:0]  act_crc5, exp_crc5;
+    if (act_pid != exp_pid) begin
+      `uvm_info(`gfn,"PID ERROR",UVM_DEBUG)
+      return 1;
+    end
+    if(item.m_pid_type inside {PidTypeOutToken, PidTypeInToken, PidTypeSetupToken}) begin
+      for (int i = 19; i <= 23; i++) begin
+        act_crc5 = {act_crc5, actual_pkt[i]};
+        exp_crc5 = {exp_crc5, expected_pkt[i]};
+      end
+      if (act_crc5 != exp_crc5) begin
+        `uvm_info(`gfn,"CRC5 ERROR",UVM_DEBUG)
+        return 1;
+      end
+    end
+    if (item.m_pid_type inside {PidTypeData0, PidTypeData1}) begin
+      for(int i = actual_pkt.size() - 16; i <= actual_pkt.size() - 1; i++) begin
+        act_crc16 = {act_crc16, actual_pkt[i]};
+        exp_crc16 = {exp_crc16, expected_pkt[i]};
+      end
+      if (act_crc16 != exp_crc16) begin
+      `uvm_info(`gfn,"CRC16 ERROR",UVM_DEBUG)
+      return 1;
+      end
+    end
+  endfunction
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
     uvm_reg csr;
@@ -378,25 +426,39 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
         else iso_trans = 1'b0;
       end
       "out_data_toggle": begin
-        // TODO
+        if (!write && channel == DataChannel) begin
+          do_read_check = 1'b0;
+        end
       end
       "in_data_toggle": begin
-        // TODO
+        if (!write && channel == DataChannel) begin
+          do_read_check = 1'b0;
+        end
       end
       "phy_pins_sense": begin
-        // TODO
+        if (!write && channel == DataChannel) begin
+          do_read_check = 1'b0;
+        end
       end
-      "phy_pin_drive": begin
-        // TODO
+      "phy_pins_drive": begin
+        if (!write && channel == DataChannel) begin
+          do_read_check = 1'b0;
+        end
       end
       "phy_config": begin
-        // TODO
+        if (!write && channel == DataChannel) begin
+          do_read_check = 1'b0;
+        end
       end
       "wake_control": begin
-        // TODO
+        if (!write && channel == DataChannel) begin
+          do_read_check = 1'b0;
+        end
       end
       "wake_events": begin
-        // TODO
+        if (!write && channel == DataChannel) begin
+          do_read_check = 1'b0;
+        end
       end
       "buffer": begin
         do_read_check = 1'b1;
@@ -426,7 +488,11 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
     end else if (pkt_nak & ~pkt_stall) begin
       m_usbdev_trans.m_usbdev_handshake_pkt = NAK;
     end else if(stall) begin
-      m_usbdev_trans.m_usbdev_handshake_pkt = STALL;
+      // Give priority to setup pkt over stall
+      if(ep_out_enable & rx_enable_setup)
+        m_usbdev_trans.m_usbdev_handshake_pkt = ACK;
+      else
+        m_usbdev_trans.m_usbdev_handshake_pkt = STALL;
     end
 
     // Check weather transfer type is isochoronus or not
