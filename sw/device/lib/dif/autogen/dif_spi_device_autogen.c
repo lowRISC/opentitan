@@ -72,6 +72,9 @@ static bool spi_device_get_irq_bit_index(dif_spi_device_irq_t irq,
     case kDifSpiDeviceIrqTpmHeaderNotEmpty:
       *index_out = SPI_DEVICE_INTR_COMMON_TPM_HEADER_NOT_EMPTY_BIT;
       break;
+    case kDifSpiDeviceIrqTpmRdfifoCmdEnd:
+      *index_out = SPI_DEVICE_INTR_COMMON_TPM_RDFIFO_CMD_END_BIT;
+      break;
     case kDifSpiDeviceIrqTpmRdfifoDrop:
       *index_out = SPI_DEVICE_INTR_COMMON_TPM_RDFIFO_DROP_BIT;
       break;
@@ -84,7 +87,7 @@ static bool spi_device_get_irq_bit_index(dif_spi_device_irq_t irq,
 
 static dif_irq_type_t irq_types[] = {
     kDifIrqTypeEvent, kDifIrqTypeEvent,  kDifIrqTypeEvent, kDifIrqTypeEvent,
-    kDifIrqTypeEvent, kDifIrqTypeStatus, kDifIrqTypeEvent,
+    kDifIrqTypeEvent, kDifIrqTypeStatus, kDifIrqTypeEvent, kDifIrqTypeEvent,
 };
 
 OT_WARN_UNUSED_RESULT

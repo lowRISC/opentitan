@@ -185,6 +185,8 @@ module spi_device_reg_top (
   logic intr_state_readbuf_flip_qs;
   logic intr_state_readbuf_flip_wd;
   logic intr_state_tpm_header_not_empty_qs;
+  logic intr_state_tpm_rdfifo_cmd_end_qs;
+  logic intr_state_tpm_rdfifo_cmd_end_wd;
   logic intr_state_tpm_rdfifo_drop_qs;
   logic intr_state_tpm_rdfifo_drop_wd;
   logic intr_enable_we;
@@ -200,6 +202,8 @@ module spi_device_reg_top (
   logic intr_enable_readbuf_flip_wd;
   logic intr_enable_tpm_header_not_empty_qs;
   logic intr_enable_tpm_header_not_empty_wd;
+  logic intr_enable_tpm_rdfifo_cmd_end_qs;
+  logic intr_enable_tpm_rdfifo_cmd_end_wd;
   logic intr_enable_tpm_rdfifo_drop_qs;
   logic intr_enable_tpm_rdfifo_drop_wd;
   logic intr_test_we;
@@ -209,6 +213,7 @@ module spi_device_reg_top (
   logic intr_test_readbuf_watermark_wd;
   logic intr_test_readbuf_flip_wd;
   logic intr_test_tpm_header_not_empty_wd;
+  logic intr_test_tpm_rdfifo_cmd_end_wd;
   logic intr_test_tpm_rdfifo_drop_wd;
   logic alert_test_we;
   logic alert_test_wd;
@@ -1500,6 +1505,7 @@ module spi_device_reg_top (
   logic tpm_status_cmdaddr_notempty_qs;
   logic tpm_status_wrfifo_pending_qs;
   logic tpm_status_wrfifo_pending_wd;
+  logic tpm_status_rdfifo_aborted_qs;
   logic tpm_access_0_we;
   logic [7:0] tpm_access_0_access_0_qs;
   logic [7:0] tpm_access_0_access_0_wd;
@@ -1705,7 +1711,34 @@ module spi_device_reg_top (
     .qs     (intr_state_tpm_header_not_empty_qs)
   );
 
-  //   F[tpm_rdfifo_drop]: 6:6
+  //   F[tpm_rdfifo_cmd_end]: 6:6
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_intr_state_tpm_rdfifo_cmd_end (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (intr_state_we),
+    .wd     (intr_state_tpm_rdfifo_cmd_end_wd),
+
+    // from internal hardware
+    .de     (hw2reg.intr_state.tpm_rdfifo_cmd_end.de),
+    .d      (hw2reg.intr_state.tpm_rdfifo_cmd_end.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_state.tpm_rdfifo_cmd_end.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (intr_state_tpm_rdfifo_cmd_end_qs)
+  );
+
+  //   F[tpm_rdfifo_drop]: 7:7
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
@@ -1896,7 +1929,34 @@ module spi_device_reg_top (
     .qs     (intr_enable_tpm_header_not_empty_qs)
   );
 
-  //   F[tpm_rdfifo_drop]: 6:6
+  //   F[tpm_rdfifo_cmd_end]: 6:6
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_intr_enable_tpm_rdfifo_cmd_end (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (intr_enable_we),
+    .wd     (intr_enable_tpm_rdfifo_cmd_end_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.intr_enable.tpm_rdfifo_cmd_end.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (intr_enable_tpm_rdfifo_cmd_end_qs)
+  );
+
+  //   F[tpm_rdfifo_drop]: 7:7
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -1926,7 +1986,7 @@ module spi_device_reg_top (
 
   // R[intr_test]: V(True)
   logic intr_test_qe;
-  logic [6:0] intr_test_flds_we;
+  logic [7:0] intr_test_flds_we;
   assign intr_test_qe = &intr_test_flds_we;
   //   F[upload_cmdfifo_not_empty]: 0:0
   prim_subreg_ext #(
@@ -2024,7 +2084,23 @@ module spi_device_reg_top (
   );
   assign reg2hw.intr_test.tpm_header_not_empty.qe = intr_test_qe;
 
-  //   F[tpm_rdfifo_drop]: 6:6
+  //   F[tpm_rdfifo_cmd_end]: 6:6
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_intr_test_tpm_rdfifo_cmd_end (
+    .re     (1'b0),
+    .we     (intr_test_we),
+    .wd     (intr_test_tpm_rdfifo_cmd_end_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (intr_test_flds_we[6]),
+    .q      (reg2hw.intr_test.tpm_rdfifo_cmd_end.q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.intr_test.tpm_rdfifo_cmd_end.qe = intr_test_qe;
+
+  //   F[tpm_rdfifo_drop]: 7:7
   prim_subreg_ext #(
     .DW    (1)
   ) u_intr_test_tpm_rdfifo_drop (
@@ -2033,7 +2109,7 @@ module spi_device_reg_top (
     .wd     (intr_test_tpm_rdfifo_drop_wd),
     .d      ('0),
     .qre    (),
-    .qe     (intr_test_flds_we[6]),
+    .qe     (intr_test_flds_we[7]),
     .q      (reg2hw.intr_test.tpm_rdfifo_drop.q),
     .ds     (),
     .qs     ()
@@ -18879,11 +18955,11 @@ module spi_device_reg_top (
 
   // R[tpm_status]: V(True)
   logic tpm_status_qe;
-  logic [1:0] tpm_status_flds_we;
+  logic [2:0] tpm_status_flds_we;
   // This ignores QEs that are set to constant 0 due to read-only fields.
   logic unused_tpm_status_flds_we;
-  assign unused_tpm_status_flds_we = ^(tpm_status_flds_we & 2'h1);
-  assign tpm_status_qe = &(tpm_status_flds_we | 2'h1);
+  assign unused_tpm_status_flds_we = ^(tpm_status_flds_we & 3'h5);
+  assign tpm_status_qe = &(tpm_status_flds_we | 3'h5);
   //   F[cmdaddr_notempty]: 0:0
   prim_subreg_ext #(
     .DW    (1)
@@ -18914,6 +18990,21 @@ module spi_device_reg_top (
     .qs     (tpm_status_wrfifo_pending_qs)
   );
   assign reg2hw.tpm_status.wrfifo_pending.qe = tpm_status_qe;
+
+  //   F[rdfifo_aborted]: 2:2
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_tpm_status_rdfifo_aborted (
+    .re     (tpm_status_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.tpm_status.rdfifo_aborted.d),
+    .qre    (),
+    .qe     (tpm_status_flds_we[2]),
+    .q      (),
+    .ds     (),
+    .qs     (tpm_status_rdfifo_aborted_qs)
+  );
 
 
   // Subregister 0 of Multireg tpm_access
@@ -19510,7 +19601,9 @@ module spi_device_reg_top (
 
   assign intr_state_readbuf_flip_wd = reg_wdata[4];
 
-  assign intr_state_tpm_rdfifo_drop_wd = reg_wdata[6];
+  assign intr_state_tpm_rdfifo_cmd_end_wd = reg_wdata[6];
+
+  assign intr_state_tpm_rdfifo_drop_wd = reg_wdata[7];
   assign intr_enable_we = addr_hit[1] & reg_we & !reg_error;
 
   assign intr_enable_upload_cmdfifo_not_empty_wd = reg_wdata[0];
@@ -19525,7 +19618,9 @@ module spi_device_reg_top (
 
   assign intr_enable_tpm_header_not_empty_wd = reg_wdata[5];
 
-  assign intr_enable_tpm_rdfifo_drop_wd = reg_wdata[6];
+  assign intr_enable_tpm_rdfifo_cmd_end_wd = reg_wdata[6];
+
+  assign intr_enable_tpm_rdfifo_drop_wd = reg_wdata[7];
   assign intr_test_we = addr_hit[2] & reg_we & !reg_error;
 
   assign intr_test_upload_cmdfifo_not_empty_wd = reg_wdata[0];
@@ -19540,7 +19635,9 @@ module spi_device_reg_top (
 
   assign intr_test_tpm_header_not_empty_wd = reg_wdata[5];
 
-  assign intr_test_tpm_rdfifo_drop_wd = reg_wdata[6];
+  assign intr_test_tpm_rdfifo_cmd_end_wd = reg_wdata[6];
+
+  assign intr_test_tpm_rdfifo_drop_wd = reg_wdata[7];
   assign alert_test_we = addr_hit[3] & reg_we & !reg_error;
 
   assign alert_test_wd = reg_wdata[0];
@@ -20941,7 +21038,8 @@ module spi_device_reg_top (
         reg_rdata_next[3] = intr_state_readbuf_watermark_qs;
         reg_rdata_next[4] = intr_state_readbuf_flip_qs;
         reg_rdata_next[5] = intr_state_tpm_header_not_empty_qs;
-        reg_rdata_next[6] = intr_state_tpm_rdfifo_drop_qs;
+        reg_rdata_next[6] = intr_state_tpm_rdfifo_cmd_end_qs;
+        reg_rdata_next[7] = intr_state_tpm_rdfifo_drop_qs;
       end
 
       addr_hit[1]: begin
@@ -20951,7 +21049,8 @@ module spi_device_reg_top (
         reg_rdata_next[3] = intr_enable_readbuf_watermark_qs;
         reg_rdata_next[4] = intr_enable_readbuf_flip_qs;
         reg_rdata_next[5] = intr_enable_tpm_header_not_empty_qs;
-        reg_rdata_next[6] = intr_enable_tpm_rdfifo_drop_qs;
+        reg_rdata_next[6] = intr_enable_tpm_rdfifo_cmd_end_qs;
+        reg_rdata_next[7] = intr_enable_tpm_rdfifo_drop_qs;
       end
 
       addr_hit[2]: begin
@@ -20962,6 +21061,7 @@ module spi_device_reg_top (
         reg_rdata_next[4] = '0;
         reg_rdata_next[5] = '0;
         reg_rdata_next[6] = '0;
+        reg_rdata_next[7] = '0;
       end
 
       addr_hit[3]: begin
@@ -21765,6 +21865,7 @@ module spi_device_reg_top (
       addr_hit[61]: begin
         reg_rdata_next[0] = tpm_status_cmdaddr_notempty_qs;
         reg_rdata_next[1] = tpm_status_wrfifo_pending_qs;
+        reg_rdata_next[2] = tpm_status_rdfifo_aborted_qs;
       end
 
       addr_hit[62]: begin

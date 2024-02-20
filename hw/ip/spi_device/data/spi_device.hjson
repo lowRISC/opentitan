@@ -103,11 +103,20 @@
       desc: "TPM Header(Command/Address) buffer available"
       type: "status"
     }
+    { name: "tpm_rdfifo_cmd_end"
+      desc: '''TPM RdFIFO command ended.
+
+        The TPM Read command targeting the RdFIFO ended.
+        Check TPM_STATUS.rdfifo_aborted to see if the transaction completed.
+        '''
+      type: "event"
+    }
     { name: "tpm_rdfifo_drop"
       desc: '''TPM RdFIFO data dropped.
 
         Data was dropped from the RdFIFO.
-        Either data was written while a read command was not active, or the read command was aborted while data was left in the RdFIFO.
+        Data was written while a read command was not active, and it was not accepted.
+        This can occur when the host aborts a read command.
         '''
       type: "event"
     }
@@ -1371,6 +1380,16 @@
             This bit becomes 1 when a complete write command is received.
             While it remains 1, subsequent write commands will block at the wait state until it is cleared.
             Write 0 to release the Write FIFO back to the TPM module.
+            '''
+        } // f: cmdaddr_notempty
+        { bits: "2"
+          name: "rdfifo_aborted"
+          hwaccess: "hwo"
+          desc: '''If 1, the last Read FIFO command was aborted.
+
+            This bit becomes 1 when a Read FIFO command became active, but the transaction did not complete.
+            An aborted transaction occurs when the host de-asserts CSB without clocking all the requested data.
+            This bit remains 1 until reset, or it will clear automatically after the next valid command is read from TPM_CMD_ADDR.
             '''
         } // f: cmdaddr_notempty
       ]

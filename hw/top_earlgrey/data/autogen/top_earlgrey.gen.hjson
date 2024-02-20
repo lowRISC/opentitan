@@ -13565,6 +13565,12 @@
       module_name: spi_device
     }
     {
+      name: spi_device_tpm_rdfifo_cmd_end
+      width: 1
+      type: interrupt
+      module_name: spi_device
+    }
+    {
       name: spi_device_tpm_rdfifo_drop
       width: 1
       type: interrupt

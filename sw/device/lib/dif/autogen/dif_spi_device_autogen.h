@@ -107,11 +107,16 @@ typedef enum dif_spi_device_irq {
    */
   kDifSpiDeviceIrqTpmHeaderNotEmpty = 5,
   /**
-   * TPM RdFIFO data dropped.  Data was dropped from the RdFIFO. Either data was
-   * written while a read command was not active, or the read command was
-   * aborted while data was left in the RdFIFO.
+   * TPM RdFIFO command ended.  The TPM Read command targeting the RdFIFO ended.
+   * Check TPM_STATUS.rdfifo_aborted to see if the transaction completed.
    */
-  kDifSpiDeviceIrqTpmRdfifoDrop = 6,
+  kDifSpiDeviceIrqTpmRdfifoCmdEnd = 6,
+  /**
+   * TPM RdFIFO data dropped.  Data was dropped from the RdFIFO. Data was
+   * written while a read command was not active, and it was not accepted. This
+   * can occur when the host aborts a read command.
+   */
+  kDifSpiDeviceIrqTpmRdfifoDrop = 7,
 } dif_spi_device_irq_t;
 
 /**

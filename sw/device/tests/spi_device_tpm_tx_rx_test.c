@@ -88,13 +88,14 @@ void ottf_external_isr(uint32_t *exc_info) {
   plic_isr_ctx_t plic_ctx = {.rv_plic = &plic,
                              .hart_id = kTopEarlgreyPlicTargetIbex0};
 
-  // We should only be receiving the tpm header interrupt during this test.
+  // We should only be receiving the tpm header interrupt during this test, but
+  // the tpm rdfifo cmd end intr_state will go high for read FIFO commands.
   spi_device_isr_ctx_t spi_device_ctx = {
       .spi_device = &spi_device.dev,
       .plic_spi_device_start_irq_id =
           kTopEarlgreyPlicIrqIdSpiDeviceUploadCmdfifoNotEmpty,
       .expected_irq = kDifSpiDeviceIrqTpmHeaderNotEmpty,
-      .is_only_irq = true};
+      .is_only_irq = false};
 
   top_earlgrey_plic_peripheral_t peripheral;
   dif_spi_device_irq_t spi_device_irq;

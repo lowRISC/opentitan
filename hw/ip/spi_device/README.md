@@ -83,6 +83,10 @@ Passthru |  Y/N   |  Y/N  |  Y/N |  Y/N    |   N  |   Y    |   Y    |     Y
 
 *Y/N*: Based on INTERCEPT_EN
 
+### Clocking Requirements
+
+SPI Device requires the core clock to have a frequency that is at least 1/4 the SPI clock frequency.
+
 ## Compatibility
 
 The SPI device supports emulating an EEPROM (SPI flash mode in this document).

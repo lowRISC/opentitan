@@ -83,6 +83,9 @@ waive -rules RESET_MUX    -location {spi_device.sv} \
       -regexp {Asynchronous reset 'rst_(spi|txfifo|rxfifo)_n' is driven} \
       -comment "The MUX is needed to control the reset during scanmode (scanmode_i == 1)"
 waive -rules RESET_MUX -location {spi_device.sv} \
+      -regexp {Asynchronous reset 'scan_rst_ni' reaches a multiplexer} \
+      -comment "Scan reset mux, but need to have asynchronous reset"
+waive -rules RESET_MUX -location {spi_device.sv} \
       -regexp {'sram_rst_n.*' is driven by a multiplexer here} \
       -comment "Scan reset mux, but need to have asynchronous reset"
 waive -rules RESET_MUX -location {spi_device.sv} \
@@ -93,6 +96,9 @@ waive -rules RESET_DRIVER -location {spi_device.sv} \
       -comment "Async reset generation is required here"
 waive -rules RESET_DRIVER -location {spid_status.sv} \
       -regexp {'status_fifo_rst_n' is driven} \
+      -comment "Async reset generation is required here"
+waive -rules RESET_DRIVER -location {spi_device.sv} \
+      -regexp {'spi_dpram_rst_n' is driven} \
       -comment "Async reset generation is required here"
 
 # clock inverter and muxes

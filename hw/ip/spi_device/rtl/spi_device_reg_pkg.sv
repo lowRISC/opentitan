@@ -45,6 +45,9 @@ package spi_device_reg_pkg;
     } tpm_rdfifo_drop;
     struct packed {
       logic        q;
+    } tpm_rdfifo_cmd_end;
+    struct packed {
+      logic        q;
     } tpm_header_not_empty;
     struct packed {
       logic        q;
@@ -67,6 +70,9 @@ package spi_device_reg_pkg;
     struct packed {
       logic        q;
     } tpm_rdfifo_drop;
+    struct packed {
+      logic        q;
+    } tpm_rdfifo_cmd_end;
     struct packed {
       logic        q;
     } tpm_header_not_empty;
@@ -92,6 +98,10 @@ package spi_device_reg_pkg;
       logic        q;
       logic        qe;
     } tpm_rdfifo_drop;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } tpm_rdfifo_cmd_end;
     struct packed {
       logic        q;
       logic        qe;
@@ -437,6 +447,10 @@ package spi_device_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
+    } tpm_rdfifo_cmd_end;
+    struct packed {
+      logic        d;
+      logic        de;
     } tpm_rdfifo_drop;
   } spi_device_hw2reg_intr_state_reg_t;
 
@@ -556,6 +570,9 @@ package spi_device_reg_pkg;
     struct packed {
       logic        d;
     } wrfifo_pending;
+    struct packed {
+      logic        d;
+    } rdfifo_aborted;
   } spi_device_hw2reg_tpm_status_reg_t;
 
   typedef struct packed {
@@ -569,9 +586,9 @@ package spi_device_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    spi_device_reg2hw_intr_state_reg_t intr_state; // [1558:1552]
-    spi_device_reg2hw_intr_enable_reg_t intr_enable; // [1551:1545]
-    spi_device_reg2hw_intr_test_reg_t intr_test; // [1544:1531]
+    spi_device_reg2hw_intr_state_reg_t intr_state; // [1562:1555]
+    spi_device_reg2hw_intr_enable_reg_t intr_enable; // [1554:1547]
+    spi_device_reg2hw_intr_test_reg_t intr_test; // [1546:1531]
     spi_device_reg2hw_alert_test_reg_t alert_test; // [1530:1529]
     spi_device_reg2hw_control_reg_t control; // [1528:1526]
     spi_device_reg2hw_cfg_reg_t cfg; // [1525:1523]
@@ -610,18 +627,18 @@ package spi_device_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    spi_device_hw2reg_intr_state_reg_t intr_state; // [206:193]
-    spi_device_hw2reg_control_reg_t control; // [192:191]
-    spi_device_hw2reg_status_reg_t status; // [190:189]
-    spi_device_hw2reg_addr_mode_reg_t addr_mode; // [188:187]
-    spi_device_hw2reg_last_read_addr_reg_t last_read_addr; // [186:155]
-    spi_device_hw2reg_flash_status_reg_t flash_status; // [154:131]
-    spi_device_hw2reg_upload_status_reg_t upload_status; // [130:115]
-    spi_device_hw2reg_upload_status2_reg_t upload_status2; // [114:96]
-    spi_device_hw2reg_upload_cmdfifo_reg_t upload_cmdfifo; // [95:85]
-    spi_device_hw2reg_upload_addrfifo_reg_t upload_addrfifo; // [84:53]
-    spi_device_hw2reg_tpm_cap_reg_t tpm_cap; // [52:34]
-    spi_device_hw2reg_tpm_status_reg_t tpm_status; // [33:32]
+    spi_device_hw2reg_intr_state_reg_t intr_state; // [209:194]
+    spi_device_hw2reg_control_reg_t control; // [193:192]
+    spi_device_hw2reg_status_reg_t status; // [191:190]
+    spi_device_hw2reg_addr_mode_reg_t addr_mode; // [189:188]
+    spi_device_hw2reg_last_read_addr_reg_t last_read_addr; // [187:156]
+    spi_device_hw2reg_flash_status_reg_t flash_status; // [155:132]
+    spi_device_hw2reg_upload_status_reg_t upload_status; // [131:116]
+    spi_device_hw2reg_upload_status2_reg_t upload_status2; // [115:97]
+    spi_device_hw2reg_upload_cmdfifo_reg_t upload_cmdfifo; // [96:86]
+    spi_device_hw2reg_upload_addrfifo_reg_t upload_addrfifo; // [85:54]
+    spi_device_hw2reg_tpm_cap_reg_t tpm_cap; // [53:35]
+    spi_device_hw2reg_tpm_status_reg_t tpm_status; // [34:32]
     spi_device_hw2reg_tpm_cmd_addr_reg_t tpm_cmd_addr; // [31:0]
   } spi_device_hw2reg_t;
 
@@ -701,13 +718,14 @@ package spi_device_reg_pkg;
   parameter logic [BlockAw-1:0] SPI_DEVICE_TPM_READ_FIFO_OFFSET = 13'h 834;
 
   // Reset values for hwext registers and their fields
-  parameter logic [6:0] SPI_DEVICE_INTR_TEST_RESVAL = 7'h 0;
+  parameter logic [7:0] SPI_DEVICE_INTR_TEST_RESVAL = 8'h 0;
   parameter logic [0:0] SPI_DEVICE_INTR_TEST_UPLOAD_CMDFIFO_NOT_EMPTY_RESVAL = 1'h 0;
   parameter logic [0:0] SPI_DEVICE_INTR_TEST_UPLOAD_PAYLOAD_NOT_EMPTY_RESVAL = 1'h 0;
   parameter logic [0:0] SPI_DEVICE_INTR_TEST_UPLOAD_PAYLOAD_OVERFLOW_RESVAL = 1'h 0;
   parameter logic [0:0] SPI_DEVICE_INTR_TEST_READBUF_WATERMARK_RESVAL = 1'h 0;
   parameter logic [0:0] SPI_DEVICE_INTR_TEST_READBUF_FLIP_RESVAL = 1'h 0;
   parameter logic [0:0] SPI_DEVICE_INTR_TEST_TPM_HEADER_NOT_EMPTY_RESVAL = 1'h 0;
+  parameter logic [0:0] SPI_DEVICE_INTR_TEST_TPM_RDFIFO_CMD_END_RESVAL = 1'h 0;
   parameter logic [0:0] SPI_DEVICE_INTR_TEST_TPM_RDFIFO_DROP_RESVAL = 1'h 0;
   parameter logic [0:0] SPI_DEVICE_ALERT_TEST_RESVAL = 1'h 0;
   parameter logic [0:0] SPI_DEVICE_ALERT_TEST_FATAL_FAULT_RESVAL = 1'h 0;
@@ -719,7 +737,7 @@ package spi_device_reg_pkg;
   parameter logic [23:0] SPI_DEVICE_FLASH_STATUS_RESVAL = 24'h 0;
   parameter logic [15:0] SPI_DEVICE_UPLOAD_CMDFIFO_RESVAL = 16'h 0;
   parameter logic [31:0] SPI_DEVICE_UPLOAD_ADDRFIFO_RESVAL = 32'h 0;
-  parameter logic [1:0] SPI_DEVICE_TPM_STATUS_RESVAL = 2'h 0;
+  parameter logic [2:0] SPI_DEVICE_TPM_STATUS_RESVAL = 3'h 0;
   parameter logic [31:0] SPI_DEVICE_TPM_CMD_ADDR_RESVAL = 32'h 0;
   parameter logic [31:0] SPI_DEVICE_TPM_READ_FIFO_RESVAL = 32'h 0;
 

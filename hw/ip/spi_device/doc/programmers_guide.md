@@ -50,6 +50,8 @@ Due to the CDC issue, the SW is only permitted to update the registers when the 
 3. The SW prepares the register value and writes the value into the read FIFO.
 4. The TPM submodule sends `WAIT` until the read FIFO is available.
    When available, the TPM submodule sends `START` followed by the register value.
+5. Optionally, SW may choose to monitor the `tpm_rdfifo_cmd_end` interrupt to be notified when commands targeting read FIFO commands end.
+  1. `TPM_STATUS.rdfifo_aborted` will show whether the triggering command failed.
 
 ### TPM Write
 

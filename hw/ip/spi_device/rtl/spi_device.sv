@@ -49,6 +49,7 @@ module spi_device
 
   // INTR: TPM mode
   output logic intr_tpm_header_not_empty_o, // TPM Command/Address buffer
+  output logic intr_tpm_rdfifo_cmd_end_o,
   output logic intr_tpm_rdfifo_drop_o,
 
   // Memory configuration
@@ -320,6 +321,7 @@ module spi_device
   logic [31:0]                tpm_cmdaddr_rdata;
   logic                       tpm_rdfifo_wvalid, tpm_rdfifo_wready;
   logic [TpmRdFifoWidth-1:0]  tpm_rdfifo_wdata;
+  logic                       tpm_event_rdfifo_cmd_end;
   logic                       tpm_event_rdfifo_drop;
 
   tpm_cap_t tpm_cap;
@@ -332,6 +334,7 @@ module spi_device
   logic tpm_status_cmdaddr_notempty;
   logic tpm_status_wrfifo_pending;
   logic tpm_status_wrfifo_release;
+  logic tpm_status_rdfifo_aborted;
 
   // TPM ---------------------------------------------------------------
 
@@ -482,6 +485,22 @@ module spi_device
     .hw2reg_intr_state_d_o  (hw2reg.intr_state.tpm_header_not_empty.d ),
     .hw2reg_intr_state_de_o (hw2reg.intr_state.tpm_header_not_empty.de),
     .intr_o                 (intr_tpm_header_not_empty_o              )
+  );
+
+  prim_intr_hw #(
+    .Width (1      ),
+    .IntrT ("Event")
+  ) u_intr_tpm_rdfifo_cmd_end (
+    .clk_i,
+    .rst_ni,
+    .event_intr_i           (tpm_event_rdfifo_cmd_end               ),
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.tpm_rdfifo_cmd_end.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.tpm_rdfifo_cmd_end.q  ),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.tpm_rdfifo_cmd_end.qe ),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.tpm_rdfifo_cmd_end.q ),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.tpm_rdfifo_cmd_end.d ),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.tpm_rdfifo_cmd_end.de),
+    .intr_o                 (intr_tpm_rdfifo_cmd_end_o              )
   );
 
   prim_intr_hw #(
@@ -695,15 +714,12 @@ module spi_device
   // The write port is clocked at SYS_CLK. Metastability may occur as CSb may
   // be asserted, de-asserted independent of SYS_CLK. This reset synchronizer
   // (sync to SYS_CLK), may delay the reset signal by 2 SYS_CLK when TPM_CSb
-  // is de-asserted. However, Read FIFO is being used after TPM module
-  // receives the command (8 SPI_CLK), then 24bit address (24 SPI_CLK). So,
-  // there are plenty of time to synced reset being released unless SYS_CLK:
-  // SPI_CLK is <1:12.
+  // is de-asserted.
   prim_rst_sync #(
     .ActiveHigh (1'b 0),
     .SkipScan   (1'b 0)
   ) u_tpm_csb_rst_sync (
-    .clk_i (clk_i),
+    .clk_i,
     .d_i   (tpm_rst_n),
     .q_o   (sys_tpm_rst_n),
 
@@ -741,87 +757,6 @@ module spi_device
     .d_i (sys_tpm_csb_buf),
     .q_o (sys_tpm_csb_syncd)
   );
-
-  ///////////////////////////////////////////////////////////////////////////
-  //                          CDC
-  // 1. csb_i pulse is detected by asynchronous reset in spi clk
-  // 2. Detected edge pulse is converted to toggle level in spi clk
-  // 3. The spi toggle level goes to 2nd edge detector in sys clk
-  //    => sys_csb_pos_pulse_stretch is used for capturing SW data on sys_clk
-  // 4. To clear the toggle level in spi clk, we create a ack pulse from
-  //    sys_csb_pos_pulse_stretch using 3rd edge detector
-  // PR# : #13859 and #13586
-  ///////////////////////////////////////////////////////////////////////////
-
-  logic spi_clk_csb_rst_pulse;
-  logic spi_clk_csb_rst_toggle;
-  logic sys_csb_pos_pulse_stretch;
-  logic spi_clk_ack;
-
-  // spi_clk csb_rst_asserted_pulse
-  prim_edge_detector #(
-    .Width      (1),
-    .ResetValue (1'b 1),
-    .EnSync     (1'b 1)
-  ) u_sck_csb_edge (
-    .clk_i             (clk_spi_in_buf),
-    .rst_ni            (tpm_rst_n),
-    .d_i               (1'b0), // tpm_rst_n has CSb assertion
-    .q_sync_o          (),
-    .q_posedge_pulse_o (),
-    .q_negedge_pulse_o (spi_clk_csb_rst_pulse)
-  );
-
-  always_ff @(posedge clk_spi_in_buf or negedge tpm_rst_n) begin
-    if (!tpm_rst_n) spi_clk_csb_rst_toggle <= 1'b0;
-    else if (spi_clk_csb_rst_pulse)
-      spi_clk_csb_rst_toggle <= !spi_clk_csb_rst_toggle;
-    else if (spi_clk_ack)
-      spi_clk_csb_rst_toggle <= 1'b0;
-  end
-
-  // sys_clk csb_rst_asserted_pulse with pulse stretch
-  prim_edge_detector #(
-    .Width      (1),
-    .ResetValue (1'b 0),
-    .EnSync     (1'b 1)
-  ) u_clk_csb_edge_0 (
-    .clk_i             (clk_i),
-    .rst_ni            (rst_ni),
-    .d_i               (spi_clk_csb_rst_toggle), // tpm_rst_n has CSb assertion
-    .q_sync_o          (),
-    .q_posedge_pulse_o (sys_csb_pos_pulse_stretch),
-    .q_negedge_pulse_o ()
-  );
-
-  logic sys_clk_tog;
-  logic spi_clk_pos_edge;
-  logic spi_clk_neg_edge;
-
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) sys_clk_tog <= 1'b0;
-    else if (sys_csb_pos_pulse_stretch)
-      sys_clk_tog <= !sys_clk_tog ;
-  end
-
-  // spi_clk csb_rst_asserted_pulse
-  prim_edge_detector #(
-    .Width      (1),
-    .ResetValue (1'b 0),
-    .EnSync     (1'b 1)
-  ) u_sck_tog_edge (
-    .clk_i             (clk_spi_in_buf),
-    .rst_ni            (tpm_rst_n),
-    .d_i               (sys_clk_tog), // tpm_rst_n has CSb assertion
-    .q_sync_o          (),
-    .q_posedge_pulse_o (spi_clk_pos_edge),
-    .q_negedge_pulse_o (spi_clk_neg_edge)
-  );
-
-  assign spi_clk_ack = spi_clk_pos_edge | spi_clk_neg_edge;
-
-  // spi_clk_csb_rst_toggle should already have = 0 before tpm_rst_n
-  `ASSERT(CsPulseWidth_A, !tpm_rst_n |-> spi_clk_csb_rst_toggle == '0)
 
   //////////////////////////////
   // SPI_DEVICE mode selector //
@@ -1509,12 +1444,12 @@ module spi_device
   ) u_spi_tpm (
     .clk_in_i  (clk_spi_in_buf ),
     .clk_out_i (clk_spi_out_buf),
+    .rst_n     (tpm_rst_n    ),
 
     .sys_clk_i (clk_i),
+    .sys_rst_ni(rst_ni       ),
 
-    .sys_rst_ni      (rst_ni       ),
-    .rst_n           (tpm_rst_n    ),
-    .sys_sync_rst_ni (sys_tpm_rst_n),
+    .sys_tpm_rst_ni(sys_tpm_rst_n),
 
     .csb_i     (sck_tpm_csb_buf), // used as data only
     .mosi_i    (tpm_mosi       ),
@@ -1522,7 +1457,6 @@ module spi_device
     .miso_en_o (tpm_miso_en    ),
 
     .tpm_cap_o (tpm_cap),
-    .sys_csb_pulse_stretch      (sys_csb_pos_pulse_stretch),
     .cfg_tpm_en_i               (cfg_tpm_en              ),
     .cfg_tpm_mode_i             (cfg_tpm_mode            ),
     .cfg_tpm_hw_reg_dis_i       (cfg_tpm_hw_reg_dis      ),
@@ -1548,15 +1482,17 @@ module spi_device
     .sys_cmdaddr_rdata_o  (tpm_cmdaddr_rdata ),
     .sys_cmdaddr_rready_i (tpm_cmdaddr_rready),
 
-    .sys_rdfifo_wvalid_i   (tpm_rdfifo_wvalid    ),
-    .sys_rdfifo_wdata_i    (tpm_rdfifo_wdata     ),
-    .sys_rdfifo_wready_o   (tpm_rdfifo_wready    ),
-    .sys_tpm_rdfifo_drop_o (tpm_event_rdfifo_drop),
+    .sys_rdfifo_wvalid_i  (tpm_rdfifo_wvalid       ),
+    .sys_rdfifo_wdata_i   (tpm_rdfifo_wdata        ),
+    .sys_rdfifo_wready_o  (tpm_rdfifo_wready       ),
+    .sys_rdfifo_cmd_end_o (tpm_event_rdfifo_cmd_end),
+    .sys_tpm_rdfifo_drop_o(tpm_event_rdfifo_drop   ),
 
     .sys_wrfifo_release_i(tpm_status_wrfifo_release),
 
     .sys_cmdaddr_notempty_o (tpm_status_cmdaddr_notempty),
-    .sys_wrfifo_pending_o   (tpm_status_wrfifo_pending)
+    .sys_wrfifo_pending_o   (tpm_status_wrfifo_pending),
+    .sys_rdfifo_aborted_o   (tpm_status_rdfifo_aborted)
   );
 
   // Register connection
@@ -1577,6 +1513,7 @@ module spi_device
 
   //  STATUS:
   assign hw2reg.tpm_status = '{
+    rdfifo_aborted:   '{ d: tpm_status_rdfifo_aborted },
     wrfifo_pending:   '{ d: tpm_status_wrfifo_pending },
     cmdaddr_notempty: '{ d: tpm_status_cmdaddr_notempty }
   };
@@ -1617,8 +1554,6 @@ module spi_device
 
   assign tpm_rdfifo_wvalid = reg2hw.tpm_read_fifo.qe;
   assign tpm_rdfifo_wdata  = reg2hw.tpm_read_fifo.q;
-
-  `ASSUME(TpmRdfifoNotFull_A, tpm_rdfifo_wvalid |-> tpm_rdfifo_wready)
 
   // END: TPM over SPI --------------------------------------------------------
 
