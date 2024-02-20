@@ -40,6 +40,8 @@ filesets:
       - seq_lib/usbdev_max_length_out_transaction_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_out_stall_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_out_trans_nak_vseq.sv: {is_include_file: true}
+      - seq_lib/usbdev_resume_link_active_vseq.sv: {is_include_file: true}
+      - seq_lib/usbdev_stall_trans_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:

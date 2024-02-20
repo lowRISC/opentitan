@@ -18,3 +18,5 @@
 `include "usbdev_max_length_out_transaction_vseq.sv"
 `include "usbdev_out_stall_vseq.sv"
 `include "usbdev_out_trans_nak_vseq.sv"
+`include "usbdev_resume_link_active_vseq.sv"
+`include "usbdev_stall_trans_vseq.sv"
