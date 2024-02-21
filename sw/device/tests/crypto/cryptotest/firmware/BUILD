@@ -199,6 +199,7 @@ opentitan_test(
     deps = [
         ":aes",
         ":aes_sca",
+        ":hash",
         ":ibex_fi",
         ":kmac_sca",
         ":prng_sca",
@@ -212,6 +213,7 @@ opentitan_test(
         "//sw/device/lib/ujson",
         "//sw/device/tests/crypto/cryptotest/json:aes_commands",
         "//sw/device/tests/crypto/cryptotest/json:commands",
+        "//sw/device/tests/crypto/cryptotest/json:hash_commands",
         "//sw/device/tests/crypto/cryptotest/json:ibex_fi_commands",
     ],
 )
