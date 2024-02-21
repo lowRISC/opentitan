@@ -78,6 +78,16 @@ py_binary(
 )
 
 py_binary(
+    name = "hjson_hash_parser",
+    srcs = ["hjson_hash_parser.py"],
+    deps = [
+        ":cryptotest_util",
+        requirement("hjson"),
+        requirement("jsonschema"),
+    ],
+)
+
+py_binary(
     name = "nist_cavp_hash_parser",
     srcs = ["nist_cavp_hash_parser.py"],
     deps = [
