@@ -181,7 +181,6 @@ buildSite () {
         rm -rf "${build_dir}/book/${f}"
     done
     rm -rf "${build_dir}/gen/api-xml" # Remove the intermediate XML that doxygen uses to generate HTML.
-    rm -rf "${build_dir}/book/sw/vendor/wycheproof/testvectors"
     # -------
 }
 buildSite
