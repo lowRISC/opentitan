@@ -25,13 +25,13 @@ genrule(
     run_binary(
         name = cryptotest_name,
         srcs = [
-            "@wycheproof//testvectors:{}".format(src_name),
+            "@wycheproof//testvectors_v1:{}".format(src_name),
             "//sw/host/cryptotest/testvectors/data/schemas:ecdsa_sig_ver_schema",
         ],
         outs = [":{}.json".format(cryptotest_name)],
         args = [
             "--src",
-            "$(location @wycheproof//testvectors:{})".format(src_name),
+            "$(location @wycheproof//testvectors_v1:{})".format(src_name),
             "--dst",
             "$(location :{}.json)".format(cryptotest_name),
             "--schema",
