@@ -456,6 +456,7 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
     uvm_reg csr;
+    string  csr_name;
     bit     do_read_check   = 1'b1;
     bit     write           = item.is_write();
     uvm_reg_addr_t csr_addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
@@ -480,15 +481,23 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
       `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
     end
 
+    csr_name = csr.get_name();
     // if incoming access is a write to a valid csr, then make updates right away
     if (addr_phase_write) begin
       void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
+      // This is a W1C register and we need to update the expected value that we use in the
+      // scoreboard if this register is written - otherwise this can lead to read mismatches
+      // later down the road since we're going to use the wrong value for prediction.
+      if ("scr_key_rotated" == csr_name && item.a_mask[0]) begin
+        exp_scr_key_rotated = prim_mubi_pkg::mubi4_and_hi(exp_scr_key_rotated,
+                                                          mubi4_t'(~item.a_data[3:0]));
+      end
     end
 
     // process the csr req
     // for write, update local variable and fifo at address phase
     // for read, update predication at address phase and compare at data phase
-    case (csr.get_name())
+    case (csr_name)
       // add individual case item for each csr
       "alert_test": begin
         if (addr_phase_write && item.a_data[0]) set_exp_alert("fatal_error", .is_fatal(0));
