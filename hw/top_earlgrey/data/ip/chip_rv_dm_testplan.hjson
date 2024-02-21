@@ -16,10 +16,13 @@
             - Read all CSRs back and check their values for correctness while adhering to the CSR's
               access policies.
             - Accesses to CSRs external to `rv_dm` go through RV_DM SBA interface into the `xbar`.
+
+            For silicon validation, instead of randomised testing to all CSRs, one CSR for each IP is tested.
             '''
       stage: V2
       si_stage: SV3
       tests: ["chip_jtag_csr_rw"]
+      bazel: ["//sw/device/tests:rv_dm_csr_rw"],
       lc_states: ["TEST_UNLOCKED", "DEV", "RMA"]
       host_support: "true"
       features: [

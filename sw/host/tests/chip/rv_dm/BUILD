@@ -7,6 +7,22 @@ load("@rules_rust//rust:defs.bzl", "rust_binary")
 package(default_visibility = ["//visibility:public"])
 
 rust_binary(
+    name = "csr_rw",
+    srcs = [
+        "src/csr_rw.rs",
+    ],
+    deps = [
+        "//hw/top_earlgrey/sw/autogen/chip:top_earlgrey",
+        "//sw/host/opentitanlib",
+        "//sw/host/opentitanlib/bindgen",
+        "@crate_index//:anyhow",
+        "@crate_index//:clap",
+        "@crate_index//:log",
+        "@crate_index//:rand",
+    ],
+)
+
+rust_binary(
     name = "jtag",
     srcs = [
         "src/jtag.rs",
