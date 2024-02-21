@@ -5,6 +5,9 @@
 // Ascon simulation wrapper
 
 module ascon_sim import ascon_pkg::*;
+#(
+  localparam int DONE_DELAY_CYCLES = 10
+)
 (
   input  clk_i,
   input  rst_ni,
@@ -42,9 +45,39 @@ module ascon_sim import ascon_pkg::*;
     .done_o                  (stimulus_done)
   );
 
-  // simulation done:
-  assign test_done_o = stimulus_done;
-  assign test_passed_o = 1'b1 ? (tl_o == tl_expected_response) : 1'b0;
+  // latch simulation done_o:
+  generate
+    if (DONE_DELAY_CYCLES > 0) begin : gen_delay_logic
+      logic delay_done_q[DONE_DELAY_CYCLES];
+      for (genvar i = 1; i < DONE_DELAY_CYCLES; i++) begin : gen_done_delay
+        always_ff @(posedge clk_i or negedge rst_ni) begin : reg_done_delay
+          if (!rst_ni) begin
+            delay_done_q[i] <= 1'b0;
+          end else begin
+            delay_done_q[i-1] <= delay_done_q[i];
+          end
+        end
+      end
+      assign delay_done_q[DONE_DELAY_CYCLES-1] = stimulus_done;
+      assign test_done_o = delay_done_q[0];
+    end else begin : gen_no_delay
+      assign test_done_o = stimulus_done;
+    end
+  endgenerate
+
+  // latch passed_o
+  logic test_passed_q;
+  logic current_test;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      test_passed_q <= 1'b1;
+    end else if (pop_response) begin
+      test_passed_q <= test_passed_q & current_test;
+    end
+  end
+
+  assign test_passed_o = test_passed_q;
+  assign current_test = (tl_o.d_data == tl_expected_response.d_data) ? 1'b1 : 1'b0;
 
   // All other interfaces are static for the moment
 
