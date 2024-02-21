@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{bail, Context, Result};
+use anyhow::{bail, ensure, Context, Result};
 use clap::Parser;
 use std::time::Duration;
 
@@ -57,8 +57,24 @@ fn wait_for_device_and_get_parent(opts: &Opts) -> Result<(rusb::Device<rusb::Glo
     ))
 }
 
-fn usbdev_aon_wake(opts: &Opts, _transport: &TransportWrapper, uart: &dyn Uart) -> Result<()> {
-    // Wait for device.
+fn usbdev_aon_wake(opts: &Opts, transport: &TransportWrapper, uart: &dyn Uart) -> Result<()> {
+    // Enable VBUS sense on the board if necessary.
+    if let Some(vbus_sense_en) = &opts.usb.vbus_sense_en {
+        log::info!("Enable VBUS sensing.");
+        let vbus_sense_en_pin = transport.gpio_pin(vbus_sense_en)?;
+        vbus_sense_en_pin.write(true)?;
+        std::thread::sleep(Duration::from_millis(100));
+    }
+    // Sense VBUS if available.
+    if let Some(vbus_sense) = &opts.usb.vbus_sense {
+        let vbus_sense_pin = transport.gpio_pin(vbus_sense)?;
+        ensure!(
+            vbus_sense_pin.read()?,
+            "OT USB does not appear to be connected to a host (VBUS not detected)"
+        );
+    }
+
+    // Wait for device to appear.
     let (parent, port) = wait_for_device_and_get_parent(opts)?;
     log::info!(
         "parent hub at bus={}, address={}, port numbers={:?}",
