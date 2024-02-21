@@ -8,7 +8,8 @@
       name: chip_sw_gpio_out
       desc: '''Verify GPIO outputs.
 
-            SW test configures the GPIOs to be in the output mode. The test walks a 1 through the
+            SW test configures the GPIOs to be in the output mode. Configure pinmux such as
+            gpio output signal loopback to gpio input. The test walks a 1 through the
             pins. The testbench checks the value for correctness and verifies that there is no
             aliasing between the pins.
             '''
@@ -43,6 +44,7 @@
       stage: V1
       si_stage: SV3
       tests: ["chip_sw_gpio"]
+      bazel: ["//sw/device/tests:gpio_intr_test"]
     }
   ]
 }
