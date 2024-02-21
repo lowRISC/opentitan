@@ -1,4 +1,4 @@
-### Cryptoc library (SHA, SHA256 and HMAC)
+### Cryptoc library (SHA, SHA256, SHA384, SHA512 and HMAC)
 This cryptoc library has been pulled from open source Chromium repo:
 ```git clone https://chromium.googlesource.com/chromiumos/third_party/cryptoc```
 

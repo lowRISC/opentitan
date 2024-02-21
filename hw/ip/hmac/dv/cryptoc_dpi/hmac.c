@@ -17,9 +17,36 @@
 
 #include "sha.h"
 #include "sha256.h"
+#include "sha384.h"
+#include "sha512.h"
 #include "util.h"
 
-static void HMAC_init(LITE_HMAC_CTX *ctx, const void *key, unsigned int len) {
+static void HMAC_init(HMAC_CTX *ctx, const void *key, unsigned int len) {
+  unsigned int i;
+  memset(&ctx->opad[0], 0, sizeof(ctx->opad));
+
+  if (len > sizeof(ctx->opad)) {
+    HASH_init(&ctx->hash);
+    HASH_update(&ctx->hash, key, len);
+    memcpy(&ctx->opad[0], HASH_final(&ctx->hash), HASH_size(&ctx->hash));
+  } else {
+    memcpy(&ctx->opad[0], key, len);
+  }
+
+  for (i = 0; i < sizeof(ctx->opad); ++i) {
+    ctx->opad[i] ^= 0x36;
+  }
+
+  HASH_init(&ctx->hash);
+  HASH_update(&ctx->hash, ctx->opad, sizeof(ctx->opad));  // hash ipad
+
+  for (i = 0; i < sizeof(ctx->opad); ++i) {
+    ctx->opad[i] ^= (0x36 ^ 0x5c);
+  }
+}
+
+static void HMAC_init_LITE(LITE_HMAC_CTX *ctx, const void *key,
+                           unsigned int len) {
   unsigned int i;
   memset(&ctx->opad[0], 0, sizeof(ctx->opad));
 
@@ -50,11 +77,33 @@ void HMAC_SHA_init(LITE_HMAC_CTX *ctx, const void *key, unsigned int len) {
 
 void HMAC_SHA256_init(LITE_HMAC_CTX *ctx, const void *key, unsigned int len) {
   SHA256_init(&ctx->hash);
+  HMAC_init_LITE(ctx, key, len);
+}
+
+void HMAC_SHA384_init(HMAC_CTX *ctx, const void *key, unsigned int len) {
+  SHA384_init(&ctx->hash);
   HMAC_init(ctx, key, len);
 }
 
-const uint8_t *HMAC_final(LITE_HMAC_CTX *ctx) {
-  uint8_t digest[32];  // upto SHA2
+void HMAC_SHA512_init(HMAC_CTX *ctx, const void *key, unsigned int len) {
+  SHA512_init(&ctx->hash);
+  HMAC_init(ctx, key, len);
+}
+
+const uint8_t *HMAC_final_LITE(LITE_HMAC_CTX *ctx) {
+  uint8_t digest[32];  // upto SHA2-256
+  memcpy(digest, HASH_final(&ctx->hash),
+         (HASH_size(&ctx->hash) <= sizeof(digest) ? HASH_size(&ctx->hash)
+                                                  : sizeof(digest)));
+  HASH_init(&ctx->hash);
+  HASH_update(&ctx->hash, ctx->opad, sizeof(ctx->opad));
+  HASH_update(&ctx->hash, digest, HASH_size(&ctx->hash));
+  always_memset(&ctx->opad[0], 0, sizeof(ctx->opad));  // wipe key
+  return HASH_final(&ctx->hash);
+}
+
+const uint8_t *HMAC_final(HMAC_CTX *ctx) {
+  uint8_t digest[64];  // upto SHA2-512
   memcpy(digest, HASH_final(&ctx->hash),
          (HASH_size(&ctx->hash) <= sizeof(digest) ? HASH_size(&ctx->hash)
                                                   : sizeof(digest)));
