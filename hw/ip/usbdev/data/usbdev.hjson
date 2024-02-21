@@ -180,6 +180,7 @@
             Raised if a packet was received using an OUT or SETUP transaction.
             This interrupt is directly tied to whether the RX FIFO is empty, so it should be cleared only after handling the FIFO entry.
             '''
+      type: "status"
     }
     { name: "pkt_sent"
       desc: '''
@@ -187,10 +188,11 @@
             This interrupt is directly tied to whether a sent packet has not been acknowledged in the !!in_sent register.
             It should be cleared only after clearing all bits in the !!in_sent register.
             '''
+      type: "status"
     }
     { name: "disconnected",
       desc: '''
-            Raised if VBUS is lost thus the link is disconnected.
+            Raised if VBUS is lost, thus the link is disconnected.
             '''
     }
     { name: "host_lost",
@@ -215,10 +217,11 @@
     }
     { name: "av_out_empty",
       desc: '''
-            Raised when the Available OUT FIFO is empty and the device interface is enabled.
-            This interrupt is directly tied to the FIFO status, so the AV FIFO must be provided a free buffer before the interrupt is cleared.
+            Raised when the Available OUT Buffer FIFO is empty and the device interface is enabled.
+            This interrupt is directly tied to the FIFO status, so the Available OUT Buffer FIFO must be provided a free buffer before the interrupt is cleared.
             If the condition is not cleared, the interrupt can re-assert.
             '''
+      type: "status"
     }
     { name: "rx_full",
       desc: '''
@@ -226,6 +229,7 @@
             This interrupt is directly tied to the FIFO status, so the RX FIFO must have an entry removed before the interrupt is cleared.
             If the condition is not cleared, the interrupt can re-assert.
             '''
+      type: "status"
     }
     { name: "av_overflow",
       desc: '''
@@ -237,18 +241,18 @@
             Raised if a packet to an IN endpoint started to be received but was
             then dropped due to an error. After transmitting the IN payload,
             the USB device expects a valid ACK handshake packet. This error is
-            raised if either the packet or CRC is invalid or a different token
-            was received.
+            raised if either the packet or CRC is invalid, leading to a NAK instead,
+            or if a different token was received.
             '''
     }
     { name: "rx_crc_err",
       desc: '''
-            Raised if a CRC error occured.
+            Raised if a CRC error occurred on a received packet.
             '''
     }
     { name: "rx_pid_err",
       desc: '''
-            Raised if an invalid packed identifier (PID) was received.
+            Raised if an invalid Packet IDentifier (PID) was received.
             '''
     }
     { name: "rx_bitstuff_err",
@@ -267,16 +271,17 @@
     { name: "link_out_err",
       desc: '''
             Raised if a packet to an OUT endpoint started to be received but was then dropped due to an error.
-            This error is raised if the data toggle, token, packet and/or CRC are invalid, if the Available Buffer FIFO is empty or if the Received Buffer FIFO is full.
+            This error is raised if the data toggle, token, packet and/or CRC are invalid, or if the appropriate Available OUT Buffer FIFO is empty and/or the Received Buffer FIFO is full when a packet should have been received.
             '''
     }
     {
       name: "av_setup_empty",
       desc: '''
             Raised when the Available SETUP Buffer FIFO is empty and the device interface is enabled.
-            This interrupt is directly tied to the FIFO status, so the AV FIFO must be provided a free buffer before the interrupt is cleared.
+            This interrupt is directly tied to the FIFO status, so the Available SETUP Buffer FIFO must be provided a free buffer before the interrupt is cleared.
             If the condition is not cleared, the interrupt can re-assert.
             '''
+      type: "status"
     }
   ]
   alert_list: [

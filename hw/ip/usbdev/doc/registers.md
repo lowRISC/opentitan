@@ -54,13 +54,13 @@ Interrupt State Register
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "pkt_received", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "pkt_sent", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "disconnected", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "host_lost", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "link_reset", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "link_suspend", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "link_resume", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "av_out_empty", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "rx_full", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "av_overflow", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "link_in_err", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "rx_crc_err", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "rx_pid_err", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "rx_bitstuff_err", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "frame", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "powered", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "link_out_err", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "av_setup_empty", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 14}], "config": {"lanes": 1, "fontsize": 10, "vspace": 170}}
+{"reg": [{"name": "pkt_received", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "pkt_sent", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "disconnected", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "host_lost", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "link_reset", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "link_suspend", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "link_resume", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "av_out_empty", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "rx_full", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "av_overflow", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "link_in_err", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "rx_crc_err", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "rx_pid_err", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "rx_bitstuff_err", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "frame", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "powered", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "link_out_err", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "av_setup_empty", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 14}], "config": {"lanes": 1, "fontsize": 10, "vspace": 170}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                            |
 |:------:|:------:|:-------:|:------------------------------------------------|
 | 31:18  |        |         | Reserved                                        |
-|   17   |  rw1c  |   0x0   | [av_setup_empty](#intr_state--av_setup_empty)   |
+|   17   |   ro   |   0x0   | [av_setup_empty](#intr_state--av_setup_empty)   |
 |   16   |  rw1c  |   0x0   | [link_out_err](#intr_state--link_out_err)       |
 |   15   |  rw1c  |   0x0   | [powered](#intr_state--powered)                 |
 |   14   |  rw1c  |   0x0   | [frame](#intr_state--frame)                     |
@@ -69,24 +69,24 @@ Interrupt State Register
 |   11   |  rw1c  |   0x0   | [rx_crc_err](#intr_state--rx_crc_err)           |
 |   10   |  rw1c  |   0x0   | [link_in_err](#intr_state--link_in_err)         |
 |   9    |  rw1c  |   0x0   | [av_overflow](#intr_state--av_overflow)         |
-|   8    |  rw1c  |   0x0   | [rx_full](#intr_state--rx_full)                 |
-|   7    |  rw1c  |   0x0   | [av_out_empty](#intr_state--av_out_empty)       |
+|   8    |   ro   |   0x0   | [rx_full](#intr_state--rx_full)                 |
+|   7    |   ro   |   0x0   | [av_out_empty](#intr_state--av_out_empty)       |
 |   6    |  rw1c  |   0x0   | [link_resume](#intr_state--link_resume)         |
 |   5    |  rw1c  |   0x0   | [link_suspend](#intr_state--link_suspend)       |
 |   4    |  rw1c  |   0x0   | [link_reset](#intr_state--link_reset)           |
 |   3    |  rw1c  |   0x0   | [host_lost](#intr_state--host_lost)             |
 |   2    |  rw1c  |   0x0   | [disconnected](#intr_state--disconnected)       |
-|   1    |  rw1c  |   0x0   | [pkt_sent](#intr_state--pkt_sent)               |
-|   0    |  rw1c  |   0x0   | [pkt_received](#intr_state--pkt_received)       |
+|   1    |   ro   |   0x0   | [pkt_sent](#intr_state--pkt_sent)               |
+|   0    |   ro   |   0x0   | [pkt_received](#intr_state--pkt_received)       |
 
 ### INTR_STATE . av_setup_empty
 Raised when the Available SETUP Buffer FIFO is empty and the device interface is enabled.
-This interrupt is directly tied to the FIFO status, so the AV FIFO must be provided a free buffer before the interrupt is cleared.
+This interrupt is directly tied to the FIFO status, so the Available SETUP Buffer FIFO must be provided a free buffer before the interrupt is cleared.
 If the condition is not cleared, the interrupt can re-assert.
 
 ### INTR_STATE . link_out_err
 Raised if a packet to an OUT endpoint started to be received but was then dropped due to an error.
-This error is raised if the data toggle, token, packet and/or CRC are invalid, if the Available Buffer FIFO is empty or if the Received Buffer FIFO is full.
+This error is raised if the data toggle, token, packet and/or CRC are invalid, or if the appropriate Available OUT Buffer FIFO is empty and/or the Received Buffer FIFO is full when a packet should have been received.
 
 ### INTR_STATE . powered
 Raised if VBUS is applied.
@@ -98,17 +98,17 @@ Raised when the USB frame number is updated with a valid SOF.
 Raised if an invalid bitstuffing was received.
 
 ### INTR_STATE . rx_pid_err
-Raised if an invalid packed identifier (PID) was received.
+Raised if an invalid Packet IDentifier (PID) was received.
 
 ### INTR_STATE . rx_crc_err
-Raised if a CRC error occured.
+Raised if a CRC error occurred on a received packet.
 
 ### INTR_STATE . link_in_err
 Raised if a packet to an IN endpoint started to be received but was
 then dropped due to an error. After transmitting the IN payload,
 the USB device expects a valid ACK handshake packet. This error is
-raised if either the packet or CRC is invalid or a different token
-was received.
+raised if either the packet or CRC is invalid, leading to a NAK instead,
+or if a different token was received.
 
 ### INTR_STATE . av_overflow
 Raised if a write was done to either the Available OUT Buffer FIFO or the Available SETUP Buffer FIFO when the FIFO was full.
@@ -119,8 +119,8 @@ This interrupt is directly tied to the FIFO status, so the RX FIFO must have an 
 If the condition is not cleared, the interrupt can re-assert.
 
 ### INTR_STATE . av_out_empty
-Raised when the Available OUT FIFO is empty and the device interface is enabled.
-This interrupt is directly tied to the FIFO status, so the AV FIFO must be provided a free buffer before the interrupt is cleared.
+Raised when the Available OUT Buffer FIFO is empty and the device interface is enabled.
+This interrupt is directly tied to the FIFO status, so the Available OUT Buffer FIFO must be provided a free buffer before the interrupt is cleared.
 If the condition is not cleared, the interrupt can re-assert.
 
 ### INTR_STATE . link_resume
@@ -136,7 +136,7 @@ Raised if the link is at SE0 longer than 3 us indicating a link reset (host asse
 Raised if link is active but SOF was not received from host for 4.096 ms. The SOF should be every 1 ms.
 
 ### INTR_STATE . disconnected
-Raised if VBUS is lost thus the link is disconnected.
+Raised if VBUS is lost, thus the link is disconnected.
 
 ### INTR_STATE . pkt_sent
 Raised if a packet was sent as part of an IN transaction.

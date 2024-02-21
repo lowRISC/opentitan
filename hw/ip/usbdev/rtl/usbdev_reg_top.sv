@@ -174,9 +174,7 @@ module usbdev_reg_top (
   //        or <reg>_{wd|we|qs} if field == 1 or 0
   logic intr_state_we;
   logic intr_state_pkt_received_qs;
-  logic intr_state_pkt_received_wd;
   logic intr_state_pkt_sent_qs;
-  logic intr_state_pkt_sent_wd;
   logic intr_state_disconnected_qs;
   logic intr_state_disconnected_wd;
   logic intr_state_host_lost_qs;
@@ -188,9 +186,7 @@ module usbdev_reg_top (
   logic intr_state_link_resume_qs;
   logic intr_state_link_resume_wd;
   logic intr_state_av_out_empty_qs;
-  logic intr_state_av_out_empty_wd;
   logic intr_state_rx_full_qs;
-  logic intr_state_rx_full_wd;
   logic intr_state_av_overflow_qs;
   logic intr_state_av_overflow_wd;
   logic intr_state_link_in_err_qs;
@@ -208,7 +204,6 @@ module usbdev_reg_top (
   logic intr_state_link_out_err_qs;
   logic intr_state_link_out_err_wd;
   logic intr_state_av_setup_empty_qs;
-  logic intr_state_av_setup_empty_wd;
   logic intr_enable_we;
   logic intr_enable_pkt_received_qs;
   logic intr_enable_pkt_received_wd;
@@ -800,7 +795,7 @@ module usbdev_reg_top (
   //   F[pkt_received]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_intr_state_pkt_received (
@@ -808,8 +803,8 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_we),
-    .wd     (intr_state_pkt_received_wd),
+    .we     (1'b0),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.intr_state.pkt_received.de),
@@ -827,7 +822,7 @@ module usbdev_reg_top (
   //   F[pkt_sent]: 1:1
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_intr_state_pkt_sent (
@@ -835,8 +830,8 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_we),
-    .wd     (intr_state_pkt_sent_wd),
+    .we     (1'b0),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.intr_state.pkt_sent.de),
@@ -989,7 +984,7 @@ module usbdev_reg_top (
   //   F[av_out_empty]: 7:7
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_intr_state_av_out_empty (
@@ -997,8 +992,8 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_we),
-    .wd     (intr_state_av_out_empty_wd),
+    .we     (1'b0),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.intr_state.av_out_empty.de),
@@ -1016,7 +1011,7 @@ module usbdev_reg_top (
   //   F[rx_full]: 8:8
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_intr_state_rx_full (
@@ -1024,8 +1019,8 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_we),
-    .wd     (intr_state_rx_full_wd),
+    .we     (1'b0),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.intr_state.rx_full.de),
@@ -1259,7 +1254,7 @@ module usbdev_reg_top (
   //   F[av_setup_empty]: 17:17
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_intr_state_av_setup_empty (
@@ -1267,8 +1262,8 @@ module usbdev_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_we),
-    .wd     (intr_state_av_setup_empty_wd),
+    .we     (1'b0),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.intr_state.av_setup_empty.de),
@@ -7910,10 +7905,6 @@ module usbdev_reg_top (
   // Generate write-enables
   assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
 
-  assign intr_state_pkt_received_wd = reg_wdata[0];
-
-  assign intr_state_pkt_sent_wd = reg_wdata[1];
-
   assign intr_state_disconnected_wd = reg_wdata[2];
 
   assign intr_state_host_lost_wd = reg_wdata[3];
@@ -7923,10 +7914,6 @@ module usbdev_reg_top (
   assign intr_state_link_suspend_wd = reg_wdata[5];
 
   assign intr_state_link_resume_wd = reg_wdata[6];
-
-  assign intr_state_av_out_empty_wd = reg_wdata[7];
-
-  assign intr_state_rx_full_wd = reg_wdata[8];
 
   assign intr_state_av_overflow_wd = reg_wdata[9];
 
@@ -7943,8 +7930,6 @@ module usbdev_reg_top (
   assign intr_state_powered_wd = reg_wdata[15];
 
   assign intr_state_link_out_err_wd = reg_wdata[16];
-
-  assign intr_state_av_setup_empty_wd = reg_wdata[17];
   assign intr_enable_we = addr_hit[1] & reg_we & !reg_error;
 
   assign intr_enable_pkt_received_wd = reg_wdata[0];
