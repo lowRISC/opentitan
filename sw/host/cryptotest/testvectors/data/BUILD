@@ -207,6 +207,24 @@ run_binary(
     tool = "//sw/host/cryptotest/testvectors/parsers:nist_cavp_hmac_parser",
 )
 
+run_binary(
+    name = "hjson_hash",
+    srcs = [
+        "//sw/device/tests/crypto/testvectors:hash_hardcoded.hjson",
+        "//sw/host/cryptotest/testvectors/data/schemas:hash_schema.json",
+    ],
+    outs = [":hjson_hash.json"],
+    args = [
+        "--src",
+        "$(location //sw/device/tests/crypto/testvectors:hash_hardcoded.hjson)",
+        "--dst",
+        "$(location :hjson_hash.json)",
+        "--schema",
+        "$(location //sw/host/cryptotest/testvectors/data/schemas:hash_schema.json)",
+    ],
+    tool = "//sw/host/cryptotest/testvectors/parsers:hjson_hash_parser",
+)
+
 [
     run_binary(
         name = cryptotest_name,
