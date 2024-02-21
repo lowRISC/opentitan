@@ -45,6 +45,9 @@ status_t gpio_set(ujson_t *uj, const dif_gpio_t *gpio) {
     case kGpioActionIrqDisableAll:
       TRY(dif_gpio_irq_disable_all(gpio, (dif_gpio_mask_t *)&op.state));
       break;
+    case kGpioActionIrqAcknowledgeAll:
+      TRY(dif_gpio_irq_acknowledge_all(gpio));
+      break;
     case kGpioActionIrqSetTriggerRisingEdge:
       TRY(dif_gpio_irq_set_trigger(gpio, (dif_gpio_mask_t)op.state,
                                    kDifGpioIrqTriggerEdgeRising));
@@ -52,6 +55,14 @@ status_t gpio_set(ujson_t *uj, const dif_gpio_t *gpio) {
     case kGpioActionIrqSetTriggerFallingEdge:
       TRY(dif_gpio_irq_set_trigger(gpio, (dif_gpio_mask_t)op.state,
                                    kDifGpioIrqTriggerEdgeFalling));
+      break;
+    case kGpioActionIrqSetTriggerHigh:
+      TRY(dif_gpio_irq_set_trigger(gpio, (dif_gpio_mask_t)op.state,
+                                   kDifGpioIrqTriggerLevelHigh));
+      break;
+    case kGpioActionIrqSetTriggerLow:
+      TRY(dif_gpio_irq_set_trigger(gpio, (dif_gpio_mask_t)op.state,
+                                   kDifGpioIrqTriggerLevelLow));
       break;
     default:
       return INVALID_ARGUMENT();

@@ -31,7 +31,8 @@ static dif_gpio_t gpio;
 static dif_pinmux_t pinmux;
 static dif_uart_t uart0;
 static dif_rv_plic_t plic;
-static const uint32_t kExpected_intr[] = {17, 18, 19, 20, 21, 22, 25, 26, 27, 28};
+static const uint32_t kExpected_intr[] = {17, 18, 19, 20, 21,
+                                          22, 25, 26, 27, 28};
 static uint32_t intr_index = 0;
 
 status_t command_processor(ujson_t *uj) {
@@ -100,8 +101,11 @@ void ottf_external_isr(uint32_t *exc_info) {
     // handler need to disable interrupt before it clear.
     // Interrupt is enabled by the host right before the test.
     // Disable and clear the interrupt at GPIO.
-    CHECK_DIF_OK(dif_gpio_irq_set_enabled(&gpio, gpio_pin_irq_fired, kDifToggleDisabled));
+    CHECK_DIF_OK(dif_gpio_irq_set_enabled(&gpio, gpio_pin_irq_fired,
+                                          kDifToggleDisabled));
     CHECK_DIF_OK(dif_gpio_irq_acknowledge(&gpio, gpio_pin_irq_fired));
+    CHECK_DIF_OK(dif_rv_plic_irq_complete(&plic, kTopEarlgreyPlicTargetIbex0,
+                                          plic_irq_id));
   }
 }
 
