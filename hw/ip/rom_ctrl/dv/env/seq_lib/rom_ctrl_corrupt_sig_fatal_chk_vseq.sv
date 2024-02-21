@@ -10,16 +10,18 @@ class rom_ctrl_corrupt_sig_fatal_chk_vseq extends rom_ctrl_base_vseq;
   localparam int unsigned RomSizeWords = rom_ctrl_reg_pkg::ROM_CTRL_ROM_SIZE >> 2;
   localparam int unsigned RomIndexWidth = prim_util_pkg::vbits(RomSizeWords);
 
-  typedef enum bit [2:0] {
+  typedef enum bit [3:0] {
       LocalEscalation,
       CheckerCtrConsistency,
       CheckerCtrlFlowConsistency,
       CompareCtrlFlowConsistency,
-      CompareCtrConsistency,
+      CompareCtrConsistencyWaiting,
+      CompareCtrConsistencyDone,
       MuxMubi,
       MuxConsistency,
       CtrlRedun
   } countermeasure_id_e;
+
   rand countermeasure_id_e cm_id;
 
 
@@ -100,21 +102,36 @@ class rom_ctrl_corrupt_sig_fatal_chk_vseq extends rom_ctrl_base_vseq;
           wait_for_fatal_alert();
         end
         // The hash comparison module has an internal count. If this glitches to a nonzero value
-        // before the comparison starts or to a value other than the last index after the
-        // comparison ends then a fatal alert is generated.
-        CompareCtrConsistency: begin
+        // before the comparison starts (state=Waiting) or to a value other than the last index
+        // after the comparison ends (state=Done) then a fatal alert is generated.
+        // Each of these cases are covered in cases "CompareCtrConsistencyWaiting" and
+        // "CompareCtrConsistencyDone"
+        CompareCtrConsistencyWaiting: begin
           bit [2:0] invalid_addr;
-          wait_with_bound(10000);
+          bit [4:0] fsm_state_q;
+
+          wait_with_bound(2000);
+          uvm_hdl_read("tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.u_compare.state_q",
+                       fsm_state_q);
+          if(fsm_state_q != 5'b00100) begin
+            `uvm_fatal(`gfn, {"Case:'CompareCtrConsistencyWaiting' hit when 'rom_ctrl_compare' ",
+                              "state!=Done hence sequence-case exits"})
+          end
+          // State == Waiting -> It's ok to poke the addr_q to be non-zero
           `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(invalid_addr, invalid_addr > 0;);
           force_sig("tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.u_compare.addr_q",
                     invalid_addr);
           wait_for_fatal_alert();
           dut_init();
+        end
+        CompareCtrConsistencyDone: begin
+          bit [2:0] invalid_addr;
+
           wait (cfg.rom_ctrl_vif.pwrmgr_data.done == MuBi4True);
+          // After cfg.rom_ctrl_vif.pwrmgr_data.done = True we're in Done state
           wait_with_bound(10);
           // LastAddr has been set to 7
-          `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(invalid_addr,
-                                             (invalid_addr >= 0 && invalid_addr < 7););
+          `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(invalid_addr, invalid_addr < 7;);
           force_sig("tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.u_compare.addr_q", invalid_addr);
           wait_for_fatal_alert();
         end
@@ -224,7 +241,9 @@ class rom_ctrl_corrupt_sig_fatal_chk_vseq extends rom_ctrl_base_vseq;
   endtask: wait_with_bound
 
   task force_sig(string path, int value);
-    `DV_CHECK(uvm_hdl_force(path, value));
+    chk_hdl_path(path);
+    uvm_hdl_force(path, value);
+    `uvm_info(`gfn, $sformatf("Setting path: %s to value=0x%0x",path,value), UVM_DEBUG)
     @(negedge cfg.clk_rst_vif.clk);
     `DV_CHECK(uvm_hdl_release(path));
   endtask: force_sig
