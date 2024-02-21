@@ -21,6 +21,14 @@ pub struct UsbOpts {
     /// Frequency at which to poll the USB bus for new device.
     #[arg(long, default_value = "10")]
     pub usb_poll_freq: u64,
+
+    /// Pin to enable OT to sense VBUS.
+    #[arg(long)]
+    pub vbus_sense_en: Option<String>,
+
+    /// Pin to sense VBUS.
+    #[arg(long)]
+    pub vbus_sense: Option<String>,
 }
 
 // Parse a USB VID/PID which must be a hex-string (e.g. "18d1").
