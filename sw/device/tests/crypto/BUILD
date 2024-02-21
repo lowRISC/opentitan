@@ -663,6 +663,21 @@ opentitan_test(
     ],
 )
 
+opentitan_test(
+    name = "otcrypto_hash_test",
+    srcs = ["otcrypto_hash_test.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+    },
+    deps = [
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/crypto",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
 filegroup(
     name = "template_files",
     srcs = [
