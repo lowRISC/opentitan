@@ -57,7 +57,7 @@ module spi_tpm
 ) (
   input clk_in_i,
   input clk_out_i,
-  input rst_n,
+  input rst_ni,
 
   input sys_clk_i,
   input sys_rst_ni,
@@ -537,8 +537,8 @@ module spi_tpm
   end
 
   // data_sel (sck -> isck)
-  always_ff @(posedge clk_out_i or negedge rst_n) begin
-    if (!rst_n) begin
+  always_ff @(posedge clk_out_i or negedge rst_ni) begin
+    if (!rst_ni) begin
       isck_data_sel <= SelWait;
     end else begin
       isck_data_sel <= sck_data_sel;
@@ -550,8 +550,8 @@ module spi_tpm
   //////////////
 
   // command, addr latch
-  always_ff @(posedge clk_in_i or negedge rst_n) begin
-    if (!rst_n) begin
+  always_ff @(posedge clk_in_i or negedge rst_ni) begin
+    if (!rst_ni) begin
       cmdaddr_bitcnt <= 5'h 0;
     end else if (cmdaddr_shift_en) begin
       cmdaddr_bitcnt <= cmdaddr_bitcnt + 5'h 1;
@@ -589,16 +589,16 @@ module spi_tpm
   // address correctly.
   assign sck_fifoaddr_latch = (cmdaddr_bitcnt == 5'h 1F);
 
-  always_ff @(posedge clk_out_i or negedge rst_n) begin
-    if (!rst_n) begin
+  always_ff @(posedge clk_out_i or negedge rst_ni) begin
+    if (!rst_ni) begin
       isck_fifoaddr_latch <= 1'b 0;
     end else begin
       isck_fifoaddr_latch <= sck_fifoaddr_latch;
     end
   end
 
-  always_ff @(posedge clk_in_i or negedge rst_n) begin
-    if (!rst_n) begin
+  always_ff @(posedge clk_in_i or negedge rst_ni) begin
+    if (!rst_ni) begin
       sck_cmdaddr_wdata_q <= '0;
     end else if (cmdaddr_shift_en) begin
       sck_cmdaddr_wdata_q <= sck_cmdaddr_wdata_d;
@@ -615,8 +615,8 @@ module spi_tpm
 
   // fifoaddr latch
   //  clk_out (iSCK)
-  always_ff @(posedge clk_out_i or negedge rst_n) begin
-    if (!rst_n) begin
+  always_ff @(posedge clk_out_i or negedge rst_ni) begin
+    if (!rst_ni) begin
       isck_fifoaddr <= '0;
     end else if (isck_fifoaddr_latch) begin
       // Shall assert when sck_st_q moves away from StAddr
@@ -629,7 +629,7 @@ module spi_tpm
           sck_fifoaddr_latch |=>
             $past(sck_st_q) == StAddr && (sck_st_q inside {StWait, StStartByte}
                                           || invalid_locality),
-          clk_in_i, !rst_n)
+          clk_in_i, !rst_ni)
 
   // only fifoaddr[1:0] is used in this version.
   logic  unused_fifoaddr;
@@ -643,8 +643,8 @@ module spi_tpm
   assign isck_fifoaddr_inc = isck_p2s_sent && (isck_data_sel == SelHwReg);
 
   // Write Data Latch
-  always_ff @(posedge clk_in_i or negedge rst_n) begin
-    if (!rst_n) begin
+  always_ff @(posedge clk_in_i or negedge rst_ni) begin
+    if (!rst_ni) begin
       wrdata_bitcnt <= '0;
     end else if (wrdata_shift_en) begin
       wrdata_bitcnt <= wrdata_bitcnt + 3'h 1;
@@ -653,8 +653,8 @@ module spi_tpm
 
   assign sck_wrfifo_wvalid = (wrdata_bitcnt == 3'h 7);
 
-  always_ff @(posedge clk_in_i or negedge rst_n) begin
-    if (!rst_n) begin
+  always_ff @(posedge clk_in_i or negedge rst_ni) begin
+    if (!rst_ni) begin
       wrdata_q <= 8'h 0;
     end else if (wrdata_shift_en) begin
       wrdata_q <= wrdata_d;
@@ -746,8 +746,8 @@ module spi_tpm
     end
   end
 
-  always_ff @(posedge clk_in_i or negedge rst_n) begin
-    if (!rst_n) begin
+  always_ff @(posedge clk_in_i or negedge rst_ni) begin
+    if (!rst_ni) begin
       is_tpm_reg_q <= 1'b 0;
     end else begin
       is_tpm_reg_q <= is_tpm_reg_d;
@@ -758,8 +758,8 @@ module spi_tpm
   logic        is_hw_reg_d;
   hw_reg_idx_e sck_hw_reg_idx_d;
 
-  always_ff @(posedge clk_in_i or negedge rst_n) begin
-    if (!rst_n) begin
+  always_ff @(posedge clk_in_i or negedge rst_ni) begin
+    if (!rst_ni) begin
       is_hw_reg      <= 1'b 0;
       sck_hw_reg_idx <= RegAccess;
     end else if (!sys_clk_tpm_cfg.tpm_mode && check_hw_reg && (cmd_type == Read)
@@ -791,14 +791,14 @@ module spi_tpm
   // Remember that the logic chooses only one HwReg at a transaction.
   // It does not send continuously even the transfer size is greater than the
   // word boundary.
-  always_ff @(posedge clk_out_i or negedge rst_n) begin
-    if (!rst_n) isck_hw_reg_idx <= RegAccess;
+  always_ff @(posedge clk_out_i or negedge rst_ni) begin
+    if (!rst_ni) isck_hw_reg_idx <= RegAccess;
     else        isck_hw_reg_idx <= sck_hw_reg_idx;
   end
 
   // locality store
-  always_ff @(posedge clk_in_i or negedge rst_n) begin
-    if (!rst_n) begin
+  always_ff @(posedge clk_in_i or negedge rst_ni) begin
+    if (!rst_ni) begin
       locality         <= '0;
       invalid_locality <= 1'b 0;
     end else if (check_locality && is_tpm_reg_d) begin
@@ -808,8 +808,8 @@ module spi_tpm
   end
 
   // cmd_type
-  always_ff @(posedge clk_in_i or negedge rst_n) begin
-    if (!rst_n) begin
+  always_ff @(posedge clk_in_i or negedge rst_ni) begin
+    if (!rst_ni) begin
       cmd_type <= Write;
     end else if (latch_cmd_type) begin
       // latch at the very first SCK edge
@@ -818,8 +818,8 @@ module spi_tpm
   end
 
   // xfer_size
-  always_ff @(posedge clk_in_i or negedge rst_n) begin
-    if (!rst_n) begin
+  always_ff @(posedge clk_in_i or negedge rst_ni) begin
+    if (!rst_ni) begin
       xfer_size <= 6'h 0;
     end else if (latch_xfer_size) begin
       xfer_size <= sck_cmdaddr_wdata_d[5:0];
@@ -827,8 +827,8 @@ module spi_tpm
   end
 
   // Xfer size count
-  always_ff @(posedge clk_in_i or negedge rst_n) begin
-    if (!rst_n) begin
+  always_ff @(posedge clk_in_i or negedge rst_ni) begin
+    if (!rst_ni) begin
       xfer_bytes_q <= '0;
     end else if ((isck_p2s_sent && sck_rddata_shift_en) ||
       (sck_wrfifo_wvalid && wrdata_shift_en)) begin
@@ -881,13 +881,13 @@ module spi_tpm
     .Width (1)
   ) u_rdfifo_ready (
     .clk_i (clk_in_i),
-    .rst_ni(rst_n),
+    .rst_ni,
     .d_i   (sys_enough_payload_in_rdfifo),
     .q_o   (enough_payload_in_rdfifo)
   );
 
   // Output data mux
-  `ASSERT_KNOWN(DataSelKnown_A, isck_data_sel, clk_out_i, !rst_n)
+  `ASSERT_KNOWN(DataSelKnown_A, isck_data_sel, clk_out_i, !rst_ni)
   always_comb begin
     isck_p2s_data = 8'h 00;
 
@@ -929,7 +929,7 @@ module spi_tpm
     .data_o (isck_hw_reg_byte)
   );
 
-  `ASSERT_KNOWN(HwRegIdxKnown_A, isck_hw_reg_idx, clk_out_i, !rst_n)
+  `ASSERT_KNOWN(HwRegIdxKnown_A, isck_hw_reg_idx, clk_out_i, !rst_ni)
   always_comb begin : hw_reg_mux
     isck_hw_reg_word = 32'h FFFF_FFFF;
 
@@ -1007,8 +1007,8 @@ module spi_tpm
   //  signal (`rready`) at the 8th beat.
   logic [2:0] isck_p2s_bitcnt; // loop from 7 to 0
 
-  always_ff @(posedge clk_out_i or negedge rst_n) begin
-    if (!rst_n) begin
+  always_ff @(posedge clk_out_i or negedge rst_ni) begin
+    if (!rst_ni) begin
       isck_p2s_bitcnt <= 3'h 7;
     end else begin
       isck_p2s_bitcnt <= isck_p2s_bitcnt - 1'b 1;
@@ -1019,8 +1019,8 @@ module spi_tpm
   //                                        ~|isck_p2s_bitcnt
   assign isck_p2s_sent = isck_p2s_valid && (isck_p2s_bitcnt == '0);
 
-  always_ff @(posedge clk_out_i or negedge rst_n) begin
-    if (!rst_n) isck_p2s_valid <= 1'b 0;
+  always_ff @(posedge clk_out_i or negedge rst_ni) begin
+    if (!rst_ni) isck_p2s_valid <= 1'b 0;
     else        isck_p2s_valid <= sck_p2s_valid;
   end
 
@@ -1047,8 +1047,8 @@ module spi_tpm
   // Read FIFO data selection and FIFO ready
   assign isck_rd_byte_sent = isck_p2s_sent && (isck_data_sel == SelRdFifo);
   // Select RdFIFO RDATA
-  always_ff @(posedge clk_out_i or negedge rst_n) begin
-    if (!rst_n) begin
+  always_ff @(posedge clk_out_i or negedge rst_ni) begin
+    if (!rst_ni) begin
       isck_sel_rdata <= '0;
     end else begin
       isck_sel_rdata <= sck_rdfifo_rdata[NumBits*sck_rdfifo_idx+:NumBits];
@@ -1059,8 +1059,8 @@ module spi_tpm
   // data output and the selection index are prepared on the sampling edge, so
   // the particular output byte can be sampled and latched on the shifting
   // edge. isck_p2s_bitcnt selects the bit within that byte.
-  always_ff @(posedge clk_in_i or negedge rst_n) begin
-    if (!rst_n) begin
+  always_ff @(posedge clk_in_i or negedge rst_ni) begin
+    if (!rst_ni) begin
       sck_rdfifo_idx <= '0;
     end else if (isck_rd_byte_sent) begin
       sck_rdfifo_idx <= sck_rdfifo_idx + 1'b 1;
@@ -1090,8 +1090,8 @@ module spi_tpm
   //  - p2s_valid
   //  - sck_data_sel
 
-  always_ff @(posedge clk_in_i or negedge rst_n) begin
-    if (!rst_n) begin
+  always_ff @(posedge clk_in_i or negedge rst_ni) begin
+    if (!rst_ni) begin
       sck_st_q <= StIdle;
     end else begin
       sck_st_q <= sck_st_d;
@@ -1353,7 +1353,7 @@ module spi_tpm
     .EnPack (1'b1)
   ) u_tpm_wr_buffer (
     .clk_i        (clk_in_i),
-    .rst_ni       (rst_n),
+    .rst_ni,
     .clr_i        (1'b0),
 
     .wvalid_i (sck_wrfifo_wvalid),
@@ -1376,7 +1376,7 @@ module spi_tpm
 
   // The content inside the Read FIFO needs to be flush out when a TPM
   // transaction is completed (CSb deasserted).  So, everytime CSb is
-  // deasserted --> rst_n asserted. So, reset the read FIFO. In addition, the
+  // deasserted --> rst_ni asserted. So, reset the read FIFO. In addition, the
   // reset is extended until a read command is drawn from the FIFO.
   assign sys_cmdaddr = tpm_cmdaddr_t'(sys_cmdaddr_rdata_o);
   logic unused_sys_cmdaddr;
@@ -1474,8 +1474,8 @@ module spi_tpm
                          (sck_st_q == StReadFifo || sck_st_q == StStartByte);
 
   logic sck_rdfifo_req_pending;
-  always_ff @(posedge clk_in_i or negedge rst_n) begin
-    if (!rst_n) begin
+  always_ff @(posedge clk_in_i or negedge rst_ni) begin
+    if (!rst_ni) begin
       sck_rdfifo_req_pending <= 1'b0;
     end else if (sck_sram_req[SramRdFifo] & sck_sram_gnt[SramRdFifo]) begin
       sck_rdfifo_req_pending <= 1'b1;
@@ -1484,8 +1484,8 @@ module spi_tpm
     end
   end
 
-  always_ff @(posedge clk_in_i or negedge rst_n) begin
-    if (!rst_n) begin
+  always_ff @(posedge clk_in_i or negedge rst_ni) begin
+    if (!rst_ni) begin
       sck_rdfifo_offset <= '0;
     end else if (sck_sram_req[SramRdFifo] & sck_sram_gnt[SramRdFifo]) begin
       sck_rdfifo_offset <= sck_rdfifo_offset + 1;
@@ -1508,7 +1508,7 @@ module spi_tpm
     .OutputZeroIfEmpty (1'b 0)
   ) u_sram_fifo (
     .clk_i    (clk_in_i),
-    .rst_ni   (rst_n),
+    .rst_ni,
 
     .clr_i    (1'b 0),
 
@@ -1536,7 +1536,7 @@ module spi_tpm
     .EnMask (1'b 1)
   ) u_arbiter (
     .clk_i       (clk_in_i),
-    .rst_ni      (rst_n),
+    .rst_ni,
 
     .req_i       (sck_sram_req),
     .req_addr_i  (sck_sram_addr),
@@ -1586,12 +1586,12 @@ module spi_tpm
   // CMDADDR buffer should be available, if not, at least error to be propagated
   `ASSERT(CmdAddrAvailable_A,
           sck_cmdaddr_wvalid |-> sck_cmdaddr_wready,
-          clk_in_i, !rst_n)
+          clk_in_i, !rst_ni)
 
   // When a byte is being pushed to WrFifo, the FIFO should have a space
   `ASSERT(WrFifoAvailable_A,
           sck_wrfifo_wvalid |-> sck_wrfifo_wready,
-          clk_in_i, !rst_n)
+          clk_in_i, !rst_ni)
 
   // If the command and the address have been shifted, the Locality, command
   // type should be matched with the shifted register.
@@ -1599,28 +1599,28 @@ module spi_tpm
           $fell(cmdaddr_shift_en) && !csb_i && sys_clk_tpm_cfg.tpm_en && is_tpm_reg_q |->
             (locality == sck_cmdaddr_wdata_q[15:12]) &&
             (cmd_type == sck_cmdaddr_wdata_q[31]),
-          clk_in_i, !rst_n)
+          clk_in_i, !rst_ni)
 
   // when latch_locality, the address should have 24 bits received.
   `ASSERT(LocalityLatchCondition_A,
           check_locality|-> (cmdaddr_bitcnt == 5'h 1b),
-          clk_in_i, !rst_n)
+          clk_in_i, !rst_ni)
 
   // when check_hw_reg is set, the address should have a word size
   `ASSERT(HwRegCondition_A,
           check_hw_reg |-> (cmdaddr_bitcnt == 5'h 1D),
-          clk_in_i, !rst_n)
+          clk_in_i, !rst_ni)
 
   // If is_hw_reg set, then it should be FIFO reg and within locality
   `ASSERT(HwRegCondition2_a,
           $rose(is_hw_reg) |->
             is_tpm_reg_q && !invalid_locality && !sys_clk_tpm_cfg.hw_reg_dis,
-          clk_in_i, !rst_n)
+          clk_in_i, !rst_ni)
 
   // If module returns data in StAddr, the cmdaddr_bitcount should be the last
   // byte
   `ASSERT(CmdAddrBitCntInAddrSt_A,
           (sck_st_q == StAddr) && sck_p2s_valid |-> (cmdaddr_bitcnt inside {[23:31]}),
-          clk_in_i, !rst_n)
+          clk_in_i, !rst_ni)
 
 endmodule : spi_tpm
