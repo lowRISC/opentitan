@@ -464,3 +464,21 @@ run_binary(
     ],
     tool = "//sw/host/cryptotest/testvectors/parsers:rsp_sphincsplus_parser",
 )
+
+run_binary(
+    name = "hjson_kmac",
+    srcs = [
+        "//sw/device/tests/crypto/testvectors:kmac_hardcoded.hjson",
+        "//sw/host/cryptotest/testvectors/data/schemas:kmac_schema.json",
+    ],
+    outs = [":hjson_kmac.json"],
+    args = [
+        "--src",
+        "$(location //sw/device/tests/crypto/testvectors:kmac_hardcoded.hjson)",
+        "--dst",
+        "$(location :hjson_kmac.json)",
+        "--schema",
+        "$(location //sw/host/cryptotest/testvectors/data/schemas:kmac_schema.json)",
+    ],
+    tool = "//sw/host/cryptotest/testvectors/parsers:hjson_kmac_parser",
+)
