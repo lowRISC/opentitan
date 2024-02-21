@@ -235,6 +235,47 @@ package lc_ctrl_env_pkg;
       LcStRma
   };
 
+  // LC states which are valid targets
+  const
+  lc_state_e
+  LcValidTargetState[] = '{
+      LcStTestUnlocked0,
+      LcStTestLocked0,
+      LcStTestUnlocked1,
+      LcStTestLocked1,
+      LcStTestUnlocked2,
+      LcStTestLocked2,
+      LcStTestUnlocked3,
+      LcStTestLocked3,
+      LcStTestUnlocked4,
+      LcStTestLocked4,
+      LcStTestUnlocked5,
+      LcStTestLocked5,
+      LcStTestUnlocked6,
+      LcStTestLocked6,
+      LcStTestUnlocked7,
+      LcStDev,
+      LcStProd,
+      LcStProdEnd,
+      LcStRma,
+      LcStScrap
+  };
+
+  // LC states which are valid targets for RAW unlock transitions
+  const
+  lc_state_e
+  LcValidTargetStateForRawUnlock[] = '{
+      LcStTestUnlocked0,
+      LcStTestUnlocked1,
+      LcStTestUnlocked2,
+      LcStTestUnlocked3,
+      LcStTestUnlocked4,
+      LcStTestUnlocked5,
+      LcStTestUnlocked6,
+      LcStTestUnlocked7,
+      LcStScrap
+  };
+
   // CSR interfaces
   typedef enum {
     LcCtrlTLUL = 0,
@@ -244,6 +285,14 @@ package lc_ctrl_env_pkg;
   // functions
   function automatic bit valid_state_for_trans(lc_state_e curr_state);
     return (curr_state inside {LcValidStateForTrans});
+  endfunction
+
+  function automatic bit valid_raw_unlock_target_state(lc_state_e next_state);
+    return (next_state inside {LcValidTargetStateForRawUnlock});
+  endfunction
+
+  function automatic bit valid_target_state(lc_state_e next_state);
+    return (next_state inside {LcValidTargetState});
   endfunction
 
   // verilog_format: off - avoid bad reformatting
