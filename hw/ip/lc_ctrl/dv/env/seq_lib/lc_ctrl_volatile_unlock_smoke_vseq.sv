@@ -13,6 +13,7 @@ class lc_ctrl_volatile_unlock_smoke_vseq extends lc_ctrl_smoke_vseq;
 
   constraint next_state_c {
       if (next_state_is_testunlock0) next_state == DecLcStTestUnlocked0;
+      else next_state inside {LcValidTargetState};
       solve next_state_is_testunlock0 before next_state;
    }
 
@@ -46,14 +47,15 @@ class lc_ctrl_volatile_unlock_smoke_vseq extends lc_ctrl_smoke_vseq;
       end
       csr_wr(ral.transition_cmd, 'h01);
 
-      if (!`SEC_VOLATILE_RAW_UNLOCK_EN) begin
+      if (!`SEC_VOLATILE_RAW_UNLOCK_EN &&
+          valid_raw_unlock_target_state(encode_lc_state(next_state))) begin
         // We expect the VOLATILE_RAW_UNLOCK bit to stay at zero in this case.
         cfg.clk_rst_vif.wait_clks(2);
         csr_rd_check(.ptr(ral.transition_ctrl.volatile_raw_unlock), .compare_value(0));
         cfg.clk_rst_vif.wait_clks(10);
         // Since we're performing a real transition in this case with a hashed token, we should
         // be getting a token error since a real transition expects an unhashed token.
-        csr_spinwait(.ptr(ral.status.token_error), .exp_data(1), .timeout_ns(10_000_000));
+        csr_spinwait(.ptr(ral.status.token_error), .exp_data(1), .timeout_ns(100_000));
         // The strap sampling override signal should be zero.
         `DV_CHECK_EQ(cfg.lc_ctrl_vif.strap_en_override_o, 0);
         if (cfg.en_cov) cov.volatile_raw_unlock_cg.sample(0);
