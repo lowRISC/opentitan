@@ -33,6 +33,6 @@ filegroup(
 
 autogen_cryptotest_hjson_external(
     name = "rsa_3072_verify_testvectors_wycheproof",
-    src = "//sw/vendor/wycheproof/testvectors:rsa_signature_3072_sha256_test.json",
+    src = "@wycheproof//testvectors:rsa_signature_3072_sha256_test.json",
     parser = "//sw/device/tests/crypto/testvectors/wycheproof:rsa_3072_verify_parse_testvectors",
 )
