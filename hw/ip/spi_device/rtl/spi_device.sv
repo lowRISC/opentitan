@@ -1444,7 +1444,7 @@ module spi_device
   ) u_spi_tpm (
     .clk_in_i  (clk_spi_in_buf ),
     .clk_out_i (clk_spi_out_buf),
-    .rst_n     (tpm_rst_n    ),
+    .rst_ni    (tpm_rst_n    ),
 
     .sys_clk_i (clk_i),
     .sys_rst_ni(rst_ni       ),
