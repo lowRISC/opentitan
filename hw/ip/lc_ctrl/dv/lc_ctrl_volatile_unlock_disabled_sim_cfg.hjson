@@ -10,8 +10,8 @@
   // Import additional common sim cfg files.
   import_cfgs: ["{proj_root}/hw/ip/lc_ctrl/dv/lc_ctrl_base_sim_cfg.hjson"]
 
-  // Enable this build mode for all tests
-  en_build_modes: ["volatile_unlock_disabled"]
+  // Disable volatile unlock in this configuration.
+  build_opts: ["+define+SEC_VOLATILE_RAW_UNLOCK_EN=0"]
 
   // exclusion files
   // TODO: redo UNR
