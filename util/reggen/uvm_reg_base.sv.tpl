@@ -422,6 +422,7 @@ reg_field_name, field)">\
 <%
   field_size = field.bits.width()
   field_access = field.swaccess.dv_rights()
+  field_mubi_access = field.swaccess.dv_mubi_rights()
 
   if not field.hwaccess.allows_write():
     field_volatile = 0
@@ -439,6 +440,7 @@ reg_field_name, field)">\
         .size(${field_size}),
         .lsb_pos(${field.bits.lsb}),
         .access("${field_access}"),
+        .mubi_access("${field_mubi_access}"),
         .volatile(${field_volatile}),
         .reset(${reg_width}'h${format(field.resval or 0, 'x')}),
         .has_reset(1),

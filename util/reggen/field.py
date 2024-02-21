@@ -144,11 +144,14 @@ class Field:
         tags = check_str_list(rd.get('tags', []),
                               'tags for {}'.format(where))
 
+        raw_mubi = rd.get('mubi', False)
+        is_mubi = check_bool(raw_mubi, 'mubi field for {}'.format(where))
         raw_swaccess = rd.get('swaccess')
         if raw_swaccess is not None:
-            swaccess = SWAccess(where, raw_swaccess)
+            swaccess = SWAccess(where, raw_swaccess, is_mubi)
         else:
             swaccess = default_swaccess
+            swaccess.is_mubi = is_mubi
 
         raw_hwaccess = rd.get('hwaccess')
         if raw_hwaccess is not None:
@@ -158,8 +161,6 @@ class Field:
 
         raw_hwqe = rd.get('hwqe', default_hwqe)
         hwqe = check_bool(raw_hwqe, 'hwqe field for {}'.format(where))
-        raw_mubi = rd.get('mubi', False)
-        is_mubi = check_bool(raw_mubi, 'mubi field for {}'.format(where))
         raw_auto_split = rd.get('auto_split', False)
         is_auto_split = check_bool(raw_auto_split, 'auto_split field for {}'.format(where))
 
