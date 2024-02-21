@@ -109,10 +109,10 @@ class rom_ctrl_corrupt_sig_fatal_chk_vseq extends rom_ctrl_base_vseq;
         CompareCtrConsistencyWaiting: begin
           bit [2:0] invalid_addr;
           bit [4:0] fsm_state_q;
-
+          string    path;
           wait_with_bound(2000);
-          uvm_hdl_read("tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.u_compare.state_q",
-                       fsm_state_q);
+          path = "tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.u_compare.state_q";
+          `DV_CHECK(uvm_hdl_read(path,fsm_state_q));
           if(fsm_state_q != 5'b00100) begin
             `uvm_fatal(`gfn, {"Case:'CompareCtrConsistencyWaiting' hit when 'rom_ctrl_compare' ",
                               "state!=Done hence sequence-case exits"})
@@ -173,6 +173,7 @@ class rom_ctrl_corrupt_sig_fatal_chk_vseq extends rom_ctrl_base_vseq;
           bit [TL_AW-1:0]      tgt_addr;
           cip_tl_seq_item tl_access_rsp;
           bit             completed, saw_err;
+          string          path;
 
           wait (cfg.rom_ctrl_vif.pwrmgr_data.done == MuBi4True);
           wait_with_bound(10);
@@ -241,12 +242,20 @@ class rom_ctrl_corrupt_sig_fatal_chk_vseq extends rom_ctrl_base_vseq;
   endtask: wait_with_bound
 
   task force_sig(string path, int value);
-    chk_hdl_path(path);
-    uvm_hdl_force(path, value);
+    `DV_CHECK(uvm_hdl_force(path, value));
     `uvm_info(`gfn, $sformatf("Setting path: %s to value=0x%0x",path,value), UVM_DEBUG)
     @(negedge cfg.clk_rst_vif.clk);
     `DV_CHECK(uvm_hdl_release(path));
   endtask: force_sig
+
+  task chk_fsm_state();
+    string alert_o_path = "tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.alert_o";
+    string state_q_path = "tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.state_q";
+    bit rdata_alert;
+    bit [$bits(rom_ctrl_pkg::fsm_state_e)-1:0] rdata_state;
+
+    `DV_CHECK_EQ(rdata_state, rom_ctrl_pkg::Invalid)
+  endtask: chk_fsm_state
 
   // Wait until FSM state has progressed to a state within the list.
   // The task removes all previous states including the one that has been reached afterwards.
@@ -254,6 +263,7 @@ class rom_ctrl_corrupt_sig_fatal_chk_vseq extends rom_ctrl_base_vseq;
   task wait_for_fsm_state_inside(ref rom_ctrl_pkg::fsm_state_e states_to_visit[$]);
     string state_q_path = "tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.state_q";
     bit [$bits(rom_ctrl_pkg::fsm_state_e)-1:0] rdata_state;
+    string  path = "tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.state_q";
     do begin
       @(negedge cfg.clk_rst_vif.clk);
       `DV_CHECK(uvm_hdl_read(state_q_path, rdata_state))
