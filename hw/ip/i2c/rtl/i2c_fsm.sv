@@ -160,7 +160,7 @@ module i2c_fsm import i2c_pkg::*;
         tSetupData  : tcount_d = 20'(t_r_i) + 20'(tsu_dat_i);
         tClockStart : tcount_d = 20'(thd_dat_i);
         tClockLow   : tcount_d = 20'(tlow_i) - 20'(thd_dat_i);
-        tClockPulse : tcount_d = 20'(t_r_i) + 20'(thigh_i) + 20'(t_f_i);
+        tClockPulse : tcount_d = 20'(t_r_i) + 20'(thigh_i);
         tHoldBit    : tcount_d = 20'(t_f_i) + 20'(thd_dat_i);
         tClockStop  : tcount_d = 20'(t_f_i) + 20'(tlow_i) - 20'(thd_dat_i);
         tSetupStop  : tcount_d = 20'(t_r_i) + 20'(tsu_sto_i);
