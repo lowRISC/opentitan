@@ -7,10 +7,10 @@ use clap::Parser;
 use std::time::Duration;
 
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::execute_test;
 use opentitanlib::io::uart::Uart;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::uart::console::UartConsole;
-use opentitanlib::execute_test;
 
 use usb::{UsbHub, UsbHubOp, UsbOpts};
 
@@ -40,22 +40,32 @@ fn wait_for_device_and_get_parent(opts: &Opts) -> Result<(rusb::Device<rusb::Glo
         bail!("several USB devices found");
     }
     let device = &devices[0];
-    log::info!("device found at bus={} address={}", device.device().bus_number(), device.device().address());
+    log::info!(
+        "device found at bus={} address={}",
+        device.device().bus_number(),
+        device.device().address()
+    );
 
     // Important note: here the handle will be dropped and the device handle
     // will be closed.
-    Ok((device.device().get_parent().context("device has no parent, you need to connect it via a hub for this test")?,
-       device.device().port_number()))
+    Ok((
+        device
+            .device()
+            .get_parent()
+            .context("device has no parent, you need to connect it via a hub for this test")?,
+        device.device().port_number(),
+    ))
 }
 
-fn usbdev_aon_wake(
-    opts: &Opts,
-    _transport: &TransportWrapper,
-    uart: &dyn Uart,
-) -> Result<()> {
+fn usbdev_aon_wake(opts: &Opts, _transport: &TransportWrapper, uart: &dyn Uart) -> Result<()> {
     // Wait for device.
     let (parent, port) = wait_for_device_and_get_parent(opts)?;
-    log::info!("parent hub at bus={}, address={}, port numbers={:?}", parent.bus_number(), parent.address(), parent.port_numbers()?);
+    log::info!(
+        "parent hub at bus={}, address={}, port numbers={:?}",
+        parent.bus_number(),
+        parent.address(),
+        parent.port_numbers()?
+    );
     log::info!("device under test is on port {}", port);
     // At this point, we are not holding any device handle. If we really want to make sure,
     // we could unbind the device from the driver but this requires a lot of privileges.

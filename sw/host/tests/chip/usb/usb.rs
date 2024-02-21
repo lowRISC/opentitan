@@ -6,7 +6,7 @@ use anyhow::{ensure, Context, Result};
 use clap::Parser;
 
 use std::collections::HashSet;
-use std::time::{Instant,Duration};
+use std::time::{Duration, Instant};
 
 #[derive(Debug, Parser)]
 pub struct UsbOpts {
@@ -40,7 +40,7 @@ impl DeviceLoc {
     fn from_device(dev: &rusb::Device<rusb::GlobalContext>) -> Result<DeviceLoc> {
         Ok(DeviceLoc {
             bus: dev.bus_number(),
-            port_numbers: dev.port_numbers()?
+            port_numbers: dev.port_numbers()?,
         })
     }
 }
@@ -55,7 +55,10 @@ impl UsbOpts {
     //
     // This function will return an error on critical failures such as failing to poll
     // the USB bus.
-    pub fn wait_for_device(&self, timeout: Duration) -> Result<Vec<rusb::DeviceHandle<rusb::GlobalContext>>> {
+    pub fn wait_for_device(
+        &self,
+        timeout: Duration,
+    ) -> Result<Vec<rusb::DeviceHandle<rusb::GlobalContext>>> {
         let start = Instant::now();
         // Keep a list of devices to not warn against again.
         let mut warned_desc = HashSet::<DeviceLoc>::new();
@@ -90,10 +93,12 @@ impl UsbOpts {
                         // Ignore device if we have already seen it.
                         if !warned_open.contains(&seen_dev) {
                             warned_open.insert(seen_dev);
-                            log::warn!("Could not open device at bus={} address={}: {}",
+                            log::warn!(
+                                "Could not open device at bus={} address={}: {}",
                                 device.bus_number(),
                                 device.address(),
-                                e);
+                                e
+                            );
                         }
                         continue;
                     }
@@ -102,7 +107,7 @@ impl UsbOpts {
             }
             // Return if we found at least one device or if timeout has expired.
             if !devices.is_empty() || start.elapsed() >= timeout {
-                return Ok(devices)
+                return Ok(devices);
             }
             // Wait a bit before polling again.
             std::thread::sleep(Duration::from_micros(1_000_000u64 / self.usb_poll_freq));
@@ -113,7 +118,7 @@ impl UsbOpts {
 // Structure representing a USB hub. The device needs to have sufficient permission
 // to be opened.
 pub struct UsbHub {
-    handle: rusb::DeviceHandle<rusb::GlobalContext>
+    handle: rusb::DeviceHandle<rusb::GlobalContext>,
 }
 
 // USB hub operation.
@@ -136,9 +141,12 @@ impl UsbHub {
         let dev_desc = dev.device_descriptor()?;
         // Assume that if the device has the HUB class then Linux will already enforce
         // that it follows the specification.
-        ensure!(dev_desc.class_code() == rusb::constants::LIBUSB_CLASS_HUB, "device is not a hub");
+        ensure!(
+            dev_desc.class_code() == rusb::constants::LIBUSB_CLASS_HUB,
+            "device is not a hub"
+        );
         Ok(UsbHub {
-            handle: dev.open().context("cannot open hub")?
+            handle: dev.open().context("cannot open hub")?,
         })
     }
 
@@ -149,19 +157,17 @@ impl UsbHub {
             UsbHubOp::Resume => (PORT_SUSPEND, false),
             UsbHubOp::Reset => (PORT_RESET, true),
         };
-        let req = if set_feature { rusb::constants::LIBUSB_REQUEST_SET_FEATURE }
-        else { rusb::constants::LIBUSB_REQUEST_CLEAR_FEATURE };
-        let req_type = rusb::constants::LIBUSB_RECIPIENT_OTHER |
-            rusb::constants::LIBUSB_REQUEST_TYPE_CLASS |
-            rusb::constants::LIBUSB_ENDPOINT_OUT;
-        let _ =self.handle.write_control(
-            req_type,
-            req,
-            value,
-            port as u16,
-            &[],
-            timeout
-        )?;
+        let req = if set_feature {
+            rusb::constants::LIBUSB_REQUEST_SET_FEATURE
+        } else {
+            rusb::constants::LIBUSB_REQUEST_CLEAR_FEATURE
+        };
+        let req_type = rusb::constants::LIBUSB_RECIPIENT_OTHER
+            | rusb::constants::LIBUSB_REQUEST_TYPE_CLASS
+            | rusb::constants::LIBUSB_ENDPOINT_OUT;
+        let _ = self
+            .handle
+            .write_control(req_type, req, value, port as u16, &[], timeout)?;
         Ok(())
     }
 }
