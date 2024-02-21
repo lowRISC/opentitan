@@ -78,8 +78,9 @@ HWACCESS_PERMITTED = {
 
 
 class SWAccess:
-    def __init__(self, where: str, raw: object):
+    def __init__(self, where: str, raw: object, is_mubi: bool = False):
         self.key = check_str(raw, 'swaccess for {}'.format(where))
+        self.is_mubi = is_mubi
         try:
             self.value = SWACCESS_PERMITTED[self.key]
         except KeyError:
@@ -90,6 +91,23 @@ class SWAccess:
         '''Return a UVM access string as used by uvm_field::set_access().'''
         if self.key == 'r0w1c':
             return 'W1C'
+        elif self.key in ['rw1s', 'rw1c', 'rw0c', 'r0w1c', 'rc'] and self.is_mubi:
+            # The native UVM implementations for these access modes are
+            # incompatible with Mubi's. We hence have to use regular RW access
+            # at the lowest level for the UVM RAL implementation, and model the
+            # custom mubi behavior in the uvm_base_reg_field abstraction of
+            # uvm_base_reg_field.
+            return 'RW'
+        return str(self.value[1].name)
+
+    def dv_mubi_rights(self) -> str:
+        '''Return a UVM access string as used by uvm_base_reg_field abstraction.
+        '''
+        if not self.is_mubi:
+            return 'NONE'
+        elif self.key == 'r0w1c':
+            return 'W1C'
+
         return str(self.value[1].name)
 
     def swrd(self) -> SwRdAccess:

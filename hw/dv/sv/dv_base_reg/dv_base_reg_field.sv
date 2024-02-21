@@ -17,6 +17,11 @@ class dv_base_reg_field extends uvm_reg_field;
   // This is used for get_field_by_name
   string alias_name = "";
 
+  // If this field encodes a mubi, this field encodes special access modes such as W1C that cannot
+  // be captured with the regular access configuration, since UVM does not model such access modes
+  // correctly for mubis.
+  string mubi_access = "";
+
   // Default mubi_width = 0 indicates this register field is not a mubi type.
   protected int mubi_width;
 
@@ -58,6 +63,7 @@ class dv_base_reg_field extends uvm_reg_field;
                                   int unsigned   size,
                                   int unsigned   lsb_pos,
                                   string         access,
+                                  string         mubi_access,
                                   bit            volatile,
                                   uvm_reg_data_t reset,
                                   bit            has_reset,
@@ -73,7 +79,7 @@ class dv_base_reg_field extends uvm_reg_field;
                       .is_rand  (is_rand),
                       .individually_accessible(individually_accessible));
       value.rand_mode(is_rand);
-
+      this.mubi_access = mubi_access;
       is_intr_test_fld = !(uvm_re_match("intr_test*", get_parent().get_name()));
       shadowed_val = ~committed_val;
     endfunction
@@ -145,28 +151,25 @@ class dv_base_reg_field extends uvm_reg_field;
       // use UVM_PREDICT_READ to avoid uvm_warning due to UVM_PREDICT_DIRECT
       void'(intr_state_fld.predict(predict_val, .kind(UVM_PREDICT_READ)));
 
-    end else if (kind == UVM_PREDICT_WRITE && access inside {"W1S", "W1C", "W0C"} && mubi_width > 0)
+    end else if (kind == UVM_PREDICT_WRITE && mubi_access inside {"W1S", "W1C", "W0C"})
     begin
       // Some smoke checking of the byte enables. RTL does not latch anything if not all affected
-      // bytes of the field are enabled.
+      // bytes of the field are enabled. Note that we still use UVM_PREDICT_WRITE further below
+      // since the underlying access is set to RW in the RAL model.
       if (mubi_width <= 8 && be[0] || mubi_width > 8 && mubi_width <= 16 && &be[1:0]) begin
         // In case this is a clearable MUBI field, we have to interpret the write value correctly.
         // ICEBOX(#9273): Note that this just uses bitwise functions to update the value and does
         // not rectify incorrect mubi values. At a later point, we should discuss if and how to
         // tighten this up, as discussed on the linked issue.
-        case (access)
+        case (mubi_access)
           "W1S": rw.value[0] = this.mubi_or_hi(rw.value[0], `gmv(this));
           "W1C": rw.value[0] = this.mubi_and_hi(~rw.value[0], `gmv(this));
           "W0C": rw.value[0] = this.mubi_and_hi(rw.value[0], `gmv(this));
           default: ; // unreachable
         endcase
-        // Use direct access instead and sidestep access policies.
-        kind = UVM_PREDICT_DIRECT;
       end
-    end else if (kind == UVM_PREDICT_READ && access == "RC" && mubi_width > 0) begin
+    end else if (kind == UVM_PREDICT_READ && mubi_access == "RC") begin
       rw.value[0] = this.mubi_false();
-      // Use direct access instead and sidestep access policies.
-      kind = UVM_PREDICT_DIRECT;
     end
     super.do_predict(rw, kind, be);
   endfunction
