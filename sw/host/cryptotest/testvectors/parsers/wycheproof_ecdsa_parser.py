@@ -54,7 +54,7 @@ def parse_test_vectors(raw_data):
     test_vectors = list()
     for group in test_groups:
         # Parse the key for the group
-        key = group["key"]
+        key = group["publicKey"]
 
         # Parse tests within the group
         for test in group["tests"]:
