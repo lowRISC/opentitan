@@ -95,6 +95,14 @@ impl GpioSet {
         };
         payload.execute(uart)
     }
+    pub fn irq_acknowledge_all(uart: &dyn Uart) -> Result<()> {
+        let payload = GpioSet {
+            action: GpioAction::IrqAcknowledgeAll,
+            pin_mask: 0,
+            state: 0,
+        };
+        payload.execute(uart)
+    }
     pub fn irq_set_trigger(uart: &dyn Uart, state: u32, trigger: String) -> Result<()> {
         match trigger.as_str() {
             "rising" => {
@@ -108,6 +116,22 @@ impl GpioSet {
             "falling" => {
                 let payload = GpioSet {
                     action: GpioAction::IrqSetTriggerFallingEdge,
+                    pin_mask: 0,
+                    state,
+                };
+                payload.execute(uart)
+            }
+            "high" => {
+                let payload = GpioSet {
+                    action: GpioAction::IrqSetTriggerHigh,
+                    pin_mask: 0,
+                    state,
+                };
+                payload.execute(uart)
+            }
+            "low" => {
+                let payload = GpioSet {
+                    action: GpioAction::IrqSetTriggerLow,
                     pin_mask: 0,
                     state,
                 };

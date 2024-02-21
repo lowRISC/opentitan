@@ -22,8 +22,12 @@ extern "C" {
     value(_, SetInputNoiseFilter) \
     value(_, IrqRestoreAll) \
     value(_, IrqDisableAll) \
+    value(_, IrqAcknowledgeAll) \
     value(_, IrqSetTriggerRisingEdge) \
-    value(_, IrqSetTriggerFallingEdge)
+    value(_, IrqSetTriggerFallingEdge) \
+    value(_, IrqSetTriggerHigh) \
+    value(_, IrqSetTriggerLow)
+
 UJSON_SERDE_ENUM(GpioAction, gpio_action_t, ENUM_GPIO_SET_ACTION);
 
 #define STRUCT_GPIO_SET(field, string) \
