@@ -41,11 +41,15 @@ struct HashTestCase {
     test_case_id: usize,
     algorithm: String,
     message: Vec<u8>,
+    // Customization string used for cSHAKE only
+    #[serde(default)]
+    customization_string: Vec<u8>,
     digest: Vec<u8>,
     result: bool,
 }
 
 const HASH_CMD_MAX_MESSAGE_BYTES: usize = 17068;
+const HASH_CMD_MAX_CUSTOMIZATION_STRING_BYTES: usize = 16;
 
 fn run_hash_testcase(
     test_case: &HashTestCase,
@@ -69,17 +73,26 @@ fn run_hash_testcase(
         test_case.message.len(),
         HASH_CMD_MAX_MESSAGE_BYTES,
     );
+    assert!(
+        test_case.customization_string.len() <= HASH_CMD_MAX_CUSTOMIZATION_STRING_BYTES,
+        "Customization string too long for device firmware configuration (got = {}, max = {})",
+        test_case.customization_string.len(),
+        HASH_CMD_MAX_CUSTOMIZATION_STRING_BYTES,
+    );
 
     // Send algorithm type
     match test_case.algorithm.as_str() {
         "sha-256" => CryptotestHashAlgorithm::Sha256,
         "sha-384" => CryptotestHashAlgorithm::Sha384,
         "sha-512" => CryptotestHashAlgorithm::Sha512,
+        "sha3-224" => CryptotestHashAlgorithm::Sha3_224,
         "sha3-256" => CryptotestHashAlgorithm::Sha3_256,
         "sha3-384" => CryptotestHashAlgorithm::Sha3_384,
         "sha3-512" => CryptotestHashAlgorithm::Sha3_512,
         "shake-128" => CryptotestHashAlgorithm::Shake128,
         "shake-256" => CryptotestHashAlgorithm::Shake256,
+        "cshake-128" => CryptotestHashAlgorithm::Cshake128,
+        "cshake-256" => CryptotestHashAlgorithm::Cshake256,
         _ => panic!("Unsupported hash algorithm"),
     }
     .send(&*uart)?;
@@ -95,6 +108,9 @@ fn run_hash_testcase(
     CryptotestHashMessage {
         message: ArrayVec::try_from(test_case.message.as_slice()).unwrap(),
         message_len: test_case.message.len(),
+        customization_string: ArrayVec::try_from(test_case.customization_string.as_slice())
+            .unwrap(),
+        customization_string_len: test_case.customization_string.len(),
     }
     .send(&*uart)?;
 

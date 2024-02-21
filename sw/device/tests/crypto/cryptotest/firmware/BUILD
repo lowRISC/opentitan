@@ -93,6 +93,7 @@ cc_library(
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
+        "//sw/device/lib/crypto/drivers:kmac",
         "//sw/device/lib/crypto/impl:hash",
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:keyblob",
