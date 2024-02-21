@@ -175,27 +175,29 @@ HASH_TESTVECTOR_TARGETS = [
         msg_type.lower(),
     )
     for algorithm, src_repo, extra_msg_types in [
-        ("SHA256", "sha2_fips_180_4", []),
-        ("SHA384", "sha2_fips_180_4", []),
-        ("SHA512", "sha2_fips_180_4", []),
-        ("SHA3_256", "sha3_fips_202", []),
-        ("SHA3_384", "sha3_fips_202", []),
-        ("SHA3_512", "sha3_fips_202", []),
-        (
-            "SHAKE128",
-            "shake_fips_202",
-            ["VariableOut"],
-        ),
-        (
-            "SHAKE256",
-            "shake_fips_202",
-            ["VariableOut"],
-        ),
+        #        ("SHA256", "sha2_fips_180_4", []),
+        #        ("SHA384", "sha2_fips_180_4", []),
+        #        ("SHA512", "sha2_fips_180_4", []),
+        #        ("SHA3_256", "sha3_fips_202", []),
+        #        ("SHA3_384", "sha3_fips_202", []),
+        #        ("SHA3_512", "sha3_fips_202", []),
+        #        (
+        #            "SHAKE128",
+        #            "shake_fips_202",
+        #            ["VariableOut"],
+        #        ),
+        #        (
+        #            "SHAKE256",
+        #            "shake_fips_202",
+        #            ["VariableOut"],
+        #        ),
     ]
     for msg_type in [
         "ShortMsg",
-        #        "LongMsg",
+        "LongMsg",
     ] + extra_msg_types
+] + [
+    "//sw/host/cryptotest/testvectors/data:hjson_hash",
 ]
 
 HASH_TESTVECTOR_ARGS = " ".join([

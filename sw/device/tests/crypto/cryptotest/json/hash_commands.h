@@ -10,6 +10,7 @@ extern "C" {
 #endif
 
 #define HASH_CMD_MAX_MESSAGE_BYTES 17068
+#define HASH_CMD_MAX_CUSTOMIZATION_STRING_BYTES 16
 #define HASH_CMD_MAX_DIGEST_BYTES 256
 
 // clang-format off
@@ -18,11 +19,14 @@ extern "C" {
     value(_, Sha256) \
     value(_, Sha384) \
     value(_, Sha512) \
+    value(_, Sha3_224) \
     value(_, Sha3_256) \
     value(_, Sha3_384) \
     value(_, Sha3_512) \
     value(_, Shake128) \
-    value(_, Shake256)
+    value(_, Shake256) \
+    value(_, Cshake128) \
+    value(_, Cshake256)
 UJSON_SERDE_ENUM(CryptotestHashAlgorithm, cryptotest_hash_algorithm_t, HASH_ALGORITHM);
 
 #define SHAKE_DIGEST_LENGTH(field, string) \
@@ -31,7 +35,9 @@ UJSON_SERDE_STRUCT(CryptotestHashShakeDigestLength, cryptotest_hash_shake_digest
 
 #define HASH_MESSAGE(field, string) \
     field(message, uint8_t, HASH_CMD_MAX_MESSAGE_BYTES) \
-    field(message_len, size_t)
+    field(message_len, size_t) \
+    field(customization_string, uint8_t, HASH_CMD_MAX_CUSTOMIZATION_STRING_BYTES) \
+    field(customization_string_len, size_t)
 UJSON_SERDE_STRUCT(CryptotestHashMessage, cryptotest_hash_message_t, HASH_MESSAGE);
 
 #define HASH_OUTPUT(field, string) \

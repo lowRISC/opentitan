@@ -7,6 +7,7 @@
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
+#include "sw/device/lib/crypto/drivers/kmac.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/sha2/sha256.h"
@@ -16,12 +17,6 @@
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
 #include "sw/device/tests/crypto/cryptotest/json/hash_commands.h"
-
-enum {
-  kSha3_256DigestWords = kSha256DigestWords,
-  kSha3_384DigestWords = kSha384DigestWords,
-  kSha3_512DigestWords = kSha512DigestWords,
-};
 
 status_t handle_hash(ujson_t *uj) {
   // Declare test arguments
@@ -40,6 +35,18 @@ status_t handle_hash(ujson_t *uj) {
   otcrypto_const_byte_buf_t input_message = {
       .len = uj_message.message_len,
       .data = msg_buf,
+  };
+  uint8_t customization_string_buf[uj_message.customization_string_len];
+  memcpy(customization_string_buf, uj_message.customization_string,
+         uj_message.customization_string_len);
+  otcrypto_const_byte_buf_t customization_string = {
+      .len = uj_message.customization_string_len,
+      .data = customization_string_buf,
+  };
+  // If we are using cSHAKE, the empty function name tells cryptolib not to
+  // apply any function on top of cSHAKE.
+  otcrypto_const_byte_buf_t cshake_function_name = {
+      .len = 0,
   };
 
   // Handle to correct oneshot hash API for the provided algorithm
@@ -69,6 +76,11 @@ status_t handle_hash(ujson_t *uj) {
       hash_oneshot = otcrypto_hash;
       test_stepwise = true;
       break;
+    case kCryptotestHashAlgorithmSha3_224:
+      mode = kOtcryptoHashModeSha3_224;
+      digest_len = kSha3_224DigestWords;
+      hash_oneshot = otcrypto_hash;
+      break;
     case kCryptotestHashAlgorithmSha3_256:
       mode = kOtcryptoHashModeSha3_256;
       digest_len = kSha3_256DigestWords;
@@ -94,6 +106,14 @@ status_t handle_hash(ujson_t *uj) {
       digest_len = ceil_div(uj_shake_digest_length.length, sizeof(uint32_t));
       hash_oneshot = otcrypto_xof_shake;
       break;
+    case kCryptotestHashAlgorithmCshake128:
+      mode = kOtcryptoHashXofModeCshake128;
+      digest_len = ceil_div(uj_shake_digest_length.length, sizeof(uint32_t));
+      break;
+    case kCryptotestHashAlgorithmCshake256:
+      mode = kOtcryptoHashXofModeCshake256;
+      digest_len = ceil_div(uj_shake_digest_length.length, sizeof(uint32_t));
+      break;
     default:
       LOG_ERROR("Unsupported hash algorithm: %d", uj_algorithm);
       return INVALID_ARGUMENT();
@@ -107,10 +127,20 @@ status_t handle_hash(ujson_t *uj) {
       .mode = mode,
       .len = digest_len,
   };
-
+  otcrypto_status_t status;
   // Test oneshot API
-  otcrypto_status_t status = hash_oneshot(input_message, digest);
+  switch (uj_algorithm) {
+    case kCryptotestHashAlgorithmCshake128:
+      OT_FALLTHROUGH_INTENDED;
+    case kCryptotestHashAlgorithmCshake256:
+      status = otcrypto_xof_cshake(input_message, cshake_function_name,
+                                   customization_string, digest);
+      break;
+    default:
+      status = hash_oneshot(input_message, digest);
+  }
   if (status.value != kOtcryptoStatusValueOk) {
+    LOG_ERROR("Bad status value: 0x%x", status.value);
     return INTERNAL(status.value);
   }
   cryptotest_hash_output_t uj_output;
