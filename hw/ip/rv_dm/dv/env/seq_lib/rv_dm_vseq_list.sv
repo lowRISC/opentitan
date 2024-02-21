@@ -25,3 +25,4 @@
 `include "rv_dm_jtag_dtm_hard_reset_vseq.sv"
 `include "rv_dm_stress_all_vseq.sv"
 `include "rv_dm_progbuf_busy_vseq.sv"
+`include "rv_dm_progbuf_exception_vseq.sv"
