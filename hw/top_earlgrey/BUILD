@@ -308,7 +308,7 @@ silicon(
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
     manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
     param = {
-        "interface": "hyper310",
+        "interface": "teacup",
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
     },
@@ -341,7 +341,7 @@ silicon(
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
     manifest = "//sw/device/silicon_owner:manifest_standard",
     param = {
-        "interface": "hyper310",
+        "interface": "teacup",
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
         "assemble": "{rom_ext}@0 {firmware}@0x10000",
