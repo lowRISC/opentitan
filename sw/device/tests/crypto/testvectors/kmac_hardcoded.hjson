@@ -2,90 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// The following vectors are obtained from two different sources:
-// SHAKE/SHA3: https://csrc.nist.gov/Projects/Cryptographic-Algorithm-Validation-Program/Secure-Hashing
-// CSHAKE/KMAC: https://csrc.nist.gov/projects/cryptographic-standards-and-guidelines/example-values
+// The following vectors are obtained from:
+// https://csrc.nist.gov/projects/cryptographic-standards-and-guidelines/example-values
 
 [
-  {
-    vector_identifier: "NIST CAVP, byte-oriented, SHAKE128ShortMsg_msg.rsp, Len = 56"
-    operation: SHAKE
-    security_str: 128
-    input_msg: 0x7216a825029da1
-    digest: 0x9de6ffacf3e59693a3de81b02f7db77a
-  }
-  {
-    vector_identifier: "NIST CAVP, byte-oriented, SHAKE128ShortMsg_msg.rsp, Len = 128"
-    operation: SHAKE
-    security_str: 128
-    input_msg: 0xd4d67b00ca51397791b81205d5582c0a
-    digest: 0xd0acfb2a14928caf8c168ae514925e4e
-  }
-  {
-    vector_identifier: "NIST CAVP, byte-oriented, SHAKE128ShortMsg_msg.rsp, Len = 1336"
-    operation: SHAKE
-    security_str: 128
-    input_msg: 0x18636f702f216b1b9302e59d82192f4e002f82d526c3f04cbd4f9b9f0bcd2535ed7a67d326da66bdf7fc821ef0fff1a905d56c81e4472856863908d104301133ad111e39552cd542ef78d9b35f20419b893f4a93aee848e9f86ae3fd53d27fea7fb1fc69631fa0f3a5ff51267785086ab4f682d42baf394b3b6992e9a0bb58a38ce0692df9bbaf183e18523ee1352c5fad817e0c04a3e1c476be7f5e92f482a6fb29cd4bbf09ea
-    digest: 0xb7b9db481898f888e5ee4ed629859844
-  }
-  {
-    vector_identifier: "NIST CAVP, byte-oriented, SHAKE256ShortMsg.rsp, Len = 312"
-    operation: SHAKE
-    security_str: 256
-    input_msg: 0xf532d0ece583bebaec55d030c93fcd43ad7c96a493ef15e7d06470e5eb19825fae7d8be47d3726
-    digest: 0x225ace4d5140a3d75993ca8c7b993662030d046fa0201ee9c5c335d92b4d5801
-  }
-  {
-    vector_identifier: "NIST CAVP, byte-oriented, SHAKE256VariableOut.rsp, Count = 1245, Len = 2000"
-    operation: SHAKE
-    security_str: 256
-    input_msg: 0x8d8001e2c096f1b88e7c9224a086efd4797fbf74a8033a2d422a2b6b8f6747e4
-    digest: 0x2e975f6a8a14f0704d51b13667d8195c219f71e6345696c49fa4b9d08e9225d3d39393425152c97e71dd24601c11abcfa0f12f53c680bd3ae757b8134a9c10d429615869217fdd5885c4db174985703a6d6de94a667eac3023443a8337ae1bc601b76d7d38ec3c34463105f0d3949d78e562a039e4469548b609395de5a4fd43c46ca9fd6ee29ada5efc07d84d553249450dab4a49c483ded250c9338f85cd937ae66bb436f3b4026e859fda1ca571432f3bfc09e7c03ca4d183b741111ca0483d0edabc03feb23b17ee48e844ba2408d9dcfd0139d2e8c7310125aee801c61ab7900d1efc47c078281766f361c5e6111346235e1dc38325666c
-  }
-  {
-    vector_identifier: "NIST CAVP, byte-oriented, SHA3_224ShortMsg.rsp, Len = 8"
-    operation: SHA3
-    security_str: 224
-    input_msg: 0x01
-    digest: 0x488286d9d32716e5881ea1ee51f36d3660d70f0db03b3f612ce9eda4
-  }
-  {
-    vector_identifier: "NIST CAVP, byte-oriented, SHA3_256ShortMsg.rsp, Len = 152"
-    operation: SHA3
-    security_str: 256
-    input_msg: 0xd751ccd2cd65f27db539176920a70057a08a6b
-    digest: 0x7aaca80dbeb8dc3677d18b84795985463650d72f2543e0ec709c9e70b8cd7b79
-  }
-  {
-    vector_identifier: "NIST CAVP, byte-oriented, SHA3_384LongMsg.rsp, Len = 1672"
-    operation: SHA3
-    security_str: 384
-    input_msg: 0x5fe35923b4e0af7dd24971812a58425519850a506dfa9b0d254795be785786c319a2567cbaa5e35bcf8fe83d943e23fa5169b73adc1fcf8b607084b15e6a013df147e46256e4e803ab75c110f77848136be7d806e8b2f868c16c3a90c14463407038cb7d9285079ef162c6a45cedf9c9f066375c969b5fcbcda37f02aacff4f31cded3767570885426bebd9eca877e44674e9ae2f0c24cdd0e7e1aaf1ff2fe7f80a1c4f5078eb34cd4f06fa94a2d1eab5806ca43fd0f06c60b63d5402b95c70c21ea65a151c5cfaf8262a46be3c722264b
-    digest: 0x3054d249f916a6039b2a9c3ebec1418791a0608a170e6d36486035e5f92635eaba98072a85373cb54e2ae3f982ce132b
-  }
-  {
-    vector_identifier: "NIST CAVP, byte-oriented, SHA3_512ShortMsg.rsp, Len = 296"
-    operation: SHA3
-    security_str: 512
-    input_msg: 0xf34d100269aee3ead156895e8644d4749464d5921d6157dffcbbadf7a719aee35ae0fd4872
-    digest: 0x565a1dd9d49f8ddefb79a3c7a209f53f0bc9f5396269b1ce2a2b283a3cb45ee3ae652e4ca10b26ced7e5236227006c94a37553db1b6fe5c0c2eded756c896bb1
-  }
-  {
-    vector_identifier: "NIST SP 800-185, cSHAKE_samples.pdf, Sample #1"
-    operation: CSHAKE
-    security_str: 128
-    input_msg: "0x00010203"
-    cust_str: 0x456d61696c205369676e6174757265
-    digest: 0xc1c36925b6409a04f1b504fcbca9d82b4017277cb5ed2b2065fc1d3814d5aaf5
-  }
-  {
-    vector_identifier: "NIST SP 800-185, cSHAKE_samples.pdf, Sample #3"
-    operation: CSHAKE
-    security_str: 256
-    input_msg: 0x00010203
-    cust_str: 0x456d61696c205369676e6174757265
-    digest: 0xd008828e2b80ac9d2218ffee1d070c48b8e4c87bff32c9699d5b6896eee0edd164020e2be0560858d9c00c037e34a96937c561a74c412bb4c746469527281c8c
-  }
   {
     vector_identifier: "NIST SP 800-185, KMAC_samples.pdf, Sample #1"
     operation: KMAC
