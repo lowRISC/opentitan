@@ -371,7 +371,7 @@ class i2c_base_vseq extends cip_base_vseq #(
     // now shrunk by 1, since the end point is still fixed.
     timing_cfg.tClockLow   = tlow - t_r - tsu_dat - thd_dat - 1;
     timing_cfg.tSetupBit   = t_r + tsu_dat;
-    timing_cfg.tClockPulse = t_r + thigh + t_f;
+    timing_cfg.tClockPulse = t_r + thigh;
     timing_cfg.tHoldBit    = t_f + thd_dat;
     timing_cfg.tClockStop  = t_f + tlow - thd_dat;
     timing_cfg.tSetupStop  = t_r + tsu_sto;

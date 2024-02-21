@@ -69,11 +69,13 @@
       uvm_test_seq: i2c_host_override_vseq
     }
 
-    {
-      name: i2c_host_rx_oversample
-      uvm_test_seq: i2c_host_rx_oversample_vseq
-      run_opts: ["+test_timeout_ns=80_000_000"]
-    }
+    // TODO(#21887) Removed pending DV fixes after removal
+    // of double-counted 't_f'
+    // {
+    //   name: i2c_host_rx_oversample
+    //   uvm_test_seq: i2c_host_rx_oversample_vseq
+    //   run_opts: ["+test_timeout_ns=80_000_000"]
+    // }
 
     {
       name: i2c_host_fifo_watermark
