@@ -94,13 +94,14 @@ class rom_ctrl_corrupt_sig_fatal_chk_vseq extends rom_ctrl_base_vseq;
         // set the external 'done' signal for pwrmgr to continue boot. To test this start_checker_q
         // signal from rom_ctrl_fsm is asserted randomly.
         CompareCtrlFlowConsistency: begin
+          string start_chk_path = "tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.start_checker_q";
           bit rdata;
           pick_err_inj_point();
           do begin
-            uvm_hdl_read("tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.start_checker_q", rdata);
+            `DV_CHECK(uvm_hdl_read(start_chk_path, rdata))
             @(posedge cfg.clk_rst_vif.clk);
           end while (rdata != 0);
-          force_sig("tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.start_checker_q", 1'b1);
+          force_sig(start_chk_path, 1'b1);
           check_for_alert();
           chk_fsm_state();
         end
@@ -130,15 +131,13 @@ class rom_ctrl_corrupt_sig_fatal_chk_vseq extends rom_ctrl_base_vseq;
         // module. To test this rom_select_bus_o is forced with any value other than MuBi4True and
         // MuBi4False.
         MuxMubi: begin
-          bit [3:0] rand_var;
           pick_err_inj_point();
-          mubi4_test_invalid(prim_mubi_pkg::mubi4_t'(rand_var));
-          force_sig("tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.rom_select_bus_o", rand_var);
+          force_sig("tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.rom_select_bus_o",
+                    get_invalid_mubi4());
           check_for_alert();
           dut_init();
           pick_err_inj_point();
-          mubi4_test_invalid(prim_mubi_pkg::mubi4_t'(rand_var));
-          force_sig("tb.dut.u_mux.sel_bus_q", rand_var);
+          force_sig("tb.dut.u_mux.sel_bus_q", get_invalid_mubi4());
           check_for_alert();
         end
         // The mux that arbitrates between the checker and the bus gives access to the checker at
@@ -206,11 +205,13 @@ class rom_ctrl_corrupt_sig_fatal_chk_vseq extends rom_ctrl_base_vseq;
               cfg.scoreboard.disable_rom_acc_chk = 0;
             end
             begin
+              string rom_idx_path = "tb.dut.bus_rom_rom_index";
+
               wait (cfg.m_tl_agent_cfgs["rom_ctrl_rom_reg_block"].vif.h2d.a_valid);
               $assertoff(0, "tb.dut.BusRomIndicesMatch_A");
-              uvm_hdl_force("tb.dut.bus_rom_rom_index", corr_bus_rom_rom_index_val);
+              `DV_CHECK(uvm_hdl_force(rom_idx_path, corr_bus_rom_rom_index_val));
               wait (!cfg.m_tl_agent_cfgs["rom_ctrl_rom_reg_block"].vif.h2d.a_valid);
-              uvm_hdl_release("tb.dut.bus_rom_rom_index");
+              `DV_CHECK(uvm_hdl_release(rom_idx_path));
             end
           join
         end
@@ -247,26 +248,20 @@ class rom_ctrl_corrupt_sig_fatal_chk_vseq extends rom_ctrl_base_vseq;
       @(negedge cfg.clk_rst_vif.clk);
   endtask: wait_with_bound
 
-  task chk_hdl_path(string path);
-    if(!uvm_hdl_check_path(path))
-      begin
-        `uvm_fatal("PATH NOT FOUND", $sformatf("%s", path))
-      end
-  endtask: chk_hdl_path
-
   task force_sig(string path, int value);
-    chk_hdl_path(path);
-    uvm_hdl_force(path, value);
+    `DV_CHECK(uvm_hdl_force(path, value));
     @(negedge cfg.clk_rst_vif.clk);
-    uvm_hdl_release(path);
+    `DV_CHECK(uvm_hdl_release(path));
   endtask: force_sig
 
   task chk_fsm_state();
+    string alert_o_path = "tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.alert_o";
+    string state_q_path = "tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.state_q";
     bit rdata_alert;
     bit [$bits(rom_ctrl_pkg::fsm_state_e)-1:0] rdata_state;
-    uvm_hdl_read("tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.alert_o", rdata_alert);
+    `DV_CHECK(uvm_hdl_read(alert_o_path, rdata_alert))
     `DV_CHECK_EQ(rdata_alert, 1)
-    uvm_hdl_read("tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.state_q", rdata_state);
+    `DV_CHECK(uvm_hdl_read(state_q_path, rdata_state))
     `DV_CHECK_EQ(rdata_state, rom_ctrl_pkg::Invalid)
   endtask: chk_fsm_state
 
@@ -274,10 +269,11 @@ class rom_ctrl_corrupt_sig_fatal_chk_vseq extends rom_ctrl_base_vseq;
   // The task removes all previous states including the one that has been reached afterwards.
   // Note that this assumes no loops and linear progression through the state enum entries.
   task wait_for_fsm_state_inside(ref rom_ctrl_pkg::fsm_state_e states_to_visit[$]);
+    string state_q_path = "tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.state_q";
     bit [$bits(rom_ctrl_pkg::fsm_state_e)-1:0] rdata_state;
     do begin
       @(negedge cfg.clk_rst_vif.clk);
-      uvm_hdl_read("tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.state_q", rdata_state);
+      `DV_CHECK(uvm_hdl_read(state_q_path, rdata_state))
     end while (!(rdata_state inside {states_to_visit}));
     `uvm_info(`gfn, $sformatf("reached FSM state %x", rdata_state), UVM_LOW)
     // Remove previous states from queue, including the one that has been reached.
@@ -298,5 +294,11 @@ class rom_ctrl_corrupt_sig_fatal_chk_vseq extends rom_ctrl_base_vseq;
     end
     wait_with_bound(wait_clks);
   endtask
+
+  function prim_mubi_pkg::mubi4_t get_invalid_mubi4();
+    logic [3:0] val;
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(val, mubi4_test_invalid(mubi4_t'(val));)
+    return mubi4_t'(val);
+  endfunction
 
 endclass : rom_ctrl_corrupt_sig_fatal_chk_vseq

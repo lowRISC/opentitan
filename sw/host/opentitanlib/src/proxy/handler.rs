@@ -12,15 +12,16 @@ use std::time::Duration;
 
 use super::errors::SerializedError;
 use super::protocol::{
-    EmuRequest, EmuResponse, GpioMonRequest, GpioMonResponse, GpioRequest, GpioResponse,
-    I2cRequest, I2cResponse, I2cTransferRequest, I2cTransferResponse, Message, ProxyRequest,
-    ProxyResponse, Request, Response, SpiRequest, SpiResponse, SpiTransferRequest,
-    SpiTransferResponse, UartRequest, UartResponse,
+    BitbangEntryRequest, BitbangEntryResponse, EmuRequest, EmuResponse, GpioBitRequest,
+    GpioBitResponse, GpioMonRequest, GpioMonResponse, GpioRequest, GpioResponse, I2cRequest,
+    I2cResponse, I2cTransferRequest, I2cTransferResponse, Message, ProxyRequest, ProxyResponse,
+    Request, Response, SpiRequest, SpiResponse, SpiTransferRequest, SpiTransferResponse,
+    UartRequest, UartResponse,
 };
 use super::CommandHandler;
 use crate::app::TransportWrapper;
 use crate::bootstrap::Bootstrap;
-use crate::io::gpio::GpioPin;
+use crate::io::gpio::{BitbangEntry, GpioPin};
 use crate::io::{i2c, nonblocking_help, spi};
 use crate::proxy::nonblocking_uart::NonblockingUartRegistry;
 use crate::transport::TransportError;
@@ -123,6 +124,63 @@ impl<'a> TransportCommandHandler<'a> {
                         let pins = pins.iter().map(Rc::borrow).collect::<Vec<&dyn GpioPin>>();
                         let resp = instance.monitoring_read(&pins, *continue_monitoring)?;
                         Ok(Response::GpioMonitoring(GpioMonResponse::Read { resp }))
+                    }
+                }
+            }
+            Request::GpioBitbanging { command } => {
+                let instance = self.transport.gpio_bitbanging()?;
+                match command {
+                    GpioBitRequest::Run {
+                        pins,
+                        clock_ns,
+                        entries: reqs,
+                    } => {
+                        let pins = self.transport.gpio_pins(pins)?;
+                        let pins = pins.iter().map(Rc::borrow).collect::<Vec<&dyn GpioPin>>();
+                        let clock = Duration::from_nanos(*clock_ns);
+
+                        // Construct proper response to each entry in request.
+                        let mut resps: Vec<BitbangEntryResponse> = reqs
+                            .iter()
+                            .map(|entry| match entry {
+                                BitbangEntryRequest::Write { .. } => BitbangEntryResponse::Write,
+                                BitbangEntryRequest::Both { data } => BitbangEntryResponse::Both {
+                                    data: vec![0; data.len()],
+                                },
+                                BitbangEntryRequest::Delay { .. } => BitbangEntryResponse::Delay,
+                            })
+                            .collect();
+                        // Now carefully craft a proper parameter to the
+                        // `GpioBitbanging::run()` method.  It will have reference
+                        // into elements of both the request vector and mutable reference into
+                        // the response vector.
+                        let mut entries: Vec<BitbangEntry> = reqs
+                            .iter()
+                            .zip(resps.iter_mut())
+                            .map(|pair| match pair {
+                                (
+                                    BitbangEntryRequest::Write { data },
+                                    BitbangEntryResponse::Write,
+                                ) => BitbangEntry::Write(data),
+                                (
+                                    BitbangEntryRequest::Both { data: wdata },
+                                    BitbangEntryResponse::Both { data },
+                                ) => BitbangEntry::Both(wdata, data),
+                                (
+                                    BitbangEntryRequest::Delay { clock_ticks },
+                                    BitbangEntryResponse::Delay {},
+                                ) => BitbangEntry::Delay(*clock_ticks),
+                                _ => {
+                                    // This can only happen if the logic in this method is
+                                    // flawed.  (Never due to network input.)
+                                    panic!("Mismatch");
+                                }
+                            })
+                            .collect();
+                        instance.run(&pins, clock, &mut entries)?;
+                        Ok(Response::GpioBitbanging(GpioBitResponse::Run {
+                            entries: resps,
+                        }))
                     }
                 }
             }

@@ -29,6 +29,7 @@ fn volatile_raw_unlock_with_reconnection_to_lc_tap(
     opts: &Opts,
     token_words: [u32; 4],
     transport: &TransportWrapper,
+    expect_raw_unlock_supported: bool,
 ) -> Result<()> {
     // Set the TAP straps for the lifecycle controller and reset.
     transport
@@ -57,13 +58,19 @@ fn volatile_raw_unlock_with_reconnection_to_lc_tap(
         /*use_external_clk=*/ true,
         JtagTap::LcTap,
         &opts.init.jtag_params,
+        expect_raw_unlock_supported,
     )
     .context("failed to transition to TEST_UNLOCKED0")?;
 
-    // Check that LC state is `TEST_UNLOCKED0` over the LC TAP.
+    // Check that LC state is `TEST_UNLOCKED0` over the LC TAP if we expect
+    // volatile RAW unlock to succeed.
     let state =
         DifLcCtrlState::from_redundant_encoding(jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?)?;
-    assert_eq!(state, DifLcCtrlState::TestUnlocked0);
+    if expect_raw_unlock_supported {
+        assert_eq!(state, DifLcCtrlState::TestUnlocked0);
+    } else {
+        assert_eq!(state, DifLcCtrlState::PostTransition);
+    }
 
     jtag.disconnect()?;
 
@@ -102,6 +109,7 @@ fn volatile_raw_unlock_with_reconnection_to_rv_tap(
         /*use_external_clk=*/ true,
         JtagTap::RiscvTap,
         &opts.init.jtag_params,
+        /*expect RAW unlock to succeed*/ true,
     )
     .context("failed to transition to TEST_UNLOCKED0")?;
 
@@ -125,6 +133,9 @@ fn main() -> Result<()> {
     let opts = Opts::parse();
     opts.init.init_logging();
     let transport = opts.init.init_target()?;
+    // Whether we expect the RAW unlock feature to be present or not. On prod
+    // silicon this should be disabled.
+    let expect_raw_unlock_supported = false;
 
     // Provide the hashed `RAW_UNLOCK` token. Note, it is important the hashed token is provided
     // directly, as a volatile LC operation does not go through KMAC.
@@ -136,14 +147,21 @@ fn main() -> Result<()> {
         volatile_raw_unlock_with_reconnection_to_lc_tap,
         &opts,
         token_words,
-        &transport
+        &transport,
+        expect_raw_unlock_supported,
     );
-    execute_test!(
-        volatile_raw_unlock_with_reconnection_to_rv_tap,
-        &opts,
-        token_words,
-        &transport
-    );
+
+    // Reconnection via RV_DM does not work if the volatile RAW unlock feature is not present.
+    // Skip this test if the feature is not supported (the first test above already tests this
+    // negative case).
+    if expect_raw_unlock_supported {
+        execute_test!(
+            volatile_raw_unlock_with_reconnection_to_rv_tap,
+            &opts,
+            token_words,
+            &transport,
+        );
+    }
 
     Ok(())
 }

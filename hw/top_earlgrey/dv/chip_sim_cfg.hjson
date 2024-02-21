@@ -605,6 +605,14 @@
       reseed: 1
     }
     {
+      name: chip_sw_usbdev_config_host
+      uvm_test_seq: chip_sw_usbdev_dpi_vseq
+      sw_images: ["//sw/device/tests:usbdev_config_host_test:1:new_rules"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+uart_idx=0", "+calibrate_usb_clk=1"]
+      reseed: 1
+    }
+    {
       name: chip_sw_usbdev_pincfg
       uvm_test_seq: chip_sw_usbdev_dpi_vseq
       sw_images: ["//sw/device/tests:usbdev_pincfg_test:1:new_rules"]
@@ -925,7 +933,11 @@
       uvm_test_seq: chip_sw_lc_volatile_raw_unlock_vseq
       sw_images: ["//sw/device/tests/sim_dv:lc_ctrl_volatile_raw_unlock_test:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+use_otp_image=OtpTypeLcStRaw"]
+      run_opts: [
+        "+use_otp_image=OtpTypeLcStRaw",
+        // We set this to zero if the volatile RAW unlock mechanism is expected
+        // to be disabled (this should be the case in production silicon).
+        "+exp_volatile_raw_unlock_en=0"]
       run_timeout_mins: 120
     }
     {
@@ -935,7 +947,10 @@
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: [
         "+use_otp_image=OtpTypeLcStRaw",
-        "+chip_clock_source=ChipClockSourceExternal48Mhz"]
+        "+chip_clock_source=ChipClockSourceExternal48Mhz",
+        // We set this to zero if the volatile RAW unlock mechanism is expected
+        // to be disabled (this should be the case in production silicon).
+        "+exp_volatile_raw_unlock_en=0"]
       run_timeout_mins: 120
     }
     {
@@ -1852,7 +1867,7 @@
     {
       name: chip_sw_rv_dm_ndm_reset_req_when_cpu_halted
       uvm_test_seq: "chip_sw_rv_dm_ndm_reset_when_cpu_halted_vseq"
-      sw_images: ["//sw/device/tests/sim_dv:rv_dm_ndm_reset_req_when_cpu_halted:1:new_rules"]
+      sw_images: ["//sw/device/tests:rv_dm_ndm_reset_req_when_cpu_halted_rma:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+use_jtag_dmi=1"]
     }

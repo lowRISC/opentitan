@@ -25,7 +25,7 @@
       si_stage: SV3
       lc_states: ["TEST_UNLOCKED", "PROD"]
       tests: ["chip_sw_entropy_src_ast_rng_req"]
-      bazel: []
+      bazel: ["//sw/device/tests:entropy_src_ast_rng_req_test"]
     },
     {
       name: chip_sw_entropy_src_csrng
@@ -49,7 +49,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_sw_entropy_src_csrng"]
-      bazel: []
+      bazel: ["//sw/device/tests:entropy_src_csrng_test"]
     },
     {
       name: chip_sw_entropy_src_known_answer_tests
@@ -73,7 +73,7 @@
       si_stage: SV3
       lc_states: ["TEST_UNLOCKED", "PROD"]
       tests: ["chip_sw_entropy_src_kat_test"]
-      bazel: []
+      bazel: ["//sw/device/tests:entropy_src_kat_test"]
     },
     {
       name: chip_sw_entropy_src_bypass_mode_health_tests
@@ -174,6 +174,80 @@
         "ENTROPY_SRC.RNG_BIT_ENABLE",
       ]
       stage: V3
+      si_stage: SV3
+      lc_states: ["TEST_UNLOCKED", "PROD"]
+      tests: []
+      bazel: []
+    },
+    {
+      name: chip_sw_entropy_src_fw_observe_many_contiguous
+      desc: '''Verify that the software can observe samples fast enough to extract many contiguous samples.
+
+            Procedure:
+            - Disable the entropy complex.
+            - Disable health checks.
+            - Enable ENTROPY_SRC in FIPS mode
+            - Enable Firmware Override - Observe.
+            - Repeat several times:
+              - Collect 1000 contiguous samples from the observe FIFO:
+                - Verify after reading each sample that the observe FIFO overflow status has not been set.
+              - Let the observe FIFO overflow.
+              - Drain the observe FIFO.
+
+            Tests:
+            - The procedure must be run once with ENTROPY_SRC.RNG_BIT_ENABLE disabled (4-bit / sample) and
+              four times with the ENTROPY_SRC.RNG_BIT_ENABLE feature being enabled (once for every channel).
+
+            Notes for silicon targets:
+            - This test requires access to the ENTROPY_SRC.FW_OV.OBSERVE feature, which is gated by OTP.
+              This test might thus need to be done in a secure facility.
+            '''
+      features: [
+        "ENTROPY_SRC.MODE.FIPS",
+        "ENTROPY_SRC.FW_OV.OBSERVE"
+        "ENTROPY_SRC.RNG_BIT_ENABLE",
+      ]
+      stage: V2
+      si_stage: SV3
+      lc_states: ["TEST_UNLOCKED", "PROD"]
+      tests: []
+      bazel: ["//sw/device/tests:entropy_src_fw_observe_many_contiguous_test"]
+    },
+    {
+      name: chip_sw_entropy_src_fw_extract_and_insert
+      desc: '''Verify that the software can observe samples fast enough to extract many contiguous samples.
+
+            Procedure:
+            - Disable the entropy complex.
+            - Disable health checks.
+            - Enable ENTROPY_SRC in FIPS mode.
+            - Configure OBSERVE_FIFO_THRESH to a sensible value.
+            - Enable Firmware Override - Extract & Insert.
+            - Enable CSRNG.
+            - Enable both EDNs in auto request mode.
+            - Trigger the execution of various cryptographic hardware blocks consuming entropy to stress test the entropy complex.
+            - Repeat until all entropy consuming endpoints have finished their operations:
+              - Read 1000 samples from the observe FIFO.
+              - Verify that the observe FIFO overflow status has not been set.
+              - Insert the samples back into the entropy flow.
+              - Let the observe FIFO overflow.
+              - Empty the observe FIFO and discard any values read.
+
+            Tests:
+            - The procedure must be run once with ENTROPY_SRC.RNG_BIT_ENABLE disabled (4-bit / sample) and
+              four times with the ENTROPY_SRC.RNG_BIT_ENABLE feature being enabled (once for every channel).
+            - The procedure must be tested with and without the conditioner (bypass mode).
+
+            Notes for silicon targets:
+            - This test requires access to the ENTROPY_SRC.ROUTE_TO_FIRMWARE and ENTROPY_SRC.FW_OV.EXTRACT_AND_INSERT features, which are gated by OTP.
+              This test might thus need to be done in a secure facility.
+            '''
+      features: [
+        "ENTROPY_SRC.MODE.FIPS",
+        "ENTROPY_SRC.FW_OV.EXTRACT_AND_INSERT",
+        "ENTROPY_SRC.RNG_BIT_ENABLE"
+      ]
+      stage: V2
       si_stage: SV3
       lc_states: ["TEST_UNLOCKED", "PROD"]
       tests: []

@@ -7,6 +7,7 @@ use clap::{Args, Subcommand};
 use serde_annotate::Annotate;
 use std::any::Any;
 use std::borrow::Borrow;
+use std::collections::HashMap;
 use std::fs::File;
 use std::io::{Read, Write};
 use std::rc::Rc;
@@ -548,6 +549,91 @@ impl CommandDispatch for GpioMonitoring {
     }
 }
 
+#[derive(Debug, Args)]
+/// Manipulates a given set of GPIO pins, clocking out successive samples at a given frequency.
+pub struct GpioBitbang {
+    /// The list of GPIO pins to monitor (space separated).
+    pub pins: Vec<String>,
+
+    #[arg(long, value_parser = opentitanlib::util::bitbang::parse_clock_frequency)]
+    pub clock: Duration,
+
+    #[arg(short, long)]
+    pub sequence: String,
+
+    #[arg(short, long)]
+    pub all: bool,
+}
+
+#[derive(serde::Serialize)]
+pub struct GpioBitbangResult {
+    /// Samples of input, gathered at particular times while the waveform was generated, according
+    /// to instructions in the `sequence` argument.
+    samples: HashMap<String, String>,
+
+    /// Transcript of logic levels of all affected pins at each clock tick.  Only populated if
+    /// `--all` was requested.
+    all: Vec<String>,
+}
+
+/// Composes a string of '0' and '1', with the least significant bit first in the string (opposite
+/// of ordinary numbers).  This is used to print logic levels of the set of pins listed on the
+/// command line.
+fn binary_string(data: u8, num_digits: usize) -> String {
+    let mut val = String::new();
+    for i in 0..num_digits {
+        val += if data & (1 << i) != 0 { "1" } else { "0" };
+    }
+    val
+}
+
+impl CommandDispatch for GpioBitbang {
+    fn run(
+        &self,
+        _context: &dyn Any,
+        transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn Annotate>>> {
+        transport
+            .capabilities()?
+            .request(Capability::GPIO_BITBANGING)
+            .ok()?;
+        let gpio_bitbanging = transport.gpio_bitbanging()?;
+        let gpio_pins = transport.gpio_pins(&self.pins)?;
+        let mut outbound_data_accumulator: Vec<u8> = Vec::new();
+        let mut inbound_data_accumulator: Vec<u8> = Vec::new();
+        let (mut sequence, output_map) = opentitanlib::util::bitbang::parse_sequence(
+            &self.sequence,
+            gpio_pins.len(),
+            self.clock,
+            &mut inbound_data_accumulator,
+            &mut outbound_data_accumulator,
+        )?;
+        gpio_bitbanging.run(
+            &gpio_pins
+                .iter()
+                .map(Rc::borrow)
+                .collect::<Vec<&dyn GpioPin>>(),
+            self.clock,
+            &mut sequence,
+        )?;
+        let mut samples = HashMap::new();
+        for (label, byte_index) in output_map {
+            let sampled_data = inbound_data_accumulator[byte_index];
+            samples.insert(
+                label.to_string(),
+                binary_string(sampled_data, gpio_pins.len()),
+            );
+        }
+        let mut all = Vec::new();
+        if self.all {
+            for sampled_data in inbound_data_accumulator {
+                all.push(binary_string(sampled_data, gpio_pins.len()));
+            }
+        }
+        Ok(Some(Box::new(GpioBitbangResult { samples, all })))
+    }
+}
+
 /// Commands for manipulating GPIO pins.
 #[derive(Debug, Subcommand, CommandDispatch)]
 pub enum GpioCommand {
@@ -561,4 +647,5 @@ pub enum GpioCommand {
     AnalogRead(GpioAnalogRead),
     AnalogWrite(GpioAnalogWrite),
     Monitoring(GpioMonitoring),
+    Bitbang(GpioBitbang),
 }

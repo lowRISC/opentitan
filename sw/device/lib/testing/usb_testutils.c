@@ -141,7 +141,7 @@ status_t usb_testutils_poll(usb_testutils_ctx_t *ctx) {
   }
 
   // Keep buffers available for packet reception
-  TRY(dif_usbdev_fill_available_fifo(ctx->dev, ctx->buffer_pool));
+  TRY(dif_usbdev_fill_available_fifos(ctx->dev, ctx->buffer_pool));
 
   if (istate & (1u << kDifUsbdevIrqPktReceived)) {
     // TODO: we run the risk of starving the IN side here if the rx_callback(s)
@@ -206,8 +206,9 @@ status_t usb_testutils_poll(usb_testutils_ctx_t *ctx) {
   if (istate &
       ~((1u << kDifUsbdevIrqLinkReset) | (1u << kDifUsbdevIrqPktReceived) |
         (1u << kDifUsbdevIrqPktSent) | (1u << kDifUsbdevIrqFrame) |
-        (1u << kDifUsbdevIrqAvEmpty) | (1u << kDifUsbdevIrqRxFull) |
-        (1u << kDifUsbdevIrqLinkOutErr) | (1u << kDifUsbdevIrqLinkInErr))) {
+        (1u << kDifUsbdevIrqAvSetupEmpty) | (1u << kDifUsbdevIrqAvOutEmpty) |
+        (1u << kDifUsbdevIrqRxFull) | (1u << kDifUsbdevIrqLinkOutErr) |
+        (1u << kDifUsbdevIrqLinkInErr))) {
     // Report anything that really should not be happening during testing,
     //   at least for now
     //
@@ -446,7 +447,7 @@ status_t usb_testutils_init(usb_testutils_ctx_t *ctx, bool pinflip,
   TRY(dif_usbdev_irq_disable_all(ctx->dev, NULL));
 
   // Provide buffers for any packet reception
-  TRY(dif_usbdev_fill_available_fifo(ctx->dev, ctx->buffer_pool));
+  TRY(dif_usbdev_fill_available_fifos(ctx->dev, ctx->buffer_pool));
 
   // Preemptively enable SETUP reception on endpoint zero for the
   // Default Control Pipe; all other settings for that endpoint will be applied

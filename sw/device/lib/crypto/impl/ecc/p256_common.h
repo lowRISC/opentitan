@@ -101,6 +101,7 @@ typedef struct p256_point {
  * @param share1_addr DMEM address of the second share.
  * @return Result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 status_t p256_masked_scalar_write(const p256_masked_scalar_t *src,
                                   const otbn_addr_t share0_addr,
                                   const otbn_addr_t share1_addr);

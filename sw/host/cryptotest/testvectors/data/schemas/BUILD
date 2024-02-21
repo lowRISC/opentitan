@@ -14,4 +14,8 @@ filegroup(
     srcs = ["ecdsa_sig_ver_schema.json"],
 )
 
-exports_files(["hmac_schema.json"])
+exports_files([
+    "ecdh_schema.json",
+    "hash_schema.json",
+    "hmac_schema.json",
+])

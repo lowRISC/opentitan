@@ -23,6 +23,25 @@ enum {
   kKmacPrefixMaxSize = 36,
   // The max size of customization string for KMAC.
   kKmacCustStrMaxSize = 32,
+  // The size of the sideload key. This parameter is not exposed by KMAC or
+  // Keymgr hjson files from HW, so we need to hardcode it for the moment.
+  kKmacSideloadKeyLength = 256,
+  // Length of a SHA3-224 digest in bytes.
+  kSha3_224DigestBytes = 224 / 8,
+  // Length of a SHA3-224 digest in 32-bit words.
+  kSha3_224DigestWords = kSha3_224DigestBytes / sizeof(uint32_t),
+  // Length of a SHA3_256 digest in bytes.
+  kSha3_256DigestBytes = 256 / 8,
+  // Length of a SHA3_256 digest in 32-bit words.
+  kSha3_256DigestWords = kSha3_256DigestBytes / sizeof(uint32_t),
+  // Length of a SHA3_384 digest in bytes.
+  kSha3_384DigestBytes = 384 / 8,
+  // Length of a SHA3_384 digest in 32-bit words.
+  kSha3_384DigestWords = kSha3_384DigestBytes / sizeof(uint32_t),
+  // Length of a SHA3_512 digest in bytes.
+  kSha3_512DigestBytes = 512 / 8,
+  // Length of a SHA3_512 digest in 32-bit words.
+  kSha3_512DigestWords = kSha3_512DigestBytes / sizeof(uint32_t),
 };
 
 /**
@@ -33,6 +52,9 @@ typedef struct kmac_blinded_key {
   uint32_t *share1;
   // The length of single share (in bytes)
   size_t len;
+  // Whether the key should be provided by keymgr through sideload port.
+  // If `hw_backed` is true, `share0/1` pointers and `len` are ignored.
+  hardened_bool_t hw_backed;
 } kmac_blinded_key_t;
 
 /**
@@ -208,10 +230,17 @@ status_t kmac_cshake_256(const uint8_t *message, size_t message_len,
 /**
  * Compute KMAC-128 in one-shot.
  *
- * The caller must ensure that `digest_len` words are allocated at the location
- * pointed to by `digest`.
+ * This function also supports sideloading the key from the Keymgr through a
+ * peripheral port inaccessible to SW. In order to sideload the key, the caller
+ * needs to set `key->hw_backed` to `kHardenedBoolTrue`. When sideloading,
+ * `key->length` must correspond to the sideload key size
+ * `kKmacSideloadKeyLength / 8` and `share` pointers must be set to NULL.
  *
- * `cust_str_len` cannot exceed `kKmacCustStrMaxSize`.
+ * With SW-provided keys, `key->hw_backed` must be `kHardenedBoolFalse`, `share`
+ * pointers must be correctly configured and `len` must match the key length.
+ *
+ * The caller must ensure that `digest_len` words are allocated at the location
+ * pointed to by `digest`. `cust_str_len` must not exceed `kKmacCustStrMaxSize`.
  *
  * @param message The input message.
  * @param message_len The input message length in bytes.
@@ -230,10 +259,17 @@ status_t kmac_kmac_128(kmac_blinded_key_t *key, const uint8_t *message,
 /**
  * Compute KMAC-256 in one-shot.
  *
- * The caller must ensure that `digest_len` words are allocated at the location
- * pointed to by `digest`.
+ * This function also supports sideloading the key from the Keymgr through a
+ * peripheral port inaccessible to SW. In order to sideload the key, the caller
+ * needs to set `key->hw_backed` to `kHardenedBoolTrue`. When sideloading,
+ * `key->length` must correspond to the sideload key size
+ * `kKmacSideloadKeyLength / 8` and `share` pointers must be set to NULL.
  *
- * `cust_str_len` cannot exceed `kKmacCustStrMaxSize`.
+ * With SW-provided keys, `key->hw_backed` must be `kHardenedBoolFalse`, `share`
+ * pointers must be correctly configured and `len` must match the key length.
+ *
+ * The caller must ensure that `digest_len` words are allocated at the location
+ * pointed to by `digest`. `cust_str_len` must not exceed `kKmacCustStrMaxSize`.
  *
  * @param message The input message.
  * @param message_len The input message length in bytes.

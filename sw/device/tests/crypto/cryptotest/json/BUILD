@@ -19,9 +19,23 @@ cc_library(
 )
 
 cc_library(
+    name = "ecdsa_commands",
+    srcs = ["ecdsa_commands.c"],
+    hdrs = ["ecdsa_commands.h"],
+    deps = ["//sw/device/lib/ujson"],
+)
+
+cc_library(
     name = "hmac_commands",
     srcs = ["hmac_commands.c"],
     hdrs = ["hmac_commands.h"],
+    deps = ["//sw/device/lib/ujson"],
+)
+
+cc_library(
+    name = "hash_commands",
+    srcs = ["hash_commands.c"],
+    hdrs = ["hash_commands.h"],
     deps = ["//sw/device/lib/ujson"],
 )
 

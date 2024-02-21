@@ -34,7 +34,7 @@ package usbdev_env_pkg;
     IntrLinkReset = 4,
     IntrLinkSuspend = 5,
     IntrLinkResume = 6,
-    IntrAvEmpty = 7,
+    IntrAvOutEmpty = 7,
     IntrRxFull = 8,
     IntrAvOverflow = 9,
     IntrLinkInErr = 10,
@@ -44,6 +44,7 @@ package usbdev_env_pkg;
     IntrFrame = 14,
     IntrPowered = 15,
     IntrLinkOutErr = 16,
+    IntrAvSetupEmpty = 17,
     NumUsbdevInterrupts
   } usbdev_intr_e;
 

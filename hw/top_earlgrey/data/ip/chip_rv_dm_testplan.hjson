@@ -128,6 +128,7 @@
       stage: V2
       si_stage: SV3
       tests: ["chip_sw_rv_dm_ndm_reset_req_when_cpu_halted"]
+      bazel: ["//sw/device/tests:rv_dm_ndm_reset_req_when_cpu_halted"],
       lc_states: ["TEST_UNLOCKED", "DEV", "RMA"]
       host_support: "true"
       features: [

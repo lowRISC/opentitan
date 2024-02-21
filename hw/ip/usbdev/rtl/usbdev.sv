@@ -78,7 +78,7 @@ module usbdev
   output logic       intr_link_reset_o,
   output logic       intr_link_suspend_o,
   output logic       intr_link_resume_o,
-  output logic       intr_av_empty_o,
+  output logic       intr_av_out_empty_o,
   output logic       intr_rx_full_o,
   output logic       intr_av_overflow_o,
   output logic       intr_link_in_err_o,
@@ -86,10 +86,11 @@ module usbdev
   output logic       intr_rx_crc_err_o,
   output logic       intr_rx_pid_err_o,
   output logic       intr_rx_bitstuff_err_o,
-  output logic       intr_frame_o
+  output logic       intr_frame_o,
+  output logic       intr_av_setup_empty_o
 );
 
-  // Could make SramDepth, MaxPktSizeByte, AVFifoDepth and RXFifoDepth
+  // Could make SramDepth, MaxPktSizeByte, AVSetupFifoDepth, AVOutFifoDepth and RXFifoDepth
   // module parameters but may need to fix register def for the first two
   localparam int SramDw = 32; // Places packing bytes to SRAM assume this
   localparam int SramDepth = 512; // 2kB, SRAM Width is DW
@@ -100,13 +101,16 @@ module usbdev
   localparam int NBuf = (SramDepth * SramDw) / (MaxPktSizeByte * 8);
   localparam int NBufWidth = $clog2(NBuf);
 
-  // AV fifo just stores buffer numbers
+  // AV SETUP and AV OUT fifos just store buffer numbers
   localparam int AVFifoWidth = NBufWidth;
-  localparam int AVFifoDepth = 8;
+  localparam int AVSetupFifoDepth = 4;
+  localparam int AVOutFifoDepth = 8;
 
   // RX fifo stores              buf# +  size(0-MaxPktSizeByte)  + EP# + Type
   localparam int RXFifoWidth = NBufWidth + (1+SizeWidth)         +  4  + 1;
   localparam int RXFifoDepth = 8;
+  // derived parameter
+  localparam int RXFifoDepthW = prim_util_pkg::vbits(RXFifoDepth+1);
 
   usbdev_reg2hw_t reg2hw, reg2hw_regtop;
   usbdev_hw2reg_t hw2reg, hw2reg_regtop;
@@ -139,7 +143,7 @@ module usbdev
   logic [SramDw-1:0] usb_mem_b_rdata;
 
   logic              clr_devaddr;
-  logic              event_av_empty, event_av_overflow, event_rx_full;
+  logic              event_av_setup_empty, event_av_out_empty, event_av_overflow, event_rx_full;
   logic              link_reset, link_suspend;
   logic              host_lost, link_disconnect, link_powered;
   logic              event_link_reset, event_link_suspend, event_link_resume;
@@ -156,8 +160,21 @@ module usbdev
   logic              connect_en;
   logic              resume_link_active;
 
-  logic [NEndpoints-1:0] data_toggle_clear;
+  // Current state of OUT data toggles
+  logic [NEndpoints-1:0] out_data_toggle;
+  // Write strobe from register interface
+  logic                  out_datatog_we;
+  // Write data from register interface
+  logic [NEndpoints-1:0] out_datatog_status;
+  logic [NEndpoints-1:0] out_datatog_mask;
 
+  // Current state of IN data toggles
+  logic [NEndpoints-1:0] in_data_toggle;
+  // Write strobe from register interface
+  logic                  in_datatog_we;
+  // Write data from register interface
+  logic [NEndpoints-1:0] in_datatog_status;
+  logic [NEndpoints-1:0] in_datatog_mask;
 
   /////////////////////////////////
   // USB RX after CDC & muxing   //
@@ -206,47 +223,91 @@ module usbdev
   // Receive interface fifos //
   /////////////////////////////
 
-  logic              av_fifo_wready;
+  logic              avsetup_fifo_wready;
+  logic              avout_fifo_wready;
   logic              event_pkt_received;
-  logic              av_rvalid, av_rready;
+  logic              avsetup_rvalid, avsetup_rready;
+  logic              avout_rvalid, avout_rready;
   logic              rx_wvalid, rx_wready;
+  logic              rx_wready_setup, rx_wready_out;
   logic              rx_fifo_rvalid;
   logic              rx_fifo_re;
 
-  logic [AVFifoWidth - 1:0] av_rdata;
+  logic [AVFifoWidth - 1:0] avsetup_rdata;
+  logic [AVFifoWidth - 1:0] avout_rdata;
   logic [RXFifoWidth - 1:0] rx_wdata, rx_rdata;
 
   logic [NEndpoints-1:0] clear_rxenable_out;
 
-  assign event_av_empty = connect_en & ~av_rvalid;
-  assign event_av_overflow = reg2hw.avbuffer.qe & (~av_fifo_wready);
+  // Separate 'FIFO empty' interrupts for the OUT and SETUP FIFOs because each interrupt cannot be
+  // cleared without writing a buffer into the FIFO
+  assign event_av_setup_empty = connect_en & ~avsetup_rvalid;
+  assign event_av_out_empty = connect_en & ~avout_rvalid;
+  // A single 'overflow' interrupt suffices since this indicates a programming error
+  assign event_av_overflow = (reg2hw.avsetupbuffer.qe & (~avsetup_fifo_wready))
+                           | (reg2hw.avoutbuffer.qe   & (~avout_fifo_wready));
   assign hw2reg.usbstat.rx_empty.d = connect_en & ~rx_fifo_rvalid;
 
+  // Available SETUP Buffer FIFO
   prim_fifo_sync #(
     .Width(AVFifoWidth),
     .Pass(1'b0),
-    .Depth(AVFifoDepth),
+    .Depth(AVSetupFifoDepth),
     .OutputZeroIfEmpty(1'b0)
-  ) usbdev_avfifo (
+  ) usbdev_avsetupfifo (
     .clk_i,
     .rst_ni    (rst_n),
     .clr_i     (1'b0),
 
-    .wvalid_i  (reg2hw.avbuffer.qe),
-    .wready_o  (av_fifo_wready),
-    .wdata_i   (reg2hw.avbuffer.q),
+    .wvalid_i  (reg2hw.avsetupbuffer.qe),
+    .wready_o  (avsetup_fifo_wready),
+    .wdata_i   (reg2hw.avsetupbuffer.q),
 
-    .rvalid_o  (av_rvalid),
-    .rready_i  (av_rready),
-    .rdata_o   (av_rdata),
-    .full_o    (hw2reg.usbstat.av_full.d),
-    .depth_o   (hw2reg.usbstat.av_depth.d),
+    .rvalid_o  (avsetup_rvalid),
+    .rready_i  (avsetup_rready),
+    .rdata_o   (avsetup_rdata),
+    .full_o    (hw2reg.usbstat.av_setup_full.d),
+    .depth_o   (hw2reg.usbstat.av_setup_depth.d),
+    .err_o     ()
+  );
+
+  // Available OUT Buffer FIFO
+  prim_fifo_sync #(
+    .Width(AVFifoWidth),
+    .Pass(1'b0),
+    .Depth(AVOutFifoDepth),
+    .OutputZeroIfEmpty(1'b0)
+  ) usbdev_avoutfifo (
+    .clk_i,
+    .rst_ni    (rst_n),
+    .clr_i     (1'b0),
+
+    .wvalid_i  (reg2hw.avoutbuffer.qe),
+    .wready_o  (avout_fifo_wready),
+    .wdata_i   (reg2hw.avoutbuffer.q),
+
+    .rvalid_o  (avout_rvalid),
+    .rready_i  (avout_rready),
+    .rdata_o   (avout_rdata),
+    .full_o    (hw2reg.usbstat.av_out_full.d),
+    .depth_o   (hw2reg.usbstat.av_out_depth.d),
     .err_o     ()
   );
 
   assign rx_fifo_re = reg2hw.rxfifo.ep.re | reg2hw.rxfifo.setup.re |
                       reg2hw.rxfifo.size.re | reg2hw.rxfifo.buffer.re;
 
+  // The number of used entries in the Received Buffer FIFO is presented to the software
+  logic [RXFifoDepthW-1:0] rx_depth;
+  assign hw2reg.usbstat.rx_depth.d = rx_depth;
+
+  // We can always accept a SETUP packet if the Received Buffer FIFO is not full...
+  assign rx_wready_setup = rx_wready;
+  // ... but regular OUT packets are not permitted to use the final entry; still qualified
+  // with 'rx_wready' for when reset is asserted.
+  assign rx_wready_out   = rx_wready & (rx_depth < (RXFifoDepth - 1));
+
+  // Received Buffer FIFO
   prim_fifo_sync #(
     .Width(RXFifoWidth),
     .Pass(1'b0),
@@ -265,7 +326,7 @@ module usbdev
     .rready_i  (rx_fifo_re),
     .rdata_o   (rx_rdata),
     .full_o    (event_rx_full),
-    .depth_o   (hw2reg.usbstat.rx_depth.d),
+    .depth_o   (rx_depth),
     .err_o     ()
   );
 
@@ -343,12 +404,23 @@ module usbdev
     end
   end
 
-  always_comb begin : proc_data_toggle_clear
-    data_toggle_clear = '0;
-    for (int i = 0; i < NEndpoints; i++) begin
-      data_toggle_clear[i] = reg2hw.data_toggle_clear[i].q & reg2hw.data_toggle_clear[i].qe;
-    end
-  end
+  // OUT data toggles are maintained with the packet engine but may be set or
+  // cleared by software
+  assign out_datatog_we = reg2hw.out_data_toggle.status.qe & reg2hw.out_data_toggle.mask.qe;
+  assign out_datatog_status = reg2hw.out_data_toggle.status.q;
+  assign out_datatog_mask = reg2hw.out_data_toggle.mask.q;
+  // Software may read tham at any time
+  assign hw2reg.out_data_toggle.status.d = out_data_toggle;
+  assign hw2reg.out_data_toggle.mask.d = {NEndpoints{1'b0}};
+
+  // IN data toggles are maintained with the packet engine but may be set or
+  // cleared by software
+  assign in_datatog_we = reg2hw.in_data_toggle.status.qe & reg2hw.in_data_toggle.mask.qe;
+  assign in_datatog_status = reg2hw.in_data_toggle.status.q;
+  assign in_datatog_mask = reg2hw.in_data_toggle.mask.q;
+  // Software may read them at any time
+  assign hw2reg.in_data_toggle.status.d = in_data_toggle;
+  assign hw2reg.in_data_toggle.mask.d = {NEndpoints{1'b0}};
 
   always_comb begin
     set_sentbit = '0;
@@ -461,12 +533,16 @@ module usbdev
     .rx_setup_i           (enable_setup),
     .rx_out_i             (enable_out),
     .rx_stall_i           (out_ep_stall),
-    .av_rvalid_i          (av_rvalid),
-    .av_rready_o          (av_rready),
-    .av_rdata_i           (av_rdata),
+    .avsetup_rvalid_i     (avsetup_rvalid),
+    .avsetup_rready_o     (avsetup_rready),
+    .avsetup_rdata_i      (avsetup_rdata),
+    .avout_rvalid_i       (avout_rvalid),
+    .avout_rready_o       (avout_rready),
+    .avout_rdata_i        (avout_rdata),
 
     .rx_wvalid_o          (rx_wvalid),
-    .rx_wready_i          (rx_wready),
+    .rx_wready_setup_i    (rx_wready_setup),
+    .rx_wready_out_i      (rx_wready_out),
     .rx_wdata_o           (rx_wdata),
     .setup_received_o     (setup_received),
     .out_endpoint_o       (out_endpoint),  // will be stable for several cycles
@@ -504,7 +580,15 @@ module usbdev
     .tx_osc_test_mode_i   (reg2hw.phy_config.tx_osc_test_mode.q), // cdc ok: quasi-static
     .cfg_use_diff_rcvr_i  (usb_rx_enable_o),
     .cfg_pinflip_i        (cfg_pinflip),
-    .data_toggle_clear_i  (data_toggle_clear),
+    .out_data_toggle_o    (out_data_toggle),
+    .out_datatog_we_i     (out_datatog_we),
+    .out_datatog_status_i (out_datatog_status),
+    .out_datatog_mask_i   (out_datatog_mask),
+    .in_data_toggle_o     (in_data_toggle),
+    .in_datatog_we_i      (in_datatog_we),
+    .in_datatog_status_i  (in_datatog_status),
+    .in_datatog_mask_i    (in_datatog_mask),
+
     .resume_link_active_i (resume_link_active),
 
     // status
@@ -870,17 +954,17 @@ module usbdev
     .intr_o                 (intr_link_resume_o)
   );
 
-  prim_intr_hw #(.Width(1), .IntrT("Status")) intr_av_empty (
+  prim_intr_hw #(.Width(1), .IntrT("Status")) intr_av_out_empty (
     .clk_i,
     .rst_ni, // not stubbed off so that the interrupt regs still work.
-    .event_intr_i           (event_av_empty),
-    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.av_empty.q),
-    .reg2hw_intr_test_q_i   (reg2hw.intr_test.av_empty.q),
-    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.av_empty.qe),
-    .reg2hw_intr_state_q_i  (reg2hw.intr_state.av_empty.q),
-    .hw2reg_intr_state_de_o (hw2reg.intr_state.av_empty.de),
-    .hw2reg_intr_state_d_o  (hw2reg.intr_state.av_empty.d),
-    .intr_o                 (intr_av_empty_o)
+    .event_intr_i           (event_av_out_empty),
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.av_out_empty.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.av_out_empty.q),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.av_out_empty.qe),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.av_out_empty.q),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.av_out_empty.de),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.av_out_empty.d),
+    .intr_o                 (intr_av_out_empty_o)
   );
 
   prim_intr_hw #(.Width(1), .IntrT("Status")) intr_rx_full (
@@ -985,6 +1069,19 @@ module usbdev
     .hw2reg_intr_state_de_o (hw2reg.intr_state.frame.de),
     .hw2reg_intr_state_d_o  (hw2reg.intr_state.frame.d),
     .intr_o                 (intr_frame_o)
+  );
+
+  prim_intr_hw #(.Width(1), .IntrT("Status")) intr_av_setup_empty (
+    .clk_i,
+    .rst_ni, // not stubbed off so that the interrupt regs still work.
+    .event_intr_i           (event_av_setup_empty),
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.av_setup_empty.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.av_setup_empty.q),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.av_setup_empty.qe),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.av_setup_empty.q),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.av_setup_empty.de),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.av_setup_empty.d),
+    .intr_o                 (intr_av_setup_empty_o)
   );
 
   /////////////////////////////////
@@ -1146,7 +1243,7 @@ module usbdev
   `ASSERT_KNOWN(USBIntrLinkRstKnown_A, intr_link_reset_o)
   `ASSERT_KNOWN(USBIntrLinkSusKnown_A, intr_link_suspend_o)
   `ASSERT_KNOWN(USBIntrLinkResKnown_A, intr_link_resume_o)
-  `ASSERT_KNOWN(USBIntrAvEmptyKnown_A, intr_av_empty_o)
+  `ASSERT_KNOWN(USBIntrAvOutEmptyKnown_A, intr_av_out_empty_o)
   `ASSERT_KNOWN(USBIntrRxFullKnown_A, intr_rx_full_o)
   `ASSERT_KNOWN(USBIntrAvOverKnown_A, intr_av_overflow_o)
   `ASSERT_KNOWN(USBIntrLinkInErrKnown_A, intr_link_in_err_o)
@@ -1155,6 +1252,7 @@ module usbdev
   `ASSERT_KNOWN(USBIntrRxPidErrKnown_A, intr_rx_pid_err_o)
   `ASSERT_KNOWN(USBIntrRxBitstuffErrKnown_A, intr_rx_bitstuff_err_o)
   `ASSERT_KNOWN(USBIntrFrameKnown_A, intr_frame_o)
+  `ASSERT_KNOWN(USBIntrAvSetupEmptyKnown_A, intr_av_setup_empty_o)
 
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])

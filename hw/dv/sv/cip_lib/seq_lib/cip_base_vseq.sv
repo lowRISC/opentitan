@@ -707,6 +707,13 @@ class cip_base_vseq #(
             end
             begin : issue_rand_reset
               wait_to_issue_reset(reset_delay_bound);
+
+              // Check that there are no CSR requests in flight as we trigger the reset. If any
+              // exist, they won't manage to complete (because apply_resets_concurrently will kill
+              // the task that is driving them) and everything will end up out of sync.
+              `DV_CHECK(!has_outstanding_access(),
+                        "Trying to trigger a reset with outstanding CSR items.")
+
               ongoing_reset = 1'b1;
               `uvm_info(`gfn, $sformatf("\nReset is issued for run %0d/%0d", i, num_times), UVM_LOW)
               apply_resets_concurrently();
@@ -714,7 +721,6 @@ class cip_base_vseq #(
               ongoing_reset = 1'b0;
             end
           join_any
-          `DV_CHECK_EQ(has_outstanding_access(),  0, "No CSR outstanding items after reset!")
           disable fork;
           `uvm_info(`gfn, $sformatf("\nStress w/ reset is done for run %0d/%0d", i, num_times),
                     UVM_LOW)
@@ -737,7 +743,21 @@ class cip_base_vseq #(
         rand_reset_delay inside {[1:reset_delay_bound]};
     )
 
+    // Wait a random number of cycles (up to reset_delay_bound) before triggering the reset.
     cfg.clk_rst_vif.wait_clks(rand_reset_delay);
+
+    // If there is an outstanding access, wait up to 10000 more cycles to allow it to clear. If it
+    // doesn't clear, something has gone wrong: we don't expect there to permanently be CSR
+    // accesses.
+    for (int i = 0; i < 10000; i++) begin
+      if (!has_outstanding_access()) break;
+      cfg.clk_rst_vif.wait_clks(1);
+    end
+    `DV_CHECK(!has_outstanding_access(),
+              "Outstanding access never cleared to allow us to reset.")
+
+    // Wait a portion of the clock period, to avoid the reset being synchronised with an edge of the
+    // clock.
     #($urandom_range(0, cfg.clk_rst_vif.clk_period_ps) * 1ps);
   endtask
 

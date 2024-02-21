@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-  name: chip_hmac
+  name: chip_lc_ctrl
   testpoints: [
     // LC_CTRL integration tests
     {
@@ -297,12 +297,21 @@
              - Pre-load OTP image with RAW lc_state.
              - Initiate the LC transition to test_unlocked0 state using the
                VOLATILE_RAW_UNLOCK mode of operation.
+
+             If this top-level is expected to support VOLATILE_RAW_UNLOCK:
+
              - As part of the transition to test_unlocked0, switch the TAP interface to rv_dm.
              - Enable ROM execution via rv_dm, and perform POR.
              - Initiate a second transition to test_unlocked0 using VOLATILE_RAW_UNLOCK.
              - Verify that the CPU is able to execute.
+             - Test ext_clk injection before enabling ROM execution.
 
-             Test ext_clk injection before enabling ROM execution.
+             If this top-level is NOT expected to support VOLATILE_RAW_UNLOCK:
+
+             - Check that the VOLATILE_RAW_UNLOCK bit in the transition control register stays 0
+               when it is programmed to 1.
+             - Check that the transition results in a token error (the real RAW unlock transition
+               expects the unhashed token instead of the hashed token supplied for volatile RAW unlock).
              '''
       features: [
         "LC_CTRL.STATE.RAW",

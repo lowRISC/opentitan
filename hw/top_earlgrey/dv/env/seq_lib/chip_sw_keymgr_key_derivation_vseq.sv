@@ -236,7 +236,7 @@ class chip_sw_keymgr_key_derivation_vseq extends chip_sw_base_vseq;
           top_earlgrey_rnd_cnst_pkg::RndCnstLcCtrlLcKeymgrDivProduction;
     end else begin
       creator_data.HealthMeasurement =
-          top_earlgrey_rnd_cnst_pkg::RndCnstLcCtrlLcKeymgrDivTestDevRma;
+          top_earlgrey_rnd_cnst_pkg::RndCnstLcCtrlLcKeymgrDivRma;
     end
 
     for (int i = 0; i < keymgr_pkg::KeyWidth / TL_DW; i++) begin

@@ -50,3 +50,81 @@ genrule(
         ("ecdsa_secp384r1_sha3_512_test.json", "wycheproof_ecdsa_p384_sha3_512"),
     ]
 ]
+
+[
+    run_binary(
+        name = "nist_cavp_{}_{}_{}_json".format(
+            src_repo,
+            algorithm.lower(),
+            msg_type.lower(),
+        ),
+        srcs = [
+            "@nist_cavp_{}//:{}{}.rsp".format(src_repo, algorithm, msg_type),
+            "//sw/host/cryptotest/testvectors/data/schemas:hash_schema.json",
+        ],
+        outs = [":nist_{}_{}.json".format(
+            algorithm.lower(),
+            msg_type.lower(),
+        )],
+        args = [
+            "--src",
+            "$(location @nist_cavp_{}//:{}{}.rsp)".format(src_repo, algorithm, msg_type),
+            "--dst",
+            "$(location :nist_{}_{}.json)".format(
+                algorithm.lower(),
+                msg_type.lower(),
+            ),
+            "--schema",
+            "$(location //sw/host/cryptotest/testvectors/data/schemas:hash_schema.json)",
+            "--algorithm",
+            algorithm,
+        ],
+        tool = "//sw/host/cryptotest/testvectors/parsers:nist_cavp_hash_parser",
+    )
+    for algorithm, src_repo, extra_msg_types in [
+        ("SHA256", "sha2_fips_180_4", []),
+        ("SHA384", "sha2_fips_180_4", []),
+        ("SHA512", "sha2_fips_180_4", []),
+        ("SHA3_256", "sha3_fips_202", []),
+        ("SHA3_384", "sha3_fips_202", []),
+        ("SHA3_512", "sha3_fips_202", []),
+        (
+            "SHAKE128",
+            "shake_fips_202",
+            ["VariableOut"],
+        ),
+        (
+            "SHAKE256",
+            "shake_fips_202",
+            ["VariableOut"],
+        ),
+    ]
+    for msg_type in [
+        "ShortMsg",
+        "LongMsg",
+    ] + extra_msg_types
+]
+
+[
+    run_binary(
+        name = cryptotest_name,
+        srcs = [
+            "//sw/vendor/wycheproof/testvectors:{}".format(src_name),
+            "//sw/host/cryptotest/testvectors/data/schemas:ecdh_schema.json",
+        ],
+        outs = [":{}.json".format(cryptotest_name)],
+        args = [
+            "--src",
+            "$(location //sw/vendor/wycheproof/testvectors:{})".format(src_name),
+            "--dst",
+            "$(location :{}.json)".format(cryptotest_name),
+            "--schema",
+            "$(location //sw/host/cryptotest/testvectors/data/schemas:ecdh_schema.json)",
+        ],
+        tool = "//sw/host/cryptotest/testvectors/parsers:wycheproof_ecdh_parser",
+    )
+    for src_name, cryptotest_name in [
+        ("ecdh_secp256r1_test.json", "wycheproof_ecdh_p256"),
+        ("ecdh_secp384r1_test.json", "wycheproof_ecdh_p384"),
+    ]
+]

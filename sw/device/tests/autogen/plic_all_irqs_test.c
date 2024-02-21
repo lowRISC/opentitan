@@ -2118,7 +2118,7 @@ static void peripheral_irqs_trigger(void) {
 #if TEST_MIN_IRQ_PERIPHERAL <= 22 && 22 < TEST_MAX_IRQ_PERIPHERAL
   peripheral_expected = kTopEarlgreyPlicPeripheralUsbdev;
   for (dif_usbdev_irq_t irq = kDifUsbdevIrqPktReceived;
-       irq <= kDifUsbdevIrqLinkOutErr; ++irq) {
+       irq <= kDifUsbdevIrqAvSetupEmpty; ++irq) {
     usbdev_irq_expected = irq;
     LOG_INFO("Triggering usbdev IRQ %d.", irq);
     CHECK_DIF_OK(dif_usbdev_irq_force(&usbdev, irq, true));

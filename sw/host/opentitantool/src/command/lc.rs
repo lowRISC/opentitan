@@ -478,6 +478,9 @@ impl CommandDispatch for VolatileRawUnlock {
             /*use_external_clk=*/ true,
             /*post_transition_tap=*/ JtagTap::LcTap,
             &self.jtag_params,
+            // whether we expect the RAW unlock feature to be present or not.
+            // on prod silicon this should be disabled.
+            false,
         )?;
 
         jtag = self

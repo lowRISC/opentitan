@@ -147,10 +147,10 @@ EC reset control register
 {"reg": [{"name": "ec_rst_pulse", "bits": 16, "attr": ["rw"], "rotate": 0}, {"bits": 16}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name         | Description                                                                                                                                                                         |
-|:------:|:------:|:-------:|:-------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 31:16  |        |         |              | Reserved                                                                                                                                                                            |
-|  15:0  |   rw   |  0x7d0  | ec_rst_pulse | Configure the debounce timer in number of clock cycles. Each step is 5 us for a 200 kHz clock. The signal must exceed the debounce time by at least one clock cycle to be detected. |
+|  Bits  |  Type  |  Reset  | Name         | Description                                                                   |
+|:------:|:------:|:-------:|:-------------|:------------------------------------------------------------------------------|
+| 31:16  |        |         |              | Reserved                                                                      |
+|  15:0  |   rw   |  0x7d0  | ec_rst_pulse | Configure the pulse width of ec_rst_l. Each step is 5 us for a 200 kHz clock. |
 
 ## ULP_AC_DEBOUNCE_CTL
 Ultra low power AC debounce control register

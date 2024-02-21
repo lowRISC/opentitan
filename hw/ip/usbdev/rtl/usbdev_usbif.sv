@@ -40,12 +40,16 @@ module usbdev_usbif  #(
   input  logic [NEndpoints-1:0]    rx_setup_i,
   input  logic [NEndpoints-1:0]    rx_out_i,
   input  logic [NEndpoints-1:0]    rx_stall_i,
-  input  logic                     av_rvalid_i,
-  output logic                     av_rready_o,
-  input  logic [AVFifoWidth - 1: 0]av_rdata_i,
+  input  logic                     avsetup_rvalid_i,
+  output logic                     avsetup_rready_o,
+  input  logic [AVFifoWidth - 1: 0]avsetup_rdata_i,
+  input  logic                     avout_rvalid_i,
+  output logic                     avout_rready_o,
+  input  logic [AVFifoWidth - 1: 0]avout_rdata_i,
 
   output logic                     rx_wvalid_o,
-  input  logic                     rx_wready_i,
+  input  logic                     rx_wready_setup_i,
+  input  logic                     rx_wready_out_i,
   output logic [RXFifoWidth - 1:0] rx_wdata_o,
   output logic                     setup_received_o,
   output logic [3:0]               out_endpoint_o,
@@ -84,7 +88,14 @@ module usbdev_usbif  #(
   input  logic                     cfg_pinflip_i, // 1: Treat outputs and inputs as though D+/D-
                                                   // are flipped
   input  logic                     tx_osc_test_mode_i, // Oscillator test mode: constant JK output
-  input  logic [NEndpoints-1:0]    data_toggle_clear_i, // Clear the data toggles for an EP
+  output logic [NEndpoints-1:0]    out_data_toggle_o, // Current state of OUT data toggles
+  input  logic                     out_datatog_we_i, // OUT data toggles write strobe from software
+  input  logic [NEndpoints-1:0]    out_datatog_status_i, // New state of selected OUT data toggles
+  input  logic [NEndpoints-1:0]    out_datatog_mask_i, // Which OUT EP data toggles to modify
+  output logic [NEndpoints-1:0]    in_data_toggle_o, // Current state of IN data toggles
+  input  logic                     in_datatog_we_i, // IN data toggles write strobe from software
+  input  logic [NEndpoints-1:0]    in_datatog_status_i, // New state of selected IN data toggles
+  input  logic [NEndpoints-1:0]    in_datatog_mask_i, // Which IN EP data toggles to modify
   input  logic                     resume_link_active_i, // Jump from LinkPowered to LinkResuming
 
   // status
@@ -186,13 +197,25 @@ module usbdev_usbif  #(
     end
   end // always_ff @ (posedge clk_48mhz_i)
 
+  // select from the appropriate Available Buffer FIFO, SETUP or OUT.
+  logic av_rvalid;
+  logic [AVFifoWidth-1:0] av_rdata;
+  assign av_rvalid = current_setup ? avsetup_rvalid_i : avout_rvalid_i;
+  assign av_rdata  = current_setup ? avsetup_rdata_i  : avout_rdata_i;
+
+  // only SETUP packets are permitted to fill the RxFIFO completely, ensuring that we can always
+  // receive a SETUP packet even under heavy OUT traffic and high software latency.
+  logic rx_wready;
+  assign rx_wready = current_setup ? rx_wready_setup_i : rx_wready_out_i;
+
   // need extra write at end if packet not multiple of 4 bytes
-  assign mem_write_o = av_rvalid_i & (std_write_q |
+  assign mem_write_o = av_rvalid & (std_write_q |
                        (~out_max_used_q[PktW] & (out_max_used_q[1:0] != 2'b11) & out_ep_acked));
-  assign mem_waddr = {av_rdata_i, out_max_used_q[PktW-1:2]};
+  assign mem_waddr = {av_rdata, out_max_used_q[PktW-1:2]};
   assign mem_wdata_o = wdata_q;
   assign mem_addr_o = mem_write_o ? mem_waddr : mem_raddr;
   assign mem_req_o = mem_read | mem_write_o;
+  // Is the DATA packet currently being received a SETUP DATA packet or a regular OUT DATA packet?
   assign current_setup = out_ep_setup[out_endpoint_o];
 
   logic [PktW:0] out_max_minus1;
@@ -203,22 +226,24 @@ module usbdev_usbif  #(
       out_endpoint_o,
       current_setup,
       out_max_minus1,
-      av_rdata_i
+      av_rdata
   };
   assign rx_wvalid_o = out_ep_acked;
   // Pop the available fifo after the write that used the previous value
   always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      av_rready_o <= 1'b0;
+      avsetup_rready_o <= 1'b0;
+      avout_rready_o   <= 1'b0;
     end else begin
-      av_rready_o <= rx_wvalid_o;
+      avsetup_rready_o <= rx_wvalid_o &  current_setup;
+      avout_rready_o   <= rx_wvalid_o & ~current_setup;
     end
   end
 
   // full here covers the software blocking by clearing the enable
   assign out_blocked = ~out_ep_setup & ~rx_out_i;
-  // full also covers being blocked because the hardware can't take any transaction
-  assign all_out_blocked = (~rx_wready_i) | (~av_rvalid_i);
+  // full also covers being blocked because the hardware can't take any transactions at all
+  assign all_out_blocked = (~rx_wready) | (~av_rvalid);
 
   assign out_ep_full = {NEndpoints{all_out_blocked}} | out_blocked;
   assign out_ep_stall = rx_stall_i;
@@ -282,7 +307,14 @@ module usbdev_usbif  #(
     .cfg_use_diff_rcvr_i   (cfg_use_diff_rcvr_i),
     .cfg_pinflip_i         (cfg_pinflip_i),
     .tx_osc_test_mode_i    (tx_osc_test_mode_i),
-    .data_toggle_clear_i   (data_toggle_clear_i),
+    .out_data_toggle_o     (out_data_toggle_o),
+    .out_datatog_we_i      (out_datatog_we_i),
+    .out_datatog_status_i  (out_datatog_status_i),
+    .out_datatog_mask_i    (out_datatog_mask_i),
+    .in_data_toggle_o      (in_data_toggle_o),
+    .in_datatog_we_i       (in_datatog_we_i),
+    .in_datatog_status_i   (in_datatog_status_i),
+    .in_datatog_mask_i     (in_datatog_mask_i),
     .diff_rx_ok_i          (diff_rx_ok_i),
 
     .usb_d_i               (usb_d_i),

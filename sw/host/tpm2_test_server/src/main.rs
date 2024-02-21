@@ -19,10 +19,18 @@ pub enum TpmBus {
     Spi {
         #[command(flatten)]
         params: SpiParams,
+
+        /// Pin used for signalling by Google security chips
+        #[arg(long)]
+        gsc_ready: Option<String>,
     },
     I2C {
         #[command(flatten)]
         params: I2cParams,
+
+        /// Pin used for signalling by Google security chips
+        #[arg(long)]
+        gsc_ready: Option<String>,
     },
 }
 
@@ -49,7 +57,7 @@ struct Opts {
 const CMD_TOKEN: Token = Token(0);
 const PLATFORM_TOKEN: Token = Token(1);
 
-pub fn main() -> std::io::Result<()> {
+pub fn main() -> anyhow::Result<()> {
     let options = Opts::parse();
     env_logger::Builder::from_default_env()
         .filter(None, options.logging)
@@ -72,18 +80,26 @@ pub fn main() -> std::io::Result<()> {
     poll.registry()
         .register(&mut cmd_stream, CMD_TOKEN, Interest::READABLE)?;
 
-    let transport = backend::create(&options.backend_opts).unwrap();
+    let transport = backend::create(&options.backend_opts)?;
     let bus: Box<dyn Driver> = match options.bus {
-        TpmBus::Spi { params } => {
-            let spi = params.create(&transport, "TPM").unwrap();
-            Box::new(SpiDriver::new(spi))
+        TpmBus::Spi { params, gsc_ready } => {
+            let spi = params.create(&transport, "TPM")?;
+            let ready_pin = match &gsc_ready {
+                Some(pin) => Some((transport.gpio_pin(pin)?, transport.gpio_monitoring()?)),
+                None => None,
+            };
+            Box::new(SpiDriver::new(spi, ready_pin)?)
         }
-        TpmBus::I2C { params } => {
-            let i2c = params.create(&transport, "TPM").unwrap();
-            Box::new(I2cDriver::new(i2c))
+        TpmBus::I2C { params, gsc_ready } => {
+            let i2c = params.create(&transport, "TPM")?;
+            let ready_pin = match &gsc_ready {
+                Some(pin) => Some((transport.gpio_pin(pin)?, transport.gpio_monitoring()?)),
+                None => None,
+            };
+            Box::new(I2cDriver::new(i2c, ready_pin)?)
         }
     };
-    bus.init().unwrap();
+    bus.init()?;
 
     loop {
         poll.poll(&mut events, None)?;
@@ -91,12 +107,12 @@ pub fn main() -> std::io::Result<()> {
         for event in events.iter() {
             match event.token() {
                 CMD_TOKEN => {
-                    if serve_command(&mut cmd_stream, &*bus).unwrap() {
+                    if serve_command(&mut cmd_stream, &*bus)? {
                         return Ok(());
                     }
                 }
                 PLATFORM_TOKEN => {
-                    if serve_command(&mut platform_stream, &*bus).unwrap() {
+                    if serve_command(&mut platform_stream, &*bus)? {
                         return Ok(());
                     }
                 }

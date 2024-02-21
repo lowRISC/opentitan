@@ -10,7 +10,6 @@ class usbdev_av_buffer_vseq extends usbdev_base_vseq;
 
   usb20_item      item;
   RSP             rsp_item;
-  bit      [4:0]  set_buffer_id = 5'd1;
   rand bit [3:0]  endp;
   bit      [6:0]  num_of_bytes = 8;
   bit             rand_or_not = 0;
@@ -32,9 +31,6 @@ class usbdev_av_buffer_vseq extends usbdev_base_vseq;
     cfg.clk_rst_vif.wait_clks(20);
     // Check transaction accuracy
     check_trans_accuracy();
-    // Make sure buffer is availabe for nex trans
-    ral.avbuffer.buffer.set(set_buffer_id + 1);
-    csr_update(ral.avbuffer);
   endtask
 
   task configure_trans();
@@ -48,8 +44,8 @@ class usbdev_av_buffer_vseq extends usbdev_base_vseq;
     ral.rxenable_out[0].out[endp].set(1'b1);
     csr_update(ral.rxenable_out[0]);
     // Set buffer
-    ral.avbuffer.buffer.set(set_buffer_id);
-    csr_update(ral.avbuffer);
+    ral.avoutbuffer.buffer.set(out_buffer_id);
+    csr_update(ral.avoutbuffer);
   endtask
 
   task check_trans_accuracy();
@@ -59,12 +55,16 @@ class usbdev_av_buffer_vseq extends usbdev_base_vseq;
     byte unsigned      exp_byte_data[];
     expected_data      exp_data;
     uvm_reg_data_t     read_rxfifo;
+    int unsigned       offset;
+
+    // Calculate start address (in 32-bit words) of buffer
+    offset = out_buffer_id * 'h10;
 
     // Read rxfifo reg
     csr_rd(.ptr(ral.rxfifo), .value(read_rxfifo));
     // Read buffer
-    mem_rd(.ptr(ral.buffer), .offset('h10), .data(read_data_1));
-    mem_rd(.ptr(ral.buffer), .offset('h11), .data(read_data_2));
+    mem_rd(.ptr(ral.buffer), .offset(offset), .data(read_data_1));
+    mem_rd(.ptr(ral.buffer), .offset(offset + 1), .data(read_data_2));
     // Expected data or data send to DUT
     exp_byte_data = m_data_pkt.data;
     // Bit streaming to compliance with usb protocol LSB--->MSB

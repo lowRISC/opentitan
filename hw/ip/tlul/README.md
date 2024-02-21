@@ -596,7 +596,7 @@ The TL-UL socket `M:1` is a bus element that connects `M` TL-UL
 hosts to 1 TL-UL device. Along with a `tlul_socket_1n`, this could
 be used to build the TL-UL fabric, and uses `tlul_fifo` as its
 building block. `tlul_socket_m1` has several parameterization settings
-available. The `tlul_socket_m1` is synchronous, so a `tlul_async_fifo`
+available. The `tlul_socket_m1` is synchronous, so a `tlul_fifo_async`
 must be instantiated on any ports that run asynchronously.
 
 | name | description |

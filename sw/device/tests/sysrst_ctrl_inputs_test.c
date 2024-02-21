@@ -88,8 +88,13 @@ bool test_main(void) {
       mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
 
   /* On real devices, we also need to configure the DIO pins */
-  if (kDeviceType != kDeviceSimDV)
-    setup_dio_pins(&pinmux, &sysrst_ctrl);
+  if (kDeviceType != kDeviceSimDV) {
+    sysrst_ctrl_testutils_setup_dio(&pinmux);
+    // Release pins so the host can control them.
+    sysrst_ctrl_testutils_release_dio(&sysrst_ctrl, true, true);
+    // Disable the EC reset pulse so that it does not interfere with the test.
+    sysrst_ctrl_testutils_set_ec_rst_pulse_width(&sysrst_ctrl, 0);
+  }
   const dif_pinmux_index_t *kInputPads =
       kDeviceType == kDeviceSimDV ? kInputPadsDV : kInputPadsReal;
   for (int i = 0; i < kOutputNumMioPads; ++i) {

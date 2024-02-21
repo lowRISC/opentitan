@@ -360,6 +360,10 @@ impl Jtag for OpenOcdJtagTap {
         Ok(self.openocd)
     }
 
+    fn as_raw(&mut self) -> Result<&mut OpenOcd> {
+        Ok(&mut self.openocd)
+    }
+
     fn disconnect(self: Box<Self>) -> Result<()> {
         self.openocd.shutdown()
     }

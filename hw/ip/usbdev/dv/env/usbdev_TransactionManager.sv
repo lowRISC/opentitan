@@ -13,6 +13,7 @@ class usbdev_transaction_manager extends uvm_object;
   data_packet m_data_pkt;
   hand_shake_packet m_handshake_pkt;
   usbdev_handshake_pkt_e m_usbdev_handshake_pkt;
+  usb_transfer_e m_usb_transfer;
 
   logic [1:0] state;
   logic [6:0] address;
@@ -99,13 +100,21 @@ class usbdev_transaction_manager extends uvm_object;
           address = m_usbdev_packet_classifier.address;
           endpoint = m_usbdev_packet_classifier.endpoint;
           m_token_pkt.send_token_packet(pid, address, endpoint);
-          state = 1;
+          if (m_usbdev_handshake_pkt == STALL) begin
+            m_usbdev_packet_classifier.pid = PidTypeStall;
+            pid = m_usbdev_packet_classifier.pid;
+            m_handshake_pkt.send_handshake_packet(pid);
+            state = 0;
+          end
+          else state = 1;
         end
       end
       1 : begin // Getting data from data integrity
         m_usbdev_data_integrity.read(pid, address, endpoint, data);
         m_data_pkt.send_data_packet(pid, data);
-        state = 2;
+        if (m_usb_transfer == IsoTrans)
+          state = 0;
+        else state = 2;
       end
       2 : begin
         m_usbdev_packet_classifier.checkPacket(h_pkt);
@@ -148,7 +157,9 @@ class usbdev_transaction_manager extends uvm_object;
           data = m_usbdev_packet_classifier.data;
           m_data_pkt.send_data_packet(pid, data);
           m_usbdev_data_integrity.write(pid, address, endpoint, data);
-          state = 2;
+          if (m_usb_transfer == IsoTrans)
+            state = 0;
+          else state = 2;
         end
       end
       2 : begin

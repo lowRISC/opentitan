@@ -367,7 +367,7 @@ module top_earlgrey #(
   // rv_core_ibex
 
 
-  logic [178:0]  intr_vector;
+  logic [179:0]  intr_vector;
   // Interrupt source list
   logic intr_uart0_tx_watermark;
   logic intr_uart0_rx_watermark;
@@ -473,7 +473,7 @@ module top_earlgrey #(
   logic intr_usbdev_link_reset;
   logic intr_usbdev_link_suspend;
   logic intr_usbdev_link_resume;
-  logic intr_usbdev_av_empty;
+  logic intr_usbdev_av_out_empty;
   logic intr_usbdev_rx_full;
   logic intr_usbdev_av_overflow;
   logic intr_usbdev_link_in_err;
@@ -483,6 +483,7 @@ module top_earlgrey #(
   logic intr_usbdev_frame;
   logic intr_usbdev_powered;
   logic intr_usbdev_link_out_err;
+  logic intr_usbdev_av_setup_empty;
   logic intr_pwrmgr_aon_wakeup;
   logic intr_sysrst_ctrl_aon_event_detected;
   logic intr_adc_ctrl_aon_match_done;
@@ -1447,8 +1448,10 @@ module top_earlgrey #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[18:16]),
     .SecVolatileRawUnlockEn(SecLcCtrlVolatileRawUnlockEn),
     .RndCnstLcKeymgrDivInvalid(RndCnstLcCtrlLcKeymgrDivInvalid),
-    .RndCnstLcKeymgrDivTestDevRma(RndCnstLcCtrlLcKeymgrDivTestDevRma),
+    .RndCnstLcKeymgrDivTestUnlocked(RndCnstLcCtrlLcKeymgrDivTestUnlocked),
+    .RndCnstLcKeymgrDivDev(RndCnstLcCtrlLcKeymgrDivDev),
     .RndCnstLcKeymgrDivProduction(RndCnstLcCtrlLcKeymgrDivProduction),
+    .RndCnstLcKeymgrDivRma(RndCnstLcCtrlLcKeymgrDivRma),
     .RndCnstInvalidTokens(RndCnstLcCtrlInvalidTokens),
     .SiliconCreatorId(LcCtrlSiliconCreatorId),
     .ProductId(LcCtrlProductId),
@@ -1633,7 +1636,7 @@ module top_earlgrey #(
       .intr_link_reset_o      (intr_usbdev_link_reset),
       .intr_link_suspend_o    (intr_usbdev_link_suspend),
       .intr_link_resume_o     (intr_usbdev_link_resume),
-      .intr_av_empty_o        (intr_usbdev_av_empty),
+      .intr_av_out_empty_o    (intr_usbdev_av_out_empty),
       .intr_rx_full_o         (intr_usbdev_rx_full),
       .intr_av_overflow_o     (intr_usbdev_av_overflow),
       .intr_link_in_err_o     (intr_usbdev_link_in_err),
@@ -1643,6 +1646,7 @@ module top_earlgrey #(
       .intr_frame_o           (intr_usbdev_frame),
       .intr_powered_o         (intr_usbdev_powered),
       .intr_link_out_err_o    (intr_usbdev_link_out_err),
+      .intr_av_setup_empty_o  (intr_usbdev_av_setup_empty),
       // [21]: fatal_fault
       .alert_tx_o  ( alert_tx[21:21] ),
       .alert_rx_i  ( alert_rx[21:21] ),
@@ -2621,39 +2625,40 @@ module top_earlgrey #(
   );
   // interrupt assignments
   assign intr_vector = {
-      intr_edn1_edn_fatal_err, // IDs [178 +: 1]
-      intr_edn1_edn_cmd_req_done, // IDs [177 +: 1]
-      intr_edn0_edn_fatal_err, // IDs [176 +: 1]
-      intr_edn0_edn_cmd_req_done, // IDs [175 +: 1]
-      intr_entropy_src_es_fatal_err, // IDs [174 +: 1]
-      intr_entropy_src_es_observe_fifo_ready, // IDs [173 +: 1]
-      intr_entropy_src_es_health_test_failed, // IDs [172 +: 1]
-      intr_entropy_src_es_entropy_valid, // IDs [171 +: 1]
-      intr_csrng_cs_fatal_err, // IDs [170 +: 1]
-      intr_csrng_cs_hw_inst_exc, // IDs [169 +: 1]
-      intr_csrng_cs_entropy_req, // IDs [168 +: 1]
-      intr_csrng_cs_cmd_req_done, // IDs [167 +: 1]
-      intr_keymgr_op_done, // IDs [166 +: 1]
-      intr_otbn_done, // IDs [165 +: 1]
-      intr_kmac_kmac_err, // IDs [164 +: 1]
-      intr_kmac_fifo_empty, // IDs [163 +: 1]
-      intr_kmac_kmac_done, // IDs [162 +: 1]
-      intr_hmac_hmac_err, // IDs [161 +: 1]
-      intr_hmac_fifo_empty, // IDs [160 +: 1]
-      intr_hmac_hmac_done, // IDs [159 +: 1]
-      intr_flash_ctrl_corr_err, // IDs [158 +: 1]
-      intr_flash_ctrl_op_done, // IDs [157 +: 1]
-      intr_flash_ctrl_rd_lvl, // IDs [156 +: 1]
-      intr_flash_ctrl_rd_full, // IDs [155 +: 1]
-      intr_flash_ctrl_prog_lvl, // IDs [154 +: 1]
-      intr_flash_ctrl_prog_empty, // IDs [153 +: 1]
-      intr_sensor_ctrl_aon_init_status_change, // IDs [152 +: 1]
-      intr_sensor_ctrl_aon_io_status_change, // IDs [151 +: 1]
-      intr_aon_timer_aon_wdog_timer_bark, // IDs [150 +: 1]
-      intr_aon_timer_aon_wkup_timer_expired, // IDs [149 +: 1]
-      intr_adc_ctrl_aon_match_done, // IDs [148 +: 1]
-      intr_sysrst_ctrl_aon_event_detected, // IDs [147 +: 1]
-      intr_pwrmgr_aon_wakeup, // IDs [146 +: 1]
+      intr_edn1_edn_fatal_err, // IDs [179 +: 1]
+      intr_edn1_edn_cmd_req_done, // IDs [178 +: 1]
+      intr_edn0_edn_fatal_err, // IDs [177 +: 1]
+      intr_edn0_edn_cmd_req_done, // IDs [176 +: 1]
+      intr_entropy_src_es_fatal_err, // IDs [175 +: 1]
+      intr_entropy_src_es_observe_fifo_ready, // IDs [174 +: 1]
+      intr_entropy_src_es_health_test_failed, // IDs [173 +: 1]
+      intr_entropy_src_es_entropy_valid, // IDs [172 +: 1]
+      intr_csrng_cs_fatal_err, // IDs [171 +: 1]
+      intr_csrng_cs_hw_inst_exc, // IDs [170 +: 1]
+      intr_csrng_cs_entropy_req, // IDs [169 +: 1]
+      intr_csrng_cs_cmd_req_done, // IDs [168 +: 1]
+      intr_keymgr_op_done, // IDs [167 +: 1]
+      intr_otbn_done, // IDs [166 +: 1]
+      intr_kmac_kmac_err, // IDs [165 +: 1]
+      intr_kmac_fifo_empty, // IDs [164 +: 1]
+      intr_kmac_kmac_done, // IDs [163 +: 1]
+      intr_hmac_hmac_err, // IDs [162 +: 1]
+      intr_hmac_fifo_empty, // IDs [161 +: 1]
+      intr_hmac_hmac_done, // IDs [160 +: 1]
+      intr_flash_ctrl_corr_err, // IDs [159 +: 1]
+      intr_flash_ctrl_op_done, // IDs [158 +: 1]
+      intr_flash_ctrl_rd_lvl, // IDs [157 +: 1]
+      intr_flash_ctrl_rd_full, // IDs [156 +: 1]
+      intr_flash_ctrl_prog_lvl, // IDs [155 +: 1]
+      intr_flash_ctrl_prog_empty, // IDs [154 +: 1]
+      intr_sensor_ctrl_aon_init_status_change, // IDs [153 +: 1]
+      intr_sensor_ctrl_aon_io_status_change, // IDs [152 +: 1]
+      intr_aon_timer_aon_wdog_timer_bark, // IDs [151 +: 1]
+      intr_aon_timer_aon_wkup_timer_expired, // IDs [150 +: 1]
+      intr_adc_ctrl_aon_match_done, // IDs [149 +: 1]
+      intr_sysrst_ctrl_aon_event_detected, // IDs [148 +: 1]
+      intr_pwrmgr_aon_wakeup, // IDs [147 +: 1]
+      intr_usbdev_av_setup_empty, // IDs [146 +: 1]
       intr_usbdev_link_out_err, // IDs [145 +: 1]
       intr_usbdev_powered, // IDs [144 +: 1]
       intr_usbdev_frame, // IDs [143 +: 1]
@@ -2663,7 +2668,7 @@ module top_earlgrey #(
       intr_usbdev_link_in_err, // IDs [139 +: 1]
       intr_usbdev_av_overflow, // IDs [138 +: 1]
       intr_usbdev_rx_full, // IDs [137 +: 1]
-      intr_usbdev_av_empty, // IDs [136 +: 1]
+      intr_usbdev_av_out_empty, // IDs [136 +: 1]
       intr_usbdev_link_resume, // IDs [135 +: 1]
       intr_usbdev_link_suspend, // IDs [134 +: 1]
       intr_usbdev_link_reset, // IDs [133 +: 1]

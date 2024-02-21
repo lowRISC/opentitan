@@ -51,8 +51,15 @@ typedef struct otcrypto_hmac_context {
  * mode. Only SHA-2 hash functions are supported. Other modes (e.g. SHA-3) are
  * not supported and will result in errors.
  *
- * The caller should allocate 32 bytes (8 32-bit words) of space for the `tag`
- * buffer and set its `len` field to 8.
+ * The caller should allocate the following amount of space for the `tag`
+ * buffer, depending on which hash algorithm is used:
+ *
+ * SHA-256: 32 bytes
+ * SHA-384: 48 bytes
+ * SHA-512: 64 bytes
+ *
+ * The caller should also set the `len` field of `tag` to the equivalent number
+ * of 32-bit words (e.g. 8 for SHA-256).
  *
  * @param key Pointer to the blinded key struct with key shares.
  * @param input_message Input message to be hashed.
@@ -69,7 +76,12 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
  * This function computes the KMAC on the `input_message` using the `key` and
  * returns a `tag` of `required_output_len`. The customization string is passed
  * through `customization_string` parameter. If no customization is desired it
- * can be empty.
+ * can be be left empty (by settings its `data` to NULL and `length` to 0).
+ *
+ * The caller should set the `key_length` field of `key.config` to the number
+ * of bytes in the key. Only the following key sizes (in bytes) are supported:
+ * [16, 24, 32, 48, 64]. If any other size is given, the function will return
+ * an error.
  *
  * The caller should allocate enough space in the `tag` buffer to hold
  * `required_output_len` bytes, rounded up to the nearest word, and then set

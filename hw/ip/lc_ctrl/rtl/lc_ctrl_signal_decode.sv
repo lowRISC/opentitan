@@ -10,11 +10,15 @@ module lc_ctrl_signal_decode
 #(
   // Random netlist constants
   // SCRAP, RAW, TEST_LOCKED*, INVALID
-  parameter lc_keymgr_div_t RndCnstLcKeymgrDivInvalid    = LcKeymgrDivWidth'(0),
-  // TEST_UNLOCKED*, DEV, RMA
-  parameter lc_keymgr_div_t RndCnstLcKeymgrDivTestDevRma = LcKeymgrDivWidth'(1),
+  parameter lc_keymgr_div_t RndCnstLcKeymgrDivInvalid      = LcKeymgrDivWidth'(0),
+  // TEST_UNLOCKED*
+  parameter lc_keymgr_div_t RndCnstLcKeymgrDivTestUnlocked = LcKeymgrDivWidth'(1),
+  // DEV
+  parameter lc_keymgr_div_t RndCnstLcKeymgrDivDev          = LcKeymgrDivWidth'(2),
   // PROD, PROD_END
-  parameter lc_keymgr_div_t RndCnstLcKeymgrDivProduction = LcKeymgrDivWidth'(2)
+  parameter lc_keymgr_div_t RndCnstLcKeymgrDivProduction   = LcKeymgrDivWidth'(3),
+  // RMA
+  parameter lc_keymgr_div_t RndCnstLcKeymgrDivRma          = LcKeymgrDivWidth'(4)
   ) (
   input                  clk_i,
   input                  rst_ni,
@@ -115,7 +119,7 @@ module lc_ctrl_signal_decode
               lc_hw_debug_en       = On;
               lc_cpu_en            = On;
               lc_iso_part_sw_wr_en = On;
-              lc_keymgr_div_d      = RndCnstLcKeymgrDivTestDevRma;
+              lc_keymgr_div_d      = RndCnstLcKeymgrDivTestUnlocked;
             end
             ///////////////////////////////////////////////////////////////////
             // This is the last TEST_UNLOCKED state. The same feature set is enabled
@@ -127,7 +131,7 @@ module lc_ctrl_signal_decode
               lc_hw_debug_en       = On;
               lc_cpu_en            = On;
               lc_iso_part_sw_wr_en = On;
-              lc_keymgr_div_d      = RndCnstLcKeymgrDivTestDevRma;
+              lc_keymgr_div_d      = RndCnstLcKeymgrDivTestUnlocked;
             end
             ///////////////////////////////////////////////////////////////////
             // Enable production functions
@@ -157,7 +161,7 @@ module lc_ctrl_signal_decode
               lc_keymgr_en           = On;
               lc_owner_seed_sw_rw_en = On;
               lc_iso_part_sw_wr_en   = On;
-              lc_keymgr_div_d        = RndCnstLcKeymgrDivTestDevRma;
+              lc_keymgr_div_d        = RndCnstLcKeymgrDivDev;
               // Only allow provisioning if the device has not yet been personalized.
               // If secrets_valid_i is set to ON, we output OFF.
               // Note that we can convert ON to OFF with a bitwise inversion due to the encoding.
@@ -180,7 +184,7 @@ module lc_ctrl_signal_decode
               lc_iso_part_sw_wr_en     = On;
               lc_iso_part_sw_rd_en     = On;
               lc_seed_hw_rd_en         = On;
-              lc_keymgr_div_d          = RndCnstLcKeymgrDivTestDevRma;
+              lc_keymgr_div_d          = RndCnstLcKeymgrDivRma;
             end
             ///////////////////////////////////////////////////////////////////
             // Invalid or scrapped life cycle state, make sure the escalation
@@ -305,12 +309,27 @@ module lc_ctrl_signal_decode
   // Assertions //
   ////////////////
 
-  // Need to make sure that the random netlist constants
-  // are unique.
+  // Need to make sure that the random netlist constants are all unique.
   `ASSERT_INIT(LcKeymgrDivUnique0_A,
-      !(RndCnstLcKeymgrDivInvalid inside {RndCnstLcKeymgrDivTestDevRma,
+      !(RndCnstLcKeymgrDivInvalid inside {RndCnstLcKeymgrDivTestUnlocked,
+                                          RndCnstLcKeymgrDivDev,
+                                          RndCnstLcKeymgrDivRma,
                                           RndCnstLcKeymgrDivProduction}))
-  `ASSERT_INIT(LcKeymgrDivUnique1_A, RndCnstLcKeymgrDivProduction != RndCnstLcKeymgrDivTestDevRma)
+  `ASSERT_INIT(LcKeymgrDivUnique1_A,
+      !(RndCnstLcKeymgrDivTestUnlocked inside {RndCnstLcKeymgrDivInvalid,
+                                               RndCnstLcKeymgrDivDev,
+                                               RndCnstLcKeymgrDivRma,
+                                               RndCnstLcKeymgrDivProduction}))
+  `ASSERT_INIT(LcKeymgrDivUnique2_A,
+      !(RndCnstLcKeymgrDivDev inside {RndCnstLcKeymgrDivInvalid,
+                                      RndCnstLcKeymgrDivTestUnlocked,
+                                      RndCnstLcKeymgrDivRma,
+                                      RndCnstLcKeymgrDivProduction}))
+  `ASSERT_INIT(LcKeymgrDivUnique3_A,
+      !(RndCnstLcKeymgrDivRma inside {RndCnstLcKeymgrDivInvalid,
+                                      RndCnstLcKeymgrDivTestUnlocked,
+                                      RndCnstLcKeymgrDivDev,
+                                      RndCnstLcKeymgrDivProduction}))
 
   `ASSERT(SignalsAreOffWhenNotEnabled_A,
       !lc_state_valid_i

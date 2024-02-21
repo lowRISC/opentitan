@@ -3,3 +3,4 @@
 // SPDX-License-Identifier: Apache-2.0
 pub mod aes_commands;
 pub mod commands;
+pub mod hash_commands;

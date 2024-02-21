@@ -26,6 +26,11 @@ filegroup(
     srcs = ["sphincsplus_shake_128s_simple_hardcoded.hjson"],
 )
 
+filegroup(
+    name = "kdf_testvectors_random",
+    srcs = ["kdf_testvectors_random.hjson"],
+)
+
 autogen_cryptotest_hjson_external(
     name = "rsa_3072_verify_testvectors_wycheproof",
     src = "//sw/vendor/wycheproof/testvectors:rsa_signature_3072_sha256_test.json",

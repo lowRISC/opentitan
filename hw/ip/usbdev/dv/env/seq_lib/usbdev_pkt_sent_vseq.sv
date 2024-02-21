@@ -12,8 +12,7 @@ class usbdev_pkt_sent_vseq extends usbdev_base_vseq;
     uvm_reg_data_t read_rxfifo;
 
      super.dut_init("HARD");
-     // Clear interrupts
-     csr_wr(.ptr(ral.intr_state), .value(32'h0001_ffff));
+     clear_all_interrupts();
 
     // OUT TRANS
     // -------------------------------
@@ -35,15 +34,13 @@ class usbdev_pkt_sent_vseq extends usbdev_base_vseq;
 
     // Read rxfifo reg
     csr_rd(.ptr(ral.rxfifo), .value(read_rxfifo));
-    // Make sure buffer is availabe for next trans
-    ral.avbuffer.buffer.set(set_buffer_id + 1);
-    csr_update(ral.avbuffer);
 
     // IN TRANS
     // --------------------------------
     // Configure in transaction
     num_of_bytes = m_data_pkt.data.size();
-    configure_in_trans();
+    // Note: data should have been written into the current OUT buffer by the above transaction
+    configure_in_trans(out_buffer_id);
     // Token pkt followed by handshake pkt
     call_token_seq(PktTypeToken, PidTypeInToken, endp);
     // Get response from DUT
@@ -58,8 +55,6 @@ class usbdev_pkt_sent_vseq extends usbdev_base_vseq;
     check_trans_accuracy();
     // Clear in_sent
     csr_wr(.ptr(ral.in_sent[0]), .value(32'h0000_0fff));
-    // Clear interrupts
-    csr_wr(.ptr(ral.intr_state), .value(32'h0001_ffff));
   endtask
 
   task check_trans_accuracy();

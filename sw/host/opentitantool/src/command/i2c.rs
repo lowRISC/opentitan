@@ -261,6 +261,10 @@ impl CommandDispatch for I2cPrepareRead {
 pub struct I2cTpm {
     #[command(subcommand)]
     command: super::tpm::TpmSubCommand,
+
+    /// Pin used for signalling by Google security chips
+    #[arg(long)]
+    gsc_ready: Option<String>,
 }
 
 impl CommandDispatch for I2cTpm {
@@ -270,9 +274,15 @@ impl CommandDispatch for I2cTpm {
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
         let context = context.downcast_ref::<I2cCommand>().unwrap();
-        let tpm_driver = tpm::I2cDriver::new(context.params.create(transport, "TPM")?);
-        let bus: Box<dyn tpm::Driver> = Box::new(tpm_driver);
-        self.command.run(&bus, transport)
+        let ready_pin = match &self.gsc_ready {
+            Some(pin) => Some((transport.gpio_pin(pin)?, transport.gpio_monitoring()?)),
+            None => None,
+        };
+        let tpm_driver: Box<dyn tpm::Driver> = Box::new(tpm::I2cDriver::new(
+            context.params.create(transport, "TPM")?,
+            ready_pin,
+        )?);
+        self.command.run(&tpm_driver, transport)
     }
 }
 

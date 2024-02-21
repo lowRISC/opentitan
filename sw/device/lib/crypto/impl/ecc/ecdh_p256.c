@@ -29,20 +29,36 @@ static const otbn_addr_t kOtbnVarEcdhY = OTBN_ADDR_T_INIT(p256_ecdh, y);
 static const otbn_addr_t kOtbnVarEcdhD0 = OTBN_ADDR_T_INIT(p256_ecdh, d0);
 static const otbn_addr_t kOtbnVarEcdhD1 = OTBN_ADDR_T_INIT(p256_ecdh, d1);
 
-// Mode is represented by a single word. See `p256_ecdh.s` for values.
-static const uint32_t kOtbnEcdhModeWords = 1;
-static const uint32_t kOtbnEcdhModeKeypairRandom = 0x3f1;
-static const uint32_t kOtbnEcdhModeSharedKey = 0x5ec;
-static const uint32_t kOtbnEcdhModeKeypairFromSeed = 0x29f;
-static const uint32_t kOtbnEcdhModeSharedKeyFromSeed = 0x74b;
+enum {
+  /*
+   * Mode is represented by a single word.
+   */
+  kOtbnEcdhModeWords = 1,
+  /*
+   * Mode to generate a new random keypair.
+   */
+  kOtbnEcdhModeKeypairRandom = 0x3f1,
+  /*
+   * Mode to generate a new shared key.
+   */
+  kOtbnEcdhModeSharedKey = 0x5ec,
+  /*
+   * Mode to generate a new sideloaded keypair.
+   */
+  kOtbnEcdhModeKeypairFromSeed = 0x29f,
+  /*
+   * Mode to generate a new sideloaded shared key.
+   */
+  kOtbnEcdhModeSharedKeyFromSeed = 0x74b,
+};
 
 status_t ecdh_p256_keypair_start(void) {
   // Load the ECDSA/P-256 app. Fails if OTBN is non-idle.
   HARDENED_TRY(otbn_load_app(kOtbnAppEcdh));
 
   // Set mode so start() will jump into keygen.
-  HARDENED_TRY(otbn_dmem_write(kOtbnEcdhModeWords, &kOtbnEcdhModeKeypairRandom,
-                               kOtbnVarEcdhMode));
+  uint32_t mode = kOtbnEcdhModeKeypairRandom;
+  HARDENED_TRY(otbn_dmem_write(kOtbnEcdhModeWords, &mode, kOtbnVarEcdhMode));
 
   // Start the OTBN routine.
   return otbn_execute();
@@ -75,8 +91,8 @@ status_t ecdh_p256_shared_key_start(const p256_masked_scalar_t *private_key,
   HARDENED_TRY(otbn_load_app(kOtbnAppEcdh));
 
   // Set mode so start() will jump into shared-key generation.
-  HARDENED_TRY(otbn_dmem_write(kOtbnEcdhModeWords, &kOtbnEcdhModeSharedKey,
-                               kOtbnVarEcdhMode));
+  uint32_t mode = kOtbnEcdhModeSharedKey;
+  HARDENED_TRY(otbn_dmem_write(kOtbnEcdhModeWords, &mode, kOtbnVarEcdhMode));
 
   // Set the private key shares.
   HARDENED_TRY(
@@ -113,8 +129,8 @@ status_t ecdh_p256_sideload_keypair_start(void) {
   HARDENED_TRY(otbn_load_app(kOtbnAppEcdh));
 
   // Set mode so start() will jump into sideloaded keygen.
-  HARDENED_TRY(otbn_dmem_write(
-      kOtbnEcdhModeWords, &kOtbnEcdhModeKeypairFromSeed, kOtbnVarEcdhMode));
+  uint32_t mode = kOtbnEcdhModeKeypairFromSeed;
+  HARDENED_TRY(otbn_dmem_write(kOtbnEcdhModeWords, &mode, kOtbnVarEcdhMode));
 
   // Start the OTBN routine.
   return otbn_execute();
@@ -139,8 +155,8 @@ status_t ecdh_p256_sideload_shared_key_start(const p256_point_t *public_key) {
   HARDENED_TRY(otbn_load_app(kOtbnAppEcdh));
 
   // Set mode so start() will jump into shared-key generation.
-  HARDENED_TRY(otbn_dmem_write(
-      kOtbnEcdhModeWords, &kOtbnEcdhModeSharedKeyFromSeed, kOtbnVarEcdhMode));
+  uint32_t mode = kOtbnEcdhModeSharedKeyFromSeed;
+  HARDENED_TRY(otbn_dmem_write(kOtbnEcdhModeWords, &mode, kOtbnVarEcdhMode));
 
   // Set the public key x coordinate.
   HARDENED_TRY(otbn_dmem_write(kP256CoordWords, public_key->x, kOtbnVarEcdhX));

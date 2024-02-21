@@ -355,75 +355,76 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
         cfg.set_test_phase(LcCtrlWaitTransition);
         sw_transition_req(next_lc_state, token_val);
         cfg.set_test_phase(LcCtrlTransitionComplete);
+
+        // verilog_format: on
+
+        if (cfg.err_inj.token_mux_ctrl_redun_err || cfg.err_inj.token_mux_digest_err) begin
+          // Allow the FSM to get to a terminal state
+          wait(cfg.lc_ctrl_vif.lc_ctrl_fsm_state inside {PostTransSt, InvalidSt, EscalateSt});
+          disable token_mux_ctrl_err_inject;
+          disable token_mux_digest_err_inject;
+        end
+
+        // Allow volatile registers to settle
+        cfg.clk_rst_vif.wait_clks($urandom_range(15, 10));
+
+        cfg.set_test_phase(LcCtrlReadState1);
+        // Check count and state before escalate is generated
+        // Skip this if we are injecting clock bypass error responses as the KMAC
+        // may or may not respond leaving the FSM stuck in TokenHashSt
+        // Also Token Mux select error injection leads to unpredicable results
+        if (!err_inj.clk_byp_error_rsp && !err_inj.token_mux_ctrl_redun_err) begin
+          rd_lc_state_and_cnt_csrs();
+        end else begin
+          `uvm_info(`gfn, "Skipped read of lc state & lc_count because of error injection",
+                    UVM_MEDIUM)
+          cfg.clk_rst_vif.wait_clks($urandom_range(15, 10));
+        end
+
+        // Allow escalate to be generated if we have received an alert
+        cfg.set_test_phase(LcCtrlEscalate);
+
+        // Wait before re-checking lc_state to allow escalate to be accepted
+        cfg.clk_rst_vif.wait_clks($urandom_range(150, 100));
+        cfg.set_test_phase(LcCtrlReadState2);
+        // Check count and state after escalate is generated
+        // Skip if token mux select line error injection
+        if (!err_inj.token_mux_ctrl_redun_err) rd_lc_state_and_cnt_csrs();
+
+        cfg.set_test_phase(LcCtrlPostTransition);
+
+        // Delay a few extra cycles if we are doing escalate injection
+        if (err_inj.security_escalation_err) begin
+          cfg.clk_rst_vif.wait_clks(security_escalation_err_inj_delay + 10);
+        end
+
+        // Attempt a second transition post transition if enabled
+        // verilog_format: off - avoid bad formatting
+        if (err_inj.post_trans_err) begin
+          `uvm_info(`gfn, "Attempting second transition post transition", UVM_LOW)
+          `DV_CHECK_RANDOMIZE_FATAL(this)
+          // Clear all error injections except post_trans_err
+          err_inj = '{post_trans_err: 1, default: 0};
+          // SW transition request
+          if ((err_inj.state_err || valid_state_for_trans(lc_state)) &&
+              (err_inj.count_err || err_inj.transition_count_err || lc_cnt != LcCnt24)) begin
+            lc_ctrl_state_pkg::lc_token_t token_val = get_random_token();
+            randomize_next_lc_state(dec_lc_state(lc_state));
+            set_hashed_token();
+            set_otp_prog_rsp();
+            sw_transition_req(next_lc_state, token_val);
+          end else begin
+            // wait at least two clks for scb to finish checking lc outputs
+            cfg.clk_rst_vif.wait_clks($urandom_range(15, 6));
+          end
+          cfg.set_test_phase(LcCtrlPostTransTransitionComplete);
+        end
+        // verilog_format: on
       end else begin
         cfg.set_test_phase(LcCtrlBadNextState);
         // wait at least two clks for scb to finish checking lc outputs
-        cfg.clk_rst_vif.wait_clks($urandom_range(10, 2));
+        cfg.clk_rst_vif.wait_clks($urandom_range(15, 6));
       end
-      // verilog_format: on
-
-      if (cfg.err_inj.token_mux_ctrl_redun_err || cfg.err_inj.token_mux_digest_err) begin
-        // Allow the FSM to get to a terminal state
-        wait(cfg.lc_ctrl_vif.lc_ctrl_fsm_state inside {PostTransSt, InvalidSt, EscalateSt});
-        disable token_mux_ctrl_err_inject;
-        disable token_mux_digest_err_inject;
-      end
-
-      // Allow volatile registers to settle
-      cfg.clk_rst_vif.wait_clks($urandom_range(15, 10));
-
-      cfg.set_test_phase(LcCtrlReadState1);
-      // Check count and state before escalate is generated
-      // Skip this if we are injecting clock bypass error responses as the KMAC
-      // may or may not respond leaving the FSM stuck in TokenHashSt
-      // Also Token Mux select error injection leads to unpredicable results
-      if (!err_inj.clk_byp_error_rsp && !err_inj.token_mux_ctrl_redun_err) begin
-        rd_lc_state_and_cnt_csrs();
-      end else begin
-        `uvm_info(`gfn, "Skipped read of lc state & lc_count because of error injection",
-                  UVM_MEDIUM)
-        cfg.clk_rst_vif.wait_clks($urandom_range(15, 10));
-      end
-
-      // Allow escalate to be generated if we have received an alert
-      cfg.set_test_phase(LcCtrlEscalate);
-
-      // Wait before re-checking lc_state to allow escalate to be accepted
-      cfg.clk_rst_vif.wait_clks($urandom_range(150, 100));
-      cfg.set_test_phase(LcCtrlReadState2);
-      // Check count and state after escalate is generated
-      // Skip if token mux select line error injection
-      if (!err_inj.token_mux_ctrl_redun_err) rd_lc_state_and_cnt_csrs();
-
-      cfg.set_test_phase(LcCtrlPostTransition);
-
-      // Delay a few extra cycles if we are doing escalate injection
-      if (err_inj.security_escalation_err) begin
-        cfg.clk_rst_vif.wait_clks(security_escalation_err_inj_delay + 10);
-      end
-
-      // Attempt a second transition post transition if enabled
-      // verilog_format: off - avoid bad formatting
-      if (err_inj.post_trans_err) begin
-        `uvm_info(`gfn, "Attempting second transition post transition", UVM_LOW)
-        `DV_CHECK_RANDOMIZE_FATAL(this)
-        // Clear all error injections except post_trans_err
-        err_inj = '{post_trans_err: 1, default: 0};
-        // SW transition request
-        if ((err_inj.state_err || valid_state_for_trans(lc_state)) &&
-            (err_inj.count_err || err_inj.transition_count_err || lc_cnt != LcCnt24)) begin
-          lc_ctrl_state_pkg::lc_token_t token_val = get_random_token();
-          randomize_next_lc_state(dec_lc_state(lc_state));
-          set_hashed_token();
-          set_otp_prog_rsp();
-          sw_transition_req(next_lc_state, token_val);
-        end else begin
-          // wait at least two clks for scb to finish checking lc outputs
-          cfg.clk_rst_vif.wait_clks($urandom_range(10, 2));
-        end
-        cfg.set_test_phase(LcCtrlPostTransTransitionComplete);
-      end
-      // verilog_format: on
 
       // Sample coverage if enabled
       sample_cov();

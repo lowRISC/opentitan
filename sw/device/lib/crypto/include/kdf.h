@@ -54,18 +54,32 @@ otcrypto_status_t otcrypto_kdf_hmac_ctr(
  * Performs the key derivation function with single KMAC invocation according to
  * NIST SP 800-108r1.
  *
- * The supported PRF engine for the KDF function is either of
- * {KMAC128, KMAC256}. This is passed with `kmac_mode` input argument.
+ * This function initially validates the `key_derivation_key` struct, by
+ * checking for NULL pointers, checking whether key length and its
+ * keyblob_length match each other, verifying its checksum etc. Moreover, its
+ * `hw_backed` field is used to determine whether the derivation key comes from
+ * Keymgr. In that case, this function requests Keymgr to generate the key
+ * according to diversification values passed in keyblob.
+ * (see `keyblob_buffer_to_keymgr_diversification` function in `keyblob.h`).
+ * For non-hardware-backed keys, the keyblob should be twice the length of the
+ * key.
  *
- * The caller should allocate and partially populate the `keying_material`
- * blinded key struct, including populating the key configuration and
- * allocating space for the keyblob. The caller should indicate the length of
- * the allocated keyblob; this function will return an error if the keyblob
- * length does not match expectations. For hardware-backed keys, the keyblob
- * length is 0 and the keyblob pointer may be `NULL`. For non-hardware-backed
- * keys, the keyblob should be twice the length of the key. The value in the
- * `checksum` field of the blinded key struct will be populated by this
- * function.
+ * `kmac_mode` input argument is used to decide whether KMAC128 or KMAC256 is
+ * used and it is also checked against `key_mode` from `key_derivation_key`.
+ *
+ * The produced key is returned in the `keying_material` blinded key struct.
+ * The caller should allocate and partially populate `keying_material`,
+ * including populating the key configuration and allocating space for the
+ * keyblob. The key length is also checked against `required_byte_len`. The
+ * value in the `checksum` field of the blinded key struct will be populated
+ * by this function. The use case where `keying_material` needs to be hw-backed
+ * is not supported by this function, hence `hw_backed` must be set tofalse.
+ * See `otcrypto_hw_backed_key` from `key_transport` for that specific use case.
+ *
+ * Note that it is the responsibility of the user of `keying_material` to
+ * further validate the key configuration. While populating the key, this
+ * function ignores `exportable`, `key_mode`, and `security_level` fields
+ * therefore the users must validate their `keying_material` config before use.
  *
  * @param key_derivation_key Blinded key derivation key.
  * @param kmac_mode Either KMAC128 or KMAC256 as PRF.

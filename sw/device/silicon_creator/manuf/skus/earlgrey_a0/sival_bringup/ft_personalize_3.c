@@ -10,52 +10,43 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
-#include "sw/device/silicon_creator/lib/attestation.h"
-#include "sw/device/silicon_creator/lib/attestation_key_diversifiers.h"
+#include "sw/device/silicon_creator/lib/cert/cdi_0.h"  // Generated.
+#include "sw/device/silicon_creator/lib/cert/cdi_1.h"  // Generated.
+#include "sw/device/silicon_creator/lib/cert/cert.h"
 #include "sw/device/silicon_creator/lib/cert/uds.h"  // Generated.
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
 #include "sw/device/silicon_creator/lib/drivers/kmac.h"
 #include "sw/device/silicon_creator/lib/error.h"
-#include "sw/device/silicon_creator/lib/keymgr_binding_value.h"
 #include "sw/device/silicon_creator/lib/otbn_boot_services.h"
 #include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 
 OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 
-enum {
-  /**
-   * Attestation measurement sizes, comprised of a SHA256 digest.
-   */
-  kAttestMeasurementSizeInBits = 256,
-  kAttestMeasurementSizeInBytes = kAttestMeasurementSizeInBits / 8,
-  kAttestMeasurementSizeIn32BitWords =
-      kAttestMeasurementSizeInBytes / sizeof(uint32_t),
-
-  /**
-   * Certificate Key ID size.
-   */
-  kCertKeyIdSizeInBytes = 20,
-};
+static_assert(kUdsMaxTbsSizeBytes == 569,
+              "The `uds_tbs_certificate` buffer size in the "
+              "`manuf_cert_perso_data_out_t` struct should match the value of "
+              "`kUdsMaxTbsSizeBytes`.");
+static_assert(kCdi0MaxCertSizeBytes == 634,
+              "The `cdi_0_certificate` buffer size in the "
+              "`manuf_cert_perso_data_out_t` struct should match the value of "
+              "`kCdi0MaxCertSizeBytes`.");
+static_assert(kCdi1MaxCertSizeBytes == 580,
+              "The `cdi_1_certificate` buffer size in the "
+              "`manuf_cert_perso_data_out_t` struct should match the value of "
+              "`kCdi1MaxCertSizeBytes`.");
 
 static manuf_cert_perso_data_in_t in_data;
-static keymgr_binding_value_t attestation_binding_value = {.data = {0}};
-static keymgr_binding_value_t sealing_binding_value = {.data = {0}};
-static uint32_t rom_ext_measurements[kAttestMeasurementSizeIn32BitWords * 2];
-
-// Certificate data.
+hmac_digest_t uds_pubkey_id;
+hmac_digest_t cdi_0_pubkey_id;
 static manuf_cert_perso_data_out_t out_data = {
-    .uds_certificate = {0},
-    .uds_certificate_size = kUdsMaxCertSizeBytes,
-};
-static uint8_t curr_attestation_pubkey_x_bytes[kAttestationPublicKeyCoordBytes];
-static uint8_t curr_attestation_pubkey_y_bytes[kAttestationPublicKeyCoordBytes];
-// UDS.
-static uint8_t uds_tbs_buffer[kUdsMaxTbsSizeBytes];
-static uds_sig_values_t uds_cert_tbs = {
-    .tbs = uds_tbs_buffer,
-    .tbs_size = kUdsMaxTbsSizeBytes,
+    .uds_tbs_certificate = {0},
+    .uds_tbs_certificate_size = kUdsMaxTbsSizeBytes,
+    .cdi_0_certificate = {0},
+    .cdi_0_certificate_size = kCdi0MaxCertSizeBytes,
+    .cdi_1_certificate = {0},
+    .cdi_1_certificate_size = kCdi1MaxCertSizeBytes,
 };
 
 static const flash_ctrl_perms_t kCertificateFlashInfoPerms = {
@@ -84,54 +75,6 @@ static status_t config_certificate_flash_pages(void) {
   return OK_STATUS();
 }
 
-static status_t gen_uds_keys_and_cert(void) {
-  // Generate the UDS key.
-  attestation_public_key_t uds_pubkey = {.x = {0}, .y = {0}};
-  TRY(otbn_boot_attestation_keygen(kUdsAttestationKeySeed,
-                                   kUdsKeymgrDiversifier, &uds_pubkey));
-  memcpy(curr_attestation_pubkey_x_bytes, uds_pubkey.x,
-         kAttestationPublicKeyCoordBytes);
-  memcpy(curr_attestation_pubkey_y_bytes, uds_pubkey.y,
-         kAttestationPublicKeyCoordBytes);
-  TRY(otbn_boot_attestation_key_save(kUdsAttestationKeySeed,
-                                     kUdsKeymgrDiversifier));
-  uint8_t creator_pub_key_id[kCertKeyIdSizeInBytes] = {0};
-
-  // Generate the UDS (unendorsed) UDS certificate.
-  uds_tbs_values_t uds_cert_tbs_params = {
-      // TODO(#19455): include OTP measurements in attestation keygen / cert.
-      // TODO(#19455): include creator pub key ID in cert.
-      .otp_creator_sw_cfg_hash = NULL,
-      .otp_creator_sw_cfg_hash_size = 0,
-      .otp_owner_sw_cfg_hash = NULL,
-      .otp_owner_sw_cfg_hash_size = 0,
-      .otp_hw_cfg0_hash = NULL,
-      .otp_hw_cfg0_hash_size = 0,
-      .creator_pub_key_id = creator_pub_key_id,
-      .creator_pub_key_id_size = kCertKeyIdSizeInBytes,
-      .auth_key_key_id = in_data.auth_key_key_id,
-      .auth_key_key_id_size = kCertKeyIdSizeInBytes,
-      .creator_pub_key_ec_x = curr_attestation_pubkey_x_bytes,
-      .creator_pub_key_ec_x_size = kAttestationPublicKeyCoordBytes,
-      .creator_pub_key_ec_y = curr_attestation_pubkey_y_bytes,
-      .creator_pub_key_ec_y_size = kAttestationPublicKeyCoordBytes,
-  };
-  TRY(uds_build_tbs(&uds_cert_tbs_params, uds_cert_tbs.tbs,
-                    &uds_cert_tbs.tbs_size));
-  TRY(uds_build_cert(&uds_cert_tbs, out_data.uds_certificate,
-                     &out_data.uds_certificate_size));
-
-  // Write the (unendorsed) certificate to a flash info page.
-  TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageUdsCertificate,
-                            kFlashCtrlEraseTypePage));
-  TRY(flash_ctrl_info_write(&kFlashCtrlInfoPageUdsCertificate,
-                            kFlashInfoFieldUdsCertificate.byte_offset,
-                            out_data.uds_certificate_size / sizeof(uint32_t),
-                            out_data.uds_certificate));
-
-  return OK_STATUS();
-}
-
 /**
  * Crank the keymgr to produce the attestation keys and certificates.
  */
@@ -143,97 +86,59 @@ static status_t personalize(ujson_t *uj) {
   // Configure certificate flash info page permissions.
   TRY(config_certificate_flash_pages());
 
-  // Advance keymgr to Initialized state.
+  // Initialize entropy complex / KMAC for key manager operations.
   TRY(entropy_complex_init());
-  // Initialize KMAC for key manager operations.
   TRY(kmac_keymgr_configure());
+
+  // Advance keymgr to Initialized state.
+  TRY(keymgr_state_check(kKeymgrStateReset));
   keymgr_advance_state();
-  TRY(keymgr_state_check(kKeymgrStateInit));
 
   // Load OTBN attestation keygen program.
-  attestation_public_key_t curr_pubkey = {.x = {0}, .y = {0}};
   TRY(otbn_boot_app_load());
 
-  // Advance keymgr and generate UDS attestation keys / cert.
-  // TODO(#19455): set attestation binding to OTP *Cfg partition measurements.
-  keymgr_advance_state();
-  TRY(keymgr_state_check(kKeymgrStateCreatorRootKey));
-  TRY(gen_uds_keys_and_cert());
+  // Generate UDS keys and (TBS) cert.
+  TRY(gen_uds_keys_and_cert(&in_data, &uds_pubkey_id,
+                            out_data.uds_tbs_certificate,
+                            &out_data.uds_tbs_certificate_size));
+  TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageUdsCertificate,
+                            kFlashCtrlEraseTypePage));
+  TRY(flash_ctrl_info_write(
+      &kFlashCtrlInfoPageUdsCertificate,
+      kFlashInfoFieldUdsCertificate.byte_offset,
+      out_data.uds_tbs_certificate_size / sizeof(uint32_t),
+      out_data.uds_tbs_certificate));
+  LOG_INFO("Generated UDS certificate.");
 
-  // Set attestation binding to ROM_EXT / Ownership Manifest measurements.
-  // We set the sealing binding value to all zeros as it is unused in the
-  // current personalization flow. This may be changed in the future.
-  hmac_digest_t combined_measurements;
-  memcpy(rom_ext_measurements, in_data.rom_ext_measurement,
-         kAttestMeasurementSizeInBytes);
-  memcpy(&rom_ext_measurements[kAttestMeasurementSizeIn32BitWords],
-         in_data.owner_manifest_measurement, kAttestMeasurementSizeInBytes);
-  hmac_sha256(rom_ext_measurements, kAttestMeasurementSizeInBytes * 2,
-              &combined_measurements);
-  memcpy(attestation_binding_value.data, combined_measurements.digest,
-         kAttestMeasurementSizeInBytes);
-  keymgr_sw_binding_unlock_wait();
-  keymgr_sw_binding_set(&sealing_binding_value, &attestation_binding_value);
-
-  // Advance keymgr and generate CDI_0 attestation keys / cert.
-  keymgr_advance_state();
-  TRY(keymgr_state_check(kKeymgrStateOwnerIntermediateKey));
-  TRY(otbn_boot_attestation_keygen(kCdi0AttestationKeySeed,
-                                   kCdi0KeymgrDiversifier, &curr_pubkey));
-  // TODO(#19455): create certificate with key, endorse it, and write it to
-  // flash info.
-  //
-  // Until then, we just write the public key to flash and export it over the
-  // console.
-  memcpy(out_data.cdi_0_certificate.x, curr_pubkey.x,
-         kAttestationPublicKeyCoordBytes);
-  memcpy(out_data.cdi_0_certificate.y, curr_pubkey.y,
-         kAttestationPublicKeyCoordBytes);
+  // Generate CDI_0 keys and cert.
+  TRY(gen_cdi_0_keys_and_cert(&in_data, &uds_pubkey_id, &cdi_0_pubkey_id,
+                              out_data.cdi_0_certificate,
+                              &out_data.cdi_0_certificate_size));
   TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageCdi0Certificate,
                             kFlashCtrlEraseTypePage));
   TRY(flash_ctrl_info_write(&kFlashCtrlInfoPageCdi0Certificate,
                             kFlashInfoFieldCdi0Certificate.byte_offset,
-                            sizeof(attestation_public_key_t) / sizeof(uint32_t),
-                            &curr_pubkey));
-  TRY(otbn_boot_attestation_key_save(kCdi0AttestationKeySeed,
-                                     kCdi0KeymgrDiversifier));
+                            out_data.cdi_0_certificate_size / sizeof(uint32_t),
+                            out_data.cdi_0_certificate));
+  LOG_INFO("Generated CDI_0 certificate.");
 
-  // Set attestation binding to OWNER measurement.
-  // We keep the sealing binding value to all zeros as it is unused in the
-  // current personalization flow. This may be changed in the future.
-  memcpy(attestation_binding_value.data, in_data.owner_measurement,
-         kAttestMeasurementSizeInBytes);
-  keymgr_sw_binding_unlock_wait();
-  keymgr_sw_binding_set(&sealing_binding_value, &attestation_binding_value);
-
-  // Advance keymgr and generate CDI_1 attestation keys / cert.
-  keymgr_advance_state();
-  TRY(keymgr_state_check(kKeymgrStateOwnerKey));
-  TRY(otbn_boot_attestation_keygen(kCdi1AttestationKeySeed,
-                                   kCdi1KeymgrDiversifier, &curr_pubkey));
-  // TODO(#19455): create certificate with key, endorse it, and write it to
-  // flash info.
-  //
-  // Until then, we just write the public key to flash and export it over the
-  // console.
-  memcpy(out_data.cdi_1_certificate.x, curr_pubkey.x,
-         kAttestationPublicKeyCoordBytes);
-  memcpy(out_data.cdi_1_certificate.y, curr_pubkey.y,
-         kAttestationPublicKeyCoordBytes);
+  // Generate CDI_1 keys and cert.
+  TRY(gen_cdi_1_keys_and_cert(&in_data, &cdi_0_pubkey_id,
+                              out_data.cdi_1_certificate,
+                              &out_data.cdi_1_certificate_size));
   TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageCdi1Certificate,
                             kFlashCtrlEraseTypePage));
   TRY(flash_ctrl_info_write(&kFlashCtrlInfoPageCdi1Certificate,
                             kFlashInfoFieldCdi1Certificate.byte_offset,
-                            sizeof(attestation_public_key_t) / sizeof(uint32_t),
-                            &curr_pubkey));
-  TRY(otbn_boot_attestation_key_save(kCdi1AttestationKeySeed,
-                                     kCdi1KeymgrDiversifier));
+                            out_data.cdi_1_certificate_size / sizeof(uint32_t),
+                            out_data.cdi_1_certificate));
+  LOG_INFO("Generated CDI_1 certificate.");
 
-  LOG_INFO("Exporting attestation certificates ...");
+  // Export the certificates to the provisioning appliance.
+  LOG_INFO("Exporting certificates ...");
   RESP_OK(ujson_serialize_manuf_cert_perso_data_out_t, uj, &out_data);
 
-  LOG_INFO("Wait for UDS attestation certificate endorsement ...");
-  // TODO(#19455): update UDS certificate signature field and commit to flash.
+  // TODO(#19455): Load endorsed UDS certificate and write it to flash.
 
   return OK_STATUS();
 }

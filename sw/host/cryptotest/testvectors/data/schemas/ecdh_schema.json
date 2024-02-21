@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/lowRISC/opentitan/master/sw/host/cryptotest/testvectors/data/schemas/ecdh_schema.json",
+  "title": "Cryptotest ECDH Key Derivation Test Vector",
+  "description": "A list of testvectors for ECDH Key Derivation testing",
+  "$defs": {
+    "byte_array": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 255
+      }
+    }
+  },
+  "type": "array",
+  "minItems": 1,
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "vendor": {
+        "description": "Test vector vendor name",
+        "type": "string"
+      },
+      "test_case_id": {
+        "description": "Test case ID from test vector source -- used for debugging",
+        "type": "integer"
+      },
+      "algorithm": {
+        "description": "Should be ecdh",
+        "type": "string",
+        "enum": ["ecdh"]
+      },
+      "operation": {
+        "description": "ECDH operation",
+        "type": "string",
+        "enum": ["derive"]
+      },
+      "curve": {
+        "description": "Curve type",
+        "type": "string",
+        "enum": ["p256", "p384"]
+      },
+      "d": {
+        "description": "Private key d",
+        "$ref": "#/$defs/byte_array"
+      },
+      "qx": {
+        "description": "Peer's public key x coordinate",
+        "$ref": "#/$defs/byte_array"
+      },
+      "qy": {
+        "description": "Peer's public key y coordinate",
+        "$ref": "#/$defs/byte_array"
+      },
+      "z": {
+	    "description": "Shared key Z",
+        "$ref": "#/$defs/byte_array"
+      },
+      "result": {
+        "description": "Derivation result",
+        "type": "boolean"
+      }
+    }
+  }
+}

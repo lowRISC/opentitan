@@ -4,13 +4,15 @@
 
 Note that parameters prefixed with `RndCnst` are random netlist constants that need to be regenerated via topgen before the tapeout (typically by the silicon creator).
 
-Parameter                      | Default (Max)         | Top Earlgrey   | Description
--------------------------------|-----------------------|----------------|---------------
-`AlertAsyncOn`                 | 2'b11                 | 2'b11          |
-`IdcodeValue`                  | `32'h00000001`        | `32'h00000001` | Idcode for the LC JTAG TAP.
-`RndCnstLcKeymgrDivInvalid`    | (see RTL)             | (see RTL)      | Life cycle state group diversification value for keymgr.
-`RndCnstLcKeymgrDivTestDevRma` | (see RTL)             | (see RTL)      | Life cycle state group diversification value for keymgr.
-`RndCnstLcKeymgrDivProduction` | (see RTL)             | (see RTL)      | Life cycle state group diversification value for keymgr.
+Parameter                        | Default (Max)  | Top Earlgrey   | Description
+---------------------------------|----------------|----------------|---------------
+`AlertAsyncOn`                   | 2'b11          | 2'b11          |
+`IdcodeValue`                    | `32'h00000001` | `32'h00000001` | Idcode for the LC JTAG TAP.
+`RndCnstLcKeymgrDivInvalid`      | (see RTL)      | (see RTL)      | Diversification value used for all invalid life cycle states.
+`RndCnstLcKeymgrDivTestUnlocked` | (see RTL)      | (see RTL)      | Diversification value used for the TEST_UNLOCKED* life cycle states.
+`RndCnstLcKeymgrDivDev`          | (see RTL)      | (see RTL)      | Diversification value used for the DEV life cycle state.
+`RndCnstLcKeymgrDivProduction`   | (see RTL)      | (see RTL)      | Diversification value used for the PROD/PROD_END life cycle states.
+`RndCnstLcKeymgrDivRma`          | (see RTL)      | (see RTL)      | Diversification value used for the RMA life cycle state.
 
 ### Signals
 
@@ -182,11 +184,13 @@ For all signals except ESCALATE_EN, it is recommended to structure the design su
 The `lc_keymgr_div_o` signal is a 128bit diversification constant that is output to the key manager once the life cycle controller has initialized, and is asserted at the same time as `lc_keymgr_en_o`.
 Depending on which group the life cycle state is in, this signal is assigned a different random netlist constant as defined in the table below.
 
-Life Cycle State Group     | Assigned Diversification Constant
----------------------------|----------------------------------
-TEST_UNLOCKED\*, DEV, RMA  | `LcKeymgrDivTestDevRma`
-PROD, PROD_END             | `LcKeymgrDivProduction`
-All Other States           | `LcKeymgrDivInvalid`
+Life Cycle State Group | Assigned Diversification Constant
+-----------------------|----------------------------------
+TEST_UNLOCKED\*        | `RndCnstLcKeymgrDivTestUnlocked`
+DEV                    | `RndCnstLcKeymgrDivDev`
+PROD, PROD_END         | `RndCnstLcKeymgrDivProduction`
+RMA                    | `RndCnstLcKeymgrDivRma`
+All Other States       | `RndCnstLcKeymgrDivInvalid`
 
 Note that this signal is quasistatic.
 It is hence recommended to place a max-delay constraint on it and leverage the synchronized version of `lc_keymgr_en_o` to enable any downstream register in different clock domains than the life cycle controller.

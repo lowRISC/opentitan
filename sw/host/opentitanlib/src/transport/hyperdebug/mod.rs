@@ -19,7 +19,7 @@ use std::marker::PhantomData;
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
 
-use crate::io::gpio::{GpioMonitoring, GpioPin};
+use crate::io::gpio::{GpioBitbanging, GpioMonitoring, GpioPin};
 use crate::io::i2c::Bus;
 use crate::io::jtag::{JtagChain, JtagParams};
 use crate::io::spi::Target;
@@ -27,7 +27,7 @@ use crate::io::uart::Uart;
 use crate::transport::chip_whisperer::board::Board;
 use crate::transport::chip_whisperer::ChipWhisperer;
 use crate::transport::common::fpga::{ClearBitstream, FpgaProgram};
-use crate::transport::common::uart::{flock_serial, SerialPortExclusiveLock, SerialPortUart};
+use crate::transport::common::uart::{flock_serial, SerialPortExclusiveLock};
 use crate::transport::{
     Capabilities, Capability, Transport, TransportError, TransportInterfaceType, UpdateFirmware,
 };
@@ -41,13 +41,12 @@ pub mod i2c;
 pub mod servo_micro;
 pub mod spi;
 pub mod ti50;
+pub mod uart;
 
 pub use c2d2::C2d2Flavor;
 pub use dfu::HyperdebugDfu;
 pub use servo_micro::ServoMicroFlavor;
 pub use ti50::Ti50Flavor;
-
-const UART_BAUD: u32 = 115200;
 
 /// Implementation of the Transport trait for HyperDebug based on the
 /// Nucleo-L552ZE-Q.
@@ -55,7 +54,7 @@ pub struct Hyperdebug<T: Flavor> {
     spi_interface: BulkInterface,
     i2c_interface: Option<BulkInterface>,
     cmsis_interface: Option<BulkInterface>,
-    uart_ttys: HashMap<String, PathBuf>,
+    uart_interfaces: HashMap<String, UartInterface>,
     inner: Rc<Inner>,
     current_firmware_version: Option<String>,
     cmsis_google_capabilities: Cell<Option<u16>>,
@@ -103,6 +102,17 @@ pub struct BulkInterface {
     out_endpoint: u8,
 }
 
+pub struct UartInterface {
+    interface: u8,
+    tty: PathBuf,
+}
+
+impl UartInterface {
+    pub fn new(interface: u8, tty: PathBuf) -> Self {
+        Self { interface, tty }
+    }
+}
+
 impl<T: Flavor> Hyperdebug<T> {
     const USB_CLASS_VENDOR: u8 = 255;
     const USB_SUBCLASS_UART: u8 = 80;
@@ -122,6 +132,7 @@ impl<T: Flavor> Hyperdebug<T> {
     const GOOGLE_CAP_I2C: u16 = 0x0001;
     const GOOGLE_CAP_I2C_DEVICE: u16 = 0x0002;
     const GOOGLE_CAP_GPIO_MONITORING: u16 = 0x0004;
+    const GOOGLE_CAP_GPIO_BITBANGING: u16 = 0x0008;
 
     /// Establish connection with a particular HyperDebug.
     pub fn open(
@@ -141,7 +152,7 @@ impl<T: Flavor> Hyperdebug<T> {
         let mut spi_interface: Option<BulkInterface> = None;
         let mut i2c_interface: Option<BulkInterface> = None;
         let mut cmsis_interface: Option<BulkInterface> = None;
-        let mut uart_ttys: HashMap<String, PathBuf> = HashMap::new();
+        let mut uart_interfaces: HashMap<String, UartInterface> = HashMap::new();
 
         let config_desc = device.active_config_descriptor()?;
         let current_firmware_version = if let Some(idx) = config_desc.description_string_index() {
@@ -203,8 +214,11 @@ impl<T: Flavor> Hyperdebug<T> {
                         console_tty = Some(Self::find_tty(&interface_path)?);
                     } else {
                         // We found an UART forwarding USB interface.
-                        uart_ttys
-                            .insert(interface_name.to_string(), Self::find_tty(&interface_path)?);
+                        let uart = UartInterface {
+                            interface: interface.number(),
+                            tty: Self::find_tty(&interface_path)?,
+                        };
+                        uart_interfaces.insert(interface_name.to_string(), uart);
                     }
                     continue;
                 }
@@ -264,7 +278,7 @@ impl<T: Flavor> Hyperdebug<T> {
             })?,
             i2c_interface,
             cmsis_interface,
-            uart_ttys,
+            uart_interfaces,
             inner: Rc::new(Inner {
                 console_tty: console_tty.ok_or_else(|| {
                     TransportError::CommunicationError("Missing console interface".to_string())
@@ -550,6 +564,7 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
                 | Capability::UART_NONBLOCKING
                 | Capability::GPIO
                 | Capability::GPIO_MONITORING
+                | Capability::GPIO_BITBANGING
                 | Capability::SPI
                 | Capability::SPI_DUAL
                 | Capability::SPI_QUAD
@@ -636,19 +651,17 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
 
     // Create Uart instance, or return one from a cache of previously created instances.
     fn uart(&self, instance: &str) -> Result<Rc<dyn Uart>> {
-        match self.uart_ttys.get(instance) {
-            Some(tty) => {
-                if let Some(instance) = self.inner.uarts.borrow().get(tty) {
+        match self.uart_interfaces.get(instance) {
+            Some(uart_interface) => {
+                if let Some(instance) = self.inner.uarts.borrow().get(&uart_interface.tty) {
                     return Ok(Rc::clone(instance));
                 }
-                let instance: Rc<dyn Uart> = Rc::new(SerialPortUart::open(
-                    tty.to_str().ok_or(TransportError::UnicodePathError)?,
-                    UART_BAUD,
-                )?);
+                let instance: Rc<dyn Uart> =
+                    Rc::new(uart::HyperdebugUart::open(&self.inner, uart_interface)?);
                 self.inner
                     .uarts
                     .borrow_mut()
-                    .insert(tty.clone(), Rc::clone(&instance));
+                    .insert(uart_interface.tty.clone(), Rc::clone(&instance));
                 Ok(instance)
             }
             _ => Err(TransportError::InvalidInstance(
@@ -690,6 +703,24 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
                 None,
             )?))
         }
+    }
+
+    fn gpio_bitbanging(&self) -> Result<Rc<dyn GpioBitbanging>> {
+        ensure!(
+            self.get_cmsis_google_capabilities()? & Self::GOOGLE_CAP_GPIO_BITBANGING != 0,
+            TransportError::InvalidInterface(TransportInterfaceType::GpioBitbanging),
+        );
+        // GpioBitbanging does not carry any state, so returning a new instance every time is
+        // harmless (save for some memory usage).
+        let Some(cmsis_interface) = self.cmsis_interface else {
+            bail!(TransportError::InvalidInterface(
+                TransportInterfaceType::GpioBitbanging
+            ));
+        };
+        Ok(Rc::new(gpio::HyperdebugGpioBitbanging::open(
+            &self.inner,
+            cmsis_interface,
+        )?))
     }
 
     fn dispatch(&self, action: &dyn Any) -> Result<Option<Box<dyn Annotate>>> {

@@ -50,3 +50,8 @@ void ibex_addr_remap_1_set(uint32_t matching_addr, uint32_t remap_addr,
   sec_mmio_write32(kBase + RV_CORE_IBEX_DBUS_ADDR_EN_1_REG_OFFSET, 1);
   icache_invalidate();
 }
+
+// `extern` declarations to give the inline functions in the corresponding
+// header a link location.
+extern uint64_t ibex_mcycle(void);
+extern uint64_t ibex_time_to_cycles(uint64_t time_us);

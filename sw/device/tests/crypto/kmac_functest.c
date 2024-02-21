@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/kmac.h"
+#include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/hash.h"
 #include "sw/device/lib/crypto/include/mac.h"
@@ -16,6 +17,8 @@
 // cc_compilation_context to include that directory, so the compiler will find
 // the version of this file matching the Bazel rule under test.
 #include "kmac_testvectors.h"
+
+#define MODULE_ID MAKE_MODULE_ID('t', 's', 't')
 
 // Global pointer to the current test vector.
 static kmac_test_vector_t *current_test_vector = NULL;
@@ -148,6 +151,8 @@ static status_t run_test_vector(void) {
       break;
     }
     case kKmacTestOperationKmac: {
+      current_test_vector->key.checksum =
+          integrity_blinded_checksum(&current_test_vector->key);
       otcrypto_kmac_mode_t mode;
       TRY(get_kmac_mode(current_test_vector->security_strength, &mode));
       otcrypto_word32_buf_t tag_buf = {

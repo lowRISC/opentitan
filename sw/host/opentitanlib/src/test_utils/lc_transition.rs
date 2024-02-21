@@ -31,6 +31,8 @@ pub enum LcTransitionError {
     FailedToClaimMutex,
     #[error("Volatile raw unlock is not supported on this chip.")]
     VolatileRawUnlockNotSupported,
+    #[error("Volatile raw unlock is unexpectedly supported on this chip.")]
+    VolatileRawUnlockSupported,
     #[error("LC transition target programming failed (target state: 0x{0:x}).")]
     TargetProgrammingFailed(u32),
     #[error("LC transition failed (status: 0x{0:x}).")]
@@ -216,6 +218,12 @@ pub fn trigger_lc_transition(
 /// provided (a pre-requisite of the volatile operation. The device will NOT be reset into the
 /// new lifecycle state as TAP straps are sampled again on a successfull transition. However,
 /// the TAP can be switched from LC to RISCV on a successfull transition.
+///
+/// If the feature is not present in HW we expect the transition to fail with
+/// a token error since the token is invalid for a real RAW unlock
+/// transition. Use the expect_raw_unlock_supported argument to indicate
+/// whether we expect this transition to succeed or not.
+#[allow(clippy::too_many_arguments)]
 pub fn trigger_volatile_raw_unlock<'t>(
     transport: &'t TransportWrapper,
     mut jtag: Box<dyn Jtag + 't>,
@@ -224,6 +232,7 @@ pub fn trigger_volatile_raw_unlock<'t>(
     use_external_clk: bool,
     post_transition_tap: JtagTap,
     jtag_params: &JtagParams,
+    expect_raw_unlock_supported: bool,
 ) -> Result<Box<dyn Jtag + 't>> {
     // Wait for the lc_ctrl to become initialized, claim the mutex, and program the target state
     // and token CSRs.
@@ -237,8 +246,11 @@ pub fn trigger_volatile_raw_unlock<'t>(
     jtag.write_lc_ctrl_reg(&LcCtrlReg::TransitionCtrl, ctrl.bits())?;
 
     // Read back the volatile raw unlock bit to see if the feature is supported in the silicon.
-    if jtag.read_lc_ctrl_reg(&LcCtrlReg::TransitionCtrl)? < 2u32 {
+    let read = jtag.read_lc_ctrl_reg(&LcCtrlReg::TransitionCtrl)?;
+    if read < 2u32 && expect_raw_unlock_supported {
         return Err(LcTransitionError::VolatileRawUnlockNotSupported.into());
+    } else if read >= 2u32 && !expect_raw_unlock_supported {
+        return Err(LcTransitionError::VolatileRawUnlockSupported.into());
     }
 
     // Select the requested JTAG TAP to connect to post-transition.
@@ -258,13 +270,21 @@ pub fn trigger_volatile_raw_unlock<'t>(
         jtag = transport.jtag(jtag_params)?.connect(JtagTap::RiscvTap)?;
     }
 
-    wait_for_status(
-        &mut *jtag,
-        Duration::from_secs(3),
-        LcCtrlStatus::TRANSITION_SUCCESSFUL,
-    )
-    .context("failed waiting for TRANSITION_SUCCESSFUL status.")?;
-
+    if expect_raw_unlock_supported {
+        wait_for_status(
+            &mut *jtag,
+            Duration::from_secs(3),
+            LcCtrlStatus::TRANSITION_SUCCESSFUL,
+        )
+        .context("failed waiting for TRANSITION_SUCCESSFUL status.")?;
+    } else {
+        let mut status = LcCtrlStatus::INITIALIZED | LcCtrlStatus::TOKEN_ERROR;
+        if use_external_clk {
+            status |= LcCtrlStatus::EXT_CLOCK_SWITCHED;
+        }
+        wait_for_status(&mut *jtag, Duration::from_secs(3), status)
+            .context("failed waiting for TOKEN_ERROR status.")?;
+    }
     Ok(jtag)
 }
 
@@ -288,8 +308,10 @@ pub fn wait_for_status(jtag: &mut dyn Jtag, timeout: Duration, status: LcCtrlSta
         let polled_status =
             LcCtrlStatus::from_bits(polled_status).context("status has invalid bits set")?;
 
-        // Check for any error bits set.
-        if polled_status.intersects(LcCtrlStatus::ERRORS) {
+        // Check for any error bits set - however, we exclude the status that
+        // we are looking for in this comparison, since otherwise this
+        // function would just bail.
+        if polled_status.intersects(LcCtrlStatus::ERRORS & !status) {
             bail!("status {polled_status:#b} has error bits set");
         }
 

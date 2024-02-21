@@ -15,8 +15,7 @@ class usbdev_nak_trans_vseq extends usbdev_base_vseq;
 
     super.dut_init("HARD");
     cfg.clk_rst_vif.wait_clks(20);
-    // Clear interrupts
-    csr_wr(.ptr(ral.intr_state), .value(32'h0001_ffff));
+    clear_all_interrupts();
 
     // Configure transaction
     configure_out_trans();
@@ -46,8 +45,8 @@ class usbdev_nak_trans_vseq extends usbdev_base_vseq;
     // Read rxfifo reg
     csr_rd(.ptr(ral.rxfifo), .value(read_rxfifo));
     // Make sure buffer is availabe for next trans
-    ral.avbuffer.buffer.set(set_buffer_id + 1);
-    csr_update(ral.avbuffer);
+    ral.avoutbuffer.buffer.set(out_buffer_id + 1);
+    csr_update(ral.avoutbuffer);
 
     // Out token packet followed by a data packet
     call_token_seq(PktTypeToken, PidTypeOutToken, endp);
@@ -60,9 +59,6 @@ class usbdev_nak_trans_vseq extends usbdev_base_vseq;
     $cast(m_usb20_item, m_response_item);
     get_out_response_from_device(m_usb20_item, PidTypeNak);
     cfg.clk_rst_vif.wait_clks(20);
-    // Make sure buffer is availabe for next trans
-    ral.avbuffer.buffer.set(set_buffer_id + 2);
-    csr_update(ral.avbuffer);
   endtask
 
 endclass

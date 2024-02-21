@@ -25,7 +25,7 @@ module tb;
   wire intr_link_reset;
   wire intr_link_suspend;
   wire intr_link_resume;
-  wire intr_av_empty;
+  wire intr_av_out_empty;
   wire intr_rx_full;
   wire intr_av_overflow;
   wire intr_link_in_err;
@@ -34,6 +34,7 @@ module tb;
   wire intr_rx_pid_err;
   wire intr_rx_bitstuff_err;
   wire intr_frame;
+  wire intr_av_setup_empty;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
   wire usb_vbus;
   wire usb_p;
@@ -102,7 +103,7 @@ module tb;
     .intr_link_reset_o      (intr_link_reset      ),
     .intr_link_suspend_o    (intr_link_suspend    ),
     .intr_link_resume_o     (intr_link_resume     ),
-    .intr_av_empty_o        (intr_av_empty        ),
+    .intr_av_out_empty_o    (intr_av_out_empty    ),
     .intr_rx_full_o         (intr_rx_full         ),
     .intr_av_overflow_o     (intr_av_overflow     ),
     .intr_link_in_err_o     (intr_link_in_err     ),
@@ -110,7 +111,8 @@ module tb;
     .intr_rx_crc_err_o      (intr_rx_crc_err      ),
     .intr_rx_pid_err_o      (intr_rx_pid_err      ),
     .intr_rx_bitstuff_err_o (intr_rx_bitstuff_err ),
-    .intr_frame_o           (intr_frame           )
+    .intr_frame_o           (intr_frame           ),
+    .intr_av_setup_empty_o  (intr_av_setup_empty  )
   );
 
   Clock_Divider clk_div (
@@ -127,7 +129,7 @@ module tb;
   assign interrupts[IntrLinkReset]      = intr_link_reset;
   assign interrupts[IntrLinkSuspend]    = intr_link_suspend;
   assign interrupts[IntrLinkResume]     = intr_link_resume;
-  assign interrupts[IntrAvEmpty]        = intr_av_empty;
+  assign interrupts[IntrAvOutEmpty]     = intr_av_out_empty;
   assign interrupts[IntrRxFull]         = intr_rx_full;
   assign interrupts[IntrAvOverflow]     = intr_av_overflow;
   assign interrupts[IntrLinkInErr]      = intr_link_in_err;
@@ -136,6 +138,7 @@ module tb;
   assign interrupts[IntrRxPidErr]       = intr_rx_pid_err;
   assign interrupts[IntrRxBitstuffErr]  = intr_rx_bitstuff_err;
   assign interrupts[IntrFrame]          = intr_frame;
+  assign interrupts[IntrAvSetupEmpty]   = intr_av_setup_empty;
   //assign usb_vbus = 1'b1;
 
   initial begin

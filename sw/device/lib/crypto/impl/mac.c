@@ -52,9 +52,9 @@ otcrypto_status_t otcrypto_kmac(const otcrypto_blinded_key_t *key,
     return OTCRYPTO_BAD_ARGS;
   }
 
-  // Ensure that the output will fit in the tag buffer.
-  if (required_output_len > tag.len * sizeof(uint32_t) ||
-      tag.len > SIZE_MAX / sizeof(uint32_t)) {
+  // Ensure that tag buffer length and `required_output_len` match each other.
+  if (required_output_len != tag.len * sizeof(uint32_t) ||
+      required_output_len == 0) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -68,14 +68,33 @@ otcrypto_status_t otcrypto_kmac(const otcrypto_blinded_key_t *key,
     return OTCRYPTO_BAD_ARGS;
   }
 
-  // TODO (#16410, #15590): Add sideload support.
-  if (key->config.hw_backed == kHardenedBoolTrue) {
-    return OTCRYPTO_NOT_IMPLEMENTED;
-  }
+  kmac_blinded_key_t kmac_key = {
+      .share0 = NULL,
+      .share1 = NULL,
+      .hw_backed = key->config.hw_backed,
+      .len = key_len,
+  };
 
-  kmac_blinded_key_t kmac_key;
-  HARDENED_TRY(keyblob_to_shares(key, &kmac_key.share0, &kmac_key.share1));
-  kmac_key.len = key_len;
+  if (key->config.hw_backed == kHardenedBoolTrue) {
+    if (key_len != kKmacSideloadKeyLength / 8) {
+      return OTCRYPTO_BAD_ARGS;
+    }
+    // Configure keymgr with diversification input and then generate the
+    // sideload key.
+    keymgr_diversification_t diversification;
+    // Diversification call also checks that `key->keyblob_length` is 8 words
+    // long.
+    HARDENED_TRY(keyblob_to_keymgr_diversification(key, &diversification));
+    HARDENED_TRY(keymgr_generate_key_kmac(diversification));
+  } else if (key->config.hw_backed == kHardenedBoolFalse) {
+    // Check `key_len` matches `keyblob_length`.
+    if (key->keyblob_length != 2 * key->config.key_length) {
+      return OTCRYPTO_BAD_ARGS;
+    }
+    HARDENED_TRY(keyblob_to_shares(key, &kmac_key.share0, &kmac_key.share1));
+  } else {
+    return OTCRYPTO_BAD_ARGS;
+  }
 
   switch (kmac_mode) {
     case kOtcryptoKmacModeKmac128:
@@ -99,6 +118,12 @@ otcrypto_status_t otcrypto_kmac(const otcrypto_blinded_key_t *key,
       break;
     default:
       return OTCRYPTO_BAD_ARGS;
+  }
+
+  if (key->config.hw_backed == kHardenedBoolTrue) {
+    HARDENED_TRY(keymgr_sideload_clear_kmac());
+  } else if (key->config.hw_backed != kHardenedBoolFalse) {
+    return OTCRYPTO_BAD_ARGS;
   }
 
   return OTCRYPTO_OK;

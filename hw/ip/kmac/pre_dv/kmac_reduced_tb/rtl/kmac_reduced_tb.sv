@@ -27,9 +27,15 @@ module kmac_reduced_tb #(
   parameter int unsigned MsgLen = MsgWidth * MsgWidthChunks;
   parameter int unsigned EntropyWidth = 32;
 
+  // For now, we do SHA3-256.
+  parameter int unsigned DigestLen = 256;
+  parameter int unsigned DigestLenBytes = 256/8;
+
   // DUT signals
   logic [MsgLen-1:0] msg [NumShares];
   logic msg_valid, msg_ready;
+  logic [StateW-1:0] state [NumShares];
+  logic state_valid;
   logic sha3_start, sha3_process;
   prim_mubi_pkg::mubi4_t done, absorbed;
   sha3_st_e sha3_fsm;
@@ -96,8 +102,8 @@ module kmac_reduced_tb #(
 
     // Signals primarily kept to prevent them from being optimized away during synthesis.
     // State output
-    .state_o(),
-    .state_valid_o(),
+    .state_o(state),
+    .state_valid_o(state_valid),
 
     // Entropy status signals
     .entropy_configured_o(),
@@ -300,9 +306,19 @@ module kmac_reduced_tb #(
         $display("\nERROR: error condition detected.");
         test_done_o   <= 1'b1;
       end else if (test_done) begin
-        $display("\nSUCCESS: processing finished without errors.");
-        test_passed_o <= 1'b1;
         test_done_o   <= 1'b1;
+        if (dpi_digest_bytes_q == output_digest_bytes) begin
+          $display("\nSUCCESS: processing finished successfully, output matches expected digest.");
+          $display("Expected: %h", dpi_digest_bytes_packed);
+          $display("Got:      %h", output_digest_bytes_packed);
+          test_passed_o <= 1'b1;
+        end else begin
+          $display("\nERROR: processing finished, but output doesn't matches expected digest.");
+          $display("Expected: %h", dpi_digest_bytes_packed);
+          $display("Got:      %h", output_digest_bytes_packed);
+          $display("\nInput:    %h", input_msg_bytes_packed);
+          test_passed_o <= 1'b0;
+        end
       end
     end
 
@@ -311,5 +327,103 @@ module kmac_reduced_tb #(
       test_done_o <= 1'b1;
     end
   end
+
+  // DUT checking
+  // The DUT takes and produces packed SV arrays which are simply organized as follows:
+  //
+  // MSB .......................... LSB
+  // 127 ............................ 0
+  //
+  // The checked values are byte strings organized as follows:
+  // Byte 0, Byte 1, Byte 2, ... Byte 15
+  //
+  // The functions below can be used for the conversion.
+  typedef logic [7:0] msg_bytes_t [MsgLen/8-1:0];
+  function automatic msg_bytes_t msg_bits_to_bytes(logic [MsgLen-1:0] bits);
+    msg_bytes_t bytes;
+    for (int i = 0; i < MsgLen/8; i++) begin
+      bytes[i] = bits[i*8 +: 8];
+    end
+    return bytes;
+  endfunction
+  function automatic logic [MsgLen-1:0] msg_bits_to_bytes_packed(logic [MsgLen-1:0] bits);
+    logic [MsgLen-1:0] bytes;
+    for (int i = 0; i < MsgLen/8; i++) begin
+      bytes[MsgLen-1 - 8*i -: 8] = bits[i*8 +: 8];
+    end
+    return bytes;
+  endfunction
+
+  typedef logic [7:0] digest_bytes_t [DigestLenBytes-1:0];
+  function automatic digest_bytes_t digest_bits_to_bytes(logic [DigestLen-1:0] bits);
+    digest_bytes_t bytes;
+    for (int i = 0; i < DigestLenBytes; i++) begin
+      bytes[i] = bits[i*8 +: 8];
+    end
+    return bytes;
+  endfunction
+  function automatic logic [DigestLen-1:0] digest_bits_to_bytes_packed(logic [DigestLen-1:0] bits);
+    logic [DigestLen-1:0] bytes;
+    for (int i = 0; i < DigestLenBytes; i++) begin
+      bytes[DigestLen-1 - 8*i -: 8] = bits[i*8 +: 8];
+    end
+    return bytes;
+  endfunction
+  function automatic logic [DigestLen-1:0] digest_bytes_to_bytes_packed(digest_bytes_t bytes);
+    logic [DigestLen-1:0] bytes_packed;
+    for (int i = 0; i < DigestLenBytes; i++) begin
+      bytes_packed[DigestLen-1 - 8*i -: 8] = bytes[i];
+    end
+    return bytes_packed;
+  endfunction
+
+  // Buffer input and output.
+  logic [MsgLen-1:0] input_msg;
+  always_ff @(posedge clk_i or negedge rst_ni) begin : reg_input_msg
+    if (!rst_ni) begin
+      input_msg <= '0;
+    end else if (msg_handshake) begin
+      input_msg <= msg[0] ^ msg[1];
+    end
+  end
+
+  logic [DigestLen-1:0] output_digest;
+  always_ff @(posedge clk_i or negedge rst_ni) begin : reg_output_digest
+    if (!rst_ni) begin
+      output_digest <= '0;
+    end else if (state_valid) begin
+      output_digest <= state[0][DigestLen-1:0] ^ state[1][DigestLen-1:0];
+    end
+  end
+
+  // Compute the expected output.
+  digest_bytes_t dpi_digest_bytes_d, dpi_digest_bytes_q;
+  always_comb begin
+    dpi_digest_bytes_d = '{default: '0};
+    if (sha3_process) begin
+      digestpp_dpi_pkg::c_dpi_sha3_256(input_msg_bytes, {32'b0, MsgLen/8}, dpi_digest_bytes_d);
+    end
+  end
+  always_ff @(posedge clk_i or negedge rst_ni) begin : reg_dpi_digest
+    if (!rst_ni) begin
+      dpi_digest_bytes_q <= '{default: '0};
+    end else if (sha3_process) begin
+      dpi_digest_bytes_q <= dpi_digest_bytes_d;
+    end
+  end
+
+  // Various conversions for convenience
+  msg_bytes_t input_msg_bytes;
+  logic [MsgLen-1:0] input_msg_bytes_packed;
+  assign input_msg_bytes = msg_bits_to_bytes(input_msg);
+  assign input_msg_bytes_packed = msg_bits_to_bytes_packed(input_msg);
+
+  digest_bytes_t output_digest_bytes;
+  logic [DigestLen-1:0] output_digest_bytes_packed;
+  assign output_digest_bytes = digest_bits_to_bytes(output_digest);
+  assign output_digest_bytes_packed = digest_bits_to_bytes_packed(output_digest);
+
+  logic [DigestLen-1:0] dpi_digest_bytes_packed;
+  assign dpi_digest_bytes_packed = digest_bytes_to_bytes_packed(dpi_digest_bytes_q);
 
 endmodule

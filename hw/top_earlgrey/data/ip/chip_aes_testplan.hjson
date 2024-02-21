@@ -29,6 +29,7 @@
       lc_states: ["TEST_UNLOCKED", "PROD"]
       tests: ["chip_sw_aes_enc",
               "chip_sw_aes_enc_jitter_en"]
+      bazel: ["//sw/device/tests:aes_smoketest"]
     }
     {
       name: chip_sw_aes_multi_block

@@ -122,14 +122,17 @@ fn handle_send(stream: &mut TcpStream, tpm: &dyn Driver) -> Result<()> {
     }
 
     log::debug!("TPM cmd {:02x?}", cmd);
-    if let Ok(res) = tpm.execute_command(&cmd) {
-        stream.write_all(&(res.len() as u32).to_be_bytes())?;
-        stream.write_all(&res)?;
-        stream.write_all(&[0u8; 4])?;
-    } else {
-        log::error!("Command fail.");
-        stream.write_all(&[0u8; 4])?;
-        stream.write_all(&[0u8; 4])?;
+    match tpm.execute_command(&cmd) {
+        Ok(res) => {
+            stream.write_all(&(res.len() as u32).to_be_bytes())?;
+            stream.write_all(&res)?;
+            stream.write_all(&[0u8; 4])?;
+        }
+        Err(e) => {
+            log::error!("Command fail: {}", e);
+            stream.write_all(&[0u8; 4])?;
+            stream.write_all(&[0u8; 4])?;
+        }
     }
 
     Ok(())

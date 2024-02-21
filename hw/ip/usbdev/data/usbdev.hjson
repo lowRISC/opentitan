@@ -213,9 +213,9 @@
             Raised when the link becomes active again after being suspended.
             '''
     }
-    { name: "av_empty",
+    { name: "av_out_empty",
       desc: '''
-            Raised when the AV FIFO is empty and the device interface is enabled.
+            Raised when the Available OUT FIFO is empty and the device interface is enabled.
             This interrupt is directly tied to the FIFO status, so the AV FIFO must be provided a free buffer before the interrupt is cleared.
             If the condition is not cleared, the interrupt can re-assert.
             '''
@@ -229,7 +229,7 @@
     }
     { name: "av_overflow",
       desc: '''
-            Raised if a write was done to the Available Buffer FIFO when the FIFO was full.
+            Raised if a write was done to either the Available OUT Buffer FIFO or the Available SETUP Buffer FIFO when the FIFO was full.
             '''
     }
     { name: "link_in_err",
@@ -268,6 +268,14 @@
       desc: '''
             Raised if a packet to an OUT endpoint started to be received but was then dropped due to an error.
             This error is raised if the data toggle, token, packet and/or CRC are invalid, if the Available Buffer FIFO is empty or if the Received Buffer FIFO is full.
+            '''
+    }
+    {
+      name: "av_setup_empty",
+      desc: '''
+            Raised when the Available SETUP Buffer FIFO is empty and the device interface is enabled.
+            This interrupt is directly tied to the FIFO status, so the AV FIFO must be provided a free buffer before the interrupt is cleared.
+            If the condition is not cleared, the interrupt can re-assert.
             '''
     }
   ]
@@ -537,18 +545,27 @@
         }
         {
           bits: "19:16",
-          name: "av_depth",
+          name: "av_out_depth",
           desc: '''
-                Number of buffers in the Available Buffer FIFO.
+                Number of buffers in the Available OUT Buffer FIFO.
 
-                These buffers are available for receiving packets.
+                These buffers are available for receiving OUT DATA packets.
+                '''
+        }
+        {
+          bits: "22:20",
+          name: "av_setup_depth",
+          desc: '''
+                Number of buffers in the Available SETUP Buffer FIFO.
+
+                These buffers are available for receiving SETUP DATA packets.
                 '''
         }
         {
           bits: "23",
-          name: "av_full",
+          name: "av_out_full",
           desc: '''
-                Available Buffer FIFO is full.
+                Available OUT Buffer FIFO is full.
                 '''
         }
         {
@@ -559,6 +576,13 @@
 
                 These buffers have packets that have been received and
                 should be popped from the FIFO and processed.
+                '''
+        }
+        {
+          bits: "30",
+          name: "av_setup_full",
+          desc: '''
+                Available SETUP Buffer FIFO is full.
                 '''
         }
         {
@@ -575,8 +599,8 @@
              // Exclude all read checks in all tests including reset tests.
              "excl:CsrAllTests:CsrExclCheck"]
     }
-    { name: "avbuffer",
-      desc: "Available Buffer FIFO",
+    { name: "avoutbuffer",
+      desc: "Available OUT Buffer FIFO",
       swaccess: "wo",
       hwaccess: "hro",
       hwqe: "true",
@@ -587,7 +611,26 @@
           desc: '''
                 This field contains the buffer ID being passed to the USB receive engine.
 
-                If the Available Buffer FIFO is full, any write operations are discarded.
+                If the Available OUT Buffer FIFO is full, any write operations are discarded.
+                '''
+        }
+      ]
+      tags: [// Writing this CSR affects the ral.usbstat.av_depth field.
+             "excl:CsrNonInitTests:CsrExclWrite"]
+    }
+    { name: "avsetupbuffer",
+      desc: "Available SETUP Buffer FIFO",
+      swaccess: "wo",
+      hwaccess: "hro",
+      hwqe: "true",
+      fields: [
+        {
+          bits: "4:0",
+          name: "buffer",
+          desc: '''
+                This field contains the buffer ID being passed to the USB receive engine.
+
+                If the Available SETUP Buffer FIFO is full, any write operations are discarded.
                 '''
         }
       ]
@@ -858,25 +901,67 @@
         ]
       }
     }
-    { multireg: {
-        name: "data_toggle_clear",
-        count: "NEndpoints"
-        cname: "Endpoint"
-        desc: "Clear the data toggle flag",
-        swaccess: "wo",
-        hwaccess: "hro",
-        hwqe: "true",
-        fields: [
-          {
-            bits: "0",
-            name: "clear",
-            desc: '''
-                  Writing 1 to this bit will clear the data toggle bit for this endpoint to Data0 in both IN and OUT directions.
-                  The register must no be written again within 200 ns.
-                  '''
-          }
-        ]
-      }
+    {
+      name: "out_data_toggle",
+      desc: "OUT Endpoints Data Toggles",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      fields: [
+        {
+          bits: "11:0",
+          name: "status",
+          desc: '''
+                Reading returns the current state of the OUT endpoint Data Toggle flags.
+                Writing sets the Data Toggle flag for each endpoint if the corresponding mask bit
+                in the upper half of this register is set.
+                '''
+        }
+        {
+          bits: "27:16",
+          name: "mask",
+          desc: '''
+                Reads as zero.
+                When writing, a set bit will cause the Data Toggle flag of the corresponding
+                OUT endpoint to be updated. A clear bit will leave the flag for the corresponding
+                endpoint unchanged.
+                '''
+        }
+      ],
+      tags: [// This CSR has mask bits that gate writes.
+             "excl:CsrNonInitTests:CsrExclWrite"]
+    }
+    {
+      name: "in_data_toggle",
+      desc: "IN Endpoints Data Toggles",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      fields: [
+        {
+          bits: "11:0",
+          name: "status",
+          desc: '''
+                Reading returns the current state of the IN endpoint Data Toggle flags.
+                Writing sets the Data Toggle flag for each endpoint if the corresponding mask bit
+                in the upper half of this register is set.
+                '''
+        }
+        {
+          bits: "27:16",
+          name: "mask",
+          desc: '''
+                Reads as zero.
+                When writing, a set bit will cause the Data Toggle flag of the corresponding
+                IN endpoint to be updated. A clear bit will leave the flag for the corresponding
+                endpoint unchanged.
+                '''
+        }
+      ],
+      tags: [// This CSR has mask bits that gate writes.
+             "excl:CsrNonInitTests:CsrExclWrite"]
     }
     { name: "phy_pins_sense",
       desc: '''

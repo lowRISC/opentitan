@@ -39,11 +39,16 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
   local bit pkt_stall;
   local bit pkt_sent;
   local bit stall;
+  local bit iso_trans;
   local bit [31:0] ep_out_enable_reg;
+  local bit [31:0] ep_in_enable_reg;
   local bit [31:0] rx_enable_setup_reg;
   local bit [31:0] rx_enable_out_reg;
   local bit [31:0] out_stall_reg;
-  local bit [3:0] endp_index;
+  local bit [31:0] in_stall_reg;
+  local bit [31:0] out_iso_reg;
+  local bit [31:0] in_iso_reg;
+  local bit [3:0]  endp_index;
 
   `uvm_component_new
 
@@ -110,10 +115,8 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
   // -------------------------------
   virtual task compare_usb20_pkt();
     if (actual_pkt_q.size() > 0) begin
-      repeat(actual_pkt_q.size()) begin
-        `DV_CHECK_EQ(actual_pkt_q.pop_front(), expected_pkt_q.pop_front());
-        `uvm_info(`gfn,"item match",UVM_DEBUG)
-      end
+      `DV_CHECK_EQ(actual_pkt_q.pop_front(), expected_pkt_q.pop_front());
+      `uvm_info(`gfn,"item match",UVM_DEBUG)
     end
   endtask
 
@@ -204,7 +207,7 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
         end
         ep_out_enable_reg = ral.ep_out_enable[0].get_mirrored_value();
         foreach(ep_out_enable_reg[i]) begin
-          if (ep_out_enable_reg[i]==1'b1) begin
+          if (ep_out_enable_reg[i] == 1'b1) begin
             ep_out_enable = 1'b1;
             endp_index = i;
             break;
@@ -216,13 +219,25 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
         if (!write && channel == DataChannel) begin
           do_read_check = 1'b0;
         end
+        ep_in_enable_reg = ral.ep_in_enable[0].get_mirrored_value();
+        foreach(ep_in_enable_reg[i]) begin
+          if (ep_in_enable_reg[i] == 1'b1) begin
+            endp_index = i;
+            break;
+          end
+        end
       end
       "usbstat": begin
         if (!write && channel == DataChannel) begin
           do_read_check = 1'b0;
         end
       end
-      "avbuffer": begin
+      "avoutbuffer": begin
+        if (!write && channel == DataChannel) begin
+          do_read_check = 1'b0;
+        end
+      end
+      "avsetupbuffer": begin
         if (!write && channel == DataChannel) begin
           do_read_check = 1'b0;
         end
@@ -263,15 +278,24 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
         end
       end
       "out_stall": begin
+        if (!write && channel == DataChannel) begin
+          do_read_check = 1'b0;
+        end
         out_stall_reg = ral.out_stall[0].get_mirrored_value();
         if (out_stall_reg[endp_index]) begin
           stall = 1'b1;
         end
+        else stall = 1'b0;
       end
       "in_stall": begin
         if (!write && channel == DataChannel) begin
           do_read_check = 1'b0;
         end
+        in_stall_reg = ral.in_stall[0].get_mirrored_value();
+        if (in_stall_reg[endp_index]) begin
+          stall = 1'b1;
+        end
+        else stall = 1'b0;
       end
       "configin_0": begin
         if (!write && channel == DataChannel) begin
@@ -337,11 +361,22 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
         if (!write && channel == DataChannel) begin
           do_read_check = 1'b0;
         end
+        out_iso_reg = ral.out_iso[0].get_mirrored_value();
+        if (out_iso_reg[endp_index]) begin
+          iso_trans = 1'b1;
+        end
+        else iso_trans = 1'b0;
       end
       "in_iso": begin
         if (!write && channel == DataChannel) begin
           do_read_check = 1'b0;
-        end      end
+        end
+        in_iso_reg = ral.in_iso[0].get_mirrored_value();
+        if (in_iso_reg[endp_index]) begin
+          iso_trans = 1'b1;
+        end
+        else iso_trans = 1'b0;
+      end
       "data_toggle_clear": begin
         // TODO
       end
@@ -389,6 +424,14 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
       m_usbdev_trans.m_usbdev_handshake_pkt = NAK;
     end else if(stall) begin
       m_usbdev_trans.m_usbdev_handshake_pkt = STALL;
+    end
+
+    // Check weather transfer type is isochoronus or not
+    if (iso_trans) begin
+      m_usbdev_trans.m_usb_transfer = IsoTrans;
+    end
+    else begin
+      m_usbdev_trans.m_usb_transfer = CtrlTrans;
     end
   endtask
 

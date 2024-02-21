@@ -5,11 +5,13 @@
 use anyhow::{bail, ensure, Result};
 use clap::ValueEnum;
 use serde::{Deserialize, Serialize};
+use std::borrow::Borrow;
 use std::rc::Rc;
 use std::thread;
 use std::time::{Duration, Instant};
 use thiserror::Error;
 
+use crate::io::gpio;
 use crate::io::i2c;
 use crate::io::spi;
 use crate::tpm::access::TpmAccess;
@@ -187,14 +189,43 @@ pub trait Driver {
     }
 }
 
+type GpioPinAndMonitoring = (Rc<dyn gpio::GpioPin>, Rc<dyn gpio::GpioMonitoring>);
+
+fn wait_for_gsc_ready(gsc_ready_pin: &Option<GpioPinAndMonitoring>) -> Result<()> {
+    let Some((gsc_ready_pin, monitoring)) = gsc_ready_pin else {
+        return Ok(());
+    };
+    let start_time = Instant::now();
+    while !monitoring
+        .monitoring_read(&[gsc_ready_pin.borrow()], true)?
+        .events
+        .into_iter()
+        .any(|e| e.edge == gpio::Edge::Falling)
+    {
+        if Instant::now().duration_since(start_time) > TIMEOUT {
+            bail!(TpmError::Timeout)
+        }
+    }
+    Ok(())
+}
+
 /// Implementation of the low level interface via standard SPI protocol.
 pub struct SpiDriver {
     spi: Rc<dyn spi::Target>,
+    gsc_ready_pin: Option<(Rc<dyn gpio::GpioPin>, Rc<dyn gpio::GpioMonitoring>)>,
 }
 
 impl SpiDriver {
-    pub fn new(spi: Rc<dyn spi::Target>) -> Self {
-        Self { spi }
+    pub fn new(
+        spi: Rc<dyn spi::Target>,
+        gsc_ready_pin: Option<(Rc<dyn gpio::GpioPin>, Rc<dyn gpio::GpioMonitoring>)>,
+    ) -> Result<Self> {
+        if let Some((gsc_ready_pin, monitoring)) = &gsc_ready_pin {
+            // Set up monitoring of edges on the GSC ready pin.  This will be more efficient than
+            // starting/stopping the monitoring on each TPM operation.
+            monitoring.monitoring_start(&[gsc_ready_pin.borrow()])?;
+        }
+        Ok(Self { spi, gsc_ready_pin })
     }
 
     /// Numerical TPM register address as used in SPI protocol.
@@ -232,19 +263,37 @@ impl SpiDriver {
         let req = self.compose_header(register, len, is_read);
         self.spi
             .run_transaction(&mut [spi::Transfer::Both(&req, &mut buffer)])?;
+        // The TPM has a chance to indicate that it is ready to produce the response in the very
+        // next byte.  As the fourth and final byte of the header is being sent, if the TPM sends
+        // back 0x01 on the other data line, data will come next.
         if buffer[3] & 1 == 0 {
-            let mut retries = 10;
+            // The TPM was not immediately ready, keep polling, until we receive a byte of 0x01.
+            let start_time = Instant::now();
             while {
                 self.spi
                     .run_transaction(&mut [spi::Transfer::Read(&mut buffer[0..1])])?;
                 buffer[0] & 1 == 0
             } {
-                retries -= 1;
-                if retries == 0 {
+                if Instant::now().duration_since(start_time) > TIMEOUT {
                     bail!(TpmError::Timeout)
                 }
             }
         }
+        Ok(())
+    }
+
+    fn do_read_register(&self, register: Register, data: &mut [u8]) -> Result<()> {
+        let _cs_asserted = Rc::clone(&self.spi).assert_cs()?; // Deasserts when going out of scope.
+        self.write_header(register, data.len(), true)?;
+        self.spi.run_transaction(&mut [spi::Transfer::Read(data)])?;
+        Ok(())
+    }
+
+    fn do_write_register(&self, register: Register, data: &[u8]) -> Result<()> {
+        let _cs_asserted = Rc::clone(&self.spi).assert_cs()?; // Deasserts when going out of scope.
+        self.write_header(register, data.len(), false)?;
+        self.spi
+            .run_transaction(&mut [spi::Transfer::Write(data)])?;
         Ok(())
     }
 }
@@ -257,6 +306,7 @@ const SPI_TPM_ADDRESS_OFFSET: u32 = 0x00D40000;
 const MAX_TRANSACTION_SIZE: usize = 32;
 const RESPONSE_HEADER_SIZE: usize = 6;
 const MAX_RESPONSE_SIZE: usize = 4096;
+const TIMEOUT: Duration = Duration::from_millis(500);
 
 impl Driver for SpiDriver {
     fn read_register(&self, register: Register, data: &mut [u8]) -> Result<()> {
@@ -273,10 +323,11 @@ impl Driver for SpiDriver {
             data.clone_from_slice(&buffer[1..]);
             return Ok(());
         }
-        let _cs_asserted = Rc::clone(&self.spi).assert_cs()?; // Deasserts when going out of scope.
-        self.write_header(register, data.len(), true)?;
-        self.spi.run_transaction(&mut [spi::Transfer::Read(data)])?;
-        Ok(())
+        let result = self.do_read_register(register, data);
+        if result.is_ok() {
+            wait_for_gsc_ready(&self.gsc_ready_pin)?;
+        }
+        result
     }
 
     fn write_register(&self, register: Register, data: &[u8]) -> Result<()> {
@@ -295,22 +346,40 @@ impl Driver for SpiDriver {
             ensure!(buffer[0] & 1 != 0, "TPM did not respond as expected",);
             return Ok(());
         }
-        let _cs_asserted = Rc::clone(&self.spi).assert_cs()?; // Deasserts when going out of scope.
-        self.write_header(register, data.len(), false)?;
-        self.spi
-            .run_transaction(&mut [spi::Transfer::Write(data)])?;
-        Ok(())
+        let result = self.do_write_register(register, data);
+        if result.is_ok() {
+            wait_for_gsc_ready(&self.gsc_ready_pin)?;
+        }
+        result
+    }
+}
+
+impl Drop for SpiDriver {
+    fn drop(&mut self) {
+        if let Some((gsc_ready_pin, monitoring)) = &self.gsc_ready_pin {
+            // Stop monitoring of the gsc_ready pin, by reading one final time.
+            let _ = monitoring.monitoring_read(&[gsc_ready_pin.borrow()], false);
+        }
     }
 }
 
 /// Implementation of the low level interface via Google I2C protocol.
 pub struct I2cDriver {
     i2c: Rc<dyn i2c::Bus>,
+    gsc_ready_pin: Option<(Rc<dyn gpio::GpioPin>, Rc<dyn gpio::GpioMonitoring>)>,
 }
 
 impl I2cDriver {
-    pub fn new(i2c: Rc<dyn i2c::Bus>) -> Self {
-        Self { i2c }
+    pub fn new(
+        i2c: Rc<dyn i2c::Bus>,
+        gsc_ready_pin: Option<(Rc<dyn gpio::GpioPin>, Rc<dyn gpio::GpioMonitoring>)>,
+    ) -> Result<Self> {
+        if let Some((gsc_ready_pin, monitoring)) = &gsc_ready_pin {
+            // Set up monitoring of edges on the GSC ready pin.  This will be more efficient than
+            // starting/stopping the monitoring on each TPM operation.
+            monitoring.monitoring_start(&[gsc_ready_pin.borrow()])?;
+        }
+        Ok(Self { i2c, gsc_ready_pin })
     }
 
     /// Numerical TPM register address as used in Google I2C protocol.
@@ -323,6 +392,31 @@ impl I2cDriver {
             _ => None,
         }
     }
+
+    fn try_read_register(&self, register: Register, data: &mut [u8]) -> Result<()> {
+        if self.gsc_ready_pin.is_none() {
+            // Do two I2C transfers in one call, for lowest latency.
+            self.i2c.run_transaction(
+                None, /* default addr */
+                &mut [
+                    i2c::Transfer::Write(&[Self::addr(register).unwrap()]),
+                    i2c::Transfer::Read(data),
+                ],
+            )
+        } else {
+            // Since we need to check for the GSC ready signal in between, we have to do one I2C
+            // transfer at a time, and tolerate the latency of multiple roundtrip.
+            self.i2c.run_transaction(
+                None, /* default addr */
+                &mut [i2c::Transfer::Write(&[Self::addr(register).unwrap()])],
+            )?;
+            wait_for_gsc_ready(&self.gsc_ready_pin)?;
+            self.i2c.run_transaction(
+                None, /* default addr */
+                &mut [i2c::Transfer::Read(data)],
+            )
+        }
+    }
 }
 
 impl Driver for I2cDriver {
@@ -332,14 +426,7 @@ impl Driver for I2cDriver {
         // Retry in case the I2C bus wasn't ready.
         let res = loop {
             count += 1;
-            let res = self.i2c.run_transaction(
-                None, /* default addr */
-                &mut [
-                    i2c::Transfer::Write(&[Self::addr(register).unwrap()]),
-                    i2c::Transfer::Read(data),
-                ],
-            );
-            match res {
+            match self.try_read_register(register, data) {
                 Err(e) => {
                     log::trace!(
                         "Register 0x{:X} access error: {}",
@@ -372,6 +459,16 @@ impl Driver for I2cDriver {
             None, /* default addr */
             &mut [i2c::Transfer::Write(&buffer)],
         )?;
+        wait_for_gsc_ready(&self.gsc_ready_pin)?;
         Ok(())
+    }
+}
+
+impl Drop for I2cDriver {
+    fn drop(&mut self) {
+        if let Some((gsc_ready_pin, monitoring)) = &self.gsc_ready_pin {
+            // Stop monitoring of the gsc_ready pin, by reading one final time.
+            let _ = monitoring.monitoring_read(&[gsc_ready_pin.borrow()], false);
+        }
     }
 }
