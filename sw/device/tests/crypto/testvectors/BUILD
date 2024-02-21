@@ -36,3 +36,7 @@ autogen_cryptotest_hjson_external(
     src = "@wycheproof//testvectors:rsa_signature_3072_sha256_test.json",
     parser = "//sw/device/tests/crypto/testvectors/wycheproof:rsa_3072_verify_parse_testvectors",
 )
+
+exports_files([
+    "hash_hardcoded.hjson",
+])
