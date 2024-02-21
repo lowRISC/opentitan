@@ -124,6 +124,16 @@ py_binary(
 )
 
 py_binary(
+    name = "hjson_kmac_parser",
+    srcs = ["hjson_kmac_parser.py"],
+    deps = [
+        ":cryptotest_util",
+        requirement("hjson"),
+        requirement("jsonschema"),
+    ],
+)
+
+py_binary(
     name = "wycheproof_kmac_parser",
     srcs = ["wycheproof_kmac_parser.py"],
     deps = [
