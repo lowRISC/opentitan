@@ -114,11 +114,11 @@ static bool usbdev_get_irq_bit_index(dif_usbdev_irq_t irq,
 }
 
 static dif_irq_type_t irq_types[] = {
-    kDifIrqTypeEvent, kDifIrqTypeEvent, kDifIrqTypeEvent, kDifIrqTypeEvent,
-    kDifIrqTypeEvent, kDifIrqTypeEvent, kDifIrqTypeEvent, kDifIrqTypeEvent,
-    kDifIrqTypeEvent, kDifIrqTypeEvent, kDifIrqTypeEvent, kDifIrqTypeEvent,
-    kDifIrqTypeEvent, kDifIrqTypeEvent, kDifIrqTypeEvent, kDifIrqTypeEvent,
-    kDifIrqTypeEvent, kDifIrqTypeEvent,
+    kDifIrqTypeStatus, kDifIrqTypeStatus, kDifIrqTypeEvent, kDifIrqTypeEvent,
+    kDifIrqTypeEvent,  kDifIrqTypeEvent,  kDifIrqTypeEvent, kDifIrqTypeStatus,
+    kDifIrqTypeStatus, kDifIrqTypeEvent,  kDifIrqTypeEvent, kDifIrqTypeEvent,
+    kDifIrqTypeEvent,  kDifIrqTypeEvent,  kDifIrqTypeEvent, kDifIrqTypeEvent,
+    kDifIrqTypeEvent,  kDifIrqTypeStatus,
 };
 
 OT_WARN_UNUSED_RESULT

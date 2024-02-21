@@ -89,7 +89,7 @@ typedef enum dif_usbdev_irq {
    */
   kDifUsbdevIrqPktSent = 1,
   /**
-   * Raised if VBUS is lost thus the link is disconnected.
+   * Raised if VBUS is lost, thus the link is disconnected.
    */
   kDifUsbdevIrqDisconnected = 2,
   /**
@@ -112,10 +112,11 @@ typedef enum dif_usbdev_irq {
    */
   kDifUsbdevIrqLinkResume = 6,
   /**
-   * Raised when the Available OUT FIFO is empty and the device interface is
-   * enabled. This interrupt is directly tied to the FIFO status, so the AV FIFO
-   * must be provided a free buffer before the interrupt is cleared. If the
-   * condition is not cleared, the interrupt can re-assert.
+   * Raised when the Available OUT Buffer FIFO is empty and the device interface
+   * is enabled. This interrupt is directly tied to the FIFO status, so the
+   * Available OUT Buffer FIFO must be provided a free buffer before the
+   * interrupt is cleared. If the condition is not cleared, the interrupt can
+   * re-assert.
    */
   kDifUsbdevIrqAvOutEmpty = 7,
   /**
@@ -134,15 +135,16 @@ typedef enum dif_usbdev_irq {
    * Raised if a packet to an IN endpoint started to be received but was then
    * dropped due to an error. After transmitting the IN payload, the USB device
    * expects a valid ACK handshake packet. This error is raised if either the
-   * packet or CRC is invalid or a different token was received.
+   * packet or CRC is invalid, leading to a NAK instead, or if a different token
+   * was received.
    */
   kDifUsbdevIrqLinkInErr = 10,
   /**
-   * Raised if a CRC error occured.
+   * Raised if a CRC error occurred on a received packet.
    */
   kDifUsbdevIrqRxCrcErr = 11,
   /**
-   * Raised if an invalid packed identifier (PID) was received.
+   * Raised if an invalid Packet IDentifier (PID) was received.
    */
   kDifUsbdevIrqRxPidErr = 12,
   /**
@@ -160,15 +162,17 @@ typedef enum dif_usbdev_irq {
   /**
    * Raised if a packet to an OUT endpoint started to be received but was then
    * dropped due to an error. This error is raised if the data toggle, token,
-   * packet and/or CRC are invalid, if the Available Buffer FIFO is empty or if
-   * the Received Buffer FIFO is full.
+   * packet and/or CRC are invalid, or if the appropriate Available OUT Buffer
+   * FIFO is empty and/or the Received Buffer FIFO is full when a packet should
+   * have been received.
    */
   kDifUsbdevIrqLinkOutErr = 16,
   /**
    * Raised when the Available SETUP Buffer FIFO is empty and the device
    * interface is enabled. This interrupt is directly tied to the FIFO status,
-   * so the AV FIFO must be provided a free buffer before the interrupt is
-   * cleared. If the condition is not cleared, the interrupt can re-assert.
+   * so the Available SETUP Buffer FIFO must be provided a free buffer before
+   * the interrupt is cleared. If the condition is not cleared, the interrupt
+   * can re-assert.
    */
   kDifUsbdevIrqAvSetupEmpty = 17,
 } dif_usbdev_irq_t;
