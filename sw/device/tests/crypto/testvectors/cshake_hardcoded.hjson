@@ -1,0 +1,25 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// The following vectors are obtained from:
+// https://csrc.nist.gov/projects/cryptographic-standards-and-guidelines/example-values
+
+[
+  {
+    vector_identifier: "NIST SP 800-185, cSHAKE_samples.pdf, Sample #1"
+    operation: CSHAKE
+    security_str: 128
+    input_msg: 0x00010203
+    cust_str: 0x456d61696c205369676e6174757265
+    digest: 0xc1c36925b6409a04f1b504fcbca9d82b4017277cb5ed2b2065fc1d3814d5aaf5
+  }
+  {
+    vector_identifier: "NIST SP 800-185, cSHAKE_samples.pdf, Sample #3"
+    operation: CSHAKE
+    security_str: 256
+    input_msg: 0x00010203
+    cust_str: 0x456d61696c205369676e6174757265
+    digest: 0xd008828e2b80ac9d2218ffee1d070c48b8e4c87bff32c9699d5b6896eee0edd164020e2be0560858d9c00c037e34a96937c561a74c412bb4c746469527281c8c
+  }
+]
