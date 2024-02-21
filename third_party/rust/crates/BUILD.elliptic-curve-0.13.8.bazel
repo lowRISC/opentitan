@@ -86,7 +86,7 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-none": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.13.5",
+    version = "0.13.8",
     deps = [
         "@crate_index__base16ct-0.2.0//:base16ct",
         "@crate_index__crypto-bigint-0.5.2//:crypto_bigint",
@@ -100,6 +100,6 @@ rust_library(
         "@crate_index__rand_core-0.6.4//:rand_core",
         "@crate_index__sec1-0.7.3//:sec1",
         "@crate_index__subtle-2.5.0//:subtle",
-        "@crate_index__zeroize-1.6.0//:zeroize",
+        "@crate_index__zeroize-1.7.0//:zeroize",
     ],
 )

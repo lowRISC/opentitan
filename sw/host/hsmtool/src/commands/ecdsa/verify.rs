@@ -32,7 +32,7 @@ pub struct Verify {
     signature: PathBuf,
 }
 
-#[typetag::serde(name = "rsa-verify")]
+#[typetag::serde(name = "ecdsa-verify")]
 impl Dispatch for Verify {
     fn run(
         &self,
@@ -42,7 +42,7 @@ impl Dispatch for Verify {
     ) -> Result<Box<dyn Annotate>> {
         let session = session.ok_or(HsmError::SessionRequired)?;
         let mut attrs = helper::search_spec(self.id.as_deref(), self.label.as_deref())?;
-        attrs.push(Attribute::KeyType(KeyType::Rsa.try_into()?));
+        attrs.push(Attribute::KeyType(KeyType::Ec.try_into()?));
         attrs.push(Attribute::Verify(true));
         let object = helper::find_one_object(session, &attrs)?;
 
@@ -50,8 +50,8 @@ impl Dispatch for Verify {
         if self.little_endian {
             data.reverse();
         }
-        let data = self.format.prepare(KeyType::Rsa, &data)?;
-        let mechanism = self.format.mechanism(KeyType::Rsa)?;
+        let data = self.format.prepare(KeyType::Ec, &data)?;
+        let mechanism = self.format.mechanism(KeyType::Ec)?;
         let mut signature = helper::read_file(&self.signature)?;
         if self.little_endian {
             signature.reverse();

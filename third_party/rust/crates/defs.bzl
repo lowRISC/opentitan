@@ -306,13 +306,15 @@ _NORMAL_DEPENDENCIES = {
             "chrono": "@crate_index__chrono-0.4.31//:chrono",
             "clap": "@crate_index__clap-4.4.7//:clap",
             "clap-num": "@crate_index__clap-num-1.0.2//:clap_num",
+            "const-oid": "@crate_index__const-oid-0.9.6//:const_oid",
             "crc": "@crate_index__crc-3.0.1//:crc",
             "cryptoki": "@crate_index__cryptoki-0.5.0//:cryptoki",
             "cryptoki-sys": "@crate_index__cryptoki-sys-0.1.6//:cryptoki_sys",
             "deser-hjson": "@crate_index__deser-hjson-2.1.0//:deser_hjson",
             "directories": "@crate_index__directories-5.0.1//:directories",
+            "ecdsa": "@crate_index__ecdsa-0.16.9//:ecdsa",
             "elf": "@crate_index__elf-0.7.2//:elf",
-            "elliptic-curve": "@crate_index__elliptic-curve-0.13.5//:elliptic_curve",
+            "elliptic-curve": "@crate_index__elliptic-curve-0.13.8//:elliptic_curve",
             "env_logger": "@crate_index__env_logger-0.10.0//:env_logger",
             "erased-serde": "@crate_index__erased-serde-0.3.31//:erased_serde",
             "foreign-types": "@crate_index__foreign-types-0.3.2//:foreign_types",
@@ -951,12 +953,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "crate_index__const-oid-0.9.5",
-        sha256 = "28c122c3980598d243d63d9a704629a2d748d101f278052ff068be5a4423ab6f",
+        name = "crate_index__const-oid-0.9.6",
+        sha256 = "c2459377285ad874054d797f3ccebf984978aa39129f6eafde5cdc8315b612f8",
         type = "tar.gz",
-        urls = ["https://crates.io/api/v1/crates/const-oid/0.9.5/download"],
-        strip_prefix = "const-oid-0.9.5",
-        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.const-oid-0.9.5.bazel"),
+        urls = ["https://crates.io/api/v1/crates/const-oid/0.9.6/download"],
+        strip_prefix = "const-oid-0.9.6",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.const-oid-0.9.6.bazel"),
     )
 
     maybe(
@@ -1157,12 +1159,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "crate_index__ecdsa-0.16.8",
-        sha256 = "a4b1e0c257a9e9f25f90ff76d7a68360ed497ee519c8e428d1825ef0000799d4",
+        name = "crate_index__ecdsa-0.16.9",
+        sha256 = "ee27f32b5c5292967d2d4a9d7f1e0b0aed2c15daded5a60300e4abb9d8020bca",
         type = "tar.gz",
-        urls = ["https://crates.io/api/v1/crates/ecdsa/0.16.8/download"],
-        strip_prefix = "ecdsa-0.16.8",
-        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.ecdsa-0.16.8.bazel"),
+        urls = ["https://crates.io/api/v1/crates/ecdsa/0.16.9/download"],
+        strip_prefix = "ecdsa-0.16.9",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.ecdsa-0.16.9.bazel"),
     )
 
     maybe(
@@ -1187,12 +1189,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "crate_index__elliptic-curve-0.13.5",
-        sha256 = "968405c8fdc9b3bf4df0a6638858cc0b52462836ab6b1c87377785dd09cf1c0b",
+        name = "crate_index__elliptic-curve-0.13.8",
+        sha256 = "b5e6043086bf7973472e0c7dff2142ea0b680d30e18d9cc40f267efbf222bd47",
         type = "tar.gz",
-        urls = ["https://crates.io/api/v1/crates/elliptic-curve/0.13.5/download"],
-        strip_prefix = "elliptic-curve-0.13.5",
-        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.elliptic-curve-0.13.5.bazel"),
+        urls = ["https://crates.io/api/v1/crates/elliptic-curve/0.13.8/download"],
+        strip_prefix = "elliptic-curve-0.13.8",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.elliptic-curve-0.13.8.bazel"),
     )
 
     maybe(
@@ -3675,10 +3677,10 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "crate_index__zeroize-1.6.0",
-        sha256 = "2a0956f1ba7c7909bfb66c2e9e4124ab6f6482560f6628b5aaeba39207c9aad9",
+        name = "crate_index__zeroize-1.7.0",
+        sha256 = "525b4ec142c6b68a2d10f01f7bbf6755599ca3f81ea53b8431b7dd348f5fdb2d",
         type = "tar.gz",
-        urls = ["https://crates.io/api/v1/crates/zeroize/1.6.0/download"],
-        strip_prefix = "zeroize-1.6.0",
-        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.zeroize-1.6.0.bazel"),
+        urls = ["https://crates.io/api/v1/crates/zeroize/1.7.0/download"],
+        strip_prefix = "zeroize-1.7.0",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.zeroize-1.7.0.bazel"),
     )
