@@ -59,17 +59,6 @@
     }
   ]
 
-  build_modes: [
-    {
-      name: volatile_unlock_disabled
-      build_opts: ["+define+SEC_VOLATILE_RAW_UNLOCK_EN=0"]
-    }
-    {
-      name: volatile_unlock_enabled
-        build_opts: ["+define+SEC_VOLATILE_RAW_UNLOCK_EN=1"]
-    }
-  ]
-
   // Default UVM test and seq class name.
   uvm_test: lc_ctrl_base_test
   uvm_test_seq: lc_ctrl_base_vseq
