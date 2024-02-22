@@ -3,30 +3,33 @@
 <!-- BEGIN CMDGEN util/regtool.py -d ./hw/ip/i2c/data/i2c.hjson -->
 ## Summary
 
-| Name                                          | Offset   |   Length | Description                                                                          |
-|:----------------------------------------------|:---------|---------:|:-------------------------------------------------------------------------------------|
-| i2c.[`INTR_STATE`](#intr_state)               | 0x0      |        4 | Interrupt State Register                                                             |
-| i2c.[`INTR_ENABLE`](#intr_enable)             | 0x4      |        4 | Interrupt Enable Register                                                            |
-| i2c.[`INTR_TEST`](#intr_test)                 | 0x8      |        4 | Interrupt Test Register                                                              |
-| i2c.[`ALERT_TEST`](#alert_test)               | 0xc      |        4 | Alert Test Register                                                                  |
-| i2c.[`CTRL`](#ctrl)                           | 0x10     |        4 | I2C Control Register                                                                 |
-| i2c.[`STATUS`](#status)                       | 0x14     |        4 | I2C Live Status Register for Host and Target modes                                   |
-| i2c.[`RDATA`](#rdata)                         | 0x18     |        4 | I2C Read Data                                                                        |
-| i2c.[`FDATA`](#fdata)                         | 0x1c     |        4 | I2C Host Format Data                                                                 |
-| i2c.[`FIFO_CTRL`](#fifo_ctrl)                 | 0x20     |        4 | I2C FIFO control register                                                            |
-| i2c.[`FIFO_STATUS`](#fifo_status)             | 0x24     |        4 | I2C FIFO status register                                                             |
-| i2c.[`OVRD`](#ovrd)                           | 0x28     |        4 | I2C Override Control Register                                                        |
-| i2c.[`VAL`](#val)                             | 0x2c     |        4 | Oversampled RX values                                                                |
-| i2c.[`TIMING0`](#timing0)                     | 0x30     |        4 | Detailed I2C Timings (directly corresponding to table 10 in the I2C Specification).  |
-| i2c.[`TIMING1`](#timing1)                     | 0x34     |        4 | Detailed I2C Timings (directly corresponding to table 10 in the I2C Specification).  |
-| i2c.[`TIMING2`](#timing2)                     | 0x38     |        4 | Detailed I2C Timings (directly corresponding to table 10 in the I2C Specification).  |
-| i2c.[`TIMING3`](#timing3)                     | 0x3c     |        4 | Detailed I2C Timings (directly corresponding to table 10, in the I2C Specification). |
-| i2c.[`TIMING4`](#timing4)                     | 0x40     |        4 | Detailed I2C Timings (directly corresponding to table 10, in the I2C Specification). |
-| i2c.[`TIMEOUT_CTRL`](#timeout_ctrl)           | 0x44     |        4 | I2C clock stretching timeout control                                                 |
-| i2c.[`TARGET_ID`](#target_id)                 | 0x48     |        4 | I2C target address and mask pairs                                                    |
-| i2c.[`ACQDATA`](#acqdata)                     | 0x4c     |        4 | I2C target acquired data                                                             |
-| i2c.[`TXDATA`](#txdata)                       | 0x50     |        4 | I2C target transmit data                                                             |
-| i2c.[`HOST_TIMEOUT_CTRL`](#host_timeout_ctrl) | 0x54     |        4 | I2C host clock generation timeout value (in units of input clock frequency)          |
+| Name                                            | Offset   |   Length | Description                                                                          |
+|:------------------------------------------------|:---------|---------:|:-------------------------------------------------------------------------------------|
+| i2c.[`INTR_STATE`](#intr_state)                 | 0x0      |        4 | Interrupt State Register                                                             |
+| i2c.[`INTR_ENABLE`](#intr_enable)               | 0x4      |        4 | Interrupt Enable Register                                                            |
+| i2c.[`INTR_TEST`](#intr_test)                   | 0x8      |        4 | Interrupt Test Register                                                              |
+| i2c.[`ALERT_TEST`](#alert_test)                 | 0xc      |        4 | Alert Test Register                                                                  |
+| i2c.[`CTRL`](#ctrl)                             | 0x10     |        4 | I2C Control Register                                                                 |
+| i2c.[`STATUS`](#status)                         | 0x14     |        4 | I2C Live Status Register for Host and Target modes                                   |
+| i2c.[`RDATA`](#rdata)                           | 0x18     |        4 | I2C Read Data                                                                        |
+| i2c.[`FDATA`](#fdata)                           | 0x1c     |        4 | I2C Host Format Data                                                                 |
+| i2c.[`FIFO_CTRL`](#fifo_ctrl)                   | 0x20     |        4 | I2C FIFO control register                                                            |
+| i2c.[`HOST_FIFO_CONFIG`](#host_fifo_config)     | 0x24     |        4 | Host mode FIFO configuration                                                         |
+| i2c.[`TARGET_FIFO_CONFIG`](#target_fifo_config) | 0x28     |        4 | Target mode FIFO configuration                                                       |
+| i2c.[`HOST_FIFO_STATUS`](#host_fifo_status)     | 0x2c     |        4 | Host mode FIFO status register                                                       |
+| i2c.[`TARGET_FIFO_STATUS`](#target_fifo_status) | 0x30     |        4 | Target mode FIFO status register                                                     |
+| i2c.[`OVRD`](#ovrd)                             | 0x34     |        4 | I2C Override Control Register                                                        |
+| i2c.[`VAL`](#val)                               | 0x38     |        4 | Oversampled RX values                                                                |
+| i2c.[`TIMING0`](#timing0)                       | 0x3c     |        4 | Detailed I2C Timings (directly corresponding to table 10 in the I2C Specification).  |
+| i2c.[`TIMING1`](#timing1)                       | 0x40     |        4 | Detailed I2C Timings (directly corresponding to table 10 in the I2C Specification).  |
+| i2c.[`TIMING2`](#timing2)                       | 0x44     |        4 | Detailed I2C Timings (directly corresponding to table 10 in the I2C Specification).  |
+| i2c.[`TIMING3`](#timing3)                       | 0x48     |        4 | Detailed I2C Timings (directly corresponding to table 10, in the I2C Specification). |
+| i2c.[`TIMING4`](#timing4)                       | 0x4c     |        4 | Detailed I2C Timings (directly corresponding to table 10, in the I2C Specification). |
+| i2c.[`TIMEOUT_CTRL`](#timeout_ctrl)             | 0x50     |        4 | I2C clock stretching timeout control                                                 |
+| i2c.[`TARGET_ID`](#target_id)                   | 0x54     |        4 | I2C target address and mask pairs                                                    |
+| i2c.[`ACQDATA`](#acqdata)                       | 0x58     |        4 | I2C target acquired data                                                             |
+| i2c.[`TXDATA`](#txdata)                         | 0x5c     |        4 | I2C target transmit data                                                             |
+| i2c.[`HOST_TIMEOUT_CTRL`](#host_timeout_ctrl)   | 0x60     |        4 | I2C host clock generation timeout value (in units of input clock frequency)          |
 
 ## INTR_STATE
 Interrupt State Register
@@ -37,7 +40,7 @@ Interrupt State Register
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "fmt_threshold", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "rx_threshold", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "fmt_overflow", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "rx_overflow", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "nak", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "scl_interference", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "sda_interference", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "stretch_timeout", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "sda_unstable", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "cmd_complete", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "tx_stretch", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "tx_overflow", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "acq_full", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "unexp_stop", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "host_timeout", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 17}], "config": {"lanes": 1, "fontsize": 10, "vspace": 180}}
+{"reg": [{"name": "fmt_threshold", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "rx_threshold", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "acq_threshold", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "rx_overflow", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "nak", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "scl_interference", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "sda_interference", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "stretch_timeout", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "sda_unstable", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "cmd_complete", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "tx_stretch", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "tx_threshold", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "acq_full", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "unexp_stop", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "host_timeout", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 17}], "config": {"lanes": 1, "fontsize": 10, "vspace": 180}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name             | Description                                                                                                                                                                                                          |
@@ -45,9 +48,9 @@ Interrupt State Register
 | 31:15  |        |         |                  | Reserved                                                                                                                                                                                                             |
 |   14   |  rw1c  |   0x0   | host_timeout     | target mode interrupt: raised if the host stops sending the clock during an ongoing transaction.                                                                                                                     |
 |   13   |  rw1c  |   0x0   | unexp_stop       | target mode interrupt: raised if STOP is received without a preceding NACK during an external host read.                                                                                                             |
-|   12   |   ro   |   0x0   | acq_full         | target mode interrupt: raised if ACQ FIFO becomes full.  This is a level status interrupt.                                                                                                                           |
-|   11   |  rw1c  |   0x0   | tx_overflow      | target mode interrupt: raised if TX FIFO has overflowed.                                                                                                                                                             |
-|   10   |   ro   |   0x0   | tx_stretch       | target mode interrupt: raised if the target is stretching clocks for a read command.  This is a level status interrupt.                                                                                              |
+|   12   |   ro   |   0x0   | acq_full         | target mode interrupt: raised if ACQ FIFO becomes full. This is a level status interrupt.                                                                                                                            |
+|   11   |   ro   |   0x0   | tx_threshold     | target mode interrupt: asserted whilst the TX FIFO level is below the low threshold. This is a level status interrupt.                                                                                               |
+|   10   |   ro   |   0x0   | tx_stretch       | target mode interrupt: raised if the target is stretching clocks for a read command. This is a level status interrupt.                                                                                               |
 |   9    |  rw1c  |   0x0   | cmd_complete     | host and target mode interrupt. In host mode, raised if the host issues a repeated START or terminates the transaction by issuing STOP. In target mode, raised if the external host issues a STOP or repeated START. |
 |   8    |  rw1c  |   0x0   | sda_unstable     | host mode interrupt: raised if the target does not assert a constant value of SDA during transmission.                                                                                                               |
 |   7    |  rw1c  |   0x0   | stretch_timeout  | host mode interrupt: raised if target stretches the clock beyond the allowed timeout period                                                                                                                          |
@@ -55,9 +58,9 @@ Interrupt State Register
 |   5    |  rw1c  |   0x0   | scl_interference | host mode interrupt: raised if the SCL line drops early (not supported without clock synchronization).                                                                                                               |
 |   4    |  rw1c  |   0x0   | nak              | host mode interrupt: raised if there is no ACK in response to an address or data write                                                                                                                               |
 |   3    |  rw1c  |   0x0   | rx_overflow      | host mode interrupt: raised if the RX FIFO has overflowed.                                                                                                                                                           |
-|   2    |  rw1c  |   0x0   | fmt_overflow     | host mode interrupt: raised if the FMT FIFO has overflowed.                                                                                                                                                          |
-|   1    |  rw1c  |   0x0   | rx_threshold     | host mode interrupt: raised if the RX FIFO is greater than the high threshold.                                                                                                                                       |
-|   0    |  rw1c  |   0x0   | fmt_threshold    | host mode interrupt: raised when the FMT FIFO depth is less than the low threshold.                                                                                                                                  |
+|   2    |   ro   |   0x0   | acq_threshold    | target mode interrupt: asserted whilst the ACQ FIFO level is above the high threshold. This is a level status interrupt.                                                                                             |
+|   1    |   ro   |   0x0   | rx_threshold     | host mode interrupt: asserted whilst the RX FIFO level is above the high threshold. This is a level status interrupt.                                                                                                |
+|   0    |   ro   |   0x0   | fmt_threshold    | host mode interrupt: asserted whilst the FMT FIFO level is below the low threshold. This is a level status interrupt.                                                                                                |
 
 ## INTR_ENABLE
 Interrupt Enable Register
@@ -68,7 +71,7 @@ Interrupt Enable Register
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "fmt_threshold", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "rx_threshold", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "fmt_overflow", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "rx_overflow", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "nak", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "scl_interference", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "sda_interference", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "stretch_timeout", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "sda_unstable", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "cmd_complete", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "tx_stretch", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "tx_overflow", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "acq_full", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "unexp_stop", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "host_timeout", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 17}], "config": {"lanes": 1, "fontsize": 10, "vspace": 180}}
+{"reg": [{"name": "fmt_threshold", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "rx_threshold", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "acq_threshold", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "rx_overflow", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "nak", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "scl_interference", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "sda_interference", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "stretch_timeout", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "sda_unstable", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "cmd_complete", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "tx_stretch", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "tx_threshold", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "acq_full", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "unexp_stop", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "host_timeout", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 17}], "config": {"lanes": 1, "fontsize": 10, "vspace": 180}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name             | Description                                                                |
@@ -77,7 +80,7 @@ Interrupt Enable Register
 |   14   |   rw   |   0x0   | host_timeout     | Enable interrupt when [`INTR_STATE.host_timeout`](#intr_state) is set.     |
 |   13   |   rw   |   0x0   | unexp_stop       | Enable interrupt when [`INTR_STATE.unexp_stop`](#intr_state) is set.       |
 |   12   |   rw   |   0x0   | acq_full         | Enable interrupt when [`INTR_STATE.acq_full`](#intr_state) is set.         |
-|   11   |   rw   |   0x0   | tx_overflow      | Enable interrupt when [`INTR_STATE.tx_overflow`](#intr_state) is set.      |
+|   11   |   rw   |   0x0   | tx_threshold     | Enable interrupt when [`INTR_STATE.tx_threshold`](#intr_state) is set.     |
 |   10   |   rw   |   0x0   | tx_stretch       | Enable interrupt when [`INTR_STATE.tx_stretch`](#intr_state) is set.       |
 |   9    |   rw   |   0x0   | cmd_complete     | Enable interrupt when [`INTR_STATE.cmd_complete`](#intr_state) is set.     |
 |   8    |   rw   |   0x0   | sda_unstable     | Enable interrupt when [`INTR_STATE.sda_unstable`](#intr_state) is set.     |
@@ -86,7 +89,7 @@ Interrupt Enable Register
 |   5    |   rw   |   0x0   | scl_interference | Enable interrupt when [`INTR_STATE.scl_interference`](#intr_state) is set. |
 |   4    |   rw   |   0x0   | nak              | Enable interrupt when [`INTR_STATE.nak`](#intr_state) is set.              |
 |   3    |   rw   |   0x0   | rx_overflow      | Enable interrupt when [`INTR_STATE.rx_overflow`](#intr_state) is set.      |
-|   2    |   rw   |   0x0   | fmt_overflow     | Enable interrupt when [`INTR_STATE.fmt_overflow`](#intr_state) is set.     |
+|   2    |   rw   |   0x0   | acq_threshold    | Enable interrupt when [`INTR_STATE.acq_threshold`](#intr_state) is set.    |
 |   1    |   rw   |   0x0   | rx_threshold     | Enable interrupt when [`INTR_STATE.rx_threshold`](#intr_state) is set.     |
 |   0    |   rw   |   0x0   | fmt_threshold    | Enable interrupt when [`INTR_STATE.fmt_threshold`](#intr_state) is set.    |
 
@@ -99,7 +102,7 @@ Interrupt Test Register
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "fmt_threshold", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "rx_threshold", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "fmt_overflow", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "rx_overflow", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "nak", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "scl_interference", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "sda_interference", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "stretch_timeout", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "sda_unstable", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "cmd_complete", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "tx_stretch", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "tx_overflow", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "acq_full", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "unexp_stop", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "host_timeout", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 17}], "config": {"lanes": 1, "fontsize": 10, "vspace": 180}}
+{"reg": [{"name": "fmt_threshold", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "rx_threshold", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "acq_threshold", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "rx_overflow", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "nak", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "scl_interference", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "sda_interference", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "stretch_timeout", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "sda_unstable", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "cmd_complete", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "tx_stretch", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "tx_threshold", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "acq_full", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "unexp_stop", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "host_timeout", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 17}], "config": {"lanes": 1, "fontsize": 10, "vspace": 180}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name             | Description                                                         |
@@ -108,7 +111,7 @@ Interrupt Test Register
 |   14   |   wo   |   0x0   | host_timeout     | Write 1 to force [`INTR_STATE.host_timeout`](#intr_state) to 1.     |
 |   13   |   wo   |   0x0   | unexp_stop       | Write 1 to force [`INTR_STATE.unexp_stop`](#intr_state) to 1.       |
 |   12   |   wo   |   0x0   | acq_full         | Write 1 to force [`INTR_STATE.acq_full`](#intr_state) to 1.         |
-|   11   |   wo   |   0x0   | tx_overflow      | Write 1 to force [`INTR_STATE.tx_overflow`](#intr_state) to 1.      |
+|   11   |   wo   |   0x0   | tx_threshold     | Write 1 to force [`INTR_STATE.tx_threshold`](#intr_state) to 1.     |
 |   10   |   wo   |   0x0   | tx_stretch       | Write 1 to force [`INTR_STATE.tx_stretch`](#intr_state) to 1.       |
 |   9    |   wo   |   0x0   | cmd_complete     | Write 1 to force [`INTR_STATE.cmd_complete`](#intr_state) to 1.     |
 |   8    |   wo   |   0x0   | sda_unstable     | Write 1 to force [`INTR_STATE.sda_unstable`](#intr_state) to 1.     |
@@ -117,7 +120,7 @@ Interrupt Test Register
 |   5    |   wo   |   0x0   | scl_interference | Write 1 to force [`INTR_STATE.scl_interference`](#intr_state) to 1. |
 |   4    |   wo   |   0x0   | nak              | Write 1 to force [`INTR_STATE.nak`](#intr_state) to 1.              |
 |   3    |   wo   |   0x0   | rx_overflow      | Write 1 to force [`INTR_STATE.rx_overflow`](#intr_state) to 1.      |
-|   2    |   wo   |   0x0   | fmt_overflow     | Write 1 to force [`INTR_STATE.fmt_overflow`](#intr_state) to 1.     |
+|   2    |   wo   |   0x0   | acq_threshold    | Write 1 to force [`INTR_STATE.acq_threshold`](#intr_state) to 1.    |
 |   1    |   wo   |   0x0   | rx_threshold     | Write 1 to force [`INTR_STATE.rx_threshold`](#intr_state) to 1.     |
 |   0    |   wo   |   0x0   | fmt_threshold    | Write 1 to force [`INTR_STATE.fmt_threshold`](#intr_state) to 1.    |
 
@@ -226,88 +229,102 @@ I2C Host Format Data
 I2C FIFO control register
 - Offset: `0x20`
 - Reset default: `0x0`
-- Reset mask: `0x1ff`
+- Reset mask: `0x183`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "RXRST", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "FMTRST", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "RXILVL", "bits": 3, "attr": ["rw"], "rotate": -90}, {"name": "FMTILVL", "bits": 2, "attr": ["rw"], "rotate": -90}, {"name": "ACQRST", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "TXRST", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 23}], "config": {"lanes": 1, "fontsize": 10, "vspace": 90}}
+{"reg": [{"name": "RXRST", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "FMTRST", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 5}, {"name": "ACQRST", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "TXRST", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 23}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                           |
-|:------:|:------:|:-------:|:-------------------------------|
-|  31:9  |        |         | Reserved                       |
-|   8    |   wo   |   0x0   | [TXRST](#fifo_ctrl--txrst)     |
-|   7    |   wo   |   0x0   | [ACQRST](#fifo_ctrl--acqrst)   |
-|  6:5   |   rw   |   0x0   | [FMTILVL](#fifo_ctrl--fmtilvl) |
-|  4:2   |   rw   |   0x0   | [RXILVL](#fifo_ctrl--rxilvl)   |
-|   1    |   wo   |   0x0   | [FMTRST](#fifo_ctrl--fmtrst)   |
-|   0    |   wo   |   0x0   | [RXRST](#fifo_ctrl--rxrst)     |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                             |
+|:------:|:------:|:-------:|:-------|:------------------------------------------------------------------------|
+|  31:9  |        |         |        | Reserved                                                                |
+|   8    |   wo   |   0x0   | TXRST  | TX FIFO reset. Write 1 to the register resets it. Read returns 0        |
+|   7    |   wo   |   0x0   | ACQRST | ACQ FIFO reset. Write 1 to the register resets it. Read returns 0       |
+|  6:2   |        |         |        | Reserved                                                                |
+|   1    |   wo   |   0x0   | FMTRST | FMT fifo reset. Write 1 to the register resets FMT_FIFO. Read returns 0 |
+|   0    |   wo   |   0x0   | RXRST  | RX fifo reset. Write 1 to the register resets RX_FIFO. Read returns 0   |
 
-### FIFO_CTRL . TXRST
-TX FIFO reset. Write 1 to the register resets it. Read returns 0
-
-### FIFO_CTRL . ACQRST
-ACQ FIFO reset. Write 1 to the register resets it. Read returns 0
-
-### FIFO_CTRL . FMTILVL
-Trigger level for FMT interrupts. If the FIFO depth falls below
-this setting, it raises fmt_threshold interrupt.
-
-| Value   | Name     | Description   |
-|:--------|:---------|:--------------|
-| 0x0     | fmtlvl1  | 1 character   |
-| 0x1     | fmtlvl4  | 4 characters  |
-| 0x2     | fmtlvl8  | 8 characters  |
-| 0x3     | fmtlvl16 | 16 characters |
-
-
-### FIFO_CTRL . RXILVL
-Trigger level for RX interrupts. If the FIFO depth exceeds
-this setting, it raises rx_threshold interrupt.
-
-| Value   | Name    | Description   |
-|:--------|:--------|:--------------|
-| 0x0     | rxlvl1  | 1 character   |
-| 0x1     | rxlvl4  | 4 characters  |
-| 0x2     | rxlvl8  | 8 characters  |
-| 0x3     | rxlvl16 | 16 characters |
-| 0x4     | rxlvl30 | 30 characters |
-
-Other values are reserved.
-
-### FIFO_CTRL . FMTRST
-FMT fifo reset. Write 1 to the register resets FMT_FIFO. Read returns 0
-
-### FIFO_CTRL . RXRST
-RX fifo reset. Write 1 to the register resets RX_FIFO. Read returns 0
-
-## FIFO_STATUS
-I2C FIFO status register
+## HOST_FIFO_CONFIG
+Host mode FIFO configuration
 - Offset: `0x24`
 - Reset default: `0x0`
-- Reset mask: `0x7f7f7f7f`
+- Reset mask: `0xfff0fff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "FMTLVL", "bits": 7, "attr": ["ro"], "rotate": 0}, {"bits": 1}, {"name": "TXLVL", "bits": 7, "attr": ["ro"], "rotate": 0}, {"bits": 1}, {"name": "RXLVL", "bits": 7, "attr": ["ro"], "rotate": 0}, {"bits": 1}, {"name": "ACQLVL", "bits": 7, "attr": ["ro"], "rotate": 0}, {"bits": 1}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "RX_THRESH", "bits": 12, "attr": ["rw"], "rotate": 0}, {"bits": 4}, {"name": "FMT_THRESH", "bits": 12, "attr": ["rw"], "rotate": 0}, {"bits": 4}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                  |
-|:------:|:------:|:-------:|:-------|:---------------------------------------------|
-|   31   |        |         |        | Reserved                                     |
-| 30:24  |   ro   |    x    | ACQLVL | Current fill level of ACQ fifo (Target mode) |
-|   23   |        |         |        | Reserved                                     |
-| 22:16  |   ro   |    x    | RXLVL  | Current fill level of RX fifo (Host mode)    |
-|   15   |        |         |        | Reserved                                     |
-|  14:8  |   ro   |    x    | TXLVL  | Current fill level of TX fifo (Target mode)  |
-|   7    |        |         |        | Reserved                                     |
-|  6:0   |   ro   |    x    | FMTLVL | Current fill level of FMT fifo (Host mode)   |
+|  Bits  |  Type  |  Reset  | Name       | Description                                                                                                                                                |
+|:------:|:------:|:-------:|:-----------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 31:28  |        |         |            | Reserved                                                                                                                                                   |
+| 27:16  |   rw   |   0x0   | FMT_THRESH | Threshold level for FMT interrupts. Whilst the number of used entries in the FMT FIFO is below this setting, the fmt_threshold interrupt will be asserted. |
+| 15:12  |        |         |            | Reserved                                                                                                                                                   |
+|  11:0  |   rw   |   0x0   | RX_THRESH  | Threshold level for RX interrupts. Whilst the level of data in the RX FIFO is above this setting, the rx_threshold interrupt will be asserted.             |
+
+## TARGET_FIFO_CONFIG
+Target mode FIFO configuration
+- Offset: `0x28`
+- Reset default: `0x0`
+- Reset mask: `0xfff0fff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "TX_THRESH", "bits": 12, "attr": ["rw"], "rotate": 0}, {"bits": 4}, {"name": "ACQ_THRESH", "bits": 12, "attr": ["rw"], "rotate": 0}, {"bits": 4}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name       | Description                                                                                                                                             |
+|:------:|:------:|:-------:|:-----------|:--------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 31:28  |        |         |            | Reserved                                                                                                                                                |
+| 27:16  |   rw   |   0x0   | ACQ_THRESH | Threshold level for ACQ interrupts. Whilst the level of data in the ACQ FIFO is above this setting, the acq_threshold interrupt will be asserted.       |
+| 15:12  |        |         |            | Reserved                                                                                                                                                |
+|  11:0  |   rw   |   0x0   | TX_THRESH  | Threshold level for TX interrupts. Whilst the number of used entries in the TX FIFO is below this setting, the tx_threshold interrupt will be asserted. |
+
+## HOST_FIFO_STATUS
+Host mode FIFO status register
+- Offset: `0x2c`
+- Reset default: `0x0`
+- Reset mask: `0xfff0fff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "FMTLVL", "bits": 12, "attr": ["ro"], "rotate": 0}, {"bits": 4}, {"name": "RXLVL", "bits": 12, "attr": ["ro"], "rotate": 0}, {"bits": 4}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name   | Description                    |
+|:------:|:------:|:-------:|:-------|:-------------------------------|
+| 31:28  |        |         |        | Reserved                       |
+| 27:16  |   ro   |    x    | RXLVL  | Current fill level of RX fifo  |
+| 15:12  |        |         |        | Reserved                       |
+|  11:0  |   ro   |    x    | FMTLVL | Current fill level of FMT fifo |
+
+## TARGET_FIFO_STATUS
+Target mode FIFO status register
+- Offset: `0x30`
+- Reset default: `0x0`
+- Reset mask: `0xfff0fff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "TXLVL", "bits": 12, "attr": ["ro"], "rotate": 0}, {"bits": 4}, {"name": "ACQLVL", "bits": 12, "attr": ["ro"], "rotate": 0}, {"bits": 4}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name   | Description                    |
+|:------:|:------:|:-------:|:-------|:-------------------------------|
+| 31:28  |        |         |        | Reserved                       |
+| 27:16  |   ro   |    x    | ACQLVL | Current fill level of ACQ fifo |
+| 15:12  |        |         |        | Reserved                       |
+|  11:0  |   ro   |    x    | TXLVL  | Current fill level of TX fifo  |
 
 ## OVRD
 I2C Override Control Register
-- Offset: `0x28`
+- Offset: `0x34`
 - Reset default: `0x0`
 - Reset mask: `0x7`
 
@@ -326,7 +343,7 @@ I2C Override Control Register
 
 ## VAL
 Oversampled RX values
-- Offset: `0x2c`
+- Offset: `0x38`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -345,7 +362,7 @@ Oversampled RX values
 Detailed I2C Timings (directly corresponding to table 10 in the I2C Specification).
 All values are expressed in units of the input clock period.
 These must be greater than 2 in order for the change in SCL to propagate to the input of the FSM so that acknowledgements are detected correctly.
-- Offset: `0x30`
+- Offset: `0x3c`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -363,7 +380,7 @@ These must be greater than 2 in order for the change in SCL to propagate to the 
 ## TIMING1
 Detailed I2C Timings (directly corresponding to table 10 in the I2C Specification).
 All values are expressed in units of the input clock period.
-- Offset: `0x34`
+- Offset: `0x40`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -381,7 +398,7 @@ All values are expressed in units of the input clock period.
 ## TIMING2
 Detailed I2C Timings (directly corresponding to table 10 in the I2C Specification).
 All values are expressed in units of the input clock period.
-- Offset: `0x38`
+- Offset: `0x44`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -399,7 +416,7 @@ All values are expressed in units of the input clock period.
 ## TIMING3
 Detailed I2C Timings (directly corresponding to table 10, in the I2C Specification).
 All values are expressed in units of the input clock period.
-- Offset: `0x3c`
+- Offset: `0x48`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -417,7 +434,7 @@ All values are expressed in units of the input clock period.
 ## TIMING4
 Detailed I2C Timings (directly corresponding to table 10, in the I2C Specification).
 All values are expressed in units of the input clock period.
-- Offset: `0x40`
+- Offset: `0x4c`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -434,7 +451,7 @@ All values are expressed in units of the input clock period.
 
 ## TIMEOUT_CTRL
 I2C clock stretching timeout control
-- Offset: `0x44`
+- Offset: `0x50`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -451,7 +468,7 @@ I2C clock stretching timeout control
 
 ## TARGET_ID
 I2C target address and mask pairs
-- Offset: `0x48`
+- Offset: `0x54`
 - Reset default: `0x0`
 - Reset mask: `0xfffffff`
 
@@ -471,7 +488,7 @@ I2C target address and mask pairs
 
 ## ACQDATA
 I2C target acquired data
-- Offset: `0x4c`
+- Offset: `0x58`
 - Reset default: `0x0`
 - Reset mask: `0x3ff`
 
@@ -503,7 +520,7 @@ Address for accepted transaction or acquired byte
 
 ## TXDATA
 I2C target transmit data
-- Offset: `0x50`
+- Offset: `0x5c`
 - Reset default: `0x0`
 - Reset mask: `0xff`
 
@@ -520,7 +537,7 @@ I2C target transmit data
 
 ## HOST_TIMEOUT_CTRL
 I2C host clock generation timeout value (in units of input clock frequency)
-- Offset: `0x54`
+- Offset: `0x60`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 

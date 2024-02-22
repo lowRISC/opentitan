@@ -75,19 +75,20 @@ dif_result_t dif_i2c_alert_force(const dif_i2c_t *i2c, dif_i2c_alert_t alert);
  */
 typedef enum dif_i2c_irq {
   /**
-   * Host mode interrupt: raised when the FMT FIFO depth is less than the low
-   * threshold.
+   * Host mode interrupt: asserted whilst the FMT FIFO level is below the low
+   * threshold. This is a level status interrupt.
    */
   kDifI2cIrqFmtThreshold = 0,
   /**
-   * Host mode interrupt: raised if the RX FIFO is greater than the high
-   * threshold.
+   * Host mode interrupt: asserted whilst the RX FIFO level is above the high
+   * threshold. This is a level status interrupt.
    */
   kDifI2cIrqRxThreshold = 1,
   /**
-   * Host mode interrupt: raised if the FMT FIFO has overflowed.
+   * Target mode interrupt: asserted whilst the ACQ FIFO level is above the high
+   * threshold. This is a level status interrupt.
    */
-  kDifI2cIrqFmtOverflow = 2,
+  kDifI2cIrqAcqThreshold = 2,
   /**
    * Host mode interrupt: raised if the RX FIFO has overflowed.
    */
@@ -125,15 +126,16 @@ typedef enum dif_i2c_irq {
   kDifI2cIrqCmdComplete = 9,
   /**
    * Target mode interrupt: raised if the target is stretching clocks for a read
-   * command.  This is a level status interrupt.
+   * command. This is a level status interrupt.
    */
   kDifI2cIrqTxStretch = 10,
   /**
-   * Target mode interrupt: raised if TX FIFO has overflowed.
+   * Target mode interrupt: asserted whilst the TX FIFO level is below the low
+   * threshold. This is a level status interrupt.
    */
-  kDifI2cIrqTxOverflow = 11,
+  kDifI2cIrqTxThreshold = 11,
   /**
-   * Target mode interrupt: raised if ACQ FIFO becomes full.  This is a level
+   * Target mode interrupt: raised if ACQ FIFO becomes full. This is a level
    * status interrupt.
    */
   kDifI2cIrqAcqFull = 12,
