@@ -256,3 +256,45 @@ run_binary(
         ("TKW_AE_inv", "192", "encrypt", False, "inverse"),
     ]
 ]
+
+[
+    run_binary(
+        name = "nist_cavp_aes_gcm_{}_{}_json".format(
+            ext_operation.lower(),
+            key_len,
+        ),
+        srcs = [
+            "@nist_cavp_aes_gcm//:gcm{}{}.rsp".format(ext_operation, key_len),
+            "//sw/host/cryptotest/testvectors/data/schemas:aes_gcm_schema.json",
+        ],
+        outs = [":nist_gcm_{}_{}.json".format(
+            operation.lower(),
+            key_len,
+        )],
+        args = [
+            "--src",
+            "$(location @nist_cavp_aes_gcm//:gcm{}{}.rsp)".format(ext_operation, key_len),
+            "--dst",
+            "$(location :nist_gcm_{}_{}.json)".format(
+                operation.lower(),
+                key_len,
+            ),
+            "--operation",
+            "{}".format(operation),
+            "--key_len",
+            "{}".format(key_len),
+            "--schema",
+            "$(location //sw/host/cryptotest/testvectors/data/schemas:aes_gcm_schema.json)",
+        ],
+        tool = "//sw/host/cryptotest/testvectors/parsers:nist_cavp_aes_gcm_parser",
+    )
+    for operation, ext_operation in [
+        ("Decrypt", "Decrypt"),
+        ("Encrypt", "EncryptExtIV"),
+    ]
+    for key_len in [
+        "128",
+        "192",
+        "256",
+    ]
+]
