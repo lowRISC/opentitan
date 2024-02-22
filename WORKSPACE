@@ -128,6 +128,10 @@ nist_cavp_repos()
 load("//third_party/wycheproof:repos.bzl", "wycheproof_repos")
 wycheproof_repos()
 
+# SPHINCS+ Test Vectors
+load("//third_party/sphincsplus:repos.bzl", "sphincsplus_repos")
+sphincsplus_repos()
+
 # Bitstreams from https://storage.googleapis.com/opentitan-bitstreams/
 load("//rules:bitstreams.bzl", "bitstreams_repo")
 bitstreams_repo(name = "bitstreams")
