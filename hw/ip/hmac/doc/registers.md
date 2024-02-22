@@ -3,36 +3,68 @@
 <!-- BEGIN CMDGEN util/regtool.py -d ./hw/ip/hmac/data/hmac.hjson -->
 ## Summary
 
-| Name                                         | Offset   |   Length | Description                                                                                                                                                                                     |
-|:---------------------------------------------|:---------|---------:|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| hmac.[`INTR_STATE`](#intr_state)             | 0x0      |        4 | Interrupt State Register                                                                                                                                                                        |
-| hmac.[`INTR_ENABLE`](#intr_enable)           | 0x4      |        4 | Interrupt Enable Register                                                                                                                                                                       |
-| hmac.[`INTR_TEST`](#intr_test)               | 0x8      |        4 | Interrupt Test Register                                                                                                                                                                         |
-| hmac.[`ALERT_TEST`](#alert_test)             | 0xc      |        4 | Alert Test Register                                                                                                                                                                             |
-| hmac.[`CFG`](#cfg)                           | 0x10     |        4 | HMAC Configuration register.                                                                                                                                                                    |
-| hmac.[`CMD`](#cmd)                           | 0x14     |        4 | HMAC command register                                                                                                                                                                           |
-| hmac.[`STATUS`](#status)                     | 0x18     |        4 | HMAC Status register                                                                                                                                                                            |
-| hmac.[`ERR_CODE`](#err_code)                 | 0x1c     |        4 | HMAC Error Code                                                                                                                                                                                 |
-| hmac.[`WIPE_SECRET`](#wipe_secret)           | 0x20     |        4 | Randomize internal secret registers.                                                                                                                                                            |
-| hmac.[`KEY_0`](#key)                         | 0x24     |        4 | HMAC Secret Key                                                                                                                                                                                 |
-| hmac.[`KEY_1`](#key)                         | 0x28     |        4 | HMAC Secret Key                                                                                                                                                                                 |
-| hmac.[`KEY_2`](#key)                         | 0x2c     |        4 | HMAC Secret Key                                                                                                                                                                                 |
-| hmac.[`KEY_3`](#key)                         | 0x30     |        4 | HMAC Secret Key                                                                                                                                                                                 |
-| hmac.[`KEY_4`](#key)                         | 0x34     |        4 | HMAC Secret Key                                                                                                                                                                                 |
-| hmac.[`KEY_5`](#key)                         | 0x38     |        4 | HMAC Secret Key                                                                                                                                                                                 |
-| hmac.[`KEY_6`](#key)                         | 0x3c     |        4 | HMAC Secret Key                                                                                                                                                                                 |
-| hmac.[`KEY_7`](#key)                         | 0x40     |        4 | HMAC Secret Key                                                                                                                                                                                 |
-| hmac.[`DIGEST_0`](#digest)                   | 0x44     |        4 | Digest output. If HMAC is disabled, the register shows result of SHA256                                                                                                                         |
-| hmac.[`DIGEST_1`](#digest)                   | 0x48     |        4 | Digest output. If HMAC is disabled, the register shows result of SHA256                                                                                                                         |
-| hmac.[`DIGEST_2`](#digest)                   | 0x4c     |        4 | Digest output. If HMAC is disabled, the register shows result of SHA256                                                                                                                         |
-| hmac.[`DIGEST_3`](#digest)                   | 0x50     |        4 | Digest output. If HMAC is disabled, the register shows result of SHA256                                                                                                                         |
-| hmac.[`DIGEST_4`](#digest)                   | 0x54     |        4 | Digest output. If HMAC is disabled, the register shows result of SHA256                                                                                                                         |
-| hmac.[`DIGEST_5`](#digest)                   | 0x58     |        4 | Digest output. If HMAC is disabled, the register shows result of SHA256                                                                                                                         |
-| hmac.[`DIGEST_6`](#digest)                   | 0x5c     |        4 | Digest output. If HMAC is disabled, the register shows result of SHA256                                                                                                                         |
-| hmac.[`DIGEST_7`](#digest)                   | 0x60     |        4 | Digest output. If HMAC is disabled, the register shows result of SHA256                                                                                                                         |
-| hmac.[`MSG_LENGTH_LOWER`](#msg_length_lower) | 0x64     |        4 | Received Message Length calculated by the HMAC in bits [31:0]                                                                                                                                   |
-| hmac.[`MSG_LENGTH_UPPER`](#msg_length_upper) | 0x68     |        4 | Received Message Length calculated by the HMAC in bits [63:32]                                                                                                                                  |
-| hmac.[`MSG_FIFO`](#msg_fifo)                 | 0x800    |     2048 | Message FIFO. Any write to this window will be appended to the FIFO. Only the lower [1:0] bits of the address matter to writes within the window (for correctly dealing with non 32-bit writes) |
+| Name                                         | Offset   |   Length | Description                                                          |
+|:---------------------------------------------|:---------|---------:|:---------------------------------------------------------------------|
+| hmac.[`INTR_STATE`](#intr_state)             | 0x0      |        4 | Interrupt State Register                                             |
+| hmac.[`INTR_ENABLE`](#intr_enable)           | 0x4      |        4 | Interrupt Enable Register                                            |
+| hmac.[`INTR_TEST`](#intr_test)               | 0x8      |        4 | Interrupt Test Register                                              |
+| hmac.[`ALERT_TEST`](#alert_test)             | 0xc      |        4 | Alert Test Register                                                  |
+| hmac.[`CFG`](#cfg)                           | 0x10     |        4 | HMAC Configuration register.                                         |
+| hmac.[`CMD`](#cmd)                           | 0x14     |        4 | HMAC command register                                                |
+| hmac.[`STATUS`](#status)                     | 0x18     |        4 | HMAC Status register                                                 |
+| hmac.[`ERR_CODE`](#err_code)                 | 0x1c     |        4 | HMAC Error Code                                                      |
+| hmac.[`WIPE_SECRET`](#wipe_secret)           | 0x20     |        4 | Randomize internal secret registers.                                 |
+| hmac.[`KEY_0`](#key)                         | 0x24     |        4 | HMAC Secret Key                                                      |
+| hmac.[`KEY_1`](#key)                         | 0x28     |        4 | HMAC Secret Key                                                      |
+| hmac.[`KEY_2`](#key)                         | 0x2c     |        4 | HMAC Secret Key                                                      |
+| hmac.[`KEY_3`](#key)                         | 0x30     |        4 | HMAC Secret Key                                                      |
+| hmac.[`KEY_4`](#key)                         | 0x34     |        4 | HMAC Secret Key                                                      |
+| hmac.[`KEY_5`](#key)                         | 0x38     |        4 | HMAC Secret Key                                                      |
+| hmac.[`KEY_6`](#key)                         | 0x3c     |        4 | HMAC Secret Key                                                      |
+| hmac.[`KEY_7`](#key)                         | 0x40     |        4 | HMAC Secret Key                                                      |
+| hmac.[`KEY_8`](#key)                         | 0x44     |        4 | HMAC Secret Key                                                      |
+| hmac.[`KEY_9`](#key)                         | 0x48     |        4 | HMAC Secret Key                                                      |
+| hmac.[`KEY_10`](#key)                        | 0x4c     |        4 | HMAC Secret Key                                                      |
+| hmac.[`KEY_11`](#key)                        | 0x50     |        4 | HMAC Secret Key                                                      |
+| hmac.[`KEY_12`](#key)                        | 0x54     |        4 | HMAC Secret Key                                                      |
+| hmac.[`KEY_13`](#key)                        | 0x58     |        4 | HMAC Secret Key                                                      |
+| hmac.[`KEY_14`](#key)                        | 0x5c     |        4 | HMAC Secret Key                                                      |
+| hmac.[`KEY_15`](#key)                        | 0x60     |        4 | HMAC Secret Key                                                      |
+| hmac.[`KEY_16`](#key)                        | 0x64     |        4 | HMAC Secret Key                                                      |
+| hmac.[`KEY_17`](#key)                        | 0x68     |        4 | HMAC Secret Key                                                      |
+| hmac.[`KEY_18`](#key)                        | 0x6c     |        4 | HMAC Secret Key                                                      |
+| hmac.[`KEY_19`](#key)                        | 0x70     |        4 | HMAC Secret Key                                                      |
+| hmac.[`KEY_20`](#key)                        | 0x74     |        4 | HMAC Secret Key                                                      |
+| hmac.[`KEY_21`](#key)                        | 0x78     |        4 | HMAC Secret Key                                                      |
+| hmac.[`KEY_22`](#key)                        | 0x7c     |        4 | HMAC Secret Key                                                      |
+| hmac.[`KEY_23`](#key)                        | 0x80     |        4 | HMAC Secret Key                                                      |
+| hmac.[`KEY_24`](#key)                        | 0x84     |        4 | HMAC Secret Key                                                      |
+| hmac.[`KEY_25`](#key)                        | 0x88     |        4 | HMAC Secret Key                                                      |
+| hmac.[`KEY_26`](#key)                        | 0x8c     |        4 | HMAC Secret Key                                                      |
+| hmac.[`KEY_27`](#key)                        | 0x90     |        4 | HMAC Secret Key                                                      |
+| hmac.[`KEY_28`](#key)                        | 0x94     |        4 | HMAC Secret Key                                                      |
+| hmac.[`KEY_29`](#key)                        | 0x98     |        4 | HMAC Secret Key                                                      |
+| hmac.[`KEY_30`](#key)                        | 0x9c     |        4 | HMAC Secret Key                                                      |
+| hmac.[`KEY_31`](#key)                        | 0xa0     |        4 | HMAC Secret Key                                                      |
+| hmac.[`DIGEST_0`](#digest)                   | 0xa4     |        4 | Digest output.                                                       |
+| hmac.[`DIGEST_1`](#digest)                   | 0xa8     |        4 | Digest output.                                                       |
+| hmac.[`DIGEST_2`](#digest)                   | 0xac     |        4 | Digest output.                                                       |
+| hmac.[`DIGEST_3`](#digest)                   | 0xb0     |        4 | Digest output.                                                       |
+| hmac.[`DIGEST_4`](#digest)                   | 0xb4     |        4 | Digest output.                                                       |
+| hmac.[`DIGEST_5`](#digest)                   | 0xb8     |        4 | Digest output.                                                       |
+| hmac.[`DIGEST_6`](#digest)                   | 0xbc     |        4 | Digest output.                                                       |
+| hmac.[`DIGEST_7`](#digest)                   | 0xc0     |        4 | Digest output.                                                       |
+| hmac.[`DIGEST_8`](#digest)                   | 0xc4     |        4 | Digest output.                                                       |
+| hmac.[`DIGEST_9`](#digest)                   | 0xc8     |        4 | Digest output.                                                       |
+| hmac.[`DIGEST_10`](#digest)                  | 0xcc     |        4 | Digest output.                                                       |
+| hmac.[`DIGEST_11`](#digest)                  | 0xd0     |        4 | Digest output.                                                       |
+| hmac.[`DIGEST_12`](#digest)                  | 0xd4     |        4 | Digest output.                                                       |
+| hmac.[`DIGEST_13`](#digest)                  | 0xd8     |        4 | Digest output.                                                       |
+| hmac.[`DIGEST_14`](#digest)                  | 0xdc     |        4 | Digest output.                                                       |
+| hmac.[`DIGEST_15`](#digest)                  | 0xe0     |        4 | Digest output.                                                       |
+| hmac.[`MSG_LENGTH_LOWER`](#msg_length_lower) | 0xe4     |        4 | Received Message Length calculated by the HMAC in bits [31:0]        |
+| hmac.[`MSG_LENGTH_UPPER`](#msg_length_upper) | 0xe8     |        4 | Received Message Length calculated by the HMAC in bits [63:32]       |
+| hmac.[`MSG_FIFO`](#msg_fifo)                 | 0x1000   |     4096 | Message FIFO. Any write to this window will be appended to the FIFO. |
 
 ## INTR_STATE
 Interrupt State Register
@@ -129,22 +161,59 @@ The register is updated when the engine is in Idle.
 If the software updates the register while the engine computes the hash,
 the updated value is discarded.
 - Offset: `0x10`
-- Reset default: `0x0`
-- Reset mask: `0xf`
+- Reset default: `0x210`
+- Reset mask: `0x1fff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "hmac_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "sha_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "endian_swap", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "digest_swap", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 130}}
+{"reg": [{"name": "hmac_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "sha_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "endian_swap", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "digest_swap", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "digest_size", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "key_length", "bits": 5, "attr": ["rw"], "rotate": -90}, {"bits": 19}], "config": {"lanes": 1, "fontsize": 10, "vspace": 130}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                             |
 |:------:|:------:|:-------:|:---------------------------------|
-|  31:4  |        |         | Reserved                         |
+| 31:13  |        |         | Reserved                         |
+|  12:8  |   rw   |   0x2   | [key_length](#cfg--key_length)   |
+|  7:4   |   rw   |   0x1   | [digest_size](#cfg--digest_size) |
 |   3    |   rw   |   0x0   | [digest_swap](#cfg--digest_swap) |
 |   2    |   rw   |   0x0   | [endian_swap](#cfg--endian_swap) |
 |   1    |   rw   |    x    | [sha_en](#cfg--sha_en)           |
 |   0    |   rw   |    x    | [hmac_en](#cfg--hmac_en)         |
+
+### CFG . key_length
+Key length configuration.
+
+This is a 5-bit one-hot encoded field to configure the key length for HMAC. The HMAC
+supports key lengths of 128-bit, 256-bit, 384-bit, 512-bit and 1024-bit, but will
+to block size if key length is greater than block size, i.e. max of 1024 bits
+for digest size SHA-2 384/512 and respectively 512 bits for SHA-2 256. The value of
+this register is irrelevant when only SHA-2 (not keyed HMAC) is configured.
+
+| Value   | Name     | Description                                                                                          |
+|:--------|:---------|:-----------------------------------------------------------------------------------------------------|
+| 0x01    | Key_128  | 5'b0_0001: 128-bit secret key.                                                                       |
+| 0x02    | Key_256  | 5'b0_0010: 256-bit secret key. Unsupported/invalid values and all-zero values are mapped to Key_256. |
+| 0x04    | Key_384  | 5'b0_0100: 384-bit secret key.                                                                       |
+| 0x08    | Key_512  | 5'b0_1000: 512-bit secret key.                                                                       |
+| 0x10    | Key_1024 | 5'b1_0000: 1024-bit secret key.                                                                      |
+
+Other values are reserved.
+
+### CFG . digest_size
+Digest size configuration.
+
+This is a 4-bit one-hot encoded field to select digest size for either HMAC or SHA-2.
+Invalid values, i.e., values with multiple bits set and value 4'b0000 are
+mapped in HMAC to SHA2_NONE (4'b0001).
+
+| Value   | Name      | Description                                                                      |
+|:--------|:----------|:---------------------------------------------------------------------------------|
+| 0x1     | SHA2_None | 4'b0001: Unsupported/invalid values and all-zero values are mapped to SHA2_None. |
+| 0x2     | SHA2_256  | 4'b0010: SHA-2 256 digest.                                                       |
+| 0x4     | SHA2_384  | 4'b0100: SHA-2 384 digest.                                                       |
+| 0x8     | SHA2_512  | 4'b1000: SHA-2 512 digest.                                                       |
+
+Other values are reserved.
 
 ### CFG . digest_swap
 Digest register byte swap.
@@ -214,31 +283,31 @@ from the registers [`DIGEST_0`](#digest_0) to [`DIGEST_7.`](#digest_7) Together 
 saved before switching context.
 
 ### CMD . hash_process
-If writes 1 into this field, SHA256 or HMAC calculates the digest or signing
+If writes 1 into this field, SHA-2 or HMAC calculates the digest or signing
 based on currently received message.
 
 ### CMD . hash_start
-If writes 1 into this field, SHA256 or HMAC begins its operation.
+If writes 1 into this field, SHA-2 or HMAC begins its operation.
 
-CPU should configure relative information first, such as message_length,
-secret_key.
+CPU must configure relative information first, such as the digest size, secret key
+and the key length.
 
 ## STATUS
 HMAC Status register
 - Offset: `0x18`
 - Reset default: `0x1`
-- Reset mask: `0x1f3`
+- Reset mask: `0x3f3`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "fifo_empty", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "fifo_full", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 2}, {"name": "fifo_depth", "bits": 5, "attr": ["ro"], "rotate": -90}, {"bits": 23}], "config": {"lanes": 1, "fontsize": 10, "vspace": 120}}
+{"reg": [{"name": "fifo_empty", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "fifo_full", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 2}, {"name": "fifo_depth", "bits": 6, "attr": ["ro"], "rotate": 0}, {"bits": 22}], "config": {"lanes": 1, "fontsize": 10, "vspace": 120}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name       | Description                                                                                        |
 |:------:|:------:|:-------:|:-----------|:---------------------------------------------------------------------------------------------------|
-|  31:9  |        |         |            | Reserved                                                                                           |
-|  8:4   |   ro   |    x    | fifo_depth | FIFO entry count.                                                                                  |
+| 31:10  |        |         |            | Reserved                                                                                           |
+|  9:4   |   ro   |    x    | fifo_depth | FIFO entry count.                                                                                  |
 |  3:2   |        |         |            | Reserved                                                                                           |
 |   1    |   ro   |    x    | fifo_full  | FIFO full. Data written to the FIFO whilst it is full will cause back-pressure on the interconnect |
 |   0    |   ro   |   0x1   | fifo_empty | FIFO empty                                                                                         |
@@ -281,11 +350,12 @@ variables such as secret key, internal state machine, or hash value.
 ## KEY
 HMAC Secret Key
 
-SHA256 assumes secret key is hashed 256bit key.
-Order of the secret key is:
-key[255:0] = {KEY0, KEY1, KEY2, ... , KEY7};
+HMAC using SHA-256/384/512 assumes any hashed secret key length up to the block size,
+thus capped at 1024-bit. [`key_length`](#key_length) determines how many of these registers are
+relevant for the HMAC operation. Order of the secret key is:
+key[1023:0] = {KEY0, KEY1, KEY2, ... , KEY31};
 
-The registers are allowed to be updated when the engine is in Idle state.
+The registers are allowed to be updated only when the engine is in Idle state.
 If the engine computes the hash, it discards any attempts to update the secret keys
 and report an error.
 - Reset default: `0x0`
@@ -303,6 +373,30 @@ and report an error.
 | KEY_5  | 0x38     |
 | KEY_6  | 0x3c     |
 | KEY_7  | 0x40     |
+| KEY_8  | 0x44     |
+| KEY_9  | 0x48     |
+| KEY_10 | 0x4c     |
+| KEY_11 | 0x50     |
+| KEY_12 | 0x54     |
+| KEY_13 | 0x58     |
+| KEY_14 | 0x5c     |
+| KEY_15 | 0x60     |
+| KEY_16 | 0x64     |
+| KEY_17 | 0x68     |
+| KEY_18 | 0x6c     |
+| KEY_19 | 0x70     |
+| KEY_20 | 0x74     |
+| KEY_21 | 0x78     |
+| KEY_22 | 0x7c     |
+| KEY_23 | 0x80     |
+| KEY_24 | 0x84     |
+| KEY_25 | 0x88     |
+| KEY_26 | 0x8c     |
+| KEY_27 | 0x90     |
+| KEY_28 | 0x94     |
+| KEY_29 | 0x98     |
+| KEY_30 | 0x9c     |
+| KEY_31 | 0xa0     |
 
 
 ### Fields
@@ -311,15 +405,19 @@ and report an error.
 {"reg": [{"name": "key", "bits": 32, "attr": ["wo"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                        |
-|:------:|:------:|:-------:|:-------|:-----------------------------------|
-|  31:0  |   wo   |    x    | key    | 32-bit chunk of 256-bit Secret Key |
+|  Bits  |  Type  |  Reset  | Name   | Description                         |
+|:------:|:------:|:-------:|:-------|:------------------------------------|
+|  31:0  |   wo   |    x    | key    | 32-bit chunk of 1024-bit secret key |
 
 ## DIGEST
-Digest output. If HMAC is disabled, the register shows result of SHA256
+Digest output.
 
+If HMAC is disabled, the register shows result of SHA-2 256/384/512.
 Order of the digest is:
-digest[255:0] = {DIGEST0, DIGEST1, DIGEST2, ... , DIGEST7};
+digest[511:0] = {DIGEST0, DIGEST1, DIGEST2, ... , DIGEST15}. For SHA-2 256
+256-bit digest = {DIGEST0, DIGEST1, DIGEST2, DIGEST3, DIGEST4, DIGEST5, DIGEST6,
+DIGEST7} and {DIGEST8 - DIGEST15} are all-zero. For SHA-2 384, {DIGEST12-DIGEST15} are
+truncated and are all-zero.
 
 The digest gets cleared when `CFG.sha_en` transitions from 1 to 0.
 When `CFG.sha_en` is 0, these registers can be written by software.
@@ -328,16 +426,24 @@ When `CFG.sha_en` is 0, these registers can be written by software.
 
 ### Instances
 
-| Name     | Offset   |
-|:---------|:---------|
-| DIGEST_0 | 0x44     |
-| DIGEST_1 | 0x48     |
-| DIGEST_2 | 0x4c     |
-| DIGEST_3 | 0x50     |
-| DIGEST_4 | 0x54     |
-| DIGEST_5 | 0x58     |
-| DIGEST_6 | 0x5c     |
-| DIGEST_7 | 0x60     |
+| Name      | Offset   |
+|:----------|:---------|
+| DIGEST_0  | 0xa4     |
+| DIGEST_1  | 0xa8     |
+| DIGEST_2  | 0xac     |
+| DIGEST_3  | 0xb0     |
+| DIGEST_4  | 0xb4     |
+| DIGEST_5  | 0xb8     |
+| DIGEST_6  | 0xbc     |
+| DIGEST_7  | 0xc0     |
+| DIGEST_8  | 0xc4     |
+| DIGEST_9  | 0xc8     |
+| DIGEST_10 | 0xcc     |
+| DIGEST_11 | 0xd0     |
+| DIGEST_12 | 0xd4     |
+| DIGEST_13 | 0xd8     |
+| DIGEST_14 | 0xdc     |
+| DIGEST_15 | 0xe0     |
 
 
 ### Fields
@@ -348,7 +454,7 @@ When `CFG.sha_en` is 0, these registers can be written by software.
 
 |  Bits  |  Type  |  Reset  | Name   | Description                    |
 |:------:|:------:|:-------:|:-------|:-------------------------------|
-|  31:0  |   rw   |    x    | digest | 32-bit chunk of 256-bit Digest |
+|  31:0  |   rw   |    x    | digest | 32-bit chunk of 512-bit digest |
 
 ## MSG_LENGTH_LOWER
 Received Message Length calculated by the HMAC in bits [31:0]
@@ -357,7 +463,7 @@ Message is byte granularity.
 lower 3bits [2:0] are ignored.
 
 When `CFG.sha_en` is 0, this register can be written by software.
-- Offset: `0x64`
+- Offset: `0xe4`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -375,7 +481,11 @@ When `CFG.sha_en` is 0, this register can be written by software.
 Received Message Length calculated by the HMAC in bits [63:32]
 
 When `CFG.sha_en` is 0, this register can be written by software.
-- Offset: `0x68`
+For SHA-2-2 256 computations, message length is 64-bit
+{MSG_LENGTH_UPPER, MSG_LENGTH_LOWER}, and for SHA-2 384/512,
+message length is extended to 128-bit in line with [nist-fips-180-4] where the
+upper 64 bits get zero-padded: {32'b0, 32'b0, MSG_LENGTH_UPPER, MSG_LENGTH_LOWER}.
+- Offset: `0xe8`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -390,10 +500,12 @@ When `CFG.sha_en` is 0, this register can be written by software.
 |  31:0  |   rw   |    x    | v      | Message Length [63:32] |
 
 ## MSG_FIFO
-Message FIFO. Any write to this window will be appended to the FIFO. Only the lower [1:0] bits of the address matter to writes within the window (for correctly dealing with non 32-bit writes)
+Message FIFO. Any write to this window will be appended to the FIFO.
+Only the lower [1:0] bits of the address matter to writes within the window
+(for correctly dealing with non 32-bit writes)
 
-- Word Aligned Offset Range: `0x800`to`0xffc`
-- Size (words): `512`
+- Word Aligned Offset Range: `0x1000`to`0x1ffc`
+- Size (words): `1024`
 - Access: `wo`
 - Byte writes are  supported.
 

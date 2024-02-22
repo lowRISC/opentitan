@@ -13,7 +13,7 @@
 | [`entropy_src`]  | Filters and checks raw entropy bits from a random noise source and forwards them to CSRNG                                         |
 | [`flash_ctrl`]   | Interfaces and manages integrated non-volatile flash memory; supports scrambling, integrity, and secure wipe                      |
 | [`gpio`]         | General-purpose I/O pin control interface for software                                                                            |
-| [`hmac`]         | Accelerator for SHA-256-based keyed hash message authentication code and the SHA-256 hash function                                |
+| [`hmac`]         | Accelerator for SHA-2 256/384/512-based keyed HMAC and the hash function                                                          |
 | [`i2c`]          | I2C interface for host and device mode, supporting up to 1 Mbaud data rates                                                       |
 | [`keymgr`]       | Managing identities and root keys; shielding confidential assets from software; providing a key derivation interface for software |
 | [`kmac`]         | Accelerator for Keccak-based keyed hash message authentication code and SHA-3 hash functions; with SCA and FI countermeasures     |

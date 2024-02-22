@@ -150,6 +150,47 @@
             '''
     }
     {
+      name: "HMAC.DIGEST_SIZE.SHA2-256",
+      desc: '''SHA2-256 hashing algorithm for SHA-2 and keyed HMAC.
+            '''
+    }
+    {
+      name: "HMAC.DIGEST_SIZE.SHA2-384",
+      desc: '''SHA2-384 hashing algorithm for SHA-2 and keyed HMAC.
+            '''
+    }
+    {
+      name: "HMAC.DIGEST_SIZE.SHA2-512",
+      desc: '''SHA2-512 hashing algorithm or SHA-2 and keyed HMAC.
+            '''
+    }
+    {
+      name: "HMAC.KEY_LENGTH.Key_128",
+      desc: '''HMAC based on any digest size using 128-bit key.
+            '''
+    }
+    {
+      name: "HMAC.KEY_LENGTH.Key_256",
+      desc: '''HMAC based on any digest size using 256-bit key.
+            '''
+    }
+    {
+      name: "HMAC.KEY_LENGTH.Key_384",
+      desc: '''HMAC based on any digest size using 384-bit key.
+            '''
+    }
+    {
+      name: "HMAC.KEY_LENGTH.Key_512",
+      desc: '''HMAC based on any digest size using 512-bit key.
+            '''
+    }
+    {
+      name: "HMAC.KEY_LENGTH.Key_1024",
+      desc: '''HMAC based on SHA-384/SHA-512 using 1024-bit key. If configured with SHA-256,
+            KEY_LENGTH defaults to Key_512.
+            '''
+    }
+    {
       name: "HMAC.MODE.HMAC",
       desc: '''Keyed-Hash Message Authentication Code (HMAC) supporting the following security
             strength configurations: HMAC/SHA-2 256/384/512. Compliant with NIST FIPS 198-1
