@@ -61,7 +61,7 @@ google_deps()
 
 # Rust Toolchain + crates.io Dependencies
 load("//third_party/rust:repos.bzl", "rust_repos")
-rust_repos()
+rust_repos(rules_rust = "/home/pamaury/project/rules_rust")
 load("//third_party/rust:deps.bzl", "rust_deps")
 rust_deps()
 

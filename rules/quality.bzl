@@ -472,56 +472,48 @@ modid_check_aspect = aspect(
     },
 )
 
+_RUSTFMT_SCRIPT = """\
+#!/bin/bash
+rulesrust_rustfmt=$(realpath "{rulesrust_rustfmt}")
+# This is a horrible hack: it turns out that rules_rust rustfmt's driver looks
+# at the runfiles to determine what actions to do, which is very odd but hard
+# to change. It tries to find the runfile directory based on argv[0]. If we
+# simply call this binary, the argv[0] will be the path of rules_rust rustfmt executable.
+# However, the runfiles are always created in the directory of the invoked executable
+# which is this script, and not rustfmt...
+# Hence we need to trick rustfmt into using our argv[0] instead.
+exec -a $0 $rulesrust_rustfmt {args}
+"""
+
 def _rustfmt_impl(ctx):
-    # See rules/ujson.bzl
-    rustfmt_files = ctx.attr._rustfmt.data_runfiles.files.to_list()
-    rustfmt = [f for f in rustfmt_files if f.basename == "rustfmt"][0]
+    # The list of arguments we pass to the script.
+    args = ["--skip-children"]
+    if ctx.attr.check_only:
+        args.append("--check")
 
-    out_file = ctx.actions.declare_file(ctx.label.name + ".bash")
-    exclude_patterns = ["\\! -path {}".format(shell.quote(p)) for p in ctx.attr.exclude_patterns]
-    include_patterns = ["-name {}".format(shell.quote(p)) for p in ctx.attr.patterns]
-    workspace = ctx.file.workspace.path if ctx.file.workspace else ""
-    substitutions = {
-        "@@EXCLUDE_PATTERNS@@": " ".join(exclude_patterns),
-        "@@INCLUDE_PATTERNS@@": " -o ".join(include_patterns),
-        "@@RUSTFMT@@": shell.quote(rustfmt.short_path),
-        "@@WORKSPACE@@": workspace,
-    }
-    ctx.actions.expand_template(
-        template = ctx.file._runner,
-        output = out_file,
-        substitutions = substitutions,
-        is_executable = True,
+    # Create a script to run rules_rust's rustfmt driver.
+    script = ctx.actions.declare_file("{}-rustfmt.sh".format(ctx.label.name))
+    script_content = _RUSTFMT_SCRIPT.format(
+        rulesrust_rustfmt = ctx.executable._rules_rust_rustfmt.short_path,
+        args = " ".join(args)
     )
+    ctx.actions.write(script, script_content, is_executable = True)
 
-    files = [rustfmt]
-    if ctx.file.workspace:
-        files.append(ctx.file.workspace)
-
-    return DefaultInfo(
-        runfiles = ctx.runfiles(files = files),
-        executable = out_file,
-    )
+    runfiles = ctx.attr._rules_rust_rustfmt[DefaultInfo].default_runfiles
+    return [DefaultInfo(executable = script, runfiles = runfiles)]
 
 rustfmt_attrs = {
-    "patterns": attr.string_list(
-        default = ["*.rs"],
-        doc = "Filename patterns for format checking",
+    "check_only": attr.bool(
+        default = False,
+        doc = "Only check files but do not modify them"
     ),
-    "exclude_patterns": attr.string_list(
-        doc = "Filename patterns to exlucde from format checking",
-    ),
-    "workspace": attr.label(
-        allow_single_file = True,
-        doc = "Label of the WORKSPACE file",
-    ),
-    "_runner": attr.label(
-        default = "//rules/scripts:rustfmt.template.sh",
-        allow_single_file = True,
-    ),
-    "_rustfmt": attr.label(
-        default = "@rules_rust//rust/toolchain:current_rustfmt_files",
+    # Note that this is the rules_rust rustfmt binary, which confusingly
+    # is NOT rustfmt but a driver that using bazel queries to format only
+    # the relevant rust files.
+    "_rules_rust_rustfmt": attr.label(
+        default = "@rules_rust//tools/rustfmt",
         cfg = "exec",
+        executable = True,
     ),
 }
 
