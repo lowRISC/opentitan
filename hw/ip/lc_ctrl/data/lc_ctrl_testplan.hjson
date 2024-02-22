@@ -191,12 +191,17 @@
             - Trigger a lc_transition.
             - Trigger a second lc_transition without reset.
 
-            **Checks**:
+            **Checks if the feature is enabled in HW**:
             - If the current state is RawState, and transition state is TestUnlocked0, and if the
               input token is correct, expect the transition to be sucessful.
             - Check status and volatile_raw_unlock output.
             - If the raw unlock transition is successful, check the second lc_transition can be
               performed without any error.
+
+            **Checks if the feature is disabled in HW**:
+            - Check that the volatile_raw_unlock CSR stays at 0
+            - Check that the transition command fails with a token error
+              (a real unlock transition expects the unhashed token instead of the hashed one).
             '''
       stage: V2
       tests: ["lc_ctrl_volatile_unlock_smoke"]
