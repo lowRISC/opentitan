@@ -38,3 +38,9 @@ def nist_cavp_repos():
         sha256 = "04a4a82e4de65bca505125295003f9c75a5a815afda046dc83661b8b580dfdf3",
         url = "https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/mac/kwtestvectors.zip",
     )
+    http_archive(
+        name = "nist_cavp_aes_gcm",
+        build_file = Label("//third_party/nist_cavp_testvectors:BUILD.nist_cavp_common.bazel"),
+        sha256 = "f9fc479e134cde2980b3bb7cddbcb567b2cd96fd753835243ed067699f26a023",
+        url = "https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/mac/gcmtestvectors.zip",
+    )
