@@ -57,7 +57,7 @@ The normal SHA3 processing will continue and finally push the conditioned entrop
 Health checks are performed on the input raw data from the PTRNG noise source when in that mode.
 There are four health tests that will be performed: repetitive count, adaptive proportion, bucket, and Markov tests.
 Each test has a pair of threshold values that determine that pass/fail of the test, one threshold for boot-time / bypass mode, and one for FIPS mode.
-By default, all tests are enabled, but can be turn off in the [`CONF`](registers.md#conf) register.
+By default, all tests are enabled, but can be turned off by setting the thresholds to the maximum value.
 Because of the variability of the PTRNG noise source, there are several registers that log statistics associated with the health tests.
 For example, the adaptive proportion test has a high watermark register that logs the highest measured number of ones.
 The [`ADAPTP_HI_WATERMARKS`](registers.md#adaptp_hi_watermarks) register has an entry for both FIPS and boot-time modes.

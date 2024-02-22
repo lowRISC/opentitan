@@ -92,6 +92,25 @@ Note that once the field `ES_ROUTE` is set to `kMultiBitBool4True`, no entropy i
 This mode is compatible with [Hardware Conditioning Bypass](#hardware-conditioning-bypass) (enabled by setting the `ES_TYPE` field in [`ENTROPY_CONTROL`](registers.md#entropy_control) to `kMultiBitBool4True`).
 
 
+## Single RNG Bit Mode
+
+The PTRNG entropy source delivers a stream of symbols to ENTROPY_SRC.
+Each of these symbols contains multiple bits.
+Firmware can determine whether ENTROPY_SRC should utilize all or only one of the bits that make up a symbol.
+Per default, the `RNG_BIT_ENABLE` field in the [`CONF`](registers.md#conf) register is set to `kMultiBitBool4False` and the whole symbol is used.
+To enable the single RNG bit mode `RNG_BIT_ENABLE` has to be set to `kMultiBitBool4True`.
+To select which specific bit should be used, the `RNG_BIT_SEL` field in the [`CONF`](registers.md#conf) register must be set to the number of the desired lane.
+
+When ENTROPY_SRC is configured in RNG bit mode, only a subset of the health tests are applicable and the health test thresholds need to be set to account for this.
+For this reason, the thresholds for both the bypass and the FIPS values must be set accordingly.
+The repetition count test, Markov test and adaptive proportion test can all still be performed on a single lane.
+However, to get the same number of entropy bits, we now must collect four times as many individual symbols from the PTRNG.
+This should be considered when choosing the health test thresholds, whereas the health test window size is adjustet internally.
+In contrast, the symbol repetition count test and the bucket test are not applicable to a single lane.
+They need to be disabled by setting the corresponding thresholds to the maximum value.
+The `THRESHOLD_SCOPE` field in the [`CONF`](registers.md#conf) register is also not applicable to the single lane mode and must be set to `kMultiBitBool4False`.
+
+
 ## Handling a Recoverable Alert
 
 Reasons for a recoverable alert are tracked in the [`RECOV_ALERT_STS`](registers.md#recov_alert_sts) register.

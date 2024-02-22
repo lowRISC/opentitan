@@ -272,8 +272,7 @@ If set to `kMultiBitBool4False`, the RNG input lines are all scored individually
 A statistical deviation in any one input line, be it due to coincidence or failure, will force rejection of the sample, and count toward the total alert count.
 
 ### CONF . RNG_BIT_SEL
-When the above bit iset, this field selects which bit from the RNG bus will
-be processed when in single RNG bit mode.
+When [`CONF.RNG_BIT_ENABLE`](#conf) is set, this field selects which bit from the RNG bus will be processed.
 This two bit field selects the RNG bit stream:
 0b00: RNG bit 0
 0b01: RNG bit 1
@@ -281,7 +280,7 @@ This two bit field selects the RNG bit stream:
 0b11: RNG bit 3
 
 ### CONF . RNG_BIT_ENABLE
-Setting this field to `kMultiBitBool4True` enables the single RNG bit mode, where only one bit is sampled.
+Setting this field to `kMultiBitBool4True` enables the single RNG bit mode, where only one bit is sampled per symbol.
 
 ### CONF . RNG_FIPS
 Setting this field to `kMultiBitBool4True` sets the analog RNG into a conservative operation mode that may reduce the bit rate.
