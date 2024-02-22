@@ -258,7 +258,7 @@ opentitan_binary(
     ],
     linker_script = ":ld_slot_a",
     manifest = ":manifest_standard",
-    rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:test_private_key_0": "test_key_0"},
+    rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:prod_private_key_0": "prod_key_0"},
     deps = [
         ":rom_ext",
         "//sw/device/lib/crt",
@@ -276,7 +276,7 @@ opentitan_binary(
     ],
     linker_script = ":ld_slot_b",
     manifest = ":manifest_standard",
-    rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:test_private_key_0": "test_key_0"},
+    rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:prod_private_key_0": "prod_key_0"},
     deps = [
         ":rom_ext",
         "//sw/device/lib/crt",
@@ -294,7 +294,7 @@ opentitan_binary(
     ],
     linker_script = ":ld_slot_virtual",
     manifest = ":manifest_virtual",
-    rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:test_private_key_0": "test_key_0"},
+    rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:prod_private_key_0": "prod_key_0"},
     deps = [
         ":rom_ext",
         "//sw/device/lib/crt",
