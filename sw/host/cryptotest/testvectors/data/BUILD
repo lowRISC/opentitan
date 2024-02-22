@@ -396,3 +396,23 @@ run_binary(
         ("verify", "Ver", "rsp"),
     ]
 ]
+
+run_binary(
+    name = "rsp_sphincsplus_shake256_128s_simple_json",
+    srcs = [
+        "//sw/host/cryptotest/testvectors/data/schemas:sphincsplus_schema.json",
+        "@sphincsplus_kat//:sphincs-shake256-128s-simple/PQCsignKAT_64.rsp",
+    ],
+    outs = [":rsp_sphincsplus_shake256_128s_simple.json"],
+    args = [
+        "--src",
+        "$(location @sphincsplus_kat//:sphincs-shake256-128s-simple/PQCsignKAT_64.rsp)",
+        "--dst",
+        "$(location :rsp_sphincsplus_shake256_128s_simple.json)",
+        "--schema",
+        "$(location //sw/host/cryptotest/testvectors/data/schemas:sphincsplus_schema.json)",
+        "--hash_alg",
+        "shake-256",
+    ],
+    tool = "//sw/host/cryptotest/testvectors/parsers:rsp_sphincsplus_parser",
+)

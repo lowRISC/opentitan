@@ -23,4 +23,5 @@ exports_files([
     "hmac_schema.json",
     "kmac_schema.json",
     "rsa_schema.json",
+    "sphincsplus_schema.json",
 ])
