@@ -111,6 +111,31 @@ cc_library(
 )
 
 cc_library(
+    name = "otbn_fi",
+    srcs = ["otbn_fi.c"],
+    hdrs = [
+        "otbn_fi.h",
+        "status.h",
+    ],
+    deps = [
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/crypto/drivers:otbn",
+        "//sw/device/lib/dif:otbn",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+        "//sw/device/sca/lib:sca",
+        "//sw/device/tests/crypto/cryptotest/firmware/otbn:otbn_char_hardware_dmem_op_loop",
+        "//sw/device/tests/crypto/cryptotest/firmware/otbn:otbn_char_hardware_reg_op_loop",
+        "//sw/device/tests/crypto/cryptotest/firmware/otbn:otbn_char_unrolled_dmem_op_loop",
+        "//sw/device/tests/crypto/cryptotest/firmware/otbn:otbn_char_unrolled_reg_op_loop",
+        "//sw/device/tests/crypto/cryptotest/json:otbn_fi_commands",
+    ],
+)
+
+cc_library(
     name = "prng_sca",
     srcs = ["prng_sca.c"],
     hdrs = ["prng_sca.h"],
@@ -184,6 +209,7 @@ opentitan_binary(
         ":hash",
         ":ibex_fi",
         ":kmac_sca",
+        ":otbn_fi",
         ":prng_sca",
         ":sha3_sca",
         ":trigger_sca",
@@ -218,6 +244,7 @@ opentitan_test(
         ":hash",
         ":ibex_fi",
         ":kmac_sca",
+        ":otbn_fi",
         ":prng_sca",
         ":sha3_sca",
         ":trigger_sca",
