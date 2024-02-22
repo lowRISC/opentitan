@@ -23,7 +23,7 @@ For more details about the toolchain, see the [user
 guide](../../../../doc/contributing/sw/otbn_sw.md)).
 
 `otbn_as.py` and `otbn_ld.py` can be used to build .elf files for use with
-simulations. They work work similarly to binutils programs they wrap.
+simulations. They work similarly to binutils programs they wrap.
 
 ```
 hw/ip/otbn/util/otbn_as.py -o prog_bin/prog.o prog.s
