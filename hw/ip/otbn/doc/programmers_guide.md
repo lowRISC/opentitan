@@ -62,9 +62,9 @@ All data passing must be done when OTBN [is idle](./theory_of_operation.md#opera
 
 ### Returning from an application
 
-The software running on OTBN signals completion by executing the {{#otbn-insn-ref ECALL}} instruction.
+The software running on OTBN signals completion by executing the [`ECALL`](isa.md#ecall)  instruction.
 
-Once OTBN has executed the {{#otbn-insn-ref ECALL}} instruction, the following things happen:
+Once OTBN has executed the [`ECALL`](isa.md#ecall) instruction, the following things happen:
 
 - No more instructions are fetched or executed.
 - A [secure wipe of internal state](./theory_of_operation.md#internal-state-secure-wipe) is performed.
@@ -76,7 +76,7 @@ Refer to the section [Passing of data between the host CPU and OTBN](#passing-of
 
 ### Using hardware loops
 
-OTBN provides two hardware loop instructions: {{#otbn-insn-ref LOOP}} and {{#otbn-insn-ref LOOPI}}.
+OTBN provides two hardware loop instructions: [`LOOP`](isa.md#loop)  and [`LOOPI`](isa.md#loopi) .
 
 #### Loop nesting
 
@@ -147,8 +147,8 @@ outer_body:
 ### Algorithic Examples: Multiplication with BN.MULQACC
 
 The big number instruction subset of OTBN generally operates on WLEN bit numbers.
-{{#otbn-insn-ref BN.MULQACC}} operates with WLEN/4 bit operands (with a full WLEN accumulator).
-This section outlines two techniques to perform larger multiplies by composing multiple {{#otbn-insn-ref BN.MULQACC}} instructions.
+[`BN.MULQACC`](isa.md#bnmulqacc) operates with WLEN/4 bit operands (with a full WLEN accumulator).
+This section outlines two techniques to perform larger multiplies by composing multiple [`BN.MULQACC`](isa.md#bnmulqacc) instructions.
 
 #### Multiplying two WLEN/2 numbers with BN.MULQACC
 
