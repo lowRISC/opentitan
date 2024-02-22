@@ -26,6 +26,7 @@ extern "C" {
     value(_, OtbnFi) \
     value(_, PrngSca) \
     value(_, Sha3Sca) \
+    value(_, SphincsPlus) \
     value(_, TriggerSca)
 UJSON_SERDE_ENUM(CryptotestCommand, cryptotest_cmd_t, COMMAND);
 
