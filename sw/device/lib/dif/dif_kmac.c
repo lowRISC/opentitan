@@ -237,9 +237,7 @@ dif_result_t dif_kmac_configure(dif_kmac_t *kmac, dif_kmac_config_t config) {
 
   // Write entropy seed registers.
   for (int i = 0; i < kDifKmacEntropySeedWords; ++i) {
-    mmio_region_write32(kmac->base_addr,
-                        KMAC_ENTROPY_SEED_0_REG_OFFSET +
-                            (ptrdiff_t)i * (ptrdiff_t)sizeof(uint32_t),
+    mmio_region_write32(kmac->base_addr, KMAC_ENTROPY_SEED_REG_OFFSET,
                         config.entropy_seed[i]);
   }
 

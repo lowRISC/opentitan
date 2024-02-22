@@ -116,21 +116,21 @@ package kmac_pkg;
   } entropy_mode_e;
 
   // PRNG (kmac_entropy)
-  parameter int unsigned EntropyLfsrW = 800;
-  parameter int unsigned ChunkSizeEntropyLfsr = 32;
-  parameter int unsigned NumChunksEntropyLfsr = EntropyLfsrW / ChunkSizeEntropyLfsr;
+  parameter int unsigned EntropyOutputW = 800;
+  parameter int unsigned EntropyStateW = 288;
+
+  // These LFSR parameters have been generated with
+  // $ ./util/design/gen-lfsr-seed.py --width 288 --seed 31468618 --prefix ""
+  typedef logic [EntropyStateW-1:0] lfsr_seed_t;
+  parameter lfsr_seed_t RndCnstLfsrSeedDefault = {
+    32'h758a4420,
+    256'h31e1c461_6ea343ec_153282a3_0c132b57_23c5a4cf_4743b3c7_c32d580f_74f1713a
+  };
 
   // We use a single seed that is split down into chunks internally.
   // These LFSR parameters have been generated with
   // $ ./util/design/gen-lfsr-seed.py --width 800 --seed 3369807298 --prefix ""
-  typedef logic [EntropyLfsrW-1:0] lfsr_seed_t;
-  typedef logic [EntropyLfsrW-1:0][$clog2(EntropyLfsrW)-1:0] lfsr_perm_t;
-  parameter lfsr_seed_t RndCnstLfsrSeedDefault = {
-    32'h34a19ca3,
-    256'he514d8e17a5630c287247dff3d354c022f581ace4b6c5736b5efa4160261ab0f,
-    256'h6cb2915197ab3588982bcffc9cf3b46a250cebf728c0e76f0e680420d7f428f2,
-    256'h092c1e308f7c8f9d8bacc20cd18fd586d58879654aa4851de224033bfdcbc578
-  };
+  typedef logic [EntropyOutputW-1:0][$clog2(EntropyOutputW)-1:0] lfsr_perm_t;
   parameter lfsr_perm_t RndCnstLfsrPermDefault = {
     64'hb1a3e87aeb4e69f0,
     256'h2d8a6ee2c9ac567b2aa401a639a2a8ea2553614c0a8daf672c06546fc0d35267,
@@ -167,11 +167,13 @@ package kmac_pkg;
   };
 
   // These LFSR parameters have been generated with
-  // $ ./util/design/gen-lfsr-seed.py --width 32 --seed 2336700764 --prefix ""
-  parameter int LfsrFwdWidth = 32;
-  typedef logic [LfsrFwdWidth-1:0][$clog2(LfsrFwdWidth)-1:0] lfsr_fwd_perm_t;
-  parameter lfsr_fwd_perm_t RndCnstLfsrFwdPermDefault = {
-    160'h7f3ac6d173d78678d84908157fba482e76685704
+  // $ ./util/design/gen-lfsr-seed.py --width 800 --seed 31468618 --prefix "Buffer"
+  typedef logic [EntropyOutputW-1:0] buffer_lfsr_seed_t;
+  parameter buffer_lfsr_seed_t RndCnstBufferLfsrSeedDefault = {
+    32'h292603b4,
+    256'hf1d83863_e0bd0634_4544ad28_a91d8668_24b66efd_92ad8123_5381f2bc_3d65392c,
+    256'h83c01ea5_d8be84f1_e2588917_11849a07_5a71f35f_e9b31605_f9077a6b_758a4420,
+    256'h31e1c461_6ea343ec_153282a3_0c132b57_23c5a4cf_4743b3c7_c32d580f_74f1713a
   };
 
   // Message permutation

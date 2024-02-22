@@ -221,7 +221,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
             // Entropy interface is native 32 bits - prim_edn_req component internally
             // does as many EDN fetches as necessary to fill up the required data bus size
             // of the "host".
-            repeat (kmac_reg_pkg::NumSeedsEntropyLfsr) begin
+            repeat (kmac_reg_pkg::NumSeedsEntropy) begin
               `DV_SPINWAIT(edn_fifos[0].get(edn_item);, "Wait EDN request")
             end
             `uvm_info(`gfn, "got all edn transactions", UVM_HIGH)
