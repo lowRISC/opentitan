@@ -1046,56 +1046,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
           (sfifo_esrng_full && !sfifo_esrng_not_empty)};
 
 
-  // pack esrng bus into signal bit packer
-
-  // SEC_CM: CONFIG.MUBI
-  assign mubi_rng_bit_en = mubi4_t'(reg2hw.conf.rng_bit_enable.q);
-  assign rng_bit_enable_pfe = mubi4_test_true_strict(mubi_rng_bit_en_fanout[0]);
-  assign rng_bit_enable_pfa = mubi4_test_invalid(mubi_rng_bit_en_fanout[1]);
-  assign hw2reg.recov_alert_sts.rng_bit_enable_field_alert.de = rng_bit_enable_pfa;
-  assign hw2reg.recov_alert_sts.rng_bit_enable_field_alert.d  = rng_bit_enable_pfa;
-
-  prim_mubi4_sync #(
-    .NumCopies(2),
-    .AsyncOn(0)
-  ) u_prim_mubi4_sync_rng_bit_en (
-    .clk_i,
-    .rst_ni,
-    .mubi_i(mubi_rng_bit_en),
-    .mubi_o(mubi_rng_bit_en_fanout)
-  );
-
-
-  assign rng_bit_en = rng_bit_enable_pfe;
-  assign rng_bit_sel = reg2hw.conf.rng_bit_sel.q;
-
-  prim_packer_fifo #(
-    .InW(1),
-    .OutW(RngBusWidth),
-    .ClearOnRead(1'b0)
-  ) u_prim_packer_fifo_esbit (
-    .clk_i      (clk_i),
-    .rst_ni     (rst_ni),
-    .clr_i      (pfifo_esbit_clr),
-    .wvalid_i   (pfifo_esbit_push),
-    .wdata_i    (pfifo_esbit_wdata),
-    .wready_o   (pfifo_esbit_not_full),
-    .rvalid_o   (pfifo_esbit_not_empty),
-    .rdata_o    (pfifo_esbit_rdata),
-    .rready_i   (pfifo_esbit_pop),
-    .depth_o    ()
-  );
-
-  assign pfifo_esbit_push = rng_bit_en && sfifo_esrng_not_empty;
-  assign pfifo_esbit_clr = ~es_delayed_enable;
-  assign pfifo_esbit_pop = rng_bit_en && pfifo_esbit_not_empty && pfifo_postht_not_full;
-  assign pfifo_esbit_wdata =
-         (rng_bit_sel == 2'h0) ? sfifo_esrng_rdata[0] :
-         (rng_bit_sel == 2'h1) ? sfifo_esrng_rdata[1] :
-         (rng_bit_sel == 2'h2) ? sfifo_esrng_rdata[2] :
-         sfifo_esrng_rdata[3];
-
-
   // Read the health test data from the esrng FIFO.
   assign health_test_esbus = sfifo_esrng_rdata;
   // Set the valid signal to true whenever data is pushed into the next FIFO.
@@ -2348,6 +2298,58 @@ module entropy_src_core import entropy_src_pkg::*; #(
   );
 
   assign hw2reg.extht_fail_counts.extht_lo_fail_count.d = extht_lo_fail_count;
+
+
+  //--------------------------------------------------------------
+  // Pack health tested esrng bus into single bit packer FIFO.
+  //--------------------------------------------------------------
+
+  // SEC_CM: CONFIG.MUBI
+  assign mubi_rng_bit_en = mubi4_t'(reg2hw.conf.rng_bit_enable.q);
+  assign rng_bit_enable_pfe = mubi4_test_true_strict(mubi_rng_bit_en_fanout[0]);
+  assign rng_bit_enable_pfa = mubi4_test_invalid(mubi_rng_bit_en_fanout[1]);
+  assign hw2reg.recov_alert_sts.rng_bit_enable_field_alert.de = rng_bit_enable_pfa;
+  assign hw2reg.recov_alert_sts.rng_bit_enable_field_alert.d  = rng_bit_enable_pfa;
+
+  prim_mubi4_sync #(
+    .NumCopies(2),
+    .AsyncOn(0)
+  ) u_prim_mubi4_sync_rng_bit_en (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(mubi_rng_bit_en),
+    .mubi_o(mubi_rng_bit_en_fanout)
+  );
+
+
+  assign rng_bit_en = rng_bit_enable_pfe;
+  assign rng_bit_sel = reg2hw.conf.rng_bit_sel.q;
+
+  prim_packer_fifo #(
+    .InW(1),
+    .OutW(RngBusWidth),
+    .ClearOnRead(1'b0)
+  ) u_prim_packer_fifo_esbit (
+    .clk_i      (clk_i),
+    .rst_ni     (rst_ni),
+    .clr_i      (pfifo_esbit_clr),
+    .wvalid_i   (pfifo_esbit_push),
+    .wdata_i    (pfifo_esbit_wdata),
+    .wready_o   (pfifo_esbit_not_full),
+    .rvalid_o   (pfifo_esbit_not_empty),
+    .rdata_o    (pfifo_esbit_rdata),
+    .rready_i   (pfifo_esbit_pop),
+    .depth_o    ()
+  );
+
+  assign pfifo_esbit_push = rng_bit_en && sfifo_esrng_not_empty;
+  assign pfifo_esbit_clr = ~es_delayed_enable;
+  assign pfifo_esbit_pop = rng_bit_en && pfifo_esbit_not_empty && pfifo_postht_not_full;
+  assign pfifo_esbit_wdata =
+         (rng_bit_sel == 2'h0) ? sfifo_esrng_rdata[0] :
+         (rng_bit_sel == 2'h1) ? sfifo_esrng_rdata[1] :
+         (rng_bit_sel == 2'h2) ? sfifo_esrng_rdata[2] :
+         sfifo_esrng_rdata[3];
 
 
   //--------------------------------------------
