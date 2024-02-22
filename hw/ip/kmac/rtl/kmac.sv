@@ -32,7 +32,7 @@ module kmac
 
   parameter lfsr_perm_t RndCnstLfsrPerm = RndCnstLfsrPermDefault,
   parameter lfsr_seed_t RndCnstLfsrSeed = RndCnstLfsrSeedDefault,
-  parameter lfsr_fwd_perm_t RndCnstLfsrFwdPerm = RndCnstLfsrFwdPermDefault,
+  parameter buffer_lfsr_seed_t RndCnstBufferLfsrSeed = RndCnstBufferLfsrSeedDefault,
   parameter msg_perm_t  RndCnstMsgPerm  = RndCnstMsgPermDefault,
 
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
@@ -292,8 +292,8 @@ module kmac
   logic [9:0]  wait_timer_prescaler;
   logic [15:0] wait_timer_limit;
   logic        entropy_refresh_req;
-  logic [NumSeedsEntropyLfsr-1:0]       entropy_seed_update;
-  logic [NumSeedsEntropyLfsr-1:0][31:0] entropy_seed_data;
+  logic        entropy_seed_update;
+  logic [31:0] entropy_seed_data;
 
   logic [HashCntW-1:0] entropy_hash_threshold;
   logic [HashCntW-1:0] entropy_hash_cnt;
@@ -526,10 +526,8 @@ module kmac
   assign wait_timer_limit     = reg2hw.entropy_period.wait_timer.q;
   assign entropy_refresh_req = reg2hw.cmd.entropy_req.q
                             && reg2hw.cmd.entropy_req.qe;
-  for (genvar i = 0; i < NumSeedsEntropyLfsr; i++) begin : gen_entropy_seed
-    assign entropy_seed_update[i] = reg2hw.entropy_seed[i].qe;
-    assign entropy_seed_data[i] = reg2hw.entropy_seed[i].q;
-  end
+  assign entropy_seed_update = reg2hw.entropy_seed.qe;
+  assign entropy_seed_data = reg2hw.entropy_seed.q;
 
   assign entropy_hash_threshold = reg2hw.entropy_refresh_threshold_shadowed.q;
   assign hw2reg.entropy_refresh_hash_cnt.de = 1'b 1;
@@ -1189,7 +1187,7 @@ module kmac
     kmac_entropy #(
      .RndCnstLfsrPerm(RndCnstLfsrPerm),
      .RndCnstLfsrSeed(RndCnstLfsrSeed),
-     .RndCnstLfsrFwdPerm(RndCnstLfsrFwdPerm)
+     .RndCnstBufferLfsrSeed(RndCnstBufferLfsrSeed)
     ) u_entropy (
       .clk_i,
       .rst_ni,
@@ -1266,8 +1264,8 @@ module kmac
     assign unused_sha3_rand_update = sha3_rand_update;
     assign unused_sha3_rand_consumed = sha3_rand_consumed;
 
-    logic [NumSeedsEntropyLfsr-1:0]       unused_seed_update;
-    logic [NumSeedsEntropyLfsr-1:0][31:0] unused_seed_data;
+    logic        unused_seed_update;
+    logic [31:0] unused_seed_data;
     logic [31:0] unused_refresh_period;
     logic unused_entropy_refresh_req;
     assign unused_seed_data = entropy_seed_data;
@@ -1498,9 +1496,6 @@ module kmac
 
     `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(HashCountCheck_A, gen_entropy.u_entropy.u_hash_count,
                                          alert_tx_o[1])
-    `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(SeedIdxCountCheck_A,
-                                           gen_entropy.u_entropy.u_seed_idx_count,
-                                           alert_tx_o[1])
 
     // MsgFifo.Packer
     `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(

@@ -163,10 +163,8 @@ module kmac_reduced_tb #(
   assign msg_handshake = msg_valid & msg_ready;
 
   // Randomness generation.
-  // Track falling edges of entropy_req.
-  // Since there are 5 x 5 32-bit LFSRs and every reseed just reseeds 5 LFSRs,
-  // we need to do 5 consecutive reseed operations. The end of each reseed
-  // operation is signaled with entropy_req going low.
+  // Track falling edges of entropy_req. The end of the reseed operation is signaled with
+  // entropy_req going low.
   assign entropy_req_d = entropy_req;
   always_ff @(posedge clk_i or negedge rst_ni) begin : reg_entropy_req
     if (!rst_ni) begin
@@ -228,11 +226,10 @@ module kmac_reduced_tb #(
 
       INIT_RESEED: begin
         // Perform an initial reseed of the PRNG to put it into a random state.
-        // Since there are 5 x 5 32-bit LFSRs and every reseed just reseeds 5 LFSRs,
-        // we need to do 5 consecutive reseed operations.
+        // We do one reseed operation to reseed the single Trivium primitive.
         entropy_refresh_req = 1'b1;
         reseed_count_increment = entropy_req_fell;
-        if (reseed_count_q == 8'd5) begin
+        if (reseed_count_q == 8'd1) begin
           entropy_refresh_req = 1'b0;
           kmac_reduced_tb_state_d = START_TRIGGER;
         end

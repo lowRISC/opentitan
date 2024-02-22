@@ -23,8 +23,8 @@ module kmac_reduced
 
   parameter lfsr_perm_t RndCnstLfsrPerm = RndCnstLfsrPermDefault,
   parameter lfsr_seed_t RndCnstLfsrSeed = RndCnstLfsrSeedDefault,
-  parameter lfsr_fwd_perm_t RndCnstLfsrFwdPerm = RndCnstLfsrFwdPermDefault,
-  parameter msg_perm_t RndCnstMsgPerm  = RndCnstMsgPermDefault
+  parameter buffer_lfsr_seed_t RndCnstBufferLfsrSeed = RndCnstBufferLfsrSeedDefault,
+  parameter msg_perm_t RndCnstMsgPerm = RndCnstMsgPermDefault
 ) (
   input logic clk_i,
   input logic rst_ni,
@@ -70,10 +70,10 @@ module kmac_reduced
   input logic          entropy_in_keyblock_i,  // drive to 1
 
   // Entropy reseed control
-  input logic [NumSeedsEntropyLfsr-1:0]       entropy_seed_update_i,  // drive to 0
-  input logic [NumSeedsEntropyLfsr-1:0][31:0] entropy_seed_data_i,    // drive to 0
-  input logic [TimerPrescalerW-1:0]           wait_timer_prescaler_i, // drive to 0
-  input logic [EdnWaitTimerW-1:0]             wait_timer_limit_i,     // drive to EdnWaitTimerW'1
+  input logic                       entropy_seed_update_i,  // drive to 0
+  input logic [31:0]                entropy_seed_data_i,    // drive to 0
+  input logic [TimerPrescalerW-1:0] wait_timer_prescaler_i, // drive to 0
+  input logic [EdnWaitTimerW-1:0]   wait_timer_limit_i,     // drive to EdnWaitTimerW'1
 
   // Signals primarily kept to prevent them from being optimized away during synthesis.
   // State output
@@ -245,9 +245,9 @@ module kmac_reduced
   // PRNG //
   //////////
   kmac_entropy #(
-   .RndCnstLfsrPerm(RndCnstLfsrPerm),
-   .RndCnstLfsrSeed(RndCnstLfsrSeed),
-   .RndCnstLfsrFwdPerm(RndCnstLfsrFwdPerm)
+    .RndCnstLfsrPerm(RndCnstLfsrPerm),
+    .RndCnstLfsrSeed(RndCnstLfsrSeed),
+    .RndCnstBufferLfsrSeed(RndCnstBufferLfsrSeed)
   ) u_entropy (
     .clk_i,
     .rst_ni,

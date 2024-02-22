@@ -134,7 +134,7 @@ enum {
    *
    * The length is in 32-bit words.
    */
-  kDifKmacEntropySeedWords = 5,
+  kDifKmacEntropySeedWords = 9,
   /**
    * The offset of the second share within the output state register.
    */
