@@ -305,7 +305,7 @@
       name: "AES.PRNG.FORCE_MASKS",
       desc: '''
             AES can block advancing of the internal PRNG used for masking, thereby forcing masks to a constant value.
-            This feature can be disabled using tha compile-time Verilog parameter.
+            This feature can be disabled using a compile-time Verilog parameter.
             '''
     }
     {
