@@ -139,3 +139,12 @@ py_binary(
         requirement("jsonschema"),
     ],
 )
+
+py_binary(
+    name = "rsp_sphincsplus_parser",
+    srcs = ["rsp_sphincsplus_parser.py"],
+    deps = [
+        ":cryptotest_util",
+        requirement("jsonschema"),
+    ],
+)
