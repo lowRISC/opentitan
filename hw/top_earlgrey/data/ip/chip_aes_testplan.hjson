@@ -277,9 +277,18 @@
             - Verify that the produced cipher text is correct.
             - Repeat the entire procedure with PRNG_RESEED_RATE set to PER_1. Verify that the
               second share of intermediate and output state is not zero.
+
+            Notes for silicon targets:
+            - The AES.PRNG.FORCE_MASKS feature is relevant for penetration testing only and a SCA evaluation setup is required for its verification.
+              This is done using other routines as part of the experimental setup for penetration testing.
+              The only thing that can be tested on silicon / FPGA for SiVal is the known-answer test using the CSRNG SW application interface for which a dedicated SiVal test exists.
+              For this reason, the chip_sw_aes_masking_off test is run in simulation only.
             '''
+      features: [
+        "AES.PRNG.FORCE_MASKS"
+      ]
       stage: V2S
-      si_stage: None
+      si_stage: NA
       tests: ["chip_sw_aes_masking_off"]
      }
   ]
