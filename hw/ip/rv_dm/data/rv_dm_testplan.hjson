@@ -479,6 +479,23 @@
       tests: ["rv_dm_progbuf_busy"]
     }
     {
+      name: abstractcmd_status
+      desc: '''
+            Verify the functionality of abstract command by reading tl_mem_ral.abstractcmd0-9
+            registers.
+
+            - Program jtag_dmi_ral.dmcontrol.haltreq to 1'b1.
+            - Verify that the 'debug_req_o' is set to 1.
+            - Acknowledge haltreq by setting tl_mem_ral.halted to 0.
+            - Send a valid abstract command (command type AccessRegister).
+            - Verify that the jtag_dmi_ral.abstractcs.busy is set to 1.
+            - Read tl_mem_ral.abstractcmd0-9 registers to verify that due to executing specific
+              abstract command we can read instructions stored in these registers.
+            '''
+      stage: V1
+      tests: []
+    }
+    {
       name: stress_all
       desc: '''
             A 'bug hunt' test that stresses the DUT to its limits.
