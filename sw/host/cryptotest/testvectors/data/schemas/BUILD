@@ -16,6 +16,7 @@ filegroup(
 
 exports_files([
     "aes_kw_schema.json",
+    "aes_gcm_schema.json",
     "ecdh_schema.json",
     "hash_schema.json",
     "hmac_schema.json",
