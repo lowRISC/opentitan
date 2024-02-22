@@ -160,6 +160,8 @@ For example, if SW programs the dummy cycle for Fast Read Quad to `3h`, the modu
 
 #### Pipelined Reads
 
+![Flash Read Pipeline Diagram](../doc/read_pipeline.svg)
+
 For commands with dummy cycles, the SPI Device IP can be configured to insert a 2-stage pipeline into the return path to enable higher clock rates.
 The high-speed read pipeline is of particular interest to Passthrough mode, as it moves the delay from the SPI Device IP to the Host to another cycle, relaxing the timing requirement.
 To use the high-speed read pipeline for Passthrough operation, the SPI Device IP would need to be configured to intercept SFDP reads and advertise 2 additional dummy cycles beyond that specified by the downstream SPI flash.
