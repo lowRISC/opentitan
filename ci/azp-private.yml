@@ -10,6 +10,8 @@ trigger:
   branches:
     include:
     - '*'
+    exclude:
+    - 'backport-*'
   tags:
     include:
     - "*"

@@ -24,6 +24,9 @@ trigger:
   branches:
     include:
     - "*"
+    # Don't run workflow on auto-created backport branches (PR workflow will be run)
+    exclude:
+    - "backport-*"
   tags:
     include:
     - "*"
