@@ -226,6 +226,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     uvm_reg_field alert_summary_field = ral.alert_summary_fail_counts.any_fail_count;
     int           any_fail_count_regval;
     string        fmt;
+    bit           rng_bit_en = (`gmv(ral.conf.rng_bit_enable) == MuBi4True);
+    int           rng_bit_sel = `gmv(ral.conf.rng_bit_sel);
 
     for (int i = 0; i < RNG_BUS_WIDTH; i++) begin
       if (rng_val[i] == prev_rng_val[i]) begin
@@ -234,6 +236,10 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
         repcnt[i] = 1;
       end
       max_repcnt = (repcnt[i] > max_repcnt) ? repcnt[i] : max_repcnt;
+    end
+    // Overwrite max_repcnt with the value of the selected lane if the single lane mode is active.
+    if (rng_bit_en) begin
+      max_repcnt = repcnt[rng_bit_sel];
     end
     `uvm_info(`gfn, $sformatf("max repcnt %0h", max_repcnt), UVM_DEBUG)
     repcnt_fail = evaluate_repcnt_test(fips_mode, max_repcnt);
@@ -265,16 +271,26 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     int test_cnt[RNG_BUS_WIDTH];
     int minq[$], maxq[$];
     int result = '0;
+    bit rng_bit_en = (`gmv(ral.conf.rng_bit_enable) == MuBi4True);
+    int rng_bit_sel = `gmv(ral.conf.rng_bit_sel);
     for (int i = 0; i < window.size(); i++) begin
       for (int j = 0; j < RNG_BUS_WIDTH; j++) begin
          test_cnt[j] += window[i][j];
       end
     end
-    maxq = test_cnt.max();
-    maxval = maxq[0];
-    minq = test_cnt.min();
-    minval = minq[0];
-    return test_cnt.sum();
+    // If the single lane mode is active set the min the max and the return value
+    // to the test_cnt of the selected lane.
+    if (rng_bit_en) begin
+      maxval = test_cnt[rng_bit_sel];
+      minval = test_cnt[rng_bit_sel];
+      return test_cnt[rng_bit_sel];
+    end else begin
+      maxq = test_cnt.max();
+      maxval = maxq[0];
+      minq = test_cnt.min();
+      minval = minq[0];
+      return test_cnt.sum();
+    end
   endfunction
 
   function int calc_bucket_test(queue_of_rng_val_t window);
@@ -302,17 +318,27 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   function int calc_markov_test(queue_of_rng_val_t window, output int maxval, output int minval);
     int pair_cnt[RNG_BUS_WIDTH];
     int minq[$], maxq[$];
+    bit rng_bit_en = (`gmv(ral.conf.rng_bit_enable) == MuBi4True);
+    int rng_bit_sel = `gmv(ral.conf.rng_bit_sel);
     for (int i = 0; i < window.size(); i += 2) begin
       for (int j = 0; j < RNG_BUS_WIDTH; j++) begin
         bit different = window[i][j] ^ window[i + 1][j];
         pair_cnt[j] += different;
       end
     end
-    maxq = pair_cnt.max();
-    maxval = maxq[0];
-    minq = pair_cnt.min();
-    minval = minq[0];
-    return pair_cnt.sum();
+    // If the single lane mode is active set the min the max and the return value
+    // to the pair_cnt of the selected lane.
+    if (rng_bit_en) begin
+      maxval = pair_cnt[rng_bit_sel];
+      minval = pair_cnt[rng_bit_sel];
+      return pair_cnt[rng_bit_sel];
+    end else begin
+      maxq = pair_cnt.max();
+      maxval = maxq[0];
+      minq = pair_cnt.min();
+      minval = minq[0];
+      return pair_cnt.sum();
+    end
   endfunction
 
   function int calc_extht_test(queue_of_rng_val_t window);
@@ -1069,8 +1095,10 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     seed_tl_read_cnt = 0;
 
     for (int i = 0; i < RNG_BUS_WIDTH; i++) begin
-      `uvm_info(`gfn, "Clearing REPCNTS cntr", UVM_DEBUG)
-      repcnt[i]       = 1;
+      `uvm_info(`gfn, "Set REPCNTS cntr", UVM_DEBUG)
+      repcnt[i] = (rst_type == HardReset) ? 0 :
+                  (rst_type == Enable) ? 1 :
+                  repcnt[i];
     end
     repcnt_symbol     = 1;
 
@@ -2066,6 +2094,9 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       end else begin
         val    = rng_item.h_data;
       end
+
+      // Add the item to health_test_data_q for health test checking.
+      health_test_data_q.push_back(rng_item.h_data);
     end : rng_loop
   endtask
 
@@ -2100,9 +2131,6 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
         // Exit this task.
         return;
       end else begin
-        // Add this data to health check windows
-        health_test_data_q.push_back(rng_val);
-
         // Pack this data for redistribution
         repacked_entropy_tl = {rng_val,
                                repacked_entropy_tl[RNG_BUS_WIDTH +: (TL_DW - RNG_BUS_WIDTH)]};
@@ -2145,12 +2173,21 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   // a setting that influences the switch between bypass and FIPS mode.  This will propagate the
   // internal repetition counters to the watermark field of the new mode (i.e., bypass or FIPS).
   function automatic void propagate_repcnt_to_watermark();
-    bit fips_enable, bypass_to_sw, route_to_sw, bypass_mode;
+    bit fips_enable, bypass_to_sw, route_to_sw, bypass_mode, rng_bit_en;
+    bit [1:0] rng_bit_sel;
+    int max_repcnt = 0;
     // Determine whether FIPS or bypass mode is now active.
     fips_enable = `gmv(ral.conf.fips_enable) == MuBi4True;
     bypass_to_sw = `gmv(ral.entropy_control.es_type) == MuBi4True;
     route_to_sw = `gmv(ral.entropy_control.es_route) == MuBi4True;
+    rng_bit_en  = (`gmv(ral.conf.rng_bit_enable) == MuBi4True);
+    rng_bit_sel = `gmv(ral.conf.rng_bit_sel);
     bypass_mode = ~fips_enable | (bypass_to_sw & route_to_sw);
+    // Calculate the new value for repcnt_event_cnt, since it can change when we toggle rng_bit_en.
+    for (int i = 0; i < RNG_BUS_WIDTH; i++) begin
+      max_repcnt = (repcnt[i] > max_repcnt) ? repcnt[i] : max_repcnt;
+    end
+    repcnt_event_cnt = rng_bit_en ? repcnt[rng_bit_sel] : max_repcnt;
     if (bypass_mode) begin
       // Propagate internal repetition counter to bypass watermark fields.
       if (repcnt_event_cnt > `gmv(ral.repcnt_hi_watermarks.bypass_watermark)) begin
@@ -2178,6 +2215,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     bit                       fw_ov_insert;
     bit                       is_fips_mode;
     bit                       fips_enable, es_route, es_type;
+    bit                       rng_bit_en;
+    bit [1:0]                 rng_bit_sel;
     int                       failures_in_window;
     rng_val_t                 rng_val;
     queue_of_rng_val_t        window;
@@ -2193,6 +2232,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       fips_enable = (`gmv(ral.conf.fips_enable)         == MuBi4True);
       es_route    = (`gmv(ral.entropy_control.es_route) == MuBi4True);
       es_type     = (`gmv(ral.entropy_control.es_type)  == MuBi4True);
+      rng_bit_en  = (`gmv(ral.conf.rng_bit_enable)      == MuBi4True);
+      rng_bit_sel = `gmv(ral.conf.rng_bit_sel);
 
       is_fips_mode  = fips_enable && !(es_route && es_type);
 
@@ -2249,17 +2290,16 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
         // the selected bit fills a whole frame.
         // This mirrors the DUT's behavior of repacking the data before the health checks
         //
-        // Thus the number of (repacked) window frames is the same regardless of whether
-        // the bit select is enabled.
+        // Thus the number of window frames 4 times as large when the bit select is enabled.
 
-        window_rng_frames = window_size / RNG_BUS_WIDTH;
+        window_rng_frames = rng_bit_en ? window_size : (window_size / RNG_BUS_WIDTH);
 
         forever begin : window_loop
           string fmt;
           bit [RNG_BUS_WIDTH - 1:0] xht_bus_val;
 
           // For synchronization purposes we wait to process each sample until it is visible on the
-          // as an event on xht bus. We then perform checks to ensure that the xht interface dataz
+          // as an event on xht bus. We then perform checks to ensure that the xht interface data
           // matches the RNG data and that the window boundaries (as seen on the XHT bus) appear
           // at the correct times.
           //
@@ -2287,6 +2327,9 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
           end else begin
             `DV_CHECK(window.size() < window_rng_frames)
           end
+          // Check whether the rng_bit_en and the rng_bit_sel match the values in the CONF register.
+          `DV_CHECK(xht_item.req.rng_bit_en == rng_bit_en)
+          `DV_CHECK(xht_item.req.rng_bit_sel == rng_bit_sel)
 
           // No shutdown, or window close pulse, must be a sample.
           `DV_CHECK(xht_item.req.entropy_bit_valid)
