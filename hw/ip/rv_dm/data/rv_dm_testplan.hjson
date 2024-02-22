@@ -479,6 +479,23 @@
       tests: ["rv_dm_progbuf_busy"]
     }
     {
+      name: progbuf_read_write_execute
+      desc: '''
+            Verify the functionality of program buffer by writing random data on program buffer.
+
+            - Program jtag_dmi_ral.dmcontrol.haltreq to 1'b1.
+            - Verify that 'debug_req_o' is set to 1.
+            - Acknowledge haltreq by setting tl_mem_ral.halted to 0.
+            - Fill the program buffer by writing random data to jtag_dmi_ral.progbuf0-7
+              registers.
+            - Send a valid abstract command (AccessRegister) by setting postexec bit set.
+            - Read tl_mem_ral.program_buffer0-7 registers and verify that the data we wrote is
+              what we read back.
+            '''
+      stage: V1
+      tests: ["rv_dm_progbuf_read_write_execute"]
+    }
+    {
       name: stress_all
       desc: '''
             A 'bug hunt' test that stresses the DUT to its limits.

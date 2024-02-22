@@ -48,6 +48,7 @@ filesets:
       - seq_lib/rv_dm_jtag_dtm_hard_reset_vseq.sv: {is_include_file: true}
       - seq_lib/rv_dm_stress_all_vseq.sv: {is_include_file: true}
       - seq_lib/rv_dm_progbuf_busy_vseq.sv: {is_include_file: true}
+      - seq_lib/rv_dm_progbuf_read_write_execute_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:

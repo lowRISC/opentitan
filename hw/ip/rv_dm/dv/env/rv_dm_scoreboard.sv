@@ -338,6 +338,9 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
           (!uvm_re_match("abstractcmd_*", csr.get_name())): begin
           end
           (!uvm_re_match("program_buffer_*", csr.get_name())): begin
+            // RO registers. Write on DM progbuf registers and read data
+            // from these registers manually.
+            do_read_check = 0;
           end
           (!uvm_re_match("dataaddr_*", csr.get_name())): begin
           end
