@@ -9,11 +9,12 @@ module dma
   import dma_pkg::*;
   import dma_reg_pkg::*;
 #(
-    parameter logic [NumAlerts-1:0] AlertAsyncOn         = {NumAlerts{1'b1}},
-    parameter bit                   EnableDataIntgGen    = 1'b1,
-    parameter logic [RsvdWidth-1:0] TlUserRsvd           = '0,
-    parameter logic [SYS_RACL_WIDTH-1:0] SysRacl         = '0,
-    parameter int unsigned          OtAgentId            = 0
+    parameter logic [NumAlerts-1:0]      AlertAsyncOn           = {NumAlerts{1'b1}},
+    parameter bit                        EnableDataIntgGen      = 1'b1,
+    parameter bit                        EnableRspDataIntgCheck = 1'b1,
+    parameter logic [RsvdWidth-1:0]      TlUserRsvd             = '0,
+    parameter logic [SYS_RACL_WIDTH-1:0] SysRacl                = '0,
+    parameter int unsigned               OtAgentId              = 0
 ) (
   input logic                                       clk_i,
   input logic                                       rst_ni,
@@ -188,7 +189,8 @@ module dma
   // Adapter from the DMA to Host
   tlul_adapter_host #(
     .MAX_REQS(NUM_MAX_OUTSTANDING_REQS),
-    .EnableDataIntgGen(EnableDataIntgGen)
+    .EnableDataIntgGen(EnableDataIntgGen),
+    .EnableRspDataIntgCheck(EnableRspDataIntgCheck)
   ) u_dma_host_tlul_host (
     .clk_i          ( gated_clk                        ),
     .rst_ni         ( rst_ni                           ),
@@ -214,7 +216,8 @@ module dma
   // Adapter from the DMA to the CTN
   tlul_adapter_host #(
     .MAX_REQS(NUM_MAX_OUTSTANDING_REQS),
-    .EnableDataIntgGen(EnableDataIntgGen)
+    .EnableDataIntgGen(EnableDataIntgGen),
+    .EnableRspDataIntgCheck(EnableRspDataIntgCheck)
   ) u_dma_ctn_tlul_host (
     .clk_i          ( gated_clk                        ),
     .rst_ni         ( rst_ni                           ),
