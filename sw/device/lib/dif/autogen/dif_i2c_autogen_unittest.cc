@@ -80,7 +80,7 @@ TEST_F(IrqGetTypeTest, Success) {
   dif_irq_type_t type;
 
   EXPECT_DIF_OK(dif_i2c_irq_get_type(&i2c_, kDifI2cIrqFmtThreshold, &type));
-  EXPECT_EQ(type, kDifIrqTypeEvent);
+  EXPECT_EQ(type, kDifIrqTypeStatus);
 }
 
 class IrqGetStateTest : public I2cTest {};

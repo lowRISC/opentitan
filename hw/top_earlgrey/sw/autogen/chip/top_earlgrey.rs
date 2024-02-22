@@ -1013,8 +1013,8 @@ pub enum PlicIrqId {
     I2c0FmtThreshold = 73,
     /// i2c0_rx_threshold
     I2c0RxThreshold = 74,
-    /// i2c0_fmt_overflow
-    I2c0FmtOverflow = 75,
+    /// i2c0_acq_threshold
+    I2c0AcqThreshold = 75,
     /// i2c0_rx_overflow
     I2c0RxOverflow = 76,
     /// i2c0_nak
@@ -1031,8 +1031,8 @@ pub enum PlicIrqId {
     I2c0CmdComplete = 82,
     /// i2c0_tx_stretch
     I2c0TxStretch = 83,
-    /// i2c0_tx_overflow
-    I2c0TxOverflow = 84,
+    /// i2c0_tx_threshold
+    I2c0TxThreshold = 84,
     /// i2c0_acq_full
     I2c0AcqFull = 85,
     /// i2c0_unexp_stop
@@ -1043,8 +1043,8 @@ pub enum PlicIrqId {
     I2c1FmtThreshold = 88,
     /// i2c1_rx_threshold
     I2c1RxThreshold = 89,
-    /// i2c1_fmt_overflow
-    I2c1FmtOverflow = 90,
+    /// i2c1_acq_threshold
+    I2c1AcqThreshold = 90,
     /// i2c1_rx_overflow
     I2c1RxOverflow = 91,
     /// i2c1_nak
@@ -1061,8 +1061,8 @@ pub enum PlicIrqId {
     I2c1CmdComplete = 97,
     /// i2c1_tx_stretch
     I2c1TxStretch = 98,
-    /// i2c1_tx_overflow
-    I2c1TxOverflow = 99,
+    /// i2c1_tx_threshold
+    I2c1TxThreshold = 99,
     /// i2c1_acq_full
     I2c1AcqFull = 100,
     /// i2c1_unexp_stop
@@ -1073,8 +1073,8 @@ pub enum PlicIrqId {
     I2c2FmtThreshold = 103,
     /// i2c2_rx_threshold
     I2c2RxThreshold = 104,
-    /// i2c2_fmt_overflow
-    I2c2FmtOverflow = 105,
+    /// i2c2_acq_threshold
+    I2c2AcqThreshold = 105,
     /// i2c2_rx_overflow
     I2c2RxOverflow = 106,
     /// i2c2_nak
@@ -1091,8 +1091,8 @@ pub enum PlicIrqId {
     I2c2CmdComplete = 112,
     /// i2c2_tx_stretch
     I2c2TxStretch = 113,
-    /// i2c2_tx_overflow
-    I2c2TxOverflow = 114,
+    /// i2c2_tx_threshold
+    I2c2TxThreshold = 114,
     /// i2c2_acq_full
     I2c2AcqFull = 115,
     /// i2c2_unexp_stop
@@ -1308,7 +1308,7 @@ impl TryFrom<u32> for PlicIrqId {
             72 => Ok(Self::SpiDeviceTpmRdfifoDrop),
             73 => Ok(Self::I2c0FmtThreshold),
             74 => Ok(Self::I2c0RxThreshold),
-            75 => Ok(Self::I2c0FmtOverflow),
+            75 => Ok(Self::I2c0AcqThreshold),
             76 => Ok(Self::I2c0RxOverflow),
             77 => Ok(Self::I2c0Nak),
             78 => Ok(Self::I2c0SclInterference),
@@ -1317,13 +1317,13 @@ impl TryFrom<u32> for PlicIrqId {
             81 => Ok(Self::I2c0SdaUnstable),
             82 => Ok(Self::I2c0CmdComplete),
             83 => Ok(Self::I2c0TxStretch),
-            84 => Ok(Self::I2c0TxOverflow),
+            84 => Ok(Self::I2c0TxThreshold),
             85 => Ok(Self::I2c0AcqFull),
             86 => Ok(Self::I2c0UnexpStop),
             87 => Ok(Self::I2c0HostTimeout),
             88 => Ok(Self::I2c1FmtThreshold),
             89 => Ok(Self::I2c1RxThreshold),
-            90 => Ok(Self::I2c1FmtOverflow),
+            90 => Ok(Self::I2c1AcqThreshold),
             91 => Ok(Self::I2c1RxOverflow),
             92 => Ok(Self::I2c1Nak),
             93 => Ok(Self::I2c1SclInterference),
@@ -1332,13 +1332,13 @@ impl TryFrom<u32> for PlicIrqId {
             96 => Ok(Self::I2c1SdaUnstable),
             97 => Ok(Self::I2c1CmdComplete),
             98 => Ok(Self::I2c1TxStretch),
-            99 => Ok(Self::I2c1TxOverflow),
+            99 => Ok(Self::I2c1TxThreshold),
             100 => Ok(Self::I2c1AcqFull),
             101 => Ok(Self::I2c1UnexpStop),
             102 => Ok(Self::I2c1HostTimeout),
             103 => Ok(Self::I2c2FmtThreshold),
             104 => Ok(Self::I2c2RxThreshold),
-            105 => Ok(Self::I2c2FmtOverflow),
+            105 => Ok(Self::I2c2AcqThreshold),
             106 => Ok(Self::I2c2RxOverflow),
             107 => Ok(Self::I2c2Nak),
             108 => Ok(Self::I2c2SclInterference),
@@ -1347,7 +1347,7 @@ impl TryFrom<u32> for PlicIrqId {
             111 => Ok(Self::I2c2SdaUnstable),
             112 => Ok(Self::I2c2CmdComplete),
             113 => Ok(Self::I2c2TxStretch),
-            114 => Ok(Self::I2c2TxOverflow),
+            114 => Ok(Self::I2c2TxThreshold),
             115 => Ok(Self::I2c2AcqFull),
             116 => Ok(Self::I2c2UnexpStop),
             117 => Ok(Self::I2c2HostTimeout),
@@ -1890,7 +1890,7 @@ pub const PLIC_INTERRUPT_FOR_PERIPHERAL: [PlicPeripheral; 182] = [
     PlicPeripheral::I2c0,
     // I2c0RxThreshold -> PlicPeripheral::I2c0
     PlicPeripheral::I2c0,
-    // I2c0FmtOverflow -> PlicPeripheral::I2c0
+    // I2c0AcqThreshold -> PlicPeripheral::I2c0
     PlicPeripheral::I2c0,
     // I2c0RxOverflow -> PlicPeripheral::I2c0
     PlicPeripheral::I2c0,
@@ -1908,7 +1908,7 @@ pub const PLIC_INTERRUPT_FOR_PERIPHERAL: [PlicPeripheral; 182] = [
     PlicPeripheral::I2c0,
     // I2c0TxStretch -> PlicPeripheral::I2c0
     PlicPeripheral::I2c0,
-    // I2c0TxOverflow -> PlicPeripheral::I2c0
+    // I2c0TxThreshold -> PlicPeripheral::I2c0
     PlicPeripheral::I2c0,
     // I2c0AcqFull -> PlicPeripheral::I2c0
     PlicPeripheral::I2c0,
@@ -1920,7 +1920,7 @@ pub const PLIC_INTERRUPT_FOR_PERIPHERAL: [PlicPeripheral; 182] = [
     PlicPeripheral::I2c1,
     // I2c1RxThreshold -> PlicPeripheral::I2c1
     PlicPeripheral::I2c1,
-    // I2c1FmtOverflow -> PlicPeripheral::I2c1
+    // I2c1AcqThreshold -> PlicPeripheral::I2c1
     PlicPeripheral::I2c1,
     // I2c1RxOverflow -> PlicPeripheral::I2c1
     PlicPeripheral::I2c1,
@@ -1938,7 +1938,7 @@ pub const PLIC_INTERRUPT_FOR_PERIPHERAL: [PlicPeripheral; 182] = [
     PlicPeripheral::I2c1,
     // I2c1TxStretch -> PlicPeripheral::I2c1
     PlicPeripheral::I2c1,
-    // I2c1TxOverflow -> PlicPeripheral::I2c1
+    // I2c1TxThreshold -> PlicPeripheral::I2c1
     PlicPeripheral::I2c1,
     // I2c1AcqFull -> PlicPeripheral::I2c1
     PlicPeripheral::I2c1,
@@ -1950,7 +1950,7 @@ pub const PLIC_INTERRUPT_FOR_PERIPHERAL: [PlicPeripheral; 182] = [
     PlicPeripheral::I2c2,
     // I2c2RxThreshold -> PlicPeripheral::I2c2
     PlicPeripheral::I2c2,
-    // I2c2FmtOverflow -> PlicPeripheral::I2c2
+    // I2c2AcqThreshold -> PlicPeripheral::I2c2
     PlicPeripheral::I2c2,
     // I2c2RxOverflow -> PlicPeripheral::I2c2
     PlicPeripheral::I2c2,
@@ -1968,7 +1968,7 @@ pub const PLIC_INTERRUPT_FOR_PERIPHERAL: [PlicPeripheral; 182] = [
     PlicPeripheral::I2c2,
     // I2c2TxStretch -> PlicPeripheral::I2c2
     PlicPeripheral::I2c2,
-    // I2c2TxOverflow -> PlicPeripheral::I2c2
+    // I2c2TxThreshold -> PlicPeripheral::I2c2
     PlicPeripheral::I2c2,
     // I2c2AcqFull -> PlicPeripheral::I2c2
     PlicPeripheral::I2c2,
