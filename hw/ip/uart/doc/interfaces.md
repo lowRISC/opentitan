@@ -24,8 +24,8 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 | Interrupt Name   | Type   | Description                                                                                                    |
 |:-----------------|:-------|:---------------------------------------------------------------------------------------------------------------|
-| tx_watermark     | Event  | raised if the transmit FIFO is past the high-water mark.                                                       |
-| rx_watermark     | Event  | raised if the receive FIFO is past the high-water mark.                                                        |
+| tx_watermark     | Status | raised if the transmit FIFO is past the high-water mark.                                                       |
+| rx_watermark     | Status | raised if the receive FIFO is past the high-water mark.                                                        |
 | tx_empty         | Event  | raised if the transmit FIFO has emptied and no transmit is ongoing.                                            |
 | rx_overflow      | Event  | raised if the receive FIFO has overflowed.                                                                     |
 | rx_frame_err     | Event  | raised if a framing error has been detected on receive.                                                        |

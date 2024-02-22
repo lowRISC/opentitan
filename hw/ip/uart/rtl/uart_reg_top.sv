@@ -123,9 +123,7 @@ module uart_reg_top (
   //        or <reg>_{wd|we|qs} if field == 1 or 0
   logic intr_state_we;
   logic intr_state_tx_watermark_qs;
-  logic intr_state_tx_watermark_wd;
   logic intr_state_rx_watermark_qs;
-  logic intr_state_rx_watermark_wd;
   logic intr_state_tx_empty_qs;
   logic intr_state_tx_empty_wd;
   logic intr_state_rx_overflow_qs;
@@ -224,16 +222,16 @@ module uart_reg_top (
   //   F[tx_watermark]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h1),
     .Mubi    (1'b0)
   ) u_intr_state_tx_watermark (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_we),
-    .wd     (intr_state_tx_watermark_wd),
+    .we     (1'b0),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.intr_state.tx_watermark.de),
@@ -251,7 +249,7 @@ module uart_reg_top (
   //   F[rx_watermark]: 1:1
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_intr_state_rx_watermark (
@@ -259,8 +257,8 @@ module uart_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_we),
-    .wd     (intr_state_rx_watermark_wd),
+    .we     (1'b0),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.intr_state.rx_watermark.de),
@@ -1528,10 +1526,6 @@ module uart_reg_top (
 
   // Generate write-enables
   assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
-
-  assign intr_state_tx_watermark_wd = reg_wdata[0];
-
-  assign intr_state_rx_watermark_wd = reg_wdata[1];
 
   assign intr_state_tx_empty_wd = reg_wdata[2];
 

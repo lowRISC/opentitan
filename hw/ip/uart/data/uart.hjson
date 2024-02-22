@@ -47,17 +47,20 @@
     { name: "tx", desc: "Serial transmit bit" }
   ],
   interrupt_list: [
-    { name: "tx_watermark"
-      desc: "raised if the transmit FIFO is past the high-water mark."}
-    { name: "rx_watermark"
+    { name:    "tx_watermark",
+      type:    "status",
+      default: "1",
+      desc:    "raised if the transmit FIFO is past the high-water mark."}
+    { name: "rx_watermark",
+      type: "status",
       desc: "raised if the receive FIFO is past the high-water mark."}
-    { name: "tx_empty"
+    { name: "tx_empty",
       desc: "raised if the transmit FIFO has emptied and no transmit is ongoing."}
-    { name: "rx_overflow"
+    { name: "rx_overflow",
       desc: "raised if the receive FIFO has overflowed."}
-    { name: "rx_frame_err"
+    { name: "rx_frame_err",
       desc: "raised if a framing error has been detected on receive."}
-    { name: "rx_break_err"
+    { name: "rx_break_err",
       desc: "raised if break condition has been detected on receive."}
     { name: "rx_timeout"
       desc: '''
