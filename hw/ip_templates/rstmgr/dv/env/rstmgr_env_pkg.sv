@@ -42,6 +42,7 @@ package rstmgr_env_pkg;
     "u_d0_i2c0",
     "u_d0_i2c1",
     "u_d0_i2c2",
+    "u_d0_i2c3",
     "u_d0_lc",
     "u_d0_lc_io",
     "u_d0_lc_io_div2",

@@ -15,6 +15,10 @@
 CHECKSUM: "258095983 1288805244"
 INSTANCE: tb.dut
 ANNOTATION: "VC_COV_UNR"
+Toggle 0to1 resets_o.rst_i2c3_n [0] "logic resets_o.rst_i2c3_n[1:0]"
+ANNOTATION: "VC_COV_UNR"
+Toggle 1to0 resets_o.rst_i2c3_n [0] "logic resets_o.rst_i2c3_n[1:0]"
+ANNOTATION: "VC_COV_UNR"
 Toggle 0to1 resets_o.rst_i2c2_n [0] "logic resets_o.rst_i2c2_n[1:0]"
 ANNOTATION: "VC_COV_UNR"
 Toggle 1to0 resets_o.rst_i2c2_n [0] "logic resets_o.rst_i2c2_n[1:0]"

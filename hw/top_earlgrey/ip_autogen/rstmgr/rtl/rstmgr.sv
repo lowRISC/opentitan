@@ -185,12 +185,12 @@ module rstmgr
   ////////////////////////////////////////////////////
 
   // consistency check errors
-  logic [20:0][PowerDomains-1:0] cnsty_chk_errs;
-  logic [20:0][PowerDomains-1:0] shadow_cnsty_chk_errs;
+  logic [21:0][PowerDomains-1:0] cnsty_chk_errs;
+  logic [21:0][PowerDomains-1:0] shadow_cnsty_chk_errs;
 
   // consistency sparse fsm errors
-  logic [20:0][PowerDomains-1:0] fsm_errs;
-  logic [20:0][PowerDomains-1:0] shadow_fsm_errs;
+  logic [21:0][PowerDomains-1:0] fsm_errs;
+  logic [21:0][PowerDomains-1:0] shadow_fsm_errs;
 
   assign hw2reg.err_code.reg_intg_err.d  = 1'b1;
   assign hw2reg.err_code.reg_intg_err.de = reg_intg_err;
@@ -1168,6 +1168,40 @@ module rstmgr
   end
   assign shadow_cnsty_chk_errs[20] = '0;
   assign shadow_fsm_errs[20] = '0;
+
+  // Generating resets for i2c3
+  // Power Domains: ['0']
+  // Shadowed: False
+  assign resets_o.rst_i2c3_n[DomainAonSel] = '0;
+  assign cnsty_chk_errs[21][DomainAonSel] = '0;
+  assign fsm_errs[21][DomainAonSel] = '0;
+  assign rst_en_o.i2c3[DomainAonSel] = MuBi4True;
+  rstmgr_leaf_rst #(
+    .SecCheck(SecCheck),
+    .SecMaxSyncDelay(SecMaxSyncDelay),
+    .SwRstReq(1'b1)
+  ) u_d0_i2c3 (
+    .clk_i,
+    .rst_ni,
+    .leaf_clk_i(clk_io_div4_i),
+    .parent_rst_ni(rst_lc_src_n[Domain0Sel]),
+    .sw_rst_req_ni(reg2hw.sw_rst_ctrl_n[I2C3].q),
+    .scan_rst_ni,
+    .scanmode_i,
+    .rst_en_o(rst_en_o.i2c3[Domain0Sel]),
+    .leaf_rst_o(resets_o.rst_i2c3_n[Domain0Sel]),
+    .err_o(cnsty_chk_errs[21][Domain0Sel]),
+    .fsm_err_o(fsm_errs[21][Domain0Sel])
+  );
+
+  if (SecCheck) begin : gen_d0_i2c3_assert
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
+    D0I2c3FsmCheck_A,
+    u_d0_i2c3.gen_rst_chk.u_rst_chk.u_state_regs,
+    alert_tx_o[0])
+  end
+  assign shadow_cnsty_chk_errs[21] = '0;
+  assign shadow_fsm_errs[21] = '0;
 
 
   ////////////////////////////////////////////////////

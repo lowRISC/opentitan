@@ -57,8 +57,8 @@ set_property -dict { PACKAGE_PIN  M27  IOSTANDARD LVCMOS18 } [get_ports { IOC6 }
 set_property -dict { PACKAGE_PIN  B29  IOSTANDARD LVCMOS18 } [get_ports { IOC7 }]; # EarlGrey:VBUS_DETECT
 set_property -dict { PACKAGE_PIN  K23  IOSTANDARD LVCMOS18 PULLTYPE PULLDOWN } [get_ports { IOC8 }]; # EarlGrey:TAP_STRAP0    CW340:PB12 SAM3X:SAM_JTAGSTRAP1
 set_property -dict { PACKAGE_PIN  K26 IOSTANDARD LVCMOS18 } [get_ports { IOC9  }]; # EarlGrey:GPIO
-set_property -dict { PACKAGE_PIN  J26 IOSTANDARD LVCMOS18 } [get_ports { IOC10 }]; # EarlGrey:GPIO
-set_property -dict { PACKAGE_PIN  H24 IOSTANDARD LVCMOS18 } [get_ports { IOC11 }]; # EarlGrey:GPIO
+set_property -dict { PACKAGE_PIN  J26 IOSTANDARD LVCMOS18 } [get_ports { IOC10 }]; # EarlGrey:I2C_HOST_SCL
+set_property -dict { PACKAGE_PIN  H24 IOSTANDARD LVCMOS18 } [get_ports { IOC11 }]; # EarlGrey:I2C_HOST_SDA
 set_property -dict { PACKAGE_PIN  H26 IOSTANDARD LVCMOS18 } [get_ports { IOC12 }]; # EarlGrey:GPIO
 
 ## IOR bank

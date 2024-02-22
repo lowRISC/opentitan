@@ -71,6 +71,7 @@ tl_if uart3_tl_if(clk_io_div4, rst_n);
 tl_if i2c0_tl_if(clk_io_div4, rst_n);
 tl_if i2c1_tl_if(clk_io_div4, rst_n);
 tl_if i2c2_tl_if(clk_io_div4, rst_n);
+tl_if i2c3_tl_if(clk_io_div4, rst_n);
 tl_if pattgen_tl_if(clk_io_div4, rst_n);
 tl_if pwm_aon_tl_if(clk_io_div4, rst_n);
 tl_if gpio_tl_if(clk_io_div4, rst_n);
@@ -153,6 +154,7 @@ initial begin
     `DRIVE_CHIP_TL_DEVICE_IF(i2c0, i2c0, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(i2c1, i2c1, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(i2c2, i2c2, tl)
+    `DRIVE_CHIP_TL_DEVICE_IF(i2c3, i2c3, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(pattgen, pattgen, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(pwm_aon, pwm_aon, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(gpio, gpio, tl)

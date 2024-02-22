@@ -69,6 +69,7 @@
       i2c0
       i2c1
       i2c2
+      i2c3
     ]
     output_rsts:
     [
@@ -385,6 +386,20 @@
         parent: lc_src
         clock: io_div4
       }
+      {
+        name: i2c3
+        gen: true
+        type: top
+        domains:
+        [
+          "0"
+        ]
+        shadowed: false
+        sw: true
+        path: rstmgr_aon_resets.rst_i2c3_n
+        parent: lc_src
+        clock: io_div4
+      }
     ]
     leaf_rsts:
     [
@@ -684,6 +699,20 @@
         shadowed: false
         sw: true
         path: rstmgr_aon_resets.rst_i2c2_n
+        parent: lc_src
+        clock: io_div4
+      }
+      {
+        name: i2c3
+        gen: true
+        type: top
+        domains:
+        [
+          "0"
+        ]
+        shadowed: false
+        sw: true
+        path: rstmgr_aon_resets.rst_i2c3_n
         parent: lc_src
         clock: io_div4
       }

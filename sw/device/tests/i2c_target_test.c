@@ -87,9 +87,9 @@ static status_t i2c_detach_instance(dif_i2c_t *i2c, dif_pinmux_t *pinmux,
 
 static status_t i2c_configure_instance(dif_i2c_t *i2c, dif_pinmux_t *pinmux,
                                        uint8_t i2c_instance) {
-  const uintptr_t kI2cBaseAddrTable[] = {TOP_EARLGREY_I2C0_BASE_ADDR,
-                                         TOP_EARLGREY_I2C1_BASE_ADDR,
-                                         TOP_EARLGREY_I2C2_BASE_ADDR};
+  const uintptr_t kI2cBaseAddrTable[] = {
+      TOP_EARLGREY_I2C0_BASE_ADDR, TOP_EARLGREY_I2C1_BASE_ADDR,
+      TOP_EARLGREY_I2C2_BASE_ADDR, TOP_EARLGREY_I2C3_BASE_ADDR};
   TRY_CHECK(i2c_instance < ARRAYSIZE(kI2cBaseAddrTable));
 
   mmio_region_t base_addr =

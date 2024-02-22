@@ -37,7 +37,7 @@
     { name: "NumSrc",
       desc: "Number of interrupt sources",
       type: "int",
-      default: "182",
+      default: "197",
       local: "true"
     },
     { name: "NumTarget",
@@ -1559,6 +1559,126 @@
     }
     { name: "PRIO181",
       desc: "Interrupt Source 181 Priority",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "1:0" }
+      ],
+    }
+    { name: "PRIO182",
+      desc: "Interrupt Source 182 Priority",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "1:0" }
+      ],
+    }
+    { name: "PRIO183",
+      desc: "Interrupt Source 183 Priority",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "1:0" }
+      ],
+    }
+    { name: "PRIO184",
+      desc: "Interrupt Source 184 Priority",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "1:0" }
+      ],
+    }
+    { name: "PRIO185",
+      desc: "Interrupt Source 185 Priority",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "1:0" }
+      ],
+    }
+    { name: "PRIO186",
+      desc: "Interrupt Source 186 Priority",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "1:0" }
+      ],
+    }
+    { name: "PRIO187",
+      desc: "Interrupt Source 187 Priority",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "1:0" }
+      ],
+    }
+    { name: "PRIO188",
+      desc: "Interrupt Source 188 Priority",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "1:0" }
+      ],
+    }
+    { name: "PRIO189",
+      desc: "Interrupt Source 189 Priority",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "1:0" }
+      ],
+    }
+    { name: "PRIO190",
+      desc: "Interrupt Source 190 Priority",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "1:0" }
+      ],
+    }
+    { name: "PRIO191",
+      desc: "Interrupt Source 191 Priority",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "1:0" }
+      ],
+    }
+    { name: "PRIO192",
+      desc: "Interrupt Source 192 Priority",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "1:0" }
+      ],
+    }
+    { name: "PRIO193",
+      desc: "Interrupt Source 193 Priority",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "1:0" }
+      ],
+    }
+    { name: "PRIO194",
+      desc: "Interrupt Source 194 Priority",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "1:0" }
+      ],
+    }
+    { name: "PRIO195",
+      desc: "Interrupt Source 195 Priority",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "1:0" }
+      ],
+    }
+    { name: "PRIO196",
+      desc: "Interrupt Source 196 Priority",
       swaccess: "rw",
       hwaccess: "hro",
       fields: [

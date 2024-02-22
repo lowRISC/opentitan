@@ -101,7 +101,7 @@ static dif_rv_plic_t plic;
 static dif_rv_core_ibex_t rv_core_ibex;
 static dif_aon_timer_t aon_timer;
 static dif_pwrmgr_t pwrmgr;
-static dif_i2c_t i2c0, i2c1, i2c2;
+static dif_i2c_t i2c0, i2c1, i2c2, i2c3;
 
 typedef struct node {
   const char *name;
@@ -323,7 +323,7 @@ static void print_alert_cause(alert_handler_testutils_info_t info) {
 }
 
 /*
- * Configure alert for i2c0..i2c2 s.t.
+ * Configure alert for i2c0..i2c3 s.t.
  * .alert class = class A
  * .escalation phase0,1
  * .disable ping timer
@@ -332,7 +332,7 @@ static void prgm_alert_handler_round1(void) {
   dif_alert_handler_class_t alert_class = kDifAlertHandlerClassA;
 
   for (int i = kTopEarlgreyAlertPeripheralI2c0;
-       i < kTopEarlgreyAlertPeripheralI2c2 + 1; ++i) {
+       i < kTopEarlgreyAlertPeripheralI2c3 + 1; ++i) {
     CHECK_DIF_OK(dif_alert_handler_configure_alert(
         &alert_handler, test_node[i].alert, test_node[i].class,
         /*enabled=*/kDifToggleEnabled, /*locked=*/kDifToggleEnabled));
@@ -520,6 +520,8 @@ static void peripheral_init(void) {
       dif_i2c_init(mmio_region_from_addr(TOP_EARLGREY_I2C1_BASE_ADDR), &i2c1));
   CHECK_DIF_OK(
       dif_i2c_init(mmio_region_from_addr(TOP_EARLGREY_I2C2_BASE_ADDR), &i2c2));
+  CHECK_DIF_OK(
+      dif_i2c_init(mmio_region_from_addr(TOP_EARLGREY_I2C3_BASE_ADDR), &i2c3));
   CHECK_DIF_OK(dif_uart_init(
       mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR), &uart0));
   CHECK_DIF_OK(dif_uart_init(
@@ -669,6 +671,12 @@ static node_t test_node[kTopEarlgreyAlertPeripheralLast] = {
             .alert = kTopEarlgreyAlertIdI2c2FatalFault,
             .class = kDifAlertHandlerClassA,
         },
+    [kTopEarlgreyAlertPeripheralI2c3] =
+        {
+            .name = "I2C3",
+            .alert = kTopEarlgreyAlertIdI2c3FatalFault,
+            .class = kDifAlertHandlerClassA,
+        },
 };
 
 static void init_expected_cause(void) {
@@ -678,6 +686,8 @@ static void init_expected_cause(void) {
       .alert_info.alert_cause[kTopEarlgreyAlertIdI2c1FatalFault] = 1;
   kExpectedInfo[kRound1]
       .alert_info.alert_cause[kTopEarlgreyAlertIdI2c2FatalFault] = 1;
+  kExpectedInfo[kRound1]
+      .alert_info.alert_cause[kTopEarlgreyAlertIdI2c3FatalFault] = 1;
 
   kExpectedInfo[kRound2]
       .alert_info.alert_cause[kTopEarlgreyAlertIdUart0FatalFault] = 1;
@@ -776,6 +786,7 @@ bool test_main(void) {
     CHECK_DIF_OK(dif_i2c_alert_force(&i2c0, kDifI2cAlertFatalFault));
     CHECK_DIF_OK(dif_i2c_alert_force(&i2c1, kDifI2cAlertFatalFault));
     CHECK_DIF_OK(dif_i2c_alert_force(&i2c2, kDifI2cAlertFatalFault));
+    CHECK_DIF_OK(dif_i2c_alert_force(&i2c3, kDifI2cAlertFatalFault));
     CHECK_DIF_OK(dif_alert_handler_irq_set_enabled(
         &alert_handler, kDifAlertHandlerIrqClassa, kDifToggleEnabled));
 

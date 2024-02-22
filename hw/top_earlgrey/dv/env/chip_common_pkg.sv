@@ -11,7 +11,7 @@ package chip_common_pkg;
   parameter dv_utils_pkg::uint NUM_GPIOS = 32;
   parameter dv_utils_pkg::uint NUM_UARTS = 4;
   parameter dv_utils_pkg::uint NUM_SPI_HOSTS = 2;
-  parameter dv_utils_pkg::uint NUM_I2CS = 3;
+  parameter dv_utils_pkg::uint NUM_I2CS = 4;
   parameter dv_utils_pkg::uint NUM_PWM_CHANNELS = pwm_reg_pkg::NOutputs;
   parameter dv_utils_pkg::uint NUM_PATTGEN_CH = pattgen_agent_pkg::NUM_PATTGEN_CHANNELS;
 

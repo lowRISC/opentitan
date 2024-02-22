@@ -47,6 +47,7 @@ static dif_usbdev_t usbdev;
 static dif_i2c_t i2c0;
 static dif_i2c_t i2c1;
 static dif_i2c_t i2c2;
+static dif_i2c_t i2c3;
 static dif_rv_core_ibex_t ibex;
 static const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
 
@@ -85,6 +86,9 @@ static void init_peripherals(void) {
   CHECK_DIF_OK(
       dif_i2c_init(mmio_region_from_addr(TOP_EARLGREY_I2C2_BASE_ADDR), &i2c2));
 
+  CHECK_DIF_OK(
+      dif_i2c_init(mmio_region_from_addr(TOP_EARLGREY_I2C3_BASE_ADDR), &i2c3));
+
   mmio_region_t ibex_addr =
       mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR);
   CHECK_DIF_OK(dif_rv_core_ibex_init(ibex_addr, &ibex));
@@ -106,6 +110,7 @@ static const uint32_t usbdev_alerts[] = {kTopEarlgreyAlertIdUsbdevFatalFault};
 static const uint32_t i2c0_alerts[] = {kTopEarlgreyAlertIdI2c0FatalFault};
 static const uint32_t i2c1_alerts[] = {kTopEarlgreyAlertIdI2c1FatalFault};
 static const uint32_t i2c2_alerts[] = {kTopEarlgreyAlertIdI2c2FatalFault};
+static const uint32_t i2c3_alerts[] = {kTopEarlgreyAlertIdI2c3FatalFault};
 
 static const uint32_t num_spihost0_alerts = ARRAYSIZE(spihost0_alerts);
 static const uint32_t num_spihost1_alerts = ARRAYSIZE(spihost1_alerts);
@@ -114,10 +119,12 @@ static const uint32_t num_spidev_alerts = ARRAYSIZE(spidev_alerts);
 static const uint32_t num_i2c0_alerts = ARRAYSIZE(i2c0_alerts);
 static const uint32_t num_i2c1_alerts = ARRAYSIZE(i2c1_alerts);
 static const uint32_t num_i2c2_alerts = ARRAYSIZE(i2c2_alerts);
+static const uint32_t num_i2c3_alerts = ARRAYSIZE(i2c3_alerts);
 
-static const size_t num_alerts =
-    num_spihost0_alerts + num_spihost1_alerts + num_usbdev_alerts +
-    num_i2c0_alerts + num_i2c1_alerts + num_i2c2_alerts + num_spidev_alerts;
+static const size_t num_alerts = num_spihost0_alerts + num_spihost1_alerts +
+                                 num_usbdev_alerts + num_i2c0_alerts +
+                                 num_i2c1_alerts + num_i2c2_alerts +
+                                 num_i2c3_alerts + num_spidev_alerts;
 
 /**
  * A structure to keep the info for peripheral IPs
@@ -206,6 +213,14 @@ static const test_t kPeripherals[] = {
         .alert_ids = i2c2_alerts,
         .num_alert_peri = num_i2c2_alerts,
         .reset_index = kTopEarlgreyResetManagerSwResetsI2c2,
+    },
+    {
+        .name = "I2C3",
+        .base = TOP_EARLGREY_I2C3_BASE_ADDR,
+        .dif = &i2c3,
+        .alert_ids = i2c3_alerts,
+        .num_alert_peri = num_i2c3_alerts,
+        .reset_index = kTopEarlgreyResetManagerSwResetsI2c3,
     },
 };
 

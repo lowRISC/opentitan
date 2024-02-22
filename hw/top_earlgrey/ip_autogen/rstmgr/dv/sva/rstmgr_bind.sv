@@ -49,6 +49,7 @@ module rstmgr_bind;
     .parent_rst_n(rst_sys_src_n[1]),
     .ctrl_ns(reg2hw.sw_rst_ctrl_n),
     .rst_ens({
+      rst_en_o.i2c3[1] == prim_mubi_pkg::MuBi4True,
       rst_en_o.i2c2[1] == prim_mubi_pkg::MuBi4True,
       rst_en_o.i2c1[1] == prim_mubi_pkg::MuBi4True,
       rst_en_o.i2c0[1] == prim_mubi_pkg::MuBi4True,
@@ -59,6 +60,7 @@ module rstmgr_bind;
       rst_en_o.spi_device[1] == prim_mubi_pkg::MuBi4True
     }),
     .rst_ns({
+      resets_o.rst_i2c3_n[1],
       resets_o.rst_i2c2_n[1],
       resets_o.rst_i2c1_n[1],
       resets_o.rst_i2c0_n[1],

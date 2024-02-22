@@ -113,6 +113,10 @@ static dif_i2c_t i2c1;
 static dif_i2c_t i2c2;
 #endif
 
+#if TEST_MIN_IRQ_PERIPHERAL <= 9 && 9 < TEST_MAX_IRQ_PERIPHERAL
+static dif_i2c_t i2c3;
+#endif
+
 #if TEST_MIN_IRQ_PERIPHERAL <= 10 && 10 < TEST_MAX_IRQ_PERIPHERAL
 static dif_keymgr_t keymgr;
 #endif
@@ -682,6 +686,30 @@ void ottf_external_isr(uint32_t *exc_info) {
       }
 #endif
 
+#if TEST_MIN_IRQ_PERIPHERAL <= 9 && 9 < TEST_MAX_IRQ_PERIPHERAL
+      case kTopEarlgreyPlicPeripheralI2c3: {
+        dif_i2c_irq_t irq = (dif_i2c_irq_t)(
+            plic_irq_id -
+            (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdI2c3FmtThreshold);
+        CHECK(irq == i2c_irq_expected,
+              "Incorrect i2c3 IRQ triggered: exp = %d, obs = %d",
+              i2c_irq_expected, irq);
+        i2c_irq_serviced = irq;
+
+        dif_i2c_irq_state_snapshot_t snapshot;
+        CHECK_DIF_OK(dif_i2c_irq_get_state(&i2c3, &snapshot));
+        CHECK(snapshot == (dif_i2c_irq_state_snapshot_t)(1 << irq),
+              "Only i2c3 IRQ %d expected to fire. Actual interrupt "
+              "status = %x",
+              irq, snapshot);
+
+        // TODO: Check Interrupt type then clear INTR_TEST if needed.
+        CHECK_DIF_OK(dif_i2c_irq_force(&i2c3, irq, false));
+        CHECK_DIF_OK(dif_i2c_irq_acknowledge(&i2c3, irq));
+        break;
+      }
+#endif
+
 #if TEST_MIN_IRQ_PERIPHERAL <= 10 && 10 < TEST_MAX_IRQ_PERIPHERAL
       case kTopEarlgreyPlicPeripheralKeymgr: {
         dif_keymgr_irq_t irq = (dif_keymgr_irq_t)(
@@ -1170,6 +1198,11 @@ static void peripherals_init(void) {
   CHECK_DIF_OK(dif_i2c_init(base_addr, &i2c2));
 #endif
 
+#if TEST_MIN_IRQ_PERIPHERAL <= 9 && 9 < TEST_MAX_IRQ_PERIPHERAL
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_I2C3_BASE_ADDR);
+  CHECK_DIF_OK(dif_i2c_init(base_addr, &i2c3));
+#endif
+
 #if TEST_MIN_IRQ_PERIPHERAL <= 10 && 10 < TEST_MAX_IRQ_PERIPHERAL
   base_addr = mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR);
   CHECK_DIF_OK(dif_keymgr_init(base_addr, &keymgr));
@@ -1313,6 +1346,10 @@ static void peripheral_irqs_clear(void) {
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 9 && 9 < TEST_MAX_IRQ_PERIPHERAL
   CHECK_DIF_OK(dif_i2c_irq_acknowledge_all(&i2c2));
+#endif
+
+#if TEST_MIN_IRQ_PERIPHERAL <= 9 && 9 < TEST_MAX_IRQ_PERIPHERAL
+  CHECK_DIF_OK(dif_i2c_irq_acknowledge_all(&i2c3));
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 10 && 10 < TEST_MAX_IRQ_PERIPHERAL
@@ -1558,6 +1595,11 @@ static void peripheral_irqs_enable(void) {
 #if TEST_MIN_IRQ_PERIPHERAL <= 9 && 9 < TEST_MAX_IRQ_PERIPHERAL
   CHECK_DIF_OK(
       dif_i2c_irq_restore_all(&i2c2, &i2c_irqs));
+#endif
+
+#if TEST_MIN_IRQ_PERIPHERAL <= 9 && 9 < TEST_MAX_IRQ_PERIPHERAL
+  CHECK_DIF_OK(
+      dif_i2c_irq_restore_all(&i2c3, &i2c_irqs));
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 10 && 10 < TEST_MAX_IRQ_PERIPHERAL
@@ -1861,6 +1903,21 @@ static void peripheral_irqs_trigger(void) {
     // entering the ISR.
     IBEX_SPIN_FOR(i2c_irq_serviced == irq, 1);
     LOG_INFO("IRQ %d from i2c2 is serviced.", irq);
+  }
+#endif
+
+#if TEST_MIN_IRQ_PERIPHERAL <= 9 && 9 < TEST_MAX_IRQ_PERIPHERAL
+  peripheral_expected = kTopEarlgreyPlicPeripheralI2c3;
+  for (dif_i2c_irq_t irq = kDifI2cIrqFmtThreshold;
+       irq <= kDifI2cIrqHostTimeout; ++irq) {
+    i2c_irq_expected = irq;
+    LOG_INFO("Triggering i2c3 IRQ %d.", irq);
+    CHECK_DIF_OK(dif_i2c_irq_force(&i2c3, irq, true));
+
+    // This avoids a race where *irq_serviced is read before
+    // entering the ISR.
+    IBEX_SPIN_FOR(i2c_irq_serviced == irq, 1);
+    LOG_INFO("IRQ %d from i2c3 is serviced.", irq);
   }
 #endif
 

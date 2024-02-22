@@ -406,6 +406,7 @@ For the purpose of `top_earlgrey`, the first option has been chosen to benefit s
 | i2c0              | i2c           | 0x40080000 (regs) |
 | i2c1              | i2c           | 0x40090000 (regs) |
 | i2c2              | i2c           | 0x400A0000 (regs) |
+| i2c3              | i2c           | 0x400B0000 (regs) |
 | pattgen           | pattgen       | 0x400E0000 (regs) |
 | rv_timer          | rv_timer      | 0x40100000 (regs) |
 | otp_ctrl          | otp_ctrl      | 0x40130000 (core) |

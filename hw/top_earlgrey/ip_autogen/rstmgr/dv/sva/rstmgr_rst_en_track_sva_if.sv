@@ -383,4 +383,17 @@ interface rstmgr_rst_en_track_sva_if (
           clk_io_div4_i,
           !rst_por_ni)
 
+  `ASSERT(D0RstI2c3EnTracksRstI2c3Active_A,
+          $fell(resets_i.rst_i2c3_n[Domain0Sel]) |-> ##[0:DELAY]
+          reset_en_i.i2c3[Domain0Sel] == prim_mubi_pkg::MuBi4True,
+          clk_io_div4_i,
+          !rst_por_ni)
+
+  `ASSERT(D0RstI2c3EnTracksRstI2c3Inactive_A,
+          $rose(resets_i.rst_i2c3_n[Domain0Sel]) |-> ##DELAY
+          !resets_i.rst_i2c3_n[Domain0Sel] ||
+          reset_en_i.i2c3[Domain0Sel] == prim_mubi_pkg::MuBi4False,
+          clk_io_div4_i,
+          !rst_por_ni)
+
 endinterface

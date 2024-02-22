@@ -21,6 +21,7 @@ CONNECTION, CLKMGR_PERI_CLK_SPI_HOST1_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.c
 CONNECTION, CLKMGR_PERI_CLK_I2C0_CLK, top_earlgrey.u_clkmgr_aon,clocks_o.clk_io_div4_peri, top_earlgrey.u_i2c0, clk_i
 CONNECTION, CLKMGR_PERI_CLK_I2C1_CLK, top_earlgrey.u_clkmgr_aon,clocks_o.clk_io_div4_peri, top_earlgrey.u_i2c1, clk_i
 CONNECTION, CLKMGR_PERI_CLK_I2C2_CLK, top_earlgrey.u_clkmgr_aon,clocks_o.clk_io_div4_peri, top_earlgrey.u_i2c2, clk_i
+CONNECTION, CLKMGR_PERI_CLK_I2C3_CLK, top_earlgrey.u_clkmgr_aon,clocks_o.clk_io_div4_peri, top_earlgrey.u_i2c3, clk_i
 
 CONNECTION, CLKMGR_PERI_CLK_PATTGEN_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div4_peri, top_earlgrey.u_pattgen, clk_i
 

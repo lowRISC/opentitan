@@ -79,8 +79,8 @@ set_property -dict { PACKAGE_PIN M21  IOSTANDARD LVCMOS33                   } [g
 set_property -dict { PACKAGE_PIN P18  IOSTANDARD LVCMOS33                   } [get_ports { IOC7  }]; #  P18:USRUSB_VBUS_DETECT
 set_property -dict { PACKAGE_PIN W21  IOSTANDARD LVCMOS33 PULLTYPE PULLDOWN } [get_ports { IOC8  }]; #  W21:USB_A18               TAP Strap 0         (SAM3X):A18
 set_property -dict { PACKAGE_PIN M22  IOSTANDARD LVCMOS33                   } [get_ports { IOC9  }]; #  M22:PMOD2_IO1             EarlGrey:GPIO       (BoB):PMOD1_CSB3
-set_property -dict { PACKAGE_PIN N19  IOSTANDARD LVCMOS33                   } [get_ports { IOC10 }]; #  N19:PMOD2_IO3             EarlGrey:GPIO       (BoB):PMOD1_CSB5
-set_property -dict { PACKAGE_PIN P26  IOSTANDARD LVCMOS33                   } [get_ports { IOC11 }]; #  P26:PMOD2_IO4             EarlGrey:GPIO       (BoB):PMOD1_CSB6
+set_property -dict { PACKAGE_PIN N19  IOSTANDARD LVCMOS33                   } [get_ports { IOC10 }]; #  N19:PMOD2_IO3             EarlGrey:I2C3_SCL   (BoB):PMOD1_CSB5
+set_property -dict { PACKAGE_PIN P26  IOSTANDARD LVCMOS33                   } [get_ports { IOC11 }]; #  P26:PMOD2_IO4             EarlGrey:I2C3_SDA   (BoB):PMOD1_CSB6
 set_property -dict { PACKAGE_PIN P24  IOSTANDARD LVCMOS33                   } [get_ports { IOC12 }]; #  P24:PMOD1_IO6             EarlGrey:GPIO       (BoB):PMOD2_CSB2
 #############
 ## IOR bank #

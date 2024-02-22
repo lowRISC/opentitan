@@ -88,6 +88,17 @@ static const i2c_pinmux_pins_t kI2cPinmuxPins[] = {
              .peripheral_in = kTopEarlgreyPinmuxPeripheralInI2c2Scl,
              .outsel = kTopEarlgreyPinmuxOutselI2c2Scl,
          }},
+    // I2C3.
+    {.sda =
+         {
+             .peripheral_in = kTopEarlgreyPinmuxPeripheralInI2c3Sda,
+             .outsel = kTopEarlgreyPinmuxOutselI2c3Sda,
+         },
+     .scl =
+         {
+             .peripheral_in = kTopEarlgreyPinmuxPeripheralInI2c3Scl,
+             .outsel = kTopEarlgreyPinmuxOutselI2c3Scl,
+         }},
 };
 
 /**
@@ -133,6 +144,20 @@ static status_t map_platform_to_pins(i2c_pinmux_platform_id_t platform,
           break;
         case 2:  // I2C2 uses the same pins as CW310 PMOD
           TRY(map_platform_to_pins(I2cPinmuxPlatformIdCw310Pmod, i2c_id, pins));
+          break;
+        case 3:
+          *pins = (i2c_platform_pins_t){
+              .sda =
+                  {
+                      .mio_out = kTopEarlgreyPinmuxMioOutIoc11,
+                      .insel = kTopEarlgreyPinmuxInselIoc11,
+                  },
+              .scl =
+                  {
+                      .mio_out = kTopEarlgreyPinmuxMioOutIoc10,
+                      .insel = kTopEarlgreyPinmuxInselIoc10,
+                  },
+          };
           break;
         default:
           TRY_CHECK(false, "invalid i2c_id: %0d", i2c_id);

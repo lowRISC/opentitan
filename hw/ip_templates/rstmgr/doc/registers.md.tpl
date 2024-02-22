@@ -24,15 +24,17 @@ ${"##"} Summary
 | rstmgr.[`SW_RST_REGWEN_5`](#sw_rst_regwen)   | 0x40     |        4 | Register write enable for software controllable resets.            |
 | rstmgr.[`SW_RST_REGWEN_6`](#sw_rst_regwen)   | 0x44     |        4 | Register write enable for software controllable resets.            |
 | rstmgr.[`SW_RST_REGWEN_7`](#sw_rst_regwen)   | 0x48     |        4 | Register write enable for software controllable resets.            |
-| rstmgr.[`SW_RST_CTRL_N_0`](#sw_rst_ctrl_n)   | 0x4c     |        4 | Software controllable resets.                                      |
-| rstmgr.[`SW_RST_CTRL_N_1`](#sw_rst_ctrl_n)   | 0x50     |        4 | Software controllable resets.                                      |
-| rstmgr.[`SW_RST_CTRL_N_2`](#sw_rst_ctrl_n)   | 0x54     |        4 | Software controllable resets.                                      |
-| rstmgr.[`SW_RST_CTRL_N_3`](#sw_rst_ctrl_n)   | 0x58     |        4 | Software controllable resets.                                      |
-| rstmgr.[`SW_RST_CTRL_N_4`](#sw_rst_ctrl_n)   | 0x5c     |        4 | Software controllable resets.                                      |
-| rstmgr.[`SW_RST_CTRL_N_5`](#sw_rst_ctrl_n)   | 0x60     |        4 | Software controllable resets.                                      |
-| rstmgr.[`SW_RST_CTRL_N_6`](#sw_rst_ctrl_n)   | 0x64     |        4 | Software controllable resets.                                      |
-| rstmgr.[`SW_RST_CTRL_N_7`](#sw_rst_ctrl_n)   | 0x68     |        4 | Software controllable resets.                                      |
-| rstmgr.[`ERR_CODE`](#err_code)               | 0x6c     |        4 | A bit vector of all the errors that have occurred in reset manager |
+| rstmgr.[`SW_RST_REGWEN_8`](#sw_rst_regwen)   | 0x4c     |        4 | Register write enable for software controllable resets.            |
+| rstmgr.[`SW_RST_CTRL_N_0`](#sw_rst_ctrl_n)   | 0x50     |        4 | Software controllable resets.                                      |
+| rstmgr.[`SW_RST_CTRL_N_1`](#sw_rst_ctrl_n)   | 0x54     |        4 | Software controllable resets.                                      |
+| rstmgr.[`SW_RST_CTRL_N_2`](#sw_rst_ctrl_n)   | 0x58     |        4 | Software controllable resets.                                      |
+| rstmgr.[`SW_RST_CTRL_N_3`](#sw_rst_ctrl_n)   | 0x5c     |        4 | Software controllable resets.                                      |
+| rstmgr.[`SW_RST_CTRL_N_4`](#sw_rst_ctrl_n)   | 0x60     |        4 | Software controllable resets.                                      |
+| rstmgr.[`SW_RST_CTRL_N_5`](#sw_rst_ctrl_n)   | 0x64     |        4 | Software controllable resets.                                      |
+| rstmgr.[`SW_RST_CTRL_N_6`](#sw_rst_ctrl_n)   | 0x68     |        4 | Software controllable resets.                                      |
+| rstmgr.[`SW_RST_CTRL_N_7`](#sw_rst_ctrl_n)   | 0x6c     |        4 | Software controllable resets.                                      |
+| rstmgr.[`SW_RST_CTRL_N_8`](#sw_rst_ctrl_n)   | 0x70     |        4 | Software controllable resets.                                      |
+| rstmgr.[`ERR_CODE`](#err_code)               | 0x74     |        4 | A bit vector of all the errors that have occurred in reset manager |
 
 ${"##"} ALERT_TEST
 Alert Test Register
@@ -268,6 +270,7 @@ ${"###"} Instances
 | SW_RST_REGWEN_5 | 0x40     |
 | SW_RST_REGWEN_6 | 0x44     |
 | SW_RST_REGWEN_7 | 0x48     |
+| SW_RST_REGWEN_8 | 0x4c     |
 
 
 ${"###"} Fields
@@ -292,14 +295,15 @@ ${"###"} Instances
 
 | Name            | Offset   |
 |:----------------|:---------|
-| SW_RST_CTRL_N_0 | 0x4c     |
-| SW_RST_CTRL_N_1 | 0x50     |
-| SW_RST_CTRL_N_2 | 0x54     |
-| SW_RST_CTRL_N_3 | 0x58     |
-| SW_RST_CTRL_N_4 | 0x5c     |
-| SW_RST_CTRL_N_5 | 0x60     |
-| SW_RST_CTRL_N_6 | 0x64     |
-| SW_RST_CTRL_N_7 | 0x68     |
+| SW_RST_CTRL_N_0 | 0x50     |
+| SW_RST_CTRL_N_1 | 0x54     |
+| SW_RST_CTRL_N_2 | 0x58     |
+| SW_RST_CTRL_N_3 | 0x5c     |
+| SW_RST_CTRL_N_4 | 0x60     |
+| SW_RST_CTRL_N_5 | 0x64     |
+| SW_RST_CTRL_N_6 | 0x68     |
+| SW_RST_CTRL_N_7 | 0x6c     |
+| SW_RST_CTRL_N_8 | 0x70     |
 
 
 ${"###"} Fields
@@ -315,7 +319,7 @@ ${"###"} Fields
 
 ${"##"} ERR_CODE
 A bit vector of all the errors that have occurred in reset manager
-- Offset: `0x6c`
+- Offset: `0x74`
 - Reset default: `0x0`
 - Reset mask: `0x7`
 

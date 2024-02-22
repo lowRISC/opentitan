@@ -696,6 +696,13 @@
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
+      name: chip_sw_i2c_host_tx_rx_idx3
+      uvm_test_seq: chip_sw_i2c_host_tx_rx_vseq
+      sw_images: ["//sw/device/tests/sim_dv:i2c_host_tx_rx_test:1:new_rules"]
+      run_opts: ["+i2c_idx=3"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+    }
+    {
       name: chip_sw_i2c_device_tx_rx
       uvm_test_seq: chip_sw_i2c_device_tx_rx_vseq
       sw_images: ["//sw/device/tests/sim_dv:i2c_device_tx_rx_test:1:new_rules"]

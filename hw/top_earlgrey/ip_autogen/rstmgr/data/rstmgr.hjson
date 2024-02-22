@@ -110,7 +110,7 @@
     { name: "NumSwResets",
       desc: "Number of software resets",
       type: "int",
-      default: "8",
+      default: "9",
       local: "true"
     },
 
@@ -193,6 +193,12 @@
     }
     { name: "RSTMGR.SW_RST.I2C2_ENABLE",
       desc: "Enable reset of I2C2 peripheral via CSR."
+    }
+    { name: "RSTMGR.SW_RST.I2C3_REQUEST",
+      desc: "Trigger reset of I2C3 peripheral via CSR."
+    }
+    { name: "RSTMGR.SW_RST.I2C3_ENABLE",
+      desc: "Enable reset of I2C3 peripheral via CSR."
     }
     { name: "RSTMGR.RESET_INFO.CAPTURE",
       desc: "Capture information about the causes of a reset."

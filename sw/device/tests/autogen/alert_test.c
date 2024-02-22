@@ -68,6 +68,7 @@ static dif_hmac_t hmac;
 static dif_i2c_t i2c0;
 static dif_i2c_t i2c1;
 static dif_i2c_t i2c2;
+static dif_i2c_t i2c3;
 static dif_keymgr_t keymgr;
 static dif_kmac_t kmac;
 static dif_lc_ctrl_t lc_ctrl;
@@ -144,6 +145,9 @@ static void init_peripherals(void) {
 
   base_addr = mmio_region_from_addr(TOP_EARLGREY_I2C2_BASE_ADDR);
   CHECK_DIF_OK(dif_i2c_init(base_addr, &i2c2));
+
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_I2C3_BASE_ADDR);
+  CHECK_DIF_OK(dif_i2c_init(base_addr, &i2c3));
 
   base_addr = mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR);
   CHECK_DIF_OK(dif_keymgr_init(base_addr, &keymgr));
@@ -482,6 +486,21 @@ static void trigger_alert_test(void) {
 
     // Verify that alert handler received it.
     exp_alert = kTopEarlgreyAlertIdI2c2FatalFault + i;
+    CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
+        &alert_handler, exp_alert, &is_cause));
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
+
+    // Clear alert cause register
+    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
+        &alert_handler, exp_alert));
+  }
+
+  // Write i2c's alert_test reg and check alert_cause.
+  for (dif_i2c_alert_t i = 0; i < 1; ++i) {
+    CHECK_DIF_OK(dif_i2c_alert_force(&i2c3, kDifI2cAlertFatalFault + i));
+
+    // Verify that alert handler received it.
+    exp_alert = kTopEarlgreyAlertIdI2c3FatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);

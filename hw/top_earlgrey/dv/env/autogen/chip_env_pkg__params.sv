@@ -14,6 +14,7 @@ parameter string LIST_OF_ALERTS[] = {
   "i2c0_fatal_fault",
   "i2c1_fatal_fault",
   "i2c2_fatal_fault",
+  "i2c3_fatal_fault",
   "pattgen_fatal_fault",
   "rv_timer_fatal_fault",
   "otp_ctrl_fatal_macro_error",
@@ -72,4 +73,4 @@ parameter string LIST_OF_ALERTS[] = {
   "rv_core_ibex_recov_hw_err"
 };
 
-parameter uint NUM_ALERTS = 65;
+parameter uint NUM_ALERTS = 66;

@@ -529,21 +529,29 @@ interface chip_if;
   // Functional (muxed) interface: I2Cs.
   bit [NUM_I2CS-1:0] __enable_i2c = {NUM_I2CS{1'b0}}; // Internal signal.
 
-  // {ioa7, ioa8}, {iob9, iob10}, {iob11, iob12} are the i2c connections
+  // {ioa7, ioa8}, {iob9, iob10}, {iob11, iob12}, {ioc10, ioc11} are the i2c connections
   localparam int AssignedI2cSclIos [NUM_I2CS]  = {
     top_earlgrey_pkg::MioPadIoa8,
     top_earlgrey_pkg::MioPadIob9,
-    top_earlgrey_pkg::MioPadIob11
+    top_earlgrey_pkg::MioPadIob11,
+    top_earlgrey_pkg::MioPadIoc10
   };
   localparam int AssignedI2cSdaIos [NUM_I2CS] = {
     top_earlgrey_pkg::MioPadIoa7,
     top_earlgrey_pkg::MioPadIob10,
-    top_earlgrey_pkg::MioPadIob12
+    top_earlgrey_pkg::MioPadIob12,
+    top_earlgrey_pkg::MioPadIoc11
   };
 
   // This part unfortunately has to be hardcoded since the macro cannot interpret a genvar.
-  wire [NUM_I2CS-1:0]i2c_clks = {`I2C_HIER(2).clk_i, `I2C_HIER(1).clk_i, `I2C_HIER(0).clk_i};
-  wire [NUM_I2CS-1:0]i2c_rsts = {`I2C_HIER(2).rst_ni, `I2C_HIER(1).rst_ni, `I2C_HIER(0).rst_ni};
+  wire [NUM_I2CS-1:0]i2c_clks = {`I2C_HIER(3).clk_i,
+                                 `I2C_HIER(2).clk_i,
+                                 `I2C_HIER(1).clk_i,
+                                 `I2C_HIER(0).clk_i};
+  wire [NUM_I2CS-1:0]i2c_rsts = {`I2C_HIER(3).rst_ni,
+                                 `I2C_HIER(2).rst_ni,
+                                 `I2C_HIER(1).rst_ni,
+                                 `I2C_HIER(0).rst_ni};
 
   for (genvar i = 0; i < NUM_I2CS; i++) begin : gen_i2c_if
     i2c_if i2c_if(
@@ -1006,6 +1014,7 @@ interface chip_if;
       PeripheralI2c0:           path = {path, ".", `DV_STRINGIFY(`I2C_HIER(0))};
       PeripheralI2c1:           path = {path, ".", `DV_STRINGIFY(`I2C_HIER(1))};
       PeripheralI2c2:           path = {path, ".", `DV_STRINGIFY(`I2C_HIER(2))};
+      PeripheralI2c3:           path = {path, ".", `DV_STRINGIFY(`I2C_HIER(3))};
       PeripheralKeymgr:         path = {path, ".", `DV_STRINGIFY(`KEYMGR_HIER)};
       PeripheralKmac:           path = {path, ".", `DV_STRINGIFY(`KMAC_HIER)};
       PeripheralLcCtrl:         path = {path, ".", `DV_STRINGIFY(`LC_CTRL_HIER)};

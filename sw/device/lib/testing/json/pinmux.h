@@ -58,6 +58,8 @@ extern "C" {
     value(_, I2c1Scl, kTopEarlgreyPinmuxPeripheralInI2c1Scl) \
     value(_, I2c2Sda, kTopEarlgreyPinmuxPeripheralInI2c2Sda) \
     value(_, I2c2Scl, kTopEarlgreyPinmuxPeripheralInI2c2Scl) \
+    value(_, I2c3Sda, kTopEarlgreyPinmuxPeripheralInI2c3Sda) \
+    value(_, I2c3Scl, kTopEarlgreyPinmuxPeripheralInI2c3Scl) \
     value(_, SpiHost1Sd0, kTopEarlgreyPinmuxPeripheralInSpiHost1Sd0) \
     value(_, SpiHost1Sd1, kTopEarlgreyPinmuxPeripheralInSpiHost1Sd1) \
     value(_, SpiHost1Sd2, kTopEarlgreyPinmuxPeripheralInSpiHost1Sd2) \
@@ -226,6 +228,8 @@ C_ONLY(UJSON_SERDE_ENUM(PinmuxMioOut, pinmux_mio_out_t, TOP_EARLGREY_PINMUX_MIO_
     value(_, I2c1Scl, kTopEarlgreyPinmuxOutselI2c1Scl) \
     value(_, I2c2Sda, kTopEarlgreyPinmuxOutselI2c2Sda) \
     value(_, I2c2Scl, kTopEarlgreyPinmuxOutselI2c2Scl) \
+    value(_, I2c3Sda, kTopEarlgreyPinmuxOutselI2c3Sda) \
+    value(_, I2c3Scl, kTopEarlgreyPinmuxOutselI2c3Scl) \
     value(_, SpiHost1Sd0, kTopEarlgreyPinmuxOutselSpiHost1Sd0) \
     value(_, SpiHost1Sd1, kTopEarlgreyPinmuxOutselSpiHost1Sd1) \
     value(_, SpiHost1Sd2, kTopEarlgreyPinmuxOutselSpiHost1Sd2) \

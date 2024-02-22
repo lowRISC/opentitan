@@ -113,6 +113,7 @@ class rstmgr_scoreboard extends cip_base_scoreboard #(
       "5": blocked = `gmv(ral.sw_rst_regwen[5]) == 0;
       "6": blocked = `gmv(ral.sw_rst_regwen[6]) == 0;
       "7": blocked = `gmv(ral.sw_rst_regwen[7]) == 0;
+      "8": blocked = `gmv(ral.sw_rst_regwen[8]) == 0;
       default:
         `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", ral_name))
     endcase

@@ -24,8 +24,8 @@ The parameterization rules are explained in more detail in the architectural des
 
 Localparam     | Default (Max)         | This Core      | Description
 ---------------|-----------------------|----------------|---------------
-`NAlerts`      | 8 (248)               | 65    | Number of alert instances. Maximum number bounded by LFSR implementation that generates ping timing.
-`NLpg`         | 1                     | 24       | Number of unique low-power groups as determined by topgen.
+`NAlerts`      | 8 (248)               | 66    | Number of alert instances. Maximum number bounded by LFSR implementation that generates ping timing.
+`NLpg`         | 1                     | 25       | Number of unique low-power groups as determined by topgen.
 `LpgMap`       | {0}                   | see RTL        | Array mapping each alert to a unique low-power group as determined by topgen.
 `EscCntWidth`  | 32 (32)               | 32             | Width of the escalation counters in bit.
 `AccuCntWidth` | 16 (32)               | 16 | Width of the alert accumulation counters in bit.

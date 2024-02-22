@@ -355,6 +355,8 @@ abstract_port -ports "sns_clks_i[clk_io_powerup]" -ignore -comment "hanging path
 abstract_port -ports "sns_clks_i[clk_main_powerup]" -ignore -comment "hanging path"
 abstract_port -ports "sns_clks_i[clk_aon_powerup]" -ignore -comment "hanging path"
 abstract_port -ports "sns_clks_i[clk_io_div4_powerup]" -ignore -comment "hanging path"
+abstract_port -ports "sns_rsts_i[rst_i2c3_n][0]" -ignore -comment "hanging path"
+abstract_port -ports "sns_rsts_i[rst_i2c3_n][1]" -ignore -comment "hanging path"
 abstract_port -ports "sns_rsts_i[rst_i2c2_n][0]" -ignore -comment "hanging path"
 abstract_port -ports "sns_rsts_i[rst_i2c2_n][1]" -ignore -comment "hanging path"
 abstract_port -ports "sns_rsts_i[rst_i2c1_n][0]" -ignore -comment "hanging path"

@@ -28,7 +28,8 @@
       bazel: ["//sw/device/tests/pmod:i2c_host_eeprom_test"]
       tests: ["chip_sw_i2c_host_tx_rx",
               "chip_sw_i2c_host_tx_rx_idx1",
-              "chip_sw_i2c_host_tx_rx_idx2"]
+              "chip_sw_i2c_host_tx_rx_idx2",
+              "chip_sw_i2c_host_tx_rx_idx3"]
     }
     {
       name: chip_sw_i2c_device_tx_rx

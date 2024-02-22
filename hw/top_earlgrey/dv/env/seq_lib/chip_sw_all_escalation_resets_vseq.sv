@@ -31,6 +31,7 @@ class chip_sw_all_escalation_resets_vseq extends chip_sw_base_vseq;
     '{"*i2c0*prim_reg_we_check*", TopEarlgreyAlertIdI2c0FatalFault},
     '{"*i2c1*prim_reg_we_check*", TopEarlgreyAlertIdI2c1FatalFault},
     '{"*i2c2*prim_reg_we_check*", TopEarlgreyAlertIdI2c2FatalFault},
+    '{"*i2c3*prim_reg_we_check*", TopEarlgreyAlertIdI2c3FatalFault},
     '{"*keymgr*prim_reg_we_check*", TopEarlgreyAlertIdKeymgrFatalFaultErr},
     '{"*kmac*prim_reg_we_check*", TopEarlgreyAlertIdKmacFatalFaultErr},
     // TODO TopEarlgreyAlertIdLcCtrlFatalProgError: done in sw/device/tests/sim_dv/lc_ctrl_program_error.c?

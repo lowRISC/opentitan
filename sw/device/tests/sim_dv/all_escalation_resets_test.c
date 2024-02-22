@@ -206,6 +206,7 @@ static const char *hmac_inst_name = "hmac";
 static const char *i2c0_inst_name = "i2c0";
 static const char *i2c1_inst_name = "i2c1";
 static const char *i2c2_inst_name = "i2c2";
+static const char *i2c3_inst_name = "i2c3";
 static const char *keymgr_inst_name = "keymgr";
 static const char *kmac_inst_name = "kmac";
 // TODO: test lc_ctrl fatal_state, alert 17.
@@ -835,6 +836,10 @@ static void execute_test(const dif_aon_timer_t *aon_timer) {
     } break;
     case kTopEarlgreyAlertIdI2c2FatalFault: {
       fault_checker_t fc = {trivial_fault_checker, i2c2_inst_name, we_check};
+      fault_checker = fc;
+    } break;
+    case kTopEarlgreyAlertIdI2c3FatalFault: {
+      fault_checker_t fc = {trivial_fault_checker, i2c3_inst_name, we_check};
       fault_checker = fc;
     } break;
     case kTopEarlgreyAlertIdKeymgrFatalFaultErr: {

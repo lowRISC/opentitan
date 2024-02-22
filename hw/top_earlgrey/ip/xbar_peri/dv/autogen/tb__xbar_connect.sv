@@ -24,6 +24,7 @@ initial force dut.rst_peri_ni = rst_n;
 `CONNECT_TL_DEVICE_IF(i2c0, dut, clk_peri_i, rst_n)
 `CONNECT_TL_DEVICE_IF(i2c1, dut, clk_peri_i, rst_n)
 `CONNECT_TL_DEVICE_IF(i2c2, dut, clk_peri_i, rst_n)
+`CONNECT_TL_DEVICE_IF(i2c3, dut, clk_peri_i, rst_n)
 `CONNECT_TL_DEVICE_IF(pattgen, dut, clk_peri_i, rst_n)
 `CONNECT_TL_DEVICE_IF(pwm_aon, dut, clk_peri_i, rst_n)
 `CONNECT_TL_DEVICE_IF(gpio, dut, clk_peri_i, rst_n)

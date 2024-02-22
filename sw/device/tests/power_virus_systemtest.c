@@ -70,6 +70,7 @@ static dif_otbn_t otbn;
 static dif_i2c_t i2c_0;
 static dif_i2c_t i2c_1;
 static dif_i2c_t i2c_2;
+static dif_i2c_t i2c_3;
 static dif_spi_device_handle_t spi_device;
 static dif_spi_host_t spi_host_0;
 static dif_spi_host_t spi_host_1;
@@ -81,7 +82,7 @@ static dif_pwm_t pwm;
 static dif_flash_ctrl_state_t flash_ctrl;
 static dif_rv_plic_t rv_plic;
 
-static const dif_i2c_t *i2c_handles[] = {&i2c_0, &i2c_1, &i2c_2};
+static const dif_i2c_t *i2c_handles[] = {&i2c_0, &i2c_1, &i2c_2, &i2c_3};
 static const dif_uart_t *uart_handles[] = {&uart_1, &uart_2, &uart_3};
 static dif_kmac_operation_state_t kmac_operation_state;
 static const dif_pattgen_channel_t pattgen_channels[] = {kDifPattgenChannel0,
@@ -141,9 +142,12 @@ enum {
   kI2c1DeviceAddress1 = 0x44,
   kI2c2DeviceAddress0 = 0x55,
   kI2c2DeviceAddress1 = 0x66,
+  kI2c3DeviceAddress0 = 0x77,
+  kI2c3DeviceAddress1 = 0x78,
   kI2c0TargetAddress = 0x01,
   kI2c1TargetAddress = 0x02,
   kI2c2TargetAddress = 0x03,
+  kI2c3TargetAddress = 0x04,
   /**
    * UART parameters.
    */
@@ -378,6 +382,8 @@ static void init_peripheral_handles(void) {
       dif_i2c_init(mmio_region_from_addr(TOP_EARLGREY_I2C1_BASE_ADDR), &i2c_1));
   CHECK_DIF_OK(
       dif_i2c_init(mmio_region_from_addr(TOP_EARLGREY_I2C2_BASE_ADDR), &i2c_2));
+  CHECK_DIF_OK(
+      dif_i2c_init(mmio_region_from_addr(TOP_EARLGREY_I2C3_BASE_ADDR), &i2c_3));
   CHECK_DIF_OK(dif_spi_device_init_handle(
       mmio_region_from_addr(TOP_EARLGREY_SPI_DEVICE_BASE_ADDR), &spi_device));
   CHECK_DIF_OK(dif_spi_host_init(
@@ -484,6 +490,20 @@ static void configure_pinmux(void) {
                                         kTopEarlgreyPinmuxOutselI2c2Scl));
   CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob12,
                                         kTopEarlgreyPinmuxOutselI2c2Sda));
+
+  // I2C3:
+  //    SCL on IOC10
+  //    SDA on IOC11
+  CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
+                                       kTopEarlgreyPinmuxPeripheralInI2c3Scl,
+                                       kTopEarlgreyPinmuxInselIoc10));
+  CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
+                                       kTopEarlgreyPinmuxPeripheralInI2c3Sda,
+                                       kTopEarlgreyPinmuxInselIoc11));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoc10,
+                                        kTopEarlgreyPinmuxOutselI2c3Scl));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoc11,
+                                        kTopEarlgreyPinmuxOutselI2c3Sda));
 
   // PATTGEN:
   //    Channel 0 PDA on IOR0
@@ -1255,6 +1275,7 @@ static void max_power(void) {
   mmio_region_write32(i2c_0.base_addr, I2C_CTRL_REG_OFFSET, i2c_ctrl_reg);
   mmio_region_write32(i2c_1.base_addr, I2C_CTRL_REG_OFFSET, i2c_ctrl_reg);
   mmio_region_write32(i2c_2.base_addr, I2C_CTRL_REG_OFFSET, i2c_ctrl_reg);
+  mmio_region_write32(i2c_3.base_addr, I2C_CTRL_REG_OFFSET, i2c_ctrl_reg);
 
   // Issue OTBN start command.
   CHECK_STATUS_OK(otbn_testutils_rsa_modexp_f4_start(
@@ -1444,6 +1465,7 @@ bool test_main(void) {
   configure_i2c(&i2c_0, kI2c0DeviceAddress0, kI2c0DeviceAddress1);
   configure_i2c(&i2c_1, kI2c1DeviceAddress0, kI2c1DeviceAddress1);
   configure_i2c(&i2c_2, kI2c2DeviceAddress0, kI2c2DeviceAddress1);
+  configure_i2c(&i2c_3, kI2c3DeviceAddress0, kI2c3DeviceAddress1);
   configure_spi_host(&spi_host_0, /*enable=*/true);
   // We don't enable SPI host 1 just yet, as we want to pre-load its FIFO with
   // data before enabling it at the last moment, to initiate max power draw.

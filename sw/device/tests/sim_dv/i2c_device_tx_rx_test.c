@@ -107,7 +107,15 @@ const i2c_conf_t i2c_configuration[] = {
                    kTopEarlgreyPlicIrqIdI2c2TxOverflow,
                    kTopEarlgreyPlicIrqIdI2c2AcqFull,
                    kTopEarlgreyPlicIrqIdI2c2UnexpStop,
-                   kTopEarlgreyPlicIrqIdI2c2HostTimeout}}};
+                   kTopEarlgreyPlicIrqIdI2c2HostTimeout}},
+    {.base_addr = TOP_EARLGREY_I2C3_BASE_ADDR,
+     .i2c_irq_fmt_threshold_id = kTopEarlgreyPlicIrqIdI2c3FmtThreshold,
+     .plic_irqs = {kTopEarlgreyPlicIrqIdI2c3CmdComplete,
+                   kTopEarlgreyPlicIrqIdI2c3TxStretch,
+                   kTopEarlgreyPlicIrqIdI2c3TxOverflow,
+                   kTopEarlgreyPlicIrqIdI2c3AcqFull,
+                   kTopEarlgreyPlicIrqIdI2c3UnexpStop,
+                   kTopEarlgreyPlicIrqIdI2c3HostTimeout}}};
 
 /**
  * Provides external irq handling for this test.

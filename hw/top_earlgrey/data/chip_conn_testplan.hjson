@@ -439,6 +439,7 @@
             - i2c0 clk_i
             - i2c1 clk_i
             - i2c2 clk_i
+            - i2c3 clk_i
             - pattgen clk_i
             - uart0 clk_i
             - uart1 clk_i
@@ -452,6 +453,7 @@
               "clkmgr_peri_clk_i2c0_clk",
               "clkmgr_peri_clk_i2c1_clk",
               "clkmgr_peri_clk_i2c2_clk",
+              "clkmgr_peri_clk_i2c3_clk",
               "clkmgr_peri_clk_pattgen_clk",
               "clkmgr_peri_clk_uart0_clk",
               "clkmgr_peri_clk_uart1_clk",
@@ -906,6 +908,13 @@
       tags: ["conn"]
     }
     {
+      name: rst_i2c3_n_d0
+      desc: '''Verify rstmgr's rst_i2c3_n[1] is connected to i2c3's rst_ni.'''
+      stage: V2
+      tests: ["rstmgr_i2c3_d0_i2c3_rst_ni"]
+      tags: ["conn"]
+    }
+    {
       name: rst_lc_aon_aon
       desc: '''Verify rstmgr's rst_lc_aon_n[0] is connected to the following:
             - aon_timer's rst_aon_ni
@@ -1266,6 +1275,13 @@
       desc: '''Verify rstmgr's rst_en_o.i2c2[1] connects to alert_handler's lpg_rst_en[4].'''
       stage: V2
       tests: ["rstmgr_i2c2_d0_alert_4_rst_en"]
+      tags: ["conn"]
+    }
+    {
+      name: rst_en_i2c3_d0
+      desc: '''Verify rstmgr's rst_en_o.i2c3[1] connects to alert_handler's lpg_rst_en[4].'''
+      stage: V2
+      tests: ["rstmgr_i2c3_d0_alert_4_rst_en"]
       tags: ["conn"]
     }
     {

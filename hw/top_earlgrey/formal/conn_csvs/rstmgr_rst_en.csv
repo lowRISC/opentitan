@@ -14,6 +14,7 @@ CONNECTION, RSTMGR_SPI_DEVICE_D0_ALERT_1_RST_EN, top_earlgrey.u_rstmgr_aon, rst_
 CONNECTION, RSTMGR_I2C0_D0_ALERT_2_RST_EN, top_earlgrey.u_rstmgr_aon, rst_en_o.i2c0[1], top_earlgrey.u_alert_handler, lpg_rst_en_i[2]
 CONNECTION, RSTMGR_I2C1_D0_ALERT_3_RST_EN, top_earlgrey.u_rstmgr_aon, rst_en_o.i2c1[1], top_earlgrey.u_alert_handler, lpg_rst_en_i[3]
 CONNECTION, RSTMGR_I2C2_D0_ALERT_4_RST_EN, top_earlgrey.u_rstmgr_aon, rst_en_o.i2c2[1], top_earlgrey.u_alert_handler, lpg_rst_en_i[4]
+CONNECTION, RSTMGR_I2C3_D0_ALERT_4_RST_EN, top_earlgrey.u_rstmgr_aon, rst_en_o.i2c3[1], top_earlgrey.u_alert_handler, lpg_rst_en_i[4]
 CONNECTION, RSTMGR_LC_IO_DIV4_D0_ALERT_5_RST_EN, top_earlgrey.u_rstmgr_aon, rst_en_o.lc_io_div4[1], top_earlgrey.u_alert_handler, lpg_rst_en_i[5]
 CONNECTION, RSTMGR_LC_IO_DIV4_D0_ALERT_6_RST_EN, top_earlgrey.u_rstmgr_aon, rst_en_o.lc_io_div4[1], top_earlgrey.u_alert_handler, lpg_rst_en_i[6]
 CONNECTION, RSTMGR_SPI_HOST0_D0_ALERT_7_RST_EN, top_earlgrey.u_rstmgr_aon, rst_en_o.spi_host0[1], top_earlgrey.u_alert_handler, lpg_rst_en_i[7]

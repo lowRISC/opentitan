@@ -147,9 +147,9 @@ static status_t write_read_page_with_irq(dif_i2c_t *i2c) {
 static status_t i2c_configure(dif_i2c_t *i2c, dif_pinmux_t *pinmux,
                               uint8_t i2c_instance,
                               i2c_pinmux_platform_id_t platform) {
-  const uintptr_t kI2cBaseAddrTable[] = {TOP_EARLGREY_I2C0_BASE_ADDR,
-                                         TOP_EARLGREY_I2C1_BASE_ADDR,
-                                         TOP_EARLGREY_I2C2_BASE_ADDR};
+  const uintptr_t kI2cBaseAddrTable[] = {
+      TOP_EARLGREY_I2C0_BASE_ADDR, TOP_EARLGREY_I2C1_BASE_ADDR,
+      TOP_EARLGREY_I2C2_BASE_ADDR, TOP_EARLGREY_I2C3_BASE_ADDR};
   TRY_CHECK(i2c_instance < ARRAYSIZE(kI2cBaseAddrTable));
 
   mmio_region_t base_addr =

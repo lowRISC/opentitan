@@ -41,6 +41,7 @@
       i2c0
       i2c1
       i2c2
+      i2c3
       pattgen
       gpio
       spi_device
@@ -196,6 +197,24 @@
       [
         {
           base_addr: 0x400a0000
+          size_byte: 0x80
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: i2c3
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: false
+      inst_type: i2c
+      addr_range:
+      [
+        {
+          base_addr: 0x400b0000
           size_byte: 0x80
         }
       ]
