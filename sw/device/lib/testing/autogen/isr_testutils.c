@@ -905,6 +905,7 @@ void isr_testutils_sysrst_ctrl_isr(
 }
 
 void isr_testutils_uart_isr(plic_isr_ctx_t plic_ctx, uart_isr_ctx_t uart_ctx,
+                            bool mute_status_irq,
                             top_earlgrey_plic_peripheral_t *peripheral_serviced,
                             dif_uart_irq_t *irq_serviced) {
   // Claim the IRQ at the PLIC.
@@ -935,6 +936,9 @@ void isr_testutils_uart_isr(plic_isr_ctx_t plic_ctx, uart_isr_ctx_t uart_ctx,
   CHECK_DIF_OK(dif_uart_irq_get_type(uart_ctx.uart, irq, &type));
   if (type == kDifIrqTypeEvent) {
     CHECK_DIF_OK(dif_uart_irq_acknowledge(uart_ctx.uart, irq));
+  } else if (mute_status_irq) {
+    CHECK_DIF_OK(
+        dif_uart_irq_set_enabled(uart_ctx.uart, irq, kDifToggleDisabled));
   }
 
   // Complete the IRQ at the PLIC.

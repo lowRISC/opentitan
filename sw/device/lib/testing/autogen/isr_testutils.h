@@ -861,11 +861,13 @@ void isr_testutils_sysrst_ctrl_isr(
  *
  * @param plic_ctx A PLIC ISR context handle.
  * @param uart_ctx A(n) uart ISR context handle.
+ * @param mute_status_irq set to true to disable the serviced status type IRQ.
  * @param[out] peripheral_serviced Out param for the peripheral that was
  * serviced.
  * @param[out] irq_serviced Out param for the IRQ that was serviced.
  */
 void isr_testutils_uart_isr(plic_isr_ctx_t plic_ctx, uart_isr_ctx_t uart_ctx,
+                            bool mute_status_irq,
                             top_earlgrey_plic_peripheral_t *peripheral_serviced,
                             dif_uart_irq_t *irq_serviced);
 
