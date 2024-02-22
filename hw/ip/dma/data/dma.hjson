@@ -38,6 +38,13 @@
       local: "false",
       expose: "true",
     },
+    { name: "EnableRspDataIntgCheck",
+      desc: "Enable integrity checks on the response TL-UL D channel",
+      type: "bit",
+      default: "1'b1",
+      local: "false",
+      expose: "true",
+    },
     { name: "TlUserRsvd",
       desc: "Value of `rsvd` field in A channel of all TL-UL host ports",
       type: "logic [tlul_pkg::RsvdWidth-1:0]"

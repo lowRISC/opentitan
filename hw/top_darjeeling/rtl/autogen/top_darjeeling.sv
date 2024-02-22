@@ -86,6 +86,7 @@ module top_darjeeling #(
   parameter bit SecRomCtrl1DisableScrambling = 1'b0,
   // parameters for dma
   parameter bit DmaEnableDataIntgGen = 1'b1,
+  parameter bit DmaEnableRspDataIntgCheck = 1'b1,
   parameter logic [tlul_pkg::RsvdWidth-1:0] DmaTlUserRsvd = '0,
   parameter logic [dma_pkg::SYS_RACL_WIDTH-1:0] DmaSysRacl = '0,
   parameter int unsigned DmaOtAgentId = 0,
@@ -2093,6 +2094,7 @@ module top_darjeeling #(
   dma #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[74:74]),
     .EnableDataIntgGen(DmaEnableDataIntgGen),
+    .EnableRspDataIntgCheck(DmaEnableRspDataIntgCheck),
     .TlUserRsvd(DmaTlUserRsvd),
     .SysRacl(DmaSysRacl),
     .OtAgentId(DmaOtAgentId)
