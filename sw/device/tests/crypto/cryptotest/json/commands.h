@@ -22,6 +22,7 @@ extern "C" {
     value(_, AesSca) \
     value(_, IbexFi) \
     value(_, KmacSca) \
+    value(_, OtbnFi) \
     value(_, PrngSca) \
     value(_, Sha3Sca) \
     value(_, TriggerSca)
