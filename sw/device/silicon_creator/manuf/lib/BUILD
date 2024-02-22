@@ -268,6 +268,7 @@ opentitan_test(
         data = ["//sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der"],
         otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival_bringup:otp_img_dev_manuf_individualized",
         tags = [
+            "broken",  # https://github.com/lowRISC/opentitan/issues/19086
             "lc_dev",
             "manuf",
         ],
