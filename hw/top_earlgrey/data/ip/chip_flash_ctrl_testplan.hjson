@@ -26,6 +26,7 @@
       si_stage: SV3
       lc_states: ["DEV", "PROD", "PROD_END", "RMA"]
       tests: ["chip_sw_flash_init"]
+      bazel: ["//sw/device/tests:flash_ctrl_test"]
     }
     {
       name: chip_sw_flash_host_access
@@ -111,6 +112,7 @@
       si_stage: SV3
       lc_states: ["DEV", "PROD", "PROD_END", "RMA"]
       tests: ["chip_sw_flash_init"]
+      bazel: ["//sw/device/tests:flash_ctrl_test"]
     }
     {
       name: chip_sw_flash_idle_low_power
