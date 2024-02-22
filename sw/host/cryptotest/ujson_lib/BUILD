@@ -47,6 +47,11 @@ ujson_rust(
     srcs = ["//sw/device/tests/crypto/cryptotest/json:kmac_commands"],
 )
 
+ujson_rust(
+    name = "sphincsplus_commands_rust",
+    srcs = ["//sw/device/tests/crypto/cryptotest/json:sphincsplus_commands"],
+)
+
 rust_library(
     name = "cryptotest_commands",
     srcs = [
@@ -59,6 +64,7 @@ rust_library(
         "src/hmac_commands.rs",
         "src/kmac_commands.rs",
         "src/lib.rs",
+        "src/sphincsplus_commands.rs",
     ],
     compile_data = [
         ":commands_rust",
@@ -69,6 +75,7 @@ rust_library(
         ":hash_commands_rust",
         ":hmac_commands_rust",
         ":kmac_commands_rust",
+        ":sphincsplus_commands_rust",
     ],
     rustc_env = {
         "commands_loc": "$(execpath :commands_rust)",
@@ -79,6 +86,7 @@ rust_library(
         "hash_commands_loc": "$(execpath :hash_commands_rust)",
         "hmac_commands_loc": "$(execpath :hmac_commands_rust)",
         "kmac_commands_loc": "$(execpath :kmac_commands_rust)",
+        "sphincsplus_commands_loc": "$(execpath :sphincsplus_commands_rust)",
     },
     deps = [
         "//sw/host/opentitanlib",
