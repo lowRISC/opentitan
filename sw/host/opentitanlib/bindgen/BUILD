@@ -84,6 +84,7 @@ rust_bindgen_library(
         "--allowlist-var=LC_CTRL_.*_BIT",
         "--allowlist-var=LC_CTRL_.*_REG_OFFSET",
         "--allowlist-var=OTBN_.*_REG_OFFSET",
+        "--allowlist-var=OTBN_.*_SIZE_BYTES",
         "--allowlist-var=OTP_CTRL_.*_BIT",
         "--allowlist-var=OTP_CTRL_.*_OFFSET",
         "--allowlist-var=OTP_CTRL_.*_SIZE",

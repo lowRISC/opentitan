@@ -4306,6 +4306,39 @@ test_suite(
 
 [
     opentitan_test(
+        name = "rv_dm_mem_access_{}".format(lc_state),
+        srcs = ["example_test_from_flash.c"],
+        cw310 = new_cw310_params(
+            needs_jtag = True,
+            otp = _SIVAL_OTP_IMAGE[lc_state],
+            tags = [
+                "lc_{}".format(lc_state),
+            ],
+            test_cmd = " --rom={rom:binary}",
+            test_harness = "//sw/host/tests/chip/rv_dm:mem_access",
+        ),
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_sival": None,
+        },
+        deps = [
+            "//sw/device/lib/runtime:log",
+            "//sw/device/lib/testing/test_framework:ottf_main",
+        ],
+    )
+    for lc_state, _ in _RV_DM_JTAG_LC_STATES
+]
+
+test_suite(
+    name = "rv_dm_mem_access",
+    tags = ["manual"],
+    tests = [
+        ":rv_dm_mem_access_{}".format(lc_state)
+        for lc_state, _ in _RV_DM_JTAG_LC_STATES
+    ],
+)
+
+[
+    opentitan_test(
         name = "rv_dm_jtag_{}".format(lc_state),
         srcs = ["example_test_from_flash.c"],
         cw310 = new_cw310_params(
