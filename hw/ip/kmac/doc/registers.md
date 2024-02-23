@@ -74,15 +74,30 @@ Interrupt State Register
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "kmac_done", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "fifo_empty", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "kmac_err", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 29}], "config": {"lanes": 1, "fontsize": 10, "vspace": 120}}
+{"reg": [{"name": "kmac_done", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "fifo_empty", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "kmac_err", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 29}], "config": {"lanes": 1, "fontsize": 10, "vspace": 120}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name       | Description                                                   |
-|:------:|:------:|:-------:|:-----------|:--------------------------------------------------------------|
-|  31:3  |        |         |            | Reserved                                                      |
-|   2    |  rw1c  |   0x0   | kmac_err   | KMAC/SHA3 error occurred. ERR_CODE register shows the details |
-|   1    |  rw1c  |   0x0   | fifo_empty | Message FIFO empty condition                                  |
-|   0    |  rw1c  |   0x0   | kmac_done  | KMAC/SHA3 absorbing has been completed                        |
+|  Bits  |  Type  |  Reset  | Name                                  |
+|:------:|:------:|:-------:|:--------------------------------------|
+|  31:3  |        |         | Reserved                              |
+|   2    |  rw1c  |   0x0   | [kmac_err](#intr_state--kmac_err)     |
+|   1    |   ro   |   0x0   | [fifo_empty](#intr_state--fifo_empty) |
+|   0    |  rw1c  |   0x0   | [kmac_done](#intr_state--kmac_done)   |
+
+### INTR_STATE . kmac_err
+KMAC/SHA3 error occurred. ERR_CODE register shows the details
+
+### INTR_STATE . fifo_empty
+The message FIFO is empty.
+This interrupt is raised only if the message FIFO is actually writable by software, i.e., if all of the following conditions are met:
+i) The KMAC block is not exercised by a hardware application interface.
+ii) The SHA3 block is in the Absorb state.
+iii) Software has not yet written the Process command to finish the absorption process.
+For the interrupt to be raised, the message FIFO must also have been full previously.
+Otherwise, the hardware empties the FIFO faster than software can fill it and there is no point in interrupting the software to inform it about the message FIFO being empty.
+
+### INTR_STATE . kmac_done
+KMAC/SHA3 absorbing has been completed
 
 ## INTR_ENABLE
 Interrupt Enable Register
