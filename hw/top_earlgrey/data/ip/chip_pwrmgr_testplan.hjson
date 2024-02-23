@@ -9,13 +9,14 @@
       name: chip_sw_pwrmgr_external_full_reset
       desc: '''Verify the cold boot sequence by wiggling of chip's `POR_N`.
 
-            This ensures that both FSMs are properly reset on the POR signal. The check  is that
+            This ensures that both FSMs are properly reset on the POR signal. The check is that
             the processor ends up running. Also verify, the rstmgr recorded POR in `reset_info` CSR
             by checking retention SRAM for reset_reason.
-            SiVal: This will be exercised without any special test, just by using the external POR.
+            SiVal: This will be exercised without any special test, since all tests trigger POR
+            when they start.
             '''
       stage: V2
-      si_stage: SV1
+      si_stage: None
       lc_states: [
         "RAW",
         "TEST_LOCKED",
