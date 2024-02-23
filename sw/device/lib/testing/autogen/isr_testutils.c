@@ -490,6 +490,7 @@ void isr_testutils_keymgr_isr(
 }
 
 void isr_testutils_kmac_isr(plic_isr_ctx_t plic_ctx, kmac_isr_ctx_t kmac_ctx,
+                            bool mute_status_irq,
                             top_earlgrey_plic_peripheral_t *peripheral_serviced,
                             dif_kmac_irq_t *irq_serviced) {
   // Claim the IRQ at the PLIC.
@@ -520,6 +521,9 @@ void isr_testutils_kmac_isr(plic_isr_ctx_t plic_ctx, kmac_isr_ctx_t kmac_ctx,
   CHECK_DIF_OK(dif_kmac_irq_get_type(kmac_ctx.kmac, irq, &type));
   if (type == kDifIrqTypeEvent) {
     CHECK_DIF_OK(dif_kmac_irq_acknowledge(kmac_ctx.kmac, irq));
+  } else if (mute_status_irq) {
+    CHECK_DIF_OK(
+        dif_kmac_irq_set_enabled(kmac_ctx.kmac, irq, kDifToggleDisabled));
   }
 
   // Complete the IRQ at the PLIC.

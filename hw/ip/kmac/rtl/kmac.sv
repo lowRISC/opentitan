@@ -580,8 +580,6 @@ module kmac
   // Interrupt //
   ///////////////
 
-  logic event_msgfifo_empty, msgfifo_empty_q;
-
   // Hash process absorbed interrupt
   // Convert mubi4_t to logic to generate interrupts
   assign event_absorbed = prim_mubi_pkg::mubi4_test_true_strict(app_absorbed);
@@ -603,17 +601,67 @@ module kmac
     $rose(prim_mubi_pkg::mubi4_test_true_strict(sha3_absorbed)) |=>
       prim_mubi_pkg::mubi4_test_false_strict(sha3_absorbed))
 
+  // Message FIFO empty interrupt
+  //
+  // The message FIFO empty interrupt is **not useful** for software if:
+  // - One of the hardware application interfaces is actively using the KMAC block. In this case
+  //   the message FIFO is managed entirely by the application interface.
+  // - The SHA3 core is not in the Absorb state. Only in this state, the FIFO is writeable by
+  //   software anyway.
+  // - Software has already written the Process command. The KMAC block will now empty the
+  //   message FIFO and load its content into the SHA3 core, add the padding and then perfom
+  //   the final absorption. Software cannot append the message further.
+  //
+  // The message FIFO empty interrupt can be **useful** for software in particular if:
+  // - The message FIFO was completely full previously. However, unless the KMAC block is currently
+  //   processing a block or waiting for fresh entropy from EDN, it always empties the message FIFO
+  //   faster than software can fill it up, meaning the message FIFO is empty most of the time.
+  //   Note, the empty status is signaled only once after the FIFO was completely full. The FIFO
+  //   needs to be full again for the empty status to be signaled again next time it's empty.
+  //
+  // For further details see also:
+  // https://opentitan.org/book/hw/ip/kmac/doc/theory_of_operation.html#fifo-depth-and-empty-status
+  logic status_msgfifo_empty, msgfifo_empty_gate;
+  logic msgfifo_empty_negedge, msgfifo_empty_q;
+  logic msgfifo_full_seen_d, msgfifo_full_seen_q;
+  assign msgfifo_empty_negedge = msgfifo_empty_q & ~msgfifo_empty;
+
+  // Track whether the message FIFO was full after being empty. We clear the tracking:
+  // - When receiving the Process command. This is to start over for the next message.
+  // - When seeing a negative edge on the empty signal. This signals that software has reacted to
+  //   the interrupt and is filling up the FIFO again.
+  assign msgfifo_full_seen_d =
+      msgfifo_full          ? 1'b 1 :
+      msgfifo_empty_negedge ? 1'b 0 :
+      msgfifo2kmac_process  ? 1'b 0 : msgfifo_full_seen_q;
+
+  // The interrupt is gated unless software is performing an absorption operation (but not the
+  // final block) and the FIFO was full before. The msgfifo2kmac_process pulse is arriving from the
+  // FIFO together with the empty signal.
+  assign msgfifo_empty_gate =
+      app_active                     ? 1'b 1 :
+      sha3_fsm != sha3_pkg::StAbsorb ? 1'b 1 :
+      msgfifo2kmac_process           ? 1'b 1 : ~msgfifo_full_seen_q;
+
+  assign status_msgfifo_empty = msgfifo_empty_gate ? 1'b 0 : msgfifo_empty;
+
   always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) msgfifo_empty_q <= 1'b1;
-    else         msgfifo_empty_q <= msgfifo_empty;
+    if (!rst_ni) begin
+      msgfifo_empty_q     <= 1'b 0;
+      msgfifo_full_seen_q <= 1'b 0;
+    end else begin
+      msgfifo_empty_q     <= msgfifo_empty;
+      msgfifo_full_seen_q <= msgfifo_full_seen_d;
+    end
   end
 
-  assign event_msgfifo_empty = ~msgfifo_empty_q & msgfifo_empty;
-
-  prim_intr_hw #(.Width(1)) intr_fifo_empty (
+  prim_intr_hw #(
+    .Width(1),
+    .IntrT("Status")
+  ) intr_fifo_empty (
     .clk_i,
     .rst_ni,
-    .event_intr_i           (event_msgfifo_empty),
+    .event_intr_i           (status_msgfifo_empty),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.fifo_empty.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.fifo_empty.q),
     .reg2hw_intr_test_qe_i  (reg2hw.intr_test.fifo_empty.qe),

@@ -663,7 +663,6 @@ class kmac_scoreboard extends cip_base_scoreboard #(
         if (data_phase_write) begin
           // clear internal state on a write
           if (item.a_data[KmacDone])      intr_kmac_done = 0;
-          if (item.a_data[KmacFifoEmpty]) intr_fifo_empty = 0;
           if (item.a_data[KmacErr])       intr_kmac_err = 0;
         end else if (data_phase_read) begin
           // ICEBOX: check below

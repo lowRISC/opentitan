@@ -89,7 +89,15 @@ typedef enum dif_kmac_irq {
    */
   kDifKmacIrqKmacDone = 0,
   /**
-   * Message FIFO empty condition
+   * The message FIFO is empty. This interrupt is raised only if the message
+   * FIFO is actually writable by software, i.e., if all of the following
+   * conditions are met: i) The KMAC block is not exercised by a hardware
+   * application interface. ii) The SHA3 block is in the Absorb state. iii)
+   * Software has not yet written the Process command to finish the absorption
+   * process. For the interrupt to be raised, the message FIFO must also have
+   * been full previously. Otherwise, the hardware empties the FIFO faster than
+   * software can fill it and there is no point in interrupting the software to
+   * inform it about the message FIFO being empty.
    */
   kDifKmacIrqFifoEmpty = 1,
   /**

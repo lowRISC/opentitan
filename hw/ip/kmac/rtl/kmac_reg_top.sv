@@ -181,7 +181,6 @@ module kmac_reg_top (
   logic intr_state_kmac_done_qs;
   logic intr_state_kmac_done_wd;
   logic intr_state_fifo_empty_qs;
-  logic intr_state_fifo_empty_wd;
   logic intr_state_kmac_err_qs;
   logic intr_state_kmac_err_wd;
   logic intr_enable_we;
@@ -410,7 +409,7 @@ module kmac_reg_top (
   //   F[fifo_empty]: 1:1
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_intr_state_fifo_empty (
@@ -418,8 +417,8 @@ module kmac_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_we),
-    .wd     (intr_state_fifo_empty_wd),
+    .we     (1'b0),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.intr_state.fifo_empty.de),
@@ -2744,8 +2743,6 @@ module kmac_reg_top (
   assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
 
   assign intr_state_kmac_done_wd = reg_wdata[0];
-
-  assign intr_state_fifo_empty_wd = reg_wdata[1];
 
   assign intr_state_kmac_err_wd = reg_wdata[2];
   assign intr_enable_we = addr_hit[1] & reg_we & !reg_error;
