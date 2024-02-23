@@ -65,18 +65,35 @@
     {
       name: chip_rv_dm_perform_debug
       desc: '''
-            - X-ref'ed with rom_e2e_jtag_inject from rom testplan.
-            - X-ref'ed with chip_sw_flash_lc_iso_part_sw_wr_en.
-            - X-ref'ed with manuf_cp_device_info_flash_wr from manufacturing testplan.
-            - Using the sram injection mechanism from rom_e2e_jtag_inject, load a SRAM program that
-              writes to isolated flash partition while the device is in TEST_UNLOCKED state.
-            - After writing, verify that the test program cannot read back the written value.
+            - X-ref'ed with rom_e2e_jtag_debug from rom testplan.
 
+            Verify that ROM can be debugged in appropriate life cycle states.
+
+            `CREATOR_SW_CFG_ROM_EXEC_EN` should be set to `0`.
+
+            - Verify that ROM can be debugged in TEST, DEV, and RMA life cycle states.
+              - Test debugging with commands to GDB connected via OpenOCD and JTAG (or the
+                SystemVerilog based JTAG debugger model in case of DV simulations).
+              - Read back GDB responses to check they match expected behaviour
+              - Connect a debugger and verify that ROM halts very early in `rom_start.S`.
+              - Trial the following activities within GDB, ensuring the correct
+                behaviour is seen:
+                - Halting execution and resetting
+                - Setting, hitting and deleting breakpoints using all available hardware breakpoints
+                - Single stepping
+                  - In particular single step over `wfi`
+                - Reading and writing all registers
+                - Reading all CSRs and writing some (write set TBD)
+                - Reading and writing memory (both SRAM and device)
+                - Setting the PC to jump to some location
+                - Executing code from GDB (using the call command)
+              - Verify that ROM fails to boot with `BFV:0142500d`.
             '''
       stage: V3
       si_stage: SV3
       tests: ["rom_e2e_jtag_debug_test_unlocked0", "rom_e2e_jtag_debug_dev",
               "rom_e2e_jtag_debug_rma"]
+      bazel: ["//sw/device/silicon_creator/rom/e2e/jtag_inject:rom_e2e_openocd_debug_test"],
       lc_states: ["DEV"]
       host_support: "true"
       features: [
