@@ -39,19 +39,6 @@ ecdsa_sign:
        dmem[k1] <= second share of k */
   jal      x1, p384_generate_k
 
-  /* Fill gpp registers with pointers to variables required for p384_sign */
-  /* scalar shares */
-  /*la        x17, k0
-  la        x19, k1
-  /* message */
-  /*la        x6, msg
-  /* signature values */
-  /*la        x14, r
-  la        x15, s
-  /* secret key shares */
-  /*la        x4, d0
-  la        x5, d1
-
   /* Generate the signature. */
   jal      x1, p384_sign
 
