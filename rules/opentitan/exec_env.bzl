@@ -32,6 +32,8 @@ _FIELDS = {
     "otp_data_perm": ("attr.otp_data_perm", False),
     "flash_scramble_tool": ("attr.flash_scramble_tool", False),
     "rom_scramble_config": ("file.rom_scramble_config", False),
+    "openocd": ("attr.openocd", False),
+    "openocd_adapter_config": ("attr.openocd_adapter_config", False),
 }
 
 ExecEnvInfo = provider(
@@ -215,6 +217,17 @@ def exec_env_common_attrs(**kwargs):
             doc = "ROM scrambling config for this environment",
             allow_single_file = True,
         ),
+        "openocd": attr.label(
+            doc = "OpenOCD binary for this environment",
+            default = "//third_party/openocd:openocd_bin",
+            executable = True,
+            cfg = "exec",
+        ),
+        "openocd_adapter_config": attr.label(
+            default = kwargs.get("openocd_adapter_config", None),
+            allow_single_file = True,
+            doc = "OpenOCD adapter configuration for this environment",
+        ),
     }
 
 def _do_update(name, file, data_files, param, action_param):
@@ -353,5 +366,23 @@ def common_test_setup(ctx, exec_env, firmware):
     update_file_provider("firmware", firmware, data_files, param, action_param)
     for attr, name in ctx.attr.binaries.items():
         update_file_attr(name, attr, exec_env.provider, data_files, param, action_param)
+
+    if ctx.attr.needs_jtag:
+        openocd = exec_env.openocd
+        jtag_data = [openocd]
+        jtag_test_cmd = '''
+            --openocd="$(rootpath {})"
+        '''.format(openocd.label)
+
+        openocd_adapter_config = get_fallback(ctx, "attr.openocd_adapter_config", exec_env)
+        if openocd_adapter_config != None:
+            jtag_data += [openocd_adapter_config]
+            jtag_test_cmd += '''
+                --openocd-adapter-config="$(rootpath {})"
+            '''.format(openocd_adapter_config.label)
+
+        data_labels += jtag_data
+        data_files += get_files(jtag_data)
+        param["jtag_test_cmd"] = jtag_test_cmd
 
     return test_harness, data_labels, data_files, param, action_param
