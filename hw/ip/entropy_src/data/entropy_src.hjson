@@ -1351,7 +1351,7 @@
     },
     { name:     "FW_OV_RD_FIFO_OVERFLOW",
       desc:     "Firmware override observe FIFO overflow status",
-      swaccess: "rw0c",
+      swaccess: "ro",
       hwaccess: "hwo",
       hwext: "false",
       fields: [
@@ -1362,7 +1362,7 @@
                 in the observe FIFO. The RNG data rate is slow enough that firmware should always
                 be able to keep up. This register meanwhile provides an additional check to confirm
                 that bytes read from the !!FW_OV_RD_DATA register represent contiguous RNG samples.
-                If an overflow event occurs, this bit must be cleared by software.
+                If an overflow event occurs, this bit is cleared by hardware as soon as the FIFO is emptied.
                 '''
         }
       ]
