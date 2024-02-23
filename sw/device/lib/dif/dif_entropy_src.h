@@ -770,16 +770,6 @@ dif_result_t dif_entropy_src_has_fifo_overflowed(
     const dif_entropy_src_t *entropy_src, bool *has_overflowed);
 
 /**
- * Clears the firmware override read FIFO overflow status.
- *
- * @param entropy_src An entropy source handle.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_entropy_src_clear_fifo_overflow(
-    const dif_entropy_src_t *entropy_src);
-
-/**
  * Read the firmware override FIFO depth.
  *
  * @param entropy_src An entropy source handle.

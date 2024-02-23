@@ -727,17 +727,6 @@ TEST_F(HasFifoOverflowedTest, Success) {
   EXPECT_FALSE(has_overflowed);
 }
 
-class ClearFifoOverflowTest : public EntropySrcTest {};
-
-TEST_F(ClearFifoOverflowTest, NullHandle) {
-  EXPECT_DIF_BADARG(dif_entropy_src_clear_fifo_overflow(nullptr));
-}
-
-TEST_F(ClearFifoOverflowTest, Success) {
-  EXPECT_WRITE32(ENTROPY_SRC_FW_OV_RD_FIFO_OVERFLOW_REG_OFFSET, 0);
-  EXPECT_DIF_OK(dif_entropy_src_clear_fifo_overflow(&entropy_src_));
-}
-
 class ReadFifoDepthTest : public EntropySrcTest {};
 
 TEST_F(ReadFifoDepthTest, EntropyBadArg) {
