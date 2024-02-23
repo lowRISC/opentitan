@@ -259,10 +259,11 @@ class rom_ctrl_corrupt_sig_fatal_chk_vseq extends rom_ctrl_base_vseq;
     wait_with_bound(wait_clks);
   endtask
 
-  function prim_mubi_pkg::mubi4_t get_invalid_mubi4();
+  // Return a randomly selected 4-bit value which is neither MuBi4True nor MuBi4False.
+  function bit [MuBi4Width-1:0] get_invalid_mubi4();
     logic [3:0] val;
-    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(val, mubi4_test_invalid(mubi4_t'(val));)
-    return mubi4_t'(val);
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(val, mubi4_test_invalid(val);)
+    return val;
   endfunction
 
 endclass : rom_ctrl_corrupt_sig_fatal_chk_vseq
