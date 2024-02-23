@@ -17,16 +17,16 @@
  * Define a pinmux configuration for a peripheral input and output .
  */
 typedef struct pinmux_testutils_peripheral_pin {
-  const top_earlgrey_pinmux_peripheral_in_t peripheral_in;
-  const top_earlgrey_pinmux_outsel_t outsel;
+  top_earlgrey_pinmux_peripheral_in_t peripheral_in;
+  top_earlgrey_pinmux_outsel_t outsel;
 } pinmux_testutils_peripheral_pin_t;
 
 /**
  * Define a pinmux configuration for a mio input and output.
  */
 typedef struct pinmux_testutils_mio_pin {
-  const top_earlgrey_pinmux_mio_out_t mio_out;
-  const top_earlgrey_pinmux_insel_t insel;
+  top_earlgrey_pinmux_mio_out_t mio_out;
+  top_earlgrey_pinmux_insel_t insel;
 } pinmux_testutils_mio_pin_t;
 
 /**
