@@ -407,6 +407,14 @@ opentitan_test = rv_rule(
             cfg = _testing_bitstream,
             doc = "Bitstream override for this test",
         ),
+        "post_test_harness": attr.label(
+            executable = True,
+            cfg = "exec",
+            doc = "Executable to run after the test (e.g. cleanup, clear bitstream, ...)",
+        ),
+        "post_test_cmd": attr.string(
+            doc = "Arguments to the post_test_harness",
+        ),
         # Note: an `args` attr exists as an override for exec_env.args.  It is
         # not listed here because all test rules have an implicit `args`
         # attribute which is a list of strings subject to location and make

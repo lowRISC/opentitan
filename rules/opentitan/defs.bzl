@@ -220,6 +220,8 @@ def opentitan_test(
             rom_ext = tparam.rom_ext,
             otp = tparam.otp,
             bitstream = tparam.bitstream,
+            post_test_cmd = getattr(tparam, "post_test_cmd", ""),
+            post_test_harness = getattr(tparam, "post_test_harness", None),
             test_cmd = tparam.test_cmd,
             param = tparam.param,
             data = tparam.data,
