@@ -28,7 +28,7 @@ package prim_mubi_pkg;
   `ASSERT_STATIC_IN_PACKAGE(CheckMuBi4ValsComplementary_A, MuBi4True == ~MuBi4False)
 
   // Test whether the multibit value is one of the valid enumerations
-  function automatic logic mubi4_test_invalid(mubi4_t val);
+  function automatic logic mubi4_test_invalid(logic [MuBi4Width-1:0] val);
     return ~(val inside {MuBi4True, MuBi4False});
   endfunction : mubi4_test_invalid
 
@@ -160,7 +160,7 @@ package prim_mubi_pkg;
   `ASSERT_STATIC_IN_PACKAGE(CheckMuBi8ValsComplementary_A, MuBi8True == ~MuBi8False)
 
   // Test whether the multibit value is one of the valid enumerations
-  function automatic logic mubi8_test_invalid(mubi8_t val);
+  function automatic logic mubi8_test_invalid(logic [MuBi8Width-1:0] val);
     return ~(val inside {MuBi8True, MuBi8False});
   endfunction : mubi8_test_invalid
 
@@ -292,7 +292,7 @@ package prim_mubi_pkg;
   `ASSERT_STATIC_IN_PACKAGE(CheckMuBi12ValsComplementary_A, MuBi12True == ~MuBi12False)
 
   // Test whether the multibit value is one of the valid enumerations
-  function automatic logic mubi12_test_invalid(mubi12_t val);
+  function automatic logic mubi12_test_invalid(logic [MuBi12Width-1:0] val);
     return ~(val inside {MuBi12True, MuBi12False});
   endfunction : mubi12_test_invalid
 
@@ -424,7 +424,7 @@ package prim_mubi_pkg;
   `ASSERT_STATIC_IN_PACKAGE(CheckMuBi16ValsComplementary_A, MuBi16True == ~MuBi16False)
 
   // Test whether the multibit value is one of the valid enumerations
-  function automatic logic mubi16_test_invalid(mubi16_t val);
+  function automatic logic mubi16_test_invalid(logic [MuBi16Width-1:0] val);
     return ~(val inside {MuBi16True, MuBi16False});
   endfunction : mubi16_test_invalid
 

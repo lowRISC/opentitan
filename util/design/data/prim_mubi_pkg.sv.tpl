@@ -35,7 +35,7 @@ from mubi import prim_mubi
   `ASSERT_STATIC_IN_PACKAGE(CheckMuBi${nbits}ValsComplementary_A, MuBi${nbits}True == ~MuBi${nbits}False)
 
   // Test whether the multibit value is one of the valid enumerations
-  function automatic logic mubi${nbits}_test_invalid(mubi${nbits}_t val);
+  function automatic logic mubi${nbits}_test_invalid(logic [MuBi${nbits}Width-1:0] val);
     return ~(val inside {MuBi${nbits}True, MuBi${nbits}False});
   endfunction : mubi${nbits}_test_invalid
 
