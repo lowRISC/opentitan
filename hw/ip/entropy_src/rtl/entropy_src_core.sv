@@ -664,7 +664,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   mubi4_t [1:0] mubi_rng_fips_fanout;
   assign mubi_rng_fips  = mubi4_t'(reg2hw.conf.rng_fips.q);
   assign rng_fips_pfa = mubi4_test_invalid(mubi_rng_fips_fanout[1]);
-  assign rng_fips_pfe = mubi4_test_true_strict(mubi_rng_fips_fanout[0]);
+  assign rng_fips_pfe = prim_mubi_pkg::mubi4_test_true_loose(mubi_rng_fips_fanout[0]);
   assign hw2reg.recov_alert_sts.rng_fips_field_alert.de = rng_fips_pfa;
   assign hw2reg.recov_alert_sts.rng_fips_field_alert.d  = rng_fips_pfa;
 
