@@ -30,6 +30,17 @@ load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 _TEST_SCRIPT = """#!/bin/bash
 set -e
 
+function cleanup {{
+  echo "cleanup: {post_test_harness} {post_test_cmd}"
+  {post_test_harness} {post_test_cmd}
+}}
+
+# Bazel will send a SIGTERM when the timeout expires and will
+# wait for a short amount of time (local_termination_grace_seconds)
+# before it kills the process. Therefore the trap will run even
+# on timeout.
+trap cleanup EXIT
+
 TEST_CMD=({test_cmd})
 echo Invoking test: {test_harness} {args} "$@" "${{TEST_CMD[@]}}"
 RUST_BACKTRACE=1 {test_harness} {args} "$@" "${{TEST_CMD[@]}}"
@@ -138,12 +149,21 @@ def _test_dispatch(ctx, exec_env, firmware):
 
     # Construct the test script
     script = ctx.actions.declare_file(ctx.attr.name + ".bash")
+    post_test_harness_path = ctx.executable.post_test_harness
+    post_test_cmd = ctx.attr.post_test_cmd.format(**param)
+    if post_test_harness_path != None:
+        data_files.append(post_test_harness_path)
+        post_test_harness_path = post_test_harness_path.short_path
+    else:
+        post_test_harness_path = ""
     ctx.actions.write(
         script,
         _TEST_SCRIPT.format(
             test_harness = test_harness.executable.short_path,
             args = args,
             test_cmd = test_cmd,
+            post_test_harness = post_test_harness_path,
+            post_test_cmd = post_test_cmd,
         ),
         is_executable = True,
     )
@@ -233,6 +253,10 @@ def cw310_params(
         fail("Cannot use rom or otp with bitstream.")
     if not bitstream:
         bitstream = "@//hw/bitstream/universal:splice"
+
+    # Clear bitstream after the test if it changes the OTP.
+    post_test_harness = "//sw/host/opentitantool" if changes_otp else None
+    post_test_cmd = "--rcfile= --logging=info --interface={interface} fpga clear-bitstream" if changes_otp else ""
     return struct(
         tags = ["cw310", "exclusive"] + (["changes_otp"] if changes_otp else []) + tags,
         timeout = timeout,
@@ -244,14 +268,13 @@ def cw310_params(
         otp = otp,
         bitstream = bitstream,
         needs_jtag = needs_jtag,
-        # FIXME: We should clear the bitstream *after* the test rather than before the test.
         test_cmd = ("""
-            --clear-bitstream
-        """ if changes_otp else "") + ("""
             --bitstream={bitstream}
         """ if test_harness != None else "") + ("""
             {jtag_test_cmd}
         """ if needs_jtag else "") + test_cmd,
         data = data,
         param = kwargs,
+        post_test_cmd = post_test_cmd,
+        post_test_harness = post_test_harness,
     )
