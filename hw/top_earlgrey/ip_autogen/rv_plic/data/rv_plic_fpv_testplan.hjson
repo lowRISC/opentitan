@@ -14,23 +14,8 @@
       tests: ["rv_plic_assert"]
     }
     {
-      name: EdgeTriggeredIp_A
-      desc: '''If interrupt pending (`ip`) is triggered, and the level indicator is set to
-            edge triggered (`le=1`), then in the prvious clock cycle, the interrupt source
-            (`intr_src_i) should be at the rising edge.'''
-      stage: V2
-      tests: ["rv_plic_assert"]
-    }
-    {
       name: LevelTriggeredIpWithClaim_A
       desc: '''If `intr_src_i` is set to 1, level indicator is set to level triggered, and claim
-            signal is not set, then at the next clock cycle `ip` will be triggered.'''
-      stage: V2
-      tests: ["rv_plic_assert"]
-    }
-    {
-      name: EdgeTriggeredIpWithClaim_A
-      desc: '''If `intr_src_i` is at the rising edge, level indicator is set to edge triggered, and claim
             signal is not set, then at the next clock cycle `ip` will be triggered.'''
       stage: V2
       tests: ["rv_plic_assert"]
