@@ -82,7 +82,7 @@ jobs:
         --build_tests_only \
         --test_tag_filters=-broken \
         --test_output=errors \
-        $(bash ./bazelisk.sh query 'attr("tags", "hyper310", tests(//...))')
+        $(bash ./bazelisk.sh query 'attr("tags", "cw310_sival", tests(//...))')
     displayName: "Run all the hyperdebug tests"
 
 - job: slow_otbn_crypto_tests

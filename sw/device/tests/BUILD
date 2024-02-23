@@ -1430,7 +1430,6 @@ opentitan_test(
     srcs = ["example_mem_ujcmd.c"],
     cw310 = new_cw310_params(
         test_cmd = " ".join([
-            "--bitstream=\"{bitstream}\"",
             "--bootstrap=\"{firmware}\"",
             "\"{firmware:elf}\"",
         ]),
@@ -1838,7 +1837,6 @@ opentitan_test(
     srcs = ["gpio_pinmux_test.c"],
     cw310 = new_cw310_params(
         test_cmd = """
-            --bitstream={bitstream}
             --bootstrap="{firmware}"
         """,
         test_harness = "//sw/host/tests/chip/gpio",
@@ -1869,7 +1867,6 @@ opentitan_test(
     srcs = ["gpio_intr_test.c"],
     cw310 = new_cw310_params(
         test_cmd = """
-            --bitstream={bitstream}
             --bootstrap="{firmware}"
         """,
         test_harness = "//sw/host/tests/chip/gpio_intr",
@@ -2571,7 +2568,6 @@ opentitan_test(
     test_harness = new_cw310_params(
         test_cmd = """
             --bootstrap={firmware}
-            --bitstream={bitstream}
         """,
         test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_resets",
     ),
@@ -2614,7 +2610,6 @@ opentitan_test(
     test_harness = new_cw310_params(
         test_cmd = """
             --bootstrap={firmware}
-            --bitstream={bitstream}
         """,
         test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_resets",
     ),
@@ -2641,7 +2636,6 @@ opentitan_test(
     cw310 = new_cw310_params(
         test_cmd = """
             --bootstrap={firmware}
-            --bitstream={bitstream}
         """,
         test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_resets",
     ),
@@ -2679,7 +2673,6 @@ opentitan_test(
     cw310 = new_cw310_params(
         test_cmd = """
             --bootstrap={firmware}
-            --bitstream={bitstream}
         """,
         test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_resets",
     ),
@@ -2710,7 +2703,6 @@ opentitan_test(
     cw310 = new_cw310_params(
         test_cmd = """
             --bootstrap={firmware}
-            --bitstream={bitstream}
         """,
         test_harness = "//sw/host/tests/chip/pwrmgr:sleep_por",
     ),
@@ -2751,7 +2743,6 @@ opentitan_test(
     cw310 = new_cw310_params(
         test_cmd = """
             --bootstrap={firmware}
-            --bitstream={bitstream}
         """,
         test_harness = "//sw/host/tests/chip/pwrmgr:sleep_por",
     ),
@@ -2792,7 +2783,6 @@ opentitan_test(
     cw310 = new_cw310_params(
         test_cmd = """
             --bootstrap={firmware}
-            --bitstream={bitstream}
         """,
         test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_wakeups",
     ),
@@ -2840,7 +2830,6 @@ opentitan_test(
     cw310 = new_cw310_params(
         test_cmd = """
             --bootstrap={firmware}
-            --bitstream={bitstream}
         """,
         test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_wakeups",
     ),
@@ -3145,7 +3134,6 @@ opentitan_test(
     cw310 = new_cw310_params(
         otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_prod_manuf_personalized",
         test_cmd = """
-            --bitstream="{bitstream}"
             --bootstrap="{firmware}"
             "{firmware:elf}"
         """,
@@ -3191,7 +3179,6 @@ opentitan_test(
             "manual",
         ],
         test_cmd = """
-            --bitstream="{bitstream}"
             --bootstrap="{firmware}"
             "{firmware:elf}"
         """,
@@ -3230,7 +3217,6 @@ opentitan_test(
     srcs = ["spi_device_flash_smoketest.c"],
     cw310 = new_cw310_params(
         test_cmd = """
-            --bitstream="{bitstream}"
             --bootstrap="{firmware}"
             "{firmware:elf}"
         """,
@@ -3718,7 +3704,6 @@ opentitan_test(
     cw310 = new_cw310_params(
         tags = ["manual"],
         test_cmd = """
-            --bitstream="{bitstream}"
             --bootstrap="{firmware}"
         """,
         test_harness = "//sw/host/tests/chip/usb:usbdev_aon_wake",
@@ -4103,7 +4088,6 @@ opentitan_test(
     cw310 = new_cw310_params(
         otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival_bringup:otp_img_prod_manuf_personalized",
         test_cmd = """
-            --bitstream="{bitstream}"
             --bootstrap="{firmware}"
         """,
         test_harness = "//sw/host/tests/chip/power_virus",
@@ -4184,8 +4168,6 @@ opentitan_test(
         # interface = "hyper310",
         # tags = ["manual"],
         test_cmd = """
-            --bitstream={bitstream}
-            --bootstrap="{firmware}"
         """,
         test_harness = "//sw/host/tests/chip/spi_passthru",
     ),
@@ -4650,7 +4632,6 @@ opentitan_test(
     cw310 = new_cw310_params(
         # otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_prod_manuf_personalized",
         test_cmd = """
-            --bitstream="{bitstream}"
             --bootstrap="{firmware}"
         """,
         test_harness = "//sw/host/tests/chip/i2c_target",
@@ -4731,7 +4712,6 @@ opentitan_test(
     srcs = ["example_sival.c"],
     cw310 = new_cw310_params(
         test_cmd = " ".join([
-            "--bitstream=\"{bitstream}\"",
             "--bootstrap=\"{firmware}\"",
             "\"{firmware:elf}\"",
         ]),
@@ -4749,7 +4729,6 @@ opentitan_test(
     srcs = ["sysrst_ctrl_inputs_test.c"],
     cw310 = new_cw310_params(
         test_cmd = """
-            --bitstream="{bitstream}"
             --bootstrap="{firmware}"
             "{firmware:elf}"
         """,
@@ -4787,7 +4766,6 @@ opentitan_test(
     srcs = ["sysrst_ctrl_outputs_test.c"],
     cw310 = new_cw310_params(
         test_cmd = """
-            --bitstream="{bitstream}"
             --bootstrap="{firmware}"
             "{firmware:elf}"
         """,
@@ -4826,7 +4804,6 @@ opentitan_test(
     srcs = ["sysrst_ctrl_in_irq_test.c"],
     cw310 = new_cw310_params(
         test_cmd = """
-            --bitstream="{bitstream}"
             --bootstrap="{firmware}"
             "{firmware:elf}"
         """,
@@ -4866,7 +4843,6 @@ opentitan_test(
     srcs = ["sysrst_ctrl_ec_rst_l_test.c"],
     cw310 = new_cw310_params(
         test_cmd = """
-            --bitstream="{bitstream}"
             --bootstrap="{firmware}"
         """,
         test_harness = "//sw/host/tests/chip/sysrst_ctrl:sysrst_ctrl_ec_rst_l",
@@ -4905,7 +4881,6 @@ opentitan_test(
     srcs = ["sysrst_ctrl_ulp_z3_wakeup_test.c"],
     cw310 = new_cw310_params(
         test_cmd = """
-            --bitstream="{bitstream}"
             --bootstrap="{firmware}"
             "{firmware:elf}"
         """,
@@ -4948,7 +4923,6 @@ opentitan_test(
     srcs = ["sysrst_ctrl_reset_test.c"],
     cw310 = new_cw310_params(
         test_cmd = """
-            --bitstream="{bitstream}"
             --bootstrap="{firmware}"
             "{firmware:elf}"
         """,
@@ -5137,7 +5111,6 @@ opentitan_test(
     cw310 = new_cw310_params(
         otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_prod_manuf_personalized",
         test_cmd = " ".join([
-            "--bitstream=\"{bitstream}\"",
             "--bootstrap=\"{firmware}\"",
             "--firmware-elf=\"{firmware:elf}\"",
         ]),
@@ -5264,7 +5237,6 @@ opentitan_test(
     broken = new_cw310_params(tags = ["broken"]),
     cw310 = new_cw310_params(
         test_cmd = " ".join([
-            "--bitstream=\"{bitstream}\"",
             "--bootstrap=\"{firmware}\"",
             "--firmware-elf=\"{firmware:elf}\"",
         ]),
@@ -5301,7 +5273,6 @@ opentitan_test(
     srcs = ["uart_loopback_test.c"],
     cw310 = new_cw310_params(
         test_cmd = " ".join([
-            "--bitstream=\"{bitstream}\"",
             "--bootstrap=\"{firmware}\"",
             "--firmware-elf=\"{firmware:elf}\"",
         ]),

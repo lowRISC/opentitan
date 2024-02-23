@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@rules_rust//rust:defs.bzl", "rust_binary")
-load("//rules/opentitan:openocd.bzl", "OPENTITANTOOL_OPENOCD_CMSIS_DATA_DEPS")
 load(
     "//sw/device/silicon_creator/manuf:provisioning_inputs.bzl",
     "FT_PERSONALIZE_KEYS",
@@ -22,7 +21,7 @@ rust_binary(
         "//sw/device/silicon_creator/manuf/skus/earlgrey_a0/sival_bringup/binaries:ft_personalize_1_prod_signed",
         "//sw/device/silicon_creator/manuf/skus/earlgrey_a0/sival_bringup/binaries:ft_personalize_2_prod_signed",
         "//sw/device/silicon_creator/manuf/skus/earlgrey_a0/sival_bringup/binaries:ft_personalize_3_prod_signed",
-    ] + OPENTITANTOOL_OPENOCD_CMSIS_DATA_DEPS + FT_PERSONALIZE_KEYS,
+    ] + FT_PERSONALIZE_KEYS,
     deps = [
         "//sw/host/opentitanlib",
         "//sw/host/provisioning/ft_lib",

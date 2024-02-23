@@ -204,11 +204,10 @@ opentitan_test(
     srcs = ["individualize_sw_cfg_functest.c"],
     cw310 = cw310_params(
         bitstream = "//hw/bitstream:rom_with_fake_keys_otp_test_unlocked1",
+        changes_otp = True,
         tags = ["manuf"],
         test_cmd = """
-        --clear-bitstream
-        --bitstream={bitstream}
-        --bootstrap={firmware}
+            --bootstrap={firmware}
         """,
         test_harness = "//sw/host/tests/manuf/individualize_sw_cfg",
     ),
