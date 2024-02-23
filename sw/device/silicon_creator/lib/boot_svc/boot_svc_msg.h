@@ -10,6 +10,8 @@
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_header.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_min_bl0_sec_ver.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_next_boot_bl0_slot.h"
+#include "sw/device/silicon_creator/lib/boot_svc/boot_svc_ownership_activate.h"
+#include "sw/device/silicon_creator/lib/boot_svc/boot_svc_ownership_unlock.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_primary_bl0_slot.h"
 
 #ifdef __cplusplus
@@ -43,7 +45,17 @@ extern "C" {
    * Set Primary BL0 Slot request and response.
    */ \
   X(boot_svc_primary_bl0_slot_req_t, primary_bl0_slot_req) \
-  X(boot_svc_primary_bl0_slot_res_t, primary_bl0_slot_res)
+  X(boot_svc_primary_bl0_slot_res_t, primary_bl0_slot_res) \
+  /**
+   * Ownership Activate
+   */ \
+  X(boot_svc_ownership_activate_req_t, ownership_activate_req) \
+  X(boot_svc_ownership_activate_res_t, ownership_activate_res) \
+  /**
+   * Ownership Unlock
+   */ \
+  X(boot_svc_ownership_unlock_req_t, ownership_unlock_req) \
+  X(boot_svc_ownership_unlock_res_t, ownership_unlock_res)
 // clang-format on
 
 /**
