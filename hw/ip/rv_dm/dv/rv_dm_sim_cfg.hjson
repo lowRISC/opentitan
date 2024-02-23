@@ -256,6 +256,11 @@
       reseed: 2
     }
     {
+      name: rv_dm_abstractcmd_status
+      uvm_test_seq: rv_dm_abstractcmd_status_vseq
+      reseed: 2
+    }
+    {
       name: rv_dm_stress_all
       uvm_test_seq: rv_dm_stress_all_vseq
     }
