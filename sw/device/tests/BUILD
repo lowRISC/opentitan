@@ -4092,7 +4092,7 @@ _RV_DM_JTAG_LC_STATES = get_lc_items(
         name = "rv_dm_jtag_{}".format(lc_state),
         srcs = ["example_test_from_flash.c"],
         cw310 = new_cw310_params(
-            need_jtag = "hyper310",
+            need_jtag = True,
             otp = _SIVAL_OTP_IMAGE[lc_state],
             tags = [
                 "lc_{}".format(lc_state),
@@ -4124,7 +4124,7 @@ test_suite(
         name = "rv_dm_jtag_tap_sel_{}".format(lc_state),
         srcs = ["example_test_from_flash.c"],
         cw310 = new_cw310_params(
-            need_jtag = "hyper310",
+            need_jtag = True,
             otp = _SIVAL_OTP_IMAGE[lc_state],
             tags = [
                 "lc_{}".format(lc_state),
@@ -4213,7 +4213,7 @@ test_suite(
         name = "rv_dm_lc_disabled_jtag_{}".format(lc_state),
         srcs = ["example_test_from_flash.c"],
         cw310 = new_cw310_params(
-            need_jtag = "hyper310",
+            need_jtag = True,
             otp = _SIVAL_OTP_IMAGE[lc_state],
             tags = [
                 "lc_{}".format(lc_state),
@@ -4246,7 +4246,7 @@ test_suite(
         name = "rv_dm_ndm_reset_req_{}".format(lc_state),
         srcs = ["rv_dm_ndm_reset_req.c"],
         cw310 = new_cw310_params(
-            need_jtag = "hyper310",
+            need_jtag = True,
             otp = _SIVAL_OTP_IMAGE[lc_state],
             tags = [
                 "lc_{}".format(lc_state),
@@ -4300,7 +4300,7 @@ test_suite(
         name = "rv_dm_ndm_reset_req_when_cpu_halted_{}".format(lc_state),
         srcs = ["rv_dm_ndm_reset_req_when_cpu_halted.c"],
         cw310 = new_cw310_params(
-            need_jtag = "hyper310",
+            need_jtag = True,
             otp = _SIVAL_OTP_IMAGE[lc_state],
             tags = [
                 "lc_{}".format(lc_state),
@@ -4341,7 +4341,7 @@ test_suite(
         name = "rv_dm_dtm_{}".format(lc_state),
         srcs = ["example_test_from_flash.c"],
         cw310 = new_cw310_params(
-            need_jtag = "hyper310",
+            need_jtag = True,
             otp = _SIVAL_OTP_IMAGE[lc_state],
             tags = [
                 "lc_{}".format(lc_state),
@@ -4382,7 +4382,7 @@ test_suite(
         name = "rv_dm_control_status_{}".format(lc_state),
         srcs = ["example_test_from_flash.c"],
         cw310 = new_cw310_params(
-            need_jtag = "hyper310",
+            need_jtag = True,
             otp = _SIVAL_OTP_IMAGE[lc_state],
             tags = [
                 "lc_{}".format(lc_state),

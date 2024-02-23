@@ -32,6 +32,8 @@ _FIELDS = {
     "otp_data_perm": ("attr.otp_data_perm", False),
     "flash_scramble_tool": ("attr.flash_scramble_tool", False),
     "rom_scramble_config": ("file.rom_scramble_config", False),
+    "jtag_data_deps": ("attr.jtag_data_deps", []),
+    "jtag_test_cmd": ("attr.jtag_test_cmd", ""),
 }
 
 ExecEnvInfo = provider(
@@ -215,6 +217,16 @@ def exec_env_common_attrs(**kwargs):
             doc = "ROM scrambling config for this environment",
             allow_single_file = True,
         ),
+        "jtag_data_deps": attr.label_list(
+            allow_files = True,
+            default = kwargs.get("jtag_data_deps", []),
+            doc = "Extra data files to depend on when JTAG is to be used.",
+            cfg = "exec",
+        ),
+        "jtag_test_cmd": attr.string(
+            default = kwargs.get("jtag_test_cmd", ""),
+            doc = "Extra test command arguments for JTAG.",
+        ),
     }
 
 def _do_update(name, file, data_files, param, action_param):
@@ -353,5 +365,11 @@ def common_test_setup(ctx, exec_env, firmware):
     update_file_provider("firmware", firmware, data_files, param, action_param)
     for attr, name in ctx.attr.binaries.items():
         update_file_attr(name, attr, exec_env.provider, data_files, param, action_param)
+
+    if ctx.attr.need_jtag:
+        jtag_data_deps = get_fallback(ctx, "attr.jtag_data_deps", exec_env)
+        data_files += get_files(jtag_data_deps)
+        data_labels += jtag_data_deps
+        param["jtag_test_cmd"] = get_fallback(ctx, "attr.jtag_test_cmd", exec_env)
 
     return test_harness, data_labels, data_files, param, action_param

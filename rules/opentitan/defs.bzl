@@ -231,6 +231,7 @@ def opentitan_test(
             rsa_key = rsa_key,
             spx_key = spx_key,
             manifest = manifest,
+            need_jtag = getattr(tparam, "need_jtag", False),
         )
 
     # Make sure that we used all elements in kwargs

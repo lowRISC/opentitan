@@ -14,6 +14,13 @@ load(
     "sim_dv",
     "sim_verilator",
 )
+load(
+    "@lowrisc_opentitan//rules/opentitan:openocd.bzl",
+    "OPENTITANTOOL_OPENOCD_CMSIS_DATA_DEPS",
+    "OPENTITANTOOL_OPENOCD_CMSIS_TEST_CMD",
+    "OPENTITANTOOL_OPENOCD_DATA_DEPS",
+    "OPENTITANTOOL_OPENOCD_TEST_CMD",
+)
 
 package(default_visibility = ["//visibility:public"])
 
@@ -71,6 +78,8 @@ fpga_cw310(
     base = ":fpga_cw310",
     base_bitstream = "//hw/bitstream:bitstream",
     exec_env = "fpga_cw310_test_rom",
+    jtag_data_deps = OPENTITANTOOL_OPENOCD_DATA_DEPS,
+    jtag_test_cmd = OPENTITANTOOL_OPENOCD_TEST_CMD,
     otp = "//hw/ip/otp_ctrl/data:img_rma",
     otp_mmi = "//hw/bitstream:otp_mmi",
     param = {
@@ -139,6 +148,8 @@ fpga_cw310(
     base = ":fpga_cw310",
     base_bitstream = "//hw/bitstream/hyperdebug:bitstream",
     exec_env = "fpga_hyper310_rom_with_fake_keys",
+    jtag_data_deps = OPENTITANTOOL_OPENOCD_CMSIS_DATA_DEPS,
+    jtag_test_cmd = OPENTITANTOOL_OPENOCD_CMSIS_TEST_CMD,
     manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
     otp = "//hw/ip/otp_ctrl/data:img_rma",
     otp_mmi = "//hw/bitstream/hyperdebug:otp_mmi",

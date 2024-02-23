@@ -212,7 +212,7 @@ def cw310_params(
         otp = None,
         bitstream = None,
         clear_bitstream = False,
-        need_jtag = None,
+        need_jtag = False,
         test_cmd = "",
         data = [],
         **kwargs):
@@ -229,7 +229,7 @@ def cw310_params(
       otp: Use an alternate OTP configuration for this test.
       bitstream: Use an alternate bitstream for this test.
       clear_bitstream: Whether to clear the bitstream before running the test.
-      need_jtag: If this test requires JTAG access, set this to "cw310" or "hyper310".
+      need_jtag: If this test requires JTAG access, set this to True.
       test_cmd: Use an alternate test_cmd for this test.
       data: Additional files needed by this test.
       kwargs: Additional key-value pairs to override in the test `param` dict.
@@ -250,20 +250,15 @@ def cw310_params(
         rom_ext = rom_ext,
         otp = otp,
         bitstream = bitstream,
+        need_jtag = need_jtag,
         test_cmd = ("""
             --clear-bitstream
         """ if clear_bitstream else "") + ("""
             --bitstream={bitstream}
-        """ if test_harness != None else "") + ({
-            "cw310": OPENTITANTOOL_OPENOCD_TEST_CMD,
-            "hyper310": OPENTITANTOOL_OPENOCD_CMSIS_TEST_CMD,
-            None: "",
-        }[need_jtag]) + test_cmd,
-        data = ({
-            "cw310": OPENTITANTOOL_OPENOCD_DATA_DEPS,
-            "hyper310": OPENTITANTOOL_OPENOCD_CMSIS_DATA_DEPS,
-            None: [],
-        }[need_jtag]) + data,
+        """ if test_harness != None else "") + ("""
+            {jtag_test_cmd}
+        """ if need_jtag else "") + test_cmd,
+        data = data,
         param = kwargs,
     )
 
@@ -291,7 +286,7 @@ def cw310_jtag_params(**kwargs):
     """
     return cw310_params(
         clear_bitstream = True,
-        need_jtag = "cw310",
+        need_jtag = True,
         **kwargs
     )
 
@@ -319,6 +314,6 @@ def hyper310_jtag_params(**kwargs):
     """
     return cw310_params(
         clear_bitstream = True,
-        need_jtag = "hyper310",
+        need_jtag = True,
         **kwargs
     )
