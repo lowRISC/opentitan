@@ -4,14 +4,14 @@
 
 ## Dual-port SRAM Layout
 
-The figure below shows the SRAM layout in the Flash and Passthrough modes.
+The figure below shows the SRAM layout.
 The SRAM begins at `0x1000`, which in the figure is `0x000`.
 
 ![SPI Device Dual-port SRAM Layout](../doc/spid_sram_layout.svg)
 
-The TPM Read/Write FIFOs are also assigned to the SRAM.
-The TPM Read FIFO presents a FIFO interface to software, which writes the same address for each word.
-The TPM Write FIFO, however, presents only the RAM interface to software, with data always starting at the lowest address of its region.
+In addition to the various buffers for Flash and Passthrough modes, the TPM Read and Write FIFOs are also assigned to the SRAM.
+The TPM Read FIFO presents a FIFO interface to software, which writes the [`TPM_READ_FIFO` CSR](registers.md#tpm_read_fifo) for each word instead of the underlying TPM Read Buffer SRAM region directly.
+The TPM Write FIFO, however, presents only the RAM interface to software, with data for each command always starting at the lowest address of the TPM Write Buffer region.
 
 ## TPM over SPI
 
