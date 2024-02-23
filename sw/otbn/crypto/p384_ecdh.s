@@ -11,6 +11,12 @@
  *                        shared key computation p384_curve_point_valid
  *                        binary has to be executed to check if the provided
  *                        public key is valid.
+ * 3. MODE_KEYGEN_FROM_SEED: generate keypair from a sideloaded seed
+ * 4. MODE_SHARED_KEYGEN_FROM_SEED: compute shared key using sideloaded seed
+ *                                  !!! Attention !!! - before shared key
+ *                                  computation p384_curve_point_valid
+ *                                  binary has to be executed to check if
+ *                                  the provided public key is valid.
  */
 
  /**
@@ -28,6 +34,8 @@
  */
 .equ MODE_SHARED_KEY, 0x5ec
 .equ MODE_KEYPAIR_RANDOM, 0x3f1
+.equ MODE_KEYPAIR_FROM_SEED, 0x29f
+.equ MODE_SHARED_KEY_FROM_SEED, 0x74b
 
 .section .text.start
 start:
@@ -43,6 +51,12 @@ start:
 
   addi      x3, x0, MODE_SHARED_KEY
   beq       x2, x3, shared_key
+
+  addi      x3, x0, MODE_KEYPAIR_FROM_SEED
+  beq       x2, x3, keypair_from_seed
+
+  addi      x3, x0, MODE_SHARED_KEY_FROM_SEED
+  beq       x2, x3, shared_key_from_seed
 
   /* Unsupported mode; fail. */
   unimp
@@ -101,7 +115,7 @@ keypair_random:
  * @param[out]   dmem[x]: x0, first share of shared key.
  * @param[out]   dmem[y]: x1, second share of shared key.
  *
- * clobbered registers: x2, x3, x9 to x13, x18 to x21, x26 to x30, w0 to w30
+ * clobbered registers: x2, x3, x9 to x13, x17 to x21, x26 to x30, w0 to w30
  * clobbered flag groups: FG0
  */
 shared_key:
@@ -142,6 +156,85 @@ shared_key:
 
   ecall
 
+/**
+ * Generate a fresh random keypair from a sideloaded seed.
+ *
+ * Returns secret key d in 384-bit shares d0, d1.
+ *
+ * Returns public key Q = d*G in affine coordinates (x, y).
+ *
+ * This routine runs in constant time (except potentially waiting for entropy
+ * from RND).
+ *
+ * @param[in]       w31: all-zero
+ * @param[out] dmem[d0]: 1st private key share d0
+ * @param[out] dmem[d1]: 2nd private key share d1
+ * @param[out]  dmem[x]: Public key x-coordinate
+ * @param[out]  dmem[y]: Public key y-coordinate
+ *
+ * clobbered registers: x2, x3, x9 to x13, x18 to x21, x26 to x30, w0 to w30
+ * clobbered flag groups: FG0
+ */
+keypair_from_seed:
+  /* Load keymgr seeds from WSRs.
+       w20,w21 <= seed0
+       w10,w11 <= seed1 */
+  bn.wsrr   w20, KEY_S0_L
+  bn.wsrr   w21, KEY_S0_H
+  bn.wsrr   w10, KEY_S1_L
+  bn.wsrr   w11, KEY_S1_H
+
+  /* Generate secret key d in shares.
+       dmem[d0] <= d0
+       dmem[d1] <= d1 */
+  jal       x1, p384_key_from_seed
+
+  /* Generate public key d*G.
+       dmem[x] <= (d*G).x
+       dmem[y] <= (d*G).y */
+  jal       x1, p384_base_mult
+
+  ecall
+
+/**
+ * Generate a shared key from a fresh secret key with sideloaded seed
+ * and a given public key.
+ *
+ * Returns the shared key, which is the affine x-coordinate of (d*Q). The
+ * shared key is expressed in boolean shares x0, x1 such that the key is (x0 ^
+ * x1).
+ * Returns secret key d in 384-bit shares d0, d1.
+ *
+ * This routine runs in constant time.
+ *
+ * !!! Attention !!! - before shared key computation p384_curve_point_valid
+ * binary has to be executed to check if the provided public key is valid.
+ *
+ * @param[in]        w31: all-zero
+ * @param[out]   dmem[x]: x0, first share of shared key.
+ * @param[out]   dmem[y]: x1, second share of shared key.
+ *
+ * clobbered registers: x2, x3, x9 to x13, x18 to x21, x26 to x30, w0 to w30
+ * clobbered flag groups: FG0
+ */
+shared_key_from_seed:
+  /* Load keymgr seeds from WSRs.
+       w20,w21 <= seed0
+       w10,w11 <= seed1 */
+  bn.wsrr   w20, KEY_S0_L
+  bn.wsrr   w21, KEY_S0_H
+  bn.wsrr   w10, KEY_S1_L
+  bn.wsrr   w11, KEY_S1_H
+
+  /* Generate secret key d in shares.
+       dmem[d0] <= d0
+       dmem[d1] <= d1 */
+  jal       x1, p384_key_from_seed
+
+  /* Jump to shared key computation. */
+  jal       x0, shared_key
+
+
 .data
 
 /* Operational mode. */
@@ -165,8 +258,8 @@ y:
 /* Secret key (d) in two shares: d = (d0 + d1) mod n.
 
    Note: This is also labeled k0, k1 because the `p384_scalar_mult` algorithm
-   is also used for ECDSA signing and reads from those labels; in the case of
-   ECDH, the scalar in `p384_scalar_mult` is always the private key (d). */
+   requires k0 and k1 as labels for the scalar; in the case of ECDH, the
+   scalar in `p384_scalar_mult` is always the private key (d). */
 
 .globl d0
 .globl k0

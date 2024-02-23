@@ -192,6 +192,13 @@ otbn_library(
 )
 
 otbn_library(
+    name = "p384_keygen_from_seed",
+    srcs = [
+        "p384_keygen_from_seed.s",
+    ],
+)
+
+otbn_library(
     name = "p384_base_mult",
     srcs = [
         "p384_base_mult.s",
@@ -386,10 +393,12 @@ otbn_binary(
     ],
     deps = [
         ":p384_a2b",
+        ":p384_b2a",
         ":p384_base",
         ":p384_base_mult",
         ":p384_internal_mult",
         ":p384_keygen",
+        ":p384_keygen_from_seed",
         ":p384_scalar_mult",
     ],
 )
@@ -400,10 +409,12 @@ otbn_binary(
         "p384_ecdsa_keygen.s",
     ],
     deps = [
+        ":p384_b2a",
         ":p384_base",
         ":p384_base_mult",
         ":p384_internal_mult",
         ":p384_keygen",
+        ":p384_keygen_from_seed",
     ],
 )
 

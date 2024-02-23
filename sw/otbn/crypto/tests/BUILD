@@ -502,6 +502,19 @@ otbn_sim_test(
 )
 
 otbn_sim_test(
+    name = "p384_keygen_from_seed_test",
+    srcs = [
+        "p384_keygen_from_seed_test.s",
+    ],
+    exp = "p384_keygen_from_seed_test.exp",
+    deps = [
+        "//sw/otbn/crypto:p384_b2a",
+        "//sw/otbn/crypto:p384_base",
+        "//sw/otbn/crypto:p384_keygen_from_seed",
+    ],
+)
+
+otbn_sim_test(
     name = "p384_proj_add_test",
     srcs = [
         "p384_proj_add_test.s",
