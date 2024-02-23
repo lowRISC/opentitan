@@ -2431,8 +2431,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // contiguous as possible.
   logic sfifo_observe_gate_d, sfifo_observe_gate_q;
 
-  assign sfifo_observe_gate_d = (sfifo_observe_push && sfifo_observe_full) ? 1'b0 :
-                                !sfifo_observe_not_empty                   ? 1'b1 :
+  assign sfifo_observe_gate_d = (pfifo_postht_pop && sfifo_observe_full) ? 1'b0 :
+                                !sfifo_observe_not_empty                 ? 1'b1 :
                                 sfifo_observe_gate_q;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -2443,7 +2443,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     end
   end
 
-  assign hw2reg.fw_ov_rd_fifo_overflow.d  = (pfifo_postht_pop && sfifo_observe_full);
+  assign hw2reg.fw_ov_rd_fifo_overflow.d  = !sfifo_observe_gate_d;
   assign hw2reg.fw_ov_rd_fifo_overflow.de = 1'b1;
 
   assign observe_fifo_thresh_met = fw_ov_mode && (observe_fifo_thresh != '0) &&

@@ -1235,20 +1235,20 @@ Firmware override observe FIFO overflow status
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "FW_OV_RD_FIFO_OVERFLOW", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 240}}
+{"reg": [{"name": "FW_OV_RD_FIFO_OVERFLOW", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 240}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                                                      |
 |:------:|:------:|:-------:|:--------------------------------------------------------------------------|
 |  31:1  |        |         | Reserved                                                                  |
-|   0    |  rw0c  |   0x0   | [FW_OV_RD_FIFO_OVERFLOW](#fw_ov_rd_fifo_overflow--fw_ov_rd_fifo_overflow) |
+|   0    |   ro   |   0x0   | [FW_OV_RD_FIFO_OVERFLOW](#fw_ov_rd_fifo_overflow--fw_ov_rd_fifo_overflow) |
 
 ### FW_OV_RD_FIFO_OVERFLOW . FW_OV_RD_FIFO_OVERFLOW
 This bit is set by hardware whenever RNG data is lost due to an overflow condition
 in the observe FIFO. The RNG data rate is slow enough that firmware should always
 be able to keep up. This register meanwhile provides an additional check to confirm
 that bytes read from the [`FW_OV_RD_DATA`](#fw_ov_rd_data) register represent contiguous RNG samples.
-If an overflow event occurs, this bit must be cleared by software.
+If an overflow event occurs, this bit is cleared by hardware as soon as the FIFO is emptied.
 
 ## FW_OV_RD_DATA
 Firmware override observe FIFO read register

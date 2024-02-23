@@ -314,9 +314,7 @@ module entropy_src_reg_top (
   logic [3:0] fw_ov_sha3_start_wd;
   logic fw_ov_wr_fifo_full_re;
   logic fw_ov_wr_fifo_full_qs;
-  logic fw_ov_rd_fifo_overflow_we;
   logic fw_ov_rd_fifo_overflow_qs;
-  logic fw_ov_rd_fifo_overflow_wd;
   logic fw_ov_rd_data_re;
   logic [31:0] fw_ov_rd_data_qs;
   logic fw_ov_wr_data_we;
@@ -2282,7 +2280,7 @@ module entropy_src_reg_top (
   // R[fw_ov_rd_fifo_overflow]: V(False)
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_fw_ov_rd_fifo_overflow (
@@ -2290,8 +2288,8 @@ module entropy_src_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (fw_ov_rd_fifo_overflow_we),
-    .wd     (fw_ov_rd_fifo_overflow_wd),
+    .we     (1'b0),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.fw_ov_rd_fifo_overflow.de),
@@ -3624,9 +3622,6 @@ module entropy_src_reg_top (
 
   assign fw_ov_sha3_start_wd = reg_wdata[3:0];
   assign fw_ov_wr_fifo_full_re = addr_hit[46] & reg_re & !reg_error;
-  assign fw_ov_rd_fifo_overflow_we = addr_hit[47] & reg_we & !reg_error;
-
-  assign fw_ov_rd_fifo_overflow_wd = reg_wdata[0];
   assign fw_ov_rd_data_re = addr_hit[48] & reg_re & !reg_error;
   assign fw_ov_wr_data_we = addr_hit[49] & reg_we & !reg_error;
 
@@ -3725,7 +3720,7 @@ module entropy_src_reg_top (
     reg_we_check[44] = fw_ov_control_gated_we;
     reg_we_check[45] = fw_ov_sha3_start_we;
     reg_we_check[46] = 1'b0;
-    reg_we_check[47] = fw_ov_rd_fifo_overflow_we;
+    reg_we_check[47] = 1'b0;
     reg_we_check[48] = 1'b0;
     reg_we_check[49] = fw_ov_wr_data_we;
     reg_we_check[50] = observe_fifo_thresh_gated_we;
