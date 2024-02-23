@@ -91,46 +91,72 @@ static const i2c_pinmux_pins_t kI2cPinmuxPins[] = {
 };
 
 /**
- * This table store i2c pin mappings of different platforms.
- * This is used to connect i2c instances to mio pins based on the platform.
+ * Map the combination of platform and I2C ID to pins for SCL and SDA.
  */
-static const i2c_platform_pins_t kI2cPlatformPins[] = {
-    // Hyper310 bitstream.
-    [I2cPinmuxPlatformIdHyper310] =
-        {.sda =
-             {
-                 .mio_out = kTopEarlgreyPinmuxMioOutIoa7,
-                 .insel = kTopEarlgreyPinmuxInselIoa7,
-             },
-         .scl =
-             {
-                 .mio_out = kTopEarlgreyPinmuxMioOutIoa8,
-                 .insel = kTopEarlgreyPinmuxInselIoa8,
-             }},
-    // DV.
-    [I2cPinmuxPlatformIdDvsim] = {.sda =
-                                      {
-                                          .mio_out =
-                                              kTopEarlgreyPinmuxMioOutIob10,
-                                          .insel = kTopEarlgreyPinmuxInselIob10,
-                                      },
-                                  .scl =
-                                      {
-                                          .mio_out =
-                                              kTopEarlgreyPinmuxMioOutIob9,
-                                          .insel = kTopEarlgreyPinmuxInselIob9,
-                                      }},
-    // Cw310 PMOD.
-    [I2cPinmuxPlatformIdCw310Pmod] = {
-        .sda =
-            {
-                .mio_out = kTopEarlgreyPinmuxMioOutIob12,
-                .insel = kTopEarlgreyPinmuxInselIob12,
-            },
-        .scl = {
-            .mio_out = kTopEarlgreyPinmuxMioOutIob11,
-            .insel = kTopEarlgreyPinmuxInselIob11,
-        }}};
+static status_t map_platform_to_pins(i2c_pinmux_platform_id_t platform,
+                                     uint8_t i2c_id,
+                                     i2c_platform_pins_t *pins) {
+  TRY_CHECK(pins != NULL);
+  switch (platform) {
+    case I2cPinmuxPlatformIdHyper310:  // CW310 HyperDebug
+      *pins =
+          (i2c_platform_pins_t){.sda =
+                                    {
+                                        .mio_out = kTopEarlgreyPinmuxMioOutIoa7,
+                                        .insel = kTopEarlgreyPinmuxInselIoa7,
+                                    },
+                                .scl = {
+                                    .mio_out = kTopEarlgreyPinmuxMioOutIoa8,
+                                    .insel = kTopEarlgreyPinmuxInselIoa8,
+                                }};
+      break;
+    case I2cPinmuxPlatformIdDvsim:  // DV
+      // In DV, there's one agent for each I2C instance, with a fixed set of
+      // muxed pins.
+      switch (i2c_id) {
+        case 0:  // I2C0 uses the same pins as CW310 HyperDebug
+          TRY(map_platform_to_pins(I2cPinmuxPlatformIdHyper310, i2c_id, pins));
+          break;
+        case 1:
+          *pins = (i2c_platform_pins_t){
+              .sda =
+                  {
+                      .mio_out = kTopEarlgreyPinmuxMioOutIob10,
+                      .insel = kTopEarlgreyPinmuxInselIob10,
+                  },
+              .scl =
+                  {
+                      .mio_out = kTopEarlgreyPinmuxMioOutIob9,
+                      .insel = kTopEarlgreyPinmuxInselIob9,
+                  },
+          };
+          break;
+        case 2:  // I2C2 uses the same pins as CW310 PMOD
+          TRY(map_platform_to_pins(I2cPinmuxPlatformIdCw310Pmod, i2c_id, pins));
+          break;
+        default:
+          TRY_CHECK(false, "invalid i2c_id: %0d", i2c_id);
+          break;
+      }
+      break;
+    case I2cPinmuxPlatformIdCw310Pmod:  // CW310 PMOD
+      *pins = (i2c_platform_pins_t){
+          .sda =
+              {
+                  .mio_out = kTopEarlgreyPinmuxMioOutIob12,
+                  .insel = kTopEarlgreyPinmuxInselIob12,
+              },
+          .scl = {
+              .mio_out = kTopEarlgreyPinmuxMioOutIob11,
+              .insel = kTopEarlgreyPinmuxInselIob11,
+          }};
+      break;
+    default:
+      TRY_CHECK(false, "invalid platform: %0d", platform);
+      break;
+  }
+  return OK_STATUS();
+}
 
 status_t i2c_testutils_write(const dif_i2c_t *i2c, uint8_t addr,
                              size_t byte_count, const uint8_t *data,
@@ -310,16 +336,18 @@ status_t i2c_testutils_select_pinmux(const dif_pinmux_t *pinmux, uint8_t i2c_id,
   TRY_CHECK(
       platform < I2cPinmuxPlatformIdCount && i2c_id < ARRAYSIZE(kI2cPinmuxPins),
       "Index out of bounds");
+  i2c_platform_pins_t platform_pins;
+  TRY(map_platform_to_pins(platform, i2c_id, &platform_pins));
   // Configure sda pin.
   TRY(dif_pinmux_input_select(pinmux, kI2cPinmuxPins[i2c_id].sda.peripheral_in,
-                              kI2cPlatformPins[platform].sda.insel));
-  TRY(dif_pinmux_output_select(pinmux, kI2cPlatformPins[platform].sda.mio_out,
+                              platform_pins.sda.insel));
+  TRY(dif_pinmux_output_select(pinmux, platform_pins.sda.mio_out,
                                kI2cPinmuxPins[i2c_id].sda.outsel));
 
   // Configure scl pin.
   TRY(dif_pinmux_input_select(pinmux, kI2cPinmuxPins[i2c_id].scl.peripheral_in,
-                              kI2cPlatformPins[platform].scl.insel));
-  TRY(dif_pinmux_output_select(pinmux, kI2cPlatformPins[platform].scl.mio_out,
+                              platform_pins.scl.insel));
+  TRY(dif_pinmux_output_select(pinmux, platform_pins.scl.mio_out,
                                kI2cPinmuxPins[i2c_id].scl.outsel));
   return OK_STATUS();
 }
