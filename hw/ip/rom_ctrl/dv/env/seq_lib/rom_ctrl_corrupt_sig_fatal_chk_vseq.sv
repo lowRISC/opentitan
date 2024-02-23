@@ -260,9 +260,13 @@ class rom_ctrl_corrupt_sig_fatal_chk_vseq extends rom_ctrl_base_vseq;
   endtask
 
   function prim_mubi_pkg::mubi4_t get_invalid_mubi4();
+    // This is a bit of a hack and we're basically inlining the contents of mubi4_test_invalid. This
+    // is because arguments to a function in any particular constraint get fixed before the
+    // constraint is evaluated. This means that you can't use a constraint of the form "is_good(x)"
+    // to ensure x is valid.
     logic [3:0] val;
-    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(val, mubi4_test_invalid(mubi4_t'(val));)
-    return mubi4_t'(val);
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(val, ~(val inside {MuBi4True, MuBi4False});)
+    return val;
   endfunction
 
 endclass : rom_ctrl_corrupt_sig_fatal_chk_vseq
