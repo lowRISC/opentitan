@@ -56,21 +56,16 @@ static dif_edn_t edn1;
 
 /**
  * Determine whether the observe FIFO has overflowed.
- *
- * TODO(#21279) Normally, one would rely on the FW_OV_RD_FIFO_OVERFLOW
- * register but due to an RTL bug, the overflow bit is pulsed
- * instead of latched so we cannot rely on it. Instead, rely
- * on OBSERVE_FIFO_DEPTH and assume that if the FIFO is full
- * then it has overflowed.
  */
 bool entropy_src_fifo_has_overflowed(void) {
-  uint32_t fifo_depth;
-  CHECK_DIF_OK(dif_entropy_src_get_fifo_depth(&entropy_src, &fifo_depth));
-  return fifo_depth == ENTROPY_SRC_PARAM_OBSERVE_FIFO_DEPTH;
+  bool has_overflowed;
+  CHECK_DIF_OK(
+      dif_entropy_src_has_fifo_overflowed(&entropy_src, &has_overflowed));
+  return has_overflowed;
 }
 
 /**
- * Drain observe FIFO and clear overflow status if set.
+ * Drain observe FIFO.
  */
 static void drain_observe_fifo(void) {
   // This value is arbitrary, it could be 1 but since there is some
@@ -86,7 +81,6 @@ static void drain_observe_fifo(void) {
     CHECK_DIF_OK(dif_entropy_src_observe_fifo_nonblocking_read(&entropy_src,
                                                                NULL, &len));
   } while (len == kDrainCount);
-  CHECK_DIF_OK(dif_entropy_src_clear_fifo_overflow(&entropy_src));
 }
 
 /**
