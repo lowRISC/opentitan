@@ -8,10 +8,11 @@ module ascon_tl_ul_stim
   import ascon_pkg::*;
   import tlul_pkg::*;
   import ascon_reg_pkg::*;
+  import ascon_tl_ul_stim_pkg::*;
 #(
-  localparam int NumStimulus = 2,
-  localparam int NumResponses = 2
-) 
+  localparam int NumStimulus = 9*4,
+  localparam int NumResponses = 2*4
+)
 (
   input  clk_i,
   input  rst_ni,
@@ -32,12 +33,70 @@ module ascon_tl_ul_stim
 
   initial begin
     stimulus = '{
-        '0,
-        '0
+      // NONCE
+      put_full_data(32'hDEADBEEF, ASCON_NONCE_SHARE0_0_OFFSET),
+      put_full_data(32'h0, ASCON_NONCE_SHARE0_1_OFFSET),
+      put_full_data(32'h01234567, ASCON_NONCE_SHARE0_2_OFFSET),
+      put_full_data(32'h0, ASCON_NONCE_SHARE0_3_OFFSET),
+
+      put_full_data(32'h0, ASCON_NONCE_SHARE1_0_OFFSET),
+      put_full_data(32'hCAFECAFE, ASCON_NONCE_SHARE1_1_OFFSET),
+      put_full_data(32'h0, ASCON_NONCE_SHARE1_2_OFFSET),
+      put_full_data(32'h89ABCDEF, ASCON_NONCE_SHARE1_3_OFFSET),
+
+      // KEY
+      put_full_data(32'hDEADBEEF, ASCON_KEY_SHARE0_0_OFFSET),
+      put_full_data(32'h0, ASCON_KEY_SHARE0_1_OFFSET),
+      put_full_data(32'h01234567, ASCON_KEY_SHARE0_2_OFFSET),
+      put_full_data(32'h0, ASCON_KEY_SHARE0_3_OFFSET),
+
+      put_full_data(32'h0, ASCON_KEY_SHARE1_0_OFFSET),
+      put_full_data(32'hCAFECAFE, ASCON_KEY_SHARE1_1_OFFSET),
+      put_full_data(32'h0, ASCON_KEY_SHARE1_2_OFFSET),
+      put_full_data(32'h89ABCDEF, ASCON_KEY_SHARE1_3_OFFSET),
+
+      // DATA
+      put_full_data(32'hDEADBEEF, ASCON_DATA_IN_SHARE0_0_OFFSET),
+      put_full_data(32'h0, ASCON_DATA_IN_SHARE0_1_OFFSET),
+      put_full_data(32'h01234567, ASCON_DATA_IN_SHARE0_2_OFFSET),
+      put_full_data(32'h0, ASCON_DATA_IN_SHARE0_3_OFFSET),
+
+      put_full_data(32'h0, ASCON_DATA_IN_SHARE1_0_OFFSET),
+      put_full_data(32'hCAFECAFE, ASCON_DATA_IN_SHARE1_1_OFFSET),
+      put_full_data(32'h0, ASCON_DATA_IN_SHARE1_2_OFFSET),
+      put_full_data(32'h89ABCDEF, ASCON_DATA_IN_SHARE1_3_OFFSET),
+
+      // TAG
+      put_full_data(32'hDEADBEEF, ASCON_TAG_IN_0_OFFSET),
+      put_full_data(32'h0, ASCON_TAG_IN_1_OFFSET),
+      put_full_data(32'h01234567, ASCON_TAG_IN_2_OFFSET),
+      put_full_data(32'h0, ASCON_TAG_IN_3_OFFSET),
+
+      // GET MSG
+      get_full_data(ASCON_MSG_OUT_0_OFFSET),
+      get_full_data(ASCON_MSG_OUT_1_OFFSET),
+      get_full_data(ASCON_MSG_OUT_2_OFFSET),
+      get_full_data(ASCON_MSG_OUT_3_OFFSET),
+
+      // GET TAG
+      get_full_data(ASCON_TAG_OUT_0_OFFSET),
+      get_full_data(ASCON_TAG_OUT_1_OFFSET),
+      get_full_data(ASCON_TAG_OUT_2_OFFSET),
+      get_full_data(ASCON_TAG_OUT_3_OFFSET)
     };
+
     response = '{
-        '0,
-        '0
+      // MESG
+      expect_full_data(32'hDEADBEEF),
+      expect_full_data(32'hCAFECAFE),
+      expect_full_data(32'h01234567),
+      expect_full_data(32'h89ABCDEF),
+
+      // TAG
+      expect_full_data(32'hDEADBEEF),
+      expect_full_data(32'h0),
+      expect_full_data(32'h01234567),
+      expect_full_data(32'h0)
     };
   end
 

@@ -10,6 +10,7 @@ filesets:
       - lowrisc:ip:ascon
     files:
       - rtl/ascon_sim.sv
+      - rtl/ascon_tl_ul_stim_pkg.sv
       - rtl/ascon_tl_ul_stim.sv
     file_type: systemVerilogSource
 
