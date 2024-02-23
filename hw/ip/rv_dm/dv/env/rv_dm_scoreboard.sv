@@ -336,6 +336,8 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
             do_read_check = 0;
           end
           (!uvm_re_match("abstractcmd_*", csr.get_name())): begin
+            // Disable the read check. We don't model the contents of abstractcmd registers.
+            do_read_check = 0;
           end
           (!uvm_re_match("program_buffer_*", csr.get_name())): begin
           end
