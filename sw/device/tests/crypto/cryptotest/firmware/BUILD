@@ -115,11 +115,28 @@ cc_library(
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:keyblob",
         "//sw/device/lib/crypto/impl:mac",
-        "//sw/device/lib/crypto/include:datatypes",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/lib/ujson",
         "//sw/device/tests/crypto/cryptotest/json:hmac_commands",
+    ],
+)
+
+cc_library(
+    name = "sphincsplus",
+    srcs = ["sphincsplus.c"],
+    hdrs = ["sphincsplus.h"],
+    deps = [
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/crypto/impl:integrity",
+        "//sw/device/lib/crypto/impl:keyblob",
+        "//sw/device/lib/crypto/include:datatypes",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+        "//sw/device/silicon_creator/lib/sigverify/sphincsplus:verify",
+        "//sw/device/tests/crypto/cryptotest/json:sphincsplus_commands",
     ],
 )
 
@@ -347,6 +364,7 @@ FIRMWARE_DEPS = [
     ":otbn_fi",
     ":prng_sca",
     ":sha3_sca",
+    ":sphincsplus",
     ":trigger_sca",
     "//sw/device/lib/base:csr",
     "//sw/device/lib/base:status",
