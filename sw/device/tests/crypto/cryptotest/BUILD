@@ -30,7 +30,6 @@ opentitan_test(
         data = testvector_targets,
         test_cmd = """
             --bootstrap={firmware}
-            --bitstream={bitstream}
         """ + testvector_args,
         test_harness = "//sw/host/tests/crypto/aes_nist_kat:harness",
     ),
@@ -82,7 +81,6 @@ opentitan_test(
         data = HASH_TESTVECTOR_TARGETS,
         test_cmd = """
                 --bootstrap={firmware}
-                --bitstream={bitstream}
             """ + HASH_TESTVECTOR_ARGS,
         test_harness = "//sw/host/tests/crypto/hash_kat:harness",
     ),
