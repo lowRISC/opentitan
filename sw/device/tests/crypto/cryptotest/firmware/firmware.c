@@ -23,6 +23,7 @@
 #include "sw/device/tests/crypto/cryptotest/json/kmac_sca_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/prng_sca_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/sha3_sca_commands.h"
+#include "sw/device/tests/crypto/cryptotest/json/sphincsplus_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/trigger_sca_commands.h"
 
 // Include handlers
@@ -37,6 +38,7 @@
 #include "kmac_sca.h"
 #include "prng_sca.h"
 #include "sha3_sca.h"
+#include "sphincsplus.h"
 #include "trigger_sca.h"
 
 OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
@@ -63,6 +65,9 @@ status_t process_cmd(ujson_t *uj) {
         break;
       case kCryptotestCommandHmac:
         RESP_ERR(uj, handle_hmac(uj));
+        break;
+      case kCryptotestCommandSphincsPlus:
+        RESP_ERR(uj, handle_sphincsplus(uj));
         break;
       case kCryptotestCommandAesSca:
         RESP_ERR(uj, handle_aes_sca(uj));

@@ -126,6 +126,24 @@ cc_library(
 )
 
 cc_library(
+    name = "sphincsplus",
+    srcs = ["sphincsplus.c"],
+    hdrs = ["sphincsplus.h"],
+    deps = [
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/crypto/impl:integrity",
+        "//sw/device/lib/crypto/impl:keyblob",
+        "//sw/device/lib/crypto/include:datatypes",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+        "//sw/device/silicon_creator/lib/sigverify/sphincsplus:verify",
+        "//sw/device/tests/crypto/cryptotest/json:sphincsplus_commands",
+    ],
+)
+
+cc_library(
     name = "aes_sca",
     srcs = ["aes_sca.c"],
     hdrs = ["aes_sca.h"],
@@ -251,6 +269,7 @@ opentitan_binary(
         ":kmac_sca",
         ":prng_sca",
         ":sha3_sca",
+        ":sphincsplus",
         ":trigger_sca",
         "//sw/device/lib/base:status",
         "//sw/device/lib/crypto/drivers:entropy",
@@ -290,6 +309,7 @@ opentitan_test(
         ":kmac_sca",
         ":prng_sca",
         ":sha3_sca",
+        ":sphincsplus",
         ":trigger_sca",
         "//sw/device/lib/base:status",
         "//sw/device/lib/crypto/drivers:entropy",
@@ -305,5 +325,6 @@ opentitan_test(
         "//sw/device/tests/crypto/cryptotest/json:hash_commands",
         "//sw/device/tests/crypto/cryptotest/json:hmac_commands",
         "//sw/device/tests/crypto/cryptotest/json:ibex_fi_commands",
+        "//sw/device/tests/crypto/cryptotest/json:sphincsplus_commands",
     ],
 )
