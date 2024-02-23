@@ -44,7 +44,7 @@ class mem_model #(int AddrWidth = bus_params_pkg::BUS_AW,
 
   function void compare_byte(mem_addr_t addr, logic [7:0] act_data);
    `uvm_info(`gfn, $sformatf("Compare Mem : Addr[0x%0h], Act Data[0x%0h], Exp Data[0x%0h]",
-                             addr, act_data, system_memory[addr]), UVM_MEDIUM)
+                             addr, act_data, system_memory[addr]), UVM_HIGH)
     `DV_CHECK_CASE_EQ(act_data, system_memory[addr],
                       $sformatf("addr 0x%0h read out mismatch", addr))
   endfunction
