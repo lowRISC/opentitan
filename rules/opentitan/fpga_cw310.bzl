@@ -211,6 +211,8 @@ def cw310_params(
         rom_ext = None,
         otp = None,
         bitstream = None,
+        clear_bitstream = False,
+        need_jtag = None,
         test_cmd = "",
         data = [],
         **kwargs):
@@ -226,6 +228,8 @@ def cw310_params(
       rom_ext: Use an alternate ROM_EXT for this test.
       otp: Use an alternate OTP configuration for this test.
       bitstream: Use an alternate bitstream for this test.
+      clear_bitstream: Whether to clear the bitstream before running the test.
+      need_jtag: If this test requires JTAG access, set this to "cw310" or "hyper310".
       test_cmd: Use an alternate test_cmd for this test.
       data: Additional files needed by this test.
       kwargs: Additional key-value pairs to override in the test `param` dict.
@@ -246,24 +250,24 @@ def cw310_params(
         rom_ext = rom_ext,
         otp = otp,
         bitstream = bitstream,
-        test_cmd = test_cmd,
-        data = data,
+        test_cmd = ("""
+            --clear-bitstream
+        """ if clear_bitstream else "") + ("""
+            --bitstream={bitstream}
+        """ if test_harness != None else "") + ({
+            "cw310": OPENTITANTOOL_OPENOCD_TEST_CMD,
+            "hyper310": OPENTITANTOOL_OPENOCD_CMSIS_TEST_CMD,
+            None: "",
+        }[need_jtag]) + test_cmd,
+        data = ({
+            "cw310": OPENTITANTOOL_OPENOCD_DATA_DEPS,
+            "hyper310": OPENTITANTOOL_OPENOCD_CMSIS_DATA_DEPS,
+            None: [],
+        }[need_jtag]) + data,
         param = kwargs,
     )
 
-def cw310_jtag_params(
-        tags = [],
-        timeout = "short",
-        local = True,
-        test_harness = None,
-        binaries = {},
-        rom = None,
-        rom_ext = None,
-        otp = None,
-        bitstream = None,
-        test_cmd = "",
-        data = [],
-        **kwargs):
+def cw310_jtag_params(**kwargs):
     """A macro to create CW310 parameters for OpenTitan JTAG tests.
 
     This creates version of the CW310 parameter structure pre-initialized
@@ -285,41 +289,13 @@ def cw310_jtag_params(
     Returns:
       struct of test parameters.
     """
-    if bitstream and (rom or otp):
-        fail("Cannot use rom or otp with bitstream.")
-    if not bitstream:
-        bitstream = "@//hw/bitstream/universal:splice"
-    return struct(
-        tags = ["cw310", "exclusive"] + tags,
-        timeout = timeout,
-        local = local,
-        test_harness = test_harness,
-        binaries = binaries,
-        rom = rom,
-        rom_ext = rom_ext,
-        otp = otp,
-        bitstream = bitstream,
-        test_cmd = """
-            --clear-bitstream
-            --bitstream={bitstream}
-        """ + OPENTITANTOOL_OPENOCD_TEST_CMD + test_cmd,
-        data = OPENTITANTOOL_OPENOCD_DATA_DEPS + data,
-        param = kwargs,
+    return cw310_params(
+        clear_bitstream = True,
+        need_jtag = "cw310",
+        **kwargs
     )
 
-def hyper310_jtag_params(
-        tags = [],
-        timeout = "short",
-        local = True,
-        test_harness = None,
-        binaries = {},
-        rom = None,
-        rom_ext = None,
-        otp = None,
-        bitstream = None,
-        test_cmd = "",
-        data = [],
-        **kwargs):
+def hyper310_jtag_params(**kwargs):
     """A macro to create Hyper310 parameters for OpenTitan JTAG tests.
 
     This creates version of the Hyper310 parameter structure pre-initialized
@@ -341,24 +317,8 @@ def hyper310_jtag_params(
     Returns:
       struct of test parameters.
     """
-    if bitstream and (rom or otp):
-        fail("Cannot use rom or otp with bitstream.")
-    if not bitstream:
-        bitstream = "@//hw/bitstream/universal:splice"
-    return struct(
-        tags = ["hyper310", "exclusive"] + tags,
-        timeout = timeout,
-        local = local,
-        test_harness = test_harness,
-        binaries = binaries,
-        rom = rom,
-        rom_ext = rom_ext,
-        otp = otp,
-        bitstream = bitstream,
-        test_cmd = """
-            --clear-bitstream
-            --bitstream={bitstream}
-        """ + OPENTITANTOOL_OPENOCD_CMSIS_TEST_CMD + test_cmd,
-        data = OPENTITANTOOL_OPENOCD_CMSIS_DATA_DEPS + data,
-        param = kwargs,
+    return cw310_params(
+        clear_bitstream = True,
+        need_jtag = "hyper310",
+        **kwargs
     )

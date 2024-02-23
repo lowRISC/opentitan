@@ -41,7 +41,6 @@ package(default_visibility = ["//visibility:public"])
             otp = ":otp_img_e2e_bootstrap_entry_{}".format(lc_state),
             tags = maybe_skip_in_ci(lc_state_val),
             test_cmd = """
-                --bitstream="{bitstream}"
                 --bootstrap="{firmware}"
             """,
             test_harness = "//sw/host/tests/rom/e2e_bootstrap_entry",
