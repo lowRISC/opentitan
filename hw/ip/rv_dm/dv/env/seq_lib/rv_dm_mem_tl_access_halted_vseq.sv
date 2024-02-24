@@ -22,10 +22,7 @@ class rv_dm_mem_tl_access_halted_vseq extends rv_dm_base_vseq;
     cfg.rv_dm_vif.unavailable <= 0;
     repeat ($urandom_range(1, 10)) begin
       // Verify that writing to HALTED results in anyhalted and allhalted to be set.
-      csr_wr(.ptr(jtag_dmi_ral.dmcontrol.haltreq), .value(1));
-      cfg.clk_rst_vif.wait_clks($urandom_range(0, 1000));
-      csr_wr(.ptr(tl_mem_ral.halted), .value(0));
-      cfg.clk_rst_vif.wait_clks($urandom_range(0, 1000));
+      request_halt();
       csr_rd(.ptr(jtag_dmi_ral.dmstatus), .value(r_data));
       `DV_CHECK_EQ(1, get_field_val(jtag_dmi_ral.dmstatus.anyhalted, r_data))
       `DV_CHECK_EQ(1, get_field_val(jtag_dmi_ral.dmstatus.allhalted, r_data))
