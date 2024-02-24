@@ -34,8 +34,8 @@ fixed_size_bigint!(N0Inv, at_most OTBN_BITS);
 
 #[derive(Debug, Error)]
 pub enum Error {
-    #[error("Invalid public key")]
-    InvalidPublicKey(#[source] Option<anyhow::Error>),
+    #[error("Invalid public key: {0:?}")]
+    InvalidPublicKey(#[source] anyhow::Error),
     #[error("Invalid DER file: {der}")]
     InvalidDerFile {
         der: PathBuf,
@@ -69,7 +69,7 @@ pub enum Error {
 /// Ensure the components of `key` have the correct bit length.
 fn validate_key(key: &impl PublicKeyParts) -> Result<()> {
     if key.n().bits() != MODULUS_BIT_LEN || key.e() != &BigUint::from(65537u32) {
-        bail!(Error::InvalidPublicKey(None))
+        bail!(Error::InvalidPublicKey(anyhow!("bad modulus or exponent")));
     } else {
         Ok(())
     }
@@ -91,7 +91,7 @@ impl RsaPublicKey {
                 BigUint::from_bytes_le(n.to_le_bytes().as_slice()),
                 BigUint::from(65537u32),
             )
-            .map_err(|e| Error::InvalidPublicKey(Some(anyhow!(e))))?,
+            .map_err(|e| Error::InvalidPublicKey(anyhow!(e)))?,
         })
     }
 
