@@ -93,8 +93,7 @@ allow the input to be level sensitive interrupts. In theory an input can be
 configured to detect both a rising and falling edge, but there is no hardware
 assistance to indicate which edge caused the output interrupt.
 
-**Note #1:** all inputs are sent through optional noise filtering before
-being sent into interrupt detection. **Note #2:** all output interrupts to
-the processor are level interrupts as per the Comportability Specification
-guidelines. The GPIO module, if configured, converts an edge detection
-into a level interrupt to the processor core.
+**Note #1:** The interrupt can only be triggered by GPIO input.
+**Note #2:** All inputs are sent through optional noise filtering before being sent into interrupt detection.
+**Note #3:** All interrupts to the processor are level interrupts as per the Comportability Specification guidelines.
+The GPIO module, if configured, converts an edge detection into a level interrupt to the processor core.
