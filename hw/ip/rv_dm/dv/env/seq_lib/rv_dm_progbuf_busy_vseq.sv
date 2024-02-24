@@ -18,9 +18,8 @@ class rv_dm_progbuf_busy_vseq extends rv_dm_base_vseq;
     uvm_reg_data_t data;
     uvm_reg_data_t r_data;
     repeat ($urandom_range(1, 10)) begin
-    data = $urandom_range(0,31);
-      csr_wr(.ptr(jtag_dmi_ral.dmcontrol.haltreq), .value(1));
-      csr_wr(.ptr(tl_mem_ral.halted), .value(0));
+      data = $urandom_range(0,31);
+      request_halt();
       // Access Register command with postexec bit set.
       csr_wr(.ptr(jtag_dmi_ral.command), .value('h00250000));
       csr_wr(.ptr(jtag_dmi_ral.progbuf[0]), .value(data));

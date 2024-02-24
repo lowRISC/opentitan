@@ -20,9 +20,7 @@ class rv_dm_abstractcmd_status_vseq extends rv_dm_base_vseq;
                                    'h38052403, 'h00041073, 'h7b202473, 'h7b302573, 'h00100073 };
   task body();
     uvm_reg_data_t r_data;
-    csr_wr(.ptr(jtag_dmi_ral.dmcontrol.haltreq), .value(1));
-    `DV_CHECK_EQ(cfg.rv_dm_vif.cb.debug_req, 1)
-    csr_wr(.ptr(tl_mem_ral.halted), .value(0));
+    request_halt();
     // The value in 'command' is access register command to send valid abstract command.
     csr_wr(.ptr(jtag_dmi_ral.command), .value('h00AB0000));
     csr_rd(.ptr(jtag_dmi_ral.abstractcs), .value(r_data));

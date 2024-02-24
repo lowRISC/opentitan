@@ -26,8 +26,7 @@ class rv_dm_mem_tl_access_resuming_vseq extends rv_dm_base_vseq;
       // Verify that writing to RESUMING results in anyresumeack and
       // allresumeack to be set.When resumereq bit is set,
       // it will clear the anyresumeack and allresumeack.
-      csr_wr(.ptr(jtag_dmi_ral.dmcontrol.haltreq), .value(1));
-      csr_wr(.ptr(tl_mem_ral.halted), .value(0));
+      request_halt();
       csr_rd(.ptr(jtag_dmi_ral.dmstatus), .value(rdata));
       `DV_CHECK_EQ(1, get_field_val(jtag_dmi_ral.dmstatus.anyhalted, rdata))
       `DV_CHECK_EQ(1, get_field_val(jtag_dmi_ral.dmstatus.allhalted, rdata))
