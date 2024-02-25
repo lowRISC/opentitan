@@ -261,6 +261,11 @@
       reseed: 2
     }
     {
+      name: rv_dm_rom_read_access
+      uvm_test_seq: rv_dm_rom_read_access_vseq
+      reseed: 2
+    }
+    {
       name: rv_dm_stress_all
       uvm_test_seq: rv_dm_stress_all_vseq
     }
