@@ -26,3 +26,4 @@
 `include "rv_dm_stress_all_vseq.sv"
 `include "rv_dm_progbuf_busy_vseq.sv"
 `include "rv_dm_abstractcmd_status_vseq.sv"
+`include "rv_dm_rom_read_access_vseq.sv"

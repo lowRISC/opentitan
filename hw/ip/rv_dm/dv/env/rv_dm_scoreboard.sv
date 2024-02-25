@@ -295,6 +295,8 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
     bit data_phase_read   = (!write && channel == DataChannel);
     bit data_phase_write  = (write && channel == DataChannel);
 
+    // Scoreboard only takes csr address, so filter out memory address.
+    if (is_mem_addr(item, ral_name)) return;
     // if access was to a valid csr, get the csr handle
     if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
       csr = cfg.ral_models[ral_name].default_map.get_reg_by_offset(csr_addr);
