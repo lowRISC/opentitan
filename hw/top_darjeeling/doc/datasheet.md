@@ -135,8 +135,8 @@ The following table provides a more detailed summary of the supported features:
 ## Discrete Earl Grey Differences
 
 The Darjeeling configuration derived from the OpenTitan's discrete "Earl Grey" has been extended to meet the requirements for an SoC-integrated RoT.
-The main processing elements and cryptographic features are significantly similar, while several unneeded IO peripherals in an integrated context have been removed. A set of new IP blocks have been developed to enable integration into a larger SoC.
-These blocks are highlighted with a blue in the block diagram, and include:
+The main processing elements and cryptographic features are mostly the same, while several unneeded IO peripherals in an integrated context have been removed. A set of new IP blocks have been developed to enable integration into a larger SoC.
+These blocks are highlighted with a blue border in the block diagram, and include:
 
 - An [extended key manager block](https://github.com/lowRISC/opentitan/blob/integrated_dev/hw/ip/keymgr_dpe/README.md) with support for TCG’s DICE Protection Environment (DPE)
 - A [DMA controller](https://github.com/lowRISC/opentitan/blob/integrated_dev/hw/ip/dma/doc/theory_of_operation.md) facilitating data exchange between the OpenTitan IP and the SoC
@@ -145,7 +145,7 @@ These blocks are highlighted with a blue in the block diagram, and include:
 
 ## Development Status
 
-OpenTitan Darjeeling is currently developed on a side branch named [opentitan/integrated_dev](https://github.com/lowRISC/opentitan/blob/integrated_dev), which will be consolidated with [opentitan/master](https://github.com/lowRISC/opentitan/blob/master) at a later date.
+OpenTitan Darjeeling is currently developed in a branch named [opentitan/integrated_dev](https://github.com/lowRISC/opentitan/blob/integrated_dev), which will be consolidated with [opentitan/master](https://github.com/lowRISC/opentitan/blob/master) at a later date.
 
 Certain functions and blocks remain under active development.
 Contributions are welcome, but this design is provided as-is.
@@ -154,7 +154,7 @@ Contributions are welcome, but this design is provided as-is.
 - The binary translation logic and the SoC DFx control module are under development. The former will allow for granular filtering and remapping of TL-UL requests, while the latter will provide SoC level gating functionality for DFT and debug infrastructure.
 - Crossbar generation support at the SoC-integration is not yet mature, so some TL-UL connections have not been made at this point.
 
-Since Darjeeling was derived from the discrete "Earl Grey" chip, several legacy structures are temporarily present.
+Since Darjeeling was derived from the discrete "Earl Grey" chip, several legacy structures currently remain.
 
 - The pinmux and padring will eventually be removed.
 - The always-on / non-always-on power and clock domain split from "Earl Grey" will eventually be removed. This is evident in the current clock and reset tree organization.
