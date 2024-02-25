@@ -249,6 +249,7 @@ module lc_ctrl
     .wdata_intg_i ('0                                      ),
     .be_i         ( {top_pkg::TL_DBW{1'b1}}                ),
     .instr_type_i ( prim_mubi_pkg::MuBi4False              ),
+    .user_rsvd_i  ('0                                      ),
     .valid_o      ( dmi_resp_valid                         ),
     .rdata_o      ( dmi_resp.data                          ),
     .rdata_intg_o (                                        ),
