@@ -11,6 +11,7 @@ filesets:
       - lowrisc:fpv:csr_assert_gen
     files:
       - i2c_protocol_cov.sv
+      - i2c_assert.sv
       - i2c_bind.sv
     file_type: systemVerilogSource
 
