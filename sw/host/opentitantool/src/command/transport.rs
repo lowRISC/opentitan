@@ -15,7 +15,7 @@ use std::time::Duration;
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::{StagedProgressBar, TransportWrapper};
 use opentitanlib::transport::verilator::transport::Watch;
-use opentitanlib::transport::UpdateFirmware;
+use opentitanlib::transport::{self, UpdateFirmware};
 
 /// Initialize state of a transport debugger device to fit the device under test.  This
 /// typically involves setting pins as input/output, open drain, etc. according to configuration
@@ -140,6 +140,32 @@ impl CommandDispatch for TransportQueryAll {
     }
 }
 
+/// Transmit an arbitrary textual command to the debugger/transport.  Interpretation depends
+/// entirely on the transport driver.  The HyperDebug driver for instance passes the command to be
+/// interpreted by the microcontroller on the HyperDebug board.  A list of output lines will be
+/// returned.
+#[derive(Debug, Args)]
+pub struct TransportCmd {
+    #[arg(
+        name = "CMD",
+        help = "Command to be sent verbatim to transport (e.g. HyperDebug)"
+    )]
+    pub cmd: Vec<String>,
+}
+
+impl CommandDispatch for TransportCmd {
+    fn run(
+        &self,
+        _context: &dyn Any,
+        transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn Annotate>>> {
+        let operation = transport::TransportCommand {
+            command: self.cmd.clone(),
+        };
+        transport.dispatch(&operation)
+    }
+}
+
 /// Commands for interacting with the transport debugger device itself.
 #[derive(Debug, Subcommand, CommandDispatch)]
 pub enum TransportCommand {
@@ -148,4 +174,5 @@ pub enum TransportCommand {
     UpdateFirmware(TransportUpdateFirmware),
     Query(TransportQuery),
     QueryAll(TransportQueryAll),
+    Cmd(TransportCmd),
 }
