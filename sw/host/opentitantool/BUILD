@@ -23,6 +23,7 @@ rust_binary(
         "src/command/mod.rs",
         "src/command/otp.rs",
         "src/command/reset_sam3x.rs",
+        "src/command/rom_patch.rs",
         "src/command/rsa.rs",
         "src/command/set_pll.rs",
         "src/command/spi.rs",

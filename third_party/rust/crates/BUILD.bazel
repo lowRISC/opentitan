@@ -338,6 +338,12 @@ alias(
 )
 
 alias(
+    name = "serde-hjson",
+    actual = "@crate_index__serde-hjson-0.9.1//:serde_hjson",
+    tags = ["manual"],
+)
+
+alias(
     name = "serde_bytes",
     actual = "@crate_index__serde_bytes-0.11.9//:serde_bytes",
     tags = ["manual"],
