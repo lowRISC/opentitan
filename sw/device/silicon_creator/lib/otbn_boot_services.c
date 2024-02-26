@@ -15,26 +15,26 @@
 static_assert(kAttestationSeedWords <= 16,
               "Additional attestation seed needs must be <= 516 bits.");
 
-OTBN_DECLARE_APP_SYMBOLS(boot);             // The OTBN boot-services app.
-OTBN_DECLARE_SYMBOL_ADDR(boot, mode);       // Application mode.
-OTBN_DECLARE_SYMBOL_ADDR(boot, rsa_mod);    // RSA modulus.
-OTBN_DECLARE_SYMBOL_ADDR(boot, rsa_m0inv);  // RSA Montgomery constant.
-OTBN_DECLARE_SYMBOL_ADDR(boot, rsa_inout);  // RSA input/output buffer.
-OTBN_DECLARE_SYMBOL_ADDR(boot, msg);        // ECDSA message digest.
-OTBN_DECLARE_SYMBOL_ADDR(boot, x);          // ECDSA public key x-coordinate.
-OTBN_DECLARE_SYMBOL_ADDR(boot, y);          // ECDSA public key y-coordinate.
-OTBN_DECLARE_SYMBOL_ADDR(boot, r);          // ECDSA signature component r.
-OTBN_DECLARE_SYMBOL_ADDR(boot, s);          // ECDSA signature component s.
+OTBN_DECLARE_APP_SYMBOLS(boot);           // The OTBN boot-services app.
+OTBN_DECLARE_SYMBOL_ADDR(boot, mode);     // Application mode.
+OTBN_DECLARE_SYMBOL_ADDR(boot, in_mod);   // RSA modulus.
+OTBN_DECLARE_SYMBOL_ADDR(boot, m0inv);    // RSA Montgomery constant.
+OTBN_DECLARE_SYMBOL_ADDR(boot, rsa_in);   // RSA input buffer.
+OTBN_DECLARE_SYMBOL_ADDR(boot, rsa_out);  // RSA output buffer.
+OTBN_DECLARE_SYMBOL_ADDR(boot, msg);      // ECDSA message digest.
+OTBN_DECLARE_SYMBOL_ADDR(boot, x);        // ECDSA public key x-coordinate.
+OTBN_DECLARE_SYMBOL_ADDR(boot, y);        // ECDSA public key y-coordinate.
+OTBN_DECLARE_SYMBOL_ADDR(boot, r);        // ECDSA signature component r.
+OTBN_DECLARE_SYMBOL_ADDR(boot, s);        // ECDSA signature component s.
 OTBN_DECLARE_SYMBOL_ADDR(
     boot, attestation_additional_seed);  // Additional seed for ECDSA keygen.
 
 static const otbn_app_t kOtbnAppBoot = OTBN_APP_T_INIT(boot);
 static const otbn_addr_t kOtbnVarBootMode = OTBN_ADDR_T_INIT(boot, mode);
-static const otbn_addr_t kOtbnVarBootRsaMod = OTBN_ADDR_T_INIT(boot, rsa_mod);
-static const otbn_addr_t kOtbnVarBootRsaM0inv =
-    OTBN_ADDR_T_INIT(boot, rsa_m0inv);
-static const otbn_addr_t kOtbnVarBootRsaInout =
-    OTBN_ADDR_T_INIT(boot, rsa_inout);
+static const otbn_addr_t kOtbnVarBootRsaMod = OTBN_ADDR_T_INIT(boot, in_mod);
+static const otbn_addr_t kOtbnVarBootRsaM0inv = OTBN_ADDR_T_INIT(boot, m0inv);
+static const otbn_addr_t kOtbnVarBootRsaIn = OTBN_ADDR_T_INIT(boot, rsa_in);
+static const otbn_addr_t kOtbnVarBootRsaOut = OTBN_ADDR_T_INIT(boot, rsa_out);
 static const otbn_addr_t kOtbnVarBootMsg = OTBN_ADDR_T_INIT(boot, msg);
 static const otbn_addr_t kOtbnVarBootX = OTBN_ADDR_T_INIT(boot, x);
 static const otbn_addr_t kOtbnVarBootY = OTBN_ADDR_T_INIT(boot, y);
@@ -102,6 +102,7 @@ static rom_error_t load_attestation_keygen_seed(
   rom_error_t err =
       flash_ctrl_info_read(&kFlashCtrlInfoPageAttestationKeySeeds,
                            seed_flash_offset, kAttestationSeedWords, seed);
+
   if (err != kErrorOk) {
     flash_ctrl_error_code_t flash_ctrl_err_code;
     flash_ctrl_error_code_get(&flash_ctrl_err_code);
@@ -237,13 +238,18 @@ rom_error_t otbn_boot_attestation_endorse(const hmac_digest_t *digest,
 rom_error_t otbn_boot_sigverify_mod_exp(const sigverify_rsa_key_t *key,
                                         const sigverify_rsa_buffer_t *sig,
                                         sigverify_rsa_buffer_t *result) {
+  // Write the mode.
+  uint32_t mode = kOtbnBootModeSecBootModexp;
+  HARDENED_RETURN_IF_ERROR(
+      otbn_dmem_write(kOtbnBootModeWords, &mode, kOtbnVarBootMode));
+
   // Set the modulus (n).
   HARDENED_RETURN_IF_ERROR(
       otbn_dmem_write(kSigVerifyRsaNumWords, key->n.data, kOtbnVarBootRsaMod));
 
-  // Set the encoded message.
+  // Set the signature.
   HARDENED_RETURN_IF_ERROR(
-      otbn_dmem_write(kSigVerifyRsaNumWords, sig->data, kOtbnVarBootRsaInout));
+      otbn_dmem_write(kSigVerifyRsaNumWords, sig->data, kOtbnVarBootRsaIn));
 
   // Set the precomputed constant m0_inv.
   HARDENED_RETURN_IF_ERROR(otbn_dmem_write(kOtbnWideWordNumWords, key->n0_inv,
@@ -256,6 +262,6 @@ rom_error_t otbn_boot_sigverify_mod_exp(const sigverify_rsa_key_t *key,
   // TODO(#20023): Check the instruction count register (see `mod_exp_otbn`).
 
   // Read recovered message out of OTBN dmem.
-  return otbn_dmem_read(kSigVerifyRsaNumWords, kOtbnVarBootRsaInout,
+  return otbn_dmem_read(kSigVerifyRsaNumWords, kOtbnVarBootRsaOut,
                         result->data);
 }
