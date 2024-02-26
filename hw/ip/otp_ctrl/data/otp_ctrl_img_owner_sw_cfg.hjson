@@ -147,6 +147,7 @@
                         "0x94949494",
                         "0x94949494",
                         "0x94949494",
+                        "0x94949494",
                     ],
                 },
                 {
@@ -232,7 +233,7 @@
                 },
                 {
                     name: "OWNER_SW_CFG_ROM_ALERT_DIGEST_PROD_END",
-                    value: "0x10f153e1",
+                    value: "0x8a12908b",
                 },
                 {
                     name: "OWNER_SW_CFG_ROM_ALERT_DIGEST_RMA",

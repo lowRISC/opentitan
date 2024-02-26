@@ -292,7 +292,7 @@
                 }
                 {
                     name: "OWNER_SW_CFG_ROM_ALERT_CLASSIFICATION",
-                    size: "396"
+                    size: "400"
                 }
                 {
                     name: "OWNER_SW_CFG_ROM_LOCAL_ALERT_CLASSIFICATION",
