@@ -678,6 +678,8 @@ class cip_base_vseq #(
                                             bit          do_tl_err = 1,
                                             uint         reset_delay_bound = 10_000_000);
     `DV_CHECK_FATAL(seq != null)
+    `uvm_info(`gfn, $sformatf("running run_seq_with_rand_reset_vseq for sequence %s",
+                               seq.get_full_name()), UVM_MEDIUM)
 
     for (int i = 1; i <= num_times; i++) begin
       bit ongoing_reset;
@@ -704,6 +706,8 @@ class cip_base_vseq #(
                   dv_vseq.do_apply_reset = 0;
                   dv_vseq.set_sequencer(p_sequencer);
                   `DV_CHECK_RANDOMIZE_FATAL(dv_vseq)
+                  `uvm_info(`gfn, $sformatf("Starting sequence %s", dv_vseq.get_full_name()),
+                            UVM_MEDIUM)
                   dv_vseq.start(p_sequencer);
                 end
               join
@@ -769,12 +773,17 @@ class cip_base_vseq #(
 
     cfg.set_intention_to_reset();
 
-    `uvm_info(`gfn, $sformatf("Waiting for %0d cycles with a run of no accesses", wait_cycles),
+    `uvm_info(`gfn, $sformatf(
+              "Waiting up to %0d cycles for a long enough run of no accesses", wait_cycles),
               UVM_MEDIUM)
     for (; cycles_waited < wait_cycles || cycles_with_no_accesses > 0; ++cycles_waited) begin
       if (!has_outstanding_access()) begin
+        `uvm_info(`gfn, "A cycle with no outstanding accesses", UVM_MEDIUM)
         ++cycles_with_no_accesses;
         if (cycles_with_no_accesses > CyclesWithNoAccessesThreshold) begin
+          `uvm_info(`gfn, $sformatf(
+                    "Finally no outstanding accesses after %d cycles", cycles_waited),
+                    UVM_MEDIUM)
           break;
         end
       end else begin

@@ -12,6 +12,12 @@ class sram_ctrl_env_cfg #(parameter int AddrWidth = 10)
 
   string sram_ral_name = "sram_ctrl_prim_reg_block";
 
+  // This tracks a key request.
+  bit in_key_req = 1'b0;
+
+  // This tracks when the ram is undergoing initialization in the scoreboard.
+  bit in_init = 1'b0;
+
   // ext component cfgs
   rand push_pull_agent_cfg#(.DeviceDataWidth(KDI_DATA_SIZE)) m_kdi_cfg;
 
@@ -47,6 +53,7 @@ class sram_ctrl_env_cfg #(parameter int AddrWidth = 10)
     m_kdi_cfg = push_pull_agent_cfg#(.DeviceDataWidth(KDI_DATA_SIZE))::type_id::create("m_kdi_cfg");
     m_kdi_cfg.agent_type = push_pull_agent_pkg::PullAgent;
     m_kdi_cfg.if_mode = dv_utils_pkg::Device;
+    m_kdi_cfg.pull_handshake_type = push_pull_agent_pkg::TwoPhase;
 
     // CDC synchronization between OTP and SRAM clock domains requires that the scrambling seed data
     // should be held for at least a few cycles before it can be safely latched by the SRAM domain.
@@ -55,7 +62,7 @@ class sram_ctrl_env_cfg #(parameter int AddrWidth = 10)
     m_kdi_cfg.hold_d_data_until_next_req = 1'b1;
 
     // KDI interface will never need zero delay mode.
-    // As per SRAM spec, KDI process will generally take around 800 CPU cyclesj
+    // As per SRAM spec, KDI process will generally take around 800 CPU cycles.
     m_kdi_cfg.zero_delays.rand_mode(0);
 
     `uvm_info(`gfn, $sformatf("ral_model_names: %0p", ral_model_names), UVM_LOW)

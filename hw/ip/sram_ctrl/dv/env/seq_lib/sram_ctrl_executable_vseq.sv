@@ -35,6 +35,8 @@ class sram_ctrl_executable_vseq extends sram_ctrl_multiple_keys_vseq;
     csr_wr(ral.exec, en_exec_csr);
     cfg.exec_vif.drive_lc_hw_debug_en(hw_debug_en);
     cfg.exec_vif.drive_otp_en_sram_ifetch(en_sram_ifetch);
+    // Wait a few cycles for synchronizers to settle.
+    cfg.clk_rst_vif.wait_clks(4);
   endtask
 
 endclass

@@ -46,6 +46,7 @@ class sram_ctrl_stress_all_vseq extends sram_ctrl_base_vseq;
       sram_vseq.do_sram_ctrl_init = 0;
       `uvm_info(`gfn, $sformatf("iteration[%0d]: starting %0s", i, cur_vseq_name), UVM_LOW)
       sram_vseq.start(p_sequencer);
+      `uvm_info(`gfn, $sformatf("iteration[%0d]: finishing %0s", i, cur_vseq_name), UVM_MEDIUM)
     end
   endtask
 
