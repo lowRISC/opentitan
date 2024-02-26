@@ -98,7 +98,7 @@ static rom_error_t load_attestation_keygen_seed(
                           });
 
   // Read seed from flash info page.
-  uint32_t seed_flash_offset = 0 + (additional_seed * kAttestationSeedWords);
+  uint32_t seed_flash_offset = 0 + (additional_seed * kAttestationSeedBytes);
   rom_error_t err =
       flash_ctrl_info_read(&kFlashCtrlInfoPageAttestationKeySeeds,
                            seed_flash_offset, kAttestationSeedWords, seed);
