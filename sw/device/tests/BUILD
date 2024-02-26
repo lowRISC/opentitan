@@ -1541,6 +1541,19 @@ opentitan_functest(
 )
 
 opentitan_functest(
+    name = "otbn_isa_test",
+    srcs = ["otbn_isa_test.c"],
+    deps = [
+        "//hw/ip/otbn/dv/smoke:smoke_test",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/dif:otbn",
+        "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/lib/testing:otbn_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
     name = "otp_ctrl_smoketest",
     srcs = ["otp_ctrl_smoketest.c"],
     deps = [
