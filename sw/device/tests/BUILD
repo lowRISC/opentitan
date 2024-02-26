@@ -2420,6 +2420,28 @@ opentitan_test(
 )
 
 opentitan_test(
+    name = "otbn_isa_test",
+    srcs = ["otbn_isa_test.c"],
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+            "//hw/top_earlgrey:silicon_creator": None,
+        },
+    ),
+    deps = [
+        "//hw/ip/otbn/dv/smoke:smoke_test",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/dif:otbn",
+        "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/lib/testing:otbn_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
     name = "otp_ctrl_smoketest",
     srcs = ["otp_ctrl_smoketest.c"],
     broken = new_cw310_params(tags = ["broken"]),
