@@ -256,59 +256,48 @@ dif_result_t dif_i2c_reset_acq_fifo(const dif_i2c_t *i2c) {
   return kDifOk;
 }
 
-dif_result_t dif_i2c_set_watermarks(const dif_i2c_t *i2c,
-                                    dif_i2c_level_t rx_level,
-                                    dif_i2c_level_t fmt_level) {
-  if (i2c == NULL) {
+dif_result_t dif_i2c_set_host_watermarks(const dif_i2c_t *i2c,
+                                         dif_i2c_level_t rx_level,
+                                         dif_i2c_level_t fmt_level) {
+  // Check that the FIFO levels are sensible; setting RX level equal to the
+  // depth deactivates its interrupt, but setting FMT level to that would result
+  // in continual interrupt assertion.
+  if (i2c == NULL || rx_level > I2C_PARAM_FIFO_DEPTH ||
+      fmt_level >= I2C_PARAM_FIFO_DEPTH) {
     return kDifBadArg;
   }
 
-  uint32_t rx_level_value;
-  switch (rx_level) {
-    case kDifI2cLevel1Byte:
-      rx_level_value = I2C_FIFO_CTRL_RXILVL_VALUE_RXLVL1;
-      break;
-    case kDifI2cLevel4Byte:
-      rx_level_value = I2C_FIFO_CTRL_RXILVL_VALUE_RXLVL4;
-      break;
-    case kDifI2cLevel8Byte:
-      rx_level_value = I2C_FIFO_CTRL_RXILVL_VALUE_RXLVL8;
-      break;
-    case kDifI2cLevel16Byte:
-      rx_level_value = I2C_FIFO_CTRL_RXILVL_VALUE_RXLVL16;
-      break;
-    case kDifI2cLevel30Byte:
-      rx_level_value = I2C_FIFO_CTRL_RXILVL_VALUE_RXLVL30;
-      break;
-    default:
-      return kDifBadArg;
-  }
+  uint32_t ctrl_value =
+      mmio_region_read32(i2c->base_addr, I2C_HOST_FIFO_CONFIG_REG_OFFSET);
+  ctrl_value = bitfield_field32_write(
+      ctrl_value, I2C_HOST_FIFO_CONFIG_RX_THRESH_FIELD, rx_level);
+  ctrl_value = bitfield_field32_write(
+      ctrl_value, I2C_HOST_FIFO_CONFIG_FMT_THRESH_FIELD, fmt_level);
+  mmio_region_write32(i2c->base_addr, I2C_HOST_FIFO_CONFIG_REG_OFFSET,
+                      ctrl_value);
 
-  uint32_t fmt_level_value;
-  switch (fmt_level) {
-    case kDifI2cLevel1Byte:
-      fmt_level_value = I2C_FIFO_CTRL_FMTILVL_VALUE_FMTLVL1;
-      break;
-    case kDifI2cLevel4Byte:
-      fmt_level_value = I2C_FIFO_CTRL_FMTILVL_VALUE_FMTLVL4;
-      break;
-    case kDifI2cLevel8Byte:
-      fmt_level_value = I2C_FIFO_CTRL_FMTILVL_VALUE_FMTLVL8;
-      break;
-    case kDifI2cLevel16Byte:
-      fmt_level_value = I2C_FIFO_CTRL_FMTILVL_VALUE_FMTLVL16;
-      break;
-    default:
-      return kDifBadArg;
+  return kDifOk;
+}
+
+dif_result_t dif_i2c_set_target_watermarks(const dif_i2c_t *i2c,
+                                           dif_i2c_level_t tx_level,
+                                           dif_i2c_level_t acq_level) {
+  // Check that the FIFO levels are sensible; setting ACQ level equal to the
+  // depth deactivates its interrupt, but setting TX level to that would result
+  // in continual interrupt assertion.
+  if (i2c == NULL || acq_level > I2C_PARAM_FIFO_DEPTH ||
+      tx_level >= I2C_PARAM_FIFO_DEPTH) {
+    return kDifBadArg;
   }
 
   uint32_t ctrl_value =
-      mmio_region_read32(i2c->base_addr, I2C_FIFO_CTRL_REG_OFFSET);
-  ctrl_value = bitfield_field32_write(ctrl_value, I2C_FIFO_CTRL_RXILVL_FIELD,
-                                      rx_level_value);
-  ctrl_value = bitfield_field32_write(ctrl_value, I2C_FIFO_CTRL_FMTILVL_FIELD,
-                                      fmt_level_value);
-  mmio_region_write32(i2c->base_addr, I2C_FIFO_CTRL_REG_OFFSET, ctrl_value);
+      mmio_region_read32(i2c->base_addr, I2C_TARGET_FIFO_CONFIG_REG_OFFSET);
+  ctrl_value = bitfield_field32_write(
+      ctrl_value, I2C_TARGET_FIFO_CONFIG_TX_THRESH_FIELD, tx_level);
+  ctrl_value = bitfield_field32_write(
+      ctrl_value, I2C_TARGET_FIFO_CONFIG_ACQ_THRESH_FIELD, acq_level);
+  mmio_region_write32(i2c->base_addr, I2C_TARGET_FIFO_CONFIG_REG_OFFSET,
+                      ctrl_value);
 
   return kDifOk;
 }
@@ -421,31 +410,36 @@ dif_result_t dif_i2c_override_sample_pins(const dif_i2c_t *i2c,
 }
 
 dif_result_t dif_i2c_get_fifo_levels(const dif_i2c_t *i2c,
-                                     uint8_t *fmt_fifo_level,
-                                     uint8_t *rx_fifo_level,
-                                     uint8_t *tx_fifo_level,
-                                     uint8_t *acq_fifo_level) {
+                                     dif_i2c_level_t *fmt_fifo_level,
+                                     dif_i2c_level_t *rx_fifo_level,
+                                     dif_i2c_level_t *tx_fifo_level,
+                                     dif_i2c_level_t *acq_fifo_level) {
   if (i2c == NULL) {
     return kDifBadArg;
   }
 
+  // Host-side FIFO levels
   uint32_t values =
-      mmio_region_read32(i2c->base_addr, I2C_FIFO_STATUS_REG_OFFSET);
+      mmio_region_read32(i2c->base_addr, I2C_HOST_FIFO_STATUS_REG_OFFSET);
   if (fmt_fifo_level != NULL) {
-    *fmt_fifo_level =
-        (uint8_t)bitfield_field32_read(values, I2C_FIFO_STATUS_FMTLVL_FIELD);
+    *fmt_fifo_level = (dif_i2c_level_t)bitfield_field32_read(
+        values, I2C_HOST_FIFO_STATUS_FMTLVL_FIELD);
   }
   if (rx_fifo_level != NULL) {
-    *rx_fifo_level =
-        (uint8_t)bitfield_field32_read(values, I2C_FIFO_STATUS_RXLVL_FIELD);
+    *rx_fifo_level = (dif_i2c_level_t)bitfield_field32_read(
+        values, I2C_HOST_FIFO_STATUS_RXLVL_FIELD);
   }
+
+  // Target-side FIFO levels
+  values =
+      mmio_region_read32(i2c->base_addr, I2C_TARGET_FIFO_STATUS_REG_OFFSET);
   if (tx_fifo_level != NULL) {
-    *tx_fifo_level =
-        (uint8_t)bitfield_field32_read(values, I2C_FIFO_STATUS_TXLVL_FIELD);
+    *tx_fifo_level = (dif_i2c_level_t)bitfield_field32_read(
+        values, I2C_TARGET_FIFO_STATUS_TXLVL_FIELD);
   }
   if (acq_fifo_level != NULL) {
-    *acq_fifo_level =
-        (uint8_t)bitfield_field32_read(values, I2C_FIFO_STATUS_ACQLVL_FIELD);
+    *acq_fifo_level = (dif_i2c_level_t)bitfield_field32_read(
+        values, I2C_TARGET_FIFO_STATUS_ACQLVL_FIELD);
   }
 
   return kDifOk;

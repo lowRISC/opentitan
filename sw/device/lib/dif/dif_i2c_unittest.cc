@@ -378,62 +378,118 @@ TEST_F(FifoCtrlTest, TxNullArgs) {
   EXPECT_DIF_BADARG(dif_i2c_reset_tx_fifo(nullptr));
 }
 
-TEST_F(FifoCtrlTest, SetLevels) {
-  EXPECT_MASK32(I2C_FIFO_CTRL_REG_OFFSET,
+class HostFifoConfigTest : public I2cTest {};
+
+TEST_F(HostFifoConfigTest, SetLevels) {
+  EXPECT_MASK32(I2C_HOST_FIFO_CONFIG_REG_OFFSET,
                 {
                     {
-                        I2C_FIFO_CTRL_RXILVL_OFFSET,
-                        I2C_FIFO_CTRL_RXILVL_MASK,
-                        I2C_FIFO_CTRL_RXILVL_VALUE_RXLVL1,
+                        I2C_HOST_FIFO_CONFIG_RX_THRESH_OFFSET,
+                        I2C_HOST_FIFO_CONFIG_RX_THRESH_MASK,
+                        0u,
                     },
                     {
-                        I2C_FIFO_CTRL_FMTILVL_OFFSET,
-                        I2C_FIFO_CTRL_FMTILVL_MASK,
-                        I2C_FIFO_CTRL_FMTILVL_VALUE_FMTLVL1,
+                        I2C_HOST_FIFO_CONFIG_FMT_THRESH_OFFSET,
+                        I2C_HOST_FIFO_CONFIG_FMT_THRESH_MASK,
+                        2u,
                     },
                 });
-  EXPECT_DIF_OK(
-      dif_i2c_set_watermarks(&i2c_, kDifI2cLevel1Byte, kDifI2cLevel1Byte));
+  EXPECT_DIF_OK(dif_i2c_set_host_watermarks(&i2c_, /*rx_level > */ 0u,
+                                            /*fmt_level < */ 2u));
 
-  EXPECT_MASK32(I2C_FIFO_CTRL_REG_OFFSET,
+  EXPECT_MASK32(I2C_HOST_FIFO_CONFIG_REG_OFFSET,
                 {
                     {
-                        I2C_FIFO_CTRL_RXILVL_OFFSET,
-                        I2C_FIFO_CTRL_RXILVL_MASK,
-                        I2C_FIFO_CTRL_RXILVL_VALUE_RXLVL4,
+                        I2C_HOST_FIFO_CONFIG_RX_THRESH_OFFSET,
+                        I2C_HOST_FIFO_CONFIG_RX_THRESH_MASK,
+                        3u,
                     },
                     {
-                        I2C_FIFO_CTRL_FMTILVL_OFFSET,
-                        I2C_FIFO_CTRL_FMTILVL_MASK,
-                        I2C_FIFO_CTRL_FMTILVL_VALUE_FMTLVL16,
+                        I2C_HOST_FIFO_CONFIG_FMT_THRESH_OFFSET,
+                        I2C_HOST_FIFO_CONFIG_FMT_THRESH_MASK,
+                        17u,
                     },
                 });
-  EXPECT_DIF_OK(
-      dif_i2c_set_watermarks(&i2c_, kDifI2cLevel4Byte, kDifI2cLevel16Byte));
+  EXPECT_DIF_OK(dif_i2c_set_host_watermarks(&i2c_, /*rx_level > */ 3u,
+                                            /*fmt_level < */ 17u));
 
-  EXPECT_MASK32(I2C_FIFO_CTRL_REG_OFFSET,
+  EXPECT_MASK32(I2C_HOST_FIFO_CONFIG_REG_OFFSET,
                 {
                     {
-                        I2C_FIFO_CTRL_RXILVL_OFFSET,
-                        I2C_FIFO_CTRL_RXILVL_MASK,
-                        I2C_FIFO_CTRL_RXILVL_VALUE_RXLVL30,
+                        I2C_HOST_FIFO_CONFIG_RX_THRESH_OFFSET,
+                        I2C_HOST_FIFO_CONFIG_RX_THRESH_MASK,
+                        29u,
                     },
                     {
-                        I2C_FIFO_CTRL_FMTILVL_OFFSET,
-                        I2C_FIFO_CTRL_FMTILVL_MASK,
-                        I2C_FIFO_CTRL_FMTILVL_VALUE_FMTLVL8,
+                        I2C_HOST_FIFO_CONFIG_FMT_THRESH_OFFSET,
+                        I2C_HOST_FIFO_CONFIG_FMT_THRESH_MASK,
+                        9u,
                     },
                 });
-  EXPECT_DIF_OK(
-      dif_i2c_set_watermarks(&i2c_, kDifI2cLevel30Byte, kDifI2cLevel8Byte));
-
-  EXPECT_DIF_BADARG(
-      dif_i2c_set_watermarks(&i2c_, kDifI2cLevel30Byte, kDifI2cLevel30Byte));
+  EXPECT_DIF_OK(dif_i2c_set_host_watermarks(&i2c_, /*rx_level > */ 29u,
+                                            /*fmt_level < */ 9u));
 }
 
-TEST_F(FifoCtrlTest, SetLevelsNullArgs) {
-  EXPECT_DIF_BADARG(
-      dif_i2c_set_watermarks(nullptr, kDifI2cLevel4Byte, kDifI2cLevel16Byte));
+TEST_F(HostFifoConfigTest, SetLevelsNullArgs) {
+  EXPECT_DIF_BADARG(dif_i2c_set_host_watermarks(nullptr, /*rx_level > */ 3u,
+                                                /*fmt_level < */ 17u));
+}
+
+class TargetFifoConfigTest : public I2cTest {};
+
+TEST_F(TargetFifoConfigTest, SetLevels) {
+  EXPECT_MASK32(I2C_TARGET_FIFO_CONFIG_REG_OFFSET,
+                {
+                    {
+                        I2C_TARGET_FIFO_CONFIG_TX_THRESH_OFFSET,
+                        I2C_TARGET_FIFO_CONFIG_TX_THRESH_MASK,
+                        2u,
+                    },
+                    {
+                        I2C_TARGET_FIFO_CONFIG_ACQ_THRESH_OFFSET,
+                        I2C_TARGET_FIFO_CONFIG_ACQ_THRESH_MASK,
+                        0u,
+                    },
+                });
+  EXPECT_DIF_OK(dif_i2c_set_target_watermarks(&i2c_, /*tx_level < */ 2u,
+                                              /*acq_level > */ 0u));
+
+  EXPECT_MASK32(I2C_TARGET_FIFO_CONFIG_REG_OFFSET,
+                {
+                    {
+                        I2C_TARGET_FIFO_CONFIG_TX_THRESH_OFFSET,
+                        I2C_TARGET_FIFO_CONFIG_TX_THRESH_MASK,
+                        17u,
+                    },
+                    {
+                        I2C_TARGET_FIFO_CONFIG_ACQ_THRESH_OFFSET,
+                        I2C_TARGET_FIFO_CONFIG_ACQ_THRESH_MASK,
+                        3u,
+                    },
+                });
+  EXPECT_DIF_OK(dif_i2c_set_target_watermarks(&i2c_, /*tx_level < */ 17u,
+                                              /*acq_level > */ 3u));
+
+  EXPECT_MASK32(I2C_TARGET_FIFO_CONFIG_REG_OFFSET,
+                {
+                    {
+                        I2C_TARGET_FIFO_CONFIG_TX_THRESH_OFFSET,
+                        I2C_TARGET_FIFO_CONFIG_TX_THRESH_MASK,
+                        29u,
+                    },
+                    {
+                        I2C_TARGET_FIFO_CONFIG_ACQ_THRESH_OFFSET,
+                        I2C_TARGET_FIFO_CONFIG_ACQ_THRESH_MASK,
+                        9u,
+                    },
+                });
+  EXPECT_DIF_OK(dif_i2c_set_target_watermarks(&i2c_, /*tx_level < */ 29u,
+                                              /*acq_level > */ 9u));
+}
+
+TEST_F(TargetFifoConfigTest, SetLevelsNullArgs) {
+  EXPECT_DIF_BADARG(dif_i2c_set_target_watermarks(nullptr, /*tx_level < */ 17u,
+                                                  /*acq_level > */ 3u));
 }
 
 class ControlTest : public I2cTest {};
@@ -541,8 +597,9 @@ TEST_F(OverrideTest, SampleNullArgs) {
 class FifoTest : public I2cTest {};
 
 TEST_F(FifoTest, GetLevels) {
-  uint8_t rx, fmt, tx, acq;
-  EXPECT_READ32(I2C_FIFO_STATUS_REG_OFFSET, 0x10293847);
+  dif_i2c_level_t rx, fmt, tx, acq;
+  EXPECT_READ32(I2C_HOST_FIFO_STATUS_REG_OFFSET, 0x00290047);
+  EXPECT_READ32(I2C_TARGET_FIFO_STATUS_REG_OFFSET, 0x00100038);
   EXPECT_DIF_OK(dif_i2c_get_fifo_levels(&i2c_, &fmt, &rx, &tx, &acq));
   EXPECT_EQ(fmt, 0x47);
   EXPECT_EQ(rx, 0x29);
@@ -550,7 +607,8 @@ TEST_F(FifoTest, GetLevels) {
   EXPECT_EQ(acq, 0x10);
 
   rx = 0, fmt = 0, tx = 0, acq = 0;
-  EXPECT_READ32(I2C_FIFO_STATUS_REG_OFFSET, 0x10293847);
+  EXPECT_READ32(I2C_HOST_FIFO_STATUS_REG_OFFSET, 0x00290047);
+  EXPECT_READ32(I2C_TARGET_FIFO_STATUS_REG_OFFSET, 0x00100038);
   EXPECT_DIF_OK(dif_i2c_get_fifo_levels(&i2c_, &fmt, &rx, nullptr, nullptr));
   EXPECT_EQ(fmt, 0x47);
   EXPECT_EQ(rx, 0x29);
@@ -558,7 +616,8 @@ TEST_F(FifoTest, GetLevels) {
   EXPECT_EQ(acq, 0x0);
 
   rx = 0, fmt = 0, tx = 0, acq = 0;
-  EXPECT_READ32(I2C_FIFO_STATUS_REG_OFFSET, 0x10293847);
+  EXPECT_READ32(I2C_HOST_FIFO_STATUS_REG_OFFSET, 0x00290047);
+  EXPECT_READ32(I2C_TARGET_FIFO_STATUS_REG_OFFSET, 0x00100038);
   EXPECT_DIF_OK(
       dif_i2c_get_fifo_levels(&i2c_, &fmt, nullptr, nullptr, nullptr));
   EXPECT_EQ(rx, 0x0);
@@ -567,7 +626,8 @@ TEST_F(FifoTest, GetLevels) {
   EXPECT_EQ(acq, 0x0);
 
   rx = 0, fmt = 0, tx = 0, acq = 0;
-  EXPECT_READ32(I2C_FIFO_STATUS_REG_OFFSET, 0x10293847);
+  EXPECT_READ32(I2C_HOST_FIFO_STATUS_REG_OFFSET, 0x00290047);
+  EXPECT_READ32(I2C_TARGET_FIFO_STATUS_REG_OFFSET, 0x00100038);
   EXPECT_DIF_OK(dif_i2c_get_fifo_levels(&i2c_, nullptr, &rx, nullptr, nullptr));
   EXPECT_EQ(rx, 0x29);
   EXPECT_EQ(fmt, 0x0);
@@ -575,7 +635,8 @@ TEST_F(FifoTest, GetLevels) {
   EXPECT_EQ(acq, 0x0);
 
   rx = 0, fmt = 0, tx = 0, acq = 0;
-  EXPECT_READ32(I2C_FIFO_STATUS_REG_OFFSET, 0x10293847);
+  EXPECT_READ32(I2C_HOST_FIFO_STATUS_REG_OFFSET, 0x00290047);
+  EXPECT_READ32(I2C_TARGET_FIFO_STATUS_REG_OFFSET, 0x00100038);
   EXPECT_DIF_OK(dif_i2c_get_fifo_levels(&i2c_, nullptr, nullptr, &tx, &acq));
   EXPECT_EQ(fmt, 0x0);
   EXPECT_EQ(rx, 0x0);
@@ -583,7 +644,8 @@ TEST_F(FifoTest, GetLevels) {
   EXPECT_EQ(acq, 0x10);
 
   rx = 0, fmt = 0, tx = 0, acq = 0;
-  EXPECT_READ32(I2C_FIFO_STATUS_REG_OFFSET, 0x10293847);
+  EXPECT_READ32(I2C_HOST_FIFO_STATUS_REG_OFFSET, 0x00290047);
+  EXPECT_READ32(I2C_TARGET_FIFO_STATUS_REG_OFFSET, 0x00100038);
   EXPECT_DIF_OK(dif_i2c_get_fifo_levels(&i2c_, nullptr, nullptr, &tx, nullptr));
   EXPECT_EQ(rx, 0x0);
   EXPECT_EQ(fmt, 0x0);
@@ -591,7 +653,8 @@ TEST_F(FifoTest, GetLevels) {
   EXPECT_EQ(acq, 0x0);
 
   rx = 0, fmt = 0, tx = 0, acq = 0;
-  EXPECT_READ32(I2C_FIFO_STATUS_REG_OFFSET, 0x10293847);
+  EXPECT_READ32(I2C_HOST_FIFO_STATUS_REG_OFFSET, 0x00290047);
+  EXPECT_READ32(I2C_TARGET_FIFO_STATUS_REG_OFFSET, 0x00100038);
   EXPECT_DIF_OK(
       dif_i2c_get_fifo_levels(&i2c_, nullptr, nullptr, nullptr, &acq));
   EXPECT_EQ(rx, 0x0);
@@ -601,7 +664,7 @@ TEST_F(FifoTest, GetLevels) {
 }
 
 TEST_F(FifoTest, GetLevelsNullArgs) {
-  uint8_t rx, fmt;
+  dif_i2c_level_t rx, fmt;
   EXPECT_DIF_BADARG(
       dif_i2c_get_fifo_levels(nullptr, &rx, &fmt, nullptr, nullptr));
 }

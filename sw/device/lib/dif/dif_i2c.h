@@ -142,32 +142,9 @@ typedef struct dif_i2c_config {
 } dif_i2c_config_t;
 
 /**
- * Represents a valid watermark level for one of the I2C FIFOs.
+ * Represents a watermark or data level for one of the I2C FIFOs.
  */
-typedef enum dif_i2c_watermark_level {
-  /**
-   * A one-byte watermark.
-   */
-  kDifI2cLevel1Byte = 0,
-  /**
-   * A four-byte watermark.
-   */
-  kDifI2cLevel4Byte,
-  /**
-   * An eight-byte watermark.
-   */
-  kDifI2cLevel8Byte,
-  /**
-   * A sixteen-byte watermark.
-   */
-  kDifI2cLevel16Byte,
-  /**
-   * A thirty-byte watermark.
-   *
-   * Note that this watermark is only supported for RX, and not for FMT.
-   */
-  kDifI2cLevel30Byte,
-} dif_i2c_level_t;
+typedef uint16_t dif_i2c_level_t;
 
 /**
  * Flags for a formatted I2C byte, used by the `dif_i2c_write_byte_raw()`
@@ -440,11 +417,9 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_i2c_reset_acq_fifo(const dif_i2c_t *i2c);
 
 /**
- * Sets watermarks for the RX and FMT FIFOs, which will fire the respective
- * interrupts when each fifo exceeds, or falls below, the set level.
- *
- * Note that the 30-byte level is only supported for the RX FIFO: trying to use
- * it with the FMT FIFO is an error.
+ * Sets watermarks for the RX and FMT FIFOs, which will assert the
+ * corresponding interrupts whenever the levels in the FIFOs are above (RX)
+ * and below (FMT) the set levels.
  *
  * @param i2c An I2C handle.
  * @param rx_level The desired watermark level for the RX FIFO.
@@ -452,9 +427,24 @@ dif_result_t dif_i2c_reset_acq_fifo(const dif_i2c_t *i2c);
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_i2c_set_watermarks(const dif_i2c_t *i2c,
-                                    dif_i2c_level_t rx_level,
-                                    dif_i2c_level_t fmt_level);
+dif_result_t dif_i2c_set_host_watermarks(const dif_i2c_t *i2c,
+                                         dif_i2c_level_t rx_level,
+                                         dif_i2c_level_t fmt_level);
+
+/**
+ * Sets watermarks for the TX and ACQ FIFOs, which will assert the
+ * corresponding interrupts whenever the levels in the FIFOs are below (TX)
+ * and above (ACQ) the set levels.
+ *
+ * @param i2c An I2C handle.
+ * @param tx_level The desired watermark level for the TX FIFO.
+ * @param acq_level The desired watermark level for the ACQ FIFO.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_i2c_set_target_watermarks(const dif_i2c_t *i2c,
+                                           dif_i2c_level_t tx_level,
+                                           dif_i2c_level_t acq_level);
 
 /**
  * Enables or disables the "Host I2C" functionality,
@@ -551,10 +541,10 @@ dif_result_t dif_i2c_override_sample_pins(const dif_i2c_t *i2c,
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_i2c_get_fifo_levels(const dif_i2c_t *i2c,
-                                     uint8_t *fmt_fifo_level,
-                                     uint8_t *rx_fifo_level,
-                                     uint8_t *tx_fifo_level,
-                                     uint8_t *acq_fifo_level);
+                                     dif_i2c_level_t *fmt_fifo_level,
+                                     dif_i2c_level_t *rx_fifo_level,
+                                     dif_i2c_level_t *tx_fifo_level,
+                                     dif_i2c_level_t *acq_fifo_level);
 
 /**
  * Pops an entry (a byte) off of the RX FIFO. Passing in `NULL` to the out-param

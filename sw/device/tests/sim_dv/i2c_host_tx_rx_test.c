@@ -59,7 +59,7 @@ static volatile bool done_irq_seen = false;
  */
 static uint32_t i2c_irq_fmt_threshold_id;
 static uint32_t i2c_base_addr;
-static top_earlgrey_plic_irq_id_t plic_irqs[9];
+static top_earlgrey_plic_irq_id_t plic_irqs[8];
 
 void ottf_external_isr(uint32_t *exc_info) {
   plic_isr_ctx_t plic_ctx = {.rv_plic = &plic,
@@ -74,14 +74,17 @@ void ottf_external_isr(uint32_t *exc_info) {
   dif_i2c_irq_t i2c_irq;
   isr_testutils_i2c_isr(plic_ctx, i2c_ctx, &peripheral, &i2c_irq);
 
+  bool disable = false;
   switch (i2c_irq) {
     case kDifI2cIrqFmtThreshold:
       fmt_irq_seen = true;
       i2c_irq = kDifI2cIrqFmtThreshold;
+      disable = true;
       break;
     case kDifI2cIrqRxThreshold:
       rx_irq_seen = true;
       i2c_irq = kDifI2cIrqRxThreshold;
+      disable = true;
       break;
     case kDifI2cIrqCmdComplete:
       done_irq_seen = true;
@@ -90,6 +93,11 @@ void ottf_external_isr(uint32_t *exc_info) {
     default:
       LOG_ERROR("Unexpected interrupt (at I2C): %d", i2c_irq);
       break;
+  }
+
+  if (disable) {
+    // Status type interrupt must be disabled since it cannot be cleared
+    CHECK_DIF_OK(dif_i2c_irq_set_enabled(&i2c, i2c_irq, kDifToggleDisabled));
   }
 }
 
@@ -111,17 +119,27 @@ static void en_plic_irqs(dif_rv_plic_t *plic) {
 }
 
 static void en_i2c_irqs(dif_i2c_t *i2c) {
-  dif_i2c_irq_t i2c_irqs[] = {
-      kDifI2cIrqFmtThreshold, kDifI2cIrqRxThreshold, kDifI2cIrqFmtOverflow,
-      kDifI2cIrqRxOverflow, kDifI2cIrqNak, kDifI2cIrqSclInterference,
-      kDifI2cIrqSdaInterference, kDifI2cIrqStretchTimeout,
-      // Removed for now, see plic_irqs above for explanation
-      // kDifI2cIrqSdaUnstable,
-      kDifI2cIrqCmdComplete};
+  dif_i2c_irq_t i2c_irqs[] = {kDifI2cIrqRxThreshold, kDifI2cIrqRxOverflow,
+                              kDifI2cIrqNak, kDifI2cIrqSclInterference,
+                              kDifI2cIrqSdaInterference,
+                              kDifI2cIrqStretchTimeout,
+                              // Removed for now, see plic_irqs above for
+                              // explanation kDifI2cIrqSdaUnstable,
+                              kDifI2cIrqCmdComplete};
 
   for (uint32_t i = 0; i <= ARRAYSIZE(i2c_irqs); ++i) {
     CHECK_DIF_OK(dif_i2c_irq_set_enabled(i2c, i2c_irqs[i], kDifToggleEnabled));
   }
+}
+
+static void en_i2c_status_irqs(dif_i2c_t *i2c) {
+  // Enable the FmtThreshold IRQ now that there is something in the FMT FIFO
+  CHECK_DIF_OK(
+      dif_i2c_irq_set_enabled(i2c, kDifI2cIrqFmtThreshold, kDifToggleEnabled));
+  // Enable the RxThreshold IRQ in anticipation of receiving data into the
+  // RX FIFO
+  CHECK_DIF_OK(
+      dif_i2c_irq_set_enabled(i2c, kDifI2cIrqRxThreshold, kDifToggleEnabled));
 }
 
 // handle i2c index related configure
@@ -134,7 +152,6 @@ void config_i2c_with_index(void) {
 
       plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c0FmtThreshold;
       plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c0RxThreshold;
-      plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c0FmtOverflow;
       plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c0RxOverflow;
       plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c0Nak;
       plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c0SclInterference;
@@ -165,7 +182,6 @@ void config_i2c_with_index(void) {
 
       plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c1FmtThreshold;
       plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c1RxThreshold;
-      plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c1FmtOverflow;
       plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c1RxOverflow;
       plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c1Nak;
       plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c1SclInterference;
@@ -196,7 +212,6 @@ void config_i2c_with_index(void) {
 
       plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c2FmtThreshold;
       plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c2RxThreshold;
-      plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c2FmtOverflow;
       plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c2RxOverflow;
       plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c2Nak;
       plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c2SclInterference;
@@ -249,17 +264,18 @@ void issue_test_transactions(bool skip_stop) {
   };
 
   // Write expected data to i2c device.
-  CHECK(!fmt_irq_seen);
   CHECK_STATUS_OK(i2c_testutils_write(&i2c, device_addr, byte_count,
                                       expected_data, skip_stop));
+  CHECK(!fmt_irq_seen);
+  en_i2c_status_irqs(&i2c);
 
-  uint8_t tx_fifo_lvl, rx_fifo_lvl;
+  dif_i2c_level_t fmt_fifo_lvl, rx_fifo_lvl;
 
   // Make sure all fifo entries have been drained.
   do {
     CHECK_DIF_OK(
-        dif_i2c_get_fifo_levels(&i2c, &tx_fifo_lvl, &rx_fifo_lvl, NULL, NULL));
-  } while (tx_fifo_lvl > 0);
+        dif_i2c_get_fifo_levels(&i2c, &fmt_fifo_lvl, &rx_fifo_lvl, NULL, NULL));
+  } while (fmt_fifo_lvl > 0);
   CHECK(fmt_irq_seen);
   fmt_irq_seen = false;
 
@@ -270,7 +286,7 @@ void issue_test_transactions(bool skip_stop) {
   // Make sure all data has been read back.
   do {
     CHECK_DIF_OK(
-        dif_i2c_get_fifo_levels(&i2c, &tx_fifo_lvl, &rx_fifo_lvl, NULL, NULL));
+        dif_i2c_get_fifo_levels(&i2c, &fmt_fifo_lvl, &rx_fifo_lvl, NULL, NULL));
   } while (rx_fifo_lvl < byte_count);
   CHECK(rx_irq_seen);
 
@@ -318,7 +334,7 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_i2c_configure(&i2c, config));
   CHECK_DIF_OK(dif_i2c_host_set_enabled(&i2c, kDifToggleEnabled));
   CHECK_DIF_OK(
-      dif_i2c_set_watermarks(&i2c, kDifI2cLevel30Byte, kDifI2cLevel4Byte));
+      dif_i2c_set_host_watermarks(&i2c, /*rx_level=*/29u, /*fmt_level=*/5u));
 
   en_i2c_irqs(&i2c);
 
