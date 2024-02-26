@@ -470,8 +470,8 @@ The first EDN instance, `u_edn0` is intended to be configured to deliver entropy
 | 0    | POR_N            | VCC    | InputStd     | manual            | System reset                               |
 | 1    | USB_P            | VCC    | DualBidirTol | manual            | USB P signal                               |
 | 2    | USB_N            | VCC    | DualBidirTol | manual            | USB N signal                               |
-| 3    | CC1              | AVCC   | InputStd     | manual            | ADC input 1                                |
-| 4    | CC2              | AVCC   | InputStd     | manual            | ADC input 2                                |
+| 3    | CC1              | AVCC   | BidirTol     | manual            | ADC input 1                                |
+| 4    | CC2              | AVCC   | BidirTol     | manual            | ADC input 2                                |
 | 5    | FLASH_TEST_VOLT  | VCC    | AnalogIn0    | manual            | Flash test voltage input                   |
 | 6    | FLASH_TEST_MODE0 | VCC    | InputStd     | manual            | Flash test mode signal                     |
 | 7    | FLASH_TEST_MODE1 | VCC    | InputStd     | manual            | Flash test mode signal                     |

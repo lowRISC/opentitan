@@ -10629,7 +10629,7 @@
       }
       {
         name: CC1
-        type: InputStd
+        type: BidirTol
         bank: AVCC
         connection: manual
         desc: ADC input 1
@@ -10638,7 +10638,7 @@
       }
       {
         name: CC2
-        type: InputStd
+        type: BidirTol
         bank: AVCC
         connection: manual
         desc: ADC input 2

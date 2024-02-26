@@ -424,8 +424,8 @@ module chip_earlgrey_asic #(
       InputStd, // FLASH_TEST_MODE1
       InputStd, // FLASH_TEST_MODE0
       AnalogIn0, // FLASH_TEST_VOLT
-      InputStd, // CC2
-      InputStd, // CC1
+      BidirTol, // CC2
+      BidirTol, // CC1
       DualBidirTol, // USB_N
       DualBidirTol, // USB_P
       InputStd  // POR_N
