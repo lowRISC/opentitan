@@ -22,6 +22,7 @@
       si_stage: SV3
       tests: []
       lc_states: ["PROD"]
+      bazel: ["//sw/device/tests:otbn_isa_test"]
       features: [
         "OTBN.ISA",
         "OTBN.SECUREWIPE"
