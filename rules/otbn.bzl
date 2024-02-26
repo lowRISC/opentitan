@@ -35,7 +35,7 @@ def _otbn_assemble_sources(ctx):
             env = {
                 "RV32_TOOL_AS": assembler.path,
             },
-            arguments = ["-o", obj.path, src.path],
+            arguments = ["-o", obj.path, src.path] + ctx.attr.args,
             executable = ctx.executable._otbn_as,
         )
 
@@ -246,6 +246,7 @@ otbn_library = rv_rule(
     implementation = _otbn_library,
     attrs = {
         "srcs": attr.label_list(allow_files = True),
+        "args": attr.string_list(),
         "_cc_toolchain": attr.label(
             default = Label("@bazel_tools//tools/cpp:current_cc_toolchain"),
         ),
@@ -265,6 +266,7 @@ otbn_binary = rv_rule(
     attrs = {
         "srcs": attr.label_list(allow_files = True),
         "deps": attr.label_list(providers = [DefaultInfo]),
+        "args": attr.string_list(),
         "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
         "_otbn_as": attr.label(
             default = "//hw/ip/otbn/util:otbn_as",
