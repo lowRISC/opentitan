@@ -565,7 +565,14 @@ module spi_host
   // Qualify interrupt sources individually with dedicated mask register CSR.EVENT_ENABLE
   assign status_spi_event = |(event_vector & event_mask);
 
-  assign lsio_trigger_o = tx_wm | rx_wm;
+  // Flop trigger signal to avoid glitches on the output
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      lsio_trigger_o <= 1'b0;
+    end else begin
+      lsio_trigger_o <= tx_wm | rx_wm;
+    end
+  end
 
   prim_intr_hw #(
     .Width(1),
