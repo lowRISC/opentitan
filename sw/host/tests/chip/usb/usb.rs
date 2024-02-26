@@ -2,11 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{ensure, Context, Result};
+use anyhow::{bail, ensure, Context, Result};
 use clap::Parser;
 
 use std::collections::HashSet;
 use std::time::{Duration, Instant};
+
+use opentitanlib::app::TransportWrapper;
 
 #[derive(Debug, Parser)]
 pub struct UsbOpts {
@@ -120,6 +122,39 @@ impl UsbOpts {
             // Wait a bit before polling again.
             std::thread::sleep(Duration::from_micros(1_000_000u64 / self.usb_poll_freq));
         }
+    }
+
+    pub fn vbus_control_available(&self) -> bool {
+        self.vbus_sense_en.is_some()
+    }
+
+    pub fn vbus_sense_available(&self) -> bool {
+        self.vbus_sense.is_some()
+    }
+
+    // Enable/disable VBUS.
+    pub fn enable_vbus(&self, transport: &TransportWrapper, en: bool) -> Result<()> {
+        // Enable VBUS sense on the board if necessary.
+        let Some(vbus_sense_en) = &self.vbus_sense_en else {
+            bail!("cannot control VBUS, you must specify --vbus-sense-en");
+        };
+        log::info!("{} VBUS sensing.", if en { "Enable" } else { "Disable" });
+        let vbus_sense_en_pin = transport.gpio_pin(vbus_sense_en)?;
+        vbus_sense_en_pin.write(en)?;
+        // Give time to hardware buffer to stabilize.
+        std::thread::sleep(Duration::from_millis(100));
+        Ok(())
+    }
+
+    // Check whether VBUS is present or not.
+    pub fn vbus_present(&self, transport: &TransportWrapper) -> Result<bool> {
+        // Sense VBUS if available.
+        let Some(vbus_sense) = &self.vbus_sense else {
+            bail!("cannot sense VBUS, you must specify --vbus-sense");
+        };
+
+        let vbus_sense_pin = transport.gpio_pin(vbus_sense)?;
+        vbus_sense_pin.read()
     }
 }
 

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::{bail, ensure, Context, Result};
-use clap::Parser;
+use clap::{Parser, ValueEnum};
 use std::time::Duration;
 
 use opentitanlib::app::TransportWrapper;
@@ -26,6 +26,16 @@ struct Opts {
     /// USB options.
     #[command(flatten)]
     usb: UsbOpts,
+
+    /// Wake method.
+    #[arg(long)]
+    wake: WakeMethod,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, ValueEnum)]
+enum WakeMethod {
+    Reset,
+    Disconnect,
 }
 
 // Wait for a device to appear and then return the parent device and port number.
@@ -59,17 +69,13 @@ fn wait_for_device_and_get_parent(opts: &Opts) -> Result<(rusb::Device<rusb::Glo
 
 fn usbdev_aon_wake(opts: &Opts, transport: &TransportWrapper, uart: &dyn Uart) -> Result<()> {
     // Enable VBUS sense on the board if necessary.
-    if let Some(vbus_sense_en) = &opts.usb.vbus_sense_en {
-        log::info!("Enable VBUS sensing.");
-        let vbus_sense_en_pin = transport.gpio_pin(vbus_sense_en)?;
-        vbus_sense_en_pin.write(true)?;
-        std::thread::sleep(Duration::from_millis(100));
+    if opts.usb.vbus_control_available() {
+        opts.usb.enable_vbus(transport, true)?;
     }
     // Sense VBUS if available.
-    if let Some(vbus_sense) = &opts.usb.vbus_sense {
-        let vbus_sense_pin = transport.gpio_pin(vbus_sense)?;
+    if opts.usb.vbus_sense_available() {
         ensure!(
-            vbus_sense_pin.read()?,
+            opts.usb.vbus_present(transport)?,
             "OT USB does not appear to be connected to a host (VBUS not detected)"
         );
     }
@@ -91,13 +97,37 @@ fn usbdev_aon_wake(opts: &Opts, transport: &TransportWrapper, uart: &dyn Uart) -
     let hub = UsbHub::from_device(&parent).context("for this test, you need to make sure that the program has sufficient permissions to access the hub")?;
     log::info!("suspend device");
     hub.op(UsbHubOp::Suspend, port, Duration::from_millis(100))?;
-    let _ = UartConsole::wait_for(uart, r"suspended, waiting for reset", opts.timeout)?;
+    let _ = UartConsole::wait_for(uart, r"suspended, waiting for", opts.timeout)?;
     log::info!("device has suspended");
 
-    // While suspended, we issue a bus reset.
-    log::info!("reset device");
-    hub.op(UsbHubOp::Reset, port, Duration::from_millis(100))?;
-    let _ = UartConsole::wait_for(uart, r"reset, take control back from aon", opts.timeout)?;
+    // While suspended, we issue a bus reset or disconnect.
+    match opts.wake {
+        WakeMethod::Reset => {
+            log::info!("reset device");
+            hub.op(UsbHubOp::Reset, port, Duration::from_millis(100))?;
+            let _ =
+                UartConsole::wait_for(uart, r"reset, take control back from aon", opts.timeout)?;
+        }
+        WakeMethod::Disconnect => {
+            log::info!("disconnect device");
+            ensure!(
+                opts.usb.vbus_control_available(),
+                "this test requires VBUS control"
+            );
+            opts.usb.enable_vbus(transport, false)?;
+            if opts.usb.vbus_sense_available() {
+                ensure!(
+                    !opts.usb.vbus_present(transport)?,
+                    "OT USB appears to still be connected to a host (VBUS detected)"
+                );
+            }
+            let _ = UartConsole::wait_for(
+                uart,
+                r"disconnect, take control back from aon",
+                opts.timeout,
+            )?;
+        }
+    }
 
     let _ = UartConsole::wait_for(uart, r"PASS!", opts.timeout)?;
     Ok(())
