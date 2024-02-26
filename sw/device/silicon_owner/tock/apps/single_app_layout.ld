@@ -9,7 +9,7 @@ TBF_HEADER_SIZE = 0x80;
 FLASH_START = 0x20040000;
 FLASH_LENGTH = 32M;
 
-RAM_START = 0x10005000;
+RAM_START = 0x10006000;
 RAM_LENGTH = 512K;
 
 /* TODO(cfrantz): Fix the ld_library rule to allow include paths and avoid  */

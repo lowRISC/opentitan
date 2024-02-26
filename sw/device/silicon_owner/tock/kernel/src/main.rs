@@ -22,6 +22,7 @@ use capsules_core::virtualizers::virtual_aes_ccm;
 use capsules_core::virtualizers::virtual_alarm::{MuxAlarm, VirtualMuxAlarm};
 use earlgrey::chip::EarlGreyDefaultPeripherals;
 use earlgrey::chip_config::EarlGreyConfig;
+use earlgrey::epmp::EPMPDebugConfig;
 use earlgrey::pinmux_config::EarlGreyPinmuxConfig;
 use kernel::capabilities;
 use kernel::component::Component;
@@ -32,8 +33,6 @@ use kernel::hil::i2c::I2CMaster;
 use kernel::hil::led::LedHigh;
 use kernel::hil::rng::Rng;
 use kernel::hil::symmetric_encryption::AES128;
-use kernel::platform::mpu;
-use kernel::platform::mpu::KernelMPU;
 use kernel::platform::scheduler_timer::VirtualSchedulerTimer;
 use kernel::platform::{KernelResources, SyscallDriverLookup, TbfHeaderFilterDefaultAllow};
 use kernel::scheduler::priority::PrioritySched;
@@ -97,7 +96,7 @@ static mut RSA_HARDWARE: Option<&lowrisc::rsa::OtbnRsa<'static>> = None;
 #[cfg(test)]
 static mut SHA256SOFT: Option<&capsules_extra::sha256::Sha256Software<'static>> = None;
 
-static mut CHIP: Option<&'static earlgrey::chip::EarlGrey<EarlGreyDefaultPeripherals<ChipConfig, BoardPinmuxLayout>, ChipConfig, BoardPinmuxLayout>> = None;
+static mut CHIP: Option<&'static EarlGreyChip> = None;
 static mut PROCESS_PRINTER: Option<&'static kernel::process::ProcessPrinterText> = None;
 
 // How should the kernel respond when a process faults.
@@ -116,6 +115,15 @@ impl EarlGreyConfig for ChipConfig {
     const AON_TIMER_FREQ: u32 = 250_000;
     const UART_BAUDRATE: u32 = 115200;
 }
+
+type EarlGreyChip = earlgrey::chip::EarlGrey<
+    'static,
+    {earlgrey::epmp::EPMPDebugDisable::TOR_USER_REGIONS},
+    EarlGreyDefaultPeripherals<'static, ChipConfig, BoardPinmuxLayout>,
+    ChipConfig,
+    BoardPinmuxLayout,
+    earlgrey::epmp::EarlGreyEPMP<false, earlgrey::epmp::EPMPDebugDisable>,
+>;
 
 /// A structure representing this platform that holds references to all
 /// capsules for this platform. We've included an alarm and console.
@@ -205,9 +213,7 @@ impl SyscallDriverLookup for EarlGrey {
     }
 }
 
-impl KernelResources<earlgrey::chip::EarlGrey<'static, EarlGreyDefaultPeripherals<'static, ChipConfig, BoardPinmuxLayout>, ChipConfig, BoardPinmuxLayout>>
-    for EarlGrey
-{
+impl KernelResources<EarlGreyChip> for EarlGrey {
     type SyscallDriverLookup = Self;
     type SyscallFilter = TbfHeaderFilterDefaultAllow;
     type ProcessFault = ();
@@ -247,11 +253,43 @@ impl KernelResources<earlgrey::chip::EarlGrey<'static, EarlGreyDefaultPeripheral
 unsafe fn setup() -> (
     &'static kernel::Kernel,
     &'static EarlGrey,
-    &'static earlgrey::chip::EarlGrey<'static, EarlGreyDefaultPeripherals<'static, ChipConfig, BoardPinmuxLayout>, ChipConfig, BoardPinmuxLayout>,
+    &'static EarlGreyChip,
     &'static EarlGreyDefaultPeripherals<'static, ChipConfig, BoardPinmuxLayout>,
 ) {
     // Ibex-specific handler
     earlgrey::chip::configure_trap_handler();
+
+    let earlgrey_epmp = earlgrey::epmp::EarlGreyEPMP::new(
+        earlgrey::epmp::FlashRegion(
+            rv32i::pmp::NAPOTRegionSpec::new(
+                core::ptr::addr_of!(_sflash),
+                core::ptr::addr_of!(_eflash) as usize - core::ptr::addr_of!(_sflash) as usize,
+            )
+            .unwrap(),
+        ),
+        earlgrey::epmp::RAMRegion(
+            rv32i::pmp::NAPOTRegionSpec::new(
+                core::ptr::addr_of!(_ssram),
+                core::ptr::addr_of!(_esram) as usize - core::ptr::addr_of!(_ssram) as usize,
+            )
+            .unwrap(),
+        ),
+        earlgrey::epmp::MMIORegion(
+            rv32i::pmp::NAPOTRegionSpec::new(
+                0x40000000 as *const u8, // start
+                0x10000000,              // size
+            )
+            .unwrap(),
+        ),
+        earlgrey::epmp::KernelTextRegion(
+            rv32i::pmp::TORRegionSpec::new(
+                core::ptr::addr_of!(_stext),
+                core::ptr::addr_of!(_etext),
+            )
+            .unwrap(),
+        ),
+    )
+    .unwrap();
 
     BoardPinmuxLayout::setup();
 
@@ -356,10 +394,8 @@ unsafe fn setup() -> (
     );
 
     let chip = static_init!(
-        earlgrey::chip::EarlGrey<
-            EarlGreyDefaultPeripherals<ChipConfig, BoardPinmuxLayout>, ChipConfig, BoardPinmuxLayout
-        >,
-        earlgrey::chip::EarlGrey::new(peripherals, hardware_alarm)
+        EarlGreyChip,
+        earlgrey::chip::EarlGrey::new(peripherals, hardware_alarm, earlgrey_epmp)
     );
     CHIP = Some(chip);
 
@@ -713,24 +749,18 @@ unsafe fn setup() -> (
         static mut _sappmem: u8;
         /// End of the RAM region for app memory.
         static _eappmem: u8;
-        /// The start of the kernel stack (Included only for kernel PMP)
-        static _sstack: u8;
-        /// The end of the kernel stack (Included only for kernel PMP)
-        static _estack: u8;
         /// The start of the kernel text (Included only for kernel PMP)
         static _stext: u8;
         /// The end of the kernel text (Included only for kernel PMP)
         static _etext: u8;
-        /// The start of the kernel relocation region
-        /// (Included only for kernel PMP)
-        static _srelocate: u8;
-        /// The end of the kernel relocation region
-        /// (Included only for kernel PMP)
-        static _erelocate: u8;
-        /// The start of the kernel BSS (Included only for kernel PMP)
-        static _szero: u8;
-        /// The end of the kernel BSS (Included only for kernel PMP)
-        static _ezero: u8;
+        /// The start of the kernel / app / storage flash (Included only for kernel PMP)
+        static _sflash: u8;
+        /// The end of the kernel / app / storage flash (Included only for kernel PMP)
+        static _eflash: u8;
+        /// The start of the kernel / app RAM (Included only for kernel PMP)
+        static _ssram: u8;
+        /// The end of the kernel / app RAM (Included only for kernel PMP)
+        static _esram: u8;
         /// The start of the OpenTitan manifest
         static _manifest: u8;
     }
@@ -760,52 +790,6 @@ unsafe fn setup() -> (
             watchdog,
         }
     );
-
-    let mut mpu_config = rv32i::epmp::PMPConfig::kernel_default();
-
-    // The kernel stack, BSS and relocation data
-    chip.pmp
-        .allocate_kernel_region(
-            &_sstack as *const u8,
-            &_ezero as *const u8 as usize - &_sstack as *const u8 as usize,
-            mpu::Permissions::ReadWriteOnly,
-            &mut mpu_config,
-        )
-        .unwrap();
-    // The kernel text, Manifest and vectors
-    chip.pmp
-        .allocate_kernel_region(
-            &_manifest as *const u8,
-            &_etext as *const u8 as usize - &_manifest as *const u8 as usize,
-            mpu::Permissions::ReadExecuteOnly,
-            &mut mpu_config,
-        )
-        .unwrap();
-    // The app locations
-    chip.pmp.allocate_kernel_region(
-        &_sapps as *const u8,
-        &_eapps as *const u8 as usize - &_sapps as *const u8 as usize,
-        mpu::Permissions::ReadWriteOnly,
-        &mut mpu_config,
-    );
-    // The app memory locations
-    chip.pmp.allocate_kernel_region(
-        &_sappmem as *const u8,
-        &_eappmem as *const u8 as usize - &_sappmem as *const u8 as usize,
-        mpu::Permissions::ReadWriteOnly,
-        &mut mpu_config,
-    );
-    // Access to the MMIO devices
-    chip.pmp
-        .allocate_kernel_region(
-            0x4000_0000 as *const u8,
-            0x900_0000,
-            mpu::Permissions::ReadWriteOnly,
-            &mut mpu_config,
-        )
-        .unwrap();
-
-    chip.pmp.enable_kernel_mpu(&mut mpu_config);
 
     kernel::process::load_processes(
         board_kernel,
