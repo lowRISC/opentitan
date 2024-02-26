@@ -6,6 +6,7 @@ pub mod bigint;
 pub mod bitbang;
 pub mod bitfield;
 pub mod file;
+pub mod hexdump;
 pub mod num_de;
 pub mod openocd;
 pub mod parse_int;
