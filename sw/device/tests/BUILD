@@ -3535,6 +3535,37 @@ opentitan_test(
             --bootstrap="{firmware}"
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
+            --wake=reset
+        """,
+        test_harness = "//sw/host/tests/chip/usb:usbdev_aon_wake",
+    ),
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/dif:usbdev",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing:pinmux_testutils",
+        "//sw/device/lib/testing:usb_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+# Same requirements as usbdev_aon_wake_reset_test
+# This test cannot be implemented on the CW310 because
+# there is no VBUS control so we cannot disconnect the device.
+opentitan_test(
+    name = "usbdev_aon_wake_disconnect_test",
+    srcs = ["usbdev_aon_wake_disconnect_test.c"],
+    exec_env = dicts.add(
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+    ),
+    silicon = silicon_params(
+        test_cmd = """
+            --bootstrap="{firmware}"
+            --vbus-sense-en=VBUS_SENSE_EN
+            --vbus-sense=VBUS_SENSE
+            --wake=disconnect
         """,
         test_harness = "//sw/host/tests/chip/usb:usbdev_aon_wake",
     ),
