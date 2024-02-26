@@ -3852,7 +3852,7 @@
         }
         {
           name: dma_lsio_trigger
-          desc: Collated LSIO trigger signals for DMA
+          desc: Collated synchronous LSIO trigger signals for DMA
           struct: lsio_trigger
           package: dma_pkg
           type: uni
@@ -19596,7 +19596,7 @@
       }
       {
         name: dma_lsio_trigger
-        desc: Collated LSIO trigger signals for DMA
+        desc: Collated synchronous LSIO trigger signals for DMA
         struct: lsio_trigger
         package: dma_pkg
         type: uni

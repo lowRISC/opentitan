@@ -589,7 +589,14 @@ module spi_host
     end
   end
 
-  assign lsio_trigger_o = tx_wm_q | rx_wm_q;
+  // Flop trigger signal to avoid glitches on the output
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      lsio_trigger_o <= 1'b0;
+    end else begin
+      lsio_trigger_o <= tx_wm_q | rx_wm_q;
+    end
+  end
 
   prim_intr_hw #(.Width(1)) intr_hw_spi_event (
     .clk_i,

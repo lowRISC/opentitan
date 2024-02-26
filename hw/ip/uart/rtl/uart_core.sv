@@ -321,7 +321,14 @@ module uart_core (
     endcase
   end
 
-  assign lsio_trigger_o = tx_watermark_prev_q | rx_watermark_prev_q;
+  // Flop trigger signal to avoid glitches on the output
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      lsio_trigger_o <= 1'b0;
+    end else begin
+      lsio_trigger_o <= tx_watermark_prev_q | rx_watermark_prev_q;
+    end
+  end
 
   assign event_tx_watermark = tx_watermark_d & ~tx_watermark_prev_q;
 
