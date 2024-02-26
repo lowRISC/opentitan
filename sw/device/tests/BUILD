@@ -3595,23 +3595,13 @@ opentitan_test(
     ],
 )
 
-# This test requires that the harness has sufficient permissions to
-# open the USB parent hub of the device under test so it can issue
-# requests directly. For this reason, the test is tagged as manual
-# until the CI can provide such an access.
+# Same requirements as usbdev_aon_wake_reset_test
+# This test cannot be implemented on the CW310 because
+# there is no VBUS control so we cannot disconnect the device.
 opentitan_test(
-    name = "usbdev_aon_wake_reset_test",
-    srcs = ["usbdev_aon_wake_reset_test.c"],
-    cw310 = new_cw310_params(
-        tags = ["manual"],
-        test_cmd = """
-            --bitstream="{bitstream}"
-            --bootstrap="{firmware}"
-        """,
-        test_harness = "//sw/host/tests/chip/usb:usbdev_aon_wake",
-    ),
+    name = "usbdev_aon_wake_disconnect_test",
+    srcs = ["usbdev_aon_wake_disconnect_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     silicon = silicon_params(
@@ -3619,6 +3609,7 @@ opentitan_test(
             --bootstrap="{firmware}"
             --vbus-sense-en=VBUS_SENSE_EN
             --vbus-sense=VBUS_SENSE
+            --wake=disconnect
         """,
         test_harness = "//sw/host/tests/chip/usb:usbdev_aon_wake",
     ),
