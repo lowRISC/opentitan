@@ -220,7 +220,7 @@
       type:    "uni"
       name:    "dma_lsio_trigger"
       act:     "req"
-      desc:    "Collated LSIO trigger signals for DMA"
+      desc:    "Collated synchronous LSIO trigger signals for DMA"
     }
     { struct:  "soc_alert"
       package: "soc_proxy_pkg"

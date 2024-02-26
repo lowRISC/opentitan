@@ -304,12 +304,42 @@ module soc_proxy
     .filter_o (rst_req_external_o)
   );
 
+  // CDC sync of LSIO trigger signals between the peripheral and the high-speed clock domain
+  logic uart_lsio_trigger_sync, spi_host_lsio_trigger_sync, i2c_lsio_trigger_sync;
+
+  prim_flop_2sync #(
+    .Width(1)
+  ) u_uart_lsio_trigger_sync (
+    .clk_i,
+    .rst_ni,
+    .d_i      (uart_lsio_trigger_i),
+    .q_o      (uart_lsio_trigger_sync)
+  );
+
+  prim_flop_2sync #(
+    .Width(1)
+  ) u_spi_host_lsio_trigger_sync (
+    .clk_i,
+    .rst_ni,
+    .d_i      (spi_host_lsio_trigger_i),
+    .q_o      (spi_host_lsio_trigger_sync)
+  );
+
+  prim_flop_2sync #(
+    .Width(1)
+  ) u_i2c_lsio_trigger_sync (
+    .clk_i,
+    .rst_ni,
+    .d_i    (i2c_lsio_trigger_i),
+    .q_o    (i2c_lsio_trigger_sync)
+  );
+
   // Collate LSIO trigger inputs into signal for DMA
   assign dma_lsio_trigger_o = {
     soc_lsio_trigger_i,
-    uart_lsio_trigger_i,
-    spi_host_lsio_trigger_i,
-    i2c_lsio_trigger_i
+    uart_lsio_trigger_sync,
+    spi_host_lsio_trigger_sync,
+    i2c_lsio_trigger_sync
   };
 
   // Assertions
