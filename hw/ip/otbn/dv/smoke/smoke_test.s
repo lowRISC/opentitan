@@ -5,7 +5,7 @@
 # OTBN Smoke test, runs various instructions which are expected to produce the
 # final register state see in smoke_expected.txt
 
-.section .text
+.section .text.start
 
 # x2 = 0xd0beb513
 lui x2, 0xd0beb
@@ -125,13 +125,18 @@ csrrs x23, mod5, x0
 # w1 = mod = 0x78fccc06_2228e9d6_89c9b54f_887cf14e_c79af825_69be586e_9866bb3b_53769ada
 bn.wsrr w1, 0x0 /* MOD */
 
-# Request an RND value with a write to CSR RND_PREFETCH
-csrrw x0, rnd_prefetch, x0
-
-# sim environment provides a fixed value for RND (in other environment RND isn't
-# fixed so this test will have a different final state)
 # w2 = rnd = 0xAAAAAAAA_99999999_AAAAAAAA_99999999_AAAAAAAA_99999999_AAAAAAAA_99999999
-bn.wsrr w2, 0x1 /* RND */
+.ifdef deterministic
+  la x25, rnd_value
+  li x26, 2
+  bn.lid x26, 0(x25)
+.else
+  # Request an RND value with a write to CSR RND_PREFETCH
+  csrrw x0, rnd_prefetch, x0
+  # sim environment provides a fixed value for RND (in other environment RND isn't
+  # fixed so this test will have a different final state)
+  bn.wsrr w2, 0x1 /* RND */
+.endif
 
 # w3 = w1 + w2 = 0x23a776b0_bbc28370_34745ffa_22168ae8_7245a2d0_0357f208_431165e5_ed103473
 bn.add w3, w1, w2
@@ -320,30 +325,33 @@ jal x1, call_stack_3
 
 call_stack_3:
 
-# w1 = KEY_S0L = 0xdeadbeef_deadbeef_deadbeef_deadbeef_deadbeef_deadbeef_deadbeef_deadbeef
-# w2 = w2 + w1 = w2 + KEY_S0L = 0x8958699a_78475889_8958699a_78475889_8958699a_78475889_8958699a_78475888
-bn.wsrr w1, 0x4
-bn.add w2, w2, w1
+.ifnotdef deterministic
+  # w1 = KEY_S0L = 0xdeadbeef_deadbeef_deadbeef_deadbeef_deadbeef_deadbeef_deadbeef_deadbeef
+  # w2 = w2 + w1 = w2 + KEY_S0L = 0x8958699a_78475889_8958699a_78475889_8958699a_78475889_8958699a_78475888
+  bn.wsrr w1, 0x4
+  bn.add w2, w2, w1
 
-# w1 = KEY_S0H = 0xdeadbeef_deadbeef_deadbeef_deadbeef
-# w2 = w2 + w1 = w2 + KEY_S0H = 0x8958699a_78475889_8958699a_7847588a_6806288a_56f51779_6806288a_56f51777
-bn.wsrr w1, 0x5
-bn.add w2, w2, w1
+  # w1 = KEY_S0H = 0xdeadbeef_deadbeef_deadbeef_deadbeef
+  # w2 = w2 + w1 = w2 + KEY_S0H = 0x8958699a_78475889_8958699a_7847588a_6806288a_56f51779_6806288a_56f51777
+  bn.wsrr w1, 0x5
+  bn.add w2, w2, w1
 
-# w1 = KEY_S1L = 0xbaadf00d_baadf00d_baadf00d_baadf00d_baadf00d_baadf00d_baadf00d_baadf00d
-# w2 = w2 + w1 = w2 + KEY_S1L = 0x440659a8_32f54897_440659a8_32f54898_22b41898_11a30787_22b41898_11a30784
-bn.wsrr w1, 0x6
-bn.add w2, w2, w1
+  # w1 = KEY_S1L = 0xbaadf00d_baadf00d_baadf00d_baadf00d_baadf00d_baadf00d_baadf00d_baadf00d
+  # w2 = w2 + w1 = w2 + KEY_S1L = 0x440659a8_32f54897_440659a8_32f54898_22b41898_11a30787_22b41898_11a30784
+  bn.wsrr w1, 0x6
+  bn.add w2, w2, w1
 
-# w1 = KEY_S1H = 0xbaadf00d_baadf00d_baadf00d_baadf00d
-# w2 = w2 + w1 = w2 + KEY_S1H = 0x440659a8_32f54897_440659a8_32f54898_dd6208a5_cc50f794_dd6208a5_cc50f791
-bn.wsrr w1, 0x7
-bn.add w2, w2, w1
+  # w1 = KEY_S1H = 0xbaadf00d_baadf00d_baadf00d_baadf00d
+  # w2 = w2 + w1 = w2 + KEY_S1H = 0x440659a8_32f54897_440659a8_32f54898_dd6208a5_cc50f794_dd6208a5_cc50f791
+  bn.wsrr w1, 0x7
+  bn.add w2, w2, w1
+.endif
 
 # Set unused registers to zero. Without this, they would keep the random value assigned during
 # secure wipe, which cannot be compared against an expected value.
 xor x30, x30, x30
 
+jal x1, reg_dump
 ecall
 
 test_fn_1:
@@ -356,12 +364,87 @@ test_fn_2:
   addi x22, x22, 3
   jalr x0, x1, 0
 
+
+# This function dumps both the register files
+# into gpr_state and wdr_state.
+# The registers aren't clobbered by this function.
+reg_dump:
+  # Dump all the GPRs into gpr_state
+  la x1, gpr_state # (using the x1 to hold a temporary value)
+  sw x2, 0(x1)
+
+  la x2, gpr_state
+  sw  x3,   4(x2) #  1 * 4
+  sw  x4,   8(x2) #  2 * 4
+  sw  x5,  12(x2) #  3 * 4
+  sw  x6,  16(x2) #  4 * 4
+  sw  x7,  20(x2) #  5 * 4
+  sw  x8,  24(x2) #  6 * 4
+  sw  x9,  28(x2) #  7 * 4
+  sw x10,  32(x2) #  8 * 4
+  sw x11,  36(x2) #  9 * 4
+  sw x12,  40(x2) # 10 * 4
+  sw x13,  44(x2) # 11 * 4
+  sw x14,  48(x2) # 12 * 4
+  sw x15,  52(x2) # 13 * 4
+  sw x16,  56(x2) # 14 * 4
+  sw x17,  60(x2) # 15 * 4
+  sw x18,  64(x2) # 16 * 4
+  sw x19,  68(x2) # 17 * 4
+  sw x20,  72(x2) # 18 * 4
+  sw x21,  76(x2) # 19 * 4
+  sw x22,  80(x2) # 20 * 4
+  sw x23,  84(x2) # 21 * 4
+  sw x24,  88(x2) # 22 * 4
+  sw x25,  92(x2) # 23 * 4
+  sw x26,  96(x2) # 24 * 4
+  sw x27, 100(x2) # 25 * 4
+  sw x28, 104(x2) # 26 * 4
+  sw x29, 108(x2) # 27 * 4
+  sw x30, 112(x2) # 28 * 4
+  sw x31, 116(x2) # 29 * 4
+
+  # Dump all the WDRs into wdr_state
+  li x2, 0
+  la x3, wdr_state
+  li x1, 32 # (using the x1 to hold a temporary value)
+  loop x1, 2
+  bn.sid x2++, 0(x3)
+  addi x3, x3, 32
+
+  # Restore the value of x2 and x3 to the value they had
+  # before this function.
+  la x2, gpr_state
+  lw x3, 4(x2)
+  lw x2, 0(x2)
+
+  ret
+
 .section .data
-.word 0x1234abcd
-.word 0xbaadf00d
-.word 0xcafed00d
-.word 0xdeadbeef
-.word 0xfacefeed
-.word 0xaaaaaaaa
-.word 0xbbbbbbbb
-.word 0xcccccccc
+  .word 0x1234abcd
+  .word 0xbaadf00d
+  .word 0xcafed00d
+  .word 0xdeadbeef
+  .word 0xfacefeed
+  .word 0xaaaaaaaa
+  .word 0xbbbbbbbb
+  .word 0xcccccccc
+
+.ifdef deterministic
+.balign 32
+rnd_value:
+  .rept 4
+  .word 0x99999999
+  .word 0xaaaaaaaa
+  .endr
+.endif
+
+.global gpr_state
+.balign 32
+gpr_state:
+  .zero (32 / 4) * 30 # not including x0 and x1
+
+.global wdr_state
+.balign 32
+wdr_state:
+  .zero (256 / 4) * 32
