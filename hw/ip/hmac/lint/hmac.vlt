@@ -10,8 +10,6 @@
 // currently used, but we're keeping them attached for future use.
 lint_off -rule UNUSED -file "*/rtl/hmac_core.sv" -match "Signal is not used: 'wipe_secret'"
 lint_off -rule UNUSED -file "*/rtl/hmac_core.sv" -match "Signal is not used: 'wipe_v'"
-lint_off -rule UNUSED -file "*/rtl/sha2_pad.sv" -match "Signal is not used: 'wipe_secret'"
-lint_off -rule UNUSED -file "*/rtl/sha2_pad.sv" -match "Signal is not used: 'wipe_v'"
 
 // 1 bit adder to optimize the count ones logic
 lint_off -rule WIDTH -file "*/rtl/hmac.sv" -match "*RHS's SEL generates 1 bits*"
