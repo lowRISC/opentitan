@@ -302,7 +302,7 @@ _FT_PROVISIONING_CMD_ARGS = """
 opentitan_test(
     name = "ft_provision",
     cw310 = hyper310_jtag_params(
-        timeout = "long",
+        timeout = "short",
         binaries = _FT_PROVISIONING_BINARIES,
         data = FT_PERSONALIZE_KEYS,
         otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival_bringup:otp_img_test_locked0_manuf_initialized",
