@@ -32,12 +32,14 @@ class sram_ctrl_bijection_vseq extends sram_ctrl_smoke_vseq;
 
       // Write the corresponding address to each entry in the SRAM
       for (int j = 0; j < sram_depth; j++) begin
+        if (cfg.stop_transaction_generators()) return;
         do_single_write(.addr(j*4), .data(j*4), .mask('1));
       end
 
       // Read each location back, the read data should be the same as its address
       for (int j = 0; j < sram_depth; j++) begin
         logic [TL_DW-1:0] rdata;
+        if (cfg.stop_transaction_generators()) return;
         do_single_read(.addr(j*4), .mask('1), .check_rdata(1),
                        .exp_rdata(j*4), .rdata(rdata));
       end

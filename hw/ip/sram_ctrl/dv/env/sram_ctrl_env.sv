@@ -52,11 +52,8 @@ class sram_ctrl_env #(parameter int AddrWidth = 10) extends cip_base_env #(
 
   function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
-
-    if (cfg.en_scb) begin
-      // connect KDI port
-      m_kdi_agent.monitor.analysis_port.connect(scoreboard.kdi_fifo.analysis_export);
-    end
+    // Connect KDI port.
+    m_kdi_agent.monitor.analysis_port.connect(scoreboard.kdi_fifo.analysis_export);
   endfunction
 
 endclass

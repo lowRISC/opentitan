@@ -22,6 +22,8 @@ class sram_ctrl_base_vseq #(parameter int AddrWidth = `SRAM_ADDR_WIDTH) extends 
     super.pre_start();
     void'($value$plusargs("partial_access_pct=%0d", partial_access_pct));
     `DV_CHECK_LE(partial_access_pct, 100)
+    // Wait for ram initialization to be done, since it blocks memory accesses.
+    `DV_WAIT(cfg.in_init == 1'b0, "Timed out waiting for initialization done")
   endtask
 
   virtual task dut_init(string reset_kind = "HARD");
@@ -57,16 +59,31 @@ class sram_ctrl_base_vseq #(parameter int AddrWidth = `SRAM_ADDR_WIDTH) extends 
     req_mem_init();
   endtask
 
-  // Request a memory init.
-  //
+  // Increase the number of cycles to wait for no outstanding accesses, since it is hard
+  // to sequence all invocations of pre_start, and that can trigger ram init which blocks
+  // accesses for a long time. The RAM has 32K words, and it updates one per cycle, so
+  // 50,000 cycles should be okay.
+  virtual function int wait_cycles_with_no_outstanding_accesses();
+    return 50_000;
+  endfunction
+
+  // Request a memory init, and  wait for it to complete.
   virtual task req_mem_init(bit wait_done = 1);
     // Use csr_wr rather than csr_update, because we change this reg type to RO in RAL when
     // ctrl_regwen is clear. csr_update won't issue a write to this CSR
     csr_wr(.ptr(ral.ctrl), .value('b11));
 
     // if ctrl_regwen is off, init won't start
-    if (`gmv(ral.ctrl_regwen) && wait_done) begin
-      csr_spinwait(.ptr(ral.status.init_done), .exp_data(1));
+    if (!`gmv(ral.ctrl_regwen)) begin
+      `uvm_info(`gfn, "regwen blocks mem_init", UVM_MEDIUM)
+      return;
+    end
+
+    cfg.in_init = 1'b1;
+    cfg.in_key_req = 1'b1;
+
+    if (wait_done) begin
+      `DV_WAIT(cfg.in_init == 1'b0, "Timed out waiting for initialization done")
       cfg.disable_d_user_data_intg_check_for_passthru_mem = 0;
     end
   endtask
@@ -80,7 +97,11 @@ class sram_ctrl_base_vseq #(parameter int AddrWidth = `SRAM_ADDR_WIDTH) extends 
     cfg.disable_d_user_data_intg_check_for_passthru_mem = 1;
     ral.ctrl.renew_scr_key.set(1);
     csr_update(.csr(ral.ctrl));
-    if (wait_valid) csr_spinwait(.ptr(ral.status.scr_key_valid), .exp_data(1));
+    cfg.in_key_req = 1'b1;
+    if (wait_valid) begin
+      `DV_WAIT(cfg.in_key_req == 1'b0, "Timed out waiting for key request done")
+      cfg.disable_d_user_data_intg_check_for_passthru_mem = 0;
+    end
   endtask
 
   // Task to perform a single SRAM read at the specified location
@@ -130,6 +151,7 @@ class sram_ctrl_base_vseq #(parameter int AddrWidth = `SRAM_ADDR_WIDTH) extends 
 
     repeat (num_stress_ops) begin
       bit write = $urandom_range(0, 1);
+      if (cfg.stop_transaction_generators()) break;
       // fully randomize data
       `DV_CHECK_STD_RANDOMIZE_FATAL(data)
 
@@ -174,6 +196,8 @@ class sram_ctrl_base_vseq #(parameter int AddrWidth = `SRAM_ADDR_WIDTH) extends 
     repeat (num_ops) begin
       bit completed, saw_err;
       bit write = $urandom_range(0, 1);
+
+      if (cfg.stop_transaction_generators()) break;
 
       // full randomize addr and data
       `DV_CHECK_STD_RANDOMIZE_FATAL(data)

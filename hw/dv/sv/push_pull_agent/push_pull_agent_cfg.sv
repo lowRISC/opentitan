@@ -142,12 +142,14 @@ class push_pull_agent_cfg #(parameter int HostDataWidth = 32,
   // Setter method for the user data queues - must be called externally to place specific user-data
   // to be sent by the driver.
   function void add_h_user_data(bit [HostDataWidth-1:0] data);
+    `uvm_info(`gfn, $sformatf("Added h user data %p", data), UVM_HIGH)
     h_user_data_q.push_back(data);
   endfunction
 
   // Setter method for the user data queues - must be called externally to place specific user-data
   // to be sent by the driver.
   function void add_d_user_data(bit [DeviceDataWidth-1:0] data);
+    `uvm_info(`gfn, $sformatf("Added d user data %p", data), UVM_HIGH)
     d_user_data_q.push_back(data);
   endfunction
 

@@ -7,21 +7,21 @@
 // seq, normal seq with default priority (100) has the priority to access TL driver
 `define create_tl_access_error_case(task_name_, with_c_,
                                     seq_t_ = tl_host_custom_seq #(cip_tl_seq_item),
-                                    seqr_t) \
-  begin \
-    seq_t_ tl_seq; \
-    `uvm_info(`gfn, {"Running ", `"task_name_`"}, UVM_HIGH) \
-    `uvm_create_on(tl_seq, seqr_t) \
-    if (cfg.zero_delays) begin \
-      tl_seq.min_req_delay = 0; \
-      tl_seq.max_req_delay = 0; \
-    end \
-    tl_seq.req_abort_pct = $urandom_range(0, 100); \
-    `DV_CHECK_RANDOMIZE_WITH_FATAL(tl_seq, with_c_) \
-    csr_utils_pkg::increment_outstanding_access(); \
-    `DV_SPINWAIT(`uvm_send_pri(tl_seq, 1), \
+                                    seqr_t)                                                \
+  begin                                                                                    \
+    seq_t_ tl_seq;                                                                         \
+    `uvm_info(`gfn, {"Running ", `"task_name_`"}, UVM_MEDIUM)                              \
+    `uvm_create_on(tl_seq, seqr_t)                                                         \
+    if (cfg.zero_delays) begin                                                             \
+      tl_seq.min_req_delay = 0;                                                            \
+      tl_seq.max_req_delay = 0;                                                            \
+    end                                                                                    \
+    tl_seq.req_abort_pct = $urandom_range(0, 100);                                         \
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(tl_seq, with_c_)                                        \
+    csr_utils_pkg::increment_outstanding_access();                                         \
+    `DV_SPINWAIT(`uvm_send_pri(tl_seq, 1),                                                 \
         $sformatf("Timeout: %0s with addr %0h", `"task_name_`", tl_seq.addr), 100_000_000) \
-    csr_utils_pkg::decrement_outstanding_access(); \
+    csr_utils_pkg::decrement_outstanding_access();                                         \
   end
 
 virtual task tl_access_unmapped_addr(string ral_name);

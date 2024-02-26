@@ -26,10 +26,14 @@ package csr_utils_pkg;
 
   function automatic void increment_outstanding_access();
     outstanding_accesses++;
+    `uvm_info("csr_utils_pkg", $sformatf("increment_outstanding_access %0d", outstanding_accesses),
+              UVM_HIGH)
   endfunction
 
   function automatic void decrement_outstanding_access();
     outstanding_accesses--;
+    `uvm_info("csr_utils_pkg", $sformatf("decrement_outstanding_access %0d", outstanding_accesses),
+              UVM_HIGH)
   endfunction
 
   task automatic wait_no_outstanding_access();
@@ -549,6 +553,7 @@ package csr_utils_pkg;
         fork
           while (!under_reset) begin
             if (spinwait_delay_ns) #(spinwait_delay_ns * 1ns);
+            `uvm_info("csr_utils_pkg", "In csr_spinwait", verbosity)
             csr_rd(.ptr(ptr), .value(read_data), .check(check), .path(path),
                    .blocking(1), .map(map), .user_ftdr(user_ftdr), .backdoor(backdoor));
             `uvm_info(msg_id, $sformatf("ptr %0s == 0x%0h",

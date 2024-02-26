@@ -40,7 +40,7 @@ module prim_fifo_sync #(
 
     assign depth_o = 1'b0; //output is meaningless
 
-    // devie facing
+    // device facing
     assign rvalid_o = wvalid_i;
     assign rdata_o = wdata_i;
 
