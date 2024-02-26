@@ -65,7 +65,7 @@
       si_stage: SV3
       lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
       tests: ["chip_sw_lc_ctrl_otp_hw_cfg"]
-      bazel: []
+      bazel: ["//sw/device/tests:lc_ctrl_otp_hw_cfg_test"]
     }
     {
       name: chip_sw_lc_ctrl_init
