@@ -58,10 +58,10 @@ static volatile dif_i2c_irq_t irq_fired;
  * This function overrides the default OTTF external ISR.
  *
  * For each IRQ, it performs the following:
- * 1. Claims the IRQ fired (finds PLIC IRQ index).
+ * 1. Claims the IRQ that fired (finds PLIC IRQ index).
  * 2. Checks that the index belongs to the expected peripheral.
  * 3. Checks that only the correct / expected IRQ is triggered.
- * 4. Clears the IRQ at the peripheral.
+ * 4. Clears or disables the IRQ at the peripheral.
  * 5. Completes the IRQ service at PLIC.
  */
 static status_t external_isr(void) {
@@ -79,7 +79,16 @@ static status_t external_isr(void) {
                                         kTopEarlgreyPlicIrqIdI2c2FmtThreshold);
 
   LOG_INFO("%s: plic:%d, i2c:%d", __func__, plic_irq_id, irq_fired);
-  TRY(dif_i2c_irq_acknowledge(&i2c, irq_fired));
+
+  // Clear or Disable the interrupt as appropriate.
+  dif_irq_type_t irq_type = kDifIrqTypeEvent;
+  TRY(dif_i2c_irq_get_type(&i2c, irq_fired, &irq_type));
+
+  if (irq_type == kDifIrqTypeEvent) {
+    TRY(dif_i2c_irq_acknowledge(&i2c, irq_fired));
+  } else {
+    TRY(dif_i2c_irq_set_enabled(&i2c, irq_fired, kDifToggleDisabled));
+  }
 
   // Complete the IRQ at PLIC.
   TRY(dif_rv_plic_irq_complete(&plic, kHart, plic_irq_id));
@@ -170,23 +179,43 @@ static status_t cmd_complete_irq(void) {
 }
 
 static status_t fmt_threshold_irq(void) {
+  // When the FmtThreshold interrupt fires depends upon whether it's an Event
+  // type (initial design) or a Status type (later versions).
+  dif_irq_type_t irq_type = kDifIrqTypeEvent;
+  TRY(dif_i2c_irq_get_type(&i2c, irq_fired, &irq_type));
+
   // Clean any previous state.
-  TRY(dif_i2c_irq_acknowledge(&i2c, kDifI2cIrqFmtThreshold));
-  TRY(dif_i2c_irq_set_enabled(&i2c, kDifI2cIrqFmtThreshold, kDifToggleEnabled));
-  TRY(dif_i2c_set_watermarks(&i2c, /*rx_level=*/kDifI2cLevel30Byte,
-                             /*fmt_level=*/kDifI2cLevel4Byte));
+  if (irq_type == kDifIrqTypeEvent) {
+    TRY(dif_i2c_irq_acknowledge(&i2c, kDifI2cIrqFmtThreshold));
+  } else {
+    TRY(dif_i2c_irq_set_enabled(&i2c, kDifI2cIrqFmtThreshold,
+                                kDifToggleDisabled));
+  }
+  TRY(dif_i2c_set_host_watermarks(&i2c, /*rx_level=*/29u, /*fmt_level=*/5u));
 
   irq_global_ctrl(false);
   irq_fired = kIrqVoid;
   irq_global_ctrl(true);
 
+  if (irq_type == kDifIrqTypeEvent) {
+    TRY(dif_i2c_irq_set_enabled(&i2c, kDifI2cIrqFmtThreshold,
+                                kDifToggleEnabled));
+  }
+
   const uint8_t kAddr[2] = {0x03, 0x21};
-  // Put five transactions into the fifo and expects an IRQ when the fmt_fifo
+  // Put five transactions into the FIFO and expect an IRQ when the FMT FIFO
   // level drops to four.
   for (size_t i = 0; i < 5; ++i) {
     TRY(write_byte(kAddr, 0xAB));
   }
+  // Enable the Status-type interrupt immediately after presenting the data.
+  if (irq_type == kDifIrqTypeStatus) {
+    TRY(dif_i2c_irq_set_enabled(&i2c, kDifI2cIrqFmtThreshold,
+                                kDifToggleEnabled));
+  }
 
+  // Status and Event types will both fire when the FMT FIFO level drops below 5
+  // entries.
   ATOMIC_WAIT_FOR_INTERRUPT(irq_fired == kDifI2cIrqFmtThreshold);
 
   TRY(dif_i2c_irq_set_enabled(&i2c, kDifI2cIrqFmtThreshold,
@@ -194,32 +223,11 @@ static status_t fmt_threshold_irq(void) {
   return OK_STATUS();
 }
 
-static status_t fmt_overflow_irq(void) {
-  // Clean any previous state.
-  TRY(dif_i2c_irq_acknowledge(&i2c, kDifI2cIrqFmtOverflow));
-  TRY(dif_i2c_irq_set_enabled(&i2c, kDifI2cIrqFmtOverflow, kDifToggleEnabled));
-
-  irq_global_ctrl(false);
-  irq_fired = kIrqVoid;
-  irq_global_ctrl(true);
-  const uint8_t kAddr[2] = {0x03, 0x21};
-  // Overwhelm the fmt_fifo to generate a Overflow IRQ.
-  for (size_t i = 0; i < 20; ++i) {
-    TRY(write_byte(kAddr, 0xAB));
-  }
-
-  ATOMIC_WAIT_FOR_INTERRUPT(irq_fired == kDifI2cIrqFmtOverflow);
-
-  TRY(dif_i2c_irq_set_enabled(&i2c, kDifI2cIrqFmtOverflow, kDifToggleDisabled));
-  return OK_STATUS();
-}
-
 static status_t rx_threshold_irq(void) {
   // Clean any previous state.
   TRY(dif_i2c_irq_acknowledge(&i2c, kDifI2cIrqRxThreshold));
   TRY(dif_i2c_irq_set_enabled(&i2c, kDifI2cIrqRxThreshold, kDifToggleEnabled));
-  TRY(dif_i2c_set_watermarks(&i2c, /*rx_level=*/kDifI2cLevel8Byte,
-                             /*fmt_level=*/kDifI2cLevel4Byte));
+  TRY(dif_i2c_set_host_watermarks(&i2c, /*rx_level=*/7u, /*fmt_level=*/5u));
 
   irq_global_ctrl(false);
   irq_fired = kIrqVoid;
@@ -301,7 +309,6 @@ bool test_main(void) {
   EXECUTE_TEST(test_result, nak_irq_disabled);
   EXECUTE_TEST(test_result, cmd_complete_irq);
   EXECUTE_TEST(test_result, fmt_threshold_irq);
-  EXECUTE_TEST(test_result, fmt_overflow_irq);
   EXECUTE_TEST(test_result, rx_threshold_irq);
   EXECUTE_TEST(test_result, rx_overflow_irq);
 

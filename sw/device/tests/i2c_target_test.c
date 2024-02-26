@@ -130,9 +130,9 @@ static status_t configure_device_address(ujson_t *uj, dif_i2c_t *i2c) {
   return RESP_OK_STATUS(uj);
 }
 
-static status_t wait_for_acq_fifo(dif_i2c_t *i2c, uint8_t at_least,
+static status_t wait_for_acq_fifo(dif_i2c_t *i2c, dif_i2c_level_t at_least,
                                   const ibex_timeout_t *deadline) {
-  uint8_t acq_fifo_lvl;
+  dif_i2c_level_t acq_fifo_lvl;
   while (!ibex_timeout_check(deadline)) {
     if (dif_i2c_get_fifo_levels(i2c, NULL, NULL, NULL, &acq_fifo_lvl) ==
             kDifOk &&

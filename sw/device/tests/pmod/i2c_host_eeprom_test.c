@@ -57,13 +57,12 @@ static status_t poll_while_busy(dif_i2c_t *i2c) {
 }
 
 /**
- * Check if an given irq has fired and is pending.
+ * Check if the given irq is in the expected state.
  */
-static status_t check_irq(dif_i2c_t *i2c, dif_i2c_irq_t irq) {
-  bool irq_fired = false;
-  TRY(dif_i2c_irq_is_pending(i2c, irq, &irq_fired));
-  TRY_CHECK(irq_fired, "Irq %u not fired", irq);
-  TRY(dif_i2c_irq_acknowledge(i2c, irq));
+static status_t check_irq(dif_i2c_t *i2c, dif_i2c_irq_t irq, bool expected) {
+  bool asserted = false;
+  TRY(dif_i2c_irq_is_pending(i2c, irq, &asserted));
+  TRY_CHECK(expected == asserted, "Irq %u not in the expected state", irq);
   return OK_STATUS();
 }
 
@@ -97,12 +96,17 @@ static status_t write_read_random(dif_i2c_t *i2c) {
   return OK_STATUS();
 }
 
-static status_t write_read_page(dif_i2c_t *i2c) {
+static status_t write_read_page(dif_i2c_t *i2c, bool use_irq) {
   // Write multiple bytes to the 9th page (of 64 bytes each).
   const uint8_t kAddr[2] = {0x02, 0x01};
   uint8_t data[10] = {kAddr[0], kAddr[1], 0x01, 0x23, 0x45,
                       0x67,     0x89,     0xAB, 0xCD, 0xEF};
   TRY(i2c_testutils_write(i2c, kDeviceAddr, sizeof(data), data, false));
+  if (use_irq) {
+    // Check immediately that the FmtThreshold Status-type interrupt has been
+    // deasserted.
+    TRY(check_irq(i2c, kDifI2cIrqFmtThreshold, false));
+  }
 
   // Wait for the write to finish.
   TRY(poll_while_busy(i2c));
@@ -124,6 +128,15 @@ static status_t write_read_page(dif_i2c_t *i2c) {
   TRY(i2c_testutils_write(i2c, kDeviceAddr, sizeof(data), data, false));
   TRY(poll_while_busy(i2c));
   TRY(i2c_testutils_write(i2c, kDeviceAddr, sizeof(kAddr), kAddr, true));
+  if (use_irq) {
+    // Wait with a timeout until the RxThreshold interrupt is observed.
+    ibex_timeout_t timeout = ibex_timeout_init(kDefaultTimeoutMicros);
+    bool asserted = false;
+    do {
+      TRY(dif_i2c_irq_is_pending(i2c, kDifI2cIrqRxThreshold, &asserted));
+    } while (!asserted && !ibex_timeout_check(&timeout));
+    TRY_CHECK(asserted, "RxThreshold interrupt not asserted");
+  }
   TRY(i2c_testutils_read(i2c, kDeviceAddr, sizeof(read_data), read_data,
                          kDefaultTimeoutMicros));
 
@@ -135,13 +148,14 @@ static status_t write_read_page(dif_i2c_t *i2c) {
 
 static status_t write_read_page_with_irq(dif_i2c_t *i2c) {
   TRY(dif_i2c_irq_acknowledge_all(i2c));
-  TRY(dif_i2c_set_watermarks(i2c, /*rx_level=*/kDifI2cLevel4Byte,
-                             /*fmt_level=*/kDifI2cLevel4Byte));
+  TRY(dif_i2c_set_host_watermarks(i2c, /*rx_level=*/3u, /*fmt_level=*/5u));
 
-  TRY(write_read_page(i2c));
+  TRY(write_read_page(i2c, true));
 
-  TRY(check_irq(i2c, kDifI2cIrqFmtThreshold));
-  return check_irq(i2c, kDifI2cIrqRxThreshold);
+  // FMT FIFO should empty, so interrupt should no longer be asserted.
+  TRY(check_irq(i2c, kDifI2cIrqFmtThreshold, true));
+  // All data should have been read from the RX FIFO
+  return check_irq(i2c, kDifI2cIrqRxThreshold, false);
 }
 
 static status_t i2c_configure(dif_i2c_t *i2c, dif_pinmux_t *pinmux,
@@ -189,7 +203,7 @@ bool test_main(void) {
     for (size_t i = 0; i < ARRAYSIZE(kSpeeds); ++i) {
       CHECK_STATUS_OK(i2c_testutils_set_speed(&i2c, kSpeeds[i]));
       EXECUTE_TEST(test_result, write_read_random, &i2c);
-      EXECUTE_TEST(test_result, write_read_page, &i2c);
+      EXECUTE_TEST(test_result, write_read_page, &i2c, false);
       EXECUTE_TEST(test_result, write_read_page_with_irq, &i2c);
     }
     CHECK_STATUS_OK(test_shutdown(&i2c, &pinmux, i2c_instance));

@@ -74,7 +74,7 @@ static volatile bool cmd_complete_irq_seen = false;
  * This constant indicates the number of interrupt requests.
  */
 enum {
-  kNumI2cIrqs = 6,
+  kNumI2cIrqs = 5,
 };
 
 typedef struct i2c_conf {
@@ -88,7 +88,6 @@ const i2c_conf_t i2c_configuration[] = {
      .i2c_irq_fmt_threshold_id = kTopEarlgreyPlicIrqIdI2c0FmtThreshold,
      .plic_irqs = {kTopEarlgreyPlicIrqIdI2c0CmdComplete,
                    kTopEarlgreyPlicIrqIdI2c0TxStretch,
-                   kTopEarlgreyPlicIrqIdI2c0TxOverflow,
                    kTopEarlgreyPlicIrqIdI2c0AcqFull,
                    kTopEarlgreyPlicIrqIdI2c0UnexpStop,
                    kTopEarlgreyPlicIrqIdI2c0HostTimeout}},
@@ -96,7 +95,6 @@ const i2c_conf_t i2c_configuration[] = {
      .i2c_irq_fmt_threshold_id = kTopEarlgreyPlicIrqIdI2c1FmtThreshold,
      .plic_irqs = {kTopEarlgreyPlicIrqIdI2c1CmdComplete,
                    kTopEarlgreyPlicIrqIdI2c1TxStretch,
-                   kTopEarlgreyPlicIrqIdI2c1TxOverflow,
                    kTopEarlgreyPlicIrqIdI2c1AcqFull,
                    kTopEarlgreyPlicIrqIdI2c1UnexpStop,
                    kTopEarlgreyPlicIrqIdI2c1HostTimeout}},
@@ -104,7 +102,6 @@ const i2c_conf_t i2c_configuration[] = {
      .i2c_irq_fmt_threshold_id = kTopEarlgreyPlicIrqIdI2c2FmtThreshold,
      .plic_irqs = {kTopEarlgreyPlicIrqIdI2c2CmdComplete,
                    kTopEarlgreyPlicIrqIdI2c2TxStretch,
-                   kTopEarlgreyPlicIrqIdI2c2TxOverflow,
                    kTopEarlgreyPlicIrqIdI2c2AcqFull,
                    kTopEarlgreyPlicIrqIdI2c2UnexpStop,
                    kTopEarlgreyPlicIrqIdI2c2HostTimeout}}};
@@ -221,7 +218,7 @@ bool test_main(void) {
     expected_data[i] = (uint8_t)rand_testutils_gen32_range(0, 0xff);
   };
 
-  uint8_t tx_fifo_lvl;
+  dif_i2c_level_t tx_fifo_lvl;
   CHECK_DIF_OK(dif_i2c_get_fifo_levels(&i2c, NULL, NULL, &tx_fifo_lvl, NULL));
   IBEX_SPIN_FOR(!(tx_fifo_lvl > 0 && tx_empty_irq_seen == false), 100);
   CHECK_STATUS_OK(
@@ -230,7 +227,7 @@ bool test_main(void) {
 
   LOG_INFO("Data written to fifo");
 
-  uint8_t acq_fifo_lvl;
+  dif_i2c_level_t acq_fifo_lvl;
   do {
     CHECK_DIF_OK(
         dif_i2c_get_fifo_levels(&i2c, NULL, NULL, &tx_fifo_lvl, &acq_fifo_lvl));
