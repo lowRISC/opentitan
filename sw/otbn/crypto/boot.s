@@ -99,7 +99,7 @@ start:
  * Assumes that the Montgomery constant m0_inv is provided, but computes the RR
  * constant on the fly. The only exponent supported is e=65537.
  *
- * @param[in] dmem[rsa_mod]: Modulus of the RSA public key
+ * @param[in] dmem[in_mod]: Modulus of the RSA public key
  * @param[in] dmem[rsa_inout]: Signature to check against
  * @param[in] dmem[m0inv]: Montgomery constant (-(M^-1)) mod 2^256
  * @param[out] dmem[rsa_inout]: Recovered message digest
@@ -109,9 +109,9 @@ sec_boot_modexp:
   jal      x1, compute_rr
 
   /* Set pointers to buffers for modexp. */
-  la        x24, rsa_inout
-  la        x16, rsa_mod
-  la        x23, rsa_inout
+  la        x24, rsa_out
+  la        x16, in_mod
+  la        x23, rsa_in
   la        x26, rr
   la        x17, m0inv
 
@@ -284,24 +284,28 @@ mode:
 .zero 4
 
 /* Input buffer for RSA-3072 modulus. */
-.globl rsa_mod
+.globl in_mod
 .balign 32
-rsa_mod:
+in_mod:
 .zero 384
 
 /* Input buffer for precomputed RSA-3072 Montgomery constant:
       m0' = (- M) mod 2^256. */
-.globl rsa_m0inv
+.globl m0inv
 .balign 32
-rsa_m0inv:
+m0inv:
 .zero 32
 
-/* Input/output buffer for RSA-3072 modexp:
-     input: signature
-     output: recovered message = (signature ^ 65537) mod M */
-.globl rsa_inout
+/* Input buffer for RSA-3072 modexp: holds the signature. */
+.globl rsa_in
 .balign 32
-rsa_inout:
+rsa_in:
+.zero 384
+
+/* Output buffer for RSA-3072 modexp: holds the recovered message. */
+.globl rsa_out
+.balign 32
+rsa_out:
 .zero 384
 
 /* Input buffer for an ECDSA-P256 message digest. */
