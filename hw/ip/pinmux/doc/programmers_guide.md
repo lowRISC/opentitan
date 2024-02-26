@@ -108,11 +108,7 @@ A typical programming sequence for the wakeup detectors looks as follows:
 
 ## Pinout and Pinmux Mapping
 
-The tables below summarize the pinout and pinmux connectivity for certain top-level designs.
-
-### Top Earlgrey
-
-{{#include ../../../top_earlgrey/ip/pinmux/doc/autogen/targets.md}}
+Please see the top-level specific documentation for detailed pinout and pinmux mapping tables (e.g. for [Top Earlgrey](https://opentitan.org/book/hw/top_earlgrey/ip/pinmux/doc/autogen/targets.html)).
 
 ## Device Interface Functions (DIFs)
 
