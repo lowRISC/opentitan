@@ -203,6 +203,7 @@ rust_library(
         "src/util/bitfield.rs",
         "src/util/bitbang.rs",
         "src/util/file.rs",
+        "src/util/hexdump.rs",
         "src/util/mod.rs",
         "src/util/num_de.rs",
         "src/util/parse_int.rs",
