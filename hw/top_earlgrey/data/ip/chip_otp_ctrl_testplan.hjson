@@ -124,6 +124,7 @@
       stage: V2
       si_stage: SV1
       tests: ["chip_sw_lc_ctrl_otp_hw_cfg"]
+      bazel: ["//sw/device/tests:lc_ctrl_otp_hw_cfg_test"]
     }
     {
       name: chip_sw_otp_ctrl_lc_signals
