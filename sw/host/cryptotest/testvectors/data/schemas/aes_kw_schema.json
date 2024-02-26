@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/lowRISC/opentitan/master/sw/host/cryptotest/testvectors/data/schemas/aes_kw_schema.json",
+  "title": "Cryptotest AES-KWP Testvector",
+  "description": "A list of testvectors for AES-KWP testing",
+  "$defs": {
+    "byte_array": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 255
+      }
+    }
+  },
+  "type": "array",
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "test_case_id": {
+        "description": "Incremental test case ID -- used for debugging",
+        "type": "integer"
+      },
+      "vendor": {
+        "description": "Test vector vendor name",
+        "type": "string"
+      },
+      "algorithm": {
+        "description": "AES (Advanced Encryption Standard) or TDEA (Triple Data Encryption Algorithm)",
+        "type": "string",
+        "enum": ["aes", "tdea"]
+      },
+      "operation": {
+        "description": "Operation type",
+        "type": "string",
+        "enum": ["encrypt", "decrypt"]
+      },
+      "transformation_mode": {
+        "description": "Cipher transformation mode used for encryption-decryption",
+        "type": "string",
+        "enum": ["null", "inverse", "forward"]
+      },
+      "padding": {
+        "description": "Existence of padding",
+        "type": "boolean"
+      },
+      "key_len": {
+        "description": "Length in bits of the key",
+        "type": "integer",
+        "enum": [128, 192, 256]
+      },
+      "key": {
+        "description": "AES key",
+        "$ref": "#/$defs/byte_array"
+      },
+      "ciphertext": {
+        "description": "Ciphertext",
+        "$ref": "#/$defs/byte_array"
+      },
+      "plaintext": {
+        "description": "Plaintext",
+        "$ref": "#/$defs/byte_array"
+      },
+      "result": {
+        "description": "Derivation result",
+        "type": "boolean"
+      }
+    }
+  }
+}
