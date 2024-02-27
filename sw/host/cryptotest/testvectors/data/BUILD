@@ -6,19 +6,22 @@ load("@bazel_skylib//rules:run_binary.bzl", "run_binary")
 
 package(default_visibility = ["//visibility:public"])
 
-genrule(
+run_binary(
     name = "nist_cavp_ecdsa_fips_186_4_sig_ver_json",
     srcs = [
-        "@nist_cavp_ecdsa_fips_186_4//:SigVer.rsp",
         "//sw/host/cryptotest/testvectors/data/schemas:ecdsa_sig_ver_schema",
+        "@nist_cavp_ecdsa_fips_186_4//:SigVer.rsp",
     ],
-    outs = ["nist_cavp_ecdsa_fips_186_4_sig_ver.json"],
-    cmd = """$(location //sw/host/cryptotest/testvectors/parsers:nist_cavp_ecdsa_parser) \
-            --src $(location @nist_cavp_ecdsa_fips_186_4//:SigVer.rsp) \
-            --dst $(RULEDIR)/nist_cavp_ecdsa_fips_186_4_sig_ver \
-            --schema $(location //sw/host/cryptotest/testvectors/data/schemas:ecdsa_sig_ver_schema)""",
-    message = "Parsing testvector - NIST CAVP Digital Signatures FIPS 186-4 - ECDSA",
-    tools = ["//sw/host/cryptotest/testvectors/parsers:nist_cavp_ecdsa_parser"],
+    outs = [":nist_cavp_ecdsa_fips_186_4_sig_ver.json"],
+    args = [
+        "--src",
+        "$(location @nist_cavp_ecdsa_fips_186_4//:SigVer.rsp)",
+        "--dst",
+        "$(location :nist_cavp_ecdsa_fips_186_4_sig_ver.json)",
+        "--schema",
+        "$(location //sw/host/cryptotest/testvectors/data/schemas:ecdsa_sig_ver_schema)",
+    ],
+    tool = "//sw/host/cryptotest/testvectors/parsers:nist_cavp_ecdsa_parser",
 )
 
 [
