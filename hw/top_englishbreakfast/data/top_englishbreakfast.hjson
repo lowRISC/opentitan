@@ -910,8 +910,8 @@
           // Straps
           { name: 'tap0',   pad: 'IOC8',         desc: 'TAP strap signal.'                       },
           { name: 'tap1',   pad: 'IOC5',         desc: 'TAP strap signal.'                       },
-          { name: 'dft0',   pad: 'IOC3',         desc: 'DFT strap signal.'                       },
-          { name: 'dft1',   pad: 'IOC4',         desc: 'DFT strap signal.'                       },
+          { name: 'dft0',   pad: 'IOR5',         desc: 'DFT strap signal.'                       },
+          { name: 'dft1',   pad: 'IOR7',         desc: 'DFT strap signal.'                       },
           // JTAG
           { name: 'tck',    pad: 'SPI_DEV_CLK' , desc: 'JTAG tck signal, overlaid on SPI_DEV.'   },
           { name: 'tms',    pad: 'SPI_DEV_CS_L', desc: 'JTAG tms signal, overlaid on SPI_DEV.'   },
