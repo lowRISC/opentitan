@@ -1350,7 +1350,7 @@ static void max_power(void) {
 
   // Check I2C bits TXed were echoed back by the DV agent. (Only for DV.)
   if (kDeviceType == kDeviceSimDV) {
-    uint8_t fmt_fifo_lvl, rx_fifo_lvl;
+    uint16_t fmt_fifo_lvl, rx_fifo_lvl;
 
     // Make sure all TX FIFOs have been drained.
     for (size_t ii = 0; ii < ARRAYSIZE(i2c_handles); ++ii) {

@@ -199,8 +199,8 @@ class i2c_scoreboard extends cip_base_scoreboard #(
             wait(cfg.intr_vif.pins[TxStretch]);
             wait(cfg.intr_vif.pins[AcqFull]);
           join_any
-          csr_rd(.ptr(ral.fifo_status.acqlvl), .value(acqlvl), .backdoor(UVM_BACKDOOR));
-          csr_rd(.ptr(ral.fifo_status.txlvl), .value(txlvl), .backdoor(UVM_BACKDOOR));
+          csr_rd(.ptr(ral.target_fifo_status.acqlvl), .value(acqlvl), .backdoor(UVM_BACKDOOR));
+          csr_rd(.ptr(ral.target_fifo_status.txlvl), .value(txlvl), .backdoor(UVM_BACKDOOR));
           cov.scl_stretch_cg.sample(
             .host_mode(host_init),
             .intr_stretch_timeout(cfg.intr_vif.pins[StretchTimeout]),
@@ -390,10 +390,10 @@ class i2c_scoreboard extends cip_base_scoreboard #(
               fmt_fifo_data_q.delete();
             end
             cov.fmt_fifo_level_cg.sample(.irq(cfg.intr_vif.pins[FmtThreshold]),
-                                         .fifolvl(`gmv(ral.fifo_status.fmtlvl)),
+                                         .fifolvl(`gmv(ral.host_fifo_status.fmtlvl)),
                                          .rst(fmtrst_val));
             cov.rx_fifo_level_cg.sample(.irq(cfg.intr_vif.pins[RxThreshold]),
-                                        .fifolvl(`gmv(ral.fifo_status.rxlvl)),
+                                        .fifolvl(`gmv(ral.host_fifo_status.rxlvl)),
                                         .rst(rxrst_val));
             cov.fifo_reset_cg.sample(.fmtrst(fmtrst_val),
                                      .rxrst (rxrst_val),
@@ -579,7 +579,8 @@ class i2c_scoreboard extends cip_base_scoreboard #(
           end
         end
 
-        "fifo_status": do_read_check = 1'b0;
+        "host_fifo_status": do_read_check = 1'b0;
+        "target_fifo_status": do_read_check = 1'b0;
 
         "acqdata": begin
           i2c_item obs;

@@ -107,7 +107,7 @@ class i2c_host_fifo_watermark_vseq extends i2c_rx_tx_vseq;
       cnt_fmt_threshold++;
       // read registers
       csr_rd(.ptr(ral.fifo_ctrl.fmtilvl), .value(fmt_ilvl));
-      csr_rd(.ptr(ral.fifo_status.fmtlvl), .value(fmt_lvl));
+      csr_rd(.ptr(ral.host_fifo_status.fmtlvl), .value(fmt_lvl));
       `uvm_info(`gfn, $sformatf("\n fmtilvl %0d, fmtlvl %0d", fmt_ilvl, fmt_lvl), UVM_DEBUG)
       // bound checking for fmt_lvl w.r.t fmt_ilvl because rx_fifo can received an extra data
       // before fmt_threshold intr pin is asserted (corner case)
@@ -132,7 +132,7 @@ class i2c_host_fifo_watermark_vseq extends i2c_rx_tx_vseq;
     if (intr_enable[RxThreshold] && cfg.intr_vif.pins[RxThreshold]) begin
       cnt_rx_threshold++;
       // read registers
-      csr_rd(.ptr(ral.fifo_status.rxlvl), .value(rx_lvl));
+      csr_rd(.ptr(ral.host_fifo_status.rxlvl), .value(rx_lvl));
       csr_rd(.ptr(ral.fifo_ctrl.rxilvl), .value(rx_ilvl));
       // bound checking for rx_lvl w.r.t rx_ilvl because rx_fifo can received an extra data
       // before rx_threshold intr pin is asserted (corner case)

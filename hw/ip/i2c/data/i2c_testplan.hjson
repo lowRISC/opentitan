@@ -521,7 +521,7 @@
              Cover the trigger level for FMT_FIFO and RX_FIFO interupts
              * Cross fmt_threshold interrupt with FMT_FIFO trigger level
              * Cross rx_threshold interrupt with RX_FIFO trigger level
-             Cover the FIFO levels in FIFO_STATUS
+             Cover the FIFO levels in HOST_FIFO_STATUS
             '''
     }
     {

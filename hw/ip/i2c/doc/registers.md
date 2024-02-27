@@ -3,30 +3,31 @@
 <!-- BEGIN CMDGEN util/regtool.py -d ./hw/ip/i2c/data/i2c.hjson -->
 ## Summary
 
-| Name                                          | Offset   |   Length | Description                                                                          |
-|:----------------------------------------------|:---------|---------:|:-------------------------------------------------------------------------------------|
-| i2c.[`INTR_STATE`](#intr_state)               | 0x0      |        4 | Interrupt State Register                                                             |
-| i2c.[`INTR_ENABLE`](#intr_enable)             | 0x4      |        4 | Interrupt Enable Register                                                            |
-| i2c.[`INTR_TEST`](#intr_test)                 | 0x8      |        4 | Interrupt Test Register                                                              |
-| i2c.[`ALERT_TEST`](#alert_test)               | 0xc      |        4 | Alert Test Register                                                                  |
-| i2c.[`CTRL`](#ctrl)                           | 0x10     |        4 | I2C Control Register                                                                 |
-| i2c.[`STATUS`](#status)                       | 0x14     |        4 | I2C Live Status Register for Host and Target modes                                   |
-| i2c.[`RDATA`](#rdata)                         | 0x18     |        4 | I2C Read Data                                                                        |
-| i2c.[`FDATA`](#fdata)                         | 0x1c     |        4 | I2C Host Format Data                                                                 |
-| i2c.[`FIFO_CTRL`](#fifo_ctrl)                 | 0x20     |        4 | I2C FIFO control register                                                            |
-| i2c.[`FIFO_STATUS`](#fifo_status)             | 0x24     |        4 | I2C FIFO status register                                                             |
-| i2c.[`OVRD`](#ovrd)                           | 0x28     |        4 | I2C Override Control Register                                                        |
-| i2c.[`VAL`](#val)                             | 0x2c     |        4 | Oversampled RX values                                                                |
-| i2c.[`TIMING0`](#timing0)                     | 0x30     |        4 | Detailed I2C Timings (directly corresponding to table 10 in the I2C Specification).  |
-| i2c.[`TIMING1`](#timing1)                     | 0x34     |        4 | Detailed I2C Timings (directly corresponding to table 10 in the I2C Specification).  |
-| i2c.[`TIMING2`](#timing2)                     | 0x38     |        4 | Detailed I2C Timings (directly corresponding to table 10 in the I2C Specification).  |
-| i2c.[`TIMING3`](#timing3)                     | 0x3c     |        4 | Detailed I2C Timings (directly corresponding to table 10, in the I2C Specification). |
-| i2c.[`TIMING4`](#timing4)                     | 0x40     |        4 | Detailed I2C Timings (directly corresponding to table 10, in the I2C Specification). |
-| i2c.[`TIMEOUT_CTRL`](#timeout_ctrl)           | 0x44     |        4 | I2C clock stretching timeout control                                                 |
-| i2c.[`TARGET_ID`](#target_id)                 | 0x48     |        4 | I2C target address and mask pairs                                                    |
-| i2c.[`ACQDATA`](#acqdata)                     | 0x4c     |        4 | I2C target acquired data                                                             |
-| i2c.[`TXDATA`](#txdata)                       | 0x50     |        4 | I2C target transmit data                                                             |
-| i2c.[`HOST_TIMEOUT_CTRL`](#host_timeout_ctrl) | 0x54     |        4 | I2C host clock generation timeout value (in units of input clock frequency)          |
+| Name                                            | Offset   |   Length | Description                                                                          |
+|:------------------------------------------------|:---------|---------:|:-------------------------------------------------------------------------------------|
+| i2c.[`INTR_STATE`](#intr_state)                 | 0x0      |        4 | Interrupt State Register                                                             |
+| i2c.[`INTR_ENABLE`](#intr_enable)               | 0x4      |        4 | Interrupt Enable Register                                                            |
+| i2c.[`INTR_TEST`](#intr_test)                   | 0x8      |        4 | Interrupt Test Register                                                              |
+| i2c.[`ALERT_TEST`](#alert_test)                 | 0xc      |        4 | Alert Test Register                                                                  |
+| i2c.[`CTRL`](#ctrl)                             | 0x10     |        4 | I2C Control Register                                                                 |
+| i2c.[`STATUS`](#status)                         | 0x14     |        4 | I2C Live Status Register for Host and Target modes                                   |
+| i2c.[`RDATA`](#rdata)                           | 0x18     |        4 | I2C Read Data                                                                        |
+| i2c.[`FDATA`](#fdata)                           | 0x1c     |        4 | I2C Host Format Data                                                                 |
+| i2c.[`FIFO_CTRL`](#fifo_ctrl)                   | 0x20     |        4 | I2C FIFO control register                                                            |
+| i2c.[`HOST_FIFO_STATUS`](#host_fifo_status)     | 0x24     |        4 | Host mode FIFO status register                                                       |
+| i2c.[`TARGET_FIFO_STATUS`](#target_fifo_status) | 0x28     |        4 | Target mode FIFO status register                                                     |
+| i2c.[`OVRD`](#ovrd)                             | 0x2c     |        4 | I2C Override Control Register                                                        |
+| i2c.[`VAL`](#val)                               | 0x30     |        4 | Oversampled RX values                                                                |
+| i2c.[`TIMING0`](#timing0)                       | 0x34     |        4 | Detailed I2C Timings (directly corresponding to table 10 in the I2C Specification).  |
+| i2c.[`TIMING1`](#timing1)                       | 0x38     |        4 | Detailed I2C Timings (directly corresponding to table 10 in the I2C Specification).  |
+| i2c.[`TIMING2`](#timing2)                       | 0x3c     |        4 | Detailed I2C Timings (directly corresponding to table 10 in the I2C Specification).  |
+| i2c.[`TIMING3`](#timing3)                       | 0x40     |        4 | Detailed I2C Timings (directly corresponding to table 10, in the I2C Specification). |
+| i2c.[`TIMING4`](#timing4)                       | 0x44     |        4 | Detailed I2C Timings (directly corresponding to table 10, in the I2C Specification). |
+| i2c.[`TIMEOUT_CTRL`](#timeout_ctrl)             | 0x48     |        4 | I2C clock stretching timeout control                                                 |
+| i2c.[`TARGET_ID`](#target_id)                   | 0x4c     |        4 | I2C target address and mask pairs                                                    |
+| i2c.[`ACQDATA`](#acqdata)                       | 0x50     |        4 | I2C target acquired data                                                             |
+| i2c.[`TXDATA`](#txdata)                         | 0x54     |        4 | I2C target transmit data                                                             |
+| i2c.[`HOST_TIMEOUT_CTRL`](#host_timeout_ctrl)   | 0x58     |        4 | I2C host clock generation timeout value (in units of input clock frequency)          |
 
 ## INTR_STATE
 Interrupt State Register
@@ -282,32 +283,45 @@ FMT fifo reset. Write 1 to the register resets FMT_FIFO. Read returns 0
 ### FIFO_CTRL . RXRST
 RX fifo reset. Write 1 to the register resets RX_FIFO. Read returns 0
 
-## FIFO_STATUS
-I2C FIFO status register
+## HOST_FIFO_STATUS
+Host mode FIFO status register
 - Offset: `0x24`
 - Reset default: `0x0`
-- Reset mask: `0x7f7f7f7f`
+- Reset mask: `0xffffff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "FMTLVL", "bits": 7, "attr": ["ro"], "rotate": 0}, {"bits": 1}, {"name": "TXLVL", "bits": 7, "attr": ["ro"], "rotate": 0}, {"bits": 1}, {"name": "RXLVL", "bits": 7, "attr": ["ro"], "rotate": 0}, {"bits": 1}, {"name": "ACQLVL", "bits": 7, "attr": ["ro"], "rotate": 0}, {"bits": 1}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "FMTLVL", "bits": 12, "attr": ["ro"], "rotate": 0}, {"name": "RXLVL", "bits": 12, "attr": ["ro"], "rotate": 0}, {"bits": 8}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                  |
-|:------:|:------:|:-------:|:-------|:---------------------------------------------|
-|   31   |        |         |        | Reserved                                     |
-| 30:24  |   ro   |    x    | ACQLVL | Current fill level of ACQ fifo (Target mode) |
-|   23   |        |         |        | Reserved                                     |
-| 22:16  |   ro   |    x    | RXLVL  | Current fill level of RX fifo (Host mode)    |
-|   15   |        |         |        | Reserved                                     |
-|  14:8  |   ro   |    x    | TXLVL  | Current fill level of TX fifo (Target mode)  |
-|   7    |        |         |        | Reserved                                     |
-|  6:0   |   ro   |    x    | FMTLVL | Current fill level of FMT fifo (Host mode)   |
+|  Bits  |  Type  |  Reset  | Name   | Description                    |
+|:------:|:------:|:-------:|:-------|:-------------------------------|
+| 31:24  |        |         |        | Reserved                       |
+| 23:12  |   ro   |    x    | RXLVL  | Current fill level of RX fifo  |
+|  11:0  |   ro   |    x    | FMTLVL | Current fill level of FMT fifo |
+
+## TARGET_FIFO_STATUS
+Target mode FIFO status register
+- Offset: `0x28`
+- Reset default: `0x0`
+- Reset mask: `0xffffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "TXLVL", "bits": 12, "attr": ["ro"], "rotate": 0}, {"name": "ACQLVL", "bits": 12, "attr": ["ro"], "rotate": 0}, {"bits": 8}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name   | Description                    |
+|:------:|:------:|:-------:|:-------|:-------------------------------|
+| 31:24  |        |         |        | Reserved                       |
+| 23:12  |   ro   |    x    | ACQLVL | Current fill level of ACQ fifo |
+|  11:0  |   ro   |    x    | TXLVL  | Current fill level of TX fifo  |
 
 ## OVRD
 I2C Override Control Register
-- Offset: `0x28`
+- Offset: `0x2c`
 - Reset default: `0x0`
 - Reset mask: `0x7`
 
@@ -326,7 +340,7 @@ I2C Override Control Register
 
 ## VAL
 Oversampled RX values
-- Offset: `0x2c`
+- Offset: `0x30`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -345,7 +359,7 @@ Oversampled RX values
 Detailed I2C Timings (directly corresponding to table 10 in the I2C Specification).
 All values are expressed in units of the input clock period.
 These must be greater than 2 in order for the change in SCL to propagate to the input of the FSM so that acknowledgements are detected correctly.
-- Offset: `0x30`
+- Offset: `0x34`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -363,7 +377,7 @@ These must be greater than 2 in order for the change in SCL to propagate to the 
 ## TIMING1
 Detailed I2C Timings (directly corresponding to table 10 in the I2C Specification).
 All values are expressed in units of the input clock period.
-- Offset: `0x34`
+- Offset: `0x38`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -381,7 +395,7 @@ All values are expressed in units of the input clock period.
 ## TIMING2
 Detailed I2C Timings (directly corresponding to table 10 in the I2C Specification).
 All values are expressed in units of the input clock period.
-- Offset: `0x38`
+- Offset: `0x3c`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -399,7 +413,7 @@ All values are expressed in units of the input clock period.
 ## TIMING3
 Detailed I2C Timings (directly corresponding to table 10, in the I2C Specification).
 All values are expressed in units of the input clock period.
-- Offset: `0x3c`
+- Offset: `0x40`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -417,7 +431,7 @@ All values are expressed in units of the input clock period.
 ## TIMING4
 Detailed I2C Timings (directly corresponding to table 10, in the I2C Specification).
 All values are expressed in units of the input clock period.
-- Offset: `0x40`
+- Offset: `0x44`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -434,7 +448,7 @@ All values are expressed in units of the input clock period.
 
 ## TIMEOUT_CTRL
 I2C clock stretching timeout control
-- Offset: `0x44`
+- Offset: `0x48`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -451,7 +465,7 @@ I2C clock stretching timeout control
 
 ## TARGET_ID
 I2C target address and mask pairs
-- Offset: `0x48`
+- Offset: `0x4c`
 - Reset default: `0x0`
 - Reset mask: `0xfffffff`
 
@@ -471,7 +485,7 @@ I2C target address and mask pairs
 
 ## ACQDATA
 I2C target acquired data
-- Offset: `0x4c`
+- Offset: `0x50`
 - Reset default: `0x0`
 - Reset mask: `0x3ff`
 
@@ -503,7 +517,7 @@ Address for accepted transaction or acquired byte
 
 ## TXDATA
 I2C target transmit data
-- Offset: `0x50`
+- Offset: `0x54`
 - Reset default: `0x0`
 - Reset mask: `0xff`
 
@@ -520,7 +534,7 @@ I2C target transmit data
 
 ## HOST_TIMEOUT_CTRL
 I2C host clock generation timeout value (in units of input clock frequency)
-- Offset: `0x54`
+- Offset: `0x58`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 

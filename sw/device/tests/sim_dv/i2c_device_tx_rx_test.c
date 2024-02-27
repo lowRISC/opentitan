@@ -221,7 +221,7 @@ bool test_main(void) {
     expected_data[i] = (uint8_t)rand_testutils_gen32_range(0, 0xff);
   };
 
-  uint8_t tx_fifo_lvl;
+  uint16_t tx_fifo_lvl;
   CHECK_DIF_OK(dif_i2c_get_fifo_levels(&i2c, NULL, NULL, &tx_fifo_lvl, NULL));
   IBEX_SPIN_FOR(!(tx_fifo_lvl > 0 && tx_empty_irq_seen == false), 100);
   CHECK_STATUS_OK(
@@ -230,7 +230,7 @@ bool test_main(void) {
 
   LOG_INFO("Data written to fifo");
 
-  uint8_t acq_fifo_lvl;
+  uint16_t acq_fifo_lvl;
   do {
     CHECK_DIF_OK(
         dif_i2c_get_fifo_levels(&i2c, NULL, NULL, &tx_fifo_lvl, &acq_fifo_lvl));

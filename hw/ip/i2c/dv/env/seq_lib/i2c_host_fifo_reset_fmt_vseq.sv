@@ -50,7 +50,7 @@ class i2c_host_fifo_reset_fmt_vseq extends i2c_rx_tx_vseq;
         end
         program_format_flag(fmt_item, "program_write_data_to_target");
       end // for num wr bytes
-      csr_rd_check(.ptr(ral.fifo_status.fmtlvl), .compare_value(num_wr_bytes));
+      csr_rd_check(.ptr(ral.host_fifo_status.fmtlvl), .compare_value(num_wr_bytes));
       csr_rd_check(.ptr(ral.status.fmtempty), .compare_value(0));
       cfg.clk_rst_vif.wait_clks($urandom_range(100, 2000));
       reset_fmt_fifo();

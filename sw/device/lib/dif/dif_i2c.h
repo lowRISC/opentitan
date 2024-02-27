@@ -551,10 +551,10 @@ dif_result_t dif_i2c_override_sample_pins(const dif_i2c_t *i2c,
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_i2c_get_fifo_levels(const dif_i2c_t *i2c,
-                                     uint8_t *fmt_fifo_level,
-                                     uint8_t *rx_fifo_level,
-                                     uint8_t *tx_fifo_level,
-                                     uint8_t *acq_fifo_level);
+                                     uint16_t *fmt_fifo_level,
+                                     uint16_t *rx_fifo_level,
+                                     uint16_t *tx_fifo_level,
+                                     uint16_t *acq_fifo_level);
 
 /**
  * Pops an entry (a byte) off of the RX FIFO. Passing in `NULL` to the out-param

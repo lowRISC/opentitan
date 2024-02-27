@@ -541,67 +541,74 @@ TEST_F(OverrideTest, SampleNullArgs) {
 class FifoTest : public I2cTest {};
 
 TEST_F(FifoTest, GetLevels) {
-  uint8_t rx, fmt, tx, acq;
-  EXPECT_READ32(I2C_FIFO_STATUS_REG_OFFSET, 0x10293847);
+  uint16_t rx, fmt, tx, acq;
+  EXPECT_READ32(I2C_HOST_FIFO_STATUS_REG_OFFSET, 0x10293847);
+  EXPECT_READ32(I2C_TARGET_FIFO_STATUS_REG_OFFSET, 0xb3898628);
   EXPECT_DIF_OK(dif_i2c_get_fifo_levels(&i2c_, &fmt, &rx, &tx, &acq));
-  EXPECT_EQ(fmt, 0x47);
-  EXPECT_EQ(rx, 0x29);
-  EXPECT_EQ(tx, 0x38);
-  EXPECT_EQ(acq, 0x10);
+  EXPECT_EQ(fmt, 0x847);
+  EXPECT_EQ(rx, 0x293);
+  EXPECT_EQ(tx, 0x628);
+  EXPECT_EQ(acq, 0x898);
 
   rx = 0, fmt = 0, tx = 0, acq = 0;
-  EXPECT_READ32(I2C_FIFO_STATUS_REG_OFFSET, 0x10293847);
+  EXPECT_READ32(I2C_HOST_FIFO_STATUS_REG_OFFSET, 0x10293847);
+  EXPECT_READ32(I2C_TARGET_FIFO_STATUS_REG_OFFSET, 0xb3898628);
   EXPECT_DIF_OK(dif_i2c_get_fifo_levels(&i2c_, &fmt, &rx, nullptr, nullptr));
-  EXPECT_EQ(fmt, 0x47);
-  EXPECT_EQ(rx, 0x29);
+  EXPECT_EQ(fmt, 0x847);
+  EXPECT_EQ(rx, 0x293);
   EXPECT_EQ(tx, 0x0);
   EXPECT_EQ(acq, 0x0);
 
   rx = 0, fmt = 0, tx = 0, acq = 0;
-  EXPECT_READ32(I2C_FIFO_STATUS_REG_OFFSET, 0x10293847);
+  EXPECT_READ32(I2C_HOST_FIFO_STATUS_REG_OFFSET, 0x10293847);
+  EXPECT_READ32(I2C_TARGET_FIFO_STATUS_REG_OFFSET, 0xb3898628);
   EXPECT_DIF_OK(
       dif_i2c_get_fifo_levels(&i2c_, &fmt, nullptr, nullptr, nullptr));
   EXPECT_EQ(rx, 0x0);
-  EXPECT_EQ(fmt, 0x47);
+  EXPECT_EQ(fmt, 0x847);
   EXPECT_EQ(tx, 0x0);
   EXPECT_EQ(acq, 0x0);
 
   rx = 0, fmt = 0, tx = 0, acq = 0;
-  EXPECT_READ32(I2C_FIFO_STATUS_REG_OFFSET, 0x10293847);
+  EXPECT_READ32(I2C_HOST_FIFO_STATUS_REG_OFFSET, 0x10293847);
+  EXPECT_READ32(I2C_TARGET_FIFO_STATUS_REG_OFFSET, 0xb3898628);
   EXPECT_DIF_OK(dif_i2c_get_fifo_levels(&i2c_, nullptr, &rx, nullptr, nullptr));
-  EXPECT_EQ(rx, 0x29);
+  EXPECT_EQ(rx, 0x293);
   EXPECT_EQ(fmt, 0x0);
   EXPECT_EQ(tx, 0x0);
   EXPECT_EQ(acq, 0x0);
 
   rx = 0, fmt = 0, tx = 0, acq = 0;
-  EXPECT_READ32(I2C_FIFO_STATUS_REG_OFFSET, 0x10293847);
+  EXPECT_READ32(I2C_HOST_FIFO_STATUS_REG_OFFSET, 0x10293847);
+  EXPECT_READ32(I2C_TARGET_FIFO_STATUS_REG_OFFSET, 0xb3898628);
   EXPECT_DIF_OK(dif_i2c_get_fifo_levels(&i2c_, nullptr, nullptr, &tx, &acq));
   EXPECT_EQ(fmt, 0x0);
   EXPECT_EQ(rx, 0x0);
-  EXPECT_EQ(tx, 0x38);
-  EXPECT_EQ(acq, 0x10);
+  EXPECT_EQ(tx, 0x628);
+  EXPECT_EQ(acq, 0x898);
 
   rx = 0, fmt = 0, tx = 0, acq = 0;
-  EXPECT_READ32(I2C_FIFO_STATUS_REG_OFFSET, 0x10293847);
+  EXPECT_READ32(I2C_HOST_FIFO_STATUS_REG_OFFSET, 0x10293847);
+  EXPECT_READ32(I2C_TARGET_FIFO_STATUS_REG_OFFSET, 0xb3898628);
   EXPECT_DIF_OK(dif_i2c_get_fifo_levels(&i2c_, nullptr, nullptr, &tx, nullptr));
   EXPECT_EQ(rx, 0x0);
   EXPECT_EQ(fmt, 0x0);
-  EXPECT_EQ(tx, 0x38);
+  EXPECT_EQ(tx, 0x628);
   EXPECT_EQ(acq, 0x0);
 
   rx = 0, fmt = 0, tx = 0, acq = 0;
-  EXPECT_READ32(I2C_FIFO_STATUS_REG_OFFSET, 0x10293847);
+  EXPECT_READ32(I2C_HOST_FIFO_STATUS_REG_OFFSET, 0x10293847);
+  EXPECT_READ32(I2C_TARGET_FIFO_STATUS_REG_OFFSET, 0xb3898628);
   EXPECT_DIF_OK(
       dif_i2c_get_fifo_levels(&i2c_, nullptr, nullptr, nullptr, &acq));
   EXPECT_EQ(rx, 0x0);
   EXPECT_EQ(fmt, 0x0);
   EXPECT_EQ(tx, 0x0);
-  EXPECT_EQ(acq, 0x10);
+  EXPECT_EQ(acq, 0x898);
 }
 
 TEST_F(FifoTest, GetLevelsNullArgs) {
-  uint8_t rx, fmt;
+  uint16_t rx, fmt;
   EXPECT_DIF_BADARG(
       dif_i2c_get_fifo_levels(nullptr, &rx, &fmt, nullptr, nullptr));
 }

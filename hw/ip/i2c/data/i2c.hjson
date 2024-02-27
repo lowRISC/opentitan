@@ -100,7 +100,10 @@
   ],
   param_list: [
     { name: "FifoDepth",
-      desc: "Depth of FMT, RX, TX, and ACQ FIFOs",
+      desc: '''
+            Depth of FMT, RX, TX, and ACQ FIFOs.
+            The maximum supported value is 2^12-1, although much lower values are recommended to keep area requirements reasonable.
+            ''',
       type: "int",
       default: "64",
     }
@@ -388,27 +391,37 @@
         }
       ]
     }
-    { name: "FIFO_STATUS"
-      desc: "I2C FIFO status register"
+    { name: "HOST_FIFO_STATUS"
+      desc: "Host mode FIFO status register"
       swaccess: "ro"
       hwaccess: "hwo"
       hwext: "true"
       fields: [
-        { bits: "6:0"
+        { bits: "11:0"
           name: "FMTLVL"
-          desc: "Current fill level of FMT fifo (Host mode)"
+          desc: "Current fill level of FMT fifo"
         }
-        { bits: "22:16"
+        { bits: "23:12"
           name: "RXLVL"
-          desc: "Current fill level of RX fifo (Host mode)"
+          desc: "Current fill level of RX fifo"
         }
-        { bits: "14:8"
+      ]
+      tags: [// Updated by the hw. Exclude from write-checks.
+             "excl:CsrNonInitTests:CsrExclWriteCheck"]
+    }
+    { name: "TARGET_FIFO_STATUS"
+      desc: "Target mode FIFO status register"
+      swaccess: "ro"
+      hwaccess: "hwo"
+      hwext: "true"
+      fields: [
+        { bits: "11:0"
           name: "TXLVL"
-          desc: "Current fill level of TX fifo (Target mode)"
+          desc: "Current fill level of TX fifo"
         }
-        { bits: "30:24"
+        { bits: "23:12"
           name: "ACQLVL"
-          desc: "Current fill level of ACQ fifo (Target mode)"
+          desc: "Current fill level of ACQ fifo"
         }
       ]
       tags: [// Updated by the hw. Exclude from write-checks.

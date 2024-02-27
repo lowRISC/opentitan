@@ -421,31 +421,33 @@ dif_result_t dif_i2c_override_sample_pins(const dif_i2c_t *i2c,
 }
 
 dif_result_t dif_i2c_get_fifo_levels(const dif_i2c_t *i2c,
-                                     uint8_t *fmt_fifo_level,
-                                     uint8_t *rx_fifo_level,
-                                     uint8_t *tx_fifo_level,
-                                     uint8_t *acq_fifo_level) {
+                                     uint16_t *fmt_fifo_level,
+                                     uint16_t *rx_fifo_level,
+                                     uint16_t *tx_fifo_level,
+                                     uint16_t *acq_fifo_level) {
   if (i2c == NULL) {
     return kDifBadArg;
   }
 
   uint32_t values =
-      mmio_region_read32(i2c->base_addr, I2C_FIFO_STATUS_REG_OFFSET);
+      mmio_region_read32(i2c->base_addr, I2C_HOST_FIFO_STATUS_REG_OFFSET);
   if (fmt_fifo_level != NULL) {
-    *fmt_fifo_level =
-        (uint8_t)bitfield_field32_read(values, I2C_FIFO_STATUS_FMTLVL_FIELD);
+    *fmt_fifo_level = (uint16_t)bitfield_field32_read(
+        values, I2C_HOST_FIFO_STATUS_FMTLVL_FIELD);
   }
   if (rx_fifo_level != NULL) {
-    *rx_fifo_level =
-        (uint8_t)bitfield_field32_read(values, I2C_FIFO_STATUS_RXLVL_FIELD);
+    *rx_fifo_level = (uint16_t)bitfield_field32_read(
+        values, I2C_HOST_FIFO_STATUS_RXLVL_FIELD);
   }
+  values =
+      mmio_region_read32(i2c->base_addr, I2C_TARGET_FIFO_STATUS_REG_OFFSET);
   if (tx_fifo_level != NULL) {
-    *tx_fifo_level =
-        (uint8_t)bitfield_field32_read(values, I2C_FIFO_STATUS_TXLVL_FIELD);
+    *tx_fifo_level = (uint16_t)bitfield_field32_read(
+        values, I2C_TARGET_FIFO_STATUS_TXLVL_FIELD);
   }
   if (acq_fifo_level != NULL) {
-    *acq_fifo_level =
-        (uint8_t)bitfield_field32_read(values, I2C_FIFO_STATUS_ACQLVL_FIELD);
+    *acq_fifo_level = (uint16_t)bitfield_field32_read(
+        values, I2C_TARGET_FIFO_STATUS_ACQLVL_FIELD);
   }
 
   return kDifOk;

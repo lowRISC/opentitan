@@ -253,7 +253,7 @@ void issue_test_transactions(bool skip_stop) {
   CHECK_STATUS_OK(i2c_testutils_write(&i2c, device_addr, byte_count,
                                       expected_data, skip_stop));
 
-  uint8_t tx_fifo_lvl, rx_fifo_lvl;
+  uint16_t tx_fifo_lvl, rx_fifo_lvl;
 
   // Make sure all fifo entries have been drained.
   do {

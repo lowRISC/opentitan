@@ -37,6 +37,7 @@ module i2c_core import i2c_pkg::*;
 );
 
   localparam int FifoDepthWidth = $clog2(FifoDepth+1);
+  localparam int MaxFifoDepthWidth = 12;
 
   logic [15:0] thigh;
   logic [15:0] tlow;
@@ -157,8 +158,10 @@ module i2c_core import i2c_pkg::*;
   assign hw2reg.status.targetidle.d = target_idle;
   assign hw2reg.status.rxempty.d = ~rx_fifo_rvalid;
   assign hw2reg.rdata.d = rx_fifo_rdata;
-  assign hw2reg.fifo_status.fmtlvl.d = fmt_fifo_depth;
-  assign hw2reg.fifo_status.rxlvl.d = rx_fifo_depth;
+  assign hw2reg.host_fifo_status.fmtlvl.d = {{(MaxFifoDepthWidth - FifoDepthWidth){1'b0}},
+                                             fmt_fifo_depth};
+  assign hw2reg.host_fifo_status.rxlvl.d = {{(MaxFifoDepthWidth - FifoDepthWidth){1'b0}},
+                                            rx_fifo_depth};
   assign hw2reg.val.scl_rx.d = scl_rx_val;
   assign hw2reg.val.sda_rx.d = sda_rx_val;
 
@@ -166,8 +169,10 @@ module i2c_core import i2c_pkg::*;
   assign hw2reg.status.acqfull.d = ~acq_fifo_wready;
   assign hw2reg.status.txempty.d = ~tx_fifo_rvalid;
   assign hw2reg.status.acqempty.d = ~acq_fifo_rvalid;
-  assign hw2reg.fifo_status.txlvl.d = tx_fifo_depth;
-  assign hw2reg.fifo_status.acqlvl.d = acq_fifo_depth;
+  assign hw2reg.target_fifo_status.txlvl.d = {{(MaxFifoDepthWidth - FifoDepthWidth){1'b0}},
+                                              tx_fifo_depth};
+  assign hw2reg.target_fifo_status.acqlvl.d = {{(MaxFifoDepthWidth - FifoDepthWidth){1'b0}},
+                                               acq_fifo_depth};
   assign hw2reg.acqdata.abyte.d = acq_fifo_rdata[7:0];
   assign hw2reg.acqdata.signal.d = acq_fifo_rdata[9:8];
 
@@ -682,5 +687,7 @@ module i2c_core import i2c_pkg::*;
     .hw2reg_intr_state_d_o  (hw2reg.intr_state.host_timeout.d),
     .intr_o                 (intr_host_timeout_o)
   );
+
+  `ASSERT_INIT(FifoDepthValid_A, FifoDepth > 0 && FifoDepthWidth <= MaxFifoDepthWidth)
 
 endmodule

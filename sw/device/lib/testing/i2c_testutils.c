@@ -217,7 +217,7 @@ status_t i2c_testutils_read(const dif_i2c_t *i2c, uint8_t addr,
 }
 
 status_t i2c_testutils_target_check_start(const dif_i2c_t *i2c, uint8_t *addr) {
-  uint8_t acq_fifo_lvl;
+  uint16_t acq_fifo_lvl;
   TRY(dif_i2c_get_fifo_levels(i2c, NULL, NULL, NULL, &acq_fifo_lvl));
   TRY_CHECK(acq_fifo_lvl > 1);
 
@@ -233,7 +233,7 @@ status_t i2c_testutils_target_check_start(const dif_i2c_t *i2c, uint8_t *addr) {
 
 status_t i2c_testutils_target_check_end(const dif_i2c_t *i2c,
                                         uint8_t *cont_byte) {
-  uint8_t acq_fifo_lvl;
+  uint16_t acq_fifo_lvl;
   TRY(dif_i2c_get_fifo_levels(i2c, NULL, NULL, NULL, &acq_fifo_lvl));
   TRY_CHECK(acq_fifo_lvl >= 1);
 
@@ -252,9 +252,9 @@ status_t i2c_testutils_target_check_end(const dif_i2c_t *i2c,
   return OK_STATUS(true);
 }
 
-status_t i2c_testutils_target_read(const dif_i2c_t *i2c, uint8_t byte_count,
+status_t i2c_testutils_target_read(const dif_i2c_t *i2c, uint16_t byte_count,
                                    const uint8_t *data) {
-  uint8_t tx_fifo_lvl, acq_fifo_lvl;
+  uint16_t tx_fifo_lvl, acq_fifo_lvl;
   TRY(dif_i2c_get_fifo_levels(i2c, NULL, NULL, &tx_fifo_lvl, &acq_fifo_lvl));
   // Check there's space in tx_fifo and acq_fifo
   TRY_CHECK(tx_fifo_lvl + byte_count <= I2C_PARAM_FIFO_DEPTH);
@@ -275,8 +275,8 @@ status_t i2c_testutils_target_check_read(const dif_i2c_t *i2c, uint8_t *addr,
   return i2c_testutils_target_check_end(i2c, cont_byte);
 }
 
-status_t i2c_testutils_target_write(const dif_i2c_t *i2c, uint8_t byte_count) {
-  uint8_t acq_fifo_lvl;
+status_t i2c_testutils_target_write(const dif_i2c_t *i2c, uint16_t byte_count) {
+  uint16_t acq_fifo_lvl;
   TRY(dif_i2c_get_fifo_levels(i2c, NULL, NULL, NULL, &acq_fifo_lvl));
   TRY_CHECK(acq_fifo_lvl + 2 + byte_count <= I2C_PARAM_FIFO_DEPTH);
 
@@ -285,9 +285,9 @@ status_t i2c_testutils_target_write(const dif_i2c_t *i2c, uint8_t byte_count) {
 }
 
 status_t i2c_testutils_target_check_write(const dif_i2c_t *i2c,
-                                          uint8_t byte_count, uint8_t *addr,
+                                          uint16_t byte_count, uint8_t *addr,
                                           uint8_t *bytes, uint8_t *cont_byte) {
-  uint8_t acq_fifo_lvl;
+  uint16_t acq_fifo_lvl;
   TRY(dif_i2c_get_fifo_levels(i2c, NULL, NULL, NULL, &acq_fifo_lvl));
   TRY_CHECK(acq_fifo_lvl >= 2 + byte_count);
 

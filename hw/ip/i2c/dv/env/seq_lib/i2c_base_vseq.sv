@@ -557,7 +557,7 @@ class i2c_base_vseq extends cip_base_vseq #(
     bit [7:0] abyte;
     bit [1:0] signal;
     csr_rd_check(.ptr(ral.status.acqempty), .compare_value(0));
-    csr_rd(.ptr(ral.fifo_status.acqlvl), .value(acqlvl));
+    csr_rd(.ptr(ral.target_fifo_status.acqlvl), .value(acqlvl));
     `DV_CHECK_EQ(acqlvl, (num_bytes+2)) // addr byte + data bytes + junk byte
     for (int i = 0; i < (num_bytes+2); i++) begin
       csr_rd(.ptr(ral.acqdata), .value({signal,abyte}));
@@ -1153,7 +1153,7 @@ class i2c_base_vseq extends cip_base_vseq #(
     // if fifo is empty.
       csr_rd(.ptr(ral.status.acqempty), .value(acq_fifo_empty));
       read_data = (acq_fifo_empty)? 0 : 1;
-    end else csr_rd(.ptr(ral.fifo_status.acqlvl), .value(read_data));
+    end else csr_rd(.ptr(ral.target_fifo_status.acqlvl), .value(read_data));
 
     repeat(read_data) begin
       // read one entry and compare
