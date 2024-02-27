@@ -32,7 +32,7 @@
   version:            "1.0.0",
   life_stage:         "L1",
   design_stage:       "D3",
-  verification_stage: "V2",
+  verification_stage: "V2S",
   dif_stage:          "S2",
   notes:              "Use FPV to perform block level verification.",
   clocking: [
