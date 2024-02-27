@@ -308,10 +308,6 @@ typedef struct dif_i2c_status {
    */
   bool enable_target;
   /**
-   * Line Loopback enabled
-   */
-  bool line_loopback;
-  /**
    * Format FIFO is full, SW cannot write commands to transact into the FIFO
    * until I2C host is able to act on the contents.
    */
@@ -480,19 +476,6 @@ dif_result_t dif_i2c_host_set_enabled(const dif_i2c_t *i2c, dif_toggle_t state);
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_i2c_device_set_enabled(const dif_i2c_t *i2c,
                                         dif_toggle_t state);
-
-/**
- * Enables or disables the Line Loopback functionality,
- * This function should be called to assist debugging by setting the i2c block
- * or host to use received transactions to populate outgoing transactions.
- *
- * @param i2c An I2C handle.
- * @param state The new toggle state for the host functionality.
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_i2c_line_loopback_set_enabled(const dif_i2c_t *i2c,
-                                               dif_toggle_t state);
 
 /**
  * Enables or disables the "override mode". In override mode, software is able

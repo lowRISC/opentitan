@@ -457,14 +457,6 @@
       tests: ["i2c_target_stretch"]
     }
     {
-      name: target_loopback
-      desc: '''
-            Test loopback mode, which is enabled by i2c.CTRL.LLPBK.
-            '''
-      stage: V3
-      tests: [""]
-    }
-    {
       name: bad_address
       desc: '''
             Test sends transactions with a randomized address including two legal (programmed) addresses.

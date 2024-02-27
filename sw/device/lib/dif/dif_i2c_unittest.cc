@@ -50,7 +50,6 @@ std::ostream &operator<<(std::ostream &os, const dif_i2c_config_t &params) {
 // nicely with EXPECT_EQ.
 bool operator==(dif_i2c_status_t a, dif_i2c_status_t b) {
   return a.enable_host == b.enable_host && a.enable_target == b.enable_target &&
-         a.line_loopback == b.line_loopback &&
          a.fmt_fifo_full == b.fmt_fifo_full &&
          a.rx_fifo_full == b.rx_fifo_full &&
          a.fmt_fifo_empty == b.fmt_fifo_empty &&
@@ -65,7 +64,6 @@ std::ostream &operator<<(std::ostream &os, const dif_i2c_status_t &params) {
   return os << "{\n"
             << "  .enable_host = " << params.enable_host << ",\n"
             << "  .enable_target = " << params.enable_target << ",\n"
-            << "  .line_loopback = " << params.line_loopback << ",\n"
             << "  .fmt_fifo_full = " << params.fmt_fifo_full << ",\n"
             << "  .rx_fifo_full = " << params.rx_fifo_full << ",\n"
             << "  .fmt_fifo_empty = " << params.fmt_fifo_empty << ",\n"
@@ -460,19 +458,6 @@ TEST_F(ControlTest, DeviceEnable) {
 
 TEST_F(ControlTest, DeviceEnableNullArgs) {
   EXPECT_DIF_BADARG(dif_i2c_device_set_enabled(nullptr, kDifToggleEnabled));
-}
-
-TEST_F(ControlTest, LLPBK) {
-  EXPECT_MASK32(I2C_CTRL_REG_OFFSET, {{I2C_CTRL_LLPBK_BIT, 0x1, 0x1}});
-  EXPECT_DIF_OK(dif_i2c_line_loopback_set_enabled(&i2c_, kDifToggleEnabled));
-
-  EXPECT_MASK32(I2C_CTRL_REG_OFFSET, {{I2C_CTRL_LLPBK_BIT, 0x1, 0x0}});
-  EXPECT_DIF_OK(dif_i2c_line_loopback_set_enabled(&i2c_, kDifToggleDisabled));
-}
-
-TEST_F(ControlTest, LLPBKNullArgs) {
-  EXPECT_DIF_BADARG(
-      dif_i2c_line_loopback_set_enabled(nullptr, kDifToggleEnabled));
 }
 
 class OverrideTest : public I2cTest {};

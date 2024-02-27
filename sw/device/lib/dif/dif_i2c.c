@@ -42,7 +42,6 @@ dif_result_t dif_i2c_get_status(const dif_i2c_t *i2c,
   uint32_t reg = mmio_region_read32(i2c->base_addr, I2C_CTRL_REG_OFFSET);
   status->enable_host = bitfield_bit32_read(reg, I2C_CTRL_ENABLEHOST_BIT);
   status->enable_target = bitfield_bit32_read(reg, I2C_CTRL_ENABLETARGET_BIT);
-  status->line_loopback = bitfield_bit32_read(reg, I2C_CTRL_LLPBK_BIT);
   reg = mmio_region_read32(i2c->base_addr, I2C_STATUS_REG_OFFSET);
   status->fmt_fifo_full = bitfield_bit32_read(reg, I2C_STATUS_FMTFULL_BIT);
   status->rx_fifo_full = bitfield_bit32_read(reg, I2C_STATUS_RXFULL_BIT);
@@ -349,23 +348,6 @@ dif_result_t dif_i2c_device_set_enabled(const dif_i2c_t *i2c,
   return kDifOk;
 }
 
-dif_result_t dif_i2c_line_loopback_set_enabled(const dif_i2c_t *i2c,
-                                               dif_toggle_t state) {
-  if (i2c == NULL) {
-    return kDifBadArg;
-  }
-
-  if (!dif_is_valid_toggle(state)) {
-    return kDifBadArg;
-  }
-  bool flag = dif_toggle_to_bool(state);
-
-  uint32_t reg = mmio_region_read32(i2c->base_addr, I2C_CTRL_REG_OFFSET);
-  reg = bitfield_bit32_write(reg, I2C_CTRL_LLPBK_BIT, flag);
-  mmio_region_write32(i2c->base_addr, I2C_CTRL_REG_OFFSET, reg);
-
-  return kDifOk;
-}
 dif_result_t dif_i2c_override_set_enabled(const dif_i2c_t *i2c,
                                           dif_toggle_t state) {
   if (i2c == NULL) {
