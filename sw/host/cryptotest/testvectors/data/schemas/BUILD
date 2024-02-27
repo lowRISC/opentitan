@@ -10,8 +10,8 @@ filegroup(
 )
 
 filegroup(
-    name = "ecdsa_sig_ver_schema",
-    srcs = ["ecdsa_sig_ver_schema.json"],
+    name = "ecdsa_schema",
+    srcs = ["ecdsa_schema.json"],
 )
 
 exports_files([
