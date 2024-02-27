@@ -90,9 +90,6 @@ module spid_readbuffer
 
   // The logic keeps next buffer address. Compare this with the
   // current_address and if it hits with mask, then the flip event occurs.
-  //
-  // ICEBOX(#10038): If the device goes sleep, the next_buffer_addr should be
-  //                 recoverable.
   logic [31-SramBufferAw:0] next_buffer_addr;
 
   logic active;
@@ -157,12 +154,6 @@ module spid_readbuffer
   end
 
   assign event_flip_o = active && flip && !flip_q;
-
-  // ICEBOX(#10037): Consider the case if host jumps the address? (report
-  //                 error?)
-
-  // ICEBOX(#10038): Consider the case of sleep and recover. Provide a way to
-  //                 recover `next_buffer_addr`?
 
   // Watermark event: Threshold should not be 0 to enable the event
   assign watermark_cross = (current_address_i[SramBufferAw-1:0] >= threshold_i)

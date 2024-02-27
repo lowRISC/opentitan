@@ -191,6 +191,7 @@ The IP returns data from the read buffer based on the given address in the recei
 In the current version, the read buffer size is 2kB.
 The IP only uses lower 11 bits of the received read command address (`addr[10:0]`) to issue the read requests to the DPSRAM.
 
+The read buffer feature is intended for an upstream device's initial firmware load, which manifests as a contiguous block read (typically a single SPI flash read command).
 SW is responsible for updating the read buffer contents.
 The HW notifies the SW to update the buffer contents when needed.
 The HW provides a SW configurable read watermark CSR and read-only [`LAST_READ_ADDR`](registers.md#last_read_addr) CSR.

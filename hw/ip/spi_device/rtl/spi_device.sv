@@ -1668,12 +1668,8 @@ module spi_device
     assign sys_sram_m2l[i].rdata  = sys_sram_rdata[i];
     assign sys_sram_m2l[i].rerror = sys_sram_rerror[i];
 
-    // Other than SYS access (tlul), other requesters can't wait the grant.
-    // It should be instantly available to not introduce the latency.
-    // If prim_sram_arbiter has fixed arbitration, then FW access should be
-    // lowest priority.
-    //
-    // ICEBOX(#10065): Implement grant in upload module and sram interface
+    // There is only ever a single source of requests on the SYS port (SW), so
+    // requests should always be granted.
     `ASSERT(ReqAlwaysAccepted_A, sys_sram_req[i] |-> sys_sram_gnt[i])
   end : g_sram_connect
 
