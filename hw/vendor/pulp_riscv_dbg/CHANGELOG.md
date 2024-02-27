@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [0.8.1] - 2023-10-01
+### Changed
+- debug_rom: Add rst
+
 ## [0.8.0] - 2023-04-05
 ### Fixed
 - dm_csrs: Fix W1C behavior of `sberror` (#155) [@andreaskurth](https://github.com/andreaskurth)

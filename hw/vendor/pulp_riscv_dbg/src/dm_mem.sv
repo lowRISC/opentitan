@@ -562,6 +562,7 @@ module dm_mem #(
   if (HasSndScratch) begin : gen_rom_snd_scratch
     debug_rom i_debug_rom (
       .clk_i,
+      .rst_ni,
       .req_i,
       .addr_i  ( rom_addr  ),
       .rdata_o ( rom_rdata )
@@ -572,6 +573,7 @@ module dm_mem #(
     // be saved.
     debug_rom_one_scratch i_debug_rom (
       .clk_i,
+      .rst_ni,
       .req_i,
       .addr_i  ( rom_addr  ),
       .rdata_o ( rom_rdata )
