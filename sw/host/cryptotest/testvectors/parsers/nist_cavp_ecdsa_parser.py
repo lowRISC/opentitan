@@ -50,7 +50,7 @@ def parse_testcases(args) -> None:
             "vendor": "nist",
             "test_case_id": test_count,
             "algorithm": "ecdsa",
-            "operation": "verify",
+            "operation": args.operation,
             "curve": EC_NAME_MAPPING[curve],
             "hash_alg": hash_alg,
             "message": str_to_byte_array(test_vec["Msg"]),
@@ -59,21 +59,27 @@ def parse_testcases(args) -> None:
             "r": test_vec["R"],
             "s": test_vec["S"],
         }
+        if args.operation == "sign":
+            test_case["d"] = test_vec["d"]
 
-        # NIST test vectors express the expected result as a string with a
-        # short description of the particular failure mode (if applicable).
-        # We can extract the pass/fail condition by checking the first
-        # character of the result field.
-        # Example passing vector: Result = P (0 )
-        # Example failing vector: Result = F (3 - S Changed)
-        result_str = test_vec["Result"][0]
-        if result_str == "P":
-            test_case["result"] = True
-        elif result_str == "F":
-            test_case["result"] = False
+        # Only `verify` test vectors include an explicit success/failure
+        # value. `Sign` test vectors are always expected to succeed.
+        if args.operation == "verify":
+            # NIST test vectors express the expected result as a string
+            # with a short description of the particular failure mode (if
+            # applicable).  We can extract the pass/fail condition by
+            # checking the first character of the result field.
+            # Example passing vector: Result = P (0 )
+            # Example failing vector: Result = F (3 - S Changed)
+            result_str = test_vec["Result"][0]
+            if result_str == "P":
+                test_case["result"] = True
+            elif result_str == "F":
+                test_case["result"] = False
+            else:
+                raise ValueError(f"Unknown verification result value: {result_str}")
         else:
-            raise ValueError(
-                f"Unknown verification result value: {result_str}")
+            test_case["result"] = True
 
         test_cases.append(test_case)
 
@@ -95,6 +101,12 @@ def main() -> int:
     parser.add_argument("--src", help="Source file to import.")
     parser.add_argument("--dst", help="Destination of the output file.")
     parser.add_argument("--schema", type=str, help="Test vector schema file")
+    parser.add_argument(
+        "--operation",
+        type = str,
+        help="ECDSA operation the test vectors in `src` are testing",
+        choices=["sign", "verify"],
+    )
     args = parser.parse_args()
     parse_testcases(args)
 
