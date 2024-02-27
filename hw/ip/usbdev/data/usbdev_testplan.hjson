@@ -50,17 +50,17 @@
     {
       name: data_toggle_clear
       desc: '''
-            Verify the data toggle clear functionality.
+            Verify the ability to clear Data Toggle bits.
 
-            - Set any random bit of the data toggle register from bit 0 and 11 then
+            - Set any random bit of the data toggle register from bit 0 to bit 11 then
               initiate an IN/OUT transaction on the corresponding endpoint whose bit is asserted.
-            - Verify that by writing 1 to particular bit (0-11 bits) will clear the data toggle bit for
-              that particular endpoint to DATA0 in IN/OUT directions to resynchronize with the USB host.
+            - Verify that writing 0 to a particular bit (bits 0-11) resets the data toggle bit for
+              that particular IN/OUT endpoint to DATA0, to resynchronize with the USB host.
             - But it does not prevent toggling of the flags upon successful transmission/receipt of
               subsequent data packets.
             '''
       stage: V2
-      tests: ["usbdev_data_toggle_clear"]
+      tests: []
     }
     {
       name: phy_pins_sense
@@ -814,6 +814,58 @@
             '''
       stage: V2
       tests: ["usbdev_nak_to_out_trans_when_avbuffer_empty_rxfifo_full"]
+    }
+    {
+      name: data_toggle_restore
+      desc: '''
+            Verify that each of the IN and OUT Data Toggle bits may be both set and cleared by
+            software to ensure that resuming communications after returning from Deep Sleep
+            is possible.
+
+            - Ensure that the USB device disconnected (pull up not enabled) such that no
+              communications shall occur with the device.
+            - Set all of the even-numbered OUT Data Toggle bits to 1 and all of the odd-numbered
+              OUT Data Toggle bits to 0.
+            - Check that the OUT Data Toggle bits read as 0x555.
+            - Set all of the even-numbered IN Data Toggle bits to 0 and all of the odd-numbered
+              IN Data Toggle bits to 1.
+            - Check that the IN Data Toggle bits read as 0xAAA.
+            - Check that the OUT Data Toggle bits read as 0x555.
+            - Invert all of the OUT Data Toggle bits.
+            - Invert all of the IN Data Toggle bits.
+            - Check that the OUT Data Toggle bits read as 0xAAA.
+            - Check that the IN Data Toggle bits read as 0x555.
+            - Set all of the OUT Data Toggle bits to random values.
+            - Set all of the IN Data Toggle bits to random values.
+            - Check that all of the OUT and IN Data Toggle bits read back as expected.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: setup_priority
+      desc: '''
+            Verify that the final slot of the Rx FIFO is reserved for use by SETUP packets only.
+            The final slot of the Rx FIFO buffer shall never be assigned to an OUT DATA packet
+            because it could force the USB device to be unresponsive to a SETUP DATA packet.
+
+            - Configure the USB device to receive SETUP packets on Endpoint Zero.
+            - Configure endpoint 1 to receive OUT DATA packets.
+            - Place 1 buffer in the Available SETUP Buffer FIFO.
+            - Place 8 buffers in the Available OUT Buffer FIFO.
+            - Transmit 7 OUT DATA packets to endpoint 1, checking that each packet is
+              ACKed, but do not read from Rx FIFO.
+            - Check that the Rx FIFO contains 7 buffers.
+            - Transmit 1 OUT DATA packet to endpoint 1.
+            - Verify that the OUT DATA packet is NAKed as expected.
+            - Check that the Rx FIFO depth is still 7.
+            - Transmit a SETUP DATA packet to Endpoint Zero, checking that the packet is ACKed.
+            - Check that the Rx FIFO depth is now 8.
+            - Read the packets from the Rx FIFO, checking the properties of each of the 7 OUT
+              DATA packets and the final 1 SETUP DATA packet in turn.
+            '''
+      stage: V2
+      tests: []
     }
   ]
 }
