@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules:opentitan.bzl", "OPENTITAN_CPU")
+load("//rules:opentitan_test.bzl", "opentitan_functest")
 load("//rules:cross_platform.bzl", "dual_cc_library", "dual_inputs")
 
 package(default_visibility = ["//visibility:public"])
@@ -161,6 +162,22 @@ cc_library(
         "//sw/lib/sw/device/silicon_creator:error",
         "//sw/lib/sw/device/silicon_creator/base:sec_mmio",
         "//sw/lib/sw/device/silicon_creator/sigverify:rsa_key",
+    ],
+)
+
+opentitan_functest(
+    name = "otbn_boot_services_functest",
+    srcs = ["otbn_boot_services_functest.c"],
+    # This target uses OTBN pointers internally, so it cannot work host-side.
+    deps = [
+        ":otbn_boot_services",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
+        "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/lib/sw/device/runtime:log",
+        "//sw/otbn/crypto:boot",
+        "//sw/top_darjeeling/sw/device/runtime:print",
+        "//sw/top_darjeeling/sw/test/utils:keymgr_testutils",
     ],
 )
 
