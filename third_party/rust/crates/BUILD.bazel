@@ -386,12 +386,6 @@ alias(
 )
 
 alias(
-    name = "rust-crypto",
-    actual = "@crate_index__rust-crypto-0.2.36//:crypto",
-    tags = ["manual"],
-)
-
-alias(
     name = "rustix",
     actual = "@crate_index__rustix-0.38.10//:rustix",
     tags = ["manual"],
@@ -442,6 +436,12 @@ alias(
 alias(
     name = "sha2",
     actual = "@crate_index__sha2-0.10.7//:sha2",
+    tags = ["manual"],
+)
+
+alias(
+    name = "sha3",
+    actual = "@crate_index__sha3-0.10.8//:sha3",
     tags = ["manual"],
 )
 
