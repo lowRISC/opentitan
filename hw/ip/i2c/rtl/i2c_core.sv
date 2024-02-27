@@ -35,9 +35,11 @@ module i2c_core import i2c_pkg::*;
 );
 
   import i2c_reg_pkg::FifoDepth;
+  import i2c_reg_pkg::AcqFifoDepth;
 
   // Number of bits required to represent the FIFO level/depth.
   localparam int unsigned FifoDepthW = $clog2(FifoDepth + 1);
+  localparam int unsigned AcqFifoDepthW = $clog2(AcqFifoDepth+1);
 
   // Maximum number of bits required to represent the level/depth of any FIFO.
   localparam int unsigned MaxFifoDepthW = 12;
@@ -120,7 +122,7 @@ module i2c_core import i2c_pkg::*;
   logic                     acq_fifo_wvalid;
   logic                     acq_fifo_wready;
   logic [9:0]               acq_fifo_wdata;
-  logic [FifoDepthW-1:0]    acq_fifo_depth;
+  logic [AcqFifoDepthW-1:0] acq_fifo_depth;
   logic                     acq_fifo_rvalid;
   logic                     acq_fifo_rready;
   logic [9:0]               acq_fifo_rdata;
@@ -357,7 +359,7 @@ module i2c_core import i2c_pkg::*;
   prim_fifo_sync #(
     .Width(10),
     .Pass(1'b0),
-    .Depth(FifoDepth)
+    .Depth(AcqFifoDepth)
   ) u_i2c_acqfifo (
     .clk_i,
     .rst_ni,
@@ -395,7 +397,8 @@ module i2c_core import i2c_pkg::*;
   );
 
   i2c_fsm #(
-    .FifoDepth(FifoDepth)
+    .FifoDepth(FifoDepth),
+    .AcqFifoDepth(AcqFifoDepth)
   ) u_i2c_fsm (
     .clk_i,
     .rst_ni,
@@ -680,5 +683,6 @@ module i2c_core import i2c_pkg::*;
   );
 
   `ASSERT_INIT(FifoDepthValid_A, FifoDepth > 0 && FifoDepthW <= MaxFifoDepthW)
+  `ASSERT_INIT(AcqFifoDepthValid_A, AcqFifoDepth > 0 && AcqFifoDepthW <= MaxFifoDepthW)
 
 endmodule
