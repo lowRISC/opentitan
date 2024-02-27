@@ -189,7 +189,7 @@ module spid_status
   // HW-originated WEL and WIP updates bypass the flop so they are committed
   // immediately. The changes still must be placed in the flops above, so the
   // staged values are correct for the next update.
-  // TODO: HW changes should not be allowed while BUSY
+  // TODO(#21700): HW changes should not be allowed while BUSY
   always_comb begin
     sck_status_to_commit = sck_status_staged;
     if (inclk_we_set_i) begin
