@@ -217,11 +217,11 @@ Review        | [V3_CHECKLIST_SCOPED][]                 | Done        |
 
  Type         | Item                                    | Resolution  | Note/Collaterals
 --------------|-----------------------------------------|-------------|------------------
-Documentation | [SEC_CM_TESTPLAN_COMPLETED][]           | Not Started |
-Tests         | [FPV_SEC_CM_PROVEN][]                   | Not Started |
-Tests         | [SIM_SEC_CM_VERIFIED][]                 | Not Started |
-Coverage      | [SIM_COVERAGE_REVIEWED][]               | Not Started |
-Review        | [SEC_CM_DV_REVIEWED][]                  | Not Started |
+Documentation | [SEC_CM_TESTPLAN_COMPLETED][]           | Waived      | Waived since only 1 standard sec_cm - bus integrity.
+Tests         | [FPV_SEC_CM_PROVEN][]                   | Done        | The bus integrity cm has been proven formally.
+Tests         | [SIM_SEC_CM_VERIFIED][]                 | N/A         | This module only has an FPV testbench.
+Coverage      | [SIM_COVERAGE_REVIEWED][]               | N/A         | This module only has an FPV testbench.
+Review        | [SEC_CM_DV_REVIEWED][]                  | Waived      | Waived since only 1 standard sec_cm - bus integrity.
 
 [SEC_CM_TESTPLAN_COMPLETED]:  ../../../../../doc/project_governance/checklist/README.md#sec_cm_testplan_completed
 [FPV_SEC_CM_PROVEN]:          ../../../../../doc/project_governance/checklist/README.md#fpv_sec_cm_proven
