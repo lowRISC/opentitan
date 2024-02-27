@@ -395,6 +395,32 @@
     { name: "BUS.INTEGRITY",
       desc: "End-to-end bus integrity scheme."
     }
+    { name: "LC_DFT_EN.INTERSIG.MUBI",
+      desc: "The life cycle DFT enable signal is multibit encoded."
+    }
+    { name: "LC_HW_DEBUG_EN.INTERSIG.MUBI",
+      desc: "The life cycle hardware debug enable signal is multibit encoded."
+    }
+    { name: "LC_CHECK_BYP_EN.INTERSIG.MUBI",
+      desc: "The life cycle check bypass signal is multibit encoded."
+    }
+    { name: "LC_ESCALATE_EN.INTERSIG.MUBI",
+      desc: "The life cycle check bypass signal is multibit encoded."
+    }
+    { name: "PINMUX_HW_DEBUG_EN.INTERSIG.MUBI",
+      desc: '''In order to support the NDM reset feature in RV_DM,
+               the pinmux latches the LC_HW_DEBUG_EN signal so that it can survive
+               the NDM reset, and sends that signal on to the RV_DM for use in
+               gating circuitry. This signal is also multibit encoded
+            '''
+    }
+    { name: "TAP.MUX.LC_GATED",
+      desc: '''The TAP selection mux/demux in the strap sampling module
+               is gated by life cycle signals so that the RV_DM can only
+               be selected during when LC_HW_DEBUG_EN is asserted, and
+               the DFT TAP can only be selected when LC_DFT_EN is asserted.
+            '''
+    }
   ]
 
   registers: [
