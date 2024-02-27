@@ -483,6 +483,29 @@ cc_library(
     ],
 )
 
+opentitan_test(
+    name = "otbn_boot_services_functest",
+    srcs = ["otbn_boot_services_functest.c"],
+    broken = cw310_params(tags = ["broken"]),
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        {
+            # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
+        },
+    ),
+    # This target uses OTBN pointers internally, so it cannot work host-side.
+    deps = [
+        ":otbn_boot_services",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
+        "//sw/otbn/crypto:boot",
+    ],
+)
+
 cc_library(
     name = "xmodem",
     srcs = ["xmodem.c"],
