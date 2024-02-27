@@ -88,6 +88,16 @@ py_binary(
 )
 
 py_binary(
+    name = "random_ecdsa_generator",
+    srcs = ["random_ecdsa_generator.py"],
+    deps = [
+        ":cryptotest_util",
+        requirement("jsonschema"),
+        requirement("pycryptodome"),
+    ],
+)
+
+py_binary(
     name = "nist_cavp_hash_parser",
     srcs = ["nist_cavp_hash_parser.py"],
     deps = [
