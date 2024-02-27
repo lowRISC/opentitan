@@ -168,6 +168,24 @@ cc_library(
 )
 
 cc_library(
+    name = "hexstr",
+    srcs = ["hexstr.c"],
+    hdrs = ["hexstr.h"],
+    deps = [
+        "//sw/device/lib/base:status",
+    ],
+)
+
+cc_test(
+    name = "hexstr_unittest",
+    srcs = ["hexstr_unittest.cc"],
+    deps = [
+        ":hexstr",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
     name = "hmac_testutils",
     srcs = ["hmac_testutils.c"],
     hdrs = ["hmac_testutils.h"],
