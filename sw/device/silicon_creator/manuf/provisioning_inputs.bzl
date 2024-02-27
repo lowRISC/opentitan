@@ -19,9 +19,15 @@ CP_PROVISIONING_INPUTS = _DEVICE_ID_AND_TEST_TOKENS + """
   --wafer-auth-secret="0x00000000_00000000_00000000_00000000_00000000_00000000_00000000_00000000"
 """
 
+FT_PERSONALIZE_KEYS = [
+    "//sw/device/silicon_creator/manuf/keys/fake:cert_endorsement_key.sk.der",
+    "//sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der",
+]
+
 FT_PROVISIONING_INPUTS = _DEVICE_ID_AND_TEST_TOKENS + """
   --target-mission-mode-lc-state="prod"
   --host-ecc-sk="$(rootpath //sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der)"
+  --cert-endorsement-ecc-sk="$(rootpath //sw/device/silicon_creator/manuf/keys/fake:cert_endorsement_key.sk.der)"
   --rom-ext-measurement="0x00000000_00000000_00000000_00000000_00000000_00000000_00000000_00000000"
   --owner-manifest-measurement="0x00000000_00000000_00000000_00000000_00000000_00000000_00000000_00000000"
   --owner-measurement="0x00000000_00000000_00000000_00000000_00000000_00000000_00000000_00000000"

@@ -157,12 +157,14 @@ pub fn test_exit(
     Ok(())
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn run_ft_personalize(
     transport: &TransportWrapper,
     init: &InitializeTest,
     second_bootstrap: PathBuf,
     third_bootstrap: PathBuf,
     host_ecc_sk: PathBuf,
+    cert_endorsement_ecc_sk: PathBuf,
     perso_data_in: &ManufCertPersoDataIn,
     timeout: Duration,
 ) -> Result<()> {
@@ -264,7 +266,8 @@ pub fn run_ft_personalize(
         .collect();
 
     // Check the certificates are parsable with OpenSSL.
-    let _uds_cert = parse_and_endorse_uds_cert(uds_cert_bytes, &host_sk)?;
+    let cert_endorsement_sk = SecretKey::<NistP256>::read_pkcs8_der_file(cert_endorsement_ecc_sk)?;
+    let _uds_cert = parse_and_endorse_uds_cert(uds_cert_bytes, &cert_endorsement_sk)?;
     let _cdi_0_cert = parse_certificate(&cdi_0_cert_bytes)?;
     let _cdi_1_cert = parse_certificate(&cdi_1_cert_bytes)?;
 
@@ -275,11 +278,11 @@ pub fn run_ft_personalize(
 
 fn parse_and_endorse_uds_cert(
     tbs: Vec<u8>,
-    ca_private_key: &SecretKey<NistP256>,
+    ca_sk: &SecretKey<NistP256>,
 ) -> Result<template::Certificate> {
     // Hash and sign the TBS.
     let tbs_digest = sha256(&tbs);
-    let signing_key = SigningKey::from(ca_private_key);
+    let signing_key = SigningKey::from(ca_sk);
     let (tbs_signature, _) = signing_key.sign_prehash_recoverable(&tbs_digest.to_be_bytes())?;
     let (r, s) = tbs_signature.split_bytes();
 
@@ -293,5 +296,5 @@ fn parse_and_endorse_uds_cert(
 
     // Generate the (endorsed) UDS certificate.
     let uds_cert_bytes = generate_certificate_from_tbs(tbs, &signature)?;
-    Ok(parse_certificate(&uds_cert_bytes)?)
+    parse_certificate(&uds_cert_bytes)
 }
