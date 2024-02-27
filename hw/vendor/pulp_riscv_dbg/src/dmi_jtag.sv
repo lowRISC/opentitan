@@ -17,7 +17,7 @@
 */
 
 module dmi_jtag #(
-  parameter logic [31:0] IdcodeValue = 32'h00000001
+  parameter logic [31:0] IdcodeValue = 32'h00000DB3
 ) (
   input  logic         clk_i,      // DMI Clock
   input  logic         rst_ni,     // Asynchronous reset active low
