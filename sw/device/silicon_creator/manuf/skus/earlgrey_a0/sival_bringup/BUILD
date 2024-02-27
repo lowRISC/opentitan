@@ -18,6 +18,7 @@ load(
     "//sw/device/silicon_creator/manuf:provisioning_inputs.bzl",
     "CP_PROVISIONING_INPUTS",
     "EARLGREY_A0_INDIVIDUALIZE_OTP_SW_CFGS",
+    "FT_PERSONALIZE_KEYS",
     "FT_PERSONALIZE_SIGNING_KEYS",
     "FT_PROVISIONING_INPUTS",
 )
@@ -302,7 +303,7 @@ opentitan_test(
     name = "ft_provision",
     cw310 = hyper310_jtag_params(
         binaries = _FT_PROVISIONING_BINARIES,
-        data = ["//sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der"],
+        data = FT_PERSONALIZE_KEYS,
         otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival_bringup:otp_img_test_locked0_manuf_initialized",
         tags = [
             "lc_test_locked0",
@@ -317,7 +318,7 @@ opentitan_test(
     },
     silicon = silicon_jtag_params(
         binaries = _FT_PROVISIONING_BINARIES,
-        data = ["//sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der"],
+        data = FT_PERSONALIZE_KEYS,
         interface = "hyper310",
         test_cmd = _FT_PROVISIONING_CMD_ARGS,
         test_harness = "//sw/host/tests/manuf/provisioning/ft",
