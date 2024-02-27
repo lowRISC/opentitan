@@ -1262,9 +1262,6 @@ module spi_tpm
         sck_p2s_valid = 1'b 1;
         sck_data_sel  = SelRdFifo;
 
-        // ICEBOX(#18354): RdFifo rready (sck --> isck)
-
-        // ICEBOX(#18354): check xfer_size handling
         if (isck_p2s_sent && xfer_size_met) begin
           sck_st_d = StEnd;
         end
@@ -1285,7 +1282,6 @@ module spi_tpm
         wrdata_shift_en = 1'b 1;
         // Processed by the logic. Does not have to do
 
-        // ICEBOX(#18354): check xfer_size handling
         if (sck_wrfifo_wvalid && xfer_size_met) begin
           // With complete command, upload for SW to process
           sck_cmdaddr_wvalid = 1'b 1;
@@ -1302,8 +1298,6 @@ module spi_tpm
       end // StInvalid
 
       StEnd: begin // TERMINAL_STATE
-        // TODO(#18355): Check if open pull-up cancel the transaction?
-        // If yes, then drive 0x00 for the read command
         if (cmd_type == Read) begin
           sck_p2s_valid = 1'b 1;
           sck_data_sel  = SelWait; // drive 0x00
