@@ -35,6 +35,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
 
   // when interrupt is triggered, it may take a few cycles before it's reflected in a TL read
   local bit [NumSpiDevIntr-1:0] intr_trigger_pending;
+  bit [NumSpiDevIntr-1:0]       intr_exp_read_mirrored;
 
   // tx/rx async fifo, size is 2 words
   local bit [31:0] tx_word_q[$];
@@ -871,6 +872,8 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       spi_item item;
       uint payload_idx;
       bit [31:0] start_addr, offset, read_buffer_addr;
+      event      interrupt_update_ev;
+      bit        reading_readbuffer=1;
 
       upstream_spi_req_fifo.get(item);
       if (cfg.spi_host_agent_cfg.spi_func_mode == SpiModeTpm) begin
@@ -887,6 +890,33 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
         continue;
       end
 
+      `uvm_info(`gfn, "Process read buffer command", UVM_DEBUG)
+
+      //Use fork...join_none and lock until we return from 'compare_mem_byte' below.
+      // This needs to be separated because thread below would be killed on
+      // 'item.mon_item_complete=1' which occurs the moment CSB transitions 0->1.
+      // If there was a read-buffer interrupt which occurred shortly before CSB=1
+      // the DV_SPINWAIT could kill the thread (depends on timing), without update
+      // to the interrupt predictions.
+      fork begin
+        `uvm_info(`gfn, "Blocking on SV event 'interrupt_update_ev'", UVM_DEBUG)
+        wait (interrupt_update_ev.triggered);
+        while (reading_readbuffer) begin
+          `uvm_info(`gfn,
+                    $sformatf("'interrupt_update_ev' event is triggered (buffer_addr=0x%0x)",
+                              read_buffer_addr + 1 ), UVM_DEBUG)
+          predict_read_buffer_intr(read_buffer_addr + 1, item.opcode);
+
+          //task above is delay free since it's within a fork...join_any
+          //Adding some "SPI-side" clk_delay to ensure the triggering events are noticed
+          #(cfg.spi_host_agent_cfg.sck_period_ps/2 * 1ps);
+
+          `uvm_info(`gfn, "Blocking on SV event 'interrupt_update_ev'", UVM_DEBUG)
+          wait (interrupt_update_ev.triggered);
+        end
+        `uvm_info(`gfn, "Exiting interrupt update fork", UVM_DEBUG)
+      end join_none
+
       start_addr = convert_addr_from_byte_queue(item.address_q);
       `DV_SPINWAIT(
         while (1) begin
@@ -897,18 +927,31 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
                              payload_idx, "Read buffer");
             read_buffer_addr = start_addr + payload_idx; // it's kept until reset
             payload_idx++; // clear to 0 when transaction is done
-            predict_read_buffer_intr(read_buffer_addr + 1, item.opcode);
+            -> interrupt_update_ev;
+            `uvm_info(`gfn,
+             $sformatf("Triggering 'interrupt_update_ev' event  (buffer_addr=0x%0x)",
+                       read_buffer_addr + 1 ), UVM_DEBUG)
+
             `DV_CHECK_EQ(item.payload_q.size, payload_idx)
           end
-          if (item.mon_item_complete) break;
+          if (item.mon_item_complete) begin
+            `uvm_info(`gfn,
+             "item.mon_item_complete=1 -> disabling all threads under DV_SPINWAIT", UVM_DEBUG)
+            break;
+          end
         end
       )
+      //Exiting while loop after we finish reading the buffer and triggering the event
+      //  in case the process is waiting - so we unlock it
+      reading_readbuffer = 0;
+      -> interrupt_update_ev;
+
       // only update when it has payload
       if (payload_idx > 0) begin
         `uvm_info(`gfn, $sformatf("Update last_read_addr to 0x%0x", read_buffer_addr), UVM_MEDIUM)
         void'(ral.last_read_addr.predict(.value(read_buffer_addr), .kind(UVM_PREDICT_READ)));
       end
-    end
+    end // forever begin
   endtask
 
   virtual function void predict_read_buffer_intr(int addr, bit [7:0] opcode);
@@ -941,15 +984,18 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
   // add some cycle delays to make it close to design behavior, so that the 2nd interrupt read
   // must match.
   virtual function void update_pending_intr_w_delay(spi_device_intr_e intr, int delay_cyc = 4);
-    fork begin
-      `uvm_info(`gfn,
-        $sformatf("Wait %0d cycles to enable compare of %s interrupt",delay_cyc, intr.name()),
-        UVM_MEDIUM)
-      cfg.clk_rst_vif.wait_n_clks(delay_cyc);
-      `uvm_info(`gfn,$sformatf("Wait done; Enable compare of %s", intr.name()), UVM_MEDIUM)
-      intr_trigger_pending[intr] = 1;
-    end join_none
-  endfunction
+    fork
+      begin
+        `uvm_info(`gfn,
+                  $sformatf("Wait %0d cycles to enable compare of %s interrupt",delay_cyc, intr.name()),
+                  UVM_MEDIUM)
+        cfg.clk_rst_vif.wait_n_clks(delay_cyc);
+        `uvm_info(`gfn,$sformatf("Wait done; Enable compare of %s", intr.name()), UVM_MEDIUM)
+        intr_trigger_pending[intr] = 1;
+      end // fork begin
+    join_none
+  endfunction // update_pending_intr_w_delay
+
 
   // process_tl_access:this task processes incoming access into the IP over tl interface
   // this is already called in cip_base_scoreboard::process_tl_a/d_chan_fifo tasks
