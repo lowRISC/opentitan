@@ -547,12 +547,15 @@ opentitan_test(
 opentitan_test(
     name = "chip_power_idle_load",
     srcs = ["chip_power_idle_load.c"],
+    broken = new_cw310_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         {
             "//hw/top_earlgrey:silicon_creator": None,
             "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon_owner",
             "//hw/top_earlgrey:silicon_owner_prodc_rom_ext": "silicon_owner",
+            # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
         },
     ),
     silicon_owner = silicon_params(
@@ -580,7 +583,14 @@ opentitan_test(
 opentitan_test(
     name = "chip_power_sleep_load",
     srcs = ["chip_power_sleep_load.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    broken = new_cw310_params(tags = ["broken"]),
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        {
+            # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
+        },
+    ),
     # TODO(#16374): test doesn't make progress after enabling PWM
     verilator = new_verilator_params(tags = ["broken"]),
     deps = [
@@ -946,11 +956,12 @@ opentitan_test(
 opentitan_test(
     name = "csrng_edn_concurrency_test",
     srcs = ["csrng_edn_concurrency_test.c"],
+    broken = new_cw310_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
             "//hw/top_earlgrey:silicon_creator": None,
             "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon_owner",
             "//hw/top_earlgrey:silicon_owner_prodc_rom_ext": "silicon_owner",
@@ -985,11 +996,14 @@ opentitan_test(
 opentitan_test(
     name = "csrng_kat_test",
     srcs = ["csrng_kat_test.c"],
+    broken = new_cw310_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:silicon_creator": None,
+            # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
         },
     ),
     silicon = silicon_params(
@@ -1134,11 +1148,15 @@ opentitan_test(
 opentitan_test(
     name = "edn_kat",
     srcs = ["edn_kat.c"],
+    # Remove this line when fixed.
+    broken = new_cw310_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:silicon_creator": None,
+            # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
         },
     ),
     verilator = new_verilator_params(
@@ -1273,11 +1291,12 @@ opentitan_test(
 opentitan_test(
     name = "entropy_src_csrng_test",
     srcs = ["entropy_src_csrng_test.c"],
+    broken = new_cw310_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
             "//hw/top_earlgrey:silicon_creator": None,
             "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon_owner",
             "//hw/top_earlgrey:silicon_owner_prodc_rom_ext": "silicon_owner",
@@ -1337,12 +1356,15 @@ opentitan_test(
 opentitan_test(
     name = "entropy_src_edn_reqs_test",
     srcs = ["entropy_src_edn_reqs_test.c"],
+    broken = new_cw310_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         {
             "//hw/top_earlgrey:silicon_creator": None,
             "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon_owner",
             "//hw/top_earlgrey:silicon_owner_prodc_rom_ext": "silicon_owner",
+            # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
         },
     ),
     silicon_owner = silicon_params(
@@ -1489,11 +1511,14 @@ opentitan_test(
 opentitan_test(
     name = "flash_ctrl_ops_test",
     srcs = ["flash_ctrl_ops_test.c"],
+    broken = new_cw310_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
+            # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
         },
     ),
     deps = [
@@ -1631,11 +1656,14 @@ test_suite(
 opentitan_test(
     name = "flash_ctrl_clock_freqs_test",
     srcs = ["flash_ctrl_clock_freqs_test.c"],
+    broken = new_cw310_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
+            # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
         },
     ),
     verilator = new_verilator_params(timeout = "long"),
@@ -1656,11 +1684,14 @@ opentitan_test(
 opentitan_test(
     name = "flash_ctrl_test",
     srcs = ["flash_ctrl_test.c"],
+    broken = new_cw310_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:silicon_creator": None,
+            # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
         },
     ),
     silicon = silicon_params(tags = ["broken"]),
@@ -1703,10 +1734,13 @@ opentitan_test(
 opentitan_test(
     name = "flash_ctrl_mem_protection_test",
     srcs = ["flash_ctrl_mem_protection_test.c"],
+    broken = new_cw310_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         {
             "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
+            # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
         },
     ),
     verilator = new_verilator_params(timeout = "long"),
@@ -1922,12 +1956,15 @@ opentitan_test(
 opentitan_test(
     name = "keymgr_key_derivation_test",
     srcs = ["keymgr_key_derivation_test.c"],
+    broken = new_cw310_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         {
             # This test is not supported by the silicon_owner_sival_rom_ext
             # configuration.
             "//hw/top_earlgrey:silicon_creator": None,
+            # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
         },
     ),
     verilator = new_verilator_params(timeout = "long"),
@@ -1950,11 +1987,14 @@ opentitan_test(
 opentitan_test(
     name = "keymgr_sideload_aes_test",
     srcs = ["keymgr_sideload_aes_test.c"],
+    broken = new_cw310_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:silicon_creator": None,
+            # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
         },
     ),
     silicon = silicon_params(tags = ["broken"]),
@@ -1982,11 +2022,14 @@ opentitan_test(
 opentitan_test(
     name = "keymgr_sideload_kmac_test",
     srcs = ["keymgr_sideload_kmac_test.c"],
+    broken = new_cw310_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:silicon_creator": None,
+            # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
         },
     ),
     silicon = silicon_params(tags = ["broken"]),
@@ -2187,7 +2230,14 @@ opentitan_test(
 opentitan_test(
     name = "lc_ctrl_otp_hw_cfg0_test",
     srcs = ["lc_ctrl_otp_hw_cfg0_test.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    broken = new_cw310_params(tags = ["broken"]),
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        {
+            # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
+        },
+    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:bitfield",
@@ -2373,7 +2423,14 @@ opentitan_test(
 opentitan_test(
     name = "otp_ctrl_smoketest",
     srcs = ["otp_ctrl_smoketest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    broken = new_cw310_params(tags = ["broken"]),
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        {
+            # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
+        },
+    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:bitfield",
@@ -2412,7 +2469,14 @@ opentitan_test(
 opentitan_test(
     name = "pmp_smoketest_napot",
     srcs = ["pmp_smoketest_napot.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    broken = new_cw310_params(tags = ["broken"]),
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        {
+            # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
+        },
+    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:csr",
@@ -2426,7 +2490,14 @@ opentitan_test(
 opentitan_test(
     name = "pmp_smoketest_tor",
     srcs = ["pmp_smoketest_tor.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    broken = new_cw310_params(tags = ["broken"]),
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        {
+            # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
+        },
+    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:csr",
@@ -3290,10 +3361,12 @@ opentitan_test(
 opentitan_test(
     name = "sram_ctrl_execution_test",
     srcs = ["sram_ctrl_execution_test.c"],
+    broken = new_cw310_params(tags = ["broken"]),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
         "//hw/top_earlgrey:fpga_cw310_sival": None,
-        "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+        # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
+        "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
     },
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -3354,10 +3427,13 @@ opentitan_test(
 opentitan_test(
     name = "sram_ctrl_sleep_sram_ret_contents_scramble_test",
     srcs = ["sram_ctrl_sleep_sram_ret_contents_scramble_test.c"],
+    broken = new_cw310_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
             "//hw/top_earlgrey:silicon_creator": None,
             "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon_owner",
             "//hw/top_earlgrey:silicon_owner_prodc_rom_ext": "silicon_owner",
@@ -3823,7 +3899,14 @@ opentitan_test(
         "rv_core_ibex_address_translation_test.S",
         "rv_core_ibex_address_translation_test.c",
     ],
-    exec_env = EARLGREY_TEST_ENVS,
+    broken = new_cw310_params(tags = ["broken"]),
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        {
+            # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
+        },
+    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:csr",
@@ -4945,6 +5028,7 @@ opentitan_binary(
 opentitan_test(
     name = "uart_tx_rx_test",
     srcs = ["uart_tx_rx_test.c"],
+    broken = new_cw310_params(tags = ["broken"]),
     cw310 = new_cw310_params(
         otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_prod_manuf_personalized",
         test_cmd = " ".join([
@@ -4956,7 +5040,8 @@ opentitan_test(
     ),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_sival": None,
-        "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+        # FIXME broken in sival ROM_EXT, change this line when fixed. See #21706.
+        "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
         "//hw/top_earlgrey:silicon_creator": None,
         "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon_owner",
         "//hw/top_earlgrey:silicon_owner_prodc_rom_ext": "silicon_owner",
@@ -5070,6 +5155,7 @@ opentitan_binary(
 opentitan_test(
     name = "uart_baud_rate_test",
     srcs = ["uart_baud_rate_test.c"],
+    broken = new_cw310_params(tags = ["broken"]),
     cw310 = new_cw310_params(
         test_cmd = " ".join([
             "--bitstream=\"{bitstream}\"",
@@ -5079,7 +5165,8 @@ opentitan_test(
         test_harness = "//sw/host/tests/chip/uart:uart_baud_rate",
     ),
     exec_env = dicts.add(
-        {"//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None},
+        # FIXME broken in sival ROM_EXT, change this line when fixed. See #21706.
+        {"//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken"},
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     silicon = silicon_params(
