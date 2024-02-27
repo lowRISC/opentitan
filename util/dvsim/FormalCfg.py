@@ -6,6 +6,7 @@ import logging as log
 from pathlib import Path
 
 import hjson
+from results_server import ResultsServer
 from tabulate import tabulate
 
 from OneShotCfg import OneShotCfg
@@ -247,7 +248,7 @@ class FormalCfg(OneShotCfg):
 
         return self.results_md
 
-    def _publish_results(self):
+    def _publish_results(self, results_server: ResultsServer):
         ''' our agreement with tool vendors allows us to publish the summary
         results (as in gen_results_summary).
 
@@ -258,6 +259,6 @@ class FormalCfg(OneShotCfg):
         '''
         if self.publish_report:
             self.publish_results_md = self.gen_results_summary()
-            super()._publish_results()
+            super()._publish_results(results_server)
         else:
             return
