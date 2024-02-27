@@ -6,6 +6,10 @@ load("//rules:opentitan.bzl", "OPENTITAN_CPU")
 load("//rules:autogen.bzl", "autogen_chip_info")
 load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library", "dual_inputs")
 load(
+    "@bazel_skylib//lib:dicts.bzl",
+    "dicts",
+)
+load(
     "//rules/opentitan:defs.bzl",
     "EARLGREY_TEST_ENVS",
     "cw310_params",
@@ -62,7 +66,14 @@ cc_test(
 opentitan_test(
     name = "boot_data_functest",
     srcs = ["boot_data_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    broken = cw310_params(tags = ["broken"]),
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        {
+            # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
+        },
+    ),
     verilator = verilator_params(
         timeout = "eternal",
         tags = ["flaky"],
@@ -195,7 +206,14 @@ cc_library(
 opentitan_test(
     name = "irq_asm_functest",
     srcs = ["irq_asm_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    broken = cw310_params(tags = ["broken"]),
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        {
+            # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
+        },
+    ),
     verilator = verilator_params(
         timeout = "long",
     ),
