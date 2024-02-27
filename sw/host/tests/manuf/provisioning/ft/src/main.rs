@@ -38,9 +38,13 @@ pub struct ManufFtProvisioningDataInput {
     #[arg(long, value_parser = DifLcCtrlState::parse_lc_state_str)]
     target_mission_mode_lc_state: DifLcCtrlState,
 
-    /// Host (HSM) generated ECC (P256) private key DER file.
+    /// Host (HSM) generated ECC (P256) private key DER file to support RMA token encryption.
     #[arg(long)]
     host_ecc_sk: PathBuf,
+
+    /// Certificate endorsement ECC (P256) private key DER file.
+    #[arg(long)]
+    cert_endorsement_ecc_sk: PathBuf,
 
     /// UDS authority (endorsement) key ID hexstring.
     #[arg(long)]
@@ -108,9 +112,11 @@ fn main() -> Result<()> {
         hex_string_to_u32_arrayvec::<4>(opts.provisioning_data.test_exit_token.as_str())?;
 
     // Format ujson data payload(s).
+    // Individualization ujson payload.
     let _ft_individualize_data_in = ManufFtIndividualizeData {
         device_id: hex_string_to_u32_arrayvec::<8>(opts.provisioning_data.device_id.as_str())?,
     };
+    // Personalization ujson payload.
     let rom_ext_measurement =
         hex_string_to_u32_arrayvec::<8>(opts.provisioning_data.rom_ext_measurement.as_str())?;
     let rom_ext_security_version = opts.provisioning_data.rom_ext_security_version;
@@ -203,6 +209,7 @@ fn main() -> Result<()> {
         opts.second_bootstrap,
         opts.third_bootstrap,
         opts.provisioning_data.host_ecc_sk,
+        opts.provisioning_data.cert_endorsement_ecc_sk,
         &_perso_data_in,
         opts.timeout,
     )?;
