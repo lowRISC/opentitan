@@ -12,6 +12,8 @@
 #include "sw/lib/sw/device/silicon_creator/base/sec_mmio.h"
 #include "sw/lib/sw/device/silicon_creator/dbg_print.h"
 
+#include "otbn_regs.h"  // Generated.
+
 static_assert(kAttestationSeedWords <= 16,
               "Additional attestation seed needs must be <= 516 bits.");
 
@@ -205,7 +207,24 @@ rom_error_t otbn_boot_attestation_key_save(
 }
 
 rom_error_t otbn_boot_attestation_key_clear(void) {
-  return otbn_dmem_sec_wipe();
+  // Trigger a full DMEM wipe.
+  RETURN_IF_ERROR(otbn_dmem_sec_wipe());
+  HARDENED_RETURN_IF_ERROR(otbn_busy_wait_for_done());
+
+  // Re-load the data portion of the boot services app. This is like a
+  // stripped-down version of `otbn_load_app`, where we skip the IMEM.
+  if (kOtbnAppBoot.dmem_data_end < kOtbnAppBoot.dmem_data_start) {
+    return kErrorOtbnInvalidArgument;
+  }
+  HARDENED_CHECK_GE(kOtbnAppBoot.dmem_data_end, kOtbnAppBoot.dmem_data_start);
+  const size_t data_num_words =
+      (size_t)(kOtbnAppBoot.dmem_data_end - kOtbnAppBoot.dmem_data_start);
+  if (data_num_words > 0) {
+    HARDENED_RETURN_IF_ERROR(
+        otbn_dmem_write(data_num_words, kOtbnAppBoot.dmem_data_start,
+                        kOtbnAppBoot.dmem_data_start_addr));
+  }
+  return kErrorOk;
 }
 
 rom_error_t otbn_boot_attestation_endorse(const hmac_digest_t *digest,
