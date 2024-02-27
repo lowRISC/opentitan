@@ -943,7 +943,7 @@ static void configure_i2c(dif_i2c_t *i2c, uint8_t device_addr_0,
   dif_i2c_id_t id_0 = {.mask = kI2cDeviceMask, .address = device_addr_0};
   dif_i2c_id_t id_1 = {.mask = kI2cDeviceMask, .address = device_addr_1};
   CHECK_DIF_OK(dif_i2c_set_device_id(i2c, &id_0, &id_1));
-  CHECK_DIF_OK(dif_i2c_line_loopback_set_enabled(i2c, kDifToggleEnabled));
+  CHECK_DIF_OK(dif_i2c_device_set_enabled(i2c, kDifToggleEnabled));
 }
 
 static void configure_spi_host(const dif_spi_host_t *spi_host, bool enable) {
