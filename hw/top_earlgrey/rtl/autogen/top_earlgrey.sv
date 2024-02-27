@@ -23,8 +23,11 @@ module top_earlgrey #(
   // parameters for spi_device
   parameter spi_device_pkg::sram_type_e SpiDeviceSramType = spi_device_pkg::DefaultSramType,
   // parameters for i2c0
+  parameter int I2c0AcqFifoDepth = 64,
   // parameters for i2c1
+  parameter int I2c1AcqFifoDepth = 64,
   // parameters for i2c2
+  parameter int I2c2AcqFifoDepth = 64,
   // parameters for pattgen
   // parameters for rv_timer
   // parameters for otp_ctrl
@@ -1210,7 +1213,8 @@ module top_earlgrey #(
       .rst_ni (rstmgr_aon_resets.rst_spi_device_n[rstmgr_pkg::Domain0Sel])
   );
   i2c #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[6:6])
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[6:6]),
+    .AcqFifoDepth(I2c0AcqFifoDepth)
   ) u_i2c0 (
 
       // Input
@@ -1252,7 +1256,8 @@ module top_earlgrey #(
       .rst_ni (rstmgr_aon_resets.rst_i2c0_n[rstmgr_pkg::Domain0Sel])
   );
   i2c #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[7:7])
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[7:7]),
+    .AcqFifoDepth(I2c1AcqFifoDepth)
   ) u_i2c1 (
 
       // Input
@@ -1294,7 +1299,8 @@ module top_earlgrey #(
       .rst_ni (rstmgr_aon_resets.rst_i2c1_n[rstmgr_pkg::Domain0Sel])
   );
   i2c #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[8:8])
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[8:8]),
+    .AcqFifoDepth(I2c2AcqFifoDepth)
   ) u_i2c2 (
 
       // Input

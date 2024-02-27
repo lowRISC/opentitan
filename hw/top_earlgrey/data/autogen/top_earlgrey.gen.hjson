@@ -902,7 +902,22 @@
         "0"
       ]
       param_decl: {}
-      param_list: []
+      memory: {}
+      param_list:
+      [
+        {
+          name: AcqFifoDepth
+          desc:
+            '''
+            Depth of ACQ FIFO.
+            The maximum supported value is 2^12-1, although much lower values are recommended to keep area requirements reasonable.
+            '''
+          type: int
+          default: "64"
+          expose: "true"
+          name_top: I2c0AcqFifoDepth
+        }
+      ]
       inter_signal_list:
       [
         {
@@ -949,7 +964,22 @@
         "0"
       ]
       param_decl: {}
-      param_list: []
+      memory: {}
+      param_list:
+      [
+        {
+          name: AcqFifoDepth
+          desc:
+            '''
+            Depth of ACQ FIFO.
+            The maximum supported value is 2^12-1, although much lower values are recommended to keep area requirements reasonable.
+            '''
+          type: int
+          default: "64"
+          expose: "true"
+          name_top: I2c1AcqFifoDepth
+        }
+      ]
       inter_signal_list:
       [
         {
@@ -996,7 +1026,22 @@
         "0"
       ]
       param_decl: {}
-      param_list: []
+      memory: {}
+      param_list:
+      [
+        {
+          name: AcqFifoDepth
+          desc:
+            '''
+            Depth of ACQ FIFO.
+            The maximum supported value is 2^12-1, although much lower values are recommended to keep area requirements reasonable.
+            '''
+          type: int
+          default: "64"
+          expose: "true"
+          name_top: I2c2AcqFifoDepth
+        }
+      ]
       inter_signal_list:
       [
         {

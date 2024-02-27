@@ -17,7 +17,7 @@ class i2c_glitch_vseq extends i2c_target_smoke_vseq;
   // Number of cycles sequence wait before all of the read states are executed
   parameter uint READ_STATE_WAIT_TIMEOUT_CYCLES = 40;
   // ACQ FIFO size in bytes
-  parameter uint ACQ_FIFO_SIZE = 64;
+  import i2c_env_pkg::I2C_ACQ_FIFO_DEPTH;
   // Period of SCL clock depending on timing parameters
   uint scl_period;
 
@@ -316,7 +316,7 @@ class i2c_glitch_vseq extends i2c_target_smoke_vseq;
       // Add data items to transaction enter StretchAddr state
       if (addr_states[i] == StretchAddr) begin
         // one transaction for start address and another for stop condition
-        repeat(ACQ_FIFO_SIZE - 2) begin
+        repeat(I2C_ACQ_FIFO_DEPTH - 2) begin
           `uvm_create_obj(i2c_item, req)
           append_data(req, m_i2c_target_seq.req_q);
         end
@@ -331,7 +331,7 @@ class i2c_glitch_vseq extends i2c_target_smoke_vseq;
         // Add address to the transaction
         `uvm_create_obj(i2c_item, req)
         append_address(req, m_i2c_target_seq.req_q, 1'b0);
-        timeout = (((ACQ_FIFO_SIZE + 2) * 9) + ADDR_STATE_WAIT_TIMEOUT_CYCLES) * scl_period;
+        timeout = (((I2C_ACQ_FIFO_DEPTH + 2) * 9) + ADDR_STATE_WAIT_TIMEOUT_CYCLES) * scl_period;
       end
       fork
         begin
@@ -397,12 +397,12 @@ class i2c_glitch_vseq extends i2c_target_smoke_vseq;
       append_data(req, m_i2c_target_seq.req_q);
       if (write_states[i] == StretchAcqFull) begin
         // Create ACQ FIFO full condition
-        repeat(ACQ_FIFO_SIZE) begin
+        repeat(I2C_ACQ_FIFO_DEPTH) begin
           `uvm_create_obj(i2c_item, req)
           append_data(req, m_i2c_target_seq.req_q);
         end
         // Each byte requires 9 scl cycles to be transmitted
-        timeout = ((ACQ_FIFO_SIZE * 9)+ WRITE_STATE_WAIT_TIMEOUT_CYCLES) * scl_period;
+        timeout = ((I2C_ACQ_FIFO_DEPTH * 9)+ WRITE_STATE_WAIT_TIMEOUT_CYCLES) * scl_period;
       end
       fork
           begin

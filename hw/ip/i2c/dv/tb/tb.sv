@@ -79,7 +79,9 @@ module tb;
   `DV_ALERT_IF_CONNECT()
 
   // dut
-  i2c dut (
+  i2c #(
+    .AcqFifoDepth(i2c_env_pkg::I2C_ACQ_FIFO_DEPTH)
+  ) dut (
     .clk_i                   (clk        ),
     .rst_ni                  (rst_n      ),
 

@@ -72,7 +72,10 @@ package i2c_env_pkg;
   parameter uint I2C_FMT_FIFO_DEPTH = i2c_reg_pkg::FifoDepth;
   parameter uint I2C_RX_FIFO_DEPTH  = i2c_reg_pkg::FifoDepth;
   parameter uint I2C_TX_FIFO_DEPTH  = i2c_reg_pkg::FifoDepth;
-  parameter uint I2C_ACQ_FIFO_DEPTH = i2c_reg_pkg::FifoDepth;
+  // The depth of the ACQ FIFO can be different from that of the other FIFOs.  In DV, we use a fixed
+  // value that differs from the `FifoDepth` constant.  Ideally, DV would randomly assign a value
+  // from the range of legal values (with a reasonable distribution).
+  parameter uint I2C_ACQ_FIFO_DEPTH = i2c_reg_pkg::FifoDepth + 32;
 
   // alerts
   parameter uint NUM_ALERTS = i2c_reg_pkg::NumAlerts;
