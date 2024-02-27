@@ -107,6 +107,7 @@ TEST_F(FlashTest, NullArgs) {
       dif_spi_device_set_4b_address_mode(nullptr, kDifToggleEnabled));
   EXPECT_DIF_BADARG(dif_spi_device_get_4b_address_mode(nullptr, &toggle_arg));
   EXPECT_DIF_BADARG(dif_spi_device_get_4b_address_mode(&spi_, nullptr));
+  EXPECT_DIF_BADARG(dif_spi_device_clear_flash_status_request(nullptr));
   EXPECT_DIF_BADARG(dif_spi_device_get_flash_id(nullptr, &id_arg));
   EXPECT_DIF_BADARG(dif_spi_device_get_flash_id(&spi_, nullptr));
   EXPECT_DIF_BADARG(dif_spi_device_set_flash_id(nullptr, id_arg));
@@ -116,6 +117,7 @@ TEST_F(FlashTest, NullArgs) {
   EXPECT_DIF_BADARG(dif_spi_device_get_last_read_address(&spi_, nullptr));
   EXPECT_DIF_BADARG(
       dif_spi_device_set_eflash_read_threshold(nullptr, /*address=*/0));
+  EXPECT_DIF_BADARG(dif_spi_device_reset_eflash_buffer(nullptr));
   EXPECT_DIF_BADARG(dif_spi_device_get_flash_command_slot(
       nullptr, /*slot=*/0, &toggle_arg, &command_arg));
   EXPECT_DIF_BADARG(dif_spi_device_get_flash_command_slot(
@@ -379,6 +381,14 @@ TEST_F(FlashTest, FlashWatermark) {
 
   EXPECT_WRITE32(SPI_DEVICE_READ_THRESHOLD_REG_OFFSET, 0x26a);
   EXPECT_DIF_OK(dif_spi_device_set_eflash_read_threshold(&spi_, 0x26a));
+
+  EXPECT_WRITE32(SPI_DEVICE_CONTROL_REG_OFFSET,
+                 {
+                     {SPI_DEVICE_CONTROL_MODE_OFFSET,
+                      SPI_DEVICE_CONTROL_MODE_VALUE_PASSTHROUGH},
+                     {SPI_DEVICE_CONTROL_FLASH_READ_BUFFER_CLR_BIT, 1},
+                 });
+  EXPECT_DIF_OK(dif_spi_device_reset_eflash_buffer(&spi_));
 }
 
 TEST_F(FlashTest, CommandInfo) {
@@ -718,6 +728,14 @@ TEST_F(FlashTest, StatusRegisters) {
   EXPECT_READ32(SPI_DEVICE_FLASH_STATUS_REG_OFFSET, 0x765432);
   EXPECT_DIF_OK(dif_spi_device_get_flash_status_registers(&spi_, &status));
   EXPECT_EQ(status, 0x765432);
+
+  EXPECT_WRITE32(SPI_DEVICE_CONTROL_REG_OFFSET,
+                 {
+                     {SPI_DEVICE_CONTROL_MODE_OFFSET,
+                      SPI_DEVICE_CONTROL_MODE_VALUE_PASSTHROUGH},
+                     {SPI_DEVICE_CONTROL_FLASH_STATUS_FIFO_CLR_BIT, 1},
+                 });
+  EXPECT_DIF_OK(dif_spi_device_clear_flash_status_request(&spi_));
 }
 
 class TpmTest : public SpiTest {};

@@ -43,7 +43,10 @@ module spid_readbuffer
   input clk_i,
   input rst_ni,
 
+  input sys_clk_i,
   input sys_rst_ni, // to keep the addr, bufidx, flip signals
+  // Reset read buffer address tracker.
+  input sys_clr_i,
 
   input spi_device_pkg::spi_mode_e spi_mode_i,
 
@@ -98,9 +101,38 @@ module spid_readbuffer
   // Datapath //
   //////////////
 
+  logic sys_clr_req, sys_clr_ack;
+  logic spi_clr;
+
+  always_ff @(posedge sys_clk_i or negedge sys_rst_ni) begin
+    if (!sys_rst_ni) begin
+      sys_clr_req <= 1'b0;
+    end else if (sys_clr_i) begin
+      sys_clr_req <= 1'b1;
+    end else if (sys_clr_ack) begin
+      sys_clr_req <= 1'b0;
+    end
+  end
+
+  prim_sync_reqack u_sys2spi_clr (
+    .clk_src_i        (sys_clk_i),
+    .rst_src_ni       (sys_rst_ni),
+    .clk_dst_i        (clk_i),
+    .rst_dst_ni       (sys_rst_ni),
+
+    .req_chk_i        (1'b1),
+
+    .src_req_i        (sys_clr_req),
+    .src_ack_o        (sys_clr_ack),
+    .dst_req_o        (spi_clr),
+    .dst_ack_i        (spi_clr)
+  );
+
   // Flip event handling
   always_ff @(posedge clk_i or negedge sys_rst_ni) begin
     if (!sys_rst_ni) begin
+      next_buffer_addr <= (32-SramBufferAw)'(1); // pointing to next buffer
+    end else if (spi_clr) begin
       next_buffer_addr <= (32-SramBufferAw)'(1); // pointing to next buffer
     end else if (active && flip) begin
       next_buffer_addr <= next_buffer_addr + 1'b 1;
@@ -115,8 +147,13 @@ module spid_readbuffer
   // It will be synchronized into the bus clock domain using prim_pulse_sync
   logic flip_q;
   always_ff @(posedge clk_i or negedge sys_rst_ni) begin
-    if (!sys_rst_ni) flip_q <= 1'b 0;
-    else if (active) flip_q <= flip;
+    if (!sys_rst_ni) begin
+      flip_q <= 1'b 0;
+    end else if (spi_clr) begin
+      flip_q <= 1'b 0;
+    end else if (active) begin
+      flip_q <= flip;
+    end
   end
 
   assign event_flip_o = active && flip && !flip_q;
@@ -133,6 +170,8 @@ module spid_readbuffer
 
   always_ff @(posedge clk_i or negedge sys_rst_ni) begin
     if (!sys_rst_ni) begin
+      watermark_crossed <= 1'b 0;
+    end else if (spi_clr) begin
       watermark_crossed <= 1'b 0;
     end else if (active && watermark_cross) begin
       // When `watermark_cross` and `flip` both are 1, the watermark_crossed

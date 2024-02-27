@@ -53,6 +53,25 @@ static inline uint32_t build_control_word(
   return val;
 }
 
+/**
+ * Extracts the mode value from the given configuration. Return all ones if the
+ * configuration is invalid.
+ */
+static inline uint32_t extract_mode_from_config(
+    const dif_spi_device_config_t config) {
+  switch (config.device_mode) {
+    case kDifSpiDeviceModeDisabled:
+      return SPI_DEVICE_CONTROL_MODE_VALUE_DISABLED;
+    case kDifSpiDeviceModeFlashEmulation:
+      return SPI_DEVICE_CONTROL_MODE_VALUE_FLASHMODE;
+    case kDifSpiDeviceModePassthrough:
+      return SPI_DEVICE_CONTROL_MODE_VALUE_PASSTHROUGH;
+    default:
+      return -1u;
+  }
+  return -1u;
+}
+
 dif_result_t dif_spi_device_init_handle(mmio_region_t base_addr,
                                         dif_spi_device_handle_t *spi) {
   if (spi == NULL) {
@@ -67,19 +86,9 @@ dif_result_t dif_spi_device_configure(dif_spi_device_handle_t *spi,
     return kDifBadArg;
   }
 
-  uint32_t device_mode;
-  switch (config.device_mode) {
-    case kDifSpiDeviceModeDisabled:
-      device_mode = SPI_DEVICE_CONTROL_MODE_VALUE_DISABLED;
-      break;
-    case kDifSpiDeviceModeFlashEmulation:
-      device_mode = SPI_DEVICE_CONTROL_MODE_VALUE_FLASHMODE;
-      break;
-    case kDifSpiDeviceModePassthrough:
-      device_mode = SPI_DEVICE_CONTROL_MODE_VALUE_PASSTHROUGH;
-      break;
-    default:
-      return kDifBadArg;
+  uint32_t device_mode = extract_mode_from_config(config);
+  if (device_mode == -1u) {
+    return kDifBadArg;
   }
 
   uint32_t device_config = build_control_word(config);
@@ -206,6 +215,27 @@ dif_result_t dif_spi_device_get_4b_address_mode(dif_spi_device_handle_t *spi,
   return kDifOk;
 }
 
+dif_result_t dif_spi_device_clear_flash_status_request(
+    dif_spi_device_handle_t *spi) {
+  if (spi == NULL) {
+    return kDifBadArg;
+  }
+
+  uint32_t device_mode = extract_mode_from_config(spi->config);
+  if (device_mode == -1u) {
+    return kDifBadArg;
+  }
+
+  uint32_t control =
+      bitfield_field32_write(0, SPI_DEVICE_CONTROL_MODE_FIELD, device_mode);
+  control = bitfield_bit32_write(
+      control, SPI_DEVICE_CONTROL_FLASH_STATUS_FIFO_CLR_BIT, true);
+  mmio_region_write32(spi->dev.base_addr, SPI_DEVICE_CONTROL_REG_OFFSET,
+                      control);
+
+  return kDifOk;
+}
+
 dif_result_t dif_spi_device_get_flash_id(dif_spi_device_handle_t *spi,
                                          dif_spi_device_flash_id_t *id) {
   if (spi == NULL || id == NULL) {
@@ -282,6 +312,26 @@ dif_result_t dif_spi_device_set_eflash_read_threshold(
   }
   mmio_region_write32(spi->dev.base_addr, SPI_DEVICE_READ_THRESHOLD_REG_OFFSET,
                       address);
+  return kDifOk;
+}
+
+dif_result_t dif_spi_device_reset_eflash_buffer(dif_spi_device_handle_t *spi) {
+  if (spi == NULL) {
+    return kDifBadArg;
+  }
+
+  uint32_t device_mode = extract_mode_from_config(spi->config);
+  if (device_mode == -1u) {
+    return kDifBadArg;
+  }
+
+  uint32_t control =
+      bitfield_field32_write(0, SPI_DEVICE_CONTROL_MODE_FIELD, device_mode);
+  control = bitfield_bit32_write(
+      control, SPI_DEVICE_CONTROL_FLASH_READ_BUFFER_CLR_BIT, true);
+  mmio_region_write32(spi->dev.base_addr, SPI_DEVICE_CONTROL_REG_OFFSET,
+                      control);
+
   return kDifOk;
 }
 

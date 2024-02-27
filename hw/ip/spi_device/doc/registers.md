@@ -174,19 +174,20 @@ Alert Test Register
 Control register
 - Offset: `0x10`
 - Reset default: `0x10`
-- Reset mask: `0x31`
+- Reset mask: `0x33`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "FLASH_STATUS_FIFO_CLR", "bits": 1, "attr": ["rw1s"], "rotate": -90}, {"bits": 3}, {"name": "MODE", "bits": 2, "attr": ["rw"], "rotate": -90}, {"bits": 26}], "config": {"lanes": 1, "fontsize": 10, "vspace": 230}}
+{"reg": [{"name": "FLASH_STATUS_FIFO_CLR", "bits": 1, "attr": ["rw1s"], "rotate": -90}, {"name": "FLASH_READ_BUFFER_CLR", "bits": 1, "attr": ["rw1s"], "rotate": -90}, {"bits": 2}, {"name": "MODE", "bits": 2, "attr": ["rw"], "rotate": -90}, {"bits": 26}], "config": {"lanes": 1, "fontsize": 10, "vspace": 230}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                                     |
 |:------:|:------:|:-------:|:---------------------------------------------------------|
 |  31:6  |        |         | Reserved                                                 |
 |  5:4   |   rw   |   0x1   | [MODE](#control--mode)                                   |
-|  3:1   |        |         | Reserved                                                 |
+|  3:2   |        |         | Reserved                                                 |
+|   1    |  rw1s  |   0x0   | [FLASH_READ_BUFFER_CLR](#control--flash_read_buffer_clr) |
 |   0    |  rw1s  |   0x0   | [FLASH_STATUS_FIFO_CLR](#control--flash_status_fifo_clr) |
 
 ### CONTROL . MODE
@@ -199,6 +200,15 @@ SPI Device flash operation mode.
 | 0x2     | passthrough | In passthrough mode, SPI Device IP forwards the incoming SPI flash traffics to the attached downstream flash device. HW may processes commands internally and returns data. SW may configure the device to drop inadmissable commands.                                     |
 
 Other values are reserved.
+
+### CONTROL . FLASH_READ_BUFFER_CLR
+Set to clear the read buffer state.
+
+When set to 1, resets the flash read buffer state that tracks the host read address.
+The reset should only be used when the upstream SPI host is known to be inactive.
+This function is intended to allow restoring initial values when the upstream SPI host is reset.
+
+This CSR automatically resets to 0.
 
 ### CONTROL . FLASH_STATUS_FIFO_CLR
 Set to clear the flash status FIFO.

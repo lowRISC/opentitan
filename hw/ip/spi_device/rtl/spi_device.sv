@@ -245,6 +245,9 @@ module spi_device
   // Threshold value of a buffer in bytes
   logic [BufferAw:0] readbuf_threshold;
 
+  // Synchronous clear of read buffer tracking.
+  logic readbuf_clr;
+
   // Passthrouth config signals
   logic [255:0] cmd_filter;
 
@@ -547,6 +550,9 @@ module spi_device
                       };
 
   assign readbuf_threshold = reg2hw.read_threshold.q[BufferAw:0];
+  assign readbuf_clr = reg2hw.control.flash_read_buffer_clr.q;
+  assign hw2reg.control.flash_read_buffer_clr.d  = '0;
+  assign hw2reg.control.flash_read_buffer_clr.de = 1'b1;
 
   localparam int unsigned MailboxAw = $clog2(SramMailboxDepth*SramDw/8);
   assign cfg_mailbox_en = reg2hw.cfg.mailbox_en.q;
@@ -1091,6 +1097,7 @@ module spi_device
 
     .clk_out_i (clk_spi_out_buf),
 
+    .sys_clk_i  (clk_i),
     .sys_rst_ni (rst_ni),
 
     .sel_dp_i   (cmd_dp_sel),
@@ -1114,6 +1121,7 @@ module spi_device
     .cmd_info_idx_i (cmd_info_idx_broadcast),
 
     .readbuf_threshold_i (readbuf_threshold),
+    .sys_readbuf_clr_i   (readbuf_clr),
 
     .addr_4b_en_i (cfg_addr_4b_en),
 

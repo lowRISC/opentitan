@@ -112,6 +112,7 @@ module spi_readcmd
 
   input clk_out_i, // Output clock (inverted SPI_CLK)
 
+  input sys_clk_i,
   input sys_rst_ni, // System reset for buffer tracking pointers
 
   // From Command Parser
@@ -143,6 +144,9 @@ module spi_readcmd
 
   // Double buffering in bytes
   input [SramBufferAw-1:0] readbuf_threshold_i,
+
+  // Clear read buffer address tracker.
+  input sys_readbuf_clr_i,
 
   // The command mode is 4B mode. Every read command receives 4B address
   input addr_4b_en_i,
@@ -754,7 +758,9 @@ module spi_readcmd
     .clk_i,
     .rst_ni,
 
+    .sys_clk_i,
     .sys_rst_ni,
+    .sys_clr_i (sys_readbuf_clr_i),
 
     .spi_mode_i,
 
