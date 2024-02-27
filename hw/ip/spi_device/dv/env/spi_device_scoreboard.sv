@@ -35,7 +35,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
 
   // when interrupt is triggered, it may take a few cycles before it's reflected in a TL read
   local bit [NumSpiDevIntr-1:0] intr_trigger_pending;
-  bit [NumSpiDevIntr-1:0]       intr_exp_read_mirrored;
+  local bit [NumSpiDevIntr-1:0]       intr_exp_read_mirrored;
 
   // tx/rx async fifo, size is 2 words
   local bit [31:0] tx_word_q[$];
@@ -892,7 +892,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
 
       `uvm_info(`gfn, "Process read buffer command", UVM_DEBUG)
 
-      //Use fork...join_none and lock until we return from 'compare_mem_byte' below.
+      // Use fork...join_none and lock until we return from 'compare_mem_byte' below.
       // This needs to be separated because thread below would be killed on
       // 'item.mon_item_complete=1' which occurs the moment CSB transitions 0->1.
       // If there was a read-buffer interrupt which occurred shortly before CSB=1
@@ -907,8 +907,8 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
                               read_buffer_addr + 1 ), UVM_DEBUG)
           predict_read_buffer_intr(read_buffer_addr + 1, item.opcode);
 
-          //task above is delay free since it's within a fork...join_any
-          //Adding some "SPI-side" clk_delay to ensure the triggering events are noticed
+          // task above is delay free since it's within a fork...join_any
+          // Adding some "SPI-side" clk_delay to ensure the triggering events are noticed
           #(cfg.spi_host_agent_cfg.sck_period_ps/2 * 1ps);
 
           `uvm_info(`gfn, "Blocking on SV event 'interrupt_update_ev'", UVM_DEBUG)
@@ -1083,7 +1083,8 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
           bit [NumSpiDevIntr-1:0] intr_exp = `gmv(csr);
           bit [TL_DW-1:0] intr_en = ral.intr_enable.get_mirrored_value();
           spi_device_intr_e intr;
-
+          `uvm_info(`gfn,
+                    $sformatf("INTR_STATE: read (bus_value_read: 0x%0x)",item.d_data ), UVM_DEBUG)
           foreach (intr_exp[i]) begin
             intr = spi_device_intr_e'(i); // cast to enum to get interrupt name
             if (cfg.en_cov) begin
@@ -1109,15 +1110,34 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
               intr_trigger_pending[i] = 0;
             end
           end // foreach (intr_exp[i])
+          //Update local mirror copy of intr_exp
+          intr_exp_read_mirrored = `gmv(csr);
+
           // skip updating predict value to d_data
           return;
         end // if (!write && channel == DataChannel)
         else if (write && channel == AddrChannel) begin
           bit [NumSpiDevIntr-1:0] intr_val = item.a_data;
+          bit [NumSpiDevIntr-1:0] intr_exp = `gmv(csr);
+          `uvm_info(`gfn, $sformatf("INTR_STATE: write (0x%0x)",intr_val ), UVM_DEBUG)
           foreach (intr_val[i]) begin
             spi_device_intr_e intr = spi_device_intr_e'(i);
             if (intr_val[i]) begin
               `uvm_info(`gfn, $sformatf("Clear %s", intr.name), UVM_MEDIUM)
+
+              //If intr_trigger_pending[i] is set and intr_exp_read_mirrored[i] is also set, that
+              //means the TB has predicted another interrupt since last time intr_state was read.
+              // But in the meantime, there's not been any intr_state.writes clearing the intr_state
+              // register.
+              if(intr_trigger_pending[i] && intr_exp_read_mirrored[i]) begin
+                string printout =
+                $sformatf("Unsetting 'intr_trigger_pending[i=%s]'",spi_device_intr_e'(i));
+                `uvm_info(`gfn, printout , UVM_DEBUG)
+                intr_trigger_pending[i] = 0;
+              end
+              if(intr_exp_read_mirrored[i]) begin
+                intr_exp_read_mirrored[i] = 0;
+              end
             end
           end
         end
@@ -1289,7 +1309,6 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
     intr_trigger_pending = ral.intr_state.get_reset();
-
     tx_word_q.delete();
     rx_word_q.delete();
     spi_passthrough_downstream_q.delete();
