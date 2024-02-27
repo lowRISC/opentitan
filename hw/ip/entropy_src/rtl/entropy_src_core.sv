@@ -62,10 +62,11 @@ module entropy_src_core import entropy_src_pkg::*; #(
   localparam int FullRegWidth = 32;
   localparam int EighthRegWidth = 4;
   localparam int SeedLen = 384;
+  localparam int DistrFifoWidth = 32;
   localparam int ObserveFifoWidth = 32;
   localparam int PreCondWidth = 64;
   localparam int Clog2ObserveFifoDepth = $clog2(ObserveFifoDepth);
-  localparam int EsEnableCopies = 20;
+  localparam int EsEnableCopies = 21;
   localparam int EsEnPulseCopies = 1;
 
   //-----------------------
@@ -125,6 +126,14 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                   sfifo_esrng_not_empty;
   logic                   sfifo_esrng_not_full;
   logic [2:0]             sfifo_esrng_err;
+
+  logic [DistrFifoWidth-1:0] sfifo_distr_wdata;
+  logic [DistrFifoWidth-1:0] sfifo_distr_rdata;
+  logic                      sfifo_distr_clr;
+  logic                      sfifo_distr_push;
+  logic                      sfifo_distr_not_empty;
+  logic                      sfifo_distr_pop;
+  logic                      sfifo_distr_full;
 
   logic [ObserveFifoWidth-1:0] sfifo_observe_wdata;
   logic [ObserveFifoWidth-1:0] sfifo_observe_rdata;
@@ -1029,13 +1038,19 @@ module entropy_src_core import entropy_src_pkg::*; #(
   );
 
   // fifo controls
+  // We can't have backpressure here since we can't disable the noise source during operation.
   assign sfifo_esrng_push = es_enable_fo[5] && es_delayed_enable && es_rng_src_valid &&
                             rng_enable_q;
 
+  // Assert that the esrng FIFO is not pushed to when it is full.
+  `ASSERT(EsRngFifoNoPushWhenFull_A, sfifo_esrng_full |-> (!sfifo_esrng_push || sfifo_esrng_clr))
+
   assign sfifo_esrng_clr   = ~es_delayed_enable;
   assign sfifo_esrng_wdata = es_rng_bus;
-  assign sfifo_esrng_pop   = sfifo_esrng_not_empty & (rng_bit_en ? pfifo_esbit_not_full :
-                                                                   pfifo_postht_not_full);
+  // The health tests following the esrng FIFO complete within 1 clock cycle.
+  // The receiving FIFOs need to be able to handle this so we can pop as soon as
+  // the esrng FIFO is not empty anymore.
+  assign sfifo_esrng_pop   = sfifo_esrng_not_empty;
 
   // fifo err
   // Note: for prim_fifo_sync is not an error to push to a fifo that is full.  In fact, the
@@ -2341,10 +2356,16 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rready_i   (pfifo_esbit_pop),
     .depth_o    ()
   );
+  // Backpressure is not possible here so we push as soon as the data is available
+  // if rng_bit_en is true.
+  assign pfifo_esbit_push = rng_bit_en && sfifo_esrng_pop;
+  // Assert that the esbit FIFO is not pushed to when it is full.
+  `ASSERT(EsBitFifoNoPushWhenFull_A, !pfifo_esbit_not_full |-> !pfifo_esbit_push)
 
-  assign pfifo_esbit_push = rng_bit_en && sfifo_esrng_not_empty;
   assign pfifo_esbit_clr = ~es_delayed_enable;
-  assign pfifo_esbit_pop = rng_bit_en && pfifo_esbit_not_empty && pfifo_postht_not_full;
+  // We can't allow data to be dropped here so we pop as soon as the esbit FIFO is not empty.
+  // The receiving FIFO should be able to handle this without dropping entropy.
+  assign pfifo_esbit_pop = rng_bit_en && pfifo_esbit_not_empty;
   assign pfifo_esbit_wdata =
          (rng_bit_sel == 2'h0) ? sfifo_esrng_rdata[0] :
          (rng_bit_sel == 2'h1) ? sfifo_esrng_rdata[1] :
@@ -2372,8 +2393,12 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rready_i   (pfifo_postht_pop),
     .depth_o    ()
   );
-
-  assign pfifo_postht_push = rng_bit_en ? pfifo_esbit_not_empty : sfifo_esrng_not_empty;
+  // The noise source doesn't allow for backpressure, therefore we push as soon as the
+  // entropy providing FIFO is not empty.
+  assign pfifo_postht_push = rng_bit_en ? pfifo_esbit_pop : sfifo_esrng_pop;
+  // Assert that the postht FIFO is not pushed to when it is full.
+  `ASSERT(PostHtFifoNoPushWhenFull_A, !pfifo_postht_not_full |->
+                                      (!pfifo_postht_push || pfifo_postht_clr))
 
   assign pfifo_postht_wdata = rng_bit_en ? pfifo_esbit_rdata :
                               sfifo_esrng_rdata;
@@ -2390,17 +2415,45 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   assign pfifo_postht_clr = fw_ov_mode_entropy_insert ? !es_enable_fo[7] : !es_delayed_enable;
 
-  // In firmware override mode with extract & insert enabled, post-health test entropy bits can
-  // only move into the observe FIFO. Once the observe FIFO is full, post-health test entropy is
-  // just discarded.
-  assign pfifo_postht_pop = fw_ov_mode_entropy_insert ? pfifo_postht_not_empty :
-                            // In firmware override mode (observe only) or during normal
-                            // operation, post-health test entropy bits continue to flow
-                            // through the hardware pipeline.
-                            es_bypass_mode ? pfifo_bypass_push :
-                            pfifo_precon_push & pfifo_precon_not_full;
+  // Push as soon as data is available. Since we can't handle backpressure the receiving FIFO has
+  // to deal with this data.
+  assign pfifo_postht_pop = pfifo_postht_not_empty;
 
 
+  //--------------------------------------------
+  // Store entropy in the distribution FIFO
+  //--------------------------------------------
+
+  prim_fifo_sync #(
+    .Width(DistrFifoWidth),
+    .Pass(0),
+    .Depth(DistrFifoDepth)
+  ) u_prim_fifo_sync_distribute (
+    .clk_i      (clk_i),
+    .rst_ni     (rst_ni),
+    .clr_i      (sfifo_distr_clr),
+    .wvalid_i   (sfifo_distr_push),
+    .wdata_i    (sfifo_distr_wdata),
+    .wready_o   (),
+    .rvalid_o   (sfifo_distr_not_empty),
+    .rdata_o    (sfifo_distr_rdata),
+    .rready_i   (sfifo_distr_pop),
+    .full_o     (sfifo_distr_full),
+    .depth_o    (),
+    .err_o      ()
+  );
+
+  assign sfifo_distr_clr = ~es_enable_fo[20];
+  // Since the noise source doesn't allow for backpressure we push to the distribution FIFO
+  // as soon as data is popped from the postht FIFO.
+  assign sfifo_distr_push = pfifo_postht_pop;
+  // Assert that the distribution FIFO is not pushed to when it is full.
+  `ASSERT(DistrFifoNoPushWhenFull_A, sfifo_distr_full |-> (!sfifo_distr_push || sfifo_distr_clr))
+  assign sfifo_distr_wdata = pfifo_postht_rdata;
+  // Pop the distribution FIFO as soon as data is available.
+  // Unless we are pushing to the precon FIFO, where we wait for the precon FIFO to be ready.
+  assign sfifo_distr_pop = !(fw_ov_mode_entropy_insert || es_bypass_mode) ? sfifo_distr_not_empty :
+                           sfifo_distr_not_empty && pfifo_precon_not_full;
   //--------------------------------------------
   // store entropy into a 64 entry deep FIFO
   //--------------------------------------------
@@ -2431,8 +2484,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // contiguous as possible.
   logic sfifo_observe_gate_d, sfifo_observe_gate_q;
 
-  assign sfifo_observe_gate_d = (pfifo_postht_pop && sfifo_observe_full) ? 1'b0 :
-                                !sfifo_observe_not_empty                 ? 1'b1 :
+  assign sfifo_observe_gate_d = (sfifo_distr_pop && sfifo_observe_full) ? 1'b0 :
+                                !sfifo_observe_not_empty                ? 1'b1 :
                                 sfifo_observe_gate_q;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -2452,12 +2505,12 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign hw2reg.observe_fifo_depth.d = sfifo_observe_depth;
 
   // fifo controls
-  assign sfifo_observe_push = fw_ov_mode && pfifo_postht_pop && !sfifo_observe_full &&
+  assign sfifo_observe_push = fw_ov_mode && sfifo_distr_pop && !sfifo_observe_full &&
                               (sfifo_observe_gate_q || !sfifo_observe_not_empty);
 
   assign sfifo_observe_clr  = ~es_enable_fo[9];
 
-  assign sfifo_observe_wdata = pfifo_postht_rdata;
+  assign sfifo_observe_wdata = sfifo_distr_rdata;
 
   assign sfifo_observe_pop =
          (fw_ov_mode && fw_ov_fifo_rd_pulse);
@@ -2497,12 +2550,16 @@ module entropy_src_core import entropy_src_pkg::*; #(
                              // In firmware override mode with extract & insert enabled, only bits
                              // inserted by firmware continue down the pipeline.
                              fw_ov_mode_entropy_insert ? fw_ov_fifo_wr_pulse :
-                             // Otherwise post-health test entropy bits continue to flow
-                             // downstream. This includes observe-only firmware override mode.
-                             pfifo_postht_not_empty;
+                             // Otherwise post-health test entropy bits from the distribution FIFO
+                             // continue to flow downstream. This includes observe-only firmware
+                             // override mode.
+                             sfifo_distr_pop;
+  // Assert that the precon FIFO is not pushed to when it is full.
+  `ASSERT(PreConFifoNoPushWhenFull_A, !pfifo_precon_not_full |->
+                                      (!pfifo_precon_push || pfifo_precon_clr))
 
   assign pfifo_precon_wdata = fw_ov_mode_entropy_insert ? fw_ov_wr_data :
-                              pfifo_postht_rdata;
+                              sfifo_distr_rdata;
 
   // For verification purposes, let post-disable data continue through to the SHA engine if it has
   // made it past the health checks, when in standard (non-fw_ov) mode.  This allows scoreboards
@@ -2658,20 +2715,23 @@ module entropy_src_core import entropy_src_pkg::*; #(
                              // In firmware override mode with extract & insert enabled, only bits
                              // inserted by firmware continue down the pipeline
                              fw_ov_mode_entropy_insert ? fw_ov_fifo_wr_pulse :
-                             // Otherwise post-health test entropy bits continue to flow
-                             // downstream. This includes observe-only firmware override mode.
-                             pfifo_postht_not_empty;
+                             // Otherwise post-health test entropy bits from the distribution FIFO
+                             // continue to flow downstream. This includes observe-only firmware
+                             // override mode.
+                             sfifo_distr_pop;
+  // Assert that the bypass FIFO is not pushed to when it is full.
+  `ASSERT(BypassFifoNoPushWhenFull_A, !pfifo_bypass_not_full |->
+                                      (!pfifo_bypass_push || pfifo_bypass_clr))
 
   assign pfifo_bypass_wdata = fw_ov_mode_entropy_insert ? fw_ov_wr_data :
-                              pfifo_postht_rdata;
+                              sfifo_distr_rdata;
 
   assign pfifo_bypass_clr = !es_enable_fo[11];
 
-  // Corner case: If the main state machine encounters an alert, drain the
-  // bypass fifo, to get rid of the seeds and let the HT stats continue.
-  assign pfifo_bypass_pop =
-         fw_ov_mode_entropy_insert ? pfifo_bypass_not_empty :
-         bypass_stage_pop;
+  // Always pop the bypass FIFO as soon as there is some data available.
+  // For the case when we are in boot mode the esfinal FIFO needs to decide
+  // whether to accept the data.
+  assign pfifo_bypass_pop = pfifo_bypass_not_empty;
 
   // mux to select between fips and bypass mode
   assign final_es_data = es_bypass_mode ? pfifo_bypass_rdata : pfifo_cond_rdata;
@@ -2802,10 +2862,13 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign fips_compliance = es_enable_fo[13] && fips_flag_pfe;
 
   // fifo controls
+  // Enable pushes to the esfinal FIFO as soon as the data from the bypass FIFO or the SHA
+  // block is ready. However, if we are in boot mode we only want to push the first seed.
+  // Both the boot mode push and the SHA push are controlled by main_stage_push.
   assign sfifo_esfinal_push_enable =
-         fw_ov_mode_entropy_insert && es_bypass_mode ? pfifo_bypass_not_empty :
+         fw_ov_mode_entropy_insert && es_bypass_mode ? pfifo_bypass_pop :
          main_stage_push;
-
+  // Only push entropy into the esfinal FIFO when it is not full.
   assign sfifo_esfinal_push = sfifo_esfinal_not_full && sfifo_esfinal_push_enable;
   assign sfifo_esfinal_clr  = !es_enable_fo[14];
   assign sfifo_esfinal_wdata = {fips_compliance,final_es_data};
@@ -3095,13 +3158,33 @@ module entropy_src_core import entropy_src_pkg::*; #(
                              postht_push_bit_cnt_q == (postht_from_esrng_push_bit_cnt_q +
                                                        postht_from_esbit_push_bit_cnt_q))
 
-  // Count number of bits popped from postht FIFO (PostHTWidth wide output) when bypass mode was
+  // Add number of bits pushed into postht FIFO from all sources together.
+  logic [63:0] postht_push_bit_cnt;
+  assign postht_push_bit_cnt = postht_from_esrng_push_bit_cnt_q + postht_from_esbit_push_bit_cnt_q;
+
+  // Count number of bits pushed into distribution FIFO (DistrFifoWidth wide input/output).
+  logic [63:0] distr_push_bit_cnt_d, distr_push_bit_cnt_q;
+  assign distr_push_bit_cnt_d = sfifo_distr_push & ~sfifo_distr_full ?
+                                distr_push_bit_cnt_q + DistrFifoWidth :
+                                distr_push_bit_cnt_q;
+
+  // Assert that as many bits got pushed into the distribution FIFO (destination) as into the
+  // postht FIFO (source). Add a margin (allowed less) because:
+  // - DistrFifoWidth bits may get lost after every re-enable
+  // - postht FIFO may be partially full when the assertion gets evaluated.
+  `ASSERT_AT_RESET_AND_FINAL(PosthtFifoPushedIntoDistrFifo_A,
+                             `WITHIN_MARGIN(distr_push_bit_cnt_q,                     // actual
+                                            postht_push_bit_cnt,                      // expected
+                                            (disable_cnt_q + 1) * DistrFifoWidth - 1, // allowed less
+                                            0))                                       // allowed more
+
+  // Count number of bits popped from distr FIFO (DistrFifoWidth wide output) when bypass mode was
   // disabled.
-  logic [63:0] postht_non_bypass_pop_bit_cnt_d, postht_non_bypass_pop_bit_cnt_q;
-  assign postht_non_bypass_pop_bit_cnt_d =
-      pfifo_postht_pop & pfifo_postht_not_empty & ~es_bypass_mode ?
-      postht_non_bypass_pop_bit_cnt_q + PostHTWidth :
-      postht_non_bypass_pop_bit_cnt_q;
+  logic [63:0] distr_non_bypass_pop_bit_cnt_d, distr_non_bypass_pop_bit_cnt_q;
+  assign distr_non_bypass_pop_bit_cnt_d =
+      sfifo_distr_pop & sfifo_distr_not_empty & ~es_bypass_mode ?
+      distr_non_bypass_pop_bit_cnt_q + DistrFifoWidth :
+      distr_non_bypass_pop_bit_cnt_q;
 
   // Count number of bits pushed into precon FIFO (ObserveFifoWidth wide input, PreCondWidth wide
   // output).
@@ -3111,9 +3194,9 @@ module entropy_src_core import entropy_src_pkg::*; #(
                                  precon_push_bit_cnt_q;
 
   // Assert that as many bits got pushed into the precon FIFO (destination) as got popped from the
-  // postht FIFO when bypass mode was disabled (source).
-  `ASSERT_AT_RESET_AND_FINAL(PosthtFifoPushedIntoPreconFifo_A,
-                             precon_push_bit_cnt_q == postht_non_bypass_pop_bit_cnt_q)
+  // distr FIFO when bypass mode was disabled (source).
+  `ASSERT_AT_RESET_AND_FINAL(DistrFifoPushedIntoPreconFifo_A,
+                             precon_push_bit_cnt_q == distr_non_bypass_pop_bit_cnt_q)
 
   // Track when boot and startup checks are completing.
   logic boot_startup_checks_completing;
@@ -3300,7 +3383,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
       esrng_push_bit_cnt_q                <= '0;
       postht_from_esbit_push_bit_cnt_q    <= '0;
       postht_from_esrng_push_bit_cnt_q    <= '0;
-      postht_non_bypass_pop_bit_cnt_q     <= '0;
+      distr_push_bit_cnt_q                <= '0;
+      distr_non_bypass_pop_bit_cnt_q      <= '0;
       postht_push_bit_cnt_q               <= '0;
       precon_post_startup_push_bit_cnt_q  <= '0;
       precon_push_bit_cnt_q               <= '0;
@@ -3315,7 +3399,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
       esrng_push_bit_cnt_q                <= esrng_push_bit_cnt_d;
       postht_from_esbit_push_bit_cnt_q    <= postht_from_esbit_push_bit_cnt_d;
       postht_from_esrng_push_bit_cnt_q    <= postht_from_esrng_push_bit_cnt_d;
-      postht_non_bypass_pop_bit_cnt_q     <= postht_non_bypass_pop_bit_cnt_d;
+      distr_push_bit_cnt_q                <= distr_push_bit_cnt_d;
+      distr_non_bypass_pop_bit_cnt_q      <= distr_non_bypass_pop_bit_cnt_d;
       postht_push_bit_cnt_q               <= postht_push_bit_cnt_d;
       precon_post_startup_push_bit_cnt_q  <= precon_post_startup_push_bit_cnt_d;
       precon_push_bit_cnt_q               <= precon_push_bit_cnt_d;

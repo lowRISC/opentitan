@@ -122,6 +122,14 @@
                 ''',
       local:   "true"
     },
+    { name:    "DistrFifoDepth",
+      type:    "int unsigned",
+      default: "4",
+      desc:    '''
+                Number of 32-bit entries in the distribution FIFO.
+                ''',
+      local:   "true"
+    },
   ]
   alert_list: [
     { name: "recov_alert",
