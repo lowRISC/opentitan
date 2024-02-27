@@ -10,6 +10,10 @@ load(
     "opentitan_test",
     "verilator_params",
 )
+load(
+    "@bazel_skylib//lib:dicts.bzl",
+    "dicts",
+)
 load("@ot_python_deps//:requirements.bzl", "requirement")
 
 package(default_visibility = ["//visibility:public"])
@@ -62,7 +66,14 @@ opentitan_test(
 opentitan_test(
     name = "aes_kwp_sideload_functest",
     srcs = ["aes_kwp_sideload_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    broken = cw310_params(tags = ["broken"]),
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        {
+            # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
+        },
+    ),
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -79,7 +90,14 @@ opentitan_test(
 opentitan_test(
     name = "aes_sideload_functest",
     srcs = ["aes_sideload_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    broken = cw310_params(tags = ["broken"]),
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        {
+            # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
+        },
+    ),
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -199,7 +217,14 @@ opentitan_test(
 opentitan_test(
     name = "ecdh_p256_sideload_functest",
     srcs = ["ecdh_p256_sideload_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    broken = cw310_params(tags = ["broken"]),
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        {
+            # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
+        },
+    ),
     verilator = verilator_params(
         timeout = "eternal",
     ),
@@ -237,7 +262,14 @@ opentitan_test(
 opentitan_test(
     name = "ecdsa_p256_sideload_functest",
     srcs = ["ecdsa_p256_sideload_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    broken = cw310_params(tags = ["broken"]),
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        {
+            # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
+        },
+    ),
     verilator = verilator_params(
         timeout = "eternal",
     ),
@@ -316,7 +348,14 @@ opentitan_test(
 opentitan_test(
     name = "kdf_kmac_sideload_functest_hardcoded",
     srcs = ["kdf_kmac_sideload_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    broken = cw310_params(tags = ["broken"]),
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        {
+            # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
+        },
+    ),
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -337,7 +376,14 @@ opentitan_test(
 opentitan_test(
     name = "kmac_sideload_functest_hardcoded",
     srcs = ["kmac_sideload_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    broken = cw310_params(tags = ["broken"]),
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        {
+            # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
+        },
+    ),
     verilator = verilator_params(
         timeout = "long",
     ),
