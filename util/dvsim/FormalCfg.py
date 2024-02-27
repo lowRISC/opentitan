@@ -6,10 +6,9 @@ import logging as log
 from pathlib import Path
 
 import hjson
+from OneShotCfg import OneShotCfg
 from results_server import ResultsServer
 from tabulate import tabulate
-
-from OneShotCfg import OneShotCfg
 from utils import subst_wildcards
 
 
@@ -24,8 +23,10 @@ class FormalCfg(OneShotCfg):
         self.batch_mode_prefix = "" if args.gui else "-batch"
 
         super().__init__(flow_cfg_file, hjson_data, args, mk_config)
-        self.header = ["name", "errors", "warnings", "proven", "cex", "undetermined",
-                       "covered", "unreachable", "pass_rate", "cov_rate"]
+        self.header = [
+            "name", "errors", "warnings", "proven", "cex", "undetermined",
+            "covered", "unreachable", "pass_rate", "cov_rate"
+        ]
 
         # Default not to publish child cfg results.
         if "publish_report" in hjson_data:
@@ -33,10 +34,13 @@ class FormalCfg(OneShotCfg):
         else:
             self.publish_report = False
         self.sub_flow = hjson_data['sub_flow']
-        self.summary_header = ["name", "pass_rate", "stimuli_cov", "coi_cov", "prove_cov"]
-        self.results_title = self.name.upper() + " Formal " + self.sub_flow.upper() + " Results"
+        self.summary_header = [
+            "name", "pass_rate", "stimuli_cov", "coi_cov", "prove_cov"
+        ]
+        self.results_title = self.name.upper(
+        ) + " Formal " + self.sub_flow.upper() + " Results"
 
-    def parse_dict_to_str(self, input_dict, excl_keys = []):
+    def parse_dict_to_str(self, input_dict, excl_keys=[]):
         # This is a helper function to parse dictionary items into a string.
         # This function has an optional input "excl_keys" for user to exclude
         # printing out certain items according to their keys.
@@ -88,12 +92,13 @@ class FormalCfg(OneShotCfg):
                 str(formal_summary["undetermined"]) + " W ",
                 str(formal_summary["covered"]) + " G ",
                 str(formal_summary["unreachable"]) + " E ",
-                formal_summary["pass_rate"],
-                formal_summary["cov_rate"]
+                formal_summary["pass_rate"], formal_summary["cov_rate"]
             ])
             summary.append(formal_summary["pass_rate"])
             if len(table) > 1:
-                results_str = tabulate(table, headers="firstrow", tablefmt="pipe",
+                results_str = tabulate(table,
+                                       headers="firstrow",
+                                       tablefmt="pipe",
                                        colalign=colalign)
             else:
                 results_str = "No content in summary\n"
@@ -111,8 +116,7 @@ class FormalCfg(OneShotCfg):
             cov_colalign = ("center", ) * len(cov_header)
             cov_table = [cov_header]
             cov_table.append([
-                formal_coverage["stimuli"],
-                formal_coverage["coi"],
+                formal_coverage["stimuli"], formal_coverage["coi"],
                 formal_coverage["proof"]
             ])
             summary.append(formal_coverage["stimuli"])
@@ -120,8 +124,10 @@ class FormalCfg(OneShotCfg):
             summary.append(formal_coverage["proof"])
 
             if len(cov_table) > 1:
-                results_str = tabulate(cov_table, headers="firstrow",
-                                       tablefmt="pipe", colalign=cov_colalign)
+                results_str = tabulate(cov_table,
+                                       headers="firstrow",
+                                       tablefmt="pipe",
+                                       colalign=cov_colalign)
 
             else:
                 results_str = "No content in formal_coverage\n"
@@ -146,7 +152,9 @@ class FormalCfg(OneShotCfg):
                 table.append(cfg.result_summary[cfg.name])
             except KeyError as e:
                 table.append([cfg.name, "ERROR", "N/A", "N/A", "N/A"])
-                log.error("cfg: %s could not find generated results_summary: %s", cfg.name, e)
+                log.error(
+                    "cfg: %s could not find generated results_summary: %s",
+                    cfg.name, e)
         if len(table) > 1:
             self.results_summary_md = results_str + tabulate(
                 table, headers="firstrow", tablefmt="pipe", colalign=colalign)
@@ -204,9 +212,9 @@ class FormalCfg(OneShotCfg):
         mode = self.deploy[0]
 
         if results[mode] == "P":
-            result_data = Path(subst_wildcards(self.build_dir,
-                                               {"build_mode": mode.name}),
-                               'results.hjson')
+            result_data = Path(
+                subst_wildcards(self.build_dir, {"build_mode": mode.name}),
+                'results.hjson')
             try:
                 with open(result_data, "r") as results_file:
                     self.result = hjson.load(results_file, use_decimal=True)
