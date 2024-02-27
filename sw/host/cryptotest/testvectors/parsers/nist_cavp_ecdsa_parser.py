@@ -38,47 +38,46 @@ def parse_testcases(args) -> None:
     test_count = 0
     # NIST splits the rsp files into sections with named after (curve, hash
     # algorithm) pairs
-    for section_name in raw_testcases.keys():
-        curve, hash_alg = section_name.split(",")
+    for test_vec in raw_testcases:
+        curve, hash_alg = test_vec["section_name"]
         hash_alg = hash_alg.lower()
         if hash_alg not in SUPPORTED_HASHES:
             continue
         if curve not in EC_NAME_MAPPING.keys():
             continue
-        for test_vec in raw_testcases[section_name]:
-            test_count += 1
-            test_case = {
-                "vendor": "nist",
-                "test_case_id": test_count,
-                "algorithm": "ecdsa",
-                "operation": "verify",
-                "curve": EC_NAME_MAPPING[curve],
-                "hash_alg": hash_alg,
-                "message": str_to_byte_array(test_vec["Msg"]),
-                "qx": test_vec["Qx"],
-                "qy": test_vec["Qy"],
-                "r": test_vec["R"],
-                "s": test_vec["S"],
-            }
+        test_count += 1
+        test_case = {
+            "vendor": "nist",
+            "test_case_id": test_count,
+            "algorithm": "ecdsa",
+            "operation": "verify",
+            "curve": EC_NAME_MAPPING[curve],
+            "hash_alg": hash_alg,
+            "message": str_to_byte_array(test_vec["Msg"]),
+            "qx": test_vec["Qx"],
+            "qy": test_vec["Qy"],
+            "r": test_vec["R"],
+            "s": test_vec["S"],
+        }
 
-            # NIST test vectors express the expected result as a string with a
-            # short description of the particular failure mode (if applicable).
-            # We can extract the pass/fail condition by checking the first
-            # character of the result field.
-            # Example passing vector: Result = P (0 )
-            # Example failing vector: Result = F (3 - S Changed)
-            result_str = test_vec["Result"][0]
-            if result_str == "P":
-                test_case["result"] = True
-            elif result_str == "F":
-                test_case["result"] = False
-            else:
-                raise ValueError(
-                    f"Unknown verification result value: {result_str}")
+        # NIST test vectors express the expected result as a string with a
+        # short description of the particular failure mode (if applicable).
+        # We can extract the pass/fail condition by checking the first
+        # character of the result field.
+        # Example passing vector: Result = P (0 )
+        # Example failing vector: Result = F (3 - S Changed)
+        result_str = test_vec["Result"][0]
+        if result_str == "P":
+            test_case["result"] = True
+        elif result_str == "F":
+            test_case["result"] = False
+        else:
+            raise ValueError(
+                f"Unknown verification result value: {result_str}")
 
-            test_cases.append(test_case)
+        test_cases.append(test_case)
 
-    json_filename = f"{args.dst}.json"
+    json_filename = f"{args.dst}"
     with open(json_filename, "w") as file:
         json.dump(test_cases, file, indent=4)
 

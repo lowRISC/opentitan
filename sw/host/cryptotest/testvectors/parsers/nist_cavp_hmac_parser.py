@@ -19,11 +19,11 @@ from cryptotest_util import parse_rsp
 # However, the test vectors only include the longest length for each
 # hash (i.e. the entire hash is the MAC).
 LENGTH_TO_HASH = {
-    "20": "sha1",
-    "28": "sha224",
-    "32": "sha256",
-    "48": "sha384",
-    "64": "sha512",
+    "20": "sha-1",
+    "28": "sha-224",
+    "32": "sha-256",
+    "48": "sha-384",
+    "64": "sha-512",
 }
 
 
@@ -33,24 +33,21 @@ def parse_testcases(args) -> None:
 
     # NIST splits the rsp files into sections based on tag length
     # (which implies which hash function should be used)
-    for section_name in raw_testcases.keys():
-        _, mac_len = section_name.split("=")
-        hash_alg = LENGTH_TO_HASH[mac_len]
-        for test_vec in raw_testcases[section_name]:
-            test_case = {
-                "vendor": "nist",
-                "test_case_id": test_vec["Count"],
-                "algorithm": "hmac",
-                "hash_alg": hash_alg,
-                "key": list(bytes.fromhex(test_vec["Key"])),
-                "message": list(bytes.fromhex(test_vec["Msg"])),
-                "tag": list(bytes.fromhex(test_vec["Mac"])),
-                # All NIST HMAC vectors are expected to pass
-                "result": True,
-            }
-            test_cases.append(test_case)
+    for test_vec in raw_testcases:
+        test_case = {
+            "vendor": "nist",
+            "test_case_id": int(test_vec["Count"]),
+            "algorithm": "hmac",
+            "hash_alg": LENGTH_TO_HASH[test_vec["L"]],
+            "key": list(bytes.fromhex(test_vec["Key"])),
+            "message": list(bytes.fromhex(test_vec["Msg"])),
+            "tag": list(bytes.fromhex(test_vec["Mac"])),
+            # All NIST HMAC vectors are expected to pass
+            "result": True,
+        }
+        test_cases.append(test_case)
 
-    json_filename = f"{args.dst}.json"
+    json_filename = f"{args.dst}"
     with open(json_filename, "w") as file:
         json.dump(test_cases, file, indent=4)
 

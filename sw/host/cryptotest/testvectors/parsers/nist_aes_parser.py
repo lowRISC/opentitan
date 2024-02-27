@@ -20,33 +20,33 @@ from cryptotest_util import parse_rsp, str_to_byte_array
 def parse_testcases(args) -> None:
     raw_testcases = parse_rsp(args.src)
     testcases = list()
-    for operation in raw_testcases.keys():
+    for test_vec in raw_testcases:
         # RSP file is expected to contain two groups: ENCRYPT and DECRYPT
+        operation = test_vec["section_name"]
         if operation not in ["ENCRYPT", "DECRYPT"]:
             raise ValueError(f"Unexpected group name {operation} in RSP file")
-        for test_vec in raw_testcases[operation]:
-            testcase = {
-                "algorithm": "aes",
-                "operation": operation.lower(),
-                "key_len": args.key_len,
-                "mode": args.mode,
-                "padding": "null",
-                "key": str_to_byte_array(test_vec["KEY"]),
-            }
+        testcase = {
+            "algorithm": "aes",
+            "operation": operation.lower(),
+            "key_len": args.key_len,
+            "mode": args.mode,
+            "padding": "null",
+            "key": str_to_byte_array(test_vec["KEY"]),
+        }
 
-            # ECB does not have an IV
-            if args.mode != "ecb":
-                testcase["iv"] = str_to_byte_array(test_vec["IV"])
+        # ECB does not have an IV
+        if args.mode != "ecb":
+            testcase["iv"] = str_to_byte_array(test_vec["IV"])
 
-            # CFB1 is a special case where the block size is only 1 bit
-            if args.mode == "cfb1":
-                testcase["ciphertext"] = [int(test_vec["CIPHERTEXT"])]
-                testcase["plaintext"] = [int(test_vec["PLAINTEXT"])]
-            else:
-                testcase["ciphertext"] = str_to_byte_array(test_vec["CIPHERTEXT"])
-                testcase["plaintext"] = str_to_byte_array(test_vec["PLAINTEXT"])
+        # CFB1 is a special case where the block size is only 1 bit
+        if args.mode == "cfb1":
+            testcase["ciphertext"] = [int(test_vec["CIPHERTEXT"])]
+            testcase["plaintext"] = [int(test_vec["PLAINTEXT"])]
+        else:
+            testcase["ciphertext"] = str_to_byte_array(test_vec["CIPHERTEXT"])
+            testcase["plaintext"] = str_to_byte_array(test_vec["PLAINTEXT"])
 
-            testcases.append(testcase)
+        testcases.append(testcase)
 
     json_filename = f"{args.dst}.json"
     with open(json_filename, "w") as file:
