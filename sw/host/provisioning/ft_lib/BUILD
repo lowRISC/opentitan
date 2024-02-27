@@ -11,6 +11,7 @@ rust_library(
     srcs = ["src/lib.rs"],
     deps = [
         "//sw/host/opentitanlib",
+        "//sw/host/ot_certs",
         "//sw/host/provisioning/ujson_lib",
         "@crate_index//:aes",
         "@crate_index//:anyhow",
@@ -18,6 +19,7 @@ rust_library(
         "@crate_index//:clap",
         "@crate_index//:elliptic-curve",
         "@crate_index//:log",
+        "@crate_index//:num-bigint-dig",
         "@crate_index//:p256",
         "@crate_index//:serde",
         "@crate_index//:serde_json",
