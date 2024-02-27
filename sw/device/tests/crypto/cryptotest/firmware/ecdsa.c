@@ -15,6 +15,20 @@
 #include "sw/device/lib/ujson/ujson.h"
 #include "sw/device/tests/crypto/cryptotest/json/ecdsa_commands.h"
 
+// Copied from //sw/device/tests/crypto/ecdsa_p256_functest.c
+enum {
+  /* Number of bytes in a P-256 private key. */
+  kP256PrivateKeyBytes = 256 / 8,
+};
+
+static const otcrypto_key_config_t kP256PrivateKeyConfig = {
+    .version = kOtcryptoLibVersion1,
+    .key_mode = kOtcryptoKeyModeEcdsa,
+    .key_length = kP256PrivateKeyBytes,
+    .hw_backed = kHardenedBoolFalse,
+    .security_level = kOtcryptoKeySecurityLevelLow,
+};
+
 int set_nist_p256_params(
     cryptotest_ecdsa_coordinate_t uj_qx, cryptotest_ecdsa_coordinate_t uj_qy,
     cryptotest_ecdsa_signature_t uj_signature,
@@ -109,6 +123,42 @@ status_t interpret_verify_status(ujson_t *uj, otcrypto_status_t status,
   }
 }
 
+status_t p256_sign(ujson_t *uj, cryptotest_ecdsa_private_key_t *uj_private_key,
+                   otcrypto_ecc_curve_t elliptic_curve,
+                   otcrypto_hash_digest_t message_digest,
+                   otcrypto_word32_buf_t signature_mut,
+                   cryptotest_ecdsa_signature_t *uj_signature) {
+  p256_masked_scalar_t private_key_masked;
+  otcrypto_blinded_key_t private_key = {
+      .config = kP256PrivateKeyConfig,
+      .keyblob_length = sizeof(private_key_masked),
+      .keyblob = (uint32_t *)&private_key_masked,
+  };
+  memset(private_key_masked.share0, 0, kP256MaskedScalarShareBytes);
+  memcpy(private_key_masked.share0, uj_private_key->d0, kP256ScalarBytes);
+  memset(private_key_masked.share1, 0, kP256MaskedScalarShareBytes);
+  memcpy(private_key_masked.share1, uj_private_key->d1, kP256ScalarBytes);
+  private_key.checksum = integrity_blinded_checksum(&private_key);
+
+  otcrypto_status_t status = otcrypto_ecdsa_sign(
+      &private_key, message_digest, &elliptic_curve, signature_mut);
+  if (status.value != kOtcryptoStatusValueOk) {
+    return INTERNAL(status.value);
+  }
+
+  memset(uj_signature->r, 0, ECDSA_CMD_MAX_SIGNATURE_SCALAR_BYTES);
+  memset(uj_signature->s, 0, ECDSA_CMD_MAX_SIGNATURE_SCALAR_BYTES);
+  ecdsa_p256_signature_t *signature_p256 =
+      (ecdsa_p256_signature_t *)signature_mut.data;
+  memcpy(uj_signature->r, signature_p256->r, kP256ScalarBytes);
+  uj_signature->r_len = kP256ScalarBytes;
+  memcpy(uj_signature->s, signature_p256->s, kP256ScalarBytes);
+  uj_signature->s_len = kP256ScalarBytes;
+  RESP_OK(ujson_serialize_cryptotest_ecdsa_signature_t, uj, uj_signature);
+
+  return OK_STATUS(0);
+}
+
 status_t handle_ecdsa(ujson_t *uj) {
   // Declare ECDSA parameter ujson deserializer types
   cryptotest_ecdsa_operation_t uj_op;
@@ -118,6 +168,7 @@ status_t handle_ecdsa(ujson_t *uj) {
   cryptotest_ecdsa_signature_t uj_signature;
   cryptotest_ecdsa_coordinate_t uj_qx;
   cryptotest_ecdsa_coordinate_t uj_qy;
+  cryptotest_ecdsa_private_key_t uj_private_key;
 
   // Deserialize ujson byte stream into ECDSA parameters
   TRY(ujson_deserialize_cryptotest_ecdsa_operation_t(uj, &uj_op));
@@ -127,6 +178,7 @@ status_t handle_ecdsa(ujson_t *uj) {
   TRY(ujson_deserialize_cryptotest_ecdsa_signature_t(uj, &uj_signature));
   TRY(ujson_deserialize_cryptotest_ecdsa_coordinate_t(uj, &uj_qx));
   TRY(ujson_deserialize_cryptotest_ecdsa_coordinate_t(uj, &uj_qy));
+  TRY(ujson_deserialize_cryptotest_ecdsa_private_key_t(uj, &uj_private_key));
 
   otcrypto_ecc_curve_type_t curve_type;
   otcrypto_unblinded_key_t public_key;
@@ -192,7 +244,20 @@ status_t handle_ecdsa(ujson_t *uj) {
       .len = digest_len,
       .data = (uint32_t *)message_buf,
   };
+
   switch (uj_op) {
+    case kCryptotestEcdsaOperationSign: {
+      switch (uj_curve) {
+        case kCryptotestEcdsaCurveP256: {
+          return p256_sign(uj, &uj_private_key, elliptic_curve, message_digest,
+                           signature_mut, &uj_signature);
+        }
+        default:
+          LOG_ERROR("Unsupported ECC curve: %d", uj_curve);
+          return INVALID_ARGUMENT();
+      }
+      break;
+    }
     case kCryptotestEcdsaOperationVerify: {
       hardened_bool_t verification_result = kHardenedBoolFalse;
       return interpret_verify_status(
