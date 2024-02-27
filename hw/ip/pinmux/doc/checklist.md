@@ -220,11 +220,11 @@ Review        | [V3_CHECKLIST_SCOPED][]                 | Done        |
 
  Type         | Item                                    | Resolution  | Note/Collaterals
 --------------|-----------------------------------------|-------------|------------------
-Documentation | [SEC_CM_TESTPLAN_COMPLETED][]           | Not Started |
-Tests         | [FPV_SEC_CM_VERIFIED][]                 | Not Started |
-Tests         | [SIM_SEC_CM_VERIFIED][]                 | Not Started |
-Coverage      | [SIM_COVERAGE_REVIEWED][]               | Not Started |
-Review        | [SEC_CM_DV_REVIEWED][]                  | Not Started |
+Documentation | [SEC_CM_TESTPLAN_COMPLETED][]           | Done        | The testplan has been generated, but there is no DV environment to test these CMs. The CMs (bus integrity and LC gated TAP muxing/demuxing) are tested with the FPV testbench instead.
+Tests         | [FPV_SEC_CM_PROVEN][]                   | Done        | The SEC_CM behavior has been proven with formal.
+Tests         | [SIM_SEC_CM_VERIFIED][]                 | N/A         | This module only has an FPV testbench.
+Coverage      | [SIM_COVERAGE_REVIEWED][]               | N/A         | This module only has an FPV testbench.
+Review        | [SEC_CM_DV_REVIEWED][]                  | Done        |
 
 [SEC_CM_TESTPLAN_COMPLETED]:          ../../../../doc/project_governance/checklist/README.md#sec_cm_testplan_completed
 [FPV_SEC_CM_VERIFIED]:                ../../../../doc/project_governance/checklist/README.md#fpv_sec_cm_verified
