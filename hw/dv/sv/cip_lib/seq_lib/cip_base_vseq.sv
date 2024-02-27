@@ -740,10 +740,25 @@ class cip_base_vseq #(
     end
   endtask
 
+  // This can be overriden in derived classes to wait a longer time for no outstanding accesses
+  // before giving up.
+  virtual function int wait_cycles_with_no_outstanding_accesses();
+    return 10_000;
+  endfunction
+
   // Helper function for stress_all_with_rand_reset task to wait for random time before issuing
   // reset. This function can be extended to wait for certain special timing to issue reset.
+  //
+  // The number of cycles to wait for a run of enough consecutive cycles with no outstanding
+  // accesses can also be set by derived classes for special cases. If the wait doesn't clear
+  // something is probably wrong: perhaps some loop sending CSR transactions is missing a
+  // break if stop_transaction_generators() is set.
   virtual task wait_to_issue_reset(uint reset_delay_bound = 10_000_000);
     int cycles_with_no_accesses = 0;
+    int cycles_waited = 0;
+
+    int wait_cycles = wait_cycles_with_no_outstanding_accesses();
+
     `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(
         rand_reset_delay,
         rand_reset_delay inside {[1:reset_delay_bound]};
@@ -754,10 +769,9 @@ class cip_base_vseq #(
 
     cfg.set_intention_to_reset();
 
-    // Wait up to 10000 more cycles for a run of enough consecutive cycles with no outstanding
-    // accesses. If the wait doesn't clear something is probably wrong: perhaps some loop
-    // sending CSR transactions is missing a break if stop_transaction_generators() is set.
-    for (int i = 0; i < 10000 || cycles_with_no_accesses > 0; i++) begin
+    `uvm_info(`gfn, $sformatf("Waiting for %0d cycles with a run of no accesses", wait_cycles),
+              UVM_MEDIUM)
+    for (; cycles_waited < wait_cycles || cycles_with_no_accesses > 0; ++cycles_waited) begin
       if (!has_outstanding_access()) begin
         ++cycles_with_no_accesses;
         if (cycles_with_no_accesses > CyclesWithNoAccessesThreshold) begin
@@ -771,8 +785,8 @@ class cip_base_vseq #(
       end
       cfg.clk_rst_vif.wait_clks(1);
     end
-    `DV_CHECK(!has_outstanding_access(),
-              "Waited too long to issue a reset with no outstanding accesses.")
+    `DV_CHECK(!has_outstanding_access(), $sformatf(
+              "Waited %0d cycles to issue a reset with no outstanding accesses.", cycles_waited))
 
     // Wait a portion of the clock period, to avoid the reset being synchronised with an edge of the
     // clock.
@@ -814,6 +828,7 @@ class cip_base_vseq #(
           wr_mask = get_mask_excl_fields(csrs[i], CsrExclWrite, csr_test_type);
 
           repeat ($urandom_range(2, 20)) begin
+            if (cfg.stop_transaction_generators()) break;
             // do read, exclude CsrExclWriteCheck, CsrExclCheck
             if ($urandom_range(0, 1) &&
                 !csr_excl.is_excl(csrs[i], CsrExclWriteCheck, csr_test_type)) begin
@@ -895,7 +910,7 @@ class cip_base_vseq #(
     num_accesses = (num_accesses < min_accesses) ? min_accesses : num_accesses;
 
     repeat (num_accesses * num_times) begin
-      if (cfg.under_reset) break;
+      if (cfg.stop_transaction_generators()) break;
       fork
         begin
           bit [BUS_AW-1:0]  addr;
