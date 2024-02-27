@@ -13,6 +13,16 @@ In addition to the various buffers for Flash and Passthrough modes, the TPM Read
 The TPM Read FIFO presents a FIFO interface to software, which writes the [`TPM_READ_FIFO` CSR](registers.md#tpm_read_fifo) for each word instead of the underlying TPM Read Buffer SRAM region directly.
 The TPM Write FIFO, however, presents only the RAM interface to software, with data for each command always starting at the lowest address of the TPM Write Buffer region.
 
+The SRAM is divided into two large blocks.
+The first block is for the egress flows, where software writes data to the SRAM, and the SPI host reads it.
+That first block includes the flash read buffer, the mailbox, the SFDP, and the TPM Read FIFO.
+The second block is for the ingress flows, where the SPI host writes to the SRAM, and software reads from it.
+That second block includes the flash command upload buffers and the TPM Write FIFO.
+
+This separation of flows allows the memory to be implemented by two SRAM instances that each have one read-only and one write-only port (the "1r1w" SRAM macro).
+In addition, regardless of whether the memory is implemented using a single instance with two read-write ports or the two 1r1w instances, the access controls are the same.
+Software can only write to the egress memory, and it can only read from the ingress memory.
+
 ## TPM over SPI
 
 ### Initialization
