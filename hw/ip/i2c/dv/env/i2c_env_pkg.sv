@@ -72,7 +72,7 @@ package i2c_env_pkg;
   parameter uint I2C_FMT_FIFO_DEPTH = i2c_reg_pkg::FifoDepth;
   parameter uint I2C_RX_FIFO_DEPTH  = i2c_reg_pkg::FifoDepth;
   parameter uint I2C_TX_FIFO_DEPTH  = i2c_reg_pkg::FifoDepth;
-  parameter uint I2C_ACQ_FIFO_DEPTH = i2c_reg_pkg::FifoDepth;
+  parameter uint I2C_ACQ_FIFO_DEPTH = i2c_reg_pkg::AcqFifoDepth;
 
   // alerts
   parameter uint NUM_ALERTS = i2c_reg_pkg::NumAlerts;

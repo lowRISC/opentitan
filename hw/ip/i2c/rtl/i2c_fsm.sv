@@ -7,7 +7,9 @@
 module i2c_fsm import i2c_pkg::*;
 #(
   parameter int FifoDepth = 64,
-  localparam int FifoDepthWidth = $clog2(FifoDepth+1)
+  parameter int AcqFifoDepth = 64,
+  localparam int FifoDepthWidth = $clog2(FifoDepth+1),
+  localparam int AcqFifoDepthWidth = $clog2(AcqFifoDepth+1)
 ) (
   input        clk_i,  // clock
   input        rst_ni, // active low reset
@@ -42,7 +44,7 @@ module i2c_fsm import i2c_pkg::*;
 
   output logic       acq_fifo_wvalid_o, // high if there is valid data in acq_fifo
   output logic [9:0] acq_fifo_wdata_o,  // byte and signal in acq_fifo read from target
-  input [FifoDepthWidth-1:0] acq_fifo_depth_i,
+  input [AcqFifoDepthWidth-1:0] acq_fifo_depth_i,
   output logic       acq_fifo_wready_o, // local version of ready
   input [9:0]        acq_fifo_rdata_i,  // only used for assertion
 
@@ -342,9 +344,9 @@ module i2c_fsm import i2c_pkg::*;
   // space for this entry, the target module would need to stretch the
   // repeat start / stop indication.  If a system does not support stretching,
   // there's no good way for a stop to be NACK'd.
-  logic [FifoDepthWidth-1:0] acq_fifo_remainder;
-  assign acq_fifo_remainder = FifoDepth - acq_fifo_depth_i;
-  assign acq_fifo_wready = acq_fifo_remainder > FifoDepthWidth'(1'b1);
+  logic [AcqFifoDepthWidth-1:0] acq_fifo_remainder;
+  assign acq_fifo_remainder = AcqFifoDepth - acq_fifo_depth_i;
+  assign acq_fifo_wready = acq_fifo_remainder > AcqFifoDepthWidth'(1'b1);
 
   // State definitions
   typedef enum logic [5:0] {
@@ -811,7 +813,7 @@ module i2c_fsm import i2c_pkg::*;
   // Only the fifo depth is checked here, because stretch_tx is only evaluated by the
   // fsm on the read path. This means a read start byte has already been deposited.
   assign stretch_tx = ~tx_fifo_rvalid_i |
-                      (acq_fifo_depth_i > FifoDepthWidth'(1'b1));
+                      (acq_fifo_depth_i > AcqFifoDepthWidth'(1'b1));
 
   // Only used for assertion
   logic unused_acq_rdata;
