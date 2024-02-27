@@ -55,7 +55,7 @@
                dut: clkmgr
                fusesoc_core: lowrisc:dv:clkmgr_sva
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
-               rel_path: "hw/ip/clkmgr/{sub_flow}/{tool}"
+               rel_path: "hw/top_earlgrey/ip_autogen/clkmgr/{sub_flow}/{tool}"
                task: "FpvSecCm"
              }
              {

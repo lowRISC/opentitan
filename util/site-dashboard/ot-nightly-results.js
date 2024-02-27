@@ -7,7 +7,7 @@ const block_level_urls = {
   "aes": ["https://reports.opentitan.org/hw/ip/aes_masked/dv/2024.01.22_10.46.01/","https://reports.opentitan.org/hw/ip/aes_unmasked/dv/2024.01.22_10.45.27/"],
   "alert_handler": ["https://reports.opentitan.org/hw/top_earlgrey/ip_autogen/alert_handler/dv/2024.01.22_11.16.07/"],
   "aon_timer": ["https://reports.opentitan.org/hw/ip/aon_timer/dv/2024.01.22_10.46.17/"],
-  "clkmgr": ["https://reports.opentitan.org/hw/ip/clkmgr/dv/2024.01.22_10.47.21/"],
+  "clkmgr": ["https://reports.opentitan.org/hw/top_earlgrey/ip_autogen/clkmgr/dv/2024.01.22_10.47.21/"],
   "csrng": ["https://reports.opentitan.org/hw/ip/csrng/dv/2024.01.22_10.48.06/"],
   "edn": ["https://reports.opentitan.org/hw/ip/edn/dv/2024.01.22_10.48.55/"],
   "entropy_src": ["https://reports.opentitan.org/hw/ip/entropy_src/dv/2024.01.22_10.49.35/"],

@@ -5059,8 +5059,8 @@ opentitan_test(
     ),
     deps = [
         "//hw/ip/lc_ctrl/data:lc_ctrl_regs",
-        "//hw/top_earlgrey/ip/clkmgr/data/autogen:clkmgr_regs",
         "//hw/top_earlgrey/ip/pinmux/data/autogen:pinmux_regs",
+        "//hw/top_earlgrey/ip_autogen/clkmgr/data:clkmgr_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:clkmgr",

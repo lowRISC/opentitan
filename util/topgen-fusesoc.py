@@ -78,7 +78,7 @@ def main():
     }
 
     # reg-only
-    for ip in ['clkmgr', 'flash_ctrl', 'pinmux']:
+    for ip in ['flash_ctrl', 'pinmux']:
         core_filepath = os.path.abspath(os.path.join(files_out, 'generated-%s.core' % ip))
         name = 'lowrisc:ip:%s_reggen' % ip,
         files = ['ip/%s/rtl/autogen/%s_reg_pkg.sv' % (ip, ip),
@@ -124,6 +124,7 @@ def main():
                     'lowrisc:constants:top_pkg',
                     'lowrisc:prim:util',
                     'lowrisc:ip:lc_ctrl_pkg',
+                    'lowrisc:ip_interfaces:clkmgr_pkg',
                     'lowrisc:ip_interfaces:pwrmgr_pkg',
                     'lowrisc:ip_interfaces:rstmgr_pkg',
                     'lowrisc:prim:clock_mux2',
@@ -132,7 +133,6 @@ def main():
                     'lowrisc:prim:clock_gating',
                     'lowrisc:prim:clock_buf',
                     'lowrisc:prim:clock_div',
-                    'lowrisc:ip:clkmgr_components',
                     # Top
                     # ast and sensor_ctrl not auto-generated, re-used from top_earlgrey
                     'lowrisc:systems:sensor_ctrl',
@@ -142,7 +142,6 @@ def main():
                 ],
                 'files': [
                     # IPs
-                    'ip/clkmgr/rtl/autogen/clkmgr.sv',
                     'ip/flash_ctrl/rtl/autogen/flash_ctrl_pkg.sv',
                     'ip/flash_ctrl/rtl/autogen/flash_ctrl.sv',
                     'ip/flash_ctrl/rtl/autogen/flash_ctrl_region_cfg.sv',

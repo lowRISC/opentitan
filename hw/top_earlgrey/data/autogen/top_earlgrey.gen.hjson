@@ -3297,7 +3297,7 @@
       [
         Aon
       ]
-      attr: templated
+      attr: ipgen
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_powerup
