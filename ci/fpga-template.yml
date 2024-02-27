@@ -9,6 +9,16 @@ parameters:
   type: string
 - name: design_suffix
   type: string
+# If set to true, this template will include a building step when
+# the strategy is not 'cached'.
+- name: do_build
+  type: boolean
+  default: true
+# Name of the binary artifact produced (prefixed by partial-build-bin-)
+# If not set, uses the current job's name.
+- name: bin_name
+  type: string
+  default: ""
 
 steps:
 - template: ./checkout-template.yml
@@ -28,6 +38,8 @@ steps:
       ':!/hw/**/dv/*' \
       ':!/hw/dv/'
   displayName: Configure bitstream strategy
+  # The output variable `bitstreamStrategy` is set by the previous script.
+  name: strategy
 - bash: |
     set -ex
     . util/build_consts.sh
@@ -39,38 +51,43 @@ steps:
     cp -Lv ${bitstream_archive} ${BUILD_ROOT}/build-bin.tar
   condition: eq(variables.bitstreamStrategy, 'cached')
   displayName: Extract cached bitstream
-- bash: |
-    set -ex
-    bazel_package=//hw/bitstream/vivado
-    bitstream_target=${bazel_package}:fpga_${{ parameters.design_suffix }}
-    archive_target=${bazel_package}:${{ parameters.top_name }}_${{ parameters.design_suffix }}_archive
-    trap 'get_logs' EXIT
-    get_logs() {
-      design_name=chip_${{ parameters.top_name }}_${{ parameters.design_suffix }}
-      SUB_PATH="hw/top_${{ parameters.top_name }}/${design_name}"
-      mkdir -p "$OBJ_DIR/$SUB_PATH" "$BIN_DIR/$SUB_PATH"
-      cp -rLvt "$OBJ_DIR/$SUB_PATH/" \
-        $($REPO_TOP/bazelisk.sh outquery-all ${bitstream_target})
-      bitstream_archive=$($REPO_TOP/bazelisk.sh outquery ${archive_target})
-      cp -Lv ${bitstream_archive} ${BUILD_ROOT}/build-bin.tar
-    }
+- ${{ if eq(parameters.do_build, true) }}:
+  - bash: |
+      set -ex
+      bazel_package=//hw/bitstream/vivado
+      bitstream_target=${bazel_package}:fpga_${{ parameters.design_suffix }}
+      archive_target=${bazel_package}:${{ parameters.top_name }}_${{ parameters.design_suffix }}_archive
+      trap 'get_logs' EXIT
+      get_logs() {
+        design_name=chip_${{ parameters.top_name }}_${{ parameters.design_suffix }}
+        SUB_PATH="hw/top_${{ parameters.top_name }}/${design_name}"
+        mkdir -p "$OBJ_DIR/$SUB_PATH" "$BIN_DIR/$SUB_PATH"
+        cp -rLvt "$OBJ_DIR/$SUB_PATH/" \
+          $($REPO_TOP/bazelisk.sh outquery-all ${bitstream_target})
+        bitstream_archive=$($REPO_TOP/bazelisk.sh outquery ${archive_target})
+        cp -Lv ${bitstream_archive} ${BUILD_ROOT}/build-bin.tar
+      }
 
-    . util/build_consts.sh
-    module load "xilinx/vivado/$(VIVADO_VERSION)"
-    ci/bazelisk.sh build ${archive_target}
-  condition: ne(variables.bitstreamStrategy, 'cached')
-  displayName: Build and splice bitstream with Vivado
-- bash: |
-    . util/build_consts.sh
-    echo "Synthesis log"
-    cat $OBJ_DIR/hw/top_${{ parameters.top_name }}/build.fpga_${{ parameters.design_suffix }}/synth-vivado/lowrisc_systems_chip_${{ parameters.top_name }}_${{ parameters.design_suffix }}_0.1.runs/synth_1/runme.log || true
+      . util/build_consts.sh
+      module load "xilinx/vivado/$(VIVADO_VERSION)"
+      ci/bazelisk.sh build ${archive_target}
+    condition: ne(variables.bitstreamStrategy, 'cached')
+    displayName: Build and splice bitstream with Vivado
+  - bash: |
+      . util/build_consts.sh
+      echo "Synthesis log"
+      cat $OBJ_DIR/hw/top_${{ parameters.top_name }}/build.fpga_${{ parameters.design_suffix }}/synth-vivado/lowrisc_systems_chip_${{ parameters.top_name }}_${{ parameters.design_suffix }}_0.1.runs/synth_1/runme.log || true
 
-    echo "Implementation log"
-    cat $OBJ_DIR/hw/top_${{ parameters.top_name }}/build.fpga_${{ parameters.design_suffix }}/synth-vivado/lowrisc_systems_chip_${{ parameters.top_name }}_${{ parameters.design_suffix }}_0.1.runs/impl_1/runme.log || true
-  condition: ne(variables.bitstreamStrategy, 'cached')
-  displayName: Display synthesis & implementation logs
+      echo "Implementation log"
+      cat $OBJ_DIR/hw/top_${{ parameters.top_name }}/build.fpga_${{ parameters.design_suffix }}/synth-vivado/lowrisc_systems_chip_${{ parameters.top_name }}_${{ parameters.design_suffix }}_0.1.runs/impl_1/runme.log || true
+    condition: ne(variables.bitstreamStrategy, 'cached')
+    displayName: Display synthesis & implementation logs
 - publish: "$(Build.ArtifactStagingDirectory)/build-bin.tar"
-  artifact: partial-build-bin-$(System.PhaseName)
+  ${{ if parameters.bin_name }}:
+    artifact: partial-build-bin-$(System.PhaseName)
+  ${{ else }}:
+    artifact: partial-build-bin-${{ parameters.bin_name }}
+  condition: or(eq(variables.bitstreamStrategy, 'cached'), eq(${{ parameters.do_build }}, true))
   displayName: Upload step outputs
 - publish: "$(Build.ArtifactStagingDirectory)"
   artifact: chip_${{ parameters.top_name }}_cw310-build-out

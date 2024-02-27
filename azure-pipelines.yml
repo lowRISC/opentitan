@@ -450,19 +450,13 @@ jobs:
       top_name: earlgrey
       design_suffix: cw310_hyperdebug
 
-- job: chip_earlgrey_cw340
-  displayName: CW340's Earl Grey Bitstream
-  # Build CW340 variant of the Earl Grey toplevel design using Vivado
-  dependsOn:
-    - lint
-  condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
-  pool: ci-public-eda
-  timeoutInMinutes: 150
-  steps:
-  - template: ci/fpga-template.yml
-    parameters:
-      top_name: earlgrey
-      design_suffix: cw340
+- template: ci/fpga-job.yml
+  parameters:
+    top_name: earlgrey
+    design_suffix: cw340
+    display_name: CW340's Earl Grey Bitstream
+    job_name: chip_earlgrey_cw340
+    build_timeout: 150
 
 - job: chip_englishbreakfast_cw305
   displayName: CW305's Bitstream

@@ -1,0 +1,75 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# Azure template for an FPGA bitstream job.
+# This script contains several jobs and ensures that we do not dispatch
+# a job to ci-public-eda unless we actually need to build a bitstream.
+
+parameters:
+- name: top_name
+  type: string
+- name: design_suffix
+  type: string
+# Name to display for the jobs.
+- name: display_name
+  type: string
+# Name of the job that other jobs can rely depend on.
+- name: job_name
+  type: string
+# Timeout for the build.
+- name: build_timeout
+  type: number
+
+jobs:
+# Configure the bitstream strategy and download if the strategy is 'cached'
+- job: "${{ parameters.job_name }}_strategy"
+  displayName: "Configure ${{ parameters.display_name }} strategy"
+  dependsOn:
+    - lint
+  pool:
+    vmImage: ubuntu-20.04
+  # Skip job if there is no need to need for a bitstream.
+  condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
+  steps:
+  - template: ./fpga-template.yml
+    parameters:
+      top_name: ${{ parameters.top_name }}
+      design_suffix: ${{ parameters.design_suffix }}
+      bin_name: ${{ parameters.job_name }}
+      do_build: false
+
+# Build the bitstream on the EDA pool if necessary.
+# NOTE: this will recompute the strategy which could be different from
+# the strategy first determined because the job could have to wait for
+# some time before getting access to an EDA machine. This gives another
+# opportunity to cache.
+- job: "${{ parameters.job_name }}_build"
+  displayName: "Build ${{ parameters.display_name }}"
+  dependsOn: "${{ parameters.job_name }}_strategy"
+  variables:
+    bitstreamStrategy: $[ dependencies.${{ parameters.job_name }}_strategy.outputs['strategy.bitstreamStrategy'] ]
+  # Use the ci-public-eda pool to build.
+  pool: ci-public-eda
+  condition: eq(variables.bitstreamStrategy, 'build')
+  timeoutInMinutes: ${{ parameters.build_timeout }}
+  steps:
+  - template: ./fpga-template.yml
+    parameters:
+      top_name: ${{ parameters.top_name }}
+      design_suffix: ${{ parameters.design_suffix }}
+      bin_name: ${{ parameters.job_name }}
+      do_build: true
+
+# This job does nothing but it is there to for dependency purposes.
+- job: "${{ parameters.job_name }}"
+  displayName: "${{ parameters.display_name }}"
+  dependsOn:
+    - "${{ parameters.job_name }}_strategy"
+    - "${{ parameters.job_name }}_build"
+  variables:
+    bitstreamStrategy: $[ dependencies.${{ parameters.job_name }}_strategy.outputs['strategy.bitstreamStrategy'] ]
+  # We explicitely want to succeed if build was skipped due to the strategy being 'cached'.
+  condition: or(eq(variables.bitstreamStrategy, 'cached'), eq(dependencies.${{ parameters.job_name }}_build.result, 'Succeeded'))
+  pool:
+    vmImage: ubuntu-20.04
