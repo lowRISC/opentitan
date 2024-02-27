@@ -48,7 +48,10 @@ module prim_alert_sender
   parameter bit AsyncOn = 1'b1,
   // alert sender will latch the incoming alert event permanently and
   // keep on sending alert events until the next reset.
-  parameter bit IsFatal = 1'b0
+  parameter bit IsFatal = 1'b0,
+  // Synchronize alert inputs with a 2-FF synchronizer when being used
+  // externally, where the inputs might be in a different clock domain
+  parameter bit SyncAlertInput = 1'b0
 ) (
   input             clk_i,
   input             rst_ni,
@@ -150,13 +153,37 @@ module prim_alert_sender
   logic alert_test_set_d, alert_test_set_q;
   logic ping_set_d, ping_set_q, ping_clr;
   logic alert_req_trigger, alert_test_trigger, ping_trigger;
+  logic alert_req_sync, alert_test_sync;
+
+  if (SyncAlertInput) begin : gen_sync
+    prim_flop_2sync #(
+      .Width(1)
+    ) u_sync_alert_req (
+      .clk_i,
+      .rst_ni,
+      .d_i    ( alert_req_i    ),
+      .q_o    ( alert_req_sync )
+    );
+
+    prim_flop_2sync #(
+      .Width(1)
+    ) u_sync_alert_test (
+      .clk_i,
+      .rst_ni,
+      .d_i    ( alert_test_i   ),
+      .q_o    ( alert_test_sync )
+    );
+  end else begin : gen_passthrough
+    assign alert_req_sync  = alert_req_i;
+    assign alert_test_sync = alert_test_i;
+  end
 
   // if handshake is ongoing, capture additional alert requests.
   logic alert_req;
   prim_sec_anchor_buf #(
     .Width(1)
   ) u_prim_buf_in_req (
-    .in_i(alert_req_i),
+    .in_i(alert_req_sync),
     .out_o(alert_req)
   );
 
@@ -168,7 +195,7 @@ module prim_alert_sender
   end
 
   // the alert test request is always cleared.
-  assign alert_test_trigger = alert_test_i | alert_test_set_q;
+  assign alert_test_trigger = alert_test_sync | alert_test_set_q;
   assign alert_test_set_d = (alert_clr) ? 1'b0 : alert_test_trigger;
 
   logic alert_trigger;
