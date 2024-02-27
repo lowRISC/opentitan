@@ -209,6 +209,16 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_spi_device_get_4b_address_mode(dif_spi_device_handle_t *spi,
                                                 dif_toggle_t *addr_4b);
 
+/**
+ * Clear any pending software-originated flash status change requests.
+ *
+ * @param spi A SPI device.
+ * @return kDifBadArg if spi is NULL. kDifOk otherwise.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_device_clear_flash_status_request(
+    dif_spi_device_handle_t *spi);
+
 typedef struct dif_spi_device_flash_id {
   /** The device ID for the SPI flash. */
   uint16_t device_id;
@@ -311,6 +321,17 @@ dif_result_t dif_spi_device_get_last_read_address(dif_spi_device_handle_t *spi,
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_spi_device_set_eflash_read_threshold(
     dif_spi_device_handle_t *spi, uint32_t address);
+
+/**
+ * Clear eflash read buffer state.
+ *
+ * Reinitialize the eflash read buffer to initial state.
+ *
+ * @param spi A SPI device.
+ * @return kDifBadArg if spi is NULL. kDifOk otherwise.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_device_reset_eflash_buffer(dif_spi_device_handle_t *spi);
 
 typedef enum dif_spi_device_flash_address_type {
   /** No address for this command */

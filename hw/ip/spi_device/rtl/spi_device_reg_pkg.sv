@@ -139,6 +139,9 @@ package spi_device_reg_pkg;
     } mode;
     struct packed {
       logic        q;
+    } flash_read_buffer_clr;
+    struct packed {
+      logic        q;
     } flash_status_fifo_clr;
   } spi_device_reg2hw_control_reg_t;
 
@@ -459,6 +462,10 @@ package spi_device_reg_pkg;
       logic        d;
       logic        de;
     } flash_status_fifo_clr;
+    struct packed {
+      logic        d;
+      logic        de;
+    } flash_read_buffer_clr;
   } spi_device_hw2reg_control_reg_t;
 
   typedef struct packed {
@@ -586,11 +593,11 @@ package spi_device_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    spi_device_reg2hw_intr_state_reg_t intr_state; // [1562:1555]
-    spi_device_reg2hw_intr_enable_reg_t intr_enable; // [1554:1547]
-    spi_device_reg2hw_intr_test_reg_t intr_test; // [1546:1531]
-    spi_device_reg2hw_alert_test_reg_t alert_test; // [1530:1529]
-    spi_device_reg2hw_control_reg_t control; // [1528:1526]
+    spi_device_reg2hw_intr_state_reg_t intr_state; // [1563:1556]
+    spi_device_reg2hw_intr_enable_reg_t intr_enable; // [1555:1548]
+    spi_device_reg2hw_intr_test_reg_t intr_test; // [1547:1532]
+    spi_device_reg2hw_alert_test_reg_t alert_test; // [1531:1530]
+    spi_device_reg2hw_control_reg_t control; // [1529:1526]
     spi_device_reg2hw_cfg_reg_t cfg; // [1525:1523]
     spi_device_reg2hw_intercept_en_reg_t intercept_en; // [1522:1519]
     spi_device_reg2hw_addr_mode_reg_t addr_mode; // [1518:1517]
@@ -627,8 +634,8 @@ package spi_device_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    spi_device_hw2reg_intr_state_reg_t intr_state; // [209:194]
-    spi_device_hw2reg_control_reg_t control; // [193:192]
+    spi_device_hw2reg_intr_state_reg_t intr_state; // [211:196]
+    spi_device_hw2reg_control_reg_t control; // [195:192]
     spi_device_hw2reg_status_reg_t status; // [191:190]
     spi_device_hw2reg_addr_mode_reg_t addr_mode; // [189:188]
     spi_device_hw2reg_last_read_addr_reg_t last_read_addr; // [187:156]
