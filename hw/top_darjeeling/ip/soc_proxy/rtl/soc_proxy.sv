@@ -281,6 +281,17 @@ module soc_proxy
   logic async_wkup;
   assign async_wkup = |{fatal_alert_external, recov_alert_external, soc_intr_async_i};
 
+  // Flop async_wkup to suppress glitches from the OR tree
+  prim_flop #(
+    .Width(1),
+    .ResetValue(1'b0)
+  ) u_sync_async_wkup (
+    .clk_i ( clk_i           ),
+    .rst_ni( rst_ni          ),
+    .d_i   ( async_wkup      ),
+    .q_o   ( async_wkup_sync )
+  );
+
   // Synchronize wakeup signal onto AON domain and filter out potential glitches
   prim_filter #(
     .AsyncOn(1'b1),
@@ -289,7 +300,7 @@ module soc_proxy
     .clk_i    (clk_aon_i),
     .rst_ni   (rst_aon_ni),
     .enable_i (1'b1),
-    .filter_i (async_wkup),
+    .filter_i (async_wkup_sync),
     .filter_o (wkup_internal_req_o)
   );
 
