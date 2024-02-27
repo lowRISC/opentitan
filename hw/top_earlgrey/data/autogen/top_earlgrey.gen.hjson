@@ -12816,15 +12816,15 @@
           }
           {
             name: dft0
-            pad: IOC3
+            pad: IOR5
             desc: DFT strap signal.
-            idx: 25
+            idx: 40
           }
           {
             name: dft1
-            pad: IOC4
+            pad: IOR7
             desc: DFT strap signal.
-            idx: 26
+            idx: 42
           }
           {
             name: tck
@@ -13001,15 +13001,15 @@
           }
           {
             name: dft0
-            pad: IOC3
+            pad: IOR5
             desc: DFT strap signal.
-            idx: 25
+            idx: 40
           }
           {
             name: dft1
-            pad: IOC4
+            pad: IOR7
             desc: DFT strap signal.
-            idx: 26
+            idx: 42
           }
           {
             name: tck
@@ -13178,15 +13178,15 @@
           }
           {
             name: dft0
-            pad: IOC3
+            pad: IOR5
             desc: DFT strap signal.
-            idx: 25
+            idx: 40
           }
           {
             name: dft1
-            pad: IOC4
+            pad: IOR7
             desc: DFT strap signal.
-            idx: 26
+            idx: 42
           }
           {
             name: tck

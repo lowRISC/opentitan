@@ -68,9 +68,9 @@ set_property -dict { PACKAGE_PIN AK27 IOSTANDARD LVCMOS18 PULLTYPE PULLUP } [get
 set_property -dict { PACKAGE_PIN AK31 IOSTANDARD LVCMOS18 PULLTYPE PULLUP } [get_ports { IOR2  }]; # EarlGrey:JTAG_TDI
 set_property -dict { PACKAGE_PIN AL34 IOSTANDARD LVCMOS18 PULLTYPE PULLUP } [get_ports { IOR3  }]; # EarlGrey:JTAG_TCK
 set_property -dict { PACKAGE_PIN AJ34 IOSTANDARD LVCMOS18 PULLTYPE PULLUP } [get_ports { IOR4  }]; # EarlGrey:JTAG_TRSTn
-set_property -dict { PACKAGE_PIN AK30 IOSTANDARD LVCMOS18 } [get_ports { IOR5  }]; # EarlGrey:GPIO
+set_property -dict { PACKAGE_PIN AK30 IOSTANDARD LVCMOS18 } [get_ports { IOR5  }]; # DFT Strap 0
 set_property -dict { PACKAGE_PIN AH32 DRIVE 8 IOSTANDARD LVCMOS18 } [get_ports { IOR6  }]; # EarlGrey:GPIO(LED0)
-set_property -dict { PACKAGE_PIN AJ33 DRIVE 8 IOSTANDARD LVCMOS18 } [get_ports { IOR7  }]; # EarlGrey:GPIO(LED1)
+set_property -dict { PACKAGE_PIN AJ33 DRIVE 8 IOSTANDARD LVCMOS18 } [get_ports { IOR7  }]; # DFT Strap 1
 set_property -dict { PACKAGE_PIN AH34 DRIVE 8 IOSTANDARD LVCMOS18 } [get_ports { IOR8  }]; # EarlGrey:GPIO(LED2)
 set_property -dict { PACKAGE_PIN AH31 DRIVE 8 IOSTANDARD LVCMOS18 } [get_ports { IOR9  }]; # EarlGrey:GPIO(LED3)
 set_property -dict { PACKAGE_PIN AH27 DRIVE 8 IOSTANDARD LVCMOS18 } [get_ports { IOR10 }]; # EarlGrey:GPIO(LED4)

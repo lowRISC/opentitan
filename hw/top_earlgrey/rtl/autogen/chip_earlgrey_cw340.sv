@@ -107,8 +107,8 @@ module chip_earlgrey_cw340 #(
 
   localparam int Tap0PadIdx = 30;
   localparam int Tap1PadIdx = 27;
-  localparam int Dft0PadIdx = 25;
-  localparam int Dft1PadIdx = 26;
+  localparam int Dft0PadIdx = 40;
+  localparam int Dft1PadIdx = 42;
   localparam int TckPadIdx = 38;
   localparam int TmsPadIdx = 35;
   localparam int TrstNPadIdx = 39;

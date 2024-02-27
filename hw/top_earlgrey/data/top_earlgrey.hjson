@@ -1434,10 +1434,10 @@
         // Each entry may have an optional 'desc' key for further description.
         special_signals: [
           // Straps
-          { name: 'tap0',   pad: 'IOC8', desc: 'TAP strap signal.'  },
-          { name: 'tap1',   pad: 'IOC5', desc: 'TAP strap signal.'  },
-          { name: 'dft0',   pad: 'IOC3', desc: 'DFT strap signal.'  },
-          { name: 'dft1',   pad: 'IOC4', desc: 'DFT strap signal.'  },
+          { name: 'tap0',   pad: 'IOC8', desc: 'TAP strap signal.'   },
+          { name: 'tap1',   pad: 'IOC5', desc: 'TAP strap signal.'   },
+          { name: 'dft0',   pad: 'IOR5', desc: 'DFT strap signal.'   },
+          { name: 'dft1',   pad: 'IOR7', desc: 'DFT strap signal.'   },
           // JTAG
           { name: 'tck',    pad: 'IOR3', desc: 'JTAG tck signal.'    },
           { name: 'tms',    pad: 'IOR0', desc: 'JTAG tms signal.'    },
@@ -1483,8 +1483,8 @@
           // Straps
           { name: 'tap0',   pad: 'IOC8', desc: 'TAP strap signal.'   },
           { name: 'tap1',   pad: 'IOC5', desc: 'TAP strap signal.'   },
-          { name: 'dft0',   pad: 'IOC3', desc: 'DFT strap signal.'   },
-          { name: 'dft1',   pad: 'IOC4', desc: 'DFT strap signal.'   },
+          { name: 'dft0',   pad: 'IOR5', desc: 'DFT strap signal.'   },
+          { name: 'dft1',   pad: 'IOR7', desc: 'DFT strap signal.'   },
           // JTAG
           { name: 'tck',    pad: 'IOR3', desc: 'JTAG tck signal.'    },
           { name: 'tms',    pad: 'IOR0', desc: 'JTAG tms signal.'    },
@@ -1529,8 +1529,8 @@
           // Straps
           { name: 'tap0',   pad: 'IOC8', desc: 'TAP strap signal.'   },
           { name: 'tap1',   pad: 'IOC5', desc: 'TAP strap signal.'   },
-          { name: 'dft0',   pad: 'IOC3', desc: 'DFT strap signal.'   },
-          { name: 'dft1',   pad: 'IOC4', desc: 'DFT strap signal.'   },
+          { name: 'dft0',   pad: 'IOR5', desc: 'DFT strap signal.'   },
+          { name: 'dft1',   pad: 'IOR7', desc: 'DFT strap signal.'   },
           // JTAG
           { name: 'tck',    pad: 'IOR3', desc: 'JTAG tck signal.'    },
           { name: 'tms',    pad: 'IOR0', desc: 'JTAG tms signal.'    },

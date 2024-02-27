@@ -480,8 +480,8 @@ module chip_earlgrey_verilator (
     tdo_idx:        MioPadIor1,
     tap_strap0_idx: MioPadIoc8,
     tap_strap1_idx: MioPadIoc5,
-    dft_strap0_idx: MioPadIoc3,
-    dft_strap1_idx: MioPadIoc4,
+    dft_strap0_idx: MioPadIor5,
+    dft_strap1_idx: MioPadIor7,
     // TODO: check whether there is a better way to pass these USB-specific params
     usb_dp_idx:        DioUsbdevUsbDp,
     usb_dn_idx:        DioUsbdevUsbDn,

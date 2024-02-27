@@ -90,9 +90,9 @@ set_property -dict { PACKAGE_PIN P16         IOSTANDARD LVCMOS33 PULLTYPE PULLUP
 set_property -dict { PACKAGE_PIN R16         IOSTANDARD LVCMOS33 PULLTYPE PULLUP } [get_ports { IOR2  }]; # R16:USR_DBG_TDI           JTAG
 set_property -dict { PACKAGE_PIN N18         IOSTANDARD LVCMOS33 PULLTYPE PULLUP } [get_ports { IOR3  }]; # N18:USR_DBG_TCK           JTAG
 set_property -dict { PACKAGE_PIN U19         IOSTANDARD LVCMOS33 PULLTYPE PULLUP } [get_ports { IOR4  }]; # U19:USR_DBG_TDAT1(nTRST)  JTAG
-set_property -dict { PACKAGE_PIN W9          IOSTANDARD LVCMOS18                 } [get_ports { IOR5  }]; #  W9:USRDIP3
+set_property -dict { PACKAGE_PIN W9          IOSTANDARD LVCMOS18                 } [get_ports { IOR5  }]; #  W9:USRDIP3               DFT Strap 0
 set_property -dict { PACKAGE_PIN M26 DRIVE 8 IOSTANDARD LVCMOS33                 } [get_ports { IOR6  }]; # M26:USRLED0               EarlGrey:GPIO
-set_property -dict { PACKAGE_PIN M25 DRIVE 8 IOSTANDARD LVCMOS33                 } [get_ports { IOR7  }]; # M25:USRLED1               EarlGrey:GPIO
+set_property -dict { PACKAGE_PIN M25 DRIVE 8 IOSTANDARD LVCMOS33                 } [get_ports { IOR7  }]; # M25:USRLED1               DFT Strap 1
 set_property -dict { PACKAGE_PIN M24 DRIVE 8 IOSTANDARD LVCMOS33                 } [get_ports { IOR8  }]; # M24:USRLED2               EarlGrey:GPIO
 set_property -dict { PACKAGE_PIN M19 DRIVE 8 IOSTANDARD LVCMOS33                 } [get_ports { IOR9  }]; # M19:USRLED3               EarlGrey:GPIO
 set_property -dict { PACKAGE_PIN L25 DRIVE 8 IOSTANDARD LVCMOS33                 } [get_ports { IOR10 }]; # L25:USRLED4               EarlGrey:GPIO
