@@ -2,6 +2,10 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+import random
+from typing import Callable
+
+
 def parse_rsp(file_path: str, persists: list[str] = []) -> dict:
     """Parser for NIST `.rsp` files.
 
@@ -117,3 +121,14 @@ def str_to_byte_array(s: str) -> list:
     for i in range(0, len(s), 2):
         byte_array.append(int(s[i:i + 2], 16))
     return byte_array
+
+
+def rng() -> Callable[[int], bytes]:
+    """
+    Initializes the `random` module for generating random test vectors.
+    """
+    seed = random.randrange(0, 2 ** 32)
+    # Log random seed for reproducability in CI runs
+    print(f"RANDOM SEED = {seed}")
+    random.seed(seed)
+    return random.randbytes
