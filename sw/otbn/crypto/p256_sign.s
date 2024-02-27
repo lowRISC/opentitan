@@ -56,10 +56,10 @@
  * @param[in]  dmem[k0]:  first share of secret scalar (320 bits)
  * @param[in]  dmem[k1]:  second share of secret scalar (320 bits)
  * @param[in]  dmem[msg]: message to be signed (256 bits)
- * @param[in]  dmem[r]:   dmem buffer for r component of signature (256 bits)
- * @param[in]  dmem[s]:   dmem buffer for s component of signature (256 bits)
  * @param[in]  dmem[d0]:  first share of private key d (320 bits)
  * @param[in]  dmem[d1]:  second share of private key d (320 bits)
+ * @param[out] dmem[r]:   dmem buffer for r component of signature (256 bits)
+ * @param[out] dmem[s]:   dmem buffer for s component of signature (256 bits)
  *
  * Flags: When leaving this subroutine, the M, L and Z flags of FG0 depend on
  *        the computed affine y-coordinate.
