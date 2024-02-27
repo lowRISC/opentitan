@@ -34,7 +34,6 @@ See that document for integration overview within the broader top level system.
 - SCL and SDA ports mapped to I/O via the pinmux
 - Interrupts in the host mode for FMT and RX FIFO overflow, target NACK, SCL/SDA signal interference, timeout, unstable SDA signal levels, and transaction complete
 - Interrupts in the target mode for TX FIFO empty during a read, TX FIFO nonempty at the end of a read, TX overflow and ACQ FIFO full, host sending STOP after ACK, and host ceasing to send SCL pulses during an ongoing transaction
-- Loopback support with external host when in target operation
 - SW may reset I2C block using the Reset Manager
 
 <sup>1</sup> lowRISC is avoiding the fraught terms master/slave and defaulting to host/target where applicable.
