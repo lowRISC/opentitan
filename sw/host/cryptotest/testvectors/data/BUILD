@@ -135,6 +135,49 @@ run_binary(
     tool = "//sw/host/cryptotest/testvectors/parsers:wycheproof_ed25519_parser",
 )
 
+# Number of tests per configuration (e.g. Verify P-256 SHA-256)
+ECDSA_RANDOM_COUNT = 128
+
+[
+    run_binary(
+        name = cryptotest_name,
+        srcs = [
+            "//sw/host/cryptotest/testvectors/data/schemas:ecdsa_schema",
+        ],
+        outs = [":{}.json".format(cryptotest_name)],
+        args = [
+            "--dst",
+            "$(location :{}.json)".format(cryptotest_name),
+            "--schema",
+            "$(location //sw/host/cryptotest/testvectors/data/schemas:ecdsa_schema)",
+            "--count",
+            str(ECDSA_RANDOM_COUNT),
+            "--curve",
+            curve,
+            "--hash_alg",
+            hash_alg,
+        ],
+        # Do not cache these results in CI, so every run generates a new set of
+        # random test vectors.
+        tags = ["no-cache"],
+        tool = "//sw/host/cryptotest/testvectors/parsers:random_ecdsa_generator",
+    )
+    for cryptotest_name, curve, hash_alg in [
+        ("random_ecdsa_p256_sha256", "p256", "sha-256"),
+        ("random_ecdsa_p256_sha384", "p256", "sha-384"),
+        ("random_ecdsa_p256_sha512", "p256", "sha-512"),
+        ("random_ecdsa_p256_sha3_256", "p256", "sha3-256"),
+        ("random_ecdsa_p256_sha3_384", "p256", "sha3-384"),
+        ("random_ecdsa_p256_sha3_512", "p256", "sha3-512"),
+        ("random_ecdsa_p384_sha256", "p384", "sha-256"),
+        ("random_ecdsa_p384_sha384", "p384", "sha-384"),
+        ("random_ecdsa_p384_sha512", "p384", "sha-512"),
+        ("random_ecdsa_p384_sha3_256", "p384", "sha3-256"),
+        ("random_ecdsa_p384_sha3_384", "p384", "sha3-384"),
+        ("random_ecdsa_p384_sha3_512", "p384", "sha3-512"),
+    ]
+]
+
 [
     run_binary(
         name = "nist_cavp_{}_{}_{}_json".format(
