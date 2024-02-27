@@ -98,6 +98,10 @@ rom_error_t otbn_boot_attestation_key_clear(void);
  * caller should hash the certificate with SHA-256 before calling this
  * function.
  *
+ * Note that the digest gets interpreted by OTBN in little-endian order. If the
+ * HMAC block has not been set to produce little-endian digests, then the
+ * digest bytes should be reversed before they are passed here.
+ *
  * Expects the OTBN boot-services program to already be loaded; see
  * `otbn_boot_app_load`.
  *
