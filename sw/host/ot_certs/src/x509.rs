@@ -144,9 +144,18 @@ fn extract_signature(x509: &X509) -> Result<Signature> {
     }
 }
 
+/// Generate a X509 certificate from a pre-computed TBS and signature.
+pub fn generate_certificate_from_tbs(tbs: Vec<u8>, signature: &Signature) -> Result<Vec<u8>> {
+    // Generate certificate.
+    let tbs = Value::Literal(tbs);
+    let cert =
+        der::Der::generate(|builder| x509::X509::push_certificate(builder, &tbs, signature))?;
+    Ok(cert)
+}
+
 /// Generate a X509 certificate from a template that specifies all variables.
 /// If the template does not specify the values of the signature, a signature
-/// with "zero" values will be generate.
+/// with "zero" values will be generated.
 pub fn generate_certificate(tmpl: &template::Template) -> Result<Vec<u8>> {
     // Generate TBS.
     let tbs =
