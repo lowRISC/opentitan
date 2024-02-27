@@ -142,20 +142,19 @@ Alert Test Register
 I2C Control Register
 - Offset: `0x10`
 - Reset default: `0x0`
-- Reset mask: `0x7`
+- Reset mask: `0x3`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "ENABLEHOST", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "ENABLETARGET", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "LLPBK", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 29}], "config": {"lanes": 1, "fontsize": 10, "vspace": 140}}
+{"reg": [{"name": "ENABLEHOST", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "ENABLETARGET", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 30}], "config": {"lanes": 1, "fontsize": 10, "vspace": 140}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name         | Description                                                                                                |
-|:------:|:------:|:-------:|:-------------|:-----------------------------------------------------------------------------------------------------------|
-|  31:3  |        |         |              | Reserved                                                                                                   |
-|   2    |   rw   |   0x0   | LLPBK        | Enable I2C line loopback test If line loopback is enabled, the internal design sees ACQ and RX data as "1" |
-|   1    |   rw   |   0x0   | ENABLETARGET | Enable Target I2C functionality                                                                            |
-|   0    |   rw   |   0x0   | ENABLEHOST   | Enable Host I2C functionality                                                                              |
+|  Bits  |  Type  |  Reset  | Name         | Description                     |
+|:------:|:------:|:-------:|:-------------|:--------------------------------|
+|  31:2  |        |         |              | Reserved                        |
+|   1    |   rw   |   0x0   | ENABLETARGET | Enable Target I2C functionality |
+|   0    |   rw   |   0x0   | ENABLEHOST   | Enable Host I2C functionality   |
 
 ## STATUS
 I2C Live Status Register for Host and Target modes
