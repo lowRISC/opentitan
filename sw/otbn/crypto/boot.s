@@ -143,6 +143,10 @@ attestation_keygen:
 
   /* Call scalar multiplication with base point.
      R = (x_p, y_p, z_p) = (w8, w9, w10) <= d*G */
+  bn.mov    w0, w20
+  bn.mov    w2, w10
+  bn.mov    w1, w21
+  bn.mov    w3, w11
   la        x21, p256_gx
   la        x22, p256_gy
   jal       x1, scalar_mult_int
@@ -265,10 +269,10 @@ attestation_secret_key_from_seed:
        w20, w21 <= seed0 ^ dmem[attestation_additional_seed] */
   la       x2, attestation_additional_seed
   li       x3, 22
-  bn.xor   w20, w20, w22
   bn.lid   x3++, 0(x2)
-  bn.xor   w21, w21, w23
+  bn.xor   w20, w20, w22
   bn.lid   x3, 32(x2)
+  bn.xor   w21, w21, w23
 
   /* Tail-call `p256_key_from_seed` to generate secret key shares.
        w20, w21 <= d0
