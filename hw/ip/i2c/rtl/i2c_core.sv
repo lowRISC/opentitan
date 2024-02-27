@@ -131,8 +131,6 @@ module i2c_core import i2c_pkg::*;
 
   logic        host_enable;
   logic        target_enable;
-  logic        line_loopback;
-  logic        target_loopback;
 
   logic [6:0]  target_address0;
   logic [6:0]  target_mask0;
@@ -176,11 +174,6 @@ module i2c_core import i2c_pkg::*;
 
   assign host_enable = reg2hw.ctrl.enablehost.q;
   assign target_enable = reg2hw.ctrl.enabletarget.q;
-  assign line_loopback = reg2hw.ctrl.llpbk.q;
-
-  // Target loopback simply plays back whatever is received from the external host
-  // back to it.
-  assign target_loopback = target_enable & line_loopback;
 
   assign target_address0 = reg2hw.target_id.address0.q;
   assign target_mask0 = reg2hw.target_id.mask0.q;
@@ -332,16 +325,8 @@ module i2c_core import i2c_pkg::*;
   // Target TX FIFOs
   assign event_tx_overflow = tx_fifo_wvalid & ~tx_fifo_wready;
 
-  // Need to add a valid qualification to write only payload bytes
-  logic valid_target_lb_wr;
-  i2c_acq_byte_id_e acq_type;
-  assign acq_type = i2c_acq_byte_id_e'(acq_fifo_rdata[9:8]);
-
-  assign valid_target_lb_wr = target_enable & (acq_type == AcqData);
-
-  // only write into tx fifo if it's payload
-  assign tx_fifo_wvalid = target_loopback ? acq_fifo_rvalid & valid_target_lb_wr : reg2hw.txdata.qe;
-  assign tx_fifo_wdata  = target_loopback ? acq_fifo_rdata[7:0] : reg2hw.txdata.q;
+  assign tx_fifo_wvalid = reg2hw.txdata.qe;
+  assign tx_fifo_wdata  = reg2hw.txdata.q;
 
   prim_fifo_sync #(
     .Width(8),
@@ -362,11 +347,7 @@ module i2c_core import i2c_pkg::*;
     .err_o   ()
   );
 
-  // During line loopback, pop from acquisition fifo only when there is space in
-  // the tx_fifo.  We are also allowed to pop even if there is no space if th acq entry
-  // is not data payload.
-  assign acq_fifo_rready = (reg2hw.acqdata.abyte.re & reg2hw.acqdata.signal.re) |
-                           (target_loopback & (tx_fifo_wready | (acq_type != AcqData)));
+  assign acq_fifo_rready = (reg2hw.acqdata.abyte.re & reg2hw.acqdata.signal.re);
 
   prim_fifo_sync #(
     .Width(10),

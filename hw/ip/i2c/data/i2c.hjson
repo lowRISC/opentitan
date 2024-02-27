@@ -196,16 +196,6 @@
                 Enable Target I2C functionality
                 '''
         }
-        { bits: "2"
-          resval: "0"
-          name: "LLPBK"
-          desc: '''
-                Enable I2C line loopback test
-                If line loopback is enabled, the internal design sees ACQ and RX data as "1"
-                '''
-          tags: [// Exclude from write-checks: writing 1'b1 to this bit causes interrupts unexpectedly asserted
-                "excl:CsrAllTests:CsrExclWrite"]
-        }
       ]
     }
     { name:     "STATUS"
