@@ -181,6 +181,7 @@ module pinmux_strap_sampling
     .lc_en_o(pinmux_hw_debug_en)
   );
 
+  // SEC_CM: PINMUX_HW_DEBUG_EN.INTERSIG.MUBI
   // We send this latched version over to the RV_DM in order to gate the JTAG signals and TAP side.
   // Note that the bus side will remain gated with the live lc_hw_debug_en value inside RV_DM.
   assign pinmux_hw_debug_en_o = pinmux_hw_debug_en[HwDebugEnRvDmOut];
@@ -223,6 +224,7 @@ module pinmux_strap_sampling
   logic [NTapStraps-1:0] tap_strap_d, tap_strap_q;
   logic [NDFTStraps-1:0] dft_strap_d, dft_strap_q;
 
+  // SEC_CM: TAP.MUX.LC_GATED
   // The LC strap at index 0 has a slightly different
   // enable condition than the DFT strap at index 1.
   assign tap_strap_d[0] = (lc_strap_sample_en) ? in_padring_i[TargetCfg.tap_strap0_idx] :

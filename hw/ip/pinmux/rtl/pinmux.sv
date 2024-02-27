@@ -46,10 +46,15 @@ module pinmux
   input                            strap_en_override_i,
   // ----------- VOLATILE_TEST_UNLOCKED CODE SECTION END -----------
   // LC signals for TAP qualification
+  // SEC_CM: LC_DFT_EN.INTERSIG.MUBI
   input  lc_ctrl_pkg::lc_tx_t      lc_dft_en_i,
+  // SEC_CM: LC_HW_DEBUG_EN.INTERSIG.MUBI
   input  lc_ctrl_pkg::lc_tx_t      lc_hw_debug_en_i,
+  // SEC_CM: LC_CHECK_BYP_EN.INTERSIG.MUBI
   input  lc_ctrl_pkg::lc_tx_t      lc_check_byp_en_i,
+  // SEC_CM: LC_ESCALATE_EN.INTERSIG.MUBI
   input  lc_ctrl_pkg::lc_tx_t      lc_escalate_en_i,
+  // SEC_CM: PINMUX_HW_DEBUG_EN.INTERSIG.MUBI
   output lc_ctrl_pkg::lc_tx_t      pinmux_hw_debug_en_o,
   // Sampled values for DFT straps
   output dft_strap_test_req_t      dft_strap_test_o,
