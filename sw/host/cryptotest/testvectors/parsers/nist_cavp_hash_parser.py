@@ -38,32 +38,31 @@ def parse_testcases(args) -> None:
         digest_key = "Output"
     else:
         digest_key = "MD"
-    for section_name in raw_testcases.keys():
-        count = 1
-        for test_vec in raw_testcases[section_name]:
-            # The test vector includes a single placeholder zero byte if its
-            # intended message length is 0, so we need to ignore that byte.
-            if "Len" in test_vec and int(test_vec["Len"]) == 0:
-                message = []
-            else:
-                message = str_to_byte_array(test_vec["Msg"])
-            if "COUNT" in test_vec:
-                test_case_id = int(test_vec["COUNT"])
-            else:
-                test_case_id = count
-            test_case = {
-                "vendor": "nist",
-                "test_case_id": test_case_id,
-                "algorithm": algorithm,
-                "message": message,
-                "digest": str_to_byte_array(test_vec[digest_key]),
-                # All NIST hash test vectors are expected to have the
-                # right message digest
-                "result": True,
-            }
+    count = 1
+    for test_vec in raw_testcases:
+        # The test vector includes a single placeholder zero byte if its
+        # intended message length is 0, so we need to ignore that byte.
+        if "Len" in test_vec and int(test_vec["Len"]) == 0:
+            message = []
+        else:
+            message = str_to_byte_array(test_vec["Msg"])
+        if "COUNT" in test_vec:
+            test_case_id = int(test_vec["COUNT"])
+        else:
+            test_case_id = count
+        test_case = {
+            "vendor": "nist",
+            "test_case_id": test_case_id,
+            "algorithm": algorithm,
+            "message": message,
+            "digest": str_to_byte_array(test_vec[digest_key]),
+            # All NIST hash test vectors are expected to have the
+            # right message digest
+            "result": True,
+        }
 
-            test_cases.append(test_case)
-            count += 1
+        test_cases.append(test_case)
+        count += 1
 
     json_filename = f"{args.dst}"
     with open(json_filename, "w") as file:

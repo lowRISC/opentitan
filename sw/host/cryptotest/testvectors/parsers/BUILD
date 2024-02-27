@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@rules_python//python:defs.bzl", "py_binary", "py_library")
+load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
 load("@ot_python_deps//:requirements.bzl", "requirement")
 
 package(default_visibility = ["//visibility:public"])
@@ -10,6 +10,15 @@ package(default_visibility = ["//visibility:public"])
 py_library(
     name = "cryptotest_util",
     srcs = ["cryptotest_util.py"],
+    visibility = ["//visibility:private"],
+)
+
+py_test(
+    name = "cryptotest_util_test",
+    srcs = [
+        "cryptotest_util.py",
+        "cryptotest_util_test.py",
+    ],
     visibility = ["//visibility:private"],
 )
 
