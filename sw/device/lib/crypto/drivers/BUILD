@@ -8,8 +8,13 @@ load("//rules:opentitan.bzl", "OPENTITAN_CPU")
 load(
     "//rules/opentitan:defs.bzl",
     "EARLGREY_TEST_ENVS",
+    "cw310_params",
     "opentitan_test",
     "verilator_params",
+)
+load(
+    "@bazel_skylib//lib:dicts.bzl",
+    "dicts",
 )
 
 cc_library(
@@ -66,7 +71,14 @@ cc_library(
 opentitan_test(
     name = "keymgr_test",
     srcs = ["keymgr_test.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    broken = cw310_params(tags = ["broken"]),
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        {
+            # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
+        },
+    ),
     verilator = verilator_params(
         timeout = "long",
     ),

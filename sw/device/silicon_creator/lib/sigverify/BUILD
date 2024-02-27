@@ -12,6 +12,10 @@ load(
     "opentitan_test",
     "verilator_params",
 )
+load(
+    "@bazel_skylib//lib:dicts.bzl",
+    "dicts",
+)
 
 package(default_visibility = ["//visibility:public"])
 
@@ -155,7 +159,14 @@ dual_cc_library(
 opentitan_test(
     name = "mod_exp_otbn_functest_hardcoded",
     srcs = ["mod_exp_otbn_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    broken = cw310_params(tags = ["broken"]),
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        {
+            # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
+        },
+    ),
     verilator = verilator_params(
         timeout = "long",
         tags = [
@@ -235,7 +246,14 @@ cc_library(
 opentitan_test(
     name = "rsa_verify_functest",
     srcs = ["rsa_verify_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    broken = cw310_params(tags = ["broken"]),
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        {
+            # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
+        },
+    ),
     verilator = verilator_params(
         timeout = "long",
         tags = [
@@ -335,7 +353,14 @@ cc_test(
 opentitan_test(
     name = "sigverify_dynamic_functest_hardcoded",
     srcs = ["sigverify_dynamic_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    broken = cw310_params(tags = ["broken"]),
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        {
+            # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
+        },
+    ),
     verilator = verilator_params(
         timeout = "long",
         tags = [
