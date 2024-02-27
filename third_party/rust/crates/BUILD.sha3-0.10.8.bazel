@@ -11,11 +11,11 @@ load("@rules_rust//rust:defs.bzl", "rust_library")
 package(default_visibility = ["//visibility:public"])
 
 # licenses([
-#     "TODO",  # ISC
+#     "TODO",  # MIT OR Apache-2.0
 # ])
 
 rust_library(
-    name = "rdrand",
+    name = "sha3",
     srcs = glob(["**/*.rs"]),
     compile_data = glob(
         include = ["**"],
@@ -28,12 +28,16 @@ rust_library(
             "WORKSPACE.bazel",
         ],
     ),
+    crate_features = [
+        "default",
+        "std",
+    ],
     crate_root = "src/lib.rs",
-    edition = "2015",
+    edition = "2018",
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
-        "crate-name=rdrand",
+        "crate-name=sha3",
         "manual",
         "noclippy",
         "norustfmt",
@@ -72,8 +76,9 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-none": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.4.0",
+    version = "0.10.8",
     deps = [
-        "@crate_index__rand_core-0.3.1//:rand_core",
+        "@crate_index__digest-0.10.7//:digest",
+        "@crate_index__keccak-0.1.5//:keccak",
     ],
 )
