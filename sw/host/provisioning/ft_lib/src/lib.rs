@@ -9,9 +9,12 @@ use anyhow::Result;
 use arrayvec::ArrayVec;
 use elliptic_curve::pkcs8::DecodePrivateKey;
 use elliptic_curve::{PublicKey, SecretKey};
+use num_bigint_dig::BigUint;
+use p256::ecdsa::SigningKey;
 use p256::NistP256;
 
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::crypto::sha256::sha256;
 use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg};
 use opentitanlib::io::jtag::{JtagParams, JtagTap};
 use opentitanlib::test_utils::init::InitializeTest;
@@ -21,6 +24,8 @@ use opentitanlib::test_utils::load_sram_program::{
 };
 use opentitanlib::test_utils::rpc::{UartRecv, UartSend};
 use opentitanlib::uart::console::UartConsole;
+use ot_certs::template::{self, EcdsaSignature, Signature, Value};
+use ot_certs::x509::{generate_certificate_from_tbs, parse_certificate};
 use ujson_lib::provisioning_data::{
     EccP256PublicKey, ManufCertPersoDataIn, ManufCertPersoDataOut, ManufFtIndividualizeData,
     ManufRmaTokenPersoDataIn, ManufRmaTokenPersoDataOut,
@@ -236,8 +241,57 @@ pub fn run_ft_personalize(
 
     // Wait until device exports the attestation certificates.
     let _ = UartConsole::wait_for(&*uart, r"Exporting certificates ...", timeout)?;
-    let _ = ManufCertPersoDataOut::recv(&*uart, timeout, false)?;
+    let certs = ManufCertPersoDataOut::recv(&*uart, timeout, true)?;
+
+    // Extract certificate byte vectors and trim unused bytes.
+    let uds_cert_bytes: Vec<u8> = certs
+        .uds_tbs_certificate
+        .clone()
+        .into_iter()
+        .take(certs.uds_tbs_certificate_size)
+        .collect();
+    let cdi_0_cert_bytes: Vec<u8> = certs
+        .cdi_0_certificate
+        .clone()
+        .into_iter()
+        .take(certs.cdi_0_certificate_size)
+        .collect();
+    let cdi_1_cert_bytes: Vec<u8> = certs
+        .cdi_1_certificate
+        .clone()
+        .into_iter()
+        .take(certs.cdi_1_certificate_size)
+        .collect();
+
+    // Check the certificates are parsable with OpenSSL.
+    let _uds_cert = parse_and_endorse_uds_cert(uds_cert_bytes, &host_sk)?;
+    let _cdi_0_cert = parse_certificate(&cdi_0_cert_bytes)?;
+    let _cdi_1_cert = parse_certificate(&cdi_1_cert_bytes)?;
+
     let _ = UartConsole::wait_for(&*uart, r"PASS.*\n", timeout)?;
 
     Ok(())
+}
+
+fn parse_and_endorse_uds_cert(
+    tbs: Vec<u8>,
+    ca_private_key: &SecretKey<NistP256>,
+) -> Result<template::Certificate> {
+    // Hash and sign the TBS.
+    let tbs_digest = sha256(&tbs);
+    let signing_key = SigningKey::from(ca_private_key);
+    let (tbs_signature, _) = signing_key.sign_prehash_recoverable(&tbs_digest.to_be_bytes())?;
+    let (r, s) = tbs_signature.split_bytes();
+
+    // Reformat the signature.
+    let signature = Signature::EcdsaWithSha256 {
+        value: Some(EcdsaSignature {
+            r: Value::Literal(BigUint::from_bytes_be(&r)),
+            s: Value::Literal(BigUint::from_bytes_be(&s)),
+        }),
+    };
+
+    // Generate the (endorsed) UDS certificate.
+    let uds_cert_bytes = generate_certificate_from_tbs(tbs, &signature)?;
+    Ok(parse_certificate(&uds_cert_bytes)?)
 }
