@@ -521,7 +521,7 @@
             - Verify that the interrupt pin goes high indicating an error in the link while OUT transaction.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_invalid_data1_data0_toggle_test"]
     }
     {
       name: setup_stage
