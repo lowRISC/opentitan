@@ -11,11 +11,11 @@ load(
 load("//rules:otp.bzl", "otp_image")
 load(
     "//rules/opentitan:defs.bzl",
-    "cw310_jtag_params",
+    "cw310_params",
     "opentitan_binary",
     "opentitan_test",
     "rsa_key_for_lc_state",
-    "silicon_jtag_params",
+    "silicon_params",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -69,9 +69,11 @@ _MANUF_TEST_LOCKED_KEY = None
     opentitan_test(
         name = "manuf_scrap_functest_{}".format(lc_state.lower()),
         srcs = ["empty_functest.c"],
-        cw310 = cw310_jtag_params(
+        cw310 = cw310_params(
             bitstream = "//hw/bitstream:rom_with_fake_keys_otp_{}".format(lc_state.lower()),
+            changes_otp = True,
             lc_state = lc_state,  # will be expanded in test_cmd
+            needs_jtag = True,
             tags = ["manuf"],
             test_cmd = (
                 "" if (
@@ -108,8 +110,10 @@ lc_raw_unlock_token(
 opentitan_test(
     name = "manuf_cp_unlock_raw_functest",
     srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test.c"],
-    cw310 = cw310_jtag_params(
+    cw310 = cw310_params(
         bitstream = "//hw/bitstream:rom_with_fake_keys_otp_raw",
+        changes_otp = True,
+        needs_jtag = True,
         tags = ["manuf"],
         test_harness = "//sw/host/tests/manuf/manuf_cp_unlock_raw",
     ),
@@ -128,8 +132,10 @@ opentitan_test(
 opentitan_test(
     name = "manuf_cp_volatile_unlock_raw_functest",
     srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test.c"],
-    cw310 = cw310_jtag_params(
+    cw310 = cw310_params(
         bitstream = "//hw/bitstream:rom_with_fake_keys_otp_raw",
+        changes_otp = True,
+        needs_jtag = True,
         tags = ["manuf"],
         test_harness = "//sw/host/tests/manuf/manuf_cp_volatile_unlock_raw",
     ),
@@ -163,8 +169,10 @@ opentitan_test(
     opentitan_test(
         name = "manuf_cp_yield_test_functest_{}".format(lc_state.lower()),
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test.c"],
-        cw310 = cw310_jtag_params(
+        cw310 = cw310_params(
+            changes_otp = True,
             lc_state = lc_state,  # will be expanded in test_cmd
+            needs_jtag = True,
             otp = ":otp_img_rom_exec_disabled_{}".format(lc_state.lower()),
             tags = ["manuf"],
             test_cmd = "--initial-lc-state={lc_state}",
@@ -210,7 +218,8 @@ cc_library(
     opentitan_test(
         name = "manuf_sram_program_crc_{}_functest".format(lc_state.lower()),
         srcs = ["sram_empty_functest.c"],
-        cw310 = cw310_jtag_params(
+        cw310 = cw310_params(
+            needs_jtag = True,
             otp = ":otp_img_rom_exec_disabled_{}".format(lc_state.lower()),
             test_cmd = "--elf={firmware}",
             test_harness = "//sw/host/tests/manuf/manuf_sram_program_crc_check",
@@ -221,8 +230,9 @@ cc_library(
         },
         kind = "ram",
         linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
-        silicon = silicon_jtag_params(
+        silicon = silicon_params(
             interface = "hyper310",
+            needs_jtag = True,
             test_cmd = "--elf={firmware}",
             test_harness = "//sw/host/tests/manuf/manuf_sram_program_crc_check",
         ),
@@ -291,10 +301,12 @@ opentitan_binary(
             target_lc_state.lower(),
         ),
         srcs = ["flash_device_info_flash_wr_functest.c"],
-        cw310 = cw310_jtag_params(
+        cw310 = cw310_params(
             binaries = {
                 ":sram_device_info_flash_wr_functest": "sram_program",
             },
+            changes_otp = True,
+            needs_jtag = True,
             otp = ":otp_img_rom_exec_disabled_{}".format(init_lc_state.lower()),
             tags = ["manuf"],
             target_lc_state = target_lc_state,  # will be expanded in test_cmd
@@ -373,10 +385,11 @@ opentitan_binary(
     opentitan_test(
         name = "manuf_cp_ast_test_execution_{}_functest".format(lc_state.lower()),
         srcs = ["idle_functest.c"],
-        cw310 = cw310_jtag_params(
+        cw310 = cw310_params(
             binaries = {
                 ":sram_exec_test": "sram_program",
             },
+            needs_jtag = True,
             otp = ":otp_img_rom_exec_disabled_{}".format(lc_state.lower()),
             tags = ["manuf"],
             test_cmd = """
@@ -409,7 +422,9 @@ test_suite(
 opentitan_test(
     name = "manuf_cp_test_lock_functest",
     srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test.c"],
-    cw310 = cw310_jtag_params(
+    cw310 = cw310_params(
+        changes_otp = True,
+        needs_jtag = True,
         otp = ":otp_img_otp_ctrl_functest",
         tags = ["manuf"],
         test_harness = "//sw/host/tests/manuf/manuf_cp_test_lock",
@@ -435,7 +450,9 @@ otp_image(
 opentitan_test(
     name = "otp_ctrl_functest",
     srcs = [":empty_functest.c"],
-    cw310 = cw310_jtag_params(
+    cw310 = cw310_params(
+        changes_otp = True,
+        needs_jtag = True,
         otp = ":otp_img_otp_ctrl_functest",
         tags = ["manuf"],
         test_harness = "//sw/host/tests/manuf/otp_ctrl:otp_ctrl",

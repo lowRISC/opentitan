@@ -15,17 +15,14 @@ load(
 )
 load(
     "@lowrisc_opentitan//rules/opentitan:fpga_cw310.bzl",
-    _cw310_jtag_params = "cw310_jtag_params",
     _cw310_params = "cw310_params",
     _fpga_cw305 = "fpga_cw305",
     _fpga_cw310 = "fpga_cw310",
     _fpga_cw340 = "fpga_cw340",
-    _hyper310_jtag_params = "hyper310_jtag_params",
 )
 load(
     "@lowrisc_opentitan//rules/opentitan:silicon.bzl",
     _silicon = "silicon",
-    _silicon_jtag_params = "silicon_jtag_params",
     _silicon_params = "silicon_params",
 )
 load(
@@ -57,12 +54,9 @@ fpga_cw310 = _fpga_cw310
 fpga_cw305 = _fpga_cw305
 fpga_cw340 = _fpga_cw340
 cw310_params = _cw310_params
-cw310_jtag_params = _cw310_jtag_params
-hyper310_jtag_params = _hyper310_jtag_params
 
 silicon = _silicon
 silicon_params = _silicon_params
-silicon_jtag_params = _silicon_jtag_params
 
 sim_verilator = _sim_verilator
 verilator_params = _verilator_params

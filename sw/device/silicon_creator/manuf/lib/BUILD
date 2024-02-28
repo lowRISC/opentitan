@@ -7,7 +7,6 @@ load(
     "//rules/opentitan:defs.bzl",
     "OPENTITAN_CPU",
     "cw310_params",
-    "hyper310_jtag_params",
     "opentitan_test",
 )
 load(
@@ -263,8 +262,10 @@ cc_library(
 opentitan_test(
     name = "personalize_functest",
     srcs = ["personalize_functest.c"],
-    cw310 = hyper310_jtag_params(
+    cw310 = cw310_params(
+        changes_otp = True,
         data = ["//sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der"],
+        needs_jtag = True,
         otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival_bringup:otp_img_dev_manuf_individualized",
         tags = [
             "lc_dev",

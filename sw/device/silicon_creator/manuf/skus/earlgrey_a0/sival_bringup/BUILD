@@ -8,11 +8,10 @@ load("//rules:manifest.bzl", "manifest")
 load("//rules:signing.bzl", "offline_presigning_artifacts", "offline_signature_attach")
 load(
     "//rules/opentitan:defs.bzl",
-    "cw310_jtag_params",
-    "hyper310_jtag_params",
+    "cw310_params",
     "opentitan_binary",
     "opentitan_test",
-    "silicon_jtag_params",
+    "silicon_params",
 )
 load(
     "//sw/device/silicon_creator/manuf:provisioning_inputs.bzl",
@@ -114,8 +113,10 @@ _CP_PROVISIONING_CMD_ARGS = """
 
 opentitan_test(
     name = "cp_provision",
-    cw310 = hyper310_jtag_params(
+    cw310 = cw310_params(
         binaries = {":sram_cp_provision": "sram_cp_provision"},
+        changes_otp = True,
+        needs_jtag = True,
         otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival_bringup:otp_img_test_unlocked0_manuf_empty",
         tags = ["manuf"],
         test_cmd = _CP_PROVISIONING_CMD_ARGS,
@@ -125,9 +126,11 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw310_sival": None,
         "//hw/top_earlgrey:silicon_creator": None,
     },
-    silicon = silicon_jtag_params(
+    silicon = silicon_params(
         binaries = {":sram_cp_provision": "sram_cp_provision"},
+        changes_otp = True,
         interface = "hyper310",
+        needs_jtag = True,
         test_cmd = _CP_PROVISIONING_CMD_ARGS,
         test_harness = "//sw/host/tests/manuf/provisioning/cp",
     ),
@@ -135,12 +138,14 @@ opentitan_test(
 
 opentitan_test(
     name = "cp_provision_functest",
-    cw310 = cw310_jtag_params(
+    cw310 = cw310_params(
         binaries = {
             ":sram_cp_provision": "sram_cp_provision",
             ":sram_cp_provision_functest": "sram_cp_provision_functest",
         },
         bitstream = "//hw/bitstream:rom_with_fake_keys_otp_raw",
+        changes_otp = True,
+        needs_jtag = True,
         tags = ["manuf"],
         test_cmd = """
             --provisioning-sram-elf={sram_cp_provision}
@@ -302,9 +307,11 @@ _FT_PROVISIONING_CMD_ARGS = """
 
 opentitan_test(
     name = "ft_provision",
-    cw310 = hyper310_jtag_params(
+    cw310 = cw310_params(
         binaries = _FT_PROVISIONING_BINARIES,
+        changes_otp = True,
         data = FT_PERSONALIZE_KEYS,
+        needs_jtag = True,
         otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival_bringup:otp_img_test_locked0_manuf_initialized",
         tags = [
             "lc_test_locked0",
@@ -317,10 +324,12 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw310_sival": None,
         "//hw/top_earlgrey:silicon_creator": None,
     },
-    silicon = silicon_jtag_params(
+    silicon = silicon_params(
         binaries = _FT_PROVISIONING_BINARIES,
+        changes_otp = True,
         data = FT_PERSONALIZE_KEYS,
         interface = "hyper310",
+        needs_jtag = True,
         test_cmd = _FT_PROVISIONING_CMD_ARGS,
         test_harness = "//sw/host/tests/manuf/provisioning/ft",
     ),
