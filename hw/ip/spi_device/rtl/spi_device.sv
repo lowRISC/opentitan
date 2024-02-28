@@ -1807,6 +1807,8 @@ module spi_device
   `ASSERT_KNOWN(IntrReadbufWatermarkOKnown,  intr_readbuf_watermark_o)
   `ASSERT_KNOWN(IntrReadbufFlipOKnown,       intr_readbuf_flip_o)
   `ASSERT_KNOWN(IntrTpmHeaderNotEmptyOKnown, intr_tpm_header_not_empty_o)
+  `ASSERT_KNOWN(IntrTpmRdfifoCmdEndOKnown, intr_tpm_rdfifo_cmd_end_o)
+  `ASSERT_KNOWN(IntrTpmRdfifoDropOKnown, intr_tpm_rdfifo_drop_o)
 
   `ASSERT_KNOWN(AlertKnownO_A,         alert_tx_o)
 
