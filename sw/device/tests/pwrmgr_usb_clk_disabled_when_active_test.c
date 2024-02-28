@@ -64,7 +64,7 @@ bool test_main(void) {
     uint32_t bite_us = (kDeviceType == kDeviceSimDV) ? 400 : 800;
     uint32_t bite_cycles = 0;
     CHECK_STATUS_OK(
-        aon_timer_testutils_get_aon_cycles_from_us(bite_us, &bite_cycles));
+        aon_timer_testutils_get_aon_cycles_32_from_us(bite_us, &bite_cycles));
     LOG_INFO("Setting bite reset for %u us (%u cycles)", bite_us, bite_cycles);
 
     // Set bite timer.

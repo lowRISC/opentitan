@@ -99,11 +99,16 @@ static void execute_test(dif_aon_timer_t *aon_timer, uint64_t irq_time_us,
   // Add 1500 cpu cycles of overhead to cover irq handling.
   sleep_range_h += udiv64_slow(1500 * 1000000, kClockFreqCpuHz, NULL);
 
-  uint32_t count_cycles = 0;
-  CHECK_STATUS_OK(
-      aon_timer_testutils_get_aon_cycles_from_us(irq_time_us, &count_cycles));
+  uint64_t count_cycles = 0;
+  CHECK_STATUS_OK(aon_timer_testutils_get_aon_cycles_64_from_us(irq_time_us,
+                                                                &count_cycles));
   LOG_INFO("Setting interrupt for %u us (%u cycles)", (uint32_t)irq_time_us,
            count_cycles);
+
+  // TRY_CHECK(count_cycles <= UINT32_MAX,
+  //           "The desired wake-up count 0x%08x%08x cannot fit into the 32 bits
+  //           " "watchdog timer counter", (count_cycles >> 32),
+  //           (uint32_t)count_cycles);
 
   // Set the default value to a different value than expected.
   peripheral = kTopEarlgreyPlicPeripheralUnknown;
@@ -115,11 +120,11 @@ static void execute_test(dif_aon_timer_t *aon_timer, uint64_t irq_time_us,
     // Change the default value since the expectation is different.
     irq = kDifAonTimerIrqWkupTimerExpired;
     // Setup the wdog bark interrupt.
-    CHECK_STATUS_OK(
-        aon_timer_testutils_watchdog_config(aon_timer,
-                                            /*bark_cycles=*/count_cycles,
-                                            /*bite_cycles=*/count_cycles * 4,
-                                            /*pause_in_sleep=*/false));
+    CHECK_STATUS_OK(aon_timer_testutils_watchdog_config(
+        aon_timer,
+        /*bark_cycles=*/(uint32_t)count_cycles,
+        /*bite_cycles=*/(uint32_t)count_cycles * 4,
+        /*pause_in_sleep=*/false));
   }
   // Capture the current tick to measure the time the IRQ will take.
   uint32_t start_tick = (uint32_t)tick_count_get();

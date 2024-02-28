@@ -99,7 +99,7 @@ static void test_hintable_clocks_off(const dif_clkmgr_t *clkmgr,
   // CSR read.
   uint32_t bite_cycles = 0;
   CHECK_STATUS_OK(
-      aon_timer_testutils_get_aon_cycles_from_us(bite_us, &bite_cycles));
+      aon_timer_testutils_get_aon_cycles_32_from_us(bite_us, &bite_cycles));
   LOG_INFO("Setting bite reset for %u us (%u cycles)", bite_us, bite_cycles);
 
   CHECK_STATUS_OK(aon_timer_testutils_watchdog_config(&aon_timer, UINT32_MAX,

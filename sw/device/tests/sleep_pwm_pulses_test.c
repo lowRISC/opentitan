@@ -114,7 +114,7 @@ bool test_main(void) {
   //
   // Adjust the threshold for Verilator since it runs on different clock
   // frequencies.
-  uint32_t wakeup_threshold = 30;
+  uint64_t wakeup_threshold = 30;
   if (kDeviceType == kDeviceSimVerilator) {
     wakeup_threshold = 300;
   }

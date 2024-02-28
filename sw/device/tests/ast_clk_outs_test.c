@@ -84,7 +84,7 @@ bool test_main(void) {
     // recoverable errors are not cleared.
     //
     // Set the counters so we should get an error unless they are cleared.
-    uint32_t wakeup_threshold = kDeviceType == kDeviceSimVerilator ? 1000 : 100;
+    uint64_t wakeup_threshold = kDeviceType == kDeviceSimVerilator ? 1000 : 100;
     CHECK_STATUS_OK(
         aon_timer_testutils_wakeup_config(&aon_timer, wakeup_threshold));
 

@@ -227,13 +227,13 @@ bool test_main(void) {
     irq_global_ctrl(true);
     irq_external_ctrl(true);
 
-    uint32_t wakeup_threshold = 0;
-    CHECK_STATUS_OK(aon_timer_testutils_get_aon_cycles_from_us(
+    uint64_t wakeup_threshold = 0;
+    CHECK_STATUS_OK(aon_timer_testutils_get_aon_cycles_64_from_us(
         kTestParamWakeupThresholdUsec, &wakeup_threshold));
 
     // Sleep longer in FPGA and silicon targets.
     if (kDeviceType != kDeviceSimDV && kDeviceType != kDeviceSimVerilator) {
-      uint32_t wakeup_threshold_new = wakeup_threshold * 50;
+      uint64_t wakeup_threshold_new = wakeup_threshold * 50;
       CHECK(wakeup_threshold_new > wakeup_threshold,
             "Detected wakeup_threshold overflow.");
       wakeup_threshold = wakeup_threshold_new;

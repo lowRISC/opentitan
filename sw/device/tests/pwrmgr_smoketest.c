@@ -27,7 +27,7 @@ bool test_main(void) {
   //
   // Adjust the threshold for Verilator since it runs on different clock
   // frequencies.
-  uint32_t wakeup_threshold = kDeviceType == kDeviceSimVerilator ? 300 : 30;
+  uint64_t wakeup_threshold = kDeviceType == kDeviceSimVerilator ? 300 : 30;
 
   // Initialize pwrmgr
   dif_pwrmgr_t pwrmgr;

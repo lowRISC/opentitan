@@ -15,12 +15,24 @@
  *
  * @param aon_timer An Always-On Timer handle.
  * @param microseconds The number of microseconds.
- * @param[out] cycles The number of AON clock cycles.
+ * @param[out] cycles The number of AON clock cycles as a uint32_t
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-status_t aon_timer_testutils_get_aon_cycles_from_us(uint64_t microseconds,
-                                                    uint32_t *cycles);
+status_t aon_timer_testutils_get_aon_cycles_32_from_us(uint64_t microseconds,
+                                                       uint32_t *cycles);
+
+/**
+ * Compute the number of AON cycles corresponding to the given microseconds.
+ *
+ * @param aon_timer An Always-On Timer handle.
+ * @param microseconds The number of microseconds.
+ * @param[out] cycles The number of AON clock cycles as a uint64_t
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+status_t aon_timer_testutils_get_aon_cycles_64_from_us(uint64_t microseconds,
+                                                       uint64_t *cycles);
 
 /**
  * Compute the number of microseconds corresponding to the given AON cycles.
@@ -43,7 +55,7 @@ status_t aon_timer_testutils_get_us_from_aon_cycles(uint64_t cycles,
  */
 OT_WARN_UNUSED_RESULT
 status_t aon_timer_testutils_wakeup_config(const dif_aon_timer_t *aon_timer,
-                                           uint32_t cycles);
+                                           uint64_t cycles);
 
 /**
  * Configure watchdog counter in number of AON clock cycles.

@@ -65,7 +65,7 @@ bool test_main(void) {
   // bring state machine back to active state.
   // This can happen when wake up event comes before low power
   // entry event.
-  uint32_t wakeup_threshold = kDeviceType == kDeviceSimVerilator ? 3000 : 300;
+  uint64_t wakeup_threshold = kDeviceType == kDeviceSimVerilator ? 3000 : 300;
 
   // Initialize pwrmgr
   dif_pwrmgr_t pwrmgr;

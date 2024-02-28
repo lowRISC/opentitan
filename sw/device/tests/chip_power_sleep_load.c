@@ -358,8 +358,8 @@ bool test_main(void) {
   CHECK_DIF_OK(
       dif_rv_core_ibex_enable_nmi(&rv_core_ibex, kDifRvCoreIbexNmiSourceWdog));
   uint32_t count_cycles = 0;
-  CHECK_STATUS_OK(
-      aon_timer_testutils_get_aon_cycles_from_us(kTimeTillBark, &count_cycles));
+  CHECK_STATUS_OK(aon_timer_testutils_get_aon_cycles_32_from_us(kTimeTillBark,
+                                                                &count_cycles));
 
   if (kDeepSleep) {
     // activate in Wakeup mode (no need for IRQ)
@@ -382,10 +382,10 @@ bool test_main(void) {
   const uint64_t kPowerUpTime = 30;
   const uint64_t kWakeUpTime = 500;
   uint32_t power_up_time_aon_cycles = 0;
-  CHECK_STATUS_OK(aon_timer_testutils_get_aon_cycles_from_us(
+  CHECK_STATUS_OK(aon_timer_testutils_get_aon_cycles_32_from_us(
       kPowerUpTime, &power_up_time_aon_cycles));
   uint32_t wake_up_time_aon_cycles = 0;
-  CHECK_STATUS_OK(aon_timer_testutils_get_aon_cycles_from_us(
+  CHECK_STATUS_OK(aon_timer_testutils_get_aon_cycles_32_from_us(
       kWakeUpTime, &wake_up_time_aon_cycles));
 
   // ADC configuration
