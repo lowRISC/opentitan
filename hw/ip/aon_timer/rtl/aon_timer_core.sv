@@ -13,7 +13,7 @@ module aon_timer_core import aon_timer_reg_pkg::*; (
   // Register interface
   input  aon_timer_reg2hw_t         reg2hw_i,
   output logic                      wkup_count_reg_wr_o,
-  output logic [31:0]               wkup_count_wr_data_o,
+  output logic [63:0]               wkup_count_wr_data_o,
   output logic                      wdog_count_reg_wr_o,
   output logic [31:0]               wdog_count_wr_data_o,
 
@@ -29,6 +29,9 @@ module aon_timer_core import aon_timer_reg_pkg::*; (
   logic        wkup_incr;
   // Watchdog signals
   logic        wdog_incr;
+
+  logic [63:0] wkup_count;
+  logic [63:0] wkup_thold;
 
   //////////////////
   // Wakeup Timer //
@@ -47,16 +50,19 @@ module aon_timer_core import aon_timer_reg_pkg::*; (
     end
   end
 
+  assign wkup_count = {reg2hw_i.wkup_count_hi.q, reg2hw_i.wkup_count_lo.q};
+  assign wkup_thold = {reg2hw_i.wkup_thold_hi.q, reg2hw_i.wkup_thold_lo.q};
+
   // Wakeup timer count
   assign wkup_incr = lc_ctrl_pkg::lc_tx_test_false_strict(lc_escalate_en_i[1]) &
                      reg2hw_i.wkup_ctrl.enable.q &
                      (prescale_count_q == reg2hw_i.wkup_ctrl.prescaler.q);
 
   assign wkup_count_reg_wr_o  = wkup_incr;
-  assign wkup_count_wr_data_o = (reg2hw_i.wkup_count.q + 32'd1);
+  assign wkup_count_wr_data_o = wkup_count + 64'd1;
 
   // Timer interrupt
-  assign wkup_intr_o = wkup_incr & (reg2hw_i.wkup_count.q >= reg2hw_i.wkup_thold.q);
+  assign wkup_intr_o = wkup_incr & (wkup_count >= wkup_thold);
 
   ////////////////////
   // Watchdog Timer //
