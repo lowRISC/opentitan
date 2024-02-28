@@ -435,7 +435,9 @@ cc_library(
 
 cc_library(
     name = "nonce",
+    srcs = ["nonce.c"],
     hdrs = ["nonce.h"],
+    deps = ["//sw/device/silicon_creator/lib/drivers:rnd"],
 )
 
 cc_library(
