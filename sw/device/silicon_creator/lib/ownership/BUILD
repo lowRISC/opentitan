@@ -37,24 +37,23 @@ cc_library(
     ],
 )
 
-# Enable this test when ownership/keys/fake exists.
-#opentitan_test(
-#    name = "ecdsa_functest",
-#    srcs = ["ecdsa_functest.c"],
-#    exec_env = {
-#        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-#    },
-#    deps = [
-#        ":ecdsa",
-#        "//sw/device/lib/base:hardened",
-#        "//sw/device/lib/base:status",
-#        "//sw/device/lib/runtime:log",
-#        "//sw/device/lib/testing:entropy_testutils",
-#        "//sw/device/lib/testing:hexstr",
-#        "//sw/device/lib/testing/test_framework:ottf_main",
-#        "//sw/device/silicon_creator/lib/ownership/keys/fake",
-#    ],
-#)
+opentitan_test(
+    name = "ecdsa_functest",
+    srcs = ["ecdsa_functest.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
+    deps = [
+        ":ecdsa",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/lib/testing:hexstr",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib/ownership/keys/fake",
+    ],
+)
 
 dual_cc_library(
     name = "ownership_key",
