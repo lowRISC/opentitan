@@ -12,6 +12,7 @@
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
 #include "sw/device/sca/lib/sca.h"
+#include "sw/device/tests/crypto/cryptotest/firmware/sca_lib.h"
 #include "sw/device/tests/crypto/cryptotest/firmware/status.h"
 #include "sw/device/tests/crypto/cryptotest/json/ibex_fi_commands.h"
 
@@ -265,6 +266,10 @@ status_t handle_ibex_fi_init_trigger(ujson_t *uj) {
   // As we are using the software defined trigger, the first argument of
   // sca_init is not needed. kScaTriggerSourceAes is selected as a placeholder.
   sca_init(kScaTriggerSourceAes, kScaPeripheralIoDiv4);
+
+  // Disable the instruction cache and dummy instructions for FI attacks.
+  sca_configure_cpu();
+
   return OK_STATUS(0);
 }
 
