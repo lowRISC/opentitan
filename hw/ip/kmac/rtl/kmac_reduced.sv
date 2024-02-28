@@ -99,6 +99,8 @@ module kmac_reduced
   ///////////////////////////////////
   // Message packer FIFO
   logic [sha3_pkg::MsgWidth-1:0] msg [NumShares];
+  logic [NumShares-1:0] msg_valid_shares;
+  logic [NumShares-1:0] msg_ready_shares;
   logic msg_valid, msg_ready;
 
   prim_packer_fifo #(
@@ -111,8 +113,8 @@ module kmac_reduced
     .clr_i   (1'b0),
     .wvalid_i(msg_valid_i),
     .wdata_i (msg_i[0]),
-    .wready_o(msg_ready_o),
-    .rvalid_o(msg_valid),
+    .wready_o(msg_ready_shares[0]),
+    .rvalid_o(msg_valid_shares[0]),
     .rdata_o (msg[0]),
     .rready_i(msg_ready),
     .depth_o ()
@@ -128,12 +130,16 @@ module kmac_reduced
     .clr_i   (1'b0),
     .wvalid_i(msg_valid_i),
     .wdata_i (msg_i[1]),
-    .wready_o(msg_ready_o),
-    .rvalid_o(msg_valid),
+    .wready_o(msg_ready_shares[1]),
+    .rvalid_o(msg_valid_shares[1]),
     .rdata_o (msg[1]),
     .rready_i(msg_ready),
     .depth_o ()
   );
+
+  // Reduce valid/ready signals driven by the packer FIFOs.
+  assign msg_ready_o = &msg_ready_shares;
+  assign msg_valid = &msg_valid_shares;
 
   //////////////////////////
   // Message (re-)masking //
