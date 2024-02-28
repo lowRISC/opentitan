@@ -22,7 +22,8 @@ module prim_intr_hw # (
 
   // As the wired interrupt signal intr_o is a level-triggered interrupt, the upstream consumer sw
   // has two options to make forward progress when this signal is asserted:
-  // - Mask the interrupt, by setting INTR_ENABLE = 1'b0 or masking/enabling at an upstream consumer.
+  // - Mask the interrupt, by setting INTR_ENABLE = 1'b0 or masking/enabling at an upstream
+  //   consumer.
   // - Interact with the peripheral in some user-defined way that clears the signal.
   // To make this user-defined interaction ergonomic from a SW-perspective, we have defined
   // two common patterns for typical interrupt-triggering events, *Status* and *Event*.
