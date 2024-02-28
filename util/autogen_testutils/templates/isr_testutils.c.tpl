@@ -11,7 +11,7 @@ ${autogen_banner}
 % for ip in ips_with_difs:
   % if ip.irqs:
     #include "sw/device/lib/dif/dif_${ip.name_snake}.h"
-  % endif
+% endif
 % endfor
 #include "sw/device/lib/testing/test_framework/check.h"
 
@@ -22,6 +22,9 @@ ${autogen_banner}
     void isr_testutils_${ip.name_snake}_isr(
       plic_isr_ctx_t plic_ctx,
       ${ip.name_snake}_isr_ctx_t ${ip.name_snake}_ctx,
+    % if ip.has_status_type_irqs():
+      bool mute_status_irq,
+    % endif
       top_earlgrey_plic_peripheral_t *peripheral_serviced,
       dif_${ip.name_snake}_irq_t *irq_serviced) {
 
@@ -71,7 +74,14 @@ ${autogen_banner}
         CHECK_DIF_OK(dif_${ip.name_snake}_irq_acknowledge(
             ${ip.name_snake}_ctx.${ip.name_snake},
             irq));
+      % if ip.has_status_type_irqs():
+      } else if(mute_status_irq) {
+        CHECK_DIF_OK(dif_${ip.name_snake}_irq_set_enabled(${ip.name_snake}_ctx.${ip.name_snake},
+            irq, kDifToggleDisabled));
       }
+      % else:
+      }
+      % endif
 
       // Complete the IRQ at the PLIC.
       CHECK_DIF_OK(dif_rv_plic_irq_complete(
