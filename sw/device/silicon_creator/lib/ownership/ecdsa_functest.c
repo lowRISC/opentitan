@@ -10,7 +10,7 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/ownership/ecdsa.h"
-#include "sw/device/silicon_creator/lib/ownership/keys/fake/ownership_no_owner_recovery_ecdsa_p256.h"
+#include "sw/device/silicon_creator/lib/ownership/keys/fake/no_owner_recovery_ecdsa_p256.h"
 
 // From: http://www.abrahamlincolnonline.org/lincoln/speeches/gettysburg.htm
 static const char kGettysburgPrelude[] =
@@ -51,7 +51,7 @@ static const char kGettysburgSignature[] =
 // clang-format on
 
 static const owner_key_t kNoOwnerRecoveryKey = {
-    .key = OWNERSHIP_NO_OWNER_RECOVERY_ECDSA_P256,
+    .key = NO_OWNER_RECOVERY_ECDSA_P256,
 };
 
 void __assert_func(const char *file, int line, const char *func,
