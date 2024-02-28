@@ -116,6 +116,10 @@
       name: usbdev_fifo_rst
       uvm_test_seq: usbdev_fifo_rst_vseq
     }
+    {
+      name: usbdev_phy_pins_sense
+      uvm_test_seq: usbdev_phy_pins_sense_vseq
+    }
   ]
 
   // List of regressions.
