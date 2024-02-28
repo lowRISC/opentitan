@@ -19,3 +19,4 @@
 `include "usbdev_out_stall_vseq.sv"
 `include "usbdev_out_trans_nak_vseq.sv"
 `include "usbdev_fifo_rst_vseq.sv"
+`include "usbdev_streaming_test_vseq.sv"

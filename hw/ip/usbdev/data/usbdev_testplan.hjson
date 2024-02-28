@@ -715,7 +715,7 @@
               going full.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_streaming_test"]
     }
     {
       name: max_clock_error

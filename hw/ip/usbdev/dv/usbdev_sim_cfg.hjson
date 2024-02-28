@@ -116,6 +116,10 @@
       name: usbdev_fifo_rst
       uvm_test_seq: usbdev_fifo_rst_vseq
     }
+    {
+      name: usbdev_streaming_test
+      uvm_test_seq: usbdev_streaming_test_vseq
+    }
   ]
 
   // List of regressions.
