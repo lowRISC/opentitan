@@ -14,6 +14,7 @@
 #include "sw/device/sca/lib/aes.h"
 #include "sw/device/sca/lib/prng.h"
 #include "sw/device/sca/lib/sca.h"
+#include "sw/device/tests/crypto/cryptotest/firmware/sca_lib.h"
 #include "sw/device/tests/crypto/cryptotest/json/aes_sca_commands.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -852,6 +853,11 @@ status_t handle_aes_sca_init(ujson_t *uj) {
   if (dif_aes_reset(&aes) != kDifOk) {
     return ABORTED();
   }
+
+  // Disable the instruction cache and dummy instructions for better SCA
+  // measurements.
+  sca_configure_cpu();
+
   return OK_STATUS(0);
 }
 

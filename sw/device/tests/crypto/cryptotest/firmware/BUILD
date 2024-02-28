@@ -157,6 +157,7 @@ cc_library(
         "//sw/device/sca/lib:aes",
         "//sw/device/sca/lib:prng",
         "//sw/device/sca/lib:sca",
+        "//sw/device/tests/crypto/cryptotest/firmware:sca_lib",
         "//sw/device/tests/crypto/cryptotest/json:aes_sca_commands",
     ],
 )
@@ -176,6 +177,7 @@ cc_library(
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/lib/ujson",
         "//sw/device/sca/lib:sca",
+        "//sw/device/tests/crypto/cryptotest/firmware:sca_lib",
         "//sw/device/tests/crypto/cryptotest/json:ibex_fi_commands",
     ],
 )
@@ -196,6 +198,7 @@ cc_library(
         "//sw/device/lib/ujson",
         "//sw/device/sca/lib:prng",
         "//sw/device/sca/lib:sca",
+        "//sw/device/tests/crypto/cryptotest/firmware:sca_lib",
         "//sw/device/tests/crypto/cryptotest/json:kmac_sca_commands",
     ],
 )
@@ -241,6 +244,16 @@ cc_library(
 )
 
 cc_library(
+    name = "sca_lib",
+    srcs = ["sca_lib.c"],
+    hdrs = ["sca_lib.h"],
+    deps = [
+        "//sw/device/lib/base:csr",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+cc_library(
     name = "sha3_sca",
     srcs = ["sha3_sca.c"],
     hdrs = [
@@ -256,6 +269,7 @@ cc_library(
         "//sw/device/lib/ujson",
         "//sw/device/sca/lib:prng",
         "//sw/device/sca/lib:sca",
+        "//sw/device/tests/crypto/cryptotest/firmware:sca_lib",
         "//sw/device/tests/crypto/cryptotest/json:sha3_sca_commands",
     ],
 )
@@ -297,6 +311,7 @@ opentitan_binary(
         ":prng_sca",
         ":sha3_sca",
         ":trigger_sca",
+        "//sw/device/lib/base:csr",
         "//sw/device/lib/base:status",
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/testing/test_framework:check",
@@ -338,6 +353,7 @@ opentitan_test(
         ":prng_sca",
         ":sha3_sca",
         ":trigger_sca",
+        "//sw/device/lib/base:csr",
         "//sw/device/lib/base:status",
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/testing/test_framework:check",

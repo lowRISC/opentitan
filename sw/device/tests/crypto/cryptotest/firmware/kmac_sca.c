@@ -13,6 +13,7 @@
 #include "sw/device/lib/ujson/ujson.h"
 #include "sw/device/sca/lib/prng.h"
 #include "sw/device/sca/lib/sca.h"
+#include "sw/device/tests/crypto/cryptotest/firmware/sca_lib.h"
 #include "sw/device/tests/crypto/cryptotest/firmware/status.h"
 #include "sw/device/tests/crypto/cryptotest/json/kmac_sca_commands.h"
 
@@ -470,6 +471,11 @@ status_t handle_kmac_sca_init(ujson_t *uj) {
   UJSON_CHECK_DIF_OK(dif_kmac_configure(&kmac, config));
 
   kmac_block_until_idle();
+
+  // Disable the instruction cache and dummy instructions for better SCA
+  // measurements.
+  sca_configure_cpu();
+
   return OK_STATUS(0);
 }
 
