@@ -377,7 +377,10 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
         end
         else iso_trans = 1'b0;
       end
-      "data_toggle_clear": begin
+      "out_data_toggle": begin
+        // TODO
+      end
+      "in_data_toggle": begin
         // TODO
       end
       "phy_pins_sense": begin
