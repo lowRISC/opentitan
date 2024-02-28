@@ -12,9 +12,9 @@ class aon_timer_scoreboard extends cip_base_scoreboard #(
   // local variables
   local bit  wkup_en;
   local bit  wkup_num_update_due;
-  local uint wkup_count;
+  local bit [63:0] wkup_count;
   local uint prescaler;
-  local uint wkup_thold;
+  local bit [63:0] wkup_thold;
 
   local bit  wdog_en;
   local bit  wdog_regwen;
@@ -25,9 +25,9 @@ class aon_timer_scoreboard extends cip_base_scoreboard #(
   local uint bite_thold;
 
   local bit  wkup_cause;
-  local uint wkup_num;
-  local uint wdog_bark_num;
-  local uint wdog_bite_num;
+  local bit [63:0] wkup_num;
+  local bit [31:0] wdog_bark_num;
+  local bit [31:0] wdog_bite_num;
 
   // expected values
   local bit intr_status_exp [2];
@@ -131,12 +131,20 @@ class aon_timer_scoreboard extends cip_base_scoreboard #(
         wkup_cause = csr.get_mirrored_value();
         intr_status_exp[WKUP] = item.a_data;
       end
-      "wkup_count": begin
-        wkup_count =  csr.get_mirrored_value();
+      "wkup_count_lo": begin
+        wkup_count[31:0] =  csr.get_mirrored_value();
         if (data_phase_write) wkup_num_update_due = 1;
       end
-      "wkup_thold": begin
-        wkup_thold =  csr.get_mirrored_value();
+      "wkup_count_hi": begin
+        wkup_count[63:32] =  csr.get_mirrored_value();
+        if (data_phase_write) wkup_num_update_due = 1;
+      end
+      "wkup_thold_lo": begin
+        wkup_thold[31:0] =  csr.get_mirrored_value();
+        if (data_phase_write) wkup_num_update_due = 1;
+      end
+      "wkup_thold_hi": begin
+        wkup_thold[73:32] =  csr.get_mirrored_value();
         if (data_phase_write) wkup_num_update_due = 1;
       end
       "wdog_ctrl": begin

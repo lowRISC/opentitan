@@ -33,9 +33,9 @@ class aon_timer_base_vseq extends cip_base_vseq #(
   rand bit initial_sleep_mode;
 
   // Randomize Bark/Bite and Wake-up thresholds for the counter
-  rand uint wkup_thold;
-  rand uint wdog_bark_thold;
-  rand uint wdog_bite_thold;
+  rand bit [63:0] wkup_thold;
+  rand bit [31:0] wdog_bark_thold;
+  rand bit [31:0] wdog_bite_thold;
 
   constraint thold_vals_c {
     wkup_thold      inside {[1:10]};
@@ -47,6 +47,10 @@ class aon_timer_base_vseq extends cip_base_vseq #(
 
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init();
+
+    // Don't use generic interrupt clear as timer interrupts can sometimes trigger between clearing
+    // them and checking they're zero.
+    do_clear_all_interrupts = 1'b0;
   endtask
 
   virtual task aon_timer_shutdown();
@@ -64,7 +68,8 @@ class aon_timer_base_vseq extends cip_base_vseq #(
     csr_utils_pkg::csr_wr(ral.intr_state, 2'b11);
 
     // Zero out the COUNT registers
-    csr_utils_pkg::csr_wr(ral.wkup_count, 32'h0000_0000);
+    csr_utils_pkg::csr_wr(ral.wkup_count_lo, 32'h0000_0000);
+    csr_utils_pkg::csr_wr(ral.wkup_count_hi, 32'h0000_0000);
     csr_utils_pkg::csr_wr(ral.wdog_count, 32'h0000_0000);
 
     // Wait to settle registers on AON timer domain
@@ -74,15 +79,20 @@ class aon_timer_base_vseq extends cip_base_vseq #(
   // setup basic aon_timer features
   task aon_timer_init();
 
+    // Clear the interrupts
+    csr_utils_pkg::csr_wr(ral.intr_state, 2'b11);
+
     `uvm_info(`gfn, "Initializating AON Timer. Writing 0 to WKUP_COUNT and WDOG_COUNT", UVM_LOW)
     // Register Write
-    csr_utils_pkg::csr_wr(ral.wkup_count, 32'h0000_0000);
+    csr_utils_pkg::csr_wr(ral.wkup_count_lo, 32'h0000_0000);
+    csr_utils_pkg::csr_wr(ral.wkup_count_hi, 32'h0000_0000);
     csr_utils_pkg::csr_wr(ral.wdog_count, 32'h0000_0000);
 
     `uvm_info(`gfn, "Randomizing AON Timer thresholds", UVM_HIGH)
 
     `uvm_info(`gfn, $sformatf("Writing 0x%0h to wkup_thold", wkup_thold), UVM_HIGH)
-    csr_utils_pkg::csr_wr(ral.wkup_thold, wkup_thold);
+    csr_utils_pkg::csr_wr(ral.wkup_thold_lo, wkup_thold[31:0]);
+    csr_utils_pkg::csr_wr(ral.wkup_thold_hi, wkup_thold[63:32]);
 
     `uvm_info(`gfn, $sformatf("Writing 0x%0h to wdog_bark_thold", wdog_bark_thold), UVM_HIGH)
     csr_utils_pkg::csr_wr(ral.wdog_bark_thold, wdog_bark_thold);

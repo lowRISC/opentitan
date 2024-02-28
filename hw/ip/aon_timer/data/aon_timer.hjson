@@ -161,27 +161,53 @@
         }
       ],
     },
-    { name: "WKUP_THOLD",
-      desc: "Wakeup Timer Threshold Register",
+    { name: "WKUP_THOLD_HI",
+      desc: "Wakeup Timer Threshold Register (bits 63 - 32)",
       swaccess: "rw",
       hwaccess: "hro",
       async: "clk_aon_i",
       fields: [
         { bits: "31:0",
-          name: "threshold",
-          desc: "The count at which a wakeup interrupt should be generated",
+          name: "threshold_hi",
+          desc: "The count at which a wakeup interrupt should be generated, top 32 bits",
         }
       ],
     },
-    { name: "WKUP_COUNT",
-      desc: "Wakeup Timer Count Register",
+    { name: "WKUP_THOLD_LO",
+      desc: "Wakeup Timer Threshold Register (bits 31 - 0)",
+      swaccess: "rw",
+      hwaccess: "hro",
+      async: "clk_aon_i",
+      fields: [
+        { bits: "31:0",
+          name: "threshold_lo",
+          desc: "The count at which a wakeup interrupt should be generated, bottom 32 bits",
+        }
+      ],
+    },
+    { name: "WKUP_COUNT_HI",
+      desc: "Wakeup Timer Count Register (bits 63 - 32)",
       swaccess: "rw",
       hwaccess: "hrw",
       async: "clk_aon_i",
       fields: [
         { bits: "31:0",
-          name: "count",
-          desc: "The current wakeup counter value",
+          name: "count_hi",
+          desc: "The current wakeup counter value, top 32 bits",
+        }
+      ],
+      tags: [// this could be updated by HW
+        "excl:CsrNonInitTests:CsrExclWriteCheck"],
+    },
+    { name: "WKUP_COUNT_LO",
+      desc: "Wakeup Timer Count Register (bits 31 - 0)",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      async: "clk_aon_i",
+      fields: [
+        { bits: "31:0",
+          name: "count_lo",
+          desc: "The current wakeup counter value, bottom 32 bits",
         }
       ],
       tags: [// this could be updated by HW

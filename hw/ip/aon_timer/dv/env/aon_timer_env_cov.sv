@@ -21,7 +21,7 @@ class aon_timer_env_cov extends cip_base_env_cov #(.CFG_T(aon_timer_env_cfg));
   covergroup timer_cfg_cg(string name) with function sample(bit [11:0] prescale,
                                                             bit [31:0] bark_thold,
                                                             bit [31:0] bite_thold,
-                                                            bit [31:0] wkup_thold,
+                                                            bit [63:0] wkup_thold,
                                                             bit wdog_regwen,
                                                             bit pause_in_sleep,
                                                             bit wkup_cause);
@@ -42,7 +42,7 @@ class aon_timer_env_cov extends cip_base_env_cov #(.CFG_T(aon_timer_env_cfg));
     }
     wkup_thold_cp: coverpoint wkup_thold {
       bins wkup_0 = {0};
-      bins wkup[32] = {[1:$]};
+      bins wkup[64] = {[1:$]};
       bins wkup_max = {'1};
     }
 

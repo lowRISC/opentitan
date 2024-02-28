@@ -44,7 +44,7 @@ module aon_timer import aon_timer_reg_pkg::*;
   aon_timer_hw2reg_t         hw2reg;
   // Register write signals
   logic                      aon_wkup_count_reg_wr;
-  logic [31:0]               aon_wkup_count_wr_data;
+  logic [63:0]               aon_wkup_count_wr_data;
   logic                      aon_wdog_count_reg_wr;
   logic [31:0]               aon_wdog_count_wr_data;
   // Other sync signals
@@ -78,8 +78,10 @@ module aon_timer import aon_timer_reg_pkg::*;
     .q_o     (aon_sleep_mode)
   );
 
-  assign hw2reg.wkup_count.de = aon_wkup_count_reg_wr;
-  assign hw2reg.wkup_count.d  = aon_wkup_count_wr_data;
+  assign hw2reg.wkup_count_lo.de = aon_wkup_count_reg_wr;
+  assign hw2reg.wkup_count_hi.de = aon_wkup_count_reg_wr;
+  assign hw2reg.wkup_count_lo.d  = aon_wkup_count_wr_data[31:0];
+  assign hw2reg.wkup_count_hi.d  = aon_wkup_count_wr_data[63:32];
   assign hw2reg.wdog_count.de = aon_wdog_count_reg_wr;
   assign hw2reg.wdog_count.d  = aon_wdog_count_wr_data;
 

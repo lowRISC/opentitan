@@ -12,9 +12,14 @@ This is used to stop the watchdog timer running when in debugging mode or when t
 ## Design Details
 
 The always-on timer will run on a ~200KHz clock.
-The timers themselves are 32b wide, giving a maximum timeout window of roughly ~6 hours.
-For the wakeup timer, the pre-scaler extends the maximum timeout to ~1000 days.
+The wakeup timer is 64b wide and the watchdog timer 32b wide.
+This gives a maximum timeout window of roughly ~6 hours for the watchdog and almost 3 million years for the wakeup timer.
+For the wakeup timer, the pre-scaler can be used to slow the count down so the counter value matches some desired time unit (e.g. milliseconds).
 
 Register reads via the TLUL interface are synchronized to the slow clock using the "async" register generation feature.
 This means that writes can complete before the data has reached its underlying register in the slow clock domain.
 If software needs to guarantee completion of a register write, it can read back the register value (which will guarantee the completion of all previous writes to the peripheral).
+
+The wakeup count and threshold are both 64-bit values accessed through two 32-bit registers.
+It is not possible to do a single atomic read or write of the 64-bit values.
+The programmer's guide suggests some ways to access the wakeup count and threshold to avoid issues from race conditions caused by this.
