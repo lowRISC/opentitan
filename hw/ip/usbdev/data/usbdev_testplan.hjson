@@ -528,7 +528,7 @@
             - Verify that the resume_link_active interrupt goes high and device will be resumed.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_invalid_data1_data0_toggle_test"]
     }
     {
       name: device_address

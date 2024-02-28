@@ -73,6 +73,10 @@
       uvm_test_seq: usbdev_in_trans_vseq
     }
     {
+      name: usbdev_invalid_data1_data0_toggle_test
+      uvm_test_seq: usbdev_invalid_data1_data0_toggle_test_vseq
+    }
+    {
       name: usbdev_max_length_out_transaction
       uvm_test_seq: usbdev_max_length_out_transaction_vseq
     }
