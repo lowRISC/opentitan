@@ -4,7 +4,20 @@
 // clang-format off
 ${gencmd}
 <%
-irq_peripheral_names = sorted({p.name for p in helper.irq_peripherals})
+## Get unique module names (not instance names) and the associated masks
+## determining interrupt type and default behavior. The helper list is
+## already sorted, so no need to sort it again here.
+known_names = {}
+irq_peripheral_names = []
+status_default_masks = []
+status_type_masks = []
+for p in helper.irq_peripherals:
+  if p.name not in known_names:
+    known_names.update({p.name: 1})
+    irq_peripheral_names.append(p.name)
+    status_default_masks.append(p.status_default_mask)
+    status_type_masks.append(p.status_type_mask)
+
 has_csrng = "csrng" in irq_peripheral_names
 csrng_index = irq_peripheral_names.index("csrng") if has_csrng else None
 
@@ -129,9 +142,6 @@ void ottf_external_isr(uint32_t *exc_info) {
     CHECK(snapshot == (dif_csrng_irq_state_snapshot_t)(1 << irq),
           "Only csrng IRQ %d expected to fire. Actual interrupt status = %x",
           irq, snapshot);
-
-    // TODO: Check Interrupt type then clear INTR_TEST if needed.
-    CHECK_DIF_OK(dif_csrng_irq_force(&csrng, irq, false));
     CHECK_DIF_OK(dif_csrng_irq_acknowledge(&csrng, irq));
 % else:
   if (false) {
@@ -170,14 +180,35 @@ void ottf_external_isr(uint32_t *exc_info) {
 
         dif_${p.name}_irq_state_snapshot_t snapshot;
         CHECK_DIF_OK(dif_${p.name}_irq_get_state(${args(p)}, &snapshot));
+      ## In case we have status type interrupts that are asserted by default,
+      ## we have to account for them in this check.
+      % if p.status_default_mask != 0:
+        CHECK(snapshot == (dif_${p.name}_irq_state_snapshot_t)((1 << irq) | ${"0x{:x}".format(p.status_default_mask)}),
+              "Expected ${p.inst_name} interrupt status %x. Actual interrupt "
+              "status = %x", (1 << irq) | ${"0x{:x}".format(p.status_default_mask)}, snapshot);
+      % else:
         CHECK(snapshot == (dif_${p.name}_irq_state_snapshot_t)(1 << irq),
               "Only ${p.inst_name} IRQ %d expected to fire. Actual interrupt "
-              "status = %x",
-              irq, snapshot);
+              "status = %x", irq, snapshot);
+      % endif
 
-        // TODO: Check Interrupt type then clear INTR_TEST if needed.
-        CHECK_DIF_OK(dif_${p.name}_irq_force(&${p.inst_name}, irq, false));
+      % if p.status_type_mask != 0:
+        // If this is a status type interrupt, we do not have to acknowledge the interrupt at
+        // the IP side, but we need to clear the test force register.
+        if (${"0x{:x}".format(p.status_type_mask)} & (1 << irq)) {
+          CHECK_DIF_OK(dif_${p.name}_irq_force(&${p.inst_name}, irq, false));
+          // In case this status interrupt is asserted by default, we also disable it at
+          // this point so that it does not interfere with the rest of the test.
+          if ((${"0x{:x}".format(p.status_default_mask)} & (1 << irq))) {
+            CHECK_DIF_OK(dif_${p.name}_irq_set_enabled(&${p.inst_name}, irq, false));
+          }
+        // If this is a regular event type interrupt, we acknowledge it at this point.
+        } else {
+          CHECK_DIF_OK(dif_${p.name}_irq_acknowledge(&${p.inst_name}, irq));
+        }
+      % else:
         CHECK_DIF_OK(dif_${p.name}_irq_acknowledge(&${p.inst_name}, irq));
+      % endif
         break;
       }
 #endif
@@ -246,8 +277,14 @@ static void peripheral_irqs_enable(void) {
   if n == "aon_timer": continue
 %>\
 #if TEST_MIN_IRQ_PERIPHERAL <= ${i} && ${i} < TEST_MAX_IRQ_PERIPHERAL
+% if status_default_masks[i] != 0:
+  // Note: this peripheral contains status interrupts that are asserted by
+  // default. Therefore, not all interrupts are enabled here, since that
+  // would interfere with this test. Instead, these interrupts are enabled on
+  // demand once they are being tested.
+% endif
   dif_${n}_irq_state_snapshot_t ${n}_irqs =
-      (dif_${n}_irq_state_snapshot_t)UINT_MAX;
+      (dif_${n}_irq_state_snapshot_t)${"0x{:x}".format(0xFFFFFFFF & ~status_default_masks[i])};
 #endif
 
   % endfor
@@ -294,6 +331,11 @@ ${"" if loop.last else "\n"}\
  * expected IRQ from the expected peripheral triggered.
  */
 static void peripheral_irqs_trigger(void) {
+  unsigned int status_default_mask;
+  // Depending on the build configuration, this variable may show up as unused
+  // in the clang linter. This statement waives that error.
+  (void) status_default_mask;
+
   % for p in helper.irq_peripherals:
 <%
   i = irq_peripheral_names.index(p.name)
@@ -322,12 +364,26 @@ static void peripheral_irqs_trigger(void) {
   if (kBootStage != kBootStageOwner) {
   % endif
   ${indent}peripheral_expected = ${p.plic_name};
+% if p.status_type_mask != 0:
+  ${indent}status_default_mask = ${"0x{:x}".format(p.status_default_mask)};
+% endif
   ${indent}for (dif_${p.name}_irq_t irq = ${p.start_irq};
   ${indent}     irq <= ${p.end_irq}; ++irq) {
+
   ${indent}  ${p.name}_irq_expected = irq;
   ${indent}  LOG_INFO("Triggering ${p.inst_name} IRQ %d.", irq);
   ${indent}  CHECK_DIF_OK(dif_${p.name}_irq_force(&${p.inst_name}, irq, true));
 
+% if p.status_type_mask != 0:
+  ${indent}  // In this case, the interrupt has not been enabled yet because that would
+  ${indent}  // interfere with testing other interrupts. We enable it here and let the
+  ${indent}  // interrupt handler disable it again.
+  ${indent}  if ((status_default_mask & 0x1)) {
+  ${indent}     CHECK_DIF_OK(dif_${p.name}_irq_set_enabled(&${p.inst_name}, irq, true));
+  ${indent}  }
+  ${indent}  status_default_mask >>= 1;
+
+% endif
   ${indent}  // This avoids a race where *irq_serviced is read before
   ${indent}  // entering the ISR.
   ${indent}  IBEX_SPIN_FOR(${p.name}_irq_serviced == irq, 1);
