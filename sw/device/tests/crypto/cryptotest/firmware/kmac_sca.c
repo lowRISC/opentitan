@@ -542,7 +542,8 @@ static kmac_sca_error_t sha3_ujson_absorb(const uint8_t *msg, size_t msg_len) {
   if (fpga_mode == false) {
     // Start command. On the chip, we need to first issue a START command
     // before writing to the message FIFO.
-    sca_call_and_sleep(kmac_start_cmd, kIbexLoadHashPrefixKeySleepCycles);
+    sca_call_and_sleep(kmac_start_cmd, kIbexLoadHashPrefixKeySleepCycles,
+                       false);
   }
 
   // Write data to message FIFO.
@@ -556,11 +557,12 @@ static kmac_sca_error_t sha3_ujson_absorb(const uint8_t *msg, size_t msg_len) {
     // configured to start operation 320 cycles after receiving the START and
     // PROC commands. This allows Ibex to go to sleep in order to not disturb
     // the capture.
-    sca_call_and_sleep(kmac_start_process_cmd, kIbexSha3SleepCycles);
+    sca_call_and_sleep(kmac_start_process_cmd, kIbexSha3SleepCycles, false);
   } else {
     // On the chip, issue a PROCESS command to start operation and put Ibex
     // into sleep.
-    sca_call_and_sleep(kmac_process_cmd, kIbexLoadHashMessageSleepCycles);
+    sca_call_and_sleep(kmac_process_cmd, kIbexLoadHashMessageSleepCycles,
+                       false);
   }
 
   return kmacScaOk;
