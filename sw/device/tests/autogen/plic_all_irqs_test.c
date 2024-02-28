@@ -354,9 +354,6 @@ void ottf_external_isr(uint32_t *exc_info) {
     CHECK(snapshot == (dif_csrng_irq_state_snapshot_t)(1 << irq),
           "Only csrng IRQ %d expected to fire. Actual interrupt status = %x",
           irq, snapshot);
-
-    // TODO: Check Interrupt type then clear INTR_TEST if needed.
-    CHECK_DIF_OK(dif_csrng_irq_force(&csrng, irq, false));
     CHECK_DIF_OK(dif_csrng_irq_acknowledge(&csrng, irq));
   } else {
     CHECK(peripheral == peripheral_expected,
@@ -378,11 +375,8 @@ void ottf_external_isr(uint32_t *exc_info) {
         CHECK_DIF_OK(dif_adc_ctrl_irq_get_state(&adc_ctrl_aon, &snapshot));
         CHECK(snapshot == (dif_adc_ctrl_irq_state_snapshot_t)(1 << irq),
               "Only adc_ctrl_aon IRQ %d expected to fire. Actual interrupt "
-              "status = %x",
-              irq, snapshot);
+              "status = %x", irq, snapshot);
 
-        // TODO: Check Interrupt type then clear INTR_TEST if needed.
-        CHECK_DIF_OK(dif_adc_ctrl_irq_force(&adc_ctrl_aon, irq, false));
         CHECK_DIF_OK(dif_adc_ctrl_irq_acknowledge(&adc_ctrl_aon, irq));
         break;
       }
@@ -402,11 +396,8 @@ void ottf_external_isr(uint32_t *exc_info) {
         CHECK_DIF_OK(dif_alert_handler_irq_get_state(&alert_handler, &snapshot));
         CHECK(snapshot == (dif_alert_handler_irq_state_snapshot_t)(1 << irq),
               "Only alert_handler IRQ %d expected to fire. Actual interrupt "
-              "status = %x",
-              irq, snapshot);
+              "status = %x", irq, snapshot);
 
-        // TODO: Check Interrupt type then clear INTR_TEST if needed.
-        CHECK_DIF_OK(dif_alert_handler_irq_force(&alert_handler, irq, false));
         CHECK_DIF_OK(dif_alert_handler_irq_acknowledge(&alert_handler, irq));
         break;
       }
@@ -426,11 +417,8 @@ void ottf_external_isr(uint32_t *exc_info) {
         CHECK_DIF_OK(dif_aon_timer_irq_get_state(&aon_timer_aon, &snapshot));
         CHECK(snapshot == (dif_aon_timer_irq_state_snapshot_t)(1 << irq),
               "Only aon_timer_aon IRQ %d expected to fire. Actual interrupt "
-              "status = %x",
-              irq, snapshot);
+              "status = %x", irq, snapshot);
 
-        // TODO: Check Interrupt type then clear INTR_TEST if needed.
-        CHECK_DIF_OK(dif_aon_timer_irq_force(&aon_timer_aon, irq, false));
         CHECK_DIF_OK(dif_aon_timer_irq_acknowledge(&aon_timer_aon, irq));
         break;
       }
@@ -456,11 +444,8 @@ void ottf_external_isr(uint32_t *exc_info) {
         CHECK_DIF_OK(dif_csrng_irq_get_state(&csrng, &snapshot));
         CHECK(snapshot == (dif_csrng_irq_state_snapshot_t)(1 << irq),
               "Only csrng IRQ %d expected to fire. Actual interrupt "
-              "status = %x",
-              irq, snapshot);
+              "status = %x", irq, snapshot);
 
-        // TODO: Check Interrupt type then clear INTR_TEST if needed.
-        CHECK_DIF_OK(dif_csrng_irq_force(&csrng, irq, false));
         CHECK_DIF_OK(dif_csrng_irq_acknowledge(&csrng, irq));
         break;
       }
@@ -480,11 +465,8 @@ void ottf_external_isr(uint32_t *exc_info) {
         CHECK_DIF_OK(dif_edn_irq_get_state(&edn0, &snapshot));
         CHECK(snapshot == (dif_edn_irq_state_snapshot_t)(1 << irq),
               "Only edn0 IRQ %d expected to fire. Actual interrupt "
-              "status = %x",
-              irq, snapshot);
+              "status = %x", irq, snapshot);
 
-        // TODO: Check Interrupt type then clear INTR_TEST if needed.
-        CHECK_DIF_OK(dif_edn_irq_force(&edn0, irq, false));
         CHECK_DIF_OK(dif_edn_irq_acknowledge(&edn0, irq));
         break;
       }
@@ -504,11 +486,8 @@ void ottf_external_isr(uint32_t *exc_info) {
         CHECK_DIF_OK(dif_edn_irq_get_state(&edn1, &snapshot));
         CHECK(snapshot == (dif_edn_irq_state_snapshot_t)(1 << irq),
               "Only edn1 IRQ %d expected to fire. Actual interrupt "
-              "status = %x",
-              irq, snapshot);
+              "status = %x", irq, snapshot);
 
-        // TODO: Check Interrupt type then clear INTR_TEST if needed.
-        CHECK_DIF_OK(dif_edn_irq_force(&edn1, irq, false));
         CHECK_DIF_OK(dif_edn_irq_acknowledge(&edn1, irq));
         break;
       }
@@ -528,11 +507,8 @@ void ottf_external_isr(uint32_t *exc_info) {
         CHECK_DIF_OK(dif_entropy_src_irq_get_state(&entropy_src, &snapshot));
         CHECK(snapshot == (dif_entropy_src_irq_state_snapshot_t)(1 << irq),
               "Only entropy_src IRQ %d expected to fire. Actual interrupt "
-              "status = %x",
-              irq, snapshot);
+              "status = %x", irq, snapshot);
 
-        // TODO: Check Interrupt type then clear INTR_TEST if needed.
-        CHECK_DIF_OK(dif_entropy_src_irq_force(&entropy_src, irq, false));
         CHECK_DIF_OK(dif_entropy_src_irq_acknowledge(&entropy_src, irq));
         break;
       }
@@ -552,11 +528,8 @@ void ottf_external_isr(uint32_t *exc_info) {
         CHECK_DIF_OK(dif_flash_ctrl_irq_get_state(&flash_ctrl, &snapshot));
         CHECK(snapshot == (dif_flash_ctrl_irq_state_snapshot_t)(1 << irq),
               "Only flash_ctrl IRQ %d expected to fire. Actual interrupt "
-              "status = %x",
-              irq, snapshot);
+              "status = %x", irq, snapshot);
 
-        // TODO: Check Interrupt type then clear INTR_TEST if needed.
-        CHECK_DIF_OK(dif_flash_ctrl_irq_force(&flash_ctrl, irq, false));
         CHECK_DIF_OK(dif_flash_ctrl_irq_acknowledge(&flash_ctrl, irq));
         break;
       }
@@ -576,11 +549,8 @@ void ottf_external_isr(uint32_t *exc_info) {
         CHECK_DIF_OK(dif_gpio_irq_get_state(&gpio, &snapshot));
         CHECK(snapshot == (dif_gpio_irq_state_snapshot_t)(1 << irq),
               "Only gpio IRQ %d expected to fire. Actual interrupt "
-              "status = %x",
-              irq, snapshot);
+              "status = %x", irq, snapshot);
 
-        // TODO: Check Interrupt type then clear INTR_TEST if needed.
-        CHECK_DIF_OK(dif_gpio_irq_force(&gpio, irq, false));
         CHECK_DIF_OK(dif_gpio_irq_acknowledge(&gpio, irq));
         break;
       }
@@ -600,11 +570,8 @@ void ottf_external_isr(uint32_t *exc_info) {
         CHECK_DIF_OK(dif_hmac_irq_get_state(&hmac, &snapshot));
         CHECK(snapshot == (dif_hmac_irq_state_snapshot_t)(1 << irq),
               "Only hmac IRQ %d expected to fire. Actual interrupt "
-              "status = %x",
-              irq, snapshot);
+              "status = %x", irq, snapshot);
 
-        // TODO: Check Interrupt type then clear INTR_TEST if needed.
-        CHECK_DIF_OK(dif_hmac_irq_force(&hmac, irq, false));
         CHECK_DIF_OK(dif_hmac_irq_acknowledge(&hmac, irq));
         break;
       }
@@ -624,12 +591,21 @@ void ottf_external_isr(uint32_t *exc_info) {
         CHECK_DIF_OK(dif_i2c_irq_get_state(&i2c0, &snapshot));
         CHECK(snapshot == (dif_i2c_irq_state_snapshot_t)(1 << irq),
               "Only i2c0 IRQ %d expected to fire. Actual interrupt "
-              "status = %x",
-              irq, snapshot);
+              "status = %x", irq, snapshot);
 
-        // TODO: Check Interrupt type then clear INTR_TEST if needed.
-        CHECK_DIF_OK(dif_i2c_irq_force(&i2c0, irq, false));
-        CHECK_DIF_OK(dif_i2c_irq_acknowledge(&i2c0, irq));
+        // If this is a status type interrupt, we do not have to acknowledge the interrupt at
+        // the IP side, but we need to clear the test force register.
+        if (0x1400 & (1 << irq)) {
+          CHECK_DIF_OK(dif_i2c_irq_force(&i2c0, irq, false));
+          // In case this status interrupt is asserted by default, we also disable it at
+          // this point so that it does not interfere with the rest of the test.
+          if ((0x0 & (1 << irq))) {
+            CHECK_DIF_OK(dif_i2c_irq_set_enabled(&i2c0, irq, false));
+          }
+        // If this is a regular event type interrupt, we acknowledge it at this point.
+        } else {
+          CHECK_DIF_OK(dif_i2c_irq_acknowledge(&i2c0, irq));
+        }
         break;
       }
 #endif
@@ -648,12 +624,21 @@ void ottf_external_isr(uint32_t *exc_info) {
         CHECK_DIF_OK(dif_i2c_irq_get_state(&i2c1, &snapshot));
         CHECK(snapshot == (dif_i2c_irq_state_snapshot_t)(1 << irq),
               "Only i2c1 IRQ %d expected to fire. Actual interrupt "
-              "status = %x",
-              irq, snapshot);
+              "status = %x", irq, snapshot);
 
-        // TODO: Check Interrupt type then clear INTR_TEST if needed.
-        CHECK_DIF_OK(dif_i2c_irq_force(&i2c1, irq, false));
-        CHECK_DIF_OK(dif_i2c_irq_acknowledge(&i2c1, irq));
+        // If this is a status type interrupt, we do not have to acknowledge the interrupt at
+        // the IP side, but we need to clear the test force register.
+        if (0x1400 & (1 << irq)) {
+          CHECK_DIF_OK(dif_i2c_irq_force(&i2c1, irq, false));
+          // In case this status interrupt is asserted by default, we also disable it at
+          // this point so that it does not interfere with the rest of the test.
+          if ((0x0 & (1 << irq))) {
+            CHECK_DIF_OK(dif_i2c_irq_set_enabled(&i2c1, irq, false));
+          }
+        // If this is a regular event type interrupt, we acknowledge it at this point.
+        } else {
+          CHECK_DIF_OK(dif_i2c_irq_acknowledge(&i2c1, irq));
+        }
         break;
       }
 #endif
@@ -672,12 +657,21 @@ void ottf_external_isr(uint32_t *exc_info) {
         CHECK_DIF_OK(dif_i2c_irq_get_state(&i2c2, &snapshot));
         CHECK(snapshot == (dif_i2c_irq_state_snapshot_t)(1 << irq),
               "Only i2c2 IRQ %d expected to fire. Actual interrupt "
-              "status = %x",
-              irq, snapshot);
+              "status = %x", irq, snapshot);
 
-        // TODO: Check Interrupt type then clear INTR_TEST if needed.
-        CHECK_DIF_OK(dif_i2c_irq_force(&i2c2, irq, false));
-        CHECK_DIF_OK(dif_i2c_irq_acknowledge(&i2c2, irq));
+        // If this is a status type interrupt, we do not have to acknowledge the interrupt at
+        // the IP side, but we need to clear the test force register.
+        if (0x1400 & (1 << irq)) {
+          CHECK_DIF_OK(dif_i2c_irq_force(&i2c2, irq, false));
+          // In case this status interrupt is asserted by default, we also disable it at
+          // this point so that it does not interfere with the rest of the test.
+          if ((0x0 & (1 << irq))) {
+            CHECK_DIF_OK(dif_i2c_irq_set_enabled(&i2c2, irq, false));
+          }
+        // If this is a regular event type interrupt, we acknowledge it at this point.
+        } else {
+          CHECK_DIF_OK(dif_i2c_irq_acknowledge(&i2c2, irq));
+        }
         break;
       }
 #endif
@@ -696,11 +690,8 @@ void ottf_external_isr(uint32_t *exc_info) {
         CHECK_DIF_OK(dif_keymgr_irq_get_state(&keymgr, &snapshot));
         CHECK(snapshot == (dif_keymgr_irq_state_snapshot_t)(1 << irq),
               "Only keymgr IRQ %d expected to fire. Actual interrupt "
-              "status = %x",
-              irq, snapshot);
+              "status = %x", irq, snapshot);
 
-        // TODO: Check Interrupt type then clear INTR_TEST if needed.
-        CHECK_DIF_OK(dif_keymgr_irq_force(&keymgr, irq, false));
         CHECK_DIF_OK(dif_keymgr_irq_acknowledge(&keymgr, irq));
         break;
       }
@@ -720,11 +711,8 @@ void ottf_external_isr(uint32_t *exc_info) {
         CHECK_DIF_OK(dif_kmac_irq_get_state(&kmac, &snapshot));
         CHECK(snapshot == (dif_kmac_irq_state_snapshot_t)(1 << irq),
               "Only kmac IRQ %d expected to fire. Actual interrupt "
-              "status = %x",
-              irq, snapshot);
+              "status = %x", irq, snapshot);
 
-        // TODO: Check Interrupt type then clear INTR_TEST if needed.
-        CHECK_DIF_OK(dif_kmac_irq_force(&kmac, irq, false));
         CHECK_DIF_OK(dif_kmac_irq_acknowledge(&kmac, irq));
         break;
       }
@@ -744,11 +732,8 @@ void ottf_external_isr(uint32_t *exc_info) {
         CHECK_DIF_OK(dif_otbn_irq_get_state(&otbn, &snapshot));
         CHECK(snapshot == (dif_otbn_irq_state_snapshot_t)(1 << irq),
               "Only otbn IRQ %d expected to fire. Actual interrupt "
-              "status = %x",
-              irq, snapshot);
+              "status = %x", irq, snapshot);
 
-        // TODO: Check Interrupt type then clear INTR_TEST if needed.
-        CHECK_DIF_OK(dif_otbn_irq_force(&otbn, irq, false));
         CHECK_DIF_OK(dif_otbn_irq_acknowledge(&otbn, irq));
         break;
       }
@@ -768,11 +753,8 @@ void ottf_external_isr(uint32_t *exc_info) {
         CHECK_DIF_OK(dif_otp_ctrl_irq_get_state(&otp_ctrl, &snapshot));
         CHECK(snapshot == (dif_otp_ctrl_irq_state_snapshot_t)(1 << irq),
               "Only otp_ctrl IRQ %d expected to fire. Actual interrupt "
-              "status = %x",
-              irq, snapshot);
+              "status = %x", irq, snapshot);
 
-        // TODO: Check Interrupt type then clear INTR_TEST if needed.
-        CHECK_DIF_OK(dif_otp_ctrl_irq_force(&otp_ctrl, irq, false));
         CHECK_DIF_OK(dif_otp_ctrl_irq_acknowledge(&otp_ctrl, irq));
         break;
       }
@@ -792,11 +774,8 @@ void ottf_external_isr(uint32_t *exc_info) {
         CHECK_DIF_OK(dif_pattgen_irq_get_state(&pattgen, &snapshot));
         CHECK(snapshot == (dif_pattgen_irq_state_snapshot_t)(1 << irq),
               "Only pattgen IRQ %d expected to fire. Actual interrupt "
-              "status = %x",
-              irq, snapshot);
+              "status = %x", irq, snapshot);
 
-        // TODO: Check Interrupt type then clear INTR_TEST if needed.
-        CHECK_DIF_OK(dif_pattgen_irq_force(&pattgen, irq, false));
         CHECK_DIF_OK(dif_pattgen_irq_acknowledge(&pattgen, irq));
         break;
       }
@@ -816,11 +795,8 @@ void ottf_external_isr(uint32_t *exc_info) {
         CHECK_DIF_OK(dif_pwrmgr_irq_get_state(&pwrmgr_aon, &snapshot));
         CHECK(snapshot == (dif_pwrmgr_irq_state_snapshot_t)(1 << irq),
               "Only pwrmgr_aon IRQ %d expected to fire. Actual interrupt "
-              "status = %x",
-              irq, snapshot);
+              "status = %x", irq, snapshot);
 
-        // TODO: Check Interrupt type then clear INTR_TEST if needed.
-        CHECK_DIF_OK(dif_pwrmgr_irq_force(&pwrmgr_aon, irq, false));
         CHECK_DIF_OK(dif_pwrmgr_irq_acknowledge(&pwrmgr_aon, irq));
         break;
       }
@@ -840,11 +816,8 @@ void ottf_external_isr(uint32_t *exc_info) {
         CHECK_DIF_OK(dif_rv_timer_irq_get_state(&rv_timer, kHart, &snapshot));
         CHECK(snapshot == (dif_rv_timer_irq_state_snapshot_t)(1 << irq),
               "Only rv_timer IRQ %d expected to fire. Actual interrupt "
-              "status = %x",
-              irq, snapshot);
+              "status = %x", irq, snapshot);
 
-        // TODO: Check Interrupt type then clear INTR_TEST if needed.
-        CHECK_DIF_OK(dif_rv_timer_irq_force(&rv_timer, irq, false));
         CHECK_DIF_OK(dif_rv_timer_irq_acknowledge(&rv_timer, irq));
         break;
       }
@@ -864,11 +837,8 @@ void ottf_external_isr(uint32_t *exc_info) {
         CHECK_DIF_OK(dif_sensor_ctrl_irq_get_state(&sensor_ctrl_aon, &snapshot));
         CHECK(snapshot == (dif_sensor_ctrl_irq_state_snapshot_t)(1 << irq),
               "Only sensor_ctrl_aon IRQ %d expected to fire. Actual interrupt "
-              "status = %x",
-              irq, snapshot);
+              "status = %x", irq, snapshot);
 
-        // TODO: Check Interrupt type then clear INTR_TEST if needed.
-        CHECK_DIF_OK(dif_sensor_ctrl_irq_force(&sensor_ctrl_aon, irq, false));
         CHECK_DIF_OK(dif_sensor_ctrl_irq_acknowledge(&sensor_ctrl_aon, irq));
         break;
       }
@@ -888,12 +858,21 @@ void ottf_external_isr(uint32_t *exc_info) {
         CHECK_DIF_OK(dif_spi_device_irq_get_state(&spi_device, &snapshot));
         CHECK(snapshot == (dif_spi_device_irq_state_snapshot_t)(1 << irq),
               "Only spi_device IRQ %d expected to fire. Actual interrupt "
-              "status = %x",
-              irq, snapshot);
+              "status = %x", irq, snapshot);
 
-        // TODO: Check Interrupt type then clear INTR_TEST if needed.
-        CHECK_DIF_OK(dif_spi_device_irq_force(&spi_device, irq, false));
-        CHECK_DIF_OK(dif_spi_device_irq_acknowledge(&spi_device, irq));
+        // If this is a status type interrupt, we do not have to acknowledge the interrupt at
+        // the IP side, but we need to clear the test force register.
+        if (0x20 & (1 << irq)) {
+          CHECK_DIF_OK(dif_spi_device_irq_force(&spi_device, irq, false));
+          // In case this status interrupt is asserted by default, we also disable it at
+          // this point so that it does not interfere with the rest of the test.
+          if ((0x0 & (1 << irq))) {
+            CHECK_DIF_OK(dif_spi_device_irq_set_enabled(&spi_device, irq, false));
+          }
+        // If this is a regular event type interrupt, we acknowledge it at this point.
+        } else {
+          CHECK_DIF_OK(dif_spi_device_irq_acknowledge(&spi_device, irq));
+        }
         break;
       }
 #endif
@@ -912,11 +891,8 @@ void ottf_external_isr(uint32_t *exc_info) {
         CHECK_DIF_OK(dif_spi_host_irq_get_state(&spi_host0, &snapshot));
         CHECK(snapshot == (dif_spi_host_irq_state_snapshot_t)(1 << irq),
               "Only spi_host0 IRQ %d expected to fire. Actual interrupt "
-              "status = %x",
-              irq, snapshot);
+              "status = %x", irq, snapshot);
 
-        // TODO: Check Interrupt type then clear INTR_TEST if needed.
-        CHECK_DIF_OK(dif_spi_host_irq_force(&spi_host0, irq, false));
         CHECK_DIF_OK(dif_spi_host_irq_acknowledge(&spi_host0, irq));
         break;
       }
@@ -936,11 +912,8 @@ void ottf_external_isr(uint32_t *exc_info) {
         CHECK_DIF_OK(dif_spi_host_irq_get_state(&spi_host1, &snapshot));
         CHECK(snapshot == (dif_spi_host_irq_state_snapshot_t)(1 << irq),
               "Only spi_host1 IRQ %d expected to fire. Actual interrupt "
-              "status = %x",
-              irq, snapshot);
+              "status = %x", irq, snapshot);
 
-        // TODO: Check Interrupt type then clear INTR_TEST if needed.
-        CHECK_DIF_OK(dif_spi_host_irq_force(&spi_host1, irq, false));
         CHECK_DIF_OK(dif_spi_host_irq_acknowledge(&spi_host1, irq));
         break;
       }
@@ -960,11 +933,8 @@ void ottf_external_isr(uint32_t *exc_info) {
         CHECK_DIF_OK(dif_sysrst_ctrl_irq_get_state(&sysrst_ctrl_aon, &snapshot));
         CHECK(snapshot == (dif_sysrst_ctrl_irq_state_snapshot_t)(1 << irq),
               "Only sysrst_ctrl_aon IRQ %d expected to fire. Actual interrupt "
-              "status = %x",
-              irq, snapshot);
+              "status = %x", irq, snapshot);
 
-        // TODO: Check Interrupt type then clear INTR_TEST if needed.
-        CHECK_DIF_OK(dif_sysrst_ctrl_irq_force(&sysrst_ctrl_aon, irq, false));
         CHECK_DIF_OK(dif_sysrst_ctrl_irq_acknowledge(&sysrst_ctrl_aon, irq));
         break;
       }
@@ -984,11 +954,8 @@ void ottf_external_isr(uint32_t *exc_info) {
         CHECK_DIF_OK(dif_uart_irq_get_state(&uart0, &snapshot));
         CHECK(snapshot == (dif_uart_irq_state_snapshot_t)(1 << irq),
               "Only uart0 IRQ %d expected to fire. Actual interrupt "
-              "status = %x",
-              irq, snapshot);
+              "status = %x", irq, snapshot);
 
-        // TODO: Check Interrupt type then clear INTR_TEST if needed.
-        CHECK_DIF_OK(dif_uart_irq_force(&uart0, irq, false));
         CHECK_DIF_OK(dif_uart_irq_acknowledge(&uart0, irq));
         break;
       }
@@ -1008,11 +975,8 @@ void ottf_external_isr(uint32_t *exc_info) {
         CHECK_DIF_OK(dif_uart_irq_get_state(&uart1, &snapshot));
         CHECK(snapshot == (dif_uart_irq_state_snapshot_t)(1 << irq),
               "Only uart1 IRQ %d expected to fire. Actual interrupt "
-              "status = %x",
-              irq, snapshot);
+              "status = %x", irq, snapshot);
 
-        // TODO: Check Interrupt type then clear INTR_TEST if needed.
-        CHECK_DIF_OK(dif_uart_irq_force(&uart1, irq, false));
         CHECK_DIF_OK(dif_uart_irq_acknowledge(&uart1, irq));
         break;
       }
@@ -1032,11 +996,8 @@ void ottf_external_isr(uint32_t *exc_info) {
         CHECK_DIF_OK(dif_uart_irq_get_state(&uart2, &snapshot));
         CHECK(snapshot == (dif_uart_irq_state_snapshot_t)(1 << irq),
               "Only uart2 IRQ %d expected to fire. Actual interrupt "
-              "status = %x",
-              irq, snapshot);
+              "status = %x", irq, snapshot);
 
-        // TODO: Check Interrupt type then clear INTR_TEST if needed.
-        CHECK_DIF_OK(dif_uart_irq_force(&uart2, irq, false));
         CHECK_DIF_OK(dif_uart_irq_acknowledge(&uart2, irq));
         break;
       }
@@ -1056,11 +1017,8 @@ void ottf_external_isr(uint32_t *exc_info) {
         CHECK_DIF_OK(dif_uart_irq_get_state(&uart3, &snapshot));
         CHECK(snapshot == (dif_uart_irq_state_snapshot_t)(1 << irq),
               "Only uart3 IRQ %d expected to fire. Actual interrupt "
-              "status = %x",
-              irq, snapshot);
+              "status = %x", irq, snapshot);
 
-        // TODO: Check Interrupt type then clear INTR_TEST if needed.
-        CHECK_DIF_OK(dif_uart_irq_force(&uart3, irq, false));
         CHECK_DIF_OK(dif_uart_irq_acknowledge(&uart3, irq));
         break;
       }
@@ -1080,12 +1038,21 @@ void ottf_external_isr(uint32_t *exc_info) {
         CHECK_DIF_OK(dif_usbdev_irq_get_state(&usbdev, &snapshot));
         CHECK(snapshot == (dif_usbdev_irq_state_snapshot_t)(1 << irq),
               "Only usbdev IRQ %d expected to fire. Actual interrupt "
-              "status = %x",
-              irq, snapshot);
+              "status = %x", irq, snapshot);
 
-        // TODO: Check Interrupt type then clear INTR_TEST if needed.
-        CHECK_DIF_OK(dif_usbdev_irq_force(&usbdev, irq, false));
-        CHECK_DIF_OK(dif_usbdev_irq_acknowledge(&usbdev, irq));
+        // If this is a status type interrupt, we do not have to acknowledge the interrupt at
+        // the IP side, but we need to clear the test force register.
+        if (0x20183 & (1 << irq)) {
+          CHECK_DIF_OK(dif_usbdev_irq_force(&usbdev, irq, false));
+          // In case this status interrupt is asserted by default, we also disable it at
+          // this point so that it does not interfere with the rest of the test.
+          if ((0x0 & (1 << irq))) {
+            CHECK_DIF_OK(dif_usbdev_irq_set_enabled(&usbdev, irq, false));
+          }
+        // If this is a regular event type interrupt, we acknowledge it at this point.
+        } else {
+          CHECK_DIF_OK(dif_usbdev_irq_acknowledge(&usbdev, irq));
+        }
         break;
       }
 #endif
@@ -1392,112 +1359,112 @@ static void peripheral_irqs_clear(void) {
 static void peripheral_irqs_enable(void) {
 #if TEST_MIN_IRQ_PERIPHERAL <= 0 && 0 < TEST_MAX_IRQ_PERIPHERAL
   dif_adc_ctrl_irq_state_snapshot_t adc_ctrl_irqs =
-      (dif_adc_ctrl_irq_state_snapshot_t)UINT_MAX;
+      (dif_adc_ctrl_irq_state_snapshot_t)0xffffffff;
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 1 && 1 < TEST_MAX_IRQ_PERIPHERAL
   dif_alert_handler_irq_state_snapshot_t alert_handler_irqs =
-      (dif_alert_handler_irq_state_snapshot_t)UINT_MAX;
+      (dif_alert_handler_irq_state_snapshot_t)0xffffffff;
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 3 && 3 < TEST_MAX_IRQ_PERIPHERAL
   dif_csrng_irq_state_snapshot_t csrng_irqs =
-      (dif_csrng_irq_state_snapshot_t)UINT_MAX;
+      (dif_csrng_irq_state_snapshot_t)0xffffffff;
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 4 && 4 < TEST_MAX_IRQ_PERIPHERAL
   dif_edn_irq_state_snapshot_t edn_irqs =
-      (dif_edn_irq_state_snapshot_t)UINT_MAX;
+      (dif_edn_irq_state_snapshot_t)0xffffffff;
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 5 && 5 < TEST_MAX_IRQ_PERIPHERAL
   dif_entropy_src_irq_state_snapshot_t entropy_src_irqs =
-      (dif_entropy_src_irq_state_snapshot_t)UINT_MAX;
+      (dif_entropy_src_irq_state_snapshot_t)0xffffffff;
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 6 && 6 < TEST_MAX_IRQ_PERIPHERAL
   dif_flash_ctrl_irq_state_snapshot_t flash_ctrl_irqs =
-      (dif_flash_ctrl_irq_state_snapshot_t)UINT_MAX;
+      (dif_flash_ctrl_irq_state_snapshot_t)0xffffffff;
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 7 && 7 < TEST_MAX_IRQ_PERIPHERAL
   dif_gpio_irq_state_snapshot_t gpio_irqs =
-      (dif_gpio_irq_state_snapshot_t)UINT_MAX;
+      (dif_gpio_irq_state_snapshot_t)0xffffffff;
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 8 && 8 < TEST_MAX_IRQ_PERIPHERAL
   dif_hmac_irq_state_snapshot_t hmac_irqs =
-      (dif_hmac_irq_state_snapshot_t)UINT_MAX;
+      (dif_hmac_irq_state_snapshot_t)0xffffffff;
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 9 && 9 < TEST_MAX_IRQ_PERIPHERAL
   dif_i2c_irq_state_snapshot_t i2c_irqs =
-      (dif_i2c_irq_state_snapshot_t)UINT_MAX;
+      (dif_i2c_irq_state_snapshot_t)0xffffffff;
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 10 && 10 < TEST_MAX_IRQ_PERIPHERAL
   dif_keymgr_irq_state_snapshot_t keymgr_irqs =
-      (dif_keymgr_irq_state_snapshot_t)UINT_MAX;
+      (dif_keymgr_irq_state_snapshot_t)0xffffffff;
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 11 && 11 < TEST_MAX_IRQ_PERIPHERAL
   dif_kmac_irq_state_snapshot_t kmac_irqs =
-      (dif_kmac_irq_state_snapshot_t)UINT_MAX;
+      (dif_kmac_irq_state_snapshot_t)0xffffffff;
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 12 && 12 < TEST_MAX_IRQ_PERIPHERAL
   dif_otbn_irq_state_snapshot_t otbn_irqs =
-      (dif_otbn_irq_state_snapshot_t)UINT_MAX;
+      (dif_otbn_irq_state_snapshot_t)0xffffffff;
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 13 && 13 < TEST_MAX_IRQ_PERIPHERAL
   dif_otp_ctrl_irq_state_snapshot_t otp_ctrl_irqs =
-      (dif_otp_ctrl_irq_state_snapshot_t)UINT_MAX;
+      (dif_otp_ctrl_irq_state_snapshot_t)0xffffffff;
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 14 && 14 < TEST_MAX_IRQ_PERIPHERAL
   dif_pattgen_irq_state_snapshot_t pattgen_irqs =
-      (dif_pattgen_irq_state_snapshot_t)UINT_MAX;
+      (dif_pattgen_irq_state_snapshot_t)0xffffffff;
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 15 && 15 < TEST_MAX_IRQ_PERIPHERAL
   dif_pwrmgr_irq_state_snapshot_t pwrmgr_irqs =
-      (dif_pwrmgr_irq_state_snapshot_t)UINT_MAX;
+      (dif_pwrmgr_irq_state_snapshot_t)0xffffffff;
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 16 && 16 < TEST_MAX_IRQ_PERIPHERAL
   dif_rv_timer_irq_state_snapshot_t rv_timer_irqs =
-      (dif_rv_timer_irq_state_snapshot_t)UINT_MAX;
+      (dif_rv_timer_irq_state_snapshot_t)0xffffffff;
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 17 && 17 < TEST_MAX_IRQ_PERIPHERAL
   dif_sensor_ctrl_irq_state_snapshot_t sensor_ctrl_irqs =
-      (dif_sensor_ctrl_irq_state_snapshot_t)UINT_MAX;
+      (dif_sensor_ctrl_irq_state_snapshot_t)0xffffffff;
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 18 && 18 < TEST_MAX_IRQ_PERIPHERAL
   dif_spi_device_irq_state_snapshot_t spi_device_irqs =
-      (dif_spi_device_irq_state_snapshot_t)UINT_MAX;
+      (dif_spi_device_irq_state_snapshot_t)0xffffffff;
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 19 && 19 < TEST_MAX_IRQ_PERIPHERAL
   dif_spi_host_irq_state_snapshot_t spi_host_irqs =
-      (dif_spi_host_irq_state_snapshot_t)UINT_MAX;
+      (dif_spi_host_irq_state_snapshot_t)0xffffffff;
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 20 && 20 < TEST_MAX_IRQ_PERIPHERAL
   dif_sysrst_ctrl_irq_state_snapshot_t sysrst_ctrl_irqs =
-      (dif_sysrst_ctrl_irq_state_snapshot_t)UINT_MAX;
+      (dif_sysrst_ctrl_irq_state_snapshot_t)0xffffffff;
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 21 && 21 < TEST_MAX_IRQ_PERIPHERAL
   dif_uart_irq_state_snapshot_t uart_irqs =
-      (dif_uart_irq_state_snapshot_t)UINT_MAX;
+      (dif_uart_irq_state_snapshot_t)0xffffffff;
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 22 && 22 < TEST_MAX_IRQ_PERIPHERAL
   dif_usbdev_irq_state_snapshot_t usbdev_irqs =
-      (dif_usbdev_irq_state_snapshot_t)UINT_MAX;
+      (dif_usbdev_irq_state_snapshot_t)0xffffffff;
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 0 && 0 < TEST_MAX_IRQ_PERIPHERAL
@@ -1662,10 +1629,16 @@ static void peripheral_irqs_enable(void) {
  * expected IRQ from the expected peripheral triggered.
  */
 static void peripheral_irqs_trigger(void) {
+  unsigned int status_default_mask;
+  // Depending on the build configuration, this variable may show up as unused
+  // in the clang linter. This statement waives that error.
+  (void) status_default_mask;
+
 #if TEST_MIN_IRQ_PERIPHERAL <= 0 && 0 < TEST_MAX_IRQ_PERIPHERAL
   peripheral_expected = kTopEarlgreyPlicPeripheralAdcCtrlAon;
   for (dif_adc_ctrl_irq_t irq = kDifAdcCtrlIrqMatchDone;
        irq <= kDifAdcCtrlIrqMatchDone; ++irq) {
+
     adc_ctrl_irq_expected = irq;
     LOG_INFO("Triggering adc_ctrl_aon IRQ %d.", irq);
     CHECK_DIF_OK(dif_adc_ctrl_irq_force(&adc_ctrl_aon, irq, true));
@@ -1681,6 +1654,7 @@ static void peripheral_irqs_trigger(void) {
   peripheral_expected = kTopEarlgreyPlicPeripheralAlertHandler;
   for (dif_alert_handler_irq_t irq = kDifAlertHandlerIrqClassa;
        irq <= kDifAlertHandlerIrqClassd; ++irq) {
+
     alert_handler_irq_expected = irq;
     LOG_INFO("Triggering alert_handler IRQ %d.", irq);
     CHECK_DIF_OK(dif_alert_handler_irq_force(&alert_handler, irq, true));
@@ -1702,6 +1676,7 @@ static void peripheral_irqs_trigger(void) {
     peripheral_expected = kTopEarlgreyPlicPeripheralAonTimerAon;
     for (dif_aon_timer_irq_t irq = kDifAonTimerIrqWkupTimerExpired;
          irq <= kDifAonTimerIrqWdogTimerBark; ++irq) {
+
       aon_timer_irq_expected = irq;
       LOG_INFO("Triggering aon_timer_aon IRQ %d.", irq);
       CHECK_DIF_OK(dif_aon_timer_irq_force(&aon_timer_aon, irq, true));
@@ -1718,6 +1693,7 @@ static void peripheral_irqs_trigger(void) {
   peripheral_expected = kTopEarlgreyPlicPeripheralCsrng;
   for (dif_csrng_irq_t irq = kDifCsrngIrqCsCmdReqDone;
        irq <= kDifCsrngIrqCsFatalErr; ++irq) {
+
     csrng_irq_expected = irq;
     LOG_INFO("Triggering csrng IRQ %d.", irq);
     CHECK_DIF_OK(dif_csrng_irq_force(&csrng, irq, true));
@@ -1733,6 +1709,7 @@ static void peripheral_irqs_trigger(void) {
   peripheral_expected = kTopEarlgreyPlicPeripheralEdn0;
   for (dif_edn_irq_t irq = kDifEdnIrqEdnCmdReqDone;
        irq <= kDifEdnIrqEdnFatalErr; ++irq) {
+
     edn_irq_expected = irq;
     LOG_INFO("Triggering edn0 IRQ %d.", irq);
     CHECK_DIF_OK(dif_edn_irq_force(&edn0, irq, true));
@@ -1748,6 +1725,7 @@ static void peripheral_irqs_trigger(void) {
   peripheral_expected = kTopEarlgreyPlicPeripheralEdn1;
   for (dif_edn_irq_t irq = kDifEdnIrqEdnCmdReqDone;
        irq <= kDifEdnIrqEdnFatalErr; ++irq) {
+
     edn_irq_expected = irq;
     LOG_INFO("Triggering edn1 IRQ %d.", irq);
     CHECK_DIF_OK(dif_edn_irq_force(&edn1, irq, true));
@@ -1763,6 +1741,7 @@ static void peripheral_irqs_trigger(void) {
   peripheral_expected = kTopEarlgreyPlicPeripheralEntropySrc;
   for (dif_entropy_src_irq_t irq = kDifEntropySrcIrqEsEntropyValid;
        irq <= kDifEntropySrcIrqEsFatalErr; ++irq) {
+
     entropy_src_irq_expected = irq;
     LOG_INFO("Triggering entropy_src IRQ %d.", irq);
     CHECK_DIF_OK(dif_entropy_src_irq_force(&entropy_src, irq, true));
@@ -1778,6 +1757,7 @@ static void peripheral_irqs_trigger(void) {
   peripheral_expected = kTopEarlgreyPlicPeripheralFlashCtrl;
   for (dif_flash_ctrl_irq_t irq = kDifFlashCtrlIrqProgEmpty;
        irq <= kDifFlashCtrlIrqCorrErr; ++irq) {
+
     flash_ctrl_irq_expected = irq;
     LOG_INFO("Triggering flash_ctrl IRQ %d.", irq);
     CHECK_DIF_OK(dif_flash_ctrl_irq_force(&flash_ctrl, irq, true));
@@ -1793,6 +1773,7 @@ static void peripheral_irqs_trigger(void) {
   peripheral_expected = kTopEarlgreyPlicPeripheralGpio;
   for (dif_gpio_irq_t irq = kDifGpioIrqGpio0;
        irq <= kDifGpioIrqGpio31; ++irq) {
+
     gpio_irq_expected = irq;
     LOG_INFO("Triggering gpio IRQ %d.", irq);
     CHECK_DIF_OK(dif_gpio_irq_force(&gpio, irq, true));
@@ -1808,6 +1789,7 @@ static void peripheral_irqs_trigger(void) {
   peripheral_expected = kTopEarlgreyPlicPeripheralHmac;
   for (dif_hmac_irq_t irq = kDifHmacIrqHmacDone;
        irq <= kDifHmacIrqHmacErr; ++irq) {
+
     hmac_irq_expected = irq;
     LOG_INFO("Triggering hmac IRQ %d.", irq);
     CHECK_DIF_OK(dif_hmac_irq_force(&hmac, irq, true));
@@ -1821,11 +1803,21 @@ static void peripheral_irqs_trigger(void) {
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 9 && 9 < TEST_MAX_IRQ_PERIPHERAL
   peripheral_expected = kTopEarlgreyPlicPeripheralI2c0;
+  status_default_mask = 0x0;
   for (dif_i2c_irq_t irq = kDifI2cIrqFmtThreshold;
        irq <= kDifI2cIrqHostTimeout; ++irq) {
+
     i2c_irq_expected = irq;
     LOG_INFO("Triggering i2c0 IRQ %d.", irq);
     CHECK_DIF_OK(dif_i2c_irq_force(&i2c0, irq, true));
+
+    // In this case, the interrupt has not been enabled yet because that would
+    // interfere with testing other interrupts. We enable it here and let the
+    // interrupt handler disable it again.
+    if ((status_default_mask & 0x1)) {
+       CHECK_DIF_OK(dif_i2c_irq_set_enabled(&i2c0, irq, true));
+    }
+    status_default_mask >>= 1;
 
     // This avoids a race where *irq_serviced is read before
     // entering the ISR.
@@ -1836,11 +1828,21 @@ static void peripheral_irqs_trigger(void) {
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 9 && 9 < TEST_MAX_IRQ_PERIPHERAL
   peripheral_expected = kTopEarlgreyPlicPeripheralI2c1;
+  status_default_mask = 0x0;
   for (dif_i2c_irq_t irq = kDifI2cIrqFmtThreshold;
        irq <= kDifI2cIrqHostTimeout; ++irq) {
+
     i2c_irq_expected = irq;
     LOG_INFO("Triggering i2c1 IRQ %d.", irq);
     CHECK_DIF_OK(dif_i2c_irq_force(&i2c1, irq, true));
+
+    // In this case, the interrupt has not been enabled yet because that would
+    // interfere with testing other interrupts. We enable it here and let the
+    // interrupt handler disable it again.
+    if ((status_default_mask & 0x1)) {
+       CHECK_DIF_OK(dif_i2c_irq_set_enabled(&i2c1, irq, true));
+    }
+    status_default_mask >>= 1;
 
     // This avoids a race where *irq_serviced is read before
     // entering the ISR.
@@ -1851,11 +1853,21 @@ static void peripheral_irqs_trigger(void) {
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 9 && 9 < TEST_MAX_IRQ_PERIPHERAL
   peripheral_expected = kTopEarlgreyPlicPeripheralI2c2;
+  status_default_mask = 0x0;
   for (dif_i2c_irq_t irq = kDifI2cIrqFmtThreshold;
        irq <= kDifI2cIrqHostTimeout; ++irq) {
+
     i2c_irq_expected = irq;
     LOG_INFO("Triggering i2c2 IRQ %d.", irq);
     CHECK_DIF_OK(dif_i2c_irq_force(&i2c2, irq, true));
+
+    // In this case, the interrupt has not been enabled yet because that would
+    // interfere with testing other interrupts. We enable it here and let the
+    // interrupt handler disable it again.
+    if ((status_default_mask & 0x1)) {
+       CHECK_DIF_OK(dif_i2c_irq_set_enabled(&i2c2, irq, true));
+    }
+    status_default_mask >>= 1;
 
     // This avoids a race where *irq_serviced is read before
     // entering the ISR.
@@ -1868,6 +1880,7 @@ static void peripheral_irqs_trigger(void) {
   peripheral_expected = kTopEarlgreyPlicPeripheralKeymgr;
   for (dif_keymgr_irq_t irq = kDifKeymgrIrqOpDone;
        irq <= kDifKeymgrIrqOpDone; ++irq) {
+
     keymgr_irq_expected = irq;
     LOG_INFO("Triggering keymgr IRQ %d.", irq);
     CHECK_DIF_OK(dif_keymgr_irq_force(&keymgr, irq, true));
@@ -1883,6 +1896,7 @@ static void peripheral_irqs_trigger(void) {
   peripheral_expected = kTopEarlgreyPlicPeripheralKmac;
   for (dif_kmac_irq_t irq = kDifKmacIrqKmacDone;
        irq <= kDifKmacIrqKmacErr; ++irq) {
+
     kmac_irq_expected = irq;
     LOG_INFO("Triggering kmac IRQ %d.", irq);
     CHECK_DIF_OK(dif_kmac_irq_force(&kmac, irq, true));
@@ -1898,6 +1912,7 @@ static void peripheral_irqs_trigger(void) {
   peripheral_expected = kTopEarlgreyPlicPeripheralOtbn;
   for (dif_otbn_irq_t irq = kDifOtbnIrqDone;
        irq <= kDifOtbnIrqDone; ++irq) {
+
     otbn_irq_expected = irq;
     LOG_INFO("Triggering otbn IRQ %d.", irq);
     CHECK_DIF_OK(dif_otbn_irq_force(&otbn, irq, true));
@@ -1916,6 +1931,7 @@ static void peripheral_irqs_trigger(void) {
     peripheral_expected = kTopEarlgreyPlicPeripheralOtpCtrl;
     for (dif_otp_ctrl_irq_t irq = kDifOtpCtrlIrqOtpOperationDone;
          irq <= kDifOtpCtrlIrqOtpError; ++irq) {
+
       otp_ctrl_irq_expected = irq;
       LOG_INFO("Triggering otp_ctrl IRQ %d.", irq);
       CHECK_DIF_OK(dif_otp_ctrl_irq_force(&otp_ctrl, irq, true));
@@ -1932,6 +1948,7 @@ static void peripheral_irqs_trigger(void) {
   peripheral_expected = kTopEarlgreyPlicPeripheralPattgen;
   for (dif_pattgen_irq_t irq = kDifPattgenIrqDoneCh0;
        irq <= kDifPattgenIrqDoneCh1; ++irq) {
+
     pattgen_irq_expected = irq;
     LOG_INFO("Triggering pattgen IRQ %d.", irq);
     CHECK_DIF_OK(dif_pattgen_irq_force(&pattgen, irq, true));
@@ -1947,6 +1964,7 @@ static void peripheral_irqs_trigger(void) {
   peripheral_expected = kTopEarlgreyPlicPeripheralPwrmgrAon;
   for (dif_pwrmgr_irq_t irq = kDifPwrmgrIrqWakeup;
        irq <= kDifPwrmgrIrqWakeup; ++irq) {
+
     pwrmgr_irq_expected = irq;
     LOG_INFO("Triggering pwrmgr_aon IRQ %d.", irq);
     CHECK_DIF_OK(dif_pwrmgr_irq_force(&pwrmgr_aon, irq, true));
@@ -1962,6 +1980,7 @@ static void peripheral_irqs_trigger(void) {
   peripheral_expected = kTopEarlgreyPlicPeripheralRvTimer;
   for (dif_rv_timer_irq_t irq = kDifRvTimerIrqTimerExpiredHart0Timer0;
        irq <= kDifRvTimerIrqTimerExpiredHart0Timer0; ++irq) {
+
     rv_timer_irq_expected = irq;
     LOG_INFO("Triggering rv_timer IRQ %d.", irq);
     CHECK_DIF_OK(dif_rv_timer_irq_force(&rv_timer, irq, true));
@@ -1977,6 +1996,7 @@ static void peripheral_irqs_trigger(void) {
   peripheral_expected = kTopEarlgreyPlicPeripheralSensorCtrlAon;
   for (dif_sensor_ctrl_irq_t irq = kDifSensorCtrlIrqIoStatusChange;
        irq <= kDifSensorCtrlIrqInitStatusChange; ++irq) {
+
     sensor_ctrl_irq_expected = irq;
     LOG_INFO("Triggering sensor_ctrl_aon IRQ %d.", irq);
     CHECK_DIF_OK(dif_sensor_ctrl_irq_force(&sensor_ctrl_aon, irq, true));
@@ -1990,11 +2010,21 @@ static void peripheral_irqs_trigger(void) {
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 18 && 18 < TEST_MAX_IRQ_PERIPHERAL
   peripheral_expected = kTopEarlgreyPlicPeripheralSpiDevice;
+  status_default_mask = 0x0;
   for (dif_spi_device_irq_t irq = kDifSpiDeviceIrqUploadCmdfifoNotEmpty;
        irq <= kDifSpiDeviceIrqTpmRdfifoDrop; ++irq) {
+
     spi_device_irq_expected = irq;
     LOG_INFO("Triggering spi_device IRQ %d.", irq);
     CHECK_DIF_OK(dif_spi_device_irq_force(&spi_device, irq, true));
+
+    // In this case, the interrupt has not been enabled yet because that would
+    // interfere with testing other interrupts. We enable it here and let the
+    // interrupt handler disable it again.
+    if ((status_default_mask & 0x1)) {
+       CHECK_DIF_OK(dif_spi_device_irq_set_enabled(&spi_device, irq, true));
+    }
+    status_default_mask >>= 1;
 
     // This avoids a race where *irq_serviced is read before
     // entering the ISR.
@@ -2007,6 +2037,7 @@ static void peripheral_irqs_trigger(void) {
   peripheral_expected = kTopEarlgreyPlicPeripheralSpiHost0;
   for (dif_spi_host_irq_t irq = kDifSpiHostIrqError;
        irq <= kDifSpiHostIrqSpiEvent; ++irq) {
+
     spi_host_irq_expected = irq;
     LOG_INFO("Triggering spi_host0 IRQ %d.", irq);
     CHECK_DIF_OK(dif_spi_host_irq_force(&spi_host0, irq, true));
@@ -2022,6 +2053,7 @@ static void peripheral_irqs_trigger(void) {
   peripheral_expected = kTopEarlgreyPlicPeripheralSpiHost1;
   for (dif_spi_host_irq_t irq = kDifSpiHostIrqError;
        irq <= kDifSpiHostIrqSpiEvent; ++irq) {
+
     spi_host_irq_expected = irq;
     LOG_INFO("Triggering spi_host1 IRQ %d.", irq);
     CHECK_DIF_OK(dif_spi_host_irq_force(&spi_host1, irq, true));
@@ -2037,6 +2069,7 @@ static void peripheral_irqs_trigger(void) {
   peripheral_expected = kTopEarlgreyPlicPeripheralSysrstCtrlAon;
   for (dif_sysrst_ctrl_irq_t irq = kDifSysrstCtrlIrqEventDetected;
        irq <= kDifSysrstCtrlIrqEventDetected; ++irq) {
+
     sysrst_ctrl_irq_expected = irq;
     LOG_INFO("Triggering sysrst_ctrl_aon IRQ %d.", irq);
     CHECK_DIF_OK(dif_sysrst_ctrl_irq_force(&sysrst_ctrl_aon, irq, true));
@@ -2058,6 +2091,7 @@ static void peripheral_irqs_trigger(void) {
     peripheral_expected = kTopEarlgreyPlicPeripheralUart0;
     for (dif_uart_irq_t irq = kDifUartIrqTxWatermark;
          irq <= kDifUartIrqRxParityErr; ++irq) {
+
       uart_irq_expected = irq;
       LOG_INFO("Triggering uart0 IRQ %d.", irq);
       CHECK_DIF_OK(dif_uart_irq_force(&uart0, irq, true));
@@ -2074,6 +2108,7 @@ static void peripheral_irqs_trigger(void) {
   peripheral_expected = kTopEarlgreyPlicPeripheralUart1;
   for (dif_uart_irq_t irq = kDifUartIrqTxWatermark;
        irq <= kDifUartIrqRxParityErr; ++irq) {
+
     uart_irq_expected = irq;
     LOG_INFO("Triggering uart1 IRQ %d.", irq);
     CHECK_DIF_OK(dif_uart_irq_force(&uart1, irq, true));
@@ -2089,6 +2124,7 @@ static void peripheral_irqs_trigger(void) {
   peripheral_expected = kTopEarlgreyPlicPeripheralUart2;
   for (dif_uart_irq_t irq = kDifUartIrqTxWatermark;
        irq <= kDifUartIrqRxParityErr; ++irq) {
+
     uart_irq_expected = irq;
     LOG_INFO("Triggering uart2 IRQ %d.", irq);
     CHECK_DIF_OK(dif_uart_irq_force(&uart2, irq, true));
@@ -2104,6 +2140,7 @@ static void peripheral_irqs_trigger(void) {
   peripheral_expected = kTopEarlgreyPlicPeripheralUart3;
   for (dif_uart_irq_t irq = kDifUartIrqTxWatermark;
        irq <= kDifUartIrqRxParityErr; ++irq) {
+
     uart_irq_expected = irq;
     LOG_INFO("Triggering uart3 IRQ %d.", irq);
     CHECK_DIF_OK(dif_uart_irq_force(&uart3, irq, true));
@@ -2117,11 +2154,21 @@ static void peripheral_irqs_trigger(void) {
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 22 && 22 < TEST_MAX_IRQ_PERIPHERAL
   peripheral_expected = kTopEarlgreyPlicPeripheralUsbdev;
+  status_default_mask = 0x0;
   for (dif_usbdev_irq_t irq = kDifUsbdevIrqPktReceived;
        irq <= kDifUsbdevIrqAvSetupEmpty; ++irq) {
+
     usbdev_irq_expected = irq;
     LOG_INFO("Triggering usbdev IRQ %d.", irq);
     CHECK_DIF_OK(dif_usbdev_irq_force(&usbdev, irq, true));
+
+    // In this case, the interrupt has not been enabled yet because that would
+    // interfere with testing other interrupts. We enable it here and let the
+    // interrupt handler disable it again.
+    if ((status_default_mask & 0x1)) {
+       CHECK_DIF_OK(dif_usbdev_irq_set_enabled(&usbdev, irq, true));
+    }
+    status_default_mask >>= 1;
 
     // This avoids a race where *irq_serviced is read before
     // entering the ISR.
