@@ -53,6 +53,7 @@ enum module_ {
   kModuleXModem =          MODULE_CODE('X', 'M'),
   kModuleRescue =          MODULE_CODE('R', 'S'),
   kModuleDice =            MODULE_CODE('D', 'C'),
+  kModuleOwnership =       MODULE_CODE('O', 'W'),
   // clang-format on
 };
 
@@ -81,6 +82,7 @@ enum module_ {
 //       after the ROM is frozen.
 #define DEFINE_ERRORS(X) \
   X(kErrorOk,                         0x739), \
+  X(kErrorWriteBootdataThenReboot,    0x2ea), \
   X(kErrorUnknown,                    0xffffffff), \
   \
   X(kErrorSigverifyBadRsaSignature,   ERROR_(1, kModuleSigverify, kInvalidArgument)), \
@@ -192,6 +194,12 @@ enum module_ {
   X(kErrorRescueImageTooBig,          ERROR_(2, kModuleRescue, kFailedPrecondition)), \
   \
   X(kErrorDiceInvalidArgument,        ERROR_(0, kModuleDice, kInvalidArgument)), \
+  \
+  X(kErrorOwnershipInvalidNonce,      ERROR_(0, kModuleOwnership, kInvalidArgument)), \
+  X(kErrorOwnershipInvalidMode,       ERROR_(1, kModuleOwnership, kInvalidArgument)), \
+  X(kErrorOwnershipInvalidSignature,  ERROR_(2, kModuleOwnership, kInvalidArgument)), \
+  X(kErrorOwnershipInvalidState,      ERROR_(3, kModuleOwnership, kInvalidArgument)), \
+  X(kErrorOwnershipInvalidRequest,    ERROR_(4, kModuleOwnership, kInvalidArgument)), \
   \
   /* This comment prevent clang from trying to format the macro. */
 
