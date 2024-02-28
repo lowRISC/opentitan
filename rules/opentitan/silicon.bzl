@@ -150,6 +150,7 @@ def silicon_params(
       test_harness: Use an alternative test harness for this test.
       binaries: Dict of binary labels to substitution parameter names.
       rom_ext: Use an alternate ROM_EXT for this test.
+      changes_otp: Whether this test may change the OTP.
       needs_jtag: If this test requires JTAG access, set this to True.
       test_cmd: Use an alternate test_cmd for this test.
       data: Additional files needed by this test.
@@ -167,34 +168,11 @@ def silicon_params(
         rom_ext = rom_ext,
         otp = None,
         bitstream = None,
+        changes_otp = None,
         needs_jtag = needs_jtag,
         test_cmd = ("""
             {jtag_test_cmd}
         """ if needs_jtag else "") + test_cmd,
         data = data,
         param = kwargs,
-    )
-
-def silicon_jtag_params(**kwargs):
-    """A macro to create Silicon parameters for OpenTitan JTAG tests.
-
-    This creates version of the Silicon parameter structure pre-initialized
-    with OpenOCD dependencies and test_cmd parameters.
-
-    Args:
-      tags: The test tags to apply to the test rule.
-      timeout: The timeout to apply to the test rule.
-      local: Whether to set the `local` flag on this test.
-      test_harness: Use an alternative test harness for this test.
-      binaries: Dict of binary labels to substitution parameter names.
-      rom_ext: Use an alternate ROM_EXT for this test.
-      test_cmd: Use an alternate test_cmd for this test.
-      data: Additional files needed by this test.
-      kwargs: Additional key-value pairs to override in the test `param` dict.
-    Returns:
-      struct of test parameters.
-    """
-    return silicon_params(
-        needs_jtag = True,
-        **kwargs
     )
