@@ -688,11 +688,13 @@ void isr_testutils_hmac_isr(plic_isr_ctx_t plic_ctx, hmac_isr_ctx_t hmac_ctx,
  *
  * @param plic_ctx A PLIC ISR context handle.
  * @param i2c_ctx A(n) i2c ISR context handle.
+ * @param mute_status_irq set to true to disable the serviced status type IRQ.
  * @param[out] peripheral_serviced Out param for the peripheral that was
  * serviced.
  * @param[out] irq_serviced Out param for the IRQ that was serviced.
  */
 void isr_testutils_i2c_isr(plic_isr_ctx_t plic_ctx, i2c_isr_ctx_t i2c_ctx,
+                           bool mute_status_irq,
                            top_earlgrey_plic_peripheral_t *peripheral_serviced,
                            dif_i2c_irq_t *irq_serviced);
 
@@ -811,13 +813,14 @@ void isr_testutils_sensor_ctrl_isr(
  *
  * @param plic_ctx A PLIC ISR context handle.
  * @param spi_device_ctx A(n) spi_device ISR context handle.
+ * @param mute_status_irq set to true to disable the serviced status type IRQ.
  * @param[out] peripheral_serviced Out param for the peripheral that was
  * serviced.
  * @param[out] irq_serviced Out param for the IRQ that was serviced.
  */
 void isr_testutils_spi_device_isr(
     plic_isr_ctx_t plic_ctx, spi_device_isr_ctx_t spi_device_ctx,
-    top_earlgrey_plic_peripheral_t *peripheral_serviced,
+    bool mute_status_irq, top_earlgrey_plic_peripheral_t *peripheral_serviced,
     dif_spi_device_irq_t *irq_serviced);
 
 /**
@@ -866,12 +869,13 @@ void isr_testutils_uart_isr(plic_isr_ctx_t plic_ctx, uart_isr_ctx_t uart_ctx,
  *
  * @param plic_ctx A PLIC ISR context handle.
  * @param usbdev_ctx A(n) usbdev ISR context handle.
+ * @param mute_status_irq set to true to disable the serviced status type IRQ.
  * @param[out] peripheral_serviced Out param for the peripheral that was
  * serviced.
  * @param[out] irq_serviced Out param for the IRQ that was serviced.
  */
 void isr_testutils_usbdev_isr(
-    plic_isr_ctx_t plic_ctx, usbdev_isr_ctx_t usbdev_ctx,
+    plic_isr_ctx_t plic_ctx, usbdev_isr_ctx_t usbdev_ctx, bool mute_status_irq,
     top_earlgrey_plic_peripheral_t *peripheral_serviced,
     dif_usbdev_irq_t *irq_serviced);
 

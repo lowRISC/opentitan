@@ -72,7 +72,7 @@ void ottf_external_isr(uint32_t *exc_info) {
 
   top_earlgrey_plic_peripheral_t peripheral;
   dif_i2c_irq_t i2c_irq;
-  isr_testutils_i2c_isr(plic_ctx, i2c_ctx, &peripheral, &i2c_irq);
+  isr_testutils_i2c_isr(plic_ctx, i2c_ctx, false, &peripheral, &i2c_irq);
 
   bool disable = false;
   switch (i2c_irq) {
