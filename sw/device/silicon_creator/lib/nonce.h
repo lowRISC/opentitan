@@ -5,6 +5,7 @@
 #ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_NONCE_H_
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_NONCE_H_
 
+#include <stdbool.h>
 #include <stdint.h>
 
 /**
@@ -13,5 +14,23 @@
 typedef struct nonce {
   uint32_t value[2];
 } nonce_t;
+
+/**
+ * Generate a new nonce random nonce value.
+ *
+ * @param nonce Pointer to a nonce.
+ */
+void nonce_new(nonce_t *nonce);
+
+/**
+ * Check nonces for equality.
+ *
+ * @param a Nonce to compare.
+ * @param b Nonce to compare.
+ * @return bool true if equal, false otherwise.
+ */
+inline bool nonce_equal(nonce_t *a, nonce_t *b) {
+  return a->value[0] == b->value[0] && a->value[1] == b->value[1];
+}
 
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_NONCE_H_
