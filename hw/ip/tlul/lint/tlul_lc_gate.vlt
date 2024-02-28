@@ -10,3 +10,15 @@
 // UNOPTFLAT warning.
 split_var -module "tlul_lc_gate" -var "tl_h2d_int"
 split_var -module "tlul_lc_gate" -var "tl_d2h_int"
+
+// In tlul_lc_gate.sv, there's an always_comb block that writes to
+// tl_h2d_error. This h2d signal feeds into the d2h signal through
+// u_tlul_err_resp, which means a write to tl_h2d_error causes a change in
+// tl_d2h_error, which retriggers the alway_comb block. This causes Verilator's
+// reasonably cautious tracking logic to infer a circular dependency, giving
+// UNOPTFLAT.
+//
+// The isolate_assignments metacomment here tells Verilator to split up that
+// block and track the writes to tl_h2d_error separately from all the rest.
+// This undoes the false loop.
+isolate_assignments -module "tlul_lc_gate" -var "tl_h2d_error"
