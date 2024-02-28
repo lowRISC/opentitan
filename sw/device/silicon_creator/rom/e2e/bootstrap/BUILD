@@ -4,7 +4,6 @@
 
 load(
     "//rules/opentitan:defs.bzl",
-    "cw310_jtag_params",
     "cw310_params",
     "opentitan_test",
     "rsa_key_for_lc_state",
@@ -72,10 +71,10 @@ otp_image(
 opentitan_test(
     name = "e2e_bootstrap_rma",
     srcs = ["rom_e2e_bootstrap_rma_test.c"],
-    cw310 = cw310_jtag_params(
+    cw310 = cw310_params(
+        changes_otp = True,
+        needs_jtag = True,
         otp = "otp_img_bootstrap_rma",
-        # We need to clear the bitstream between consecutive runs of this
-        # test since it modifies OTP state (i.e., the LC state).
         test_cmd = """
             --bootstrap="{firmware}"
         """,

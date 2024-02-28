@@ -4,8 +4,8 @@
 
 load(
     "//rules/opentitan:defs.bzl",
-    "cw310_jtag_params",
     "opentitan_test",
+    new_cw310_params = "cw310_params",
 )
 load(
     "//rules:opentitan_test.bzl",
@@ -45,11 +45,12 @@ package(default_visibility = ["//visibility:public"])
     opentitan_test(
         name = "sram_program_fpga_cw310_test_otp_{}".format(lc_state),
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
-        cw310 = cw310_jtag_params(
+        cw310 = new_cw310_params(
             binaries = {
                 "//sw/device/examples/sram_program:sram_program": "sram_program",
             },
             logging = "debug",
+            needs_jtag = True,
             otp = ":img_{}_exec_disabled".format(lc_state),
             tags = ["cw310_rom_with_fake_keys"],
             test_cmd = """
@@ -96,9 +97,10 @@ LC_STATES_DEBUG_DISALLOWED = [
     opentitan_test(
         name = "openocd_debug_test_otp_" + lc_state,
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
-        cw310 = cw310_jtag_params(
+        cw310 = new_cw310_params(
             timeout = "moderate",
             logging = "debug",
+            needs_jtag = True,
             otp = ":img_{}_exec_disabled".format(lc_state),
             tags = ["cw310_rom_with_fake_keys"],
             test_cmd = " --elf={rom:elf}" + (" --expect-fail" if lc_state_val in LC_STATES_DEBUG_DISALLOWED else " "),
