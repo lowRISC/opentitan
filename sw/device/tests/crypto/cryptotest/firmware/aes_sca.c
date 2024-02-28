@@ -24,6 +24,11 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
+/**
+ * Enable FPGA mode.
+ */
+static bool fpga_mode = false;
+
 enum {
   kAesKeyLengthMax = 32,
   kAesKeyLength = 16,
@@ -167,6 +172,7 @@ static aes_sca_error_t aes_key_mask_and_config(const uint8_t *key,
         sca_linear_layer(sca_next_lfsr(1, kScaLfsrMasking)));
     key_shares.share0[i] = *((uint32_t *)key + i) ^ key_shares.share1[i];
   }
+
   // Provide random shares for unused key bits.
   for (size_t i = key_len / 4; i < kAesKeyLengthMax / 4; ++i) {
     key_shares.share1[i] =
@@ -243,7 +249,16 @@ static aes_sca_error_t aes_encrypt(const uint8_t *plaintext,
   }
 
   // Start AES operation (this triggers the capture) and go to sleep.
-  sca_call_and_sleep(aes_manual_trigger, kIbexAesSleepCycles);
+  if (fpga_mode) {
+    // On the FPGA, the AES block automatically sets and unsets the trigger.
+    sca_call_and_sleep(aes_manual_trigger, kIbexAesSleepCycles, false);
+  } else {
+    // On the chip, we need to manually set and unset the trigger. This is done
+    // in this function to have the trigger as close as possible to the AES
+    // operation.
+    sca_call_and_sleep(aes_manual_trigger, kIbexAesSleepCycles, true);
+  }
+
   return aesScaOk;
 }
 
@@ -260,9 +275,7 @@ static status_t aes_send_ciphertext(bool only_first_word, ujson_t *uj) {
   } while (!ready);
 
   dif_aes_data_t ciphertext;
-  if (dif_aes_read_output(&aes, &ciphertext) != kDifOk) {
-    return OUT_OF_RANGE();
-  }
+  UJSON_CHECK_DIF_OK(dif_aes_read_output(&aes, &ciphertext));
 
   cryptotest_aes_sca_ciphertext_t uj_output;
   memset(uj_output.ciphertext, 0, AESSCA_CMD_MAX_DATA_BYTES);
@@ -307,11 +320,15 @@ status_t handle_aes_sca_single_encrypt(ujson_t *uj) {
     block_ctr = 1;
   }
 
-  sca_set_trigger_high();
+  if (fpga_mode) {
+    sca_set_trigger_high();
+  }
   if (aes_encrypt(uj_data.text, uj_data.text_length) != aesScaOk) {
     return ABORTED();
   }
-  sca_set_trigger_low();
+  if (fpga_mode) {
+    sca_set_trigger_low();
+  }
 
   TRY(aes_send_ciphertext(false, uj));
   return OK_STATUS(0);
@@ -396,14 +413,18 @@ status_t handle_aes_sca_batch_encrypt(ujson_t *uj) {
     block_ctr = num_encryptions;
   }
 
-  sca_set_trigger_high();
+  if (fpga_mode) {
+    sca_set_trigger_high();
+  }
   for (uint32_t i = 0; i < num_encryptions; ++i) {
     if (aes_encrypt(plaintext_random, kAesTextLength) != aesScaOk) {
       return ABORTED();
     }
     aes_serial_advance_random();
   }
-  sca_set_trigger_low();
+  if (fpga_mode) {
+    sca_set_trigger_low();
+  }
 
   TRY(aes_send_ciphertext(true, uj));
 
@@ -456,7 +477,9 @@ status_t handle_aes_sca_batch_alternative_encrypt(ujson_t *uj) {
   // Set trigger high outside of loop
   // On FPGA, the trigger is AND-ed with AES !IDLE and creates a LO-HI-LO per
   // AES operation
-  sca_set_trigger_high();
+  if (fpga_mode) {
+    sca_set_trigger_high();
+  }
   dif_aes_data_t ciphertext;
   for (uint32_t i = 0; i < num_encryptions; ++i) {
     // Encrypt
@@ -477,7 +500,9 @@ status_t handle_aes_sca_batch_alternative_encrypt(ujson_t *uj) {
     // Use ciphertext as next plaintext (incl. next call to this function)
     memcpy(batch_plaintext, ciphertext.data, kAesTextLength);
   }
-  sca_set_trigger_low();
+  if (fpga_mode) {
+    sca_set_trigger_low();
+  }
 
   // send last ciphertext
   cryptotest_aes_sca_ciphertext_t uj_output;
@@ -647,7 +672,9 @@ status_t handle_aes_sca_fvsr_key_batch_encrypt(ujson_t *uj) {
     return OUT_OF_RANGE();
   }
 
-  sca_set_trigger_high();
+  if (fpga_mode) {
+    sca_set_trigger_high();
+  }
   for (uint32_t i = 0; i < num_encryptions; ++i) {
     if (aes_key_mask_and_config(batch_keys[i], kAesKeyLength) != aesScaOk) {
       return ABORTED();
@@ -656,7 +683,9 @@ status_t handle_aes_sca_fvsr_key_batch_encrypt(ujson_t *uj) {
       return ABORTED();
     }
   }
-  sca_set_trigger_low();
+  if (fpga_mode) {
+    sca_set_trigger_low();
+  }
 
   TRY(aes_send_ciphertext(false, uj));
 
@@ -714,12 +743,16 @@ status_t handle_aes_sca_fvsr_data_batch_encrypt(ujson_t *uj) {
     sample_fixed = sca_next_lfsr(1, kScaLfsrOrder) & 0x1;
   }
 
-  sca_set_trigger_high();
+  if (fpga_mode) {
+    sca_set_trigger_high();
+  }
   for (uint32_t i = 0; i < num_encryptions; ++i) {
     aes_key_mask_and_config(batch_keys[i], kAesKeyLength);
     aes_encrypt(batch_plaintexts[i], kAesTextLength);
   }
-  sca_set_trigger_low();
+  if (fpga_mode) {
+    sca_set_trigger_low();
+  }
 
   TRY(aes_send_ciphertext(false, uj));
 
@@ -859,16 +892,17 @@ status_t handle_aes_sca_fvsr_key_start_batch_generate(ujson_t *uj) {
  * @param uj The received uJSON data.
  */
 status_t handle_aes_sca_init(ujson_t *uj) {
+  // Read mode. FPGA or discrete.
+  cryptotest_aes_sca_fpga_mode_t uj_data;
+  TRY(ujson_deserialize_cryptotest_aes_sca_fpga_mode_t(uj, &uj_data));
+  if (uj_data.fpga_mode == 0x01) {
+    fpga_mode = true;
+  }
   sca_init(kScaTriggerSourceAes, kScaPeripheralIoDiv4 | kScaPeripheralAes);
 
-  if (dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes) !=
-      kDifOk) {
-    return ABORTED();
-  }
-
-  if (dif_aes_reset(&aes) != kDifOk) {
-    return ABORTED();
-  }
+  UJSON_CHECK_DIF_OK(
+      dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes));
+  UJSON_CHECK_DIF_OK(dif_aes_reset(&aes));
 
   // Disable the instruction cache and dummy instructions for better SCA
   // measurements.

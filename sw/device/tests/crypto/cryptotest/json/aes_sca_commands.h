@@ -56,6 +56,10 @@ UJSON_SERDE_STRUCT(CryptotestAesScaLfsr, cryptotest_aes_sca_lfsr_t, AES_SCA_LFSR
     field(ciphertext, uint8_t, AESSCA_CMD_MAX_MSG_BYTES) \
     field(ciphertext_length, uint32_t)
 UJSON_SERDE_STRUCT(CryptotestAesScaCiphertext, cryptotest_aes_sca_ciphertext_t, AES_SCA_CIPHERTEXT);
+
+#define AES_SCA_FPGA_MODE(field, string) \
+    field(fpga_mode, uint8_t)
+UJSON_SERDE_STRUCT(CryptotestAesScaFpgaMode, cryptotest_aes_sca_fpga_mode_t, AES_SCA_FPGA_MODE);
 // clang-format on
 
 #ifdef __cplusplus
