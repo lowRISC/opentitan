@@ -4,6 +4,10 @@
 
 // Otp_ctrl_parallel_lc_vseq is developed to generate rand lc_otp req, which runs parallel with
 // normal DAI access sequences.
+
+// changing the default spinwait timeout value for this test
+import csr_utils_pkg::default_spinwait_timeout_ns;
+
 class otp_ctrl_parallel_lc_req_vseq extends otp_ctrl_parallel_base_vseq;
   `uvm_object_utils(otp_ctrl_parallel_lc_req_vseq)
 
@@ -13,6 +17,13 @@ class otp_ctrl_parallel_lc_req_vseq extends otp_ctrl_parallel_base_vseq;
   constraint lc_trans_c {
     do_lc_trans == 0;
   }
+
+  virtual task pre_start();
+    // LC transition in using real OTP is very long because of IP PROG transaction duration
+    // need to scale up the default spinwait timeout duration
+    default_spinwait_timeout_ns = default_spinwait_timeout_ns * 1000;
+    super.pre_start();
+  endtask : pre_start
 
   virtual task run_parallel_seq(ref bit base_vseq_done);
     forever begin
