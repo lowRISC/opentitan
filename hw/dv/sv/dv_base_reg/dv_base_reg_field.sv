@@ -143,7 +143,7 @@ class dv_base_reg_field extends uvm_reg_field;
       uvm_reg_field intr_state_fld = get_intr_state_field();
       uvm_reg_data_t predict_val;
       if (intr_state_fld.get_access == "RO") begin // status interrupt
-        predict_val = field_val;
+        predict_val = field_val | intr_state_fld.get_reset();
       end else begin // regular W1C interrupt
         `DV_CHECK_STREQ(intr_state_fld.get_access, "W1C")
         predict_val = field_val | `gmv(intr_state_fld);
