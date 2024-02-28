@@ -53,3 +53,12 @@ lint_off -rule UNUSED -file "*/src/dmi_jtag.sv" -match "Bits of signal are not u
 // In debug_rom.sv, the addr_i input is a full 64-bit address. We only
 // use bits 7:3; waive the others.
 lint_off -rule UNUSED -file "*/debug_rom/debug_rom.sv" -match "Bits of signal are not used: 'addr_i'[63:8,2:0]"
+
+// Waive a warning where we're subtracting an undecorated integer from a bit-vector with fixed
+// width.
+lint_off -rule WIDTH -file "*/src/dm_mem.sv" -match "*SUB expects 32 bits*'DataCount' generates 4 bits."
+
+// Subtraction between two part selects. Oddly, these look like they are actually the same size so
+// this might actually be Verilator doing something a bit strange.
+lint_off -rule WIDTH -file "*/src/dm_mem.sv" -match "*SUB expects 32*but*SEL*10 bits."
+
