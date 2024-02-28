@@ -519,7 +519,7 @@ class RegBlock:
                     hwaccess=hwaccess_rw,
                     hwqe=False,
                     bits=interrupt.bits,
-                    resval=0,
+                    resval=interrupt.default_val,
                     enum=None,
                     mubi=False,
                     auto_split=False))
