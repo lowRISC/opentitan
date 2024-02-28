@@ -119,7 +119,7 @@ bool test_main(void) {
   // entering sleep to have a chance to measure before sleeping. With normal
   // sleep all measurements should remain enabled, and there should be no
   // errors for clocks that were selectively turned off.
-  uint32_t wakeup_threshold = kDeviceType == kDeviceSimVerilator ? 1000 : 100;
+  uint64_t wakeup_threshold = kDeviceType == kDeviceSimVerilator ? 1000 : 100;
   CHECK_STATUS_OK(
       aon_timer_testutils_wakeup_config(&aon_timer, wakeup_threshold));
 

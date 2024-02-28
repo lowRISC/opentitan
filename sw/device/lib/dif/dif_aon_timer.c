@@ -20,8 +20,11 @@ static_assert(AON_TIMER_INTR_STATE_WDOG_TIMER_BARK_BIT ==
                   AON_TIMER_INTR_TEST_WDOG_TIMER_BARK_BIT,
               "Watchdog IRQ have different indexes in different registers!");
 
+// Note count is a 64-bit value that cannot be set atomically. It is recommened
+// the counter is only cleared when the wakeup timer is disabled.
 static void aon_timer_wakeup_clear_counter(const dif_aon_timer_t *aon) {
-  mmio_region_write32(aon->base_addr, AON_TIMER_WKUP_COUNT_REG_OFFSET, 0);
+  mmio_region_write32(aon->base_addr, AON_TIMER_WKUP_COUNT_LO_REG_OFFSET, 0);
+  mmio_region_write32(aon->base_addr, AON_TIMER_WKUP_COUNT_HI_REG_OFFSET, 0);
 }
 
 static void aon_timer_wakeup_toggle(const dif_aon_timer_t *aon, bool enable) {
@@ -58,8 +61,10 @@ static bool aon_timer_watchdog_is_locked(const dif_aon_timer_t *aon) {
 }
 
 dif_result_t dif_aon_timer_wakeup_start(const dif_aon_timer_t *aon,
-                                        uint32_t threshold,
+                                        uint64_t threshold,
                                         uint32_t prescaler) {
+  uint64_t threshold_dec;
+
   if (aon == NULL || prescaler > AON_TIMER_WKUP_CTRL_PRESCALER_MASK) {
     return kDifBadArg;
   }
@@ -68,10 +73,14 @@ dif_result_t dif_aon_timer_wakeup_start(const dif_aon_timer_t *aon,
   aon_timer_wakeup_toggle(aon, false);
   aon_timer_wakeup_clear_counter(aon);
 
+  threshold_dec = threshold - 1;
+
   // As AON_TIMER spends one more cycle to create the interrupt, subtract
   // cycles by 1 here.
-  mmio_region_write32(aon->base_addr, AON_TIMER_WKUP_THOLD_REG_OFFSET,
-                      threshold - 1);
+  mmio_region_write32(aon->base_addr, AON_TIMER_WKUP_THOLD_LO_REG_OFFSET,
+                      (uint32_t)(threshold_dec & 0xffffffff));
+  mmio_region_write32(aon->base_addr, AON_TIMER_WKUP_THOLD_HI_REG_OFFSET,
+                      (uint32_t)(threshold_dec >> 32));
 
   uint32_t reg =
       bitfield_field32_write(0, AON_TIMER_WKUP_CTRL_PRESCALER_FIELD, prescaler);
@@ -96,6 +105,7 @@ dif_result_t dif_aon_timer_wakeup_restart(const dif_aon_timer_t *aon) {
     return kDifBadArg;
   }
 
+  aon_timer_wakeup_toggle(aon, false);
   aon_timer_wakeup_clear_counter(aon);
   aon_timer_wakeup_toggle(aon, true);
 
@@ -136,12 +146,32 @@ dif_result_t dif_aon_timer_clear_wakeup_cause(const dif_aon_timer_t *aon) {
 }
 
 dif_result_t dif_aon_timer_wakeup_get_count(const dif_aon_timer_t *aon,
-                                            uint32_t *count) {
+                                            uint64_t *count) {
+  uint32_t count_lo;
+  uint32_t count_hi;
+  uint32_t count_hi_2;
+
   if (aon == NULL || count == NULL) {
     return kDifBadArg;
   }
 
-  *count = mmio_region_read32(aon->base_addr, AON_TIMER_WKUP_COUNT_REG_OFFSET);
+  count_hi =
+      mmio_region_read32(aon->base_addr, AON_TIMER_WKUP_COUNT_HI_REG_OFFSET);
+  count_lo =
+      mmio_region_read32(aon->base_addr, AON_TIMER_WKUP_COUNT_LO_REG_OFFSET);
+  count_hi_2 =
+      mmio_region_read32(aon->base_addr, AON_TIMER_WKUP_COUNT_HI_REG_OFFSET);
+
+  // If second WKUP_COUNT_HI read differs from the first WKUP_COUNT_LO has
+  // overflowed due to counter increment so read new WKUP_COUNT_LO value and use
+  // second WKUP_COUNT_HI read as top 32-bit value.
+  if (count_hi_2 != count_hi) {
+    count_lo =
+        mmio_region_read32(aon->base_addr, AON_TIMER_WKUP_COUNT_LO_REG_OFFSET);
+    count_hi = count_hi_2;
+  }
+
+  *count = (uint64_t)count_lo | (((uint64_t)count_hi) << 32);
 
   return kDifOk;
 }

@@ -72,10 +72,10 @@ bool test_main(void) {
   //
   // Adjust the cycles for Verilator since it runs on different clock
   // frequencies.
-  uint32_t wakeup_cycles = 0;
+  uint64_t wakeup_cycles = 0;
   uint32_t wakeup_time_micros = 200;
-  CHECK_STATUS_OK(aon_timer_testutils_get_aon_cycles_from_us(wakeup_time_micros,
-                                                             &wakeup_cycles));
+  CHECK_STATUS_OK(aon_timer_testutils_get_aon_cycles_64_from_us(
+      wakeup_time_micros, &wakeup_cycles));
   if (kDeviceType == kDeviceSimVerilator) {
     wakeup_cycles *= 10;
   }

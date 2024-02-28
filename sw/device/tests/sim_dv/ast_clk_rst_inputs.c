@@ -199,9 +199,9 @@ static void configure_adc_ctrl(const dif_adc_ctrl_t *adc_ctrl) {
   uint32_t wake_up_time_aon_cycles = 0;
   uint32_t power_up_time_aon_cycles = 0;
 
-  CHECK_STATUS_OK(aon_timer_testutils_get_aon_cycles_from_us(
+  CHECK_STATUS_OK(aon_timer_testutils_get_aon_cycles_32_from_us(
       kPowerUpTimeInUs, &power_up_time_aon_cycles));
-  CHECK_STATUS_OK(aon_timer_testutils_get_aon_cycles_from_us(
+  CHECK_STATUS_OK(aon_timer_testutils_get_aon_cycles_32_from_us(
       kWakeUpTimeInUs, &wake_up_time_aon_cycles));
   CHECK_DIF_OK(dif_adc_ctrl_set_enabled(adc_ctrl, kDifToggleDisabled));
   CHECK_DIF_OK(dif_adc_ctrl_reset(adc_ctrl));

@@ -233,10 +233,10 @@ bool test_main(void) {
       // exception to avoid the NMI messing with the fault dump.
       uint32_t bark_cycles = 0;
       CHECK_STATUS_OK(
-          aon_timer_testutils_get_aon_cycles_from_us(1, &bark_cycles));
+          aon_timer_testutils_get_aon_cycles_32_from_us(1, &bark_cycles));
       uint32_t bite_cycles = 0;
       CHECK_STATUS_OK(
-          aon_timer_testutils_get_aon_cycles_from_us(100, &bite_cycles));
+          aon_timer_testutils_get_aon_cycles_32_from_us(100, &bite_cycles));
 
       // Set wdog as a reset source.
       CHECK_DIF_OK(dif_pwrmgr_set_request_sources(

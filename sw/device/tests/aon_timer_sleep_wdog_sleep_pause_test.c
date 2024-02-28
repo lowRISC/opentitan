@@ -49,15 +49,15 @@ bool test_main(void) {
   dif_rstmgr_reset_info_bitfield_t rst_info = rstmgr_testutils_reason_get();
   rstmgr_testutils_reason_clear();
 
-  uint32_t wkup_cnt;
+  uint64_t wkup_cnt;
   uint32_t wdog_cnt;
   if (rst_info == kDifRstmgrResetInfoPor) {
     LOG_INFO("Booting for the first time, setting wdog");
 
     // Configure watchdog sooner then wakeup, but with pause enabled.
-    uint32_t wkup_cycles = 0;
-    CHECK_STATUS_OK(
-        aon_timer_testutils_get_aon_cycles_from_us(WKUP_TIME_US, &wkup_cycles));
+    uint64_t wkup_cycles = 0;
+    CHECK_STATUS_OK(aon_timer_testutils_get_aon_cycles_64_from_us(
+        WKUP_TIME_US, &wkup_cycles));
 
     // The actual expiration of the watchdog is unimportant, as the test
     // mainly checks the count.

@@ -39,7 +39,7 @@ extern "C" {
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_aon_timer_wakeup_start(const dif_aon_timer_t *aon,
-                                        uint32_t threshold, uint32_t prescaler);
+                                        uint64_t threshold, uint32_t prescaler);
 
 /** Stops Always-On Timer (wake-up timer).
  *
@@ -101,7 +101,7 @@ dif_result_t dif_aon_timer_clear_wakeup_cause(const dif_aon_timer_t *aon);
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_aon_timer_wakeup_get_count(const dif_aon_timer_t *aon,
-                                            uint32_t *count);
+                                            uint64_t *count);
 
 /** Starts Always-On Timer (watchdog timer).
  *

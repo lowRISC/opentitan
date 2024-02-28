@@ -200,10 +200,10 @@ void config_sysrst(dif_pinmux_index_t pad_pin) {
 void config_wdog(uint64_t bark_micros, uint64_t bite_micros) {
   uint32_t bark_cycles = 0;
   CHECK_STATUS_OK(
-      aon_timer_testutils_get_aon_cycles_from_us(bark_micros, &bark_cycles));
+      aon_timer_testutils_get_aon_cycles_32_from_us(bark_micros, &bark_cycles));
   uint32_t bite_cycles = 0;
   CHECK_STATUS_OK(
-      aon_timer_testutils_get_aon_cycles_from_us(bite_micros, &bite_cycles));
+      aon_timer_testutils_get_aon_cycles_32_from_us(bite_micros, &bite_cycles));
 
   LOG_INFO("Wdog will bark after %u microseconds (%u aon cycles)",
            (uint32_t)bark_micros, bark_cycles);

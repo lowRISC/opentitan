@@ -67,8 +67,10 @@ TEST_F(WakeupStartTest, Success) {
                  {
                      {AON_TIMER_WKUP_CTRL_ENABLE_BIT, false},
                  });
-  EXPECT_WRITE32(AON_TIMER_WKUP_COUNT_REG_OFFSET, 0);
-  EXPECT_WRITE32(AON_TIMER_WKUP_THOLD_REG_OFFSET, 0);
+  EXPECT_WRITE32(AON_TIMER_WKUP_COUNT_LO_REG_OFFSET, 0);
+  EXPECT_WRITE32(AON_TIMER_WKUP_COUNT_HI_REG_OFFSET, 0);
+  EXPECT_WRITE32(AON_TIMER_WKUP_THOLD_LO_REG_OFFSET, 0);
+  EXPECT_WRITE32(AON_TIMER_WKUP_THOLD_HI_REG_OFFSET, 0);
   EXPECT_WRITE32(AON_TIMER_WKUP_CTRL_REG_OFFSET,
                  {
                      {
@@ -108,7 +110,13 @@ TEST_F(WakeupRestartTest, NullArgs) {
 }
 
 TEST_F(WakeupRestartTest, Success) {
-  EXPECT_WRITE32(AON_TIMER_WKUP_COUNT_REG_OFFSET, 0);
+  EXPECT_READ32(AON_TIMER_WKUP_CTRL_REG_OFFSET, 0);
+  EXPECT_WRITE32(AON_TIMER_WKUP_CTRL_REG_OFFSET,
+                 {
+                     {AON_TIMER_WKUP_CTRL_ENABLE_BIT, false},
+                 });
+  EXPECT_WRITE32(AON_TIMER_WKUP_COUNT_LO_REG_OFFSET, 0);
+  EXPECT_WRITE32(AON_TIMER_WKUP_COUNT_HI_REG_OFFSET, 0);
   EXPECT_READ32(AON_TIMER_WKUP_CTRL_REG_OFFSET, 0);
   EXPECT_WRITE32(AON_TIMER_WKUP_CTRL_REG_OFFSET,
                  {
@@ -123,16 +131,29 @@ class WakeupGetCountTest : public AonTimerTest {};
 TEST_F(WakeupGetCountTest, NullArgs) {
   EXPECT_DIF_BADARG(dif_aon_timer_wakeup_get_count(nullptr, nullptr));
   EXPECT_DIF_BADARG(dif_aon_timer_wakeup_get_count(&aon_, nullptr));
-  uint32_t count;
+  uint64_t count;
   EXPECT_DIF_BADARG(dif_aon_timer_wakeup_get_count(nullptr, &count));
 }
 
 TEST_F(WakeupGetCountTest, Success) {
-  EXPECT_READ32(AON_TIMER_WKUP_COUNT_REG_OFFSET, 0xA5A5A5A5);
+  EXPECT_READ32(AON_TIMER_WKUP_COUNT_HI_REG_OFFSET, 0xA5A5A5A5);
+  EXPECT_READ32(AON_TIMER_WKUP_COUNT_LO_REG_OFFSET, 0xA5A5A5A5);
+  EXPECT_READ32(AON_TIMER_WKUP_COUNT_HI_REG_OFFSET, 0xA5A5A5A5);
 
-  uint32_t count;
+  uint64_t count;
   EXPECT_DIF_OK(dif_aon_timer_wakeup_get_count(&aon_, &count));
-  EXPECT_EQ(count, 0xA5A5A5A5);
+  EXPECT_EQ(count, 0xA5A5A5A5A5A5A5A5);
+}
+
+TEST_F(WakeupGetCountTest, OverflowSuccess) {
+  EXPECT_READ32(AON_TIMER_WKUP_COUNT_HI_REG_OFFSET, 0xA5A5A5A5);
+  EXPECT_READ32(AON_TIMER_WKUP_COUNT_LO_REG_OFFSET, 0xA5A5A5A5);
+  EXPECT_READ32(AON_TIMER_WKUP_COUNT_HI_REG_OFFSET, 0xA5A5A5A6);
+  EXPECT_READ32(AON_TIMER_WKUP_COUNT_LO_REG_OFFSET, 0x5A5A5A5A);
+
+  uint64_t count;
+  EXPECT_DIF_OK(dif_aon_timer_wakeup_get_count(&aon_, &count));
+  EXPECT_EQ(count, 0xA5A5A5A65A5A5A5A);
 }
 
 class WatchdogStartTest : public AonTimerTest {

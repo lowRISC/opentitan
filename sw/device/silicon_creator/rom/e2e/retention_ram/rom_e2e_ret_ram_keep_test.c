@@ -94,7 +94,7 @@ rom_error_t retention_ram_keep_test(void) {
     //
     // Adjust the threshold for Verilator since it runs on different clock
     // frequencies.
-    uint32_t wakeup_threshold = kDeviceType == kDeviceSimVerilator ? 300 : 30;
+    uint64_t wakeup_threshold = kDeviceType == kDeviceSimVerilator ? 300 : 30;
 
     dif_aon_timer_t aon_timer;
     CHECK_DIF_OK(dif_aon_timer_init(

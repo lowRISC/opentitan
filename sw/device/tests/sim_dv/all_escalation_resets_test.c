@@ -736,11 +736,11 @@ static void alert_handler_config(void) {
 
 static void set_aon_timers(const dif_aon_timer_t *aon_timer) {
   uint32_t bark_cycles = 0;
-  CHECK_STATUS_OK(aon_timer_testutils_get_aon_cycles_from_us(kWdogBarkMicros,
-                                                             &bark_cycles));
+  CHECK_STATUS_OK(aon_timer_testutils_get_aon_cycles_32_from_us(kWdogBarkMicros,
+                                                                &bark_cycles));
   uint32_t bite_cycles = 0;
-  CHECK_STATUS_OK(aon_timer_testutils_get_aon_cycles_from_us(kWdogBiteMicros,
-                                                             &bite_cycles));
+  CHECK_STATUS_OK(aon_timer_testutils_get_aon_cycles_32_from_us(kWdogBiteMicros,
+                                                                &bite_cycles));
 
   LOG_INFO(
       "Wdog will bark after %u us (%u cycles) and bite after %u us (%u cycles)",

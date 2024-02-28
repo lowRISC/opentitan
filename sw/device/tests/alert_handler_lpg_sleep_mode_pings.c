@@ -348,7 +348,7 @@ static void execute_test_phases(uint8_t test_phase, uint32_t ping_timeout_cyc) {
 
     // Set the AON timer to send a wakeup signal in ~10-20us.
     CHECK_STATUS_OK(aon_timer_testutils_wakeup_config(
-        &aon_timer, rand_testutils_gen32_range(2, 4)));
+        &aon_timer, (uint32_t)rand_testutils_gen32_range(2, 4)));
     // Enter normal sleep mode.
     enter_low_power(/*deep_sleep=*/false);
   } else { /*wakeup reset*/
@@ -432,7 +432,7 @@ static void execute_test_phases(uint8_t test_phase, uint32_t ping_timeout_cyc) {
 
     // Set the AON timer to send a wakeup signal in ~100-150us.
     CHECK_STATUS_OK(aon_timer_testutils_wakeup_config(
-        &aon_timer, rand_testutils_gen32_range(20, 30)));
+        &aon_timer, (uint32_t)rand_testutils_gen32_range(20, 30)));
 
     // Enter the normal sleep or deep sleep mode
     // Deep sleep mode is time consuming in DV, and normal sleep mode is more
