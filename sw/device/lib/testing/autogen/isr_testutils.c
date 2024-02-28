@@ -407,6 +407,7 @@ void isr_testutils_hmac_isr(plic_isr_ctx_t plic_ctx, hmac_isr_ctx_t hmac_ctx,
 }
 
 void isr_testutils_i2c_isr(plic_isr_ctx_t plic_ctx, i2c_isr_ctx_t i2c_ctx,
+                           bool mute_status_irq,
                            top_earlgrey_plic_peripheral_t *peripheral_serviced,
                            dif_i2c_irq_t *irq_serviced) {
   // Claim the IRQ at the PLIC.
@@ -437,6 +438,8 @@ void isr_testutils_i2c_isr(plic_isr_ctx_t plic_ctx, i2c_isr_ctx_t i2c_ctx,
   CHECK_DIF_OK(dif_i2c_irq_get_type(i2c_ctx.i2c, irq, &type));
   if (type == kDifIrqTypeEvent) {
     CHECK_DIF_OK(dif_i2c_irq_acknowledge(i2c_ctx.i2c, irq));
+  } else if (mute_status_irq) {
+    CHECK_DIF_OK(dif_i2c_irq_set_enabled(i2c_ctx.i2c, irq, kDifToggleDisabled));
   }
 
   // Complete the IRQ at the PLIC.
@@ -763,7 +766,7 @@ void isr_testutils_sensor_ctrl_isr(
 
 void isr_testutils_spi_device_isr(
     plic_isr_ctx_t plic_ctx, spi_device_isr_ctx_t spi_device_ctx,
-    top_earlgrey_plic_peripheral_t *peripheral_serviced,
+    bool mute_status_irq, top_earlgrey_plic_peripheral_t *peripheral_serviced,
     dif_spi_device_irq_t *irq_serviced) {
   // Claim the IRQ at the PLIC.
   dif_rv_plic_irq_id_t plic_irq_id;
@@ -797,6 +800,9 @@ void isr_testutils_spi_device_isr(
   if (type == kDifIrqTypeEvent) {
     CHECK_DIF_OK(
         dif_spi_device_irq_acknowledge(spi_device_ctx.spi_device, irq));
+  } else if (mute_status_irq) {
+    CHECK_DIF_OK(dif_spi_device_irq_set_enabled(spi_device_ctx.spi_device, irq,
+                                                kDifToggleDisabled));
   }
 
   // Complete the IRQ at the PLIC.
@@ -926,7 +932,7 @@ void isr_testutils_uart_isr(plic_isr_ctx_t plic_ctx, uart_isr_ctx_t uart_ctx,
 }
 
 void isr_testutils_usbdev_isr(
-    plic_isr_ctx_t plic_ctx, usbdev_isr_ctx_t usbdev_ctx,
+    plic_isr_ctx_t plic_ctx, usbdev_isr_ctx_t usbdev_ctx, bool mute_status_irq,
     top_earlgrey_plic_peripheral_t *peripheral_serviced,
     dif_usbdev_irq_t *irq_serviced) {
   // Claim the IRQ at the PLIC.
@@ -957,6 +963,9 @@ void isr_testutils_usbdev_isr(
   CHECK_DIF_OK(dif_usbdev_irq_get_type(usbdev_ctx.usbdev, irq, &type));
   if (type == kDifIrqTypeEvent) {
     CHECK_DIF_OK(dif_usbdev_irq_acknowledge(usbdev_ctx.usbdev, irq));
+  } else if (mute_status_irq) {
+    CHECK_DIF_OK(
+        dif_usbdev_irq_set_enabled(usbdev_ctx.usbdev, irq, kDifToggleDisabled));
   }
 
   // Complete the IRQ at the PLIC.
