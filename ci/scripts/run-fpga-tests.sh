@@ -50,42 +50,40 @@ test_args=""
 echo "tags: ${fpga_tags}"
 if [ "${fpga_tags}" == "cw310_sival_but_not_rom_ext_tests" ]
 then
-    # Only consider tests that are tagged `cw310_sival` but not tagged `cw310_sival_rom_ext`.
+    # Only consider tests that are tagged `cw310_sival` but that do not have corresponding
+    # test tagged `cw310_sival_rom_ext`.
+
     # The difficulty is that, technically, they are different tests since `opentitan_test` creates
     # one target for each execution environment. The following query relies on the existence
     # of the test suite created by `opentitan_test` that depends on all per-exec-env tests.
+    # This query only removes all tests that have sibling tagged `cw310_sival_rom_ext`. We
+    # then rely on test tag filters to only consider `cw310_sival`.
     ci/bazelisk.sh query \
     "
-        `# Find all test tagged cw310_sival that are dependencies of the test suite identified`
-        attr(
-            \"tags\",
-            \"cw310_sival([^_]|$)\",
-            deps(
-                `# Find all test suites depending on a test tagged cw310_sival` \
-                kind(
-                    \"test_suite\",
-                    rdeps(
-                        //...,
-                        `# Find all tests tagged cw310_sival`
-                        attr(\"tags\",\"cw310_sival([^_]|$)\", //...),
-                        1
-                    )
-                )
-                except
-                `# Remove all test suites depending on a test tagged cw310_sival_rom_ext`
-                rdeps(
-                    //...,
-                    `# Find all tests tagged cw310_sival_rom_ext`
-                    attr(\"tags\",\"cw310_sival_rom_ext\", //...),
-                    1
-                ),
-                1
+        `# Find all tests that are dependencies of the test suite identified`
+        deps(
+            `# Find all test suites`
+            kind(
+                \"test_suite\",
+                //...
             )
+            except
+            `# Remove all test suites depending on a test tagged cw310_sival_rom_ext`
+            `# but ignore those marked as broken or manual`
+            rdeps(
+                //...
+                except
+                attr(\"tags\",\"broken|manual\", //...),
+                `# Find all tests tagged cw310_sival_rom_ext`
+                attr(\"tags\",\"cw310_sival_rom_ext\", //...),
+                1
+            ),
+            1
         )
     " \
     > "${pattern_file}"
     # We need to remove tests tagged as manual since we are not using a wildcard target.
-    test_args="${test_args} --test_tag_filters=-broken,-skip_in_ci,-manual"
+    test_args="${test_args} --test_tag_filters=cw310_sival,-broken,-skip_in_ci,-manual"
 else
     test_args="${test_args} --test_tag_filters=${fpga_tags},-broken,-skip_in_ci"
     echo "//..." > "${pattern_file}"
