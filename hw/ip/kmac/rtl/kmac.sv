@@ -966,6 +966,10 @@ module kmac
     .state_valid_o (state_valid),
     .state_o       (state), // [Share]
 
+    // REQ/ACK interface to avoid power spikes
+    .run_req_o (     ), // Not used
+    .run_ack_i (1'b 1), // The SHA3 core is always allowed to process.
+
     .error_o                    (sha3_err),
     .sparse_fsm_error_o         (sha3_state_error),
     .count_error_o              (sha3_count_error),

@@ -237,6 +237,10 @@ module kmac_reduced
     .state_valid_o(state_valid_o),
     .state_o      (state_o),
 
+    // REQ/ACK interface to avoid power spikes
+    .run_req_o(),     // Not used
+    .run_ack_i(1'b1), // The SHA3 core is always allowed to process.
+
     // LC escalation
     .lc_escalate_en_i(lc_escalate_en[0]),
 

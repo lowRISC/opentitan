@@ -2625,6 +2625,10 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .state_valid_o (sha3_state_vld),
     .state_o       (sha3_state),
 
+    // REQ/ACK interface to avoid power spikes
+    .run_req_o(),
+    .run_ack_i(1'b1),
+
     .error_o (sha3_err),
     .sparse_fsm_error_o (sha3_state_error),
     .count_error_o  (sha3_count_error),
