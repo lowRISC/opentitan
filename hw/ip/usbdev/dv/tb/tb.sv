@@ -83,6 +83,7 @@ module tb;
     .usb_aon_suspend_req_o  (),
     .usb_aon_wake_ack_o     (),
     // Events and debug info from wakeup module
+    .usb_aon_bus_not_idle_i       ('0),
     .usb_aon_bus_reset_i          ('0),
     .usb_aon_sense_lost_i         ('0),
     .usb_aon_wake_detect_active_i ('0),

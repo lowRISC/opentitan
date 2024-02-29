@@ -55,6 +55,7 @@ module pinmux_tb
   output logic usb_dnpullup_en_o,
   input usbdev_suspend_req_i,
   input usbdev_wake_ack_i,
+  output logic usbdev_bus_not_idle_o,
   output logic usbdev_bus_reset_o,
   output logic usbdev_sense_lost_o,
   output logic usbdev_wake_detect_active_o,

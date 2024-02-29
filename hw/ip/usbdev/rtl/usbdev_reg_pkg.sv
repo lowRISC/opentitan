@@ -633,6 +633,10 @@ package usbdev_reg_pkg;
       logic        d;
       logic        de;
     } bus_reset;
+    struct packed {
+      logic        d;
+      logic        de;
+    } bus_not_idle;
   } usbdev_hw2reg_wake_events_reg_t;
 
   // Register -> HW type
@@ -666,19 +670,19 @@ package usbdev_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    usbdev_hw2reg_intr_state_reg_t intr_state; // [321:286]
-    usbdev_hw2reg_usbctrl_reg_t usbctrl; // [285:278]
-    usbdev_hw2reg_usbstat_reg_t usbstat; // [277:248]
-    usbdev_hw2reg_rxfifo_reg_t rxfifo; // [247:231]
-    usbdev_hw2reg_rxenable_out_mreg_t [11:0] rxenable_out; // [230:207]
-    usbdev_hw2reg_in_sent_mreg_t [11:0] in_sent; // [206:183]
-    usbdev_hw2reg_out_stall_mreg_t [11:0] out_stall; // [182:159]
-    usbdev_hw2reg_in_stall_mreg_t [11:0] in_stall; // [158:135]
-    usbdev_hw2reg_configin_mreg_t [11:0] configin; // [134:63]
-    usbdev_hw2reg_out_data_toggle_reg_t out_data_toggle; // [62:39]
-    usbdev_hw2reg_in_data_toggle_reg_t in_data_toggle; // [38:15]
-    usbdev_hw2reg_phy_pins_sense_reg_t phy_pins_sense; // [14:6]
-    usbdev_hw2reg_wake_events_reg_t wake_events; // [5:0]
+    usbdev_hw2reg_intr_state_reg_t intr_state; // [323:288]
+    usbdev_hw2reg_usbctrl_reg_t usbctrl; // [287:280]
+    usbdev_hw2reg_usbstat_reg_t usbstat; // [279:250]
+    usbdev_hw2reg_rxfifo_reg_t rxfifo; // [249:233]
+    usbdev_hw2reg_rxenable_out_mreg_t [11:0] rxenable_out; // [232:209]
+    usbdev_hw2reg_in_sent_mreg_t [11:0] in_sent; // [208:185]
+    usbdev_hw2reg_out_stall_mreg_t [11:0] out_stall; // [184:161]
+    usbdev_hw2reg_in_stall_mreg_t [11:0] in_stall; // [160:137]
+    usbdev_hw2reg_configin_mreg_t [11:0] configin; // [136:65]
+    usbdev_hw2reg_out_data_toggle_reg_t out_data_toggle; // [64:41]
+    usbdev_hw2reg_in_data_toggle_reg_t in_data_toggle; // [40:17]
+    usbdev_hw2reg_phy_pins_sense_reg_t phy_pins_sense; // [16:8]
+    usbdev_hw2reg_wake_events_reg_t wake_events; // [7:0]
   } usbdev_hw2reg_t;
 
   // Register offsets
