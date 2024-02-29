@@ -248,6 +248,8 @@ cc_library(
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
         "//sw/device/silicon_creator/lib/drivers:rnd",
         "//sw/device/silicon_creator/lib/drivers:uart",
+        "//sw/device/silicon_creator/lib/ownership",
+        "//sw/device/silicon_creator/lib/ownership:ownership_unlock",
         "//sw/device/silicon_creator/lib/sigverify",
         "//sw/otbn/crypto:boot",
     ],
@@ -285,6 +287,7 @@ opentitan_binary(
         ":rom_ext",
         "//sw/device/lib/crt",
         "//sw/device/silicon_creator/lib:manifest_def",
+        "//sw/device/silicon_creator/lib/ownership/keys/fake",
         "//sw/device/silicon_creator/rom_ext/keys/fake",
     ],
 )
@@ -308,6 +311,7 @@ opentitan_binary(
         ":rom_ext",
         "//sw/device/lib/crt",
         "//sw/device/silicon_creator/lib:manifest_def",
+        "//sw/device/silicon_creator/lib/ownership/keys/fake",
         "//sw/device/silicon_creator/rom_ext/keys/fake",
     ],
 )
@@ -331,6 +335,7 @@ opentitan_binary(
         ":rom_ext",
         "//sw/device/lib/crt",
         "//sw/device/silicon_creator/lib:manifest_def",
+        "//sw/device/silicon_creator/lib/ownership/keys/fake",
         "//sw/device/silicon_creator/rom_ext/keys/fake",
     ],
 )
