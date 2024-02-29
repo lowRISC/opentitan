@@ -85,6 +85,16 @@ package rstmgr_env_pkg;
 
   typedef logic [$bits(alert_crashdump_t)-1:0] linearized_alert_dump_t;
 
+  // This is used to capture the values of CSR fields are reset by POR only, so these CSR
+  // values can be restored to their pre-reset value right after a reset is done and undo
+  // the dv_base reset clearing them.
+  typedef struct packed {
+    logic       alert_info_ctrl_en;
+    logic [3:0] alert_info_ctrl_index;
+    logic       cpu_info_ctrl_en;
+    logic [3:0] cpu_info_ctrl_index;
+  } rstmgr_values_of_por_csr_fields_t;
+
   // functions
 
   // package sources
