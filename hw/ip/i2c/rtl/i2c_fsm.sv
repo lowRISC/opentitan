@@ -744,7 +744,7 @@ module i2c_fsm import i2c_pkg::*;
         end
       end
       // StretchAddr: target stretches the clock if matching address cannot be
-      // despoited yet.
+      // desposited yet.
       StretchAddr : begin
         target_idle_o = 1'b0;
         scl_d = 1'b0;
@@ -843,7 +843,6 @@ module i2c_fsm import i2c_pkg::*;
           if (fmt_fifo_rvalid_i) state_d = Active;
         end
       end
-
       // SetupStart: SDA and SCL are released
       SetupStart : begin
         if (tcount_q == 20'd1) begin
@@ -883,7 +882,6 @@ module i2c_fsm import i2c_pkg::*;
           end
         end
       end
-
       // ClockPulse: SCL is released, SDA keeps the indexed bit value
       ClockPulse : begin
         en_sda_interf_det = 1'b1;
@@ -1014,7 +1012,6 @@ module i2c_fsm import i2c_pkg::*;
           end
         end
       end
-
       // ClockStop: SCL is pulled low, SDA stays low
       ClockStop : begin
         if (tcount_q == 20'd1) begin
@@ -1048,7 +1045,6 @@ module i2c_fsm import i2c_pkg::*;
           end
         end
       end
-
       // Active: continue while keeping SCL low
       Active : begin
         if (fmt_flag_read_bytes_i) begin
@@ -1067,7 +1063,6 @@ module i2c_fsm import i2c_pkg::*;
           tcount_sel = tClockLow;
         end
       end
-
       // PopFmtFifo: populate fmt_fifo
       PopFmtFifo : begin
         if (!host_enable_i) begin
@@ -1084,7 +1079,6 @@ module i2c_fsm import i2c_pkg::*;
           tcount_sel = tNoDelay;
         end
       end
-
       // AcquireStart: hold start condition
       AcquireStart : begin
         if (scl_i_q && !scl_i) begin
@@ -1093,7 +1087,6 @@ module i2c_fsm import i2c_pkg::*;
           input_byte_clr = 1'b1;
         end
       end
-
       // AddrRead: read and compare target address
       AddrRead : begin
         if (bit_ack && address_match) begin
@@ -1104,7 +1097,6 @@ module i2c_fsm import i2c_pkg::*;
           state_d = Idle;
         end
       end
-
       // AddrAckWait: pause before acknowledging
       AddrAckWait : begin
         if (tcount_q == 20'd1 && !scl_i) begin
@@ -1172,14 +1164,12 @@ module i2c_fsm import i2c_pkg::*;
           end
         end
       end
-
       // Wait for clock to become positive.
       TransmitAck : begin
         if (scl_i) begin
           state_d = TransmitAckPulse;
         end
       end
-
       // TransmitAckPulse: target waits for host to ACK transmission
       // If a nak is received, that means a stop is incoming.
       TransmitAckPulse : begin
@@ -1193,14 +1183,12 @@ module i2c_fsm import i2c_pkg::*;
           end
         end
       end
-
       // An inert state just waiting for host to issue a stop
       // Cannot cycle back to idle directly as other events depend on the system being
       // non-idle.
       WaitForStop: begin
         state_d = WaitForStop;
       end
-
       // AcquireByte: target acquires a byte
       AcquireByte : begin
         if (bit_ack) begin
@@ -1209,7 +1197,6 @@ module i2c_fsm import i2c_pkg::*;
           tcount_sel = tClockStart;
         end
       end
-
       // AcquireAckWait: pause before acknowledging
       AcquireAckWait : begin
         if (tcount_q == 20'd1 && !scl_i) begin
@@ -1267,6 +1254,7 @@ module i2c_fsm import i2c_pkg::*;
           event_tx_stretch_o = 1'b0;
         end
       end
+      // StretchTxSetup: Wait for tSetupData before going to transmit
       StretchTxSetup : begin
         if (tcount_q == 20'd1) begin
           state_d = TransmitSetup;
@@ -1278,7 +1266,6 @@ module i2c_fsm import i2c_pkg::*;
       StretchAcqFull : begin
         if (acq_fifo_wready) state_d = AcquireByte;
       end
-
       // default
       default : begin
         state_d = Idle;
