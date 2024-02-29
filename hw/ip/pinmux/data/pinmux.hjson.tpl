@@ -286,12 +286,23 @@
       struct:  "logic",
       width:   "1"
     },
+    { name:    "usbdev_bus_not_idle",
+      type:    "uni",
+      act:     "req",
+      package: "",
+      desc:    '''
+               Event signal that indicates that the USB was not idle while monitoring.
+               ''',
+      struct:  "logic",
+      width:   "1",
+      default: "1'b0"
+    },
     { name:    "usbdev_bus_reset",
       type:    "uni",
       act:     "req",
       package: "",
       desc:    '''
-               Event signal that indicates what happened while monitoring.
+               Event signal that indicates that the USB issued a Bus Reset while monitoring.
                ''',
       struct:  "logic",
       width:   "1",
@@ -302,7 +313,7 @@
       act:     "req",
       package: "",
       desc:    '''
-               Event signal that indicates what happened while monitoring.
+               Event signal that indicates what USB SENSE was lost while monitoring.
                ''',
       struct:  "logic",
       width:   "1",

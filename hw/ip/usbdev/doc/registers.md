@@ -1317,17 +1317,18 @@ Activation may not happen immediately, and its status can be verified by checkin
 USB wake module events and debug
 - Offset: `0x94`
 - Reset default: `0x0`
-- Reset mask: `0x301`
+- Reset mask: `0x701`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "module_active", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 7}, {"name": "disconnected", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "bus_reset", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 22}], "config": {"lanes": 1, "fontsize": 10, "vspace": 150}}
+{"reg": [{"name": "module_active", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 7}, {"name": "disconnected", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "bus_reset", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "bus_not_idle", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 21}], "config": {"lanes": 1, "fontsize": 10, "vspace": 150}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name          | Description                                                                    |
 |:------:|:------:|:-------:|:--------------|:-------------------------------------------------------------------------------|
-| 31:10  |        |         |               | Reserved                                                                       |
+| 31:11  |        |         |               | Reserved                                                                       |
+|   10   |   ro   |   0x0   | bus_not_idle  | USB aon wake module detected a non-idle bus while monitoring events.           |
 |   9    |   ro   |   0x0   | bus_reset     | USB aon wake module detected a bus reset while monitoring events.              |
 |   8    |   ro   |   0x0   | disconnected  | USB aon wake module detected VBUS was interrupted while monitoring events.     |
 |  7:1   |        |         |               | Reserved                                                                       |

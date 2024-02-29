@@ -941,12 +941,13 @@
       'lc_ctrl.lc_flash_rma_ack' : ['flash_ctrl.rma_ack', 'otbn.lc_rma_ack'],
 
       // usbdev connection to pinmux
-      'usbdev.usb_dp_pullup'      : ['pinmux_aon.usbdev_dppullup_en'],
-      'usbdev.usb_dn_pullup'      : ['pinmux_aon.usbdev_dnpullup_en'],
-      'usbdev.usb_aon_suspend_req': ['pinmux_aon.usbdev_suspend_req'],
-      'usbdev.usb_aon_wake_ack'   : ['pinmux_aon.usbdev_wake_ack'],
-      'usbdev.usb_aon_bus_reset'  : ['pinmux_aon.usbdev_bus_reset'],
-      'usbdev.usb_aon_sense_lost' : ['pinmux_aon.usbdev_sense_lost'],
+      'usbdev.usb_dp_pullup'        : ['pinmux_aon.usbdev_dppullup_en'],
+      'usbdev.usb_dn_pullup'        : ['pinmux_aon.usbdev_dnpullup_en'],
+      'usbdev.usb_aon_suspend_req'  : ['pinmux_aon.usbdev_suspend_req'],
+      'usbdev.usb_aon_wake_ack'     : ['pinmux_aon.usbdev_wake_ack'],
+      'usbdev.usb_aon_bus_not_idle' : ['pinmux_aon.usbdev_bus_not_idle'],
+      'usbdev.usb_aon_bus_reset'    : ['pinmux_aon.usbdev_bus_reset'],
+      'usbdev.usb_aon_sense_lost'   : ['pinmux_aon.usbdev_sense_lost'],
       'pinmux_aon.usbdev_wake_detect_active' : ['usbdev.usb_aon_wake_detect_active'],
 
       // Edn connections

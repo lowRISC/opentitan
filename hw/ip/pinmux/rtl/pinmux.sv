@@ -69,6 +69,7 @@ module pinmux
   output                           usb_dnpullup_en_o,
   input                            usbdev_suspend_req_i,
   input                            usbdev_wake_ack_i,
+  output                           usbdev_bus_not_idle_o,
   output                           usbdev_bus_reset_o,
   output                           usbdev_sense_lost_o,
   output                           usbdev_wake_detect_active_o,
@@ -382,6 +383,7 @@ module pinmux
 
     // wake/powerup request
     .wake_req_aon_o(usb_wkup_req_o),
+    .bus_not_idle_aon_o(usbdev_bus_not_idle_o),
     .bus_reset_aon_o(usbdev_bus_reset_o),
     .sense_lost_aon_o(usbdev_sense_lost_o),
     .wake_detect_active_aon_o(usbdev_wake_detect_active_o)

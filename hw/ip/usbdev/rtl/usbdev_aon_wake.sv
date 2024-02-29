@@ -32,6 +32,7 @@ module usbdev_aon_wake import usbdev_pkg::*;(
   output logic wake_req_aon_o,
 
   // Event signals that indicate what happened while monitoring
+  output logic bus_not_idle_aon_o,
   output logic bus_reset_aon_o,
   output logic sense_lost_aon_o,
 
@@ -72,6 +73,7 @@ module usbdev_aon_wake import usbdev_pkg::*;(
   // active.
   logic se0_async, sense_lost_async;
   logic event_bus_reset, event_sense_lost;
+  logic bus_not_idle_d, bus_not_idle_q;
   logic bus_reset_d, bus_reset_q;
   logic sense_lost_d, sense_lost_q;
 
@@ -100,9 +102,15 @@ module usbdev_aon_wake import usbdev_pkg::*;(
     .filter_o (event_sense_lost)
   );
 
+  // USB has become non-idle while monitoring.
+  assign bus_not_idle_d = (event_not_idle | bus_not_idle_q) & wake_detect_active_q;
+  // USB has issued a Bus Reset condition while monitoring.
   assign bus_reset_d = (event_bus_reset | bus_reset_q) & wake_detect_active_q;
+  // USB SENSE signal has been lost (Disconnection) while monitoring.
   assign sense_lost_d = (event_sense_lost | sense_lost_q) & wake_detect_active_q;
 
+  // Detected events
+  assign bus_not_idle_aon_o = bus_not_idle_q;
   assign bus_reset_aon_o = bus_reset_q;
   assign sense_lost_aon_o = sense_lost_q;
 
@@ -113,10 +121,12 @@ module usbdev_aon_wake import usbdev_pkg::*;(
 
   always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin : proc_reg_events
     if (!rst_aon_ni) begin
+      bus_not_idle_q <= 1'b0;
       bus_reset_q <= 1'b0;
       sense_lost_q <= 1'b0;
       wake_req_q <= 1'b0;
     end else begin
+      bus_not_idle_q <= bus_not_idle_d;
       bus_reset_q <= bus_reset_d;
       sense_lost_q <= sense_lost_d;
       wake_req_q <= wake_req_d;

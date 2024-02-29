@@ -2632,6 +2632,20 @@
           index: -1
         }
         {
+          name: usb_aon_bus_not_idle
+          struct: logic
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: usbdev
+          default: ""
+          package: ""
+          end_idx: -1
+          top_type: broadcast
+          top_signame: usbdev_usb_aon_bus_not_idle
+          index: -1
+        }
+        {
           name: usb_aon_wake_detect_active
           struct: logic
           type: uni
@@ -4118,8 +4132,21 @@
           index: -1
         }
         {
+          name: usbdev_bus_not_idle
+          desc: Event signal that indicates that the USB was not idle while monitoring.
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          default: 1'b0
+          inst_name: pinmux_aon
+          package: ""
+          top_signame: usbdev_usb_aon_bus_not_idle
+          index: -1
+        }
+        {
           name: usbdev_bus_reset
-          desc: Event signal that indicates what happened while monitoring.
+          desc: Event signal that indicates that the USB issued a Bus Reset while monitoring.
           struct: logic
           type: uni
           act: req
@@ -4132,7 +4159,7 @@
         }
         {
           name: usbdev_sense_lost
-          desc: Event signal that indicates what happened while monitoring.
+          desc: Event signal that indicates what USB SENSE was lost while monitoring.
           struct: logic
           type: uni
           act: req
@@ -8237,6 +8264,10 @@
       usbdev.usb_aon_wake_ack:
       [
         pinmux_aon.usbdev_wake_ack
+      ]
+      usbdev.usb_aon_bus_not_idle:
+      [
+        pinmux_aon.usbdev_bus_not_idle
       ]
       usbdev.usb_aon_bus_reset:
       [
@@ -16710,6 +16741,20 @@
         index: -1
       }
       {
+        name: usb_aon_bus_not_idle
+        struct: logic
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: usbdev
+        default: ""
+        package: ""
+        end_idx: -1
+        top_type: broadcast
+        top_signame: usbdev_usb_aon_bus_not_idle
+        index: -1
+      }
+      {
         name: usb_aon_wake_detect_active
         struct: logic
         type: uni
@@ -17729,8 +17774,21 @@
         index: -1
       }
       {
+        name: usbdev_bus_not_idle
+        desc: Event signal that indicates that the USB was not idle while monitoring.
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        default: 1'b0
+        inst_name: pinmux_aon
+        package: ""
+        top_signame: usbdev_usb_aon_bus_not_idle
+        index: -1
+      }
+      {
         name: usbdev_bus_reset
-        desc: Event signal that indicates what happened while monitoring.
+        desc: Event signal that indicates that the USB issued a Bus Reset while monitoring.
         struct: logic
         type: uni
         act: req
@@ -17743,7 +17801,7 @@
       }
       {
         name: usbdev_sense_lost
-        desc: Event signal that indicates what happened while monitoring.
+        desc: Event signal that indicates what USB SENSE was lost while monitoring.
         struct: logic
         type: uni
         act: req
@@ -21565,6 +21623,17 @@
         type: uni
         end_idx: -1
         act: req
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        signame: usbdev_usb_aon_bus_not_idle
+        width: 1
+        type: uni
+        end_idx: -1
+        act: rcv
         suffix: ""
         default: "'0"
       }
