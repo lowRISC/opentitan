@@ -213,6 +213,14 @@
           tags: [// Exclude from write-checks: writing 1'b1 to this bit causes interrupts unexpectedly asserted
                 "excl:CsrAllTests:CsrExclWrite"]
         }
+        { bits: "3"
+          resval: "0"
+          name: "NACKWHENFULL"
+          desc: '''
+                Instead of stretching the clock when the ACQ FIFO is full send a NACK instead.
+                This happens both after having received an address as well as a byte.
+                '''
+        }
       ]
     }
     { name:     "STATUS"

@@ -184,6 +184,9 @@ package i2c_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
+    } nackwhenfull;
+    struct packed {
+      logic        q;
     } llpbk;
     struct packed {
       logic        q;
@@ -505,11 +508,11 @@ package i2c_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    i2c_reg2hw_intr_state_reg_t intr_state; // [428:414]
-    i2c_reg2hw_intr_enable_reg_t intr_enable; // [413:399]
-    i2c_reg2hw_intr_test_reg_t intr_test; // [398:369]
-    i2c_reg2hw_alert_test_reg_t alert_test; // [368:367]
-    i2c_reg2hw_ctrl_reg_t ctrl; // [366:364]
+    i2c_reg2hw_intr_state_reg_t intr_state; // [429:415]
+    i2c_reg2hw_intr_enable_reg_t intr_enable; // [414:400]
+    i2c_reg2hw_intr_test_reg_t intr_test; // [399:370]
+    i2c_reg2hw_alert_test_reg_t alert_test; // [369:368]
+    i2c_reg2hw_ctrl_reg_t ctrl; // [367:364]
     i2c_reg2hw_rdata_reg_t rdata; // [363:355]
     i2c_reg2hw_fdata_reg_t fdata; // [354:336]
     i2c_reg2hw_fifo_ctrl_reg_t fifo_ctrl; // [335:328]
