@@ -326,7 +326,6 @@ impl UpdateProtocol for LegacyRescue {
         progress.new_stage("", frames.len() * Frame::DATA_LEN);
         'next_block: for (idx, frame) in frames.iter().enumerate() {
             for consecutive_errors in 0..Self::MAX_CONSECUTIVE_ERRORS {
-                eprint!("{}.", idx);
                 progress.progress(idx * Frame::DATA_LEN);
                 uart.write(frame.as_bytes())?;
                 let mut response = [0u8; Frame::HASH_LEN];
