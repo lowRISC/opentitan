@@ -833,6 +833,21 @@
                   '''
           }
           {
+            bits: "29",
+            name: "sending",
+            swaccess: "rw1c",
+            hwaccess: "hwo",
+            desc: '''
+                  This bit indicates that the buffer is in the process of being collected by the
+                  host. It becomes set upon the first attempt by the host to collect a buffer from
+                  this endpoint when the rdy bit was set.
+
+                  It is cleared when the packet has been collected successfully or the pending
+                  transaction has been canceled by the hardware through detection of a
+                  link reset or receipt of a SETUP packet.
+                  '''
+          }
+          {
             bits: "30",
             name: "pend",
             swaccess: "rw1c"

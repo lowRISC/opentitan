@@ -357,7 +357,7 @@ module usbdev
   logic [3:0]            in_endpoint;
   logic                  in_endpoint_val;
   logic [NEndpoints-1:0] in_rdy;
-  logic [NEndpoints-1:0] clear_rdybit, set_sentbit, update_pend;
+  logic [NEndpoints-1:0] clear_rdybit, set_sentbit, update_pend, set_sending;
   logic                  setup_received, in_ep_xact_end;
   logic [NEndpoints-1:0] ep_out_iso, ep_in_iso;
   logic [NEndpoints-1:0] enable_out, enable_setup, in_ep_stall, out_ep_stall;
@@ -411,6 +411,25 @@ module usbdev
       in_rdy[i] = reg2hw.configin[i].rdy.q;
     end
   end
+
+  // Captured properties of current IN buffer, maintained throughout packet collection as
+  // protection against change during packet retraction by FW.
+  logic [NBufWidth-1:0] in_buf_q, in_buf_d;
+  logic [SizeWidth:0] in_size_q, in_size_d;
+  logic       in_xact_starting;
+  logic [3:0] in_xact_start_ep;
+
+  always_ff @(posedge clk_i or negedge rst_n) begin
+    if (!rst_n) begin
+      in_buf_q  <= '0;
+      in_size_q <= '0;
+    end else begin
+      in_buf_q  <= in_buf_d;
+      in_size_q <= in_size_d;
+    end
+  end
+  assign in_buf_d  = in_xact_starting ? in_buf[in_xact_start_ep]  : in_buf_q;
+  assign in_size_d = in_xact_starting ? in_size[in_xact_start_ep] : in_size_q;
 
   // OUT data toggles are maintained with the packet engine but may be set or
   // cleared by software
@@ -481,15 +500,23 @@ module usbdev
     end else begin
       if (setup_received & out_endpoint_val) begin
         // Clear pending when a SETUP is received
-        clear_rdybit[out_endpoint] = 1'b1;
-        update_pend[out_endpoint]  = 1'b1;
+        clear_rdybit[out_endpoint]   = 1'b1;
+        update_pend[out_endpoint]    = 1'b1;
       end else if (in_ep_xact_end & in_endpoint_val) begin
-        // Clear when an IN transmission was successful
-        clear_rdybit[in_endpoint] = 1'b1;
+        // Clear rdy and sending when an IN transmission was successful
+        clear_rdybit[in_endpoint]   = 1'b1;
       end
     end
   end
 
+  // IN transaction starting on any endpoint?
+  always_comb begin
+    set_sending = '0;
+    if (in_xact_starting) set_sending[in_xact_start_ep] = 1'b1;
+  end
+
+  // Clearing of rdy bit in response to successful IN packet transmission or packet cancellation
+  // through link reset or SETUP packet reception.
   always_comb begin : proc_map_rdy_hw2reg
     for (int i = 0; i < NEndpoints; i++) begin
       hw2reg.configin[i].rdy.de = clear_rdybit[i];
@@ -502,6 +529,15 @@ module usbdev
     for (int i = 0; i < NEndpoints; i++) begin
       hw2reg.configin[i].pend.de = update_pend[i];
       hw2reg.configin[i].pend.d  = reg2hw.configin[i].rdy.q | reg2hw.configin[i].pend.q;
+    end
+  end
+
+  // Update the sending bit to mark that collection of the packet by the USB host has been
+  // attempted and FW shall not attempt retraction of the packet.
+  always_comb begin : proc_map_sending
+    for (int i = 0; i < NEndpoints; i++) begin
+      hw2reg.configin[i].sending.de = set_sending[i] | set_sentbit[i] | update_pend[i];
+      hw2reg.configin[i].sending.d  = ~set_sentbit[i] & ~update_pend[i];
     end
   end
 
@@ -557,8 +593,10 @@ module usbdev
     .out_endpoint_val_o   (out_endpoint_val),
 
     // transmit side
-    .in_buf_i             (in_buf[in_endpoint]),
-    .in_size_i            (in_size[in_endpoint]),
+    .in_xact_starting_o   (in_xact_starting),
+    .in_xact_start_ep_o   (in_xact_start_ep),
+    .in_buf_i             (in_buf_q),
+    .in_size_i            (in_size_q),
     .in_stall_i           (in_ep_stall),
     .in_rdy_i             (in_rdy),
     .in_ep_xact_end_o     (in_ep_xact_end),

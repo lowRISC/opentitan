@@ -32,6 +32,12 @@ module usb_fs_nb_in_pe #(
 
 
   ////////////////////
+  // Transaction starting
+  ////////////////////
+  output logic                  in_xact_starting_o, // Start of an IN transaction; capture details
+  output logic [3:0]            in_xact_start_ep_o, // Endpoint starting an IN transaction
+
+  ////////////////////
   // endpoint interface
   ////////////////////
   output logic [3:0]            in_ep_current_o, // Other signals addressed to this ep
@@ -153,10 +159,20 @@ module usb_fs_nb_in_pe #(
   // Is the endpoint active?
   assign ep_active = in_ep_enabled_i[in_ep_index_d] & ep_in_hw;
 
-  assign more_data_to_send =
-      in_ep_has_data_i[in_ep_index] & ~in_ep_data_done_i[in_ep_index];
+  // Retain whether the current IN transmission has associated data; an Isochronous transaction
+  // for which there was no packet data available must not raise a 'pkt_sent' interrupt.
+  logic has_data_q;
+
+  assign more_data_to_send = has_data_q & ~in_ep_data_done_i[in_ep_index];
 
   assign tx_data_avail_o = logic'(in_xact_state == StSendData) & more_data_to_send;
+
+  ////////////////////////////////////////////////////////////////////////////////
+  // Transaction is starting on this IN endpoint; capture the packet details.
+  ////////////////////////////////////////////////////////////////////////////////
+
+  assign in_xact_starting_o = ep_active && in_token_received;
+  assign in_xact_start_ep_o = in_ep_current_d;
 
   ////////////////////////////////////////////////////////////////////////////////
   // in transaction state machine
@@ -195,7 +211,7 @@ module usb_fs_nb_in_pe #(
         end else if (in_ep_stall_i[in_ep_index]) begin
           in_xact_state_next = StIdle;
           tx_pid_o = {UsbPidStall}; // STALL
-        end else if (in_ep_has_data_i[in_ep_index]) begin
+        end else if (has_data_q) begin
           in_xact_state_next = StSendData;
           tx_pid_o = {data_toggle_q[in_ep_index], 1'b0, {UsbPidTypeData}}; // DATA0/1
         end else begin
@@ -209,7 +225,7 @@ module usb_fs_nb_in_pe #(
         if ((!more_data_to_send) || ((&in_ep_get_addr_o) && tx_data_get_i)) begin
           if (in_ep_iso_i[in_ep_index]) begin
             in_xact_state_next = StIdle; // no ACK for ISO EPs
-            in_xact_end = in_ep_has_data_i[in_ep_index];
+            in_xact_end = has_data_q;
           end else begin
             if (tx_pkt_end_i) begin
               in_xact_state_next = StWaitAckStart;
@@ -281,7 +297,6 @@ module usb_fs_nb_in_pe #(
     end else begin
       tx_data_o <= in_ep_data_i;
     end
-
   end
 
   always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin
@@ -311,12 +326,14 @@ module usb_fs_nb_in_pe #(
 
   always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      in_ep_newpkt_o <= 1'b0;
+      in_ep_newpkt_o  <= 1'b0;
       in_ep_current_o <= '0;
+      has_data_q      <= 1'b0;
     end else begin
       if (in_token_received) begin
         in_ep_current_o <= in_ep_current_d;
-        in_ep_newpkt_o <= 1'b1;
+        in_ep_newpkt_o  <= 1'b1;
+        has_data_q      <= in_ep_has_data_i[in_ep_index_d];
       end else begin
         in_ep_newpkt_o <= 1'b0;
       end

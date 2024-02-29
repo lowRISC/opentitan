@@ -56,6 +56,8 @@ module usbdev_usbif  #(
   output logic                     out_endpoint_val_o,
 
   // transmit (IN) side
+  output logic                     in_xact_starting_o,
+  output logic [3:0]               in_xact_start_ep_o,
   input  logic [NBufWidth - 1:0]   in_buf_i,
   input  logic [PktW:0]            in_size_i,
   input  logic [NEndpoints-1:0]    in_stall_i,
@@ -344,6 +346,9 @@ module usbdev_usbif  #(
     .out_ep_iso_i          (out_ep_iso_i),
 
     // in endpoint interfaces
+    .in_xact_starting_o    (in_xact_starting_o),
+    .in_xact_start_ep_o    (in_xact_start_ep_o),
+
     .in_ep_current_o       (in_ep_current),
     .in_ep_rollback_o      (link_in_err_o),
     .in_ep_xact_end_o      (in_ep_xact_end_o),

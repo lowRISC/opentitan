@@ -71,6 +71,9 @@ module usb_fs_nb_pe #(
   input  logic [NumOutEps-1:0]   out_ep_iso_i, // Configure endpoint in isochronous mode
 
   // in endpoint interfaces
+  output logic                   in_xact_starting_o, // Start of an IN transaction
+  output logic [3:0]             in_xact_start_ep_o, // Capture IN packet details
+
   output logic [3:0]             in_ep_current_o, // Other signals addressed to this ep
   output logic                   in_ep_rollback_o, // Bad termination, rollback transaction
   output logic                   in_ep_xact_end_o, // good termination, transaction complete
@@ -166,6 +169,10 @@ module usb_fs_nb_pe #(
     .link_reset_i          (link_reset_i),
     .link_active_i         (link_active_i),
     .dev_addr_i            (dev_addr_i),
+
+    // transaction starting
+    .in_xact_starting_o    (in_xact_starting_o),
+    .in_xact_start_ep_o    (in_xact_start_ep_o),
 
     // endpoint interface
     .in_ep_current_o       (in_ep_current_o),
