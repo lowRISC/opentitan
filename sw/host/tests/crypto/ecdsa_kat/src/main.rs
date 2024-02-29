@@ -67,7 +67,7 @@ fn run_ecdsa_testcase(
     test_case: &EcdsaTestCase,
     opts: &Opts,
     transport: &TransportWrapper,
-    fail_counter: &mut u32,
+    failures: &mut Vec<String>,
 ) -> Result<()> {
     log::info!(
         "vendor: {}, test case: {}",
@@ -253,9 +253,14 @@ fn run_ecdsa_testcase(
             test_case.result,
             success
         );
-    }
-    if success != test_case.result {
-        *fail_counter += 1;
+        failures.push(format!(
+            "{} {} {} {} #{}",
+            test_case.vendor,
+            test_case.curve,
+            test_case.operation,
+            test_case.hash_alg,
+            test_case.test_case_id
+        ));
     }
     Ok(())
 }
@@ -266,7 +271,7 @@ fn test_ecdsa(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let _ = UartConsole::wait_for(&*uart, r"Running [^\r\n]*", opts.timeout)?;
 
     let mut test_counter = 0u32;
-    let mut fail_counter = 0u32;
+    let mut failures = vec![];
     let test_vector_files = &opts.ecdsa_json;
     for file in test_vector_files {
         let raw_json = fs::read_to_string(file)?;
@@ -275,13 +280,16 @@ fn test_ecdsa(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         for ecdsa_test in &ecdsa_tests {
             test_counter += 1;
             log::info!("Test counter: {}", test_counter);
-            run_ecdsa_testcase(ecdsa_test, opts, transport, &mut fail_counter)?;
+            run_ecdsa_testcase(ecdsa_test, opts, transport, &mut failures)?;
         }
     }
     assert_eq!(
-        0, fail_counter,
-        "Failed {} out of {} tests.",
-        fail_counter, test_counter
+        0,
+        failures.len(),
+        "Failed {} out of {} tests. Failures: {:?}",
+        failures.len(),
+        test_counter,
+        failures
     );
     Ok(())
 }
