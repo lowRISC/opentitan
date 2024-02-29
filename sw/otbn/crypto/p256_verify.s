@@ -278,6 +278,9 @@ p256_verify:
  * show a data dependent timing and execution profile. Only use in situations
  * where a full white-box environment is acceptable.
  *
+ * The `a` parameter must be nonzero. If it is zero, the code will jump to
+ * `p256_invalid_input`.
+ *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
  * @param[in]  w0: a, operand
@@ -289,6 +292,11 @@ p256_verify:
  * clobbered flag groups: FG0
  */
 mod_inv_var:
+  /* Check if the input is zero. */
+  bn.cmp    w0, w31
+  csrrs     x2, FG0, x0
+  andi      x2, x2, 8
+  bne       x2, x0, p256_invalid_input
 
   /* w2 = r = 0 */
   bn.mov    w2, w31
