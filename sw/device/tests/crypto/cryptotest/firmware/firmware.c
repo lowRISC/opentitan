@@ -14,6 +14,7 @@
 #include "sw/device/tests/crypto/cryptotest/json/aes_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/aes_sca_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/commands.h"
+#include "sw/device/tests/crypto/cryptotest/json/ecdsa_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/hash_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/ibex_fi_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/kmac_sca_commands.h"
@@ -24,6 +25,7 @@
 // Include handlers
 #include "aes.h"
 #include "aes_sca.h"
+#include "ecdsa.h"
 #include "hash.h"
 #include "ibex_fi.h"
 #include "kmac_sca.h"
@@ -40,6 +42,9 @@ status_t process_cmd(ujson_t *uj) {
     switch (cmd) {
       case kCryptotestCommandAes:
         RESP_ERR(uj, handle_aes(uj));
+        break;
+      case kCryptotestCommandEcdsa:
+        RESP_ERR(uj, handle_ecdsa(uj));
         break;
       case kCryptotestCommandHash:
         RESP_ERR(uj, handle_hash(uj));
