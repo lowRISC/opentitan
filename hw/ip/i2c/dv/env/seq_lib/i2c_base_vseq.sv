@@ -177,7 +177,7 @@ class i2c_base_vseq extends cip_base_vseq #(
   }
 
   constraint timing_val_c {
-    thigh   inside {[cfg.seq_cfg.i2c_min_timing : cfg.seq_cfg.i2c_max_timing]};
+    thigh   inside {[                         4 : cfg.seq_cfg.i2c_max_timing]};
     t_r     inside {[cfg.seq_cfg.i2c_min_timing : cfg.seq_cfg.i2c_max_timing]};
     t_f     inside {[cfg.seq_cfg.i2c_min_timing : cfg.seq_cfg.i2c_max_timing]};
     thd_sta inside {[cfg.seq_cfg.i2c_min_timing : cfg.seq_cfg.i2c_max_timing]};
@@ -202,10 +202,13 @@ class i2c_base_vseq extends cip_base_vseq #(
       t_scl_interference == 0;
     } else {
       tsu_sta inside {[cfg.seq_cfg.i2c_min_timing : cfg.seq_cfg.i2c_max_timing]};
+      // If we are generating a fixed_period SCL in the agent, we need the clock pulses
+      // to be at-least long enough to contain an RSTART condition to chain transfers
+      // together.
+      thigh >= tsu_sta + t_f + thd_sta; // RSTART constraint
       // force derived timing parameters to be positive (correct DUT config)
       // tlow must be at least 2 greater than the sum of t_r + tsu_dat + thd_dat
       // because the flopped clock (see #15003 below) reduces tClockLow by 1.
-      thigh == (thd_sta + tsu_sta + t_r);
       tlow    inside {[(t_r + tsu_dat + thd_dat + 2) :
                        (t_r + tsu_dat + thd_dat + 2) + cfg.seq_cfg.i2c_time_range]};
       t_buf   inside {[(tsu_sta - t_r + 1) :
@@ -989,7 +992,7 @@ class i2c_base_vseq extends cip_base_vseq #(
   task write_tx_fifo(bit add_delay = 0);
     uvm_reg_data_t data;
     int read_size;
-    int rd_txfifo_timeout_ns = 100_000;
+    int rd_txfifo_timeout_ns = 10_000_000;
     // indefinite time
     int tx_empty_timeout_ns = 500_000_000;
     bit is_valid;

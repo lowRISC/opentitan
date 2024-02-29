@@ -16,8 +16,6 @@ class i2c_glitch_vseq extends i2c_target_smoke_vseq;
   parameter uint WRITE_STATE_WAIT_TIMEOUT_CYCLES = 40;
   // Number of cycles sequence wait before all of the read states are executed
   parameter uint READ_STATE_WAIT_TIMEOUT_CYCLES = 40;
-  // ACQ FIFO size in bytes
-  import i2c_env_pkg::I2C_ACQ_FIFO_DEPTH;
   // Period of SCL clock depending on timing parameters
   uint scl_period;
 

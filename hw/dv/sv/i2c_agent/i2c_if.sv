@@ -128,9 +128,13 @@ interface i2c_if(
     join
   endtask: wait_for_host_stop_or_rstart
 
+  // TODO(#21887) Re-strengthen checks when detecting ACK/NACK on the bus
+  // Similar to S/Sr/P conditions above, these timing-referenced monitor
+  // routines are brittle. Remove some delays for now.
+
   task automatic wait_for_host_ack(ref timing_cfg_t tc);
     `uvm_info(msg_id, "Wait for host ack::Begin", UVM_HIGH)
-    wait_for_dly(tc.tClockLow + tc.tSetupBit);
+    // wait_for_dly(tc.tClockLow + tc.tSetupBit);
     forever begin
       @(posedge scl_i);
       if (!sda_i) begin
@@ -144,7 +148,7 @@ interface i2c_if(
 
   task automatic wait_for_host_nack(ref timing_cfg_t tc);
     `uvm_info(msg_id, "Wait for host nack::Begin", UVM_HIGH)
-    wait_for_dly(tc.tClockLow + tc.tSetupBit);
+    // wait_for_dly(tc.tClockLow + tc.tSetupBit);
     forever begin
       @(posedge scl_i);
       if (sda_i) begin

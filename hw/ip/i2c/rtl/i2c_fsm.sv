@@ -93,6 +93,9 @@ module i2c_fsm import i2c_pkg::*;
                                  // or clock idle by host.
   logic [30:0] stretch_active_cnt; // In target mode keep track of how long it has stretched for
                                    // the NACK timeout feature.
+
+  // (IP in HOST-Mode) This bit is active when the FSM is in a state where a TARGET might
+  // be trying to stretch the clock, preventing the controller FSM from continuing.
   logic        stretch_en;
   logic        actively_stretching; // Only high when this target is holding SCL low to stretch.
 
@@ -161,6 +164,7 @@ module i2c_fsm import i2c_pkg::*;
     tClockStart,
     tClockLow,
     tClockPulse,
+    tClockHigh,
     tHoldBit,
     tClockStop,
     tSetupStop,
@@ -180,6 +184,7 @@ module i2c_fsm import i2c_pkg::*;
         tClockStart : tcount_d = 20'(thd_dat_i);
         tClockLow   : tcount_d = 20'(tlow_i) - 20'(thd_dat_i);
         tClockPulse : tcount_d = 20'(t_r_i) + 20'(thigh_i);
+        tClockHigh  : tcount_d = 20'(thigh_i);
         tHoldBit    : tcount_d = 20'(t_f_i) + 20'(thd_dat_i);
         tClockStop  : tcount_d = 20'(t_f_i) + 20'(tlow_i) - 20'(thd_dat_i);
         tSetupStop  : tcount_d = 20'(t_r_i) + 20'(tsu_sto_i);
@@ -187,10 +192,8 @@ module i2c_fsm import i2c_pkg::*;
         tNoDelay    : tcount_d = 20'h00001;
         default     : tcount_d = 20'h00001;
       endcase
-    end else if (stretch_idle_cnt == '0 || target_enable_i) begin
+    end else if (host_enable_i || target_enable_i) begin
       tcount_d = tcount_q - 1'b1;
-    end else begin
-      tcount_d = tcount_q;  // pause timer if clock is stretched
     end
   end
 
@@ -213,7 +216,8 @@ module i2c_fsm import i2c_pkg::*;
   always_ff @ (posedge clk_i or negedge rst_ni) begin : clk_stretch
     if (!rst_ni) begin
       stretch_idle_cnt <= '0;
-    end else if (stretch_en && scl_d && !scl_i) begin
+    end else if (stretch_en) begin
+      // HOST-mode count of clock stretching
       stretch_idle_cnt <= stretch_idle_cnt + 1'b1;
     end else if (!target_idle_o && event_host_timeout_o) begin
       // If the host has timed out, reset the counter and try again
@@ -234,6 +238,34 @@ module i2c_fsm import i2c_pkg::*;
       stretch_active_cnt <= stretch_active_cnt + 1'b1;
     end else begin
       stretch_active_cnt <= '0;
+    end
+  end
+
+  // The TARGET can stretch the clock during any time that the host drives SCL to 0.
+  // However, we (the HOST) cannot know it is being stretched until we release SCL,
+  // usually trying to create the next clock pulse.
+  // There is a minimum 3-cycle round trip (1-cycle output flop, 2-cycle input synchronizer),
+  // between releasing the clock and observing the effect of releasing the clock on
+  // the inputs. However, this is really '1 + t_r + 2' as the bus also needs to slew to '1
+  // before can observe it. Even if the TARGET is not stretching the clock, we cannot
+  // confirm it until at-least this amount of time has elapsed.
+  //
+  // 'stretch_predict_cnt_expired' becomes active once we have observed (4 + t_r) cycles of
+  // delay, and if !scl_i at this point we know that the TARGET is stretching the clock.
+  // > This implementation requires 'thigh >= 4' to guarantee we don't miss stretching.
+  logic [31:0] stretch_cnt_threshold;
+  assign stretch_cnt_threshold = 32'd2 + 32'(t_r_i);
+
+  logic stretch_predict_cnt_expired;
+  always_ff @ (posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      stretch_predict_cnt_expired <= 1'b0;
+    end else begin
+      if (stretch_idle_cnt == stretch_cnt_threshold) begin
+        stretch_predict_cnt_expired <= 1'b1;
+      end else if (!stretch_en) begin
+        stretch_predict_cnt_expired <= 1'b0;
+      end
     end
   end
 
@@ -587,6 +619,11 @@ module i2c_fsm import i2c_pkg::*;
           scl_d = 1'b1;
         end
       end
+
+      ///////////////
+      // HOST MODE //
+      ///////////////
+
       // SetupStart: SDA and SCL are released
       SetupStart : begin
         host_idle_o = 1'b0;
@@ -741,6 +778,11 @@ module i2c_fsm import i2c_pkg::*;
         else scl_d = 1'b0;
         fmt_fifo_rready_o = 1'b1;
       end
+
+      /////////////////
+      // TARGET MODE //
+      /////////////////
+
       // AcquireStart: hold start condition
       AcquireStart : begin
         target_idle_o = 1'b0;
@@ -998,6 +1040,11 @@ module i2c_fsm import i2c_pkg::*;
         end
         clear_nack_next_byte = 1'b1;
       end
+
+      ///////////////
+      // HOST MODE //
+      ///////////////
+
       // SetupStart: SDA and SCL are released
       SetupStart : begin
         if (tcount_q == 20'd1) begin
@@ -1040,7 +1087,11 @@ module i2c_fsm import i2c_pkg::*;
       // ClockPulse: SCL is released, SDA keeps the indexed bit value
       ClockPulse : begin
         en_sda_interf_det = 1'b1;
-        if (tcount_q == 20'd1) begin
+        if (!scl_i && stretch_predict_cnt_expired) begin
+          // Saw stretching. Remain in this state and don't count down until we see SCL high.
+          load_tcount = 1'b1;
+          tcount_sel = tClockHigh;
+        end else if (tcount_q == 20'd1) begin
           state_d = HoldBit;
           load_tcount = 1'b1;
           tcount_sel = tHoldBit;
@@ -1073,7 +1124,11 @@ module i2c_fsm import i2c_pkg::*;
       end
       // ClockPulseAck: SCL is released
       ClockPulseAck : begin
-        if (tcount_q == 20'd1) begin
+        if (!scl_i && stretch_predict_cnt_expired) begin
+          // Saw stretching. Remain in this state and don't count down until we see SCL high.
+          load_tcount = 1'b1;
+          tcount_sel = tClockHigh;
+        end else if (tcount_q == 20'd1) begin
           state_d = HoldDevAck;
           load_tcount = 1'b1;
           tcount_sel = tHoldBit;
@@ -1103,11 +1158,15 @@ module i2c_fsm import i2c_pkg::*;
       end
       // ReadClockPulse: SCL is released, the indexed bit value is read off SDA
       ReadClockPulse : begin
-        if (tcount_q == 20'd1) begin
+        if (!scl_i && stretch_predict_cnt_expired) begin
+          // Saw stretching. Remain in this state and don't count down until we see SCL high.
+          load_tcount = 1'b1;
+          tcount_sel = tClockHigh;
+        end else if (tcount_q == 20'd1) begin
           state_d = ReadHoldBit;
           load_tcount = 1'b1;
           tcount_sel = tHoldBit;
-          shift_data_en = 1'b1;
+          shift_data_en = 1'b1; // SDA is sampled on the final clk_i cycle of the SCL pulse.
         end
       end
       // ReadHoldBit: SCL is pulled low
@@ -1138,7 +1197,11 @@ module i2c_fsm import i2c_pkg::*;
       // HostClockPulseAck: SCL is released
       HostClockPulseAck : begin
         en_sda_interf_det = 1'b1;
-        if (tcount_q == 20'd1) begin
+        if (!scl_i && stretch_predict_cnt_expired) begin
+          // Saw stretching. Remain in this state and don't count down until we see SCL high.
+          load_tcount = 1'b1;
+          tcount_sel = tClockHigh;
+        end else if (tcount_q == 20'd1) begin
           state_d = HostHoldBitAck;
           load_tcount = 1'b1;
           tcount_sel = tHoldBit;
@@ -1234,6 +1297,12 @@ module i2c_fsm import i2c_pkg::*;
           tcount_sel = tNoDelay;
         end
       end
+
+
+      /////////////////
+      // TARGET MODE //
+      /////////////////
+
       // AcquireStart: hold start condition
       AcquireStart : begin
         if (scl_i_q && !scl_i) begin
