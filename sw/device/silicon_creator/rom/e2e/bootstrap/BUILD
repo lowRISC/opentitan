@@ -108,9 +108,6 @@ opentitan_test(
             "//sw/device/silicon_creator/rom/e2e:new_empty_test_slot_a": "firmware",
         },
         otp = "//hw/ip/otp_ctrl/data:img_bootstrap_disabled",
-        test_cmd = """
-            --bitstream="{bitstream}"
-        """,
         test_harness = "//sw/host/tests/rom/e2e_bootstrap_disabled",
     ),
     exec_env = {

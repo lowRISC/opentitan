@@ -422,6 +422,20 @@ opentitan_test = rv_rule(
             allow_files = True,
             cfg = "exec",
         ),
+        "need_jtag": attr.bool(
+            default = False,
+            doc = "JTAG is required for this test",
+        ),
+        "jtag_data_deps": attr.label_list(
+            allow_files = True,
+            default = [],
+            doc = "JTAG extra data dependencies override for this test",
+            cfg = "exec",
+        ),
+        "jtag_test_cmd": attr.string(
+            default = "",
+            doc = "JTAG extra test command parameters override for this test",
+        ),
         "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
     }.items()),
     fragments = ["cpp"],
