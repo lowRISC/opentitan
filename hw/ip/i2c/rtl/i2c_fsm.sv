@@ -36,17 +36,17 @@ module i2c_fsm import i2c_pkg::*;
   output logic       rx_fifo_wvalid_o, // high if there is valid data in rx_fifo
   output logic [7:0] rx_fifo_wdata_o,  // byte in rx_fifo read from target
 
-  input        tx_fifo_rvalid_i, // indicates there is valid data in tx_fifo
-  input        tx_fifo_wvalid_i, // indicates data is being put into tx_fifo
-  input [FifoDepthWidth-1:0]  tx_fifo_depth_i,  // tx_fifo_depth
-  output logic tx_fifo_rready_o, // pop entry from tx_fifo
-  input [7:0]  tx_fifo_rdata_i,  // byte in tx_fifo to be sent to host
+  input                      tx_fifo_rvalid_i, // indicates there is valid data in tx_fifo
+  input                      tx_fifo_wvalid_i, // indicates data is being put into tx_fifo
+  input [FifoDepthWidth-1:0] tx_fifo_depth_i,  // fill level of tx_fifo
+  output logic               tx_fifo_rready_o, // pop entry from tx_fifo
+  input [7:0]                tx_fifo_rdata_i,  // byte in tx_fifo to be sent to host
 
-  output logic       acq_fifo_wvalid_o, // high if there is valid data in acq_fifo
-  output logic [9:0] acq_fifo_wdata_o,  // byte and signal in acq_fifo read from target
-  input [AcqFifoDepthWidth-1:0] acq_fifo_depth_i,
-  output logic       acq_fifo_wready_o, // local version of ready
-  input [9:0]        acq_fifo_rdata_i,  // only used for assertion
+  output logic                    acq_fifo_wvalid_o, // high if there is valid data in acq_fifo
+  output logic [9:0]              acq_fifo_wdata_o,  // byte and signal in acq_fifo read from target
+  input [AcqFifoDepthWidth-1:0]   acq_fifo_depth_i,  // fill level of acq_fifo
+  output logic                    acq_fifo_wready_o, // local version of ready
+  input [9:0]                     acq_fifo_rdata_i,  // only used for assertion
 
   output logic       host_idle_o,      // indicates the host is idle
   output logic       target_idle_o,    // indicates the target is idle
@@ -61,7 +61,7 @@ module i2c_fsm import i2c_pkg::*;
   input [15:0] tsu_dat_i,  // data setup time in clock units
   input [15:0] thd_dat_i,  // data hold time in clock units
   input [15:0] t_buf_i,    // bus free time between STOP and START in clock units
-  input [30:0] stretch_timeout_i,  // max time target may stretch the clock
+  input [30:0] stretch_timeout_i,  // max time target connected to this host may stretch the clock
   input        timeout_enable_i,   // assert if target stretches clock past max
   input [31:0] host_timeout_i,     // max time target waits for host to pull clock down
 
@@ -330,7 +330,7 @@ module i2c_fsm import i2c_pkg::*;
     end
   end
 
-  // Detection by the target of ACK bit send by the host
+  // Detection by the target of ACK bit sent by the host
   always_ff @ (posedge clk_i or negedge rst_ni) begin : host_ack_register
     if (!rst_ni) begin
       host_ack <= 1'b0;
@@ -572,8 +572,8 @@ module i2c_fsm import i2c_pkg::*;
         host_idle_o = 1'b0;
         scl_d = 1'b0;
         if (bit_index == '0 && tcount_q == 20'd1) begin
-          rx_fifo_wdata_o = read_byte;  // transfer read data to rx_fifo
           rx_fifo_wvalid_o = 1'b1;      // assert that rx_fifo has valid data
+          rx_fifo_wdata_o = read_byte;  // transfer read data to rx_fifo
         end
       end
       // HostClockLowAck: SCL pulled low, SDA is conditional
@@ -678,7 +678,7 @@ module i2c_fsm import i2c_pkg::*;
         end
       end
       // TransmitWait: Check if data is available prior to transmit
-      TransmitWait: begin
+      TransmitWait : begin
         target_idle_o = 1'b0;
       end
       // TransmitSetup: target shifts indexed bit onto SDA while SCL is low
@@ -741,12 +741,12 @@ module i2c_fsm import i2c_pkg::*;
         sda_d = 1'b0;
 
         if (tcount_q == 20'd1) begin
+          acq_fifo_wvalid_o = acq_fifo_wready;      // assert that acq_fifo has valid data
           acq_fifo_wdata_o = {AcqData, input_byte}; // transfer data to acq_fifo
-          acq_fifo_wvalid_o = acq_fifo_wready;         // assert that acq_fifo has valid data
         end
       end
       // StretchAddr: target stretches the clock if matching address cannot be
-      // despoited yet.
+      // deposited yet.
       StretchAddr : begin
         target_idle_o = 1'b0;
         scl_d = 1'b0;
@@ -760,7 +760,7 @@ module i2c_fsm import i2c_pkg::*;
         scl_d = 1'b0;
       end
       // StretchTxSetup: drive the return data
-      StretchTxSetup: begin
+      StretchTxSetup : begin
         target_idle_o = 1'b0;
         scl_d = 1'b0;
         sda_d = tx_fifo_rdata[3'(bit_idx)];
@@ -771,8 +771,8 @@ module i2c_fsm import i2c_pkg::*;
         scl_d = 1'b0;
 
         // When space becomes available, deposit entry
-        acq_fifo_wdata_o = {AcqData, input_byte}; // transfer data to acq_fifo
         acq_fifo_wvalid_o = acq_fifo_wready;      // assert that acq_fifo has valid data
+        acq_fifo_wdata_o = {AcqData, input_byte}; // transfer data to acq_fifo
       end
       // default
       default : begin
@@ -845,7 +845,6 @@ module i2c_fsm import i2c_pkg::*;
           if (fmt_fifo_rvalid_i) state_d = Active;
         end
       end
-
       // SetupStart: SDA and SCL are released
       SetupStart : begin
         if (tcount_q == 20'd1) begin
@@ -885,7 +884,6 @@ module i2c_fsm import i2c_pkg::*;
           end
         end
       end
-
       // ClockPulse: SCL is released, SDA keeps the indexed bit value
       ClockPulse : begin
         en_sda_interf_det = 1'b1;
@@ -1016,7 +1014,6 @@ module i2c_fsm import i2c_pkg::*;
           end
         end
       end
-
       // ClockStop: SCL is pulled low, SDA stays low
       ClockStop : begin
         if (tcount_q == 20'd1) begin
@@ -1050,7 +1047,6 @@ module i2c_fsm import i2c_pkg::*;
           end
         end
       end
-
       // Active: continue while keeping SCL low
       Active : begin
         if (fmt_flag_read_bytes_i) begin
@@ -1069,7 +1065,6 @@ module i2c_fsm import i2c_pkg::*;
           tcount_sel = tClockLow;
         end
       end
-
       // PopFmtFifo: populate fmt_fifo
       PopFmtFifo : begin
         if (!host_enable_i) begin
@@ -1086,7 +1081,6 @@ module i2c_fsm import i2c_pkg::*;
           tcount_sel = tNoDelay;
         end
       end
-
       // AcquireStart: hold start condition
       AcquireStart : begin
         if (scl_i_q && !scl_i) begin
@@ -1095,7 +1089,6 @@ module i2c_fsm import i2c_pkg::*;
           input_byte_clr = 1'b1;
         end
       end
-
       // AddrRead: read and compare target address
       AddrRead : begin
         if (bit_ack && address_match) begin
@@ -1106,7 +1099,6 @@ module i2c_fsm import i2c_pkg::*;
           state_d = Idle;
         end
       end
-
       // AddrAckWait: pause before acknowledging
       AddrAckWait : begin
         if (tcount_q == 20'd1 && !scl_i) begin
@@ -1141,7 +1133,7 @@ module i2c_fsm import i2c_pkg::*;
         end
       end
       // TransmitWait: Evaluate whether there are entries to send first
-      TransmitWait: begin
+      TransmitWait : begin
         if (stretch_tx) begin
           state_d = StretchTx;
         end else begin
@@ -1174,14 +1166,12 @@ module i2c_fsm import i2c_pkg::*;
           end
         end
       end
-
       // Wait for clock to become positive.
       TransmitAck : begin
         if (scl_i) begin
           state_d = TransmitAckPulse;
         end
       end
-
       // TransmitAckPulse: target waits for host to ACK transmission
       // If a nak is received, that means a stop is incoming.
       TransmitAckPulse : begin
@@ -1195,14 +1185,12 @@ module i2c_fsm import i2c_pkg::*;
           end
         end
       end
-
       // An inert state just waiting for host to issue a stop
       // Cannot cycle back to idle directly as other events depend on the system being
       // non-idle.
-      WaitForStop: begin
+      WaitForStop : begin
         state_d = WaitForStop;
       end
-
       // AcquireByte: target acquires a byte
       AcquireByte : begin
         if (bit_ack) begin
@@ -1211,7 +1199,6 @@ module i2c_fsm import i2c_pkg::*;
           tcount_sel = tClockStart;
         end
       end
-
       // AcquireAckWait: pause before acknowledging
       AcquireAckWait : begin
         if (tcount_q == 20'd1 && !scl_i) begin
@@ -1269,6 +1256,7 @@ module i2c_fsm import i2c_pkg::*;
           event_tx_stretch_o = 1'b0;
         end
       end
+      // StretchTxSetup: Wait for tSetupData before going to transmit
       StretchTxSetup : begin
         if (tcount_q == 20'd1) begin
           state_d = TransmitSetup;
@@ -1280,7 +1268,6 @@ module i2c_fsm import i2c_pkg::*;
       StretchAcqFull : begin
         if (acq_fifo_wready) state_d = AcquireByte;
       end
-
       // default
       default : begin
         state_d = Idle;
