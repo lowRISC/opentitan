@@ -570,8 +570,8 @@ module i2c_fsm import i2c_pkg::*;
         host_idle_o = 1'b0;
         scl_d = 1'b0;
         if (bit_index == '0 && tcount_q == 20'd1) begin
-          rx_fifo_wdata_o = read_byte;  // transfer read data to rx_fifo
           rx_fifo_wvalid_o = 1'b1;      // assert that rx_fifo has valid data
+          rx_fifo_wdata_o = read_byte;  // transfer read data to rx_fifo
         end
       end
       // HostClockLowAck: SCL pulled low, SDA is conditional
@@ -739,8 +739,8 @@ module i2c_fsm import i2c_pkg::*;
         sda_d = 1'b0;
 
         if (tcount_q == 20'd1) begin
+          acq_fifo_wvalid_o = acq_fifo_wready;      // assert that acq_fifo has valid data
           acq_fifo_wdata_o = {AcqData, input_byte}; // transfer data to acq_fifo
-          acq_fifo_wvalid_o = acq_fifo_wready;         // assert that acq_fifo has valid data
         end
       end
       // StretchAddr: target stretches the clock if matching address cannot be
@@ -769,8 +769,8 @@ module i2c_fsm import i2c_pkg::*;
         scl_d = 1'b0;
 
         // When space becomes available, deposit entry
-        acq_fifo_wdata_o = {AcqData, input_byte}; // transfer data to acq_fifo
         acq_fifo_wvalid_o = acq_fifo_wready;      // assert that acq_fifo has valid data
+        acq_fifo_wdata_o = {AcqData, input_byte}; // transfer data to acq_fifo
       end
       // default
       default : begin
