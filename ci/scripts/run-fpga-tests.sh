@@ -82,7 +82,42 @@ then
         )
     " \
     > "${pattern_file}"
-    test_args="${test_args} --test_tag_filters=cw310_sival,-broken,-skip_in_ci"
+    # We need to remove tests tagged as manual since we are not using a wildcard target.
+    test_args="${test_args} --test_tag_filters=cw310_sival,-broken,-skip_in_ci,-manual"
+elif [ "${fpga_tags}" == "cw310_rom_but_not_manuf_and_sival_tests" ]
+then
+    # Only consider tests that are tagged `cw310_rom_with_fake_keys` or `cw310_rom_with_real_keys`
+    # but that do not have corresponding test tagged `cw310_sival` or `cw310_sival_rom_ext`. Also
+    # ignore tests tagged as `manuf`.
+
+    # This query only removes all tests that have sibling tagged  `cw310_sival` or `cw310_sival_rom_ext`.
+    # We then rely on test tag filters to only consider `cw310_sival`.
+    ci/bazelisk.sh query \
+    "
+        `# Find all tests that are dependencies of the test suite identified`
+        deps(
+            `# Find all test suites`
+            kind(
+                \"test_suite\",
+                //...
+            )
+            except
+            `# Remove all test suites depending on a test tagged cw310_sival[_rom_ext]`
+            `# but ignore those marked as broken`
+            rdeps(
+                //...
+                except
+                attr(\"tags\",\"broken\", //...),
+                `# Find all tests tagged cw310_sival_rom_ext`
+                attr(\"tags\",\"cw310_sival\", //...),
+                1
+            ),
+            1
+        )
+    " \
+    > "${pattern_file}"
+    # We need to remove tests tagged as manual since we are not using a wildcard target.
+    test_args="${test_args} --test_tag_filters=cw310_rom_with_fake_keys,cw310_rom_with_real_keys,-manuf,-broken,-skip_in_ci,-manual"
 else
     test_args="${test_args} --test_tag_filters=${fpga_tags},-broken,-skip_in_ci"
     echo "//..." > "${pattern_file}"
