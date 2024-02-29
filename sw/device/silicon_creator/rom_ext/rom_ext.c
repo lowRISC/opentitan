@@ -38,6 +38,8 @@
 #include "sw/device/silicon_creator/lib/manifest.h"
 #include "sw/device/silicon_creator/lib/manifest_def.h"
 #include "sw/device/silicon_creator/lib/otbn_boot_services.h"
+#include "sw/device/silicon_creator/lib/ownership/ownership.h"
+#include "sw/device/silicon_creator/lib/ownership/ownership_unlock.h"
 #include "sw/device/silicon_creator/lib/shutdown.h"
 #include "sw/device/silicon_creator/lib/sigverify/sigverify.h"
 #include "sw/device/silicon_creator/rom_ext/rescue.h"
@@ -132,7 +134,7 @@ void rom_ext_check_rom_expectations(void) {
 }
 
 OT_WARN_UNUSED_RESULT
-static rom_error_t rom_ext_init(void) {
+static rom_error_t rom_ext_init(boot_data_t *boot_data) {
   sec_mmio_next_stage_init();
   lc_state = lifecycle_state_get();
   pinmux_init();
@@ -146,6 +148,9 @@ static rom_error_t rom_ext_init(void) {
 
   // Check that the retention RAM is initialized.
   HARDENED_RETURN_IF_ERROR(retention_sram_check_version());
+
+  // Get the boot_data record
+  HARDENED_RETURN_IF_ERROR(boot_data_read(lc_state, boot_data));
 
   return kErrorOk;
 }
@@ -463,7 +468,6 @@ static rom_error_t boot_svc_next_boot_bl0_slot_handler(
 
   boot_svc_next_boot_bl0_slot_res_init(error,
                                        &boot_svc_msg->next_boot_bl0_slot_res);
-  retention_sram_get()->creator.boot_svc_msg = *boot_svc_msg;
   // We always return OK here because we've logged any error status in the boot
   // services response message and we want the boot flow to continue.
   return kErrorOk;
@@ -543,47 +547,50 @@ static rom_error_t boot_svc_min_sec_ver_handler(boot_svc_msg_t *boot_svc_msg,
 }
 
 OT_WARN_UNUSED_RESULT
-static rom_error_t rom_ext_try_boot(void) {
-  boot_data_t boot_data;
-  HARDENED_RETURN_IF_ERROR(boot_data_read(lc_state, &boot_data));
-
-  boot_svc_msg_t boot_svc_msg = retention_sram_get()->creator.boot_svc_msg;
-  if (boot_svc_msg.header.identifier == kBootSvcIdentifier) {
-    HARDENED_RETURN_IF_ERROR(boot_svc_header_check(&boot_svc_msg.header));
-    uint32_t msg_type = boot_svc_msg.header.type;
+static rom_error_t handle_boot_svc(boot_data_t *boot_data) {
+  boot_svc_msg_t *boot_svc_msg = &retention_sram_get()->creator.boot_svc_msg;
+  // TODO(lowRISC#22387): Examine the boot_svc code paths for boot loops.
+  if (boot_svc_msg->header.identifier == kBootSvcIdentifier) {
+    HARDENED_RETURN_IF_ERROR(boot_svc_header_check(&boot_svc_msg->header));
+    uint32_t msg_type = boot_svc_msg->header.type;
     switch (launder32(msg_type)) {
       case kBootSvcEmptyType:
         HARDENED_CHECK_EQ(msg_type, kBootSvcEmptyType);
         break;
       case kBootSvcNextBl0SlotReqType:
         HARDENED_CHECK_EQ(msg_type, kBootSvcNextBl0SlotReqType);
-        HARDENED_RETURN_IF_ERROR(
-            boot_svc_next_boot_bl0_slot_handler(&boot_svc_msg, &boot_data));
-        break;
+        return boot_svc_next_boot_bl0_slot_handler(boot_svc_msg, boot_data);
       case kBootSvcPrimaryBl0SlotReqType:
         HARDENED_CHECK_EQ(msg_type, kBootSvcPrimaryBl0SlotReqType);
-        HARDENED_RETURN_IF_ERROR(
-            boot_svc_primary_boot_bl0_slot_handler(&boot_svc_msg, &boot_data));
-        break;
+        return boot_svc_primary_boot_bl0_slot_handler(boot_svc_msg, boot_data);
       case kBootSvcMinBl0SecVerReqType:
         HARDENED_CHECK_EQ(msg_type, kBootSvcMinBl0SecVerReqType);
-        HARDENED_RETURN_IF_ERROR(
-            boot_svc_min_sec_ver_handler(&boot_svc_msg, &boot_data));
-        break;
+        return boot_svc_min_sec_ver_handler(boot_svc_msg, boot_data);
+      case kBootSvcOwnershipUnlockReqType:
+        HARDENED_CHECK_EQ(msg_type, kBootSvcOwnershipUnlockReqType);
+        return ownership_unlock_handler(boot_svc_msg, boot_data);
       case kBootSvcNextBl0SlotResType:
+      case kBootSvcPrimaryBl0SlotResType:
+      case kBootSvcMinBl0SecVerResType:
+      case kBootSvcOwnershipUnlockResType:
         // For response messages left in ret-ram we do nothing.
         break;
       default:
-        HARDENED_TRAP();
+          // For messages with an unknown msg_type, we do nothing.
+          ;
     }
   }
+  return kErrorOk;
+}
 
+OT_WARN_UNUSED_RESULT
+static rom_error_t rom_ext_try_next_stage(boot_data_t *boot_data) {
   rom_ext_boot_policy_manifests_t manifests =
-      rom_ext_boot_policy_manifests_get(&boot_data);
+      rom_ext_boot_policy_manifests_get(boot_data);
   rom_error_t error = kErrorRomExtBootFailed;
   rom_error_t slot[2] = {0, 0};
   for (size_t i = 0; i < ARRAYSIZE(manifests.ordered); ++i) {
-    error = rom_ext_verify(manifests.ordered[i], &boot_data);
+    error = rom_ext_verify(manifests.ordered[i], boot_data);
     slot[i] = error;
     if (error != kErrorOk) {
       continue;
@@ -618,22 +625,54 @@ static rom_error_t rom_ext_try_boot(void) {
   return error;
 }
 
-void rom_ext_main(void) {
-  rom_ext_check_rom_expectations();
-  SHUTDOWN_IF_ERROR(rom_ext_init());
+static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
+  HARDENED_RETURN_IF_ERROR(rom_ext_init(boot_data));
   dbg_printf("Starting ROM_EXT\r\n");
 
-  boot_log_t *boot_log = &retention_sram_get()->creator.boot_log;
+  // Initialize the boot_log in retention RAM.
   const chip_info_t *rom_chip_info = (const chip_info_t *)_chip_info_start;
   boot_log_check_or_init(boot_log, rom_ext_current_slot(), rom_chip_info);
+  boot_log->rom_ext_nonce = boot_data->nonce;
+  boot_log->ownership_state = boot_data->ownership_state;
 
+  // Initialize the chip ownership state.
+  HARDENED_RETURN_IF_ERROR(ownership_init());
+
+  // Handle any pending boot_svc commands.
   rom_error_t error;
+  error = handle_boot_svc(boot_data);
+  if (error == kErrorWriteBootdataThenReboot) {
+    // Boot services reports errors by writing a status code into the reply
+    // messages.  Regardless of whether a boot service request produced an
+    // error, we want to continue booting unless the error specifically asks
+    // for a reboot.
+    return error;
+  }
+
+  // Re-sync the boot_log entries that could be changed by boot services.
+  boot_log->rom_ext_nonce = boot_data->nonce;
+  boot_log->ownership_state = boot_data->ownership_state;
+  boot_log_digest_update(boot_log);
+
   if (uart_break_detect(kRescueDetectTime) == kHardenedBoolTrue) {
     dbg_printf("rescue: remember to clear break\r\n");
     uart_enable_receiver();
     error = rescue_protocol();
   } else {
-    error = rom_ext_try_boot();
+    error = rom_ext_try_next_stage(boot_data);
+  }
+  return error;
+}
+
+void rom_ext_main(void) {
+  rom_ext_check_rom_expectations();
+  boot_data_t boot_data;
+  boot_log_t *boot_log = &retention_sram_get()->creator.boot_log;
+
+  rom_error_t error = rom_ext_start(&boot_data, boot_log);
+  if (error == kErrorWriteBootdataThenReboot) {
+    HARDENED_CHECK_EQ(error, kErrorWriteBootdataThenReboot);
+    error = boot_data_write(&boot_data);
   }
   shutdown_finalize(error);
 }
