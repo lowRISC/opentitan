@@ -12,6 +12,10 @@ class rstmgr_scoreboard extends cip_base_scoreboard #(
   // local variables
   static const string sw_rst_ctrl_n_preffix = "sw_rst_ctrl_n_";
 
+  // This is used to capture and restore upon a regular reset the CSR values that are reset
+  // by POR only, since the CIP and lower layers will reset all CSRs.
+  rstmgr_values_of_por_csr_fields_t por_fields;
+
   // TLM agent fifos
 
   // local queues to hold incoming packets pending comparison
@@ -25,6 +29,8 @@ class rstmgr_scoreboard extends cip_base_scoreboard #(
 
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
+    // Initial capture to be able to restore after POR.
+    capture_por_csr_fields();
     fork
       monitor_por();
       monitor_capture();
@@ -75,6 +81,8 @@ class rstmgr_scoreboard extends cip_base_scoreboard #(
           `uvm_info(`gfn, "tl got out of reset", UVM_MEDIUM)
           under_reset = 0;
           clear_outstanding_access();
+          cfg.clk_rst_vif.wait_clks(1);
+          restore_por_csr_fields();
         end
       end
   endtask
@@ -168,8 +176,6 @@ class rstmgr_scoreboard extends cip_base_scoreboard #(
       end
       "alert_info_ctrl": begin
         // The en bit is cleared by any hardware reset, but other bits are only cleared by POR.
-        // ICEBOX(lowrisc/opentitan#18258): Should be possible to check this CSR.
-        do_read_check = 1'b0;
       end
       "alert_info_attr": begin
         // Read only.
@@ -187,8 +193,6 @@ class rstmgr_scoreboard extends cip_base_scoreboard #(
       end
       "cpu_info_ctrl": begin
         // The en bit is cleared by any hardware reset, but other bits are only cleared by POR.
-        // ICEBOX(lowrisc/opentitan#18258): Should be possible to check this CSR.
-        do_read_check = 1'b0;
       end
       "cpu_info_attr": begin
         // Read only.
@@ -243,7 +247,59 @@ class rstmgr_scoreboard extends cip_base_scoreboard #(
     end
   endtask
 
+  local function void capture_por_csr_fields();
+    por_fields.alert_info_ctrl_en = `gmv(ral.alert_info_ctrl.en);
+    `uvm_info(`gfn, $sformatf("captured alert_info_ctrl.en 0x%x", por_fields.alert_info_ctrl_en),
+              UVM_MEDIUM)
+    por_fields.alert_info_ctrl_index = `gmv(ral.alert_info_ctrl.index);
+    `uvm_info(`gfn, $sformatf(
+              "captured alert_info_ctrl.index 0x%x", por_fields.alert_info_ctrl_index), UVM_MEDIUM)
+    por_fields.cpu_info_ctrl_en = `gmv(ral.cpu_info_ctrl.en);
+    `uvm_info(`gfn, $sformatf(
+              "captured cpu_info_ctrl.en 0x%x", por_fields.cpu_info_ctrl_en), UVM_MEDIUM)
+    por_fields.cpu_info_ctrl_index = `gmv(ral.cpu_info_ctrl.index);
+    `uvm_info(`gfn, $sformatf(
+              "captured cpu_info_ctrl.index 0x%x", por_fields.cpu_info_ctrl_index), UVM_MEDIUM)
+  endfunction
+
+  // Restore the alert and cpu_info_ctrl index values, and the enable bits only on low power reset
+  // since all other resets clear them.
+  local task restore_por_csr_fields();
+    if (cfg.rstmgr_vif.reset_info[ral.reset_info.low_power_exit.get_lsb_pos()]) begin
+      `uvm_info(`gfn, $sformatf(
+                "Restoring alert_info_ctrl.en to 0x%x", por_fields.alert_info_ctrl_en), UVM_MEDIUM)
+      csr_wr(.ptr(ral.alert_info_ctrl.en), .value(por_fields.alert_info_ctrl_en), .backdoor(1),
+             .predict(1));
+      `uvm_info(`gfn, $sformatf("Restoring cpu_info_ctrl.en to 0x%x", por_fields.cpu_info_ctrl_en),
+                UVM_MEDIUM)
+      csr_wr(.ptr(ral.cpu_info_ctrl.en), .value(por_fields.cpu_info_ctrl_en), .backdoor(1),
+             .predict(1));
+    end
+    `uvm_info(`gfn, $sformatf(
+              "Restoring alert_info_ctrl.index to 0x%x", por_fields.alert_info_ctrl_index),
+              UVM_MEDIUM)
+    csr_wr(.ptr(ral.alert_info_ctrl.index), .value(por_fields.alert_info_ctrl_index), .backdoor(1),
+           .predict(1));
+    `uvm_info(`gfn, $sformatf(
+              "After restoring alert_info_ctrl mirrored value 0x%x", `gmv(ral.alert_info_ctrl)),
+              UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf(
+              "Restoring cpu_info_ctrl.index to 0x%x", por_fields.cpu_info_ctrl_index), UVM_MEDIUM)
+    csr_wr(.ptr(ral.cpu_info_ctrl.index), .value(por_fields.cpu_info_ctrl_index), .backdoor(1),
+           .predict(1));
+    `uvm_info(`gfn, $sformatf(
+              "After restoring cpu_info_ctrl mirrored value 0x%x", `gmv(ral.cpu_info_ctrl)),
+              UVM_MEDIUM)
+  endtask
+
+  // There are a handful of registers that are reset on POR only, but the dv_base classes
+  // will clear all mirrored values on reset. Rather than changing all that code to handle
+  // resets more accurately here we just capture the mirrored values of all such CSRs
+  // before reset, and apply them back once reset is handled. It would be really clean if
+  // they could be restored here right after reset, but restore is a task so it cannot be
+  // called within a function.
   virtual function void reset(string kind = "HARD");
+    capture_por_csr_fields();
     super.reset(kind);
     // reset local fifos queues and variables
   endfunction
