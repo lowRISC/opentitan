@@ -32,11 +32,16 @@ The values of these parameters will depend primarily on three bus details:
     - By default the device should operate at the maximum frequency for that mode.
     However, If the system developer wishes to operate at slower than the mode-specific maximum, a larger than minimum period  could be allowed as an additional functional parameter when calculating the timing parameters.
 
+Additional Constraints
+- To guarantee clock stretching works correctly in Controller-Mode, there is a requirement of `THIGH >= 4`.
+This constraint derives from the fact that there is a latency between the Controller FSM driving the bus and observing the effect of driving the bus.
+The implementation requires `THIGH` to be at least this large to guarantee that if the Target stretches the clock, we can observe it in time, and react accordingly.
+
 Based on the inputs, the timing parameters may be chosen using the following algorithm:
 1. The physical timing parameters t<sub>HD,STA</sub>, t<sub>SU,STA</sub>, t<sub>HD.DAT</sub>, t<sub>SU,DAT</sub>, t<sub>BUF</sub>, and t<sub>STO</sub>, t<sub>HIGH</sub>, and t<sub>LOW</sub> all have minimum allowed values which depend on the choice of speed mode (Standard-mode, Fast-mode or Fast-mode Plus).
 Using the speed mode input, look up the appropriate minimum value (in ns) for each parameter (i.e. t<sub>HD,STA,min</sub>, t<sub>SU,STA,min</sub>, etc)
 1. For each of these eight parameters, obtain an integer minimum by dividing the physical minimum parameter by the clock frequency and rounding up to the next highest integer:
-$$ \textrm{THIGH_MIN}=\lceil{t\_{HIGH,min}/t\_{clk}}\rceil $$
+$$ \textrm{THIGH_MIN}=(\lceil{t\_{HIGH,min}/t\_{clk}}\rceil,4)\_{max} $$
 $$ \textrm{TLOW_MIN}=\lceil{t\_{LOW,min}/t\_{clk}}\rceil $$
 $$ \textrm{THD_STA_MIN}= \lceil{t\_{HD,STA,min}/t\_{clk}}\rceil $$
 $$ \textrm{TSU_STA_MIN}= \lceil{t\_{SU,STA,min}/t\_{clk}}\rceil $$
