@@ -58,9 +58,10 @@ class entropy_src_env extends cip_base_env #(
     cfg.m_aes_halt_agent_cfg.agent_type          = push_pull_agent_pkg::PullAgent;
     cfg.m_aes_halt_agent_cfg.if_mode             = dv_utils_pkg::Device;
     cfg.m_aes_halt_agent_cfg.pull_handshake_type = push_pull_agent_pkg::FourPhase;
-    // When CSRNG has just started operating its AES, it may take up to 35 cycles to acknowledge the
+    // When CSRNG has just started operating its AES, it may take up to 48 cycles to acknowledge the
     // request.
-    cfg.m_aes_halt_agent_cfg.device_delay_max = 35;
+    cfg.m_aes_halt_agent_cfg.zero_delays = 0;
+    cfg.m_aes_halt_agent_cfg.device_delay_max = 48;
     // CSRNG drops its ack in the cycle after entropy_src has dropped its req.
     cfg.m_aes_halt_agent_cfg.ack_lo_delay_max = 1;
 
