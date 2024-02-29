@@ -5,6 +5,7 @@
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load("@rules_rust//bindgen:bindgen.bzl", "rust_bindgen_toolchain")
 load("@rules_rust//crate_universe:defs.bzl", "crate", "crates_vendor")
+load("@rules_rust//proto/prost:defs.bzl", "rust_prost_toolchain")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -35,6 +36,22 @@ toolchain(
     name = "bindgen_toolchain",
     toolchain = "bindgen_toolchain_impl",
     toolchain_type = "@rules_rust//bindgen:toolchain_type",
+)
+
+rust_prost_toolchain(
+    name = "prost_toolchain_impl",
+    prost_plugin = "@crate_index//:protoc-gen-prost__protoc-gen-prost",
+    prost_runtime = "@crate_index//:prost",
+    prost_types = "@crate_index//:prost-types",
+    proto_compiler = "@com_google_protobuf//:protoc",
+    # Disable tonic.
+    tonic_plugin_flag = "",
+)
+
+toolchain(
+    name = "prost_toolchain",
+    toolchain = "prost_toolchain_impl",
+    toolchain_type = "@rules_rust//proto/prost:toolchain_type",
 )
 
 crates_vendor(
@@ -107,6 +124,9 @@ crates_vendor(
             patches = [
                 "@//third_party/rust/patches:pqcrypto-sphincsplus-includedir.patch",
             ],
+        )],
+        "protoc-gen-prost": [crate.annotation(
+            gen_binaries = ["protoc-gen-prost"],
         )],
     },
     cargo_lockfile = "//third_party/rust:Cargo.lock",

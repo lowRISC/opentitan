@@ -383,6 +383,10 @@ _NORMAL_DEV_DEPENDENCIES = {
     "third_party/rust": {
         _COMMON_CONDITION: {
             "base64ct": "@crate_index__base64ct-1.6.0//:base64ct",
+            "bytes": "@crate_index__bytes-1.5.0//:bytes",
+            "prost": "@crate_index__prost-0.12.3//:prost",
+            "prost-types": "@crate_index__prost-types-0.12.3//:prost_types",
+            "protoc-gen-prost": "@crate_index__protoc-gen-prost-0.3.1//:protoc_gen_prost",
         },
     },
 }
@@ -478,6 +482,7 @@ _CONDITIONS = {
     "cfg(any(target_os = \"ios\", target_os = \"macos\"))": ["@rules_rust//rust/platform:aarch64-apple-darwin", "@rules_rust//rust/platform:aarch64-apple-ios", "@rules_rust//rust/platform:aarch64-apple-ios-sim", "@rules_rust//rust/platform:i686-apple-darwin", "@rules_rust//rust/platform:x86_64-apple-darwin", "@rules_rust//rust/platform:x86_64-apple-ios"],
     "cfg(any(target_os = \"macos\", target_os = \"ios\"))": ["@rules_rust//rust/platform:aarch64-apple-darwin", "@rules_rust//rust/platform:aarch64-apple-ios", "@rules_rust//rust/platform:aarch64-apple-ios-sim", "@rules_rust//rust/platform:i686-apple-darwin", "@rules_rust//rust/platform:x86_64-apple-darwin", "@rules_rust//rust/platform:x86_64-apple-ios"],
     "cfg(any(unix, target_os = \"wasi\"))": ["@rules_rust//rust/platform:aarch64-apple-darwin", "@rules_rust//rust/platform:aarch64-apple-ios", "@rules_rust//rust/platform:aarch64-apple-ios-sim", "@rules_rust//rust/platform:aarch64-fuchsia", "@rules_rust//rust/platform:aarch64-linux-android", "@rules_rust//rust/platform:aarch64-unknown-linux-gnu", "@rules_rust//rust/platform:arm-unknown-linux-gnueabi", "@rules_rust//rust/platform:armv7-linux-androideabi", "@rules_rust//rust/platform:armv7-unknown-linux-gnueabi", "@rules_rust//rust/platform:i686-apple-darwin", "@rules_rust//rust/platform:i686-linux-android", "@rules_rust//rust/platform:i686-unknown-freebsd", "@rules_rust//rust/platform:i686-unknown-linux-gnu", "@rules_rust//rust/platform:powerpc-unknown-linux-gnu", "@rules_rust//rust/platform:s390x-unknown-linux-gnu", "@rules_rust//rust/platform:wasm32-wasi", "@rules_rust//rust/platform:x86_64-apple-darwin", "@rules_rust//rust/platform:x86_64-apple-ios", "@rules_rust//rust/platform:x86_64-fuchsia", "@rules_rust//rust/platform:x86_64-linux-android", "@rules_rust//rust/platform:x86_64-unknown-freebsd", "@rules_rust//rust/platform:x86_64-unknown-linux-gnu"],
+    "cfg(any(windows, unix, target_os = \"redox\"))": ["@rules_rust//rust/platform:aarch64-apple-darwin", "@rules_rust//rust/platform:aarch64-apple-ios", "@rules_rust//rust/platform:aarch64-apple-ios-sim", "@rules_rust//rust/platform:aarch64-fuchsia", "@rules_rust//rust/platform:aarch64-linux-android", "@rules_rust//rust/platform:aarch64-pc-windows-msvc", "@rules_rust//rust/platform:aarch64-unknown-linux-gnu", "@rules_rust//rust/platform:arm-unknown-linux-gnueabi", "@rules_rust//rust/platform:armv7-linux-androideabi", "@rules_rust//rust/platform:armv7-unknown-linux-gnueabi", "@rules_rust//rust/platform:i686-apple-darwin", "@rules_rust//rust/platform:i686-linux-android", "@rules_rust//rust/platform:i686-pc-windows-msvc", "@rules_rust//rust/platform:i686-unknown-freebsd", "@rules_rust//rust/platform:i686-unknown-linux-gnu", "@rules_rust//rust/platform:powerpc-unknown-linux-gnu", "@rules_rust//rust/platform:s390x-unknown-linux-gnu", "@rules_rust//rust/platform:x86_64-apple-darwin", "@rules_rust//rust/platform:x86_64-apple-ios", "@rules_rust//rust/platform:x86_64-fuchsia", "@rules_rust//rust/platform:x86_64-linux-android", "@rules_rust//rust/platform:x86_64-pc-windows-msvc", "@rules_rust//rust/platform:x86_64-unknown-freebsd", "@rules_rust//rust/platform:x86_64-unknown-linux-gnu"],
     "cfg(not(all(windows, target_env = \"msvc\")))": ["@rules_rust//rust/platform:aarch64-apple-darwin", "@rules_rust//rust/platform:aarch64-apple-ios", "@rules_rust//rust/platform:aarch64-apple-ios-sim", "@rules_rust//rust/platform:aarch64-fuchsia", "@rules_rust//rust/platform:aarch64-linux-android", "@rules_rust//rust/platform:aarch64-unknown-linux-gnu", "@rules_rust//rust/platform:arm-unknown-linux-gnueabi", "@rules_rust//rust/platform:armv7-linux-androideabi", "@rules_rust//rust/platform:armv7-unknown-linux-gnueabi", "@rules_rust//rust/platform:i686-apple-darwin", "@rules_rust//rust/platform:i686-linux-android", "@rules_rust//rust/platform:i686-unknown-freebsd", "@rules_rust//rust/platform:i686-unknown-linux-gnu", "@rules_rust//rust/platform:powerpc-unknown-linux-gnu", "@rules_rust//rust/platform:riscv32imc-unknown-none-elf", "@rules_rust//rust/platform:riscv64gc-unknown-none-elf", "@rules_rust//rust/platform:s390x-unknown-linux-gnu", "@rules_rust//rust/platform:thumbv7em-none-eabi", "@rules_rust//rust/platform:thumbv8m.main-none-eabi", "@rules_rust//rust/platform:wasm32-unknown-unknown", "@rules_rust//rust/platform:wasm32-wasi", "@rules_rust//rust/platform:x86_64-apple-darwin", "@rules_rust//rust/platform:x86_64-apple-ios", "@rules_rust//rust/platform:x86_64-fuchsia", "@rules_rust//rust/platform:x86_64-linux-android", "@rules_rust//rust/platform:x86_64-unknown-freebsd", "@rules_rust//rust/platform:x86_64-unknown-linux-gnu", "@rules_rust//rust/platform:x86_64-unknown-none"],
     "cfg(not(all(windows, target_env = \"msvc\", not(target_vendor = \"uwp\"))))": ["@rules_rust//rust/platform:aarch64-apple-darwin", "@rules_rust//rust/platform:aarch64-apple-ios", "@rules_rust//rust/platform:aarch64-apple-ios-sim", "@rules_rust//rust/platform:aarch64-fuchsia", "@rules_rust//rust/platform:aarch64-linux-android", "@rules_rust//rust/platform:aarch64-unknown-linux-gnu", "@rules_rust//rust/platform:arm-unknown-linux-gnueabi", "@rules_rust//rust/platform:armv7-linux-androideabi", "@rules_rust//rust/platform:armv7-unknown-linux-gnueabi", "@rules_rust//rust/platform:i686-apple-darwin", "@rules_rust//rust/platform:i686-linux-android", "@rules_rust//rust/platform:i686-unknown-freebsd", "@rules_rust//rust/platform:i686-unknown-linux-gnu", "@rules_rust//rust/platform:powerpc-unknown-linux-gnu", "@rules_rust//rust/platform:riscv32imc-unknown-none-elf", "@rules_rust//rust/platform:riscv64gc-unknown-none-elf", "@rules_rust//rust/platform:s390x-unknown-linux-gnu", "@rules_rust//rust/platform:thumbv7em-none-eabi", "@rules_rust//rust/platform:thumbv8m.main-none-eabi", "@rules_rust//rust/platform:wasm32-unknown-unknown", "@rules_rust//rust/platform:wasm32-wasi", "@rules_rust//rust/platform:x86_64-apple-darwin", "@rules_rust//rust/platform:x86_64-apple-ios", "@rules_rust//rust/platform:x86_64-fuchsia", "@rules_rust//rust/platform:x86_64-linux-android", "@rules_rust//rust/platform:x86_64-unknown-freebsd", "@rules_rust//rust/platform:x86_64-unknown-linux-gnu", "@rules_rust//rust/platform:x86_64-unknown-none"],
     "cfg(not(any(windows, target_os = \"hermit\", target_os = \"unknown\")))": ["@rules_rust//rust/platform:aarch64-apple-darwin", "@rules_rust//rust/platform:aarch64-apple-ios", "@rules_rust//rust/platform:aarch64-apple-ios-sim", "@rules_rust//rust/platform:aarch64-fuchsia", "@rules_rust//rust/platform:aarch64-linux-android", "@rules_rust//rust/platform:aarch64-unknown-linux-gnu", "@rules_rust//rust/platform:arm-unknown-linux-gnueabi", "@rules_rust//rust/platform:armv7-linux-androideabi", "@rules_rust//rust/platform:armv7-unknown-linux-gnueabi", "@rules_rust//rust/platform:i686-apple-darwin", "@rules_rust//rust/platform:i686-linux-android", "@rules_rust//rust/platform:i686-unknown-freebsd", "@rules_rust//rust/platform:i686-unknown-linux-gnu", "@rules_rust//rust/platform:powerpc-unknown-linux-gnu", "@rules_rust//rust/platform:riscv32imc-unknown-none-elf", "@rules_rust//rust/platform:riscv64gc-unknown-none-elf", "@rules_rust//rust/platform:s390x-unknown-linux-gnu", "@rules_rust//rust/platform:thumbv7em-none-eabi", "@rules_rust//rust/platform:thumbv8m.main-none-eabi", "@rules_rust//rust/platform:wasm32-wasi", "@rules_rust//rust/platform:x86_64-apple-darwin", "@rules_rust//rust/platform:x86_64-apple-ios", "@rules_rust//rust/platform:x86_64-fuchsia", "@rules_rust//rust/platform:x86_64-linux-android", "@rules_rust//rust/platform:x86_64-unknown-freebsd", "@rules_rust//rust/platform:x86_64-unknown-linux-gnu", "@rules_rust//rust/platform:x86_64-unknown-none"],
@@ -832,6 +837,16 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "crate_index__bytes-1.5.0",
+        sha256 = "a2bd12c1caf447e69cd4528f47f94d203fd2582878ecb9e9465484c4148a8223",
+        type = "tar.gz",
+        urls = ["https://crates.io/api/v1/crates/bytes/1.5.0/download"],
+        strip_prefix = "bytes-1.5.0",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.bytes-1.5.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "crate_index__cc-1.0.83",
         sha256 = "f1174fb0b6ec23863f8b971027804a42614e347eafb0a95bf0b12cdae21fc4d0",
         type = "tar.gz",
@@ -1168,6 +1183,16 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "crate_index__either-1.10.0",
+        sha256 = "11157ac094ffbdde99aa67b23417ebdd801842852b500e395a45a9c0aac03e4a",
+        type = "tar.gz",
+        urls = ["https://crates.io/api/v1/crates/either/1.10.0/download"],
+        strip_prefix = "either-1.10.0",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.either-1.10.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "crate_index__elasticlunr-rs-3.0.2",
         sha256 = "41e83863a500656dfa214fee6682de9c5b9f03de6860fec531235ed2ae9f6571",
         type = "tar.gz",
@@ -1274,6 +1299,16 @@ def crate_repositories():
         urls = ["https://crates.io/api/v1/crates/filetime/0.2.22/download"],
         strip_prefix = "filetime-0.2.22",
         build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.filetime-0.2.22.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "crate_index__fixedbitset-0.4.2",
+        sha256 = "0ce7134b9999ecaf8bcd65542e436736ef32ddca1b3e06094cb6ec5755203b80",
+        type = "tar.gz",
+        urls = ["https://crates.io/api/v1/crates/fixedbitset/0.4.2/download"],
+        strip_prefix = "fixedbitset-0.4.2",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.fixedbitset-0.4.2.bazel"),
     )
 
     maybe(
@@ -1518,6 +1553,16 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "crate_index__home-0.5.9",
+        sha256 = "e3d1354bf6b7235cb4a0576c2619fd4ed18183f689b12b006a0ee7329eeff9a5",
+        type = "tar.gz",
+        urls = ["https://crates.io/api/v1/crates/home/0.5.9/download"],
+        strip_prefix = "home-0.5.9",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.home-0.5.9.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "crate_index__html5ever-0.26.0",
         sha256 = "bea68cab48b8459f17cf1c944c67ddc572d272d9f2b274140f223ecb1da4a3b7",
         type = "tar.gz",
@@ -1664,6 +1709,16 @@ def crate_repositories():
         urls = ["https://crates.io/api/v1/crates/is-terminal/0.4.9/download"],
         strip_prefix = "is-terminal-0.4.9",
         build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.is-terminal-0.4.9.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "crate_index__itertools-0.11.0",
+        sha256 = "b1c173a5686ce8bfa551b3563d0c2170bf24ca44da99c7ca4bfdab5418c3fe57",
+        type = "tar.gz",
+        urls = ["https://crates.io/api/v1/crates/itertools/0.11.0/download"],
+        strip_prefix = "itertools-0.11.0",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.itertools-0.11.0.bazel"),
     )
 
     maybe(
@@ -1926,6 +1981,16 @@ def crate_repositories():
         urls = ["https://crates.io/api/v1/crates/mio-signals/0.2.0/download"],
         strip_prefix = "mio-signals-0.2.0",
         build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.mio-signals-0.2.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "crate_index__multimap-0.8.3",
+        sha256 = "e5ce46fe64a9d73be07dcbe690a38ce1b293be448fd8ce1e6c1b8062c9f72c6a",
+        type = "tar.gz",
+        urls = ["https://crates.io/api/v1/crates/multimap/0.8.3/download"],
+        strip_prefix = "multimap-0.8.3",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.multimap-0.8.3.bazel"),
     )
 
     maybe(
@@ -2210,6 +2275,16 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "crate_index__petgraph-0.6.4",
+        sha256 = "e1d3afd2628e69da2be385eb6f2fd57c8ac7977ceeff6dc166ff1657b0e386a9",
+        type = "tar.gz",
+        urls = ["https://crates.io/api/v1/crates/petgraph/0.6.4/download"],
+        strip_prefix = "petgraph-0.6.4",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.petgraph-0.6.4.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "crate_index__phf-0.10.1",
         sha256 = "fabbf1ead8a5bcbc20f5f8b939ee3f5b0f6f281b6ad3468b84656b658b455259",
         type = "tar.gz",
@@ -2372,6 +2447,56 @@ def crate_repositories():
         urls = ["https://crates.io/api/v1/crates/proc-macro2/1.0.69/download"],
         strip_prefix = "proc-macro2-1.0.69",
         build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.proc-macro2-1.0.69.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "crate_index__prost-0.12.3",
+        sha256 = "146c289cda302b98a28d40c8b3b90498d6e526dd24ac2ecea73e4e491685b94a",
+        type = "tar.gz",
+        urls = ["https://crates.io/api/v1/crates/prost/0.12.3/download"],
+        strip_prefix = "prost-0.12.3",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.prost-0.12.3.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "crate_index__prost-build-0.12.3",
+        sha256 = "c55e02e35260070b6f716a2423c2ff1c3bb1642ddca6f99e1f26d06268a0e2d2",
+        type = "tar.gz",
+        urls = ["https://crates.io/api/v1/crates/prost-build/0.12.3/download"],
+        strip_prefix = "prost-build-0.12.3",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.prost-build-0.12.3.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "crate_index__prost-derive-0.12.3",
+        sha256 = "efb6c9a1dd1def8e2124d17e83a20af56f1570d6c2d2bd9e266ccb768df3840e",
+        type = "tar.gz",
+        urls = ["https://crates.io/api/v1/crates/prost-derive/0.12.3/download"],
+        strip_prefix = "prost-derive-0.12.3",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.prost-derive-0.12.3.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "crate_index__prost-types-0.12.3",
+        sha256 = "193898f59edcf43c26227dcd4c8427f00d99d61e95dcde58dabd49fa291d470e",
+        type = "tar.gz",
+        urls = ["https://crates.io/api/v1/crates/prost-types/0.12.3/download"],
+        strip_prefix = "prost-types-0.12.3",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.prost-types-0.12.3.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "crate_index__protoc-gen-prost-0.3.1",
+        sha256 = "e810847124cb9a1d4ccefb1aabc80ccaba67f4af047e60dc1c0f2e145494bb85",
+        type = "tar.gz",
+        urls = ["https://crates.io/api/v1/crates/protoc-gen-prost/0.3.1/download"],
+        strip_prefix = "protoc-gen-prost-0.3.1",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.protoc-gen-prost-0.3.1.bazel"),
     )
 
     maybe(
@@ -3396,6 +3521,16 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "crate_index__which-4.4.2",
+        sha256 = "87ba24419a2078cd2b0f2ede2691b6c66d8e47836da3b6db8265ebad47afbfc7",
+        type = "tar.gz",
+        urls = ["https://crates.io/api/v1/crates/which/4.4.2/download"],
+        strip_prefix = "which-4.4.2",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.which-4.4.2.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "crate_index__winapi-0.3.9",
         sha256 = "5c839a674fcd7a98952e593242ea400abe93992746761e38641405d28b00f419",
         type = "tar.gz",
@@ -3466,6 +3601,16 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "crate_index__windows-sys-0.52.0",
+        sha256 = "282be5f36a8ce781fad8c8ae18fa3f9beff57ec1b52cb3de0789201425d9a33d",
+        type = "tar.gz",
+        urls = ["https://crates.io/api/v1/crates/windows-sys/0.52.0/download"],
+        strip_prefix = "windows-sys-0.52.0",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.windows-sys-0.52.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "crate_index__windows-targets-0.42.2",
         sha256 = "8e5180c00cd44c9b1c88adb3693291f1cd93605ded80c250a75d472756b4d071",
         type = "tar.gz",
@@ -3482,6 +3627,16 @@ def crate_repositories():
         urls = ["https://crates.io/api/v1/crates/windows-targets/0.48.5/download"],
         strip_prefix = "windows-targets-0.48.5",
         build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.windows-targets-0.48.5.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "crate_index__windows-targets-0.52.3",
+        sha256 = "d380ba1dc7187569a8a9e91ed34b8ccfc33123bbacb8c0aed2d1ad7f3ef2dc5f",
+        type = "tar.gz",
+        urls = ["https://crates.io/api/v1/crates/windows-targets/0.52.3/download"],
+        strip_prefix = "windows-targets-0.52.3",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.windows-targets-0.52.3.bazel"),
     )
 
     maybe(
@@ -3506,6 +3661,16 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "crate_index__windows_aarch64_gnullvm-0.52.3",
+        sha256 = "68e5dcfb9413f53afd9c8f86e56a7b4d86d9a2fa26090ea2dc9e40fba56c6ec6",
+        type = "tar.gz",
+        urls = ["https://crates.io/api/v1/crates/windows_aarch64_gnullvm/0.52.3/download"],
+        strip_prefix = "windows_aarch64_gnullvm-0.52.3",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.windows_aarch64_gnullvm-0.52.3.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "crate_index__windows_aarch64_msvc-0.42.2",
         sha256 = "e08e8864a60f06ef0d0ff4ba04124db8b0fb3be5776a5cd47641e942e58c4d43",
         type = "tar.gz",
@@ -3522,6 +3687,16 @@ def crate_repositories():
         urls = ["https://crates.io/api/v1/crates/windows_aarch64_msvc/0.48.5/download"],
         strip_prefix = "windows_aarch64_msvc-0.48.5",
         build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.windows_aarch64_msvc-0.48.5.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "crate_index__windows_aarch64_msvc-0.52.3",
+        sha256 = "8dab469ebbc45798319e69eebf92308e541ce46760b49b18c6b3fe5e8965b30f",
+        type = "tar.gz",
+        urls = ["https://crates.io/api/v1/crates/windows_aarch64_msvc/0.52.3/download"],
+        strip_prefix = "windows_aarch64_msvc-0.52.3",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.windows_aarch64_msvc-0.52.3.bazel"),
     )
 
     maybe(
@@ -3546,6 +3721,16 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "crate_index__windows_i686_gnu-0.52.3",
+        sha256 = "2a4e9b6a7cac734a8b4138a4e1044eac3404d8326b6c0f939276560687a033fb",
+        type = "tar.gz",
+        urls = ["https://crates.io/api/v1/crates/windows_i686_gnu/0.52.3/download"],
+        strip_prefix = "windows_i686_gnu-0.52.3",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.windows_i686_gnu-0.52.3.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "crate_index__windows_i686_msvc-0.42.2",
         sha256 = "44d840b6ec649f480a41c8d80f9c65108b92d89345dd94027bfe06ac444d1060",
         type = "tar.gz",
@@ -3562,6 +3747,16 @@ def crate_repositories():
         urls = ["https://crates.io/api/v1/crates/windows_i686_msvc/0.48.5/download"],
         strip_prefix = "windows_i686_msvc-0.48.5",
         build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.windows_i686_msvc-0.48.5.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "crate_index__windows_i686_msvc-0.52.3",
+        sha256 = "28b0ec9c422ca95ff34a78755cfa6ad4a51371da2a5ace67500cf7ca5f232c58",
+        type = "tar.gz",
+        urls = ["https://crates.io/api/v1/crates/windows_i686_msvc/0.52.3/download"],
+        strip_prefix = "windows_i686_msvc-0.52.3",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.windows_i686_msvc-0.52.3.bazel"),
     )
 
     maybe(
@@ -3586,6 +3781,16 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "crate_index__windows_x86_64_gnu-0.52.3",
+        sha256 = "704131571ba93e89d7cd43482277d6632589b18ecf4468f591fbae0a8b101614",
+        type = "tar.gz",
+        urls = ["https://crates.io/api/v1/crates/windows_x86_64_gnu/0.52.3/download"],
+        strip_prefix = "windows_x86_64_gnu-0.52.3",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.windows_x86_64_gnu-0.52.3.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "crate_index__windows_x86_64_gnullvm-0.42.2",
         sha256 = "26d41b46a36d453748aedef1486d5c7a85db22e56aff34643984ea85514e94a3",
         type = "tar.gz",
@@ -3606,6 +3811,16 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "crate_index__windows_x86_64_gnullvm-0.52.3",
+        sha256 = "42079295511643151e98d61c38c0acc444e52dd42ab456f7ccfd5152e8ecf21c",
+        type = "tar.gz",
+        urls = ["https://crates.io/api/v1/crates/windows_x86_64_gnullvm/0.52.3/download"],
+        strip_prefix = "windows_x86_64_gnullvm-0.52.3",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.windows_x86_64_gnullvm-0.52.3.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "crate_index__windows_x86_64_msvc-0.42.2",
         sha256 = "9aec5da331524158c6d1a4ac0ab1541149c0b9505fde06423b02f5ef0106b9f0",
         type = "tar.gz",
@@ -3622,6 +3837,16 @@ def crate_repositories():
         urls = ["https://crates.io/api/v1/crates/windows_x86_64_msvc/0.48.5/download"],
         strip_prefix = "windows_x86_64_msvc-0.48.5",
         build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.windows_x86_64_msvc-0.48.5.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "crate_index__windows_x86_64_msvc-0.52.3",
+        sha256 = "0770833d60a970638e989b3fa9fd2bb1aaadcf88963d1659fd7d9990196ed2d6",
+        type = "tar.gz",
+        urls = ["https://crates.io/api/v1/crates/windows_x86_64_msvc/0.52.3/download"],
+        strip_prefix = "windows_x86_64_msvc-0.52.3",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.windows_x86_64_msvc-0.52.3.bazel"),
     )
 
     maybe(

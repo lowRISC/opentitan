@@ -71,6 +71,13 @@ crate_universe_dependencies(bootstrap = True)
 load("//third_party/rust/crates:crates.bzl", "crate_repositories")
 crate_repositories()
 
+load("@rules_rust//proto/prost:repositories.bzl", "rust_prost_dependencies")
+rust_prost_dependencies()
+
+# Does not seem to be necessary?
+# load("@rules_rust//proto/prost:transitive_repositories.bzl", "rust_prost_transitive_repositories")
+# rust_prost_transitive_repositories()
+
 # Shellcheck
 load("//third_party/shellcheck:repos.bzl", "shellcheck_repos")
 shellcheck_repos()
@@ -162,3 +169,5 @@ hyperdebug_repos()
 register_toolchains(
     "//rules/opentitan:localtools",
 )
+
+register_toolchains("//third_party/rust:prost_toolchain")

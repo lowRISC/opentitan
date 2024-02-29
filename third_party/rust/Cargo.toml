@@ -110,3 +110,8 @@ rsa-der = "0.3.0"
 [dev-dependencies]
 base64ct = "1.6.0"
 indoc = "2.0.4"
+
+bytes = "1.5.0"
+prost = "0.12.3"
+prost-types = "0.12.3"
+protoc-gen-prost = "0.3.1"

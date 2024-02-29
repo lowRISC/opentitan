@@ -80,6 +80,12 @@ alias(
 )
 
 alias(
+    name = "bytes",
+    actual = "@crate_index__bytes-1.5.0//:bytes",
+    tags = ["manual"],
+)
+
+alias(
     name = "chrono",
     actual = "@crate_index__chrono-0.4.31//:chrono",
     tags = ["manual"],
@@ -332,6 +338,24 @@ alias(
 )
 
 alias(
+    name = "prost",
+    actual = "@crate_index__prost-0.12.3//:prost",
+    tags = ["manual"],
+)
+
+alias(
+    name = "prost-types",
+    actual = "@crate_index__prost-types-0.12.3//:prost_types",
+    tags = ["manual"],
+)
+
+alias(
+    name = "protoc-gen-prost",
+    actual = "@crate_index__protoc-gen-prost-0.3.1//:protoc_gen_prost",
+    tags = ["manual"],
+)
+
+alias(
     name = "quote",
     actual = "@crate_index__quote-1.0.33//:quote",
     tags = ["manual"],
@@ -485,5 +509,11 @@ alias(
 alias(
     name = "mdbook__mdbook",
     actual = "@crate_index__mdbook-0.4.34//:mdbook__bin",
+    tags = ["manual"],
+)
+
+alias(
+    name = "protoc-gen-prost__protoc-gen-prost",
+    actual = "@crate_index__protoc-gen-prost-0.3.1//:protoc-gen-prost__bin",
     tags = ["manual"],
 )
