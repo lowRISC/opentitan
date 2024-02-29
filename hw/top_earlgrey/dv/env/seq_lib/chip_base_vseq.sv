@@ -293,6 +293,9 @@ class chip_base_vseq #(
     if (cfg.do_creator_sw_cfg_ast_cfg) begin
       cfg.mem_bkdr_util_h[Otp].write32(otp_ctrl_reg_pkg::CreatorSwCfgAstInitEnOffset,
                                        prim_mubi_pkg::MuBi4True);
+    end else begin
+      cfg.mem_bkdr_util_h[Otp].write32(otp_ctrl_reg_pkg::CreatorSwCfgAstInitEnOffset,
+                                       prim_mubi_pkg::MuBi4False);
     end
 
     // Ensure that the allocated size of the AST cfg region in OTP is equal to the number of AST
