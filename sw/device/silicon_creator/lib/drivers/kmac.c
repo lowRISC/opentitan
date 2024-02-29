@@ -55,9 +55,8 @@ enum {
 static_assert(kShake256KeccakRateWords <= kStateShareSize,
               "assert SHAKE256 rate is <= share size");
 
-static const uint32_t kEntropySeed[] = {0x5d2a3764, 0x37d3ecba, 0xe1859094,
-                                        0xb153e3fe, 0x09596819, 0x3e85a6e8,
-                                        0xb6dcdaba, 0x50dc409c, 0x11e1ebd1};
+static const uint32_t kEntropySeed[] = {0xaa25b4bf, 0x48ce8fff, 0x5a78282a,
+                                        0x48465647, 0x70410fef};
 
 /**
  * KMAC configuration parameters.
@@ -205,18 +204,14 @@ static rom_error_t kmac_configure(kmac_config_t config) {
       cfg_reg, KMAC_CFG_SHADOWED_EN_UNSUPPORTED_MODESTRENGTH_BIT, 0);
   abs_mmio_write32_shadowed(kBase + KMAC_CFG_SHADOWED_REG_OFFSET, cfg_reg);
 
-  // Write entropy seed register. Even though the values are
+  // Write entropy seed registers. Even though the values are
   // irrelevant, these registers must be written for the KMAC block to consider
   // its entropy "ready" and to begin operation.
-  abs_mmio_write32(kBase + KMAC_ENTROPY_SEED_REG_OFFSET, kEntropySeed[0]);
-  abs_mmio_write32(kBase + KMAC_ENTROPY_SEED_REG_OFFSET, kEntropySeed[1]);
-  abs_mmio_write32(kBase + KMAC_ENTROPY_SEED_REG_OFFSET, kEntropySeed[2]);
-  abs_mmio_write32(kBase + KMAC_ENTROPY_SEED_REG_OFFSET, kEntropySeed[3]);
-  abs_mmio_write32(kBase + KMAC_ENTROPY_SEED_REG_OFFSET, kEntropySeed[4]);
-  abs_mmio_write32(kBase + KMAC_ENTROPY_SEED_REG_OFFSET, kEntropySeed[5]);
-  abs_mmio_write32(kBase + KMAC_ENTROPY_SEED_REG_OFFSET, kEntropySeed[6]);
-  abs_mmio_write32(kBase + KMAC_ENTROPY_SEED_REG_OFFSET, kEntropySeed[7]);
-  abs_mmio_write32(kBase + KMAC_ENTROPY_SEED_REG_OFFSET, kEntropySeed[8]);
+  abs_mmio_write32(kBase + KMAC_ENTROPY_SEED_0_REG_OFFSET, kEntropySeed[0]);
+  abs_mmio_write32(kBase + KMAC_ENTROPY_SEED_1_REG_OFFSET, kEntropySeed[1]);
+  abs_mmio_write32(kBase + KMAC_ENTROPY_SEED_2_REG_OFFSET, kEntropySeed[2]);
+  abs_mmio_write32(kBase + KMAC_ENTROPY_SEED_3_REG_OFFSET, kEntropySeed[3]);
+  abs_mmio_write32(kBase + KMAC_ENTROPY_SEED_4_REG_OFFSET, kEntropySeed[4]);
 
   return kErrorOk;
 }

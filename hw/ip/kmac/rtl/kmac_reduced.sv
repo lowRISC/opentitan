@@ -23,8 +23,8 @@ module kmac_reduced
 
   parameter lfsr_perm_t RndCnstLfsrPerm = RndCnstLfsrPermDefault,
   parameter lfsr_seed_t RndCnstLfsrSeed = RndCnstLfsrSeedDefault,
-  parameter buffer_lfsr_seed_t RndCnstBufferLfsrSeed = RndCnstBufferLfsrSeedDefault,
-  parameter msg_perm_t RndCnstMsgPerm = RndCnstMsgPermDefault
+  parameter lfsr_fwd_perm_t RndCnstLfsrFwdPerm = RndCnstLfsrFwdPermDefault,
+  parameter msg_perm_t RndCnstMsgPerm  = RndCnstMsgPermDefault
 ) (
   input logic clk_i,
   input logic rst_ni,
@@ -70,10 +70,10 @@ module kmac_reduced
   input logic          entropy_in_keyblock_i,  // drive to 1
 
   // Entropy reseed control
-  input logic                       entropy_seed_update_i,  // drive to 0
-  input logic [31:0]                entropy_seed_data_i,    // drive to 0
-  input logic [TimerPrescalerW-1:0] wait_timer_prescaler_i, // drive to 0
-  input logic [EdnWaitTimerW-1:0]   wait_timer_limit_i,     // drive to EdnWaitTimerW'1
+  input logic [NumSeedsEntropyLfsr-1:0]       entropy_seed_update_i,  // drive to 0
+  input logic [NumSeedsEntropyLfsr-1:0][31:0] entropy_seed_data_i,    // drive to 0
+  input logic [TimerPrescalerW-1:0]           wait_timer_prescaler_i, // drive to 0
+  input logic [EdnWaitTimerW-1:0]             wait_timer_limit_i,     // drive to EdnWaitTimerW'1
 
   // Signals primarily kept to prevent them from being optimized away during synthesis.
   // State output
@@ -166,7 +166,7 @@ module kmac_reduced
   assign msg_mask_en = msg_mask_en_i & msg_valid & msg_ready;
 
   // SHA3 entropy interface
-  logic sha3_rand_valid, sha3_rand_early, sha3_rand_update, sha3_rand_consumed;
+  logic sha3_rand_valid, sha3_rand_early, sha3_rand_consumed;
   logic [StateW/2-1:0] sha3_rand_data;
   logic sha3_rand_aux;
 
@@ -213,7 +213,6 @@ module kmac_reduced
     .rand_early_i    (sha3_rand_early),
     .rand_data_i     (sha3_rand_data),
     .rand_aux_i      (sha3_rand_aux),
-    .rand_update_o   (sha3_rand_update),
     .rand_consumed_o (sha3_rand_consumed),
 
     // N, S: Used in cSHAKE mode
@@ -251,9 +250,9 @@ module kmac_reduced
   // PRNG //
   //////////
   kmac_entropy #(
-    .RndCnstLfsrPerm(RndCnstLfsrPerm),
-    .RndCnstLfsrSeed(RndCnstLfsrSeed),
-    .RndCnstBufferLfsrSeed(RndCnstBufferLfsrSeed)
+   .RndCnstLfsrPerm(RndCnstLfsrPerm),
+   .RndCnstLfsrSeed(RndCnstLfsrSeed),
+   .RndCnstLfsrFwdPerm(RndCnstLfsrFwdPerm)
   ) u_entropy (
     .clk_i,
     .rst_ni,
@@ -268,7 +267,6 @@ module kmac_reduced
     .rand_early_o   (sha3_rand_early),
     .rand_data_o    (sha3_rand_data),
     .rand_aux_o     (sha3_rand_aux),
-    .rand_update_i  (sha3_rand_update),
     .rand_consumed_i(sha3_rand_consumed),
 
     // Message Masking

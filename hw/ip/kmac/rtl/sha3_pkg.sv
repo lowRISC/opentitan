@@ -231,12 +231,15 @@ package sha3_pkg;
     KeccakStPhase2Cycle1 = 6'b000011,
 
     // Chi Stage 2 and Iota for first lane halves. Chi Stage 1 for second
-    // lane halves. Unconditionally move to Phase2Cycle3.
+    // lane halves. We only move forward if the fresh randomness required for
+    // remasking is available. Otherwise, keep computing Phase2Cycle1.
     KeccakStPhase2Cycle2 = 6'b011000,
 
     // Chi Stage 2 and Iota for second lane halves.
-    // When doing the last round (MaxRound -1) it completes the process and
-    // goes back to Idle. If not, it repeats the phases again.
+    // This state doesn't require random value as it is XORed into the states
+    // in Phase1 and Phase2Cycle2. When doing the last round (MaxRound -1)
+    // it completes the process and goes back to Idle. If not, it repeats
+    // the phases again.
     KeccakStPhase2Cycle3 = 6'b101010,
 
     // Error state. Not clearly defined yet.

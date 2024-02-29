@@ -284,12 +284,22 @@ This section explains the entropy generator inside the KMAC HWIP.
 KMAC has an entropy generator to provide the design with pseudo-random numbers while processing the secret key block.
 The entropy is used for both remasking the DOM multipliers inside the Chi function of the Keccak core as well as for masking the message if [`CFG_SHADOWED.msg_mask`](registers.md#cfg_shadowed) is enabled.
 
-The entropy generator is constructed using a [heavily unrolled Trivium stream cipher primitive](https://eprint.iacr.org/2023/1134).
-This allows the module to generate 800 bits of fresh, pseudo-random numbers required by the 800 DOM multipliers for remasking in every clock cycle.
+![Entropy block](../doc/kmac-entropy.svg)
 
-Depending on [`CFG_SHADOWED.entropy_mode`](registers.md#cfg_shadowed), the entropy generator fetches initial entropy from the [Entropy Distribution Network (EDN)][edn] module or software has to provide a seed by writing the [`ENTROPY_SEED`](registers.md#entropy_seed) register 9 times.
-The module periodically refreshes the PRNG seed with fresh entropy from EDN.
-Software can explicitly request a complete reseed of the PRNG state from EDN through [`CMD.entropy_req`](registers.md#cmd).
+The entropy generator is made up of 25 32-bit linear feedback shift registers (LFSRs).
+This allows the module to generate 800 bits of fresh, pseudo-random numbers required by the 800 DOM multipliers for remasking in every clock cycle.
+To break linear shift patterns, each LFSR features a non-linear layer.
+In addition an 800-bit wide permutation spanning across all LFSRs is used.
+
+Depending on [`CFG_SHADOWED.entropy_mode`](registers.md#cfg_shadowed), the entropy generator fetches initial entropy from the [Entropy Distribution Network (EDN)][edn] module or software has to provide a seed by writing the [`ENTROPY_SEED_0`](registers.md#entropy_seed) - [`ENTROPY_SEED_4`](registers.md#entropy_seed) registers in ascending order.
+The module periodically refreshes the LFSR seeds with the new entropy from EDN.
+
+To limit the entropy consumption for reseeding, a cascaded reseeding mechanism is used.
+Per reseeding operation, the entropy generator consumes five times 32 bits of entropy from [EDN][edn], one 32-bit word at a time.
+These five 32-bit words are directly fed into LFSRs 0/5/10/15/20 for reseeding.
+At the same time, the previous states of LFSRs 0/5/10/15/20 from before the reseeding operation are permuted and then forwarded to reseed LFSRs 1/6/11/16/21.
+Similarly, the previous states of LFSRs 1/6/11/16/21 from before the reseeding operation are permuted and then forwarded to reseed LFSRs 2/7/12/17/22.
+Software can still request a complete reseed of all 25 LFSRs from EDN by subsequently triggering five reseeding operations through [`CMD.entropy_req`](registers.md#cmd).
 
 [edn]: ../../edn/README.md
 

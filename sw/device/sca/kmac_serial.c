@@ -430,9 +430,8 @@ static void kmac_init(void) {
   dif_kmac_config_t config = (dif_kmac_config_t){
       .entropy_mode = kDifKmacEntropyModeSoftware,
       .entropy_fast_process = kDifToggleDisabled,
-      .entropy_seed = {0x5d2a3764, 0x37d3ecba, 0xe1859094, 0xb153e3fe,
-                       0x09596819, 0x3e85a6e8, 0xb6dcdaba, 0x50dc409c,
-                       0x11e1ebd1},
+      .entropy_seed = {0xaa25b4bf, 0x48ce8fff, 0x5a78282a, 0x48465647,
+                       0x70410fef},
       .message_big_endian = kDifToggleDisabled,
       .output_big_endian = kDifToggleDisabled,
       .sideload = kDifToggleDisabled,

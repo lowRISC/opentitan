@@ -145,29 +145,29 @@
       desc:    "Width of the hash counter in the entropy"
       local:   "true"
     }
-    { name:    "NumSeedsEntropy",
+    { name:    "NumSeedsEntropyLfsr",
       type:    "int",
-      default: "9",
-      desc:    "Number of words for the PRNG seed used for entropy generation",
+      default: "5",
+      desc:    "Number of words for the LFSR seed used for entropy generation",
       local:   "true"
     }
     { name:      "RndCnstLfsrSeed"
-      desc:      "Compile-time random data for PRNG default seed"
+      desc:      "Compile-time random data for LFSR default seed"
       type:      "kmac_pkg::lfsr_seed_t"
-      randcount: "288"
+      randcount: "800"
       randtype:  "data"
     }
     { name:      "RndCnstLfsrPerm",
-      desc:      "Compile-time random permutation for PRNG output",
+      desc:      "Compile-time random permutation for LFSR output",
       type:      "kmac_pkg::lfsr_perm_t"
       randcount: "800",
       randtype:  "perm",
     }
-    { name:      "RndCnstBufferLfsrSeed"
-      desc:      "Compile-time random data for PRNG buffer default seed"
-      type:      "kmac_pkg::buffer_lfsr_seed_t"
-      randcount: "800"
-      randtype:  "data"
+    { name:      "RndCnstLfsrFwdPerm",
+      desc:      "Compile-time random permutation for forwarding LFSR state",
+      type:      "kmac_pkg::lfsr_fwd_perm_t"
+      randcount: "32",
+      randtype:  "perm",
     }
     { name:      "RndCnstMsgPerm"
       desc:      "Compile-time random permutation for LFSR Message output"
@@ -802,30 +802,36 @@
         }
       ]
     } // R: ENTROPY_REFRESH_THRESHOLD_SHADOWED
-    {
-      name: "ENTROPY_SEED"
-      desc: '''Entropy Seed
+    { multireg: {
+        name: "ENTROPY_SEED"
+        desc: '''Entropy Seed
 
-            Entropy seed register for the integrated entropy generator.
+              Entropy seed registers for the integrated entropy generator.
 
-            If !!CFG_SHADOWED.entropy_mode is set to sw_mode, software first needs to set !!CFG_SHADOWED.entropy_ready.
-            Then, software needs to write the !!ENTROPY_SEED register 9 times.
-            Upon each write, the written value is loaded into the corresponding state chunk of the entropy generator.
+              If !!CFG_SHADOWED.entropy_mode is set to sw_mode, software first needs to set
+              !!CFG_SHADOWED.entropy_ready and then write the !!ENTROPY_SEED_0 -
+              !!ENTROPY_SEED_4 registers in ascending order. Software writes one 32-bit value
+              to every register which is subsequently loaded into the corresponding 32-bit LFSR
+              chunk of the entropy generator.
 
-            After writing the !!ENTROPY_SEED register 9 times, the entropy generator will start its operation.
-            After this point, writing this register has no longer any effect.
-            '''
-      hwext: "true"
-      hwqe : "true"
-      swaccess: "wo"
-      hwaccess: "hro"
-      fields: [
-        { bits: "31:0"
-          name: "seed"
-          desc: "32-bit chunk of the entropy generator seed"
-        }
-      ]
-    } // R: ENTROPY_SEED
+              After writing all !!ENTROPY_SEED_0 registers, the entropy generator will start
+              its operation. After this point, writing these registers has no longer any
+              effect.
+              '''
+        count: "NumSeedsEntropyLfsr"
+        cname: "KMAC"
+        hwext: "true"
+        hwqe : "true"
+        swaccess: "wo"
+        hwaccess: "hro"
+        fields: [
+          { bits: "31:0"
+            name: "seed"
+            desc: "32-bit chunk of the entropy generator seed"
+          }
+        ]
+      } // R: ENTROPY_SEED
+    } // multireg: ENTROPY_SEED
     { multireg: {
         name: "KEY_SHARE0"
         desc: '''KMAC Secret Key

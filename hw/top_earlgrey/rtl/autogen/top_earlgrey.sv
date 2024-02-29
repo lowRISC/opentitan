@@ -2253,7 +2253,7 @@ module top_earlgrey #(
     .SecIdleAcceptSwMsg(SecKmacIdleAcceptSwMsg),
     .RndCnstLfsrSeed(RndCnstKmacLfsrSeed),
     .RndCnstLfsrPerm(RndCnstKmacLfsrPerm),
-    .RndCnstBufferLfsrSeed(RndCnstKmacBufferLfsrSeed),
+    .RndCnstLfsrFwdPerm(RndCnstKmacLfsrFwdPerm),
     .RndCnstMsgPerm(RndCnstKmacMsgPerm)
   ) u_kmac (
 

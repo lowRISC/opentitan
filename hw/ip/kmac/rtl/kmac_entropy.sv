@@ -12,7 +12,7 @@ module kmac_entropy
 #(
   parameter lfsr_perm_t RndCnstLfsrPerm = RndCnstLfsrPermDefault,
   parameter lfsr_seed_t RndCnstLfsrSeed = RndCnstLfsrSeedDefault,
-  parameter buffer_lfsr_seed_t RndCnstBufferLfsrSeed = RndCnstBufferLfsrSeedDefault
+  parameter lfsr_fwd_perm_t RndCnstLfsrFwdPerm = RndCnstLfsrFwdPermDefault
 ) (
   input clk_i,
   input rst_ni,
@@ -27,7 +27,6 @@ module kmac_entropy
   output logic                          rand_early_o,
   output logic [sha3_pkg::StateW/2-1:0] rand_data_o,
   output logic                          rand_aux_o,
-  input                                 rand_update_i,
   input                                 rand_consumed_i,
 
   // Status
@@ -44,15 +43,15 @@ module kmac_entropy
   //// rand_valid_o unless it is not processing KeyBlock.
   input fast_process_i,
 
-  //// PRNG enable for Message Masking
-  //// If 1, PRNG advances to create 64-bit PRN. This input is used to mask
+  //// LFSR Enable for Message Masking
+  //// If 1, LFSR advances to create 64-bit PRNG. This input is used to mask
   //// the message fed into SHA3 (Keccak).
   input                       msg_mask_en_i,
   output logic [MsgWidth-1:0] msg_mask_o,
 
   //// SW update of seed
-  input        seed_update_i,
-  input [31:0] seed_data_i,
+  input [NumSeedsEntropyLfsr-1:0]       seed_update_i,
+  input [NumSeedsEntropyLfsr-1:0][31:0] seed_data_i,
 
   //// SW may initiate manual EDN seed refresh
   input entropy_refresh_req_i,
@@ -118,7 +117,7 @@ module kmac_entropy
     // get new entropy from EDN or the seed should be feeded by the software.
     StRandReset = 10'b1001111000,
 
-    // The seed is fed into PRNG and the entropy is ready. It means the
+    // The seed is fed into LFSR and the entropy is ready. It means the
     // rand_valid is asserted with valid data. It takes a few steps to reach
     // this state from StRandReset.
     StRandReady = 10'b0110000100,
@@ -129,7 +128,7 @@ module kmac_entropy
     // Reset --> EdnReq:
     //     If entropy source module is ready, the software sets a bit in CFG
     //     also sets the entropy mode to EdnMode. Then this FSM moves to EdnReq
-    //     to initialize PRNG seed.
+    //     to initialize LFSR seed.
     //
     // Ready --> EdnReq:
     //     1. If a mode is configured as to update entropy everytime it is
@@ -137,7 +136,7 @@ module kmac_entropy
     //     2. If the software enabled EDN timer and the timer is expired and
     //        also the KMAC is processing the key block, the FSM moves to
     //        EdnReq to refresh seed
-    //     3. If a KMAC operation is completed, the FSM also refreshes the PRNG
+    //     3. If a KMAC operation is completed, the FSM also refreshes the LFSR
     //        seed to prepare next KMAC op or wipe out operation.
     StRandEdn = 10'b1100100111,
 
@@ -146,7 +145,7 @@ module kmac_entropy
     // entropy
     StSwSeedWait = 10'b1011110110,
 
-    // Generate: In this state, the entropy generator advances the PRNG to
+    // Generate: In this state, the entropy generator advances the LFSRs to
     // generate the 800-bits of pseudo random data for the next evaluation.
     StRandGenerate = 10'b0000001100,
 
@@ -190,18 +189,15 @@ module kmac_entropy
   localparam int unsigned PrescalerW = TimerPrescalerW;
   logic [PrescalerW-1:0] prescaler_cnt;
 
-  // PRNG primitive
-  // SW configures to use EDN or ENTROPY_SEED register as PRNG seed
-  logic seed_en, seed_done;
-  logic seed_req, seed_ack;
-  logic [edn_pkg::ENDPOINT_BUS_WIDTH-1:0] seed;
-  logic prng_en;
-  logic [EntropyOutputW-1:0] prng_data, prng_data_permuted;
-
-  // Buffer stage to prevent glitches happening inside the PRNG itself from
-  // propagating into the masked processing core.
-  logic [EntropyOutputW-1:0] rand_data_q;
-  logic data_update;
+  // LFSR
+  // SW configures to use EDN or SEED register as a LFSR seed
+  logic [NumSeedsEntropyLfsr-1:0]                            lfsr_seed_en_red;
+  logic [NumChunksEntropyLfsr-1:0]                           lfsr_seed_en;
+  logic [NumChunksEntropyLfsr-1:0][ChunkSizeEntropyLfsr-1:0] lfsr_seed;
+  logic lfsr_seed_done;
+  logic lfsr_en;
+  logic [NumChunksEntropyLfsr-1:0][ChunkSizeEntropyLfsr-1:0] lfsr_data_chunked;
+  logic [EntropyLfsrW-1:0] lfsr_data, lfsr_data_permuted;
 
   // Auxliliary randomness
   logic aux_rand_d, aux_rand_q;
@@ -209,13 +205,17 @@ module kmac_entropy
 
   // Randomness for controlling PRNG updates. This only matters for clock cycles
   // where the PRNG output is not actually used.
-  logic [3:0] prng_en_rand_d, prng_en_rand_q;
+  logic [3:0] lfsr_en_rand_d, lfsr_en_rand_q;
 
   // Entropy valid signal
   // FSM set and clear the valid signal, rand_consume signal clear the valid
   // signal. Split the set, clear to make entropy valid while FSM is processing
   // other tasks.
   logic rand_valid_set, rand_valid_clear;
+
+  // Signal to track whether the FSM should stay in the StRandReady state or
+  // move to StRandGenerate upon getting the next rand_consumed_i.
+  logic ready_phase_d, ready_phase_q;
 
   // FSM latches the mode and stores into mode_q when the FSM is out from
   // StReset. The following states, or internal datapath uses mode_q after that.
@@ -347,61 +347,121 @@ module kmac_entropy
     else if (mode_latch) mode_q <= mode_i;
   end
 
-  // PRNG primitive ===========================================================
+  // LFSRs ====================================================================
 
-  `ASSERT_KNOWN(ModeKnown_A, mode_i)
-  assign seed = (mode_q == EntropyModeSw) ? seed_data_i : entropy_data_i;
+  // We use 25 32-bit LFSRs in parallel to generate the 800 bits of randomness
+  // required by the DOM multipliers inside the Keccak core in a single clock
+  // cycle. To reduce the entropy consumption for periodic reseeding, a cascaded
+  // reseeding mechanism is used:
+  //
+  // - LFSR 0 (5/10/15/20) gets one 32-bit seed each from EDN/SW.
+  // - LFSR 1 (6/11/16/21) gets the old state of LFSR 0 (5/10/15/20)
+  // - ...
+  // - LFSR 4 (9/14/19/24) gets the old state of LFSR 3 (8/13/18/23)
+  //
+  // In addition, the forwarded old states are permuted.
+  //
+  // This allows to reduce the entropy consumption. A full reseed of all 25
+  // LFSRs is still possible by subsequently triggering 5 reseeding operations
+  // though software.
 
-  // We employ a single unrolled Trivium stream cipher primitive to generate
-  // 800 bits per clock cycle.
-  prim_trivium #(
-   .BiviumVariant         (0),
-   .OutputWidth           (EntropyOutputW),
-   .StrictLockupProtection(1),
-   .SeedType              (prim_trivium_pkg::SeedTypeStatePartial),
-   .PartialSeedWidth      (edn_pkg::ENDPOINT_BUS_WIDTH),
-   .RndCnstTriviumLfsrSeed(RndCnstLfsrSeed)
-  ) u_prim_trivium (
-   .clk_i (clk_i),
-   .rst_ni(rst_ni),
+  // Reseeding counter - We reseed one 32-bit chunk at a time and need to keep
+  // track of which LFSR chunk to reseed next.
+  localparam int unsigned SeedIdxWidth =
+      prim_util_pkg::vbits(NumSeedsEntropyLfsr);
+  logic [SeedIdxWidth-1:0] seed_idx;
+  logic seed_idx_count_error;
 
-   .en_i                (prng_en || msg_mask_en_i),
-   .allow_lockup_i      ('0), // Not used.
-   .seed_en_i           (seed_en),
-   .seed_done_o         (seed_done),
-   .seed_req_o          (seed_req),
-   .seed_ack_i          (seed_ack),
-   .seed_key_i          ('0), // Not used.
-   .seed_iv_i           ('0), // Not used.
-   .seed_state_full_i   ('0), // Not used.
-   .seed_state_partial_i(seed),
-
-   .key_o(prng_data),
-   .err_o()
+  // SEC_CM CTR.REDUN
+  // This primitive is used to place a hardened counter
+  prim_count #(
+    .Width(SeedIdxWidth)
+  ) u_seed_idx_count (
+    .clk_i,
+    .rst_ni,
+    .clr_i(lfsr_seed_done),
+    .set_i(1'b0),
+    .set_cnt_i(SeedIdxWidth'(0)),
+    .incr_en_i(|lfsr_seed_en),
+    .decr_en_i(1'b0),
+    .step_i(SeedIdxWidth'(1)),
+    .commit_i(1'b1),
+    .cnt_o(seed_idx),
+    .cnt_after_commit_o(),
+    .err_o(seed_idx_count_error)
   );
 
-  // Add a permutation layer to obfuscate the output of the PRNG primitive.
-  for (genvar i = 0; i < EntropyOutputW; i++) begin : gen_perm
-    assign prng_data_permuted[i] = prng_data[RndCnstLfsrPerm[i]];
+  assign lfsr_seed_done =
+      (seed_idx == SeedIdxWidth'(unsigned'(NumSeedsEntropyLfsr - 1))) &
+      |lfsr_seed_en;
+
+  // Seed selection - The reduced seed enable signal `lfsr_seed_en_red` is
+  // controlled by the FSM. Here we just repliate it as we're always reseeding
+  // 5 LFSRs together.
+  for (genvar i = 0; i < 5; i++) begin : gen_lfsr_seed_en
+    assign lfsr_seed_en[i * 5 +: 5] = {5{lfsr_seed_en_red[i]}};
   end
 
-  // Buffer stage to prevent glitches happening inside the PRNG primitive from
-  // propagating into the masked processing core.
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      rand_data_q <= RndCnstBufferLfsrSeed;
-    end else if (data_update || msg_mask_en_i) begin
-      rand_data_q <= prng_data_permuted;
+  // From software we get NumChunks 32-bit seeds but only one is valid. The
+  // others may be zero.
+  // From EDN we get a single 32-bit seed. This is the default value forwarded.
+  for (genvar i = 0; i < NumSeedsEntropyLfsr; i++) begin : gen_lfsr_seed
+    // LFSRs 0/5/10/15/20 get the fresh entropy.
+    assign lfsr_seed[i * 5] =
+        (mode_q == EntropyModeSw) ? seed_data_i[i] : entropy_data_i;
+
+    // The other LFSRs get the permuted old states.
+    for (genvar j = 0; j < 4; j++) begin : gen_fwd_seeds
+      for (genvar k = 0; k < ChunkSizeEntropyLfsr; k++) begin : gen_fwd_perm
+        assign lfsr_seed[i * 5 + j + 1][k] =
+            lfsr_data_chunked[i * 5 + j][RndCnstLfsrFwdPerm[k]];
+      end
     end
+  end
+  `ASSERT_KNOWN(ModeKnown_A, mode_i)
+
+  // We employ five 32-bit LFSRs to generate 160 bits per clock cycle. Using
+  // multiple 32-bit LFSRs with an additional permutation layer spanning across
+  // all LFSRs has relevant advantages:
+  // - Multiple simulateneous faults needs to be injected to get a fully
+  //   deterministic output.
+  // - No additional buffering is needed for reseeding. Both software and EDN
+  //   provide 32 bits at a time meaning we can reseed the LFSRs directly as
+  //   we get the entropy.
+  // We use multiple LFSR instances each having a width of ChunkSize.
+  for (genvar i = 0; i < NumChunksEntropyLfsr; i++) begin : gen_lfsrs
+    prim_lfsr #(
+      .LfsrType("GAL_XOR"),
+      .LfsrDw(ChunkSizeEntropyLfsr),
+      .StateOutDw(ChunkSizeEntropyLfsr),
+      .DefaultSeed(RndCnstLfsrSeed[i * ChunkSizeEntropyLfsr +: ChunkSizeEntropyLfsr]),
+      .StatePermEn(1'b0),
+      .NonLinearOut(1'b1)
+    ) u_lfsr_chunk (
+      .clk_i,
+      .rst_ni,
+      .seed_en_i(lfsr_seed_en[i]),
+      .seed_i   (lfsr_seed[i]),
+      .lfsr_en_i(lfsr_en || msg_mask_en_i),
+      .entropy_i('0),
+      .state_o  (lfsr_data_chunked[i])
+    );
+  end
+
+  // Add a permutation layer spanning across all LFSRs to break linear shift
+  // patterns.
+  assign lfsr_data = lfsr_data_chunked;
+  for (genvar i = 0; i < EntropyLfsrW; i++) begin : gen_perm
+    assign lfsr_data_permuted[i] = lfsr_data[RndCnstLfsrPerm[i]];
   end
 
   // Forwrad LSBs for masking the message.
-  assign msg_mask_o = rand_data_q[MsgWidth-1:0];
+  assign msg_mask_o = lfsr_data_permuted[MsgWidth-1:0];
 
-  //  PRNG primitive ----------------------------------------------------------
+  // LFSRs --------------------------------------------------------------------
 
   // Auxiliary randomness =====================================================
-  assign aux_rand_d = aux_update ? rand_data_q[EntropyOutputW - 1] :
+  assign aux_rand_d = aux_update ? lfsr_data_permuted[EntropyLfsrW - 1] :
                                    aux_rand_q;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -413,23 +473,23 @@ module kmac_entropy
 
   // Auxiliary randomness -----------------------------------------------------
 
-  // PRNG enable randomness ===================================================
-  assign prng_en_rand_d =
-      aux_update ? rand_data_q[EntropyOutputW - 2 -: 4] : // refresh
-                   {1'b0, prng_en_rand_q[3:1]};           // shift out
+  // LFSR enable randomness ===================================================
+  assign lfsr_en_rand_d =
+      aux_update ? lfsr_data_permuted[EntropyLfsrW - 2 -: 4] : // refresh
+                   {1'b0, lfsr_en_rand_q[3:1]};                // shift out
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      prng_en_rand_q <= '0;
+      lfsr_en_rand_q <= '0;
     end else begin
-      prng_en_rand_q <= prng_en_rand_d;
+      lfsr_en_rand_q <= lfsr_en_rand_d;
     end
   end
 
-  // PRNG enable randomness ---------------------------------------------------
+  // LFSR enable randomness ---------------------------------------------------
 
   // Randomness outputs =======================================================
-  assign rand_data_o = rand_data_q;
+  assign rand_data_o = lfsr_data_permuted;
   assign rand_aux_o = aux_rand_q;
 
   // entropy valid
@@ -447,15 +507,15 @@ module kmac_entropy
   assign rand_early_o = rand_valid_set;
 
   // The Keccak core is not supposed to ever consume randomness unless it's marked
-  // as valid. The only exception is if the reseeding of the PRNG just finished
+  // as valid. The only exception is if the reseeding of the LFSRs just finished
   // in the previous clock cycle. Because it's possible for the randomness to stay
   // valid throughout the reseeding (the valid is for sure de-asserted at the end).
   // The Keccak core may base its decision to start processing / consuming entropy
-  // before the valid is de-asserted. If this happens, the current buffer output
+  // before the valid is de-asserted. If this happens, the current LFSR output
   // might be used for both remasking and as auxiliary randomness which isn't ideal
   // but given this happens only very rarely it should be okay.
   `ASSUME(ConsumeNotAssertWhenNotValid_M,
-      rand_update_i | rand_consumed_i |-> rand_valid_o || $past(seed_done))
+      rand_consumed_i |-> rand_valid_o || $past(lfsr_seed_done))
 
   // Upon escalation or in case the EDN wait timer expires the entropy_req signal
   // can be dropped before getting acknowledged. This may leave EDN in a strange
@@ -475,7 +535,7 @@ module kmac_entropy
   // Randomness outputs -------------------------------------------------------
 
   // Remaining outputs
-  assign count_error_o = hash_count_error;
+  assign count_error_o = hash_count_error | seed_idx_count_error;
 
   ///////////////////
   // State Machine //
@@ -498,6 +558,9 @@ module kmac_entropy
 
     threshold_hit_clr = 1'b 0;
 
+    // EDN request
+    entropy_req = 1'b 0;
+
     // rand is valid when this logic expands the entropy.
     // FSM sets the valid signal, the signal is cleared by `consume` signal
     // or FSM clear signal.
@@ -510,14 +573,18 @@ module kmac_entropy
     // mode_latch to store mode_i into mode_q
     mode_latch = 1'b 0;
 
-    // PRNG reseed handling
-    seed_en = 1'b 0;
-    seed_ack = 1'b 0;
-    entropy_req = 1'b 0;
+    // lfsr_en: Let LFSR run
+    // To save power, this logic enables LFSR when it needs entropy expansion.
+    lfsr_en = 1'b 0;
 
-    // Randomness control signals
-    prng_en = 1'b 0;
-    data_update = 1'b 0;
+    // lfsr_seed_en_red: Signal to update LFSR seed
+    // LFSR seed can be updated by EDN or SW.
+    lfsr_seed_en_red = '0;
+
+    // Signal to track whether FSM should stay in StRandReady state or move on.
+    ready_phase_d = ready_phase_q;
+
+    // Auxiliary randomness control signals
     aux_update = 1'b 0;
 
     // Error
@@ -534,14 +601,10 @@ module kmac_entropy
           // SW has configured KMAC
           unique case (mode_i)
             EntropyModeSw: begin
-              // Start reseeding the PRNG via ENTROPY_SEED CSR.
-              seed_en = 1'b 1;
               st_d = StSwSeedWait;
             end
 
             EntropyModeEdn: begin
-              // Start reseeding the PRNG via EDN.
-              seed_en = 1'b 1;
               st_d = StRandEdn;
 
               // Timer reset
@@ -567,18 +630,21 @@ module kmac_entropy
       StRandReady: begin
         timer_enable = 1'b 1; // If limit is zero, timer won't work
 
-        prng_en = prng_en_rand_q[0];
+        lfsr_en = lfsr_en_rand_q[0];
 
-        if ((rand_update_i || rand_consumed_i) &&
+        if (rand_consumed_i &&
             ((fast_process_i && in_keyblock_i) || !fast_process_i)) begin
           // If fast_process is set, don't clear the rand valid, even
           // consumed. So, the logic does not expand the entropy again.
           // If fast_process is not set, then every rand_consume signal
           // triggers rand expansion.
-          prng_en = 1'b 1;
-          data_update = 1'b 1;
 
-          if (rand_consumed_i) begin
+          // Allow for two reads from the Keccak core. This is what is needed
+          // per round.
+          lfsr_en = 1'b 1;
+          ready_phase_d = ~ready_phase_q;
+
+          if (ready_phase_q) begin
             st_d = StRandGenerate;
 
             rand_valid_clear = 1'b 1;
@@ -587,8 +653,6 @@ module kmac_entropy
           end
         end else if ((mode_q == EntropyModeEdn) &&
             (entropy_refresh_req_i || threshold_hit_q)) begin
-          // Start reseeding the PRNG via EDN.
-          seed_en = 1'b 1;
           st_d = StRandEdn;
 
           // Timer reset
@@ -602,8 +666,8 @@ module kmac_entropy
       end
 
       StRandEdn: begin
-        // Forward request of PRNG primitive.
-        entropy_req = seed_req;
+        // Send request
+        entropy_req = 1'b 1;
 
         // Wait timer
         timer_enable = 1'b 1;
@@ -612,21 +676,20 @@ module kmac_entropy
           // If timer count is non-zero and expired;
           st_d = StRandErrWaitExpired;
 
-        end else if (entropy_req_o && entropy_ack_i) begin
-          seed_ack = 1'b 1;
+        end else if (entropy_ack_i) begin
+          lfsr_seed_en_red[seed_idx] = 1'b 1;
 
-          if (seed_done) begin
+          if (lfsr_seed_done) begin
             st_d = StRandGenerate;
 
             if ((fast_process_i && in_keyblock_i) || !fast_process_i) begin
-              prng_en = 1'b 1;
-              data_update = 1'b 1;
+              lfsr_en = 1'b 1;
               rand_valid_clear = 1'b 1;
             end
           end else begin
             st_d = StRandEdn;
           end
-        end else if ((rand_update_i || rand_consumed_i) &&
+        end else if (rand_consumed_i &&
             ((fast_process_i && in_keyblock_i) || !fast_process_i)) begin
           // Somehow, while waiting the EDN entropy, the KMAC or SHA3 logic
           // consumed the remained entropy. This can happen when the previous
@@ -635,23 +698,20 @@ module kmac_entropy
           // operation while waiting for the EDN response.
           st_d = StRandEdn;
 
-          prng_en = 1'b 1;
-          data_update = 1'b 1;
-          rand_valid_clear = rand_consumed_i;
+          lfsr_en = 1'b 1;
+          rand_valid_clear = 1'b 1;
         end else begin
           st_d = StRandEdn;
         end
       end
 
       StSwSeedWait: begin
-        // Forward ack driven by software.
-        seed_ack = seed_req & seed_update_i;
+        lfsr_seed_en_red = seed_update_i;
 
-        if (seed_done) begin
+        if (lfsr_seed_done) begin
           st_d = StRandGenerate;
 
-          prng_en = 1'b 1;
-          data_update = 1'b 1;
+          lfsr_en = 1'b 1;
 
           rand_valid_clear = 1'b 1;
         end else begin
@@ -660,22 +720,13 @@ module kmac_entropy
       end
 
       StRandGenerate: begin
-        // The current buffer output is used as auxiliary randomness and -
-        // depending on whether keccak_round is parametrized to always forward
-        // the buffer output and not use intermediate randomness - forwarded
-        // to the DOM multipliers without them updating in this cycle. We don't
-        // need to advance the PRNG as there is no risk of accidentally
-        // re-using the same randomness twice since after the current cycle:
-        // - We either load and re-mask the message/key which will use
-        //   different PRNG output bits. The PRNG is advanced once per 64 bits
-        //   loaded.
-        // - Or, the Keccak/SHA3 core is operated but it always starts with
-        //   the linear layers which don't require fresh randomness. While
-        //   processing the linear layers, the PRNG is advanced to have fresh
-        //   randomness for the non-linear layer requiring it.
+        // The current LFSR output is used as auxiliary randomness.
         aux_update = 1'b 1;
+
+        // Advance the LFSR and set the valid bit. The next LFSR output will be
+        // used for re-masking.
+        lfsr_en = 1'b 1;
         rand_valid_set = 1'b 1;
-        prng_en = prng_en_rand_q[0];
 
         st_d = StRandReady;
       end
@@ -702,10 +753,8 @@ module kmac_entropy
         // Keep entropy signal valid to complete current hashing even with error
         rand_valid_set = 1'b 1;
 
-        // Advance the PRNG after the entropy has been used.
-        prng_en = (rand_update_i | rand_consumed_i) &
-            ((fast_process_i & in_keyblock_i) | ~fast_process_i);
-        data_update = prng_en;
+        // Advance the LFSR after the entropy has been used.
+        lfsr_en = rand_consumed_i & ((fast_process_i & in_keyblock_i) | ~fast_process_i);
 
         if (err_processed_i) begin
           st_d = StRandReset;
@@ -737,6 +786,14 @@ module kmac_entropy
   end
   `ASSERT_KNOWN(RandStKnown_A, st)
 
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      ready_phase_q <= '0;
+    end else begin
+      ready_phase_q <= ready_phase_d;
+    end
+  end
+
   // mubi4 sender
 
   assign entropy_configured = (st != StRandReset)
@@ -756,22 +813,37 @@ module kmac_entropy
   // Assertions //
   ////////////////
 
-  // The EDN bus width needs to be equal to the width of the ENTROPY_SEED
-  // register as this module doesn't perform width adaption.
-  `ASSERT_INIT(EdnBusWidth_A, edn_pkg::ENDPOINT_BUS_WIDTH == 32)
+  `ASSERT_INIT(EntropyLfsrWDivisble, NumChunksEntropyLfsr ==
+      EntropyLfsrW / ChunkSizeEntropyLfsr)
+
+  // We reseed one chunk of the entropy generator at a time. Therefore the
+  // chunk size must match the data width of the software and EDN inputs.
+  `ASSERT_INIT(ChunkSizeEntropyLfsrMatchesSw, ChunkSizeEntropyLfsr == 32)
+  `ASSERT_INIT(ChunkSizeEntropyLfsrMatchesEdn, ChunkSizeEntropyLfsr ==
+      edn_pkg::ENDPOINT_BUS_WIDTH)
 
 // the code below is not meant to be synthesized,
 // but it is intended to be used in simulation and FPV
 `ifndef SYNTHESIS
   // Check that the supplied permutations are valid.
-  logic [EntropyOutputW-1:0] perm_test;
+  logic [EntropyLfsrW-1:0] perm_test;
   initial begin : p_perm_check
     perm_test = '0;
-    for (int k = 0; k < EntropyOutputW; k++) begin
+    for (int k = 0; k < EntropyLfsrW; k++) begin
       perm_test[RndCnstLfsrPerm[k]] = 1'b1;
     end
     // All bit positions must be marked with 1.
     `ASSERT_I(PermutationCheck_A, &perm_test)
+  end
+
+  logic [ChunkSizeEntropyLfsr-1:0] perm_fwd_test;
+  initial begin : p_perm_fwd_check
+    perm_fwd_test = '0;
+    for (int k = 0; k < ChunkSizeEntropyLfsr; k++) begin
+      perm_fwd_test[RndCnstLfsrFwdPerm[k]] = 1'b1;
+    end
+    // All bit positions must be marked with 1.
+    `ASSERT_I(PermutationCheck_A, &perm_fwd_test)
   end
 `endif
 

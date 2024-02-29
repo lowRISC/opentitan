@@ -16,52 +16,56 @@
 | kmac.[`ENTROPY_PERIOD`](#entropy_period)                                         | 0x20     |        4 | Entropy Timer Periods.                                   |
 | kmac.[`ENTROPY_REFRESH_HASH_CNT`](#entropy_refresh_hash_cnt)                     | 0x24     |        4 | Entropy Refresh Counter                                  |
 | kmac.[`ENTROPY_REFRESH_THRESHOLD_SHADOWED`](#entropy_refresh_threshold_shadowed) | 0x28     |        4 | Entropy Refresh Threshold                                |
-| kmac.[`ENTROPY_SEED`](#entropy_seed)                                             | 0x2c     |        4 | Entropy Seed                                             |
-| kmac.[`KEY_SHARE0_0`](#key_share0)                                               | 0x30     |        4 | KMAC Secret Key                                          |
-| kmac.[`KEY_SHARE0_1`](#key_share0)                                               | 0x34     |        4 | KMAC Secret Key                                          |
-| kmac.[`KEY_SHARE0_2`](#key_share0)                                               | 0x38     |        4 | KMAC Secret Key                                          |
-| kmac.[`KEY_SHARE0_3`](#key_share0)                                               | 0x3c     |        4 | KMAC Secret Key                                          |
-| kmac.[`KEY_SHARE0_4`](#key_share0)                                               | 0x40     |        4 | KMAC Secret Key                                          |
-| kmac.[`KEY_SHARE0_5`](#key_share0)                                               | 0x44     |        4 | KMAC Secret Key                                          |
-| kmac.[`KEY_SHARE0_6`](#key_share0)                                               | 0x48     |        4 | KMAC Secret Key                                          |
-| kmac.[`KEY_SHARE0_7`](#key_share0)                                               | 0x4c     |        4 | KMAC Secret Key                                          |
-| kmac.[`KEY_SHARE0_8`](#key_share0)                                               | 0x50     |        4 | KMAC Secret Key                                          |
-| kmac.[`KEY_SHARE0_9`](#key_share0)                                               | 0x54     |        4 | KMAC Secret Key                                          |
-| kmac.[`KEY_SHARE0_10`](#key_share0)                                              | 0x58     |        4 | KMAC Secret Key                                          |
-| kmac.[`KEY_SHARE0_11`](#key_share0)                                              | 0x5c     |        4 | KMAC Secret Key                                          |
-| kmac.[`KEY_SHARE0_12`](#key_share0)                                              | 0x60     |        4 | KMAC Secret Key                                          |
-| kmac.[`KEY_SHARE0_13`](#key_share0)                                              | 0x64     |        4 | KMAC Secret Key                                          |
-| kmac.[`KEY_SHARE0_14`](#key_share0)                                              | 0x68     |        4 | KMAC Secret Key                                          |
-| kmac.[`KEY_SHARE0_15`](#key_share0)                                              | 0x6c     |        4 | KMAC Secret Key                                          |
-| kmac.[`KEY_SHARE1_0`](#key_share1)                                               | 0x70     |        4 | KMAC Secret Key, 2nd share.                              |
-| kmac.[`KEY_SHARE1_1`](#key_share1)                                               | 0x74     |        4 | KMAC Secret Key, 2nd share.                              |
-| kmac.[`KEY_SHARE1_2`](#key_share1)                                               | 0x78     |        4 | KMAC Secret Key, 2nd share.                              |
-| kmac.[`KEY_SHARE1_3`](#key_share1)                                               | 0x7c     |        4 | KMAC Secret Key, 2nd share.                              |
-| kmac.[`KEY_SHARE1_4`](#key_share1)                                               | 0x80     |        4 | KMAC Secret Key, 2nd share.                              |
-| kmac.[`KEY_SHARE1_5`](#key_share1)                                               | 0x84     |        4 | KMAC Secret Key, 2nd share.                              |
-| kmac.[`KEY_SHARE1_6`](#key_share1)                                               | 0x88     |        4 | KMAC Secret Key, 2nd share.                              |
-| kmac.[`KEY_SHARE1_7`](#key_share1)                                               | 0x8c     |        4 | KMAC Secret Key, 2nd share.                              |
-| kmac.[`KEY_SHARE1_8`](#key_share1)                                               | 0x90     |        4 | KMAC Secret Key, 2nd share.                              |
-| kmac.[`KEY_SHARE1_9`](#key_share1)                                               | 0x94     |        4 | KMAC Secret Key, 2nd share.                              |
-| kmac.[`KEY_SHARE1_10`](#key_share1)                                              | 0x98     |        4 | KMAC Secret Key, 2nd share.                              |
-| kmac.[`KEY_SHARE1_11`](#key_share1)                                              | 0x9c     |        4 | KMAC Secret Key, 2nd share.                              |
-| kmac.[`KEY_SHARE1_12`](#key_share1)                                              | 0xa0     |        4 | KMAC Secret Key, 2nd share.                              |
-| kmac.[`KEY_SHARE1_13`](#key_share1)                                              | 0xa4     |        4 | KMAC Secret Key, 2nd share.                              |
-| kmac.[`KEY_SHARE1_14`](#key_share1)                                              | 0xa8     |        4 | KMAC Secret Key, 2nd share.                              |
-| kmac.[`KEY_SHARE1_15`](#key_share1)                                              | 0xac     |        4 | KMAC Secret Key, 2nd share.                              |
-| kmac.[`KEY_LEN`](#key_len)                                                       | 0xb0     |        4 | Secret Key length in bit.                                |
-| kmac.[`PREFIX_0`](#prefix)                                                       | 0xb4     |        4 | cSHAKE Prefix register.                                  |
-| kmac.[`PREFIX_1`](#prefix)                                                       | 0xb8     |        4 | cSHAKE Prefix register.                                  |
-| kmac.[`PREFIX_2`](#prefix)                                                       | 0xbc     |        4 | cSHAKE Prefix register.                                  |
-| kmac.[`PREFIX_3`](#prefix)                                                       | 0xc0     |        4 | cSHAKE Prefix register.                                  |
-| kmac.[`PREFIX_4`](#prefix)                                                       | 0xc4     |        4 | cSHAKE Prefix register.                                  |
-| kmac.[`PREFIX_5`](#prefix)                                                       | 0xc8     |        4 | cSHAKE Prefix register.                                  |
-| kmac.[`PREFIX_6`](#prefix)                                                       | 0xcc     |        4 | cSHAKE Prefix register.                                  |
-| kmac.[`PREFIX_7`](#prefix)                                                       | 0xd0     |        4 | cSHAKE Prefix register.                                  |
-| kmac.[`PREFIX_8`](#prefix)                                                       | 0xd4     |        4 | cSHAKE Prefix register.                                  |
-| kmac.[`PREFIX_9`](#prefix)                                                       | 0xd8     |        4 | cSHAKE Prefix register.                                  |
-| kmac.[`PREFIX_10`](#prefix)                                                      | 0xdc     |        4 | cSHAKE Prefix register.                                  |
-| kmac.[`ERR_CODE`](#err_code)                                                     | 0xe0     |        4 | KMAC/SHA3 Error Code                                     |
+| kmac.[`ENTROPY_SEED_0`](#entropy_seed)                                           | 0x2c     |        4 | Entropy Seed                                             |
+| kmac.[`ENTROPY_SEED_1`](#entropy_seed)                                           | 0x30     |        4 | Entropy Seed                                             |
+| kmac.[`ENTROPY_SEED_2`](#entropy_seed)                                           | 0x34     |        4 | Entropy Seed                                             |
+| kmac.[`ENTROPY_SEED_3`](#entropy_seed)                                           | 0x38     |        4 | Entropy Seed                                             |
+| kmac.[`ENTROPY_SEED_4`](#entropy_seed)                                           | 0x3c     |        4 | Entropy Seed                                             |
+| kmac.[`KEY_SHARE0_0`](#key_share0)                                               | 0x40     |        4 | KMAC Secret Key                                          |
+| kmac.[`KEY_SHARE0_1`](#key_share0)                                               | 0x44     |        4 | KMAC Secret Key                                          |
+| kmac.[`KEY_SHARE0_2`](#key_share0)                                               | 0x48     |        4 | KMAC Secret Key                                          |
+| kmac.[`KEY_SHARE0_3`](#key_share0)                                               | 0x4c     |        4 | KMAC Secret Key                                          |
+| kmac.[`KEY_SHARE0_4`](#key_share0)                                               | 0x50     |        4 | KMAC Secret Key                                          |
+| kmac.[`KEY_SHARE0_5`](#key_share0)                                               | 0x54     |        4 | KMAC Secret Key                                          |
+| kmac.[`KEY_SHARE0_6`](#key_share0)                                               | 0x58     |        4 | KMAC Secret Key                                          |
+| kmac.[`KEY_SHARE0_7`](#key_share0)                                               | 0x5c     |        4 | KMAC Secret Key                                          |
+| kmac.[`KEY_SHARE0_8`](#key_share0)                                               | 0x60     |        4 | KMAC Secret Key                                          |
+| kmac.[`KEY_SHARE0_9`](#key_share0)                                               | 0x64     |        4 | KMAC Secret Key                                          |
+| kmac.[`KEY_SHARE0_10`](#key_share0)                                              | 0x68     |        4 | KMAC Secret Key                                          |
+| kmac.[`KEY_SHARE0_11`](#key_share0)                                              | 0x6c     |        4 | KMAC Secret Key                                          |
+| kmac.[`KEY_SHARE0_12`](#key_share0)                                              | 0x70     |        4 | KMAC Secret Key                                          |
+| kmac.[`KEY_SHARE0_13`](#key_share0)                                              | 0x74     |        4 | KMAC Secret Key                                          |
+| kmac.[`KEY_SHARE0_14`](#key_share0)                                              | 0x78     |        4 | KMAC Secret Key                                          |
+| kmac.[`KEY_SHARE0_15`](#key_share0)                                              | 0x7c     |        4 | KMAC Secret Key                                          |
+| kmac.[`KEY_SHARE1_0`](#key_share1)                                               | 0x80     |        4 | KMAC Secret Key, 2nd share.                              |
+| kmac.[`KEY_SHARE1_1`](#key_share1)                                               | 0x84     |        4 | KMAC Secret Key, 2nd share.                              |
+| kmac.[`KEY_SHARE1_2`](#key_share1)                                               | 0x88     |        4 | KMAC Secret Key, 2nd share.                              |
+| kmac.[`KEY_SHARE1_3`](#key_share1)                                               | 0x8c     |        4 | KMAC Secret Key, 2nd share.                              |
+| kmac.[`KEY_SHARE1_4`](#key_share1)                                               | 0x90     |        4 | KMAC Secret Key, 2nd share.                              |
+| kmac.[`KEY_SHARE1_5`](#key_share1)                                               | 0x94     |        4 | KMAC Secret Key, 2nd share.                              |
+| kmac.[`KEY_SHARE1_6`](#key_share1)                                               | 0x98     |        4 | KMAC Secret Key, 2nd share.                              |
+| kmac.[`KEY_SHARE1_7`](#key_share1)                                               | 0x9c     |        4 | KMAC Secret Key, 2nd share.                              |
+| kmac.[`KEY_SHARE1_8`](#key_share1)                                               | 0xa0     |        4 | KMAC Secret Key, 2nd share.                              |
+| kmac.[`KEY_SHARE1_9`](#key_share1)                                               | 0xa4     |        4 | KMAC Secret Key, 2nd share.                              |
+| kmac.[`KEY_SHARE1_10`](#key_share1)                                              | 0xa8     |        4 | KMAC Secret Key, 2nd share.                              |
+| kmac.[`KEY_SHARE1_11`](#key_share1)                                              | 0xac     |        4 | KMAC Secret Key, 2nd share.                              |
+| kmac.[`KEY_SHARE1_12`](#key_share1)                                              | 0xb0     |        4 | KMAC Secret Key, 2nd share.                              |
+| kmac.[`KEY_SHARE1_13`](#key_share1)                                              | 0xb4     |        4 | KMAC Secret Key, 2nd share.                              |
+| kmac.[`KEY_SHARE1_14`](#key_share1)                                              | 0xb8     |        4 | KMAC Secret Key, 2nd share.                              |
+| kmac.[`KEY_SHARE1_15`](#key_share1)                                              | 0xbc     |        4 | KMAC Secret Key, 2nd share.                              |
+| kmac.[`KEY_LEN`](#key_len)                                                       | 0xc0     |        4 | Secret Key length in bit.                                |
+| kmac.[`PREFIX_0`](#prefix)                                                       | 0xc4     |        4 | cSHAKE Prefix register.                                  |
+| kmac.[`PREFIX_1`](#prefix)                                                       | 0xc8     |        4 | cSHAKE Prefix register.                                  |
+| kmac.[`PREFIX_2`](#prefix)                                                       | 0xcc     |        4 | cSHAKE Prefix register.                                  |
+| kmac.[`PREFIX_3`](#prefix)                                                       | 0xd0     |        4 | cSHAKE Prefix register.                                  |
+| kmac.[`PREFIX_4`](#prefix)                                                       | 0xd4     |        4 | cSHAKE Prefix register.                                  |
+| kmac.[`PREFIX_5`](#prefix)                                                       | 0xd8     |        4 | cSHAKE Prefix register.                                  |
+| kmac.[`PREFIX_6`](#prefix)                                                       | 0xdc     |        4 | cSHAKE Prefix register.                                  |
+| kmac.[`PREFIX_7`](#prefix)                                                       | 0xe0     |        4 | cSHAKE Prefix register.                                  |
+| kmac.[`PREFIX_8`](#prefix)                                                       | 0xe4     |        4 | cSHAKE Prefix register.                                  |
+| kmac.[`PREFIX_9`](#prefix)                                                       | 0xe8     |        4 | cSHAKE Prefix register.                                  |
+| kmac.[`PREFIX_10`](#prefix)                                                      | 0xec     |        4 | cSHAKE Prefix register.                                  |
+| kmac.[`ERR_CODE`](#err_code)                                                     | 0xf0     |        4 | KMAC/SHA3 Error Code                                     |
 | kmac.[`STATE`](#state)                                                           | 0x400    |      512 | Keccak State (1600 bit) memory.                          |
 | kmac.[`MSG_FIFO`](#msg_fifo)                                                     | 0x800    |     2048 | Message FIFO.                                            |
 
@@ -532,17 +536,30 @@ counter is only reset by the CMD.hash_cnt_clr CSR bit.
 ## ENTROPY_SEED
 Entropy Seed
 
-Entropy seed register for the integrated entropy generator.
+Entropy seed registers for the integrated entropy generator.
 
-If [`CFG_SHADOWED.entropy_mode`](#cfg_shadowed) is set to sw_mode, software first needs to set [`CFG_SHADOWED.entropy_ready.`](#cfg_shadowed)
-Then, software needs to write the [`ENTROPY_SEED`](#entropy_seed) register 9 times.
-Upon each write, the written value is loaded into the corresponding state chunk of the entropy generator.
+If [`CFG_SHADOWED.entropy_mode`](#cfg_shadowed) is set to sw_mode, software first needs to set
+[`CFG_SHADOWED.entropy_ready`](#cfg_shadowed) and then write the [`ENTROPY_SEED_0`](#entropy_seed_0) -
+[`ENTROPY_SEED_4`](#entropy_seed_4) registers in ascending order. Software writes one 32-bit value
+to every register which is subsequently loaded into the corresponding 32-bit LFSR
+chunk of the entropy generator.
 
-After writing the [`ENTROPY_SEED`](#entropy_seed) register 9 times, the entropy generator will start its operation.
-After this point, writing this register has no longer any effect.
-- Offset: `0x2c`
+After writing all [`ENTROPY_SEED_0`](#entropy_seed_0) registers, the entropy generator will start
+its operation. After this point, writing these registers has no longer any
+effect.
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
+
+### Instances
+
+| Name           | Offset   |
+|:---------------|:---------|
+| ENTROPY_SEED_0 | 0x2c     |
+| ENTROPY_SEED_1 | 0x30     |
+| ENTROPY_SEED_2 | 0x34     |
+| ENTROPY_SEED_3 | 0x38     |
+| ENTROPY_SEED_4 | 0x3c     |
+
 
 ### Fields
 
@@ -574,22 +591,22 @@ responsibility to keep upper bits of the secret key to 0.
 
 | Name          | Offset   |
 |:--------------|:---------|
-| KEY_SHARE0_0  | 0x30     |
-| KEY_SHARE0_1  | 0x34     |
-| KEY_SHARE0_2  | 0x38     |
-| KEY_SHARE0_3  | 0x3c     |
-| KEY_SHARE0_4  | 0x40     |
-| KEY_SHARE0_5  | 0x44     |
-| KEY_SHARE0_6  | 0x48     |
-| KEY_SHARE0_7  | 0x4c     |
-| KEY_SHARE0_8  | 0x50     |
-| KEY_SHARE0_9  | 0x54     |
-| KEY_SHARE0_10 | 0x58     |
-| KEY_SHARE0_11 | 0x5c     |
-| KEY_SHARE0_12 | 0x60     |
-| KEY_SHARE0_13 | 0x64     |
-| KEY_SHARE0_14 | 0x68     |
-| KEY_SHARE0_15 | 0x6c     |
+| KEY_SHARE0_0  | 0x40     |
+| KEY_SHARE0_1  | 0x44     |
+| KEY_SHARE0_2  | 0x48     |
+| KEY_SHARE0_3  | 0x4c     |
+| KEY_SHARE0_4  | 0x50     |
+| KEY_SHARE0_5  | 0x54     |
+| KEY_SHARE0_6  | 0x58     |
+| KEY_SHARE0_7  | 0x5c     |
+| KEY_SHARE0_8  | 0x60     |
+| KEY_SHARE0_9  | 0x64     |
+| KEY_SHARE0_10 | 0x68     |
+| KEY_SHARE0_11 | 0x6c     |
+| KEY_SHARE0_12 | 0x70     |
+| KEY_SHARE0_13 | 0x74     |
+| KEY_SHARE0_14 | 0x78     |
+| KEY_SHARE0_15 | 0x7c     |
 
 
 ### Fields
@@ -622,22 +639,22 @@ responsibility to keep upper bits of the secret key to 0.
 
 | Name          | Offset   |
 |:--------------|:---------|
-| KEY_SHARE1_0  | 0x70     |
-| KEY_SHARE1_1  | 0x74     |
-| KEY_SHARE1_2  | 0x78     |
-| KEY_SHARE1_3  | 0x7c     |
-| KEY_SHARE1_4  | 0x80     |
-| KEY_SHARE1_5  | 0x84     |
-| KEY_SHARE1_6  | 0x88     |
-| KEY_SHARE1_7  | 0x8c     |
-| KEY_SHARE1_8  | 0x90     |
-| KEY_SHARE1_9  | 0x94     |
-| KEY_SHARE1_10 | 0x98     |
-| KEY_SHARE1_11 | 0x9c     |
-| KEY_SHARE1_12 | 0xa0     |
-| KEY_SHARE1_13 | 0xa4     |
-| KEY_SHARE1_14 | 0xa8     |
-| KEY_SHARE1_15 | 0xac     |
+| KEY_SHARE1_0  | 0x80     |
+| KEY_SHARE1_1  | 0x84     |
+| KEY_SHARE1_2  | 0x88     |
+| KEY_SHARE1_3  | 0x8c     |
+| KEY_SHARE1_4  | 0x90     |
+| KEY_SHARE1_5  | 0x94     |
+| KEY_SHARE1_6  | 0x98     |
+| KEY_SHARE1_7  | 0x9c     |
+| KEY_SHARE1_8  | 0xa0     |
+| KEY_SHARE1_9  | 0xa4     |
+| KEY_SHARE1_10 | 0xa8     |
+| KEY_SHARE1_11 | 0xac     |
+| KEY_SHARE1_12 | 0xb0     |
+| KEY_SHARE1_13 | 0xb4     |
+| KEY_SHARE1_14 | 0xb8     |
+| KEY_SHARE1_15 | 0xbc     |
 
 
 ### Fields
@@ -656,7 +673,7 @@ Secret Key length in bit.
 This value is used to make encoded secret key in KMAC.
 KMAC supports certain lengths of the secret key. Currently it
 supports 128b, 192b, 256b, 384b, and 512b secret keys.
-- Offset: `0xb0`
+- Offset: `0xc0`
 - Reset default: `0x0`
 - Reset mask: `0x7`
 - Register enable: [`CFG_REGWEN`](#cfg_regwen)
@@ -712,17 +729,17 @@ and report an error.
 
 | Name      | Offset   |
 |:----------|:---------|
-| PREFIX_0  | 0xb4     |
-| PREFIX_1  | 0xb8     |
-| PREFIX_2  | 0xbc     |
-| PREFIX_3  | 0xc0     |
-| PREFIX_4  | 0xc4     |
-| PREFIX_5  | 0xc8     |
-| PREFIX_6  | 0xcc     |
-| PREFIX_7  | 0xd0     |
-| PREFIX_8  | 0xd4     |
-| PREFIX_9  | 0xd8     |
-| PREFIX_10 | 0xdc     |
+| PREFIX_0  | 0xc4     |
+| PREFIX_1  | 0xc8     |
+| PREFIX_2  | 0xcc     |
+| PREFIX_3  | 0xd0     |
+| PREFIX_4  | 0xd4     |
+| PREFIX_5  | 0xd8     |
+| PREFIX_6  | 0xdc     |
+| PREFIX_7  | 0xe0     |
+| PREFIX_8  | 0xe4     |
+| PREFIX_9  | 0xe8     |
+| PREFIX_10 | 0xec     |
 
 
 ### Fields
@@ -737,7 +754,7 @@ and report an error.
 
 ## ERR_CODE
 KMAC/SHA3 Error Code
-- Offset: `0xe0`
+- Offset: `0xf0`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 

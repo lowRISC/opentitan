@@ -2596,7 +2596,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rand_early_i    (1'b0),
     .rand_data_i     ('0),
     .rand_aux_i      ('0),
-    .rand_update_o   (),
     .rand_consumed_o (),
 
     // N, S: Used in cSHAKE mode
