@@ -169,7 +169,6 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
 
   // interrupt mode buffer credit
   int       rd_crd = 16;
-  int       wr_crd = 4;
 
   // fifo level to trigger lvl interrupt
   int       rd_lvl = 0;

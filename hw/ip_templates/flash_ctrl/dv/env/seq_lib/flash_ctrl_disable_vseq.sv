@@ -44,8 +44,10 @@ class flash_ctrl_disable_vseq extends flash_ctrl_otf_base_vseq;
         mubi4_t dis_val;
         dis_val = get_rand_mubi4_val(.t_weight(1), .f_weight(1), .other_weight(4));
         csr_wr(.ptr(ral.dis), .value(dis_val));
-        // DIS acts as true if program value is 4b0xxx or xxx0.
-        is_disable = ~(dis_val[3] & dis_val[0]);
+        // DIS acts as true if program value is not 4b0xxx or xxx0.
+        // However, there is additional routine in flash_ctrl_lcmgr makes
+        // disable flash when dis_val is not mubi_false.
+        is_disable = (dis_val != prim_mubi_pkg::MuBi4False);
       end
     endcase // randcase
     exp_err = is_disable;
