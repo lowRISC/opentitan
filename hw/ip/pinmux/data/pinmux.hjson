@@ -196,6 +196,14 @@
       struct:  "logic",
       width:   "1"
     },
+    { name:    "usbdev_bus_not_idle",
+      type:    "uni",
+      act:     "req",
+      package: "",
+      struct:  "logic",
+      width:   "1",
+      default: "1'b0"
+    },
     { name:    "usbdev_bus_reset",
       type:    "uni",
       act:     "req",

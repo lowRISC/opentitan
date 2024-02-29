@@ -41,6 +41,7 @@ module pinmux_bind_fpv;
     .usb_dnpullup_en_o,
     .usbdev_suspend_req_i,
     .usbdev_wake_ack_i,
+    .usbdev_bus_not_idle_o,
     .usbdev_bus_reset_o,
     .usbdev_sense_lost_o,
     .usbdev_wake_detect_active_o,
