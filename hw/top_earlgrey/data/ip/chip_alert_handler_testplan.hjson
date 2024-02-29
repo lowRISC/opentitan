@@ -104,9 +104,10 @@
             - Verify after the escalation reset all faults are cleared, and that the alert
               info captured the correct alert.
             - Check that no additional resets occur.
+            SiVal: It is not possible to trigger internal integrity errors.
             '''
       stage: V2
-      si_stage: None
+      si_stage: NA
       tests: ["chip_sw_all_escalation_resets"]
     }
     {
@@ -131,9 +132,12 @@
             - Verify that the alert_handler can request EDN to provide entropy.
             - Ensure that the alert ping handshake to all alert sources and escalation receivers
               complete without errors.
+            SiVal: This test is not necessary:
+            - We cannot explicitly detect an EDN request.
+            - There are plenty of tests checking ping behavior.
             '''
       stage: V2
-      si_stage: None
+      si_stage: NA
       tests: ["chip_sw_alert_handler_entropy"]
     }
     {

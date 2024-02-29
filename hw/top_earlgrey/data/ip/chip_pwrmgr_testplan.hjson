@@ -16,7 +16,7 @@
             when they start.
             '''
       stage: V2
-      si_stage: None
+      si_stage: NA
       lc_states: [
         "RAW",
         "TEST_LOCKED",
@@ -85,7 +85,7 @@
             SiVal: No need to run this, run chip_sw_pwrmgr_random_sleep_all_wake_ups instead.
             '''
       stage: V2
-      si_stage: None
+      si_stage: NA
       tests: ["chip_sw_pwrmgr_normal_sleep_all_wake_ups"]
       bazel: []
     }
@@ -198,7 +198,7 @@
             SiVal: This test can only run in sim_dv.
             '''
       stage: V3
-      si_stage: None
+      si_stage: NA
       features: [
         "PWRMGR.LOW_POWER.SENSOR_CTRL_AON_WKUP_REQ_WAKEUP_ENABLE",
         "PWRMGR.LOW_POWER.SENSOR_CTRL_AON_WKUP_REQ_WAKEUP_REQUEST",
@@ -220,7 +220,7 @@
             SiVal: No need to run this, run chip_sw_pwrmgr_random_sleep_all_reset_reqs instead.
             '''
       stage: V2
-      si_stage: None
+      si_stage: NA
       features: [
         "PWRMGR.LOW_POWER.ENTRY",
         "PWRMGR.RESET.AON_TIMER_AON_AON_TIMER_RST_REQ_ENABLE",
@@ -270,7 +270,7 @@
             SiVal: AON power glitch cannot be triggered at will.
             '''
       stage: V2
-      si_stage: None
+      si_stage: NA
       tests: ["chip_sw_pwrmgr_full_aon_reset"]
       bazel: []
     }
@@ -284,7 +284,7 @@
             SiVal: Main power glitch cannot be triggered at will.
             '''
       stage: V2
-      si_stage: None
+      si_stage: NA
       tests: ["chip_sw_pwrmgr_main_power_glitch_reset"]
       bazel: []
     }
@@ -307,7 +307,7 @@
             SiVal: Main power glitch cannot be triggered at will.
             '''
       stage: V2
-      si_stage: None
+      si_stage: NA
       tests: ["chip_sw_pwrmgr_random_sleep_power_glitch_reset"]
       bazel: []
     }
@@ -327,7 +327,7 @@
             SiVal: Main power glitch cannot be triggered at will.
             '''
       stage: V2
-      si_stage: None
+      si_stage: NA
       tests: ["chip_sw_pwrmgr_deep_sleep_power_glitch_reset"]
       bazel: []
     }
@@ -342,7 +342,7 @@
             SiVal: Main power glitch cannot be triggered at will.
             '''
       stage: V2
-      si_stage: None
+      si_stage: NA
       tests: ["chip_sw_pwrmgr_sleep_power_glitch_reset"]
       bazel: []
     }
@@ -396,7 +396,7 @@
             The chip_sw_all_resets is a superset of this testpoint.
             '''
       stage: V2
-      si_stage: None
+      si_stage: SV3
       tests: [
         "chip_sw_pwrmgr_sysrst_ctrl_reset",
         "chip_sw_pwrmgr_all_reset_reqs",
@@ -409,7 +409,7 @@
             time, one after the other. Use POR_N PAD to trigger reset.
             '''
       stage: V2
-      si_stage: None
+      si_stage: NA
       tests: ["chip_sw_pwrmgr_b2b_sleep_reset_req"]
       bazel: []
     }
@@ -495,7 +495,7 @@
             alert_handler to immediately trip escalation reset.
             '''
       stage: V2
-      si_stage: None
+      si_stage: NA
       lc_states: [
         "TEST_UNLOCKED1",
         "DEV",

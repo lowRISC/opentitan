@@ -156,7 +156,7 @@
             SiVal: This is implicitly tested by the success of OTP updates for calibration.
             '''
       stage: V2
-      si_stage: None
+      si_stage: NA
       tests: ["chip_sw_clkmgr_external_clk_src_for_lc"]
       bazel: []
     }
@@ -176,7 +176,7 @@
             with the right frequency after calibration. There are a few such tests already.
             '''
       stage: V2
-      si_stage: None
+      si_stage: NA
       lc_states: [
         "DEV",
       ]
@@ -198,10 +198,10 @@
             clk_src_sys_jen_i input using formal.
 
             X-ref with various specific jitter enable tests.
-            SiVal: This is a connecivity test ony, not suitable for sival.
+            SiVal: This is a connectivity test only, not suitable for sival.
             '''
       stage: V2
-      si_stage: None
+      si_stage: NA
       tests: [
         "chip_sw_clkmgr_jitter",
         "chip_sw_flash_ctrl_ops_jitter_en",
@@ -268,7 +268,7 @@
             No specific work may be needed other than configuring external clocks.
             '''
       stage: V2
-      si_stage: None
+      si_stage: NA
       tests: [
         "chip_sw_clkmgr_jitter_reduced_freq",
         "chip_sw_flash_ctrl_ops_jitter_en_reduced_freq",
@@ -373,7 +373,7 @@
             add extra checks for specific units having been reset.
             '''
       stage: V2
-      si_stage: None
+      si_stage: NA
       tests: ["chip_sw_all_escalation_resets"]
       bazel: []
     }

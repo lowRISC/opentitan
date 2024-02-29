@@ -103,10 +103,11 @@
               for kTopEarlgreyAlertIdLcCtrlFatalProgError.
             - Verify that, after escalation reset, the alert handler cause and the fault register are cleared.
             - Verify after the escalation reset that the alert info captured the correct alert.
+            SiVal: Forcing this illegal condition is not feasible in sival.
             '''
       features: ["OTP_CTRL.ERROR_HANDLING.FATAL"]
       stage: V2
-      si_stage: None
+      si_stage: NA
       tests: ["chip_sw_lc_ctrl_program_error"]
     }
     {
@@ -209,10 +210,11 @@
               the alert interface to make sure alert and escalation is triggered.
 
             X'ref with chip_sw_all_escalation_resets.
+            SiVal: It is not feasible to inject ECC fatal errors in OTP macro.
             '''
       features: ["OTP_CTRL.ERROR_HANDLING.FATAL"]
       stage: V3
-      si_stage: None
+      si_stage: NA
       tests: ["chip_sw_otp_ctrl_escalation"]
     }
     {

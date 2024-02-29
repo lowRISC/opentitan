@@ -39,7 +39,7 @@
             '''
       features: ["ROM_CTRL.DIGESTS", "ROM_CTRL.EXP_DIGESTS"]
       stage: V2
-      si_stage: None
+      si_stage: NA
       tests: ["chip_sw_rom_ctrl_integrity_check"]
     }
     {
@@ -54,9 +54,10 @@
             - Verify that KMAC returns an error signal to the ROM controller.
             - Verify that the ROM controller itself transitions to invalid state and the chip is
               effectively dead.
+            SiVal: Creating a glitch is not feasible, so this is not a sival test.
             '''
       stage: V3
-      si_stage: None
+      si_stage: NA
       tests: []
     }
     {
