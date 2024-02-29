@@ -408,8 +408,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                         sha3_start_raw;
   logic                         sha3_start;
   logic                         sha3_process;
-  logic                         sha3_msg_end;
-  logic                         sha3_msg_rdy_mask;
   logic                         sha3_block_processed;
   prim_mubi_pkg::mubi4_t        sha3_done;
   prim_mubi_pkg::mubi4_t        sha3_absorbed;
@@ -417,7 +415,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic [2:0]                   sha3_fsm;
   logic [32:0]                  sha3_err;
   logic                         cs_aes_halt_req;
-  logic                         sha3_msg_rdy;
   logic [WINDOW_CNTR_WIDTH-1:0] window_cntr;
 
   logic [sha3_pkg::StateW-1:0] sha3_state[Sha3Share];
@@ -483,7 +480,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic        cs_aes_halt_q, cs_aes_halt_d;
   logic [63:0] es_rdata_capt_q, es_rdata_capt_d;
   logic        es_rdata_capt_vld_q, es_rdata_capt_vld_d;
-  logic        sha3_msg_rdy_mask_q, sha3_msg_rdy_mask_d;
   mubi4_t      mubi_mod_en_dly_d, mubi_mod_en_dly_q;
 
 
@@ -500,7 +496,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
       es_rdata_capt_q        <= '0;
       es_rdata_capt_vld_q    <= '0;
       fw_ov_sha3_start_pfe_q <= '0;
-      sha3_msg_rdy_mask_q    <= '0;
       mubi_mod_en_dly_q      <= prim_mubi_pkg::MuBi4False;
       sha3_flush_q           <= '0;
       sha3_start_mask_q      <= '0;
@@ -514,7 +509,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
       es_rdata_capt_q        <= es_rdata_capt_d;
       es_rdata_capt_vld_q    <= es_rdata_capt_vld_d;
       fw_ov_sha3_start_pfe_q <= fw_ov_sha3_start_pfe;
-      sha3_msg_rdy_mask_q    <= sha3_msg_rdy_mask_d;
       sha3_flush_q           <= sha3_flush_d;
       sha3_start_mask_q      <= sha3_start_mask_d;
       mubi_mod_en_dly_q      <= mubi_mod_en_dly_d;
@@ -2552,31 +2546,19 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // internally by the padding logic whenever 832 bits (= the rate or block size of SHA3-384) have
   // been received.
   //
-  // Note on backpressure from the SHA block:
-  // If we use the full sha3_msgfifo_ready signal, we create a combinational logic
-  // loop.  However, the SHA3 seems to have a hiccup by which it some times
-  // asserts ready even though it is processing data, so we mask our push
-  // signal with our (flop-based) sha3_msg_rdy_mask
-  assign pfifo_cond_push  = pfifo_precon_not_empty && !es_bypass_mode && sha3_msg_rdy_mask;
+  // Note on backpressure handling from the SHA3 engine:
+  // To avoid inferring a combo loop, the msg_valid_i input (pfifo_cond_push signal) must not
+  // depend on the msg_ready_o output (sha3_msgfifo_ready). However, we can always push into the
+  // SHA3 engine as long as the precon FIFO contains valid data. The ready output is just used to
+  // determine when to pop from the precon FIFO.
 
+  assign pfifo_cond_push  = pfifo_precon_not_empty && !es_bypass_mode;
   assign pfifo_cond_wdata = pfifo_precon_rdata;
 
   assign msg_data[0] = pfifo_cond_wdata;
 
-  // The SHA3 block cannot take messages except between the
-  // start and cs_aes_req pulses
-  assign sha3_msg_end        = cs_aes_halt_req;
-
-  assign sha3_msg_rdy_mask_d = sha3_start ? 1'b1 :
-                               sha3_msg_end ? 1'b0 :
-                               sha3_msg_rdy_mask_q;
-
-  assign sha3_msg_rdy_mask = sha3_msg_rdy_mask_q & ~sha3_msg_end &
-                             ~cs_aes_halt_req;
-
   assign pfifo_cond_rdata = sha3_state[0][SeedLen-1:0];
   assign pfifo_cond_not_empty = sha3_state_vld;
-  assign sha3_msgfifo_ready = sha3_msg_rdy & sha3_msg_rdy_mask;
 
   // SHA3 hashing engine
   sha3 #(
@@ -2589,7 +2571,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .msg_valid_i (pfifo_cond_push),
     .msg_data_i  (msg_data),
     .msg_strb_i  ({8{pfifo_cond_push}}),
-    .msg_ready_o (sha3_msg_rdy),
+    .msg_ready_o (sha3_msgfifo_ready),
 
     // Entropy interface - not using
     .rand_valid_i    (1'b0),
@@ -2626,8 +2608,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .state_o       (sha3_state),
 
     // REQ/ACK interface to avoid power spikes
-    .run_req_o(),
-    .run_ack_i(1'b1),
+    .run_req_o(cs_aes_halt_req),
+    .run_ack_i(cs_aes_halt_i.cs_aes_halt_ack),
 
     .error_o (sha3_err),
     .sparse_fsm_error_o (sha3_state_error),
@@ -2709,7 +2691,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .sha3_start_o         (sha3_start_raw),
     .sha3_process_o       (sha3_process),
     .sha3_done_o          (sha3_done),
-    .cs_aes_halt_req_o    (cs_aes_halt_req),
     .cs_aes_halt_ack_i    (cs_aes_halt_i.cs_aes_halt_ack),
     .local_escalate_i     (es_cntr_err_sum),
     .main_sm_alert_o      (es_main_sm_alert),
@@ -2927,72 +2908,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign unused_entropy_data = (|reg2hw.entropy_data.q);
   assign unused_fw_ov_rd_data = (|reg2hw.fw_ov_rd_data.q);
   assign unused_sfifo_esrng_not_full = (|sfifo_esrng_not_full);
-
-  //--------------------------------------------
-  // Assertions
-  //--------------------------------------------
-
-`ifdef INC_ASSERT
-  // entropy_src is known to activate Keccak without AES Halt handshakes with CSRNG (#17941).
-  // This code ensures that this does not happen too often (i.e., at most `KAWAH_THRESHOLD` out of
-  // `KAWAH_WINDOW_SIZE` consecutive clock cycles) outside *Firmware Override - Extract & Insert*
-  // mode.  When firmware inserts entropy, it is essentially in control of the SHA3 core
-  // and the current HW implementation cannot make guarantees around AES Halt and Keccak activity.
-  //
-  // When issue #17941 gets resolved and there are assertions (or equivalent checks) in place to
-  // ensure that Keccak is not activated without AES Halt handshakes, this code should be removed.
-
-  // Track activity of Keccak.
-  logic keccak_active;
-  assign keccak_active = u_sha3.u_keccak.keccak_st != sha3_pkg::KeccakStIdle;
-  `ASSERT_KNOWN(KeccakActiveKnown_A, keccak_active)
-
-  // Track state of AES Halt req/ack with CSRNG.
-  logic cs_aes_halt_active;
-  assign cs_aes_halt_active = cs_aes_halt_o.cs_aes_halt_req && cs_aes_halt_i.cs_aes_halt_ack;
-  `ASSERT_KNOWN(CsAesHaltActiveKnown_A, cs_aes_halt_active)
-
-  // Track when Keccak is active without AES Halt ('KAWAH') outside FW entropy insertion mode.
-  localparam int unsigned KAWAH_WINDOW_SIZE = 512;
-  logic [KAWAH_WINDOW_SIZE-1:0] kawah_window_d, kawah_window_q;
-  assign kawah_window_d[0] = keccak_active & ~cs_aes_halt_active & ~fw_ov_mode_entropy_insert;
-  assign kawah_window_d[KAWAH_WINDOW_SIZE-1:1] = kawah_window_q[KAWAH_WINDOW_SIZE-2:0];
-
-  // Count how many cycles Keccak was active without AES Halt in the current window.
-  localparam int unsigned KAWAH_COUNTER_SIZE = $clog2(KAWAH_WINDOW_SIZE);
-  logic [KAWAH_COUNTER_SIZE-1:0] kawah_counter_d, kawah_counter_q;
-  always_comb begin
-    kawah_counter_d = kawah_counter_q;
-    // Increment counter if Keccak is active without AES Halt in the current cycle.
-    if (kawah_window_d[0]) kawah_counter_d += 1;
-    // Decrement counter if Keccak was active without AES Halt in the cycle that falls out of the
-    // sliding window in this cycle.
-    if (kawah_window_q[KAWAH_WINDOW_SIZE-1]) begin
-      // If the counter would underflow, a testbench error has happened (only relevant if reset is
-      // deasserted).
-      `ASSERT_I(KawahCounterNoUnderflow_A, rst_ni !== 1'b1 || kawah_counter_d > 0)
-      kawah_counter_d -= 1;
-    end
-  end
-  // Ensure counter does not overflow.
-  `ASSERT(KawahCounterNoOverflow_A, kawah_counter_d < KAWAH_WINDOW_SIZE - 1)
-
-  // Assert that in the last KAWAH_WINDOW_SIZE clock cycles, Keccak was active without AES Halt for
-  // at most KAWAH_THRESHOLD clock cycles.
-  localparam int unsigned KAWAH_THRESHOLD = 24;
-  `ASSERT(KeccakNotTooActiveWithoutAesHalt_A, kawah_counter_q <= KAWAH_THRESHOLD)
-  `ASSERT_INIT(KawahParametersLegal_A, KAWAH_THRESHOLD < KAWAH_WINDOW_SIZE)
-
-  always_ff @(posedge clk_i, negedge rst_ni) begin
-    if (!rst_ni) begin
-      kawah_counter_q <= '0;
-      kawah_window_q  <= '0;
-    end else begin
-      kawah_counter_q <= kawah_counter_d;
-      kawah_window_q  <= kawah_window_d;
-    end
-  end
-`endif
 
   //--------------------------------------------
   // Assertions

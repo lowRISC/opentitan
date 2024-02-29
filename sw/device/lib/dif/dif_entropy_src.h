@@ -66,14 +66,13 @@ typedef enum dif_entropy_src_main_fsm {
   kDifEntropySrcMainFsmStateFWInsertStart = 0x0c3,
   kDifEntropySrcMainFsmStateFWInsertMsg = 0x059,
   kDifEntropySrcMainFsmStateSha3MsgDone = 0x10f,
-  kDifEntropySrcMainFsmStateSha3Prep = 0x0f8,
-  kDifEntropySrcMainFsmStateSha3Process = 0x0bf,
-  kDifEntropySrcMainFsmStateSha3Valid = 0x171,
+  kDifEntropySrcMainFsmStateSha3Process = 0x0f8,
+  kDifEntropySrcMainFsmStateSha3Valid = 0x0bf,
   kDifEntropySrcMainFsmStateSha3Done = 0x198,
-  kDifEntropySrcMainFsmStateSha3Quiesce = 0x1cd,
-  kDifEntropySrcMainFsmStateAlertState = 0x1fb,
-  kDifEntropySrcMainFsmStateAlertHang = 0x15c,
-  kDifEntropySrcMainFsmStateError = 0x13d
+  kDifEntropySrcMainFsmStateSha3Quiesce = 0x139,
+  kDifEntropySrcMainFsmStateAlertState = 0x1cd,
+  kDifEntropySrcMainFsmStateAlertHang = 0x1fb,
+  kDifEntropySrcMainFsmStateError = 0x73
 } dif_entropy_src_main_fsm_t;
 
 /**

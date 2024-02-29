@@ -61,10 +61,6 @@ Any entropy bits arriving after the observe FIFO is full are being discarded.
 Firmware has to read out the entire observe FIFO to restart entropy collection.
 Only entropy bits inserted by firmware by writing the [`FW_OV_WR_DATA`](registers.md#fw_ov_wr_data) register may eventually reach the block hardware interface.
 
-The `cs_aes_halt` interface that should halt CSRNG's AES while Entropy Source's SHA3 is active (to prevent power peaks) does not work when firmware inserts entropy.
-In this case, SHA3 activity is controlled by software.
-Thus, if power peaks are a concern, software must ensure that SHA3 is not active too frequently or not together with CSRNG's AES.
-
 If firmware does not want to use hardware conditioning for the inserted entropy bits, it has to do one of the two following points:
 1. Set the `FIPS_ENABLE` field in the [`CONF`](registers.md#conf) register to `kMultiBitBool4False`.
 In this case, the entropy is routed to the hardware endpoints.

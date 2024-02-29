@@ -6788,10 +6788,6 @@
             The idea is that Entropy Source requests CSRNG's AES to halt and waits for CSRNG to acknowledge before it starts its SHA3.
             While SHA3 runs, Entropy Source keeps the request high.
             CSRNG may not drop the acknowledge before Entropy Source drops the request.
-
-            Current limitations:
-            1. During startup and in Firmware Override - Extract & Insert mode, Entropy Source makes no AES Halt requests but still activates its SHA3 engine.
-            2. Outside Firmware Override - Extract & Insert mode, Entropy Source may activate its SHA3 engine without requesting AES Halt, but no more than for 24 Keccak rounds (24 clock cycles) every 512 clock cycles.
             '''
           struct: cs_aes_halt
           package: entropy_src_pkg
@@ -19385,10 +19381,6 @@
           The idea is that Entropy Source requests CSRNG's AES to halt and waits for CSRNG to acknowledge before it starts its SHA3.
           While SHA3 runs, Entropy Source keeps the request high.
           CSRNG may not drop the acknowledge before Entropy Source drops the request.
-
-          Current limitations:
-          1. During startup and in Firmware Override - Extract & Insert mode, Entropy Source makes no AES Halt requests but still activates its SHA3 engine.
-          2. Outside Firmware Override - Extract & Insert mode, Entropy Source may activate its SHA3 engine without requesting AES Halt, but no more than for 24 Keccak rounds (24 clock cycles) every 512 clock cycles.
           '''
         struct: cs_aes_halt
         package: entropy_src_pkg
