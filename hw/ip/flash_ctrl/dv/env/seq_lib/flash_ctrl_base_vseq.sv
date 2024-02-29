@@ -123,7 +123,6 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
   virtual task reset_flash();
     // Set all flash partitions to 1s.
     flash_dv_part_e part = part.first();
-
     do begin
       cfg.flash_mem_bkdr_init(part, flash_init);
       part = part.next();
@@ -432,7 +431,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
       `uvm_info("intr_read", $sformatf("intr_state: %x", intr_st), UVM_MEDIUM)
 
       // the comparison below is done because when the flash reads "too fast", it can fill up
-      // the FIFO before more entries are read out. This creates a siutation where we may have
+      // the FIFO before more entries are read out. This creates a situation where we may have
       // multiple level or full interrupts even though it is not really the case.
       // Imagine the level is set to 5, and we get the first interrupt when are 5 entries.
       // While reading the 5 entries out, the flash fills so fast that the hardware sees another
@@ -456,55 +455,46 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
   endtask // flash_ctrl_intr_read
 
   virtual task flash_ctrl_intr_write(flash_op_t flash_op, data_q_t wdata);
-    int curr_wr;
-    int wr_cnt, wr_idx = 0;
+    int wr_idx = 0;
     uvm_reg_data_t data;
     bit [31:0] intr_st;
-    bit        wait_done = 0;
 
-    `uvm_info("flash_ctrl_intr_write", $sformatf("num_wd: %0d  crd:%0d", flash_op.num_words,
-                                                 cfg.wr_crd), UVM_MEDIUM)
+    `uvm_info("flash_ctrl_intr_write", $sformatf("num_wd: %0d", flash_op.num_words),
+                                                 UVM_MEDIUM)
+    // Enable ProgLvl interrupt
+    csr_rd(.ptr(ral.intr_enable), .value(data));
+    data[FlashCtrlIntrProgLvl] = 1;
+    csr_wr(.ptr(ral.intr_enable), .value(data));
+
     // Make sure prog_fifo is available before start program.
-    `DV_SPINWAIT(while(cfg.wr_crd == 0) begin
-                 csr_rd(.ptr(ral.curr_fifo_lvl.prog), .value(curr_wr));
-                 cfg.wr_crd = 4 - curr_wr;
-                 end,
-                 "wait for wr_crd timeout",
+    `DV_SPINWAIT(wait(cfg.intr_vif.pins[FlashCtrlIntrProgLvl] == 1);,
+                 "wait initial prog intr timeout",
                  // Defined in the seq_cfg, default is 10ms.
                  cfg.seq_cfg.prog_timeout_ns, "flash_ctrl_intr_write")
 
     flash_ctrl_start_op(flash_op);
 
-    // Initially no interrupts are set. So we have to start writing
-    // data to fifo then wait for interrupt.
-    do begin
-      while (cfg.wr_crd > 0 && wr_idx < flash_op.num_words) begin
-        mem_wr(.ptr(ral.prog_fifo), .offset(0), .data(wdata[wr_idx++]));
-        cfg.wr_crd--;
-      end
-      `DV_SPINWAIT(wait(cfg.intr_vif.pins[FlashCtrlIntrProgEmpty] == 1 ||
-                        cfg.intr_vif.pins[FlashCtrlIntrProgLvl] == 1 ||
-                        cfg.intr_vif.pins[FlashCtrlIntrOpDone] == 1);,
+    while (wr_idx < flash_op.num_words) begin
+      `DV_SPINWAIT(wait(cfg.intr_vif.pins[FlashCtrlIntrProgLvl] == 1);,
                    "wait prog intr timeout",
                    // Defined in the seq_cfg, default is 10ms.
                    cfg.seq_cfg.prog_timeout_ns, "flash_ctrl_intr_write")
+      mem_wr(.ptr(ral.prog_fifo), .offset(0), .data(wdata[wr_idx++]));
+    end
 
-      csr_rd(.ptr(ral.intr_state), .value(data));
-      intr_st = data;
-      clear_intr_state(data);
+    `DV_SPINWAIT(wait(cfg.intr_vif.pins[FlashCtrlIntrOpDone] == 1);,
+                 "wait intr op done timeout",
+                 // Defined in the seq_cfg, default is 10ms.
+                 cfg.seq_cfg.prog_timeout_ns, "flash_ctrl_intr_write")
 
-      if (intr_st[FlashCtrlIntrOpDone]) begin
-        // out of the loop
-        wait_done = 1;
-        wr_idx = flash_op.num_words;
-      end else if (intr_st[FlashCtrlIntrProgEmpty]) begin
-        cfg.wr_crd = 4; // fifo size is 4
-      end else if (intr_st[FlashCtrlIntrProgLvl]) begin
-        // fifo depth 4, intr level: 2
-        // Credit should be  depth - fifo level
-        cfg.wr_crd = 4 - cfg.wr_lvl;
-      end
-    end while (wr_idx < flash_op.num_words || wait_done == 0);
+    // Disable and clear the interrupt
+    csr_rd(.ptr(ral.intr_enable), .value(data));
+    data[FlashCtrlIntrProgLvl] = 0;
+    csr_wr(.ptr(ral.intr_enable), .value(data));
+
+    csr_rd(.ptr(ral.intr_state), .value(data));
+    intr_st = data;
+    clear_intr_state(data);
   endtask // flash_ctrl_intr_write
 
   // Task to perform a direct Flash read at the specified location

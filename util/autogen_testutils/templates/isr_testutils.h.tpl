@@ -69,12 +69,18 @@ typedef struct plic_isr_ctx {
      *
      * @param plic_ctx A PLIC ISR context handle.
      * @param ${ip.name_snake}_ctx A(n) ${ip.name_snake} ISR context handle.
+    % if ip.has_status_type_irqs():
+     * @param mute_status_irq set to true to disable the serviced status type IRQ.
+    % endif
      * @param[out] peripheral_serviced Out param for the peripheral that was serviced.
      * @param[out] irq_serviced Out param for the IRQ that was serviced.
      */
     void isr_testutils_${ip.name_snake}_isr(
       plic_isr_ctx_t plic_ctx,
       ${ip.name_snake}_isr_ctx_t ${ip.name_snake}_ctx,
+    % if ip.has_status_type_irqs():
+      bool mute_status_irq,
+    % endif
       top_earlgrey_plic_peripheral_t *peripheral_serviced,
       dif_${ip.name_snake}_irq_t *irq_serviced);
 

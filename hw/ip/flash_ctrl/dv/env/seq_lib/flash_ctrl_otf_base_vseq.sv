@@ -254,7 +254,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
                                          cfg.rd_lvl, cfg.wr_lvl), UVM_MEDIUM)
 
         flash_ctrl_fifo_levels_cfg_intr(cfg.rd_lvl, cfg.wr_lvl);
-        flash_ctrl_intr_enable(6'h3f);
+        flash_ctrl_intr_enable(6'h3c);
       end
     end
     otf_wr_pct_temp     = cfg.otf_wr_pct;

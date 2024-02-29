@@ -75,7 +75,8 @@ static volatile bool fired_irqs[kNumIRQs];
 void ottf_external_isr(uint32_t *exc_info) {
   top_earlgrey_plic_peripheral_t peripheral_serviced;
   dif_flash_ctrl_irq_t irq_serviced;
-  isr_testutils_flash_ctrl_isr(plic_ctx, flash_ctx, &peripheral_serviced,
+  // Instruct the ISR to mute any status interrupt that is firing.
+  isr_testutils_flash_ctrl_isr(plic_ctx, flash_ctx, true, &peripheral_serviced,
                                &irq_serviced);
   CHECK(peripheral_serviced == kTopEarlgreyPlicPeripheralFlashCtrl,
         "Interurpt from unexpected peripheral: %d", peripheral_serviced);
@@ -95,15 +96,20 @@ static void clear_irq_variables(void) {
 /**
  * Initializes FLASH_CTRL and enables the relevant interrupts.
  */
-static void flash_ctrl_init_with_irqs(mmio_region_t base_addr,
-                                      dif_flash_ctrl_state_t *flash_state,
-                                      dif_flash_ctrl_t *flash_ctrl) {
+static void flash_ctrl_init_with_event_irqs(mmio_region_t base_addr,
+                                            dif_flash_ctrl_state_t *flash_state,
+                                            dif_flash_ctrl_t *flash_ctrl) {
   CHECK_DIF_OK(dif_flash_ctrl_init(base_addr, flash_ctrl));
   CHECK_DIF_OK(dif_flash_ctrl_init_state(flash_state, base_addr));
 
   for (dif_flash_ctrl_irq_t i = 0; i < kNumIRQs; ++i) {
-    CHECK_DIF_OK(dif_flash_ctrl_irq_set_enabled(
-        flash_ctrl, kDifFlashCtrlIrqProgEmpty + i, kDifToggleEnabled));
+    dif_irq_type_t type;
+    CHECK_DIF_OK(dif_flash_ctrl_irq_get_type(
+        flash_ctrl, kDifFlashCtrlIrqProgEmpty + i, &type));
+    if (type == kDifIrqTypeEvent) {
+      CHECK_DIF_OK(dif_flash_ctrl_irq_set_enabled(
+          flash_ctrl, kDifFlashCtrlIrqProgEmpty + i, kDifToggleEnabled));
+    }
   }
   clear_irq_variables();
 }
@@ -145,6 +151,14 @@ static void test_info_part(uint32_t partition_number, const uint32_t *test_data,
     expected_irqs[kDifFlashCtrlIrqOpDone] = true;
     expected_irqs[kDifFlashCtrlIrqProgEmpty] = true;
     expected_irqs[kDifFlashCtrlIrqProgLvl] = true;
+    // Note: ProgEmpty and ProgLvl interrupts are enabled here and since the
+    // assert by default, they will be serviced and silenced right away. In
+    // order to test them more thoroughly, in this test, we would have to rework
+    // the write operation test utility.
+    CHECK_DIF_OK(dif_flash_ctrl_irq_set_enabled(
+        &flash_ctrl, kDifFlashCtrlIrqProgEmpty, kDifToggleEnabled));
+    CHECK_DIF_OK(dif_flash_ctrl_irq_set_enabled(
+        &flash_ctrl, kDifFlashCtrlIrqProgLvl, kDifToggleEnabled));
     CHECK_STATUS_OK(flash_ctrl_testutils_write(
         &flash_state, address, kPartitionId, test_data,
         kDifFlashCtrlPartitionTypeInfo, kInfoSize));
@@ -164,6 +178,13 @@ static void test_info_part(uint32_t partition_number, const uint32_t *test_data,
     expected_irqs[kDifFlashCtrlIrqOpDone] = true;
     expected_irqs[kDifFlashCtrlIrqRdLvl] = true;
     expected_irqs[kDifFlashCtrlIrqRdFull] = true;
+    // Note: RdLvl and RdFull interrupts are enabled here and as opposed to
+    // ProgEmpty and ProgLvl above, they will be tested correctly, since they
+    // only assert once the FIFO reaches the respective fill levels.
+    CHECK_DIF_OK(dif_flash_ctrl_irq_set_enabled(
+        &flash_ctrl, kDifFlashCtrlIrqRdLvl, kDifToggleEnabled));
+    CHECK_DIF_OK(dif_flash_ctrl_irq_set_enabled(
+        &flash_ctrl, kDifFlashCtrlIrqRdFull, kDifToggleEnabled));
     CHECK_STATUS_OK(flash_ctrl_testutils_read(
         &flash_state, address, kPartitionId, readback_data,
         kDifFlashCtrlPartitionTypeInfo, kInfoSize, 1));
@@ -184,7 +205,7 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_rv_plic_init(
       mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &plic0));
 
-  flash_ctrl_init_with_irqs(
+  flash_ctrl_init_with_event_irqs(
       mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR),
       &flash_state, &flash_ctrl);
   rv_plic_testutils_irq_range_enable(&plic0, plic_ctx.hart_id,

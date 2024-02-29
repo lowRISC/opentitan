@@ -13,6 +13,7 @@ import sys
 from typing import Dict
 
 from reggen.ip_block import IpBlock
+from reggen.interrupt import IntrType
 
 from .c import TopGenC
 from .lib import Name
@@ -39,12 +40,15 @@ class IrqTestPeripheral(TestPeripheral):
     """Captures a peripheral instance's attributes for use in IRQ test."""
     def __init__(self, name: str, inst_name: str, base_addr_name: str,
                  is_templated: bool, plic_name: str, start_irq: str,
-                 end_irq: str, plic_start_irq: str):
+                 end_irq: str, plic_start_irq: str, status_type_mask: int,
+                 status_default_mask: int):
         super().__init__(name, inst_name, base_addr_name, is_templated)
         self.plic_name = plic_name
         self.start_irq = start_irq
         self.end_irq = end_irq
         self.plic_start_irq = plic_start_irq
+        self.status_type_mask = status_type_mask
+        self.status_default_mask = status_default_mask
 
 
 class AlertTestPeripheral(TestPeripheral):
@@ -108,9 +112,26 @@ class TopGenCTest(TopGenC):
             end_irq = end_irq.replace(inst_name, f"dif_{name}_irq", 1)
             end_irq = Name.from_snake_case(end_irq).as_c_enum()
 
+            # Create two sets of masks:
+            # - status_type_mask encodes whether an IRQ is of status type
+            # - status_default_mask encodes default of status type IRQ
+            n = 0
+            status_type_mask = 0
+            status_default_mask = 0
+            for irq in self.top["interrupt"]:
+                if irq["module_name"] == inst_name:
+                    if irq["intr_type"] == IntrType.Status:
+                        setbit = (((1 << irq["width"]) - 1) << n)
+                        status_type_mask |= setbit
+                        if irq["default_val"] is True:
+                            status_default_mask |= setbit
+                    n += irq["width"]
+
             irq_peripheral = IrqTestPeripheral(name, inst_name, base_addr_name,
-                                               is_templated, plic_name, start_irq,
-                                               end_irq, plic_start_irq)
+                                               is_templated, plic_name,
+                                               start_irq, end_irq,
+                                               plic_start_irq, status_type_mask,
+                                               status_default_mask)
             irq_peripherals.append(irq_peripheral)
 
         irq_peripherals.sort(key=lambda p: p.inst_name)

@@ -20,18 +20,23 @@ _intr_type_map = {'event': IntrType.Event, 'status': IntrType.Status}
 
 class Interrupt(Signal):
 
-    def __init__(self, name: str, desc: str, bits: Bits, auto_split: bool, intr_type: IntrType):
+    def __init__(self, name: str, desc: str, bits: Bits,
+                 auto_split: bool, intr_type: IntrType, default_val: bool):
         super().__init__(name, desc, bits)
         self.intr_type = intr_type
         self.auto_split = auto_split
+        self.default_val = default_val
 
     @staticmethod
     def from_raw(what: str, lsb: int, raw: object) -> 'Interrupt':
-        rd = check_keys(raw, what, ['name', 'desc'], ['width', 'type', 'auto_split'])
+        rd = check_keys(raw, what, ['name', 'desc'],
+                        ['width', 'type', 'auto_split', 'default'])
 
         name = check_name(rd['name'], 'name field of ' + what)
         desc = check_str(rd['desc'], 'desc field of ' + what)
         width = check_int(rd.get('width', 1), 'width field of ' + what)
+        default_val = check_bool(rd.get('default', False),
+                                 'default field of ' + what)
         if width <= 0:
             raise ValueError('The width field of signal {} ({}) '
                              'has value {}, but should be positive.'.format(
@@ -49,7 +54,11 @@ class Interrupt(Signal):
                 'has value {}, but should be either event or status.'.format(
                     name, what, intr_type_str))
 
-        return Interrupt(name, desc, bits, auto_split, intr_type,)
+        if intr_type == IntrType.Event and default_val:
+            raise RuntimeError('Interrupt {} is of Event type and cannot '
+                               'have a nonzero default'.format(name))
+
+        return Interrupt(name, desc, bits, auto_split, intr_type, default_val)
 
     @staticmethod
     def from_raw_list(what: str, raw: object) -> Sequence['Interrupt']:

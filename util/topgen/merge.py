@@ -884,6 +884,8 @@ def amend_interrupt(top: OrderedDict, name_to_block: Dict[str, IpBlock]):
             sig_dict = signal.as_nwt_dict('interrupt')
             qual = lib.add_module_prefix_to_signal(sig_dict,
                                                    module=m.lower())
+            qual["intr_type"] = signal.intr_type
+            qual["default_val"] = signal.default_val
             top["interrupt"].append(qual)
 
 

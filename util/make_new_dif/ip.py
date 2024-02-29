@@ -161,3 +161,10 @@ class Ip:
                 p = Parameter(parameter)
                 parameters[p.name] = p
         return parameters
+
+    def has_status_type_irqs(self):
+        for irq in self.irqs:
+            if irq.type == "status":
+                return True
+        else:
+            return False

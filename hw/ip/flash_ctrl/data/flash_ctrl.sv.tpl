@@ -1123,35 +1123,22 @@ module flash_ctrl
     assign hw2reg.ecc_single_err_addr[i].d = {flash_phy_rsp.ecc_addr[i], {BusByteWidth{1'b0}}};
   end
 
-  logic sw_rd_fifo_wr_q;
-  logic prog_fifo_rd_q;
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      sw_rd_fifo_wr_q <= '0;
-      prog_fifo_rd_q <= '0;
-    end else begin
-      sw_rd_fifo_wr_q <= sw_rfifo_wen & sw_rfifo_wready;
-      prog_fifo_rd_q <= prog_fifo_rvalid & prog_fifo_ren;
-    end
-  end
-
-  // general interrupt events
   logic [LastIntrIdx-1:0] intr_event;
+  // Status types
+  assign intr_event[ProgEmpty] = !prog_fifo_rvalid;
+  // Check whether this FIFO has been drained to a certain level.
+  assign intr_event[ProgLvl]   = reg2hw.fifo_lvl.prog.q >= MaxFifoWidth'(prog_fifo_depth);
+  assign intr_event[RdFull]    = sw_rfifo_full;
+  // Check whether this FIFO has been filled to a certain level.
+  assign intr_event[RdLvl]     = reg2hw.fifo_lvl.rd.q <= sw_rfifo_depth;
+  // Event types
+  assign intr_event[OpDone]    = sw_ctrl_done;
+  assign intr_event[CorrErr]   = |flash_phy_rsp.ecc_single_err;
 
-  prim_edge_detector #(
+  prim_intr_hw #(
     .Width(1),
-    .ResetValue(1),
-    .EnSync(0)
-  ) u_prog_empty_event (
-    .clk_i,
-    .rst_ni,
-    .d_i(~prog_fifo_rvalid),
-    .q_sync_o(),
-    .q_posedge_pulse_o(intr_event[ProgEmpty]),
-    .q_negedge_pulse_o()
-  );
-
-  prim_intr_hw #(.Width(1)) u_intr_prog_empty (
+    .IntrT ("Status")
+  ) u_intr_prog_empty (
     .clk_i,
     .rst_ni,
     .event_intr_i           (intr_event[ProgEmpty]),
@@ -1164,20 +1151,10 @@ module flash_ctrl
     .intr_o                 (intr_prog_empty_o)
   );
 
-  prim_edge_detector #(
+  prim_intr_hw #(
     .Width(1),
-    .ResetValue(0),
-    .EnSync(0)
-  ) u_prog_lvl_event (
-    .clk_i,
-    .rst_ni,
-    .d_i(prog_fifo_rd_q & (reg2hw.fifo_lvl.prog.q == MaxFifoWidth'(prog_fifo_depth))),
-    .q_sync_o(),
-    .q_posedge_pulse_o(intr_event[ProgLvl]),
-    .q_negedge_pulse_o()
-  );
-
-  prim_intr_hw #(.Width(1)) u_intr_prog_lvl (
+    .IntrT ("Status")
+  ) u_intr_prog_lvl (
     .clk_i,
     .rst_ni,
     .event_intr_i           (intr_event[ProgLvl]),
@@ -1190,20 +1167,10 @@ module flash_ctrl
     .intr_o                 (intr_prog_lvl_o)
   );
 
-  prim_edge_detector #(
+  prim_intr_hw #(
     .Width(1),
-    .ResetValue(0),
-    .EnSync(0)
-  ) u_rd_full_event (
-    .clk_i,
-    .rst_ni,
-    .d_i(sw_rfifo_full),
-    .q_sync_o(),
-    .q_posedge_pulse_o(intr_event[RdFull]),
-    .q_negedge_pulse_o()
-  );
-
-  prim_intr_hw #(.Width(1)) u_intr_rd_full (
+    .IntrT ("Status")
+  ) u_intr_rd_full (
     .clk_i,
     .rst_ni,
     .event_intr_i           (intr_event[RdFull]),
@@ -1216,20 +1183,10 @@ module flash_ctrl
     .intr_o                 (intr_rd_full_o)
   );
 
-  prim_edge_detector #(
+  prim_intr_hw #(
     .Width(1),
-    .ResetValue(0),
-    .EnSync(0)
-  ) u_rd_lvl_event (
-    .clk_i,
-    .rst_ni,
-    .d_i(sw_rd_fifo_wr_q & (reg2hw.fifo_lvl.rd.q == sw_rfifo_depth)),
-    .q_sync_o(),
-    .q_posedge_pulse_o(intr_event[RdLvl]),
-    .q_negedge_pulse_o()
-  );
-
-  prim_intr_hw #(.Width(1)) u_intr_rd_lvl (
+    .IntrT ("Status")
+  ) u_intr_rd_lvl (
     .clk_i,
     .rst_ni,
     .event_intr_i           (intr_event[RdLvl]),
@@ -1242,10 +1199,10 @@ module flash_ctrl
     .intr_o                 (intr_rd_lvl_o)
   );
 
-  assign intr_event[OpDone] = sw_ctrl_done;
-  assign intr_event[CorrErr] = |flash_phy_rsp.ecc_single_err;
-
-  prim_intr_hw #(.Width(1)) u_intr_op_done (
+  prim_intr_hw #(
+    .Width(1),
+    .IntrT ("Event")
+  ) u_intr_op_done (
     .clk_i,
     .rst_ni,
     .event_intr_i           (intr_event[OpDone]),
@@ -1258,7 +1215,10 @@ module flash_ctrl
     .intr_o                 (intr_op_done_o)
   );
 
-  prim_intr_hw #(.Width(1)) u_intr_corr_err (
+  prim_intr_hw #(
+    .Width(1),
+    .IntrT ("Event")
+  ) u_intr_corr_err (
     .clk_i,
     .rst_ni,
     .event_intr_i           (intr_event[CorrErr]),

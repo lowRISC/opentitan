@@ -99,7 +99,7 @@ void ottf_external_isr(uint32_t *exc_info) {
 
   top_earlgrey_plic_peripheral_t peripheral;
   dif_spi_device_irq_t spi_device_irq;
-  isr_testutils_spi_device_isr(plic_ctx, spi_device_ctx, &peripheral,
+  isr_testutils_spi_device_isr(plic_ctx, spi_device_ctx, false, &peripheral,
                                &spi_device_irq);
 
   switch (spi_device_irq) {

@@ -90,7 +90,7 @@ TEST_F(IrqGetTypeTest, Success) {
 
   EXPECT_DIF_OK(dif_flash_ctrl_irq_get_type(&flash_ctrl_,
                                             kDifFlashCtrlIrqProgEmpty, &type));
-  EXPECT_EQ(type, kDifIrqTypeEvent);
+  EXPECT_EQ(type, kDifIrqTypeStatus);
 }
 
 class IrqGetStateTest : public FlashCtrlTest {};
