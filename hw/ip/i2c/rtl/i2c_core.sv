@@ -140,6 +140,7 @@ module i2c_core import i2c_pkg::*;
 
   logic        host_enable;
   logic        target_enable;
+  logic        nack_when_full;
   logic        line_loopback;
   logic        target_loopback;
 
@@ -188,6 +189,7 @@ module i2c_core import i2c_pkg::*;
   assign host_enable = reg2hw.ctrl.enablehost.q;
   assign target_enable = reg2hw.ctrl.enabletarget.q;
   assign line_loopback = reg2hw.ctrl.llpbk.q;
+  assign nack_when_full = reg2hw.ctrl.nackwhenfull.q;
 
   // Target loopback simply plays back whatever is received from the external host
   // back to it.
@@ -407,6 +409,7 @@ module i2c_core import i2c_pkg::*;
 
     .host_enable_i           (host_enable),
     .target_enable_i         (target_enable),
+    .nack_when_full_i        (nack_when_full),
 
     .fmt_fifo_rvalid_i       (fmt_fifo_rvalid),
     .fmt_fifo_wvalid_i       (fmt_fifo_wvalid),

@@ -19,6 +19,7 @@ module i2c_fsm import i2c_pkg::*;
 
   input        host_enable_i, // enable host functionality
   input        target_enable_i, // enable target functionality
+  input        nack_when_full_i, // nack instead of stretching when acq_fifo is full
 
   input        fmt_fifo_rvalid_i, // indicates there is valid data in fmt_fifo
   input        fmt_fifo_wvalid_i, // indicates data is being put into fmt_fifo
@@ -121,7 +122,7 @@ module i2c_fsm import i2c_pkg::*;
   logic [7:0]  input_byte;    // register for reads from host
   logic        input_byte_clr;// clear input_byte contents
   logic        acq_fifo_wready;
-  logic        stretch_addr;
+  logic        stretch_cond;
   logic        stretch_tx;
   logic        expect_stop;
 
@@ -385,7 +386,9 @@ module i2c_fsm import i2c_pkg::*;
     // Target function clock stretch handling.
     StretchAddr,
     StretchTx, StretchTxSetup,
-    StretchAcqFull
+    StretchAcqFull,
+    // Target function nack when clock stretching is not possible.
+    NackSetup, NackPulse, NackHold
   } state_e;
 
   state_e state_q, state_d;
@@ -671,7 +674,7 @@ module i2c_fsm import i2c_pkg::*;
         // Upon transition to next state, populate the acquisition fifo
         if (tcount_q == 20'd1) begin
           // only write to fifo if stretching conditions are not met
-          acq_fifo_wvalid_o = ~stretch_addr;
+          acq_fifo_wvalid_o = ~stretch_cond;
           acq_fifo_wdata_o = {AcqStart, input_byte};
         end
       end
@@ -749,7 +752,7 @@ module i2c_fsm import i2c_pkg::*;
         target_idle_o = 1'b0;
         scl_d = 1'b0;
 
-        acq_fifo_wvalid_o = ~stretch_addr;
+        acq_fifo_wvalid_o = ~stretch_cond;
         acq_fifo_wdata_o = {AcqStart, input_byte};
       end
       // StretchTx: target stretches the clock when tx_fifo is empty
@@ -771,6 +774,21 @@ module i2c_fsm import i2c_pkg::*;
         // When space becomes available, deposit entry
         acq_fifo_wvalid_o = acq_fifo_wready;      // assert that acq_fifo has valid data
         acq_fifo_wdata_o = {AcqData, input_byte}; // transfer data to acq_fifo
+      end
+      // NackSetup: target pulls SDA high while SCL is low
+      NackSetup : begin
+        target_idle_o = 1'b0;
+        sda_d = 1'b1;
+      end
+      // NackPulse: target pulls SDA high while SCL is released
+      NackPulse : begin
+        target_idle_o = 1'b0;
+        sda_d = 1'b1;
+      end
+      // NackHold: target pulls SDA high while SCL is pulled low
+      NackHold : begin
+        target_idle_o = 1'b0;
+        sda_d = 1'b1;
       end
       // default
       default : begin
@@ -801,7 +819,7 @@ module i2c_fsm import i2c_pkg::*;
     end
   end
 
-  assign stretch_addr = !acq_fifo_wready;
+  assign stretch_cond = !acq_fifo_wready;
 
   // Stretch Tx phase when:
   // 1. When there is no data to return to host
@@ -1100,7 +1118,13 @@ module i2c_fsm import i2c_pkg::*;
       // AddrAckWait: pause before acknowledging
       AddrAckWait : begin
         if (tcount_q == 20'd1 && !scl_i) begin
-          state_d = AddrAckSetup;
+          // When we expect to have to stretch, we must nack when in
+          // nack_when_full mode.
+          if (stretch_cond && nack_when_full_i) begin
+            state_d = NackSetup;
+          end else begin
+            state_d = AddrAckSetup;
+          end
         end
       end
       // AddrAckSetup: target pulls SDA low while SCL is low
@@ -1121,7 +1145,7 @@ module i2c_fsm import i2c_pkg::*;
           // Stretch when requested by software or when there is insufficient
           // space to hold the start / address format byte.
           // If there is sufficient space, the format byte is written into the acquisition fifo.
-          if (stretch_addr) begin
+          if (stretch_cond) begin
             state_d = StretchAddr;
           end else if (rw_bit_q) begin
             state_d = TransmitWait;
@@ -1200,7 +1224,11 @@ module i2c_fsm import i2c_pkg::*;
       // AcquireAckWait: pause before acknowledging
       AcquireAckWait : begin
         if (tcount_q == 20'd1 && !scl_i) begin
-          state_d = AcquireAckSetup;
+          if (stretch_cond && nack_when_full_i) begin
+            state_d = NackSetup;
+          end else begin
+            state_d = AcquireAckSetup;
+          end
         end
       end
       // AcquireAckSetup: target pulls SDA low while SCL is low
@@ -1220,13 +1248,17 @@ module i2c_fsm import i2c_pkg::*;
         if (tcount_q == 20'd1) begin
           // If there is no space for the current entry, stretch clocks and
           // wait for software to make space.
-          state_d = acq_fifo_wready ? AcquireByte : StretchAcqFull;
+          if (stretch_cond) begin
+            state_d = StretchAcqFull;
+          end else begin
+            state_d = AcquireByte;
+          end
         end
       end
       // StretchAddr: The address phase can not yet be completed, stretch
       // clock and wait.
       StretchAddr : begin
-        if (!stretch_addr) begin
+        if (!stretch_cond) begin
           // When transmitting after an address stretch, we need to assume
           // that is looks like a Tx stretch.  This is because if we try
           // to follow the normal path, the logic will release the clock
@@ -1264,7 +1296,28 @@ module i2c_fsm import i2c_pkg::*;
       // When space becomes available, deposit the entry into the acqusition fifo
       // and move on to receive the next byte.
       StretchAcqFull : begin
-        if (acq_fifo_wready) state_d = AcquireByte;
+        if (!stretch_cond) begin
+          state_d = AcquireByte;
+        end
+      end
+      // NackSetup: target pulls SDA high while SCL is low
+      NackSetup : begin
+        if (scl_i) state_d = NackPulse;
+      end
+      // NackPulse: target pulls SDA high while SCL is released
+      NackPulse : begin
+        if (!scl_i) begin
+          state_d = NackHold;
+          load_tcount = 1'b1;
+          tcount_sel = tClockStart;
+        end
+      end
+      // NackHold: target pulls SDA high while SCL is pulled low
+      NackHold : begin
+        if (tcount_q == 20'd1) begin
+          // After nacking go back to idle
+          state_d = Idle;
+        end
       end
       // default
       default : begin
