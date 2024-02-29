@@ -29,7 +29,6 @@ module entropy_src_main_sm
   output logic                  sha3_start_o,
   output logic                  sha3_process_o,
   output prim_mubi_pkg::mubi4_t sha3_done_o,
-  output logic                  cs_aes_halt_req_o,
   input logic                   cs_aes_halt_ack_i,
   input logic                   local_escalate_i,
   output logic                  main_sm_alert_o,
@@ -54,7 +53,6 @@ module entropy_src_main_sm
     sha3_start_o = 1'b0;
     sha3_process_o = 1'b0;
     sha3_done_o = prim_mubi_pkg::MuBi4False;
-    cs_aes_halt_req_o = 1'b0;
     main_sm_alert_o = 1'b0;
     main_sm_idle_o = 1'b0;
     main_sm_err_o = 1'b0;
@@ -162,7 +160,7 @@ module entropy_src_main_sm
             end else begin
               // We've now passed two consecutive test windows of the configured window length.
               // Next, we're going to compress the collected entropy to produce a single seed.
-              state_d = Sha3Prep;
+              state_d = Sha3Process;
               rst_alert_cntr_o = 1'b1;
             end
           end
@@ -212,7 +210,7 @@ module entropy_src_main_sm
               state_d = AlertState;
             end else if (!ht_fail_pulse_i) begin
               // Move forward and get the conditioner ready to finish the absorption process.
-              state_d = Sha3Prep;
+              state_d = Sha3Process;
               rst_alert_cntr_o = 1'b1;
             end
           end
@@ -229,24 +227,15 @@ module entropy_src_main_sm
         if (!enable_i) begin
           state_d = Idle;
         end else if (!fw_ov_sha3_start_i) begin
-          state_d = Sha3Prep;
-        end
-      end
-      Sha3Prep: begin
-        // for normal or halt cases, always prevent a power spike
-        cs_aes_halt_req_o = 1'b1;
-        if (cs_aes_halt_ack_i) begin
           state_d = Sha3Process;
         end
       end
       Sha3Process: begin
         // Trigger the final absorption operation of the SHA3 engine.
-        cs_aes_halt_req_o = 1'b1;
         sha3_process_o = 1'b1;
         state_d = Sha3Valid;
       end
       Sha3Valid: begin
-        cs_aes_halt_req_o = 1'b1;
         if (sha3_state_vld_i) begin
           state_d = Sha3Done;
         end
