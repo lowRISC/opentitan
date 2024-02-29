@@ -866,7 +866,7 @@ For endpoints that accept SETUP transactions, a SETUP packet will clear the STAL
 ## configin
 Configure IN Transaction
 - Reset default: `0x0`
-- Reset mask: `0xc0007f1f`
+- Reset mask: `0xe0007f1f`
 
 ### Instances
 
@@ -889,17 +889,18 @@ Configure IN Transaction
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "buffer", "bits": 5, "attr": ["rw"], "rotate": 0}, {"bits": 3}, {"name": "size", "bits": 7, "attr": ["rw"], "rotate": 0}, {"bits": 15}, {"name": "pend", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "rdy", "bits": 1, "attr": ["rw"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "buffer", "bits": 5, "attr": ["rw"], "rotate": 0}, {"bits": 3}, {"name": "size", "bits": 7, "attr": ["rw"], "rotate": 0}, {"bits": 14}, {"name": "sending", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "pend", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "rdy", "bits": 1, "attr": ["rw"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 90}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                        |
-|:------:|:------:|:-------:|:----------------------------|
-|   31   |   rw   |   0x0   | [rdy](#configin--rdy)       |
-|   30   |  rw1c  |   0x0   | [pend](#configin--pend)     |
-| 29:15  |        |         | Reserved                    |
-|  14:8  |   rw   |   0x0   | [size](#configin--size)     |
-|  7:5   |        |         | Reserved                    |
-|  4:0   |   rw   |   0x0   | [buffer](#configin--buffer) |
+|  Bits  |  Type  |  Reset  | Name                          |
+|:------:|:------:|:-------:|:------------------------------|
+|   31   |   rw   |   0x0   | [rdy](#configin--rdy)         |
+|   30   |  rw1c  |   0x0   | [pend](#configin--pend)       |
+|   29   |  rw1c  |   0x0   | [sending](#configin--sending) |
+| 28:15  |        |         | Reserved                      |
+|  14:8  |   rw   |   0x0   | [size](#configin--size)       |
+|  7:5   |        |         | Reserved                      |
+|  4:0   |   rw   |   0x0   | [buffer](#configin--buffer)   |
 
 ### configin . rdy
 This bit should be set to indicate the buffer is ready for sending.
@@ -918,6 +919,15 @@ The bit is set when the rdy bit is cleared by hardware because of a
 SETUP packet being received or a link reset being detected.
 
 The bit remains set until cleared by being written with a 1.
+
+### configin . sending
+This bit indicates that the buffer is in the process of being collected by the
+host. It becomes set upon the first attempt by the host to collect a buffer from
+this endpoint when the rdy bit was set.
+
+It is cleared when the packet has been collected successfully or the pending
+transaction has been canceled by the hardware through detection of a
+link reset or receipt of a SETUP packet.
 
 ### configin . size
 The number of bytes to send from the buffer.
