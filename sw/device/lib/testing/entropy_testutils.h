@@ -54,6 +54,13 @@ status_t entropy_testutils_fw_override_enable(dif_entropy_src_t *entropy_src,
                                               bool bypass_conditioner);
 
 /**
+ * Drain the `entropy_src` FW override mode observe FIFO and clear overflow
+ * status if set.
+ */
+OT_WARN_UNUSED_RESULT
+status_t entropy_testutils_drain_observe_fifo(dif_entropy_src_t *entropy_src);
+
+/**
  * Waits for the entropy_src to reach a certain state.
  *
  * @param entropy_src Entropy source handle.
@@ -70,6 +77,12 @@ status_t entropy_testutils_wait_for_state(const dif_entropy_src_t *entropy_src,
  */
 OT_WARN_UNUSED_RESULT
 status_t entropy_testutils_stop_all(void);
+
+/**
+ * Disables all entropy source health tests.
+ */
+OT_WARN_UNUSED_RESULT
+status_t entropy_testutils_disable_health_tests(dif_entropy_src_t *entropy_src);
 
 /**
  * Throws test assertion if there are any errors detected in any of the entropy
