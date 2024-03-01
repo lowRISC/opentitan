@@ -117,7 +117,7 @@
             The maximum supported value is 2^12-1, although much lower values are recommended to keep area requirements reasonable.
             ''',
       type: int
-      default: "64",
+      default: "268",
     }
   ],
   features: [
