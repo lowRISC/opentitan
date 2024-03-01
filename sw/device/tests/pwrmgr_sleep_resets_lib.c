@@ -149,7 +149,7 @@ void config_alert_handler(void) {
       .classes = classes,
       .class_configs = class_config,
       .classes_len = ARRAYSIZE(class_config),
-      .ping_timeout = 0,
+      .ping_timeout = kAlertHandlerTestutilsDefaultPingTimeout,
   };
 
   CHECK_STATUS_OK(alert_handler_testutils_configure_all(alert_handler, config,
