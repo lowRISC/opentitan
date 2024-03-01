@@ -61,18 +61,16 @@ package entropy_src_env_pkg;
     es_ack_sm_err          = 3,
     es_main_sm_err         = 4,
     es_cntr_err            = 5,
-    fifo_write_err         = 6,
-    fifo_read_err          = 7,
-    fifo_state_err         = 8,
-    sfifo_esrng_err_test   = 9,
-    sfifo_observe_err_test = 10,
-    sfifo_esfinal_err_test = 11,
-    es_ack_sm_err_test     = 12,
-    es_main_sm_err_test    = 13,
-    es_cntr_err_test       = 14,
-    fifo_write_err_test    = 15,
-    fifo_read_err_test     = 16,
-    fifo_state_err_test    = 17
+    fifo_read_err          = 6,
+    fifo_state_err         = 7,
+    sfifo_esrng_err_test   = 8,
+    sfifo_observe_err_test = 9,
+    sfifo_esfinal_err_test = 10,
+    es_ack_sm_err_test     = 11,
+    es_main_sm_err_test    = 12,
+    es_cntr_err_test       = 13,
+    fifo_read_err_test     = 14,
+    fifo_state_err_test    = 15
   } err_code_e;
 
   typedef enum int {
