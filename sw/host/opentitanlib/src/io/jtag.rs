@@ -21,7 +21,7 @@ pub struct JtagParams {
     #[arg(long, default_value = "openocd")]
     pub openocd: PathBuf,
 
-    #[arg(long, default_value = "200")]
+    #[arg(long, default_value = "1000")]
     pub adapter_speed_khz: u64,
 }
 
