@@ -331,6 +331,13 @@ module core_ibex_tb_top;
     run_test();
   end
 
+  // Manually set unused_assert_connected = 1 to disable the AssertConnected_A assertion for
+  // prim_count in case lockstep (set by SecureIbex) is enabled. If not disabled, DV fails.
+  if (SecureIbex) begin : gen_disable_count_check
+    assign dut.u_ibex_top.gen_lockstep.u_ibex_lockstep.u_rst_shadow_cnt.
+          unused_assert_connected = 1;
+  end
+
   // Disable the assertion for onhot check in case WrenCheck (set by SecureIbex) is enabled.
   if (SecureIbex) begin : gen_disable_onehot_check
     assign dut.u_ibex_top.gen_regfile_ff.register_file_i.gen_wren_check.u_prim_onehot_check.

@@ -72,7 +72,7 @@ Ibex implements all the Control and Status Registers (CSRs) listed in the follow
 +---------+--------------------+--------+-----------------------------------------------+
 |  0x7B3  | ``dscratch1``      | RW     | Debug Scratch Register 1                      |
 +---------+--------------------+--------+-----------------------------------------------+
-|  0x7C0  | ``cpuctrl``        | WARL   | CPU Control Register (Custom CSR)             |
+|  0x7C0  | ``cpuctrlsts``     | WARL   | CPU Control and Status Register (Custom CSR)  |
 +---------+--------------------+--------+-----------------------------------------------+
 |  0x7C1  | ``secureseed``     | WARL   | Security feature random seed (Custom CSR)     |
 +---------+--------------------+--------+-----------------------------------------------+

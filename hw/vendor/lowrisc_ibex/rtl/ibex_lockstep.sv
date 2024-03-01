@@ -120,33 +120,51 @@ module ibex_lockstep import ibex_pkg::*; #(
   // - The reset of the shadow core is synchronously released.
   // The comparison is started in the following clock cycle.
 
-  logic [LockstepOffsetW-1:0] rst_shadow_cnt_d, rst_shadow_cnt_q, rst_shadow_cnt_incr;
-  // Internally generated resets cause IMPERFECTSCH warnings
-  /* verilator lint_off IMPERFECTSCH */
-  logic                       rst_shadow_set_d, rst_shadow_set_q;
-  logic                       rst_shadow_n, enable_cmp_q;
-  /* verilator lint_on IMPERFECTSCH */
+  logic [LockstepOffsetW-1:0] rst_shadow_cnt;
+  logic                       rst_shadow_cnt_err;
+  ibex_mubi_t                 rst_shadow_set_d, rst_shadow_set_q;
+  logic                       rst_shadow_n, rst_shadow_set_single_bit;
+  ibex_mubi_t                 enable_cmp_d, enable_cmp_q;
 
-  assign rst_shadow_cnt_incr = rst_shadow_cnt_q + 1'b1;
+  // This counter primitive starts counting to LockstepOffset after a system
+  // reset. The counter value saturates at LockstepOffset.
+  prim_count #(
+    .Width      (LockstepOffsetW        ),
+    .ResetValue (LockstepOffsetW'(1'b0) )
+  ) u_rst_shadow_cnt (
+    .clk_i              (clk_i                  ),
+    .rst_ni             (rst_ni                 ),
+    .clr_i              (1'b0                   ),
+    .set_i              (1'b0                   ),
+    .set_cnt_i          ('0                     ),
+    .incr_en_i          (1'b1                   ),
+    .decr_en_i          (1'b0                   ),
+    .step_i             (LockstepOffsetW'(1'b1) ),
+    .commit_i           (1'b1                   ),
+    .cnt_o              (rst_shadow_cnt         ),
+    .cnt_after_commit_o (                       ),
+    .err_o              (rst_shadow_cnt_err     )
+  );
 
-  assign rst_shadow_set_d = (rst_shadow_cnt_q == LockstepOffsetW'(LockstepOffset - 1));
-  assign rst_shadow_cnt_d = rst_shadow_set_d ? rst_shadow_cnt_q : rst_shadow_cnt_incr;
+  // When the LockstepOffset counter value is reached, activate the lockstep
+  // comparison. We do not explicitly check whether rst_shadow_set_q forms a valid
+  // multibit signal as this value is implicitly checked by the enable_cmp
+  // comparison below.
+  assign rst_shadow_set_d =
+    (rst_shadow_cnt >= LockstepOffsetW'(LockstepOffset - 1)) ? IbexMuBiOn : IbexMuBiOff;
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      rst_shadow_cnt_q <= '0;
-      enable_cmp_q     <= '0;
-    end else begin
-      rst_shadow_cnt_q <= rst_shadow_cnt_d;
-      enable_cmp_q     <= rst_shadow_set_q;
-    end
-  end
+  // Enable lockstep comparison.
+  assign enable_cmp_d = rst_shadow_set_q;
+
+  // This assignment is needed in order to avoid "Warning-IMPERFECTSCH" messages.
+  // TODO: Remove when updating Verilator #2134.
+  assign rst_shadow_set_single_bit = rst_shadow_set_q[0];
 
   // The primitives below are used to place size-only constraints in order to prevent
   // synthesis optimizations and preserve anchor points for constraining backend tools.
   prim_flop #(
-    .Width(1),
-    .ResetValue(1'b0)
+    .Width(IbexMuBiWidth),
+    .ResetValue(IbexMuBiOff)
   ) u_prim_rst_shadow_set_flop (
     .clk_i (clk_i),
     .rst_ni(rst_ni),
@@ -154,10 +172,20 @@ module ibex_lockstep import ibex_pkg::*; #(
     .q_o   (rst_shadow_set_q)
   );
 
+  prim_flop #(
+    .Width(IbexMuBiWidth),
+    .ResetValue(IbexMuBiOff)
+  ) u_prim_enable_cmp_flop (
+    .clk_i (clk_i),
+    .rst_ni(rst_ni),
+    .d_i   (enable_cmp_d),
+    .q_o   (enable_cmp_q)
+  );
+
   prim_clock_mux2 #(
     .NoFpgaBufG(1'b1)
   ) u_prim_rst_shadow_n_mux2 (
-    .clk0_i(rst_shadow_set_q),
+    .clk0_i(rst_shadow_set_single_bit),
     .clk1_i(scan_rst_ni),
     .sel_i (test_en_i),
     .clk_o (rst_shadow_n)
@@ -458,8 +486,10 @@ module ibex_lockstep import ibex_pkg::*; #(
 
   logic outputs_mismatch;
 
-  assign outputs_mismatch       = enable_cmp_q & (shadow_outputs_q != core_outputs_q[0]);
-  assign alert_major_internal_o = outputs_mismatch | shadow_alert_major_internal;
+  assign outputs_mismatch =
+    (enable_cmp_q != IbexMuBiOff) & (shadow_outputs_q != core_outputs_q[0]);
+  assign alert_major_internal_o
+    = outputs_mismatch | shadow_alert_major_internal | rst_shadow_cnt_err;
   assign alert_major_bus_o      = shadow_alert_major_bus;
   assign alert_minor_o          = shadow_alert_minor;
 

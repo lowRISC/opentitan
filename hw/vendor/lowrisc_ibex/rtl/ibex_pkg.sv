@@ -655,7 +655,8 @@ package ibex_pkg;
 
   // Mult-bit signal used for security hardening. For non-secure implementation all bits other than
   // the bottom bit are ignored.
-  typedef logic [3:0] ibex_mubi_t;
+  parameter int IbexMuBiWidth = 4;
+  typedef logic [IbexMuBiWidth-1:0] ibex_mubi_t;
 
   // Note that if adjusting these parameters it is assumed the bottom bit is set for On and unset
   // for Off. This allows the use of IbexMuBiOn/IbexMuBiOff to work for both secure and non-secure
