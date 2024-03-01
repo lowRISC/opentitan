@@ -66,7 +66,7 @@ class entropy_src_err_vseq extends entropy_src_base_vseq;
     cfg.entropy_src_assert_vif.assert_off_err();
 
     case (cfg.which_err_code) inside
-      sfifo_esrng_err, sfifo_observe_err, sfifo_esfinal_err: begin
+      sfifo_esrng_err, sfifo_distr_err, sfifo_observe_err, sfifo_esfinal_err: begin
         path_name = cfg.which_fifo_err.name();
 
         path1 = cfg.entropy_src_path_vif.fifo_err_path(fifo_base_path,
@@ -144,7 +144,7 @@ class entropy_src_err_vseq extends entropy_src_base_vseq;
         force_fifo_err(path1, path2, value1, value2, fld, 1'b1);
         cov_vif.cg_fifo_err_sample(cfg.which_fifo_err, cfg.which_fifo);
       end
-      sfifo_esrng_err_test, sfifo_observe_err_test, sfifo_esfinal_err_test,
+      sfifo_esrng_err_test, sfifo_distr_err_test, sfifo_observe_err_test, sfifo_esfinal_err_test,
       es_ack_sm_err_test, es_main_sm_err_test, es_cntr_err_test,
       fifo_read_err_test, fifo_state_err_test: begin
         // First turn off module_enable to write registers

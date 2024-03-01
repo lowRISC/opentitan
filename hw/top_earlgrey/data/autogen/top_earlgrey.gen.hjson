@@ -6758,6 +6758,14 @@
           name_top: EntropySrcEsFifoDepth
         }
         {
+          name: DistrFifoDepth
+          desc: Number of 32-bit entries in the distr FIFO
+          type: int unsigned
+          default: "2"
+          expose: "true"
+          name_top: EntropySrcDistrFifoDepth
+        }
+        {
           name: Stub
           desc: Stub out the core of entropy_src logic
           type: bit
