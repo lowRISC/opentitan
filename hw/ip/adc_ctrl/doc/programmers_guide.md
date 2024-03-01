@@ -45,13 +45,14 @@ The debug accessory voltage range of interest is shown in the diagram below:
 The ADC can be used to detect debug cable connection / disconnection in the non-overlapping regions.
 As an example use case of the two channel filters they can be used for detection of a USB-C debug accessory.
 The ADC must meet some minimum specifications:
-* Full scale range is 0.0V to 2.2V
-* If the signal is below 0.0V the ADC value will be zero.
-* If the signal is above 2.2V the ADC value will be maximum (i.e. same as 2.2V)
-* Absolute maximum error +/- 15 mV in the 0.25 - 0.45 V range
-* Absolute maximum error +/- 30 mV in the rest of the 0.0 - 2.2 V range
+* Full scale range must be 0.0V to 2.2V (note: the ADC in Earlgrey has a full range of 0.0V - 2.3V)
+* If the signal is below 0.0V the ADC value must be zero.
+* If the signal is above the full scale value, the ADC value must be maximum
+* Absolute maximum error must be +/- 15 mV in the 0.25 - 0.45 V range
+* Absolute maximum error must be +/- 30 mV in the rest of the 0.0 - 2.2 V range
 
 The following assumes:
+* Full scale range is 0.0V to 2.3V
 * The slow clock runs at 200kHz or 5 us.
 * The ADC requires 30 us to power on.
 * The ADC takes a single sample in 44 clocks (220 us)
@@ -62,18 +63,18 @@ The controller should be initialized with the properties of the ADC and scan tim
 * The number of samples to cause transition from slow to fast scan should be set in [`adc_lp_sample_ctl`](registers.md#adc_lp_sample_ctl) to `4` (causing slow scan to be 4*8ms = 32ms of debounce time).
 * The number of samples for debounce should be set in [`adc_sample_ctl`](registers.md#adc_sample_ctl) to `155` (causing the total debounce time to be 32ms (slow scan) + 220us * 2 * 155 = 100ms, at the low end of the USB-C spec window).
 
-* For the 10-bit ADC granularity, the filter registers [`adc_chnX_filter_ctlN`](registers.md#adc_chn0_filter_ctl) should be programmed to:
+* For the 10-bit ADC granularity, the filter registers [`adc_chnX_filter_ctlN`](registers.md#adc_chn0_filter_ctl) should be programmed to (assuming a 0.0V - 2.3V full range):
 
 | Filter | Ch0 Min      | Ch0 Max      | Ch1 Min      | Ch1 Max      | Device connected            |
 |--------|--------------|--------------|--------------|--------------|-----------------------------|
-| 0 IN   |  149 (0.32V) |  279 (0.60V) |  149 (0.32V) |  279 (0.60V) | Debug Sink (local RpUSB)    |
-| 1 IN   |  391 (0.84V) |  524 (1.125V)|  391 (0.84V) |  524 (1.125V)| Debug Sink (local Rp1.5A)   |
-| 2 IN   |  712 (1.53V) |  931 (2.00V) |  712 (1.53V) |  931 (2.00V) | Debug Sink (local Rp3A)     |
-| 3 IN   |  712 (1.53V) |  847 (1.82V) |  405 (0.87V) |  503 (1.08V) | Debug Source with RpUSB     |
-| 4 IN   |  349 (0.75V) |  512 (1.12V) |  186 (0.40V) |  279 (0.60V) | Debug Source with Rp1.5A    |
-| 5 IN   |  405 (0.87V) |  503 (1.08V) |  712 (1.53V) |  841 (1.82V) | Debug Source RpUSB Flipped  |
-| 6 IN   |  186 (0.40V) |  279 (0.60V) |  349 (0.75V) |  521 (1.12V) | Debug Source Rp1.5A Flipped |
-| 7 OUT  |  116 (0.25V) |  954 (2.05V) |  116 (0.25V) |  954 (2.05V) | Disconnect                  |
+| 0 IN   |  142 (0.32V) |  267 (0.60V) |  142 (0.32V) |  267 (0.60V) | Debug Sink (local RpUSB)    |
+| 1 IN   |  374 (0.84V) |  501 (1.125V)|  374 (0.84V) |  501 (1.125V)| Debug Sink (local Rp1.5A)   |
+| 2 IN   |  681 (1.53V) |  890 (2.00V) |  681 (1.53V) |  890 (2.00V) | Debug Sink (local Rp3A)     |
+| 3 IN   |  681 (1.53V) |  810 (1.82V) |  387 (0.87V) |  481 (1.08V) | Debug Source with RpUSB     |
+| 4 IN   |  334 (0.75V) |  499 (1.12V) |  178 (0.40V) |  267 (0.60V) | Debug Source with Rp1.5A    |
+| 5 IN   |  387 (0.87V) |  481 (1.08V) |  681 (1.53V) |  810 (1.82V) | Debug Source RpUSB Flipped  |
+| 6 IN   |  178 (0.40V) |  267 (0.60V) |  334 (0.75V) |  499 (1.12V) | Debug Source Rp1.5A Flipped |
+| 7 OUT  |  111 (0.25V) |  913 (2.05V) |  111 (0.25V) |  913 (2.05V) | Disconnect                  |
 
 
 * The interrupt [`adc_intr_ctl`](registers.md#adc_intr_ctl) and wakeup [`adc_wakeup_ctl`](registers.md#adc_wakeup_ctl) enables should be configured.
