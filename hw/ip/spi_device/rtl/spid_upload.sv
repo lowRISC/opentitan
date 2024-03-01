@@ -507,11 +507,6 @@ module spid_upload
   // Instance //
   //////////////
 
-  // ICEBOX(#18354): Merge two FIFOs into one.
-  // Design a module that has one SRAM Read port / one SRAM write port
-  // and compile-time configurable # of FIFO ports + N of SramBase Address
-  // (Preferrably variable width)
-
   // FIFO reset:
   // To maintain the pointer on read/ write side same, the FIFO uses
   // sys_rst_ni rather than rst_ni for the write port. The pointer is

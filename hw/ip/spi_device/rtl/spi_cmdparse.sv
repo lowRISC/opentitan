@@ -210,15 +210,6 @@ module spi_cmdparse
   end
 
   // cmd_info latch
-  // ICEBOX(#18354): This can be further optimized as follows:
-  // At 7th beat, check the opcode[7:1] with cmd_info[NumCmdInfo-1:0].opcode[7:1].
-  // Unless SW configures more than one cmd_info slots with same opcode,
-  // at most two slots match with the opcode[7:1].
-  // The two can be latched then at 8th beat, only the last bit of the opcode
-  // in the two cmd_info entries can be compared.
-  //
-  // It reduces the logic from 8bit compare with 24 logic depth into 1bit
-  // compare with 1 logic depth.
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       cmd_info_q <= '{
