@@ -15,7 +15,7 @@ RTL           | [CLKRST_CONNECTED][]           | Done        |
 RTL           | [IP_TOP][]                     | Done        |
 RTL           | [IP_INSTANTIABLE][]            | Done        |
 RTL           | [PHYSICAL_MACROS_DEFINED_80][] | Done        | `prim_ram_2p` is instantiated
-RTL           | [FUNC_IMPLEMENTED][]           | Done        | Firmware Operation Mode only
+RTL           | [FUNC_IMPLEMENTED][]           | Done        |
 RTL           | [ASSERT_KNOWN_ADDED][]         | Done        |
 Code Quality  | [LINT_SETUP][]                 | Done        |
 
@@ -38,8 +38,8 @@ Type          | Item                      | Resolution  | Note/Collaterals
 Documentation | [NEW_FEATURES][]          | Done        |
 Documentation | [BLOCK_DIAGRAM][]         | Done        |
 Documentation | [DOC_INTERFACE][]         | Done        |
-Documentation | [DOC_INTEGRATION_GUIDE][] | Waived      | This checklist item has been added retrospectively.
-Documentation | [MISSING_FUNC][]          | N/A         |
+Documentation | [DOC_INTEGRATION_GUIDE][] | Done        |
+Documentation | [MISSING_FUNC][]          | Done        | TPM write response compliance waived for this version.
 Documentation | [FEATURE_FROZEN][]        | Done        |
 RTL           | [FEATURE_COMPLETE][]      | Done        |
 RTL           | [PORT_FROZEN][]           | Done        |
