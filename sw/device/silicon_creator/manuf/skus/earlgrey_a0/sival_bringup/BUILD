@@ -201,6 +201,7 @@ filegroup(
     name = "sram_ft_individualize_all",
     testonly = True,
     srcs = [
+        ":sram_ft_individualize_proda",
         ":sram_ft_individualize_prodc",
         ":sram_ft_individualize_sival",
         ":sram_ft_individualize_sival_bringup",
