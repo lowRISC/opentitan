@@ -1158,7 +1158,6 @@
         }
       ]
     }
-
     { name: "wake_control",
       desc: "USB wake module control for suspend / resume",
       swaccess: "wo",
@@ -1197,7 +1196,6 @@
         },
       ]
     }
-
     { name: "wake_events",
       desc: "USB wake module events and debug",
       swaccess: "ro",
@@ -1230,7 +1228,49 @@
         }
       ]
     }
-
+    { name: "fifo_ctrl",
+      desc: "FIFO control register",
+      swaccess: "wo",
+      hwaccess: "hro",
+      fields: [
+        {
+          bits: "0",
+          resval: "0",
+          name: "avout_rst",
+          desc: '''
+                Software reset of the Available OUT Buffer FIFO. This must be used only when the USB device
+                is not connected to the USB.
+                '''
+          hwqe: "true"
+          tags: [// Prevent interaction with the Av OUT FIFO state indicators.
+                 "excl:CsrNonInitTests:CsrExclWrite"]
+        }
+        {
+          bits: "1",
+          resval: "0",
+          name: "avsetup_rst",
+          desc: '''
+                Software reset of the Available SETUP Buffer FIFO. This must be used only when the USB device
+                is not connected to the USB.
+                '''
+          hwqe: "true"
+          tags: [// Prevent interaction with the Av SETUP FIFO state indicators.
+                 "excl:CsrNonInitTests:CsrExclWrite"]
+        }
+        {
+          bits: "2",
+          resval: "0",
+          name: "rx_rst",
+          desc: '''
+                Software reset the of Rx Buffer FIFO. This must be used only when the USB device is not
+                connected to the USB.
+                '''
+          hwqe: "true"
+          tags: [// Prevent interaction with the Rx FIFO state indicators.
+                 "excl:CsrNonInitTests:CsrExclWrite"]
+        }
+      ]
+    }
     { window: {
         name: "buffer",
         items: "512",

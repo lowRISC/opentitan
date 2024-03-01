@@ -59,9 +59,9 @@ module usbdev_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [37:0] reg_we_check;
+  logic [38:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(38)
+    .OneHotWidth(39)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -705,6 +705,10 @@ module usbdev_reg_top (
   logic wake_control_busy;
   logic [9:0] wake_events_qs;
   logic wake_events_busy;
+  logic fifo_ctrl_we;
+  logic fifo_ctrl_avout_rst_wd;
+  logic fifo_ctrl_avsetup_rst_wd;
+  logic fifo_ctrl_rx_rst_wd;
   // Define register CDC handling.
   // CDC handling is done on a per-reg instead of per-field boundary.
 
@@ -7813,8 +7817,105 @@ module usbdev_reg_top (
   );
 
 
+  // R[fifo_ctrl]: V(False)
+  logic fifo_ctrl_qe;
+  logic [2:0] fifo_ctrl_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_fifo_ctrl0_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&fifo_ctrl_flds_we),
+    .q_o(fifo_ctrl_qe)
+  );
+  //   F[avout_rst]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_fifo_ctrl_avout_rst (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-  logic [37:0] addr_hit;
+    // from register interface
+    .we     (fifo_ctrl_we),
+    .wd     (fifo_ctrl_avout_rst_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (fifo_ctrl_flds_we[0]),
+    .q      (reg2hw.fifo_ctrl.avout_rst.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     ()
+  );
+  assign reg2hw.fifo_ctrl.avout_rst.qe = fifo_ctrl_qe;
+
+  //   F[avsetup_rst]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_fifo_ctrl_avsetup_rst (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (fifo_ctrl_we),
+    .wd     (fifo_ctrl_avsetup_rst_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (fifo_ctrl_flds_we[1]),
+    .q      (reg2hw.fifo_ctrl.avsetup_rst.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     ()
+  );
+  assign reg2hw.fifo_ctrl.avsetup_rst.qe = fifo_ctrl_qe;
+
+  //   F[rx_rst]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_fifo_ctrl_rx_rst (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (fifo_ctrl_we),
+    .wd     (fifo_ctrl_rx_rst_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (fifo_ctrl_flds_we[2]),
+    .q      (reg2hw.fifo_ctrl.rx_rst.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     ()
+  );
+  assign reg2hw.fifo_ctrl.rx_rst.qe = fifo_ctrl_qe;
+
+
+
+  logic [38:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == USBDEV_INTR_STATE_OFFSET);
@@ -7855,6 +7956,7 @@ module usbdev_reg_top (
     addr_hit[35] = (reg_addr == USBDEV_PHY_CONFIG_OFFSET);
     addr_hit[36] = (reg_addr == USBDEV_WAKE_CONTROL_OFFSET);
     addr_hit[37] = (reg_addr == USBDEV_WAKE_EVENTS_OFFSET);
+    addr_hit[38] = (reg_addr == USBDEV_FIFO_CTRL_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -7899,7 +8001,8 @@ module usbdev_reg_top (
                (addr_hit[34] & (|(USBDEV_PERMIT[34] & ~reg_be))) |
                (addr_hit[35] & (|(USBDEV_PERMIT[35] & ~reg_be))) |
                (addr_hit[36] & (|(USBDEV_PERMIT[36] & ~reg_be))) |
-               (addr_hit[37] & (|(USBDEV_PERMIT[37] & ~reg_be)))));
+               (addr_hit[37] & (|(USBDEV_PERMIT[37] & ~reg_be))) |
+               (addr_hit[38] & (|(USBDEV_PERMIT[38] & ~reg_be)))));
   end
 
   // Generate write-enables
@@ -8428,6 +8531,13 @@ module usbdev_reg_top (
   assign wake_control_we = addr_hit[36] & reg_we & !reg_error;
 
 
+  assign fifo_ctrl_we = addr_hit[38] & reg_we & !reg_error;
+
+  assign fifo_ctrl_avout_rst_wd = reg_wdata[0];
+
+  assign fifo_ctrl_avsetup_rst_wd = reg_wdata[1];
+
+  assign fifo_ctrl_rx_rst_wd = reg_wdata[2];
 
   // Assign write-enables to checker logic vector.
   always_comb begin
@@ -8470,6 +8580,7 @@ module usbdev_reg_top (
     reg_we_check[35] = phy_config_we;
     reg_we_check[36] = wake_control_we;
     reg_we_check[37] = 1'b0;
+    reg_we_check[38] = fifo_ctrl_we;
   end
 
   // Read data return
@@ -8860,6 +8971,12 @@ module usbdev_reg_top (
       addr_hit[37]: begin
         reg_rdata_next = DW'(wake_events_qs);
       end
+      addr_hit[38]: begin
+        reg_rdata_next[0] = '0;
+        reg_rdata_next[1] = '0;
+        reg_rdata_next[2] = '0;
+      end
+
       default: begin
         reg_rdata_next = '1;
       end
