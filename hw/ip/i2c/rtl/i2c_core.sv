@@ -5,9 +5,7 @@
 // Description: I2C core module
 
 module i2c_core import i2c_pkg::*;
-#(
-  parameter int                    FifoDepth = 64
-) (
+(
   input                            clk_i,
   input                            rst_ni,
 
@@ -35,6 +33,8 @@ module i2c_core import i2c_pkg::*;
   output logic                     intr_unexp_stop_o,
   output logic                     intr_host_timeout_o
 );
+
+  import i2c_reg_pkg::FifoDepth;
 
   // Number of bits required to represent the FIFO level/depth.
   localparam int unsigned FifoDepthW = $clog2(FifoDepth + 1);
