@@ -24,11 +24,11 @@ use opentitanlib::test_utils::load_sram_program::{
 };
 use opentitanlib::test_utils::rpc::{UartRecv, UartSend};
 use opentitanlib::uart::console::UartConsole;
-use ot_certs::template::{self, EcdsaSignature, Signature, Value};
+use ot_certs::template::{EcdsaSignature, Signature, Value};
 use ot_certs::x509::{generate_certificate_from_tbs, parse_certificate};
 use ujson_lib::provisioning_data::{
-    EccP256PublicKey, ManufCertPersoDataIn, ManufCertPersoDataOut, ManufFtIndividualizeData,
-    ManufRmaTokenPersoDataIn, ManufRmaTokenPersoDataOut,
+    EccP256PublicKey, ManufCertPersoDataIn, ManufCertPersoDataOut, ManufEndorsedCerts,
+    ManufFtIndividualizeData, ManufRmaTokenPersoDataIn, ManufRmaTokenPersoDataOut,
 };
 
 pub fn test_unlock(
@@ -246,7 +246,7 @@ pub fn run_ft_personalize(
     let certs = ManufCertPersoDataOut::recv(&*uart, timeout, true)?;
 
     // Extract certificate byte vectors and trim unused bytes.
-    let uds_cert_bytes: Vec<u8> = certs
+    let uds_tbs_cert_bytes: Vec<u8> = certs
         .uds_tbs_certificate
         .clone()
         .into_iter()
@@ -265,21 +265,29 @@ pub fn run_ft_personalize(
         .take(certs.cdi_1_certificate_size)
         .collect();
 
-    // Check the certificates are parsable with OpenSSL.
+    // Log certificates to console and check they are parsable with OpenSSL.
     let cert_endorsement_sk = SecretKey::<NistP256>::read_pkcs8_der_file(cert_endorsement_ecc_sk)?;
-    let _uds_cert = parse_and_endorse_uds_cert(uds_cert_bytes, &cert_endorsement_sk)?;
+    let uds_cert_bytes = parse_and_endorse_uds_cert(uds_tbs_cert_bytes, &cert_endorsement_sk)?;
+    log::info!("UDS Cert: {}", hex::encode(uds_cert_bytes.clone()));
+    log::info!("CDI_0 Cert: {}", hex::encode(cdi_0_cert_bytes.clone()));
+    log::info!("CDI_1 Cert: {}", hex::encode(cdi_1_cert_bytes.clone()));
+    let _uds_cert = parse_certificate(&uds_cert_bytes)?;
     let _cdi_0_cert = parse_certificate(&cdi_0_cert_bytes)?;
     let _cdi_1_cert = parse_certificate(&cdi_1_cert_bytes)?;
 
-    let _ = UartConsole::wait_for(&*uart, r"PASS.*\n", timeout)?;
+    // Send endorsed certificates back to the device.
+    let endorsed_certs = ManufEndorsedCerts {
+        uds_certificate: uds_cert_bytes.clone().into_iter().collect(),
+        uds_certificate_size: uds_cert_bytes.len(),
+    };
+    let _ = UartConsole::wait_for(&*uart, r"Importing certificates ...", timeout)?;
+    endorsed_certs.send(&*uart)?;
+    let _ = UartConsole::wait_for(&*uart, r"Imported UDS certificate", timeout)?;
 
     Ok(())
 }
 
-fn parse_and_endorse_uds_cert(
-    tbs: Vec<u8>,
-    ca_sk: &SecretKey<NistP256>,
-) -> Result<template::Certificate> {
+fn parse_and_endorse_uds_cert(tbs: Vec<u8>, ca_sk: &SecretKey<NistP256>) -> Result<Vec<u8>> {
     // Hash and sign the TBS.
     let tbs_digest = sha256(&tbs);
     let signing_key = SigningKey::from(ca_sk);
@@ -295,6 +303,5 @@ fn parse_and_endorse_uds_cert(
     };
 
     // Generate the (endorsed) UDS certificate.
-    let uds_cert_bytes = generate_certificate_from_tbs(tbs, &signature)?;
-    parse_certificate(&uds_cert_bytes)
+    generate_certificate_from_tbs(tbs, &signature)
 }
