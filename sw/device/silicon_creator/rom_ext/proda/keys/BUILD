@@ -49,8 +49,8 @@ keyset(
     name = "keyset",
     build_setting_default = "",
     keys = {
-        "earlgrey_z1_prodc_1.der": "earlgrey_z1_prodc_1",
+        "earlgrey_z1_proda_1.der": "earlgrey_z1_proda_1",
     },
-    profile = "earlgrey_z1_prodc",
+    profile = "earlgrey_z1_proda",
     tool = "//signing:token",
 )
