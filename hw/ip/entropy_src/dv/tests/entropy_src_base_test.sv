@@ -32,7 +32,7 @@ class entropy_src_base_test extends cip_base_test #(
     bit xht_only_default_rsp;
     if ($value$plusargs("rng_max_delay=%0d", rng_max_delay)) begin
       `uvm_info(`gfn, $sformatf("+rng_max_delay specified"), UVM_MEDIUM)
-      cfg.m_rng_agent_cfg.host_delay_max = rng_max_delay;
+      cfg.rng_max_delay = rng_max_delay;
     end
     if ($value$plusargs("xht_only_default_rsp=%0b", xht_only_default_rsp)) begin
       `uvm_info(`gfn, $sformatf("+xht_only_default_rsp specified"), UVM_MEDIUM)
