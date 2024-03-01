@@ -134,6 +134,18 @@ UJSON_SERDE_STRUCT(ManufCertPersoDataOut, \
                    STRUCT_MANUF_CERT_PERSO_DATA_OUT);
 // clang-format on
 
+/**
+ * Endorsed certificates imported during device personalization.
+ */
+// clang-format off
+#define STRUCT_MANUF_ENDORSED_CERTS(field, string) \
+    field(uds_certificate, uint8_t, 596) \
+    field(uds_certificate_size, size_t)
+UJSON_SERDE_STRUCT(ManufEndorsedCerts, \
+                   manuf_endorsed_certs_t, \
+                   STRUCT_MANUF_ENDORSED_CERTS);
+// clang-format on
+
 #undef MODULE_ID
 // clang-format on
 
