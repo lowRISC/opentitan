@@ -455,7 +455,19 @@ class cip_base_vseq #(
         uvm_reg_data_t exp_val = `gmv(intr_csrs[i]);
         uvm_reg_data_t act_val;
 
+        interrupt_t irq_ro_mask = '0;
+
+        // Status type interrupts have RO fields in intr_state, so mask those bits off here as they
+        // can't be generically predicted for all IPs.
+        if (!uvm_re_match("intr_state*", intr_csrs[i].get_name())) begin
+          irq_ro_mask = intr_csrs[i].get_ro_mask();
+        end
+
+        exp_val &= ~irq_ro_mask;
+
         csr_rd(.ptr(intr_csrs[i]), .value(act_val));
+        act_val &= ~irq_ro_mask;
+
         if (cfg.under_reset) continue;
         `uvm_info(`gfn, $sformatf("Read %s: 0x%0h", intr_csrs[i].`gfn, act_val), UVM_MEDIUM)
         `DV_CHECK_EQ(exp_val, act_val, {"when reading the intr CSR", intr_csrs[i].`gfn})
