@@ -57,7 +57,7 @@ class flash_ctrl_mp_regions_vseq extends flash_ctrl_base_vseq;
   constraint flash_op_c {
     flash_op.op inside {FlashOpRead, FlashOpProgram, FlashOpErase};
     flash_op.addr inside {[0 : FlashSizeBytes - 1]};
-
+    flash_op.otf_addr == flash_op.addr[OTFHostId-1:0];
     // Bank erase is supported only for data & 1st info partitions
     flash_op.partition != FlashPartData && flash_op.partition != FlashPartInfo ->
     flash_op.erase_type == flash_ctrl_pkg::FlashErasePage;
