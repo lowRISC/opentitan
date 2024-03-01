@@ -70,26 +70,6 @@ bool entropy_src_fifo_has_overflowed(void) {
 }
 
 /**
- * Drain observe FIFO and clear overflow status if set.
- */
-static void drain_observe_fifo(void) {
-  // This value is arbitrary, it could be 1 but since there is some
-  // overhead in dif_entropy_src_observe_fifo_nonblocking_read, it's better
-  // to read several words every time to drain the FIFO quickly.
-  const size_t kDrainCount = 32;
-  size_t len;
-  // Read from the FIFO until we get a short read which means that the FIFO was
-  // emptied.
-  LOG_INFO("drain observe FIFO overflow...");
-  do {
-    len = kDrainCount;
-    CHECK_DIF_OK(dif_entropy_src_observe_fifo_nonblocking_read(&entropy_src,
-                                                               NULL, &len));
-  } while (len == kDrainCount);
-  CHECK_DIF_OK(dif_entropy_src_clear_fifo_overflow(&entropy_src));
-}
-
-/**
  * Let observe FIFO overflow.
  */
 static status_t let_observe_fifo_overflow(uint32_t timeout_usec) {
@@ -107,20 +87,9 @@ static status_t entropy_config(
       edn_testutils_auto_params_build(false, /*res_itval=*/0, /*glen_val=*/0);
   // Disable the entropy complex.
   TRY(entropy_testutils_stop_all());
-
   // Disable all health tests.
-  static dif_entropy_src_test_t kHealthTest[] = {
-      kDifEntropySrcTestRepetitionCount,
-      kDifEntropySrcTestRepetitionCountSymbol,
-      kDifEntropySrcTestAdaptiveProportion, kDifEntropySrcTestBucket,
-      kDifEntropySrcTestMarkov};
-  for (size_t i = 0; i < ARRAYSIZE(kHealthTest); i++) {
-    TRY(dif_entropy_src_health_test_configure(
-        &entropy_src,
-        (dif_entropy_src_health_test_config_t){.test_type = kHealthTest[i],
-                                               .high_threshold = 0xffffffff,
-                                               .low_threshold = 0}));
-  }
+  TRY(entropy_testutils_disable_health_tests(&entropy_src));
+
   // Enable FW override.
   TRY(dif_entropy_src_fw_override_configure(
       &entropy_src,
@@ -173,7 +142,8 @@ status_t firmware_override_observe(
     uint32_t words_to_read = nr_sample_words;
     uint32_t *sample_buffer_ptr = sample_buffer;
     // Drain FIFO to make sure we get contiguous samples.
-    drain_observe_fifo();
+    LOG_INFO("drain observe FIFO overflow...");
+    TRY(entropy_testutils_drain_observe_fifo(&entropy_src));
     // Collect.
     ibex_timeout_t tmo = ibex_timeout_init(timeout_usec);
     while (words_to_read > 0 && !ibex_timeout_check(&tmo)) {
