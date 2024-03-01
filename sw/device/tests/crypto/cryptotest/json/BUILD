@@ -19,6 +19,13 @@ cc_library(
 )
 
 cc_library(
+    name = "drbg_commands",
+    srcs = ["drbg_commands.c"],
+    hdrs = ["drbg_commands.h"],
+    deps = ["//sw/device/lib/ujson"],
+)
+
+cc_library(
     name = "ecdsa_commands",
     srcs = ["ecdsa_commands.c"],
     hdrs = ["ecdsa_commands.h"],
