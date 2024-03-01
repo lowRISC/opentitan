@@ -257,7 +257,7 @@ status_t i2c_testutils_target_check_end(const dif_i2c_t *i2c,
   return OK_STATUS(true);
 }
 
-status_t i2c_testutils_target_read(const dif_i2c_t *i2c, uint8_t byte_count,
+status_t i2c_testutils_target_read(const dif_i2c_t *i2c, uint16_t byte_count,
                                    const uint8_t *data) {
   dif_i2c_level_t tx_fifo_lvl, acq_fifo_lvl;
   TRY(dif_i2c_get_fifo_levels(i2c, NULL, NULL, &tx_fifo_lvl, &acq_fifo_lvl));
@@ -265,7 +265,7 @@ status_t i2c_testutils_target_read(const dif_i2c_t *i2c, uint8_t byte_count,
   TRY_CHECK(tx_fifo_lvl + byte_count <= I2C_PARAM_FIFO_DEPTH);
   TRY_CHECK(acq_fifo_lvl + 2 <= I2C_PARAM_FIFO_DEPTH);
 
-  for (uint8_t i = 0; i < byte_count; ++i) {
+  for (uint16_t i = 0; i < byte_count; ++i) {
     TRY(dif_i2c_transmit_byte(i2c, data[i]));
   }
   // TODO: Check for errors / status.
@@ -280,7 +280,7 @@ status_t i2c_testutils_target_check_read(const dif_i2c_t *i2c, uint8_t *addr,
   return i2c_testutils_target_check_end(i2c, cont_byte);
 }
 
-status_t i2c_testutils_target_write(const dif_i2c_t *i2c, uint8_t byte_count) {
+status_t i2c_testutils_target_write(const dif_i2c_t *i2c, uint16_t byte_count) {
   dif_i2c_level_t acq_fifo_lvl;
   TRY(dif_i2c_get_fifo_levels(i2c, NULL, NULL, NULL, &acq_fifo_lvl));
   TRY_CHECK(acq_fifo_lvl + 2 + byte_count <= I2C_PARAM_FIFO_DEPTH);
@@ -290,7 +290,7 @@ status_t i2c_testutils_target_write(const dif_i2c_t *i2c, uint8_t byte_count) {
 }
 
 status_t i2c_testutils_target_check_write(const dif_i2c_t *i2c,
-                                          uint8_t byte_count, uint8_t *addr,
+                                          uint16_t byte_count, uint8_t *addr,
                                           uint8_t *bytes, uint8_t *cont_byte) {
   dif_i2c_level_t acq_fifo_lvl;
   TRY(dif_i2c_get_fifo_levels(i2c, NULL, NULL, NULL, &acq_fifo_lvl));
@@ -299,7 +299,7 @@ status_t i2c_testutils_target_check_write(const dif_i2c_t *i2c,
   int32_t dir = TRY(i2c_testutils_target_check_start(i2c, addr));
   TRY_CHECK(dir == kI2cWrite);
 
-  for (uint8_t i = 0; i < byte_count; ++i) {
+  for (uint16_t i = 0; i < byte_count; ++i) {
     dif_i2c_signal_t signal;
     TRY(dif_i2c_acquire_byte(i2c, bytes + i, &signal));
     TRY_CHECK(signal == kDifI2cSignalNone);
