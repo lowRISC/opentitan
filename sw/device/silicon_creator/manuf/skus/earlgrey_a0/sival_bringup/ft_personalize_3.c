@@ -48,6 +48,7 @@ static manuf_cert_perso_data_out_t out_data = {
     .cdi_1_certificate = {0},
     .cdi_1_certificate_size = kCdi1MaxCertSizeBytes,
 };
+static manuf_endorsed_certs_t endorsed_certs;
 
 static const flash_ctrl_perms_t kCertificateFlashInfoPerms = {
     .read = kMultiBitBool4True,
@@ -138,7 +139,19 @@ static status_t personalize(ujson_t *uj) {
   LOG_INFO("Exporting certificates ...");
   RESP_OK(ujson_serialize_manuf_cert_perso_data_out_t, uj, &out_data);
 
-  // TODO(#19455): Load endorsed UDS certificate and write it to flash.
+  // Import endorsed certificates from the provisioning appliance.
+  LOG_INFO("Importing certificates ...");
+  TRY(ujson_deserialize_manuf_endorsed_certs_t(uj, &endorsed_certs));
+
+  // Write the endorsed UDS certificate to flash and ack to host.
+  TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageUdsCertificate,
+                            kFlashCtrlEraseTypePage));
+  TRY(flash_ctrl_info_write(
+      &kFlashCtrlInfoPageUdsCertificate,
+      kFlashInfoFieldUdsCertificate.byte_offset,
+      endorsed_certs.uds_certificate_size / sizeof(uint32_t),
+      endorsed_certs.uds_certificate));
+  LOG_INFO("Imported UDS certificate.");
 
   return OK_STATUS();
 }
