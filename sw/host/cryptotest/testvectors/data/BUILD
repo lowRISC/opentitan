@@ -6,6 +6,45 @@ load("@bazel_skylib//rules:run_binary.bzl", "run_binary")
 
 package(default_visibility = ["//visibility:public"])
 
+# Strip the inner layer of the DRBG repository, which is a zip of zips
+genrule(
+    name = "nist_cavp_drbg_sp_800_90a_reseed",
+    srcs = ["@nist_cavp_drbg_sp_800_90a_root//:drbgvectors_pr_false.zip"],
+    outs = [":CTR_DRBG_RESEED.rsp"],
+    cmd = "unzip -p $(location @nist_cavp_drbg_sp_800_90a_root//:drbgvectors_pr_false.zip) CTR_DRBG.rsp > $(location :CTR_DRBG_RESEED.rsp)",
+)
+
+genrule(
+    name = "nist_cavp_drbg_sp_800_90a_no_reseed",
+    srcs = ["@nist_cavp_drbg_sp_800_90a_root//:drbgvectors_no_reseed.zip"],
+    outs = [":CTR_DRBG_NO_RESEED.rsp"],
+    cmd = "unzip -p $(location @nist_cavp_drbg_sp_800_90a_root//:drbgvectors_no_reseed.zip) CTR_DRBG.rsp > $(location :CTR_DRBG_NO_RESEED.rsp)",
+)
+
+[
+    run_binary(
+        name = "nist_cavp_drbg_sp_800_90a_{}_json".format(mode),
+        srcs = [
+            ":CTR_DRBG_{}.rsp".format(mode.upper()),
+            "//sw/host/cryptotest/testvectors/data/schemas:drbg_schema.json",
+        ],
+        outs = [":nist_cavp_drbg_sp_800_90a_{}.json".format(mode)],
+        args = [
+            "--src",
+            "$(location :CTR_DRBG_{}.rsp)".format(mode.upper()),
+            "--dst",
+            "$(location :nist_cavp_drbg_sp_800_90a_{}.json)".format(mode),
+            "--schema",
+            "$(location //sw/host/cryptotest/testvectors/data/schemas:drbg_schema.json)",
+        ] + (["--reseed"] if reseed else []),
+        tool = "//sw/host/cryptotest/testvectors/parsers:nist_cavp_drbg_parser",
+    )
+    for mode, reseed in [
+        ("reseed", True),
+        ("no_reseed", False),
+    ]
+]
+
 run_binary(
     name = "nist_cavp_ecdsa_fips_186_4_sig_ver_json",
     srcs = [
