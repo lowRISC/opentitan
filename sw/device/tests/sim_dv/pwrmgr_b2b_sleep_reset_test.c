@@ -29,8 +29,8 @@
 
    'kNumRound' is set to 10 by sv sequence (chip_sw_repeat_reset_wkup_vseq.sv)
 
-   For the reset event, the sequence assert power on resest by driving POR_N
-   PAD. For the wake up event, the seqeunce assert power button in by driving
+   For the reset event, the sequence assert power on resets by driving POR_N
+   PAD. For the wake up event, the sequence assert power button in by driving
    IOR13 PAD.
 
  */

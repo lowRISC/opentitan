@@ -115,7 +115,8 @@ bool test_main(void) {
       LOG_INFO("Last Booting");
       return true;
     default:
-      LOG_INFO("Booting for undefined case %0d", reset_case);
+      LOG_INFO("Booting for undefined case %d, reset_info 0x%x", reset_case,
+               rst_info);
   }
 
   return false;

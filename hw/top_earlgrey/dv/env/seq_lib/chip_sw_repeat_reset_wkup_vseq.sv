@@ -40,7 +40,7 @@ class chip_sw_repeat_reset_wkup_vseq extends chip_sw_base_vseq;
                                 i, input_type.name(), add_cycle, reset_delay), UVM_MEDIUM)
 
       if (input_type == TEST_WKUP) begin
-        // wakup is sync with slow clock.
+        // wakeup is sync with slow clock.
         // We can't align edge with fsm state (main_clk)
         execute_wakeup();
       end else if (input_type == TEST_RST) begin
@@ -54,7 +54,7 @@ class chip_sw_repeat_reset_wkup_vseq extends chip_sw_base_vseq;
         join
       end
 
-      // after reset / wakep, waitfor reboot
+      // after reset / wakep, wait for reboot
       // before test goes to the next round
       `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInBootRom)
       `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest)
