@@ -158,3 +158,29 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
     },
 )
+
+DRBG_TESTVECTOR_TARGETS = [
+    "//sw/host/cryptotest/testvectors/data:nist_cavp_drbg_sp_800_90a_reseed_json",
+    "//sw/host/cryptotest/testvectors/data:nist_cavp_drbg_sp_800_90a_no_reseed_json",
+]
+
+DRBG_TESTVECTOR_ARGS = " ".join([
+    "--drbg-json=\"$(rootpath {})\"".format(target)
+    for target in DRBG_TESTVECTOR_TARGETS
+])
+
+opentitan_test(
+    name = "drbg_kat",
+    cw310 = cw310_params(
+        timeout = "long",
+        binaries = {"//sw/device/tests/crypto/cryptotest/firmware:firmware": "firmware"},
+        data = DRBG_TESTVECTOR_TARGETS,
+        test_cmd = """
+                --bootstrap={firmware}
+            """ + DRBG_TESTVECTOR_ARGS,
+        test_harness = "//sw/host/tests/crypto/drbg_kat:harness",
+    ),
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+    },
+)
