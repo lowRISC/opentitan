@@ -43,6 +43,7 @@
 | usbdev.[`phy_config`](#phy_config)           | 0x8c     |        4 | USB PHY Configuration                                                      |
 | usbdev.[`wake_control`](#wake_control)       | 0x90     |        4 | USB wake module control for suspend / resume                               |
 | usbdev.[`wake_events`](#wake_events)         | 0x94     |        4 | USB wake module events and debug                                           |
+| usbdev.[`fifo_ctrl`](#fifo_ctrl)             | 0x98     |        4 | FIFO control register                                                      |
 | usbdev.[`buffer`](#buffer)                   | 0x800    |     2048 | 2 kB packet buffer. Divided into 32 64-byte buffers.                       |
 
 ## INTR_STATE
@@ -1332,6 +1333,25 @@ USB wake module events and debug
 |   8    |   ro   |   0x0   | disconnected  | USB aon wake module detected VBUS was interrupted while monitoring events.     |
 |  7:1   |        |         |               | Reserved                                                                       |
 |   0    |   ro   |   0x0   | module_active | USB aon wake module is active, monitoring events and controlling the pull-ups. |
+
+## fifo_ctrl
+FIFO control register
+- Offset: `0x98`
+- Reset default: `0x0`
+- Reset mask: `0x7`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "avout_rst", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "avsetup_rst", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "rx_rst", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 29}], "config": {"lanes": 1, "fontsize": 10, "vspace": 130}}
+```
+
+|  Bits  |  Type  |  Reset  | Name        | Description                                                                                                                |
+|:------:|:------:|:-------:|:------------|:---------------------------------------------------------------------------------------------------------------------------|
+|  31:3  |        |         |             | Reserved                                                                                                                   |
+|   2    |   wo   |   0x0   | rx_rst      | Software reset the of Rx Buffer FIFO. This must be used only when the USB device is not connected to the USB.              |
+|   1    |   wo   |   0x0   | avsetup_rst | Software reset of the Available SETUP Buffer FIFO. This must be used only when the USB device is not connected to the USB. |
+|   0    |   wo   |   0x0   | avout_rst   | Software reset of the Available OUT Buffer FIFO. This must be used only when the USB device is not connected to the USB.   |
 
 ## buffer
 2 kB packet buffer. Divided into 32 64-byte buffers.

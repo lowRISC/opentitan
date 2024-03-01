@@ -223,11 +223,14 @@ module usbdev
   // Receive interface fifos //
   /////////////////////////////
 
+  logic              avsetup_fifo_rst;
   logic              avsetup_fifo_wready;
+  logic              avout_fifo_rst;
   logic              avout_fifo_wready;
   logic              event_pkt_received;
   logic              avsetup_rvalid, avsetup_rready;
   logic              avout_rvalid, avout_rready;
+  logic              rx_fifo_rst;
   logic              rx_wvalid, rx_wready;
   logic              rx_wready_setup, rx_wready_out;
   logic              rx_fifo_rvalid;
@@ -238,6 +241,11 @@ module usbdev
   logic [RXFifoWidth - 1:0] rx_wdata, rx_rdata;
 
   logic [NEndpoints-1:0] clear_rxenable_out;
+
+  // Software reset signals
+  assign avsetup_fifo_rst = reg2hw.fifo_ctrl.avsetup_rst.qe & reg2hw.fifo_ctrl.avsetup_rst.q;
+  assign avout_fifo_rst = reg2hw.fifo_ctrl.avout_rst.qe & reg2hw.fifo_ctrl.avout_rst.q;
+  assign rx_fifo_rst = reg2hw.fifo_ctrl.rx_rst.qe & reg2hw.fifo_ctrl.rx_rst.q;
 
   // Separate 'FIFO empty' interrupts for the OUT and SETUP FIFOs because each interrupt cannot be
   // cleared without writing a buffer into the FIFO
@@ -257,7 +265,7 @@ module usbdev
   ) usbdev_avsetupfifo (
     .clk_i,
     .rst_ni    (rst_n),
-    .clr_i     (1'b0),
+    .clr_i     (avsetup_fifo_rst),
 
     .wvalid_i  (reg2hw.avsetupbuffer.qe),
     .wready_o  (avsetup_fifo_wready),
@@ -280,7 +288,7 @@ module usbdev
   ) usbdev_avoutfifo (
     .clk_i,
     .rst_ni    (rst_n),
-    .clr_i     (1'b0),
+    .clr_i     (avout_fifo_rst),
 
     .wvalid_i  (reg2hw.avoutbuffer.qe),
     .wready_o  (avout_fifo_wready),
@@ -316,7 +324,7 @@ module usbdev
   ) usbdev_rxfifo (
     .clk_i,
     .rst_ni    (rst_n),
-    .clr_i     (1'b0),
+    .clr_i     (rx_fifo_rst),
 
     .wvalid_i  (rx_wvalid),
     .wready_o  (rx_wready),
