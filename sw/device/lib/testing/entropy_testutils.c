@@ -195,6 +195,22 @@ status_t entropy_testutils_wait_for_state(const dif_entropy_src_t *entropy_src,
   return OK_STATUS();
 }
 
+status_t entropy_testutils_drain_observe_fifo(dif_entropy_src_t *entropy_src) {
+  // This value is arbitrary, it could be 1 but since there is some
+  // overhead in dif_entropy_src_observe_fifo_nonblocking_read, it's better
+  // to read several words every time to drain the FIFO quickly.
+  const size_t kDrainCount = 32;
+  size_t len;
+  // Read from the FIFO until we get a short read which means that the FIFO was
+  // emptied.
+  do {
+    len = kDrainCount;
+    TRY(dif_entropy_src_observe_fifo_nonblocking_read(entropy_src, NULL, &len));
+  } while (len == kDrainCount);
+
+  return OK_STATUS();
+}
+
 status_t entropy_testutils_stop_all(void) {
   const dif_entropy_src_t entropy_src = {
       .base_addr = mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR)};
@@ -209,6 +225,24 @@ status_t entropy_testutils_stop_all(void) {
   TRY(dif_edn_stop(&edn1));
   TRY(dif_csrng_stop(&csrng));
   TRY(dif_entropy_src_stop(&entropy_src));
+  return OK_STATUS();
+}
+
+status_t entropy_testutils_disable_health_tests(
+    dif_entropy_src_t *entropy_src) {
+  static dif_entropy_src_test_t kHealthTest[] = {
+      kDifEntropySrcTestRepetitionCount,
+      kDifEntropySrcTestRepetitionCountSymbol,
+      kDifEntropySrcTestAdaptiveProportion, kDifEntropySrcTestBucket,
+      kDifEntropySrcTestMarkov};
+  for (size_t i = 0; i < ARRAYSIZE(kHealthTest); i++) {
+    TRY(dif_entropy_src_health_test_configure(
+        entropy_src,
+        (dif_entropy_src_health_test_config_t){.test_type = kHealthTest[i],
+                                               .high_threshold = 0xffffffff,
+                                               .low_threshold = 0}));
+  }
+
   return OK_STATUS();
 }
 
