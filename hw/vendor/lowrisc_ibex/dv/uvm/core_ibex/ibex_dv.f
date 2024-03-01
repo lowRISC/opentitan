@@ -21,6 +21,7 @@
 ${PRJ_DIR}/dv/uvm/core_ibex/common/prim/prim_pkg.sv
 ${LOWRISC_IP_DIR}/ip/prim/rtl/prim_assert.sv
 ${LOWRISC_IP_DIR}/ip/prim/rtl/prim_util_pkg.sv
+${LOWRISC_IP_DIR}/ip/prim/rtl/prim_count.sv
 ${LOWRISC_IP_DIR}/ip/prim/rtl/prim_secded_pkg.sv
 ${LOWRISC_IP_DIR}/ip/prim/rtl/prim_secded_22_16_dec.sv
 ${LOWRISC_IP_DIR}/ip/prim/rtl/prim_secded_22_16_enc.sv

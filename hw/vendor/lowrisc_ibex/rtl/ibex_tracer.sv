@@ -136,10 +136,10 @@ module ibex_tracer (
     if ((data_accessed & MEM) != 0) begin
       $fwrite(fh, " PA:0x%08x", rvfi_mem_addr);
 
-      if (rvfi_mem_rmask != 4'b0000) begin
+      if (rvfi_mem_wmask != 4'b0000) begin
         $fwrite(fh, " store:0x%08x", rvfi_mem_wdata);
       end
-      if (rvfi_mem_wmask != 4'b0000) begin
+      if (rvfi_mem_rmask != 4'b0000) begin
         $fwrite(fh, " load:0x%08x", rvfi_mem_rdata);
       end
     end

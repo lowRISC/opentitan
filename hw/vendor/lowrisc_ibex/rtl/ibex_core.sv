@@ -46,7 +46,11 @@ module ibex_core import ibex_pkg::*; #(
 ) (
   // Clock and Reset
   input  logic                         clk_i,
+  // Internally generated resets in ibex_lockstep cause IMPERFECTSCH warnings.
+  // TODO: Remove when upgrading Verilator #2134.
+  /* verilator lint_off IMPERFECTSCH */
   input  logic                         rst_ni,
+  /* verilator lint_on IMPERFECTSCH */
 
   input  logic [31:0]                  hart_id_i,
   input  logic [31:0]                  boot_addr_i,
