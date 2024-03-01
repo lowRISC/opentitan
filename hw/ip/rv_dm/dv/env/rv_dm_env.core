@@ -50,6 +50,7 @@ filesets:
       - seq_lib/rv_dm_progbuf_busy_vseq.sv: {is_include_file: true}
       - seq_lib/rv_dm_abstractcmd_status_vseq.sv: {is_include_file: true}
       - seq_lib/rv_dm_rom_read_access_vseq.sv: {is_include_file: true}
+      - seq_lib/rv_dm_progbuf_exception_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:
