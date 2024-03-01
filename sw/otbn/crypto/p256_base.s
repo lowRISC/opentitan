@@ -757,16 +757,17 @@ proj_add:
  * projective z-coordinate in the underlying finite field of the P-256 curve.
  * For inverse computation Fermat's little theorem is used, i.e.
  * we compute z^-1 = z^(p-2) mod p.
- * For exponentiation a 27 step addition chain is used.
- * This addition chain is (presumably?) the shortest addition chain known as
- * of today for the exponent exp = p - 2 = 2^256 -  2^224 + 2^6 + 2^64 - 1 - 2.
- * Origin of the chain can not fully be traced. [1] attributes it to a specific
- * patch to OpenSLL. The same addition chain is used in the OpenSSL and
- * BoringSSL crypto libraries.
- * This routine runs in constant time.
  *
- * [1] https://doi.org/10.1007/s13389-014-0090-x
- *     https://eprint.iacr.org/2013/816.pdf
+ * For exponentiation, we use an addition chain from Brian Smith's collection
+ * of the fastest known addition chains:
+ * https://briansmith.org/ecc-inversion-addition-chains-01#p256_field_inversion
+ *
+ * The chain is based on work by Gueron and Krasnov[1], with one more addition
+ * shaved off by Smith himself.
+ *
+ * [1] https://eprint.iacr.org/2013/816.pdf
+ *
+ * This routine runs in constant time.
  *
  * Flags: When leaving this subroutine, the M, L and Z flags of FG0 depend on
  *        the computed affine y-coordinate.
@@ -786,170 +787,134 @@ proj_add:
  */
 proj_to_affine:
 
-  /* 1: exp = 0x1 */
+  /* Fully reduce z. */
   bn.addm   w10, w10, w31
 
-  /* 2: exp = 0x2 = 2*0x1 */
+  /* w19 <= z^2 */
   bn.mov    w24, w10
   bn.mov    w25, w10
   jal       x1, mul_modp
 
-  /* 3: exp = 0x3 = 0x2+0x1 */
+  /* w12 <= z^3 = x2 */
   bn.mov    w24, w19
   bn.mov    w25, w10
   jal       x1, mul_modp
   bn.mov    w12, w19
 
-  /* 4: exp = 0x6 = 2*0x3 */
+  /* w19 <= z^6 */
   bn.mov    w24, w19
   bn.mov    w25, w19
   jal       x1, mul_modp
 
-  /* 5: exp = 0xc = 2*0x6 */
+  /* w13 <= z^7 = z^(2^3 - 1) = x3 */
   bn.mov    w24, w19
-  bn.mov    w25, w19
-  jal       x1, mul_modp
-
-  /* 6: exp = 0xf = 0xc+0x3 */
-  bn.mov    w24, w19
-  bn.mov    w25, w12
+  bn.mov    w25, w10
   jal       x1, mul_modp
   bn.mov    w13, w19
 
-  /* 7: exp = 0xf0 = 16*0xf */
-  loopi     4, 4
+  /* w14 <= z^(2^6 - 1) = x6 */
+  loopi     3, 4
     bn.mov    w24, w19
     bn.mov    w25, w19
     jal       x1, mul_modp
     nop
-
-  /* 8: exp = 0xff = 0xf0+0xf */
   bn.mov    w24, w19
   bn.mov    w25, w13
   jal       x1, mul_modp
   bn.mov    w14, w19
 
-  /* 9: exp = 0xff00 = 256*0xff */
-  loopi     8, 4
+  /* w15 <= z^(2^12 - 1) = x12 */
+  loopi     6, 4
     bn.mov    w24, w19
     bn.mov    w25, w19
     jal       x1, mul_modp
     nop
-
-  /* 10: exp = 0xffff = 0xff00+0xff */
   bn.mov    w24, w19
   bn.mov    w25, w14
   jal       x1, mul_modp
   bn.mov    w15, w19
 
-  /* 11: exp = 0xffff0000 = 2^16*0xffff */
-  loopi     16, 4
+  /* w16 <= z^(2^15 - 1) = x15 */
+  loopi     3, 4
     bn.mov    w24, w19
     bn.mov    w25, w19
     jal       x1, mul_modp
     nop
-
-  /* 12: exp = 0xffffffff = 0xffff0000+0xffff */
   bn.mov    w24, w19
-  bn.mov    w25, w15
+  bn.mov    w25, w13
   jal       x1, mul_modp
   bn.mov    w16, w19
 
-  /* 13: exp = 0xffffffff00000000 = 2^32*0xffffffff */
+  /* w17 <= z^(2^30 - 1) = x30 */
+  loopi     15, 4
+    bn.mov    w24, w19
+    bn.mov    w25, w19
+    jal       x1, mul_modp
+    nop
+  bn.mov    w24, w19
+  bn.mov    w25, w16
+  jal       x1, mul_modp
+  bn.mov    w17, w19
+
+  /* w18 <= z^(2^32 - 1) = x32 */
+  loopi     2, 4
+    bn.mov    w24, w19
+    bn.mov    w25, w19
+    jal       x1, mul_modp
+    nop
+  bn.mov    w24, w19
+  bn.mov    w25, w12
+  jal       x1, mul_modp
+  bn.mov    w18, w19
+
+  /* w19 <= z^(2^64 - 2^32 + 1) */
   loopi     32, 4
     bn.mov    w24, w19
     bn.mov    w25, w19
     jal       x1, mul_modp
     nop
-  bn.mov    w17, w19
-
-  /* 14: exp = 0xffffffff00000001 = 0xffffffff00000000+0x1 */
-  bn.mov    w24, w10
-  bn.mov    w25, w19
+  bn.mov    w24, w19
+  bn.mov    w25, w10
   jal       x1, mul_modp
 
-  /* 15: exp =
-           0xffffffff00000001000000000000000000000000000000000000000000000000
-         = 2^192*0xffffffff00000001 */
-  loopi     192, 4
+  /* w19 <= z^(2^192 - 2^160 + 2^128 + 2^32 - 1) */
+  loopi     128, 4
     bn.mov    w24, w19
     bn.mov    w25, w19
     jal       x1, mul_modp
     nop
-  bn.mov    w18, w19
-
-  /* 16: exp = 0xffffffffffffffff = 0xffffffff00000000+0xffffffff */
-  bn.mov    w24, w17
-  bn.mov    w25, w16
-  jal       x1, mul_modp
-
-  /* 17: exp = 0xffffffffffffffff0000 = 2^16*0xffffffffffffffff */
-  loopi     16, 4
-    bn.mov    w24, w19
-    bn.mov    w25, w19
-    jal       x1, mul_modp
-    nop
-
-  /* 18: exp = 0xffffffffffffffffffff = 0xffffffffffffffff0000+0xffff */
-  bn.mov    w24, w15
-  bn.mov    w25, w19
-  jal       x1, mul_modp
-
-  /* 19: exp = 0xffffffffffffffffffff00 = 256*0xffffffffffffffffffff */
-  loopi     8, 4
-    bn.mov    w24, w19
-    bn.mov    w25, w19
-    jal       x1, mul_modp
-    nop
-
-  /* 20: exp = 0xffffffffffffffffffffff = 0xffffffffffffffffffff00+0xff */
-  bn.mov    w24, w14
-  bn.mov    w25, w19
-  jal       x1, mul_modp
-
-  /* 21: exp = 0xffffffffffffffffffffff0 = 16*0xffffffffffffffffffffff */
-  loopi     4, 4
-    bn.mov    w24, w19
-    bn.mov    w25, w19
-    jal       x1, mul_modp
-    nop
-
-  /* 22: exp = 0xfffffffffffffffffffffff = 0xffffffffffffffffffffff0+0xf */
-  bn.mov    w24, w13
-  bn.mov    w25, w19
-  jal       x1, mul_modp
-
-  /* 23: exp = 0x3ffffffffffffffffffffffc = 4*0xfffffffffffffffffffffff */
-  loopi     2, 4
-    bn.mov    w24, w19
-    bn.mov    w25, w19
-    jal       x1, mul_modp
-    nop
-
-  /* 24: exp = 0x3fffffffffffffffffffffff = 0x3ffffffffffffffffffffffc+0x3 */
-  bn.mov    w24, w12
-  bn.mov    w25, w19
-  jal       x1, mul_modp
-
-  /* 25: exp = 0xfffffffffffffffffffffffc = 4*0x3fffffffffffffffffffffff */
-  loopi     2, 4
-    bn.mov    w24, w19
-    bn.mov    w25, w19
-    jal       x1, mul_modp
-    nop
-
-  /* 26: exp = 0xfffffffffffffffffffffffd = 0xfffffffffffffffffffffffc+0x1 */
-  bn.mov    w24, w10
-  bn.mov    w25, w19
-  jal       x1, mul_modp
-
-  /* 27: exp = p-2
-         = 0xffffffff00000001000000000000000000000000fffffffffffffffffffffffd
-         = 0xfffffffffffffffffffffffd
-         + 0xffffffff00000001000000000000000000000000000000000000000000000000
-     w14 = z^exp = z^(p-2) = z^-1   mod p */
   bn.mov    w24, w19
   bn.mov    w25, w18
+  jal       x1, mul_modp
+
+  /* w19 <= z^(2^224 - 2^192 + 2^160 + 2^64 + 1) */
+  loopi     32, 4
+    bn.mov    w24, w19
+    bn.mov    w25, w19
+    jal       x1, mul_modp
+    nop
+  bn.mov    w24, w19
+  bn.mov    w25, w18
+  jal       x1, mul_modp
+
+  /* w19 <= z^(2^254 - 2^222 + 2^190 + 2^94 - 1) */
+  loopi     30, 4
+    bn.mov    w24, w19
+    bn.mov    w25, w19
+    jal       x1, mul_modp
+    nop
+  bn.mov    w24, w19
+  bn.mov    w25, w17
+  jal       x1, mul_modp
+
+  /* w14 <= z^(2^256 - 2^224 + 2^192 + 2^96 - 2^2 + 1) = z^(p-2) */
+  loopi     2, 4
+    bn.mov    w24, w19
+    bn.mov    w25, w19
+    jal       x1, mul_modp
+    nop
+  bn.mov    w24, w19
+  bn.mov    w25, w10
   jal       x1, mul_modp
   bn.mov    w14, w19
 
