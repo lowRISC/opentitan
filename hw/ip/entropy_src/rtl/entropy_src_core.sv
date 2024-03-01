@@ -124,28 +124,32 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                   sfifo_esrng_full;
   logic                   sfifo_esrng_not_empty;
   logic                   sfifo_esrng_not_full;
+  logic                   sfifo_esrng_int_err;
   logic [2:0]             sfifo_esrng_err;
 
-  logic [ObserveFifoWidth-1:0] sfifo_observe_wdata;
-  logic [ObserveFifoWidth-1:0] sfifo_observe_rdata;
-  logic                    sfifo_observe_push;
-  logic                    sfifo_observe_pop;
-  logic                    sfifo_observe_full;
-  logic                    sfifo_observe_clr;
-  logic                    sfifo_observe_not_empty;
+  logic [ObserveFifoWidth-1:0]    sfifo_observe_wdata;
+  logic [ObserveFifoWidth-1:0]    sfifo_observe_rdata;
+  logic                           sfifo_observe_push;
+  logic                           sfifo_observe_pop;
+  logic                           sfifo_observe_full;
+  logic                           sfifo_observe_clr;
+  logic                           sfifo_observe_not_empty;
   logic [Clog2ObserveFifoDepth:0] sfifo_observe_depth;
+  logic                           sfifo_observe_int_err;
   logic [2:0]                     sfifo_observe_err;
 
   logic [Clog2EsFifoDepth:0] sfifo_esfinal_depth;
-  logic [(1+SeedLen)-1:0] sfifo_esfinal_wdata;
-  logic [(1+SeedLen)-1:0] sfifo_esfinal_rdata;
-  logic                   sfifo_esfinal_push;
-  logic                   sfifo_esfinal_pop;
-  logic                   sfifo_esfinal_clr;
-  logic                   sfifo_esfinal_not_full;
-  logic                   sfifo_esfinal_full;
-  logic                   sfifo_esfinal_not_empty;
-  logic [2:0]             sfifo_esfinal_err;
+  logic [(1+SeedLen)-1:0]    sfifo_esfinal_wdata;
+  logic [(1+SeedLen)-1:0]    sfifo_esfinal_rdata;
+  logic                      sfifo_esfinal_push;
+  logic                      sfifo_esfinal_pop;
+  logic                      sfifo_esfinal_clr;
+  logic                      sfifo_esfinal_not_full;
+  logic                      sfifo_esfinal_full;
+  logic                      sfifo_esfinal_not_empty;
+  logic                      sfifo_esfinal_int_err;
+  logic [2:0]                sfifo_esfinal_err;
+
   logic [SeedLen-1:0]     esfinal_data;
   logic                   esfinal_fips_flag;
 
@@ -1008,7 +1012,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .Width(RngBusWidth),
     .Pass(0),
     .Depth(2),
-    .OutputZeroIfEmpty(1'b0)
+    .OutputZeroIfEmpty(0),
+    .Secure(1)
   ) u_prim_fifo_sync_esrng (
     .clk_i      (clk_i),
     .rst_ni     (rst_ni),
@@ -1021,7 +1026,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rready_i   (sfifo_esrng_pop),
     .full_o     (sfifo_esrng_full),
     .depth_o    (),
-    .err_o      ()
+    .err_o      (sfifo_esrng_int_err)
   );
 
   // fifo controls
@@ -1045,7 +1050,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign sfifo_esrng_err =
          {1'b0,
           (sfifo_esrng_pop && !sfifo_esrng_not_empty),
-          (sfifo_esrng_full && !sfifo_esrng_not_empty)};
+          (sfifo_esrng_full && !sfifo_esrng_not_empty) || sfifo_esrng_int_err};
   `ASSERT(RngBackpressureNotAllowed_A, sfifo_esrng_push |-> sfifo_esrng_not_full)
 
   // Read the health test data from the esrng FIFO.
@@ -2464,7 +2469,9 @@ module entropy_src_core import entropy_src_pkg::*; #(
   prim_fifo_sync #(
     .Width(ObserveFifoWidth),
     .Pass(0),
-    .Depth(ObserveFifoDepth)
+    .Depth(ObserveFifoDepth),
+    .OutputZeroIfEmpty(1), // Prevent SVA from firing due unknown module outputs.
+    .Secure(1)
   ) u_prim_fifo_sync_observe (
     .clk_i      (clk_i),
     .rst_ni     (rst_ni),
@@ -2477,7 +2484,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rready_i   (sfifo_observe_pop),
     .full_o     (sfifo_observe_full),
     .depth_o    (sfifo_observe_depth),
-    .err_o      ()
+    .err_o      (sfifo_observe_int_err)
   );
 
   // The Observe fifo is intended to hold kilobits of contiguous data, yet still gracefully
@@ -2525,7 +2532,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign sfifo_observe_err =
          {1'b0,
          (sfifo_observe_pop && !sfifo_observe_not_empty),
-         (sfifo_observe_full && !sfifo_observe_not_empty)};
+         (sfifo_observe_full && !sfifo_observe_not_empty) || sfifo_observe_int_err};
 
 
   //--------------------------------------------
@@ -2830,7 +2837,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .Width(1+SeedLen),
     .Pass(0),
     .Depth(EsFifoDepth),
-    .OutputZeroIfEmpty(1'b0)
+    .OutputZeroIfEmpty(0),
+    .Secure(1)
   ) u_prim_fifo_sync_esfinal (
     .clk_i          (clk_i),
     .rst_ni         (rst_ni),
@@ -2843,7 +2851,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rdata_o        (sfifo_esfinal_rdata),
     .full_o         (sfifo_esfinal_full),
     .depth_o        (sfifo_esfinal_depth),
-    .err_o          ()
+    .err_o          (sfifo_esfinal_int_err)
   );
 
   // The FIPS flag is fully determined in SW. This has to be the case since we don't know
@@ -2872,7 +2880,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign sfifo_esfinal_err =
          {1'b0,
           (sfifo_esfinal_pop && !sfifo_esfinal_not_empty),
-          (sfifo_esfinal_full && !sfifo_esfinal_not_empty)};
+          (sfifo_esfinal_full && !sfifo_esfinal_not_empty) || sfifo_esfinal_int_err};
 
   // drive out hw interface
   assign es_hw_if_req = entropy_src_hw_if_i.es_req;
