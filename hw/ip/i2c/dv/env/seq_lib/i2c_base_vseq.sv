@@ -491,47 +491,6 @@ class i2c_base_vseq extends cip_base_vseq #(
     if (verify_clear) wait(!cfg.intr_vif.pins[intr]);
   endtask : clear_interrupt
 
-  // TODO: Temporary override of the task in cip_base_vseq, because it requires modification to
-  // support Status Type interrupts. Remove this when cip_base_vseq has been updated.
-  //
-  // Task to clear register intr status bits
-  virtual task clear_all_interrupts();
-    dv_utils_pkg::interrupt_t signal_ro_mask = '0;
-    int sig_idx = 0;
-    if (cfg.num_interrupts == 0) return;
-    foreach (intr_state_csrs[i]) begin
-      dv_base_reg_field flds[$];
-      bit [bus_params_pkg::BUS_DW-1:0] csr_ro_mask = 0;
-      bit [bus_params_pkg::BUS_DW-1:0] data;
-      // Status type interrupts are read-only and cannot be cleared by writing 1 to them.
-      // Instead, the underlying condition needs to be resolved (e.g. drain a FIFO that is full).
-      // Therefore, we extract the RO bitmask so that we can mask the writes / reads below.
-      intr_state_csrs[i].get_dv_base_reg_fields(flds);
-      foreach (flds[j]) begin
-        if (flds[j].get_access() == "RO") begin
-          csr_ro_mask[j] = 1'b1;
-          // Remember the mask for the interrupt signals below.
-          signal_ro_mask[sig_idx] = 1'b1;
-        end
-        sig_idx++;
-      end
-      csr_rd(.ptr(intr_state_csrs[i]), .value(data));
-      if (data & ~csr_ro_mask != 0) begin
-        `uvm_info(`gtn, $sformatf("Clearing %0s", intr_state_csrs[i].get_name()), UVM_HIGH)
-        csr_wr(.ptr(intr_state_csrs[i]), .value(data & ~csr_ro_mask));
-        csr_rd(.ptr(intr_state_csrs[i]), .value(data));
-        if (!cfg.under_reset) `DV_CHECK_EQ(data & ~csr_ro_mask, 0)
-        else break;
-      end
-    end
-    if (!cfg.under_reset) begin
-      // Status type interrupts may remain asserted, hence we have to mask them away.
-      dv_utils_pkg::interrupt_t mask = dv_utils_pkg::interrupt_t'((1 << cfg.num_interrupts) - 1) &
-                                       ~signal_ro_mask;
-      `DV_CHECK_EQ(cfg.intr_vif.sample() & mask, '0)
-    end
-  endtask
-
   virtual function void print_seq_cfg_vars(string msg = "", bit do_print = 1'b0);
     if (do_print) begin
       string str;
