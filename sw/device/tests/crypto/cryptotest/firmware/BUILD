@@ -53,12 +53,16 @@ cc_library(
 cc_library(
     name = "aes_sca",
     srcs = ["aes_sca.c"],
-    hdrs = ["aes_sca.h"],
+    hdrs = [
+        "aes_sca.h",
+        "status.h",
+    ],
     deps = [
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:aes",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:aes_testutils",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/lib/ujson",
         "//sw/device/sca/lib:aes",
