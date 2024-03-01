@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/lowRISC/opentitan/master/sw/host/cryptotest/testvectors/data/schemas/hmac_schema.json",
+  "title": "Cryptotest HMAC Test Vector",
+  "description": "A list of testvectors for HMAC testing",
+  "$defs": {
+    "byte_array": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 255
+      }
+    }
+  },
+  "type": "array",
+  "minItems": 1,
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "vendor": {
+        "description": "test vector vendor name",
+        "type": "string"
+      },
+      "test_case_id": {
+        "description": "Test case ID number -- used for debugging",
+        "type": "integer"
+      },
+      "algorithm": {
+        "description": "Should be drbg",
+        "type": "string",
+        "enum": ["drbg"]
+      },
+      "entropy": {
+        "description": "Initial entropy value",
+        "$ref": "#/$defs/byte_array"
+      },
+      "personalization_string": {
+        "description": "Personalization string for instantiation",
+        "$ref": "#/$defs/byte_array"
+      },
+      "reseed": {
+        "description": "Whether the test requires reseeding",
+	"type": "boolean"
+      },
+      "reseed_entropy": {
+        "description": "Reseed entropy if reseed = True",
+        "$ref": "#/$defs/byte_array"
+      },
+      "reseed_additional_input": {
+        "description": "Additional value for reseed if reseed = True",
+        "$ref": "#/$defs/byte_array"
+      },
+      "additional_input_1": {
+        "description": "First additional value",
+        "$ref": "#/$defs/byte_array"
+      },
+      "additional_input_2": {
+        "description": "Second additional value",
+        "$ref": "#/$defs/byte_array"
+      },
+      "output": {
+        "description": "Expected random returned bits",
+        "$ref": "#/$defs/byte_array"
+      },
+      "result": {
+        "description": "Whether the returned bits should match `output`",
+        "type": "boolean"
+      }
+    }
+  }
+}
