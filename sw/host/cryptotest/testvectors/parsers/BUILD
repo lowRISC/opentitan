@@ -41,6 +41,15 @@ py_binary(
 )
 
 py_binary(
+    name = "nist_cavp_drbg_parser",
+    srcs = ["nist_cavp_drbg_parser.py"],
+    deps = [
+        ":cryptotest_util",
+        requirement("jsonschema"),
+    ],
+)
+
+py_binary(
     name = "nist_cavp_ecdsa_parser",
     srcs = ["nist_cavp_ecdsa_parser.py"],
     deps = [
