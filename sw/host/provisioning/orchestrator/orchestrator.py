@@ -145,7 +145,7 @@ def main():
                         required=True)
     parser.add_argument("--sku",
                         help="SKU",
-                        choices=["prodc", "sival", "sival_bringup"],
+                        choices=["proda", "prodc", "sival", "sival_bringup"],
                         required=True)
     parser.add_argument("--fpga_test",
                         action="store_true",
