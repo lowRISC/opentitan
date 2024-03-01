@@ -1131,7 +1131,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign health_test_window = es_bypass_mode ? health_test_bypass_window : health_test_fips_window;
   // Multiply the health test window by four if we are using the single lane mode.
   // In single lane mode 4 times as many symbols are tested for the same amount of entropy.
-  assign health_test_window_scaled = rng_bit_en ? health_test_window << 2 :
+  assign health_test_window_scaled = rng_bit_en ? {health_test_window, 2'b0} :
                                                   {2'b0, health_test_window};
 
   // Window sizes other than 384 bits (the seed length) are currently not tested nor supported in
