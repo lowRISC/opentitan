@@ -52,6 +52,9 @@ ci/scripts/mypy.sh $tgt_branch
 echo -e "\n### Use clang-format to check C/C++ coding style"
 ci/scripts/clang-format.sh $tgt_branch
 
+echo -e "\n### Use rustfmt to check Rust coding style"
+ci/scripts/rust-format.sh $tgt_branch
+
 echo -e "\n### Check formatting on header guards"
 ci/scripts/include-guard.sh $tgt_branch
 
