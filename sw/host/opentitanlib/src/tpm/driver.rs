@@ -147,7 +147,8 @@ pub trait Driver {
 
     /// Poll the status register until the status is valid and data is available or time out.
     fn poll_for_data_available(&self) -> Result<TpmStatus> {
-        const STATUS_POLL_TIMEOUT: Duration = Duration::from_millis(30000);
+        // Some TPM operations, such as generating RSA keys can take several minutes.
+        const STATUS_POLL_TIMEOUT: Duration = Duration::from_secs(5 * 60);
         let deadline = Instant::now() + STATUS_POLL_TIMEOUT;
         let mut sts = self.read_status()?;
         // If the device is busy and doesn't actually respond, the status comes back as !0. This
