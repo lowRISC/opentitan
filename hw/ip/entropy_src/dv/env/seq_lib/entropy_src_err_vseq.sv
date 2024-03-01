@@ -126,7 +126,7 @@ class entropy_src_err_vseq extends entropy_src_base_vseq;
         `DV_CHECK(uvm_hdl_read(sm_state_path, sm_state))
         `DV_CHECK_EQ(sm_state, entropy_src_ack_sm_pkg::Error)
       end
-      fifo_write_err, fifo_read_err, fifo_state_err: begin
+      fifo_read_err, fifo_state_err: begin
         fifo_name = cfg.which_fifo.name();
         path_key = fld_name.substr(first_index+1, last_index-1);
 
@@ -141,16 +141,12 @@ class entropy_src_err_vseq extends entropy_src_base_vseq;
           fifo_forced_paths[i] = cfg.entropy_src_path_vif.fifo_err_path("sfifo_esrng",
                                                                         path_exts[i]);
         end
-        if (cfg.which_err_code == fifo_write_err && cfg.which_fifo == sfifo_esrng) begin
-          force_fifo_err_exception(fifo_forced_paths, fifo_forced_values, fld, 1'b1);
-        end else begin
-          force_fifo_err(path1, path2, value1, value2, fld, 1'b1);
-        end
+        force_fifo_err(path1, path2, value1, value2, fld, 1'b1);
         cov_vif.cg_fifo_err_sample(cfg.which_fifo_err, cfg.which_fifo);
       end
-      sfifo_esrng_err_test ,sfifo_observe_err_test, sfifo_esfinal_err_test, es_ack_sm_err_test,
-      es_main_sm_err_test, es_cntr_err_test, fifo_write_err_test, fifo_read_err_test,
-      fifo_state_err_test: begin
+      sfifo_esrng_err_test, sfifo_observe_err_test, sfifo_esfinal_err_test,
+      es_ack_sm_err_test, es_main_sm_err_test, es_cntr_err_test,
+      fifo_read_err_test, fifo_state_err_test: begin
         // First turn off module_enable to write registers
         csr_wr(.ptr(ral.module_enable), .value(prim_mubi_pkg::MuBi4False));
         // Get the register field name
