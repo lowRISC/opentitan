@@ -87,7 +87,7 @@
       stage: V2
       si_stage: NA
       tests: ["chip_sw_pwrmgr_normal_sleep_all_wake_ups"]
-      bazel: []
+      bazel: ["//sw/device/tests:pwrmgr_normal_sleep_all_wake_ups"]
     }
     {
       name: chip_sw_pwrmgr_deep_sleep_por_reset
@@ -149,7 +149,7 @@
       stage: V2
       si_stage: NA
       tests: ["chip_sw_pwrmgr_deep_sleep_all_wake_ups"]
-      bazel: []
+      bazel: ["//sw/device/tests:pwrmgr_deep_sleep_all_wake_ups"]
     }
     {
       name: chip_sw_pwrmgr_deep_sleep_all_reset_reqs
