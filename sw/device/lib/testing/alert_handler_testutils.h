@@ -14,6 +14,10 @@
 
 #include "alert_handler_regs.h"
 
+enum {
+  kAlertHandlerTestutilsDefaultPingTimeout = 256,
+};
+
 typedef enum alert_handler_class_state {
   kCstateIdle = 0,
   kCstateTimeout = 1,
