@@ -21,6 +21,13 @@ package usbdev_env_pkg;
 
   // parameters
 
+  // Number of packet buffers available within the USB device
+  parameter uint NumBuffers       = 32;
+  // FIFO Depths; number of entries
+  parameter uint AvOutFIFODepth   = 8;
+  parameter uint AvSetupFIFODepth = 4;
+  parameter uint RxFIFODepth      = 8;
+
   // alerts
   parameter uint NUM_ALERTS = 1;
   parameter string LIST_OF_ALERTS[] = {"fatal_fault"};

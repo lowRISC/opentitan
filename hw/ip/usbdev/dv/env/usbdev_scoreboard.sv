@@ -398,6 +398,9 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
       "wake_events": begin
         // TODO
       end
+      "fifo_ctrl": begin
+        // TODO
+      end
       "buffer": begin
         do_read_check = 1'b1;
       end
