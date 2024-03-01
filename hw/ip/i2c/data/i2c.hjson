@@ -104,7 +104,10 @@
   ],
   param_list: [
     { name: "FifoDepth",
-      desc: "Depth of FMT, RX, TX, and ACQ FIFOs",
+      desc: '''
+            Depth of FMT, RX, TX, and ACQ FIFOs.
+            The maximum supported value is 2^12-1, although much lower values are recommended to keep area requirements reasonable.
+            ''',
       type: "int",
       default: "64",
     }
