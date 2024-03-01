@@ -1211,9 +1211,6 @@ module spi_tpm
         if (cmdaddr_bitcnt == 5'h 1F && cmd_type == Write) begin
           if (!sck_wrfifo_busy && ~|sck_cmdaddr_wdepth) begin
             // Write command and FIFO is empty. Ready to push
-            // ICEBOX(#18354): Change the state machine to send start byte at
-            //                 cmdaddr_bitcnt == 5'h 17 if write command and FIFO is
-            //                 empty, then the state can go to StWrite directly.
             sck_st_d = StStartByte;
           end else begin
             // FIFO is not empty. Move to StWait and waits for the empty write
