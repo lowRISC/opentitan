@@ -18,6 +18,7 @@ rust_library(
         "@crate_index//:arrayvec",
         "@crate_index//:clap",
         "@crate_index//:elliptic-curve",
+        "@crate_index//:hex",
         "@crate_index//:log",
         "@crate_index//:num-bigint-dig",
         "@crate_index//:p256",
