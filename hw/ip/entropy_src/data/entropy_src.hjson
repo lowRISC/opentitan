@@ -1597,6 +1597,22 @@
                 Writing a zero resets this status bit.
                 '''
         }
+        { bits: "31",
+          name: "POSTHT_ENTROPY_DROP_ALERT",
+          desc: '''
+                This bit is set when post-health test entropy bits are being dropped from the hardware pipeline.
+                The pipeline can drop individual symbols at the input of the postht FIFO (esbit FIFO when running in single-channel mode, see !!ENTROPY_SRC.RNG_BIT_ENABLE).
+                Entropy bits might get dropped in these locations e.g. due to backpressure from the conditioner.
+
+                Note that the conditioner will still use the amount of bits configured in !!HEALTH_TEST_WINDOW.FIPS_WINDOW to produce the seed.
+                The resulting seed is still okay to use.
+                But as the dropped bits are still tested, the effective test window increases beyond the value configured in !!HEALTH_TEST_WINDOW.FIPS_WINDOW.
+
+                Software should check this bit when running in Firmware Override: Observe mode as dropping post-health test entropy bits in this mode may cause the entropy bits observed from the Observe FIFO to be non-contiguous.
+
+                Writing a zero resets this status bit.
+                '''
+        }
       ]
     },
     {

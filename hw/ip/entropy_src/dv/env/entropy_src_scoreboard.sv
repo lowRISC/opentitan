@@ -175,6 +175,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   endfunction
 
   task run_phase(uvm_phase phase);
+    // When seeing unexpected alerts during debugging, disable the alert checking.
+    //do_alert_check = 0;
     super.run_phase(phase);
     if (cfg.en_scb) begin
       fork

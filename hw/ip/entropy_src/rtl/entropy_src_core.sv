@@ -139,7 +139,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic [Clog2EsFifoDepth:0] sfifo_esfinal_depth;
   logic [(1+SeedLen)-1:0] sfifo_esfinal_wdata;
   logic [(1+SeedLen)-1:0] sfifo_esfinal_rdata;
-  logic                   sfifo_esfinal_push_enable;
   logic                   sfifo_esfinal_push;
   logic                   sfifo_esfinal_pop;
   logic                   sfifo_esfinal_clr;
@@ -416,6 +415,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic [32:0]                  sha3_err;
   logic                         cs_aes_halt_req;
   logic [WINDOW_CNTR_WIDTH-1:0] window_cntr;
+  logic                         window_cntr_incr_en;
 
   logic [sha3_pkg::StateW-1:0] sha3_state[Sha3Share];
   logic [PreCondWidth-1:0] msg_data[Sha3Share];
@@ -441,6 +441,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                    es_fw_ov_wr_alert;
   logic                    es_fw_ov_disable_alert;
   logic                    fw_ov_corrupted;
+  logic                    postht_entropy_drop_alert;
 
   logic                    stale_seed_processing;
   logic                    main_sm_enable;
@@ -450,6 +451,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                    unused_entropy_data;
   logic                    unused_fw_ov_rd_data;
   logic                    unused_sfifo_esrng_not_full;
+  logic                    unused_sfifo_esfinal_not_full;
 
   prim_mubi_pkg::mubi8_t en_entropy_src_fw_read;
   prim_mubi_pkg::mubi8_t en_entropy_src_fw_over;
@@ -1023,28 +1025,40 @@ module entropy_src_core import entropy_src_pkg::*; #(
   );
 
   // fifo controls
+  // We can't handle any backpressure at this point. Unless the ENTROPY_SRC block is turned off,
+  // the input coming from the noise source / RNG needs to be accepted without dropping samples.
   assign sfifo_esrng_push = es_enable_fo[5] && es_delayed_enable && es_rng_src_valid &&
                             rng_enable_q;
 
   assign sfifo_esrng_clr   = ~es_delayed_enable;
   assign sfifo_esrng_wdata = es_rng_bus;
-  assign sfifo_esrng_pop   = sfifo_esrng_not_empty & (rng_bit_en ? pfifo_esbit_not_full :
-                                                                   pfifo_postht_not_full);
+  // We can't apply any backpressure at this point. Every sample is presented to the health tests
+  // for exactly one clock cycle. If the receiving FIFO is full, the sample is dropped but the
+  // health tests are still performed and the results accumulated.
+  assign sfifo_esrng_pop = sfifo_esrng_not_empty;
 
   // fifo err
-  // Note: for prim_fifo_sync is not an error to push to a fifo that is full.  In fact, the
-  // backpressure mechanism applied to the RNG inputs counts on this.
+  // The esnrg FIFO must never be pushed when it's full as no backpressure can be applied to the
+  // noise source / RNG. However, we can't raise an error and abort operation of the ENTROPY_SRC
+  // block as this would mean a catastrophic failure of the whole chip. Instead we need to catch
+  // this in simulation only.
   assign sfifo_esrng_err =
          {1'b0,
           (sfifo_esrng_pop && !sfifo_esrng_not_empty),
           (sfifo_esrng_full && !sfifo_esrng_not_empty)};
-
+  `ASSERT(RngBackpressureNotAllowed_A, sfifo_esrng_push |-> sfifo_esrng_not_full)
 
   // Read the health test data from the esrng FIFO.
   assign health_test_esbus = sfifo_esrng_rdata;
-  // Set the valid signal to true whenever data is pushed into the next FIFO.
-  assign health_test_esbus_vld = rng_bit_en ? pfifo_esbit_push && !pfifo_esbit_clr :
-                                              pfifo_postht_push && !pfifo_postht_clr;
+  // Perform the health tests whenever data is valid and the receiving FIFO is not being cleared.
+  // This doesn't mean the receiving FIFO is pushed. The receiving FIFO is only pushed if it has
+  // indeed space. This means in case of heavy backpressure, we keep testing the noise source
+  // samples, but we drop them before the postht FIFO. If this happens, the window counter isn't
+  // incremented. This way we can keep the number of bits going into the conditioner constant,
+  // independent of potential backpressure within the pipeline.
+  assign health_test_esbus_vld =
+      rng_bit_en ? sfifo_esrng_not_empty && !pfifo_esbit_clr :
+                   sfifo_esrng_not_empty && !pfifo_postht_clr;
 
   // Health test any data that comes in on the RNG interface.
   assign repcnt_active = 1'b1;
@@ -1499,6 +1513,16 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   // Window counter
   // SEC_CM: CTR.REDUN
+
+  // We only increment the counter if the currently tested sample can be pushed to the correct FIFO
+  // following the health tests. This is required to keep the number of samples passed to the
+  // conditioner constant also when experiencing backpressure from the conditioner. At the same
+  // time, we're not allowed to drop samples before the health testing. This means the number of
+  // tested samples might be slightly bigger than the number of samples fed into the conditioner.
+  assign window_cntr_incr_en =
+      rng_bit_en ? pfifo_esbit_push  && pfifo_esbit_not_full  && !pfifo_esbit_clr :
+                   pfifo_postht_push && pfifo_postht_not_full && !pfifo_postht_clr;
+
   prim_count #(
     .Width(WINDOW_CNTR_WIDTH)
   ) u_prim_count_window_cntr (
@@ -1507,7 +1531,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clr_i(!es_delayed_enable),
     .set_i(health_test_done_pulse),
     .set_cnt_i(WINDOW_CNTR_WIDTH'(0)),
-    .incr_en_i(health_test_esbus_vld),
+    .incr_en_i(window_cntr_incr_en),
     .decr_en_i(1'b0),
     .step_i(WINDOW_CNTR_WIDTH'(1)),
     .commit_i(1'b1),
@@ -2143,7 +2167,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
          es_bus_cmp_alert ||
          es_thresh_cfg_alert ||
          es_fw_ov_wr_alert ||
-         es_fw_ov_disable_alert;
+         es_fw_ov_disable_alert ||
+         postht_entropy_drop_alert;
 
   assign hw2reg.recov_alert_sts.es_main_sm_alert.de = es_main_sm_alert;
   assign hw2reg.recov_alert_sts.es_main_sm_alert.d  = es_main_sm_alert;
@@ -2294,6 +2319,33 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign hw2reg.extht_fail_counts.extht_lo_fail_count.d = extht_lo_fail_count;
 
 
+  //------------------------------------------------------------------
+  // Signal a recoverable alert when dropping tested entropy bits.
+  //------------------------------------------------------------------
+
+  // Post-health test entropy bits can be dropped from the pipeline in case of e.g. backpressure
+  // from the conditioner. The conditioner will still use the amount of bits configured in
+  // HEALTH_TEST_WINDOW.FIPS_WINDOW to produce the seed, and the produced seed is okay to use.
+  // But as the dropped bits are still tested, the effective test window increases beyond the
+  // value configured in HEALTH_TEST_WINDOW.FIPS_WINDOW.
+  //
+  // Signaling this condition serves the following purposes:
+  // 1. When running in Firmware Override: Observe mode, dropping post-health test entropy bits
+  //    may cause the entropy bits observed from the Observe FIFO to be non-contiguous, causing
+  //    the observed bits to be not usable for validation purposes. Note that Firmware Override:
+  //    Extract & Insert mode is not affected by this.
+  // 2. It allows the DV environment to know when entropy bits have been dropped which simplifies
+  //    DV.
+
+  // The pop signal of the preceeding esrng FIFO is unconditional, meaning samples are dropped
+  // whenever the esbit or postht FIFO is full in single-channel or multi-channel mode,
+  // respectively.
+  assign postht_entropy_drop_alert = sfifo_esrng_not_empty &&
+      (rng_bit_en ? !pfifo_esbit_not_full : !pfifo_postht_not_full);
+
+  assign hw2reg.recov_alert_sts.postht_entropy_drop_alert.de = postht_entropy_drop_alert;
+  assign hw2reg.recov_alert_sts.postht_entropy_drop_alert.d  = postht_entropy_drop_alert;
+
   //--------------------------------------------------------------
   // Pack health tested esrng bus into single bit packer FIFO.
   //--------------------------------------------------------------
@@ -2336,6 +2388,10 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .depth_o    ()
   );
 
+  // The prim_packer_fifo primitive is constructed to only accept pushes if there is indeed space
+  // available. The pop signal of the preceeding esrng FIFO is unconditional, meaning samples can
+  // be dropped before the esbit FIFO in case of backpressure. The samples are however still
+  // tested.
   assign pfifo_esbit_push = rng_bit_en && sfifo_esrng_not_empty;
   assign pfifo_esbit_clr = ~es_delayed_enable;
   assign pfifo_esbit_pop = rng_bit_en && pfifo_esbit_not_empty && pfifo_postht_not_full;
@@ -2367,6 +2423,12 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .depth_o    ()
   );
 
+  // The prim_packer_fifo primitive is constructed to only accept pushes if there is indeed space
+  // available. In case the single-bit mode is enabled, the pop signal of the preceeding esbit FIFO
+  // is conditional on the full status of the postht FIFO, meaning backpressure can be handled. In
+  // case the single-bit mode is disabled, the pop signal of the preceeding esrng FIFO is
+  // unconditional, meaning samples can be dropped before the esbit in case of backpressure. The
+  // samples are however still tested.
   assign pfifo_postht_push = rng_bit_en ? pfifo_esbit_not_empty : sfifo_esrng_not_empty;
 
   assign pfifo_postht_wdata = rng_bit_en ? pfifo_esbit_rdata :
@@ -2446,7 +2508,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign hw2reg.observe_fifo_depth.d = sfifo_observe_depth;
 
   // fifo controls
-  assign sfifo_observe_push = fw_ov_mode && pfifo_postht_pop && !sfifo_observe_full &&
+  assign sfifo_observe_push = fw_ov_mode && pfifo_postht_pop &&
                               (sfifo_observe_gate_q || !sfifo_observe_not_empty);
 
   assign sfifo_observe_clr  = ~es_enable_fo[9];
@@ -2457,8 +2519,11 @@ module entropy_src_core import entropy_src_pkg::*; #(
          (fw_ov_mode && fw_ov_fifo_rd_pulse);
 
   // fifo err
+  // Note that for the used prim_fifo_sync and prim_packer_fifo primitives it is not an error to
+  // push to a FIFO that is full. The primitives simply don't accept the data when full. The
+  // backpressure needs to be handled at the sender.
   assign sfifo_observe_err =
-         {(sfifo_observe_push && sfifo_observe_full),
+         {1'b0,
          (sfifo_observe_pop && !sfifo_observe_not_empty),
          (sfifo_observe_full && !sfifo_observe_not_empty)};
 
@@ -2788,11 +2853,12 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign fips_compliance = es_enable_fo[13] && fips_flag_pfe;
 
   // fifo controls
-  assign sfifo_esfinal_push_enable =
+  // No backpressure is possible at this point. If the esfinal FIFO is already full and a new seed
+  // is pushed, the push is ignored and the seed is lost.
+  assign sfifo_esfinal_push =
          fw_ov_mode_entropy_insert && es_bypass_mode ? pfifo_bypass_not_empty :
          main_stage_push;
 
-  assign sfifo_esfinal_push = sfifo_esfinal_not_full && sfifo_esfinal_push_enable;
   assign sfifo_esfinal_clr  = !es_enable_fo[14];
   assign sfifo_esfinal_wdata = {fips_compliance,final_es_data};
   assign sfifo_esfinal_pop = es_route_to_sw ? pfifo_swread_push :
@@ -2800,8 +2866,9 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign {esfinal_fips_flag,esfinal_data} = sfifo_esfinal_rdata;
 
   // fifo err
-  // Note: for prim_fifo_sync is not an error to push to a fifo that is full.  In fact, the
-  // backpressure mechanism applied to the previous FIFO counts on this.
+  // Note that for the used prim_fifo_sync and prim_packer_fifo primitives it is not an error to
+  // push to a FIFO that is full. The primitives simply don't accept the data when full. The
+  // backpressure needs to be handled at the sender.
   assign sfifo_esfinal_err =
          {1'b0,
           (sfifo_esfinal_pop && !sfifo_esfinal_not_empty),
@@ -2907,7 +2974,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign unused_sha3_state = (|sha3_state[0][sha3_pkg::StateW-1:SeedLen]);
   assign unused_entropy_data = (|reg2hw.entropy_data.q);
   assign unused_fw_ov_rd_data = (|reg2hw.fw_ov_rd_data.q);
-  assign unused_sfifo_esrng_not_full = (|sfifo_esrng_not_full);
+  assign unused_sfifo_esrng_not_full = sfifo_esrng_not_full;
+  assign unused_sfifo_esfinal_not_full = sfifo_esfinal_not_full;
 
   //--------------------------------------------
   // Assertions
