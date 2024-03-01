@@ -195,9 +195,14 @@ status_t i2c_testutils_read(const dif_i2c_t *i2c, uint8_t addr,
   TRY(dif_i2c_irq_acknowledge(i2c, kDifI2cIrqNak));
   TRY(dif_i2c_reset_rx_fifo(i2c));
   do {
+    // Per chunk, as many bytes as fit into the RX FIFO could be transferred.
+    // However, as the number of bytes has to be communicated to the target in
+    // one byte, UINT8_MAX is another upper limit.
+    size_t max_chunk =
+        I2C_PARAM_FIFO_DEPTH < UINT8_MAX ? I2C_PARAM_FIFO_DEPTH : UINT8_MAX;
+    uint8_t chunk = (uint8_t)(byte_count < max_chunk ? byte_count : max_chunk);
+
     // Loop until we get an ACK from the device or a timeout.
-    uint8_t chunk = byte_count > I2C_PARAM_FIFO_DEPTH ? I2C_PARAM_FIFO_DEPTH
-                                                      : (uint8_t)byte_count;
     while (TRY(i2c_testutils_issue_read(i2c, addr, chunk))) {
       nak_count++;
       if (ibex_timeout_check(&timer)) {
