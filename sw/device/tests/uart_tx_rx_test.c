@@ -224,10 +224,14 @@ void ottf_external_isr(uint32_t *exc_info) {
   // Correlate the interrupt fired at PLIC with UART.
   dif_uart_irq_t uart_irq;
   if (plic_irq_id == uart_irq_tx_watermartk_id) {
+    CHECK_DIF_OK(dif_uart_irq_set_enabled(&uart, kDifUartIrqTxWatermark,
+                                          kDifToggleDisabled));
     CHECK(exp_uart_irq_tx_watermark, "Unexpected TX watermark interrupt");
     uart_irq_tx_watermark_fired = true;
     uart_irq = kDifUartIrqTxWatermark;
   } else if (plic_irq_id == uart_irq_rx_watermartk_id) {
+    CHECK_DIF_OK(dif_uart_irq_set_enabled(&uart, kDifUartIrqRxWatermark,
+                                          kDifToggleDisabled));
     CHECK(exp_uart_irq_rx_watermark, "Unexpected RX watermark interrupt");
     uart_irq_rx_watermark_fired = true;
     uart_irq = kDifUartIrqRxWatermark;
@@ -285,9 +289,9 @@ static void uart_init_with_irqs(mmio_region_t base_addr, dif_uart_t *uart) {
   CHECK_DIF_OK(dif_uart_watermark_tx_set(uart, kDifUartWatermarkByte16));
   CHECK_DIF_OK(dif_uart_watermark_rx_set(uart, kDifUartWatermarkByte16));
 
-  // Enable these UART interrupts - TX/TX watermark, TX empty and RX overflow.
-  CHECK_DIF_OK(dif_uart_irq_set_enabled(uart, kDifUartIrqTxWatermark,
-                                        kDifToggleEnabled));
+  // Enable these UART interrupts - RX watermark, TX empty and RX overflow.
+  // TX watermark is enabled once the TX buffer has been written (otherwise it
+  // will fire immediately).
   CHECK_DIF_OK(dif_uart_irq_set_enabled(uart, kDifUartIrqRxWatermark,
                                         kDifToggleEnabled));
   CHECK_DIF_OK(
@@ -374,19 +378,28 @@ static bool uart_transfer_ongoing_bytes(const dif_uart_t *uart,
                                         uart_direction_t uart_direction,
                                         uint8_t *data, size_t dataset_size,
                                         size_t *dataset_index,
+                                        size_t max_xfer_size,
                                         bool *transfer_done) {
   size_t bytes_remaining = dataset_size - *dataset_index;
+  size_t bytes_to_xfer =
+      max_xfer_size < bytes_remaining ? max_xfer_size : bytes_remaining;
   size_t bytes_transferred = 0;
   bool result = false;
   switch (uart_direction) {
     case kUartSend:
-      result = dif_uart_bytes_send(uart, &data[*dataset_index], bytes_remaining,
+      result = dif_uart_bytes_send(uart, &data[*dataset_index], bytes_to_xfer,
                                    &bytes_transferred) == kDifOk;
+
+      CHECK_DIF_OK(dif_uart_irq_set_enabled(uart, kDifUartIrqTxWatermark,
+                                            kDifToggleEnabled));
       break;
     case kUartReceive:
       result =
-          dif_uart_bytes_receive(uart, bytes_remaining, &data[*dataset_index],
+          dif_uart_bytes_receive(uart, bytes_to_xfer, &data[*dataset_index],
                                  &bytes_transferred) == kDifOk;
+
+      CHECK_DIF_OK(dif_uart_irq_set_enabled(uart, kDifUartIrqRxWatermark,
+                                            kDifToggleEnabled));
       break;
     default:
       LOG_FATAL("Invalid UART data transfer direction!");
@@ -427,9 +440,11 @@ static void execute_test(const dif_uart_t *uart) {
       uart_irq_tx_watermark_fired = false;
 
       // Send the remaining kUartTxData as and when the TX watermark fires.
-      CHECK(uart_transfer_ongoing_bytes(uart, kUartSend, (uint8_t *)kUartTxData,
-                                        UART_DATASET_SIZE,
-                                        &uart_tx_bytes_written, &uart_tx_done));
+      // Intentionally limit the transfer size to 32 bytes at a time. This means
+      // we see multiple TX watermark interrupts in the test.
+      CHECK(uart_transfer_ongoing_bytes(
+          uart, kUartSend, (uint8_t *)kUartTxData, UART_DATASET_SIZE,
+          &uart_tx_bytes_written, 32, &uart_tx_done));
 
       if (uart_tx_done) {
         // At this point, we have sent the required number of bytes.
@@ -445,9 +460,9 @@ static void execute_test(const dif_uart_t *uart) {
       // than 16, RX watermark won't fire. In that case, keep reading until all
       // item are received.
       do {
-        CHECK(uart_transfer_ongoing_bytes(uart, kUartReceive, uart_rx_data,
-                                          UART_DATASET_SIZE,
-                                          &uart_rx_bytes_read, &uart_rx_done));
+        CHECK(uart_transfer_ongoing_bytes(
+            uart, kUartReceive, uart_rx_data, UART_DATASET_SIZE,
+            &uart_rx_bytes_read, UART_DATASET_SIZE, &uart_rx_done));
       } while (!uart_rx_done && (UART_DATASET_SIZE - uart_rx_bytes_read < 16));
 
       if (uart_rx_done) {
