@@ -989,5 +989,8 @@ module rv_core_ibex
       lsu_store_resp_intg_err)
   `ASSERT_IBEX_CORE_ERROR_TRIGGER_ALERT(IbexInstrIntgErrCheck_A, alert_tx_o[2], u_ibex_core,
       instr_intg_err)
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(IbexLockstepResetCountAlertCheck_A,
+      u_core.gen_lockstep.u_ibex_lockstep.u_rst_shadow_cnt, alert_tx_o[2])
+
 `endif // ifdef INC_ASSERT
 endmodule
