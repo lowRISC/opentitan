@@ -60,6 +60,7 @@ In low power mode:
 * Similar to normal operation, the ADC power-up delay is controlled by [`adc_pd_ctl.pwrup_time`](registers.md#adc_pd_ctl).
 * Once the ADC is powered up, two samples are taken and compared to the filter thresholds.
 * If a configurable number of matches, as determined by [`adc_lp_sample_ctl`](registers.md#adc_lp_sample_ctl), are seen, the ADC controller transitions to normal operation for continuous sampling.
+* If a match cannot be confirmed in normal operation mode, the ADC controller switches back to low power mode without firmware intervention.
 
 Although it can be used at any time, the periodic operation mode and use of the slow clock allows the ADC controller to continue to scan when most of the chip is in sleep or power-down modes.
 The controller can be configured to issue a wakeup to the rest of the chip.

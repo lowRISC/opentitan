@@ -563,11 +563,27 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
         // Previous matched set different to current
         m_np_counter = 0;
         m_debounced  = 0;
+        // In case the LP mode was configured before, the FSM transitions back into LP mode
+        // if a match cannot be confirmed.
+        if (cfg.ral.adc_pd_ctl.lp_mode.get_mirrored_value()) begin
+          // Move to normal power mode
+          m_lp_mode = 1;
+          // Reflect in config object
+          cfg.lp_mode = 1;
+        end
       end
     end else begin
       // No filters hit
       m_np_counter = 0;
       m_debounced  = 0;
+      // In case the LP mode was configured before, the FSM transitions back into LP mode
+      // if a match cannot be confirmed.
+      if (cfg.ral.adc_pd_ctl.lp_mode.get_mirrored_value()) begin
+        // Move to normal power mode
+        m_lp_mode = 1;
+        // Reflect in config object
+        cfg.lp_mode = 1;
+      end
     end
   endfunction
 
