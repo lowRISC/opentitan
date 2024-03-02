@@ -149,8 +149,6 @@ module adc_ctrl_fsm
     end
   end
 
-  // TODO: #13725
-  // The logic below can be enhanced for better handling in the future
   logic ld_match;
   always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin
     if (!rst_aon_ni) begin
@@ -338,7 +336,9 @@ module adc_ctrl_fsm
         // do not transition forward until handshake with ADC is complete
         if (!adc_d_val_i) begin
           ld_match = 1'b1;
-          // if there is no match, clear counter and begin sampling again.
+          // if there is no match in normal power mode, clear counter and begin sampling again.
+          // if there is no match and low power mode is enabled, clear counter and go back to LP_0.
+          //
           // if there is a match, there are 3 conditions:
           // 1. the sample count is less than the threshold -> still attempting to make a new match,
           //    keep sampling.
@@ -347,7 +347,11 @@ module adc_ctrl_fsm
           // 3, the sample count is greater than the threshold -> this is a continued stable match,
           //    keep sampling.
           if (!stay_match) begin
-            fsm_state_d = NP_0;
+            if (cfg_lp_mode_i) begin
+              fsm_state_d = LP_0;
+            end else begin
+              fsm_state_d = NP_0;
+            end
             np_sample_cnt_clr = 1'b1;
           end else if (np_sample_cnt_q < np_sample_cnt_thresh) begin
             fsm_state_d = NP_0;
