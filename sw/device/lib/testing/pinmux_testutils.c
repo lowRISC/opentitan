@@ -7,6 +7,7 @@
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/status.h"
+#include "sw/device/lib/devicetables/dt.h"
 #include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
@@ -16,26 +17,20 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 void pinmux_testutils_init(dif_pinmux_t *pinmux) {
-  // Set up SW straps on IOC0-IOC2, for GPIOs 22-24
-  CHECK_DIF_OK(dif_pinmux_input_select(pinmux,
-                                       kTopEarlgreyPinmuxPeripheralInGpioGpio22,
-                                       kTopEarlgreyPinmuxInselIoc0));
-  CHECK_DIF_OK(dif_pinmux_input_select(pinmux,
-                                       kTopEarlgreyPinmuxPeripheralInGpioGpio23,
-                                       kTopEarlgreyPinmuxInselIoc1));
-  CHECK_DIF_OK(dif_pinmux_input_select(pinmux,
-                                       kTopEarlgreyPinmuxPeripheralInGpioGpio24,
-                                       kTopEarlgreyPinmuxInselIoc2));
-
-  // Configure UART0 RX input to connect to MIO pad IOC3
-  CHECK_DIF_OK(dif_pinmux_input_select(pinmux,
-                                       kTopEarlgreyPinmuxPeripheralInUart0Rx,
-                                       kTopEarlgreyPinmuxInselIoc3));
-  CHECK_DIF_OK(dif_pinmux_output_select(pinmux, kTopEarlgreyPinmuxMioOutIoc3,
-                                        kTopEarlgreyPinmuxOutselConstantHighZ));
-  // Configure UART0 TX output to connect to MIO pad IOC4
-  CHECK_DIF_OK(dif_pinmux_output_select(pinmux, kTopEarlgreyPinmuxMioOutIoc4,
-                                        kTopEarlgreyPinmuxOutselUart0Tx));
+  uint32_t cfg_len = dt_pinctrl_boot_periphmux_config_len();
+  for (uint32_t idx = 0; idx < cfg_len; idx++) {
+    dt_pinctrl_cfg_t cfg = dt_pinctrl_get_boot_periphmux_config(idx);
+    dif_pinmux_index_t mux_id = dt_pinctrl_mux_from_cfg(cfg);
+    dif_pinmux_index_t sel_id = dt_pinctrl_selection_from_cfg(cfg);
+    CHECK_DIF_OK(dif_pinmux_input_select(pinmux, mux_id, sel_id));
+  }
+  cfg_len = dt_pinctrl_boot_padmux_config_len();
+  for (uint32_t idx = 0; idx < cfg_len; idx++) {
+    dt_pinctrl_cfg_t cfg = dt_pinctrl_get_boot_padmux_config(idx);
+    dif_pinmux_index_t mux_id = dt_pinctrl_mux_from_cfg(cfg);
+    dif_pinmux_index_t sel_id = dt_pinctrl_selection_from_cfg(cfg);
+    CHECK_DIF_OK(dif_pinmux_output_select(pinmux, mux_id, sel_id));
+  }
 
 #if !OT_IS_ENGLISH_BREAKFAST
   // Enable pull-ups on UART0 RX
@@ -52,16 +47,6 @@ void pinmux_testutils_init(dif_pinmux_t *pinmux) {
                                             kDifPinmuxPadKindMio, in_attr,
                                             &out_attr));
   };
-
-  // Configure UART1 RX input to connect to MIO pad IOB4
-  CHECK_DIF_OK(dif_pinmux_input_select(pinmux,
-                                       kTopEarlgreyPinmuxPeripheralInUart1Rx,
-                                       kTopEarlgreyPinmuxInselIob4));
-  CHECK_DIF_OK(dif_pinmux_output_select(pinmux, kTopEarlgreyPinmuxMioOutIob4,
-                                        kTopEarlgreyPinmuxOutselConstantHighZ));
-  // Configure UART1 TX output to connect to MIO pad IOB5
-  CHECK_DIF_OK(dif_pinmux_output_select(pinmux, kTopEarlgreyPinmuxMioOutIob5,
-                                        kTopEarlgreyPinmuxOutselUart1Tx));
 
   // Configure a higher drive strength for the USB_P and USB_N pads because we
   // must the pad drivers must be capable of overpowering the 'pull' signal
@@ -87,10 +72,6 @@ void pinmux_testutils_init(dif_pinmux_t *pinmux) {
                                    kDifPinmuxPadKindDio, in_attr, &out_attr));
   }
 #endif
-
-  // Configure USBDEV SENSE outputs to be high-Z (IOC7)
-  CHECK_DIF_OK(dif_pinmux_output_select(pinmux, kTopEarlgreyPinmuxMioOutIoc7,
-                                        kTopEarlgreyPinmuxOutselConstantHighZ));
 }
 
 // Mapping of Chip IOs to the GPIO peripheral.
