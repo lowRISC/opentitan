@@ -147,41 +147,142 @@ module soc_proxy
                                            reg2hw.alert_test.recov_alert_external_3.q;
 
   // Handle fatal external alert requests
-  logic [NumFatalExternalAlerts-1:0] soc_fatal_alert_p, soc_fatal_alert_n, fatal_alert_external;
+  logic [NumFatalExternalAlerts-1:0] fatal_alert_external, fatal_alert_external_async;
+  logic [NumFatalExternalAlerts-1:0] soc_fatal_alert_p, soc_fatal_alert_n;
+  logic [NumFatalExternalAlerts-1:0] soc_fatal_alert_ack_p_d, soc_fatal_alert_ack_n_d;
+
+  // Acknowledge alert based on request.
+  // Ensure that Ack has always a valid encoding and we swallow a staggered _p/_n signal
+  always_comb begin
+    for(int i = 0; i < NumFatalExternalAlerts; i++) begin
+      // Acknowledge alert based on request.
+      // Ensure that Ack has always a valid encoding and we swallow a staggered _p/_n signal
+      if (soc_fatal_alert_p[i] ^ soc_fatal_alert_n[i]) begin
+        soc_fatal_alert_ack_p_d[i] = soc_fatal_alert_p[i];
+        soc_fatal_alert_ack_n_d[i] = soc_fatal_alert_n[i];
+      end else begin
+        soc_fatal_alert_ack_p_d[i] = soc_fatal_alert_o[i].ack_p;
+        soc_fatal_alert_ack_n_d[i] = soc_fatal_alert_o[i].ack_n;
+      end
+    end
+  end
+
   for (genvar i = 0; i < NumFatalExternalAlerts; i++) begin : gen_fatal_alert_handling
-    // Buffer/anchor incoming signals to prevent optimization
-    prim_sec_anchor_buf #(
-      .Width(2)
-    ) u_prim_sec_anchor_buf (
-      .in_i ({soc_fatal_alert_i[i].alert_p, soc_fatal_alert_i[i].alert_n}),
-      .out_o({soc_fatal_alert_p[i], soc_fatal_alert_n[i]})
+    // Treat any positive value on `alert_p` and any negative value on `alert_n` as alert.
+    // Combinationally determine the alert on the input signals to generater an asynchronous
+    // wakeup.
+    assign fatal_alert_external_async[i] = soc_fatal_alert_p[i] | ~soc_fatal_alert_n[i];
+
+    // Synchronize external differentially encoded alert to internal clk domain
+    prim_flop_2sync #(
+      .Width(1),
+      .ResetValue(1'b0)
+    ) u_prim_flop_2sync_fatal_alert_p (
+      .clk_i,
+      .rst_ni,
+      .d_i    (soc_fatal_alert_i[i].alert_p),
+      .q_o    (soc_fatal_alert_p[i])
+    );
+    prim_flop_2sync #(
+      .Width(1),
+      .ResetValue(1'b1)
+    ) u_prim_flop_2sync_fatal_alert_n (
+      .clk_i,
+      .rst_ni,
+      .d_i    (soc_fatal_alert_i[i].alert_n),
+      .q_o    (soc_fatal_alert_n[i])
     );
     // Treat any positive value on `alert_p` and any negative value on `alert_n` as alert.
     assign fatal_alert_external[i] = soc_fatal_alert_p[i] | ~soc_fatal_alert_n[i];
-    // Acknowledge handled alerts.
-    assign soc_fatal_alert_o[i] = '{
-      ack_p: soc_fatal_alert_p[i],
-      ack_n: soc_fatal_alert_n[i]
-    };
+
+    prim_flop #(
+      .Width(1),
+      .ResetValue(1'b0)
+    ) u_prim_flop_fatal_ack_p (
+      .clk_i,
+      .rst_ni,
+      .d_i    (soc_fatal_alert_ack_p_d[i]),
+      .q_o    (soc_fatal_alert_o[i].ack_p)
+    );
+
+    prim_flop #(
+      .Width(1),
+      .ResetValue(1'b1)
+    ) u_prim_flop_fatal_ack_n (
+      .clk_i,
+      .rst_ni,
+      .d_i    (soc_fatal_alert_ack_n_d[i]),
+      .q_o    (soc_fatal_alert_o[i].ack_n)
+    );
   end
 
   // Handle recoverable external alert requests
-  logic [NumRecovExternalAlerts-1:0] soc_recov_alert_p, soc_recov_alert_n, recov_alert_external;
+  logic [NumRecovExternalAlerts-1:0] recov_alert_external, recov_alert_external_async;
+  logic [NumRecovExternalAlerts-1:0] soc_recov_alert_p, soc_recov_alert_n;
+  logic [NumRecovExternalAlerts-1:0] soc_recov_alert_ack_p_d, soc_recov_alert_ack_n_d;
+
+  // Acknowledge alert based on request.
+  // Ensure that Ack has always a valid encoding and we swallow a staggered _p/_n signal
+  always_comb begin
+    for(int i = 0; i < NumRecovExternalAlerts; i++) begin
+      if (soc_recov_alert_p[i] ^ soc_recov_alert_n[i]) begin
+        soc_recov_alert_ack_p_d[i] = soc_recov_alert_p[i];
+        soc_recov_alert_ack_n_d[i] = soc_recov_alert_n[i];
+      end else begin
+        soc_recov_alert_ack_p_d[i] = soc_recov_alert_o[i].ack_p;
+        soc_recov_alert_ack_n_d[i] = soc_recov_alert_o[i].ack_n;
+      end
+    end
+  end
+
   for (genvar i = 0; i < NumRecovExternalAlerts; i++) begin : gen_recov_alert_handling
-    // Buffer/anchor incoming signals to prevent undesired optimizations
-    prim_sec_anchor_buf #(
-      .Width(2)
-    ) u_prim_sec_anchor_buf (
-      .in_i ({soc_recov_alert_i[i].alert_p, soc_recov_alert_i[i].alert_n}),
-      .out_o({soc_recov_alert_p[i], soc_recov_alert_n[i]})
+    // Treat any positive value on `alert_p` and any negative value on `alert_n` as alert.
+    // Combinationally determine the alert on the input signals to generater an asynchronous
+    // wakeup.
+    assign recov_alert_external_async[i] =  soc_recov_alert_i[i].alert_p |
+                                           ~soc_recov_alert_i[i].alert_n;
+
+    // Synchronize external differentially encoded alert to internal clk domain
+    prim_flop_2sync #(
+      .Width(1),
+      .ResetValue(1'b0)
+    ) u_prim_flop_2sync_recov_alert_p (
+      .clk_i,
+      .rst_ni,
+      .d_i    (soc_recov_alert_i[i].alert_p),
+      .q_o    (soc_recov_alert_p[i])
+    );
+    prim_flop_2sync #(
+      .Width(1),
+      .ResetValue(1'b1)
+    ) u_prim_flop_2sync_recov_alert_n (
+      .clk_i,
+      .rst_ni,
+      .d_i    (soc_recov_alert_i[i].alert_n),
+      .q_o    (soc_recov_alert_n[i])
     );
     // Treat any positive value on `alert_p` and any negative value on `alert_n` as alert.
     assign recov_alert_external[i] = soc_recov_alert_p[i] | ~soc_recov_alert_n[i];
-    // Acknowledge alert based on request.
-    assign soc_recov_alert_o[i] = '{
-      ack_p: soc_recov_alert_p[i],
-      ack_n: soc_recov_alert_n[i]
-    };
+
+    prim_flop #(
+      .Width(1),
+      .ResetValue(1'b0)
+    ) u_prim_flop_recov_ack_p (
+      .clk_i,
+      .rst_ni,
+      .d_i    (soc_recov_alert_ack_p_d[i]),
+      .q_o    (soc_recov_alert_o[i].ack_p)
+    );
+
+    prim_flop #(
+      .Width(1),
+      .ResetValue(1'b1)
+    ) u_prim_flop_recov_ack_n (
+      .clk_i,
+      .rst_ni,
+      .d_i    (soc_recov_alert_ack_n_d[i]),
+      .q_o    (soc_recov_alert_o[i].ack_n)
+    );
   end
 
   // Aggregate integrity alerts
@@ -278,7 +379,7 @@ module soc_proxy
 
   // Generate internal wakeup signal combinatorially from asynchronous signals
   logic async_wkup;
-  assign async_wkup = |{fatal_alert_external, recov_alert_external, soc_intr_async_i};
+  assign async_wkup = |{fatal_alert_external_async, recov_alert_external_async, soc_intr_async_i};
 
   // Synchronize wakeup signal onto AON domain and filter out potential glitches
   prim_filter #(
