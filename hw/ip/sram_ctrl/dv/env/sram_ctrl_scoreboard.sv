@@ -347,15 +347,15 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
       // of the sram address space.
       `uvm_info(`gfn, "starting to wait for init", UVM_MEDIUM)
       cfg.clk_rst_vif.wait_clks(cfg.mem_bkdr_util_h.get_depth());
-      // Wait a small delay to latch the updated CSR status
-      #1;
+
       // If we are in escalated state, init_done will stay low.
       if (status_lc_esc == EscNone) begin
+        // To determine the real end of memory initialization check status.init_done.
+        csr_spinwait(.ptr(ral.status.init_done), .exp_data(1), .backdoor(1));
         exp_status[SramCtrlInitDone] = 1;
         // And flush the cip_scoreboard exp_mem since their contents are invalid.
         `uvm_info(`gfn, $sformatf("Initializing %s memory model", cfg.sram_ral_name), UVM_MEDIUM)
         exp_mem[cfg.sram_ral_name].init();
-        csr_wr(.ptr(ral.status.init_done), .value(1), .backdoor(1));
       end else begin
         exp_status[SramCtrlInitDone] = 0;
       end
@@ -390,8 +390,6 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
 
       // lc escalation status will be dropped after reset, no further action needed
       wait(cfg.lc_vif.lc_esc_en == lc_ctrl_pkg::Off);
-      // And wait a couple cycles (maybe three) for synchronizers.
-      cfg.clk_rst_vif.wait_clks(3);
 
       // there could be up to 6 transactions accepted but not compared due to escalation
       // 2 transactions are due to outstanding, allow another 4 pending items in the queue
@@ -452,8 +450,8 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
       // to properly synchronize and propagate the data through the DUT
       cfg.clk_rst_vif.wait_clks(KDI_PROPAGATION_CYCLES);
 
-      // Wait a small delay before updating CSR status
-      #1;
+      // To determine the real end of key processing check status.scr_key_valid.
+      csr_spinwait(.ptr(ral.status.scr_key_valid), .exp_data(1), .backdoor(1));
 
       cfg.in_key_req = 0;
       `uvm_info(`gfn, "Set in_key_req=0", UVM_MEDIUM)
@@ -472,9 +470,6 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
         exp_scr_key_rotated = MuBi4True;
         exp_status[SramCtrlScrKeyValid]     = 1;
         exp_status[SramCtrlScrKeySeedValid] = seed_valid;
-        csr_wr(.ptr(ral.scr_key_rotated), .value(MuBi4True), .backdoor(1));
-        csr_wr(.ptr(ral.status.scr_key_valid), .value(1), .backdoor(1));
-        csr_wr(.ptr(ral.status.scr_key_seed_valid), .value(seed_valid), .backdoor(1));
       end
       // sample coverage on seed_valid
       if (cfg.en_cov) begin

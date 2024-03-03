@@ -17,8 +17,10 @@ class sram_ctrl_throughput_vseq extends sram_ctrl_smoke_vseq;
     cfg.m_tl_agent_cfgs[cfg.sram_ral_name].allow_a_valid_drop_wo_a_ready = 0;
 
     req_mem_init();
-    // And wait for any side_effect of ram_init, since detection of the end is not very accurate.
-    cfg.clk_rst_vif.wait_clks(3);
+    // And wait for side_effects of ram_init to be done, since detection of the end is not very
+    // accurate and memory transactions wll be blocked until init is completely done. The number
+    // 20 below is not special, it is just a sensible guess.
+    cfg.clk_rst_vif.wait_clks(20);
 
     for (int i = 0; i < num_trans; i++) begin
       int num_cycles;
