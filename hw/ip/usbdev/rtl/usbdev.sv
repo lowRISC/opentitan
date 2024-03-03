@@ -313,7 +313,7 @@ module usbdev
   assign rx_wready_setup = rx_wready;
   // ... but regular OUT packets are not permitted to use the final entry; still qualified
   // with 'rx_wready' for when reset is asserted.
-  assign rx_wready_out   = rx_wready & (rx_depth < (RXFifoDepth - 1));
+  assign rx_wready_out   = rx_wready & (rx_depth < RXFifoDepthW'(RXFifoDepth - 1));
 
   // Received Buffer FIFO
   prim_fifo_sync #(
