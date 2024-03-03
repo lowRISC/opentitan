@@ -120,9 +120,9 @@
 
   // List of regressions.
   regressions: [
-    // {
-    //   name: smoke
-    //   tests: ["usbdev_smoke"]
-    // }
+    {
+      name: smoke
+      tests: ["usbdev_smoke"]
+    }
   ]
 }
