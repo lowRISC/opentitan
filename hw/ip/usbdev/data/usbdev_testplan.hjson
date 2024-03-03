@@ -816,6 +816,102 @@
       tests: ["usbdev_nak_to_out_trans_when_avbuffer_empty_rxfifo_full"]
     }
     {
+      name: spurious_tokens_ignored
+      desc: '''
+            Check that the device ignores packets with unexpected tokens such as NYET, PRE...
+            Also test ACK and NAK when not in response to a transmitted IN packet.
+
+            - Randomly transmit valid token packets that use unexpected/unsupported PIDs and,
+              in the case of ACK/NAK handshake packet that are out of sequence.
+            - This is important in ensuring that the USB device/communications does not fail in
+              the event of host handshake responses (to IN packets) being delayed.
+            - Test all possible PIDs other than SETUP, OUT and IN, including invalid PIDs where
+              the lower and upper nibbles are not complementary, and DATA0 and DATA1 PIDs without
+              a preceding SETUP, OUT or IN token packet.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: low_speed_traffic
+      desc: '''
+            Test that Low Speed traffic on the bus in the downstream direction is appropriately
+            ignored and does not cause the USB device to enter an invalid state.
+            Background: Hubs are permitted to propagate downstream Low Speed signaling to Full
+            Speed devices on other ports.
+
+            - Connect the USB device, with a SETUP- and OUT-capable endpoint.
+            - Repeatedly generate and check valid SETUP and OUT packets at Full Speed signaling
+              speeds, whilst interspersing Full Speed traffic that consists of PRE tokens followed
+              by randomized packet contents at Low Speed signaling.
+            - Check that the USB device receives correctly all of the SETUP and OUT packets and is
+              unaffected by the Low Speed signaling.
+            - In particular, check that it does not generate unexpected interrupts because these
+              could devalue the diagnostic use of those interrupts in detecting and reporting
+              unreliable connections.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: rand_bus_resets
+      desc: '''
+            Ensure that all of SETUP, OUT and IN traffic are robust against randomized
+            bus resets from the USB and that communications may successfully be resumed after
+            subsequent reconfiguration.
+
+            - Configure the USB device to receive SETUP, OUT and IN traffic (the regular
+              Default Pipe, ie. just Endpoint Zero, should suffice).
+            - During the process of normal device configuration, issue a Bus Reset to the device at
+              a random time (ensuring that it may occur during all transaction types), and then
+              restart the configuration, checking that it completes successfully this time when no
+              reset occurs.
+            - The intention is to ensure that the internal state machines and logic do not get
+              stuck or hold persistent inappropriate state.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: rand_disconnects
+      desc: '''
+            Ensure that all of SETUP, OUT and IN traffic are robust against randomized
+            disconnection of the USB and that communications may successfully be resumed after a
+            bus reset and reconfiguration. (The bus reset should occur have a disconnection that
+            was host-initiated, and before configuration traffic commences.)
+
+            - Configure the USB device to receive SETUP, OUT and IN traffic (the regular
+              Default Pipe, ie. just Endpoint Zero should suffice).
+            - During the process of normal device configuration, disconnect the USB at a random
+              time (ensuring that it may occur during all transaction types), and then restart
+              the configuration after a Bus Reset and check that
+              configuration completes successfully this time when no disconnection occurs.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: max_usb_traffic
+      desc: '''
+            Verify operation under maximal traffic to maximal endpoints, exercising all transfer
+            types and all packet lengths, with randomized delays on the CSR side when receiving
+            packets, supplying packets, making buffers available for use, and responding to
+            interrupts.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: stress_usb_traffic
+      desc: '''
+            Derived from 'max_usb_traffic' this also randomly introduces unexpected token packets,
+            low speed traffic, invalid traffic, bus resets and disconnects, to ensure that these do
+            not interfere with the transmission and reception of valid traffic.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
       name: data_toggle_restore
       desc: '''
             Verify that each of the IN and OUT Data Toggle bits may be both set and cleared by
@@ -866,6 +962,23 @@
             '''
       stage: V2
       tests: []
+    }
+    {
+      name: fifo_resets
+      desc: '''
+            Test the software-controlled FIFO reset functionality, introduced as a contingency
+            for error recovery and to permit reconfiguration of the USB device hardware without
+            resorting to use of the block-level asynchronous reset.
+
+            - Populate the USBDEV FIFOs with packets randomly.
+            - Choose a random set of FIFOs to reset.
+            - Check the FIFO levels match expectations.
+            - Note: the handling of the Received Buffer FIFO requires configuration of,
+              and transmission of packets to, the USB device since there is no direct means
+              to inject packets from the CSR side.
+            '''
+      stage: V2
+      tests: ["usbdev_fifo_rst"]
     }
   ]
 }
