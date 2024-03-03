@@ -149,7 +149,7 @@ module hmac_core import prim_sha2_pkg::*; (
     end else if (load_txcount) begin
       // When loading, add block size to the message length because the SW-visible message length
       // does not include the block containing the key xor'ed with the inner pad.
-      txcount <= message_length + BlockSize;
+      txcount <= message_length + 64'(BlockSize);
     end else if (inc_txcount) begin
       txcount[63:5] <= txcount[63:5] + 1'b1;
     end
