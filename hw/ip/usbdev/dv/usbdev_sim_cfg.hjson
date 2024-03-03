@@ -69,7 +69,7 @@
       uvm_test_seq: usbdev_av_buffer_vseq
     }
     {
-      name: setup_trans_ignored
+      name: usbdev_setup_trans_ignored
       uvm_test_seq: usbdev_setup_trans_ignored_vseq
     }
     {
@@ -85,7 +85,7 @@
       uvm_test_seq: usbdev_enable_vseq
     }
     {
-      name: in_trans
+      name: usbdev_in_trans
       uvm_test_seq: usbdev_in_trans_vseq
     }
     {
