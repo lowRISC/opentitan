@@ -100,7 +100,6 @@ class sram_ctrl_smoke_vseq extends sram_ctrl_base_vseq;
         req_mem_init();
       end
 
-
       // Do some random memory accesses
       `uvm_info(`gfn,
                 $sformatf("Performing %0d random memory accesses!", num_ops),
