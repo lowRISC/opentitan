@@ -73,7 +73,7 @@
               inputs and outputs.
             '''
       stage: V2
-      tests: ["usbdev_phy_pins_sense"]
+      tests: []
     }
     {
       name: wake_events
@@ -86,7 +86,7 @@
               as well as bus_disconnected and bus_reset during deep sleep.
             '''
       stage: V2
-      tests: ["usbdev_wake_events"]
+      tests: []
     }
     {
       name: av_buffer
@@ -116,7 +116,7 @@
               device in the data packet of the OUT transaction.
             '''
       stage: V2
-      tests: ["usbdev_rx_fifo"]
+      tests: []
     }
     {
       name: phy_config_tx_osc_test_mode
@@ -127,7 +127,7 @@
             - Verify that the device starts transmitting the J/K pattern continuously.
             '''
       stage: V2
-      tests: ["usbdev_phy_config_tx_osc_test_mode"]
+      tests: []
     }
     {
       name: phy_config_eop_single_bit_handling
@@ -141,7 +141,7 @@
             - Verify that the device should recognize this eop as valid and should not raise any link_err interrupts.
             '''
       stage: V2
-      tests: ["usbdev_phy_config_eop_single_bit_handling"]
+      tests: []
     }
     {
       name: phy_config_pinflip
@@ -152,7 +152,7 @@
             - Verify that the usb_dn goes high and usb_dp will become high impedance (Z).
             '''
       stage: V2
-      tests: ["usbdev_phy_config_pinflip"]
+      tests: []
     }
     {
       name: phy_config_usb_ref_disable
@@ -164,7 +164,7 @@
             - Verify that the clock synchronization signal usb_ref_0 and usb_ref_val will not be generated.
             '''
       stage: V2
-      tests: ["usbdev_phy_config_usb_ref_disable"]
+      tests: []
     }
     {
       name: max_length_out_transaction
@@ -188,7 +188,7 @@
               was successfully transmitted.
             '''
       stage: V2
-      tests: ["usbdev_max_length_in_transaction"]
+      tests: []
     }
     {
       name: min_length_out_transaction
@@ -212,7 +212,7 @@
               is received then in_sent register's bit will be 1.
             '''
       stage: V2
-      tests: ["usbdev_min_length_in_transaction"]
+      tests: []
     }
     {
       name: random_length_out_trans
@@ -238,7 +238,7 @@
               register's bit will be 1.
             '''
       stage: V2
-      tests: ["usbdev_random_length_in_trans"]
+      tests: []
     }
     {
       name: out_stall
@@ -262,7 +262,7 @@
             - Verify that the device responds with the PID STALL Handshake.
             '''
       stage: V2
-      tests: ["usbdev_in_stall"]
+      tests: []
     }
     {
       name: out_iso
@@ -274,7 +274,7 @@
             - Verify that the device will not send any handshake packet.
             '''
       stage: V2
-      tests: ["usbdev_out_iso"]
+      tests: []
     }
     {
       name: in_iso
@@ -285,7 +285,7 @@
             - Verify that the device will send data packet but will not expect any handshake packet from host.
             '''
       stage: V2
-      tests: ["usbdev_in_iso"]
+      tests: []
     }
     {
       name: pkt_received
@@ -318,7 +318,7 @@
             - Verify that the corresponding Interrupt pin goes high after the link disconnected.
             '''
       stage: V2
-      tests: ["usbdev_disconnected"]
+      tests: []
     }
     {
       name: host_lost
@@ -331,7 +331,7 @@
             - It should come after every 1 ms.
             '''
       stage: V2
-      tests: ["usbdev_host_lost"]
+      tests: []
     }
     {
       name: link_reset
@@ -344,7 +344,7 @@
             - Verify that the interrupt pin link_reset goes high once the link reset.
             '''
       stage: V2
-      tests: ["usbdev_link_reset"]
+      tests: []
     }
     {
       name: link_suspend
@@ -357,7 +357,7 @@
             - Verify that the interrupt pin goes high once the link suspended.
             '''
       stage: V2
-      tests: ["usbdev_link_suspend"]
+      tests: []
     }
     {
       name: link_resume
@@ -369,7 +369,7 @@
             - Verify that the interrupt pin link_resume goes high once the link resume.
             '''
       stage: V2
-      tests: ["usbdev_link_resume"]
+      tests: []
     }
     {
       name: av_empty
@@ -382,7 +382,7 @@
             - Verify that this interrupt pin goes high once the available fifo is empty.
             '''
       stage: V2
-      tests: ["usbdev_av_empty"]
+      tests: []
     }
     {
       name: rx_full
@@ -395,7 +395,7 @@
             - Verify that this interrupt pin should go high once the received fifo is full.
             '''
       stage: V2
-      tests: ["usbdev_rx_full"]
+      tests: []
     }
     {
       name: av_overflow
@@ -408,7 +408,7 @@
               reached the overflowing condition.
             '''
       stage: V2
-      tests: ["usbdev_av_overflow"]
+      tests: []
     }
     {
       name: enable
@@ -434,7 +434,7 @@
             - Verify that the resume_link_active interrupt goes high and device will be resumed.
             '''
       stage: V2
-      tests: ["usbdev_resume_link_active"]
+      tests: []
     }
     {
       name: device_address
@@ -448,7 +448,7 @@
             - Verify that the device ignores all packets that are sent to other address.
             '''
       stage: V2
-      tests: ["usbdev_device_address"]
+      tests: []
     }
     {
       name: link_in_err
@@ -462,7 +462,7 @@
             - Verify that the link_in_err should go high following the handshake packet sent by the host.
             '''
       stage: V2
-      tests: ["usbdev_link_in_err"]
+      tests: []
     }
     {
       name: rx_crc_err
@@ -473,7 +473,7 @@
             - Verify that the rx_crc_err should go high following the reception of erroneous packet.
             '''
       stage: V2
-      tests: ["usbdev_rx_crc_err"]
+      tests: []
     }
     {
       name: rx_pid_err
@@ -484,7 +484,7 @@
             - Verify that the interrupt pin goes high indicating PID error.
             '''
       stage: V2
-      tests: ["usbdev_rx_pid_err"]
+      tests: []
     }
     {
       name: rx_bitstuff_err
@@ -495,7 +495,7 @@
             - Verify that the interrupt pin goes high indicating bitstuff error.
             '''
       stage: V2
-      tests: ["usbdev_rx_bitstuff_err"]
+      tests: []
     }
     {
       name: link_out_err
@@ -507,7 +507,7 @@
             - Verify that the interrupt pin goes high indicating an error in the link in OUT transaction.
             '''
       stage: V2
-      tests: ["usbdev_link_out_err"]
+      tests: []
     }
     {
       name: invalid_data1_data0_toggle_test
@@ -519,7 +519,7 @@
             - Verify that the interrupt pin goes high indicating an error in the link while OUT transaction.
             '''
       stage: V2
-      tests: ["usbdev_invalid_data1_data0_toggle_test"]
+      tests: []
     }
     {
       name: setup_stage
@@ -531,7 +531,7 @@
             - Verify that the device ACK the setup packet and prepare for the data stage.
             '''
       stage: V2
-      tests: ["usbdev_setup_stage"]
+      tests: []
     }
     {
       name: in_data_stage
@@ -543,7 +543,7 @@
               required by host or a NAK packet if there is no data available.
             '''
       stage: V2
-      tests: ["usbdev_in_data_stage"]
+      tests: []
     }
     {
       name: out_data_stage
@@ -555,7 +555,7 @@
               an ACK packet or return a NAK if it is still processing previous data.
             '''
       stage: V2
-      tests: ["usbdev_out_data_stage"]
+      tests: []
     }
     {
       name: out_status_stage
@@ -568,7 +568,7 @@
               sending an ACK packet or return NAK if it is still processing or STALL if an error occurred.
             '''
       stage: V2
-      tests: ["usbdev_out_status_stage"]
+      tests: []
     }
     {
       name: in_status_stage
@@ -580,7 +580,7 @@
               STALL for error and NAK for busy followed by ACK from Host.
             '''
       stage: V2
-      tests: ["usbdev_in_status_stage"]
+      tests: []
     }
     {
       name: endpoint_access
@@ -593,7 +593,7 @@
               accesses and data_packet for IN Accesses.
             '''
       stage: V2
-      tests: ["usbdev_endpoint_access"]
+      tests: []
     }
     {
       name: disable_endpoint
@@ -607,7 +607,7 @@
               particular endpoint will be ignored.
             '''
       stage: V2
-      tests: ["usbdev_disable_endpoint"]
+      tests: []
     }
     {
       name: out_trans_nak
@@ -659,7 +659,7 @@
             - Verify that we will get STALL response when try to attempt IN/OUT transactions.
             '''
       stage: V2
-      tests: ["usbdev_stall_trans"]
+      tests: []
     }
     {
       name: setup_priority_over_stall_response
@@ -673,7 +673,7 @@
               bits for that endpoint
             '''
       stage: V2
-      tests: ["usbdev_setup_priority_over_stall_response"]
+      tests: []
     }
     {
       name: stall_priority_over_NAK
@@ -686,7 +686,7 @@
             - Verify that the STALL being higher in priority will take precedence over NAK responses.
             '''
       stage: V2
-      tests: ["usbdev_stall_priority_over_NAK"]
+      tests: []
     }
     {
       name: pending_in_trans
@@ -699,7 +699,7 @@
             - Verify that the rdy bit in the configin_ep will be cleared and pend bit will be set to 1.
             '''
       stage: V2
-      tests: ["usbdev_pending_in_trans"]
+      tests: []
     }
     {
       name: streaming_test
@@ -715,7 +715,7 @@
               going full.
             '''
       stage: V2
-      tests: ["usbdev_streaming_test"]
+      tests: []
     }
     {
       name: max_clock_error
@@ -729,7 +729,7 @@
               end of transaction.
             '''
       stage: V2
-      tests: ["usbdev_max_clock_error"]
+      tests: []
     }
     {
       name: max_phase_error
@@ -743,7 +743,7 @@
               of transaction.
             '''
       stage: V2
-      tests: ["usbdev_max_phase_error"]
+      tests: []
     }
     {
       name: min_inter_pkt_delay
@@ -756,7 +756,7 @@
               successive packets is less than 2 bit times.
             '''
       stage: V2
-      tests: ["usbdev_min_inter_pkt_delay"]
+      tests: []
     }
     {
       name: max_inter_pkt_delay
@@ -769,7 +769,7 @@
               more than max interpacket delay.
             '''
       stage: V2
-      tests: ["usbdev_max_inter_pkt_delay"]
+      tests: []
     }
     {
       name: device_timeout_missing_host_handshake
@@ -785,7 +785,7 @@
               The register bit will be 0 for the endpoint involved in the transaction.
             '''
       stage: V2
-      tests: ["usbdev_device_timeout_missing_host_handshake"]
+      tests: []
     }
     {
       name: device_timeout
@@ -799,7 +799,7 @@
               after the preceding one in the same transaction.
             '''
       stage: V2
-      tests: ["usbdev_device_timeout"]
+      tests: []
     }
     {
       name: nak_to_out_trans_when_avbuffer_empty_rxfifo_full
@@ -813,7 +813,7 @@
               responses even though endpoint is enabled.
             '''
       stage: V2
-      tests: ["usbdev_nak_to_out_trans_when_avbuffer_empty_rxfifo_full"]
+      tests: []
     }
     {
       name: data_toggle_restore
