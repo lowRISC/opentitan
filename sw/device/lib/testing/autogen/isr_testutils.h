@@ -676,11 +676,13 @@ void isr_testutils_gpio_isr(plic_isr_ctx_t plic_ctx, gpio_isr_ctx_t gpio_ctx,
  *
  * @param plic_ctx A PLIC ISR context handle.
  * @param hmac_ctx A(n) hmac ISR context handle.
+ * @param mute_status_irq set to true to disable the serviced status type IRQ.
  * @param[out] peripheral_serviced Out param for the peripheral that was
  * serviced.
  * @param[out] irq_serviced Out param for the IRQ that was serviced.
  */
 void isr_testutils_hmac_isr(plic_isr_ctx_t plic_ctx, hmac_isr_ctx_t hmac_ctx,
+                            bool mute_status_irq,
                             top_earlgrey_plic_peripheral_t *peripheral_serviced,
                             dif_hmac_irq_t *irq_serviced);
 

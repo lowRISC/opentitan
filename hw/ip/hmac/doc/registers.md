@@ -43,15 +43,29 @@ Interrupt State Register
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "hmac_done", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "fifo_empty", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "hmac_err", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 29}], "config": {"lanes": 1, "fontsize": 10, "vspace": 120}}
+{"reg": [{"name": "hmac_done", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "fifo_empty", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "hmac_err", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 29}], "config": {"lanes": 1, "fontsize": 10, "vspace": 120}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name       | Description                                                       |
-|:------:|:------:|:-------:|:-----------|:------------------------------------------------------------------|
-|  31:3  |        |         |            | Reserved                                                          |
-|   2    |  rw1c  |   0x0   | hmac_err   | HMAC error occurred. ERR_CODE register shows which error occurred |
-|   1    |  rw1c  |   0x0   | fifo_empty | Message FIFO empty condition                                      |
-|   0    |  rw1c  |   0x0   | hmac_done  | HMAC-256 completes a message with key                             |
+|  Bits  |  Type  |  Reset  | Name                                  |
+|:------:|:------:|:-------:|:--------------------------------------|
+|  31:3  |        |         | Reserved                              |
+|   2    |  rw1c  |   0x0   | [hmac_err](#intr_state--hmac_err)     |
+|   1    |   ro   |   0x0   | [fifo_empty](#intr_state--fifo_empty) |
+|   0    |  rw1c  |   0x0   | [hmac_done](#intr_state--hmac_done)   |
+
+### INTR_STATE . hmac_err
+HMAC error occurred. ERR_CODE register shows which error occurred
+
+### INTR_STATE . fifo_empty
+The message FIFO is empty.
+This interrupt is raised only if the message FIFO is actually writable by software, i.e., if all of the following conditions are met:
+i) The HMAC block is not running in HMAC mode and performing the second round of computing the final hash of the outer key as well as the result of the first round using the inner key.
+ii) Software has not yet written the Process or Stop command to finish the hashing operation.
+For the interrupt to be raised, the message FIFO must also have been full previously.
+Otherwise, the hardware empties the FIFO faster than software can fill it and there is no point in interrupting the software to inform it about the message FIFO being empty.
+
+### INTR_STATE . hmac_done
+HMAC-256 completes a message with key
 
 ## INTR_ENABLE
 Interrupt Enable Register

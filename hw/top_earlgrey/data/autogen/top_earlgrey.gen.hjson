@@ -14383,7 +14383,7 @@
       width: 1
       type: interrupt
       module_name: hmac
-      intr_type: IntrType.Event
+      intr_type: IntrType.Status
       default_val: false
     }
     {

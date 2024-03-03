@@ -372,6 +372,7 @@ void isr_testutils_gpio_isr(plic_isr_ctx_t plic_ctx, gpio_isr_ctx_t gpio_ctx,
 }
 
 void isr_testutils_hmac_isr(plic_isr_ctx_t plic_ctx, hmac_isr_ctx_t hmac_ctx,
+                            bool mute_status_irq,
                             top_earlgrey_plic_peripheral_t *peripheral_serviced,
                             dif_hmac_irq_t *irq_serviced) {
   // Claim the IRQ at the PLIC.
@@ -402,6 +403,9 @@ void isr_testutils_hmac_isr(plic_isr_ctx_t plic_ctx, hmac_isr_ctx_t hmac_ctx,
   CHECK_DIF_OK(dif_hmac_irq_get_type(hmac_ctx.hmac, irq, &type));
   if (type == kDifIrqTypeEvent) {
     CHECK_DIF_OK(dif_hmac_irq_acknowledge(hmac_ctx.hmac, irq));
+  } else if (mute_status_irq) {
+    CHECK_DIF_OK(
+        dif_hmac_irq_set_enabled(hmac_ctx.hmac, irq, kDifToggleDisabled));
   }
 
   // Complete the IRQ at the PLIC.
