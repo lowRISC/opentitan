@@ -113,15 +113,26 @@ Error                        | Value | Description
 `SwHashStartWhenActive`      | `0x4` | The error is reported when CMD.start is received while HMAC is running.
 `SwPushMsgWhenDisallowed`    | `0x5` | After CMD.process is received, the MSG_FIFO should not by updated by SW. This error is reported in that case.
 
+## FIFO Depth and Empty status
 
+If the SW is slow and the SHA2 engine pops the data fast enough, the Message FIFO's depth may remain **0**.
+The Message FIFO's `fifo_empty` status bit, however, is lowered for a cycle.
 
-### FIFO_EMPTY
+However, if the SHA2 engine is currently busy, the Message FIFO may actually run full (indicated by the `fifo_full` status bit).
+Resolving this conditions may take several dozens of cycles.
+After the SHA2 engine starts popping the data again, the Message FIFO will eventually run empty again and the `fifo_empty` status interrupt will fire.
+Note that the `fifo_empty` status interrupt will not fire if i) the Message FIFO is not writable by software, or ii) after software has written either the `Process` or `Stop` command.
 
-If the FIFO_FULL interrupt occurs, it is recommended the software does not write
-more data into [`MSG_FIFO`](registers.md#msg_fifo) until the interrupt is cleared and the status
-[`STATUS.fifo_full`](registers.md#status) is lowered. Whilst the FIFO is full the HMAC will block
-writes until the FIFO has space which will cause back-pressure on the
-interconnect.
+The recommended approach for software to write messages is:
+
+1. Check the FIFO depth [`STATUS.fifo_depth`](registers.md#status). This represents the number of entry slots currently occupied in the FIFO.
+2. Calculate the remaining size as `<max number of fifo entries> - <STATUS.fifo_depth>)`.
+3. Write data to fill the remaining size.
+4. Repeat until all data is written.
+   In case the FIFO runs full (check [`STATUS.fifo_full`](registers.md#status)), software can optionally wait for the `fifo_empty` status interrupt before continuing.
+
+If the FIFO runs full, software should not continue to write data into [`MSG_FIFO`](registers.md#msg_fifo) and first wait the status flag [`STATUS.fifo_full`](registers.md#status) to lower.
+Whilst the FIFO is full, the HMAC will block writes until the FIFO has space which will cause back-pressure on the interconnect.
 
 ## Device Interface Functions (DIFs)
 

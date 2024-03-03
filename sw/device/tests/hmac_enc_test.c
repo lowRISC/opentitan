@@ -41,8 +41,8 @@ static const dif_hmac_transaction_t kHmacTransactionConfig = {
  * overrides the default OTTF implementation.
  */
 void ottf_external_isr(uint32_t *exc_info) {
-  isr_testutils_hmac_isr(plic_ctx, hmac_ctx, &peripheral_serviced,
-                         &irq_serviced);
+  isr_testutils_hmac_isr(plic_ctx, hmac_ctx, /* mute_status_irq */ false,
+                         &peripheral_serviced, &irq_serviced);
 }
 
 /**
@@ -79,9 +79,6 @@ bool test_main(void) {
 
   irqs_init();
 
-  // Expect the fifo empty irq after pushing data.
-  hmac_ctx.expected_irq = kDifHmacIrqFifoEmpty;
-  irq_serviced = UINT32_MAX;
   // Use HMAC in SHA256 mode to generate a 256bit key from `kHmacRefLongKey`.
   CHECK_DIF_OK(
       dif_hmac_mode_sha256_start(hmac_ctx.hmac, kHmacTransactionConfig));
@@ -89,12 +86,6 @@ bool test_main(void) {
       hmac_ctx.hmac, (char *)kHmacRefLongKey, sizeof(kHmacRefLongKey)));
   CHECK_STATUS_OK(hmac_testutils_check_message_length(
       hmac_ctx.hmac, sizeof(kHmacRefLongKey) * 8));
-
-  // If the irq has't fired yet, wait for the `fifoEmpty` interrupt .
-  if (irq_serviced != hmac_ctx.expected_irq) {
-    wait_for_interrupt();
-  }
-  CHECK(irq_serviced == hmac_ctx.expected_irq);
 
   // Expect the done irq after processing data.
   hmac_ctx.expected_irq = kDifHmacIrqHmacDone;

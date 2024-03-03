@@ -80,7 +80,16 @@ typedef enum dif_hmac_irq {
    */
   kDifHmacIrqHmacDone = 0,
   /**
-   * Message FIFO empty condition
+   * The message FIFO is empty. This interrupt is raised only if the message
+   * FIFO is actually writable by software, i.e., if all of the following
+   * conditions are met: i) The HMAC block is not running in HMAC mode and
+   * performing the second round of computing the final hash of the outer key as
+   * well as the result of the first round using the inner key. ii) Software has
+   * not yet written the Process or Stop command to finish the hashing
+   * operation. For the interrupt to be raised, the message FIFO must also have
+   * been full previously. Otherwise, the hardware empties the FIFO faster than
+   * software can fill it and there is no point in interrupting the software to
+   * inform it about the message FIFO being empty.
    */
   kDifHmacIrqFifoEmpty = 1,
   /**

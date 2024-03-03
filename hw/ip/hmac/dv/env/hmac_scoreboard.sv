@@ -107,8 +107,8 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
               end while (intr != intr.first);
             end
           end
-          "intr_state": begin // wr intr_state.fifo_empty to 1 will clear the fifo_empty bit
-            if (item.a_data[HmacMsgFifoEmpty]) fifo_empty = 0;
+          "intr_state": begin
+            // Do nothing
           end
           "cfg": begin
             if (hmac_start) return; // won't update configs if hash start
@@ -204,6 +204,9 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
             check_idle_o(1'b1);
             flush();
           end
+          // TODO(#21815): Verify FIFO empty status interrupt.
+          fifo_empty = item.d_data[HmacMsgFifoEmpty];
+          void'(ral.intr_state.fifo_empty.predict(.value(fifo_empty), .kind(UVM_PREDICT_READ)));
         end
         "digest_0", "digest_1", "digest_2", "digest_3", "digest_4", "digest_5", "digest_6",
         "digest_7": begin

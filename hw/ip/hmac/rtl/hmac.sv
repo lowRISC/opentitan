@@ -114,6 +114,7 @@ module hmac
   logic hmac_core_idle;
   logic sha_core_idle;
   logic hash_running;
+  logic idle;
 
   ///////////////////////
   // Connect registers //
@@ -276,15 +277,6 @@ module hmac
   ////////////////
   // Interrupts //
   ////////////////
-  logic fifo_empty_q, fifo_empty_event;
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      fifo_empty_q <= '1; // By default, it is empty
-    end else if (!hmac_fifo_wsel) begin
-      fifo_empty_q <= fifo_empty;
-    end
-  end
-  assign fifo_empty_event = fifo_empty & ~fifo_empty_q;
 
   // instantiate interrupt hardware primitive
   prim_intr_hw #(.Width(1)) intr_hw_hmac_done (
@@ -299,10 +291,65 @@ module hmac
     .hw2reg_intr_state_d_o  (hw2reg.intr_state.hmac_done.d),
     .intr_o                 (intr_hmac_done_o)
   );
-  prim_intr_hw #(.Width(1)) intr_hw_fifo_empty (
+
+  // FIFO empty interrupt
+  //
+  // The FIFO empty interrupt is **not useful** for software if:
+  // - The HMAC block is running in HMAC mode and performing the second round of computing the
+  //   final hash of the outer key as well as the result of the first round using the inner key.
+  //   The FIFO is then managed entirely by the hardware.
+  // - The FIFO is currently not writeable by software.
+  // - Software has already written the Process command. The HMAC block will now empty the
+  //   FIFO and load its content into the SHA2 core, add the padding and then perfom
+  //   the final hashing operation. Software cannot append the message further.
+  // - Software has written the Stop command. The HMAC block will not wait for further input from
+  //   software after finishing the current block.
+  //
+  // The FIFO empty interrupt can be **useful** for software in particular if:
+  // - The FIFO was completely full previously. However, unless the HMAC block is currently
+  //   processing a block, it always empties the message FIFO faster than software can fill it up,
+  //   meaning the message FIFO is empty most of the time. Note, the empty status is signaled only
+  //   once after the FIFO was completely full. The FIFO needs to be full again for the empty
+  //   status to be signaled again next time it's empty.
+  logic status_fifo_empty, fifo_empty_gate;
+  logic fifo_empty_negedge, fifo_empty_q;
+  logic fifo_full_seen_d, fifo_full_seen_q;
+  assign fifo_empty_negedge = fifo_empty_q & ~fifo_empty;
+
+  // Track whether the FIFO was full after being empty. We clear the tracking:
+  // - When receiving the Start, Continue, Process or Stop command. This is to start over for the
+  //   next message.
+  // - When seeing a negative edge on the empty signal. This signals that software has reacted to
+  //   the interrupt and is filling up the FIFO again.
+  assign fifo_full_seen_d =
+      fifo_full                             ? 1'b 1 :
+      fifo_empty_negedge                    ? 1'b 0 :
+      reg_hash_start || reg_hash_continue ||
+          reg_hash_process || reg_hash_stop ? 1'b 0 : fifo_full_seen_q;
+
+  // The interrupt is gated unless software is actually allowed to write the FIFO and the FIFO was
+  // full before.
+  assign fifo_empty_gate = ~msg_allowed || ~fifo_full_seen_q;
+
+  assign status_fifo_empty = fifo_empty_gate ? 1'b 0 : fifo_empty;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      fifo_empty_q     <= 1'b 0;
+      fifo_full_seen_q <= 1'b 0;
+    end else begin
+      fifo_empty_q     <= fifo_empty;
+      fifo_full_seen_q <= fifo_full_seen_d;
+    end
+  end
+
+  prim_intr_hw #(
+    .Width(1),
+    .IntrT("Status")
+  ) intr_hw_fifo_empty (
     .clk_i,
     .rst_ni,
-    .event_intr_i           (fifo_empty_event),
+    .event_intr_i           (status_fifo_empty),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.fifo_empty.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.fifo_empty.q),
     .reg2hw_intr_test_qe_i  (reg2hw.intr_test.fifo_empty.qe),
@@ -648,7 +695,6 @@ module hmac
   //  - Clean interrupt status
   // ICEBOX(#12958): Revise prim_packer and replace `reg_fifo_wvalid` to the
   // empty status.
-  logic idle;
   assign idle = !reg_fifo_wvalid && !fifo_rvalid
               && hmac_core_idle && sha_core_idle;
 
