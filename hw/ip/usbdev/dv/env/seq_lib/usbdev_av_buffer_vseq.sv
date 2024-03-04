@@ -10,13 +10,8 @@ class usbdev_av_buffer_vseq extends usbdev_base_vseq;
 
   usb20_item      item;
   RSP             rsp_item;
-  rand bit [3:0]  endp;
   bit      [6:0]  num_of_bytes = 8;
   bit             rand_or_not = 0;
-
-  constraint endpoint_c {
-    endp inside {[0:11]};
-  }
 
   task body();
     // Configure transaction
