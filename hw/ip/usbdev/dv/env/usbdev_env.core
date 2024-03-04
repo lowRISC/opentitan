@@ -41,6 +41,7 @@ filesets:
       - seq_lib/usbdev_out_stall_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_out_trans_nak_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_fifo_rst_vseq.sv: {is_include_file: true}
+      - seq_lib/usbdev_rx_fifo_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:

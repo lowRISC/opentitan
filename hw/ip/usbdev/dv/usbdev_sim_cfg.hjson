@@ -94,23 +94,31 @@
     }
     {
       name: usbdev_random_length_out_trans
-      uvm_test_seq: random_length_out_transaction_vseq
+      uvm_test_seq: usbdev_random_length_out_transaction_vseq
     }
     {
       name: usbdev_min_length_out_transaction
-      uvm_test_seq: min_length_out_transaction_vseq
+      uvm_test_seq: usbdev_min_length_out_transaction_vseq
     }
     {
       name: usbdev_max_length_out_transaction
-      uvm_test_seq: max_length_out_transaction_vseq
+      uvm_test_seq: usbdev_max_length_out_transaction_vseq
     }
     {
       name: usbdev_out_stall
-      uvm_test_seq: out_stall_vseq
+      uvm_test_seq: usbdev_out_stall_vseq
     }
     {
       name: usbdev_out_trans_nak
-      uvm_test_seq: out_trans_nak_vseq
+      uvm_test_seq: usbdev_out_trans_nak_vseq
+    }
+    {
+      name: usbdev_fifo_rst
+      uvm_test_seq: usbdev_fifo_rst_vseq
+    }
+    {
+      name: usbdev_rx_fifo
+      uvm_test_seq: usbdev_rx_fifo_vseq
     }
     {
       name: usbdev_fifo_rst

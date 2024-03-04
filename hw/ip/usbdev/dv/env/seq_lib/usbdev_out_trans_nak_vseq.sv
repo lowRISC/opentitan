@@ -10,8 +10,6 @@ class usbdev_out_trans_nak_vseq extends usbdev_base_vseq;
 
   task body();
     super.dut_init("HARD");
-    cfg.clk_rst_vif.wait_clks(200);
-    clear_all_interrupts();
     // Configure out transaction
     configure_out_trans();
     // Clear RX Out
