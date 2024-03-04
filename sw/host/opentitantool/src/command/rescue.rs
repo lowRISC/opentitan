@@ -11,7 +11,7 @@ use std::path::PathBuf;
 
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
-use opentitanlib::rescue::boot_svc::{BootDataSlot, NextBootBl0};
+use opentitanlib::chip::boot_svc::{BootDataSlot, NextBootBl0};
 use opentitanlib::rescue::serial::RescueSerial;
 
 #[derive(Debug, serde::Serialize, Annotate)]
