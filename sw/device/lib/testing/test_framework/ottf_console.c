@@ -173,10 +173,18 @@ static status_t manage_flow_control(const dif_uart_t *uart,
     TRY(dif_uart_rx_bytes_available(uart, &avail));
     if (avail < kFlowControlLowWatermark &&
         flow_control_state != kOttfConsoleFlowControlResume) {
+      // Enable RX watermark interrupt when RX FIFO level is below the
+      // watermark.
+      CHECK_DIF_OK(dif_uart_irq_set_enabled(uart, kDifUartIrqRxWatermark,
+                                            kDifToggleEnabled));
       ctrl = kOttfConsoleFlowControlResume;
     } else if (avail >= kFlowControlHighWatermark &&
                flow_control_state != kOttfConsoleFlowControlPause) {
       ctrl = kOttfConsoleFlowControlPause;
+      // RX watermark interrupt is status type, so disable the interrupt whilst
+      // RX FIFO is above the watermark to avoid an inifite loop of ISRs.
+      CHECK_DIF_OK(dif_uart_irq_set_enabled(uart, kDifUartIrqRxWatermark,
+                                            kDifToggleDisabled));
     } else {
       return OK_STATUS((int32_t)flow_control_state);
     }
