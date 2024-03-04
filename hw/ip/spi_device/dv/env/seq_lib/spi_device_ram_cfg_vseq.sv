@@ -18,7 +18,7 @@ class spi_device_ram_cfg_vseq extends spi_device_base_vseq;
       `DV_CHECK_STD_RANDOMIZE_FATAL(src_ram_cfg)
       `DV_CHECK(uvm_hdl_deposit(src_path, src_ram_cfg))
       #($urandom_range(1, 100) * 1ns);
-      if (spi_device_env_pkg::SRAM_TYPE == spi_device_pkg::SramType2p) begin
+      if (`SRAM_TYPE == spi_device_pkg::SramType2p) begin
         `DV_CHECK(uvm_hdl_read(dst_path, dst_ram_cfg))
         `DV_CHECK_CASE_EQ(src_ram_cfg, dst_ram_cfg)
       end else begin // 1r1w
