@@ -260,10 +260,8 @@ mod_mul_256x256:
      over from the multiplication routine. */
   bn.sel    w22, w28, w31, M
 
-  /* Reduce product modulo m. */
-  jal       x1, p256_reduce
-
-  ret
+  /* Reduce product modulo m (tail-call). */
+  jal       x0, p256_reduce
 
 /**
  * 320- by 128-bit modular multiplication for P-256 coordinate and scalar fields.
@@ -312,10 +310,8 @@ mod_mul_320x128:
      over from the multiplication routine. */
   bn.sel    w22, w28, w31, M
 
-  /* Reduce product modulo m. */
-  jal       x1, p256_reduce
-
-  ret
+  /* Reduce product modulo m (tail-call). */
+  jal       x0, p256_reduce
 
 /**
  * 256-bit modular multiplication for P-256 coordinate field.
@@ -1091,11 +1087,10 @@ proj_double:
   bn.mov    w12, w9
   bn.mov    w13, w10
 
-  /* R = (x_r, y_r, z_r) = (w11, w12, w13) = P+Q
+  /* Tail-call to addition.
+     R = (x_r, y_r, z_r) = (w11, w12, w13) = P+Q
        = (w8, w9, w10) + (w11, w12, w13) = (x_p, y_p, z_p) + (x_q, y_q, z_q) */
-  jal       x1, proj_add
-
-  ret
+  jal       x0, proj_add
 
 
 /**
@@ -1280,13 +1275,11 @@ scalar_mult_int:
 
   /* Check if the z-coordinate of Q is 0. If so, fail; this represents the
      point at infinity and means the scalar was zero mod n, which likely
-     indicates a fault attack.
+     indicates a fault attack. Tail-call.
 
      FG0.Z <= if (w10 == 0) then 1 else 0 */
   bn.cmp    w10, w31
-  jal       x1, trigger_fault_if_fg0_z
-
-  ret
+  jal       x0, trigger_fault_if_fg0_z
 
 /**
  * P-256 scalar multiplication with base point G
