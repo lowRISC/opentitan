@@ -7,7 +7,7 @@
  *
  * During the boot process, this program should remain loaded. This binary has
  * the following modes:
- *   1. MODE_SEC_BOOT_MODEXP: RSA-3072 modexp (to verify a code signature).
+ *   1. MODE_SIGVERIFY: ECDSA-P256 signature verification.
  *   2. MODE_ATTESTATION_KEYGEN: Derive a new attestation keypair (ECDSA-P256).
  *   3. MODE_ATTESTATION_ENDORSE: Sign with a saved attestation signing key.
  *   4. MODE_ATTESTATION_KEY_SAVE: Save an attestation signing key.
@@ -56,7 +56,7 @@
  * as `li`. If support is added, we could use 32-bit values here instead of
  * 11-bit.
  */
-.equ MODE_SEC_BOOT_MODEXP, 0x7d3
+.equ MODE_SIGVERIFY, 0x7d3
 .equ MODE_ATTESTATION_KEYGEN, 0x2bf
 .equ MODE_ATTESTATION_ENDORSE, 0x5e8
 .equ MODE_ATTESTATION_KEY_SAVE, 0x64d
@@ -67,8 +67,8 @@ start:
   la    x2, mode
   lw    x2, 0(x2)
 
-  addi  x3, x0, MODE_SEC_BOOT_MODEXP
-  beq   x2, x3, sec_boot_modexp
+  addi  x3, x0, MODE_SIGVERIFY
+  beq   x2, x3, sigverify
 
   addi  x3, x0, MODE_ATTESTATION_KEYGEN
   beq   x2, x3, attestation_keygen
@@ -85,38 +85,31 @@ start:
   unimp
 
 /**
- * RSA-3072 modular exponentation.
+ * ECDSA-P256 signature verification.
  *
- * Computes msg = (sig^65537) mod M, where
- *          sig is the signature
- *          M is the public key modulus
+ * The result of the verification is returned in two variables: `ok`
+ * indicates whether the signature passed basic validity checks, and `x_r`
+ * indicates the recovered value. A signature passes verification only if BOTH:
+ * - `ok` is true, and
+ * - `x_r` is equal to the original `r` value.
  *
- * Uses the specialized RSA-3072 OTBN modexp implementation to recover an
- * encoded message from an input signature. Ibex needs to check that the
- * encoded message matches the encoding of the expected message to complete
- * signature verification.
+ * If `ok` is false, the value in `x_r` is meaningless; callers
+ * should check both.
  *
- * Assumes that the Montgomery constant m0_inv is provided, but computes the RR
- * constant on the fly. The only exponent supported is e=65537.
- *
- * @param[in] dmem[in_mod]: Modulus of the RSA public key
- * @param[in] dmem[rsa_inout]: Signature to check against
- * @param[in] dmem[m0inv]: Montgomery constant (-(M^-1)) mod 2^256
- * @param[out] dmem[rsa_inout]: Recovered message digest
+ * @param[in]  dmem[msg]: message to be verified (256 bits)
+ * @param[in]  dmem[r]:   r component of signature (256 bits)
+ * @param[in]  dmem[s]:   s component of signature (256 bits)
+ * @param[in]  dmem[x]:   affine x-coordinate of public key (256 bits)
+ * @param[in]  dmem[y]:   affine y-coordinate of public key (256 bits)
+ * @param[out] dmem[ok]:  success/failure of basic checks (32 bits)
+ * @param[out] dmem[x_r]: dmem buffer for reduced affine x_r-coordinate (x_1)
  */
-sec_boot_modexp:
-  /* Compute R^2 (same for both exponents): dmem[rr] <= R^2 */
-  jal      x1, compute_rr
+sigverify:
+  /* Validate the public key (ends the program on failure). */
+  jal      x1, p256_check_public_key
 
-  /* Set pointers to buffers for modexp. */
-  la        x24, rsa_out
-  la        x16, in_mod
-  la        x23, rsa_in
-  la        x26, rr
-  la        x17, m0inv
-
-  /* run modular exponentiation */
-  jal      x1, modexp_var_3072_f4
+  /* Verify the signature (compute x_r). */
+  jal      x1, p256_verify
 
   ecall
 
@@ -287,30 +280,11 @@ attestation_secret_key_from_seed:
 mode:
 .zero 4
 
-/* Input buffer for RSA-3072 modulus. */
-.globl in_mod
-.balign 32
-in_mod:
-.zero 384
-
-/* Input buffer for precomputed RSA-3072 Montgomery constant:
-      m0' = (- M) mod 2^256. */
-.globl m0inv
-.balign 32
-m0inv:
-.zero 32
-
-/* Input buffer for RSA-3072 modexp: holds the signature. */
-.globl rsa_in
-.balign 32
-rsa_in:
-.zero 384
-
-/* Output buffer for RSA-3072 modexp: holds the recovered message. */
-.globl rsa_out
-.balign 32
-rsa_out:
-.zero 384
+/* Status of validity checks on the public key and signature (for verify). */
+.globl ok
+.balign 4
+ok:
+  .zero 4
 
 /* Input buffer for an ECDSA-P256 message digest. */
 .globl msg
@@ -341,6 +315,12 @@ x:
 .balign 32
 y:
 .zero 32
+
+/* Verification result x_r (aka x_1). */
+.globl x_r
+.balign 32
+x_r:
+  .zero 32
 
 /* DRBG output to XOR with key manager seed. */
 .globl attestation_additional_seed
