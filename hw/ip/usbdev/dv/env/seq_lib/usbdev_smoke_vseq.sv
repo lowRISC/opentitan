@@ -36,7 +36,7 @@ class usbdev_smoke_vseq extends usbdev_base_vseq;
     // Setup token packet followed by a data packet of 8 bytes
     call_token_sequence(PidTypeSetupToken);
     cfg.clk_rst_vif.wait_clks(20);
-    call_data_sequence(PktTypeData, PidTypeData0);
+    call_data_sequence(PidTypeData0);
     cfg.clk_rst_vif.wait_clks(20);
     // read rx_fifo register to check rcvd buffer id, endpoint number and type setup/out
     csr_rd(.ptr(ral.rxfifo), .value(rx_fifo_read));
@@ -62,10 +62,10 @@ class usbdev_smoke_vseq extends usbdev_base_vseq;
       end
   endtask
 
-  task call_data_sequence(input pkt_type_e pkt_type, input pid_type_e pid_type);
+  task call_data_sequence(input pid_type_e pid_type);
     RSP rsp_item;
     `uvm_create_on(m_data_pkt, p_sequencer.usb20_sequencer_h)
-    m_data_pkt.m_pkt_type = pkt_type;
+    m_data_pkt.m_pkt_type = PktTypeData;
     m_data_pkt.m_pid_type = pid_type;
     m_data_pkt.m_bmRT = bmRequestType3;
     m_data_pkt.m_bR = bRequestGET_DESCRIPTOR;

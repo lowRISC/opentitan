@@ -111,10 +111,10 @@ endtask
     finish_item(m_token_pkt);
   endtask
 
-  virtual task call_data_seq(input pkt_type_e pkt_type, input pid_type_e pid_type,
+  virtual task call_data_seq(input pid_type_e pid_type,
                              input bit rand_or_not, input bit [6:0] num_of_bytes);
     `uvm_create_on(m_data_pkt, p_sequencer.usb20_sequencer_h)
-    m_data_pkt.m_pkt_type = pkt_type;
+    m_data_pkt.m_pkt_type = PktTypeData;
     m_data_pkt.m_pid_type = pid_type;
     if (rand_or_not) assert(m_data_pkt.randomize());
     else assert(m_data_pkt.randomize() with {m_data_pkt.data.size() == num_of_bytes;});
