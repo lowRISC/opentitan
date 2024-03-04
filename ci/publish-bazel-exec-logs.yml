@@ -1,0 +1,23 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# Azure template for publishing bazel execution logs so they can be analyzed
+# offline.
+#
+# This template expects that a variable $BAZEL_EXEC_LOG_ROOT is set and it
+# will upload a zip file containing all the files in this directory.
+
+steps:
+  - bash: |
+      set -e
+      # Compress it
+      ./bazelisk.sh run //sw/host/bazel:exec_log -- --json-out=$BAZEL_EXEC_LOG_ROOT/exec_log.json $BAZEL_EXEC_LOG_ROOT/*.log
+      cd $BAZEL_EXEC_LOG_ROOT
+      zip $(Build.ArtifactStagingDirectory)/exec_logs.zip exec_log.json
+    displayName: Create zip with execution logs
+  - publish: "$(Build.ArtifactStagingDirectory)/exec_logs.zip"
+    # The PhaseName is the string after the "job" key in the build description,
+    # e.g. "job: my_phase_name".
+    artifact: exec-logs-$(System.PhaseName)
+    displayName: Upload execution logs
