@@ -422,6 +422,7 @@ opentitan_test(
         "//hw/top_earlgrey:silicon_creator": None,
         "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon_owner",
         "//hw/top_earlgrey:silicon_owner_prodc_rom_ext": "silicon_owner",
+        "//hw/top_earlgrey:silicon_owner_proda_rom_ext": "silicon_owner",
         "//hw/top_earlgrey:sim_dv": None,
         "//hw/top_earlgrey:sim_verilator": None,
     },
@@ -553,6 +554,7 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_owner_prodc_rom_ext": "silicon_owner",
             # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
             "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
+            "//hw/top_earlgrey:silicon_owner_proda_rom_ext": "silicon_owner",
         },
     ),
     silicon_owner = silicon_params(
@@ -962,6 +964,7 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_creator": None,
             "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon_owner",
             "//hw/top_earlgrey:silicon_owner_prodc_rom_ext": "silicon_owner",
+            "//hw/top_earlgrey:silicon_owner_proda_rom_ext": "silicon_owner",
         },
     ),
     silicon_owner = silicon_params(
@@ -1189,6 +1192,7 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_creator": None,
             "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon_owner",
             "//hw/top_earlgrey:silicon_owner_prodc_rom_ext": "silicon_owner",
+            "//hw/top_earlgrey:silicon_owner_proda_rom_ext": "silicon_owner",
         },
     ),
     silicon_owner = silicon_params(
@@ -1297,6 +1301,7 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_creator": None,
             "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon_owner",
             "//hw/top_earlgrey:silicon_owner_prodc_rom_ext": "silicon_owner",
+            "//hw/top_earlgrey:silicon_owner_proda_rom_ext": "silicon_owner",
         },
     ),
     silicon_owner = silicon_params(
@@ -1362,6 +1367,7 @@ opentitan_test(
         {
             "//hw/top_earlgrey:silicon_creator": None,
             "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon_owner",
+            "//hw/top_earlgrey:silicon_owner_proda_rom_ext": "silicon_owner",
             "//hw/top_earlgrey:silicon_owner_prodc_rom_ext": "silicon_owner",
             # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
             "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
@@ -1484,6 +1490,7 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
         "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
         "//hw/top_earlgrey:silicon_owner_prodc_rom_ext": None,
+        "//hw/top_earlgrey:silicon_owner_proda_rom_ext": None,
         "//hw/top_earlgrey:sim_dv": None,
         "//hw/top_earlgrey:sim_verilator": None,
     },
@@ -2703,6 +2710,7 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
         "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon_owner",
         "//hw/top_earlgrey:silicon_owner_prodc_rom_ext": "silicon_owner",
+        "//hw/top_earlgrey:silicon_owner_proda_rom_ext": "silicon_owner",
         "//hw/top_earlgrey:sim_dv": None,
     },
     silicon_owner = silicon_params(
@@ -2742,6 +2750,7 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
         "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon_owner",
         "//hw/top_earlgrey:silicon_owner_prodc_rom_ext": "silicon_owner",
+        "//hw/top_earlgrey:silicon_owner_proda_rom_ext": "silicon_owner",
         "//hw/top_earlgrey:sim_dv": None,
     },
     silicon_owner = silicon_params(
@@ -2850,6 +2859,7 @@ opentitan_test(
         "//hw/top_earlgrey:silicon_creator": None,
         "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
         "//hw/top_earlgrey:silicon_owner_prodc_rom_ext": None,
+        "//hw/top_earlgrey:silicon_owner_proda_rom_ext": None,
         "//hw/top_earlgrey:sim_dv": None,
     },
     silicon = silicon_params(
@@ -3499,6 +3509,7 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_creator": None,
             "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon_owner",
             "//hw/top_earlgrey:silicon_owner_prodc_rom_ext": "silicon_owner",
+            "//hw/top_earlgrey:silicon_owner_proda_rom_ext": "silicon_owner",
         },
     ),
     silicon_owner = silicon_params(
@@ -3913,6 +3924,7 @@ opentitan_test(
         "//hw/top_earlgrey:silicon_creator": None,
         "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon_owner",
         "//hw/top_earlgrey:silicon_owner_prodc_rom_ext": "silicon_owner",
+        "//hw/top_earlgrey:silicon_owner_proda_rom_ext": "silicon_owner",
         "//hw/top_earlgrey:sim_dv": None,
         "//hw/top_earlgrey:sim_verilator": None,
     },
@@ -4022,6 +4034,7 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_creator": None,
             "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon_owner",
             "//hw/top_earlgrey:silicon_owner_prodc_rom_ext": "silicon_owner",
+            "//hw/top_earlgrey:silicon_owner_proda_rom_ext": "silicon_owner",
         },
     ),
     silicon_owner = silicon_params(
@@ -5111,6 +5124,7 @@ opentitan_test(
         "//hw/top_earlgrey:silicon_creator": None,
         "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon_owner",
         "//hw/top_earlgrey:silicon_owner_prodc_rom_ext": "silicon_owner",
+        "//hw/top_earlgrey:silicon_owner_proda_rom_ext": "silicon_owner",
         "//hw/top_earlgrey:sim_dv": None,
     },
     silicon = silicon_params(
