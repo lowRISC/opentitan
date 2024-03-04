@@ -5,11 +5,15 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_DATATYPES_H_
 #define OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_DATATYPES_H_
 
+#include <stddef.h>
+#include <stdint.h>
+
 #ifdef OTCRYPTO_IN_REPO
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/status.h"
 #else
 #include "freestanding/absl_status.h"
+#include "freestanding/defs.h"
 #include "freestanding/hardened.h"
 #endif
 

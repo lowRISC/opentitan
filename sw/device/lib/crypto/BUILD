@@ -25,12 +25,34 @@ ot_static_library(
     ],
 )
 
+# This library imports the archive created by the static library rule
+# above. This can be used within the codebase to test the cryptolib
+# as built.
 cc_import(
     name = "crypto",
     static_library = ":otcrypto",
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//sw/device/lib/crypto/include:crypto_hdrs",
+    ],
+)
+
+# This library imports the archive created by the static library rule
+# above AND provides the header files as though they'd been exported
+# from the repo in the same way as the packaged headers in the
+# cryptolib.tar.xz output below.  This is used to create tests that
+# verify the exported library and header files work correctly when
+# exported.  Because we export a version of the `hardended_bool_t` and
+# `status_t` types, it can be somewhat difficult to use this target
+# within the repo (ie: you cannot use the in-repo definitions of those
+# types, nor can you directly use anything that depends on those types).
+# See //sw/device/test/crypto:otcrypto_export_test as an example.
+cc_import(
+    name = "crypto_exported_for_test",
+    static_library = ":otcrypto",
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//sw/device/lib/crypto/include:exported_headers_for_test",
     ],
 )
 

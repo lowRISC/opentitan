@@ -836,6 +836,18 @@ opentitan_test(
     ],
 )
 
+opentitan_test(
+    name = "otcrypto_export_test",
+    srcs = ["otcrypto_export_test.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+    },
+    deps = [
+        "//sw/device/lib/crypto:crypto_exported_for_test",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
 filegroup(
     name = "template_files",
     srcs = [
