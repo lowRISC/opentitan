@@ -73,6 +73,7 @@ module i2c_fsm import i2c_pkg::*;
   input logic [6:0] target_address1_i,
   input logic [6:0] target_mask1_i,
 
+  output logic target_sr_p_cond_o,       // Saw RSTART/STOP in Target-Mode.
   output logic event_target_nack_o,      // this target sent a NACK (this is used to keep count)
   output logic event_nak_o,              // target didn't Ack when expected
   output logic event_scl_interference_o, // other device forcing SCL low
@@ -1591,6 +1592,11 @@ module i2c_fsm import i2c_pkg::*;
       state_d = Idle;
     end
   end
+
+  // TARGET-Mode -> RSTART or STOP condition observed
+  // This output is used to (optionally) reset the TXFIFO, as any data populated by
+  // software is now highly-unlikely to be applicable to the next transaction.
+  assign target_sr_p_cond_o = target_enable_i && !target_idle && (stop_det | start_det);
 
   // Synchronous state transition
   always_ff @ (posedge clk_i or negedge rst_ni) begin : state_transition

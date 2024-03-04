@@ -271,20 +271,21 @@ Host mode FIFO configuration
 Target mode FIFO configuration
 - Offset: `0x28`
 - Reset default: `0x0`
-- Reset mask: `0xfff0fff`
+- Reset mask: `0xfff8fff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "TX_THRESH", "bits": 12, "attr": ["rw"], "rotate": 0}, {"bits": 4}, {"name": "ACQ_THRESH", "bits": 12, "attr": ["rw"], "rotate": 0}, {"bits": 4}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "TX_THRESH", "bits": 12, "attr": ["rw"], "rotate": 0}, {"bits": 3}, {"name": "TXRST_ON_COND", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "ACQ_THRESH", "bits": 12, "attr": ["rw"], "rotate": 0}, {"bits": 4}], "config": {"lanes": 1, "fontsize": 10, "vspace": 150}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name       | Description                                                                                                                                             |
-|:------:|:------:|:-------:|:-----------|:--------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 31:28  |        |         |            | Reserved                                                                                                                                                |
-| 27:16  |   rw   |   0x0   | ACQ_THRESH | Threshold level for ACQ interrupts. Whilst the level of data in the ACQ FIFO is above this setting, the acq_threshold interrupt will be asserted.       |
-| 15:12  |        |         |            | Reserved                                                                                                                                                |
-|  11:0  |   rw   |   0x0   | TX_THRESH  | Threshold level for TX interrupts. Whilst the number of used entries in the TX FIFO is below this setting, the tx_threshold interrupt will be asserted. |
+|  Bits  |  Type  |  Reset  | Name          | Description                                                                                                                                                                                                                                    |
+|:------:|:------:|:-------:|:--------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 31:28  |        |         |               | Reserved                                                                                                                                                                                                                                       |
+| 27:16  |   rw   |   0x0   | ACQ_THRESH    | Threshold level for ACQ interrupts. Whilst the level of data in the ACQ FIFO is above this setting, the acq_threshold interrupt will be asserted.                                                                                              |
+|   15   |   rw   |   0x0   | TXRST_ON_COND | If set, automatically reset the TX FIFO (TXRST) upon seeing a RSTART/STOP condition during an active transaction in Target Mode. This may be useful if the remaining data in the TX FIFO becomes no longer applicable to the next transaction. |
+| 14:12  |        |         |               | Reserved                                                                                                                                                                                                                                       |
+|  11:0  |   rw   |   0x0   | TX_THRESH     | Threshold level for TX interrupts. Whilst the number of used entries in the TX FIFO is below this setting, the tx_threshold interrupt will be asserted.                                                                                        |
 
 ## HOST_FIFO_STATUS
 Host mode FIFO status register

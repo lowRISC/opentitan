@@ -235,6 +235,8 @@ module i2c_reg_top (
   logic target_fifo_config_we;
   logic [11:0] target_fifo_config_tx_thresh_qs;
   logic [11:0] target_fifo_config_tx_thresh_wd;
+  logic target_fifo_config_txrst_on_cond_qs;
+  logic target_fifo_config_txrst_on_cond_wd;
   logic [11:0] target_fifo_config_acq_thresh_qs;
   logic [11:0] target_fifo_config_acq_thresh_wd;
   logic host_fifo_status_re;
@@ -2017,7 +2019,7 @@ module i2c_reg_top (
 
   // R[target_fifo_config]: V(False)
   logic target_fifo_config_qe;
-  logic [1:0] target_fifo_config_flds_we;
+  logic [2:0] target_fifo_config_flds_we;
   prim_flop #(
     .Width(1),
     .ResetValue(0)
@@ -2055,6 +2057,34 @@ module i2c_reg_top (
   );
   assign reg2hw.target_fifo_config.tx_thresh.qe = target_fifo_config_qe;
 
+  //   F[txrst_on_cond]: 15:15
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_target_fifo_config_txrst_on_cond (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (target_fifo_config_we),
+    .wd     (target_fifo_config_txrst_on_cond_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (target_fifo_config_flds_we[1]),
+    .q      (reg2hw.target_fifo_config.txrst_on_cond.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (target_fifo_config_txrst_on_cond_qs)
+  );
+  assign reg2hw.target_fifo_config.txrst_on_cond.qe = target_fifo_config_qe;
+
   //   F[acq_thresh]: 27:16
   prim_subreg #(
     .DW      (12),
@@ -2074,7 +2104,7 @@ module i2c_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (target_fifo_config_flds_we[1]),
+    .qe     (target_fifo_config_flds_we[2]),
     .q      (reg2hw.target_fifo_config.acq_thresh.q),
     .ds     (),
 
@@ -3085,6 +3115,8 @@ module i2c_reg_top (
 
   assign target_fifo_config_tx_thresh_wd = reg_wdata[11:0];
 
+  assign target_fifo_config_txrst_on_cond_wd = reg_wdata[15];
+
   assign target_fifo_config_acq_thresh_wd = reg_wdata[27:16];
   assign host_fifo_status_re = addr_hit[11] & reg_re & !reg_error;
   assign target_fifo_status_re = addr_hit[12] & reg_re & !reg_error;
@@ -3291,6 +3323,7 @@ module i2c_reg_top (
 
       addr_hit[10]: begin
         reg_rdata_next[11:0] = target_fifo_config_tx_thresh_qs;
+        reg_rdata_next[15] = target_fifo_config_txrst_on_cond_qs;
         reg_rdata_next[27:16] = target_fifo_config_acq_thresh_qs;
       end
 

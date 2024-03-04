@@ -283,6 +283,10 @@ Firmware can configure the threshold value via the register [`TARGET_FIFO_CONFIG
 Whilst the TX FIFO level is below a designated number of entries the `tx_threshold` interrupt is asserted.
 Firmware can configure the threshold value via the register [`TARGET_FIFO_CONFIG.TX_THRESH`](registers.md#target_fifo_config).
 
+If firmware sets the bit [`TARGET_FIFO_CONFIG.TXRST_ON_COND`](registers.md#target_fifo_config), the TX FIFO will be reset whenever a RSTART or STOP condition is seen on the bus during an active Target-Mode transaction.
+This behaviour may be useful to software, as any remaining data in the TXFIFO after a Sr/P condition is probably no-longer applicable to the next transfer, so will likely have to be cleared out anyway.
+Keeping this behaviour as a toggle allows software to observe the fifo state before resetting it, which may be useful to understand how much of the previous transfer completed if that information is helpful or relevant.
+
 If ACQ FIFO becomes full, the interrupt `acq_full` is asserted.
 
 If a host ceases to send SCL pulses at any point during an ongoing transaction, the target waits for a specified time period and then asserts the interrupt `host_timeout`.

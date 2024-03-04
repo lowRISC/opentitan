@@ -388,6 +388,14 @@
                 '''
           resval: "0"
         }
+        { bits: "15"
+          name: "TXRST_ON_COND"
+          desc: '''If set, automatically reset the TX FIFO (TXRST) upon seeing a RSTART/STOP condition
+                during an active transaction in Target Mode. This may be useful if the remaining data
+                in the TX FIFO becomes no longer applicable to the next transaction.
+                '''
+          resval: "0"
+        }
         { bits: "27:16"
           name: "ACQ_THRESH"
           desc: '''Threshold level for ACQ interrupts. Whilst the level of data in the ACQ FIFO

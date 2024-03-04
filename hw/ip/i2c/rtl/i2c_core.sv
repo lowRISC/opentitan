@@ -81,6 +81,8 @@ module i2c_core import i2c_pkg::*;
   logic event_unexp_stop;
   logic event_host_timeout;
 
+  logic target_sr_p_cond;
+
   logic [15:0] scl_rx_val;
   logic [15:0] sda_rx_val;
 
@@ -167,6 +169,7 @@ module i2c_core import i2c_pkg::*;
   logic [AcqFifoWidth-9:0] unused_acq_fifo_signal_q;
   logic        unused_alert_test_qe;
   logic        unused_alert_test_q;
+  logic        unused_txrst_on_cond_qe;
 
   assign hw2reg.status.fmtfull.d = ~fmt_fifo_wready;
   assign hw2reg.status.rxfull.d = ~rx_fifo_wready;
@@ -244,7 +247,8 @@ module i2c_core import i2c_pkg::*;
   assign i2c_fifo_rx_thresh  = reg2hw.host_fifo_config.rx_thresh.q;
   assign i2c_fifo_fmt_thresh = reg2hw.host_fifo_config.fmt_thresh.q;
 
-  assign i2c_fifo_txrst      = reg2hw.fifo_ctrl.txrst.q & reg2hw.fifo_ctrl.txrst.qe;
+  assign i2c_fifo_txrst      = (reg2hw.fifo_ctrl.txrst.q & reg2hw.fifo_ctrl.txrst.qe) ||
+                               (reg2hw.target_fifo_config.txrst_on_cond.q & target_sr_p_cond);
   assign i2c_fifo_acqrst     = reg2hw.fifo_ctrl.acqrst.q & reg2hw.fifo_ctrl.acqrst.qe;
   assign i2c_fifo_tx_thresh  = reg2hw.target_fifo_config.tx_thresh.q;
   assign i2c_fifo_acq_thresh = reg2hw.target_fifo_config.acq_thresh.q;
@@ -293,6 +297,7 @@ module i2c_core import i2c_pkg::*;
   assign unused_acq_fifo_signal_q = reg2hw.acqdata.signal.q;
   assign unused_alert_test_qe = reg2hw.alert_test.qe;
   assign unused_alert_test_q = reg2hw.alert_test.q;
+  assign unused_txrst_on_cond_qe = reg2hw.target_fifo_config.txrst_on_cond.qe;
 
   prim_fifo_sync #(
     .Width   (13),
@@ -475,6 +480,7 @@ module i2c_core import i2c_pkg::*;
     .target_mask0_i          (target_mask0),
     .target_address1_i       (target_address1),
     .target_mask1_i          (target_mask1),
+    .target_sr_p_cond_o      (target_sr_p_cond),
     .event_target_nack_o     (event_target_nack),
     .event_nak_o             (event_nak),
     .event_scl_interference_o(event_scl_interference),
