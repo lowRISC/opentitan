@@ -80,6 +80,7 @@ EARLGREY_TEST_ENVS = {
 EARLGREY_SILICON_OWNER_ROM_EXT_ENVS = {
     "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
     "//hw/top_earlgrey:silicon_owner_prodc_rom_ext": None,
+    "//hw/top_earlgrey:silicon_owner_proda_rom_ext": None,
 }
 
 # Messages we expect for possible test outcomes.

@@ -378,6 +378,21 @@ silicon(
     }),
 )
 
+silicon(
+    name = "silicon_owner_proda_rom_ext",
+    testonly = True,
+    base = ":silicon_owner_sival_rom_ext",
+    exec_env = "silicon_owner_proda_rom_ext",
+    rom_ext = select({
+        "//signing:test_keys": "//sw/device/silicon_creator/rom_ext/proda:rom_ext_fake_prod_signed_slot_a",
+        "//conditions:default": "//sw/device/silicon_creator/rom_ext/proda/binaries:rom_ext_real_prod_signed_slot_a",
+    }),
+    rsa_key = select({
+        "//signing:test_keys": {"//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_test_private_key_0": "test_key_0"},
+        "//conditions:default": {"//sw/device/silicon_creator/rom_ext/proda/keys:keyset": "earlgrey_z1_proda_1"},
+    }),
+)
+
 ###########################################################################
 # Sim Verilator Environments
 #
