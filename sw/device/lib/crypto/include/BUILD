@@ -31,6 +31,7 @@ cc_library(
         "kdf.h",
         "key_transport.h",
         "mac.h",
+        "otcrypto.h",
         "rsa.h",
     ],
     defines = ["OTCRYPTO_IN_REPO=1"],
@@ -39,6 +40,28 @@ cc_library(
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:status",
     ],
+)
+
+# Create a library that makes the headers available as though we've been
+# exported from the repo (ie: OTCRYPTO_IN_REPO is not set).
+cc_library(
+    name = "exported_headers_for_test",
+    hdrs = [
+        "aes.h",
+        "datatypes.h",
+        "drbg.h",
+        "ecc.h",
+        "hash.h",
+        "kdf.h",
+        "key_transport.h",
+        "mac.h",
+        "otcrypto.h",
+        "rsa.h",
+        "//sw/device/lib/crypto/include/freestanding:absl_status.h",
+        "//sw/device/lib/crypto/include/freestanding:defs.h",
+        "//sw/device/lib/crypto/include/freestanding:hardened.h",
+    ],
+    includes = ["."],
 )
 
 pkg_files(
