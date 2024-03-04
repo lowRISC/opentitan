@@ -11,6 +11,9 @@ class usbdev_in_trans_vseq extends usbdev_base_vseq;
   virtual task body();
     uvm_reg_data_t rxfifo;
     bit in_sent;
+
+    num_of_bytes = $urandom_range(1, 64);
+
     super.dut_init("HARD");
     clear_all_interrupts();
     ral.intr_enable.pkt_sent.set(1'b1); // Enable pkt_sent interrupt
@@ -31,7 +34,6 @@ class usbdev_in_trans_vseq extends usbdev_base_vseq;
     // Make sure buffer is availabe for next trans
     ral.avoutbuffer.buffer.set(out_buffer_id + 1);
     csr_update(ral.avoutbuffer);
-    num_of_bytes = m_data_pkt.data.size();
     // Note: data should have been written into the current OUT buffer by the above transaction
     configure_in_trans(out_buffer_id);  // register configurations for IN Trans.
     // Token pkt followed by handshake pkt

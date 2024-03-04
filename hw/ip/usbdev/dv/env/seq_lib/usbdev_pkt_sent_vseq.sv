@@ -11,8 +11,10 @@ class usbdev_pkt_sent_vseq extends usbdev_base_vseq;
   virtual task body();
     uvm_reg_data_t read_rxfifo;
 
-     super.dut_init("HARD");
-     clear_all_interrupts();
+    num_of_bytes = $urandom_range(1, 64);
+
+    super.dut_init("HARD");
+    clear_all_interrupts();
 
     // OUT TRANS
     // -------------------------------
@@ -38,7 +40,6 @@ class usbdev_pkt_sent_vseq extends usbdev_base_vseq;
     // IN TRANS
     // --------------------------------
     // Configure in transaction
-    num_of_bytes = m_data_pkt.data.size();
     // Note: data should have been written into the current OUT buffer by the above transaction
     configure_in_trans(out_buffer_id);
     // Token pkt followed by handshake pkt
