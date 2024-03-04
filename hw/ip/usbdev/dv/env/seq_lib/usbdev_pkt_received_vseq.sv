@@ -10,11 +10,15 @@ class usbdev_pkt_received_vseq extends usbdev_base_vseq;
 
   usb20_item     item;
   RSP            rsp_item;
-  bit            rand_or_not = 1;
   bit      [6:0] num_of_bytes;
   bit            pkt_received;
   uvm_reg_data_t read_rxfifo;
   uvm_reg_data_t intr_state;
+
+  task pre_start();
+    super.pre_start();
+    rand_or_not = 1'b1;
+  endtask
 
   task body();
     // Configure transaction
