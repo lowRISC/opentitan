@@ -25,7 +25,7 @@ manifest(d = {
     "visibility": ["//visibility:public"],
 })
 
-# To test that the fake-signed ProdC ROM_EXT can boot, you need a bitstream
+# To test that the fake-signed ProdA ROM_EXT can boot, you need a bitstream
 # with the OTP word CREATOR_SW_CCFG_MANUF_STATE set to `PRODA` (as above
 # in the manifest definition).  You can manually create such a bitstream with:
 #
