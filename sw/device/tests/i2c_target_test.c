@@ -9,6 +9,11 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/devicetables/dt.h"
+#include "sw/device/lib/devicetables/dt_i2c.h"
+#include "sw/device/lib/devicetables/dt_pinmux.h"
+#include "sw/device/lib/devicetables/dt_pwrmgr.h"
+#include "sw/device/lib/devicetables/dt_rv_plic.h"
 #include "sw/device/lib/dif/dif_i2c.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
@@ -87,9 +92,11 @@ static status_t i2c_detach_instance(dif_i2c_t *i2c, dif_pinmux_t *pinmux,
 
 static status_t i2c_configure_instance(dif_i2c_t *i2c, dif_pinmux_t *pinmux,
                                        uint8_t i2c_instance) {
-  const uintptr_t kI2cBaseAddrTable[] = {TOP_EARLGREY_I2C0_BASE_ADDR,
-                                         TOP_EARLGREY_I2C1_BASE_ADDR,
-                                         TOP_EARLGREY_I2C2_BASE_ADDR};
+  const uintptr_t kI2cBaseAddrTable[] = {
+      dt_device_reg_addr(dt_get_device(kDtDeviceTypeI2c, 0), 0),
+      dt_device_reg_addr(dt_get_device(kDtDeviceTypeI2c, 1), 0),
+      dt_device_reg_addr(dt_get_device(kDtDeviceTypeI2c, 2), 0),
+  };
   TRY_CHECK(i2c_instance < ARRAYSIZE(kI2cBaseAddrTable));
 
   mmio_region_t base_addr =
@@ -288,20 +295,54 @@ static status_t command_processor(ujson_t *uj) {
   return INTERNAL();
 }
 
+static status_t config_pinmux(void) {
+  dt_device_t dev = dt_get_device(kDtDeviceTypeI2c, 0);
+  for (uint32_t i = 0; i < kDtI2cPinctrlOutputCount; ++i) {
+    dt_pinctrl_cfg_t cfg = dt_pinctrl_get_padmux_config(dev, i);
+    if (dt_pinctrl_cfg_is_empty(cfg)) {
+      continue;
+    }
+    dif_pinmux_index_t mux = dt_pinctrl_mux_from_cfg(cfg);
+    dif_pinmux_index_t sel = dt_pinctrl_selection_from_cfg(cfg);
+    TRY(dif_pinmux_output_select(&pinmux, mux, sel));
+  }
+  for (uint32_t i = 0; i < kDtI2cPinctrlInputCount; ++i) {
+    dt_pinctrl_cfg_t cfg = dt_pinctrl_get_periphmux_config(dev, i);
+    if (dt_pinctrl_cfg_is_empty(cfg)) {
+      continue;
+    }
+    dif_pinmux_index_t mux = dt_pinctrl_mux_from_cfg(cfg);
+    dif_pinmux_index_t sel = dt_pinctrl_selection_from_cfg(cfg);
+    TRY(dif_pinmux_input_select(&pinmux, mux, sel));
+  }
+  return OK_STATUS();
+}
+
 static status_t test_init(void) {
-  mmio_region_t base_addr =
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR);
+  mmio_region_t base_addr;
+  //  base_addr = mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR);
+  base_addr = mmio_region_from_addr(
+      dt_device_reg_addr(dt_get_device(kDtDeviceTypePinmux, 0), 0));
   TRY(dif_pinmux_init(base_addr, &pinmux));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR);
+  //  base_addr = mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR);
+  base_addr = mmio_region_from_addr(
+      dt_device_reg_addr(dt_get_device(kDtDeviceTypePwrmgr, 0), 0));
   TRY(dif_pwrmgr_init(base_addr, &pwrmgr));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);
+  //  base_addr = mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);
+  base_addr = mmio_region_from_addr(
+      dt_device_reg_addr(dt_get_device(kDtDeviceTypeRvPlic, 0), 0));
   TRY(dif_rv_plic_init(base_addr, &plic));
   // Enable global and external IRQ at Ibex.
   irq_global_ctrl(true);
   irq_external_ctrl(true);
 
+  //  TRY(i2c_testutils_select_pinmux(&pinmux, 0, I2cPinmuxPlatformIdHyper310));
+  TRY(config_pinmux());
+
+  TRY(i2c_testutils_set_speed(&i2c, kDifI2cSpeedStandard));
+  TRY(dif_i2c_device_set_enabled(&i2c, kDifToggleEnabled));
   return OK_STATUS();
 }
 

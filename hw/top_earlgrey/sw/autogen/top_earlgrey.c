@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include <stdint.h>
 
 /**
  * PLIC Interrupt Source to Peripheral Map

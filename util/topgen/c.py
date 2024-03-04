@@ -111,6 +111,7 @@ class TopGenC:
         # The .c file needs the .h file's relative path, store it here
         self.header_path = None
 
+        self._init_device_ids()
         self._init_plic_targets()
         self._init_plic_mapping()
         self._init_alert_mapping()
@@ -120,6 +121,7 @@ class TopGenC:
         self._init_rstmgr_sw_rsts()
         self._init_pwrmgr_reset_requests()
         self._init_clkmgr_clocks()
+        self._init_clocks()
         self._init_mmio_region()
 
     def devices(self) -> List[Tuple[Tuple[str, Optional[str]], MemoryRegion]]:
@@ -174,6 +176,30 @@ class TopGenC:
                     ret.append((val["label"], region))
 
         return ret
+
+    def _init_device_ids(self):
+        """Organize devices by type into two different kinds of maps. The first
+        map groups devices by type, where an instance name maps to an index in a
+        table of devices of that type. The second map is a flat list of all
+        devices, where the index represents that device's ID.
+        """
+        devices_by_type = {}
+        for m in self.top["module"]:
+            type_name = m["type"]
+            device_list = devices_by_type.setdefault(type_name, [])
+            device_list.append(Name.from_snake_case(m["name"]))
+        self.device_id_groups = {Name(["unknown"]): (0, [])}
+        device_ids = CEnum(Name(["dt", "device", "id"]))
+        device_ids.add_constant(Name(["unknown"]))
+        for dev_type, dev_list in devices_by_type.items():
+            dev_type_name = Name.from_snake_case(dev_type)
+            dev_id_base = device_ids.enum_counter
+            self.device_id_groups[dev_type_name] = (dev_id_base, dev_list)
+            for device in dev_list:
+                docstring = f"{dev_type} instance named {device.as_snake_case()}"
+                device_ids.add_constant(device, docstring=docstring)
+        device_ids.add_constant(Name(["count"]))
+        self.device_ids = device_ids
 
     def _init_plic_targets(self):
         enum = CEnum(self._top_name + Name(["plic", "target"]))
@@ -503,6 +529,20 @@ class TopGenC:
 
         self.clkmgr_gateable_clocks = gateable_clocks
         self.clkmgr_hintable_clocks = hintable_clocks
+
+    def _init_clocks(self):
+        """
+        Collects the clocks in the design and assigns them IDs.
+        """
+        clocks = self.top['clocks']
+        clock_list = CEnum(self._top_name + Name(["clock", "src"]))
+        clock_list.add_constant(Name(["unknown"]), "ID representing unknown clock")
+        for clock in clocks.all_srcs.keys():
+            clock_name = Name.from_snake_case(clock)
+            docstring = "Clock {}".format(clock)
+            clock_list.add_constant(clock_name, docstring)
+        clock_list.add_constant(Name(["count"]), "Number of clock IDs")
+        self.clocks = clock_list
 
     def _init_mmio_region(self):
         """

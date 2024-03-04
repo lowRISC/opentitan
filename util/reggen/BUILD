@@ -221,6 +221,15 @@ py_library(
 )
 
 py_library(
+    name = "gen_dt_api",
+    srcs = ["gen_dt_api.py"],
+    deps = [
+        ":ip_block",
+        requirement("mako"),
+    ],
+)
+
+py_library(
     name = "gen_fpv",
     srcs = ["gen_fpv.py"],
     deps = [

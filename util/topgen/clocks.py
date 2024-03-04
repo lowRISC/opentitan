@@ -319,11 +319,10 @@ class Clocks:
         # Define a list for each "family" of clocks
         for name, clk in self.srcs.items():
             if not clk.aon:
-                parent_child_clks[name] = [name];
+                parent_child_clks[name] = [name]
 
         for name, clk in self.derived_srcs.items():
             parent_child_clks[clk.src.name].append(name)
-
 
         return TypedClocks(ast_clks=ast_clks,
                            ft_clks=ft_clks,

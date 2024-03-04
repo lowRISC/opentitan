@@ -77,7 +77,6 @@ cc_library(
     hdrs = ["aon_timer_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:math",
         "//sw/device/lib/dif:aon_timer",
@@ -189,6 +188,7 @@ cc_library(
     deps = [
         "//hw/ip/i2c/data:i2c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/devicetables:dt_api",
         "//sw/device/lib/dif:i2c",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/runtime:ibex",
@@ -291,6 +291,7 @@ cc_library(
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
+        "//sw/device/lib/devicetables:dt_api",
         "//sw/device/lib/dif:base",
         "//sw/device/lib/dif:gpio",
         "//sw/device/lib/dif:pinmux",

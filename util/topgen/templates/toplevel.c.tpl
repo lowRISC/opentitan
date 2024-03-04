@@ -1,8 +1,12 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+<%
+from topgen.lib import Name
+%>\
 
 #include "${helper.header_path}"
+#include <stdint.h>
 
 /**
  * PLIC Interrupt Source to Peripheral Map
@@ -18,4 +22,4 @@ ${helper.plic_mapping.render_definition()}
  * This array is a mapping from `${helper.alert_alerts.name.as_c_type()}` to
  * `${helper.alert_sources.name.as_c_type()}`.
  */
-${helper.alert_mapping.render_definition()}
+${helper.alert_mapping.render_definition()}\

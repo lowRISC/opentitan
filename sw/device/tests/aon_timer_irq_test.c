@@ -9,6 +9,11 @@
 
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/devicetables/dt.h"
+#include "sw/device/lib/devicetables/dt_aon_timer.h"
+#include "sw/device/lib/devicetables/dt_rv_core_ibex.h"
+#include "sw/device/lib/devicetables/dt_rv_plic.h"
+#include "sw/device/lib/devicetables/dt_rv_timer.h"
 #include "sw/device/lib/dif/dif_aon_timer.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
 #include "sw/device/lib/dif/dif_rv_timer.h"
@@ -21,11 +26,9 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
 OTTF_DEFINE_TEST_CONFIG();
 
-static const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
+static const uint32_t kPlicTarget = 0;            // Targeting hart 0.
 static const uint32_t kTickFreqHz = 1000 * 1000;  // 1Mhz / 1us
 static dif_rv_core_ibex_t rv_core_ibex;
 static dif_aon_timer_t aon_timer;
@@ -33,7 +36,7 @@ static dif_rv_timer_t rv_timer;
 static dif_rv_plic_t plic;
 
 static volatile dif_aon_timer_irq_t irq;
-static volatile top_earlgrey_plic_peripheral_t peripheral;
+static volatile dt_device_t peripheral;
 static volatile uint64_t irq_tick;
 
 // TODO:(lowrisc/opentitan#9984): Add timing API to the test framework
@@ -57,8 +60,9 @@ static_assert(configUSE_PREEMPTION == 0,
               "rv_timer may be initialized already by FreeRtos");
 
 static void tick_init(void) {
+  dt_device_t rv_timer_dev = dt_get_device(kDtDeviceTypeRvTimer, 0);
   CHECK_DIF_OK(dif_rv_timer_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_TIMER_BASE_ADDR), &rv_timer));
+      mmio_region_from_addr(dt_device_reg_addr(rv_timer_dev, 0)), &rv_timer));
 
   CHECK_DIF_OK(dif_rv_timer_reset(&rv_timer));
 
@@ -111,7 +115,7 @@ static void execute_test(dif_aon_timer_t *aon_timer, uint64_t irq_time_us,
   //           (uint32_t)count_cycles);
 
   // Set the default value to a different value than expected.
-  peripheral = kTopEarlgreyPlicPeripheralUnknown;
+  peripheral = kDtDeviceUnknown;
   irq = kDifAonTimerIrqWdogTimerBark;
   if (expected_irq == kDifAonTimerIrqWkupTimerExpired) {
     // Setup the wake up interrupt.
@@ -129,8 +133,8 @@ static void execute_test(dif_aon_timer_t *aon_timer, uint64_t irq_time_us,
   // Capture the current tick to measure the time the IRQ will take.
   uint32_t start_tick = (uint32_t)tick_count_get();
 
-  ATOMIC_WAIT_FOR_INTERRUPT(peripheral ==
-                            kTopEarlgreyPlicPeripheralAonTimerAon);
+  const dt_device_t kAonTimerId = dt_get_device(kDtDeviceTypeAonTimer, 0);
+  ATOMIC_WAIT_FOR_INTERRUPT(peripheral == kAonTimerId);
 
   uint32_t time_elapsed = (uint32_t)irq_tick - start_tick;
   CHECK(time_elapsed < sleep_range_h && time_elapsed > sleep_range_l,
@@ -138,9 +142,9 @@ static void execute_test(dif_aon_timer_t *aon_timer, uint64_t irq_time_us,
         (uint32_t)time_elapsed, (uint32_t)sleep_range_l,
         (uint32_t)sleep_range_h);
 
-  CHECK(peripheral == kTopEarlgreyPlicPeripheralAonTimerAon,
-        "Interrupt from incorrect peripheral: exp = %d, obs = %d",
-        kTopEarlgreyPlicPeripheralAonTimerAon, peripheral);
+  CHECK(peripheral == kAonTimerId,
+        "Interrupt from incorrect peripheral: exp = %d, obs = %d", kAonTimerId,
+        peripheral);
 
   CHECK(irq == expected_irq, "Interrupt type incorrect: exp = %d, obs = %d",
         kDifAonTimerIrqWkupTimerExpired, irq);
@@ -158,18 +162,20 @@ void ottf_external_isr(uint32_t *exc_info) {
   dif_rv_plic_irq_id_t irq_id;
   CHECK_DIF_OK(dif_rv_plic_irq_claim(&plic, kPlicTarget, &irq_id));
 
-  peripheral = (top_earlgrey_plic_peripheral_t)
-      top_earlgrey_plic_interrupt_for_peripheral[irq_id];
+  peripheral = dt_irq_to_device(irq_id);
 
-  if (peripheral == kTopEarlgreyPlicPeripheralAonTimerAon) {
-    irq =
-        (dif_aon_timer_irq_t)(irq_id -
-                              (dif_rv_plic_irq_id_t)
-                                  kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired);
+  const dt_device_t kAonTimerId = dt_get_device(kDtDeviceTypeAonTimer, 0);
+  if (peripheral == kAonTimerId) {
+    const uint32_t kIrqWkupTimer =
+        dt_device_irq_id(kAonTimerId, kDtAonTimerIrqTypeWkupTimerExpired);
+    const uint32_t kIrqWdogTimer =
+        dt_device_irq_id(kAonTimerId, kDtAonTimerIrqTypeWdogTimerBark);
 
-    if (irq_id == kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired) {
+    irq = (dif_aon_timer_irq_t)(irq_id - (dif_rv_plic_irq_id_t)kIrqWkupTimer);
+
+    if (irq_id == kIrqWkupTimer) {
       CHECK_DIF_OK(dif_aon_timer_wakeup_stop(&aon_timer));
-    } else if (irq_id == kTopEarlgreyPlicIrqIdAonTimerAonWdogTimerBark) {
+    } else if (irq_id == kIrqWdogTimer) {
       CHECK_DIF_OK(dif_aon_timer_watchdog_stop(&aon_timer));
     }
 
@@ -212,22 +218,27 @@ bool test_main(void) {
   tick_init();
 
   // Initialize aon timer.
+  const dt_device_t aon_timer_dev = dt_get_device(kDtDeviceTypeAonTimer, 0);
   CHECK_DIF_OK(dif_aon_timer_init(
-      mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR), &aon_timer));
+      mmio_region_from_addr(dt_device_reg_addr(aon_timer_dev, 0)), &aon_timer));
 
+  dt_device_t ibex_dev = dt_get_device(kDtDeviceTypeRvCoreIbex, 0);
   CHECK_DIF_OK(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
-      &rv_core_ibex));
+      mmio_region_from_addr(dt_device_reg_addr(ibex_dev, 0)), &rv_core_ibex));
 
   // Initialize the PLIC.
+  const dt_device_t rv_timer_dev = dt_get_device(kDtDeviceTypeRvPlic, 0);
   mmio_region_t plic_base_addr =
-      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);
+      mmio_region_from_addr(dt_device_reg_addr(rv_timer_dev, 0));
   CHECK_DIF_OK(dif_rv_plic_init(plic_base_addr, &plic));
 
   // Enable all the AON interrupts used in this test.
+  const uint32_t kIrqWkupTimer =
+      dt_device_irq_id(aon_timer_dev, kDtAonTimerIrqTypeWkupTimerExpired);
+  const uint32_t kIrqWdogTimer =
+      dt_device_irq_id(aon_timer_dev, kDtAonTimerIrqTypeWdogTimerBark);
   rv_plic_testutils_irq_range_enable(
-      &plic, kPlicTarget, kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired,
-      kTopEarlgreyPlicIrqIdAonTimerAonWdogTimerBark);
+      &plic, kPlicTarget, (uint32_t)kIrqWkupTimer, (uint32_t)kIrqWdogTimer);
 
   // Executing the test using random time bounds calculated from the clock
   // frequency to make sure the aon timer is generating the interrupt after the

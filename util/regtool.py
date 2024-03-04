@@ -12,8 +12,8 @@ import sys
 from pathlib import Path
 
 from reggen import (
-    gen_cfg_md, gen_cheader, gen_dv, gen_fpv, gen_md, gen_html, gen_json, gen_rtl,
-    gen_rust, gen_sec_cm_testplan, gen_selfdoc, gen_tock, version,
+    gen_cfg_md, gen_cheader, gen_dv, gen_dt_api, gen_fpv, gen_md, gen_html, gen_json,
+    gen_rtl, gen_rust, gen_sec_cm_testplan, gen_selfdoc, gen_tock, version,
 )
 from reggen.countermeasure import CounterMeasure
 from reggen.ip_block import IpBlock
@@ -61,6 +61,11 @@ def main():
                         '-D',
                         action='store_true',
                         help='Output C defines header')
+    parser.add_argument('--dt-api',
+                        action='store_true',
+                        help='Output devicetable API header')
+    parser.add_argument('--dt-include-guard',
+                        help='Include guard macro for DT API header')
     parser.add_argument('--rust',
                         '-R',
                         action='store_true',
@@ -172,7 +177,8 @@ def main():
                      ('sec_cm_testplan', ('sec_cm_testplan', 'data')),
                      ('rust', ('rs', None)), ('tock', ('trs', None)),
                      ('interfaces', ('interfaces', None)),
-                     ('doc_html_old', ('doc_html_old', None))]
+                     ('doc_html_old', ('doc_html_old', None)),
+                     ('dt_api', ('dt_api', None))]
     fmt = None
     dirspec = None
     for arg_name, spec in arg_to_format:
@@ -321,6 +327,11 @@ def main():
             elif fmt == 'trs':
                 return gen_tock.gen_tock(obj, outfile, infile.name, src_lic,
                                          src_copy, version_stamp)
+            elif fmt == 'dt_api':
+                dt_include_guard = f"OPENTITAN_SW_DEVICE_LIB_DEVICETABLES_DT_{obj.name.upper()}_H_"
+                if args.dt_include_guard:
+                    dt_include_guard = args.dt_include_guard
+                return gen_dt_api.gen_dt_api(obj, outfile, dt_include_guard)
             else:
                 return gen_json.gen_json(obj, outfile, fmt)
 
