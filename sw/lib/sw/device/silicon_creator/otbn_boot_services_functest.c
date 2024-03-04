@@ -18,80 +18,24 @@ OTTF_DEFINE_TEST_CONFIG();
 // Keymgr handle for this test.
 static dif_keymgr_t keymgr;
 
-// sw/device/silicon_creator/rom/keys/fake/test_key_0_rsa_3072_exp_f4.public.der
-static const sigverify_rsa_key_t kRsaKey = {
-    .n = {{
-        0x5801a2bd, 0xeff64a46, 0xc8cf2251, 0xa7cd62cb, 0x634a39c2, 0x55c936d3,
-        0x463d61fc, 0x762ebbaa, 0x01aadfb2, 0x23da15d1, 0x8475fdc6, 0x4ec67b7b,
-        0xe9364570, 0xd23ec7c7, 0x98038d63, 0x5688a56b, 0x68037add, 0xb20ff289,
-        0x9d96c1ce, 0xbac0b8cd, 0xead33d0b, 0x195f89c8, 0xd7dc110e, 0xf5bccc12,
-        0x8dfa33dc, 0xedc404d2, 0x74ef8524, 0x9197c0c8, 0x79cc448e, 0x4c9c505d,
-        0x4a586ad7, 0xe2d0f071, 0x589f28c2, 0x2ca7fc22, 0x0354b0e2, 0xefb63b44,
-        0x33a75b04, 0x9e194454, 0x1b4b2cde, 0x8e3f78e0, 0x5260877c, 0x05685b72,
-        0x4868ad4e, 0x10303ac9, 0x05ac2411, 0x5e797381, 0xd5407668, 0xe3522348,
-        0xa33134f8, 0x38f7a953, 0xd926f672, 0x136f6753, 0xb186b0ab, 0x5ccab586,
-        0x61e5bf2e, 0x9fc0eebb, 0x788ed0bd, 0x47b5fc70, 0xf971262a, 0x3b40d99b,
-        0x5b9fd926, 0xce3c93bf, 0xd406005e, 0x72b9e555, 0xc9b9273e, 0xfcef747f,
-        0xf0a35598, 0x2761e8f6, 0xec1799df, 0x462bc52d, 0x8e47218b, 0x429ccdae,
-        0xe7e7d66c, 0x70c70b03, 0x0356c3d2, 0x3cb3e7d1, 0xd42d035d, 0x83c529a3,
-        0x8df9930e, 0xb082e1f0, 0x07509c30, 0x5c33a350, 0x4f6884b9, 0x7b9d2de0,
-        0x0f1d16b3, 0x38dbcf55, 0x168580ea, 0xc2f2aca4, 0x43f0ae60, 0x227dd2ed,
-        0xd8dc61f4, 0x9404e8bc, 0x0db76fe3, 0x3491d3b0, 0x6ca44e27, 0xcda63719,
-    }},
-    .n0_inv =
-        {
-            0x9c9a176b,
-            0x44d6fa52,
-            0x71a63ec4,
-            0xadc94595,
-            0x3fd9bc73,
-            0xa83cdc95,
-            0xbe1bc819,
-            0x2b421fae,
-        },
+// Message value for signature generation/verification tests.
+const char kTestMessage[] = "Test message.";
+const size_t kTestMessageLen = sizeof(kTestMessage) - 1;
+
+// Valid ECDSA-P256 public key.
+static const attestation_public_key_t kEcdsaKey = {
+    .x = {0x1ceb402b, 0x9dc600d1, 0x182ec21b, 0x5ede3640, 0x3566bdac,
+          0x1debf94b, 0x1a286a75, 0x8904d749},
+    .y = {0x63eab6dc, 0x0c53bf99, 0x086d3ee7, 0x1076efa6, 0x8dd8ece2,
+          0xbfececf0, 0x9b94e34d, 0x59b12f3c},
 };
 
-// Signature for "test message".
-static const sigverify_rsa_buffer_t kRsaSignature = {
-    .data = {
-        0x725bfa2c, 0xdb359e00, 0x4dd50e25, 0x344ce68a, 0x2d49dc6b, 0x4a53a013,
-        0x2abd4a7c, 0x762dd4aa, 0xe1935a41, 0xb807b2c2, 0xdf0222d7, 0x2dc12fdf,
-        0xe432fb54, 0x2a12e15d, 0xf290eb01, 0x2529d6d4, 0x0813ab70, 0x78bd8229,
-        0x63f3064e, 0x1cceba14, 0x4beff42b, 0xb9e98de4, 0x84a7f442, 0xb03649bc,
-        0x7726af3d, 0xeaf2656d, 0xf82f963b, 0x31082a3d, 0x194ff701, 0x86588b75,
-        0x5732f5de, 0x35d14195, 0x262c612d, 0x3f66ce59, 0xa2742c75, 0x276341fb,
-        0x8cb84d0a, 0x1222f7f6, 0xbbd8ec56, 0x36e629b1, 0x891fd231, 0xfb351d0c,
-        0x598dab98, 0x64534c32, 0xbcc39e4c, 0x256e4544, 0x3a3205ab, 0x02c5878c,
-        0x99a7e70a, 0xc65c4d5d, 0xe5bedc24, 0x83de5d15, 0x16429111, 0x05d0b216,
-        0xbf8d4dfe, 0x4be3707f, 0x004d6b75, 0xd64b4c66, 0x6e9e4375, 0xa5e1fc9f,
-        0x4ca3c8f2, 0x544cf3d2, 0x34767ef2, 0xc361639c, 0x6062f836, 0x558ebb62,
-        0xec7ee0af, 0x11033e71, 0x873742d3, 0x0ad49285, 0x6f163385, 0xd880305f,
-        0x76e79003, 0x2bd4c955, 0x4a00fd2a, 0x7a045dd4, 0xdf671f3f, 0xd986e081,
-        0x96cfc193, 0xd211ece5, 0x4486f7cb, 0x47be12f5, 0xe513619c, 0xe1a5f41c,
-        0xbc4fbcb3, 0x78b903b7, 0xc8dcbff8, 0x5c088a19, 0x66301acc, 0x12b05bf9,
-        0xa9c795a9, 0xe229e3ca, 0xe928d10b, 0x96eda9d9, 0x162f4a58, 0x069b950c,
-    }};
-
-// Expected encoded message = (sig ^ 65537) mod N.
-static const sigverify_rsa_buffer_t kRsaExpEncodedMessage = {
-    .data = {
-        0x05468728, 0x3ed0c5ca, 0x025d4fda, 0xcfa3e704, 0x507ce0d8, 0xecb616f6,
-        0xa0a4a460, 0x3f0a377b, 0x05000420, 0x03040201, 0x86480165, 0x0d060960,
-        0x00303130, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
-        0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
-        0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
-        0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
-        0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
-        0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
-        0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
-        0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
-        0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
-        0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
-        0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
-        0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
-        0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,
-        0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0x0001ffff,
-    }};
+// Valid ECDSA-P256 signature for `kTestMessage`.
+static const attestation_signature_t kEcdsaSignature = {
+    .r = {0x4811545a, 0x088d927b, 0x5d8624b5, 0x2ef1f329, 0x184ba14a,
+          0xf655eede, 0xaaed0d54, 0xa20e1ac7},
+    .s = {0x729b945d, 0x181dc116, 0x1025dba4, 0xb99828a0, 0xe7225df3,
+          0x0e200e9b, 0x785690b4, 0xf47efe98}};
 
 // Sample key manager diversification data for testing.
 static const keymgr_diversification_t kDiversification = {
@@ -100,16 +44,17 @@ static const keymgr_diversification_t kDiversification = {
     .version = 0,
 };
 
-// Message to sign for endorsement tests.
-const char kEndorseTestMessage[] = "Test message.";
-const size_t kEndorseTestMessageLen = sizeof(kEndorseTestMessage) - 1;
+rom_error_t sigverify_test(void) {
+  // Hash the test message.
+  hmac_digest_t digest;
+  hmac_sha256(kTestMessage, kTestMessageLen, &digest);
 
-rom_error_t modexp_test(void) {
-  sigverify_rsa_buffer_t encoded_message;
+  // The recovered `r` value from sigverify should be equal to the signature
+  // `r` value.
+  uint32_t recovered_r[kAttestationSignatureComponentWords];
   RETURN_IF_ERROR(
-      otbn_boot_sigverify_mod_exp(&kRsaKey, &kRsaSignature, &encoded_message));
-  CHECK_ARRAYS_EQ(encoded_message.data, kRsaExpEncodedMessage.data,
-                  ARRAYSIZE(kRsaExpEncodedMessage.data));
+      otbn_boot_sigverify(&kEcdsaKey, &kEcdsaSignature, &digest, recovered_r));
+  CHECK_ARRAYS_EQ(recovered_r, kEcdsaSignature.r, ARRAYSIZE(kEcdsaSignature.r));
   return kErrorOk;
 }
 
@@ -167,36 +112,22 @@ rom_error_t attestation_advance_and_endorse_test(void) {
 
   // Run endorsement (should overwrite the key with randomness when done).
   hmac_digest_t digest;
-  hmac_sha256(kEndorseTestMessage, kEndorseTestMessageLen, &digest);
+  hmac_sha256(kTestMessage, kTestMessageLen, &digest);
   attestation_signature_t sig;
   RETURN_IF_ERROR(otbn_boot_attestation_endorse(&digest, &sig));
 
-  // TODO: run an ECDSA signature verification here once we have code for that.
-  // For now, just log the key and signature so we can check offline.
-  LOG_INFO("x = 0x%08x%08x%08x%08x%08x%08x%08x%08x", pk.x[7], pk.x[6], pk.x[5],
-           pk.x[4], pk.x[3], pk.x[2], pk.x[1], pk.x[0]);
-  LOG_INFO("y = 0x%08x%08x%08x%08x%08x%08x%08x%08x", pk.y[7], pk.y[6], pk.y[5],
-           pk.y[4], pk.y[3], pk.y[2], pk.y[1], pk.y[0]);
-  LOG_INFO("digest = 0x%08x%08x%08x%08x%08x%08x%08x%08x", digest.digest[7],
-           digest.digest[6], digest.digest[5], digest.digest[4],
-           digest.digest[3], digest.digest[2], digest.digest[1],
-           digest.digest[0]);
-  LOG_INFO("Signature (expected valid):");
-  LOG_INFO("r = 0x%08x%08x%08x%08x%08x%08x%08x%08x", sig.r[7], sig.r[6],
-           sig.r[5], sig.r[4], sig.r[3], sig.r[2], sig.r[1], sig.r[0]);
-  LOG_INFO("s = 0x%08x%08x%08x%08x%08x%08x%08x%08x", sig.s[7], sig.s[6],
-           sig.s[5], sig.s[4], sig.s[3], sig.s[2], sig.s[1], sig.s[0]);
+  // Check that the signature is valid (recovered r == r).
+  uint32_t recovered_r[kAttestationSignatureComponentWords];
+  RETURN_IF_ERROR(otbn_boot_sigverify(&pk, &sig, &digest, recovered_r));
+  CHECK_ARRAYS_EQ(recovered_r, sig.r, ARRAYSIZE(sig.r));
 
   // Run endorsement again (should not return an error, but should produce an
   // invalid signature).
   RETURN_IF_ERROR(otbn_boot_attestation_endorse(&digest, &sig));
 
-  // TODO: run an ECDSA signature verification here once we have code for that.
-  LOG_INFO("Signature (expected invalid):");
-  LOG_INFO("r = 0x%08x%08x%08x%08x%08x%08x%08x%08x", sig.r[7], sig.r[6],
-           sig.r[5], sig.r[4], sig.r[3], sig.r[2], sig.r[1], sig.r[0]);
-  LOG_INFO("s = 0x%08x%08x%08x%08x%08x%08x%08x%08x", sig.s[7], sig.s[6],
-           sig.s[5], sig.s[4], sig.s[3], sig.s[2], sig.s[1], sig.s[0]);
+  // Check that the signature is invalid (recovered r != r).
+  RETURN_IF_ERROR(otbn_boot_sigverify(&pk, &sig, &digest, recovered_r));
+  CHECK_ARRAYS_NE(recovered_r, sig.r, ARRAYSIZE(sig.r));
 
   return kErrorOk;
 }
@@ -212,14 +143,14 @@ rom_error_t attestation_save_clear_key_test(void) {
   RETURN_IF_ERROR(
       otbn_boot_attestation_key_save(kUdsAttestationKeySeed, kDiversification));
   hmac_digest_t digest;
-  hmac_sha256(kEndorseTestMessage, kEndorseTestMessageLen, &digest);
+  hmac_sha256(kTestMessage, kTestMessageLen, &digest);
   attestation_signature_t sig;
   RETURN_IF_ERROR(otbn_boot_attestation_endorse(&digest, &sig));
 
   // Clear the key and check that endorsing now fails (it should even lock
   // OTBN).
   RETURN_IF_ERROR(otbn_boot_attestation_key_clear());
-  hmac_sha256(kEndorseTestMessage, kEndorseTestMessageLen, &digest);
+  hmac_sha256(kTestMessage, kTestMessageLen, &digest);
   CHECK(otbn_boot_attestation_endorse(&digest, &sig) ==
         kErrorOtbnExecutionFailed);
   return kErrorOk;
@@ -238,7 +169,7 @@ bool test_main(void) {
   // Load the boot services OTBN app.
   CHECK(otbn_boot_app_load() == kErrorOk);
 
-  EXECUTE_TEST(result, modexp_test);
+  EXECUTE_TEST(result, sigverify_test);
   EXECUTE_TEST(result, attestation_keygen_test);
   EXECUTE_TEST(result, attestation_advance_and_endorse_test);
   EXECUTE_TEST(result, attestation_save_clear_key_test);

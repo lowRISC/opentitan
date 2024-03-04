@@ -38,9 +38,22 @@ enum {
   kAttestationPublicKeyCoordWords =
       kAttestationPublicKeyCoordBytes / sizeof(uint32_t),
   /**
+   * Size of an attestation signature component in bits.
+   */
+  kAttestationSignatureComponentBits = 256,
+  /**
+   * Size of an attestation signature component in bytes.
+   */
+  kAttestationSignatureComponentBytes = kAttestationSignatureComponentBits / 8,
+  /**
+   * Size of an attestation signature component in 32b words.
+   */
+  kAttestationSignatureComponentWords =
+      kAttestationSignatureComponentBytes / sizeof(uint32_t),
+  /**
    * Size of an attestation signature in bits.
    */
-  kAttestationSignatureBits = 512,
+  kAttestationSignatureBits = kAttestationSignatureComponentBits * 2,
   /**
    * Size of an attestation signature in bytes.
    */
@@ -84,8 +97,8 @@ typedef struct attestation_public_key {
  * Holds an attestation signature (ECDSA-P256).
  */
 typedef struct attestation_signature {
-  uint32_t r[kAttestationSignatureWords / 2];
-  uint32_t s[kAttestationSignatureWords / 2];
+  uint32_t r[kAttestationSignatureComponentWords];
+  uint32_t s[kAttestationSignatureComponentWords];
 } attestation_signature_t;
 
 #ifdef __cplusplus
