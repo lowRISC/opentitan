@@ -10,7 +10,6 @@ class usbdev_pkt_received_vseq extends usbdev_base_vseq;
 
   usb20_item     item;
   RSP            rsp_item;
-  bit      [6:0] num_of_bytes;
   bit            pkt_received;
   uvm_reg_data_t read_rxfifo;
   uvm_reg_data_t intr_state;
@@ -23,7 +22,7 @@ class usbdev_pkt_received_vseq extends usbdev_base_vseq;
     // Out token packet followed by a data packet
     call_token_seq(PidTypeOutToken);
     cfg.clk_rst_vif.wait_clks(20);
-    call_data_seq(PidTypeData0, num_of_bytes);
+    call_data_seq(PidTypeData0);
     get_response(rsp_item);
     $cast(item, rsp_item);
     get_out_response_from_device(item, PidTypeAck);

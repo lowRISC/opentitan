@@ -111,7 +111,7 @@ endtask
     finish_item(m_token_pkt);
   endtask
 
-  virtual task call_data_seq(input pid_type_e pid_type, input bit [6:0] num_of_bytes);
+  virtual task call_data_seq(input pid_type_e pid_type);
     `uvm_create_on(m_data_pkt, p_sequencer.usb20_sequencer_h)
     m_data_pkt.m_pkt_type = PktTypeData;
     m_data_pkt.m_pid_type = pid_type;
