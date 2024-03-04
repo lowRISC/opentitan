@@ -13,9 +13,9 @@ otbn_binary(
     ],
     deps = [
         ":p256_base",
+        ":p256_isoncurve",
         ":p256_sign",
-        ":rsa_verify_3072",
-        ":rsa_verify_3072_rr",
+        ":p256_verify",
     ],
 )
 
