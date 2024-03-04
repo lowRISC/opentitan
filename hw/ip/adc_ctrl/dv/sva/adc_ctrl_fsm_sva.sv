@@ -38,4 +38,8 @@ module adc_ctrl_fsm_sva
   `ASSERT(NpSampleCntHwReset_A, 1 |=> (@(posedge clk_aon_i) np_sample_cnt_q == 0), !rst_aon_ni, 0)
   `ASSERT(LpSampleCntHwReset_A, 1 |=> (@(posedge clk_aon_i) lp_sample_cnt_q == 0), !rst_aon_ni, 0)
 
+  // Check connectivity of the state output register (this is used for debug only).
+  `ASSERT(FsmDebugOut_A, fsm_state_q === tb.dut.u_reg.hw2reg.adc_fsm_state.d,
+      clk_aon_i, !rst_aon_ni)
+
 endmodule

@@ -160,6 +160,10 @@ package adc_ctrl_reg_pkg;
     } oneshot;
   } adc_ctrl_hw2reg_adc_intr_status_reg_t;
 
+  typedef struct packed {
+    logic [4:0]  d;
+  } adc_ctrl_hw2reg_adc_fsm_state_reg_t;
+
   // Register -> HW type
   typedef struct packed {
     adc_ctrl_reg2hw_intr_state_reg_t intr_state; // [447:447]
@@ -181,10 +185,11 @@ package adc_ctrl_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    adc_ctrl_hw2reg_intr_state_reg_t intr_state; // [77:76]
-    adc_ctrl_hw2reg_adc_chn_val_mreg_t [1:0] adc_chn_val; // [75:20]
-    adc_ctrl_hw2reg_filter_status_reg_t filter_status; // [19:11]
-    adc_ctrl_hw2reg_adc_intr_status_reg_t adc_intr_status; // [10:0]
+    adc_ctrl_hw2reg_intr_state_reg_t intr_state; // [82:81]
+    adc_ctrl_hw2reg_adc_chn_val_mreg_t [1:0] adc_chn_val; // [80:25]
+    adc_ctrl_hw2reg_filter_status_reg_t filter_status; // [24:16]
+    adc_ctrl_hw2reg_adc_intr_status_reg_t adc_intr_status; // [15:5]
+    adc_ctrl_hw2reg_adc_fsm_state_reg_t adc_fsm_state; // [4:0]
   } adc_ctrl_hw2reg_t;
 
   // Register offsets
@@ -219,12 +224,15 @@ package adc_ctrl_reg_pkg;
   parameter logic [BlockAw-1:0] ADC_CTRL_FILTER_STATUS_OFFSET = 7'h 70;
   parameter logic [BlockAw-1:0] ADC_CTRL_ADC_INTR_CTL_OFFSET = 7'h 74;
   parameter logic [BlockAw-1:0] ADC_CTRL_ADC_INTR_STATUS_OFFSET = 7'h 78;
+  parameter logic [BlockAw-1:0] ADC_CTRL_ADC_FSM_STATE_OFFSET = 7'h 7c;
 
   // Reset values for hwext registers and their fields
   parameter logic [0:0] ADC_CTRL_INTR_TEST_RESVAL = 1'h 0;
   parameter logic [0:0] ADC_CTRL_INTR_TEST_MATCH_DONE_RESVAL = 1'h 0;
   parameter logic [0:0] ADC_CTRL_ALERT_TEST_RESVAL = 1'h 0;
   parameter logic [0:0] ADC_CTRL_ALERT_TEST_FATAL_FAULT_RESVAL = 1'h 0;
+  parameter logic [4:0] ADC_CTRL_ADC_FSM_STATE_RESVAL = 5'h 0;
+  parameter logic [4:0] ADC_CTRL_ADC_FSM_STATE_STATE_RESVAL = 5'h 0;
 
   // Register index
   typedef enum int {
@@ -258,11 +266,12 @@ package adc_ctrl_reg_pkg;
     ADC_CTRL_ADC_WAKEUP_CTL,
     ADC_CTRL_FILTER_STATUS,
     ADC_CTRL_ADC_INTR_CTL,
-    ADC_CTRL_ADC_INTR_STATUS
+    ADC_CTRL_ADC_INTR_STATUS,
+    ADC_CTRL_ADC_FSM_STATE
   } adc_ctrl_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] ADC_CTRL_PERMIT [31] = '{
+  parameter logic [3:0] ADC_CTRL_PERMIT [32] = '{
     4'b 0001, // index[ 0] ADC_CTRL_INTR_STATE
     4'b 0001, // index[ 1] ADC_CTRL_INTR_ENABLE
     4'b 0001, // index[ 2] ADC_CTRL_INTR_TEST
@@ -293,7 +302,8 @@ package adc_ctrl_reg_pkg;
     4'b 0001, // index[27] ADC_CTRL_ADC_WAKEUP_CTL
     4'b 0001, // index[28] ADC_CTRL_FILTER_STATUS
     4'b 0011, // index[29] ADC_CTRL_ADC_INTR_CTL
-    4'b 0011  // index[30] ADC_CTRL_ADC_INTR_STATUS
+    4'b 0011, // index[30] ADC_CTRL_ADC_INTR_STATUS
+    4'b 0001  // index[31] ADC_CTRL_ADC_FSM_STATE
   };
 
 endpackage

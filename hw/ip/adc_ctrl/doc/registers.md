@@ -36,6 +36,7 @@
 | adc_ctrl.[`filter_status`](#filter_status)               | 0x70     |        4 | Adc filter match status                   |
 | adc_ctrl.[`adc_intr_ctl`](#adc_intr_ctl)                 | 0x74     |        4 | Interrupt enable controls.                |
 | adc_ctrl.[`adc_intr_status`](#adc_intr_status)           | 0x78     |        4 | Debug cable internal status               |
+| adc_ctrl.[`adc_fsm_state`](#adc_fsm_state)               | 0x7c     |        4 | State of the internal state machine       |
 
 ## INTR_STATE
 Interrupt State Register
@@ -374,6 +375,48 @@ Debug cable internal status
 |  31:9  |        |         |              | Reserved                                                   |
 |   8    |  rw1c  |   0x0   | oneshot      | 0: oneshot sample is not done ; 1: oneshot sample is done  |
 |  7:0   |  rw1c  |   0x0   | filter_match | 0: filter condition is not met; 1: filter condition is met |
+
+## adc_fsm_state
+State of the internal state machine
+- Offset: `0x7c`
+- Reset default: `0x0`
+- Reset mask: `0x1f`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "state", "bits": 5, "attr": ["ro"], "rotate": 0}, {"bits": 27}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name                           |
+|:------:|:------:|:-------:|:-------------------------------|
+|  31:5  |        |         | Reserved                       |
+|  4:0   |   ro   |   0x0   | [state](#adc_fsm_state--state) |
+
+### adc_fsm_state . state
+Current FSM state (for debug purposes)
+
+| Value   | Name       | Description                                        |
+|:--------|:-----------|:---------------------------------------------------|
+| 0x00    | PWRDN      | in the power down state                            |
+| 0x01    | PWRUP      | being powered up                                   |
+| 0x02    | ONEST_0    | in oneshot mode; sample channel0 value             |
+| 0x03    | ONEST_021  | in oneshot mode; transition from chn0 to chn1      |
+| 0x04    | ONEST_1    | in oneshot mode; sample channel1 value             |
+| 0x05    | ONEST_DONE | one shot done                                      |
+| 0x06    | LP_0       | in low-power mode, sample channel0 value           |
+| 0x07    | LP_021     | in low-power mode, transition from chn0 to chn1    |
+| 0x08    | LP_1       | in low-power mode, sample channel1 value           |
+| 0x09    | LP_EVAL    | in low-power mode, evaluate if there is a match    |
+| 0x0a    | LP_SLP     | in low-power mode, go to sleep                     |
+| 0x0b    | LP_PWRUP   | in low-power mode, being powered up                |
+| 0x0c    | NP_0       | in normal-power mode, sample channel0 value        |
+| 0x0d    | NP_021     | in normal-power mode, transition from chn0 to chn1 |
+| 0x0e    | NP_1       | in normal-power mode, sample channel1 value        |
+| 0x0f    | NP_EVAL    | in normal-power mode, detection is done            |
+| 0x10    | NP_DONE    | normal-power detection done                        |
+
+Other values are reserved.
 
 
 <!-- END CMDGEN -->

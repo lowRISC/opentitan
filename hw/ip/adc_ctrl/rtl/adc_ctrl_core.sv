@@ -25,7 +25,10 @@ module adc_ctrl_core import adc_ctrl_reg_pkg::* ; (
 
   // adc interface
   input  ast_pkg::adc_ast_rsp_t adc_i,
-  output ast_pkg::adc_ast_req_t adc_o
+  output ast_pkg::adc_ast_req_t adc_o,
+
+  // FSM state output for debug purposes.
+  output fsm_state_e fsm_state_o
 );
 
   logic chn0_val_we, chn1_val_we;//write enable for the latest ADC sample
@@ -162,7 +165,8 @@ module adc_ctrl_core import adc_ctrl_reg_pkg::* ; (
     .chn0_val_o(chn0_val),
     .chn1_val_o(chn1_val),
     .adc_ctrl_done_o(adc_ctrl_done),
-    .oneshot_done_o(oneshot_done)
+    .oneshot_done_o(oneshot_done),
+    .fsm_state_o
   );
 
   // synchronzie from clk_aon into cfg domain
