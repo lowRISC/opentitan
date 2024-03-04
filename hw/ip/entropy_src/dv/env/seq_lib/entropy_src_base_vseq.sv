@@ -383,8 +383,13 @@ class entropy_src_base_vseq extends cip_base_vseq #(
   // b. The intr_state register indicates no more data in entropy_data
   //
   // If max_bundles < 0, simply reads all available bundles.
+  //
+  // If source is TlSrcObserveFIFO and check_overflow is set to 1, this task checks whether
+  // overflows occured or not. This is done to make sure that the data read from the observe
+  // FIFO is contiguous.
   task do_entropy_data_read(tl_data_source_e source = TlSrcEntropyDataReg,
                             int max_bundles = -1,
+                            bit check_overflow = 0,
                             output int bundles_found);
     bit intr_status;
     bit done;
@@ -414,11 +419,24 @@ class entropy_src_base_vseq extends cip_base_vseq #(
         `uvm_info(`gfn, "READING INTERRUPT STS", UVM_DEBUG)
         csr_rd(.ptr(intr_field), .value(intr_status));
         if (intr_status) begin
+          // Check that the Observe FIFO hasn't overflown yet.
+          // By checking for overflows before and after reading the observe FIFO we can make sure,
+          // that the data we are reading is contiguous.
+          if (check_overflow && (source == TlSrcObserveFIFO)) begin
+            csr_rd_check(.ptr(ral.fw_ov_rd_fifo_overflow.fw_ov_rd_fifo_overflow),
+                        .compare_value('0));
+          end
           // Read and check entropy
           `uvm_info(`gfn, $sformatf("Reading %d words", cnt_per_interrupt), UVM_HIGH)
           for (int i = 0; i < cnt_per_interrupt; i++) begin
             bit [TL_DW-1:0] entropy_tlul;
             csr_rd(.ptr(data_reg), .value(entropy_tlul), .blocking(1'b1));
+          end
+          if (check_overflow && (source == TlSrcObserveFIFO)) begin
+            // Check whether no overflow occured while reading the observe FIFO and we are
+            // still reading out contiguous data.
+            csr_rd_check(.ptr(ral.fw_ov_rd_fifo_overflow.fw_ov_rd_fifo_overflow),
+                        .compare_value('0));
           end
           // Clear the appropriate interrupt bit
           `uvm_info(`gfn, "CLEARING FIFO INTERRUPT", UVM_DEBUG)

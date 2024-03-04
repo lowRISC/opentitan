@@ -106,6 +106,12 @@
     }
 
     {
+      name: entropy_src_fw_ov_contiguous
+      uvm_test: entropy_src_fw_ov_contiguous_test
+      uvm_test_seq: entropy_src_fw_ov_contiguous_vseq
+    }
+
+    {
      name: entropy_src_intr
      uvm_test: entropy_src_intr_test
      uvm_test_seq: entropy_src_intr_vseq
