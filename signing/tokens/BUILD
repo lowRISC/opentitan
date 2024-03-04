@@ -56,3 +56,20 @@ signing_tool(
     location = "token",
     tool = "//sw/host/hsmtool",
 )
+
+signing_tool(
+    name = "cloud_kms_proda",
+    data = [
+        "earlgrey_z1_proda.yaml",
+        "@cloud_kms_hsm//:libkmsp11",
+    ],
+    env = {
+        # The Cloud KMS PKCS11 provider needs to know where the user's home
+        # is in order to load the gclould credentials.
+        "HOME": ENV["HOME"],
+        "HSMTOOL_MODULE": "$(location @cloud_kms_hsm//:libkmsp11)",
+        "KMS_PKCS11_CONFIG": "$(location earlgrey_z1_proda.yaml)",
+    },
+    location = "token",
+    tool = "//sw/host/hsmtool",
+)
