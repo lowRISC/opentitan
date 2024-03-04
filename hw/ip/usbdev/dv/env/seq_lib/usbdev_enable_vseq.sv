@@ -27,7 +27,7 @@ class usbdev_enable_vseq extends usbdev_base_vseq;
     cfg.clk_rst_vif.wait_clks(100);
     configure_out_trans(); // register configurations for OUT Trans.
     cfg.clk_rst_vif.wait_clks(20);
-    call_token_seq(PktTypeToken, PidTypeOutToken, endp);
+    call_token_seq(PktTypeToken, PidTypeOutToken);
     cfg.clk_rst_vif.wait_clks(20);
     call_data_seq(PktTypeData, PidTypeData0, rand_or_not, num_of_bytes);
     get_response(m_response_item);

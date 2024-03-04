@@ -100,7 +100,7 @@ virtual task dut_init(string reset_kind = "HARD");
   if (do_usbdev_init) usbdev_init();
 endtask
 
-  virtual task call_token_seq(input pkt_type_e pkt_type, input pid_type_e pid_type, bit [3:0] endp);
+  virtual task call_token_seq(input pkt_type_e pkt_type, input pid_type_e pid_type);
     `uvm_create_on(m_token_pkt, p_sequencer.usb20_sequencer_h)
     m_token_pkt.m_pkt_type = pkt_type;
     m_token_pkt.m_pid_type = pid_type;

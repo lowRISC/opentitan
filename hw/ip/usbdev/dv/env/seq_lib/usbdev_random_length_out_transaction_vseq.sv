@@ -12,7 +12,7 @@ class usbdev_random_length_out_transaction_vseq extends usbdev_base_vseq;
     // Configure out transaction
     configure_out_trans();
     // Out token packet followed by a data packet of random bytes
-    call_token_seq(PktTypeToken, PidTypeOutToken, endp);
+    call_token_seq(PktTypeToken, PidTypeOutToken);
     cfg.clk_rst_vif.wait_clks(20);
     call_data_seq(PktTypeData, PidTypeData0, rand_or_not, num_of_bytes);
     get_response(m_response_item);
