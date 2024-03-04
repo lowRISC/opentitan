@@ -88,6 +88,32 @@ example:
 }
 ```
 
+## Configuration for silicon_owner PRODA SKU signing
+
+The production PRODA SKU expects a signing key held in Google's cloud-kms
+service.
+
+See the previous section for more details on how to update the `hsmtool`
+configuration.
+
+```json
+{
+  "earlgrey_a0": {
+    "token": "earlgrey_a0_000",
+    "user": "user",
+    "pin": "XXXXXX"
+  },
+  "earlgrey_z0_sival": {
+    "token": "ot-earlgrey-z0-sival",
+    "user": "user"
+  },
+  "earlgrey_z1_proda": {
+    "token": "ot-earlgrey-z1-proda",
+    "user": "user"
+  }
+}
+```
+
 ### Cloud KMS authentication
 
 In order to sign with the cloud-kms key, you need to authenticate to Google
