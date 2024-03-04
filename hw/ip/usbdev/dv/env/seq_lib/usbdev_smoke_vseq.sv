@@ -49,7 +49,7 @@ class usbdev_smoke_vseq extends usbdev_base_vseq;
     call_token_seq(PidTypeOutToken);
     cfg.clk_rst_vif.wait_clks(20);
     // TODO: want to use a randomized packet length here but may be 4n contrained presently.
-    call_data_seq(PktTypeData, PidTypeData1, 0, 64);  // Using DATA1 for second packet.
+    call_data_seq(PidTypeData1, 0, 64);  // Using DATA1 for second packet.
     cfg.clk_rst_vif.wait_clks(20);
 
     // Check that the packet was accepted (ACKnowledged) by the USB device.
