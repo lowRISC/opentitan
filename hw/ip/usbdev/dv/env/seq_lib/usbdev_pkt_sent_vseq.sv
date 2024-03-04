@@ -23,7 +23,7 @@ class usbdev_pkt_sent_vseq extends usbdev_base_vseq;
     csr_update(ral.intr_enable);
 
     // Out token packet followed by a data packet
-    call_token_seq(PktTypeToken, PidTypeOutToken, endp);
+    call_token_seq(PktTypeToken, PidTypeOutToken);
     cfg.clk_rst_vif.wait_clks(20);
     call_data_seq(PktTypeData, PidTypeData0, rand_or_not, num_of_bytes);
     // Get response from DUT
@@ -42,7 +42,7 @@ class usbdev_pkt_sent_vseq extends usbdev_base_vseq;
     // Note: data should have been written into the current OUT buffer by the above transaction
     configure_in_trans(out_buffer_id);
     // Token pkt followed by handshake pkt
-    call_token_seq(PktTypeToken, PidTypeInToken, endp);
+    call_token_seq(PktTypeToken, PidTypeInToken);
     // Get response from DUT
     get_response(m_response_item);
     $cast(m_usb20_item, m_response_item);
