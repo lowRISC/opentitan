@@ -10,12 +10,6 @@ class usbdev_av_buffer_vseq extends usbdev_base_vseq;
 
   usb20_item      item;
   RSP             rsp_item;
-  bit      [6:0]  num_of_bytes = 8;
-
-  task pre_start();
-    super.pre_start();
-    rand_or_not = 1'b0;
-  endtask
 
   task body();
     // Configure transaction
@@ -23,7 +17,7 @@ class usbdev_av_buffer_vseq extends usbdev_base_vseq;
     // Out token packet followed by a data packet of 8 bytes
     call_token_seq(PidTypeOutToken);
     cfg.clk_rst_vif.wait_clks(20);
-    call_data_seq(PidTypeData0, rand_or_not, num_of_bytes);
+    call_data_seq(PidTypeData0, .randomize_length(1'b0), .num_of_bytes(8));
     get_response(rsp_item);
     $cast(item, rsp_item);
     get_out_response_from_device(item, PidTypeAck);
