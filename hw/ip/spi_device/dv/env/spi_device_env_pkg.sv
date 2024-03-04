@@ -72,7 +72,6 @@ package spi_device_env_pkg;
   parameter uint NUM_ALERTS = 1;
   parameter string LIST_OF_ALERTS[] = {"fatal_fault"};
 
-  parameter spi_device_pkg::sram_type_e SRAM_TYPE = spi_device_pkg::SramType2p;
   // SPI SRAM is 4kB
   parameter uint SRAM_OFFSET                     = 'h1000;
   parameter uint SRAM_SIZE                       = 4096;

@@ -48,7 +48,7 @@ module tb;
 
   // dut
   spi_device #(
-    .SramType(SRAM_TYPE)
+    .SramType(`SRAM_TYPE)
   ) dut (
     .clk_i          (clk       ),
     .rst_ni         (rst_n     ),

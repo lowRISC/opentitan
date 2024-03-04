@@ -1,0 +1,12 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+{
+  variant: 1r1w
+
+  // Import the base spi_device sim_cfg file
+  import_cfgs: ["{proj_root}/hw/ip/spi_device/dv/base_sim_cfg.hjson"]
+
+  build_opts: ["+define+SRAM_TYPE=spi_device_pkg::SramType1r1w"]
+}
