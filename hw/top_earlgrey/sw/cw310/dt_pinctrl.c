@@ -423,6 +423,10 @@ static const dt_pinctrl_cfg_t boot_periphmux_cfgs[] = {
                               kTopEarlgreyPinmuxInselIoc1),
     dt_pinctrl_cfg_from_parts(kTopEarlgreyPinmuxPeripheralInGpioGpio24,
                               kTopEarlgreyPinmuxInselIoc2),
+    // Console input. This shouldn't really be here...
+    dt_pinctrl_cfg_from_parts(kTopEarlgreyPinmuxPeripheralInUart0Rx,
+                              kTopEarlgreyPinmuxInselIoc3),
+
 };
 
 uint32_t dt_pinctrl_boot_padmux_config_len(void) {
@@ -430,7 +434,7 @@ uint32_t dt_pinctrl_boot_padmux_config_len(void) {
   return 5;
 }
 
-uint32_t dt_pinctrl_boot_periphmux_config_len(void) { return 3; }
+uint32_t dt_pinctrl_boot_periphmux_config_len(void) { return 4; }
 
 dt_pinctrl_cfg_t dt_pinctrl_get_boot_padmux_config(uint32_t idx) {
   //  const uint32_t cfg_len = ARRAYSIZE(boot_padmux_cfgs);
@@ -444,7 +448,7 @@ dt_pinctrl_cfg_t dt_pinctrl_get_boot_padmux_config(uint32_t idx) {
 dt_pinctrl_cfg_t dt_pinctrl_get_boot_periphmux_config(uint32_t idx) {
   //  const uint32_t cfg_len = ARRAYSIZE(boot_periphmux_cfgs);
   //  if (idx < cfg_len) {
-  if (idx < 3) {
+  if (idx < 4) {
     return boot_periphmux_cfgs[idx];
   }
   return -1;
