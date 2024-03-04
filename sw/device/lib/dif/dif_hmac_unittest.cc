@@ -27,6 +27,8 @@ class HmacTest : public testing::Test, public mock_mmio::MmioTest {
   dif_hmac_transaction_t transaction_ = {
       .message_endianness = kDifHmacEndiannessLittle,
       .digest_endianness = kDifHmacEndiannessLittle,
+      .digest_size = kDifSHA256,
+      .key_length = kDifHMACKey256,
   };
 
   struct ConfigRegister {
@@ -34,6 +36,8 @@ class HmacTest : public testing::Test, public mock_mmio::MmioTest {
     bool sha_enable = true;
     bool msg_big_endian = false;
     bool digest_big_endian = false;
+    uint32_t key_length = HMAC_CFG_KEY_LENGTH_VALUE_KEY_256;
+    uint32_t digest_size = HMAC_CFG_DIGEST_SIZE_VALUE_SHA2_256;
   } config_reg_;
 
   HmacTest() { EXPECT_DIF_OK(dif_hmac_init(dev().region(), &hmac_)); }
@@ -46,6 +50,8 @@ class HmacTest : public testing::Test, public mock_mmio::MmioTest {
             {HMAC_CFG_SHA_EN_BIT, config_reg_.sha_enable},
             {HMAC_CFG_ENDIAN_SWAP_BIT, config_reg_.msg_big_endian},
             {HMAC_CFG_DIGEST_SWAP_BIT, config_reg_.digest_big_endian},
+            {HMAC_CFG_DIGEST_SIZE_OFFSET, config_reg_.digest_size},
+            {HMAC_CFG_KEY_LENGTH_OFFSET, config_reg_.key_length},
         });
   }
 

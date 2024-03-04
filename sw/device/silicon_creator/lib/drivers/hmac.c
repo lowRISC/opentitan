@@ -28,6 +28,11 @@ void hmac_sha256_init(void) {
   reg = bitfield_bit32_write(reg, HMAC_CFG_ENDIAN_SWAP_BIT, false);
   reg = bitfield_bit32_write(reg, HMAC_CFG_SHA_EN_BIT, true);
   reg = bitfield_bit32_write(reg, HMAC_CFG_HMAC_EN_BIT, false);
+  // configure to run SHA-2 256 with 256-bit key
+  reg = bitfield_field32_write(reg, HMAC_CFG_DIGEST_SIZE_FIELD,
+                               HMAC_CFG_DIGEST_SIZE_VALUE_SHA2_256);
+  reg = bitfield_field32_write(reg, HMAC_CFG_KEY_LENGTH_FIELD,
+                               HMAC_CFG_KEY_LENGTH_VALUE_KEY_256);
   abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CFG_REG_OFFSET, reg);
 
   reg = 0;

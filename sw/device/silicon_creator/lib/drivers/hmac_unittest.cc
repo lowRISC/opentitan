@@ -27,12 +27,18 @@ class HmacTest : public rom_test::RomTest {
     EXPECT_ABS_WRITE32(base_ + HMAC_INTR_ENABLE_REG_OFFSET, 0u);
     EXPECT_ABS_WRITE32(base_ + HMAC_INTR_STATE_REG_OFFSET,
                        std::numeric_limits<uint32_t>::max());
+
+    uint32_t key_len_256 = HMAC_CFG_KEY_LENGTH_VALUE_KEY_256;
+    uint32_t digest_256 = HMAC_CFG_DIGEST_SIZE_VALUE_SHA2_256;
+
     EXPECT_ABS_WRITE32(base_ + HMAC_CFG_REG_OFFSET,
                        {
                            {HMAC_CFG_DIGEST_SWAP_BIT, false},
                            {HMAC_CFG_ENDIAN_SWAP_BIT, false},
                            {HMAC_CFG_SHA_EN_BIT, true},
                            {HMAC_CFG_HMAC_EN_BIT, false},
+                           {HMAC_CFG_DIGEST_SIZE_OFFSET, digest_256},
+                           {HMAC_CFG_KEY_LENGTH_OFFSET, key_len_256},
                        });
     EXPECT_ABS_WRITE32(base_ + HMAC_CMD_REG_OFFSET,
                        {{HMAC_CMD_HASH_START_BIT, true}});

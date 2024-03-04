@@ -62,6 +62,13 @@ static void hmac_init(hardened_bool_t enable_hmac) {
     HARDENED_CHECK_EQ(enable_hmac, kHardenedBoolFalse);
     cfg = bitfield_bit32_write(cfg, HMAC_CFG_HMAC_EN_BIT, false);
   }
+
+  // configure to run SHA-2 256 with 256-bit key
+  cfg = bitfield_field32_write(cfg, HMAC_CFG_DIGEST_SIZE_FIELD,
+                               HMAC_CFG_DIGEST_SIZE_VALUE_SHA2_256);
+  cfg = bitfield_field32_write(cfg, HMAC_CFG_KEY_LENGTH_FIELD,
+                               HMAC_CFG_KEY_LENGTH_VALUE_KEY_256);
+
   abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CFG_REG_OFFSET, cfg);
 
   uint32_t cmd = bitfield_bit32_write(0, HMAC_CMD_HASH_START_BIT, true);
