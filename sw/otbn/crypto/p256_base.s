@@ -813,107 +813,97 @@ proj_to_affine:
   bn.mov    w13, w19
 
   /* w14 <= z^(2^6 - 1) = x6 */
-  loopi     3, 4
-    bn.mov    w24, w19
+  bn.mov    w24, w19
+  loopi     3, 3
     bn.mov    w25, w19
     jal       x1, mul_modp
-    nop
-  bn.mov    w24, w19
+    bn.mov    w24, w19
   bn.mov    w25, w13
   jal       x1, mul_modp
   bn.mov    w14, w19
 
   /* w15 <= z^(2^12 - 1) = x12 */
-  loopi     6, 4
-    bn.mov    w24, w19
+  bn.mov    w24, w19
+  loopi     6, 3
     bn.mov    w25, w19
     jal       x1, mul_modp
-    nop
-  bn.mov    w24, w19
+    bn.mov    w24, w19
   bn.mov    w25, w14
   jal       x1, mul_modp
   bn.mov    w15, w19
 
   /* w16 <= z^(2^15 - 1) = x15 */
-  loopi     3, 4
-    bn.mov    w24, w19
+  bn.mov    w24, w19
+  loopi     3, 3
     bn.mov    w25, w19
     jal       x1, mul_modp
-    nop
-  bn.mov    w24, w19
+    bn.mov    w24, w19
   bn.mov    w25, w13
   jal       x1, mul_modp
   bn.mov    w16, w19
 
   /* w17 <= z^(2^30 - 1) = x30 */
-  loopi     15, 4
-    bn.mov    w24, w19
+  bn.mov    w24, w19
+  loopi     15, 3
     bn.mov    w25, w19
     jal       x1, mul_modp
-    nop
-  bn.mov    w24, w19
+    bn.mov    w24, w19
   bn.mov    w25, w16
   jal       x1, mul_modp
   bn.mov    w17, w19
 
   /* w18 <= z^(2^32 - 1) = x32 */
-  loopi     2, 4
-    bn.mov    w24, w19
+  bn.mov    w24, w19
+  loopi     2, 3
     bn.mov    w25, w19
     jal       x1, mul_modp
-    nop
-  bn.mov    w24, w19
+    bn.mov    w24, w19
   bn.mov    w25, w12
   jal       x1, mul_modp
   bn.mov    w18, w19
 
   /* w19 <= z^(2^64 - 2^32 + 1) */
-  loopi     32, 4
-    bn.mov    w24, w19
+  bn.mov    w24, w19
+  loopi     32, 3
     bn.mov    w25, w19
     jal       x1, mul_modp
-    nop
-  bn.mov    w24, w19
+    bn.mov    w24, w19
   bn.mov    w25, w10
   jal       x1, mul_modp
 
   /* w19 <= z^(2^192 - 2^160 + 2^128 + 2^32 - 1) */
-  loopi     128, 4
-    bn.mov    w24, w19
+  bn.mov    w24, w19
+  loopi     128, 3
     bn.mov    w25, w19
     jal       x1, mul_modp
-    nop
-  bn.mov    w24, w19
+    bn.mov    w24, w19
   bn.mov    w25, w18
   jal       x1, mul_modp
 
   /* w19 <= z^(2^224 - 2^192 + 2^160 + 2^64 + 1) */
-  loopi     32, 4
-    bn.mov    w24, w19
+  bn.mov    w24, w19
+  loopi     32, 3
     bn.mov    w25, w19
     jal       x1, mul_modp
-    nop
-  bn.mov    w24, w19
+    bn.mov    w24, w19
   bn.mov    w25, w18
   jal       x1, mul_modp
 
   /* w19 <= z^(2^254 - 2^222 + 2^190 + 2^94 - 1) */
-  loopi     30, 4
-    bn.mov    w24, w19
+  bn.mov    w24, w19
+  loopi     30, 3
     bn.mov    w25, w19
     jal       x1, mul_modp
-    nop
-  bn.mov    w24, w19
+    bn.mov    w24, w19
   bn.mov    w25, w17
   jal       x1, mul_modp
 
   /* w14 <= z^(2^256 - 2^224 + 2^192 + 2^96 - 2^2 + 1) = z^(p-2) */
-  loopi     2, 4
-    bn.mov    w24, w19
+  bn.mov    w24, w19
+  loopi     2, 3
     bn.mov    w25, w19
     jal       x1, mul_modp
-    nop
-  bn.mov    w24, w19
+    bn.mov    w24, w19
   bn.mov    w25, w10
   jal       x1, mul_modp
   bn.mov    w14, w19
