@@ -17,7 +17,7 @@ class usbdev_av_buffer_vseq extends usbdev_base_vseq;
     // Configure transaction
     configure_trans();
     // Out token packet followed by a data packet of 8 bytes
-    call_token_seq(PktTypeToken, PidTypeOutToken);
+    call_token_seq(PidTypeOutToken);
     cfg.clk_rst_vif.wait_clks(20);
     call_data_seq(PktTypeData, PidTypeData0, rand_or_not, num_of_bytes);
     get_response(rsp_item);

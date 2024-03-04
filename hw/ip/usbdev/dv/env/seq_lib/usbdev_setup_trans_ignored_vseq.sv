@@ -17,7 +17,7 @@ class usbdev_setup_trans_ignored_vseq extends usbdev_base_vseq;
     ral.intr_enable.pkt_received.set(1'b1); // Enable pkt_received interrupt
     csr_update(ral.intr_enable);
     // Setup token packet
-    call_token_seq(PktTypeToken, PidTypeSetupToken);
+    call_token_seq(PidTypeSetupToken);
     cfg.clk_rst_vif.wait_clks(20);
     csr_rd(.ptr(ral.intr_state.pkt_received), .value(pkt_received));
     // Verify the packet received bit must be zero.

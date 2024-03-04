@@ -24,7 +24,7 @@ class usbdev_nak_trans_vseq extends usbdev_base_vseq;
     csr_update(ral.set_nak_out[0]);
 
     // Out token packet followed by a data packet
-    call_token_seq(PktTypeToken, PidTypeOutToken);
+    call_token_seq(PidTypeOutToken);
     cfg.clk_rst_vif.wait_clks(20);
     call_data_seq(PktTypeData, PidTypeData0, rand_or_not, num_of_bytes);
     cfg.clk_rst_vif.wait_clks(20);
@@ -49,7 +49,7 @@ class usbdev_nak_trans_vseq extends usbdev_base_vseq;
     csr_update(ral.avoutbuffer);
 
     // Out token packet followed by a data packet
-    call_token_seq(PktTypeToken, PidTypeOutToken);
+    call_token_seq(PidTypeOutToken);
     cfg.clk_rst_vif.wait_clks(20);
     call_data_seq(PktTypeData, PidTypeData1, rand_or_not, num_of_bytes);
     cfg.clk_rst_vif.wait_clks(20);
