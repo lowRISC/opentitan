@@ -10,7 +10,7 @@
 # CI jobs should use ci/bazelisk.sh instead, which performs CI-friendly additional
 # setup.
 
-set -euo pipefail
+set -eo pipefail
 
 # Change to this script's directory, as it is the location of the bazel workspace.
 cd "$(dirname "$0")"
