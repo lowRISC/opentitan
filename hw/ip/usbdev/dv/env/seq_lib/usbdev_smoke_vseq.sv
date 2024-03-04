@@ -34,7 +34,7 @@ class usbdev_smoke_vseq extends usbdev_base_vseq;
     ral.intr_enable.pkt_received.set(1'b1); // Enable pkt_received interrupt
     csr_update(ral.intr_enable);
     // Setup token packet followed by a data packet of 8 bytes
-    call_token_sequence(PktTypeToken, PidTypeSetupToken);
+    call_token_sequence(PidTypeSetupToken);
     cfg.clk_rst_vif.wait_clks(20);
     call_data_sequence(PktTypeData, PidTypeData0);
     cfg.clk_rst_vif.wait_clks(20);
@@ -45,10 +45,10 @@ class usbdev_smoke_vseq extends usbdev_base_vseq;
     `DV_CHECK_EQ(rx_fifo_expected, rx_fifo_read);
   endtask
 
-  task call_token_sequence(input pkt_type_e pkt_type, input pid_type_e pid_type);
+  task call_token_sequence(input pid_type_e pid_type);
     RSP rsp_item;
     `uvm_create_on(m_token_pkt, p_sequencer.usb20_sequencer_h)
-    m_token_pkt.m_pkt_type = pkt_type;
+    m_token_pkt.m_pkt_type = PktTypeToken;
     m_token_pkt.m_pid_type = pid_type;
     assert(m_token_pkt.randomize() with {m_token_pkt.address inside {7'b0};
                                          m_token_pkt.endpoint inside {4'd0};});
