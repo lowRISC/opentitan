@@ -205,6 +205,17 @@
       tests: ["spi_device_intercept", "spi_device_flash_all"]
     }
     {
+      name: cmd_read_pipeline
+      desc: '''
+            - Configure proper fast read command info slot with the read data pipeline feature.
+            - Issue fast read command.
+            - Check propagation of fast read command, including dummy cycles for read data pipeline.
+            - Initiate response to the fast read.
+            - Check proper reception of response.'''
+      stage: V2
+      tests: ["spi_device_intercept", "spi_device_flash_all"]
+    }
+    {
       name: flash_cmd_upload
       desc: '''
             - Configure spi_device on flash or passthrough mode.
@@ -405,6 +416,7 @@
             Cover payload swap enable.
             Cover upload enable.
             Cover busy enable.
+            Cover all read_pipeline_mode values
             Cover all dummy sizes.
             Cover number of payload lanes (single, dual and quad modes or no payload).
 
