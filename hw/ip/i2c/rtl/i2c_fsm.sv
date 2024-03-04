@@ -124,6 +124,7 @@ module i2c_fsm import i2c_pkg::*;
   logic        input_byte_clr;// clear input_byte contents
   logic        acq_fifo_wready;
   logic        stretch_addr;
+  logic        stretch_rx;
   logic        stretch_tx;
   logic        expect_stop;
 
@@ -741,7 +742,7 @@ module i2c_fsm import i2c_pkg::*;
         sda_d = 1'b0;
 
         if (tcount_q == 20'd1) begin
-          acq_fifo_wvalid_o = acq_fifo_wready;      // assert that acq_fifo has valid data
+          acq_fifo_wvalid_o = ~stretch_rx;          // assert that acq_fifo has space
           acq_fifo_wdata_o = {AcqData, input_byte}; // transfer data to acq_fifo
         end
       end
@@ -771,7 +772,7 @@ module i2c_fsm import i2c_pkg::*;
         scl_d = 1'b0;
 
         // When space becomes available, deposit entry
-        acq_fifo_wvalid_o = acq_fifo_wready;      // assert that acq_fifo has valid data
+        acq_fifo_wvalid_o = ~stretch_rx;          // assert that acq_fifo has space
         acq_fifo_wdata_o = {AcqData, input_byte}; // transfer data to acq_fifo
       end
       // default
@@ -803,7 +804,8 @@ module i2c_fsm import i2c_pkg::*;
     end
   end
 
-  assign stretch_addr = !acq_fifo_wready;
+  assign stretch_rx   = !acq_fifo_wready;
+  assign stretch_addr = stretch_rx;
 
   // Stretch Tx phase when:
   // 1. When there is no data to return to host
@@ -1222,7 +1224,7 @@ module i2c_fsm import i2c_pkg::*;
         if (tcount_q == 20'd1) begin
           // If there is no space for the current entry, stretch clocks and
           // wait for software to make space.
-          state_d = acq_fifo_wready ? AcquireByte : StretchAcqFull;
+          state_d = stretch_rx ? StretchAcqFull : AcquireByte;
         end
       end
       // StretchAddr: The address phase can not yet be completed, stretch
@@ -1266,7 +1268,7 @@ module i2c_fsm import i2c_pkg::*;
       // When space becomes available, deposit the entry into the acqusition fifo
       // and move on to receive the next byte.
       StretchAcqFull : begin
-        if (acq_fifo_wready) state_d = AcquireByte;
+        if (~stretch_rx) state_d = AcquireByte;
       end
       // default
       default : begin
