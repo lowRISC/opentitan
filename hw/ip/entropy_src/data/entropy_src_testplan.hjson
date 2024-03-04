@@ -127,6 +127,14 @@
       tests: ["entropy_src_functional_errors"]
     }
     {
+      name: firmware_ov_read_contiguous_data
+      desc: '''
+            Verify that firmware can read 1024 unaltered, contiguous symbols from the noise source.
+            '''
+      stage: V2
+      tests: ["entropy_src_fw_ov_contiguous"]
+    }
+    {
       name: external_health_tests
       desc: '''
             Verify the external health test (XHT) interface and functionality, including continuous

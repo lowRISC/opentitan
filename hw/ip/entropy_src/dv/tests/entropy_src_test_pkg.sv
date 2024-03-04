@@ -18,6 +18,7 @@ package entropy_src_test_pkg;
   `include "entropy_src_rng_test.sv"
   `include "entropy_src_rng_max_rate_test.sv"
   `include "entropy_src_fw_ov_test.sv"
+  `include "entropy_src_fw_ov_contiguous_test.sv"
   `include "entropy_src_stress_all_test.sv"
   `include "entropy_src_functional_errors_test.sv"
   `include "entropy_src_alert_test.sv"

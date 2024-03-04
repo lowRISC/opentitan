@@ -23,12 +23,14 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   // number of seeds output since enable (or reset)
   int seeds_out            = 0;
 
-  int entropy_data_seeds   = 0;
-  int entropy_data_drops   = 0;
-  int csrng_seeds          = 0;
-  int csrng_drops          = 0;
-  int observe_fifo_words   = 0;
-  int observe_fifo_drops   = 0;
+  int entropy_data_seeds    = 0;
+  int entropy_data_drops    = 0;
+  int csrng_seeds           = 0;
+  int csrng_drops           = 0;
+  int observe_fifo_words    = 0;
+  int observe_fifo_drops    = 0;
+  bit observe_fifo_overflow = 0;
+  int overflow_read_cnt     = 0;
 
   bit dut_pipeline_enabled = 0;
   bit regwen_pending = 0;
@@ -1084,9 +1086,13 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     // Note: For non-FW_OV mode, the repack_idx_tl and repack_idx_sha counters are stack variables
     // which get reset automatically when the collect entropy task exits.
 
-    if (rst_type == FIFOClr) begin
+    if ((rst_type == FIFOClr) || (rst_type == Enable)) begin
       observe_fifo_q.delete();
       entropy_data_q.delete();
+      // The overflow condition for the observe FIFO is cleared whenever the observe FIFO
+      // gets cleared.
+      observe_fifo_overflow = 0;
+      overflow_read_cnt = 0;
     end
 
     // reset all other statistics
@@ -1845,6 +1851,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
           if (fifos_cleared) begin
             `DV_CHECK_FATAL(csr.predict(.value('0), .kind(UVM_PREDICT_READ)))
           end else begin
+            // The read check already happens in process_observe_fifo_csr_access().
+            do_read_check = 0;
             process_observe_fifo_csr_access(item, csr);
             // Assume (for now) that there is no underflow
             // (We are not tracking it at this time, and so an underflow
@@ -2467,57 +2475,93 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     string msg, fmt;
     bit fw_ov_enabled = (cfg.otp_en_es_fw_over == MuBi8True) &&
                         (ral.fw_ov_control.fw_ov_mode.get_mirrored_value() == MuBi4True);
+    bit drops_allowed;
 
     csr_val = item.d_data;
 
     fmt = "Predicting observe FIFO access, Looking for: %08x";
     msg = $sformatf(fmt, csr_val);
     `uvm_info(`gfn, msg, UVM_FULL)
-    if (!fw_ov_enabled) begin
-      // if fw_ov mode has never been enabled (and the programming model has been correctly
-      // applied) then the observe fifo should be empty and cleared.
-      msg = "Observe FIFO is disabled";
-      `uvm_info(`gfn, msg, UVM_FULL)
-      `DV_CHECK_FATAL(csr.predict(.value('0), .kind(UVM_PREDICT_READ)))
-    end else begin
-      msg = $sformatf("Checking %0d candidate seeds", observe_fifo_q.size());
-      `uvm_info(`gfn, msg, UVM_FULL)
-      while (observe_fifo_q.size() > 0) begin : seed_trial_loop
-        bit [TL_DW - 1:0] prediction;
-        // Unlike the ENTROPY_DATA CSR case, there is no need to leave seed predictions
-        // in the queue.
-        prediction = observe_fifo_q.pop_front();
-        if (prediction == csr_val) begin
-          `DV_CHECK_FATAL(csr.predict(.value(prediction), .kind(UVM_PREDICT_READ)))
-          observe_fifo_words++;
-          match_found = 1;
-          cov_vif.cg_observe_fifo_event_sample(
-              mubi4_t'(ral.conf.fips_enable.get_mirrored_value()),
-              mubi4_t'(ral.conf.fips_flag.get_mirrored_value()),
-              mubi4_t'(ral.conf.rng_fips.get_mirrored_value()),
-              mubi4_t'(ral.conf.threshold_scope.get_mirrored_value()),
-              mubi4_t'(ral.conf.rng_bit_enable.get_mirrored_value()),
-              ral.conf.rng_bit_sel.get_mirrored_value(),
-              mubi4_t'(ral.entropy_control.es_route.get_mirrored_value()),
-              mubi4_t'(ral.entropy_control.es_type.get_mirrored_value()),
-              mubi4_t'(ral.conf.entropy_data_reg_enable.get_mirrored_value()),
-              mubi8_t'(cfg.otp_en_es_fw_read),
-              mubi4_t'(ral.fw_ov_control.fw_ov_mode.get_mirrored_value()),
-              mubi8_t'(cfg.otp_en_es_fw_over),
-              mubi4_t'(ral.fw_ov_control.fw_ov_entropy_insert.get_mirrored_value())
-          );
-          msg = $sformatf("Match found: %d\n", observe_fifo_words);
-          `uvm_info(`gfn, msg, UVM_FULL)
-          break;
-        end else begin
-          observe_fifo_drops++;
-          msg = $sformatf("Dropped word: %d\n", observe_fifo_drops);
-          `uvm_info(`gfn, msg, UVM_FULL)
+
+    // Put the following code inside of a fork to avoid consuming time.
+    fork
+      if (!fw_ov_enabled) begin
+        // if fw_ov mode has never been enabled (and the programming model has been correctly
+        // applied) then the observe fifo should be empty and cleared.
+        msg = "Observe FIFO is disabled";
+        `uvm_info(`gfn, msg, UVM_FULL)
+        `DV_CHECK_FATAL(csr.predict(.value('0), .kind(UVM_PREDICT_READ)))
+      end else begin
+        msg = $sformatf("Checking %0d candidate seeds", observe_fifo_q.size());
+        `uvm_info(`gfn, msg, UVM_FULL)
+        // If no observe FIFO overflow condition was detected yet, read fw_ov_rd_fifo_overflow via
+        // backdoor to see whether the overflow condition in the observe FIFO holds.
+        if (!observe_fifo_overflow) begin
+          csr_rd(.ptr(ral.fw_ov_rd_fifo_overflow.fw_ov_rd_fifo_overflow),
+                 .value(observe_fifo_overflow),
+                 .backdoor(1));
+          overflow_read_cnt = 0;
+        // If an observe FIFO overflow condition was detected, count the number of reads that
+        // happened since the overflow to trace when the condition is being lifted.
+        end else if (observe_fifo_overflow) begin
+          overflow_read_cnt += 1;
         end
-      end : seed_trial_loop
-      `DV_CHECK_EQ_FATAL(match_found, 1,
-                        "All candidate observe FIFO words have been checked, with no match")
-    end
+        // Entropy can only be dropped when the overflow condition holds. This is why we only
+        // expect to see dropped seeds when the overflow condition was active and the whole observe
+        // FIFO has since been read out entirely.
+        drops_allowed = observe_fifo_overflow && (overflow_read_cnt == ObserveFifoDepth);
+        while (observe_fifo_q.size() > 0) begin : seed_trial_loop
+          bit [TL_DW - 1:0] prediction;
+          // Unlike the ENTROPY_DATA CSR case, there is no need to leave seed predictions
+          // in the queue.
+          prediction = observe_fifo_q.pop_front();
+          fmt = "Predicting observe FIFO access, Comparing to: %08x";
+          msg = $sformatf(fmt, prediction);
+          `uvm_info(`gfn, msg, UVM_FULL)
+          if (prediction == csr_val) begin
+            `DV_CHECK_FATAL(csr.predict(.value(prediction), .kind(UVM_PREDICT_READ)))
+            observe_fifo_words++;
+            match_found = 1;
+            cov_vif.cg_observe_fifo_event_sample(
+                mubi4_t'(ral.conf.fips_enable.get_mirrored_value()),
+                mubi4_t'(ral.conf.fips_flag.get_mirrored_value()),
+                mubi4_t'(ral.conf.rng_fips.get_mirrored_value()),
+                mubi4_t'(ral.conf.threshold_scope.get_mirrored_value()),
+                mubi4_t'(ral.conf.rng_bit_enable.get_mirrored_value()),
+                ral.conf.rng_bit_sel.get_mirrored_value(),
+                mubi4_t'(ral.entropy_control.es_route.get_mirrored_value()),
+                mubi4_t'(ral.entropy_control.es_type.get_mirrored_value()),
+                mubi4_t'(ral.conf.entropy_data_reg_enable.get_mirrored_value()),
+                mubi8_t'(cfg.otp_en_es_fw_read),
+                mubi4_t'(ral.fw_ov_control.fw_ov_mode.get_mirrored_value()),
+                mubi8_t'(cfg.otp_en_es_fw_over),
+                mubi4_t'(ral.fw_ov_control.fw_ov_entropy_insert.get_mirrored_value())
+            );
+            msg = $sformatf("Match found: %d\n", observe_fifo_words);
+            `uvm_info(`gfn, msg, UVM_FULL)
+            break;
+          end else begin
+            `DV_CHECK_FATAL(drops_allowed)
+            observe_fifo_drops++;
+            msg = $sformatf("Dropped word: %d\n", observe_fifo_drops);
+            `uvm_info(`gfn, msg, UVM_FULL)
+          end
+        end : seed_trial_loop
+        // If drops were allowed, disallow them again and reset overflow_read_cnt
+        // and observe_fifo_overflow.
+        if (drops_allowed) begin
+          drops_allowed = 0;
+          overflow_read_cnt = 0;
+          // See if another overflow has happened since the last one.
+          csr_rd(.ptr(ral.fw_ov_rd_fifo_overflow.fw_ov_rd_fifo_overflow),
+                 .value(observe_fifo_overflow),
+                 .backdoor(1));
+        end
+
+        `DV_CHECK_EQ_FATAL(match_found, 1,
+                          "All candidate observe FIFO words have been checked, with no match")
+      end
+    join_none
   endfunction
 
   virtual function void reset(string kind = "HARD");

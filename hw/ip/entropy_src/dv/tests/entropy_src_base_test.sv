@@ -39,9 +39,6 @@ class entropy_src_base_test extends cip_base_test #(
       cfg.xht_only_default_rsp = xht_only_default_rsp;
     end
 
-    // seed_cnt only used by smoke test
-    // so there is no need to randomize it.
-    cfg.seed_cnt                       = 1;
     cfg.rng_ignores_backpressure       = 0;
     cfg.otp_en_es_fw_read_pct          = 100;
     cfg.otp_en_es_fw_read_inval_pct    = 0;
@@ -72,6 +69,8 @@ class entropy_src_base_test extends cip_base_test #(
     cfg.induce_targeted_transition_pct = 0;
     cfg.dut_cfg.tight_thresholds_pct   = 0;
 
+    // Set the maximum threshold for the observe FIFO threshold randomization to ObserveFifoDepth.
+    cfg.dut_cfg.max_observe_fifo_threshold = entropy_src_reg_pkg::ObserveFifoDepth;
 
   endfunction
 

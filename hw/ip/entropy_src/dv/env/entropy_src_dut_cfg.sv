@@ -65,6 +65,10 @@ class entropy_src_dut_cfg extends uvm_object;
   // This knob controls the frequency of bad configurations
   uint          bad_mubi_cfg_pct;
 
+  // max_observe_fifo_threshold is the upper limit for the randomization of the
+  // observe FIFO threshold.
+  uint          max_observe_fifo_threshold = entropy_src_reg_pkg::ObserveFifoDepth;
+
   ///////////////////////
   // Randomized fields //
   ///////////////////////
@@ -330,7 +334,7 @@ class entropy_src_dut_cfg extends uvm_object;
 
   constraint observe_fifo_thresh_c {observe_fifo_thresh dist {
       // 0 is a reserved value that is not to be used.
-      [1:entropy_src_reg_pkg::ObserveFifoDepth]  :/ 1};
+      [1:max_observe_fifo_threshold]  :/ 1};
   }
 
   ///////////////
@@ -396,7 +400,7 @@ class entropy_src_dut_cfg extends uvm_object;
                   fips_enable_pct),
         $sformatf("\n\t |***** fips_flag_pct               : %12d *****| \t",
                   fips_flag_pct),
-        $sformatf("\n\t |***** rng_fips_pct               : %12d *****| \t",
+        $sformatf("\n\t |***** rng_fips_pct                : %12d *****| \t",
                   rng_fips_pct),
         $sformatf("\n\t |***** route_software_pct          : %12d *****| \t",
                   route_software_pct),
@@ -510,6 +514,7 @@ class entropy_src_dut_cfg extends uvm_object;
     `DV_CHECK(fw_ov_insert_start_pct <= 100);
     `DV_CHECK(default_ht_thresholds_pct <= 100);
     `DV_CHECK(bad_mubi_cfg_pct <= 100);
+    `DV_CHECK(max_observe_fifo_threshold <= entropy_src_reg_pkg::ObserveFifoDepth);
   endfunction
 
 endclass
