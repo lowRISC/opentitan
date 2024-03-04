@@ -6,6 +6,8 @@ package(default_visibility = ["//visibility:public"])
 
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 
+exports_files(glob(["*.h"]))
+
 pkg_files(
     name = "package",
     srcs = glob(["*.h"]),

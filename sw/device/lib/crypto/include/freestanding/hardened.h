@@ -29,11 +29,11 @@ typedef enum hardened_bool {
   /**
    * The truthy value, expected to be used like #true.
    */
-  kHardenedBoolTrue = HARDENED_BOOL_TRUE,
+  kHardenedBoolTrue = 0x739,
   /**
    * The falsey value, expected to be used like #false.
    */
-  kHardenedBoolFalse = HARDENED_BOOL_FALSE,
+  kHardenedBoolFalse = 0x1d4,
 } hardened_bool_t;
 
 #ifdef __cplusplus
