@@ -44,6 +44,26 @@ typedef enum dif_hmac_endianness {
 } dif_hmac_endianness_t;
 
 /**
+ * HMAC key length in bits.
+ */
+typedef enum dif_hmac_key_length {
+  kDifHMACKey128 = 1,
+  kDifHMACKey256 = (1 << 1),
+  kDifHMACKey384 = (1 << 2),
+  kDifHMACKey512 = (1 << 3),
+  kDifHMACKey1024 = (1 << 4),
+} dif_hmac_key_length_t;
+
+/**
+ * SHA-2 digest size
+ */
+typedef enum dif_sha2_digest_size {
+  kDifSHA256 = (1 << 1),
+  kDifSHA384 = (1 << 2),
+  kDifSHA512 = (1 << 3),
+} dif_sha2_digest_size_t;
+
+/**
  * Configuration for a single HMAC Transaction
  */
 typedef struct dif_hmac_transaction {
@@ -51,6 +71,10 @@ typedef struct dif_hmac_transaction {
   dif_hmac_endianness_t message_endianness;
   /** Byte endianness for reads from the digest. */
   dif_hmac_endianness_t digest_endianness;
+  /** SHA-2 digest size. */
+  dif_sha2_digest_size_t digest_size;
+  /** HMAC key length. */
+  dif_hmac_key_length_t key_length;
 } dif_hmac_transaction_t;
 
 /**

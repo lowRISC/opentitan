@@ -110,7 +110,7 @@ dif_result_t dif_hmac_mode_hmac_start(const dif_hmac_t *hmac,
   // The least significant word is at HMAC_KEY_7_REG_OFFSET.
   // From the HWIP spec: "Order of the secret key is: key[255:0] = {KEY0, KEY1,
   // KEY2, ... , KEY7};"
-  for (size_t i = 0; i < HMAC_PARAM_NUM_WORDS; ++i) {
+  for (size_t i = 0; i < 8; ++i) {
     const ptrdiff_t word_offset = (ptrdiff_t)(i * sizeof(uint32_t));
     mmio_region_write32(hmac->base_addr, HMAC_KEY_7_REG_OFFSET - word_offset,
                         read_32((char *)key + word_offset));
@@ -119,6 +119,13 @@ dif_result_t dif_hmac_mode_hmac_start(const dif_hmac_t *hmac,
   // Set HMAC to process in HMAC mode (not SHA256-only mode).
   reg = bitfield_bit32_write(reg, HMAC_CFG_SHA_EN_BIT, true);
   reg = bitfield_bit32_write(reg, HMAC_CFG_HMAC_EN_BIT, true);
+
+  // Set digest size to SHA-2 256 and 256-bit key
+  reg = bitfield_field32_write(reg, HMAC_CFG_DIGEST_SIZE_FIELD,
+                               HMAC_CFG_DIGEST_SIZE_VALUE_SHA2_256);
+  reg = bitfield_field32_write(reg, HMAC_CFG_KEY_LENGTH_FIELD,
+                               HMAC_CFG_KEY_LENGTH_VALUE_KEY_256);
+
   mmio_region_write32(hmac->base_addr, HMAC_CFG_REG_OFFSET, reg);
 
   // Begin HMAC operation.
@@ -142,6 +149,12 @@ dif_result_t dif_hmac_mode_sha256_start(const dif_hmac_t *hmac,
   // Set HMAC to process in SHA256-only mode (without HMAC mode).
   reg = bitfield_bit32_write(reg, HMAC_CFG_SHA_EN_BIT, true);
   reg = bitfield_bit32_write(reg, HMAC_CFG_HMAC_EN_BIT, false);
+
+  // Set digest size to SHA-2 256 and 256-bit key
+  reg = bitfield_field32_write(reg, HMAC_CFG_DIGEST_SIZE_FIELD,
+                               HMAC_CFG_DIGEST_SIZE_VALUE_SHA2_256);
+  reg = bitfield_field32_write(reg, HMAC_CFG_KEY_LENGTH_FIELD,
+                               HMAC_CFG_KEY_LENGTH_VALUE_KEY_256);
 
   // Write new CFG register value.
   mmio_region_write32(hmac->base_addr, HMAC_CFG_REG_OFFSET, reg);
@@ -209,7 +222,6 @@ dif_result_t dif_hmac_get_message_length(const dif_hmac_t *hmac,
   if (hmac == NULL || msg_len == NULL) {
     return kDifBadArg;
   }
-
   uint64_t msg_lower =
       mmio_region_read32(hmac->base_addr, HMAC_MSG_LENGTH_LOWER_REG_OFFSET);
   uint64_t msg_upper =
@@ -270,6 +282,13 @@ dif_result_t dif_hmac_finish(const dif_hmac_t *hmac,
       bitfield_bit32_write(device_config, HMAC_CFG_SHA_EN_BIT, false);
   device_config =
       bitfield_bit32_write(device_config, HMAC_CFG_HMAC_EN_BIT, false);
+  device_config =
+      bitfield_field32_write(device_config, HMAC_CFG_DIGEST_SIZE_FIELD,
+                             HMAC_CFG_DIGEST_SIZE_VALUE_SHA2_NONE);
+  device_config =
+      bitfield_field32_write(device_config, HMAC_CFG_KEY_LENGTH_FIELD,
+                             HMAC_CFG_KEY_LENGTH_VALUE_KEY_256);
+
   mmio_region_write32(hmac->base_addr, HMAC_CFG_REG_OFFSET, device_config);
 
   return kDifOk;
