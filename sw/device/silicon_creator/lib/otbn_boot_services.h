@@ -114,27 +114,27 @@ rom_error_t otbn_boot_attestation_endorse(const hmac_digest_t *digest,
                                           attestation_signature_t *sig);
 
 /**
- * Computes the modular exponentiation of an RSA signature on OTBN.
+ * Computes an ECDSA-P256 signature verification on OTBN.
  *
- * Given an RSA public key and sig, this function computes sig^e mod n using
- * Montgomery multiplication, where
- * - sig is an RSA signature,
- * - e and n are the exponent and the modulus of the key, respectively.
- *
- * The key exponent is always 65537; no other exponents are supported.
+ * May be used for code signatures as well as attestation signatures. Returns
+ * the recovered `r` value in `result`. The signature is valid if this `r`
+ * value matches the `r` component of the signature, but the caller is
+ * responsible for the final comparison.
  *
  * Expects the OTBN boot-services program to already be loaded; see
  * `otbn_boot_app_load`.
  *
- * @param key An RSA public key.
- * @param sig Buffer that holds the signature, little-endian.
- * @param[out] result Buffer to write the result to, little-endian.
+ * @param key An ECDSA-P256 public key.
+ * @param sig An ECDSA-P256 signature.
+ * @param digest Message digest to check against.
+ * @param[out] recovered_r Buffer for the recovered `r` value.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t otbn_boot_sigverify_mod_exp(const sigverify_rsa_key_t *key,
-                                        const sigverify_rsa_buffer_t *sig,
-                                        sigverify_rsa_buffer_t *result);
+rom_error_t otbn_boot_sigverify(const attestation_public_key_t *key,
+                                const attestation_signature_t *sig,
+                                const hmac_digest_t *digest,
+                                uint32_t *recovered_r);
 
 #ifdef __cplusplus
 }  // extern "C"
