@@ -11,9 +11,10 @@ class usbdev_av_buffer_vseq extends usbdev_base_vseq;
   usb20_item      item;
   RSP             rsp_item;
   bit      [6:0]  num_of_bytes = 8;
-  bit             rand_or_not = 0;
 
   task body();
+    rand_or_not = 1'b0;
+
     // Configure transaction
     configure_trans();
     // Out token packet followed by a data packet of 8 bytes
