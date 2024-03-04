@@ -7,9 +7,9 @@ use std::rc::Rc;
 use std::time::Duration;
 
 use crate::app::TransportWrapper;
+use crate::chip::boot_log::BootLog;
+use crate::chip::boot_svc::{BootDataSlot, BootSvc, NextBootBl0};
 use crate::io::uart::Uart;
-use crate::rescue::boot_log::BootLog;
-use crate::rescue::boot_svc::{BootDataSlot, BootSvc, NextBootBl0};
 use crate::rescue::xmodem::Xmodem;
 use crate::rescue::RescueError;
 use crate::uart::console::UartConsole;

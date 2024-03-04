@@ -9,7 +9,7 @@ use serde_annotate::Annotate;
 use sha2::{Digest, Sha256};
 use std::convert::TryFrom;
 
-use crate::rescue::RescueError;
+use super::ChipDataError;
 use crate::with_unknown;
 
 with_unknown! {
@@ -20,36 +20,59 @@ with_unknown! {
         Bl0BootSlotA = 0xb851f57e,
         Bl0BootSlotB = 0x17cfb6bf,
     }
+
+    pub enum OwnershipState: u32 [default = Self::None] {
+        None = 0,
+        LockedOwner = 0x444e574f,
+        LockedUpdate = 0x4450554c,
+        UnlockedAny = 0x594e4155,
+        UnlockedEndorsed = 0x444e4555,
+    }
+
 }
 
+/// The BootLog provides information about how the ROM and ROM_EXT
+/// booted the chip.
 #[derive(Debug, Default, Serialize, Annotate)]
 pub struct BootLog {
+    /// A SHA256 digest over all other fields in this struct.
     #[annotate(format=hex)]
-    digest: [u32; 8],
+    pub digest: [u32; 8],
+    /// A tag that identifies this struct as the boot log ('BLOG').
     #[annotate(format=hex)]
-    identifier: u32,
+    pub identifier: u32,
+    /// The chip version (a git hash prefix from the ROM).
     #[annotate(format=hex)]
-    chip_version: u64,
-    rom_ext_slot: BootSlot,
-    rom_ext_major: u16,
-    rom_ext_minor: u16,
+    pub chip_version: u64,
+    /// The boot slot the ROM chose to boot the ROM_EXT.
+    pub rom_ext_slot: BootSlot,
+    /// The ROM_EXT major version number.
+    pub rom_ext_major: u16,
+    /// The ROM_EXT minor version number.
+    pub rom_ext_minor: u16,
+    /// The ROM_EXT size in bytes.
     #[annotate(format=hex)]
-    rom_ext_size: u32,
+    pub rom_ext_size: u32,
+    /// The ROM_EXT nonce (a value used to prevent replay of signed commands).
     #[annotate(format=hex)]
-    rom_ext_nonce: u64,
-    bl0_slot: BootSlot,
+    pub rom_ext_nonce: u64,
+    /// The boot slot the ROM_EXT chose to boot the owner firmware.
+    pub bl0_slot: BootSlot,
+    /// The chip's ownership state.
+    pub ownership_state: OwnershipState,
+    /// Reserved for future use.
     #[annotate(format=hex)]
-    reserved: [u32; 15],
+    pub reserved: [u32; 14],
 }
 
 impl TryFrom<&[u8]> for BootLog {
-    type Error = RescueError;
+    type Error = ChipDataError;
     fn try_from(buf: &[u8]) -> std::result::Result<Self, Self::Error> {
         if buf.len() < Self::SIZE {
-            return Err(RescueError::BadSize(Self::SIZE, buf.len()));
+            return Err(ChipDataError::BadSize(Self::SIZE, buf.len()));
         }
         if !BootLog::valid_digest(buf) {
-            return Err(RescueError::InvalidDigest);
+            return Err(ChipDataError::InvalidDigest);
         }
         let mut reader = std::io::Cursor::new(buf);
         let mut val = BootLog::default();
@@ -62,6 +85,7 @@ impl TryFrom<&[u8]> for BootLog {
         val.rom_ext_size = reader.read_u32::<LittleEndian>()?;
         val.rom_ext_nonce = reader.read_u64::<LittleEndian>()?;
         val.bl0_slot = BootSlot(reader.read_u32::<LittleEndian>()?);
+        val.ownership_state = OwnershipState(reader.read_u32::<LittleEndian>()?);
         reader.read_u32_into::<LittleEndian>(&mut val.reserved)?;
         Ok(val)
     }
