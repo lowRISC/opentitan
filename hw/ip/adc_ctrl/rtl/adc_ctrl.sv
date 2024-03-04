@@ -92,7 +92,8 @@ module adc_ctrl
     .wkup_req_o,
     .intr_o(intr_match_done_o),
     .adc_i(adc_i),
-    .adc_o(adc_o)
+    .adc_o(adc_o),
+    .fsm_state_o(hw2reg.adc_fsm_state.d)
   );
 
   // All outputs should be known value after reset

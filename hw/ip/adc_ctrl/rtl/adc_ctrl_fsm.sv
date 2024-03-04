@@ -28,7 +28,8 @@ module adc_ctrl_fsm
   output logic [9:0] chn0_val_o,
   output logic [9:0] chn1_val_o,
   output logic       adc_ctrl_done_o,
-  output logic       oneshot_done_o
+  output logic       oneshot_done_o,
+  output fsm_state_e fsm_state_o // FSM state output for debug purposes
 );
 
   logic trigger_q;
@@ -53,6 +54,7 @@ module adc_ctrl_fsm
 
 
   fsm_state_e fsm_state_q, fsm_state_d;
+  assign fsm_state_o = fsm_state_q;
 
   always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin
     if (!rst_aon_ni) begin

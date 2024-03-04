@@ -369,5 +369,109 @@
         }
       ]
     }
+
+    { name: "adc_fsm_state",
+      desc: "State of the internal state machine",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwext: "true",
+      resval: "0",
+      async: "clk_aon_i",
+      tags: [ // internal HW state output, cannot be auto predicted.
+              "excl:CsrNonInitTests:CsrExclCheck"],
+      fields: [
+        { bits: "4:0",
+          name: "state",
+          desc: "Current FSM state (for debug purposes)",
+          enum: [
+            {
+              value: "0",
+              name: "PWRDN",
+              desc: "in the power down state"
+            }
+            {
+              value: "1",
+              name: "PWRUP",
+              desc: "being powered up"
+            }
+            {
+              value: "2",
+              name: "ONEST_0",
+              desc: "in oneshot mode; sample channel0 value"
+            }
+            {
+              value: "3",
+              name: "ONEST_021",
+              desc: "in oneshot mode; transition from chn0 to chn1"
+            }
+            {
+              value: "4",
+              name: "ONEST_1",
+              desc: "in oneshot mode; sample channel1 value"
+            }
+            {
+              value: "5",
+              name: "ONEST_DONE",
+              desc: "one shot done"
+            }
+            {
+              value: "6",
+              name: "LP_0",
+              desc: "in low-power mode, sample channel0 value"
+            }
+            {
+              value: "7",
+              name: "LP_021",
+              desc: "in low-power mode, transition from chn0 to chn1"
+            }
+            {
+              value: "8",
+              name: "LP_1",
+              desc: "in low-power mode, sample channel1 value"
+            }
+            {
+              value: "9",
+              name: "LP_EVAL",
+              desc: "in low-power mode, evaluate if there is a match"
+            }
+            {
+              value: "10",
+              name: "LP_SLP",
+              desc: "in low-power mode, go to sleep"
+            }
+            {
+              value: "11",
+              name: "LP_PWRUP",
+              desc: "in low-power mode, being powered up"
+            }
+            {
+              value: "12",
+              name: "NP_0",
+              desc: "in normal-power mode, sample channel0 value"
+            }
+            {
+              value: "13",
+              name: "NP_021",
+              desc: "in normal-power mode, transition from chn0 to chn1"
+            }
+            {
+              value: "14",
+              name: "NP_1",
+              desc: "in normal-power mode, sample channel1 value"
+            }
+            {
+              value: "15",
+              name: "NP_EVAL",
+              desc: "in normal-power mode, detection is done"
+            }
+            {
+              value: "16",
+              name: "NP_DONE",
+              desc: "normal-power detection done"
+            }
+          ]
+        }
+      ]
+    }
   ],
 }

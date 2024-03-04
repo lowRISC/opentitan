@@ -54,9 +54,9 @@ module adc_ctrl_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [30:0] reg_we_check;
+  logic [31:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(31)
+    .OneHotWidth(32)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -214,6 +214,9 @@ module adc_ctrl_reg_top (
   logic [7:0] adc_intr_status_filter_match_wd;
   logic adc_intr_status_oneshot_qs;
   logic adc_intr_status_oneshot_wd;
+  logic adc_fsm_state_re;
+  logic [4:0] adc_fsm_state_qs;
+  logic adc_fsm_state_busy;
   // Define register CDC handling.
   // CDC handling is done on a per-reg instead of per-field boundary.
 
@@ -1297,6 +1300,45 @@ module adc_ctrl_reg_top (
   );
   assign unused_aon_filter_status_wdata =
       ^aon_filter_status_wdata;
+
+  logic [4:0]  aon_adc_fsm_state_ds_int;
+  logic [4:0]  aon_adc_fsm_state_qs_int;
+  logic [4:0] aon_adc_fsm_state_ds;
+  logic aon_adc_fsm_state_qe;
+  logic [4:0] aon_adc_fsm_state_qs;
+  logic aon_adc_fsm_state_re;
+
+  always_comb begin
+    aon_adc_fsm_state_qs = 5'h0;
+    aon_adc_fsm_state_ds = 5'h0;
+    aon_adc_fsm_state_ds = aon_adc_fsm_state_ds_int;
+    aon_adc_fsm_state_qs = aon_adc_fsm_state_qs_int;
+  end
+
+  prim_reg_cdc #(
+    .DataWidth(5),
+    .ResetVal(5'h0),
+    .BitMask(5'h1f),
+    .DstWrReq(1)
+  ) u_adc_fsm_state_cdc (
+    .clk_src_i    (clk_i),
+    .rst_src_ni   (rst_ni),
+    .clk_dst_i    (clk_aon_i),
+    .rst_dst_ni   (rst_aon_ni),
+    .src_regwen_i ('0),
+    .src_we_i     ('0),
+    .src_re_i     (adc_fsm_state_re),
+    .src_wd_i     ('0),
+    .src_busy_o   (adc_fsm_state_busy),
+    .src_qs_o     (adc_fsm_state_qs), // for software read back
+    .dst_update_i (aon_adc_fsm_state_qe),
+    .dst_ds_i     (aon_adc_fsm_state_ds),
+    .dst_qs_i     (aon_adc_fsm_state_qs),
+    .dst_we_o     (),
+    .dst_re_o     (aon_adc_fsm_state_re),
+    .dst_regwen_o (),
+    .dst_wd_o     ()
+  );
 
   // Register instances
   // R[intr_state]: V(False)
@@ -3762,8 +3804,26 @@ module adc_ctrl_reg_top (
   );
 
 
+  // R[adc_fsm_state]: V(True)
+  logic [0:0] adc_fsm_state_flds_we;
+  assign aon_adc_fsm_state_qe = |adc_fsm_state_flds_we;
+  prim_subreg_ext #(
+    .DW    (5)
+  ) u_adc_fsm_state (
+    .re     (aon_adc_fsm_state_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.adc_fsm_state.d),
+    .qre    (),
+    .qe     (adc_fsm_state_flds_we[0]),
+    .q      (),
+    .ds     (aon_adc_fsm_state_ds_int),
+    .qs     (aon_adc_fsm_state_qs_int)
+  );
 
-  logic [30:0] addr_hit;
+
+
+  logic [31:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == ADC_CTRL_INTR_STATE_OFFSET);
@@ -3797,6 +3857,7 @@ module adc_ctrl_reg_top (
     addr_hit[28] = (reg_addr == ADC_CTRL_FILTER_STATUS_OFFSET);
     addr_hit[29] = (reg_addr == ADC_CTRL_ADC_INTR_CTL_OFFSET);
     addr_hit[30] = (reg_addr == ADC_CTRL_ADC_INTR_STATUS_OFFSET);
+    addr_hit[31] = (reg_addr == ADC_CTRL_ADC_FSM_STATE_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -3834,7 +3895,8 @@ module adc_ctrl_reg_top (
                (addr_hit[27] & (|(ADC_CTRL_PERMIT[27] & ~reg_be))) |
                (addr_hit[28] & (|(ADC_CTRL_PERMIT[28] & ~reg_be))) |
                (addr_hit[29] & (|(ADC_CTRL_PERMIT[29] & ~reg_be))) |
-               (addr_hit[30] & (|(ADC_CTRL_PERMIT[30] & ~reg_be)))));
+               (addr_hit[30] & (|(ADC_CTRL_PERMIT[30] & ~reg_be))) |
+               (addr_hit[31] & (|(ADC_CTRL_PERMIT[31] & ~reg_be)))));
   end
 
   // Generate write-enables
@@ -3955,6 +4017,7 @@ module adc_ctrl_reg_top (
   assign adc_intr_status_filter_match_wd = reg_wdata[7:0];
 
   assign adc_intr_status_oneshot_wd = reg_wdata[8];
+  assign adc_fsm_state_re = addr_hit[31] & reg_re & !reg_error;
 
   // Assign write-enables to checker logic vector.
   always_comb begin
@@ -3990,6 +4053,7 @@ module adc_ctrl_reg_top (
     reg_we_check[28] = filter_status_we;
     reg_we_check[29] = adc_intr_ctl_we;
     reg_we_check[30] = adc_intr_status_we;
+    reg_we_check[31] = 1'b0;
   end
 
   // Read data return
@@ -4096,6 +4160,9 @@ module adc_ctrl_reg_top (
         reg_rdata_next[8] = adc_intr_status_oneshot_qs;
       end
 
+      addr_hit[31]: begin
+        reg_rdata_next = DW'(adc_fsm_state_qs);
+      end
       default: begin
         reg_rdata_next = '1;
       end
@@ -4186,6 +4253,9 @@ module adc_ctrl_reg_top (
       end
       addr_hit[28]: begin
         reg_busy_sel = filter_status_busy;
+      end
+      addr_hit[31]: begin
+        reg_busy_sel = adc_fsm_state_busy;
       end
       default: begin
         reg_busy_sel  = '0;
