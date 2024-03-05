@@ -36,3 +36,18 @@ rust_binary(
         "@crate_index//:rusb",
     ],
 )
+
+rust_binary(
+    name = "usb_harness",
+    srcs = [
+        "usb_harness.rs",
+    ],
+    deps = [
+        ":usb",
+        "//sw/host/opentitanlib",
+        "@crate_index//:anyhow",
+        "@crate_index//:clap",
+        "@crate_index//:humantime",
+        "@crate_index//:log",
+    ],
+)
