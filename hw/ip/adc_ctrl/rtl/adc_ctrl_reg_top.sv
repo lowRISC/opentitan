@@ -201,17 +201,23 @@ module adc_ctrl_reg_top (
   logic [27:0] adc_chn_val_1_qs;
   logic adc_chn_val_1_busy;
   logic adc_wakeup_ctl_we;
-  logic [7:0] adc_wakeup_ctl_qs;
+  logic [8:0] adc_wakeup_ctl_qs;
   logic adc_wakeup_ctl_busy;
   logic filter_status_we;
-  logic [7:0] filter_status_qs;
+  logic [8:0] filter_status_qs;
   logic filter_status_busy;
   logic adc_intr_ctl_we;
-  logic [8:0] adc_intr_ctl_qs;
-  logic [8:0] adc_intr_ctl_wd;
+  logic [7:0] adc_intr_ctl_match_en_qs;
+  logic [7:0] adc_intr_ctl_match_en_wd;
+  logic adc_intr_ctl_trans_en_qs;
+  logic adc_intr_ctl_trans_en_wd;
+  logic adc_intr_ctl_oneshot_en_qs;
+  logic adc_intr_ctl_oneshot_en_wd;
   logic adc_intr_status_we;
-  logic [7:0] adc_intr_status_filter_match_qs;
-  logic [7:0] adc_intr_status_filter_match_wd;
+  logic [7:0] adc_intr_status_match_qs;
+  logic [7:0] adc_intr_status_match_wd;
+  logic adc_intr_status_trans_qs;
+  logic adc_intr_status_trans_wd;
   logic adc_intr_status_oneshot_qs;
   logic adc_intr_status_oneshot_wd;
   logic adc_fsm_state_re;
@@ -1220,21 +1226,23 @@ module adc_ctrl_reg_top (
     .dst_wd_o     ()
   );
 
-  logic [7:0]  aon_adc_wakeup_ctl_qs_int;
-  logic [7:0] aon_adc_wakeup_ctl_qs;
-  logic [7:0] aon_adc_wakeup_ctl_wdata;
+  logic [7:0]  aon_adc_wakeup_ctl_match_en_qs_int;
+  logic  aon_adc_wakeup_ctl_trans_en_qs_int;
+  logic [8:0] aon_adc_wakeup_ctl_qs;
+  logic [8:0] aon_adc_wakeup_ctl_wdata;
   logic aon_adc_wakeup_ctl_we;
   logic unused_aon_adc_wakeup_ctl_wdata;
 
   always_comb begin
-    aon_adc_wakeup_ctl_qs = 8'h0;
-    aon_adc_wakeup_ctl_qs = aon_adc_wakeup_ctl_qs_int;
+    aon_adc_wakeup_ctl_qs = 9'h0;
+    aon_adc_wakeup_ctl_qs[7:0] = aon_adc_wakeup_ctl_match_en_qs_int;
+    aon_adc_wakeup_ctl_qs[8] = aon_adc_wakeup_ctl_trans_en_qs_int;
   end
 
   prim_reg_cdc #(
-    .DataWidth(8),
-    .ResetVal(8'h0),
-    .BitMask(8'hff),
+    .DataWidth(9),
+    .ResetVal(9'h0),
+    .BitMask(9'h1ff),
     .DstWrReq(0)
   ) u_adc_wakeup_ctl_cdc (
     .clk_src_i    (clk_i),
@@ -1244,7 +1252,7 @@ module adc_ctrl_reg_top (
     .src_regwen_i ('0),
     .src_we_i     (adc_wakeup_ctl_we),
     .src_re_i     ('0),
-    .src_wd_i     (reg_wdata[7:0]),
+    .src_wd_i     (reg_wdata[8:0]),
     .src_busy_o   (adc_wakeup_ctl_busy),
     .src_qs_o     (adc_wakeup_ctl_qs), // for software read back
     .dst_update_i ('0),
@@ -1258,26 +1266,30 @@ module adc_ctrl_reg_top (
   assign unused_aon_adc_wakeup_ctl_wdata =
       ^aon_adc_wakeup_ctl_wdata;
 
-  logic [7:0]  aon_filter_status_ds_int;
-  logic [7:0]  aon_filter_status_qs_int;
-  logic [7:0] aon_filter_status_ds;
+  logic [7:0]  aon_filter_status_match_ds_int;
+  logic [7:0]  aon_filter_status_match_qs_int;
+  logic  aon_filter_status_trans_ds_int;
+  logic  aon_filter_status_trans_qs_int;
+  logic [8:0] aon_filter_status_ds;
   logic aon_filter_status_qe;
-  logic [7:0] aon_filter_status_qs;
-  logic [7:0] aon_filter_status_wdata;
+  logic [8:0] aon_filter_status_qs;
+  logic [8:0] aon_filter_status_wdata;
   logic aon_filter_status_we;
   logic unused_aon_filter_status_wdata;
 
   always_comb begin
-    aon_filter_status_qs = 8'h0;
-    aon_filter_status_ds = 8'h0;
-    aon_filter_status_ds = aon_filter_status_ds_int;
-    aon_filter_status_qs = aon_filter_status_qs_int;
+    aon_filter_status_qs = 9'h0;
+    aon_filter_status_ds = 9'h0;
+    aon_filter_status_ds[7:0] = aon_filter_status_match_ds_int;
+    aon_filter_status_qs[7:0] = aon_filter_status_match_qs_int;
+    aon_filter_status_ds[8] = aon_filter_status_trans_ds_int;
+    aon_filter_status_qs[8] = aon_filter_status_trans_qs_int;
   end
 
   prim_reg_cdc #(
-    .DataWidth(8),
-    .ResetVal(8'h0),
-    .BitMask(8'hff),
+    .DataWidth(9),
+    .ResetVal(9'h0),
+    .BitMask(9'h1ff),
     .DstWrReq(1)
   ) u_filter_status_cdc (
     .clk_src_i    (clk_i),
@@ -1287,7 +1299,7 @@ module adc_ctrl_reg_top (
     .src_regwen_i ('0),
     .src_we_i     (filter_status_we),
     .src_re_i     ('0),
-    .src_wd_i     (reg_wdata[7:0]),
+    .src_wd_i     (reg_wdata[8:0]),
     .src_busy_o   (filter_status_busy),
     .src_qs_o     (filter_status_qs), // for software read back
     .dst_update_i (aon_filter_status_qe),
@@ -3663,12 +3675,13 @@ module adc_ctrl_reg_top (
 
 
   // R[adc_wakeup_ctl]: V(False)
+  //   F[match_en]: 7:0
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0),
     .Mubi    (1'b0)
-  ) u_adc_wakeup_ctl (
+  ) u_adc_wakeup_ctl_match_en (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -3682,23 +3695,51 @@ module adc_ctrl_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.adc_wakeup_ctl.q),
+    .q      (reg2hw.adc_wakeup_ctl.match_en.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (aon_adc_wakeup_ctl_qs_int)
+    .qs     (aon_adc_wakeup_ctl_match_en_qs_int)
+  );
+
+  //   F[trans_en]: 8:8
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_adc_wakeup_ctl_trans_en (
+    .clk_i   (clk_aon_i),
+    .rst_ni  (rst_aon_ni),
+
+    // from register interface
+    .we     (aon_adc_wakeup_ctl_we),
+    .wd     (aon_adc_wakeup_ctl_wdata[8]),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.adc_wakeup_ctl.trans_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (aon_adc_wakeup_ctl_trans_en_qs_int)
   );
 
 
   // R[filter_status]: V(False)
-  logic [0:0] filter_status_flds_we;
+  logic [1:0] filter_status_flds_we;
   assign aon_filter_status_qe = |filter_status_flds_we;
+  //   F[match]: 7:0
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (8'h0),
     .Mubi    (1'b0)
-  ) u_filter_status (
+  ) u_filter_status_match (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
 
@@ -3707,32 +3748,60 @@ module adc_ctrl_reg_top (
     .wd     (aon_filter_status_wdata[7:0]),
 
     // from internal hardware
-    .de     (hw2reg.filter_status.de),
-    .d      (hw2reg.filter_status.d),
+    .de     (hw2reg.filter_status.match.de),
+    .d      (hw2reg.filter_status.match.d),
 
     // to internal hardware
     .qe     (filter_status_flds_we[0]),
-    .q      (reg2hw.filter_status.q),
-    .ds     (aon_filter_status_ds_int),
+    .q      (reg2hw.filter_status.match.q),
+    .ds     (aon_filter_status_match_ds_int),
 
     // to register interface (read)
-    .qs     (aon_filter_status_qs_int)
+    .qs     (aon_filter_status_match_qs_int)
+  );
+
+  //   F[trans]: 8:8
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_filter_status_trans (
+    .clk_i   (clk_aon_i),
+    .rst_ni  (rst_aon_ni),
+
+    // from register interface
+    .we     (aon_filter_status_we),
+    .wd     (aon_filter_status_wdata[8]),
+
+    // from internal hardware
+    .de     (hw2reg.filter_status.trans.de),
+    .d      (hw2reg.filter_status.trans.d),
+
+    // to internal hardware
+    .qe     (filter_status_flds_we[1]),
+    .q      (reg2hw.filter_status.trans.q),
+    .ds     (aon_filter_status_trans_ds_int),
+
+    // to register interface (read)
+    .qs     (aon_filter_status_trans_qs_int)
   );
 
 
   // R[adc_intr_ctl]: V(False)
+  //   F[match_en]: 7:0
   prim_subreg #(
-    .DW      (9),
+    .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (9'h0),
+    .RESVAL  (8'h0),
     .Mubi    (1'b0)
-  ) u_adc_intr_ctl (
+  ) u_adc_intr_ctl_match_en (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_intr_ctl_we),
-    .wd     (adc_intr_ctl_wd),
+    .wd     (adc_intr_ctl_match_en_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3740,43 +3809,124 @@ module adc_ctrl_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.adc_intr_ctl.q),
+    .q      (reg2hw.adc_intr_ctl.match_en.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (adc_intr_ctl_qs)
+    .qs     (adc_intr_ctl_match_en_qs)
+  );
+
+  //   F[trans_en]: 8:8
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_adc_intr_ctl_trans_en (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (adc_intr_ctl_we),
+    .wd     (adc_intr_ctl_trans_en_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.adc_intr_ctl.trans_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (adc_intr_ctl_trans_en_qs)
+  );
+
+  //   F[oneshot_en]: 9:9
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_adc_intr_ctl_oneshot_en (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (adc_intr_ctl_we),
+    .wd     (adc_intr_ctl_oneshot_en_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.adc_intr_ctl.oneshot_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (adc_intr_ctl_oneshot_en_qs)
   );
 
 
   // R[adc_intr_status]: V(False)
-  //   F[filter_match]: 7:0
+  //   F[match]: 7:0
   prim_subreg #(
     .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (8'h0),
     .Mubi    (1'b0)
-  ) u_adc_intr_status_filter_match (
+  ) u_adc_intr_status_match (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (adc_intr_status_we),
-    .wd     (adc_intr_status_filter_match_wd),
+    .wd     (adc_intr_status_match_wd),
 
     // from internal hardware
-    .de     (hw2reg.adc_intr_status.filter_match.de),
-    .d      (hw2reg.adc_intr_status.filter_match.d),
+    .de     (hw2reg.adc_intr_status.match.de),
+    .d      (hw2reg.adc_intr_status.match.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.adc_intr_status.filter_match.q),
+    .q      (reg2hw.adc_intr_status.match.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (adc_intr_status_filter_match_qs)
+    .qs     (adc_intr_status_match_qs)
   );
 
-  //   F[oneshot]: 8:8
+  //   F[trans]: 8:8
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_adc_intr_status_trans (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (adc_intr_status_we),
+    .wd     (adc_intr_status_trans_wd),
+
+    // from internal hardware
+    .de     (hw2reg.adc_intr_status.trans.de),
+    .d      (hw2reg.adc_intr_status.trans.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.adc_intr_status.trans.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (adc_intr_status_trans_qs)
+  );
+
+  //   F[oneshot]: 9:9
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
@@ -4007,16 +4157,24 @@ module adc_ctrl_reg_top (
 
   assign adc_wakeup_ctl_we = addr_hit[27] & reg_we & !reg_error;
 
+
   assign filter_status_we = addr_hit[28] & reg_we & !reg_error;
+
 
   assign adc_intr_ctl_we = addr_hit[29] & reg_we & !reg_error;
 
-  assign adc_intr_ctl_wd = reg_wdata[8:0];
+  assign adc_intr_ctl_match_en_wd = reg_wdata[7:0];
+
+  assign adc_intr_ctl_trans_en_wd = reg_wdata[8];
+
+  assign adc_intr_ctl_oneshot_en_wd = reg_wdata[9];
   assign adc_intr_status_we = addr_hit[30] & reg_we & !reg_error;
 
-  assign adc_intr_status_filter_match_wd = reg_wdata[7:0];
+  assign adc_intr_status_match_wd = reg_wdata[7:0];
 
-  assign adc_intr_status_oneshot_wd = reg_wdata[8];
+  assign adc_intr_status_trans_wd = reg_wdata[8];
+
+  assign adc_intr_status_oneshot_wd = reg_wdata[9];
   assign adc_fsm_state_re = addr_hit[31] & reg_re & !reg_error;
 
   // Assign write-enables to checker logic vector.
@@ -4152,12 +4310,15 @@ module adc_ctrl_reg_top (
         reg_rdata_next = DW'(filter_status_qs);
       end
       addr_hit[29]: begin
-        reg_rdata_next[8:0] = adc_intr_ctl_qs;
+        reg_rdata_next[7:0] = adc_intr_ctl_match_en_qs;
+        reg_rdata_next[8] = adc_intr_ctl_trans_en_qs;
+        reg_rdata_next[9] = adc_intr_ctl_oneshot_en_qs;
       end
 
       addr_hit[30]: begin
-        reg_rdata_next[7:0] = adc_intr_status_filter_match_qs;
-        reg_rdata_next[8] = adc_intr_status_oneshot_qs;
+        reg_rdata_next[7:0] = adc_intr_status_match_qs;
+        reg_rdata_next[8] = adc_intr_status_trans_qs;
+        reg_rdata_next[9] = adc_intr_status_oneshot_qs;
       end
 
       addr_hit[31]: begin

@@ -63,10 +63,10 @@ In low power mode:
 * If a match cannot be confirmed in normal operation mode, the ADC controller switches back to low power mode without firmware intervention.
 
 Although it can be used at any time, the periodic operation mode and use of the slow clock allows the ADC controller to continue to scan when most of the chip is in sleep or power-down modes.
+
 The controller can be configured to issue a wakeup to the rest of the chip.
-
 If a filter is enabled for wakeup in [`adc_wakeup_ctl`](registers.md#adc_wakeup_ctl) and [`filter_status`](registers.md#filter_status) indicates a match, a wakeup is generated to the system power manager.
-
+For debug purposes, a transition from low power mode to normal power mode can also be configured to issue a wakeup to the rest of the chip via [`adc_wakeup_ctl`](registers.md#adc_wakeup_ctl).
 
 ## Filters and debounce
 

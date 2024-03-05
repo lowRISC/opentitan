@@ -28,7 +28,7 @@ module adc_ctrl_core import adc_ctrl_reg_pkg::* ; (
   output ast_pkg::adc_ast_req_t adc_o,
 
   // FSM state output for debug purposes.
-  output fsm_state_e fsm_state_o
+  output adc_ctrl_pkg::fsm_state_e aon_fsm_state_o
 );
 
   logic chn0_val_we, chn1_val_we;//write enable for the latest ADC sample
@@ -36,6 +36,7 @@ module adc_ctrl_core import adc_ctrl_reg_pkg::* ; (
 
   logic [NumAdcFilter-1:0] chn0_match, chn1_match, match;
   logic [NumAdcFilter-1:0] match_pulse;
+  logic aon_fsm_trans;
 
   //write enable for the ADC sample when the interrupt is triggered
   logic adc_ctrl_done, oneshot_done;
@@ -133,13 +134,18 @@ module adc_ctrl_core import adc_ctrl_reg_pkg::* ; (
   end
 
   // adc filter status
-  assign aon_filter_status_o.d  = match_pulse | reg2hw_i.filter_status.q;
-  assign aon_filter_status_o.de = |match_pulse;
+  assign aon_filter_status_o.match.d  = match_pulse | reg2hw_i.filter_status.match.q;
+  assign aon_filter_status_o.match.de = |match_pulse;
+  // transition status
+  assign aon_filter_status_o.trans.d  = aon_fsm_trans | reg2hw_i.filter_status.trans.q;
+  assign aon_filter_status_o.trans.de = aon_fsm_trans;
 
   // generate wakeup to external power manager if filter status
   // and wakeup enable are set.
-  assign wkup_req_o = |(reg2hw_i.filter_status.q &
-                      reg2hw_i.adc_wakeup_ctl.q);
+  assign wkup_req_o = |(reg2hw_i.filter_status.match.q &
+                        reg2hw_i.adc_wakeup_ctl.match_en.q) ||
+                       (reg2hw_i.filter_status.trans.q &
+                        reg2hw_i.adc_wakeup_ctl.trans_en.q);
 
   //instantiate the main state machine
   adc_ctrl_fsm u_adc_ctrl_fsm (
@@ -166,7 +172,8 @@ module adc_ctrl_core import adc_ctrl_reg_pkg::* ; (
     .chn1_val_o(chn1_val),
     .adc_ctrl_done_o(adc_ctrl_done),
     .oneshot_done_o(oneshot_done),
-    .fsm_state_o
+    .aon_fsm_state_o,
+    .aon_fsm_trans_o(aon_fsm_trans)
   );
 
   // synchronzie from clk_aon into cfg domain
@@ -182,13 +189,16 @@ module adc_ctrl_core import adc_ctrl_reg_pkg::* ; (
 
   //Instantiate the interrupt module
   adc_ctrl_intr u_adc_ctrl_intr (
+    .clk_i,
+    .rst_ni,
     .clk_aon_i,
     .rst_aon_ni,
     .aon_filter_match_i(match_pulse),
-    .clk_i,
-    .rst_ni,
-    .cfg_intr_en_i(reg2hw_i.adc_intr_ctl.q),
+    .aon_fsm_trans_i(aon_fsm_trans),
     .cfg_oneshot_done_i(cfg_oneshot_done),
+    .cfg_intr_en_i(reg2hw_i.adc_intr_ctl.match_en.q),
+    .cfg_intr_trans_en_i(reg2hw_i.adc_intr_ctl.trans_en.q),
+    .cfg_oneshot_done_en_i(reg2hw_i.adc_intr_ctl.oneshot_en.q),
     .intr_state_i(reg2hw_i.intr_state),
     .intr_enable_i(reg2hw_i.intr_enable),
     .intr_test_i(reg2hw_i.intr_test),

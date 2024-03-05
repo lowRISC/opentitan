@@ -304,18 +304,37 @@ ADC value sampled on channel
 Enable filter matches as wakeups
 - Offset: `0x6c`
 - Reset default: `0x0`
-- Reset mask: `0xff`
+- Reset mask: `0x1ff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "EN", "bits": 8, "attr": ["rw"], "rotate": 0}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "MATCH_EN", "bits": 8, "attr": ["rw"], "rotate": 0}, {"name": "TRANS_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 23}], "config": {"lanes": 1, "fontsize": 10, "vspace": 100}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                                    |
-|:------:|:------:|:-------:|:-------|:-------------------------------------------------------------------------------|
-|  31:8  |        |         |        | Reserved                                                                       |
-|  7:0   |   rw   |   0x0   | EN     | 0: filter match wil not generate wakeupe; 1: filter match will generate wakeup |
+|  Bits  |  Type  |  Reset  | Name                                  |
+|:------:|:------:|:-------:|:--------------------------------------|
+|  31:9  |        |         | Reserved                              |
+|   8    |   rw   |   0x0   | [TRANS_EN](#adc_wakeup_ctl--trans_en) |
+|  7:0   |   rw   |   0x0   | [MATCH_EN](#adc_wakeup_ctl--match_en) |
+
+### adc_wakeup_ctl . TRANS_EN
+Wakeup due to FSM transition from low power sampling
+mode to normal sampling mode.
+
+Note that this wakeup source is primarily intended for debug purposes.
+If enabled all the time, this can lead to many wakeups due to false
+positives that are ruled out automatically by adc_ctrl after
+transitioning from LP -> NP.
+
+0: transition match will not generate wakeup;
+1: transition match will generate wakeup
+
+### adc_wakeup_ctl . MATCH_EN
+Filter wakeup source.
+
+0: filter match will not generate wakeup;
+1: filter match will generate wakeup
 
 ## filter_status
 Adc filter match status
@@ -323,18 +342,19 @@ Adc filter match status
 Indicates whether a particular filter has matched on all channels.
 - Offset: `0x70`
 - Reset default: `0x0`
-- Reset mask: `0xff`
+- Reset mask: `0x1ff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "COND", "bits": 8, "attr": ["rw1c"], "rotate": 0}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "MATCH", "bits": 8, "attr": ["rw1c"], "rotate": 0}, {"name": "TRANS", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 23}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name   | Description                                                |
 |:------:|:------:|:-------:|:-------|:-----------------------------------------------------------|
-|  31:8  |        |         |        | Reserved                                                   |
-|  7:0   |  rw1c  |   0x0   | COND   | 0: filter condition is not met; 1: filter condition is met |
+|  31:9  |        |         |        | Reserved                                                   |
+|   8    |  rw1c  |   0x0   | TRANS  | 0: transition did not occur; 1: transition occurred        |
+|  7:0   |  rw1c  |   0x0   | MATCH  | 0: filter condition is not met; 1: filter condition is met |
 
 ## adc_intr_ctl
 Interrupt enable controls.
@@ -345,36 +365,57 @@ which internal sources are actually registered.
 This register uses the same bit enumeration as [`ADC_INTR_STATUS`](#adc_intr_status)
 - Offset: `0x74`
 - Reset default: `0x0`
-- Reset mask: `0x1ff`
+- Reset mask: `0x3ff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "EN", "bits": 9, "attr": ["rw"], "rotate": 0}, {"bits": 23}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "MATCH_EN", "bits": 8, "attr": ["rw"], "rotate": 0}, {"name": "TRANS_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "ONESHOT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 22}], "config": {"lanes": 1, "fontsize": 10, "vspace": 120}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                        |
-|:------:|:------:|:-------:|:-------|:-------------------------------------------------------------------|
-|  31:9  |        |         |        | Reserved                                                           |
-|  8:0   |   rw   |   0x0   | EN     | 0: interrupt source is not enabled; 1: interrupt source is enabled |
+|  Bits  |  Type  |  Reset  | Name                                    |
+|:------:|:------:|:-------:|:----------------------------------------|
+| 31:10  |        |         | Reserved                                |
+|   9    |   rw   |   0x0   | [ONESHOT_EN](#adc_intr_ctl--oneshot_en) |
+|   8    |   rw   |   0x0   | [TRANS_EN](#adc_intr_ctl--trans_en)     |
+|  7:0   |   rw   |   0x0   | [MATCH_EN](#adc_intr_ctl--match_en)     |
+
+### adc_intr_ctl . ONESHOT_EN
+Interrupt due to oneshot sampling.
+
+0: interrupt source is not enabled; 1: interrupt source is enabled
+
+### adc_intr_ctl . TRANS_EN
+Interrupt due to FSM transition from low power sampling
+mode to normal sampling mode. This is mainly intended for debug.
+
+Note that this interrupt is primarily intended for debug purposes.
+
+0: interrupt source is not enabled; 1: interrupt source is enabled
+
+### adc_intr_ctl . MATCH_EN
+Filter interrupt source.
+
+0: interrupt source is not enabled; 1: interrupt source is enabled
 
 ## adc_intr_status
 Debug cable internal status
 - Offset: `0x78`
 - Reset default: `0x0`
-- Reset mask: `0x1ff`
+- Reset mask: `0x3ff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "filter_match", "bits": 8, "attr": ["rw1c"], "rotate": 0}, {"name": "oneshot", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 23}], "config": {"lanes": 1, "fontsize": 10, "vspace": 90}}
+{"reg": [{"name": "MATCH", "bits": 8, "attr": ["rw1c"], "rotate": 0}, {"name": "TRANS", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "ONESHOT", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 22}], "config": {"lanes": 1, "fontsize": 10, "vspace": 90}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name         | Description                                                |
-|:------:|:------:|:-------:|:-------------|:-----------------------------------------------------------|
-|  31:9  |        |         |              | Reserved                                                   |
-|   8    |  rw1c  |   0x0   | oneshot      | 0: oneshot sample is not done ; 1: oneshot sample is done  |
-|  7:0   |  rw1c  |   0x0   | filter_match | 0: filter condition is not met; 1: filter condition is met |
+|  Bits  |  Type  |  Reset  | Name    | Description                                                |
+|:------:|:------:|:-------:|:--------|:-----------------------------------------------------------|
+| 31:10  |        |         |         | Reserved                                                   |
+|   9    |  rw1c  |   0x0   | ONESHOT | 0: oneshot sample is not done ; 1: oneshot sample is done  |
+|   8    |  rw1c  |   0x0   | TRANS   | 0: transition did not occur; 1: transition occurred        |
+|  7:0   |  rw1c  |   0x0   | MATCH   | 0: filter condition is not met; 1: filter condition is met |
 
 ## adc_fsm_state
 State of the internal state machine

@@ -100,15 +100,33 @@ package adc_ctrl_reg_pkg;
   } adc_ctrl_reg2hw_adc_chn1_filter_ctl_mreg_t;
 
   typedef struct packed {
-    logic [7:0]  q;
+    struct packed {
+      logic        q;
+    } trans_en;
+    struct packed {
+      logic [7:0]  q;
+    } match_en;
   } adc_ctrl_reg2hw_adc_wakeup_ctl_reg_t;
 
   typedef struct packed {
-    logic [7:0]  q;
+    struct packed {
+      logic        q;
+    } trans;
+    struct packed {
+      logic [7:0]  q;
+    } match;
   } adc_ctrl_reg2hw_filter_status_reg_t;
 
   typedef struct packed {
-    logic [8:0]  q;
+    struct packed {
+      logic        q;
+    } oneshot_en;
+    struct packed {
+      logic        q;
+    } trans_en;
+    struct packed {
+      logic [7:0]  q;
+    } match_en;
   } adc_ctrl_reg2hw_adc_intr_ctl_reg_t;
 
   typedef struct packed {
@@ -116,8 +134,11 @@ package adc_ctrl_reg_pkg;
       logic        q;
     } oneshot;
     struct packed {
+      logic        q;
+    } trans;
+    struct packed {
       logic [7:0]  q;
-    } filter_match;
+    } match;
   } adc_ctrl_reg2hw_adc_intr_status_reg_t;
 
   typedef struct packed {
@@ -145,15 +166,25 @@ package adc_ctrl_reg_pkg;
   } adc_ctrl_hw2reg_adc_chn_val_mreg_t;
 
   typedef struct packed {
-    logic [7:0]  d;
-    logic        de;
+    struct packed {
+      logic [7:0]  d;
+      logic        de;
+    } match;
+    struct packed {
+      logic        d;
+      logic        de;
+    } trans;
   } adc_ctrl_hw2reg_filter_status_reg_t;
 
   typedef struct packed {
     struct packed {
       logic [7:0]  d;
       logic        de;
-    } filter_match;
+    } match;
+    struct packed {
+      logic        d;
+      logic        de;
+    } trans;
     struct packed {
       logic        d;
       logic        de;
@@ -166,29 +197,29 @@ package adc_ctrl_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    adc_ctrl_reg2hw_intr_state_reg_t intr_state; // [447:447]
-    adc_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [446:446]
-    adc_ctrl_reg2hw_intr_test_reg_t intr_test; // [445:444]
-    adc_ctrl_reg2hw_alert_test_reg_t alert_test; // [443:442]
-    adc_ctrl_reg2hw_adc_en_ctl_reg_t adc_en_ctl; // [441:440]
-    adc_ctrl_reg2hw_adc_pd_ctl_reg_t adc_pd_ctl; // [439:411]
-    adc_ctrl_reg2hw_adc_lp_sample_ctl_reg_t adc_lp_sample_ctl; // [410:403]
-    adc_ctrl_reg2hw_adc_sample_ctl_reg_t adc_sample_ctl; // [402:387]
-    adc_ctrl_reg2hw_adc_fsm_rst_reg_t adc_fsm_rst; // [386:386]
-    adc_ctrl_reg2hw_adc_chn0_filter_ctl_mreg_t [7:0] adc_chn0_filter_ctl; // [385:210]
-    adc_ctrl_reg2hw_adc_chn1_filter_ctl_mreg_t [7:0] adc_chn1_filter_ctl; // [209:34]
-    adc_ctrl_reg2hw_adc_wakeup_ctl_reg_t adc_wakeup_ctl; // [33:26]
-    adc_ctrl_reg2hw_filter_status_reg_t filter_status; // [25:18]
-    adc_ctrl_reg2hw_adc_intr_ctl_reg_t adc_intr_ctl; // [17:9]
-    adc_ctrl_reg2hw_adc_intr_status_reg_t adc_intr_status; // [8:0]
+    adc_ctrl_reg2hw_intr_state_reg_t intr_state; // [451:451]
+    adc_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [450:450]
+    adc_ctrl_reg2hw_intr_test_reg_t intr_test; // [449:448]
+    adc_ctrl_reg2hw_alert_test_reg_t alert_test; // [447:446]
+    adc_ctrl_reg2hw_adc_en_ctl_reg_t adc_en_ctl; // [445:444]
+    adc_ctrl_reg2hw_adc_pd_ctl_reg_t adc_pd_ctl; // [443:415]
+    adc_ctrl_reg2hw_adc_lp_sample_ctl_reg_t adc_lp_sample_ctl; // [414:407]
+    adc_ctrl_reg2hw_adc_sample_ctl_reg_t adc_sample_ctl; // [406:391]
+    adc_ctrl_reg2hw_adc_fsm_rst_reg_t adc_fsm_rst; // [390:390]
+    adc_ctrl_reg2hw_adc_chn0_filter_ctl_mreg_t [7:0] adc_chn0_filter_ctl; // [389:214]
+    adc_ctrl_reg2hw_adc_chn1_filter_ctl_mreg_t [7:0] adc_chn1_filter_ctl; // [213:38]
+    adc_ctrl_reg2hw_adc_wakeup_ctl_reg_t adc_wakeup_ctl; // [37:29]
+    adc_ctrl_reg2hw_filter_status_reg_t filter_status; // [28:20]
+    adc_ctrl_reg2hw_adc_intr_ctl_reg_t adc_intr_ctl; // [19:10]
+    adc_ctrl_reg2hw_adc_intr_status_reg_t adc_intr_status; // [9:0]
   } adc_ctrl_reg2hw_t;
 
   // HW -> register type
   typedef struct packed {
-    adc_ctrl_hw2reg_intr_state_reg_t intr_state; // [82:81]
-    adc_ctrl_hw2reg_adc_chn_val_mreg_t [1:0] adc_chn_val; // [80:25]
-    adc_ctrl_hw2reg_filter_status_reg_t filter_status; // [24:16]
-    adc_ctrl_hw2reg_adc_intr_status_reg_t adc_intr_status; // [15:5]
+    adc_ctrl_hw2reg_intr_state_reg_t intr_state; // [86:85]
+    adc_ctrl_hw2reg_adc_chn_val_mreg_t [1:0] adc_chn_val; // [84:29]
+    adc_ctrl_hw2reg_filter_status_reg_t filter_status; // [28:18]
+    adc_ctrl_hw2reg_adc_intr_status_reg_t adc_intr_status; // [17:5]
     adc_ctrl_hw2reg_adc_fsm_state_reg_t adc_fsm_state; // [4:0]
   } adc_ctrl_hw2reg_t;
 
@@ -299,8 +330,8 @@ package adc_ctrl_reg_pkg;
     4'b 1111, // index[24] ADC_CTRL_ADC_CHN1_FILTER_CTL_7
     4'b 1111, // index[25] ADC_CTRL_ADC_CHN_VAL_0
     4'b 1111, // index[26] ADC_CTRL_ADC_CHN_VAL_1
-    4'b 0001, // index[27] ADC_CTRL_ADC_WAKEUP_CTL
-    4'b 0001, // index[28] ADC_CTRL_FILTER_STATUS
+    4'b 0011, // index[27] ADC_CTRL_ADC_WAKEUP_CTL
+    4'b 0011, // index[28] ADC_CTRL_FILTER_STATUS
     4'b 0011, // index[29] ADC_CTRL_ADC_INTR_CTL
     4'b 0011, // index[30] ADC_CTRL_ADC_INTR_STATUS
     4'b 0001  // index[31] ADC_CTRL_ADC_FSM_STATE

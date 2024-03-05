@@ -74,6 +74,8 @@ typedef enum dif_adc_ctrl_channel {
  */
 typedef enum dif_adc_ctrl_filter {
   DIF_ADC_CTRL_FILTER_LIST(DIF_ADC_CTRL_FILTER_ENUM_INIT_)
+
+      kDifAdcCtrlTrans,
 } dif_adc_ctrl_filter_t;
 
 #undef DIF_ADC_CTRL_FILTER_ENUM_INIT_
@@ -96,6 +98,10 @@ typedef enum dif_adc_ctrl_filter {
  */
 typedef enum dif_adc_ctrl_irq_cause {
   DIF_ADC_CTRL_FILTER_LIST(DIF_ADC_CTRL_IRQ_CAUSE_ENUM_INIT_)
+  /**
+   * Sample ready cause in Oneshot mode.
+   */
+  kDifAdcCtrlIrqCauseTrans = 1U << ADC_CTRL_ADC_INTR_STATUS_TRANS_BIT,
   /**
    * Sample ready cause in Oneshot mode.
    */
