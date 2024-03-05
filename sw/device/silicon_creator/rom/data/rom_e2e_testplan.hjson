@@ -561,7 +561,7 @@
             | :---------------------------------: | :-------------------------------: |
             | `identitfier = 0`                   | `kErrorBootPolicyBadIdentifier`   |
             | `length < CHIP_ROM_EXT_SIZE_MIN`    | `kErrorBootPolicyBadLength`       |
-            | `length > CHIP_ROM_EXT_SIZE_MAX`    | `kErrorBootPolicyBadLength`       |
+            | `length > CHIP_ROM_EXT_SIZE_MAX`    | No Error; image should boot.      |
             | `code_start = code_end`             | `kErrorManifestBadCodeRegion`     |
             | `code_start < CHIP_MANIFEST_SIZE`   | `kErrorManifestBadCodeRegion`     |
             | `code_end > length`                 | `kErrorManifestBadCodeRegion`     |
