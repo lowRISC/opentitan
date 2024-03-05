@@ -61,6 +61,8 @@ module i2c_core import i2c_pkg::*;
   logic [30:0] stretch_timeout;
   logic        timeout_enable;
   logic [31:0] host_timeout;
+  logic [30:0] nack_timeout;
+  logic        nack_timeout_en;
 
   logic scl_sync;
   logic sda_sync;
@@ -228,6 +230,8 @@ module i2c_core import i2c_pkg::*;
   assign stretch_timeout = reg2hw.timeout_ctrl.val.q;
   assign timeout_enable  = reg2hw.timeout_ctrl.en.q;
   assign host_timeout    = reg2hw.host_timeout_ctrl.q;
+  assign nack_timeout    = reg2hw.target_timeout_ctrl.val.q;
+  assign nack_timeout_en = reg2hw.target_timeout_ctrl.en.q;
 
   assign i2c_fifo_rxrst      = reg2hw.fifo_ctrl.rxrst.q & reg2hw.fifo_ctrl.rxrst.qe;
   assign i2c_fifo_fmtrst     = reg2hw.fifo_ctrl.fmtrst.q & reg2hw.fifo_ctrl.fmtrst.qe;
@@ -459,6 +463,8 @@ module i2c_core import i2c_pkg::*;
     .stretch_timeout_i       (stretch_timeout),
     .timeout_enable_i        (timeout_enable),
     .host_timeout_i          (host_timeout),
+    .nack_timeout_i          (nack_timeout),
+    .nack_timeout_en_i       (nack_timeout_en),
     .target_address0_i       (target_address0),
     .target_mask0_i          (target_mask0),
     .target_address1_i       (target_address1),
