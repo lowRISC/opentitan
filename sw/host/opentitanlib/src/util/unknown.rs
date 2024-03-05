@@ -128,6 +128,28 @@ macro_rules! with_unknown {
             use serde::de::{Deserialize, Deserializer, Error, Visitor};
             use std::convert::TryFrom;
             use $crate::util::unknown::ParseError;
+            use clap::ValueEnum;
+            use clap::builder::PossibleValue;
+
+            impl ValueEnum for $Enum {
+                fn value_variants<'a>() -> &'a [Self] {
+                    const VARIANTS: &[$Enum] = &[
+                        $($Enum::$enumerator),*
+                    ];
+                    VARIANTS
+                }
+
+                fn to_possible_value(&self) -> Option<PossibleValue> {
+                    let s = match *self {
+                        $(
+                            $Enum::$enumerator => stringify!($enumerator),
+                        )*
+                        _ => return None,
+
+                    };
+                    Some(PossibleValue::new(s))
+                }
+            }
 
             impl FromStr for $Enum {
                 type Err = ParseError;
