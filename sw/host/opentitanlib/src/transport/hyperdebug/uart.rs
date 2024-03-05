@@ -2,16 +2,19 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use std::rc::Rc;
+use std::time::Duration;
+
+use anyhow::Result;
+use rusb::{Direction, Recipient, RequestType};
+use serialport::Parity;
+
 use super::UartInterface;
 use crate::io::nonblocking_help::NonblockingHelp;
 use crate::io::uart::Uart;
 use crate::transport::common::uart::SerialPortUart;
 use crate::transport::hyperdebug::Inner;
 use crate::transport::TransportError;
-use anyhow::Result;
-use rusb::{Direction, Recipient, RequestType};
-use std::rc::Rc;
-use std::time::Duration;
 
 const UART_BAUD: u32 = 115200;
 
@@ -98,6 +101,24 @@ impl Uart for HyperdebugUart {
             rusb::request_type(Direction::Out, RequestType::Vendor, Recipient::Interface),
             ControlRequest::Break as u8,
             if enable { 0xFFFF } else { 0 },
+            self.usb_interface as u16,
+            &[],
+        )?;
+        Ok(())
+    }
+
+    fn set_parity(&self, parity: Parity) -> Result<()> {
+        let parity_code = match parity {
+            Parity::None => 0,
+            Parity::Odd => 1,
+            Parity::Even => 2,
+        };
+
+        let usb_handle = self.inner.usb_device.borrow();
+        usb_handle.write_control(
+            rusb::request_type(Direction::Out, RequestType::Vendor, Recipient::Interface),
+            ControlRequest::SetParity as u8,
+            parity_code,
             self.usb_interface as u16,
             &[],
         )?;
