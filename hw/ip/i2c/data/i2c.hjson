@@ -570,7 +570,10 @@
       ]
     }
     { name: "TIMEOUT_CTRL"
-      desc: "I2C clock stretching timeout control"
+      desc: '''
+            I2C clock stretching timeout control.
+            This is used in I2C host mode to detect whether a connected target is stretching for too long.
+            '''
       swaccess: "rw"
       hwaccess: "hro"
       fields: [
@@ -660,6 +663,24 @@
       hwaccess: "hro"
       fields: [
         { bits: "31:0" }
+      ]
+    }
+    { name: "TARGET_TIMEOUT_CTRL"
+      desc: '''
+            I2C target internal stretching timeout control.
+            When the target has stretched beyond this time it will send a NACK.
+            '''
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "30:0"
+          name: "VAL"
+          desc: "Clock stretching timeout value (in units of input clock frequency)"
+        }
+        { bits: "31"
+          name: "EN"
+          desc: "Enable timeout feature and send NACK once the timeout has been reached"
+        }
       ]
     }
   ]
