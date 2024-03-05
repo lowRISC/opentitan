@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
-use clap::Parser;
+use clap::{Args, Parser, Subcommand, ValueEnum};
 
 use std::fs::{File, OpenOptions};
 use std::io::BufReader;
@@ -14,11 +14,47 @@ use exec_log_lib::exec_log::ExecLog;
 
 use spawn_proto::protos::SpawnExec;
 
+/// File format of the log file.
+#[derive(Debug, ValueEnum)]
+#[serde(rename_all = "kebab-case")]
+enum Format {
+    /// Automatically guess the format based on the extension.
+    Auto,
+    /// Bazel binary execution log (protobuf).
+    BazelBin,
+    /// Opentitan json format.
+    OtJson,
+}
+
+/// Operation to perform.
+#[derive(Debug, Subcommand)]
+#[serde(rename_all = "kebab-case")]
+enum Operation {
+    /// Convert between formats.
+    Convert(ConvertCommand),
+    /// Print the log.
+    Print(PrintCommand),
+}
+
+/// Conversion command.
+#[derive(Debug, Args)]
+struct ConvertCommand {
+    /// Input format.
+    #[arg(long, default_value_t = Format::Auto)]
+    in_format: Format,
+    /// Output format.
+    #[arg(long, default_value_t = Format::Auto)]
+    out_format: Format,
+    /// Input file.
+    input: PathBuf,
+    /// Output file.
+    output: PathBuf,
+}
+
 #[derive(Debug, Parser)]
 struct Opts {
-    exec_log: PathBuf,
-    #[arg(long)]
-    json_out: Option<PathBuf>,
+    #[command(flatten)]
+    operation: Operation,
 }
 
 fn main() -> Result<()> {
