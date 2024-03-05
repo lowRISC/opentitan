@@ -110,8 +110,6 @@ bool test_main(void) {
       // DV simulation can exercise pin-flipping and differential rcvr on/off
       // but there's no point wasting simulation time trying both tx modes;
       // D+/D- are always used directly as differential signals.
-      OT_FALLTHROUGH_INTENDED;
-    case kDeviceSilicon:
       ntests = 4U;
       for (unsigned test = 0U; test < ntests; ++test) {
         test_cfg[test].pinflip = ((test & 1U) != 0U);
@@ -122,13 +120,18 @@ bool test_main(void) {
 
     case kDeviceFpgaCw340:
     case kDeviceFpgaCw310:
-      LOG_INFO(" - CW310/340 does not support pinflipping; ignoring");
-      LOG_INFO(" - CW310/340 employs only differential transmission");
+      // For the CW310/340 pin-flipping is only useful if the SBU signals of
+      // the USB-C connector are being driven; this is not the case we're
+      // testing.
+      OT_FALLTHROUGH_INTENDED;
+    case kDeviceSilicon:
+      // Silicon would require external pin-flipping in some form,
+      // eg. configurable hardware or a reversible cable. Only the differential
+      // rcvr on/off may be exercised.
+      LOG_INFO(" - CW310/340/Teacup does not support pinflipping; ignoring");
+      LOG_INFO(" - CW310/340/Teacup employs only differential transmission");
       ntests = 2U;
       for (unsigned test = 0U; test < ntests; ++test) {
-        // For the CW310/340 pin-flipping is only useful if the SBU signals of
-        // the USB-C connector are being driven; this is not the case we're
-        // testing.
         test_cfg[test].pinflip = false;
         test_cfg[test].en_diff_rcvr = ((test & 1U) != 0U);
         // D+/D- signals are always used directly as differential signals.
