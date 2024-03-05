@@ -14,13 +14,15 @@ class usbdev_enable_vseq extends usbdev_base_vseq;
     // Therefore, if we want to accurately test the device enable function,
     // we need to manually set this.
     do_usbdev_init = 1'b0;
+
+    rand_or_not = 1'b0;
+    num_of_bytes = 8;
+
     super.pre_start();
   endtask
 
   task body();
     uvm_reg_data_t rd_data;
-    num_of_bytes = 8;
-    rand_or_not = 0;
     ral.usbctrl.enable.set(1'b1);  // Set usbdev control register enable bit.
     ral.usbctrl.device_address.set(0);
     csr_update(ral.usbctrl);

@@ -8,9 +8,9 @@ class usbdev_min_length_out_transaction_vseq extends usbdev_random_length_out_tr
 
   `uvm_object_new
 
-  task body();
+  task pre_start();
+    super.pre_start();
     num_of_bytes = 0;
-    rand_or_not = 0;
-    super.body();
+    rand_or_not = 1'b0;
   endtask
 endclass
