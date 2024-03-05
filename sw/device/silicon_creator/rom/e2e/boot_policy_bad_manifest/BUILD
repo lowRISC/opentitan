@@ -3,12 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "//rules/opentitan:defs.bzl",
-    "cw310_params",
-    "opentitan_test",
-    "verilator_params",
-)
-load(
     "//rules:const.bzl",
     "CONST",
     "get_lc_items",
@@ -16,14 +10,13 @@ load(
     "hex_digits",
 )
 load(
-    "//rules:opentitan.bzl",
-    "RSA_ONLY_KEY_STRUCTS",
-    "opentitan_flash_binary",
-    "opentitan_multislot_flash_binary",
-)
-load(
     "//rules:manifest.bzl",
     "manifest",
+)
+load(
+    "//rules:opentitan_test.bzl",
+    "OTTF_SUCCESS_MSG",
+    "ROM_BOOT_FAILURE_MSG",
 )
 load(
     "//rules:otp.bzl",
@@ -35,6 +28,11 @@ load(
 load(
     "//rules:rom_e2e.bzl",
     "maybe_skip_in_ci",
+)
+load(
+    "//rules/opentitan:defs.bzl",
+    "cw310_params",
+    "opentitan_test",
 )
 load(
     "//sw/device/silicon_creator/rom/e2e:defs.bzl",
@@ -67,10 +65,12 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
         "name": "too_large",
         "manifest": {
             "identifier": hex(CONST.ROM_EXT),
+            # Note: we expect this image to boot successfully, so we must set the `address_translation` field to ensure the ROM does not error out an a bad field here.
+            "address_translation": hex(CONST.HARDENED_FALSE),
             "length": hex(CONST.ROM_EXT_SIZE_MAX + 1),
         },
-        "exit_success": MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.BOOT_POLICY.BAD_LENGTH)),
-        "exit_failure": msg_template_bfv_all_except(CONST.BFV.BOOT_POLICY.BAD_LENGTH),
+        "exit_success": OTTF_SUCCESS_MSG,
+        "exit_failure": ROM_BOOT_FAILURE_MSG,
     },
     {
         "name": "empty_code",

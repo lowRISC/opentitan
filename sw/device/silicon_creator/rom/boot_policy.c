@@ -30,8 +30,7 @@ rom_error_t boot_policy_manifest_check(const manifest_t *manifest,
   if (manifest->identifier != CHIP_ROM_EXT_IDENTIFIER) {
     return kErrorBootPolicyBadIdentifier;
   }
-  if (manifest->length < CHIP_ROM_EXT_SIZE_MIN ||
-      manifest->length > CHIP_ROM_EXT_SIZE_MAX) {
+  if (manifest->length < CHIP_ROM_EXT_SIZE_MIN) {
     return kErrorBootPolicyBadLength;
   }
   RETURN_IF_ERROR(manifest_check(manifest));

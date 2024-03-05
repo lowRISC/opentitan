@@ -56,10 +56,6 @@ TEST_F(BootPolicyTest, ManifestCheckBadLength) {
   manifest.length = CHIP_ROM_EXT_SIZE_MIN - 1;
   EXPECT_EQ(boot_policy_manifest_check(&manifest, &boot_data),
             kErrorBootPolicyBadLength);
-
-  manifest.length = CHIP_ROM_EXT_SIZE_MAX + 1;
-  EXPECT_EQ(boot_policy_manifest_check(&manifest, &boot_data),
-            kErrorBootPolicyBadLength);
 }
 
 TEST_F(BootPolicyTest, ManifestCheckBadManifest) {

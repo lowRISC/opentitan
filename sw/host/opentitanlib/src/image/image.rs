@@ -15,7 +15,7 @@ use thiserror::Error;
 use crate::crypto::rsa::Modulus;
 use crate::crypto::rsa::Signature as RsaSignature;
 use crate::crypto::sha256;
-use crate::image::manifest::Manifest;
+use crate::image::manifest::{Manifest, CHIP_ROM_EXT_IDENTIFIER, CHIP_ROM_EXT_SIZE_MAX};
 use crate::image::manifest_def::{ManifestRsaBuffer, ManifestSpec};
 use crate::image::manifest_ext::{ManifestExtEntry, ManifestExtSpec};
 use crate::util::file::{FromReader, ToWriter};
@@ -108,6 +108,14 @@ impl Image {
         ensure!(manifest.code_end < len);
         ensure!(manifest.entry_point < len);
         ensure!(manifest.extensions.entries.iter().all(|x| x.offset < len));
+
+        // We allow the ROM_EXT to be larger than maximum slot size to support provisioning flows
+        // and future ROM_EXT expansion if needed.
+        if (manifest.identifier == CHIP_ROM_EXT_IDENTIFIER)
+            && (manifest.length > CHIP_ROM_EXT_SIZE_MAX)
+        {
+            log::warn!("ROM_EXT is larger than 64k. Link offsets may need recalculating.");
+        }
 
         Ok(())
     }
