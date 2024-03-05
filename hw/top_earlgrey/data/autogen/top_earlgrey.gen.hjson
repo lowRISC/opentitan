@@ -14287,11 +14287,11 @@
       default_val: false
     }
     {
-      name: adc_ctrl_aon_match_done
+      name: adc_ctrl_aon_match_pending
       width: 1
       type: interrupt
       module_name: adc_ctrl_aon
-      intr_type: IntrType.Event
+      intr_type: IntrType.Status
       default_val: false
     }
     {

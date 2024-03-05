@@ -54,8 +54,8 @@ dif_result_t dif_adc_ctrl_alert_force(const dif_adc_ctrl_t *adc_ctrl,
 static bool adc_ctrl_get_irq_bit_index(dif_adc_ctrl_irq_t irq,
                                        bitfield_bit32_index_t *index_out) {
   switch (irq) {
-    case kDifAdcCtrlIrqMatchDone:
-      *index_out = ADC_CTRL_INTR_COMMON_MATCH_DONE_BIT;
+    case kDifAdcCtrlIrqMatchPending:
+      *index_out = ADC_CTRL_INTR_COMMON_MATCH_PENDING_BIT;
       break;
     default:
       return false;
@@ -65,14 +65,15 @@ static bool adc_ctrl_get_irq_bit_index(dif_adc_ctrl_irq_t irq,
 }
 
 static dif_irq_type_t irq_types[] = {
-    kDifIrqTypeEvent,
+    kDifIrqTypeStatus,
 };
 
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_adc_ctrl_irq_get_type(const dif_adc_ctrl_t *adc_ctrl,
                                        dif_adc_ctrl_irq_t irq,
                                        dif_irq_type_t *type) {
-  if (adc_ctrl == NULL || type == NULL || irq == kDifAdcCtrlIrqMatchDone + 1) {
+  if (adc_ctrl == NULL || type == NULL ||
+      irq == kDifAdcCtrlIrqMatchPending + 1) {
     return kDifBadArg;
   }
 

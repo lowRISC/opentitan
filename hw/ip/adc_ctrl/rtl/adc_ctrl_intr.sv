@@ -89,36 +89,35 @@ module adc_ctrl_intr
     .dst_ack_i(dst_ack)
   );
 
-  // To write into interrupt status register. Note that we're also adding the non-AON interrupt
-  // source cfg_oneshot_done_i at this point.
-  logic [1+NumAonIntrEvents-1:0] intr_events;
-
   // Note that aon_req_hold is a value held in an async domain.
   // aon_req_hold's value should not change until handshake is completed by `prim_sync_reqack`.
   // There is no reason to use `prim_sync_reqack` in this case because that module passes
   // through data only when the direction is src->dst.
-  assign intr_events = {cfg_oneshot_done_i, {NumAonIntrEvents{dst_ack}} & aon_req_hold_q} &
-                       {cfg_oneshot_done_en_i, cfg_intr_trans_en_i, cfg_intr_en_i};
-
-  assign adc_intr_status_o.match.de = |intr_events[7:0];
-  assign adc_intr_status_o.trans.de = intr_events[8];
-  assign adc_intr_status_o.oneshot.de = intr_events[9];
-
-  // since interrupt events are pulsed, when successive events arrive we need to make sure to
-  // hold the previously latched values
-  assign adc_intr_status_o.match.d = intr_events[7:0] | adc_intr_status_i.match.q;
-
-  logic unused_sigs;
-  assign unused_sigs = ^{adc_intr_status_i.oneshot.q,
-                         adc_intr_status_i.trans.q};
+  assign adc_intr_status_o.trans.de = cfg_intr_trans_en_i && dst_ack && aon_req_hold_q[8];
   assign adc_intr_status_o.trans.d = 1'b1;
+  // Since interrupt events are pulsed, when successive events arrive we need to make sure to
+  // hold the previously latched values
+  logic [NumAdcFilter-1:0] match_events;
+  assign match_events = cfg_intr_en_i & {NumAdcFilter{dst_ack}} & aon_req_hold_q[NumAdcFilter-1:0];
+  assign adc_intr_status_o.match.de = |match_events;
+  assign adc_intr_status_o.match.d = match_events | adc_intr_status_i.match.q;
+  // Note that we're also adding the non-AON interrupt source cfg_oneshot_done_i at this point.
+  assign adc_intr_status_o.oneshot.de = cfg_oneshot_done_i && cfg_oneshot_done_en_i;
   assign adc_intr_status_o.oneshot.d = 1'b1;
 
+  logic status_irq_value;
+  assign status_irq_value = |{adc_intr_status_i.oneshot.q,
+                              adc_intr_status_i.trans.q,
+                              adc_intr_status_i.match.q};
+
   // instantiate interrupt hardware primitive
-  prim_intr_hw #(.Width(1)) i_adc_ctrl_intr_o (
+  prim_intr_hw #(
+    .Width(1),
+    .IntrT("Status")
+  ) i_adc_ctrl_intr_o (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
-    .event_intr_i           (|intr_events),
+    .event_intr_i           (status_irq_value),
     .reg2hw_intr_enable_q_i (intr_enable_i.q),
     .reg2hw_intr_test_q_i   (intr_test_i.q),
     .reg2hw_intr_test_qe_i  (intr_test_i.qe),

@@ -78,9 +78,9 @@ dif_result_t dif_adc_ctrl_alert_force(const dif_adc_ctrl_t *adc_ctrl,
  */
 typedef enum dif_adc_ctrl_irq {
   /**
-   * ADC match or measurement event done
+   * ADC match or measurement event has occurred
    */
-  kDifAdcCtrlIrqMatchDone = 0,
+  kDifAdcCtrlIrqMatchPending = 0,
 } dif_adc_ctrl_irq_t;
 
 /**

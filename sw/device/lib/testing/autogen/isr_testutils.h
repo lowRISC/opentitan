@@ -565,13 +565,14 @@ typedef struct usbdev_isr_ctx {
  *
  * @param plic_ctx A PLIC ISR context handle.
  * @param adc_ctrl_ctx A(n) adc_ctrl ISR context handle.
+ * @param mute_status_irq set to true to disable the serviced status type IRQ.
  * @param[out] peripheral_serviced Out param for the peripheral that was
  * serviced.
  * @param[out] irq_serviced Out param for the IRQ that was serviced.
  */
 void isr_testutils_adc_ctrl_isr(
     plic_isr_ctx_t plic_ctx, adc_ctrl_isr_ctx_t adc_ctrl_ctx,
-    top_earlgrey_plic_peripheral_t *peripheral_serviced,
+    bool mute_status_irq, top_earlgrey_plic_peripheral_t *peripheral_serviced,
     dif_adc_ctrl_irq_t *irq_serviced);
 
 /**

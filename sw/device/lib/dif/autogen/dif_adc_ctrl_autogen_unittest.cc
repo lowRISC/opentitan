@@ -62,29 +62,29 @@ TEST_F(IrqGetTypeTest, NullArgs) {
   dif_irq_type_t type;
 
   EXPECT_DIF_BADARG(
-      dif_adc_ctrl_irq_get_type(nullptr, kDifAdcCtrlIrqMatchDone, &type));
+      dif_adc_ctrl_irq_get_type(nullptr, kDifAdcCtrlIrqMatchPending, &type));
+
+  EXPECT_DIF_BADARG(dif_adc_ctrl_irq_get_type(
+      &adc_ctrl_, kDifAdcCtrlIrqMatchPending, nullptr));
 
   EXPECT_DIF_BADARG(
-      dif_adc_ctrl_irq_get_type(&adc_ctrl_, kDifAdcCtrlIrqMatchDone, nullptr));
-
-  EXPECT_DIF_BADARG(
-      dif_adc_ctrl_irq_get_type(nullptr, kDifAdcCtrlIrqMatchDone, nullptr));
+      dif_adc_ctrl_irq_get_type(nullptr, kDifAdcCtrlIrqMatchPending, nullptr));
 }
 
 TEST_F(IrqGetTypeTest, BadIrq) {
   dif_irq_type_t type;
 
   EXPECT_DIF_BADARG(dif_adc_ctrl_irq_get_type(
-      &adc_ctrl_, static_cast<dif_adc_ctrl_irq_t>(kDifAdcCtrlIrqMatchDone + 1),
-      &type));
+      &adc_ctrl_,
+      static_cast<dif_adc_ctrl_irq_t>(kDifAdcCtrlIrqMatchPending + 1), &type));
 }
 
 TEST_F(IrqGetTypeTest, Success) {
   dif_irq_type_t type;
 
   EXPECT_DIF_OK(
-      dif_adc_ctrl_irq_get_type(&adc_ctrl_, kDifAdcCtrlIrqMatchDone, &type));
-  EXPECT_EQ(type, kDifIrqTypeEvent);
+      dif_adc_ctrl_irq_get_type(&adc_ctrl_, kDifAdcCtrlIrqMatchPending, &type));
+  EXPECT_EQ(type, kDifIrqTypeStatus);
 }
 
 class IrqGetStateTest : public AdcCtrlTest {};
@@ -122,13 +122,13 @@ TEST_F(IrqIsPendingTest, NullArgs) {
   bool is_pending;
 
   EXPECT_DIF_BADARG(dif_adc_ctrl_irq_is_pending(
-      nullptr, kDifAdcCtrlIrqMatchDone, &is_pending));
+      nullptr, kDifAdcCtrlIrqMatchPending, &is_pending));
 
   EXPECT_DIF_BADARG(dif_adc_ctrl_irq_is_pending(
-      &adc_ctrl_, kDifAdcCtrlIrqMatchDone, nullptr));
+      &adc_ctrl_, kDifAdcCtrlIrqMatchPending, nullptr));
 
-  EXPECT_DIF_BADARG(
-      dif_adc_ctrl_irq_is_pending(nullptr, kDifAdcCtrlIrqMatchDone, nullptr));
+  EXPECT_DIF_BADARG(dif_adc_ctrl_irq_is_pending(
+      nullptr, kDifAdcCtrlIrqMatchPending, nullptr));
 }
 
 TEST_F(IrqIsPendingTest, BadIrq) {
@@ -144,9 +144,9 @@ TEST_F(IrqIsPendingTest, Success) {
   // Get the first IRQ state.
   irq_state = false;
   EXPECT_READ32(ADC_CTRL_INTR_STATE_REG_OFFSET,
-                {{ADC_CTRL_INTR_STATE_MATCH_DONE_BIT, true}});
-  EXPECT_DIF_OK(dif_adc_ctrl_irq_is_pending(&adc_ctrl_, kDifAdcCtrlIrqMatchDone,
-                                            &irq_state));
+                {{ADC_CTRL_INTR_STATE_MATCH_PENDING_BIT, true}});
+  EXPECT_DIF_OK(dif_adc_ctrl_irq_is_pending(
+      &adc_ctrl_, kDifAdcCtrlIrqMatchPending, &irq_state));
   EXPECT_TRUE(irq_state);
 }
 
@@ -196,7 +196,7 @@ class IrqAcknowledgeTest : public AdcCtrlTest {};
 
 TEST_F(IrqAcknowledgeTest, NullArgs) {
   EXPECT_DIF_BADARG(
-      dif_adc_ctrl_irq_acknowledge(nullptr, kDifAdcCtrlIrqMatchDone));
+      dif_adc_ctrl_irq_acknowledge(nullptr, kDifAdcCtrlIrqMatchPending));
 }
 
 TEST_F(IrqAcknowledgeTest, BadIrq) {
@@ -207,16 +207,16 @@ TEST_F(IrqAcknowledgeTest, BadIrq) {
 TEST_F(IrqAcknowledgeTest, Success) {
   // Clear the first IRQ state.
   EXPECT_WRITE32(ADC_CTRL_INTR_STATE_REG_OFFSET,
-                 {{ADC_CTRL_INTR_STATE_MATCH_DONE_BIT, true}});
+                 {{ADC_CTRL_INTR_STATE_MATCH_PENDING_BIT, true}});
   EXPECT_DIF_OK(
-      dif_adc_ctrl_irq_acknowledge(&adc_ctrl_, kDifAdcCtrlIrqMatchDone));
+      dif_adc_ctrl_irq_acknowledge(&adc_ctrl_, kDifAdcCtrlIrqMatchPending));
 }
 
 class IrqForceTest : public AdcCtrlTest {};
 
 TEST_F(IrqForceTest, NullArgs) {
   EXPECT_DIF_BADARG(
-      dif_adc_ctrl_irq_force(nullptr, kDifAdcCtrlIrqMatchDone, true));
+      dif_adc_ctrl_irq_force(nullptr, kDifAdcCtrlIrqMatchPending, true));
 }
 
 TEST_F(IrqForceTest, BadIrq) {
@@ -227,9 +227,9 @@ TEST_F(IrqForceTest, BadIrq) {
 TEST_F(IrqForceTest, Success) {
   // Force first IRQ.
   EXPECT_WRITE32(ADC_CTRL_INTR_TEST_REG_OFFSET,
-                 {{ADC_CTRL_INTR_TEST_MATCH_DONE_BIT, true}});
+                 {{ADC_CTRL_INTR_TEST_MATCH_PENDING_BIT, true}});
   EXPECT_DIF_OK(
-      dif_adc_ctrl_irq_force(&adc_ctrl_, kDifAdcCtrlIrqMatchDone, true));
+      dif_adc_ctrl_irq_force(&adc_ctrl_, kDifAdcCtrlIrqMatchPending, true));
 }
 
 class IrqGetEnabledTest : public AdcCtrlTest {};
@@ -238,13 +238,13 @@ TEST_F(IrqGetEnabledTest, NullArgs) {
   dif_toggle_t irq_state;
 
   EXPECT_DIF_BADARG(dif_adc_ctrl_irq_get_enabled(
-      nullptr, kDifAdcCtrlIrqMatchDone, &irq_state));
+      nullptr, kDifAdcCtrlIrqMatchPending, &irq_state));
 
   EXPECT_DIF_BADARG(dif_adc_ctrl_irq_get_enabled(
-      &adc_ctrl_, kDifAdcCtrlIrqMatchDone, nullptr));
+      &adc_ctrl_, kDifAdcCtrlIrqMatchPending, nullptr));
 
-  EXPECT_DIF_BADARG(
-      dif_adc_ctrl_irq_get_enabled(nullptr, kDifAdcCtrlIrqMatchDone, nullptr));
+  EXPECT_DIF_BADARG(dif_adc_ctrl_irq_get_enabled(
+      nullptr, kDifAdcCtrlIrqMatchPending, nullptr));
 }
 
 TEST_F(IrqGetEnabledTest, BadIrq) {
@@ -260,9 +260,9 @@ TEST_F(IrqGetEnabledTest, Success) {
   // First IRQ is enabled.
   irq_state = kDifToggleDisabled;
   EXPECT_READ32(ADC_CTRL_INTR_ENABLE_REG_OFFSET,
-                {{ADC_CTRL_INTR_ENABLE_MATCH_DONE_BIT, true}});
+                {{ADC_CTRL_INTR_ENABLE_MATCH_PENDING_BIT, true}});
   EXPECT_DIF_OK(dif_adc_ctrl_irq_get_enabled(
-      &adc_ctrl_, kDifAdcCtrlIrqMatchDone, &irq_state));
+      &adc_ctrl_, kDifAdcCtrlIrqMatchPending, &irq_state));
   EXPECT_EQ(irq_state, kDifToggleEnabled);
 }
 
@@ -272,7 +272,7 @@ TEST_F(IrqSetEnabledTest, NullArgs) {
   dif_toggle_t irq_state = kDifToggleEnabled;
 
   EXPECT_DIF_BADARG(dif_adc_ctrl_irq_set_enabled(
-      nullptr, kDifAdcCtrlIrqMatchDone, irq_state));
+      nullptr, kDifAdcCtrlIrqMatchPending, irq_state));
 }
 
 TEST_F(IrqSetEnabledTest, BadIrq) {
@@ -288,9 +288,9 @@ TEST_F(IrqSetEnabledTest, Success) {
   // Enable first IRQ.
   irq_state = kDifToggleEnabled;
   EXPECT_MASK32(ADC_CTRL_INTR_ENABLE_REG_OFFSET,
-                {{ADC_CTRL_INTR_ENABLE_MATCH_DONE_BIT, 0x1, true}});
+                {{ADC_CTRL_INTR_ENABLE_MATCH_PENDING_BIT, 0x1, true}});
   EXPECT_DIF_OK(dif_adc_ctrl_irq_set_enabled(
-      &adc_ctrl_, kDifAdcCtrlIrqMatchDone, irq_state));
+      &adc_ctrl_, kDifAdcCtrlIrqMatchPending, irq_state));
 }
 
 class IrqDisableAllTest : public AdcCtrlTest {};
