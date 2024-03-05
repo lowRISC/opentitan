@@ -13,9 +13,13 @@ class uart_rx_oversample_vseq extends uart_tx_rx_vseq;
     en_rx == 1;
   }
 
-  // lower the freq so that there is enough time to read rx oversmapled value and check
+  // Lower the freq so that there is enough time to read rx oversampled value and check. At high
+  // baud rates the oversample capture period is too short (~3 clk cycles) for us to easily drive
+  // every oversample bit at the right moment to be captured and read the VAL register at the right
+  // moment to see what we expected due to the timing variation from randomised CDC sync delay,
+  // inexact clk division, etc.
   constraint baud_rate_extra_c {
-    baud_rate <= BaudRate115200;
+    baud_rate <= BaudRate9600;
   }
 
   `uvm_object_new
@@ -52,9 +56,10 @@ class uart_rx_oversample_vseq extends uart_tx_rx_vseq;
   // 1. drive all 0s/1s and keep reading reg for the pattern w/o any delay
   // 2. after find the pattern, flip pattern[0] and keep polling reg for 0x0001/0xfffe
   // 3. after find it, then we know we're close to the edge of the clk
-  // 4. Delay 0.45 * oversample_clk_period to get to the center of the clk
+  // 4. Delay 0.5 * oversample_clk_period - fixed_delay_time to get the center of the clk
   virtual task find_oversampled_clk_center();
     bit [TL_DW-1:0] pattern;
+    time fixed_delay_time;
     `uvm_info(`gfn, "finding oversample clk center", UVM_HIGH)
     randcase
       1: pattern = (1 << num_bits) - 1; // all 1s
@@ -68,8 +73,10 @@ class uart_rx_oversample_vseq extends uart_tx_rx_vseq;
     cfg.m_uart_agent_cfg.vif.uart_rx = pattern[0];
     csr_spinwait(.ptr(ral.val.rx), .exp_data(pattern));
     `uvm_info(`gfn, $sformatf("found matching pattern %x", pattern), UVM_MEDIUM)
-    // move 0.4 clk into the clk center, as previous reg read consume some cycles
-    #(get_oversampled_baud_clk_period_ns() *1ns * 0.4);
+    // find offset to account for the fixed delay of register reading, only relevant at high baud
+    fixed_delay_time = cfg.clk_rst_vif.clk_period_ps * 1ps * 3;
+    // move to the center of the oversampling clk
+    #(get_oversampled_baud_clk_period_ns() * 1ns * 0.5 - fixed_delay_time);
     `uvm_info(`gfn, "at center of clock", UVM_MEDIUM)
   endtask
 
@@ -87,7 +94,7 @@ class uart_rx_oversample_vseq extends uart_tx_rx_vseq;
       #(get_oversampled_baud_clk_period_ns() * 1ns);
     end
     cfg.m_uart_agent_cfg.vif.uart_rx = 1; // back to default value
-    // launch check in a parallel thread
+    // launch check in a parallel thread to avoid losing clock alignment in the main thread
     fork
       begin
         // Wait for 3 cycles before checking the oversampled value
