@@ -58,10 +58,14 @@ class entropy_src_env extends cip_base_env #(
     cfg.m_aes_halt_agent_cfg.agent_type          = push_pull_agent_pkg::PullAgent;
     cfg.m_aes_halt_agent_cfg.if_mode             = dv_utils_pkg::Device;
     cfg.m_aes_halt_agent_cfg.pull_handshake_type = push_pull_agent_pkg::FourPhase;
-    // When CSRNG has just started operating its AES, it may take up to 48 cycles to acknowledge the
-    // request.
+    // When CSRNG has just started operating its AES, it may take up to 48 cycles to acknowledge
+    // the request. When running ast/rng at the maximum rate (this is an unrealistic scenario
+    // primarily used for reaching coverage metrics) we reduce the acknowledge delay to the minimum
+    // to reduce backpressure and avoid entropy bits from being dropped from the pipeline as our
+    // scoreboard cannot handle this.
     cfg.m_aes_halt_agent_cfg.zero_delays = 0;
-    cfg.m_aes_halt_agent_cfg.device_delay_max = 48;
+    cfg.m_aes_halt_agent_cfg.device_delay_min = 0;
+    cfg.m_aes_halt_agent_cfg.device_delay_max = (cfg.rng_max_delay == 1) ? 0 : 48;
     // CSRNG drops its ack in the cycle after entropy_src has dropped its req.
     cfg.m_aes_halt_agent_cfg.ack_lo_delay_max = 1;
 
