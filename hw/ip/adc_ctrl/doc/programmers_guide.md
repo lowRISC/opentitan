@@ -45,11 +45,14 @@ The debug accessory voltage range of interest is shown in the diagram below:
 The ADC can be used to detect debug cable connection / disconnection in the non-overlapping regions.
 As an example use case of the two channel filters they can be used for detection of a USB-C debug accessory.
 The ADC must meet some minimum specifications:
-* Full scale range must be 0.0V to 2.2V (note: the ADC in Earlgrey has a full range of 0.0V - 2.3V)
-* If the signal is below 0.0V the ADC value must be zero.
+* The minimum voltage for the ADC to produce a valid result is 0.0V
+* The maximum voltage for the ADC to produce a valid result is 2.2V or more
+* If the signal is below 0.0V the ADC value must be zero
 * If the signal is above the full scale value, the ADC value must be maximum
 * Absolute maximum error must be +/- 15 mV in the 0.25 - 0.45 V range
 * Absolute maximum error must be +/- 30 mV in the rest of the 0.0 - 2.2 V range
+
+Note that the ADC in the Earlgrey integration with Nuvoton has a full range of 0.0V - 2.3V.
 
 The following assumes:
 * Full scale range is 0.0V to 2.3V
