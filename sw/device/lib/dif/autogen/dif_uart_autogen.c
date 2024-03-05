@@ -84,8 +84,8 @@ static bool uart_get_irq_bit_index(dif_uart_irq_t irq,
 }
 
 static dif_irq_type_t irq_types[] = {
-    kDifIrqTypeStatus, kDifIrqTypeStatus, kDifIrqTypeEvent, kDifIrqTypeEvent,
-    kDifIrqTypeEvent,  kDifIrqTypeEvent,  kDifIrqTypeEvent, kDifIrqTypeEvent,
+    kDifIrqTypeStatus, kDifIrqTypeStatus, kDifIrqTypeStatus, kDifIrqTypeEvent,
+    kDifIrqTypeEvent,  kDifIrqTypeEvent,  kDifIrqTypeEvent,  kDifIrqTypeEvent,
 };
 
 OT_WARN_UNUSED_RESULT

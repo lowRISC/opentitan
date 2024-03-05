@@ -99,9 +99,14 @@ class uart_intr_vseq extends uart_base_vseq;
           check_one_intr(.uart_intr(uart_intr), .exp(0));
           spinwait_txidle();
           check_one_intr(.uart_intr(uart_intr), .exp(1));
-          // check interrupt is non-sticky
+          // Interrupt should remain asserted whilst there is nothing to transmit, writes to
+          // intr_state to clear have no effect
           csr_wr(.ptr(ral.intr_state), .value(1 << uart_intr));
+          check_one_intr(.uart_intr(uart_intr), .exp(1));
+          // Interrupt should clear when there is something to transmit.
+          drive_tx_bytes(.num_bytes($urandom_range(1, UART_FIFO_DEPTH + 1)));
           check_one_intr(.uart_intr(uart_intr), .exp(0));
+          spinwait_txidle();
         end
       end
 
@@ -142,6 +147,7 @@ class uart_intr_vseq extends uart_base_vseq;
         // predict TX/RX FIFO levels for this test.
         exp_intr_state_mask[TxWatermark] = 1'b0;
         exp_intr_state_mask[RxWatermark] = 1'b0;
+        exp_intr_state_mask[TxEmpty]     = 1'b0;
 
         fork
           begin

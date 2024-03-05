@@ -96,10 +96,8 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
       compare(act_item, exp_item, "TX");
       // after an item is sent, check to see if size dipped below watermark
       predict_tx_watermark_intr();
+      predict_tx_empty_intr();
 
-      if (tx_q.size() == 0 && tx_processing_item_q.size() == 0) begin
-        intr_exp[TxEmpty] = 1;
-      end
     end
   endtask
 
@@ -141,6 +139,15 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
   virtual function void predict_tx_watermark_intr(uint tx_q_size = tx_q.size);
     uint watermark = get_watermark_bytes_by_level(ral.fifo_ctrl.txilvl.get_mirrored_value());
     intr_exp[TxWatermark] = (tx_q_size < watermark) || status_intr_test[TxWatermark];
+  endfunction
+
+
+  virtual function void predict_tx_empty_intr(uint tx_q_size = tx_q.size);
+    if (tx_q_size == 0 && tx_processing_item_q.size() == 0) begin
+      intr_exp[TxEmpty] = 1;
+    end else begin
+      intr_exp[TxEmpty] = status_intr_test[TxEmpty];
+    end
   endfunction
 
   virtual function void predict_rx_watermark_intr(uint rx_q_size = rx_q.size);
@@ -202,6 +209,7 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
               tx_processing_item_q.push_back(tx_q.pop_front());
               fork begin
                 int loc_tx_q_size = tx_q.size();
+                predict_tx_empty_intr();
                 cfg.clk_rst_vif.wait_n_clks(NUM_CLK_DLY_TO_UPDATE_TX_WATERMARK);
                 predict_tx_watermark_intr(loc_tx_q_size);
               end join_none
@@ -260,10 +268,12 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
               // Predict before decrement to model scenario where watermark triggers due to going
               // above then immediate dropping below the threshold as TX item gets immediate popped.
               predict_tx_watermark_intr(loc_tx_q_size);
+              predict_tx_empty_intr(loc_tx_q_size);
               loc_tx_q_size--;
             end
 
             predict_tx_watermark_intr(loc_tx_q_size);
+            predict_tx_empty_intr(loc_tx_q_size);
           end join_none
         end // write && channel == AddrChannel
       end
@@ -296,6 +306,7 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
           end
           // recalculate watermark when RXILVL/TXILVL is updated
           predict_rx_watermark_intr();
+          predict_tx_empty_intr();
           fork begin
             int loc_tx_q_size = tx_q.size();
             if (txrst_val) cfg.clk_rst_vif.wait_n_clks(NUM_CLK_DLY_TO_UPDATE_TX_WATERMARK);
@@ -314,11 +325,13 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
           // status.
           status_intr_test[TxWatermark] = item.a_data[TxWatermark];
           status_intr_test[RxWatermark] = item.a_data[RxWatermark];
+          status_intr_test[TxEmpty]     = item.a_data[TxEmpty];
 
           intr_exp |= item.a_data;
 
           predict_tx_watermark_intr();
           predict_rx_watermark_intr();
+          predict_tx_empty_intr();
 
           if (cfg.en_cov) begin
             foreach (intr_exp[i]) begin
@@ -407,6 +420,7 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
             // cleared by writes to intr_state.
             intr_wdata[TxWatermark] = 1'b0;
             intr_wdata[RxWatermark] = 1'b0;
+            intr_wdata[TxEmpty]     = 1'b0;
             intr_exp &= ~intr_wdata;
           end join_none
         end else if (!write && channel == AddrChannel) begin // read & addr phase
@@ -587,6 +601,7 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
     // interrupts reflect the UART state on reset.
     predict_tx_watermark_intr();
     predict_rx_watermark_intr();
+    predict_tx_empty_intr();
   endfunction
 
   function void check_phase(uvm_phase phase);

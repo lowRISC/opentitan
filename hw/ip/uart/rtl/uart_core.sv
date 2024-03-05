@@ -66,7 +66,6 @@ module uart_core (
   logic           allzero_err, not_allzero_char;
   logic           event_tx_watermark, event_rx_watermark, event_tx_empty, event_rx_overflow;
   logic           event_rx_frame_err, event_rx_break_err, event_rx_timeout, event_rx_parity_err;
-  logic           tx_uart_idle_q;
 
   assign tx_enable        = reg2hw.ctrl.tx.q;
   assign rx_enable        = reg2hw.ctrl.rx.q;
@@ -327,15 +326,7 @@ module uart_core (
   //
   // The alternative software fix is to disable tx_enable until it has a chance to
   // burst in the desired amount of data.
-  assign event_tx_empty     = ~tx_fifo_rvalid & ~tx_uart_idle_q & tx_uart_idle;
-
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      tx_uart_idle_q       <= 1'b1;
-    end else begin
-      tx_uart_idle_q       <= tx_uart_idle;
-    end
-  end
+  assign event_tx_empty = ~tx_fifo_rvalid & tx_uart_idle;
 
   always_comb begin
     unique case(uart_fifo_rxilvl)
@@ -418,7 +409,7 @@ module uart_core (
     .intr_o                 (intr_rx_watermark_o)
   );
 
-  prim_intr_hw #(.Width(1)) intr_hw_tx_empty (
+  prim_intr_hw #(.Width(1), .IntrT("Status")) intr_hw_tx_empty (
     .clk_i,
     .rst_ni,
     .event_intr_i           (event_tx_empty),

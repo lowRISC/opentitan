@@ -125,7 +125,6 @@ module uart_reg_top (
   logic intr_state_tx_watermark_qs;
   logic intr_state_rx_watermark_qs;
   logic intr_state_tx_empty_qs;
-  logic intr_state_tx_empty_wd;
   logic intr_state_rx_overflow_qs;
   logic intr_state_rx_overflow_wd;
   logic intr_state_rx_frame_err_qs;
@@ -276,16 +275,16 @@ module uart_reg_top (
   //   F[tx_empty]: 2:2
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h1),
     .Mubi    (1'b0)
   ) u_intr_state_tx_empty (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_we),
-    .wd     (intr_state_tx_empty_wd),
+    .we     (1'b0),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.intr_state.tx_empty.de),
@@ -1526,8 +1525,6 @@ module uart_reg_top (
 
   // Generate write-enables
   assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
-
-  assign intr_state_tx_empty_wd = reg_wdata[2];
 
   assign intr_state_rx_overflow_wd = reg_wdata[3];
 

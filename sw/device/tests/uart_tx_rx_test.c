@@ -236,6 +236,8 @@ void ottf_external_isr(uint32_t *exc_info) {
     uart_irq_rx_watermark_fired = true;
     uart_irq = kDifUartIrqRxWatermark;
   } else if (plic_irq_id == uart_irq_tx_empty_id) {
+    CHECK_DIF_OK(dif_uart_irq_set_enabled(&uart, kDifUartIrqTxEmpty,
+                                          kDifToggleDisabled));
     CHECK(exp_uart_irq_tx_empty, "Unexpected TX empty interrupt");
     uart_irq_tx_empty_fired = true;
     uart_irq = kDifUartIrqTxEmpty;
@@ -289,13 +291,11 @@ static void uart_init_with_irqs(mmio_region_t base_addr, dif_uart_t *uart) {
   CHECK_DIF_OK(dif_uart_watermark_tx_set(uart, kDifUartWatermarkByte16));
   CHECK_DIF_OK(dif_uart_watermark_rx_set(uart, kDifUartWatermarkByte16));
 
-  // Enable these UART interrupts - RX watermark, TX empty and RX overflow.
-  // TX watermark is enabled once the TX buffer has been written (otherwise it
-  // will fire immediately).
+  // Enable these UART interrupts - RX watermark and RX overflow.  TX watermark
+  // and TX empty are enabled once the TX buffer has been written (otherwise
+  // they will fire immediately).
   CHECK_DIF_OK(dif_uart_irq_set_enabled(uart, kDifUartIrqRxWatermark,
                                         kDifToggleEnabled));
-  CHECK_DIF_OK(
-      dif_uart_irq_set_enabled(uart, kDifUartIrqTxEmpty, kDifToggleEnabled));
   CHECK_DIF_OK(
       dif_uart_irq_set_enabled(uart, kDifUartIrqRxOverflow, kDifToggleEnabled));
 }
@@ -391,6 +391,9 @@ static bool uart_transfer_ongoing_bytes(const dif_uart_t *uart,
                                    &bytes_transferred) == kDifOk;
 
       CHECK_DIF_OK(dif_uart_irq_set_enabled(uart, kDifUartIrqTxWatermark,
+                                            kDifToggleEnabled));
+
+      CHECK_DIF_OK(dif_uart_irq_set_enabled(uart, kDifUartIrqTxEmpty,
                                             kDifToggleEnabled));
       break;
     case kUartReceive:

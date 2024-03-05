@@ -13347,8 +13347,8 @@
       width: 1
       type: interrupt
       module_name: uart0
-      intr_type: IntrType.Event
-      default_val: false
+      intr_type: IntrType.Status
+      default_val: true
     }
     {
       name: uart0_rx_overflow
@@ -13411,8 +13411,8 @@
       width: 1
       type: interrupt
       module_name: uart1
-      intr_type: IntrType.Event
-      default_val: false
+      intr_type: IntrType.Status
+      default_val: true
     }
     {
       name: uart1_rx_overflow
@@ -13475,8 +13475,8 @@
       width: 1
       type: interrupt
       module_name: uart2
-      intr_type: IntrType.Event
-      default_val: false
+      intr_type: IntrType.Status
+      default_val: true
     }
     {
       name: uart2_rx_overflow
@@ -13539,8 +13539,8 @@
       width: 1
       type: interrupt
       module_name: uart3
-      intr_type: IntrType.Event
-      default_val: false
+      intr_type: IntrType.Status
+      default_val: true
     }
     {
       name: uart3_rx_overflow

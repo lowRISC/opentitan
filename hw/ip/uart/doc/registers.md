@@ -22,13 +22,13 @@
 ## INTR_STATE
 Interrupt State Register
 - Offset: `0x0`
-- Reset default: `0x1`
+- Reset default: `0x5`
 - Reset mask: `0xff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "tx_watermark", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "rx_watermark", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "tx_empty", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "rx_overflow", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "rx_frame_err", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "rx_break_err", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "rx_timeout", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "rx_parity_err", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 150}}
+{"reg": [{"name": "tx_watermark", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "rx_watermark", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "tx_empty", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "rx_overflow", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "rx_frame_err", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "rx_break_err", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "rx_timeout", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "rx_parity_err", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 150}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name          | Description                                                                                                    |
@@ -39,7 +39,7 @@ Interrupt State Register
 |   5    |  rw1c  |   0x0   | rx_break_err  | raised if break condition has been detected on receive.                                                        |
 |   4    |  rw1c  |   0x0   | rx_frame_err  | raised if a framing error has been detected on receive.                                                        |
 |   3    |  rw1c  |   0x0   | rx_overflow   | raised if the receive FIFO has overflowed.                                                                     |
-|   2    |  rw1c  |   0x0   | tx_empty      | raised if the transmit FIFO has emptied and no transmit is ongoing.                                            |
+|   2    |   ro   |   0x1   | tx_empty      | raised if the transmit FIFO has emptied and no transmit is ongoing.                                            |
 |   1    |   ro   |   0x0   | rx_watermark  | raised if the receive FIFO is past the high-water mark.                                                        |
 |   0    |   ro   |   0x1   | tx_watermark  | raised if the transmit FIFO is past the high-water mark.                                                       |
 

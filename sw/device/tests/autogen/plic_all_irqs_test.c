@@ -988,17 +988,17 @@ void ottf_external_isr(uint32_t *exc_info) {
 
         dif_uart_irq_state_snapshot_t snapshot;
         CHECK_DIF_OK(dif_uart_irq_get_state(&uart0, &snapshot));
-        CHECK(snapshot == (dif_uart_irq_state_snapshot_t)((1 << irq) | 0x1),
+        CHECK(snapshot == (dif_uart_irq_state_snapshot_t)((1 << irq) | 0x5),
               "Expected uart0 interrupt status %x. Actual interrupt "
-              "status = %x", (1 << irq) | 0x1, snapshot);
+              "status = %x", (1 << irq) | 0x5, snapshot);
 
         // If this is a status type interrupt, we do not have to acknowledge the interrupt at
         // the IP side, but we need to clear the test force register.
-        if (0x3 & (1 << irq)) {
+        if (0x7 & (1 << irq)) {
           CHECK_DIF_OK(dif_uart_irq_force(&uart0, irq, false));
           // In case this status interrupt is asserted by default, we also disable it at
           // this point so that it does not interfere with the rest of the test.
-          if ((0x1 & (1 << irq))) {
+          if ((0x5 & (1 << irq))) {
             CHECK_DIF_OK(dif_uart_irq_set_enabled(&uart0, irq, false));
           }
         // If this is a regular event type interrupt, we acknowledge it at this point.
@@ -1021,17 +1021,17 @@ void ottf_external_isr(uint32_t *exc_info) {
 
         dif_uart_irq_state_snapshot_t snapshot;
         CHECK_DIF_OK(dif_uart_irq_get_state(&uart1, &snapshot));
-        CHECK(snapshot == (dif_uart_irq_state_snapshot_t)((1 << irq) | 0x1),
+        CHECK(snapshot == (dif_uart_irq_state_snapshot_t)((1 << irq) | 0x5),
               "Expected uart1 interrupt status %x. Actual interrupt "
-              "status = %x", (1 << irq) | 0x1, snapshot);
+              "status = %x", (1 << irq) | 0x5, snapshot);
 
         // If this is a status type interrupt, we do not have to acknowledge the interrupt at
         // the IP side, but we need to clear the test force register.
-        if (0x3 & (1 << irq)) {
+        if (0x7 & (1 << irq)) {
           CHECK_DIF_OK(dif_uart_irq_force(&uart1, irq, false));
           // In case this status interrupt is asserted by default, we also disable it at
           // this point so that it does not interfere with the rest of the test.
-          if ((0x1 & (1 << irq))) {
+          if ((0x5 & (1 << irq))) {
             CHECK_DIF_OK(dif_uart_irq_set_enabled(&uart1, irq, false));
           }
         // If this is a regular event type interrupt, we acknowledge it at this point.
@@ -1054,17 +1054,17 @@ void ottf_external_isr(uint32_t *exc_info) {
 
         dif_uart_irq_state_snapshot_t snapshot;
         CHECK_DIF_OK(dif_uart_irq_get_state(&uart2, &snapshot));
-        CHECK(snapshot == (dif_uart_irq_state_snapshot_t)((1 << irq) | 0x1),
+        CHECK(snapshot == (dif_uart_irq_state_snapshot_t)((1 << irq) | 0x5),
               "Expected uart2 interrupt status %x. Actual interrupt "
-              "status = %x", (1 << irq) | 0x1, snapshot);
+              "status = %x", (1 << irq) | 0x5, snapshot);
 
         // If this is a status type interrupt, we do not have to acknowledge the interrupt at
         // the IP side, but we need to clear the test force register.
-        if (0x3 & (1 << irq)) {
+        if (0x7 & (1 << irq)) {
           CHECK_DIF_OK(dif_uart_irq_force(&uart2, irq, false));
           // In case this status interrupt is asserted by default, we also disable it at
           // this point so that it does not interfere with the rest of the test.
-          if ((0x1 & (1 << irq))) {
+          if ((0x5 & (1 << irq))) {
             CHECK_DIF_OK(dif_uart_irq_set_enabled(&uart2, irq, false));
           }
         // If this is a regular event type interrupt, we acknowledge it at this point.
@@ -1087,17 +1087,17 @@ void ottf_external_isr(uint32_t *exc_info) {
 
         dif_uart_irq_state_snapshot_t snapshot;
         CHECK_DIF_OK(dif_uart_irq_get_state(&uart3, &snapshot));
-        CHECK(snapshot == (dif_uart_irq_state_snapshot_t)((1 << irq) | 0x1),
+        CHECK(snapshot == (dif_uart_irq_state_snapshot_t)((1 << irq) | 0x5),
               "Expected uart3 interrupt status %x. Actual interrupt "
-              "status = %x", (1 << irq) | 0x1, snapshot);
+              "status = %x", (1 << irq) | 0x5, snapshot);
 
         // If this is a status type interrupt, we do not have to acknowledge the interrupt at
         // the IP side, but we need to clear the test force register.
-        if (0x3 & (1 << irq)) {
+        if (0x7 & (1 << irq)) {
           CHECK_DIF_OK(dif_uart_irq_force(&uart3, irq, false));
           // In case this status interrupt is asserted by default, we also disable it at
           // this point so that it does not interfere with the rest of the test.
-          if ((0x1 & (1 << irq))) {
+          if ((0x5 & (1 << irq))) {
             CHECK_DIF_OK(dif_uart_irq_set_enabled(&uart3, irq, false));
           }
         // If this is a regular event type interrupt, we acknowledge it at this point.
@@ -1551,7 +1551,7 @@ static void peripheral_irqs_enable(void) {
   // would interfere with this test. Instead, these interrupts are enabled on
   // demand once they are being tested.
   dif_uart_irq_state_snapshot_t uart_irqs =
-      (dif_uart_irq_state_snapshot_t)0xfffffffe;
+      (dif_uart_irq_state_snapshot_t)0xfffffffa;
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 22 && 22 < TEST_MAX_IRQ_PERIPHERAL
@@ -2208,7 +2208,7 @@ static void peripheral_irqs_trigger(void) {
   // non-DV setups.
   if (kDeviceType == kDeviceSimDV) {
     peripheral_expected = kTopEarlgreyPlicPeripheralUart0;
-    status_default_mask = 0x1;
+    status_default_mask = 0x5;
     for (dif_uart_irq_t irq = kDifUartIrqTxWatermark;
          irq <= kDifUartIrqRxParityErr; ++irq) {
 
@@ -2234,7 +2234,7 @@ static void peripheral_irqs_trigger(void) {
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 21 && 21 < TEST_MAX_IRQ_PERIPHERAL
   peripheral_expected = kTopEarlgreyPlicPeripheralUart1;
-  status_default_mask = 0x1;
+  status_default_mask = 0x5;
   for (dif_uart_irq_t irq = kDifUartIrqTxWatermark;
        irq <= kDifUartIrqRxParityErr; ++irq) {
 
@@ -2259,7 +2259,7 @@ static void peripheral_irqs_trigger(void) {
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 21 && 21 < TEST_MAX_IRQ_PERIPHERAL
   peripheral_expected = kTopEarlgreyPlicPeripheralUart2;
-  status_default_mask = 0x1;
+  status_default_mask = 0x5;
   for (dif_uart_irq_t irq = kDifUartIrqTxWatermark;
        irq <= kDifUartIrqRxParityErr; ++irq) {
 
@@ -2284,7 +2284,7 @@ static void peripheral_irqs_trigger(void) {
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 21 && 21 < TEST_MAX_IRQ_PERIPHERAL
   peripheral_expected = kTopEarlgreyPlicPeripheralUart3;
-  status_default_mask = 0x1;
+  status_default_mask = 0x5;
   for (dif_uart_irq_t irq = kDifUartIrqTxWatermark;
        irq <= kDifUartIrqRxParityErr; ++irq) {
 
