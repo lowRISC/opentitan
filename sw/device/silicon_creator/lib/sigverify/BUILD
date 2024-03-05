@@ -16,6 +16,15 @@ load(
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
+    name = "ecdsa_p256_key",
+    srcs = ["ecdsa_p256_key.c"],
+    hdrs = ["ecdsa_p256_key.h"],
+    deps = [
+        "//sw/device/lib/base:macros",
+    ],
+)
+
+cc_library(
     name = "rsa_key",
     srcs = ["rsa_key.c"],
     hdrs = ["rsa_key.h"],
