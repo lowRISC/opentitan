@@ -370,6 +370,15 @@ package i2c_reg_pkg;
 
   typedef struct packed {
     struct packed {
+      logic        q;
+    } en;
+    struct packed {
+      logic [30:0] q;
+    } val;
+  } i2c_reg2hw_target_timeout_ctrl_reg_t;
+
+  typedef struct packed {
+    struct packed {
       logic        d;
       logic        de;
     } fmt_threshold;
@@ -506,27 +515,28 @@ package i2c_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    i2c_reg2hw_intr_state_reg_t intr_state; // [428:414]
-    i2c_reg2hw_intr_enable_reg_t intr_enable; // [413:399]
-    i2c_reg2hw_intr_test_reg_t intr_test; // [398:369]
-    i2c_reg2hw_alert_test_reg_t alert_test; // [368:367]
-    i2c_reg2hw_ctrl_reg_t ctrl; // [366:364]
-    i2c_reg2hw_rdata_reg_t rdata; // [363:355]
-    i2c_reg2hw_fdata_reg_t fdata; // [354:336]
-    i2c_reg2hw_fifo_ctrl_reg_t fifo_ctrl; // [335:328]
-    i2c_reg2hw_host_fifo_config_reg_t host_fifo_config; // [327:302]
-    i2c_reg2hw_target_fifo_config_reg_t target_fifo_config; // [301:276]
-    i2c_reg2hw_ovrd_reg_t ovrd; // [275:273]
-    i2c_reg2hw_timing0_reg_t timing0; // [272:241]
-    i2c_reg2hw_timing1_reg_t timing1; // [240:209]
-    i2c_reg2hw_timing2_reg_t timing2; // [208:177]
-    i2c_reg2hw_timing3_reg_t timing3; // [176:145]
-    i2c_reg2hw_timing4_reg_t timing4; // [144:113]
-    i2c_reg2hw_timeout_ctrl_reg_t timeout_ctrl; // [112:81]
-    i2c_reg2hw_target_id_reg_t target_id; // [80:53]
-    i2c_reg2hw_acqdata_reg_t acqdata; // [52:41]
-    i2c_reg2hw_txdata_reg_t txdata; // [40:32]
-    i2c_reg2hw_host_timeout_ctrl_reg_t host_timeout_ctrl; // [31:0]
+    i2c_reg2hw_intr_state_reg_t intr_state; // [460:446]
+    i2c_reg2hw_intr_enable_reg_t intr_enable; // [445:431]
+    i2c_reg2hw_intr_test_reg_t intr_test; // [430:401]
+    i2c_reg2hw_alert_test_reg_t alert_test; // [400:399]
+    i2c_reg2hw_ctrl_reg_t ctrl; // [398:396]
+    i2c_reg2hw_rdata_reg_t rdata; // [395:387]
+    i2c_reg2hw_fdata_reg_t fdata; // [386:368]
+    i2c_reg2hw_fifo_ctrl_reg_t fifo_ctrl; // [367:360]
+    i2c_reg2hw_host_fifo_config_reg_t host_fifo_config; // [359:334]
+    i2c_reg2hw_target_fifo_config_reg_t target_fifo_config; // [333:308]
+    i2c_reg2hw_ovrd_reg_t ovrd; // [307:305]
+    i2c_reg2hw_timing0_reg_t timing0; // [304:273]
+    i2c_reg2hw_timing1_reg_t timing1; // [272:241]
+    i2c_reg2hw_timing2_reg_t timing2; // [240:209]
+    i2c_reg2hw_timing3_reg_t timing3; // [208:177]
+    i2c_reg2hw_timing4_reg_t timing4; // [176:145]
+    i2c_reg2hw_timeout_ctrl_reg_t timeout_ctrl; // [144:113]
+    i2c_reg2hw_target_id_reg_t target_id; // [112:85]
+    i2c_reg2hw_acqdata_reg_t acqdata; // [84:73]
+    i2c_reg2hw_txdata_reg_t txdata; // [72:64]
+    i2c_reg2hw_host_timeout_ctrl_reg_t host_timeout_ctrl; // [63:32]
+    i2c_reg2hw_target_timeout_ctrl_reg_t target_timeout_ctrl; // [31:0]
   } i2c_reg2hw_t;
 
   // HW -> register type
@@ -566,6 +576,7 @@ package i2c_reg_pkg;
   parameter logic [BlockAw-1:0] I2C_ACQDATA_OFFSET = 7'h 58;
   parameter logic [BlockAw-1:0] I2C_TXDATA_OFFSET = 7'h 5c;
   parameter logic [BlockAw-1:0] I2C_HOST_TIMEOUT_CTRL_OFFSET = 7'h 60;
+  parameter logic [BlockAw-1:0] I2C_TARGET_TIMEOUT_CTRL_OFFSET = 7'h 64;
 
   // Reset values for hwext registers and their fields
   parameter logic [14:0] I2C_INTR_TEST_RESVAL = 15'h 0;
@@ -625,11 +636,12 @@ package i2c_reg_pkg;
     I2C_TARGET_ID,
     I2C_ACQDATA,
     I2C_TXDATA,
-    I2C_HOST_TIMEOUT_CTRL
+    I2C_HOST_TIMEOUT_CTRL,
+    I2C_TARGET_TIMEOUT_CTRL
   } i2c_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] I2C_PERMIT [25] = '{
+  parameter logic [3:0] I2C_PERMIT [26] = '{
     4'b 0011, // index[ 0] I2C_INTR_STATE
     4'b 0011, // index[ 1] I2C_INTR_ENABLE
     4'b 0011, // index[ 2] I2C_INTR_TEST
@@ -654,7 +666,8 @@ package i2c_reg_pkg;
     4'b 1111, // index[21] I2C_TARGET_ID
     4'b 0011, // index[22] I2C_ACQDATA
     4'b 0001, // index[23] I2C_TXDATA
-    4'b 1111  // index[24] I2C_HOST_TIMEOUT_CTRL
+    4'b 1111, // index[24] I2C_HOST_TIMEOUT_CTRL
+    4'b 1111  // index[25] I2C_TARGET_TIMEOUT_CTRL
   };
 
 endpackage

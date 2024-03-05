@@ -52,9 +52,9 @@ module i2c_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [24:0] reg_we_check;
+  logic [25:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(25)
+    .OneHotWidth(26)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -300,6 +300,11 @@ module i2c_reg_top (
   logic host_timeout_ctrl_we;
   logic [31:0] host_timeout_ctrl_qs;
   logic [31:0] host_timeout_ctrl_wd;
+  logic target_timeout_ctrl_we;
+  logic [30:0] target_timeout_ctrl_val_qs;
+  logic [30:0] target_timeout_ctrl_val_wd;
+  logic target_timeout_ctrl_en_qs;
+  logic target_timeout_ctrl_en_wd;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -2801,8 +2806,64 @@ module i2c_reg_top (
   );
 
 
+  // R[target_timeout_ctrl]: V(False)
+  //   F[val]: 30:0
+  prim_subreg #(
+    .DW      (31),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (31'h0),
+    .Mubi    (1'b0)
+  ) u_target_timeout_ctrl_val (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-  logic [24:0] addr_hit;
+    // from register interface
+    .we     (target_timeout_ctrl_we),
+    .wd     (target_timeout_ctrl_val_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.target_timeout_ctrl.val.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (target_timeout_ctrl_val_qs)
+  );
+
+  //   F[en]: 31:31
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_target_timeout_ctrl_en (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (target_timeout_ctrl_we),
+    .wd     (target_timeout_ctrl_en_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.target_timeout_ctrl.en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (target_timeout_ctrl_en_qs)
+  );
+
+
+
+  logic [25:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == I2C_INTR_STATE_OFFSET);
@@ -2830,6 +2891,7 @@ module i2c_reg_top (
     addr_hit[22] = (reg_addr == I2C_ACQDATA_OFFSET);
     addr_hit[23] = (reg_addr == I2C_TXDATA_OFFSET);
     addr_hit[24] = (reg_addr == I2C_HOST_TIMEOUT_CTRL_OFFSET);
+    addr_hit[25] = (reg_addr == I2C_TARGET_TIMEOUT_CTRL_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -2861,7 +2923,8 @@ module i2c_reg_top (
                (addr_hit[21] & (|(I2C_PERMIT[21] & ~reg_be))) |
                (addr_hit[22] & (|(I2C_PERMIT[22] & ~reg_be))) |
                (addr_hit[23] & (|(I2C_PERMIT[23] & ~reg_be))) |
-               (addr_hit[24] & (|(I2C_PERMIT[24] & ~reg_be)))));
+               (addr_hit[24] & (|(I2C_PERMIT[24] & ~reg_be))) |
+               (addr_hit[25] & (|(I2C_PERMIT[25] & ~reg_be)))));
   end
 
   // Generate write-enables
@@ -3046,6 +3109,11 @@ module i2c_reg_top (
   assign host_timeout_ctrl_we = addr_hit[24] & reg_we & !reg_error;
 
   assign host_timeout_ctrl_wd = reg_wdata[31:0];
+  assign target_timeout_ctrl_we = addr_hit[25] & reg_we & !reg_error;
+
+  assign target_timeout_ctrl_val_wd = reg_wdata[30:0];
+
+  assign target_timeout_ctrl_en_wd = reg_wdata[31];
 
   // Assign write-enables to checker logic vector.
   always_comb begin
@@ -3075,6 +3143,7 @@ module i2c_reg_top (
     reg_we_check[22] = 1'b0;
     reg_we_check[23] = txdata_we;
     reg_we_check[24] = host_timeout_ctrl_we;
+    reg_we_check[25] = target_timeout_ctrl_we;
   end
 
   // Read data return
@@ -3257,6 +3326,11 @@ module i2c_reg_top (
 
       addr_hit[24]: begin
         reg_rdata_next[31:0] = host_timeout_ctrl_qs;
+      end
+
+      addr_hit[25]: begin
+        reg_rdata_next[30:0] = target_timeout_ctrl_val_qs;
+        reg_rdata_next[31] = target_timeout_ctrl_en_qs;
       end
 
       default: begin
