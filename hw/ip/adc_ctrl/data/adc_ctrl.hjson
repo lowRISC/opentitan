@@ -306,8 +306,29 @@
       resval: "0",
       fields: [
         { bits: "NumAdcFilter-1:0",
-          name: "EN",
-          desc: "0: filter match wil not generate wakeupe; 1: filter match will generate wakeup",
+          name: "MATCH_EN",
+          desc: '''
+          Filter wakeup source.
+
+          0: filter match will not generate wakeup;
+          1: filter match will generate wakeup
+          '''
+        }
+        {
+          bits: "NumAdcFilter:NumAdcFilter",
+          name: "TRANS_EN",
+          desc: '''
+          Wakeup due to FSM transition from low power sampling
+          mode to normal sampling mode.
+
+          Note that this wakeup source is primarily intended for debug purposes.
+          If enabled all the time, this can lead to many wakeups due to false
+          positives that are ruled out automatically by adc_ctrl after
+          transitioning from LP -> NP.
+
+          0: transition match will not generate wakeup;
+          1: transition match will generate wakeup
+          '''
         }
       ]
     }
@@ -324,8 +345,12 @@
       resval: "0",
       fields: [
         { bits: "7:0",
-          name: "COND",
+          name: "MATCH",
           desc: "0: filter condition is not met; 1: filter condition is met",
+        }
+        { bits: "NumAdcFilter:NumAdcFilter",
+          name: "TRANS",
+          desc: "0: transition did not occur; 1: transition occurred",
         }
       ]
     }
@@ -343,10 +368,36 @@
       hwaccess: "hro",
       resval: "0",
       fields: [
-        { bits: "8:0",
-          name: "EN",
-          desc: "0: interrupt source is not enabled; 1: interrupt source is enabled",
+        { bits: "NumAdcFilter-1:0",
+          name: "MATCH_EN",
+          desc: '''
+          Filter interrupt source.
+
+          0: interrupt source is not enabled; 1: interrupt source is enabled
+          '''
         }
+        {
+          bits: "NumAdcFilter:NumAdcFilter",
+          name: "TRANS_EN",
+          desc: '''
+          Interrupt due to FSM transition from low power sampling
+          mode to normal sampling mode. This is mainly intended for debug.
+
+          Note that this interrupt is primarily intended for debug purposes.
+
+          0: interrupt source is not enabled; 1: interrupt source is enabled
+          '''
+        }
+        {
+          bits: "NumAdcFilter+1:NumAdcFilter+1",
+          name: "ONESHOT_EN",
+          desc: '''
+          Interrupt due to oneshot sampling.
+
+          0: interrupt source is not enabled; 1: interrupt source is enabled
+          '''
+        }
+
       ]
     }
 
@@ -360,11 +411,15 @@
               "excl:CsrNonInitTests:CsrExclCheck"],
       fields: [
         { bits: "NumAdcFilter-1:0",
-          name: "filter_match",
+          name: "MATCH",
           desc: "0: filter condition is not met; 1: filter condition is met",
         }
         { bits: "NumAdcFilter:NumAdcFilter",
-          name: "oneshot",
+          name: "TRANS",
+          desc: "0: transition did not occur; 1: transition occurred",
+        }
+        { bits: "NumAdcFilter+1:NumAdcFilter+1",
+          name: "ONESHOT",
           desc: "0: oneshot sample is not done ; 1: oneshot sample is done",
         }
       ]

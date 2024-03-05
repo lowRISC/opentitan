@@ -417,9 +417,9 @@ TEST_F(FilterStatusTest, NullArgs) {
 
 TEST_F(FilterStatusTest, Success) {
   uint32_t status;
-  EXPECT_READ32(ADC_CTRL_FILTER_STATUS_REG_OFFSET, 0xFF);
+  EXPECT_READ32(ADC_CTRL_FILTER_STATUS_REG_OFFSET, 0x1FF);
   EXPECT_DIF_OK(dif_adc_ctrl_get_filter_status(&adc_ctrl_, &status));
-  EXPECT_EQ(status, 0xFF);
+  EXPECT_EQ(status, 0x1FF);
 }
 
 class IrqGetCausesTest : public AdcCtrlTest {};
@@ -446,7 +446,7 @@ TEST_F(IrqClearCausesTest, NullHandle) {
 
 TEST_F(IrqClearCausesTest, BadCauses) {
   EXPECT_DIF_BADARG(dif_adc_ctrl_irq_clear_causes(
-      &adc_ctrl_, 1U << (ADC_CTRL_PARAM_NUM_ADC_FILTER + 1)));
+      &adc_ctrl_, 1U << (ADC_CTRL_PARAM_NUM_ADC_FILTER + 2)));
 }
 
 TEST_F(IrqClearCausesTest, Success) {
@@ -455,8 +455,13 @@ TEST_F(IrqClearCausesTest, Success) {
   EXPECT_DIF_OK(dif_adc_ctrl_irq_clear_causes(
       &adc_ctrl_, kDifAdcCtrlIrqCauseFilter0 | kDifAdcCtrlIrqCauseFilter3));
 
-  EXPECT_WRITE32(ADC_CTRL_FILTER_STATUS_REG_OFFSET, 0x1);
-  EXPECT_WRITE32(ADC_CTRL_ADC_INTR_STATUS_REG_OFFSET, 0x101);
+  EXPECT_WRITE32(ADC_CTRL_FILTER_STATUS_REG_OFFSET, 0x102);
+  EXPECT_WRITE32(ADC_CTRL_ADC_INTR_STATUS_REG_OFFSET, 0x102);
+  EXPECT_DIF_OK(dif_adc_ctrl_irq_clear_causes(
+      &adc_ctrl_, kDifAdcCtrlIrqCauseFilter1 | kDifAdcCtrlIrqCauseTrans));
+
+  EXPECT_WRITE32(ADC_CTRL_FILTER_STATUS_REG_OFFSET, 0x001);
+  EXPECT_WRITE32(ADC_CTRL_ADC_INTR_STATUS_REG_OFFSET, 0x201);
   EXPECT_DIF_OK(dif_adc_ctrl_irq_clear_causes(
       &adc_ctrl_, kDifAdcCtrlIrqCauseFilter0 | kDifAdcCtrlIrqCauseOneshot));
 }
@@ -471,7 +476,7 @@ TEST_F(FilterMatchWakeupSetEnabledTest, NullHandle) {
 TEST_F(FilterMatchWakeupSetEnabledTest, BadFilter) {
   EXPECT_DIF_BADARG(dif_adc_ctrl_filter_match_wakeup_set_enabled(
       &adc_ctrl_,
-      static_cast<dif_adc_ctrl_filter_t>(ADC_CTRL_PARAM_NUM_ADC_FILTER),
+      static_cast<dif_adc_ctrl_filter_t>(ADC_CTRL_PARAM_NUM_ADC_FILTER + 1),
       kDifToggleEnabled));
 }
 
@@ -490,6 +495,11 @@ TEST_F(FilterMatchWakeupSetEnabledTest, Success) {
   EXPECT_WRITE32(ADC_CTRL_ADC_WAKEUP_CTL_REG_OFFSET, 0xF);
   EXPECT_DIF_OK(dif_adc_ctrl_filter_match_wakeup_set_enabled(
       &adc_ctrl_, kDifAdcCtrlFilter7, kDifToggleDisabled));
+
+  EXPECT_READ32(ADC_CTRL_ADC_WAKEUP_CTL_REG_OFFSET, 0xF);
+  EXPECT_WRITE32(ADC_CTRL_ADC_WAKEUP_CTL_REG_OFFSET, 0x10F);
+  EXPECT_DIF_OK(dif_adc_ctrl_filter_match_wakeup_set_enabled(
+      &adc_ctrl_, kDifAdcCtrlTrans, kDifToggleEnabled));
 }
 
 class FilterMatchWakeupGetEnabledTest : public AdcCtrlTest {};
@@ -506,7 +516,7 @@ TEST_F(FilterMatchWakeupGetEnabledTest, BadFilter) {
   dif_toggle_t is_enabled;
   EXPECT_DIF_BADARG(dif_adc_ctrl_filter_match_wakeup_get_enabled(
       &adc_ctrl_,
-      static_cast<dif_adc_ctrl_filter_t>(ADC_CTRL_PARAM_NUM_ADC_FILTER),
+      static_cast<dif_adc_ctrl_filter_t>(ADC_CTRL_PARAM_NUM_ADC_FILTER + 1),
       &is_enabled));
 }
 

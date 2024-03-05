@@ -29,7 +29,8 @@ module adc_ctrl_fsm
   output logic [9:0] chn1_val_o,
   output logic       adc_ctrl_done_o,
   output logic       oneshot_done_o,
-  output fsm_state_e fsm_state_o // FSM state output for debug purposes
+  output fsm_state_e aon_fsm_state_o, // FSM state output for debug purposes
+  output logic       aon_fsm_trans_o // FSM lp -> np transition indication pulse
 );
 
   logic trigger_q;
@@ -54,7 +55,7 @@ module adc_ctrl_fsm
 
 
   fsm_state_e fsm_state_q, fsm_state_d;
-  assign fsm_state_o = fsm_state_q;
+  assign aon_fsm_state_o = fsm_state_q;
 
   always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin
     if (!rst_aon_ni) begin
@@ -185,7 +186,6 @@ module adc_ctrl_fsm
   assign lp_sample_cnt_thresh = cfg_lp_sample_cnt_i - 1'b1;
   assign np_sample_cnt_thresh = cfg_np_sample_cnt_i - 1'b1;
 
-
   always_comb begin: adc_fsm
     fsm_state_d = fsm_state_q;
     //outputs
@@ -202,6 +202,7 @@ module adc_ctrl_fsm
     adc_ctrl_done_o = 1'b0;
     oneshot_done_o = 1'b0;
     ld_match = 1'b0;
+    aon_fsm_trans_o = 1'b0;
 
     unique case (fsm_state_q)
       PWRDN: begin
@@ -289,6 +290,7 @@ module adc_ctrl_fsm
           end else if (lp_sample_cnt_q == lp_sample_cnt_thresh) begin
             fsm_state_d = NP_0;
             lp_sample_cnt_clr = 1'b1;
+            aon_fsm_trans_o = 1'b1;
           end
         end
       end

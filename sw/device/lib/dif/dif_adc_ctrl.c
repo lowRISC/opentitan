@@ -450,7 +450,7 @@ dif_result_t dif_adc_ctrl_irq_clear_causes(const dif_adc_ctrl_t *adc_ctrl,
 dif_result_t dif_adc_ctrl_filter_match_wakeup_set_enabled(
     const dif_adc_ctrl_t *adc_ctrl, dif_adc_ctrl_filter_t filter,
     dif_toggle_t enabled) {
-  if (adc_ctrl == NULL || filter >= ADC_CTRL_PARAM_NUM_ADC_FILTER ||
+  if (adc_ctrl == NULL || filter >= (ADC_CTRL_PARAM_NUM_ADC_FILTER + 1) ||
       !dif_is_valid_toggle(enabled)) {
     return kDifBadArg;
   }
@@ -468,7 +468,7 @@ dif_result_t dif_adc_ctrl_filter_match_wakeup_set_enabled(
 dif_result_t dif_adc_ctrl_filter_match_wakeup_get_enabled(
     const dif_adc_ctrl_t *adc_ctrl, dif_adc_ctrl_filter_t filter,
     dif_toggle_t *is_enabled) {
-  if (adc_ctrl == NULL || filter >= ADC_CTRL_PARAM_NUM_ADC_FILTER ||
+  if (adc_ctrl == NULL || filter >= (ADC_CTRL_PARAM_NUM_ADC_FILTER + 1) ||
       is_enabled == NULL) {
     return kDifBadArg;
   }
