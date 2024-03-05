@@ -97,9 +97,9 @@ fn uart_tx_rx(
     MemWriteReq::execute(console, *uart_id_addr as u32, &[*uart_id])?;
 
     let uart = transport.uart("dut")?;
-    uart.clear_rx_buffer()?;
     uart.set_parity(Parity::None)
         .context("failed to set parity")?;
+    uart.clear_rx_buffer()?;
 
     UartConsole::wait_for(console, r"Executing the test[^\n]*\n", opts.timeout)?;
 

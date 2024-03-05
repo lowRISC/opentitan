@@ -5534,3 +5534,40 @@ opentitan_test(
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
+
+opentitan_test(
+    name = "uart_parity_test",
+    srcs = ["uart_parity_test.c"],
+    cw310 = new_cw310_params(
+        test_cmd = " ".join([
+            "--bootstrap=\"{firmware}\"",
+            "--firmware-elf=\"{firmware:elf}\"",
+        ]),
+        test_harness = "//sw/host/tests/chip/uart:uart_parity",
+    ),
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_sival": None,
+        "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+        "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
+    },
+    silicon = silicon_params(
+        test_cmd = " ".join([
+            "--bootstrap=\"{firmware}\"",
+            "--firmware-elf=\"{firmware:elf}\"",
+        ]),
+        test_harness = "//sw/host/tests/chip/uart:uart_parity",
+    ),
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:rv_plic",
+        "//sw/device/lib/dif:uart",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:irq",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:uart_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_console",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/testing/test_framework:ottf_utils",
+    ],
+)
