@@ -10,11 +10,10 @@ use std::time::Duration;
 use anyhow::{Context, Result};
 use clap::Parser;
 use object::{Object, ObjectSymbol};
-use serialport::Parity;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::execute_test;
-use opentitanlib::io::uart::Uart;
+use opentitanlib::io::uart::{Parity, Uart};
 use opentitanlib::test_utils;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::mem::MemWriteReq;

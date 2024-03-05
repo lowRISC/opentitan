@@ -9,6 +9,7 @@ use std::time::Duration;
 use anyhow::Result;
 use clap::Args;
 use serde::{Deserialize, Serialize};
+pub use serialport::Parity;
 use thiserror::Error;
 
 use super::nonblocking_help::{NoNonblockingHelp, NonblockingHelp};
@@ -94,6 +95,10 @@ pub trait Uart {
     }
 
     fn set_break(&self, _enable: bool) -> Result<()> {
+        Err(TransportError::UnsupportedOperation.into())
+    }
+
+    fn set_parity(&self, _parity: Parity) -> Result<()> {
         Err(TransportError::UnsupportedOperation.into())
     }
 
