@@ -254,5 +254,4 @@ module tb;
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end
-
 endmodule
