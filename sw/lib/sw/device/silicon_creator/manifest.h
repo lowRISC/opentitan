@@ -13,6 +13,7 @@
 #include "sw/lib/sw/device/silicon_creator/epmp_state.h"
 #include "sw/lib/sw/device/silicon_creator/error.h"
 #include "sw/lib/sw/device/silicon_creator/keymgr_binding_value.h"
+#include "sw/lib/sw/device/silicon_creator/sigverify/ecdsa_p256_key.h"
 #include "sw/lib/sw/device/silicon_creator/sigverify/rsa_key.h"
 #include "sw/lib/sw/device/silicon_creator/sigverify/spx_key.h"
 
@@ -170,6 +171,7 @@ typedef struct manifest_version {
  */
 enum {
   kManifestVersionMajor1 = CHIP_MANIFEST_VERSION_MAJOR_1,
+  kManifestVersionMajor2 = CHIP_MANIFEST_VERSION_MAJOR_2,
   kManifestVersionMinor1 = CHIP_MANIFEST_VERSION_MINOR_1,
 };
 
@@ -192,11 +194,12 @@ enum {
  */
 typedef struct manifest {
   /**
-   * RSA signature of the image.
+   * The manifest only supports one of the following signatures:
    *
-   * RSASSA-PKCS1-v1_5 signature of the image generated using a 3072-bit RSA
-   * private key and the SHA-256 hash function. The signed region of an image
-   * starts immediately after this field and ends at the end of the image.
+   * - For `kManifestVersionMajor1`: `rsa_signature`.
+   * - For `kManifestVersionMajor2`: `ecdsa_signature`.
+   *
+   * Both signatures use SHA-256 as the hash function.
    *
    * On-target verification should also integrate usage constraints comparison
    * to signature verification to harden it against potential attacks. During
@@ -210,15 +213,46 @@ typedef struct manifest {
    * usage constraints read from the hardware can be obtained using
    * `manifest_digest_region_get()`.
    */
-  sigverify_rsa_buffer_t rsa_signature;
+  union {
+    /**
+     * RSA signature of the image.
+     *
+     * RSASSA-PKCS1-v1_5 signature of the image generated using a 3072-bit RSA
+     * private key and the SHA-256 hash function. The signed region of an image
+     * starts immediately after this field and ends at the end of the image.
+     */
+    sigverify_rsa_buffer_t rsa_signature;
+
+    /**
+     * ECDSA P256 signature of the image.
+     *
+     * ECDSA P256 signature of the image generated using a NIST P256 ECC key
+     * and the SHA-256 hash function. The signed region of an image starts
+     * immediately after the end of the union encapsulating this field and ends
+     * at the end of the image.
+     */
+    sigverify_ecdsa_p256_buffer_t ecdsa_signature;
+  };
   /**
    * Usage constraints.
    */
   manifest_usage_constraints_t usage_constraints;
   /**
-   * Modulus of the signer's 3072-bit RSA public key.
+   * The manifest only supports one of the following public key types:
+   *
+   * - For `kManifestVersionMajor1`: `rsa_modulus`.
+   * - For `kManifestVersionMajor2`: `ecdsa_public_key`.
    */
-  sigverify_rsa_buffer_t rsa_modulus;
+  union {
+    /**
+     * Modulus of the signer's 3072-bit RSA public key.
+     */
+    sigverify_rsa_buffer_t rsa_modulus;
+    /**
+     * Signer's ECDSA NIST P256 ECC public key.
+     */
+    sigverify_ecdsa_p256_buffer_t ecdsa_public_key;
+  };
   /**
    * Address translation (hardened boolean).
    */
@@ -300,8 +334,10 @@ typedef struct manifest {
 } manifest_t;
 
 OT_ASSERT_MEMBER_OFFSET(manifest_t, rsa_signature, 0);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, ecdsa_signature, 0);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, usage_constraints, 384);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, rsa_modulus, 432);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, ecdsa_public_key, 432);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, address_translation, 816);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, identifier, 820);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, manifest_version, 824);

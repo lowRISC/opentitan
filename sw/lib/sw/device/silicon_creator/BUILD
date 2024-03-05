@@ -77,6 +77,7 @@ cc_library(
         ":keymgr_binding",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/lib/sw/device/silicon_creator/base:chip",
+        "//sw/lib/sw/device/silicon_creator/sigverify:ecdsa_p256_key",
         "//sw/lib/sw/device/silicon_creator/sigverify:rsa_key",
         "//sw/lib/sw/device/silicon_creator/sigverify:spx_key",
     ],
