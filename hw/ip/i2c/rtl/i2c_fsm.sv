@@ -123,7 +123,7 @@ module i2c_fsm import i2c_pkg::*;
   logic        address_match; // indicates one of target's addresses matches the one sent by host
   logic [7:0]  input_byte;    // register for reads from host
   logic        input_byte_clr;// clear input_byte contents
-  logic        acq_fifo_wready;
+  logic        acq_fifo_plenty_space;
   logic        stretch_addr;
   logic        stretch_rx;
   logic        stretch_tx;
@@ -346,9 +346,15 @@ module i2c_fsm import i2c_pkg::*;
   // space for this entry, the target module would need to stretch the
   // repeat start / stop indication.  If a system does not support stretching,
   // there's no good way for a stop to be NACK'd.
+  // Besides the space necessary for the stop format byte, we also need one
+  // space to send a NACK. This means that we can notify software that a NACK
+  // has happened while still keeping space for a subsequent stop or repeated
+  // start.
   logic [AcqFifoDepthWidth-1:0] acq_fifo_remainder;
   assign acq_fifo_remainder = AcqFifoDepth - acq_fifo_depth_i;
-  assign acq_fifo_wready = acq_fifo_remainder > AcqFifoDepthWidth'(1'b1);
+  // This is used for acq_fifo_wready_o to send the ACQ FIFO full alert to
+  // software.
+  assign acq_fifo_plenty_space = acq_fifo_remainder > AcqFifoDepthWidth'(2);
 
   // State definitions
   typedef enum logic [5:0] {
@@ -805,7 +811,7 @@ module i2c_fsm import i2c_pkg::*;
     end
   end
 
-  assign stretch_rx   = !acq_fifo_wready;
+  assign stretch_rx   = !acq_fifo_plenty_space;
   assign stretch_addr = stretch_rx;
 
   // Stretch Tx phase when:
@@ -1340,7 +1346,7 @@ module i2c_fsm import i2c_pkg::*;
                                    (stretch_idle_cnt[30:0] > stretch_timeout_i) && timeout_enable_i;
 
   // Fed out for interrupt purposes
-  assign acq_fifo_wready_o = acq_fifo_wready;
+  assign acq_fifo_wready_o = acq_fifo_plenty_space;
 
   // Check to make sure scl_i is never a single cycle glitch
   `ASSERT(SclInputGlitch_A, $rose(scl_i) |-> ##1 scl_i)
@@ -1356,5 +1362,9 @@ module i2c_fsm import i2c_pkg::*;
 
   // Check that we don't change SCL and SDA in the same clock cycle in host mode.
   `ASSERT(SclSdaChangeNotSimultaneous_A, !(host_enable_i && (scl_d != scl_q) && (sda_d != sda_q)))
+
+  // Check that ACQ FIFO is deep enough to support a stop/rstart as well as
+  // a nack when it is full.
+  `ASSERT(AcqFifoDeepEnough_A, AcqFifoDepth > 2)
 
 endmodule
