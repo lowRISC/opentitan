@@ -30,6 +30,7 @@ rust_library(
         ":xmodem_testlib",
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",
+        "@crate_index//:clap",
         "@crate_index//:log",
         "@crate_index//:serde",
     ],
