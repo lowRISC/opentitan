@@ -16,6 +16,7 @@ pub mod image;
 pub mod lc;
 pub mod load_bitstream;
 pub mod otp;
+pub mod ownership;
 pub mod rescue;
 pub mod rsa;
 pub mod sam3x;
