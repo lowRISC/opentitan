@@ -47,13 +47,13 @@ Interrupt State Register
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "match_done", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 120}}
+{"reg": [{"name": "match_pending", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 150}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name       | Description                         |
-|:------:|:------:|:-------:|:-----------|:------------------------------------|
-|  31:1  |        |         |            | Reserved                            |
-|   0    |  rw1c  |   0x0   | match_done | ADC match or measurement event done |
+|  Bits  |  Type  |  Reset  | Name          | Description                                 |
+|:------:|:------:|:-------:|:--------------|:--------------------------------------------|
+|  31:1  |        |         |               | Reserved                                    |
+|   0    |   ro   |   0x0   | match_pending | ADC match or measurement event has occurred |
 
 ## INTR_ENABLE
 Interrupt Enable Register
@@ -64,13 +64,13 @@ Interrupt Enable Register
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "match_done", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 120}}
+{"reg": [{"name": "match_pending", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 150}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name       | Description                                                          |
-|:------:|:------:|:-------:|:-----------|:---------------------------------------------------------------------|
-|  31:1  |        |         |            | Reserved                                                             |
-|   0    |   rw   |   0x0   | match_done | Enable interrupt when [`INTR_STATE.match_done`](#intr_state) is set. |
+|  Bits  |  Type  |  Reset  | Name          | Description                                                             |
+|:------:|:------:|:-------:|:--------------|:------------------------------------------------------------------------|
+|  31:1  |        |         |               | Reserved                                                                |
+|   0    |   rw   |   0x0   | match_pending | Enable interrupt when [`INTR_STATE.match_pending`](#intr_state) is set. |
 
 ## INTR_TEST
 Interrupt Test Register
@@ -81,13 +81,13 @@ Interrupt Test Register
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "match_done", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 120}}
+{"reg": [{"name": "match_pending", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 150}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name       | Description                                                   |
-|:------:|:------:|:-------:|:-----------|:--------------------------------------------------------------|
-|  31:1  |        |         |            | Reserved                                                      |
-|   0    |   wo   |   0x0   | match_done | Write 1 to force [`INTR_STATE.match_done`](#intr_state) to 1. |
+|  Bits  |  Type  |  Reset  | Name          | Description                                                      |
+|:------:|:------:|:-------:|:--------------|:-----------------------------------------------------------------|
+|  31:1  |        |         |               | Reserved                                                         |
+|   0    |   wo   |   0x0   | match_pending | Write 1 to force [`INTR_STATE.match_pending`](#intr_state) to 1. |
 
 ## ALERT_TEST
 Alert Test Register

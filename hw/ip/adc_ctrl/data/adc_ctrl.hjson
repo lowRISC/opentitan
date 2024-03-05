@@ -45,8 +45,9 @@
     }
   ],
   interrupt_list: [
-    { name: "match_done",
-      desc: "ADC match or measurement event done",
+    { name: "match_pending",
+      desc: "ADC match or measurement event has occurred",
+      type: "status"
     }
   ],
   alert_list: [

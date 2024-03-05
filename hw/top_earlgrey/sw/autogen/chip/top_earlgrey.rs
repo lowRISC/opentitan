@@ -1165,8 +1165,8 @@ pub enum PlicIrqId {
     PwrmgrAonWakeup = 149,
     /// sysrst_ctrl_aon_event_detected
     SysrstCtrlAonEventDetected = 150,
-    /// adc_ctrl_aon_match_done
-    AdcCtrlAonMatchDone = 151,
+    /// adc_ctrl_aon_match_pending
+    AdcCtrlAonMatchPending = 151,
     /// aon_timer_aon_wkup_timer_expired
     AonTimerAonWkupTimerExpired = 152,
     /// aon_timer_aon_wdog_timer_bark
@@ -1384,7 +1384,7 @@ impl TryFrom<u32> for PlicIrqId {
             148 => Ok(Self::UsbdevAvSetupEmpty),
             149 => Ok(Self::PwrmgrAonWakeup),
             150 => Ok(Self::SysrstCtrlAonEventDetected),
-            151 => Ok(Self::AdcCtrlAonMatchDone),
+            151 => Ok(Self::AdcCtrlAonMatchPending),
             152 => Ok(Self::AonTimerAonWkupTimerExpired),
             153 => Ok(Self::AonTimerAonWdogTimerBark),
             154 => Ok(Self::SensorCtrlAonIoStatusChange),
@@ -2042,7 +2042,7 @@ pub const PLIC_INTERRUPT_FOR_PERIPHERAL: [PlicPeripheral; 182] = [
     PlicPeripheral::PwrmgrAon,
     // SysrstCtrlAonEventDetected -> PlicPeripheral::SysrstCtrlAon
     PlicPeripheral::SysrstCtrlAon,
-    // AdcCtrlAonMatchDone -> PlicPeripheral::AdcCtrlAon
+    // AdcCtrlAonMatchPending -> PlicPeripheral::AdcCtrlAon
     PlicPeripheral::AdcCtrlAon,
     // AonTimerAonWkupTimerExpired -> PlicPeripheral::AonTimerAon
     PlicPeripheral::AonTimerAon,

@@ -489,7 +489,7 @@ module top_earlgrey #(
   logic intr_usbdev_av_setup_empty;
   logic intr_pwrmgr_aon_wakeup;
   logic intr_sysrst_ctrl_aon_event_detected;
-  logic intr_adc_ctrl_aon_match_done;
+  logic intr_adc_ctrl_aon_match_pending;
   logic intr_aon_timer_aon_wkup_timer_expired;
   logic intr_aon_timer_aon_wdog_timer_bark;
   logic intr_sensor_ctrl_aon_io_status_change;
@@ -1871,7 +1871,7 @@ module top_earlgrey #(
   ) u_adc_ctrl_aon (
 
       // Interrupt
-      .intr_match_done_o (intr_adc_ctrl_aon_match_done),
+      .intr_match_pending_o (intr_adc_ctrl_aon_match_pending),
       // [28]: fatal_fault
       .alert_tx_o  ( alert_tx[28:28] ),
       .alert_rx_i  ( alert_rx[28:28] ),
@@ -2661,7 +2661,7 @@ module top_earlgrey #(
       intr_sensor_ctrl_aon_io_status_change, // IDs [154 +: 1]
       intr_aon_timer_aon_wdog_timer_bark, // IDs [153 +: 1]
       intr_aon_timer_aon_wkup_timer_expired, // IDs [152 +: 1]
-      intr_adc_ctrl_aon_match_done, // IDs [151 +: 1]
+      intr_adc_ctrl_aon_match_pending, // IDs [151 +: 1]
       intr_sysrst_ctrl_aon_event_detected, // IDs [150 +: 1]
       intr_pwrmgr_aon_wakeup, // IDs [149 +: 1]
       intr_usbdev_av_setup_empty, // IDs [148 +: 1]

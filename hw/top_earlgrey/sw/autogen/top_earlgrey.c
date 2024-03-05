@@ -163,7 +163,7 @@ const top_earlgrey_plic_peripheral_t
   [kTopEarlgreyPlicIrqIdUsbdevAvSetupEmpty] = kTopEarlgreyPlicPeripheralUsbdev,
   [kTopEarlgreyPlicIrqIdPwrmgrAonWakeup] = kTopEarlgreyPlicPeripheralPwrmgrAon,
   [kTopEarlgreyPlicIrqIdSysrstCtrlAonEventDetected] = kTopEarlgreyPlicPeripheralSysrstCtrlAon,
-  [kTopEarlgreyPlicIrqIdAdcCtrlAonMatchDone] = kTopEarlgreyPlicPeripheralAdcCtrlAon,
+  [kTopEarlgreyPlicIrqIdAdcCtrlAonMatchPending] = kTopEarlgreyPlicPeripheralAdcCtrlAon,
   [kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired] = kTopEarlgreyPlicPeripheralAonTimerAon,
   [kTopEarlgreyPlicIrqIdAonTimerAonWdogTimerBark] = kTopEarlgreyPlicPeripheralAonTimerAon,
   [kTopEarlgreyPlicIrqIdSensorCtrlAonIoStatusChange] = kTopEarlgreyPlicPeripheralSensorCtrlAon,

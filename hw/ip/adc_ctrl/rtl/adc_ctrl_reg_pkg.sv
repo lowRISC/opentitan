@@ -259,7 +259,7 @@ package adc_ctrl_reg_pkg;
 
   // Reset values for hwext registers and their fields
   parameter logic [0:0] ADC_CTRL_INTR_TEST_RESVAL = 1'h 0;
-  parameter logic [0:0] ADC_CTRL_INTR_TEST_MATCH_DONE_RESVAL = 1'h 0;
+  parameter logic [0:0] ADC_CTRL_INTR_TEST_MATCH_PENDING_RESVAL = 1'h 0;
   parameter logic [0:0] ADC_CTRL_ALERT_TEST_RESVAL = 1'h 0;
   parameter logic [0:0] ADC_CTRL_ALERT_TEST_FATAL_FAULT_RESVAL = 1'h 0;
   parameter logic [4:0] ADC_CTRL_ADC_FSM_STATE_RESVAL = 5'h 0;

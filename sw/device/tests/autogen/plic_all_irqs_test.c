@@ -365,7 +365,7 @@ void ottf_external_isr(uint32_t *exc_info) {
       case kTopEarlgreyPlicPeripheralAdcCtrlAon: {
         dif_adc_ctrl_irq_t irq = (dif_adc_ctrl_irq_t)(
             plic_irq_id -
-            (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdAdcCtrlAonMatchDone);
+            (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdAdcCtrlAonMatchPending);
         CHECK(irq == adc_ctrl_irq_expected,
               "Incorrect adc_ctrl_aon IRQ triggered: exp = %d, obs = %d",
               adc_ctrl_irq_expected, irq);
@@ -377,7 +377,19 @@ void ottf_external_isr(uint32_t *exc_info) {
               "Only adc_ctrl_aon IRQ %d expected to fire. Actual interrupt "
               "status = %x", irq, snapshot);
 
-        CHECK_DIF_OK(dif_adc_ctrl_irq_acknowledge(&adc_ctrl_aon, irq));
+        // If this is a status type interrupt, we do not have to acknowledge the interrupt at
+        // the IP side, but we need to clear the test force register.
+        if (0x1 & (1 << irq)) {
+          CHECK_DIF_OK(dif_adc_ctrl_irq_force(&adc_ctrl_aon, irq, false));
+          // In case this status interrupt is asserted by default, we also disable it at
+          // this point so that it does not interfere with the rest of the test.
+          if ((0x0 & (1 << irq))) {
+            CHECK_DIF_OK(dif_adc_ctrl_irq_set_enabled(&adc_ctrl_aon, irq, false));
+          }
+        // If this is a regular event type interrupt, we acknowledge it at this point.
+        } else {
+          CHECK_DIF_OK(dif_adc_ctrl_irq_acknowledge(&adc_ctrl_aon, irq));
+        }
         break;
       }
 #endif
@@ -1728,12 +1740,21 @@ static void peripheral_irqs_trigger(void) {
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 0 && 0 < TEST_MAX_IRQ_PERIPHERAL
   peripheral_expected = kTopEarlgreyPlicPeripheralAdcCtrlAon;
-  for (dif_adc_ctrl_irq_t irq = kDifAdcCtrlIrqMatchDone;
-       irq <= kDifAdcCtrlIrqMatchDone; ++irq) {
+  status_default_mask = 0x0;
+  for (dif_adc_ctrl_irq_t irq = kDifAdcCtrlIrqMatchPending;
+       irq <= kDifAdcCtrlIrqMatchPending; ++irq) {
 
     adc_ctrl_irq_expected = irq;
     LOG_INFO("Triggering adc_ctrl_aon IRQ %d.", irq);
     CHECK_DIF_OK(dif_adc_ctrl_irq_force(&adc_ctrl_aon, irq, true));
+
+    // In this case, the interrupt has not been enabled yet because that would
+    // interfere with testing other interrupts. We enable it here and let the
+    // interrupt handler disable it again.
+    if ((status_default_mask & 0x1)) {
+       CHECK_DIF_OK(dif_adc_ctrl_irq_set_enabled(&adc_ctrl_aon, irq, true));
+    }
+    status_default_mask >>= 1;
 
     // This avoids a race where *irq_serviced is read before
     // entering the ISR.

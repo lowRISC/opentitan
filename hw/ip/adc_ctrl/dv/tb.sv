@@ -88,18 +88,18 @@ module tb;
 
   // dut
   adc_ctrl dut (
-    .clk_i             (clk),
-    .rst_ni            (rst_n),
-    .clk_aon_i         (clk_aon),
-    .rst_aon_ni        (rst_aon_n),
-    .tl_i              (tl_if.h2d),
-    .tl_o              (tl_if.d2h),
-    .alert_rx_i        (alert_rx),
-    .alert_tx_o        (alert_tx),
-    .adc_o             (adc_o),
-    .adc_i             (adc_i),
-    .intr_match_done_o (interrupts[ADC_CTRL_INTERRUPT_INDEX]),
-    .wkup_req_o        (wakeup_req)
+    .clk_i                (clk),
+    .rst_ni               (rst_n),
+    .clk_aon_i            (clk_aon),
+    .rst_aon_ni           (rst_aon_n),
+    .tl_i                 (tl_if.h2d),
+    .tl_o                 (tl_if.d2h),
+    .alert_rx_i           (alert_rx),
+    .alert_tx_o           (alert_tx),
+    .adc_o                (adc_o),
+    .adc_i                (adc_i),
+    .intr_match_pending_o (interrupts[ADC_CTRL_INTERRUPT_INDEX]),
+    .wkup_req_o           (wakeup_req)
   );
 
   initial begin

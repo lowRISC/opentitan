@@ -18,9 +18,9 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 ## Interrupts
 
-| Interrupt Name   | Type   | Description                         |
-|:-----------------|:-------|:------------------------------------|
-| match_done       | Event  | ADC match or measurement event done |
+| Interrupt Name   | Type   | Description                                 |
+|:-----------------|:-------|:--------------------------------------------|
+| match_pending    | Status | ADC match or measurement event has occurred |
 
 ## Security Alerts
 

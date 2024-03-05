@@ -1166,7 +1166,7 @@ typedef enum top_earlgrey_plic_irq_id {
   kTopEarlgreyPlicIrqIdUsbdevAvSetupEmpty = 148, /**< usbdev_av_setup_empty */
   kTopEarlgreyPlicIrqIdPwrmgrAonWakeup = 149, /**< pwrmgr_aon_wakeup */
   kTopEarlgreyPlicIrqIdSysrstCtrlAonEventDetected = 150, /**< sysrst_ctrl_aon_event_detected */
-  kTopEarlgreyPlicIrqIdAdcCtrlAonMatchDone = 151, /**< adc_ctrl_aon_match_done */
+  kTopEarlgreyPlicIrqIdAdcCtrlAonMatchPending = 151, /**< adc_ctrl_aon_match_pending */
   kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired = 152, /**< aon_timer_aon_wkup_timer_expired */
   kTopEarlgreyPlicIrqIdAonTimerAonWdogTimerBark = 153, /**< aon_timer_aon_wdog_timer_bark */
   kTopEarlgreyPlicIrqIdSensorCtrlAonIoStatusChange = 154, /**< sensor_ctrl_aon_io_status_change */

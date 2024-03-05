@@ -64,17 +64,17 @@ void ottf_external_isr(uint32_t *exc_info) {
 
   adc_ctrl_isr_ctx_t adc_ctrl_ctx = {
       .adc_ctrl = &adc_ctrl,
-      .plic_adc_ctrl_start_irq_id = kTopEarlgreyPlicIrqIdAdcCtrlAonMatchDone,
+      .plic_adc_ctrl_start_irq_id = kTopEarlgreyPlicIrqIdAdcCtrlAonMatchPending,
       .expected_irq = 0,
       .is_only_irq = true};
 
   top_earlgrey_plic_peripheral_t peripheral;
   dif_adc_ctrl_irq_t adc_ctrl_irq;
-  isr_testutils_adc_ctrl_isr(plic_ctx, adc_ctrl_ctx, &peripheral,
+  isr_testutils_adc_ctrl_isr(plic_ctx, adc_ctrl_ctx, false, &peripheral,
                              &adc_ctrl_irq);
 
   CHECK(peripheral == kTopEarlgreyPlicPeripheralAdcCtrlAon);
-  CHECK(adc_ctrl_irq == kDifAdcCtrlIrqMatchDone);
+  CHECK(adc_ctrl_irq == kDifAdcCtrlIrqMatchPending);
   interrupt_serviced = true;
 
   // Verify this interrupt was actually expected.
@@ -83,7 +83,7 @@ void ottf_external_isr(uint32_t *exc_info) {
 
 static void en_plic_irqs(dif_rv_plic_t *plic) {
   top_earlgrey_plic_irq_id_t plic_irqs[] = {
-      kTopEarlgreyPlicIrqIdAdcCtrlAonMatchDone};
+      kTopEarlgreyPlicIrqIdAdcCtrlAonMatchPending};
 
   for (uint32_t i = 0; i < ARRAYSIZE(plic_irqs); ++i) {
     CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
@@ -112,8 +112,8 @@ bool test_main(void) {
       mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &plic));
 
   // Enable adc interrupts.
-  CHECK_DIF_OK(dif_adc_ctrl_irq_set_enabled(&adc_ctrl, kDifAdcCtrlIrqMatchDone,
-                                            kDifToggleEnabled));
+  CHECK_DIF_OK(dif_adc_ctrl_irq_set_enabled(
+      &adc_ctrl, kDifAdcCtrlIrqMatchPending, kDifToggleEnabled));
 
   uint16_t channel0_filter0_max =
       (uint16_t)(kChannel0MaxHighByte << 8) | kChannel0MaxLowByte;
