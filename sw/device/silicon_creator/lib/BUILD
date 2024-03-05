@@ -97,6 +97,7 @@ cc_library(
         "//sw/device/silicon_creator/lib:chip_info",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/drivers:hmac",
+        "//sw/device/silicon_creator/lib/ownership:datatypes",
     ],
 )
 
