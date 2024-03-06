@@ -50,6 +50,11 @@ TEST_F(SensorCtrlTest, BadArgs) {
       dif_sensor_ctrl_set_ast_event_trigger(&sensor_ctrl, bad_idx, toggle_arg));
 
   EXPECT_DIF_BADARG(
+      dif_sensor_ctrl_set_alert_en(nullptr, good_idx, toggle_arg));
+  EXPECT_DIF_BADARG(
+      dif_sensor_ctrl_set_alert_en(&sensor_ctrl, bad_idx, toggle_arg));
+
+  EXPECT_DIF_BADARG(
       dif_sensor_ctrl_set_alert_fatal(nullptr, good_idx, toggle_arg));
   EXPECT_DIF_BADARG(
       dif_sensor_ctrl_set_alert_fatal(&sensor_ctrl, bad_idx, toggle_arg));
@@ -102,6 +107,32 @@ TEST_F(SensorCtrlTest, TriggerEvents) {
         dif_sensor_ctrl_get_ast_event_trigger(&sensor_ctrl, i, &enable));
     EXPECT_EQ(enable, kDifToggleDisabled);
   }
+}
+
+TEST_F(SensorCtrlTest, AlertEnable) {
+  for (size_t i = 0; i < SENSOR_CTRL_PARAM_NUM_ALERT_EVENTS; i++) {
+    EXPECT_READ32(SENSOR_CTRL_CFG_REGWEN_REG_OFFSET, 1);
+    EXPECT_WRITE32(SENSOR_CTRL_ALERT_EN_0_REG_OFFSET + i * 4,
+                   kMultiBitBool4True);
+    EXPECT_DIF_OK(
+        dif_sensor_ctrl_set_alert_en(&sensor_ctrl, i, kDifToggleEnabled));
+  }
+
+  for (size_t i = 0; i < SENSOR_CTRL_PARAM_NUM_ALERT_EVENTS; i++) {
+    EXPECT_READ32(SENSOR_CTRL_CFG_REGWEN_REG_OFFSET, 1);
+    EXPECT_WRITE32(SENSOR_CTRL_ALERT_EN_0_REG_OFFSET + i * 4,
+                   kMultiBitBool4False);
+    EXPECT_DIF_OK(
+        dif_sensor_ctrl_set_alert_en(&sensor_ctrl, i, kDifToggleDisabled));
+  }
+
+  EXPECT_READ32(SENSOR_CTRL_CFG_REGWEN_REG_OFFSET, 0);
+  EXPECT_EQ(dif_sensor_ctrl_set_alert_en(&sensor_ctrl, 0, kDifToggleDisabled),
+            kDifLocked);
+
+  EXPECT_READ32(SENSOR_CTRL_CFG_REGWEN_REG_OFFSET, 0);
+  EXPECT_EQ(dif_sensor_ctrl_set_alert_en(&sensor_ctrl, 0, kDifToggleEnabled),
+            kDifLocked);
 }
 
 TEST_F(SensorCtrlTest, AlertFatality) {

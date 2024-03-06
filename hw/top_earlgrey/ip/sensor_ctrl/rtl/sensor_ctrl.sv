@@ -45,6 +45,10 @@ module sensor_ctrl
   output logic wkup_req_o
 );
 
+  import prim_mubi_pkg::mubi4_t;
+  import prim_mubi_pkg::mubi4_test_true_loose;
+
+
   // The reg_pkg number of alerts and ast alerts must always match
   `ASSERT_INIT(NumAlertsMatch_A, ast_pkg::NumAlerts == NumAlertEvents)
 
@@ -185,13 +189,31 @@ module sensor_ctrl
   // triggered, there is thus not a need to ever acknowledge the source.
   // For recoverable alerts, the ack is only sent once the alert is captured into software readable
   // registers
+  logic [NumAlertEvents-1:0] alert_en, alert_en_buf;
   logic [NumAlertEvents-1:0] recov_event;
   logic [NumAlertEvents-1:0] fatal_event;
+
+  prim_sec_anchor_buf #(
+    .Width(NumAlertEvents)
+  ) u_prim_sec_anchor_buf (
+    .in_i(alert_en),
+    .out_o(alert_en_buf)
+  );
+
   for (genvar i = 0; i < NumAlertEvents; i++) begin : gen_ast_alert_events
 
+    // We're using the "loose" check so that alerts are only disabled iff they are equal to the
+    // false value. This ensures that even a value glitched to an incorrect encoding will enable
+    // the alert.
+    assign alert_en[i] = mubi4_test_true_loose(mubi4_t'(reg2hw.alert_en[i]));
+
     // when there is a valid alert, set the alert state
-    assign recov_event[i] = event_vld[i] & ~reg2hw.fatal_alert_en[i];
-    assign fatal_event[i] = event_vld[i] & reg2hw.fatal_alert_en[i];
+    assign recov_event[i] = alert_en_buf[i] &&
+                            event_vld[i] &&
+                            !reg2hw.fatal_alert_en[i];
+    assign fatal_event[i] = alert_en_buf[i] &&
+                            event_vld[i] &&
+                            reg2hw.fatal_alert_en[i];
 
     assign hw2reg.recov_alert[i].d  = 1'b1;
     assign hw2reg.recov_alert[i].de = recov_event[i];
@@ -286,8 +308,8 @@ module sensor_ctrl
   // be used to trigger wake from low power.
   // Fatal alerts are not used here because they do not ever ack, meaning
   // the originating event can never disappear.
-  assign async_wake = (|async_alert_event_p)  |
-                      (~&async_alert_event_n) |
+  assign async_wake = (|(async_alert_event_p & alert_en_buf))  |
+                      (~&(async_alert_event_n | ~alert_en_buf)) |
                       (|reg2hw.recov_alert);
 
   prim_flop_2sync #(

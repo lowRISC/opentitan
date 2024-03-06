@@ -76,6 +76,26 @@ dif_result_t dif_sensor_ctrl_set_ast_event_trigger(
 }
 
 OT_WARN_UNUSED_RESULT
+dif_result_t dif_sensor_ctrl_set_alert_en(const dif_sensor_ctrl_t *sensor_ctrl,
+                                          dif_sensor_ctrl_event_idx_t event_idx,
+                                          dif_toggle_t en) {
+  if (sensor_ctrl == NULL || is_ast_event_invalid(event_idx)) {
+    return kDifBadArg;
+  };
+
+  if (is_locked(sensor_ctrl)) {
+    return kDifLocked;
+  }
+
+  mmio_region_write32(
+      sensor_ctrl->base_addr,
+      SENSOR_CTRL_ALERT_EN_0_REG_OFFSET + ((ptrdiff_t)event_idx << 2),
+      dif_toggle_to_multi_bit_bool4(en));
+
+  return kDifOk;
+}
+
+OT_WARN_UNUSED_RESULT
 dif_result_t dif_sensor_ctrl_set_alert_fatal(
     const dif_sensor_ctrl_t *sensor_ctrl, dif_sensor_ctrl_event_idx_t event_idx,
     dif_toggle_t en_fatal) {

@@ -100,6 +100,10 @@ static void check_alert_state(dif_toggle_t fatal) {
  *  Finally, check for correct capture of cause in alert handler.
  */
 static void test_event(uint32_t idx, dif_toggle_t fatal) {
+  // Enable the alert on the sensor_ctrl side
+  CHECK_DIF_OK(
+      dif_sensor_ctrl_set_alert_en(&sensor_ctrl, idx, kDifToggleEnabled));
+
   // Configure event fatality
   CHECK_DIF_OK(dif_sensor_ctrl_set_alert_fatal(&sensor_ctrl, idx, fatal));
 
@@ -124,6 +128,10 @@ static void test_event(uint32_t idx, dif_toggle_t fatal) {
 
   // check whether alert handler captured the event
   check_alert_state(fatal);
+
+  // Disable the alert on the sensor_ctrl side
+  CHECK_DIF_OK(
+      dif_sensor_ctrl_set_alert_en(&sensor_ctrl, idx, kDifToggleDisabled));
 };
 
 enum {
