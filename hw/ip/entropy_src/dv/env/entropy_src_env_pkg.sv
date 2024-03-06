@@ -56,30 +56,33 @@ package entropy_src_env_pkg;
 
   typedef enum int {
     sfifo_esrng_err        = 0,
-    sfifo_observe_err      = 1,
-    sfifo_esfinal_err      = 2,
-    es_ack_sm_err          = 3,
-    es_main_sm_err         = 4,
-    es_cntr_err            = 5,
-    fifo_read_err          = 6,
-    fifo_state_err         = 7,
-    sfifo_esrng_err_test   = 8,
-    sfifo_observe_err_test = 9,
-    sfifo_esfinal_err_test = 10,
-    es_ack_sm_err_test     = 11,
-    es_main_sm_err_test    = 12,
-    es_cntr_err_test       = 13,
-    fifo_read_err_test     = 14,
-    fifo_state_err_test    = 15
+    sfifo_distr_err        = 1,
+    sfifo_observe_err      = 2,
+    sfifo_esfinal_err      = 3,
+    es_ack_sm_err          = 4,
+    es_main_sm_err         = 5,
+    es_cntr_err            = 6,
+    fifo_read_err          = 7,
+    fifo_state_err         = 8,
+    sfifo_esrng_err_test   = 9,
+    sfifo_distr_err_test   = 10,
+    sfifo_observe_err_test = 11,
+    sfifo_esfinal_err_test = 12,
+    es_ack_sm_err_test     = 13,
+    es_main_sm_err_test    = 14,
+    es_cntr_err_test       = 15,
+    fifo_read_err_test     = 16,
+    fifo_state_err_test    = 17
   } err_code_e;
 
   typedef enum int {
     sfifo_observe_error = 0,
     sfifo_esrng_error   = 1,
-    sfifo_esfinal_error = 2,
-    es_ack_sm_error     = 3,
-    es_main_sm_error    = 4,
-    es_cntr_error       = 5
+    sfifo_distr_error   = 2,
+    sfifo_esfinal_error = 3,
+    es_ack_sm_error     = 4,
+    es_main_sm_error    = 5,
+    es_cntr_error       = 6
   } fatal_err_e;
 
   typedef enum int {
@@ -119,8 +122,9 @@ package entropy_src_env_pkg;
 
   typedef enum int {
     sfifo_esrng   = 0,
-    sfifo_observe = 1,
-    sfifo_esfinal = 2
+    sfifo_distr   = 1,
+    sfifo_observe = 2,
+    sfifo_esfinal = 3
   } which_fifo_e;
 
   typedef enum int {
@@ -130,8 +134,9 @@ package entropy_src_env_pkg;
 
   typedef enum bit [4:0] {
     sfifo_esrng_err_code   = 0,
-    sfifo_observe_err_code = 1,
-    sfifo_esfinal_err_code = 2,
+    sfifo_distr_err_code   = 1,
+    sfifo_observe_err_code = 2,
+    sfifo_esfinal_err_code = 3,
     es_ack_sm_err_code     = 20,
     es_main_sm_err_code    = 21,
     es_cntr_err_code       = 22,

@@ -1482,12 +1482,12 @@ Writing a zero resets this status bit.
 Hardware detection of error conditions status register
 - Offset: `0xd8`
 - Reset default: `0x0`
-- Reset mask: `0x71f00007`
+- Reset mask: `0x71f0000f`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "SFIFO_ESRNG_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SFIFO_OBSERVE_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SFIFO_ESFINAL_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 17}, {"name": "ES_ACK_SM_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ES_MAIN_SM_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ES_CNTR_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SHA3_STATE_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SHA3_RST_STORAGE_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 3}, {"name": "FIFO_WRITE_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "FIFO_READ_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "FIFO_STATE_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 1}], "config": {"lanes": 1, "fontsize": 10, "vspace": 220}}
+{"reg": [{"name": "SFIFO_ESRNG_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SFIFO_DISTR_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SFIFO_OBSERVE_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SFIFO_ESFINAL_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 16}, {"name": "ES_ACK_SM_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ES_MAIN_SM_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ES_CNTR_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SHA3_STATE_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SHA3_RST_STORAGE_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 3}, {"name": "FIFO_WRITE_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "FIFO_READ_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "FIFO_STATE_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 1}], "config": {"lanes": 1, "fontsize": 10, "vspace": 220}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                                    |
@@ -1502,9 +1502,10 @@ Hardware detection of error conditions status register
 |   22   |   ro   |   0x0   | [ES_CNTR_ERR](#err_code--es_cntr_err)                   |
 |   21   |   ro   |   0x0   | [ES_MAIN_SM_ERR](#err_code--es_main_sm_err)             |
 |   20   |   ro   |   0x0   | [ES_ACK_SM_ERR](#err_code--es_ack_sm_err)               |
-|  19:3  |        |         | Reserved                                                |
-|   2    |   ro   |   0x0   | [SFIFO_ESFINAL_ERR](#err_code--sfifo_esfinal_err)       |
-|   1    |   ro   |   0x0   | [SFIFO_OBSERVE_ERR](#err_code--sfifo_observe_err)       |
+|  19:4  |        |         | Reserved                                                |
+|   3    |   ro   |   0x0   | [SFIFO_ESFINAL_ERR](#err_code--sfifo_esfinal_err)       |
+|   2    |   ro   |   0x0   | [SFIFO_OBSERVE_ERR](#err_code--sfifo_observe_err)       |
+|   1    |   ro   |   0x0   | [SFIFO_DISTR_ERR](#err_code--sfifo_distr_err)           |
 |   0    |   ro   |   0x0   | [SFIFO_ESRNG_ERR](#err_code--sfifo_esrng_err)           |
 
 ### ERR_CODE . FIFO_STATE_ERR
@@ -1558,6 +1559,11 @@ This bit will stay set until the next reset.
 This bit will be set to one when an error has been detected for the
 observe FIFO. The type of error is reflected in the type status
 bits (bits 28 through 30 of this register).
+This bit will stay set until the next reset.
+
+### ERR_CODE . SFIFO_DISTR_ERR
+This bit will be set to one when an error has been detected for the distribution FIFO.
+The type of error is reflected in the type status bits (bits 28 through 30 of this register).
 This bit will stay set until the next reset.
 
 ### ERR_CODE . SFIFO_ESRNG_ERR

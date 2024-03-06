@@ -521,6 +521,7 @@ interface entropy_src_cov_if
                                                   bit esrng_fifo_not_empty_i,
                                                   bit esbit_fifo_not_empty_i,
                                                   bit postht_fifo_not_empty_i,
+                                                  bit distr_fifo_not_empty_i,
                                                   bit cs_aes_halt_req_i,
                                                   bit sha3_done_i,
                                                   bit bypass_mode_i,
@@ -556,7 +557,13 @@ interface entropy_src_cov_if
       bins not_empty = {1'b1};
     }
 
-    cr_enable_i_fifo_state: cross cp_enable, cp_esrng_fifo, cp_esbit_fifo, cp_postht_fifo {
+    cp_distr_fifo: coverpoint distr_fifo_not_empty_i {
+      bins empty = {1'b0};
+      bins not_empty = {1'b1};
+    }
+
+    cr_enable_i_fifo_state: cross cp_enable,
+        cp_esrng_fifo, cp_esbit_fifo, cp_postht_fifo, cp_distr_fifo {
       // When re-enabling, all those FIFOs are empty.
       //
       // This is a property of the current implementation and it may be legal to change the
@@ -566,7 +573,8 @@ interface entropy_src_cov_if
       illegal_bins enabling_and_any_fifo_not_empty =
           binsof(cp_enable.enabling) && (binsof(cp_esrng_fifo.not_empty) ||
                                          binsof(cp_esbit_fifo.not_empty) ||
-                                         binsof(cp_postht_fifo.not_empty));
+                                         binsof(cp_postht_fifo.not_empty) ||
+                                         binsof(cp_distr_fifo.not_empty));
     }
 
     cp_sha3_state: coverpoint {cs_aes_halt_req_i, sha3_done_i} {
@@ -1117,6 +1125,7 @@ interface entropy_src_cov_if
             tb.dut.u_entropy_src_core.u_enable_delay.esrng_fifo_not_empty_i,
             tb.dut.u_entropy_src_core.u_enable_delay.esbit_fifo_not_empty_i,
             tb.dut.u_entropy_src_core.u_enable_delay.postht_fifo_not_empty_i,
+            tb.dut.u_entropy_src_core.u_enable_delay.distr_fifo_not_empty_i,
             tb.dut.u_entropy_src_core.u_enable_delay.cs_aes_halt_req_i,
             tb.dut.u_entropy_src_core.u_enable_delay.sha3_done_i == MuBi4True,
             tb.dut.u_entropy_src_core.u_enable_delay.bypass_mode_i,
