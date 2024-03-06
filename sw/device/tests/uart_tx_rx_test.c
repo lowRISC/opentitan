@@ -111,16 +111,7 @@ static const uint8_t kExpUartRxData[UART_DATASET_SIZE] = {
 
 // There are multiple uart instances in the chip. These variables will be
 // updated according to the uart we select.
-static volatile uint32_t uart_base_addr;
-static volatile uint32_t uart_peripheral_id;
-static volatile uint32_t uart_irq_tx_watermartk_id;
-static volatile uint32_t uart_irq_rx_watermartk_id;
-static volatile uint32_t uart_irq_tx_empty_id;
-static volatile uint32_t uart_irq_rx_overflow_id;
-static volatile uint32_t uart_irq_rx_frame_err_id;
-static volatile uint32_t uart_irq_rx_break_err_id;
-static volatile uint32_t uart_irq_rx_timeout_id;
-static volatile uint32_t uart_irq_rx_parity_err_id;
+static volatile uart_cfg_params_t uart_cfg;
 
 /**
  * Set our expectation & event indications of the interrupts we intend to
@@ -140,60 +131,6 @@ enum {
   kCommandTimeout = 5000000,  // microseconds
 };
 
-void update_uart_base_addr_and_irq_id(void) {
-  switch (kUartIdx) {
-    case 0:
-      uart_base_addr = TOP_EARLGREY_UART0_BASE_ADDR;
-      uart_peripheral_id = kTopEarlgreyPlicPeripheralUart0;
-      uart_irq_tx_watermartk_id = kTopEarlgreyPlicIrqIdUart0TxWatermark;
-      uart_irq_rx_watermartk_id = kTopEarlgreyPlicIrqIdUart0RxWatermark;
-      uart_irq_tx_empty_id = kTopEarlgreyPlicIrqIdUart0TxEmpty;
-      uart_irq_rx_overflow_id = kTopEarlgreyPlicIrqIdUart0RxOverflow;
-      uart_irq_rx_frame_err_id = kTopEarlgreyPlicIrqIdUart0RxFrameErr;
-      uart_irq_rx_break_err_id = kTopEarlgreyPlicIrqIdUart0RxBreakErr;
-      uart_irq_rx_timeout_id = kTopEarlgreyPlicIrqIdUart0RxTimeout;
-      uart_irq_rx_parity_err_id = kTopEarlgreyPlicIrqIdUart0RxParityErr;
-      break;
-    case 1:
-      uart_base_addr = TOP_EARLGREY_UART1_BASE_ADDR;
-      uart_peripheral_id = kTopEarlgreyPlicPeripheralUart1;
-      uart_irq_tx_watermartk_id = kTopEarlgreyPlicIrqIdUart1TxWatermark;
-      uart_irq_rx_watermartk_id = kTopEarlgreyPlicIrqIdUart1RxWatermark;
-      uart_irq_tx_empty_id = kTopEarlgreyPlicIrqIdUart1TxEmpty;
-      uart_irq_rx_overflow_id = kTopEarlgreyPlicIrqIdUart1RxOverflow;
-      uart_irq_rx_frame_err_id = kTopEarlgreyPlicIrqIdUart1RxFrameErr;
-      uart_irq_rx_break_err_id = kTopEarlgreyPlicIrqIdUart1RxBreakErr;
-      uart_irq_rx_timeout_id = kTopEarlgreyPlicIrqIdUart1RxTimeout;
-      uart_irq_rx_parity_err_id = kTopEarlgreyPlicIrqIdUart1RxParityErr;
-      break;
-    case 2:
-      uart_base_addr = TOP_EARLGREY_UART2_BASE_ADDR;
-      uart_peripheral_id = kTopEarlgreyPlicPeripheralUart2;
-      uart_irq_tx_watermartk_id = kTopEarlgreyPlicIrqIdUart2TxWatermark;
-      uart_irq_rx_watermartk_id = kTopEarlgreyPlicIrqIdUart2RxWatermark;
-      uart_irq_tx_empty_id = kTopEarlgreyPlicIrqIdUart2TxEmpty;
-      uart_irq_rx_overflow_id = kTopEarlgreyPlicIrqIdUart2RxOverflow;
-      uart_irq_rx_frame_err_id = kTopEarlgreyPlicIrqIdUart2RxFrameErr;
-      uart_irq_rx_break_err_id = kTopEarlgreyPlicIrqIdUart2RxBreakErr;
-      uart_irq_rx_timeout_id = kTopEarlgreyPlicIrqIdUart2RxTimeout;
-      uart_irq_rx_parity_err_id = kTopEarlgreyPlicIrqIdUart2RxParityErr;
-      break;
-    case 3:
-      uart_base_addr = TOP_EARLGREY_UART3_BASE_ADDR;
-      uart_peripheral_id = kTopEarlgreyPlicPeripheralUart3;
-      uart_irq_tx_watermartk_id = kTopEarlgreyPlicIrqIdUart3TxWatermark;
-      uart_irq_rx_watermartk_id = kTopEarlgreyPlicIrqIdUart3RxWatermark;
-      uart_irq_tx_empty_id = kTopEarlgreyPlicIrqIdUart3TxEmpty;
-      uart_irq_rx_overflow_id = kTopEarlgreyPlicIrqIdUart3RxOverflow;
-      uart_irq_rx_frame_err_id = kTopEarlgreyPlicIrqIdUart3RxFrameErr;
-      uart_irq_rx_break_err_id = kTopEarlgreyPlicIrqIdUart3RxBreakErr;
-      uart_irq_rx_timeout_id = kTopEarlgreyPlicIrqIdUart3RxTimeout;
-      uart_irq_rx_parity_err_id = kTopEarlgreyPlicIrqIdUart3RxParityErr;
-      break;
-    default:
-      LOG_FATAL("Unsupported uart ID %x", kUartIdx);
-  }
-}
 /**
  * Provides external irq handling for this test.
  *
@@ -208,28 +145,28 @@ void ottf_external_isr(uint32_t *exc_info) {
   // Check if it is the right peripheral.
   top_earlgrey_plic_peripheral_t peripheral = (top_earlgrey_plic_peripheral_t)
       top_earlgrey_plic_interrupt_for_peripheral[plic_irq_id];
-  CHECK(peripheral == uart_peripheral_id,
+  CHECK(peripheral == uart_cfg.peripheral_id,
         "Interurpt from unexpected peripheral: %d", peripheral);
 
   // Correlate the interrupt fired at PLIC with UART.
   dif_uart_irq_t uart_irq;
-  if (plic_irq_id == uart_irq_tx_watermartk_id) {
+  if (plic_irq_id == uart_cfg.irq_tx_watermark_id) {
     CHECK_DIF_OK(dif_uart_irq_set_enabled(&uart, kDifUartIrqTxWatermark,
                                           kDifToggleDisabled));
     CHECK(exp_uart_irq_tx_watermark, "Unexpected TX watermark interrupt");
     uart_irq_tx_watermark_fired = true;
     uart_irq = kDifUartIrqTxWatermark;
-  } else if (plic_irq_id == uart_irq_rx_watermartk_id) {
+  } else if (plic_irq_id == uart_cfg.irq_rx_watermark_id) {
     CHECK_DIF_OK(dif_uart_irq_set_enabled(&uart, kDifUartIrqRxWatermark,
                                           kDifToggleDisabled));
     CHECK(exp_uart_irq_rx_watermark, "Unexpected RX watermark interrupt");
     uart_irq_rx_watermark_fired = true;
     uart_irq = kDifUartIrqRxWatermark;
-  } else if (plic_irq_id == uart_irq_tx_empty_id) {
+  } else if (plic_irq_id == uart_cfg.irq_tx_empty_id) {
     CHECK(exp_uart_irq_tx_empty, "Unexpected TX empty interrupt");
     uart_irq_tx_empty_fired = true;
     uart_irq = kDifUartIrqTxEmpty;
-  } else if (plic_irq_id == uart_irq_rx_overflow_id) {
+  } else if (plic_irq_id == uart_cfg.irq_rx_overflow_id) {
     CHECK(exp_uart_irq_rx_overflow, "Unexpected RX overflow interrupt");
     uart_irq_rx_overflow_fired = true;
     uart_irq = kDifUartIrqRxOverflow;
@@ -294,61 +231,63 @@ static void uart_init_with_irqs(mmio_region_t base_addr, dif_uart_t *uart) {
  * Initializes PLIC and enables the relevant UART interrupts.
  */
 static void plic_init_with_irqs(mmio_region_t base_addr, dif_rv_plic_t *plic) {
-  LOG_INFO("Initializing the PLIC. %08x", uart_irq_tx_watermartk_id);
+  LOG_INFO("Initializing the PLIC. %08x", uart_cfg.irq_tx_watermark_id);
 
   CHECK_DIF_OK(dif_rv_plic_init(base_addr, plic));
 
   // Set the priority of UART interrupts at PLIC to be >=1 (so ensure the target
   // does get interrupted).
   CHECK_DIF_OK(
-      dif_rv_plic_irq_set_priority(plic, uart_irq_tx_watermartk_id, 0x1));
+      dif_rv_plic_irq_set_priority(plic, uart_cfg.irq_tx_watermark_id, 0x1));
   CHECK_DIF_OK(
-      dif_rv_plic_irq_set_priority(plic, uart_irq_rx_watermartk_id, 0x2));
-  CHECK_DIF_OK(dif_rv_plic_irq_set_priority(plic, uart_irq_tx_empty_id, 0x3));
+      dif_rv_plic_irq_set_priority(plic, uart_cfg.irq_rx_watermark_id, 0x2));
   CHECK_DIF_OK(
-      dif_rv_plic_irq_set_priority(plic, uart_irq_rx_overflow_id, 0x1));
+      dif_rv_plic_irq_set_priority(plic, uart_cfg.irq_tx_empty_id, 0x3));
   CHECK_DIF_OK(
-      dif_rv_plic_irq_set_priority(plic, uart_irq_rx_frame_err_id, 0x2));
+      dif_rv_plic_irq_set_priority(plic, uart_cfg.irq_rx_overflow_id, 0x1));
   CHECK_DIF_OK(
-      dif_rv_plic_irq_set_priority(plic, uart_irq_rx_break_err_id, 0x3));
-  CHECK_DIF_OK(dif_rv_plic_irq_set_priority(plic, uart_irq_rx_timeout_id, 0x1));
+      dif_rv_plic_irq_set_priority(plic, uart_cfg.irq_rx_frame_err_id, 0x2));
   CHECK_DIF_OK(
-      dif_rv_plic_irq_set_priority(plic, uart_irq_rx_parity_err_id, 0x2));
+      dif_rv_plic_irq_set_priority(plic, uart_cfg.irq_rx_break_err_id, 0x3));
+  CHECK_DIF_OK(
+      dif_rv_plic_irq_set_priority(plic, uart_cfg.irq_rx_timeout_id, 0x1));
+  CHECK_DIF_OK(
+      dif_rv_plic_irq_set_priority(plic, uart_cfg.irq_rx_parity_err_id, 0x2));
 
   // Set the threshold for the Ibex to 0.
   CHECK_DIF_OK(
       dif_rv_plic_target_set_threshold(plic, kTopEarlgreyPlicTargetIbex0, 0x0));
 
   // Enable all UART interrupts at the PLIC.
-  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(plic, uart_irq_tx_watermartk_id,
+  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(plic, uart_cfg.irq_tx_watermark_id,
                                            kTopEarlgreyPlicTargetIbex0,
                                            kDifToggleEnabled));
 
-  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(plic, uart_irq_rx_watermartk_id,
+  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(plic, uart_cfg.irq_rx_watermark_id,
                                            kTopEarlgreyPlicTargetIbex0,
                                            kDifToggleEnabled));
 
-  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(plic, uart_irq_tx_empty_id,
+  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(plic, uart_cfg.irq_tx_empty_id,
                                            kTopEarlgreyPlicTargetIbex0,
                                            kDifToggleEnabled));
 
-  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(plic, uart_irq_rx_overflow_id,
+  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(plic, uart_cfg.irq_rx_overflow_id,
                                            kTopEarlgreyPlicTargetIbex0,
                                            kDifToggleEnabled));
 
-  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(plic, uart_irq_rx_frame_err_id,
+  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(plic, uart_cfg.irq_rx_frame_err_id,
                                            kTopEarlgreyPlicTargetIbex0,
                                            kDifToggleEnabled));
 
-  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(plic, uart_irq_rx_break_err_id,
+  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(plic, uart_cfg.irq_rx_break_err_id,
                                            kTopEarlgreyPlicTargetIbex0,
                                            kDifToggleEnabled));
 
-  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(plic, uart_irq_rx_timeout_id,
+  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(plic, uart_cfg.irq_rx_timeout_id,
                                            kTopEarlgreyPlicTargetIbex0,
                                            kDifToggleEnabled));
 
-  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(plic, uart_irq_rx_parity_err_id,
+  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(plic, uart_cfg.irq_rx_parity_err_id,
                                            kTopEarlgreyPlicTargetIbex0,
                                            kDifToggleEnabled));
 }
@@ -536,9 +475,10 @@ bool test_main(void) {
     ottf_console_configure_uart(TOP_EARLGREY_UART1_BASE_ADDR);
   }
 
-  update_uart_base_addr_and_irq_id();
+  CHECK_STATUS_OK(
+      uart_testutils_cfg_params(kUartIdx, (uart_cfg_params_t *)&uart_cfg));
 
-  LOG_INFO("Test UART%d with base_addr: %08x", kUartIdx, uart_base_addr);
+  LOG_INFO("Test UART%d with base_addr: %08x", kUartIdx, uart_cfg.base_addr);
 
   // Attach the UART under test.
   CHECK_STATUS_OK(
@@ -551,7 +491,7 @@ bool test_main(void) {
       &clkmgr, /*jitter_enabled=*/false, kUseExtClk, kUseLowSpeedSel));
 
   // Initialize the UART.
-  mmio_region_t chosen_uart_region = mmio_region_from_addr(uart_base_addr);
+  mmio_region_t chosen_uart_region = mmio_region_from_addr(uart_cfg.base_addr);
   uart_init_with_irqs(chosen_uart_region, &uart);
 
   // Initialize the PLIC.
