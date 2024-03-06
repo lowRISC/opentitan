@@ -678,7 +678,7 @@
       tests: []
     }
     {
-      name: stall_priority_over_NAK
+      name: stall_priority_over_nak
       desc: '''
             Verify that if the configuration has both STALL and NAK enabled the STALL
             handshake will take priority.
@@ -688,7 +688,7 @@
             - Verify that the STALL being higher in priority will take precedence over NAK responses.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_stall_priority_over_nak"]
     }
     {
       name: pending_in_trans
