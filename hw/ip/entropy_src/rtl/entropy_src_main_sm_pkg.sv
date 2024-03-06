@@ -42,11 +42,10 @@ package entropy_src_main_sm_pkg;
     ContHTRunning  = 9'b110100010, // continuous test mode, wait for health test done pulse
     FWInsertStart  = 9'b011000011, // fw ov mode, start the sha3 block
     FWInsertMsg    = 9'b001011001, // fw ov mode, insert fw message into sha3 block
-    Sha3MsgDone    = 9'b100001111, // sha3 mode, all input messages added, ready to process
+    Sha3MsgDone    = 9'b100001111, // sha3 mode, sha3 state cleared, go to continuous check mode
     Sha3Process    = 9'b011111000, // sha3 mode, pulse the sha3 process input
     Sha3Valid      = 9'b010111111, // sha3 mode, wait for sha3 valid indication
     Sha3Done       = 9'b110011000, // sha3 mode, capture sha3 result, pulse done input
-    Sha3Quiesce    = 9'b100111001, // sha3 mode, goto alert state or continuous check mode
     AlertState     = 9'b111001101, // if some alert condition occurs, pulse an alert indication
     AlertHang      = 9'b111111011, // after pulsing alert signal, hang here until sw handles
     Error          = 9'b001110011  // illegal state reached and hang
