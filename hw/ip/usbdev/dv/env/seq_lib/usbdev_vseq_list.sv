@@ -20,8 +20,11 @@
 `include "usbdev_pkt_received_vseq.sv"
 `include "usbdev_pkt_sent_vseq.sv"
 `include "usbdev_random_length_out_transaction_vseq.sv"
+`include "usbdev_resume_link_active_vseq.sv"
 `include "usbdev_setup_trans_ignored_vseq.sv"
 
 // These depend on usbdev_random_length_out_transaction, so need to come after it.
 `include "usbdev_max_length_out_transaction_vseq.sv"
 `include "usbdev_min_length_out_transaction_vseq.sv"
+
+`include "usbdev_fifo_rst_vseq.sv"
