@@ -112,9 +112,9 @@
             '''
       stage: V2
       si_stage: SV3
-      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      lc_states: ["PROD"]
       tests: ["chip_sw_kmac_idle"]
-      bazel: []
+      bazel: ["//sw/device/tests:kmac_idle_test"]
     }
     {
       name: chip_sw_kmac_sha3_stress
