@@ -527,7 +527,7 @@ extern "C" {
  * address between #TOP_EARLGREY_SENSOR_CTRL_AON_BASE_ADDR and
  * `TOP_EARLGREY_SENSOR_CTRL_AON_BASE_ADDR + TOP_EARLGREY_SENSOR_CTRL_AON_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_SENSOR_CTRL_AON_SIZE_BYTES 0x40u
+#define TOP_EARLGREY_SENSOR_CTRL_AON_SIZE_BYTES 0x80u
 
 /**
  * Peripheral base address for regs device on sram_ctrl_ret_aon in top earlgrey.

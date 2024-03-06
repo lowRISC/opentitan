@@ -411,7 +411,7 @@ pub const SENSOR_CTRL_AON_BASE_ADDR: usize = 0x40490000;
 /// memory-mapped registers associated with this peripheral should have an
 /// address between #SENSOR_CTRL_AON_BASE_ADDR and
 /// `SENSOR_CTRL_AON_BASE_ADDR + SENSOR_CTRL_AON_SIZE_BYTES`.
-pub const SENSOR_CTRL_AON_SIZE_BYTES: usize = 0x40;
+pub const SENSOR_CTRL_AON_SIZE_BYTES: usize = 0x80;
 
 /// Peripheral base address for regs device on sram_ctrl_ret_aon in top earlgrey.
 ///

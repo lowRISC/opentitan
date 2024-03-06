@@ -91,6 +91,10 @@ bool test_main(void) {
   for (size_t i = 0; i < sensor_ctrl_events; ++i) {
     LOG_INFO("Testing sensor_ctrl event %d", i);
 
+    // Enable the alert on the sensor_ctrl side
+    CHECK_DIF_OK(
+        dif_sensor_ctrl_set_alert_en(&sensor_ctrl, i, kDifToggleEnabled));
+
     // Setup event trigger
     CHECK_DIF_OK(dif_sensor_ctrl_set_ast_event_trigger(&sensor_ctrl, i,
                                                        kDifToggleEnabled));
@@ -113,6 +117,10 @@ bool test_main(void) {
       LOG_ERROR("Recoverable event 0x%x does not match expectation %d", events,
                 i);
     }
+
+    // Disable the alert on the sensor_ctrl side
+    CHECK_DIF_OK(
+        dif_sensor_ctrl_set_alert_en(&sensor_ctrl, i, kDifToggleDisabled));
 
     // clear event trigger
     CHECK_DIF_OK(dif_sensor_ctrl_set_ast_event_trigger(&sensor_ctrl, i,

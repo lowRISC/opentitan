@@ -81,6 +81,21 @@ dif_result_t dif_sensor_ctrl_set_ast_event_trigger(
     dif_toggle_t enable);
 
 /**
+ * Enable a particular alert event..
+ *
+ * @param sensor_ctrl A sensor_ctrl handle.
+ * @param event_idx The event to configure.
+ * @param en Whether an event is enabled or not. If
+ * `kDifToggleEnabled`, the event is enabled.  Otherwise, it is disabled.
+ * @return 'kDifBadArg' if `handle` is null or `event_idx` is larger than the
+ * number of events supported.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_sensor_ctrl_set_alert_en(const dif_sensor_ctrl_t *sensor_ctrl,
+                                          dif_sensor_ctrl_event_idx_t event_idx,
+                                          dif_toggle_t en);
+
+/**
  * Sets the fatality configuration of a particular event.
  *
  * An event can be configured to be either fatal or recoverable.

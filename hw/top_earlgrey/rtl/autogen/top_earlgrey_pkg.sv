@@ -289,7 +289,7 @@ package top_earlgrey_pkg;
   /**
    * Peripheral size in bytes for sensor_ctrl_aon in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_SENSOR_CTRL_AON_SIZE_BYTES = 32'h40;
+  parameter int unsigned TOP_EARLGREY_SENSOR_CTRL_AON_SIZE_BYTES = 32'h80;
 
   /**
    * Peripheral base address for regs device on sram_ctrl_ret_aon in top earlgrey.

@@ -14,7 +14,7 @@
   sw_checklist:       "/sw/device/lib/dif/dif_sensor_ctrl",
   revisions: [
     {
-      version:            "1.0.0",
+      version:            "2.0.0",
       life_stage:         "L1",
       design_stage:       "D3",
       // block level verification not planned
@@ -170,10 +170,37 @@ registers: [
 
     { multireg: {
         cname: "SENSOR_CTRL",
+        name: "ALERT_EN",
+        regwen: "CFG_REGWEN",
+        desc: '''
+          Each multibit value enables a corresponding alert.
+        ''',
+        count: "NumAlertEvents",
+        swaccess: "rw",
+        hwaccess: "hro",
+        compact: "false",
+        fields: [
+            { bits: "3:0",
+              name: "VAL",
+              mubi: "true"
+              desc: '''
+                kMultiBitBool4True - An alert event is enabled.
+                kMultiBitBool4False - An alert event is disabled.
+              ''',
+              resval: "False"
+            },
+        ],
+      },
+    },
+
+    { multireg: {
+        cname: "SENSOR_CTRL",
         name: "FATAL_ALERT_EN",
         regwen: "CFG_REGWEN",
         desc: '''
           Each bit marks a corresponding alert as fatal or recoverable.
+
+          Note that alerts are ignored if they are not enabled in !!ALERT_EN.
         ''',
         count: "NumAlertEvents",
         swaccess: "rw",
