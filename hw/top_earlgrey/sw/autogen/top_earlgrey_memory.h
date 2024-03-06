@@ -708,7 +708,7 @@
  * address between #TOP_EARLGREY_HMAC_BASE_ADDR and
  * `TOP_EARLGREY_HMAC_BASE_ADDR + TOP_EARLGREY_HMAC_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_HMAC_SIZE_BYTES 0x1000
+#define TOP_EARLGREY_HMAC_SIZE_BYTES 0x2000
 /**
  * Peripheral base address for kmac in top earlgrey.
  *

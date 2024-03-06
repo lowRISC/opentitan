@@ -389,7 +389,7 @@ package top_earlgrey_pkg;
   /**
    * Peripheral size in bytes for hmac in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_HMAC_SIZE_BYTES = 32'h1000;
+  parameter int unsigned TOP_EARLGREY_HMAC_SIZE_BYTES = 32'h2000;
 
   /**
    * Peripheral base address for kmac in top earlgrey.

@@ -551,7 +551,7 @@ pub const HMAC_BASE_ADDR: usize = 0x41110000;
 /// memory-mapped registers associated with this peripheral should have an
 /// address between #HMAC_BASE_ADDR and
 /// `HMAC_BASE_ADDR + HMAC_SIZE_BYTES`.
-pub const HMAC_SIZE_BYTES: usize = 0x1000;
+pub const HMAC_SIZE_BYTES: usize = 0x2000;
 
 /// Peripheral base address for kmac in top earlgrey.
 ///
