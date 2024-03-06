@@ -90,6 +90,56 @@ static const pinmux_testutils_mio_pin_t kUartDvPins[4] = {
         .insel = kTopEarlgreyPinmuxInselIoa0,
     }};
 
+static const uart_cfg_params_t kUartCfgParams[4] = {
+    (uart_cfg_params_t){
+        .base_addr = TOP_EARLGREY_UART0_BASE_ADDR,
+        .peripheral_id = kTopEarlgreyPlicPeripheralUart0,
+        .irq_tx_watermark_id = kTopEarlgreyPlicIrqIdUart0TxWatermark,
+        .irq_rx_watermark_id = kTopEarlgreyPlicIrqIdUart0RxWatermark,
+        .irq_tx_empty_id = kTopEarlgreyPlicIrqIdUart0TxEmpty,
+        .irq_rx_overflow_id = kTopEarlgreyPlicIrqIdUart0RxOverflow,
+        .irq_rx_frame_err_id = kTopEarlgreyPlicIrqIdUart0RxFrameErr,
+        .irq_rx_break_err_id = kTopEarlgreyPlicIrqIdUart0RxBreakErr,
+        .irq_rx_timeout_id = kTopEarlgreyPlicIrqIdUart0RxTimeout,
+        .irq_rx_parity_err_id = kTopEarlgreyPlicIrqIdUart0RxParityErr,
+    },
+    (uart_cfg_params_t){
+        .base_addr = TOP_EARLGREY_UART1_BASE_ADDR,
+        .peripheral_id = kTopEarlgreyPlicPeripheralUart1,
+        .irq_tx_watermark_id = kTopEarlgreyPlicIrqIdUart1TxWatermark,
+        .irq_rx_watermark_id = kTopEarlgreyPlicIrqIdUart1RxWatermark,
+        .irq_tx_empty_id = kTopEarlgreyPlicIrqIdUart1TxEmpty,
+        .irq_rx_overflow_id = kTopEarlgreyPlicIrqIdUart1RxOverflow,
+        .irq_rx_frame_err_id = kTopEarlgreyPlicIrqIdUart1RxFrameErr,
+        .irq_rx_break_err_id = kTopEarlgreyPlicIrqIdUart1RxBreakErr,
+        .irq_rx_timeout_id = kTopEarlgreyPlicIrqIdUart1RxTimeout,
+        .irq_rx_parity_err_id = kTopEarlgreyPlicIrqIdUart1RxParityErr,
+    },
+    (uart_cfg_params_t){
+        .base_addr = TOP_EARLGREY_UART2_BASE_ADDR,
+        .peripheral_id = kTopEarlgreyPlicPeripheralUart2,
+        .irq_tx_watermark_id = kTopEarlgreyPlicIrqIdUart2TxWatermark,
+        .irq_rx_watermark_id = kTopEarlgreyPlicIrqIdUart2RxWatermark,
+        .irq_tx_empty_id = kTopEarlgreyPlicIrqIdUart2TxEmpty,
+        .irq_rx_overflow_id = kTopEarlgreyPlicIrqIdUart2RxOverflow,
+        .irq_rx_frame_err_id = kTopEarlgreyPlicIrqIdUart2RxFrameErr,
+        .irq_rx_break_err_id = kTopEarlgreyPlicIrqIdUart2RxBreakErr,
+        .irq_rx_timeout_id = kTopEarlgreyPlicIrqIdUart2RxTimeout,
+        .irq_rx_parity_err_id = kTopEarlgreyPlicIrqIdUart2RxParityErr,
+    },
+    (uart_cfg_params_t){
+        .base_addr = TOP_EARLGREY_UART3_BASE_ADDR,
+        .peripheral_id = kTopEarlgreyPlicPeripheralUart3,
+        .irq_tx_watermark_id = kTopEarlgreyPlicIrqIdUart3TxWatermark,
+        .irq_rx_watermark_id = kTopEarlgreyPlicIrqIdUart3RxWatermark,
+        .irq_tx_empty_id = kTopEarlgreyPlicIrqIdUart3TxEmpty,
+        .irq_rx_overflow_id = kTopEarlgreyPlicIrqIdUart3RxOverflow,
+        .irq_rx_frame_err_id = kTopEarlgreyPlicIrqIdUart3RxFrameErr,
+        .irq_rx_break_err_id = kTopEarlgreyPlicIrqIdUart3RxBreakErr,
+        .irq_rx_timeout_id = kTopEarlgreyPlicIrqIdUart3RxTimeout,
+        .irq_rx_parity_err_id = kTopEarlgreyPlicIrqIdUart3RxParityErr,
+    }};
+
 status_t uart_testutils_select_pinmux(const dif_pinmux_t *pinmux,
                                       uint8_t uart_idx,
                                       uart_pinmux_channel_t channel) {
@@ -115,6 +165,15 @@ status_t uart_testutils_detach_pinmux(const dif_pinmux_t *pinmux,
 
   TRY(dif_pinmux_input_select(pinmux, kUartPinmuxPins[uart_idx].peripheral_in,
                               kTopEarlgreyPinmuxInselConstantZero));
+
+  return OK_STATUS();
+}
+
+status_t uart_testutils_cfg_params(uint8_t uart_idx,
+                                   uart_cfg_params_t *params) {
+  TRY_CHECK(uart_idx < ARRAYSIZE(kUartCfgParams), "Index out of bounds");
+
+  *params = kUartCfgParams[uart_idx];
 
   return OK_STATUS();
 }
