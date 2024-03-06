@@ -43,8 +43,8 @@ module entropy_src_enable_delay import prim_mubi_pkg::*; (
   input logic distr_fifo_not_empty_i,
 
   // SHA3 conditioner inputs
-  input logic   cs_aes_halt_req_i,
-  input mubi4_t sha3_done_i,
+  input logic cs_aes_halt_req_i,
+  input logic sha3_block_processed_i,
 
   input logic bypass_mode_i,
 
@@ -64,19 +64,19 @@ module entropy_src_enable_delay import prim_mubi_pkg::*; (
   // Flops
   logic [MaxFifoWait - 1:0] fifo_timer_d, fifo_timer_q;
   logic                     sha3_active_post_en_d, sha3_active_post_en_q;
-  mubi4_t                   sha3_done_q;
+  logic                     sha3_block_processed_q;
   logic                     extend_enable_q;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       sha3_active_post_en_q   <= 1'b0;
       fifo_timer_q            <= '0;
-      sha3_done_q             <= prim_mubi_pkg::MuBi4False;
+      sha3_block_processed_q  <= 1'b0;
       extend_enable_q         <= 1'b0;
     end else begin
       sha3_active_post_en_q   <= sha3_active_post_en_d;
       fifo_timer_q            <= fifo_timer_d;
-      sha3_done_q             <= sha3_done_i;
+      sha3_block_processed_q  <= sha3_block_processed_i;
       extend_enable_q         <= extend_enable;
     end
   end
@@ -98,10 +98,10 @@ module entropy_src_enable_delay import prim_mubi_pkg::*; (
   // Health checks.
   assign extend_enable = ((fifo_timer_q[0] | data_in_flight) & ~enable_i);
 
-  // Pulse to extend from the falling edge of the incoming enable pulse
-  // until one cycle after the SHA is done.
+  // Pulse to extend from the falling edge of the incoming enable pulse until one cycle after the
+  // SHA engine has finished processing the current block.
   assign sha3_active_post_en_d = cs_aes_halt_req_i && !enable_i ? 1'b1 :
-                                 mubi4_test_true_strict(sha3_done_q) ? 1'b0 :
+                                 sha3_block_processed_q ? 1'b0 :
                                  sha3_active_post_en_q;
 
   // Force the output to be low until sha3_active_post_en_q falls or

@@ -634,7 +634,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .postht_fifo_not_empty_i(pfifo_postht_not_empty),
     .distr_fifo_not_empty_i(sfifo_distr_not_empty),
     .cs_aes_halt_req_i(cs_aes_halt_req),
-    .sha3_done_i(sha3_done),
+    .sha3_block_processed_i(sha3_block_processed),
     .bypass_mode_i(es_bypass_mode),
     .enable_o(es_delayed_enable)
   );

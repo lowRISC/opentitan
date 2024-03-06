@@ -523,7 +523,7 @@ interface entropy_src_cov_if
                                                   bit postht_fifo_not_empty_i,
                                                   bit distr_fifo_not_empty_i,
                                                   bit cs_aes_halt_req_i,
-                                                  bit sha3_done_i,
+                                                  bit sha3_block_processed_i,
                                                   bit bypass_mode_i,
                                                   bit enable_o);
     option.name         = "enable_delay_cg";
@@ -577,28 +577,22 @@ interface entropy_src_cov_if
                                          binsof(cp_distr_fifo.not_empty));
     }
 
-    cp_sha3_state: coverpoint {cs_aes_halt_req_i, sha3_done_i} {
+    cp_sha3_state: coverpoint {cs_aes_halt_req_i, sha3_block_processed_i} {
       bins idle = {2'b00};
-      // AES Halt Req and SHA3 Done cannot be true at the same time.
-      //
-      // This is a property of the current implementation and it may be legal to change the
-      // implementation so that this no longer holds.  In the current implementation, however, it is
-      // impossible to cover these cases.  These cases are thus put into `illegal_bins`, so that
-      // they fail if the implementation changes and the coverage has to be redefined.
-      bins sha3_done = {2'b01};
+      bins sha3_block_processed = {2'b01};
       bins aes_halt_req = {2'b10};
-      illegal_bins aes_halt_req_and_sha3_done = {2'b11};
+      bins aes_halt_req_and_sha3_block_processed = {2'b11};
     }
 
     cr_enable_i_sha3_state: cross cp_enable, cp_sha3_state {
-      // SHA3 Done cannot be true when enabling (and thus currently disabled).
+      // SHA3 Block Processed cannot be true when enabling (and thus currently disabled).
       //
       // This is a property of the current implementation and it may be legal to change the
       // implementation so that this no longer holds.  In the current implementation, however, it is
       // impossible to cover these cases.  These cases are thus put into `illegal_bins`, so that
       // they fail if the implementation changes and the coverage has to be redefined.
-      illegal_bins enabling_and_sha3_done =
-          binsof(cp_enable.enabling) && binsof(cp_sha3_state.sha3_done);
+      illegal_bins enabling_and_sha3_block_processed =
+          binsof(cp_enable.enabling) && binsof(cp_sha3_state.sha3_block_processed);
     }
 
     cr_enable_i_bypass_mode: cross cp_enable, bypass_mode_i;
@@ -1127,7 +1121,7 @@ interface entropy_src_cov_if
             tb.dut.u_entropy_src_core.u_enable_delay.postht_fifo_not_empty_i,
             tb.dut.u_entropy_src_core.u_enable_delay.distr_fifo_not_empty_i,
             tb.dut.u_entropy_src_core.u_enable_delay.cs_aes_halt_req_i,
-            tb.dut.u_entropy_src_core.u_enable_delay.sha3_done_i == MuBi4True,
+            tb.dut.u_entropy_src_core.u_enable_delay.sha3_block_processed_i,
             tb.dut.u_entropy_src_core.u_enable_delay.bypass_mode_i,
             tb.dut.u_entropy_src_core.u_enable_delay.enable_o);
       end
