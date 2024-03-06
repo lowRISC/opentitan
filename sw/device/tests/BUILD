@@ -4588,41 +4588,6 @@ opentitan_test(
 )
 
 # TODO(#19902): Migrate to `opentitan_test` once there is support for the
-# hyperdebug310 target. #19903 covers support for hyperdebug340, and #19901
-# covers support for cw340_params.
-opentitan_functest(
-    name = "spi_device_ottf_console_test",
-    srcs = ["spi_device_ottf_console_test.c"],
-    cw310 = cw310_params(
-        interface = "hyper310",
-        test_cmds = [
-            "--bitstream=\"$(location {bitstream})\"",
-            "--bootstrap=\"$(location {flash})\"",
-        ],
-    ),
-    cw340 = cw340_params(
-        interface = "hyper340",
-        tags = ["manual"],
-        test_cmds = [
-            "--bitstream=\"$(location {bitstream})\"",
-            "--bootstrap=\"$(location {flash})\"",
-        ],
-    ),
-    targets = [
-        "cw310_rom_with_fake_keys",
-        "cw310_test_rom",
-        "cw340_test_rom",
-    ],
-    test_harness = "//sw/host/tests/chip/spi_device_ottf_console",
-    deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/dif:spi_device",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
-)
-
-# TODO(#19902): Migrate to `opentitan_test` once there is support for the
 # hyperdebug310 target.
 opentitan_test(
     name = "i2c_target_test",
