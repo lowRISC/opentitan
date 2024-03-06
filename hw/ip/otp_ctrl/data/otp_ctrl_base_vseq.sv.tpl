@@ -409,8 +409,11 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   endtask
 
   // For a DAI interface operation to finish, either way until status dai_idle is set, or check
-  // err_code and see if fatal error happened.
+  // err_code and see if fatal error happened. In any case, break out of this wait if there
+  // is a need to stop transaction generators, since a spinwait will otherwise just stop
+  // when it times-out.
   virtual task wait_dai_op_done();
+    if (cfg.stop_transaction_generators()) return;
     fork begin
       fork
         begin
@@ -426,6 +429,12 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
             csr_rd(.ptr(ral.err_code[DaiIdx].err_code), .value(err_val), .backdoor(1));
             // Break if error will cause fatal alerts
             if (err_val inside {OTP_TERMINAL_ERRS}) break;
+          end
+        end
+        begin
+          forever begin
+            cfg.clk_rst_vif.wait_clks(1);
+            if (cfg.stop_transaction_generators()) break;
           end
         end
       join_any
@@ -616,6 +625,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
         bit [TL_AW-1:0] rand_addr = $urandom_range(0, NUM_PRIM_REG - 1) * 4;
         bit [TL_AW-1:0] tlul_addr =
             cfg.ral_models["otp_ctrl_prim_reg_block"].get_addr_from_offset(rand_addr);
+        if (cfg.stop_transaction_generators()) break;
         rand_drive_dft_en();
         `DV_CHECK_STD_RANDOMIZE_FATAL(data)
         test_access_en = cfg.otp_ctrl_vif.lc_dft_en_i == lc_ctrl_pkg::On;

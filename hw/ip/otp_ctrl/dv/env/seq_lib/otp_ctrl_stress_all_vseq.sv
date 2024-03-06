@@ -39,7 +39,8 @@ class otp_ctrl_stress_all_vseq extends otp_ctrl_base_vseq;
 
       seq = create_seq_by_name(seq_names[seq_idx]);
       `downcast(otp_ctrl_vseq, seq)
-
+      `uvm_info(`gfn, $sformatf("Starting sequence %s in stress_all", otp_ctrl_vseq.get_name()),
+                UVM_MEDIUM)
 
       // At the end of each vseq, design might enter terminal Error State, need to reset to
       // recover. If upper seq disables do_apply_reset for this seq, then can't issue reset
