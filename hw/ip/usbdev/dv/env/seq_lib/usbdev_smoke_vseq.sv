@@ -8,61 +8,100 @@ class usbdev_smoke_vseq extends usbdev_base_vseq;
 
   `uvm_object_new
 
-  usb20_item    m_usb20_item;
-  usb20_item    rsp_itm;
-  token_pkt     m_token_pkt;
-  data_pkt      m_data_pkt;
-  handshake_pkt m_handshake_pkt;
-
   task body();
-    uvm_reg_data_t rx_fifo_read;
-    uvm_reg_data_t rx_fifo_expected;
-    uvm_reg_data_t rx_empty;
-    uvm_reg_data_t usbstat;
-    uvm_reg_data_t data;
-    uvm_status_e status;
+    // Expected data content of packet
+    byte unsigned exp_data[];
+    usb20_item response;
+    data_pkt in_data;
+
     super.apply_reset("HARD");
     super.dut_init("HARD");
     cfg.clk_rst_vif.wait_clks(200);
     clear_all_interrupts();
-    csr_wr(.ptr(ral.ep_out_enable[0].enable[0]), .value(1'b1)); // Enable EP0 Out
-    csr_update(ral.ep_out_enable[0]);
-    ral.rxenable_setup[0].setup[0].set(1'b1); // Enable rx setup
-    csr_update(ral.rxenable_setup[0]);
+
+    // Enable all endpoints for SETUP, IN and OUT
+    csr_wr(.ptr(ral.ep_out_enable[0]), .value(12'hfff));
+    csr_wr(.ptr(ral.ep_in_enable[0]), .value(12'hfff));
+    csr_wr(.ptr(ral.rxenable_out[0]), .value(12'hfff));
+    csr_wr(.ptr(ral.rxenable_setup[0]), .value(12'hfff));
     ral.avsetupbuffer.buffer.set(setup_buffer_id); // set buffer id =1
     csr_update(ral.avsetupbuffer);
     ral.intr_enable.pkt_received.set(1'b1); // Enable pkt_received interrupt
     csr_update(ral.intr_enable);
-    // Setup token packet followed by a data packet of 8 bytes
-    call_token_sequence(PidTypeSetupToken);
+
+    // ---------------------------------------------------------------------------------------------
+    // SETUP token packet followed by a DATA packet of 8 bytes
+    // ---------------------------------------------------------------------------------------------
+    call_token_seq(PidTypeSetupToken);
     cfg.clk_rst_vif.wait_clks(20);
-    call_data_sequence(PktTypeData, PidTypeData0);
+    call_desc_sequence(PktTypeData, PidTypeData0);
     cfg.clk_rst_vif.wait_clks(20);
-    // read rx_fifo register to check rcvd buffer id, endpoint number and type setup/out
-    csr_rd(.ptr(ral.rxfifo), .value(rx_fifo_read));
-    // expected value of rx_fifof reg is (32'h80801)[setup = 1, payload size = 8 bytes buffid = 1]
-    rx_fifo_expected = 32'h80801;
-    `DV_CHECK_EQ(rx_fifo_expected, rx_fifo_read);
+
+    // Check the contents of the packet buffer memory against the SETUP packet that was sent.
+    recover_orig_data(m_data_pkt.data, exp_data);
+    check_rx_packet(endp, 1'b1, setup_buffer_id, exp_data);
+
+    // ---------------------------------------------------------------------------------------------
+    // OUT data packet
+    // ---------------------------------------------------------------------------------------------
+    ral.avoutbuffer.buffer.set(out_buffer_id);
+    csr_update(ral.avoutbuffer);
+    call_token_seq(PidTypeOutToken);
+    cfg.clk_rst_vif.wait_clks(20);
+    // TODO: want to use a randomized packet length here but may be 4n contrained presently.
+    call_data_seq(PktTypeData, PidTypeData1, 0, 64);  // Using DATA1 for second packet.
+    cfg.clk_rst_vif.wait_clks(20);
+
+    // Check that the packet was accepted (ACKnowledged) by the USB device.
+    get_response(m_response_item);
+    $cast(response, m_response_item);
+    `DV_CHECK_EQ(response.m_pkt_type, PktTypeHandshake);
+    `DV_CHECK_EQ(response.m_pid_type, PidTypeAck);
+
+    // Check the contents of the packet buffer memory against the OUT packet that was sent.
+    recover_orig_data(m_data_pkt.data, exp_data);
+    check_rx_packet(endp, 1'b0, out_buffer_id, exp_data);
+
+    // ---------------------------------------------------------------------------------------------
+    // Retrieve that data packet using an IN transaction.
+    // ---------------------------------------------------------------------------------------------
+
+    // Declare that there is an IN packet available for collection, initially leaving the RDY bit
+    // clear, to mimic the behavior of the DIF.
+    ral.configin[endp].size.set(exp_data.size());
+    ral.configin[endp].buffer.set(out_buffer_id);
+    ral.configin[endp].rdy.set(1'b0);
+    csr_update(ral.configin[endp]);
+    // Now set the RDY bit
+    ral.configin[endp].rdy.set(1'b1);
+    csr_update(ral.configin[endp]);
+
+    // Token pkt followed by handshake pkt
+    call_token_seq(PidTypeInToken);
+    get_response(m_response_item);
+    $cast(response, m_response_item);
+    `DV_CHECK_EQ(response.m_pkt_type, PktTypeData);
+    $cast(in_data, response);
+    check_tx_packet(in_data, PidTypeData1, exp_data);
+    cfg.clk_rst_vif.wait_clks(20);
+    call_handshake_sequence(PktTypeHandshake, PidTypeAck);
+    cfg.clk_rst_vif.wait_clks(20);
+    // Verify Transaction reads register status and verifies that IN transaction is successful.
+    check_in_sent();
+
   endtask
 
-  task call_token_sequence(input pid_type_e pid_type);
-    RSP rsp_item;
-    `uvm_create_on(m_token_pkt, p_sequencer.usb20_sequencer_h)
-    m_token_pkt.m_pkt_type = PktTypeToken;
-    m_token_pkt.m_pid_type = pid_type;
-    assert(m_token_pkt.randomize() with {m_token_pkt.address inside {7'b0};
-                                         m_token_pkt.endpoint inside {4'd0};});
-      m_usb20_item = m_token_pkt;
-      start_item(m_token_pkt);
-      finish_item(m_token_pkt);
-      if (pid_type == PidTypeInToken) begin
-        get_response(rsp_item);
-        $cast(rsp_itm, rsp_item);
-        get_response_from_device(rsp_itm, PidTypeData1);
-      end
-  endtask
+  // TODO: Presently the act of sending a data packet, destructively modifies it!
+  // Restore the data packet to its original state. This just bit-reverses each byte
+  // within the input array.
+  function recover_orig_data(input byte unsigned in[], output byte unsigned out[]);
+    out = {<<8{in}};  // Reverse the order of the bytes
+    out = {<<{out}};  // Bit-reverse everything
+  endfunction
 
-  task call_data_sequence(input pkt_type_e pkt_type, input pid_type_e pid_type);
+  // Construct and transmit a DATA packet containing a SETUP descriptor to the USB device
+  task call_desc_sequence(input pkt_type_e pkt_type, input pid_type_e pid_type);
+    usb20_item response;
     RSP rsp_item;
     `uvm_create_on(m_data_pkt, p_sequencer.usb20_sequencer_h)
     m_data_pkt.m_pkt_type = pkt_type;
@@ -70,21 +109,13 @@ class usbdev_smoke_vseq extends usbdev_base_vseq;
     m_data_pkt.m_bmRT = bmRequestType3;
     m_data_pkt.m_bR = bRequestGET_DESCRIPTOR;
     assert(m_data_pkt.randomize());
-    m_usb20_item = m_data_pkt;
-    m_data_pkt.set_payload (m_data_pkt.m_bmRT, m_data_pkt.m_bR,8'h00, 8'h01, 8'h00, 8'h00,
-                            8'h40,8'h00);
+    m_data_pkt.set_payload(m_data_pkt.m_bmRT, m_data_pkt.m_bR, 8'h00, 8'h01, 8'h00, 8'h00,
+                           8'h40,8'h00);
     start_item(m_data_pkt);
     finish_item(m_data_pkt);
     get_response(rsp_item);
-    $cast(rsp_itm, rsp_item);
-    get_response_from_device(rsp_itm, PidTypeAck);
+    $cast(response, rsp_item);
+    get_out_response_from_device(response, PidTypeAck);
   endtask
 
-  task get_response_from_device(usb20_item rsp_itm, input pid_type_e pid_type);
-    `uvm_create_on(m_handshake_pkt, p_sequencer.usb20_sequencer_h)
-    m_handshake_pkt.m_pid_type = pid_type;
-    m_usb20_item = m_handshake_pkt;
-    // DV_CHECK on device reponse packet id
-    `DV_CHECK_EQ(m_usb20_item.m_pid_type, rsp_itm.m_pid_type);
-  endtask
 endclass : usbdev_smoke_vseq

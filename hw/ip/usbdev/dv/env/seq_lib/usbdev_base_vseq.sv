@@ -100,6 +100,7 @@ virtual task dut_init(string reset_kind = "HARD");
   if (do_usbdev_init) usbdev_init();
 endtask
 
+  // Construct and transmit a token packet to the USB device
   virtual task call_token_seq(input pid_type_e pid_type);
     `uvm_create_on(m_token_pkt, p_sequencer.usb20_sequencer_h)
     m_token_pkt.m_pkt_type = PktTypeToken;
@@ -111,6 +112,7 @@ endtask
     finish_item(m_token_pkt);
   endtask
 
+  // Construct and transmit a DATA packet to the USB device
   virtual task call_data_seq(input pkt_type_e pkt_type, input pid_type_e pid_type,
                              input bit rand_or_not, input bit [6:0] num_of_bytes);
     `uvm_create_on(m_data_pkt, p_sequencer.usb20_sequencer_h)
@@ -146,6 +148,85 @@ endtask
     m_usb20_item = m_handshake_pkt;
     start_item(m_handshake_pkt);
     finish_item(m_handshake_pkt);
+  endtask
+
+  // Check that a SETUP/OUT data packet with the given properties was received and stored by
+  // the USB device in its packet buffer memory.
+  task check_rx_packet(bit [3:0] endp, bit setup, bit [4:0] buffer_id,
+                       byte unsigned exp_byte_data[]);
+    uvm_reg_data_t rx_fifo_read;
+    int unsigned   offset;
+
+    // Read RX FIFO which should contain a buffer description matching the expectations
+    csr_rd(.ptr(ral.rxfifo), .value(rx_fifo_read));
+
+    `DV_CHECK_EQ(get_field_val(ral.rxfifo.ep, rx_fifo_read), endp);
+    `DV_CHECK_EQ(get_field_val(ral.rxfifo.setup, rx_fifo_read), setup);
+    `DV_CHECK_EQ(get_field_val(ral.rxfifo.buffer, rx_fifo_read), buffer_id);
+    `DV_CHECK_EQ(get_field_val(ral.rxfifo.size, rx_fifo_read), exp_byte_data.size());
+
+    // Calculate start address (in 32-bit words) of buffer
+    offset = buffer_id * 'h10;
+
+    // TODO: This is partly a limitation of this test code and partly because we may expect to
+    // run into troubles trying to perform complete word reads from a packet buffer memory that
+    // has not been initialized, resulting in the transfer of undefined data even if it is
+    // ultimately unused.
+    `DV_CHECK_EQ_FATAL(exp_byte_data.size() & 3, 0, "Packets must be 4n presently");
+    for (int unsigned idx = 0; idx < exp_byte_data.size(); idx++) begin
+      `uvm_info(`gfn, $sformatf("%d: 0x%x", idx, exp_byte_data[idx]), UVM_DEBUG)
+    end
+
+    // Check buffer content against packet data
+    for (int unsigned idx = 0; idx < exp_byte_data.size(); idx += 4) begin
+      bit [31:0] act_data;
+      bit [31:0] exp_data;
+      // Expected value of this word
+      exp_data = {exp_byte_data[idx + 3], exp_byte_data[idx + 2],
+                  exp_byte_data[idx + 1], exp_byte_data[idx]};
+
+      mem_rd(.ptr(ral.buffer), .offset(offset), .data(act_data));
+      `uvm_info(`gfn, $sformatf("Checking 0x%x against 0x%x", act_data, exp_data), UVM_DEBUG)
+      // `DV check on actual and exp data
+      `DV_CHECK_CASE_EQ(act_data, exp_data, "Received buffer contents do not match data packet")
+      offset++;
+    end
+  endtask
+
+  // Check that the IN DATA packet transmitted by the USB device matches our expectations
+  task check_tx_packet(data_pkt pkt, pid_type_e exp_pid, input byte unsigned exp_data[]);
+    int unsigned act_len = pkt.data.size();
+    int unsigned exp_len = exp_data.size();
+    int unsigned len = (act_len < exp_len) ? act_len : exp_len;
+
+    `uvm_info(`gfn, $sformatf("IN packet PID 0x%x len %d expected PID 0x%x len %d",
+                              pkt.m_pid_type, act_len, exp_pid, exp_len), UVM_DEBUG)
+    `DV_CHECK_EQ(pkt.m_pid_type, exp_pid);
+
+    for (int unsigned i = 0; i < exp_data.size(); i++) begin
+      `uvm_info(`gfn, $sformatf("%d: 0x%x", i, exp_data[i]), UVM_HIGH)
+    end
+    for (int unsigned i = 0; i < pkt.data.size(); i++) begin
+      `uvm_info(`gfn, $sformatf("%d: 0x%x", i, pkt.data[i]), UVM_HIGH)
+    end
+    for (int unsigned i = 0; i < len; i++) begin
+      `DV_CHECK_EQ(pkt.data[i], exp_data[i], "Mismatch in packet data")
+    end
+    `DV_CHECK_EQ(act_len, exp_len, "Unexpected packet length")
+  endtask
+
+  task check_in_sent();
+    bit pkt_sent;
+    bit sent;
+    csr_rd(.ptr(ral.intr_state.pkt_sent), .value(pkt_sent));
+    csr_rd(.ptr(ral.in_sent[0].sent[endp]), .value(sent));
+    `DV_CHECK_EQ(1, pkt_sent);
+    `DV_CHECK_EQ(1, sent);
+
+    // Write 1 to clear particular EP in_sent
+    csr_wr(.ptr(ral.in_sent[0].sent[endp]), .value(1'b1));
+    csr_rd(.ptr(ral.in_sent[0].sent[endp]), .value(sent));
+    `DV_CHECK_EQ(sent, 0); // verify that after writing 1, the in_sent bit is cleared.
   endtask
 
 virtual task dut_shutdown();
