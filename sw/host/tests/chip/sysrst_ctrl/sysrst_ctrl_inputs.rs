@@ -12,12 +12,12 @@ use std::time::Duration;
 
 use object::{Object, ObjectSymbol};
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::execute_test;
 use opentitanlib::io::uart::Uart;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::mem::MemWriteReq;
 use opentitanlib::test_utils::test_status::TestStatus;
 use opentitanlib::uart::console::UartConsole;
-use opentitanlib::{collection, execute_test};
 
 use sysrst_ctrl::{set_pins, setup_pins, Config};
 
@@ -35,16 +35,23 @@ struct Opts {
     firmware_elf: PathBuf,
 }
 
-static CONFIG: Lazy<HashMap<&'static str, Config>> = Lazy::new(|| {
-    collection! {
-        "hyper310" => Config {
-            // key0, key1, key2, pwrb_in, ac_present_in, lid_open, ec_rst, flash_wp
-            output_pins: vec!["IOR10", "IOR11", "IOR12", "IOR5", "IOR6", "IOR7", "SYSRST_CTRL_EC_RST_L", "SYSRST_CTRL_FLASH_WP_L"],
-            open_drain: vec![false, false, false, false, false, false, true, true],
-            input_pins: vec![],
-            //  ec_rst, flash_wp
-            pullup_pins: vec!["SYSRST_CTRL_EC_RST_L", "SYSRST_CTRL_FLASH_WP_L"],
-        },
+static CONFIG: Lazy<Config> = Lazy::new(|| {
+    Config {
+        // key0, key1, key2, pwrb_in, ac_present_in, lid_open, ec_rst, flash_wp
+        output_pins: vec![
+            "IOR10",
+            "IOR11",
+            "IOR12",
+            "IOR5",
+            "IOR6",
+            "IOR7",
+            "SYSRST_CTRL_EC_RST_L",
+            "SYSRST_CTRL_FLASH_WP_L",
+        ],
+        open_drain: vec![false, false, false, false, false, false, true, true],
+        input_pins: vec![],
+        //  ec_rst, flash_wp
+        pullup_pins: vec!["SYSRST_CTRL_EC_RST_L", "SYSRST_CTRL_FLASH_WP_L"],
     }
 });
 
@@ -125,20 +132,12 @@ fn main() -> Result<()> {
     uart.set_flow_control(true)?;
     let _ = UartConsole::wait_for(&*uart, r"Running [^\r\n]*", opts.timeout)?;
 
-    log::info!(
-        "Use pin configuration for {:?}",
-        opts.init.backend_opts.interface
-    );
-    let config = CONFIG
-        .get(opts.init.backend_opts.interface.as_str())
-        .expect("interface");
-
     execute_test!(
         chip_sw_sysrst_ctrl_input,
         &opts,
         &transport,
         &*uart,
-        config,
+        &CONFIG,
         *test_phase_address,
         *test_expected_address
     );

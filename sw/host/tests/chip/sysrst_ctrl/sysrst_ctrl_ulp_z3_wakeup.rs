@@ -5,19 +5,18 @@
 use anyhow::{ensure, Result};
 use clap::Parser;
 use once_cell::sync::Lazy;
-use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
 use std::time::Duration;
 
 use object::{Object, ObjectSymbol};
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::execute_test;
 use opentitanlib::io::uart::Uart;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::mem::MemWriteReq;
 use opentitanlib::test_utils::test_status::TestStatus;
 use opentitanlib::uart::console::UartConsole;
-use opentitanlib::{collection, execute_test};
 
 use sysrst_ctrl::{read_pins, set_pins, setup_pins, Config};
 
@@ -49,16 +48,14 @@ enum TestPhase {
 // Keep this consistent with device code.
 const DEBOUNCE_SW_VALUE_USEC: u64 = 100;
 
-static CONFIG: Lazy<HashMap<&'static str, Config>> = Lazy::new(|| {
-    collection! {
-        "hyper310" => Config {
-            // pwrb_in_i, ac_present_i, lid_open_i
-            output_pins: vec!["IOR10", "IOR11", "IOR12"],
-            open_drain: vec![false, false, false],
-            // z3_wakeup
-            input_pins: vec!["IOR5"],
-            pullup_pins: vec![],
-        },
+static CONFIG: Lazy<Config> = Lazy::new(|| {
+    Config {
+        // pwrb_in_i, ac_present_i, lid_open_i
+        output_pins: vec!["IOR10", "IOR11", "IOR12"],
+        open_drain: vec![false, false, false],
+        // z3_wakeup
+        input_pins: vec!["IOR5"],
+        pullup_pins: vec![],
     }
 });
 
@@ -154,16 +151,8 @@ fn main() -> Result<()> {
     uart.set_flow_control(true)?;
     let _ = UartConsole::wait_for(&*uart, r"Running [^\r\n]*", opts.timeout)?;
 
-    log::info!(
-        "Use pin configuration for {:?}",
-        opts.init.backend_opts.interface
-    );
-    let config = CONFIG
-        .get(opts.init.backend_opts.interface.as_str())
-        .expect("interface");
-
     // Setup transport pins.
-    setup_pins(&transport, config)?;
+    setup_pins(&transport, &CONFIG)?;
 
     // The sysrst_ctrl block can detect three transitions to wakeup:
     // - A high level on the ac_present_i signal
@@ -181,7 +170,7 @@ fn main() -> Result<()> {
             chip_sw_sysrst_ctrl_ulp_z3_wakeup,
             &opts,
             &transport,
-            config,
+            &CONFIG,
             &*uart,
             symbol.address() as u32,
             initial,
