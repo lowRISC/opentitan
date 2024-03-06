@@ -165,7 +165,8 @@ Write 1 to request memory init.
 The init mechanism uses an LFSR that is seeded with a part of the nonce supplied when requesting a scrambling key.
 Once seeded, the memory is initialized with pseudo-random data pulled from the LFSR.
 Note that [`CTRL.RENEW_SCR_KEY`](#ctrl) takes priority when writing 1 to both [`CTRL.RENEW_SCR_KEY`](#ctrl) and [`CTRL.INIT`](#ctrl) with the same write transaction.
-This means that the key request will complete first, followed by SRAM initialization.
+This means that the key request will complete first, followed by SRAM initialization. Note that writing 1 to this register while
+an init request is already pending has no effect.
 
 ### CTRL . RENEW_SCR_KEY
 Write 1 to request a new scrambling key from OTP. After writing to this register, SRAM transactions will
@@ -173,7 +174,7 @@ be blocked until [`STATUS.SCR_KEY_VALID`](#status) has been set to 1. If [`STATU
 before triggering a key renewal, hardware will automatically clear that status bit such that software
 can poll its status. Note that requesting a new scrambling key takes ~200 OTP cycles, which translates
 to ~800 CPU cycles (OTP runs at 24MHz, CPU runs at 100MHz). Note that writing 1 to this register while
-a key request is pending has no effect.
+a key request or a memory initialization request is already pending has no effect.
 
 ## SCR_KEY_ROTATED
 Clearable SRAM key request status.

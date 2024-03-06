@@ -366,7 +366,7 @@
                   before triggering a key renewal, hardware will automatically clear that status bit such that software
                   can poll its status. Note that requesting a new scrambling key takes ~200 OTP cycles, which translates
                   to ~800 CPU cycles (OTP runs at 24MHz, CPU runs at 100MHz). Note that writing 1 to this register while
-                  a key request is pending has no effect.
+                  a key request or a memory initialization request is already pending has no effect.
                   '''
           },
           { bits: "1",
@@ -376,7 +376,8 @@
                   The init mechanism uses an LFSR that is seeded with a part of the nonce supplied when requesting a scrambling key.
                   Once seeded, the memory is initialized with pseudo-random data pulled from the LFSR.
                   Note that !!CTRL.RENEW_SCR_KEY takes priority when writing 1 to both !!CTRL.RENEW_SCR_KEY and !!CTRL.INIT with the same write transaction.
-                  This means that the key request will complete first, followed by SRAM initialization.
+                  This means that the key request will complete first, followed by SRAM initialization. Note that writing 1 to this register while
+                  an init request is already pending has no effect.
                   '''
           },
         ]

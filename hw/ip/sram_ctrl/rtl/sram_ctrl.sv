@@ -205,10 +205,12 @@ module sram_ctrl
 
   // A write to the init register reloads the LFSR seed, resets the init counter and
   // sets init_q to flag a pending initialization request.
-  logic init_trig;
-  assign init_trig = reg2hw.ctrl.init.q & reg2hw.ctrl.init.qe;
+  logic init_trig, init_q;
+  assign init_trig = reg2hw.ctrl.init.q &&
+                     reg2hw.ctrl.init.qe &&
+                     !init_q; // Ignore new requests while memory init is already pending.
 
-  logic init_d, init_q, init_done;
+  logic init_d, init_done;
   assign init_d = (init_done) ? 1'b0 :
                   (init_trig) ? 1'b1 : init_q;
 
@@ -262,7 +264,11 @@ module sram_ctrl
   // the req/ack protocol as described in more details here:
   // https://docs.opentitan.org/hw/ip/otp_ctrl/doc/index.html#interfaces-to-sram-and-otbn-scramblers
   logic key_req, key_ack;
-  assign key_req = reg2hw.ctrl.renew_scr_key.q & reg2hw.ctrl.renew_scr_key.qe;
+  assign key_req = reg2hw.ctrl.renew_scr_key.q &&
+                   reg2hw.ctrl.renew_scr_key.qe &&
+                   !key_req_pending_q && // Ignore new requests while a request is already pending.
+                   !init_q; // Ignore new requests while memory init is already pending.
+
   assign key_req_pending_d = (key_req) ? 1'b1 :
                              (key_ack) ? 1'b0 : key_req_pending_q;
 
