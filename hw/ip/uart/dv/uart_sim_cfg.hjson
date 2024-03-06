@@ -88,7 +88,7 @@
     {
       name: uart_intr
       uvm_test_seq: uart_intr_vseq
-      // 3ms
+      // 3s
       run_opts: ["+test_timeout_ns=3000000000"]
     }
 
