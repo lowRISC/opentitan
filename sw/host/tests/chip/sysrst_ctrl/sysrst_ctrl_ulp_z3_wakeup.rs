@@ -19,7 +19,7 @@ use opentitanlib::test_utils::test_status::TestStatus;
 use opentitanlib::uart::console::UartConsole;
 use opentitanlib::{collection, execute_test};
 
-use sysrst_ctrl::{Config, read_pins, setup_pins, set_pins};
+use sysrst_ctrl::{read_pins, set_pins, setup_pins, Config};
 
 #[derive(Debug, Parser)]
 struct Opts {
@@ -145,7 +145,8 @@ fn main() -> Result<()> {
         .find(|symbol| symbol.name() == Ok("kTestPhaseReal"))
         .expect("Provided ELF missing 'kTestPhaseReal' symbol");
     assert_eq!(
-        symbol.size(), 1,
+        symbol.size(),
+        1,
         "symbol 'kTestPhaseReal' does not have the expected size"
     );
 

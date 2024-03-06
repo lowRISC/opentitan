@@ -19,7 +19,7 @@ use opentitanlib::test_utils::test_status::TestStatus;
 use opentitanlib::uart::console::UartConsole;
 use opentitanlib::{collection, execute_test};
 
-use sysrst_ctrl::{Config, setup_pins, set_pins};
+use sysrst_ctrl::{set_pins, setup_pins, Config};
 
 #[derive(Debug, Parser)]
 struct Opts {
@@ -56,7 +56,6 @@ fn chip_sw_sysrst_ctrl_input(
     test_phase_addr: u32,
     test_expected_addr: u32,
 ) -> Result<()> {
-
     /* Setup transport pins */
     setup_pins(transport, config)?;
 

@@ -19,7 +19,7 @@ use opentitanlib::test_utils::test_status::TestStatus;
 use opentitanlib::uart::console::UartConsole;
 use opentitanlib::{collection, execute_test};
 
-use sysrst_ctrl::{Config, setup_pins, set_pins};
+use sysrst_ctrl::{set_pins, setup_pins, Config};
 
 #[derive(Debug, Parser)]
 struct Opts {
@@ -72,7 +72,11 @@ fn set_pads_and_synch(
     // Since we cannot generate a short enough glitch, simply do not change the pins
     // and check that no interrupt is generated.
     log::info!("==============================");
-    log::info!("Test with prev={:x}, next={:x}", pad_values_prev, pad_values_next);
+    log::info!(
+        "Test with prev={:x}, next={:x}",
+        pad_values_prev,
+        pad_values_next
+    );
 
     // Set pins.
     set_pins(params.transport, params.config, pad_values_prev)?;
@@ -121,11 +125,11 @@ fn chip_sw_sysrst_ctrl_in_irq(
     // Test 7 H2L input transitions.
     let mut test_phase = 0;
     for i in 0..7 {
-      set_pads_and_synch(&params, 1 << i, 0, &mut test_phase)?;
+        set_pads_and_synch(&params, 1 << i, 0, &mut test_phase)?;
     }
     // Test 7 L2H input transitions.
     for i in 0..7 {
-      set_pads_and_synch(&params, 0, 1 << i, &mut test_phase)?;
+        set_pads_and_synch(&params, 0, 1 << i, &mut test_phase)?;
     }
 
     // Test 4 different combo key intr sources with 2, 3, 4 and 5 combo key
@@ -154,7 +158,8 @@ fn main() -> Result<()> {
         .find(|symbol| symbol.name() == Ok("kCurrentTestPhaseReal"))
         .expect("Provided ELF missing 'kCurrentTestPhaseReal' symbol");
     assert_eq!(
-        symbol.size(), 1,
+        symbol.size(),
+        1,
         "symbol 'kCurrentTestPhaseReal' does not have the expected size"
     );
 
