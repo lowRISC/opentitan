@@ -4,17 +4,9 @@
 #
 # waiver file for HMAC
 
-waive -rules {CONST_FF RESET_ONLY PARTIAL_CONST_ASSIGN} -location {hmac_core.sv} -regexp {txcount\[4:0\]} \
-      -comment "lower 32bits of message are aligned. So ignoring txcount for lower 5 bits"
-
-waive -rules {EXPLICIT_BITLEN} -location {hmac_*.sv} \
-      -comment "Bit length is guarded by the assigned wire (64bit)"
-
 waive -rules {HIER_BRANCH_NOT_READ INPUT_NOT_READ} -location {hmac_core.sv} -regexp {wipe_(secret|v)} \
-      -comment "Not used but remained for future use"
+      -comment "Not used but remains for future use"
 
-waive -rules {NOT_READ} -location {*_reg_top.sv} -regexp {(address|param|user)} \
-      -comment "Register module waiver"
-
-waive -rules {NOT_READ HIER_NET_NOT_READ} -location {hmac.sv} -regexp {'msg_fifo_wmask.* is not read} \
-      -comment "Only first bit in a byte is used"
+# ARITH_CONTEXT
+waive -rules {ARITH_CONTEXT} -location {hmac.sv}  -regexp {Bitlength of arithmetic operation 'i % 2' is self-determined in this context} \
+      -comment "Intended"
