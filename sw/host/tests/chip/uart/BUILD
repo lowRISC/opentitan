@@ -18,6 +18,7 @@ rust_binary(
         "//third_party/rust/crates:humantime",
         "//third_party/rust/crates:log",
         "//third_party/rust/crates:object",
+        "//third_party/rust/crates:serialport",
     ],
 )
 
