@@ -346,3 +346,44 @@ bitstream_fragment_from_manifest = rule(
         ),
     },
 )
+
+def _unavailable_file_impl(ctx):
+    output = ctx.actions.declare_file(ctx.attr.name + "/unavailable.bit")
+    ctx.actions.run_shell(
+        command = "echo 'this bitstream is not available' && exit 1",
+        outputs = [output],
+    )
+
+    return [DefaultInfo(files = depset([output]))]
+
+# Create an unavailable file target that will throw an error if built.
+_unavailable_file = rule(
+    implementation = _unavailable_file_impl,
+)
+
+def unavailable_bitstream(
+        name,
+        **kwargs):
+    """
+    Create an unavailable bitstream target that will throw an error if built.
+
+    Arguments:
+    - name: name of the bitstream target
+    - rom_mmi: name of ROM nmi file target
+    - otp_mmi: name of OTP nmi file target
+    """
+    _unavailable_file(
+        name = name,
+        testonly = True,
+        tags = ["manual"],
+    )
+    if "rom_mmi" not in kwargs or "otp_mmi" not in kwargs:
+        fail("You need to specify rom_mmi and otp_mmi arguments")
+    native.alias(
+        name = kwargs["rom_mmi"],
+        actual = ":" + name,
+    )
+    native.alias(
+        name = kwargs["otp_mmi"],
+        actual = ":" + name,
+    )
