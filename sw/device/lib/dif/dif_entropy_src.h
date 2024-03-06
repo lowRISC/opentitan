@@ -69,7 +69,6 @@ typedef enum dif_entropy_src_main_fsm {
   kDifEntropySrcMainFsmStateSha3Process = 0x0f8,
   kDifEntropySrcMainFsmStateSha3Valid = 0x0bf,
   kDifEntropySrcMainFsmStateSha3Done = 0x198,
-  kDifEntropySrcMainFsmStateSha3Quiesce = 0x139,
   kDifEntropySrcMainFsmStateAlertState = 0x1cd,
   kDifEntropySrcMainFsmStateAlertHang = 0x1fb,
   kDifEntropySrcMainFsmStateError = 0x73

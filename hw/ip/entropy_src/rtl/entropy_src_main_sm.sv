@@ -20,7 +20,6 @@ module entropy_src_main_sm
   input logic                   alert_thresh_fail_i,
   output logic                  rst_alert_cntr_o,
   input logic                   bypass_mode_i,
-  input logic                   main_stage_rdy_i,
   input logic                   bypass_stage_rdy_i,
   input logic                   sha3_state_vld_i,
   output logic                  main_stage_push_o,
@@ -29,7 +28,6 @@ module entropy_src_main_sm
   output logic                  sha3_start_o,
   output logic                  sha3_process_o,
   output prim_mubi_pkg::mubi4_t sha3_done_o,
-  input logic                   cs_aes_halt_ack_i,
   input logic                   local_escalate_i,
   output logic                  main_sm_alert_o,
   output logic                  main_sm_idle_o,
@@ -245,21 +243,14 @@ module entropy_src_main_sm
           sha3_done_o = prim_mubi_pkg::MuBi4True;
           state_d = Sha3MsgDone;
         end else begin
-          if (main_stage_rdy_i) begin
-            // Push the digest produced by the SHA3 engine into the final FIFO and clear the
-            // internal state of the SHA3 engine to start from scratch for the next seed.
-            sha3_done_o = prim_mubi_pkg::MuBi4True;
-            main_stage_push_o = 1'b1;
-            state_d = Sha3MsgDone;
-          end
+          // Push the digest produced by the SHA3 engine into the final FIFO and clear the
+          // internal state of the SHA3 engine to start from scratch for the next seed.
+          sha3_done_o = prim_mubi_pkg::MuBi4True;
+          main_stage_push_o = 1'b1;
+          state_d = Sha3MsgDone;
         end
       end
       Sha3MsgDone: begin
-        if (!cs_aes_halt_ack_i) begin
-          state_d = Sha3Quiesce;
-        end
-      end
-      Sha3Quiesce: begin
         if (!enable_i || fw_ov_ent_insert_i) begin
           state_d = Idle;
         end else begin
