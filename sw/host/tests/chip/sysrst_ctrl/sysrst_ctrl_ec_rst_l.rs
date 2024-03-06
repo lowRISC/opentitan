@@ -6,17 +6,16 @@ use anyhow::{bail, ensure, Result};
 use clap::Parser;
 use once_cell::sync::Lazy;
 use std::borrow::Borrow;
-use std::collections::HashMap;
 use std::rc::Rc;
 use std::time::Duration;
 
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::execute_test;
 use opentitanlib::io::gpio::{ClockNature, Edge, MonitoringEvent, PinMode};
 use opentitanlib::io::uart::Uart;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::test_status::TestStatus;
 use opentitanlib::uart::console::UartConsole;
-use opentitanlib::{collection, execute_test};
 
 use sysrst_ctrl::{read_pins, set_pins, setup_pins, Config};
 
@@ -37,17 +36,15 @@ struct Params<'a> {
     config: &'a Config,
 }
 
-static CONFIG: Lazy<HashMap<&'static str, Config>> = Lazy::new(|| {
-    collection! {
-        "hyper310" => Config {
-            // key0_in, key1_in
-            output_pins: vec!["IOR6", "IOR7"],
-            open_drain: vec![false, false],
-            // ec_rst, flash_wp
-            input_pins: vec!["SYSRST_CTRL_EC_RST_L", "SYSRST_CTRL_FLASH_WP_L"],
-            // ec_rst, flash_wp
-            pullup_pins: vec!["SYSRST_CTRL_EC_RST_L", "SYSRST_CTRL_FLASH_WP_L"],
-        },
+static CONFIG: Lazy<Config> = Lazy::new(|| {
+    Config {
+        // key0_in, key1_in
+        output_pins: vec!["IOR6", "IOR7"],
+        open_drain: vec![false, false],
+        // ec_rst, flash_wp
+        input_pins: vec!["SYSRST_CTRL_EC_RST_L", "SYSRST_CTRL_FLASH_WP_L"],
+        // ec_rst, flash_wp
+        pullup_pins: vec!["SYSRST_CTRL_EC_RST_L", "SYSRST_CTRL_FLASH_WP_L"],
     }
 });
 
@@ -232,21 +229,13 @@ fn main() -> Result<()> {
     uart.set_flow_control(true)?;
     let _ = UartConsole::wait_for(&*uart, r"Running [^\r\n]*", opts.timeout)?;
 
-    log::info!(
-        "Use pin configuration for {:?}",
-        opts.init.backend_opts.interface
-    );
-    let config = CONFIG
-        .get(opts.init.backend_opts.interface.as_str())
-        .expect("interface");
-
     execute_test!(
         chip_sw_sysrst_ctrl_input,
         &Params {
             opts: &opts,
             transport: &transport,
             uart: &*uart,
-            config,
+            config: &CONFIG,
         }
     );
     Ok(())
