@@ -836,7 +836,7 @@ TEST_F(GetErrorsTest, NullArgs) {
 
 TEST_F(GetErrorsTest, Success) {
   uint32_t errors;
-  EXPECT_READ32(ENTROPY_SRC_ERR_CODE_REG_OFFSET, 0x30000003);
+  EXPECT_READ32(ENTROPY_SRC_ERR_CODE_REG_OFFSET, 0x30000005);
   EXPECT_DIF_OK(dif_entropy_src_get_errors(&entropy_src_, &errors));
   EXPECT_EQ(errors, kDifEntropySrcErrorRngFifoWrite |
                         kDifEntropySrcErrorRngFifoRead |

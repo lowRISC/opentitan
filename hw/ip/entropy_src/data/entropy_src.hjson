@@ -100,6 +100,13 @@
       local:   "false",
       expose:  "true"
     },
+    { name:    "DistrFifoDepth",
+      type:    "int unsigned",
+      default: "2",
+      desc:    "Number of 32-bit entries in the distr FIFO",
+      local:   "false",
+      expose:  "true"
+    },
     { name:    "Stub",
       type:    "bit",
       default: "0",
@@ -1631,6 +1638,14 @@
                 '''
         }
         { bits: "1",
+          name: "SFIFO_DISTR_ERR",
+          desc: '''
+                This bit will be set to one when an error has been detected for the distribution FIFO.
+                The type of error is reflected in the type status bits (bits 28 through 30 of this register).
+                This bit will stay set until the next reset.
+                '''
+        }
+        { bits: "2",
           name: "SFIFO_OBSERVE_ERR",
           desc: '''
                 This bit will be set to one when an error has been detected for the
@@ -1639,7 +1654,7 @@
                 This bit will stay set until the next reset.
                 '''
         }
-        { bits: "2",
+        { bits: "3",
           name: "SFIFO_ESFINAL_ERR",
           desc: '''
                 This bit will be set to one when an error has been detected for the

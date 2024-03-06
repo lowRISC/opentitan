@@ -21,9 +21,9 @@
 //    back to idle.
 //
 // This block creates a modified version of the enable pulse which:
-// 1. Postpones the disable event until any flowing data has passed through the RNG, ESBIT and
-//    POSTHT FIFOs.  If packpressure is encountered at the Precon FIFO, the stalled data can
-//    be discarded, and so a has a maximum time limit of MaxFifoWait=3 clocks is given for this
+// 1. Postpones the disable event until any flowing data has passed through the RNG, ESBIT, POSTHT
+//    and DISTR FIFOs. If backpressure is encountered at the Precon FIFO, the stalled data can
+//    be discarded, and so a has a maximum time limit of MaxFifoWait=4 clocks is given for this
 //    check.
 // 2. Once the disable signal is received, the rising edge does not occur until:
 //    2a. One clock after the falling edge OR
@@ -40,6 +40,7 @@ module entropy_src_enable_delay import prim_mubi_pkg::*; (
   input logic esrng_fifo_not_empty_i,
   input logic esbit_fifo_not_empty_i,
   input logic postht_fifo_not_empty_i,
+  input logic distr_fifo_not_empty_i,
 
   // SHA3 conditioner inputs
   input logic   cs_aes_halt_req_i,
@@ -51,14 +52,14 @@ module entropy_src_enable_delay import prim_mubi_pkg::*; (
 );
 
   // Maximum number of cycles to wait for FIFOs to clear out.
-  // Set to 3 to allow one cycle for each FIFO in the pipeline.
-  localparam int MaxFifoWait = 3;
+  // Set to 4 to allow one cycle for each FIFO in the pipeline.
+  localparam int MaxFifoWait = 4;
 
   logic suppress_reenable;
   logic extend_enable;
 
   logic data_in_flight;
-  logic [2:0] fifos_not_empty;
+  logic [3:0] fifos_not_empty;
 
   // Flops
   logic [MaxFifoWait - 1:0] fifo_timer_d, fifo_timer_q;
@@ -89,7 +90,8 @@ module entropy_src_enable_delay import prim_mubi_pkg::*; (
   // register.
   assign fifo_timer_d = enable_i ? {MaxFifoWait{1'b1}} : {fifo_timer_q[MaxFifoWait-2:0], 1'b0};
   assign fifos_not_empty = {esrng_fifo_not_empty_i, esbit_fifo_not_empty_i,
-                            !bypass_mode_i & postht_fifo_not_empty_i};
+                            !bypass_mode_i & postht_fifo_not_empty_i,
+                            !bypass_mode_i & distr_fifo_not_empty_i};
   assign data_in_flight = |fifo_timer_q && |fifos_not_empty;
 
   // Extend the enable by at least one clock to give the FSM time to receive any last
