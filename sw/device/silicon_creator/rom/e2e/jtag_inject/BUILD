@@ -88,6 +88,170 @@ test_suite(
     ],
 )
 
+[
+    opentitan_test(
+        name = "openocd_asm_interrupt_handler_otp_" + lc_state,
+        srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
+        cw310 = new_cw310_params(
+            logging = "debug",
+            needs_jtag = True,
+            otp = ":img_{}_exec_disabled".format(lc_state),
+            test_cmd = " --elf={rom:elf}",
+            test_harness = "//sw/host/tests/rom/e2e_openocd_debug_test:asm_interrupt_handler",
+        ),
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        },
+        deps = [
+            "//sw/device/lib/runtime:log",
+            "//sw/device/lib/testing/test_framework:ottf_main",
+            "//sw/device/silicon_creator/lib/drivers:otp",
+            "//sw/device/silicon_creator/lib/sigverify:spx_verify",
+        ],
+    )
+    for lc_state, lc_state_val in get_lc_items(
+        CONST.LCV.TEST_UNLOCKED0,
+        CONST.LCV.DEV,
+        CONST.LCV.RMA,
+    )
+]
+
+test_suite(
+    name = "rom_e2e_openocd_asm_interrupt_handler",
+    tags = ["manual"],
+    tests = [
+        "openocd_asm_interrupt_handler_otp_" + lc_state
+        for lc_state, _ in get_lc_items(
+            CONST.LCV.TEST_UNLOCKED0,
+            CONST.LCV.DEV,
+            CONST.LCV.RMA,
+        )
+    ],
+)
+
+[
+    opentitan_test(
+        name = "openocd_shutdown_execution_asm_" + lc_state,
+        srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
+        cw310 = new_cw310_params(
+            logging = "debug",
+            needs_jtag = True,
+            otp = ":img_{}_exec_disabled".format(lc_state),
+            test_cmd = " --elf={rom:elf}",
+            test_harness = "//sw/host/tests/rom/e2e_openocd_debug_test:shutdown_execution_asm",
+        ),
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        },
+        deps = [
+            "//sw/device/lib/runtime:log",
+            "//sw/device/lib/testing/test_framework:ottf_main",
+            "//sw/device/silicon_creator/lib/drivers:otp",
+            "//sw/device/silicon_creator/lib/sigverify:spx_verify",
+        ],
+    )
+    for lc_state, lc_state_val in get_lc_items(
+        CONST.LCV.TEST_UNLOCKED0,
+        CONST.LCV.DEV,
+        CONST.LCV.RMA,
+    )
+]
+
+test_suite(
+    name = "rom_e2e_openocd_shutdown_execution_asm",
+    tags = ["manual"],
+    tests = [
+        "openocd_shutdown_execution_asm_" + lc_state
+        for lc_state, _ in get_lc_items(
+            CONST.LCV.TEST_UNLOCKED0,
+            CONST.LCV.DEV,
+            CONST.LCV.RMA,
+        )
+    ],
+)
+
+[
+    opentitan_test(
+        name = "openocd_asm_watchdog_bark_" + lc_state,
+        srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
+        cw310 = new_cw310_params(
+            logging = "debug",
+            needs_jtag = True,
+            otp = ":img_{}_exec_disabled".format(lc_state),
+            test_cmd = " --elf={rom:elf}",
+            test_harness = "//sw/host/tests/rom/e2e_openocd_debug_test:asm_watchdog_bark",
+        ),
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        },
+        deps = [
+            "//sw/device/lib/runtime:log",
+            "//sw/device/lib/testing/test_framework:ottf_main",
+            "//sw/device/silicon_creator/lib/drivers:otp",
+            "//sw/device/silicon_creator/lib/sigverify:spx_verify",
+        ],
+    )
+    for lc_state, lc_state_val in get_lc_items(
+        CONST.LCV.TEST_UNLOCKED0,
+        CONST.LCV.DEV,
+        CONST.LCV.RMA,
+    )
+]
+
+test_suite(
+    name = "rom_e2e_openocd_asm_watchdog_bark",
+    tags = ["manual"],
+    tests = [
+        "openocd_asm_watchdog_bark_" + lc_state
+        for lc_state, _ in get_lc_items(
+            CONST.LCV.TEST_UNLOCKED0,
+            CONST.LCV.DEV,
+            CONST.LCV.RMA,
+        )
+    ],
+)
+
+[
+    opentitan_test(
+        name = "openocd_asm_watchdog_bite_" + lc_state,
+        srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
+        cw310 = new_cw310_params(
+            logging = "debug",
+            needs_jtag = True,
+            otp = ":img_{}_exec_disabled".format(lc_state),
+            test_cmd = " --elf={rom:elf}",
+            test_harness = "//sw/host/tests/rom/e2e_openocd_debug_test:asm_watchdog_bite",
+        ),
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        },
+        deps = [
+            "//sw/device/lib/runtime:log",
+            "//sw/device/lib/testing/test_framework:ottf_main",
+            "//sw/device/silicon_creator/lib/drivers:otp",
+            "//sw/device/silicon_creator/lib/sigverify:spx_verify",
+        ],
+    )
+    for lc_state, lc_state_val in get_lc_items(
+        CONST.LCV.TEST_UNLOCKED0,
+        CONST.LCV.DEV,
+        CONST.LCV.RMA,
+    )
+]
+
+test_suite(
+    name = "rom_e2e_openocd_asm_watchdog_bite",
+    tags = ["manual"],
+    tests = [
+        "openocd_asm_watchdog_bite_" + lc_state
+        for lc_state, _ in get_lc_items(
+            CONST.LCV.TEST_UNLOCKED0,
+            CONST.LCV.DEV,
+            CONST.LCV.RMA,
+        )
+    ],
+)
+
 LC_STATES_DEBUG_DISALLOWED = [
     CONST.LCV.PROD,
     CONST.LCV.PROD_END,
@@ -104,7 +268,7 @@ LC_STATES_DEBUG_DISALLOWED = [
             otp = ":img_{}_exec_disabled".format(lc_state),
             tags = ["cw310_rom_with_fake_keys"],
             test_cmd = " --elf={rom:elf}" + (" --expect-fail" if lc_state_val in LC_STATES_DEBUG_DISALLOWED else " "),
-            test_harness = "//sw/host/tests/rom/e2e_openocd_debug_test",
+            test_harness = "//sw/host/tests/rom/e2e_openocd_debug_test:debug_test",
         ),
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,

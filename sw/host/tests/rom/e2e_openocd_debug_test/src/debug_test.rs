@@ -7,11 +7,10 @@ use std::time::Duration;
 
 use anyhow::Result;
 use clap::Parser;
-use opentitanlib::io::uart::Uart;
 use regex::Regex;
 
 use opentitanlib::app::TransportWrapper;
-use opentitanlib::debug::elf_debugger::{ElfDebugger, ElfSymbols, SymbolicAddress};
+use opentitanlib::debug::elf_debugger::{ElfSymbols, SymbolicAddress};
 use opentitanlib::execute_test;
 use opentitanlib::io::jtag::{JtagTap, RiscvCsr, RiscvGpr};
 use opentitanlib::test_utils::init::InitializeTest;
@@ -33,153 +32,35 @@ struct Opts {
     /// if and only if the test fails.
     #[arg(long)]
     expect_fail: bool,
+
+    /// Breakpoint timeout.
+    #[arg(long, value_parser = humantime::parse_duration, default_value = "5s")]
+    breakpoint_timeout: Duration,
 }
 
-fn reset(transport: &TransportWrapper, strappings: &[&str], reset_delay: Duration) -> Result<()> {
-    log::info!("Resetting target...");
-    for strapping in strappings.iter() {
-        transport.pin_strapping(strapping)?.apply()?;
-    }
-    transport.reset_target(reset_delay, true)?;
-    // We want to hold the strapping configuration here because in some life cycle states,
-    // the tap multiplexing is dynamic so removing the tap strap would actually change the tap.
-    Ok(())
-}
+fn debug_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
+    log::info!("Loading symbols from ELF {}", opts.elf.display());
+    let sym = ElfSymbols::load_elf(&opts.elf)?;
 
-const BP_TIMEOUT: Duration = Duration::from_secs(5);
+    // This test requires RV_DM access so first strap and reset.
+    transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
+    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
 
-fn asm_interrupt_handler(dbg: &mut ElfDebugger) -> Result<()> {
-    dbg.reset(false)?;
-    dbg.remove_all_breakpoints()?;
+    let uart = transport.uart("console")?;
 
-    // Attempt to trigger an exception.
-    dbg.set_pc(0)?;
-
-    dbg.run_until("_asm_exception_handler", BP_TIMEOUT)?;
-
-    Ok(())
-}
-
-fn shutdown_execution_asm(dbg: &mut ElfDebugger) -> Result<()> {
-    dbg.reset(false)?;
-    dbg.remove_all_breakpoints()?;
-
-    // Reset PC to the start of main SRAM
-    dbg.set_pc(top_earlgrey::SRAM_CTRL_MAIN_RAM_BASE_ADDR as u32)?;
-
-    // Check that the execution hits the exception handler
-    dbg.run_until("_asm_exception_handler", BP_TIMEOUT)?;
-
-    Ok(())
-}
-
-fn asm_watchdog_bark(dbg: &mut ElfDebugger) -> Result<()> {
-    dbg.reset(false)?;
-    dbg.remove_all_breakpoints()?;
-
-    // Run until we check whether ROM execution is enabled
-    dbg.run_until("kRomStartBootMaybeHalt", BP_TIMEOUT)?;
-
-    // Pretend execution is enabled
-    dbg.set_pc("kRomStartBootExecEn")?;
-
-    dbg.run_until("kRomStartStoreT1ToBiteThold", BP_TIMEOUT)?;
-
-    // Set the bite threshold to UINT32_MAX. We want to exercise that the
-    // bark causes control to reach the interrupt handler.
-    dbg.write_reg(RiscvGpr::T1, 0xFFFFFFFF)?;
-
-    // Run until right after configuring the watchdog timer
-    dbg.run_until("kRomStartWatchdogEnabled", BP_TIMEOUT)?;
-
-    dbg.set_pc("kRomStartBootMaybeHalt")?;
-
-    // Wait for the NMI handler to be hit.
-    dbg.run_until("_asm_exception_handler", BP_TIMEOUT)?;
-
-    Ok(())
-}
-
-fn asm_watchdog_bite<'t>(
-    opt_dbg: &mut Option<ElfDebugger<'t>>,
-    opts: &Opts,
-    transport: &'t TransportWrapper,
-    sym: &'t ElfSymbols,
-) -> Result<()> {
-    // This test requires taking the ownershup of the debugger.
-    let mut dbg = opt_dbg.take().unwrap();
-
-    dbg.reset(false)?;
-    dbg.remove_all_breakpoints()?;
-
-    // Run until we check whether ROM execution is enabled
-    dbg.run_until("kRomStartBootMaybeHalt", BP_TIMEOUT)?;
-
-    // Pretend execution is enabled
-    dbg.set_pc("kRomStartBootExecEn")?;
-
-    dbg.run_until("kRomStartStoreT1ToBiteThold", BP_TIMEOUT)?;
-
-    // We don't want the bark to trigger for this test.
-    // There's no label before BARK_THOLD is stored, so we need to override the stored value.
-    dbg.write_u32(
-        top_earlgrey::AON_TIMER_AON_BASE_ADDR as u32
-            + opentitanlib::dif::aon_timer::AonTimerReg::WdogBarkThold as u32,
-        0xFFFFFFFF,
-    )?;
-
-    // Double the bite timeout. The current timeout is too short, causing this test to be flaky.
-    let orig_timeout = dbg.read_reg(RiscvGpr::T1)?;
-    dbg.write_reg(RiscvGpr::T1, orig_timeout * 2)?;
-
-    // Clear RESET_INFO.
-    dbg.write_u32(
-        top_earlgrey::RSTMGR_AON_BASE_ADDR as u32
-            + opentitanlib::dif::rstmgr::RstmgrReg::ResetInfo as u32,
-        0,
-    )?;
-
-    dbg.run_until("kRomStartWatchdogEnabled", BP_TIMEOUT)?;
-
-    dbg.set_pc("kRomStartBootMaybeHalt")?;
-
-    // Set a breakpoint to ensure the NMI handler is not being hit.
-    // If the NMI handler is hit then the PC check below will fail.
-    dbg.set_breakpoint("_asm_exception_handler")?;
-
-    // This should trigger the watchdog and cause a reset.
-    // Disconnect JTAG, wait for a sufficiently long period to allow reset to complete and reconnect.
-    dbg.disconnect()?;
-    std::thread::sleep(BP_TIMEOUT);
     let jtag = opts
         .init
         .jtag_params
         .create(transport)?
-        .connect(JtagTap::RiscvTap)?;
-    dbg = sym.attach(jtag);
+        .connect(JtagTap::RiscvTap);
 
-    // Check that the execution has stuck after reset at the given known location.
-    dbg.halt()?;
-    dbg.expect_pc_range("kRomStartBootHalted".."kRomStartBootExecEn")?;
+    if opts.expect_fail {
+        assert!(jtag.is_err());
+        return Ok(());
+    }
 
-    // Check the reset reason as well
-    let reset_info = dbg.read_u32(
-        top_earlgrey::RSTMGR_AON_BASE_ADDR as u32
-            + opentitanlib::dif::rstmgr::RstmgrReg::ResetInfo as u32,
-    )?;
-
-    // Check that the reset is caused by watchdog.
-    log::info!("RESET_INFO={:#x}", reset_info);
-    assert!(reset_info & u32::from(opentitanlib::dif::rstmgr::DifRstmgrResetInfo::Watchdog) != 0);
-
-    *opt_dbg = Some(dbg);
-
-    Ok(())
-}
-
-fn debug_test(dbg: &mut ElfDebugger, uart: &dyn Uart) -> Result<()> {
+    let mut dbg = sym.attach(jtag?);
     dbg.reset(false)?;
-    dbg.remove_all_breakpoints()?;
 
     // Immediately after reset, we should be sitting on the Ibex reset
     // handler, the 33rd entry in the interrupt vector.
@@ -191,13 +72,13 @@ fn debug_test(dbg: &mut ElfDebugger, uart: &dyn Uart) -> Result<()> {
     dbg.expect_pc("_rom_start_boot")?;
 
     // Run until we check whether ROM execution is enabled.
-    dbg.run_until("kRomStartBootMaybeHalt", BP_TIMEOUT)?;
+    dbg.run_until("kRomStartBootMaybeHalt", opts.breakpoint_timeout)?;
 
     // Pretend execution is enabled.
     dbg.set_pc("kRomStartBootExecEn")?;
 
     // Continue until watchdog config.
-    dbg.run_until("kRomStartWatchdogEnabled", BP_TIMEOUT)?;
+    dbg.run_until("kRomStartWatchdogEnabled", opts.breakpoint_timeout)?;
 
     // Disable watchdog config
     dbg.write_u32(
@@ -207,13 +88,13 @@ fn debug_test(dbg: &mut ElfDebugger, uart: &dyn Uart) -> Result<()> {
     )?;
 
     // Continue until rom_main
-    dbg.run_until("rom_main", BP_TIMEOUT)?;
+    dbg.run_until("rom_main", opts.breakpoint_timeout)?;
 
     // Continue until uart_init
-    dbg.run_until("uart_init", BP_TIMEOUT)?;
+    dbg.run_until("uart_init", opts.breakpoint_timeout)?;
 
     // Finish uart_init
-    dbg.finish(BP_TIMEOUT)?;
+    dbg.finish(opts.breakpoint_timeout)?;
 
     // Read and write GPRs
     const GPRS: &[RiscvGpr] = &[
@@ -450,7 +331,7 @@ fn debug_test(dbg: &mut ElfDebugger, uart: &dyn Uart) -> Result<()> {
 
     // Execute code
     for c in "GDB-OK\r\n".bytes() {
-        dbg.call("uart_putchar", &[c as u32], BP_TIMEOUT)?;
+        dbg.call("uart_putchar", &[c as u32], opts.breakpoint_timeout)?;
     }
 
     dbg.resume()?;
@@ -461,9 +342,10 @@ fn debug_test(dbg: &mut ElfDebugger, uart: &dyn Uart) -> Result<()> {
         exit_success: Some(Regex::new(r"OK!GDB-OK(?s:.*)BFV:0142500d")?),
         ..Default::default()
     };
-    let result = console.interact(uart, None, Some(&mut std::io::stdout()))?;
+    let result = console.interact(&*uart, None, Some(&mut std::io::stdout()))?;
     assert_eq!(result, ExitStatus::ExitSuccess);
 
+    dbg.disconnect()?;
     Ok(())
 }
 
@@ -472,39 +354,7 @@ fn main() -> Result<()> {
     opts.init.init_logging();
     let transport = opts.init.init_target()?;
 
-    log::info!("Loading symbols from ELF {}", opts.elf.display());
-    let sym = ElfSymbols::load_elf(&opts.elf)?;
-
-    let uart = transport.uart("console")?;
-
-    reset(
-        &transport,
-        &["PINMUX_TAP_RISCV"],
-        opts.init.bootstrap.options.reset_delay,
-    )?;
-
-    let jtag_result = opts
-        .init
-        .jtag_params
-        .create(&transport)?
-        .connect(JtagTap::RiscvTap);
-
-    if opts.expect_fail {
-        assert!(jtag_result.is_err());
-        return Ok(());
-    }
-
-    let mut jtag = jtag_result?;
-    jtag.reset(false)?;
-
-    let mut dbg = Some(sym.attach(jtag));
-    execute_test!(asm_interrupt_handler, dbg.as_mut().unwrap());
-    execute_test!(shutdown_execution_asm, dbg.as_mut().unwrap());
-    execute_test!(asm_watchdog_bark, dbg.as_mut().unwrap());
-    execute_test!(asm_watchdog_bite, &mut dbg, &opts, &transport, &sym);
-    execute_test!(debug_test, dbg.as_mut().unwrap(), &*uart);
-
-    dbg.unwrap().disconnect()?;
+    execute_test!(debug_test, &opts, &transport);
 
     Ok(())
 }

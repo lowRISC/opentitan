@@ -7,9 +7,9 @@ load("@rules_rust//rust:defs.bzl", "rust_binary")
 package(default_visibility = ["//visibility:public"])
 
 rust_binary(
-    name = "e2e_openocd_debug_test",
+    name = "asm_interrupt_handler",
     srcs = [
-        "src/main.rs",
+        "src/asm_interrupt_handler.rs",
     ],
     deps = [
         "//hw/top_earlgrey/sw/autogen/chip:top_earlgrey",
@@ -17,7 +17,71 @@ rust_binary(
         "//third_party/rust/crates:regex",
         "@crate_index//:anyhow",
         "@crate_index//:clap",
+        "@crate_index//:humantime",
         "@crate_index//:log",
-        "@crate_index//:object",
+    ],
+)
+
+rust_binary(
+    name = "shutdown_execution_asm",
+    srcs = [
+        "src/shutdown_execution_asm.rs",
+    ],
+    deps = [
+        "//hw/top_earlgrey/sw/autogen/chip:top_earlgrey",
+        "//sw/host/opentitanlib",
+        "//third_party/rust/crates:regex",
+        "@crate_index//:anyhow",
+        "@crate_index//:clap",
+        "@crate_index//:humantime",
+        "@crate_index//:log",
+    ],
+)
+
+rust_binary(
+    name = "asm_watchdog_bark",
+    srcs = [
+        "src/asm_watchdog_bark.rs",
+    ],
+    deps = [
+        "//hw/top_earlgrey/sw/autogen/chip:top_earlgrey",
+        "//sw/host/opentitanlib",
+        "//third_party/rust/crates:regex",
+        "@crate_index//:anyhow",
+        "@crate_index//:clap",
+        "@crate_index//:humantime",
+        "@crate_index//:log",
+    ],
+)
+
+rust_binary(
+    name = "asm_watchdog_bite",
+    srcs = [
+        "src/asm_watchdog_bite.rs",
+    ],
+    deps = [
+        "//hw/top_earlgrey/sw/autogen/chip:top_earlgrey",
+        "//sw/host/opentitanlib",
+        "//third_party/rust/crates:regex",
+        "@crate_index//:anyhow",
+        "@crate_index//:clap",
+        "@crate_index//:humantime",
+        "@crate_index//:log",
+    ],
+)
+
+rust_binary(
+    name = "debug_test",
+    srcs = [
+        "src/debug_test.rs",
+    ],
+    deps = [
+        "//hw/top_earlgrey/sw/autogen/chip:top_earlgrey",
+        "//sw/host/opentitanlib",
+        "//third_party/rust/crates:regex",
+        "@crate_index//:anyhow",
+        "@crate_index//:clap",
+        "@crate_index//:humantime",
+        "@crate_index//:log",
     ],
 )
