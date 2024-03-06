@@ -198,7 +198,7 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     end
   endtask
 
-  // Bit Stuffing Task
+  // Bit Stuffing/Unstuffing Task
   // -------------------------------
   task bit_stuffing(input bit packet[], output bit bit_stuff_out[]);
     int consecutive_ones_count = 0;
@@ -221,6 +221,33 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     bit_stuff_out = packet;
   endtask
 
+  // Returns 1 in the event of detecting a bit stuffing error, output is
+  // still complete but likely invalid (no bits dropped where the stuffed '0'
+  // was expected).
+  function bit bit_unstuffing(input bit in[], output bit out[]);
+    int consecutive_ones_count = 0;
+    bit unstuffed[$];
+    bit error = 1'b0;
+    for (int i = 0; i < in.size(); i++) begin
+      if (consecutive_ones_count >= 6) begin
+        if (in[i] == 1'b1) begin
+          unstuffed.push_back(in[i]);
+          `uvm_info(`gfn, $sformatf("Bit stuffing error at offset %d", i), UVM_LOW)
+          error = 1'b1;
+        end
+        consecutive_ones_count = 0;
+      end else unstuffed.push_back(in[i]);
+      if (in[i] == 1'b1) consecutive_ones_count = consecutive_ones_count + 1;
+      else consecutive_ones_count = 0;
+    end
+    // Six ones at the end of the packet without a stuffed '0' also constitutes
+    // an error. Note that we need not be concerned with 'dribble' (section 7.1.9.1)
+    // here because of the direct connection to the USB device.
+    if (consecutive_ones_count >= 6) error = 1'b1;
+    out = unstuffed;
+    return error;
+  endfunction
+
   // NRZI Encoding/Decoding Task
   // -------------------------------
 
@@ -242,10 +269,10 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     decoded_packet = new[nrzi_in.size()];
     for (int i = 0; i < nrzi_in.size(); i++) begin
       if (nrzi_in[i] == prev_bit) begin
-        // If the current NRZI bit matches the previous bit, it's a 0.
+        // If the current NRZI bit matches the previous bit, it's a 1.
         decoded_packet[i] = 1'b1;
       end else begin
-        // If the current NRZI bit is different from the previous bit, it's a 1.
+        // If the current NRZI bit is different from the previous bit, it's a 0.
         decoded_packet[i] = 1'b0;
       end
       prev_bit = nrzi_in[i];
@@ -295,26 +322,84 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
 
   // Get_DUT_Response
   // -------------------------------
-  task get_dut_response(usb20_item rsp_item);
+  task get_dut_response(ref usb20_item rsp_item);
     bit received_pkt[];
+    bit nrzi_out_pkt[];
     bit decoded_received_pkt[];
     int receive_index = 0;
     bit [7:0] received_pid = 0;
+    bit bitstuff_err;
+    bit use_negedge;
+    // TODO: DV should not be stealing access to the driver enable of the DUT and would ideally
+    // be able to synchronize to just the USB_P/N signals are they are received.
     `uvm_info(`gfn, "After drive Packet in wait to check usb_dp_en_o signal", UVM_DEBUG)
     wait(cfg.bif.usb_dp_en_o);
+    // TODO: Operating on a div 4 clock is inherently fraught and runs into sampling problems;
+    // a simple solution would be to use the 4x oversampling and detect the initial transition away
+    // from Idle state, then choose an appropriate sampling phase [0,3] on the 4x clock.
+    //
+    // Here, for now, we just choose the clock edge to sidestep sampling errors.
+    // This only works because the div 4 clock is derived from and phase-locked to the 48MHz device
+    // clock.
+    use_negedge = (cfg.bif.usb_clk === 1'b0);
+    `uvm_info(`gfn, $sformatf("use_neg %d clk %d", use_negedge, cfg.bif.usb_clk), UVM_LOW)
+
     while (cfg.bif.usb_dp_en_o) begin
+      if (use_negedge) @(negedge cfg.bif.usb_clk);
+      else @(posedge cfg.bif.usb_clk);
+      // Detect SE0 signaling which indicates End Of Packet
+      if (cfg.bif.usb_p === 1'b0 && cfg.bif.usb_n === 1'b0) break;
       received_pkt = new[received_pkt.size() + 1](received_pkt);
-      @(posedge cfg.bif.usb_clk)
       received_pkt[receive_index] = cfg.bif.usb_p;
       receive_index = receive_index + 1;
     end
     `uvm_info(`gfn, $sformatf("Received Packet = %p", received_pkt), UVM_LOW)
-    nrzi_decoder (received_pkt, decoded_received_pkt);
+    nrzi_decoder(received_pkt, nrzi_out_pkt);
+    `uvm_info(`gfn, $sformatf("NRZI-decoded Packet = %p", nrzi_out_pkt), UVM_LOW)
+    bitstuff_err = bit_unstuffing(nrzi_out_pkt, decoded_received_pkt);
+    `DV_CHECK_EQ(bitstuff_err, 0, "Bit stuffing error detected");
     `uvm_info(`gfn, $sformatf("Decoded Received Packet = %p", decoded_received_pkt), UVM_LOW)
+    // TODO: check that we have enough bits for the PID
     for (int i = 0 ; i < 8; i++) begin
       received_pid[i] = decoded_received_pkt[i + 8];
     end
+    // TODO: this contortion seems confusing and unnecessary
     received_pid = {<<4{received_pid}};
+
+    // Capture the Packet IDentifier and Packet Type
     rsp_item.m_pid_type = pid_type_e'(received_pid);
+    case (rsp_item.m_pid_type)
+      // Handshake Packet IDentififers
+      PidTypeAck, PidTypeNak, PidTypeStall, PidTypeNyet: rsp_item.m_pkt_type = PktTypeHandshake;
+      // Data Packet IDentifiers
+      PidTypeData0, PidTypeData1, PidTypeData2, PidTypeMData: rsp_item.m_pkt_type = PktTypeData;
+      // Start Of Frame
+      PidTypeSofToken: rsp_item.m_pkt_type = PktTypeSoF;
+      // Treat everything else as a Token, although some of them are 'Special'
+      default: rsp_item.m_pkt_type = PktTypeToken;
+    endcase
+
+    // TODO: Temporary code just to lift the received DATA packet content of an IN transaction.
+    case (rsp_item.m_pid_type)
+      PidTypeData0, PidTypeData1: begin
+        // TODO: Ignoring the 16-bits of CRC, and we have possibly captured some additional bit(s)
+        // from the EOP (SE0) signaling.
+        int unsigned len = (decoded_received_pkt.size() - 32) & ~7;  // integral byte count
+        data_pkt data;
+        `uvm_create_obj(data_pkt, data)
+        data.set_id_info(rsp_item);
+        data.m_pkt_type = rsp_item.m_pkt_type;
+        data.m_pid_type = rsp_item.m_pid_type;
+        data.data = new [len >> 3];
+        for (int unsigned i = 0; i < len; i++) begin
+          data.data[i >> 3] = data.data[i >> 3] | (decoded_received_pkt[i + 16] << (i & 7));
+        end
+        rsp_item = data;
+        `uvm_info(`gfn, $sformatf("IN packet has length %d bytes", len >> 3), UVM_DEBUG)
+      end
+      default: begin
+        // No other PID type carries a data payload.
+      end
+    endcase
   endtask
 endclass
