@@ -202,23 +202,18 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
   // -------------------------------
   task bit_stuffing(input bit packet[], output bit bit_stuff_out[]);
     int consecutive_ones_count = 0;
+    bit stuffed[$];
     for (int i = 0; i < packet.size(); i++) begin
+      stuffed.push_back(packet[i]);
       if (packet[i] == 1'b1) begin
         consecutive_ones_count = consecutive_ones_count + 1;
-        if (consecutive_ones_count == 6) begin
-          packet = new[packet.size() + 1](packet);
-          for (int j = packet.size() ; j > i; j = j - 1) begin
-            packet[j] = packet[j - 1];
-          end
-          i = i + 1;
-          packet[i] = 1'b0;
+        if (consecutive_ones_count >= 6) begin
           consecutive_ones_count = 0;
+          stuffed.push_back(1'b0);
         end
-      end else if (packet[i] == 1'b0) begin
-        consecutive_ones_count = 0;
-      end
+      end else consecutive_ones_count = 0;
     end
-    bit_stuff_out = packet;
+    bit_stuff_out = stuffed;
   endtask
 
   // Returns 1 in the event of detecting a bit stuffing error, output is
