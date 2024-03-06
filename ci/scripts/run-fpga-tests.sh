@@ -28,7 +28,7 @@ fi
 mkdir -p "${BIT_CACHE_DIR}"
 cp -rt "${BIT_CACHE_DIR}" "${BIT_SRC_DIR}"/*
 
-export BITSTREAM="--offline --list ci_bitstreams"
+export BITSTREAM="--offline --list --unavailable=@//hw/bitstream/unavailable ci_bitstreams"
 
 # We will lose serial access when we reboot, but if tests fail we should reboot
 # in case we've crashed the UART handler on the CW310's SAM3U
