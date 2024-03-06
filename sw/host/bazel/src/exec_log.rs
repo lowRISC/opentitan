@@ -2,13 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// use anyhow::{bail, Result};
-use serde::de::Error;
-use serde::ser::SerializeSeq;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use serde::de::Error;
 use std::collections::HashMap;
 
-use spawn_proto::protos::{Digest as BazelDigest, File as BazelFile, SpawnExec};
+use spawn_proto::protos::{Digest as BazelDigest, File as BazelFile, Platform as BazelPlatform, SpawnExec};
 
 #[derive(Default)]
 struct IndexedSet<T: Default> {
@@ -38,6 +36,7 @@ impl<T: Default> std::fmt::Debug for IndexedSet<T> {
     }
 }
 
+// For an IndexedSet, we only serialize the values.
 impl<T> Serialize for IndexedSet<T>
 where
     T: Default + Serialize,
@@ -46,23 +45,30 @@ where
     where
         S: Serializer,
     {
-        let mut seq = serializer.serialize_seq(Some(self.values.len()))?;
-        for e in &self.values {
-            seq.serialize_element(e)?;
-        }
-        seq.end()
+        self.values.serialize(serializer)
     }
 }
 
+// For an IndexedSet, deserializes the value and reconstruct the map.
 impl<'de, T> Deserialize<'de> for IndexedSet<T>
 where
-    T: Default + Deserialize<'de>,
+    T: Default + Eq + std::hash::Hash + Clone + Deserialize<'de>,
 {
-    fn deserialize<D>(_deserializer: D) -> Result<Self, D::Error>
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: Deserializer<'de>,
     {
-        Err(D::Error::custom("unimplemented".to_string()))
+        let values = Vec::<T>::deserialize(deserializer)?;
+        let mut map = HashMap::new();
+        for (idx, val) in values.iter().enumerate() {
+            if map.insert(val.clone(), idx).is_some() {
+                return Err(D::Error::custom("indexed set contains duplicate entry".to_string()))
+            }
+        }
+        Ok(IndexedSet {
+            values,
+            map
+        })
     }
 }
 
@@ -74,6 +80,8 @@ pub struct ExecLog {
     digests: IndexedSet<Digest>,
     // List of all files.
     files: IndexedSet<File>,
+    // List of all files.
+    properties: IndexedSet<Property>,
     // List of entries in the log.
     entries: Vec<Entry>,
 }
@@ -81,6 +89,14 @@ pub struct ExecLog {
 impl ExecLog {
     pub fn new() -> ExecLog {
         ExecLog::default()
+    }
+
+    fn add_property(&mut self, name: &String, value: &String) -> usize {
+        let prop = Property {
+            name: self.strings.get_or_insert(name),
+            value: self.strings.get_or_insert(value),
+        };
+        self.properties.get_or_insert(&prop)
     }
 
     fn add_bazel_digest(&mut self, digest: &BazelDigest) -> usize {
@@ -101,6 +117,10 @@ impl ExecLog {
         })
     }
 
+    fn add_bazel_platform(&mut self, platform: &BazelPlatform) -> Vec<usize> {
+        platform.properties.iter().map(|p| self.add_property(&p.name, &p.value)).collect()
+    }
+
     pub fn add_bazel_entry(&mut self, entry: &SpawnExec) {
         let cmd_args = entry
             .command_args
@@ -110,11 +130,9 @@ impl ExecLog {
         let env_vars = entry
             .environment_variables
             .iter()
-            .map(|ev| EnvVar {
-                name: self.strings.get_or_insert(&ev.name),
-                value: self.strings.get_or_insert(&ev.value),
-            })
+            .map(|ev| self.add_property(&ev.name, &ev.value))
             .collect::<Vec<_>>();
+        let platform = entry.platform.as_ref().map(|p| self.add_bazel_platform(p)).unwrap_or_else(|| Vec::new());
         let inputs = entry
             .inputs
             .iter()
@@ -134,6 +152,7 @@ impl ExecLog {
         let entry = Entry {
             cmd_args,
             env_vars,
+            platform,
             inputs,
             listed_outputs,
             remotable: entry.remotable,
@@ -159,6 +178,7 @@ impl std::fmt::Debug for ExecLog {
             .field("strings", &self.strings)
             .field("digests", &self.digests)
             .field("files", &self.files)
+            .field("properties", &self.properties)
             .field("entries (count)", &self.entries.len())
             .finish()
     }
@@ -182,8 +202,8 @@ pub struct File {
     is_tool: bool,
 }
 
-#[derive(Default, Debug, Serialize, Deserialize)]
-pub struct EnvVar {
+#[derive(Default, Clone, Debug, Hash, Eq, PartialEq, Serialize, Deserialize)]
+pub struct Property {
     // Name (index into `ExecLog.strings`).
     name: usize,
     // Value (index into `ExecLog.strings`).
@@ -194,10 +214,10 @@ pub struct EnvVar {
 pub struct Entry {
     // List if command arguments (index into `ExecLog.strings`).
     cmd_args: Vec<usize>,
-    // The command environment.
-    env_vars: Vec<EnvVar>,
-    // /// The command execution platform.
-    // pub platform: ::core::option::Option<Platform>,
+    // The command environment variables (index into `ExecLog.properties`).
+    env_vars: Vec<usize>,
+    // The command execution platform (index into `ExecLog.properties`).
+    platform: Vec<usize>,
     // The inputs at the time of the execution (index into `ExecLog.files`).
     inputs: Vec<usize>,
     // All the listed outputs paths. The paths are relative to the execution root.
