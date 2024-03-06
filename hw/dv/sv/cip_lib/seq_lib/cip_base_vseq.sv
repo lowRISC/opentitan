@@ -799,8 +799,9 @@ class cip_base_vseq #(
     )
 
     // Wait a random number of cycles (up to reset_delay_bound) before triggering the reset.
+    `uvm_info(`gfn, $sformatf("Want to issue reset in %0d cycles", rand_reset_delay),
+              UVM_MEDIUM)
     cfg.clk_rst_vif.wait_clks(rand_reset_delay);
-
     cfg.set_intention_to_reset();
 
     `uvm_info(`gfn, $sformatf(
@@ -808,7 +809,6 @@ class cip_base_vseq #(
               UVM_MEDIUM)
     for (; cycles_waited < wait_cycles || cycles_with_no_accesses > 0; ++cycles_waited) begin
       if (!has_outstanding_access()) begin
-        `uvm_info(`gfn, "A cycle with no outstanding accesses", UVM_MEDIUM)
         ++cycles_with_no_accesses;
         if (cycles_with_no_accesses > CyclesWithNoAccessesThreshold) begin
           `uvm_info(`gfn, $sformatf(

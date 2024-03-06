@@ -37,7 +37,7 @@ class hmac_common_vseq extends hmac_base_vseq;
       // `StPushToMsgFifo` state, this task try to issue reset (with a large possibility) during
       // `StPushToMsgFifo` state.
       wait (cfg.hash_process_triggered == 1);
-      cfg.clk_rst_vif.wait_clks($urandom_range(100, 150));
+      super.wait_to_issue_reset($urandom_range(100, 150));
       #($urandom_range(0, cfg.clk_rst_vif.clk_period_ps) * 1ps);
     end else begin
       super.wait_to_issue_reset(reset_delay_bound);
