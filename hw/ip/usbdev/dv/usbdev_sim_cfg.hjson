@@ -78,6 +78,10 @@
       uvm_test_seq: usbdev_fifo_rst_vseq
     }
     {
+      name: usbdev_in_status_stage
+      uvm_test_seq: usbdev_in_status_stage_vseq
+    }
+    {
       name: usbdev_in_trans
       uvm_test_seq: usbdev_in_trans_vseq
     }

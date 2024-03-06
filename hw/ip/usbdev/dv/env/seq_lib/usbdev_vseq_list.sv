@@ -12,6 +12,7 @@
 `include "usbdev_enable_vseq.sv"
 `include "usbdev_fifo_rst_vseq.sv"
 `include "usbdev_in_stall_vseq.sv"
+`include "usbdev_in_status_stage_vseq.sv"
 `include "usbdev_in_trans_vseq.sv"
 `include "usbdev_nak_trans_vseq.sv"
 `include "usbdev_out_stall_vseq.sv"
