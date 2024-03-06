@@ -104,7 +104,7 @@ class otp_ctrl_init_fail_vseq extends otp_ctrl_smoke_vseq;
       bit [TL_DW-1:0] addr;
 
       for (int i = 0; i < NumPart; i++) begin
-  if (cfg.stop_transaction_generators()) return;
+        if (cfg.stop_transaction_generators()) return;
         `DV_CHECK_RANDOMIZE_FATAL(this);
 
         if (PartInfo[i].sw_digest) begin
