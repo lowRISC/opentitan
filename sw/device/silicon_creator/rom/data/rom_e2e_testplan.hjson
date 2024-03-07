@@ -578,6 +578,25 @@
     }
 
     {
+      name: rom_e2e_boot_policy_big_image
+      desc: '''Verify that ROM can boot flash images that are larger than the ROM_EXT slot.
+
+            Provisioning flash images may take up more space than the dedicated ROM_EXT slot,
+            and potentially, up to the size of the entire slot A/B (since there is no need to
+            have multiple boot stages for provisioning firmware).
+
+            - Write image of size `CHIP_ROM_EXT_SIZE_MAX` + 1 or greater to `slot_a`.
+              - The other slot remains empty (since it could be consumed by the single image).
+              - Image should be less than (`CHIP_ROM_EXT_SIZE_MAX` + `CHIP_BL0_SIZE_MAX` + 1).
+            - Verify that the chip boots the image successfully.
+            - Repeat for all life cycle states: TEST, DEV, PROD, PROD_END, and RMA.
+            '''
+      tags: ["rom", "no_dv", "fpga", "silicon"]
+      stage: V2
+      tests: []
+    }
+
+    {
       name: rom_e2e_boot_policy_valid
       desc: '''Verify that ROM chooses the slot with the valid signature.
 
