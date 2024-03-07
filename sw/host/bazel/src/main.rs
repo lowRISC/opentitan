@@ -32,6 +32,8 @@ enum Operation {
     Convert(ConvertCommand),
     /// Print the log.
     Print(PrintCommand),
+    /// Compare two logs.
+    Compare(CompareCommand),
 }
 
 /// Conversion command.
@@ -57,6 +59,21 @@ struct PrintCommand {
     format: Option<Format>,
     /// Input file.
     input: PathBuf,
+}
+
+/// Compare command.
+#[derive(Debug, Args)]
+struct CompareCommand {
+    /// Input A format. If not set, will guess format based on extension.
+    #[arg(long)]
+    format_a: Option<Format>,
+    /// Input file A.
+    input_a: PathBuf,
+    /// Input B format. If not set, will guess format based on extension.
+    #[arg(long)]
+    format_b: Option<Format>,
+    /// Input file B.
+    input_b: PathBuf,
 }
 
 #[derive(Debug, Parser)]
@@ -135,8 +152,7 @@ fn print_bazel(print: &PrintCommand) -> Result<()> {
         if !bazel_exec_log::read_spawn_exec(&mut reader, &mut msg, &mut buf)? {
             break;
         };
-        // println!("{msg:#?}");
-        println!("{:#?}", msg.environment_variables);
+        println!("{msg:#?}");
     }
     Ok(())
 }
@@ -146,7 +162,16 @@ fn print_ot_json(print: &PrintCommand) -> Result<()> {
     let reader = BufReader::new(file);
     let exec_log: ExecLog = serde_json::from_reader(reader)?;
 
-    println!("{exec_log:#?}");
+    println!("Strings:");
+    for string in exec_log.iter_strings() {
+        println!("* {string}");
+    }
+
+    println!("Files:");
+    for file in exec_log.iter_files() {
+        println!("{file:#?}");
+    }
+
     Ok(())
 }
 
@@ -159,11 +184,21 @@ fn print_log(print: &PrintCommand) -> Result<()> {
     }
 }
 
+fn compare_logs(cmp: &CompareCommand) -> Result<()> {
+    let fmt_a = guess_format(&cmp.format_a, &cmp.input_a)?;
+    let fmt_b = guess_format(&cmp.format_b, &cmp.input_b)?;
+
+    ensure!(fmt_a == Format::OtJson && fmt_b == Format::OtJson, "the compare command only supports the ot-json format");
+
+    Ok(())
+}
+
 fn main() -> Result<()> {
     let opts = Opts::parse();
 
     match opts.operation {
         Operation::Convert(conv) => convert(&conv),
         Operation::Print(print) => print_log(&print),
+        Operation::Compare(compare) => compare_logs(&compare),
     }
 }

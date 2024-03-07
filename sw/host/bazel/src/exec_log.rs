@@ -5,8 +5,13 @@
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde::de::Error;
 use std::collections::HashMap;
+use std::fmt::{Debug, Formatter};
 
 use spawn_proto::protos::{Digest as BazelDigest, File as BazelFile, Platform as BazelPlatform, SpawnExec};
+
+pub trait ViewType<'outer, Outer, T> {
+    fn view_from(outer: &'outer Outer, val: &'outer T) -> Self;
+}
 
 #[derive(Default)]
 struct IndexedSet<T: Default> {
@@ -14,10 +19,43 @@ struct IndexedSet<T: Default> {
     map: HashMap<T, usize>,
 }
 
+pub struct IndexedSetIterator<'set, T: Default> {
+    iter: <&'set Vec<T> as IntoIterator>::IntoIter,
+}
+
+impl<'set, T: Default> Iterator for IndexedSetIterator<'set, T> {
+    type Item = &'set T;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.iter.next()
+    }
+}
+
+pub struct IndexedSetIteratorWith<'outer, Outer, T: Default, ViewT>
+where ViewT: ViewType<'outer, Outer, T>
+{
+    outer: &'outer Outer,
+    iter: <&'outer Vec<T> as IntoIterator>::IntoIter,
+    _viewt: std::marker::PhantomData<ViewT>,
+}
+
+impl<'outer, Outer, T: Default, ViewT> Iterator for IndexedSetIteratorWith<'outer, Outer, T, ViewT>
+where ViewT: ViewType<'outer, Outer, T> {
+    type Item = ViewT;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.iter.next().map(|x| ViewT::view_from(self.outer, x))
+    }
+}
+
 impl<T> IndexedSet<T>
 where
     T: Default + Clone + Eq + std::hash::Hash,
 {
+    pub fn get_at(&self, idx: usize) -> &T {
+        &self.values[idx]
+    }
+
     pub fn get_or_insert(&mut self, val: &T) -> usize {
         let new_index = self.values.len();
         let index = self.map.entry(val.clone()).or_insert(new_index);
@@ -26,10 +64,25 @@ where
         }
         *index
     }
+
+    pub fn iter(&self) -> IndexedSetIterator<T> {
+        IndexedSetIterator {
+            iter: (&self.values).into_iter(),
+        }
+    }
+
+    pub fn iter_with<'outer, Outer, ViewT>(&'outer self, outer: &'outer Outer) -> IndexedSetIteratorWith<'outer, Outer, T, ViewT>
+    where ViewT: ViewType<'outer, Outer, T> {
+        IndexedSetIteratorWith {
+            outer: outer,
+            iter: (&self.values).into_iter(),
+            _viewt: std::marker::PhantomData,
+        }
+    }
 }
 
-impl<T: Default> std::fmt::Debug for IndexedSet<T> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
+impl<T: Default> Debug for IndexedSet<T> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
         f.debug_struct("IndexedSet")
             .field("values (count)", &self.values.len())
             .finish()
@@ -72,6 +125,7 @@ where
     }
 }
 
+
 #[derive(Default, Serialize, Deserialize)]
 pub struct ExecLog {
     // List of all strings.
@@ -89,6 +143,14 @@ pub struct ExecLog {
 impl ExecLog {
     pub fn new() -> ExecLog {
         ExecLog::default()
+    }
+
+    pub fn iter_strings(&self) -> IndexedSetIterator<String> {
+        self.strings.iter()
+    }
+
+    pub fn iter_files(&self) -> IndexedSetIteratorWith<Self, File, FileView> {
+        self.files.iter_with(self)
     }
 
     fn add_property(&mut self, name: &String, value: &String) -> usize {
@@ -194,12 +256,81 @@ pub struct Digest {
     hash_fn: usize,
 }
 
+pub struct DigestView<'log> {
+    exec_log: &'log ExecLog,
+    digest: &'log Digest,
+}
+
+impl<'log> ViewType<'log, ExecLog, Digest> for DigestView<'log> {
+    fn view_from(exec_log: &'log ExecLog, digest: &'log Digest) -> Self {
+        DigestView {
+            exec_log,
+            digest
+        }
+    }
+}
+
+impl<'log> Debug for DigestView<'log> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
+        f.debug_struct("File")
+            .field("hash", &self.exec_log.strings.get_at(self.digest.hash))
+            .field("size_bytes", &self.digest.size_bytes)
+            .field("hash_fn", &self.exec_log.strings.get_at(self.digest.hash_fn))
+            .finish()
+    }
+}
+
 #[derive(Default, Clone, Debug, Hash, Eq, PartialEq, Serialize, Deserialize)]
 pub struct File {
     path: usize,
     symlink: usize,
     digest: Option<usize>,
     is_tool: bool,
+}
+
+pub struct FileView<'log> {
+    exec_log: &'log ExecLog,
+    file: &'log File,
+}
+
+impl FileView<'_> {
+    pub fn path(&self) -> &str {
+        &self.exec_log.strings.get_at(self.file.path)
+    }
+
+    pub fn digest(&self) -> Option<DigestView> {
+        self.file.digest.map(|d_idx| {
+            DigestView::view_from(self.exec_log, self.exec_log.digests.get_at(d_idx))
+        })
+    }
+
+    pub fn symlink(&self) -> &str {
+        &self.exec_log.strings.get_at(self.file.symlink)
+    }
+
+    pub fn is_tool(&self) -> bool {
+        self.file.is_tool
+    }
+}
+
+impl<'log> ViewType<'log, ExecLog, File> for FileView<'log> {
+    fn view_from(exec_log: &'log ExecLog, file: &'log File) -> Self {
+        FileView {
+            exec_log,
+            file
+        }
+    }
+}
+
+impl<'log> Debug for FileView<'log> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
+        f.debug_struct("Digest")
+            .field("path", &self.path())
+            .field("symlink", &self.symlink())
+            .field("digest", &self.digest())
+            .field("is_tool", &self.is_tool())
+            .finish()
+    }
 }
 
 #[derive(Default, Clone, Debug, Hash, Eq, PartialEq, Serialize, Deserialize)]
