@@ -64,19 +64,16 @@ class sram_ctrl_smoke_vseq extends sram_ctrl_base_vseq;
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(num_ops)
 
       if (access_during_key_req) begin
-        // request new key or issue mem init, in the meanwhile, do some random SRAM operations
+        // Request new key and issue mem init, in the meanwhile, do some random SRAM operations.
+        // When mem_init is requested a new key is also requested, so it is only necessary to
+        // call req_mem_init. This is important, since if only new keys are requested the
+        // scrambling will change and most memory locations will have ECC errors.
+        //
+        // The purpose of the test is to check that no memory transactions happen while either
+        // key request of memory initialization are happening, and that is met by req_mem_init
+        // since it does both.
         fork
-          begin
-            // during key or init req, sram access shouldn't be taken
-            randcase
-              1: begin
-                req_scr_key();
-              end
-              1: begin
-                req_mem_init();
-              end
-            endcase
-          end
+          req_mem_init();
           begin
             // add 2 cycles to avoid issuing key_scr/init and mem access happen at the same time,
             // as it's hard to handle this case in scb

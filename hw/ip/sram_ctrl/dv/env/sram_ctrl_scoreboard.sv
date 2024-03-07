@@ -314,6 +314,9 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
       // all contents will change with new key/nonces.
       exp_status[SramCtrlScrKeyValid] = 0;
       exp_mem[cfg.sram_ral_name].init();
+
+      if (cfg.under_reset) return;
+
       // Create expected response from kdi push_pull agent.
       begin
         otp_ctrl_pkg::sram_otp_key_rsp_t otp_rsp;
@@ -346,7 +349,12 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
       // thus we just need to wait for a number of cycles equal to the total size
       // of the sram address space.
       `uvm_info(`gfn, "starting to wait for init", UVM_MEDIUM)
-      cfg.clk_rst_vif.wait_clks(cfg.mem_bkdr_util_h.get_depth());
+      // This gets interrupted by reset.
+      `DV_SPINWAIT_EXIT(
+          cfg.clk_rst_vif.wait_clks(cfg.mem_bkdr_util_h.get_depth());,
+          wait (cfg.under_reset == 1'b1);,
+          "Stopped waiting for ram init due to reset")
+      if (cfg.under_reset) return;
 
       // If we are in escalated state, init_done will stay low.
       if (status_lc_esc == EscNone) begin
@@ -454,22 +462,22 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
       csr_spinwait(.ptr(ral.status.scr_key_valid), .exp_data(1), .backdoor(1));
 
       cfg.in_key_req = 0;
-      `uvm_info(`gfn, "Set in_key_req=0", UVM_MEDIUM)
+      if (!cfg.under_reset) begin
+        // When KDI item is seen, update key, nonce
+        `uvm_info(`gfn, $sformatf(
+                  "mem_bkdr_scb.update_key with key=0x%x, nonce=0x%x, seed_valid=%0d",
+                  key, nonce, seed_valid),
+                  UVM_MEDIUM)
+        if (status_lc_esc == EscNone) begin
+          {key, nonce, seed_valid} = item.d_data;
+          mem_bkdr_scb.update_key(key, nonce);
 
-      // When KDI item is seen, update key, nonce
-      `uvm_info(`gfn, $sformatf(
-                "mem_bkdr_scb.update_key with key=0x%x, nonce=0x%x, seed_valid=%0d",
-                key, nonce, seed_valid),
-                UVM_MEDIUM)
-      if (status_lc_esc == EscNone) begin
-        {key, nonce, seed_valid} = item.d_data;
-        mem_bkdr_scb.update_key(key, nonce);
-
-        // The scr_key_rotated and status.scr_key_valid will be updated.
-        `uvm_info(`gfn, "Setting scr_key_rotated and scr_key_valid", UVM_MEDIUM)
-        exp_scr_key_rotated = MuBi4True;
-        exp_status[SramCtrlScrKeyValid]     = 1;
-        exp_status[SramCtrlScrKeySeedValid] = seed_valid;
+          // The scr_key_rotated and status.scr_key_valid will be updated.
+          `uvm_info(`gfn, "Setting scr_key_rotated and scr_key_valid", UVM_MEDIUM)
+          exp_scr_key_rotated = MuBi4True;
+          exp_status[SramCtrlScrKeyValid]     = 1;
+          exp_status[SramCtrlScrKeySeedValid] = seed_valid;
+        end
       end
       // sample coverage on seed_valid
       if (cfg.en_cov) begin
@@ -496,7 +504,6 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
     bit data_phase_read   = (!write && channel == DataChannel);
     bit data_phase_write  = (write && channel == DataChannel);
 
-    `uvm_info(`gfn, "In process_tl_access", UVM_MEDIUM)
     if (ral_name == cfg.sram_ral_name) begin
       if (channel == AddrChannel) process_sram_tl_a_chan_item(item);
       else                        process_sram_tl_d_chan_item(item);
@@ -555,15 +562,15 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
           `uvm_info(`gfn, $sformatf("Updating ctrl CSR with 0x%x", item.a_data), UVM_MEDIUM)
           // Writes are blocked if regwen blocks them, and for renew_scr_key, if
           // status.scr_key_valid is 0.
-          // Predict status.scr_key_valid to be 0 if the write goes through.
           if (item.a_data[SramCtrlRenewScrKey] && `gmv(ral.ctrl_regwen) &&
               (`gmv(ral.status.scr_key_valid) == 0)) begin
+            // Set cfg.in_key_req, and its side-effects are handled
+            // in process_key_request.
             cfg.in_key_req = 1'b1;
-            `uvm_info(`gfn, "Set in_key_req=1", UVM_MEDIUM)
             void'(ral.status.scr_key_valid.predict(.value(0), .kind(UVM_PREDICT_READ)));
           end
-          // Predict the status.init_done to be 0..
           if (item.a_data[SramCtrlInit] && `gmv(ral.ctrl_regwen)) begin
+            // The side-effects of setting cfg.in_init are handled in process_sram_init.
             cfg.in_init = 1'b1;
             void'(ral.status.init_done.predict(.value(0), .kind(UVM_PREDICT_READ)));
           end
@@ -618,13 +625,12 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
   endfunction
 
   virtual function void reset(string kind = "HARD");
-    sram_trans_t t;
     super.reset(kind);
 
     reset_key_nonce();
     cfg.in_init = 0;
-    `uvm_info(`gfn, "Set in_key_req=0", UVM_MEDIUM)
     cfg.in_key_req = 0;
+    cfg.m_kdi_cfg.clear_d_user_data();
     new_key_received = 0;
     init_after_new_key = 0;
     mem_bkdr_scb.reset();

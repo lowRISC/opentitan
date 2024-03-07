@@ -286,6 +286,7 @@ virtual task run_tl_intg_err_vseq(int num_times = 1);
     end
   end
   for (int trans = 1; trans <= num_times; trans++) begin
+    if (cfg.stop_transaction_generators()) break;
     `uvm_info(`gfn, $sformatf("Running run_tl_intg_err_vseq %0d/%0d", trans, num_times),
               UVM_LOW)
     foreach (cfg.ral_models[ral_name]) begin
@@ -375,6 +376,7 @@ endtask
 
 virtual task run_passthru_mem_tl_intg_err_vseq(int num_times = 1);
   for (int trans = 1; trans <= num_times; trans++) begin
+    if (cfg.stop_transaction_generators()) break;
     `uvm_info(`gfn, $sformatf("Running run_passthru_mem_tl_intg_err_vseq %0d/%0d",
                               trans, num_times),
               UVM_LOW)
