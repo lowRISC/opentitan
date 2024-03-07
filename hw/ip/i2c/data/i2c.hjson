@@ -621,7 +621,7 @@
           name: "ABYTE"
           desc: "Address for accepted transaction or acquired byte"
         }
-        { bits: "9:8"
+        { bits: "10:8"
           name: "SIGNAL"
           desc: "Host issued a START before transmitting ABYTE, a STOP or a RESTART after the preceeding ABYTE"
           enum: [
@@ -640,6 +640,14 @@
             { value: "3",
               name: "RESTART",
               desc: "ABYTE contains junk, START with address will follow"
+            },
+            { value: "4",
+              name: "NACK",
+              desc: "ABYTE contains either the address or data that was NACK'ed"
+            },
+            { value: "5",
+              name: "NACKSTART",
+              desc: "ABYTE contains the I2C address which was ACK'ed, but the block will continue and NACK the next data byte that was received: this only happens for writes"
             },
           ]
         }

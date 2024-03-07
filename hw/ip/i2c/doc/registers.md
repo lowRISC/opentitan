@@ -492,30 +492,33 @@ I2C target address and mask pairs
 I2C target acquired data
 - Offset: `0x58`
 - Reset default: `0x0`
-- Reset mask: `0x3ff`
+- Reset mask: `0x7ff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "ABYTE", "bits": 8, "attr": ["ro"], "rotate": 0}, {"name": "SIGNAL", "bits": 2, "attr": ["ro"], "rotate": -90}, {"bits": 22}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "ABYTE", "bits": 8, "attr": ["ro"], "rotate": 0}, {"name": "SIGNAL", "bits": 3, "attr": ["ro"], "rotate": -90}, {"bits": 21}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                       |
 |:------:|:------:|:-------:|:---------------------------|
-| 31:10  |        |         | Reserved                   |
-|  9:8   |   ro   |    x    | [SIGNAL](#acqdata--signal) |
+| 31:11  |        |         | Reserved                   |
+|  10:8  |   ro   |    x    | [SIGNAL](#acqdata--signal) |
 |  7:0   |   ro   |    x    | [ABYTE](#acqdata--abyte)   |
 
 ### ACQDATA . SIGNAL
 Host issued a START before transmitting ABYTE, a STOP or a RESTART after the preceeding ABYTE
 
-| Value   | Name    | Description                                         |
-|:--------|:--------|:----------------------------------------------------|
-| 0x0     | NONE    | ABYTE contains ordinary data byte as received       |
-| 0x1     | START   | ABYTE contains the 8-bit I2C address (R/W in lsb)   |
-| 0x2     | STOP    | ABYTE contains junk                                 |
-| 0x3     | RESTART | ABYTE contains junk, START with address will follow |
+| Value   | Name      | Description                                                                                                                                              |
+|:--------|:----------|:---------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0x0     | NONE      | ABYTE contains ordinary data byte as received                                                                                                            |
+| 0x1     | START     | ABYTE contains the 8-bit I2C address (R/W in lsb)                                                                                                        |
+| 0x2     | STOP      | ABYTE contains junk                                                                                                                                      |
+| 0x3     | RESTART   | ABYTE contains junk, START with address will follow                                                                                                      |
+| 0x4     | NACK      | ABYTE contains either the address or data that was NACK'ed                                                                                               |
+| 0x5     | NACKSTART | ABYTE contains the I2C address which was ACK'ed, but the block will continue and NACK the next data byte that was received: this only happens for writes |
 
+Other values are reserved.
 
 ### ACQDATA . ABYTE
 Address for accepted transaction or acquired byte
@@ -570,5 +573,6 @@ When the target has stretched beyond this time it will send a NACK.
 |:------:|:------:|:-------:|:-------|:-----------------------------------------------------------------------|
 |   31   |   rw   |   0x0   | EN     | Enable timeout feature and send NACK once the timeout has been reached |
 |  30:0  |   rw   |   0x0   | VAL    | Clock stretching timeout value (in units of input clock frequency)     |
+
 
 <!-- END CMDGEN -->
