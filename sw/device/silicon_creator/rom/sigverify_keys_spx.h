@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
+#include "sw/device/silicon_creator/rom/sigverify_key_types.h"
 #include "sw/device/silicon_creator/rom/sigverify_keys.h"
 #include "sw/lib/sw/device/silicon_creator/error.h"
 #include "sw/lib/sw/device/silicon_creator/sigverify/spx_key.h"
@@ -15,47 +16,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
-
-/**
- * An SPX public key stored in ROM.
- *
- * This struct must start with the common initial sequence
- * `sigverify_rom_key_header_t`.
- */
-typedef struct sigverify_rom_spx_key_entry {
-  /**
-   * Type of the key.
-   */
-  sigverify_key_type_t key_type;
-  /**
-   * An SPX public key.
-   */
-  sigverify_spx_key_t key;
-} sigverify_rom_spx_key_entry_t;
-
-OT_ASSERT_MEMBER_OFFSET(sigverify_rom_spx_key_entry_t, key_type, 0);
-OT_ASSERT_MEMBER_OFFSET(sigverify_rom_spx_key_entry_t, key.data[0], 4);
-OT_ASSERT_MEMBER_OFFSET(sigverify_rom_key_header_t, key_type, 0);
-OT_ASSERT_MEMBER_OFFSET(sigverify_rom_key_header_t, key_id, 4);
-
-/**
- * Union type to inspect the common initial sequence of SPX public keys stored
- * in ROM.
- */
-typedef union sigverify_rom_spx_key {
-  /**
-   * Common initial sequence.
-   */
-  sigverify_rom_key_header_t key_header;
-  /**
-   * Actual SPX public key entry.
-   */
-  sigverify_rom_spx_key_entry_t entry;
-} sigverify_rom_spx_key_t;
-
-static_assert(
-    sizeof(sigverify_rom_spx_key_entry_t) == sizeof(sigverify_rom_spx_key_t),
-    "Size of an SPX public key entry must be equal to the size of a key");
 
 /**
  * Number of SPX public keys.
