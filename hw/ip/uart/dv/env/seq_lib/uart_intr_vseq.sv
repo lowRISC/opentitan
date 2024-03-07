@@ -7,13 +7,15 @@ class uart_intr_vseq extends uart_base_vseq;
   `uvm_object_utils(uart_intr_vseq)
 
   constraint num_trans_c {
-    num_trans inside {[1:5]};
+    num_trans inside {[1:4]};
   }
 
-  // make interrupt easy to predict - lower the freq so that there is enough time to read status
-  // and check
+  // Make interrupts easy to predict and fast to simulate - lower the freq so that there is enough
+  // time to read status and check but enforce a minimum frequency when performing many runs in a
+  // test to keep runtime reasonable.
   constraint baud_rate_extra_c {
     baud_rate <= BaudRate230400;
+    num_trans > 2 -> baud_rate >= BaudRate115200;
   }
 
   `uvm_object_new
@@ -222,20 +224,23 @@ class uart_intr_vseq extends uart_base_vseq;
         csr_rd(.ptr(ral.rdata),  .value(rdata));
 
         // wait for timeout_val-2 cycles (it's about to timeout) and then
-        // read or drive one uart RX item to reset timeout cnt. More fifo read, less fifo write
+        // read or drive uart RX items to reset timeout cnt. More fifo read, less fifo write
         // Repeat until fifo is empty. Timeout should never occur
         forever begin
-          bit [TL_DW-1:0] status;
+          bit rxempty;
           bit rxfull;
           randcase
-            3: begin // read RX fifo
-              csr_rd(.ptr(ral.status), .value(status));
-              if (get_field_val(ral.status.rxempty, status)) begin
-                break;
-              end
+            5: begin // read one or more RX items (fifo read)
+              csr_rd(.ptr(ral.status.rxempty), .value(rxempty));
+              if (rxempty) break; // exit forever
               // use -2 to have higher tolerance to avoid timeout
               wait_for_baud_clock_cycles(timeout_val - 2);
-              csr_rd(.ptr(ral.rdata),  .value(rdata));
+              // Read more than one byte most of the time to reduce max runtime
+              repeat ($urandom_range(UART_FIFO_DEPTH >> 2, 1)) begin
+                csr_rd(.ptr(ral.rdata), .value(rdata));
+                csr_rd(.ptr(ral.status.rxempty), .value(rxempty));
+                if (rxempty) break; // exit repeat
+              end
             end
             1: begin // drive one RX item (fifo write)
               // use -2 to have higher tolerance to avoid timeout
