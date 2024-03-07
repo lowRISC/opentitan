@@ -354,6 +354,7 @@ cc_library(
         "sigverify_keys.h",
     ],
     deps = [
+        ":sigverify_key_types",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:macros",
@@ -361,6 +362,15 @@ cc_library(
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/device/silicon_creator/lib/drivers:rnd",
+        "//sw/device/silicon_creator/lib/sigverify:rsa_key",
+        "//sw/device/silicon_creator/lib/sigverify:spx_key",
+    ],
+)
+
+cc_library(
+    name = "sigverify_key_types",
+    hdrs = ["sigverify_key_types.h"],
+    deps = [
         "//sw/device/silicon_creator/lib/sigverify:rsa_key",
         "//sw/device/silicon_creator/lib/sigverify:spx_key",
     ],
@@ -375,6 +385,7 @@ cc_library(
         "sigverify_keys_rsa.h",
     ],
     deps = [
+        ":sigverify_key_types",
         ":sigverify_keys",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//sw/device/lib/base:macros",
@@ -393,6 +404,7 @@ cc_library(
         "sigverify_keys_spx.h",
     ],
     deps = [
+        ":sigverify_key_types",
         ":sigverify_keys",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//sw/device/lib/base:macros",
