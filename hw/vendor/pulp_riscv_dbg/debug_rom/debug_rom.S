@@ -12,7 +12,11 @@
 
 // Region of memory where each hart has 1
 // byte to read.
-#define FLAGS 0x400
+#if CARFIELD
+  #define FLAGS 0x3FC
+#else
+  #define FLAGS 0x400
+#endif
 #define FLAG_GO     0
 #define FLAG_RESUME 1
 

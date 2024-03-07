@@ -6,8 +6,9 @@ GCC?=riscv64-unknown-elf-gcc
 OBJCOPY?=riscv64-unknown-elf-objcopy
 OBJDUMP?=riscv64-unknown-elf-objdump
 PYTHON?=python
+FLAGS?=
 
-all: $(debug_rom)
+all: $(debug_rom) rename
 
 %.sv: %.img
 	$(PYTHON) gen_rom.py $<
@@ -19,10 +20,13 @@ all: $(debug_rom)
 	$(OBJCOPY) -O binary $< $@
 
 %.elf: $(findstring debug_rom, $(debug_rom)).S link.ld
-	$(GCC) $(if  $(findstring one_scratch,$@),,-DSND_SCRATCH=1) -I$(RISCV)/include -Tlink.ld $< -nostdlib -fPIC -static -Wl,--no-gc-sections -o $@
+	$(GCC) $(if  $(findstring one_scratch,$@),,-DSND_SCRATCH=1) $(FLAGS) -I$(RISCV)/include -Tlink.ld $< -nostdlib -fPIC -static -Wl,--no-gc-sections -o $@
 
 %.dump: %.elf
 	$(OBJDUMP) -d $< --disassemble-all --disassemble-zeroes --section=.text --section=.text.startup --section=.text.init --section=.data  > $@
 
 clean:
 	rm -f *.img *.dump *.bin *.sv
+
+rename:
+	$(shell grep -rl "debug_rom" debug_rom.sv | xargs sed -i 's/debug_rom/debug_ot_rom/g')
