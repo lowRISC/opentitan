@@ -5504,14 +5504,14 @@ opentitan_test(
 )
 
 opentitan_test(
-    name = "uart_parity_test",
-    srcs = ["uart_parity_test.c"],
+    name = "uart_parity_break_test",
+    srcs = ["uart_parity_break_test.c"],
     cw310 = cw310_params(
         test_cmd = " ".join([
             "--bootstrap=\"{firmware}\"",
             "--firmware-elf=\"{firmware:elf}\"",
         ]),
-        test_harness = "//sw/host/tests/chip/uart:uart_parity",
+        test_harness = "//sw/host/tests/chip/uart:uart_parity_break",
     ),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_sival": None,
@@ -5523,7 +5523,7 @@ opentitan_test(
             "--bootstrap=\"{firmware}\"",
             "--firmware-elf=\"{firmware:elf}\"",
         ]),
-        test_harness = "//sw/host/tests/chip/uart:uart_parity",
+        test_harness = "//sw/host/tests/chip/uart:uart_parity_break",
     ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
