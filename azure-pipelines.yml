@@ -138,6 +138,94 @@ jobs:
       includePatterns:
         - "/sw/***"
 
+# Run it a second time so we can compare execution logs
+- job: sw_build2
+  displayName: Earl Grey SW Build
+  # Build software tests for the Earl Grey toplevel design
+  timeoutInMinutes: 120
+  dependsOn: checkout
+  pool: ci-public
+  steps:
+  - template: ci/checkout-template.yml
+  - template: ci/install-package-dependencies.yml
+  - template: ci/load-bazel-cache-write-creds.yml
+  - bash: |
+      set -x -e
+
+      # Check the entire build graph for conflicts in loading or analysis
+      # phases. For context, see issue #18726.
+      # First, test with an empty bitstream cache entry.
+      ci/scripts/test-empty-bitstream-cache.sh
+      # Now redo with the real bitstream cache included.
+      ci/bazelisk.sh build --nobuild //...
+
+      # This command selects the unit tests to be built:
+      # * It excludes //quality because that's the purview of `slow_lints`.
+      # * It excludes //sw/otbn/crypto because that's tested in `otbn_crypto_tests`.
+      # * It excludes the tests from //third_party/riscv-compliance because
+      #   they're already covered by `execute_fpga_tests_cw310`.
+      # * It excludes //hw:all to avoid building Verilator, which is pulled in
+      #   because //... effectively asks to build //hw:verilator_real and other
+      #   targets in //hw:all that depend on it. Note that this is only a
+      #   shallow exclusion; tests deeper under //hw will still be found.
+      # * It excludes targets that depend on bitstream_splice rules, since the
+      #   environment does not have access to Vivado.
+      # * It excludes all <ip>_regs targets under //hw/ip_templates, since
+      #   it makes no sense to build these under ip_templates. These IPs need
+      #   to be updated as more migrate to ipgen.
+      TARGET_PATTERN_FILE=target_pattern.txt
+      mkdir "$BAZEL_EXEC_LOG_ROOT"
+      echo //... > "${TARGET_PATTERN_FILE}"
+      echo -//quality/... >> "${TARGET_PATTERN_FILE}"
+      echo -//sw/otbn/crypto/... >> "${TARGET_PATTERN_FILE}"
+      echo -//third_party/riscv-compliance/... >> "${TARGET_PATTERN_FILE}"
+      echo -//hw:all >> "${TARGET_PATTERN_FILE}"
+      echo -//hw/ip_templates/clkmgr/data:clkmgr_regs \
+        >> "${TARGET_PATTERN_FILE}"
+      echo -//hw/ip_templates/flash_ctrl/data:flash_ctrl_regs \
+        >> "${TARGET_PATTERN_FILE}"
+      echo -//hw/ip_templates/pwrmgr/data:pwrmgr_regs \
+        >> "${TARGET_PATTERN_FILE}"
+      echo -//hw/ip_templates/rstmgr/data:rstmgr_regs \
+        >> "${TARGET_PATTERN_FILE}"
+      ci/bazelisk.sh cquery \
+        --noinclude_aspects \
+        --output=starlark \
+        --starlark:expr='"-{}".format(target.label)' \
+        --define DISABLE_VERILATOR_BUILD=true \
+        -- "rdeps(//..., kind(bitstream_splice, //...))" \
+        >> "${TARGET_PATTERN_FILE}"
+
+      # Build all unit tests and their dependencies.
+      ci/bazelisk.sh build \
+        --build_tests_only=false \
+        --define DISABLE_VERILATOR_BUILD=true \
+        --test_tag_filters=-broken,-cw310,-verilator,-dv \
+        --target_pattern_file="${TARGET_PATTERN_FILE}" \
+        --execution_log_binary_file="$BAZEL_EXEC_LOG_ROOT/test.log" \
+        --noexecution_log_sort
+    displayName: Build SW
+  - template: ci/publish-bazel-exec-logs.yml
+  - publish: target_pattern.txt
+    artifact: target_pattern_file
+  - bash: |
+      set -x -e
+      . util/build_consts.sh
+      # copy the rom to a specific location
+      ROM_TARGET="${BIN_DIR}/sw/device/silicon_creator/rom"
+      mkdir -p "${ROM_TARGET}"
+      ROM_REAL_TARGETS="//sw/device/silicon_creator/rom:package_real"
+      ROM_FAKE_TARGETS="//sw/device/silicon_creator/rom:package_fake"
+      QUERY_CMD_ARGS=(outquery-all --noinclude_aspects --noimplicit_deps)
+      ROM_REAL_FILES=($(ci/bazelisk.sh "${QUERY_CMD_ARGS[@]}" "${ROM_REAL_TARGETS}" | sort | uniq))
+      ROM_FAKE_FILES=($(ci/bazelisk.sh "${QUERY_CMD_ARGS[@]}" "${ROM_FAKE_TARGETS}" | sort | uniq))
+      cp -Lvt "${ROM_TARGET}" "${ROM_FAKE_FILES[@]}" "${ROM_REAL_FILES[@]}"
+  - template: ci/upload-artifacts-template.yml
+    parameters:
+      includePatterns:
+        - "/sw/***"
+
+
 - job: sw_test
   displayName: Earl Grey SW Test
   timeoutInMinutes: 120
