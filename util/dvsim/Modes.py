@@ -404,11 +404,10 @@ class Tests(RunModes):
                 val = getattr(test_obj, attr)
                 default_val = attrs[attr]
                 if val == default_val:
-                    global_val = None
-                    # Check if we can find a default in sim_cfg
-                    if hasattr(sim_cfg, attr):
-                        global_val = getattr(sim_cfg, attr)
-
+                    # If sim_cfg specifies a value for this attribute and this
+                    # value isn't equal to default_val, then copy the sim_cfg
+                    # value across to the test object.
+                    global_val = getattr(sim_cfg, attr, None)
                     if global_val is not None and global_val != default_val:
                         setattr(test_obj, attr, global_val)
 
