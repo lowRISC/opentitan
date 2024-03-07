@@ -294,7 +294,7 @@ module i2c_reg_top (
   logic [6:0] target_id_mask1_wd;
   logic acqdata_re;
   logic [7:0] acqdata_abyte_qs;
-  logic [1:0] acqdata_signal_qs;
+  logic [2:0] acqdata_signal_qs;
   logic txdata_we;
   logic [7:0] txdata_wd;
   logic host_timeout_ctrl_we;
@@ -2722,9 +2722,9 @@ module i2c_reg_top (
     .qs     (acqdata_abyte_qs)
   );
 
-  //   F[signal]: 9:8
+  //   F[signal]: 10:8
   prim_subreg_ext #(
-    .DW    (2)
+    .DW    (3)
   ) u_acqdata_signal (
     .re     (acqdata_re),
     .we     (1'b0),
@@ -3317,7 +3317,7 @@ module i2c_reg_top (
 
       addr_hit[22]: begin
         reg_rdata_next[7:0] = acqdata_abyte_qs;
-        reg_rdata_next[9:8] = acqdata_signal_qs;
+        reg_rdata_next[10:8] = acqdata_signal_qs;
       end
 
       addr_hit[23]: begin
