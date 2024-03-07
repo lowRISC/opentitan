@@ -53,9 +53,9 @@ rust_binary(
 )
 
 rust_binary(
-    name = "uart_parity",
+    name = "uart_parity_break",
     srcs = [
-        "src/uart_parity.rs",
+        "src/uart_parity_break.rs",
     ],
     deps = [
         "//sw/host/opentitanlib",
