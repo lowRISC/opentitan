@@ -23,6 +23,8 @@ unsigned int get_mtval() {
   return result;
   }*/
 
+void __attribute__((weak)) external_irq_handler(void)  {
+}
 
 void simple_exc_handler(void) {
   printf("EXCEPTION!!!\r\n");
