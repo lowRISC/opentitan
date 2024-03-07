@@ -150,85 +150,23 @@ Status register
 {"reg": [{"name": "TXQD", "bits": 8, "attr": ["ro"], "rotate": 0}, {"name": "RXQD", "bits": 8, "attr": ["ro"], "rotate": 0}, {"name": "CMDQD", "bits": 4, "attr": ["ro"], "rotate": 0}, {"name": "RXWM", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 1}, {"name": "BYTEORDER", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "RXSTALL", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "RXEMPTY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "RXFULL", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TXWM", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TXSTALL", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TXEMPTY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TXFULL", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ACTIVE", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "READY", "bits": 1, "attr": ["ro"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 110}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                            |
-|:------:|:------:|:-------:|:--------------------------------|
-|   31   |   ro   |   0x0   | [READY](#status--ready)         |
-|   30   |   ro   |   0x0   | [ACTIVE](#status--active)       |
-|   29   |   ro   |   0x0   | [TXFULL](#status--txfull)       |
-|   28   |   ro   |   0x0   | [TXEMPTY](#status--txempty)     |
-|   27   |   ro   |   0x0   | [TXSTALL](#status--txstall)     |
-|   26   |   ro   |   0x0   | [TXWM](#status--txwm)           |
-|   25   |   ro   |   0x0   | [RXFULL](#status--rxfull)       |
-|   24   |   ro   |   0x0   | [RXEMPTY](#status--rxempty)     |
-|   23   |   ro   |   0x0   | [RXSTALL](#status--rxstall)     |
-|   22   |   ro   |   0x0   | [BYTEORDER](#status--byteorder) |
-|   21   |        |         | Reserved                        |
-|   20   |   ro   |   0x0   | [RXWM](#status--rxwm)           |
-| 19:16  |   ro   |   0x0   | [CMDQD](#status--cmdqd)         |
-|  15:8  |   ro   |   0x0   | [RXQD](#status--rxqd)           |
-|  7:0   |   ro   |   0x0   | [TXQD](#status--txqd)           |
-
-### STATUS . READY
-When high, indicates the SPI host is ready to receive
-   commands. Writing to COMMAND when READY is low is
-   an error, and will trigger an interrupt.
-
-### STATUS . ACTIVE
-When high, indicates the SPI host is processing a previously
-   issued command.
-
-### STATUS . TXFULL
-When high, indicates that the transmit data fifo is full.
-   Any further writes to [`RXDATA`](#rxdata) will create an error interrupt.
-
-### STATUS . TXEMPTY
-When high, indicates that the transmit data fifo is empty.
-   Note, one transmit item can be pending in the internal transmit datapath (inside the spi_host_byte_select module).
-   This means the transmit data fifo is empty and TXEMTPY will be high, while there is still one packet that needs to be transmitted.
-
-### STATUS . TXSTALL
-If high, signifies that an ongoing transaction has stalled
-   due to lack of data in the TX FIFO
-
-### STATUS . TXWM
-If high, the amount of data in the TX FIFO has fallen below the
-   level of [`CONTROL.TX_WATERMARK`](#control) words (32b each).
-
-### STATUS . RXFULL
-When high, indicates that the receive fifo is full.  Any
-   ongoing transactions will stall until firmware reads some
-   data from [`RXDATA.`](#rxdata)
-
-### STATUS . RXEMPTY
-When high, indicates that the receive fifo is empty.
-   Any reads from RX FIFO will cause an error interrupt.
-
-### STATUS . RXSTALL
-If high, signifies that an ongoing transaction has stalled
-   due to lack of available space in the RX FIFO
-
-### STATUS . BYTEORDER
-The value of the ByteOrder parameter, provided so that firmware
-   can confirm proper IP configuration.
-
-### STATUS . RXWM
-If high, the number of 32-bits in the RX FIFO now exceeds the
-   [`CONTROL.RX_WATERMARK`](#control) entries (32b each).
-
-### STATUS . CMDQD
-Command queue depth. Indicates how many unread 32-bit words are
-   currently in the command segment queue.
-
-### STATUS . RXQD
-Receive queue depth. Indicates how many unread 32-bit words are
-   currently in the RX FIFO.  When active, this result may an
-   underestimate due to synchronization delays.
-
-### STATUS . TXQD
-Transmit queue depth.
-   Indicates how many unsent 32-bit words are currently in the TX FIFO.
-   When active, this result may be an overestimate due to synchronization delays.
-   It may also be an underestimate by 1 because of one pending transmit packet in the internal transmit datapath (inside the spi_host_byte_select module).
+|  Bits  |  Type  |  Reset  | Name      | Description                                                                                                                                                               |
+|:------:|:------:|:-------:|:----------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|   31   |   ro   |   0x0   | READY     | When high, indicates the SPI host is ready to receive commands. Writing to COMMAND when READY is low is an error, and will trigger an interrupt.                          |
+|   30   |   ro   |   0x0   | ACTIVE    | When high, indicates the SPI host is processing a previously issued command.                                                                                              |
+|   29   |   ro   |   0x0   | TXFULL    | When high, indicates that the transmit data fifo is full. Any further writes to [`RXDATA`](#rxdata) will create an error interrupt.                                       |
+|   28   |   ro   |   0x0   | TXEMPTY   | When high, indicates that the transmit data fifo is empty.                                                                                                                |
+|   27   |   ro   |   0x0   | TXSTALL   | If high, signifies that an ongoing transaction has stalled due to lack of data in the TX FIFO                                                                             |
+|   26   |   ro   |   0x0   | TXWM      | If high, the amount of data in the TX FIFO has fallen below the level of [`CONTROL.TX_WATERMARK`](#control) words (32b each).                                             |
+|   25   |   ro   |   0x0   | RXFULL    | When high, indicates that the receive fifo is full.  Any ongoing transactions will stall until firmware reads some data from [`RXDATA.`](#rxdata)                         |
+|   24   |   ro   |   0x0   | RXEMPTY   | When high, indicates that the receive fifo is empty. Any reads from RX FIFO will cause an error interrupt.                                                                |
+|   23   |   ro   |   0x0   | RXSTALL   | If high, signifies that an ongoing transaction has stalled due to lack of available space in the RX FIFO                                                                  |
+|   22   |   ro   |   0x0   | BYTEORDER | The value of the ByteOrder parameter, provided so that firmware can confirm proper IP configuration.                                                                      |
+|   21   |        |         |           | Reserved                                                                                                                                                                  |
+|   20   |   ro   |   0x0   | RXWM      | If high, the number of 32-bits in the RX FIFO now exceeds the [`CONTROL.RX_WATERMARK`](#control) entries (32b each).                                                      |
+| 19:16  |   ro   |   0x0   | CMDQD     | Command queue depth. Indicates how many unread 32-bit words are currently in the command segment queue.                                                                   |
+|  15:8  |   ro   |   0x0   | RXQD      | Receive queue depth. Indicates how many unread 32-bit words are currently in the RX FIFO.  When active, this result may an underestimate due to synchronization delays.   |
+|  7:0   |   ro   |   0x0   | TXQD      | Transmit queue depth. Indicates how many unsent 32-bit words are currently in the TX FIFO. When active, this result may be an overestimate due to synchronization delays. |
 
 ## CONFIGOPTS
 Configuration options register.
