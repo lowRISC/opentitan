@@ -53,6 +53,10 @@
         "description": "AES intermediate value",
         "$ref": "#/$defs/byte_array"
       },
+      "tag": {
+        "description": "Authentication Tag",
+        "$ref": "#/$defs/byte_array"
+      },
       "ciphertext": {
         "description": "Ciphertext",
         "$ref": "#/$defs/byte_array"
