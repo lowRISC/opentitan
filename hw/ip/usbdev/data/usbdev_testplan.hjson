@@ -323,12 +323,14 @@
     {
       name: host_lost
       desc: '''
-            Verify that if link is active but SOF was not received from host for 4.096 ms then host lost
-            will raise.
+            Verify that if link is active (ie. not completely idle) but SOF was not received from
+            host for 4.096 ms, the 'host lost' interrupt becomes asserted.
 
-            - Send SOF from host after 4.096 ms while  INTR_ENABLE [3] is set.
-            - Verify that the corresponding interrupt pin goes high once the host lost.
-            - It should come after every 1 ms.
+            - Note that there must be _some_ non-idle signaling on the USB during this time because
+              otherwise the link state will become suspended, and 'host lost' will not be signaled.
+            - Send SOF from host after 4.096 ms while INTR_ENABLE [3] is set.
+            - Verify that the corresponding interrupt pin goes high once the host is lost.
+            - SOF should normally be received every 1 ms.
             '''
       stage: V2
       tests: []
@@ -349,8 +351,8 @@
     {
       name: link_suspend
       desc: '''
-            Verify that if the line has signaled J for longer than 3 ms and is therefore in suspend state
-            then link suspend will raise.
+            Verify that if the line has signaled J (Idle) for longer than 3 ms and is therefore in
+            suspend state the 'link suspend' will be raised.
 
             - Leave the link in idle state for more than 3 ms while enable the INTR_ENABLE [5] is set and
               also set the wake_control.suspend_req afterwards.
@@ -364,7 +366,7 @@
       desc: '''
             Verify that when the link becomes active again after being suspended link resume will raise.
 
-            - First suspend the link by keeping J signal for 3.1ms  and then resume it by changing the
+            - First suspend the link by keeping J signal for 3.1ms and then resume it by changing the
               polarity for 20ms. While the INTR_ENABLE [6] bit is set , also set the wake_control.wake_ack signal.
             - Verify that the interrupt pin link_resume goes high once the link resume.
             '''
@@ -718,15 +720,41 @@
       tests: []
     }
     {
-      name: max_clock_error
+      name: max_clock_error_untracked
       desc: '''
-            Verify the functionality OF DUT at maximum clock.
+            Verify the functionality of DUT at maximum clock frequency deltas.
+            This test does not attempt to model the adjustment of the usb_clk oscillator,
+            in response to SOF packets received from the USB host, and therefore cannot
+            support the full frequency mismatch required by the USB 2.0 protocol specification.
 
-            - Clock the device and the agent with opposite corners of allowable frequency
+            - Clock the device and the agent with opposite extremes of allowable frequency
               ranges and initiate a transaction with maximum data length.
-            - Verify that the transaction between the host agent and device must be successful
-              indicated by interrupts for successful packet reception or transmission after the
-              end of transaction.
+            - Verify that the transactions occur successfully between the device and host agent
+              in both directions, and that all transmitted bytes are decoded correctly.
+            - Verify that there are no reports of bit stuffing errors or CRC errors.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: max_clock_error_tracking
+      desc: '''
+            Verify the functionality of DUT at maximum clock frequency difference, adjusting the
+            frequency of 'usb_clk' in response to the arrival times of the SOF packets sent
+            from the USB host agent.
+
+            - Implement tracking of the SOF packets from the host, using the 'usb_ref_pulse_o'
+              signal from the DUT to adjust the USB device clock.
+            - With the USB host agent operating at the maximum frequency permissible within the
+              USB 2.0 protocol specification, start the USB device operating at the minimum
+              permissible frequency and check that SOF packets are still received and decoded
+              correctly.
+            - Check that the 'usb_ref_pulse_o' signal is produced as expected, and that the
+              'usb_clk' signal increases in frequency to match that of the USB host agent.
+            - Verify that full length packet transmission to and from the host occurs successfully
+              without reports of bit stuffing errors or CRC errors.
+            - Repeat the above with the USB host agent at the minimum permissible frequency and
+              the USB device starting at the maximum frequecy.
             '''
       stage: V2
       tests: []
@@ -739,8 +767,8 @@
             - Clock the device and the agent with opposite corners of phases and initiate a
               transaction with maximum data length.
             - Verify that the transaction between the host agent and device must be successful by
-              rasing interrupts for succesful packet reception or transmission after the end
-              of transaction.
+              raising interrupts for succesful packet reception or transmission after the end
+              of the transaction.
             '''
       stage: V2
       tests: []
@@ -811,6 +839,91 @@
               RX Fifo becomes full.
             - Verify that the device unable to consume packets at such a rate will set NAK
               responses even though endpoint is enabled.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: aon_wake_resume
+      desc: '''
+            Verify that the AON/Wake module is able to detect Resume Signaling and indicate that
+            via the USB device register interface.
+
+            - Connect the USB device to the USB host model.
+            - Send Suspend Signaling to the USB device.
+            - Verify that the 'link_suspend' interrupt is raised indicating that the USB has been
+              Idle (J) for at least 3ms.
+            - Enable the AON/Wake module, leaving it to maintain the pull up state.
+            - Initiate Resume Signaling, driving the USB into the 'K' state.
+            - Check that the 'wake_req_aon_o' signal from the 'usbdev_aon_wake' module becomes
+              asserted.
+            - Read from the 'wake_events' CSR of the USB device and check that the 'bus_not_idle'
+              bit is asserted.
+            - Disable the AON/Wake module and verify that the USB device is still connected,
+              ie. the DP pullup is enabled and DP is high.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: aon_wake_reset
+      desc: '''
+            Verify that the AON/Wake module is able to detect Reset Signaling and indicate that
+            via the USB device register interface.
+
+            - Connect the USB device to the USB host model.
+            - Enable the AON/Wake module, leaving it to maintain the pull up state.
+            - Perform a Bus Reset, driving SE0 state onto the USB for at least 10us; the
+              specification requires at least 10ms of Reset Signaling for a full reset, but the
+              AON/Wake module should respond a lot faster, to allow time for chip start up and
+              software reinitialization.
+            - Check that the 'wake_req_aon_o' signal from the 'usbdev_aon_wake' module becomes
+              asserted.
+            - Read from the 'wake_events' CSR of the USB device and check that the 'bus_reset'
+              bit is asserted.
+            - Disable the AON/Wake module and verify that the USB device is still connected,
+              ie. the DP pullup is enabled and DP is high.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: aon_wake_disconnect
+      desc: '''
+            Verify that the AON/Wake module is able to detect Bus Disconnection and indicate that
+            via the USB device register interface.
+
+            - Connect the USB device to the USB host model.
+            - Enable the AON/Wake module, leaving it to maintain the pull up state.
+            - Verify that the DP pull up remains asserted, indicating the presence of the device
+              on the USB.
+            - Lower the VBUS/SENSE signal.
+            - Check that the 'wake_req_aon_o' signal from the 'usbdev_aon_wake' module becomes
+              asserted.
+            - Read from the 'wake_events' CSR of the USB device and check that the 'disconnected'
+              bit is asserted.
+            - Check that the DP pull up is no longer asserted; it shall be dropped by the
+              usbdev_aon_wake module to protect against spurious reconnection.
+            - Disable the AON/Wake module and verify that the USB device remains disconnected.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: invalid_sync
+      desc: '''
+            Randomized interspersing of valid and invalid USB traffic. Generate bit-level changes
+            on the USB that do not constitute valid SYNC signaling, interspersed with valid USB
+            traffic to/from the device.
+
+            - Set up the device with a single IN and a single OUT endpoint.
+            - Fully populate the Available OUT Buffer FIFO.
+            - Stream and check known traffic to (OUT) and from (IN) the device, with the CSR
+              side simply returning unmodified every OUT packet that is received.
+            - Randomly select whether to send an OUT packet, request an IN packet or generate
+              invalid noise (never including a valid SYNC signal) on the USB.
+            - Verify that all data has been streamed successfully, and that the USB device continued
+              to operate correctly, ignoring all of the invalid signaling.
             '''
       stage: V2
       tests: []
@@ -907,6 +1020,25 @@
             Derived from 'max_usb_traffic' this also randomly introduces unexpected token packets,
             low speed traffic, invalid traffic, bus resets and disconnects, to ensure that these do
             not interfere with the transmission and reception of valid traffic.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: in_packet_retraction
+      desc: '''
+            Exercise retraction of IN packets for Isochronous streams, prioritizing the delivery of
+            the most recent data over the reliable delivery of all data presented.
+
+            - Configure a single IN endpoint for Isochronous support.
+            - Repeatedly poll for and collect IN packets from the USB host model, randomizing the
+              delays between collection attempts.
+            - Present a stream of Isochronous packets on the IN endpoint, with each packet containing
+              a serial number. Randomize the times between packet presentations, and keep on the CSR
+              side a record of which packets were retracted/overwritten rather than being transmitted
+              successfully to the host.
+            - Check that the CSR side and the USB host model agree on which packets were successfully
+              transmitted from the device to the host.
             '''
       stage: V2
       tests: []
