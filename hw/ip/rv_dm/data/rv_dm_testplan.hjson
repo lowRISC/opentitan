@@ -493,7 +493,7 @@
               abstract command we can read instructions stored in these registers.
             '''
       stage: V1
-      tests: []
+      tests: ["rv_dm_abstractcmd_status"]
     }
     {
       name: progbuf_read_write_execute
@@ -536,7 +536,7 @@
             - Read from the addresses of rom and verify that it reads the expected data.
             '''
       stage: V1
-      tests: []
+      tests: ["rv_dm_rom_read_access"]
     }
     {
       name: stress_all
