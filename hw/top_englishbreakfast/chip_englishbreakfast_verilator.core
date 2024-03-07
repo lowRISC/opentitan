@@ -65,7 +65,7 @@ parameters:
     default: true
     description: Replace JTAG TAP with an OpenOCD direct connection
   UART_LOG_uart0:
-    datatype: string
+    datatype: str
     paramtype: plusarg
     description: Write a log of output from uart0 to the given log file. Use "-" for stdout.
   RV_CORE_IBEX_SIM_SRAM:

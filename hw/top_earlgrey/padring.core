@@ -20,9 +20,6 @@ filesets:
       # common waivers
       - lowrisc:lint:common
       - lowrisc:lint:comportable
-    files:
-      # - lint/padring.vlt
-    file_type: vlt
 
   files_ascentlint_waiver:
     depend:

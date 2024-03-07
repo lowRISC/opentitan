@@ -38,9 +38,6 @@ filesets:
       # common waivers
       - lowrisc:lint:common
       - lowrisc:lint:comportable
-    files:
-      # - lint/sysrst_ctrl.waiver
-    file_type: waiver
 
 parameters:
   SYNTHESIS:
@@ -70,4 +67,3 @@ targets:
         mode: lint-only
         verilator_options:
           - "-Wall"
-

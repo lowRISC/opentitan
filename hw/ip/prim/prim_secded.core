@@ -51,8 +51,6 @@ filesets:
     depend:
       # common waivers
       - lowrisc:lint:common
-    files:
-      # - lint/prim_secded.vlt
     file_type: vlt
 
   files_ascentlint_waiver:
@@ -75,4 +73,3 @@ targets:
       - tool_ascentlint  ? (files_ascentlint_waiver)
       - tool_veriblelint ? (files_veriblelint_waiver)
       - files_rtl
-
