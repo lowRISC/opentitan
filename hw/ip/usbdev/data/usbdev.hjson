@@ -138,6 +138,13 @@
       struct:  "logic",
       width:   "1"
     },
+    { name:    "usb_aon_bus_not_idle",
+      type:    "uni",
+      act:     "rcv",
+      package: "",
+      struct:  "logic",
+      width:   "1"
+    },
     { name:    "usb_aon_wake_detect_active",
       type:    "uni",
       act:     "rcv",
@@ -1224,6 +1231,14 @@
           name: "bus_reset",
           desc: '''
                 USB aon wake module detected a bus reset while monitoring events.
+                '''
+        }
+        {
+          bits: "10",
+          resval: "0",
+          name: "bus_not_idle",
+          desc: '''
+                USB aon wake module detected a non-idle bus while monitoring events.
                 '''
         }
       ]

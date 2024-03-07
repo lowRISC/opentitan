@@ -568,6 +568,7 @@ module top_earlgrey #(
   logic       usbdev_usb_dn_pullup;
   logic       usbdev_usb_aon_suspend_req;
   logic       usbdev_usb_aon_wake_ack;
+  logic       usbdev_usb_aon_bus_not_idle;
   logic       usbdev_usb_aon_bus_reset;
   logic       usbdev_usb_aon_sense_lost;
   logic       pinmux_aon_usbdev_wake_detect_active;
@@ -1670,6 +1671,7 @@ module top_earlgrey #(
       .usb_aon_wake_ack_o(usbdev_usb_aon_wake_ack),
       .usb_aon_bus_reset_i(usbdev_usb_aon_bus_reset),
       .usb_aon_sense_lost_i(usbdev_usb_aon_sense_lost),
+      .usb_aon_bus_not_idle_i(usbdev_usb_aon_bus_not_idle),
       .usb_aon_wake_detect_active_i(pinmux_aon_usbdev_wake_detect_active),
       .ram_cfg_i(ast_usb_ram_1p_cfg),
       .tl_i(usbdev_tl_req),
@@ -1944,6 +1946,7 @@ module top_earlgrey #(
       .usb_wkup_req_o(pwrmgr_aon_wakeups[3]),
       .usbdev_suspend_req_i(usbdev_usb_aon_suspend_req),
       .usbdev_wake_ack_i(usbdev_usb_aon_wake_ack),
+      .usbdev_bus_not_idle_o(usbdev_usb_aon_bus_not_idle),
       .usbdev_bus_reset_o(usbdev_usb_aon_bus_reset),
       .usbdev_sense_lost_o(usbdev_usb_aon_sense_lost),
       .usbdev_wake_detect_active_o(pinmux_aon_usbdev_wake_detect_active),

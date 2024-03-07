@@ -703,7 +703,7 @@ module usbdev_reg_top (
   logic wake_control_we;
   logic [1:0] wake_control_qs;
   logic wake_control_busy;
-  logic [9:0] wake_events_qs;
+  logic [10:0] wake_events_qs;
   logic wake_events_busy;
   logic fifo_ctrl_we;
   logic fifo_ctrl_avout_rst_wd;
@@ -754,25 +754,29 @@ module usbdev_reg_top (
   logic  aon_wake_events_disconnected_qs_int;
   logic  aon_wake_events_bus_reset_ds_int;
   logic  aon_wake_events_bus_reset_qs_int;
-  logic [9:0] aon_wake_events_ds;
+  logic  aon_wake_events_bus_not_idle_ds_int;
+  logic  aon_wake_events_bus_not_idle_qs_int;
+  logic [10:0] aon_wake_events_ds;
   logic aon_wake_events_qe;
-  logic [9:0] aon_wake_events_qs;
+  logic [10:0] aon_wake_events_qs;
 
   always_comb begin
-    aon_wake_events_qs = 10'h0;
-    aon_wake_events_ds = 10'h0;
+    aon_wake_events_qs = 11'h0;
+    aon_wake_events_ds = 11'h0;
     aon_wake_events_ds[0] = aon_wake_events_module_active_ds_int;
     aon_wake_events_qs[0] = aon_wake_events_module_active_qs_int;
     aon_wake_events_ds[8] = aon_wake_events_disconnected_ds_int;
     aon_wake_events_qs[8] = aon_wake_events_disconnected_qs_int;
     aon_wake_events_ds[9] = aon_wake_events_bus_reset_ds_int;
     aon_wake_events_qs[9] = aon_wake_events_bus_reset_qs_int;
+    aon_wake_events_ds[10] = aon_wake_events_bus_not_idle_ds_int;
+    aon_wake_events_qs[10] = aon_wake_events_bus_not_idle_qs_int;
   end
 
   prim_reg_cdc #(
-    .DataWidth(10),
-    .ResetVal(10'h0),
-    .BitMask(10'h301),
+    .DataWidth(11),
+    .ResetVal(11'h0),
+    .BitMask(11'h701),
     .DstWrReq(1)
   ) u_wake_events_cdc (
     .clk_src_i    (clk_i),
@@ -7733,7 +7737,7 @@ module usbdev_reg_top (
 
 
   // R[wake_events]: V(False)
-  logic [2:0] wake_events_flds_we;
+  logic [3:0] wake_events_flds_we;
   assign aon_wake_events_qe = |wake_events_flds_we;
   //   F[module_active]: 0:0
   prim_subreg #(
@@ -7814,6 +7818,33 @@ module usbdev_reg_top (
 
     // to register interface (read)
     .qs     (aon_wake_events_bus_reset_qs_int)
+  );
+
+  //   F[bus_not_idle]: 10:10
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_wake_events_bus_not_idle (
+    .clk_i   (clk_aon_i),
+    .rst_ni  (rst_aon_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.wake_events.bus_not_idle.de),
+    .d      (hw2reg.wake_events.bus_not_idle.d),
+
+    // to internal hardware
+    .qe     (wake_events_flds_we[3]),
+    .q      (),
+    .ds     (aon_wake_events_bus_not_idle_ds_int),
+
+    // to register interface (read)
+    .qs     (aon_wake_events_bus_not_idle_qs_int)
   );
 
 

@@ -60,6 +60,7 @@ module usbdev
   // Events and state from wakeup module
   input  logic       usb_aon_bus_reset_i,
   input  logic       usb_aon_sense_lost_i,
+  input  logic       usb_aon_bus_not_idle_i,
   input  logic       usb_aon_wake_detect_active_i,
 
   // SOF reference for clock calibration
@@ -1214,6 +1215,8 @@ module usbdev
 
   assign hw2reg.wake_events.module_active.de = 1'b1;
   assign hw2reg.wake_events.module_active.d = usb_aon_wake_detect_active_i;
+  assign hw2reg.wake_events.bus_not_idle.de = 1'b1;
+  assign hw2reg.wake_events.bus_not_idle.d = usb_aon_bus_not_idle_i;
   assign hw2reg.wake_events.disconnected.de = 1'b1;
   assign hw2reg.wake_events.disconnected.d = usb_aon_sense_lost_i;
   assign hw2reg.wake_events.bus_reset.de = 1'b1;
