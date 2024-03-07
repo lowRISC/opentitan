@@ -12,7 +12,7 @@ steps:
   - bash: |
       set -e
       # Compress it
-      ./bazelisk.sh run //sw/host/bazel:exec_log -- --json-out=$BAZEL_EXEC_LOG_ROOT/exec_log.json $BAZEL_EXEC_LOG_ROOT/*.log
+      ./bazelisk.sh run //sw/host/bazel:exec_log -- convert $BAZEL_EXEC_LOG_ROOT/*.log $BAZEL_EXEC_LOG_ROOT/exec_log.json
       cd $BAZEL_EXEC_LOG_ROOT
       zip $(Build.ArtifactStagingDirectory)/exec_logs.zip exec_log.json
     displayName: Create zip with execution logs
