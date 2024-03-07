@@ -67,15 +67,15 @@ where
 
     pub fn iter(&self) -> IndexedSetIterator<T> {
         IndexedSetIterator {
-            iter: (&self.values).into_iter(),
+            iter: self.values.iter(),
         }
     }
 
     pub fn iter_with<'outer, Outer, ViewT>(&'outer self, outer: &'outer Outer) -> IndexedSetIteratorWith<'outer, Outer, T, ViewT>
     where ViewT: ViewType<'outer, Outer, T> {
         IndexedSetIteratorWith {
-            outer: outer,
-            iter: (&self.values).into_iter(),
+            outer,
+            iter: self.values.iter(),
             _viewt: std::marker::PhantomData,
         }
     }
@@ -194,7 +194,7 @@ impl ExecLog {
             .iter()
             .map(|ev| self.add_property(&ev.name, &ev.value))
             .collect::<Vec<_>>();
-        let platform = entry.platform.as_ref().map(|p| self.add_bazel_platform(p)).unwrap_or_else(|| Vec::new());
+        let platform = entry.platform.as_ref().map(|p| self.add_bazel_platform(p)).unwrap_or_else(Vec::new);
         let inputs = entry
             .inputs
             .iter()
@@ -295,7 +295,7 @@ pub struct FileView<'log> {
 
 impl FileView<'_> {
     pub fn path(&self) -> &str {
-        &self.exec_log.strings.get_at(self.file.path)
+        self.exec_log.strings.get_at(self.file.path)
     }
 
     pub fn digest(&self) -> Option<DigestView> {
@@ -305,7 +305,7 @@ impl FileView<'_> {
     }
 
     pub fn symlink(&self) -> &str {
-        &self.exec_log.strings.get_at(self.file.symlink)
+        self.exec_log.strings.get_at(self.file.symlink)
     }
 
     pub fn is_tool(&self) -> bool {
