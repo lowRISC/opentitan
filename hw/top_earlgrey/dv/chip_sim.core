@@ -11,7 +11,6 @@ filesets:
       - lowrisc:systems:top_earlgrey_pkg
       - "!gatelevel ? (lowrisc:systems:chip_earlgrey_asic)"
       - lowrisc:ibex:ibex_tracer
-    files:
     file_type: systemVerilogSource
 
   files_dv:

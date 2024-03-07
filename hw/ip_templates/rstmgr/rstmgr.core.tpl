@@ -35,8 +35,6 @@ filesets:
       # common waivers
       - lowrisc:lint:common
       - lowrisc:lint:comportable
-    files:
-    file_type: vlt
 
   files_ascentlint_waiver:
     depend:

@@ -38,7 +38,6 @@ filesets:
       # common waivers
       - lowrisc:lint:common
       - lowrisc:lint:comportable
-    files:
     file_type: waiver
 
 parameters:
