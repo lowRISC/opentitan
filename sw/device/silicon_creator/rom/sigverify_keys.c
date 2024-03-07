@@ -11,6 +11,7 @@
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/drivers/rnd.h"
+#include "sw/device/silicon_creator/rom/sigverify_key_types.h"
 #include "sw/device/silicon_creator/rom/sigverify_keys_rsa.h"
 #include "sw/device/silicon_creator/rom/sigverify_keys_spx.h"
 

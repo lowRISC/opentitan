@@ -23,6 +23,7 @@ cc_library(
     deps = [
         "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib/sigverify",
+        "//sw/device/silicon_creator/rom:sigverify_key_types",
     ],
 )
 
