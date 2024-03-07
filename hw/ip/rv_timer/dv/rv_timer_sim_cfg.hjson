@@ -63,7 +63,7 @@
     {
       name: rv_timer_cfg_update_on_fly
       uvm_test_seq: rv_timer_cfg_update_on_fly_vseq
-      // 10ms
+      // 10s
       run_opts: ["+zero_delays=1", "+test_timeout_ns=10000000000"]
     }
 
