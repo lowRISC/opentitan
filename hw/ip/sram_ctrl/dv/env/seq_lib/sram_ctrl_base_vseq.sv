@@ -67,7 +67,10 @@ class sram_ctrl_base_vseq #(parameter int AddrWidth = `SRAM_ADDR_WIDTH) extends 
     return 50_000;
   endfunction
 
-  // Request a memory init, and  wait for it to complete.
+  // Request a memory init, and  wait for it to complete. This is a problematic task since
+  // it would be better to set the in_init and in_key_req in either this place or in
+  // process_tl_access, except in cip sequences the will not be called. If the scoreboard
+  // is enabled it is more accurate to let it set the in_init and in_key_req flags.
   virtual task req_mem_init(bit wait_done = 1);
     // Use csr_wr rather than csr_update, because we change this reg type to RO in RAL when
     // ctrl_regwen is clear. csr_update won't issue a write to this CSR
@@ -79,9 +82,12 @@ class sram_ctrl_base_vseq #(parameter int AddrWidth = `SRAM_ADDR_WIDTH) extends 
       return;
     end
 
-    cfg.in_init = 1'b1;
-    cfg.in_key_req = 1'b1;
-
+    // The following flags are set in the process_tl_access when the scoreboard is enabled.
+    if (!cfg.en_scb) begin
+      cfg.in_init = 1'b1;
+      `uvm_info(`gfn, "In req_mem_init setting in_key_req = 1", UVM_MEDIUM)
+      cfg.in_key_req = 1'b1;
+    end
     if (wait_done) begin
       `DV_WAIT(cfg.in_init == 1'b0, "Timed out waiting for initialization done")
       cfg.disable_d_user_data_intg_check_for_passthru_mem = 0;
@@ -97,7 +103,11 @@ class sram_ctrl_base_vseq #(parameter int AddrWidth = `SRAM_ADDR_WIDTH) extends 
     cfg.disable_d_user_data_intg_check_for_passthru_mem = 1;
     ral.ctrl.renew_scr_key.set(1);
     csr_update(.csr(ral.ctrl));
-    cfg.in_key_req = 1'b1;
+    // The following flags are set in process_tl_access when the scoreboard is enabled.
+    if (!cfg.en_scb) begin
+      `uvm_info(`gfn, "In req_src_init setting in_key_req = 1", UVM_MEDIUM)
+      cfg.in_key_req = 1'b1;
+    end
     if (wait_valid) begin
       `DV_WAIT(cfg.in_key_req == 1'b0, "Timed out waiting for key request done")
       cfg.disable_d_user_data_intg_check_for_passthru_mem = 0;

@@ -54,6 +54,8 @@ class sram_ctrl_env_cfg #(parameter int AddrWidth = 10)
     m_kdi_cfg.agent_type = push_pull_agent_pkg::PullAgent;
     m_kdi_cfg.if_mode = dv_utils_pkg::Device;
     m_kdi_cfg.pull_handshake_type = push_pull_agent_pkg::TwoPhase;
+    m_kdi_cfg.device_delay_min = 30;
+    m_kdi_cfg.device_delay_max = 80;
 
     // CDC synchronization between OTP and SRAM clock domains requires that the scrambling seed data
     // should be held for at least a few cycles before it can be safely latched by the SRAM domain.
