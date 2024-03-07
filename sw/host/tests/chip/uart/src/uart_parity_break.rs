@@ -79,7 +79,13 @@ fn main() -> Result<()> {
                 test_phase_addr,
             };
 
-            execute_test!(uart_parity, &opts, &transport, &*uart_console, &test_data);
+            execute_test!(
+                uart_parity_break,
+                &opts,
+                &transport,
+                &*uart_console,
+                &test_data
+            );
         }
     }
 
@@ -88,7 +94,7 @@ fn main() -> Result<()> {
 
 /// Send and receive data with a device's UART checking that the parity matches.
 /// Some data is then sent with the incorrect parity.
-fn uart_parity(
+fn uart_parity_break(
     opts: &Opts,
     transport: &TransportWrapper,
     console: &dyn Uart,
@@ -111,7 +117,7 @@ fn uart_parity(
     };
 
     // Configure the UART under test and the parity to use.
-    UartConsole::wait_for(console, r"waiting for commands", opts.timeout)?;
+    UartConsole::wait_for(console, r"waiting for commands\r\n", opts.timeout)?;
     MemWriteReq::execute(console, *parity_addr, &[dif_parity])?;
     MemWriteReq::execute(console, *uart_id_addr, &[*uart_id])?;
 
@@ -125,7 +131,7 @@ fn uart_parity(
     uart.clear_rx_buffer()?;
 
     // Tell the device to send us some data and check it.
-    UartConsole::wait_for(console, r"waiting for commands", opts.timeout)?;
+    UartConsole::wait_for(console, r"waiting for commands\r\n", opts.timeout)?;
     MemWriteReq::execute(console, *test_phase_addr, &[TestPhase::Send as u8])?;
 
     log::info!("Reading data...");
@@ -137,14 +143,14 @@ fn uart_parity(
     assert_eq!(&received_data, tx_rx_data);
 
     // Tell the device to receive some correct data.
-    UartConsole::wait_for(console, r"waiting for commands", opts.timeout)?;
+    UartConsole::wait_for(console, r"waiting for commands\r\n", opts.timeout)?;
     MemWriteReq::execute(console, *test_phase_addr, &[TestPhase::Recv as u8])?;
 
     log::info!("Sending data...");
     uart.write(tx_rx_data).context("failed to send data")?;
 
     // Tell the device to receive some data with the wrong parity.
-    UartConsole::wait_for(console, r"waiting for commands", opts.timeout)?;
+    UartConsole::wait_for(console, r"waiting for commands\r\n", opts.timeout)?;
     MemWriteReq::execute(console, *test_phase_addr, &[TestPhase::RecvErr as u8])?;
 
     let other_parity = match parity {
