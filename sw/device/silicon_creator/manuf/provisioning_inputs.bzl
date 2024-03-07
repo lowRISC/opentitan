@@ -5,6 +5,7 @@
 EARLGREY_A0_INDIVIDUALIZE_OTP_SW_CFGS = [
     "sival_bringup",
     "sival",
+    "proda",
     "prodc",
 ]
 
