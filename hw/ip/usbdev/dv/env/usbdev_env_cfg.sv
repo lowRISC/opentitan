@@ -20,8 +20,8 @@ class usbdev_env_cfg extends cip_base_env_cfg #(.RAL_T(usbdev_reg_block));
   // efficient when the clocks are similar speeds)
   rand uint aon_clk_freq_mhz;
   constraint aon_clk_freq_mhz_c {
-    aon_clk_freq_mhz * 3 >= usb_clk_freq_mhz &&
-    aon_clk_freq_mhz * 2 <= usb_clk_freq_mhz;
+    aon_clk_freq_mhz >= usb_clk_freq_mhz / 3 &&
+    aon_clk_freq_mhz <= usb_clk_freq_mhz / 2;
   }
 
   // ext component cfgs
