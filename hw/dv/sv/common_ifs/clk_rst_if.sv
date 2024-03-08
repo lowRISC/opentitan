@@ -136,6 +136,7 @@ interface clk_rst_if #(
 
   // set the clk frequency in khz
   function automatic void set_freq_khz(int freq_khz);
+    `DV_CHECK_FATAL(freq_khz > 0, , msg_id)
     clk_freq_mhz = $itor(freq_khz) / 1000;
     clk_period_ps = 1000_000 / clk_freq_mhz;
     recompute = 1'b1;
@@ -143,6 +144,7 @@ interface clk_rst_if #(
 
   // set the clk frequency in mhz
   function automatic void set_freq_mhz(int freq_mhz);
+    `DV_CHECK_FATAL(freq_mhz > 0, , msg_id)
     set_freq_khz(freq_mhz * 1000);
   endfunction
 
