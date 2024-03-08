@@ -69,11 +69,11 @@ then
             )
             except
             `# Remove all test suites depending on a test tagged cw310_sival_rom_ext`
-            `# but ignore those marked as broken`
+            `# but ignore those marked as broken or manual`
             rdeps(
                 //...
                 except
-                attr(\"tags\",\"broken\", //...),
+                attr(\"tags\",\"broken|manual\", //...),
                 `# Find all tests tagged cw310_sival_rom_ext`
                 attr(\"tags\",\"cw310_sival_rom_ext\", //...),
                 1
@@ -103,11 +103,11 @@ then
             )
             except
             `# Remove all test suites depending on a test tagged cw310_sival[_rom_ext]`
-            `# but ignore those marked as broken`
+            `# but ignore those marked as broken or manual`
             rdeps(
                 //...
                 except
-                attr(\"tags\",\"broken\", //...),
+                attr(\"tags\",\"broken|manual\", //...),
                 `# Find all tests tagged cw310_sival_rom_ext`
                 attr(\"tags\",\"cw310_sival\", //...),
                 1
