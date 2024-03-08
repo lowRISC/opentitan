@@ -102,7 +102,7 @@ The list below describes how the counters interpret the filter results:
 * If the counter is the debounce counter and it reaches its threshold, as defined by [`adc_sample_ctl.np_sample_cnt`](registers.md#adc_sample_ctl), then:
   * An interrupt is raised if the threshold is met for the first time.
   * The current sample values are latched into [`adc_chn_val[0].adc_chn_value_intr`](registers.md#adc_chn_val) and  [`adc_chn_val[1].adc_chn_value_intr`](registers.md#adc_chn_val).
-    *  If a series of interrupts and matches are seen, these registers only record the value of the last debounced hit.
+    *  If a series of interrupts and matches are seen, these registers only record the value of the first debounced hit.
   * The [`adc_intr_status`](registers.md#adc_intr_status) register is updated by setting the bits corresponding to filters that are hit (note that bits that are already set will not be cleared).
     This will cause the block to raise an interrupt if it was not already doing so.
   * If a filter is a hit and is also enabled in [`adc_wakeup_ctl`](registers.md#adc_wakeup_ctl) the corresponding filter generates a wakeup.
