@@ -76,6 +76,7 @@ module i2c_core import i2c_pkg::*;
   logic event_stretch_timeout;
   logic event_sda_unstable;
   logic event_cmd_complete;
+  logic event_target_nack;
   logic event_tx_stretch;
   logic event_unexp_stop;
   logic event_host_timeout;
@@ -187,6 +188,9 @@ module i2c_core import i2c_pkg::*;
   assign hw2reg.target_fifo_status.acqlvl.d = MaxFifoDepthW'(acq_fifo_depth);
   assign hw2reg.acqdata.abyte.d = acq_fifo_rdata[7:0];
   assign hw2reg.acqdata.signal.d = acq_fifo_rdata[AcqFifoWidth-1:8];
+  // Add one to the target NACK count if this target has sent a NACK.
+  assign hw2reg.target_nack_count.de = event_target_nack;
+  assign hw2reg.target_nack_count.d = reg2hw.target_nack_count.q + 1;
 
   assign override = reg2hw.ovrd.txovrden;
 
@@ -469,6 +473,7 @@ module i2c_core import i2c_pkg::*;
     .target_mask0_i          (target_mask0),
     .target_address1_i       (target_address1),
     .target_mask1_i          (target_mask1),
+    .event_target_nack_o     (event_target_nack),
     .event_nak_o             (event_nak),
     .event_scl_interference_o(event_scl_interference),
     .event_sda_interference_o(event_sda_interference),
