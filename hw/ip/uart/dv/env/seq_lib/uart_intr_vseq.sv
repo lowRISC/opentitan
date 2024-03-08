@@ -56,10 +56,14 @@ class uart_intr_vseq extends uart_base_vseq;
         int watermark_bytes = get_watermark_bytes_by_level(level);
         if (!en_tx) return;
         // First byte is immediately popped from TX FIFO (for transmission) and watermark based upon
-        // TX FIFO level excluding in-tranmission byte. Add 1 to watermark_bytes here to give the
+        // TX FIFO level excluding in-transmission byte. Add 1 to watermark_bytes here to give the
         // number of bytes required to move over the watermark threshold.
         watermark_bytes += 1;
         drive_tx_bytes(.num_bytes(watermark_bytes - 1));
+        if (level == 0) begin
+          // Need a brief delay while the data byte is popped and the interrupt returns high
+          cfg.clk_rst_vif.wait_clks(1);
+        end
         check_one_intr(.uart_intr(uart_intr), .exp(1));
         drive_tx_bytes(.num_bytes(1));
         check_one_intr(.uart_intr(uart_intr), .exp(0));
