@@ -252,6 +252,9 @@ status_t handle_otbn_fi_load_integrity(ujson_t *uj) {
  * @param uj The received uJSON data.
  */
 status_t handle_otbn_fi_char_hardware_dmem_op_loop(ujson_t *uj) {
+  // Clear registered alerts in alert handler.
+  uint32_t reg_alerts = sca_get_triggered_alerts();
+
   // Initialize OTBN app, load it, and get interface to OTBN data memory.
   OTBN_DECLARE_APP_SYMBOLS(otbn_char_hardware_dmem_op_loop);
   OTBN_DECLARE_SYMBOL_ADDR(otbn_char_hardware_dmem_op_loop, lc);
@@ -268,6 +271,8 @@ status_t handle_otbn_fi_char_hardware_dmem_op_loop(ujson_t *uj) {
   otbn_execute();
   otbn_busy_wait_for_done();
   sca_set_trigger_low();
+  // Get registered alerts from alert handler.
+  reg_alerts = sca_get_triggered_alerts();
 
   // Read loop counter from OTBN data memory.
   otbn_dmem_read(1, kOtbnAppCharHardwareDmemOpLoopLC, &loop_counter);
@@ -280,6 +285,7 @@ status_t handle_otbn_fi_char_hardware_dmem_op_loop(ujson_t *uj) {
   otbn_fi_loop_counter_t uj_output;
   uj_output.loop_counter = loop_counter;
   uj_output.err_status = err_bits;
+  uj_output.alerts = reg_alerts;
   RESP_OK(ujson_serialize_otbn_fi_loop_counter_t, uj, &uj_output);
   return OK_STATUS(0);
 }
@@ -298,6 +304,9 @@ status_t handle_otbn_fi_char_hardware_dmem_op_loop(ujson_t *uj) {
  * @param uj The received uJSON data.
  */
 status_t handle_otbn_fi_char_hardware_reg_op_loop(ujson_t *uj) {
+  // Clear registered alerts in alert handler.
+  uint32_t reg_alerts = sca_get_triggered_alerts();
+
   // Initialize OTBN app, load it, and get interface to OTBN data memory.
   OTBN_DECLARE_APP_SYMBOLS(otbn_char_hardware_reg_op_loop);
   OTBN_DECLARE_SYMBOL_ADDR(otbn_char_hardware_reg_op_loop, lc);
@@ -314,6 +323,8 @@ status_t handle_otbn_fi_char_hardware_reg_op_loop(ujson_t *uj) {
   otbn_execute();
   otbn_busy_wait_for_done();
   sca_set_trigger_low();
+  // Get registered alerts from alert handler.
+  reg_alerts = sca_get_triggered_alerts();
 
   // Read loop counter from OTBN data memory.
   otbn_dmem_read(1, kOtbnAppCharHardwareRegOpLoopLC, &loop_counter);
@@ -326,6 +337,7 @@ status_t handle_otbn_fi_char_hardware_reg_op_loop(ujson_t *uj) {
   otbn_fi_loop_counter_t uj_output;
   uj_output.loop_counter = loop_counter;
   uj_output.err_status = err_bits;
+  uj_output.alerts = reg_alerts;
   RESP_OK(ujson_serialize_otbn_fi_loop_counter_t, uj, &uj_output);
   return OK_STATUS(0);
 }
@@ -346,6 +358,9 @@ status_t handle_otbn_fi_char_hardware_reg_op_loop(ujson_t *uj) {
  * @param uj The received uJSON data.
  */
 status_t handle_otbn_fi_char_unrolled_dmem_op_loop(ujson_t *uj) {
+  // Clear registered alerts in alert handler.
+  uint32_t reg_alerts = sca_get_triggered_alerts();
+
   // Initialize OTBN app, load it, and get interface to OTBN data memory.
   OTBN_DECLARE_APP_SYMBOLS(otbn_char_unrolled_dmem_op_loop);
   OTBN_DECLARE_SYMBOL_ADDR(otbn_char_unrolled_dmem_op_loop, lc);
@@ -362,6 +377,8 @@ status_t handle_otbn_fi_char_unrolled_dmem_op_loop(ujson_t *uj) {
   otbn_execute();
   otbn_busy_wait_for_done();
   sca_set_trigger_low();
+  // Get registered alerts from alert handler.
+  reg_alerts = sca_get_triggered_alerts();
 
   // Read loop counter from OTBN data memory.
   otbn_dmem_read(1, kOtbnAppCharUnrolledDmemOpLoopLC, &loop_counter);
@@ -374,6 +391,7 @@ status_t handle_otbn_fi_char_unrolled_dmem_op_loop(ujson_t *uj) {
   otbn_fi_loop_counter_t uj_output;
   uj_output.loop_counter = loop_counter;
   uj_output.err_status = err_bits;
+  uj_output.alerts = reg_alerts;
   RESP_OK(ujson_serialize_otbn_fi_loop_counter_t, uj, &uj_output);
   return OK_STATUS(0);
 }
@@ -392,6 +410,9 @@ status_t handle_otbn_fi_char_unrolled_dmem_op_loop(ujson_t *uj) {
  * @param uj The received uJSON data.
  */
 status_t handle_otbn_fi_char_unrolled_reg_op_loop(ujson_t *uj) {
+  // Clear registered alerts in alert handler.
+  uint32_t reg_alerts = sca_get_triggered_alerts();
+
   // Initialize OTBN app, load it, and get interface to OTBN data memory.
   OTBN_DECLARE_APP_SYMBOLS(otbn_char_unrolled_reg_op_loop);
   OTBN_DECLARE_SYMBOL_ADDR(otbn_char_unrolled_reg_op_loop, lc);
@@ -408,6 +429,8 @@ status_t handle_otbn_fi_char_unrolled_reg_op_loop(ujson_t *uj) {
   otbn_execute();
   otbn_busy_wait_for_done();
   sca_set_trigger_low();
+  // Get registered alerts from alert handler.
+  reg_alerts = sca_get_triggered_alerts();
 
   // Read loop counter from OTBN data memory.
   otbn_dmem_read(1, kOtbnAppCharUnrolledRegOpLoopLC, &loop_counter);
@@ -420,6 +443,7 @@ status_t handle_otbn_fi_char_unrolled_reg_op_loop(ujson_t *uj) {
   otbn_fi_loop_counter_t uj_output;
   uj_output.loop_counter = loop_counter;
   uj_output.err_status = err_bits;
+  uj_output.alerts = reg_alerts;
   RESP_OK(ujson_serialize_otbn_fi_loop_counter_t, uj, &uj_output);
   return OK_STATUS(0);
 }
@@ -444,16 +468,24 @@ status_t handle_otbn_fi_init_keymgr(ujson_t *uj) {
 }
 
 /**
- * Initializes the trigger.
+ * Initializes the OTBN FI test.
+ *
+ * Setup the trigger and alert handler. Disable dummy instructions and the
+ * iCache.
  *
  * @param uj The received uJSON data.
  */
-status_t handle_otbn_fi_init_trigger(ujson_t *uj) {
+status_t handle_otbn_fi_init(ujson_t *uj) {
   status_t err = entropy_testutils_auto_mode_init();
   sca_select_trigger_type(kScaTriggerTypeSw);
-  sca_init(kScaTriggerSourceOtbn, kScaPeripheralEntropy | kScaPeripheralIoDiv4 |
-                                      kScaPeripheralOtbn | kScaPeripheralCsrng |
-                                      kScaPeripheralEdn | kScaPeripheralKmac);
+  sca_init(kScaTriggerSourceOtbn,
+           kScaPeripheralIoDiv4 | kScaPeripheralEdn | kScaPeripheralCsrng |
+               kScaPeripheralEntropy | kScaPeripheralAes | kScaPeripheralHmac |
+               kScaPeripheralKmac | kScaPeripheralOtbn);
+
+  // Configure the alert handler. Alerts triggered by IP blocks are captured
+  // and reported to the test.
+  sca_configure_alert_handler();
 
   // Disable the instruction cache and dummy instructions for FI attacks.
   sca_configure_cpu();
@@ -472,10 +504,10 @@ status_t handle_otbn_fi(ujson_t *uj) {
   otbn_fi_subcommand_t cmd;
   TRY(ujson_deserialize_otbn_fi_subcommand_t(uj, &cmd));
   switch (cmd) {
-    case kOtbnFiSubcommandInitTrigger:
-      return handle_otbn_fi_init_trigger(uj);
     case kOtbnFiSubcommandInitKeyMgr:
       return handle_otbn_fi_init_keymgr(uj);
+    case kOtbnFiSubcommandInit:
+      return handle_otbn_fi_init(uj);
     case kOtbnFiSubcommandCharUnrolledRegOpLoop:
       return handle_otbn_fi_char_unrolled_reg_op_loop(uj);
     case kOtbnFiSubcommandCharUnrolledDmemOpLoop:
