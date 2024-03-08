@@ -220,13 +220,36 @@ jobs:
       ROM_REAL_FILES=($(ci/bazelisk.sh "${QUERY_CMD_ARGS[@]}" "${ROM_REAL_TARGETS}" | sort | uniq))
       ROM_FAKE_FILES=($(ci/bazelisk.sh "${QUERY_CMD_ARGS[@]}" "${ROM_FAKE_TARGETS}" | sort | uniq))
       cp -Lvt "${ROM_TARGET}" "${ROM_FAKE_FILES[@]}" "${ROM_REAL_FILES[@]}"
-  - template: ci/upload-artifacts-template.yml
-    parameters:
-      includePatterns:
-        - "/sw/***"
 
 
 - job: sw_test
+  displayName: Earl Grey SW Test
+  timeoutInMinutes: 120
+  dependsOn: sw_build
+  pool: ci-public
+  condition: false
+  steps:
+  - template: ci/checkout-template.yml
+  - template: ci/install-package-dependencies.yml
+  - template: ci/load-bazel-cache-write-creds.yml
+  - download: current
+    artifact: target_pattern_file
+  - bash: |
+      TARGET_PATTERN_FILE="$(Pipeline.Workspace)/target_pattern_file/target_pattern.txt"
+      mkdir "$BAZEL_EXEC_LOG_ROOT"
+      ci/bazelisk.sh test \
+        --build_tests_only=false \
+        --test_output=errors \
+        --define DISABLE_VERILATOR_BUILD=true \
+        --test_tag_filters=-broken,-cw310,-verilator,-dv,-silicon \
+        --target_pattern_file="${TARGET_PATTERN_FILE}" \
+        --execution_log_binary_file="$BAZEL_EXEC_LOG_ROOT/build.log" \
+        --noexecution_log_sort
+    displayName: Build & test SW
+  - template: ci/publish-bazel-test-results.yml
+  - template: ci/publish-bazel-exec-logs.yml
+
+- job: sw_test2
   displayName: Earl Grey SW Test
   timeoutInMinutes: 120
   dependsOn: sw_build
