@@ -57,9 +57,9 @@ static void sw_reset(void) {
   wait_for_interrupt();
 }
 
-status_t export_data_over_console(ujson_t *uj,
-                                  manuf_rma_token_perso_data_out_t *out_data) {
-  RESP_OK(ujson_serialize_manuf_rma_token_perso_data_out_t, uj, out_data);
+status_t export_rma_token_over_console(
+    ujson_t *uj, wrapped_rma_unlock_token_t *wrapped_rma_token) {
+  RESP_OK(ujson_serialize_wrapped_rma_unlock_token_t, uj, wrapped_rma_token);
   return OK_STATUS();
 }
 
@@ -95,8 +95,8 @@ bool test_main(void) {
   // retention SRAM (namely in the creator partition) as it is faster than
   // storing it in flash, and still persists across a SW initiated reset.
   retention_sram_t *ret_sram_data = retention_sram_get();
-  manuf_rma_token_perso_data_out_t *out_data =
-      (manuf_rma_token_perso_data_out_t *)&ret_sram_data->creator.reserved;
+  wrapped_rma_unlock_token_t *wrapped_rma_token =
+      (wrapped_rma_unlock_token_t *)&ret_sram_data->creator.reserved;
 
   dif_rstmgr_reset_info_bitfield_t info = rstmgr_testutils_reason_get();
   if (info & kDifRstmgrResetInfoPor) {
@@ -124,7 +124,7 @@ bool test_main(void) {
       // Perform OTP and flash info writes.
       LOG_INFO("Provisioning OTP SECRET2 flash info pages 1, 2, & 4 ...");
       CHECK_STATUS_OK(manuf_personalize_device_secrets(
-          &flash_state, &lc_ctrl, &otp_ctrl, &host_ecc_pk, out_data));
+          &flash_state, &lc_ctrl, &otp_ctrl, &host_ecc_pk, wrapped_rma_token));
 
       // Read the attestation key seed fields to ensure they are non-zero.
       uint32_t uds_attestation_key_seed[kAttestationSeedWords];
@@ -153,7 +153,7 @@ bool test_main(void) {
     // Send the RMA unlock token data (stored in the retention SRAM) over the
     // console using ujson framework.
     LOG_INFO("Exporting RMA unlock token ...");
-    CHECK_STATUS_OK(export_data_over_console(&uj, out_data));
+    CHECK_STATUS_OK(export_rma_token_over_console(&uj, wrapped_rma_token));
 
     // Wait in a loop so that OpenOCD can connect to the TAP without the ROM
     // resetting the chip.

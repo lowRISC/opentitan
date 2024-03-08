@@ -23,7 +23,7 @@ static dif_lc_ctrl_t lc_ctrl;
 static dif_otp_ctrl_t otp_ctrl;
 
 static ecc_p256_public_key_t host_ecc_pk;
-static manuf_rma_token_perso_data_out_t wrapped_rma_token;
+static wrapped_rma_unlock_token_t wrapped_rma_token;
 
 /**
  * Initializes all DIF handles used in this program.
@@ -49,8 +49,7 @@ static status_t personalize(ujson_t *uj) {
     TRY(manuf_personalize_device_secrets(&flash_ctrl_state, &lc_ctrl, &otp_ctrl,
                                          &host_ecc_pk, &wrapped_rma_token));
     LOG_INFO("Exporting RMA token ...");
-    RESP_OK(ujson_serialize_manuf_rma_token_perso_data_out_t, uj,
-            &wrapped_rma_token);
+    RESP_OK(ujson_serialize_wrapped_rma_unlock_token_t, uj, &wrapped_rma_token);
   }
 
   return OK_STATUS();
