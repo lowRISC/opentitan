@@ -106,6 +106,11 @@ def _bitstream_splice_impl(ctx):
     exec_env = ctx.attr.exec_env[ExecEnvInfo]
     src = ctx.file.src if ctx.file.src else exec_env.base_bitstream
 
+    # If configured to skip bitstream loading, do not splice and forward the file:
+    # opentitantool skips loading if the file is named `skip.bit`.
+    if ctx.attr.skip:
+        return [DefaultInfo(files = depset([src]))]
+
     # Splice in a ROM image if we have one either in attrs or the exec_env.
     if not ctx.attr.rom or ctx.attr.rom.label.name == "none":
         rom = exec_env.rom
@@ -159,7 +164,7 @@ def _bitstream_splice_impl(ctx):
     )
     return DefaultInfo(files = depset([output]))
 
-bitstream_splice = rule(
+bitstream_splice_ = rule(
     implementation = _bitstream_splice_impl,
     attrs = {
         "src": attr.label(allow_single_file = True, doc = "The bitstream to splice"),
@@ -170,6 +175,16 @@ bitstream_splice = rule(
         "exec_env": attr.label(providers = [[ExecEnvInfo], [DefaultInfo]], mandatory = True, doc = "The exec_env to splice for"),
         "swap_nibbles": attr.bool(default = True, doc = "Swap nybbles while preparing the memory image"),
         "debug": attr.bool(default = False, doc = "Emit debug info while updating"),
+        "skip": attr.bool(default = False, doc = "Skip splice and do not modify the bitstream"),
     },
     toolchains = [LOCALTOOLS_TOOLCHAIN],
 )
+
+def bitstream_splice(**kwargs):
+    bitstream_splice_(
+        skip = select({
+            "//hw/bitstream:bitstream_skip": True,
+            "//conditions:default": False,
+        }),
+        **kwargs
+    )
