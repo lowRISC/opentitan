@@ -31,6 +31,7 @@
   interrupt_list: [
     { name: "event_detected",
       desc: "Common interrupt triggered by combo or keyboard events.",
+      type: "status"
     }
   ],
   alert_list: [
@@ -278,7 +279,7 @@
     { name: "ULP_STATUS",
       desc: "Ultra low power status",
       swaccess: "rw1c",
-      hwaccess: "hwo",
+      hwaccess: "hrw",
       resval: "0",
       tags: [ // the value of these regs is determined by the
               // value on the pins, hence it cannot be predicted.
@@ -972,7 +973,7 @@
             interrupt action is configured in the corresponding !!COM_OUT_CTL register.
             ''',
       swaccess: "rw1c",
-      hwaccess: "hwo",
+      hwaccess: "hrw",
       resval: "0",
       tags: [ // the value of these regs is determined by the
               // value on the pins, hence it cannot be predicted.
@@ -1003,7 +1004,7 @@
     { name: "KEY_INTR_STATUS",
       desc: "key interrupt source",
       swaccess: "rw1c",
-      hwaccess: "hwo",
+      hwaccess: "hrw",
       resval: "0",
       tags: [ // the value of these regs is determined by the value on the pins
               // or other CSRs, hence it cannot be predicted.

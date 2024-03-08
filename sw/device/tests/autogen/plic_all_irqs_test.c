@@ -983,7 +983,19 @@ void ottf_external_isr(uint32_t *exc_info) {
               "Only sysrst_ctrl_aon IRQ %d expected to fire. Actual interrupt "
               "status = %x", irq, snapshot);
 
-        CHECK_DIF_OK(dif_sysrst_ctrl_irq_acknowledge(&sysrst_ctrl_aon, irq));
+        // If this is a status type interrupt, we do not have to acknowledge the interrupt at
+        // the IP side, but we need to clear the test force register.
+        if (0x1 & (1 << irq)) {
+          CHECK_DIF_OK(dif_sysrst_ctrl_irq_force(&sysrst_ctrl_aon, irq, false));
+          // In case this status interrupt is asserted by default, we also disable it at
+          // this point so that it does not interfere with the rest of the test.
+          if ((0x0 & (1 << irq))) {
+            CHECK_DIF_OK(dif_sysrst_ctrl_irq_set_enabled(&sysrst_ctrl_aon, irq, false));
+          }
+        // If this is a regular event type interrupt, we acknowledge it at this point.
+        } else {
+          CHECK_DIF_OK(dif_sysrst_ctrl_irq_acknowledge(&sysrst_ctrl_aon, irq));
+        }
         break;
       }
 #endif
@@ -2207,12 +2219,21 @@ static void peripheral_irqs_trigger(void) {
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 20 && 20 < TEST_MAX_IRQ_PERIPHERAL
   peripheral_expected = kTopEarlgreyPlicPeripheralSysrstCtrlAon;
+  status_default_mask = 0x0;
   for (dif_sysrst_ctrl_irq_t irq = kDifSysrstCtrlIrqEventDetected;
        irq <= kDifSysrstCtrlIrqEventDetected; ++irq) {
 
     sysrst_ctrl_irq_expected = irq;
     LOG_INFO("Triggering sysrst_ctrl_aon IRQ %d.", irq);
     CHECK_DIF_OK(dif_sysrst_ctrl_irq_force(&sysrst_ctrl_aon, irq, true));
+
+    // In this case, the interrupt has not been enabled yet because that would
+    // interfere with testing other interrupts. We enable it here and let the
+    // interrupt handler disable it again.
+    if ((status_default_mask & 0x1)) {
+       CHECK_DIF_OK(dif_sysrst_ctrl_irq_set_enabled(&sysrst_ctrl_aon, irq, true));
+    }
+    status_default_mask >>= 1;
 
     // This avoids a race where *irq_serviced is read before
     // entering the ISR.

@@ -17,10 +17,13 @@ module sysrst_ctrl_intr
   input  [NumCombo-1:0]   aon_combo_intr_i,
   input                   aon_ulp_wakeup_pulse_i,
 
-  input  sysrst_ctrl_reg2hw_wkup_status_reg_t wkup_status_i,
-  input  sysrst_ctrl_reg2hw_intr_state_reg_t  intr_state_i,
-  input  sysrst_ctrl_reg2hw_intr_enable_reg_t intr_enable_i,
-  input  sysrst_ctrl_reg2hw_intr_test_reg_t   intr_test_i,
+  input  sysrst_ctrl_reg2hw_wkup_status_reg_t       wkup_status_i,
+  input  sysrst_ctrl_reg2hw_intr_state_reg_t        intr_state_i,
+  input  sysrst_ctrl_reg2hw_intr_enable_reg_t       intr_enable_i,
+  input  sysrst_ctrl_reg2hw_intr_test_reg_t         intr_test_i,
+  input  sysrst_ctrl_reg2hw_key_intr_status_reg_t   key_intr_status_i,
+  input  sysrst_ctrl_reg2hw_combo_intr_status_reg_t combo_intr_status_i,
+  input  sysrst_ctrl_reg2hw_ulp_status_reg_t        ulp_status_i,
 
   output sysrst_ctrl_hw2reg_wkup_status_reg_t       wkup_status_o,
   output sysrst_ctrl_hw2reg_intr_state_reg_t        intr_state_o,
@@ -57,10 +60,8 @@ module sysrst_ctrl_intr
   always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin
      if (!rst_aon_ni) begin
         aon_staging_reqs_q <= '0;
-     end else if (aon_ld_req && |aon_reqs) begin
-        aon_staging_reqs_q <= aon_reqs;
      end else if (aon_ld_req) begin
-        aon_staging_reqs_q <= '0;
+        aon_staging_reqs_q <= aon_reqs;
      end else if (|aon_reqs) begin
         aon_staging_reqs_q <= aon_staging_reqs_q | aon_reqs;
      end
@@ -70,7 +71,7 @@ module sysrst_ctrl_intr
   logic aon_ack;
 
   // staging has pending requsts
-  assign aon_ld_req = (aon_req_hold_q == '0) & |aon_staging_reqs_q;
+  assign aon_ld_req = (aon_req_hold_q == '0) && |aon_staging_reqs_q;
 
   // request hold self clears when the handshake cycle is complete
   always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin
@@ -168,21 +169,20 @@ module sysrst_ctrl_intr
   assign ulp_status_o.d = 1'b1;
   assign ulp_status_o.de = ulp_wakeup_pulse;
 
-  // Aggregate interrupt event pulses.
-  logic intr_event_pulse;
-  assign intr_event_pulse = |{ulp_wakeup_pulse,
-                              combo_intr,
-                              h2l_key_intr,
-                              l2h_key_intr};
+  // Aggregate interrupt event statuses.
+  logic intr_event_status;
+  assign intr_event_status = |{ulp_status_i,
+                               combo_intr_status_i,
+                               key_intr_status_i};
 
   // instantiate interrupt hardware primitive
   prim_intr_hw #(
    .Width(1),
-   .IntrT("Event")
+   .IntrT("Status")
   ) u_sysrst_ctrl_intr_o (
     .clk_i,
     .rst_ni,
-    .event_intr_i           (intr_event_pulse),
+    .event_intr_i           (intr_event_status),
     .reg2hw_intr_enable_q_i (intr_enable_i.q),
     .reg2hw_intr_test_q_i   (intr_test_i.q),
     .reg2hw_intr_test_qe_i  (intr_test_i.qe),

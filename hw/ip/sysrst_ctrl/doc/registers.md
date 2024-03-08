@@ -58,13 +58,13 @@ Interrupt State Register
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "event_detected", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 160}}
+{"reg": [{"name": "event_detected", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 160}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name           | Description                                             |
 |:------:|:------:|:-------:|:---------------|:--------------------------------------------------------|
 |  31:1  |        |         |                | Reserved                                                |
-|   0    |  rw1c  |   0x0   | event_detected | Common interrupt triggered by combo or keyboard events. |
+|   0    |   ro   |   0x0   | event_detected | Common interrupt triggered by combo or keyboard events. |
 
 ## INTR_ENABLE
 Interrupt Enable Register

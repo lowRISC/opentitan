@@ -12,6 +12,7 @@
 #include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/sysrst_ctrl_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_console.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ottf_utils.h"
 
@@ -30,9 +31,7 @@ enum {
   kPlicTarget = kTopEarlgreyPlicTargetIbex0,
 };
 
-static volatile dif_sysrst_ctrl_irq_t irq;
-static volatile top_earlgrey_plic_peripheral_t peripheral;
-dif_rv_plic_irq_id_t irq_id;
+static volatile bool irq_triggered;
 
 // On DV, we must use variables in flash.
 // On a real device, we must use variables in RAM.
@@ -91,7 +90,7 @@ void sysrst_ctrl_input_change_detect(
                                                   ? &kCurrentTestPhaseDV
                                                   : &kCurrentTestPhaseReal;
 
-  peripheral = UINT32_MAX;
+  irq_triggered = false;
   LOG_INFO("Wait for test to start: want phase %d", phase);
   OTTF_WAIT_FOR(phase == *kCurrentTestPhase, kCurrentTestPhaseTimeoutUsec);
   phase++;
@@ -105,22 +104,21 @@ void sysrst_ctrl_input_change_detect(
   CHECK_DIF_OK(
       dif_sysrst_ctrl_input_change_detect_configure(&sysrst_ctrl, config));
 
+  // Enable sysrst ctrl irq.
+  CHECK_DIF_OK(dif_sysrst_ctrl_irq_set_enabled(
+      &sysrst_ctrl, kDifSysrstCtrlIrqEventDetected, kDifToggleEnabled));
+
   LOG_INFO("Tell host we are ready");
   test_phase_sync();
 
   OTTF_WAIT_FOR(phase == *kCurrentTestPhase, kCurrentTestPhaseTimeoutUsec);
   phase++;
   // Check that the interrupt isn't triggered at the first part of the test.
-  CHECK(peripheral == UINT32_MAX,
-        "The interrupt is triggered during input glitch.");
+  CHECK(!irq_triggered, "The interrupt is triggered during input glitch.");
   LOG_INFO("Tell host we did not detect the glitch");
   test_phase_sync();
 
-  ATOMIC_WAIT_FOR_INTERRUPT(peripheral ==
-                            kTopEarlgreyPlicPeripheralSysrstCtrlAon);
-  // Check that the interrupt is triggered at the second part of the test.
-  CHECK(irq_id == kTopEarlgreyPlicIrqIdSysrstCtrlAonEventDetected,
-        "Wrong irq_id");
+  ATOMIC_WAIT_FOR_INTERRUPT(irq_triggered);
 
   uint32_t causes;
   CHECK_DIF_OK(
@@ -155,7 +153,7 @@ void sysrst_ctrl_key_combo_detect(dif_sysrst_ctrl_key_combo_t key_combo,
                                                   ? &kCurrentTestPhaseDV
                                                   : &kCurrentTestPhaseReal;
 
-  peripheral = UINT32_MAX;
+  irq_triggered = false;
   LOG_INFO("wait for test to start");
   OTTF_WAIT_FOR(phase == *kCurrentTestPhase, kCurrentTestPhaseTimeoutUsec);
   phase++;
@@ -171,24 +169,23 @@ void sysrst_ctrl_key_combo_detect(dif_sysrst_ctrl_key_combo_t key_combo,
   CHECK_DIF_OK(dif_sysrst_ctrl_key_combo_detect_configure(
       &sysrst_ctrl, key_combo, sysrst_ctrl_key_combo_config));
 
+  // Enable sysrst ctrl irq.
+  CHECK_DIF_OK(dif_sysrst_ctrl_irq_set_enabled(
+      &sysrst_ctrl, kDifSysrstCtrlIrqEventDetected, kDifToggleEnabled));
+
   LOG_INFO("tell host we are ready");
   test_phase_sync();
 
   OTTF_WAIT_FOR(phase == *kCurrentTestPhase, kCurrentTestPhaseTimeoutUsec);
   phase++;
   // Check that the interrupt isn't triggered at the first part of the test.
-  CHECK(peripheral == UINT32_MAX,
-        "The interrupt is triggered during input glitch.");
+  CHECK(!irq_triggered, "The interrupt is triggered during input glitch.");
   LOG_INFO("tell host we did not detect the glitch");
   test_phase_sync();
 
   LOG_INFO("wait for interrupt");
-  ATOMIC_WAIT_FOR_INTERRUPT(peripheral ==
-                            kTopEarlgreyPlicPeripheralSysrstCtrlAon);
+  ATOMIC_WAIT_FOR_INTERRUPT(irq_triggered);
   LOG_INFO("interrupt triggered, checks causes");
-  // Check that the interrupt is triggered at the second part of the test.
-  CHECK(irq_id == kTopEarlgreyPlicIrqIdSysrstCtrlAonEventDetected,
-        "Wrong irq_id");
 
   uint32_t causes;
   CHECK_DIF_OK(dif_sysrst_ctrl_key_combo_irq_get_causes(&sysrst_ctrl, &causes));
@@ -213,22 +210,42 @@ void sysrst_ctrl_key_combo_detect(dif_sysrst_ctrl_key_combo_t key_combo,
  * External interrupt handler.
  */
 void ottf_external_isr(uint32_t *exc_info) {
-  CHECK_DIF_OK(dif_rv_plic_irq_claim(&plic, kPlicTarget, &irq_id));
+  const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
+  dif_rv_plic_irq_id_t plic_irq_id = 0;
+  CHECK_DIF_OK(dif_rv_plic_irq_claim(&plic, kPlicTarget, &plic_irq_id));
 
-  peripheral = (top_earlgrey_plic_peripheral_t)
-      top_earlgrey_plic_interrupt_for_peripheral[irq_id];
+  top_earlgrey_plic_peripheral_t peripheral = (top_earlgrey_plic_peripheral_t)
+      top_earlgrey_plic_interrupt_for_peripheral[plic_irq_id];
 
-  if (peripheral == kTopEarlgreyPlicPeripheralSysrstCtrlAon) {
-    irq =
-        (dif_sysrst_ctrl_irq_t)(irq_id -
-                                (dif_rv_plic_irq_id_t)
-                                    kTopEarlgreyPlicIrqIdSysrstCtrlAonEventDetected);
-    CHECK_DIF_OK(dif_sysrst_ctrl_irq_acknowledge(&sysrst_ctrl, irq));
+  switch (peripheral) {
+    case kTopEarlgreyPlicPeripheralUart0:
+      if (!ottf_console_flow_control_isr(exc_info)) {
+        goto unexpected_irq;
+      };
+      break;
+    case kTopEarlgreyPlicPeripheralSysrstCtrlAon: {
+      // Check that the ID matches the expected interrupt, then mask it, since
+      // it's a status type.
+      dif_sysrst_ctrl_irq_t irq =
+          (dif_sysrst_ctrl_irq_t)(plic_irq_id -
+                                  (dif_rv_plic_irq_id_t)
+                                      kTopEarlgreyPlicIrqIdSysrstCtrlAonEventDetected);
+      CHECK(irq == kDifSysrstCtrlIrqEventDetected);
+      CHECK_DIF_OK(dif_sysrst_ctrl_irq_set_enabled(&sysrst_ctrl, irq,
+                                                   kDifToggleDisabled));
+      irq_triggered = true;
+    } break;
+    default:
+      goto unexpected_irq;
   }
 
-  // Complete the IRQ by writing the IRQ source to the Ibex specific CC.
-  // register.
-  CHECK_DIF_OK(dif_rv_plic_irq_complete(&plic, kPlicTarget, irq_id));
+  // Complete the IRQ at PLIC.
+  CHECK_DIF_OK(dif_rv_plic_irq_complete(&plic, kPlicTarget, plic_irq_id));
+  return;
+
+  // A label to jump to for common error handling.
+unexpected_irq:
+  CHECK(false, "Unexpected external IRQ %d", plic_irq_id);
 }
 
 bool test_main(void) {
@@ -250,11 +267,6 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_sysrst_ctrl_init(
       mmio_region_from_addr(TOP_EARLGREY_SYSRST_CTRL_AON_BASE_ADDR),
       &sysrst_ctrl));
-
-  // Enable sysrst ctrl irq.
-  dif_toggle_t irq_state = kDifToggleEnabled;
-  CHECK_DIF_OK(dif_sysrst_ctrl_irq_set_enabled(
-      &sysrst_ctrl, kDifSysrstCtrlIrqEventDetected, irq_state));
 
   // Set input pins.
   dif_pinmux_t pinmux;

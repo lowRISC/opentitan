@@ -123,9 +123,7 @@ module sysrst_ctrl_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
-  logic intr_state_we;
   logic intr_state_qs;
-  logic intr_state_wd;
   logic intr_enable_we;
   logic intr_enable_qs;
   logic intr_enable_wd;
@@ -1827,7 +1825,7 @@ module sysrst_ctrl_reg_top (
   // R[intr_state]: V(False)
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_intr_state (
@@ -1835,8 +1833,8 @@ module sysrst_ctrl_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_we),
-    .wd     (intr_state_wd),
+    .we     (1'b0),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.intr_state.de),
@@ -2123,7 +2121,7 @@ module sysrst_ctrl_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (),
+    .q      (reg2hw.ulp_status.q),
     .ds     (),
 
     // to register interface (read)
@@ -6085,7 +6083,7 @@ module sysrst_ctrl_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (),
+    .q      (reg2hw.combo_intr_status.combo0_h2l.q),
     .ds     (),
 
     // to register interface (read)
@@ -6112,7 +6110,7 @@ module sysrst_ctrl_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (),
+    .q      (reg2hw.combo_intr_status.combo1_h2l.q),
     .ds     (),
 
     // to register interface (read)
@@ -6139,7 +6137,7 @@ module sysrst_ctrl_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (),
+    .q      (reg2hw.combo_intr_status.combo2_h2l.q),
     .ds     (),
 
     // to register interface (read)
@@ -6166,7 +6164,7 @@ module sysrst_ctrl_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (),
+    .q      (reg2hw.combo_intr_status.combo3_h2l.q),
     .ds     (),
 
     // to register interface (read)
@@ -6195,7 +6193,7 @@ module sysrst_ctrl_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (),
+    .q      (reg2hw.key_intr_status.pwrb_h2l.q),
     .ds     (),
 
     // to register interface (read)
@@ -6222,7 +6220,7 @@ module sysrst_ctrl_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (),
+    .q      (reg2hw.key_intr_status.key0_in_h2l.q),
     .ds     (),
 
     // to register interface (read)
@@ -6249,7 +6247,7 @@ module sysrst_ctrl_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (),
+    .q      (reg2hw.key_intr_status.key1_in_h2l.q),
     .ds     (),
 
     // to register interface (read)
@@ -6276,7 +6274,7 @@ module sysrst_ctrl_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (),
+    .q      (reg2hw.key_intr_status.key2_in_h2l.q),
     .ds     (),
 
     // to register interface (read)
@@ -6303,7 +6301,7 @@ module sysrst_ctrl_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (),
+    .q      (reg2hw.key_intr_status.ac_present_h2l.q),
     .ds     (),
 
     // to register interface (read)
@@ -6330,7 +6328,7 @@ module sysrst_ctrl_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (),
+    .q      (reg2hw.key_intr_status.ec_rst_l_h2l.q),
     .ds     (),
 
     // to register interface (read)
@@ -6357,7 +6355,7 @@ module sysrst_ctrl_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (),
+    .q      (reg2hw.key_intr_status.flash_wp_l_h2l.q),
     .ds     (),
 
     // to register interface (read)
@@ -6384,7 +6382,7 @@ module sysrst_ctrl_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (),
+    .q      (reg2hw.key_intr_status.pwrb_l2h.q),
     .ds     (),
 
     // to register interface (read)
@@ -6411,7 +6409,7 @@ module sysrst_ctrl_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (),
+    .q      (reg2hw.key_intr_status.key0_in_l2h.q),
     .ds     (),
 
     // to register interface (read)
@@ -6438,7 +6436,7 @@ module sysrst_ctrl_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (),
+    .q      (reg2hw.key_intr_status.key1_in_l2h.q),
     .ds     (),
 
     // to register interface (read)
@@ -6465,7 +6463,7 @@ module sysrst_ctrl_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (),
+    .q      (reg2hw.key_intr_status.key2_in_l2h.q),
     .ds     (),
 
     // to register interface (read)
@@ -6492,7 +6490,7 @@ module sysrst_ctrl_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (),
+    .q      (reg2hw.key_intr_status.ac_present_l2h.q),
     .ds     (),
 
     // to register interface (read)
@@ -6519,7 +6517,7 @@ module sysrst_ctrl_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (),
+    .q      (reg2hw.key_intr_status.ec_rst_l_l2h.q),
     .ds     (),
 
     // to register interface (read)
@@ -6546,7 +6544,7 @@ module sysrst_ctrl_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (),
+    .q      (reg2hw.key_intr_status.flash_wp_l_l2h.q),
     .ds     (),
 
     // to register interface (read)
@@ -6654,9 +6652,6 @@ module sysrst_ctrl_reg_top (
   end
 
   // Generate write-enables
-  assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
-
-  assign intr_state_wd = reg_wdata[0];
   assign intr_enable_we = addr_hit[1] & reg_we & !reg_error;
 
   assign intr_enable_wd = reg_wdata[0];
@@ -6885,7 +6880,7 @@ module sysrst_ctrl_reg_top (
   // Assign write-enables to checker logic vector.
   always_comb begin
     reg_we_check = '0;
-    reg_we_check[0] = intr_state_we;
+    reg_we_check[0] = 1'b0;
     reg_we_check[1] = intr_enable_we;
     reg_we_check[2] = intr_test_we;
     reg_we_check[3] = alert_test_we;
