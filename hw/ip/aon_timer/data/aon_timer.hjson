@@ -19,10 +19,10 @@
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
   sw_checklist:       "/sw/device/lib/dif/dif_aon_timer",
-  version:            "1.0.0",
+  version:            "2.0.0",
   life_stage:         "L1",
-  design_stage:       "D3",
-  verification_stage: "V2S",
+  design_stage:       "D2",
+  verification_stage: "V1",
   dif_stage:          "S2",
   clocking: [
     {clock: "clk_i", reset: "rst_ni", primary: true},
