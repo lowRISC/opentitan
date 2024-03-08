@@ -5,6 +5,7 @@
 use anyhow::{bail, ensure, Result};
 use clap::{Args, Parser, Subcommand, ValueEnum};
 
+use std::collections::{HashMap, HashSet};
 use std::fs::{File, OpenOptions};
 use std::io::BufReader;
 use std::path::{Path, PathBuf};
@@ -15,7 +16,7 @@ use exec_log_lib::exec_log::ExecLog;
 use spawn_proto::protos::SpawnExec;
 
 /// File format of the log file.
-#[derive(Copy, Clone, Debug, Eq, PartialEq,ValueEnum)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, ValueEnum)]
 #[value(rename_all = "kebab-case")]
 enum Format {
     /// Bazel binary execution log (protobuf).
@@ -88,7 +89,7 @@ struct Opts {
 
 fn guess_format(fmt: &Option<Format>, path: &Path) -> Result<Format> {
     if let Some(fmt) = fmt {
-        return Ok(*fmt)
+        return Ok(*fmt);
     }
     let ext = path.extension();
     let Some(ext) = ext else {
@@ -108,8 +109,14 @@ fn convert(conv: &ConvertCommand) -> Result<()> {
     let in_fmt = guess_format(&conv.in_format, &conv.input)?;
     let out_fmt = guess_format(&conv.out_format, &conv.output)?;
 
-    ensure!(in_fmt == Format::BazelBin, "only supports bazel binary log as input");
-    ensure!(out_fmt == Format::OtJson, "only supports opentitan json log as output");
+    ensure!(
+        in_fmt == Format::BazelBin,
+        "only supports bazel binary log as input"
+    );
+    ensure!(
+        out_fmt == Format::OtJson,
+        "only supports opentitan json log as output"
+    );
 
     let file = File::open(&conv.input)?;
     let mut reader = BufReader::with_capacity(10_000_000, file);
@@ -157,19 +164,17 @@ fn print_bazel(print: &PrintCommand) -> Result<()> {
     Ok(())
 }
 
-fn print_ot_json(print: &PrintCommand) -> Result<()> {
-    let file = File::open(&print.input)?;
+fn read_ot_log(path: &Path) -> Result<ExecLog> {
+    let file = File::open(path)?;
     let reader = BufReader::new(file);
-    let exec_log: ExecLog = serde_json::from_reader(reader)?;
+    Ok(serde_json::from_reader(reader)?)
+}
 
-    println!("Strings:");
-    for string in exec_log.iter_strings() {
-        println!("* {string}");
-    }
+fn print_ot_json(print: &PrintCommand) -> Result<()> {
+    let exec_log = read_ot_log(&print.input)?;
 
-    println!("Files:");
-    for file in exec_log.iter_files() {
-        println!("{file:#?}");
+    for entry in exec_log.iter_entries() {
+        println!("{entry:#?}");
     }
 
     Ok(())
@@ -188,7 +193,51 @@ fn compare_logs(cmp: &CompareCommand) -> Result<()> {
     let fmt_a = guess_format(&cmp.format_a, &cmp.input_a)?;
     let fmt_b = guess_format(&cmp.format_b, &cmp.input_b)?;
 
-    ensure!(fmt_a == Format::OtJson && fmt_b == Format::OtJson, "the compare command only supports the ot-json format");
+    ensure!(
+        fmt_a == Format::OtJson && fmt_b == Format::OtJson,
+        "the compare command only supports the ot-json format"
+    );
+
+    let input_a = read_ot_log(&cmp.input_a)?;
+    let input_b = read_ot_log(&cmp.input_b)?;
+    // Map from file name to digest string.
+    let mut file_digest_map = HashMap::<&str, &str>::new();
+    let mut diff_files = HashSet::<&str>::new();
+    // Insert all files for A.
+    for file_a in input_a.iter_files() {
+        // Ignore files with no digest.
+        let Some(digest) = file_a.digest() else {
+            continue;
+        };
+        file_digest_map.insert(file_a.path(), digest.hash());
+    }
+    // Compare with all files from B.
+    for file_b in input_b.iter_files() {
+        // Ignore files with no digest.
+        let Some(digest_b) = file_b.digest() else {
+            continue;
+        };
+        match file_digest_map.get(file_b.path()) {
+            None => println!("File '{}' exists in A but not in B", file_b.path()),
+            Some(digest_a) if digest_a != &digest_b.hash() => {
+                println!(
+                    "File '{}' has different hash ({} in A, {} in B)",
+                    file_b.path(),
+                    digest_a,
+                    digest_b.hash()
+                );
+                diff_files.insert(file_b.path());
+            }
+            _ => (),
+        }
+    }
+    // Look at directly affected entries in A.
+    println!("The following entries in A were directly depending on the above files:");
+    for entry_a in input_a.iter_entries() {
+        if entry_a.inputs().any(|inp| diff_files.contains(inp.path())) {
+            println!("{:#?}", entry_a);
+        }
+    }
 
     Ok(())
 }

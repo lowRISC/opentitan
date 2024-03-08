@@ -2,15 +2,59 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde::de::Error;
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::collections::HashMap;
 use std::fmt::{Debug, Formatter};
 
-use spawn_proto::protos::{Digest as BazelDigest, File as BazelFile, Platform as BazelPlatform, SpawnExec};
+use spawn_proto::protos::{
+    Digest as BazelDigest, File as BazelFile, Platform as BazelPlatform, SpawnExec,
+};
 
-pub trait ViewType<'outer, Outer, T> {
-    fn view_from(outer: &'outer Outer, val: &'outer T) -> Self;
+// This type is used to transform an iterator over a collection of opaque
+// type into an iterator over a collection of `ViewType`. The ViewType
+// provides a public view of the opaque type. This type furthermore allows
+// the ViewType to refers to an outer structure (With) that may be necessary
+// to provide access (e.g. the opaque type is just an index into a data structure
+// provided by With).
+pub trait ViewType<'with, With, T> {
+    fn view_from(with: &'with With, val: T) -> Self;
+}
+
+pub struct IteratorViewWith<'with, With, InnerIter, ViewT>
+where
+    InnerIter: Iterator,
+    ViewT: ViewType<'with, With, InnerIter::Item>,
+{
+    with: &'with With,
+    iter: InnerIter,
+    _viewt: std::marker::PhantomData<ViewT>,
+}
+
+impl<'with, With, InnerIter, ViewT> IteratorViewWith<'with, With, InnerIter, ViewT>
+where
+    InnerIter: Iterator,
+    ViewT: ViewType<'with, With, InnerIter::Item>,
+{
+    pub fn from_iter(with: &'with With, iter: InnerIter) -> Self {
+        IteratorViewWith {
+            with,
+            iter: iter,
+            _viewt: std::marker::PhantomData,
+        }
+    }
+}
+
+impl<'with, With, InnerIter, ViewT> Iterator for IteratorViewWith<'with, With, InnerIter, ViewT>
+where
+    InnerIter: Iterator,
+    ViewT: ViewType<'with, With, InnerIter::Item>,
+{
+    type Item = ViewT;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.iter.next().map(|x| ViewT::view_from(self.with, x))
+    }
 }
 
 #[derive(Default)]
@@ -28,23 +72,6 @@ impl<'set, T: Default> Iterator for IndexedSetIterator<'set, T> {
 
     fn next(&mut self) -> Option<Self::Item> {
         self.iter.next()
-    }
-}
-
-pub struct IndexedSetIteratorWith<'outer, Outer, T: Default, ViewT>
-where ViewT: ViewType<'outer, Outer, T>
-{
-    outer: &'outer Outer,
-    iter: <&'outer Vec<T> as IntoIterator>::IntoIter,
-    _viewt: std::marker::PhantomData<ViewT>,
-}
-
-impl<'outer, Outer, T: Default, ViewT> Iterator for IndexedSetIteratorWith<'outer, Outer, T, ViewT>
-where ViewT: ViewType<'outer, Outer, T> {
-    type Item = ViewT;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        self.iter.next().map(|x| ViewT::view_from(self.outer, x))
     }
 }
 
@@ -68,15 +95,6 @@ where
     pub fn iter(&self) -> IndexedSetIterator<T> {
         IndexedSetIterator {
             iter: self.values.iter(),
-        }
-    }
-
-    pub fn iter_with<'outer, Outer, ViewT>(&'outer self, outer: &'outer Outer) -> IndexedSetIteratorWith<'outer, Outer, T, ViewT>
-    where ViewT: ViewType<'outer, Outer, T> {
-        IndexedSetIteratorWith {
-            outer,
-            iter: self.values.iter(),
-            _viewt: std::marker::PhantomData,
         }
     }
 }
@@ -115,16 +133,14 @@ where
         let mut map = HashMap::new();
         for (idx, val) in values.iter().enumerate() {
             if map.insert(val.clone(), idx).is_some() {
-                return Err(D::Error::custom("indexed set contains duplicate entry".to_string()))
+                return Err(D::Error::custom(
+                    "indexed set contains duplicate entry".to_string(),
+                ));
             }
         }
-        Ok(IndexedSet {
-            values,
-            map
-        })
+        Ok(IndexedSet { values, map })
     }
 }
-
 
 #[derive(Default, Serialize, Deserialize)]
 pub struct ExecLog {
@@ -149,8 +165,14 @@ impl ExecLog {
         self.strings.iter()
     }
 
-    pub fn iter_files(&self) -> IndexedSetIteratorWith<Self, File, FileView> {
-        self.files.iter_with(self)
+    pub fn iter_files(&self) -> IteratorViewWith<Self, IndexedSetIterator<File>, FileView> {
+        IteratorViewWith::from_iter(&self, self.files.iter())
+    }
+
+    pub fn iter_entries(
+        &self,
+    ) -> IteratorViewWith<Self, <&Vec<Entry> as IntoIterator>::IntoIter, EntryView> {
+        IteratorViewWith::from_iter(&self, self.entries.iter())
     }
 
     fn add_property(&mut self, name: &String, value: &String) -> usize {
@@ -180,7 +202,11 @@ impl ExecLog {
     }
 
     fn add_bazel_platform(&mut self, platform: &BazelPlatform) -> Vec<usize> {
-        platform.properties.iter().map(|p| self.add_property(&p.name, &p.value)).collect()
+        platform
+            .properties
+            .iter()
+            .map(|p| self.add_property(&p.name, &p.value))
+            .collect()
     }
 
     pub fn add_bazel_entry(&mut self, entry: &SpawnExec) {
@@ -194,7 +220,11 @@ impl ExecLog {
             .iter()
             .map(|ev| self.add_property(&ev.name, &ev.value))
             .collect::<Vec<_>>();
-        let platform = entry.platform.as_ref().map(|p| self.add_bazel_platform(p)).unwrap_or_else(Vec::new);
+        let platform = entry
+            .platform
+            .as_ref()
+            .map(|p| self.add_bazel_platform(p))
+            .unwrap_or_else(Vec::new);
         let inputs = entry
             .inputs
             .iter()
@@ -261,21 +291,32 @@ pub struct DigestView<'log> {
     digest: &'log Digest,
 }
 
-impl<'log> ViewType<'log, ExecLog, Digest> for DigestView<'log> {
+impl<'log> DigestView<'log> {
+    pub fn hash(&self) -> &'log str {
+        self.exec_log.strings.get_at(self.digest.hash)
+    }
+
+    pub fn size_bytes(&self) -> u64 {
+        self.digest.size_bytes
+    }
+
+    pub fn hash_fn(&self) -> &'log str {
+        self.exec_log.strings.get_at(self.digest.hash_fn)
+    }
+}
+
+impl<'log> ViewType<'log, ExecLog, &'log Digest> for DigestView<'log> {
     fn view_from(exec_log: &'log ExecLog, digest: &'log Digest) -> Self {
-        DigestView {
-            exec_log,
-            digest
-        }
+        DigestView { exec_log, digest }
     }
 }
 
 impl<'log> Debug for DigestView<'log> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
         f.debug_struct("File")
-            .field("hash", &self.exec_log.strings.get_at(self.digest.hash))
-            .field("size_bytes", &self.digest.size_bytes)
-            .field("hash_fn", &self.exec_log.strings.get_at(self.digest.hash_fn))
+            .field("hash", &self.hash())
+            .field("size_bytes", &self.size_bytes())
+            .field("hash_fn", &self.hash_fn())
             .finish()
     }
 }
@@ -293,18 +334,18 @@ pub struct FileView<'log> {
     file: &'log File,
 }
 
-impl FileView<'_> {
-    pub fn path(&self) -> &str {
+impl<'log> FileView<'log> {
+    pub fn path(&self) -> &'log str {
         self.exec_log.strings.get_at(self.file.path)
     }
 
-    pub fn digest(&self) -> Option<DigestView> {
-        self.file.digest.map(|d_idx| {
-            DigestView::view_from(self.exec_log, self.exec_log.digests.get_at(d_idx))
-        })
+    pub fn digest(&self) -> Option<DigestView<'log>> {
+        self.file
+            .digest
+            .map(|d_idx| DigestView::view_from(self.exec_log, self.exec_log.digests.get_at(d_idx)))
     }
 
-    pub fn symlink(&self) -> &str {
+    pub fn symlink(&self) -> &'log str {
         self.exec_log.strings.get_at(self.file.symlink)
     }
 
@@ -313,18 +354,15 @@ impl FileView<'_> {
     }
 }
 
-impl<'log> ViewType<'log, ExecLog, File> for FileView<'log> {
+impl<'log> ViewType<'log, ExecLog, &'log File> for FileView<'log> {
     fn view_from(exec_log: &'log ExecLog, file: &'log File) -> Self {
-        FileView {
-            exec_log,
-            file
-        }
+        FileView { exec_log, file }
     }
 }
 
 impl<'log> Debug for FileView<'log> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
-        f.debug_struct("Digest")
+        f.debug_struct("File")
             .field("path", &self.path())
             .field("symlink", &self.symlink())
             .field("digest", &self.digest())
@@ -339,6 +377,36 @@ pub struct Property {
     name: usize,
     // Value (index into `ExecLog.strings`).
     value: usize,
+}
+
+pub struct PropertyView<'log> {
+    exec_log: &'log ExecLog,
+    prop: &'log Property,
+}
+
+impl<'log> PropertyView<'log> {
+    pub fn name(&self) -> &'log str {
+        self.exec_log.strings.get_at(self.prop.name)
+    }
+
+    pub fn value(&self) -> &'log str {
+        self.exec_log.strings.get_at(self.prop.value)
+    }
+}
+
+impl<'log> ViewType<'log, ExecLog, &'log Property> for PropertyView<'log> {
+    fn view_from(exec_log: &'log ExecLog, prop: &'log Property) -> Self {
+        PropertyView { exec_log, prop }
+    }
+}
+
+impl<'log> Debug for PropertyView<'log> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
+        f.debug_struct("Property")
+            .field("name", &self.name())
+            .field("value", &self.value())
+            .finish()
+    }
 }
 
 #[derive(Default, Debug, Serialize, Deserialize)]
@@ -398,4 +466,130 @@ pub struct Entry {
     digest: Option<usize>,
     // /// Timing, size and memory statistics.
     // pub metrics: ::core::option::Option<SpawnMetrics>,
+}
+
+pub struct EntryView<'log> {
+    exec_log: &'log ExecLog,
+    entry: &'log Entry,
+}
+
+impl<'log> EntryView<'log> {
+    pub fn cmd_args(&self) -> impl Iterator<Item = &str> {
+        self.entry
+            .cmd_args
+            .iter()
+            .map(|idx| self.exec_log.strings.get_at(*idx).as_str())
+    }
+
+    pub fn env_vars(&self) -> impl Iterator<Item = PropertyView<'log>> + '_ {
+        self.entry.env_vars.iter().map(|idx| {
+            PropertyView::view_from(&self.exec_log, self.exec_log.properties.get_at(*idx))
+        })
+    }
+
+    pub fn platform(&self) -> impl Iterator<Item = PropertyView<'log>> + '_ {
+        self.entry.platform.iter().map(|idx| {
+            PropertyView::view_from(&self.exec_log, self.exec_log.properties.get_at(*idx))
+        })
+    }
+
+    pub fn inputs(&self) -> impl Iterator<Item = FileView<'log>> + '_ {
+        self.entry
+            .inputs
+            .iter()
+            .map(|idx| FileView::view_from(&self.exec_log, self.exec_log.files.get_at(*idx)))
+    }
+
+    pub fn listed_outputs(&self) -> impl Iterator<Item = &'log str> {
+        self.entry
+            .listed_outputs
+            .iter()
+            .map(|idx| self.exec_log.strings.get_at(*idx).as_str())
+    }
+
+    pub fn remotable(&self) -> bool {
+        self.entry.remotable
+    }
+
+    pub fn cacheable(&self) -> bool {
+        self.entry.cacheable
+    }
+
+    pub fn timeout_millis(&self) -> i64 {
+        self.entry.timeout_millis
+    }
+
+    pub fn mnemonic(&self) -> &'log str {
+        self.exec_log.strings.get_at(self.entry.mnemonic).as_str()
+    }
+
+    pub fn actual_outputs(&self) -> impl Iterator<Item = FileView<'log>> + '_ {
+        self.entry
+            .actual_outputs
+            .iter()
+            .map(|idx| FileView::view_from(&self.exec_log, self.exec_log.files.get_at(*idx)))
+    }
+
+    pub fn runner(&self) -> &'log str {
+        self.exec_log.strings.get_at(self.entry.runner).as_str()
+    }
+
+    pub fn cache_hit(&self) -> bool {
+        self.entry.cache_hit
+    }
+
+    pub fn status(&self) -> &'log str {
+        self.exec_log.strings.get_at(self.entry.status).as_str()
+    }
+
+    pub fn exit_code(&self) -> i32 {
+        self.entry.exit_code
+    }
+
+    pub fn remote_cacheable(&self) -> bool {
+        self.entry.remote_cacheable
+    }
+
+    pub fn target_label(&self) -> &str {
+        self.exec_log
+            .strings
+            .get_at(self.entry.target_label)
+            .as_str()
+    }
+
+    pub fn digest(&self) -> Option<DigestView> {
+        self.entry
+            .digest
+            .map(|idx| DigestView::view_from(&self.exec_log, self.exec_log.digests.get_at(idx)))
+    }
+}
+
+impl<'log> ViewType<'log, ExecLog, &'log Entry> for EntryView<'log> {
+    fn view_from(exec_log: &'log ExecLog, entry: &'log Entry) -> Self {
+        EntryView { exec_log, entry }
+    }
+}
+
+impl<'log> Debug for EntryView<'log> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
+        f.debug_struct("Entry")
+            .field("cmd_args", &self.cmd_args().collect::<Vec<_>>())
+            .field("env_vars", &self.env_vars().collect::<Vec<_>>())
+            .field("platform", &self.platform().collect::<Vec<_>>())
+            .field("inputs", &self.inputs().collect::<Vec<_>>())
+            .field("listed_outputs", &self.listed_outputs().collect::<Vec<_>>())
+            .field("remotable", &self.remotable())
+            .field("cacheable", &self.cacheable())
+            .field("timeout_millis", &self.timeout_millis())
+            .field("mnemonic", &self.mnemonic())
+            .field("actual_outputs", &self.actual_outputs().collect::<Vec<_>>())
+            .field("runner", &self.runner())
+            .field("cache_hit", &self.cache_hit())
+            .field("status", &self.status())
+            .field("exit_code", &self.exit_code())
+            .field("remote_cacheable", &self.remote_cacheable())
+            .field("target_label", &self.target_label())
+            .field("digest", &self.digest())
+            .finish()
+    }
 }
