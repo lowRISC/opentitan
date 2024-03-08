@@ -8,8 +8,11 @@ class usbdev_random_length_out_transaction_vseq extends usbdev_base_vseq;
 
   `uvm_object_new
 
-  // Subclasses with a fixed length transaction should set this to zero
-  bit randomize_length = 1'b1;
+  // Subclasses with a fixed length transaction should set this to zero and should set num_of_bytes
+  // to the length that they want. The default is to set randomize_length to 1. num_of_bytes will
+  // then be ignored.
+  bit       randomize_length = 1'b1;
+  bit [6:0] num_of_bytes = 0;
 
   task body();
     // Configure out transaction

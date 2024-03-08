@@ -10,7 +10,7 @@ class usbdev_max_length_out_transaction_vseq extends usbdev_random_length_out_tr
 
   task pre_start();
     super.pre_start();
-    num_of_bytes = 64;
     randomize_length = 1'b0;
+    num_of_bytes = 64;
   endtask
 endclass

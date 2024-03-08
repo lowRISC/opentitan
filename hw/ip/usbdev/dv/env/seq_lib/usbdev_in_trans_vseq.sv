@@ -21,7 +21,7 @@ class usbdev_in_trans_vseq extends usbdev_base_vseq;
     // Out token packet followed by a data packet
     call_token_seq(PidTypeOutToken);
     cfg.clk_rst_vif.wait_clks(20);
-    call_data_seq(PidTypeData0, .randomize_length(1'b1), .num_of_bytes(num_of_bytes));
+    call_data_seq(PidTypeData0, .randomize_length(1'b1), .num_of_bytes(0));
     get_response(m_response_item);
     $cast(m_usb20_item, m_response_item);
     get_out_response_from_device(m_usb20_item, PidTypeAck); // check OUT response
@@ -31,9 +31,8 @@ class usbdev_in_trans_vseq extends usbdev_base_vseq;
     // Make sure buffer is availabe for next trans
     ral.avoutbuffer.buffer.set(out_buffer_id + 1);
     csr_update(ral.avoutbuffer);
-    num_of_bytes = m_data_pkt.data.size();
     // Note: data should have been written into the current OUT buffer by the above transaction
-    configure_in_trans(out_buffer_id);  // register configurations for IN Trans.
+    configure_in_trans(out_buffer_id, m_data_pkt.data.size());
     // Token pkt followed by handshake pkt
     call_token_seq(PidTypeInToken);
     get_response(m_response_item);

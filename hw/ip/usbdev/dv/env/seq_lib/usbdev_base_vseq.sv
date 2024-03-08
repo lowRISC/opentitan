@@ -23,7 +23,6 @@ bit [4:0] setup_buffer_id = 5'd1;
 bit [4:0] out_buffer_id = 5'd7;
 // Current IN buffer number
 bit [4:0] in_buffer_id = 5'd13;
-bit      [6:0] num_of_bytes;
 
 constraint endpoint_c {
   endp inside {[0:11]};
@@ -265,7 +264,7 @@ virtual task configure_setup_trans();
   csr_update(ral.avsetupbuffer);
 endtask
 
-virtual task configure_in_trans(bit [4:0] buffer_id);
+virtual task configure_in_trans(bit [4:0] buffer_id, bit [6:0] num_of_bytes);
   // Enable Endp IN
   csr_wr(.ptr(ral.ep_in_enable[0].enable[endp]),  .value(1'b1));
   csr_update(ral.ep_in_enable[0]);
