@@ -15,18 +15,13 @@ class usbdev_pkt_received_vseq extends usbdev_base_vseq;
   uvm_reg_data_t read_rxfifo;
   uvm_reg_data_t intr_state;
 
-  task pre_start();
-    super.pre_start();
-    rand_or_not = 1'b1;
-  endtask
-
   task body();
     // Configure transaction
     configure_trans();
     // Out token packet followed by a data packet
     call_token_seq(PidTypeOutToken);
     cfg.clk_rst_vif.wait_clks(20);
-    call_data_seq(PidTypeData0, rand_or_not, num_of_bytes);
+    call_data_seq(PidTypeData0, .randomize_length(1'b1), .num_of_bytes(num_of_bytes));
     get_response(rsp_item);
     $cast(item, rsp_item);
     get_out_response_from_device(item, PidTypeAck);

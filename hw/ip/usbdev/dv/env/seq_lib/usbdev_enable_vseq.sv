@@ -15,9 +15,6 @@ class usbdev_enable_vseq extends usbdev_base_vseq;
     // we need to manually set this.
     do_usbdev_init = 1'b0;
 
-    rand_or_not = 1'b0;
-    num_of_bytes = 8;
-
     super.pre_start();
   endtask
 
@@ -31,7 +28,7 @@ class usbdev_enable_vseq extends usbdev_base_vseq;
     cfg.clk_rst_vif.wait_clks(20);
     call_token_seq(PidTypeOutToken);
     cfg.clk_rst_vif.wait_clks(20);
-    call_data_seq(PidTypeData0, rand_or_not, num_of_bytes);
+    call_data_seq(PidTypeData0, .randomize_length(1'b0), .num_of_bytes(8));
     get_response(m_response_item);
     $cast(m_usb20_item, m_response_item);
     get_out_response_from_device(m_usb20_item, PidTypeAck);

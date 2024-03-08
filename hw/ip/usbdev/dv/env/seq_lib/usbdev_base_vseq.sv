@@ -24,7 +24,6 @@ bit [4:0] out_buffer_id = 5'd7;
 // Current IN buffer number
 bit [4:0] in_buffer_id = 5'd13;
 bit      [6:0] num_of_bytes;
-bit            rand_or_not = 1'b1;
 
 constraint endpoint_c {
   endp inside {[0:11]};

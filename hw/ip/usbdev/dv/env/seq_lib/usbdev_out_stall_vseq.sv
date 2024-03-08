@@ -20,7 +20,7 @@ class usbdev_out_stall_vseq extends usbdev_base_vseq;
     // Out token packet followed by a data packet
     call_token_seq(PidTypeOutToken);
     cfg.clk_rst_vif.wait_clks(20);
-    call_data_seq(PidTypeData0, rand_or_not, num_of_bytes);
+    call_data_seq(PidTypeData0, .randomize_length(1'b1), .num_of_bytes(num_of_bytes));
     cfg.clk_rst_vif.wait_clks(20);
     get_response(m_response_item);
     $cast(m_usb20_item, m_response_item);
