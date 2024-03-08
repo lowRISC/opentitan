@@ -152,8 +152,8 @@ module sysrst_ctrl_reg_top (
   logic [0:0] ulp_ctl_qs;
   logic ulp_ctl_busy;
   logic ulp_status_we;
-  logic [0:0] ulp_status_qs;
-  logic ulp_status_busy;
+  logic ulp_status_qs;
+  logic ulp_status_wd;
   logic wkup_status_we;
   logic [0:0] wkup_status_qs;
   logic wkup_status_busy;
@@ -250,11 +250,43 @@ module sysrst_ctrl_reg_top (
   logic [3:0] com_out_ctl_3_qs;
   logic com_out_ctl_3_busy;
   logic combo_intr_status_we;
-  logic [3:0] combo_intr_status_qs;
-  logic combo_intr_status_busy;
+  logic combo_intr_status_combo0_h2l_qs;
+  logic combo_intr_status_combo0_h2l_wd;
+  logic combo_intr_status_combo1_h2l_qs;
+  logic combo_intr_status_combo1_h2l_wd;
+  logic combo_intr_status_combo2_h2l_qs;
+  logic combo_intr_status_combo2_h2l_wd;
+  logic combo_intr_status_combo3_h2l_qs;
+  logic combo_intr_status_combo3_h2l_wd;
   logic key_intr_status_we;
-  logic [13:0] key_intr_status_qs;
-  logic key_intr_status_busy;
+  logic key_intr_status_pwrb_h2l_qs;
+  logic key_intr_status_pwrb_h2l_wd;
+  logic key_intr_status_key0_in_h2l_qs;
+  logic key_intr_status_key0_in_h2l_wd;
+  logic key_intr_status_key1_in_h2l_qs;
+  logic key_intr_status_key1_in_h2l_wd;
+  logic key_intr_status_key2_in_h2l_qs;
+  logic key_intr_status_key2_in_h2l_wd;
+  logic key_intr_status_ac_present_h2l_qs;
+  logic key_intr_status_ac_present_h2l_wd;
+  logic key_intr_status_ec_rst_l_h2l_qs;
+  logic key_intr_status_ec_rst_l_h2l_wd;
+  logic key_intr_status_flash_wp_l_h2l_qs;
+  logic key_intr_status_flash_wp_l_h2l_wd;
+  logic key_intr_status_pwrb_l2h_qs;
+  logic key_intr_status_pwrb_l2h_wd;
+  logic key_intr_status_key0_in_l2h_qs;
+  logic key_intr_status_key0_in_l2h_wd;
+  logic key_intr_status_key1_in_l2h_qs;
+  logic key_intr_status_key1_in_l2h_wd;
+  logic key_intr_status_key2_in_l2h_qs;
+  logic key_intr_status_key2_in_l2h_wd;
+  logic key_intr_status_ac_present_l2h_qs;
+  logic key_intr_status_ac_present_l2h_wd;
+  logic key_intr_status_ec_rst_l_l2h_qs;
+  logic key_intr_status_ec_rst_l_l2h_wd;
+  logic key_intr_status_flash_wp_l_l2h_qs;
+  logic key_intr_status_flash_wp_l_l2h_wd;
   // Define register CDC handling.
   // CDC handling is done on a per-reg instead of per-field boundary.
 
@@ -451,49 +483,6 @@ module sysrst_ctrl_reg_top (
   );
   assign unused_aon_ulp_ctl_wdata =
       ^aon_ulp_ctl_wdata;
-
-  logic  aon_ulp_status_ds_int;
-  logic  aon_ulp_status_qs_int;
-  logic [0:0] aon_ulp_status_ds;
-  logic aon_ulp_status_qe;
-  logic [0:0] aon_ulp_status_qs;
-  logic [0:0] aon_ulp_status_wdata;
-  logic aon_ulp_status_we;
-  logic unused_aon_ulp_status_wdata;
-
-  always_comb begin
-    aon_ulp_status_qs = 1'h0;
-    aon_ulp_status_ds = 1'h0;
-    aon_ulp_status_ds = aon_ulp_status_ds_int;
-    aon_ulp_status_qs = aon_ulp_status_qs_int;
-  end
-
-  prim_reg_cdc #(
-    .DataWidth(1),
-    .ResetVal(1'h0),
-    .BitMask(1'h1),
-    .DstWrReq(1)
-  ) u_ulp_status_cdc (
-    .clk_src_i    (clk_i),
-    .rst_src_ni   (rst_ni),
-    .clk_dst_i    (clk_aon_i),
-    .rst_dst_ni   (rst_aon_ni),
-    .src_regwen_i ('0),
-    .src_we_i     (ulp_status_we),
-    .src_re_i     ('0),
-    .src_wd_i     (reg_wdata[0:0]),
-    .src_busy_o   (ulp_status_busy),
-    .src_qs_o     (ulp_status_qs), // for software read back
-    .dst_update_i (aon_ulp_status_qe),
-    .dst_ds_i     (aon_ulp_status_ds),
-    .dst_qs_i     (aon_ulp_status_qs),
-    .dst_we_o     (aon_ulp_status_we),
-    .dst_re_o     (),
-    .dst_regwen_o (),
-    .dst_wd_o     (aon_ulp_status_wdata)
-  );
-  assign unused_aon_ulp_status_wdata =
-      ^aon_ulp_status_wdata;
 
   logic  aon_wkup_status_ds_int;
   logic  aon_wkup_status_qs_int;
@@ -1834,156 +1823,6 @@ module sysrst_ctrl_reg_top (
   assign unused_aon_com_out_ctl_3_wdata =
       ^aon_com_out_ctl_3_wdata;
 
-  logic  aon_combo_intr_status_combo0_h2l_ds_int;
-  logic  aon_combo_intr_status_combo0_h2l_qs_int;
-  logic  aon_combo_intr_status_combo1_h2l_ds_int;
-  logic  aon_combo_intr_status_combo1_h2l_qs_int;
-  logic  aon_combo_intr_status_combo2_h2l_ds_int;
-  logic  aon_combo_intr_status_combo2_h2l_qs_int;
-  logic  aon_combo_intr_status_combo3_h2l_ds_int;
-  logic  aon_combo_intr_status_combo3_h2l_qs_int;
-  logic [3:0] aon_combo_intr_status_ds;
-  logic aon_combo_intr_status_qe;
-  logic [3:0] aon_combo_intr_status_qs;
-  logic [3:0] aon_combo_intr_status_wdata;
-  logic aon_combo_intr_status_we;
-  logic unused_aon_combo_intr_status_wdata;
-
-  always_comb begin
-    aon_combo_intr_status_qs = 4'h0;
-    aon_combo_intr_status_ds = 4'h0;
-    aon_combo_intr_status_ds[0] = aon_combo_intr_status_combo0_h2l_ds_int;
-    aon_combo_intr_status_qs[0] = aon_combo_intr_status_combo0_h2l_qs_int;
-    aon_combo_intr_status_ds[1] = aon_combo_intr_status_combo1_h2l_ds_int;
-    aon_combo_intr_status_qs[1] = aon_combo_intr_status_combo1_h2l_qs_int;
-    aon_combo_intr_status_ds[2] = aon_combo_intr_status_combo2_h2l_ds_int;
-    aon_combo_intr_status_qs[2] = aon_combo_intr_status_combo2_h2l_qs_int;
-    aon_combo_intr_status_ds[3] = aon_combo_intr_status_combo3_h2l_ds_int;
-    aon_combo_intr_status_qs[3] = aon_combo_intr_status_combo3_h2l_qs_int;
-  end
-
-  prim_reg_cdc #(
-    .DataWidth(4),
-    .ResetVal(4'h0),
-    .BitMask(4'hf),
-    .DstWrReq(1)
-  ) u_combo_intr_status_cdc (
-    .clk_src_i    (clk_i),
-    .rst_src_ni   (rst_ni),
-    .clk_dst_i    (clk_aon_i),
-    .rst_dst_ni   (rst_aon_ni),
-    .src_regwen_i ('0),
-    .src_we_i     (combo_intr_status_we),
-    .src_re_i     ('0),
-    .src_wd_i     (reg_wdata[3:0]),
-    .src_busy_o   (combo_intr_status_busy),
-    .src_qs_o     (combo_intr_status_qs), // for software read back
-    .dst_update_i (aon_combo_intr_status_qe),
-    .dst_ds_i     (aon_combo_intr_status_ds),
-    .dst_qs_i     (aon_combo_intr_status_qs),
-    .dst_we_o     (aon_combo_intr_status_we),
-    .dst_re_o     (),
-    .dst_regwen_o (),
-    .dst_wd_o     (aon_combo_intr_status_wdata)
-  );
-  assign unused_aon_combo_intr_status_wdata =
-      ^aon_combo_intr_status_wdata;
-
-  logic  aon_key_intr_status_pwrb_h2l_ds_int;
-  logic  aon_key_intr_status_pwrb_h2l_qs_int;
-  logic  aon_key_intr_status_key0_in_h2l_ds_int;
-  logic  aon_key_intr_status_key0_in_h2l_qs_int;
-  logic  aon_key_intr_status_key1_in_h2l_ds_int;
-  logic  aon_key_intr_status_key1_in_h2l_qs_int;
-  logic  aon_key_intr_status_key2_in_h2l_ds_int;
-  logic  aon_key_intr_status_key2_in_h2l_qs_int;
-  logic  aon_key_intr_status_ac_present_h2l_ds_int;
-  logic  aon_key_intr_status_ac_present_h2l_qs_int;
-  logic  aon_key_intr_status_ec_rst_l_h2l_ds_int;
-  logic  aon_key_intr_status_ec_rst_l_h2l_qs_int;
-  logic  aon_key_intr_status_flash_wp_l_h2l_ds_int;
-  logic  aon_key_intr_status_flash_wp_l_h2l_qs_int;
-  logic  aon_key_intr_status_pwrb_l2h_ds_int;
-  logic  aon_key_intr_status_pwrb_l2h_qs_int;
-  logic  aon_key_intr_status_key0_in_l2h_ds_int;
-  logic  aon_key_intr_status_key0_in_l2h_qs_int;
-  logic  aon_key_intr_status_key1_in_l2h_ds_int;
-  logic  aon_key_intr_status_key1_in_l2h_qs_int;
-  logic  aon_key_intr_status_key2_in_l2h_ds_int;
-  logic  aon_key_intr_status_key2_in_l2h_qs_int;
-  logic  aon_key_intr_status_ac_present_l2h_ds_int;
-  logic  aon_key_intr_status_ac_present_l2h_qs_int;
-  logic  aon_key_intr_status_ec_rst_l_l2h_ds_int;
-  logic  aon_key_intr_status_ec_rst_l_l2h_qs_int;
-  logic  aon_key_intr_status_flash_wp_l_l2h_ds_int;
-  logic  aon_key_intr_status_flash_wp_l_l2h_qs_int;
-  logic [13:0] aon_key_intr_status_ds;
-  logic aon_key_intr_status_qe;
-  logic [13:0] aon_key_intr_status_qs;
-  logic [13:0] aon_key_intr_status_wdata;
-  logic aon_key_intr_status_we;
-  logic unused_aon_key_intr_status_wdata;
-
-  always_comb begin
-    aon_key_intr_status_qs = 14'h0;
-    aon_key_intr_status_ds = 14'h0;
-    aon_key_intr_status_ds[0] = aon_key_intr_status_pwrb_h2l_ds_int;
-    aon_key_intr_status_qs[0] = aon_key_intr_status_pwrb_h2l_qs_int;
-    aon_key_intr_status_ds[1] = aon_key_intr_status_key0_in_h2l_ds_int;
-    aon_key_intr_status_qs[1] = aon_key_intr_status_key0_in_h2l_qs_int;
-    aon_key_intr_status_ds[2] = aon_key_intr_status_key1_in_h2l_ds_int;
-    aon_key_intr_status_qs[2] = aon_key_intr_status_key1_in_h2l_qs_int;
-    aon_key_intr_status_ds[3] = aon_key_intr_status_key2_in_h2l_ds_int;
-    aon_key_intr_status_qs[3] = aon_key_intr_status_key2_in_h2l_qs_int;
-    aon_key_intr_status_ds[4] = aon_key_intr_status_ac_present_h2l_ds_int;
-    aon_key_intr_status_qs[4] = aon_key_intr_status_ac_present_h2l_qs_int;
-    aon_key_intr_status_ds[5] = aon_key_intr_status_ec_rst_l_h2l_ds_int;
-    aon_key_intr_status_qs[5] = aon_key_intr_status_ec_rst_l_h2l_qs_int;
-    aon_key_intr_status_ds[6] = aon_key_intr_status_flash_wp_l_h2l_ds_int;
-    aon_key_intr_status_qs[6] = aon_key_intr_status_flash_wp_l_h2l_qs_int;
-    aon_key_intr_status_ds[7] = aon_key_intr_status_pwrb_l2h_ds_int;
-    aon_key_intr_status_qs[7] = aon_key_intr_status_pwrb_l2h_qs_int;
-    aon_key_intr_status_ds[8] = aon_key_intr_status_key0_in_l2h_ds_int;
-    aon_key_intr_status_qs[8] = aon_key_intr_status_key0_in_l2h_qs_int;
-    aon_key_intr_status_ds[9] = aon_key_intr_status_key1_in_l2h_ds_int;
-    aon_key_intr_status_qs[9] = aon_key_intr_status_key1_in_l2h_qs_int;
-    aon_key_intr_status_ds[10] = aon_key_intr_status_key2_in_l2h_ds_int;
-    aon_key_intr_status_qs[10] = aon_key_intr_status_key2_in_l2h_qs_int;
-    aon_key_intr_status_ds[11] = aon_key_intr_status_ac_present_l2h_ds_int;
-    aon_key_intr_status_qs[11] = aon_key_intr_status_ac_present_l2h_qs_int;
-    aon_key_intr_status_ds[12] = aon_key_intr_status_ec_rst_l_l2h_ds_int;
-    aon_key_intr_status_qs[12] = aon_key_intr_status_ec_rst_l_l2h_qs_int;
-    aon_key_intr_status_ds[13] = aon_key_intr_status_flash_wp_l_l2h_ds_int;
-    aon_key_intr_status_qs[13] = aon_key_intr_status_flash_wp_l_l2h_qs_int;
-  end
-
-  prim_reg_cdc #(
-    .DataWidth(14),
-    .ResetVal(14'h0),
-    .BitMask(14'h3fff),
-    .DstWrReq(1)
-  ) u_key_intr_status_cdc (
-    .clk_src_i    (clk_i),
-    .rst_src_ni   (rst_ni),
-    .clk_dst_i    (clk_aon_i),
-    .rst_dst_ni   (rst_aon_ni),
-    .src_regwen_i ('0),
-    .src_we_i     (key_intr_status_we),
-    .src_re_i     ('0),
-    .src_wd_i     (reg_wdata[13:0]),
-    .src_busy_o   (key_intr_status_busy),
-    .src_qs_o     (key_intr_status_qs), // for software read back
-    .dst_update_i (aon_key_intr_status_qe),
-    .dst_ds_i     (aon_key_intr_status_ds),
-    .dst_qs_i     (aon_key_intr_status_qs),
-    .dst_we_o     (aon_key_intr_status_we),
-    .dst_re_o     (),
-    .dst_regwen_o (),
-    .dst_wd_o     (aon_key_intr_status_wdata)
-  );
-  assign unused_aon_key_intr_status_wdata =
-      ^aon_key_intr_status_wdata;
-
   // Register instances
   // R[intr_state]: V(False)
   prim_subreg #(
@@ -2265,32 +2104,30 @@ module sysrst_ctrl_reg_top (
 
 
   // R[ulp_status]: V(False)
-  logic [0:0] ulp_status_flds_we;
-  assign aon_ulp_status_qe = |ulp_status_flds_we;
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_ulp_status (
-    .clk_i   (clk_aon_i),
-    .rst_ni  (rst_aon_ni),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (aon_ulp_status_we),
-    .wd     (aon_ulp_status_wdata[0]),
+    .we     (ulp_status_we),
+    .wd     (ulp_status_wd),
 
     // from internal hardware
     .de     (hw2reg.ulp_status.de),
     .d      (hw2reg.ulp_status.d),
 
     // to internal hardware
-    .qe     (ulp_status_flds_we[0]),
+    .qe     (),
     .q      (),
-    .ds     (aon_ulp_status_ds_int),
+    .ds     (),
 
     // to register interface (read)
-    .qs     (aon_ulp_status_qs_int)
+    .qs     (ulp_status_qs)
   );
 
 
@@ -6228,8 +6065,6 @@ module sysrst_ctrl_reg_top (
 
 
   // R[combo_intr_status]: V(False)
-  logic [3:0] combo_intr_status_flds_we;
-  assign aon_combo_intr_status_qe = |combo_intr_status_flds_we;
   //   F[combo0_h2l]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -6237,24 +6072,24 @@ module sysrst_ctrl_reg_top (
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_combo_intr_status_combo0_h2l (
-    .clk_i   (clk_aon_i),
-    .rst_ni  (rst_aon_ni),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (aon_combo_intr_status_we),
-    .wd     (aon_combo_intr_status_wdata[0]),
+    .we     (combo_intr_status_we),
+    .wd     (combo_intr_status_combo0_h2l_wd),
 
     // from internal hardware
     .de     (hw2reg.combo_intr_status.combo0_h2l.de),
     .d      (hw2reg.combo_intr_status.combo0_h2l.d),
 
     // to internal hardware
-    .qe     (combo_intr_status_flds_we[0]),
+    .qe     (),
     .q      (),
-    .ds     (aon_combo_intr_status_combo0_h2l_ds_int),
+    .ds     (),
 
     // to register interface (read)
-    .qs     (aon_combo_intr_status_combo0_h2l_qs_int)
+    .qs     (combo_intr_status_combo0_h2l_qs)
   );
 
   //   F[combo1_h2l]: 1:1
@@ -6264,24 +6099,24 @@ module sysrst_ctrl_reg_top (
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_combo_intr_status_combo1_h2l (
-    .clk_i   (clk_aon_i),
-    .rst_ni  (rst_aon_ni),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (aon_combo_intr_status_we),
-    .wd     (aon_combo_intr_status_wdata[1]),
+    .we     (combo_intr_status_we),
+    .wd     (combo_intr_status_combo1_h2l_wd),
 
     // from internal hardware
     .de     (hw2reg.combo_intr_status.combo1_h2l.de),
     .d      (hw2reg.combo_intr_status.combo1_h2l.d),
 
     // to internal hardware
-    .qe     (combo_intr_status_flds_we[1]),
+    .qe     (),
     .q      (),
-    .ds     (aon_combo_intr_status_combo1_h2l_ds_int),
+    .ds     (),
 
     // to register interface (read)
-    .qs     (aon_combo_intr_status_combo1_h2l_qs_int)
+    .qs     (combo_intr_status_combo1_h2l_qs)
   );
 
   //   F[combo2_h2l]: 2:2
@@ -6291,24 +6126,24 @@ module sysrst_ctrl_reg_top (
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_combo_intr_status_combo2_h2l (
-    .clk_i   (clk_aon_i),
-    .rst_ni  (rst_aon_ni),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (aon_combo_intr_status_we),
-    .wd     (aon_combo_intr_status_wdata[2]),
+    .we     (combo_intr_status_we),
+    .wd     (combo_intr_status_combo2_h2l_wd),
 
     // from internal hardware
     .de     (hw2reg.combo_intr_status.combo2_h2l.de),
     .d      (hw2reg.combo_intr_status.combo2_h2l.d),
 
     // to internal hardware
-    .qe     (combo_intr_status_flds_we[2]),
+    .qe     (),
     .q      (),
-    .ds     (aon_combo_intr_status_combo2_h2l_ds_int),
+    .ds     (),
 
     // to register interface (read)
-    .qs     (aon_combo_intr_status_combo2_h2l_qs_int)
+    .qs     (combo_intr_status_combo2_h2l_qs)
   );
 
   //   F[combo3_h2l]: 3:3
@@ -6318,30 +6153,28 @@ module sysrst_ctrl_reg_top (
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_combo_intr_status_combo3_h2l (
-    .clk_i   (clk_aon_i),
-    .rst_ni  (rst_aon_ni),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (aon_combo_intr_status_we),
-    .wd     (aon_combo_intr_status_wdata[3]),
+    .we     (combo_intr_status_we),
+    .wd     (combo_intr_status_combo3_h2l_wd),
 
     // from internal hardware
     .de     (hw2reg.combo_intr_status.combo3_h2l.de),
     .d      (hw2reg.combo_intr_status.combo3_h2l.d),
 
     // to internal hardware
-    .qe     (combo_intr_status_flds_we[3]),
+    .qe     (),
     .q      (),
-    .ds     (aon_combo_intr_status_combo3_h2l_ds_int),
+    .ds     (),
 
     // to register interface (read)
-    .qs     (aon_combo_intr_status_combo3_h2l_qs_int)
+    .qs     (combo_intr_status_combo3_h2l_qs)
   );
 
 
   // R[key_intr_status]: V(False)
-  logic [13:0] key_intr_status_flds_we;
-  assign aon_key_intr_status_qe = |key_intr_status_flds_we;
   //   F[pwrb_h2l]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -6349,24 +6182,24 @@ module sysrst_ctrl_reg_top (
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_key_intr_status_pwrb_h2l (
-    .clk_i   (clk_aon_i),
-    .rst_ni  (rst_aon_ni),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (aon_key_intr_status_we),
-    .wd     (aon_key_intr_status_wdata[0]),
+    .we     (key_intr_status_we),
+    .wd     (key_intr_status_pwrb_h2l_wd),
 
     // from internal hardware
     .de     (hw2reg.key_intr_status.pwrb_h2l.de),
     .d      (hw2reg.key_intr_status.pwrb_h2l.d),
 
     // to internal hardware
-    .qe     (key_intr_status_flds_we[0]),
+    .qe     (),
     .q      (),
-    .ds     (aon_key_intr_status_pwrb_h2l_ds_int),
+    .ds     (),
 
     // to register interface (read)
-    .qs     (aon_key_intr_status_pwrb_h2l_qs_int)
+    .qs     (key_intr_status_pwrb_h2l_qs)
   );
 
   //   F[key0_in_h2l]: 1:1
@@ -6376,24 +6209,24 @@ module sysrst_ctrl_reg_top (
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_key_intr_status_key0_in_h2l (
-    .clk_i   (clk_aon_i),
-    .rst_ni  (rst_aon_ni),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (aon_key_intr_status_we),
-    .wd     (aon_key_intr_status_wdata[1]),
+    .we     (key_intr_status_we),
+    .wd     (key_intr_status_key0_in_h2l_wd),
 
     // from internal hardware
     .de     (hw2reg.key_intr_status.key0_in_h2l.de),
     .d      (hw2reg.key_intr_status.key0_in_h2l.d),
 
     // to internal hardware
-    .qe     (key_intr_status_flds_we[1]),
+    .qe     (),
     .q      (),
-    .ds     (aon_key_intr_status_key0_in_h2l_ds_int),
+    .ds     (),
 
     // to register interface (read)
-    .qs     (aon_key_intr_status_key0_in_h2l_qs_int)
+    .qs     (key_intr_status_key0_in_h2l_qs)
   );
 
   //   F[key1_in_h2l]: 2:2
@@ -6403,24 +6236,24 @@ module sysrst_ctrl_reg_top (
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_key_intr_status_key1_in_h2l (
-    .clk_i   (clk_aon_i),
-    .rst_ni  (rst_aon_ni),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (aon_key_intr_status_we),
-    .wd     (aon_key_intr_status_wdata[2]),
+    .we     (key_intr_status_we),
+    .wd     (key_intr_status_key1_in_h2l_wd),
 
     // from internal hardware
     .de     (hw2reg.key_intr_status.key1_in_h2l.de),
     .d      (hw2reg.key_intr_status.key1_in_h2l.d),
 
     // to internal hardware
-    .qe     (key_intr_status_flds_we[2]),
+    .qe     (),
     .q      (),
-    .ds     (aon_key_intr_status_key1_in_h2l_ds_int),
+    .ds     (),
 
     // to register interface (read)
-    .qs     (aon_key_intr_status_key1_in_h2l_qs_int)
+    .qs     (key_intr_status_key1_in_h2l_qs)
   );
 
   //   F[key2_in_h2l]: 3:3
@@ -6430,24 +6263,24 @@ module sysrst_ctrl_reg_top (
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_key_intr_status_key2_in_h2l (
-    .clk_i   (clk_aon_i),
-    .rst_ni  (rst_aon_ni),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (aon_key_intr_status_we),
-    .wd     (aon_key_intr_status_wdata[3]),
+    .we     (key_intr_status_we),
+    .wd     (key_intr_status_key2_in_h2l_wd),
 
     // from internal hardware
     .de     (hw2reg.key_intr_status.key2_in_h2l.de),
     .d      (hw2reg.key_intr_status.key2_in_h2l.d),
 
     // to internal hardware
-    .qe     (key_intr_status_flds_we[3]),
+    .qe     (),
     .q      (),
-    .ds     (aon_key_intr_status_key2_in_h2l_ds_int),
+    .ds     (),
 
     // to register interface (read)
-    .qs     (aon_key_intr_status_key2_in_h2l_qs_int)
+    .qs     (key_intr_status_key2_in_h2l_qs)
   );
 
   //   F[ac_present_h2l]: 4:4
@@ -6457,24 +6290,24 @@ module sysrst_ctrl_reg_top (
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_key_intr_status_ac_present_h2l (
-    .clk_i   (clk_aon_i),
-    .rst_ni  (rst_aon_ni),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (aon_key_intr_status_we),
-    .wd     (aon_key_intr_status_wdata[4]),
+    .we     (key_intr_status_we),
+    .wd     (key_intr_status_ac_present_h2l_wd),
 
     // from internal hardware
     .de     (hw2reg.key_intr_status.ac_present_h2l.de),
     .d      (hw2reg.key_intr_status.ac_present_h2l.d),
 
     // to internal hardware
-    .qe     (key_intr_status_flds_we[4]),
+    .qe     (),
     .q      (),
-    .ds     (aon_key_intr_status_ac_present_h2l_ds_int),
+    .ds     (),
 
     // to register interface (read)
-    .qs     (aon_key_intr_status_ac_present_h2l_qs_int)
+    .qs     (key_intr_status_ac_present_h2l_qs)
   );
 
   //   F[ec_rst_l_h2l]: 5:5
@@ -6484,24 +6317,24 @@ module sysrst_ctrl_reg_top (
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_key_intr_status_ec_rst_l_h2l (
-    .clk_i   (clk_aon_i),
-    .rst_ni  (rst_aon_ni),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (aon_key_intr_status_we),
-    .wd     (aon_key_intr_status_wdata[5]),
+    .we     (key_intr_status_we),
+    .wd     (key_intr_status_ec_rst_l_h2l_wd),
 
     // from internal hardware
     .de     (hw2reg.key_intr_status.ec_rst_l_h2l.de),
     .d      (hw2reg.key_intr_status.ec_rst_l_h2l.d),
 
     // to internal hardware
-    .qe     (key_intr_status_flds_we[5]),
+    .qe     (),
     .q      (),
-    .ds     (aon_key_intr_status_ec_rst_l_h2l_ds_int),
+    .ds     (),
 
     // to register interface (read)
-    .qs     (aon_key_intr_status_ec_rst_l_h2l_qs_int)
+    .qs     (key_intr_status_ec_rst_l_h2l_qs)
   );
 
   //   F[flash_wp_l_h2l]: 6:6
@@ -6511,24 +6344,24 @@ module sysrst_ctrl_reg_top (
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_key_intr_status_flash_wp_l_h2l (
-    .clk_i   (clk_aon_i),
-    .rst_ni  (rst_aon_ni),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (aon_key_intr_status_we),
-    .wd     (aon_key_intr_status_wdata[6]),
+    .we     (key_intr_status_we),
+    .wd     (key_intr_status_flash_wp_l_h2l_wd),
 
     // from internal hardware
     .de     (hw2reg.key_intr_status.flash_wp_l_h2l.de),
     .d      (hw2reg.key_intr_status.flash_wp_l_h2l.d),
 
     // to internal hardware
-    .qe     (key_intr_status_flds_we[6]),
+    .qe     (),
     .q      (),
-    .ds     (aon_key_intr_status_flash_wp_l_h2l_ds_int),
+    .ds     (),
 
     // to register interface (read)
-    .qs     (aon_key_intr_status_flash_wp_l_h2l_qs_int)
+    .qs     (key_intr_status_flash_wp_l_h2l_qs)
   );
 
   //   F[pwrb_l2h]: 7:7
@@ -6538,24 +6371,24 @@ module sysrst_ctrl_reg_top (
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_key_intr_status_pwrb_l2h (
-    .clk_i   (clk_aon_i),
-    .rst_ni  (rst_aon_ni),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (aon_key_intr_status_we),
-    .wd     (aon_key_intr_status_wdata[7]),
+    .we     (key_intr_status_we),
+    .wd     (key_intr_status_pwrb_l2h_wd),
 
     // from internal hardware
     .de     (hw2reg.key_intr_status.pwrb_l2h.de),
     .d      (hw2reg.key_intr_status.pwrb_l2h.d),
 
     // to internal hardware
-    .qe     (key_intr_status_flds_we[7]),
+    .qe     (),
     .q      (),
-    .ds     (aon_key_intr_status_pwrb_l2h_ds_int),
+    .ds     (),
 
     // to register interface (read)
-    .qs     (aon_key_intr_status_pwrb_l2h_qs_int)
+    .qs     (key_intr_status_pwrb_l2h_qs)
   );
 
   //   F[key0_in_l2h]: 8:8
@@ -6565,24 +6398,24 @@ module sysrst_ctrl_reg_top (
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_key_intr_status_key0_in_l2h (
-    .clk_i   (clk_aon_i),
-    .rst_ni  (rst_aon_ni),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (aon_key_intr_status_we),
-    .wd     (aon_key_intr_status_wdata[8]),
+    .we     (key_intr_status_we),
+    .wd     (key_intr_status_key0_in_l2h_wd),
 
     // from internal hardware
     .de     (hw2reg.key_intr_status.key0_in_l2h.de),
     .d      (hw2reg.key_intr_status.key0_in_l2h.d),
 
     // to internal hardware
-    .qe     (key_intr_status_flds_we[8]),
+    .qe     (),
     .q      (),
-    .ds     (aon_key_intr_status_key0_in_l2h_ds_int),
+    .ds     (),
 
     // to register interface (read)
-    .qs     (aon_key_intr_status_key0_in_l2h_qs_int)
+    .qs     (key_intr_status_key0_in_l2h_qs)
   );
 
   //   F[key1_in_l2h]: 9:9
@@ -6592,24 +6425,24 @@ module sysrst_ctrl_reg_top (
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_key_intr_status_key1_in_l2h (
-    .clk_i   (clk_aon_i),
-    .rst_ni  (rst_aon_ni),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (aon_key_intr_status_we),
-    .wd     (aon_key_intr_status_wdata[9]),
+    .we     (key_intr_status_we),
+    .wd     (key_intr_status_key1_in_l2h_wd),
 
     // from internal hardware
     .de     (hw2reg.key_intr_status.key1_in_l2h.de),
     .d      (hw2reg.key_intr_status.key1_in_l2h.d),
 
     // to internal hardware
-    .qe     (key_intr_status_flds_we[9]),
+    .qe     (),
     .q      (),
-    .ds     (aon_key_intr_status_key1_in_l2h_ds_int),
+    .ds     (),
 
     // to register interface (read)
-    .qs     (aon_key_intr_status_key1_in_l2h_qs_int)
+    .qs     (key_intr_status_key1_in_l2h_qs)
   );
 
   //   F[key2_in_l2h]: 10:10
@@ -6619,24 +6452,24 @@ module sysrst_ctrl_reg_top (
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_key_intr_status_key2_in_l2h (
-    .clk_i   (clk_aon_i),
-    .rst_ni  (rst_aon_ni),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (aon_key_intr_status_we),
-    .wd     (aon_key_intr_status_wdata[10]),
+    .we     (key_intr_status_we),
+    .wd     (key_intr_status_key2_in_l2h_wd),
 
     // from internal hardware
     .de     (hw2reg.key_intr_status.key2_in_l2h.de),
     .d      (hw2reg.key_intr_status.key2_in_l2h.d),
 
     // to internal hardware
-    .qe     (key_intr_status_flds_we[10]),
+    .qe     (),
     .q      (),
-    .ds     (aon_key_intr_status_key2_in_l2h_ds_int),
+    .ds     (),
 
     // to register interface (read)
-    .qs     (aon_key_intr_status_key2_in_l2h_qs_int)
+    .qs     (key_intr_status_key2_in_l2h_qs)
   );
 
   //   F[ac_present_l2h]: 11:11
@@ -6646,24 +6479,24 @@ module sysrst_ctrl_reg_top (
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_key_intr_status_ac_present_l2h (
-    .clk_i   (clk_aon_i),
-    .rst_ni  (rst_aon_ni),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (aon_key_intr_status_we),
-    .wd     (aon_key_intr_status_wdata[11]),
+    .we     (key_intr_status_we),
+    .wd     (key_intr_status_ac_present_l2h_wd),
 
     // from internal hardware
     .de     (hw2reg.key_intr_status.ac_present_l2h.de),
     .d      (hw2reg.key_intr_status.ac_present_l2h.d),
 
     // to internal hardware
-    .qe     (key_intr_status_flds_we[11]),
+    .qe     (),
     .q      (),
-    .ds     (aon_key_intr_status_ac_present_l2h_ds_int),
+    .ds     (),
 
     // to register interface (read)
-    .qs     (aon_key_intr_status_ac_present_l2h_qs_int)
+    .qs     (key_intr_status_ac_present_l2h_qs)
   );
 
   //   F[ec_rst_l_l2h]: 12:12
@@ -6673,24 +6506,24 @@ module sysrst_ctrl_reg_top (
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_key_intr_status_ec_rst_l_l2h (
-    .clk_i   (clk_aon_i),
-    .rst_ni  (rst_aon_ni),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (aon_key_intr_status_we),
-    .wd     (aon_key_intr_status_wdata[12]),
+    .we     (key_intr_status_we),
+    .wd     (key_intr_status_ec_rst_l_l2h_wd),
 
     // from internal hardware
     .de     (hw2reg.key_intr_status.ec_rst_l_l2h.de),
     .d      (hw2reg.key_intr_status.ec_rst_l_l2h.d),
 
     // to internal hardware
-    .qe     (key_intr_status_flds_we[12]),
+    .qe     (),
     .q      (),
-    .ds     (aon_key_intr_status_ec_rst_l_l2h_ds_int),
+    .ds     (),
 
     // to register interface (read)
-    .qs     (aon_key_intr_status_ec_rst_l_l2h_qs_int)
+    .qs     (key_intr_status_ec_rst_l_l2h_qs)
   );
 
   //   F[flash_wp_l_l2h]: 13:13
@@ -6700,24 +6533,24 @@ module sysrst_ctrl_reg_top (
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_key_intr_status_flash_wp_l_l2h (
-    .clk_i   (clk_aon_i),
-    .rst_ni  (rst_aon_ni),
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (aon_key_intr_status_we),
-    .wd     (aon_key_intr_status_wdata[13]),
+    .we     (key_intr_status_we),
+    .wd     (key_intr_status_flash_wp_l_l2h_wd),
 
     // from internal hardware
     .de     (hw2reg.key_intr_status.flash_wp_l_l2h.de),
     .d      (hw2reg.key_intr_status.flash_wp_l_l2h.d),
 
     // to internal hardware
-    .qe     (key_intr_status_flds_we[13]),
+    .qe     (),
     .q      (),
-    .ds     (aon_key_intr_status_flash_wp_l_l2h_ds_int),
+    .ds     (),
 
     // to register interface (read)
-    .qs     (aon_key_intr_status_flash_wp_l_l2h_qs_int)
+    .qs     (key_intr_status_flash_wp_l_l2h_qs)
   );
 
 
@@ -6848,6 +6681,7 @@ module sysrst_ctrl_reg_top (
 
   assign ulp_status_we = addr_hit[10] & reg_we & !reg_error;
 
+  assign ulp_status_wd = reg_wdata[0];
   assign wkup_status_we = addr_hit[11] & reg_we & !reg_error;
 
   assign key_invert_ctl_we = addr_hit[12] & reg_we & !reg_error;
@@ -7011,24 +6845,42 @@ module sysrst_ctrl_reg_top (
 
   assign combo_intr_status_we = addr_hit[41] & reg_we & !reg_error;
 
+  assign combo_intr_status_combo0_h2l_wd = reg_wdata[0];
 
+  assign combo_intr_status_combo1_h2l_wd = reg_wdata[1];
 
+  assign combo_intr_status_combo2_h2l_wd = reg_wdata[2];
 
+  assign combo_intr_status_combo3_h2l_wd = reg_wdata[3];
   assign key_intr_status_we = addr_hit[42] & reg_we & !reg_error;
 
+  assign key_intr_status_pwrb_h2l_wd = reg_wdata[0];
 
+  assign key_intr_status_key0_in_h2l_wd = reg_wdata[1];
 
+  assign key_intr_status_key1_in_h2l_wd = reg_wdata[2];
 
+  assign key_intr_status_key2_in_h2l_wd = reg_wdata[3];
 
+  assign key_intr_status_ac_present_h2l_wd = reg_wdata[4];
 
+  assign key_intr_status_ec_rst_l_h2l_wd = reg_wdata[5];
 
+  assign key_intr_status_flash_wp_l_h2l_wd = reg_wdata[6];
 
+  assign key_intr_status_pwrb_l2h_wd = reg_wdata[7];
 
+  assign key_intr_status_key0_in_l2h_wd = reg_wdata[8];
 
+  assign key_intr_status_key1_in_l2h_wd = reg_wdata[9];
 
+  assign key_intr_status_key2_in_l2h_wd = reg_wdata[10];
 
+  assign key_intr_status_ac_present_l2h_wd = reg_wdata[11];
 
+  assign key_intr_status_ec_rst_l_l2h_wd = reg_wdata[12];
 
+  assign key_intr_status_flash_wp_l_l2h_wd = reg_wdata[13];
 
   // Assign write-enables to checker logic vector.
   always_comb begin
@@ -7118,8 +6970,9 @@ module sysrst_ctrl_reg_top (
         reg_rdata_next = DW'(ulp_ctl_qs);
       end
       addr_hit[10]: begin
-        reg_rdata_next = DW'(ulp_status_qs);
+        reg_rdata_next[0] = ulp_status_qs;
       end
+
       addr_hit[11]: begin
         reg_rdata_next = DW'(wkup_status_qs);
       end
@@ -7219,11 +7072,29 @@ module sysrst_ctrl_reg_top (
         reg_rdata_next = DW'(com_out_ctl_3_qs);
       end
       addr_hit[41]: begin
-        reg_rdata_next = DW'(combo_intr_status_qs);
+        reg_rdata_next[0] = combo_intr_status_combo0_h2l_qs;
+        reg_rdata_next[1] = combo_intr_status_combo1_h2l_qs;
+        reg_rdata_next[2] = combo_intr_status_combo2_h2l_qs;
+        reg_rdata_next[3] = combo_intr_status_combo3_h2l_qs;
       end
+
       addr_hit[42]: begin
-        reg_rdata_next = DW'(key_intr_status_qs);
+        reg_rdata_next[0] = key_intr_status_pwrb_h2l_qs;
+        reg_rdata_next[1] = key_intr_status_key0_in_h2l_qs;
+        reg_rdata_next[2] = key_intr_status_key1_in_h2l_qs;
+        reg_rdata_next[3] = key_intr_status_key2_in_h2l_qs;
+        reg_rdata_next[4] = key_intr_status_ac_present_h2l_qs;
+        reg_rdata_next[5] = key_intr_status_ec_rst_l_h2l_qs;
+        reg_rdata_next[6] = key_intr_status_flash_wp_l_h2l_qs;
+        reg_rdata_next[7] = key_intr_status_pwrb_l2h_qs;
+        reg_rdata_next[8] = key_intr_status_key0_in_l2h_qs;
+        reg_rdata_next[9] = key_intr_status_key1_in_l2h_qs;
+        reg_rdata_next[10] = key_intr_status_key2_in_l2h_qs;
+        reg_rdata_next[11] = key_intr_status_ac_present_l2h_qs;
+        reg_rdata_next[12] = key_intr_status_ec_rst_l_l2h_qs;
+        reg_rdata_next[13] = key_intr_status_flash_wp_l_l2h_qs;
       end
+
       default: begin
         reg_rdata_next = '1;
       end
@@ -7254,9 +7125,6 @@ module sysrst_ctrl_reg_top (
       end
       addr_hit[9]: begin
         reg_busy_sel = ulp_ctl_busy;
-      end
-      addr_hit[10]: begin
-        reg_busy_sel = ulp_status_busy;
       end
       addr_hit[11]: begin
         reg_busy_sel = wkup_status_busy;
@@ -7344,12 +7212,6 @@ module sysrst_ctrl_reg_top (
       end
       addr_hit[40]: begin
         reg_busy_sel = com_out_ctl_3_busy;
-      end
-      addr_hit[41]: begin
-        reg_busy_sel = combo_intr_status_busy;
-      end
-      addr_hit[42]: begin
-        reg_busy_sel = key_intr_status_busy;
       end
       default: begin
         reg_busy_sel  = '0;

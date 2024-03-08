@@ -7,6 +7,7 @@
 `include "prim_assert.sv"
 
 module sysrst_ctrl
+  import sysrst_ctrl_pkg::*;
   import sysrst_ctrl_reg_pkg::*;
 #(
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
@@ -174,7 +175,7 @@ module sysrst_ctrl
   // This module runs on the AON clock entirely.
   // Hence, its local signals are not prefixed with aon_*.
   logic aon_z3_wakeup_hw;
-  logic aon_ulp_wakeup_pulse_int;
+  logic aon_ulp_wakeup_pulse;
   sysrst_ctrl_ulp u_sysrst_ctrl_ulp (
     .clk_i(clk_aon_i),
     .rst_ni(rst_aon_ni),
@@ -187,9 +188,8 @@ module sysrst_ctrl
     .ulp_lid_debounce_ctl_i(reg2hw.ulp_lid_debounce_ctl),
     .ulp_pwrb_debounce_ctl_i(reg2hw.ulp_pwrb_debounce_ctl),
     .ulp_ctl_i(reg2hw.ulp_ctl),
-    .ulp_status_o(hw2reg.ulp_status),
     // wakeup pulses on AON clock
-    .ulp_wakeup_pulse_o(aon_ulp_wakeup_pulse_int),
+    .ulp_wakeup_pulse_o(aon_ulp_wakeup_pulse),
     .z3_wakeup_hw_o(aon_z3_wakeup_hw)
   );
 
@@ -199,7 +199,7 @@ module sysrst_ctrl
 
   // This module runs on the AON clock entirely.
   // Hence, its local signals are not prefixed with aon_*.
-  logic aon_sysrst_ctrl_key_intr;
+  logic [NumKeyIntr-1:0] aon_l2h_key_intr, aon_h2l_key_intr;
   sysrst_ctrl_keyintr u_sysrst_ctrl_keyintr (
     .clk_i(clk_aon_i),
     .rst_ni(rst_aon_ni),
@@ -214,9 +214,9 @@ module sysrst_ctrl
     // CSRs synced to AON clock
     .key_intr_ctl_i(reg2hw.key_intr_ctl),
     .key_intr_debounce_ctl_i(reg2hw.key_intr_debounce_ctl),
-    .key_intr_status_o(hw2reg.key_intr_status),
     // IRQ running on AON clock
-    .sysrst_ctrl_key_intr_o(aon_sysrst_ctrl_key_intr)
+    .l2h_key_intr_o(aon_l2h_key_intr),
+    .h2l_key_intr_o(aon_h2l_key_intr)
   );
 
   /////////////////////
@@ -225,7 +225,8 @@ module sysrst_ctrl
 
   // This module runs on the AON clock entirely.
   // Hence, its local signals are not prefixed with aon_*.
-  logic aon_sysrst_ctrl_combo_intr, aon_bat_disable_hw, aon_ec_rst_l_hw;
+  logic [NumCombo-1:0] aon_combo_intr;
+  logic aon_bat_disable_hw, aon_ec_rst_l_hw;
   sysrst_ctrl_combo u_sysrst_ctrl_combo (
     .clk_i(clk_aon_i),
     .rst_ni(rst_aon_ni),
@@ -244,9 +245,8 @@ module sysrst_ctrl
     .com_sel_ctl_i(reg2hw.com_sel_ctl),
     .com_det_ctl_i(reg2hw.com_det_ctl),
     .com_out_ctl_i(reg2hw.com_out_ctl),
-    .combo_intr_status_o(hw2reg.combo_intr_status),
     // Output signals on AON clock
-    .sysrst_ctrl_combo_intr_o(aon_sysrst_ctrl_combo_intr),
+    .combo_intr_o(aon_combo_intr),
     .bat_disable_hw_o(aon_bat_disable_hw),
     .rst_req_o(rst_req_o),
     .ec_rst_l_hw_o(aon_ec_rst_l_hw)
@@ -324,55 +324,26 @@ module sysrst_ctrl
   // Interrupt agreggation //
   ///////////////////////////
 
-  // OT wakeup signal to pwrmgr, CSRs and signals on AON domain (see #6323)
-  logic aon_intr_event_pulse;
-  assign aon_intr_event_pulse = aon_ulp_wakeup_pulse_int ||
-                                aon_sysrst_ctrl_combo_intr ||
-                                aon_sysrst_ctrl_key_intr;
-  assign hw2reg.wkup_status.de = aon_intr_event_pulse;
-  assign hw2reg.wkup_status.d = 1'b1;
-  assign wkup_req_o = reg2hw.wkup_status.q;
-
-  logic aon_intr_req, aon_intr_ack;
-  always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin : p_intr_req_hold_reg
-    if(~rst_aon_ni) begin
-      aon_intr_req <= 1'b0;
-    end else begin
-      // A new interrupt event has priority over the acknowledge pulse.
-      aon_intr_req <= (aon_intr_req && !aon_intr_ack) || aon_intr_event_pulse;
-    end
-  end
-
-  // This synchronizes over a pulse if there is a pending request.
-  // If the main bus clock is not active, this will stall the synchronization until
-  // the clock becomes live again so that no interrupt requests are missed.
-  logic intr_event_pulse;
-  prim_sync_reqack u_prim_sync_reqack (
-    .clk_src_i(clk_aon_i),
-    .rst_src_ni(rst_aon_ni),
-    .clk_dst_i(clk_i),
-    .rst_dst_ni(rst_ni),
-    .req_chk_i(1'b1),
-    .src_req_i(aon_intr_req),
-    .src_ack_o(aon_intr_ack),
-    .dst_req_o(intr_event_pulse),
-    .dst_ack_i(intr_event_pulse)
-  );
-
-  // Instantiate the interrupt module
-  prim_intr_hw #(
-    .Width(1)
-  ) u_prim_intr_hw (
+  sysrst_ctrl_intr u_sysrst_ctrl_intr (
+    .clk_aon_i,
+    .rst_aon_ni,
     .clk_i,
     .rst_ni,
-    .event_intr_i          (intr_event_pulse),
-    .reg2hw_intr_enable_q_i(reg2hw.intr_enable.q),
-    .reg2hw_intr_test_q_i  (reg2hw.intr_test.q),
-    .reg2hw_intr_test_qe_i (reg2hw.intr_test.qe),
-    .reg2hw_intr_state_q_i (reg2hw.intr_state.q),
-    .hw2reg_intr_state_de_o(hw2reg.intr_state.de),
-    .hw2reg_intr_state_d_o (hw2reg.intr_state.d),
-    .intr_o                (intr_event_detected_o)
+    .aon_l2h_key_intr_i(aon_l2h_key_intr),
+    .aon_h2l_key_intr_i(aon_h2l_key_intr),
+    .aon_combo_intr_i(aon_combo_intr),
+    .aon_ulp_wakeup_pulse_i(aon_ulp_wakeup_pulse),
+    .wkup_status_i(reg2hw.wkup_status),
+    .intr_state_i(reg2hw.intr_state),
+    .intr_enable_i(reg2hw.intr_enable),
+    .intr_test_i(reg2hw.intr_test),
+    .wkup_status_o(hw2reg.wkup_status),
+    .intr_state_o(hw2reg.intr_state),
+    .key_intr_status_o(hw2reg.key_intr_status),
+    .combo_intr_status_o(hw2reg.combo_intr_status),
+    .ulp_status_o(hw2reg.ulp_status),
+    .intr_o(intr_event_detected_o),
+    .aon_wkup_req_o(wkup_req_o)
   );
 
   ////////////////

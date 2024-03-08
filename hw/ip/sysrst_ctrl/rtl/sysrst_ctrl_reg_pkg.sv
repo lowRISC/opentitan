@@ -8,6 +8,7 @@ package sysrst_ctrl_reg_pkg;
 
   // Param list
   parameter int NumCombo = 4;
+  parameter int NumKeyIntr = 7;
   parameter int TimerWidth = 16;
   parameter int DetTimerWidth = 32;
   parameter int NumAlerts = 1;

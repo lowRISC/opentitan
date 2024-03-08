@@ -25,9 +25,8 @@ module sysrst_ctrl_combo
   input  sysrst_ctrl_reg2hw_com_sel_ctl_mreg_t          [NumCombo-1:0] com_sel_ctl_i,
   input  sysrst_ctrl_reg2hw_com_det_ctl_mreg_t          [NumCombo-1:0] com_det_ctl_i,
   input  sysrst_ctrl_reg2hw_com_out_ctl_mreg_t          [NumCombo-1:0] com_out_ctl_i,
-  output sysrst_ctrl_hw2reg_combo_intr_status_reg_t                    combo_intr_status_o,
   // Output signals on AON clock
-  output                                                               sysrst_ctrl_combo_intr_o,
+  output [NumCombo-1:0]                                                combo_intr_o,
   output                                                               bat_disable_hw_o,
   output                                                               rst_req_o,
   output                                                               ec_rst_l_hw_o
@@ -38,7 +37,6 @@ module sysrst_ctrl_combo
   logic [NumCombo-1:0] combo_bat_disable;
   logic [NumCombo-1:0] combo_ec_rst_l;
   logic [NumCombo-1:0] combo_rst_req;
-  logic [NumCombo-1:0] combo_intr_pulse;
 
   localparam int unsigned NumInputs = 5;
   logic [NumInputs-1:0] in;
@@ -141,7 +139,7 @@ module sysrst_ctrl_combo
       .combo_det_pulse_i(combo_det_pulse),
       .ec_rst_l_i(ec_rst_l_int_i),
       .ec_rst_ctl_i(ec_rst_ctl_i),
-      .combo_intr_pulse_o(combo_intr_pulse[k]),
+      .combo_intr_pulse_o(combo_intr_o[k]),
       .bat_disable_o(combo_bat_disable[k]),
       .rst_req_o(combo_rst_req[k]),
       .ec_rst_l_o(combo_ec_rst_l[k])
@@ -155,18 +153,5 @@ module sysrst_ctrl_combo
   // If any combo triggers OT or EC RST(active low), assert the signal
   assign rst_req_o = |(combo_rst_req);
   assign ec_rst_l_hw_o = &(combo_ec_rst_l);
-
-  // Write interrupt status registers using the synced IRQ pulses.
-  assign {combo_intr_status_o.combo3_h2l.de,
-          combo_intr_status_o.combo2_h2l.de,
-          combo_intr_status_o.combo1_h2l.de,
-          combo_intr_status_o.combo0_h2l.de} = combo_intr_pulse;
-
-  assign sysrst_ctrl_combo_intr_o = |combo_intr_pulse;
-
-  assign combo_intr_status_o.combo0_h2l.d = 1'b1;
-  assign combo_intr_status_o.combo1_h2l.d = 1'b1;
-  assign combo_intr_status_o.combo2_h2l.d = 1'b1;
-  assign combo_intr_status_o.combo3_h2l.d = 1'b1;
 
 endmodule
