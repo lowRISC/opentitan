@@ -592,6 +592,7 @@ cc_library(
     name = "sigverify_key_types",
     hdrs = ["sigverify_key_types.h"],
     deps = [
+        "//sw/lib/sw/device/silicon_creator/sigverify:ecdsa_p256_key",
         "//sw/lib/sw/device/silicon_creator/sigverify:rsa_key",
         "//sw/lib/sw/device/silicon_creator/sigverify:spx_key",
     ],

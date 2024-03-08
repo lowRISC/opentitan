@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "sw/lib/sw/device/silicon_creator/sigverify/ecdsa_p256_key.h"
 #include "sw/lib/sw/device/silicon_creator/sigverify/rsa_key.h"
 #include "sw/lib/sw/device/silicon_creator/sigverify/spx_key.h"
 
@@ -73,6 +74,52 @@ typedef struct sigverify_rom_key_header {
 OT_ASSERT_MEMBER_OFFSET(sigverify_rom_key_header_t, key_type, 0);
 OT_ASSERT_MEMBER_OFFSET(sigverify_rom_key_header_t, key_id, 4);
 OT_ASSERT_SIZE(sigverify_rom_key_header_t, 8);
+
+/**
+ * An ECDSA P256 public key stored in ROM.
+ *
+ * This struct must start with the common initial sequence
+ * `sigverify_rom_key_header_t`.
+ *
+ */
+typedef struct sigverify_rom_ecdsa_p256_key_entry {
+  /**
+   * Type of the key.
+   */
+  sigverify_key_type_t key_type;
+  /**
+   * An ECDSA P256 public key.
+   */
+  sigverify_ecdsa_p256_buffer_t key;
+} sigverify_rom_ecdsa_p256_key_entry_t;
+OT_ASSERT_MEMBER_OFFSET(sigverify_rom_ecdsa_p256_key_entry_t, key_type, 0);
+OT_ASSERT_MEMBER_OFFSET(sigverify_rom_ecdsa_p256_key_entry_t, key.data[0], 4);
+static_assert(offsetof(sigverify_rom_key_header_t, key_type) ==
+                  offsetof(sigverify_rom_ecdsa_p256_key_entry_t, key_type),
+              "Invalid key_type offset.");
+static_assert(offsetof(sigverify_rom_key_header_t, key_id) ==
+                  offsetof(sigverify_rom_ecdsa_p256_key_entry_t, key.data[0]),
+              "Invalid key_id offset.");
+
+/**
+ * Union type to inspect the common initial sequence of ECDSA P256 public keys
+ *
+ */
+typedef union sigverify_rom_ecdsa_p256_key {
+  /**
+   * Common initial sequence.
+   */
+  sigverify_rom_key_header_t key_header;
+  /**
+   * Actual ECDSA P256 public key entry.
+   */
+  sigverify_rom_ecdsa_p256_key_entry_t entry;
+} sigverify_rom_ecdsa_p256_key_t;
+
+static_assert(sizeof(sigverify_rom_ecdsa_p256_key_entry_t) ==
+                  sizeof(sigverify_rom_ecdsa_p256_key_t),
+              "Size of an ECDSA P256 public key entry must be equal to the "
+              "size of a key");
 
 /**
  * An RSA public key stored in ROM.
