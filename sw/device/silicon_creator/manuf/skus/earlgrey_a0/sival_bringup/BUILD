@@ -2,10 +2,6 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
-load("//rules:const.bzl", "CONST", "hex")
-load("//rules:manifest.bzl", "manifest")
-load("//rules:signing.bzl", "offline_presigning_artifacts", "offline_signature_attach")
 load(
     "//rules/opentitan:defs.bzl",
     "cw310_params",
@@ -309,46 +305,4 @@ opentitan_test(
         test_cmd = _FT_PROVISIONING_CMD_ARGS,
         test_harness = "//sw/host/tests/manuf/provisioning/ft",
     ),
-)
-
-manifest(d = {
-    "name": "manifest",
-    "address_translation": hex(CONST.HARDENED_FALSE),
-    "identifier": hex(CONST.ROM_EXT),
-    "visibility": ["//visibility:private"],
-})
-
-offline_presigning_artifacts(
-    name = "presigning",
-    testonly = True,
-    srcs = [
-        ":ft_personalize_1",
-        ":ft_personalize_2",
-        ":ft_personalize_3",
-    ],
-    manifest = ":manifest",
-    rsa_key = {
-        "//sw/device/silicon_creator/rom/keys/real/rsa:keyset": "earlgrey_a0_prod_0",
-    },
-    tags = ["manual"],
-)
-
-pkg_tar(
-    name = "digests",
-    testonly = True,
-    srcs = [":presigning"],
-    mode = "0644",
-    tags = ["manual"],
-)
-
-offline_signature_attach(
-    name = "signed",
-    testonly = True,
-    srcs = [
-        ":presigning",
-    ],
-    rsa_signatures = [
-        "//sw/device/silicon_creator/manuf/skus/earlgrey_a0/sival_bringup/signatures:rsa_signatures",
-    ],
-    tags = ["manual"],
 )

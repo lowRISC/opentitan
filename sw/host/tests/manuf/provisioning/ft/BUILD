@@ -17,10 +17,9 @@ rust_binary(
     testonly = True,
     srcs = ["src/main.rs"],
     data = [
+        "//sw/device/silicon_creator/manuf/skus/earlgrey_a0/sival_bringup:ft_personalize_1",
+        "//sw/device/silicon_creator/manuf/skus/earlgrey_a0/sival_bringup:ft_personalize_3",
         "//sw/device/silicon_creator/manuf/skus/earlgrey_a0/sival_bringup:sram_ft_individualize_all",
-        "//sw/device/silicon_creator/manuf/skus/earlgrey_a0/sival_bringup/binaries:ft_personalize_1_prod_signed",
-        "//sw/device/silicon_creator/manuf/skus/earlgrey_a0/sival_bringup/binaries:ft_personalize_2_prod_signed",
-        "//sw/device/silicon_creator/manuf/skus/earlgrey_a0/sival_bringup/binaries:ft_personalize_3_prod_signed",
     ] + FT_PERSONALIZE_KEYS,
     deps = [
         "//sw/host/opentitanlib",
