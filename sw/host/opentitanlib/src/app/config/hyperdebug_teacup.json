@@ -100,11 +100,11 @@
     },
     {
       "name": "IOB11",
-      "alias_of": "CN9_19"
+      "alias_of": "CN9_21"
     },
     {
       "name": "IOB12",
-      "alias_of": "CN9_21"
+      "alias_of": "CN9_19"
     },
     {
       "name": "IOC0",
