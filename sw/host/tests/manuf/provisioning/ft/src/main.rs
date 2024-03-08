@@ -82,10 +82,6 @@ struct Opts {
     #[command(flatten)]
     provisioning_data: ManufFtProvisioningDataInput,
 
-    /// Second personalization binary to bootstrap.
-    #[arg(long)]
-    second_bootstrap: PathBuf,
-
     /// Third personalization binary to bootstrap.
     #[arg(long)]
     third_bootstrap: PathBuf,
@@ -206,7 +202,6 @@ fn main() -> Result<()> {
     run_ft_personalize(
         &transport,
         &opts.init,
-        opts.second_bootstrap,
         opts.third_bootstrap,
         opts.provisioning_data.host_ecc_sk,
         opts.provisioning_data.cert_endorsement_ecc_sk,
