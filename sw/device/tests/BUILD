@@ -5105,7 +5105,8 @@ opentitan_test(
         test_harness = "//sw/host/tests/chip/uart:uart_tx_rx",
     ),
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_sival": None,
+        # FIXME has some flaky behaviour.
+        "//hw/top_earlgrey:fpga_cw310_sival": "broken",
         # FIXME broken in sival ROM_EXT, change this line when fixed. See #21706.
         "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
         "//hw/top_earlgrey:silicon_creator": None,
