@@ -125,6 +125,10 @@
       name: usbdev_in_stall
       uvm_test_seq: usbdev_in_stall_vseq
     }
+    {
+      name: in_iso
+      uvm_test_seq: usbdev_in_iso_vseq
+    }
   ]
 
   // List of regressions.
