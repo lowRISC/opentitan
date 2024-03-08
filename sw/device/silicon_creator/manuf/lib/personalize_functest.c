@@ -117,14 +117,14 @@ bool test_main(void) {
       // Wait for host ECC pubkey, used to generate a shared AES key to export
       // the RMA unlock token, to arrive over the console.
       LOG_INFO("Ready to receive host ECC pubkey ...");
-      manuf_rma_token_perso_data_in_t in_data;
+      ecc_p256_public_key_t host_ecc_pk;
       CHECK_STATUS_OK(
-          ujson_deserialize_manuf_rma_token_perso_data_in_t(&uj, &in_data));
+          ujson_deserialize_ecc_p256_public_key_t(&uj, &host_ecc_pk));
 
       // Perform OTP and flash info writes.
       LOG_INFO("Provisioning OTP SECRET2 flash info pages 1, 2, & 4 ...");
       CHECK_STATUS_OK(manuf_personalize_device_secrets(
-          &flash_state, &lc_ctrl, &otp_ctrl, &in_data, out_data));
+          &flash_state, &lc_ctrl, &otp_ctrl, &host_ecc_pk, out_data));
 
       // Read the attestation key seed fields to ensure they are non-zero.
       uint32_t uds_attestation_key_seed[kAttestationSeedWords];
