@@ -40,8 +40,7 @@ UJSON_SERDE_STRUCT(ManufFtIndividualizeData, \
 // clang-format on
 
 /**
- * Ephemeral HSM ECC public key used to derive ECDH shared secret key for
- * wrapping the RMA unlock token.
+ * ECC P256 public key.
  */
 // clang-format off
 #define STRUCT_ECC_P256_PUBLIC_KEY(field, string) \
@@ -50,17 +49,6 @@ UJSON_SERDE_STRUCT(ManufFtIndividualizeData, \
 UJSON_SERDE_STRUCT(EccP256PublicKey, \
                    ecc_p256_public_key_t, \
                    STRUCT_ECC_P256_PUBLIC_KEY);
-// clang-format on
-
-/**
- * Data imported during device RMA token personalization.
- */
-// clang-format off
-#define STRUCT_MANUF_RMA_TOKEN_PERSO_DATA_IN(field, string) \
-    field(host_pk, ecc_p256_public_key_t)
-UJSON_SERDE_STRUCT(ManufRmaTokenPersoDataIn, \
-                   manuf_rma_token_perso_data_in_t, \
-                   STRUCT_MANUF_RMA_TOKEN_PERSO_DATA_IN);
 // clang-format on
 
 /**
