@@ -82,6 +82,7 @@ class usbdev_smoke_vseq extends usbdev_base_vseq;
     $cast(response, m_response_item);
     `DV_CHECK_EQ(response.m_pkt_type, PktTypeData);
     $cast(in_data, response);
+    recover_orig_data(in_data.data, in_data.data);
     check_tx_packet(in_data, PidTypeData1, exp_data);
     cfg.clk_rst_vif.wait_clks(20);
     call_handshake_sequence(PktTypeHandshake, PidTypeAck);
