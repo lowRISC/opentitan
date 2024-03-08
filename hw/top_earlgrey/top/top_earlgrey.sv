@@ -2193,7 +2193,7 @@ module top_earlgrey #(
       .reg_req_t(reg_req_t),
       .reg_rsp_t(reg_rsp_t),
       .AxiAddrWidth(AxiAddrWidth),
-      .AxiDataWidth(64),
+      .AxiDataWidth(AxiDataWidth),
       .AxiIdWidth(AxiIdWidth),
       .AxiUserWidth(AxiUserWidth)
   ) idma_wrap_i (

@@ -6,7 +6,7 @@
 
 #define IDMA_BASE 		 0xfef00000
 #define TCDM_BASE      0xfff00000
-#define L2_BASE        0x78010000
+#define L2_BASE        0x78000000
 #define L3_BASE        0x80000000
 
 #define IDMA_SRC_ADDR_OFFSET         0x00
