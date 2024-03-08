@@ -185,7 +185,7 @@ static void aes_key_mask_and_config(const uint8_t *key, size_t key_len) {
     key_shares.share0[i] = *((uint32_t *)key + i) ^ key_shares.share1[i];
   }
   // Provide random shares for unused key bits.
-  for (size_t i = key_len; i < kAesKeyLengthMax / 4; ++i) {
+  for (size_t i = key_len / 4; i < kAesKeyLengthMax / 4; ++i) {
     key_shares.share1[i] =
         sca_non_linear_layer(sca_next_lfsr(1, kScaLfsrMasking));
     key_shares.share0[i] =
