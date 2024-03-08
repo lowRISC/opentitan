@@ -412,8 +412,8 @@ fn test_bootstrap_phase1_erase(
     // Remove strapping so that chip fails to boot instead of going into bootstrap.
     transport.pin_strapping("ROM_BOOTSTRAP")?.remove()?;
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
-    // `kErrorBootPolicyBadLength` (0242500d) is defined in `error.h`.
-    console.exit_success = Some(Regex::new("BFV:0242500d")?);
+    // `kErrorManifestBadVersionMajor` (054d410d) is defined in `error.h`.
+    console.exit_success = Some(Regex::new("BFV:054d410d")?);
     let result = console.interact(&*uart, None, Some(&mut std::io::stdout()))?;
     if result != ExitStatus::ExitSuccess {
         bail!("FAIL: {:?}", result);
@@ -426,8 +426,8 @@ fn test_bootstrap_phase1_erase(
     uart.clear_rx_buffer()?;
     transport.pin_strapping("ROM_BOOTSTRAP")?.remove()?;
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
-    // `kErrorBootPolicyBadIdentifier` (0142500d) is defined in `error.h`.
-    console.exit_success = Some(Regex::new("BFV:0142500d")?);
+    // `kErrorManifestBadVersionMajor` (054d410d) is defined in `error.h`.
+    console.exit_success = Some(Regex::new("BFV:054d410d")?);
     let result = console.interact(&*uart, None, Some(&mut std::io::stdout()))?;
     if result != ExitStatus::ExitSuccess {
         bail!("FAIL: {:?}", result);
@@ -454,8 +454,8 @@ fn test_bootstrap_phase1_read(opts: &Opts, transport: &TransportWrapper) -> Resu
     // Remove strapping so that chip fails to boot instead of going into bootstrap.
     transport.pin_strapping("ROM_BOOTSTRAP")?.remove()?;
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
-    // `kErrorBootPolicyBadLength` (0242500d) is defined in `error.h`.
-    console.exit_success = Some(Regex::new("0242500d")?);
+    // `kErrorManifestBadVersionMajor` (054d410d) is defined in `error.h`.
+    console.exit_success = Some(Regex::new("BFV:054d410d")?);
     let result = console.interact(&*uart, None, Some(&mut std::io::stdout()))?;
     if result != ExitStatus::ExitSuccess {
         bail!("FAIL: {:?}", result);
@@ -518,8 +518,8 @@ fn test_bootstrap_phase2_page_program(opts: &Opts, transport: &TransportWrapper)
 
     let mut console = UartConsole {
         timeout: Some(Duration::new(1, 0)),
-        // `kErrorBootPolicyBadLength` (0242500d) is defined in `error.h`.
-        exit_success: Some(Regex::new("BFV:0242500d\r\n")?),
+        // `kErrorManifestBadVersionMajor` (054d410d) is defined in `error.h`.
+        exit_success: Some(Regex::new("BFV:054d410d\r\n")?),
         ..Default::default()
     };
     // Remove strapping so that chip fails to boot instead of going into bootstrap.
@@ -592,8 +592,8 @@ fn test_bootstrap_phase2_read(opts: &Opts, transport: &TransportWrapper) -> Resu
 
     let mut console = UartConsole {
         timeout: Some(Duration::new(1, 0)),
-        // `kErrorBootPolicyBadLength` (0242500d) is defined in `error.h`.
-        exit_success: Some(Regex::new("BFV:0242500d\r\n")?),
+        // `kErrorManifestBadVersionMajor` (054d410d) is defined in `error.h`.
+        exit_success: Some(Regex::new("BFV:054d410d\r\n")?),
         ..Default::default()
     };
     // Remove strapping so that chip fails to boot instead of going into bootstrap.
