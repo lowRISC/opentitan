@@ -271,9 +271,7 @@ virtual task configure_in_trans(bit [4:0] buffer_id);
   csr_update(ral.ep_in_enable[0]);
   // Configure IN Transaction
   ral.configin[endp].rdy.set(1'b1);
-  csr_update(ral.configin[endp]);
   ral.configin[endp].size.set(num_of_bytes);
-  csr_update(ral.configin[endp]);
   ral.configin[endp].buffer.set(buffer_id);
   csr_update(ral.configin[endp]);
 endtask
