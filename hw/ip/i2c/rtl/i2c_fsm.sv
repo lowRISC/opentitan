@@ -73,6 +73,7 @@ module i2c_fsm import i2c_pkg::*;
   input logic [6:0] target_address1_i,
   input logic [6:0] target_mask1_i,
 
+  output logic event_target_nack_o,      // this target sent a NACK (this is used to keep count)
   output logic event_nak_o,              // target didn't Ack when expected
   output logic event_scl_interference_o, // other device forcing SCL low
   output logic event_sda_interference_o, // other device forcing SDA low
@@ -518,6 +519,7 @@ module i2c_fsm import i2c_pkg::*;
     event_scl_interference_o = 1'b0;
     event_sda_unstable_o = 1'b0;
     event_cmd_complete_o = 1'b0;
+    event_target_nack_o = 1'b0;
     rw_bit = rw_bit_q;
     stretch_en = 1'b0;
     expect_stop = 1'b0;
@@ -832,6 +834,7 @@ module i2c_fsm import i2c_pkg::*;
           // complete notification from a restart or a stop. We must notify
           // software that it needs to start processing the ACQ FIFO.
           event_cmd_complete_o = 1'b1;
+          event_target_nack_o = 1'b1;
         end
       end
       // StretchAddr: target stretches the clock if matching address cannot be
@@ -881,6 +884,7 @@ module i2c_fsm import i2c_pkg::*;
         event_scl_interference_o = 1'b0;
         event_sda_unstable_o = 1'b0;
         event_cmd_complete_o = 1'b0;
+        event_target_nack_o = 1'b0;
         actively_stretching = 1'b0;
       end
     endcase // unique case (state_q)
