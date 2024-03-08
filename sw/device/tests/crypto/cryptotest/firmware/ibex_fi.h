@@ -282,7 +282,7 @@ status_t handle_ibex_fi_char_unrolled_reg_op_loop(ujson_t *uj);
  * @param uj An initialized uJSON context.
  * @return OK or error.
  */
-status_t handle_ibex_fi_init_trigger(ujson_t *uj);
+status_t handle_ibex_fi_init(ujson_t *uj);
 
 /**
  * ibex.char.register_file command handler.
