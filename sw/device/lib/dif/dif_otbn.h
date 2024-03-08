@@ -141,6 +141,30 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_otbn_get_insn_cnt(const dif_otbn_t *otbn, uint32_t *insn_cnt);
 
 /**
+ * Gets the content of the load checksum register.
+ *
+ * Gets the 32-bit CRC checksum of data written to memory.
+ *
+ * @param otbn OTBN instance.
+ * @param[out] insn_cnt The number of instructions executed by OTBN.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_otbn_get_load_checksum(const dif_otbn_t *otbn,
+                                        uint32_t *insn_cnt);
+
+/**
+ * Clears the load checksum register.
+ *
+ * Writes 0 to the load checksum register to clear it.
+ *
+ * @param otbn OTBN instance.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_otbn_clear_load_checksum(const dif_otbn_t *otbn);
+
+/**
  * Write an OTBN application into its instruction memory (IMEM).
  *
  * Only 32b-aligned 32b word accesses are allowed.
