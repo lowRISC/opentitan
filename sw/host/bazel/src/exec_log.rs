@@ -39,7 +39,7 @@ where
     pub fn from_iter(with: &'with With, iter: InnerIter) -> Self {
         IteratorViewWith {
             with,
-            iter: iter,
+            iter,
             _viewt: std::marker::PhantomData,
         }
     }
@@ -166,13 +166,13 @@ impl ExecLog {
     }
 
     pub fn iter_files(&self) -> IteratorViewWith<Self, IndexedSetIterator<File>, FileView> {
-        IteratorViewWith::from_iter(&self, self.files.iter())
+        IteratorViewWith::from_iter(self, self.files.iter())
     }
 
     pub fn iter_entries(
         &self,
     ) -> IteratorViewWith<Self, <&Vec<Entry> as IntoIterator>::IntoIter, EntryView> {
-        IteratorViewWith::from_iter(&self, self.entries.iter())
+        IteratorViewWith::from_iter(self, self.entries.iter())
     }
 
     fn add_property(&mut self, name: &String, value: &String) -> usize {
@@ -483,13 +483,13 @@ impl<'log> EntryView<'log> {
 
     pub fn env_vars(&self) -> impl Iterator<Item = PropertyView<'log>> + '_ {
         self.entry.env_vars.iter().map(|idx| {
-            PropertyView::view_from(&self.exec_log, self.exec_log.properties.get_at(*idx))
+            PropertyView::view_from(self.exec_log, self.exec_log.properties.get_at(*idx))
         })
     }
 
     pub fn platform(&self) -> impl Iterator<Item = PropertyView<'log>> + '_ {
         self.entry.platform.iter().map(|idx| {
-            PropertyView::view_from(&self.exec_log, self.exec_log.properties.get_at(*idx))
+            PropertyView::view_from(self.exec_log, self.exec_log.properties.get_at(*idx))
         })
     }
 
@@ -497,7 +497,7 @@ impl<'log> EntryView<'log> {
         self.entry
             .inputs
             .iter()
-            .map(|idx| FileView::view_from(&self.exec_log, self.exec_log.files.get_at(*idx)))
+            .map(|idx| FileView::view_from(self.exec_log, self.exec_log.files.get_at(*idx)))
     }
 
     pub fn listed_outputs(&self) -> impl Iterator<Item = &'log str> {
@@ -527,7 +527,7 @@ impl<'log> EntryView<'log> {
         self.entry
             .actual_outputs
             .iter()
-            .map(|idx| FileView::view_from(&self.exec_log, self.exec_log.files.get_at(*idx)))
+            .map(|idx| FileView::view_from(self.exec_log, self.exec_log.files.get_at(*idx)))
     }
 
     pub fn runner(&self) -> &'log str {
@@ -560,7 +560,7 @@ impl<'log> EntryView<'log> {
     pub fn digest(&self) -> Option<DigestView> {
         self.entry
             .digest
-            .map(|idx| DigestView::view_from(&self.exec_log, self.exec_log.digests.get_at(idx)))
+            .map(|idx| DigestView::view_from(self.exec_log, self.exec_log.digests.get_at(idx)))
     }
 }
 
