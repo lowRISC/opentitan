@@ -28,7 +28,7 @@ use ot_certs::template::{EcdsaSignature, Signature, Value};
 use ot_certs::x509::{generate_certificate_from_tbs, parse_certificate};
 use ujson_lib::provisioning_data::{
     EccP256PublicKey, ManufCertPersoDataIn, ManufCertPersoDataOut, ManufEndorsedCerts,
-    ManufFtIndividualizeData, ManufRmaTokenPersoDataIn, ManufRmaTokenPersoDataOut,
+    ManufFtIndividualizeData, ManufRmaTokenPersoDataOut,
 };
 
 pub fn test_unlock(
@@ -200,22 +200,20 @@ pub fn run_ft_personalize(
         .collect::<ArrayVec<u32, 8>>();
     host_pk_x.reverse();
     host_pk_y.reverse();
-    let rma_token_wrapping_keys = ManufRmaTokenPersoDataIn {
-        host_pk: EccP256PublicKey {
-            x: host_pk_x,
-            y: host_pk_y,
-        },
+    let rma_token_wrapping_pubkey = EccP256PublicKey {
+        x: host_pk_x,
+        y: host_pk_y,
     };
 
     // Get UART, set flow control, and wait for test to start running.
     uart.set_flow_control(true)?;
-    let _ = UartConsole::wait_for(&*uart, r"Waiting for FT provisioning data ...", timeout)?;
+    let _ = UartConsole::wait_for(&*uart, r"Waiting for host public key ...", timeout)?;
 
     // Send RMA token wrapping ECC keys into the device over the console.
-    rma_token_wrapping_keys.send(&*uart)?;
+    rma_token_wrapping_pubkey.send(&*uart)?;
 
     // Wait until device exports the wrapped RMA unlock token.
-    let _ = UartConsole::wait_for(&*uart, r"Exporting FT provisioning data ...", timeout)?;
+    let _ = UartConsole::wait_for(&*uart, r"Exporting RMA token ...", timeout)?;
     let rma_token_out_data = ManufRmaTokenPersoDataOut::recv(&*uart, timeout, false)?;
     log::info!("{:x?}", rma_token_out_data);
     let _ = UartConsole::wait_for(&*uart, r"PASS.*\n", timeout)?;

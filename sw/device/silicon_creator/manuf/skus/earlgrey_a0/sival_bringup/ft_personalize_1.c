@@ -27,8 +27,8 @@ static dif_lc_ctrl_t lc_ctrl;
 static dif_otp_ctrl_t otp_ctrl;
 static dif_rstmgr_t rstmgr;
 
-static manuf_rma_token_perso_data_in_t in_data;
-static manuf_rma_token_perso_data_out_t out_data;
+static ecc_p256_public_key_t host_ecc_pk;
+static manuf_rma_token_perso_data_out_t wrapped_rma_token;
 
 /**
  * Initializes all DIF handles used in this program.
@@ -55,7 +55,10 @@ static void sw_reset(void) {
   wait_for_interrupt();
 }
 
-static status_t personalize(ujson_t *uj) {
+/**
+ * Provision OTP SECRET{1,2} partitions, enable flash scrambling, and reboot.
+ */
+static status_t personalize_otp_secrets(ujson_t *uj) {
   // Provision OTP Secret1 partition, and complete provisioning of OTP
   // CreatorSwCfg partition.
   if (!status_ok(manuf_personalize_device_secret1_check(&otp_ctrl))) {
@@ -70,12 +73,13 @@ static status_t personalize(ujson_t *uj) {
 
   // Provision OTP Secret2 partition and keymgr flash info pages (1, 2, and 4).
   if (!status_ok(manuf_personalize_device_secrets_check(&otp_ctrl))) {
-    LOG_INFO("Waiting for FT provisioning data ...");
-    TRY(ujson_deserialize_manuf_rma_token_perso_data_in_t(uj, &in_data));
+    LOG_INFO("Waiting for host public key ...");
+    TRY(ujson_deserialize_ecc_p256_public_key_t(uj, &host_ecc_pk));
     TRY(manuf_personalize_device_secrets(&flash_ctrl_state, &lc_ctrl, &otp_ctrl,
-                                         &in_data, &out_data));
-    LOG_INFO("Exporting FT provisioning data ...");
-    RESP_OK(ujson_serialize_manuf_rma_token_perso_data_out_t, uj, &out_data);
+                                         &host_ecc_pk, &wrapped_rma_token));
+    LOG_INFO("Exporting RMA token ...");
+    RESP_OK(ujson_serialize_manuf_rma_token_perso_data_out_t, uj,
+            &wrapped_rma_token);
     sw_reset();
   }
 
@@ -86,6 +90,6 @@ bool test_main(void) {
   CHECK_STATUS_OK(peripheral_handles_init());
   ujson_t uj = ujson_ottf_console();
   CHECK_STATUS_OK(lc_ctrl_testutils_operational_state_check(&lc_ctrl));
-  CHECK_STATUS_OK(personalize(&uj));
+  CHECK_STATUS_OK(personalize_otp_secrets(&uj));
   return true;
 }
