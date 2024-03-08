@@ -212,7 +212,6 @@ jobs:
   timeoutInMinutes: 120
   dependsOn: sw_build
   pool: ci-public
-  condition: false
   steps:
   - template: ci/checkout-template.yml
   - template: ci/install-package-dependencies.yml
@@ -239,7 +238,6 @@ jobs:
   timeoutInMinutes: 120
   dependsOn: sw_build
   pool: ci-public
-  condition: false
   steps:
   - template: ci/checkout-template.yml
   - template: ci/install-package-dependencies.yml
