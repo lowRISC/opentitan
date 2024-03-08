@@ -157,11 +157,9 @@ pub fn test_exit(
     Ok(())
 }
 
-#[allow(clippy::too_many_arguments)]
 pub fn run_ft_personalize(
     transport: &TransportWrapper,
     init: &InitializeTest,
-    second_bootstrap: PathBuf,
     third_bootstrap: PathBuf,
     host_ecc_sk: PathBuf,
     cert_endorsement_ecc_sk: PathBuf,
@@ -174,18 +172,14 @@ pub fn run_ft_personalize(
     // FT Personalize 1                                                        |
     // -------------------------------------------------------------------------
 
-    // Bootstrap first personalization binary into flash and wait for test status pass over the UART.
+    // Bootstrap first personalization binary into flash.
     uart.clear_rx_buffer()?;
     init.bootstrap.init(transport)?;
-    let _ = UartConsole::wait_for(&*uart, r"PASS.*\n", timeout)?;
+    let _ = UartConsole::wait_for(&*uart, r"Bootstrap requested.", timeout)?;
 
-    // -------------------------------------------------------------------------
-    // FT Personalize 2                                                        |
-    // -------------------------------------------------------------------------
-
-    // Bootstrap second personalization binary into flash.
+    // Bootstrap again since the flash scrambling seeds were provisioned in the previous step.
     uart.clear_rx_buffer()?;
-    init.bootstrap.load(transport, &second_bootstrap)?;
+    init.bootstrap.init(transport)?;
 
     // Load host (HSM) generated ECC keys.
     let host_sk = SecretKey::<NistP256>::read_pkcs8_der_file(host_ecc_sk)?;

@@ -218,39 +218,18 @@ opentitan_binary(
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
     rsa_key = FT_PERSONALIZE_SIGNING_KEYS,
     deps = [
-        "//sw/device/lib/dif:lc_ctrl",
-        "//sw/device/lib/dif:otp_ctrl",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:lc_ctrl_testutils",
-        "//sw/device/lib/testing/test_framework:check",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_earlgrey_a0_sku_sival_bringup",
-        "//sw/device/silicon_creator/manuf/lib:personalize",
-    ],
-)
-
-opentitan_binary(
-    name = "ft_personalize_2",
-    testonly = True,
-    srcs = ["ft_personalize_2.c"],
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-        "//hw/top_earlgrey:silicon_creator": None,
-    },
-    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
-    rsa_key = FT_PERSONALIZE_SIGNING_KEYS,
-    deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/arch:device",
         "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/dif:lc_ctrl",
         "//sw/device/lib/dif:otp_ctrl",
+        "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:lc_ctrl_testutils",
+        "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/json:provisioning_data",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/lib/testing/test_framework:status",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_earlgrey_a0_sku_sival_bringup",
         "//sw/device/silicon_creator/manuf/lib:personalize",
     ],
 )
@@ -293,14 +272,12 @@ opentitan_binary(
 _FT_PROVISIONING_BINARIES = {
     ":sram_ft_individualize_sival_bringup": "sram_ft_individualize",
     ":ft_personalize_1": "ft_personalize_1",
-    ":ft_personalize_2": "ft_personalize_2",
     ":ft_personalize_3": "ft_personalize_3",
 }
 
 _FT_PROVISIONING_CMD_ARGS = """
   --elf={sram_ft_individualize}
   --bootstrap={ft_personalize_1}
-  --second-bootstrap={ft_personalize_2}
   --third-bootstrap={ft_personalize_3}
 """ + FT_PROVISIONING_INPUTS
 
