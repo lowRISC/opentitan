@@ -8,6 +8,7 @@ module i2c_fsm import i2c_pkg::*;
 #(
   parameter int FifoDepth = 64,
   parameter int AcqFifoDepth = 64,
+  parameter int unsigned AcqFifoWidth = 10,
   localparam int FifoDepthWidth = $clog2(FifoDepth+1),
   localparam int AcqFifoDepthWidth = $clog2(AcqFifoDepth+1)
 ) (
@@ -43,10 +44,10 @@ module i2c_fsm import i2c_pkg::*;
   input [7:0]                tx_fifo_rdata_i,  // byte in tx_fifo to be sent to host
 
   output logic                    acq_fifo_wvalid_o, // high if there is valid data in acq_fifo
-  output logic [9:0]              acq_fifo_wdata_o,  // byte and signal in acq_fifo read from target
+  output logic [AcqFifoWidth-1:0] acq_fifo_wdata_o,  // byte and signal in acq_fifo read from target
   input [AcqFifoDepthWidth-1:0]   acq_fifo_depth_i,  // fill level of acq_fifo
   output logic                    acq_fifo_wready_o, // local version of ready
-  input [9:0]                     acq_fifo_rdata_i,  // only used for assertion
+  input [AcqFifoWidth-1:0]        acq_fifo_rdata_i,  // only used for assertion
 
   output logic       host_idle_o,      // indicates the host is idle
   output logic       target_idle_o,    // indicates the target is idle
@@ -467,7 +468,7 @@ module i2c_fsm import i2c_pkg::*;
     rx_fifo_wdata_o = 8'h00;
     tx_fifo_rready_o = 1'b0;
     acq_fifo_wvalid_o = 1'b0;
-    acq_fifo_wdata_o = 10'b0;
+    acq_fifo_wdata_o = AcqFifoWidth'(0);
     event_nak_o = 1'b0;
     event_scl_interference_o = 1'b0;
     event_sda_unstable_o = 1'b0;
@@ -786,7 +787,7 @@ module i2c_fsm import i2c_pkg::*;
         rx_fifo_wdata_o = 8'h00;
         tx_fifo_rready_o = 1'b0;
         acq_fifo_wvalid_o = 1'b0;
-        acq_fifo_wdata_o = 10'b0;
+        acq_fifo_wdata_o = AcqFifoWidth'(0);
         event_nak_o = 1'b0;
         event_scl_interference_o = 1'b0;
         event_sda_unstable_o = 1'b0;

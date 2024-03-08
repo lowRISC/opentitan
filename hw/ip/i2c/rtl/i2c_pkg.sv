@@ -5,7 +5,9 @@
 // i2c package
 //
 package i2c_pkg;
-  typedef enum logic [1:0] {
+  parameter int unsigned I2C_ACQ_BYTE_ID_WIDTH = 2;
+
+  typedef enum logic [I2C_ACQ_BYTE_ID_WIDTH-1:0] {
     AcqData = 2'b00,
     AcqStart = 2'b01,
     AcqStop = 2'b10,
