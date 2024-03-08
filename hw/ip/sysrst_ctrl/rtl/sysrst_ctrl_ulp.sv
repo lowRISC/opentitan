@@ -19,7 +19,6 @@ module sysrst_ctrl_ulp
   input sysrst_ctrl_reg2hw_ulp_lid_debounce_ctl_reg_t ulp_lid_debounce_ctl_i,
   input sysrst_ctrl_reg2hw_ulp_pwrb_debounce_ctl_reg_t ulp_pwrb_debounce_ctl_i,
   input sysrst_ctrl_reg2hw_ulp_ctl_reg_t ulp_ctl_i,
-  output sysrst_ctrl_hw2reg_ulp_status_reg_t ulp_status_o,
   // Wakeup pulses on AON clock
   output ulp_wakeup_pulse_o,
   output z3_wakeup_hw_o
@@ -94,8 +93,5 @@ module sysrst_ctrl_ulp
   assign z3_wakeup_hw_o = pwrb_det |
                           lid_open_det |
                           ac_present_det;
-
-  assign ulp_status_o.d = 1'b1;
-  assign ulp_status_o.de = ulp_wakeup_pulse_o;
 
 endmodule

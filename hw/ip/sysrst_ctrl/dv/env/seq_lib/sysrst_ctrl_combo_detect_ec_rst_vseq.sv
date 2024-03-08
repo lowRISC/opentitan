@@ -71,7 +71,7 @@ class sysrst_ctrl_combo_detect_ec_rst_vseq extends sysrst_ctrl_base_vseq;
     if (wait_cycles > (debounce_timer + detect_timer)) begin
       // It takes 2-3 clock cycles to sync the interrupt value
       // Read the combo status register
-      cfg.clk_aon_rst_vif.wait_clks(2);
+      cfg.clk_aon_rst_vif.wait_clks(3);
       csr_rd_check(.ptr(ral.combo_intr_status), .compare_value(1));
 
       // Write to clear the interrupt
