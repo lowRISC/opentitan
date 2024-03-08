@@ -368,6 +368,22 @@ cc_library(
 )
 
 cc_library(
+    name = "sigverify_otp_keys",
+    srcs = ["sigverify_otp_keys.c"],
+    hdrs = ["sigverify_otp_keys.h"],
+    deps = [
+        ":sigverify_key_types",
+        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        "//sw/device/lib/base:macros",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib/drivers:hmac",
+        "//sw/device/silicon_creator/lib/drivers:lifecycle",
+        "//sw/device/silicon_creator/lib/drivers:otp",
+        "//sw/device/silicon_creator/lib/drivers:rnd",
+    ],
+)
+
+cc_library(
     name = "sigverify_key_types",
     hdrs = ["sigverify_key_types.h"],
     deps = [
