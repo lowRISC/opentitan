@@ -54,6 +54,25 @@ enum {
 };
 
 /**
+ * SPX configuration ID.
+ *
+ * Used to identify the SPX parameter confuration used to sign/verify a message.
+ */
+typedef enum sigverify_spx_config_id {
+  /**SPHINCS+-SHAKE-128s*/
+  kSigverifySpxConfigRegular = 0,
+  /**
+   * SPHINCS+-SHAKE-128s-q20
+   *
+   * As specified in https://eprint.iacr.org/2022/1725.pdf.
+   *
+   * n  | h  | d | b  | k | w  | bitsec | sigsize
+   * 16 | 18 | 1 | 24 | 6 | 16 |   128  | 3264
+   */
+  kSigverifySpxConfigQ20 = 1,
+} sigverify_spx_config_id_t;
+
+/**
  * An SPX signature.
  */
 typedef struct sigverify_spx_signature {

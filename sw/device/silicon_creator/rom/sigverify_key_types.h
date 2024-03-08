@@ -180,6 +180,10 @@ typedef struct sigverify_rom_spx_key_entry {
    * An SPX public key.
    */
   sigverify_spx_key_t key;
+  /**
+   * Parameter configuration ID for the SPX key.
+   */
+  sigverify_spx_config_id_t config_id;
 } sigverify_rom_spx_key_entry_t;
 
 OT_ASSERT_MEMBER_OFFSET(sigverify_rom_spx_key_entry_t, key_type, 0);
