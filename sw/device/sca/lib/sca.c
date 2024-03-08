@@ -317,7 +317,7 @@ void sca_seed_lfsr(uint32_t seed, sca_lfsr_context_t context) {
     sca_lfsr_state_masking = seed;
   }
   if (context == kScaLfsrOrder) {
-    sca_lfsr_state_masking = seed;
+    sca_lfsr_state_order = seed;
   }
 }
 
