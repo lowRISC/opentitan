@@ -57,18 +57,18 @@ UJSON_SERDE_STRUCT(EccP256PublicKey, \
  * The RMA unlock token is encrypted with AES-ECB using an ECDH emphemeral key.
  * The key wrapping process works as follows:
  *
- * - An HSM generates an ECDH-P256 keypair (`sk_hsm`, `pk_hsm`), where the
- *   public component, `pk_hsm`, is baked into the provisioning test program.
- * - During provisioning, the device generates an additional ECDH-P256 keypair
+ * - The host generates an ECDH-P256 keypair (`sk_host`, `pk_host`), where the
+ *   public component, `pk_host`, is sent to the device over the console.
+ * - During provisioning, the device generates its own ECDH-P256 keypair
  *   (`sk_device`, `pk_device`).
- * - The device then generates an emphemeral shared AES key (`k_shared`) using
- *   `sk_device` and `pk_hsm`.
+ * - The device then generates an emphemeral, shared, AES key (`k_shared`) using
+ *   `sk_device` and `pk_host`.
  * - The device encrypts the raw RMA unlock token using AES and the shared
  *   secret key, `k_shared`.
  * - The device transmits the encrypted RMA unlock token, along with the
  *   device-generated `pk_device`, to the host (e.g. ATE), allowing the RMA
  *   unlock token to be decrypted using the shared secret (`k_shared`) derived
- *   by the HSM.
+ *   by the host.
  */
 // clang-format off
 #define STRUCT_WRAPPED_RMA_UNLOCK_TOKEN(field, string) \
@@ -77,17 +77,6 @@ UJSON_SERDE_STRUCT(EccP256PublicKey, \
 UJSON_SERDE_STRUCT(WrappedRmaUnlockToken, \
                    wrapped_rma_unlock_token_t, \
                    STRUCT_WRAPPED_RMA_UNLOCK_TOKEN);
-// clang-format on
-
-/**
- * Data exported during device RMA token personalization.
- */
-// clang-format off
-#define STRUCT_MANUF_RMA_TOKEN_PERSO_DATA_OUT(field, string) \
-    field(wrapped_rma_unlock_token, wrapped_rma_unlock_token_t)
-UJSON_SERDE_STRUCT(ManufRmaTokenPersoDataOut, \
-                   manuf_rma_token_perso_data_out_t, \
-                   STRUCT_MANUF_RMA_TOKEN_PERSO_DATA_OUT);
 // clang-format on
 
 /**
