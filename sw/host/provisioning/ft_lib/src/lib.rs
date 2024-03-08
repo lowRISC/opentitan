@@ -28,7 +28,7 @@ use ot_certs::template::{EcdsaSignature, Signature, Value};
 use ot_certs::x509::{generate_certificate_from_tbs, parse_certificate};
 use ujson_lib::provisioning_data::{
     EccP256PublicKey, ManufCertPersoDataIn, ManufCertPersoDataOut, ManufEndorsedCerts,
-    ManufFtIndividualizeData, ManufRmaTokenPersoDataOut,
+    ManufFtIndividualizeData, WrappedRmaUnlockToken,
 };
 
 pub fn test_unlock(
@@ -214,7 +214,7 @@ pub fn run_ft_personalize(
 
     // Wait until device exports the wrapped RMA unlock token.
     let _ = UartConsole::wait_for(&*uart, r"Exporting RMA token ...", timeout)?;
-    let rma_token_out_data = ManufRmaTokenPersoDataOut::recv(&*uart, timeout, false)?;
+    let rma_token_out_data = WrappedRmaUnlockToken::recv(&*uart, timeout, false)?;
     log::info!("{:x?}", rma_token_out_data);
     let _ = UartConsole::wait_for(&*uart, r"PASS.*\n", timeout)?;
 
