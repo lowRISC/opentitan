@@ -82,6 +82,11 @@ def _chip_info_src(ctx):
         stamp_files = [ctx.version_file]
         stamp_args.append("--ot_version_file")
         stamp_args.append(ctx.version_file.path)
+    else:
+        print("NOTE: stamping is disabled, the chip_info section will use a fixed version string")
+        stamp_args.append("--default_version")
+        # The script expects a 20-character long hash: "OpenTitanOpenTitanOT"
+        stamp_args.append("4f70656e546974616e4f70656e546974616e4f54")
 
     out_source = ctx.actions.declare_file("chip_info.c")
     ctx.actions.run(
@@ -110,7 +115,7 @@ autogen_chip_info_src = rule(
             executable = True,
             cfg = "exec",
         ),
-    } | stamp_attr(1, "//rules:stamp_flag"),
+    } | stamp_attr(-1, "//rules:stamp_flag"),
 )
 
 def autogen_chip_info(name):

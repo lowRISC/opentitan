@@ -45,7 +45,7 @@ const chip_info_t kChipInfo = {{
 """
 
 
-def read_version_file(version_info_path) -> int:
+def read_version_file(version_info_path, default_version) -> int:
     """
     Search for the scm revision variable and interprets
     the contents as a big-endian hex literal. Return an error
@@ -53,7 +53,7 @@ def read_version_file(version_info_path) -> int:
     """
 
     version_info = version_file.VersionInformation(version_info_path)
-    version = version_info.scm_revision("")
+    version = version_info.scm_revision(default_version)
     return int(version, base=16)
 
 
@@ -81,11 +81,14 @@ def main():
     parser.add_argument('--ot_version_file',
                         type=Path,
                         help='Path to a file with the OpenTitan Version')
+    parser.add_argument('--default_version',
+                        type=str,
+                        help='Version to use if the version file does not indicate a version')
 
     args = parser.parse_args()
 
     # Extract version stamp from file
-    version = read_version_file(args.ot_version_file)
+    version = read_version_file(args.ot_version_file, args.default_version)
     log.info("Version: %x" % (version, ))
 
     generated_source = generate_chip_info_c_source(version)
