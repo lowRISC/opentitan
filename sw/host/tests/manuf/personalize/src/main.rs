@@ -26,7 +26,7 @@ use opentitanlib::test_utils::rpc::{UartRecv, UartSend};
 use opentitanlib::uart::console::UartConsole;
 
 mod provisioning_data;
-use provisioning_data::{EccP256PublicKey, ManufRmaTokenPersoDataOut};
+use provisioning_data::{EccP256PublicKey, WrappedRmaUnlockToken};
 
 #[derive(Debug, Parser)]
 struct Opts {
@@ -90,15 +90,15 @@ fn rma_unlock_token_export(opts: &Opts, transport: &TransportWrapper) -> Result<
 
     // Wait for output data to be transimitted over the console.
     let _ = UartConsole::wait_for(&*uart, r"Exporting RMA unlock token ...", opts.timeout)?;
-    let export_data = ManufRmaTokenPersoDataOut::recv(&*uart, opts.timeout, false)?;
-    log::info!("{:x?}", export_data);
+    let wrapped_rma_token = WrappedRmaUnlockToken::recv(&*uart, opts.timeout, false)?;
+    log::info!("{:x?}", wrapped_rma_token);
 
     // Load device-generated EC public key.
     let mut device_pk_sec1_bytes = Vec::new();
-    for key_word in &export_data.wrapped_rma_unlock_token.device_pk.y {
+    for key_word in &wrapped_rma_token.device_pk.y {
         device_pk_sec1_bytes.extend(&key_word.to_le_bytes());
     }
-    for key_word in &export_data.wrapped_rma_unlock_token.device_pk.x {
+    for key_word in &wrapped_rma_token.device_pk.x {
         device_pk_sec1_bytes.extend(&key_word.to_le_bytes());
     }
     device_pk_sec1_bytes.push(0x04); // This indicates the EC public key is not compressed.
@@ -113,7 +113,7 @@ fn rma_unlock_token_export(opts: &Opts, transport: &TransportWrapper) -> Result<
 
     // Load encrypted RMA unlock token into a GenericArray.
     let mut ciphertext = Vec::new();
-    for ciphertext_word in export_data.wrapped_rma_unlock_token.data {
+    for ciphertext_word in wrapped_rma_token.data {
         ciphertext.extend(&ciphertext_word.to_le_bytes());
     }
     let plaintext = GenericArray::from_mut_slice(ciphertext.as_mut_slice());
