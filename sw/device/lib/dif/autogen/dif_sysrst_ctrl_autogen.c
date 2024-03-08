@@ -65,7 +65,7 @@ static bool sysrst_ctrl_get_irq_bit_index(dif_sysrst_ctrl_irq_t irq,
 }
 
 static dif_irq_type_t irq_types[] = {
-    kDifIrqTypeEvent,
+    kDifIrqTypeStatus,
 };
 
 OT_WARN_UNUSED_RESULT

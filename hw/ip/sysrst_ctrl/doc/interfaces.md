@@ -38,7 +38,7 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 | Interrupt Name   | Type   | Description                                             |
 |:-----------------|:-------|:--------------------------------------------------------|
-| event_detected   | Event  | Common interrupt triggered by combo or keyboard events. |
+| event_detected   | Status | Common interrupt triggered by combo or keyboard events. |
 
 ## Security Alerts
 

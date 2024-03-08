@@ -14283,7 +14283,7 @@
       width: 1
       type: interrupt
       module_name: sysrst_ctrl_aon
-      intr_type: IntrType.Event
+      intr_type: IntrType.Status
       default_val: false
     }
     {
