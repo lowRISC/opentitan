@@ -15,7 +15,12 @@
 #include "sw/device/sca/lib/prng.h"
 #include "sw/device/sca/lib/sca.h"
 #include "sw/device/tests/crypto/cryptotest/firmware/sca_lib.h"
+#include "sw/device/tests/crypto/cryptotest/firmware/status.h"
 #include "sw/device/tests/crypto/cryptotest/json/aes_sca_commands.h"
+
+#if !OT_IS_ENGLISH_BREAKFAST
+#include "sw/device/lib/testing/aes_testutils.h"
+#endif
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -745,6 +750,17 @@ status_t handle_aes_sca_seed_lfsr(ujson_t *uj) {
     transaction.force_masks = false;
   }
   sca_seed_lfsr(seed_local, kScaLfsrMasking);
+
+#if !OT_IS_ENGLISH_BREAKFAST
+  if (transaction.force_masks) {
+    LOG_INFO("Disabling masks.");
+    status_t res = aes_testutils_masking_prng_zero_output_seed();
+    if (res.value != 0) {
+      return ABORTED();
+    }
+    UJSON_CHECK_DIF_OK(dif_aes_trigger(&aes, kDifAesTriggerPrngReseed));
+  }
+#endif
 
   return OK_STATUS(0);
 }
