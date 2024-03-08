@@ -33,3 +33,17 @@ otbn_binary(
         "otbn_char_unrolled_reg_op_loop.s",
     ],
 )
+
+otbn_binary(
+    name = "otbn_key_sideload",
+    srcs = [
+        "otbn_key_sideload.s",
+    ],
+)
+
+otbn_binary(
+    name = "otbn_load_integrity",
+    srcs = [
+        "otbn_load_integrity.s",
+    ],
+)
