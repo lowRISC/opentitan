@@ -170,8 +170,10 @@ module tlul_lc_gate
 
     unique case (state_q)
       StActive: begin
-        if (lc_tx_test_false_loose(lc_en_i) || flush_req_i) begin
+        if (lc_tx_test_true_strict(lc_en_i) || flush_req_i) begin
           state_d = StOutstanding;
+        end else if (lc_tx_test_false_loose(lc_en_i)) begin
+          state_d = StError;
         end
         if (outstanding_txn != '0) begin
           resp_pending_o = 1'b1;
@@ -207,7 +209,9 @@ module tlul_lc_gate
       StErrorOutstanding: begin
         err_en = On;
         block_cmd = 1'b1;
-        if (outstanding_txn == '0) begin
+        if (lc_tx_test_false_loose(lc_en_i)) begin
+          state_d = StError;
+        end else if (outstanding_txn == '0) begin
           state_d = StActive;
         end
       end
