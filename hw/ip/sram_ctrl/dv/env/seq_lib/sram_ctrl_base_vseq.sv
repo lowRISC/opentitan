@@ -122,6 +122,7 @@ class sram_ctrl_base_vseq #(parameter int AddrWidth = `SRAM_ADDR_WIDTH) extends 
                               input bit [TL_DW-1:0]    exp_rdata    = '0,
                               input mubi4_t            instr_type   = MuBi4False,
                               output logic [TL_DW-1:0] rdata);
+    `uvm_info(`gfn, $sformatf("do_single_read addr 0x%x", addr), UVM_HIGH)
     tl_access(.addr(addr),
               .data(rdata),
               .mask(mask),
@@ -141,6 +142,7 @@ class sram_ctrl_base_vseq #(parameter int AddrWidth = `SRAM_ADDR_WIDTH) extends 
                                bit [TL_DBW-1:0] mask        = get_rand_mask(.write(1)),
                                bit              blocking    = $urandom_range(0, 1),
                                mubi4_t          instr_type  = MuBi4False);
+    `uvm_info(`gfn, $sformatf("do_single_write addr 0x%x, data 0x%x", addr, data), UVM_HIGH)
     tl_access(.addr(addr),
               .data(data),
               .mask(mask),
