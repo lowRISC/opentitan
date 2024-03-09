@@ -954,11 +954,11 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
         end
 
         if (addr_phase_write && `gmv(ral.check_trigger_regwen) && item.a_data inside {[1:3]}) begin
-          bit [TL_DW-1:0] check_timout = `gmv(ral.check_timeout) == 0 ? '1 :
+          bit [TL_DW-1:0] check_timeout = `gmv(ral.check_timeout) == 0 ? '1 :
                                                                         `gmv(ral.check_timeout);
           exp_status[OtpCheckPendingIdx] = 1;
           under_chk = 1;
-          if (check_timout <= CHK_TIMEOUT_CYC) begin
+          if (check_timeout <= CHK_TIMEOUT_CYC) begin
             set_exp_alert("fatal_check_error", 1, `gmv(ral.check_timeout));
             predict_err(OtpTimeoutErrIdx);
           end else begin
@@ -968,7 +968,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                   predict_err(otp_status_e'(i), OtpMacroEccCorrError);
                 end else if (cfg.ecc_chk_err[i] == OtpEccUncorrErr &&
                              part_has_integrity(i)) begin
-                  set_exp_alert("fatal_macro_error", 1, check_timout);
+                  set_exp_alert("fatal_macro_error", 1, 40_000);
                   predict_err(otp_status_e'(i), OtpMacroEccUncorrError);
                 end
               end
