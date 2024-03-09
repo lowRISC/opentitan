@@ -16,8 +16,10 @@ steps:
       cd $BAZEL_EXEC_LOG_ROOT
       zip $(Build.ArtifactStagingDirectory)/exec_logs.zip exec_log.json
     displayName: Create zip with execution logs
+    condition: succeededOrFailed()
   - publish: "$(Build.ArtifactStagingDirectory)/exec_logs.zip"
     # The PhaseName is the string after the "job" key in the build description,
     # e.g. "job: my_phase_name".
     artifact: exec-logs-$(System.PhaseName)
     displayName: Upload execution logs
+    condition: succeededOrFailed()
