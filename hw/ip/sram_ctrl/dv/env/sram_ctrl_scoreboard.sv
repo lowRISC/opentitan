@@ -459,8 +459,9 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
       cfg.clk_rst_vif.wait_clks(KDI_PROPAGATION_CYCLES);
 
       // To determine the real end of key processing check status.scr_key_valid.
-      csr_spinwait(.ptr(ral.status.scr_key_valid), .exp_data(1), .backdoor(1));
-
+      if (status_lc_esc == EscNone) begin
+        csr_spinwait(.ptr(ral.status.scr_key_valid), .exp_data(1), .backdoor(1));
+      end
       cfg.in_key_req = 0;
       if (!cfg.under_reset) begin
         // When KDI item is seen, update key, nonce
