@@ -356,36 +356,84 @@
                     bkout_type: false,
                     items: [
                         {
+                            name: "ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY_TYPE0",
+                            size: "4"
+                        },
+                        {
                             name: "ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY0",
-                            size: "68"
+                            size: "64"
+                        },
+                        {
+                            name: "ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY_TYPE1",
+                            size: "4"
                         },
                         {
                             name: "ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY1",
-                            size: "68"
+                            size: "64"
+                        },
+                        {
+                            name: "ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY_TYPE2",
+                            size: "4"
                         },
                         {
                             name: "ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY2",
-                            size: "68"
+                            size: "64"
+                        },
+                        {
+                            name: "ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY_TYPE3",
+                            size: "4"
                         },
                         {
                             name: "ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY3",
-                            size: "68"
+                            size: "64"
+                        },
+                        {
+                            name: "ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_TYPE0",
+                            size: "4"
                         },
                         {
                             name: "ROT_CREATOR_AUTH_CODESIGN_SPX_KEY0",
-                            size: "40"
+                            size: "32"
+                        },
+                        {
+                            name: "ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_CONFIG0",
+                            size: "4"
+                        },
+                        {
+                            name: "ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_TYPE1",
+                            size: "4"
                         },
                         {
                             name: "ROT_CREATOR_AUTH_CODESIGN_SPX_KEY1",
-                            size: "40"
+                            size: "32"
+                        },
+                        {
+                            name: "ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_CONFIG1",
+                            size: "4"
+                        },
+                        {
+                            name: "ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_TYPE2",
+                            size: "4"
                         },
                         {
                             name: "ROT_CREATOR_AUTH_CODESIGN_SPX_KEY2",
-                            size: "40"
+                            size: "32"
+                        },
+                        {
+                            name: "ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_CONFIG2",
+                            size: "4"
+                        },
+                        {
+                            name: "ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_TYPE3",
+                            size: "4"
                         },
                         {
                             name: "ROT_CREATOR_AUTH_CODESIGN_SPX_KEY3",
-                            size: "40"
+                            size: "32"
+                        },
+                        {
+                            name: "ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_CONFIG3",
+                            size: "4"
                         },
                         {
                             name: "ROT_CREATOR_AUTH_CODESIGN_BLOCK_SHA2_256_HASH",
