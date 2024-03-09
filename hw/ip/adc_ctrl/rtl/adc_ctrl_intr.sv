@@ -89,16 +89,28 @@ module adc_ctrl_intr
     .dst_ack_i(dst_ack)
   );
 
-  // Note that aon_req_hold is a value held in an async domain.
-  // aon_req_hold's value should not change until handshake is completed by `prim_sync_reqack`.
-  // There is no reason to use `prim_sync_reqack` in this case because that module passes
-  // through data only when the direction is src->dst.
-  assign adc_intr_status_o.trans.de = cfg_intr_trans_en_i && dst_ack && aon_req_hold_q[8];
+  // Holding reg after the CDC. Note that aon_req_hold_q does not change until the handshake has
+  // been completed, hence we can sample it safely upon a dst_ack pulse.
+  logic dst_ack_q;
+  logic [NumAonIntrEvents-1:0] req_hold_q;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      req_hold_q <= '0;
+      dst_ack_q <= 1'b0;
+    end else begin
+      dst_ack_q <= dst_ack;
+      if (dst_ack) begin
+        req_hold_q <= aon_req_hold_q;
+      end
+    end
+  end
+
+  assign adc_intr_status_o.trans.de = cfg_intr_trans_en_i && dst_ack_q && req_hold_q[8];
   assign adc_intr_status_o.trans.d = 1'b1;
   // Since interrupt events are pulsed, when successive events arrive we need to make sure to
   // hold the previously latched values
   logic [NumAdcFilter-1:0] match_events;
-  assign match_events = cfg_intr_en_i & {NumAdcFilter{dst_ack}} & aon_req_hold_q[NumAdcFilter-1:0];
+  assign match_events = cfg_intr_en_i & {NumAdcFilter{dst_ack_q}} & req_hold_q[NumAdcFilter-1:0];
   assign adc_intr_status_o.match.de = |match_events;
   assign adc_intr_status_o.match.d = match_events | adc_intr_status_i.match.q;
   // Note that we're also adding the non-AON interrupt source cfg_oneshot_done_i at this point.
