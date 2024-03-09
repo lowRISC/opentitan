@@ -60,14 +60,26 @@ It has been generated with ./util/design/gen-otp-mmap.py
 |         |                           |            |      32bit       |                       OWNER_SW_CFG_ROM_RSTMGR_INFO_EN                       |     0x3F4      |     4      |
 |         |                           |            |      32bit       |                      OWNER_SW_CFG_ROM_EXT_BOOTSTRAP_EN                      |     0x3F8      |     4      |
 |         |                           |            |      64bit       |              [OWNER_SW_CFG_DIGEST](#Reg_owner_sw_cfg_digest_0)              |     0x470      |     8      |
-|    3    | ROT_CREATOR_AUTH_CODESIGN |    472     |      32bit       |                    ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY0                     |     0x478      |     68     |
-|         |                           |            |      32bit       |                    ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY1                     |     0x4BC      |     68     |
-|         |                           |            |      32bit       |                    ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY2                     |     0x500      |     68     |
-|         |                           |            |      32bit       |                    ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY3                     |     0x544      |     68     |
-|         |                           |            |      32bit       |                     ROT_CREATOR_AUTH_CODESIGN_SPX_KEY0                      |     0x588      |     40     |
-|         |                           |            |      32bit       |                     ROT_CREATOR_AUTH_CODESIGN_SPX_KEY1                      |     0x5B0      |     40     |
-|         |                           |            |      32bit       |                     ROT_CREATOR_AUTH_CODESIGN_SPX_KEY2                      |     0x5D8      |     40     |
-|         |                           |            |      32bit       |                     ROT_CREATOR_AUTH_CODESIGN_SPX_KEY3                      |     0x600      |     40     |
+|    3    | ROT_CREATOR_AUTH_CODESIGN |    472     |      32bit       |                  ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY_TYPE0                  |     0x478      |     4      |
+|         |                           |            |      32bit       |                    ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY0                     |     0x47C      |     64     |
+|         |                           |            |      32bit       |                  ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY_TYPE1                  |     0x4BC      |     4      |
+|         |                           |            |      32bit       |                    ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY1                     |     0x4C0      |     64     |
+|         |                           |            |      32bit       |                  ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY_TYPE2                  |     0x500      |     4      |
+|         |                           |            |      32bit       |                    ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY2                     |     0x504      |     64     |
+|         |                           |            |      32bit       |                  ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY_TYPE3                  |     0x544      |     4      |
+|         |                           |            |      32bit       |                    ROT_CREATOR_AUTH_CODESIGN_ECDSA_KEY3                     |     0x548      |     64     |
+|         |                           |            |      32bit       |                   ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_TYPE0                   |     0x588      |     4      |
+|         |                           |            |      32bit       |                     ROT_CREATOR_AUTH_CODESIGN_SPX_KEY0                      |     0x58C      |     32     |
+|         |                           |            |      32bit       |                  ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_CONFIG0                  |     0x5AC      |     4      |
+|         |                           |            |      32bit       |                   ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_TYPE1                   |     0x5B0      |     4      |
+|         |                           |            |      32bit       |                     ROT_CREATOR_AUTH_CODESIGN_SPX_KEY1                      |     0x5B4      |     32     |
+|         |                           |            |      32bit       |                  ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_CONFIG1                  |     0x5D4      |     4      |
+|         |                           |            |      32bit       |                   ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_TYPE2                   |     0x5D8      |     4      |
+|         |                           |            |      32bit       |                     ROT_CREATOR_AUTH_CODESIGN_SPX_KEY2                      |     0x5DC      |     32     |
+|         |                           |            |      32bit       |                  ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_CONFIG2                  |     0x5FC      |     4      |
+|         |                           |            |      32bit       |                   ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_TYPE3                   |     0x600      |     4      |
+|         |                           |            |      32bit       |                     ROT_CREATOR_AUTH_CODESIGN_SPX_KEY3                      |     0x604      |     32     |
+|         |                           |            |      32bit       |                  ROT_CREATOR_AUTH_CODESIGN_SPX_KEY_CONFIG3                  |     0x624      |     4      |
 |         |                           |            |      32bit       |                ROT_CREATOR_AUTH_CODESIGN_BLOCK_SHA2_256_HASH                |     0x628      |     32     |
 |         |                           |            |      64bit       | [ROT_CREATOR_AUTH_CODESIGN_DIGEST](#Reg_rot_creator_auth_codesign_digest_0) |     0x648      |     8      |
 |    4    |  ROT_CREATOR_AUTH_STATE   |     40     |      32bit       |                      ROT_CREATOR_AUTH_STATE_ECDSA_KEY0                      |     0x650      |     4      |
