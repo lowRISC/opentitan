@@ -35,6 +35,7 @@ class sram_ctrl_lc_escalation_vseq extends sram_ctrl_multiple_keys_vseq;
     repeat (num_trans) begin
       if (cfg.stop_transaction_generators()) break;
 
+      `uvm_info(`gfn, "New round of lc_escalation", UVM_HIGH)
       if ($urandom_range(0, 1)) begin
         req_mem_init();
       end else begin
