@@ -23,12 +23,12 @@ class sram_ctrl_throughput_vseq extends sram_ctrl_smoke_vseq;
     cfg.clk_rst_vif.wait_clks(20);
 
     for (int i = 0; i < num_trans; i++) begin
-      int num_cycles;
+      int num_cycles = 0;
 
       num_partial_write = 0;
-      `uvm_info(`gfn, $sformatf("iteration: %0d", i), UVM_LOW)
 
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(num_ops)
+      `uvm_info(`gfn, $sformatf("iteration: %0d, issuing %0d ops", i, num_ops), UVM_LOW)
 
       `DV_SPINWAIT_EXIT(
           // thread 1 to count cycles
