@@ -230,7 +230,6 @@ jobs:
         --execution_log_binary_file="$BAZEL_EXEC_LOG_ROOT/build.log" \
         --noexecution_log_sort
     displayName: Build & test SW
-  - template: ci/publish-bazel-test-results.yml
   - template: ci/publish-bazel-exec-logs.yml
 
 - job: sw_test2
@@ -256,5 +255,66 @@ jobs:
         --execution_log_binary_file="$BAZEL_EXEC_LOG_ROOT/build.log" \
         --noexecution_log_sort
     displayName: Build & test SW
-  - template: ci/publish-bazel-test-results.yml
+  - template: ci/publish-bazel-exec-logs.yml
+
+- job: fpga_test
+  displayName: "FPGA tests"
+  timeoutInMinutes: 30
+  dependsOn: sw_build
+  pool:
+    name: FPGA
+    demands: BOARD -equals cw310
+  steps:
+  - template: ci/checkout-template.yml
+  - template: ci/install-package-dependencies.yml
+  - template: ci/download-artifacts-template.yml
+    parameters:
+      downloadPartialBuildBinFrom:
+        - sw_build
+  - template: ci/load-bazel-cache-write-creds.yml
+  - bash: |
+      set -x
+      module load "xilinx/vivado/$(VIVADO_VERSION)"
+      mkdir "$BAZEL_EXEC_LOG_ROOT"
+      ci/bazelisk.sh test \
+        --define DISABLE_VERILATOR_BUILD=true \
+        --define bitstream=gcp_splice \
+        --build_tests_only \
+        --test_tag_filters=-broken \
+        --test_output=errors \
+        --execution_log_binary_file="$BAZEL_EXEC_LOG_ROOT/build.log" \
+        --noexecution_log_sort \
+        //sw/device/tests:aes_smoketest_fpga_cw310_rom_with_fake_keys
+    displayName: "Run FPGA test"
+  - template: ci/publish-bazel-exec-logs.yml
+
+- job: fpga_test2
+  displayName: "FPGA tests"
+  timeoutInMinutes: 30
+  dependsOn: sw_build
+  pool:
+    name: FPGA
+    demands: BOARD -equals cw310
+  steps:
+  - template: ci/checkout-template.yml
+  - template: ci/install-package-dependencies.yml
+  - template: ci/download-artifacts-template.yml
+    parameters:
+      downloadPartialBuildBinFrom:
+        - sw_build
+  - template: ci/load-bazel-cache-write-creds.yml
+  - bash: |
+      set -x
+      module load "xilinx/vivado/$(VIVADO_VERSION)"
+      mkdir "$BAZEL_EXEC_LOG_ROOT"
+      ci/bazelisk.sh test \
+        --define DISABLE_VERILATOR_BUILD=true \
+        --define bitstream=gcp_splice \
+        --build_tests_only \
+        --test_tag_filters=-broken \
+        --test_output=errors \
+        --execution_log_binary_file="$BAZEL_EXEC_LOG_ROOT/build.log" \
+        --noexecution_log_sort \
+        //sw/device/tests:aes_smoketest_fpga_cw310_rom_with_fake_keys
+    displayName: "Run FPGA test"
   - template: ci/publish-bazel-exec-logs.yml
