@@ -17,7 +17,7 @@
       features: ["USBDEV.BUFFER.MEMORY"]
       stage: V2
       si_stage: SV2
-      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      lc_states: ["PROD"]
       tests: []
       bazel: []
     }
@@ -32,7 +32,7 @@
       features: ["USBDEV.CONN.VBUS"]
       stage: V2
       si_stage: SV3
-      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      lc_states: ["PROD"]
       tests: ["chip_sw_usbdev_vbus"]
       bazel: ["//sw/device/tests:usbdev_vbus_test"]
     }
@@ -57,7 +57,7 @@
       ]
       stage: V2
       si_stage: SV3
-      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      lc_states: ["PROD"]
       tests: ["chip_sw_usbdev_pullup"]
       bazel: ["//sw/device/tests:usbdev_pullup_test"]
     }
@@ -82,7 +82,7 @@
       ]
       stage: V2
       si_stage: SV3
-      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      lc_states: ["PROD"]
       tests: ["chip_sw_usbdev_aon_pullup"]
       bazel: ["//sw/device/tests:usbdev_aon_pullup_test"]
     }
@@ -108,7 +108,7 @@
       ]
       stage: V2
       si_stage: SV3
-      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      lc_states: ["PROD"]
       tests: []
       bazel: []
     }
@@ -136,7 +136,7 @@
       ]
       stage: V2
       si_stage: SV3
-      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      lc_states: ["PROD"]
       tests: ["chip_sw_usbdev_setuprx"]
       bazel: ["//sw/device/tests:usbdev_setuprx_test"]
     }
@@ -161,7 +161,7 @@
       ]
       stage: V2
       si_stage: SV3
-      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      lc_states: ["PROD"]
       tests: ["chip_sw_usbdev_config_host"]
       bazel: ["//sw/device/tests:usbdev_config_host_test"]
     }
@@ -188,7 +188,7 @@
       ]
       stage: V2
       si_stage: SV3
-      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      lc_states: ["PROD"]
       tests: ["chip_sw_usbdev_pincfg"]
       bazel: ["//sw/device/tests:usbdev_pincfg_test"]
     }
@@ -216,7 +216,7 @@
       ]
       stage: V2
       si_stage: SV3
-      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      lc_states: ["PROD"]
       tests: ["chip_sw_usbdev_dpi"]
       bazel: []
     }
@@ -244,7 +244,7 @@
       ]
       stage: V3
       si_stage: SV3
-      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      lc_states: ["PROD"]
       tests: ["chip_sw_usbdev_stream"]
       bazel: []
     }
@@ -273,7 +273,7 @@
       ]
       stage: V3
       si_stage: SV3
-      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      lc_states: ["PROD"]
       tests: []
       bazel: []
     }
@@ -301,7 +301,7 @@
       ]
       stage: V3
       si_stage: SV3
-      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      lc_states: ["PROD"]
       tests: []
       bazel: []
     }
@@ -331,7 +331,7 @@
       ]
       stage: V3
       si_stage: SV3
-      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      lc_states: ["PROD"]
       tests: []
       bazel: []
     }
@@ -362,7 +362,7 @@
       ]
       stage: V3
       si_stage: SV3
-      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      lc_states: ["PROD"]
       tests: []
       bazel: ["//sw/device/tests:usbdev_aon_wake_reset"]
     }
@@ -395,7 +395,7 @@
       ]
       stage: V3
       si_stage: SV3
-      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      lc_states: ["PROD"]
       tests: []
       bazel: ["//sw/device/tests:usbdev_aon_wake_disconnect"]
     }
@@ -414,7 +414,7 @@
       features: ["USBDEV.POWER.TOGGLE_RESTORE"]
       stage: V3
       si_stage: SV3
-      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      lc_states: ["PROD"]
       tests: []
       bazel: []
     }

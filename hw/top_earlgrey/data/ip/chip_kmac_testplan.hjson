@@ -19,7 +19,7 @@
         "chip_sw_kmac_mode_kmac",
         "chip_sw_kmac_mode_kmac_jitter_en",
       ]
-      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      lc_states: ["PROD"]
       bazel: ["//sw/device/tests:kmac_mode_kmac_test"]
     }
     {
@@ -94,6 +94,7 @@
             '''
       stage: V2
       si_stage: SV3
+      lc_states: ["PROD"]
       tests: ["chip_sw_kmac_entropy"]
     }
     {
@@ -128,7 +129,7 @@
       features: ["KMAC.MODE.SHA3"]
       stage: V3
       si_stage: SV3
-      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      lc_states: ["PROD"]
       tests: []
       bazel: []
     }
@@ -148,7 +149,7 @@
       ]
       stage: V3
       si_stage: SV3
-      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      lc_states: ["PROD"]
       tests: []
       bazel: []
     }
@@ -168,7 +169,7 @@
       ]
       stage: V3
       si_stage: SV3
-      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      lc_states: ["PROD"]
       tests: []
       bazel: []
     }
@@ -188,7 +189,7 @@
       ]
       stage: V3
       si_stage: SV3
-      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      lc_states: ["PROD"]
       tests: []
       bazel: []
     }
@@ -214,7 +215,7 @@
       features: ["KMAC.KEY.SIDELOAD"]
       stage: V3
       si_stage: SV3
-      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      lc_states: ["PROD"]
       tests: []
       bazel: []
     }
@@ -233,7 +234,7 @@
       ]
       stage: V3
       si_stage: SV3
-      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      lc_states: ["PROD"]
       tests: []
       bazel: []
     }
@@ -257,7 +258,7 @@
       ]
       stage: V3
       si_stage: SV3
-      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      lc_states: ["PROD"]
       tests: []
       bazel: []
     }
@@ -285,7 +286,7 @@
       features: []
       stage: V3
       si_stage: SV3
-      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      lc_states: ["PROD"]
       tests: []
       bazel: []
     }

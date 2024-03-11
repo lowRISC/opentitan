@@ -26,7 +26,7 @@
       features: ["SYSRST_CTRL.COMBO_DETECT"]
       stage: V2
       si_stage: SV3
-      lc_states: ["DEV", "PROD", "PROD_END", "RMA"]
+      lc_states: ["PROD"]
       tests: ["chip_sw_pwrmgr_sysrst_ctrl_reset", "chip_sw_sysrst_ctrl_reset"]
       bazel: ["//sw/device/tests:sysrst_ctrl_reset_test"]
     }
@@ -41,7 +41,7 @@
       features: ["SYSRST_CTRL.PIN_INPUT_VALUE_ACCESS"]
       stage: V2
       si_stage: SV3
-      lc_states: ["DEV", "PROD", "PROD_END", "RMA"]
+      lc_states: ["PROD"]
       tests: ["chip_sw_sysrst_ctrl_inputs"]
       bazel: ["//sw/device/tests:sysrst_ctrl_inputs_test"]
     }
@@ -64,7 +64,7 @@
             '''
       stage: V2
       si_stage: SV3
-      lc_states: ["DEV", "PROD", "PROD_END", "RMA"]
+      lc_states: ["PROD"]
       tests: ["chip_sw_sysrst_ctrl_outputs"]
       bazel: ["//sw/device/tests:sysrst_ctrl_outputs_test"]
     }
@@ -86,7 +86,7 @@
       features: ["SYSRST_CTRL.INPUT_TRIGGERED_INTERRUPT"]
       stage: V2
       si_stage: SV3
-      lc_states: ["DEV", "PROD", "PROD_END", "RMA"]
+      lc_states: ["PROD"]
       tests: ["chip_sw_sysrst_ctrl_in_irq"]
       bazel: ["//sw/device/tests:sysrst_ctrl_in_irq_test"]
     }
@@ -112,7 +112,7 @@
       features: ["SYSRST_CTRL.ULTRA_LOW_POWER_WAKEUP"]
       stage: V2
       si_stage:SV3
-      lc_states: ["DEV", "PROD", "PROD_END", "RMA"]
+      lc_states: ["PROD"]
       tests: ["chip_sw_sysrst_ctrl_reset"]
       bazel: ["//sw/device/tests:sysrst_ctrl_reset_test"]
     }
@@ -140,7 +140,7 @@
       features: ["SYSRST_CTRL.ULTRA_LOW_POWER_RESET"]
       stage: V2
       si_stage:SV3
-      lc_states: ["DEV", "PROD", "PROD_END", "RMA"]
+      lc_states: ["PROD"]
       tests: ["chip_sw_sysrst_ctrl_reset"]
       bazel: ["//sw/device/tests:sysrst_ctrl_reset_test"]
     }
@@ -158,7 +158,7 @@
       features: ["SYSRST_CTRL.EC_RESET_POR"]
       stage: V2
       si_stage:SV3
-      lc_states: ["DEV", "PROD", "PROD_END", "RMA"]
+      lc_states: ["PROD"]
       tests: ["chip_sw_sysrst_ctrl_ec_rst_l"]
       bazel: ["//sw/device/tests:sysrst_ctrl_ec_rst_l_test"]
     }
@@ -171,7 +171,7 @@
       features: ["SYSRST_CTRL.FLASH_WP_POR"]
       stage: V2
       si_stage:SV3
-      lc_states: ["DEV", "PROD", "PROD_END", "RMA"]
+      lc_states: ["PROD"]
       tests: ["chip_sw_sysrst_ctrl_ec_rst_l"]
       bazel: ["//sw/device/tests:sysrst_ctrl_ec_rst_l_test"]
     }
@@ -192,7 +192,7 @@
       features: ["SYSRST_CTRL.ULTRA_LOW_POWER_WAKEUP"]
       stage: V2
       si_stage:SV3
-      lc_states: ["DEV", "PROD", "PROD_END", "RMA"]
+      lc_states: ["PROD"]
       tests: [
         "chip_sw_adc_ctrl_sleep_debug_cable_wakeup",
         "chip_sw_sysrst_ctrl_ulp_z3_wakeup"

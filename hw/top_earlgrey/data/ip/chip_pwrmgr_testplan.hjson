@@ -16,12 +16,8 @@
             when they start.
             '''
       stage: V2
-      si_stage: NA
-      lc_states: [
-        "RAW",
-        "TEST_LOCKED",
-        "TEST_UNLOCKED1",
-      ]
+      si_stage: SV1
+      lc_states: ["PROD"]
       features: ["PWRMGR.RESET.POR_REQUEST"]
       tests: ["chip_sw_pwrmgr_full_aon_reset"]
     }
@@ -49,10 +45,7 @@
             '''
       stage: V2
       si_stage: SV3
-      lc_states: [
-        "PROD",
-        "PROD_END",
-      ]
+      lc_states: ["PROD"]
       features: [
         "PWRMGR.LOW_POWER.SYSRST_CTRL_AON_WKUP_REQ_WAKEUP_ENABLE",
         "PWRMGR.LOW_POWER.SYSRST_CTRL_AON_WKUP_REQ_WAKEUP_REQUEST",
@@ -101,10 +94,7 @@
             '''
       stage: V2
       si_stage: SV3
-      lc_states: [
-        "PROD",
-        "PROD_END",
-      ]
+      lc_states: ["PROD"]
       features: [
         "PWRMGR.LOW_POWER.DISABLE_POWER",
         "PWRMGR.LOW_POWER.ENTRY",
@@ -125,10 +115,7 @@
             '''
       stage: V2
       si_stage: SV3
-      lc_states: [
-        "PROD",
-        "PROD_END",
-      ]
+      lc_states: ["PROD"]
       features: [
         "PWRMGR.LOW_POWER.ENTRY",
         "PWRMGR.RESET.POR_REQUEST",
@@ -220,7 +207,8 @@
             SiVal: No need to run this, run chip_sw_pwrmgr_random_sleep_all_reset_reqs instead.
             '''
       stage: V2
-      si_stage: NA
+      si_stage: SV3
+      lc_states: ["PROD"]
       features: [
         "PWRMGR.LOW_POWER.ENTRY",
         "PWRMGR.RESET.AON_TIMER_AON_AON_TIMER_RST_REQ_ENABLE",
@@ -245,12 +233,7 @@
             '''
       stage: V2
       si_stage: SV2
-      lc_states: [
-        "TEST_UNLOCKED1",
-        "DEV",
-        "PROD",
-        "PROD_END",
-      ]
+      lc_states: ["PROD"]
       features: [
         "PWRMGR.RESET.AON_TIMER_AON_AON_TIMER_RST_REQ_ENABLE",
         "PWRMGR.RESET.AON_TIMER_AON_AON_TIMER_RST_REQ_REQUEST",
@@ -286,7 +269,6 @@
       stage: V2
       si_stage: NA
       tests: ["chip_sw_pwrmgr_main_power_glitch_reset"]
-      bazel: []
     }
     {
       name: chip_sw_pwrmgr_random_sleep_power_glitch_reset
@@ -309,7 +291,6 @@
       stage: V2
       si_stage: NA
       tests: ["chip_sw_pwrmgr_random_sleep_power_glitch_reset"]
-      bazel: []
     }
     {
       name: chip_sw_pwrmgr_deep_sleep_power_glitch_reset
@@ -329,7 +310,6 @@
       stage: V2
       si_stage: NA
       tests: ["chip_sw_pwrmgr_deep_sleep_power_glitch_reset"]
-      bazel: []
     }
     {
       name: chip_sw_pwrmgr_sleep_power_glitch_reset
@@ -344,7 +324,6 @@
       stage: V2
       si_stage: NA
       tests: ["chip_sw_pwrmgr_sleep_power_glitch_reset"]
-      bazel: []
     }
     {
       name: chip_sw_pwrmgr_random_sleep_all_reset_reqs
@@ -364,10 +343,7 @@
             '''
       stage: V2
       si_stage: SV3
-      lc_states: [
-        "PROD",
-        "PROD_END",
-      ]
+      lc_states: ["PROD"]
       features: [
         "PWRMGR.LOW_POWER.ENTRY",
         "PWRMGR.LOW_POWER.DISABLE_POWER"
@@ -397,6 +373,7 @@
             '''
       stage: V2
       si_stage: SV3
+      lc_states: ["PROD"]
       tests: [
         "chip_sw_pwrmgr_sysrst_ctrl_reset",
         "chip_sw_pwrmgr_all_reset_reqs",
@@ -411,7 +388,6 @@
       stage: V2
       si_stage: NA
       tests: ["chip_sw_pwrmgr_b2b_sleep_reset_req"]
-      bazel: []
     }
     {
       name: chip_sw_pwrmgr_sleep_disabled
@@ -424,10 +400,7 @@
             '''
       stage: V2
       si_stage: SV3
-      lc_states: [
-        "PROD",
-        "PROD_END",
-      ]
+      lc_states: ["PROD"]
       features: ["PWRMGR.LOW_POWER.ENTRY"]
       tests: ["chip_sw_pwrmgr_sleep_disabled"]
       bazel: ["//sw/device/tests:pwrmgr_sleep_disabled_test"]
@@ -444,10 +417,7 @@
             '''
       stage: V3
       si_stage: SV3
-      lc_states: [
-        "PROD",
-        "PROD_END",
-      ]
+      lc_states: ["PROD"]
       features: ["PWRMGR.CLOCK_CONTROL.USB_WHEN_ACTIVE"]
       tests: ["chip_sw_pwrmgr_usb_clk_disabled_when_active"]
       bazel: ["//sw/device/tests:pwrmgr_usb_clk_disabled_when_active_test"]
@@ -465,12 +435,7 @@
             '''
       stage: V3
       si_stage: SV3
-      lc_states: [
-        "TEST_UNLOCKED1",
-        "DEV",
-        "PROD",
-        "PROD_END",
-      ]
+      lc_states: ["PROD"]
       features: [
         "PWRMGR.RESET.AON_TIMER_AON_AON_TIMER_RST_REQ_ENABLE",
         "PWRMGR.RESET.AON_TIMER_AON_AON_TIMER_RST_REQ_REQUEST",
@@ -496,13 +461,8 @@
             '''
       stage: V2
       si_stage: NA
-      lc_states: [
-        "TEST_UNLOCKED1",
-        "DEV",
-      ]
       features: ["PWRMGR.RESET.ESCALATION_REQUEST"]
       tests: ["chip_sw_all_escalation_resets"]
-      bazel: []
     }
   ]
 }

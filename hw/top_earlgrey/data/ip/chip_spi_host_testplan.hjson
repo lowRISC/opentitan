@@ -28,6 +28,7 @@
       ]
       stage: V2
       si_stage: SV2
+      lc_states: ["PROD"]
       tests: ["chip_sw_spi_host_tx_rx"]
       bazel: [
         "//sw/device/tests:spi_host_winbond_flash_test",
@@ -51,6 +52,7 @@
       ]
       stage: V3
       si_stage: SV3
+      lc_states: ["PROD"]
       tests: []
     }
     {
@@ -69,6 +71,7 @@
       ]
       stage: V3
       si_stage: SV3
+      lc_states: ["PROD"]
       tests: []
     }
     {
@@ -93,6 +96,7 @@
       ]
       stage: V3
       si_stage: SV3
+      lc_states: ["PROD"]
       tests: []
     }
   ]

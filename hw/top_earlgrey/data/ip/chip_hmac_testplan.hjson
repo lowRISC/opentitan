@@ -15,7 +15,7 @@
             '''
       stage: V2
       si_stage: SV2
-      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      lc_states: ["PROD"]
       tests: ["chip_sw_hmac_enc",
               "chip_sw_hmac_enc_jitter_en"]
       bazel: ["//sw/device/tests:hmac_enc_test"]
@@ -38,7 +38,7 @@
             '''
       stage: V2
       si_stage: SV3
-      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      lc_states: ["PROD"]
       tests: ["chip_sw_hmac_enc_idle"]
       bazel: []
     }
@@ -54,7 +54,7 @@
       features: ["HMAC.MODE.SHA2"]
       stage: V3
       si_stage: SV3
-      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      lc_states: ["PROD"]
       tests: []
       bazel: []
     }
@@ -70,7 +70,7 @@
       features: ["HMAC.MODE.HMAC"]
       stage: V3
       si_stage: SV3
-      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      lc_states: ["PROD"]
       tests: []
       bazel: []
     }
@@ -89,7 +89,7 @@
       ]
       stage: V3
       si_stage: SV3
-      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      lc_states: ["PROD"]
       tests: []
       bazel: []
     }
@@ -107,7 +107,7 @@
       features: ["HMAC.SECURE_WIPE"]
       stage: V3
       si_stage: SV3
-      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      lc_states: ["PROD"]
       tests: []
       bazel: []
     }
@@ -126,7 +126,7 @@
       features: []
       stage: V3
       si_stage: SV3
-      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      lc_states: ["PROD"]
       tests: []
       bazel: []
     }

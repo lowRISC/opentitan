@@ -16,6 +16,7 @@
       features: ["GPIO.OUT.MASK"]
       stage: V1
       si_stage: SV2
+      lc_states: ["PROD"]
       tests: ["chip_sw_gpio"]
       bazel: ["//sw/device/tests:gpio_pinmux_test"]
     }
@@ -29,6 +30,7 @@
       features: ["GPIO.IN.INTR_CTRL", "GPIO.IN.FILTER"]
       stage: V1
       si_stage: SV2
+      lc_states: ["PROD"]
       tests: ["chip_sw_gpio"]
       bazel: ["//sw/device/tests:gpio_pinmux_test"]
     }
@@ -43,6 +45,7 @@
       features: ["GPIO.IN.INTR_CTRL", "GPIO.IN.FILTER"]
       stage: V1
       si_stage: SV3
+      lc_states: ["PROD"]
       tests: ["chip_sw_gpio"]
       bazel: ["//sw/device/tests:gpio_intr_test"]
     }

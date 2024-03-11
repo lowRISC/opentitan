@@ -82,6 +82,7 @@
             - Re-enable data transfer and ensure data correctness.
             '''
       stage: V3
+      si_stage: NA
       tests: []
     }
     {
@@ -92,6 +93,7 @@
             - Ensure the CSR `wake_debug` returns correctly value.
             '''
       stage: V3
+      si_stage: NA
       tests: []
     }
 
@@ -116,6 +118,8 @@
             - Follow a similar testing procedure for DIOs.
             '''
       stage: V2
+      si_stage: SV3
+      lc_states: ["PROD"]
       tests: ["chip_padctrl_attributes"]
     }
     {
@@ -133,6 +137,8 @@
             Cross-references the `chip_pin_mux` test.
             '''
       stage: V2
+      si_stage: SV3
+      lc_states: ["PROD"]
       tests: ["chip_padctrl_attributes"]
     }
     {
@@ -154,6 +160,8 @@
             covered in other tests such as chip_sw_sleep_pwm_pulses.
             '''
       stage: V2
+      si_stage: SV3
+      lc_states: ["PROD"]
       tests: ["chip_sw_sleep_pin_mio_dio_val"]
     }
     {
@@ -170,6 +178,8 @@
             those detectors. Also, randomize and test all wakeup modes and enable debounce filter.
             '''
       stage: V2
+      si_stage: SV3
+      lc_states: ["PROD"]
       tests: ["chip_sw_sleep_pin_wake"]
     }
     {
@@ -189,6 +199,8 @@
               chip is back in active power.
             '''
       stage: V2
+      si_stage: SV3
+      lc_states: ["PROD"]
       tests: ["chip_sw_sleep_pin_retention"]
     }
     {
@@ -211,6 +223,8 @@
             host (SV testbench) performs these stimulus / checks.
             '''
       stage: V2
+      si_stage: SV2
+      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "RMA"]
       tests: ["chip_tap_straps_dev", "chip_tap_straps_prod", "chip_tap_straps_rma",
               "chip_tap_straps_testunlock0"]
     }
@@ -245,6 +259,7 @@
       ]
       stage: V2
       si_stage: SV2
+      lc_states: ["PROD"]
       tests: ["chip_sw_pattgen_ios"]
     }
 
@@ -282,6 +297,7 @@
       ]
       stage: V2
       si_stage: SV2
+      lc_states: ["PROD"]
       tests: ["chip_sw_sleep_pwm_pulses"]
     }
 
@@ -305,6 +321,7 @@
             - Check the alert up to the NMI phase and make sure that the alert cause is from Ibex.
             '''
       stage: V2
+      si_stage: NA
       tests: ["chip_sw_data_integrity_escalation"]
     }
     {
@@ -320,6 +337,7 @@
             - Check the alert up to the NMI phase and make sure that the alert cause is from Ibex.
             '''
       stage: V2
+      si_stage: NA
       tests: ["chip_sw_data_integrity_escalation"]
     }
 
@@ -338,6 +356,7 @@
             regwen is enabled, and errors are not cleared.
             '''
       stage: V2
+      si_stage: NA
       tests: ["chip_sw_ast_clk_outputs"]
     }
     {
@@ -355,6 +374,8 @@
             Repeat 1-4 to check it is ok.
             '''
       stage: V2
+      si_stage: SV3
+      lc_states: ["PROD"]
       tests: ["chip_sw_ast_clk_rst_inputs"]
     }
     {
@@ -364,6 +385,8 @@
             X-ref with chip_sw_clkmgr_jitter
             '''
       stage: V2
+      si_stage: SV3
+      lc_states: ["PROD"]
       tests: ["chip_sw_clkmgr_jitter",
               "chip_sw_flash_ctrl_ops_jitter_en",
               "chip_sw_flash_ctrl_access_jitter_en",
@@ -391,6 +414,8 @@
               open source is effectively short-circuited.
             '''
       stage: V2
+      si_stage: SV3
+      lc_states: ["PROD"]
       tests: ["chip_sw_usb_ast_clk_calib"]
     }
     {
@@ -400,6 +425,7 @@
              X-ref'ed with `chip_sensor_ctrl_ast_alerts`.
              '''
       stage: V2
+      si_stage: NA
       tests: ["chip_sw_sensor_ctrl_alert"]
     }
 
@@ -416,6 +442,8 @@
                as either recoverable or fatal.
              '''
       stage: V2
+      si_stage: SV3
+      lc_states: ["PROD"]
       tests: ["chip_sw_pwrmgr_sleep_sensor_ctrl_alert_wakeup",
               "chip_sw_sensor_ctrl_alert"]
     }
@@ -428,6 +456,8 @@
                from a sensor_ctrl register.
             '''
       stage: V2
+      si_stage: SV3
+      lc_states: ["PROD"]
       tests: ["chip_sw_sensor_ctrl_status"]
     }
     {
@@ -437,6 +467,8 @@
                AST. X-ref'ed chip_sw_pwrmgr_sleep_all_wake_ups.
              '''
       stage: V2
+      si_stage: SV3
+      lc_states: ["PROD"]
       tests: ["chip_sw_pwrmgr_sleep_sensor_ctrl_alert_wakeup"]
     }
 
@@ -458,6 +490,7 @@
             5. Enable concurrent threads in tests
             '''
       stage: V1
+      si_stage: NA
       tests: ["chip_sw_example_rom",
               "chip_sw_example_flash",
               "chip_sw_uart_smoketest_signed",
@@ -475,6 +508,7 @@
             '''
       stage: V2
       si_stage: SV2
+      lc_states: ["PROD"]
       tests: ["chip_sw_aes_smoketest",
               "chip_sw_aon_timer_smoketest",
               "chip_sw_clkmgr_smoketest",
@@ -527,6 +561,7 @@
             as well.
             '''
       stage: V2
+      si_stage: NA
       tests: ["rom_keymgr_functest"]
     }
     {
@@ -545,6 +580,8 @@
       name: chip_sw_coremark
       desc: '''Run the coremark benchmark on the full chip.'''
       stage: V3
+      si_stage: SV4
+      lc_states: ["PROD"]
       tests: ["chip_sw_coremark"]
     }
     {
@@ -561,6 +598,7 @@
              For detail, refer to chip_spi_device_flash_mode
              '''
       stage: V2
+      si_stage: NA
       tests: ["chip_sw_uart_tx_rx_bootstrap"]
     }
     {
@@ -571,6 +609,7 @@
              In reality this can be any rom based test, which requires secure boot.
              '''
       stage: V2
+      si_stage: NA
       tests: ["rom_e2e_smoke"]
     }
     {
@@ -596,6 +635,7 @@
              - Check AST init done equal to 0 via sensor_ctrl.
              '''
       stage: V2
+      si_stage: NA
       tests: ["rom_raw_unlock"]
     }
     {
@@ -648,6 +688,8 @@
       in #14095 for more details on how to approach the implementation.
       '''
       stage: V3
+      si_stage: SV2
+      lc_states: ["PROD"]
       tests: ["chip_sw_power_virus"]
     }
     {
@@ -676,6 +718,8 @@
         - Check whether PWM should be active
       '''
       stage: V2
+      si_stage: SV3
+      lc_states: ["PROD"]
       tests: ["chip_sw_power_idle_load"]
     }
     {
@@ -703,6 +747,8 @@
       in #14095 for more details on how to approach the implementation.
       '''
       stage: V2
+      si_stage: SV3
+      lc_states: ["PROD"]
       tests: ["chip_sw_power_sleep_load"]
     }
 
@@ -720,6 +766,7 @@
       X-ref'ed with manuf_ft_exit_token from manufacturing test plan.
       '''
       stage: V2
+      si_stage: NA
       tests: ["chip_sw_exit_test_unlocked_bootstrap"]
     }
 
@@ -744,6 +791,7 @@
       X-ref'ed with manuf_ft_sku_individualization from manufacturing test plan.
       '''
       stage: V2
+      si_stage: NA
       tests: ["chip_sw_inject_scramble_seed"]
     }
   ]
