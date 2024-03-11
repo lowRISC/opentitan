@@ -38,18 +38,12 @@
 /**
  * The following section contains log fields constructed from the logs using
  * the log_fields_t struct defined in sw/device/lib/runtime/log.h. The size of
- * each log field is fixed - 20 bytes.
+ * each log field is fixed - 20 bytes. To distinguish between the fields of
+ * different ELF files we add an offset to the address. We register that offset
+ * here as a header before the log fields.
  */
-.logs.fields _dv_log_offset (INFO): {
-  /* Force this section to always be emitted. The logs extraction script expects
-   * this section to be present in the ELF file, but the linker will not emit it
-   * if there are no outputs (i.e, the *(.logs.fields) statement) with contents.
-   *
-   * However, almost any assignment will implicitly create even an empty section,
-   * including the very silly . = . (set the program counter to itself).
-   *
-   * See https://sourceware.org/binutils/docs-2.29/ld/Output-Section-Discarding.html. */
-  . = .;
+.logs.fields 0 (INFO): {
+  LONG(_dv_log_offset);
   *(.logs.fields)
 }
 
