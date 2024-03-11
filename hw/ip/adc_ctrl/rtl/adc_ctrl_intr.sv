@@ -42,20 +42,18 @@ module adc_ctrl_intr
   // The staging portion always absorbs the incoming event pulse.
   // The request portion on the other hand does not change until
   // a request/ack handshake cycle has completed.
-  logic [NumAonIntrEvents-1:0] staging_reqs_q;
+  logic [NumAonIntrEvents-1:0] aon_staging_reqs_q;
   logic aon_ld_req;
 
   // staging portion takes on the value of the incoming event match
   // and clears when it is snapshot into request hold.
   always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin
      if (!rst_aon_ni) begin
-        staging_reqs_q <= '0;
-     end else if (aon_ld_req && |aon_reqs) begin
-        staging_reqs_q <= aon_reqs;
+        aon_staging_reqs_q <= '0;
      end else if (aon_ld_req) begin
-        staging_reqs_q <= '0;
+        aon_staging_reqs_q <= aon_reqs;
      end else if (|aon_reqs) begin
-        staging_reqs_q <= staging_reqs_q | aon_reqs;
+        aon_staging_reqs_q <= aon_staging_reqs_q | aon_reqs;
      end
   end
 
@@ -63,14 +61,14 @@ module adc_ctrl_intr
   logic aon_ack;
 
   // staging has pending requsts
-  assign aon_ld_req = (aon_req_hold_q == '0) & |staging_reqs_q;
+  assign aon_ld_req = (aon_req_hold_q == '0) && |aon_staging_reqs_q;
 
   // request hold self clears when the handshake cycle is complete
   always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin
      if (!rst_aon_ni) begin
         aon_req_hold_q <= '0;
      end else if (aon_ld_req) begin
-        aon_req_hold_q <= staging_reqs_q;
+        aon_req_hold_q <= aon_staging_reqs_q;
      end else if (aon_ack) begin
         aon_req_hold_q <= '0;
      end
