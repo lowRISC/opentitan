@@ -39,6 +39,8 @@ load(
     "@lowrisc_opentitan//rules/opentitan:keyutils.bzl",
     _rsa_key_by_name = "rsa_key_by_name",
     _rsa_key_for_lc_state = "rsa_key_for_lc_state",
+    _spx_key_by_name = "spx_key_by_name",
+    _spx_key_for_lc_state = "spx_key_for_lc_state",
 )
 
 """Rules to build OpenTitan for the RISC-V target"""
@@ -66,6 +68,9 @@ dv_params = _dv_params
 
 rsa_key_for_lc_state = _rsa_key_for_lc_state
 rsa_key_by_name = _rsa_key_by_name
+
+spx_key_for_lc_state = _spx_key_for_lc_state
+spx_key_by_name = _spx_key_by_name
 
 # The default set of test environments for Earlgrey.
 EARLGREY_TEST_ENVS = {
