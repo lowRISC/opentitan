@@ -22,7 +22,7 @@
       si_stage: SV2
       tests: ["chip_sw_rv_core_ibex_nmi_irq"]
       bazel: ["//sw/device/tests:rv_core_ibex_nmi_irq_test"]
-      lc_states: ["TEST_UNLOCKED", "DEV", "RMA", "PROD", "PROD_END"]
+      lc_states: ["PROD"]
       features: [
         "RV_CORE_IBEX.CPU.INTERRUPTS"
       ]
@@ -43,7 +43,7 @@
       stage: V2
       si_stage: SV1
       tests: ["chip_sw_rv_core_ibex_rnd"]
-      lc_states: ["TEST_UNLOCKED", "DEV", "RMA", "PROD", "PROD_END"]
+      lc_states: ["PROD"]
       features: [
         "RV_CORE_IBEX.RND"
       ]
@@ -65,7 +65,7 @@
       stage: V2
       si_stage: SV3
       tests: ["chip_sw_rv_core_ibex_address_translation"]
-      lc_states: ["TEST_UNLOCKED", "DEV", "RMA", "PROD", "PROD_END"]
+      lc_states: ["PROD"]
       features: [
         "RV_CORE_IBEX.ADDRESS_TRANSLATION"
       ]
@@ -87,7 +87,7 @@
       stage: V2
       si_stage: SV3
       tests: ["chip_sw_rv_core_ibex_icache_invalidate"]
-      lc_states: ["TEST_UNLOCKED", "DEV", "RMA", "PROD", "PROD_END"]
+      lc_states: ["PROD"]
       features: [
         "RV_CORE_IBEX.CPU.ICACHE"
       ]
@@ -106,7 +106,7 @@
        si_stage: SV1
        tests: ["chip_sw_rstmgr_cpu_info"]
        bazel: ["//sw/device/tests:rstmgr_cpu_info_test"]
-       lc_states: ["TEST_UNLOCKED", "DEV", "RMA", "PROD", "PROD_END"]
+       lc_states: ["PROD"]
        features: [
          "RV_CORE_IBEX.CRASH_DUMP"
        ]
@@ -124,7 +124,7 @@
        si_stage: SV1
        tests: ["chip_sw_rstmgr_cpu_info"]
        bazel: ["//sw/device/tests:rstmgr_cpu_info_test"]
-       lc_states: ["TEST_UNLOCKED", "DEV", "RMA", "PROD", "PROD_END"]
+       lc_states: ["PROD"]
        features: [
          "RV_CORE_IBEX.CRASH_DUMP"
        ]
@@ -143,7 +143,7 @@
        si_stage: SV1
        tests: []
        bazel: ["//sw/device/tests:rv_core_ibex_isa_test_functest"]
-       lc_states: ["TEST_UNLOCKED", "DEV", "RMA", "PROD", "PROD_END"]
+       lc_states: ["PROD"]
        features: [
          "RV_CORE_IBEX.CPU.ISA"
        ]
@@ -202,7 +202,7 @@
        stage: V2
        si_stage: SV1
        tests: []
-       lc_states: ["TEST_UNLOCKED", "DEV", "RMA", "PROD", "PROD_END"]
+       lc_states: ["PROD"]
        features: [
          "RV_CORE_IBEX.CPU.ICACHE",
          "RV_CORE_IBEX.CPU.MEMORY"
@@ -233,7 +233,7 @@
              - ECC error in the register file
             '''
       stage: V3
-      si_stage: None
+      si_stage: NA
       tests: []
     }
   ]

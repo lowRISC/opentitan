@@ -24,7 +24,7 @@
                  "FLASH_CTRL.INFO.CREATOR_PARTITION", "FLASH_CTRL.INFO.OWNER_PARTITION"]
       stage: V2
       si_stage: SV3
-      lc_states: ["DEV", "PROD", "PROD_END", "RMA"]
+      lc_states: ["PROD"]
       tests: ["chip_sw_flash_init"]
       bazel: ["//sw/device/tests:flash_ctrl_test"]
     }
@@ -37,7 +37,7 @@
       features: ["FLASH_CTRL.OP.HOST_READ"]
       stage: V2
       si_stage: SV3
-      lc_states: ["DEV", "PROD", "PROD_END", "RMA"]
+      lc_states: ["PROD"]
       tests: ["chip_sw_flash_ctrl_access",
               "chip_sw_flash_ctrl_access_jitter_en"]
       bazel: ["//sw/device/tests:flash_ctrl_ops_test"]
@@ -53,7 +53,7 @@
       features: ["FLASH_CTRL.OP.PROTOCOL_CTRL"]
       stage: V2
       si_stage: SV3
-      lc_states: ["DEV", "PROD", "PROD_END", "RMA"]
+      lc_states: ["PROD"]
       tests: ["chip_sw_flash_ctrl_ops", "chip_sw_flash_ctrl_ops_jitter_en"]
       bazel: ["//sw/device/tests:flash_ctrl_ops_test"]
     }
@@ -69,7 +69,7 @@
       features: ["FLASH_CTRL.MEM_PROTECTION"]
       stage: V3
       si_stage: SV3
-      lc_states: ["DEV", "PROD", "PROD_END", "RMA"]
+      lc_states: ["PROD"]
       tests: ["chip_sw_flash_ctrl_mem_protection"]
       bazel: ["//sw/device/tests:flash_ctrl_mem_protection_test"]
     }
@@ -92,7 +92,7 @@
       features: ["FLASH_CTRL.RMA"]
       stage: V2
       si_stage: SV3
-      lc_states: ["DEV", "PROD", "PROD_END", "RMA"]
+      lc_states: ["PROD"]
       tests: ["chip_sw_flash_rma_unlocked"]
     }
     {
@@ -110,7 +110,7 @@
       features: ["FLASH_CTRL.INIT.SCRAMBLING_KEYS", "FLASH_CTRL.OP.PROTOCOL_CTRL"]
       stage: V2
       si_stage: SV3
-      lc_states: ["DEV", "PROD", "PROD_END", "RMA"]
+      lc_states: ["PROD"]
       tests: ["chip_sw_flash_init"]
       bazel: ["//sw/device/tests:flash_ctrl_test"]
     }
@@ -125,7 +125,7 @@
             '''
       stage: V2
       si_stage: SV3
-      lc_states: ["DEV", "PROD", "PROD_END", "RMA"]
+      lc_states: ["PROD"]
       tests: ["chip_sw_flash_ctrl_idle_low_power"]
       bazel: ["//sw/device/tests:flash_ctrl_idle_low_power_test"]
     }
@@ -139,7 +139,7 @@
       features: ["FLASH_CTRL.INIT.ROOT_SEEDS", "FLASH_CTRL.INFO.CREATOR_PARTITION", "FLASH_CTRL.INFO.OWNER_PARTITION"]
       stage: V2
       si_stage: SV3
-      lc_states: ["DEV", "PROD", "PROD_END", "RMA"]
+      lc_states: ["PROD"]
       tests: ["chip_sw_keymgr_key_derivation"]
     }
     {
@@ -153,7 +153,7 @@
       features: ["FLASH_CTRL.INFO.CREATOR_PARTITION"]
       stage: V2
       si_stage: SV3
-      lc_states: ["DEV", "PROD", "PROD_END", "RMA"]
+      lc_states: ["PROD"]
       tests: ["chip_sw_flash_ctrl_lc_rw_en"]
       bazel: ["//sw/device/tests:flash_ctrl_info_access_lc_states",
               "//sw/device/tests:flash_ctrl_info_access_lc_states_personalized"]
@@ -166,7 +166,7 @@
       features: ["FLASH_CTRL.RMA"]
       stage: V2
       si_stage: SV3
-      lc_states: ["DEV", "PROD", "PROD_END", "RMA"]
+      lc_states: ["RMA"]
       tests: ["chip_sw_flash_rma_unlocked"]
       bazel: ["//sw/device/tests:flash_ctrl_rma_test"]
     }
@@ -189,7 +189,7 @@
       name: chip_sw_flash_lc_iso_part_sw_rd_en
       desc: '''Verify the lc_iso_part_sw_rd_en signal from LC ctrl.
 
-            - Transition from DEV to PROD to ESCALATION/SCRAP state via OTP and verify
+            - Transition from DEV or PROD to ESCALATION/SCRAP state via OTP and verify
               that this LC signal transitions from 0 to 1 and back to 0. Verify that the SW
               accessibility of the corresponding partition depending on the signal value.
             '''
@@ -245,7 +245,7 @@
             '''
       features: ["FLASH_CTRL.ESCALATION"]
       stage: V2
-      si_stage: None
+      si_stage: NA
       tests: ["chip_sw_all_escalation_resets"]
     }
     {
@@ -257,7 +257,7 @@
             - Verify that this region can be read / written to by the SW in any LC state.
             '''
       stage: V2
-      si_stage: None
+      si_stage: NA
       tests: ["chip_prim_tl_access"]
     }
     {
@@ -270,6 +270,7 @@
             '''
       stage: V2
       si_stage: SV3
+      lc_states: ["PROD"]
       tests: ["chip_sw_flash_ctrl_clock_freqs"]
       bazel: ["//sw/device/tests:flash_ctrl_clock_freqs_test"]
     }
@@ -283,7 +284,7 @@
             the internal status should be clean and should not send out more alerts.
             '''
       stage: V2
-      si_stage: None
+      si_stage: NA
       tests: ["chip_sw_flash_crash_alert"]
     }
     {
@@ -307,6 +308,7 @@
             '''
       stage: V2
       si_stage: SV3
+      lc_states: ["PROD"]
       tests: ["chip_sw_flash_crash_alert"]
       bazel: ["//sw/device/tests:flash_ctrl_write_clear_test"]
     }

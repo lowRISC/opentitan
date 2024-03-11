@@ -25,6 +25,7 @@
       features: ["I2C.MODE.HOST", "I2C.OPERATION.READ", "I2C.OPERATION.WRITE"]
       stage: V2
       si_stage: SV2
+      lc_states: ["PROD"]
       bazel: ["//sw/device/tests/pmod:i2c_host_eeprom_test"]
       tests: ["chip_sw_i2c_host_tx_rx",
               "chip_sw_i2c_host_tx_rx_idx1",
@@ -49,6 +50,7 @@
       features: ["I2C.MODE.TARGET", "I2C.OPERATION.READ", "I2C.OPERATION.WRITE"]
       stage: V2
       si_stage: SV2
+      lc_states: ["PROD"]
       bazel: ["//sw/device/tests:i2c_target_test"]
       tests: ["chip_sw_i2c_device_tx_rx"]
     }
@@ -75,6 +77,7 @@
       features: ["I2C.MODE.HOST", "I2C.MODE.TARGET", "I2C.SPEED.STANDARD", "I2C.SPEED.FAST", "I2C.SPEED.FASTPLUS"]
       stage: V3
       si_stage: SV3
+      lc_states: ["PROD"]
       bazel: ["//sw/device/tests/pmod:i2c_host_fram_test"]
       tests: []
     }
@@ -94,6 +97,7 @@
       features: ["I2C.MODE.HOST", "I2C.OVERRIDE"]
       stage: V3
       si_stage: SV3
+      lc_states: ["PROD"]
       tests: []
     }
     {
@@ -119,6 +123,7 @@
       features: ["I2C.MODE.HOST", "I2C.PROTOCOL.CLOCKSTRETCHING"]
       stage: V3
       si_stage: SV3
+      lc_states: ["PROD"]
       tests: []
     }
     {
@@ -138,6 +143,7 @@
       features: ["I2C.MODE.HOST", "I2C.PROTOCOL.NACK"]
       stage: V3
       si_stage: SV3
+      lc_states: ["PROD"]
       tests: []
       bazel: ["//sw/device/tests/pmod:i2c_host_eeprom_test"]
     }
@@ -157,6 +163,7 @@
       features: ["I2C.MODE.TARGET", "I2C.PROTOCOL.REPEATEDSTART"]
       stage: V3
       si_stage: SV3
+      lc_states: ["PROD"]
       tests: []
     }
   ]

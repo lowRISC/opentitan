@@ -18,10 +18,7 @@
             '''
       stage: V2
       si_stage: SV3
-      lc_states: [
-        "PROD",
-        "PROD_END",
-      ]
+      lc_states: ["PROD"]
       features: [
         "CLKMGR.HINT.AES",
         "CLKMGR.HINT.HMAC",
@@ -57,10 +54,7 @@
             '''
       stage: V2
       si_stage: SV3
-      lc_states: [
-        "PROD",
-        "PROD_END",
-      ]
+      lc_states: ["PROD"]
       features: [
         "CLKMGR.HINT.AES",
         "CLKMGR.HINT.HMAC",
@@ -93,10 +87,7 @@
             '''
       stage: V2
       si_stage: SV3
-      lc_states: [
-        "PROD",
-        "PROD_END",
-      ]
+      lc_states: ["PROD"]
       features: [
         "CLKMGR.ENABLE.IO",
         "CLKMGR.ENABLE.IO_DIV2",
@@ -176,7 +167,7 @@
             with the right frequency after calibration. There are a few such tests already.
             '''
       stage: V2
-      si_stage: NA
+      si_stage: SV3
       lc_states: [
         "DEV",
       ]
@@ -225,10 +216,7 @@
             '''
       stage: V3
       si_stage: SV3
-      lc_states: [
-        "PROD",
-        "PROD_END",
-      ]
+      lc_states: ["PROD"]
       features: [
         "CLKMGR.JITTER.REGWEN",
         "CLKMGR.JITTER.ENABLE",
@@ -282,7 +270,6 @@
         "chip_sw_flash_init_reduced_freq",
         "chip_sw_csrng_edn_concurrency_reduced_freq",
       ]
-      bazel: []
     }
     {
       name: chip_sw_clkmgr_deep_sleep_frequency
@@ -294,10 +281,7 @@
             '''
       stage: V2
       si_stage: SV3
-      lc_states: [
-        "PROD",
-        "PROD_END",
-      ]
+      lc_states: ["PROD"]
       features: [
         "CLKMGR.MEAS_CTRL.REGWEN",
         "CLKMGR.MEAS_CTRL.IO",
@@ -322,10 +306,7 @@
             '''
       stage: V2
       si_stage: SV3
-      lc_states: [
-        "PROD",
-        "PROD_END",
-      ]
+      lc_states: ["PROD"]
       features: [
         "CLKMGR.MEAS_CTRL.REGWEN",
         "CLKMGR.MEAS_CTRL.IO",
@@ -350,6 +331,7 @@
             '''
       stage: V2
       si_stage: SV3
+      lc_states: ["PROD"]
       features: [
         "CLKMGR.MEAS_CTRL.REGWEN",
         "CLKMGR.MEAS_CTRL.IO",
@@ -375,7 +357,6 @@
       stage: V2
       si_stage: NA
       tests: ["chip_sw_all_escalation_resets"]
-      bazel: []
     }
     {
       name: chip_sw_clkmgr_alert_handler_clock_enables
@@ -389,12 +370,7 @@
             '''
       stage: V2
       si_stage: SV3
-      lc_states: [
-        "DEV",
-        "PROD",
-        "PROD_END",
-        "RMA",
-      ]
+      lc_states: ["PROD"]
       features: ["CLKMGR.ALERT_HANDLER.CLOCK_STATUS"]
       tests: ["chip_sw_alert_handler_lpg_clkoff"]
       bazel: ["//sw/device/tests:alert_handler_lpg_clkoff_test"]

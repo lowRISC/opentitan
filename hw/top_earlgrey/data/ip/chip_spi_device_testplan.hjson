@@ -74,15 +74,13 @@
               model.
             '''
       stage: V3
-      si_stage: None
-      lc_states: [ "PROD" ]
+      si_stage: NA
       features: [
         "SPI_DEVICE.MODE.PASSTHROUGH",
         "SPI_DEVICE.HW.LANES",
         "SPI_DEVICE.MODE.PASSTHROUGH.CMD_FILTER",
       ]
       tests: []
-      bazel: []
     }
     {
       name: chip_sw_spi_device_pass_through_collision

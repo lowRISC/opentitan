@@ -17,7 +17,7 @@
             '''
       features: ["OTP_CTRL.INIT"]
       stage: V2
-      si_stage: None
+      si_stage: NA
       tests: ["chip_sw_lc_ctrl_transition"]
     }
     {
@@ -41,7 +41,7 @@
       features: ["OTP_CTRL.KEY_DERIVATION", "OTP_CTRL.PARTITION.SECRET1"]
       stage: V2
       si_stage: SV1
-      lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
+      lc_states: ["PROD"]
       tests: [// Verifies both, main and retention SRAM scrambling.
               "chip_sw_sram_ctrl_scrambled_access",
               "chip_sw_flash_init",
@@ -62,6 +62,7 @@
       features: ["OTP_CTRL.ENTROPY_READ"]
       stage: V2
       si_stage: SV1
+      lc_states: ["PROD"]
       tests: ["chip_sw_sram_ctrl_scrambled_access",
               "chip_sw_flash_init",
               "chip_sw_keymgr_key_derivation",
@@ -87,6 +88,7 @@
                  "OTP_CTRL.PARTITION.LIFE_CYCLE", "OTP_CTRL.PARTITION.SECRET2"]
       stage: V2
       si_stage: SV1
+      lc_states: ["PROD"]
       tests: ["chip_sw_lc_ctrl_transition"]
     }
     {
@@ -125,6 +127,8 @@
       stage: V2
       si_stage: SV1
       tests: ["chip_sw_lc_ctrl_otp_hw_cfg0"]
+      lc_states: ["PROD"]
+      bazel: ["//sw/device/tests:lc_ctrl_otp_hw_cfg_test"]
     }
     {
       name: chip_sw_otp_ctrl_lc_signals
@@ -147,7 +151,7 @@
             '''
       features: ["OTP_CTRL.PARTITION.SECRET2"]
       stage: V2
-      si_stage: None
+      si_stage: NA
       tests: [
         // lc_dft_en_i
         "chip_prim_tl_access",
@@ -197,7 +201,7 @@
                  "OTP_CTRL.PARTITIONS_FEATURE.READ_LOCK",
                  "OTP_CTRL.PARTITIONS_FEATURE.WRITE_LOCK"]
       stage: V3
-      si_stage: None
+      si_stage: NA
       tests: ["chip_sw_otp_ctrl_vendor_test_csr_access"]
     }
     {
@@ -242,7 +246,7 @@
       features: ["OTP_CTRL.PARTITIONS_FEATURE.READ_LOCK", "OTP_CTRL.PARTITIONS_FEATURE.WRITE_LOCK",
                  "OTP_CTRL.ERROR_HANDLING.RECOVERABLE"]
       stage: V3
-      si_stage: None
+      si_stage: NA
       tests: []
     }
     {
@@ -257,7 +261,7 @@
       '''
       features: ["OTP_CTRL.BACKGROUND_CHECK.CHECK_TIMEOUT"]
       stage: V3
-      si_stage: None
+      si_stage: NA
       tests: []
     }
   ]
