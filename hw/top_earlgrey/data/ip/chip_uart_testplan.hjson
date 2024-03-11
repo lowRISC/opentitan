@@ -18,6 +18,7 @@
             '''
       stage: V1
       si_stage: SV2
+      lc_states: ["PROD"]
       features: ["UART.FIFO_INTERRUPTS"]
       tests: ["chip_sw_uart_tx_rx"]
       tags: ["gls"]
@@ -35,6 +36,7 @@
             '''
       stage: V1
       si_stage: SV3
+      lc_states: ["PROD"]
       features: ["UART.FIFO_INTERRUPTS"]
       tests: ["chip_sw_uart_tx_rx", "chip_sw_uart_tx_rx_idx1", "chip_sw_uart_tx_rx_idx2",
               "chip_sw_uart_tx_rx_idx3"]
@@ -49,6 +51,7 @@
             '''
       stage: V1
       si_stage: SV3
+      lc_states: ["PROD"]
       features: ["UART.BAUD_RATE_CONTROL"]
       tests: ["chip_sw_uart_rand_baudrate"]
       bazel: ["//sw/device/tests:uart_baud_rate_test"]
@@ -71,9 +74,8 @@
 
             '''
       stage: V1
-      si_stage: SV3
+      si_stage: NA
       features: []
-      lc_states: ["RMA"]
       tests: ["chip_sw_uart_tx_rx_alt_clk_freq", "chip_sw_uart_tx_rx_alt_clk_freq_low_speed"]
     }
     {
@@ -88,6 +90,7 @@
             '''
       stage: V3
       si_stage: SV3
+      lc_states: ["PROD"]
       features: ["UART.PARITY"]
       tests: []
     }
@@ -101,9 +104,10 @@
             '''
       stage: V3
       si_stage: SV3
+      lc_states: ["PROD"]
       features: ["UART.LINE_LOOPBACK"]
       tests: []
-	  bazel: ["//sw/device/tests:uart_loopback_test"]
+      bazel: ["//sw/device/tests:uart_loopback_test"]
     },
     {
       name: chip_sw_uart_system_loopback
@@ -115,9 +119,10 @@
             '''
       stage: V3
       si_stage: SV3
+      lc_states: ["PROD"]
       features: ["UART.SYSTEM_LOOPBACK"]
       tests: []
-	  bazel: ["//sw/device/tests:uart_loopback_test"]
+      bazel: ["//sw/device/tests:uart_loopback_test"]
     },
     {
       name: chip_sw_uart_line_break
@@ -133,6 +138,7 @@
             '''
       stage: V3
       si_stage: SV3
+      lc_states: ["PROD"]
       features: ["UART.LINE_BREAK"]
       tests: []
     },
@@ -150,6 +156,7 @@
             '''
       stage: V3
       si_stage: SV3
+      lc_states: ["PROD"]
       features: ["UART.FIFO_INTERRUPTS"]
       tests: ["chip_sw_uart_tx_rx"]
       bazel: ["//sw/device/tests:uart_tx_rx_test"]

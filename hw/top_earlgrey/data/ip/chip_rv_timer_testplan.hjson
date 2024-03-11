@@ -15,7 +15,7 @@
             '''
       stage: V2
       si_stage: SV3
-      lc_states: ["DEV", "PROD", "RMA"]
+      lc_states: ["PROD"]
       features: ["RV_TIMER.ENABLE", "RV_TIMER.CONFIG", "RV_TIMER.COMPARE", "RV_TIMER.INTERRUPT",
                  "RV_TIMER.COUNTER"]
       tests: ["chip_sw_rv_timer_irq"]
@@ -35,7 +35,7 @@
             '''
       stage: V3
       si_stage: SV3
-      lc_states: ["DEV", "PROD", "RMA"]
+      lc_states: ["PROD"]
       features: ["RV_TIMER.ENABLE", "RV_TIMER.CONFIG", "RV_TIMER.COMPARE"]
       tests: ["chip_sw_rv_timer_systick_test"]
       bazel: ["//sw/device/tests:rv_timer_systick_test"]
@@ -54,7 +54,7 @@
             '''
       stage: V3
       si_stage: SV3
-      lc_states: ["DEV", "PROD", "RMA"]
+      lc_states: ["PROD"]
       features: ["RV_TIMER.ENABLE", "RV_TIMER.CONFIG", "RV_TIMER.COMPARE", "RV_TIMER.INTERRUPT",
                  "RV_TIMER.COUNTER", "RV_TIMER.RISCV_CSRS_INTEGRATION"]
       tests: ["chip_sw_rv_timer_systick_test"]
