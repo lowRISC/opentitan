@@ -6,6 +6,7 @@
 
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/dif/dif_usbdev.h"
+#include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/usb_testutils.h"
 
@@ -434,5 +435,43 @@ status_t usb_testutils_controlep_init(usb_testutils_controlep_ctx_t *ctctx,
   // receiving control transfers from the host
   TRY(dif_usbdev_interface_enable(ctx->dev, kDifToggleEnabled));
 
+  return OK_STATUS();
+}
+
+// Proceed only when the device has been configured; this allows host-side
+// software to establish communication.
+status_t usb_testutils_controlep_config_wait(
+    usb_testutils_controlep_ctx_t *ctctx, usb_testutils_ctx_t *ctx) {
+  // In simulation the DPI (host) is very responsive, and it will take only
+  // a handful of bus frames to set the configuration; importantly we want
+  // regression simulations to terminate sooner rather than later if there
+  // is a gross connectivity failure.
+  uint32_t timeout_usecs = 8 * 1000;  // 8ms = 8 x 1ms bus frames
+  switch (kDeviceType) {
+    case kDeviceSimDV:
+      break;
+    case kDeviceSimVerilator: {
+      // The Verilator simulation runs the CPU and the USB DPI model on the same
+      // clock, and the USB bus frame is 1ms (= 48,000 clock cycles), so we
+      // simply want to set the timeout in terms of clock cycles.
+      uint64_t clk_cycles = 48 * timeout_usecs;
+      timeout_usecs =
+          (uint32_t)udiv64_slow(clk_cycles * 1000000, kClockFreqCpuHz, NULL);
+    } break;
+    default:
+      // With an FGPA build the host software will respond more slowly and there
+      // may even be a requirement for user intervention such as cabling.
+      timeout_usecs = 30 * 1000000;
+      break;
+  }
+  ibex_timeout_t timeout = ibex_timeout_init(timeout_usecs);
+  while (ctctx->device_state != kUsbTestutilsDeviceConfigured &&
+         !ibex_timeout_check(&timeout)) {
+    TRY(usb_testutils_poll(ctx));
+  }
+  if (ctctx->device_state != kUsbTestutilsDeviceConfigured) {
+    // Don't wait indefinitely because there may be no usable connection.
+    return UNAVAILABLE();
+  }
   return OK_STATUS();
 }

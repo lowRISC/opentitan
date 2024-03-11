@@ -6,7 +6,7 @@
 //
 // For each of the pin/bus configurations in turn, this test runs the USB test
 // software, device and DPI model through all of the initial communications to
-// set up the device and select a confgiguration.
+// set up the device and select a configuration.
 //
 // It is necessary to perform a complete reset of the usbdev hardware block
 // before starting the next test because the DIF keeps the 'Available buffers'
@@ -179,14 +179,8 @@ bool test_main(void) {
 
     // Configuration shall have been selected only after the host/DPI model has
     // successfully concluded the SET_CONFIGURATION control transfer
-    const uint32_t kTimeoutUsecs = 30 * 1000000;
-    ibex_timeout_t timeout = ibex_timeout_init(kTimeoutUsecs);
-    while (usbdev_control.device_state != kUsbTestutilsDeviceConfigured &&
-           !ibex_timeout_check(&timeout)) {
-      CHECK_STATUS_OK(usb_testutils_poll(&usbdev));
-    }
-    // Check that we were configured, implying that communication is working.
-    CHECK(usbdev_control.device_state == kUsbTestutilsDeviceConfigured);
+    CHECK_STATUS_OK(
+        usb_testutils_controlep_config_wait(&usbdev_control, &usbdev));
 
     if (kDeviceType == kDeviceSimDV || kDeviceType == kDeviceSimVerilator) {
       // TODO: We shall probably want simply to drop the connection and control
