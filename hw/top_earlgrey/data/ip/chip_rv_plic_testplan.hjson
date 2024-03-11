@@ -18,6 +18,7 @@
             '''
       stage: V2
       si_stage: SV2
+      lc_states: ["PROD"]
       features: ["RV_PLIC.PRIORITY", "RV_PLIC.ENABLE"]
       tests: [
         "chip_plic_all_irqs_0",
@@ -40,6 +41,7 @@
             '''
       stage: V2
       si_stage: SV3
+      lc_states: ["PROD"]
       features: ["RV_PLIC.PRIORITY", "RV_PLIC.ENABLE"]
       tests: ["chip_sw_plic_sw_irq"]
       bazel: ["//sw/device/tests:plic_sw_irq_test"],

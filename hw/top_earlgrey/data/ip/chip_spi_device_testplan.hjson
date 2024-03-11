@@ -26,13 +26,7 @@
       stage: V2
       // Can function as a smoketest, but also may be useful as part of a bootloader for early bring-up.
       si_stage: SV2
-      lc_states: [
-        "TEST_UNLOCKED",
-        "DEV",
-        "PROD",
-        "PROD_END",
-        "RMA",
-      ]
+      lc_states: ["PROD"]
       features: [
         "SPI_DEVICE.MODE.GENERIC",
         "SPI_DEVICE.MODE.GENERIC.ASYNC_FIFOS",
@@ -109,15 +103,13 @@
               model.
             '''
       stage: V3
-      si_stage: None
-      lc_states: [ "PROD" ]
+      si_stage: NA
       features: [
         "SPI_DEVICE.MODE.PASSTHROUGH",
         "SPI_DEVICE.HW.LANES",
         "SPI_DEVICE.MODE.PASSTHROUGH.CMD_FILTER",
       ]
       tests: []
-      bazel: []
     }
     {
       name: chip_sw_spi_device_pass_through_collision

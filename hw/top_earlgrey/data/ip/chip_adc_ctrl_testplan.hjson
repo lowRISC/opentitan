@@ -27,6 +27,7 @@
       features:["ADC_CTRL.MODE.LOW_POWER"]
       stage: V2
       si_stage: SV3
+      lc_states: ["PROD"]
       tests: ["chip_sw_adc_ctrl_sleep_debug_cable_wakeup"]
     }
     {
@@ -51,6 +52,7 @@
       features:["ADC_CTRL.MODE.LOW_POWER"]
       stage: V2
       si_stage: SV3
+      lc_states: ["PROD"]
       tests: ["chip_sw_adc_ctrl_sleep_debug_cable_wakeup"]
     }
     {
@@ -59,6 +61,7 @@
       features:["ADC_CTRL.MODE.NORMAL"]
       stage: V3
       si_stage: SV2
+      lc_states: ["PROD"]
       tests: []
     }
     {
@@ -67,6 +70,7 @@
       features:["ADC_CTRL.ONESHOT", "ADC_CTRL.MODE.NORMAL"]
       stage: V3
       si_stage: SV3
+      lc_states: ["PROD"]
       tests: []
     }
   ]
