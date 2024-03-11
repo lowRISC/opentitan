@@ -3232,7 +3232,6 @@ opentitan_test(
     srcs = ["spi_device_flash_smoketest.c"],
     cw310 = new_cw310_params(
         test_cmd = """
-            --bitstream="{bitstream}"
             --bootstrap="{firmware}"
             "{firmware:elf}"
         """,
