@@ -3,9 +3,11 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "//rules:opentitan_test.bzl",
+    "//rules/opentitan:defs.bzl",
     "cw310_params",
-    "opentitan_functest",
+    "opentitan_test",
+    "rsa_key_for_lc_state",
+    "spx_key_for_lc_state",
 )
 load(
     "//rules:const.bzl",
@@ -16,7 +18,6 @@ load(
 load(
     "//rules:opentitan.bzl",
     "RSA_SPX_KEY_STRUCTS",
-    "get_key_structs_for_lc_state",
     "opentitan_flash_binary",
 )
 load(
@@ -194,11 +195,12 @@ opentitan_flash_binary(
 ]
 
 [
-    opentitan_functest(
+    opentitan_test(
         name = "sigverify_spx_{}_{}".format(
             lc_state,
             t["name"],
         ),
+        srcs = ["sigverify_spx_test.c"],
         cw310 = cw310_params(
             bitstream = ":bitstream_sigverify_spx_{}_{}".format(
                 lc_state,
@@ -207,9 +209,25 @@ opentitan_flash_binary(
             exit_success = t["exit_success"][lc_state],
             tags = maybe_skip_in_ci(lc_state_val),
         ),
-        key_struct = get_key_structs_for_lc_state(lc_state_val)[0],
-        ot_flash_binary = ":empty_test_sigverify_spx",
-        targets = ["cw310_rom_with_fake_keys"],
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        },
+        rsa_key = rsa_key_for_lc_state(
+            RSA_SPX_KEY_STRUCTS,
+            lc_state_val,
+        ),
+        spx_key = spx_key_for_lc_state(
+            RSA_SPX_KEY_STRUCTS,
+            lc_state_val,
+        ),
+        deps = [
+            "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+            "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
+            "//sw/device/lib/testing/test_framework:ottf_main",
+            "//sw/device/silicon_creator/lib/drivers:lifecycle",
+            "//sw/device/silicon_creator/lib/drivers:otp",
+            "//sw/device/silicon_creator/lib/sigverify:spx_verify",
+        ],
     )
     for lc_state, lc_state_val in get_lc_items()
     for t in SIGVERIFY_SPX_CASES
