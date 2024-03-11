@@ -95,9 +95,12 @@ class uart_loopback_vseq extends uart_tx_rx_vseq;
     cfg.m_uart_agent_cfg.en_tx_monitor = 1;
     cfg.m_uart_agent_cfg.en_rx_monitor = 1;
 
-    // if noise filter is on, need 3 cycles delay to make sure internal rx value is 1, otherwise,
-    // unexpected value (0) may be propagated to RX datapath
-    if (en_noise_filter) cfg.clk_rst_vif.wait_clks(3);
+    // CDC sync on RX input adds propagation delay, so wait some cycles to ensure the internal RX
+    // value is 1 before disabling line loopback. Otherwise, unexpected value (0) may be propagated
+    // to RX datapath and be falsely interpreted as the beginning of a START bit.
+    cfg.clk_rst_vif.wait_clks(2);
+    // If noise filter is on, need an additional cycle of delay.
+    if (en_noise_filter) cfg.clk_rst_vif.wait_clks(1);
 
     ral.ctrl.llpbk.set(0);
     ral.fifo_ctrl.rxrst.set(1);
