@@ -242,7 +242,7 @@ inline uint32_t launder32(uint32_t val) {
 
   // When we're building for static analysis, reduce false positives by
   // short-circuiting the inline assembly block.
-#if OT_BUILD_FOR_STATIC_ANALYZER
+#if OT_BUILD_FOR_STATIC_ANALYZER || OT_DISABLE_HARDENING
   return val;
 #endif
 
@@ -264,6 +264,9 @@ inline uint32_t launder32(uint32_t val) {
  */
 OT_WARN_UNUSED_RESULT
 inline uintptr_t launderw(uintptr_t val) {
+#if OT_BUILD_FOR_STATIC_ANALYZER || OT_DISABLE_HARDENING
+  return val;
+#endif
   asm volatile("" : "+r"(val));
   return val;
 }
@@ -557,6 +560,7 @@ inline uintptr_t ct_cmovw(ct_boolw_t c, uintptr_t a, uintptr_t b) {
 #define HARDENED_CHECK_OP_LE_ "bleu"
 #define HARDENED_CHECK_OP_GE_ "bgeu"
 
+#ifndef OT_DISABLE_HARDENING
 // clang-format off
 #define HARDENED_CHECK_(op_, a_, b_) \
   asm volatile(                      \
@@ -570,7 +574,20 @@ inline uintptr_t ct_cmovw(ct_boolw_t c, uintptr_t a, uintptr_t b) {
   do {                                        \
     asm volatile(HARDENED_UNIMP_SEQUENCE_()); \
   } while (false)
-#else  // OT_PLATFORM_RV32
+
+#else  // OT_DISABLE_HARDENING
+// We allow disabling hardening to measure the impact of the hardened sequences
+// on code size.
+#define HARDENED_CHECK_(op_, a_, b_) \
+  do {                               \
+    (void)(a_);                      \
+    (void)(b_);                      \
+  } while (0)
+#define HARDENED_TRAP_() \
+  do {                   \
+  } while (0)
+#endif  // OT_DISABLE_HARDENING
+#else   // OT_PLATFORM_RV32
 #include <assert.h>
 
 #define HARDENED_CHECK_OP_EQ_ ==
