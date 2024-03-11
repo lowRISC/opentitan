@@ -428,7 +428,7 @@ Parameter      | Default | Top Earlgrey  | Description
 ---------------|---------|---------------|---------------
 `Width`        | 16      | 16            | Native OTP word width.
 `Depth`        | 1024    | 1024          | Depth of OTP macro.
-`CmdWidth`     | 3       | 3             | Width of the OTP command.
+`CmdWidth`     | 7       | 7             | Width of the OTP command.
 `ErrWidth`     | 3       | 3             | Width of error code output signal.
 `PwrSeqWidth`  | 2       | 2             | Width of power sequencing signals to/from AST.
 `SizeWidth`    | 2       | 2             | Width of the size field.
@@ -459,7 +459,7 @@ Signal                  | Direction        | Type                        | Descr
 `ready_o`               | `output`         | `logic`                     | Ready signal for the command handshake.
 `valid_i`               | `input`          | `logic`                     | Valid signal for the command handshake.
 `size_i`                | `input`          | `logic [SizeWidth-1:0]`     | Number of native OTP words to transfer, minus one: `2'b00 = 1 native word` ... `2'b11 = 4 native words`.
-`cmd_i`                 | `input`          | `logic [CmdWidth-1:0]`      | OTP command: `3'b000 = read`, `3'b001 = write`, `3'b010 = read raw`, `3'b011 = write raw`,  `3'b111 = initialize`
+`cmd_i`                 | `input`          | `logic [CmdWidth-1:0]`      | OTP command: `7'b1000101 = read`, `7'b0110111 = write`, `7'b1111001 = read raw`, `7'b1100010 = write raw`,  `7'b0101100 = initialize`
 `addr_i`                | `input`          | `logic [$clog2(Depth)-1:0]` | OTP word address.
 `wdata_i`               | `input`          | `logic [IfWidth-1:0]`       | Write data for write commands.
 `valid_o`               | `output`         | `logic`                     | Valid signal for command response.
