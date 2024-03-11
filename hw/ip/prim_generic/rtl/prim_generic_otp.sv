@@ -54,7 +54,7 @@ module prim_generic_otp
   input                          valid_i,
   // #(Native words)-1, e.g. size == 0 for 1 native word.
   input [SizeWidth-1:0]          size_i,
-  // 000: read, 001: write, 010: read raw, 011: write raw, 111: init
+  // See prim_otp_pkg for the command encoding.
   input  cmd_e                   cmd_i,
   input [AddrWidth-1:0]          addr_i,
   input [IfWidth-1:0]            wdata_i,
