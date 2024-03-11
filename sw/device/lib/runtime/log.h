@@ -98,6 +98,8 @@ void base_log_internal_core(log_fields_t log, ...);
  */
 void base_log_internal_dv(const log_fields_t *log, uint32_t nargs, ...);
 
+extern char _dv_log_offset[];
+
 /**
  * Basic logging macro that all other logging macros delegate to.
  *
@@ -119,7 +121,7 @@ void base_log_internal_dv(const log_fields_t *log, uint32_t nargs, ...);
       __attribute__((section(".logs.fields")))                   \
       static const log_fields_t kLogFields =                     \
           LOG_MAKE_FIELDS_(severity, format, ##__VA_ARGS__);     \
-      base_log_internal_dv(&kLogFields,                          \
+      base_log_internal_dv((const log_fields_t*)((char*)&kLogFields + (uintptr_t)&_dv_log_offset), \
                            OT_VA_ARGS_COUNT(format, ##__VA_ARGS__), \
                            ##__VA_ARGS__); /* clang-format on */ \
     } else {                                                     \
