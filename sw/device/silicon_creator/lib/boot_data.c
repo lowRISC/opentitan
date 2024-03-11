@@ -543,6 +543,7 @@ static rom_error_t boot_data_default_get(lifecycle_state_t lc_state,
 
   HARDENED_RETURN_IF_ERROR(res);
 
+  memset(boot_data, 0, sizeof(*boot_data));
   boot_data->is_valid = kBootDataValidEntry;
   boot_data->identifier = kBootDataIdentifier;
   boot_data->version = kBootDataVersion2;
