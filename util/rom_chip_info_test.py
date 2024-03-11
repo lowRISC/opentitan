@@ -84,16 +84,16 @@ class TestFileOperations(unittest.TestCase):
         """Reading a properly-formatted version file produces the expected int.
         """
         version = rom_chip_info.read_version_file(
-            pathlib.Path("fake/path/version.txt"))
+            pathlib.Path("fake/path/version.txt"), None)
         self.assertEqual(version, EXAMPLE_SHA1_DIGEST)
 
     @patch("version_file.open", mock_open(read_data=''))
     def test_read_version_file_empty(self):
         """Reading an empty version file raises an exception.
         """
-        with self.assertRaisesRegex(ValueError, "invalid literal for int"):
-            rom_chip_info.read_version_file(
-                pathlib.Path("fake/path/version.txt"))
+        version = rom_chip_info.read_version_file(
+            pathlib.Path("fake/path/version.txt"), f'{EXAMPLE_SHA1_DIGEST:x}')
+        self.assertEqual(version, EXAMPLE_SHA1_DIGEST)
 
     @patch("version_file.open", mock_open(read_data='BUILD_SCM_REVISION xyz'))
     def test_read_version_file_invalid_hex(self):
@@ -101,7 +101,7 @@ class TestFileOperations(unittest.TestCase):
         """
         with self.assertRaisesRegex(ValueError, "invalid literal for int"):
             rom_chip_info.read_version_file(
-                pathlib.Path("fake/path/version.txt"))
+                pathlib.Path("fake/path/version.txt"), None)
 
     @patch("pathlib.Path.open", new_callable=mock_open)
     def test_write_source_file(self, mock_path_open):
