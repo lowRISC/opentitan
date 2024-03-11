@@ -1260,6 +1260,111 @@ module usbdev
   assign hw2reg.wake_events.bus_reset.de = 1'b1;
   assign hw2reg.wake_events.bus_reset.d = usb_aon_bus_reset_i;
 
+  /////////////////////////////////////
+  // Diagnostic/performance counters //
+  /////////////////////////////////////
+
+  // SW write strobes for the event enables of the counters.
+  logic ctr_out_ev_qe;
+  logic ctr_in_ev_qe;
+  logic ctr_errors_ev_qe;
+  assign ctr_out_ev_qe = &{reg2hw.count_out.ign_avsetup.qe,
+                           reg2hw.count_out.drop_avout.qe,
+                           reg2hw.count_out.drop_rx.qe,
+                           reg2hw.count_out.datatog_out.qe};
+  assign ctr_in_ev_qe = &{reg2hw.count_in.timeout.qe,
+                          reg2hw.count_in.nak.qe,
+                          reg2hw.count_in.nodata.qe};
+  assign ctr_errors_ev_qe = &{reg2hw.count_errors.crc5.qe,
+                              reg2hw.count_errors.crc16.qe,
+                              reg2hw.count_errors.bitstuff.qe,
+                              reg2hw.count_errors.pid_invalid.qe};
+
+  // Counters use 'rst_n' and remain at zero in Stubbed implementation
+  usbdev_counter #(.NEndpoints(NEndpoints), .NEvents(4)) u_ctr_out(
+    .clk_i        (clk_i),
+    .rst_ni       (rst_n),
+    .reset_i      (reg2hw.count_out.rst.qe & reg2hw.count_out.rst.q),
+    .event_i      (4'h0),
+    .ep_i         (4'h0),
+    // Set of events being counted.
+    .ev_qe_i      (ctr_out_ev_qe),
+    .ev_i         ({reg2hw.count_out.ign_avsetup.q,
+                    reg2hw.count_out.drop_avout.q,
+                    reg2hw.count_out.drop_rx.q,
+                    reg2hw.count_out.datatog_out.q}),
+    .ev_o         ({hw2reg.count_out.ign_avsetup.d,
+                    hw2reg.count_out.drop_avout.d,
+                    hw2reg.count_out.drop_rx.d,
+                    hw2reg.count_out.datatog_out.d}),
+    // Endpoints being monitored.
+    .endp_qe_i    (reg2hw.count_out.endpoints.qe),
+    .endpoints_i  (reg2hw.count_out.endpoints.q),
+    .endpoints_o  (hw2reg.count_out.endpoints.d),
+    .count_o      (hw2reg.count_out.count.d)
+  );
+
+  usbdev_counter #(.NEndpoints(NEndpoints), .NEvents(3)) u_ctr_in(
+    .clk_i        (clk_i),
+    .rst_ni       (rst_n),
+    .reset_i      (reg2hw.count_in.rst.qe & reg2hw.count_in.rst.q),
+    .event_i      (3'b0),
+    .ep_i         (4'h0),
+    // Set of events being counted.
+    .ev_qe_i      (ctr_in_ev_qe),
+    .ev_i         ({reg2hw.count_in.timeout.q,
+                    reg2hw.count_in.nak.q,
+                    reg2hw.count_in.nodata.q}),
+    .ev_o         ({hw2reg.count_in.timeout.d,
+                    hw2reg.count_in.nak.d,
+                    hw2reg.count_in.nodata.d}),
+    // Endpoints being monitored.
+    .endp_qe_i    (reg2hw.count_in.endpoints.qe),
+    .endpoints_i  (reg2hw.count_in.endpoints.q),
+    .endpoints_o  (hw2reg.count_in.endpoints.d),
+    .count_o      (hw2reg.count_in.count.d)
+  );
+
+  usbdev_counter #(.NEndpoints(NEndpoints), .NEvents(1)) u_ctr_nodata_in(
+    .clk_i        (clk_i),
+    .rst_ni       (rst_n),
+    .reset_i      (reg2hw.count_nodata_in.rst.qe & reg2hw.count_nodata_in.rst.q),
+    .event_i      (1'b0),
+    .ep_i         (4'h0),
+    // Single event for this counter, so enables not required.
+    .ev_qe_i      (1'b1),
+    .ev_i         (1'b1),
+    .ev_o         (), // not used
+    // Endpoints being monitored.
+    .endp_qe_i    (reg2hw.count_nodata_in.endpoints.qe),
+    .endpoints_i  (reg2hw.count_nodata_in.endpoints.q),
+    .endpoints_o  (hw2reg.count_nodata_in.endpoints.d),
+    .count_o      (hw2reg.count_nodata_in.count.d)
+  );
+
+  usbdev_counter #(.NEndpoints(1), .NEvents(4)) u_ctr_errors(
+    .clk_i        (clk_i),
+    .rst_ni       (rst_n),
+    .reset_i      (reg2hw.count_errors.rst.qe & reg2hw.count_errors.rst.q),
+    .event_i      (4'h0),
+    .ep_i         (1'b0),
+    // Set of events being counted.
+    .ev_qe_i      (ctr_errors_ev_qe),
+    .ev_i         ({reg2hw.count_errors.crc5.q,
+                    reg2hw.count_errors.crc16.q,
+                    reg2hw.count_errors.bitstuff.q,
+                    reg2hw.count_errors.pid_invalid.q}),
+    .ev_o         ({hw2reg.count_errors.crc5.d,
+                    hw2reg.count_errors.crc16.d,
+                    hw2reg.count_errors.bitstuff.d,
+                    hw2reg.count_errors.pid_invalid.d}),
+    // This events are not reliably associated with specific endpoints, so no endpoint enables.
+    .endp_qe_i    (1'b1),
+    .endpoints_i  (1'b1),
+    .endpoints_o  (), // not used
+    .count_o      (hw2reg.count_errors.count.d)
+  );
+
   /////////////////////////////////
   // Xprop assertions on outputs //
   /////////////////////////////////
