@@ -24,11 +24,19 @@ struct Opts {
     /// Path to the ROM binary.
     #[arg(long)]
     rom: PathBuf,
+
+    /// Seed for random number generator.
+    #[arg(long)]
+    seed: Option<u64>,
 }
 
 const NUM_ACCESSES_PER_REGION: usize = 32;
 
 fn test_mem_access(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
+    let seed = opts.seed.unwrap_or_else(|| thread_rng().gen());
+    log::info!("Random number generator seed is {:x}", seed);
+    let mut rng = rand_chacha::ChaCha12Rng::seed_from_u64(seed);
+
     // Avoid watchdog timeout by entering bootstrap mode.
     transport.pin_strapping("ROM_BOOTSTRAP")?.apply()?;
 
@@ -68,7 +76,6 @@ fn test_mem_access(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     ];
 
     // Randomly generate accesses.
-    let mut rng = thread_rng();
     let mut accesses = vec![];
     for (name, base, size) in rw_regions.iter().copied() {
         accesses.extend(

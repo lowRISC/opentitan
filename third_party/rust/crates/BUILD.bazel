@@ -344,6 +344,12 @@ alias(
 )
 
 alias(
+    name = "rand_chacha",
+    actual = "@crate_index__rand_chacha-0.3.1//:rand_chacha",
+    tags = ["manual"],
+)
+
+alias(
     name = "regex",
     actual = "@crate_index__regex-1.9.4//:regex",
     tags = ["manual"],

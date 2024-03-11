@@ -345,6 +345,7 @@ _NORMAL_DEPENDENCIES = {
             "proc-macro2": "@crate_index__proc-macro2-1.0.69//:proc_macro2",
             "quote": "@crate_index__quote-1.0.33//:quote",
             "rand": "@crate_index__rand-0.8.5//:rand",
+            "rand_chacha": "@crate_index__rand_chacha-0.3.1//:rand_chacha",
             "regex": "@crate_index__regex-1.9.4//:regex",
             "ring": "@crate_index__ring-0.16.20//:ring",
             "rsa": "@crate_index__rsa-0.9.2//:rsa",
