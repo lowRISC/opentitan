@@ -1260,6 +1260,155 @@ module usbdev
   assign hw2reg.wake_events.bus_reset.de = 1'b1;
   assign hw2reg.wake_events.bus_reset.d = usb_aon_bus_reset_i;
 
+  /////////////////////////////////////
+  // Diagnostic/performance counters //
+  /////////////////////////////////////
+
+  // Counters use 'rst_n' and remain at zero in Stubbed implementation
+  usbdev_counter #(.NEndpoints(NEndpoints)) u_ctr_ign_avsetup(
+    .clk_i        (clk_i),
+    .rst_ni       (rst_n),
+    .reset_i      (reg2hw.count_ign_avsetup.rst.qe & reg2hw.count_ign_avsetup.rst.q),
+    .event_i      (1'b0),
+    .ep_i         (4'h0),
+    .endp_qe_i    (reg2hw.count_ign_avsetup.endpoints.qe),
+    .endpoints_i  (reg2hw.count_ign_avsetup.endpoints.q),
+    .endpoints_o  (hw2reg.count_ign_avsetup.endpoints.d),
+    .count_o      (hw2reg.count_ign_avsetup.count.d)
+  );
+
+  usbdev_counter #(.NEndpoints(NEndpoints)) u_ctr_drop_avout(
+    .clk_i        (clk_i),
+    .rst_ni       (rst_ni),
+    .reset_i      (reg2hw.count_drop_avout.rst.qe & reg2hw.count_drop_avout.rst.q),
+    .event_i      (1'b0),
+    .ep_i         (4'h0),
+    .endp_qe_i    (reg2hw.count_drop_avout.endpoints.qe),
+    .endpoints_i  (reg2hw.count_drop_avout.endpoints.q),
+    .endpoints_o  (hw2reg.count_drop_avout.endpoints.d),
+    .count_o      (hw2reg.count_drop_avout.count.d)
+  );
+
+  usbdev_counter #(.NEndpoints(NEndpoints)) u_ctr_drop_rx(
+    .clk_i        (clk_i),
+    .rst_ni       (rst_ni),
+    .reset_i      (reg2hw.count_drop_rx.rst.qe & reg2hw.count_drop_rx.rst.q),
+    .event_i      (1'b0),
+    .ep_i         (4'h0),
+    .endp_qe_i    (reg2hw.count_drop_rx.endpoints.qe),
+    .endpoints_i  (reg2hw.count_drop_rx.endpoints.q),
+    .endpoints_o  (hw2reg.count_drop_rx.endpoints.d),
+    .count_o      (hw2reg.count_drop_rx.count.d)
+  );
+
+  usbdev_counter #(.NEndpoints(NEndpoints)) u_ctr_datatag_out(
+    .clk_i        (clk_i),
+    .rst_ni       (rst_ni),
+    .reset_i      (reg2hw.count_datatog_out.rst.qe & reg2hw.count_datatog_out.rst.q),
+    .event_i      (1'b0),
+    .ep_i         (4'h0),
+    .endp_qe_i    (reg2hw.count_datatog_out.endpoints.qe),
+    .endpoints_i  (reg2hw.count_datatog_out.endpoints.q),
+    .endpoints_o  (hw2reg.count_datatog_out.endpoints.d),
+    .count_o      (hw2reg.count_datatog_out.count.d)
+  );
+
+  usbdev_counter #(.NEndpoints(NEndpoints)) u_ctr_timeout_in(
+    .clk_i        (clk_i),
+    .rst_ni       (rst_ni),
+    .reset_i      (reg2hw.count_timeout_in.rst.qe & reg2hw.count_timeout_in.rst.q),
+    .event_i      (1'b0),
+    .ep_i         (4'h0),
+    .endp_qe_i    (reg2hw.count_timeout_in.endpoints.qe),
+    .endpoints_i  (reg2hw.count_timeout_in.endpoints.q),
+    .endpoints_o  (hw2reg.count_timeout_in.endpoints.d),
+    .count_o      (hw2reg.count_timeout_in.count.d)
+  );
+
+  usbdev_counter #(.NEndpoints(NEndpoints)) u_ctr_nak_in(
+    .clk_i        (clk_i),
+    .rst_ni       (rst_ni),
+    .reset_i      (reg2hw.count_nak_in.rst.qe & reg2hw.count_nak_in.rst.q),
+    .event_i      (1'b0),
+    .ep_i         (4'h0),
+    .endp_qe_i    (reg2hw.count_nak_in.endpoints.qe),
+    .endpoints_i  (reg2hw.count_nak_in.endpoints.q),
+    .endpoints_o  (hw2reg.count_nak_in.endpoints.d),
+    .count_o      (hw2reg.count_nak_in.count.d)
+  );
+
+  usbdev_counter #(.NEndpoints(NEndpoints)) u_ctr_nodata_in0(
+    .clk_i        (clk_i),
+    .rst_ni       (rst_ni),
+    .reset_i      (reg2hw.count_nodata_in0.rst.qe & reg2hw.count_nodata_in0.rst.q),
+    .event_i      (1'b0),
+    .ep_i         (4'h0),
+    .endp_qe_i    (reg2hw.count_nodata_in0.endpoints.qe),
+    .endpoints_i  (reg2hw.count_nodata_in0.endpoints.q),
+    .endpoints_o  (hw2reg.count_nodata_in0.endpoints.d),
+    .count_o      (hw2reg.count_nodata_in0.count.d)
+  );
+
+  usbdev_counter #(.NEndpoints(NEndpoints)) u_ctr_nodata_in1(
+    .clk_i        (clk_i),
+    .rst_ni       (rst_ni),
+    .reset_i      (reg2hw.count_nodata_in1.rst.qe & reg2hw.count_nodata_in1.rst.q),
+    .event_i      (1'b0),
+    .ep_i         (4'h0),
+    .endp_qe_i    (reg2hw.count_nodata_in1.endpoints.qe),
+    .endpoints_i  (reg2hw.count_nodata_in1.endpoints.q),
+    .endpoints_o  (hw2reg.count_nodata_in1.endpoints.d),
+    .count_o      (hw2reg.count_nodata_in1.count.d)
+  );
+
+  usbdev_counter #(.NEndpoints(1)) u_ctr_crc5_out(
+    .clk_i        (clk_i),
+    .rst_ni       (rst_ni),
+    .reset_i      (reg2hw.count_crc5_out.rst.qe & reg2hw.count_crc5_out.rst.q),
+    .event_i      (1'b0),
+    .ep_i         (1'b0),
+    .endp_qe_i    (reg2hw.count_crc5_out.enable.qe),
+    .endpoints_i  (reg2hw.count_crc5_out.enable.q),
+    .endpoints_o  (hw2reg.count_crc5_out.enable.d),
+    .count_o      (hw2reg.count_crc5_out.count.d)
+  );
+
+  usbdev_counter #(.NEndpoints(1)) u_ctr_crc16_out(
+    .clk_i        (clk_i),
+    .rst_ni       (rst_ni),
+    .reset_i      (reg2hw.count_crc16_out.rst.qe & reg2hw.count_crc16_out.rst.q),
+    .event_i      (1'b0),
+    .ep_i         (1'b0),
+    .endp_qe_i    (reg2hw.count_crc16_out.enable.qe),
+    .endpoints_i  (reg2hw.count_crc16_out.enable.q),
+    .endpoints_o  (hw2reg.count_crc16_out.enable.d),
+    .count_o      (hw2reg.count_crc16_out.count.d)
+  );
+
+  usbdev_counter #(.NEndpoints(1)) u_ctr_bitstuff(
+    .clk_i        (clk_i),
+    .rst_ni       (rst_ni),
+    .reset_i      (reg2hw.count_bitstuff.rst.qe & reg2hw.count_bitstuff.rst.q),
+    .event_i      (1'b0),
+    .ep_i         (1'b0),
+    .endp_qe_i    (reg2hw.count_bitstuff.enable.qe),
+    .endpoints_i  (reg2hw.count_bitstuff.enable.q),
+    .endpoints_o  (hw2reg.count_bitstuff.enable.d),
+    .count_o      (hw2reg.count_bitstuff.count.d)
+  );
+
+  usbdev_counter #(.NEndpoints(1)) u_ctr_pid_invalid(
+    .clk_i        (clk_i),
+    .rst_ni       (rst_ni),
+    .reset_i      (reg2hw.count_pid_invalid.rst.qe & reg2hw.count_pid_invalid.rst.q),
+    .event_i      (1'b0),
+    .ep_i         (1'b0),
+    .endp_qe_i    (reg2hw.count_pid_invalid.enable.qe),
+    .endpoints_i  (reg2hw.count_pid_invalid.enable.q),
+    .endpoints_o  (hw2reg.count_pid_invalid.enable.d),
+    .count_o      (hw2reg.count_pid_invalid.count.d)
+  );
+
   /////////////////////////////////
   // Xprop assertions on outputs //
   /////////////////////////////////
