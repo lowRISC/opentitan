@@ -19,6 +19,10 @@ build --strip='never'
 # impact of the hardened sequences on code size.
 build:disable_hardening --features=-guards --copt=-DOT_DISABLE_HARDENING=1
 
+# Use --config=disable_hardening to disable hardening to measure the
+# impact of the hardened sequences on code size.
+build:disable_hardening --features=-guards --copt=-DOT_DISABLE_HARDENING=1
+
 # Enable toolchain resolution with cc
 build --incompatible_enable_cc_toolchain_resolution
 
