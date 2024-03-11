@@ -71,6 +71,17 @@ status_t ottf_console_flow_control(const dif_uart_t *uart,
 void ottf_console_flow_control_enable(void);
 
 /**
+ * Manage console flow control from interrupt context.
+ *
+ * Call this when a console UART interrupt triggers.
+ *
+ * @param exc_info The OTTF execution info passed to all ISRs.
+ * @return True if an RX Watermark IRQ was detected and handled. False
+ * otherwise.
+ */
+bool ottf_console_flow_control_isr(uint32_t *exc_info);
+
+/**
  * Returns the number of OTTF console flow control interrupts that have
  * occurred.
  */
