@@ -59,9 +59,9 @@ module usbdev_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [38:0] reg_we_check;
+  logic [42:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(39)
+    .OneHotWidth(43)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -733,6 +733,50 @@ module usbdev_reg_top (
   logic fifo_ctrl_avout_rst_wd;
   logic fifo_ctrl_avsetup_rst_wd;
   logic fifo_ctrl_rx_rst_wd;
+  logic count_out_re;
+  logic count_out_we;
+  logic [7:0] count_out_count_qs;
+  logic count_out_datatog_out_qs;
+  logic count_out_datatog_out_wd;
+  logic count_out_drop_rx_qs;
+  logic count_out_drop_rx_wd;
+  logic count_out_drop_avout_qs;
+  logic count_out_drop_avout_wd;
+  logic count_out_ign_avsetup_qs;
+  logic count_out_ign_avsetup_wd;
+  logic [11:0] count_out_endpoints_qs;
+  logic [11:0] count_out_endpoints_wd;
+  logic count_out_rst_wd;
+  logic count_in_re;
+  logic count_in_we;
+  logic [7:0] count_in_count_qs;
+  logic count_in_nodata_qs;
+  logic count_in_nodata_wd;
+  logic count_in_nak_qs;
+  logic count_in_nak_wd;
+  logic count_in_timeout_qs;
+  logic count_in_timeout_wd;
+  logic [11:0] count_in_endpoints_qs;
+  logic [11:0] count_in_endpoints_wd;
+  logic count_in_rst_wd;
+  logic count_nodata_in_re;
+  logic count_nodata_in_we;
+  logic [7:0] count_nodata_in_count_qs;
+  logic [11:0] count_nodata_in_endpoints_qs;
+  logic [11:0] count_nodata_in_endpoints_wd;
+  logic count_nodata_in_rst_wd;
+  logic count_errors_re;
+  logic count_errors_we;
+  logic [7:0] count_errors_count_qs;
+  logic count_errors_pid_invalid_qs;
+  logic count_errors_pid_invalid_wd;
+  logic count_errors_bitstuff_qs;
+  logic count_errors_bitstuff_wd;
+  logic count_errors_crc16_qs;
+  logic count_errors_crc16_wd;
+  logic count_errors_crc5_qs;
+  logic count_errors_crc5_wd;
+  logic count_errors_rst_wd;
   // Define register CDC handling.
   // CDC handling is done on a per-reg instead of per-field boundary.
 
@@ -8253,8 +8297,388 @@ module usbdev_reg_top (
   assign reg2hw.fifo_ctrl.rx_rst.qe = fifo_ctrl_qe;
 
 
+  // R[count_out]: V(True)
+  logic count_out_qe;
+  logic [6:0] count_out_flds_we;
+  // This ignores QEs that are set to constant 0 due to read-only fields.
+  logic unused_count_out_flds_we;
+  assign unused_count_out_flds_we = ^(count_out_flds_we & 7'h1);
+  assign count_out_qe = &(count_out_flds_we | 7'h1);
+  //   F[count]: 7:0
+  prim_subreg_ext #(
+    .DW    (8)
+  ) u_count_out_count (
+    .re     (count_out_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.count_out.count.d),
+    .qre    (),
+    .qe     (count_out_flds_we[0]),
+    .q      (),
+    .ds     (),
+    .qs     (count_out_count_qs)
+  );
 
-  logic [38:0] addr_hit;
+  //   F[datatog_out]: 12:12
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_count_out_datatog_out (
+    .re     (count_out_re),
+    .we     (count_out_we),
+    .wd     (count_out_datatog_out_wd),
+    .d      (hw2reg.count_out.datatog_out.d),
+    .qre    (),
+    .qe     (count_out_flds_we[1]),
+    .q      (reg2hw.count_out.datatog_out.q),
+    .ds     (),
+    .qs     (count_out_datatog_out_qs)
+  );
+  assign reg2hw.count_out.datatog_out.qe = count_out_qe;
+
+  //   F[drop_rx]: 13:13
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_count_out_drop_rx (
+    .re     (count_out_re),
+    .we     (count_out_we),
+    .wd     (count_out_drop_rx_wd),
+    .d      (hw2reg.count_out.drop_rx.d),
+    .qre    (),
+    .qe     (count_out_flds_we[2]),
+    .q      (reg2hw.count_out.drop_rx.q),
+    .ds     (),
+    .qs     (count_out_drop_rx_qs)
+  );
+  assign reg2hw.count_out.drop_rx.qe = count_out_qe;
+
+  //   F[drop_avout]: 14:14
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_count_out_drop_avout (
+    .re     (count_out_re),
+    .we     (count_out_we),
+    .wd     (count_out_drop_avout_wd),
+    .d      (hw2reg.count_out.drop_avout.d),
+    .qre    (),
+    .qe     (count_out_flds_we[3]),
+    .q      (reg2hw.count_out.drop_avout.q),
+    .ds     (),
+    .qs     (count_out_drop_avout_qs)
+  );
+  assign reg2hw.count_out.drop_avout.qe = count_out_qe;
+
+  //   F[ign_avsetup]: 15:15
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_count_out_ign_avsetup (
+    .re     (count_out_re),
+    .we     (count_out_we),
+    .wd     (count_out_ign_avsetup_wd),
+    .d      (hw2reg.count_out.ign_avsetup.d),
+    .qre    (),
+    .qe     (count_out_flds_we[4]),
+    .q      (reg2hw.count_out.ign_avsetup.q),
+    .ds     (),
+    .qs     (count_out_ign_avsetup_qs)
+  );
+  assign reg2hw.count_out.ign_avsetup.qe = count_out_qe;
+
+  //   F[endpoints]: 27:16
+  prim_subreg_ext #(
+    .DW    (12)
+  ) u_count_out_endpoints (
+    .re     (count_out_re),
+    .we     (count_out_we),
+    .wd     (count_out_endpoints_wd),
+    .d      (hw2reg.count_out.endpoints.d),
+    .qre    (),
+    .qe     (count_out_flds_we[5]),
+    .q      (reg2hw.count_out.endpoints.q),
+    .ds     (),
+    .qs     (count_out_endpoints_qs)
+  );
+  assign reg2hw.count_out.endpoints.qe = count_out_qe;
+
+  //   F[rst]: 31:31
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_count_out_rst (
+    .re     (1'b0),
+    .we     (count_out_we),
+    .wd     (count_out_rst_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (count_out_flds_we[6]),
+    .q      (reg2hw.count_out.rst.q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.count_out.rst.qe = count_out_qe;
+
+
+  // R[count_in]: V(True)
+  logic count_in_qe;
+  logic [5:0] count_in_flds_we;
+  // This ignores QEs that are set to constant 0 due to read-only fields.
+  logic unused_count_in_flds_we;
+  assign unused_count_in_flds_we = ^(count_in_flds_we & 6'h1);
+  assign count_in_qe = &(count_in_flds_we | 6'h1);
+  //   F[count]: 7:0
+  prim_subreg_ext #(
+    .DW    (8)
+  ) u_count_in_count (
+    .re     (count_in_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.count_in.count.d),
+    .qre    (),
+    .qe     (count_in_flds_we[0]),
+    .q      (),
+    .ds     (),
+    .qs     (count_in_count_qs)
+  );
+
+  //   F[nodata]: 13:13
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_count_in_nodata (
+    .re     (count_in_re),
+    .we     (count_in_we),
+    .wd     (count_in_nodata_wd),
+    .d      (hw2reg.count_in.nodata.d),
+    .qre    (),
+    .qe     (count_in_flds_we[1]),
+    .q      (reg2hw.count_in.nodata.q),
+    .ds     (),
+    .qs     (count_in_nodata_qs)
+  );
+  assign reg2hw.count_in.nodata.qe = count_in_qe;
+
+  //   F[nak]: 14:14
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_count_in_nak (
+    .re     (count_in_re),
+    .we     (count_in_we),
+    .wd     (count_in_nak_wd),
+    .d      (hw2reg.count_in.nak.d),
+    .qre    (),
+    .qe     (count_in_flds_we[2]),
+    .q      (reg2hw.count_in.nak.q),
+    .ds     (),
+    .qs     (count_in_nak_qs)
+  );
+  assign reg2hw.count_in.nak.qe = count_in_qe;
+
+  //   F[timeout]: 15:15
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_count_in_timeout (
+    .re     (count_in_re),
+    .we     (count_in_we),
+    .wd     (count_in_timeout_wd),
+    .d      (hw2reg.count_in.timeout.d),
+    .qre    (),
+    .qe     (count_in_flds_we[3]),
+    .q      (reg2hw.count_in.timeout.q),
+    .ds     (),
+    .qs     (count_in_timeout_qs)
+  );
+  assign reg2hw.count_in.timeout.qe = count_in_qe;
+
+  //   F[endpoints]: 27:16
+  prim_subreg_ext #(
+    .DW    (12)
+  ) u_count_in_endpoints (
+    .re     (count_in_re),
+    .we     (count_in_we),
+    .wd     (count_in_endpoints_wd),
+    .d      (hw2reg.count_in.endpoints.d),
+    .qre    (),
+    .qe     (count_in_flds_we[4]),
+    .q      (reg2hw.count_in.endpoints.q),
+    .ds     (),
+    .qs     (count_in_endpoints_qs)
+  );
+  assign reg2hw.count_in.endpoints.qe = count_in_qe;
+
+  //   F[rst]: 31:31
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_count_in_rst (
+    .re     (1'b0),
+    .we     (count_in_we),
+    .wd     (count_in_rst_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (count_in_flds_we[5]),
+    .q      (reg2hw.count_in.rst.q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.count_in.rst.qe = count_in_qe;
+
+
+  // R[count_nodata_in]: V(True)
+  logic count_nodata_in_qe;
+  logic [2:0] count_nodata_in_flds_we;
+  // This ignores QEs that are set to constant 0 due to read-only fields.
+  logic unused_count_nodata_in_flds_we;
+  assign unused_count_nodata_in_flds_we = ^(count_nodata_in_flds_we & 3'h1);
+  assign count_nodata_in_qe = &(count_nodata_in_flds_we | 3'h1);
+  //   F[count]: 7:0
+  prim_subreg_ext #(
+    .DW    (8)
+  ) u_count_nodata_in_count (
+    .re     (count_nodata_in_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.count_nodata_in.count.d),
+    .qre    (),
+    .qe     (count_nodata_in_flds_we[0]),
+    .q      (),
+    .ds     (),
+    .qs     (count_nodata_in_count_qs)
+  );
+
+  //   F[endpoints]: 27:16
+  prim_subreg_ext #(
+    .DW    (12)
+  ) u_count_nodata_in_endpoints (
+    .re     (count_nodata_in_re),
+    .we     (count_nodata_in_we),
+    .wd     (count_nodata_in_endpoints_wd),
+    .d      (hw2reg.count_nodata_in.endpoints.d),
+    .qre    (),
+    .qe     (count_nodata_in_flds_we[1]),
+    .q      (reg2hw.count_nodata_in.endpoints.q),
+    .ds     (),
+    .qs     (count_nodata_in_endpoints_qs)
+  );
+  assign reg2hw.count_nodata_in.endpoints.qe = count_nodata_in_qe;
+
+  //   F[rst]: 31:31
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_count_nodata_in_rst (
+    .re     (1'b0),
+    .we     (count_nodata_in_we),
+    .wd     (count_nodata_in_rst_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (count_nodata_in_flds_we[2]),
+    .q      (reg2hw.count_nodata_in.rst.q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.count_nodata_in.rst.qe = count_nodata_in_qe;
+
+
+  // R[count_errors]: V(True)
+  logic count_errors_qe;
+  logic [5:0] count_errors_flds_we;
+  // This ignores QEs that are set to constant 0 due to read-only fields.
+  logic unused_count_errors_flds_we;
+  assign unused_count_errors_flds_we = ^(count_errors_flds_we & 6'h1);
+  assign count_errors_qe = &(count_errors_flds_we | 6'h1);
+  //   F[count]: 7:0
+  prim_subreg_ext #(
+    .DW    (8)
+  ) u_count_errors_count (
+    .re     (count_errors_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.count_errors.count.d),
+    .qre    (),
+    .qe     (count_errors_flds_we[0]),
+    .q      (),
+    .ds     (),
+    .qs     (count_errors_count_qs)
+  );
+
+  //   F[pid_invalid]: 27:27
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_count_errors_pid_invalid (
+    .re     (count_errors_re),
+    .we     (count_errors_we),
+    .wd     (count_errors_pid_invalid_wd),
+    .d      (hw2reg.count_errors.pid_invalid.d),
+    .qre    (),
+    .qe     (count_errors_flds_we[1]),
+    .q      (reg2hw.count_errors.pid_invalid.q),
+    .ds     (),
+    .qs     (count_errors_pid_invalid_qs)
+  );
+  assign reg2hw.count_errors.pid_invalid.qe = count_errors_qe;
+
+  //   F[bitstuff]: 28:28
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_count_errors_bitstuff (
+    .re     (count_errors_re),
+    .we     (count_errors_we),
+    .wd     (count_errors_bitstuff_wd),
+    .d      (hw2reg.count_errors.bitstuff.d),
+    .qre    (),
+    .qe     (count_errors_flds_we[2]),
+    .q      (reg2hw.count_errors.bitstuff.q),
+    .ds     (),
+    .qs     (count_errors_bitstuff_qs)
+  );
+  assign reg2hw.count_errors.bitstuff.qe = count_errors_qe;
+
+  //   F[crc16]: 29:29
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_count_errors_crc16 (
+    .re     (count_errors_re),
+    .we     (count_errors_we),
+    .wd     (count_errors_crc16_wd),
+    .d      (hw2reg.count_errors.crc16.d),
+    .qre    (),
+    .qe     (count_errors_flds_we[3]),
+    .q      (reg2hw.count_errors.crc16.q),
+    .ds     (),
+    .qs     (count_errors_crc16_qs)
+  );
+  assign reg2hw.count_errors.crc16.qe = count_errors_qe;
+
+  //   F[crc5]: 30:30
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_count_errors_crc5 (
+    .re     (count_errors_re),
+    .we     (count_errors_we),
+    .wd     (count_errors_crc5_wd),
+    .d      (hw2reg.count_errors.crc5.d),
+    .qre    (),
+    .qe     (count_errors_flds_we[4]),
+    .q      (reg2hw.count_errors.crc5.q),
+    .ds     (),
+    .qs     (count_errors_crc5_qs)
+  );
+  assign reg2hw.count_errors.crc5.qe = count_errors_qe;
+
+  //   F[rst]: 31:31
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_count_errors_rst (
+    .re     (1'b0),
+    .we     (count_errors_we),
+    .wd     (count_errors_rst_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (count_errors_flds_we[5]),
+    .q      (reg2hw.count_errors.rst.q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.count_errors.rst.qe = count_errors_qe;
+
+
+
+  logic [42:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == USBDEV_INTR_STATE_OFFSET);
@@ -8296,6 +8720,10 @@ module usbdev_reg_top (
     addr_hit[36] = (reg_addr == USBDEV_WAKE_CONTROL_OFFSET);
     addr_hit[37] = (reg_addr == USBDEV_WAKE_EVENTS_OFFSET);
     addr_hit[38] = (reg_addr == USBDEV_FIFO_CTRL_OFFSET);
+    addr_hit[39] = (reg_addr == USBDEV_COUNT_OUT_OFFSET);
+    addr_hit[40] = (reg_addr == USBDEV_COUNT_IN_OFFSET);
+    addr_hit[41] = (reg_addr == USBDEV_COUNT_NODATA_IN_OFFSET);
+    addr_hit[42] = (reg_addr == USBDEV_COUNT_ERRORS_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -8341,7 +8769,11 @@ module usbdev_reg_top (
                (addr_hit[35] & (|(USBDEV_PERMIT[35] & ~reg_be))) |
                (addr_hit[36] & (|(USBDEV_PERMIT[36] & ~reg_be))) |
                (addr_hit[37] & (|(USBDEV_PERMIT[37] & ~reg_be))) |
-               (addr_hit[38] & (|(USBDEV_PERMIT[38] & ~reg_be)))));
+               (addr_hit[38] & (|(USBDEV_PERMIT[38] & ~reg_be))) |
+               (addr_hit[39] & (|(USBDEV_PERMIT[39] & ~reg_be))) |
+               (addr_hit[40] & (|(USBDEV_PERMIT[40] & ~reg_be))) |
+               (addr_hit[41] & (|(USBDEV_PERMIT[41] & ~reg_be))) |
+               (addr_hit[42] & (|(USBDEV_PERMIT[42] & ~reg_be)))));
   end
 
   // Generate write-enables
@@ -8901,6 +9333,50 @@ module usbdev_reg_top (
   assign fifo_ctrl_avsetup_rst_wd = reg_wdata[1];
 
   assign fifo_ctrl_rx_rst_wd = reg_wdata[2];
+  assign count_out_re = addr_hit[39] & reg_re & !reg_error;
+  assign count_out_we = addr_hit[39] & reg_we & !reg_error;
+
+  assign count_out_datatog_out_wd = reg_wdata[12];
+
+  assign count_out_drop_rx_wd = reg_wdata[13];
+
+  assign count_out_drop_avout_wd = reg_wdata[14];
+
+  assign count_out_ign_avsetup_wd = reg_wdata[15];
+
+  assign count_out_endpoints_wd = reg_wdata[27:16];
+
+  assign count_out_rst_wd = reg_wdata[31];
+  assign count_in_re = addr_hit[40] & reg_re & !reg_error;
+  assign count_in_we = addr_hit[40] & reg_we & !reg_error;
+
+  assign count_in_nodata_wd = reg_wdata[13];
+
+  assign count_in_nak_wd = reg_wdata[14];
+
+  assign count_in_timeout_wd = reg_wdata[15];
+
+  assign count_in_endpoints_wd = reg_wdata[27:16];
+
+  assign count_in_rst_wd = reg_wdata[31];
+  assign count_nodata_in_re = addr_hit[41] & reg_re & !reg_error;
+  assign count_nodata_in_we = addr_hit[41] & reg_we & !reg_error;
+
+  assign count_nodata_in_endpoints_wd = reg_wdata[27:16];
+
+  assign count_nodata_in_rst_wd = reg_wdata[31];
+  assign count_errors_re = addr_hit[42] & reg_re & !reg_error;
+  assign count_errors_we = addr_hit[42] & reg_we & !reg_error;
+
+  assign count_errors_pid_invalid_wd = reg_wdata[27];
+
+  assign count_errors_bitstuff_wd = reg_wdata[28];
+
+  assign count_errors_crc16_wd = reg_wdata[29];
+
+  assign count_errors_crc5_wd = reg_wdata[30];
+
+  assign count_errors_rst_wd = reg_wdata[31];
 
   // Assign write-enables to checker logic vector.
   always_comb begin
@@ -8944,6 +9420,10 @@ module usbdev_reg_top (
     reg_we_check[36] = wake_control_we;
     reg_we_check[37] = 1'b0;
     reg_we_check[38] = fifo_ctrl_we;
+    reg_we_check[39] = count_out_we;
+    reg_we_check[40] = count_in_we;
+    reg_we_check[41] = count_nodata_in_we;
+    reg_we_check[42] = count_errors_we;
   end
 
   // Read data return
@@ -9350,6 +9830,40 @@ module usbdev_reg_top (
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = '0;
         reg_rdata_next[2] = '0;
+      end
+
+      addr_hit[39]: begin
+        reg_rdata_next[7:0] = count_out_count_qs;
+        reg_rdata_next[12] = count_out_datatog_out_qs;
+        reg_rdata_next[13] = count_out_drop_rx_qs;
+        reg_rdata_next[14] = count_out_drop_avout_qs;
+        reg_rdata_next[15] = count_out_ign_avsetup_qs;
+        reg_rdata_next[27:16] = count_out_endpoints_qs;
+        reg_rdata_next[31] = '0;
+      end
+
+      addr_hit[40]: begin
+        reg_rdata_next[7:0] = count_in_count_qs;
+        reg_rdata_next[13] = count_in_nodata_qs;
+        reg_rdata_next[14] = count_in_nak_qs;
+        reg_rdata_next[15] = count_in_timeout_qs;
+        reg_rdata_next[27:16] = count_in_endpoints_qs;
+        reg_rdata_next[31] = '0;
+      end
+
+      addr_hit[41]: begin
+        reg_rdata_next[7:0] = count_nodata_in_count_qs;
+        reg_rdata_next[27:16] = count_nodata_in_endpoints_qs;
+        reg_rdata_next[31] = '0;
+      end
+
+      addr_hit[42]: begin
+        reg_rdata_next[7:0] = count_errors_count_qs;
+        reg_rdata_next[27] = count_errors_pid_invalid_qs;
+        reg_rdata_next[28] = count_errors_bitstuff_qs;
+        reg_rdata_next[29] = count_errors_crc16_qs;
+        reg_rdata_next[30] = count_errors_crc5_qs;
+        reg_rdata_next[31] = '0;
       end
 
       default: begin

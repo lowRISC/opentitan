@@ -44,7 +44,11 @@
 | usbdev.[`wake_control`](#wake_control)       | 0x90     |        4 | USB wake module control for suspend / resume                               |
 | usbdev.[`wake_events`](#wake_events)         | 0x94     |        4 | USB wake module events and debug                                           |
 | usbdev.[`fifo_ctrl`](#fifo_ctrl)             | 0x98     |        4 | FIFO control register                                                      |
-| usbdev.[`buffer`](#buffer)                   | 0x800    |     2048 | 2 kB packet buffer. Divided into 32 64-byte buffers.                       |
+| usbdev.[`count_out`](#count_out)             | 0x9c     |        4 | Counter for OUT side USB events.                                           |
+| usbdev.[`count_in`](#count_in)               | 0xa0     |        4 | Counter for IN side USB events.                                            |
+| usbdev.[`count_nodata_in`](#count_nodata_in) | 0xa4     |        4 | Count of IN transactions for which no packet data was available.           |
+| usbdev.[`count_errors`](#count_errors)       | 0xa8     |        4 | Count of error conditions detected on token packets from the host.         |
+| usbdev.[`buffer`](#buffer)                   | 0x800    |     2048 | 2 KiB packet buffer. Divided into thirty two 64-byte buffers.              |
 
 ## INTR_STATE
 Interrupt State Register
@@ -1364,10 +1368,164 @@ FIFO control register
 |   1    |   wo   |   0x0   | avsetup_rst | Software reset of the Available SETUP Buffer FIFO. This must be used only when the USB device is not connected to the USB. |
 |   0    |   wo   |   0x0   | avout_rst   | Software reset of the Available OUT Buffer FIFO. This must be used only when the USB device is not connected to the USB.   |
 
-## buffer
-2 kB packet buffer. Divided into 32 64-byte buffers.
+## count_out
+Counter for OUT side USB events.
+- Offset: `0x9c`
+- Reset default: `0x0`
+- Reset mask: `0x8ffff0ff`
 
-The packet buffer is used for sending and receiveing packets.
+### Fields
+
+```wavejson
+{"reg": [{"name": "count", "bits": 8, "attr": ["ro"], "rotate": 0}, {"bits": 4}, {"name": "datatog_out", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "drop_rx", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "drop_avout", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "ign_avsetup", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "endpoints", "bits": 12, "attr": ["rw"], "rotate": 0}, {"bits": 3}, {"name": "rst", "bits": 1, "attr": ["wo"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 130}}
+```
+
+|  Bits  |  Type  |  Reset  | Name                                   |
+|:------:|:------:|:-------:|:---------------------------------------|
+|   31   |   wo   |   0x0   | [rst](#count_out--rst)                 |
+| 30:28  |        |         | Reserved                               |
+| 27:16  |   rw   |   0x0   | [endpoints](#count_out--endpoints)     |
+|   15   |   rw   |   0x0   | [ign_avsetup](#count_out--ign_avsetup) |
+|   14   |   rw   |   0x0   | [drop_avout](#count_out--drop_avout)   |
+|   13   |   rw   |   0x0   | [drop_rx](#count_out--drop_rx)         |
+|   12   |   rw   |   0x0   | [datatog_out](#count_out--datatog_out) |
+|  11:8  |        |         | Reserved                               |
+|  7:0   |   ro   |   0x0   | [count](#count_out--count)             |
+
+### count_out . rst
+Write 1 to reset the counter.
+
+### count_out . endpoints
+Set of OUT endpoints for which this counter is enabled.
+
+### count_out . ign_avsetup
+Count the SETUP packets that were ignored because there was no buffer in the
+Av SETUP FIFO.
+
+### count_out . drop_avout
+Count the OUT packets that could not be accepted because there was no buffer in the
+Av OUT FIFO. Non-Isochronous OUT packets have been NAKed.
+Isochronous OUT packets were ignored.
+
+### count_out . drop_rx
+Count the SETUP/OUT packets ignored, dropped or NAKed because the RX FIFO was full.
+SETUP packets have been ignored, Isochronous OUT packets have been dropped, and
+non-Isochronous OUT packets have been NAKed.
+
+### count_out . datatog_out
+Count the OUT transactions for which the USB device acknowledged the OUT packet
+and dropped it internally, which is the correct response to a packet transmitted
+with an incorrect Data Toggle.
+
+The expectation is that this packet is a retry of the previous packet transmission
+and that the handshake response was not received intact by the USB host, indicating
+unreliable communications.
+
+Other causes of Data Toggle synchronization failure may result in data loss.
+
+### count_out . count
+Number of events counted.
+
+## count_in
+Counter for IN side USB events.
+- Offset: `0xa0`
+- Reset default: `0x0`
+- Reset mask: `0x8fffe0ff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "count", "bits": 8, "attr": ["ro"], "rotate": 0}, {"bits": 5}, {"name": "nodata", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "nak", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "timeout", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "endpoints", "bits": 12, "attr": ["rw"], "rotate": 0}, {"bits": 3}, {"name": "rst", "bits": 1, "attr": ["wo"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 90}}
+```
+
+|  Bits  |  Type  |  Reset  | Name                              |
+|:------:|:------:|:-------:|:----------------------------------|
+|   31   |   wo   |   0x0   | [rst](#count_in--rst)             |
+| 30:28  |        |         | Reserved                          |
+| 27:16  |   rw   |   0x0   | [endpoints](#count_in--endpoints) |
+|   15   |   rw   |   0x0   | [timeout](#count_in--timeout)     |
+|   14   |   rw   |   0x0   | [nak](#count_in--nak)             |
+|   13   |   rw   |   0x0   | [nodata](#count_in--nodata)       |
+|  12:8  |        |         | Reserved                          |
+|  7:0   |   ro   |   0x0   | [count](#count_in--count)         |
+
+### count_in . rst
+Write 1 to reset the counter.
+
+### count_in . endpoints
+Set of endpoints for which this counter is enabled.
+
+### count_in . timeout
+Count the IN transactions for which the USB host did not respond with a handshake,
+and the transactions timed out. This indicates that the host did not receive it
+and decode it as a valid packet, suggesting that communication is unreliable.
+
+Isochronous IN transactions are excluded from this count because there is no
+handshake response to Isochronous packet transfers.
+
+### count_in . nak
+Count the IN transactions rejected by the host responding with a NAK handshake.
+
+### count_in . nodata
+Count the IN transactions that were attempted when there was no packet available
+in the corresponding 'configin' register(s). This is not necessarily an error
+condition, and the counter primarily offers some visibility into when the IN
+traffic is underusing the available bus bandwidth.
+It is of particular utility to Isochronous IN endpoints.
+
+### count_in . count
+Number of events counted.
+
+## count_nodata_in
+Count of IN transactions for which no packet data was available.
+
+This secondary register allows some partitioning of endpoints among the two
+counters, for more targeted measurement, eg. endpoints may be grouped according to
+the expected bandwidth usage, or Isochronous vs. non-Isochronous transfers.
+- Offset: `0xa4`
+- Reset default: `0x0`
+- Reset mask: `0x8fff00ff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "count", "bits": 8, "attr": ["ro"], "rotate": 0}, {"bits": 8}, {"name": "endpoints", "bits": 12, "attr": ["rw"], "rotate": 0}, {"bits": 3}, {"name": "rst", "bits": 1, "attr": ["wo"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name      | Description                                                                                                                   |
+|:------:|:------:|:-------:|:----------|:------------------------------------------------------------------------------------------------------------------------------|
+|   31   |   wo   |   0x0   | rst       | Write 1 to reset the counter.                                                                                                 |
+| 30:28  |        |         |           | Reserved                                                                                                                      |
+| 27:16  |   rw   |   0x0   | endpoints | Set of endpoints for which this counter is enabled.                                                                           |
+|  15:8  |        |         |           | Reserved                                                                                                                      |
+|  7:0   |   ro   |   0x0   | count     | Number of IN transactions that were attempted when there was no packet available in the corresponding 'configin' register(s). |
+
+## count_errors
+Count of error conditions detected on token packets from the host.
+- Offset: `0xa8`
+- Reset default: `0x0`
+- Reset mask: `0xf80000ff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "count", "bits": 8, "attr": ["ro"], "rotate": 0}, {"bits": 19}, {"name": "pid_invalid", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "bitstuff", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "crc16", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "crc5", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "rst", "bits": 1, "attr": ["wo"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 130}}
+```
+
+|  Bits  |  Type  |  Reset  | Name        | Description                                                                                                                                                                                                                             |
+|:------:|:------:|:-------:|:------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|   31   |   wo   |   0x0   | rst         | Write 1 to reset the counter.                                                                                                                                                                                                           |
+|   30   |   rw   |   0x0   | crc5        | Count CRC5 errors detected on token packets sent by the host. CRC5 errors on token packets received from the host indicate very unreliable communication and possibly a substantial frequency mismatch between the host and the device. |
+|   29   |   rw   |   0x0   | crc16       | Count SETUP/OUT DATA packets that were ignored, dropped or NAKed because a CRC16 error was detected.                                                                                                                                    |
+|   28   |   rw   |   0x0   | bitstuff    | Number of SETUP/OUT packets that were ignored, dropped or NAKed because a Bit Stuffing error was detected.                                                                                                                              |
+|   27   |   rw   |   0x0   | pid_invalid | Number of Invalid PIDs detected on packets from the host. Invalid PIDs may indicate very unreliable communication and/or a substantial frequency mismatch between the host and the device.                                              |
+|  26:8  |        |         |             | Reserved                                                                                                                                                                                                                                |
+|  7:0   |   ro   |   0x0   | count       | Number of events counted.                                                                                                                                                                                                               |
+
+## buffer
+2 KiB packet buffer. Divided into thirty two 64-byte buffers.
+
+The packet buffer is used for sending and receiving packets.
 
 - Word Aligned Offset Range: `0x800`to`0xffc`
 - Size (words): `512`
