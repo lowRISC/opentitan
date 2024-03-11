@@ -244,8 +244,10 @@ void check_wakeup_reason(uint32_t wakeup_unit) {
     case PWRMGR_PARAM_ADC_CTRL_AON_WKUP_REQ_IDX: {
       uint32_t filter_status = 0;
       CHECK_DIF_OK(dif_adc_ctrl_get_filter_status(&adc_ctrl, &filter_status));
-      CHECK(filter_status == (1 << kDifAdcCtrlFilter5),
-            "Expected bit %d set in irq causes", kDifAdcCtrlFilter5);
+      CHECK(filter_status ==
+                ((1 << kDifAdcCtrlFilter5) | (1 << kDifAdcCtrlTrans)),
+            "Expected bits %d and %d set in filter status, got status 0x%x",
+            kDifAdcCtrlFilter5, kDifAdcCtrlTrans, filter_status);
     } break;
     case PWRMGR_PARAM_PINMUX_AON_PIN_WKUP_REQ_IDX: {
       uint32_t wakeup_cause;
