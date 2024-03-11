@@ -18,6 +18,10 @@ use top_earlgrey::top_earlgrey;
 struct Opts {
     #[command(flatten)]
     init: InitializeTest,
+
+    /// Seed for random number generator.
+    #[arg(long)]
+    seed: Option<u64>,
 }
 
 fn test(jtag: &mut dyn Jtag, base: usize, offset: u32) -> Result<()> {
@@ -40,6 +44,10 @@ fn test(jtag: &mut dyn Jtag, base: usize, offset: u32) -> Result<()> {
 }
 
 fn test_csr_rw(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
+    let seed = opts.seed.unwrap_or_else(|| thread_rng().gen());
+    log::info!("Random number generator seed is {:x}", seed);
+    let mut rng = rand_chacha::ChaCha12Rng::seed_from_u64(seed);
+
     // Avoid watchdog timeout by entering bootstrap mode.
     transport.pin_strapping("ROM_BOOTSTRAP")?.apply()?;
 
@@ -222,7 +230,7 @@ fn test_csr_rw(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         ),
     ];
 
-    tests.shuffle(&mut thread_rng());
+    tests.shuffle(&mut rng);
 
     for (name, base, offset) in tests.iter().copied() {
         log::info!("Testing {}", name);
