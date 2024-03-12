@@ -65,8 +65,8 @@ module tb;
     .alert_tx_o           (alert_tx   ),
 
     // USB Interface
-    .cio_usb_dp_i           (usb20_block_if.usb_dp_i     ),
-    .cio_usb_dn_i           (usb20_block_if.usb_dn_i     ),
+    .cio_usb_dp_i           (usb20_block_if.usb_p        ),
+    .cio_usb_dn_i           (usb20_block_if.usb_n        ),
     .usb_rx_d_i             (usb20_block_if.usb_rx_d_i   ),
     .cio_usb_dp_o           (usb20_block_if.usb_dp_o     ),
     .cio_usb_dp_en_o        (usb20_block_if.usb_dp_en_o  ),
