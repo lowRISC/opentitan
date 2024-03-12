@@ -82,10 +82,6 @@ struct Opts {
     #[command(flatten)]
     provisioning_data: ManufFtProvisioningDataInput,
 
-    /// Third personalization binary to bootstrap.
-    #[arg(long)]
-    third_bootstrap: PathBuf,
-
     /// Console receive timeout.
     #[arg(long, value_parser = humantime::parse_duration, default_value = "600s")]
     timeout: Duration,
@@ -202,7 +198,6 @@ fn main() -> Result<()> {
     run_ft_personalize(
         &transport,
         &opts.init,
-        opts.third_bootstrap,
         opts.provisioning_data.host_ecc_sk,
         opts.provisioning_data.cert_endorsement_ecc_sk,
         &_perso_data_in,

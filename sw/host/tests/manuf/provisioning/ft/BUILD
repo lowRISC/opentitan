@@ -18,7 +18,6 @@ rust_binary(
     srcs = ["src/main.rs"],
     data = [
         "//sw/device/silicon_creator/manuf/skus/earlgrey_a0/sival_bringup:ft_personalize_1",
-        "//sw/device/silicon_creator/manuf/skus/earlgrey_a0/sival_bringup:ft_personalize_3",
         "//sw/device/silicon_creator/manuf/skus/earlgrey_a0/sival_bringup:sram_ft_individualize_all",
     ] + FT_PERSONALIZE_KEYS,
     deps = [

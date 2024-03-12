@@ -160,7 +160,6 @@ pub fn test_exit(
 pub fn run_ft_personalize(
     transport: &TransportWrapper,
     init: &InitializeTest,
-    third_bootstrap: PathBuf,
     host_ecc_sk: PathBuf,
     cert_endorsement_ecc_sk: PathBuf,
     perso_data_in: &ManufCertPersoDataIn,
@@ -168,16 +167,16 @@ pub fn run_ft_personalize(
 ) -> Result<()> {
     let uart = transport.uart("console")?;
 
-    // -------------------------------------------------------------------------
-    // FT Personalize 1                                                        |
-    // -------------------------------------------------------------------------
-
-    // Bootstrap first personalization binary into flash.
+    // Bootstrap personalization binary into flash.
     uart.clear_rx_buffer()?;
     init.bootstrap.init(transport)?;
-    let _ = UartConsole::wait_for(&*uart, r"Bootstrap requested.", timeout)?;
+
+    // -------------------------------------------------------------------------
+    // RMA Token and (OTP) Root Key Provisioning                               |
+    // -------------------------------------------------------------------------
 
     // Bootstrap again since the flash scrambling seeds were provisioned in the previous step.
+    let _ = UartConsole::wait_for(&*uart, r"Bootstrap requested.", timeout)?;
     uart.clear_rx_buffer()?;
     init.bootstrap.init(transport)?;
 
@@ -216,25 +215,17 @@ pub fn run_ft_personalize(
     let _ = UartConsole::wait_for(&*uart, r"Exporting RMA token ...", timeout)?;
     let rma_token_out_data = WrappedRmaUnlockToken::recv(&*uart, timeout, false)?;
     log::info!("{:x?}", rma_token_out_data);
-    let _ = UartConsole::wait_for(&*uart, r"PASS.*\n", timeout)?;
 
     // -------------------------------------------------------------------------
-    // FT Personalize 3                                                        |
+    // Certificate Provisioning                                                |
     // -------------------------------------------------------------------------
-
-    // Bootstrap third personalization binary into flash.
-    uart.clear_rx_buffer()?;
-    init.bootstrap.load(transport, &third_bootstrap)?;
-
-    // Get UART, set flow control, and wait for test to start running.
-    uart.set_flow_control(true)?;
-    let _ = UartConsole::wait_for(&*uart, r"Waiting for FT provisioning data ...", timeout)?;
 
     // Send attestation TCB measurements for generating certificates.
+    let _ = UartConsole::wait_for(&*uart, r"Waiting for DICE certificate inputs ...", timeout)?;
     perso_data_in.send(&*uart)?;
 
     // Wait until device exports the attestation certificates.
-    let _ = UartConsole::wait_for(&*uart, r"Exporting certificates ...", timeout)?;
+    let _ = UartConsole::wait_for(&*uart, r"Exporting DICE certificates ...", timeout)?;
     let certs = ManufCertPersoDataOut::recv(&*uart, timeout, true)?;
 
     // Extract certificate byte vectors and trim unused bytes.
@@ -272,9 +263,9 @@ pub fn run_ft_personalize(
         uds_certificate: uds_cert_bytes.clone().into_iter().collect(),
         uds_certificate_size: uds_cert_bytes.len(),
     };
-    let _ = UartConsole::wait_for(&*uart, r"Importing certificates ...", timeout)?;
+    let _ = UartConsole::wait_for(&*uart, r"Importing DICE UDS certificate ...", timeout)?;
     endorsed_certs.send(&*uart)?;
-    let _ = UartConsole::wait_for(&*uart, r"Imported UDS certificate", timeout)?;
+    let _ = UartConsole::wait_for(&*uart, r"Imported DICE UDS certificate.", timeout)?;
 
     Ok(())
 }
