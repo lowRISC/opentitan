@@ -31,10 +31,11 @@ extern "C" {
  * allocating space for the keyblob. The caller should indicate the length of
  * the allocated keyblob; this function will return an error if the keyblob
  * length does not match expectations. For hardware-backed keys, the keyblob
- * length is 0 and the keyblob pointer may be `NULL`. For non-hardware-backed
- * keys, the keyblob should be twice the length of the key. The value in the
- * `checksum` field of the blinded key struct will be populated by this
- * function.
+ * expectations. If the key is hardware-backed, the caller should pass a fully
+ * populated private key handle such as the kind returned by
+ * `otcrypto_hw_backed_key`. For non-hardware-backed keys, the keyblob should
+ * be twice the length of the key. The value in the `checksum` field of the
+ * blinded key struct will be populated by this function.
  *
  * @param key_derivation_key Blinded key derivation key.
  * @param kdf_label Label string according to SP 800-108r1.
