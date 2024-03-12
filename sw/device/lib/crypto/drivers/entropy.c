@@ -450,9 +450,9 @@ static status_t csrng_send_app_cmd(uint32_t base_address,
         reg = abs_mmio_read32(kBaseCsrng + CSRNG_INTR_STATE_REG_OFFSET);
       } while (!bitfield_bit32_read(reg, CSRNG_INTR_STATE_CS_CMD_REQ_DONE_BIT));
 
-      // Check the "status" bit, which will be 1 only if there was an error.
+      // Check the "status" bit, which will be 0 unless there was an error.
       reg = abs_mmio_read32(kBaseCsrng + CSRNG_SW_CMD_STS_REG_OFFSET);
-      if (bitfield_bit32_read(reg, CSRNG_SW_CMD_STS_CMD_STS_BIT)) {
+      if (bitfield_field32_read(reg, CSRNG_SW_CMD_STS_CMD_STS_FIELD)) {
         return OTCRYPTO_RECOV_ERR;
       }
     }
@@ -467,8 +467,8 @@ static status_t csrng_send_app_cmd(uint32_t base_address,
         reg = abs_mmio_read32(sts_reg_addr);
       } while (!bitfield_bit32_read(reg, EDN_SW_CMD_STS_CMD_ACK_BIT));
 
-      // Check the "status" bit, which will be 1 only if there was an error.
-      if (bitfield_bit32_read(reg, EDN_SW_CMD_STS_CMD_STS_BIT)) {
+      // Check the "status" bit, which will be 0 unless there was an error.
+      if (bitfield_field32_read(reg, CSRNG_SW_CMD_STS_CMD_STS_FIELD)) {
         return OTCRYPTO_RECOV_ERR;
       }
     }
@@ -525,7 +525,7 @@ static status_t edn_ready_block(uint32_t edn_address) {
     reg = abs_mmio_read32(edn_address + EDN_SW_CMD_STS_REG_OFFSET);
   } while (!bitfield_bit32_read(reg, EDN_SW_CMD_STS_CMD_RDY_BIT));
 
-  if (bitfield_bit32_read(reg, EDN_SW_CMD_STS_CMD_STS_BIT)) {
+  if (bitfield_field32_read(reg, CSRNG_SW_CMD_STS_CMD_STS_FIELD)) {
     return OTCRYPTO_RECOV_ERR;
   }
   return OTCRYPTO_OK;

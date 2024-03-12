@@ -155,6 +155,30 @@ typedef enum dif_csrng_error {
 } dif_csrng_error_t;
 
 /**
+ * Enumeration of CSRNG command status errors.
+ */
+typedef enum dif_csrng_cmd_sts_error {
+  /**
+   * Indicates that the command completed successfully.
+   */
+  kDifCsrngCmdStsSuccess = 0,
+  /**
+   * Indicates that an invalid apllication command has been issued.
+   */
+  kDifCsrngCmdStsInvalidAcmd = 1,
+  /**
+   * Indicates that the state wasn't zeroized properly after an uninstantiate
+   * command due to invalid state parameters in the cmd drbg.
+   */
+  kDifCsrngCmdStsInvalidStateParams = 2,
+  /**
+   * Indicates that CSRNG entropy was generated for a command that is not a
+   * generate command.
+   */
+  kDifCsrngCmdStsInvalidCtrDrbgCmd = 3,
+} dif_csrng_cmd_sts_t;
+
+/**
  * The status of the CSRNG block at a particular moment in time.
  */
 typedef struct dif_csrng_cmd_status {
@@ -163,14 +187,9 @@ typedef struct dif_csrng_cmd_status {
    */
   dif_csrng_cmd_status_kind_t kind;
   /**
-   * A bitset of FIFOs in an unhealthy state, with bit indices given by
-   * `dif_csrng_fifo_t`.
+   * The status value CSRNG returns.
    */
-  uint32_t unhealthy_fifos;
-  /**
-   * A bitset of errors, with bit indices given by `dif_csrng_error_t`.
-   */
-  uint32_t errors;
+  dif_csrng_cmd_sts_t cmd_sts;
 } dif_csrng_cmd_status_t;
 
 /**

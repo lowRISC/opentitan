@@ -238,7 +238,8 @@ interface edn_cov_if (
   endgroup : edn_cs_cmd_response_cg
 
   covergroup edn_sw_cmd_sts_cg with function sample(bit cmd_rdy, bit cmd_reg_rdy,
-                                                    bit cmd_sts, bit cmd_ack);
+                                                    csrng_pkg::csrng_cmd_sts_e cmd_sts,
+                                                    bit cmd_ack);
     option.name         = "edn_sw_cmd_sts_cg";
     option.per_instance = 1;
 
@@ -252,10 +253,7 @@ interface edn_cov_if (
       bins not_ready = { 1'b0 };
     }
 
-    cp_cmd_sts_cg: coverpoint cmd_sts {
-      bins error   = { 1'b1 };
-      bins success = { 1'b0 };
-    }
+    cp_cmd_sts_cg: coverpoint cmd_sts;
 
     cp_cmd_ack_cg: coverpoint cmd_ack {
       bins ack    = { 1'b1 };
@@ -264,8 +262,8 @@ interface edn_cov_if (
   endgroup : edn_sw_cmd_sts_cg
 
   covergroup edn_hw_cmd_sts_cg with function sample(bit boot_mode, bit auto_mode,
-                                                    bit cmd_sts, bit cmd_ack,
-                                                    csrng_pkg::acmd_e acmd);
+                                                    csrng_pkg::csrng_cmd_sts_e cmd_sts,
+                                                    bit cmd_ack, csrng_pkg::acmd_e acmd);
     option.name         = "edn_hw_cmd_sts_cg";
     option.per_instance = 1;
 
@@ -279,10 +277,7 @@ interface edn_cov_if (
       bins not_auto_mode = { 1'b0 };
     }
 
-    cp_cmd_sts: coverpoint cmd_sts {
-      bins error   = { 1'b1 };
-      bins success = { 1'b0 };
-    }
+    cp_cmd_sts: coverpoint cmd_sts;
 
     cp_cmd_ack: coverpoint cmd_ack {
       bins ack    = { 1'b1 };
@@ -368,13 +363,14 @@ interface edn_cov_if (
   endfunction : cg_cs_cmd_response_sample
 
   function automatic void cg_edn_sw_cmd_sts_sample(bit cmd_rdy, bit cmd_reg_rdy,
-                                                   bit cmd_sts, bit cmd_ack);
+                                                   csrng_pkg::csrng_cmd_sts_e cmd_sts,
+                                                   bit cmd_ack);
     edn_sw_cmd_sts_cg_inst.sample(cmd_rdy, cmd_reg_rdy, cmd_sts, cmd_ack);
   endfunction : cg_edn_sw_cmd_sts_sample
 
   function automatic void cg_edn_hw_cmd_sts_sample(bit boot_mode, bit auto_mode,
-                                                   bit cmd_sts, bit cmd_ack,
-                                                   csrng_pkg::acmd_e acmd);
+                                                   csrng_pkg::csrng_cmd_sts_e cmd_sts,
+                                                   bit cmd_ack, csrng_pkg::acmd_e acmd);
     edn_hw_cmd_sts_cg_inst.sample(boot_mode, auto_mode, cmd_sts, cmd_ack, acmd);
   endfunction : cg_edn_hw_cmd_sts_sample
 

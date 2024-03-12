@@ -325,20 +325,45 @@
       tags: [// Internal HW can modify status register
                  "excl:CsrNonInitTests:CsrExclCheck"]
       fields: [
-        { bits: "0",
-          name: "CMD_RDY",
-          desc: '''This bit indicates when the command interface is ready to accept commands.
-                '''
-          resval: "1"
-        }
         { bits: "1",
+          name: "CMD_RDY",
+          desc: '''
+                This bit indicates when the command interface is ready to accept commands.
+                Before starting to write a new command to !!SW_CMD_REQ, this field needs to be polled.
+                0b0: CSRNG is not ready to accept commands or the last command hasn't been acked yet.
+                0b1: CSRNG is ready to accept the next command.
+                '''
+          resval: "0"
+        }
+        { bits: "2",
+          name: "CMD_ACK",
+          desc: '''
+                This one bit field indicates when a SW command has been acknowledged by the CSRNG.
+                It is set to low each time a new command is written to !!CMD_REQ.
+                The field is set to high once a SW command request has been acknowledged by the CSRNG.
+                0b0: The last SW command has not been acknowledged yet.
+                0b1: The last SW command has been acknowledged.
+                '''
+          resval: "0"
+        }
+        { bits: "4:3",
           name: "CMD_STS",
           desc: '''
-                This one bit field is the status code returned with the application command ack.
+                This field represents the status code returned with the application command ack.
                 It is updated each time a command ack is asserted on the internal application
                 interface for software use.
-                0b0: Request completed successfully
-                0b1: Request completed with an error
+                To check whether a command was succesful, wait for !!INTR_STATE.CS_CMD_REQ_DONE or
+                !!SW_CMD_STS.CMD_ACK to be high and then check the value of this field.
+                0x0: Request completed successfully.
+                0x1: Request completed with an invalid application command error.
+                     This error indicates that the issued application command doesn't represent a valid operation.
+                     If this error appears, the main state machine will hang and the entropy complex has to be restarted.
+                0x2: Request completed with an invalid state parameter error.
+                     This error indicates that the state wasn't zeroized properly after an uninstantiate command.
+                     In this case the entropy complex should be restarted to properly zeroize the state.
+                0x3: Request completed with an invalid counter drbg generation command error.
+                     This error indicates that CSRNG entropy was generated for a command that is not a generate command.
+                     In this case the entropy should not be considered as valid.
                 '''
           resval: "0"
         }

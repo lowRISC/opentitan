@@ -30,7 +30,8 @@ interface csrng_if (input clk, input rst_n);
   assign cmd_push_if.valid     = (if_mode == dv_utils_pkg::Device) ? cmd_req.csrng_req_valid : 'z;
   assign cmd_push_if.h_data    = (if_mode == dv_utils_pkg::Device) ? cmd_req.csrng_req_bus : 'z;
   assign cmd_rsp.csrng_rsp_ack = (if_mode == dv_utils_pkg::Device) ? cmd_rsp_int.csrng_rsp_ack : 'z;
-  assign cmd_rsp.csrng_rsp_sts = (if_mode == dv_utils_pkg::Device) ? cmd_rsp_int.csrng_rsp_sts : 'z;
+  assign cmd_rsp.csrng_rsp_sts = (if_mode == dv_utils_pkg::Device) ?
+                                 cmd_rsp_int.csrng_rsp_sts : CMD_STS_UNDRIVEN;
 
   assign genbits_push_if.ready = (if_mode == dv_utils_pkg::Device) ? cmd_req.genbits_ready : 'z;
   assign cmd_rsp.genbits_valid = (if_mode == dv_utils_pkg::Device) ? genbits_push_if.valid : 'z;

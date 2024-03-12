@@ -140,6 +140,10 @@ package csrng_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
+    } cmd_ack;
+    struct packed {
+      logic [1:0]  d;
+      logic        de;
     } cmd_sts;
   } csrng_hw2reg_sw_cmd_sts_reg_t;
 
@@ -320,8 +324,8 @@ package csrng_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    csrng_hw2reg_intr_state_reg_t intr_state; // [167:160]
-    csrng_hw2reg_sw_cmd_sts_reg_t sw_cmd_sts; // [159:156]
+    csrng_hw2reg_intr_state_reg_t intr_state; // [170:163]
+    csrng_hw2reg_sw_cmd_sts_reg_t sw_cmd_sts; // [162:156]
     csrng_hw2reg_genbits_vld_reg_t genbits_vld; // [155:154]
     csrng_hw2reg_genbits_reg_t genbits; // [153:122]
     csrng_hw2reg_int_state_val_reg_t int_state_val; // [121:90]
