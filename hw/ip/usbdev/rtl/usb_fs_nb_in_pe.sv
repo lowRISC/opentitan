@@ -170,8 +170,10 @@ module usb_fs_nb_in_pe #(
   ////////////////////////////////////////////////////////////////////////////////
   // Transaction is starting on this IN endpoint; capture the packet details.
   ////////////////////////////////////////////////////////////////////////////////
+  logic in_starting;
+  assign in_starting = (in_xact_state == StIdle || in_xact_state == StWaitAck) && in_token_received;
 
-  assign in_xact_starting_o = ep_active && in_token_received;
+  assign in_xact_starting_o = in_starting & ep_active;
   assign in_xact_start_ep_o = in_ep_current_d;
 
   ////////////////////////////////////////////////////////////////////////////////
@@ -265,7 +267,7 @@ module usb_fs_nb_in_pe #(
           in_xact_state_next = StIdle;
           in_xact_end = 1'b1;
         end else if (in_token_received) begin
-          in_xact_state_next = StRcvdIn;
+          in_xact_state_next = ep_active ? StRcvdIn : StIdle;
           rollback_in_xact = 1'b1;
         end else if (rx_pkt_end_i) begin
           in_xact_state_next = StIdle;
