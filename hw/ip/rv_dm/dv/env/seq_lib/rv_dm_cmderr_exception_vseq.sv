@@ -16,8 +16,9 @@ class rv_dm_cmderr_exception_vseq extends rv_dm_base_vseq;
   }
 
   task body();
-    //Verify that the cmderr should set to 3, if an excepton occurred while executing the command.
-    write_chk(.ptr(tl_mem_ral.exception), .cmderr(3), .command(32'h00231000));
+    // Verify that the cmderr should be AbstractCmdErrException,
+    // if an excepton occurred while executing the command.
+    write_chk(.ptr(tl_mem_ral.exception), .cmderr(AbstractCmdErrException), .command(32'h00231000));
   endtask : body
 
 endclass : rv_dm_cmderr_exception_vseq
