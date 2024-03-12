@@ -117,7 +117,7 @@ You may find it useful to use wildcards to build/test all targets in the OpenTit
 If a target (a test or build artifact) relies on optional parts of the "Getting Started" guide they should be tagged so they can be filtered out and users can `bazelisk.sh test //...` once they filter out the appropriate tags.
 We maintain or use the following tags to support this:
 * `broken` is used to tag tests that are committed but should not be expected by CI or others to pass.
-* `cw310`, `cw310_test_rom`, and `cw310_rom` are used to tag tests that depend on a correctly setup cw310 "Bergen Board" to emulate OpenTitan.
+* `cw310`, `cw310_test_rom`, and `cw310_rom_with_fake_keys` are used to tag tests that depend on a correctly setup cw310 "Bergen Board" to emulate OpenTitan.
   The `cw310` tag may be used in `--test_tag_filters` to enable concise filtering to select tests that run on this board and include or exclude them.
   Loading the bitstream is the slowest part of the test, so these tags can group tests with common bitstreams to accelerate the tests tagged `cw310_test_rom`.
 * `verilator` is used to tag tests that depend on a verilated model of OpenTitan that can take a significant time to build.
@@ -145,7 +145,8 @@ There is no way to filter out dependencies of a test\_suite such as `//sw/device
 
 On-device tests such as `//sw/device/tests:uart_smoketest` include multiple targets for different device simulation/emulation tools.
 Typically, you will only want to run one of these test targets at a time (for instance, only Verilator or only FPGA).
-Add `_sim_verilator` to the test name to run the test on Verilator only, and `_fpga_cw310_rom` or `_fpga_cw310_test_rom` to run the test on FPGA only.
+Add `_sim_verilator` to the test name to run the test on Verilator only, and `_fpga_cw310_rom_with_fake_keys` or `_fpga_cw310_test_rom` to run the test on FPGA only.
+Not all tests are available on all of these targets; in particular, tests do not always expose both `_fpga_cw310_rom_with_fake_keys` and `fpga_cw310_test_rom` options, so if one does not work then it's good to try the other.
 
 You can check which Verilator tests are available under a given directory using:
 ```console
