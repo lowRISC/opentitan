@@ -10,8 +10,6 @@ interface usb20_block_if (
   inout wire usb_n
 );
   // Data Inputs pins
-  logic usb_dp_i;
-  logic usb_dn_i;
   logic usb_rx_d_i;
   // Data Outputs pins
   logic usb_dp_o;
@@ -33,8 +31,6 @@ interface usb20_block_if (
   logic usb_clk;             // signal used to divide clock or send J/K symbols for 4 clock cycles
 
   assign usb_sense_i = usb_vbus;
-  assign usb_dp_i = usb_p;
-  assign usb_dn_i = usb_n;
   assign usb_p = usb_dp_en_o ? usb_dp_o : drive_p;
   assign usb_n = usb_dn_en_o ? usb_dn_o : drive_n;
 
