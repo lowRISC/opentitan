@@ -43,6 +43,18 @@ typedef mubi_cov #(.Width(12),
 typedef mubi_cov #(.Width(16),
                    .ValueTrue(prim_mubi_pkg::MuBi16True),
                    .ValueFalse(prim_mubi_pkg::MuBi16False)) mubi16_cov;
+typedef mubi_cov #(.Width(20),
+                   .ValueTrue(prim_mubi_pkg::MuBi20True),
+                   .ValueFalse(prim_mubi_pkg::MuBi20False)) mubi20_cov;
+typedef mubi_cov #(.Width(24),
+                   .ValueTrue(prim_mubi_pkg::MuBi24True),
+                   .ValueFalse(prim_mubi_pkg::MuBi24False)) mubi24_cov;
+typedef mubi_cov #(.Width(28),
+                   .ValueTrue(prim_mubi_pkg::MuBi28True),
+                   .ValueFalse(prim_mubi_pkg::MuBi28False)) mubi28_cov;
+typedef mubi_cov #(.Width(32),
+                   .ValueTrue(prim_mubi_pkg::MuBi32True),
+                   .ValueFalse(prim_mubi_pkg::MuBi32False)) mubi32_cov;
 
 // a mubi coverage object, which allows to dynamically select the width of mubi
 class dv_base_mubi_cov extends uvm_object;
@@ -53,6 +65,10 @@ class dv_base_mubi_cov extends uvm_object;
   mubi8_cov m_mubi8_cov;
   mubi12_cov m_mubi12_cov;
   mubi16_cov m_mubi16_cov;
+  mubi20_cov m_mubi20_cov;
+  mubi24_cov m_mubi24_cov;
+  mubi28_cov m_mubi28_cov;
+  mubi32_cov m_mubi32_cov;
 
   `uvm_object_utils(dv_base_mubi_cov)
   `uvm_object_new
@@ -70,6 +86,10 @@ class dv_base_mubi_cov extends uvm_object;
       8:  m_mubi8_cov  = mubi8_cov::type_id::create(cov_name);
       12: m_mubi12_cov = mubi12_cov::type_id::create(cov_name);
       16: m_mubi16_cov = mubi16_cov::type_id::create(cov_name);
+      20: m_mubi20_cov = mubi20_cov::type_id::create(cov_name);
+      24: m_mubi24_cov = mubi24_cov::type_id::create(cov_name);
+      28: m_mubi28_cov = mubi28_cov::type_id::create(cov_name);
+      32: m_mubi32_cov = mubi32_cov::type_id::create(cov_name);
       default: `uvm_fatal(`gfn, $sformatf("Unsupported mubi width (%0d) is used", mubi_width))
     endcase
   endfunction : create_cov
@@ -80,9 +100,11 @@ class dv_base_mubi_cov extends uvm_object;
       8:  m_mubi8_cov.sample(value);
       12: m_mubi12_cov.sample(value);
       16: m_mubi16_cov.sample(value);
+      20: m_mubi20_cov.sample(value);
+      24: m_mubi24_cov.sample(value);
+      28: m_mubi28_cov.sample(value);
+      32: m_mubi32_cov.sample(value);
       default: `uvm_fatal(`gfn, $sformatf("Unsupported mubi width (%0d) is used", mubi_width))
     endcase
   endfunction : sample
 endclass : dv_base_mubi_cov
-
-

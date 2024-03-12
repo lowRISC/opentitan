@@ -22,7 +22,7 @@ MUBI_DEC_OUT_PATH = "hw/ip/prim/rtl/prim_mubi{}_dec.sv"
 MUBI_SW_OUT_PATH = "sw/device/lib/base/multibits.h"
 MUBI_SW_ASM_OUT_PATH = "sw/device/lib/base/multibits_asm.h"
 
-N_MAX_NIBBLES = 4
+N_MAX_NIBBLES = 8
 
 
 def is_width_valid(width: int) -> bool:
