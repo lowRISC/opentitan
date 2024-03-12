@@ -244,7 +244,7 @@ static void aes_encrypt(const uint8_t *plaintext, size_t plaintext_len) {
   // Using the SecAesStartTriggerDelay hardware parameter, the AES unit is
   // configured to start operation 40 cycles after receiving the start trigger.
   // This allows Ibex to go to sleep in order to not disturb the capture.
-  sca_call_and_sleep(aes_manual_trigger, kIbexAesSleepCycles);
+  sca_call_and_sleep(aes_manual_trigger, kIbexAesSleepCycles, false);
 }
 
 /**
