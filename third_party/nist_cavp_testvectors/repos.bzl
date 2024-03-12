@@ -18,7 +18,10 @@ def nist_cavp_repos():
         name = "nist_cavp_drbg_sp_800_90a_root",
         build_file = Label("//third_party/nist_cavp_testvectors:BUILD.nist_cavp_common.bazel"),
         sha256 = "5f7e5658ebd5b4e6785a7b12fa32333511d2acc2f2d9c5ae1ffa16b699377769",
-        url = "https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/drbg/drbgtestvectors.zip",
+        urls = [
+            "https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/drbg/drbgtestvectors.zip",
+            "https://storage.googleapis.com/ot-crypto-test-vectors/nist/drbgtestvectors.zip",
+        ],
     )
     http_archive(
         name = "nist_cavp_ecdsa_fips_186_4",
@@ -81,17 +84,26 @@ def nist_cavp_repos():
         name = "nist_cavp_ecdh_sp_800_56a",
         build_file = Label("//third_party/nist_cavp_testvectors:BUILD.nist_cavp_common.bazel"),
         sha256 = "5fff092551f2d72e89a3d9362711878708f9a14b502f0dfae819649105b0ea39",
-        url = "https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/components/ecccdhtestvectors.zip",
+        urls = [
+            "https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/components/ecccdhtestvectors.zip",
+            "https://storage.googleapis.com/ot-crypto-test-vectors/nist/ecccdhtestvectors.zip",
+        ],
     )
     http_archive(
         name = "nist_cavp_rsa_fips_186_3",
         build_file = Label("//third_party/nist_cavp_testvectors:BUILD.nist_cavp_common.bazel"),
         sha256 = "8405aeb3572a4f98ed4b1a3ccb3f2f49e725462dd28ec4759d6a15d88855d19c",
-        url = "https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/dss/186-3rsatestvectors.zip",
+        urls = [
+            "https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/dss/186-3rsatestvectors.zip",
+            "https://storage.googleapis.com/ot-crypto-test-vectors/nist/186-3rsatestvectors.zip",
+        ],
     )
     http_archive(
         name = "nist_cavp_hmac_fips_198_1",
         build_file = Label("//third_party/nist_cavp_testvectors:BUILD.nist_cavp_common.bazel"),
         sha256 = "418c3837d38f249d6668146bd0090db24dd3c02d2e6797e3de33860a387ae4bd",
-        url = "https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/mac/hmactestvectors.zip",
+        urls = [
+            "https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/mac/hmactestvectors.zip",
+            "https://storage.googleapis.com/ot-crypto-test-vectors/nist/hmactestvectors.zip",
+        ],
     )
