@@ -525,7 +525,7 @@
             - Verify that jtag_dmi_ral.abstractcs.cmderr is set to 3.
             '''
       stage: V1
-      tests: []
+      tests: ["rv_dm_cmderr_exception"]
     }
     {
       name: rom_read_access
