@@ -144,9 +144,10 @@ jobs:
   - template: ci/install-package-dependencies.yml
   # Bazel test suites are a common cause of problematic tags. Check test suites
   # before checking for other tag issues.
-  - bash:  ci/scripts/check_bazel_test_suites.py
-    displayName: Check Bazel test suites (Experimental)
-    continueOnError: True
+  # #21973: Disabled until Verilator tags are fixed in our build tree.
+  #- bash:  ci/scripts/check_bazel_test_suites.py
+  #  displayName: Check Bazel test suites (Experimental)
+  #  continueOnError: True
   - bash: ci/scripts/check-bazel-tags.sh
     displayName: Check Bazel Tags (Experimental)
     continueOnError: True
