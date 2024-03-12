@@ -793,12 +793,22 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
           bit is_watermark;
           // use zero_delay write, otherwise, spi may read faster than SW write
           bit zero_delay_write = 1;
+          int unsigned delay = $urandom_range(10, 200);
 
-          cfg.clk_rst_vif.wait_clks($urandom_range(10, 200));
+          // We read 'intr_state' through the backdoor every cycle to see if a flip/watermark
+          // event occurs. Just because otherwise, if we apply a "random delay" it's possible the
+          // new value will be written at a time the RTL has already "latched" the older value and
+          // there will be a mem comparison mismatch
+          // Once we read a readbufflip/watermark interrupt via backdoor, then do a front-door read
+          //  to keep the predictions intact
+          cfg.clk_rst_vif.wait_clks(1);
+          csr_rd(.ptr(ral.intr_state), .value(intr_state_val), .backdoor(1));
 
-          csr_rd(ral.intr_state, intr_state_val);
           is_flip = get_field_val(ral.intr_state.readbuf_flip, intr_state_val);
           is_watermark = get_field_val(ral.intr_state.readbuf_watermark, intr_state_val);
+          if (is_flip || is_watermark) // Front-door read to keep the SCB predictions intact
+            csr_rd(ral.intr_state, intr_state_val);
+
 
           // clear flip and watermark event before updating mem
           // if clear too late, scb is hard to handle as the interrupt may happen again
@@ -807,10 +817,8 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
           if (is_watermark) intr_state_val[ReadbufWatermark] = 1;
 
           if (!is_flip && !is_watermark) continue;
-          // Wait for register access to complete
-          while(ral.intr_state.is_busy()) begin
-            cfg.clk_rst_vif.wait_clks(1);
-          end
+
+          cfg.clk_rst_vif.wait_clks(1);
           csr_wr(ral.intr_state, intr_state_val);
 
           if (is_flip) begin
