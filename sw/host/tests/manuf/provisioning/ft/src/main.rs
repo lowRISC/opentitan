@@ -14,7 +14,7 @@ use opentitanlib::dif::lc_ctrl::DifLcCtrlState;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::lc::read_lc_state;
 use opentitanlib::test_utils::load_sram_program::SramProgramParams;
-use ujson_lib::provisioning_data::{ManufCertPersoDataIn, ManufFtIndividualizeData};
+use ujson_lib::provisioning_data::{ManufCertgenInputs, ManufFtIndividualizeData};
 use util_lib::{hex_string_to_u32_arrayvec, hex_string_to_u8_arrayvec};
 
 /// Provisioning data command-line parameters.
@@ -120,7 +120,7 @@ fn main() -> Result<()> {
     let owner_security_version = opts.provisioning_data.owner_security_version;
     let uds_auth_key_id =
         hex_string_to_u8_arrayvec::<20>(opts.provisioning_data.uds_auth_key_id.as_str())?;
-    let _perso_data_in = ManufCertPersoDataIn {
+    let _perso_certgen_inputs = ManufCertgenInputs {
         rom_ext_measurement: rom_ext_measurement.clone(),
         rom_ext_security_version,
         owner_manifest_measurement: owner_manifest_measurement.clone(),
@@ -200,7 +200,7 @@ fn main() -> Result<()> {
         &opts.init,
         opts.provisioning_data.host_ecc_sk,
         opts.provisioning_data.cert_endorsement_ecc_sk,
-        &_perso_data_in,
+        &_perso_certgen_inputs,
         opts.timeout,
     )?;
 
