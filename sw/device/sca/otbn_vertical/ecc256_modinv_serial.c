@@ -92,7 +92,7 @@ static void p256_run_modinv(uint32_t *k0, uint32_t *k1) {
 
   // Execute program.
   sca_set_trigger_high();
-  sca_call_and_sleep(otbn_manual_trigger, kIbexOtbnSleepCycles);
+  sca_call_and_sleep(otbn_manual_trigger, kIbexOtbnSleepCycles, false);
   otbn_busy_wait_for_done();
   sca_set_trigger_low();
 }
