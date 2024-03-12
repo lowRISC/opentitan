@@ -15,15 +15,17 @@
 #include "keymgr_regs.h"  // Generated.
 
 #define KEYMGR_ASSERT(a, b) static_assert(a == b, "Bad value for " #a)
-KEYMGR_ASSERT(kKeymgrStateReset, KEYMGR_WORKING_STATE_STATE_VALUE_RESET);
-KEYMGR_ASSERT(kKeymgrStateInit, KEYMGR_WORKING_STATE_STATE_VALUE_INIT);
-KEYMGR_ASSERT(kKeymgrStateCreatorRootKey,
+KEYMGR_ASSERT(kScKeymgrStateReset, KEYMGR_WORKING_STATE_STATE_VALUE_RESET);
+KEYMGR_ASSERT(kScKeymgrStateInit, KEYMGR_WORKING_STATE_STATE_VALUE_INIT);
+KEYMGR_ASSERT(kScKeymgrStateCreatorRootKey,
               KEYMGR_WORKING_STATE_STATE_VALUE_CREATOR_ROOT_KEY);
-KEYMGR_ASSERT(kKeymgrStateOwnerIntermediateKey,
+KEYMGR_ASSERT(kScKeymgrStateOwnerIntermediateKey,
               KEYMGR_WORKING_STATE_STATE_VALUE_OWNER_INTERMEDIATE_KEY);
-KEYMGR_ASSERT(kKeymgrStateOwnerKey, KEYMGR_WORKING_STATE_STATE_VALUE_OWNER_KEY);
-KEYMGR_ASSERT(kKeymgrStateDisabled, KEYMGR_WORKING_STATE_STATE_VALUE_DISABLED);
-KEYMGR_ASSERT(kKeymgrStateInvalid, KEYMGR_WORKING_STATE_STATE_VALUE_INVALID);
+KEYMGR_ASSERT(kScKeymgrStateOwnerKey,
+              KEYMGR_WORKING_STATE_STATE_VALUE_OWNER_KEY);
+KEYMGR_ASSERT(kScKeymgrStateDisabled,
+              KEYMGR_WORKING_STATE_STATE_VALUE_DISABLED);
+KEYMGR_ASSERT(kScKeymgrStateInvalid, KEYMGR_WORKING_STATE_STATE_VALUE_INVALID);
 
 enum {
   kBase = TOP_DARJEELING_KEYMGR_BASE_ADDR,
@@ -65,18 +67,18 @@ static rom_error_t expected_state_check(uint32_t expected_state) {
   return kErrorKeymgrInternal;
 }
 
-void keymgr_entropy_reseed_interval_set(uint16_t entropy_reseed_interval) {
-  SEC_MMIO_ASSERT_WRITE_INCREMENT(kKeymgrSecMmioEntropyReseedIntervalSet, 1);
+void sc_keymgr_entropy_reseed_interval_set(uint16_t entropy_reseed_interval) {
+  SEC_MMIO_ASSERT_WRITE_INCREMENT(kScKeymgrSecMmioEntropyReseedIntervalSet, 1);
   uint32_t reg = bitfield_field32_write(
       0, KEYMGR_RESEED_INTERVAL_SHADOWED_VAL_FIELD, entropy_reseed_interval);
   sec_mmio_write32_shadowed(kBase + KEYMGR_RESEED_INTERVAL_SHADOWED_REG_OFFSET,
                             reg);
 }
 
-void keymgr_sw_binding_set(
+void sc_keymgr_sw_binding_set(
     const keymgr_binding_value_t *binding_value_sealing,
     const keymgr_binding_value_t *binding_value_attestation) {
-  SEC_MMIO_ASSERT_WRITE_INCREMENT(kKeymgrSecMmioSwBindingSet, 17);
+  SEC_MMIO_ASSERT_WRITE_INCREMENT(kScKeymgrSecMmioSwBindingSet, 17);
 
   // Write and lock (rw0c) the software binding value. This register is unlocked
   // by hardware upon a successful state transition.
@@ -93,7 +95,7 @@ void keymgr_sw_binding_set(
   sec_mmio_write32(kBase + KEYMGR_SW_BINDING_REGWEN_REG_OFFSET, 0);
 }
 
-void keymgr_sw_binding_unlock_wait(void) {
+void sc_keymgr_sw_binding_unlock_wait(void) {
   while (!abs_mmio_read32(kBase + KEYMGR_SW_BINDING_REGWEN_REG_OFFSET)) {
   }
   // Ignore the return value since this read is performed to check and update
@@ -101,31 +103,31 @@ void keymgr_sw_binding_unlock_wait(void) {
   OT_DISCARD(sec_mmio_read32(kBase + KEYMGR_SW_BINDING_REGWEN_REG_OFFSET));
 }
 
-void keymgr_creator_max_ver_set(uint32_t max_key_ver) {
-  SEC_MMIO_ASSERT_WRITE_INCREMENT(kKeymgrSecMmioCreatorMaxVerSet, 2);
+void sc_keymgr_creator_max_ver_set(uint32_t max_key_ver) {
+  SEC_MMIO_ASSERT_WRITE_INCREMENT(kScKeymgrSecMmioCreatorMaxVerSet, 2);
   // Write and lock (rw0c) the max key version.
   sec_mmio_write32_shadowed(
       kBase + KEYMGR_MAX_CREATOR_KEY_VER_SHADOWED_REG_OFFSET, max_key_ver);
   sec_mmio_write32(kBase + KEYMGR_MAX_CREATOR_KEY_VER_REGWEN_REG_OFFSET, 0);
 }
 
-void keymgr_owner_int_max_ver_set(uint32_t max_key_ver) {
-  SEC_MMIO_ASSERT_WRITE_INCREMENT(kKeymgrSecMmioOwnerIntMaxVerSet, 2);
+void sc_keymgr_owner_int_max_ver_set(uint32_t max_key_ver) {
+  SEC_MMIO_ASSERT_WRITE_INCREMENT(kScKeymgrSecMmioOwnerIntMaxVerSet, 2);
   // Write and lock (rw0c) the max key version.
   sec_mmio_write32_shadowed(
       kBase + KEYMGR_MAX_OWNER_INT_KEY_VER_SHADOWED_REG_OFFSET, max_key_ver);
   sec_mmio_write32(kBase + KEYMGR_MAX_OWNER_INT_KEY_VER_REGWEN_REG_OFFSET, 0);
 }
 
-void keymgr_owner_max_ver_set(uint32_t max_key_ver) {
-  SEC_MMIO_ASSERT_WRITE_INCREMENT(kKeymgrSecMmioOwnerMaxVerSet, 2);
+void sc_keymgr_owner_max_ver_set(uint32_t max_key_ver) {
+  SEC_MMIO_ASSERT_WRITE_INCREMENT(kScKeymgrSecMmioOwnerMaxVerSet, 2);
   // Write and lock (rw0c) the max key version.
   sec_mmio_write32_shadowed(
       kBase + KEYMGR_MAX_OWNER_KEY_VER_SHADOWED_REG_OFFSET, max_key_ver);
   sec_mmio_write32(kBase + KEYMGR_MAX_OWNER_KEY_VER_REGWEN_REG_OFFSET, 0);
 }
 
-void keymgr_advance_state(void) {
+void sc_keymgr_advance_state(void) {
   uint32_t reg =
       bitfield_field32_write(0, KEYMGR_CONTROL_SHADOWED_DEST_SEL_FIELD,
                              KEYMGR_CONTROL_SHADOWED_DEST_SEL_VALUE_NONE);
@@ -136,7 +138,7 @@ void keymgr_advance_state(void) {
   abs_mmio_write32(kBase + KEYMGR_START_REG_OFFSET, 1);
 }
 
-rom_error_t keymgr_state_check(keymgr_state_t expected_state) {
+rom_error_t sc_keymgr_state_check(sc_keymgr_state_t expected_state) {
   return expected_state_check(expected_state);
 }
 
@@ -201,8 +203,8 @@ static rom_error_t keymgr_wait_until_done(void) {
   return kErrorKeymgrInternal;
 }
 
-rom_error_t keymgr_generate_attestation_key_otbn(
-    keymgr_diversification_t diversification) {
+rom_error_t sc_keymgr_generate_attestation_key_otbn(
+    sc_keymgr_diversification_t diversification) {
   HARDENED_RETURN_IF_ERROR(keymgr_is_idle());
 
   // Select OTBN as the destination.
@@ -225,7 +227,7 @@ rom_error_t keymgr_generate_attestation_key_otbn(
   abs_mmio_write32(kBase + KEYMGR_KEY_VERSION_REG_OFFSET,
                    diversification.version);
   // Set the salt.
-  for (size_t i = 0; i < kKeymgrSaltNumWords; i++) {
+  for (size_t i = 0; i < kScKeymgrSaltNumWords; i++) {
     abs_mmio_write32(kBase + KEYMGR_SALT_0_REG_OFFSET + (i * sizeof(uint32_t)),
                      diversification.salt[i]);
   }
@@ -237,7 +239,7 @@ rom_error_t keymgr_generate_attestation_key_otbn(
   return keymgr_wait_until_done();
 }
 
-rom_error_t keymgr_sideload_clear_otbn(void) {
+rom_error_t sc_keymgr_sideload_clear_otbn(void) {
   HARDENED_RETURN_IF_ERROR(keymgr_is_idle());
 
   // Set SIDELOAD_CLEAR to begin continuously clearing the requested slot.

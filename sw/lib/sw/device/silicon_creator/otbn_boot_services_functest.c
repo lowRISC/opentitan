@@ -38,7 +38,7 @@ static const attestation_signature_t kEcdsaSignature = {
           0x0e200e9b, 0x785690b4, 0xf47efe98}};
 
 // Sample key manager diversification data for testing.
-static const keymgr_diversification_t kDiversification = {
+static const sc_keymgr_diversification_t kDiversification = {
     .salt = {0x00010203, 0x04050607, 0x08090a0b, 0x0c0d0e0f, 0xf0f1f2f3,
              0xf4f5f6f7, 0xf8f9fafb, 0xfcfdfeff},
     .version = 0,
@@ -85,7 +85,7 @@ rom_error_t attestation_keygen_test(void) {
 
   // Check that key generations with different diversification result in
   // different keys.
-  keymgr_diversification_t diversification_modified;
+  sc_keymgr_diversification_t diversification_modified;
   memcpy(&diversification_modified, &kDiversification,
          sizeof(diversification_modified));
   diversification_modified.salt[0] ^= 1;

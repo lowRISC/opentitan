@@ -375,7 +375,7 @@ static void rom_pre_boot_check(void) {
 OT_WARN_UNUSED_RESULT
 static rom_error_t rom_boot(const manifest_t *manifest, uint32_t flash_exec) {
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomBoot, 1);
-  HARDENED_RETURN_IF_ERROR(keymgr_state_check(kKeymgrStateReset));
+  HARDENED_RETURN_IF_ERROR(sc_keymgr_state_check(kScKeymgrStateReset));
 
   const keymgr_binding_value_t *attestation_measurement =
       &manifest->binding_value;
@@ -388,10 +388,10 @@ static rom_error_t rom_boot(const manifest_t *manifest, uint32_t flash_exec) {
   } else {
     HARDENED_CHECK_NE(use_rom_ext_measurement, kHardenedBoolTrue);
   }
-  keymgr_sw_binding_set(&manifest->binding_value, attestation_measurement);
-  keymgr_creator_max_ver_set(manifest->max_key_version);
-  SEC_MMIO_WRITE_INCREMENT(kKeymgrSecMmioSwBindingSet +
-                           kKeymgrSecMmioCreatorMaxVerSet);
+  sc_keymgr_sw_binding_set(&manifest->binding_value, attestation_measurement);
+  sc_keymgr_creator_max_ver_set(manifest->max_key_version);
+  SEC_MMIO_WRITE_INCREMENT(kScKeymgrSecMmioSwBindingSet +
+                           kScKeymgrSecMmioCreatorMaxVerSet);
 
   sec_mmio_check_counters(/*expected_check_count=*/2);
 
