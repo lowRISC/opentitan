@@ -38,6 +38,10 @@ module tb;
     // both signals to the same life cycle signal.
     .lc_hw_debug_en_i     (rv_dm_if.lc_hw_debug_en),
     .pinmux_hw_debug_en_i (rv_dm_if.lc_hw_debug_en),
+    // TODO: this needs to be hooked up to the interface properly so that all combinations
+    // of access control combinations can be tested.
+    .lc_dft_en_i          (rv_dm_if.lc_hw_debug_en),
+    .otp_dis_rv_dm_late_debug_i(prim_mubi_pkg::MuBi8True),
     .scanmode_i           (rv_dm_if.scanmode      ),
     .scan_rst_ni          (rv_dm_if.scan_rst_n    ),
     .ndmreset_req_o       (rv_dm_if.ndmreset_req  ),

@@ -160,7 +160,7 @@ This ensures that the sampled `lc_hw_debug_en` value does not survive a life cyc
 
 Finally, note that there is secondary gating on the `rv_dm` and DFT TAPs that is always consuming live `lc_hw_debug_en` and `lc_dft_en` signals for added protection.
 
-See also [rv_dm documentation](../../rv_dm/README.md).
+See also [rv_dm documentation](../../rv_dm/doc/theory_of_operation.md#non-debug-module-reset-support).
 
 ## Generic Pad Wrapper
 

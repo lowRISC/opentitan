@@ -495,7 +495,7 @@ pub const RV_DM_REGS_BASE_ADDR: usize = 0x41200000;
 /// memory-mapped registers associated with this peripheral should have an
 /// address between #RV_DM_REGS_BASE_ADDR and
 /// `RV_DM_REGS_BASE_ADDR + RV_DM_REGS_SIZE_BYTES`.
-pub const RV_DM_REGS_SIZE_BYTES: usize = 0x4;
+pub const RV_DM_REGS_SIZE_BYTES: usize = 0x10;
 
 /// Peripheral base address for mem device on rv_dm in top earlgrey.
 ///

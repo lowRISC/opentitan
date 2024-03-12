@@ -36,6 +36,18 @@
       tests: []
     }
     {
+      name: sec_cm_lc_dft_en_intersig_mubi
+      desc: "Verify the countermeasure(s) LC_DFT_EN.INTERSIG.MUBI."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_otp_dis_rv_dm_late_debug_intersig_mubi
+      desc: "Verify the countermeasure(s) OTP_DIS_RV_DM_LATE_DEBUG.INTERSIG.MUBI."
+      stage: V2S
+      tests: []
+    }
+    {
       name: sec_cm_dm_en_ctrl_lc_gated
       desc: "Verify the countermeasure(s) DM_EN.CTRL.LC_GATED."
       stage: V2S

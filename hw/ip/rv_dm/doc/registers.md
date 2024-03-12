@@ -3,9 +3,11 @@
 <!-- BEGIN CMDGEN util/regtool.py -d ./hw/ip/rv_dm/data/rv_dm.hjson -->
 ## Summary of the **`regs`** interface's registers
 
-| Name                              | Offset   |   Length | Description         |
-|:----------------------------------|:---------|---------:|:--------------------|
-| rv_dm.[`ALERT_TEST`](#alert_test) | 0x0      |        4 | Alert Test Register |
+| Name                                                          | Offset   |   Length | Description                                |
+|:--------------------------------------------------------------|:---------|---------:|:-------------------------------------------|
+| rv_dm.[`ALERT_TEST`](#alert_test)                             | 0x0      |        4 | Alert Test Register                        |
+| rv_dm.[`LATE_DEBUG_ENABLE_REGWEN`](#late_debug_enable_regwen) | 0x4      |        4 | Lock bit for !!LATE_DEBUG_ENABLE register. |
+| rv_dm.[`LATE_DEBUG_ENABLE`](#late_debug_enable)               | 0x8      |        4 | Debug enable register.                     |
 
 ## ALERT_TEST
 Alert Test Register
@@ -23,6 +25,57 @@ Alert Test Register
 |:------:|:------:|:-------:|:------------|:-------------------------------------------------|
 |  31:1  |        |         |             | Reserved                                         |
 |   0    |   wo   |   0x0   | fatal_fault | Write 1 to trigger one alert event of this kind. |
+
+## LATE_DEBUG_ENABLE_REGWEN
+Lock bit for [`LATE_DEBUG_ENABLE`](#late_debug_enable) register.
+- Offset: `0x4`
+- Reset default: `0x1`
+- Reset mask: `0x1`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "LATE_DEBUG_ENABLE_REGWEN", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 260}}
+```
+
+|  Bits  |  Type  |  Reset  | Name                     | Description                                                                                                                                                                             |
+|:------:|:------:|:-------:|:-------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|  31:1  |        |         |                          | Reserved                                                                                                                                                                                |
+|   0    |  rw0c  |   0x1   | LATE_DEBUG_ENABLE_REGWEN | [`LATE_DEBUG_ENABLE`](#late_debug_enable) register configuration enable bit. If this is cleared to 0, the [`LATE_DEBUG_ENABLE`](#late_debug_enable) register cannot be written anymore. |
+
+## LATE_DEBUG_ENABLE
+Debug enable register.
+
+If the device is in the DEV lifecycle state and the
+DIS_RV_DM_LATE_DEBUG_IN_DEV has been programmed to kMuBi8False
+(or an invalid value), the RV_DM gating mechanisms are by default
+not ungated until SW writes kMuBi32True to this register.
+
+This can be leveraged to implement a "late debug enable in DEV"
+policy, whereby ROM_EXT first locks out any sensitive areas and
+functionalities of the device before enabling debug access via
+RV_DM.
+
+This register can be locked out via [`LATE_DEBUG_ENABLE_REGWEN.`](#late_debug_enable_regwen)
+
+This register does not have any effect in the following cases:
+  - If the device is in a DFT-enabled life cycle state (TEST_UNLOCKED*, RMA)
+  - If the device is in the DEV life cycle state and DIS_RV_DM_LATE_DEBUG_IN_DEV has been programmed to kMuBi8True
+  - If the device is in a life cycle state where hardware debugging is disabled (TEST_LOCKED*, PROD*, invalid states).
+- Offset: `0x8`
+- Reset default: `0x69696969`
+- Reset mask: `0xffffffff`
+- Register enable: [`LATE_DEBUG_ENABLE_REGWEN`](#late_debug_enable_regwen)
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "LATE_DEBUG_ENABLE", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |   Reset    | Name              | Description                                                                   |
+|:------:|:------:|:----------:|:------------------|:------------------------------------------------------------------------------|
+|  31:0  |   rw   | 0x69696969 | LATE_DEBUG_ENABLE | A value of kMuBi32True enables the debug module, all other values disable it. |
 
 ## Summary of the **`mem`** interface's registers
 

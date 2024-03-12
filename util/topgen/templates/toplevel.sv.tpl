@@ -236,6 +236,8 @@ module top_${top["name"]} #(
       otp_ctrl_otp_broadcast.hw_cfg1_data.en_csrng_sw_app_read;
   assign sram_ctrl_main_otp_en_sram_ifetch =
       otp_ctrl_otp_broadcast.hw_cfg1_data.en_sram_ifetch;
+  assign rv_dm_otp_dis_rv_dm_late_debug =
+      otp_ctrl_otp_broadcast.hw_cfg1_data.dis_rv_dm_late_debug;
   assign lc_ctrl_otp_device_id =
       otp_ctrl_otp_broadcast.hw_cfg0_data.device_id;
   assign lc_ctrl_otp_manuf_state =

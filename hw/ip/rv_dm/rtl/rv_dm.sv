@@ -24,8 +24,14 @@ module rv_dm
   // SEC_CM: LC_HW_DEBUG_EN.INTERSIG.MUBI
   // HW Debug lifecycle enable signal (live version from the life cycle controller)
   input  lc_ctrl_pkg::lc_tx_t lc_hw_debug_en_i,
+  // SEC_CM: LC_DFT_EN.INTERSIG.MUBI
+  // HW DFT lifecycle enable signal (live version from the life cycle controller)
+  input  lc_ctrl_pkg::lc_tx_t lc_dft_en_i,
+  // SEC_CM: OTP_DIS_RV_DM_LATE_DEBUG.INTERSIG.MUBI
   // HW Debug lifecycle enable signal (latched version from pinmux, only used for JTAG/TAP gating)
   input  lc_ctrl_pkg::lc_tx_t pinmux_hw_debug_en_i,
+  // Late debug enable disablement signal coming from the OTP HW_CFG1 partition.
+  input  prim_mubi_pkg::mubi8_t otp_dis_rv_dm_late_debug_i,
   input  prim_mubi_pkg::mubi4_t scanmode_i,
   input                       scan_rst_ni,
   output logic                ndmreset_req_o,  // non-debug module reset
@@ -60,6 +66,8 @@ module rv_dm
 
   import prim_mubi_pkg::mubi4_bool_to_mubi;
   import prim_mubi_pkg::mubi4_test_true_strict;
+  import prim_mubi_pkg::mubi8_test_true_strict;
+  import prim_mubi_pkg::mubi32_test_true_strict;
   import lc_ctrl_pkg::lc_tx_test_true_strict;
 
   `ASSERT_INIT(paramCheckNrHarts, NrHarts > 0)
@@ -173,14 +181,75 @@ module rv_dm
     PmEnLastPos
   } rv_dm_pm_en_e;
 
-  lc_ctrl_pkg::lc_tx_t [LcEnLastPos-1:0] lc_hw_debug_en;
+  lc_ctrl_pkg::lc_tx_t lc_hw_debug_en;
   prim_lc_sync #(
-    .NumCopies(int'(LcEnLastPos))
-  ) u_lc_en_sync (
+    .NumCopies(1)
+  ) u_prim_lc_sync_lc_hw_debug_en (
     .clk_i,
     .rst_ni,
     .lc_en_i(lc_hw_debug_en_i),
-    .lc_en_o(lc_hw_debug_en)
+    .lc_en_o({lc_hw_debug_en})
+  );
+
+  lc_ctrl_pkg::lc_tx_t lc_dft_en;
+  prim_lc_sync #(
+    .NumCopies(1)
+  ) u_prim_lc_sync_lc_dft_en (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(lc_dft_en_i),
+    .lc_en_o({lc_dft_en})
+  );
+
+  prim_mubi_pkg::mubi8_t [lc_ctrl_pkg::TxWidth-1:0] otp_dis_rv_dm_late_debug;
+  prim_mubi8_sync #(
+    .NumCopies (lc_ctrl_pkg::TxWidth)
+  ) u_prim_mubi8_sync_otp_dis_rv_dm_late_debug (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(otp_dis_rv_dm_late_debug_i),
+    .mubi_o(otp_dis_rv_dm_late_debug)
+  );
+
+  prim_mubi_pkg::mubi32_t [lc_ctrl_pkg::TxWidth-1:0] late_debug_enable;
+  prim_mubi32_sync #(
+    .NumCopies (lc_ctrl_pkg::TxWidth),
+    .AsyncOn(0) // No synchronization required since the input signal is already synchronous.
+  ) u_prim_mubi32_sync_late_debug_enable (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(prim_mubi_pkg::mubi32_t'(regs_reg2hw.late_debug_enable)),
+    .mubi_o(late_debug_enable)
+  );
+
+  // SEC_CM: DM_EN.CTRL.LC_GATED
+  // This implements a hardened MuBi multiplexor circuit where each output bitlane has its own
+  // associated comparators for the enablement condition.
+  logic [lc_ctrl_pkg::TxWidth-1:0] lc_hw_debug_en_raw;
+  logic [lc_ctrl_pkg::TxWidth-1:0] lc_dft_en_raw;
+  logic [lc_ctrl_pkg::TxWidth-1:0] lc_hw_debug_en_gated_raw;
+  assign lc_hw_debug_en_raw = lc_hw_debug_en;
+  assign lc_dft_en_raw = lc_dft_en;
+  for (genvar k = 0; k < lc_ctrl_pkg::TxWidth; k++) begin : gen_mubi_mux
+    assign lc_hw_debug_en_gated_raw[k] = (mubi8_test_true_strict(otp_dis_rv_dm_late_debug[k]) ||
+                                          mubi32_test_true_strict(late_debug_enable[k])) ?
+                                          lc_hw_debug_en_raw[k] :
+                                          lc_dft_en_raw[k];
+  end
+
+  // The lc_hw_debug_en_gated signal modulates gating logic on the bus-side of the RV_DM.
+  // The pinmux_hw_debug_en signal on the other hand modulates the TAP side of the RV_DM.
+  // In order for the RV_DM to remain response during a NDM reset request, the TAP side
+  // is not further modulated with the LATE_DEBUG_ENABLE CSR.
+  lc_ctrl_pkg::lc_tx_t [LcEnLastPos-1:0] lc_hw_debug_en_gated;
+  prim_lc_sync #(
+    .NumCopies(int'(LcEnLastPos)),
+    .AsyncOn(0) // No synchronization required since the input signal is already synchronous.
+  ) u_lc_en_sync_copies (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(lc_ctrl_pkg::lc_tx_t'(lc_hw_debug_en_gated_raw)),
+    .lc_en_o(lc_hw_debug_en_gated)
   );
 
   lc_ctrl_pkg::lc_tx_t [PmEnLastPos-1:0] pinmux_hw_debug_en;
@@ -203,7 +272,7 @@ module rv_dm
   logic ndmreset_req;
   logic ndmreset_req_qual;
   // SEC_CM: DM_EN.CTRL.LC_GATED
-  assign reset_req_en = lc_tx_test_true_strict(lc_hw_debug_en[LcEnResetReq]);
+  assign reset_req_en = lc_tx_test_true_strict(lc_hw_debug_en_gated[LcEnResetReq]);
   assign ndmreset_req_o = ndmreset_req_qual & reset_req_en;
 
   logic dmi_en;
@@ -238,7 +307,7 @@ module rv_dm
     .tl_d2h_o(sba_tl_h_i_int),
     .tl_h2d_o(sba_tl_h_o),
     .tl_d2h_i(sba_tl_h_i),
-    .lc_en_i (lc_hw_debug_en[LcEnSba]),
+    .lc_en_i (lc_hw_debug_en_gated[LcEnSba]),
     .err_o   (sba_gate_intg_error),
     .flush_req_i('0),
     .flush_ack_o(),
@@ -297,7 +366,7 @@ module rv_dm
   logic [NrHarts-1:0] debug_req;
   for (genvar i = 0; i < NrHarts; i++) begin : gen_debug_req_hart
     // SEC_CM: DM_EN.CTRL.LC_GATED
-    assign debug_req_en[i] = lc_tx_test_true_strict(lc_hw_debug_en[LcEnDebugReq + i]);
+    assign debug_req_en[i] = lc_tx_test_true_strict(lc_hw_debug_en_gated[LcEnDebugReq + i]);
   end
   assign debug_req_o = debug_req & debug_req_en;
 
@@ -375,13 +444,13 @@ module rv_dm
     .flush_req_i(ndmreset_req),
     .flush_ack_o(ndmreset_req_qual),
     .resp_pending_o(),
-    .lc_en_i (lc_hw_debug_en[LcEnRom]),
+    .lc_en_i (lc_hw_debug_en_gated[LcEnRom]),
     .err_o   (rom_gate_intg_error)
   );
 
   prim_mubi_pkg::mubi4_t en_ifetch;
   // SEC_CM: DM_EN.CTRL.LC_GATED, EXEC.CTRL.MUBI
-  assign en_ifetch = mubi4_bool_to_mubi(lc_tx_test_true_strict(lc_hw_debug_en[LcEnFetch]));
+  assign en_ifetch = mubi4_bool_to_mubi(lc_tx_test_true_strict(lc_hw_debug_en_gated[LcEnFetch]));
 
   tlul_adapter_reg #(
     .CmdIntgCheck     (1),
