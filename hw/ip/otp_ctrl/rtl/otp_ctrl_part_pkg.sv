@@ -326,7 +326,8 @@ package otp_ctrl_part_pkg;
   };
   typedef struct packed {
     logic [63:0] hw_cfg1_digest;
-    logic [47:0] unallocated;
+    logic [39:0] unallocated;
+    prim_mubi_pkg::mubi8_t dis_rv_dm_late_debug;
     prim_mubi_pkg::mubi8_t en_csrng_sw_app_read;
     prim_mubi_pkg::mubi8_t en_sram_ifetch;
   } otp_hw_cfg1_data_t;
@@ -334,7 +335,8 @@ package otp_ctrl_part_pkg;
   // default value used for intermodule
   parameter otp_hw_cfg1_data_t OTP_HW_CFG1_DATA_DEFAULT = '{
     hw_cfg1_digest: 64'hBBF4A76885E754F2,
-    unallocated: 48'h0,
+    unallocated: 40'h0,
+    dis_rv_dm_late_debug: prim_mubi_pkg::mubi8_t'(8'h69),
     en_csrng_sw_app_read: prim_mubi_pkg::mubi8_t'(8'h69),
     en_sram_ifetch: prim_mubi_pkg::mubi8_t'(8'h69)
   };
@@ -378,7 +380,8 @@ package otp_ctrl_part_pkg;
     }),
     128'({
       64'hBBF4A76885E754F2,
-      48'h0, // unallocated space
+      40'h0, // unallocated space
+      8'h69,
       8'h69,
       8'h69
     }),

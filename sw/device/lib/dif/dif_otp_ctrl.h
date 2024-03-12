@@ -94,8 +94,10 @@ typedef enum dif_otp_ctrl_partition {
    *
    * This contains
    * - EN_SRAM_IFETCH: Enable / disable execute from SRAM CSR switch.
-   * - EN_CSRNG_SW_APP_READ: This input efuse is used to enable access
-   * to the NIST internal state per instance.
+   * - EN_CSRNG_SW_APP_READ: This input efuse is used to enable access to the
+   * NIST internal state per instance.
+   * - DIS_RV_DM_LATE_DEBUG: Setting this to true bypasses the late debug
+   * enablement of RV_DM in the DEV life cycle state.
    */
   kDifOtpCtrlPartitionHwCfg1,
   /**

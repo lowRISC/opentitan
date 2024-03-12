@@ -23,7 +23,8 @@ class chip_sw_entropy_src_fuse_vseq extends chip_sw_base_vseq;
     cfg.mem_bkdr_util_h[Otp].otp_write_hw_cfg0_partition(
       .device_id(DEVICE_ID), .manuf_state(MANUF_STATE));
     cfg.mem_bkdr_util_h[Otp].otp_write_hw_cfg1_partition(
-      .en_sram_ifetch(MUBI8FALSE), .en_csrng_sw_app_read(MUBI8TRUE));
+      .en_sram_ifetch(MUBI8FALSE), .en_csrng_sw_app_read(MUBI8TRUE),
+      .dis_rv_dm_late_debug(MUBI8TRUE));
   endtask
 
   virtual task body();
@@ -38,7 +39,8 @@ class chip_sw_entropy_src_fuse_vseq extends chip_sw_base_vseq;
         cfg.mem_bkdr_util_h[Otp].otp_write_hw_cfg0_partition(
           .device_id(DEVICE_ID), .manuf_state(MANUF_STATE));
         cfg.mem_bkdr_util_h[Otp].otp_write_hw_cfg1_partition(
-          .en_sram_ifetch(MUBI8FALSE), .en_csrng_sw_app_read(MUBI8FALSE));
+          .en_sram_ifetch(MUBI8FALSE), .en_csrng_sw_app_read(MUBI8FALSE),
+          .dis_rv_dm_late_debug(MUBI8TRUE));
           break;
       end
     end

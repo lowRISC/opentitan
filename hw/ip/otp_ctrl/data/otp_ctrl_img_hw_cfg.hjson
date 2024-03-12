@@ -33,6 +33,11 @@
                     name:  "EN_CSRNG_SW_APP_READ",
                     value: true,
                 },
+                {
+                    // Use legacy behavior and disable late debug enable.
+                    name:  "DIS_RV_DM_LATE_DEBUG",
+                    value: true,
+                },
             ],
         }
     ]

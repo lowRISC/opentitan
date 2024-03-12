@@ -33,6 +33,10 @@ typedef struct hw_cfg1_settings {
    * instance.
    */
   multi_bit_bool_t en_csrng_sw_app_read;
+  /**
+   * This efuse is to disable the RV_DM late debug enable behavior
+   */
+  multi_bit_bool_t dis_rv_dm_late_debug;
 } hw_cfg1_settings_t;
 
 // Changing any of the following values may result in unexpected device
@@ -43,7 +47,9 @@ typedef struct hw_cfg1_settings {
 // - en_csrng_sw_app_read: required to be able to extract output from CSRNG.
 const hw_cfg1_settings_t kHwCfg1Settings = {
     .en_sram_ifetch = kMultiBitBool8True,
-    .en_csrng_sw_app_read = kMultiBitBool8True};
+    .en_csrng_sw_app_read = kMultiBitBool8True,
+    .dis_rv_dm_late_debug = kMultiBitBool8True,
+};
 
 /**
  * Configures digital logic settings in the HW_CFG1 partition.
@@ -57,6 +63,8 @@ static status_t hw_cfg1_enable_knobs_set(const dif_otp_ctrl_t *otp_ctrl) {
       bitfield_field32_write(0, kSramFetch, kHwCfg1Settings.en_sram_ifetch);
   val = bitfield_field32_write(val, kCsrngAppRead,
                                kHwCfg1Settings.en_csrng_sw_app_read);
+  val = bitfield_field32_write(val, kDisRvDmLateDebug,
+                               kHwCfg1Settings.dis_rv_dm_late_debug);
 
   TRY(otp_ctrl_testutils_dai_write32(otp_ctrl, kDifOtpCtrlPartitionHwCfg1,
                                      kHwCfgEnSramIfetchOffset, &val,

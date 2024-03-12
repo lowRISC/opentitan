@@ -468,6 +468,12 @@ status_t manuf_personalize_device_secret1(const dif_lc_ctrl_t *lc_ctrl,
     return INTERNAL();
   }
 
+  uint32_t dis_rv_dm_late_debug =
+      bitfield_field32_read(otp_hw_cfg1_settings, kDisRvDmLateDebug);
+  if (dis_rv_dm_late_debug != kMultiBitBool8True) {
+    return INTERNAL();
+  }
+
   TRY(entropy_complex_init());
   TRY(entropy_csrng_instantiate(/*disable_trng_input=*/kHardenedBoolFalse,
                                 /*seed_material=*/NULL));

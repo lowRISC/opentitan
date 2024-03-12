@@ -11,6 +11,7 @@
 
 extern const bitfield_field32_t kSramFetch;
 extern const bitfield_field32_t kCsrngAppRead;
+extern const bitfield_field32_t kDisRvDmLateDebug;
 extern const bitfield_field32_t kEntropySrcFwRd;
 extern const bitfield_field32_t kEntropySrcFwOvr;
 
