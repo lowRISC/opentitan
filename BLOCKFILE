@@ -20,6 +20,9 @@ BLOCKFILE
 .github/workflows/pr_change_check.yml
 ci/scripts/check-pr-changes-allowed.py
 
+# Ensure that you can't add yourself as a committer without authorization
+COMMITTERS
+
 # Please keep the following lists of files sorted.
 
 # RTL changes to HW IP blocks used in Darjeeling are restricted on this branch.
