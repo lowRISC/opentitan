@@ -142,7 +142,7 @@ package csrng_reg_pkg;
       logic        de;
     } cmd_ack;
     struct packed {
-      logic [1:0]  d;
+      logic [2:0]  d;
       logic        de;
     } cmd_sts;
   } csrng_hw2reg_sw_cmd_sts_reg_t;
@@ -194,6 +194,10 @@ package csrng_reg_pkg;
       logic        d;
       logic        de;
     } cs_main_sm_alert;
+    struct packed {
+      logic        d;
+      logic        de;
+    } cs_main_sm_invalid_cmd_seq;
   } csrng_hw2reg_recov_alert_sts_reg_t;
 
   typedef struct packed {
@@ -324,13 +328,13 @@ package csrng_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    csrng_hw2reg_intr_state_reg_t intr_state; // [170:163]
-    csrng_hw2reg_sw_cmd_sts_reg_t sw_cmd_sts; // [162:156]
-    csrng_hw2reg_genbits_vld_reg_t genbits_vld; // [155:154]
-    csrng_hw2reg_genbits_reg_t genbits; // [153:122]
-    csrng_hw2reg_int_state_val_reg_t int_state_val; // [121:90]
-    csrng_hw2reg_hw_exc_sts_reg_t hw_exc_sts; // [89:73]
-    csrng_hw2reg_recov_alert_sts_reg_t recov_alert_sts; // [72:61]
+    csrng_hw2reg_intr_state_reg_t intr_state; // [173:166]
+    csrng_hw2reg_sw_cmd_sts_reg_t sw_cmd_sts; // [165:158]
+    csrng_hw2reg_genbits_vld_reg_t genbits_vld; // [157:156]
+    csrng_hw2reg_genbits_reg_t genbits; // [155:124]
+    csrng_hw2reg_int_state_val_reg_t int_state_val; // [123:92]
+    csrng_hw2reg_hw_exc_sts_reg_t hw_exc_sts; // [91:75]
+    csrng_hw2reg_recov_alert_sts_reg_t recov_alert_sts; // [74:61]
     csrng_hw2reg_err_code_reg_t err_code; // [60:9]
     csrng_hw2reg_main_sm_state_reg_t main_sm_state; // [8:0]
   } csrng_hw2reg_t;
