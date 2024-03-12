@@ -85,7 +85,14 @@ module usb_fs_nb_in_pe #(
   // Data payload to send if any
   output logic              tx_data_avail_o,
   input  logic              tx_data_get_i,
-  output logic [7:0]        tx_data_o
+  output logic [7:0]        tx_data_o,
+
+  ////////////////////
+  // event counters
+  ////////////////////
+  output logic              event_timeout_in_o,
+  output logic              event_nak_in_o,
+  output logic              event_nodata_in_o
 );
 
   ////////////////////////////////////////////////////////////////////////////////
@@ -114,7 +121,7 @@ module usb_fs_nb_in_pe #(
   logic [NumInEps-1:0] data_toggle_q, data_toggle_d;
 
   // endpoint data buffer
-  logic       token_received, setup_token_received, in_token_received, ack_received;
+  logic       token_received, setup_token_received, in_token_received, ack_received, nak_received;
   logic       more_data_to_send;
   logic       ep_in_hw, ep_active;
   logic [3:0] in_ep_current_d;
@@ -143,6 +150,11 @@ module usb_fs_nb_in_pe #(
     rx_pkt_end_i &&
     rx_pkt_valid_i &&
     rx_pid == UsbPidAck;
+
+  assign nak_received =
+    rx_pkt_end_i &&
+    rx_pkt_valid_i &&
+    rx_pid == UsbPidNak;
 
   // Is the specified endpoint actually implemented in hardware?
   assign ep_in_hw = {1'b0, rx_endp_i} < NumInEps;
@@ -267,9 +279,11 @@ module usb_fs_nb_in_pe #(
           in_xact_state_next = StIdle;
           in_xact_end = 1'b1;
         end else if (in_token_received) begin
+          // Handshake response is missing.
           in_xact_state_next = ep_active ? StRcvdIn : StIdle;
           rollback_in_xact = 1'b1;
         end else if (rx_pkt_end_i) begin
+          // Includes NAK
           in_xact_state_next = StIdle;
           rollback_in_xact = 1'b1;
         end else begin
@@ -381,6 +395,34 @@ module usb_fs_nb_in_pe #(
       end
     end
   end
+
+  ////////////////////////////////////////////////////////////////////////////////
+  // Count non-Isochronous IN transactions not receiving a handshake response.
+  //
+  // - no handshake response within the timeout period
+  // - packet reception started within the timeout period but it was not ACK/NAK.
+  ////////////////////////////////////////////////////////////////////////////////
+  assign event_timeout_in_o = (in_xact_state == StWaitAckStart ||
+                              (in_xact_state == StWaitAck && rx_pkt_end_i && !nak_received))
+                            & rollback_in_xact;
+
+  ////////////////////////////////////////////////////////////////////////////////
+  // Count IN transactions that are actively NAKed by the host.
+  ////////////////////////////////////////////////////////////////////////////////
+  assign event_nak_in_o = (in_xact_state == StWaitAck) && nak_received;
+
+  ////////////////////////////////////////////////////////////////////////////////
+  // Count the number of IN requests for which data is not available, including
+  // endpoints which are supported but not presently enabled/configured.
+  // (These may be ignored using the event counter configuration if required.)
+  ////////////////////////////////////////////////////////////////////////////////
+  logic event_nodata_in_q;
+  // This event signal must be delayed by a single cycle so that 'in_ep_current_o' becomes valid.
+  always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin
+    if (!rst_ni) event_nodata_in_q <= 1'b0;
+    else event_nodata_in_q <= in_starting & (ep_in_hw ? !in_ep_has_data_i[in_ep_index_d] : 1'b0);
+  end
+  assign event_nodata_in_o = event_nodata_in_q;
 
   ////////////////
   // Assertions //
