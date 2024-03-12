@@ -18,71 +18,58 @@
 For detailed information on USBDEV design features, please see the [USBDEV HWIP technical specification](../README.md).
 
 ## Testbench architecture
-USBDEV testbench has been constructed based on the [CIP testbench architecture](../../../dv/sv/cip_lib/README.md).
+The USBDEV testbench is based on the [CIP testbench architecture](../../../dv/sv/cip_lib/README.md).
 
 ### Top level testbench
-Top level testbench is located at `hw/ip/usbdev/dv/tb/tb.sv`.
+The top-level testbench is located at `hw/ip/usbdev/dv/tb/tb.sv`.
 It instantiates the USBDEV DUT module `hw/ip/usbdev/rtl/usbdev.sv`.
-In addition, it instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
-* [Clock and reset interface for the TL and USB domains](../../../dv/sv/common_ifs/README.md)
-* [TileLink host interface](../../../dv/sv/tl_agent/README.md)
-* USBDEV IOs
-* Interrupts ([`pins_if`](../../../dv/sv/common_ifs/README.md)
 
-### Common DV utility components
-The following utilities provide generic helper tasks and functions to perform activities that are common across the project:
-* [dv_utils_pkg](../../../dv/sv/dv_utils/README.md)
-* [csr_utils_pkg](../../../dv/sv/csr_utils/README.md)
+USBDEV has the following interfaces, which the testbench instantiates and connects and registers with `uvm_config_db`:
+- [Clock and reset interfaces](../../../dv/sv/common_ifs/README.md) for the USB and AON clock domains.
+- A [TileLink interface](../../../dv/sv/tl_agent/README.md).
+  USBDEV is a TL-UL device, which expects to communicate with a TL-UL host.
+  In the OpenTitan SoC, this will be the Ibex core.
+- A `usb20_block_if` representing the actual USB interface.
+  This is using a class that has been developed in parallel with `usb20_if`.
+  Eventually, they will hopefully be merged again.
+- An [alert interface](../../../dv/sv/alert_esc_agent/README.md)
+- Interrupts, modelled with the basic [`pins_if`](../../../dv/sv/common_ifs/README.md) interface.
 
-### Compile-time configurations
-None for now.
+### Agents
+USBDEV has dedicated agents for two interfaces.
 
-### Global types & methods
-All common types and methods defined at the package level can be found in `usbdev_env_pkg`.
-Some of them in use are:
-```systemverilog
-[list a few parameters, types & methods; no need to mention all]
-```
+- The dedicated [usb20_agent](../../../dv/sv/usb20_agent/README.md), which has its own documentation.
+  This handles the USB interface itself.
 
-### TL_agent
-USBDEV testbench instantiates (already handled in CIP base env) [tl_agent](../../../dv/sv/tl_agent/README.md) which provides the ability to drive and independently monitor random traffic via TL host interface into USBDEV device.
-
-###  USB20 Agent
-The [usb20_agent](../../../dv/sv/usb20_agent/README.md) is currently a skeleton implementation.
-It does not offer any functionality yet.
-
-### UVM RAL Model
-The USBDEV RAL model is created with the [`ralgen`](../../../dv/tools/ralgen/README.md) FuseSoC generator script automatically when the simulation is at the build stage.
-
-It can be created manually by invoking [`regtool`](../../../../util/reggen/doc/setup_and_use.md):
+- The generic [tl_agent](../../../dv/sv/tl_agent/README.md) inherited from CIP base environment.
+  This handles TileLink traffic (accessing both CSRs and packet buffers)
 
 ### Reference models
-There are no reference models in use currently.
+The only reference model for USBDEV is a RAL model for CSR reads and writes.
+For this, there is a dedicated RAL model, which is created by [`ralgen`](../../../dv/tools/ralgen/README.md) as part of the build flow.
 
 ### Stimulus strategy
 #### Test sequences
 All test sequences reside in `hw/ip/usbdev/dv/env/seq_lib`.
 The `usbdev_base_vseq` virtual sequence is extended from `cip_base_vseq` and serves as a starting point.
 All test sequences are extended from `usbdev_base_vseq`.
-It provides commonly used handles, variables, functions and tasks that the test sequences can simple use / call.
-Some of the most commonly used tasks / functions are as follows:
-* `usbdev_init()`: Do basic USB device initialization.
+It provides commonly used handles, variables, functions and tasks that the test sequences can simply use / call.
+
+USBDEV virtual sequences normally also run a `usbdev_init` task at the start of the simulation.
+This does basic USB device initialization and is only disabled for `usbdev_common_vseq` (which tests CSR behaviour and doesn't need to enable USB itself).
 
 #### Functional coverage
-To ensure high quality constrained random stimulus, it is necessary to develop a functional coverage model.
-The following covergroups have been developed to prove that the test intent has been adequately met:
-* TBD
+
+Covergroups for functional coverage (as collected by `usbdev_env_cov`) are listed in the testplan at `hw/ip/usbdev/data/usbdev_testplan.hjson`.
 
 ### Self-checking strategy
 #### Scoreboard
-The `usbdev_scoreboard` is primarily used for end to end checking.
-It creates the following analysis ports to retrieve the data monitored by corresponding interface agents:
-* TBD
+The `usbdev_scoreboard` is currently in skeleton form and doesn't really contain any checks.
+TODO: Extend the scoreboard far enough that there's something to document, then document it here.
 
 #### Assertions
 * TLUL assertions: The `tb/usbdev_bind.sv` binds the `tlul_assert` [assertions](../../tlul/doc/TlulProtocolChecker.md) to the IP to ensure TileLink interface protocol compliance.
 * Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
-* TBD
 
 ## Building and running tests
 We are using our in-house developed [regression tool](../../../../util/dvsim/README.md) for building and running our tests and regressions.
