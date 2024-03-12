@@ -90,10 +90,11 @@ typedef struct otcrypto_ecc_curve {
  * including populating the key configuration and allocating space for the
  * keyblob. The caller should indicate the length of the allocated keyblob;
  * this function will return an error if the keyblob length does not match
- * expectations. For hardware-backed keys, the keyblob length is 0 and the
- * keyblob pointer may be `NULL`. For non-hardware-backed keys, the keyblob
- * should be twice the length of the key. The value in the `checksum` field of
- * the blinded key struct will be populated by the key generation function.
+ * expectations. If the key is hardware-backed, the caller should pass a fully
+ * populated private key handle as returned by `otcrypto_hw_backed_key`. For
+ * non-hardware-backed keys, the keyblob should be twice the length of the key.
+ * The value in the `checksum` field of the blinded key struct will be
+ * populated by the key generation function.
  *
  * The `domain_parameter` field of the `elliptic_curve` is required only for a
  * custom curve. For named curves this field is ignored and can be set to
@@ -177,10 +178,11 @@ otcrypto_status_t otcrypto_ecdsa_verify(
  * including populating the key configuration and allocating space for the
  * keyblob. The caller should indicate the length of the allocated keyblob;
  * this function will return an error if the keyblob length does not match
- * expectations. For hardware-backed keys, the keyblob length is 0 and the
- * keyblob pointer may be `NULL`. For non-hardware-backed keys, the keyblob
- * should be twice the length of the key. The value in the `checksum` field of
- * the blinded key struct will be populated by the key generation function.
+ * expectations. If the key is hardware-backed, the caller should pass a fully
+ * populated private key handle as returned by `otcrypto_hw_backed_key`. For
+ * non-hardware-backed keys, the keyblob should be twice the length of the key.
+ * The value in the `checksum` field of the blinded key struct will be
+ * populated by the key generation function.
  *
  * @param elliptic_curve Pointer to the elliptic curve to be used.
  * @param[out] private_key Pointer to the blinded private key (d) struct.
@@ -223,10 +225,11 @@ otcrypto_status_t otcrypto_ecdh(const otcrypto_blinded_key_t *private_key,
  * including populating the key configuration and allocating space for the
  * keyblob. The caller should indicate the length of the allocated keyblob;
  * this function will return an error if the keyblob length does not match
- * expectations. For hardware-backed keys, the keyblob length is 0 and the
- * keyblob pointer may be `NULL`. For non-hardware-backed keys, the keyblob
- * should be twice the length of the key. The value in the `checksum` field of
- * the blinded key struct will be populated by the key generation function.
+ * expectations. If the key is hardware-backed, the caller should pass a fully
+ * populated private key handle as returned by `otcrypto_hw_backed_key`. For
+ * non-hardware-backed keys, the keyblob should be twice the length of the key.
+ * The value in the `checksum` field of the blinded key struct will be
+ * populated by the key generation function.
  *
  * @param[out] private_key Pointer to the blinded private key struct.
  * @param[out] public_key Pointer to the unblinded public key struct.
@@ -281,10 +284,11 @@ otcrypto_status_t otcrypto_ed25519_verify(
  * including populating the key configuration and allocating space for the
  * keyblob. The caller should indicate the length of the allocated keyblob;
  * this function will return an error if the keyblob length does not match
- * expectations. For hardware-backed keys, the keyblob length is 0 and the
- * keyblob pointer may be `NULL`. For non-hardware-backed keys, the keyblob
- * should be twice the length of the key. The value in the `checksum` field of
- * the blinded key struct will be populated by the key generation function.
+ * expectations. If the key is hardware-backed, the caller should pass a fully
+ * populated private key handle as returned by `otcrypto_hw_backed_key`. For
+ * non-hardware-backed keys, the keyblob should be twice the length of the key.
+ * The value in the `checksum` field of the blinded key struct will be
+ * populated by the key generation function.
  *
  * @param[out] private_key Pointer to the blinded private key struct.
  * @param[out] public_key Pointer to the unblinded public key struct.
