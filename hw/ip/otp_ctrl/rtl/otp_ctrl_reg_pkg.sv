@@ -212,6 +212,8 @@ package otp_ctrl_reg_pkg;
   parameter int EnSramIfetchSize = 1;
   parameter int EnCsrngSwAppReadOffset = 1729;
   parameter int EnCsrngSwAppReadSize = 1;
+  parameter int DisRvDmLateDebugOffset = 1730;
+  parameter int DisRvDmLateDebugSize = 1;
   parameter int HwCfg1DigestOffset = 1736;
   parameter int HwCfg1DigestSize = 8;
   parameter int Secret0Offset = 1744;

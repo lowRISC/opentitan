@@ -1363,6 +1363,18 @@
       default: "1",
       local: "true"
     },
+    { name: "DisRvDmLateDebugOffset",
+      desc: "Offset of DIS_RV_DM_LATE_DEBUG",
+      type: "int",
+      default: "1730",
+      local: "true"
+    },
+    { name: "DisRvDmLateDebugSize",
+      desc: "Size of DIS_RV_DM_LATE_DEBUG",
+      type: "int",
+      default: "1",
+      local: "true"
+    },
     { name: "HwCfg1DigestOffset",
       desc: "Offset of HW_CFG1_DIGEST",
       type: "int",
