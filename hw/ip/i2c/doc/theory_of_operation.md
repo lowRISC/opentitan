@@ -154,6 +154,8 @@ Taken to be synonymous with T<sub>SU,ACK</sub>
 - t<sub>HD,DAT</sub>: set in register [`TIMING3.THD_DAT`](registers.md#timing3).
 Taken to be synonymous with T<sub>HD,ACK</sub>.
 Moreover, since the pin driver fall time is likely to be less then one clock cycle, this parameter is also taken to be synonymous with the parameters T<sub>VD,DAT</sub> and T<sub>VD,ACK</sub>
+This parameter controls the number of cycles after the falling edge of SCL that SDA is driven.
+In addition, when the IP operates as a target, the parameter specifies the required SCL high time after SDA changes to satisfy the Start and Stop symbol decoders.
 - t<sub>SU,STO</sub>: set in register [`TIMING4.TSU_STO`](registers.md#timing4).
 - t<sub>BUF</sub>: set in register [`TIMING4.T_BUF`](registers.md#timing4)
 

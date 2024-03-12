@@ -109,6 +109,9 @@ module i2c_fsm import i2c_pkg::*;
   logic        byte_decr;     // indicates byte_index must be decremented by 1
   logic        byte_clr;      // indicates byte_index must be reset to byte_num
 
+  // Stop / Start detection counter
+  logic [15:0] ctrl_det_count;
+
   // Other internal variables
   logic        scl_q;         // scl internal flopped
   logic        sda_q;         // data internal flopped
@@ -126,7 +129,9 @@ module i2c_fsm import i2c_pkg::*;
   logic        log_stop;      // indicates stop is been issued
 
   // Target specific variables
+  logic        start_det_trigger, start_det_pending;
   logic        start_det;     // indicates start or repeated start is detected on the bus
+  logic        stop_det_trigger, stop_det_pending;
   logic        stop_det;      // indicates stop is detected on the bus
   logic        address0_match;// indicates target's address0 matches the one sent by host
   logic        address1_match;// indicates target's address1 matches the one sent by host
@@ -328,11 +333,55 @@ module i2c_fsm import i2c_pkg::*;
     end
   end
 
+  // To resolve ambiguity with early SDA arrival, reject control symbols when
+  // SCL goes low too soon. The hold time for ordinary data/ACK bits is too
+  // short to reliably see SCL change before SDA. Use the hold time for
+  // control signals to ensure a Start or Stop symbol was actually received.
+  // Requirements: thd_dat + 1 < thd_sta
+  //   The extra (+1) here is to account for a late SDA arrival due to CDC
+  //   skew.
+  //
+  // Note that this counter combines Start and Stop detection into one
+  // counter. A controller-only reset scenario could end up with a Stop
+  // following shortly after a Start, with the requisite setup time not
+  // observed.
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      ctrl_det_count <= '0;
+    end else if (start_det_trigger || stop_det_trigger) begin
+      ctrl_det_count <= 16'd1;
+    end else if (start_det_pending || stop_det_pending) begin
+      ctrl_det_count <= ctrl_det_count + 1'b1;
+    end
+  end
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      start_det_pending <= 1'b0;
+    end else if (start_det_trigger) begin
+      start_det_pending <= 1'b1;
+    end else if (!target_enable_i || !scl_i || start_det || stop_det_trigger) begin
+      start_det_pending <= 1'b0;
+    end
+  end
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      stop_det_pending <= 1'b0;
+    end else if (stop_det_trigger) begin
+      stop_det_pending <= 1'b1;
+    end else if (!target_enable_i || !scl_i || stop_det || start_det_trigger) begin
+      stop_det_pending <= 1'b0;
+    end
+  end
+
   // (Repeated) Start condition detection by target
-  assign start_det = target_enable_i && (scl_i_q && scl_i) & (sda_i_q && !sda_i);
+  assign start_det_trigger = target_enable_i && (scl_i_q && scl_i) & (sda_i_q && !sda_i);
+  assign start_det = target_enable_i && start_det_pending && (ctrl_det_count >= thd_dat_i);
 
   // Stop condition detection by target
-  assign stop_det = target_enable_i && (scl_i_q && scl_i) & (!sda_i_q && sda_i);
+  assign stop_det_trigger = target_enable_i && (scl_i_q && scl_i) & (!sda_i_q && sda_i);
+  assign stop_det = target_enable_i && stop_det_pending && (ctrl_det_count >= thd_dat_i);
 
   // Bit counter on the target side
   assign bit_ack = (bit_idx == 4'd8); // ack
