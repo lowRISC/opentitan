@@ -73,7 +73,7 @@
               inputs and outputs.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_phy_pins_sense"]
     }
     {
       name: wake_events
