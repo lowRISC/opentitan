@@ -25,6 +25,10 @@ static dif_rv_plic_t rv_plic;
 static dif_uart_t uart;
 
 // Parameters of the test to be set at the beginning.
+// Parity settings are:
+// - 0 => Odd
+// - 1 => Even
+// - 2 => Disabled
 static volatile uint8_t parity = UINT8_MAX;
 static volatile uint8_t uart_idx = UINT8_MAX;
 
@@ -66,11 +70,14 @@ static status_t configure_uart(void) {
   TRY(uart_testutils_cfg_params(uart_idx, (uart_cfg_params_t *)&uart_cfg));
 
   TRY(dif_uart_init(mmio_region_from_addr(uart_cfg.base_addr), &uart));
+
+  dif_toggle_t parity_enable =
+      parity < 2 ? kDifToggleEnabled : kDifToggleDisabled;
   TRY(dif_uart_configure(&uart,
                          (dif_uart_config_t){
                              .baudrate = (uint32_t)kUartBaudrate,
                              .clk_freq_hz = (uint32_t)kClockFreqPeripheralHz,
-                             .parity_enable = kDifToggleEnabled,
+                             .parity_enable = parity_enable,
                              .parity = parity,
                              .tx_enable = kDifToggleDisabled,
                              .rx_enable = kDifToggleDisabled,
@@ -198,13 +205,16 @@ static status_t execute_test(void) {
 
   TRY_CHECK_ARRAYS_EQ(recv_buf, kUartData, ARRAYSIZE(kUartData));
 
-  // Wait for host to sync and then receive data but now expecting the parity
-  // error interrupt to trigger.
-  uart_irq_rx_parity_err_expected = true;
-  OTTF_WAIT_FOR(test_phase == kTestPhaseRecvErr, kCommandTimeoutMicros);
+  // Only expect a parity error if parity was enabled.
+  if (parity < 2) {
+    // Wait for host to sync and then receive data but now expecting the parity
+    // error interrupt to trigger.
+    uart_irq_rx_parity_err_expected = true;
+    OTTF_WAIT_FOR(test_phase == kTestPhaseRecvErr, kCommandTimeoutMicros);
 
-  LOG_INFO("Receiving data with wrong parity");
-  IBEX_SPIN_FOR(uart_irq_rx_parity_err_fired, 1 * 1000 * 1000);
+    LOG_INFO("Receiving data with wrong parity");
+    ATOMIC_WAIT_FOR_INTERRUPT(uart_irq_rx_parity_err_fired);
+  }
 
   // Wait for host to sync and then expect to receive a line break.
   uart_irq_rx_break_err_expected = true;
