@@ -23,7 +23,8 @@ class spi_monitor extends dv_base_monitor#(
   // Analysis port for the collected transfer.
   uvm_analysis_port #(spi_item) host_analysis_port;
   uvm_analysis_port #(spi_item) device_analysis_port;
-  uvm_analysis_port #(spi_item) csb_active_analysis_port; //Sends txn on CSB deassertion
+  // Sends txn on CSB deassertion (CSB becoming active)
+  uvm_analysis_port #(spi_item) csb_active_analysis_port;
 
   `uvm_component_new
 
@@ -38,7 +39,6 @@ class spi_monitor extends dv_base_monitor#(
     forever collect_trans();
   endtask
 
-  //TODO: Remove the UVM_PHASE reference - It's not being used
   // collect transactions
   virtual protected task collect_trans();
     bit flash_opcode_received;
@@ -99,8 +99,6 @@ class spi_monitor extends dv_base_monitor#(
       end
       default: ; // do nothing, in SpiModeGeneric, it writes to fifo for each byte
     endcase // case (cfg.spi_func_mode)
-
-
   endtask : collect_trans
 
   virtual protected task collect_curr_trans();
@@ -258,7 +256,8 @@ class spi_monitor extends dv_base_monitor#(
     repeat (item.dummy_cycles) begin
       cfg.wait_sck_edge(SamplingEdge, active_csb);
     end
-    `uvm_info(`gfn, "Sending {opcode,address} on the 'req_analysis_port'", UVM_DEBUG)
+    `uvm_info(`gfn, $sformatf("Sending {opcode=0x%0x,address=%p} on the 'req_analysis_port'",
+                              item.opcode, item.address_q), UVM_DEBUG)
     req_analysis_port.write(item);
 
     forever begin

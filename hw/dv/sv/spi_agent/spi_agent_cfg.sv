@@ -19,7 +19,7 @@ class spi_agent_cfg extends dv_base_agent_cfg;
   bit partial_byte;       // Transfering less than byte
   bit [3:0] bits_to_transfer; // Bits to transfer if using less than byte
   bit decode_commands;  // Used in monitor if decoding of commands needed
-  bit [2:0] cmd_addr_size = 4; //Address size for command
+  bit [2:0] cmd_addr_size = 4; // Address size for command
 
   //-------------------------
   // spi_host regs

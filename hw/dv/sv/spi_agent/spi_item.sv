@@ -32,7 +32,7 @@ class spi_item extends uvm_sequence_item;
   // of wait until the entire item is collected. This indicates item has collected all data.
   bit mon_item_complete;
 
-  //Triggered for each byte sampled and when CSB becomes inactive
+  // Triggered for each byte sampled and when CSB becomes inactive
   event byte_sampled_ev, item_finished_ev;
 
   // constrain size of data sent / received to be at most 64kB
