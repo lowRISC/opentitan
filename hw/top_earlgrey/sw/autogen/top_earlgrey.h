@@ -643,7 +643,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_RV_DM_MEM_BASE_ADDR 0x10000u
+#define TOP_EARLGREY_RV_DM_MEM_BASE_ADDR 0x80000u
 
 /**
  * Peripheral size for mem device on rv_dm in top earlgrey.
@@ -895,7 +895,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR 0x8000u
+#define TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR 0x10000u
 
 /**
  * Peripheral size for rom device on rom_ctrl in top earlgrey.
@@ -905,7 +905,7 @@ extern "C" {
  * address between #TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR and
  * `TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR + TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES 0x8000u
+#define TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES 0x10000u
 
 /**
  * Peripheral base address for cfg device on rv_core_ibex in top earlgrey.
@@ -959,12 +959,12 @@ extern "C" {
 /**
  * Memory base address for rom in top earlgrey.
  */
-#define TOP_EARLGREY_ROM_BASE_ADDR 0x8000u
+#define TOP_EARLGREY_ROM_BASE_ADDR 0x10000u
 
 /**
  * Memory size for rom in top earlgrey.
  */
-#define TOP_EARLGREY_ROM_SIZE_BYTES 0x8000u
+#define TOP_EARLGREY_ROM_SIZE_BYTES 0x10000u
 
 
 /**

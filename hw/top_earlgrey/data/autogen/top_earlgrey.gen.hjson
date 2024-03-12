@@ -5182,7 +5182,7 @@
       }
       base_addrs:
       {
-        mem: 0x00010000
+        mem: 0x00080000
         regs: 0x41200000
       }
       clock_connections:
@@ -7268,7 +7268,7 @@
       }
       base_addrs:
       {
-        rom: 0x00008000
+        rom: 0x00010000
         regs: 0x411e0000
       }
       memory:
@@ -7280,7 +7280,7 @@
           data_intg_passthru: True
           exec: True
           byte_write: False
-          size: 0x8000
+          size: 0x10000
         }
       }
       param_decl:
@@ -7344,7 +7344,7 @@
           desc: Memory size of the ROM (in bytes).
           type: int
           name_top: MemSizeRomCtrlRom
-          default: 32768
+          default: 65536
         }
       ]
       inter_signal_list:
@@ -8934,7 +8934,7 @@
           addr_range:
           [
             {
-              base_addr: 0x10000
+              base_addr: 0x80000
               size_byte: 0x1000
             }
           ]
@@ -8953,8 +8953,8 @@
           addr_range:
           [
             {
-              base_addr: 0x8000
-              size_byte: 0x8000
+              base_addr: 0x10000
+              size_byte: 0x10000
             }
           ]
           xbar: false

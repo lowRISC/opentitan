@@ -190,7 +190,7 @@
       addr_range:
       [
         {
-          base_addr: 0x10000
+          base_addr: 0x80000
           size_byte: 0x1000
         }
       ]
@@ -209,8 +209,8 @@
       addr_range:
       [
         {
-          base_addr: 0x8000
-          size_byte: 0x8000
+          base_addr: 0x10000
+          size_byte: 0x10000
         }
       ]
       xbar: false

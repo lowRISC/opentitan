@@ -627,7 +627,7 @@
         IdcodeValue: "jtag_id_pkg::RV_DM_JTAG_IDCODE",
       },
       // Note that this module also contains a bus host.
-      base_addrs: {mem: "0x00010000", regs: "0x41200000"}
+      base_addrs: {mem: "0x00080000", regs: "0x41200000"}
     },
     { name: "rv_plic",
       type: "rv_plic",
@@ -747,16 +747,15 @@
       clock_srcs: {clk_i: "main"},
       clock_group: "infra",
       reset_connections: {rst_ni: "lc"},
-      base_addrs: {rom: "0x00008000", regs: "0x411e0000"},
+      base_addrs: {rom: "0x00010000", regs: "0x411e0000"},
       memory: {
         rom: {
           label:              "rom",
           swaccess:           "ro",
-          data_intg_passthru: "true",
+          data_intg_passthru: "True",
           exec:               "True",
           byte_write:         "False",
-          size:               "0x8000",
-          data_intg_passthru: "True"
+          size:               "0x10000"
         }
       },
       param_decl: {

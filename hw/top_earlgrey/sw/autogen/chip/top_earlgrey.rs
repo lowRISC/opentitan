@@ -501,7 +501,7 @@ pub const RV_DM_REGS_SIZE_BYTES: usize = 0x4;
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
 /// registers associated with the peripheral (usually via a DIF).
-pub const RV_DM_MEM_BASE_ADDR: usize = 0x10000;
+pub const RV_DM_MEM_BASE_ADDR: usize = 0x80000;
 
 /// Peripheral size for mem device on rv_dm in top earlgrey.
 ///
@@ -697,7 +697,7 @@ pub const ROM_CTRL_REGS_SIZE_BYTES: usize = 0x80;
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
 /// registers associated with the peripheral (usually via a DIF).
-pub const ROM_CTRL_ROM_BASE_ADDR: usize = 0x8000;
+pub const ROM_CTRL_ROM_BASE_ADDR: usize = 0x10000;
 
 /// Peripheral size for rom device on rom_ctrl in top earlgrey.
 ///
@@ -705,7 +705,7 @@ pub const ROM_CTRL_ROM_BASE_ADDR: usize = 0x8000;
 /// memory-mapped registers associated with this peripheral should have an
 /// address between #ROM_CTRL_ROM_BASE_ADDR and
 /// `ROM_CTRL_ROM_BASE_ADDR + ROM_CTRL_ROM_SIZE_BYTES`.
-pub const ROM_CTRL_ROM_SIZE_BYTES: usize = 0x8000;
+pub const ROM_CTRL_ROM_SIZE_BYTES: usize = 0x10000;
 
 /// Peripheral base address for cfg device on rv_core_ibex in top earlgrey.
 ///
@@ -740,10 +740,10 @@ pub const RAM_MAIN_BASE_ADDR: usize = 0x10000000;
 pub const RAM_MAIN_SIZE_BYTES: usize = 0x20000;
 
 /// Memory base address for rom in top earlgrey.
-pub const ROM_BASE_ADDR: usize = 0x8000;
+pub const ROM_BASE_ADDR: usize = 0x10000;
 
 /// Memory size for rom in top earlgrey.
-pub const ROM_SIZE_BYTES: usize = 0x8000;
+pub const ROM_SIZE_BYTES: usize = 0x10000;
 
 /// PLIC Interrupt Source Peripheral.
 ///
