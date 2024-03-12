@@ -48,8 +48,8 @@ module tb;
   usb20_if usb20_if(.clk_i(usb_clk), .rst_ni(usb_rst_n), .usb_vbus(usb_vbus),
   .usb_p(usb_p), .usb_n(usb_n));
   usb20_block_if usb20_block_if(.clk_i(usb_clk), .rst_ni(usb_rst_n),
-  .usb_vbus(usb_vbus), .usb_p(usb_p), .usb_n(usb_n));
- `DV_ALERT_IF_CONNECT(usb_clk, usb_rst_n)
+                                .usb_vbus(usb_vbus), .usb_p(usb_p), .usb_n(usb_n));
+  `DV_ALERT_IF_CONNECT(usb_clk, usb_rst_n)
 
   // dut
   usbdev dut (
