@@ -27,7 +27,7 @@ use opentitanlib::uart::console::UartConsole;
 use ot_certs::template::{EcdsaSignature, Signature, Value};
 use ot_certs::x509::{generate_certificate_from_tbs, parse_certificate};
 use ujson_lib::provisioning_data::{
-    EccP256PublicKey, ManufCertPersoDataIn, ManufCertPersoDataOut, ManufEndorsedCerts,
+    EccP256PublicKey, ManufCertgenInputs, ManufDiceCerts, ManufEndorsedCerts,
     ManufFtIndividualizeData, WrappedRmaUnlockToken,
 };
 
@@ -165,7 +165,7 @@ pub fn run_ft_personalize(
     third_bootstrap: PathBuf,
     host_ecc_sk: PathBuf,
     cert_endorsement_ecc_sk: PathBuf,
-    perso_data_in: &ManufCertPersoDataIn,
+    perso_certgen_inputs: &ManufCertgenInputs,
     timeout: Duration,
 ) -> Result<()> {
     let uart = transport.uart("console")?;
@@ -231,17 +231,15 @@ pub fn run_ft_personalize(
     // Bootstrap third personalization binary into flash.
     uart.clear_rx_buffer()?;
     init.bootstrap.load(transport, &third_bootstrap)?;
-
-    // Get UART, set flow control, and wait for test to start running.
     uart.set_flow_control(true)?;
-    let _ = UartConsole::wait_for(&*uart, r"Waiting for FT provisioning data ...", timeout)?;
 
     // Send attestation TCB measurements for generating certificates.
-    perso_data_in.send(&*uart)?;
+    let _ = UartConsole::wait_for(&*uart, r"Waiting for DICE certificate inputs ...", timeout)?;
+    perso_certgen_inputs.send(&*uart)?;
 
     // Wait until device exports the attestation certificates.
-    let _ = UartConsole::wait_for(&*uart, r"Exporting certificates ...", timeout)?;
-    let certs = ManufCertPersoDataOut::recv(&*uart, timeout, true)?;
+    let _ = UartConsole::wait_for(&*uart, r"Exporting DICE certificates ...", timeout)?;
+    let certs = ManufDiceCerts::recv(&*uart, timeout, true)?;
 
     // Extract certificate byte vectors and trim unused bytes.
     let uds_tbs_cert_bytes: Vec<u8> = certs

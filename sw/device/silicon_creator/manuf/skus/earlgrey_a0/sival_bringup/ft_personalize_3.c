@@ -26,7 +26,7 @@ OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 
 static_assert(kUdsMaxTbsSizeBytes == 569,
               "The `uds_tbs_certificate` buffer size in the "
-              "`manuf_cert_perso_data_out_t` struct should match the value of "
+              "`manuf_dice_certs_t` struct should match the value of "
               "`kUdsMaxTbsSizeBytes`.");
 static_assert(kUdsMaxCertSizeBytes == 660,
               "The `uds_certificate` buffer size in the "
@@ -34,17 +34,17 @@ static_assert(kUdsMaxCertSizeBytes == 660,
               "`kUdsMaxCertSizeBytes`.");
 static_assert(kCdi0MaxCertSizeBytes == 582,
               "The `cdi_0_certificate` buffer size in the "
-              "`manuf_cert_perso_data_out_t` struct should match the value of "
+              "`manuf_dice_certs_t` struct should match the value of "
               "`kCdi0MaxCertSizeBytes`.");
 static_assert(kCdi1MaxCertSizeBytes == 631,
               "The `cdi_1_certificate` buffer size in the "
-              "`manuf_cert_perso_data_out_t` struct should match the value of "
+              "`manuf_dice_certs_t` struct should match the value of "
               "`kCdi1MaxCertSizeBytes`.");
 
-static manuf_cert_perso_data_in_t in_data;
+static manuf_certgen_inputs_t certgen_inputs;
 hmac_digest_t uds_pubkey_id;
 hmac_digest_t cdi_0_pubkey_id;
-static manuf_cert_perso_data_out_t out_data = {
+static manuf_dice_certs_t dice_certs = {
     .uds_tbs_certificate = {0},
     .uds_tbs_certificate_size = kUdsMaxTbsSizeBytes,
     .cdi_0_certificate = {0},
@@ -85,8 +85,8 @@ static status_t config_certificate_flash_pages(void) {
  */
 static status_t personalize(ujson_t *uj) {
   // Retrieve certificate provisioning data.
-  LOG_INFO("Waiting for FT provisioning data ...");
-  TRY(ujson_deserialize_manuf_cert_perso_data_in_t(uj, &in_data));
+  LOG_INFO("Waiting for DICE certificate inputs ...");
+  TRY(ujson_deserialize_manuf_certgen_inputs_t(uj, &certgen_inputs));
 
   // Configure certificate flash info page permissions.
   TRY(config_certificate_flash_pages());
@@ -103,45 +103,47 @@ static status_t personalize(ujson_t *uj) {
   TRY(otbn_boot_app_load());
 
   // Generate UDS keys and (TBS) cert.
-  TRY(dice_uds_cert_build(&in_data, &uds_pubkey_id,
-                          out_data.uds_tbs_certificate,
-                          &out_data.uds_tbs_certificate_size));
+  TRY(dice_uds_cert_build(&certgen_inputs, &uds_pubkey_id,
+                          dice_certs.uds_tbs_certificate,
+                          &dice_certs.uds_tbs_certificate_size));
   TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageUdsCertificate,
                             kFlashCtrlEraseTypePage));
   TRY(flash_ctrl_info_write(
       &kFlashCtrlInfoPageUdsCertificate,
       kFlashInfoFieldUdsCertificate.byte_offset,
-      out_data.uds_tbs_certificate_size / sizeof(uint32_t),
-      out_data.uds_tbs_certificate));
+      dice_certs.uds_tbs_certificate_size / sizeof(uint32_t),
+      dice_certs.uds_tbs_certificate));
   LOG_INFO("Generated UDS certificate.");
 
   // Generate CDI_0 keys and cert.
-  TRY(dice_cdi_0_cert_build(&in_data, &uds_pubkey_id, &cdi_0_pubkey_id,
-                            out_data.cdi_0_certificate,
-                            &out_data.cdi_0_certificate_size));
+  TRY(dice_cdi_0_cert_build(&certgen_inputs, &uds_pubkey_id, &cdi_0_pubkey_id,
+                            dice_certs.cdi_0_certificate,
+                            &dice_certs.cdi_0_certificate_size));
   TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageCdi0Certificate,
                             kFlashCtrlEraseTypePage));
-  TRY(flash_ctrl_info_write(&kFlashCtrlInfoPageCdi0Certificate,
-                            kFlashInfoFieldCdi0Certificate.byte_offset,
-                            out_data.cdi_0_certificate_size / sizeof(uint32_t),
-                            out_data.cdi_0_certificate));
+  TRY(flash_ctrl_info_write(
+      &kFlashCtrlInfoPageCdi0Certificate,
+      kFlashInfoFieldCdi0Certificate.byte_offset,
+      dice_certs.cdi_0_certificate_size / sizeof(uint32_t),
+      dice_certs.cdi_0_certificate));
   LOG_INFO("Generated CDI_0 certificate.");
 
   // Generate CDI_1 keys and cert.
-  TRY(dice_cdi_1_cert_build(&in_data, &cdi_0_pubkey_id,
-                            out_data.cdi_1_certificate,
-                            &out_data.cdi_1_certificate_size));
+  TRY(dice_cdi_1_cert_build(&certgen_inputs, &cdi_0_pubkey_id,
+                            dice_certs.cdi_1_certificate,
+                            &dice_certs.cdi_1_certificate_size));
   TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageCdi1Certificate,
                             kFlashCtrlEraseTypePage));
-  TRY(flash_ctrl_info_write(&kFlashCtrlInfoPageCdi1Certificate,
-                            kFlashInfoFieldCdi1Certificate.byte_offset,
-                            out_data.cdi_1_certificate_size / sizeof(uint32_t),
-                            out_data.cdi_1_certificate));
+  TRY(flash_ctrl_info_write(
+      &kFlashCtrlInfoPageCdi1Certificate,
+      kFlashInfoFieldCdi1Certificate.byte_offset,
+      dice_certs.cdi_1_certificate_size / sizeof(uint32_t),
+      dice_certs.cdi_1_certificate));
   LOG_INFO("Generated CDI_1 certificate.");
 
   // Export the certificates to the provisioning appliance.
-  LOG_INFO("Exporting certificates ...");
-  RESP_OK(ujson_serialize_manuf_cert_perso_data_out_t, uj, &out_data);
+  LOG_INFO("Exporting DICE certificates ...");
+  RESP_OK(ujson_serialize_manuf_dice_certs_t, uj, &dice_certs);
 
   // Import endorsed certificates from the provisioning appliance.
   LOG_INFO("Importing certificates ...");
