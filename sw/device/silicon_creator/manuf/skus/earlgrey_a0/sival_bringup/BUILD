@@ -204,9 +204,9 @@ filegroup(
 )
 
 opentitan_binary(
-    name = "ft_personalize_1",
+    name = "ft_personalize",
     testonly = True,
-    srcs = ["ft_personalize_1.c"],
+    srcs = ["ft_personalize.c"],
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         "//hw/top_earlgrey:silicon_creator": None,
@@ -243,12 +243,12 @@ opentitan_binary(
 
 _FT_PROVISIONING_BINARIES = {
     ":sram_ft_individualize_sival_bringup": "sram_ft_individualize",
-    ":ft_personalize_1": "ft_personalize_1",
+    ":ft_personalize": "ft_personalize",
 }
 
 _FT_PROVISIONING_CMD_ARGS = """
   --elf={sram_ft_individualize}
-  --bootstrap={ft_personalize_1}
+  --bootstrap={ft_personalize}
 """ + FT_PROVISIONING_INPUTS
 
 opentitan_test(
