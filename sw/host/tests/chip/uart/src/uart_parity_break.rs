@@ -67,7 +67,7 @@ fn main() -> Result<()> {
 
     // Test all four UARTs with both parities.
     for uart_id in 0..4 {
-        for parity in [Parity::Odd, Parity::Even] {
+        for parity in [Parity::Odd, Parity::Even, Parity::None] {
             transport.reset_target(Duration::from_millis(500), true)?;
 
             let test_data = TestData {
@@ -113,7 +113,7 @@ fn uart_parity_break(
     let dif_parity = match parity {
         Parity::Odd => 0,
         Parity::Even => 1,
-        Parity::None => unimplemented!(),
+        Parity::None => 2,
     };
 
     // Configure the UART under test and the parity to use.
@@ -149,18 +149,20 @@ fn uart_parity_break(
     log::info!("Sending data...");
     uart.write(tx_rx_data).context("failed to send data")?;
 
-    // Tell the device to receive some data with the wrong parity.
-    UartConsole::wait_for(console, r"waiting for commands\r\n", opts.timeout)?;
-    MemWriteReq::execute(console, *test_phase_addr, &[TestPhase::RecvErr as u8])?;
+    if *parity != Parity::None {
+        // Tell the device to receive some data with the wrong parity.
+        UartConsole::wait_for(console, r"waiting for commands\r\n", opts.timeout)?;
+        MemWriteReq::execute(console, *test_phase_addr, &[TestPhase::RecvErr as u8])?;
 
-    let other_parity = match parity {
-        Parity::Odd => Parity::Even,
-        Parity::Even => Parity::Odd,
-        Parity::None => unimplemented!(),
-    };
-    uart.set_parity(other_parity)
-        .context("failed to set parity")?;
-    uart.write(&[0xff]).context("failed to send data")?;
+        let other_parity = match parity {
+            Parity::Odd => Parity::Even,
+            Parity::Even => Parity::Odd,
+            Parity::None => unimplemented!(),
+        };
+        uart.set_parity(other_parity)
+            .context("failed to set parity")?;
+        uart.write(&[0xff]).context("failed to send data")?;
+    }
 
     // Tell the device to receive some data with the wrong parity.
     UartConsole::wait_for(console, r"waiting for commands\r\n", opts.timeout)?;
