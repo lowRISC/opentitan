@@ -24,12 +24,11 @@
   sw_checklist:       "/sw/device/lib/dif/dif_kmac",
   revisions: [
     {
-      version:            "1.0.0",
+      version:            "2.0.0",
       life_stage:         "L1",
       design_stage:       "D2S",
       verification_stage: "V2S",
       dif_stage:          "S2",
-      commit_id:          "c2a8c64ccbca39707be7883dfd2f8c1100813730",
     }
   ]
   clocking: [
