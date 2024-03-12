@@ -2,14 +2,19 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Test hand shake sequence between sv and c
-// 1. sv: `write_test_phase`(PHASE)
-//    and waiting for test status change from c
+// Running `write_test_phase` from SV causes the C side to perform
+// the checks for the new phase, so any preparation from SV needs to be
+// done prior to updating the phase. Therefore the test sequences the sv
+// and c side as follows:
+// 1. sv: Prepare any external settings,
+//        `write_test_phase`(PHASE),
+//        wait for test status change from c.
 // 2. c: check kTestPhase in switch
 // 3. c: `wait_next_test_phase`
 //    set test status and write all 1 to flash and wait for
 //    backdoor update from sv
 // 4. sv: Move to next routine and repeat #1 with the next PHASE
+
 class chip_sw_sysrst_ctrl_ulp_z3_wakeup_vseq extends chip_sw_base_vseq;
   `uvm_object_utils(chip_sw_sysrst_ctrl_ulp_z3_wakeup_vseq)
   `uvm_object_new
@@ -84,10 +89,10 @@ class chip_sw_sysrst_ctrl_ulp_z3_wakeup_vseq extends chip_sw_base_vseq;
     cfg.chip_vif.aon_clk_por_rst_if.wait_clks(DEBOUNCE_SW_VALUE);
   endtask
 
-  virtual task sync_with_sw();
+  virtual task sync_with_sw(input bit add_delay = 1'b1);
     `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInWfi)
     `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest)
-    #(cfg.flash_write_latency_in_us * 1us);
+    if (add_delay) #(cfg.flash_write_latency_in_us * 1us);
   endtask
 
   virtual task body();
@@ -117,7 +122,7 @@ class chip_sw_sysrst_ctrl_ulp_z3_wakeup_vseq extends chip_sw_base_vseq;
     `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInWfi)
 
     glitch_lid_open();
-    sync_with_sw();
+    sync_with_sw(.add_delay(0));
     write_test_phase(PHASE_WAIT_WAKEUP);
     check_wakeup_pin();
     sync_with_sw();
