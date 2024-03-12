@@ -20,6 +20,10 @@ class i2c_target_smoke_vseq extends i2c_base_vseq;
     solve t_r                   before t_buf;
     solve tsu_sta               before t_buf;
     solve t_f, thigh            before t_sda_unstable, t_sda_interference;
+
+    thd_sta > thd_dat + 1;
+    t_buf > thd_dat + 1;
+
     if (program_incorrect_regs) {
       // force derived timing parameters to be negative (incorrect DUT config)
       tsu_sta == t_r + t_buf + 1;  // negative tHoldStop
