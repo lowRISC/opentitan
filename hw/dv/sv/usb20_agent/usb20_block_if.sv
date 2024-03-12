@@ -19,7 +19,6 @@ interface usb20_block_if (
   logic usb_tx_se0_o;
   logic usb_tx_d_o;
   // Non-data pins
-  logic usb_sense_i;          // indicates the presence of VBUS from Host
   logic usb_dp_pullup_o ;
   logic usb_dn_pullup_o ;
   logic usb_rx_enable_o;
@@ -30,7 +29,6 @@ interface usb20_block_if (
   logic usb_ref_pulse_o;
   logic usb_clk;             // signal used to divide clock or send J/K symbols for 4 clock cycles
 
-  assign usb_sense_i = usb_vbus;
   assign usb_p = usb_dp_en_o ? usb_dp_o : drive_p;
   assign usb_n = usb_dn_en_o ? usb_dn_o : drive_n;
 
