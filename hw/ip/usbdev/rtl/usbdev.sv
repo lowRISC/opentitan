@@ -149,12 +149,22 @@ module usbdev
   logic              host_lost, link_disconnect, link_powered;
   logic              event_link_reset, event_link_suspend, event_link_resume;
   logic              event_host_lost, event_disconnect, event_powered;
+  logic              event_rx_crc5_err, event_rx_crc16_err;
   logic              event_rx_crc_err, event_rx_pid_err;
   logic              event_rx_bitstuff_err;
   logic              event_in_err;
   logic              event_out_err;
   logic              event_frame, event_sof;
   logic              link_active;
+
+  // Diagnostic visibility of OUT-side exceptional events
+  logic              event_ign_avsetup, event_drop_avout, event_drop_rx, event_datatog_out;
+  // Diagnostic visibility of IN-side exceptional events
+  logic              event_timeout_in, event_nak_in, event_nodata_in;
+
+  // Interrupt to software reports both types of CRC error; they are separated only for the
+  // purpose of diagnostic event counting.
+  assign event_rx_crc_err = event_rx_crc5_err | event_rx_crc16_err;
 
   logic [10:0]       frame;
   logic [2:0]        link_state;
@@ -652,9 +662,19 @@ module usbdev
     .host_lost_o          (host_lost),
     .link_in_err_o        (event_in_err),
     .link_out_err_o       (event_out_err),
-    .rx_crc_err_o         (event_rx_crc_err),
+    .rx_crc5_err_o        (event_rx_crc5_err),
+    .rx_crc16_err_o       (event_rx_crc16_err),
     .rx_pid_err_o         (event_rx_pid_err),
-    .rx_bitstuff_err_o    (event_rx_bitstuff_err)
+    .rx_bitstuff_err_o    (event_rx_bitstuff_err),
+
+    // event counters
+    .event_ign_avsetup_o  (event_ign_avsetup),
+    .event_drop_avout_o   (event_drop_avout),
+    .event_drop_rx_o      (event_drop_rx),
+    .event_datatog_out_o  (event_datatog_out),
+    .event_timeout_in_o   (event_timeout_in),
+    .event_nak_in_o       (event_nak_in),
+    .event_nodata_in_o    (event_nodata_in)
   );
 
   /////////////////////////////////
@@ -1285,8 +1305,11 @@ module usbdev
     .clk_i        (clk_i),
     .rst_ni       (rst_n),
     .reset_i      (reg2hw.count_out.rst.qe & reg2hw.count_out.rst.q),
-    .event_i      (4'h0),
-    .ep_i         (4'h0),
+    .event_i      ({event_ign_avsetup,
+                    event_drop_avout,
+                    event_drop_rx,
+                    event_datatog_out}),
+    .ep_i         (out_endpoint),
     // Set of events being counted.
     .ev_qe_i      (ctr_out_ev_qe),
     .ev_i         ({reg2hw.count_out.ign_avsetup.q,
@@ -1308,8 +1331,10 @@ module usbdev
     .clk_i        (clk_i),
     .rst_ni       (rst_n),
     .reset_i      (reg2hw.count_in.rst.qe & reg2hw.count_in.rst.q),
-    .event_i      (3'b0),
-    .ep_i         (4'h0),
+    .event_i      ({event_timeout_in,
+                    event_nak_in,
+                    event_nodata_in}),
+    .ep_i         (in_endpoint),
     // Set of events being counted.
     .ev_qe_i      (ctr_in_ev_qe),
     .ev_i         ({reg2hw.count_in.timeout.q,
@@ -1329,8 +1354,8 @@ module usbdev
     .clk_i        (clk_i),
     .rst_ni       (rst_n),
     .reset_i      (reg2hw.count_nodata_in.rst.qe & reg2hw.count_nodata_in.rst.q),
-    .event_i      (1'b0),
-    .ep_i         (4'h0),
+    .event_i      (event_nodata_in),
+    .ep_i         (in_endpoint),
     // Single event for this counter, so enables not required.
     .ev_qe_i      (1'b1),
     .ev_i         (1'b1),
@@ -1346,7 +1371,10 @@ module usbdev
     .clk_i        (clk_i),
     .rst_ni       (rst_n),
     .reset_i      (reg2hw.count_errors.rst.qe & reg2hw.count_errors.rst.q),
-    .event_i      (4'h0),
+    .event_i      ({event_rx_crc5_err,
+                    event_rx_crc16_err,
+                    event_rx_bitstuff_err,
+                    event_rx_pid_err}),
     .ep_i         (1'b0),
     // Set of events being counted.
     .ev_qe_i      (ctr_errors_ev_qe),

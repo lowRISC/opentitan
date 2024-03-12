@@ -115,9 +115,19 @@ module usbdev_usbif  #(
   output logic                     link_in_err_o,
   output logic                     link_out_err_o,
   output logic                     host_lost_o,
-  output logic                     rx_crc_err_o,
+  output logic                     rx_crc5_err_o,
+  output logic                     rx_crc16_err_o,
   output logic                     rx_pid_err_o,
-  output logic                     rx_bitstuff_err_o
+  output logic                     rx_bitstuff_err_o,
+
+  // event counters
+  output logic                     event_ign_avsetup_o,
+  output logic                     event_drop_avout_o,
+  output logic                     event_drop_rx_o,
+  output logic                     event_datatog_out_o,
+  output logic                     event_timeout_in_o,
+  output logic                     event_nak_in_o,
+  output logic                     event_nodata_in_o
 );
 
   // Enable pull-up resistor only if VBUS is active
@@ -129,7 +139,7 @@ module usbdev_usbif  #(
   logic [7:0]                        out_ep_data;
 
   logic [3:0]                        out_ep_current;
-  logic                              out_ep_data_put, out_ep_acked, out_ep_rollback;
+  logic                              out_ep_newpkt, out_ep_data_put, out_ep_acked, out_ep_rollback;
   logic                              current_setup, all_out_blocked;
   logic [NEndpoints-1:0]             out_ep_setup, out_ep_full, out_ep_stall;
   logic [NEndpoints-1:0]             out_blocked;
@@ -332,7 +342,7 @@ module usbdev_usbif  #(
 
     // out endpoint interfaces
     .out_ep_current_o      (out_ep_current),
-    .out_ep_newpkt_o       (),
+    .out_ep_newpkt_o       (out_ep_newpkt),
     .out_ep_data_put_o     (out_ep_data_put),
     .out_ep_put_addr_o     (out_ep_put_addr),
     .out_ep_data_o         (out_ep_data),
@@ -367,13 +377,20 @@ module usbdev_usbif  #(
     .rx_j_det_o            (rx_j_det),
 
     // error signals
-    .rx_crc_err_o          (rx_crc_err_o),
+    .rx_crc5_err_o         (rx_crc5_err_o),
+    .rx_crc16_err_o        (rx_crc16_err_o),
     .rx_pid_err_o          (rx_pid_err_o),
     .rx_bitstuff_err_o     (rx_bitstuff_err_o),
 
     // sof interface
     .sof_valid_o           (sof_valid_o),
-    .frame_index_o         (frame_index_raw)
+    .frame_index_o         (frame_index_raw),
+
+    // event counters
+    .event_datatog_out_o   (event_datatog_out_o),
+    .event_timeout_in_o    (event_timeout_in_o),
+    .event_nak_in_o        (event_nak_in_o),
+    .event_nodata_in_o     (event_nodata_in_o)
   );
 
   // Capture frame number (host sends every 1ms)
@@ -424,6 +441,36 @@ module usbdev_usbif  #(
     .host_lost_o           (host_lost_o),
     .sof_missed_o          (do_internal_sof)
   );
+
+  //////////////////////////////////////////////////////////////////////////////////////////////
+  // Count the number of SETUP and OUT packets ignored because there is no available buffer in
+  // the appropriate FIFO, and the number of SETUP/OUT packets dropped because the RX FIFO
+  // will not accept another buffer.
+  //////////////////////////////////////////////////////////////////////////////////////////////
+  logic ign_avsetup;
+  logic drop_avout;
+  logic drop_rx;
+  always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      ign_avsetup <= 1'b0;
+      drop_avout  <= 1'b0;
+      drop_rx     <= 1'b0;
+    end else begin
+      // Ignore SETUP packets because no Available SETUP Buffer
+      if (out_ep_newpkt) ign_avsetup <= 1'b0;
+      else if (out_ep_data_put & current_setup & !avsetup_rvalid_i) ign_avsetup <= 1'b1;
+      // Dropped OUT packets because no Available OUT Buffer
+      if (out_ep_newpkt) drop_avout <= 1'b0;
+      else if (out_ep_data_put & !current_setup & !avout_rvalid_i) drop_avout  <= 1'b1;
+      // Dropped SETUP/OUT packets because no space in RX FIFO
+      if (out_ep_newpkt) drop_rx <= 1'b0;
+      else if (out_ep_data_put & !rx_wready) drop_rx <= 1'b1;
+    end
+  end
+
+  assign event_ign_avsetup_o = ign_avsetup;
+  assign event_drop_avout_o  = drop_avout;
+  assign event_drop_rx_o     = drop_rx;
 
   ////////////////
   // Assertions //
