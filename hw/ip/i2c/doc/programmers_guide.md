@@ -45,6 +45,8 @@ $$ \textrm{TSU_DAT_MIN}= \lceil{t\_{HD,DAT,min}/t\_{clk}}\rceil $$
 $$ \textrm{T_BUF_MIN}= \lceil{t\_{BUF,min}/t\_{clk}}\rceil $$
 $$ \textrm{T_STO_MIN}= \lceil{t\_{STO,min}/t\_{clk}}\rceil $$
 
+Note that `T_HD_DAT_MIN` must be at least 1, and `T_HD_STA_MIN` and `T_BUF_MIN` must be greater than `T_HD_DAT_MIN`.
+
 1. Input the integer timing parameters, THD_STA_MIN, TSU_STA_MIN, THD_DAT_MIN, TSU_DAT_MIN, T_BUF_MIN and T_STO_MIN into their corresponding registers (`TIMING2.THD_STA`, `TIMING2.TSU_STA`, `TIMING3.THD_DAT`, `TIMING3.TSU_DAT`, `TIMING4.T_BUF`, `TIMING4.T_STO`)
     - This step allows the firmware to manage SDA signal delays to ensure that the SDA outputs are compliant with the specification.
     - The registers `TIMING0.THIGH` and `TIMING0.TLOW` will be taken care of in a later step.
