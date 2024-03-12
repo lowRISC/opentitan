@@ -20,9 +20,9 @@ extern "C" {
  */
 enum {
   /* Length of an OTBN wide word in bits */
-  kOtbnWideWordNumBits = 256,
+  kScOtbnWideWordNumBits = 256,
   /* Length of an OTBN wide word in words */
-  kOtbnWideWordNumWords = kOtbnWideWordNumBits / (sizeof(uint32_t) * 8),
+  kScOtbnWideWordNumWords = kScOtbnWideWordNumBits / (sizeof(uint32_t) * 8),
 };
 
 /**
@@ -32,12 +32,12 @@ enum {
  *
  * Example:
  * ```
- *  otbn_execute();
- *  SEC_MMIO_WRITE_INCREMENT(kOtbnSecMmioExecute);
+ *  sc_otbn_execute();
+ *  SEC_MMIO_WRITE_INCREMENT(kScOtbnSecMmioExecute);
  * ```
  */
 enum {
-  kOtbnSecMmioExecute = 1,
+  kScOtbnSecMmioExecute = 1,
 };
 
 /**
@@ -45,25 +45,25 @@ enum {
  *
  * TODO(#16754): replace these with constants from otbn_regs.h
  */
-typedef enum otbn_cmd {
-  kOtbnCmdExecute = 0xd8,
-  kOtbnCmdSecWipeDmem = 0xc3,
-  kOtbnCmdSecWipeImem = 0x1e,
-} otbn_cmd_t;
+typedef enum sc_otbn_cmd {
+  kScOtbnCmdExecute = 0xd8,
+  kScOtbnCmdSecWipeDmem = 0xc3,
+  kScOtbnCmdSecWipeImem = 0x1e,
+} sc_otbn_cmd_t;
 
 /**
  * OTBN status
  *
  * TODO(#16754): replace these with constants from otbn_regs.h
  */
-typedef enum otbn_status {
-  kOtbnStatusIdle = 0x00,
-  kOtbnStatusBusyExecute = 0x01,
-  kOtbnStatusBusySecWipeDmem = 0x02,
-  kOtbnStatusBusySecWipeImem = 0x03,
-  kOtbnStatusBusySecWipeInt = 0x04,
-  kOtbnStatusLocked = 0xFF,
-} otbn_status_t;
+typedef enum sc_otbn_status {
+  kScOtbnStatusIdle = 0x00,
+  kScOtbnStatusBusyExecute = 0x01,
+  kScOtbnStatusBusySecWipeDmem = 0x02,
+  kScOtbnStatusBusySecWipeImem = 0x03,
+  kScOtbnStatusBusySecWipeInt = 0x04,
+  kScOtbnStatusLocked = 0xFF,
+} sc_otbn_status_t;
 
 /**
  * The address of an OTBN symbol as seen by OTBN
@@ -71,7 +71,7 @@ typedef enum otbn_status {
  * Use `OTBN_DECLARE_SYMBOL_ADDR()` together with `OTBN_ADDR_T_INIT()` to
  * initialize this type.
  */
-typedef uint32_t otbn_addr_t;
+typedef uint32_t sc_otbn_addr_t;
 
 /**
  * Information about an embedded OTBN application image.
@@ -82,7 +82,7 @@ typedef uint32_t otbn_addr_t;
  * Use `OTBN_DECLARE_APP_SYMBOLS()` together with `OTBN_APP_T_INIT()` to
  * initialize this structure.
  */
-typedef struct otbn_app {
+typedef struct sc_otbn_app {
   /**
    * Start of OTBN instruction memory.
    */
@@ -112,8 +112,8 @@ typedef struct otbn_app {
    * This pointer references OTBN's memory and is used to copy data at app load
    * time.
    */
-  const otbn_addr_t dmem_data_start_addr;
-} otbn_app_t;
+  const sc_otbn_addr_t dmem_data_start_addr;
+} sc_otbn_app_t;
 
 /**
  * Generate the prefix to add to an OTBN symbol name used on the Ibex side
@@ -122,8 +122,8 @@ typedef struct otbn_app {
  * memory for that symbol.
  *
  * This is needed by the OTBN driver to support DMEM/IMEM ranges but
- * application code shouldn't need to use this. Use the `otbn_addr_t` type and
- * supporting macros instead.
+ * application code shouldn't need to use this. Use the `sc_otbn_addr_t` type
+ * and supporting macros instead.
  */
 #define OTBN_SYMBOL_PTR(app_name, sym) _otbn_local_app_##app_name##_##sym
 
@@ -189,13 +189,13 @@ typedef struct otbn_app {
  *
  * After making all required symbols from the application image available
  * through `OTBN_DECLARE_APP_SYMBOLS()`, use this macro to initialize an
- * `otbn_app_t` struct with those symbols.
+ * `sc_otbn_app_t` struct with those symbols.
  *
  * @param app_name Name of the application to load.
  * @see OTBN_DECLARE_APP_SYMBOLS()
  */
 #define OTBN_APP_T_INIT(app_name)                                           \
-  ((otbn_app_t){                                                            \
+  ((sc_otbn_app_t){                                                         \
       .imem_start = OTBN_SYMBOL_PTR(app_name, _imem_start),                 \
       .imem_end = OTBN_SYMBOL_PTR(app_name, _imem_end),                     \
       .dmem_data_start = OTBN_SYMBOL_PTR(app_name, _dmem_data_start),       \
@@ -204,7 +204,7 @@ typedef struct otbn_app {
   })
 
 /**
- * Initializes an `otbn_addr_t`.
+ * Initializes an `sc_otbn_addr_t`.
  */
 #define OTBN_ADDR_T_INIT(app_name, symbol_name) \
   ((uint32_t)OTBN_SYMBOL_ADDR(app_name, symbol_name))
@@ -219,7 +219,7 @@ typedef struct otbn_app {
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t otbn_load_app(const otbn_app_t app);
+rom_error_t sc_otbn_load_app(const sc_otbn_app_t app);
 
 /**
  * Copies data from the CPU memory to OTBN data memory.
@@ -230,8 +230,8 @@ rom_error_t otbn_load_app(const otbn_app_t app);
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t otbn_dmem_write(size_t num_words, const uint32_t *src,
-                            otbn_addr_t dest);
+rom_error_t sc_otbn_dmem_write(size_t num_words, const uint32_t *src,
+                               sc_otbn_addr_t dest);
 
 /**
  * Copies data from OTBN's data memory to CPU memory.
@@ -243,8 +243,8 @@ rom_error_t otbn_dmem_write(size_t num_words, const uint32_t *src,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t otbn_dmem_read(size_t num_words, const otbn_addr_t src,
-                           uint32_t *dest);
+rom_error_t sc_otbn_dmem_read(size_t num_words, const sc_otbn_addr_t src,
+                              uint32_t *dest);
 
 /**
  * Start the execution of the application loaded into OTBN.
@@ -254,7 +254,7 @@ rom_error_t otbn_dmem_read(size_t num_words, const otbn_addr_t src,
  * @return Result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t otbn_execute(void);
+rom_error_t sc_otbn_execute(void);
 
 /**
  * Blocks until OTBN is idle.
@@ -264,7 +264,7 @@ rom_error_t otbn_execute(void);
  * @return Result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t otbn_busy_wait_for_done(void);
+rom_error_t sc_otbn_busy_wait_for_done(void);
 
 /**
  * Read OTBN's instruction count register.
@@ -281,7 +281,7 @@ rom_error_t otbn_busy_wait_for_done(void);
  * @return count the value from the instruction count register
  */
 OT_WARN_UNUSED_RESULT
-uint32_t otbn_instruction_count_get(void);
+uint32_t sc_otbn_instruction_count_get(void);
 
 /**
  * Wipe IMEM securely.
@@ -291,7 +291,7 @@ uint32_t otbn_instruction_count_get(void);
  * @return Result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t otbn_imem_sec_wipe(void);
+rom_error_t sc_otbn_imem_sec_wipe(void);
 
 /**
  * Wipe DMEM securely.
@@ -301,7 +301,7 @@ rom_error_t otbn_imem_sec_wipe(void);
  * @return Result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t otbn_dmem_sec_wipe(void);
+rom_error_t sc_otbn_dmem_sec_wipe(void);
 
 #ifdef __cplusplus
 }

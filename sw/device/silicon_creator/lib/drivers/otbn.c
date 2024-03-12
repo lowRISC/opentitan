@@ -51,18 +51,18 @@ static rom_error_t check_offset_len(uint32_t offset_bytes, size_t num_words,
   return kErrorOk;
 }
 
-rom_error_t otbn_busy_wait_for_done(void) {
+rom_error_t sc_otbn_busy_wait_for_done(void) {
   uint32_t status = launder32(UINT32_MAX);
   rom_error_t res = launder32(kErrorOk ^ status);
   do {
     status = abs_mmio_read32(kBase + OTBN_STATUS_REG_OFFSET);
-  } while (launder32(status) != kOtbnStatusIdle &&
-           launder32(status) != kOtbnStatusLocked);
+  } while (launder32(status) != kScOtbnStatusIdle &&
+           launder32(status) != kScOtbnStatusLocked);
   res ^= ~status;
   if (launder32(res) == kErrorOk) {
     HARDENED_CHECK_EQ(res, kErrorOk);
     HARDENED_CHECK_EQ(abs_mmio_read32(kBase + OTBN_STATUS_REG_OFFSET),
-                      kOtbnStatusIdle);
+                      kScOtbnStatusIdle);
     return res;
   }
   return kErrorOtbnUnavailable;
@@ -75,8 +75,8 @@ rom_error_t otbn_busy_wait_for_done(void) {
  * @param src Source buffer.
  * @param num_words Number of words to copy.
  */
-static void otbn_write(uint32_t dest_addr, const uint32_t *src,
-                       size_t num_words) {
+static void sc_otbn_write(uint32_t dest_addr, const uint32_t *src,
+                          size_t num_words) {
   // Start from a random index less than `num_words`.
   size_t i = ((uint64_t)rnd_uint32() * (uint64_t)num_words) >> 32;
   enum { kStep = 1 };
@@ -95,23 +95,24 @@ static void otbn_write(uint32_t dest_addr, const uint32_t *src,
 }
 
 OT_WARN_UNUSED_RESULT
-static rom_error_t otbn_imem_write(size_t num_words, const uint32_t *src,
-                                   otbn_addr_t dest) {
+static rom_error_t sc_otbn_imem_write(size_t num_words, const uint32_t *src,
+                                      sc_otbn_addr_t dest) {
   HARDENED_RETURN_IF_ERROR(
       check_offset_len(dest, num_words, OTBN_IMEM_SIZE_BYTES));
-  otbn_write(kBase + OTBN_IMEM_REG_OFFSET + dest, src, num_words);
+  sc_otbn_write(kBase + OTBN_IMEM_REG_OFFSET + dest, src, num_words);
   return kErrorOk;
 }
 
-rom_error_t otbn_dmem_write(size_t num_words, const uint32_t *src,
-                            otbn_addr_t dest) {
+rom_error_t sc_otbn_dmem_write(size_t num_words, const uint32_t *src,
+                               sc_otbn_addr_t dest) {
   HARDENED_RETURN_IF_ERROR(
       check_offset_len(dest, num_words, OTBN_DMEM_SIZE_BYTES));
-  otbn_write(kBase + OTBN_DMEM_REG_OFFSET + dest, src, num_words);
+  sc_otbn_write(kBase + OTBN_DMEM_REG_OFFSET + dest, src, num_words);
   return kErrorOk;
 }
 
-rom_error_t otbn_dmem_read(size_t num_words, otbn_addr_t src, uint32_t *dest) {
+rom_error_t sc_otbn_dmem_read(size_t num_words, sc_otbn_addr_t src,
+                              uint32_t *dest) {
   HARDENED_RETURN_IF_ERROR(
       check_offset_len(src, num_words, OTBN_DMEM_SIZE_BYTES));
   size_t i = 0, r = num_words - 1;
@@ -134,7 +135,7 @@ rom_error_t otbn_dmem_read(size_t num_words, otbn_addr_t src, uint32_t *dest) {
  * @return Result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-static rom_error_t otbn_cmd_run(otbn_cmd_t cmd, rom_error_t error) {
+static rom_error_t sc_otbn_cmd_run(sc_otbn_cmd_t cmd, rom_error_t error) {
   enum {
     kIntrStateDone = (1 << OTBN_INTR_COMMON_DONE_BIT),
     // Use a bit index that doesn't overlap with error bits.
@@ -160,25 +161,25 @@ static rom_error_t otbn_cmd_run(otbn_cmd_t cmd, rom_error_t error) {
   uint32_t err_bits = abs_mmio_read32(kBase + OTBN_ERR_BITS_REG_OFFSET);
   res ^= err_bits;
 
-  // Status should be kOtbnStatusIdle; OTBN can also issue a done interrupt
+  // Status should be kScOtbnStatusIdle; OTBN can also issue a done interrupt
   // when transitioning to the "locked" state, so it is important to check
   // the status here.
   uint32_t status = abs_mmio_read32(kBase + OTBN_STATUS_REG_OFFSET);
 
   if (launder32(res) == kErrorOk && launder32(err_bits) == 0 &&
-      launder32(status) == kOtbnStatusIdle) {
+      launder32(status) == kScOtbnStatusIdle) {
     HARDENED_CHECK_EQ(res, kErrorOk);
     HARDENED_CHECK_EQ(err_bits, 0);
     HARDENED_CHECK_EQ(abs_mmio_read32(kBase + OTBN_STATUS_REG_OFFSET),
-                      kOtbnStatusIdle);
+                      kScOtbnStatusIdle);
     return res;
   }
   return error;
 }
 
-rom_error_t otbn_execute(void) {
+rom_error_t sc_otbn_execute(void) {
   // If OTBN is busy, wait for it to be done.
-  HARDENED_RETURN_IF_ERROR(otbn_busy_wait_for_done());
+  HARDENED_RETURN_IF_ERROR(sc_otbn_busy_wait_for_done());
 
   // Set software errors to fatal before running the program. Note: the CTRL
   // register has only this one setting, so we have no need to read the
@@ -186,19 +187,19 @@ rom_error_t otbn_execute(void) {
   sec_mmio_write32(kBase + OTBN_CTRL_REG_OFFSET,
                    1 << OTBN_CTRL_SOFTWARE_ERRS_FATAL_BIT);
 
-  return otbn_cmd_run(kOtbnCmdExecute, kErrorOtbnExecutionFailed);
+  return sc_otbn_cmd_run(kScOtbnCmdExecute, kErrorOtbnExecutionFailed);
 }
 
-uint32_t otbn_instruction_count_get(void) {
+uint32_t sc_otbn_instruction_count_get(void) {
   return abs_mmio_read32(kBase + OTBN_INSN_CNT_REG_OFFSET);
 }
 
-rom_error_t otbn_imem_sec_wipe(void) {
-  return otbn_cmd_run(kOtbnCmdSecWipeImem, kErrorOtbnSecWipeImemFailed);
+rom_error_t sc_otbn_imem_sec_wipe(void) {
+  return sc_otbn_cmd_run(kScOtbnCmdSecWipeImem, kErrorOtbnSecWipeImemFailed);
 }
 
-rom_error_t otbn_dmem_sec_wipe(void) {
-  return otbn_cmd_run(kOtbnCmdSecWipeDmem, kErrorOtbnSecWipeDmemFailed);
+rom_error_t sc_otbn_dmem_sec_wipe(void) {
+  return sc_otbn_cmd_run(kScOtbnCmdSecWipeDmem, kErrorOtbnSecWipeDmemFailed);
 }
 
 /**
@@ -212,7 +213,7 @@ rom_error_t otbn_dmem_sec_wipe(void) {
  * @return OK if the addresses are valid, otherwise `kErrorOtbnInvalidArgument`.
  */
 OT_WARN_UNUSED_RESULT
-static rom_error_t check_app_address_ranges(const otbn_app_t app) {
+static rom_error_t check_app_address_ranges(const sc_otbn_app_t app) {
   if (app.imem_end > app.imem_start &&
       app.dmem_data_end >= app.dmem_data_start) {
     HARDENED_CHECK_GT(app.imem_end, app.imem_start);
@@ -222,27 +223,27 @@ static rom_error_t check_app_address_ranges(const otbn_app_t app) {
   return kErrorOtbnInvalidArgument;
 }
 
-rom_error_t otbn_load_app(const otbn_app_t app) {
+rom_error_t sc_otbn_load_app(const sc_otbn_app_t app) {
   HARDENED_RETURN_IF_ERROR(check_app_address_ranges(app));
 
   // If OTBN is busy, wait for it to be done.
-  HARDENED_RETURN_IF_ERROR(otbn_busy_wait_for_done());
+  HARDENED_RETURN_IF_ERROR(sc_otbn_busy_wait_for_done());
 
   // Wipe memories.
-  HARDENED_RETURN_IF_ERROR(otbn_dmem_sec_wipe());
-  HARDENED_RETURN_IF_ERROR(otbn_imem_sec_wipe());
+  HARDENED_RETURN_IF_ERROR(sc_otbn_dmem_sec_wipe());
+  HARDENED_RETURN_IF_ERROR(sc_otbn_imem_sec_wipe());
 
   const size_t imem_num_words = (size_t)(app.imem_end - app.imem_start);
   const size_t data_num_words =
       (size_t)(app.dmem_data_end - app.dmem_data_start);
 
   // IMEM always starts at 0.
-  otbn_addr_t imem_start_addr = 0;
+  sc_otbn_addr_t imem_start_addr = 0;
   HARDENED_RETURN_IF_ERROR(
-      otbn_imem_write(imem_num_words, app.imem_start, imem_start_addr));
+      sc_otbn_imem_write(imem_num_words, app.imem_start, imem_start_addr));
 
   if (data_num_words > 0) {
-    HARDENED_RETURN_IF_ERROR(otbn_dmem_write(
+    HARDENED_RETURN_IF_ERROR(sc_otbn_dmem_write(
         data_num_words, app.dmem_data_start, app.dmem_data_start_addr));
   }
   return kErrorOk;
