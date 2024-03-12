@@ -34,6 +34,9 @@ static volatile uart_cfg_params_t uart_cfg;
 // Whether we expect and have received the RX parity error interrupt.
 static volatile bool uart_irq_rx_parity_err_expected = false;
 static volatile bool uart_irq_rx_parity_err_fired = false;
+// Whether we expect and have received the RX line break error interrupt.
+static volatile bool uart_irq_rx_break_err_expected = false;
+static volatile bool uart_irq_rx_break_err_fired = false;
 
 enum {
   // Timeout for ujson commands.
@@ -47,7 +50,7 @@ typedef enum test_phase {
   kTestPhaseSend,
   kTestPhaseRecv,
   kTestPhaseRecvErr,
-  kTestPhaseDone,
+  kTestPhaseBreakErr,
 } test_phase_t;
 static volatile uint8_t test_phase = kTestPhaseCfg;
 
@@ -81,11 +84,43 @@ static status_t configure_uart(void) {
   return OK_STATUS();
 }
 
+// Configure the `rx_parity_err` and `rx_break_err` interrupts for the UART
+// under test.
+static status_t configure_interrupts(void) {
+  TRY(dif_uart_irq_disable_all(&uart, NULL));
+
+  TRY(dif_uart_irq_set_enabled(&uart, kDifUartIrqRxParityErr,
+                               kDifToggleEnabled));
+  TRY(dif_uart_irq_set_enabled(&uart, kDifUartIrqRxBreakErr,
+                               kDifToggleEnabled));
+
+  TRY(dif_rv_plic_irq_set_priority(&rv_plic, uart_cfg.irq_rx_parity_err_id,
+                                   0x1));
+  TRY(dif_rv_plic_irq_set_priority(&rv_plic, uart_cfg.irq_rx_break_err_id,
+                                   0x1));
+
+  TRY(dif_rv_plic_irq_set_enabled(&rv_plic, uart_cfg.irq_rx_parity_err_id,
+                                  kTopEarlgreyPlicTargetIbex0,
+                                  kDifToggleEnabled));
+  TRY(dif_rv_plic_irq_set_enabled(&rv_plic, uart_cfg.irq_rx_break_err_id,
+                                  kTopEarlgreyPlicTargetIbex0,
+                                  kDifToggleEnabled));
+
+  TRY(dif_rv_plic_target_set_threshold(&rv_plic, kTopEarlgreyPlicTargetIbex0,
+                                       0x0));
+
+  // Enable the external IRQ at Ibex.
+  irq_global_ctrl(true);
+  irq_external_ctrl(true);
+
+  return OK_STATUS();
+}
+
 // This function overrides the default OTTF external ISR.
 //
-// It looks out for the `rx_parity_err` interrupt and checks it came from the
-// correct UART. If `uart_irq_rx_parity_err_expected` is set, then
-// `uart_irq_rx_parity_err_fired` is set to true.
+// It handles the `rx_parity_err` and `rx_break_err` interrupts and checks they
+// came from the correct UART. If the interrupts were expected, we let the main
+// thread know that they were triggered.
 void ottf_external_isr(uint32_t *exc_info) {
   // Claim the interrupt.
   dif_rv_plic_irq_id_t plic_irq_id;
@@ -96,24 +131,32 @@ void ottf_external_isr(uint32_t *exc_info) {
   top_earlgrey_plic_peripheral_t peripheral = (top_earlgrey_plic_peripheral_t)
       top_earlgrey_plic_interrupt_for_peripheral[plic_irq_id];
 
+  // Handle interrupts for the console UART separately.
   if (peripheral != uart_cfg.peripheral_id) {
     ottf_console_flow_control_isr(exc_info);
   }
 
   // Check it was the parity error that fired and that we expected it.
-  CHECK(plic_irq_id == uart_cfg.irq_rx_parity_err_id,
-        "Unexpected interrupt from UART: %d", plic_irq_id);
-  CHECK(uart_irq_rx_parity_err_expected, "Unexpected parity error interrupt");
-  uart_irq_rx_parity_err_fired = true;
+  uint32_t uart_irq_id = 0;
+  if (plic_irq_id == uart_cfg.irq_rx_parity_err_id) {
+    CHECK(uart_irq_rx_parity_err_expected, "Unexpected parity error interrupt");
+    uart_irq_rx_parity_err_fired = true;
+    uart_irq_id = kDifUartIrqRxParityErr;
+  } else if (plic_irq_id == uart_cfg.irq_rx_break_err_id) {
+    CHECK(uart_irq_rx_break_err_expected, "Unexpected break error interrupt");
+    uart_irq_rx_break_err_fired = true;
+    uart_irq_id = kDifUartIrqRxBreakErr;
+  } else {
+    CHECK(false, "Unexpected interrupt from UART: %d", plic_irq_id);
+  }
 
   // Check that the same interrupt fired at the UART as well.
   bool is_pending;
-  CHECK_DIF_OK(
-      dif_uart_irq_is_pending(&uart, kDifUartIrqRxParityErr, &is_pending));
+  CHECK_DIF_OK(dif_uart_irq_is_pending(&uart, uart_irq_id, &is_pending));
   CHECK(is_pending, "UART interrupt fired at PLIC did not fire at UART");
 
-  // Acknowledge interrupts.
-  CHECK_DIF_OK(dif_uart_irq_acknowledge(&uart, kDifUartIrqRxParityErr));
+  // Acknowledge interrupt.
+  CHECK_DIF_OK(dif_uart_irq_acknowledge(&uart, uart_irq_id));
   CHECK_DIF_OK(dif_rv_plic_irq_complete(&rv_plic, kTopEarlgreyPlicTargetIbex0,
                                         plic_irq_id));
 }
@@ -122,6 +165,7 @@ void ottf_external_isr(uint32_t *exc_info) {
 // 1. Send some data and have the host check its parity.
 // 2. Receive some data with the correct parity and check it.
 // 3. Receive some data with the wrong parity and check the interrupt fired.
+// 4. Wait for the host to trigger a line break error.
 static status_t execute_test(void) {
   // Wait for host to sync and then send the expected bytes.
   OTTF_WAIT_FOR(test_phase == kTestPhaseSend, kCommandTimeoutMicros);
@@ -162,6 +206,13 @@ static status_t execute_test(void) {
   LOG_INFO("Receiving data with wrong parity");
   IBEX_SPIN_FOR(uart_irq_rx_parity_err_fired, 1 * 1000 * 1000);
 
+  // Wait for host to sync and then expect to receive a line break.
+  uart_irq_rx_break_err_expected = true;
+  OTTF_WAIT_FOR(test_phase == kTestPhaseBreakErr, kCommandTimeoutMicros);
+
+  LOG_INFO("Waiting for line break");
+  IBEX_SPIN_FOR(uart_irq_rx_break_err_fired, 1 * 1000 * 1000);
+
   return OK_STATUS();
 }
 
@@ -187,24 +238,9 @@ bool test_main(void) {
 
   // Configure the UART under test.
   CHECK_STATUS_OK(configure_uart());
+  CHECK_STATUS_OK(configure_interrupts());
 
   LOG_INFO("UART%d configured", uart_idx);
-
-  // Enable parity error interrupt.
-  CHECK_DIF_OK(dif_uart_irq_disable_all(&uart, NULL));
-  CHECK_DIF_OK(dif_uart_irq_set_enabled(&uart, kDifUartIrqRxParityErr,
-                                        kDifToggleEnabled));
-  CHECK_DIF_OK(dif_rv_plic_irq_set_priority(
-      &rv_plic, uart_cfg.irq_rx_parity_err_id, 0x1));
-  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
-      &rv_plic, uart_cfg.irq_rx_parity_err_id, kTopEarlgreyPlicTargetIbex0,
-      kDifToggleEnabled));
-  CHECK_DIF_OK(dif_rv_plic_target_set_threshold(
-      &rv_plic, kTopEarlgreyPlicTargetIbex0, 0x0));
-
-  // Enable the external IRQ at Ibex.
-  irq_global_ctrl(true);
-  irq_external_ctrl(true);
 
   status_t result = OK_STATUS();
   EXECUTE_TEST(result, execute_test);
