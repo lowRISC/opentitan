@@ -38,7 +38,7 @@ enum TestPhase {
     Send,
     Recv,
     RecvErr,
-    _Done,
+    BreakErr,
 }
 
 struct TestData<'a> {
@@ -161,6 +161,14 @@ fn uart_parity_break(
     uart.set_parity(other_parity)
         .context("failed to set parity")?;
     uart.write(&[0xff]).context("failed to send data")?;
+
+    // Tell the device to receive some data with the wrong parity.
+    UartConsole::wait_for(console, r"waiting for commands\r\n", opts.timeout)?;
+    MemWriteReq::execute(console, *test_phase_addr, &[TestPhase::BreakErr as u8])?;
+
+    uart.set_break(true).context("failed to set break")?;
+    std::thread::sleep(Duration::from_millis(30));
+    uart.set_break(false).context("failed to unset break")?;
 
     // The device will tell us whether or not the data with the wrong parity
     // was received okay.
