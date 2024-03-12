@@ -7,6 +7,7 @@
 #include <assert.h>
 #include <stddef.h>
 
+#include "dif_base.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/mmio.h"
@@ -124,12 +125,19 @@ dif_result_t dif_uart_configure(const dif_uart_t *uart,
     return kDifBadArg;
   }
 
+  // Check requested RXBLVL is within bounds.
+  uint32_t rxblvl = config.rx_break_level;
+  if ((rxblvl & UART_CTRL_RXBLVL_MASK) != rxblvl) {
+    return kDifBadArg;
+  }
+
   // Must be called before the first write to any of the UART registers.
   uart_reset(uart);
 
   // Set baudrate, enable RX and TX, configure parity.
   uint32_t reg = 0;
   reg = bitfield_field32_write(reg, UART_CTRL_NCO_FIELD, nco_masked);
+  reg = bitfield_field32_write(reg, UART_CTRL_RXBLVL_FIELD, rxblvl);
   if (dif_toggle_to_bool(config.tx_enable)) {
     reg = bitfield_bit32_write(reg, UART_CTRL_TX_BIT, true);
   }
@@ -146,6 +154,19 @@ dif_result_t dif_uart_configure(const dif_uart_t *uart,
 
   // Disable interrupts.
   mmio_region_write32(uart->base_addr, UART_INTR_ENABLE_REG_OFFSET, 0u);
+
+  return kDifOk;
+}
+
+dif_result_t dif_uart_rx_break_level_set(
+    const dif_uart_t *uart, dif_uart_rx_break_level_t rx_break_level) {
+  if (uart == NULL) {
+    return kDifBadArg;
+  }
+
+  uint32_t reg = mmio_region_read32(uart->base_addr, UART_CTRL_REG_OFFSET);
+  reg = bitfield_field32_write(reg, UART_CTRL_RXBLVL_FIELD, rx_break_level);
+  mmio_region_write32(uart->base_addr, UART_CTRL_REG_OFFSET, reg);
 
   return kDifOk;
 }
