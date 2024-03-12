@@ -45,8 +45,6 @@ module tb;
   clk_rst_if usb_clk_rst_if(.clk(usb_clk), .rst_n(usb_rst_n));
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(interrupts);
   tl_if tl_if(.clk(usb_clk), .rst_n(usb_rst_n));
-  usb20_if usb20_if(.clk_i(usb_clk), .rst_ni(usb_rst_n), .usb_vbus(usb_vbus),
-  .usb_p(usb_p), .usb_n(usb_n));
   usb20_block_if usb20_block_if(.clk_i(usb_clk), .rst_ni(usb_rst_n),
   .usb_vbus(usb_vbus), .usb_p(usb_p), .usb_n(usb_n));
  `DV_ALERT_IF_CONNECT(usb_clk, usb_rst_n)
@@ -149,7 +147,6 @@ module tb;
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "aon_clk_rst_vif", aon_clk_rst_if);
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
-    uvm_config_db#(virtual usb20_if)::set(null, "*.env.m_usb20_agent*", "vif", usb20_if);
     uvm_config_db#(virtual usb20_block_if)::set(null, "*.env.m_usb20_agent*","bif",usb20_block_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();

@@ -5,7 +5,6 @@
 class usb20_agent_cfg extends dv_base_agent_cfg;
 
   // interface handle used by driver, monitor & the sequencer, via cfg handle
-  virtual usb20_if vif;
   virtual usb20_block_if bif;
   virtual clk_rst_if clk_rst_if_i;
 
