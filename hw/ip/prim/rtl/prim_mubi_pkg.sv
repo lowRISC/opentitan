@@ -542,4 +542,532 @@ package prim_mubi_pkg;
     return mubi16_and(a, b, MuBi16False);
   endfunction : mubi16_and_lo
 
+  //////////////////////////////////////////////
+  // 20 Bit Multibit Type and Functions //
+  //////////////////////////////////////////////
+
+  parameter int MuBi20Width = 20;
+  typedef enum logic [MuBi20Width-1:0] {
+    MuBi20True = 20'h69696, // enabled
+    MuBi20False = 20'h96969  // disabled
+  } mubi20_t;
+
+  // This is a prerequisite for the multibit functions below to work.
+  `ASSERT_STATIC_IN_PACKAGE(CheckMuBi20ValsComplementary_A, MuBi20True == ~MuBi20False)
+
+  // Test whether the multibit value is one of the valid enumerations
+  function automatic logic mubi20_test_invalid(mubi20_t val);
+    return ~(val inside {MuBi20True, MuBi20False});
+  endfunction : mubi20_test_invalid
+
+  // Convert a 1 input value to a mubi output
+  function automatic mubi20_t mubi20_bool_to_mubi(logic val);
+    return (val ? MuBi20True : MuBi20False);
+  endfunction : mubi20_bool_to_mubi
+
+  // Test whether the multibit value signals an "enabled" condition.
+  // The strict version of this function requires
+  // the multibit value to equal True.
+  function automatic logic mubi20_test_true_strict(mubi20_t val);
+    return MuBi20True == val;
+  endfunction : mubi20_test_true_strict
+
+  // Test whether the multibit value signals a "disabled" condition.
+  // The strict version of this function requires
+  // the multibit value to equal False.
+  function automatic logic mubi20_test_false_strict(mubi20_t val);
+    return MuBi20False == val;
+  endfunction : mubi20_test_false_strict
+
+  // Test whether the multibit value signals an "enabled" condition.
+  // The loose version of this function interprets all
+  // values other than False as "enabled".
+  function automatic logic mubi20_test_true_loose(mubi20_t val);
+    return MuBi20False != val;
+  endfunction : mubi20_test_true_loose
+
+  // Test whether the multibit value signals a "disabled" condition.
+  // The loose version of this function interprets all
+  // values other than True as "disabled".
+  function automatic logic mubi20_test_false_loose(mubi20_t val);
+    return MuBi20True != val;
+  endfunction : mubi20_test_false_loose
+
+
+  // Performs a logical OR operation between two multibit values.
+  // This treats "act" as logical 1, and all other values are
+  // treated as 0. Truth table:
+  //
+  // A    | B    | OUT
+  //------+------+-----
+  // !act | !act | !act
+  // act  | !act | act
+  // !act | act  | act
+  // act  | act  | act
+  //
+  function automatic mubi20_t mubi20_or(mubi20_t a, mubi20_t b, mubi20_t act);
+    logic [MuBi20Width-1:0] a_in, b_in, act_in, out;
+    a_in = a;
+    b_in = b;
+    act_in = act;
+    for (int k = 0; k < MuBi20Width; k++) begin
+      if (act_in[k]) begin
+        out[k] = a_in[k] || b_in[k];
+      end else begin
+        out[k] = a_in[k] && b_in[k];
+      end
+    end
+    return mubi20_t'(out);
+  endfunction : mubi20_or
+
+  // Performs a logical AND operation between two multibit values.
+  // This treats "act" as logical 1, and all other values are
+  // treated as 0. Truth table:
+  //
+  // A    | B    | OUT
+  //------+------+-----
+  // !act | !act | !act
+  // act  | !act | !act
+  // !act | act  | !act
+  // act  | act  | act
+  //
+  function automatic mubi20_t mubi20_and(mubi20_t a, mubi20_t b, mubi20_t act);
+    logic [MuBi20Width-1:0] a_in, b_in, act_in, out;
+    a_in = a;
+    b_in = b;
+    act_in = act;
+    for (int k = 0; k < MuBi20Width; k++) begin
+      if (act_in[k]) begin
+        out[k] = a_in[k] && b_in[k];
+      end else begin
+        out[k] = a_in[k] || b_in[k];
+      end
+    end
+    return mubi20_t'(out);
+  endfunction : mubi20_and
+
+  // Performs a logical OR operation between two multibit values.
+  // This treats "True" as logical 1, and all other values are
+  // treated as 0.
+  function automatic mubi20_t mubi20_or_hi(mubi20_t a, mubi20_t b);
+    return mubi20_or(a, b, MuBi20True);
+  endfunction : mubi20_or_hi
+
+  // Performs a logical AND operation between two multibit values.
+  // This treats "True" as logical 1, and all other values are
+  // treated as 0.
+  function automatic mubi20_t mubi20_and_hi(mubi20_t a, mubi20_t b);
+    return mubi20_and(a, b, MuBi20True);
+  endfunction : mubi20_and_hi
+
+  // Performs a logical OR operation between two multibit values.
+  // This treats "False" as logical 1, and all other values are
+  // treated as 0.
+  function automatic mubi20_t mubi20_or_lo(mubi20_t a, mubi20_t b);
+    return mubi20_or(a, b, MuBi20False);
+  endfunction : mubi20_or_lo
+
+  // Performs a logical AND operation between two multibit values.
+  // This treats "False" as logical 1, and all other values are
+  // treated as 0.
+  function automatic mubi20_t mubi20_and_lo(mubi20_t a, mubi20_t b);
+    return mubi20_and(a, b, MuBi20False);
+  endfunction : mubi20_and_lo
+
+  //////////////////////////////////////////////
+  // 24 Bit Multibit Type and Functions //
+  //////////////////////////////////////////////
+
+  parameter int MuBi24Width = 24;
+  typedef enum logic [MuBi24Width-1:0] {
+    MuBi24True = 24'h969696, // enabled
+    MuBi24False = 24'h696969  // disabled
+  } mubi24_t;
+
+  // This is a prerequisite for the multibit functions below to work.
+  `ASSERT_STATIC_IN_PACKAGE(CheckMuBi24ValsComplementary_A, MuBi24True == ~MuBi24False)
+
+  // Test whether the multibit value is one of the valid enumerations
+  function automatic logic mubi24_test_invalid(mubi24_t val);
+    return ~(val inside {MuBi24True, MuBi24False});
+  endfunction : mubi24_test_invalid
+
+  // Convert a 1 input value to a mubi output
+  function automatic mubi24_t mubi24_bool_to_mubi(logic val);
+    return (val ? MuBi24True : MuBi24False);
+  endfunction : mubi24_bool_to_mubi
+
+  // Test whether the multibit value signals an "enabled" condition.
+  // The strict version of this function requires
+  // the multibit value to equal True.
+  function automatic logic mubi24_test_true_strict(mubi24_t val);
+    return MuBi24True == val;
+  endfunction : mubi24_test_true_strict
+
+  // Test whether the multibit value signals a "disabled" condition.
+  // The strict version of this function requires
+  // the multibit value to equal False.
+  function automatic logic mubi24_test_false_strict(mubi24_t val);
+    return MuBi24False == val;
+  endfunction : mubi24_test_false_strict
+
+  // Test whether the multibit value signals an "enabled" condition.
+  // The loose version of this function interprets all
+  // values other than False as "enabled".
+  function automatic logic mubi24_test_true_loose(mubi24_t val);
+    return MuBi24False != val;
+  endfunction : mubi24_test_true_loose
+
+  // Test whether the multibit value signals a "disabled" condition.
+  // The loose version of this function interprets all
+  // values other than True as "disabled".
+  function automatic logic mubi24_test_false_loose(mubi24_t val);
+    return MuBi24True != val;
+  endfunction : mubi24_test_false_loose
+
+
+  // Performs a logical OR operation between two multibit values.
+  // This treats "act" as logical 1, and all other values are
+  // treated as 0. Truth table:
+  //
+  // A    | B    | OUT
+  //------+------+-----
+  // !act | !act | !act
+  // act  | !act | act
+  // !act | act  | act
+  // act  | act  | act
+  //
+  function automatic mubi24_t mubi24_or(mubi24_t a, mubi24_t b, mubi24_t act);
+    logic [MuBi24Width-1:0] a_in, b_in, act_in, out;
+    a_in = a;
+    b_in = b;
+    act_in = act;
+    for (int k = 0; k < MuBi24Width; k++) begin
+      if (act_in[k]) begin
+        out[k] = a_in[k] || b_in[k];
+      end else begin
+        out[k] = a_in[k] && b_in[k];
+      end
+    end
+    return mubi24_t'(out);
+  endfunction : mubi24_or
+
+  // Performs a logical AND operation between two multibit values.
+  // This treats "act" as logical 1, and all other values are
+  // treated as 0. Truth table:
+  //
+  // A    | B    | OUT
+  //------+------+-----
+  // !act | !act | !act
+  // act  | !act | !act
+  // !act | act  | !act
+  // act  | act  | act
+  //
+  function automatic mubi24_t mubi24_and(mubi24_t a, mubi24_t b, mubi24_t act);
+    logic [MuBi24Width-1:0] a_in, b_in, act_in, out;
+    a_in = a;
+    b_in = b;
+    act_in = act;
+    for (int k = 0; k < MuBi24Width; k++) begin
+      if (act_in[k]) begin
+        out[k] = a_in[k] && b_in[k];
+      end else begin
+        out[k] = a_in[k] || b_in[k];
+      end
+    end
+    return mubi24_t'(out);
+  endfunction : mubi24_and
+
+  // Performs a logical OR operation between two multibit values.
+  // This treats "True" as logical 1, and all other values are
+  // treated as 0.
+  function automatic mubi24_t mubi24_or_hi(mubi24_t a, mubi24_t b);
+    return mubi24_or(a, b, MuBi24True);
+  endfunction : mubi24_or_hi
+
+  // Performs a logical AND operation between two multibit values.
+  // This treats "True" as logical 1, and all other values are
+  // treated as 0.
+  function automatic mubi24_t mubi24_and_hi(mubi24_t a, mubi24_t b);
+    return mubi24_and(a, b, MuBi24True);
+  endfunction : mubi24_and_hi
+
+  // Performs a logical OR operation between two multibit values.
+  // This treats "False" as logical 1, and all other values are
+  // treated as 0.
+  function automatic mubi24_t mubi24_or_lo(mubi24_t a, mubi24_t b);
+    return mubi24_or(a, b, MuBi24False);
+  endfunction : mubi24_or_lo
+
+  // Performs a logical AND operation between two multibit values.
+  // This treats "False" as logical 1, and all other values are
+  // treated as 0.
+  function automatic mubi24_t mubi24_and_lo(mubi24_t a, mubi24_t b);
+    return mubi24_and(a, b, MuBi24False);
+  endfunction : mubi24_and_lo
+
+  //////////////////////////////////////////////
+  // 28 Bit Multibit Type and Functions //
+  //////////////////////////////////////////////
+
+  parameter int MuBi28Width = 28;
+  typedef enum logic [MuBi28Width-1:0] {
+    MuBi28True = 28'h6969696, // enabled
+    MuBi28False = 28'h9696969  // disabled
+  } mubi28_t;
+
+  // This is a prerequisite for the multibit functions below to work.
+  `ASSERT_STATIC_IN_PACKAGE(CheckMuBi28ValsComplementary_A, MuBi28True == ~MuBi28False)
+
+  // Test whether the multibit value is one of the valid enumerations
+  function automatic logic mubi28_test_invalid(mubi28_t val);
+    return ~(val inside {MuBi28True, MuBi28False});
+  endfunction : mubi28_test_invalid
+
+  // Convert a 1 input value to a mubi output
+  function automatic mubi28_t mubi28_bool_to_mubi(logic val);
+    return (val ? MuBi28True : MuBi28False);
+  endfunction : mubi28_bool_to_mubi
+
+  // Test whether the multibit value signals an "enabled" condition.
+  // The strict version of this function requires
+  // the multibit value to equal True.
+  function automatic logic mubi28_test_true_strict(mubi28_t val);
+    return MuBi28True == val;
+  endfunction : mubi28_test_true_strict
+
+  // Test whether the multibit value signals a "disabled" condition.
+  // The strict version of this function requires
+  // the multibit value to equal False.
+  function automatic logic mubi28_test_false_strict(mubi28_t val);
+    return MuBi28False == val;
+  endfunction : mubi28_test_false_strict
+
+  // Test whether the multibit value signals an "enabled" condition.
+  // The loose version of this function interprets all
+  // values other than False as "enabled".
+  function automatic logic mubi28_test_true_loose(mubi28_t val);
+    return MuBi28False != val;
+  endfunction : mubi28_test_true_loose
+
+  // Test whether the multibit value signals a "disabled" condition.
+  // The loose version of this function interprets all
+  // values other than True as "disabled".
+  function automatic logic mubi28_test_false_loose(mubi28_t val);
+    return MuBi28True != val;
+  endfunction : mubi28_test_false_loose
+
+
+  // Performs a logical OR operation between two multibit values.
+  // This treats "act" as logical 1, and all other values are
+  // treated as 0. Truth table:
+  //
+  // A    | B    | OUT
+  //------+------+-----
+  // !act | !act | !act
+  // act  | !act | act
+  // !act | act  | act
+  // act  | act  | act
+  //
+  function automatic mubi28_t mubi28_or(mubi28_t a, mubi28_t b, mubi28_t act);
+    logic [MuBi28Width-1:0] a_in, b_in, act_in, out;
+    a_in = a;
+    b_in = b;
+    act_in = act;
+    for (int k = 0; k < MuBi28Width; k++) begin
+      if (act_in[k]) begin
+        out[k] = a_in[k] || b_in[k];
+      end else begin
+        out[k] = a_in[k] && b_in[k];
+      end
+    end
+    return mubi28_t'(out);
+  endfunction : mubi28_or
+
+  // Performs a logical AND operation between two multibit values.
+  // This treats "act" as logical 1, and all other values are
+  // treated as 0. Truth table:
+  //
+  // A    | B    | OUT
+  //------+------+-----
+  // !act | !act | !act
+  // act  | !act | !act
+  // !act | act  | !act
+  // act  | act  | act
+  //
+  function automatic mubi28_t mubi28_and(mubi28_t a, mubi28_t b, mubi28_t act);
+    logic [MuBi28Width-1:0] a_in, b_in, act_in, out;
+    a_in = a;
+    b_in = b;
+    act_in = act;
+    for (int k = 0; k < MuBi28Width; k++) begin
+      if (act_in[k]) begin
+        out[k] = a_in[k] && b_in[k];
+      end else begin
+        out[k] = a_in[k] || b_in[k];
+      end
+    end
+    return mubi28_t'(out);
+  endfunction : mubi28_and
+
+  // Performs a logical OR operation between two multibit values.
+  // This treats "True" as logical 1, and all other values are
+  // treated as 0.
+  function automatic mubi28_t mubi28_or_hi(mubi28_t a, mubi28_t b);
+    return mubi28_or(a, b, MuBi28True);
+  endfunction : mubi28_or_hi
+
+  // Performs a logical AND operation between two multibit values.
+  // This treats "True" as logical 1, and all other values are
+  // treated as 0.
+  function automatic mubi28_t mubi28_and_hi(mubi28_t a, mubi28_t b);
+    return mubi28_and(a, b, MuBi28True);
+  endfunction : mubi28_and_hi
+
+  // Performs a logical OR operation between two multibit values.
+  // This treats "False" as logical 1, and all other values are
+  // treated as 0.
+  function automatic mubi28_t mubi28_or_lo(mubi28_t a, mubi28_t b);
+    return mubi28_or(a, b, MuBi28False);
+  endfunction : mubi28_or_lo
+
+  // Performs a logical AND operation between two multibit values.
+  // This treats "False" as logical 1, and all other values are
+  // treated as 0.
+  function automatic mubi28_t mubi28_and_lo(mubi28_t a, mubi28_t b);
+    return mubi28_and(a, b, MuBi28False);
+  endfunction : mubi28_and_lo
+
+  //////////////////////////////////////////////
+  // 32 Bit Multibit Type and Functions //
+  //////////////////////////////////////////////
+
+  parameter int MuBi32Width = 32;
+  typedef enum logic [MuBi32Width-1:0] {
+    MuBi32True = 32'h96969696, // enabled
+    MuBi32False = 32'h69696969  // disabled
+  } mubi32_t;
+
+  // This is a prerequisite for the multibit functions below to work.
+  `ASSERT_STATIC_IN_PACKAGE(CheckMuBi32ValsComplementary_A, MuBi32True == ~MuBi32False)
+
+  // Test whether the multibit value is one of the valid enumerations
+  function automatic logic mubi32_test_invalid(mubi32_t val);
+    return ~(val inside {MuBi32True, MuBi32False});
+  endfunction : mubi32_test_invalid
+
+  // Convert a 1 input value to a mubi output
+  function automatic mubi32_t mubi32_bool_to_mubi(logic val);
+    return (val ? MuBi32True : MuBi32False);
+  endfunction : mubi32_bool_to_mubi
+
+  // Test whether the multibit value signals an "enabled" condition.
+  // The strict version of this function requires
+  // the multibit value to equal True.
+  function automatic logic mubi32_test_true_strict(mubi32_t val);
+    return MuBi32True == val;
+  endfunction : mubi32_test_true_strict
+
+  // Test whether the multibit value signals a "disabled" condition.
+  // The strict version of this function requires
+  // the multibit value to equal False.
+  function automatic logic mubi32_test_false_strict(mubi32_t val);
+    return MuBi32False == val;
+  endfunction : mubi32_test_false_strict
+
+  // Test whether the multibit value signals an "enabled" condition.
+  // The loose version of this function interprets all
+  // values other than False as "enabled".
+  function automatic logic mubi32_test_true_loose(mubi32_t val);
+    return MuBi32False != val;
+  endfunction : mubi32_test_true_loose
+
+  // Test whether the multibit value signals a "disabled" condition.
+  // The loose version of this function interprets all
+  // values other than True as "disabled".
+  function automatic logic mubi32_test_false_loose(mubi32_t val);
+    return MuBi32True != val;
+  endfunction : mubi32_test_false_loose
+
+
+  // Performs a logical OR operation between two multibit values.
+  // This treats "act" as logical 1, and all other values are
+  // treated as 0. Truth table:
+  //
+  // A    | B    | OUT
+  //------+------+-----
+  // !act | !act | !act
+  // act  | !act | act
+  // !act | act  | act
+  // act  | act  | act
+  //
+  function automatic mubi32_t mubi32_or(mubi32_t a, mubi32_t b, mubi32_t act);
+    logic [MuBi32Width-1:0] a_in, b_in, act_in, out;
+    a_in = a;
+    b_in = b;
+    act_in = act;
+    for (int k = 0; k < MuBi32Width; k++) begin
+      if (act_in[k]) begin
+        out[k] = a_in[k] || b_in[k];
+      end else begin
+        out[k] = a_in[k] && b_in[k];
+      end
+    end
+    return mubi32_t'(out);
+  endfunction : mubi32_or
+
+  // Performs a logical AND operation between two multibit values.
+  // This treats "act" as logical 1, and all other values are
+  // treated as 0. Truth table:
+  //
+  // A    | B    | OUT
+  //------+------+-----
+  // !act | !act | !act
+  // act  | !act | !act
+  // !act | act  | !act
+  // act  | act  | act
+  //
+  function automatic mubi32_t mubi32_and(mubi32_t a, mubi32_t b, mubi32_t act);
+    logic [MuBi32Width-1:0] a_in, b_in, act_in, out;
+    a_in = a;
+    b_in = b;
+    act_in = act;
+    for (int k = 0; k < MuBi32Width; k++) begin
+      if (act_in[k]) begin
+        out[k] = a_in[k] && b_in[k];
+      end else begin
+        out[k] = a_in[k] || b_in[k];
+      end
+    end
+    return mubi32_t'(out);
+  endfunction : mubi32_and
+
+  // Performs a logical OR operation between two multibit values.
+  // This treats "True" as logical 1, and all other values are
+  // treated as 0.
+  function automatic mubi32_t mubi32_or_hi(mubi32_t a, mubi32_t b);
+    return mubi32_or(a, b, MuBi32True);
+  endfunction : mubi32_or_hi
+
+  // Performs a logical AND operation between two multibit values.
+  // This treats "True" as logical 1, and all other values are
+  // treated as 0.
+  function automatic mubi32_t mubi32_and_hi(mubi32_t a, mubi32_t b);
+    return mubi32_and(a, b, MuBi32True);
+  endfunction : mubi32_and_hi
+
+  // Performs a logical OR operation between two multibit values.
+  // This treats "False" as logical 1, and all other values are
+  // treated as 0.
+  function automatic mubi32_t mubi32_or_lo(mubi32_t a, mubi32_t b);
+    return mubi32_or(a, b, MuBi32False);
+  endfunction : mubi32_or_lo
+
+  // Performs a logical AND operation between two multibit values.
+  // This treats "False" as logical 1, and all other values are
+  // treated as 0.
+  function automatic mubi32_t mubi32_and_lo(mubi32_t a, mubi32_t b);
+    return mubi32_and(a, b, MuBi32False);
+  endfunction : mubi32_and_lo
+
 endpackage : prim_mubi_pkg
