@@ -34,7 +34,7 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
   input logic [CtrLen-1:0]   ctr_drbg_gen_rc_i,
 
   output logic               ctr_drbg_gen_ack_o, // final ack when update process has been completed
-  output logic               ctr_drbg_gen_sts_o, // final ack status
+  output csrng_cmd_sts_e     ctr_drbg_gen_sts_o, // final ack status
   input logic                ctr_drbg_gen_rdy_i, // ready to process the ack above
   output logic [Cmd-1:0]     ctr_drbg_gen_ccmd_o,
   output logic [StateId-1:0] ctr_drbg_gen_inst_id_o,
@@ -180,6 +180,9 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
   logic [NApps-1:0]            capt_adata;
   logic [SeedLen-1:0]          update_adata[NApps];
   logic [CtrLen-1:0]           v_ctr;
+
+  // status error signals
+  logic                        ctr_drbg_gen_sts_err;
 
   // flops
   logic [1:0]                  interate_ctr_q, interate_ctr_d;
@@ -588,12 +591,11 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
   // block ack
   assign ctr_drbg_gen_ack_o = sfifo_genbits_pop;
 
-  assign ctr_drbg_gen_sts_o = sfifo_genbits_pop && (
-         (ctr_drbg_gen_ccmd_o == INV) ||
-         (ctr_drbg_gen_ccmd_o == INS) ||
-         (ctr_drbg_gen_ccmd_o == RES) ||
-         (ctr_drbg_gen_ccmd_o == UPD) ||
-         (ctr_drbg_gen_ccmd_o == UNI));
+  // Return a status error when the genbits FIFO is popped while ctr_drbg_gen_ccmd_o is not
+  // equal to GEN.
+  assign ctr_drbg_gen_sts_err = sfifo_genbits_pop && (ctr_drbg_gen_ccmd_o != GEN);
+
+  assign ctr_drbg_gen_sts_o = ctr_drbg_gen_sts_err ? CMD_STS_INVALID_GEN_CMD : CMD_STS_SUCCESS;
 
   // Make sure that the state machine has a stable error state. This means that after the error
   // state is entered it will not exit it unless a reset signal is received.

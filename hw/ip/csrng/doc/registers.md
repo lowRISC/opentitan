@@ -157,30 +157,51 @@ Command request register
 ## SW_CMD_STS
 Application interface command status register
 - Offset: `0x1c`
-- Reset default: `0x1`
-- Reset mask: `0x3`
+- Reset default: `0x0`
+- Reset mask: `0x1e`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "CMD_RDY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CMD_STS", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 30}], "config": {"lanes": 1, "fontsize": 10, "vspace": 90}}
+{"reg": [{"bits": 1}, {"name": "CMD_RDY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CMD_ACK", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CMD_STS", "bits": 2, "attr": ["ro"], "rotate": -90}, {"bits": 27}], "config": {"lanes": 1, "fontsize": 10, "vspace": 90}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                            |
 |:------:|:------:|:-------:|:--------------------------------|
-|  31:2  |        |         | Reserved                        |
-|   1    |   ro   |   0x0   | [CMD_STS](#sw_cmd_sts--cmd_sts) |
-|   0    |   ro   |   0x1   | [CMD_RDY](#sw_cmd_sts--cmd_rdy) |
+|  31:5  |        |         | Reserved                        |
+|  4:3   |   ro   |   0x0   | [CMD_STS](#sw_cmd_sts--cmd_sts) |
+|   2    |   ro   |   0x0   | [CMD_ACK](#sw_cmd_sts--cmd_ack) |
+|   1    |   ro   |   0x0   | [CMD_RDY](#sw_cmd_sts--cmd_rdy) |
 
 ### SW_CMD_STS . CMD_STS
-This one bit field is the status code returned with the application command ack.
+This field represents the status code returned with the application command ack.
 It is updated each time a command ack is asserted on the internal application
 interface for software use.
-0b0: Request completed successfully
-0b1: Request completed with an error
+To check whether a command was succesful, wait for [`INTR_STATE.CS_CMD_REQ_DONE`](#intr_state) or
+[`SW_CMD_STS.CMD_ACK`](#sw_cmd_sts) to be high and then check the value of this field.
+0x0: Request completed successfully.
+0x1: Request completed with an invalid application command error.
+     This error indicates that the issued application command doesn't represent a valid operation.
+     If this error appears, the main state machine will hang and the entropy complex has to be restarted.
+0x2: Request completed with an invalid state parameter error.
+     This error indicates that the state wasn't zeroized properly after an uninstantiate command.
+     In this case the entropy complex should be restarted to properly zeroize the state.
+0x3: Request completed with an invalid counter drbg generation command error.
+     This error indicates that CSRNG entropy was generated for a command that is not a generate command.
+     In this case the entropy should not be considered as valid.
+
+### SW_CMD_STS . CMD_ACK
+This one bit field indicates when a SW command has been acknowledged by the CSRNG.
+It is set to low each time a new command is written to [`CMD_REQ.`](#cmd_req)
+The field is set to high once a SW command request has been acknowledged by the CSRNG.
+0b0: The last SW command has not been acknowledged yet.
+0b1: The last SW command has been acknowledged.
 
 ### SW_CMD_STS . CMD_RDY
 This bit indicates when the command interface is ready to accept commands.
+Before starting to write a new command to [`SW_CMD_REQ`](#sw_cmd_req), this field needs to be polled.
+0b0: CSRNG is not ready to accept commands or the last command hasn't been acked yet.
+0b1: CSRNG is ready to accept the next command.
 
 ## GENBITS_VLD
 Generate bits returned valid register

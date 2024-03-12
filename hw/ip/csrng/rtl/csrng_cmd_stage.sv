@@ -27,10 +27,10 @@ module csrng_cmd_stage import csrng_pkg::*; #(
   output logic [CmdFifoWidth-1:0]    cmd_arb_bus_o,
   // Ack from core.
   input logic                        cmd_ack_i,
-  input logic                        cmd_ack_sts_i,
+  input csrng_cmd_sts_e              cmd_ack_sts_i,
   // Ack to app i/f.
   output logic                       cmd_stage_ack_o,
-  output logic                       cmd_stage_ack_sts_o,
+  output csrng_cmd_sts_e             cmd_stage_ack_sts_o,
   // Genbits from core.
   input logic                        genbits_vld_i,
   input logic [127:0]                genbits_bus_i,
@@ -85,7 +85,7 @@ module csrng_cmd_stage import csrng_pkg::*; #(
 
   // Flops.
   logic                    cmd_ack_q, cmd_ack_d;
-  logic                    cmd_ack_sts_q, cmd_ack_sts_d;
+  csrng_cmd_sts_e          cmd_ack_sts_q, cmd_ack_sts_d;
   logic [3:0]              cmd_len_q, cmd_len_d;
   logic                    cmd_gen_flag_q, cmd_gen_flag_d;
   logic [11:0]             cmd_gen_cmd_q, cmd_gen_cmd_d;
@@ -96,7 +96,7 @@ module csrng_cmd_stage import csrng_pkg::*; #(
   always_ff @(posedge clk_i or negedge rst_ni)
     if (!rst_ni) begin
       cmd_ack_q       <= '0;
-      cmd_ack_sts_q   <= '0;
+      cmd_ack_sts_q   <= CMD_STS_SUCCESS;
       cmd_len_q       <= '0;
       cmd_gen_flag_q  <= '0;
       cmd_gen_cmd_q   <= '0;
@@ -413,7 +413,7 @@ module csrng_cmd_stage import csrng_pkg::*; #(
   assign cmd_stage_ack_o = cmd_ack_q;
 
   assign cmd_ack_sts_d =
-         (!cs_enable_i) ? '0 :
+         (!cs_enable_i) ? CMD_STS_SUCCESS :
          cmd_final_ack ? cmd_ack_sts_i :
          cmd_ack_sts_q;
 

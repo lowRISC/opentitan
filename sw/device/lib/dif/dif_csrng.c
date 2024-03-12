@@ -147,90 +147,12 @@ dif_result_t dif_csrng_get_cmd_interface_status(
   uint32_t reg =
       mmio_region_read32(csrng->base_addr, CSRNG_SW_CMD_STS_REG_OFFSET);
   bool cmd_ready = bitfield_bit32_read(reg, CSRNG_SW_CMD_STS_CMD_RDY_BIT);
-  bool cmd_error = bitfield_bit32_read(reg, CSRNG_SW_CMD_STS_CMD_STS_BIT);
+  uint32_t cmd_sts = bitfield_field32_read(reg, CSRNG_SW_CMD_STS_CMD_STS_FIELD);
 
-  // The function prioritizes error detection to avoid masking errors
-  // when `cmd_ready` is set to true.
-  if (cmd_error) {
+  status->cmd_sts = cmd_sts;
+  // If the command did not execute successfully, return the error status.
+  if (cmd_sts != 0) {
     status->kind = kDifCsrngCmdStatusError;
-    uint32_t reg =
-        mmio_region_read32(csrng->base_addr, CSRNG_ERR_CODE_REG_OFFSET);
-
-    status->unhealthy_fifos =
-        bitfield_bit32_copy(status->unhealthy_fifos, kDifCsrngFifoCmd, reg,
-                            CSRNG_ERR_CODE_SFIFO_CMD_ERR_BIT);
-    status->unhealthy_fifos =
-        bitfield_bit32_copy(status->unhealthy_fifos, kDifCsrngFifoGenBits, reg,
-                            CSRNG_ERR_CODE_SFIFO_GENBITS_ERR_BIT);
-    status->unhealthy_fifos =
-        bitfield_bit32_copy(status->unhealthy_fifos, kDifCsrngFifoCmdReq, reg,
-                            CSRNG_ERR_CODE_SFIFO_CMDREQ_ERR_BIT);
-    status->unhealthy_fifos =
-        bitfield_bit32_copy(status->unhealthy_fifos, kDifCsrngFifoRcStage, reg,
-                            CSRNG_ERR_CODE_SFIFO_RCSTAGE_ERR_BIT);
-    status->unhealthy_fifos =
-        bitfield_bit32_copy(status->unhealthy_fifos, kDifCsrngFifoKeyVrc, reg,
-                            CSRNG_ERR_CODE_SFIFO_KEYVRC_ERR_BIT);
-    status->unhealthy_fifos =
-        bitfield_bit32_copy(status->unhealthy_fifos, kDifCsrngFifoUpdateReq,
-                            reg, CSRNG_ERR_CODE_SFIFO_UPDREQ_ERR_BIT);
-    status->unhealthy_fifos =
-        bitfield_bit32_copy(status->unhealthy_fifos, kDifCsrngFifoBencRec, reg,
-                            CSRNG_ERR_CODE_SFIFO_BENCREQ_ERR_BIT);
-    status->unhealthy_fifos =
-        bitfield_bit32_copy(status->unhealthy_fifos, kDifCsrngFifoBencAck, reg,
-                            CSRNG_ERR_CODE_SFIFO_BENCACK_ERR_BIT);
-    status->unhealthy_fifos =
-        bitfield_bit32_copy(status->unhealthy_fifos, kDifCsrngFifoPData, reg,
-                            CSRNG_ERR_CODE_SFIFO_PDATA_ERR_BIT);
-    status->unhealthy_fifos =
-        bitfield_bit32_copy(status->unhealthy_fifos, kDifCsrngFifoFinal, reg,
-                            CSRNG_ERR_CODE_SFIFO_FINAL_ERR_BIT);
-    status->unhealthy_fifos =
-        bitfield_bit32_copy(status->unhealthy_fifos, kDifCsrngFifoGBencAck, reg,
-                            CSRNG_ERR_CODE_SFIFO_GBENCACK_ERR_BIT);
-    status->unhealthy_fifos =
-        bitfield_bit32_copy(status->unhealthy_fifos, kDifCsrngFifoGrcStage, reg,
-                            CSRNG_ERR_CODE_SFIFO_GRCSTAGE_ERR_BIT);
-    status->unhealthy_fifos =
-        bitfield_bit32_copy(status->unhealthy_fifos, kDifCsrngFifoGGenReq, reg,
-                            CSRNG_ERR_CODE_SFIFO_GGENREQ_ERR_BIT);
-    status->unhealthy_fifos =
-        bitfield_bit32_copy(status->unhealthy_fifos, kDifCsrngFifoGadStage, reg,
-                            CSRNG_ERR_CODE_SFIFO_GADSTAGE_ERR_BIT);
-    status->unhealthy_fifos =
-        bitfield_bit32_copy(status->unhealthy_fifos, kDifCsrngFifoBlockEnc, reg,
-                            CSRNG_ERR_CODE_SFIFO_BLKENC_ERR_BIT);
-
-    status->errors =
-        bitfield_bit32_copy(status->errors, kDifCsrngErrorCmdStageSm, reg,
-                            CSRNG_ERR_CODE_CMD_STAGE_SM_ERR_BIT);
-    status->errors = bitfield_bit32_copy(status->errors, kDifCsrngErrorMainSm,
-                                         reg, CSRNG_ERR_CODE_MAIN_SM_ERR_BIT);
-    status->errors =
-        bitfield_bit32_copy(status->errors, kDifCsrngErrorDrbgGenSm, reg,
-                            CSRNG_ERR_CODE_DRBG_GEN_SM_ERR_BIT);
-    status->errors =
-        bitfield_bit32_copy(status->errors, kDifCsrngErrorDrbgUpdateBlockEncSm,
-                            reg, CSRNG_ERR_CODE_DRBG_UPDBE_SM_ERR_BIT);
-    status->errors =
-        bitfield_bit32_copy(status->errors, kDifCsrngErrorDrbgUpdateOutBlockSm,
-                            reg, CSRNG_ERR_CODE_DRBG_UPDOB_SM_ERR_BIT);
-    status->errors =
-        bitfield_bit32_copy(status->errors, kDifCsrngErrorAesSm, reg,
-                            CSRNG_ERR_CODE_AES_CIPHER_SM_ERR_BIT);
-    status->errors =
-        bitfield_bit32_copy(status->errors, kDifCsrngErrorGenerateCmdCounter,
-                            reg, CSRNG_ERR_CODE_CMD_GEN_CNT_ERR_BIT);
-    status->errors =
-        bitfield_bit32_copy(status->errors, kDifCsrngErrorFifoWrite, reg,
-                            CSRNG_ERR_CODE_FIFO_WRITE_ERR_BIT);
-    status->errors = bitfield_bit32_copy(status->errors, kDifCsrngErrorFifoRead,
-                                         reg, CSRNG_ERR_CODE_FIFO_READ_ERR_BIT);
-    status->errors =
-        bitfield_bit32_copy(status->errors, kDifCsrngErrorFifoFullAndEmpty, reg,
-                            CSRNG_ERR_CODE_FIFO_STATE_ERR_BIT);
-
     return kDifOk;
   }
 
