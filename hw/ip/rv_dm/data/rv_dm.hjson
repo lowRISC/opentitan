@@ -75,6 +75,17 @@
     },
     { struct:  "lc_tx"
       type:    "uni"
+      name:    "lc_dft_en"
+      act:     "rcv"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
+      desc:    '''
+               Multibit life cycle hardware debug enable signal coming from life cycle controller,
+               asserted when the DFT mechanisms are enabled in the system.
+               '''
+    },
+    { struct:  "lc_tx"
+      type:    "uni"
       name:    "pinmux_hw_debug_en"
       act:     "rcv"
       default: "lc_ctrl_pkg::Off"
@@ -85,6 +96,13 @@
                gate the JTAG / TAP side of the RV_DM. It is used to keep a debug session live
                while the rest of the system undergoes an NDM reset.
                '''
+    },
+    { struct:  "mubi8",
+      type:    "uni",
+      name:    "otp_dis_rv_dm_late_debug",
+      act:     "rcv",
+      package: "prim_mubi_pkg",
+      default: "prim_mubi_pkg::MuBi8False"
     },
     // TBD: should we connect this to the clock manager?
     { struct:  "logic"
@@ -230,15 +248,37 @@
     { name: "LC_HW_DEBUG_EN.INTERSIG.MUBI",
       desc: "The life cycle hardware debug enable signal is multibit encoded."
     }
+    { name: "LC_DFT_EN.INTERSIG.MUBI",
+      desc: "The life cycle hardware DFT enable signal is multibit encoded."
+    }
+    { name: "OTP_DIS_RV_DM_LATE_DEBUG.INTERSIG.MUBI",
+      desc: "The OTP chicken switch to disable late debug enablement is multibit encoded."
+    }
     { name: "DM_EN.CTRL.LC_GATED",
       desc: '''
-            The debug module is enabled with the LC_HW_DEBUG_EN signal.
+            The debug module is enabled via a combination of the multibit encoded
+            LC_DFT_EN, LC_HW_DEBUG_EN and OTP_DIS_RV_DM_LATE_DEBUG signals, as well as the
+            LATE_DEBUG_ENABLE CSR.
+
             This enablement is implemented by gating / enabling critical
             blocks with separately buffered copies of the life cycle signal.
             This comprises the debug module interface (DMI) attached to the TAP,
             the reset request line, the system bus access module (SBA), the debug
             request output, the TL-UL adapter for the debug ROM, and the ifetch indicator
             being fed into the TL-UL adapter for the debug ROM.
+
+            In terms of gating conditions, the debug module implements a
+            mechanism that allows for a 'late' debug enable in the DEV life
+            cycle state:
+
+              - Debug is always enabled unconditionally in DFT-enabled life
+                cycle states (TEST_UNLOCKED* and RMA).
+              - Debug is always enabled unconditionally in the DEV life cycle
+                state iff OTP_DIS_RV_DM_LATE_DEBUG is set to kMuBi8True.
+              - Debug is conditionally enabled based on the value of the
+                LATE_DEBUG_ENABLE CSR in the DEV life cycle state iff OTP_DIS_RV_DM_LATE_DEBUG
+                is set to kMuBi8False (or any invalid MuBi value).
+              - Debug is always disabled in all other life cycle states.
             '''
     }
     { name: "SBA_TL_LC_GATE.FSM.SPARSE",
@@ -257,6 +297,55 @@
   regwidth: "32",
   registers: {
     regs:[
+      { name:     "LATE_DEBUG_ENABLE_REGWEN",
+        desc:     '''
+                  Lock bit for !!LATE_DEBUG_ENABLE register.
+                  '''
+        swaccess: "rw0c",
+        hwaccess: "none",
+        fields: [
+        {   bits:   "0",
+            desc:   '''
+                    !!LATE_DEBUG_ENABLE register configuration enable bit. If
+                      this is cleared to 0, the !!LATE_DEBUG_ENABLE register
+                      cannot be written anymore.
+                    ''',
+            resval: 1,
+          }
+        ]
+      },
+      { name:  "LATE_DEBUG_ENABLE",
+        desc: '''
+              Debug enable register.
+
+              If the device is in the DEV lifecycle state and the
+              DIS_RV_DM_LATE_DEBUG_IN_DEV has been programmed to kMuBi8False
+              (or an invalid value), the RV_DM gating mechanisms are by default
+              not ungated until SW writes kMuBi32True to this register.
+
+              This can be leveraged to implement a "late debug enable in DEV"
+              policy, whereby ROM_EXT first locks out any sensitive areas and
+              functionalities of the device before enabling debug access via
+              RV_DM.
+
+              This register can be locked out via !!LATE_DEBUG_ENABLE_REGWEN.
+
+              This register does not have any effect in the following cases:
+                - If the device is in a DFT-enabled life cycle state (TEST_UNLOCKED*, RMA)
+                - If the device is in the DEV life cycle state and DIS_RV_DM_LATE_DEBUG_IN_DEV has been programmed to kMuBi8True
+                - If the device is in a life cycle state where hardware debugging is disabled (TEST_LOCKED*, PROD*, invalid states).
+              ''',
+        swaccess: "rw",
+        hwaccess: "hro", // updated by write to RESUMING
+        regwen:   "LATE_DEBUG_ENABLE_REGWEN",
+        fields: [
+          { bits: "31:0",
+            resval: "false"
+            mubi: "true"
+            desc: "A value of kMuBi32True enables the debug module, all other values disable it."
+          },
+        ]
+      },
     ]
     mem: [
       // Expansion of debug memory within rv_dm used for DV purposes. The generated reg_top is not

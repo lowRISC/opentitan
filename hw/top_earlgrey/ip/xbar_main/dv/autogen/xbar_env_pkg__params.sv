@@ -8,7 +8,7 @@
 // List of Xbar device memory map
 tl_device_t xbar_devices[$] = '{
     '{"rv_dm__regs", '{
-        '{32'h41200000, 32'h41200003}
+        '{32'h41200000, 32'h4120000f}
     }},
     '{"rv_dm__mem", '{
         '{32'h00010000, 32'h00010fff}

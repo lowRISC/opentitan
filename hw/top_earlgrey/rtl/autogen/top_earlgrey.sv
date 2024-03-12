@@ -743,6 +743,7 @@ module top_earlgrey #(
   otp_ctrl_pkg::otp_manuf_state_t       lc_ctrl_otp_manuf_state;
   otp_ctrl_pkg::otp_device_id_t       keymgr_otp_device_id;
   prim_mubi_pkg::mubi8_t       sram_ctrl_main_otp_en_sram_ifetch;
+  prim_mubi_pkg::mubi8_t       rv_dm_otp_dis_rv_dm_late_debug;
 
   // define mixed connection to port
   assign edn0_edn_req[2] = ast_edn_req_i;
@@ -790,6 +791,8 @@ module top_earlgrey #(
       otp_ctrl_otp_broadcast.hw_cfg1_data.en_csrng_sw_app_read;
   assign sram_ctrl_main_otp_en_sram_ifetch =
       otp_ctrl_otp_broadcast.hw_cfg1_data.en_sram_ifetch;
+  assign rv_dm_otp_dis_rv_dm_late_debug =
+      otp_ctrl_otp_broadcast.hw_cfg1_data.dis_rv_dm_late_debug;
   assign lc_ctrl_otp_device_id =
       otp_ctrl_otp_broadcast.hw_cfg0_data.device_id;
   assign lc_ctrl_otp_manuf_state =
@@ -2153,7 +2156,9 @@ module top_earlgrey #(
       .jtag_i(pinmux_aon_rv_jtag_req),
       .jtag_o(pinmux_aon_rv_jtag_rsp),
       .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en),
+      .lc_dft_en_i(lc_ctrl_lc_dft_en),
       .pinmux_hw_debug_en_i(pinmux_aon_pinmux_hw_debug_en),
+      .otp_dis_rv_dm_late_debug_i(rv_dm_otp_dis_rv_dm_late_debug),
       .unavailable_i(1'b0),
       .ndmreset_req_o(rv_dm_ndmreset_req),
       .dmactive_o(),

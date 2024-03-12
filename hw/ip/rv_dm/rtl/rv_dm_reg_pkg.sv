@@ -11,7 +11,7 @@ package rv_dm_reg_pkg;
   parameter int NumAlerts = 1;
 
   // Address widths within the block
-  parameter int RegsAw = 2;
+  parameter int RegsAw = 4;
   parameter int MemAw = 12;
 
   ///////////////////////////////////////////////
@@ -23,13 +23,20 @@ package rv_dm_reg_pkg;
     logic        qe;
   } rv_dm_reg2hw_alert_test_reg_t;
 
+  typedef struct packed {
+    logic [31:0] q;
+  } rv_dm_reg2hw_late_debug_enable_reg_t;
+
   // Register -> HW type for regs interface
   typedef struct packed {
-    rv_dm_reg2hw_alert_test_reg_t alert_test; // [1:0]
+    rv_dm_reg2hw_alert_test_reg_t alert_test; // [33:32]
+    rv_dm_reg2hw_late_debug_enable_reg_t late_debug_enable; // [31:0]
   } rv_dm_regs_reg2hw_t;
 
   // Register offsets for regs interface
-  parameter logic [RegsAw-1:0] RV_DM_ALERT_TEST_OFFSET = 2'h 0;
+  parameter logic [RegsAw-1:0] RV_DM_ALERT_TEST_OFFSET = 4'h 0;
+  parameter logic [RegsAw-1:0] RV_DM_LATE_DEBUG_ENABLE_REGWEN_OFFSET = 4'h 4;
+  parameter logic [RegsAw-1:0] RV_DM_LATE_DEBUG_ENABLE_OFFSET = 4'h 8;
 
   // Reset values for hwext registers and their fields for regs interface
   parameter logic [0:0] RV_DM_ALERT_TEST_RESVAL = 1'h 0;
@@ -37,12 +44,16 @@ package rv_dm_reg_pkg;
 
   // Register index for regs interface
   typedef enum int {
-    RV_DM_ALERT_TEST
+    RV_DM_ALERT_TEST,
+    RV_DM_LATE_DEBUG_ENABLE_REGWEN,
+    RV_DM_LATE_DEBUG_ENABLE
   } rv_dm_regs_id_e;
 
   // Register width information to check illegal writes for regs interface
-  parameter logic [3:0] RV_DM_REGS_PERMIT [1] = '{
-    4'b 0001  // index[0] RV_DM_ALERT_TEST
+  parameter logic [3:0] RV_DM_REGS_PERMIT [3] = '{
+    4'b 0001, // index[0] RV_DM_ALERT_TEST
+    4'b 0001, // index[1] RV_DM_LATE_DEBUG_ENABLE_REGWEN
+    4'b 1111  // index[2] RV_DM_LATE_DEBUG_ENABLE
   };
 
   //////////////////////////////////////////////

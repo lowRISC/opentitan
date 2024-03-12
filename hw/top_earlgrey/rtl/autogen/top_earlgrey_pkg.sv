@@ -349,7 +349,7 @@ package top_earlgrey_pkg;
   /**
    * Peripheral size in bytes for regs device on rv_dm in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_RV_DM_REGS_SIZE_BYTES = 32'h4;
+  parameter int unsigned TOP_EARLGREY_RV_DM_REGS_SIZE_BYTES = 32'h10;
 
   /**
    * Peripheral base address for mem device on rv_dm in top earlgrey.

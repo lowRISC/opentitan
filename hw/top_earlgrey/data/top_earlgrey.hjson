@@ -997,6 +997,7 @@
                                       'pinmux_aon.lc_dft_en',
                                       'ast.lc_dft_en',
                                       'pwrmgr_aon.lc_dft_en',
+                                      'rv_dm.lc_dft_en'
                                      ],
       'lc_ctrl.lc_nvm_debug_en'    : ['flash_ctrl.lc_nvm_debug_en'],
       'lc_ctrl.lc_hw_debug_en'     : ['sram_ctrl_main.lc_hw_debug_en',
@@ -1091,6 +1092,7 @@
         'lc_ctrl.otp_manuf_state',
         'keymgr.otp_device_id',
         'sram_ctrl_main.otp_en_sram_ifetch',
+        'rv_dm.otp_dis_rv_dm_late_debug',
     ],
 
     // ext is to create port in the top.

@@ -635,7 +635,7 @@ extern "C" {
  * address between #TOP_EARLGREY_RV_DM_REGS_BASE_ADDR and
  * `TOP_EARLGREY_RV_DM_REGS_BASE_ADDR + TOP_EARLGREY_RV_DM_REGS_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_RV_DM_REGS_SIZE_BYTES 0x4u
+#define TOP_EARLGREY_RV_DM_REGS_SIZE_BYTES 0x10u
 
 /**
  * Peripheral base address for mem device on rv_dm in top earlgrey.

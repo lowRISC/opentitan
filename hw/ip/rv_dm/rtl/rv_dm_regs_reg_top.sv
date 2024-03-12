@@ -20,7 +20,7 @@ module rv_dm_regs_reg_top (
 
   import rv_dm_reg_pkg::* ;
 
-  localparam int AW = 2;
+  localparam int AW = 4;
   localparam int DW = 32;
   localparam int DBW = DW/8;                    // Byte Width
 
@@ -51,9 +51,9 @@ module rv_dm_regs_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [0:0] reg_we_check;
+  logic [2:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(1)
+    .OneHotWidth(3)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -122,6 +122,12 @@ module rv_dm_regs_reg_top (
   //        or <reg>_{wd|we|qs} if field == 1 or 0
   logic alert_test_we;
   logic alert_test_wd;
+  logic late_debug_enable_regwen_we;
+  logic late_debug_enable_regwen_qs;
+  logic late_debug_enable_regwen_wd;
+  logic late_debug_enable_we;
+  logic [31:0] late_debug_enable_qs;
+  logic [31:0] late_debug_enable_wd;
 
   // Register instances
   // R[alert_test]: V(True)
@@ -144,11 +150,72 @@ module rv_dm_regs_reg_top (
   assign reg2hw.alert_test.qe = alert_test_qe;
 
 
+  // R[late_debug_enable_regwen]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_late_debug_enable_regwen (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-  logic [0:0] addr_hit;
+    // from register interface
+    .we     (late_debug_enable_regwen_we),
+    .wd     (late_debug_enable_regwen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (late_debug_enable_regwen_qs)
+  );
+
+
+  // R[late_debug_enable]: V(False)
+  // Create REGWEN-gated WE signal
+  logic late_debug_enable_gated_we;
+  assign late_debug_enable_gated_we = late_debug_enable_we & late_debug_enable_regwen_qs;
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (32'h69696969),
+    .Mubi    (1'b1)
+  ) u_late_debug_enable (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (late_debug_enable_gated_we),
+    .wd     (late_debug_enable_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.late_debug_enable.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (late_debug_enable_qs)
+  );
+
+
+
+  logic [2:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[0] = (reg_addr == RV_DM_ALERT_TEST_OFFSET);
+    addr_hit[1] = (reg_addr == RV_DM_LATE_DEBUG_ENABLE_REGWEN_OFFSET);
+    addr_hit[2] = (reg_addr == RV_DM_LATE_DEBUG_ENABLE_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -156,18 +223,28 @@ module rv_dm_regs_reg_top (
   // Check sub-word write is permitted
   always_comb begin
     wr_err = (reg_we &
-              ((addr_hit[0] & (|(RV_DM_REGS_PERMIT[0] & ~reg_be)))));
+              ((addr_hit[0] & (|(RV_DM_REGS_PERMIT[0] & ~reg_be))) |
+               (addr_hit[1] & (|(RV_DM_REGS_PERMIT[1] & ~reg_be))) |
+               (addr_hit[2] & (|(RV_DM_REGS_PERMIT[2] & ~reg_be)))));
   end
 
   // Generate write-enables
   assign alert_test_we = addr_hit[0] & reg_we & !reg_error;
 
   assign alert_test_wd = reg_wdata[0];
+  assign late_debug_enable_regwen_we = addr_hit[1] & reg_we & !reg_error;
+
+  assign late_debug_enable_regwen_wd = reg_wdata[0];
+  assign late_debug_enable_we = addr_hit[2] & reg_we & !reg_error;
+
+  assign late_debug_enable_wd = reg_wdata[31:0];
 
   // Assign write-enables to checker logic vector.
   always_comb begin
     reg_we_check = '0;
     reg_we_check[0] = alert_test_we;
+    reg_we_check[1] = late_debug_enable_regwen_we;
+    reg_we_check[2] = late_debug_enable_gated_we;
   end
 
   // Read data return
@@ -176,6 +253,14 @@ module rv_dm_regs_reg_top (
     unique case (1'b1)
       addr_hit[0]: begin
         reg_rdata_next[0] = '0;
+      end
+
+      addr_hit[1]: begin
+        reg_rdata_next[0] = late_debug_enable_regwen_qs;
+      end
+
+      addr_hit[2]: begin
+        reg_rdata_next[31:0] = late_debug_enable_qs;
       end
 
       default: begin

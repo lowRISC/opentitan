@@ -19,6 +19,7 @@ The debug system follows the execution-based debug approach described in the [RI
 - System Bus Access (SBA): Access to arbitrary bus-attached peripherals through JTAG
 - Compatible with RISC-V Debug Specification 0.13-compliant debug software, including OpenOCD and GDB
 - TileLink Uncached Light (TL-UL) bus interfaces
+- Late debug enable mechanism in DEV life cycle state
 
 ## Description
 
