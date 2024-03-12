@@ -302,6 +302,7 @@ TEST_F(FlashCtrlTest, ReadTransaction) {
                 });
   EXPECT_EQ(dif_flash_ctrl_start(&dif_flash_ctrl_, transaction),
             kDifIpFifoFull);
+
   // Control register not writable
   EXPECT_READ32(FLASH_CTRL_STATUS_REG_OFFSET,
                 {
@@ -376,7 +377,6 @@ TEST_F(FlashCtrlTest, ReadTransaction) {
                     {FLASH_CTRL_OP_STATUS_DONE_BIT, 1},
                     {FLASH_CTRL_OP_STATUS_ERR_BIT, 0},
                 });
-  EXPECT_WRITE32(FLASH_CTRL_OP_STATUS_REG_OFFSET, 0);
   EXPECT_READ32(FLASH_CTRL_ERR_CODE_REG_OFFSET,
                 {
                     {FLASH_CTRL_ERR_CODE_MP_ERR_BIT, 1},
@@ -386,6 +386,7 @@ TEST_F(FlashCtrlTest, ReadTransaction) {
                     {FLASH_CTRL_ERR_CODE_UPDATE_ERR_BIT, 0},
                 });
   EXPECT_READ32(FLASH_CTRL_ERR_ADDR_REG_OFFSET, 0x12345678u);
+  EXPECT_WRITE32(FLASH_CTRL_OP_STATUS_REG_OFFSET, 0);
   EXPECT_DIF_OK(dif_flash_ctrl_end(&dif_flash_ctrl_, &output));
   EXPECT_FALSE(dif_flash_ctrl_.transaction_pending);
   EXPECT_EQ(output.operation_done, 1);
@@ -488,7 +489,6 @@ TEST_F(FlashCtrlTest, ProgramTransaction) {
                     {FLASH_CTRL_OP_STATUS_DONE_BIT, 1},
                     {FLASH_CTRL_OP_STATUS_ERR_BIT, 0},
                 });
-  EXPECT_WRITE32(FLASH_CTRL_OP_STATUS_REG_OFFSET, 0);
   EXPECT_READ32(FLASH_CTRL_ERR_CODE_REG_OFFSET,
                 {
                     {FLASH_CTRL_ERR_CODE_MP_ERR_BIT, 0},
@@ -498,6 +498,7 @@ TEST_F(FlashCtrlTest, ProgramTransaction) {
                     {FLASH_CTRL_ERR_CODE_UPDATE_ERR_BIT, 1},
                 });
   EXPECT_READ32(FLASH_CTRL_ERR_ADDR_REG_OFFSET, 0x87654321u);
+  EXPECT_WRITE32(FLASH_CTRL_OP_STATUS_REG_OFFSET, 0);
   EXPECT_DIF_OK(dif_flash_ctrl_end(&dif_flash_ctrl_, &output));
   EXPECT_FALSE(dif_flash_ctrl_.transaction_pending);
   EXPECT_EQ(output.operation_done, 1);
