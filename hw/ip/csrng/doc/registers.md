@@ -158,18 +158,18 @@ Command request register
 Application interface command status register
 - Offset: `0x1c`
 - Reset default: `0x0`
-- Reset mask: `0x1e`
+- Reset mask: `0x3e`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"bits": 1}, {"name": "CMD_RDY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CMD_ACK", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CMD_STS", "bits": 2, "attr": ["ro"], "rotate": -90}, {"bits": 27}], "config": {"lanes": 1, "fontsize": 10, "vspace": 90}}
+{"reg": [{"bits": 1}, {"name": "CMD_RDY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CMD_ACK", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CMD_STS", "bits": 3, "attr": ["ro"], "rotate": -90}, {"bits": 26}], "config": {"lanes": 1, "fontsize": 10, "vspace": 90}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                            |
 |:------:|:------:|:-------:|:--------------------------------|
-|  31:5  |        |         | Reserved                        |
-|  4:3   |   ro   |   0x0   | [CMD_STS](#sw_cmd_sts--cmd_sts) |
+|  31:6  |        |         | Reserved                        |
+|  5:3   |   ro   |   0x0   | [CMD_STS](#sw_cmd_sts--cmd_sts) |
 |   2    |   ro   |   0x0   | [CMD_ACK](#sw_cmd_sts--cmd_ack) |
 |   1    |   ro   |   0x0   | [CMD_RDY](#sw_cmd_sts--cmd_rdy) |
 
@@ -189,6 +189,9 @@ To check whether a command was succesful, wait for [`INTR_STATE.CS_CMD_REQ_DONE`
 0x3: Request completed with an invalid counter drbg generation command error.
      This error indicates that CSRNG entropy was generated for a command that is not a generate command.
      In this case the entropy should not be considered as valid.
+0x4: This error indicates that the last command was issued out of sequence.
+     This happens when a command other than instantiate was issued without sending an instantiate command first.
+     This can also happen when an uninstantiate command is sent without instantiating first.
 
 ### SW_CMD_STS . CMD_ACK
 This one bit field indicates when a SW command has been acknowledged by the CSRNG.
@@ -331,24 +334,64 @@ resets the status bits.
 Recoverable alert status register
 - Offset: `0x34`
 - Reset default: `0x0`
-- Reset mask: `0x300f`
+- Reset mask: `0x700f`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "SW_APP_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "READ_INT_STATE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ACMD_FLAG0_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 8}, {"name": "CS_BUS_CMP_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CS_MAIN_SM_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 18}], "config": {"lanes": 1, "fontsize": 10, "vspace": 280}}
+{"reg": [{"name": "ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "SW_APP_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "READ_INT_STATE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ACMD_FLAG0_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 8}, {"name": "CS_BUS_CMP_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CS_MAIN_SM_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CS_MAIN_SM_INVALID_CMD_SEQ", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 17}], "config": {"lanes": 1, "fontsize": 10, "vspace": 280}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                       | Description                                                                                                                                                                                  |
-|:------:|:------:|:-------:|:---------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 31:14  |        |         |                            | Reserved                                                                                                                                                                                     |
-|   13   |  rw0c  |   0x0   | CS_MAIN_SM_ALERT           | This bit is set when an unsupported/illegal CSRNG command is being processed. The main FSM will hang unless the module enable field is set to the disabled state.                            |
-|   12   |  rw0c  |   0x0   | CS_BUS_CMP_ALERT           | This bit is set when the software application port genbits bus value is equal to the prior valid value on the bus, indicating a possible attack. Writing a zero resets this status bit.      |
-|  11:4  |        |         |                            | Reserved                                                                                                                                                                                     |
-|   3    |  rw0c  |   0x0   | ACMD_FLAG0_FIELD_ALERT     | This bit is set when the FLAG0 field in the Application Command is set to a value other than kMultiBitBool4True or kMultiBitBool4False. Writing a zero resets this status bit.               |
-|   2    |  rw0c  |   0x0   | READ_INT_STATE_FIELD_ALERT | This bit is set when the READ_INT_STATE field in the [`CTRL`](#ctrl) register is set to a value other than kMultiBitBool4True or kMultiBitBool4False. Writing a zero resets this status bit. |
-|   1    |  rw0c  |   0x0   | SW_APP_ENABLE_FIELD_ALERT  | This bit is set when the SW_APP_ENABLE field in the [`CTRL`](#ctrl) register is set to a value other than kMultiBitBool4True or kMultiBitBool4False. Writing a zero resets this status bit.  |
-|   0    |  rw0c  |   0x0   | ENABLE_FIELD_ALERT         | This bit is set when the ENABLE field in the [`CTRL`](#ctrl) register is set to a value other than kMultiBitBool4True or kMultiBitBool4False. Writing a zero resets this status bit.         |
+|  Bits  |  Type  |  Reset  | Name                                                                       |
+|:------:|:------:|:-------:|:---------------------------------------------------------------------------|
+| 31:15  |        |         | Reserved                                                                   |
+|   14   |  rw0c  |   0x0   | [CS_MAIN_SM_INVALID_CMD_SEQ](#recov_alert_sts--cs_main_sm_invalid_cmd_seq) |
+|   13   |  rw0c  |   0x0   | [CS_MAIN_SM_ALERT](#recov_alert_sts--cs_main_sm_alert)                     |
+|   12   |  rw0c  |   0x0   | [CS_BUS_CMP_ALERT](#recov_alert_sts--cs_bus_cmp_alert)                     |
+|  11:4  |        |         | Reserved                                                                   |
+|   3    |  rw0c  |   0x0   | [ACMD_FLAG0_FIELD_ALERT](#recov_alert_sts--acmd_flag0_field_alert)         |
+|   2    |  rw0c  |   0x0   | [READ_INT_STATE_FIELD_ALERT](#recov_alert_sts--read_int_state_field_alert) |
+|   1    |  rw0c  |   0x0   | [SW_APP_ENABLE_FIELD_ALERT](#recov_alert_sts--sw_app_enable_field_alert)   |
+|   0    |  rw0c  |   0x0   | [ENABLE_FIELD_ALERT](#recov_alert_sts--enable_field_alert)                 |
+
+### RECOV_ALERT_STS . CS_MAIN_SM_INVALID_CMD_SEQ
+This bit is set when an out of order command is received by the main state machine.
+This happens when an instantiate command is sent for a state that was already
+instantiated or when any command other than instantiate is sent for a state that
+wasn't instantiated yet.
+The invalid command is ignored and CSRNG continues to operate.
+Writing a zero resets this status bit.
+
+### RECOV_ALERT_STS . CS_MAIN_SM_ALERT
+This bit is set when an unsupported/illegal CSRNG command is received by the
+main state machine.
+The invalid command is ignored and CSRNG continues to operate.
+Writing a zero resets this status bit.
+
+### RECOV_ALERT_STS . CS_BUS_CMP_ALERT
+This bit is set when the software application port genbits bus value is equal
+to the prior valid value on the bus, indicating a possible attack.
+Writing a zero resets this status bit.
+
+### RECOV_ALERT_STS . ACMD_FLAG0_FIELD_ALERT
+This bit is set when the FLAG0 field in the Application Command is set to
+a value other than kMultiBitBool4True or kMultiBitBool4False.
+Writing a zero resets this status bit.
+
+### RECOV_ALERT_STS . READ_INT_STATE_FIELD_ALERT
+This bit is set when the READ_INT_STATE field in the [`CTRL`](#ctrl) register is set to
+a value other than kMultiBitBool4True or kMultiBitBool4False.
+Writing a zero resets this status bit.
+
+### RECOV_ALERT_STS . SW_APP_ENABLE_FIELD_ALERT
+This bit is set when the SW_APP_ENABLE field in the [`CTRL`](#ctrl) register is set to
+a value other than kMultiBitBool4True or kMultiBitBool4False.
+Writing a zero resets this status bit.
+
+### RECOV_ALERT_STS . ENABLE_FIELD_ALERT
+This bit is set when the ENABLE field in the [`CTRL`](#ctrl) register is set to
+a value other than kMultiBitBool4True or kMultiBitBool4False.
+Writing a zero resets this status bit.
 
 ## ERR_CODE
 Hardware detection of error conditions status register

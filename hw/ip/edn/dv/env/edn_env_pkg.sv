@@ -26,7 +26,7 @@ package edn_env_pkg;
   parameter uint     MAX_NUM_ENDPOINTS = 7;
   parameter string   LIST_OF_ALERTS[]  = {"recov_alert","fatal_alert"};
   parameter uint     NUM_ALERTS        = 2;
-  parameter uint     CMD_STS_SIZE      = 2;
+  parameter uint     CMD_STS_SIZE      = 3;
   parameter uint     CMD_TYPE_SIZE     = 4;
 
   // types

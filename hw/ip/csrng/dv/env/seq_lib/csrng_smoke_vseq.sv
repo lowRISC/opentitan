@@ -35,5 +35,13 @@ class csrng_smoke_vseq extends csrng_base_vseq;
       for (int i = 0; i < NUM_HW_APPS + 1; i++)
         cfg.check_internal_state(.app(i), .compare(1));
     end
+
+    // Create/Write CSRNG Cmd_Req - Generate Command
+    cs_item.acmd  = csrng_pkg::UNI;
+    cs_item.clen  = 'h0;
+    cs_item.flags = MuBi4True;
+    cs_item.glen  = 'h0;
+    `uvm_info(`gfn, $sformatf("%s", cs_item.convert2string()), UVM_DEBUG)
+    send_cmd_req(SW_APP, cs_item);
   endtask : body
 endclass : csrng_smoke_vseq

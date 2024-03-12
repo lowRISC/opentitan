@@ -13,6 +13,7 @@ filesets:
       - lowrisc:prim:edge_detector
       - lowrisc:prim:assert
       - lowrisc:prim:lc_sync
+      - lowrisc:prim:onehot
       - lowrisc:prim:sparse_fsm
       - lowrisc:ip:tlul
       - lowrisc:ip:aes

@@ -181,7 +181,7 @@ typedef enum power_virus_test_stage {
 
 power_virus_test_stage_t test_stage;
 
-static uint32_t csrng_reseed_cmd_header;
+static uint32_t csrng_instantiate_cmd_header;
 
 /**
  * The peripheral clock of I2C IP (in nanoseconds)
@@ -785,11 +785,11 @@ static void configure_entropy_complex(void) {
           .alert_threshold = UINT16_MAX},
       kDifToggleEnabled));
 
-  // Configure CSRNG and create reseed command header for later use during max
-  // power epoch.
+  // Configure CSRNG and create instantiate command header for later use during
+  // max power epoch.
   CHECK_DIF_OK(dif_csrng_configure(&csrng));
-  csrng_reseed_cmd_header = csrng_cmd_header_build(
-      kCsrngAppCmdReseed, kDifCsrngEntropySrcToggleEnable, /*cmd_len=*/0,
+  csrng_instantiate_cmd_header = csrng_cmd_header_build(
+      kCsrngAppCmdInstantiate, kDifCsrngEntropySrcToggleEnable, /*cmd_len=*/0,
       /*generate_len=*/0);
 
   // Configure EDNs in auto mode.
@@ -1274,15 +1274,16 @@ static void max_power(void) {
   // Request entropy during max power epoch. Since AES is so fast, realistically
   // we will only be able to request a single block of entropy.
   mmio_region_write32(csrng.base_addr, CSRNG_CMD_REQ_REG_OFFSET,
-                      csrng_reseed_cmd_header);
+                      csrng_instantiate_cmd_header);
 
   // Issue HMAC process and KMAC squeeze commands.
   kmac_operation_state.squeezing = true;
   mmio_region_write32(kmac.base_addr, KMAC_CMD_REG_OFFSET, kmac_cmd_reg);
 
-  // Toggle GPIO pin to indicate we are in max power consumption epoch. Note, we
-  // do this BEFORE triggering the AES, since by the type the new value
-  // propagates to the pin, the AES will already be active.
+  // Issue AES trigger commands.
+  mmio_region_write32(aes.base_addr, AES_TRIGGER_REG_OFFSET, aes_trigger_reg);
+
+  // Toggle GPIO pin to indicate we are in max power consumption epoch.
   mmio_region_write32(gpio.base_addr, GPIO_MASKED_OUT_LOWER_REG_OFFSET,
                       gpio_on_reg_val);
 
@@ -1290,9 +1291,6 @@ static void max_power(void) {
                       hmac_cmd_reg);  // see note
   // moved HMAC activation here because it is too fast and returns to idle
   // before GPIO pin IOB8 is toggled.
-
-  // Issue AES trigger commands.
-  mmio_region_write32(aes.base_addr, AES_TRIGGER_REG_OFFSET, aes_trigger_reg);
 
   // Wait for AES to complete encryption, as this is the fastest block.
   while (!(mmio_region_read32(aes.base_addr, AES_STATUS_REG_OFFSET) &

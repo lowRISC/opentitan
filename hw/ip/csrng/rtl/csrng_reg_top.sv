@@ -161,7 +161,7 @@ module csrng_reg_top (
   logic [31:0] cmd_req_wd;
   logic sw_cmd_sts_cmd_rdy_qs;
   logic sw_cmd_sts_cmd_ack_qs;
-  logic [1:0] sw_cmd_sts_cmd_sts_qs;
+  logic [2:0] sw_cmd_sts_cmd_sts_qs;
   logic genbits_vld_re;
   logic genbits_vld_genbits_vld_qs;
   logic genbits_vld_genbits_fips_qs;
@@ -188,6 +188,8 @@ module csrng_reg_top (
   logic recov_alert_sts_cs_bus_cmp_alert_wd;
   logic recov_alert_sts_cs_main_sm_alert_qs;
   logic recov_alert_sts_cs_main_sm_alert_wd;
+  logic recov_alert_sts_cs_main_sm_invalid_cmd_seq_qs;
+  logic recov_alert_sts_cs_main_sm_invalid_cmd_seq_wd;
   logic err_code_sfifo_cmd_err_qs;
   logic err_code_sfifo_genbits_err_qs;
   logic err_code_sfifo_cmdreq_err_qs;
@@ -755,11 +757,11 @@ module csrng_reg_top (
     .qs     (sw_cmd_sts_cmd_ack_qs)
   );
 
-  //   F[cmd_sts]: 4:3
+  //   F[cmd_sts]: 5:3
   prim_subreg #(
-    .DW      (2),
+    .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (2'h0),
+    .RESVAL  (3'h0),
     .Mubi    (1'b0)
   ) u_sw_cmd_sts_cmd_sts (
     .clk_i   (clk_i),
@@ -1076,6 +1078,33 @@ module csrng_reg_top (
 
     // to register interface (read)
     .qs     (recov_alert_sts_cs_main_sm_alert_qs)
+  );
+
+  //   F[cs_main_sm_invalid_cmd_seq]: 14:14
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_recov_alert_sts_cs_main_sm_invalid_cmd_seq (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (recov_alert_sts_we),
+    .wd     (recov_alert_sts_cs_main_sm_invalid_cmd_seq_wd),
+
+    // from internal hardware
+    .de     (hw2reg.recov_alert_sts.cs_main_sm_invalid_cmd_seq.de),
+    .d      (hw2reg.recov_alert_sts.cs_main_sm_invalid_cmd_seq.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (recov_alert_sts_cs_main_sm_invalid_cmd_seq_qs)
   );
 
 
@@ -1969,6 +1998,8 @@ module csrng_reg_top (
   assign recov_alert_sts_cs_bus_cmp_alert_wd = reg_wdata[12];
 
   assign recov_alert_sts_cs_main_sm_alert_wd = reg_wdata[13];
+
+  assign recov_alert_sts_cs_main_sm_invalid_cmd_seq_wd = reg_wdata[14];
   assign err_code_test_we = addr_hit[15] & reg_we & !reg_error;
 
   assign err_code_test_wd = reg_wdata[4:0];
@@ -2042,7 +2073,7 @@ module csrng_reg_top (
       addr_hit[7]: begin
         reg_rdata_next[1] = sw_cmd_sts_cmd_rdy_qs;
         reg_rdata_next[2] = sw_cmd_sts_cmd_ack_qs;
-        reg_rdata_next[4:3] = sw_cmd_sts_cmd_sts_qs;
+        reg_rdata_next[5:3] = sw_cmd_sts_cmd_sts_qs;
       end
 
       addr_hit[8]: begin
@@ -2073,6 +2104,7 @@ module csrng_reg_top (
         reg_rdata_next[3] = recov_alert_sts_acmd_flag0_field_alert_qs;
         reg_rdata_next[12] = recov_alert_sts_cs_bus_cmp_alert_qs;
         reg_rdata_next[13] = recov_alert_sts_cs_main_sm_alert_qs;
+        reg_rdata_next[14] = recov_alert_sts_cs_main_sm_invalid_cmd_seq_qs;
       end
 
       addr_hit[14]: begin
