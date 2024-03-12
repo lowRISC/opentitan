@@ -134,48 +134,48 @@ static void check_lock_otp_partition(const dif_otp_ctrl_t *otp) {
 
 /** Key manager configuration steps performed in ROM. */
 rom_error_t keymgr_rom_test(void) {
-  ASSERT_OK(keymgr_state_check(kKeymgrStateReset));
+  ASSERT_OK(sc_keymgr_state_check(kScKeymgrStateReset));
   if (retention_sram_get()
           ->creator
           .reserved[ARRAYSIZE((retention_sram_t){0}.creator.reserved) - 1] ==
       TEST_ROM_IDENTIFIER) {
     // Test ROM does not set the binding / max key registers, like the ROM does.
-    keymgr_sw_binding_set(&kBindingValueRom, &kBindingValueRom);
-    keymgr_creator_max_ver_set(kMaxVerRom);
-    SEC_MMIO_WRITE_INCREMENT(kKeymgrSecMmioSwBindingSet +
-                             kKeymgrSecMmioCreatorMaxVerSet);
+    sc_keymgr_sw_binding_set(&kBindingValueRom, &kBindingValueRom);
+    sc_keymgr_creator_max_ver_set(kMaxVerRom);
+    SEC_MMIO_WRITE_INCREMENT(kScKeymgrSecMmioSwBindingSet +
+                             kScKeymgrSecMmioCreatorMaxVerSet);
   }
   sec_mmio_check_values(/*rnd_offset=*/0);
 
   const uint16_t kEntropyReseedInterval = 0x1234;
-  keymgr_entropy_reseed_interval_set(kEntropyReseedInterval);
-  SEC_MMIO_WRITE_INCREMENT(kKeymgrSecMmioEntropyReseedIntervalSet);
+  sc_keymgr_entropy_reseed_interval_set(kEntropyReseedInterval);
+  SEC_MMIO_WRITE_INCREMENT(kScKeymgrSecMmioEntropyReseedIntervalSet);
   sec_mmio_check_values(/*rnd_offset=*/0);
 
   // Advance keymgr to Initialized state.
-  keymgr_advance_state();
-  ASSERT_OK(keymgr_state_check(kKeymgrStateInit));
+  sc_keymgr_advance_state();
+  ASSERT_OK(sc_keymgr_state_check(kScKeymgrStateInit));
   LOG_INFO("Keymgr State: Init");
 
   // Advance keymgr to CreatorRootKey state.
-  keymgr_advance_state();
-  ASSERT_OK(keymgr_state_check(kKeymgrStateCreatorRootKey));
+  sc_keymgr_advance_state();
+  ASSERT_OK(sc_keymgr_state_check(kScKeymgrStateCreatorRootKey));
   LOG_INFO("Keymgr State: CreatorRootKey");
 
   // The software binding register lock is reset after advancing the key
   // manager, so we need to call this function to update sec_mmio expectation
   // table.
-  keymgr_sw_binding_unlock_wait();
+  sc_keymgr_sw_binding_unlock_wait();
   sec_mmio_check_values(/*rnd_offset=*/0);
 
   // Advance keymgr to OwnerIntermediateKey state.
-  keymgr_sw_binding_set(&kBindingValueRomExt, &kBindingValueRomExt);
-  keymgr_owner_int_max_ver_set(kMaxVerRomExt);
-  SEC_MMIO_WRITE_INCREMENT(kKeymgrSecMmioSwBindingSet +
-                           kKeymgrSecMmioOwnerIntMaxVerSet);
+  sc_keymgr_sw_binding_set(&kBindingValueRomExt, &kBindingValueRomExt);
+  sc_keymgr_owner_int_max_ver_set(kMaxVerRomExt);
+  SEC_MMIO_WRITE_INCREMENT(kScKeymgrSecMmioSwBindingSet +
+                           kScKeymgrSecMmioOwnerIntMaxVerSet);
   sec_mmio_check_values(/*rnd_offset=*/0);
-  keymgr_advance_state();
-  ASSERT_OK(keymgr_state_check(kKeymgrStateOwnerIntermediateKey));
+  sc_keymgr_advance_state();
+  ASSERT_OK(sc_keymgr_state_check(kScKeymgrStateOwnerIntermediateKey));
   LOG_INFO("Keymgr State: OwnerIntermediateKey");
 
   sec_mmio_check_counters(/*expected_check_count=*/4);
@@ -187,17 +187,17 @@ rom_error_t keymgr_rom_ext_test(void) {
   // The software binding register lock is reset after advancing the key
   // manager, so we need to call this function to update sec_mmio expectation
   // table.
-  keymgr_sw_binding_unlock_wait();
+  sc_keymgr_sw_binding_unlock_wait();
   sec_mmio_check_values(/*rnd_offset=*/0);
 
   // Advance keymgr to OwnerKey state.
-  keymgr_sw_binding_set(&kBindingValueBl0, &kBindingValueBl0);
-  keymgr_owner_max_ver_set(kMaxVerBl0);
-  SEC_MMIO_WRITE_INCREMENT(kKeymgrSecMmioSwBindingSet +
-                           kKeymgrSecMmioOwnerMaxVerSet);
+  sc_keymgr_sw_binding_set(&kBindingValueBl0, &kBindingValueBl0);
+  sc_keymgr_owner_max_ver_set(kMaxVerBl0);
+  SEC_MMIO_WRITE_INCREMENT(kScKeymgrSecMmioSwBindingSet +
+                           kScKeymgrSecMmioOwnerMaxVerSet);
   sec_mmio_check_values(/*rnd_offset=*/0);
-  keymgr_advance_state();
-  ASSERT_OK(keymgr_state_check(kKeymgrStateOwnerKey));
+  sc_keymgr_advance_state();
+  ASSERT_OK(sc_keymgr_state_check(kScKeymgrStateOwnerKey));
 
   sec_mmio_check_counters(/*expected_check_count=*/7);
   return kErrorOk;

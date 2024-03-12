@@ -4,8 +4,8 @@
 
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_header.h"
 
-#include <cstring>
 #include <array>
+#include <cstring>
 
 #include "gtest/gtest.h"
 #include "sw/device/silicon_creator/lib/base/chip.h"

@@ -239,10 +239,10 @@ static rom_error_t rom_ext_attestation_keygen(const manifest_t *manifest) {
   // ROM sets the SW binding values for the first key stage (CreatorRootKey) but
   // does not initialize the key manager. Advance key manager state twice to
   // transition to the creator root key state.
-  keymgr_advance_state();
-  HARDENED_RETURN_IF_ERROR(keymgr_state_check(kKeymgrStateInit));
-  keymgr_advance_state();
-  HARDENED_RETURN_IF_ERROR(keymgr_state_check(kKeymgrStateCreatorRootKey));
+  sc_keymgr_advance_state();
+  HARDENED_RETURN_IF_ERROR(sc_keymgr_state_check(kScKeymgrStateInit));
+  sc_keymgr_advance_state();
+  HARDENED_RETURN_IF_ERROR(sc_keymgr_state_check(kScKeymgrStateCreatorRootKey));
 
   // Generate UDS attestation keys.
   HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_keygen(
@@ -252,22 +252,22 @@ static rom_error_t rom_ext_attestation_keygen(const manifest_t *manifest) {
       kUdsAttestationKeySeed, kUdsKeymgrDiversifier));
 
   // Advance keymgr to OwnerIntermediate stage (root of Sealing_0 and CDI_0).
-  keymgr_sw_binding_unlock_wait();
+  sc_keymgr_sw_binding_unlock_wait();
   // We set the sealing binding value to all 0s, as sealing keys are not
   // currently used at the ROM_EXT stage. For the attestation binding value, we
   // use the ROM_EXT measurement preloaded in `static_critical` section by ROM.
   keymgr_binding_value_t zero_binding_value = {.data = {0}};
-  keymgr_sw_binding_set(
+  sc_keymgr_sw_binding_set(
       /*binding_value_sealing=*/&zero_binding_value,
       /*binding_value_attestation=*/&boot_measurements.rom_ext);
   const manifest_t *rom_ext_manifest =
       (const manifest_t *)_rom_ext_start_address;
-  keymgr_owner_int_max_ver_set(rom_ext_manifest->max_key_version);
-  SEC_MMIO_WRITE_INCREMENT(kKeymgrSecMmioSwBindingSet +
-                           kKeymgrSecMmioOwnerIntMaxVerSet);
-  keymgr_advance_state();
+  sc_keymgr_owner_int_max_ver_set(rom_ext_manifest->max_key_version);
+  SEC_MMIO_WRITE_INCREMENT(kScKeymgrSecMmioSwBindingSet +
+                           kScKeymgrSecMmioOwnerIntMaxVerSet);
+  sc_keymgr_advance_state();
   HARDENED_RETURN_IF_ERROR(
-      keymgr_state_check(kKeymgrStateOwnerIntermediateKey));
+      sc_keymgr_state_check(kScKeymgrStateOwnerIntermediateKey));
 
   // Generate CDI_0 attestation keys.
   HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_keygen(
@@ -280,14 +280,14 @@ static rom_error_t rom_ext_attestation_keygen(const manifest_t *manifest) {
 
   // Advance keymgr to Owner stage (root of Sealing_1 and CDI_1).
   // TODO(ttrippel): Put the real BL0 measurement in here.
-  keymgr_sw_binding_unlock_wait();
-  keymgr_sw_binding_set(/*binding_value_sealing=*/&manifest->binding_value,
-                        /*binding_value_attestation=*/&zero_binding_value);
-  keymgr_owner_max_ver_set(manifest->max_key_version);
-  SEC_MMIO_WRITE_INCREMENT(kKeymgrSecMmioSwBindingSet +
-                           kKeymgrSecMmioOwnerMaxVerSet);
-  keymgr_advance_state();
-  HARDENED_RETURN_IF_ERROR(keymgr_state_check(kKeymgrStateOwnerKey));
+  sc_keymgr_sw_binding_unlock_wait();
+  sc_keymgr_sw_binding_set(/*binding_value_sealing=*/&manifest->binding_value,
+                           /*binding_value_attestation=*/&zero_binding_value);
+  sc_keymgr_owner_max_ver_set(manifest->max_key_version);
+  SEC_MMIO_WRITE_INCREMENT(kScKeymgrSecMmioSwBindingSet +
+                           kScKeymgrSecMmioOwnerMaxVerSet);
+  sc_keymgr_advance_state();
+  HARDENED_RETURN_IF_ERROR(sc_keymgr_state_check(kScKeymgrStateOwnerKey));
 
   // Generate CDI_1 attestation keys.
   HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_keygen(

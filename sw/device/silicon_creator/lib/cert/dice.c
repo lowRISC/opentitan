@@ -90,9 +90,9 @@ status_t dice_uds_cert_build(manuf_cert_perso_data_in_t *perso_data_in,
                              hmac_digest_t *uds_pubkey_id, uint8_t *tbs_cert,
                              size_t *tbs_cert_size) {
   // Generate the UDS key.
-  TRY(keymgr_state_check(kKeymgrStateInit));
-  keymgr_advance_state();
-  TRY(keymgr_state_check(kKeymgrStateCreatorRootKey));
+  TRY(sc_keymgr_state_check(kScKeymgrStateInit));
+  sc_keymgr_advance_state();
+  TRY(sc_keymgr_state_check(kScKeymgrStateCreatorRootKey));
   TRY(otbn_boot_attestation_keygen(kUdsAttestationKeySeed,
                                    kUdsKeymgrDiversifier, &curr_pubkey));
   TRY(otbn_boot_attestation_key_save(kUdsAttestationKeySeed,
@@ -130,7 +130,7 @@ status_t dice_cdi_0_cert_build(manuf_cert_perso_data_in_t *perso_data_in,
                                hmac_digest_t *uds_pubkey_id,
                                hmac_digest_t *cdi_0_pubkey_id, uint8_t *cert,
                                size_t *cert_size) {
-  TRY(keymgr_state_check(kKeymgrStateCreatorRootKey));
+  TRY(sc_keymgr_state_check(kScKeymgrStateCreatorRootKey));
 
   // Set attestation binding to the ROM_EXT measurement.
   memcpy(attestation_binding_value.data, perso_data_in->rom_ext_measurement,
@@ -138,12 +138,12 @@ status_t dice_cdi_0_cert_build(manuf_cert_perso_data_in_t *perso_data_in,
   // We set the sealing binding value to all zeros as it is unused in the
   // current personalization flow. This may be changed in the future.
   memset(sealing_binding_value.data, 0, kAttestMeasurementSizeInBytes);
-  keymgr_sw_binding_unlock_wait();
-  keymgr_sw_binding_set(&sealing_binding_value, &attestation_binding_value);
+  sc_keymgr_sw_binding_unlock_wait();
+  sc_keymgr_sw_binding_set(&sealing_binding_value, &attestation_binding_value);
 
   // Generate the CDI_0 key.
-  keymgr_advance_state();
-  TRY(keymgr_state_check(kKeymgrStateOwnerIntermediateKey));
+  sc_keymgr_advance_state();
+  TRY(sc_keymgr_state_check(kScKeymgrStateOwnerIntermediateKey));
   TRY(otbn_boot_attestation_keygen(kCdi0AttestationKeySeed,
                                    kCdi0KeymgrDiversifier, &curr_pubkey));
   curr_pubkey_le_to_be_convert();
@@ -190,7 +190,7 @@ status_t dice_cdi_0_cert_build(manuf_cert_perso_data_in_t *perso_data_in,
 status_t dice_cdi_1_cert_build(manuf_cert_perso_data_in_t *perso_data_in,
                                hmac_digest_t *cdi_0_pubkey_id, uint8_t *cert,
                                size_t *cert_size) {
-  TRY(keymgr_state_check(kKeymgrStateOwnerIntermediateKey));
+  TRY(sc_keymgr_state_check(kScKeymgrStateOwnerIntermediateKey));
 
   // Set attestation binding to combination of Owner firmware and Ownership
   // Manifest measurements.
@@ -208,12 +208,12 @@ status_t dice_cdi_1_cert_build(manuf_cert_perso_data_in_t *perso_data_in,
   // We set the sealing binding value to all zeros as it is unused in the
   // current personalization flow. This may be changed in the future.
   memset(sealing_binding_value.data, 0, kAttestMeasurementSizeInBytes);
-  keymgr_sw_binding_unlock_wait();
-  keymgr_sw_binding_set(&sealing_binding_value, &attestation_binding_value);
+  sc_keymgr_sw_binding_unlock_wait();
+  sc_keymgr_sw_binding_set(&sealing_binding_value, &attestation_binding_value);
 
   // Generate the CDI_1 key.
-  keymgr_advance_state();
-  TRY(keymgr_state_check(kKeymgrStateOwnerKey));
+  sc_keymgr_advance_state();
+  TRY(sc_keymgr_state_check(kScKeymgrStateOwnerKey));
   TRY(otbn_boot_attestation_keygen(kCdi1AttestationKeySeed,
                                    kCdi1KeymgrDiversifier, &curr_pubkey));
   curr_pubkey_le_to_be_convert();

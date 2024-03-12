@@ -54,7 +54,7 @@ rom_error_t otbn_boot_app_load(void);
 OT_WARN_UNUSED_RESULT
 rom_error_t otbn_boot_attestation_keygen(
     attestation_key_seed_t additional_seed,
-    keymgr_diversification_t diversification,
+    sc_keymgr_diversification_t diversification,
     attestation_public_key_t *public_key);
 
 /**
@@ -74,7 +74,7 @@ rom_error_t otbn_boot_attestation_keygen(
 OT_WARN_UNUSED_RESULT
 rom_error_t otbn_boot_attestation_key_save(
     attestation_key_seed_t additional_seed,
-    keymgr_diversification_t diversification);
+    sc_keymgr_diversification_t diversification);
 
 /**
  * Clears any saved attestation key from OTBN's scratchpad.
