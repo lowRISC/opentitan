@@ -32,7 +32,7 @@ enum {
  *
  * Preconditions: keymgr has been initialized, and is ready to be cranked.
  *
- * @param perso_data_in Pointer to the personalization input data payload.
+ * @param inputs Pointer to the personalization input data payload.
  * @param[in,out] uds_pubkey_id Pointer to the UDS public key ID.
  * @param[out] cert Buffer to hold the generated UDS certificate.
  * @param[in,out] cert_size Size of the UDS certificate (input value is the size
@@ -40,7 +40,7 @@ enum {
  *                          computed size of the certificate).
  * @return The result of the operation.
  */
-status_t dice_uds_cert_build(manuf_cert_perso_data_in_t *perso_data_in,
+status_t dice_uds_cert_build(manuf_certgen_inputs_t *inputs,
                              hmac_digest_t *uds_pubkey_id, uint8_t *cert,
                              size_t *cert_size);
 
@@ -49,7 +49,7 @@ status_t dice_uds_cert_build(manuf_cert_perso_data_in_t *perso_data_in,
  *
  * Preconditions: keymgr has been cranked to the `CreatorRootKey` stage.
  *
- * @param perso_data_in Pointer to the personalization input data payload.
+ * @param inputs Pointer to the personalization input data payload.
  * @param uds_pubkey_id Pointer to the UDS public key ID.
  * @param[in,out] cdi_0_pubkey_id Pointer to the CDI_0 public key ID.
  * @param[out] cert Buffer to hold the generated CDI_0 certificate.
@@ -58,7 +58,7 @@ status_t dice_uds_cert_build(manuf_cert_perso_data_in_t *perso_data_in,
  *                          computed size of the certificate).
  * @return The result of the operation.
  */
-status_t dice_cdi_0_cert_build(manuf_cert_perso_data_in_t *perso_data_in,
+status_t dice_cdi_0_cert_build(manuf_certgen_inputs_t *inputs,
                                hmac_digest_t *uds_pubkey_id,
                                hmac_digest_t *cdi_0_pubkey_id, uint8_t *cert,
                                size_t *cert_size);
@@ -68,7 +68,7 @@ status_t dice_cdi_0_cert_build(manuf_cert_perso_data_in_t *perso_data_in,
  *
  * Preconditions: keymgr has been cranked to the `OwnerIntermediateKey` stage.
  *
- * @param perso_data_in Pointer to the personalization input data payload.
+ * @param inputs Pointer to the personalization input data payload.
  * @param cdi_0_pubkey_id Pointer the CDI_0 public key ID.
  * @param[out] cert Buffer to hold the generated CDI_1 certificate.
  * @param[in,out] cert_size Size of the CDI_1 certificate (input value is the
@@ -76,7 +76,7 @@ status_t dice_cdi_0_cert_build(manuf_cert_perso_data_in_t *perso_data_in,
  *                          computed size of the certificate).
  * @return The result of the operation.
  */
-status_t dice_cdi_1_cert_build(manuf_cert_perso_data_in_t *perso_data_in,
+status_t dice_cdi_1_cert_build(manuf_certgen_inputs_t *inputs,
                                hmac_digest_t *cdi_0_pubkey_id, uint8_t *cert,
                                size_t *cert_size);
 

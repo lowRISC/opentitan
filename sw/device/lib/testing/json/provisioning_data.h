@@ -80,39 +80,39 @@ UJSON_SERDE_STRUCT(WrappedRmaUnlockToken, \
 // clang-format on
 
 /**
- * Data imported during device (attestation) certificate personalization.
+ * Inputs needed to generate certificates during personalization.
  */
 // clang-format off
-#define STRUCT_MANUF_CERT_PERSO_DATA_IN(field, string) \
+#define STRUCT_MANUF_CERTGEN_INPUTS(field, string) \
     field(rom_ext_measurement, uint32_t, 8) \
     field(rom_ext_security_version, uint32_t) \
     field(owner_manifest_measurement, uint32_t, 8) \
     field(owner_measurement, uint32_t, 8) \
     field(owner_security_version, uint32_t) \
     field(auth_key_key_id, uint8_t, 20)
-UJSON_SERDE_STRUCT(ManufCertPersoDataIn, \
-                   manuf_cert_perso_data_in_t, \
-                   STRUCT_MANUF_CERT_PERSO_DATA_IN);
+UJSON_SERDE_STRUCT(ManufCertgenInputs, \
+                   manuf_certgen_inputs_t, \
+                   STRUCT_MANUF_CERTGEN_INPUTS);
 // clang-format on
 
 /**
- * Certificates exported during device personalization.
+ * DICE certificates exported during personalization.
  */
 // clang-format off
-#define STRUCT_MANUF_CERT_PERSO_DATA_OUT(field, string) \
+#define STRUCT_MANUF_DICE_CERTS(field, string) \
     field(uds_tbs_certificate, uint8_t, 569) \
     field(uds_tbs_certificate_size, size_t) \
     field(cdi_0_certificate, uint8_t, 582) \
     field(cdi_0_certificate_size, size_t) \
     field(cdi_1_certificate, uint8_t, 631) \
     field(cdi_1_certificate_size, size_t)
-UJSON_SERDE_STRUCT(ManufCertPersoDataOut, \
-                   manuf_cert_perso_data_out_t, \
-                   STRUCT_MANUF_CERT_PERSO_DATA_OUT);
+UJSON_SERDE_STRUCT(ManufDiceCerts, \
+                   manuf_dice_certs_t, \
+                   STRUCT_MANUF_DICE_CERTS);
 // clang-format on
 
 /**
- * Endorsed certificates imported during device personalization.
+ * Endorsed certificates imported during personalization.
  */
 // clang-format off
 #define STRUCT_MANUF_ENDORSED_CERTS(field, string) \
