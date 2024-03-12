@@ -74,7 +74,7 @@ module tb;
     .cio_usb_dn_en_o        (usb20_block_if.usb_dn_en_o  ),
     .usb_tx_d_o             (usb20_block_if.usb_tx_d_o   ),
     .usb_tx_se0_o           (usb20_block_if.usb_tx_se0_o ),
-    .cio_sense_i            (usb20_block_if.usb_sense_i        ),
+    .cio_sense_i            (usb20_block_if.usb_vbus           ),
     .usb_dp_pullup_o        (usb20_block_if.usb_dp_pullup_o    ),
     .usb_dn_pullup_o        (usb20_block_if.usb_dn_pullup_o    ),
     .usb_rx_enable_o        (usb20_block_if.usb_rx_enable_o    ),
@@ -139,7 +139,6 @@ module tb;
   assign interrupts[IntrRxBitstuffErr]  = intr_rx_bitstuff_err;
   assign interrupts[IntrFrame]          = intr_frame;
   assign interrupts[IntrAvSetupEmpty]   = intr_av_setup_empty;
-  //assign usb_vbus = 1'b1;
 
   initial begin
     // drive clk and rst_n from clk_if
