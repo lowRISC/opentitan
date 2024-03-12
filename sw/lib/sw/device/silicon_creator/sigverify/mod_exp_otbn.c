@@ -22,15 +22,15 @@ OTBN_DECLARE_SYMBOL_ADDR(run_rsa_verify_3072_rr_modexp,
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa_verify_3072_rr_modexp,
                          m0inv);  // The Montgomery constant m0_inv.
 
-static const otbn_app_t kOtbnAppRsa =
+static const sc_otbn_app_t kOtbnAppRsa =
     OTBN_APP_T_INIT(run_rsa_verify_3072_rr_modexp);
-static const otbn_addr_t kOtbnVarRsaOutBuf =
+static const sc_otbn_addr_t kOtbnVarRsaOutBuf =
     OTBN_ADDR_T_INIT(run_rsa_verify_3072_rr_modexp, out_buf);
-static const otbn_addr_t kOtbnVarRsaInMod =
+static const sc_otbn_addr_t kOtbnVarRsaInMod =
     OTBN_ADDR_T_INIT(run_rsa_verify_3072_rr_modexp, in_mod);
-static const otbn_addr_t kOtbnVarRsaInBuf =
+static const sc_otbn_addr_t kOtbnVarRsaInBuf =
     OTBN_ADDR_T_INIT(run_rsa_verify_3072_rr_modexp, in_buf);
-static const otbn_addr_t kOtbnVarRsaM0Inv =
+static const sc_otbn_addr_t kOtbnVarRsaM0Inv =
     OTBN_ADDR_T_INIT(run_rsa_verify_3072_rr_modexp, m0inv);
 
 /**
@@ -42,8 +42,8 @@ static const otbn_addr_t kOtbnVarRsaM0Inv =
  */
 OT_WARN_UNUSED_RESULT
 static rom_error_t write_rsa_3072_int_to_otbn(const sigverify_rsa_buffer_t *src,
-                                              otbn_addr_t dst) {
-  return otbn_dmem_write(kSigVerifyRsaNumWords, src->data, dst);
+                                              sc_otbn_addr_t dst) {
+  return sc_otbn_dmem_write(kSigVerifyRsaNumWords, src->data, dst);
 }
 
 /**
@@ -54,9 +54,9 @@ static rom_error_t write_rsa_3072_int_to_otbn(const sigverify_rsa_buffer_t *src,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-static rom_error_t read_rsa_3072_int_from_otbn(const otbn_addr_t src,
+static rom_error_t read_rsa_3072_int_from_otbn(const sc_otbn_addr_t src,
                                                sigverify_rsa_buffer_t *dst) {
-  return otbn_dmem_read(kSigVerifyRsaNumWords, src, dst->data);
+  return sc_otbn_dmem_read(kSigVerifyRsaNumWords, src, dst->data);
 }
 
 OT_WARN_UNUSED_RESULT
@@ -65,7 +65,7 @@ static rom_error_t run_otbn_rsa_3072_modexp(
     const sigverify_rsa_buffer_t *signature,
     sigverify_rsa_buffer_t *recovered_message) {
   // Load the RSA app.
-  HARDENED_RETURN_IF_ERROR(otbn_load_app(kOtbnAppRsa));
+  HARDENED_RETURN_IF_ERROR(sc_otbn_load_app(kOtbnAppRsa));
 
   // Set the modulus (n).
   HARDENED_RETURN_IF_ERROR(
@@ -76,17 +76,17 @@ static rom_error_t run_otbn_rsa_3072_modexp(
       write_rsa_3072_int_to_otbn(signature, kOtbnVarRsaInBuf));
 
   // Set the precomputed constant m0_inv.
-  HARDENED_RETURN_IF_ERROR(otbn_dmem_write(
-      kOtbnWideWordNumWords, public_key->n0_inv, kOtbnVarRsaM0Inv));
+  HARDENED_RETURN_IF_ERROR(sc_otbn_dmem_write(
+      kScOtbnWideWordNumWords, public_key->n0_inv, kOtbnVarRsaM0Inv));
 
   // Start the OTBN routine.
-  HARDENED_RETURN_IF_ERROR(otbn_execute());
-  SEC_MMIO_WRITE_INCREMENT(kOtbnSecMmioExecute);
+  HARDENED_RETURN_IF_ERROR(sc_otbn_execute());
+  SEC_MMIO_WRITE_INCREMENT(kScOtbnSecMmioExecute);
 
   // Check that the instruction count falls within the expected range. If the
   // instruction count falls outside this range, it indicates that there was a
   // fault injection attack of some kind during OTBN execution.
-  uint32_t count = otbn_instruction_count_get();
+  uint32_t count = sc_otbn_instruction_count_get();
   if (launder32(count) < kModExpOtbnInsnCountMin ||
       launder32(count) > kModExpOtbnInsnCountMax) {
     return kErrorOtbnBadInsnCount;
