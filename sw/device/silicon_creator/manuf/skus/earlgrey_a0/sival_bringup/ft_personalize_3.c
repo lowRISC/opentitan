@@ -92,8 +92,8 @@ static status_t personalize(ujson_t *uj) {
   TRY(kmac_keymgr_configure());
 
   // Advance keymgr to Initialized state.
-  TRY(keymgr_state_check(kKeymgrStateReset));
-  keymgr_advance_state();
+  TRY(sc_keymgr_state_check(kScKeymgrStateReset));
+  sc_keymgr_advance_state();
 
   // Load OTBN attestation keygen program.
   TRY(otbn_boot_app_load());

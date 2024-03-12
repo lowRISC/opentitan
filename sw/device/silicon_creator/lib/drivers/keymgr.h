@@ -18,65 +18,65 @@ extern "C" {
 /**
  * Key Manager states.
  */
-typedef enum keymgr_state {
+typedef enum sc_keymgr_state {
   /**
    * Key manager control is still in reset. Please wait for initialization
    * complete before issuing operations
    */
-  kKeymgrStateReset,
+  kScKeymgrStateReset,
   /**
    * Key manager control has finished initialization and will now accept
    * software commands.
    */
-  kKeymgrStateInit,
+  kScKeymgrStateInit,
   /**
    * Key manager control currently contains the creator root key.
    */
-  kKeymgrStateCreatorRootKey,
+  kScKeymgrStateCreatorRootKey,
   /**
    * Key manager control currently contains the owner intermediate key.
    */
-  kKeymgrStateOwnerIntermediateKey,
+  kScKeymgrStateOwnerIntermediateKey,
   /**
    * Key manager control currently contains the owner key.
    */
-  kKeymgrStateOwnerKey,
+  kScKeymgrStateOwnerKey,
   /**
    * Key manager currently disabled. Please reset the key manager. Sideload keys
    * are still valid.
    */
-  kKeymgrStateDisabled,
+  kScKeymgrStateDisabled,
   /**
    * Key manager currently invalid. Please reset the key manager. Sideload keys
    * are no longer valid.
    */
-  kKeymgrStateInvalid,
+  kScKeymgrStateInvalid,
   /**
    * This is not a state - it is the total number of states.
    */
-  kKeymgrStateNumStates,
-} keymgr_state_t;
+  kScKeymgrStateNumStates,
+} sc_keymgr_state_t;
 
 enum {
   /**
    * Number of 32-bit words for the salt.
    */
-  kKeymgrSaltNumWords = 8,
+  kScKeymgrSaltNumWords = 8,
 };
 
 /**
  * Data used to differentiate a generated keymgr key.
  */
-typedef struct keymgr_diversification {
+typedef struct sc_keymgr_diversification {
   /**
    * Salt value to use for key generation.
    */
-  uint32_t salt[kKeymgrSaltNumWords];
+  uint32_t salt[kScKeymgrSaltNumWords];
   /**
    * Version for key generation (anti-rollback protection).
    */
   uint32_t version;
-} keymgr_diversification_t;
+} sc_keymgr_diversification_t;
 
 /**
  * The following constants represent the expected number of sec_mmio register
@@ -85,16 +85,16 @@ typedef struct keymgr_diversification {
  *
  * Example:
  * ```
- *  keymgr_sw_binding_set();
- *  SEC_MMIO_WRITE_INCREMENT(kKeymgrSecMmioSwBindingSet);
+ *  sc_keymgr_sw_binding_set();
+ *  SEC_MMIO_WRITE_INCREMENT(kScKeymgrSecMmioSwBindingSet);
  * ```
  */
 enum {
-  kKeymgrSecMmioEntropyReseedIntervalSet = 1,
-  kKeymgrSecMmioSwBindingSet = 17,
-  kKeymgrSecMmioCreatorMaxVerSet = 2,
-  kKeymgrSecMmioOwnerIntMaxVerSet = 2,
-  kKeymgrSecMmioOwnerMaxVerSet = 2,
+  kScKeymgrSecMmioEntropyReseedIntervalSet = 1,
+  kScKeymgrSecMmioSwBindingSet = 17,
+  kScKeymgrSecMmioCreatorMaxVerSet = 2,
+  kScKeymgrSecMmioOwnerIntMaxVerSet = 2,
+  kScKeymgrSecMmioOwnerMaxVerSet = 2,
 };
 
 /**
@@ -103,25 +103,25 @@ enum {
  * This function also clears and caches the value of the `SW_BINDING_REGWEN`
  * register in the `sec_mmio` expectations table. This register is unlocked
  * after a successful transaction. It is recommended to call
- * `keymgr_sw_binding_unlock_wait()` after initiating a transition to update its
- * value in the `sec_mmio` expectations table.
+ * `sc_keymgr_sw_binding_unlock_wait()` after initiating a transition to update
+ * its value in the `sec_mmio` expectations table.
  *
  * @param binding_value_sealing Software binding for sealing value.
  * @param binding_value_attestation Software binding for attestation value.
  */
-void keymgr_sw_binding_set(
+void sc_keymgr_sw_binding_set(
     const keymgr_binding_value_t *binding_value_sealing,
     const keymgr_binding_value_t *binding_value_attestation);
 
 /**
  * Blocks until the software binding registers are unlocked.
  *
- * This function can be called after `keymgr_advance_state()` to wait for the
+ * This function can be called after `sc_keymgr_advance_state()` to wait for the
  * software binding registers to become available for writing and to update the
  * cached value of `SW_BINDING_REGWEN` register in the `sec_mmio` expectations
  * table.
  */
-void keymgr_sw_binding_unlock_wait(void);
+void sc_keymgr_sw_binding_unlock_wait(void);
 
 /**
  * Sets the Silicon Creator max key version.
@@ -129,7 +129,7 @@ void keymgr_sw_binding_unlock_wait(void);
  * @param max_key_ver Maximum key version associated with the Silicon Creator
  * key manager stage.
  */
-void keymgr_creator_max_ver_set(uint32_t max_key_ver);
+void sc_keymgr_creator_max_ver_set(uint32_t max_key_ver);
 
 /**
  * Sets the Silicon Owner Intermediate max key version.
@@ -137,7 +137,7 @@ void keymgr_creator_max_ver_set(uint32_t max_key_ver);
  * @param max_key_ver Maximum key version associated with the Silicon Owner
  * Intermediate key manager stage.
  */
-void keymgr_owner_int_max_ver_set(uint32_t max_key_ver);
+void sc_keymgr_owner_int_max_ver_set(uint32_t max_key_ver);
 
 /**
  * Sets the Silicon Owner max key version.
@@ -145,7 +145,7 @@ void keymgr_owner_int_max_ver_set(uint32_t max_key_ver);
  * @param max_key_ver Maximum key version associated with the Silicon Owner
  * key manager stage.
  */
-void keymgr_owner_max_ver_set(uint32_t max_key_ver);
+void sc_keymgr_owner_max_ver_set(uint32_t max_key_ver);
 
 /**
  * Sets the entropy reseed interval of the key manager.
@@ -154,24 +154,24 @@ void keymgr_owner_max_ver_set(uint32_t max_key_ver);
  * entropy is reseeded.
  * @return The result of the operation.
  */
-void keymgr_entropy_reseed_interval_set(uint16_t entropy_reseed_interval);
+void sc_keymgr_entropy_reseed_interval_set(uint16_t entropy_reseed_interval);
 
 /**
  * Advances the state of the key manager.
  *
- * The `keymgr_state_check()` function must be called before this function to
+ * The `sc_keymgr_state_check()` function must be called before this function to
  * ensure the key manager is in the expected state and ready to receive op
  * commands.
  *
- * The caller is responsible for calling the `keymgr_state_check()` at a later
- * time to ensure the advance transition completed without errors.
+ * The caller is responsible for calling the `sc_keymgr_state_check()` at a
+ * later time to ensure the advance transition completed without errors.
  *
- * Note: It is recommended to call `keymgr_sw_binding_unlock_wait()` before the
- * secure mmio `sec_mmio_check_values()` function to make sure the value of the
- * `SW_BINDING_REGWEN` register is updated in the secure mmio expectations
+ * Note: It is recommended to call `sc_keymgr_sw_binding_unlock_wait()` before
+ * the secure mmio `sec_mmio_check_values()` function to make sure the value of
+ * the `SW_BINDING_REGWEN` register is updated in the secure mmio expectations
  * table.
  */
-void keymgr_advance_state(void);
+void sc_keymgr_advance_state(void);
 
 /**
  * Checks the state of the key manager.
@@ -181,7 +181,7 @@ void keymgr_advance_state(void);
  * is idle or success; otherwise returns `kErrorKeymgrInternal`.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t keymgr_state_check(keymgr_state_t expected_state);
+rom_error_t sc_keymgr_state_check(sc_keymgr_state_t expected_state);
 
 /**
  * Derive a key manager key for the OTBN block.
@@ -194,8 +194,8 @@ rom_error_t keymgr_state_check(keymgr_state_t expected_state);
  * @return OK or error.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t keymgr_generate_attestation_key_otbn(
-    const keymgr_diversification_t diversification);
+rom_error_t sc_keymgr_generate_attestation_key_otbn(
+    const sc_keymgr_diversification_t diversification);
 
 /**
  * Clear OTBN's sideloaded key slot.
@@ -206,7 +206,7 @@ rom_error_t keymgr_generate_attestation_key_otbn(
  * @return OK or error.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t keymgr_sideload_clear_otbn(void);
+rom_error_t sc_keymgr_sideload_clear_otbn(void);
 
 #ifdef __cplusplus
 }

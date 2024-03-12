@@ -12,9 +12,9 @@ extern "C" {
 #endif  // __cplusplus
 
 // Attestation key diversifier constants.
-extern const keymgr_diversification_t kUdsKeymgrDiversifier;
-extern const keymgr_diversification_t kCdi0KeymgrDiversifier;
-extern const keymgr_diversification_t kCdi1KeymgrDiversifier;
+extern const sc_keymgr_diversification_t kUdsKeymgrDiversifier;
+extern const sc_keymgr_diversification_t kCdi0KeymgrDiversifier;
+extern const sc_keymgr_diversification_t kCdi1KeymgrDiversifier;
 
 #ifdef __cplusplus
 }  // extern "C"

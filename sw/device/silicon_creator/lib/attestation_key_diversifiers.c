@@ -7,7 +7,7 @@
 // UDS (Creator) attestation key diverisfier constants.
 // Note: versions are always set to 0 so these keys are always valid from the
 // perspective of the keymgr hardware.
-const keymgr_diversification_t kUdsKeymgrDiversifier = {
+const sc_keymgr_diversification_t kUdsKeymgrDiversifier = {
     .salt =
         {
             0xabffa6a9,
@@ -23,7 +23,7 @@ const keymgr_diversification_t kUdsKeymgrDiversifier = {
 };
 
 // CDI_0 (OwnerIntermediate) attestation key diverisfier constants.
-const keymgr_diversification_t kCdi0KeymgrDiversifier = {
+const sc_keymgr_diversification_t kCdi0KeymgrDiversifier = {
     .salt =
         {
             0x3e5913c7,
@@ -39,7 +39,7 @@ const keymgr_diversification_t kCdi0KeymgrDiversifier = {
 };
 
 // CDI_1 (Owner) attestation key diverisfier constants.
-const keymgr_diversification_t kCdi1KeymgrDiversifier = {
+const sc_keymgr_diversification_t kCdi1KeymgrDiversifier = {
     .salt =
         {
             0x2d12c2e3,
