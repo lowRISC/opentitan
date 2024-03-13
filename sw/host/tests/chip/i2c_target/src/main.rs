@@ -10,7 +10,7 @@ use opentitanlib::app::TransportWrapper;
 use opentitanlib::execute_test;
 use opentitanlib::io::i2c::Transfer;
 use opentitanlib::test_utils::e2e_command::TestCommand;
-use opentitanlib::test_utils::i2c_target::{I2cTargetAddress, I2cTransaction};
+use opentitanlib::test_utils::i2c_target::{I2cTargetAddress, I2cTransferStart};
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::rpc::{UartRecv, UartSend};
 use opentitanlib::test_utils::status::Status;
@@ -56,14 +56,12 @@ fn test_read_transaction(opts: &Opts, transport: &TransportWrapper, address: u8)
     let i2c = transport.i2c(&opts.i2c)?;
 
     log::info!("Testing read transaction at I2C address {address:02x}");
-    let txn = I2cTransaction::new(b"Hello");
+    let txn = I2cTransferStart::new(address, b"Hello", true);
     let mut result = vec![0u8; txn.length as usize];
-    let rx_result = txn.execute_read(&*uart, || {
+    txn.execute_read(&*uart, || {
         i2c.run_transaction(Some(address), &mut [Transfer::Read(&mut result)])
     })?;
     assert_eq!(result.as_slice(), txn.data.as_slice());
-    assert_eq!(rx_result.address, address);
-    assert_eq!(rx_result.continuation, 0);
     Ok(())
 }
 
@@ -71,13 +69,14 @@ fn test_write_transaction(opts: &Opts, transport: &TransportWrapper, address: u8
     let uart = transport.uart("console")?;
     let i2c = transport.i2c(&opts.i2c)?;
     log::info!("Testing write transaction at I2C address {address:02x}");
-    let result = I2cTransaction::execute_write(&*uart, TestCommand::I2cWriteTransaction, || {
+
+    let transfer = I2cTransferStart::execute_write(&*uart, || {
         i2c.run_transaction(Some(address), &mut [Transfer::Write(b"Hello World")])
     })?;
-    let len = result.length as usize;
-    assert_eq!(&result.data[0..len], b"Hello World");
-    assert_eq!(result.address, address);
-    assert_eq!(result.continuation, 0);
+    let len = transfer.length as usize;
+    assert_eq!(&transfer.data[0..len], b"Hello World");
+    assert_eq!(transfer.address, address);
+    assert!(transfer.stop);
     Ok(())
 }
 
@@ -89,14 +88,13 @@ fn test_write_transaction_slow(
     let uart = transport.uart("console")?;
     let i2c = transport.i2c(&opts.i2c)?;
     log::info!("Testing slow write transaction at I2C address {address:02x}");
-    let result =
-        I2cTransaction::execute_write(&*uart, TestCommand::I2cWriteTransactionSlow, || {
-            i2c.run_transaction(Some(address), &mut [Transfer::Write(GETTYSBURG.as_bytes())])
-        })?;
+    let result = I2cTransferStart::execute_write_slow(&*uart, || {
+        i2c.run_transaction(Some(address), &mut [Transfer::Write(GETTYSBURG.as_bytes())])
+    })?;
     let len = result.length as usize;
     assert_eq!(&result.data[0..len], GETTYSBURG.as_bytes());
     assert_eq!(result.address, address);
-    assert_eq!(result.continuation, 0);
+    assert!(result.stop);
     Ok(())
 }
 
