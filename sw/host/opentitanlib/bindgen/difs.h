@@ -9,6 +9,17 @@
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 
+#ifdef OT_IS_ENGLISH_BREAKFAST_REDUCED_SUPPORT_FOR_INTERNAL_USE_ONLY_
+
+#include "aon_timer_regs.h"  // Generated.
+#include "clkmgr_regs.h"     // Generated.
+#include "lc_ctrl_regs.h"    // Generated.
+#include "otp_ctrl_regs.h"   // Generated.
+#include "rstmgr_regs.h"     // Generated.
+#include "uart_regs.h"       // Generated.
+
+#else
+
 #include "adc_ctrl_regs.h"       // Generated.
 #include "aes_regs.h"            // Generated.
 #include "alert_handler_regs.h"  // Generated.
@@ -39,5 +50,7 @@
 #include "sysrst_ctrl_regs.h"    // Generated.
 #include "uart_regs.h"           // Generated.
 #include "usbdev_regs.h"         // Generated.
+
+#endif
 
 #endif  // OPENTITAN_SW_HOST_OPENTITANLIB_BINDGEN_DIFS_H_
