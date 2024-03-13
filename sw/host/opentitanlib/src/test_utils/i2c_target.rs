@@ -22,34 +22,44 @@ impl I2cTargetAddress {
     }
 }
 
-impl I2cTransaction {
-    pub fn new(content: &[u8]) -> Self {
+impl I2cTransferStart {
+    pub fn new(address: u8, content: &[u8], stop: bool) -> Self {
         let mut a = arrayvec::ArrayVec::<u8, 256>::new();
         a.try_extend_from_slice(content)
             .expect("fewer than 256 bytes");
         Self {
             length: a.len() as u8,
-            address: 0,
-            continuation: 0,
+            address,
+            stop,
             data: a,
         }
     }
 
-    pub fn execute_read<F>(&self, uart: &dyn Uart, f: F) -> Result<I2cRxResult>
+    pub fn execute_read<F>(&self, uart: &dyn Uart, f: F) -> Result<()>
     where
         F: FnOnce() -> Result<()>,
     {
-        TestCommand::I2cReadTransaction.send_with_crc(uart)?;
+        TestCommand::I2cStartTransferRead.send_with_crc(uart)?;
         self.send_with_crc(uart)?;
         f()?;
-        I2cRxResult::recv(uart, Duration::from_secs(300), false)
+        Status::recv(uart, Duration::from_secs(300), false)?;
+        Ok(())
     }
 
-    pub fn execute_write<F>(uart: &dyn Uart, command: TestCommand, f: F) -> Result<Self>
+    pub fn execute_write<F>(uart: &dyn Uart, f: F) -> Result<Self>
     where
         F: FnOnce() -> Result<()>,
     {
-        command.send_with_crc(uart)?;
+        TestCommand::I2cStartTransferWrite.send_with_crc(uart)?;
+        f()?;
+        Self::recv(uart, Duration::from_secs(300), false)
+    }
+
+    pub fn execute_write_slow<F>(uart: &dyn Uart, f: F) -> Result<Self>
+    where
+        F: FnOnce() -> Result<()>,
+    {
+        TestCommand::I2cStartTransferWriteSlow.send_with_crc(uart)?;
         f()?;
         Self::recv(uart, Duration::from_secs(300), false)
     }
