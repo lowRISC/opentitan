@@ -26,7 +26,7 @@ class rv_dm_abstractcmd_status_vseq extends rv_dm_base_vseq;
     csr_rd(.ptr(jtag_dmi_ral.abstractcs), .value(r_data));
     `DV_CHECK_EQ(1, get_field_val(jtag_dmi_ral.abstractcs.busy, r_data));
 
-    for (int i = 0; 1 < 10; i++) begin
+    for (int i = 0; i < 10; i++) begin
       csr_rd(.ptr(tl_mem_ral.abstractcmd[i]), .value(r_data));
       `DV_CHECK_EQ(exp_debug_rom[i], r_data)
     end
