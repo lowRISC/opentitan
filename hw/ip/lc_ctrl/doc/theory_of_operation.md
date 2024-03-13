@@ -355,7 +355,7 @@ The purpose of this encoding is to ensure the following
 
 - It is difficult to jump from PROD / PROD_END / SCRAP into DEV
 - It is difficult to jump from DEV / PROD / PROD_END / SCRAP into TEST*
-- It is difficult to jump from DEV / PROD / PROD_END / SCRAP into RMA
+- It is difficult to jump from PROD_END / SCRAP into RMA
 
 Further, the encoding has been chosen to minimize the probability of successful glitch attacks attempting to alter the value of bits in the life cycle state.
 In particular, this encoding guards against attacks that manipulate the OTP to output all-zeros, or attacks that manipulate the OTP to read from other address locations within OTP to inject specific values.
