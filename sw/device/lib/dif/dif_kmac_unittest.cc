@@ -656,9 +656,8 @@ class KmacConfigureTest : public KmacTest {
   dif_kmac_config_t kmac_config_ = {
       .entropy_mode = kDifKmacEntropyModeIdle,
       .entropy_fast_process = false,
-      .entropy_seed = {0x5d2a3764, 0x37d3ecba, 0xe1859094, 0xb153e3fe,
-                       0x09596819, 0x3e85a6e8, 0xb6dcdaba, 0x50dc409c,
-                       0x11e1ebd1},
+      .entropy_seed = {0xb153e3fe, 0x09596819, 0x3e85a6e8, 0xb6dcdaba,
+                       0x50dc409c, 0x11e1ebd1},
       .entropy_hash_threshold = 0x03ff,
       .entropy_wait_timer = 0xffff,
       .entropy_prescaler = 0x03ff,

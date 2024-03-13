@@ -226,7 +226,7 @@ module kmac_reduced_tb #(
 
       INIT_RESEED: begin
         // Perform an initial reseed of the PRNG to put it into a random state.
-        // We do one reseed operation to reseed the single Trivium primitive.
+        // We do one reseed operation to reseed the single Bivium primitive.
         entropy_refresh_req = 1'b1;
         reseed_count_increment = entropy_req_fell;
         if (reseed_count_q == 8'd1) begin

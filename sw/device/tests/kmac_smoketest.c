@@ -294,12 +294,11 @@ bool test_main(void) {
 
   // Configure KMAC hardware using software entropy. The seed has been randomnly
   // chosen and is genrated using enerated using
-  // ./util/design/gen-lfsr-seed.py --width 288 --seed 2034386436 --prefix ""
+  // ./util/design/gen-lfsr-seed.py --width 192 --seed 2034386436 --prefix ""
   dif_kmac_config_t config = (dif_kmac_config_t){
       .entropy_mode = kDifKmacEntropyModeSoftware,
-      .entropy_seed = {0x5d2a3764, 0x37d3ecba, 0xe1859094, 0xb153e3fe,
-                       0x09596819, 0x3e85a6e8, 0xb6dcdaba, 0x50dc409c,
-                       0x11e1ebd1},
+      .entropy_seed = {0xb153e3fe, 0x09596819, 0x3e85a6e8, 0xb6dcdaba,
+                       0x50dc409c, 0x11e1ebd1},
       .entropy_fast_process = kDifToggleEnabled,
   };
   CHECK_DIF_OK(dif_kmac_configure(&kmac, config));

@@ -289,7 +289,7 @@ This section explains the entropy generator inside the KMAC HWIP.
 KMAC has an entropy generator to provide the design with pseudo-random numbers while processing the secret key block.
 The entropy is used for both remasking the DOM multipliers inside the Chi function of the Keccak core as well as for masking the message if [`CFG_SHADOWED.msg_mask`](registers.md#cfg_shadowed) is enabled.
 
-The entropy generator is constructed using a [heavily unrolled Trivium stream cipher primitive](https://eprint.iacr.org/2023/1134).
+The entropy generator is constructed using a [heavily unrolled Bivium stream cipher primitive](https://eprint.iacr.org/2023/1134).
 This allows the module to generate 800 bits of fresh, pseudo-random numbers required by the 800 DOM multipliers for remasking in every clock cycle.
 
 Depending on [`CFG_SHADOWED.entropy_mode`](registers.md#cfg_shadowed), the entropy generator fetches initial entropy from the [Entropy Distribution Network (EDN)][edn] module or software has to provide a seed by writing the [`ENTROPY_SEED`](registers.md#entropy_seed) register 9 times.
