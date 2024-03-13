@@ -195,6 +195,10 @@ impl<'a> TransportCommandHandler<'a> {
                         instance.set_baudrate(*rate)?;
                         Ok(Response::Uart(UartResponse::SetBaudrate))
                     }
+                    UartRequest::SetParity(parity) => {
+                        instance.set_parity(*parity)?;
+                        Ok(Response::Uart(UartResponse::SetParity))
+                    }
                     UartRequest::Read {
                         timeout_millis,
                         len,
