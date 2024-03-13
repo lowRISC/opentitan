@@ -28,6 +28,8 @@ extern "C" {
  */
 enum {
   kOtpSecMmioCreatorSwCfgLockDown = 1,
+  kOtpSecMmioDaiRead32 = 2,
+  kOtpSecMmioDaiRead64 = 2,
 };
 
 /**
@@ -59,6 +61,30 @@ uint64_t otp_read64(uint32_t address);
  * @param num_words The number of 32-bit words to read from OTP.
  */
 void otp_read(uint32_t address, uint32_t *data, size_t num_words);
+
+/**
+ * Perform a blocking 32-bit read from the Direct Access Interface (DAI).
+ *
+ * This enables reading any readable 32-bit OTP field that is not in the memory
+ * mapped software config partitions (i.e., partitions other than the
+ * {CREATOR,OWNER}_SW_CFG partitions).
+ *
+ * @param address The address to read from offset from the start of OTP memory.
+ * @return The 32-bit value from OTP.
+ */
+uint32_t otp_dai_read32(uint32_t address);
+
+/**
+ * Perform a blocking 64-bit read from the Direct Access Interface (DAI).
+ *
+ * This enables reading any readable 64-bit OTP field that is not in the memory
+ * mapped software config partitions (i.e., partitions other than the
+ * {CREATOR,OWNER}_SW_CFG partitions).
+ *
+ * @param address The address to read from offset from the start of OTP memory.
+ * @return The 64-bit value from OTP.
+ */
+uint64_t otp_dai_read64(uint32_t address);
 
 /**
  * Disables read access to CREATOR_SW_CFG partition until next reset.
