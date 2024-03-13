@@ -87,7 +87,7 @@ class usb20_monitor extends dv_base_monitor #(
       PidTypeAck: handshake_packet();
       PidTypeNak: handshake_packet();
       PidTypeStall: handshake_packet();
-      default: `uvm_info(`gfn, $sformatf("Invalid packet type"), UVM_DEBUG)
+      default: invalid_packet_pid();
     endcase
   endtask
 
@@ -162,6 +162,18 @@ class usb20_monitor extends dv_base_monitor #(
     else req_analysis_port.write(m_handshake_pkt);
   endtask
 
+  //----------------------------------------Invalid Packet----------------------------------------//
+  virtual task invalid_packet_pid();
+    typedef bit [7:0] invalid_pid_p;
+    invalid_pid_p invalid_pid_result;
+    int unsigned size;
+    size = $size(bit_destuffed);
+    `uvm_info(`gfn, $sformatf("packet size = %d", size), UVM_DEBUG)
+    if (size == 35) token_packet();
+    else if (size == 19) handshake_packet();
+    else data_packet();
+  endtask
+
   // NRZI decoder
   task nrzi_decoder(input bit nrzi_in[], output bit monitored_decoded_packet[]);
     bit prev_bit = 1'b1;
@@ -210,10 +222,12 @@ class usb20_monitor extends dv_base_monitor #(
   task detect_reset();
     bit next_rst_phase = 1'b1;
     @(posedge cfg.bif.usb_clk);
-    repeat (4) begin
-      while (cfg.bif.rst_ni != next_rst_phase) @(posedge cfg.bif.usb_clk);
-    end
-    cfg.clk_rst_if_i.wait_for_reset(1, 1);
+
+    while (cfg.bif.rst_ni != next_rst_phase) @(posedge cfg.bif.usb_clk);
+
+    // Initially we have have only posedge so assigning 0 to negedge bit because it never detects
+    // the negedge of the clk.
+    cfg.clk_rst_if_i.wait_for_reset(0, 1);
   endtask
 
   virtual task monitor_ready_to_end();

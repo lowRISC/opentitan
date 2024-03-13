@@ -279,27 +279,18 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
   virtual task reset_signals();
     cfg.bif.usb_rx_d_i = 1'b1;
     cfg.bif.usb_vbus = 1'b1;
-    cfg.bif.drive_p  = 1'b1;
-    cfg.bif.drive_n = 1'b1;
+    cfg.bif.drive_p  = 1'b0;
+    cfg.bif.drive_n = 1'b0;
     @(posedge cfg.bif.rst_ni);
-    `uvm_info(`gfn, "Hardware Reset in Progress", UVM_DEBUG)
     cfg.bif.usb_vbus = 1'b0;
-    cfg.bif.drive_p   = 1'bz;
-    cfg.bif.drive_n   = 1'bz;
     repeat(usb_idle_clk_cycles) @(posedge cfg.bif.usb_clk);
     cfg.bif.usb_vbus = 1'b1;
-    cfg.bif.drive_p   = 1'b1;
-    cfg.bif.drive_n   = 1'b0;
-    `uvm_info(`gfn, "Out of Hardware Reset", UVM_DEBUG)
     bus_reset();
   endtask
 
   // USB Bus Reset Task
   // -------------------------------
   task bus_reset();
-    @(posedge cfg.bif.usb_clk)
-    cfg.bif.drive_p = 1'b1;
-    cfg.bif.drive_n = 1'b0;
     // Waitfor device active state
     `DV_SPINWAIT(wait(cfg.bif.usb_dp_pullup_o);, "timeout waiting for usb_pullup", 500_000)
     @(posedge cfg.bif.usb_clk)
