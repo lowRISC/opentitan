@@ -63,3 +63,4 @@ fi
 echo
 echo "Bitstream strategy is ${bitstream_strategy}"
 echo "##vso[task.setvariable variable=bitstreamStrategy]${bitstream_strategy}"
+echo "##vso[task.setvariable variable=bitstreamStrategy;isOutput=true]${bitstream_strategy}"
