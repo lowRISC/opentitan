@@ -92,7 +92,7 @@ typedef struct log_fields {
 /**
  * Implementation detail.
  */
-void base_log_internal_core(log_fields_t log, ...);
+void base_log_internal_core(const log_fields_t *log, ...);
 /**
  * Implementation detail.
  */
@@ -123,9 +123,9 @@ void base_log_internal_dv(const log_fields_t *log, uint32_t nargs, ...);
                            OT_VA_ARGS_COUNT(format, ##__VA_ARGS__), \
                            ##__VA_ARGS__); /* clang-format on */ \
     } else {                                                     \
-      log_fields_t log_fields =                                  \
+      static const log_fields_t log_fields =                     \
           LOG_MAKE_FIELDS_(severity, format, ##__VA_ARGS__);     \
-      base_log_internal_core(log_fields, ##__VA_ARGS__);         \
+      base_log_internal_core(&log_fields, ##__VA_ARGS__);        \
     }                                                            \
   } while (false)
 

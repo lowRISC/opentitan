@@ -44,13 +44,13 @@ static const char *stringify_severity(log_severity_t severity) {
  * @param log the log data to log.
  * @param ... format parameters matching the format string.
  */
-void base_log_internal_core(log_fields_t log, ...) {
+void base_log_internal_core(const log_fields_t *log, ...) {
   size_t file_name_len =
-      (size_t)(((const char *)memchr(log.file_name, '\0', PTRDIFF_MAX)) -
-               log.file_name);
-  const char *base_name = memrchr(log.file_name, '/', file_name_len);
+      (size_t)(((const char *)memchr(log->file_name, '\0', PTRDIFF_MAX)) -
+               log->file_name);
+  const char *base_name = memrchr(log->file_name, '/', file_name_len);
   if (base_name == NULL) {
-    base_name = log.file_name;
+    base_name = log->file_name;
   } else {
     ++base_name;  // Remove the final '/'.
   }
@@ -60,13 +60,13 @@ void base_log_internal_core(log_fields_t log, ...) {
   // nothing was printed for some time.
   static uint16_t global_log_counter = 0;
 
-  base_printf("%s%05d %s:%d] ", stringify_severity(log.severity),
-              global_log_counter, base_name, log.line);
+  base_printf("%s%05d %s:%d] ", stringify_severity(log->severity),
+              global_log_counter, base_name, log->line);
   ++global_log_counter;
 
   va_list args;
   va_start(args, log);
-  base_vprintf(log.format, args);
+  base_vprintf(log->format, args);
   va_end(args);
 
   base_printf("\r\n");
