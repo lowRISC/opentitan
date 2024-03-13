@@ -55,6 +55,7 @@ typedef enum test_phase {
   kTestPhaseRecv,
   kTestPhaseRecvErr,
   kTestPhaseBreakErr,
+  kTestPhaseBreakErrDone,
 } test_phase_t;
 static volatile uint8_t test_phase = kTestPhaseCfg;
 
@@ -216,12 +217,26 @@ static status_t execute_test(void) {
     ATOMIC_WAIT_FOR_INTERRUPT(uart_irq_rx_parity_err_fired);
   }
 
-  // Wait for host to sync and then expect to receive a line break.
-  uart_irq_rx_break_err_expected = true;
-  OTTF_WAIT_FOR(test_phase == kTestPhaseBreakErr, kCommandTimeoutMicros);
+  // We test the RX line break error interrupt at all supported levels.
+  dif_uart_rx_break_level_t break_levels[4] = {
+      kDifUartRxBreakLevel2,
+      kDifUartRxBreakLevel4,
+      kDifUartRxBreakLevel8,
+      kDifUartRxBreakLevel16,
+  };
 
-  LOG_INFO("Waiting for line break");
-  IBEX_SPIN_FOR(uart_irq_rx_break_err_fired, 1 * 1000 * 1000);
+  for (int i = 0; i < ARRAYSIZE(break_levels); i++) {
+    TRY(dif_uart_rx_break_level_set(&uart, break_levels[i]));
+
+    // Wait for host to sync and then expect to receive a line break.
+    uart_irq_rx_break_err_expected = true;
+    OTTF_WAIT_FOR(test_phase == kTestPhaseBreakErr, kCommandTimeoutMicros);
+
+    LOG_INFO("Waiting for line break");
+    ATOMIC_WAIT_FOR_INTERRUPT(uart_irq_rx_break_err_fired);
+
+    test_phase = kTestPhaseBreakErrDone;
+  }
 
   return OK_STATUS();
 }
