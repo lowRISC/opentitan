@@ -463,6 +463,42 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
       "fifo_ctrl": begin
         // TODO
       end
+      "count_ign_avsetup": begin
+        // TODO
+      end
+      "count_drop_avout": begin
+        // TODO
+      end
+      "count_drop_rx": begin
+        // TODO
+      end
+      "count_datatog_out": begin
+        // TODO
+      end
+      "count_timeout_in": begin
+        // TODO
+      end
+      "count_nak_in": begin
+        // TODO
+      end
+      "count_nodata_in0": begin
+        // TODO
+      end
+      "count_nodata_in1": begin
+        // TODO
+      end
+      "count_crc5_out": begin
+        // TODO
+      end
+      "count_crc16_out": begin
+        // TODO
+      end
+      "count_bitstuff": begin
+        // TODO
+      end
+      "count_pid_invalid": begin
+        // TODO
+      end
       "buffer": begin
         do_read_check = 1'b1;
       end

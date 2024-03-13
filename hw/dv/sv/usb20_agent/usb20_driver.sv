@@ -318,6 +318,10 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     bit use_negedge;
     // TODO: DV should not be stealing access to the driver enable of the DUT and would ideally
     // be able to synchronize to just the USB_P/N signals are they are received.
+    //
+    // TODO: It will also be necessary to wait with timeout; the device should ordinarily respond
+    // within a limited, fixed timeout interval, but also the traffic may receive no response if it
+    // is not a valid packet directed to an endpoint at an address capable of handling it.
     `uvm_info(`gfn, "After drive Packet in wait to check usb_dp_en_o signal", UVM_DEBUG)
     wait(cfg.bif.usb_dp_en_o);
     // TODO: Operating on a div 4 clock is inherently fraught and runs into sampling problems;
