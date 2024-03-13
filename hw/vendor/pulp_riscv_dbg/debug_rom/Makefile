@@ -30,3 +30,4 @@ clean:
 
 rename:
 	$(shell grep -rl "debug_rom" debug_rom.sv | xargs sed -i 's/debug_rom/debug_ot_rom/g')
+	$(shell grep -rl "debug_rom_one_scratch" debug_rom_one_scratch.sv | xargs sed -i 's/debug_rom_one_scratch/debug_ot_rom_one_scratch/g')
