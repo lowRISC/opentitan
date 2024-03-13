@@ -155,7 +155,7 @@
     }
     { name:    "NumSeedsEntropy",
       type:    "int",
-      default: "9",
+      default: "6",
       desc:    "Number of words for the PRNG seed used for entropy generation",
       local:   "true"
     }

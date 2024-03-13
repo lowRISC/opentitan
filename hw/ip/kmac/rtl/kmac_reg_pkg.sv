@@ -12,7 +12,7 @@ package kmac_reg_pkg;
   parameter int NumEntriesMsgFifo = 10;
   parameter int NumBytesMsgFifoEntry = 8;
   parameter int unsigned HashCntW = 10;
-  parameter int NumSeedsEntropy = 9;
+  parameter int NumSeedsEntropy = 6;
   parameter int NumAlerts = 2;
 
   // Address widths within the block

@@ -352,10 +352,10 @@ module kmac_entropy
   `ASSERT_KNOWN(ModeKnown_A, mode_i)
   assign seed = (mode_q == EntropyModeSw) ? seed_data_i : entropy_data_i;
 
-  // We employ a single unrolled Trivium stream cipher primitive to generate
+  // We employ a single unrolled Bivium stream cipher primitive to generate
   // 800 bits per clock cycle.
   prim_trivium #(
-   .BiviumVariant         (0),
+   .BiviumVariant         (1),
    .OutputWidth           (EntropyOutputW),
    .StrictLockupProtection(1),
    .SeedType              (prim_trivium_pkg::SeedTypeStatePartial),
