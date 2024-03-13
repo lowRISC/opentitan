@@ -34,7 +34,7 @@ class uart_rx_oversample_vseq extends uart_tx_rx_vseq;
 
       find_oversampled_clk_center();
       // don't use big number here, the way TB measures cycle isn't the same as DUT
-      // need to re-sync again after cerntain cycles
+      // need to re-sync again after certain cycles
       repeat ($urandom_range(1, 3)) begin
         drive_rx_oversampled_val();
       end
@@ -43,7 +43,7 @@ class uart_rx_oversample_vseq extends uart_tx_rx_vseq;
 
     // wait for a full uart transaction time to flush out the remaining rx transaction
     uart_xfer_bits = NUM_UART_XFER_BITS_WO_PARITY + cfg.m_uart_agent_cfg.en_parity;
-    #(cfg.m_uart_agent_cfg.vif.uart_clk_period_ns * uart_xfer_bits);
+    #(cfg.m_uart_agent_cfg.vif.uart_clk_period * uart_xfer_bits);
 
     cfg.m_uart_agent_cfg.en_rx_monitor = 1;
     clear_fifos(.clear_rx_fifo(1), .clear_tx_fifo(0));
@@ -76,7 +76,7 @@ class uart_rx_oversample_vseq extends uart_tx_rx_vseq;
     // find offset to account for the fixed delay of register reading, only relevant at high baud
     fixed_delay_time = cfg.clk_rst_vif.clk_period_ps * 1ps * 3;
     // move to the center of the oversampling clk
-    #(get_oversampled_baud_clk_period_ns() * 1ns * 0.5 - fixed_delay_time);
+    #(get_oversampled_baud_clk_period()* 0.5 - fixed_delay_time);
     `uvm_info(`gfn, "at center of clock", UVM_MEDIUM)
   endtask
 
@@ -91,7 +91,7 @@ class uart_rx_oversample_vseq extends uart_tx_rx_vseq;
     // Most recent bit is bit 0
     for (int i = num_bits - 1; i >= 0; i--) begin
       cfg.m_uart_agent_cfg.vif.uart_rx = data[i];
-      #(get_oversampled_baud_clk_period_ns() * 1ns);
+      #(get_oversampled_baud_clk_period());
     end
     cfg.m_uart_agent_cfg.vif.uart_rx = 1; // back to default value
     // launch check in a parallel thread to avoid losing clock alignment in the main thread
@@ -104,8 +104,8 @@ class uart_rx_oversample_vseq extends uart_tx_rx_vseq;
     join_none
   endtask
 
-  virtual function real get_oversampled_baud_clk_period_ns();
-    return cfg.m_uart_agent_cfg.vif.uart_clk_period_ns / num_bits;
+  virtual function real get_oversampled_baud_clk_period();
+    return cfg.m_uart_agent_cfg.vif.uart_clk_period / num_bits;
   endfunction
 
 endclass : uart_rx_oversample_vseq
