@@ -39,6 +39,7 @@ enum TestPhase {
     Recv,
     RecvErr,
     BreakErr,
+    _BreakErrDone,
 }
 
 struct TestData<'a> {
@@ -164,13 +165,17 @@ fn uart_parity_break(
         uart.write(&[0xff]).context("failed to send data")?;
     }
 
-    // Tell the device to receive some data with the wrong parity.
-    UartConsole::wait_for(console, r"waiting for commands\r\n", opts.timeout)?;
-    MemWriteReq::execute(console, *test_phase_addr, &[TestPhase::BreakErr as u8])?;
+    for _ in 0..4 {
+        // Sync with the device.
+        UartConsole::wait_for(console, r"waiting for commands\r\n", opts.timeout)?;
+        MemWriteReq::execute(console, *test_phase_addr, &[TestPhase::BreakErr as u8])?;
 
-    uart.set_break(true).context("failed to set break")?;
-    std::thread::sleep(Duration::from_millis(30));
-    uart.set_break(false).context("failed to unset break")?;
+        // At 115200 baud each character spans ~800us. A 16 character break takes
+        // ~14ms. We sleep for long enough that all the break levels will trigger.
+        uart.set_break(true).context("failed to set break")?;
+        std::thread::sleep(Duration::from_millis(15));
+        uart.set_break(false).context("failed to unset break")?;
+    }
 
     // The device will tell us whether or not the data with the wrong parity
     // was received okay.
