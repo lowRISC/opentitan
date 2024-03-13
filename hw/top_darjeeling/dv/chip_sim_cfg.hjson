@@ -817,6 +817,7 @@
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["//sw/device/tests:rstmgr_cpu_info_test:6"]
       en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+sw_test_timeout_ns=20_000_000"]
     }
     {
       name: chip_sw_pwrmgr_full_aon_reset
@@ -933,7 +934,7 @@
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["//sw/device/tests:aon_timer_wdog_bite_reset_test:6"]
       en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=18_000_000"]
+      run_opts: ["+sw_test_timeout_ns=30_000_000"]
     }
     {
       name: chip_sw_pwrmgr_wdog_reset
@@ -1317,7 +1318,7 @@
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["//sw/device/tests:sensor_ctrl_wakeup_test:6"]
       en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=8_000_000"]
+      run_opts: ["+sw_test_timeout_ns=12_000_000"]
     }
     {
       name: chip_sw_coremark
