@@ -138,14 +138,14 @@ class uart_monitor extends dv_base_monitor#(
   task drive_tx_clk();
     forever begin
       if (cfg.vif.uart_tx_clk_pulses > 0) begin
-        #(cfg.vif.uart_clk_period_ns / 2);
+        #(cfg.vif.uart_clk_period / 2);
         cfg.vif.uart_tx_clk = ~cfg.vif.uart_tx_clk;
         // last cycle only use half period as design and agent aren't using same clock. If agent
         // freq is slower and design continues sending tx item, the freq diff will be accumulated.
         // Ending current item after latch STOP bit to allow agent to re-establish clock to sample
         // the START bit of next item
-        if (cfg.vif.uart_tx_clk_pulses == 1) #(cfg.vif.uart_clk_period_ns / 4);
-        else                                 #(cfg.vif.uart_clk_period_ns / 2);
+        if (cfg.vif.uart_tx_clk_pulses == 1) #(cfg.vif.uart_clk_period / 4);
+        else                                 #(cfg.vif.uart_clk_period / 2);
         cfg.vif.uart_tx_clk = ~cfg.vif.uart_tx_clk;
         cfg.vif.uart_tx_clk_pulses--;
       end else begin
@@ -157,9 +157,9 @@ class uart_monitor extends dv_base_monitor#(
   task drive_rx_clk();
     forever begin
       if (cfg.vif.uart_rx_clk_pulses > 0) begin
-        #(cfg.vif.uart_clk_period_ns / 2);
+        #(cfg.vif.uart_clk_period / 2);
         cfg.vif.uart_rx_clk = ~cfg.vif.uart_rx_clk;
-        #(cfg.vif.uart_clk_period_ns / 2);
+        #(cfg.vif.uart_clk_period / 2);
         cfg.vif.uart_rx_clk = ~cfg.vif.uart_rx_clk;
         cfg.vif.uart_rx_clk_pulses--;
       end else begin
@@ -175,7 +175,7 @@ class uart_monitor extends dv_base_monitor#(
       @(cfg.vif.uart_tx_clk_pulses);
       if (cfg.vif.uart_tx_clk_pulses == 0) continue;
 
-      #(cfg.vif.uart_clk_period_ns * (50 - cfg.get_max_drift_cycle_pct()) / 100);
+      #(cfg.vif.uart_clk_period * (50 - cfg.get_max_drift_cycle_pct()) / 100);
       `DV_SPINWAIT_EXIT(
           begin
             @(cfg.vif.uart_tx_int);
@@ -183,8 +183,8 @@ class uart_monitor extends dv_base_monitor#(
                 "Expect uart_tx stable from %0d to %0d of the period, but it's changed",
                 50 - cfg.get_max_drift_cycle_pct(), 50 + cfg.get_max_drift_cycle_pct()))
           end,
-          // simplified from cfg.vif.uart_clk_period_ns * max_drift_cycle_pct * 2 / 100
-          #(cfg.vif.uart_clk_period_ns * cfg.get_max_drift_cycle_pct() / 50))
+          // simplified from cfg.vif.uart_clk_period * max_drift_cycle_pct * 2 / 100
+          #(cfg.vif.uart_clk_period * cfg.get_max_drift_cycle_pct() / 50))
     end
   endtask
 

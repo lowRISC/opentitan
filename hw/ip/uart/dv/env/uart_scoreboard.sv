@@ -37,7 +37,7 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
   uart_item rx_q[$];
 
   // it takes 3 cycles to move item from fifo to process, which delays reg status change
-  // and it also takes 3 cycles to trigger tx matermark interrupt
+  // and it also takes 3 cycles to trigger tx watermark interrupt
   parameter uint NUM_CLK_DLY_TO_UPDATE_TX_WATERMARK = 3;
 
   `uvm_component_new
@@ -115,7 +115,7 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
 
         if (parity_err) begin
           intr_exp[RxParityErr] = 1;
-          `uvm_info(`gfn, $sformatf("dropped uart rx item due to partiy err:\n%0s",
+          `uvm_info(`gfn, $sformatf("dropped uart rx item due to parity err:\n%0s",
                                     item.sprint()), UVM_HIGH)
         end
         if (!item.stop_bit) begin
@@ -148,7 +148,7 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
     intr_exp[RxWatermark] = (rx_q_size >= watermark) || status_intr_test[RxWatermark];
   endfunction
 
-  // we don't model uart cycle-acurrately, ignore checking when item is just/almost finished
+  // we don't model uart cycle-accurately, ignore checking when item is just/almost finished
   function bit is_in_ignored_period(uart_dir_e dir);
     case (dir)
       UartTx: return uart_tx_clk_pulses inside `TX_IGNORED_PERIOD;

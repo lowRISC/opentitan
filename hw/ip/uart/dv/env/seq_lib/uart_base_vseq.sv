@@ -69,7 +69,7 @@ class uart_base_vseq extends cip_base_vseq #(.CFG_T               (uart_env_cfg)
   virtual task uart_init();
     int nco = get_nco(baud_rate, cfg.clk_freq_mhz, ral.ctrl.nco.get_n_bits());
 
-    // we skip writting some CSRs at the last 1-2 uart cycles, when baud rate is 1.5Mbps, uart
+    // we skip writing some CSRs at the last 1-2 uart cycles, when baud rate is 1.5Mbps, uart
     // cycle is small, need to reduce the TL delay, so that the write doesn't happen at the
     // ignore period
     if (baud_rate == BaudRate1p5Mbps && p_sequencer.cfg.clk_freq_mhz < 48) begin
@@ -225,7 +225,7 @@ class uart_base_vseq extends cip_base_vseq #(.CFG_T               (uart_env_cfg)
     endcase
   endtask : rand_read_rx_byte
 
-  // read rx data from CSR rdata, but wait until it's not in igored period
+  // read rx data from CSR rdata, but wait until it's not in ignored period
   virtual task wait_ignored_period_and_read_rdata(ref bit [TL_DW-1:0] rdata);
     wait_when_in_ignored_period(.rx(1));
     csr_rd(.ptr(ral.rdata), .value(rdata));
@@ -262,7 +262,7 @@ class uart_base_vseq extends cip_base_vseq #(.CFG_T               (uart_env_cfg)
     `uvm_info(`gfn, "wait_for_tx_fifo_not_full is done", UVM_HIGH)
   endtask : wait_for_tx_fifo_not_full
 
-  // task to wait for rx fifo not full, will be overriden in overflow test
+  // task to wait for rx fifo not full, will be overridden in overflow test
   virtual task wait_for_rx_fifo_not_full();
     if (ral.ctrl.rx.get_mirrored_value()) begin
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_access_fifo)

@@ -62,7 +62,7 @@ class uart_agent_cfg extends dv_base_agent_cfg;
 
   function void set_baud_rate(baud_rate_e b);
     baud_rate = b;
-    vif.uart_clk_period_ns = (get_baud_rate_period_ns(b) * 1ns);
+    vif.uart_clk_period = (get_baud_rate_period_ns(b) * 1ns);
   endfunction
 
   function void set_parity(bit en_parity, bit odd_parity);

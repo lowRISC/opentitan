@@ -14,8 +14,8 @@ class uart_tx_ovrd_vseq extends uart_smoke_vseq;
     bit txval;
     bit exp;
 
-    // add 1 uart clk to make sure previous uart TX transfer is done completedly
-    #(cfg.m_uart_agent_cfg.vif.uart_clk_period_ns * 1ns);
+    // add 1 uart clk to make sure previous uart TX transfer is done completely
+    #(cfg.m_uart_agent_cfg.vif.uart_clk_period);
 
     // disable monitor as monitor can't handle this
     cfg.m_uart_agent_cfg.en_tx_monitor = 0;

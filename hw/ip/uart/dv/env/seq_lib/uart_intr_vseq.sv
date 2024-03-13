@@ -322,7 +322,7 @@ class uart_intr_vseq extends uart_base_vseq;
   endtask
 
   task wait_for_baud_clock_cycles(uint cycles);
-    #(cfg.m_uart_agent_cfg.vif.uart_clk_period_ns * cycles);
+    #(cfg.m_uart_agent_cfg.vif.uart_clk_period * cycles);
   endtask
 
   task drive_tx_bytes(int num_bytes);
