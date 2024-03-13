@@ -469,6 +469,7 @@ dual_cc_library(
             "//sw/device/lib/base:hardened",
             "//sw/device/lib/base:macros",
             "//sw/device/silicon_creator/lib/base:sec_mmio",
+            "//sw/device/lib/base:abs_mmio",
         ],
     ),
 )

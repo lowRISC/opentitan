@@ -28,9 +28,43 @@ extern "C" {
  */
 enum {
   kOtpSecMmioCreatorSwCfgLockDown = 1,
-  kOtpSecMmioDaiRead32 = 2,
-  kOtpSecMmioDaiRead64 = 2,
+  kOtpSecMmioDaiRead32 = 1,
+  kOtpSecMmioDaiRead64 = 1,
 };
+
+/**
+ * OTP partition information.
+ */
+typedef struct otp_partition_info {
+  /**
+   * The absolute OTP address at which this partition starts.
+   */
+  uint32_t start_addr;
+  /**
+   * The alignment mask for this partition.
+   *
+   * A valid address for this partition must be such that
+   * `addr & align_mask == 0`.
+   */
+  uint32_t align_mask;
+} otp_partition_info_t;
+
+/**
+ * OTP partitions whose fields are readable after being locked.
+ */
+typedef enum otp_partition {
+  kOtpPartitionCreatorSwCfg,
+  kOtpPartitionOwnerSwCfg,
+  kOtpPartitionRotCreatorAuthCodesign,
+  kOtpPartitionRotCreatorAuthState,
+  kOtpPartitionHwCfg0,
+  kOtpPartitionHwCfg1,
+} otp_partition_t;
+
+/**
+ * Table of OTP partition information.
+ */
+extern const otp_partition_info_t kOtpPartitions[];
 
 /**
  * Perform a blocking 32-bit read from the memory mapped software config
@@ -69,10 +103,12 @@ void otp_read(uint32_t address, uint32_t *data, size_t num_words);
  * mapped software config partitions (i.e., partitions other than the
  * {CREATOR,OWNER}_SW_CFG partitions).
  *
- * @param address The address to read from offset from the start of OTP memory.
+ * @param partition The OTP partition to read from.
+ * @param relative_address The address to read from, relative to the start of
+ *                         the OTP partition.
  * @return The 32-bit value from OTP.
  */
-uint32_t otp_dai_read32(uint32_t address);
+uint32_t otp_dai_read32(otp_partition_t partition, uint32_t address);
 
 /**
  * Perform a blocking 64-bit read from the Direct Access Interface (DAI).
@@ -81,10 +117,27 @@ uint32_t otp_dai_read32(uint32_t address);
  * mapped software config partitions (i.e., partitions other than the
  * {CREATOR,OWNER}_SW_CFG partitions).
  *
- * @param address The address to read from offset from the start of OTP memory.
+ * @param partition The OTP partition to read from.
+ * @param relative_address The address to read from, relative to the start of
+ *                         the OTP partition.
  * @return The 64-bit value from OTP.
  */
-uint64_t otp_dai_read64(uint32_t address);
+uint64_t otp_dai_read64(otp_partition_t partition, uint32_t address);
+
+/**
+ * Perform a blocking read of `num_words` 32-bit words from the Direct Access
+ * Interface (DAI).
+ *
+ * Note: this should only be used to read 32-bit granule OTP regions.
+ *
+ * @param partition The OTP partition to read from.
+ * @param relative_address The address to read from, relative to the start of
+ *                         the OTP partition.
+ * @param data The output buffer of at least length `num_words`.
+ * @param num_words The number of 32-bit words to read from OTP.
+ */
+rom_error_t otp_dai_read(otp_partition_t partition, uint32_t address,
+                         uint32_t *data, size_t num_words);
 
 /**
  * Disables read access to CREATOR_SW_CFG partition until next reset.
