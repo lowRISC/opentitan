@@ -399,10 +399,11 @@ class sram_ctrl_scoreboard #(parameter int AddrWidth = 10) extends cip_base_scor
       // lc escalation status will be dropped after reset, no further action needed
       wait(cfg.lc_vif.lc_esc_en == lc_ctrl_pkg::Off);
 
-      // there could be up to 6 transactions accepted but not compared due to escalation
-      // 2 transactions are due to outstanding, allow another 4 pending items in the queue
-      // as we skip checking them when lc_esc happens
-      `DV_CHECK_LE(mem_bkdr_scb.read_item_q.size + mem_bkdr_scb.write_item_q.size, 6)
+      // there could be up to 7 transactions accepted but not compared due to escalation
+      // 2 transactions are due to outstanding, allow another 6 pending items in the queue
+      // as we skip checking them when lc_esc happens, and one more because of CDC delay
+      // for lc_escalate_en_i
+      `DV_CHECK_LE(mem_bkdr_scb.read_item_q.size + mem_bkdr_scb.write_item_q.size, 7)
 
       // sample coverage
       if (cfg.en_cov) begin
