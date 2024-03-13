@@ -32,7 +32,7 @@ extern "C" {
  * - Perform a number (N) of calls to `sec_mmio_write32()`.
  * - Increment the expected number of writes by N with
  *   `SEC_MMIO_WRITE_INCREMENT()`. This is done using a separate function call
- *   to be able to detect skip instruciton faults on `sec_mmio_write32()`
+ *   to be able to detect skip instruction faults on `sec_mmio_write32()`
  *   calls.
  *
  * Register reads
