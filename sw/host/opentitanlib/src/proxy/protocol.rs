@@ -12,6 +12,7 @@ use crate::io::gpio::{
 };
 use crate::io::i2c::DeviceStatus;
 use crate::io::spi::{MaxSizes, TransferMode};
+use crate::io::uart::Parity;
 use crate::proxy::errors::SerializedError;
 use crate::transport::Capabilities;
 use crate::util::voltage::Voltage;
@@ -142,6 +143,7 @@ pub enum UartRequest {
     SetBaudrate {
         rate: u32,
     },
+    SetParity(Parity),
     Read {
         timeout_millis: Option<u32>,
         len: u32,
@@ -157,6 +159,7 @@ pub enum UartRequest {
 pub enum UartResponse {
     GetBaudrate { rate: u32 },
     SetBaudrate,
+    SetParity,
     Read { data: Vec<u8> },
     Write,
     SupportsNonblockingRead { has_support: bool },
