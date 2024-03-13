@@ -21,6 +21,11 @@ package(default_visibility = ["//visibility:public"])
 cc_library(
     name = "datatypes",
     hdrs = ["datatypes.h"],
+    deps = [
+        "//sw/device/silicon_creator/lib/sigverify:ecdsa_p256_key",
+        "//sw/device/silicon_creator/lib/sigverify:rsa_key",
+        "//sw/device/silicon_creator/lib/sigverify:spx_key",
+    ],
 )
 
 cc_library(
