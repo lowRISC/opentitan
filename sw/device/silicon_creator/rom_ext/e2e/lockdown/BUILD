@@ -15,7 +15,10 @@ opentitan_test(
     cw310 = cw310_params(
         exit_failure = "PASS|FAIL|BFV:.*\r\n",
         # Make sure we get to the correct point in the test program before the fault.
-        exit_success = "OTP CreatorSwCfg:\r\n.*FAULT: Load Access Fault.*\r\n",
+        # The MTVAL is the location of the access fault.  The address below
+        # corresponds to the OTP controller at
+        # OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET + OTP_CTRL_PARAM_CREATOR_SW_CFG_OFFSET.
+        exit_success = "FAULT: Load Access Fault.*MTVAL=40131040\r\n",
     ),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
@@ -34,7 +37,12 @@ opentitan_test(
     cw310 = cw310_params(
         exit_failure = "PASS|FAIL|BFV:.*\r\n",
         # Make sure we get to the correct point in the test program before the fault.
-        exit_success = "dif_otp_ctrl_configure:\r\n.*FAULT: Load Access Fault.*\r\n",
+        # The OTP DIF first checks to see if the OTP controller is locked.
+        # Since we've disabled access to the OTP controller completely, reading
+        # the REGWEN register will fail and cause a fault.
+        # The address below # corresponds to the OTP controller at
+        # OTP_CTRL_CHECK_REGWEN_REG_OFFSET.
+        exit_success = "FAULT: Load Access Fault.*MTVAL=4013003c\r\n",
     ),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
