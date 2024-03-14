@@ -173,7 +173,7 @@ if {($env(DUT_TOP) == "pinmux_tb") || ($env(DUT_TOP) == "pinmux_chip_tb")} {
   clock -rate {cio_ac_present_i, cio_ec_rst_l_i, cio_key0_in_i, cio_key1_in_i, cio_key2_in_i, cio_pwrb_in_i, cio_lid_open_i} clk_aon_i
   reset -expr {!rst_ni !rst_aon_ni}
 
-} elseif {$env(DUT_TOP) == "usbdev"} {
+} elseif {$env(DUT_TOP) == "usbdev_tb"} {
   clock clk_i -both_edges
   clock clk_aon_i
   clock -rate {tl_i, cio_d_i, cio_dp_i, cio_dn_i, cio_sense_i} clk_i
