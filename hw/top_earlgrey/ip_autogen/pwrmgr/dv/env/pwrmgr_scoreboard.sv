@@ -61,12 +61,28 @@ class pwrmgr_scoreboard extends cip_base_scoreboard #(
           // is somewhat unpredictable for reasons explained in the pwrmgr_escalation_timeout
           // sequence, so this relies on the sequence to avoid unpredictable stoppages.
           `uvm_info(`gfn, "Detected unexpected clk_esc_i stop", UVM_MEDIUM)
-          cfg.clk_rst_vif.wait_clks(121);
-          if (cfg.esc_clk_rst_vif.clk_gate && cfg.pwrmgr_vif.pwr_ast_req.io_clk_en &&
-              cfg.pwrmgr_vif.pwr_clk_req.io_ip_clk_en) begin
-            `uvm_info(`gfn, "clk_esc_i has been inactive enough to trigger an alert", UVM_MEDIUM)
-            set_exp_alert("fatal_fault", 1, 500);
-          end
+          fork
+            begin : isolation_fork
+              // This fork is so we can wait for a number of cycles with the clock inactive,
+              // and stop waiting if the escalation clock gate is re-opened.
+              fork
+                begin
+                  cfg.clk_rst_vif.wait_clks(121);
+                  if (cfg.esc_clk_rst_vif.clk_gate && cfg.pwrmgr_vif.pwr_ast_req.io_clk_en &&
+                    cfg.pwrmgr_vif.pwr_clk_req.io_ip_clk_en) begin
+                    `uvm_info(`gfn, "clk_esc_i has been inactive enough to trigger an alert",
+                              UVM_MEDIUM)
+                    `uvm_info(`gfn, "set_exp_alert from monitor_escalation_timeout clock gated",
+                              UVM_MEDIUM)
+                    set_exp_alert("fatal_fault", 1, 500);
+                  end
+                end
+                // This stops the wait if the gate is re-opened.
+                @(negedge cfg.esc_clk_rst_vif.clk_gate);
+              join_any
+              disable fork;
+            end
+          join
         end
       forever
         @(negedge cfg.esc_clk_rst_vif.o_rst_n) begin
