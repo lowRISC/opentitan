@@ -7,7 +7,7 @@
 
 # Global configuration options.
 ARG VERILATOR_VERSION=4.210
-ARG VERIBLE_VERSION=v0.0-2135-gb534c1fe
+ARG VERIBLE_VERSION=v0.0-3622-g07b310a3
 # The RISCV toolchain version should match the release tag used in GitHub.
 ARG RISCV_TOOLCHAIN_TAR_VERSION=20220210-1
 # This should match the version in bazelish.sh.
@@ -147,7 +147,7 @@ RUN curl https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add \
 
 # Install Verible
 RUN curl -f -Ls -o verible.tar.gz \
-        https://github.com/chipsalliance/verible/releases/download/${VERIBLE_VERSION}/verible-${VERIBLE_VERSION}-Ubuntu-20.04-focal-x86_64.tar.gz \
+        https://github.com/chipsalliance/verible/releases/download/${VERIBLE_VERSION}/verible-${VERIBLE_VERSION}-linux-static-x86_64.tar.gz \
     && mkdir -p /tools/verible \
     && tar -C /tools/verible -xf verible.tar.gz --strip-components=1
 ENV PATH "/tools/verible/bin:${PATH}"

@@ -94,9 +94,8 @@ python3 -m pip install --user -r python-requirements.txt --require-hashes
 
 # Install Verible
 lsb_sr="$(lsb_release -sr)"
-lsb_sc="$(lsb_release -sc)"
-VERIBLE_BASE_URL="https://github.com/google/verible/releases/download"
-VERIBLE_TARBALL="verible-${VERIBLE_VERSION}-Ubuntu-${lsb_sr}-${lsb_sc}-x86_64.tar.gz"
+VERIBLE_BASE_URL="https://github.com/chipsalliance/verible/releases/download"
+VERIBLE_TARBALL="verible-${VERIBLE_VERSION}-linux-static-x86_64.tar.gz"
 VERIBLE_URL="${VERIBLE_BASE_URL}/${VERIBLE_VERSION}/${VERIBLE_TARBALL}"
 
 verible_tar="$TMPDIR/verible.tar.gz"
