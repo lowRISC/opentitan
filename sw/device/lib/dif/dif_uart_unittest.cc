@@ -195,9 +195,9 @@ TEST_F(WatermarkTxSetTest, Success) {
   EXPECT_MASK32(UART_FIFO_CTRL_REG_OFFSET,
                 {
                     {UART_FIFO_CTRL_TXILVL_OFFSET, UART_FIFO_CTRL_TXILVL_MASK,
-                     UART_FIFO_CTRL_TXILVL_VALUE_TXLVL64},
+                     UART_FIFO_CTRL_TXILVL_VALUE_TXLVL16},
                 });
-  EXPECT_DIF_OK(dif_uart_watermark_tx_set(&uart_, kDifUartWatermarkByte64));
+  EXPECT_DIF_OK(dif_uart_watermark_tx_set(&uart_, kDifUartWatermarkByte16));
 }
 
 class SetEnableTest : public UartTest {};

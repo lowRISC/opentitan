@@ -14,14 +14,16 @@ package uart_env_pkg;
   import dv_base_reg_pkg::*;
   import cip_base_pkg::*;
   import uart_ral_pkg::*;
+  import uart_reg_pkg::RxFifoDepth;
+  import uart_reg_pkg::TxFifoDepth;
 
   // macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
   // local types
-  parameter uint UART_FIFO_DEPTH = 128;
-  parameter uint MAX_WATERMARK_LVL = 7;
+  parameter uint MAX_RX_WATERMARK_LVL = 7;
+  parameter uint MAX_TX_WATERMARK_LVL = 7;
   // alerts
   parameter uint NUM_ALERTS = 1;
   parameter string LIST_OF_ALERTS[] = {"fatal_fault"};
@@ -39,21 +41,31 @@ package uart_env_pkg;
   } uart_intr_e;
 
   // get the number of bytes that triggers watermark interrupt
-  function automatic int get_watermark_bytes_by_level(int lvl);
-    case(lvl)
-      0: return 1;
-      1: return 2;
-      2: return 4;
-      3: return 8;
-      4: return 16;
-      5: return 32;
-      6: return 64;
-      7: return 126;
-      default: begin
-        `uvm_fatal("uart_env_pkg::get_watermark_bytes_by_level",
-                   $sformatf("invalid watermark level value - %0d", lvl))
-      end
-    endcase
+  function automatic int get_rx_watermark_bytes_by_level(int lvl);
+    int thresh = 2**lvl;
+    if (lvl > MAX_RX_WATERMARK_LVL) begin
+      `uvm_fatal("uart_env_pkg::get_rx_watermark_bytes_by_level",
+                 $sformatf("invalid RX watermark level value - %0d", lvl))
+    end else if (thresh > RxFifoDepth) begin
+      return 2**(MAX_RX_WATERMARK_LVL+1);
+    end else if (thresh == RxFifoDepth) begin
+      return thresh - 2;
+    end else begin
+      return thresh;
+    end
+  endfunction
+
+  // get the number of bytes that triggers watermark interrupt
+  function automatic int get_tx_watermark_bytes_by_level(int lvl);
+    int thresh = 2**lvl;
+    if (lvl > MAX_TX_WATERMARK_LVL) begin
+      `uvm_fatal("uart_env_pkg::get_tx_watermark_bytes_by_level",
+                 $sformatf("invalid TX watermark level value - %0d", lvl))
+    end else if (thresh >= TxFifoDepth/2) begin
+      return TxFifoDepth/2;
+    end else begin
+      return thresh;
+    end
   endfunction
 
   // get the number of bytes that triggers break interrupt

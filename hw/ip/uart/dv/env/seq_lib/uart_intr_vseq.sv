@@ -55,7 +55,7 @@ class uart_intr_vseq extends uart_base_vseq;
     case (uart_intr)
       TxWatermark: begin
         int level = ral.fifo_ctrl.txilvl.get_mirrored_value();
-        int watermark_bytes = get_watermark_bytes_by_level(level);
+        int watermark_bytes = get_tx_watermark_bytes_by_level(level);
         if (!en_tx) return;
         // First byte is immediately popped from TX FIFO (for transmission) and watermark based upon
         // TX FIFO level excluding in-transmission byte. Add 1 to watermark_bytes here to give the
@@ -71,7 +71,7 @@ class uart_intr_vseq extends uart_base_vseq;
         check_one_intr(.uart_intr(uart_intr), .exp(0));
         // wait until it drops below watermark
         csr_spinwait(.ptr(ral.fifo_status.txlvl),
-                     .exp_data(get_watermark_bytes_by_level(level)),
+                     .exp_data(get_tx_watermark_bytes_by_level(level)),
                      .compare_op(CompareOpLt));
         check_one_intr(.uart_intr(uart_intr), .exp(1));
         cfg.m_uart_agent_cfg.vif.wait_for_tx_idle();
@@ -86,7 +86,7 @@ class uart_intr_vseq extends uart_base_vseq;
 
       RxWatermark: begin
         int level = ral.fifo_ctrl.rxilvl.get_mirrored_value();
-        int watermark_bytes = get_watermark_bytes_by_level(level);
+        int watermark_bytes = get_rx_watermark_bytes_by_level(level);
         drive_rx_bytes(.num_bytes(watermark_bytes - 1));
         check_one_intr(.uart_intr(uart_intr), .exp(0));
         drive_rx_bytes(.num_bytes(1));
@@ -100,8 +100,8 @@ class uart_intr_vseq extends uart_base_vseq;
 
       TxEmpty: begin
         if (en_tx) begin
-          // when tx is enabled, one extra item is in the data path, total is UART_FIFO_DEPTH + 1
-          drive_tx_bytes(.num_bytes($urandom_range(1, UART_FIFO_DEPTH + 1)));
+          // when tx is enabled, one extra item is in the data path, total is TxFifoDepth + 1
+          drive_tx_bytes(.num_bytes($urandom_range(1, TxFifoDepth + 1)));
           check_one_intr(.uart_intr(uart_intr), .exp(0));
           spinwait_txidle();
           check_one_intr(.uart_intr(uart_intr), .exp(1));
@@ -112,7 +112,7 @@ class uart_intr_vseq extends uart_base_vseq;
       end
 
       RxOverflow: begin
-        drive_rx_bytes(.num_bytes(UART_FIFO_DEPTH));
+        drive_rx_bytes(.num_bytes(RxFifoDepth));
         check_one_intr(.uart_intr(uart_intr), .exp(0));
         drive_rx_bytes(.num_bytes(1));
         check_one_intr(.uart_intr(uart_intr), .exp(en_rx));
@@ -202,7 +202,7 @@ class uart_intr_vseq extends uart_base_vseq;
 
       RxTimeout: begin
         bit [TL_DW-1:0] rdata;
-        uint num_bytes   = $urandom_range(1, UART_FIFO_DEPTH);
+        uint num_bytes   = $urandom_range(1, RxFifoDepth);
         uint timeout_val = ral.timeout_ctrl.val.get_mirrored_value();
         bit  en_timeout  = ral.timeout_ctrl.en.get_mirrored_value();
         drive_rx_bytes(num_bytes);
@@ -236,7 +236,7 @@ class uart_intr_vseq extends uart_base_vseq;
               // use -2 to have higher tolerance to avoid timeout
               wait_for_baud_clock_cycles(timeout_val - 2);
               // Read more than one byte most of the time to reduce max runtime
-              repeat ($urandom_range(UART_FIFO_DEPTH >> 2, 1)) begin
+              repeat ($urandom_range(RxFifoDepth >> 2, 1)) begin
                 csr_rd(.ptr(ral.rdata), .value(rdata));
                 csr_rd(.ptr(ral.status.rxempty), .value(rxempty));
                 if (rxempty) break; // exit repeat

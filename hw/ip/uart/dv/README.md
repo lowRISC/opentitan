@@ -39,10 +39,7 @@ The following utilities provide generic helper tasks and functions to perform ac
 
 ### Global types & methods
 All common types and methods defined at the package level can be found in
-`uart_env_pkg`. Some of them in use are:
-```systemverilog
-parameter uint UART_FIFO_DEPTH    = 32;
-```
+`uart_env_pkg`.
 
 ### TL_agent
 UART instantiates (already handled in CIP base env) [tl_agent](../../../dv/sv/tl_agent/README.md)
@@ -75,7 +72,8 @@ To ensure high quality constrained random stimulus, it is necessary to develop a
 The following covergroups have been developed to prove that the test intent has been adequately met:
 * common covergroup for interrupts `hw/dv/sv/cip_lib/cip_base_env_cov.sv`: Cover interrupt value, interrupt enable, intr_test, interrupt pin
 * uart_cg in uart_agent_cov `hw/dv/sv/uart_agent/uart_agent_cov.sv`:       Cover direction, uart data, en_parity, odd_parity and baud rate
-* fifo_level_cg `hw/ip/uart/dv/env/uart_env_cov.sv`:                       Cover all fifo level with fifo reset for both TX and RX
+* rx_fifo_level_cg `hw/ip/uart/dv/env/uart_env_cov.sv`:                    Cover all fifo level with fifo reset for RX
+* tx_fifo_level_cg `hw/ip/uart/dv/env/uart_env_cov.sv`:                    Cover all fifo level with fifo reset for TX
 * tx_watermark_cg / rx_watermark_cg `hw/ip/uart/dv/env/uart_env_cov.sv`: Cover TX/RX watermark interrupt triggered for all watermark levels
 * rx_break_err_cg `hw/ip/uart/dv/env/uart_env_cov.sv`: Cover break interrupt triggered for all break levels
 * rx_timeout_cg `hw/ip/uart/dv/env/uart_env_cov.sv`: Cover timeout interrupt with small ( < 20), medium (20 - 50) and large (50 - 100) timeout values

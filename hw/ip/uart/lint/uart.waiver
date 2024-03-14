@@ -35,3 +35,6 @@ waive -rules RESET_MUX    -location {uart_core.sv} -regexp {Asynchronous reset '
 
 waive -rules UNREACHABLE -location {uart_core.sv} -msg {'break_st_q' is assigned to a non-x value within the default branch of a fully specified case statement} \
       -comment "This is fine, lint tool doesn't seem to recognize the if-statements in the case-items."
+
+waive -rules INVALID_COMPARE  -location {uart_core.sv} -msg {Comparison 'uart_fifo_rxilvl > (RxFifoDepthW - 1)' with '(RxFifoDepthW - 1)'=7 can never be true} \
+      -comment "This comparison is added for generality so that the module works even with differen FIFO depths."

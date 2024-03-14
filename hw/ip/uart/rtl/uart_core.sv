@@ -28,20 +28,20 @@ module uart_core (
   import uart_reg_pkg::*;
 
   localparam int NcoWidth = $bits(reg2hw.ctrl.nco.q);
-  // Keep in sync with UART_FIFO_DEPTH in dv/env/uart_env_pkg.sv.
-  // Watermark levels will require adjustment for different depth values, see the assignments to
-  // `rx_watermark_d` and `tx_watermark_d` below in this file and the
-  // `get_watermaark_bytes_by_level` function in dv/env/uart_env_pkg.sv. Register definitions in
-  // `data/uart.hjson` should also be adjusted.
-  localparam int UART_FIFO_DEPTH = 128;
-  localparam int UART_FIFO_DEPTH_W = $clog2(UART_FIFO_DEPTH)+1;
+  localparam int TxFifoDepthW = $clog2(TxFifoDepth)+1;
+  localparam int RxFifoDepthW = $clog2(RxFifoDepth)+1;
+
+  // The design does not support FIFOs deeper than 255 elements with the current CSR layout.
+  `ASSERT_INIT(TxFifoDepth_A, TxFifoDepth < 256)
+  `ASSERT_INIT(RxFifoDepth_A, RxFifoDepth < 256)
 
   logic   [15:0]  rx_val_q;
   logic   [7:0]   uart_rdata;
   logic           tick_baud_x16, rx_tick_baud;
 
-  logic   [UART_FIFO_DEPTH_W-1:0] tx_fifo_depth, rx_fifo_depth;
-  logic   [UART_FIFO_DEPTH_W-1:0] rx_fifo_depth_prev_q;
+  logic   [TxFifoDepthW-1:0] tx_fifo_depth;
+  logic   [RxFifoDepthW-1:0] rx_fifo_depth;
+  logic   [RxFifoDepthW-1:0] rx_fifo_depth_prev_q;
 
   logic   [23:0]  rx_timeout_count_d, rx_timeout_count_q, uart_rxto_val;
   logic           rx_fifo_depth_changed, uart_rxto_en;
@@ -146,14 +146,14 @@ module uart_core (
   assign hw2reg.status.rxfull.d      = ~rx_fifo_wready;
   assign hw2reg.status.txfull.d      = ~tx_fifo_wready;
 
-  assign hw2reg.fifo_status.txlvl.d  = tx_fifo_depth;
-  assign hw2reg.fifo_status.rxlvl.d  = rx_fifo_depth;
+  assign hw2reg.fifo_status.txlvl.d  = 8'(tx_fifo_depth);
+  assign hw2reg.fifo_status.rxlvl.d  = 8'(rx_fifo_depth);
 
   // resets are self-clearing, so need to update FIFO_CTRL
   assign hw2reg.fifo_ctrl.rxilvl.de = 1'b0;
   assign hw2reg.fifo_ctrl.rxilvl.d  = 3'h0;
   assign hw2reg.fifo_ctrl.txilvl.de = 1'b0;
-  assign hw2reg.fifo_ctrl.txilvl.d  = 2'h0;
+  assign hw2reg.fifo_ctrl.txilvl.d  = 3'h0;
 
   //              NCO 16x Baud Generator
   // output clock rate is:
@@ -179,7 +179,7 @@ module uart_core (
   prim_fifo_sync #(
     .Width   (8),
     .Pass    (1'b0),
-    .Depth   (UART_FIFO_DEPTH)
+    .Depth   (TxFifoDepth)
   ) u_uart_txfifo (
     .clk_i,
     .rst_ni,
@@ -280,7 +280,7 @@ module uart_core (
   prim_fifo_sync #(
     .Width   (8),
     .Pass    (1'b0),
-    .Depth   (UART_FIFO_DEPTH)
+    .Depth   (RxFifoDepth)
   ) u_uart_rxfifo (
     .clk_i,
     .rst_ni,
@@ -305,16 +305,16 @@ module uart_core (
   // Interrupt & Status //
   ////////////////////////
 
+  logic [TxFifoDepthW-1:0] tx_watermark_thresh;
   always_comb begin
-    unique case(uart_fifo_txilvl)
-      3'h0:    event_tx_watermark = (tx_fifo_depth < 8'd1);
-      3'h1:    event_tx_watermark = (tx_fifo_depth < 8'd2);
-      3'h2:    event_tx_watermark = (tx_fifo_depth < 8'd4);
-      3'h3:    event_tx_watermark = (tx_fifo_depth < 8'd8);
-      3'h4:    event_tx_watermark = (tx_fifo_depth < 8'd16);
-      3'h5:    event_tx_watermark = (tx_fifo_depth < 8'd32);
-      default: event_tx_watermark = (tx_fifo_depth < 8'd64);
-    endcase
+    // Create power of two thresholds.
+    // The threshold saturates at half the FIFO depth.
+    if (uart_fifo_txilvl >= (TxFifoDepthW-2)) begin
+      tx_watermark_thresh = TxFifoDepthW'(TxFifoDepth/2);
+    end else begin
+      tx_watermark_thresh = 1'b1 << uart_fifo_txilvl;
+    end
+    event_tx_watermark = tx_fifo_depth < tx_watermark_thresh;
   end
 
   // The empty condition handling is a bit different.
@@ -337,19 +337,23 @@ module uart_core (
     end
   end
 
+  logic [RxFifoDepthW-1:0] rx_watermark_thresh;
   always_comb begin
-    unique case(uart_fifo_rxilvl)
-      3'h0:    event_rx_watermark = (rx_fifo_depth >= 8'd1);
-      3'h1:    event_rx_watermark = (rx_fifo_depth >= 8'd2);
-      3'h2:    event_rx_watermark = (rx_fifo_depth >= 8'd4);
-      3'h3:    event_rx_watermark = (rx_fifo_depth >= 8'd8);
-      3'h4:    event_rx_watermark = (rx_fifo_depth >= 8'd16);
-      3'h5:    event_rx_watermark = (rx_fifo_depth >= 8'd32);
-      3'h6:    event_rx_watermark = (rx_fifo_depth >= 8'd64);
-      3'h7:    event_rx_watermark = (rx_fifo_depth >= 8'd126);
-      default: event_rx_watermark = 1'b0;
-    endcase
+    // Create power of two thresholds.
+    if (uart_fifo_rxilvl > (RxFifoDepthW-1)) begin
+      // This results in the comparison always returning 0 below because RxFifoDepth can
+      // encode depths up to 2*RxFifoDepth-1.
+      rx_watermark_thresh = {RxFifoDepthW{1'b1}};
+    end else if (uart_fifo_rxilvl == (RxFifoDepthW-1)) begin
+      // The maximum valid threshold threshold is an exception and saturates at RxFifoDepth-2.
+      rx_watermark_thresh = RxFifoDepthW'(RxFifoDepth-2);
+    end else begin
+      rx_watermark_thresh = 1'b1 << uart_fifo_rxilvl;
+    end
+    event_rx_watermark = rx_fifo_depth >= rx_watermark_thresh;
   end
+
+
 
   // rx timeout interrupt
   assign uart_rxto_en  = reg2hw.timeout_ctrl.en.q;
@@ -380,7 +384,7 @@ module uart_core (
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       rx_timeout_count_q   <= 24'd0;
-      rx_fifo_depth_prev_q <= 6'd0;
+      rx_fifo_depth_prev_q <= '0;
     end else begin
       rx_timeout_count_q    <= rx_timeout_count_d;
       rx_fifo_depth_prev_q  <= rx_fifo_depth;

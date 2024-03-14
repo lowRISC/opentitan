@@ -74,7 +74,7 @@
 
     {
       name: uart_fifo_reset
-      // need more seeds to cover uart_env_cov::fifo_level_cg
+      // need more seeds to cover uart_env_cov::rx_fifo_level_cg and uart_env_cov::tx_fifo_level_cg
       reseed: 300
       uvm_test_seq: uart_fifo_reset_vseq
     }

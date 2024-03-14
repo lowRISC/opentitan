@@ -7,6 +7,8 @@
 package uart_reg_pkg;
 
   // Param list
+  parameter int RxFifoDepth = 128;
+  parameter int TxFifoDepth = 32;
   parameter int NumAlerts = 1;
 
   // Address widths within the block

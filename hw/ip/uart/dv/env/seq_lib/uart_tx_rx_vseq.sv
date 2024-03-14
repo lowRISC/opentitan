@@ -7,9 +7,11 @@ class uart_tx_rx_vseq extends uart_base_vseq;
 
   rand uint num_tx_bytes;
   rand uint num_rx_bytes;
-  rand uint dly_to_next_trans;
+  rand uint dly_to_next_rx_trans;
+  rand uint dly_to_next_tx_trans;
   rand uint dly_to_access_intr;
-  rand bit  wait_for_idle;
+  rand bit  wait_for_rx_idle;
+  rand bit  wait_for_tx_idle;
   rand uint weight_to_skip_rx_read;
   rand uint dly_to_rx_read;
 
@@ -36,8 +38,16 @@ class uart_tx_rx_vseq extends uart_base_vseq;
     };
   }
 
-  constraint dly_to_next_trans_c {
-    dly_to_next_trans dist {
+  constraint dly_to_next_rx_trans_c {
+    dly_to_next_rx_trans dist {
+      0           :/ 5,  // more back2back transaction
+      [1:100]     :/ 5,
+      [100:10000] :/ 2
+    };
+  }
+
+  constraint dly_to_next_tx_trans_c {
+    dly_to_next_tx_trans dist {
       0           :/ 5,  // more back2back transaction
       [1:100]     :/ 5,
       [100:10000] :/ 2
@@ -53,8 +63,15 @@ class uart_tx_rx_vseq extends uart_base_vseq;
     };
   }
 
-  constraint wait_for_idle_c {
-    wait_for_idle dist {
+  constraint wait_for_rx_idle_c {
+    wait_for_rx_idle dist {
+      1       :/ 1,
+      0       :/ 10
+    };
+  }
+
+  constraint wait_for_tx_idle_c {
+    wait_for_tx_idle dist {
       1       :/ 1,
       0       :/ 10
     };
@@ -164,15 +181,15 @@ class uart_tx_rx_vseq extends uart_base_vseq;
   virtual task process_tx();
     for (int j = 1; j <= num_tx_bytes; j++) begin
       byte tx_byte;
-      `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_next_trans)
-      `DV_CHECK_MEMBER_RANDOMIZE_FATAL(wait_for_idle)
+      `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_next_tx_trans)
+      `DV_CHECK_MEMBER_RANDOMIZE_FATAL(wait_for_tx_idle)
 
-      cfg.clk_rst_vif.wait_clks(dly_to_next_trans);
+      cfg.clk_rst_vif.wait_clks(dly_to_next_tx_trans);
       wait_for_tx_fifo_not_full();
       wait_when_in_ignored_period(.tx(1));
       `DV_CHECK_STD_RANDOMIZE_FATAL(tx_byte)
       send_tx_byte(tx_byte);
-      if (wait_for_idle) spinwait_txidle();
+      if (wait_for_tx_idle) spinwait_txidle();
     end
   endtask : process_tx
 
@@ -185,14 +202,14 @@ class uart_tx_rx_vseq extends uart_base_vseq;
       begin // drive from uart RX interface
         for (int j = 1; j <= num_rx_bytes; j++) begin
           byte rx_byte;
-          `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_next_trans)
-          `DV_CHECK_MEMBER_RANDOMIZE_FATAL(wait_for_idle)
+          `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_next_rx_trans)
+          `DV_CHECK_MEMBER_RANDOMIZE_FATAL(wait_for_rx_idle)
           `DV_CHECK_STD_RANDOMIZE_FATAL(rx_byte)
 
-          cfg.clk_rst_vif.wait_clks(dly_to_next_trans);
+          cfg.clk_rst_vif.wait_clks(dly_to_next_rx_trans);
           wait_for_rx_fifo_not_full();
           send_rx_byte(rx_byte);
-          if (wait_for_idle) spinwait_rxidle();
+          if (wait_for_rx_idle) spinwait_rxidle();
         end
         send_rx_done = 1; // to end reading RX thread
       end

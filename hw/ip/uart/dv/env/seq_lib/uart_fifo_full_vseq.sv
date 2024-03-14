@@ -25,20 +25,37 @@ class uart_fifo_full_vseq extends uart_tx_rx_vseq;
     };
   }
 
-  constraint dly_to_next_trans_c {
-    dly_to_next_trans dist {
-      0           :/ UART_FIFO_DEPTH - 2,  // more back2back transaction
+  constraint dly_to_next_rx_trans_c {
+    dly_to_next_rx_trans dist {
+      0           :/ RxFifoDepth - 2,  // more back2back transaction
       [1:100]     :/ 5,
       [100:10000] :/ 2
     };
   }
 
-  constraint wait_for_idle_c {
-    // ratio of wait/not_wait depends upon UART_FIFO_DEPTH to ensure we're very likely to get a run
+  constraint dly_to_next_tx_trans_c {
+    dly_to_next_tx_trans dist {
+      0           :/ TxFifoDepth - 2,  // more back2back transaction
+      [1:100]     :/ 5,
+      [100:10000] :/ 2
+    };
+  }
+
+  constraint wait_for_rx_idle_c {
+    // ratio of wait/not_wait depends upon RxFifoDepth to ensure we're very likely to get a run
     // of transactions to fill the FIFO
-    wait_for_idle dist {
+    wait_for_rx_idle dist {
       1       :/ 1,
-      0       :/ UART_FIFO_DEPTH + 10
+      0       :/ RxFifoDepth + 10
+    };
+  }
+
+  constraint wait_for_tx_idle_c {
+    // ratio of wait/not_wait depends upon TxFifoDepth to ensure we're very likely to get a run
+    // of transactions to fill the FIFO
+    wait_for_tx_idle dist {
+      1       :/ 1,
+      0       :/ TxFifoDepth + 10
     };
   }
 
