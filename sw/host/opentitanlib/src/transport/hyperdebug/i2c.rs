@@ -481,7 +481,7 @@ impl Bus for HyperdebugI2cBus {
             TransportError::UnsupportedOperation
         );
         ensure!(self.mode.get() == Mode::Device, I2cError::NotInDeviceMode);
-        if data.len() > 256 {
+        if data.len() > 1024 {
             bail!(TransportError::CommunicationError(
                 "Data exceeds maximum length".to_string()
             ))
