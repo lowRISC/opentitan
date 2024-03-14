@@ -139,7 +139,7 @@ class uart_base_vseq extends cip_base_vseq #(.CFG_T               (uart_env_cfg)
     if (ral.ctrl.tx.get_mirrored_value()) begin
       // use a very big timeout as it takes long time to flush all the items
       csr_spinwait(.ptr(ral.status.txidle), .exp_data(1'b1),
-                   .timeout_ns(UART_FIFO_DEPTH * 1_250_000),
+                   .timeout_ns(TxFifoDepth * 1_250_000),
                    .spinwait_delay_ns($urandom_range(0, 1000)));
     end
   endtask

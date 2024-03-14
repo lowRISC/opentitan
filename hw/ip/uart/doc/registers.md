@@ -266,8 +266,6 @@ raises tx_watermark interrupt.
 | 0x2     | txlvl4  | 4 characters  |
 | 0x3     | txlvl8  | 8 characters  |
 | 0x4     | txlvl16 | 16 characters |
-| 0x5     | txlvl32 | 32 characters |
-| 0x6     | txlvl64 | 64 characters |
 
 Other values are reserved.
 

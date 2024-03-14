@@ -124,7 +124,7 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
                                     item.sprint()), UVM_HIGH)
         end
         if (!parity_err && item.stop_bit == 1) begin // no parity/frame error
-          if (rx_q.size < UART_FIFO_DEPTH) begin
+          if (rx_q.size < RxFifoDepth) begin
             rx_q.push_back(item);
             predict_rx_watermark_intr();
           end
@@ -139,12 +139,12 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
   endtask
 
   virtual function void predict_tx_watermark_intr(uint tx_q_size = tx_q.size);
-    uint watermark = get_watermark_bytes_by_level(ral.fifo_ctrl.txilvl.get_mirrored_value());
+    uint watermark = get_tx_watermark_bytes_by_level(ral.fifo_ctrl.txilvl.get_mirrored_value());
     intr_exp[TxWatermark] = (tx_q_size < watermark) || status_intr_test[TxWatermark];
   endfunction
 
   virtual function void predict_rx_watermark_intr(uint rx_q_size = rx_q.size);
-    uint watermark = get_watermark_bytes_by_level(ral.fifo_ctrl.rxilvl.get_mirrored_value());
+    uint watermark = get_rx_watermark_bytes_by_level(ral.fifo_ctrl.rxilvl.get_mirrored_value());
     intr_exp[RxWatermark] = (rx_q_size >= watermark) || status_intr_test[RxWatermark];
   endfunction
 
@@ -224,7 +224,7 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
             cfg.clk_rst_vif.wait_n_clks(1);
 
             tx_item.data = item.a_data;
-            if (tx_q.size() < UART_FIFO_DEPTH) begin
+            if (tx_q.size() < TxFifoDepth) begin
               tx_q.push_back(tx_item);
               `uvm_info(`gfn, $sformatf("After push one item, tx_q size: %0d", tx_q.size), UVM_HIGH)
             end else begin
@@ -248,7 +248,7 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
             if (ral.ctrl.slpbk.get_mirrored_value()) begin
               // if sys loopback is on, tx item isn't sent to uart pin but rx fifo
               uart_item tx_item = tx_q.pop_front();
-              if (rx_enabled && (rx_q.size < UART_FIFO_DEPTH)) begin
+              if (rx_enabled && (rx_q.size < TxFifoDepth)) begin
                 rx_q.push_back(tx_item);
                 predict_rx_watermark_intr();
               end
@@ -280,18 +280,16 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
             tx_q.delete();
             void'(ral.fifo_ctrl.txrst.predict(.value(0), .kind(UVM_PREDICT_WRITE)));
             if (cfg.en_cov) begin
-              cov.fifo_level_cg.sample(.dir(UartTx),
-                                       .lvl(ral.fifo_status.txlvl.get_mirrored_value()),
-                                       .rst(1));
+              cov.tx_fifo_level_cg.sample(.lvl(ral.fifo_status.txlvl.get_mirrored_value()),
+                                          .rst(1));
             end
           end
           if (rxrst_val) begin
             rx_q.delete();
             void'(ral.fifo_ctrl.rxrst.predict(.value(0), .kind(UVM_PREDICT_WRITE)));
             if (cfg.en_cov) begin
-              cov.fifo_level_cg.sample(.dir(UartRx),
-                                       .lvl(ral.fifo_status.rxlvl.get_mirrored_value()),
-                                       .rst(1));
+              cov.rx_fifo_level_cg.sample(.lvl(ral.fifo_status.rxlvl.get_mirrored_value()),
+                                          .rst(1));
             end
           end
           // recalculate watermark when RXILVL/TXILVL is updated
@@ -331,10 +329,10 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
         if (!write) begin // read
           case (channel)
             AddrChannel: begin // predict at address phase
-              tx_full_exp  = tx_q.size >= UART_FIFO_DEPTH;
+              tx_full_exp  = tx_q.size >= TxFifoDepth;
               tx_empty_exp = tx_q.size == 0;
               tx_idle_exp  = tx_q.size == 0 && tx_processing_item_q.size == 0;
-              rx_full_exp  = rx_q.size == UART_FIFO_DEPTH;
+              rx_full_exp  = rx_q.size == RxFifoDepth;
               rx_empty_exp = rx_q.size == 0;
               rx_idle_exp  = (uart_rx_clk_pulses == 0) || !rx_enabled;
             end
@@ -350,14 +348,14 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
 
               // ignore corner case when item is about to complete, also fifo is changing from
               // full to not full and it's at ignored period
-              if (!(tx_enabled && tx_q_size_at_addr_phase == UART_FIFO_DEPTH
+              if (!(tx_enabled && tx_q_size_at_addr_phase == TxFifoDepth
                     && is_in_ignored_period(UartTx))) begin
                 `DV_CHECK_EQ(get_field_val(ral.status.txfull, item.d_data), tx_full_exp, $sformatf(
                     "check tx_full fail: tx_en = %0d, tx_q.size = %0d, uart_tx_clk_pulses = %0d",
                     tx_enabled, tx_q_size_at_addr_phase, uart_tx_clk_pulses))
               end
               if (!(rx_enabled && is_in_ignored_period(UartRx) &&
-                    rx_q_size_at_addr_phase inside {UART_FIFO_DEPTH - 1, UART_FIFO_DEPTH})) begin
+                    rx_q_size_at_addr_phase inside {RxFifoDepth - 1, RxFifoDepth})) begin
                 `DV_CHECK_EQ(get_field_val(ral.status.rxfull, item.d_data), rx_full_exp, $sformatf(
                     "check rx_full fail: rx_en = %0d, rx_q.size = %0d, uart_rx_clk_pulses = %0d",
                     rx_enabled, rx_q_size_at_addr_phase, uart_rx_clk_pulses))
@@ -466,7 +464,7 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
         if (!write) begin
           case (channel)
             AddrChannel: begin // predict at address phase
-              txlvl_exp = tx_q.size() > UART_FIFO_DEPTH ? UART_FIFO_DEPTH : tx_q.size();
+              txlvl_exp = tx_q.size() > TxFifoDepth ? TxFifoDepth : tx_q.size();
               rxlvl_exp = rx_q.size();
             end
             DataChannel: begin // check at data phase
@@ -500,8 +498,8 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
               do_read_check = 1'b0;
 
               if (cfg.en_cov) begin
-                cov.fifo_level_cg.sample(.dir(UartTx), .lvl(txlvl_act), .rst(0));
-                cov.fifo_level_cg.sample(.dir(UartRx), .lvl(rxlvl_act), .rst(0));
+                cov.tx_fifo_level_cg.sample(.lvl(txlvl_act), .rst(0));
+                cov.rx_fifo_level_cg.sample(.lvl(rxlvl_act), .rst(0));
               end
             end
           endcase

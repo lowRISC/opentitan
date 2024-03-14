@@ -221,12 +221,6 @@ dif_result_t dif_uart_watermark_tx_set(const dif_uart_t *uart,
     case kDifUartWatermarkByte16:
       value = UART_FIFO_CTRL_TXILVL_VALUE_TXLVL16;
       break;
-    case kDifUartWatermarkByte32:
-      value = UART_FIFO_CTRL_TXILVL_VALUE_TXLVL32;
-      break;
-    case kDifUartWatermarkByte64:
-      value = UART_FIFO_CTRL_TXILVL_VALUE_TXLVL64;
-      break;
     default:
       // The minimal TX watermark is 1 byte, maximal 16 bytes.
       return kDifError;

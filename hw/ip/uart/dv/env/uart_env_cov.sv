@@ -5,13 +5,23 @@
 class uart_env_cov extends cip_base_env_cov #(.CFG_T(uart_env_cfg));
   `uvm_component_utils(uart_env_cov)
 
-  covergroup fifo_level_cg with function sample(uart_dir_e dir, int lvl, bit rst);
-    cp_dir: coverpoint dir;
+  import uart_reg_pkg::RxFifoDepth;
+  import uart_reg_pkg::TxFifoDepth;
+
+  covergroup rx_fifo_level_cg with function sample(int lvl, bit rst);
     cp_lvl: coverpoint lvl {
-      bins all_levels[] = {[0:UART_FIFO_DEPTH]};
+      bins all_levels[] = {[0:RxFifoDepth]};
     }
     cp_rst: coverpoint rst;
-    cross cp_dir, cp_lvl, cp_rst;
+    cross cp_lvl, cp_rst;
+  endgroup
+
+  covergroup tx_fifo_level_cg with function sample(int lvl, bit rst);
+    cp_lvl: coverpoint lvl {
+      bins all_levels[] = {[0:TxFifoDepth]};
+    }
+    cp_rst: coverpoint rst;
+    cross cp_lvl, cp_rst;
   endgroup
 
   // Cover all combinations of 2 different clocks
@@ -29,13 +39,13 @@ class uart_env_cov extends cip_base_env_cov #(.CFG_T(uart_env_cfg));
 
   covergroup tx_watermark_cg with function sample(int watermark_lvl);
     cp_watermark_lvl: coverpoint watermark_lvl {
-      bins all_levels[] = {[0:MAX_WATERMARK_LVL-1]};
+      bins all_levels[] = {[0:MAX_TX_WATERMARK_LVL-1]};
     }
   endgroup
 
   covergroup rx_watermark_cg with function sample(int watermark_lvl);
     cp_watermark_lvl: coverpoint watermark_lvl {
-      bins all_levels[] = {[0:MAX_WATERMARK_LVL]};
+      bins all_levels[] = {[0:MAX_RX_WATERMARK_LVL]};
     }
   endgroup
 
@@ -63,7 +73,8 @@ class uart_env_cov extends cip_base_env_cov #(.CFG_T(uart_env_cfg));
 
   function new(string name, uvm_component parent);
     super.new(name, parent);
-    fifo_level_cg = new();
+    rx_fifo_level_cg = new();
+    tx_fifo_level_cg = new();
     baud_rate_w_core_clk_cg = new();
     tx_watermark_cg = new();
     rx_watermark_cg = new();

@@ -119,6 +119,23 @@
       desc: "End-to-end bus integrity scheme."
     }
   ]
+  param_list: [
+    // Note that the watermark CSRs further below need to be adjusted when
+    // making changes to these FIFO depths. The RTL and DV are written in
+    // a parametric way and will adjust automatically.
+    { name:    "RxFifoDepth",
+      desc:    "Number of bytes in the RX FIFO.",
+      type:    "int",
+      default: "128",
+      local:   "true",
+    }
+    { name:    "TxFifoDepth",
+      desc:    "Number of bytes in the TX FIFO.",
+      type:    "int",
+      default: "32",
+      local:   "true",
+    }
+  ]
   regwidth: "32",
   registers: [
     { name: "CTRL",
@@ -344,14 +361,6 @@
             { value: "4",
               name: "txlvl16",
               desc: "16 characters"
-            },
-            { value: "5",
-              name: "txlvl32",
-              desc: "32 characters"
-            },
-            { value: "6",
-              name: "txlvl64",
-              desc: "64 characters"
             },
           ]
         }
