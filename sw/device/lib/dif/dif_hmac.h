@@ -92,8 +92,10 @@ typedef struct dif_hmac_digest {
  * successful call to this function, |dif_hmac_fifo_push()| can be called to
  * write the message for HMAC processing.
  *
- * This function must be called with a valid `key` that references a 32-byte,
- * contiguous, readable region where the key may be copied from.
+ * This function should be called with a valid `key` that references a 32-byte,
+ * contiguous, readable region where the key may be copied from. Passing a
+ * `NULL` `key` reference will skip loading of the key. This is only expected to
+ * be used to test scenarios where the key is not loaded.
  *
  * @param hmac The HMAC device to start HMAC operation for.
  * @param key The 256-bit HMAC key.
@@ -195,20 +197,20 @@ dif_result_t dif_hmac_process(const dif_hmac_t *hmac);
  * then this function assumes HMAC is still processing and will return
  * `kDifHmacErrorDigestProcessing`.
  *
- * Once the digest has been read, the HMAC and SHA256 datapaths are disabled,
- * clearing the digest registers.
- *
  * `digest` must reference an allocated, contiguous, 32-byte buffer. This buffer
  * shall also be 4-byte aligned. This is all consistent with the platform
  * requirements for size and alignment requirements of `dif_hmac_digest_t`.
  *
  * @param hmac The HMAC device to read the digest from.
+ * @param disable_after_done If true, the HMAC and SHA256 datapaths will be
+ * disabled after the digest is read, clearing the digest registers.
  * @param[out] digest A contiguous 32-byte, 4-byte aligned buffer for the
  * digest.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_hmac_finish(const dif_hmac_t *hmac, dif_hmac_digest_t *digest);
+dif_result_t dif_hmac_finish(const dif_hmac_t *hmac, bool disable_after_done,
+                             dif_hmac_digest_t *digest);
 
 /**
  * Randomizes internal secret registers on the HMAC device. This includes the
@@ -218,10 +220,12 @@ dif_result_t dif_hmac_finish(const dif_hmac_t *hmac, dif_hmac_digest_t *digest);
  *
  * @param hmac The HMAC device to clobber state on.
  * @param entropy A source of randomness to write to the HMAC internal state.
+ * @param[out] digest The resulting digest from the wipe operation.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_hmac_wipe_secret(const dif_hmac_t *hmac, uint32_t entropy);
+dif_result_t dif_hmac_wipe_secret(const dif_hmac_t *hmac, uint32_t entropy,
+                                  dif_hmac_digest_t *digest);
 
 #ifdef __cplusplus
 }  // extern "C"

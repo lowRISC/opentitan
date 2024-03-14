@@ -96,7 +96,7 @@ static dif_result_t dif_hmac_calculate_device_config_value(
 dif_result_t dif_hmac_mode_hmac_start(const dif_hmac_t *hmac,
                                       const uint8_t *key,
                                       const dif_hmac_transaction_t config) {
-  if (hmac == NULL || key == NULL) {
+  if (hmac == NULL) {
     return kDifBadArg;
   }
 
@@ -106,14 +106,16 @@ dif_result_t dif_hmac_mode_hmac_start(const dif_hmac_t *hmac,
   // Set the byte-order of the input message and the digest.
   DIF_RETURN_IF_ERROR(dif_hmac_calculate_device_config_value(&reg, config));
 
-  // Set the HMAC key.
-  // The least significant word is at HMAC_KEY_7_REG_OFFSET.
-  // From the HWIP spec: "Order of the secret key is: key[255:0] = {KEY0, KEY1,
-  // KEY2, ... , KEY7};"
-  for (size_t i = 0; i < 8; ++i) {
-    const ptrdiff_t word_offset = (ptrdiff_t)(i * sizeof(uint32_t));
-    mmio_region_write32(hmac->base_addr, HMAC_KEY_7_REG_OFFSET - word_offset,
-                        read_32((char *)key + word_offset));
+  if (key != NULL) {
+    // Set the HMAC key.
+    // The least significant word is at HMAC_KEY_7_REG_OFFSET.
+    // From the HWIP spec: "Order of the secret key is: key[255:0] = {KEY0,
+    // KEY1, KEY2, ... , KEY7};"
+    for (size_t i = 0; i < 8; ++i) {
+      const ptrdiff_t word_offset = (ptrdiff_t)(i * sizeof(uint32_t));
+      mmio_region_write32(hmac->base_addr, HMAC_KEY_7_REG_OFFSET - word_offset,
+                          read_32((char *)key + word_offset));
+    }
   }
 
   // Set HMAC to process in HMAC mode (not SHA256-only mode).
@@ -180,8 +182,8 @@ dif_result_t dif_hmac_fifo_push(const dif_hmac_t *hmac, const void *data,
     size_t bytes_written = 0;
 
     if (bytes_remaining < sizeof(uint32_t) || !word_aligned) {
-      // Individual byte writes are needed if the buffer isn't aligned or there
-      // are no more full words to write.
+      // Individual byte writes are needed if the buffer isn't aligned or
+      // there are no more full words to write.
       mmio_region_write8(hmac->base_addr, HMAC_MSG_FIFO_REG_OFFSET, *data_sent);
       bytes_written = 1;
     } else {
@@ -242,7 +244,19 @@ dif_result_t dif_hmac_process(const dif_hmac_t *hmac) {
   return kDifOk;
 }
 
-dif_result_t dif_hmac_finish(const dif_hmac_t *hmac,
+static void read_digest(const dif_hmac_t *hmac, dif_hmac_digest_t *digest) {
+  // Read the digest in reverse to preserve the numerical value.
+  // The least significant word is at HMAC_DIGEST_7_REG_OFFSET.
+  // From the HWIP spec: "Order of the digest is: digest[255:0] = {DIGEST0,
+  // DIGEST1, DIGEST2, ... , DIGEST7};"
+  for (size_t i = 0; i < ARRAYSIZE(digest->digest); ++i) {
+    digest->digest[i] = mmio_region_read32(
+        hmac->base_addr,
+        HMAC_DIGEST_7_REG_OFFSET - (ptrdiff_t)(i * sizeof(uint32_t)));
+  }
+}
+
+dif_result_t dif_hmac_finish(const dif_hmac_t *hmac, bool disable_after_done,
                              dif_hmac_digest_t *digest) {
   if (hmac == NULL || digest == NULL) {
     return kDifBadArg;
@@ -256,6 +270,15 @@ dif_result_t dif_hmac_finish(const dif_hmac_t *hmac,
   bool fifo_empty = mmio_region_get_bit32(
       hmac->base_addr, HMAC_STATUS_REG_OFFSET, HMAC_STATUS_FIFO_EMPTY_BIT);
 
+  bool hmac_error =
+      mmio_region_get_bit32(hmac->base_addr, HMAC_INTR_STATE_REG_OFFSET,
+                            HMAC_INTR_STATE_HMAC_ERR_BIT);
+
+  if (hmac_error) {
+    // Detected error.
+    return kDifError;
+  }
+
   if (done) {
     // Clear hmac_done.
     mmio_region_nonatomic_set_bit32(hmac->base_addr, HMAC_INTR_STATE_REG_OFFSET,
@@ -264,42 +287,36 @@ dif_result_t dif_hmac_finish(const dif_hmac_t *hmac,
     return kDifUnavailable;
   }
 
-  // Read the digest in reverse to preserve the numerical value.
-  // The least significant word is at HMAC_DIGEST_7_REG_OFFSET.
-  // From the HWIP spec: "Order of the digest is: digest[255:0] = {DIGEST0,
-  // DIGEST1, DIGEST2, ... , DIGEST7};"
-  for (size_t i = 0; i < ARRAYSIZE(digest->digest); ++i) {
-    digest->digest[i] = mmio_region_read32(
-        hmac->base_addr,
-        HMAC_DIGEST_7_REG_OFFSET - (ptrdiff_t)(i * sizeof(uint32_t)));
+  read_digest(hmac, digest);
+
+  if (disable_after_done) {
+    // Disable HMAC and SHA256 until the next transaction, clearing the
+    // current digest.
+    uint32_t device_config =
+        mmio_region_read32(hmac->base_addr, HMAC_CFG_REG_OFFSET);
+    device_config =
+        bitfield_bit32_write(device_config, HMAC_CFG_SHA_EN_BIT, false);
+    device_config =
+        bitfield_bit32_write(device_config, HMAC_CFG_HMAC_EN_BIT, false);
+    device_config =
+        bitfield_field32_write(device_config, HMAC_CFG_DIGEST_SIZE_FIELD,
+                               HMAC_CFG_DIGEST_SIZE_VALUE_SHA2_NONE);
+    device_config =
+        bitfield_field32_write(device_config, HMAC_CFG_KEY_LENGTH_FIELD,
+                               HMAC_CFG_KEY_LENGTH_VALUE_KEY_256);
+
+    mmio_region_write32(hmac->base_addr, HMAC_CFG_REG_OFFSET, device_config);
   }
-
-  // Disable HMAC and SHA256 until the next transaction, clearing the current
-  // digest.
-  uint32_t device_config =
-      mmio_region_read32(hmac->base_addr, HMAC_CFG_REG_OFFSET);
-  device_config =
-      bitfield_bit32_write(device_config, HMAC_CFG_SHA_EN_BIT, false);
-  device_config =
-      bitfield_bit32_write(device_config, HMAC_CFG_HMAC_EN_BIT, false);
-  device_config =
-      bitfield_field32_write(device_config, HMAC_CFG_DIGEST_SIZE_FIELD,
-                             HMAC_CFG_DIGEST_SIZE_VALUE_SHA2_NONE);
-  device_config =
-      bitfield_field32_write(device_config, HMAC_CFG_KEY_LENGTH_FIELD,
-                             HMAC_CFG_KEY_LENGTH_VALUE_KEY_256);
-
-  mmio_region_write32(hmac->base_addr, HMAC_CFG_REG_OFFSET, device_config);
 
   return kDifOk;
 }
 
-dif_result_t dif_hmac_wipe_secret(const dif_hmac_t *hmac, uint32_t entropy) {
-  if (hmac == NULL) {
+dif_result_t dif_hmac_wipe_secret(const dif_hmac_t *hmac, uint32_t entropy,
+                                  dif_hmac_digest_t *digest) {
+  if (hmac == NULL || digest == NULL) {
     return kDifBadArg;
   }
-
   mmio_region_write32(hmac->base_addr, HMAC_WIPE_SECRET_REG_OFFSET, entropy);
-
+  read_digest(hmac, digest);
   return kDifOk;
 }
