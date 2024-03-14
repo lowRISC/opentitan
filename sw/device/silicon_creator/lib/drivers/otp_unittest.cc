@@ -40,7 +40,7 @@ class OtpReadTest : public OtpTest {
  protected:
   const ptrdiff_t mmap_window_offset_ = OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET;
   void ExpectDaiIdleCheck(bool idle) {
-    EXPECT_SEC_READ32(base_ + OTP_CTRL_STATUS_REG_OFFSET,
+    EXPECT_ABS_READ32(base_ + OTP_CTRL_STATUS_REG_OFFSET,
                       {{OTP_CTRL_STATUS_DAI_IDLE_BIT, idle}});
   }
 };
