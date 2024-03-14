@@ -32,8 +32,11 @@ waive -rules RESET_MUX -location {rv_dm.sv} \
       -msg {Asynchronous reset 'dmi_rst_n' is driven by a multiplexer here, used as a reset 'rst_ni' at} \
       -comment "This is needed such that the reset can be properly controlled during scanmode.."
 waive -rules RESET_USE -location {rv_dm.sv} \
-      -msg {'rst_ni' is connected to 'dmi_jtag' port 'rst_ni', and used as an asynchronous reset or set at rv_dm_regs_reg_top} \
-      -comment "This message arises since due to reset synchronization inside the dmi_jtag module."
+      -msg {'rst_ni' is connected to 'dmi_jtag' port 'rst_ni', and used as an asynchronous reset or set} \
+      -comment "This message arises due to reset synchronization inside the dmi_jtag module."
+waive -rules {INPUT_NOT_READ HIER_BRANCH_NOT_READ} -location {rv_dm.sv} \
+      -regexp {'clk_lc_i' is not read from in module} \
+      -comment "This clock input is left unconnected. It is only needed so that the topgen tooling correctly connects the lc clock/reset pair."
 
 # dmi_jtag_tap
 waive -rules CLOCK_MUX -location {dmi_jtag_tap.sv} -regexp {Clock '.*tck_n' is driven by a multiplexer here, used as a clock at dmi_jtag_tap.sv} \

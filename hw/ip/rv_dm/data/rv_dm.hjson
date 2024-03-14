@@ -21,7 +21,10 @@
   design_stage:       "D2S",
   verification_stage: "V1",
   clocking: [
-    {clock: "clk_i", reset: "rst_ni"}
+    {clock: "clk_i", reset: "rst_ni", primary: true},
+    // Ideally, this is the processor clock and reset.
+    // Note that only the reset input is used here for NDM reset request tracking.
+    {clock: "clk_lc_i", reset: "rst_lc_ni"}
   ]
   bus_interfaces: [
     { protocol: "tlul", direction: "host",   name: "sba" }
