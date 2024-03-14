@@ -67,8 +67,11 @@ module entropy_src_core import entropy_src_pkg::*; #(
   localparam int ObserveFifoWidth = 32;
   localparam int PreCondWidth = 64;
   localparam int Clog2ObserveFifoDepth = $clog2(ObserveFifoDepth);
-  localparam int EsEnableCopies = 21;
+  localparam int EsEnableCopies = 20;
   localparam int EsEnPulseCopies = 1;
+  localparam int unsigned NumSwReadsSeed = SeedLen / FullRegWidth;
+  localparam int unsigned LastSwRead = NumSwReadsSeed - 1;
+  localparam int unsigned SwReadIdxWidth = prim_util_pkg::vbits(NumSwReadsSeed);
 
   //-----------------------
   // SHA3parameters
@@ -110,7 +113,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic       entropy_data_reg_en_pfe;
   logic       entropy_data_reg_en_pfa;
   logic       es_data_reg_rd_en;
-  logic       sw_es_rd_pulse;
   logic       event_es_entropy_valid;
   logic       event_es_health_test_failed;
   logic       event_es_observe_fifo_ready;
@@ -386,13 +388,10 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                     pfifo_bypass_clr;
   logic                     pfifo_bypass_pop;
 
-  logic [SeedLen-1:0]       pfifo_swread_wdata;
-  logic                     pfifo_swread_not_full;
-  logic [FullRegWidth-1:0]  pfifo_swread_rdata;
-  logic                     pfifo_swread_not_empty;
-  logic                     pfifo_swread_push;
-  logic                     pfifo_swread_clr;
-  logic                     pfifo_swread_pop;
+  logic [SwReadIdxWidth-1:0] swread_idx_d, swread_idx_q;
+  logic                      swread_idx_incr, swread_idx_clr;
+  logic [FullRegWidth-1:0]   swread_data, swread_data_buf;
+  logic                      swread_done;
 
   logic [SeedLen-1:0]       final_es_data;
   logic                     es_hw_if_req;
@@ -877,7 +876,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
 
   // set the interrupt event when enabled
-  assign event_es_entropy_valid = pfifo_swread_not_empty && es_enable_fo[2];
+  assign event_es_entropy_valid =
+      sfifo_esfinal_not_empty && es_route_to_sw && es_data_reg_rd_en && es_enable_fo[2];
 
 
   // set the interrupt sources
@@ -2512,7 +2512,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign sfifo_distr_push = pfifo_postht_not_empty;
   assign sfifo_distr_wdata = pfifo_postht_rdata;
 
-  assign sfifo_distr_clr = fw_ov_mode_entropy_insert ? !es_enable_fo[20] : !es_delayed_enable;
+  assign sfifo_distr_clr = fw_ov_mode_entropy_insert ? !es_enable_fo[19] : !es_delayed_enable;
 
   // In firmware override mode with extract & insert enabled, post-health test entropy bits can
   // only move into the observe FIFO. Once the observe FIFO is full, post-health test entropy is
@@ -2937,8 +2937,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   assign sfifo_esfinal_clr  = !es_enable_fo[14];
   assign sfifo_esfinal_wdata = {fips_compliance,final_es_data};
-  assign sfifo_esfinal_pop = es_route_to_sw ? pfifo_swread_push :
-         es_hw_if_fifo_pop;
+  assign sfifo_esfinal_pop = es_route_to_sw ? swread_done : es_hw_if_fifo_pop;
   assign {esfinal_fips_flag,esfinal_data} = sfifo_esfinal_rdata;
 
   // fifo err
@@ -2993,53 +2992,64 @@ module entropy_src_core import entropy_src_pkg::*; #(
          (es_rdata_capt_q == sfifo_esfinal_rdata[63:0]);
 
 
-  //--------------------------------------------
-  // software es read path
-  //--------------------------------------------
+  //----------------------------------------------------
+  // software es read path via ENTROPY_DATA register
+  //----------------------------------------------------
 
-  prim_packer_fifo #(
-    .InW(SeedLen),
-    .OutW(FullRegWidth),
-    .ClearOnRead(1'b0)
-  ) u_prim_packer_fifo_swread (
-    .clk_i      (clk_i),
-    .rst_ni     (rst_ni),
-    .clr_i      (pfifo_swread_clr),
-    .wvalid_i   (pfifo_swread_push),
-    .wdata_i    (pfifo_swread_wdata),
-    .wready_o   (pfifo_swread_not_full),
-    .rvalid_o   (pfifo_swread_not_empty),
-    .rdata_o    (pfifo_swread_rdata),
-    .rready_i   (pfifo_swread_pop),
-    .depth_o    ()
-  );
-
-  assign pfifo_swread_push = es_route_to_sw && pfifo_swread_not_full && sfifo_esfinal_not_empty;
-  assign pfifo_swread_wdata = esfinal_data;
-
-  assign pfifo_swread_clr = !(es_enable_fo[17] && es_data_reg_rd_en);
-  assign pfifo_swread_pop =  es_enable_fo[18] && sw_es_rd_pulse;
-
-  // set the es entropy to the read reg
-  assign es_data_reg_rd_en = es_enable_fo[19] && efuse_es_sw_reg_en && entropy_data_reg_en_pfe;
-  assign hw2reg.entropy_data.d = es_data_reg_rd_en ? pfifo_swread_rdata : '0;
-  assign sw_es_rd_pulse = es_data_reg_rd_en && reg2hw.entropy_data.re;
-
-  assign efuse_es_sw_reg_en = prim_mubi_pkg::mubi8_test_true_strict(en_entropy_src_fw_read);
-
+  // Sync and evaluate the OTP input.
   prim_mubi8_sync #(
     .NumCopies(1),
-    .AsyncOn(1) // must be set to one, see note below
+    .AsyncOn(1)
   ) u_prim_mubi8_sync_es_fw_read (
     .clk_i,
     .rst_ni,
     .mubi_i(otp_en_entropy_src_fw_read_i),
     .mubi_o({en_entropy_src_fw_read})
   );
+  assign efuse_es_sw_reg_en = prim_mubi_pkg::mubi8_test_true_strict(en_entropy_src_fw_read);
 
-  // note: the input to the above sync module is from the OTP block.
-  //       It is assumed that the source is in a different time domain,
-  //       and requires the AsyncOn parameter to be set.
+  // Is the ENTROPY_DATA register readable?
+  assign es_data_reg_rd_en = es_enable_fo[17] && efuse_es_sw_reg_en && entropy_data_reg_en_pfe;
+
+  // Interface the esfinal FIFO and cut its 384-bit output into 32-bit chunks for software.
+  // We're done after the last read.
+  assign swread_done = reg2hw.entropy_data.re && (swread_idx_q == LastSwRead[SwReadIdxWidth-1:0]);
+
+  // Increment the index counter upon reads from software.
+  assign swread_idx_incr = reg2hw.entropy_data.re;
+
+  // Unless the ENTROPY_DATA CSR is readable, keep clearing the index counter. Clear the counter
+  // after a full seed has been read.
+  assign swread_idx_clr = !es_data_reg_rd_en || swread_done;
+
+  // Index counter
+  assign swread_idx_d = !es_enable_fo[18] ? '0                  :
+                        swread_idx_clr    ? '0                  :
+                        swread_idx_incr   ? swread_idx_q + 1'b1 : swread_idx_q;
+  always_ff @(posedge clk_i or negedge rst_ni) begin : swread_idx_reg
+    if (!rst_ni) begin
+      swread_idx_q <= '0;
+    end else begin
+      swread_idx_q <= swread_idx_d;
+    end
+  end
+
+  // Forward the relevant part of the valid esfinal output or 0 if ES_ROUTE is off.
+  assign swread_data = sfifo_esfinal_not_empty && es_route_to_sw ?
+      esfinal_data[swread_idx_q * FullRegWidth +: FullRegWidth] : '0;
+
+  // This primitive is used to place a size-only constraint on the buffers to act as a synthesis
+  // optimization barrier. This ensures ES_ROUTE and ENTROPY_DATA_REG_ENABLE together with the OTP
+  // input are taken into account in separately.
+  prim_buf #(
+    .Width(FullRegWidth)
+  ) u_prim_buf_swread_data (
+    .in_i (swread_data),
+    .out_o(swread_data_buf)
+  );
+
+  // Forward the data to the ENTROPY_DATA CSR or 0 if the CSR is not readable.
+  assign hw2reg.entropy_data.d = es_data_reg_rd_en ? swread_data_buf : '0;
 
 
   //--------------------------------------------
@@ -3308,11 +3318,11 @@ module entropy_src_core import entropy_src_pkg::*; #(
   end
 
   // Track when entropy is expected to get dropped instead of pushed into the esfinal FIFO: when the
-  // esfinal FIFO is full and either routing to SW and the SW read FIFO is full or not routing to SW
+  // esfinal FIFO is full and either routing to SW and the SW read isn't done or not routing to SW
   // and no request on the hardware interface.
   logic esfinal_exp_drop;
   assign esfinal_exp_drop = sfifo_esfinal_full & (es_route_to_sw ?
-                                                  ~pfifo_swread_not_full :      // SW read FIFO full
+                                                  ~swread_done :                // SW read not done
                                                   ~entropy_src_hw_if_i.es_req); // no HW request
 
   // Count number of bits that are expected to have gotten pushed into precon FIFO and into esfinal
