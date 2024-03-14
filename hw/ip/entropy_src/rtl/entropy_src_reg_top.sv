@@ -325,7 +325,7 @@ module entropy_src_reg_top (
   logic observe_fifo_depth_re;
   logic [6:0] observe_fifo_depth_qs;
   logic debug_status_re;
-  logic [2:0] debug_status_entropy_fifo_depth_qs;
+  logic [1:0] debug_status_entropy_fifo_depth_qs;
   logic [2:0] debug_status_sha3_fsm_qs;
   logic debug_status_sha3_block_pr_qs;
   logic debug_status_sha3_squeezing_qs;
@@ -2392,9 +2392,9 @@ module entropy_src_reg_top (
 
 
   // R[debug_status]: V(True)
-  //   F[entropy_fifo_depth]: 2:0
+  //   F[entropy_fifo_depth]: 1:0
   prim_subreg_ext #(
-    .DW    (3)
+    .DW    (2)
   ) u_debug_status_entropy_fifo_depth (
     .re     (debug_status_re),
     .we     (1'b0),
@@ -4051,7 +4051,7 @@ module entropy_src_reg_top (
       end
 
       addr_hit[52]: begin
-        reg_rdata_next[2:0] = debug_status_entropy_fifo_depth_qs;
+        reg_rdata_next[1:0] = debug_status_entropy_fifo_depth_qs;
         reg_rdata_next[5:3] = debug_status_sha3_fsm_qs;
         reg_rdata_next[6] = debug_status_sha3_block_pr_qs;
         reg_rdata_next[7] = debug_status_sha3_squeezing_qs;

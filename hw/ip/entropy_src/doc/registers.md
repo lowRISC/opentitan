@@ -1331,12 +1331,12 @@ Observe FIFO depth register
 Debug status register
 - Offset: `0xd0`
 - Reset default: `0x10000`
-- Reset mask: `0x303ff`
+- Reset mask: `0x303fb`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "ENTROPY_FIFO_DEPTH", "bits": 3, "attr": ["ro"], "rotate": -90}, {"name": "SHA3_FSM", "bits": 3, "attr": ["ro"], "rotate": -90}, {"name": "SHA3_BLOCK_PR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SHA3_SQUEEZING", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SHA3_ABSORBED", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SHA3_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 6}, {"name": "MAIN_SM_IDLE", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "MAIN_SM_BOOT_DONE", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 14}], "config": {"lanes": 1, "fontsize": 10, "vspace": 200}}
+{"reg": [{"name": "ENTROPY_FIFO_DEPTH", "bits": 2, "attr": ["ro"], "rotate": -90}, {"bits": 1}, {"name": "SHA3_FSM", "bits": 3, "attr": ["ro"], "rotate": -90}, {"name": "SHA3_BLOCK_PR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SHA3_SQUEEZING", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SHA3_ABSORBED", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SHA3_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 6}, {"name": "MAIN_SM_IDLE", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "MAIN_SM_BOOT_DONE", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 14}], "config": {"lanes": 1, "fontsize": 10, "vspace": 200}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name               | Description                                                         |
@@ -1350,7 +1350,8 @@ Debug status register
 |   7    |   ro   |    x    | SHA3_SQUEEZING     | This is the SHA3 squeezing signal current state.                    |
 |   6    |   ro   |    x    | SHA3_BLOCK_PR      | This is the SHA3 block processed signal current state.              |
 |  5:3   |   ro   |    x    | SHA3_FSM           | This is the SHA3 finite state machine current state.                |
-|  2:0   |   ro   |    x    | ENTROPY_FIFO_DEPTH | This is the depth of the entropy source FIFO.                       |
+|   2    |        |         |                    | Reserved                                                            |
+|  1:0   |   ro   |    x    | ENTROPY_FIFO_DEPTH | This is the depth of the entropy source FIFO.                       |
 
 ## RECOV_ALERT_STS
 Recoverable alert status register
