@@ -5235,6 +5235,22 @@
       inter_signal_list:
       [
         {
+          name: next_dm_addr
+          desc:
+            '''
+            32bit word address of the next debug module.
+            Set to 0x0 if this is the last debug module in the chain.
+            '''
+          struct: next_dm_addr
+          package: rv_dm_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: "'0"
+          inst_name: rv_dm
+          index: -1
+        }
+        {
           name: jtag
           desc: JTAG signals for the RISC-V TAP.
           struct: jtag
@@ -18726,6 +18742,22 @@
         default: ""
         end_idx: -1
         top_signame: flash_ctrl_mem_tl
+        index: -1
+      }
+      {
+        name: next_dm_addr
+        desc:
+          '''
+          32bit word address of the next debug module.
+          Set to 0x0 if this is the last debug module in the chain.
+          '''
+        struct: next_dm_addr
+        package: rv_dm_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: "'0"
+        inst_name: rv_dm
         index: -1
       }
       {

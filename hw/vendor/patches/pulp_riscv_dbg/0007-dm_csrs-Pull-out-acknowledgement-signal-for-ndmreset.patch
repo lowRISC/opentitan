@@ -1,0 +1,53 @@
+From 91dd09788d0151fb48b85fa32eb07e9e1b0b0dd3 Mon Sep 17 00:00:00 2001
+From: Michael Schaffner <msf@opentitan.org>
+Date: Thu, 14 Mar 2024 09:36:40 -0700
+Subject: [PATCH 7/7] [dm_csrs] Pull out acknowledgement signal for ndmreset
+
+This signal can be used to implement more accurate ndmreset completion
+tracking outside of RV_DM.
+
+Signed-off-by: Michael Schaffner <msf@opentitan.org>
+
+diff --git a/src/dm_csrs.sv b/src/dm_csrs.sv
+index e90a96a..a800141 100644
+--- a/src/dm_csrs.sv
++++ b/src/dm_csrs.sv
+@@ -35,6 +35,7 @@ module dm_csrs #(
+   output dm::dmi_resp_t                     dmi_resp_o,
+   // global ctrl
+   output logic                              ndmreset_o,      // non-debug module reset active-high
++  input  logic                              ndmreset_ack_i,  // non-debug module reset ack pulse
+   output logic                              dmactive_o,      // 1 -> debug-module is active,
+                                                              // 0 -> synchronous re-set
+   // hart status
+@@ -515,8 +516,8 @@ module dm_csrs #(
+       data_d = data_i;
+     end
+ 
+-    // set the havereset flag when we did a ndmreset
+-    if (ndmreset_o) begin
++    // set the havereset flag when the ndmreset completed
++    if (ndmreset_ack_i) begin
+       havereset_d_aligned[NrHarts-1:0] = '1;
+     end
+     // -------------
+diff --git a/src/dm_top.sv b/src/dm_top.sv
+index 89dc590..87b480a 100644
+--- a/src/dm_top.sv
++++ b/src/dm_top.sv
+@@ -38,6 +38,7 @@ module dm_top #(
+   input  logic [31:0]           next_dm_addr_i,
+   input  logic                  testmode_i,
+   output logic                  ndmreset_o,  // non-debug module reset
++  input  logic                  ndmreset_ack_i, // non-debug module reset acknowledgement pulse
+   output logic                  dmactive_o,  // debug module is active
+   output logic [NrHarts-1:0]    debug_req_o, // async debug request
+   // communicate whether the hart is unavailable (e.g.: power down)
+@@ -131,6 +132,7 @@ module dm_top #(
+     .dmi_resp_ready_i,
+     .dmi_resp_o,
+     .ndmreset_o              ( ndmreset              ),
++    .ndmreset_ack_i          ( ndmreset_ack_i        ),
+     .dmactive_o,
+     .hartsel_o               ( hartsel               ),
+     .hartinfo_i,

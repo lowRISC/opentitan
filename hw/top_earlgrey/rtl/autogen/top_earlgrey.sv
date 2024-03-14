@@ -2156,6 +2156,7 @@ module top_earlgrey #(
       .alert_rx_i  ( alert_rx[40:40] ),
 
       // Inter-module signals
+      .next_dm_addr_i('0),
       .jtag_i(pinmux_aon_rv_jtag_req),
       .jtag_o(pinmux_aon_rv_jtag_rsp),
       .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en),
