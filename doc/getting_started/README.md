@@ -170,20 +170,12 @@ But since this requires the Bazel build system the recommendation is to download
 
 Go to [this page](https://github.com/google/verible/releases) and download the correct binary archive for your machine.
 
-The example below is for Ubuntu 20.04:
-
-```
-export VERIBLE_VERSION={{#tool-version verible }}
-wget https://github.com/google/verible/releases/download/${VERIBLE_VERSION}/verible-${VERIBLE_VERSION}-Ubuntu-20.04-focal-x86_64.tar.gz
-tar -xf verible-${VERIBLE_VERSION}-Ubuntu-20.04-focal-x86_64.tar.gz
-```
-
-If you are using Ubuntu 18.04 then instead use:
+The example below is for a generic linux OS:
 
 ```console
 export VERIBLE_VERSION={{#tool-version verible }}
-wget https://github.com/google/verible/releases/download/${VERIBLE_VERSION}/verible-${VERIBLE_VERSION}-Ubuntu-18.04-bionic-x86_64.tar.gz
-tar -xf verible-${VERIBLE_VERSION}-Ubuntu-18.04-bionic-x86_64.tar.gz
+wget https:wget https://github.com/chipsalliance/verible/releases/download/${VERIBLE_VERSION}/verible-${VERIBLE_VERSION}-linux-static-x86_64.tar.gz
+tar -xf verible-${VERIBLE_VERSION}-linux-static-x86_64.tar.gz
 ```
 
 Then install Verible within 'tools' using:

@@ -30,7 +30,7 @@ __TOOL_REQUIREMENTS__ = {
         'as_needed': True
     },
     'verible': {
-        'min_version': 'v0.0-2135-gb534c1fe',
+        'min_version': 'v0.0-3622-g07b310a3',
         'as_needed': True
     },
     'vcs': {
