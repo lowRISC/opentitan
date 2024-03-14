@@ -764,9 +764,9 @@ TEST_F(GetDebugStateTest, Success) {
        {ENTROPY_SRC_DEBUG_STATUS_SHA3_SQUEEZING_BIT, 1},
        {ENTROPY_SRC_DEBUG_STATUS_SHA3_BLOCK_PR_BIT, 1},
        {ENTROPY_SRC_DEBUG_STATUS_SHA3_FSM_OFFSET, kDifEntropySrcSha3StateFlush},
-       {ENTROPY_SRC_DEBUG_STATUS_ENTROPY_FIFO_DEPTH_OFFSET, 4}});
+       {ENTROPY_SRC_DEBUG_STATUS_ENTROPY_FIFO_DEPTH_OFFSET, 3}});
   EXPECT_DIF_OK(dif_entropy_src_get_debug_state(&entropy_src_, &debug_state));
-  EXPECT_EQ(debug_state.entropy_fifo_depth, 4);
+  EXPECT_EQ(debug_state.entropy_fifo_depth, 3);
   EXPECT_EQ(debug_state.sha3_fsm_state, kDifEntropySrcSha3StateFlush);
   EXPECT_EQ(debug_state.sha3_block_processed, true);
   EXPECT_EQ(debug_state.sha3_squeezing, true);

@@ -14,7 +14,7 @@ module entropy_src
 #(
   parameter bit Stub = 1'b0,
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
-  parameter int EsFifoDepth = 4,
+  parameter int EsFifoDepth = 3,
   parameter int DistrFifoDepth = 2
 ) (
   input logic clk_i,

@@ -6782,7 +6782,7 @@
           name: EsFifoDepth
           desc: Number of 384-bit entries in the esfinal FIFO
           type: int
-          default: "4"
+          default: "3"
           expose: "true"
           name_top: EntropySrcEsFifoDepth
         }

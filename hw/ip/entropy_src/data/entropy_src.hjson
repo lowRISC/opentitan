@@ -95,7 +95,7 @@
     # Regular parameters
     { name:    "EsFifoDepth",
       type:    "int",
-      default: "4",
+      default: "3",
       desc:    "Number of 384-bit entries in the esfinal FIFO"
       local:   "false",
       expose:  "true"
@@ -1435,7 +1435,7 @@
       hwaccess: "hwo",
       hwext: "true",
       fields: [
-        { bits: "2:0",
+        { bits: "1:0",
           name: "ENTROPY_FIFO_DEPTH",
           desc: "This is the depth of the entropy source FIFO."
         }
