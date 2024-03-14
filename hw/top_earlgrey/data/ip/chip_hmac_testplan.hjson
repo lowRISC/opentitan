@@ -40,7 +40,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_sw_hmac_enc_idle"]
-      bazel: []
+      bazel: ["//sw/device/tests:hmac_enc_idle_test"]
     }
     {
       name: chip_sw_hmac_sha2_stress
@@ -109,7 +109,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: []
-      bazel: []
+      bazel: ["//sw/device/tests:hmac_secure_wipe_test"]
     }
     {
       name: chip_sw_hmac_error_conditions
