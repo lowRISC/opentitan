@@ -22,6 +22,7 @@ module dm_csrs #(
 ) (
   input  logic                              clk_i,           // Clock
   input  logic                              rst_ni,          // Asynchronous reset active low
+  input  logic [31:0]                       next_dm_addr_i,  // Static next_dm word address.
   input  logic                              testmode_i,
   input  logic                              dmi_rst_ni,      // sync. DTM reset,
                                                              // active-low
@@ -34,6 +35,7 @@ module dm_csrs #(
   output dm::dmi_resp_t                     dmi_resp_o,
   // global ctrl
   output logic                              ndmreset_o,      // non-debug module reset active-high
+  input  logic                              ndmreset_ack_i,  // non-debug module reset ack pulse
   output logic                              dmactive_o,      // 1 -> debug-module is active,
                                                              // 0 -> synchronous re-set
   // hart status
@@ -86,7 +88,6 @@ module dm_csrs #(
 
   dm::dtm_op_e dtm_op;
   assign dtm_op = dm::dtm_op_e'(dmi_req_i.op);
-
 
   localparam dm::dm_csr_e DataEnd = dm::dm_csr_e'(dm::Data0 + {4'h0, dm::DataCount} - 8'h1);
   localparam dm::dm_csr_e ProgBufEnd = dm::dm_csr_e'(dm::ProgBuf0 + {4'h0, dm::ProgBufSize} - 8'h1);
@@ -212,6 +213,9 @@ module dm_csrs #(
 
   // Get the data index, i.e. 0 for dm::Data0 up to 11 for dm::Data11
   assign dm_csr_addr = dm::dm_csr_e'({1'b0, dmi_req_i.addr});
+  logic unused_addr_bits;
+  assign unused_addr_bits = ^dmi_req_i.addr[31:$bits(dm_csr_addr)];
+
   // Xilinx Vivado 2020.1 does not allow subtraction of two enums; do the subtraction with logic
   // types instead.
   assign autoexecdata_idx = 4'({dm_csr_addr} - {dm::Data0});
@@ -305,8 +309,8 @@ module dm_csrs #(
         dm::Hartinfo:     resp_queue_inp.data = hartinfo_aligned[selected_hart];
         dm::AbstractCS:   resp_queue_inp.data = abstractcs;
         dm::AbstractAuto: resp_queue_inp.data = abstractauto_q;
-        // command is read-only
-        dm::Command:    resp_queue_inp.data = '0;
+        dm::Command:      resp_queue_inp.data = '0;
+        dm::NextDM:       resp_queue_inp.data = next_dm_addr_i;
         [(dm::ProgBuf0):ProgBufEnd]: begin
           resp_queue_inp.data = progbuf_q[dmi_req_i.addr[$clog2(dm::ProgBufSize)-1:0]];
           if (!cmdbusy_i) begin
@@ -417,6 +421,7 @@ module dm_csrs #(
             end
           end
         end
+        dm::NextDM:; // nextdm is R/O
         dm::AbstractAuto: begin
           // this field can only be written legally when there is no command executing
           if (!cmdbusy_i) begin
@@ -511,8 +516,8 @@ module dm_csrs #(
       data_d = data_i;
     end
 
-    // set the havereset flag when we did a ndmreset
-    if (ndmreset_o) begin
+    // set the havereset flag when the ndmreset completed
+    if (ndmreset_ack_i) begin
       havereset_d_aligned[NrHarts-1:0] = '1;
     end
     // -------------
@@ -544,6 +549,9 @@ module dm_csrs #(
     if (dmcontrol_q.resumereq && resumeack_i) begin
       dmcontrol_d.resumereq = 1'b0;
     end
+    // WARL behavior of hartsel, depending on NrHarts.
+    // If NrHarts = 1 this is just masked to all-zeros.
+    {dmcontrol_d.hartselhi, dmcontrol_d.hartsello} &= (2**$clog2(NrHarts))-1;
     // static values for dcsr
     sbcs_d.sbversion            = 3'd1;
     sbcs_d.sbbusy               = sbbusy_i;

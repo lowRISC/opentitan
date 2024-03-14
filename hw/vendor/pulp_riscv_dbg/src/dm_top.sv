@@ -30,8 +30,15 @@ module dm_top #(
   input  logic                  clk_i,       // clock
   // asynchronous reset active low, connect PoR here, not the system reset
   input  logic                  rst_ni,
+  // Subsequent debug modules can be chained by setting the nextdm register value to the offset of
+  // the next debug module. The RISC-V debug spec mandates that the first debug module located at
+  // 0x0, and that the last debug module in the chain sets the nextdm register to 0x0. The nextdm
+  // register is a word address and not a byte address. This value is passed in as a static signal
+  // so that it becomes possible to assign this value with chiplet tie-offs or straps, if needed.
+  input  logic [31:0]           next_dm_addr_i,
   input  logic                  testmode_i,
   output logic                  ndmreset_o,  // non-debug module reset
+  input  logic                  ndmreset_ack_i, // non-debug module reset acknowledgement pulse
   output logic                  dmactive_o,  // debug module is active
   output logic [NrHarts-1:0]    debug_req_o, // async debug request
   // communicate whether the hart is unavailable (e.g.: power down)
@@ -115,6 +122,7 @@ module dm_top #(
   ) i_dm_csrs (
     .clk_i,
     .rst_ni,
+    .next_dm_addr_i,
     .testmode_i,
     .dmi_rst_ni,
     .dmi_req_valid_i,
@@ -124,6 +132,7 @@ module dm_top #(
     .dmi_resp_ready_i,
     .dmi_resp_o,
     .ndmreset_o              ( ndmreset              ),
+    .ndmreset_ack_i          ( ndmreset_ack_i        ),
     .dmactive_o,
     .hartsel_o               ( hartsel               ),
     .hartinfo_i,

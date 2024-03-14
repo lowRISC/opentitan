@@ -222,7 +222,7 @@ package dm;
   } sbcs_t;
 
   typedef struct packed {
-    logic [6:0]  addr;
+    logic [31:0] addr;
     dtm_op_e     op;
     logic [31:0] data;
   } dmi_req_t;

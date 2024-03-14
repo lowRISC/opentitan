@@ -1,0 +1,24 @@
+From d7544597def65a4fcd7a853ed64604bdc24ae9df Mon Sep 17 00:00:00 2001
+From: Michael Schaffner <msf@opentitan.org>
+Date: Wed, 13 Mar 2024 12:15:24 -0700
+Subject: [PATCH 6/7] [dm_csrs] Correct behavior of hartsel
+
+The hartsel register is supposed to have WARL behavior depending on how
+many harts are supported.
+
+Signed-off-by: Michael Schaffner <msf@opentitan.org>
+
+diff --git a/src/dm_csrs.sv b/src/dm_csrs.sv
+index 9686883..e90a96a 100644
+--- a/src/dm_csrs.sv
++++ b/src/dm_csrs.sv
+@@ -548,6 +548,9 @@ module dm_csrs #(
+     if (dmcontrol_q.resumereq && resumeack_i) begin
+       dmcontrol_d.resumereq = 1'b0;
+     end
++    // WARL behavior of hartsel, depending on NrHarts.
++    // If NrHarts = 1 this is just masked to all-zeros.
++    {dmcontrol_d.hartselhi, dmcontrol_d.hartsello} &= (2**$clog2(NrHarts))-1;
+     // static values for dcsr
+     sbcs_d.sbversion            = 3'd1;
+     sbcs_d.sbbusy               = sbbusy_i;

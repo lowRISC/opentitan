@@ -1,0 +1,83 @@
+From 149fb72ccfe2af0a18e37884146c73e214817050 Mon Sep 17 00:00:00 2001
+From: Michael Schaffner <msf@opentitan.org>
+Date: Tue, 21 Nov 2023 19:40:16 -0800
+Subject: [PATCH 5/7] [dm_csrs] Implement nextdm register
+
+Signed-off-by: Michael Schaffner <msf@opentitan.org>
+
+diff --git a/src/dm_csrs.sv b/src/dm_csrs.sv
+index b899b17..9686883 100644
+--- a/src/dm_csrs.sv
++++ b/src/dm_csrs.sv
+@@ -22,6 +22,7 @@ module dm_csrs #(
+ ) (
+   input  logic                              clk_i,           // Clock
+   input  logic                              rst_ni,          // Asynchronous reset active low
++  input  logic [31:0]                       next_dm_addr_i,  // Static next_dm word address.
+   input  logic                              testmode_i,
+   input  logic                              dmi_rst_ni,      // sync. DTM reset,
+                                                              // active-low
+@@ -307,8 +308,8 @@ module dm_csrs #(
+         dm::Hartinfo:     resp_queue_inp.data = hartinfo_aligned[selected_hart];
+         dm::AbstractCS:   resp_queue_inp.data = abstractcs;
+         dm::AbstractAuto: resp_queue_inp.data = abstractauto_q;
+-        // command is read-only
+-        dm::Command:    resp_queue_inp.data = '0;
++        dm::Command:      resp_queue_inp.data = '0;
++        dm::NextDM:       resp_queue_inp.data = next_dm_addr_i;
+         [(dm::ProgBuf0):ProgBufEnd]: begin
+           resp_queue_inp.data = progbuf_q[dmi_req_i.addr[$clog2(dm::ProgBufSize)-1:0]];
+           if (!cmdbusy_i) begin
+@@ -419,6 +420,7 @@ module dm_csrs #(
+             end
+           end
+         end
++        dm::NextDM:; // nextdm is R/O
+         dm::AbstractAuto: begin
+           // this field can only be written legally when there is no command executing
+           if (!cmdbusy_i) begin
+diff --git a/src/dm_top.sv b/src/dm_top.sv
+index 6188b28..89dc590 100644
+--- a/src/dm_top.sv
++++ b/src/dm_top.sv
+@@ -30,6 +30,12 @@ module dm_top #(
+   input  logic                  clk_i,       // clock
+   // asynchronous reset active low, connect PoR here, not the system reset
+   input  logic                  rst_ni,
++  // Subsequent debug modules can be chained by setting the nextdm register value to the offset of
++  // the next debug module. The RISC-V debug spec mandates that the first debug module located at
++  // 0x0, and that the last debug module in the chain sets the nextdm register to 0x0. The nextdm
++  // register is a word address and not a byte address. This value is passed in as a static signal
++  // so that it becomes possible to assign this value with chiplet tie-offs or straps, if needed.
++  input  logic [31:0]           next_dm_addr_i,
+   input  logic                  testmode_i,
+   output logic                  ndmreset_o,  // non-debug module reset
+   output logic                  dmactive_o,  // debug module is active
+@@ -115,6 +121,7 @@ module dm_top #(
+   ) i_dm_csrs (
+     .clk_i,
+     .rst_ni,
++    .next_dm_addr_i,
+     .testmode_i,
+     .dmi_rst_ni,
+     .dmi_req_valid_i,
+diff --git a/tb/tb_test_env.sv b/tb/tb_test_env.sv
+index 4b300ca..9ac8f28 100644
+--- a/tb/tb_test_env.sv
++++ b/tb/tb_test_env.sv
+@@ -245,6 +245,7 @@ module tb_test_env #(
+ 
+        .clk_i             ( clk_i             ),
+        .rst_ni            ( rst_ni            ),
++       .next_dm_addr_i    ( '0                ),
+        .testmode_i        ( 1'b0              ),
+        .ndmreset_o        ( ndmreset          ),
+        .dmactive_o        (                   ), // active debug session TODO
+@@ -258,6 +259,7 @@ module tb_test_env #(
+        .slave_be_i        ( dm_be             ),
+        .slave_wdata_i     ( dm_wdata          ),
+        .slave_rdata_o     ( dm_rdata          ),
++       .slave_err_o       (                   ),
+ 
+        .master_req_o      ( sb_req            ),
+        .master_add_o      ( sb_addr           ),

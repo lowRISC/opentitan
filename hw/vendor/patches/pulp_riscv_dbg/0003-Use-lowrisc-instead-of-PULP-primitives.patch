@@ -1,7 +1,7 @@
-From 51db2dfa1d52ea995f244fba457a101215381382 Mon Sep 17 00:00:00 2001
+From 9323ea206e15381283e67a780aac8ffbb5a5d19b Mon Sep 17 00:00:00 2001
 From: Michael Schaffner <msf@google.com>
 Date: Tue, 25 Oct 2022 18:27:27 -0700
-Subject: [PATCH 3/3] Use lowrisc instead of PULP primitives
+Subject: [PATCH 3/7] Use lowrisc instead of PULP primitives
 
 Signed-off-by: Michael Schaffner <msf@google.com>
 
@@ -235,7 +235,7 @@ index f9d66fd..ef9e57c 100644
  
  endmodule : dmi_cdc
 diff --git a/src/dmi_jtag.sv b/src/dmi_jtag.sv
-index 6be89a6..a7e5bff 100644
+index 24edad0..f8b8483 100644
 --- a/src/dmi_jtag.sv
 +++ b/src/dmi_jtag.sv
 @@ -22,9 +22,10 @@ module dmi_jtag #(

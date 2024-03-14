@@ -47,14 +47,9 @@ fn test_control_status(opts: &Opts, transport: &TransportWrapper) -> Result<()> 
         | 0x3ff << consts::DMCONTROL_HARTSELHI_SHIFT
         | consts::DMCONTROL_DMACTIVE_MASK;
     dmi.dmi_write(consts::DMCONTROL, dmcontrol)?;
-    assert_eq!(dmi.dmi_read(consts::DMCONTROL)?, dmcontrol);
-
-    // Write 0 to hartsel and confirm readback.
-    let dmcontrol = 0 << consts::DMCONTROL_HARTSELLO_SHIFT
-        | 0 << consts::DMCONTROL_HARTSELHI_SHIFT
-        | consts::DMCONTROL_DMACTIVE_MASK;
-    dmi.dmi_write(consts::DMCONTROL, dmcontrol)?;
-    assert_eq!(dmi.dmi_read(consts::DMCONTROL)?, dmcontrol);
+    // Since this target only supports 1 hart, the WARL behavior of this register is such that no
+    // bits should be set at this point, except for dmactive.
+    assert_eq!(dmi.dmi_read(consts::DMCONTROL)?, consts::DMCONTROL_DMACTIVE_MASK);
 
     let mut hart = dmi.select_hart(0)?;
     assert!(hart.state()?.running);

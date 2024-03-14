@@ -212,7 +212,8 @@ module lc_ctrl
   logic req_ready;
   assign req_ready = dmi_req_ready & dmi_resp_ready;
   dmi_jtag #(
-    .IdcodeValue(IdcodeValue)
+    .IdcodeValue(IdcodeValue),
+    .NumDmiWordAbits(7)
   ) u_dmi_jtag (
     .clk_i,
     .rst_ni,
@@ -264,6 +265,7 @@ module lc_ctrl
   // These signals are unused
   logic unused_tap_tl_d2h;
   assign unused_tap_tl_d2h = ^{
+    dmi_req.addr[31:30],
     tap_tl_d2h.d_opcode,
     tap_tl_d2h.d_param,
     tap_tl_d2h.d_size,
