@@ -32,7 +32,11 @@ module tb;
   ) dut (
     .clk_i                (clk  ),
     .rst_ni               (rst_n),
-
+    // TODO: this should be attached to another reset that can be driven low separately from rst_n.
+    // It is used for tracking NDM reset requests internally (the clock input is unused, but
+    // required so that the topgen tooling works correctly).
+    .clk_lc_i             (clk  ),
+    .rst_lc_ni            (rst_n),
     // the differing behavior of lc_hw_debug_en_i and pinmux_hw_debug_en_i
     // will be tested at the top-level. for the purposes of this TB we connect
     // both signals to the same life cycle signal.

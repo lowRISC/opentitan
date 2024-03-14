@@ -19,8 +19,12 @@ module rv_dm
   parameter logic [31:0]          IdcodeValue  = 32'h 0000_0001
 ) (
   input  logic                clk_i,       // clock
+  input  logic                clk_lc_i,    // only declared here so that the topgen
+                                           // tooling connects the correct clk/rst domains.
   input  logic                rst_ni,      // asynchronous reset active low, connect PoR
                                            // here, not the system reset
+  input  logic                rst_lc_ni,  // asynchronous reset active low, connect the lc
+                                           // reset here. this is only used for NDM reset tracking.
   input  logic [31:0]         next_dm_addr_i, // static word address of the next debug module.
   // SEC_CM: LC_HW_DEBUG_EN.INTERSIG.MUBI
   // HW Debug lifecycle enable signal (live version from the life cycle controller)
@@ -269,16 +273,80 @@ module rv_dm
   logic dmi_rsp_valid, dmi_rsp_ready;
   logic dmi_rst_n;
 
+  logic dmi_en;
+  // SEC_CM: DM_EN.CTRL.LC_GATED
+  assign dmi_en = lc_tx_test_true_strict(pinmux_hw_debug_en[PmEnDmiReq]);
+
+  ////////////////////////
+  // NDM Reset Tracking //
+  ////////////////////////
+
   logic reset_req_en;
-  logic ndmreset_req;
+  logic ndmreset_req, ndmreset_ack;
   logic ndmreset_req_qual;
   // SEC_CM: DM_EN.CTRL.LC_GATED
   assign reset_req_en = lc_tx_test_true_strict(lc_hw_debug_en_gated[LcEnResetReq]);
   assign ndmreset_req_o = ndmreset_req_qual & reset_req_en;
 
-  logic dmi_en;
-  // SEC_CM: DM_EN.CTRL.LC_GATED
-  assign dmi_en = lc_tx_test_true_strict(pinmux_hw_debug_en[PmEnDmiReq]);
+  // Sample the processor reset to detect lc reset assertion.
+  logic lc_rst_asserted_async;
+  prim_flop_2sync #(
+    .Width(1),
+    .ResetValue(1) // Resets to 1 to indicate assertion.
+  ) u_prim_flop_2sync_lc_rst_assert (
+    .clk_i, // Use RV_DM clock
+    .rst_ni(rst_lc_ni), // Use LC reset here that resets the entire system except the RV_DM.
+    .d_i(1'b0), // Set to 0 to indicate deassertion.
+    .q_o(lc_rst_asserted_async)
+  );
+
+  // Note that the output of the above flops can be metastable at reset assertion, since the reset
+  // signal is coming from a different clock domain and has not been synchronized with clk_i.
+  logic lc_rst_asserted;
+  prim_flop_2sync #(
+    .Width(1)
+  ) u_prim_flop_2sync_lc_rst_sync (
+    .clk_i,
+    .rst_ni,
+    .d_i(lc_rst_asserted_async),
+    .q_o(lc_rst_asserted)
+  );
+
+  // The acknowledgement pulse sets the dmstatus.allhavereset / dmstatus.anyhavereset registers in
+  // RV_DM. It should only be asserted once an NDM reset request has been fully completed.
+  logic ndmreset_pending_q;
+  logic lc_rst_pending_q;
+  always_ff @(posedge clk_i or negedge rst_ni) begin : p_ndm_reset
+    if (!rst_ni) begin
+      ndmreset_pending_q <= 1'b0;
+      lc_rst_pending_q <= 1'b0;
+    end else begin
+      // Only set this if there was no previous pending NDM request.
+      if (ndmreset_req && !ndmreset_pending_q) begin
+        ndmreset_pending_q <= 1'b1;
+      end else if (ndmreset_ack && ndmreset_pending_q) begin
+        ndmreset_pending_q <= 1'b0;
+      end
+      // We only track lc resets that are asserted during an active ndm reset request..
+      if (ndmreset_pending_q && lc_rst_asserted) begin
+        lc_rst_pending_q <= 1'b1;
+      end else if (ndmreset_ack && lc_rst_pending_q) begin
+        lc_rst_pending_q <= 1'b0;
+      end
+    end
+  end
+
+  // In order to ACK the following conditions must be met
+  // 1) an NDM reset request was asserted and is pending
+  // 2) a lc reset was asserted after the NDM reset request
+  // 3) the NDM reset request was deasserted
+  // 4) the NDM lc request was deasserted
+  // 5) the debug module has been ungated for operation (depending on LC state, OTP config and CSR)
+  assign ndmreset_ack = ndmreset_pending_q &&
+                        lc_rst_pending_q &&
+                        !ndmreset_req &&
+                        !lc_rst_asserted &&
+                        reset_req_en;
 
   /////////////////////////////////////////
   // System Bus Access Port (TL-UL Host) //
@@ -502,7 +570,7 @@ module rv_dm
     .next_dm_addr_i,
     .testmode_i            (testmode              ),
     .ndmreset_o            (ndmreset_req          ),
-    .ndmreset_ack_i        (ndmreset_req          ),
+    .ndmreset_ack_i        (ndmreset_ack          ),
     .dmactive_o,
     .debug_req_o           (debug_req             ),
     .unavailable_i,

@@ -5193,6 +5193,7 @@
       clock_srcs:
       {
         clk_i: main
+        clk_lc_i: main
       }
       clock_group: infra
       reset_connections:
@@ -5200,6 +5201,11 @@
         rst_ni:
         {
           name: sys
+          domain: "0"
+        }
+        rst_lc_ni:
+        {
+          name: lc
           domain: "0"
         }
       }
@@ -5215,6 +5221,7 @@
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_infra
+        clk_lc_i: clkmgr_aon_clocks.clk_main_infra
       }
       domain:
       [

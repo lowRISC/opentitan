@@ -7,7 +7,7 @@ All hardware interfaces of the debug system are documented in the [PULP RISC-V D
 <!-- BEGIN CMDGEN util/regtool.py --interfaces ./hw/ip/rv_dm/data/rv_dm.hjson -->
 Referring to the [Comportable guideline for peripheral device functionality](https://opentitan.org/book/doc/contributing/hw/comportability), the module **`rv_dm`** has the following hardware interfaces defined
 - Primary Clock: **`clk_i`**
-- Other Clocks: *none*
+- Other Clocks: **`clk_lc_i`**
 - Bus Device Interfaces (TL-UL): **`regs_tl_d`**, **`mem_tl_d`**
 - Bus Host Interfaces (TL-UL): **`sba_tl_h`**
 - Peripheral Pins for Chip IO: *none*
