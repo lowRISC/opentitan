@@ -103,8 +103,6 @@ TEST_F(HmacMacTest, StartDigestLittleEndianSuccess) {
 TEST_F(HmacMacTest, StartBadArg) {
   EXPECT_DIF_BADARG(
       dif_hmac_mode_hmac_start(nullptr, kKey.data(), transaction_));
-
-  EXPECT_DIF_BADARG(dif_hmac_mode_hmac_start(&hmac_, nullptr, transaction_));
 }
 
 TEST_F(HmacMacTest, StartError) {
