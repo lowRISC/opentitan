@@ -15,6 +15,8 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
   local bit rx_enabled;
   local int uart_tx_clk_pulses;
   local int uart_rx_clk_pulses;
+  local int uart_rx_clk_x16_rem16;
+  local int rx_ignore_period_counter;
 
   // expected values
   local bit tx_full_exp, rx_full_exp, tx_empty_exp, rx_empty_exp, tx_idle_exp, rx_idle_exp;
@@ -63,6 +65,7 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
       process_uart_tx_fifo();
       process_uart_rx_fifo();
       process_nf_cov();
+      update_rx_ignore_period_counter();
     join_none
   endtask
 
@@ -103,10 +106,15 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
     end
   endtask
 
+  function int uart_clk_periods_to_whole_main_clk_periods(real uart_clk_periods);
+    return int'($ceil(uart_clk_periods * cfg.m_uart_agent_cfg.vif.uart_clk_period /
+                      (cfg.clk_rst_vif.clk_period_ps * 1ps)));
+  endfunction
+
   virtual task process_uart_rx_fifo();
     uart_item item;
     forever begin
-      uart_rx_fifo.get(item);
+      uart_rx_fifo.get(item); // item comes from monitor rx_analysis_port
       `uvm_info(`gfn, $sformatf("received uart rx item:\n%0s", item.sprint()), UVM_HIGH)
 
       if (rx_enabled) begin
@@ -125,6 +133,14 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
         end
         if (!parity_err && item.stop_bit == 1) begin // no parity/frame error
           if (rx_q.size < UART_FIFO_DEPTH) begin
+            // Set rx_ignore_period_counter going by calculating the period to ignore from the
+            // ideal mid-bit time (now). This is a combination of delays based on the current baud
+            // rate (oversample misalignment, glitch delay) and delays based on the period of the
+            // main clock (CDC sync, majority filter, RX logic delay).
+            real glitch_period = cfg.m_uart_agent_cfg.get_uart_period_glitch_pct() / 100.0;
+            rx_ignore_period_counter = (uart_clk_periods_to_whole_main_clk_periods(1 / 16.0) +
+                                        uart_clk_periods_to_whole_main_clk_periods(glitch_period) +
+                                        7);
             rx_q.push_back(item);
             predict_rx_watermark_intr();
           end
@@ -136,6 +152,20 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
         end // no parity/frame error
       end // if (rx_enabled)
     end // forever
+  endtask
+
+  virtual task update_rx_ignore_period_counter();
+    forever begin
+      if (rx_ignore_period_counter > 0) begin
+        cfg.clk_rst_vif.wait_clks(1);
+        rx_ignore_period_counter--;
+      end else begin
+        `uvm_info(`gfn, "rx_ignore_period_counter finished", UVM_HIGH)
+        @(rx_ignore_period_counter);
+        `uvm_info(`gfn, $sformatf("rx_ignore_period_counter set to %0d",
+                                  rx_ignore_period_counter), UVM_HIGH)
+      end
+    end
   endtask
 
   virtual function void predict_tx_watermark_intr(uint tx_q_size = tx_q.size);
@@ -151,8 +181,31 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
   // we don't model uart cycle-accurately, ignore checking when item is just/almost finished
   function bit is_in_ignored_period(uart_dir_e dir);
     case (dir)
-      UartTx: return uart_tx_clk_pulses inside `TX_IGNORED_PERIOD;
-      UartRx: return uart_rx_clk_pulses inside `RX_IGNORED_PERIOD;
+      UartTx: begin
+        return uart_tx_clk_pulses inside `TX_IGNORED_PERIOD;
+      end
+      UartRx: begin
+          // Use a more targetted window here than the whole RX_IGNORED_PERIOD.
+          // RX_IGNORED_PERIOD is excessive at low baud rates and yet is insufficient at high
+          // baud rates when main-clock-based RX delays grow proportionally larger.
+        if (uart_rx_clk_pulses inside `RX_IGNORED_PERIOD && uart_rx_clk_x16_rem16 == 7) begin
+          // Ignore during the period from uart_clk_period/16 *before* mid-bit to the
+          // ideal mid-bit time. The DUT samples with period of uart_clk_period/16 and
+          // may be sampling early or late by about the same amount. Let
+          // rx_ignore_period_counter handle the period after the ideal mid-bit time.
+          return 1;
+        end else if (rx_ignore_period_counter > 0) begin
+          // Ignore during the period from the ideal mid-bit time to a later time
+          // determined by summing up a combination of delays that scale with either
+          // uart_clk_period and main clock.
+          return 1;
+        end
+        return 0;
+      end
+      default begin
+        `uvm_error(`gfn, "unexpected uart_dir_e")
+        return 0;
+      end
     endcase
   endfunction
 
@@ -177,8 +230,9 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
       end
 
       // need to store uart_tx/tx_clk_pulses earlier to predict reg value correctly
-      uart_tx_clk_pulses   = uart_vif.uart_tx_clk_pulses;
-      uart_rx_clk_pulses   = uart_vif.uart_rx_clk_pulses;
+      uart_tx_clk_pulses    = uart_vif.uart_tx_clk_pulses;
+      uart_rx_clk_pulses    = uart_vif.uart_rx_clk_pulses;
+      uart_rx_clk_x16_rem16 = uart_vif.uart_rx_clk_x16_rem16;
       // save fifo level at address phase
       tx_q_size_at_addr_phase = tx_q.size;
       rx_q_size_at_addr_phase = rx_q.size;
@@ -566,6 +620,7 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
     // reset local variables
     uart_tx_clk_pulses   = 0;
     uart_rx_clk_pulses   = 0;
+    rx_ignore_period_counter = 0;
     tx_q_size_at_addr_phase = 0;
     rx_q_size_at_addr_phase = 0;
     tx_enabled           = ral.ctrl.tx.get_reset();

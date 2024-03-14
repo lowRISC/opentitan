@@ -123,7 +123,7 @@ class uart_monitor extends dv_base_monitor#(
           `uvm_error(`gfn, "No stop bit when expected!")
         end
         `uvm_info(`gfn, $sformatf("collected uart rx txn:\n%0s", item.sprint()), UVM_HIGH)
-        rx_analysis_port.write(item);
+        rx_analysis_port.write(item); // item goes to scoreboard uart_rx_fifo
 
         // wait for uart_rx_clk_pulses==0, otherwise, it may affect next transaction
         cfg.vif.wait_for_rx_idle();
@@ -138,6 +138,7 @@ class uart_monitor extends dv_base_monitor#(
   task drive_tx_clk();
     forever begin
       if (cfg.vif.uart_tx_clk_pulses > 0) begin
+        // Generate a 'clock cycle' used for uart_monitor TX timing
         #(cfg.vif.uart_clk_period / 2);
         cfg.vif.uart_tx_clk = ~cfg.vif.uart_tx_clk;
         // last cycle only use half period as design and agent aren't using same clock. If agent
@@ -149,6 +150,7 @@ class uart_monitor extends dv_base_monitor#(
         cfg.vif.uart_tx_clk = ~cfg.vif.uart_tx_clk;
         cfg.vif.uart_tx_clk_pulses--;
       end else begin
+        // Idle. Wait to be told to generate more TX 'clock cycles'
         @(cfg.vif.uart_tx_int, cfg.vif.uart_tx_clk_pulses);
       end
     end
@@ -157,12 +159,16 @@ class uart_monitor extends dv_base_monitor#(
   task drive_rx_clk();
     forever begin
       if (cfg.vif.uart_rx_clk_pulses > 0) begin
-        #(cfg.vif.uart_clk_period / 2);
-        cfg.vif.uart_rx_clk = ~cfg.vif.uart_rx_clk;
-        #(cfg.vif.uart_clk_period / 2);
-        cfg.vif.uart_rx_clk = ~cfg.vif.uart_rx_clk;
+        // Generate a 'clock cycle' used for uart_driver and uart_monitor RX timing
+        // while also generating a count of which 1/16th of the 'clock cycle' we are in.
+        for (int ii = 1; ii <= 16; ii++) begin
+          #(cfg.vif.uart_clk_period / 16);
+          if (ii == 8 || ii == 16) cfg.vif.uart_rx_clk = ~cfg.vif.uart_rx_clk;
+          cfg.vif.uart_rx_clk_x16_rem16 = ii < 16 ? ii : 0;
+        end
         cfg.vif.uart_rx_clk_pulses--;
       end else begin
+        // Idle. Wait to be told to generate more RX 'clock cycles'
         @(cfg.vif.uart_rx, cfg.vif.uart_rx_clk_pulses);
       end
     end
@@ -201,10 +207,11 @@ class uart_monitor extends dv_base_monitor#(
       cov.uart_reset_cg.sample(UartTx, cfg.vif.uart_tx_clk_pulses);
       cov.uart_reset_cg.sample(UartRx, cfg.vif.uart_rx_clk_pulses);
     end
-    cfg.vif.uart_tx_clk_pulses = 0;
-    cfg.vif.uart_tx_clk        = 1;
-    cfg.vif.uart_rx_clk_pulses = 0;
-    cfg.vif.uart_rx_clk        = 1;
+    cfg.vif.uart_tx_clk_pulses    = 0;
+    cfg.vif.uart_tx_clk           = 1;
+    cfg.vif.uart_rx_clk_pulses    = 0;
+    cfg.vif.uart_rx_clk_x16_rem16 = 0;
+    cfg.vif.uart_rx_clk           = 1;
     wait(!cfg.under_reset);
   endtask
 
