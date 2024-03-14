@@ -111,6 +111,7 @@ void *jtagdpi_create(const char *display_name, int listen_port) {
 
   // Create socket
   ctx->sock = tcp_server_create(display_name, listen_port);
+  assert(ctx->sock);
 
   reset_jtag_signals(ctx);
 

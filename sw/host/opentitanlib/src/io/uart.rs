@@ -32,7 +32,7 @@ impl UartParams {
         if let Some(baudrate) = self.baudrate {
             uart.set_baudrate(baudrate)?;
         }
-        log::info!("set_flow_control to {}", self.flow_control);
+        log::info!("set_flow_control to {}\r", self.flow_control);
         uart.set_flow_control(self.flow_control)?;
         Ok(uart)
     }

@@ -79,6 +79,11 @@ fn test_openocd(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     );
     // Test reads by checking the LC_STATE register
     let mut lc_ctrl_state = [0u32; 1];
+    log::info!(
+        "LC_CTRL_STATE_RESULT = {:x}, LC_CTRL_STATE_RESULT = {:x}",
+        jtag.read_memory32(lc_ctrl_state_addr, &mut lc_ctrl_state)?,
+        lc_ctrl_state[0]
+    );
     assert_eq!(
         jtag.read_memory32(lc_ctrl_state_addr, &mut lc_ctrl_state)?,
         1

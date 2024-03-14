@@ -12,18 +12,24 @@ use std::rc::Rc;
 use std::time::{Duration, Instant};
 
 use crate::io::gpio::{GpioError, GpioPin};
+use crate::io::jtag::{Jtag, JtagParams};
+use crate::io::spi::Target;
 use crate::io::uart::Uart;
 use crate::transport::verilator::gpio::{GpioInner, VerilatorGpioPin};
+use crate::transport::verilator::spi::VerilatorSpi;
 use crate::transport::verilator::subprocess::{Options, Subprocess};
 use crate::transport::verilator::uart::VerilatorUart;
 use crate::transport::{
     Capabilities, Capability, Transport, TransportError, TransportInterfaceType,
 };
+use crate::util::openocd::OpenOcdServer;
 use crate::util::parse_int::ParseInt;
 
 pub(crate) struct Inner {
     uart: Option<Rc<dyn Uart>>,
+    spi: Option<Rc<dyn Target>>,
     pub gpio: GpioInner,
+    jtag: Option<Rc<dyn Jtag>>,
 }
 
 /// Represents the verilator transport object.
@@ -71,7 +77,12 @@ impl Verilator {
             spi_file: spi,
             gpio_read_file: gpio_rd,
             gpio_write_file: gpio_wr,
-            inner: Rc::new(RefCell::new(Inner { uart: None, gpio })),
+            inner: Rc::new(RefCell::new(Inner {
+                gpio,
+                spi: None,
+                uart: None,
+                jtag: None,
+            })),
         })
     }
 
@@ -93,7 +104,9 @@ impl Drop for Verilator {
 
 impl Transport for Verilator {
     fn capabilities(&self) -> Result<Capabilities> {
-        Ok(Capabilities::new(Capability::UART | Capability::GPIO))
+        Ok(Capabilities::new(
+            Capability::GPIO | Capability::SPI | Capability::UART,
+        ))
     }
 
     fn uart(&self, instance: &str) -> Result<Rc<dyn Uart>> {
@@ -106,6 +119,18 @@ impl Transport for Verilator {
             inner.uart = Some(Rc::new(VerilatorUart::open(&self.uart_file)?));
         }
         Ok(Rc::clone(inner.uart.as_ref().unwrap()))
+    }
+
+    fn spi(&self, instance: &str) -> Result<Rc<dyn Target>> {
+        ensure!(
+            instance == "0",
+            TransportError::InvalidInstance(TransportInterfaceType::Spi, instance.to_string())
+        );
+        let mut inner = self.inner.borrow_mut();
+        if inner.spi.is_none() {
+            inner.spi = Some(Rc::new(VerilatorSpi::open(&self.spi_file, instance)?));
+        }
+        Ok(Rc::clone(inner.spi.as_ref().unwrap()))
     }
 
     fn gpio_pin(&self, instance: &str) -> Result<Rc<dyn GpioPin>> {
@@ -126,6 +151,14 @@ impl Transport for Verilator {
         } else {
             Err(TransportError::UnsupportedOperation.into())
         }
+    }
+
+    fn jtag(&self, opts: &JtagParams) -> Result<Rc<dyn Jtag>> {
+        let mut inner = self.inner.borrow_mut();
+        if inner.jtag.is_none() {
+            inner.jtag = Some(Rc::new(OpenOcdServer::new(opts)?));
+        }
+        Ok(Rc::clone(inner.jtag.as_ref().unwrap()))
     }
 }
 

@@ -2739,8 +2739,18 @@ opentitan_functest(
         ] + DARJEELING_OPENTITANTOOL_OPENOCD_TEST_CMDS,
     ),
     data = DARJEELING_OPENTITANTOOL_OPENOCD_DATA_DEPS,
-    targets = ["cw310_rom_with_fake_keys"],
+    targets = [
+        #"verilator",
+        "cw310_rom_with_fake_keys",
+    ],
     test_harness = "//sw/host/tests/chip/jtag:openocd_test",
+    verilator = verilator_params(
+        timeout = "long",
+        test_cmds = [
+            "--reset-delay=\"120sec\"",
+            "--bootstrap=\"$(rootpath {flash})\"",
+        ] + DARJEELING_OPENTITANTOOL_OPENOCD_TEST_CMDS,
+    ),
     deps = [
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/lib/sw/device/runtime:log",
@@ -2760,9 +2770,18 @@ opentitan_functest(
         ],
     ),
     targets = [
+        #"verilator",
         "cw310_test_rom",
     ],
     test_harness = "//sw/host/tests/chip/spi_device_ottf_console",
+    verilator = verilator_params(
+        timeout = "long",
+        tags = ["manual"],
+        test_cmds = [
+            "--reset-delay=\"120sec\"",
+            "--bootstrap=\"$(location {flash})\"",
+        ],
+    ),
     deps = [
         "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/testing/test_framework:ottf_main",

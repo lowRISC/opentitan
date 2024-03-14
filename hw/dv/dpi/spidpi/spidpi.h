@@ -6,33 +6,14 @@
 #define OPENTITAN_HW_DV_DPI_SPIDPI_SPIDPI_H_
 
 #include <limits.h>
+#include <stdio.h>
 #include <svdpi.h>
 
 extern "C" {
 
-#define MAX_TRANSACTION 4
-struct spidpi_ctx {
-  int loglevel;
-  char ptyname[64];
-  int host;
-  int device;
-  FILE *mon_file;
-  char mon_pathname[PATH_MAX];
-  void *mon;
-  int tick;
-  int cpol;
-  int cpha;
-  int msbfirst;  // shift direction
-  int nout;
-  int bout;
-  int nin;
-  int bin;
-  int din;
-  int nmax;
-  char driving;
-  int state;
-  char buf[MAX_TRANSACTION];
-};
+#define MAX_TRANSACTION (8 * 1024)
+#define MAX_TRANSFER (4 * 1024)
+struct spidpi_ctx;
 
 // SPI Host States
 #define SP_IDLE 0
@@ -51,7 +32,7 @@ struct spidpi_ctx {
 #define P2D_CSB 0x2
 #define P2D_SDI 0x4
 
-void *spidpi_create(const char *name, int mode, int loglevel);
+void *spidpi_create(const char *name, int listen_port, int mode, int loglevel);
 char spidpi_tick(void *ctx_void, const svLogicVecVal *d2p_data);
 void spidpi_close(void *ctx_void);
 

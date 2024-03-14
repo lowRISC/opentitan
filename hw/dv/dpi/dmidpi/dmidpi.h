@@ -17,10 +17,12 @@ extern "C" {
  * Call from a initial block.
  *
  * @param display_name Name of the interface (for display purposes only)
+ * @param id_code ID of DMI device
  * @param listen_port Port to listen on
  * @return an initialized struct dmidpi_ctx context object
  */
-void *dmidpi_create(const char *display_name, int listen_port);
+void *dmidpi_create(const char *display_name, unsigned int id_code,
+                    int listen_port);
 
 /**
  * Destructor: Close all connections and free all resources

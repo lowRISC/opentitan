@@ -103,7 +103,7 @@ impl CommandDispatch for Console {
             };
             let uart = self.params.create(transport)?;
             if let Some(send) = self.send.as_ref() {
-                log::info!("Sending: {:?}", send);
+                log::info!("Sending: {:?}\r", send);
                 uart.write(send.as_bytes())?;
             }
             console.interact(&*uart, Some(&mut stdin), Some(&mut stdout))?
