@@ -28,6 +28,19 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     int max_delay;
   } expected_alert_t;
 
+  // This holds alerts to be added to the expected_alert array: incoming expectations
+  // are placed in this queue before going into the expected_alert since we would need
+  // to fork a thread within a function since there needs to be a wait before determining
+  // how they need to be handled. A fork with delays within a function has given some
+  // trouble so it is best to avoid it.
+  //
+  // This queue holds alerts since they are received in set_exp_alert and when they are handled
+  // in process_set_exp_alerts.
+  expected_alert_t exp_alert_q[string][$];
+
+  // This event is used to notify process_set_exp_alerts there are alerts to be handled.
+  event new_exp_alert;
+
   // alert checking related parameters
   bit do_alert_check = 1;
   bit check_alert_sig_int_err = 1;
@@ -124,6 +137,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
       process_tl_fifos();
       if (cfg.list_of_alerts.size()) process_alert_fifos();
       if (cfg.list_of_alerts.size()) check_alerts();
+      if (cfg.list_of_alerts.size()) process_set_exp_alerts();
     join_none
   endtask
 
@@ -300,25 +314,40 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     if (!(alert_name inside {cfg.list_of_alerts})) begin
       `uvm_fatal(`gfn, $sformatf("alert_name %0s is not in cfg.list_of_alerts!", alert_name))
     end
-    fork
-      begin
-        // delay a negedge clk to avoid race condition between this function and
-        // `under_alert_handshake` variable
-        cfg.clk_rst_vif.wait_n_clks(1);
-        if (under_alert_handshake[alert_name] || expected_alert[alert_name].expected) begin
-          `uvm_info(`gfn, $sformatf(
-                    "Current %0s status: under_alert_handshake=%0b, exp_alert=%0b, request ignored",
-                    alert_name,
-                    under_alert_handshake[alert_name],
-                    expected_alert[alert_name].expected
-                    ), UVM_MEDIUM)
-        end else begin
-          `uvm_info(`gfn, $sformatf("alert %0s is expected to trigger", alert_name), UVM_HIGH)
-          expected_alert[alert_name] = '{1, is_fatal, max_delay};
+    exp_alert_q[alert_name].push_back(expected_alert_t'{1, is_fatal, max_delay});
+    // Notify process_set_exp_alerts there is work to do.
+    ->new_exp_alert;
+  endfunction
+
+  // Handle incoming expected alerts.
+  virtual task process_set_exp_alerts();
+    forever begin
+      int num_alerts = 0;
+      @new_exp_alert;
+      @cfg.clk_rst_vif.cbn;
+      foreach (exp_alert_q[alert_name]) begin
+        while (exp_alert_q[alert_name].size() > 0) begin
+          expected_alert_t exp_alert = exp_alert_q[alert_name].pop_front();
+          ++num_alerts;
+          if (under_alert_handshake[alert_name] || expected_alert[alert_name].expected) begin
+            `uvm_info(`gfn, $sformatf(
+                      {"Current %0s status: under_alert_handshake=%0b, exp_alert=%0b, ",
+                       "request ignored"},
+                      alert_name,
+                      under_alert_handshake[alert_name],
+                      expected_alert[alert_name].expected
+                      ), UVM_MEDIUM)
+          end else begin
+            `uvm_info(`gfn, $sformatf(
+                      "alert %0s is expected to trigger, fatal=%0d, delay %0d", alert_name,
+                       exp_alert.is_fatal, exp_alert.max_delay), UVM_MEDIUM)
+            expected_alert[alert_name] = '{1, exp_alert.is_fatal, exp_alert.max_delay};
+          end
         end
       end
-    join_none
-  endfunction
+      `DV_CHECK_NE(num_alerts, 0, "Expected some alerts received")
+    end
+  endtask
 
   // task to process tl access
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
