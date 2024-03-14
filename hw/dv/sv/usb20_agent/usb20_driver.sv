@@ -7,7 +7,10 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
 
   `uvm_component_new
 
-  int usb_rst_time = 100_000;  // upto 10ms
+  // Bus Reset signaling from a real physical host is required to be at least 10ms,
+  // but the USB device detects a bus reset after just 3us.
+  int usb_rst_time = 100; // may be up to 10ms,
+
   int usb_idle_clk_cycles = 5;
   bit [7:0] SYNC_PATTERN = 8'b1000_0000;
   bit [1:0] EOP = 2'b00;

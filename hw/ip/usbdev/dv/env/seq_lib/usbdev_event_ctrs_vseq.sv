@@ -3,6 +3,17 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // Sequence for basic testing of usbdev event counters
+//
+// This is a simple initial test sequence for exercising the event counters in the USB device.
+// It performs resets and monitoring from the CSR side and packet transmission and collection
+// on the USB side.
+//
+// In time, the set of enabled endpoints for each counter should probably be changed during the
+// test rather than randomizing up front, since the counters are expressly designed to support
+// that, and the configurations of the endpoints themselves could perhaps be changed too.
+//
+// We should probably also separate the CSR side and the USB side into separate processes if
+// practicable.
 
 class usbdev_event_ctrs_vseq extends usbdev_base_vseq;
   `uvm_object_utils(usbdev_event_ctrs_vseq)
@@ -149,10 +160,10 @@ class usbdev_event_ctrs_vseq extends usbdev_base_vseq;
       bit [Act_Count-1:0] actions;
       // FIFO status information
       bit [31:0] usbstat;
-      bit avsetup_empty;
-      bit avsetup_full;
-      bit avout_empty;
-      bit avout_full;
+      bit  avsetup_empty;
+      uint avsetup_level;
+      bit  avout_empty;
+      uint avout_level;
       uint rx_level;
       uint bufnum;
       bit [11:0] rst;
@@ -198,79 +209,119 @@ class usbdev_event_ctrs_vseq extends usbdev_base_vseq;
 
       // Ascertain the present state of the FIFOs.
       csr_rd(.ptr(ral.usbstat), .value(usbstat));
-      avsetup_full  =  get_field_val(ral.usbstat.av_out_full,    usbstat);
-      avsetup_empty = (get_field_val(ral.usbstat.av_setup_depth, usbstat) <= 0);
-      avout_full    =  get_field_val(ral.usbstat.av_setup_full,  usbstat);
-      avout_empty   = (get_field_val(ral.usbstat.av_out_depth,   usbstat) <= 0);
+      avsetup_level =  get_field_val(ral.usbstat.av_setup_depth, usbstat);
+      avout_level   =  get_field_val(ral.usbstat.av_out_depth,   usbstat);
       rx_level      =  get_field_val(ral.usbstat.rx_depth,       usbstat);
-
-      `uvm_info(`gfn, $sformatf("AVSETUP depth %d full %d empty %d",
-                                get_field_val(ral.usbstat.av_setup_depth, usbstat), avsetup_full,
-                                avsetup_empty), UVM_LOW)  // UVM_HIGH
-      `uvm_info(`gfn, $sformatf("AVOUT depth %d full %d empty %d",
-                                get_field_val(ral.usbstat.av_out_depth, usbstat), avout_full,
-                                avout_empty), UVM_LOW)  // UVM_HIGH
-      `uvm_info(`gfn, $sformatf("RXFIFO depth %d", rx_level), UVM_LOW)   // UVM_HIGH
 
       // Decide whether to supply buffer(s);
       // Note: the buffer numbers do not actually matter, we're not concerned with the data itself.
       `DV_CHECK_STD_RANDOMIZE_FATAL(actions)
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(bufnum, bufnum inside {[0:NBuf-1]};)
-      if (actions[Act_SupplyAVSetup] & !avsetup_full) begin
+      if (actions[Act_SupplyAVSetup] && avsetup_level < AvSetupFIFODepth) begin
+        `uvm_info(`gfn, $sformatf("Supplying SETUP buffer"), UVM_MEDIUM)
         csr_wr(.ptr(ral.avsetupbuffer), .value(bufnum));
-        avsetup_empty = 0;
+        // Update our expectations about the FIFO state.
+        avsetup_level++;
       end
-      if (actions[Act_SupplyAVOut] & !avout_full) begin
+      if (actions[Act_SupplyAVOut] && avout_level <= AvOutFIFODepth) begin
+        `uvm_info(`gfn, $sformatf("Supplying OUT buffer"), UVM_MEDIUM)
         csr_wr(.ptr(ral.avoutbuffer), .value(bufnum));
-        avout_empty = 0;
+        // Update our expectations about the FIFO state.
+        avout_level++;
+
       end
+
+      // Derivative FIFO status indicators.
+      avsetup_empty = ~|avsetup_level;
+      avout_empty = ~|avout_level;
+
+      `uvm_info(`gfn, $sformatf("AVSETUP depth %d full %d empty %d", avsetup_level,
+                                (avsetup_level >= AvSetupFIFODepth), avsetup_empty), UVM_MEDIUM)
+      `uvm_info(`gfn, $sformatf("AVOUT depth %d full %d empty %d", avout_level,
+                                (avout_level >= AvOutFIFODepth), avout_empty), UVM_MEDIUM)
+      `uvm_info(`gfn, $sformatf("RXFIFO depth %d", rx_level), UVM_MEDIUM)
 
       // Attempt to send a SETUP packet to a randomly-chosen endpoint.
       if (actions[Act_SendSETUP]) begin
         bit exp_accepted = !avsetup_empty && (rx_level < RxFIFODepth);
 
         `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(endp, endp inside {[0:NEndpoints-1]};)
+        `uvm_info(`gfn, $sformatf("Attempting SETUP transaction to endp %d", endp), UVM_MEDIUM)
         call_token_seq(PidTypeSetupToken);
-        call_data_seq(PidTypeData0, .randomize_length(1'b0), .num_of_bytes(8));
+
+        // TODO: lie about the transfer type to prevent the usb20_driver automatically stalling
+        // attempting to retrieve a handshake response that we expect never to arrive!
+        call_data_seq(PidTypeData0, .randomize_length(1'b0), .num_of_bytes(8),
+                      .trans_type(exp_accepted ? CtrlTrans : IsoTrans));
+        // TODO: presently we cannot use usb20_driver to check for the absence of a response.
+        if (exp_accepted) begin
+          get_response(m_response_item);
+          $cast(m_usb20_item, m_response_item);
+          get_out_response_from_device(m_usb20_item, PidTypeAck);
+        end
 
         exp_cnt_ign_avsetup = ctr_event(exp_cnt_ign_avsetup, ep_ign_avsetup[endp] && avsetup_empty);
         exp_cnt_drop_rx = ctr_event(exp_cnt_drop_rx, ep_drop_rx[endp] && (rx_level >= RxFIFODepth));
         if (exp_accepted) begin
           // Update our understanding of the RX FIFO level.
-          rx_level = rx_level - 1;
+          rx_level = rx_level + 1;
           // It should be expecting DATA1 next.
           exp_out_toggles[endp] = 1'b1;
+        end else begin
+          // Our device currently resets the Data Toggle bit in the event that a SETUP packet is
+          // dropped; this is probably fine since any subsequent packet shall surely be a retry
+          // of a SETUP packet.
+          exp_out_toggles[endp] = 1'b0;
         end
       end
+
+      // Attempt to send an OUT packet to a randomly-chosen endpoint.
       if (actions[Act_SendOUT]) begin
         bit exp_accepted = !avout_empty && (rx_level < RxFIFODepth - 1);
+        bit provoke_mismatch;
 
-        // Attempt to send an OUT packet to a randomly-chosen endpoint.
+        // Decide here whether to provoke a Data Toggle mismatch by sending the wrong DATA PID.
+        `DV_CHECK_STD_RANDOMIZE_FATAL(provoke_mismatch)
+
         `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(endp, endp inside {[0:NEndpoints-1]};)
+        `uvm_info(`gfn, $sformatf("Attempting OUT transaction to endp %d (provoking mismatch %d)",
+                                  endp, provoke_mismatch), UVM_MEDIUM)
+
         call_token_seq(PidTypeOutToken);
-        call_data_seq(exp_out_toggles[endp] ? PidTypeData1 : PidTypeData0,
+        call_data_seq((exp_out_toggles[endp] ^ provoke_mismatch) ? PidTypeData1 : PidTypeData0,
                       .randomize_length(1'b1), .num_of_bytes(0));
         get_response(m_response_item);
         $cast(m_usb20_item, m_response_item);
-        get_out_response_from_device(m_usb20_item, exp_accepted ? PidTypeAck : PidTypeNak);
+        // A data packet with the wrong DATA PID shall still be accepted, regarded as a retry.
+        get_out_response_from_device(m_usb20_item,
+                                     (exp_accepted || provoke_mismatch) ? PidTypeAck : PidTypeNak);
 
+        // Counting of packets that cannot be accepted because of the FIFO state does not consider
+        // whether the Data Toggle mismatches; that check is independent.
         exp_cnt_drop_avout = ctr_event(exp_cnt_drop_avout, ep_drop_avout[endp] && avout_empty);
         // Note: Final entry of the RX FIFO is reserved only for use by SETUP packets.
         exp_cnt_drop_rx = ctr_event(exp_cnt_drop_rx,
                                     ep_drop_rx[endp] && (rx_level >= RxFIFODepth - 1));
-        if (exp_accepted) begin
+        // Data Toggle checking is independent of whether the packet can be stored.
+        exp_cnt_datatog_out = ctr_event(exp_cnt_datatog_out,
+                                        ep_datatog_out[endp] && provoke_mismatch);
+
+        if (exp_accepted && !provoke_mismatch) begin
           // Update our understanding of the RX FIFO level.
-          rx_level = rx_level - 1;
+          rx_level = rx_level + 1;
           // OUT Data Toggle inverts.
           exp_out_toggles[endp] ^=  1;
         end
       end
+
+      // Request an IN packet from a randomly-chosen endpoint.
       if (actions[Act_SendIN]) begin
         // Response to IN transactions
         in_rsp_e in_response;
 
-        // Request an IN packet from a randomly-chosen endpoint.
         `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(endp, endp inside {[0:NEndpoints-1]};)
+        `uvm_info(`gfn, $sformatf("Attempting IN transaction to endp %d", endp), UVM_MEDIUM)
+
         call_token_seq(PidTypeInToken);
         // Get response from DUT.
         get_response(m_response_item);
@@ -299,7 +350,7 @@ class usbdev_event_ctrs_vseq extends usbdev_base_vseq;
         endcase
 
         // TODO: presently we do NOT supply any IN packets via 'configin' so enabled 'nodata_in'
-        //       counter(s) will increment for every attempted IN transactions.
+        //       counter(s) will increment for every attempted IN transaction.
         exp_cnt_nodata_in0 = ctr_event(exp_cnt_nodata_in0, ep_nodata_in0[endp] && 1);
         exp_cnt_nodata_in1 = ctr_event(exp_cnt_nodata_in1, ep_nodata_in1[endp] && 1);
       end

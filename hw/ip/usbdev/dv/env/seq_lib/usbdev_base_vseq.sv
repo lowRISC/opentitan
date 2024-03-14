@@ -112,10 +112,12 @@ endtask
 
   // Construct and transmit a DATA packet to the USB device
   virtual task call_data_seq(input pid_type_e pid_type,
-                             input bit randomize_length, input bit [6:0] num_of_bytes);
+                             input bit randomize_length, input bit [6:0] num_of_bytes = 0,
+                             usb_transfer_e trans_type = CtrlTrans);
     `uvm_create_on(m_data_pkt, p_sequencer.usb20_sequencer_h)
     m_data_pkt.m_pkt_type = PktTypeData;
     m_data_pkt.m_pid_type = pid_type;
+    m_data_pkt.m_usb_transfer = trans_type;
     `DV_CHECK_RANDOMIZE_WITH_FATAL(m_data_pkt,
                                    !randomize_length -> m_data_pkt.data.size() == num_of_bytes;)
     m_usb20_item = m_data_pkt;
