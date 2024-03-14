@@ -96,7 +96,9 @@ status_t hmac_testutils_finish_polled(const dif_hmac_t *hmac,
                                       dif_hmac_digest_t *digest_out) {
   uint32_t usec;
   TRY(compute_hmac_testutils_finish_timeout_usec(&usec));
-  IBEX_TRY_SPIN_FOR(dif_hmac_finish(hmac, digest_out) == kDifOk, usec);
+  IBEX_TRY_SPIN_FOR(
+      dif_hmac_finish(hmac, /*disable_after_done=*/true, digest_out) == kDifOk,
+      usec);
   return OK_STATUS();
 }
 
