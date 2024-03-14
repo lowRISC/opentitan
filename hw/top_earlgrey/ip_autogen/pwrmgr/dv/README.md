@@ -79,9 +79,9 @@ All test sequences reside in [`hw/top_earlgrey/ip_autogen/pwrmgr/dv/env/seq_lib`
 The `pwrmgr_base_vseq` virtual sequence is extended from `cip_base_vseq` and serves as a starting point.
 It provides commonly used handles, variables, functions and tasks used by the test sequences.
 Some of the most commonly used tasks and functions are as follows:
-* task `wait_for_fast_fsm_active`:
-  Waits for the `fetch_en_o` output to become 1, indicating the fast fsm is active and the CPU can fetch instructions.
-  We wait for this before the tests can start, since any CSR accesses require the CPU to be running.
+* task `wait_for_fast_fsm`:
+  Waits for the fast fsm to be active or inactive, indicated by whether the `fetch_en_o` output become On or Off respectively.
+  We mostly call this expecting it to be active before the tests can start, since any CSR accesses require the CPU to be running.
   Due to complexities in the UVM sequences this task is called in the virtual post_apply_reset task of dv_base_vseq.
 * task `wait_for_csr_to_propagate_to_slow_domain`:
   Waits for `cfg_cdc_sync` CSR to be clear, indicating the CDC to the slow clock has completed.

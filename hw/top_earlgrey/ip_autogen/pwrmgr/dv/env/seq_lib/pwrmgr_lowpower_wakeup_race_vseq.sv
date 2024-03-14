@@ -31,7 +31,7 @@ class pwrmgr_lowpower_wakeup_race_vseq extends pwrmgr_base_vseq;
     wakeups_t prior_reasons = '0;
     bit prior_fall_through = '0;
     bit prior_abort = '0;
-    wait_for_fast_fsm_active();
+    wait_for_fast_fsm(FastFsmActive);
 
     check_wake_status('0);
     for (int i = 0; i < num_trans; ++i) begin
@@ -83,25 +83,23 @@ class pwrmgr_lowpower_wakeup_race_vseq extends pwrmgr_base_vseq;
         end
       join
 
-      if (ral.control.main_pd_n.get_mirrored_value() == 1'b0) begin
-        wait_for_reset_cause(pwrmgr_pkg::LowPwrEntry);
-      end
-
-      // Now bring it back.
-      cfg.clk_rst_vif.wait_clks(cycles_before_wakeup);
+      wait_for_fast_fsm(FastFsmInactive);
 
       // Check wake_status prior to wakeup, or the unit requesting wakeup will have been reset.
       // This read will not work in the chip, since the processor will be asleep.
-      cfg.slow_clk_rst_vif.wait_clks(5);
-      check_wake_status(wakeups & wakeups_en);
-      `uvm_info(`gfn, $sformatf("Got wake_status=0x%x", wakeups & wakeups_en), UVM_MEDIUM)
+      // We wait until the cycle following the fast fsm lc_rst release.
+      if (ral.control.main_pd_n.get_mirrored_value() == 1'b0) begin
+        wait_for_lc_rst_release();
+        check_wake_status(wakeups & wakeups_en);
+        `uvm_info(`gfn, $sformatf("Got wake_status=0x%x", wakeups & wakeups_en), UVM_MEDIUM)
+      end
       wait(cfg.pwrmgr_vif.pwr_clk_req.main_ip_clk_en == 1'b1);
 
       // Send more wakeups to make sure they are reported in CSRs. With this all enabled
       // wakeups should be registered.
       cfg.pwrmgr_vif.update_wakeups('1);
 
-      wait_for_fast_fsm_active();
+      wait_for_fast_fsm(FastFsmActive);
       `uvm_info(`gfn, "Back from wakeup", UVM_MEDIUM)
 
       // make this check parallel.

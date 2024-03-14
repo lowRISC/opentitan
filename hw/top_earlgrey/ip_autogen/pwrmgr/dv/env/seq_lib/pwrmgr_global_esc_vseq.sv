@@ -23,7 +23,7 @@ class pwrmgr_global_esc_vseq extends pwrmgr_base_vseq;
   task send_esc();
     int cycle;
     for (int i = 0; i < num_trans; ++i) begin
-      wait_for_fast_fsm_active();
+      wait_for_fast_fsm(FastFsmActive);
       cycle = $urandom_range(50, 300);
       send_escalation_reset();
       repeat (cycle) @(cfg.clk_rst_vif.cb);
