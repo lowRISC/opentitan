@@ -69,8 +69,8 @@ class rv_dm_jtag_dmi_debug_disabled_vseq extends rv_dm_base_vseq;
       cfg.m_jtag_agent_cfg.vif.do_trst_n(2);
       cfg.rv_dm_vif.cb.lc_hw_debug_en <= lc_ctrl_pkg::On;
 
-      // Wait a clock edge to make sure the LC signal has an effect
-      cfg.clk_rst_vif.wait_clks(1);
+      // Wait atleast two clock edges to make sure the LC signal has an effect
+      cfg.clk_rst_vif.wait_clks(2);
 
       // Read the contents of abstractdata[0] and check they are what we set at the start.
       read_abstractdata(value0);
