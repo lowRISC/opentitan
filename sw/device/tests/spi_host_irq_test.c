@@ -82,6 +82,36 @@ static status_t external_isr(void) {
 
 void ottf_external_isr(uint32_t *exc_info) { test_result = external_isr(); }
 
+static status_t active_event_irq(void) {
+  uint8_t data[256];
+  memset(data, 0xA5, sizeof(data));
+
+  irq_fired = UINT32_MAX;
+  TRY(dif_spi_host_event_set_enabled(&spi_host, kDifSpiHostEvtIdle, true));
+
+  dif_spi_host_status_t status;
+  TRY(dif_spi_host_get_status(&spi_host, &status));
+  TRY_CHECK(!status.active);
+
+  // Issue a command and check that the `STATUS.active` go low.
+  TRY(dif_spi_host_fifo_write(&spi_host, data, sizeof(data)));
+  TRY(dif_spi_host_write_command(&spi_host, sizeof(data),
+                                 kDifSpiHostWidthStandard,
+                                 kDifSpiHostDirectionTx, true));
+  TRY(dif_spi_host_get_status(&spi_host, &status));
+  TRY_CHECK(status.active);
+
+  // Wait for the event irq and check that it was triggered by `STATUS.active`.
+  ATOMIC_WAIT_FOR_INTERRUPT(irq_fired == kDifSpiHostIrqSpiEvent);
+  TRY(dif_spi_host_get_status(&spi_host, &status));
+  TRY_CHECK(!status.active);
+
+  TRY(dif_spi_host_event_set_enabled(&spi_host, kDifSpiHostEvtIdle, false));
+  IBEX_TRY_SPIN_FOR(TRY(spi_host_testutils_is_active(&spi_host)) == false,
+                    1000);
+  return OK_STATUS();
+}
+
 static status_t ready_event_irq(void) {
   enum { kDataSize = 260, kCommands = 5 };
   static_assert(kDataSize % kCommands == 0, "Must be multiple.");
@@ -115,36 +145,6 @@ static status_t ready_event_irq(void) {
   TRY_CHECK(status.ready);
 
   TRY(dif_spi_host_event_set_enabled(&spi_host, kDifSpiHostEvtReady, false));
-  IBEX_TRY_SPIN_FOR(TRY(spi_host_testutils_is_active(&spi_host)) == false,
-                    1000);
-  return OK_STATUS();
-}
-
-static status_t active_event_irq(void) {
-  uint8_t data[256];
-  memset(data, 0xA5, sizeof(data));
-
-  irq_fired = UINT32_MAX;
-  TRY(dif_spi_host_event_set_enabled(&spi_host, kDifSpiHostEvtIdle, true));
-
-  dif_spi_host_status_t status;
-  TRY(dif_spi_host_get_status(&spi_host, &status));
-  TRY_CHECK(!status.active);
-
-  // Issue a command and check that the `STATUS.active` go low.
-  TRY(dif_spi_host_fifo_write(&spi_host, data, sizeof(data)));
-  TRY(dif_spi_host_write_command(&spi_host, sizeof(data),
-                                 kDifSpiHostWidthStandard,
-                                 kDifSpiHostDirectionTx, true));
-  TRY(dif_spi_host_get_status(&spi_host, &status));
-  TRY_CHECK(status.active);
-
-  // Wait for the event irq and check that it was triggered by `STATUS.active`.
-  ATOMIC_WAIT_FOR_INTERRUPT(irq_fired == kDifSpiHostIrqSpiEvent);
-  TRY(dif_spi_host_get_status(&spi_host, &status));
-  TRY_CHECK(!status.active);
-
-  TRY(dif_spi_host_event_set_enabled(&spi_host, kDifSpiHostEvtIdle, false));
   IBEX_TRY_SPIN_FOR(TRY(spi_host_testutils_is_active(&spi_host)) == false,
                     1000);
   return OK_STATUS();
@@ -337,8 +337,8 @@ static status_t test_init(void) {
       (dif_spi_host_config_t){
           .spi_clock = 1000000,
           .peripheral_clock_freq_hz = (uint32_t)kClockFreqHiSpeedPeripheralHz,
-          .rx_watermark = kTxWatermark,
-          .tx_watermark = kRxWatermark,
+          .rx_watermark = kRxWatermark,
+          .tx_watermark = kTxWatermark,
       }));
   TRY(dif_spi_host_output_set_enabled(&spi_host, true));
 
