@@ -41,6 +41,10 @@ typedef struct otp_partition_info {
    */
   uint32_t start_addr;
   /**
+   * Size (in bytes) of the partition, excluding the digest field.
+   */
+  size_t size;
+  /**
    * The alignment mask for this partition.
    *
    * A valid address for this partition must be such that

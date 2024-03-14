@@ -25,21 +25,33 @@ enum {
 const otp_partition_info_t kOtpPartitions[] = {
     [kOtpPartitionCreatorSwCfg] = {
         .start_addr = OTP_CTRL_PARAM_CREATOR_SW_CFG_OFFSET,
+        .size = OTP_CTRL_PARAM_CREATOR_SW_CFG_SIZE -
+                OTP_CTRL_PARAM_CREATOR_SW_CFG_DIGEST_SIZE,
         .align_mask = 0x3},
     [kOtpPartitionOwnerSwCfg] = {
         .start_addr = OTP_CTRL_PARAM_OWNER_SW_CFG_OFFSET,
+        .size = OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE -
+                OTP_CTRL_PARAM_OWNER_SW_CFG_DIGEST_SIZE,
         .align_mask = 0x3},
     [kOtpPartitionRotCreatorAuthCodesign] = {
         .start_addr = OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_OFFSET,
+        .size = OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_SIZE -
+                OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_DIGEST_SIZE,
         .align_mask = 0x3},
     [kOtpPartitionRotCreatorAuthState] = {
         .start_addr = OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_OFFSET,
+        .size = OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_SIZE -
+                OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_DIGEST_SIZE,
         .align_mask = 0x3},
     [kOtpPartitionHwCfg0] = {
         .start_addr = OTP_CTRL_PARAM_HW_CFG0_OFFSET,
+        .size = OTP_CTRL_PARAM_HW_CFG0_SIZE -
+                OTP_CTRL_PARAM_HW_CFG0_DIGEST_SIZE,
         .align_mask = 0x3},
     [kOtpPartitionHwCfg1] = {
         .start_addr = OTP_CTRL_PARAM_HW_CFG1_OFFSET,
+        .size = OTP_CTRL_PARAM_HW_CFG1_SIZE -
+                OTP_CTRL_PARAM_HW_CFG1_DIGEST_SIZE,
         .align_mask = 0x3},
 };
 // clang-format on
@@ -71,7 +83,7 @@ static void wait_for_dai_idle(void) {
   uint32_t status = 0;
   bool idle = false;
   do {
-    status = sec_mmio_read32(kBase + OTP_CTRL_STATUS_REG_OFFSET);
+    status = abs_mmio_read32(kBase + OTP_CTRL_STATUS_REG_OFFSET);
     idle = bitfield_bit32_read(status, OTP_CTRL_STATUS_DAI_IDLE_BIT);
   } while (!idle);
 }
