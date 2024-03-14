@@ -8,7 +8,7 @@ class usbdev_in_stall_vseq extends usbdev_base_vseq;
   `uvm_object_new
 
   task body();
-    configure_in_trans(out_buffer_id);  // register configurations for IN Trans.
+    configure_in_trans(out_buffer_id, .num_of_bytes(7'd10));  // register configurations for IN Trans.
     csr_wr(.ptr(ral.in_stall[0].endpoint[endp]),  .value(1'b1)); // Stall EP IN
     // Token pkt followed by handshake pkt
     call_token_seq(PidTypeInToken);
