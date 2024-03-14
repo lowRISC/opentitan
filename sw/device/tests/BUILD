@@ -1931,6 +1931,29 @@ opentitan_test(
 )
 
 opentitan_test(
+    name = "hmac_secure_wipe_test",
+    srcs = ["hmac_secure_wipe_test.c"],
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+            "//hw/top_earlgrey:silicon_creator": None,
+        },
+    ),
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:hmac",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:hmac_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
     name = "hmac_smoketest",
     srcs = ["hmac_smoketest.c"],
     exec_env = dicts.add(

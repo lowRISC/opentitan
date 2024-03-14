@@ -104,6 +104,7 @@ test_suite(
         "//sw/device/tests:flash_ctrl_test",
         "//sw/device/tests:hmac_enc_idle_test",
         "//sw/device/tests:hmac_enc_test",
+        "//sw/device/tests:hmac_secure_wipe_test",
         "//sw/device/tests:keymgr_sideload_aes_test",
         "//sw/device/tests:keymgr_sideload_kmac_test",
         "//sw/device/tests:keymgr_sideload_otbn_simple_test",
