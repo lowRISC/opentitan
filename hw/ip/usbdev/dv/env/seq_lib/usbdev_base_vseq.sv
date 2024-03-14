@@ -314,4 +314,13 @@ virtual task call_sof_seq(input pkt_type_e pkt_type, input pid_type_e pid_type);
   start_item(m_sof_pkt);
   finish_item(m_sof_pkt);
 endtask
+
+virtual task inter_packet_delay(int delay = 0);
+  // From section 7.1.18.1 Time interval between packets is between 2 to 6.5 bit times.
+  // Multiply with 4 because usb  samples on 4 clks.
+  if (delay == 0) delay = $urandom_range(8, 28);
+  else delay = delay * 4;
+  // for max/min inter pkt delay it can be changed with task argument
+  cfg.clk_rst_vif.wait_clks(delay);
+endtask
 endclass : usbdev_base_vseq
