@@ -15,12 +15,12 @@ class pwrmgr_esc_clk_rst_malfunc_vseq extends pwrmgr_base_vseq;
   constraint num_trans_c {num_trans inside {[1 : 3]};}
 
   virtual task body();
-    wait_for_fast_fsm_active();
+    wait_for_fast_fsm(FastFsmActive);
     // Wait some time so the stimulus is sent after the fast fsm becoming active.
     cfg.clk_rst_vif.wait_clks(4);
     expect_fatal_alerts = 1;
     trigger_escalation_timeout();
-    wait_for_fast_fsm_active();
+    wait_for_fast_fsm(FastFsmActive);
   endtask : body
 
   // Trigers an escalation timeout fault, either stopping clk_esc_i or driving rst_esc_ni.

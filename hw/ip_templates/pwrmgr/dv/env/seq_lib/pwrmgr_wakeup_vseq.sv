@@ -25,7 +25,7 @@ class pwrmgr_wakeup_vseq extends pwrmgr_base_vseq;
     bit prior_fall_through = '0;
     bit prior_abort = '0;
 
-    wait_for_fast_fsm_active();
+    wait_for_fast_fsm(FastFsmActive);
     check_wake_status('0);
     for (int i = 0; i < num_trans; ++i) begin
       `uvm_info(`gfn, "Starting new round", UVM_MEDIUM)
@@ -88,7 +88,7 @@ class pwrmgr_wakeup_vseq extends pwrmgr_base_vseq;
       `uvm_info(`gfn, $sformatf("Got wake_status=0x%x", enabled_wakeups), UVM_MEDIUM)
       wait(cfg.pwrmgr_vif.pwr_clk_req.main_ip_clk_en == 1'b1);
 
-      wait_for_fast_fsm_active();
+      wait_for_fast_fsm(FastFsmActive);
       `uvm_info(`gfn, "Back from wakeup", UVM_MEDIUM)
 
       @cfg.clk_rst_vif.cb;

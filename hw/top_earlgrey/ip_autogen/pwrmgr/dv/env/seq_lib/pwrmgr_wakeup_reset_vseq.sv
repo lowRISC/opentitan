@@ -47,7 +47,7 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
     resets_t enabled_resets;
     wakeups_t enabled_wakeups;
 
-    wait_for_fast_fsm_active();
+    wait_for_fast_fsm(FastFsmActive);
 
     check_reset_status('0);
     check_wake_status('0);
@@ -129,7 +129,7 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
         twirl_rom_response();
       join
 
-      wait_for_fast_fsm_active();
+      wait_for_fast_fsm(FastFsmActive);
 
       check_reset_status('0);
 

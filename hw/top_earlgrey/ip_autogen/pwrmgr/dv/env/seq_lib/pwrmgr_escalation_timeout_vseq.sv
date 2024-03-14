@@ -48,7 +48,7 @@ class pwrmgr_escalation_timeout_vseq extends pwrmgr_base_vseq;
   endtask
 
   virtual task body();
-    wait_for_fast_fsm_active();
+    wait_for_fast_fsm(FastFsmActive);
     cfg.slow_clk_rst_vif.set_freq_mhz(1);
     cfg.esc_clk_rst_vif.wait_clks(200);
     // The timeout is not predictable for two reasons:
@@ -59,7 +59,7 @@ class pwrmgr_escalation_timeout_vseq extends pwrmgr_base_vseq;
     // Keep the clock stopped for less than 118 cycles should be safe to avoid an alert.
     check_stopped_esc_clk(118, 1'b0);
     check_stopped_esc_clk(2000, 1'b1);
-    wait_for_fast_fsm_active();
+    wait_for_fast_fsm(FastFsmActive);
     // This should generate a reset but it doesn't so the test will fail.
     // TODO(lowrisc/opentitan#20516): Enable this test when this is fixed.
     // check_stopped_esc_clk(136, 1'b1);

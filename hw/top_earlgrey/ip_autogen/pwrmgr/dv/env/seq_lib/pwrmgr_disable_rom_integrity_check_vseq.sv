@@ -31,7 +31,7 @@ class pwrmgr_disable_rom_integrity_check_vseq extends pwrmgr_base_vseq;
 
   task body();
     resets_t enabled_resets;
-    wait_for_fast_fsm_active();
+    wait_for_fast_fsm(FastFsmActive);
     check_reset_status('0);
 
     for (int i = 0; i < 5; ++i) begin
@@ -113,7 +113,7 @@ class pwrmgr_disable_rom_integrity_check_vseq extends pwrmgr_base_vseq;
       end
       wait(cfg.pwrmgr_vif.pwr_clk_req.main_ip_clk_en == 1'b1);
 
-      wait_for_fast_fsm_active();
+      wait_for_fast_fsm(FastFsmActive);
       `uvm_info(`gfn, "Back from reset", UVM_MEDIUM)
 
       check_wake_info(.reasons('0), .fall_through(1'b0), .abort(1'b0));

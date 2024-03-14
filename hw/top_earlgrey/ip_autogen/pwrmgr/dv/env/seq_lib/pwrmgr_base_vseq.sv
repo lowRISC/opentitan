@@ -18,6 +18,11 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
 
   localparam int MaxCyclesBeforeEnable = 12;
 
+  typedef enum int {
+    FastFsmActive,
+    FastFsmInactive
+  } fast_fsm_activity_e;
+
   // Random wakeups and resets.
   rand wakeups_t wakeups;
   rand wakeups_t wakeups_en;
@@ -158,9 +163,9 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
     // There is tb lock up case
     // when reset come while rom_ctrl = {false, false}.
     // So we need rom_ctrl driver runs in parallel with
-    // wait_for_fast_fsm_active
+    // wait_for_fast_fsm(FastFsmActive)
     fork
-      wait_for_fast_fsm_active();
+      wait_for_fast_fsm(FastFsmActive);
       init_rom_response();
     join
     // And drive the cpu not sleeping.
@@ -414,11 +419,16 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
                                 ~cfg.pwrmgr_vif.fast_cb.pwr_rst_req.rst_lc_req,
                                 cycles_before_rst_lc_src)
           if (cfg.pwrmgr_vif.fast_cb.pwr_rst_req.rst_lc_req[1] == 1'b0) begin
+            // Wait for the rst_lc_src_n[1] input to go inactive.
+            if (cfg.pwrmgr_vif.pwr_rst_rsp.rst_lc_src_n[1] != 1'b1)
+              @(posedge cfg.pwrmgr_vif.pwr_rst_rsp.rst_lc_src_n[1]);
             cfg.esc_clk_rst_vif.drive_rst_pin(1);
             cfg.lc_clk_rst_vif.drive_rst_pin(1);
           end else begin
-            // And clear all reset requests when rst_lc_req[1] goes high, because when
+            // And clear all reset requests when rst_lc_src_n[1] goes active, because when
             // peripherals are reset they should drop their reset requests.
+            if (cfg.pwrmgr_vif.pwr_rst_rsp.rst_lc_src_n[1] != 1'b0)
+              @(negedge cfg.pwrmgr_vif.pwr_rst_rsp.rst_lc_src_n[1]);
             cfg.esc_clk_rst_vif.drive_rst_pin(0);
             cfg.lc_clk_rst_vif.drive_rst_pin(0);
             clear_escalation_reset();
@@ -589,18 +599,31 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
     cfg.pwrmgr_vif.update_otp_idle(otp_idle);
   endtask
 
-  // Waits for the fast fsm becoming active after SW initiated low power, indicated by the
-  // fetch_en output going high.
-  task wait_for_fast_fsm_active();
-    `uvm_info(`gfn, "starting wait for pwrmgr fast fsm active", UVM_MEDIUM)
-    `DV_SPINWAIT(wait (cfg.pwrmgr_vif.fetch_en == lc_ctrl_pkg::On);,
-                 "timeout waiting for the CPU to be active", FetchEnTimeoutNs)
-    `uvm_info(`gfn, "pwrmgr fast fsm is active", UVM_MEDIUM)
+  // Waits for the fast fsm becoming active or inactive, indicated by the
+  // fetch_en output going On or Off respectively.
+  task wait_for_fast_fsm(fast_fsm_activity_e activity = FastFsmActive);
+    lc_ctrl_pkg::lc_tx_t fetch_en = activity == FastFsmActive ? lc_ctrl_pkg::On : lc_ctrl_pkg::Off;
+    `uvm_info(`gfn, $sformatf("starting wait for pwrmgr %s", activity.name), UVM_MEDIUM)
+    `DV_SPINWAIT(wait (cfg.pwrmgr_vif.fetch_en == fetch_en);,
+                 "timeout waiting for pwrmgr fast fsm target activity", FetchEnTimeoutNs)
+    `uvm_info(`gfn, $sformatf("pwrmgr reached %s", activity.name), UVM_MEDIUM)
+  endtask
+
+  // Waits for the lc_rst output going inactive, which would complete a device reset.
+  // This should not be called for shallow sleep, since there is no lc_rst request.
+  task wait_for_lc_rst_release();
+    `uvm_info(`gfn, "starting wait for release of lc_rst for non-aon domain", UVM_MEDIUM)
+    `DV_WAIT(cfg.pwrmgr_vif.pwr_rst_req.rst_lc_req[1] == 1'b1,
+             "timeout waiting for lc_rst[1] to be active", FetchEnTimeoutNs)
+    `DV_WAIT(cfg.pwrmgr_vif.pwr_rst_req.rst_lc_req[1] == 1'b0,
+             "timeout waiting for lc_rst[1] to be inactive", FetchEnTimeoutNs)
+    `uvm_info(`gfn, "pwrmgr fast released lc_req[1]", UVM_MEDIUM)
   endtask
 
   task wait_for_reset_cause(pwrmgr_pkg::reset_cause_e cause);
     `DV_WAIT(cfg.pwrmgr_vif.pwr_rst_req.reset_cause == cause)
-    `uvm_info(`gfn, $sformatf("Observed reset cause_match 0x%x", cause), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("Observed reset cause_match %s (0x%x)", cause.name, cause),
+              UVM_MEDIUM)
   endtask
 
   virtual task wait_for_csr_to_propagate_to_slow_domain();
