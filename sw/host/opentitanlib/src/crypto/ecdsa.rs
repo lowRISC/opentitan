@@ -2,18 +2,19 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{anyhow, ensure, Result};
+use anyhow::{anyhow, ensure, Context, Result};
 use ecdsa::elliptic_curve::pkcs8::{DecodePrivateKey, EncodePrivateKey};
 use ecdsa::elliptic_curve::pkcs8::{DecodePublicKey, EncodePublicKey};
 use ecdsa::signature::hazmat::PrehashVerifier;
 use p256::ecdsa::{Signature, SigningKey, VerifyingKey};
 use rand::rngs::OsRng;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use serde_annotate::Annotate;
 use std::io::{Read, Write};
 use std::path::Path;
+use std::str::FromStr;
 
-use crate::crypto::rsa::Error;
+use super::Error;
 use crate::crypto::sha256::{sha256, Sha256Digest};
 
 pub struct EcdsaPrivateKey {
@@ -73,7 +74,7 @@ impl EcdsaPrivateKey {
     }
 }
 
-#[derive(Debug, Serialize, Annotate)]
+#[derive(Debug, Serialize, Deserialize, Annotate)]
 pub struct EcdsaRawSignature {
     #[serde(with = "serde_bytes")]
     #[annotate(format = hexstr)]
@@ -133,6 +134,10 @@ impl EcdsaRawSignature {
         self.write(&mut sig)?;
         Ok(sig)
     }
+
+    pub fn is_empty(&self) -> bool {
+        self.r.iter().all(|&v| v == 0) && self.s.iter().all(|&v| v == 0)
+    }
 }
 
 impl EcdsaPublicKey {
@@ -144,17 +149,6 @@ impl EcdsaPublicKey {
     pub fn load(path: impl AsRef<Path>) -> Result<Self> {
         let key = VerifyingKey::read_public_key_der_file(path)?;
         Ok(Self { key })
-    }
-
-    pub fn to_raw(&self) -> EcdsaRawPublicKey {
-        let point = self.key.to_encoded_point(false);
-        // Since opentitan is a little-endian machine, we reverse the byte
-        // order of the X and Y values.
-        let mut x = point.x().unwrap().as_slice().to_vec();
-        let mut y = point.y().unwrap().as_slice().to_vec();
-        x.reverse();
-        y.reverse();
-        EcdsaRawPublicKey { x, y }
     }
 
     pub fn verify(&self, digest: &Sha256Digest, signature: &EcdsaRawSignature) -> Result<()> {
@@ -171,7 +165,7 @@ impl EcdsaPublicKey {
     }
 }
 
-#[derive(Debug, Serialize, Annotate)]
+#[derive(Debug, Serialize, Deserialize, Annotate)]
 pub struct EcdsaRawPublicKey {
     #[serde(with = "serde_bytes")]
     #[annotate(format = hexstr)]
@@ -190,7 +184,32 @@ impl Default for EcdsaRawPublicKey {
     }
 }
 
+impl TryFrom<&EcdsaPublicKey> for EcdsaRawPublicKey {
+    type Error = Error;
+    fn try_from(v: &EcdsaPublicKey) -> Result<Self, Self::Error> {
+        let point = v.key.to_encoded_point(false);
+        // Since opentitan is a little-endian machine, we reverse the byte
+        // order of the X and Y values.
+        let mut x = point.x().unwrap().as_slice().to_vec();
+        let mut y = point.y().unwrap().as_slice().to_vec();
+        x.reverse();
+        y.reverse();
+        Ok(EcdsaRawPublicKey { x, y })
+    }
+}
+
+impl FromStr for EcdsaRawPublicKey {
+    type Err = Error;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let key = EcdsaPublicKey::load(s)
+            .with_context(|| format!("Failed to load {s}"))
+            .map_err(Error::Other)?;
+        EcdsaRawPublicKey::try_from(&key)
+    }
+}
+
 impl EcdsaRawPublicKey {
+    pub const SIZE: usize = 32 + 32;
     pub fn read(src: &mut impl Read) -> Result<Self> {
         let mut key = Self::default();
         src.read_exact(&mut key.x)?;

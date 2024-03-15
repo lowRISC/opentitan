@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::chip::boot_svc::{OwnershipUnlockRequest, UnlockMode};
-use crate::crypto::ecdsa::{EcdsaPrivateKey, EcdsaPublicKey, EcdsaRawSignature};
+use crate::crypto::ecdsa::{EcdsaPrivateKey, EcdsaPublicKey, EcdsaRawPublicKey, EcdsaRawSignature};
 use crate::util::parse_int::ParseInt;
 use anyhow::Result;
 use clap::Args;
@@ -36,7 +36,7 @@ impl OwnershipUnlockParams {
         }
         if let Some(next_owner) = &self.next_owner {
             let key = EcdsaPublicKey::load(next_owner)?;
-            unlock.next_owner_key = key.to_raw();
+            unlock.next_owner_key = EcdsaRawPublicKey::try_from(&key)?;
         }
         if let Some(signature) = &self.signature {
             let mut f = File::open(signature)?;
