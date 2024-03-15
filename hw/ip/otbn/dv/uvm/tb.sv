@@ -290,7 +290,8 @@ module tb;
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(escalate_vif)::set(null, "*.env", "escalate_vif", escalate_if);
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
-    uvm_config_db#(virtual otbn_model_if)::set(null, "*.env.model_agent", "vif", model_if);
+    uvm_config_db#(virtual otbn_model_if#(.ImemSizeByte(ImemSizeByte)))::set(
+      null, "*.env.model_agent", "vif", model_if);
     uvm_config_db#(virtual key_sideload_if#(keymgr_pkg::otbn_key_req_t))::set(
       null, "*.env.keymgr_sideload_agent", "vif", keymgr_if);
 
