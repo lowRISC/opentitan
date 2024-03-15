@@ -451,10 +451,13 @@
       ]
     }
     { name: "WIPE_SECRET",
-      desc: '''Randomize internal secret registers.
+      desc: '''Clear internal secret registers.
 
-            If CPU writes value into the register, the value is used to randomize internal
-            variables such as secret key, internal state machine, or hash value.
+            If CPU writes value into the register, the value is used to clear the internal
+            variables such as secret key, internal state machine, or hash value. The clear
+            secret operation uses XORs with the provided value as one of the operands. It is
+            recommended to use a value extracted from an entropy source. A value equal to 0
+            will leave all internal values unchanged.
             ''',
       swaccess: "wo",
       hwaccess: "hro",
