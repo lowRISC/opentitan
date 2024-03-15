@@ -173,14 +173,17 @@ module aes_core
   logic                                       cipher_alert;
 
   // Pseudo-random data for clearing purposes
-  logic                [WidthPRDClearing-1:0] cipher_prd_clearing [NumShares];
   logic                [WidthPRDClearing-1:0] prd_clearing [NumSharesKey];
   logic                                       prd_clearing_upd_req;
   logic                                       prd_clearing_upd_ack;
   logic                                       prd_clearing_rsd_req;
   logic                                       prd_clearing_rsd_ack;
   logic                               [127:0] prd_clearing_128 [NumShares];
-  logic                               [255:0] prd_clearing_256 [NumSharesKey];
+  logic                               [255:0] prd_clearing_256 [NumShares];
+  logic                           [3:0][31:0] prd_clearing_data;
+  logic                               [255:0] prd_clearing_key_init [NumSharesKey];
+  logic                       [3:0][3:0][7:0] prd_clearing_state [NumShares];
+  logic                           [7:0][31:0] prd_clearing_key [NumShares];
 
   // Unused signals
   logic               [NumRegsData-1:0][31:0] unused_data_out_q;
@@ -210,18 +213,27 @@ module aes_core
 
   // Generate clearing signals of appropriate widths.
   // Different shares need to be cleared with different pseudo-random data.
-  for (genvar s = 0; s < NumShares; s++) begin : gen_prd_clearing_128_shares
+  for (genvar s = 0; s < NumShares; s++) begin : gen_prd_clearing_shares
     for (genvar c = 0; c < NumChunksPRDClearing128; c++) begin : gen_prd_clearing_128
       assign prd_clearing_128[s][c * WidthPRDClearing +: WidthPRDClearing] = prd_clearing[s];
     end
-  end
-  // The initial key is always provided in two shares. The two shares of the initial key register
-  // need to be cleared with different pseudo-random data.
-  for (genvar s = 0; s < NumSharesKey; s++) begin : gen_prd_clearing_256_shares
     for (genvar c = 0; c < NumChunksPRDClearing256; c++) begin : gen_prd_clearing_256
       assign prd_clearing_256[s][c * WidthPRDClearing +: WidthPRDClearing] = prd_clearing[s];
     end
   end
+  // The data registers are always unmasked.
+  assign prd_clearing_data = prd_clearing_128[0];
+  // The initial key is always provided in two shares. The two shares of the initial key register
+  // need to be cleared with different pseudo-random data.
+  for (genvar s = 0; s < NumSharesKey; s++) begin : gen_prd_clearing_key_init_shares
+    for (genvar c = 0; c < NumChunksPRDClearing256; c++) begin : gen_prd_clearing_key_init
+      assign prd_clearing_key_init[s][c * WidthPRDClearing +: WidthPRDClearing] = prd_clearing[s];
+    end
+  end
+  // The cipher core uses multiple packed dimensions internally but the number of bits remain the
+  // same. Since some tools fail to peform the `conversion` on input ports, we do it here.
+  assign prd_clearing_state = prd_clearing_128;
+  assign prd_clearing_key   = prd_clearing_256;
 
   ////////////
   // Inputs //
@@ -305,8 +317,8 @@ module aes_core
     unique case (key_init_sel)
       KEY_INIT_INPUT:  key_init_d = key_init;
       KEY_INIT_KEYMGR: key_init_d = key_sideload;
-      KEY_INIT_CLEAR:  key_init_d = prd_clearing_256;
-      default:         key_init_d = prd_clearing_256;
+      KEY_INIT_CLEAR:  key_init_d = prd_clearing_key_init;
+      default:         key_init_d = prd_clearing_key_init;
     endcase
   end
 
@@ -333,8 +345,8 @@ module aes_core
       IV_DATA_OUT_RAW: iv_d = aes_transpose(state_out);
       IV_DATA_IN_PREV: iv_d = data_in_prev_q;
       IV_CTR:          iv_d = ctr;
-      IV_CLEAR:        iv_d = prd_clearing_128[0];
-      default:         iv_d = prd_clearing_128[0];
+      IV_CLEAR:        iv_d = prd_clearing_data;
+      default:         iv_d = prd_clearing_data;
     endcase
   end
 
@@ -355,8 +367,8 @@ module aes_core
   always_comb begin : data_in_prev_mux
     unique case (data_in_prev_sel)
       DIP_DATA_IN: data_in_prev_d = data_in;
-      DIP_CLEAR:   data_in_prev_d = prd_clearing_128[0];
-      default:     data_in_prev_d = prd_clearing_128[0];
+      DIP_CLEAR:   data_in_prev_d = prd_clearing_data;
+      default:     data_in_prev_d = prd_clearing_data;
     endcase
   end
 
@@ -409,10 +421,6 @@ module aes_core
   );
   assign cipher_op_buf = ciph_op_e'(cipher_op_raw);
 
-  for (genvar s = 0; s < NumShares; s++) begin : gen_cipher_prd_clearing
-    assign cipher_prd_clearing[s] = prd_clearing[s];
-  end
-
   // Convert input data/IV to state format (every word corresponds to one state column).
   // Mux for state input
   always_comb begin : state_in_mux
@@ -464,42 +472,43 @@ module aes_core
     .RndCnstMaskingLfsrSeed ( RndCnstMaskingLfsrSeed ),
     .RndCnstMaskingLfsrPerm ( RndCnstMaskingLfsrPerm )
   ) u_aes_cipher_core (
-    .clk_i            ( clk_i                      ),
-    .rst_ni           ( rst_ni                     ),
+    .clk_i                ( clk_i                      ),
+    .rst_ni               ( rst_ni                     ),
 
-    .in_valid_i       ( cipher_in_valid            ),
-    .in_ready_o       ( cipher_in_ready            ),
+    .in_valid_i           ( cipher_in_valid            ),
+    .in_ready_o           ( cipher_in_ready            ),
 
-    .out_valid_o      ( cipher_out_valid           ),
-    .out_ready_i      ( cipher_out_ready           ),
+    .out_valid_o          ( cipher_out_valid           ),
+    .out_ready_i          ( cipher_out_ready           ),
 
-    .cfg_valid_i      ( ~ctrl_err_storage          ), // Used for gating assertions only.
-    .op_i             ( cipher_op_buf              ),
-    .key_len_i        ( key_len_q                  ),
-    .crypt_i          ( cipher_crypt               ),
-    .crypt_o          ( cipher_crypt_busy          ),
-    .dec_key_gen_i    ( cipher_dec_key_gen         ),
-    .dec_key_gen_o    ( cipher_dec_key_gen_busy    ),
-    .prng_reseed_i    ( cipher_prng_reseed         ),
-    .prng_reseed_o    ( cipher_prng_reseed_busy    ),
-    .key_clear_i      ( cipher_key_clear           ),
-    .key_clear_o      ( cipher_key_clear_busy      ),
-    .data_out_clear_i ( cipher_data_out_clear      ),
-    .data_out_clear_o ( cipher_data_out_clear_busy ),
-    .alert_fatal_i    ( alert_fatal_o              ),
-    .alert_o          ( cipher_alert               ),
+    .cfg_valid_i          ( ~ctrl_err_storage          ), // Used for gating assertions only.
+    .op_i                 ( cipher_op_buf              ),
+    .key_len_i            ( key_len_q                  ),
+    .crypt_i              ( cipher_crypt               ),
+    .crypt_o              ( cipher_crypt_busy          ),
+    .dec_key_gen_i        ( cipher_dec_key_gen         ),
+    .dec_key_gen_o        ( cipher_dec_key_gen_busy    ),
+    .prng_reseed_i        ( cipher_prng_reseed         ),
+    .prng_reseed_o        ( cipher_prng_reseed_busy    ),
+    .key_clear_i          ( cipher_key_clear           ),
+    .key_clear_o          ( cipher_key_clear_busy      ),
+    .data_out_clear_i     ( cipher_data_out_clear      ),
+    .data_out_clear_o     ( cipher_data_out_clear_busy ),
+    .alert_fatal_i        ( alert_fatal_o              ),
+    .alert_o              ( cipher_alert               ),
 
-    .prd_clearing_i   ( cipher_prd_clearing        ),
+    .prd_clearing_state_i ( prd_clearing_state         ),
+    .prd_clearing_key_i   ( prd_clearing_key           ),
 
-    .force_masks_i    ( force_masks                ),
-    .data_in_mask_o   ( state_mask                 ),
-    .entropy_req_o    ( entropy_masking_req_o      ),
-    .entropy_ack_i    ( entropy_masking_ack_i      ),
-    .entropy_i        ( entropy_masking_i          ),
+    .force_masks_i        ( force_masks                ),
+    .data_in_mask_o       ( state_mask                 ),
+    .entropy_req_o        ( entropy_masking_req_o      ),
+    .entropy_ack_i        ( entropy_masking_ack_i      ),
+    .entropy_i            ( entropy_masking_i          ),
 
-    .state_init_i     ( state_init                 ),
-    .key_init_i       ( key_init_cipher            ),
-    .state_o          ( state_done                 )
+    .state_init_i         ( state_init                 ),
+    .key_init_i           ( key_init_cipher            ),
+    .state_o              ( state_done                 )
   );
 
   if (!SecMasking) begin : gen_state_out_unmasked
@@ -514,7 +523,7 @@ module aes_core
     logic [3:0][3:0][7:0] state_done_muxed [NumShares];
     for (genvar s = 0; s < NumShares; s++) begin : gen_state_done_muxed
       assign state_done_muxed[s] =
-          (cipher_out_valid == SP2V_HIGH) ? state_done[s] : prd_clearing_128[s];
+          (cipher_out_valid == SP2V_HIGH) ? state_done[s] : prd_clearing_state[s];
     end
 
     // Avoid aggressive synthesis optimizations.
@@ -676,7 +685,7 @@ module aes_core
   // Input data register clear
   always_comb begin : data_in_reg_clear
     for (int i = 0; i < NumRegsData; i++) begin
-      hw2reg.data_in[i].d  = prd_clearing_128[0][i * 32 +: 32];
+      hw2reg.data_in[i].d  = prd_clearing_data[i];
       hw2reg.data_in[i].de = data_in_we;
     end
   end

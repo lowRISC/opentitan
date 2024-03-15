@@ -136,7 +136,8 @@ module aes_cipher_core import aes_pkg::*;
   output logic                        alert_o,
 
   // Pseudo-random data for register clearing
-  input  logic [WidthPRDClearing-1:0] prd_clearing_i [NumShares],
+  input  logic        [3:0][3:0][7:0] prd_clearing_state_i [NumShares],
+  input  logic            [7:0][31:0] prd_clearing_key_i [NumShares],
 
   // Masking PRNG
   input  logic                        force_masks_i, // Useful for SCA only.
@@ -222,10 +223,7 @@ module aes_cipher_core import aes_pkg::*;
   logic                               sp_enc_err_d, sp_enc_err_q;
   logic                               op_err;
 
-  // Pseudo-random data for clearing and masking purposes
-  logic                       [127:0] prd_clearing_128 [NumShares];
-  logic                       [255:0] prd_clearing_256 [NumShares];
-
+  // Pseudo-random data for masking purposes
   logic         [WidthPRDMasking-1:0] prd_masking;
   logic  [3:0][3:0][WidthPRDSBox-1:0] prd_sub_bytes;
   logic             [WidthPRDKey-1:0] prd_key_expand;
@@ -234,17 +232,6 @@ module aes_cipher_core import aes_pkg::*;
   logic                               prd_masking_rsd_ack;
 
   logic               [3:0][3:0][7:0] data_in_mask;
-
-  // Generate clearing signals of appropriate widths. If masking is enabled, the two shares of
-  // the registers must be cleared with different pseudo-random data.
-  for (genvar s = 0; s < NumShares; s++) begin : gen_prd_clearing_shares
-    for (genvar c = 0; c < NumChunksPRDClearing128; c++) begin : gen_prd_clearing_128
-      assign prd_clearing_128[s][c * WidthPRDClearing +: WidthPRDClearing] = prd_clearing_i[s];
-    end
-    for (genvar c = 0; c < NumChunksPRDClearing256; c++) begin : gen_prd_clearing_256
-      assign prd_clearing_256[s][c * WidthPRDClearing +: WidthPRDClearing] = prd_clearing_i[s];
-    end
-  end
 
   // op_i is one-hot encoded. Check the provided value and trigger an alert upon detecing invalid
   // encodings.
@@ -261,8 +248,8 @@ module aes_cipher_core import aes_pkg::*;
     unique case (state_sel)
       STATE_INIT:  state_d = state_init_i;
       STATE_ROUND: state_d = add_round_key_out;
-      STATE_CLEAR: state_d = prd_clearing_128;
-      default:     state_d = prd_clearing_128;
+      STATE_CLEAR: state_d = prd_clearing_state_i;
+      default:     state_d = prd_clearing_state_i;
     endcase
   end
 
@@ -431,10 +418,10 @@ module aes_cipher_core import aes_pkg::*;
   always_comb begin : key_full_mux
     unique case (key_full_sel)
       KEY_FULL_ENC_INIT: key_full_d = key_init_i;
-      KEY_FULL_DEC_INIT: key_full_d = !CiphOpFwdOnly ? key_dec_q : prd_clearing_256;
+      KEY_FULL_DEC_INIT: key_full_d = !CiphOpFwdOnly ? key_dec_q : prd_clearing_key_i;
       KEY_FULL_ROUND:    key_full_d = key_expand_out;
-      KEY_FULL_CLEAR:    key_full_d = prd_clearing_256;
-      default:           key_full_d = prd_clearing_256;
+      KEY_FULL_CLEAR:    key_full_d = prd_clearing_key_i;
+      default:           key_full_d = prd_clearing_key_i;
     endcase
   end
 
@@ -452,8 +439,8 @@ module aes_cipher_core import aes_pkg::*;
     always_comb begin : key_dec_mux
       unique case (key_dec_sel)
         KEY_DEC_EXPAND: key_dec_d = key_expand_out;
-        KEY_DEC_CLEAR:  key_dec_d = prd_clearing_256;
-        default:        key_dec_d = prd_clearing_256;
+        KEY_DEC_CLEAR:  key_dec_d = prd_clearing_key_i;
+        default:        key_dec_d = prd_clearing_key_i;
       endcase
     end
 
@@ -803,7 +790,7 @@ module aes_cipher_core import aes_pkg::*;
 
   // Signals used for assertions only.
   logic prd_clearing_equals_output, unused_prd_clearing_equals_output;
-  assign prd_clearing_equals_output = (prd_clearing_128 == add_round_key_out);
+  assign prd_clearing_equals_output = (prd_clearing_state_i == add_round_key_out);
   assign unused_prd_clearing_equals_output = prd_clearing_equals_output;
 
   // Ensure that the state register gets cleared with pseudo-random data at the end of the last

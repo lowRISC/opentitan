@@ -57,15 +57,11 @@ module csrng_block_encrypt import csrng_pkg::*; #(
   logic [BlkLen-1:0]    cipher_data_out;
   logic                 aes_cipher_core_enable;
 
-  logic [aes_pkg::WidthPRDClearing-1:0] prd_clearing [NumShares];
-
   logic [3:0][3:0][7:0] state_init[NumShares];
 
   logic [7:0][31:0]     key_init[NumShares];
   logic [3:0][3:0][7:0] state_done[NumShares];
   logic [3:0][3:0][7:0] state_out;
-
-  assign     prd_clearing[0] = '0;
 
   assign     state_init[0] = aes_pkg::aes_transpose({<<8{block_encrypt_v_i}});
 
@@ -102,35 +98,40 @@ module csrng_block_encrypt import csrng_pkg::*; #(
     .clk_i              (clk_i),
     .rst_ni             (rst_ni),
 
-    .cfg_valid_i        ( 1'b1                       ),
-    .in_valid_i         ( cipher_in_valid            ),
-    .in_ready_o         ( cipher_in_ready            ),
-    .out_valid_o        ( cipher_out_valid           ),
-    .out_ready_i        ( cipher_out_ready           ),
-    .op_i               ( aes_pkg::CIPH_FWD          ),
-    .key_len_i          ( aes_pkg::AES_256           ),
-    .crypt_i            ( aes_pkg::SP2V_HIGH         ), // Enable
-    .crypt_o            ( cipher_crypt_busy          ),
-    .alert_fatal_i      ( 1'b0                       ),
-    .alert_o            ( block_encrypt_aes_cipher_sm_err_o),
-    .dec_key_gen_i      ( aes_pkg::SP2V_LOW          ), // Disable
-    .dec_key_gen_o      (                            ),
-    .prng_reseed_i      ( 1'b0                       ), // Disable
-    .prng_reseed_o      (                            ),
-    .key_clear_i        ( 1'b0                       ), // Disable
-    .key_clear_o        (                            ),
-    .data_out_clear_i   ( 1'b0                       ), // Disable
-    .data_out_clear_o   (                            ),
-    .prd_clearing_i     ( prd_clearing               ),
-    .force_masks_i      ( 1'b0                       ),
-    .data_in_mask_o     (                            ),
-    .entropy_req_o      (                            ),
-    .entropy_ack_i      ( 1'b0                       ),
-    .entropy_i          ( '0                         ),
+    .cfg_valid_i          ( 1'b1                       ),
+    .in_valid_i           ( cipher_in_valid            ),
+    .in_ready_o           ( cipher_in_ready            ),
+    .out_valid_o          ( cipher_out_valid           ),
+    .out_ready_i          ( cipher_out_ready           ),
+    .op_i                 ( aes_pkg::CIPH_FWD          ),
+    .key_len_i            ( aes_pkg::AES_256           ),
+    .crypt_i              ( aes_pkg::SP2V_HIGH         ), // Enable
+    .crypt_o              ( cipher_crypt_busy          ),
+    .alert_fatal_i        ( 1'b0                       ),
+    .alert_o              ( block_encrypt_aes_cipher_sm_err_o),
+    .dec_key_gen_i        ( aes_pkg::SP2V_LOW          ), // Disable
+    .dec_key_gen_o        (                            ),
+    .prng_reseed_i        ( 1'b0                       ), // Disable
+    .prng_reseed_o        (                            ),
+    .key_clear_i          ( 1'b0                       ), // Disable
+    .key_clear_o          (                            ),
+    .data_out_clear_i     ( 1'b0                       ), // Disable
+    .data_out_clear_o     (                            ),
+    .prd_clearing_state_i ( state_init                 ), // Providing this value allows synthesis
+                                                          // to perform optimizations. We don't
+                                                          // care about SCA leakage in this context.
+    .prd_clearing_key_i   ( key_init                   ), // This input is not used. Providing this
+                                                          // value allows synthesis to perform
+                                                          // optimizations.
+    .force_masks_i        ( 1'b0                       ),
+    .data_in_mask_o       (                            ),
+    .entropy_req_o        (                            ),
+    .entropy_ack_i        ( 1'b0                       ),
+    .entropy_i            ( '0                         ),
 
-    .state_init_i       ( state_init                 ),
-    .key_init_i         ( key_init                   ),
-    .state_o            ( state_done                 )
+    .state_init_i         ( state_init                 ),
+    .key_init_i           ( key_init                   ),
+    .state_o              ( state_done                 )
   );
 
 

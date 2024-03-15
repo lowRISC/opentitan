@@ -39,6 +39,10 @@ module aes_cipher_core_tb #(
   sp2v_e                       crypt, dec_key_gen;
   logic                        prng_reseed;
   logic [WidthPRDClearing-1:0] prd_clearing [NumShares];
+  logic                [127:0] prd_clearing_128 [NumShares];
+  logic                [255:0] prd_clearing_256 [NumShares];
+  logic        [3:0][3:0][7:0] prd_clearing_state [NumShares];
+  logic            [7:0][31:0] prd_clearing_key [NumShares];
   logic        [3:0][3:0][7:0] state_mask;
   logic        [3:0][3:0][7:0] state_init [NumShares];
   logic        [3:0][3:0][7:0] state_done [NumShares];
@@ -52,42 +56,43 @@ module aes_cipher_core_tb #(
     .SecMasking  ( SecMasking  ),
     .SecSBoxImpl ( SecSBoxImpl )
   ) u_aes_cipher_core (
-    .clk_i            ( clk_i               ),
-    .rst_ni           ( rst_ni              ),
+    .clk_i                ( clk_i               ),
+    .rst_ni               ( rst_ni              ),
 
-    .in_valid_i       ( in_valid            ),
-    .in_ready_o       ( in_ready            ),
+    .in_valid_i           ( in_valid            ),
+    .in_ready_o           ( in_ready            ),
 
-    .out_valid_o      ( out_valid           ),
-    .out_ready_i      ( SP2V_HIGH           ), // We're always ready.
+    .out_valid_o          ( out_valid           ),
+    .out_ready_i          ( SP2V_HIGH           ), // We're always ready.
 
-    .cfg_valid_i      ( 1'b1                ), // Used for gating assertions only.
-    .op_i             ( op                  ),
-    .key_len_i        ( key_len_q           ),
-    .crypt_i          ( crypt               ),
-    .crypt_o          (                     ), // Ignored.
-    .dec_key_gen_i    ( dec_key_gen         ),
-    .dec_key_gen_o    (                     ), // Ignored.
-    .prng_reseed_i    ( prng_reseed         ),
-    .prng_reseed_o    (                     ), // Ignored.
-    .key_clear_i      ( 1'b0                ), // Ignored.
-    .key_clear_o      (                     ), // Ignored.
-    .data_out_clear_i ( 1'b0                ), // Ignored.
-    .data_out_clear_o (                     ), // Ignored.
-    .alert_fatal_i    ( 1'b0                ), // Ignored.
-    .alert_o          ( alert               ), // Ignored.
+    .cfg_valid_i          ( 1'b1                ), // Used for gating assertions only.
+    .op_i                 ( op                  ),
+    .key_len_i            ( key_len_q           ),
+    .crypt_i              ( crypt               ),
+    .crypt_o              (                     ), // Ignored.
+    .dec_key_gen_i        ( dec_key_gen         ),
+    .dec_key_gen_o        (                     ), // Ignored.
+    .prng_reseed_i        ( prng_reseed         ),
+    .prng_reseed_o        (                     ), // Ignored.
+    .key_clear_i          ( 1'b0                ), // Ignored.
+    .key_clear_o          (                     ), // Ignored.
+    .data_out_clear_i     ( 1'b0                ), // Ignored.
+    .data_out_clear_o     (                     ), // Ignored.
+    .alert_fatal_i        ( 1'b0                ), // Ignored.
+    .alert_o              ( alert               ), // Ignored.
 
-    .prd_clearing_i   ( prd_clearing        ),
+    .prd_clearing_state_i ( prd_clearing_state  ),
+    .prd_clearing_key_i   ( prd_clearing_key    ),
 
-    .force_masks_i    ( 1'b0                ), // Ignored.
-    .data_in_mask_o   ( state_mask          ),
-    .entropy_req_o    ( entropy_masking_req ),
-    .entropy_ack_i    ( 1'b1                ), // This TB has always entropy available.
-    .entropy_i        ( entropy_masking     ),
+    .force_masks_i        ( 1'b0                ), // Ignored.
+    .data_in_mask_o       ( state_mask          ),
+    .entropy_req_o        ( entropy_masking_req ),
+    .entropy_ack_i        ( 1'b1                ), // This TB has always entropy available.
+    .entropy_i            ( entropy_masking     ),
 
-    .state_init_i     ( state_init          ),
-    .key_init_i       ( key_init            ),
-    .state_o          ( state_done          )
+    .state_init_i         ( state_init          ),
+    .key_init_i           ( key_init            ),
+    .state_o              ( state_done          )
   );
 
   // TB signals.
@@ -130,6 +135,21 @@ module aes_cipher_core_tb #(
       prd_clearing <= '{default: {$urandom, $urandom}};
     end
   end
+
+  // Generate clearing signals of appropriate widths.
+  // Different shares need to be cleared with different pseudo-random data.
+  for (genvar s = 0; s < NumShares; s++) begin : gen_prd_clearing_shares
+    for (genvar c = 0; c < NumChunksPRDClearing128; c++) begin : gen_prd_clearing_128
+      assign prd_clearing_128[s][c * WidthPRDClearing +: WidthPRDClearing] = prd_clearing[s];
+    end
+    for (genvar c = 0; c < NumChunksPRDClearing256; c++) begin : gen_prd_clearing_256
+      assign prd_clearing_256[s][c * WidthPRDClearing +: WidthPRDClearing] = prd_clearing[s];
+    end
+  end
+  // The cipher core uses multiple packed dimensions internally but the number of bits remain the
+  // same. Since some tools fail to peform the `conversion` on input ports, we do it here.
+  assign prd_clearing_state = prd_clearing_128;
+  assign prd_clearing_key   = prd_clearing_256;
 
   // Update whenever requested.
   always_ff @(posedge clk_i or negedge rst_ni) begin : reg_entropy_masking

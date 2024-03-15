@@ -68,11 +68,13 @@ no
 no_of_groups
 2
 
-% The lowest 128 bits are used for the initial state shares. The upper 128 bits of share 0 are used
-% for prd_clearing_i. The latter bits are random but change only once per encryption (simulation),
+% The lowest 128 bits are used for the initial state shares. For the clearing,
+% - the upper 512 bits (prd_clearing_key_i), and
+% - the lower 256 bits of these 512 bits (prd_clearing_state_i)
+% of share 0 are used. All these bits are random but change only once per encryption (simulation),
 % i.e., we shouldn't use the `no_of_always_random_inputs` argument for that.
-256'h$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-256'h$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$00000000000000000000000000000000
+640'h$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+640'h$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$00000000000000000000000000000000
 
 % name of the clock signal
 clock_signal_name
@@ -86,253 +88,289 @@ no_of_always_random_inputs
 
 % number of primary inputs during the initialization
 no_of_initial_inputs
-18
+21
 
 % number of clock cycles to initiate the run (start of encryption)
 no_of_initial_clock_cycles
 12
 
 %1 - First clock cycle with inactive reset.
-            key_clear_i         1'b0
-            data_out_clear_i    1'b0
-            alert_fatal_i       1'b0
-            force_masks_i       1'b0
-            entropy_ack_i       1'b1
-[2:0]       out_ready_i         3'b011
-            cfg_valid_i         1'b1
-[1:0]       op_i                2'b01
-[127:0]     state_init_i        group_in0[127:0]
-[255:128]   state_init_i        group_in1[127:0]
-[127:0]     prd_clearing_i      group_in0[255:128]
-[511:0]     key_init_i          512'h00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-            rst_ni              1'b1
-[2:0]       in_valid_i          3'b100
-[2:0]       crypt_i             3'b011
-[2:0]       dec_key_gen_i       3'b100
-            prng_reseed_i       1'b0
-[2:0]       key_len_i           3'b000
+            key_clear_i          1'b0
+            data_out_clear_i     1'b0
+            alert_fatal_i        1'b0
+            force_masks_i        1'b0
+            entropy_ack_i        1'b1
+[2:0]       out_ready_i          3'b011
+            cfg_valid_i          1'b1
+[1:0]       op_i                 2'b01
+[127:0]     state_init_i         group_in0[127:0]
+[255:128]   state_init_i         group_in1[127:0]
+[255:0]     prd_clearing_key_i   group_in0[383:128]
+[511:256]   prd_clearing_key_i   group_in0[639:384]
+[127:0]     prd_clearing_state_i group_in0[255:128]
+[255:128]   prd_clearing_state_i group_in0[511:384]
+[511:0]     key_init_i           512'h00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+            rst_ni               1'b1
+[2:0]       in_valid_i           3'b100
+[2:0]       crypt_i              3'b011
+[2:0]       dec_key_gen_i        3'b100
+            prng_reseed_i        1'b0
+[2:0]       key_len_i            3'b000
 
 %2 - Reset the DUT.
-            key_clear_i         1'b0
-            data_out_clear_i    1'b0
-            alert_fatal_i       1'b0
-            force_masks_i       1'b0
-            entropy_ack_i       1'b1
-[2:0]       out_ready_i         3'b011
-            cfg_valid_i         1'b1
-[1:0]       op_i                2'b01
-[127:0]     state_init_i        group_in0[127:0]
-[255:128]   state_init_i        group_in1[127:0]
-[127:0]     prd_clearing_i      group_in0[255:128]
-[511:0]     key_init_i          512'h00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-            rst_ni              1'b0
-[2:0]       in_valid_i          3'b100
-[2:0]       crypt_i             3'b011
-[2:0]       dec_key_gen_i       3'b100
-            prng_reseed_i       1'b0
-[2:0]       key_len_i           3'b001
+            key_clear_i          1'b0
+            data_out_clear_i     1'b0
+            alert_fatal_i        1'b0
+            force_masks_i        1'b0
+            entropy_ack_i        1'b1
+[2:0]       out_ready_i          3'b011
+            cfg_valid_i          1'b1
+[1:0]       op_i                 2'b01
+[127:0]     state_init_i         group_in0[127:0]
+[255:128]   state_init_i         group_in1[127:0]
+[255:0]     prd_clearing_key_i   group_in0[383:128]
+[511:256]   prd_clearing_key_i   group_in0[639:384]
+[127:0]     prd_clearing_state_i group_in0[255:128]
+[255:128]   prd_clearing_state_i group_in0[511:384]
+[511:0]     key_init_i           512'h00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+            rst_ni               1'b0
+[2:0]       in_valid_i           3'b100
+[2:0]       crypt_i              3'b011
+[2:0]       dec_key_gen_i        3'b100
+            prng_reseed_i        1'b0
+[2:0]       key_len_i            3'b001
 
 %3 - Perform an initial reseed of the internal masking PRNG to put it into a random state.
-            key_clear_i         1'b0
-            data_out_clear_i    1'b0
-            alert_fatal_i       1'b0
-            force_masks_i       1'b0
-            entropy_ack_i       1'b1
-[2:0]       out_ready_i         3'b011
-            cfg_valid_i         1'b1
-[1:0]       op_i                2'b01
-[127:0]     state_init_i        group_in0[127:0]
-[255:128]   state_init_i        group_in1[127:0]
-[127:0]     prd_clearing_i      group_in0[255:128]
-[511:0]     key_init_i          512'h00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-            rst_ni              1'b1
-[2:0]       in_valid_i          3'b011
-[2:0]       crypt_i             3'b100
-[2:0]       dec_key_gen_i       3'b100
-            prng_reseed_i       1'b1
-[2:0]       key_len_i           3'b001
+            key_clear_i          1'b0
+            data_out_clear_i     1'b0
+            alert_fatal_i        1'b0
+            force_masks_i        1'b0
+            entropy_ack_i        1'b1
+[2:0]       out_ready_i          3'b011
+            cfg_valid_i          1'b1
+[1:0]       op_i                 2'b01
+[127:0]     state_init_i         group_in0[127:0]
+[255:128]   state_init_i         group_in1[127:0]
+[255:0]     prd_clearing_key_i   group_in0[383:128]
+[511:256]   prd_clearing_key_i   group_in0[639:384]
+[127:0]     prd_clearing_state_i group_in0[255:128]
+[255:128]   prd_clearing_state_i group_in0[511:384]
+[511:0]     key_init_i           512'h00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+            rst_ni               1'b1
+[2:0]       in_valid_i           3'b011
+[2:0]       crypt_i              3'b100
+[2:0]       dec_key_gen_i        3'b100
+            prng_reseed_i        1'b1
+[2:0]       key_len_i            3'b001
 
 %4 - De-assert in_valid_i. The DUT is busy reseeding the internal masking PRNG.
-            key_clear_i         1'b0
-            data_out_clear_i    1'b0
-            alert_fatal_i       1'b0
-            force_masks_i       1'b0
-            entropy_ack_i       1'b1
-[2:0]       out_ready_i         3'b011
-            cfg_valid_i         1'b1
-[1:0]       op_i                2'b01
-[127:0]     state_init_i        group_in0[127:0]
-[255:128]   state_init_i        group_in1[127:0]
-[127:0]     prd_clearing_i      group_in0[255:128]
-[511:0]     key_init_i          512'h00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-            rst_ni              1'b1
-[2:0]       in_valid_i          3'b100
-[2:0]       crypt_i             3'b100
-[2:0]       dec_key_gen_i       3'b100
-            prng_reseed_i       1'b1
-[2:0]       key_len_i           3'b001
+            key_clear_i          1'b0
+            data_out_clear_i     1'b0
+            alert_fatal_i        1'b0
+            force_masks_i        1'b0
+            entropy_ack_i        1'b1
+[2:0]       out_ready_i          3'b011
+            cfg_valid_i          1'b1
+[1:0]       op_i                 2'b01
+[127:0]     state_init_i         group_in0[127:0]
+[255:128]   state_init_i         group_in1[127:0]
+[255:0]     prd_clearing_key_i   group_in0[383:128]
+[511:256]   prd_clearing_key_i   group_in0[639:384]
+[127:0]     prd_clearing_state_i group_in0[255:128]
+[255:128]   prd_clearing_state_i group_in0[511:384]
+[511:0]     key_init_i           512'h00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+            rst_ni               1'b1
+[2:0]       in_valid_i           3'b100
+[2:0]       crypt_i              3'b100
+[2:0]       dec_key_gen_i        3'b100
+            prng_reseed_i        1'b1
+[2:0]       key_len_i            3'b001
 
 %5 - Wait for initial reseed of the masking PRNG to finish.
-            key_clear_i         1'b0
-            data_out_clear_i    1'b0
-            alert_fatal_i       1'b0
-            force_masks_i       1'b0
-            entropy_ack_i       1'b1
-[2:0]       out_ready_i         3'b011
-            cfg_valid_i         1'b1
-[1:0]       op_i                2'b01
-[127:0]     state_init_i        group_in0[127:0]
-[255:128]   state_init_i        group_in1[127:0]
-[127:0]     prd_clearing_i      group_in0[255:128]
-[511:0]     key_init_i          512'h00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-            rst_ni              1'b1
-[2:0]       in_valid_i          3'b100
-[2:0]       crypt_i             3'b100
-[2:0]       dec_key_gen_i       3'b100
-            prng_reseed_i       1'b1
-[2:0]       key_len_i           3'b001
+            key_clear_i          1'b0
+            data_out_clear_i     1'b0
+            alert_fatal_i        1'b0
+            force_masks_i        1'b0
+            entropy_ack_i        1'b1
+[2:0]       out_ready_i          3'b011
+            cfg_valid_i          1'b1
+[1:0]       op_i                 2'b01
+[127:0]     state_init_i         group_in0[127:0]
+[255:128]   state_init_i         group_in1[127:0]
+[255:0]     prd_clearing_key_i   group_in0[383:128]
+[511:256]   prd_clearing_key_i   group_in0[639:384]
+[127:0]     prd_clearing_state_i group_in0[255:128]
+[255:128]   prd_clearing_state_i group_in0[511:384]
+[511:0]     key_init_i           512'h00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+            rst_ni               1'b1
+[2:0]       in_valid_i           3'b100
+[2:0]       crypt_i              3'b100
+[2:0]       dec_key_gen_i        3'b100
+            prng_reseed_i        1'b1
+[2:0]       key_len_i            3'b001
 
 %6 - Wait for initial reseed of the masking PRNG to finish.
-            key_clear_i         1'b0
-            data_out_clear_i    1'b0
-            alert_fatal_i       1'b0
-            force_masks_i       1'b0
-            entropy_ack_i       1'b1
-[2:0]       out_ready_i         3'b011
-            cfg_valid_i         1'b1
-[1:0]       op_i                2'b01
-[127:0]     state_init_i        group_in0[127:0]
-[255:128]   state_init_i        group_in1[127:0]
-[127:0]     prd_clearing_i      group_in0[255:128]
-[511:0]     key_init_i          512'h00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-            rst_ni              1'b1
-[2:0]       in_valid_i          3'b100
-[2:0]       crypt_i             3'b100
-[2:0]       dec_key_gen_i       3'b100
-            prng_reseed_i       1'b1
-[2:0]       key_len_i           3'b001
+            key_clear_i          1'b0
+            data_out_clear_i     1'b0
+            alert_fatal_i        1'b0
+            force_masks_i        1'b0
+            entropy_ack_i        1'b1
+[2:0]       out_ready_i          3'b011
+            cfg_valid_i          1'b1
+[1:0]       op_i                 2'b01
+[127:0]     state_init_i         group_in0[127:0]
+[255:128]   state_init_i         group_in1[127:0]
+[255:0]     prd_clearing_key_i   group_in0[383:128]
+[511:256]   prd_clearing_key_i   group_in0[639:384]
+[127:0]     prd_clearing_state_i group_in0[255:128]
+[255:128]   prd_clearing_state_i group_in0[511:384]
+[511:0]     key_init_i           512'h00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+            rst_ni               1'b1
+[2:0]       in_valid_i           3'b100
+[2:0]       crypt_i              3'b100
+[2:0]       dec_key_gen_i        3'b100
+            prng_reseed_i        1'b1
+[2:0]       key_len_i            3'b001
 
 %7 - Wait for initial reseed of the masking PRNG to finish.
-            key_clear_i         1'b0
-            data_out_clear_i    1'b0
-            alert_fatal_i       1'b0
-            force_masks_i       1'b0
-            entropy_ack_i       1'b1
-[2:0]       out_ready_i         3'b011
-            cfg_valid_i         1'b1
-[1:0]       op_i                2'b01
-[127:0]     state_init_i        group_in0[127:0]
-[255:128]   state_init_i        group_in1[127:0]
-[127:0]     prd_clearing_i      group_in0[255:128]
-[511:0]     key_init_i          512'h00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-            rst_ni              1'b1
-[2:0]       in_valid_i          3'b100
-[2:0]       crypt_i             3'b100
-[2:0]       dec_key_gen_i       3'b100
-            prng_reseed_i       1'b1
-[2:0]       key_len_i           3'b001
+            key_clear_i          1'b0
+            data_out_clear_i     1'b0
+            alert_fatal_i        1'b0
+            force_masks_i        1'b0
+            entropy_ack_i        1'b1
+[2:0]       out_ready_i          3'b011
+            cfg_valid_i          1'b1
+[1:0]       op_i                 2'b01
+[127:0]     state_init_i         group_in0[127:0]
+[255:128]   state_init_i         group_in1[127:0]
+[255:0]     prd_clearing_key_i   group_in0[383:128]
+[511:256]   prd_clearing_key_i   group_in0[639:384]
+[127:0]     prd_clearing_state_i group_in0[255:128]
+[255:128]   prd_clearing_state_i group_in0[511:384]
+[511:0]     key_init_i           512'h00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+            rst_ni               1'b1
+[2:0]       in_valid_i           3'b100
+[2:0]       crypt_i              3'b100
+[2:0]       dec_key_gen_i        3'b100
+            prng_reseed_i        1'b1
+[2:0]       key_len_i            3'b001
 
 %8 - Wait for initial reseed of the masking PRNG to finish.
-            key_clear_i         1'b0
-            data_out_clear_i    1'b0
-            alert_fatal_i       1'b0
-            force_masks_i       1'b0
-            entropy_ack_i       1'b1
-[2:0]       out_ready_i         3'b011
-            cfg_valid_i         1'b1
-[1:0]       op_i                2'b01
-[127:0]     state_init_i        group_in0[127:0]
-[255:128]   state_init_i        group_in1[127:0]
-[127:0]     prd_clearing_i      group_in0[255:128]
-[511:0]     key_init_i          512'h00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-            rst_ni              1'b1
-[2:0]       in_valid_i          3'b100
-[2:0]       crypt_i             3'b100
-[2:0]       dec_key_gen_i       3'b100
-            prng_reseed_i       1'b1
-[2:0]       key_len_i           3'b001
+            key_clear_i          1'b0
+            data_out_clear_i     1'b0
+            alert_fatal_i        1'b0
+            force_masks_i        1'b0
+            entropy_ack_i        1'b1
+[2:0]       out_ready_i          3'b011
+            cfg_valid_i          1'b1
+[1:0]       op_i                 2'b01
+[127:0]     state_init_i         group_in0[127:0]
+[255:128]   state_init_i         group_in1[127:0]
+[255:0]     prd_clearing_key_i   group_in0[383:128]
+[511:256]   prd_clearing_key_i   group_in0[639:384]
+[127:0]     prd_clearing_state_i group_in0[255:128]
+[255:128]   prd_clearing_state_i group_in0[511:384]
+[511:0]     key_init_i           512'h00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+            rst_ni               1'b1
+[2:0]       in_valid_i           3'b100
+[2:0]       crypt_i              3'b100
+[2:0]       dec_key_gen_i        3'b100
+            prng_reseed_i        1'b1
+[2:0]       key_len_i            3'b001
 
 %9 - Wait for initial reseed of the masking PRNG to finish.
-            key_clear_i         1'b0
-            data_out_clear_i    1'b0
-            alert_fatal_i       1'b0
-            force_masks_i       1'b0
-            entropy_ack_i       1'b1
-[2:0]       out_ready_i         3'b011
-            cfg_valid_i         1'b1
-[1:0]       op_i                2'b01
-[127:0]     state_init_i        group_in0[127:0]
-[255:128]   state_init_i        group_in1[127:0]
-[127:0]     prd_clearing_i      group_in0[255:128]
-[511:0]     key_init_i          512'h00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-            rst_ni              1'b1
-[2:0]       in_valid_i          3'b100
-[2:0]       crypt_i             3'b100
-[2:0]       dec_key_gen_i       3'b100
-            prng_reseed_i       1'b1
-[2:0]       key_len_i           3'b001
+            key_clear_i          1'b0
+            data_out_clear_i     1'b0
+            alert_fatal_i        1'b0
+            force_masks_i        1'b0
+            entropy_ack_i        1'b1
+[2:0]       out_ready_i          3'b011
+            cfg_valid_i          1'b1
+[1:0]       op_i                 2'b01
+[127:0]     state_init_i         group_in0[127:0]
+[255:128]   state_init_i         group_in1[127:0]
+[255:0]     prd_clearing_key_i   group_in0[383:128]
+[511:256]   prd_clearing_key_i   group_in0[639:384]
+[127:0]     prd_clearing_state_i group_in0[255:128]
+[255:128]   prd_clearing_state_i group_in0[511:384]
+[511:0]     key_init_i           512'h00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+            rst_ni               1'b1
+[2:0]       in_valid_i           3'b100
+[2:0]       crypt_i              3'b100
+[2:0]       dec_key_gen_i        3'b100
+            prng_reseed_i        1'b1
+[2:0]       key_len_i            3'b001
 
 %10 - Wait for initial reseed of the masking PRNG to finish.
-            key_clear_i         1'b0
-            data_out_clear_i    1'b0
-            alert_fatal_i       1'b0
-            force_masks_i       1'b0
-            entropy_ack_i       1'b1
-[2:0]       out_ready_i         3'b011
-            cfg_valid_i         1'b1
-[1:0]       op_i                2'b01
-[127:0]     state_init_i        group_in0[127:0]
-[255:128]   state_init_i        group_in1[127:0]
-[127:0]     prd_clearing_i      group_in0[255:128]
-[511:0]     key_init_i          512'h00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-            rst_ni              1'b1
-[2:0]       in_valid_i          3'b100
-[2:0]       crypt_i             3'b100
-[2:0]       dec_key_gen_i       3'b100
-            prng_reseed_i       1'b1
-[2:0]       key_len_i           3'b001
+            key_clear_i          1'b0
+            data_out_clear_i     1'b0
+            alert_fatal_i        1'b0
+            force_masks_i        1'b0
+            entropy_ack_i        1'b1
+[2:0]       out_ready_i          3'b011
+            cfg_valid_i          1'b1
+[1:0]       op_i                 2'b01
+[127:0]     state_init_i         group_in0[127:0]
+[255:128]   state_init_i         group_in1[127:0]
+[255:0]     prd_clearing_key_i   group_in0[383:128]
+[511:256]   prd_clearing_key_i   group_in0[639:384]
+[127:0]     prd_clearing_state_i group_in0[255:128]
+[255:128]   prd_clearing_state_i group_in0[511:384]
+[511:0]     key_init_i           512'h00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+            rst_ni               1'b1
+[2:0]       in_valid_i           3'b100
+[2:0]       crypt_i              3'b100
+[2:0]       dec_key_gen_i        3'b100
+            prng_reseed_i        1'b1
+[2:0]       key_len_i            3'b001
 
 %11 - Start encryption.
-            key_clear_i         1'b0
-            data_out_clear_i    1'b0
-            alert_fatal_i       1'b0
-            force_masks_i       1'b0
-            entropy_ack_i       1'b1
-[2:0]       out_ready_i         3'b011
-            cfg_valid_i         1'b1
-[1:0]       op_i                2'b01
-[127:0]     state_init_i        group_in0[127:0]
-[255:128]   state_init_i        group_in1[127:0]
-[127:0]     prd_clearing_i      group_in0[255:128]
-[511:0]     key_init_i          512'h00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-            rst_ni              1'b1
-[2:0]       in_valid_i          3'b011
-[2:0]       crypt_i             3'b011
-[2:0]       dec_key_gen_i       3'b100
-            prng_reseed_i       1'b1
-[2:0]       key_len_i           3'b001
+            key_clear_i          1'b0
+            data_out_clear_i     1'b0
+            alert_fatal_i        1'b0
+            force_masks_i        1'b0
+            entropy_ack_i        1'b1
+[2:0]       out_ready_i          3'b011
+            cfg_valid_i          1'b1
+[1:0]       op_i                 2'b01
+[127:0]     state_init_i         group_in0[127:0]
+[255:128]   state_init_i         group_in1[127:0]
+[255:0]     prd_clearing_key_i   group_in0[383:128]
+[511:256]   prd_clearing_key_i   group_in0[639:384]
+[127:0]     prd_clearing_state_i group_in0[255:128]
+[255:128]   prd_clearing_state_i group_in0[511:384]
+[511:0]     key_init_i           512'h00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+            rst_ni               1'b1
+[2:0]       in_valid_i           3'b011
+[2:0]       crypt_i              3'b011
+[2:0]       dec_key_gen_i        3'b100
+            prng_reseed_i        1'b1
+[2:0]       key_len_i            3'b001
 
 %12 - De-assert in_valid_i. The DUT is already busy performing the encryption.
 % De-asserting in_valid_i helps to avoid restarting the encryption after finishing in case the
 % simulation isn't stopped.
-            key_clear_i         1'b0
-            data_out_clear_i    1'b0
-            alert_fatal_i       1'b0
-            force_masks_i       1'b0
-            entropy_ack_i       1'b1
-[2:0]       out_ready_i         3'b011
-            cfg_valid_i         1'b1
-[1:0]       op_i                2'b01
-[127:0]     state_init_i        group_in0[127:0]
-[255:128]   state_init_i        group_in1[127:0]
-[127:0]     prd_clearing_i      group_in0[255:128]
-[511:0]     key_init_i          512'h00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-            rst_ni              1'b1
-[2:0]       in_valid_i          3'b100
-[2:0]       crypt_i             3'b011
-[2:0]       dec_key_gen_i       3'b100
-            prng_reseed_i       1'b1
-[2:0]       key_len_i           3'b001
+            key_clear_i          1'b0
+            data_out_clear_i     1'b0
+            alert_fatal_i        1'b0
+            force_masks_i        1'b0
+            entropy_ack_i        1'b1
+[2:0]       out_ready_i          3'b011
+            cfg_valid_i          1'b1
+[1:0]       op_i                 2'b01
+[127:0]     state_init_i         group_in0[127:0]
+[255:128]   state_init_i         group_in1[127:0]
+[255:0]     prd_clearing_key_i   group_in0[383:128]
+[511:256]   prd_clearing_key_i   group_in0[639:384]
+[127:0]     prd_clearing_state_i group_in0[255:128]
+[255:128]   prd_clearing_state_i group_in0[511:384]
+[511:0]     key_init_i           512'h00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+            rst_ni               1'b1
+[2:0]       in_valid_i           3'b100
+[2:0]       crypt_i              3'b011
+[2:0]       dec_key_gen_i        3'b100
+            prng_reseed_i        1'b1
+[2:0]       key_len_i            3'b001
 
 % the condition to check to terminate the simulation (e.g., done signal is high) or a number of
 % clock cycles, e.g., ClockCycles 5.
