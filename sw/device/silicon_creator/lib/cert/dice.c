@@ -17,10 +17,24 @@
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
+#include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/otbn_boot_services.h"
+
+#include "otp_ctrl_regs.h"  // Generated.
+
+enum {
+  /**
+   * Size of the largest OTP partition to be measured.
+   */
+  kDiceMeasuredOtpPartitionMaxSizeIn32bitWords =
+      (OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE -
+       OTP_CTRL_PARAM_OWNER_SW_CFG_DIGEST_SIZE) /
+      sizeof(uint32_t),
+};
 
 static keymgr_binding_value_t attestation_binding_value = {.data = {0}};
 static keymgr_binding_value_t sealing_binding_value = {.data = {0}};
+static uint32_t otp_state[kDiceMeasuredOtpPartitionMaxSizeIn32bitWords] = {0};
 static attestation_public_key_t curr_pubkey = {.x = {0}, .y = {0}};
 static attestation_public_key_t curr_pubkey_be = {.x = {0}, .y = {0}};
 static attestation_signature_t curr_tbs_signature = {.r = {0}, .s = {0}};
@@ -35,6 +49,18 @@ static cdi_1_sig_values_t cdi_1_cert_params = {
     .tbs = cdi_1_tbs_buffer,
     .tbs_size = kCdi1MaxTbsSizeBytes,
 };
+
+// clang-format off
+static_assert(
+    OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE > OTP_CTRL_PARAM_CREATOR_SW_CFG_SIZE &&
+    OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE > OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_SIZE &&
+    OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE > OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_SIZE &&
+    OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE > OTP_CTRL_PARAM_HW_CFG0_SIZE &&
+    OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE > OTP_CTRL_PARAM_HW_CFG1_SIZE,
+    "The largest DICE measured OTP partition is no longer the "
+    "OwnerSwCfg partition. Update the "
+    "kDiceMeasuredOtpPartitionMaxSizeIn32bitWords constant.");
+// clang-format on
 
 static_assert(kAttestMeasurementSizeInBytes == 32,
               "The attestation measurement size should equal the size of the "
@@ -86,9 +112,32 @@ static void curr_tbs_signature_le_to_be_convert(void) {
                    kAttestationSignatureBytes / 2);
 }
 
+/**
+ * Helper function to compute measurements of various OTP partitions that are to
+ * be included in attestation certificates.
+ */
+static status_t measure_otp_partition(otp_partition_t partition,
+                                      hmac_digest_t *measurement) {
+  otp_dai_read(partition, /*address=*/0, otp_state,
+               kOtpPartitions[partition].size / sizeof(uint32_t));
+  hmac_sha256(otp_state, kOtpPartitions[partition].size, measurement);
+  return OK_STATUS();
+}
+
 status_t dice_uds_cert_build(manuf_certgen_inputs_t *inputs,
                              hmac_digest_t *uds_pubkey_id, uint8_t *tbs_cert,
                              size_t *tbs_cert_size) {
+  // Measure OTP partitions.
+  // TODO(#19455): check against digests present in the OTP digest field.
+  hmac_digest_t otp_creator_sw_cfg_measurement = {.digest = {0}};
+  hmac_digest_t otp_owner_sw_cfg_measurement = {.digest = {0}};
+  hmac_digest_t otp_hw_cfg0_measurement = {.digest = {0}};
+  TRY(measure_otp_partition(kOtpPartitionCreatorSwCfg,
+                            &otp_creator_sw_cfg_measurement));
+  TRY(measure_otp_partition(kOtpPartitionOwnerSwCfg,
+                            &otp_owner_sw_cfg_measurement));
+  TRY(measure_otp_partition(kOtpPartitionHwCfg0, &otp_hw_cfg0_measurement));
+
   // Generate the UDS key.
   TRY(sc_keymgr_state_check(kScKeymgrStateInit));
   sc_keymgr_advance_state();
@@ -104,13 +153,15 @@ status_t dice_uds_cert_build(manuf_certgen_inputs_t *inputs,
 
   // Generate the TBS certificate.
   uds_tbs_values_t uds_cert_tbs_params = {
-      // TODO(#19455): include OTP measurements in attestation keygen / cert.
-      .otp_creator_sw_cfg_hash = NULL,
-      .otp_creator_sw_cfg_hash_size = 0,
-      .otp_owner_sw_cfg_hash = NULL,
-      .otp_owner_sw_cfg_hash_size = 0,
-      .otp_hw_cfg0_hash = NULL,
-      .otp_hw_cfg0_hash_size = 0,
+      // TODO(#19455): add measurements of new (A1) OTP partitions.
+      .otp_creator_sw_cfg_hash =
+          (unsigned char *)otp_creator_sw_cfg_measurement.digest,
+      .otp_creator_sw_cfg_hash_size = kHmacDigestNumBytes,
+      .otp_owner_sw_cfg_hash =
+          (unsigned char *)otp_owner_sw_cfg_measurement.digest,
+      .otp_owner_sw_cfg_hash_size = kHmacDigestNumBytes,
+      .otp_hw_cfg0_hash = (unsigned char *)otp_hw_cfg0_measurement.digest,
+      .otp_hw_cfg0_hash_size = kHmacDigestNumBytes,
       .debug_flag = is_debug_exposed(),
       .creator_pub_key_id = (unsigned char *)uds_pubkey_id->digest,
       .creator_pub_key_id_size = kCertKeyIdSizeInBytes,
