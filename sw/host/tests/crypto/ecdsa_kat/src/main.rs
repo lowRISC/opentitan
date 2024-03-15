@@ -30,6 +30,7 @@ use opentitanlib::test_utils::rpc::{UartRecv, UartSend};
 use opentitanlib::uart::console::UartConsole;
 
 #[derive(Debug, Parser)]
+#[command(args_override_self = true)]
 struct Opts {
     #[command(flatten)]
     init: InitializeTest,
@@ -68,6 +69,7 @@ fn run_ecdsa_testcase(
     opts: &Opts,
     transport: &TransportWrapper,
     failures: &mut Vec<String>,
+    quiet: bool,
 ) -> Result<()> {
     log::info!(
         "vendor: {}, test case: {}",
@@ -240,7 +242,7 @@ fn run_ecdsa_testcase(
     }
     .send(&*uart)?;
 
-    let ecdsa_output = CryptotestEcdsaVerifyOutput::recv(&*uart, opts.timeout, false)?;
+    let ecdsa_output = CryptotestEcdsaVerifyOutput::recv(&*uart, opts.timeout, quiet)?;
     let success = match ecdsa_output {
         CryptotestEcdsaVerifyOutput::Success => true,
         CryptotestEcdsaVerifyOutput::Failure => false,
@@ -273,6 +275,9 @@ fn test_ecdsa(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let mut test_counter = 0u32;
     let mut failures = vec![];
     let test_vector_files = &opts.ecdsa_json;
+    // A filter level of `Error` indicates we're running in CI, so we don't want to print the
+    // output of every UART recv().
+    let quiet = opts.init.logging == log::LevelFilter::Error;
     for file in test_vector_files {
         let raw_json = fs::read_to_string(file)?;
         let ecdsa_tests: Vec<EcdsaTestCase> = serde_json::from_str(&raw_json)?;
@@ -280,7 +285,7 @@ fn test_ecdsa(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         for ecdsa_test in &ecdsa_tests {
             test_counter += 1;
             log::info!("Test counter: {}", test_counter);
-            run_ecdsa_testcase(ecdsa_test, opts, transport, &mut failures)?;
+            run_ecdsa_testcase(ecdsa_test, opts, transport, &mut failures, quiet)?;
         }
     }
     assert_eq!(
