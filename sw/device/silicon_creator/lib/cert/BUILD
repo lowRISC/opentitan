@@ -60,6 +60,7 @@ cc_library(
     hdrs = ["dice.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
+        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
         "//sw/device/lib/testing/json:provisioning_data",
@@ -72,6 +73,7 @@ cc_library(
         "//sw/device/silicon_creator/lib/drivers:hmac",
         "//sw/device/silicon_creator/lib/drivers:keymgr",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
+        "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/otbn/crypto:boot",
     ],
 )
