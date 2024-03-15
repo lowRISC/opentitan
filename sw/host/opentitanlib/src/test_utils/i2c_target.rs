@@ -63,4 +63,14 @@ impl I2cTransferStart {
         f()?;
         Self::recv(uart, Duration::from_secs(300), false)
     }
+
+    pub fn execute_write_read<F>(&self, uart: &dyn Uart, f: F) -> Result<Self>
+    where
+        F: FnOnce() -> Result<()>,
+    {
+        TestCommand::I2cStartTransferWriteRead.send(uart)?;
+        self.send(uart)?;
+        f()?;
+        Self::recv(uart, Duration::from_secs(300), false)
+    }
 }
