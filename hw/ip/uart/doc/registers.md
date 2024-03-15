@@ -273,17 +273,17 @@ Other values are reserved.
 Trigger level for RX interrupts. If the FIFO depth is greater than or equal to
 the setting, it raises rx_watermark interrupt.
 
-| Value   | Name     | Description    |
-|:--------|:---------|:---------------|
-| 0x0     | rxlvl1   | 1 character    |
-| 0x1     | rxlvl2   | 2 characters   |
-| 0x2     | rxlvl4   | 4 characters   |
-| 0x3     | rxlvl8   | 8 characters   |
-| 0x4     | rxlvl16  | 16 characters  |
-| 0x5     | rxlvl32  | 32 characters  |
-| 0x6     | rxlvl64  | 64 characters  |
-| 0x7     | rxlvl126 | 126 characters |
+| Value   | Name    | Description   |
+|:--------|:--------|:--------------|
+| 0x0     | rxlvl1  | 1 character   |
+| 0x1     | rxlvl2  | 2 characters  |
+| 0x2     | rxlvl4  | 4 characters  |
+| 0x3     | rxlvl8  | 8 characters  |
+| 0x4     | rxlvl16 | 16 characters |
+| 0x5     | rxlvl32 | 32 characters |
+| 0x6     | rxlvl62 | 62 characters |
 
+Other values are reserved.
 
 ### FIFO_CTRL . TXRST
 TX fifo reset. Write 1 to the register resets TX_FIFO. Read returns 0

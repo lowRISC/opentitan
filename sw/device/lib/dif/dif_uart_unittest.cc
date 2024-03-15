@@ -165,9 +165,9 @@ TEST_F(WatermarkRxSetTest, Success) {
   EXPECT_MASK32(UART_FIFO_CTRL_REG_OFFSET,
                 {
                     {UART_FIFO_CTRL_RXILVL_OFFSET, UART_FIFO_CTRL_RXILVL_MASK,
-                     UART_FIFO_CTRL_RXILVL_VALUE_RXLVL126},
+                     UART_FIFO_CTRL_RXILVL_VALUE_RXLVL62},
                 });
-  EXPECT_DIF_OK(dif_uart_watermark_rx_set(&uart_, kDifUartWatermarkByte126));
+  EXPECT_DIF_OK(dif_uart_watermark_rx_set(&uart_, kDifUartWatermarkByte62));
 }
 
 class WatermarkTxSetTest : public UartTest {};
@@ -177,7 +177,7 @@ TEST_F(WatermarkTxSetTest, NullArgs) {
 }
 
 TEST_F(WatermarkTxSetTest, InvalidWatermark) {
-  EXPECT_EQ(dif_uart_watermark_tx_set(&uart_, kDifUartWatermarkByte126),
+  EXPECT_EQ(dif_uart_watermark_tx_set(&uart_, kDifUartWatermarkByte62),
             kDifError);
 }
 

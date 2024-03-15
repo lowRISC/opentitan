@@ -248,7 +248,7 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
             if (ral.ctrl.slpbk.get_mirrored_value()) begin
               // if sys loopback is on, tx item isn't sent to uart pin but rx fifo
               uart_item tx_item = tx_q.pop_front();
-              if (rx_enabled && (rx_q.size < TxFifoDepth)) begin
+              if (rx_enabled && (rx_q.size < RxFifoDepth)) begin
                 rx_q.push_back(tx_item);
                 predict_rx_watermark_intr();
               end

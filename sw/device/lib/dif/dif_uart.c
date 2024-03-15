@@ -178,11 +178,8 @@ dif_result_t dif_uart_watermark_rx_set(const dif_uart_t *uart,
     case kDifUartWatermarkByte32:
       value = UART_FIFO_CTRL_RXILVL_VALUE_RXLVL32;
       break;
-    case kDifUartWatermarkByte64:
-      value = UART_FIFO_CTRL_RXILVL_VALUE_RXLVL64;
-      break;
-    case kDifUartWatermarkByte126:
-      value = UART_FIFO_CTRL_RXILVL_VALUE_RXLVL126;
+    case kDifUartWatermarkByte62:
+      value = UART_FIFO_CTRL_RXILVL_VALUE_RXLVL62;
       break;
     default:
       return kDifError;
