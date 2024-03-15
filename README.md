@@ -22,9 +22,17 @@ across partners participating in the OpenTitan project.
 
 ## Documentation
 
-The project contains comprehensive documentation of all IPs and tools. You can
-access it [online at docs.opentitan.org](https://docs.opentitan.org/).
+The detailed documentation can be built within this repository. The following commands configures and runs
+a local server, accessible by the browser. This server basically represent the official opentitan.org website
+including the customization we implemented, particularly, concerning the memory map.
 
+To build the doc and run the server:
+```
+git clone https://www.github.com/alsaqr-platform/opentitan.git
+cd opentitan/
+make -C hw/ top
+source utils/build_doc.py --preview
+```
 ## How to contribute
 
 Have a look at [CONTRIBUTING](https://github.com/lowRISC/opentitan/blob/master/CONTRIBUTING.md) and our [documentation on
