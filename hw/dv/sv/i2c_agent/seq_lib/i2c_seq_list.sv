@@ -5,3 +5,4 @@
 `include "i2c_base_seq.sv"
 `include "i2c_device_response_seq.sv"
 `include "i2c_target_base_seq.sv"
+`include "i2c_target_may_nack_seq.sv"

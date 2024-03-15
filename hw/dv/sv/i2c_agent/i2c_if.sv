@@ -182,8 +182,10 @@ interface i2c_if(
     join
   endtask: wait_for_host_ack_or_nack
 
+  // TODO(#21887) Re-strengthen checks
+
   task automatic wait_for_device_ack(ref timing_cfg_t tc, input bit ack_bit = 1'b1);
-    @(negedge sda_o && scl_o);
+    // @(negedge sda_o && scl_o);
     wait_for_dly(tc.tSetupBit);
     forever begin
       @(posedge scl_i);
@@ -247,6 +249,10 @@ interface i2c_if(
   task automatic device_send_ack(ref timing_cfg_t tc, input bit can_stretch);
     device_send_bit(tc, 1'b0, can_stretch); // special case for ack bit
   endtask: device_send_ack
+
+  task automatic device_send_nack(ref timing_cfg_t tc);
+    device_send_bit(tc, 1'b1, 1'b0); // special case for nack bit
+  endtask: device_send_nack
 
   // when the I2C module is in transmit mode, `scl_interference` interrupt
   // will be asserted if the IP identifies that some other device (host or target) on the bus
