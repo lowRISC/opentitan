@@ -116,7 +116,7 @@ UJSON_SERDE_STRUCT(ManufDiceCerts, \
  */
 // clang-format off
 #define STRUCT_MANUF_ENDORSED_CERTS(field, string) \
-    field(uds_certificate, uint8_t, 596) \
+    field(uds_certificate, uint8_t, 660) \
     field(uds_certificate_size, size_t)
 UJSON_SERDE_STRUCT(ManufEndorsedCerts, \
                    manuf_endorsed_certs_t, \
