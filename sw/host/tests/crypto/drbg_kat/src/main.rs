@@ -33,6 +33,7 @@ struct Opts {
 }
 
 #[derive(Debug, Deserialize)]
+#[command(args_override_self = true)]
 struct DrbgTestCase {
     vendor: String,
     test_case_id: usize,
@@ -53,7 +54,8 @@ fn run_drbg_testcase(
     test_case: &DrbgTestCase,
     opts: &Opts,
     transport: &TransportWrapper,
-    fail_counter: &mut u32,
+    failures: &mut Vec<String>,
+    quiet: bool,
 ) -> Result<()> {
     log::info!(
         "vendor: {}, test case: {}",
@@ -98,7 +100,7 @@ fn run_drbg_testcase(
     .send(&*uart)?;
 
     // Get output
-    let drbg_output = CryptotestDrbgOutput::recv(&*uart, opts.timeout, false)?;
+    let drbg_output = CryptotestDrbgOutput::recv(&*uart, opts.timeout, quiet)?;
     // The expected output is in a mixed-endian format (32-bit words
     // are in little-endian order, but the bytes within the words are
     // in big-endian order). Convert the actual output to match this
@@ -121,7 +123,16 @@ fn run_drbg_testcase(
             test_case.result,
             success
         );
-        *fail_counter += 1;
+        failures.push(format!(
+            "{} DRBG {} #{}",
+            test_case.vendor,
+            if test_case.reseed {
+                "with reseed"
+            } else {
+                "no reseed"
+            },
+            test_case.test_case_id,
+        ));
     }
     Ok(())
 }
@@ -132,8 +143,11 @@ fn test_drbg(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let _ = UartConsole::wait_for(&*uart, r"Running [^\r\n]*", opts.timeout)?;
 
     let mut test_counter = 0u32;
-    let mut fail_counter = 0u32;
+    let mut failures = vec![];
     let test_vector_files = &opts.drbg_json;
+    // A filter level of `Error` indicates we're running in CI, so we don't want to print the
+    // output of every UART recv().
+    let quiet = opts.init.logging == log::LevelFilter::Error;
     for file in test_vector_files {
         let raw_json = fs::read_to_string(file)?;
         let drbg_tests: Vec<DrbgTestCase> = serde_json::from_str(&raw_json)?;
@@ -141,13 +155,16 @@ fn test_drbg(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         for drbg_test in &drbg_tests {
             test_counter += 1;
             log::info!("Test counter: {}", test_counter);
-            run_drbg_testcase(drbg_test, opts, transport, &mut fail_counter)?;
+            run_drbg_testcase(drbg_test, opts, transport, &mut failures, quiet)?;
         }
     }
     assert_eq!(
-        0, fail_counter,
-        "Failed {} out of {} tests.",
-        fail_counter, test_counter
+        0,
+        failures.len(),
+        "Failed {} out of {} tests. Failures: {:?}",
+        failures.len(),
+        test_counter,
+        failures
     );
     Ok(())
 }
