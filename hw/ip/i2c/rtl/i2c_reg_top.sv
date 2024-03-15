@@ -52,9 +52,9 @@ module i2c_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [26:0] reg_we_check;
+  logic [27:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(27)
+    .OneHotWidth(28)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -213,6 +213,7 @@ module i2c_reg_top (
   logic status_acqfull_qs;
   logic status_txempty_qs;
   logic status_acqempty_qs;
+  logic status_host_disabled_nack_timeout_qs;
   logic rdata_re;
   logic [7:0] rdata_qs;
   logic fdata_we;
@@ -310,6 +311,11 @@ module i2c_reg_top (
   logic target_nack_count_re;
   logic [7:0] target_nack_count_qs;
   logic [7:0] target_nack_count_wd;
+  logic host_nack_handler_timeout_we;
+  logic [30:0] host_nack_handler_timeout_val_qs;
+  logic [30:0] host_nack_handler_timeout_val_wd;
+  logic host_nack_handler_timeout_en_qs;
+  logic host_nack_handler_timeout_en_wd;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -1392,6 +1398,17 @@ module i2c_reg_top (
 
 
   // R[ctrl]: V(False)
+  logic ctrl_qe;
+  logic [2:0] ctrl_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_ctrl0_qe (
+    .clk_i(clk_i),
+    .rst_ni(rst_ni),
+    .d_i(&ctrl_flds_we),
+    .q_o(ctrl_qe)
+  );
   //   F[enablehost]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -1407,17 +1424,18 @@ module i2c_reg_top (
     .wd     (ctrl_enablehost_wd),
 
     // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
+    .de     (hw2reg.ctrl.enablehost.de),
+    .d      (hw2reg.ctrl.enablehost.d),
 
     // to internal hardware
-    .qe     (),
+    .qe     (ctrl_flds_we[0]),
     .q      (reg2hw.ctrl.enablehost.q),
     .ds     (),
 
     // to register interface (read)
     .qs     (ctrl_enablehost_qs)
   );
+  assign reg2hw.ctrl.enablehost.qe = ctrl_qe;
 
   //   F[enabletarget]: 1:1
   prim_subreg #(
@@ -1434,17 +1452,18 @@ module i2c_reg_top (
     .wd     (ctrl_enabletarget_wd),
 
     // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
+    .de     (hw2reg.ctrl.enabletarget.de),
+    .d      (hw2reg.ctrl.enabletarget.d),
 
     // to internal hardware
-    .qe     (),
+    .qe     (ctrl_flds_we[1]),
     .q      (reg2hw.ctrl.enabletarget.q),
     .ds     (),
 
     // to register interface (read)
     .qs     (ctrl_enabletarget_qs)
   );
+  assign reg2hw.ctrl.enabletarget.qe = ctrl_qe;
 
   //   F[llpbk]: 2:2
   prim_subreg #(
@@ -1461,17 +1480,18 @@ module i2c_reg_top (
     .wd     (ctrl_llpbk_wd),
 
     // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
+    .de     (hw2reg.ctrl.llpbk.de),
+    .d      (hw2reg.ctrl.llpbk.d),
 
     // to internal hardware
-    .qe     (),
+    .qe     (ctrl_flds_we[2]),
     .q      (reg2hw.ctrl.llpbk.q),
     .ds     (),
 
     // to register interface (read)
     .qs     (ctrl_llpbk_qs)
   );
+  assign reg2hw.ctrl.llpbk.qe = ctrl_qe;
 
 
   // R[status]: V(True)
@@ -1623,6 +1643,21 @@ module i2c_reg_top (
     .q      (),
     .ds     (),
     .qs     (status_acqempty_qs)
+  );
+
+  //   F[host_disabled_nack_timeout]: 10:10
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_status_host_disabled_nack_timeout (
+    .re     (status_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.status.host_disabled_nack_timeout.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (status_host_disabled_nack_timeout_qs)
   );
 
 
@@ -2923,8 +2958,64 @@ module i2c_reg_top (
   );
 
 
+  // R[host_nack_handler_timeout]: V(False)
+  //   F[val]: 30:0
+  prim_subreg #(
+    .DW      (31),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (31'h0),
+    .Mubi    (1'b0)
+  ) u_host_nack_handler_timeout_val (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-  logic [26:0] addr_hit;
+    // from register interface
+    .we     (host_nack_handler_timeout_we),
+    .wd     (host_nack_handler_timeout_val_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.host_nack_handler_timeout.val.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (host_nack_handler_timeout_val_qs)
+  );
+
+  //   F[en]: 31:31
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_host_nack_handler_timeout_en (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (host_nack_handler_timeout_we),
+    .wd     (host_nack_handler_timeout_en_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.host_nack_handler_timeout.en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (host_nack_handler_timeout_en_qs)
+  );
+
+
+
+  logic [27:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == I2C_INTR_STATE_OFFSET);
@@ -2954,6 +3045,7 @@ module i2c_reg_top (
     addr_hit[24] = (reg_addr == I2C_HOST_TIMEOUT_CTRL_OFFSET);
     addr_hit[25] = (reg_addr == I2C_TARGET_TIMEOUT_CTRL_OFFSET);
     addr_hit[26] = (reg_addr == I2C_TARGET_NACK_COUNT_OFFSET);
+    addr_hit[27] = (reg_addr == I2C_HOST_NACK_HANDLER_TIMEOUT_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -2987,7 +3079,8 @@ module i2c_reg_top (
                (addr_hit[23] & (|(I2C_PERMIT[23] & ~reg_be))) |
                (addr_hit[24] & (|(I2C_PERMIT[24] & ~reg_be))) |
                (addr_hit[25] & (|(I2C_PERMIT[25] & ~reg_be))) |
-               (addr_hit[26] & (|(I2C_PERMIT[26] & ~reg_be)))));
+               (addr_hit[26] & (|(I2C_PERMIT[26] & ~reg_be))) |
+               (addr_hit[27] & (|(I2C_PERMIT[27] & ~reg_be)))));
   end
 
   // Generate write-enables
@@ -3182,6 +3275,11 @@ module i2c_reg_top (
   assign target_nack_count_re = addr_hit[26] & reg_re & !reg_error;
 
   assign target_nack_count_wd = '1;
+  assign host_nack_handler_timeout_we = addr_hit[27] & reg_we & !reg_error;
+
+  assign host_nack_handler_timeout_val_wd = reg_wdata[30:0];
+
+  assign host_nack_handler_timeout_en_wd = reg_wdata[31];
 
   // Assign write-enables to checker logic vector.
   always_comb begin
@@ -3213,6 +3311,7 @@ module i2c_reg_top (
     reg_we_check[24] = host_timeout_ctrl_we;
     reg_we_check[25] = target_timeout_ctrl_we;
     reg_we_check[26] = 1'b0;
+    reg_we_check[27] = host_nack_handler_timeout_we;
   end
 
   // Read data return
@@ -3294,6 +3393,7 @@ module i2c_reg_top (
         reg_rdata_next[7] = status_acqfull_qs;
         reg_rdata_next[8] = status_txempty_qs;
         reg_rdata_next[9] = status_acqempty_qs;
+        reg_rdata_next[10] = status_host_disabled_nack_timeout_qs;
       end
 
       addr_hit[6]: begin
@@ -3405,6 +3505,11 @@ module i2c_reg_top (
 
       addr_hit[26]: begin
         reg_rdata_next[7:0] = target_nack_count_qs;
+      end
+
+      addr_hit[27]: begin
+        reg_rdata_next[30:0] = host_nack_handler_timeout_val_qs;
+        reg_rdata_next[31] = host_nack_handler_timeout_en_qs;
       end
 
       default: begin

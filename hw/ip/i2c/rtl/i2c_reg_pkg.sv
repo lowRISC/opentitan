@@ -185,12 +185,15 @@ package i2c_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
+      logic        qe;
     } llpbk;
     struct packed {
       logic        q;
+      logic        qe;
     } enabletarget;
     struct packed {
       logic        q;
+      logic        qe;
     } enablehost;
   } i2c_reg2hw_ctrl_reg_t;
 
@@ -387,6 +390,15 @@ package i2c_reg_pkg;
 
   typedef struct packed {
     struct packed {
+      logic        q;
+    } en;
+    struct packed {
+      logic [30:0] q;
+    } val;
+  } i2c_reg2hw_host_nack_handler_timeout_reg_t;
+
+  typedef struct packed {
+    struct packed {
       logic        d;
       logic        de;
     } fmt_threshold;
@@ -451,6 +463,21 @@ package i2c_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        d;
+      logic        de;
+    } enablehost;
+    struct packed {
+      logic        d;
+      logic        de;
+    } enabletarget;
+    struct packed {
+      logic        d;
+      logic        de;
+    } llpbk;
+  } i2c_hw2reg_ctrl_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic        d;
     } fmtfull;
     struct packed {
       logic        d;
@@ -479,6 +506,9 @@ package i2c_reg_pkg;
     struct packed {
       logic        d;
     } acqempty;
+    struct packed {
+      logic        d;
+    } host_disabled_nack_timeout;
   } i2c_hw2reg_status_reg_t;
 
   typedef struct packed {
@@ -528,35 +558,37 @@ package i2c_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    i2c_reg2hw_intr_state_reg_t intr_state; // [471:457]
-    i2c_reg2hw_intr_enable_reg_t intr_enable; // [456:442]
-    i2c_reg2hw_intr_test_reg_t intr_test; // [441:412]
-    i2c_reg2hw_alert_test_reg_t alert_test; // [411:410]
-    i2c_reg2hw_ctrl_reg_t ctrl; // [409:407]
-    i2c_reg2hw_rdata_reg_t rdata; // [406:398]
-    i2c_reg2hw_fdata_reg_t fdata; // [397:379]
-    i2c_reg2hw_fifo_ctrl_reg_t fifo_ctrl; // [378:371]
-    i2c_reg2hw_host_fifo_config_reg_t host_fifo_config; // [370:345]
-    i2c_reg2hw_target_fifo_config_reg_t target_fifo_config; // [344:317]
-    i2c_reg2hw_ovrd_reg_t ovrd; // [316:314]
-    i2c_reg2hw_timing0_reg_t timing0; // [313:282]
-    i2c_reg2hw_timing1_reg_t timing1; // [281:250]
-    i2c_reg2hw_timing2_reg_t timing2; // [249:218]
-    i2c_reg2hw_timing3_reg_t timing3; // [217:186]
-    i2c_reg2hw_timing4_reg_t timing4; // [185:154]
-    i2c_reg2hw_timeout_ctrl_reg_t timeout_ctrl; // [153:122]
-    i2c_reg2hw_target_id_reg_t target_id; // [121:94]
-    i2c_reg2hw_acqdata_reg_t acqdata; // [93:81]
-    i2c_reg2hw_txdata_reg_t txdata; // [80:72]
-    i2c_reg2hw_host_timeout_ctrl_reg_t host_timeout_ctrl; // [71:40]
-    i2c_reg2hw_target_timeout_ctrl_reg_t target_timeout_ctrl; // [39:8]
-    i2c_reg2hw_target_nack_count_reg_t target_nack_count; // [7:0]
+    i2c_reg2hw_intr_state_reg_t intr_state; // [506:492]
+    i2c_reg2hw_intr_enable_reg_t intr_enable; // [491:477]
+    i2c_reg2hw_intr_test_reg_t intr_test; // [476:447]
+    i2c_reg2hw_alert_test_reg_t alert_test; // [446:445]
+    i2c_reg2hw_ctrl_reg_t ctrl; // [444:439]
+    i2c_reg2hw_rdata_reg_t rdata; // [438:430]
+    i2c_reg2hw_fdata_reg_t fdata; // [429:411]
+    i2c_reg2hw_fifo_ctrl_reg_t fifo_ctrl; // [410:403]
+    i2c_reg2hw_host_fifo_config_reg_t host_fifo_config; // [402:377]
+    i2c_reg2hw_target_fifo_config_reg_t target_fifo_config; // [376:349]
+    i2c_reg2hw_ovrd_reg_t ovrd; // [348:346]
+    i2c_reg2hw_timing0_reg_t timing0; // [345:314]
+    i2c_reg2hw_timing1_reg_t timing1; // [313:282]
+    i2c_reg2hw_timing2_reg_t timing2; // [281:250]
+    i2c_reg2hw_timing3_reg_t timing3; // [249:218]
+    i2c_reg2hw_timing4_reg_t timing4; // [217:186]
+    i2c_reg2hw_timeout_ctrl_reg_t timeout_ctrl; // [185:154]
+    i2c_reg2hw_target_id_reg_t target_id; // [153:126]
+    i2c_reg2hw_acqdata_reg_t acqdata; // [125:113]
+    i2c_reg2hw_txdata_reg_t txdata; // [112:104]
+    i2c_reg2hw_host_timeout_ctrl_reg_t host_timeout_ctrl; // [103:72]
+    i2c_reg2hw_target_timeout_ctrl_reg_t target_timeout_ctrl; // [71:40]
+    i2c_reg2hw_target_nack_count_reg_t target_nack_count; // [39:32]
+    i2c_reg2hw_host_nack_handler_timeout_reg_t host_nack_handler_timeout; // [31:0]
   } i2c_reg2hw_t;
 
   // HW -> register type
   typedef struct packed {
-    i2c_hw2reg_intr_state_reg_t intr_state; // [147:118]
-    i2c_hw2reg_status_reg_t status; // [117:108]
+    i2c_hw2reg_intr_state_reg_t intr_state; // [154:125]
+    i2c_hw2reg_ctrl_reg_t ctrl; // [124:119]
+    i2c_hw2reg_status_reg_t status; // [118:108]
     i2c_hw2reg_rdata_reg_t rdata; // [107:100]
     i2c_hw2reg_host_fifo_status_reg_t host_fifo_status; // [99:76]
     i2c_hw2reg_target_fifo_status_reg_t target_fifo_status; // [75:52]
@@ -593,6 +625,7 @@ package i2c_reg_pkg;
   parameter logic [BlockAw-1:0] I2C_HOST_TIMEOUT_CTRL_OFFSET = 7'h 60;
   parameter logic [BlockAw-1:0] I2C_TARGET_TIMEOUT_CTRL_OFFSET = 7'h 64;
   parameter logic [BlockAw-1:0] I2C_TARGET_NACK_COUNT_OFFSET = 7'h 68;
+  parameter logic [BlockAw-1:0] I2C_HOST_NACK_HANDLER_TIMEOUT_OFFSET = 7'h 6c;
 
   // Reset values for hwext registers and their fields
   parameter logic [14:0] I2C_INTR_TEST_RESVAL = 15'h 0;
@@ -613,7 +646,7 @@ package i2c_reg_pkg;
   parameter logic [0:0] I2C_INTR_TEST_HOST_TIMEOUT_RESVAL = 1'h 0;
   parameter logic [0:0] I2C_ALERT_TEST_RESVAL = 1'h 0;
   parameter logic [0:0] I2C_ALERT_TEST_FATAL_FAULT_RESVAL = 1'h 0;
-  parameter logic [9:0] I2C_STATUS_RESVAL = 10'h 33c;
+  parameter logic [10:0] I2C_STATUS_RESVAL = 11'h 33c;
   parameter logic [0:0] I2C_STATUS_FMTEMPTY_RESVAL = 1'h 1;
   parameter logic [0:0] I2C_STATUS_HOSTIDLE_RESVAL = 1'h 1;
   parameter logic [0:0] I2C_STATUS_TARGETIDLE_RESVAL = 1'h 1;
@@ -654,11 +687,12 @@ package i2c_reg_pkg;
     I2C_TXDATA,
     I2C_HOST_TIMEOUT_CTRL,
     I2C_TARGET_TIMEOUT_CTRL,
-    I2C_TARGET_NACK_COUNT
+    I2C_TARGET_NACK_COUNT,
+    I2C_HOST_NACK_HANDLER_TIMEOUT
   } i2c_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] I2C_PERMIT [27] = '{
+  parameter logic [3:0] I2C_PERMIT [28] = '{
     4'b 0011, // index[ 0] I2C_INTR_STATE
     4'b 0011, // index[ 1] I2C_INTR_ENABLE
     4'b 0011, // index[ 2] I2C_INTR_TEST
@@ -685,7 +719,8 @@ package i2c_reg_pkg;
     4'b 0001, // index[23] I2C_TXDATA
     4'b 1111, // index[24] I2C_HOST_TIMEOUT_CTRL
     4'b 1111, // index[25] I2C_TARGET_TIMEOUT_CTRL
-    4'b 0001  // index[26] I2C_TARGET_NACK_COUNT
+    4'b 0001, // index[26] I2C_TARGET_NACK_COUNT
+    4'b 1111  // index[27] I2C_HOST_NACK_HANDLER_TIMEOUT
   };
 
 endpackage

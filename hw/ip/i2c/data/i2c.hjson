@@ -204,7 +204,8 @@
     { name: "CTRL"
       desc: "I2C Control Register"
       swaccess: "rw"
-      hwaccess: "hro"
+      hwaccess: "hrw"
+      hwqe:     "true",
       fields: [
         { bits: "0"
           resval: "0"
@@ -283,6 +284,13 @@
           name: "ACQEMPTY"
           desc: "Target mode receive FIFO is empty"
           resval: "1"
+        }
+        { bits: "10"
+          name: "HOST_DISABLED_NACK_TIMEOUT"
+          desc: '''
+                A Host-Mode active transaction has been ended by the !!HOST_NACK_HANDLER_TIMEOUT mechanism.
+                This bit is cleared when !!CTRL.ENABLEHOST is set by software to start a new transaction.
+                '''
         }
       ]
       tags: [// Updated by the hw. Exclude from write-checks.
@@ -726,6 +734,38 @@
       hwaccess: "hrw"
       fields: [
         { bits: "7:0" }
+      ]
+    }
+    { name: "HOST_NACK_HANDLER_TIMEOUT"
+      desc: '''
+            Timeout in Host-Mode for an unhandled NACK before hardware automatically ends the transaction.
+            (in units of input clock frequency)
+
+            In Host-Mode during an active Controller-Transmitter transfer, if the Target NACKs a byte
+            the 'nak' interrupt is asserted and the Byte-Formatted Programming Mode FSM halts awaiting
+            software intervention. Software must acknowledge the interrupt (CIP 'Event-Type') to allow
+            the state machine to continue, typically after clearing out the FMTFIFO to start a new transfer.
+            While halted, the active transaction is not ended (no STOP (P) condition is created), and the
+            block releases both SCL and SDA.
+
+            This timeout can be used to automatically disable the block if software does not handle the
+            'nak' interrupt in a timely manner. If the timeout expires, (!!CTRL.HOSTMODE) will be disabled
+            which creates a STOP (P) condition on the bus ending the active transaction. Additionally, the
+            !!STATUS.HOST_DISABLED_NACK_TIMEOUT bit is set to alert software.
+
+            The enable bit must be set for this feature to operate.
+            '''
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "30:0"
+          name: "VAL"
+          desc: "Unhandled NAK timeout value (in units of input clock frequency)"
+        }
+        { bits: "31"
+          name: "EN"
+          desc: "Timeout enable"
+        }
       ]
     }
   ]
