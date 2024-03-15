@@ -37,6 +37,7 @@ const RANDOM_MASK_P256: &str = "37c9e5b8e9e24402f2ec25a2eec87c1c531d67e38c18876d
 const RANDOM_MASK_P384: &str = "b80fee36252d2c38350ad1c00803e09c90f4c086e4cfeed78f164b20b100d5d45f16b678a40a64295438bbebc3e29b09";
 
 #[derive(Debug, Parser)]
+#[command(args_override_self = true)]
 struct Opts {
     #[command(flatten)]
     init: InitializeTest,
@@ -66,8 +67,8 @@ fn run_ecdh_testcase(
     test_case: &EcdhTestCase,
     opts: &Opts,
     transport: &TransportWrapper,
-    fail_counter: &mut usize,
-    failures: &mut Vec<usize>,
+    failures: &mut Vec<String>,
+    quiet: bool,
 ) -> Result<()> {
     log::info!(
         "vendor: {}, test case: {}",
@@ -196,7 +197,7 @@ fn run_ecdh_testcase(
     }
     .send(&*uart)?;
 
-    let ecdh_output = CryptotestEcdhDeriveOutput::recv(&*uart, opts.timeout, false)?;
+    let ecdh_output = CryptotestEcdhDeriveOutput::recv(&*uart, opts.timeout, quiet)?;
     let out_len = ecdh_output.shared_secret_len;
     if out_len > ecdh_output.shared_secret.len() {
         panic!("ECDH returned shared secret was too long for device firmware configuration.");
@@ -206,14 +207,16 @@ fn run_ecdh_testcase(
     z.reverse();
     let success = ecdh_output.ok != 0 && z == ecdh_output.shared_secret[..out_len];
     if success != test_case.result {
-        *fail_counter += 1;
         log::info!(
             "FAILED test #{}: expected = {}, actual = {}",
             test_case.test_case_id,
             test_case.result,
             success
         );
-        failures.push(test_case.test_case_id);
+        failures.push(format!(
+            "{} ECDH {} #{}",
+            test_case.vendor, test_case.curve, test_case.test_case_id
+        ));
     }
     Ok(())
 }
@@ -224,9 +227,11 @@ fn test_ecdh(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let _ = UartConsole::wait_for(&*uart, r"Running [^\r\n]*", opts.timeout)?;
 
     let mut test_counter = 0u32;
-    let mut fail_counter = 0usize;
     let mut failures = vec![];
     let test_vector_files = &opts.ecdh_json;
+    // A filter level of `Error` indicates we're running in CI, so we don't want to print the
+    // output of every UART recv().
+    let quiet = opts.init.logging == log::LevelFilter::Error;
     for file in test_vector_files {
         let raw_json = fs::read_to_string(file)?;
         let ecdh_tests: Vec<EcdhTestCase> = serde_json::from_str(&raw_json)?;
@@ -234,13 +239,16 @@ fn test_ecdh(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         for ecdh_test in &ecdh_tests {
             test_counter += 1;
             log::info!("Test counter: {}", test_counter);
-            run_ecdh_testcase(ecdh_test, opts, transport, &mut fail_counter, &mut failures)?;
+            run_ecdh_testcase(ecdh_test, opts, transport, &mut failures, quiet)?;
         }
     }
     assert_eq!(
-        0, fail_counter,
-        "Failed {} out of {} tests. Failed tests: {:?}",
-        fail_counter, test_counter, failures,
+        0,
+        failures.len(),
+        "Failed {} out of {} tests. Failures: {:?}",
+        failures.len(),
+        test_counter,
+        failures,
     );
     Ok(())
 }
