@@ -10,8 +10,9 @@
 
 module aes_cipher_control import aes_pkg::*;
 #(
-  parameter bit         SecMasking  = 0,
-  parameter sbox_impl_e SecSBoxImpl = SBoxImplDom
+  parameter bit         CiphOpFwdOnly = 0,
+  parameter bit         SecMasking    = 0,
+  parameter sbox_impl_e SecSBoxImpl   = SBoxImplDom
 ) (
   input  logic                    clk_i,
   input  logic                    rst_ni,
@@ -369,8 +370,8 @@ module aes_cipher_control import aes_pkg::*;
   end
 
   // Use separate signal for key expand operation, forward round.
-  assign key_expand_op_o    = (dec_key_gen_d == SP2V_HIGH ||
-                               dec_key_gen_q == SP2V_HIGH) ? CIPH_FWD : op_i;
+  assign key_expand_op_o    = (dec_key_gen_d == SP2V_HIGH  ||
+                               dec_key_gen_q == SP2V_HIGH) || CiphOpFwdOnly ? CIPH_FWD : op_i;
   assign key_expand_round_o = rnd_ctr;
 
   // Let the main controller know whate we are doing.

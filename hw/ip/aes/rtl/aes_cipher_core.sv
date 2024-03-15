@@ -95,6 +95,7 @@
 module aes_cipher_core import aes_pkg::*;
 #(
   parameter bit          AES192Enable         = 1,
+  parameter bit          CiphOpFwdOnly        = 0,
   parameter bit          SecMasking           = 1,
   parameter sbox_impl_e  SecSBoxImpl          = SBoxImplDom,
   parameter bit          SecAllowForcingMasks = 0,
@@ -430,7 +431,7 @@ module aes_cipher_core import aes_pkg::*;
   always_comb begin : key_full_mux
     unique case (key_full_sel)
       KEY_FULL_ENC_INIT: key_full_d = key_init_i;
-      KEY_FULL_DEC_INIT: key_full_d = key_dec_q;
+      KEY_FULL_DEC_INIT: key_full_d = !CiphOpFwdOnly ? key_dec_q : prd_clearing_256;
       KEY_FULL_ROUND:    key_full_d = key_expand_out;
       KEY_FULL_CLEAR:    key_full_d = prd_clearing_256;
       default:           key_full_d = prd_clearing_256;
@@ -445,21 +446,36 @@ module aes_cipher_core import aes_pkg::*;
     end
   end
 
-  // SEC_CM: KEY.SEC_WIPE
-  // Decryption Key registers
-  always_comb begin : key_dec_mux
-    unique case (key_dec_sel)
-      KEY_DEC_EXPAND: key_dec_d = key_expand_out;
-      KEY_DEC_CLEAR:  key_dec_d = prd_clearing_256;
-      default:        key_dec_d = prd_clearing_256;
-    endcase
-  end
+  if (!CiphOpFwdOnly) begin : gen_key_dec
+    // SEC_CM: KEY.SEC_WIPE
+    // Decryption Key registers
+    always_comb begin : key_dec_mux
+      unique case (key_dec_sel)
+        KEY_DEC_EXPAND: key_dec_d = key_expand_out;
+        KEY_DEC_CLEAR:  key_dec_d = prd_clearing_256;
+        default:        key_dec_d = prd_clearing_256;
+      endcase
+    end
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin : key_dec_reg
-    if (!rst_ni) begin
-      key_dec_q <= '{default: '0};
-    end else if (key_dec_we == SP2V_HIGH) begin
-      key_dec_q <= key_dec_d;
+    always_ff @(posedge clk_i or negedge rst_ni) begin : key_dec_reg
+      if (!rst_ni) begin
+        key_dec_q <= '{default: '0};
+      end else if (key_dec_we == SP2V_HIGH) begin
+        key_dec_q <= key_dec_d;
+      end
+    end
+  end else begin : gen_no_key_dec
+    // No Decryption Key registers
+    assign key_dec_q = '{default: '0};
+    assign key_dec_d = key_dec_q;
+
+    // Tie-off unused signals.
+    logic unused_key_dec;
+    always_comb begin
+      unused_key_dec = ^{key_dec_sel, key_dec_we};
+      for (int s = 0; s < NumShares; s++) begin
+        unused_key_dec ^= ^{key_dec_d[s]};
+      end
     end
   end
 
@@ -514,9 +530,20 @@ module aes_cipher_core import aes_pkg::*;
   always_comb begin : round_key_mux
     unique case (round_key_sel)
       ROUND_KEY_DIRECT: round_key = key_bytes;
-      ROUND_KEY_MIXED:  round_key = key_mix_columns_out;
+      ROUND_KEY_MIXED:  round_key = !CiphOpFwdOnly ? key_mix_columns_out : key_bytes;
       default:          round_key = key_bytes;
     endcase
+  end
+
+  if (CiphOpFwdOnly) begin : gen_unused_key_mix_columns_out
+    // Tie-off unused signals.
+    logic unused_key_mix_columns_out;
+    always_comb begin
+      unused_key_mix_columns_out = 1'b0;
+      for (int s = 0; s < NumShares; s++) begin
+        unused_key_mix_columns_out ^= ^{key_mix_columns_out[s]};
+      end
+    end
   end
 
   /////////////
@@ -525,8 +552,9 @@ module aes_cipher_core import aes_pkg::*;
 
   // Control
   aes_cipher_control #(
-    .SecMasking  ( SecMasking  ),
-    .SecSBoxImpl ( SecSBoxImpl )
+    .CiphOpFwdOnly ( CiphOpFwdOnly ),
+    .SecMasking    ( SecMasking    ),
+    .SecSBoxImpl   ( SecSBoxImpl   )
   ) u_aes_cipher_control (
     .clk_i                ( clk_i               ),
     .rst_ni               ( rst_ni              ),
