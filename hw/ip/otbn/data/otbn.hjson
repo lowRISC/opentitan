@@ -702,7 +702,7 @@
     // Imem size (given as `items` below) must be a power of two.
     { window: {
         name: "IMEM",
-        items: "1024", // 4 kB
+        items: "2048", // 8 kB
         swaccess: "rw",
         data-intg-passthru: "true",
         byte-write: "false",
