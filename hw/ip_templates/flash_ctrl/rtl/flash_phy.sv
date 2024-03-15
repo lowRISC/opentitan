@@ -197,6 +197,8 @@ module flash_phy
   assign host_ecc_en = mubi4_test_true_strict(mubi4_and_hi(region_cfg.ecc_en, region_cfg.en));
 
   // Prim flash to flash_phy_core connections
+  flash_phy_pkg::scramble_req_t             [NumBanks-1:0] scramble_req;
+  flash_phy_pkg::scramble_rsp_t             [NumBanks-1:0] scramble_rsp;
   flash_phy_pkg::flash_phy_prim_flash_req_t [NumBanks-1:0] prim_flash_req;
   flash_phy_pkg::flash_phy_prim_flash_rsp_t [NumBanks-1:0] prim_flash_rsp;
   logic [NumBanks-1:0] ecc_single_err;
@@ -205,9 +207,10 @@ module flash_phy
   assign flash_ctrl_o.ecc_single_err = ecc_single_err;
   assign flash_ctrl_o.ecc_addr = ecc_addr;
 
-  mubi4_t [NumBanks-1:0] flash_disable;
+  // One extra copy for the flash scrambling module.
+  mubi4_t [NumBanks:0] flash_disable;
   prim_mubi4_sync #(
-    .NumCopies(NumBanks),
+    .NumCopies(NumBanks+1),
     .AsyncOn(0)
   ) u_disable_buf (
     .clk_i,
@@ -248,9 +251,7 @@ module flash_phy
     assign ctrl_req = flash_ctrl_i.req & (ctrl_bank_sel == bank);
     assign ecc_addr[bank][BusBankAddrW +: BankW] = bank;
 
-    flash_phy_core #(
-      .SecScrambleEn(SecScrambleEn)
-    ) u_core (
+    flash_phy_core u_core (
       .clk_i,
       .rst_ni,
       // integrity error is either from host or from controller
@@ -275,10 +276,6 @@ module flash_phy
       .prog_data_i(flash_ctrl_i.prog_data),
       .prog_last_i(flash_ctrl_i.prog_last),
       .prog_type_i(flash_ctrl_i.prog_type),
-      .addr_key_i(flash_ctrl_i.addr_key),
-      .data_key_i(flash_ctrl_i.data_key),
-      .rand_addr_key_i(flash_ctrl_i.rand_addr_key),
-      .rand_data_key_i(flash_ctrl_i.rand_data_key),
       .rd_buf_en_i(flash_ctrl_i.rd_buf_en),
       .host_req_rdy_o(host_req_rdy[bank]),
       .host_req_done_o(host_req_done[bank]),
@@ -288,6 +285,8 @@ module flash_phy
       .rd_data_o(rd_data[bank]),
       .rd_err_o(rd_err[bank]),
       .flash_disable_i(flash_disable[bank]),
+      .scramble_req_o(scramble_req[bank]),
+      .scramble_rsp_i(scramble_rsp[bank]),
       .prim_flash_req_o(prim_flash_req[bank]),
       .prim_flash_rsp_i(prim_flash_rsp[bank]),
       .ecc_single_err_o(ecc_single_err[bank]),
@@ -303,6 +302,23 @@ module flash_phy
       .cnt_err_o(cnt_err[bank])
     );
   end // block: gen_flash_banks
+
+  // shared scrambling module
+  // SEC_CM: MEM.SCRAMBLE
+  flash_phy_scramble #(
+    .SecScrambleEn(SecScrambleEn)
+  ) u_scramble (
+    .clk_i,
+    .rst_ni,
+    // both escalation and integrity error cause the scramble keys to change
+    .disable_i(prim_mubi_pkg::mubi4_test_true_loose(flash_disable[NumBanks])),
+    .addr_key_i(flash_ctrl_i.addr_key),
+    .data_key_i(flash_ctrl_i.data_key),
+    .rand_addr_key_i(flash_ctrl_i.rand_addr_key),
+    .rand_data_key_i(flash_ctrl_i.rand_data_key),
+    .scramble_req_i(scramble_req),
+    .scramble_rsp_o(scramble_rsp)
+  );
 
   // life cycle handling
   logic tdo;

@@ -136,4 +136,21 @@ package flash_phy_pkg;
     logic [FullDataWidth-1:0] rdata;
   } flash_phy_prim_flash_rsp_t;
 
+  typedef struct packed {
+    logic calc_req;
+    logic op_req;
+    cipher_ops_e op_type;
+    logic [BankAddrW-1:0] addr;
+    logic [DataWidth-1:0] plain_data;
+    logic [DataWidth-1:0] scrambled_data;
+  } scramble_req_t;
+
+  typedef struct packed {
+    logic calc_ack;
+    logic op_ack;
+    logic [DataWidth-1:0] mask;
+    logic [DataWidth-1:0] plain_data;
+    logic [DataWidth-1:0] scrambled_data;
+  } scramble_rsp_t;
+
 endpackage // flash_phy_pkg
