@@ -15,14 +15,6 @@
   },
   {
     "command": "rsa-export",
-    "label": "earlgrey_a0_test_1",
-    "private": false,
-    "format": "pkcs1-der",
-    "filename": "earlgrey_a0_test_1.der"
-  },
-
-  {
-    "command": "rsa-export",
     "label": "earlgrey_a0_dev_0",
     "private": false,
     "format": "pkcs1-der",
@@ -30,31 +22,9 @@
   },
   {
     "command": "rsa-export",
-    "label": "earlgrey_a0_dev_1",
-    "private": false,
-    "format": "pkcs1-der",
-    "filename": "earlgrey_a0_dev_1.der"
-  },
-
-  {
-    "command": "rsa-export",
     "label": "earlgrey_a0_prod_0",
     "private": false,
     "format": "pkcs1-der",
     "filename": "earlgrey_a0_prod_0.der"
-  },
-  {
-    "command": "rsa-export",
-    "label": "earlgrey_a0_prod_1",
-    "private": false,
-    "format": "pkcs1-der",
-    "filename": "earlgrey_a0_prod_1.der"
-  },
-  {
-    "command": "rsa-export",
-    "label": "earlgrey_a0_prod_2",
-    "private": false,
-    "format": "pkcs1-der",
-    "filename": "earlgrey_a0_prod_2.der"
   },
 ]

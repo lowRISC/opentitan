@@ -4,12 +4,8 @@
 
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/rom/keys/real/rsa/earlgrey_a0_dev_0.h"
-#include "sw/device/silicon_creator/rom/keys/real/rsa/earlgrey_a0_dev_1.h"
 #include "sw/device/silicon_creator/rom/keys/real/rsa/earlgrey_a0_prod_0.h"
-#include "sw/device/silicon_creator/rom/keys/real/rsa/earlgrey_a0_prod_1.h"
-#include "sw/device/silicon_creator/rom/keys/real/rsa/earlgrey_a0_prod_2.h"
 #include "sw/device/silicon_creator/rom/keys/real/rsa/earlgrey_a0_test_0.h"
-#include "sw/device/silicon_creator/rom/keys/real/rsa/earlgrey_a0_test_1.h"
 #include "sw/device/silicon_creator/rom/sigverify_keys_rsa.h"
 
 #include "otp_ctrl_regs.h"
@@ -18,7 +14,7 @@
  * Number of RSA public keys.
  */
 enum {
-  kSigverifyRsaKeysCnt_ = 7,
+  kSigverifyRsaKeysCnt_ = 3,
 };
 const size_t kSigverifyRsaKeysCnt = kSigverifyRsaKeysCnt_;
 
@@ -28,7 +24,7 @@ const size_t kSigverifyRsaKeysCnt = kSigverifyRsaKeysCnt_;
  * This must be coprime with and less than `kSigverifyNumRsaKeys`.
  * Note: Step size is not applicable when `kSigverifyNumRsaKeys` is 1.
  */
-const size_t kSigverifyRsaKeysStep = 5;
+const size_t kSigverifyRsaKeysStep = 1;
 
 /**
  * Real public keys for signature verification.
@@ -47,13 +43,6 @@ const sigverify_rom_rsa_key_t kSigverifyRsaKeys[kSigverifyRsaKeysCnt_] = {
     {
         .entry =
             {
-                .key = EARLGREY_A0_TEST_1,
-                .key_type = kSigverifyKeyTypeTest,
-            },
-    },
-    {
-        .entry =
-            {
                 .key = EARLGREY_A0_DEV_0,
                 .key_type = kSigverifyKeyTypeDev,
             },
@@ -61,28 +50,7 @@ const sigverify_rom_rsa_key_t kSigverifyRsaKeys[kSigverifyRsaKeysCnt_] = {
     {
         .entry =
             {
-                .key = EARLGREY_A0_DEV_1,
-                .key_type = kSigverifyKeyTypeDev,
-            },
-    },
-    {
-        .entry =
-            {
                 .key = EARLGREY_A0_PROD_0,
-                .key_type = kSigverifyKeyTypeProd,
-            },
-    },
-    {
-        .entry =
-            {
-                .key = EARLGREY_A0_PROD_1,
-                .key_type = kSigverifyKeyTypeProd,
-            },
-    },
-    {
-        .entry =
-            {
-                .key = EARLGREY_A0_PROD_2,
                 .key_type = kSigverifyKeyTypeProd,
             },
     },
