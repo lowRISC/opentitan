@@ -12,8 +12,7 @@ module flash_phy_core
   import flash_phy_pkg::*;
   import prim_mubi_pkg::mubi4_t;
 #(
-  parameter int unsigned ArbCnt = 5,
-  parameter bit SecScrambleEn = 1'b1
+  parameter int unsigned ArbCnt = 5
 ) (
   input                              clk_i,
   input                              rst_ni,
@@ -36,12 +35,10 @@ module flash_phy_core
   input [BusFullWidth-1:0]           prog_data_i,
   input                              prog_last_i,
   input flash_ctrl_pkg::flash_prog_e prog_type_i,
-  input [KeySize-1:0]                addr_key_i,
-  input [KeySize-1:0]                data_key_i,
-  input [KeySize-1:0]                rand_addr_key_i,
-  input [KeySize-1:0]                rand_data_key_i,
   input                              rd_buf_en_i,
   input prim_mubi_pkg::mubi4_t       flash_disable_i,
+  output scramble_req_t              scramble_req_o,
+  input  scramble_rsp_t              scramble_rsp_i,
   input  flash_phy_prim_flash_rsp_t  prim_flash_rsp_i,
   output flash_phy_prim_flash_req_t  prim_flash_req_o,
   output logic                       host_req_rdy_o,
@@ -170,7 +167,6 @@ module flash_phy_core
     HostDisableIdx,
     CtrlDisableIdx,
     FsmDisableIdx,
-    ScrDisableIdx,
     ProgFsmDisableIdx,
     LastDisableIdx
   } phy_core_disable_e;
@@ -522,6 +518,8 @@ module flash_phy_core
     );
   end
 
+  assign fsm_err_o = fsm_err | prog_fsm_err;
+
   ////////////////////////
   // erase pipeline
   ////////////////////////
@@ -544,39 +542,21 @@ module flash_phy_core
   );
 
   ////////////////////////
-  // scrambling / de-scrambling primitive
+  // bundle data to send to shared scrambling module
   ////////////////////////
 
-  logic [BankAddrW-1:0] scramble_muxed_addr;
-  assign scramble_muxed_addr = prog_calc_req ? muxed_addr[BusBankAddrW-1:LsbAddrBit] :
-                                               rd_calc_addr;
-
-  // SEC_CM: MEM.SCRAMBLE
-  flash_phy_scramble #(
-    .SecScrambleEn(SecScrambleEn)
-  ) u_scramble (
-    .clk_i,
-    .rst_ni,
-    // both escalation and integrity error cause the scramble keys to change
-    .disable_i(mubi4_test_true_loose(flash_disable[ScrDisableIdx])),
-    .calc_req_i(prog_calc_req | rd_calc_req),
-    .op_req_i(prog_op_req | rd_op_req),
-    .op_type_i(prog_op_req ? ScrambleOp : DeScrambleOp),
-    .addr_i(scramble_muxed_addr),
-    .plain_data_i(prog_data),
-    .scrambled_data_i(rd_scrambled_data),
-    .addr_key_i,
-    .data_key_i,
-    .rand_addr_key_i,
-    .rand_data_key_i,
-    .calc_ack_o(calc_ack),
-    .op_ack_o(op_ack),
-    .mask_o(scramble_mask),
-    .plain_data_o(rd_descrambled_data),
-    .scrambled_data_o(prog_scrambled_data)
-  );
-
-  assign fsm_err_o = fsm_err | prog_fsm_err;
+  assign scramble_req_o.calc_req       = prog_calc_req | rd_calc_req;
+  assign scramble_req_o.op_req         = prog_op_req | rd_op_req;
+  assign scramble_req_o.op_type        = prog_op_req ? ScrambleOp : DeScrambleOp;
+  assign scramble_req_o.addr           = prog_calc_req ? muxed_addr[BusBankAddrW-1:LsbAddrBit] :
+                                                         rd_calc_addr;
+  assign scramble_req_o.plain_data     = prog_data;
+  assign scramble_req_o.scrambled_data = rd_scrambled_data;
+  assign calc_ack            = scramble_rsp_i.calc_ack;
+  assign op_ack              = scramble_rsp_i.op_ack;
+  assign scramble_mask       = scramble_rsp_i.mask;
+  assign rd_descrambled_data = scramble_rsp_i.plain_data;
+  assign prog_scrambled_data = scramble_rsp_i.scrambled_data;
 
   ////////////////////////
   // Actual connection to flash phy

@@ -257,10 +257,10 @@ class flash_ctrl_hw_sec_otp_vseq extends flash_ctrl_base_vseq;
   // Tests the connections between the Flash OTP and the Scramble Block in the Flash Ctrl
   virtual task otp_scramble_key_test_connect();
 
-    logic [KeyWidth-1:0] prb_otp_addr_key     [flash_ctrl_pkg::NumBanks];
-    logic [KeyWidth-1:0] prb_otp_data_key     [flash_ctrl_pkg::NumBanks];
-    logic [KeyWidth-1:0] prb_otp_addr_rand_key[flash_ctrl_pkg::NumBanks];
-    logic [KeyWidth-1:0] prb_otp_data_rand_key[flash_ctrl_pkg::NumBanks];
+    logic [KeyWidth-1:0] prb_otp_addr_key;
+    logic [KeyWidth-1:0] prb_otp_data_key;
+    logic [KeyWidth-1:0] prb_otp_addr_rand_key;
+    logic [KeyWidth-1:0] prb_otp_data_rand_key;
 
     // OTP SCRAMBLE KEY TESTS - CONNECTIVITY TEST ONLY
 
@@ -270,24 +270,16 @@ class flash_ctrl_hw_sec_otp_vseq extends flash_ctrl_base_vseq;
     `uvm_info(`gfn, "FLASH OTP KEY - Scramble Connectivity Check", UVM_LOW)
 
     // Probe Internal Scramble Signals
-    for (int i = 0; i < flash_ctrl_pkg::NumBanks; i++) begin
-      prb_otp_addr_key[i] = read_key_probe(
-          $sformatf("tb.dut.u_eflash.gen_flash_cores[%0d].u_core.u_scramble.addr_key_i", i));
-      prb_otp_addr_rand_key[i] = read_key_probe(
-          $sformatf("tb.dut.u_eflash.gen_flash_cores[%0d].u_core.u_scramble.rand_addr_key_i", i));
-      prb_otp_data_key[i] = read_key_probe(
-          $sformatf("tb.dut.u_eflash.gen_flash_cores[%0d].u_core.u_scramble.data_key_i", i));
-      prb_otp_data_rand_key[i] = read_key_probe(
-          $sformatf("tb.dut.u_eflash.gen_flash_cores[%0d].u_core.u_scramble.rand_data_key_i", i));
-    end
+    prb_otp_addr_key = read_key_probe("tb.dut.u_eflash.u_scramble.addr_key_i");
+    prb_otp_addr_rand_key = read_key_probe("tb.dut.u_eflash.u_scramble.rand_addr_key_i");
+    prb_otp_data_key = read_key_probe("tb.dut.u_eflash.u_scramble.data_key_i");
+    prb_otp_data_rand_key = read_key_probe("tb.dut.u_eflash.u_scramble.rand_data_key_i");
 
     // Compare OTP Keys - Probed vs Expected (For This Test Scenario)
-    for (int i = 0; i < flash_ctrl_pkg::NumBanks; i++) begin
-      compare_key_probe(i, "otp_addr_key", prb_otp_addr_key[i], otp_addr_key);
-      compare_key_probe(i, "otp_addr_rand_key", prb_otp_addr_rand_key[i], otp_addr_rand_key);
-      compare_key_probe(i, "otp_data_key", prb_otp_data_key[i], otp_data_key);
-      compare_key_probe(i, "otp_data_rand_key", prb_otp_data_rand_key[i], otp_data_rand_key);
-    end
+    compare_key_probe("otp_addr_key", prb_otp_addr_key, otp_addr_key);
+    compare_key_probe("otp_addr_rand_key", prb_otp_addr_rand_key, otp_addr_rand_key);
+    compare_key_probe("otp_data_key", prb_otp_data_key, otp_data_key);
+    compare_key_probe("otp_data_rand_key", prb_otp_data_rand_key, otp_data_rand_key);
 
   endtask : otp_scramble_key_test_connect
 
@@ -298,7 +290,7 @@ class flash_ctrl_hw_sec_otp_vseq extends flash_ctrl_base_vseq;
   endfunction : read_key_probe
 
   // Task that compares an expected Key with a given key
-  virtual task compare_key_probe(input uint i, input string dut_prb,
+  virtual task compare_key_probe(input string dut_prb,
                                  input logic [KeyWidth-1:0] key,
                                  input logic [KeyWidth-1:0] expected_key);
 
@@ -306,9 +298,9 @@ class flash_ctrl_hw_sec_otp_vseq extends flash_ctrl_base_vseq;
               UVM_MEDIUM)
 
     `DV_CHECK_EQ(key, expected_key, $sformatf(
-                 {"Flash OTP Scramble Key Mismatch, Key : %s[%0d], Read : ",
+                 {"Flash OTP Scramble Key Mismatch, Key : %s, Read : ",
                   "0x%0x, Expected : 0x%0x, FAIL"},
-                   dut_prb, i, key, expected_key))
+                   dut_prb, key, expected_key))
 
   endtask : compare_key_probe
 

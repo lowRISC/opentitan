@@ -15,22 +15,89 @@ module flash_phy_scramble import flash_phy_pkg::*; #(
   input clk_i,
   input rst_ni,
   input disable_i,
-  input calc_req_i, // calculate galois multiplier mask
-  input op_req_i,   // request primitive operation
-  input cipher_ops_e op_type_i,  // sramble or de-scramble
-  input [BankAddrW-1:0] addr_i,
-  input [DataWidth-1:0] plain_data_i,
-  input [DataWidth-1:0] scrambled_data_i,
   input [KeySize-1:0] addr_key_i,
   input [KeySize-1:0] data_key_i,
   input [KeySize-1:0] rand_addr_key_i,
   input [KeySize-1:0] rand_data_key_i,
-  output logic calc_ack_o,
-  output logic op_ack_o,
-  output logic [DataWidth-1:0] mask_o,
-  output logic [DataWidth-1:0] plain_data_o,
-  output logic [DataWidth-1:0] scrambled_data_o
+  input  scramble_req_t [NumBanks-1:0] scramble_req_i,
+  output scramble_rsp_t [NumBanks-1:0] scramble_rsp_o
 );
+
+  ///////////////////////////
+  // input arbitration logic
+  ///////////////////////////
+
+  localparam int OpDataWidth = 2*DataWidth + $bits(cipher_ops_e);
+  logic calc_req, calc_ack, op_req, op_ack;
+  logic [NumBanks-1:0] calc_req_banks, calc_ack_banks, op_req_banks, op_ack_banks;
+  logic [BankAddrW-1:0] calc_addr_in_banks[NumBanks];
+  logic [OpDataWidth-1:0] op_data_in_banks[NumBanks];
+  logic [BankAddrW-1:0] calc_addr_in;
+  logic [DataWidth-1:0] calc_mask;
+  logic [OpDataWidth-1:0] op_data_in;
+  cipher_ops_e op_type;
+  logic [DataWidth-1:0] plain_data_in, plain_data_out, scrambled_data_in, scrambled_data_out;
+  for (genvar k = 0; k < NumBanks; k++) begin : gen_scramble_assign
+    // Inputs for GF mult
+    assign calc_req_banks[k] = scramble_req_i[k].calc_req;
+    assign calc_addr_in_banks[k] = scramble_req_i[k].addr;
+    // Outputs for GF mult
+    assign scramble_rsp_o[k].calc_ack = calc_ack_banks[k];
+    assign scramble_rsp_o[k].mask = calc_mask;
+
+
+    // Inputs for scrambling primitive
+    assign op_req_banks[k] = scramble_req_i[k].op_req;
+    assign op_data_in_banks[k] = {scramble_req_i[k].op_type,
+                                  scramble_req_i[k].plain_data,
+                                  scramble_req_i[k].scrambled_data};
+    // Outputs for scrambling primitive
+    assign scramble_rsp_o[k].op_ack = op_ack_banks[k];
+    assign scramble_rsp_o[k].plain_data = plain_data_out;
+    assign scramble_rsp_o[k].scrambled_data = scrambled_data_out;
+  end
+
+  prim_arbiter_tree #(
+    .N(NumBanks),
+    .DW(BankAddrW),
+    .EnDataPort(1)
+  ) u_prim_arbiter_tree_calc (
+    .clk_i,
+    .rst_ni,
+    .req_chk_i(1'b1),
+    .req_i    (calc_req_banks),
+    .data_i   (calc_addr_in_banks),
+    .gnt_o    (calc_ack_banks),
+    .idx_o    (),
+    .valid_o  (calc_req),
+    .data_o   (calc_addr_in),
+    .ready_i  (calc_ack)
+  );
+
+  prim_arbiter_tree #(
+    .N(NumBanks),
+    .DW(OpDataWidth),
+    .EnDataPort(1)
+  ) u_prim_arbiter_tree_op (
+    .clk_i,
+    .rst_ni,
+    .req_chk_i(1'b1),
+    .req_i    (op_req_banks),
+    .data_i   (op_data_in_banks),
+    .gnt_o    (op_ack_banks),
+    .idx_o    (),
+    .valid_o  (op_req),
+    .data_o   (op_data_in),
+    .ready_i  (op_ack)
+  );
+
+  assign {op_type,
+          plain_data_in,
+          scrambled_data_in} = op_data_in;
+
+  ///////////////////////////
+  // GF multiplier
+  ///////////////////////////
 
   localparam int AddrPadWidth = DataWidth - BankAddrW;
   localparam int UnusedWidth = KeySize - AddrPadWidth;
@@ -42,7 +109,7 @@ module flash_phy_scramble import flash_phy_pkg::*; #(
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       addr_key_sel <= '0;
-    end else if (!calc_req_i || calc_req_i && calc_ack_o) begin
+    end else if (!calc_req || calc_req && calc_ack) begin
       addr_key_sel <= disable_i;
     end
   end
@@ -62,31 +129,33 @@ module flash_phy_scramble import flash_phy_pkg::*; #(
     ) u_mult (
       .clk_i,
       .rst_ni,
-      .req_i(calc_req_i),
-      .operand_a_i({muxed_addr_key[DataWidth +: AddrPadWidth], addr_i}),
+      .req_i(calc_req),
+      .operand_a_i({muxed_addr_key[DataWidth +: AddrPadWidth], calc_addr_in}),
       .operand_b_i(muxed_addr_key[DataWidth-1:0]),
-      .ack_o(calc_ack_o),
-      .prod_o(mask_o)
+      .ack_o(calc_ack),
+      .prod_o(calc_mask)
     );
   end else begin : gen_no_gf_mult
-    assign mask_o = '0;
+    assign calc_mask = '0;
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) begin
-        calc_ack_o <= '0;
-      end else if (calc_req_i && calc_ack_o) begin
-        calc_ack_o <= '0;
-      end else if (calc_req_i && !calc_ack_o) begin
-        calc_ack_o <= '1;
+        calc_ack <= '0;
+      end else if (calc_req && calc_ack) begin
+        calc_ack <= '0;
+      end else if (calc_req && !calc_ack) begin
+        calc_ack <= '1;
       end
     end
   end
 
+  ///////////////////////////
+  // cipher
+  ///////////////////////////
 
-  // Cipher portion
   logic dec;
   logic [DataWidth-1:0] data;
-  assign dec = op_type_i == DeScrambleOp;
+  assign dec = op_type == DeScrambleOp;
 
   // Do not allow the key to change during a transaction.
   // While this may be desirable for security reasons, it creates
@@ -95,13 +164,13 @@ module flash_phy_scramble import flash_phy_pkg::*; #(
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       data_key_sel <= '0;
-    end else if (!op_req_i || op_req_i && op_ack_o) begin
+    end else if (!op_req || op_req && op_ack) begin
       data_key_sel <= disable_i;
     end
   end
 
   // the prim_prince valid_o is a flopped version of valid_i
-  // As a result, when op_req_i stays high due to multiple transactions
+  // As a result, when op_req stays high due to multiple transactions
   // in-flight, the receiving logic can misinterpret the 'ack' if we just
   // tie it to valid_o.
   // Add a little bit of shimming logic here to properly create the ack
@@ -116,8 +185,8 @@ module flash_phy_scramble import flash_phy_pkg::*; #(
     end
   end
 
-  assign cipher_valid_in_d = op_ack_o ? '0 : op_req_i & !cipher_valid_out;
-  assign op_ack_o = cipher_valid_in_q & cipher_valid_out;
+  assign cipher_valid_in_d = op_ack ? '0 : op_req & !cipher_valid_out;
+  assign op_ack = cipher_valid_in_q & cipher_valid_out;
 
   if (SecScrambleEn) begin : gen_prince
     prim_prince # (
@@ -126,14 +195,14 @@ module flash_phy_scramble import flash_phy_pkg::*; #(
       // Use improved key schedule proposed by https://eprint.iacr.org/2014/656.pdf (see appendix).
       .UseOldKeySched(1'b0),
       .HalfwayDataReg(1'b1),
-      // No key register is needed half way, since the data_key_i and operation op_type_i inputs
+      // No key register is needed half way, since the data_key_i and operation op_type inputs
       // remain constant until one data block has been processed.
       .HalfwayKeyReg (1'b0)
     ) u_cipher (
       .clk_i,
       .rst_ni,
       .valid_i(cipher_valid_in_d),
-      .data_i(dec ? scrambled_data_i : plain_data_i),
+      .data_i(dec ? scrambled_data_in : plain_data_in),
       .key_i(data_key_sel ? rand_data_key_i : data_key_i),
       .dec_i(dec),
       .data_o(data),
@@ -148,14 +217,14 @@ module flash_phy_scramble import flash_phy_pkg::*; #(
         cipher_valid_out <= cipher_valid_in_d;
       end
     end
-    assign data = dec ? scrambled_data_i : plain_data_i;
+    assign data = dec ? scrambled_data_in : plain_data_in;
   end
 
   // if decrypt, output the unscrambled data, feed input through otherwise
-  assign plain_data_o = dec ? data : scrambled_data_i;
+  assign plain_data_out = dec ? data : scrambled_data_in;
 
   // if encrypt, output the scrambled data, feed input through otherwise
-  assign scrambled_data_o = dec ? plain_data_i : data;
+  assign scrambled_data_out = dec ? plain_data_in : data;
 
 
 
