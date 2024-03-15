@@ -12,6 +12,7 @@ pub mod present;
 pub mod printer;
 pub mod raw_tty;
 pub mod rom_detect;
+pub mod serde;
 pub mod status;
 pub mod testing;
 pub mod unknown;
