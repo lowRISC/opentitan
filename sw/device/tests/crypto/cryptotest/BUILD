@@ -134,7 +134,7 @@ HASH_TESTVECTOR_TARGETS = [
     ]
     for msg_type in [
         "ShortMsg",
-        #        "LongMsg",
+        "LongMsg",
     ] + extra_msg_types
 ]
 

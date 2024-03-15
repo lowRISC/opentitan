@@ -53,7 +53,9 @@ impl<T: DeserializeOwned> UartRecv for T {
             None
         };
         let result = console.interact(uart, None, out)?;
-        println!();
+        if !quiet {
+            println!();
+        }
         match result {
             ExitStatus::ExitSuccess => {
                 let cap = console

@@ -124,6 +124,29 @@ jobs:
     displayName: "Run the tests"
   - template: ../ci/publish-bazel-test-results.yml
 
+- job: cryptotest_cw310
+  displayName: "Cryptotest Framework CW310 Tests"
+  timeoutInMinutes: 300
+  dependsOn: checkout
+  pool:
+    name: FPGA
+    demands: BOARD -equals cw310
+  steps:
+  - template: ../ci/checkout-template.yml
+  - template: ../ci/install-package-dependencies.yml
+  - bash: |
+      set -x
+      ci/bazelisk.sh test \
+        --define DISABLE_VERILATOR_BUILD=true \
+        --define bitstream=gcp_splice \
+        --build_tests_only \
+        --test_output=streamed \
+        --test_tag_filters="cw310_test_rom" \
+        --test_arg="--logging=error" \
+        //sw/device/tests/crypto/cryptotest/...
+    displayName: "Run CW310 Cryptotest Framework Tests"
+  - template: ../ci/publish-bazel-test-results.yml
+
 - job: bob_spi_i2c
   displayName: "BoB: SPI and I2C Tests"
   timeoutInMinutes: 30
