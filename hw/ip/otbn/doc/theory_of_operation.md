@@ -39,7 +39,7 @@ To avoid spurious life cycle escalations and to enable reliable RMA entry, it sh
 ### Memories
 
 The OTBN processor core has access to two dedicated memories: an instruction memory (IMEM), and a data memory (DMEM).
-Each memory is 4 kiB in size.
+The IMEM is 8 KiB, the DMEM is 4 KiB.
 
 The memory layout follows the Harvard architecture.
 Both memories are byte-addressed, with addresses starting at 0.
