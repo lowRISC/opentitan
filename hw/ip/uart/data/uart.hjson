@@ -126,7 +126,7 @@
     { name:    "RxFifoDepth",
       desc:    "Number of bytes in the RX FIFO.",
       type:    "int",
-      default: "128",
+      default: "64",
       local:   "true",
     }
     { name:    "TxFifoDepth",
@@ -327,12 +327,8 @@
               desc: "32 characters"
             },
             { value: "6",
-              name: "rxlvl64",
-              desc: "64 characters"
-            },
-            { value: "7",
-              name: "rxlvl126",
-              desc: "126 characters"
+              name: "rxlvl62",
+              desc: "62 characters"
             },
           ]
         }

@@ -20,7 +20,7 @@ top level system.
 - 2-pin full duplex external interface
 - 8-bit data word, optional even or odd parity bit per byte
 - 1 stop bit
-- 128 x 8b RX buffer
+- 64 x 8b RX buffer
 - 32 x 8b TX buffer
 - Programmable baud rate
 - Interrupt for transmit empty, receive overflow, frame error, parity error, break error, receive
