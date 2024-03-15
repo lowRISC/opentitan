@@ -515,7 +515,7 @@ impl OwnershipUnlockRequest {
     }
 
     pub fn set_next_owner_key(&mut self, key: &EcdsaPublicKey) -> Result<()> {
-        self.next_owner_key = key.to_raw();
+        self.next_owner_key = EcdsaRawPublicKey::try_from(key)?;
         Ok(())
     }
 

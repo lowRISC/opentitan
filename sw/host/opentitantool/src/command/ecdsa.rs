@@ -13,7 +13,9 @@ use std::path::{Path, PathBuf};
 
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
-use opentitanlib::crypto::ecdsa::{EcdsaPrivateKey, EcdsaPublicKey, EcdsaRawSignature};
+use opentitanlib::crypto::ecdsa::{
+    EcdsaPrivateKey, EcdsaPublicKey, EcdsaRawPublicKey, EcdsaRawSignature,
+};
 use opentitanlib::crypto::sha256::Sha256Digest;
 use opentitanlib::util::parse_int::ParseInt;
 
@@ -42,8 +44,7 @@ impl CommandDispatch for EcdsaKeyShowCommand {
         _transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
         let key = load_pub_or_priv_key(&self.der_file)?;
-
-        Ok(Some(Box::new(key.to_raw())))
+        Ok(Some(Box::new(EcdsaRawPublicKey::try_from(&key)?)))
     }
 }
 
@@ -94,7 +95,7 @@ impl CommandDispatch for EcdsaKeyExportCommand {
         _transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
         let key = load_pub_or_priv_key(&self.der_file)?;
-        let key = key.to_raw();
+        let key = EcdsaRawPublicKey::try_from(&key)?;
 
         let output_path = match &self.output_file {
             Some(path) => path.clone(),
