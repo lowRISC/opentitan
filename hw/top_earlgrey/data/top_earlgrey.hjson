@@ -768,7 +768,7 @@
       param_decl: {PMPEnable: "1",
                    PMPGranularity: "0",
                    PMPNumRegions: "16",
-                   MHPMCounterNum: "10",
+                   MHPMCounterNum: "2",
                    MHPMCounterWidth: "32",
                    RV32E: "0",
                    RV32M: "ibex_pkg::RV32MSingleCycle",

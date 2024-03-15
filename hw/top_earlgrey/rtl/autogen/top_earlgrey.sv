@@ -100,7 +100,7 @@ module top_earlgrey #(
   parameter bit RvCoreIbexPMPEnable = 1,
   parameter int unsigned RvCoreIbexPMPGranularity = 0,
   parameter int unsigned RvCoreIbexPMPNumRegions = 16,
-  parameter int unsigned RvCoreIbexMHPMCounterNum = 10,
+  parameter int unsigned RvCoreIbexMHPMCounterNum = 2,
   parameter int unsigned RvCoreIbexMHPMCounterWidth = 32,
   parameter bit RvCoreIbexRV32E = 0,
   parameter ibex_pkg::rv32m_e RvCoreIbexRV32M = ibex_pkg::RV32MSingleCycle,
