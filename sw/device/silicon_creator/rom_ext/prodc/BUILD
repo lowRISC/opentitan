@@ -41,7 +41,7 @@ opentitan_binary(
     linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_a",
     linkopts = LINK_ORDER,
     manifest = ":manifest_prodc",
-    rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:prod_private_key_2": "prod_key_2"},
+    rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:prod_private_key_0": "prod_key_0"},
     deps = [
         "//sw/device/lib/crt",
         "//sw/device/silicon_creator/lib:manifest_def",
@@ -61,7 +61,7 @@ opentitan_binary(
     linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_b",
     linkopts = LINK_ORDER,
     manifest = ":manifest_prodc",
-    rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:prod_private_key_2": "prod_key_2"},
+    rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:prod_private_key_0": "prod_key_0"},
     deps = [
         "//sw/device/lib/crt",
         "//sw/device/silicon_creator/lib:manifest_def",
@@ -111,7 +111,7 @@ offline_presigning_artifacts(
     ],
     manifest = ":manifest_prodc",
     rsa_key = {
-        "//sw/device/silicon_creator/rom/keys/real/rsa:keyset": "earlgrey_a0_prod_2",
+        "//sw/device/silicon_creator/rom/keys/real/rsa:keyset": "earlgrey_a0_prod_0",
     },
     tags = ["manual"],
 )
