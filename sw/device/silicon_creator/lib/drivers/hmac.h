@@ -15,9 +15,13 @@ extern "C" {
 
 enum {
   /**
-   * Size of a SHA-256 digest in words.
+   * Size of a SHA-256 digest in bytes.
    */
-  kHmacDigestNumWords = 8,
+  kHmacDigestNumBytes = 32,
+  /**
+   * Size of a SHA-256 digest in 32-bit words.
+   */
+  kHmacDigestNumWords = kHmacDigestNumBytes / sizeof(uint32_t),
 };
 
 /**
