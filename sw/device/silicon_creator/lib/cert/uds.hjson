@@ -48,6 +48,16 @@
         debug_flag: {
             type: "boolean",
         }
+        // Certificate signature: the result of signing with ECDSA
+        // are two integers named "r" and "s"
+        cert_signature_r: {
+            type: "integer",
+            size: 32,
+        },
+        cert_signature_s: {
+            type: "integer",
+            size: 32,
+        },
     },
 
     certificate: {
@@ -86,8 +96,10 @@
         }
         signature: {
             algorithm: "ecdsa-with-sha256",
-            // The value field is optional: since the UDS is signed offline, we don't
-            // need to be able to set the signature from the ROM.
+            value: {
+                r: { var: "cert_signature_r" },
+                s: { var: "cert_signature_s" }
+            }
         }
     }
 }

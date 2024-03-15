@@ -38,6 +38,10 @@ static_assert(kUdsMaxTbsSizeBytes == 569,
               "The `uds_tbs_certificate` buffer size in the "
               "`manuf_dice_certs_t` struct should match the value of "
               "`kUdsMaxTbsSizeBytes`.");
+static_assert(kUdsMaxCertSizeBytes == 660,
+              "The `uds_tbs_certificate` buffer size in the "
+              "`manuf_dice_certs_t` struct should match the value of "
+              "`kUdsMaxTbsSizeBytes`.");
 static_assert(kCdi0MaxCertSizeBytes == 582,
               "The `cdi_0_certificate` buffer size in the "
               "`manuf_dice_certs_t` struct should match the value of "
