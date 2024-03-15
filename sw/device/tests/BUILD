@@ -3968,6 +3968,9 @@ opentitan_test(
 opentitan_test(
     name = "rstmgr_alert_info_test",
     srcs = ["rstmgr_alert_info_test.c"],
+    cw310 = new_cw310_params(
+        timeout = "moderate",
+    ),
     exec_env = {
         # TODO(lowrisc/opentitan#20589): Enable _sival* tests when bug is fixed
         # "//hw/top_earlgrey:fpga_cw310_sival": None,
