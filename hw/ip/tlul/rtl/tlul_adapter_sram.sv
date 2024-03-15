@@ -565,13 +565,22 @@ module tlul_adapter_sram
   // These parameter options cannot both be true at the same time
   `ASSERT_INIT(DataIntgOptions_A, ~(EnableDataIntgGen & EnableDataIntgPt))
 
-  // make sure outputs are defined
-  `ASSERT_KNOWN(TlOutKnown_A,    tl_o.d_valid)
-  `ASSERT_KNOWN_IF(TlOutPayloadKnown_A, tl_o, tl_o.d_valid)
+  // Make sure that outputs are defined (a special case for tl_o is explained separately below)
   `ASSERT_KNOWN(ReqOutKnown_A,   req_o  )
   `ASSERT_KNOWN(WeOutKnown_A,    we_o   )
   `ASSERT_KNOWN(AddrOutKnown_A,  addr_o )
   `ASSERT_KNOWN(WdataOutKnown_A, wdata_o)
   `ASSERT_KNOWN(WmaskOutKnown_A, wmask_o)
+
+  // We'd like to claim that the payload of the TL output is known, but this isn't necessarily true!
+  // This block is just an adapter that converts from an SRAM interface to a TL interface. To make
+  // the assertion true, we need to weaken it to say that that tl_o is only X if the SRAM supplied
+  // that X.
+  //
+  // This is a bit tricky to track because SRAM responses get stored in u_rspfifo. Assuming that the
+  // FIFO doesn't manufacture X's (an assertion in prim_fifo_sync), the only stage of the path
+  // needed in this file is the following:
+  `ASSERT_KNOWN(TlOutValidKnown_A, tl_o.d_valid)
+  `ASSERT(TlOutKnownIfFifoKnown_A, !$isunknown(rspfifo_rdata) -> !$isunknown(tl_o))
 
 endmodule
