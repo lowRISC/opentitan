@@ -60,6 +60,8 @@ module i2c_core import i2c_pkg::*;
   logic [31:0] host_timeout;
   logic [30:0] nack_timeout;
   logic        nack_timeout_en;
+  logic [30:0] host_nack_handler_timeout;
+  logic        host_nack_handler_timeout_en;
 
   logic scl_sync;
   logic sda_sync;
@@ -79,6 +81,9 @@ module i2c_core import i2c_pkg::*;
   logic event_host_timeout;
 
   logic target_sr_p_cond;
+  logic unhandled_unexp_nak;
+  logic status_host_disabled_nack_timeout_d;
+  logic status_host_disabled_nack_timeout_de;
 
   logic [15:0] scl_rx_val;
   logic [15:0] sda_rx_val;
@@ -148,6 +153,7 @@ module i2c_core import i2c_pkg::*;
 
   logic        host_enable;
   logic        target_enable;
+  logic        host_disable;
   logic        line_loopback;
   logic        target_loopback;
 
@@ -157,6 +163,7 @@ module i2c_core import i2c_pkg::*;
   logic [6:0]  target_mask1;
 
   // Unused parts of exposed bits
+  logic        unused_ctrl_bits;
   logic        unused_rx_thr_qe;
   logic        unused_fmt_thr_qe;
   logic        unused_tx_thr_qe;
@@ -168,12 +175,20 @@ module i2c_core import i2c_pkg::*;
   logic        unused_alert_test_q;
   logic        unused_txrst_on_cond_qe;
 
+  assign hw2reg.ctrl.enablehost.d = 1'b0;
+  assign hw2reg.ctrl.enablehost.de = host_disable;
+  assign hw2reg.ctrl.enabletarget.d = 1'b0;
+  assign hw2reg.ctrl.enabletarget.de = 1'b0;
+  assign hw2reg.ctrl.llpbk.d = 1'b0;
+  assign hw2reg.ctrl.llpbk.de = 1'b0;
+
   assign hw2reg.status.fmtfull.d = ~fmt_fifo_wready;
   assign hw2reg.status.rxfull.d = ~rx_fifo_wready;
   assign hw2reg.status.fmtempty.d = ~fmt_fifo_rvalid;
   assign hw2reg.status.hostidle.d = host_idle;
   assign hw2reg.status.targetidle.d = target_idle;
   assign hw2reg.status.rxempty.d = ~rx_fifo_rvalid;
+
   assign hw2reg.rdata.d = rx_fifo_rdata;
   assign hw2reg.host_fifo_status.fmtlvl.d = MaxFifoDepthW'(fmt_fifo_depth);
   assign hw2reg.host_fifo_status.rxlvl.d = MaxFifoDepthW'(rx_fifo_depth);
@@ -223,21 +238,23 @@ module i2c_core import i2c_pkg::*;
     end
   end
 
-  assign thigh           = reg2hw.timing0.thigh.q;
-  assign tlow            = reg2hw.timing0.tlow.q;
-  assign t_r             = reg2hw.timing1.t_r.q;
-  assign t_f             = reg2hw.timing1.t_f.q;
-  assign tsu_sta         = reg2hw.timing2.tsu_sta.q;
-  assign thd_sta         = reg2hw.timing2.thd_sta.q;
-  assign tsu_dat         = reg2hw.timing3.tsu_dat.q;
-  assign thd_dat         = reg2hw.timing3.thd_dat.q;
-  assign tsu_sto         = reg2hw.timing4.tsu_sto.q;
-  assign t_buf           = reg2hw.timing4.t_buf.q;
-  assign stretch_timeout = reg2hw.timeout_ctrl.val.q;
-  assign timeout_enable  = reg2hw.timeout_ctrl.en.q;
-  assign host_timeout    = reg2hw.host_timeout_ctrl.q;
-  assign nack_timeout    = reg2hw.target_timeout_ctrl.val.q;
-  assign nack_timeout_en = reg2hw.target_timeout_ctrl.en.q;
+  assign thigh                        = reg2hw.timing0.thigh.q;
+  assign tlow                         = reg2hw.timing0.tlow.q;
+  assign t_r                          = reg2hw.timing1.t_r.q;
+  assign t_f                          = reg2hw.timing1.t_f.q;
+  assign tsu_sta                      = reg2hw.timing2.tsu_sta.q;
+  assign thd_sta                      = reg2hw.timing2.thd_sta.q;
+  assign tsu_dat                      = reg2hw.timing3.tsu_dat.q;
+  assign thd_dat                      = reg2hw.timing3.thd_dat.q;
+  assign tsu_sto                      = reg2hw.timing4.tsu_sto.q;
+  assign t_buf                        = reg2hw.timing4.t_buf.q;
+  assign stretch_timeout              = reg2hw.timeout_ctrl.val.q;
+  assign timeout_enable               = reg2hw.timeout_ctrl.en.q;
+  assign host_timeout                 = reg2hw.host_timeout_ctrl.q;
+  assign nack_timeout                 = reg2hw.target_timeout_ctrl.val.q;
+  assign nack_timeout_en              = reg2hw.target_timeout_ctrl.en.q;
+  assign host_nack_handler_timeout    = reg2hw.host_nack_handler_timeout.val.q;
+  assign host_nack_handler_timeout_en = reg2hw.host_nack_handler_timeout.en.q;
 
   assign i2c_fifo_rxrst      = reg2hw.fifo_ctrl.rxrst.q & reg2hw.fifo_ctrl.rxrst.qe;
   assign i2c_fifo_fmtrst     = reg2hw.fifo_ctrl.fmtrst.q & reg2hw.fifo_ctrl.fmtrst.qe;
@@ -284,7 +301,20 @@ module i2c_core import i2c_pkg::*;
   assign fmt_flag_read_continue = fmt_fifo_rvalid ? fmt_fifo_rdata[11] : '0;
   assign fmt_flag_nak_ok        = fmt_fifo_rvalid ? fmt_fifo_rdata[12] : '0;
 
+  // Operating this HWIP as a controller-transmitter, the addressed Target device
+  // may NACK our bytes. In Byte-Formatted Programming Mode, each FDATA format indicator
+  // can set the 'NAKOK' bit to ignore the Target's NACK and proceed to the next item in
+  // the FMTFIFO. If 'NAKOK' is not set, the 'nak' interrupt is asserted, and the FSM
+  // halts until software intervenes.
+  // To acknowledge the 'NACK', software should acknowledge the interrupt using the
+  // standard W1C mechanism to the INTR_STATE register.
+  assign unhandled_unexp_nak = reg2hw.intr_state.nak.q;
+
   // Unused parts of exposed bits
+  assign unused_ctrl_bits = ^{
+    reg2hw.ctrl.enabletarget.qe,
+    reg2hw.ctrl.llpbk.qe
+  };
   assign unused_rx_thr_qe  = reg2hw.host_fifo_config.rx_thresh.qe;
   assign unused_fmt_thr_qe = reg2hw.host_fifo_config.fmt_thresh.qe;
   assign unused_tx_thr_qe  = reg2hw.target_fifo_config.tx_thresh.qe;
@@ -385,71 +415,75 @@ module i2c_core import i2c_pkg::*;
     .clk_i,
     .rst_ni,
 
-    .scl_i                   (scl_sync),
-    .scl_o                   (scl_out_fsm),
-    .sda_i                   (sda_sync),
-    .sda_o                   (sda_out_fsm),
+    .scl_i                          (scl_sync),
+    .scl_o                          (scl_out_fsm),
+    .sda_i                          (sda_sync),
+    .sda_o                          (sda_out_fsm),
 
-    .host_enable_i           (host_enable),
-    .target_enable_i         (target_enable),
+    .host_enable_i                  (host_enable),
+    .target_enable_i                (target_enable),
+    .host_disable_o                 (host_disable),
 
     .fmt_fifo_rvalid_i       (fmt_fifo_rvalid),
     .fmt_fifo_depth_i        (fmt_fifo_depth),
     .fmt_fifo_rready_o       (fmt_fifo_rready),
 
-    .fmt_byte_i              (fmt_byte),
-    .fmt_flag_start_before_i (fmt_flag_start_before),
-    .fmt_flag_stop_after_i   (fmt_flag_stop_after),
-    .fmt_flag_read_bytes_i   (fmt_flag_read_bytes),
-    .fmt_flag_read_continue_i(fmt_flag_read_continue),
-    .fmt_flag_nak_ok_i       (fmt_flag_nak_ok),
+    .fmt_byte_i                     (fmt_byte),
+    .fmt_flag_start_before_i        (fmt_flag_start_before),
+    .fmt_flag_stop_after_i          (fmt_flag_stop_after),
+    .fmt_flag_read_bytes_i          (fmt_flag_read_bytes),
+    .fmt_flag_read_continue_i       (fmt_flag_read_continue),
+    .fmt_flag_nak_ok_i              (fmt_flag_nak_ok),
+    .unhandled_unexp_nak_i          (unhandled_unexp_nak),
 
-    .rx_fifo_wvalid_o        (rx_fifo_wvalid),
-    .rx_fifo_wdata_o         (rx_fifo_wdata),
+    .rx_fifo_wvalid_o               (rx_fifo_wvalid),
+    .rx_fifo_wdata_o                (rx_fifo_wdata),
 
     .tx_fifo_rvalid_i        (tx_fifo_rvalid),
     .tx_fifo_rready_o        (tx_fifo_rready),
     .tx_fifo_rdata_i         (tx_fifo_rdata),
 
-    .acq_fifo_wready_o       (acq_fifo_wready),
-    .acq_fifo_wvalid_o       (acq_fifo_wvalid),
-    .acq_fifo_wdata_o        (acq_fifo_wdata),
-    .acq_fifo_rdata_i        (acq_fifo_rdata),
-    .acq_fifo_depth_i        (acq_fifo_depth),
+    .acq_fifo_wready_o              (acq_fifo_wready),
+    .acq_fifo_wvalid_o              (acq_fifo_wvalid),
+    .acq_fifo_wdata_o               (acq_fifo_wdata),
+    .acq_fifo_rdata_i               (acq_fifo_rdata),
+    .acq_fifo_depth_i               (acq_fifo_depth),
 
-    .host_idle_o             (host_idle),
-    .target_idle_o           (target_idle),
+    .host_idle_o                    (host_idle),
+    .target_idle_o                  (target_idle),
 
-    .thigh_i                 (thigh),
-    .tlow_i                  (tlow),
-    .t_r_i                   (t_r),
-    .t_f_i                   (t_f),
-    .thd_sta_i               (thd_sta),
-    .tsu_sta_i               (tsu_sta),
-    .tsu_sto_i               (tsu_sto),
-    .tsu_dat_i               (tsu_dat),
-    .thd_dat_i               (thd_dat),
-    .t_buf_i                 (t_buf),
-    .stretch_timeout_i       (stretch_timeout),
-    .timeout_enable_i        (timeout_enable),
-    .host_timeout_i          (host_timeout),
-    .nack_timeout_i          (nack_timeout),
-    .nack_timeout_en_i       (nack_timeout_en),
-    .target_address0_i       (target_address0),
-    .target_mask0_i          (target_mask0),
-    .target_address1_i       (target_address1),
-    .target_mask1_i          (target_mask1),
-    .target_sr_p_cond_o      (target_sr_p_cond),
-    .event_target_nack_o     (event_target_nack),
-    .event_nak_o             (event_nak),
-    .event_scl_interference_o(event_scl_interference),
-    .event_sda_interference_o(event_sda_interference),
-    .event_stretch_timeout_o (event_stretch_timeout),
-    .event_sda_unstable_o    (event_sda_unstable),
-    .event_cmd_complete_o    (event_cmd_complete),
-    .event_tx_stretch_o      (event_tx_stretch),
-    .event_unexp_stop_o      (event_unexp_stop),
-    .event_host_timeout_o    (event_host_timeout)
+    .thigh_i                        (thigh),
+    .tlow_i                         (tlow),
+    .t_r_i                          (t_r),
+    .t_f_i                          (t_f),
+    .thd_sta_i                      (thd_sta),
+    .tsu_sta_i                      (tsu_sta),
+    .tsu_sto_i                      (tsu_sto),
+    .tsu_dat_i                      (tsu_dat),
+    .thd_dat_i                      (thd_dat),
+    .t_buf_i                        (t_buf),
+    .stretch_timeout_i              (stretch_timeout),
+    .timeout_enable_i               (timeout_enable),
+    .host_timeout_i                 (host_timeout),
+    .nack_timeout_i                 (nack_timeout),
+    .nack_timeout_en_i              (nack_timeout_en),
+    .host_nack_handler_timeout_i    (host_nack_handler_timeout),
+    .host_nack_handler_timeout_en_i (host_nack_handler_timeout_en),
+    .target_address0_i              (target_address0),
+    .target_mask0_i                 (target_mask0),
+    .target_address1_i              (target_address1),
+    .target_mask1_i                 (target_mask1),
+    .target_sr_p_cond_o             (target_sr_p_cond),
+    .event_target_nack_o            (event_target_nack),
+    .event_nak_o                    (event_nak),
+    .event_scl_interference_o       (event_scl_interference),
+    .event_sda_interference_o       (event_sda_interference),
+    .event_stretch_timeout_o        (event_stretch_timeout),
+    .event_sda_unstable_o           (event_sda_unstable),
+    .event_cmd_complete_o           (event_cmd_complete),
+    .event_tx_stretch_o             (event_tx_stretch),
+    .event_unexp_stop_o             (event_unexp_stop),
+    .event_host_timeout_o           (event_host_timeout)
   );
 
   prim_intr_hw #(
@@ -664,6 +698,47 @@ module i2c_core import i2c_pkg::*;
     .hw2reg_intr_state_d_o  (hw2reg.intr_state.host_timeout.d),
     .intr_o                 (intr_host_timeout_o)
   );
+
+  // The STATUS CSR is defined as hwext, as most values in it are swaccess: "ro" and
+  // simply forward certain internal signals to the register interface.
+  // However, the HOST_DISABLED_NACK_TIMEOUT field is flopped, so manually instantiate here.
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_status_host_disabled_nack_timeout_reg (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (status_host_disabled_nack_timeout_de),
+    .d      (status_host_disabled_nack_timeout_d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (hw2reg.status.host_disabled_nack_timeout.d)
+  );
+  // Set -> When the 'host_disable' signal is pulsed by the FSM.
+  // Clear -> When SW sets ctrl.enablehost to 1'b1.
+  assign status_host_disabled_nack_timeout_de =
+    host_disable |                                           // Set
+    (reg2hw.ctrl.enablehost.qe & reg2hw.ctrl.enablehost.q) ; // Clear
+  assign status_host_disabled_nack_timeout_d = host_disable;
+
+  ////////////////
+  // ASSERTIONS //
+  ////////////////
+
+  `ASSERT_PULSE(HostDisablePulse_A, host_disable)
 
   `ASSERT_INIT(FifoDepthValid_A, FifoDepth > 0 && FifoDepthW <= MaxFifoDepthW)
   `ASSERT_INIT(AcqFifoDepthValid_A, AcqFifoDepth > 0 && AcqFifoDepthW <= MaxFifoDepthW)

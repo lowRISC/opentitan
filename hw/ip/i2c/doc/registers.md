@@ -3,35 +3,36 @@
 <!-- BEGIN CMDGEN util/regtool.py -d ./hw/ip/i2c/data/i2c.hjson -->
 ## Summary
 
-| Name                                              | Offset   |   Length | Description                                                                                        |
-|:--------------------------------------------------|:---------|---------:|:---------------------------------------------------------------------------------------------------|
-| i2c.[`INTR_STATE`](#intr_state)                   | 0x0      |        4 | Interrupt State Register                                                                           |
-| i2c.[`INTR_ENABLE`](#intr_enable)                 | 0x4      |        4 | Interrupt Enable Register                                                                          |
-| i2c.[`INTR_TEST`](#intr_test)                     | 0x8      |        4 | Interrupt Test Register                                                                            |
-| i2c.[`ALERT_TEST`](#alert_test)                   | 0xc      |        4 | Alert Test Register                                                                                |
-| i2c.[`CTRL`](#ctrl)                               | 0x10     |        4 | I2C Control Register                                                                               |
-| i2c.[`STATUS`](#status)                           | 0x14     |        4 | I2C Live Status Register for Host and Target modes                                                 |
-| i2c.[`RDATA`](#rdata)                             | 0x18     |        4 | I2C Read Data                                                                                      |
-| i2c.[`FDATA`](#fdata)                             | 0x1c     |        4 | I2C Host Format Data                                                                               |
-| i2c.[`FIFO_CTRL`](#fifo_ctrl)                     | 0x20     |        4 | I2C FIFO control register                                                                          |
-| i2c.[`HOST_FIFO_CONFIG`](#host_fifo_config)       | 0x24     |        4 | Host mode FIFO configuration                                                                       |
-| i2c.[`TARGET_FIFO_CONFIG`](#target_fifo_config)   | 0x28     |        4 | Target mode FIFO configuration                                                                     |
-| i2c.[`HOST_FIFO_STATUS`](#host_fifo_status)       | 0x2c     |        4 | Host mode FIFO status register                                                                     |
-| i2c.[`TARGET_FIFO_STATUS`](#target_fifo_status)   | 0x30     |        4 | Target mode FIFO status register                                                                   |
-| i2c.[`OVRD`](#ovrd)                               | 0x34     |        4 | I2C Override Control Register                                                                      |
-| i2c.[`VAL`](#val)                                 | 0x38     |        4 | Oversampled RX values                                                                              |
-| i2c.[`TIMING0`](#timing0)                         | 0x3c     |        4 | Detailed I2C Timings (directly corresponding to table 10 in the I2C Specification).                |
-| i2c.[`TIMING1`](#timing1)                         | 0x40     |        4 | Detailed I2C Timings (directly corresponding to table 10 in the I2C Specification).                |
-| i2c.[`TIMING2`](#timing2)                         | 0x44     |        4 | Detailed I2C Timings (directly corresponding to table 10 in the I2C Specification).                |
-| i2c.[`TIMING3`](#timing3)                         | 0x48     |        4 | Detailed I2C Timings (directly corresponding to table 10, in the I2C Specification).               |
-| i2c.[`TIMING4`](#timing4)                         | 0x4c     |        4 | Detailed I2C Timings (directly corresponding to table 10, in the I2C Specification).               |
-| i2c.[`TIMEOUT_CTRL`](#timeout_ctrl)               | 0x50     |        4 | I2C clock stretching timeout control.                                                              |
-| i2c.[`TARGET_ID`](#target_id)                     | 0x54     |        4 | I2C target address and mask pairs                                                                  |
-| i2c.[`ACQDATA`](#acqdata)                         | 0x58     |        4 | I2C target acquired data                                                                           |
-| i2c.[`TXDATA`](#txdata)                           | 0x5c     |        4 | I2C target transmit data                                                                           |
-| i2c.[`HOST_TIMEOUT_CTRL`](#host_timeout_ctrl)     | 0x60     |        4 | I2C host clock generation timeout value (in units of input clock frequency)                        |
-| i2c.[`TARGET_TIMEOUT_CTRL`](#target_timeout_ctrl) | 0x64     |        4 | I2C target internal stretching timeout control.                                                    |
-| i2c.[`TARGET_NACK_COUNT`](#target_nack_count)     | 0x68     |        4 | Number of times the I2C target has NACK'ed a new transaction since the last read of this register. |
+| Name                                                          | Offset   |   Length | Description                                                                                        |
+|:--------------------------------------------------------------|:---------|---------:|:---------------------------------------------------------------------------------------------------|
+| i2c.[`INTR_STATE`](#intr_state)                               | 0x0      |        4 | Interrupt State Register                                                                           |
+| i2c.[`INTR_ENABLE`](#intr_enable)                             | 0x4      |        4 | Interrupt Enable Register                                                                          |
+| i2c.[`INTR_TEST`](#intr_test)                                 | 0x8      |        4 | Interrupt Test Register                                                                            |
+| i2c.[`ALERT_TEST`](#alert_test)                               | 0xc      |        4 | Alert Test Register                                                                                |
+| i2c.[`CTRL`](#ctrl)                                           | 0x10     |        4 | I2C Control Register                                                                               |
+| i2c.[`STATUS`](#status)                                       | 0x14     |        4 | I2C Live Status Register for Host and Target modes                                                 |
+| i2c.[`RDATA`](#rdata)                                         | 0x18     |        4 | I2C Read Data                                                                                      |
+| i2c.[`FDATA`](#fdata)                                         | 0x1c     |        4 | I2C Host Format Data                                                                               |
+| i2c.[`FIFO_CTRL`](#fifo_ctrl)                                 | 0x20     |        4 | I2C FIFO control register                                                                          |
+| i2c.[`HOST_FIFO_CONFIG`](#host_fifo_config)                   | 0x24     |        4 | Host mode FIFO configuration                                                                       |
+| i2c.[`TARGET_FIFO_CONFIG`](#target_fifo_config)               | 0x28     |        4 | Target mode FIFO configuration                                                                     |
+| i2c.[`HOST_FIFO_STATUS`](#host_fifo_status)                   | 0x2c     |        4 | Host mode FIFO status register                                                                     |
+| i2c.[`TARGET_FIFO_STATUS`](#target_fifo_status)               | 0x30     |        4 | Target mode FIFO status register                                                                   |
+| i2c.[`OVRD`](#ovrd)                                           | 0x34     |        4 | I2C Override Control Register                                                                      |
+| i2c.[`VAL`](#val)                                             | 0x38     |        4 | Oversampled RX values                                                                              |
+| i2c.[`TIMING0`](#timing0)                                     | 0x3c     |        4 | Detailed I2C Timings (directly corresponding to table 10 in the I2C Specification).                |
+| i2c.[`TIMING1`](#timing1)                                     | 0x40     |        4 | Detailed I2C Timings (directly corresponding to table 10 in the I2C Specification).                |
+| i2c.[`TIMING2`](#timing2)                                     | 0x44     |        4 | Detailed I2C Timings (directly corresponding to table 10 in the I2C Specification).                |
+| i2c.[`TIMING3`](#timing3)                                     | 0x48     |        4 | Detailed I2C Timings (directly corresponding to table 10, in the I2C Specification).               |
+| i2c.[`TIMING4`](#timing4)                                     | 0x4c     |        4 | Detailed I2C Timings (directly corresponding to table 10, in the I2C Specification).               |
+| i2c.[`TIMEOUT_CTRL`](#timeout_ctrl)                           | 0x50     |        4 | I2C clock stretching timeout control.                                                              |
+| i2c.[`TARGET_ID`](#target_id)                                 | 0x54     |        4 | I2C target address and mask pairs                                                                  |
+| i2c.[`ACQDATA`](#acqdata)                                     | 0x58     |        4 | I2C target acquired data                                                                           |
+| i2c.[`TXDATA`](#txdata)                                       | 0x5c     |        4 | I2C target transmit data                                                                           |
+| i2c.[`HOST_TIMEOUT_CTRL`](#host_timeout_ctrl)                 | 0x60     |        4 | I2C host clock generation timeout value (in units of input clock frequency).                       |
+| i2c.[`TARGET_TIMEOUT_CTRL`](#target_timeout_ctrl)             | 0x64     |        4 | I2C target internal stretching timeout control.                                                    |
+| i2c.[`TARGET_NACK_COUNT`](#target_nack_count)                 | 0x68     |        4 | Number of times the I2C target has NACK'ed a new transaction since the last read of this register. |
+| i2c.[`HOST_NACK_HANDLER_TIMEOUT`](#host_nack_handler_timeout) | 0x6c     |        4 | Timeout in Host-Mode for an unhandled NACK before hardware automatically ends the transaction.     |
 
 ## INTR_STATE
 Interrupt State Register
@@ -166,27 +167,28 @@ I2C Control Register
 I2C Live Status Register for Host and Target modes
 - Offset: `0x14`
 - Reset default: `0x33c`
-- Reset mask: `0x3ff`
+- Reset mask: `0x7ff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "FMTFULL", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "RXFULL", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "FMTEMPTY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "HOSTIDLE", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TARGETIDLE", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "RXEMPTY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TXFULL", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ACQFULL", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TXEMPTY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ACQEMPTY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 22}], "config": {"lanes": 1, "fontsize": 10, "vspace": 120}}
+{"reg": [{"name": "FMTFULL", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "RXFULL", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "FMTEMPTY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "HOSTIDLE", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TARGETIDLE", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "RXEMPTY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TXFULL", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ACQFULL", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TXEMPTY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ACQEMPTY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "HOST_DISABLED_NACK_TIMEOUT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 21}], "config": {"lanes": 1, "fontsize": 10, "vspace": 280}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name       | Description                                                        |
-|:------:|:------:|:-------:|:-----------|:-------------------------------------------------------------------|
-| 31:10  |        |         |            | Reserved                                                           |
-|   9    |   ro   |   0x1   | ACQEMPTY   | Target mode receive FIFO is empty                                  |
-|   8    |   ro   |   0x1   | TXEMPTY    | Target mode TX FIFO is empty                                       |
-|   7    |   ro   |    x    | ACQFULL    | Target mode receive FIFO is full                                   |
-|   6    |   ro   |    x    | TXFULL     | Target mode TX FIFO is full                                        |
-|   5    |   ro   |   0x1   | RXEMPTY    | Host mode RX FIFO is empty                                         |
-|   4    |   ro   |   0x1   | TARGETIDLE | Target functionality is idle. No Target transaction is in progress |
-|   3    |   ro   |   0x1   | HOSTIDLE   | Host functionality is idle. No Host transaction is in progress     |
-|   2    |   ro   |   0x1   | FMTEMPTY   | Host mode FMT FIFO is empty                                        |
-|   1    |   ro   |    x    | RXFULL     | Host mode RX FIFO is full                                          |
-|   0    |   ro   |    x    | FMTFULL    | Host mode FMT FIFO is full                                         |
+|  Bits  |  Type  |  Reset  | Name                       | Description                                                                                                                                                                                                                  |
+|:------:|:------:|:-------:|:---------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 31:11  |        |         |                            | Reserved                                                                                                                                                                                                                     |
+|   10   |   ro   |    x    | HOST_DISABLED_NACK_TIMEOUT | A Host-Mode active transaction has been ended by the [`HOST_NACK_HANDLER_TIMEOUT`](#host_nack_handler_timeout) mechanism. This bit is cleared when [`CTRL.ENABLEHOST`](#ctrl) is set by software to start a new transaction. |
+|   9    |   ro   |   0x1   | ACQEMPTY                   | Target mode receive FIFO is empty                                                                                                                                                                                            |
+|   8    |   ro   |   0x1   | TXEMPTY                    | Target mode TX FIFO is empty                                                                                                                                                                                                 |
+|   7    |   ro   |    x    | ACQFULL                    | Target mode receive FIFO is full                                                                                                                                                                                             |
+|   6    |   ro   |    x    | TXFULL                     | Target mode TX FIFO is full                                                                                                                                                                                                  |
+|   5    |   ro   |   0x1   | RXEMPTY                    | Host mode RX FIFO is empty                                                                                                                                                                                                   |
+|   4    |   ro   |   0x1   | TARGETIDLE                 | Target functionality is idle. No Target transaction is in progress                                                                                                                                                           |
+|   3    |   ro   |   0x1   | HOSTIDLE                   | Host functionality is idle. No Host transaction is in progress                                                                                                                                                               |
+|   2    |   ro   |   0x1   | FMTEMPTY                   | Host mode FMT FIFO is empty                                                                                                                                                                                                  |
+|   1    |   ro   |    x    | RXFULL                     | Host mode RX FIFO is full                                                                                                                                                                                                    |
+|   0    |   ro   |    x    | FMTFULL                    | Host mode FMT FIFO is full                                                                                                                                                                                                   |
 
 ## RDATA
 I2C Read Data
@@ -543,7 +545,12 @@ I2C target transmit data
 |  7:0   |   wo   |   0x0   | TXDATA |               |
 
 ## HOST_TIMEOUT_CTRL
-I2C host clock generation timeout value (in units of input clock frequency)
+I2C host clock generation timeout value (in units of input clock frequency).
+
+In an active transaction in Target-Mode, if the Controller ceases to send SCL pulses
+for this number of cycles then the "host_timeout" interrupt will be asserted.
+
+Set this CSR to 0 to disable this behaviour.
 - Offset: `0x60`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
@@ -595,6 +602,38 @@ When it reaches its maximum value it will stay at that value.
 |:------:|:------:|:-------:|:------------------|:--------------|
 |  31:8  |        |         |                   | Reserved      |
 |  7:0   |   rc   |   0x0   | TARGET_NACK_COUNT |               |
+
+## HOST_NACK_HANDLER_TIMEOUT
+Timeout in Host-Mode for an unhandled NACK before hardware automatically ends the transaction.
+(in units of input clock frequency)
+
+In Host-Mode during an active Controller-Transmitter transfer, if the Target NACKs a byte
+the 'nak' interrupt is asserted and the Byte-Formatted Programming Mode FSM halts awaiting
+software intervention. Software must acknowledge the interrupt (CIP 'Event-Type') to allow
+the state machine to continue, typically after clearing out the FMTFIFO to start a new transfer.
+While halted, the active transaction is not ended (no STOP (P) condition is created), and the
+block releases both SCL and SDA.
+
+This timeout can be used to automatically disable the block if software does not handle the
+'nak' interrupt in a timely manner. If the timeout expires, ([`CTRL.HOSTMODE`](#ctrl)) will be disabled
+which creates a STOP (P) condition on the bus ending the active transaction. Additionally, the
+[`STATUS.HOST_DISABLED_NACK_TIMEOUT`](#status) bit is set to alert software.
+
+The enable bit must be set for this feature to operate.
+- Offset: `0x6c`
+- Reset default: `0x0`
+- Reset mask: `0xffffffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "VAL", "bits": 31, "attr": ["rw"], "rotate": 0}, {"name": "EN", "bits": 1, "attr": ["rw"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name   | Description                                                     |
+|:------:|:------:|:-------:|:-------|:----------------------------------------------------------------|
+|   31   |   rw   |   0x0   | EN     | Timeout enable                                                  |
+|  30:0  |   rw   |   0x0   | VAL    | Unhandled NAK timeout value (in units of input clock frequency) |
 
 
 <!-- END CMDGEN -->

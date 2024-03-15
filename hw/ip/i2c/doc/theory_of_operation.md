@@ -87,6 +87,24 @@ Typically every byte transmitted must also receive an ACK signal, and the IP wil
 However, there are some I2C commands which do not require an ACK.
 In those cases this flag should be asserted with FBYTE indicating no ACK is expected and no interrupt should be raised if the ACK is not received.
 
+#### Halt-on-NAK
+
+If the Host-Mode Controller-Transmitter transmits a byte and the 9th bit is a NACK from the Target/Bus, the `nak` interrupt is usually asserted (modulo the effect of [`FDATA.NAKOK`](registers.md#fdata)).
+If the 'nak' interrupt is asserted, the Byte-Formatted Programming Mode FSM will halt until the interrupt has been acknowledged using the standard 'Event-Type' interrupt acknowledgement (W1C to INTR_STATE).
+Software will likely want to do one of two things in handling this irq:
+1. End the current transaction by setting [`CTRL.ENABLEHOST`](registers.md#ctrl) to `1'b0`, and clear the FIFOs ready to begin a new transaction.
+2. Clear the FIFOs, then begin a new transfer without ending the transaction by add new FDATA indicators to the FMTFIFO.
+   In this case, the first entry written to the FMTFIFO should have [`FDATA.START`](registers.md#fdata) set to `1'b1` to create a repeated start condition.
+
+While the FSM is halted, SCL/SDA are released and the bus is observed as having an elongated 9th clock period.
+
+The Halt-on-'NAK' behaviour may be problematic if SW is not responsive, so there is a timeout mechanism that can automatically end the transaction by creating a STOP condition and disabling Host-Mode.
+This is configured using the [`HOST_NACK_HANDLER_TIMEOUT`](registers.md#host_nack_handler_timeout) CSR, which allows software to configure the delay before hardware will terminate the transaction.
+Hardware will also automatically clear [`CTRL.ENABLEHOST`](registers.md#ctrl) when this occurs.
+If this mechanism activates, software can be informed by reading the [`STATUS.HOST_DISABLED_NACK_TIMEOUT`](registers.md#status) bit.
+This field is cleared when software next activates Host-Mode by setting [`CTRL.ENABLEHOST`](registers.md#ctrl) to `1'b1`.
+Before re-activating Host-Mode, software should ensure that the 'nak' interrupt has been handled and acknowledged.
+
 ### Target Address Registers
 
 I2C target device is assigned two 7-bit address and 7-bit mask pairs.
@@ -214,8 +232,9 @@ Firmware can configure the threshold value via the register [`HOST_FIFO_CONFIG.F
 
 If the RX FIFO receives an additional write request when its FIFO is full, the interrupt `rx_overflow` is asserted and the character is dropped.
 
-If the module transmits a byte, but receives no ACK signal, the `nak` interrupt is usually asserted.
-In cases where a byte is transmitted and no ACK is expected or required, that byte should be submitted with NAKOK flag also asserted.
+If the module transmits a byte and the 9th bit is a NACK from the Target/Bus, the `nak` interrupt is usually asserted (modulo the effect of [`FDATA.NAKOK`](registers.md#fdata)).
+If the 'nak' interrupt is asserted, the Byte-Formatted Programming Mode FSM will halt until the interrupt has been acknowledged.
+See [the Halt-on-NAK section](#halt-on-nak) above for more details on this behaviour.
 
 When the I2C module is in transmit mode, the `scl_interference` or `sda_interference` interrupts will be asserted if the IP identifies that some other device (host or target) on the bus is forcing either signal low and interfering with the transmission.
 It should be noted that the `scl_interference` interrupt is not raised in the case when the target device is stretching the clock.
