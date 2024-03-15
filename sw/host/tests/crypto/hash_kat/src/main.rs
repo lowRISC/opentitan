@@ -23,6 +23,7 @@ use opentitanlib::test_utils::rpc::{UartRecv, UartSend};
 use opentitanlib::uart::console::UartConsole;
 
 #[derive(Debug, Parser)]
+#[command(args_override_self = true)]
 struct Opts {
     #[command(flatten)]
     init: InitializeTest,
@@ -51,7 +52,8 @@ fn run_hash_testcase(
     test_case: &HashTestCase,
     opts: &Opts,
     transport: &TransportWrapper,
-    fail_counter: &mut u32,
+    failures: &mut Vec<String>,
+    quiet: bool,
 ) -> Result<()> {
     log::info!(
         "vendor: {}, algorithm: {}, test case: {}",
@@ -99,9 +101,10 @@ fn run_hash_testcase(
     .send(&*uart)?;
 
     // Get hash output
-    let hash_output = CryptotestHashOutput::recv(&*uart, opts.timeout, false)?;
+    let hash_output = CryptotestHashOutput::recv(&*uart, opts.timeout, quiet)?;
     // Stepwise hashing is currently supported by SHA2 only.
-    let mut failed = false;
+    let mut failed_oneshot = false;
+    let mut failed_stepwise = false;
     match test_case.algorithm.as_str() {
         "sha-256" | "sha-384" | "sha-512" => {
             vec![
@@ -132,11 +135,28 @@ fn run_hash_testcase(
                 test_case.result,
                 success
             );
-            failed = true;
+            match mode {
+                "oneshot" => {
+                    failed_oneshot = true;
+                }
+                "stepwise" => {
+                    failed_stepwise = true;
+                }
+                _ => unreachable!("Invalid mode value"),
+            }
         }
     });
-    if failed {
-        *fail_counter += 1;
+    if failed_oneshot {
+        failures.push(format!(
+            "{} {} #{} oneshot",
+            test_case.vendor, test_case.algorithm, test_case.test_case_id
+        ));
+    }
+    if failed_stepwise {
+        failures.push(format!(
+            "{} {} #{} stepwise",
+            test_case.vendor, test_case.algorithm, test_case.test_case_id
+        ));
     }
     Ok(())
 }
@@ -147,8 +167,11 @@ fn test_hash(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let _ = UartConsole::wait_for(&*uart, r"Running [^\r\n]*", opts.timeout)?;
 
     let mut test_counter = 0u32;
-    let mut fail_counter = 0u32;
+    let mut failures = vec![];
     let test_vector_files = &opts.hash_json;
+    // A filter level of `Error` indicates we're running in CI, so we don't want to print the
+    // output of every UART recv().
+    let quiet = opts.init.logging == log::LevelFilter::Error;
     for file in test_vector_files {
         let raw_json = fs::read_to_string(file)?;
         let hash_tests: Vec<HashTestCase> = serde_json::from_str(&raw_json)?;
@@ -156,13 +179,16 @@ fn test_hash(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         for hash_test in &hash_tests {
             test_counter += 1;
             log::info!("Test counter: {}", test_counter);
-            run_hash_testcase(hash_test, opts, transport, &mut fail_counter)?;
+            run_hash_testcase(hash_test, opts, transport, &mut failures, quiet)?;
         }
     }
     assert_eq!(
-        0, fail_counter,
-        "Failed {} out of {} tests.",
-        fail_counter, test_counter
+        0,
+        failures.len(),
+        "Failed {} out of {} tests. Failures: {:?}",
+        failures.len(),
+        test_counter,
+        failures
     );
     Ok(())
 }
