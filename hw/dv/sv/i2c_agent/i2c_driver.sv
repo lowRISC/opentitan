@@ -169,6 +169,9 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
           cfg.vif.device_send_ack(cfg.timing_cfg, !cfg.stretch_after_ack);
         join
       end
+      DevNack: begin
+        cfg.vif.device_send_nack(cfg.timing_cfg);
+      end
       RdData: begin
         `uvm_info(`gfn, $sformatf("Send readback data %0x", req.rdata), UVM_MEDIUM)
         cfg.timing_cfg.tStretchHostClock = gen_num_stretch_host_clks(cfg.timing_cfg);

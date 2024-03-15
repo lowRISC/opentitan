@@ -235,6 +235,10 @@
       uvm_test_seq: "i2c_host_mode_toggle_vseq"
       run_timeout_mins: 10
     }
+    {
+      name: "i2c_host_may_nack"
+      uvm_test_seq: "i2c_host_may_nack_vseq"
+    }
   ]
 
   // List of regressions.
@@ -249,7 +253,7 @@
               "i2c_host_fifo_watermark", "i2c_host_fifo_overflow", "i2c_host_fifo_reset_fmt",
               "i2c_host_rx_oversample",  "i2c_host_stretch_timeout",
               "i2c_host_fifo_fmt_empty", "i2c_host_fifo_reset_rx", "i2c_host_stretch_timeout",
-              "i2c_host_fifo_full",
+              "i2c_host_fifo_full", "i2c_host_may_nack",
               "i2c_host_error_intr"]
     }
     {

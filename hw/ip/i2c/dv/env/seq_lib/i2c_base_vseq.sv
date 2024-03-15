@@ -466,6 +466,7 @@ class i2c_base_vseq extends cip_base_vseq #(
   //
   // - Clear all interrupts that are active
   // - Add a delay of 'clear_intr_dly' cycles before the W1C operation
+  // - If 'nak' irq is active, add an extra delay of 1000 cycles
   virtual task process_interrupts();
     bit [TL_DW-1:0] intr_state, intr_clear;
 
@@ -489,6 +490,11 @@ class i2c_base_vseq extends cip_base_vseq #(
     end
     if (bit'(get_field_val(ral.intr_state.tx_stretch, intr_clear))) begin
       `uvm_info(`gfn, "\n  clearing tx_stretch", UVM_DEBUG)
+    end
+    if (bit'(get_field_val(ral.intr_state.nak, intr_clear))) begin
+      // Add a longer delay to mimic a software handler clearing the NAK condition
+      cfg.clk_rst_vif.wait_clks(1_000);
+      `uvm_info(`gfn, "Clearing 'NAK' interrupt, allowing FSM to continue...", UVM_DEBUG)
     end
 
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(clear_intr_dly)
