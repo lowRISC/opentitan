@@ -183,6 +183,30 @@ module prim_fifo_sync #(
     end
 
     `ASSERT(depthShallNotExceedParamDepth, !empty |-> depth_o <= DepthW'(Depth))
+
+
+    // "X tracking"
+    //
+    // A full formal correctness property for the FIFO would assert that "everything that goes in
+    // comes out again, and in the correct order". If we're just interested in tracking X's, we can
+    // be much lazier by tracking the possibility of unknown words in the FIFO.
+    //
+    // This isn't a very strong property, but it should avoid the possibility of the FIFO concocting
+    // X values unexpectedly.
+`ifdef FPV_ON
+    logic may_contain_x;
+
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) begin
+        may_contain_x <= 0;
+      end else begin
+        may_contain_x <= (may_contain_x || $isunknown(wdata_i)) && !empty;
+      end
+    end
+
+    `ASSERT(DataKnown_A, rvalid_o && !may_contain_x -> !$isunknown(rdata_o))
+`endif
+
   end // block: gen_normal_fifo
 
 
@@ -190,7 +214,6 @@ module prim_fifo_sync #(
   // Known Assertions //
   //////////////////////
 
-  `ASSERT(DataKnown_A, rvalid_o |-> !$isunknown(rdata_o))
   `ASSERT_KNOWN(DepthKnown_A, depth_o)
   `ASSERT_KNOWN(RvalidKnown_A, rvalid_o)
   `ASSERT_KNOWN(WreadyKnown_A, wready_o)
