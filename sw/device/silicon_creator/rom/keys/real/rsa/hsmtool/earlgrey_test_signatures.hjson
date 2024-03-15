@@ -20,15 +20,6 @@
     {
       "command": "rsa-sign",
       "id": null,
-      "label": "earlgrey_a0_test_1",
-      "format": "PlainText",
-      "little_endian": false,
-      "output": "earlgrey_a0_test_1.sig",
-      "input": "test.bin"
-    },
-    {
-      "command": "rsa-sign",
-      "id": null,
       "label": "earlgrey_a0_dev_0",
       "format": "PlainText",
       "little_endian": false,
@@ -38,37 +29,10 @@
     {
       "command": "rsa-sign",
       "id": null,
-      "label": "earlgrey_a0_dev_1",
-      "format": "PlainText",
-      "little_endian": false,
-      "output": "earlgrey_a0_dev_1.sig",
-      "input": "test.bin"
-    },
-    {
-      "command": "rsa-sign",
-      "id": null,
       "label": "earlgrey_a0_prod_0",
       "format": "PlainText",
       "little_endian": false,
       "output": "earlgrey_a0_prod_0.sig",
-      "input": "test.bin"
-    },
-    {
-      "command": "rsa-sign",
-      "id": null,
-      "label": "earlgrey_a0_prod_1",
-      "format": "PlainText",
-      "little_endian": false,
-      "output": "earlgrey_a0_prod_1.sig",
-      "input": "test.bin"
-    },
-    {
-      "command": "rsa-sign",
-      "id": null,
-      "label": "earlgrey_a0_prod_2",
-      "format": "PlainText",
-      "little_endian": false,
-      "output": "earlgrey_a0_prod_2.sig",
       "input": "test.bin"
     },
 ]
