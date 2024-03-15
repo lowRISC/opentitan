@@ -176,10 +176,11 @@ static status_t recv_write_transfer(dif_i2c_t *i2c, i2c_transfer_start_t *txn,
   switch (signal) {
     case kDifI2cSignalStop:
       txn->stop = true;
-      return OK_STATUS(false);
+      return OK_STATUS(0);
     case kDifI2cSignalRepeat:
       txn->stop = false;
-      return OK_STATUS(true);
+      // Repeated start, return the address of the next operation.
+      return OK_STATUS(txn->address);
     default:
       return INTERNAL();
   }
@@ -203,6 +204,24 @@ static status_t start_write_transaction(ujson_t *uj, dif_i2c_t *i2c,
   i2c_transfer_start_t txn = (i2c_transfer_start_t){0};
   TRY(recv_write_transfer(i2c, &txn, kTestTimeout, delay_micros));
   return RESP_OK(ujson_serialize_i2c_transfer_start_t, uj, &txn);
+}
+
+static status_t start_write_read_transaction(ujson_t *uj, dif_i2c_t *i2c) {
+  i2c_transfer_start_t read_trans;
+  TRY(UJSON_WITH_CRC(ujson_deserialize_i2c_transfer_start_t, uj, &read_trans));
+  TRY(i2c_testutils_target_read(i2c, read_trans.length, read_trans.data));
+
+  i2c_transfer_start_t write_trans = (i2c_transfer_start_t){0};
+  uint8_t address =
+      (uint8_t)TRY(recv_write_transfer(i2c, &write_trans, kTestTimeout, 0));
+  TRY_CHECK(write_trans.stop == false, "Stop bit not expected at this point.");
+  TRY_CHECK(read_trans.address == address,
+            "Address (0x%x) is not the expected(0x%x)", address,
+            read_trans.address);
+  ibex_timeout_t deadline = ibex_timeout_init(kTestTimeout);
+  TRY(wait_for_acq_fifo(i2c, 1, &deadline));
+
+  return RESP_OK(ujson_serialize_i2c_transfer_start_t, uj, &write_trans);
 }
 
 static status_t enter_sleep(ujson_t *uj, dif_i2c_t *i2c, bool normal) {
@@ -279,6 +298,9 @@ static status_t command_processor(ujson_t *uj) {
         break;
       case kTestCommandI2cStartTransferRead:
         RESP_ERR(uj, start_read_transaction(uj, &i2c));
+        break;
+      case kTestCommandI2cStartTransferWriteRead:
+        RESP_ERR(uj, start_write_read_transaction(uj, &i2c));
         break;
       case kTestCommandI2cStartTransferWriteSlow:
         // We'll insert a 10ms delay every 64 bytes, which is a huge delay
