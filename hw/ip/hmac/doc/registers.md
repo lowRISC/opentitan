@@ -13,7 +13,7 @@
 | hmac.[`CMD`](#cmd)                           | 0x14     |        4 | HMAC command register                                                |
 | hmac.[`STATUS`](#status)                     | 0x18     |        4 | HMAC Status register                                                 |
 | hmac.[`ERR_CODE`](#err_code)                 | 0x1c     |        4 | HMAC Error Code                                                      |
-| hmac.[`WIPE_SECRET`](#wipe_secret)           | 0x20     |        4 | Randomize internal secret registers.                                 |
+| hmac.[`WIPE_SECRET`](#wipe_secret)           | 0x20     |        4 | Clear internal secret registers.                                     |
 | hmac.[`KEY_0`](#key)                         | 0x24     |        4 | HMAC Secret Key                                                      |
 | hmac.[`KEY_1`](#key)                         | 0x28     |        4 | HMAC Secret Key                                                      |
 | hmac.[`KEY_2`](#key)                         | 0x2c     |        4 | HMAC Secret Key                                                      |
@@ -329,10 +329,13 @@ HMAC Error Code
 |  31:0  |   ro   |   0x0   | err_code | If error interrupt occurs, this register has information of error cause. Please take a look at `hw/ip/hmac/rtl/hmac_pkg.sv:err_code_e enum type. |
 
 ## WIPE_SECRET
-Randomize internal secret registers.
+Clear internal secret registers.
 
-If CPU writes value into the register, the value is used to randomize internal
-variables such as secret key, internal state machine, or hash value.
+If CPU writes value into the register, the value is used to clear the internal
+variables such as secret key, internal state machine, or hash value. The clear
+secret operation uses XORs with the provided value as one of the operands. It is
+recommended to use a value extracted from an entropy source. A value equal to 0
+will leave all internal values unchanged.
 - Offset: `0x20`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
