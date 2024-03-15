@@ -2,21 +2,24 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{anyhow, bail, Result};
+use anyhow::{anyhow, bail, ensure, Context, Result};
 use num_bigint_dig::{traits::ModInverse, BigInt, BigUint, Sign::Minus};
 use rand::rngs::OsRng;
 use rsa::pkcs1::{DecodeRsaPublicKey, EncodeRsaPublicKey};
 use rsa::pkcs1v15::Pkcs1v15Sign;
 use rsa::pkcs8::{DecodePrivateKey, EncodePrivateKey};
 use rsa::traits::PublicKeyParts;
+use serde::{Deserialize, Serialize};
+use serde_annotate::Annotate;
 use sha2::Sha256;
 use std::fs::File;
 use std::io::{Read, Write};
 use std::ops::Deref;
 use std::ops::Shl;
 use std::path::{Path, PathBuf};
-use thiserror::Error;
+use std::str::FromStr;
 
+use super::Error;
 use crate::crypto::sha256::Sha256Digest;
 use crate::util::bigint::fixed_size_bigint;
 
@@ -32,44 +35,10 @@ fixed_size_bigint!(Signature, at_most SIGNATURE_BIT_LEN);
 fixed_size_bigint!(RR, at_most RR_BIT_LEN);
 fixed_size_bigint!(N0Inv, at_most OTBN_BITS);
 
-#[derive(Debug, Error)]
-pub enum Error {
-    #[error("Invalid public key")]
-    InvalidPublicKey(#[source] Option<anyhow::Error>),
-    #[error("Invalid DER file: {der}")]
-    InvalidDerFile {
-        der: PathBuf,
-        #[source]
-        source: anyhow::Error,
-    },
-    #[error("Read failed: {file}")]
-    ReadFailed {
-        file: PathBuf,
-        #[source]
-        source: anyhow::Error,
-    },
-    #[error("Write failed: {file}")]
-    WriteFailed {
-        file: PathBuf,
-        #[source]
-        source: anyhow::Error,
-    },
-    #[error("Generate failed")]
-    GenerateFailed(#[source] anyhow::Error),
-    #[error("Invalid signature")]
-    InvalidSignature(#[source] anyhow::Error),
-    #[error("Sign failed")]
-    SignFailed(#[source] anyhow::Error),
-    #[error("Verification failed")]
-    VerifyFailed(#[source] anyhow::Error),
-    #[error("Failed to compute key component")]
-    KeyComponentComputeFailed,
-}
-
 /// Ensure the components of `key` have the correct bit length.
 fn validate_key(key: &impl PublicKeyParts) -> Result<()> {
     if key.n().bits() != MODULUS_BIT_LEN || key.e() != &BigUint::from(65537u32) {
-        bail!(Error::InvalidPublicKey(None))
+        bail!(Error::InvalidPublicKey(anyhow!("bad modulus or exponent")));
     } else {
         Ok(())
     }
@@ -91,7 +60,7 @@ impl RsaPublicKey {
                 BigUint::from_bytes_le(n.to_le_bytes().as_slice()),
                 BigUint::from(65537u32),
             )
-            .map_err(|e| Error::InvalidPublicKey(Some(anyhow!(e))))?,
+            .map_err(|e| Error::InvalidPublicKey(anyhow!(e)))?,
         })
     }
 
@@ -270,5 +239,66 @@ impl Deref for RsaPrivateKey {
 
     fn deref(&self) -> &Self::Target {
         &self.key
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, Annotate)]
+pub struct RsaRawPublicKey {
+    #[serde(with = "serde_bytes")]
+    #[annotate(format = hexstr)]
+    pub modulus: Vec<u8>,
+    pub n0_inv: Vec<u8>,
+}
+
+impl Default for RsaRawPublicKey {
+    fn default() -> Self {
+        Self {
+            modulus: vec![0; 384],
+            n0_inv: vec![0; 32],
+        }
+    }
+}
+
+impl TryFrom<&RsaPublicKey> for RsaRawPublicKey {
+    type Error = Error;
+    fn try_from(v: &RsaPublicKey) -> Result<Self, Self::Error> {
+        Ok(Self {
+            modulus: v.modulus().to_le_bytes().to_vec(),
+            n0_inv: v.n0_inv().map_err(Error::Other)?.to_le_bytes().to_vec(),
+        })
+    }
+}
+
+impl FromStr for RsaRawPublicKey {
+    type Err = Error;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let key = RsaPublicKey::from_pkcs1_der_file(s)
+            .with_context(|| format!("Failed to load {s}"))
+            .map_err(Error::Other)?;
+        RsaRawPublicKey::try_from(&key)
+    }
+}
+
+impl RsaRawPublicKey {
+    pub const SIZE: usize = 384 + 32;
+    pub fn read(src: &mut impl Read) -> Result<Self> {
+        let mut key = Self::default();
+        src.read_exact(&mut key.modulus)?;
+        src.read_exact(&mut key.n0_inv)?;
+        Ok(key)
+    }
+
+    pub fn write(&self, dest: &mut impl Write) -> Result<()> {
+        ensure!(
+            self.modulus.len() == 384,
+            Error::InvalidPublicKey(anyhow!("bad modulus length: {}", self.modulus.len()))
+        );
+        ensure!(
+            self.n0_inv.len() == 32,
+            Error::InvalidPublicKey(anyhow!("bad n0_inv length: {}", self.n0_inv.len()))
+        );
+        dest.write_all(&self.modulus)?;
+        dest.write_all(&self.n0_inv)?;
+        Ok(())
     }
 }
