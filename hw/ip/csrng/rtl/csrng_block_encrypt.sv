@@ -94,9 +94,10 @@ module csrng_block_encrypt import csrng_pkg::*; #(
   // SEC_CM: AES_CIPHER.DATA_REG.LOCAL_ESC
 
   aes_cipher_core #(
-    .AES192Enable ( 1'b0 ),  // AES192Enable disabled
-    .SecMasking   ( 1'b0 ),  // Masking disable
-    .SecSBoxImpl  ( SBoxImpl )
+    .AES192Enable  ( 1'b0 ),  // AES192Enable disabled
+    .CiphOpFwdOnly ( 1'b1 ),  // Forward operation only
+    .SecMasking    ( 1'b0 ),  // Masking disable
+    .SecSBoxImpl   ( SBoxImpl )
   ) u_aes_cipher_core   (
     .clk_i              (clk_i),
     .rst_ni             (rst_ni),
