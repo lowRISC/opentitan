@@ -581,7 +581,7 @@ inline uintptr_t manifest_entry_point_get(const manifest_t *manifest) {
  */
 MANIFEST_EXTENSIONS(DEFINE_GETTER)
 
-#else   // defined(OT_PLATFORM_RV32) || defined(MANIFEST_UNIT_TEST_)
+#else  // defined(OT_PLATFORM_RV32) || defined(MANIFEST_UNIT_TEST_)
 /**
  * Declarations for the functions above that should be defined in tests.
  */
@@ -589,11 +589,14 @@ rom_error_t manifest_check(const manifest_t *manifest);
 manifest_digest_region_t manifest_digest_region_get(const manifest_t *manifest);
 epmp_region_t manifest_code_region_get(const manifest_t *manifest);
 uintptr_t manifest_entry_point_get(const manifest_t *manifest);
-rom_error_t manifest_get_ext_spx_key(const manifest_t *manifest,
+
+// Manifest extension getters.
+rom_error_t manifest_ext_get_spx_key(const manifest_t *manifest,
                                      const manifest_ext_spx_key_t **spx_key);
-rom_error_t manifest_get_ext_spx_signature(
+rom_error_t manifest_ext_get_spx_signature(
     const manifest_t *manifest,
     const manifest_ext_spx_signature_t **spx_signature);
+
 #endif  // defined(OT_PLATFORM_RV32) || defined(MANIFEST_UNIT_TEST_)
 
 #ifdef __cplusplus
