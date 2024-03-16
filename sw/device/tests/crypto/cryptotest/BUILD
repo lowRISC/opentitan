@@ -219,3 +219,31 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
     },
 )
+
+SPHINCSPLUS_TESTVECTOR_TARGETS = [
+    "//sw/host/cryptotest/testvectors/data:{}".format(target)
+    for target in [
+        "rsp_sphincsplus_shake256_128s_simple_json",
+    ]
+]
+
+SPHINCSPLUS_TESTVECTOR_ARGS = " ".join([
+    "--sphincsplus-json=\"$(rootpath {})\"".format(target)
+    for target in SPHINCSPLUS_TESTVECTOR_TARGETS
+])
+
+opentitan_test(
+    name = "sphincsplus_kat",
+    cw310 = cw310_params(
+        timeout = "long",
+        binaries = {"//sw/device/tests/crypto/cryptotest/firmware:firmware": "firmware"},
+        data = SPHINCSPLUS_TESTVECTOR_TARGETS,
+        test_cmd = """
+                --bootstrap={firmware}
+            """ + SPHINCSPLUS_TESTVECTOR_ARGS,
+        test_harness = "//sw/host/tests/crypto/sphincsplus_kat:harness",
+    ),
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+    },
+)
