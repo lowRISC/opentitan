@@ -1853,6 +1853,7 @@ opentitan_test(
     name = "gpio_intr_test",
     srcs = ["gpio_intr_test.c"],
     cw310 = new_cw310_params(
+        timeout = "moderate",
         test_cmd = """
             --bootstrap="{firmware}"
         """,
