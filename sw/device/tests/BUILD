@@ -4375,6 +4375,7 @@ test_suite(
         name = "rv_dm_mem_access_{}".format(lc_state),
         srcs = ["example_test_from_flash.c"],
         cw310 = new_cw310_params(
+            timeout = "moderate",
             needs_jtag = True,
             otp = _SIVAL_OTP_IMAGE[lc_state],
             tags = [
