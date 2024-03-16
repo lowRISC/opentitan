@@ -32,7 +32,7 @@ typedef enum pwmgr_sleep_resets_lib_times {
   kEscalationPhase2Micros = 50,                               // 50 us
   // Allow a long wait before the reset is received, since the host needs
   // to read and parse the log message before it changes the pin values.
-  kWaitWhileActiveMicros = 80000,  // 80 ms
+  kWaitWhileActiveMicros = 500000,  // 500 ms
 } pwmgr_sleep_resets_lib_times_t;
 
 /**
