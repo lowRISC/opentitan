@@ -25,53 +25,6 @@ enum {
 };
 
 /**
- * OTP key state encoding values used in the `ROT_CREATOR_AUTH_STATE` partition.
- *
- * The values are derived from the otp_ctrl encoding algorithm to ensure that
- * the following one-directional transitions are possible:
- * - `kSigVerifyKeyAuthStateBlank` -> `kSigVerifyKeyAuthStateEnabled`
- * - `kSigVerifyKeyAuthStateEnabled` -> `kSigVerifyKeyAuthStateDisabled`
- *
- * No other state transitions are supported. An attacker who attempts to change
- * the state of the key from `kSigVerifyKeyAuthStateDisabled` to
- * `kSigVerifyKeyAuthStateEnabled` will trigger an ECC error in the OTP macro
- */
-typedef enum sigverify_key_auth_state {
-  /**
-   * Represents the state of the key as blank.
-   */
-  kSigVerifyKeyAuthStateBlank = 0,
-  /**
-   * Represents the state of the key as enabled.
-   *
-   * The value is derived from the otp_ctrl encoding algorithm to ensure that
-   * transitions from this value to `kSigVerifyKeyAuthStateDisabled` are
-   * possible (i.e. the value change does not trigger an ECC error in the OTP
-   * macro). See https://github.com/lowRISC/opentitan/pull/21270 for more
-   * details.
-   *
-   * parameter logic [15:0] I0 = 16'b0110_0111_1000_0001; // ECC: 6'b000100
-   * parameter logic [15:0] I1 = 16'b1110_1000_1010_0001; // ECC: 6'b100110
-   * AuthStEnabled  = { I1,  I0},
-   */
-  kSigVerifyKeyAuthStateEnabled = 0xe8a16781,
-  /**
-   * Represents the state of the key as disabled.
-   *
-   * The value is derived from the otp_ctrl encoding algorithm to ensure that
-   * transitions into this value from `kSigVerifyKeyAuthStateEnabled` are
-   * possible (i.e. the value change does not trigger an ECC error in the OTP
-   * macro). See https://github.com/lowRISC/opentitan/pull/21270 for more
-   * details.
-   *
-   * parameter logic [15:0] J0 = 16'b0111_1111_1010_0001; // ECC: 6'b101101
-   * parameter logic [15:0] J1 = 16'b1110_1001_1111_0101; // ECC: 6'b101111
-   * AuthStDisabled = { J1,  J0}
-   */
-  kSigVerifyKeyAuthStateDisabled = 0xe9f57fa1,
-} sigverify_key_auth_state_t;
-
-/**
  * SRAM representation of the OTP `ROT_CREATOR_AUTH_CODESIGN` partition.
  *
  * The data is loaded into SRAM via `sigverify_otp_keys_init()` and its

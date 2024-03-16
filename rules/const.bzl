@@ -25,6 +25,26 @@ CONST = struct(
     # Must match the definition in spx_verify.h
     SPX_DISABLED = 0x8d6c8c17,
     SPX_SUCCESS = 0x8d6c8c17,
+    # SPX+ signature verification parameters are mapped to specific config IDs.
+    # Must match the definitions in //sw/device/silicon_creator/lib/sigverify/spx_key.h
+    SPX_CONFIG_ID = struct(
+        SHAKE_128S = 0x0142410e,
+        SHAKE_128S_Q20 = 0x9b28d8da,
+    ),
+    # Signature verification key types. Must match the definitions in
+    # //sw/device/silicon_creator/rom/sigverify_key_types.h
+    SIGVERIFY = struct(
+        KEY_TYPE = struct(
+            TEST = 0x3ff0c819,
+            DEV = 0x7a01a471,
+            PROD = 0x43a839ad,
+        ),
+        KEY_STATE = struct(
+            BLANK = 0x0,
+            PROVISIONED = 0xe8a16781,
+            REVOKED = 0xe9f57fa1,
+        ),
+    ),
     # Must match the definitions in lc_ctrl_regs.h.
     LCV = struct(
         TEST_UNLOCKED0 = 0x02108421,

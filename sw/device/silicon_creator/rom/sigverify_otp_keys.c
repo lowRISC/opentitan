@@ -243,7 +243,7 @@ rom_error_t sigverify_otp_keys_get(sigverify_otp_keys_get_params_t params,
         array_get_generic(params.key_array, params.key_size, i);
     if (k->key_id == params.key_id) {
       HARDENED_CHECK_EQ(k->key_id, params.key_id);
-      if (params.key_states[i] == kSigVerifyKeyAuthStateEnabled) {
+      if (params.key_states[i] == kSigVerifyKeyAuthStateProvisioned) {
         rom_error_t error = key_is_valid(k->key_type, params.lc_state);
         if (launder32(error) == kErrorOk) {
           HARDENED_CHECK_EQ(error, kErrorOk);
@@ -274,7 +274,8 @@ rom_error_t sigverify_otp_keys_get(sigverify_otp_keys_get_params_t params,
     HARDENED_CHECK_LT(cand_key_index, params.key_cnt);
     const sigverify_rom_key_header_t *cand_key =
         array_get_generic(params.key_array, params.key_size, cand_key_index);
-    if (params.key_states[cand_key_index] == kSigVerifyKeyAuthStateEnabled) {
+    if (params.key_states[cand_key_index] ==
+        kSigVerifyKeyAuthStateProvisioned) {
       rom_error_t error = key_is_valid(cand_key->key_type, params.lc_state);
       HARDENED_CHECK_EQ(error, kErrorOk);
       *key = cand_key;
