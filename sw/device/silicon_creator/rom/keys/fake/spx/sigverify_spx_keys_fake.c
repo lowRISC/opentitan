@@ -42,7 +42,7 @@ const sigverify_rom_spx_key_t kSigverifySpxKeys[kSigverifySpxKeysCnt_] = {
             {
                 .key = TEST_KEY_0_SPX,
                 .key_type = kSigverifyKeyTypeTest,
-                .config_id = kSigverifySpxConfigRegular,
+                .config_id = kSigverifySpxConfigIdShake128s,
             },
     },
     {
@@ -50,7 +50,7 @@ const sigverify_rom_spx_key_t kSigverifySpxKeys[kSigverifySpxKeysCnt_] = {
             {
                 .key = TEST_KEY_1_SPX,
                 .key_type = kSigverifyKeyTypeTest,
-                .config_id = kSigverifySpxConfigRegular,
+                .config_id = kSigverifySpxConfigIdShake128s,
             },
     },
     {
@@ -58,7 +58,7 @@ const sigverify_rom_spx_key_t kSigverifySpxKeys[kSigverifySpxKeysCnt_] = {
             {
                 .key = DEV_KEY_0_SPX,
                 .key_type = kSigverifyKeyTypeDev,
-                .config_id = kSigverifySpxConfigRegular,
+                .config_id = kSigverifySpxConfigIdShake128s,
             },
     },
     {
@@ -66,7 +66,7 @@ const sigverify_rom_spx_key_t kSigverifySpxKeys[kSigverifySpxKeysCnt_] = {
             {
                 .key = DEV_KEY_1_SPX,
                 .key_type = kSigverifyKeyTypeDev,
-                .config_id = kSigverifySpxConfigRegular,
+                .config_id = kSigverifySpxConfigIdShake128s,
             },
     },
     {
@@ -74,7 +74,7 @@ const sigverify_rom_spx_key_t kSigverifySpxKeys[kSigverifySpxKeysCnt_] = {
             {
                 .key = PROD_KEY_0_SPX,
                 .key_type = kSigverifyKeyTypeProd,
-                .config_id = kSigverifySpxConfigRegular,
+                .config_id = kSigverifySpxConfigIdShake128s,
             },
     },
     {
@@ -82,6 +82,7 @@ const sigverify_rom_spx_key_t kSigverifySpxKeys[kSigverifySpxKeysCnt_] = {
             {
                 .key = PROD_KEY_1_SPX,
                 .key_type = kSigverifyKeyTypeProd,
+                .config_id = kSigverifySpxConfigIdShake128s,
             },
     },
     {
@@ -89,6 +90,7 @@ const sigverify_rom_spx_key_t kSigverifySpxKeys[kSigverifySpxKeysCnt_] = {
             {
                 .key = PROD_KEY_2_SPX,
                 .key_type = kSigverifyKeyTypeProd,
+                .config_id = kSigverifySpxConfigIdShake128s,
             },
     },
 };
