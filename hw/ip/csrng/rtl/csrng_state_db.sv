@@ -67,6 +67,7 @@ module csrng_state_db import csrng_pkg::*; #(
   logic [NApps-1:0]                int_st_dump_sel;
   logic [InternalStateWidth-1:0]   internal_states_out[NApps];
   logic [InternalStateWidth-1:0]   internal_states_dump[NApps];
+  logic [InternalStateWidth-1:0]   internal_state_pl_dump;
   logic [RegInternalStateWidth-1:0] internal_state_diag;
   logic                             reg_rd_ptr_inc;
 
@@ -95,15 +96,12 @@ module csrng_state_db import csrng_pkg::*; #(
   // flops - no reset
   logic [InternalStateWidth-1:0]  internal_states_q[NApps], internal_states_d[NApps];
   logic [InternalStateWidth-1:0]  internal_state_pl_q, internal_state_pl_d;
-  logic [InternalStateWidth-1:0]  internal_state_pl_dump_q, internal_state_pl_dump_d;
-
 
   // no reset on state
   always_ff @(posedge clk_i)
     begin
       internal_states_q <= internal_states_d;
       internal_state_pl_q <= internal_state_pl_d;
-      internal_state_pl_dump_q <= internal_state_pl_dump_d;
     end
 
 
@@ -121,10 +119,10 @@ module csrng_state_db import csrng_pkg::*; #(
   // logical "or" is made of all of the buses into one
   always_comb begin
     internal_state_pl_d = '0;
-    internal_state_pl_dump_d = '0;
+    internal_state_pl_dump = '0;
     for (int i = 0; i < NApps; i = i+1) begin
       internal_state_pl_d |= internal_states_out[i];
-      internal_state_pl_dump_d |= internal_states_dump[i];
+      internal_state_pl_dump |= internal_states_dump[i];
     end
   end
 
@@ -133,8 +131,7 @@ module csrng_state_db import csrng_pkg::*; #(
           state_db_rd_res_ctr_o} = internal_state_pl_q;
 
 
-  // using a copy of the internal state pipeline version for better timing
-  assign internal_state_diag = {30'b0,internal_state_pl_dump_q};
+  assign internal_state_diag = {30'b0,internal_state_pl_dump};
 
 
   // Register access of internal state
