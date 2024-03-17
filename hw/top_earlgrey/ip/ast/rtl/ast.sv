@@ -685,7 +685,7 @@ rng #(
 // Alerts (Always ON)
 ///////////////////////////////////////
 ast_pkg::ast_dif_t as_alert_src;
-ast_pkg::ast_dif_t cg_alert_src;
+ast_pkg::ast_dif_t cgc_alert_src;
 ast_pkg::ast_dif_t gd_alert_src;
 ast_pkg::ast_dif_t ts_alert_hi_src;
 ast_pkg::ast_dif_t ts_alert_lo_src;
@@ -712,7 +712,7 @@ ast_alert u_alert_as (
 ast_alert u_alert_cg (
   .clk_i ( clk_ast_alert_i ),
   .rst_ni ( rst_ast_alert_ni ),
-  .alert_src_i ( cg_alert_src ),
+  .alert_src_i ( cgc_alert_src ),
   .alert_trig_i ( alert_rsp_i.alerts_trig[ast_pkg::CgSel] ),
   .alert_ack_i ( alert_rsp_i.alerts_ack[ast_pkg::CgSel] ),
   .alert_req_o ( alert_req_o.alerts[ast_pkg::CgSel] )
@@ -820,7 +820,7 @@ ast_alert u_alert_ot5 (
 // Alerts Open-Source Selection
 ////////////////////////////////////////
 assign as_alert_src    = '{p: 1'b0, n: 1'b1};
-assign cg_alert_src    = '{p: 1'b0, n: 1'b1};
+assign cgc_alert_src   = '{p: 1'b0, n: 1'b1};
 assign gd_alert_src    = '{p: 1'b0, n: 1'b1};
 assign ts_alert_hi_src = '{p: 1'b0, n: 1'b1};
 assign ts_alert_lo_src = '{p: 1'b0, n: 1'b1};
