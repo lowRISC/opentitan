@@ -122,7 +122,6 @@ clang_tidy_rv_test(
         "//sw/device/silicon_creator/rom:sigverify_keys_rsa",
         "//sw/device/silicon_creator/rom:sigverify_keys_spx",
         "//sw/device/silicon_creator/rom/keys/fake/rsa",
-        "//sw/device/silicon_creator/rom/keys/fake/spx",
     ],
 )
 
