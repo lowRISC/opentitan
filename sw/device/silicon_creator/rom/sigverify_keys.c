@@ -13,7 +13,6 @@
 #include "sw/device/silicon_creator/lib/drivers/rnd.h"
 #include "sw/device/silicon_creator/rom/sigverify_key_types.h"
 #include "sw/device/silicon_creator/rom/sigverify_keys_rsa.h"
-#include "sw/device/silicon_creator/rom/sigverify_keys_spx.h"
 
 /**
  * Checks the validity of a key in OTP.

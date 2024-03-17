@@ -116,6 +116,7 @@ cc_library(
         ":sigverify_keys",
         ":sigverify_keys_rsa",
         ":sigverify_keys_spx",
+        ":sigverify_otp_keys",
         "//hw/ip/aon_timer/data:aon_timer_c_regs",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:bitfield",
@@ -175,7 +176,6 @@ opentitan_binary(
     deps = [
         ":rom_without_keys",
         "//sw/device/silicon_creator/rom/keys/fake/rsa",
-        "//sw/device/silicon_creator/rom/keys/fake/spx",
     ],
 )
 
@@ -207,7 +207,6 @@ opentitan_binary(
     deps = [
         ":rom_without_keys",
         "//sw/device/silicon_creator/rom/keys/real/rsa",
-        "//sw/device/silicon_creator/rom/keys/real/spx",
     ],
 )
 
@@ -422,7 +421,7 @@ cc_library(
     ],
     deps = [
         ":sigverify_key_types",
-        ":sigverify_keys",
+        ":sigverify_otp_keys",
         "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib:error",
