@@ -27,7 +27,7 @@ package(default_visibility = ["//visibility:public"])
 
 otp_image(
     name = "otp_img_sigverify_spx_rma",
-    src = "//hw/ip/otp_ctrl/data:otp_json_rma",
+    src = "//hw/ip/otp_ctrl/data/lc_state:otp_json_rma",
     overlays = STD_OTP_OVERLAYS + [
         "//sw/device/silicon_creator/rom/e2e/sigverify_spx:otp_json_sigverify_spx_enabled_true",
     ],

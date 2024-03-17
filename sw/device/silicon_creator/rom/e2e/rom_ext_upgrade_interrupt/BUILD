@@ -59,7 +59,7 @@ otp_json(
 [
     otp_image(
         name = "otp_img_rom_ext_upgrade_interrupt_{}".format(lc_state),
-        src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state),
+        src = "//hw/ip/otp_ctrl/data/lc_state:otp_json_{}".format(lc_state),
         overlays = STD_OTP_OVERLAYS + [":otp_json_rom_ext_upgrade_interrupt"],
         visibility = ["//visibility:private"],
     )

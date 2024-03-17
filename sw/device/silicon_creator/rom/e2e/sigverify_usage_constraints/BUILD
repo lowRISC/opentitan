@@ -90,7 +90,7 @@ otp_json(
 [
     otp_image(
         name = "otp_img_sigverify_usage_constraints_{}".format(lc_state),
-        src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state),
+        src = "//hw/ip/otp_ctrl/data/lc_state:otp_json_{}".format(lc_state),
         overlays = STD_OTP_OVERLAYS + [":otp_json_set_usage_constraint_params_overlay"],
         visibility = ["//visibility:private"],
     )
