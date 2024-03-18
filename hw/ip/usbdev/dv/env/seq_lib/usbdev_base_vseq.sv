@@ -153,6 +153,7 @@ endtask
   task check_rx_packet(bit [3:0] endp, bit setup, bit [4:0] buffer_id,
                        byte unsigned exp_byte_data[]);
     uvm_reg_data_t rx_fifo_read;
+    int unsigned   aligned_size;
     int unsigned   offset;
 
     // Read RX FIFO which should contain a buffer description matching the expectations
@@ -170,13 +171,17 @@ endtask
     // run into troubles trying to perform complete word reads from a packet buffer memory that
     // has not been initialized, resulting in the transfer of undefined data even if it is
     // ultimately unused.
-    `DV_CHECK_EQ_FATAL(exp_byte_data.size() & 3, 0, "Packets must be 4n presently");
+    aligned_size = exp_byte_data.size() & ~3;
+    if (aligned_size < exp_byte_data.size()) begin
+      `uvm_info(`gfn, $sformatf("WARNING: Packets must be 4n presently; final byte(s) not tested"),
+                UVM_LOW)
+    end
     for (int unsigned idx = 0; idx < exp_byte_data.size(); idx++) begin
       `uvm_info(`gfn, $sformatf("%d: 0x%x", idx, exp_byte_data[idx]), UVM_DEBUG)
     end
 
     // Check buffer content against packet data
-    for (int unsigned idx = 0; idx < exp_byte_data.size(); idx += 4) begin
+    for (int unsigned idx = 0; idx < aligned_size; idx += 4) begin
       bit [31:0] act_data;
       bit [31:0] exp_data;
       // Expected value of this word
@@ -225,6 +230,31 @@ endtask
     csr_wr(.ptr(ral.in_sent[0].sent[endp]), .value(1'b1));
     csr_rd(.ptr(ral.in_sent[0].sent[endp]), .value(sent));
     `DV_CHECK_EQ(sent, 0); // verify that after writing 1, the in_sent bit is cleared.
+  endtask
+
+  // Check that the USB device received a packet with the expected properties.
+  task check_pkt_received(bit [3:0] endp, bit setup, bit [4:0] buffer_id,
+                          byte unsigned exp_byte_data[]);
+    uvm_reg_data_t intr_state;
+    bit pkt_received;
+
+    // Read intr_state reg
+    csr_rd(.ptr(ral.intr_state), .value(intr_state));
+    // Get pkt_received interrupt status
+    pkt_received = bit'(get_field_val(ral.intr_state.pkt_received, intr_state));
+    // DV_CHECK on pkt_received interrupt; this is a Status type interrupt,
+    // so it will be asserted only whilst the RX FIFO is non-empty.
+    `DV_CHECK_EQ(pkt_received, 1);
+
+    // Read rx_fifo reg, clearing the interrupt condition.
+    check_rx_packet(endp, setup, buffer_id, exp_byte_data);
+
+    // Read intr_state reg
+    csr_rd(.ptr(ral.intr_state), .value(intr_state));
+    // Get pkt_received interrupt status
+    pkt_received = bit'(get_field_val(ral.intr_state.pkt_received, intr_state));
+    // DV_CHECK on pkt_received interrupt
+    `DV_CHECK_EQ(pkt_received, 0);
   endtask
 
 virtual task dut_shutdown();
