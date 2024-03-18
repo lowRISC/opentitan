@@ -84,3 +84,10 @@ cc_library(
     hdrs = ["provisioning_data.h"],
     deps = ["//sw/device/lib/ujson"],
 )
+
+cc_library(
+    name = "ottf",
+    srcs = ["ottf.c"],
+    hdrs = ["ottf.h"],
+    deps = ["//sw/device/lib/ujson"],
+)
