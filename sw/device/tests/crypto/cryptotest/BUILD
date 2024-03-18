@@ -372,3 +372,107 @@ opentitan_test(
         test_harness = "//sw/host/tests/crypto/kmac_kat:harness",
     ),
 )
+
+AES_GCM_TESTVECTOR_ENCRYPT_TARGETS = [
+    "//sw/host/cryptotest/testvectors/data:nist_cavp_aes_gcm_{}_{}_json".format(
+        ext_operation.lower(),
+        key_len,
+    )
+    for ext_operation in [
+        "EncryptExtIV",
+    ]
+    for key_len in [
+        "128",
+        "192",
+        "256",
+    ]
+]
+
+AES_GCM_TESTVECTOR_DECRYPT_TARGETS = [
+    "//sw/host/cryptotest/testvectors/data:nist_cavp_aes_gcm_{}_{}_json".format(
+        ext_operation.lower(),
+        key_len,
+    )
+    for ext_operation in [
+        "Decrypt",
+    ]
+    for key_len in [
+        "128",
+        "192",
+        "256",
+    ]
+]
+
+AES_GCM_ENCRYPT_TESTVECTOR_ARGS = " ".join([
+    "--aes-gcm-json=\"$(rootpath {})\"".format(target)
+    for target in AES_GCM_TESTVECTOR_ENCRYPT_TARGETS
+])
+
+AES_GCM_DECRYPT_TESTVECTOR_ARGS = " ".join([
+    "--aes-gcm-json=\"$(rootpath {})\"".format(target)
+    for target in AES_GCM_TESTVECTOR_DECRYPT_TARGETS
+])
+
+opentitan_test(
+    name = "aes_gcm_nist_kat_enc",
+    cw310 = cw310_params(
+        timeout = "eternal",
+        binaries = {"//sw/device/tests/crypto/cryptotest/firmware:firmware_fpga_cw310_test_rom": "firmware"},
+        data = AES_GCM_TESTVECTOR_ENCRYPT_TARGETS,
+        test_cmd = """
+                --bootstrap={firmware}
+            """ + AES_GCM_ENCRYPT_TESTVECTOR_ARGS,
+        test_harness = "//sw/host/tests/crypto/aes_gcm_nist_kat:harness",
+    ),
+    exec_env = CRYPTOTEST_EXEC_ENVS,
+    silicon = silicon_params(
+        timeout = "eternal",
+        binaries = {"//sw/device/tests/crypto/cryptotest/firmware:firmware_silicon_owner_sival_rom_ext": "firmware"},
+        data = AES_GCM_TESTVECTOR_ENCRYPT_TARGETS,
+        test_cmd = """
+                --bootstrap={firmware}
+            """ + AES_GCM_ENCRYPT_TESTVECTOR_ARGS,
+        test_harness = "//sw/host/tests/crypto/aes_gcm_nist_kat:harness",
+    ),
+    silicon_prodc = silicon_params(
+        timeout = "eternal",
+        binaries = {"//sw/device/tests/crypto/cryptotest/firmware:firmware_silicon_owner_prodc_rom_ext": "firmware"},
+        data = AES_GCM_TESTVECTOR_ENCRYPT_TARGETS,
+        test_cmd = """
+                --bootstrap={firmware}
+            """ + AES_GCM_ENCRYPT_TESTVECTOR_ARGS,
+        test_harness = "//sw/host/tests/crypto/aes_gcm_nist_kat:harness",
+    ),
+)
+
+opentitan_test(
+    name = "aes_gcm_nist_kat_dec",
+    cw310 = cw310_params(
+        timeout = "eternal",
+        binaries = {"//sw/device/tests/crypto/cryptotest/firmware:firmware_fpga_cw310_test_rom": "firmware"},
+        data = AES_GCM_TESTVECTOR_DECRYPT_TARGETS,
+        test_cmd = """
+                --bootstrap={firmware}
+            """ + AES_GCM_DECRYPT_TESTVECTOR_ARGS,
+        test_harness = "//sw/host/tests/crypto/aes_gcm_nist_kat:harness",
+    ),
+    exec_env = CRYPTOTEST_EXEC_ENVS,
+    silicon = silicon_params(
+        timeout = "eternal",
+        binaries = {"//sw/device/tests/crypto/cryptotest/firmware:firmware_silicon_owner_sival_rom_ext": "firmware"},
+        data = AES_GCM_TESTVECTOR_DECRYPT_TARGETS,
+        test_cmd = """
+                --bootstrap={firmware}
+            """ + AES_GCM_DECRYPT_TESTVECTOR_ARGS,
+        test_harness = "//sw/host/tests/crypto/aes_gcm_nist_kat:harness",
+    ),
+    silicon_prodc = silicon_params(
+        timeout = "eternal",
+        binaries = {"//sw/device/tests/crypto/cryptotest/firmware:firmware_silicon_owner_prodc_rom_ext": "firmware"},
+        data = AES_GCM_TESTVECTOR_DECRYPT_TARGETS,
+        test_cmd = """
+                --bootstrap={firmware}
+            """ + AES_GCM_DECRYPT_TESTVECTOR_ARGS,
+        test_harness = "//sw/host/tests/crypto/aes_gcm_nist_kat:harness",
+    ),
+)
