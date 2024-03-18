@@ -107,6 +107,8 @@ def _parameter_name(env, pname):
         (_, suffix) = env.split(":")
         if "cw310" in suffix:
             pname = "cw310"
+        elif "cw340" in suffix:
+            pname = "cw340"
         elif "verilator" in suffix:
             pname = "verilator"
         elif "dv" in suffix:
@@ -149,6 +151,7 @@ def opentitan_test(
         manifest = None,
         exec_env = {},
         cw310 = _cw310_params(),
+        cw340 = _cw310_params(),
         dv = _dv_params(),
         silicon = _silicon_params(),
         verilator = _verilator_params(),
@@ -182,6 +185,7 @@ def opentitan_test(
     """
     test_parameters = {
         "cw310": cw310,
+        "cw340": cw340,
         "dv": dv,
         "silicon": silicon,
         "verilator": verilator,

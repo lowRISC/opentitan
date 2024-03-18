@@ -267,20 +267,6 @@ fpga_cw305(
 ###########################################################################
 fpga_cw340(
     name = "fpga_cw340",
-    design = "earlgrey",
-    exec_env = "fpga_cw340",
-    libs = [
-        "//sw/device/lib/arch:boot_stage_rom_ext",
-        "//sw/device/lib/arch:fpga_cw340",
-    ],
-    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
-    rom_scramble_config = "//hw/top_earlgrey/data:autogen/top_earlgrey.gen.hjson",
-    test_cmd = "testing-not-supported",
-)
-
-fpga_cw340(
-    name = "fpga_cw340_test_rom",
-    testonly = True,
     args = [
         "--rcfile=",
         "--logging=info",
@@ -289,17 +275,55 @@ fpga_cw340(
         "@//ci:lowrisc_fpga_cw340": ["--uarts=/dev/ttyACM_CW340_1,/dev/ttyACM_CW340_0"],
         "//conditions:default": [],
     }),
-    base = ":fpga_cw340",
-    base_bitstream = "//hw/bitstream/cw340:bitstream",
-    exec_env = "fpga_cw340_test_rom",
-    otp_mmi = "//hw/bitstream/cw340:otp_mmi",
+    design = "earlgrey",
+    exec_env = "fpga_cw340",
+    libs = [
+        "//sw/device/lib/arch:boot_stage_rom_ext",
+        "//sw/device/lib/arch:fpga_cw340",
+    ],
+    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
     param = {
-        "interface": "cw340",
+        "interface": "hyper340",
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
     },
+    rom_scramble_config = "//hw/top_earlgrey/data:autogen/top_earlgrey.gen.hjson",
+    test_cmd = "testing-not-supported",
+)
+
+fpga_cw340(
+    name = "fpga_cw340_test_rom",
+    testonly = True,
+    base = ":fpga_cw340",
+    base_bitstream = "//hw/bitstream/cw340:bitstream",
+    exec_env = "fpga_cw340_test_rom",
+    otp = "//hw/ip/otp_ctrl/data:img_rma",
+    otp_mmi = "//hw/bitstream/cw340:otp_mmi",
+    rom = "//sw/device/lib/testing/test_rom:test_rom",
     rom_mmi = "//hw/bitstream/cw340:rom_mmi",
     test_cmd = """
+        --exec="transport init"
+        --exec="fpga load-bitstream {bitstream}"
+        --exec="bootstrap --clear-uart=true {firmware}"
+        --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
+        no-op
+    """,
+)
+
+fpga_cw340(
+    name = "fpga_cw340_rom_with_fake_keys",
+    testonly = True,
+    base = ":fpga_cw340",
+    base_bitstream = "//hw/bitstream/cw340:bitstream",
+    exec_env = "fpga_cw340_rom_with_fake_keys",
+    manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
+    otp = "//hw/ip/otp_ctrl/data:img_rma",
+    otp_mmi = "//hw/bitstream/cw340:otp_mmi",
+    rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
+    rom_mmi = "//hw/bitstream/cw340:rom_mmi",
+    rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:test_private_key_0": "test_key_0"},
+    test_cmd = """
+        --exec="transport init"
         --exec="fpga load-bitstream {bitstream}"
         --exec="bootstrap --clear-uart=true {firmware}"
         --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
