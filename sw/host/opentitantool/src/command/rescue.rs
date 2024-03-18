@@ -13,7 +13,7 @@ use std::path::PathBuf;
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::chip::boot_svc::{BootDataSlot, NextBootBl0};
-use opentitanlib::chip::helper::OwnershipUnlockParams;
+use opentitanlib::chip::helper::{OwnershipActivateParams, OwnershipUnlockParams};
 use opentitanlib::rescue::serial::RescueSerial;
 
 #[derive(Debug, serde::Serialize, Annotate)]
@@ -172,12 +172,64 @@ impl CommandDispatch for OwnershipUnlock {
     }
 }
 
+#[derive(Debug, Args)]
+pub struct OwnershipActivate {
+    #[command(flatten)]
+    params: UartParams,
+    #[command(flatten)]
+    activate: OwnershipActivateParams,
+    #[arg(short, long, help = "A file containing a binary activate request")]
+    input: Option<PathBuf>,
+}
+
+impl CommandDispatch for OwnershipActivate {
+    fn run(
+        &self,
+        _context: &dyn Any,
+        transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn Annotate>>> {
+        let activate = self
+            .activate
+            .apply_to(self.input.as_ref().map(File::open).transpose()?.as_mut())?;
+
+        let uart = self.params.create(transport)?;
+        let rescue = RescueSerial::new(uart);
+        rescue.enter(transport)?;
+        rescue.ownership_activate(activate)?;
+        Ok(None)
+    }
+}
+
+#[derive(Debug, Args)]
+pub struct SetOwnerConfig {
+    #[command(flatten)]
+    params: UartParams,
+    #[arg(help = "A signed owner configuration block")]
+    input: PathBuf,
+}
+
+impl CommandDispatch for SetOwnerConfig {
+    fn run(
+        &self,
+        _context: &dyn Any,
+        transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn Annotate>>> {
+        let data = std::fs::read(&self.input)?;
+        let uart = self.params.create(transport)?;
+        let rescue = RescueSerial::new(uart);
+        rescue.enter(transport)?;
+        rescue.set_owner_config(&data)?;
+        Ok(None)
+    }
+}
+
 #[derive(Debug, Subcommand, CommandDispatch)]
 pub enum BootSvc {
     Get(GetBootSvc),
     SetNextBl0Slot(SetNextBl0Slot),
     SetPrimaryBl0Slot(SetPrimaryBl0Slot),
     OwnershipUnlock(OwnershipUnlock),
+    OwnershipActivate(OwnershipActivate),
 }
 
 #[derive(Debug, Subcommand, CommandDispatch)]
@@ -186,4 +238,5 @@ pub enum RescueCommand {
     BootSvc(BootSvc),
     GetBootLog(GetBootLog),
     Firmware(Firmware),
+    SetOwnerConfig(SetOwnerConfig),
 }

@@ -79,7 +79,7 @@ impl Default for OwnerBlock {
 impl OwnerBlock {
     const SIZE: usize = 2048;
     const DATA_SIZE: usize = 1728;
-    const SIGNATURE_OFFSET: usize = 1752;
+    const SIGNATURE_OFFSET: usize = 1952;
 
     pub fn basic() -> Self {
         Self {
