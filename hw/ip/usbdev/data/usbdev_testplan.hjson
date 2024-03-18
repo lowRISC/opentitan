@@ -1105,9 +1105,11 @@
             - Set all of the OUT Data Toggle bits to random values.
             - Set all of the IN Data Toggle bits to random values.
             - Check that all of the OUT and IN Data Toggle bits read back as expected.
+            - Test the interaction of USB traffic with the IN and OUT Data Toggle bits, but note
+              that data toggle bits may only be toggled safely between packets.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_data_toggle_restore"]
     }
     {
       name: setup_priority
