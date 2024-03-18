@@ -131,12 +131,20 @@ status_t dice_uds_cert_build(manuf_certgen_inputs_t *inputs,
   // TODO(#19455): check against digests present in the OTP digest field.
   hmac_digest_t otp_creator_sw_cfg_measurement = {.digest = {0}};
   hmac_digest_t otp_owner_sw_cfg_measurement = {.digest = {0}};
+  hmac_digest_t otp_rot_creator_auth_codesign_measurement = {.digest = {0}};
+  hmac_digest_t otp_rot_creator_auth_state_measurement = {.digest = {0}};
   hmac_digest_t otp_hw_cfg0_measurement = {.digest = {0}};
+  hmac_digest_t otp_hw_cfg1_measurement = {.digest = {0}};
   TRY(measure_otp_partition(kOtpPartitionCreatorSwCfg,
                             &otp_creator_sw_cfg_measurement));
   TRY(measure_otp_partition(kOtpPartitionOwnerSwCfg,
                             &otp_owner_sw_cfg_measurement));
+  TRY(measure_otp_partition(kOtpPartitionRotCreatorAuthCodesign,
+                            &otp_rot_creator_auth_codesign_measurement));
+  TRY(measure_otp_partition(kOtpPartitionRotCreatorAuthState,
+                            &otp_rot_creator_auth_state_measurement));
   TRY(measure_otp_partition(kOtpPartitionHwCfg0, &otp_hw_cfg0_measurement));
+  TRY(measure_otp_partition(kOtpPartitionHwCfg1, &otp_hw_cfg1_measurement));
 
   // Generate the UDS key.
   TRY(sc_keymgr_state_check(kScKeymgrStateInit));
@@ -153,15 +161,22 @@ status_t dice_uds_cert_build(manuf_certgen_inputs_t *inputs,
 
   // Generate the TBS certificate.
   uds_tbs_values_t uds_cert_tbs_params = {
-      // TODO(#19455): add measurements of new (A1) OTP partitions.
       .otp_creator_sw_cfg_hash =
           (unsigned char *)otp_creator_sw_cfg_measurement.digest,
       .otp_creator_sw_cfg_hash_size = kHmacDigestNumBytes,
       .otp_owner_sw_cfg_hash =
           (unsigned char *)otp_owner_sw_cfg_measurement.digest,
       .otp_owner_sw_cfg_hash_size = kHmacDigestNumBytes,
+      .otp_rot_creator_auth_codesign_hash =
+          (unsigned char *)otp_rot_creator_auth_codesign_measurement.digest,
+      .otp_rot_creator_auth_codesign_hash_size = kHmacDigestNumBytes,
+      .otp_rot_creator_auth_state_hash =
+          (unsigned char *)otp_rot_creator_auth_state_measurement.digest,
+      .otp_rot_creator_auth_state_hash_size = kHmacDigestNumBytes,
       .otp_hw_cfg0_hash = (unsigned char *)otp_hw_cfg0_measurement.digest,
       .otp_hw_cfg0_hash_size = kHmacDigestNumBytes,
+      .otp_hw_cfg1_hash = (unsigned char *)otp_hw_cfg1_measurement.digest,
+      .otp_hw_cfg1_hash_size = kHmacDigestNumBytes,
       .debug_flag = is_debug_exposed(),
       .creator_pub_key_id = (unsigned char *)uds_pubkey_id->digest,
       .creator_pub_key_id_size = kCertKeyIdSizeInBytes,

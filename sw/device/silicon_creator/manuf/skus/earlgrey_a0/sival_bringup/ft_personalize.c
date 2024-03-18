@@ -35,11 +35,11 @@
 
 OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 
-static_assert(kUdsMaxTbsSizeBytes == 569,
+static_assert(kUdsMaxTbsSizeBytes == 714,
               "The `uds_tbs_certificate` buffer size in the "
               "`manuf_dice_certs_t` struct should match the value of "
               "`kUdsMaxTbsSizeBytes`.");
-static_assert(kUdsMaxCertSizeBytes == 660,
+static_assert(kUdsMaxCertSizeBytes == 805,
               "The `uds_tbs_certificate` buffer size in the "
               "`manuf_dice_certs_t` struct should match the value of "
               "`kUdsMaxTbsSizeBytes`.");
