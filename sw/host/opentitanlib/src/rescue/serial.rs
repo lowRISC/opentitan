@@ -8,7 +8,9 @@ use std::time::Duration;
 
 use crate::app::TransportWrapper;
 use crate::chip::boot_log::BootLog;
-use crate::chip::boot_svc::{BootDataSlot, BootSvc, NextBootBl0, OwnershipUnlockRequest};
+use crate::chip::boot_svc::{
+    BootDataSlot, BootSvc, NextBootBl0, OwnershipActivateRequest, OwnershipUnlockRequest,
+};
 use crate::io::uart::Uart;
 use crate::rescue::xmodem::Xmodem;
 use crate::rescue::RescueError;
@@ -122,5 +124,18 @@ impl RescueSerial {
         let message = BootSvc::ownership_unlock(unlock);
         let data = message.to_bytes()?;
         self.set_boot_svc_raw(&data)
+    }
+
+    pub fn ownership_activate(&self, activate: OwnershipActivateRequest) -> Result<()> {
+        let message = BootSvc::ownership_activate(activate);
+        let data = message.to_bytes()?;
+        self.set_boot_svc_raw(&data)
+    }
+
+    pub fn set_owner_config(&self, data: &[u8]) -> Result<()> {
+        self.set_mode(Self::OWNER_BLOCK)?;
+        let xm = Xmodem::new();
+        xm.send(&*self.uart, data)?;
+        Ok(())
     }
 }
