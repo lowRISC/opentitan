@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 pub mod aes_commands;
+pub mod aes_gcm_commands;
 pub mod commands;
 pub mod drbg_commands;
 pub mod ecdh_commands;
