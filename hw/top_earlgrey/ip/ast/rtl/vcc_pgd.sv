@@ -33,13 +33,13 @@ end
 
 always_comb (* xprop_off *) begin
   if ( init_start ) begin
-    vcc_pok_o <= 1'b0;
+    vcc_pok_o = 1'b0;
   end
   if ( !init_start && gen_supp_a ) begin
-    vcc_pok_o <= #(ast_bhv_pkg::VCC_POK_RDLY) gen_supp_a;
+    vcc_pok_o = #(ast_bhv_pkg::VCC_POK_RDLY) gen_supp_a;
   end
   if ( !init_start && !gen_supp_a ) begin
-    vcc_pok_o <= #(ast_bhv_pkg::VCC_POK_FDLY) gen_supp_a;
+    vcc_pok_o = #(ast_bhv_pkg::VCC_POK_FDLY) gen_supp_a;
   end
 end
 `else
