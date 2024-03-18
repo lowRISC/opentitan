@@ -185,6 +185,9 @@ opentitan_test(
 opentitan_test(
     name = "drbg_functest",
     srcs = ["drbg_functest.c"],
+    cw310 = cw310_params(
+        tags = ["broken"],  # https://github.com/lowRISC/opentitan/issues/19568
+    ),
     exec_env = EARLGREY_TEST_ENVS,
     verilator = verilator_params(
         timeout = "eternal",
