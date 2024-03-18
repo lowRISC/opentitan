@@ -320,10 +320,10 @@ module entropy_src_reg_top (
   logic fw_ov_wr_data_we;
   logic [31:0] fw_ov_wr_data_wd;
   logic observe_fifo_thresh_we;
-  logic [6:0] observe_fifo_thresh_qs;
-  logic [6:0] observe_fifo_thresh_wd;
+  logic [5:0] observe_fifo_thresh_qs;
+  logic [5:0] observe_fifo_thresh_wd;
   logic observe_fifo_depth_re;
-  logic [6:0] observe_fifo_depth_qs;
+  logic [5:0] observe_fifo_depth_qs;
   logic debug_status_re;
   logic [1:0] debug_status_entropy_fifo_depth_qs;
   logic [2:0] debug_status_sha3_fsm_qs;
@@ -2349,9 +2349,9 @@ module entropy_src_reg_top (
   logic observe_fifo_thresh_gated_we;
   assign observe_fifo_thresh_gated_we = observe_fifo_thresh_we & regwen_qs;
   prim_subreg #(
-    .DW      (7),
+    .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (7'h20),
+    .RESVAL  (6'h10),
     .Mubi    (1'b0)
   ) u_observe_fifo_thresh (
     .clk_i   (clk_i),
@@ -2377,7 +2377,7 @@ module entropy_src_reg_top (
 
   // R[observe_fifo_depth]: V(True)
   prim_subreg_ext #(
-    .DW    (7)
+    .DW    (6)
   ) u_observe_fifo_depth (
     .re     (observe_fifo_depth_re),
     .we     (1'b0),
@@ -3685,7 +3685,7 @@ module entropy_src_reg_top (
   assign fw_ov_wr_data_wd = reg_wdata[31:0];
   assign observe_fifo_thresh_we = addr_hit[50] & reg_we & !reg_error;
 
-  assign observe_fifo_thresh_wd = reg_wdata[6:0];
+  assign observe_fifo_thresh_wd = reg_wdata[5:0];
   assign observe_fifo_depth_re = addr_hit[51] & reg_re & !reg_error;
   assign debug_status_re = addr_hit[52] & reg_re & !reg_error;
   assign recov_alert_sts_we = addr_hit[53] & reg_we & !reg_error;
@@ -4043,11 +4043,11 @@ module entropy_src_reg_top (
       end
 
       addr_hit[50]: begin
-        reg_rdata_next[6:0] = observe_fifo_thresh_qs;
+        reg_rdata_next[5:0] = observe_fifo_thresh_qs;
       end
 
       addr_hit[51]: begin
-        reg_rdata_next[6:0] = observe_fifo_depth_qs;
+        reg_rdata_next[5:0] = observe_fifo_depth_qs;
       end
 
       addr_hit[52]: begin

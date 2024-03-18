@@ -56,7 +56,7 @@ It further has to set the `FW_OV_INSERT_START` field in the [`FW_OV_SHA3_START`]
 Once all entropy bits have been written to the [`FW_OV_WR_DATA`](registers.md#fw_ov_wr_data) register, firmware can set `FW_OV_INSERT_START` to `kMultiBitBool4False` to trigger the hardware conditioning mechanism.
 
 Note that if the `FW_OV_ENTROPY_INSERT` field is set to `kMultiBitBool4True`, post-health test entropy bits do NOT continue to flow through the hardware pipeline.
-The observe FIFO will collect 2 kBit of contiguous entropy bits.
+The observe FIFO will collect 1 kBit of contiguous entropy bits.
 Any entropy bits arriving after the observe FIFO is full are being discarded.
 Firmware has to read out the entire observe FIFO to restart entropy collection.
 Only entropy bits inserted by firmware by writing the [`FW_OV_WR_DATA`](registers.md#fw_ov_wr_data) register may eventually reach the block hardware interface.

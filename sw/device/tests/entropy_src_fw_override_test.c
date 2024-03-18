@@ -33,7 +33,7 @@ enum {
   /**
    * Observe FIFO threshold: half of the FIFO size.
    */
-  kEntropySrcFifoThreshold = 32,
+  kEntropySrcFifoThreshold = 16,
   /**
    * The number of contiguous samples we want to capture.
    */
