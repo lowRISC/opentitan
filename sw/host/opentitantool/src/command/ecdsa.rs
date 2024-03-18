@@ -37,6 +37,14 @@ pub struct EcdsaKeyShowCommand {
     der_file: PathBuf,
 }
 
+#[derive(serde::Serialize, Annotate)]
+pub struct EcdsaKeyShowResult {
+    pub raw: EcdsaRawPublicKey,
+    #[serde(with = "serde_bytes")]
+    #[annotate(format = hexstr)]
+    pub sec1_encoded: Vec<u8>,
+}
+
 impl CommandDispatch for EcdsaKeyShowCommand {
     fn run(
         &self,
@@ -44,7 +52,10 @@ impl CommandDispatch for EcdsaKeyShowCommand {
         _transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
         let key = load_pub_or_priv_key(&self.der_file)?;
-        Ok(Some(Box::new(EcdsaRawPublicKey::try_from(&key)?)))
+        Ok(Some(Box::new(EcdsaKeyShowResult {
+            raw: EcdsaRawPublicKey::try_from(&key)?,
+            sec1_encoded: key.key.to_sec1_bytes().to_vec(),
+        })))
     }
 }
 

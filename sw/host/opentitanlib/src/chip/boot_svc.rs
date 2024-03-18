@@ -327,6 +327,18 @@ impl BootSvc {
             message: Message::OwnershipUnlockRequest(unlock),
         }
     }
+
+    pub fn ownership_activate(activate: OwnershipActivateRequest) -> Self {
+        BootSvc {
+            header: Header {
+                digest: [0u32; 8],
+                identifier: Header::IDENTIFIER,
+                kind: BootSvcKind::OwnershipActivateRequest,
+                length: (Header::SIZE + OwnershipActivateRequest::SIZE) as u32,
+            },
+            message: Message::OwnershipActivateRequest(activate),
+        }
+    }
 }
 
 impl TryFrom<&[u8]> for Header {

@@ -7,7 +7,7 @@ use num_bigint_dig::{traits::ModInverse, BigInt, BigUint, Sign::Minus};
 use rand::rngs::OsRng;
 use rsa::pkcs1::{DecodeRsaPublicKey, EncodeRsaPublicKey};
 use rsa::pkcs1v15::Pkcs1v15Sign;
-use rsa::pkcs8::{DecodePrivateKey, EncodePrivateKey};
+use rsa::pkcs8::{DecodePrivateKey, DecodePublicKey, EncodePrivateKey};
 use rsa::traits::PublicKeyParts;
 use serde::{Deserialize, Serialize};
 use serde_annotate::Annotate;
@@ -67,7 +67,9 @@ impl RsaPublicKey {
     /// Construct a new public key from a PKCS1 encoded DER file.
     pub fn from_pkcs1_der_file<P: Into<PathBuf>>(der_file: P) -> Result<RsaPublicKey> {
         let der_file = der_file.into();
-        match rsa::RsaPublicKey::read_pkcs1_der_file(&der_file) {
+        match rsa::RsaPublicKey::read_pkcs1_der_file(&der_file)
+            .or_else(|_| rsa::RsaPublicKey::read_public_key_der_file(&der_file))
+        {
             Ok(key) => {
                 validate_key(&key)?;
                 Ok(Self { key })
@@ -247,6 +249,8 @@ pub struct RsaRawPublicKey {
     #[serde(with = "serde_bytes")]
     #[annotate(format = hexstr)]
     pub modulus: Vec<u8>,
+    #[serde(with = "serde_bytes")]
+    #[annotate(format = hexstr)]
     pub n0_inv: Vec<u8>,
 }
 
