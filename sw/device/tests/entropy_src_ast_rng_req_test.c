@@ -19,7 +19,7 @@ enum {
    * The size of the buffer used in firmware to process the entropy bits in
    * firmware override mode.
    */
-  kEntropyFifoBufferSize = 32,
+  kEntropyFifoBufferSize = 16,
 };
 
 static uint32_t read_fifo_depth(dif_entropy_src_t *entropy) {

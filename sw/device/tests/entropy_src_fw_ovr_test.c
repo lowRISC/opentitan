@@ -20,7 +20,7 @@ enum {
    * The size of the buffer used in firmware to process the entropy bits in
    * firmware override mode.
    */
-  kEntropyFifoBufferSize = 32,
+  kEntropyFifoBufferSize = 16,
 };
 
 /**

@@ -1295,37 +1295,37 @@ In addition, the otp_en_entropy_src_fw_over input needs to be set to `kMultiBitB
 ## OBSERVE_FIFO_THRESH
 Observe FIFO threshold register
 - Offset: `0xc8`
-- Reset default: `0x20`
-- Reset mask: `0x7f`
+- Reset default: `0x10`
+- Reset mask: `0x3f`
 - Register enable: [`REGWEN`](#regwen)
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "OBSERVE_FIFO_THRESH", "bits": 7, "attr": ["rw"], "rotate": -90}, {"bits": 25}], "config": {"lanes": 1, "fontsize": 10, "vspace": 210}}
+{"reg": [{"name": "OBSERVE_FIFO_THRESH", "bits": 6, "attr": ["rw"], "rotate": -90}, {"bits": 26}], "config": {"lanes": 1, "fontsize": 10, "vspace": 210}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                | Description                                                                                                                                                                             |
 |:------:|:------:|:-------:|:--------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|  31:7  |        |         |                     | Reserved                                                                                                                                                                                |
-|  6:0   |   rw   |  0x20   | OBSERVE_FIFO_THRESH | This field will set the threshold that the depth of the observe FIFO will be compared with when setting the interrupt status bit. Note: a value of zero is reserved and not to be used. |
+|  31:6  |        |         |                     | Reserved                                                                                                                                                                                |
+|  5:0   |   rw   |  0x10   | OBSERVE_FIFO_THRESH | This field will set the threshold that the depth of the observe FIFO will be compared with when setting the interrupt status bit. Note: a value of zero is reserved and not to be used. |
 
 ## OBSERVE_FIFO_DEPTH
 Observe FIFO depth register
 - Offset: `0xcc`
 - Reset default: `0x0`
-- Reset mask: `0x7f`
+- Reset mask: `0x3f`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "OBSERVE_FIFO_DEPTH", "bits": 7, "attr": ["ro"], "rotate": -90}, {"bits": 25}], "config": {"lanes": 1, "fontsize": 10, "vspace": 200}}
+{"reg": [{"name": "OBSERVE_FIFO_DEPTH", "bits": 6, "attr": ["ro"], "rotate": -90}, {"bits": 26}], "config": {"lanes": 1, "fontsize": 10, "vspace": 200}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name               | Description                                                 |
 |:------:|:------:|:-------:|:-------------------|:------------------------------------------------------------|
-|  31:7  |        |         |                    | Reserved                                                    |
-|  6:0   |   ro   |    x    | OBSERVE_FIFO_DEPTH | This field will hold the current depth of the observe FIFO. |
+|  31:6  |        |         |                    | Reserved                                                    |
+|  5:0   |   ro   |    x    | OBSERVE_FIFO_DEPTH | This field will hold the current depth of the observe FIFO. |
 
 ## DEBUG_STATUS
 Debug status register
