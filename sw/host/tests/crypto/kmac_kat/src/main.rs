@@ -58,7 +58,8 @@ fn run_kmac_testcase(
     test_case: &KmacTestCase,
     opts: &Opts,
     transport: &TransportWrapper,
-    fail_counter: &mut u32,
+    failures: &mut Vec<String>,
+    quiet: bool,
 ) -> Result<()> {
     log::info!(
         "vendor: {}, test case: {}",
@@ -122,7 +123,7 @@ fn run_kmac_testcase(
     }
     .send(&*uart)?;
 
-    let kmac_tag = CryptotestKmacTag::recv(&*uart, opts.timeout, false)?;
+    let kmac_tag = CryptotestKmacTag::recv(&*uart, opts.timeout, quiet)?;
     // Cryptolib could have chosen to return more tag bytes than we asked for. If it did, we can
     // ignore the extra ones.
     let success = test_case.tag[..] == kmac_tag.tag[..test_case.tag.len()];
@@ -133,9 +134,10 @@ fn run_kmac_testcase(
             test_case.result,
             success
         );
-    }
-    if success != test_case.result {
-        *fail_counter += 1;
+        failures.push(format!(
+            "{} KMAC-{} #{}",
+            test_case.vendor, test_case.mode, test_case.test_case_id
+        ));
     }
     Ok(())
 }
@@ -146,8 +148,11 @@ fn test_kmac(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let _ = UartConsole::wait_for(&*uart, r"Running [^\r\n]*", opts.timeout)?;
 
     let mut test_counter = 0u32;
-    let mut fail_counter = 0u32;
+    let mut failures = vec![];
     let test_vector_files = &opts.kmac_json;
+    // A filter level of `Error` indicates we're running in CI, so we don't want to print the
+    // output of every UART recv().
+    let quiet = opts.init.logging == log::LevelFilter::Error;
     for file in test_vector_files {
         let raw_json = fs::read_to_string(file)?;
         let kmac_tests: Vec<KmacTestCase> = serde_json::from_str(&raw_json)?;
@@ -155,13 +160,16 @@ fn test_kmac(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         for kmac_test in &kmac_tests {
             test_counter += 1;
             log::info!("Test counter: {}", test_counter);
-            run_kmac_testcase(kmac_test, opts, transport, &mut fail_counter)?;
+            run_kmac_testcase(kmac_test, opts, transport, &mut failures, quiet)?;
         }
     }
     assert_eq!(
-        0, fail_counter,
-        "Failed {} out of {} tests.",
-        fail_counter, test_counter
+        0,
+        failures.len(),
+        "Failed {} out of {} tests. Failures: {:?}",
+        failures.len(),
+        test_counter,
+        failures
     );
     Ok(())
 }
