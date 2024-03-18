@@ -219,3 +219,40 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
     },
 )
+
+AES_GCM_TESTVECTOR_TARGETS = [
+    "//sw/host/cryptotest/testvectors/data:nist_cavp_aes_gcm_{}_{}_json".format(
+        ext_operation.lower(),
+        key_len,
+    )
+    for ext_operation in [
+        "Decrypt",
+        "EncryptExtIV",
+    ]
+    for key_len in [
+        "128",
+        "192",
+        "256",
+    ]
+]
+
+AES_GCM_TESTVECTOR_ARGS = " ".join([
+    "--aes-gcm-json=\"$(rootpath {})\"".format(target)
+    for target in AES_GCM_TESTVECTOR_TARGETS
+])
+
+opentitan_test(
+    name = "aes_gcm_nist_kat",
+    cw310 = cw310_params(
+        timeout = "long",
+        binaries = {"//sw/device/tests/crypto/cryptotest/firmware:firmware": "firmware"},
+        data = AES_GCM_TESTVECTOR_TARGETS,
+        test_cmd = """
+                --bootstrap={firmware}
+            """ + AES_GCM_TESTVECTOR_ARGS,
+        test_harness = "//sw/host/tests/crypto/aes_gcm_nist_kat:harness",
+    ),
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+    },
+)
