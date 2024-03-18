@@ -276,7 +276,7 @@ fpga_cw340(
     exec_env = "fpga_cw340_test_rom",
     otp_mmi = "//hw/bitstream/cw340:otp_mmi",
     param = {
-        "interface": "cw340",
+        "interface": "hyper340",
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
     },

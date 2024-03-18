@@ -1,6 +1,14 @@
 {
   "includes": ["/__builtin__/hyperdebug_chipwhisperer.json"],
   "interface": "hyper340",
+  "pins": [
+    {
+      "name": "RESET",
+      "mode": "OpenDrain",
+      "pull_mode": "PullUp",
+      "alias_of": "CN10_29"
+    }
+  ],
   "spi": [
     {
       "name": "BOOTSTRAP",
