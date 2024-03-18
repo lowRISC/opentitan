@@ -100,7 +100,7 @@ UJSON_SERDE_STRUCT(ManufCertgenInputs, \
  */
 // clang-format off
 #define STRUCT_MANUF_DICE_CERTS(field, string) \
-    field(uds_tbs_certificate, uint8_t, 569) \
+    field(uds_tbs_certificate, uint8_t, 714) \
     field(uds_tbs_certificate_size, size_t) \
     field(cdi_0_certificate, uint8_t, 582) \
     field(cdi_0_certificate_size, size_t) \
@@ -116,7 +116,7 @@ UJSON_SERDE_STRUCT(ManufDiceCerts, \
  */
 // clang-format off
 #define STRUCT_MANUF_ENDORSED_CERTS(field, string) \
-    field(uds_certificate, uint8_t, 660) \
+    field(uds_certificate, uint8_t, 805) \
     field(uds_certificate_size, size_t)
 UJSON_SERDE_STRUCT(ManufEndorsedCerts, \
                    manuf_endorsed_certs_t, \
