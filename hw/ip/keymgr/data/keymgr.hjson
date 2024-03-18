@@ -42,8 +42,9 @@
   alert_list: [
     { name: "recov_operation_err",
       desc: '''
-        Alert for key manager operation errors.  These errors could have been caused by
-        software'''
+            Alert for key manager operation errors.  These errors could have been caused by
+            software.
+	    '''
     },
     { name: "fatal_fault_err",
       desc: "Alert for key manager faults.  These errors cannot be caused by software",
@@ -269,23 +270,27 @@
   features: [
     {
       name: "KEYMGR.SIDELOAD.KMAC",
-      desc: '''Generation of keys for KMAC. The key is only visible to hardware. This is tracked in
+      desc: '''
+            Generation of keys for KMAC. The key is only visible to hardware. This is tracked in
             KMAC as KMAC.KEY.SIDELOAD.
             '''
     }
     {
       name: "KEYMGR.SIDELOAD.AES",
-      desc: '''Generation of keys for AES. The key is only visible to hardware.
+      desc: '''
+            Generation of keys for AES. The key is only visible to hardware.
             '''
     }
     {
       name: "KEYMGR.SIDELOAD.OTBN",
-      desc: '''Generation of keys for KMAC. The key is only visible to hardware and OTBN code.
+      desc: '''
+            Generation of keys for KMAC. The key is only visible to hardware and OTBN code.
             '''
     }
     {
       name: "KEYMGR.DERIVE.ATTESTATION",
-      desc: '''DICE compliant key derivation. Used to generate attestation keys. Derived keys can
+      desc: '''
+            DICE compliant key derivation. Used to generate attestation keys. Derived keys can
             be directed to registers exposed to software, or sideloaded to OTBN
             (KEYMGR.SIDELOAD.OTBN). 256Bit measurements can be provided to the key derivation
             function using a dedicated set of registers.
@@ -293,14 +298,16 @@
     }
     {
       name: "KEYMGR.DERIVE.SEALING",
-      desc: '''Derivation of sealing keys. Derived keys can be directed to software registers, or
+      desc: '''
+            Derivation of sealing keys. Derived keys can be directed to software registers, or
             sideloaded to hardware security blocks. 256Bit binding words can be provided to the the
             key derivation function using a dedicated set of registers.
             '''
     }
     {
       name: "KEYMGR.GENERATE.OUTPUT",
-      desc: '''Derivation of output keys with additional salt and version. Software provided
+      desc: '''
+            Derivation of output keys with additional salt and version. Software provided
             salt and version values are used as inputs in the key derivation function along with
             the internal key manager state. The derived keys can be directed to software registers,
             or sideloaded to hardware security blocks.
@@ -308,13 +315,15 @@
     }
     {
       name: "KEYMGR.GENERATE.IDENTITY",
-      desc: '''Derivation of output keys to software registers. Unlike KEYMGR.GENERATE.OUTPUT, the
+      desc: '''
+            Derivation of output keys to software registers. Unlike KEYMGR.GENERATE.OUTPUT, the
             key derivation function does not support salt or version inputs.
             '''
     }
     {
       name: "KEYMGR.KEY_VERSIONING",
-      desc: '''The maximum version value supported by KEYMGR.GENERATE.OUTPUT is configurable via a
+      desc: '''
+            The maximum version value supported by KEYMGR.GENERATE.OUTPUT is configurable via a
             set of write-lockable registers. KEYMGR.GENERATE.OUTPUT will fail to derive a key with
             a version greater than the version set in the write lockable register for any given
             key manager internal state.
@@ -327,145 +336,145 @@
     }
     { name: "CONFIG.SHADOW",
       desc: '''
-        Various critical registers are shadowed: including operation control, reseed interval,
-        and key max version (creator, owner intermediate, owner).
-      '''
+            Various critical registers are shadowed: including operation control, reseed interval,
+            and key max version (creator, owner intermediate, owner).
+            '''
     }
     { name: "OP.CONFIG.REGWEN",
       desc: '''
-        Various controls locked during the duration of an operation: including operation start,
-        operation control, sideload clear, salt and key version.
-      '''
+            Various controls locked during the duration of an operation: including operation start,
+            operation control, sideload clear, salt and key version.
+            '''
     }
     { name: "RESEED.CONFIG.REGWEN",
       desc: '''
-        Reseed interval is software lockable.
-      '''
+            Reseed interval is software lockable.
+            '''
     }
     { name: "SW_BINDING.CONFIG.REGWEN",
       desc: '''
-        Software binding is lockable by software in each stage. When keymgr successfully advances,
-        the lock is released to allow the next stage the freedom to program.
-      '''
+            Software binding is lockable by software in each stage. When keymgr successfully advances,
+            the lock is released to allow the next stage the freedom to program.
+            '''
     }
     { name: "MAX_KEY_VER.CONFIG.REGWEN",
       desc: '''
-        Max key version is software lockable.
-      '''
+            Max key version is software lockable.
+            '''
     }
     { name: "LC_CTRL.INTERSIG.MUBI",
       desc: '''
-        Life cycle control signal is multibit
-      '''
+            Life cycle control signal is multibit
+            '''
     }
     { name: "CONSTANTS.CONSISTENCY",
       desc: '''
-        Basic consistency checks (all 0's or all 1's) for keymgr diversification constants
-      '''
+            Basic consistency checks (all 0's or all 1's) for keymgr diversification constants
+            '''
     }
     { name: "INTERSIG.CONSISTENCY",
       desc: '''
-        Basic consistency checks (all 0's or all 1's) for otp diversification inputs
-      '''
+            Basic consistency checks (all 0's or all 1's) for otp diversification inputs
+            '''
     }
     { name: "HW.KEY.SW_NOACCESS",
       desc: '''
-        Sideload keys are not directly accessible by software.
-      '''
+            Sideload keys are not directly accessible by software.
+            '''
     }
     { name: "OUTPUT_KEYS.CTRL.REDUN",
       desc: '''
-        Software and sideload keys are redundantly controlled. Each generate operation
-        creates a valid and a data enable (software and sideload specific).
+            Software and sideload keys are redundantly controlled. Each generate operation
+            creates a valid and a data enable (software and sideload specific).
 
-        In order for a key to be populated into the software register, both the software valid
-        and the software data enable must be asserted.  The same is true for sideload.
+            In order for a key to be populated into the software register, both the software valid
+            and the software data enable must be asserted.  The same is true for sideload.
 
-        This makes it more difficult for an attack to fault a sideload key into the software key slot.
-        An attacker would need to fault both the software valid and the software data enable.
+            This makes it more difficult for an attack to fault a sideload key into the software key slot.
+            An attacker would need to fault both the software valid and the software data enable.
 
-        During a sideload operation, if an attacker manages to fault the valid but not the data enable,
-        the software key is populated with random data.  If an atacker manages to fault the data enable but
-        not the valid, then the software key retains its previous value.
-      '''
+            During a sideload operation, if an attacker manages to fault the valid but not the data enable,
+            the software key is populated with random data.  If an atacker manages to fault the data enable but
+            not the valid, then the software key retains its previous value.
+            '''
     }
     { name: "CTRL.FSM.SPARSE",
       desc: '''
-        Main control fsm is sparsely encoded.
-      '''
+            Main control fsm is sparsely encoded.
+            '''
     }
     { name: "DATA.FSM.SPARSE",
       desc: '''
-        Control data fsm (for redundant data control) is sparsely encoded.
-      '''
+            Control data fsm (for redundant data control) is sparsely encoded.
+            '''
     }
     { name: "CTRL.FSM.LOCAL_ESC",
       desc: '''
-        Main control fsm locally escalates based on any detected fault in keymgr.
-        When a fault is detected (sync or async) the fsm transitions to invalid state to prevent
-        further legal operations from executing.
-      '''
+            Main control fsm locally escalates based on any detected fault in keymgr.
+            When a fault is detected (sync or async) the fsm transitions to invalid state to prevent
+            further legal operations from executing.
+            '''
     }
     { name: "CTRL.FSM.CONSISTENCY",
       desc: '''
-        Main and operational fsm transitions are consistent with software commands.
-      '''
+            Main and operational fsm transitions are consistent with software commands.
+            '''
     }
     { name: "CTRL.FSM.GLOBAL_ESC",
       desc: '''
-        When the system globally escalates, the main control fsm also transitions to invalid state
-        to prevent further legal operations from executing.
-      '''
+            When the system globally escalates, the main control fsm also transitions to invalid state
+            to prevent further legal operations from executing.
+            '''
     }
     { name: "CTRL.CTR.REDUN",
       desc: '''
-        Primary count is duplicated.
-      '''
+            Primary count is duplicated.
+            '''
     }
     { name: "KMAC_IF.FSM.SPARSE",
       desc: '''
-        kmac interface fsm is sparsely encoded.
-      '''
+            kmac interface fsm is sparsely encoded.
+            '''
     }
     { name: "KMAC_IF.CTR.REDUN",
       desc: '''
-        Primary count uses cross count.
-      '''
+            Primary count uses cross count.
+            '''
     }
     { name: "KMAC_IF_CMD.CTRL.CONSISTENCY",
       desc: '''
-        One hot check for kmac interface commands.
-        Also, command enable (adv_en, id_en, gen_en) is checked for consistency
-        throughout the operation.
-      '''
+            One hot check for kmac interface commands.
+            Also, command enable (adv_en, id_en, gen_en) is checked for consistency
+            throughout the operation.
+            '''
     }
     { name: "KMAC_IF_DONE.CTRL.CONSISTENCY",
       desc: '''
-        Spurious kmac done check.
-      '''
+            Spurious kmac done check.
+            '''
     }
     { name: "RESEED.CTR.REDUN",
       desc: '''
-        Primary count is duplicated.
-      '''
+            Primary count is duplicated.
+            '''
     }
     { name: "SIDE_LOAD_SEL.CTRL.CONSISTENCY",
       desc: '''
-        Sideload key slot select is checked for consistency.
-        When a key slot is valid when it should not be, an error is triggered.
-        The reverse case is not checked, since an invalid key cannot be used
-        anyways.
-      '''
+            Sideload key slot select is checked for consistency.
+            When a key slot is valid when it should not be, an error is triggered.
+            The reverse case is not checked, since an invalid key cannot be used
+            anyways.
+            '''
     }
     { name: "SIDELOAD_CTRL.FSM.SPARSE",
       desc: '''
-        Sideload control fsm is sparsely encoded.
-      '''
+            Sideload control fsm is sparsely encoded.
+            '''
     }
     { name: "CTRL.KEY.INTEGRITY",
       desc: '''
-        Internal secret key is protected with ECC.
-      '''
+            Internal secret key is protected with ECC.
+            '''
     }
   ]
 
@@ -481,10 +490,10 @@
           name: "EN",
           resval: "1"
           desc: '''
-            key manager configuration enable.
-            When key manager operation is started (see CONTROL), registers protected by this EN are no longer
-            modifiable until the operation completes.
-          '''
+                Key manager configuration enable.
+                When key manager operation is started (see CONTROL), registers protected by this EN are no longer
+                modifiable until the operation completes.
+                '''
         },
       ]
     },
@@ -504,8 +513,8 @@
             { value: "1",
               name: "Valid state",
               desc: '''
-                To trigger a start, this value must be programmed.  All other values are considered no operation start.
-                '''
+                    To trigger a start, this value must be programmed.  All other values are considered no operation start.
+                    '''
             },
           ]
           tags: [// bit self clears, handle in directed test
@@ -531,38 +540,38 @@
             { value: "0",
               name: "Advance",
               desc: '''
-                Advance key manager state.
+                    Advance key manager state.
 
-                Advances key manager to the next stage.
-                If key manager is already at last functional state, the advance operation is equivalent to the
-                disable operation.
-                '''
+                    Advances key manager to the next stage.
+                    If key manager is already at last functional state, the advance operation is equivalent to the
+                    disable operation.
+                    '''
             },
             { value: "1",
               name: "Generate ID",
               desc: '''
-                Generates an identity seed from the current state.
-                '''
+                    Generates an identity seed from the current state.
+                    '''
             },
             { value: "2",
               name: "Generate SW Output",
               desc: '''
-                Generates a key manager output that is visible to software from the current state.
-                '''
+                    Generates a key manager output that is visible to software from the current state.
+                    '''
             },
             { value: "3",
               name: "Generate HW Output",
               desc: '''
-                Generates a key manager output that is visible only to hardware crypto blocks.
-                '''
+                    Generates a key manager output that is visible only to hardware crypto blocks.
+                    '''
             },
             { value: "4",
               name: "Disable",
               desc: '''
-                Disables key manager operation and moves it to the disabled state.
+                    Disables key manager operation and moves it to the disabled state.
 
-                Note the disabled state is terminal and cannot be recovered without a reset.
-                '''
+                    Note the disabled state is terminal and cannot be recovered without a reset.
+                    '''
             },
           ],
         },
@@ -570,24 +579,24 @@
         { bits: "7",
           name: "CDI_SEL",
           desc: '''
-            When the OPERATION field is programmed to generate output, this field selects
-            the appropriate CDI to use.
+                When the OPERATION field is programmed to generate output, this field selects
+                the appropriate CDI to use.
 
-            This field should be programmed for both hw / sw generation.
-          ''',
+                This field should be programmed for both hw / sw generation.
+                ''',
           resval: "0"
           enum: [
             { value: "0",
               name: "Sealing CDI",
               desc: '''
-                Sealing CDI is selected
-                '''
+                    Sealing CDI is selected
+                    '''
             },
             { value: "1",
               name: "Attestation CDI",
               desc: '''
-                Attestation CDI is selected
-                '''
+                    Attestation CDI is selected
+                    '''
             },
           ],
         },
@@ -595,40 +604,40 @@
         { bits: "13:12",
           name: "DEST_SEL",
           desc: '''
-            When the OPERATION field is programmed to generate output, this field selects
-            the appropriate crypto cipher target.
+                When the OPERATION field is programmed to generate output, this field selects
+                the appropriate crypto cipher target.
 
-            This field should be programmed for both hw / sw generation, as this helps diverisifies the output.
-          ''',
+                This field should be programmed for both hw / sw generation, as this helps diverisifies the output.
+                ''',
           resval: "0"
           enum: [
             { value: "0",
               name: "None",
               desc: '''
-                No target selected
-                '''
+                    No target selected
+                    '''
             },
             { value: "1",
               name: "AES",
               desc: '''
-                AES selected
-                '''
+                    AES selected
+                    '''
             },
             { value: "2",
               name: "KMAC",
               desc: '''
-                KMAC selected
-                '''
+                    KMAC selected
+                    '''
             },
             { value: "3",
               name: "OTBN",
               desc: '''
-                OTBN selected.  Note for OTBN hardware operations, the generated output is 384-bits, while for all
-                other operations (including OTBN software), it is 256-bits.
+                    OTBN selected.  Note for OTBN hardware operations, the generated output is 384-bits, while for all
+                    other operations (including OTBN software), it is 256-bits.
 
-                Generating a hardware 384-bit seed directly for OTBN sideload reduces some of the OTBN code burden for entropy expansion.
-                When generating for software, this is not a concern.
-                '''
+                    Generating a hardware 384-bit seed directly for OTBN sideload reduces some of the OTBN code burden for entropy expansion.
+                    When generating for software, this is not a concern.
+                    '''
             },
           ]
         },
@@ -645,35 +654,35 @@
           name: "VAL",
           resval: "0"
           desc: '''
-            Depending on the value programmed, a different sideload key slot is cleared.
-            If the value programmed is not one of the enumerated values below, ALL sideload
-            key slots are continuously cleared. In order to stop continuous clearing, SW should
-            toggle the clear bit again (i.e. disable continuous clearing).
-          ''',
+                Depending on the value programmed, a different sideload key slot is cleared.
+                If the value programmed is not one of the enumerated values below, ALL sideload
+                key slots are continuously cleared. In order to stop continuous clearing, SW should
+                toggle the clear bit again (i.e. disable continuous clearing).
+                ''',
           enum: [
             { value: "0",
               name: "None",
               desc: '''
-                No sideload keys cleared.
-                '''
+                    No sideload keys cleared.
+                    '''
             },
             { value: "1",
               name: "AES",
               desc: '''
-                The AES sideload key is continuously cleared with entropy.
-                '''
+                    The AES sideload key is continuously cleared with entropy.
+                    '''
             },
             { value: "2",
               name: "KMAC",
               desc: '''
-                The KMAC sideload key is continuously cleared with entropy.
-                '''
+                    The KMAC sideload key is continuously cleared with entropy.
+                    '''
             },
             { value: "3",
               name: "OTBN",
               desc: '''
-                The OTBN sideload key is continuously cleared with entropy.
-                '''
+                    The OTBN sideload key is continuously cleared with entropy.
+                    '''
             },
           ]
 
@@ -690,8 +699,8 @@
           name: "EN",
           resval: "1"
           desc: '''
-            Configuration enable for reseed interval
-          '''
+                Configuration enable for reseed interval
+                '''
         },
       ]
     },
@@ -709,8 +718,8 @@
           name: "VAL",
           resval: "0x100"
           desc: '''
-            Number of key manager cycles before the entropy is reseeded
-          '''
+                Number of key manager cycles before the entropy is reseeded
+                '''
         },
       ]
     },
@@ -732,11 +741,11 @@
           name: "EN",
           resval: "1"
           desc: '''
-            Software binding register write enable.
-            This is locked by software and unlocked by hardware upon a successful advance call.
+                Software binding register write enable.
+                This is locked by software and unlocked by hardware upon a successful advance call.
 
-            Software binding resets to 1, and its value cannot be altered by software until advancement to Init state.
-          '''
+                Software binding resets to 1, and its value cannot be altered by software until advancement to Init state.
+                '''
         },
       ]
     },
@@ -746,22 +755,22 @@
         name: "SEALING_SW_BINDING",
         regwen: "SW_BINDING_REGWEN",
         desc: '''
-          Software binding input to sealing portion of the key manager.
-          This register is lockable and shared between key manager stages.
-          This binding value is not considered secret, however its integrity is very important.
+              Software binding input to sealing portion of the key manager.
+              This register is lockable and shared between key manager stages.
+              This binding value is not considered secret, however its integrity is very important.
 
-          The software binding is locked by software and unlocked by hardware upon a successful advance operation.
-        ''',
+              The software binding is locked by software and unlocked by hardware upon a successful advance operation.
+              ''',
         count: "NumSwBindingReg",
         swaccess: "rw",
         hwaccess: "hro",
         fields: [
-            { bits: "31:0",
-              name: "VAL",
-              desc: '''
-                Software binding value
-              ''',
-              resval: "0"
+          { bits: "31:0",
+            name: "VAL",
+            desc: '''
+                  Software binding value
+                  ''',
+            resval: "0"
             },
         ],
       },
@@ -772,12 +781,12 @@
         name: "ATTEST_SW_BINDING",
         regwen: "SW_BINDING_REGWEN",
         desc: '''
-          Software binding input to the attestation portion of the key manager.
-          This register is lockable and shared between key manager stages.
-          This binding value is not considered secret, however its integrity is very important.
+              Software binding input to the attestation portion of the key manager.
+              This register is lockable and shared between key manager stages.
+              This binding value is not considered secret, however its integrity is very important.
 
-          The software binding is locked by software and unlocked by hardware upon a successful advance operation.
-        ''',
+              The software binding is locked by software and unlocked by hardware upon a successful advance operation.
+              ''',
         count: "NumSwBindingReg",
         swaccess: "rw",
         hwaccess: "hro",
@@ -785,8 +794,8 @@
             { bits: "31:0",
               name: "VAL",
               desc: '''
-                Software binding value
-              ''',
+                    Software binding value
+                    ''',
               resval: "0"
             },
         ],
@@ -798,19 +807,19 @@
         name: "Salt",
         regwen: "CFG_REGWEN",
         desc: '''
-          Salt value used as part of output generation
-        ''',
+              Salt value used as part of output generation
+              ''',
         count: "NumSaltReg",
         swaccess: "rw",
         hwaccess: "hro",
         fields: [
-            { bits: "31:0",
-              name: "VAL",
-              desc: '''
-                Salt value
-              ''',
-              resval: "0"
-            },
+          { bits: "31:0",
+            name: "VAL",
+            desc: '''
+                  Salt value
+                  ''',
+            resval: "0"
+          },
         ],
       },
     },
@@ -820,19 +829,19 @@
         name: "KEY_VERSION",
         regwen: "CFG_REGWEN",
         desc: '''
-          Version used as part of output generation
-        ''',
+              Version used as part of output generation
+              ''',
         count: "NumKeyVersion",
         swaccess: "rw",
         hwaccess: "hro",
         fields: [
-            { bits: "31:0",
-              name: "VAL",
-              desc: '''
-                Key version
-              ''',
-              resval: "0"
-            },
+          { bits: "31:0",
+            name: "VAL",
+            desc: '''
+                  Key version
+                  ''',
+            resval: "0"
+          },
         ],
       },
     },
@@ -855,8 +864,8 @@
           name: "EN",
           resval: "1"
           desc: '''
-            MAX_CREATOR_KEY_VERSION configure enable.
-          '''
+                MAX_CREATOR_KEY_VERSION configure enable.
+                '''
         },
       ]
     },
@@ -874,10 +883,10 @@
           name: "VAL",
           resval: "0x0"
           desc: '''
-            Max key version.
+                Max key version.
 
-            Any key version up to the value specificed in this register is valid.
-          '''
+                Any key version up to the value specificed in this register is valid.
+                '''
         },
       ]
     },
@@ -891,8 +900,8 @@
           name: "EN",
           resval: "1"
           desc: '''
-            MAX_OWNER_INTERMEDIATE_KEY configure enable.
-          '''
+                MAX_OWNER_INTERMEDIATE_KEY configure enable.
+                '''
         },
       ]
     },
@@ -910,10 +919,10 @@
           name: "VAL",
           resval: "1"
           desc: '''
-            Max key version.
+                Max key version.
 
-            Any key version up to the value specificed in this register is valid.
-          '''
+                Any key version up to the value specificed in this register is valid.
+                '''
         },
       ]
     },
@@ -927,8 +936,8 @@
           name: "EN",
           resval: "1"
           desc: '''
-            MAX_OWNER_KEY configure enable.
-          '''
+                MAX_OWNER_KEY configure enable.
+                '''
         },
       ]
     },
@@ -946,10 +955,10 @@
           name: "VAL",
           resval: "0x0"
           desc: '''
-            Max key version.
+                Max key version.
 
-            Any key version up to the value specificed in this register is valid.
-          '''
+                Any key version up to the value specificed in this register is valid.
+                '''
         },
       ]
     },
@@ -958,22 +967,22 @@
         cname: "KEYMGR",
         name: "SW_SHARE0_OUTPUT",
         desc: '''
-          Key manager software output.
+              Key manager software output.
 
-          When a software output operation is selected, the results of the operation are placed
-          here.
-        ''',
+              When a software output operation is selected, the results of the operation are placed
+              here.
+              ''',
         count: "NumOutReg",
         swaccess: "rc",
         hwaccess: "hwo",
         fields: [
-            { bits: "31:0",
-              name: "VAL",
-              desc: '''
-                Software output value
-              ''',
-              resval: "0"
-            },
+          { bits: "31:0",
+            name: "VAL",
+            desc: '''
+                  Software output value
+                  ''',
+            resval: "0"
+          },
         ],
         tags: [// HW-update reg
                // When a fault happens (e.g. when we test TL integrity error), this CSR will be
@@ -986,22 +995,22 @@
         cname: "KEYMGR",
         name: "SW_SHARE1_OUTPUT",
         desc: '''
-          Key manager software output.
+              Key manager software output.
 
-          When a software output operation is selected, the results of the operation are placed
-          here.
-        ''',
+              When a software output operation is selected, the results of the operation are placed
+              here.
+              ''',
         count: "NumOutReg",
         swaccess: "rc",
         hwaccess: "hwo",
         fields: [
-            { bits: "31:0",
-              name: "VAL",
-              desc: '''
-                Software output value
-              ''',
-              resval: "0"
-            },
+          { bits: "31:0",
+            name: "VAL",
+            desc: '''
+                  Software output value
+                  ''',
+            resval: "0"
+          },
         ],
         tags: [// HW-update reg
                // When a fault happens (e.g. when we test TL integrity error), this CSR will be
@@ -1012,10 +1021,10 @@
 
     { name: "WORKING_STATE",
       desc: '''
-        Key manager working state.
+            Key manager working state.
 
-        This is a readout of the current key manager working state
-      ''',
+            This is a readout of the current key manager working state
+            ''',
       swaccess: "ro",
       hwaccess: "hwo",
       fields: [
@@ -1027,48 +1036,48 @@
             { value: "0",
               name: "Reset",
               desc: '''
-                Key manager control is still in reset.  Please wait for initialization complete
-                before issuing operations
-              '''
+                    Key manager control is still in reset.  Please wait for initialization complete
+                    before issuing operations
+                    '''
             },
             { value: "1",
               name: "Init",
               desc: '''
-                Key manager control has finished initialization and will now accept
-                software commands.
-              '''
+                    Key manager control has finished initialization and will now accept
+                    software commands.
+                    '''
             },
             { value: "2",
               name: "Creator Root Key",
               desc: '''
-                Key manager control currently contains the creator root key.
-              '''
+                    Key manager control currently contains the creator root key.
+                    '''
             },
             { value: "3",
               name: "Owner Intermediate Key",
               desc: '''
-                Key manager control currently contains the owner intermediate key.
-              '''
+                    Key manager control currently contains the owner intermediate key.
+                    '''
             },
             { value: "4",
               name: "Owner Key",
               desc: '''
-                Key manager control currently contains the owner key.
-              '''
+                    Key manager control currently contains the owner key.
+                    '''
             },
             { value: "5",
               name: "Disabled",
               desc: '''
-                Key manager currently disabled. Please reset the key manager.
-                Sideload keys are still valid.
-              '''
+                    Key manager currently disabled. Please reset the key manager.
+                    Sideload keys are still valid.
+                    '''
             },
             { value: "6",
               name: "Invalid",
               desc: '''
-                Key manager currently invalid. Please reset the key manager.
-                Sideload keys are no longer valid.
-              '''
+                    Key manager currently invalid. Please reset the key manager.
+                    Sideload keys are no longer valid.
+                    '''
             },
           ]
         }
@@ -1077,12 +1086,12 @@
 
     { name: "OP_STATUS",
       desc: '''
-        Key manager status.
+            Key manager status.
 
-        Hardware sets the status based on software initiated operations.
-        This register must be explicitly cleared by software.
-        Software clears by writing back whatever it reads.
-      ''',
+            Hardware sets the status based on software initiated operations.
+            This register must be explicitly cleared by software.
+            Software clears by writing back whatever it reads.
+            ''',
       swaccess: "rw1c",
       hwaccess: "hwo",
       fields: [
@@ -1094,27 +1103,27 @@
             { value: "0",
               name: "Idle",
               desc: '''
-                Key manager is idle
-                '''
+                    Key manager is idle
+                    '''
             },
             { value: "1",
               name: "WIP",
               desc: '''
-                Work in progress.
-                A key manager operation has been started and is ongoing
-                '''
+                    Work in progress.
+                    A key manager operation has been started and is ongoing
+                    '''
             },
             { value: "2",
               name: "DONE_SUCCESS",
               desc: '''
-                Operation finished without errors
-                '''
+                    Operation finished without errors
+                    '''
             },
             { value: "3",
               name: "DONE_ERROR",
               desc: '''
-                Operation finished with errors, please see ERR_CODE register.
-                '''
+                    Operation finished with errors, please see ERR_CODE register.
+                    '''
             },
           ]
         },
@@ -1123,15 +1132,15 @@
 
     { name: "ERR_CODE",
       desc: '''
-        Key manager error code.
-        This register must be explicitly cleared by software.
+            Key manager error code.
+            This register must be explicitly cleared by software.
 
-        This register represents both synchronous and asynchronous recoverable
-        errors.
+            This register represents both synchronous and asynchronous recoverable
+            errors.
 
-        Synchronous errors refer to those that only happen when a keymgr operation is
-        invoked, while asynchronous refers to errors that can happen at any time.
-      ''',
+            Synchronous errors refer to those that only happen when a keymgr operation is
+            invoked, while asynchronous refers to errors that can happen at any time.
+            ''',
       swaccess: "rw1c",
       hwaccess: "hwo",
       fields: [
@@ -1155,12 +1164,11 @@
 
     { name: "FAULT_STATUS",
       desc: '''
-        This register represents both synchronous and asynchronous fatal faults.
+            This register represents both synchronous and asynchronous fatal faults.
 
-        Synchronous faults refer to those that only happen when a keymgr operation is
-        invoked, while asynchronous refers to faults that can happen at any time.
-
-      ''',
+            Synchronous faults refer to those that only happen when a keymgr operation is
+            invoked, while asynchronous refers to faults that can happen at any time.
+            ''',
       swaccess: "ro",
       hwaccess: "hrw",
       fields: [
@@ -1239,9 +1247,9 @@
 
     { name: "DEBUG",
       desc: '''
-        The register holds some debug information that may be convenient if keymgr
-        misbehaves.
-      ''',
+            The register holds some debug information that may be convenient if keymgr
+            misbehaves.
+            ''',
       swaccess: "rw0c",
       hwaccess: "hwo",
       fields: [
@@ -1280,9 +1288,7 @@
           resval: "0x0"
           desc: "ROM digest failed input checks during operation",
         },
-
       ]
     },
-
   ],
 }

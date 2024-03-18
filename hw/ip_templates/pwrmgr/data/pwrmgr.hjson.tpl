@@ -55,8 +55,8 @@
   alert_list: [
     { name: "fatal_fault",
       desc: '''
-      This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected.
-      '''
+            This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected.
+            '''
     }
   ],
   features: [
@@ -64,17 +64,20 @@
       desc: "Wait completion of Life Cycle initialization."
     }
     { name: "PWRMGR.CLOCK_CONTROL.IO_IN_LOW_POWER",
-      desc: '''Controls whether the IO clock remains active in
+      desc: '''
+            Controls whether the IO clock remains active in
             low power mode.
             '''
     }
     { name: "PWRMGR.CLOCK_CONTROL.MAIN_IN_LOW_POWER",
-      desc: '''Controls whether the MAIN clock remains active in
+      desc: '''
+            Controls whether the MAIN clock remains active in
             low power mode.
             '''
     }
     { name: "PWRMGR.CLOCK_CONTROL.USB_IN_LOW_POWER",
-      desc: '''Controls whether the USB clock remains active in
+      desc: '''
+            Controls whether the USB clock remains active in
             low power mode.
             '''
     }
@@ -82,12 +85,14 @@
       desc: "Controls whether the USB clock is enabled in active state."
     }
     { name: "PWRMGR.LOW_POWER.ENTRY",
-      desc: '''Controls of low power entry, and cases when low power is
+      desc: '''
+            Controls of low power entry, and cases when low power is
             not entered due to interrupts or specific units getting busy.
             '''
     }
     { name: "PWRMGR.LOW_POWER.DISABLE_POWER"
-      desc: '''Controls whether power is turned off for non-AON domains when
+      desc: '''
+            Controls whether power is turned off for non-AON domains when
             in low power.
             '''
     }
@@ -350,9 +355,9 @@
     }
     { name: "FSM.TERMINAL",
       desc: '''
-        When FSMs reach a bad state, go into a terminate state that does not
-        recover without user or external host intervention.
-      '''
+            When FSMs reach a bad state, go into a terminate state that does not
+            recover without user or external host intervention.
+            '''
     }
     { name: "CTRL_FLOW.GLOBAL_ESC",
       desc: "When global escalation is received, proceed directly to reset."
@@ -380,25 +385,25 @@
       hwaccess: "hwo",
       hwext: "true",
       desc: '''
-      Controls the configurability of the !!CONTROL register.
+            Controls the configurability of the !!CONTROL register.
 
-      This register ensures the contents do not change once a low power hint and
-      WFI has occurred.
+            This register ensures the contents do not change once a low power hint and
+            WFI has occurred.
 
-      It unlocks whenever a low power transition has completed (transition back to the
-      ACTIVE state) for any reason.
-      ''',
+            It unlocks whenever a low power transition has completed (transition back to the
+            ACTIVE state) for any reason.
+            ''',
 
       fields: [
         { bits: "0",
           name: "EN",
           desc: '''
-            Configuration enable.
+                Configuration enable.
 
-            This bit defaults to 1 and is set to 0 by hardware when low power entry is initiated.
-            When the device transitions back from low power state to active state, this bit is set
-            back to 1 to allow software configuration of !!CONTROL
-          ''',
+                This bit defaults to 1 and is set to 0 by hardware when low power entry is initiated.
+                When the device transitions back from low power state to active state, this bit is set
+                back to 1 to allow software configuration of !!CONTROL
+                ''',
           resval: "1",
         },
       ]
@@ -422,24 +427,24 @@
           hwaccess: "hrw",
           name: "LOW_POWER_HINT",
           desc: '''
-            The low power hint to power manager.
-            The hint is an indication for how the manager should treat the next WFI.
-            Once the power manager begins a low power transition, or if a valid reset request is registered,
-            this bit is automatically cleared by HW.
-            '''
+                The low power hint to power manager.
+                The hint is an indication for how the manager should treat the next WFI.
+                Once the power manager begins a low power transition, or if a valid reset request is registered,
+                this bit is automatically cleared by HW.
+                '''
           resval: "0"
           enum: [
             { value: "0",
               name: "None",
               desc: '''
-                No low power intent
-                '''
+                    No low power intent
+                    '''
             },
             { value: "1",
               name: "Low Power",
               desc: '''
-                Next WFI should trigger low power entry
-                '''
+                    Next WFI should trigger low power entry
+                    '''
             },
           ]
           tags: [// The regwen for this reg is RO. CSR seq can't support to check this reg
@@ -454,14 +459,14 @@
             { value: "0",
               name: "Disabled",
               desc: '''
-                Core clock disabled during low power state
-                '''
+                    Core clock disabled during low power state
+                    '''
             },
             { value: "1",
               name: "Enabled",
               desc: '''
-                Core clock enabled during low power state
-                '''
+                    Core clock enabled during low power state
+                    '''
             },
           ]
         },
@@ -474,14 +479,14 @@
             { value: "0",
               name: "Disabled",
               desc: '''
-                IO clock disabled during low power state
-                '''
+                    IO clock disabled during low power state
+                    '''
             },
             { value: "1",
               name: "Enabled",
               desc: '''
-                IO clock enabled during low power state
-                '''
+                    IO clock enabled during low power state
+                    '''
             },
           ]
         },
@@ -494,17 +499,17 @@
             { value: "0",
               name: "Disabled",
               desc: '''
-                USB clock disabled during low power state
-                '''
+                    USB clock disabled during low power state
+                    '''
             },
             { value: "1",
               name: "Enabled",
               desc: '''
-                USB clock enabled during low power state.
+                    USB clock enabled during low power state.
 
-                However, if !!CONTROL.MAIN_PD_N is 0, USB clock is disabled
-                during low power state.
-                '''
+                    However, if !!CONTROL.MAIN_PD_N is 0, USB clock is disabled
+                    during low power state.
+                    '''
             },
           ]
         },
@@ -517,14 +522,14 @@
             { value: "0",
               name: "Disabled",
               desc: '''
-                USB clock disabled during active power state
-                '''
+                    USB clock disabled during active power state
+                    '''
             },
             { value: "1",
               name: "Enabled",
               desc: '''
-                USB clock enabled during active power state
-                '''
+                    USB clock enabled during active power state
+                    '''
             },
           ]
         },
@@ -537,14 +542,14 @@
             { value: "0",
               name: "Power down",
               desc: '''
-                Main power domain is powered down during low power state.
-                '''
+                    Main power domain is powered down during low power state.
+                    '''
             },
             { value: "1",
               name: "Power up",
               desc: '''
-                Main power domain is kept powered during low power state
-                '''
+                    Main power domain is kept powered during low power state
+                    '''
             },
           ]
         },
@@ -558,23 +563,23 @@
       hwaccess: "hrw",
       hwqe: "true",
       desc: '''
-      The configuration registers CONTROL, WAKEUP_EN, RESET_EN are all written in the
-      fast clock domain but used in the slow clock domain.
+            The configuration registers CONTROL, WAKEUP_EN, RESET_EN are all written in the
+            fast clock domain but used in the slow clock domain.
 
-      The configuration are not propagated across the clock boundary until this
-      register is triggered and read.  See fields below for more details
-      ''',
+            The configuration are not propagated across the clock boundary until this
+            register is triggered and read.  See fields below for more details
+            ''',
 
       fields: [
         { bits: "0",
           name: "SYNC",
           desc: '''
-            Configuration sync.  When this bit is written to 1, a sync pulse is generated.  When
-            the sync completes, this bit then self clears.
+                Configuration sync.  When this bit is written to 1, a sync pulse is generated.  When
+                the sync completes, this bit then self clears.
 
-            Software should write this bit to 1, wait for it to clear, before assuming the slow clock
-            domain has accepted the programmed values.
-          ''',
+                Software should write this bit to 1, wait for it to clear, before assuming the slow clock
+                domain has accepted the programmed values.
+                ''',
           resval: "0",
         },
       ]
@@ -592,9 +597,9 @@
           resval: "1"
           name: "EN",
           desc: '''
-            When 1, WAKEUP_EN register can be configured.
-            When 0, WAKEUP_EN register cannot be configured.
-          ''',
+                When 1, WAKEUP_EN register can be configured.
+                When 0, WAKEUP_EN register cannot be configured.
+                ''',
         },
       ]
     },
@@ -612,9 +617,9 @@
           { bits: "0",
             name: "EN",
             desc: '''
-              Whenever a particular bit is set to 1, that wakeup is also enabled.
-              Whenever a particular bit is set to 0, that wakeup cannot wake the device from low power.
-            ''',
+                  Whenever a particular bit is set to 1, that wakeup is also enabled.
+                  Whenever a particular bit is set to 0, that wakeup cannot wake the device from low power.
+                  ''',
           },
         ]
       },
@@ -634,8 +639,8 @@
           { bits: "0",
             name: "VAL",
             desc: '''
-              Current value of wake requests
-            ''',
+                  Current value of wake requests
+                  ''',
           },
         ]
       },
@@ -650,9 +655,9 @@
           resval: "1"
           name: "EN",
           desc: '''
-            When 1, RESET_EN register can be configured.
-            When 0, RESET_EN register cannot be configured.
-          ''',
+                When 1, RESET_EN register can be configured.
+                When 0, RESET_EN register cannot be configured.
+                ''',
         },
       ]
     },
@@ -670,9 +675,9 @@
           { bits: "0",
             name: "EN",
             desc: '''
-              Whenever a particular bit is set to 1, that reset request is enabled.
-              Whenever a particular bit is set to 0, that reset request cannot reset the device.
-            ''',
+                  Whenever a particular bit is set to 1, that reset request is enabled.
+                  Whenever a particular bit is set to 0, that reset request cannot reset the device.
+                  ''',
           },
         ]
         tags: [// Self resets should never be triggered by automated tests
@@ -692,8 +697,8 @@
           { bits: "0",
             name: "VAL",
             desc: '''
-              Current value of reset request
-            ''',
+                  Current value of reset request
+                  ''',
           },
         ]
       },
@@ -708,9 +713,9 @@
         { bits: "0",
           name: "VAL",
           desc: '''
-            When 1, an escalation reset has been seen.
-            When 0, there is no escalation reset.
-          ''',
+                When 1, an escalation reset has been seen.
+                When 0, there is no escalation reset.
+                ''',
         },
       ]
     },
@@ -724,21 +729,21 @@
         { bits: "0",
           name: "VAL",
           desc: '''
-            When written to 1, this actively suppresses the wakeup info capture.
-            When written to 0, wakeup info capture timing is controlled by HW.
-          ''',
+                When written to 1, this actively suppresses the wakeup info capture.
+                When written to 0, wakeup info capture timing is controlled by HW.
+                ''',
         },
       ]
     },
 
     { name: "WAKE_INFO",
       desc: '''
-        Indicates which functions caused the chip to wakeup.
-        The wake info recording begins whenever the device begins a valid low power entry.
+            Indicates which functions caused the chip to wakeup.
+            The wake info recording begins whenever the device begins a valid low power entry.
 
-        This capture is continued until it is explicitly disabled through WAKE_INFO_CAPTURE_DIS.
-        This means it is possible to capture multiple wakeup reasons.
-      ''',
+            This capture is continued until it is explicitly disabled through WAKE_INFO_CAPTURE_DIS.
+            This means it is possible to capture multiple wakeup reasons.
+            ''',
       swaccess: "rw1c",
       hwaccess: "hrw",
       hwext: "true",
@@ -752,21 +757,21 @@
         { bits: "${NumWkups}",
           name: "FALL_THROUGH",
           desc: '''
-            The fall through wakeup reason indicates that despite setting a WFI and providing a low power
-            hint, an interrupt arrived at just the right time to break the executing core out of WFI.
+                The fall through wakeup reason indicates that despite setting a WFI and providing a low power
+                hint, an interrupt arrived at just the right time to break the executing core out of WFI.
 
-            The power manager detects this condition, halts low power entry and reports as a wakeup reason
-          ''',
+                The power manager detects this condition, halts low power entry and reports as a wakeup reason
+                ''',
         },
         { bits: "${NumWkups+1}",
           name: "ABORT",
           desc: '''
-            The abort wakeup reason indicates that despite setting a WFI and providing a low power
-            hint, an active flash / lifecycle / otp transaction was ongoing when the power controller
-            attempted to initiate low power entry.
+                The abort wakeup reason indicates that despite setting a WFI and providing a low power
+                hint, an active flash / lifecycle / otp transaction was ongoing when the power controller
+                attempted to initiate low power entry.
 
-            The power manager detects this condition, halts low power entry and reports as a wakeup reason
-          ''',
+                The power manager detects this condition, halts low power entry and reports as a wakeup reason
+                ''',
         },
       ]
       tags: [// This regwen is completely under HW management and thus cannot be manipulated
@@ -784,22 +789,22 @@
         { bits: "0",
           name: "REG_INTG_ERR",
           desc: '''
-            When 1, an integrity error has occurred.
-          ''',
+                When 1, an integrity error has occurred.
+                ''',
         },
 
         { bits: "1",
           name: "ESC_TIMEOUT",
           desc: '''
-            When 1, an escalation clock / reset timeout has occurred.
-          ''',
+                When 1, an escalation clock / reset timeout has occurred.
+                ''',
         },
 
         { bits: "2",
           name: "MAIN_PD_GLITCH",
           desc: '''
-            When 1, unexpected power glitch was observed on main PD.
-          ''',
+                When 1, unexpected power glitch was observed on main PD.
+                ''',
         },
       ]
     },

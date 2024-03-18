@@ -583,388 +583,388 @@
     },
 ##############################################################################
 # control and status registers
-  { name: "CTRL_SHADOWED",
-    desc: '''
-      Control Register.
+    { name: "CTRL_SHADOWED",
+      desc: '''
+        Control Register.
 
-      Can only be updated when the AES unit is idle.
-      If the AES unit is non-idle, writes to this register are ignored.
-      This register is shadowed, meaning two subsequent write operations are required to change its content.
-      If the two write operations try to set a different value, a recoverable alert is triggered (See Status Register).
-      A read operation clears the internal phase tracking: The next write operation is always considered a first write operation of an update sequence.
-      Any write operation to this register will clear the status tracking required for automatic mode (See MANUAL_OPERATION field).
-      A write to the Control Register is considered the start of a new message.
-      Hence, software needs to provide new key, IV and input data afterwards.
-    '''
-    swaccess: "rw",
-    hwaccess: "hrw",
-    hwext:    "true",
-    hwqe:     "true",
-    shadowed: "true",
-    update_err_alert: "recov_ctrl_update_err",
-    storage_err_alert: "fatal_fault",
-    fields: [
-      { bits: "1:0",
-        name: "OPERATION",
-        resval: "0x1",
-        hwaccess: "hrw",
-        desc:  '''
-          2-bit one-hot field to select the operation of AES unit.
-          Invalid input values, i.e., values with multiple bits set and value 2'b00, are mapped to AES_ENC (2'b01).
-        '''
-        enum: [
-          { value: "1",
-            name: "AES_ENC",
-            desc: '''
-              2'b01: Encryption.
-              Invalid input values, i.e., 2'b00 and 2'b11, are mapped to AES_ENC.
-            '''
-          },
-          { value: "2",
-            name: "AES_DEC",
-            desc: '''
-              2'b10: Decryption.
-            '''
-          },
-        ]
-        tags: ["shadowed_reg_path:u_aes_core.u_ctrl_reg_shadowed.u_ctrl_reg_shadowed_operation"]
-      }
-      { bits: "7:2",
-        name: "MODE",
-        resval: "0x20",
-        hwaccess: "hrw",
-        desc:  '''
-          6-bit one-hot field to select AES block cipher mode.
-          Invalid input values, i.e., values with multiple bits set and value 6'b00_0000, are mapped to AES_NONE (6'b10_0000).
-        '''
-        enum: [
-          { value: "1",
-            name: "AES_ECB",
-            desc: '''
-              6'b00_0001: Electronic Codebook (ECB) mode.
-            '''
-          },
-          { value: "2",
-            name: "AES_CBC",
-            desc: '''
-              6'b00_0010: Cipher Block Chaining (CBC) mode.
-            '''
-          },
-          { value: "4",
-            name: "AES_CFB",
-            desc: '''
-              6'b00_0100: Cipher Feedback (CFB) mode.
-            '''
-          },
-          { value: "8",
-            name: "AES_OFB",
-            desc: '''
-              6'b00_1000: Output Feedback (OFB) mode.
-            '''
-          },
-          { value: "16",
-            name: "AES_CTR",
-            desc: '''
-              6'b01_0000: Counter (CTR) mode.
-            '''
-          },
-          { value: "32",
-            name: "AES_NONE",
-            desc: '''
-              6'b10_0000: Invalid input values, i.e., value with multiple bits set and value 6'b00_0000, are mapped to AES_NONE.
-            '''
-          }
-        ]
-        tags: ["shadowed_reg_path:u_aes_core.u_ctrl_reg_shadowed.u_ctrl_reg_shadowed_mode"]
-      }
-      { bits: "10:8",
-        name: "KEY_LEN",
-        resval: "1",
-        hwaccess: "hrw",
-        desc: '''
-          3-bit one-hot field to select AES key length.
-          Invalid input values, i.e., values with multiple bits set, value 3'b000, and value 3'b010 in case 192-bit keys are not supported (because disabled at compile time) are mapped to AES_256 (3'b100).
-        '''
-        enum: [
-          { value: "1",
-            name: "AES_128",
-            desc: '''
-              3'b001: 128-bit key length.
-            '''
-          },
-          { value: "2",
-            name: "AES_192",
-            desc: '''
-              3'b010: 192-bit key length.
-              In case support for 192-bit keys has been disabled at compile time, setting this value results in configuring AES_256 (3'b100).
-            '''
-          },
-          { value: "4",
-            name: "AES_256",
-            desc: '''
-              3'b100: 256-bit key length.
-              Invalid input values, i.e., values with multiple bits set, value 3'b000, and value 3'b010 in case 192-bit keys are not supported (because disabled at compile time) are mapped to AES_256.
-            '''
-          }
-        ]
-        tags: ["shadowed_reg_path:u_aes_core.u_ctrl_reg_shadowed.u_ctrl_reg_shadowed_key_len"]
-      }
-      { bits: "11",
-        name: "SIDELOAD",
-        resval: "0",
-        desc: '''
-          Controls whether the AES unit uses the key provided by the key manager via key sideload interface (1) or the key provided by software via Initial Key Registers KEY_SHARE1_0 - KEY_SHARE1_7 (0).
-        '''
-        tags: ["shadowed_reg_path:u_aes_core.u_ctrl_reg_shadowed.u_ctrl_reg_shadowed_sideload"]
-      }
-      { bits: "14:12",
-        name: "PRNG_RESEED_RATE",
-        resval: "1",
-        hwaccess: "hrw",
-        desc: '''
-          3-bit one-hot field to control the reseeding rate of the internal pseudo-random number generator (PRNG) used for masking.
-          Invalid input values, i.e., values with multiple bits set and value 3'b000 are mapped to the highest reseeding rate PER_1 (3'b001).
-        '''
-        enum: [
-          { value: "1",
-            name: "PER_1",
-            desc: '''
-              3'b001: Reseed the masking PRNG once per block.
-              Invalid input values, i.e., values with multiple bits set and value 3'b000 are mapped to PER_1 (3'b001).
-              This results in a max entropy consumption rate of ~343 Mbit/s.
-            '''
-          },
-          { value: "2",
-            name: "PER_64",
-            desc: '''
-              3'b010: Reseed the masking PRNG approximately once per every 64 blocks.
-              This results in a max entropy consumption rate of ~5.4 Mbit/s.
-            '''
-          },
-          { value: "4",
-            name: "PER_8K",
-            desc: '''
-              3'b100: Reseed the masking PRNG approximately once per every 8192 blocks.
-              This results in a max entropy consumption rate of ~0.042 Mbit/s.
-            '''
-          }
-        ]
-        tags: ["shadowed_reg_path:u_aes_core.u_ctrl_reg_shadowed.u_ctrl_reg_shadowed_prng_reseed_rate"]
-      }
-      { bits: "15",
-        name: "MANUAL_OPERATION",
-        resval: "0"
-        desc:  '''
-          Controls whether the AES unit is operated in normal/automatic mode (0) or fully manual mode (1).
-          In automatic mode (0), the AES unit automatically i) starts to encrypt/decrypt when it receives new input data, and ii) stalls during the last encryption/decryption cycle if the previous output data has not yet been read.
-          This is the most efficient mode to operate in.
-          Note that the corresponding status tracking is automatically cleared upon a write to the Control Register.
-          In manual mode (1), the AES unit i) only starts to encrypt/decrypt after receiving a start trigger (see Trigger Register), and ii) overwrites previous output data irrespective of whether it has been read out or not.
-          This mode is useful if software needs full control over the AES unit.
-        '''
-        tags: ["shadowed_reg_path:u_aes_core.u_ctrl_reg_shadowed.u_ctrl_reg_shadowed_manual_operation"]
-      }
-    ]
-    tags: [// Updated by the HW.
-           // Updates based on writes to this reg (reset test possible).
-           // Exclude from write-read checks.
-           "excl:CsrNonInitTests:CsrExclWriteCheck"]
-  },
-  { name: "CTRL_AUX_SHADOWED",
-    desc: '''
-      Auxiliary Control Register.
-
-      This register is shadowed, meaning two subsequent write operations are required to change its content.
-      If the two write operations try to set a different value, a recoverable alert is triggered (See Status Register).
-      A read operation clears the internal phase tracking: The next write operation is always considered a first write operation of an update sequence.
-    '''
-    swaccess: "rw",
-    hwaccess: "hro",
-    shadowed: "true",
-    regwen:   "CTRL_AUX_REGWEN",
-    update_err_alert: "recov_ctrl_update_err",
-    storage_err_alert: "fatal_fault",
-    fields: [
-      { bits:   "0",
-        name:   "KEY_TOUCH_FORCES_RESEED",
-        desc:   '''
-                Controls whether providing a new key triggers the reseeding of internal pseudo-random number generators used for clearing and masking (1) or not (0).
-                ''',
-        resval: 1,
-      }
-      { bits:   "1",
-        name:   "FORCE_MASKS",
-        desc:   '''
-                Allow the internal masking PRNG to advance (0) or force its internal state (1) leading to constant masks.
-                Setting all masks to constant value can be useful when performing SCA.
-                To completely disable the masking, the second key share (KEY_SHARE1_0 - KEY_SHARE1_7) must be zero as well.
-                In addition, a special seed needs to be loaded into the masking PRNG using the EDN interface.
-                Only applicable if both the Masking parameter and the SecAllowForcingMasks parameter are set to one.
-                '''
-        resval: "0"
-      }
-    ]
-  },
-  { name:     "CTRL_AUX_REGWEN",
-    desc:     '''
-              Lock bit for Auxiliary Control Register.
+        Can only be updated when the AES unit is idle.
+        If the AES unit is non-idle, writes to this register are ignored.
+        This register is shadowed, meaning two subsequent write operations are required to change its content.
+        If the two write operations try to set a different value, a recoverable alert is triggered (See Status Register).
+        A read operation clears the internal phase tracking: The next write operation is always considered a first write operation of an update sequence.
+        Any write operation to this register will clear the status tracking required for automatic mode (See MANUAL_OPERATION field).
+        A write to the Control Register is considered the start of a new message.
+        Hence, software needs to provide new key, IV and input data afterwards.
+      '''
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext:    "true",
+      hwqe:     "true",
+      shadowed: "true",
+      update_err_alert: "recov_ctrl_update_err",
+      storage_err_alert: "fatal_fault",
+      fields: [
+        { bits: "1:0",
+          name: "OPERATION",
+          resval: "0x1",
+          hwaccess: "hrw",
+          desc:  '''
+            2-bit one-hot field to select the operation of AES unit.
+            Invalid input values, i.e., values with multiple bits set and value 2'b00, are mapped to AES_ENC (2'b01).
+          '''
+          enum: [
+            { value: "1",
+              name: "AES_ENC",
+              desc: '''
+                2'b01: Encryption.
+                Invalid input values, i.e., 2'b00 and 2'b11, are mapped to AES_ENC.
               '''
-    swaccess: "rw0c",
-    hwaccess: "none",
-    fields: [
-    {   bits:   "0",
-        desc:   '''
-                Auxiliary Control Register configuration enable bit.
-                If this is cleared to 0, the Auxiliary Control Register cannot be written anymore.
-                ''',
-        resval: 1,
-      }
-    ]
-  },
-  { name: "TRIGGER",
-    desc: '''
-      Trigger Register.
+            },
+            { value: "2",
+              name: "AES_DEC",
+              desc: '''
+                2'b10: Decryption.
+              '''
+            },
+          ]
+          tags: ["shadowed_reg_path:u_aes_core.u_ctrl_reg_shadowed.u_ctrl_reg_shadowed_operation"]
+        }
+        { bits: "7:2",
+          name: "MODE",
+          resval: "0x20",
+          hwaccess: "hrw",
+          desc:  '''
+            6-bit one-hot field to select AES block cipher mode.
+            Invalid input values, i.e., values with multiple bits set and value 6'b00_0000, are mapped to AES_NONE (6'b10_0000).
+          '''
+          enum: [
+            { value: "1",
+              name: "AES_ECB",
+              desc: '''
+                6'b00_0001: Electronic Codebook (ECB) mode.
+              '''
+            },
+            { value: "2",
+              name: "AES_CBC",
+              desc: '''
+                6'b00_0010: Cipher Block Chaining (CBC) mode.
+              '''
+            },
+            { value: "4",
+              name: "AES_CFB",
+              desc: '''
+                6'b00_0100: Cipher Feedback (CFB) mode.
+              '''
+            },
+            { value: "8",
+              name: "AES_OFB",
+              desc: '''
+                6'b00_1000: Output Feedback (OFB) mode.
+              '''
+            },
+            { value: "16",
+              name: "AES_CTR",
+              desc: '''
+                6'b01_0000: Counter (CTR) mode.
+              '''
+            },
+            { value: "32",
+              name: "AES_NONE",
+              desc: '''
+                6'b10_0000: Invalid input values, i.e., value with multiple bits set and value 6'b00_0000, are mapped to AES_NONE.
+              '''
+            }
+          ]
+          tags: ["shadowed_reg_path:u_aes_core.u_ctrl_reg_shadowed.u_ctrl_reg_shadowed_mode"]
+        }
+        { bits: "10:8",
+          name: "KEY_LEN",
+          resval: "1",
+          hwaccess: "hrw",
+          desc: '''
+            3-bit one-hot field to select AES key length.
+            Invalid input values, i.e., values with multiple bits set, value 3'b000, and value 3'b010 in case 192-bit keys are not supported (because disabled at compile time) are mapped to AES_256 (3'b100).
+          '''
+          enum: [
+            { value: "1",
+              name: "AES_128",
+              desc: '''
+                3'b001: 128-bit key length.
+              '''
+            },
+            { value: "2",
+              name: "AES_192",
+              desc: '''
+                3'b010: 192-bit key length.
+                In case support for 192-bit keys has been disabled at compile time, setting this value results in configuring AES_256 (3'b100).
+              '''
+            },
+            { value: "4",
+              name: "AES_256",
+              desc: '''
+                3'b100: 256-bit key length.
+                Invalid input values, i.e., values with multiple bits set, value 3'b000, and value 3'b010 in case 192-bit keys are not supported (because disabled at compile time) are mapped to AES_256.
+              '''
+            }
+          ]
+          tags: ["shadowed_reg_path:u_aes_core.u_ctrl_reg_shadowed.u_ctrl_reg_shadowed_key_len"]
+        }
+        { bits: "11",
+          name: "SIDELOAD",
+          resval: "0",
+          desc: '''
+            Controls whether the AES unit uses the key provided by the key manager via key sideload interface (1) or the key provided by software via Initial Key Registers KEY_SHARE1_0 - KEY_SHARE1_7 (0).
+          '''
+          tags: ["shadowed_reg_path:u_aes_core.u_ctrl_reg_shadowed.u_ctrl_reg_shadowed_sideload"]
+        }
+        { bits: "14:12",
+          name: "PRNG_RESEED_RATE",
+          resval: "1",
+          hwaccess: "hrw",
+          desc: '''
+            3-bit one-hot field to control the reseeding rate of the internal pseudo-random number generator (PRNG) used for masking.
+            Invalid input values, i.e., values with multiple bits set and value 3'b000 are mapped to the highest reseeding rate PER_1 (3'b001).
+          '''
+          enum: [
+            { value: "1",
+              name: "PER_1",
+              desc: '''
+                3'b001: Reseed the masking PRNG once per block.
+                Invalid input values, i.e., values with multiple bits set and value 3'b000 are mapped to PER_1 (3'b001).
+                This results in a max entropy consumption rate of ~343 Mbit/s.
+              '''
+            },
+            { value: "2",
+              name: "PER_64",
+              desc: '''
+                3'b010: Reseed the masking PRNG approximately once per every 64 blocks.
+                This results in a max entropy consumption rate of ~5.4 Mbit/s.
+              '''
+            },
+            { value: "4",
+              name: "PER_8K",
+              desc: '''
+                3'b100: Reseed the masking PRNG approximately once per every 8192 blocks.
+                This results in a max entropy consumption rate of ~0.042 Mbit/s.
+              '''
+            }
+          ]
+          tags: ["shadowed_reg_path:u_aes_core.u_ctrl_reg_shadowed.u_ctrl_reg_shadowed_prng_reseed_rate"]
+        }
+        { bits: "15",
+          name: "MANUAL_OPERATION",
+          resval: "0"
+          desc:  '''
+            Controls whether the AES unit is operated in normal/automatic mode (0) or fully manual mode (1).
+            In automatic mode (0), the AES unit automatically i) starts to encrypt/decrypt when it receives new input data, and ii) stalls during the last encryption/decryption cycle if the previous output data has not yet been read.
+            This is the most efficient mode to operate in.
+            Note that the corresponding status tracking is automatically cleared upon a write to the Control Register.
+            In manual mode (1), the AES unit i) only starts to encrypt/decrypt after receiving a start trigger (see Trigger Register), and ii) overwrites previous output data irrespective of whether it has been read out or not.
+            This mode is useful if software needs full control over the AES unit.
+          '''
+          tags: ["shadowed_reg_path:u_aes_core.u_ctrl_reg_shadowed.u_ctrl_reg_shadowed_manual_operation"]
+        }
+      ]
+      tags: [// Updated by the HW.
+             // Updates based on writes to this reg (reset test possible).
+             // Exclude from write-read checks.
+             "excl:CsrNonInitTests:CsrExclWriteCheck"]
+    },
+    { name: "CTRL_AUX_SHADOWED",
+      desc: '''
+        Auxiliary Control Register.
 
-      Each bit is individually cleared to zero when executing the corresponding trigger.
-      While executing any of the triggered operations, the AES unit will set the IDLE bit in the Status Register to zero.
-      The processor must check the Status Register before triggering further actions.
-      For example, writes to Initial Key and IV Registers are ignored while the AES unit is busy.
-      Writes to the Input Data Registers are not ignored but the data will be cleared if a KEY_IV_DATA_IN_CLEAR operation is pending.
-    '''
-    swaccess: "wo",
-    hwaccess: "hrw",
-    # Tag info (CSR test exclusions):
-    #  Updated by the HW.
-    #  Updates based on writes to this reg.
-    #  -> Exclude all fields from write-read checks.
-    #  Upon reset, the non-zero values trigger internal operations that clear this reg to zero.
-    #  -> Exclude fields with non-zero reset value from init and write-read checks (also in reset test).
-    fields: [
-      { bits: "0",
-        name: "START",
-        resval: "0"
-        desc:  '''
-          Keep AES unit paused (0) or trigger the encryption/decryption of one data block (1).
-          This trigger is cleared to `0` if MANUAL_OPERATION=0 or if MODE=AES_NONE (see Control Register).
-        '''
-        tags: ["excl:CsrNonInitTests:CsrExclWriteCheck"]
-      }
-      { bits: "1",
-        name: "KEY_IV_DATA_IN_CLEAR",
-        resval: "1"
-        desc:  '''
-          Keep current values in Initial Key, internal Full Key and Decryption Key registers, IV registers and Input Data registers (0) or clear all those registers with pseudo-random data (1).
-        '''
-        tags: ["excl:CsrAllTests:CsrExclCheck"]
-      }
-      { bits: "2",
-        name: "DATA_OUT_CLEAR",
-        resval: "1"
-        desc:  '''
-          Keep current values in Output Data registers (0) or clear those registers with pseudo-random data (1).
-        '''
-        tags: ["excl:CsrAllTests:CsrExclCheck"]
-      }
-      { bits: "3",
-        name: "PRNG_RESEED",
-        resval: "1"
-        desc:  '''
-          Keep continuing with the current states of the internal pseudo-random number generators used for register clearing and masking (0) or perform a reseed of the internal states from the connected entropy source (1).
-          If the KEY_TOUCH_FORCES_RESEED bit in the Auxiliary Control Register is set to one, this trigger will automatically get set after providing a new initial key.
-        '''
-        tags: ["excl:CsrAllTests:CsrExclCheck"]
-      }
-    ]
-  },
-  { name: "STATUS",
-    desc: "Status Register",
-    swaccess: "ro",
-    hwaccess: "hwo",
-    # Tag info (CSR test exclusions):
-    #  Updated by the HW.
-    #  Updates based on writes to other regs.
-    #  -> Exclude all fields (except ALERT_FATAL_FAULT) from init and write-read checks.
-    #  Upon reset, internal operations are triggered at the end of which IDLE and INPUT_READY will be 1.
-    #  -> Exclude IDLE and INPUT_READY field from init and write-read checks (also in reset test).
-    fields: [
-      { bits: "0",
-        name: "IDLE",
-        resval: "0",
-        hwaccess: "hrw",
-        desc:  '''
-          The AES unit is idle (1) or busy (0).
-          This flag is `0` if one of the following operations is currently running: i) encryption/decryption, ii) register clearing or iii) PRNG reseeding.
-          This flag is also `0` if an encryption/decryption is running but the AES unit is stalled.
-        '''
-        tags: ["excl:CsrAllTests:CsrExclCheck"]
-      }
-      { bits: "1",
-        name: "STALL",
-        resval: "0"
-        desc:  '''
-          The AES unit is not stalled (0) or stalled (1) because there is previous
-          output data that must be read by the processor before the AES unit can
-          overwrite this data.
-          This flag is not meaningful if MANUAL_OPERATION=1 (see Control Register).
-        '''
-        tags: ["excl:CsrNonInitTests:CsrExclCheck"]
-      }
-      { bits: "2",
-        name: "OUTPUT_LOST",
-        resval: "0"
-        hwaccess: "hrw",
-        desc:  '''
-          All previous output data has been fully read by the processor (0) or at least one previous output data block has been lost (1).
-          It has been overwritten by the AES unit before the processor could fully read it.
-          Once set to `1`, this flag remains set until AES operation is restarted by re-writing the Control Register.
-          The primary use of this flag is for design verification.
-          This flag is not meaningful if MANUAL_OPERATION=0 (see Control Register).
-        '''
-        tags: ["excl:CsrNonInitTests:CsrExclCheck"]
-      }
-      { bits: "3",
-        name: "OUTPUT_VALID",
-        resval: "0"
-        desc:  '''
-          The AES unit has no valid output (0) or has valid output data (1).
-        '''
-        tags: ["excl:CsrNonInitTests:CsrExclCheck"]
-      }
-      { bits: "4",
-        name: "INPUT_READY",
-        resval: "0",
-        desc:  '''
-          The AES unit is ready (1) or not ready (0) to receive new data input via the DATA_IN registers.
-          If the present values in the DATA_IN registers have not yet been loaded into the
-          module this flag is `0` (not ready).
-        '''
-        tags: ["excl:CsrAllTests:CsrExclCheck"]
-      }
-      { bits: "5",
-        name: "ALERT_RECOV_CTRL_UPDATE_ERR",
-        resval: "0",
-        desc:  '''
-          An update error has not occurred (0) or has occurred (1) in the shadowed Control Register.
-          AES operation needs to be restarted by re-writing the Control Register.
-        '''
-        tags: ["excl:CsrNonInitTests:CsrExclCheck"]
-      }
-      { bits: "6",
-        name: "ALERT_FATAL_FAULT",
-        resval: "0",
-        desc:  '''
-          No fatal fault has occurred inside the AES unit (0).
-          A fatal fault has occurred and the AES unit needs to be reset (1).
-          Examples for fatal faults include
-          i) storage errors in the Control Register,
-          ii) if any internal FSM enters an invalid state,
-          iii) if any sparsely encoded signal takes on an invalid value,
-          iv) errors in the internal round counter,
-          v) escalations triggered by the life cycle controller, and
-          vi) fatal integrity failures on the TL-UL bus.
-        '''
-      }
-    ]
-  },
+        This register is shadowed, meaning two subsequent write operations are required to change its content.
+        If the two write operations try to set a different value, a recoverable alert is triggered (See Status Register).
+        A read operation clears the internal phase tracking: The next write operation is always considered a first write operation of an update sequence.
+      '''
+      swaccess: "rw",
+      hwaccess: "hro",
+      shadowed: "true",
+      regwen:   "CTRL_AUX_REGWEN",
+      update_err_alert: "recov_ctrl_update_err",
+      storage_err_alert: "fatal_fault",
+      fields: [
+        { bits:   "0",
+          name:   "KEY_TOUCH_FORCES_RESEED",
+          desc:   '''
+                  Controls whether providing a new key triggers the reseeding of internal pseudo-random number generators used for clearing and masking (1) or not (0).
+                  ''',
+          resval: 1,
+        }
+        { bits:   "1",
+          name:   "FORCE_MASKS",
+          desc:   '''
+                  Allow the internal masking PRNG to advance (0) or force its internal state (1) leading to constant masks.
+                  Setting all masks to constant value can be useful when performing SCA.
+                  To completely disable the masking, the second key share (KEY_SHARE1_0 - KEY_SHARE1_7) must be zero as well.
+                  In addition, a special seed needs to be loaded into the masking PRNG using the EDN interface.
+                  Only applicable if both the Masking parameter and the SecAllowForcingMasks parameter are set to one.
+                  '''
+          resval: "0"
+        }
+      ]
+    },
+    { name:     "CTRL_AUX_REGWEN",
+      desc:     '''
+                Lock bit for Auxiliary Control Register.
+                '''
+      swaccess: "rw0c",
+      hwaccess: "none",
+      fields: [
+        { bits:   "0",
+          desc:   '''
+                  Auxiliary Control Register configuration enable bit.
+                  If this is cleared to 0, the Auxiliary Control Register cannot be written anymore.
+                  ''',
+          resval: 1,
+        }
+      ]
+    },
+    { name: "TRIGGER",
+      desc: '''
+        Trigger Register.
+
+        Each bit is individually cleared to zero when executing the corresponding trigger.
+        While executing any of the triggered operations, the AES unit will set the IDLE bit in the Status Register to zero.
+        The processor must check the Status Register before triggering further actions.
+        For example, writes to Initial Key and IV Registers are ignored while the AES unit is busy.
+        Writes to the Input Data Registers are not ignored but the data will be cleared if a KEY_IV_DATA_IN_CLEAR operation is pending.
+      '''
+      swaccess: "wo",
+      hwaccess: "hrw",
+      # Tag info (CSR test exclusions):
+      #  Updated by the HW.
+      #  Updates based on writes to this reg.
+      #  -> Exclude all fields from write-read checks.
+      #  Upon reset, the non-zero values trigger internal operations that clear this reg to zero.
+      #  -> Exclude fields with non-zero reset value from init and write-read checks (also in reset test).
+      fields: [
+        { bits: "0",
+          name: "START",
+          resval: "0"
+          desc:  '''
+            Keep AES unit paused (0) or trigger the encryption/decryption of one data block (1).
+            This trigger is cleared to `0` if MANUAL_OPERATION=0 or if MODE=AES_NONE (see Control Register).
+          '''
+          tags: ["excl:CsrNonInitTests:CsrExclWriteCheck"]
+        }
+        { bits: "1",
+          name: "KEY_IV_DATA_IN_CLEAR",
+          resval: "1"
+          desc:  '''
+            Keep current values in Initial Key, internal Full Key and Decryption Key registers, IV registers and Input Data registers (0) or clear all those registers with pseudo-random data (1).
+          '''
+          tags: ["excl:CsrAllTests:CsrExclCheck"]
+        }
+        { bits: "2",
+          name: "DATA_OUT_CLEAR",
+          resval: "1"
+          desc:  '''
+            Keep current values in Output Data registers (0) or clear those registers with pseudo-random data (1).
+          '''
+          tags: ["excl:CsrAllTests:CsrExclCheck"]
+        }
+        { bits: "3",
+          name: "PRNG_RESEED",
+          resval: "1"
+          desc:  '''
+            Keep continuing with the current states of the internal pseudo-random number generators used for register clearing and masking (0) or perform a reseed of the internal states from the connected entropy source (1).
+            If the KEY_TOUCH_FORCES_RESEED bit in the Auxiliary Control Register is set to one, this trigger will automatically get set after providing a new initial key.
+          '''
+          tags: ["excl:CsrAllTests:CsrExclCheck"]
+        }
+      ]
+    },
+    { name: "STATUS",
+      desc: "Status Register",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      # Tag info (CSR test exclusions):
+      #  Updated by the HW.
+      #  Updates based on writes to other regs.
+      #  -> Exclude all fields (except ALERT_FATAL_FAULT) from init and write-read checks.
+      #  Upon reset, internal operations are triggered at the end of which IDLE and INPUT_READY will be 1.
+      #  -> Exclude IDLE and INPUT_READY field from init and write-read checks (also in reset test).
+      fields: [
+        { bits: "0",
+          name: "IDLE",
+          resval: "0",
+          hwaccess: "hrw",
+          desc:  '''
+            The AES unit is idle (1) or busy (0).
+            This flag is `0` if one of the following operations is currently running: i) encryption/decryption, ii) register clearing or iii) PRNG reseeding.
+            This flag is also `0` if an encryption/decryption is running but the AES unit is stalled.
+          '''
+          tags: ["excl:CsrAllTests:CsrExclCheck"]
+        }
+        { bits: "1",
+          name: "STALL",
+          resval: "0"
+          desc:  '''
+            The AES unit is not stalled (0) or stalled (1) because there is previous
+            output data that must be read by the processor before the AES unit can
+            overwrite this data.
+            This flag is not meaningful if MANUAL_OPERATION=1 (see Control Register).
+          '''
+          tags: ["excl:CsrNonInitTests:CsrExclCheck"]
+        }
+        { bits: "2",
+          name: "OUTPUT_LOST",
+          resval: "0"
+          hwaccess: "hrw",
+          desc:  '''
+            All previous output data has been fully read by the processor (0) or at least one previous output data block has been lost (1).
+            It has been overwritten by the AES unit before the processor could fully read it.
+            Once set to `1`, this flag remains set until AES operation is restarted by re-writing the Control Register.
+            The primary use of this flag is for design verification.
+            This flag is not meaningful if MANUAL_OPERATION=0 (see Control Register).
+          '''
+          tags: ["excl:CsrNonInitTests:CsrExclCheck"]
+        }
+        { bits: "3",
+          name: "OUTPUT_VALID",
+          resval: "0"
+          desc:  '''
+            The AES unit has no valid output (0) or has valid output data (1).
+          '''
+          tags: ["excl:CsrNonInitTests:CsrExclCheck"]
+        }
+        { bits: "4",
+          name: "INPUT_READY",
+          resval: "0",
+          desc:  '''
+            The AES unit is ready (1) or not ready (0) to receive new data input via the DATA_IN registers.
+            If the present values in the DATA_IN registers have not yet been loaded into the
+            module this flag is `0` (not ready).
+          '''
+          tags: ["excl:CsrAllTests:CsrExclCheck"]
+        }
+        { bits: "5",
+          name: "ALERT_RECOV_CTRL_UPDATE_ERR",
+          resval: "0",
+          desc:  '''
+            An update error has not occurred (0) or has occurred (1) in the shadowed Control Register.
+            AES operation needs to be restarted by re-writing the Control Register.
+          '''
+          tags: ["excl:CsrNonInitTests:CsrExclCheck"]
+        }
+        { bits: "6",
+          name: "ALERT_FATAL_FAULT",
+          resval: "0",
+          desc:  '''
+            No fatal fault has occurred inside the AES unit (0).
+            A fatal fault has occurred and the AES unit needs to be reset (1).
+            Examples for fatal faults include
+            i) storage errors in the Control Register,
+            ii) if any internal FSM enters an invalid state,
+            iii) if any sparsely encoded signal takes on an invalid value,
+            iv) errors in the internal round counter,
+            v) escalations triggered by the life cycle controller, and
+            vi) fatal integrity failures on the TL-UL bus.
+          '''
+        }
+      ]
+    },
   ],
 }

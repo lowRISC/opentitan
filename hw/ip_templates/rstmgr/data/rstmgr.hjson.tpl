@@ -57,15 +57,15 @@
   alert_list: [
     { name: "fatal_fault",
       desc: '''
-        This fatal alert is triggered when a fatal structural fault is detected.
-        Structural faults include errors such as sparse fsm errors and tlul integrity errors.
-      '''
+            This fatal alert is triggered when a fatal structural fault is detected.
+            Structural faults include errors such as sparse fsm errors and tlul integrity errors.
+            '''
     }
     { name: "fatal_cnsty_fault",
       desc: '''
-        This fatal alert is triggered when a reset consistency fault is detected.
-        It is separated from the category above for clearer error collection and debug.
-      '''
+            This fatal alert is triggered when a reset consistency fault is detected.
+            It is separated from the category above for clearer error collection and debug.
+            '''
     }
   ],
   countermeasures: [
@@ -134,9 +134,9 @@
       type:    "bit",
       default: "1'b1",
       desc:    '''
-        When 1, enable rstmgr reset consistency checks.
-        When 0, there are no consistency checks.
-      '''
+               When 1, enable rstmgr reset consistency checks.
+               When 0, there are no consistency checks.
+               '''
       local:   "false",
       expose:  "true"
     },
@@ -145,8 +145,8 @@
       type:    "int",
       default: "2",
       desc:    '''
-        The maximum synchronization delay for parent / child reset checks.
-      '''
+               The maximum synchronization delay for parent / child reset checks.
+               '''
       local:   "false",
       expose:  "true"
     },
@@ -193,9 +193,9 @@
       act:     "rcv",
       width:   "${len(power_domains)}"
       desc:    '''
-        Root power on reset signals from ast.
-        There is one root reset signal for each core power domain.
-      '''
+               Root power on reset signals from ast.
+               There is one root reset signal for each core power domain.
+               '''
     },
 
     { struct:  "pwr_rst",    // pwr_rst_req_t, pwr_rst_rsp_t
@@ -203,9 +203,9 @@
       name:    "pwr",        // resets_o (req), resets_i (rsp)
       act:     "rsp",
       desc:    '''
-         Reset request signals from power manager.
-         Power manager can request for specific domains of the lc/sys reset tree to assert.
-      '''
+               Reset request signals from power manager.
+               Power manager can request for specific domains of the lc/sys reset tree to assert.
+               '''
     },
 
     { struct:  "rstmgr_out",
@@ -214,8 +214,8 @@
       act:     "req",
       package: "rstmgr_pkg", // Origin package (only needs for the req)
       desc:    '''
-        Leaf resets fed to the system.
-      '''
+               Leaf resets fed to the system.
+               '''
     },
 
     { struct:  "rstmgr_rst_en",
@@ -224,8 +224,8 @@
       act:     "req",
       package: "rstmgr_pkg", // Origin package (only needs for the req)
       desc:    '''
-        Low-power-group outputs used by alert handler.
-      '''
+               Low-power-group outputs used by alert handler.
+               '''
     },
 
     { struct:  "alert_crashdump",
@@ -234,8 +234,8 @@
       act:     "rcv",
       package: "alert_pkg",
       desc:    '''
-        Alert handler crash dump information.
-      '''
+               Alert handler crash dump information.
+               '''
     },
 
     { struct:  "cpu_crash_dump",
@@ -244,8 +244,8 @@
       act:     "rcv",
       package: "rv_core_ibex_pkg",
       desc:    '''
-        Main processing element crash dump information.
-      '''
+               Main processing element crash dump information.
+               '''
     },
 
     { struct:  "mubi4",
@@ -254,8 +254,8 @@
       act:     "req",
       package: "prim_mubi_pkg",
       desc:    '''
-        Software requested system reset to pwrmgr.
-      '''
+               Software requested system reset to pwrmgr.
+               '''
     },
 
     // Exported resets
@@ -273,8 +273,8 @@
 
     { name: "RESET_REQ",
       desc: '''
-        Software requested system reset.
-      ''',
+            Software requested system reset.
+            ''',
       swaccess: "rw",
       hwaccess: "hrw",
       fields: [
@@ -282,9 +282,9 @@
           mubi: true
           name: "VAL",
           desc: '''
-            When set to kMultiBitBool4True, a reset to power manager is requested.
-            Upon completion of reset, this bit is automatically cleared by hardware.
-          '''
+                When set to kMultiBitBool4True, a reset to power manager is requested.
+                Upon completion of reset, this bit is automatically cleared by hardware.
+                '''
           resval: false
         },
       ],
@@ -304,16 +304,16 @@
           hwaccess: "none",
           name: "POR",
           desc: '''
-            Indicates when a device has reset due to power up.
-            '''
+                Indicates when a device has reset due to power up.
+                '''
           resval: "1"
         },
 
         { bits: "1",
           name: "LOW_POWER_EXIT",
           desc: '''
-            Indicates when a device has reset due low power exit.
-            '''
+                Indicates when a device has reset due low power exit.
+                '''
           resval: "0"
         },
 
@@ -321,8 +321,8 @@
           hwaccess: "hrw",
           name: "SW_RESET",
           desc: '''
-            Indicates when a device has reset due to !!RESET_REQ.
-            '''
+                Indicates when a device has reset due to !!RESET_REQ.
+                '''
           resval: "0"
         },
 
@@ -332,12 +332,12 @@
           hwaccess: "hrw",
           name: "HW_REQ",
           desc: '''
-            Indicates when a device has reset due to a hardware requested reset.
-            The bit mapping is as follows:
-            % for req in (reqs["peripheral"] + reqs["int"] + reqs["debug"]):
-            b${3 + loop.index}: ${f"{req['module']}: {req['desc']}"}
-            % endfor
-            '''
+                Indicates when a device has reset due to a hardware requested reset.
+                The bit mapping is as follows:
+                % for req in (reqs["peripheral"] + reqs["int"] + reqs["debug"]):
+                b${3 + loop.index}: ${f"{req['module']}: {req['desc']}"}
+                % endfor
+                '''
           resval: "0"
         },
       ]
@@ -353,8 +353,8 @@
           name: "EN",
           resval: "1"
           desc: '''
-            When 1, !!${dump_src.upper()}_INFO_CTRL can be modified.
-          '''
+                When 1, !!${dump_src.upper()}_INFO_CTRL can be modified.
+                '''
         },
       ]
     }
@@ -372,17 +372,17 @@
           name: "EN",
           hwaccess: "hrw",
           desc: '''
-            Enable ${dump_src} dump to capture new information.
-            This field is automatically set to 0 upon system reset (even if rstmgr is not reset).
-            '''
+                Enable ${dump_src} dump to capture new information.
+                This field is automatically set to 0 upon system reset (even if rstmgr is not reset).
+                '''
           resval: "0"
         },
 
         { bits: "4+IdxWidth-1:4",
           name: "INDEX",
           desc: '''
-            Controls which 32-bit value to read.
-            '''
+                Controls which 32-bit value to read.
+                '''
           resval: "0"
         },
       ]
@@ -402,8 +402,8 @@
           swaccess: "ro",
           hwaccess: "hwo",
           desc: '''
-            The number of 32-bit values contained in the ${dump_src} info dump.
-            '''
+                The number of 32-bit values contained in the ${dump_src} info dump.
+                '''
           resval: "0",
           tags: [// This field is tied to a design constant, thus the
                  // default value is never 0.  Since there is not a way
@@ -415,8 +415,8 @@
 
     { name: "${dump_src.upper()}_INFO",
       desc: '''
-              ${dump_src.capitalize()} dump information prior to last reset.
-              Which value read is controlled by the !!${dump_src.upper()}_INFO_CTRL register.
+            ${dump_src.capitalize()} dump information prior to last reset.
+            Which value read is controlled by the !!${dump_src.upper()}_INFO_CTRL register.
             ''',
       swaccess: "ro",
       hwaccess: "hwo",
@@ -426,8 +426,8 @@
         { bits: "31:0",
           name: "VALUE",
           desc: '''
-            The current 32-bit value of crash dump.
-            '''
+                The current 32-bit value of crash dump.
+                '''
           resval: "0",
         },
       ]
@@ -443,10 +443,10 @@
         cname: "RSTMGR_SW_RST",
         name:  "SW_RST_REGWEN",
         desc:  '''
-          Register write enable for software controllable resets.
-          When a particular bit value is 0, the corresponding value in !!SW_RST_CTRL_N can no longer be changed.
-          When a particular bit value is 1, the corresponding value in !!SW_RST_CTRL_N can be changed.
-        ''',
+               Register write enable for software controllable resets.
+               When a particular bit value is 0, the corresponding value in !!SW_RST_CTRL_N can no longer be changed.
+               When a particular bit value is 1, the corresponding value in !!SW_RST_CTRL_N can be changed.
+               ''',
         count: "NumSwResets",
         swaccess: "rw0c",
         hwaccess: "none",
@@ -466,10 +466,10 @@
         cname: "RSTMGR_SW_RST",
         name:  "SW_RST_CTRL_N",
         desc:  '''
-          Software controllable resets.
-          When a particular bit value is 0, the corresponding module is held in reset.
-          When a particular bit value is 1, the corresponding module is not held in reset.
-        ''',
+               Software controllable resets.
+               When a particular bit value is 0, the corresponding module is held in reset.
+               When a particular bit value is 1, the corresponding module is not held in reset.
+               ''',
         count: "NumSwResets",
         swaccess: "rw",
         hwaccess: "hro",
@@ -492,35 +492,34 @@
 
     { name: "ERR_CODE",
       desc: '''
-        A bit vector of all the errors that have occurred in reset manager
-      ''',
+            A bit vector of all the errors that have occurred in reset manager
+            ''',
       swaccess: "ro",
       hwaccess: "hrw",
       fields: [
         { bits: "0",
           name: "REG_INTG_ERR",
           desc: '''
-            The register file has experienced an integrity error.
-          '''
+                The register file has experienced an integrity error.
+                '''
           resval: "0"
         },
 
         { bits: "1",
           name: "RESET_CONSISTENCY_ERR",
           desc: '''
-            A inconsistent parent / child reset was observed.
-          '''
+                A inconsistent parent / child reset was observed.
+                '''
           resval: "0"
         },
 
         { bits: "2",
           name: "FSM_ERR",
           desc: '''
-            Sparsely encoded fsm error.
-          '''
+                Sparsely encoded fsm error.
+                '''
           resval: "0"
         },
-
       ]
     },
   ]

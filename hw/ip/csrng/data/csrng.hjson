@@ -249,11 +249,11 @@
       hwaccess: "none",
       fields: [
         {
-            bits: "0",
-            desc: ''' When true, all writeable registers can be modified.
-            When false, they become read-only.
-            '''
-            resval: 1
+          bits: "0",
+          desc: ''' When true, all writeable registers can be modified.
+          When false, they become read-only.
+          '''
+          resval: 1
         }
       ]
     },
@@ -266,36 +266,36 @@
                  "excl:CsrAllTests:CsrExclWrite"]
       fields: [
         {
-            bits: "3:0",
-            name: "ENABLE",
-            mubi: true
-            desc: '''
-                  Setting this field to kMultiBitBool4True will enable the CSRNG module. The modules
-                  of the entropy complex may only be enabled and disabled in a specific order, see
-                  Programmers Guide for details.
-                  '''
+          bits: "3:0",
+          name: "ENABLE",
+          mubi: true
+          desc: '''
+                Setting this field to kMultiBitBool4True will enable the CSRNG module. The modules
+                of the entropy complex may only be enabled and disabled in a specific order, see
+                Programmers Guide for details.
+                '''
           resval: false
         },
         {
-            bits: "7:4",
-            name: "SW_APP_ENABLE",
-            mubi: true
-            desc: '''
-                  Setting this field to kMultiBitBool4True will enable reading from the !!GENBITS register.
-                  This application interface for software (register based) will be enabled
-                  only if the otp_en_csrng_sw_app_read input vector is set to the enable encoding.
-                  '''
+          bits: "7:4",
+          name: "SW_APP_ENABLE",
+          mubi: true
+          desc: '''
+                Setting this field to kMultiBitBool4True will enable reading from the !!GENBITS register.
+                This application interface for software (register based) will be enabled
+                only if the otp_en_csrng_sw_app_read input vector is set to the enable encoding.
+                '''
           resval: false
         },
         {
-            bits: "11:8",
-            name: "READ_INT_STATE",
-            mubi: true
-            desc: '''
-                  Setting this field to kMultiBitBool4True will enable reading from the !!INT_STATE_VAL register.
-                  Reading the internal state of the enable instances will be enabled
-                  only if the otp_en_csrng_sw_app_read input vector is set to the enable encoding.
-                  '''
+          bits: "11:8",
+          name: "READ_INT_STATE",
+          mubi: true
+          desc: '''
+                Setting this field to kMultiBitBool4True will enable reading from the !!INT_STATE_VAL register.
+                Reading the internal state of the enable instances will be enabled
+                only if the otp_en_csrng_sw_app_read input vector is set to the enable encoding.
+                '''
           resval: false
         },
       ]
@@ -416,19 +416,19 @@
       hwqe: "true",
       fields: [
         {
-            bits: "3:0",
-            name: "INT_STATE_NUM",
-            desc: '''
-                  Setting this field will set the number for which internal state can be
-                  selected for a read access. Up to 16 internal state values can be chosen
-                  from this register. The actual number of valid internal state fields
-                  is set by parameter NHwApps plus 1 software app. For those selections that point
-                  to reserved locations (greater than NHwApps plus 1), the returned value
-                  will be zero. Writing this register will also reset the internal read
-                  pointer for the !!INT_STATE_VAL register.
-                  Note: This register should be read back after being written to ensure
-                  that the !!INT_STATE_VAL read back is accurate.
-                  '''
+          bits: "3:0",
+          name: "INT_STATE_NUM",
+          desc: '''
+                Setting this field will set the number for which internal state can be
+                selected for a read access. Up to 16 internal state values can be chosen
+                from this register. The actual number of valid internal state fields
+                is set by parameter NHwApps plus 1 software app. For those selections that point
+                to reserved locations (greater than NHwApps plus 1), the returned value
+                will be zero. Writing this register will also reset the internal read
+                pointer for the !!INT_STATE_VAL register.
+                Note: This register should be read back after being written to ensure
+                that the !!INT_STATE_VAL read back is accurate.
+                '''
         },
       ]
     },
@@ -796,16 +796,16 @@
                 "excl:CsrAllTests:CsrExclWrite"]
       fields: [
         {
-            bits: "4:0",
-            name: "ERR_CODE_TEST",
-            desc: '''
-                  Setting this field will set the bit number for which an error
-                  will be forced in the hardware. This bit number is that same one
-                  found in the !!ERR_CODE register. The action of writing this
-                  register will force an error pulse. The sole purpose of this
-                  register is to test that any error properly propagates to either
-                  an interrupt or an alert.
-                  '''
+          bits: "4:0",
+          name: "ERR_CODE_TEST",
+          desc: '''
+                Setting this field will set the bit number for which an error
+                will be forced in the hardware. This bit number is that same one
+                found in the !!ERR_CODE register. The action of writing this
+                register will force an error pulse. The sole purpose of this
+                register is to test that any error properly propagates to either
+                an interrupt or an alert.
+                '''
         },
       ]
     },

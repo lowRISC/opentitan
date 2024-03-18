@@ -68,8 +68,8 @@
   alert_list: [
     { name: "fatal_fault",
       desc: '''
-      This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected.
-      '''
+            This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected.
+            '''
     }
   ],
 
@@ -106,12 +106,13 @@
 
   features: [
     { name: "RV_PLIC.PRIORITY",
-      desc: '''Each interrupt source can be given a configurable priority.'''
+      desc: "Each interrupt source can be given a configurable priority."
     }
     { name: "RV_PLIC.ENABLE",
-      desc: '''Each target has an associated set of interrupt enable bits. Configuring these
-               controls whether a target will be notified when the interrupt is triggered.
-            '''
+      desc: '''
+            Each target has an associated set of interrupt enable bits. Configuring these
+            controls whether a target will be notified when the interrupt is triggered.
+           '''
     }
   ]
 
@@ -168,8 +169,10 @@
       ],
     }
     { name: "CC${i}",
-      desc: '''Claim interrupt by read, complete interrupt by write for Target ${i}.
-      Value read/written is interrupt ID. Reading a value of 0 means no pending interrupts.''',
+      desc: '''
+            Claim interrupt by read, complete interrupt by write for Target ${i}.
+            Value read/written is interrupt ID. Reading a value of 0 means no pending interrupts.
+	    ''',
       swaccess: "rw",
       hwaccess: "hrw",
       hwext: "true",
@@ -185,8 +188,10 @@
   { skipto: "0x4000000" }
 % for i in range(target):
     { name: "MSIP${i}",
-      desc: '''msip for Hart ${i}.
-      Write 1 to here asserts software interrupt for Hart msip_o[${i}], write 0 to clear.''',
+      desc: '''
+            msip for Hart ${i}.
+            Write 1 to here asserts software interrupt for Hart msip_o[${i}], write 0 to clear.
+	    ''',
       swaccess: "rw",
       hwaccess: "hro",
       fields: [
@@ -198,7 +203,7 @@
 % endfor
   { skipto: "0x4004000" }
   { name: "ALERT_TEST",
-      desc: '''Alert Test Register.''',
+      desc: "Alert Test Register."
       swaccess: "wo",
       hwaccess: "hro",
       hwqe:     "True",

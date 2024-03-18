@@ -120,9 +120,9 @@
       type:    "int unsigned",
       default: "32",
       desc:    '''
-                Number of 32-bit entries in the observe FIFO.
-                Note that upon changing this parameter, the bit widths of the !!OBSERVE_FIFO_THRESH and !!OBSERVE_FIFO_DEPTH registers have to be manually adjusted.
-                ''',
+               Number of 32-bit entries in the observe FIFO.
+               Note that upon changing this parameter, the bit widths of the !!OBSERVE_FIFO_THRESH and !!OBSERVE_FIFO_DEPTH registers have to be manually adjusted.
+               ''',
       local:   "true"
     },
   ]
@@ -284,11 +284,12 @@
       hwaccess: "none",
       fields: [
         {
-            bits: "0",
-            desc: ''' When true, the !!MODULE_ENABLE register can be modified.
-            When false, it becomes read-only.
-            '''
-            resval: 1
+          bits: "0",
+          desc: '''
+                When true, the !!MODULE_ENABLE register can be modified.
+                When false, it becomes read-only.
+                '''
+          resval: 1
         }
       ]
     },
@@ -300,13 +301,12 @@
              "excl:CsrAllTests:CsrExclAll"]
       fields: [
         {
-            bits: "0",
-            desc: ''' When this bit true and the MODULE_ENABLE field is false,
-            the REGWEN write enable bit read as true, and is distributed to
-            all associated control and threshold registers.
-            When false, these registers become read-only.
-            '''
-            resval: 1
+          bits: "0",
+          desc: '''
+                When this bit is true and the MODULE_ENABLE field is false, the REGWEN write enable bit read as true, and is distributed to all associated control and threshold registers.
+                When false, these registers become read-only.
+                '''
+          resval: 1
         }
       ]
     },
@@ -318,12 +318,12 @@
              "excl:CsrNonInitTests:CsrExclCheck"]
       fields: [
         {
-            bits: "0",
-            desc: '''
-                  This read-only write enable bit will allow write access to control and threshold registers that are associated with this bit, but only when the !!MODULE_ENABLE register is set to `kMultiBitBool4False` and the !!SW_REGUPD write enable bit is set to true.
-                  When read as false, these registers become read-only.
-            '''
-            resval: 1
+          bits: "0",
+          desc: '''
+                This read-only write enable bit will allow write access to control and threshold registers that are associated with this bit, but only when the !!MODULE_ENABLE register is set to `kMultiBitBool4False` and the !!SW_REGUPD write enable bit is set to true.
+                When read as false, these registers become read-only.
+                '''
+          resval: 1
         }
       ]
     },
@@ -361,7 +361,8 @@
           mubi: true,
           name: "MODULE_ENABLE",
           desc: '''
-                Setting this field to `kMultiBitBool4True` will enable the ENTROPY_SRC module. Setting this field to `kMultiBitBool4False` will effectively reset the module.
+                Setting this field to `kMultiBitBool4True` will enable the ENTROPY_SRC module.
+                Setting this field to `kMultiBitBool4False` will effectively reset the module.
                 The modules of the entropy complex may only be enabled and disabled in a specific order, see Programmers Guide for details.
                 '''
           resval: false,
@@ -422,10 +423,11 @@
           desc: '''
                 When !!CONF.RNG_BIT_ENABLE is set, this field selects which bit from the RNG bus will be processed.
                 This two bit field selects the RNG bit stream:
-                0b00: RNG bit 0
-                0b01: RNG bit 1
-                0b10: RNG bit 2
-                0b11: RNG bit 3
+
+                - 0b00: RNG bit 0
+                - 0b01: RNG bit 1
+                - 0b10: RNG bit 2
+                - 0b11: RNG bit 3
                 '''
         },
         { bits: "21:18",
@@ -548,24 +550,26 @@
       fields: [
         { bits: "15:0",
           name: "FIPS_THRESH",
-          desc: '''This is the threshold size for the repetition count health test.
-                   This value is used in FIPS mode.
-                   This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is less than the current value of this register.
-                   A read from this register always reflects the current value.
+          desc: '''
+                This is the threshold size for the repetition count health test.
+                This value is used in FIPS mode.
+                This register must be written before the module is enabled.
+                Writing to this register will only update the register if the
+                written value is less than the current value of this register.
+                A read from this register always reflects the current value.
                 '''
           resval: "0xFFFF"
         }
         { bits: "31:16",
           name: "BYPASS_THRESH",
-          desc: '''This is the threshold size for the repetition count health test
-                   running in bypass mode. This mode is active after reset for the
-                   first and only test run, or when this mode is programmed by firmware.
-                   This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is less than the current value of this register.
-                   A read from this register always reflects the current value.
+          desc: '''
+                This is the threshold size for the repetition count health test
+                running in bypass mode. This mode is active after reset for the
+                first and only test run, or when this mode is programmed by firmware.
+                This register must be written before the module is enabled.
+                Writing to this register will only update the register if the
+                written value is less than the current value of this register.
+                A read from this register always reflects the current value.
                 '''
           resval: "0xFFFF"
         }
@@ -583,24 +587,26 @@
       fields: [
         { bits: "15:0",
           name: "FIPS_THRESH",
-          desc: '''This is the threshold size for the repetition count symbol health test.
-                   This value is used in FIPS mode.
-                   This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is less than the current value of this register.
-                   A read from this register always reflects the current value.
+          desc: '''
+                This is the threshold size for the repetition count symbol health test.
+                This value is used in FIPS mode.
+                This register must be written before the module is enabled.
+                Writing to this register will only update the register if the
+                written value is less than the current value of this register.
+                A read from this register always reflects the current value.
                 '''
           resval: "0xFFFF"
         }
         { bits: "31:16",
           name: "BYPASS_THRESH",
-          desc: '''This is the threshold size for the repetition count symbol health test
-                   running in bypass mode. This mode is active after reset for the
-                   first and only test run, or when this mode is programmed by firmware.
-                   This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is less than the current value of this register.
-                   A read from this register always reflects the current value.
+          desc: '''
+                This is the threshold size for the repetition count symbol health test
+                running in bypass mode. This mode is active after reset for the
+                first and only test run, or when this mode is programmed by firmware.
+                This register must be written before the module is enabled.
+                Writing to this register will only update the register if the
+                written value is less than the current value of this register.
+                A read from this register always reflects the current value.
                 '''
           resval: "0xFFFF"
         }
@@ -618,24 +624,26 @@
       fields: [
         { bits: "15:0",
           name: "FIPS_THRESH",
-          desc: '''This is the threshold size for the adaptive proportion health test.
-                   This value is used in FIPS mode.
-                   This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is less than the current value of this register.
-                   A read from this register always reflects the current value.
+          desc: '''
+                This is the threshold size for the adaptive proportion health test.
+                This value is used in FIPS mode.
+                This register must be written before the module is enabled.
+                Writing to this register will only update the register if the
+                written value is less than the current value of this register.
+                A read from this register always reflects the current value.
                 '''
           resval: "0xFFFF"
         }
         { bits: "31:16",
           name: "BYPASS_THRESH",
-          desc: '''This is the threshold size for the adaptive proportion health test
-                   running in bypass mode. This mode is active after reset for the
-                   first and only test run, or when this mode is programmed by firmware.
-                   This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is less than the current value of this register.
-                   A read from this register always reflects the current value.
+          desc: '''
+                This is the threshold size for the adaptive proportion health test
+                running in bypass mode. This mode is active after reset for the
+                first and only test run, or when this mode is programmed by firmware.
+                This register must be written before the module is enabled.
+                Writing to this register will only update the register if the
+                written value is less than the current value of this register.
+                A read from this register always reflects the current value.
                 '''
           resval: "0xFFFF"
         }
@@ -653,24 +661,26 @@
       fields: [
         { bits: "15:0",
           name: "FIPS_THRESH",
-          desc: '''This is the threshold size for the adaptive proportion health test.
-                   This value is used in FIPS mode.
-                   This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is greater than the current value of this register.
-                   A read from this register always reflects the current value.
+          desc: '''
+                This is the threshold size for the adaptive proportion health test.
+                This value is used in FIPS mode.
+                This register must be written before the module is enabled.
+                Writing to this register will only update the register if the
+                written value is greater than the current value of this register.
+                A read from this register always reflects the current value.
                 '''
           resval: "0x0000"
         }
         { bits: "31:16",
           name: "BYPASS_THRESH",
-          desc: '''This is the threshold size for the adaptive proportion health test
-                   running in bypass mode. This mode is active after reset for the
-                   first and only test run, or when this mode is programmed by firmware.
-                   This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is greater than the current value of this register.
-                   A read from this register always reflects the current value.
+          desc: '''
+                This is the threshold size for the adaptive proportion health test
+                running in bypass mode. This mode is active after reset for the
+                first and only test run, or when this mode is programmed by firmware.
+                This register must be written before the module is enabled.
+                Writing to this register will only update the register if the
+                written value is greater than the current value of this register.
+                A read from this register always reflects the current value.
                 '''
           resval: "0x0000"
         }
@@ -688,24 +698,26 @@
       fields: [
         { bits: "15:0",
           name: "FIPS_THRESH",
-          desc: '''This is the threshold size for the bucket health test.
-                   This value is used in FIPS mode.
-                   This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is less than the current value of this register.
-                   A read from this register always reflects the current value.
+          desc: '''
+                This is the threshold size for the bucket health test.
+                This value is used in FIPS mode.
+                This register must be written before the module is enabled.
+                Writing to this register will only update the register if the
+                written value is less than the current value of this register.
+                A read from this register always reflects the current value.
                 '''
           resval: "0xFFFF"
         }
         { bits: "31:16",
           name: "BYPASS_THRESH",
-          desc: '''This is the threshold size for the bucket health test
-                   running in bypass mode. This mode is active after reset for the
-                   first and only test run, or when this mode is programmed by firmware.
-                   This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is less than the current value of this register.
-                   A read from this register always reflects the current value.
+          desc: '''
+                This is the threshold size for the bucket health test
+                running in bypass mode. This mode is active after reset for the
+                first and only test run, or when this mode is programmed by firmware.
+                This register must be written before the module is enabled.
+                Writing to this register will only update the register if the
+                written value is less than the current value of this register.
+                A read from this register always reflects the current value.
                 '''
           resval: "0xFFFF"
         }
@@ -723,24 +735,26 @@
       fields: [
         { bits: "15:0",
           name: "FIPS_THRESH",
-          desc: '''This is the threshold size for the Markov health test.
-                   This value is used in FIPS mode.
-                   This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is less than the current value of this register.
-                   A read from this register always reflects the current value.
+          desc: '''
+                This is the threshold size for the Markov health test.
+                This value is used in FIPS mode.
+                This register must be written before the module is enabled.
+                Writing to this register will only update the register if the
+                written value is less than the current value of this register.
+                A read from this register always reflects the current value.
                 '''
           resval: "0xFFFF"
         }
         { bits: "31:16",
           name: "BYPASS_THRESH",
-          desc: '''This is the threshold size for the Markov health test
-                   running in bypass mode. This mode is active after reset for the
-                   first and only test run, or when this mode is programmed by firmware.
-                   This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is less than the current value of this register.
-                   A read from this register always reflects the current value.
+          desc: '''
+                This is the threshold size for the Markov health test
+                running in bypass mode. This mode is active after reset for the
+                first and only test run, or when this mode is programmed by firmware.
+                This register must be written before the module is enabled.
+                Writing to this register will only update the register if the
+                written value is less than the current value of this register.
+                A read from this register always reflects the current value.
                 '''
           resval: "0xFFFF"
        }
@@ -758,24 +772,26 @@
       fields: [
         { bits: "15:0",
           name: "FIPS_THRESH",
-          desc: '''This is the threshold size for the Markov health test.
-                   This value is used in FIPS mode.
-                   This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is greater than the current value of this register.
-                   A read from this register always reflects the current value.
+          desc: '''
+                This is the threshold size for the Markov health test.
+                This value is used in FIPS mode.
+                This register must be written before the module is enabled.
+                Writing to this register will only update the register if the
+                written value is greater than the current value of this register.
+                A read from this register always reflects the current value.
                 '''
           resval: "0x0000"
         }
         { bits: "31:16",
           name: "BYPASS_THRESH",
-          desc: '''This is the threshold size for the Markov health test
-                   running in bypass mode. This mode is active after reset for the
-                   first and only test run, or when this mode is programmed by firmware.
-                   This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is greater than the current value of this register.
-                   A read from this register always reflects the current value.
+          desc: '''
+                This is the threshold size for the Markov health test
+                running in bypass mode. This mode is active after reset for the
+                first and only test run, or when this mode is programmed by firmware.
+                This register must be written before the module is enabled.
+                Writing to this register will only update the register if the
+                written value is greater than the current value of this register.
+                A read from this register always reflects the current value.
                 '''
           resval: "0x0000"
         }
@@ -793,24 +809,26 @@
       fields: [
         { bits: "15:0",
           name: "FIPS_THRESH",
-          desc: '''This is the threshold size for the external health test.
-                   This value is used in FIPS mode.
-                   This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is less than the current value of this register.
-                   A read from this register always reflects the current value.
+          desc: '''
+                This is the threshold size for the external health test.
+                This value is used in FIPS mode.
+                This register must be written before the module is enabled.
+                Writing to this register will only update the register if the
+                written value is less than the current value of this register.
+                A read from this register always reflects the current value.
                 '''
           resval: "0xFFFF"
         }
         { bits: "31:16",
           name: "BYPASS_THRESH",
-          desc: '''This is the threshold size for the external health test
-                   running in bypass mode. This mode is active after reset for the
-                   first and only test run, or when this mode is programmed by firmware.
-                   This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is less than the current value of this register.
-                   A read from this register always reflects the current value.
+          desc: '''
+                This is the threshold size for the external health test
+                running in bypass mode. This mode is active after reset for the
+                first and only test run, or when this mode is programmed by firmware.
+                This register must be written before the module is enabled.
+                Writing to this register will only update the register if the
+                written value is less than the current value of this register.
+                A read from this register always reflects the current value.
                 '''
           resval: "0xFFFF"
         }
@@ -828,24 +846,26 @@
       fields: [
         { bits: "15:0",
           name: "FIPS_THRESH",
-          desc: '''This is the threshold size for the external health test.
-                   This value is used in FIPS mode.
-                   This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is greater than the current value of this register.
-                   A read from this register always reflects the current value.
+          desc: '''
+                This is the threshold size for the external health test.
+                This value is used in FIPS mode.
+                This register must be written before the module is enabled.
+                Writing to this register will only update the register if the
+                written value is greater than the current value of this register.
+                A read from this register always reflects the current value.
                 '''
           resval: "0x0000"
         }
         { bits: "31:16",
           name: "BYPASS_THRESH",
-          desc: '''This is the threshold size for the external health test
-                   running in bypass mode. This mode is active after reset for the
-                   first and only test run, or when this mode is programmed by firmware.
-                   This register must be written before the module is enabled.
-                   Writing to this register will only update the register if the
-                   written value is greater than the current value of this register.
-                   A read from this register always reflects the current value.
+          desc: '''
+                This is the threshold size for the external health test
+                running in bypass mode. This mode is active after reset for the
+                first and only test run, or when this mode is programmed by firmware.
+                This register must be written before the module is enabled.
+                Writing to this register will only update the register if the
+                written value is greater than the current value of this register.
+                A read from this register always reflects the current value.
                 '''
           resval: "0x0000"
         }
@@ -1027,8 +1047,9 @@
       fields: [
         { bits: "31:0",
           name: "REPCNT_TOTAL_FAILS",
-          desc: '''This register will hold a running count of test failures observed
-                   during normal operation. It will persist until cleared.
+          desc: '''
+                This register will hold a running count of test failures observed
+                during normal operation. It will persist until cleared.
                 '''
         }
       ]
@@ -1041,8 +1062,9 @@
       fields: [
         { bits: "31:0",
           name: "REPCNTS_TOTAL_FAILS",
-          desc: '''This register will hold a running count of test failures observed
-                   during normal operation. It will persist until cleared.
+          desc: '''
+                This register will hold a running count of test failures observed
+                during normal operation. It will persist until cleared.
                 '''
         }
       ]
@@ -1055,8 +1077,9 @@
       fields: [
         { bits: "31:0",
           name: "ADAPTP_HI_TOTAL_FAILS",
-          desc: '''This register will hold a running count of test failures observed
-                   during normal operation. It will persist until cleared.
+          desc: '''
+                This register will hold a running count of test failures observed
+                during normal operation. It will persist until cleared.
                 '''
         }
       ]
@@ -1069,8 +1092,9 @@
       fields: [
         { bits: "31:0",
           name: "ADAPTP_LO_TOTAL_FAILS",
-          desc: '''This register will hold a running count of test failures observed
-                   during normal operation. It will persist until cleared.
+          desc: '''
+                This register will hold a running count of test failures observed
+                during normal operation. It will persist until cleared.
                 '''
         }
       ]
@@ -1083,9 +1107,10 @@
       fields: [
         { bits: "31:0",
           name: "BUCKET_TOTAL_FAILS",
-          desc: '''This register will hold a running count of test failures observed
-                   during normal operation. It will persist until cleared.
-                '''
+          desc: '''
+                This register will hold a running count of test failures observed
+                during normal operation. It will persist until cleared.
+              '''
         }
       ]
     },
@@ -1097,8 +1122,9 @@
       fields: [
         { bits: "31:0",
           name: "MARKOV_HI_TOTAL_FAILS",
-          desc: '''This register will hold a running count of test failures observed
-                   during normal operation. It will persist until cleared.
+          desc: '''
+                This register will hold a running count of test failures observed
+                during normal operation. It will persist until cleared.
                 '''
         }
       ]
@@ -1111,8 +1137,9 @@
       fields: [
         { bits: "31:0",
           name: "MARKOV_LO_TOTAL_FAILS",
-          desc: '''This register will hold a running count of test failures observed
-                   during normal operation. It will persist until cleared.
+          desc: '''
+                This register will hold a running count of test failures observed
+                during normal operation. It will persist until cleared.
                 '''
         }
       ]
@@ -1125,8 +1152,9 @@
       fields: [
         { bits: "31:0",
           name: "EXTHT_HI_TOTAL_FAILS",
-          desc: '''This register will hold a running count of test failures observed
-                   during normal operation. It will persist until cleared.
+          desc: '''
+                This register will hold a running count of test failures observed
+                during normal operation. It will persist until cleared.
                 '''
         }
       ]
@@ -1139,8 +1167,9 @@
       fields: [
         { bits: "31:0",
           name: "EXTHT_LO_TOTAL_FAILS",
-          desc: '''This register will hold a running count of test failures observed
-                   during normal operation. It will persist until cleared.
+          desc: '''
+                This register will hold a running count of test failures observed
+                during normal operation. It will persist until cleared.
                 '''
         }
       ]
@@ -1197,9 +1226,7 @@
       fields: [
         { bits: "15:0",
           name: "ANY_FAIL_COUNT",
-          desc: '''
-                The number of subsequent health test windows during which one or more health tests failed.
-                '''
+          desc: "The number of subsequent health test windows during which one or more health tests failed."
         }
       ]
     },
@@ -1220,45 +1247,31 @@
       fields: [
         { bits: "7:4",
           name: "REPCNT_FAIL_COUNT",
-          desc: '''
-                The number of health test windows during which this test failed since the last passing health test window.
-                '''
+          desc: "The number of health test windows during which this test failed since the last passing health test window."
         }
         { bits: "11:8",
           name: "ADAPTP_HI_FAIL_COUNT",
-          desc: '''
-                The number of health test windows during which this test failed since the last passing health test window.
-                '''
+          desc: "The number of health test windows during which this test failed since the last passing health test window."
         }
         { bits: "15:12",
           name: "ADAPTP_LO_FAIL_COUNT",
-          desc: '''
-                The number of health test windows during which this test failed since the last passing health test window.
-                '''
+          desc: "The number of health test windows during which this test failed since the last passing health test window."
         }
         { bits: "19:16",
           name: "BUCKET_FAIL_COUNT",
-          desc: '''
-                The number of health test windows during which this test failed since the last passing health test window.
-                '''
+          desc: "The number of health test windows during which this test failed since the last passing health test window."
         }
         { bits: "23:20",
           name: "MARKOV_HI_FAIL_COUNT",
-          desc: '''
-                The number of health test windows during which this test failed since the last passing health test window.
-                '''
+          desc: "The number of health test windows during which this test failed since the last passing health test window."
         }
         { bits: "27:24",
           name: "MARKOV_LO_FAIL_COUNT",
-          desc: '''
-                The number of health test windows during which this test failed since the last passing health test window.
-                '''
+          desc: "The number of health test windows during which this test failed since the last passing health test window."
         }
         { bits: "31:28",
           name: "REPCNTS_FAIL_COUNT",
-          desc: '''
-                The number of health test windows during which this test failed since the last passing health test window.
-                '''
+          desc: "The number of health test windows during which this test failed since the last passing health test window."
         }
       ]
     },
@@ -1279,15 +1292,11 @@
       fields: [
         { bits: "3:0",
           name: "EXTHT_HI_FAIL_COUNT",
-          desc: '''
-                The number of health test windows during which this test failed since the last passing health test window.
-                '''
+          desc: "The number of health test windows during which this test failed since the last passing health test window."
         }
         { bits: "7:4",
           name: "EXTHT_LO_FAIL_COUNT",
-          desc: '''
-                The number of health test windows during which this test failed since the last passing health test window.
-                '''
+          desc: "The number of health test windows during which this test failed since the last passing health test window."
         }
       ]
     },
@@ -1365,7 +1374,8 @@
       fields: [
         { bits: "0",
           name: "FW_OV_WR_FIFO_FULL",
-          desc: '''"When this bit is clear, writes to the FW_OV_WR_DATA register are allowed.
+          desc: '''
+                When this bit is clear, writes to the FW_OV_WR_DATA register are allowed.
                 If this bit is set, it is the equivalent to a FIFO full condition, and writes
                 to the FW_OV_WR_DATA register must be delayed until this bit is reset.
                 '''
@@ -1429,8 +1439,8 @@
       regwen:   "REGWEN",
       fields: [
         { bits: "5:0",
-          desc: '''This field will set the threshold that the depth of the observe FIFO
-                will be compared with when setting the interrupt status bit.
+          desc: '''
+                This field will set the threshold that the depth of the observe FIFO will be compared with when setting the interrupt status bit.
                 Note: a value of zero is reserved and not to be used.
                 '''
           resval: "0x10"
@@ -1444,8 +1454,7 @@
       hwext: "true",
       fields: [
         { bits: "5:0",
-          desc: '''This field will hold the current depth of the observe FIFO.
-                '''
+          desc: "This field will hold the current depth of the observe FIFO."
         }
       ]
     },
@@ -1759,16 +1768,16 @@
                  "excl:CsrNonInitTests:CsrExclWrite"]
       fields: [
         {
-            bits: "4:0",
-            name: "ERR_CODE_TEST",
-            desc: '''
-                  Setting this field will set the bit number for which an error
-                  will be forced in the hardware. This bit number is that same one
-                  found in the !!ERR_CODE register. The action of writing this
-                  register will force an error pulse. The sole purpose of this
-                  register is to test that any error properly propagates to either
-                  an interrupt or an alert.
-                  '''
+          bits: "4:0",
+          name: "ERR_CODE_TEST",
+          desc: '''
+                Setting this field will set the bit number for which an error
+                will be forced in the hardware. This bit number is that same one
+                found in the !!ERR_CODE register. The action of writing this
+                register will force an error pulse. The sole purpose of this
+                register is to test that any error properly propagates to either
+                an interrupt or an alert.
+                '''
         },
       ]
     },
@@ -1779,7 +1788,8 @@
       fields: [
         { bits: "8:0",
           name: "MAIN_SM_STATE",
-          desc: '''This is the state of the ENTROPY_SRC main state machine.
+          desc: '''
+                This is the state of the ENTROPY_SRC main state machine.
                 See the RTL file `entropy_src_main_sm` for the meaning of the values.
                 '''
           resval: 0xf5

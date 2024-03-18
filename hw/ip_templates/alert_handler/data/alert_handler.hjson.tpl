@@ -237,56 +237,56 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
   features: [
     { name: "ALERT_HANDLER.ALERT.OBSERVE",
       desc: '''
-                All incoming alerts can be observed by the alert handler.
+            All incoming alerts can be observed by the alert handler.
             '''
     }
     { name: "ALERT_HANDLER.ALERT.INTERRUPT",
       desc: '''
-                All alert classes can raise an interrupt when an alert that is
-                allocated to them is raised.
+            All alert classes can raise an interrupt when an alert that is
+            allocated to them is raised.
             '''
     }
     { name: "ALERT_HANDLER.ALERT.ESCALATE",
       desc: '''
-               All incoming alerts can trigger the alert escalation mechanisms
-               of the classes they are allocated to
+            All incoming alerts can trigger the alert escalation mechanisms
+            of the classes they are allocated to
             '''
     }
     {
       name: "ALERT_HANDLER.PING_TIMER",
       desc: '''
-                The alert handler periodically pings all alert receivers and
-                will raise an alert if the ping isn't responded to in good time
-             '''
+            The alert handler periodically pings all alert receivers and
+            will raise an alert if the ping isn't responded to in good time
+            '''
     }
     { name: "ALERT_HANDLER.ESCALATION.COUNT",
       desc: '''
-                An escalation can be triggered when the number of alerts seen in
-                a particular class exceeds a software programmable threshold
+            An escalation can be triggered when the number of alerts seen in
+            a particular class exceeds a software programmable threshold
             '''
     }
     { name: "ALERT_HANDLER.ESCALATION.TIMEOUT",
       desc: '''
-                An escalation can be triggered when an interrupt from a class
-                isn't acknowledged after a software programmable timeout
+            An escalation can be triggered when an interrupt from a class
+            isn't acknowledged after a software programmable timeout
             '''
     }
     { name: "ALERT_HANDLER.ESCALATION.PHASES",
       desc: '''
-               Each alert class can trigger the same 4 escalation phases. A
-               programmable timer specifies the delay between each of the
-               escalation phases. The actions taken on each of the escalation
-               signals are specific to the top-level integration.
+            Each alert class can trigger the same 4 escalation phases. A
+            programmable timer specifies the delay between each of the
+            escalation phases. The actions taken on each of the escalation
+            signals are specific to the top-level integration.
             '''
     }
     {
       name: "ALERT_HANDLER.CRASH_DUMP",
       desc: '''
-               A crashdump with the state of CSRs and alert handler state bits
-               is made available. When a programmable latching trigger condition
-               is met the crashdump is held constant at its value on that
-               trigger condition so it can be recorded and made available for
-               later analysis
+            A crashdump with the state of CSRs and alert handler state bits
+            is made available. When a programmable latching trigger condition
+            is met the crashdump is held constant at its value on that
+            trigger condition so it can be recorded and made available for
+            later analysis.
             '''
     }
   ]
@@ -368,8 +368,10 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
 % for i in range(n_classes):
     { name: "class${chars[i].lower()}",
       desc: '''
-            Interrupt state bit of Class ${chars[i]}. Set by HW in case an alert within this class triggered. Defaults true, write one to clear.
-            ''',
+            Interrupt state bit of Class ${chars[i]}.
+            Set by HW in case an alert within this class triggered.
+            Defaults true, write one to clear.
+            '''
     },
 % endfor
   ],
@@ -387,11 +389,11 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
         {
             bits:   "0",
             desc: '''
-            When true, the !!PING_TIMEOUT_CYC_SHADOWED and !!PING_TIMER_EN_SHADOWED registers can be modified.
-            When false, they become read-only. Defaults true, write one to clear.
-            This should be cleared once the alert handler has been configured and the ping
-            timer mechanism has been kicked off.
-            '''
+                  When true, the !!PING_TIMEOUT_CYC_SHADOWED and !!PING_TIMER_EN_SHADOWED registers can be modified.
+                  When false, they become read-only. Defaults true, write one to clear.
+                  This should be cleared once the alert handler has been configured and the ping
+                  timer mechanism has been kicked off.
+                  '''
             resval: 1,
         },
       ]
@@ -409,10 +411,10 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
           bits: "PING_CNT_DW-1:0",
           resval:   256,
           desc: '''
-          Timeout value in cycles.
-          If an alert receiver or an escalation sender does not respond to a ping within this timeout window, a pingfail alert will be raised.
-          It is recommended to set this value to the equivalent of 256 cycles of the slowest alert sender clock domain in the system (or greater).
-          '''
+                Timeout value in cycles.
+                If an alert receiver or an escalation sender does not respond to a ping within this timeout window, a pingfail alert will be raised.
+                It is recommended to set this value to the equivalent of 256 cycles of the slowest alert sender clock domain in the system (or greater).
+                '''
         }
       ]
     }
@@ -429,89 +431,92 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
           bits: "0",
           resval:   0,
           desc: '''
-          Setting this to 1 enables the ping timer mechanism.
-          This bit cannot be cleared to 0 once it has been set to 1.
+                Setting this to 1 enables the ping timer mechanism.
+                This bit cannot be cleared to 0 once it has been set to 1.
 
-          Note that the alert pinging mechanism will only ping alerts that have been enabled and locked.
+                Note that the alert pinging mechanism will only ping alerts that have been enabled and locked.
           '''
         }
       ]
     }
 ##############################################################################
 # all alerts
-    { multireg: { name:     "ALERT_REGWEN",
-                  desc:     "Register write enable for alert enable bits.",
-                  count:    "NAlerts",
-                  compact:  "false",
-                  swaccess: "rw0c",
-                  hwaccess: "hro",
-                  hwqe:     "false",
-                  cname:    "alert",
-                  fields: [
-                    { bits:   "0",
-                      name:   "EN",
-                      desc:   '''
-                              Alert configuration write enable bit.
-                              If this is cleared to 0, the corresponding !!ALERT_EN_SHADOWED
-                              and !!ALERT_CLASS_SHADOWED bits are not writable anymore.
+    { multireg: {
+        name:     "ALERT_REGWEN",
+        desc:     "Register write enable for alert enable bits.",
+        count:    "NAlerts",
+        compact:  "false",
+        swaccess: "rw0c",
+        hwaccess: "hro",
+        hwqe:     "false",
+        cname:    "alert",
+        fields: [
+          { bits:   "0",
+            name:   "EN",
+            desc:   '''
+                    Alert configuration write enable bit.
+                    If this is cleared to 0, the corresponding !!ALERT_EN_SHADOWED
+                    and !!ALERT_CLASS_SHADOWED bits are not writable anymore.
 
-                              Note that the alert pinging mechanism will only ping alerts that have been enabled and locked.
-                              ''',
-                      resval: "1",
-                    }
-                  ]
-                }
+                    Note that the alert pinging mechanism will only ping alerts that have been enabled and locked.
+                    '''
+            resval: "1",
+          }
+        ]
+      }
     },
-    { multireg: { name:     "ALERT_EN_SHADOWED",
-                  desc:     '''Enable register for alerts.
-                  ''',
-                  count:    "NAlerts",
-                  shadowed: "true",
-                  swaccess: "rw",
-                  hwaccess: "hro",
-                  regwen:   "ALERT_REGWEN",
-                  regwen_multi: "true",
-                  cname:    "alert",
-                  tags:     [// Enable `alert_en` might cause top-level escalators to trigger
-                             // unexpected reset
-                             "excl:CsrAllTests:CsrExclWrite"]
-                 fields: [
-                    { bits: "0",
-                      name: "EN_A",
-                      resval: 0
-                      desc: '''
-                            Alert enable bit.
+    { multireg: {
+        name:     "ALERT_EN_SHADOWED",
+        desc:     '''Enable register for alerts.
+        ''',
+        count:    "NAlerts",
+        shadowed: "true",
+        swaccess: "rw",
+        hwaccess: "hro",
+        regwen:   "ALERT_REGWEN",
+        regwen_multi: "true",
+        cname:    "alert",
+        tags:     [// Enable `alert_en` might cause top-level escalators to trigger
+                   // unexpected reset
+                   "excl:CsrAllTests:CsrExclWrite"]
+       fields: [
+          { bits: "0",
+            name: "EN_A",
+            resval: 0
+            desc: '''
+                  Alert enable bit.
 
-                            Note that the alert pinging mechanism will only ping alerts that have been enabled and locked.
-                            '''
-                    }
-                  ]
-                }
+                  Note that the alert pinging mechanism will only ping alerts that have been enabled and locked.
+                  '''
+          }
+        ]
+      }
     },
-    { multireg: { name:     "ALERT_CLASS_SHADOWED",
-                  desc:     '''Class assignment of alerts.
-                  ''',
-                  count:    "NAlerts",
-                  shadowed: "true",
-                  swaccess: "rw",
-                  hwaccess: "hro",
-                  regwen:   "ALERT_REGWEN",
-                  regwen_multi: "true",
-                  cname:    "alert",
-                  fields: [
-                    {
-                      bits: "CLASS_DW-1:0",
-                      name: "CLASS_A",
-                      resval: 0
-                      desc: "Classification ",
-                      enum: [
+    { multireg: {
+        name:     "ALERT_CLASS_SHADOWED",
+        desc:     '''Class assignment of alerts.
+        ''',
+        count:    "NAlerts",
+        shadowed: "true",
+        swaccess: "rw",
+        hwaccess: "hro",
+        regwen:   "ALERT_REGWEN",
+        regwen_multi: "true",
+        cname:    "alert",
+        fields: [
+          {
+            bits: "CLASS_DW-1:0",
+            name: "CLASS_A",
+            resval: 0
+            desc: "Classification ",
+            enum: [
 % for i in range(n_classes):
-                              { value: "${i}", name: "Class${chars[i]}", desc: "" },
+              { value: "${i}", name: "Class${chars[i]}", desc: "" },
 % endfor
-                            ]
-                    }
-                  ]
-                }
+            ]
+          }
+        ]
+      }
     },
     { multireg: {
       name: "ALERT_CAUSE",
@@ -528,107 +533,110 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
     },
 ##############################################################################
 # local alerts
-    { multireg: { name:     "LOC_ALERT_REGWEN",
-                  desc:     "Register write enable for alert enable bits.",
-                  count:    "N_LOC_ALERT",
-                  compact:  "false",
-                  swaccess: "rw0c",
-                  hwaccess: "none",
-                  cname:    "LOC_ALERT",
-                  fields: [
-                    { bits:   "0",
-                      name:   "EN",
-                      desc:   '''
-                              Alert configuration write enable bit.
-                              If this is cleared to 0, the corresponding !!LOC_ALERT_EN_SHADOWED
-                              and !!LOC_ALERT_CLASS_SHADOWED bits are not writable anymore.
+    { multireg: {
+        name:     "LOC_ALERT_REGWEN",
+        desc:     "Register write enable for alert enable bits.",
+        count:    "N_LOC_ALERT",
+        compact:  "false",
+        swaccess: "rw0c",
+        hwaccess: "none",
+        cname:    "LOC_ALERT",
+        fields: [
+          { bits:   "0",
+            name:   "EN",
+            desc:   '''
+                    Alert configuration write enable bit.
+                    If this is cleared to 0, the corresponding !!LOC_ALERT_EN_SHADOWED
+                    and !!LOC_ALERT_CLASS_SHADOWED bits are not writable anymore.
 
-                              Note that the alert pinging mechanism will only ping alerts that have been enabled and locked.
-                              ''',
-                      resval: "1",
-                    }
-                  ]
-                }
+                    Note that the alert pinging mechanism will only ping alerts that have been enabled and locked.
+                    ''',
+            resval: "1",
+          }
+        ]
+      }
     },
-    { multireg: { name:     "LOC_ALERT_EN_SHADOWED",
-                  desc:
+    { multireg: {
+        name:     "LOC_ALERT_EN_SHADOWED",
+        desc: '''
+              Enable register for the local alerts
+              "alert pingfail" (0), "escalation pingfail" (1),
+              "alert integfail" (2), "escalation integfail" (3),
+              "bus integrity failure" (4), "shadow reg update error" (5)
+              and "shadow reg storage error" (6).
+              '''
+        count:    "N_LOC_ALERT",
+        shadowed: "true",
+        swaccess: "rw",
+        hwaccess: "hro",
+        regwen:   "LOC_ALERT_REGWEN",
+        regwen_multi: "true",
+        cname:    "LOC_ALERT",
+        fields: [
+          { bits: "0",
+            name: "EN_LA",
+            resval: 0
+            desc: '''
+                  Alert enable bit.
+
+                  Note that the alert pinging mechanism will only ping alerts that have been enabled and locked.
                   '''
-                  Enable register for the local alerts
-                  "alert pingfail" (0), "escalation pingfail" (1),
-                  "alert integfail" (2), "escalation integfail" (3),
-                  "bus integrity failure" (4), "shadow reg update error" (5)
-                  and "shadow reg storage error" (6).
-                  ''',
-                  count:    "N_LOC_ALERT",
-                  shadowed: "true",
-                  swaccess: "rw",
-                  hwaccess: "hro",
-                  regwen:   "LOC_ALERT_REGWEN",
-                  regwen_multi: "true",
-                  cname:    "LOC_ALERT",
-                  fields: [
-                    { bits: "0",
-                      name: "EN_LA",
-                      resval: 0
-                      desc: '''
-                            Alert enable bit.
-
-                            Note that the alert pinging mechanism will only ping alerts that have been enabled and locked.
-                            '''
-                    }
-                  ]
-                }
+          }
+        ]
+      }
     },
-    { multireg: { name:     "LOC_ALERT_CLASS_SHADOWED",
-                  desc:     '''
+    { multireg: {
+        name:     "LOC_ALERT_CLASS_SHADOWED",
+        desc:     '''
                   Class assignment of the local alerts
                   "alert pingfail" (0), "escalation pingfail" (1),
                   "alert integfail" (2), "escalation integfail" (3),
                   "bus integrity failure" (4), "shadow reg update error" (5)
                   and "shadow reg storage error" (6).
-                  ''',
-                  count:    "N_LOC_ALERT",
-                  shadowed: "true",
-                  swaccess: "rw",
-                  hwaccess: "hro",
-                  regwen:   "LOC_ALERT_REGWEN",
-                  regwen_multi: "true",
-                  cname:    "LOC_ALERT",
-                  fields: [
-                    {
-                      bits: "CLASS_DW-1:0",
-                      name: "CLASS_LA",
-                      resval: 0
-                      desc: "Classification ",
-                      enum: [
+                  '''
+        count:    "N_LOC_ALERT",
+        shadowed: "true",
+        swaccess: "rw",
+        hwaccess: "hro",
+        regwen:   "LOC_ALERT_REGWEN",
+        regwen_multi: "true",
+        cname:    "LOC_ALERT",
+        fields: [
+          {
+            bits: "CLASS_DW-1:0",
+            name: "CLASS_LA",
+            resval: 0
+            desc: "Classification ",
+            enum: [
 % for i in range(n_classes):
-                              { value: "${i}", name: "Class${chars[i]}", desc: "" },
+              { value: "${i}", name: "Class${chars[i]}", desc: "" },
 % endfor
-                            ]
-                    }
-                  ]
-                }
+            ]
+          }
+        ]
+      }
     },
     { multireg: {
-      name: "LOC_ALERT_CAUSE",
-      desc: '''Alert Cause Register for the local alerts
-      "alert pingfail" (0), "escalation pingfail" (1),
-      "alert integfail" (2), "escalation integfail" (3),
-      "bus integrity failure" (4), "shadow reg update error" (5)
-      and "shadow reg storage error" (6).
-      ''',
-      count: "N_LOC_ALERT",
-      compact:  "false",
-      cname: "LOC_ALERT",
-      swaccess: "rw1c",
-      hwaccess: "hrw",
-      tags: [// Top level CSR automation test, CPU clock is disabled, so escalation response will
-             // not send back to alert handler. This will set loc_alert_cause and could not predict
-             // automatically.
-             "excl:CsrNonInitTests:CsrExclCheck"],
-      fields: [
-        { bits: "0", name: "LA", desc: "Cause bit ", resval: 0}
-      ]
+        name: "LOC_ALERT_CAUSE",
+        desc: '''
+              Alert Cause Register for the local alerts
+              "alert pingfail" (0), "escalation pingfail" (1),
+              "alert integfail" (2), "escalation integfail" (3),
+              "bus integrity failure" (4), "shadow reg update error" (5)
+              and "shadow reg storage error" (6).
+              '''
+        count: "N_LOC_ALERT",
+        compact:  "false",
+        cname: "LOC_ALERT",
+        swaccess: "rw1c",
+        hwaccess: "hrw",
+        tags: [// Top level CSR automation test, CPU clock is disabled, so escalation response will
+               // not send back to alert handler. This will set loc_alert_cause and could not predict
+               // automatically.
+               "excl:CsrNonInitTests:CsrExclCheck"],
+        fields: [
+          { bits: "0", name: "LA", desc: "Cause bit ", resval: 0}
+        ]
       }
     },
 ##############################################################################
@@ -642,12 +650,12 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
       swaccess: "rw0c",
       hwaccess: "none",
       fields: [
-      {   bits:   "0",
+        { bits:   "0",
           desc:   '''
                   Class configuration enable bit.
                   If this is cleared to 0, the corresponding class configuration
                   registers cannot be written anymore.
-                  ''',
+                  '''
           resval: 1,
         }
       ]
@@ -666,7 +674,7 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
                 interrupt timeout) for Class ${chars[i]}. Note that interrupts can fire
                 regardless of whether the escalation mechanisms are enabled for
                 this class or not.
-                ''',
+                '''
         }
         { bits: "1",
           name: "LOCK",
@@ -725,11 +733,12 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
       swaccess: "rw0c",
       hwaccess: "hwo",
       fields: [
-      {   bits:   "0",
-          desc:   '''Register defaults to true, can only be cleared. This register is set
-          to false by the hardware if the escalation protocol has been triggered and the bit
-          !!CLASS${chars[i]}_CTRL_SHADOWED.LOCK is true.
-          ''',
+        { bits:   "0",
+          desc:   '''
+                  Register defaults to true, can only be cleared. This register is set
+                  to false by the hardware if the escalation protocol has been triggered and the bit
+                  !!CLASS${chars[i]}_CTRL_SHADOWED.LOCK is true.
+                  '''
           resval: 1,
         }
       ],
@@ -749,9 +758,10 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
       regwen:   "CLASS${chars[i]}_CLR_REGWEN",
       fields: [
         { bits: "0",
-          desc: '''Writing 1 to this register clears the accumulator and aborts escalation
-          (if it has been triggered). This clear is disabled if !!CLASS${chars[i]}_CLR_REGWEN is false.
-          '''
+          desc: '''
+                Writing 1 to this register clears the accumulator and aborts escalation
+                (if it has been triggered). This clear is disabled if !!CLASS${chars[i]}_CLR_REGWEN is false.
+                '''
         }
       ]
     },
@@ -780,10 +790,11 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
       regwen:   "CLASS${chars[i]}_REGWEN",
       fields: [
         { bits: "AccuCntDw-1:0",
-          desc: '''Once the accumulation value register is equal to the threshold escalation will
-          be triggered on the next alert occurrence within this class ${chars[i]} begins. Note that this
-          register can not be modified if !!CLASS${chars[i]}_REGWEN is false.
-          '''
+          desc: '''
+                Once the accumulation value register is equal to the threshold escalation will
+                be triggered on the next alert occurrence within this class ${chars[i]} begins. Note that this
+                register can not be modified if !!CLASS${chars[i]}_REGWEN is false.
+                '''
         }
       ]
     },
@@ -797,12 +808,13 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
       regwen:   "CLASS${chars[i]}_REGWEN",
       fields: [
         { bits: "EscCntDw-1:0",
-          desc: '''If the interrupt corresponding to this class is not
-          handled within the specified amount of cycles, escalation will be triggered.
-          Set to a positive value to enable the interrupt timeout for Class ${chars[i]}. The timeout is set to zero
-          by default, which disables this feature. Note that this register can not be modified if
-          !!CLASS${chars[i]}_REGWEN is false.
-          '''
+          desc: '''
+                If the interrupt corresponding to this class is not
+                handled within the specified amount of cycles, escalation will be triggered.
+                Set to a positive value to enable the interrupt timeout for Class ${chars[i]}. The timeout is set to zero
+                by default, which disables this feature. Note that this register can not be modified if
+                !!CLASS${chars[i]}_REGWEN is false.
+                '''
         }
       ]
     },
@@ -818,12 +830,12 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
       fields: [
         { bits: "PHASE_DW-1:0",
           desc: '''
-          Determine in which escalation phase to capture the crashdump containing all alert cause CSRs and escalation
-          timer states. It is recommended to capture the crashdump upon entering the first escalation phase
-          that activates a countermeasure with many side-effects (e.g. life cycle state scrapping) in order
-          to prevent spurious alert events from masking the original alert causes.
-          Note that this register can not be modified if !!CLASS${chars[i]}_REGWEN is false.
-          '''
+                Determine in which escalation phase to capture the crashdump containing all alert cause CSRs and escalation
+                timer states. It is recommended to capture the crashdump upon entering the first escalation phase
+                that activates a countermeasure with many side-effects (e.g. life cycle state scrapping) in order
+                to prevent spurious alert events from masking the original alert causes.
+                Note that this register can not be modified if !!CLASS${chars[i]}_REGWEN is false.
+                '''
         }
       ]
     },
@@ -838,8 +850,10 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
       regwen:   "CLASS${chars[i]}_REGWEN",
       fields: [
         { bits: "EscCntDw-1:0" ,
-          desc: '''Escalation phase duration in cycles. Note that this register can not be
-          modified if !!CLASS${chars[i]}_REGWEN is false.'''
+          desc: '''
+                Escalation phase duration in cycles. Note that this register can not be
+                modified if !!CLASS${chars[i]}_REGWEN is false.
+                '''
         }
       ]
     }
@@ -853,16 +867,17 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
       hwext:    "true",
       fields: [
         { bits: "EscCntDw-1:0",
-          desc: '''Returns the current timeout or escalation count (depending on !!CLASS${chars[i]}_STATE).
-          This register can not be directly cleared. However, SW can indirectly clear as follows.
+          desc: '''
+                Returns the current timeout or escalation count (depending on !!CLASS${chars[i]}_STATE).
+                This register can not be directly cleared. However, SW can indirectly clear as follows.
 
-          If the class is in the Timeout state, the timeout can be aborted by clearing the
-          corresponding interrupt bit.
+                If the class is in the Timeout state, the timeout can be aborted by clearing the
+                corresponding interrupt bit.
 
-          If this class is in any of the escalation phases (e.g. Phase0), escalation protocol can be
-          aborted by writing to !!CLASS${chars[i]}_CLR_SHADOWED. Note however that has no effect if !!CLASS${chars[i]}_REGWEN
-          is set to false (either by SW or by HW via the !!CLASS${chars[i]}_CTRL_SHADOWED.LOCK feature).
-          '''
+                If this class is in any of the escalation phases (e.g. Phase0), escalation protocol can be
+                aborted by writing to !!CLASS${chars[i]}_CLR_SHADOWED. Note however that has no effect if !!CLASS${chars[i]}_REGWEN
+                is set to false (either by SW or by HW via the !!CLASS${chars[i]}_CTRL_SHADOWED.LOCK feature).
+                '''
         }
       ],
       tags: [// The value of this register is determined by counting how many cycles the escalation phase has lasted
@@ -879,15 +894,15 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
       fields: [
         { bits: "2:0",
           enum: [
-                  { value: "0b000", name: "Idle",     desc: "No timeout or escalation triggered." },
-                  { value: "0b001", name: "Timeout",  desc: "IRQ timeout counter is active." },
-                  { value: "0b010", name: "FsmError", desc: "Terminal error state if FSM has been glitched." },
-                  { value: "0b011", name: "Terminal", desc: "Terminal state after escalation protocol." },
-                  { value: "0b100", name: "Phase0",   desc: "Escalation Phase0 is active." },
-                  { value: "0b101", name: "Phase1",   desc: "Escalation Phase1 is active." },
-                  { value: "0b110", name: "Phase2",   desc: "Escalation Phase2 is active." },
-                  { value: "0b111", name: "Phase3",   desc: "Escalation Phase3 is active." }
-                ]
+            { value: "0b000", name: "Idle",     desc: "No timeout or escalation triggered." },
+            { value: "0b001", name: "Timeout",  desc: "IRQ timeout counter is active." },
+            { value: "0b010", name: "FsmError", desc: "Terminal error state if FSM has been glitched." },
+            { value: "0b011", name: "Terminal", desc: "Terminal state after escalation protocol." },
+            { value: "0b100", name: "Phase0",   desc: "Escalation Phase0 is active." },
+            { value: "0b101", name: "Phase1",   desc: "Escalation Phase1 is active." },
+            { value: "0b110", name: "Phase2",   desc: "Escalation Phase2 is active." },
+            { value: "0b111", name: "Phase3",   desc: "Escalation Phase3 is active." }
+          ]
         }
       ],
       tags: [// The current escalation state cannot be auto-predicted

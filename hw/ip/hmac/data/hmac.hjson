@@ -71,8 +71,8 @@
   alert_list: [
     { name: "fatal_fault",
       desc: '''
-      This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected.
-      '''
+            This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected.
+            '''
     }
   ],
   inter_signal_list: [
@@ -101,54 +101,49 @@
   features: [
     {
       name: "HMAC.MODE.SHA2",
-      desc: '''SHA-2 hashing algorithm supporting the following security strength configurations: SHA-2 256/384/512. Compliant with NIST FIPS 180-4.
+      desc: '''
+            SHA-2 hashing algorithm supporting the following security strength configurations: SHA-2 256/384/512.
+            Compliant with NIST FIPS 180-4.
             '''
     }
     {
       name: "HMAC.MODE.HMAC",
-      desc: '''Keyed-Hash Message Authentication Code (HMAC) supporting the following security strength configurations: HMAC/SHA-2 256/384/512.
-      Compliant with NIST FIPS 198-1 which will be superseded by NIST SP 800-224.
+      desc: '''
+            Keyed-Hash Message Authentication Code (HMAC) supporting the following security strength configurations: HMAC/SHA-2 256/384/512.
+            Compliant with NIST FIPS 198-1 which will be superseded by NIST SP 800-224.
             '''
     }
     {
       name: "HMAC.DIGEST_SIZE.SHA2-256",
-      desc: '''SHA-2 256 hashing algorithm for SHA-2 and keyed HMAC.
-            '''
+      desc: "SHA-2 256 hashing algorithm for SHA-2 and keyed HMAC."
     }
     {
       name: "HMAC.DIGEST_SIZE.SHA2-384",
-      desc: '''SHA-2 384 hashing algorithm for SHA-2 and keyed HMAC.
-            '''
+      desc: "SHA-2 384 hashing algorithm for SHA-2 and keyed HMAC."
     }
     {
       name: "HMAC.DIGEST_SIZE.SHA2-512",
-      desc: '''SHA-2 512 hashing algorithm or SHA-2 and keyed HMAC.
-            '''
+      desc: "SHA-2 512 hashing algorithm or SHA-2 and keyed HMAC."
     }
     {
       name: "HMAC.KEY_LENGTH.KEY_128",
-      desc: '''HMAC based on any digest size using 128-bit key.
-            '''
+      desc: "HMAC based on any digest size using 128-bit key."
     }
     {
       name: "HMAC.KEY_LENGTH.KEY_256",
-      desc: '''HMAC based on any digest size using 256-bit key.
-            '''
+      desc: "HMAC based on any digest size using 256-bit key."
     }
     {
       name: "HMAC.KEY_LENGTH.KEY_384",
-      desc: '''HMAC based on any digest size using 384-bit key.
-            '''
+      desc: "HMAC based on any digest size using 384-bit key."
     }
     {
       name: "HMAC.KEY_LENGTH.KEY_512",
-      desc: '''HMAC based on any digest size using 512-bit key.
-            '''
+      desc: "HMAC based on any digest size using 512-bit key."
     }
     {
       name: "HMAC.KEY_LENGTH.KEY_1024",
-      desc: '''HMAC based on SHA-2 384/SHA-2 512 using 1024-bit key.
-            '''
+      desc: "HMAC based on SHA-2 384/SHA-2 512 using 1024-bit key."
     }
     {
       name: "HMAC.ENDIANNESS.MESSAGE",
@@ -171,7 +166,8 @@
   regwidth: "32",
   registers: [
     { name: "CFG",
-      desc: '''HMAC Configuration register.
+      desc: '''
+            HMAC Configuration register.
 
             The register is updated when the engine is in Idle.
             If the software updates the register while the engine computes the hash, the updated value is discarded.
@@ -183,7 +179,8 @@
       fields: [
         { bits: "0",
           name: "hmac_en",
-          desc: '''HMAC datapath enable.
+          desc: '''
+                HMAC datapath enable.
 
                 If this bit is 1, HMAC operates when `hash_start` toggles.
                 ''',
@@ -192,16 +189,18 @@
         }
         { bits: "1",
           name: "sha_en",
-          desc: '''SHA-2 enable.
+          desc: '''
+                SHA-2 enable.
 
-                 If 0, the SHA engine will not initiate compression, this is used to stop operation of the SHA-2 engine until configuration has been done.
-                 When the SHA-2 engine is disabled the digest is cleared.'''
+                If 0, the SHA engine will not initiate compression, this is used to stop operation of the SHA-2 engine until configuration has been done.
+                When the SHA-2 engine is disabled the digest is cleared.'''
           tags: [// don't enable hmac and sha data paths - we will do that in functional tests
                  "excl:CsrNonInitTests:CsrExclWrite"]
         }
         { bits: "2",
           name: "endian_swap",
-          desc: '''Endian swap.
+          desc: '''
+                Endian swap.
 
                 If 0, each value will be added to the message in little-endian byte order.
                 The value is written to MSG_FIFO same to the SW writes.
@@ -213,7 +212,8 @@
         }
         { bits: "3",
           name: "digest_swap",
-          desc: '''Digest register byte swap.
+          desc: '''
+                Digest register byte swap.
 
                 If 1 the value contained in each digest output register is converted to big-endian byte order.
                 This setting does not affect the order of the digest output registers, !!DIGEST_0 still contains the first 4 bytes of the digest.
@@ -321,13 +321,15 @@
       fields: [
         { bits: "0",
           name: "hash_start",
-          desc: '''If 1 is written into this field, SHA-2 or HMAC begins its operation.
+          desc: '''
+                If 1 is written into this field, SHA-2 or HMAC begins its operation.
                 CPU must configure relative information first, such as the digest size, secret key and the key length.
                 ''',
         }
         { bits: "1",
           name: "hash_process",
-          desc: '''If 1 is written to this field, SHA-2 or HMAC calculates the digest or signing based on currently received message.
+          desc: '''
+                If 1 is written to this field, SHA-2 or HMAC calculates the digest or signing based on currently received message.
                 '''
         }
         { bits: "2",
@@ -374,7 +376,8 @@
       fields: [
         { bits: "31:0",
           name: "err_code",
-          desc: '''If error interrupt occurs, this register has information of error cause.
+          desc: '''
+                If error interrupt occurs, this register has information of error cause.
                 Please take a look at `hw/ip/hmac/rtl/hmac_pkg.sv:err_code_e enum type.
                 '''
           tags: [// Randomly write mem will cause this reg updated by design
@@ -405,7 +408,8 @@
     }
     { multireg: {
         name: "KEY",
-        desc: '''HMAC Secret Key
+        desc: '''
+              HMAC Secret Key
 
               HMAC using SHA-2 256/384/512 assumes any hashed secret key length up to the block size, thus capped at 1024-bit.
               !!key_length determines how many of these registers are relevant for the HMAC operation. Order of the secret key is:
@@ -427,7 +431,8 @@
     }
     { multireg: {
         name: "DIGEST",
-        desc: '''Digest output.
+        desc: '''
+              Digest output.
 
               If HMAC is disabled, the register shows result of SHA-2 256/384/512.
               Order of the 512-bit digest[511:0] = {DIGEST0, DIGEST1, DIGEST2, ... , DIGEST15}.
@@ -453,7 +458,8 @@
       }
     }
     { name: "MSG_LENGTH_LOWER",
-      desc: '''Received Message Length calculated by the HMAC in bits [31:0]
+      desc: '''
+            Received Message Length calculated by the HMAC in bits [31:0]
 
             Message is byte granularity.
             Lower 3 bits [2:0] are ignored.
@@ -489,9 +495,10 @@
         items: "1024"      // 4kB
         swaccess: "wo",
         byte-write: "true",
-        desc: '''Message FIFO. Any write to this window will be appended to the FIFO.
-        Only the lower [1:0] bits of the address matter to writes within the window
-        (for correctly dealing with non 32-bit writes)
+        desc: '''
+              Message FIFO. Any write to this window will be appended to the FIFO.
+              Only the lower [1:0] bits of the address matter to writes within the window
+              (for correctly dealing with non 32-bit writes)
               '''
       }
     }

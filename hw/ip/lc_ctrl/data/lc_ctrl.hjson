@@ -58,15 +58,15 @@
       type:    "bit",
       default: "1'b0",
       desc:    '''
-        Disable (0) or enable (1) volatile RAW UNLOCK capability.
-        If enabled, it is possible to perform a volatile RAW -> TEST_UNLOCKED0 transition
-        without programming the OTP. This is a useful fallback mode in case the OTP is
-        not working correctly.
+               Disable (0) or enable (1) volatile RAW UNLOCK capability.
+               If enabled, it is possible to perform a volatile RAW -> TEST_UNLOCKED0 transition
+               without programming the OTP. This is a useful fallback mode in case the OTP is
+               not working correctly.
 
-        IMPORTANT NOTE: This should only be used in test chips. The parameter must be set
-        to 0 in production tapeouts since this weakens the security posture of the RAW
-        UNLOCK mechanism.
-      '''
+               IMPORTANT NOTE: This should only be used in test chips. The parameter must be set
+               to 0 in production tapeouts since this weakens the security posture of the RAW
+               UNLOCK mechanism.
+               '''
       local:   "false",
       expose:  "true"
     },
@@ -463,25 +463,29 @@
   features: [
     {
       name: "LC_CTRL.STATE.RAW"
-      desc: '''Initial state. No functions other than transition to `TEST_UNLOCKED0` are available.
+      desc: '''
+            Initial state. No functions other than transition to `TEST_UNLOCKED0` are available.
             '''
     }
     {
       name: "LC_CTRL.STATE.TEST_UNLOCKED"
-      desc: '''State used for manufacturing and production testing. CPU execution and all debug
+      desc: '''
+            State used for manufacturing and production testing. CPU execution and all debug
             functionality is enabled in this state. The key manager (`keymgr`) is disabled.
             '''
     }
     {
       name: "LC_CTRL.STATE.TEST_LOCKED"
-      desc: '''This state is logically equivalent to `RAW`, where only transitions to
+      desc: '''
+            This state is logically equivalent to `RAW`, where only transitions to
             `TEST_UNLOCKED` states are available. The transition requires a test unlock token which
             needs to be provisioned in the `TEST_UNLOCKED0` state.
             '''
     }
     {
       name: "LC_CTRL.STATE.DEV"
-      desc: '''This state is used to develop provisioning and mission mode software. It can also
+      desc: '''
+            This state is used to develop provisioning and mission mode software. It can also
             be used to debug software via `rv_dm`. All other debug functionality is disabled. The
             key manager (`keymgr`) is enabled. This is a mutually exclusive state to `PROD` and
             `PROD_END`.
@@ -492,7 +496,8 @@
     }
     {
       name: "LC_CTRL.STATE.PROD"
-      desc: '''This state state is used both for provisioning and mission mode. CPU execution and
+      desc: '''
+            This state state is used both for provisioning and mission mode. CPU execution and
             all debug functionality is disabled. The key manager (`keymgr`) is enabled. This is a
             mutually exclusive state to `DEV` and `PROD_END`.
 
@@ -502,41 +507,47 @@
     }
     {
       name: "LC_CTRL.STATE.PROD_END"
-      desc: '''This state is used both for provisioning and mission mode. This state is logically
+      desc: '''
+            This state is used both for provisioning and mission mode. This state is logically
             equivalent to `PROD`, with the only difference being that transitions from this state
             to `RMA` are not allowed.
             '''
     }
     {
       name: "LC_CTRL.STATE.RMA"
-      desc: '''This state is logically equivalent to `TEST_UNLOCKED`. It can be entered from any
+      desc: '''
+            This state is logically equivalent to `TEST_UNLOCKED`. It can be entered from any
             mission mode state (`DEV`, `PROD` and `PROD_END`) states using an authentication
             token provisioned at manufacturing time by the Silicon Creator.
             '''
     }
     {
       name: "LC_CTRL.STATE.SCRAP"
-      desc: '''This state is logically equivalent to `RAW` state, with the following exceptions:
+      desc: '''
+            This state is logically equivalent to `RAW` state, with the following exceptions:
             1) `SCRAP` is a final state; and, 2) Life cycle JTAG interface is disabled upon
             successful entry into this state.
             '''
     }
     {
       name: "LC_CTRL.ACCESS.JTAG"
-      desc: '''Lifecycle controller CSRs are accessible via a dedicated JTAG interface, supporting
+      desc: '''
+            Lifecycle controller CSRs are accessible via a dedicated JTAG interface, supporting
             manufacturing life cycle transitions and RMA flows. The CSRs support a hardware mutex
             to arbitrate access through the JTAG interface versus from the TL-UL bus.
             '''
     }
     {
       name: "LC_CTRL.ACCESS.EXT_CLK"
-      desc: '''The lifecycle controller supports switching to an external clock source via a CSR
+      desc: '''
+            The lifecycle controller supports switching to an external clock source via a CSR
             interface.
             '''
     }
     {
       name: "LC_CTRL.AUTHENTICATED_TRANSITIONS"
-      desc: '''The following transitions require an user provided token, which is verified against
+      desc: '''
+            The following transitions require an user provided token, which is verified against
             a pre-hashed image stored in OTP: 1) Transition from `RAW` into `TEST_UNLOCKED0` state,
             2) Transition from any `TEST_LOCKED` state into a `TEST_UNLOCKED` state, 3) Transition
             from any `TEST_UNLOCKED` state into `PROD`, `DEV` or `PROD_END` states; or 4)
@@ -545,7 +556,8 @@
     }
     {
       name: "LC_CTRL.LOGICAL_SCRAP"
-      desc: '''The lifecycle controller supports escalating to a logical scrap state as part of
+      desc: '''
+            The lifecycle controller supports escalating to a logical scrap state as part of
             alert escalations. The life cycle can be reverted to the configured state by
             performing a hard reset.
             '''
@@ -786,12 +798,12 @@
       hwaccess: "none",
       fields: [
         {
-            bits:   "0",
-            desc: '''
-            This bit is managed by software and is set to 1 by default.
-            When cleared to 0, the !!CLAIM_TRANSITION_IF mutex register cannot be written to anymore. Write 0 to clear this bit.
-            '''
-            resval: 1,
+          bits:   "0",
+          desc: '''
+                This bit is managed by software and is set to 1 by default.
+                When cleared to 0, the !!CLAIM_TRANSITION_IF mutex register cannot be written to anymore. Write 0 to clear this bit.
+                '''
+          resval: 1,
         },
       ]
     },
@@ -810,12 +822,12 @@
           mubi: true,
           resval: false,
           desc: '''
-          In order to have exclusive access to the transition interface, SW must first claim the associated
-          hardware mutex by writing kMultiBitBool8True to this register.
-          If the register reads back kMultiBitBool8True, the mutex claim has been successful, and !!TRANSITION_REGWEN
-          will be set automatically to 1 by HW.
-          Write 0 to this register in order to release the HW mutex.
-          '''
+                In order to have exclusive access to the transition interface, software must first claim the associated
+                hardware mutex by writing kMultiBitBool8True to this register.
+                If the register reads back kMultiBitBool8True, the mutex claim has been successful, and !!TRANSITION_REGWEN
+                will be set automatically to 1 by HW.
+                Write 0 to this register in order to release the HW mutex.
+                '''
         }
       ]
     },
@@ -831,15 +843,15 @@
               "excl:CsrNonInitTests:CsrExclCheck"],
       fields: [
         {
-            bits:   "0",
-            desc: '''
-            This bit is hardware-managed and only readable by software.
-            By default, this bit is set to 0 by hardware.
-            Once SW has claimed the !!CLAIM_TRANSITION_IF mutex, this bit will be set to 1.
-            Note that the life cycle controller sets this bit temporarily to 0 while executing a life cycle state
-            transition.
-            '''
-            resval: 0,
+          bits:   "0",
+          desc: '''
+                This bit is hardware-managed and only readable by software.
+                By default, this bit is set to 0 by hardware.
+                Once software has claimed the !!CLAIM_TRANSITION_IF mutex, this bit will be set to 1.
+                Note that the life cycle controller sets this bit temporarily to 0 while executing a life cycle state
+                transition.
+                '''
+          resval: 0,
         },
       ]
     },
@@ -859,13 +871,13 @@
         { bits: "0",
           name: "START",
           desc: '''
-          Writing a 1 to this register initiates the life cycle state transition to the state
-          specified in !!TRANSITION_TARGET.
-          Note that not all transitions are possible, and certain conditional transitions require
-          an additional !!TRANSITION_TOKEN_0.
-          In order to have exclusive access to this register, SW must first claim the associated
-          hardware mutex via !!CLAIM_TRANSITION_IF.
-          '''
+                Writing a 1 to this register initiates the life cycle state transition to the state
+                specified in !!TRANSITION_TARGET.
+                Note that not all transitions are possible, and certain conditional transitions require
+                an additional !!TRANSITION_TOKEN_0.
+                In order to have exclusive access to this register, software must first claim the associated
+                hardware mutex via !!CLAIM_TRANSITION_IF.
+                '''
         }
       ]
     }
@@ -875,7 +887,7 @@
       hwqe:     "true",
       hwext:    "true",
       regwen:   "TRANSITION_REGWEN",
-        tags: [ // To update this register, SW needs to claim the associated hardware mutex via
+        tags: [ // To update this register, software needs to claim the associated hardware mutex via
                 // CLAIM_TRANSITION_IF, so can not auto predict its value.
                 // Can't write this CSR in chip-level. If mutex is claimed and this is witten to 1,
                 // chip-level switches to use ext clk, but TB doesn't provide an ext clk to CSR tests.
@@ -885,27 +897,27 @@
           name: "EXT_CLOCK_EN",
           swaccess: "rw1s",
           desc: '''
-          When set to 1, the OTP clock will be switched to an externally supplied clock right away when the
-          device is in a non-PROD life cycle state. The clock mux will remain switched until the next system reset.
-          '''
+                When set to 1, the OTP clock will be switched to an externally supplied clock right away when the
+                device is in a non-PROD life cycle state. The clock mux will remain switched until the next system reset.
+                '''
         }
         { bits: "1",
           name: "VOLATILE_RAW_UNLOCK",
           swaccess: "rw",
           desc: '''
-          When set to 1, LC_CTRL performs a volatile lifecycle transition from RAW -> TEST_UNLOCKED0.
-          No state update will be written to OTP, and no reset will be needed after the transition has succeeded.
-          Note that the token to be provided has to be the hashed unlock token, since in this case the token is NOT passed through KMAC before performing the comparison.
+                When set to 1, LC_CTRL performs a volatile lifecycle transition from RAW -> TEST_UNLOCKED0.
+                No state update will be written to OTP, and no reset will be needed after the transition has succeeded.
+                Note that the token to be provided has to be the hashed unlock token, since in this case the token is NOT passed through KMAC before performing the comparison.
 
-          After a successful VOLATILE_RAW_UNLOCK transition from RAW -> TEST_UNLOCKED0, the LC_CTRL FSM will go back to the IdleSt and set the STATUS.TRANSITION_SUCCESSFUL bit.
-          The LC_CTRL accepts further transition commands in this state.
+                After a successful VOLATILE_RAW_UNLOCK transition from RAW -> TEST_UNLOCKED0, the LC_CTRL FSM will go back to the IdleSt and set the STATUS.TRANSITION_SUCCESSFUL bit.
+                The LC_CTRL accepts further transition commands in this state.
 
-          IMPORTANT NOTE: this feature is intended for test chips only in order to mitigate the risks of a malfunctioning
-          OTP macro. Production devices will permanently disable this feature at compile time via the SecVolatileRawUnlockEn parameter.
+                IMPORTANT NOTE: this feature is intended for test chips only in order to mitigate the risks of a malfunctioning
+                OTP macro. Production devices will permanently disable this feature at compile time via the SecVolatileRawUnlockEn parameter.
 
-          Software can check whether VOLATILE_RAW_UNLOCK is available by writing 1 and reading back
-          the register value. If the register reads back as 1 the mechanism is available, and if it reads back 0 it is not.
-          '''
+                Software can check whether VOLATILE_RAW_UNLOCK is available by writing 1 and reading back
+                the register value. If the register reads back as 1 the mechanism is available, and if it reads back 0 it is not.
+                '''
         }
       ]
     }
@@ -915,7 +927,7 @@
                   128bit token for conditional transitions.
                   Make sure to set this to 0 for unconditional transitions.
                   Note that this register is shared with the life cycle TAP interface.
-                  In order to have exclusive access to this register, SW must first claim the associated
+                  In order to have exclusive access to this register, software must first claim the associated
                   hardware mutex via !!CLAIM_TRANSITION_IF.
                   ''',
         count:    "NumTokenWords", // 4 x 32bit = 128bit
@@ -925,7 +937,7 @@
         hwext:    "true",
         regwen:   "TRANSITION_REGWEN",
         cname:    "WORD",
-        tags: [ // To update this register, SW needs to claim the associated hardware mutex via
+        tags: [ // To update this register, software needs to claim the associated hardware mutex via
                 // CLAIM_TRANSITION_IF, so can not auto predict its value.
                 "excl:CsrNonInitTests:CsrExclCheck"],
         fields: [
@@ -950,10 +962,10 @@
                 The encoding is straightforward replication: [val, val, val, val, val, val].
 
                 Note that this register is shared with the life cycle TAP interface.
-                In order to have exclusive access to this register, SW must first claim the associated
+                In order to have exclusive access to this register, software must first claim the associated
                 hardware mutex via !!CLAIM_TRANSITION_IF.
                 '''
-          tags: [ // To update this register, SW needs to claim the associated hardware mutex via
+          tags: [ // To update this register, software needs to claim the associated hardware mutex via
                   // CLAIM_TRANSITION_IF, so can not auto predict its value.
                   "excl:CsrNonInitTests:CsrExclCheck"],
           enum: [
@@ -1060,7 +1072,7 @@
       hwqe:     "true",
       hwext:    "true",
       regwen:   "TRANSITION_REGWEN",
-      tags: [ // To update this register, SW needs to claim the associated hardware mutex via
+      tags: [ // To update this register, software needs to claim the associated hardware mutex via
               // CLAIM_TRANSITION_IF, so can not auto predict its value.
               "excl:CsrNonInitTests:CsrExclCheck"],
       fields: [
@@ -1077,7 +1089,7 @@
       swaccess: "ro",
       hwaccess: "hwo",
       hwext:    "true",
-      tags: [ // To update this register, SW needs to claim the associated hardware mutex via
+      tags: [ // To update this register, software needs to claim the associated hardware mutex via
               // CLAIM_TRANSITION_IF, so can not auto predict its value.
               "excl:CsrNonInitTests:CsrExclCheck"],
       fields: [
@@ -1221,14 +1233,14 @@
         { bits: "CsrLcCountWidth-1:0"
           name: "CNT"
           desc: '''
-          Number of total life cycle state transition attempts.
-          The life cycle controller allows up to 24 transition attempts.
-          If this counter is equal to 24, the !!LC_STATE is considered
-          to be invalid and will read as SCRAP.
+                Number of total life cycle state transition attempts.
+                The life cycle controller allows up to 24 transition attempts.
+                If this counter is equal to 24, the !!LC_STATE is considered
+                to be invalid and will read as SCRAP.
 
-          If the counter state is invalid, or the life cycle controller is in the post-transition state,
-          the counter will have the value 31 (i.e., all counter bits will be set).
-          '''
+                If the counter state is invalid, or the life cycle controller is in the post-transition state,
+                the counter will have the value 31 (i.e., all counter bits will be set).
+                '''
         }
       ],
     }

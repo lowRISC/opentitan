@@ -617,16 +617,16 @@
                 "excl:CsrAllTests:CsrExclWrite"]
       fields: [
         {
-            bits: "4:0",
-            name: "ERR_CODE_TEST",
-            desc: '''
-                  Setting this field will set the bit number for which an error
-                  will be forced in the hardware. This bit number is that same one
-                  found in the !!ERR_CODE register. The action of writing this
-                  register will force an error pulse. The sole purpose of this
-                  register is to test that any error properly propagates to either
-                  an interrupt or an alert.
-                  '''
+          bits: "4:0",
+          name: "ERR_CODE_TEST",
+          desc: '''
+                Setting this field will set the bit number for which an error
+                will be forced in the hardware. This bit number is that same one
+                found in the !!ERR_CODE register. The action of writing this
+                register will force an error pulse. The sole purpose of this
+                register is to test that any error properly propagates to either
+                an interrupt or an alert.
+                '''
         },
       ]
     },
