@@ -20,7 +20,8 @@ module flash_phy_scramble import flash_phy_pkg::*; #(
   input [KeySize-1:0] rand_addr_key_i,
   input [KeySize-1:0] rand_data_key_i,
   input  scramble_req_t [NumBanks-1:0] scramble_req_i,
-  output scramble_rsp_t [NumBanks-1:0] scramble_rsp_o
+  output scramble_rsp_t [NumBanks-1:0] scramble_rsp_o,
+  output logic arb_err_o
 );
 
   ///////////////////////////
@@ -57,7 +58,9 @@ module flash_phy_scramble import flash_phy_pkg::*; #(
     assign scramble_rsp_o[k].scrambled_data = scrambled_data_out;
   end
 
-  prim_arbiter_tree #(
+  // SEC_CM: PHY_ARBITER.CTRL.REDUN
+  logic [NumBanks-1:0] local_err;
+  prim_arbiter_tree_dup #(
     .N(NumBanks),
     .DW(BankAddrW),
     .EnDataPort(1)
@@ -71,10 +74,12 @@ module flash_phy_scramble import flash_phy_pkg::*; #(
     .idx_o    (),
     .valid_o  (calc_req),
     .data_o   (calc_addr_in),
-    .ready_i  (calc_ack)
+    .ready_i  (calc_ack),
+    .err_o    (local_err[0])
   );
 
-  prim_arbiter_tree #(
+  // SEC_CM: PHY_ARBITER.CTRL.REDUN
+  prim_arbiter_tree_dup #(
     .N(NumBanks),
     .DW(OpDataWidth),
     .EnDataPort(1)
@@ -88,8 +93,11 @@ module flash_phy_scramble import flash_phy_pkg::*; #(
     .idx_o    (),
     .valid_o  (op_req),
     .data_o   (op_data_in),
-    .ready_i  (op_ack)
+    .ready_i  (op_ack),
+    .err_o    (local_err[1])
   );
+
+  assign arb_err_o = |local_err;
 
   assign {op_type,
           plain_data_in,

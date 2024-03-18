@@ -113,6 +113,9 @@ module flash_phy
   // outstanding count error per bank
   logic [NumBanks-1:0]     cnt_err;
 
+  // arbiter error from scrambling module
+  logic scramble_arb_err;
+
   // select which bank each is operating on
   assign host_bank_sel = host_req_i ? host_addr_i[BusAddrW-1 -: BankW] : '0;
   assign ctrl_bank_sel = flash_ctrl_i.addr[BusAddrW-1 -: BankW];
@@ -138,7 +141,7 @@ module flash_phy
   assign flash_ctrl_o.storage_intg_err = |intg_ecc_err;
   assign flash_ctrl_o.fsm_err = |fsm_err;
   assign flash_ctrl_o.spurious_ack = |spurious_acks;
-  assign flash_ctrl_o.arb_err = |arb_err;
+  assign flash_ctrl_o.arb_err = |arb_err | scramble_arb_err;
   assign flash_ctrl_o.host_gnt_err = |{host_gnt_err, cnt_err} ;
   assign flash_ctrl_o.fifo_err = |{rsp_fifo_err, core_fifo_err};
 
@@ -317,7 +320,8 @@ module flash_phy
     .rand_addr_key_i(flash_ctrl_i.rand_addr_key),
     .rand_data_key_i(flash_ctrl_i.rand_data_key),
     .scramble_req_i(scramble_req),
-    .scramble_rsp_o(scramble_rsp)
+    .scramble_rsp_o(scramble_rsp),
+    .arb_err_o(scramble_arb_err) // fatal error from redundant arbiter logic
   );
 
   // life cycle handling
