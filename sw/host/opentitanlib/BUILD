@@ -43,6 +43,12 @@ ujson_rust(
     defines = ["opentitanlib=crate"],
 )
 
+ujson_rust(
+    name = "ottf",
+    srcs = ["//sw/device/lib/testing/json:ottf"],
+    defines = ["opentitanlib=crate"],
+)
+
 filegroup(
     name = "config",
     srcs = glob(["src/app/config/*.json"]),
@@ -233,6 +239,7 @@ rust_library(
         ":e2e_command",
         ":pinmux_config",
         ":spi_passthru",
+        ":ottf",
         "@hyperdebug_firmware//:hyperdebug/ec.bin",
         "//third_party/openocd:jtag_cmsis_dap_adapter_cfg",
         "//util/openocd/target:lowrisc-earlgrey.cfg",
@@ -255,6 +262,7 @@ rust_library(
         "mem": "$(location :mem)",
         "pinmux_config": "$(location :pinmux_config)",
         "spi_passthru": "$(location :spi_passthru)",
+        "ottf": "$(location :ottf)",
         "hyperdebug_firmware": "$(location @hyperdebug_firmware//:hyperdebug/ec.bin)",
         "openocd_riscv_target_cfg": "$(location //util/openocd/target:lowrisc-earlgrey.cfg)",
         "openocd_lc_target_cfg": "$(location //util/openocd/target:lowrisc-earlgrey-lc.cfg)",
