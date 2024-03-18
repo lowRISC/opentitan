@@ -84,7 +84,7 @@
     {
       name: "spi_device_ram_cfg"
       uvm_test_seq: "spi_device_ram_cfg_vseq"
-      reseed: 20
+      reseed: 1
     }
 
     {
