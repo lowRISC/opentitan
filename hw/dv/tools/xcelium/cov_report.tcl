@@ -8,6 +8,10 @@
 # exclusion script and the coverage refinement files are passed to the IMC invocation using the
 # -load, -init and -load_refinement switches respectively (whichever ones are applicable).
 
+# Generate "detachable" reports that work despite browser Cross-Origin Request Security protection.
+# They have the downside that you have to select the .report file yourself in-browser.
+config reports.detachable_report_data -set true
+
 # Set the output directory for the reports database using the env var 'cov_report_dir'.
 # The supplied env var may have quotes or spaces that needs to be trimmed.
 set cov_report_dir [string trim $::env(cov_report_dir) " \"'"]
