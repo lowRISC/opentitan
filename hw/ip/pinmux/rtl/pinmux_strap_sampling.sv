@@ -407,8 +407,12 @@ module pinmux_strap_sampling
 
       // Also reset all corresponding pad attributes to the default ('0) when JTAG is enabled.
       // This disables functional pad features that may have been set, e.g., pull-up/pull-down.
-      assign attr_padring_o[k] = (jtag_en) ? '0 : attr_core_i[k];
-
+      // Do enable schmitt trigger on JTAG clock and JTAG reset for better signal integrity.
+      if (k == TargetCfg.tck_idx  || k == TargetCfg.trst_idx) begin : gen_schmitt_en
+        assign attr_padring_o[k] = (jtag_en) ? '{schmitt_en: 1'b1, default: '0} : attr_core_i[k];
+      end else begin : gen_no_schmitt
+        assign attr_padring_o[k] = (jtag_en) ? '0 : attr_core_i[k];
+      end
     end else begin : gen_other_inputs
       assign attr_padring_o[k] = attr_core_i[k];
       assign in_core_o[k]      = in_padring_i[k];
