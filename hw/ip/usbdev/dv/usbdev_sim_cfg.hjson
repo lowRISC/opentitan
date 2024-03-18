@@ -61,6 +61,10 @@
       reseed: 1
     }
     {
+      name: usbdev_data_toggle_restore
+      uvm_test_seq: usbdev_data_toggle_restore_vseq
+    }
+    {
       name: usbdev_enable
       uvm_test_seq: usbdev_enable_vseq
     }

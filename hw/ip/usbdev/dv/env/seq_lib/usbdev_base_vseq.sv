@@ -392,7 +392,7 @@ endtask
   endtask
 
   virtual task configure_out_trans();
-    // Enable EP0 Out
+    // Enable EP Out
     csr_wr(.ptr(ral.ep_out_enable[0].enable[endp]), .value(1'b1));
     csr_update(ral.ep_out_enable[0]);
     // Enable rx out
@@ -413,7 +413,7 @@ endtask
   endtask
 
   virtual task configure_setup_trans();
-    // Enable EP0 Out
+    // Enable EP Out
     csr_wr(.ptr(ral.ep_out_enable[0].enable[endp]), .value(1'b1));
     csr_update(ral.ep_out_enable[0]);
     // Enable rx setup
