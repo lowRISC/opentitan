@@ -89,6 +89,53 @@ TEST_F(OtpReadTest, ReadLenN) {
   EXPECT_THAT(arr, ElementsAreArray(expected));
 }
 
+struct DigestReadTestCase {
+  otp_partition_t partition;
+  uint32_t digest_offest;
+};
+
+class OtpPartitionDigestTest
+    : public OtpTest,
+      public testing::WithParamInterface<DigestReadTestCase> {};
+
+TEST_P(OtpPartitionDigestTest, ReadDigest) {
+  EXPECT_SEC_READ32(base_ + GetParam().digest_offest + sizeof(uint32_t),
+                    0x12345678);
+  EXPECT_SEC_READ32(base_ + GetParam().digest_offest, 0x87654321);
+  EXPECT_EQ(otp_partition_digest_read(GetParam().partition),
+            0x1234567887654321);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    ReadPartitionDigests, OtpPartitionDigestTest,
+    testing::Values(
+        DigestReadTestCase{
+            .partition = kOtpPartitionCreatorSwCfg,
+            .digest_offest = OTP_CTRL_CREATOR_SW_CFG_DIGEST_0_REG_OFFSET,
+        },
+        DigestReadTestCase{
+            .partition = kOtpPartitionOwnerSwCfg,
+            .digest_offest = OTP_CTRL_OWNER_SW_CFG_DIGEST_0_REG_OFFSET,
+        },
+        DigestReadTestCase{
+            .partition = kOtpPartitionRotCreatorAuthCodesign,
+            .digest_offest =
+                OTP_CTRL_ROT_CREATOR_AUTH_CODESIGN_DIGEST_0_REG_OFFSET,
+        },
+        DigestReadTestCase{
+            .partition = kOtpPartitionRotCreatorAuthState,
+            .digest_offest =
+                OTP_CTRL_ROT_CREATOR_AUTH_STATE_DIGEST_0_REG_OFFSET,
+        },
+        DigestReadTestCase{
+            .partition = kOtpPartitionHwCfg0,
+            .digest_offest = OTP_CTRL_HW_CFG0_DIGEST_0_REG_OFFSET,
+        },
+        DigestReadTestCase{
+            .partition = kOtpPartitionHwCfg1,
+            .digest_offest = OTP_CTRL_HW_CFG1_DIGEST_0_REG_OFFSET,
+        }));
+
 class OtpDaiReadTest : public OtpReadTest,
                        public testing::WithParamInterface<int> {};
 

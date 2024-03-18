@@ -45,6 +45,10 @@ typedef struct otp_partition_info {
    */
   size_t size;
   /**
+   * The absolute OTP address at which this partition's digest starts.
+   */
+  uint32_t digest_addr;
+  /**
    * The alignment mask for this partition.
    *
    * A valid address for this partition must be such that
@@ -99,6 +103,14 @@ uint64_t otp_read64(uint32_t address);
  * @param num_words The number of 32-bit words to read from OTP.
  */
 void otp_read(uint32_t address, uint32_t *data, size_t num_words);
+
+/**
+ * Read a partition's 64-bit digest from the corresponding CSRs.
+ *
+ * @param partition The OTP partition whose digest should be read.
+ * @return The 64-bit digest value.
+ */
+uint64_t otp_partition_digest_read(otp_partition_t partition);
 
 /**
  * Perform a blocking 32-bit read from the Direct Access Interface (DAI).
