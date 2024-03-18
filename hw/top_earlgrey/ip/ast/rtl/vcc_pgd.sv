@@ -31,7 +31,7 @@ initial begin
   init_start = 1'b0;
 end
 
-always_comb (* xprop_off *) begin
+always (* xprop_off *) @( * ) begin
   if ( init_start ) begin
     vcc_pok_o <= 1'b0;
   end

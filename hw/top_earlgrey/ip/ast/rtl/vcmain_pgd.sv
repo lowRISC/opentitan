@@ -31,7 +31,7 @@ initial begin
   init_start = 1'b0;
 end
 
-always_comb begin
+always @( * ) begin
   if ( init_start ) begin
     vcmain_pok_o <= 1'b0;
   end else if ( !init_start && gen_supp_a ) begin
