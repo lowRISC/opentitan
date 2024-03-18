@@ -8,7 +8,23 @@ cc_library(
     name = "commands",
     srcs = ["commands.c"],
     hdrs = ["commands.h"],
-    deps = ["//sw/device/lib/ujson"],
+    deps = [
+        ":aes_commands",
+        ":aes_sca_commands",
+        ":drbg_commands",
+        ":ecdh_commands",
+        ":ecdsa_commands",
+        ":hash_commands",
+        ":hmac_commands",
+        ":ibex_fi_commands",
+        ":kmac_commands",
+        ":kmac_sca_commands",
+        ":otbn_fi_commands",
+        ":prng_sca_commands",
+        ":sha3_sca_commands",
+        ":trigger_sca_commands",
+        "//sw/device/lib/ujson",
+    ],
 )
 
 cc_library(
