@@ -53,7 +53,7 @@ TL host interface into SPI Device.
 ### SPI Device agent
 [spi agent](../../../dv/sv/spi_agent/README.md) is used to drive and monitor SPI items.
 There are 2 spi_agents in the testbench to serve as a SPI host and a SPI device.
-* The host agent is connected to the upstream port to drive stimulus for FW mode, TPM mode and flash mode.
+* The host agent is connected to the upstream port to drive stimulus for TPM mode and flash mode.
 * The device agent is connected to the passthrough port.
 When host sends a flash transaction with passthrough enabled, the device agent receives it and provides the return data when it's a read command.
 
@@ -69,12 +69,7 @@ The `spi_device_base_vseq` virtual sequence is extended from `cip_base_vseq` and
 All test sequences are extended from `spi_device_base_vseq`.
 It provides commonly used handles, variables, functions and tasks that the test sequences can simple use / call.
 Some of the most commonly used tasks / functions are as follows:
-* spi_device_fw_init:         Fully randomize SPI Device control following CSRs and configure TX/RX SRAM FIFO size for FW mode as following
-  * clock polarity/phase(CPOL, CPHA), bit direction(tx/rx_order), mode, fifo interrupt level(txlvl, rxlvl)
-  * TX/RX SRAM FIFO size: from 100 to 1900 and higher distribute for TX size / RX size = 1, 1/2 or 2/1
 * spi_host_xfer_bytes:        Send bytes of data to DUT (SPI Device) through spi_host_driver
-* write_device_words_to_send: Write words of data to DUT CSR and update SRAM write pointer, which enables DUT to send data to SPI host.
-* read_tx/rx_avail_bytes:     Read CSRs to get how many bytes of available space/data in SRAM memory
 
 #### Functional coverage
 To ensure high quality constrained random stimulus, it is necessary to develop a functional coverage model.
