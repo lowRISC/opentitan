@@ -23,7 +23,7 @@ class pwm_monitor extends dv_base_monitor #(
   endfunction
 
   // collect transactions forever - already forked in dv_base_monitor::run_phase
-  virtual protected task collect_trans(uvm_phase phase);
+  virtual protected task collect_trans();
     uint count_cycles, active_cycles;
     logic pwm_prev = 0;
 

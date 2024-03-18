@@ -76,7 +76,7 @@ class flash_phy_prim_monitor extends dv_base_monitor #(
   endtask
 
   // collect transactions forever - already forked in dv_base_monitor::run_phase
-  virtual protected task collect_trans(uvm_phase phase);
+  virtual protected task collect_trans();
     `DV_SPINWAIT(wait(cfg.vif.rst_n == 1);,
                  "timeout waiting for reset deassert", 100_000)
     `uvm_info(`gfn, $sformatf("flash_phy_prim_monitor %s", (cfg.scb_otf_en)? "enabled" :

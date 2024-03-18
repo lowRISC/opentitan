@@ -33,11 +33,11 @@ class spi_monitor extends dv_base_monitor#(
   endfunction
 
   virtual task run_phase(uvm_phase phase);
-    forever collect_trans(phase);
+    forever collect_trans();
   endtask
 
   // collect transactions
-  virtual protected task collect_trans(uvm_phase phase);
+  virtual protected task collect_trans();
     bit flash_opcode_received;
 
     wait (cfg.en_monitor);

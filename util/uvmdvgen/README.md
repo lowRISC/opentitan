@@ -104,7 +104,7 @@ IP. The following describes their contents in each source generated:
     This is the monitor component extended from `dv_base_monitor`. It provides
     the following items:
 
-    * `virtual protected task collect_trans(uvm_phase phase)`
+    * `virtual protected task collect_trans()`
 
         This is a shell task within which user is required to add logic to detect
         an event, sample the interface and create a transaction object and write

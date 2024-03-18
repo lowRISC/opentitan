@@ -19,7 +19,7 @@ class otbn_model_monitor extends dv_base_monitor #(
 
   `uvm_component_new
 
-  protected task collect_trans(uvm_phase phase);
+  protected task collect_trans();
     fork
       collect_status();
       collect_insns();
