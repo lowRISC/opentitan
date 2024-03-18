@@ -417,16 +417,9 @@ opentitan_test(
 opentitan_test(
     name = "aon_timer_smoketest",
     srcs = ["aon_timer_smoketest.c"],
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-        "//hw/top_earlgrey:silicon_creator": None,
-        "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon_owner",
-        "//hw/top_earlgrey:silicon_owner_prodc_rom_ext": "silicon_owner",
-        "//hw/top_earlgrey:sim_dv": None,
-        "//hw/top_earlgrey:sim_verilator": None,
-    },
-    silicon_owner = silicon_params(
-        tags = ["broken"],
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     deps = [
         "//sw/device/lib/base:mmio",
