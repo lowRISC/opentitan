@@ -895,8 +895,9 @@ module chip_${top["name"]}_${target["name"]} #(
   assign manual_out_otp_ext_volt = 1'b0;
   assign manual_oe_otp_ext_volt = 1'b0;
 
+  // Enable schmitt trigger on POR for better signal integrity.
+  assign manual_attr_por_n = '{schmitt_en: 1'b1, default: '0};
   // These pad attributes currently tied off permanently (these are all input-only pads).
-  assign manual_attr_por_n = '0;
   assign manual_attr_cc1 = '0;
   assign manual_attr_cc2 = '0;
   assign manual_attr_flash_test_mode0 = '0;
