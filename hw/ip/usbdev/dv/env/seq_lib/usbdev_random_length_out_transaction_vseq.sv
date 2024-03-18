@@ -15,6 +15,9 @@ class usbdev_random_length_out_transaction_vseq extends usbdev_base_vseq;
   bit [6:0] num_of_bytes = 0;
 
   task body();
+    // Expected data content of packet
+    byte unsigned exp_data[];
+
     // Configure out transaction
     configure_out_trans();
     // Out token packet followed by a data packet of random bytes
@@ -25,18 +28,18 @@ class usbdev_random_length_out_transaction_vseq extends usbdev_base_vseq;
     $cast(m_usb20_item, m_response_item);
     get_out_response_from_device(m_usb20_item, PidTypeAck);
     cfg.clk_rst_vif.wait_clks(20);
-    // Verifies the data size is of random length
-    check_trans_accuracy();
+
+    recover_orig_data(m_data_pkt.data, exp_data);
+    // Check that the USB device received a packet with the expected properties.
+    check_pkt_received(endp, 0, out_buffer_id, exp_data);
   endtask
 
-  task check_trans_accuracy();
-    bit      [6:0] data_size;
-    bit      [6:0] rx_fifo_data_size;
+  // TODO: Presently the act of sending a data packet, destructively modifies it!
+  // Restore the data packet to its original state. This just bit-reverses each byte
+  // within the input array.
+  function recover_orig_data(input byte unsigned in[], output byte unsigned out[]);
+    out = {<<8{in}};  // Reverse the order of the bytes
+    out = {<<{out}};  // Bit-reverse everything
+  endfunction
 
-     // Checking that data is of random length (0-64 bytes)
-    csr_rd(.ptr(ral.rxfifo.size), .value(rx_fifo_data_size));
-    `uvm_info(`gfn, $sformatf("RX fifo size =  %d", rx_fifo_data_size), UVM_DEBUG)
-    `uvm_info(`gfn, $sformatf("Data size =  %d", m_data_pkt.data.size()), UVM_DEBUG)
-    `DV_CHECK_EQ(rx_fifo_data_size, m_data_pkt.data.size());
-  endtask
 endclass
