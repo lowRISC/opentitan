@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::chip::boot_svc::{OwnershipUnlockRequest, UnlockMode};
+use crate::chip::boot_svc::{OwnershipActivateRequest, OwnershipUnlockRequest, UnlockMode};
 use crate::crypto::ecdsa::{EcdsaPrivateKey, EcdsaPublicKey, EcdsaRawPublicKey, EcdsaRawSignature};
 use crate::util::parse_int::ParseInt;
 use anyhow::Result;
@@ -60,5 +60,46 @@ impl OwnershipUnlockParams {
         };
         self.apply(&mut unlock)?;
         Ok(unlock)
+    }
+}
+
+#[derive(Debug, Args)]
+pub struct OwnershipActivateParams {
+    #[arg(long, value_parser = u64::from_str, help="Current ROM_EXT nonce")]
+    pub nonce: Option<u64>,
+    #[arg(long, help = "A path to a detached signature for the activate request")]
+    pub signature: Option<PathBuf>,
+    #[arg(long, help = "A path to a private key to sign the request")]
+    pub sign: Option<PathBuf>,
+}
+
+impl OwnershipActivateParams {
+    /// Applies the parameters to the activate request.
+    pub fn apply(&self, activate: &mut OwnershipActivateRequest) -> Result<()> {
+        if let Some(nonce) = &self.nonce {
+            activate.nonce = *nonce;
+        }
+        if let Some(signature) = &self.signature {
+            let mut f = File::open(signature)?;
+            activate.signature = EcdsaRawSignature::read(&mut f)?;
+        }
+        if let Some(sign) = &self.sign {
+            let key = EcdsaPrivateKey::load(sign)?;
+            activate.sign(&key)?;
+        }
+        Ok(())
+    }
+
+    /// Reads an activate request (or creates a default request) and applies the parameters.
+    pub fn apply_to(&self, reader: Option<&mut impl Read>) -> Result<OwnershipActivateRequest> {
+        let mut activate = if let Some(r) = reader {
+            let mut data = Vec::new();
+            r.read_to_end(&mut data)?;
+            OwnershipActivateRequest::try_from(data.as_slice())?
+        } else {
+            OwnershipActivateRequest::default()
+        };
+        self.apply(&mut activate)?;
+        Ok(activate)
     }
 }

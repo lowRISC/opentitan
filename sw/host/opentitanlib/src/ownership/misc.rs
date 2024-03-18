@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -28,8 +28,8 @@ with_unknown! {
 
     pub enum OwnershipKeyAlg: u32 [default = Self::Unknown] {
         Unknown = 0,
-        Rsa = u32::from_le_bytes(*b"RSA\0"),
-        Ecdsa = u32::from_le_bytes(*b"ECDS"),
+        Rsa = u32::from_le_bytes(*b"RSA3"),
+        EcdsaP256 = u32::from_le_bytes(*b"P256"),
         Spx = u32::from_le_bytes(*b"SPX+"),
         Spxq20 = u32::from_le_bytes(*b"Sq20"),
     }
@@ -96,7 +96,7 @@ impl KeyMaterial {
 
     pub fn kind(&self) -> OwnershipKeyAlg {
         match self {
-            KeyMaterial::Ecdsa(_) => OwnershipKeyAlg::Ecdsa,
+            KeyMaterial::Ecdsa(_) => OwnershipKeyAlg::EcdsaP256,
             KeyMaterial::Rsa(_) => OwnershipKeyAlg::Rsa,
             KeyMaterial::Spx(_) => OwnershipKeyAlg::Spx,
             KeyMaterial::Unknown(_) => OwnershipKeyAlg::Unknown,
@@ -106,7 +106,7 @@ impl KeyMaterial {
     pub fn read_length(src: &mut impl Read, kind: OwnershipKeyAlg, buflen: usize) -> Result<Self> {
         let result = match kind {
             OwnershipKeyAlg::Rsa => KeyMaterial::Rsa(RsaRawPublicKey::read(src)?),
-            OwnershipKeyAlg::Ecdsa => KeyMaterial::Ecdsa(EcdsaRawPublicKey::read(src)?),
+            OwnershipKeyAlg::EcdsaP256 => KeyMaterial::Ecdsa(EcdsaRawPublicKey::read(src)?),
             OwnershipKeyAlg::Spx | OwnershipKeyAlg::Spxq20 => {
                 KeyMaterial::Spx(SpxRawPublicKey::read(src)?)
             }
