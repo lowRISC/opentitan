@@ -312,7 +312,7 @@ FIRMWARE_DEPS = [
     "//sw/device/lib/ujson",
 
     # Include all JSON commands.
-    "//sw/device/tests/crypto/cryptotest/json",
+    "//sw/device/tests/crypto/cryptotest/json:commands",
 ]
 
 [
