@@ -27,16 +27,19 @@ const otp_partition_info_t kOtpPartitions[] = {
         .start_addr = OTP_CTRL_PARAM_CREATOR_SW_CFG_OFFSET,
         .size = OTP_CTRL_PARAM_CREATOR_SW_CFG_SIZE -
                 OTP_CTRL_PARAM_CREATOR_SW_CFG_DIGEST_SIZE,
+        .digest_addr = OTP_CTRL_CREATOR_SW_CFG_DIGEST_0_REG_OFFSET,
         .align_mask = 0x3},
     [kOtpPartitionOwnerSwCfg] = {
         .start_addr = OTP_CTRL_PARAM_OWNER_SW_CFG_OFFSET,
         .size = OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE -
                 OTP_CTRL_PARAM_OWNER_SW_CFG_DIGEST_SIZE,
+        .digest_addr = OTP_CTRL_OWNER_SW_CFG_DIGEST_0_REG_OFFSET,
         .align_mask = 0x3},
     [kOtpPartitionHwCfg] = {
         .start_addr = OTP_CTRL_PARAM_HW_CFG_OFFSET,
         .size = OTP_CTRL_PARAM_HW_CFG_SIZE -
                 OTP_CTRL_PARAM_HW_CFG_DIGEST_SIZE,
+        .digest_addr = OTP_CTRL_HW_CFG_DIGEST_0_REG_OFFSET,
         .align_mask = 0x3},
 };
 // clang-format on
@@ -62,6 +65,14 @@ void otp_read(uint32_t address, uint32_t *data, size_t num_words) {
   }
   HARDENED_CHECK_EQ(i, num_words);
   HARDENED_CHECK_EQ((uint32_t)r, UINT32_MAX);
+}
+
+uint64_t otp_partition_digest_read(otp_partition_t partition) {
+  uint32_t reg_offset = kBase + kOtpPartitions[partition].digest_addr;
+  uint64_t value = sec_mmio_read32(reg_offset + sizeof(uint32_t));
+  value <<= 32;
+  value |= sec_mmio_read32(reg_offset);
+  return value;
 }
 
 static void wait_for_dai_idle(void) {
