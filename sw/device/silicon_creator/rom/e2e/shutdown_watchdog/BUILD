@@ -87,7 +87,7 @@ SHUTDOWN_WATCHDOG_CASES = [
             t["lc_state"],
             t["bite_threshold"],
         ),
-        src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(t["lc_state"]),
+        src = "//hw/ip/otp_ctrl/data/lc_state:otp_json_{}".format(t["lc_state"]),
         overlays = STD_OTP_OVERLAYS + [
             ":otp_json_shutdown_watchdog_{}_{}".format(
                 t["lc_state"],

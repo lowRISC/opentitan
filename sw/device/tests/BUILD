@@ -4187,7 +4187,7 @@ otp_json(
 
 otp_image(
     name = "power_virus_systemtest_otp_img_rma",
-    src = "//hw/ip/otp_ctrl/data:otp_json_rma",
+    src = "//hw/ip/otp_ctrl/data/lc_state:otp_json_rma",
     overlays = STD_OTP_OVERLAYS + [":power_virus_systemtest_otp_overlay"],
     visibility = ["//visibility:private"],
 )
@@ -4321,7 +4321,7 @@ otp_json(
 
 otp_image(
     name = "flash_scrambling_smoketest_otp_img_rma",
-    src = "//hw/ip/otp_ctrl/data:otp_json_rma",
+    src = "//hw/ip/otp_ctrl/data/lc_state:otp_json_rma",
     overlays = STD_OTP_OVERLAYS + [":flash_scrambling_smoketest_otp_overlay"],
     visibility = ["//visibility:private"],
 )

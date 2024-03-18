@@ -167,7 +167,7 @@ opentitan_flash_binary(
             lc_state,
             t["name"],
         ),
-        src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state),
+        src = "//hw/ip/otp_ctrl/data/lc_state:otp_json_{}".format(lc_state),
         overlays = STD_OTP_OVERLAYS + [":otp_json_sigverify_spx_{}".format(t["name"])],
         visibility = ["//visibility:private"],
     )

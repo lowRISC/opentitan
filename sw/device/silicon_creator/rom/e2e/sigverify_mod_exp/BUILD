@@ -69,7 +69,7 @@ SIGVERIFY_MOD_EXP_CASES = [
             lc_state,
             t["name"],
         ),
-        src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state),
+        src = "//hw/ip/otp_ctrl/data/lc_state:otp_json_{}".format(lc_state),
         overlays = STD_OTP_OVERLAYS + [":otp_json_sigverify_mod_exp_{}".format(t["name"])],
     )
     for lc_state, _ in get_lc_items()

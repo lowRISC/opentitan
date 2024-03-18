@@ -61,7 +61,7 @@ otp_json(
 # lifecycle state in order to test the transition from PROD to RMA.
 otp_image(
     name = "otp_img_bootstrap_rma",
-    src = "//hw/ip/otp_ctrl/data:otp_json_prod",
+    src = "//hw/ip/otp_ctrl/data/lc_state:otp_json_prod",
     overlays = STD_OTP_OVERLAYS + [
         ":otp_json_bootstrap_rma",
     ],

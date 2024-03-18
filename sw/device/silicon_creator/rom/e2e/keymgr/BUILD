@@ -76,7 +76,7 @@ rom_e2e_keymgr_init_configs = [
 [
     otp_image(
         name = "otp_img_keymgr_{}".format(config["name"]),
-        src = "//hw/ip/otp_ctrl/data:otp_json_rma",
+        src = "//hw/ip/otp_ctrl/data/lc_state:otp_json_rma",
         overlays = STD_OTP_OVERLAYS + [":otp_json_keymgr_{}".format(config["name"])],
         visibility = ["//visibility:private"],
     )

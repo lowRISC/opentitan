@@ -78,7 +78,7 @@ otp_json(
 [
     otp_image(
         name = "otp_img_boot_policy_rollback_{}".format(lc_state),
-        src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state),
+        src = "//hw/ip/otp_ctrl/data/lc_state:otp_json_{}".format(lc_state),
         overlays = STD_OTP_OVERLAYS + [":otp_json_boot_policy_rollback"],
         visibility = ["//visibility:private"],
     )

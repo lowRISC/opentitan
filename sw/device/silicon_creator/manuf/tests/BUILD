@@ -155,7 +155,7 @@ opentitan_test(
 [
     otp_image(
         name = "otp_img_rom_exec_disabled_test_unlocked{}".format(i),
-        src = "//hw/ip/otp_ctrl/data:otp_json_test_unlocked{}".format(i),
+        src = "//hw/ip/otp_ctrl/data/lc_state:otp_json_test_unlocked{}".format(i),
         overlays = [
             "//hw/ip/otp_ctrl/data:otp_json_fixed_secret0",
             "//hw/ip/otp_ctrl/data:otp_json_exec_disabled",
@@ -443,7 +443,7 @@ opentitan_test(
 
 otp_image(
     name = "otp_img_otp_ctrl_functest",
-    src = "//hw/ip/otp_ctrl/data:otp_json_test_unlocked0",
+    src = "//hw/ip/otp_ctrl/data/lc_state:otp_json_test_unlocked0",
     visibility = ["//visibility:private"],
 )
 

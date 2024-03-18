@@ -59,7 +59,7 @@ ALERT_LC_STATES = get_lc_items(
 
 [otp_image(
     name = "otp_img_alert_{}".format(lc_state),
-    src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state),
+    src = "//hw/ip/otp_ctrl/data/lc_state:otp_json_{}".format(lc_state),
     overlays = STD_OTP_OVERLAYS,
 ) for lc_state, _ in ALERT_LC_STATES]
 
@@ -192,7 +192,7 @@ otp_alert_digest(
 
 [otp_image(
     name = "otp_img_shutdown_alert_{}".format(lc_state),
-    src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state),
+    src = "//hw/ip/otp_ctrl/data/lc_state:otp_json_{}".format(lc_state),
     overlays = STD_OTP_OVERLAYS + [
         ":shutdown_alert_owner_sw_cfg",
         ":shutdown_alert_digest_cfg",
