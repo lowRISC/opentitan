@@ -884,6 +884,8 @@
                   '''
           }
         ]
+        tags: [// 'rdy', 'pend' and 'sending' bits interact with each other.
+               "excl:CsrNonInitTests:CsrExclWrite"]
       }
     }
     { multireg: {
