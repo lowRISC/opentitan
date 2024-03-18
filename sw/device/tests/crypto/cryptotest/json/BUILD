@@ -35,6 +35,13 @@ cc_library(
 )
 
 cc_library(
+    name = "aes_gcm_commands",
+    srcs = ["aes_gcm_commands.c"],
+    hdrs = ["aes_gcm_commands.h"],
+    deps = ["//sw/device/lib/ujson"],
+)
+
+cc_library(
     name = "drbg_commands",
     srcs = ["drbg_commands.c"],
     hdrs = ["drbg_commands.h"],
