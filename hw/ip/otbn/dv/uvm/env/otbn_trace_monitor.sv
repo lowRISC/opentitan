@@ -11,7 +11,7 @@ class otbn_trace_monitor extends dv_base_monitor #(
   `uvm_component_utils(otbn_trace_monitor)
   `uvm_component_new
 
-  protected task collect_trans(uvm_phase phase);
+  protected task collect_trans();
     otbn_trace_item item;
     bit             item_valid = 1'b0;
 
