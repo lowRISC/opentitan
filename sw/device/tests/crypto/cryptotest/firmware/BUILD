@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 load(
     "//rules/opentitan:defs.bzl",
-    "cw310_params",
     "opentitan_binary",
     "opentitan_test",
     "silicon_params",
@@ -289,44 +288,49 @@ cc_library(
     ],
 )
 
-opentitan_binary(
-    name = "firmware",
-    testonly = True,
-    srcs = [":firmware.c"],
-    exec_env = [
-        "//hw/top_earlgrey:fpga_cw310_test_rom",
-    ],
-    deps = [
-        ":aes",
-        ":aes_sca",
-        ":drbg",
-        ":ecdh",
-        ":ecdsa",
-        ":hash",
-        ":hmac",
-        ":ibex_fi",
-        ":kmac",
-        ":kmac_sca",
-        ":otbn_fi",
-        ":prng_sca",
-        ":sha3_sca",
-        ":trigger_sca",
-        "//sw/device/lib/base:csr",
-        "//sw/device/lib/base:status",
-        "//sw/device/lib/crypto/drivers:entropy",
-        "//sw/device/lib/testing/test_framework:check",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/lib/testing/test_framework:ujson_ottf",
-        "//sw/device/lib/ujson",
-        "//sw/device/tests/crypto/cryptotest/json:aes_commands",
-        "//sw/device/tests/crypto/cryptotest/json:commands",
-        "//sw/device/tests/crypto/cryptotest/json:drbg_commands",
-        "//sw/device/tests/crypto/cryptotest/json:ecdh_commands",
-        "//sw/device/tests/crypto/cryptotest/json:hash_commands",
-        "//sw/device/tests/crypto/cryptotest/json:hmac_commands",
-        "//sw/device/tests/crypto/cryptotest/json:ibex_fi_commands",
-    ],
-)
+FIRMWARE_DEPS = [
+    ":aes_sca",
+    ":aes",
+    ":drbg",
+    ":ecdh",
+    ":ecdsa",
+    ":hash",
+    ":hmac",
+    ":ibex_fi",
+    ":kmac_sca",
+    ":kmac",
+    ":otbn_fi",
+    ":prng_sca",
+    ":sha3_sca",
+    ":trigger_sca",
+    "//sw/device/lib/base:csr",
+    "//sw/device/lib/base:status",
+    "//sw/device/lib/crypto/drivers:entropy",
+    "//sw/device/lib/testing/test_framework:check",
+    "//sw/device/lib/testing/test_framework:ottf_main",
+    "//sw/device/lib/testing/test_framework:ujson_ottf",
+    "//sw/device/lib/ujson",
+
+    # Include all JSON commands.
+    "//sw/device/tests/crypto/cryptotest/json",
+]
+
+[
+    opentitan_binary(
+        name = "firmware_{}".format(exec_env),
+        testonly = True,
+        srcs = [":firmware.c"],
+        exec_env = [
+            "//hw/top_earlgrey:{}".format(exec_env),
+        ],
+        deps = FIRMWARE_DEPS,
+    )
+    for exec_env in [
+        "fpga_cw310_test_rom",
+        "silicon_owner_sival_rom_ext",
+        "silicon_owner_prodc_rom_ext",
+    ]
+]
 
 opentitan_test(
     name = "chip_pen_test",
@@ -338,36 +342,5 @@ opentitan_test(
     silicon_owner = silicon_params(
         tags = ["broken"],
     ),
-    deps = [
-        ":aes",
-        ":aes_sca",
-        ":drbg",
-        ":ecdh",
-        ":ecdsa",
-        ":hash",
-        ":hmac",
-        ":ibex_fi",
-        ":kmac",
-        ":kmac_sca",
-        ":otbn_fi",
-        ":prng_sca",
-        ":sha3_sca",
-        ":trigger_sca",
-        "//sw/device/lib/base:csr",
-        "//sw/device/lib/base:status",
-        "//sw/device/lib/crypto/drivers:entropy",
-        "//sw/device/lib/testing/test_framework:check",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/lib/testing/test_framework:ujson_ottf",
-        "//sw/device/lib/ujson",
-        "//sw/device/tests/crypto/cryptotest/json:aes_commands",
-        "//sw/device/tests/crypto/cryptotest/json:commands",
-        "//sw/device/tests/crypto/cryptotest/json:drbg_commands",
-        "//sw/device/tests/crypto/cryptotest/json:ecdh_commands",
-        "//sw/device/tests/crypto/cryptotest/json:ecdsa_commands",
-        "//sw/device/tests/crypto/cryptotest/json:hash_commands",
-        "//sw/device/tests/crypto/cryptotest/json:hmac_commands",
-        "//sw/device/tests/crypto/cryptotest/json:ibex_fi_commands",
-        "//sw/device/tests/crypto/cryptotest/json:kmac_commands",
-    ],
+    deps = FIRMWARE_DEPS,
 )
