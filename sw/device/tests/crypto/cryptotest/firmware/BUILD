@@ -25,6 +25,7 @@ cc_library(
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/lib/ujson",
         "//sw/device/tests/crypto/cryptotest/json:aes_commands",
+        "//sw/device/tests/crypto/cryptotest/json:aes_gcm_commands",
     ],
 )
 
