@@ -41,9 +41,13 @@
     }
     {
       name: mem_cfg
-      desc: '''Test cfg_i connectivity between spi_device and prim_ram_2p.
+      desc: '''Test cfg_i connectivity between spi_device and the backing RAM.
 
-               Randomly set dut.ram_cfg_i and check this value is propagated to prim_mem_2p.'''
+
+               Randomly set dut.ram_cfg_i and check this value is propagated to the memory itself.
+               For the 1r1w implementation, where the RAM is split into ingress and egress portions,
+               check that the configuration makes it to both sides.'''
+
       stage: V2
       tests: ["spi_device_ram_cfg"]
     }
