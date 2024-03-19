@@ -188,9 +188,11 @@ module i2c_core import i2c_pkg::*;
   assign hw2reg.target_fifo_status.acqlvl.d = MaxFifoDepthW'(acq_fifo_depth);
   assign hw2reg.acqdata.abyte.d = acq_fifo_rdata[7:0];
   assign hw2reg.acqdata.signal.d = acq_fifo_rdata[AcqFifoWidth-1:8];
-  // Add one to the target NACK count if this target has sent a NACK.
-  assign hw2reg.target_nack_count.de = event_target_nack;
-  assign hw2reg.target_nack_count.d = reg2hw.target_nack_count.q + 1;
+
+  // Add one to the target NACK count if this target has sent a NACK and if
+  // counter has not saturated.
+  assign hw2reg.target_nack_count.de = event_target_nack && (reg2hw.target_nack_count.q < 8'hFF);
+  assign hw2reg.target_nack_count.d  = reg2hw.target_nack_count.q + 1;
 
   assign override = reg2hw.ovrd.txovrden;
 
