@@ -91,7 +91,7 @@ module otbn_rf_base
   logic rd_stack_b;
 
   logic                     stack_full;
-  logic [BaseIntgWidth-1:0] stack_data_intg;
+  logic [BaseIntgWidth-1:0] stack_data_intg, stack_data_intg_raw;
   logic                     stack_data_valid;
 
   logic state_reset;
@@ -160,7 +160,7 @@ module otbn_rf_base
 
     .pop_i         (pop_stack),
     .commit_i      (1'b1),
-    .top_data_o    (stack_data_intg),
+    .top_data_o    (stack_data_intg_raw),
     .top_valid_o   (stack_data_valid),
 
     .stack_wr_idx_o(),
@@ -171,6 +171,11 @@ module otbn_rf_base
     .next_top_data_o (),
     .next_top_valid_o()
   );
+
+  // Squash call stack read data to 0 (which means invalid ECC with the encoding we use) when
+  // there's nothing on the call stack. OTBN will raise an error when we read from an empty call
+  // stack but this prevents X propagation and exposing any previous, now invalid, stack values.
+  assign stack_data_intg = stack_data_valid ? stack_data_intg_raw : '0;
 
   if (RegFile == RegFileFF) begin : gen_rf_base_ff
     otbn_rf_base_ff #(
