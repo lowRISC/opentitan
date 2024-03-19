@@ -10,6 +10,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
+#include "sw/device/silicon_creator/lib/base/boot_measurements.h"
 #include "sw/device/silicon_creator/lib/cert/cdi_0.h"  // Generated.
 #include "sw/device/silicon_creator/lib/cert/cdi_1.h"  // Generated.
 #include "sw/device/silicon_creator/lib/cert/dice.h"
@@ -162,9 +163,24 @@ static status_t personalize(ujson_t *uj) {
   return OK_STATUS();
 }
 
+static void log_self_hash(void) {
+  // clang-format off
+  LOG_INFO("Personalization Firmware Hash: 0x%08x%08x%08x%08x%08x%08x%08x%08x",
+           boot_measurements.rom_ext.data[7],
+           boot_measurements.rom_ext.data[6],
+           boot_measurements.rom_ext.data[5],
+           boot_measurements.rom_ext.data[4],
+           boot_measurements.rom_ext.data[3],
+           boot_measurements.rom_ext.data[2],
+           boot_measurements.rom_ext.data[1],
+           boot_measurements.rom_ext.data[0]);
+  // clang-format on
+}
+
 bool test_main(void) {
   ujson_t uj = ujson_ottf_console();
 
+  log_self_hash();
   CHECK_STATUS_OK(personalize(&uj));
 
   return true;
