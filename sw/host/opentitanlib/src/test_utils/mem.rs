@@ -16,9 +16,9 @@ include!(env!("mem"));
 
 impl MemRead32Req {
     pub fn execute(uart: &dyn Uart, address: u32) -> Result<u32> {
-        TestCommand::MemRead32.send(uart)?;
+        TestCommand::MemRead32.send_with_crc(uart)?;
         let op = MemRead32Req { address };
-        op.send(uart)?;
+        op.send_with_crc(uart)?;
         let resp = MemRead32Resp::recv(uart, Duration::from_secs(300), false)?;
         Ok(resp.value)
     }
@@ -34,12 +34,12 @@ impl MemReadReq {
                 data: ArrayVec::new(),
             };
             let op_size = std::cmp::min(bytes_to_read - bytes_read, size_check.data.capacity());
-            TestCommand::MemRead.send(uart)?;
+            TestCommand::MemRead.send_with_crc(uart)?;
             let op = MemReadReq {
                 address: start_address + (bytes_read as u32),
                 data_len: op_size.try_into().unwrap(),
             };
-            op.send(uart)?;
+            op.send_with_crc(uart)?;
             let resp = MemReadResp::recv(uart, Duration::from_secs(300), false)?;
             data[bytes_read..(bytes_read + op_size)].copy_from_slice(resp.data.as_slice());
             bytes_read += op_size;
@@ -50,9 +50,9 @@ impl MemReadReq {
 
 impl MemWrite32Req {
     pub fn execute(uart: &dyn Uart, address: u32, value: u32) -> Result<()> {
-        TestCommand::MemWrite32.send(uart)?;
+        TestCommand::MemWrite32.send_with_crc(uart)?;
         let op = MemWrite32Req { address, value };
-        op.send(uart)?;
+        op.send_with_crc(uart)?;
         Status::recv(uart, Duration::from_secs(300), false)?;
         Ok(())
     }
@@ -63,7 +63,7 @@ impl MemWriteReq {
         let bytes_to_write = data.len();
         let mut bytes_written = 0_usize;
         while bytes_written < bytes_to_write {
-            TestCommand::MemWrite.send(uart)?;
+            TestCommand::MemWrite.send_with_crc(uart)?;
             let mut op = MemWriteReq {
                 address: start_address + (bytes_written as u32),
                 data_len: 0,
@@ -73,7 +73,7 @@ impl MemWriteReq {
             op.data
                 .try_extend_from_slice(&data[bytes_written..(bytes_written + op_size)])?;
             op.data_len = op_size.try_into().unwrap();
-            op.send(uart)?;
+            op.send_with_crc(uart)?;
             let _ = Status::recv(uart, Duration::from_secs(300), false)?;
             bytes_written += op_size;
         }

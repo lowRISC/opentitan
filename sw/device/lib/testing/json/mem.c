@@ -13,7 +13,7 @@
 status_t ujcmd_mem_read32(ujson_t *uj) {
   mem_read32_req_t op;
   mem_read32_resp_t resp;
-  TRY(ujson_deserialize_mem_read32_req_t(uj, &op));
+  TRY(UJSON_WITH_CRC(ujson_deserialize_mem_read32_req_t, uj, &op));
   if ((op.address % sizeof(uint32_t)) != 0) {
     return INVALID_ARGUMENT();
   }
@@ -24,7 +24,7 @@ status_t ujcmd_mem_read32(ujson_t *uj) {
 status_t ujcmd_mem_read(ujson_t *uj) {
   mem_read_req_t op;
   mem_read_resp_t resp;
-  TRY(ujson_deserialize_mem_read_req_t(uj, &op));
+  TRY(UJSON_WITH_CRC(ujson_deserialize_mem_read_req_t, uj, &op));
   if (op.data_len > sizeof(resp.data)) {
     return INVALID_ARGUMENT();
   }
@@ -35,7 +35,7 @@ status_t ujcmd_mem_read(ujson_t *uj) {
 
 status_t ujcmd_mem_write32(ujson_t *uj) {
   mem_write32_req_t op;
-  TRY(ujson_deserialize_mem_write32_req_t(uj, &op));
+  TRY(UJSON_WITH_CRC(ujson_deserialize_mem_write32_req_t, uj, &op));
   if ((op.address % sizeof(uint32_t)) != 0) {
     return INVALID_ARGUMENT();
   }
@@ -45,7 +45,7 @@ status_t ujcmd_mem_write32(ujson_t *uj) {
 
 status_t ujcmd_mem_write(ujson_t *uj) {
   mem_write_req_t op;
-  TRY(ujson_deserialize_mem_write_req_t(uj, &op));
+  TRY(UJSON_WITH_CRC(ujson_deserialize_mem_write_req_t, uj, &op));
   if (op.data_len > sizeof(op.data)) {
     return INVALID_ARGUMENT();
   }
