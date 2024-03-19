@@ -86,6 +86,14 @@ cc_library(
 )
 
 cc_library(
+    name = "binary_blob",
+    hdrs = ["binary_blob.h"],
+    deps = [
+        "@googletest//:gtest",
+    ],
+)
+
+cc_library(
     name = "clkmgr_testutils",
     srcs = ["clkmgr_testutils.c"],
     hdrs = ["clkmgr_testutils.h"],
