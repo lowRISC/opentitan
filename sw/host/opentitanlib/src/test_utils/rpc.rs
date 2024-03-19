@@ -13,8 +13,13 @@ use crate::io::uart::{Uart, UartError};
 use crate::test_utils::status::Status;
 use crate::uart::console::{ExitStatus, UartConsole};
 
+// Bring in the auto-generated sources.
+include!(env!("ottf"));
+
 pub trait UartSend {
     fn send(&self, uart: &dyn Uart) -> Result<()>;
+
+    fn send_with_crc(&self, uart: &dyn Uart) -> Result<()>;
 }
 
 impl<T: Serialize> UartSend for T {
@@ -23,6 +28,16 @@ impl<T: Serialize> UartSend for T {
         log::info!("Sending: {}", s);
         uart.write(s.as_bytes())?;
         Ok(())
+    }
+
+    fn send_with_crc(&self, uart: &dyn Uart) -> Result<()> {
+        let s = serde_json::to_string(self)?;
+        log::info!("Sending: {}", s);
+        uart.write(s.as_bytes())?;
+        let actual_crc = OttfCrc {
+            crc: Crc::<u32>::new(&CRC_32_ISO_HDLC).checksum(s.as_bytes()),
+        };
+        actual_crc.send(uart)
     }
 }
 
