@@ -59,6 +59,7 @@ class pwrmgr_aborted_low_power_vseq extends pwrmgr_base_vseq;
                 "Enabled wakeups=0x%x (wkups=%x  wkup_en=%x)", enabled_wakeups, wakeups, wakeups_en
                 ), UVM_MEDIUM)
       csr_wr(.ptr(ral.wakeup_en[0]), .value(wakeups_en));
+
       `uvm_info(`gfn, $sformatf("%0sabling wakeup capture", disable_wakeup_capture ? "Dis" : "En"),
                 UVM_MEDIUM)
       csr_wr(.ptr(ral.wake_info_capture_dis), .value(disable_wakeup_capture));
@@ -117,6 +118,7 @@ class pwrmgr_aborted_low_power_vseq extends pwrmgr_base_vseq;
       // Get ready for another round.
       cfg.pwrmgr_vif.update_cpu_sleeping(1'b0);
       set_nvms_idle();
+      cfg.slow_clk_rst_vif.wait_clks(4);
     end
     `uvm_info(`gfn, "Test done", UVM_MEDIUM)
   endtask

@@ -581,6 +581,7 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
                   low_power_hint
                   ), UVM_MEDIUM)
         csr_update(.csr(ral.control));
+        wait_for_csr_to_propagate_to_slow_domain();
       end
       // Predict the effect of the potential low power transition.
       if (low_power_hint) process_low_power_hint();
@@ -709,8 +710,10 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
     if (exp_value != initial_value) begin
       // The various bits of wake_info could have different sync delays, so wait some more.
       cfg.clk_rst_vif.wait_clks(1);
-      `DV_SPINWAIT(wait(cfg.pwrmgr_vif.wake_info != initial_value);, $sformatf(
-                   "wake info wait timeout  exp:%p  init:%p", exp_value, initial_value), 15_000)
+      `DV_SPINWAIT(wait(cfg.pwrmgr_vif.wake_info == exp_value);,
+                   $sformatf("wake info wait timeout exp:%p actual:%p", exp_value,
+                             cfg.pwrmgr_vif.wake_info),
+                   15_000)
     end
   endtask : fast_check_wake_info
 

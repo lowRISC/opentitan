@@ -85,10 +85,10 @@ class pwrmgr_lowpower_invalid_vseq extends pwrmgr_base_vseq;
               "Some wakeup must be enabled: wkups=%b, wkup_en=%b", wakeups, wakeups_en))
     `uvm_info(`gfn, $sformatf("Enabled wakeups=0x%x", enabled_wakeups), UVM_MEDIUM)
     csr_wr(.ptr(ral.wakeup_en[0]), .value(wakeups_en));
+
     low_power_hint = 1;
     update_control_csr();
 
-    wait_for_csr_to_propagate_to_slow_domain();
     `uvm_info(`gfn, $sformatf("Enabled wakeups=0x%x", enabled_wakeups), UVM_MEDIUM)
 
     // Initiate low power transition.
@@ -102,7 +102,7 @@ class pwrmgr_lowpower_invalid_vseq extends pwrmgr_base_vseq;
     end
 
     // Now bring it back.
-    cfg.clk_rst_vif.wait_clks(cycles_before_wakeup);
+    cfg.slow_clk_rst_vif.wait_clks(cycles_before_wakeup);
     cfg.pwrmgr_vif.update_wakeups(wakeups);
 
     wait(cfg.pwrmgr_vif.pwr_clk_req.main_ip_clk_en == 1'b1);

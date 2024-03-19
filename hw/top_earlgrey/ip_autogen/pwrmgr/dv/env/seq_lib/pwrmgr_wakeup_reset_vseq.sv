@@ -81,7 +81,6 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
 
       low_power_hint = 1'b1;
       update_control_csr();
-      wait_for_csr_to_propagate_to_slow_domain();
 
       // Initiate low power transition.
       cfg.pwrmgr_vif.update_cpu_sleeping(1'b1);

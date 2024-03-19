@@ -39,16 +39,16 @@ class pwrmgr_smoke_vseq extends pwrmgr_base_vseq;
     // Enable all wakeups so any peripheral can cause a wakeup.
     wakeup_en = '1;
     csr_wr(.ptr(ral.wakeup_en[0]), .value(wakeup_en));
+
     low_power_hint = 1'b1;
     update_control_csr();
-    wait_for_csr_to_propagate_to_slow_domain();
 
     // Initiate low power transition.
     cfg.pwrmgr_vif.update_cpu_sleeping(1'b1);
     wait_for_reset_cause(pwrmgr_pkg::LowPwrEntry);
 
     // Now bring it back.
-    cfg.clk_rst_vif.wait_clks(cycles_before_wakeup);
+    cfg.slow_clk_rst_vif.wait_clks(cycles_before_wakeup);
     cfg.pwrmgr_vif.update_wakeups(wakeups);
 
     wait_for_fast_fsm(FastFsmActive);
