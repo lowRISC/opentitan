@@ -105,10 +105,11 @@ static status_t lock_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
 
   // Get the least significant 64 bits of the digest. We will use this as the
   // digest to lock the OTP partition. The complete digest will be used in the
-  // attestation key / certificate generation.
-  uint64_t partition_digest_lowest_64bits = digest[1];
+  // attestation key / certificate generation. Note: cryptolib generates the
+  // digest in big-endian format so we must rearrange the bytes.
+  uint64_t partition_digest_lowest_64bits = __builtin_bswap32(digest[6]);
   partition_digest_lowest_64bits =
-      (partition_digest_lowest_64bits << 32) | digest[0];
+      (partition_digest_lowest_64bits << 32) | __builtin_bswap32(digest[7]);
 
   TRY(otp_ctrl_testutils_lock_partition(
       otp_ctrl, partition, /*digest=*/partition_digest_lowest_64bits));
