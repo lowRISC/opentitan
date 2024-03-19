@@ -351,7 +351,7 @@
     { name: "PHY_ARBITER.CTRL.REDUN",
       desc: '''
         The phy arbiters for controller/host arbitration and in the shared scrambling module are redundant.
-        The arbiters have two instance underneath that are constantly compared to each other.
+        The arbiters have two instances underneath that are constantly compared to each other.
       '''
     }
     { name: "PHY_HOST_GRANT.CTRL.CONSISTENCY",
