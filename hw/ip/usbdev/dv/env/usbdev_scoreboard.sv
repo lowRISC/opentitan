@@ -463,6 +463,66 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
       "fifo_ctrl": begin
         // TODO
       end
+      "count_ign_avsetup": begin
+        if (!write && channel == DataChannel) begin
+          do_read_check = 1'b0;
+        end
+      end
+      "count_drop_avout": begin
+        if (!write && channel == DataChannel) begin
+          do_read_check = 1'b0;
+        end
+      end
+      "count_drop_rx": begin
+        if (!write && channel == DataChannel) begin
+          do_read_check = 1'b0;
+        end
+      end
+      "count_datatog_out": begin
+        if (!write && channel == DataChannel) begin
+          do_read_check = 1'b0;
+        end
+      end
+      "count_timeout_in": begin
+        if (!write && channel == DataChannel) begin
+          do_read_check = 1'b0;
+        end
+      end
+      "count_nak_in": begin
+        if (!write && channel == DataChannel) begin
+          do_read_check = 1'b0;
+        end
+      end
+      "count_nodata_in0": begin
+        if (!write && channel == DataChannel) begin
+          do_read_check = 1'b0;
+        end
+      end
+      "count_nodata_in1": begin
+        if (!write && channel == DataChannel) begin
+          do_read_check = 1'b0;
+        end
+      end
+      "count_crc5_out": begin
+        if (!write && channel == DataChannel) begin
+          do_read_check = 1'b0;
+        end
+      end
+      "count_crc16_out": begin
+        if (!write && channel == DataChannel) begin
+          do_read_check = 1'b0;
+        end
+      end
+      "count_bitstuff": begin
+        if (!write && channel == DataChannel) begin
+          do_read_check = 1'b0;
+        end
+      end
+      "count_pid_invalid": begin
+        if (!write && channel == DataChannel) begin
+          do_read_check = 1'b0;
+        end
+      end
       "buffer": begin
         do_read_check = 1'b1;
       end

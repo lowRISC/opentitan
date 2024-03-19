@@ -149,12 +149,22 @@ module usbdev
   logic              host_lost, link_disconnect, link_powered;
   logic              event_link_reset, event_link_suspend, event_link_resume;
   logic              event_host_lost, event_disconnect, event_powered;
+  logic              event_rx_crc5_err, event_rx_crc16_err;
   logic              event_rx_crc_err, event_rx_pid_err;
   logic              event_rx_bitstuff_err;
   logic              event_in_err;
   logic              event_out_err;
   logic              event_frame, event_sof;
   logic              link_active;
+
+  // Diagnostic visibility of OUT-side exceptional events
+  logic              event_ign_avsetup, event_drop_avout, event_drop_rx, event_datatog_out;
+  // Diagnostic visibility of IN-side exceptional events
+  logic              event_timeout_in, event_nak_in, event_nodata_in;
+
+  // Interrupt to software reports both types of CRC error; they are separated only for the
+  // purpose of diagnostic event counting.
+  assign event_rx_crc_err = event_rx_crc5_err | event_rx_crc16_err;
 
   logic [10:0]       frame;
   logic [2:0]        link_state;
@@ -652,9 +662,19 @@ module usbdev
     .host_lost_o          (host_lost),
     .link_in_err_o        (event_in_err),
     .link_out_err_o       (event_out_err),
-    .rx_crc_err_o         (event_rx_crc_err),
+    .rx_crc5_err_o        (event_rx_crc5_err),
+    .rx_crc16_err_o       (event_rx_crc16_err),
     .rx_pid_err_o         (event_rx_pid_err),
-    .rx_bitstuff_err_o    (event_rx_bitstuff_err)
+    .rx_bitstuff_err_o    (event_rx_bitstuff_err),
+
+    // event counters
+    .event_ign_avsetup_o  (event_ign_avsetup),
+    .event_drop_avout_o   (event_drop_avout),
+    .event_drop_rx_o      (event_drop_rx),
+    .event_datatog_out_o  (event_datatog_out),
+    .event_timeout_in_o   (event_timeout_in),
+    .event_nak_in_o       (event_nak_in),
+    .event_nodata_in_o    (event_nodata_in)
   );
 
   /////////////////////////////////
@@ -1259,6 +1279,155 @@ module usbdev
   assign hw2reg.wake_events.disconnected.d = usb_aon_sense_lost_i;
   assign hw2reg.wake_events.bus_reset.de = 1'b1;
   assign hw2reg.wake_events.bus_reset.d = usb_aon_bus_reset_i;
+
+  /////////////////////////////////////
+  // Diagnostic/performance counters //
+  /////////////////////////////////////
+
+  // Counters use 'rst_n' and remain at zero in Stubbed implementation
+  usbdev_counter #(.NEndpoints(NEndpoints)) u_ctr_ign_avsetup(
+    .clk_i        (clk_i),
+    .rst_ni       (rst_n),
+    .reset_i      (reg2hw.count_ign_avsetup.rst.qe & reg2hw.count_ign_avsetup.rst.q),
+    .event_i      (event_ign_avsetup),
+    .ep_i         (out_endpoint),
+    .endp_qe_i    (reg2hw.count_ign_avsetup.endpoints.qe),
+    .endpoints_i  (reg2hw.count_ign_avsetup.endpoints.q),
+    .endpoints_o  (hw2reg.count_ign_avsetup.endpoints.d),
+    .count_o      (hw2reg.count_ign_avsetup.count.d)
+  );
+
+  usbdev_counter #(.NEndpoints(NEndpoints)) u_ctr_drop_avout(
+    .clk_i        (clk_i),
+    .rst_ni       (rst_ni),
+    .reset_i      (reg2hw.count_drop_avout.rst.qe & reg2hw.count_drop_avout.rst.q),
+    .event_i      (event_drop_avout),
+    .ep_i         (out_endpoint),
+    .endp_qe_i    (reg2hw.count_drop_avout.endpoints.qe),
+    .endpoints_i  (reg2hw.count_drop_avout.endpoints.q),
+    .endpoints_o  (hw2reg.count_drop_avout.endpoints.d),
+    .count_o      (hw2reg.count_drop_avout.count.d)
+  );
+
+  usbdev_counter #(.NEndpoints(NEndpoints)) u_ctr_drop_rx(
+    .clk_i        (clk_i),
+    .rst_ni       (rst_ni),
+    .reset_i      (reg2hw.count_drop_rx.rst.qe & reg2hw.count_drop_rx.rst.q),
+    .event_i      (event_drop_rx),
+    .ep_i         (out_endpoint),
+    .endp_qe_i    (reg2hw.count_drop_rx.endpoints.qe),
+    .endpoints_i  (reg2hw.count_drop_rx.endpoints.q),
+    .endpoints_o  (hw2reg.count_drop_rx.endpoints.d),
+    .count_o      (hw2reg.count_drop_rx.count.d)
+  );
+
+  usbdev_counter #(.NEndpoints(NEndpoints)) u_ctr_datatag_out(
+    .clk_i        (clk_i),
+    .rst_ni       (rst_ni),
+    .reset_i      (reg2hw.count_datatog_out.rst.qe & reg2hw.count_datatog_out.rst.q),
+    .event_i      (event_datatog_out),
+    .ep_i         (out_endpoint),
+    .endp_qe_i    (reg2hw.count_datatog_out.endpoints.qe),
+    .endpoints_i  (reg2hw.count_datatog_out.endpoints.q),
+    .endpoints_o  (hw2reg.count_datatog_out.endpoints.d),
+    .count_o      (hw2reg.count_datatog_out.count.d)
+  );
+
+  usbdev_counter #(.NEndpoints(NEndpoints)) u_ctr_timeout_in(
+    .clk_i        (clk_i),
+    .rst_ni       (rst_ni),
+    .reset_i      (reg2hw.count_timeout_in.rst.qe & reg2hw.count_timeout_in.rst.q),
+    .event_i      (event_timeout_in),
+    .ep_i         (in_endpoint),
+    .endp_qe_i    (reg2hw.count_timeout_in.endpoints.qe),
+    .endpoints_i  (reg2hw.count_timeout_in.endpoints.q),
+    .endpoints_o  (hw2reg.count_timeout_in.endpoints.d),
+    .count_o      (hw2reg.count_timeout_in.count.d)
+  );
+
+  usbdev_counter #(.NEndpoints(NEndpoints)) u_ctr_nak_in(
+    .clk_i        (clk_i),
+    .rst_ni       (rst_ni),
+    .reset_i      (reg2hw.count_nak_in.rst.qe & reg2hw.count_nak_in.rst.q),
+    .event_i      (event_nak_in),
+    .ep_i         (in_endpoint),
+    .endp_qe_i    (reg2hw.count_nak_in.endpoints.qe),
+    .endpoints_i  (reg2hw.count_nak_in.endpoints.q),
+    .endpoints_o  (hw2reg.count_nak_in.endpoints.d),
+    .count_o      (hw2reg.count_nak_in.count.d)
+  );
+
+  usbdev_counter #(.NEndpoints(NEndpoints)) u_ctr_nodata_in0(
+    .clk_i        (clk_i),
+    .rst_ni       (rst_ni),
+    .reset_i      (reg2hw.count_nodata_in0.rst.qe & reg2hw.count_nodata_in0.rst.q),
+    .event_i      (event_nodata_in),
+    .ep_i         (in_xact_start_ep),
+    .endp_qe_i    (reg2hw.count_nodata_in0.endpoints.qe),
+    .endpoints_i  (reg2hw.count_nodata_in0.endpoints.q),
+    .endpoints_o  (hw2reg.count_nodata_in0.endpoints.d),
+    .count_o      (hw2reg.count_nodata_in0.count.d)
+  );
+
+  usbdev_counter #(.NEndpoints(NEndpoints)) u_ctr_nodata_in1(
+    .clk_i        (clk_i),
+    .rst_ni       (rst_ni),
+    .reset_i      (reg2hw.count_nodata_in1.rst.qe & reg2hw.count_nodata_in1.rst.q),
+    .event_i      (event_nodata_in),
+    .ep_i         (in_xact_start_ep),
+    .endp_qe_i    (reg2hw.count_nodata_in1.endpoints.qe),
+    .endpoints_i  (reg2hw.count_nodata_in1.endpoints.q),
+    .endpoints_o  (hw2reg.count_nodata_in1.endpoints.d),
+    .count_o      (hw2reg.count_nodata_in1.count.d)
+  );
+
+  usbdev_counter #(.NEndpoints(1)) u_ctr_crc5_out(
+    .clk_i        (clk_i),
+    .rst_ni       (rst_ni),
+    .reset_i      (reg2hw.count_crc5_out.rst.qe & reg2hw.count_crc5_out.rst.q),
+    .event_i      (event_rx_crc5_err),
+    .ep_i         (1'b0),
+    .endp_qe_i    (reg2hw.count_crc5_out.enable.qe),
+    .endpoints_i  (reg2hw.count_crc5_out.enable.q),
+    .endpoints_o  (hw2reg.count_crc5_out.enable.d),
+    .count_o      (hw2reg.count_crc5_out.count.d)
+  );
+
+  usbdev_counter #(.NEndpoints(1)) u_ctr_crc16_out(
+    .clk_i        (clk_i),
+    .rst_ni       (rst_ni),
+    .reset_i      (reg2hw.count_crc16_out.rst.qe & reg2hw.count_crc16_out.rst.q),
+    .event_i      (event_rx_crc16_err),
+    .ep_i         (1'b0),
+    .endp_qe_i    (reg2hw.count_crc16_out.enable.qe),
+    .endpoints_i  (reg2hw.count_crc16_out.enable.q),
+    .endpoints_o  (hw2reg.count_crc16_out.enable.d),
+    .count_o      (hw2reg.count_crc16_out.count.d)
+  );
+
+  usbdev_counter #(.NEndpoints(1)) u_ctr_bitstuff(
+    .clk_i        (clk_i),
+    .rst_ni       (rst_ni),
+    .reset_i      (reg2hw.count_bitstuff.rst.qe & reg2hw.count_bitstuff.rst.q),
+    .event_i      (event_rx_bitstuff_err),
+    .ep_i         (1'b0),
+    .endp_qe_i    (reg2hw.count_bitstuff.enable.qe),
+    .endpoints_i  (reg2hw.count_bitstuff.enable.q),
+    .endpoints_o  (hw2reg.count_bitstuff.enable.d),
+    .count_o      (hw2reg.count_bitstuff.count.d)
+  );
+
+  usbdev_counter #(.NEndpoints(1)) u_ctr_pid_invalid(
+    .clk_i        (clk_i),
+    .rst_ni       (rst_ni),
+    .reset_i      (reg2hw.count_pid_invalid.rst.qe & reg2hw.count_pid_invalid.rst.q),
+    .event_i      (event_rx_pid_err),
+    .ep_i         (1'b0),
+    .endp_qe_i    (reg2hw.count_pid_invalid.enable.qe),
+    .endpoints_i  (reg2hw.count_pid_invalid.enable.q),
+    .endpoints_o  (hw2reg.count_pid_invalid.enable.d),
+    .count_o      (hw2reg.count_pid_invalid.count.d)
+  );
 
   /////////////////////////////////
   // Xprop assertions on outputs //

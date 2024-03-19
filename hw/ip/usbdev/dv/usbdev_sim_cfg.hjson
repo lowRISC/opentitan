@@ -74,6 +74,10 @@
       uvm_test_seq: usbdev_enable_vseq
     }
     {
+      name: usbdev_event_ctrs
+      uvm_test_seq: usbdev_event_ctrs_vseq
+    }
+    {
       name: usbdev_fifo_rst
       uvm_test_seq: usbdev_fifo_rst_vseq
     }

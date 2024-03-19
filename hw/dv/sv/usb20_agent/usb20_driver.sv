@@ -7,7 +7,10 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
 
   `uvm_component_new
 
-  int usb_rst_time = 100_000;  // upto 10ms
+  // Bus Reset signaling from a real physical host is required to be at least 10ms,
+  // but the USB device detects a bus reset after just 3us.
+  int usb_rst_time = 100; // may be up to 10ms,
+
   int usb_idle_clk_cycles = 5;
   bit [7:0] SYNC_PATTERN = 8'b1000_0000;
   bit [1:0] EOP = 2'b00;
@@ -318,6 +321,10 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     bit use_negedge;
     // TODO: DV should not be stealing access to the driver enable of the DUT and would ideally
     // be able to synchronize to just the USB_P/N signals are they are received.
+    //
+    // TODO: It will also be necessary to wait with timeout; the device should ordinarily respond
+    // within a limited, fixed timeout interval, but also the traffic may receive no response if it
+    // is not a valid packet directed to an endpoint at an address capable of handling it.
     `uvm_info(`gfn, "After drive Packet in wait to check usb_dp_en_o signal", UVM_DEBUG)
     wait(cfg.bif.usb_dp_en_o);
     // TODO: Operating on a div 4 clock is inherently fraught and runs into sampling problems;
