@@ -33,11 +33,11 @@ end
 
 always_comb begin
   if ( init_start ) begin
-    vcaon_pok_o <= 1'b0;
+    vcaon_pok_o = 1'b0;
   end else if ( !init_start && gen_supp_a ) begin
-    vcaon_pok_o <= #(ast_bhv_pkg::VCAON_POK_RDLY) gen_supp_a;
+    vcaon_pok_o = #(ast_bhv_pkg::VCAON_POK_RDLY) gen_supp_a;
   end else if ( !init_start && !gen_supp_a ) begin
-    vcaon_pok_o <= #(ast_bhv_pkg::VCAON_POK_FDLY) gen_supp_a;
+    vcaon_pok_o = #(ast_bhv_pkg::VCAON_POK_FDLY) gen_supp_a;
   end
 end
 `else

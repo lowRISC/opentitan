@@ -33,13 +33,13 @@ end
 
 always_comb (* xprop_off *) begin
   if ( init_start ) begin
-    vio_pok_o <= 1'b0;
+    vio_pok_o = 1'b0;
   end
   if ( !init_start && gen_supp_a ) begin
-    vio_pok_o <= #(ast_bhv_pkg::VIO_POK_RDLY) gen_supp_a;
+    vio_pok_o = #(ast_bhv_pkg::VIO_POK_RDLY) gen_supp_a;
   end
   if ( !init_start && !gen_supp_a ) begin
-    vio_pok_o <= #(ast_bhv_pkg::VIO_POK_FDLY) gen_supp_a;
+    vio_pok_o = #(ast_bhv_pkg::VIO_POK_FDLY) gen_supp_a;
   end
 end
 `else
