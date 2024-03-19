@@ -346,7 +346,7 @@
                 '''
           resval: "0"
         }
-        { bits: "4:3",
+        { bits: "5:3",
           name: "CMD_STS",
           desc: '''
                 This field represents the status code returned with the application command ack.
@@ -364,6 +364,9 @@
                 0x3: Request completed with an invalid counter drbg generation command error.
                      This error indicates that CSRNG entropy was generated for a command that is not a generate command.
                      In this case the entropy should not be considered as valid.
+                0x4: This error indicates that the last command was issued out of sequence.
+                     This happens when a command other than instantiate was issued without sending an instantiate command first.
+                     This can also happen when an uninstantiate command is sent without instantiating first.
                 '''
           resval: "0"
         }

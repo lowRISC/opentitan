@@ -176,6 +176,12 @@ typedef enum dif_csrng_cmd_sts_error {
    * generate command.
    */
   kDifCsrngCmdStsInvalidCtrDrbgCmd = 3,
+  /**
+   * Indicates that last command was not issued in sequence.
+   * E.g. an instantiate on an instantiated state or any command other than an
+   * instantiate on an uninstantiated state.
+   */
+  kDifCsrngCmdStsInvalidCmdSeq = 4,
 } dif_csrng_cmd_sts_t;
 
 /**

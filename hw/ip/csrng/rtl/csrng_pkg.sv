@@ -14,7 +14,7 @@ package csrng_pkg;
   parameter int unsigned FIPS_GENBITS_BUS_WIDTH = entropy_src_pkg::FIPS_BUS_WIDTH +
                          GENBITS_BUS_WIDTH;
   parameter int unsigned MainSmStateWidth = 8;
-  parameter int unsigned CSRNG_CMD_STS_WIDTH = 2;
+  parameter int unsigned CSRNG_CMD_STS_WIDTH = 3;
 
   // instantiation interface
   typedef struct packed {
@@ -24,10 +24,11 @@ package csrng_pkg;
   } csrng_req_t;
 
   typedef enum logic [CSRNG_CMD_STS_WIDTH-1:0] {
-    CMD_STS_SUCCESS              = 2'h0,
-    CMD_STS_INVALID_ACMD         = 2'h1,
-    CMD_STS_INVALID_STATE_PARAM  = 2'h2,
-    CMD_STS_INVALID_GEN_CMD      = 2'h3,
+    CMD_STS_SUCCESS              = 3'h0,
+    CMD_STS_INVALID_ACMD         = 3'h1,
+    CMD_STS_INVALID_STATE_PARAM  = 3'h2,
+    CMD_STS_INVALID_GEN_CMD      = 3'h3,
+    CMD_STS_INVALID_CMD_SEQ      = 3'h4,
     CMD_STS_UNDRIVEN             = 'z
   } csrng_cmd_sts_e;
 

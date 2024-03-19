@@ -136,6 +136,14 @@ class csrng_alert_vseq extends csrng_base_vseq;
     // Check recov_alert_sts register has cleared.
     csr_rd_check(.ptr(ral.recov_alert_sts), .compare_value(0));
 
+    // Write CSRNG Cmd_Req - Uninstantiate Command.
+    cs_item.acmd  = csrng_pkg::UNI;
+    cs_item.clen  = 'h0;
+    cs_item.flags = MuBi4True;
+    cs_item.glen  = 'h0;
+    `uvm_info(`gfn, $sformatf("%s", cs_item.convert2string()), UVM_DEBUG)
+    send_cmd_req(cfg.which_app_err_alert, cs_item);
+
     `uvm_info(`gfn, $sformatf("Testing cs_bus_cmp_alert"), UVM_MEDIUM)
 
     // Here we force CSRNG to generate two identical outputs to trigger a cs_bus_cmp_alert.
@@ -152,6 +160,14 @@ class csrng_alert_vseq extends csrng_base_vseq;
     cs_item.clen  = 'h0;
     cs_item.flags = MuBi4True;
     cs_item.glen  = 'h1;
+    `uvm_info(`gfn, $sformatf("%s", cs_item.convert2string()), UVM_DEBUG)
+    send_cmd_req(SW_APP, cs_item);
+
+    // Write CSRNG Cmd_Req - Uninstantiate Command.
+    cs_item.acmd  = csrng_pkg::UNI;
+    cs_item.clen  = 'h0;
+    cs_item.flags = MuBi4True;
+    cs_item.glen  = 'h0;
     `uvm_info(`gfn, $sformatf("%s", cs_item.convert2string()), UVM_DEBUG)
     send_cmd_req(SW_APP, cs_item);
 
@@ -216,13 +232,6 @@ class csrng_alert_vseq extends csrng_base_vseq;
     cfg.clk_rst_vif.wait_clks(100);
     ral.ctrl.enable.set(prim_mubi_pkg::MuBi4True);
     csr_update(.csr(ral.ctrl));
-
-    // The uninstantiate is not really needed. At the moment, it's mainly useful for coverage.
-    cs_item.acmd  = csrng_pkg::UNI;
-    cs_item.clen  = clen;
-    cs_item.flags = get_rand_mubi4_val(.t_weight(4), .f_weight(4), .other_weight(0));
-    cs_item.glen  = glen;
-    send_cmd_req(cfg.which_app_err_alert, cs_item, .await_response(1'b1));
 
     // Clear recov_alert_sts register.
     csr_wr(.ptr(ral.recov_alert_sts), .value(32'b0));

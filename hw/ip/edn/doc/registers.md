@@ -227,18 +227,18 @@ in the CSRNG documentation.
 EDN software command status register
 - Offset: `0x24`
 - Reset default: `0x0`
-- Reset mask: `0x1f`
+- Reset mask: `0x3f`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "CMD_REG_RDY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CMD_RDY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CMD_ACK", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CMD_STS", "bits": 2, "attr": ["ro"], "rotate": -90}, {"bits": 27}], "config": {"lanes": 1, "fontsize": 10, "vspace": 130}}
+{"reg": [{"name": "CMD_REG_RDY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CMD_RDY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CMD_ACK", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CMD_STS", "bits": 3, "attr": ["ro"], "rotate": -90}, {"bits": 26}], "config": {"lanes": 1, "fontsize": 10, "vspace": 130}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                    |
 |:------:|:------:|:-------:|:----------------------------------------|
-|  31:5  |        |         | Reserved                                |
-|  4:3   |   ro   |   0x0   | [CMD_STS](#sw_cmd_sts--cmd_sts)         |
+|  31:6  |        |         | Reserved                                |
+|  5:3   |   ro   |   0x0   | [CMD_STS](#sw_cmd_sts--cmd_sts)         |
 |   2    |   ro   |   0x0   | [CMD_ACK](#sw_cmd_sts--cmd_ack)         |
 |   1    |   ro   |   0x0   | [CMD_RDY](#sw_cmd_sts--cmd_rdy)         |
 |   0    |   ro   |   0x0   | [CMD_REG_RDY](#sw_cmd_sts--cmd_reg_rdy) |
@@ -273,18 +273,18 @@ This bit has to be polled before each word of a command is written to [`SW_CMD_R
 EDN hardware command status register
 - Offset: `0x28`
 - Reset default: `0x0`
-- Reset mask: `0x1ff`
+- Reset mask: `0x3ff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "BOOT_MODE", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "AUTO_MODE", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CMD_TYPE", "bits": 4, "attr": ["ro"], "rotate": -90}, {"name": "CMD_ACK", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CMD_STS", "bits": 2, "attr": ["ro"], "rotate": -90}, {"bits": 23}], "config": {"lanes": 1, "fontsize": 10, "vspace": 110}}
+{"reg": [{"name": "BOOT_MODE", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "AUTO_MODE", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CMD_TYPE", "bits": 4, "attr": ["ro"], "rotate": -90}, {"name": "CMD_ACK", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CMD_STS", "bits": 3, "attr": ["ro"], "rotate": -90}, {"bits": 22}], "config": {"lanes": 1, "fontsize": 10, "vspace": 110}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                |
 |:------:|:------:|:-------:|:------------------------------------|
-|  31:9  |        |         | Reserved                            |
-|  8:7   |   ro   |   0x0   | [CMD_STS](#hw_cmd_sts--cmd_sts)     |
+| 31:10  |        |         | Reserved                            |
+|  9:7   |   ro   |   0x0   | [CMD_STS](#hw_cmd_sts--cmd_sts)     |
 |   6    |   ro   |   0x0   | [CMD_ACK](#hw_cmd_sts--cmd_ack)     |
 |  5:2   |   ro   |   0x0   | [CMD_TYPE](#hw_cmd_sts--cmd_type)   |
 |   1    |   ro   |   0x0   | [AUTO_MODE](#hw_cmd_sts--auto_mode) |

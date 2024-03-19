@@ -160,12 +160,12 @@ module edn_reg_top (
   logic sw_cmd_sts_cmd_reg_rdy_qs;
   logic sw_cmd_sts_cmd_rdy_qs;
   logic sw_cmd_sts_cmd_ack_qs;
-  logic [1:0] sw_cmd_sts_cmd_sts_qs;
+  logic [2:0] sw_cmd_sts_cmd_sts_qs;
   logic hw_cmd_sts_boot_mode_qs;
   logic hw_cmd_sts_auto_mode_qs;
   logic [3:0] hw_cmd_sts_cmd_type_qs;
   logic hw_cmd_sts_cmd_ack_qs;
-  logic [1:0] hw_cmd_sts_cmd_sts_qs;
+  logic [2:0] hw_cmd_sts_cmd_sts_qs;
   logic reseed_cmd_we;
   logic [31:0] reseed_cmd_wd;
   logic generate_cmd_we;
@@ -685,11 +685,11 @@ module edn_reg_top (
     .qs     (sw_cmd_sts_cmd_ack_qs)
   );
 
-  //   F[cmd_sts]: 4:3
+  //   F[cmd_sts]: 5:3
   prim_subreg #(
-    .DW      (2),
+    .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (2'h0),
+    .RESVAL  (3'h0),
     .Mubi    (1'b0)
   ) u_sw_cmd_sts_cmd_sts (
     .clk_i   (clk_i),
@@ -822,11 +822,11 @@ module edn_reg_top (
     .qs     (hw_cmd_sts_cmd_ack_qs)
   );
 
-  //   F[cmd_sts]: 8:7
+  //   F[cmd_sts]: 9:7
   prim_subreg #(
-    .DW      (2),
+    .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (2'h0),
+    .RESVAL  (3'h0),
     .Mubi    (1'b0)
   ) u_hw_cmd_sts_cmd_sts (
     .clk_i   (clk_i),
@@ -1571,7 +1571,7 @@ module edn_reg_top (
         reg_rdata_next[0] = sw_cmd_sts_cmd_reg_rdy_qs;
         reg_rdata_next[1] = sw_cmd_sts_cmd_rdy_qs;
         reg_rdata_next[2] = sw_cmd_sts_cmd_ack_qs;
-        reg_rdata_next[4:3] = sw_cmd_sts_cmd_sts_qs;
+        reg_rdata_next[5:3] = sw_cmd_sts_cmd_sts_qs;
       end
 
       addr_hit[10]: begin
@@ -1579,7 +1579,7 @@ module edn_reg_top (
         reg_rdata_next[1] = hw_cmd_sts_auto_mode_qs;
         reg_rdata_next[5:2] = hw_cmd_sts_cmd_type_qs;
         reg_rdata_next[6] = hw_cmd_sts_cmd_ack_qs;
-        reg_rdata_next[8:7] = hw_cmd_sts_cmd_sts_qs;
+        reg_rdata_next[9:7] = hw_cmd_sts_cmd_sts_qs;
       end
 
       addr_hit[11]: begin
