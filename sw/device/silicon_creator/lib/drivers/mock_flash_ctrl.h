@@ -5,6 +5,7 @@
 #ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_MOCK_FLASH_CTRL_H_
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_MOCK_FLASH_CTRL_H_
 
+#include "gmock/gmock.h"
 #include "sw/device/lib/base/global_mock.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 
@@ -51,6 +52,22 @@ class MockFlashCtrl : public global_mock::GlobalMock<MockFlashCtrl> {
 
 using MockFlashCtrl = testing::StrictMock<internal::MockFlashCtrl>;
 using NiceMockFlashCtrl = testing::NiceMock<internal::MockFlashCtrl>;
+
+MATCHER_P3(FlashPerms, read, write, erase, "") {
+  return ::testing::Value(
+      arg,
+      ::testing::AllOf(::testing::Field(&flash_ctrl_perms_t::read, read),
+                       ::testing::Field(&flash_ctrl_perms_t::write, write),
+                       ::testing::Field(&flash_ctrl_perms_t::erase, erase)));
+}
+
+MATCHER_P3(FlashCfg, scrambling, ecc, he, "") {
+  return ::testing::Value(
+      arg, ::testing::AllOf(
+               ::testing::Field(&flash_ctrl_cfg_t::scrambling, scrambling),
+               ::testing::Field(&flash_ctrl_cfg_t::ecc, ecc),
+               ::testing::Field(&flash_ctrl_cfg_t::he, he)));
+}
 
 }  // namespace rom_test
 
