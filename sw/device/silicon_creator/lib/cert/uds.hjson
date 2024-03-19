@@ -62,7 +62,7 @@
         // Debug (whether LC state exposes JTAG access or not).
         debug_flag: {
             type: "boolean",
-        }
+        },
         // Certificate signature: the result of signing with ECDSA
         // are two integers named "r" and "s"
         cert_signature_r: {
@@ -72,7 +72,7 @@
         cert_signature_s: {
             type: "integer",
             size: 32,
-        },
+        }
     },
 
     certificate: {
