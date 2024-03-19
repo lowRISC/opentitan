@@ -22,6 +22,7 @@ cc_library(
     name = "datatypes",
     hdrs = ["datatypes.h"],
     deps = [
+        "//sw/device/lib/base:bitfield",
         "//sw/device/silicon_creator/lib/sigverify:ecdsa_p256_key",
         "//sw/device/silicon_creator/lib/sigverify:rsa_key",
         "//sw/device/silicon_creator/lib/sigverify:spx_key",
@@ -95,6 +96,36 @@ cc_library(
         ":ecdsa",
         ":ownership_key",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+    ],
+)
+
+cc_library(
+    name = "owner_block",
+    srcs = ["owner_block.c"],
+    hdrs = ["owner_block.h"],
+    deps = [
+        ":datatypes",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/silicon_creator/lib:boot_data",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+    ],
+)
+
+cc_test(
+    name = "owner_block_unittest",
+    srcs = [
+        "owner_block_unittest.cc",
+        "testdata/basic_owner_testdata.h",
+    ],
+    deps = [
+        ":datatypes",
+        ":owner_block",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/testing:binary_blob",
+        "//sw/device/silicon_creator/lib:boot_data",
+        "//sw/device/silicon_creator/testing:rom_test",
+        "@googletest//:gtest_main",
     ],
 )
 

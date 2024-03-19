@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/sigverify/ecdsa_p256_key.h"
 #include "sw/device/silicon_creator/lib/sigverify/rsa_key.h"
@@ -66,6 +67,8 @@ typedef enum tlv_tag {
   kTlvTagInfoConfig = 0x4f464e49,
   /** Rescue Configuration: `RESQ`. */
   kTlvTagRescueConfig = 0x51534552,
+  /** Not Present: `ZZZZ`. */
+  kTlvTagNotPresent = 0x5a5a5a5a,
 } tlv_tag_t;
 
 typedef struct tlv_header {
@@ -179,16 +182,23 @@ OT_ASSERT_MEMBER_OFFSET(owner_application_key_t, usage_constraint, 44);
 OT_ASSERT_MEMBER_OFFSET(owner_application_key_t, data, 48);
 OT_ASSERT_SIZE(owner_application_key_t, 464);
 
-typedef enum owner_flash_property {
-  kOwnerFlashPropertyRead = 0x00000001,
-  kOwnerFlashPropertyProgram = 0x00000002,
-  kOwnerFlashPropertyErase = 0x00000004,
-  kOwnerFlashPropertyScramble = 0x00000008,
-  kOwnerFlashPropertyEcc = 0x00000010,
-  kOwnerFlashPropertyHighEndurance = 0x00000020,
-  kOwnerFlashPropertyProtectWhenPrimary = 0x40000000,
-  kOwnerFlashPropertyLock = 0x80000000,
-} owner_flash_property_t;
+// clang-format off
+/**
+ * Bitfields for the `access` word of flash region configs.
+ */
+#define FLASH_CONFIG_READ                 ((bitfield_field32_t) { .mask = 0xF, .index = 0 })
+#define FLASH_CONFIG_PROGRAM              ((bitfield_field32_t) { .mask = 0xF, .index = 4 })
+#define FLASH_CONFIG_ERASE                ((bitfield_field32_t) { .mask = 0xF, .index = 8 })
+#define FLASH_CONFIG_PROTECT_WHEN_PRIMARY ((bitfield_field32_t) { .mask = 0xF, .index = 24 })
+#define FLASH_CONFIG_LOCK                 ((bitfield_field32_t) { .mask = 0xF, .index = 28 })
+
+/**
+ * Bitfields for the `properties` word of flash region configs.
+ */
+#define FLASH_CONFIG_SCRAMBLE             ((bitfield_field32_t) { .mask = 0xF, .index = 0 })
+#define FLASH_CONFIG_ECC                  ((bitfield_field32_t) { .mask = 0xF, .index = 4 })
+#define FLASH_CONFIG_HIGH_ENDURANCE       ((bitfield_field32_t) { .mask = 0xF, .index = 8 })
+// clang-format on
 
 /**
  * The owner flash region describes a region of flash and its configuration
@@ -199,10 +209,12 @@ typedef struct owner_flash_region {
   uint16_t start;
   /** The size of the region, in flash pages. */
   uint16_t size;
-  /** The properties of the flash region. */
+  /** The access properties of the flash region. */
+  uint32_t access;
+  /** The flash properties of the flash region. */
   uint32_t properties;
 } owner_flash_region_t;
-OT_ASSERT_SIZE(owner_flash_region_t, 8);
+OT_ASSERT_SIZE(owner_flash_region_t, 12);
 
 /**
  * The owner flash config is a collection of owner region configuration items.
@@ -211,10 +223,14 @@ typedef struct owner_flash_config {
   /**
    * Header identifiying this struct.
    * tag: `FLSH`.
-   * length: 8 + 8 * length(config).
+   * length: 8 + 12 * length(config).
    */
   tlv_header_t header;
-  /** A list of flash region configurations. */
+  /**
+   * A list of flash region configurations.
+   * In each `config` item, the `access` and `properties` fields are xor-ed
+   * with the region index in each nibble (ie: index 1 == 0x11111111).
+   */
   owner_flash_region_t config[];
 } owner_flash_config_t;
 OT_ASSERT_MEMBER_OFFSET(owner_flash_config_t, header, 0);
@@ -231,19 +247,25 @@ typedef struct owner_info_page {
   /** The info page number. */
   uint8_t page;
   uint16_t _pad;
-  /** The properties of the info page. */
+  /** The access properties of the flash region. */
+  uint32_t access;
+  /** The flash properties of the flash region. */
   uint32_t properties;
 } owner_info_page_t;
-OT_ASSERT_SIZE(owner_info_page_t, 8);
+OT_ASSERT_SIZE(owner_info_page_t, 12);
 
 typedef struct owner_flash_info_config {
   /**
    * Header identifiying this struct.
    * tag: `INFO`.
-   * length: 8 + 8 * length(config).
+   * length: 8 + 12 * length(config).
    */
   tlv_header_t header;
-  /** A list of flash info page configurations. */
+  /**
+   * A list of flash info page configurations.
+   * In each `config` item, the `access` and `properties` fields are xor-ed
+   * with the region index in each nibble (ie: index 1 == 0x11111111).
+   */
   owner_info_page_t config[];
 } owner_flash_info_config_t;
 OT_ASSERT_MEMBER_OFFSET(owner_flash_info_config_t, header, 0);
