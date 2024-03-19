@@ -94,22 +94,39 @@ static void check_alert_state(dif_toggle_t fatal) {
 /**
  *  First configure fatality of the desired event.
  *  Then trigger the event from sensor_ctrl to ast.
+ *  Do this with the alert disabled and make sure there is no fault, and
+ *  then enable it and expect a fault.
  *  Next poll for setting of correct events inside sensor_ctrl status.
- *  When a recoverable event is triggerd, make sure only recoverable
+ *  When a recoverable event is triggered, make sure only recoverable
  *  status is seen, likewise for fatal events.
  *  Finally, check for correct capture of cause in alert handler.
  */
 static void test_event(uint32_t idx, dif_toggle_t fatal) {
-  // Enable the alert on the sensor_ctrl side
-  CHECK_DIF_OK(
-      dif_sensor_ctrl_set_alert_en(&sensor_ctrl, idx, kDifToggleEnabled));
-
   // Configure event fatality
   CHECK_DIF_OK(dif_sensor_ctrl_set_alert_fatal(&sensor_ctrl, idx, fatal));
+
+  LOG_INFO("Testing alert %d masked off", idx);
+  // Disable the alert on the sensor_ctrl side
+  CHECK_DIF_OK(
+      dif_sensor_ctrl_set_alert_en(&sensor_ctrl, idx, kDifToggleDisabled));
 
   // Trigger event
   CHECK_DIF_OK(dif_sensor_ctrl_set_ast_event_trigger(&sensor_ctrl, idx,
                                                      kDifToggleEnabled));
+
+  // There should be no fault so we cannot wait for CSR updates.
+  busy_spin_micros(20);
+
+  dif_sensor_ctrl_events_t events = 0;
+  CHECK_DIF_OK(dif_sensor_ctrl_get_recov_events(&sensor_ctrl, &events));
+  CHECK(events == 0, "Event is disabled, so we expect no recoverable faults");
+  CHECK_DIF_OK(dif_sensor_ctrl_get_fatal_events(&sensor_ctrl, &events));
+  CHECK(events == 0, "Event is disabled, so we expect no fatal faults");
+
+  LOG_INFO("Testing alert %d %s masked on", idx, fatal ? "fatal" : "recov");
+  // Enable the alert on the sensor_ctrl side
+  CHECK_DIF_OK(
+      dif_sensor_ctrl_set_alert_en(&sensor_ctrl, idx, kDifToggleEnabled));
 
   // wait for events to set
   IBEX_SPIN_FOR(get_events(fatal) > 0, 1);

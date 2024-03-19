@@ -418,28 +418,16 @@
       lc_states: ["PROD"]
       tests: ["chip_sw_usb_ast_clk_calib"]
     }
-    {
-      name: chip_sw_ast_alerts
-      desc: '''Verify the alerts from AST aggregating into the sensor_ctrl.
-
-             X-ref'ed with `chip_sensor_ctrl_ast_alerts`.
-             '''
-      stage: V2
-      si_stage: NA
-      tests: ["chip_sw_sensor_ctrl_alert"]
-    }
 
     // SENSOR_CTRL tests:
     {
       name: chip_sw_sensor_ctrl_ast_alerts
       desc: '''Verify the alerts from AST aggregating into the sensor_ctrl.
 
-               Check that AST events can be triggered from sensor_ctrl and that
-               the resulting AST outputs are observed in both sensor_ctrl and
-               the alert_handler.
-
-               For the alert handler case, make sure to test each alert configured
-               as either recoverable or fatal.
+               Check that each AST event can be triggered from sensor_ctrl.
+               Configure alert handler to reset for both fatal and recoverable
+               alerts. Configure each alert source as fatal or recoverable,
+               and as enabled or disabled checking against resets.
              '''
       stage: V2
       si_stage: SV3
