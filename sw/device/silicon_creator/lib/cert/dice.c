@@ -9,6 +9,7 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/testing/json/provisioning_data.h"
+#include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/silicon_creator/lib/attestation.h"
 #include "sw/device/silicon_creator/lib/attestation_key_diversifiers.h"
 #include "sw/device/silicon_creator/lib/cert/cdi_0.h"  // Generated.
@@ -118,9 +119,23 @@ static void curr_tbs_signature_le_to_be_convert(void) {
  */
 static status_t measure_otp_partition(otp_partition_t partition,
                                       hmac_digest_t *measurement) {
+  // Compute the digest.
   otp_dai_read(partition, /*address=*/0, otp_state,
                kOtpPartitions[partition].size / sizeof(uint32_t));
   hmac_sha256(otp_state, kOtpPartitions[partition].size, measurement);
+
+  // Check the digest matches what is stored in OTP.
+  // TODO(#21554): remove this conditional once the root keys and key policies
+  // have been provisioned. Until then, these partitions have not been locked.
+  if (partition == kOtpPartitionCreatorSwCfg ||
+      partition == kOtpPartitionOwnerSwCfg) {
+    uint64_t expected_digest = otp_partition_digest_read(partition);
+    uint32_t digest_hi = expected_digest >> 32;
+    uint32_t digest_lo = expected_digest & UINT32_MAX;
+    TRY_CHECK(digest_hi == measurement->digest[1]);
+    TRY_CHECK(digest_lo == measurement->digest[0]);
+  }
+
   return OK_STATUS();
 }
 
@@ -128,7 +143,6 @@ status_t dice_uds_cert_build(manuf_certgen_inputs_t *inputs,
                              hmac_digest_t *uds_pubkey_id, uint8_t *tbs_cert,
                              size_t *tbs_cert_size) {
   // Measure OTP partitions.
-  // TODO(#19455): check against digests present in the OTP digest field.
   hmac_digest_t otp_creator_sw_cfg_measurement = {.digest = {0}};
   hmac_digest_t otp_owner_sw_cfg_measurement = {.digest = {0}};
   hmac_digest_t otp_rot_creator_auth_codesign_measurement = {.digest = {0}};
