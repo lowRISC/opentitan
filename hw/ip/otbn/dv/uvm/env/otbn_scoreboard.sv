@@ -400,8 +400,18 @@ class otbn_scoreboard extends cip_base_scoreboard #(
             pending_start_tl_trans = 1'b0;
           end
 
-          // Has the status changed to locked? This should be accompanied by a fatal alert
-          if (item.status == otbn_pkg::StatusLocked) begin
+          // Has the status changed to locked? This should be accompanied by a fatal alert unless
+          // an RMA request has been handled successfully, i.e., without seeing any fatal alert
+          // condition.
+          if (item.status == otbn_pkg::StatusLocked &&
+              (item.err_bits.fatal_software       ||
+               item.err_bits.lifecycle_escalation ||
+               item.err_bits.illegal_bus_access   ||
+               item.err_bits.bad_internal_state   ||
+               item.err_bits.bus_intg_violation   ||
+               item.err_bits.reg_intg_violation   ||
+               item.err_bits.dmem_intg_violation  ||
+               item.err_bits.imem_intg_violation)) begin
             expect_alert("fatal");
           end
           // Has the status changed from executing to idle with a nonzero err_bits?
