@@ -10,7 +10,7 @@
 
 `include "axi/typedef.svh"
 
-module secure_subsystem_synth_wrap_astral
+module security_island
    import axi_pkg::*;
    import jtag_ot_pkg::*;
    import tlul2axi_pkg::*;
@@ -103,7 +103,7 @@ module secure_subsystem_synth_wrap_astral
    input logic  [LogDepth:0]              async_idma_axi_out_r_wptr_i,
    output logic [LogDepth:0]              async_idma_axi_out_r_rptr_o,
    // Axi Isolate
-   input  logic [1:0]                    axi_isolate_i,
+   input  logic                          axi_isolate_i,
    output logic [1:0]                    axi_isolated_o,
    // Interrupt signal
    input logic                           irq_ibex_i,
@@ -248,7 +248,7 @@ module secure_subsystem_synth_wrap_astral
    ) i_isolate_sync_tlul2axi (
      .clk_i,
      .rst_ni   ( pwr_on_rst_ni       ),
-     .serial_i ( axi_isolate_i[0]    ),
+     .serial_i ( axi_isolate_i       ),
      .serial_o ( axi_isolate_sync[0] )
    );
 
@@ -258,7 +258,7 @@ module secure_subsystem_synth_wrap_astral
    ) i_isolate_sync_idma (
      .clk_i,
      .rst_ni   ( pwr_on_rst_ni       ),
-     .serial_i ( axi_isolate_i[1]    ),
+     .serial_i ( axi_isolate_i       ),
      .serial_o ( axi_isolate_sync[1] )
    );
 

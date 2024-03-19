@@ -309,11 +309,8 @@ module testbench_asynch_astral ();
 
 /////////////////////////////// DUT ///////////////////////////////
 
-`ifndef NETLIST
-   secure_subsystem_synth_wrap_astral dut (
-`else
+
    security_island dut (
-`endif
        .clk_i            ( clk_sys       ),
        .clk_ref_i        ( clk_sys       ),
        .rst_ni           ( rst_sys_n     ),
