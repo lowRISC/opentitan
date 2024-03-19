@@ -306,8 +306,8 @@ module i2c_reg_top (
   logic target_timeout_ctrl_en_qs;
   logic target_timeout_ctrl_en_wd;
   logic target_nack_count_re;
-  logic [31:0] target_nack_count_qs;
-  logic [31:0] target_nack_count_wd;
+  logic [7:0] target_nack_count_qs;
+  logic [7:0] target_nack_count_wd;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -2867,9 +2867,9 @@ module i2c_reg_top (
 
   // R[target_nack_count]: V(False)
   prim_subreg #(
-    .DW      (32),
+    .DW      (8),
     .SwAccess(prim_subreg_pkg::SwAccessRC),
-    .RESVAL  (32'h0),
+    .RESVAL  (8'h0),
     .Mubi    (1'b0)
   ) u_target_nack_count (
     .clk_i   (clk_i),
@@ -3371,7 +3371,7 @@ module i2c_reg_top (
       end
 
       addr_hit[26]: begin
-        reg_rdata_next[31:0] = target_nack_count_qs;
+        reg_rdata_next[7:0] = target_nack_count_qs;
       end
 
       default: begin

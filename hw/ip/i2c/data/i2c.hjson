@@ -696,11 +696,12 @@
             Number of times the I2C target has NACK'ed a new transaction since the last read of this register.
             Reading this register clears it.
             This is useful because when the ACQ FIFO is full the software know that a NACK has occurred, but without this register would not know how many transactions it missed.
+            When it reaches its maximum value it will stay at that value.
             '''
       swaccess: "rc"
       hwaccess: "hrw"
       fields: [
-        { bits: "31:0" }
+        { bits: "7:0" }
       ]
     }
   ]
