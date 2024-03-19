@@ -61,10 +61,10 @@ module top_${top["name"]} #(
     p_rhs = p_exp['default']
 %>\
     % if 12 + len(p_lhs) + 3 + len(p_rhs) + 1 < 100:
-  parameter ${p_lhs} = ${p_rhs}${"" if loop.parent.last & loop.last else ","}
+  parameter ${p_lhs} = ${p_rhs}${"" if loop.last & lib.is_last_module_with_params(top, loop.parent.index) else ","}
     % else:
   parameter ${p_lhs} =
-      ${p_rhs}${"" if loop.parent.last & loop.last else ","}
+      ${p_rhs}${"" if loop.last & lib.is_last_module_with_params(top, loop.parent.index) else ","}
     % endif
   % endfor
 % endfor

@@ -244,6 +244,12 @@ def get_pad_list(padstr):
     return pads
 
 
+def is_last_module_with_params(top, idx):
+    modules_after = top["module"][idx + 1:]
+    num_params = sum(len(m["param_list"]) for m in modules_after)
+    return num_params == 0
+
+
 # Template functions
 def ljust(x, width):
     return "{:<{width}}".format(x, width=width)
