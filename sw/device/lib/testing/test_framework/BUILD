@@ -281,6 +281,7 @@ cc_library(
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing/json:ottf",
         "//sw/device/lib/ujson",
     ],
 )

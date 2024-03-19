@@ -21,7 +21,7 @@ volatile uint32_t kEndTest;
 status_t command_processor(ujson_t *uj) {
   while (!kEndTest) {
     test_command_t command;
-    TRY(ujson_deserialize_test_command_t(uj, &command));
+    TRY(UJSON_WITH_CRC(ujson_deserialize_test_command_t, uj, &command));
     status_t status = ujson_ottf_dispatch(uj, command);
     if (status_err(status) == kUnimplemented) {
       RESP_ERR(uj, status);
