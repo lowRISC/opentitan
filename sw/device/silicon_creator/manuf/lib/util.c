@@ -74,23 +74,30 @@ status_t manuf_util_hash_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
 
   switch (partition) {
     case kDifOtpCtrlPartitionVendorTest: {
-      uint32_t vendor_test_32bit_array[OTP_CTRL_PARAM_VENDOR_TEST_SIZE /
-                                       sizeof(uint32_t)];
+      uint32_t
+          vendor_test_32bit_array[(OTP_CTRL_PARAM_VENDOR_TEST_SIZE -
+                                   OTP_CTRL_PARAM_VENDOR_TEST_DIGEST_SIZE) /
+                                  sizeof(uint32_t)];
 
       TRY(otp_ctrl_testutils_dai_read32_array(
           otp_ctrl, kDifOtpCtrlPartitionVendorTest, 0, vendor_test_32bit_array,
-          OTP_CTRL_PARAM_VENDOR_TEST_SIZE / sizeof(uint32_t)));
+          (OTP_CTRL_PARAM_VENDOR_TEST_SIZE -
+           OTP_CTRL_PARAM_VENDOR_TEST_DIGEST_SIZE) /
+              sizeof(uint32_t)));
       otcrypto_const_byte_buf_t input = {
           .data = (unsigned char *)vendor_test_32bit_array,
-          .len = OTP_CTRL_PARAM_VENDOR_TEST_SIZE,
+          .len = OTP_CTRL_PARAM_VENDOR_TEST_SIZE -
+                 OTP_CTRL_PARAM_VENDOR_TEST_DIGEST_SIZE,
       };
       TRY(otcrypto_hash(input, digest));
     } break;
     case kDifOtpCtrlPartitionCreatorSwCfg: {
       otcrypto_const_byte_buf_t input = {
           .data = (unsigned char *)(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR +
-                                    OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET),
-          .len = OTP_CTRL_PARAM_CREATOR_SW_CFG_SIZE,
+                                    OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
+                                    OTP_CTRL_PARAM_CREATOR_SW_CFG_OFFSET),
+          .len = OTP_CTRL_PARAM_CREATOR_SW_CFG_SIZE -
+                 OTP_CTRL_PARAM_CREATOR_SW_CFG_DIGEST_SIZE,
       };
       TRY(otcrypto_hash(input, digest));
     } break;
@@ -98,8 +105,9 @@ status_t manuf_util_hash_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
       otcrypto_const_byte_buf_t input = {
           .data = (unsigned char *)(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR +
                                     OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
-                                    OTP_CTRL_PARAM_CREATOR_SW_CFG_SIZE),
-          .len = OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE,
+                                    OTP_CTRL_PARAM_OWNER_SW_CFG_OFFSET),
+          .len = OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE -
+                 OTP_CTRL_PARAM_OWNER_SW_CFG_DIGEST_SIZE,
       };
       TRY(otcrypto_hash(input, digest));
     } break;
