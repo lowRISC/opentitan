@@ -66,18 +66,17 @@ class pwrmgr_lowpower_wakeup_race_vseq extends pwrmgr_base_vseq;
       low_power_hint = 1'b1;
       update_control_csr();
 
-      wait_for_csr_to_propagate_to_slow_domain();
       set_nvms_idle();
 
       // This will send the wakeup and trigger low power entry so they almost coincide.
       fork
         begin
-          cfg.clk_rst_vif.wait_clks(cycles_before_transition);
+          cfg.slow_clk_rst_vif.wait_clks(cycles_before_transition);
           // Initiate low power transition.
           cfg.pwrmgr_vif.update_cpu_sleeping(1'b1);
         end
         begin
-          cfg.clk_rst_vif.wait_clks(cycles_before_early_wakeup);
+          cfg.slow_clk_rst_vif.wait_clks(cycles_before_early_wakeup);
           // Send the wakeups.
           cfg.pwrmgr_vif.update_wakeups(wakeups);
         end

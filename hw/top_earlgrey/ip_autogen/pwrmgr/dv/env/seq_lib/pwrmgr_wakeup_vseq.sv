@@ -38,7 +38,10 @@ class pwrmgr_wakeup_vseq extends pwrmgr_base_vseq;
       enabled_wakeups = wakeups_en & wakeups;
       `DV_CHECK(enabled_wakeups, $sformatf(
                 "Some wakeup must be enabled: wkups=%b, wkup_en=%b", wakeups, wakeups_en))
-      `uvm_info(`gfn, $sformatf("Enabled wakeups=0x%x", enabled_wakeups), UVM_MEDIUM)
+      `uvm_info(`gfn, $sformatf(
+                "Enabled wakeups=0x%x, wakeups=0x%x, enables=0x%x",
+                enabled_wakeups, wakeups, wakeups_en),
+                UVM_MEDIUM)
       csr_wr(.ptr(ral.wakeup_en[0]), .value(wakeups_en));
 
       if (keep_prior_wake_info) begin
@@ -65,8 +68,6 @@ class pwrmgr_wakeup_vseq extends pwrmgr_base_vseq;
       low_power_hint = 1'b1;
       update_control_csr();
 
-      wait_for_csr_to_propagate_to_slow_domain();
-
       // Initiate low power transition.
       cfg.pwrmgr_vif.update_cpu_sleeping(1'b1);
       set_nvms_idle();
@@ -76,7 +77,7 @@ class pwrmgr_wakeup_vseq extends pwrmgr_base_vseq;
       end
 
       // Now bring it back.
-      cfg.clk_rst_vif.wait_clks(cycles_before_wakeup);
+      cfg.slow_clk_rst_vif.wait_clks(cycles_before_wakeup);
       cfg.pwrmgr_vif.update_wakeups(wakeups);
       // Check wake_status prior to wakeup, or the unit requesting wakeup will have been reset.
       // This read will not work in the chip, since the processor will be asleep.
