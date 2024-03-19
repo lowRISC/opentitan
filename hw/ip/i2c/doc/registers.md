@@ -579,19 +579,21 @@ When the target has stretched beyond this time it will send a NACK.
 Number of times the I2C target has NACK'ed a new transaction since the last read of this register.
 Reading this register clears it.
 This is useful because when the ACQ FIFO is full the software know that a NACK has occurred, but without this register would not know how many transactions it missed.
+When it reaches its maximum value it will stay at that value.
 - Offset: `0x68`
 - Reset default: `0x0`
-- Reset mask: `0xffffffff`
+- Reset mask: `0xff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "TARGET_NACK_COUNT", "bits": 32, "attr": ["rc"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "TARGET_NACK_COUNT", "bits": 8, "attr": ["rc"], "rotate": -90}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 190}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name              | Description   |
 |:------:|:------:|:-------:|:------------------|:--------------|
-|  31:0  |   rc   |   0x0   | TARGET_NACK_COUNT |               |
+|  31:8  |        |         |                   | Reserved      |
+|  7:0   |   rc   |   0x0   | TARGET_NACK_COUNT |               |
 
 
 <!-- END CMDGEN -->
