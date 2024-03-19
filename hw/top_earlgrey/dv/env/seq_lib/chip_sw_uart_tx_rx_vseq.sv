@@ -7,8 +7,8 @@ class chip_sw_uart_tx_rx_vseq extends chip_sw_uart_smoke_vseq;
 
   `uvm_object_new
 
-  localparam uint UART_DATASET_SIZE = 128;
-  localparam uint UART_RX_FIFO_SIZE = 128;
+  localparam uint UART_DATASET_SIZE = 64;
+  localparam uint UART_RX_FIFO_SIZE = 64;
 
   // A set of bytes expected to be received on TX.
   rand bit [7:0] exp_uart_tx_data[];
