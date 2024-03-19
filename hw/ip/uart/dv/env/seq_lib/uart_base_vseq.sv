@@ -102,9 +102,8 @@ class uart_base_vseq extends cip_base_vseq #(.CFG_T               (uart_env_cfg)
       `DV_CHECK_RANDOMIZE_FATAL(ral.timeout_ctrl.en)
       csr_update(ral.timeout_ctrl);
 
-      `DV_CHECK_RANDOMIZE_FATAL(ral.fifo_ctrl.rxilvl)
-      `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.fifo_ctrl.txilvl,
-                                     value <= 6;)
+      `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.fifo_ctrl.rxilvl, value <=  $clog2(RxFifoDepth);)
+      `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.fifo_ctrl.txilvl, value <= ($clog2(TxFifoDepth) - 1);)
       csr_update(ral.fifo_ctrl);
     end
   endtask
