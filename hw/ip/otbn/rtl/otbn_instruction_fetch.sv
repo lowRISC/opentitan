@@ -333,28 +333,36 @@ module otbn_instruction_fetch
     end else if (insn_prefetch_fail) begin
       // When prefetching has failed prefetch the requested address
       imem_addr_o = insn_fetch_req_addr_i;
-    end else if (insn_is_branch(imem_rdata_i[31:0])) begin
-      // For a branch we do not know if it will be taken or untaken. So never prefetch to keep
-      // timing consistent regardless of taken/not-taken. This also applies to jumps, this avoids
-      // the need to calculate the jump address here.
-      //
-      // For x-prop reasons we do not suppress the imem_req_o here. When OTBN executes an
-      // instruction that produces a software error it comes to an immediate halt. However only the
-      // raw fetch request is considered here for timing reasons. So if the instruction following
-      // the error causing instruction is X in simulation the `insn_is_branch` sees an X here
-      // which would result in imem_req_o going X (using simulator options that enable X prop for
-      // if statements). This is turn causes an assertion failure.
-      //
-      // The imem_rvalid_kill signal is used to avoid the X prop issue. This suppresses the
-      // imem_rvalid signal the following cycle. Whilst imem_rvalid_kill itself will go X if
-      // imem_rdata_i is X, as OTBN has halted following the error this doesn't cause a problem.
-      imem_rvalid_kill_d = 1'b1;
-      insn_prefetch      = 1'b0;
-    end else if ({1'b0, insn_prefetch_addr} == prefetch_loop_end_addr_i &&
-                 prefetch_loop_active_i &&
-                 prefetch_loop_iterations_i > 32'd1) begin
-      // When in a loop prefetch the loop beginning when execution reaches the end.
-      imem_addr_o = prefetch_loop_jump_addr_i;
+    end else begin
+      if ({1'b0, insn_prefetch_addr} == prefetch_loop_end_addr_i &&
+          prefetch_loop_active_i &&
+          prefetch_loop_iterations_i > 32'd1) begin
+        // When in a loop prefetch the loop beginning when execution reaches the end.
+        imem_addr_o = prefetch_loop_jump_addr_i;
+      end
+
+      // It is important this if doesn't take priority over others in this block. If it does then
+      // when `imem_rdata_i` is unknown `imem_addr_o` becomes unknown when running a simulation that
+      // propagates X through if. In hardware terms this means there isn't a combinational path from
+      // `imem_rdata_i` and `imem_addr_o`. This may be useful for timing purposes as well.
+      if (insn_is_branch(imem_rdata_i[31:0])) begin
+        // For a branch we do not know if it will be taken or untaken. So never prefetch to keep
+        // timing consistent regardless of taken/not-taken. This also applies to jumps, this avoids
+        // the need to calculate the jump address here.
+        //
+        // For x-prop reasons we do not suppress the imem_req_o here. When OTBN executes an
+        // instruction that produces a software error it comes to an immediate halt. However only
+        // the raw fetch request is considered here for timing reasons. So if the instruction
+        // following the error causing instruction is X in simulation the `insn_is_branch` sees an
+        // X here which would result in imem_req_o going X (using simulator options that enable
+        // X prop for if statements). This is turn causes an assertion failure.
+        //
+        // The imem_rvalid_kill signal is used to avoid the X prop issue. This suppresses the
+        // imem_rvalid signal the following cycle. Whilst imem_rvalid_kill itself will go X if
+        // imem_rdata_i is X, as OTBN has halted following the error this doesn't cause a problem.
+        imem_rvalid_kill_d = 1'b1;
+        insn_prefetch      = 1'b0;
+      end
     end
   end
 
