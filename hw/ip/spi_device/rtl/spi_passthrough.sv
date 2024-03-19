@@ -618,6 +618,9 @@ module spi_passthrough
   logic [3:0] half_cycle_sampled_sd;
   logic [3:0] read_pipeline_stg1_d, read_pipeline_stg1_q;
   logic [3:0] read_pipeline_stg2_d, read_pipeline_stg2_q;
+  logic [3:0] host_s_en_muxed;
+  logic [3:0] read_pipeline_oe_stg1_d, read_pipeline_oe_stg1_q;
+  logic [3:0] read_pipeline_oe_stg2_d, read_pipeline_oe_stg2_q;
 
   // Sample on the ordinary capture edge, in case half-cycle sampling is
   // selected. This flop samples data that is to be prepared for a later
@@ -657,30 +660,57 @@ module spi_passthrough
     .q_o       (read_pipeline_stg2_q)
   );
 
+  prim_flop #(
+    .Width         ($bits(read_pipeline_oe_stg1_d)),
+    .ResetValue    ('0)
+  ) u_read_pipe_oe_stg1 (
+    .clk_i     (clk_out_i),
+    .rst_ni,
+    .d_i       (read_pipeline_oe_stg1_d),
+    .q_o       (read_pipeline_oe_stg1_q)
+  );
+
+  prim_flop #(
+    .Width         ($bits(read_pipeline_oe_stg2_d)),
+    .ResetValue    ('0)
+  ) u_read_pipe_oe_stg2 (
+    .clk_i     (clk_out_i),
+    .rst_ni,
+    .d_i       (read_pipeline_oe_stg2_d),
+    .q_o       (read_pipeline_oe_stg2_q)
+  );
+
   always_comb begin
     host_s_o = passthrough_i.s;
     read_pipeline_stg2_d = read_pipeline_stg1_q;
     read_pipeline_stg1_d = half_cycle_sampled_sd;
 
+    host_s_en_muxed = host_s_en_inclk;
+    read_pipeline_oe_stg2_d = read_pipeline_oe_stg1_q;
+    read_pipeline_oe_stg1_d = host_s_en_inclk;
+
     unique case (cmd_info.read_pipeline_mode)
       RdPipeTwoStageFullCycle: begin
         host_s_o = read_pipeline_stg2_q;
         read_pipeline_stg1_d = passthrough_i.s;
+        host_s_en_muxed = read_pipeline_oe_stg2_q;
       end
       RdPipeTwoStageHalfCycle: begin
         host_s_o = read_pipeline_stg2_q;
         read_pipeline_stg1_d = half_cycle_sampled_sd;
+        host_s_en_muxed = read_pipeline_oe_stg2_q;
       end
       default: begin
         host_s_o = passthrough_i.s;
         read_pipeline_stg1_d = half_cycle_sampled_sd;
+        host_s_en_muxed = host_s_en_inclk;
       end
     endcase
   end
 
   always_ff @(posedge clk_out_i or negedge rst_ni) begin
     if (!rst_ni) host_s_en_o <= '0; // input mode
-    else         host_s_en_o <= host_s_en_inclk;
+    else         host_s_en_o <= host_s_en_muxed;
   end
 
   logic pt_gated_sck;
