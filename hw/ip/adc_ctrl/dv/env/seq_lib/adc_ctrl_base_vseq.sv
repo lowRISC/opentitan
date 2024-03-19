@@ -102,7 +102,6 @@ class adc_ctrl_base_vseq extends cip_base_vseq #(
     ral.adc_pd_ctl.wakeup_time.set(cfg.wakeup_time);
     csr_wr(ral.adc_pd_ctl, ral.adc_pd_ctl.get());
 
-
   endtask
 
   //

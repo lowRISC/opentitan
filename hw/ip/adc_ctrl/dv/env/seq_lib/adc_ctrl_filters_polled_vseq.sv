@@ -81,7 +81,6 @@ class adc_ctrl_filters_polled_vseq extends adc_ctrl_base_vseq;
       random_ramp_vseq.start(p_sequencer, this);
       `uvm_info(`gfn, random_ramp_vseq.sprint(uvm_default_line_printer), UVM_MEDIUM)
 
-
       // Send randomized ramp on all channels - falling
       `uvm_create_obj(adc_ctrl_random_ramp_vseq, random_ramp_vseq)
       random_ramp_vseq.set_sequencer(p_sequencer);
@@ -102,8 +101,7 @@ class adc_ctrl_filters_polled_vseq extends adc_ctrl_base_vseq;
       do_adc_fsm_reset();
 
       // Re-randomize configuration if enabled
-      if (!cfg.filters_fixed) `DV_CHECK_RANDOMIZE_FATAL(cfg);
-
+      if (!cfg.filters_fixed) `DV_CHECK_RANDOMIZE_FATAL(cfg)
     end
     // A short delay to allow all CDC to complete
     cfg.clk_aon_rst_vif.wait_clks($urandom_range(10, 15));

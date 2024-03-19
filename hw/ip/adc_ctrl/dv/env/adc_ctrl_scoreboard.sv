@@ -105,6 +105,7 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
     bit intr_en;
     forever begin
       @(cfg.intr_vif.pins);
+      if (cfg.clk_rst_vif.rst_n == 1'b0) continue;
       m_interrupt = cfg.intr_vif.sample_pin(ADC_CTRL_INTERRUPT_INDEX);
       // Compare against expected every change of interrupt line
       if (cfg.en_scb) begin
@@ -648,6 +649,8 @@ class adc_ctrl_scoreboard extends cip_base_scoreboard #(
     m_adc_ctrl_en = 0;
     m_lp_mode = 0;
     m_lp_to_np_transition = 0;
+    cfg.adc_intr_ctl = '0;
+    cfg.adc_wakeup_ctl = '0;
   endfunction
 
   // Software reset
