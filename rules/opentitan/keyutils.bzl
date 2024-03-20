@@ -88,24 +88,38 @@ KeyInfo = provider(
     Used to capture all required information about a key.
     """,
     fields = {
-        "key_info": "Info associated with the key.",
+        "id": "Identifier used by the consumers of the provider to determine the key algorithm.",
+        "config": "The config of the key. Specific to the key algorithm.",
+        "method": "Mechanism used to access the key. Can be local or hsmtool.",
+        "pub_key": "Public key `file`.",
+        "private_key": "Private key `file`. May be None when method is set to hsmtool.",
+        "type": "The type of the key. Can be TestKey, DevKey or ProdKey.",
     },
 )
 
-def _key_sphincs_plus(ctx):
-    key_obj = {
-        "id": "sphincs_plus",
-        "config": ctx.attr.config,
-        "method": ctx.attr.method,
-        "pub_key": ctx.file.pub_key.path,
-        "type": ctx.attr.type,
-    }
-    if ctx.attr.private_key:
-        key_obj["private_key"] = ctx.file.private_key.path
-    return [KeyInfo(key_info = key_obj)]
+def _build_key_info_handler(id):
+    """Return a handler that creates a KeyInfo provider.
+
+    Args:
+        id: Identifier used by the consumers of the provider to determine the key algorithm.
+    Returns:
+        A handler that creates a KeyInfo provider.
+    """
+
+    def key_info_handler(ctx):
+        return [KeyInfo(
+            id = id,
+            config = ctx.attr.config,
+            method = ctx.attr.method,
+            pub_key = ctx.file.pub_key,
+            private_key = ctx.file.private_key,
+            type = ctx.attr.type,
+        )]
+
+    return key_info_handler
 
 key_sphincs_plus = rule(
-    implementation = _key_sphincs_plus,
+    implementation = _build_key_info_handler("sphincs_plus"),
     attrs = {
         "pub_key": attr.label(
             allow_single_file = [".pem"],
@@ -132,21 +146,8 @@ key_sphincs_plus = rule(
     },
 )
 
-def _key_ecdsa(ctx):
-    key_obj = {
-        "id": "ecdsa",
-        "config": ctx.attr.config,
-        "method": ctx.attr.method,
-        "pub_key": ctx.file.pub_key.path,
-        "type": ctx.attr.type,
-    }
-    if ctx.attr.private_key:
-        key_obj["private_key"] = ctx.file.private_key.path
-
-    return [KeyInfo(key_info = key_obj)]
-
 key_ecdsa = rule(
-    implementation = _key_ecdsa,
+    implementation = _build_key_info_handler("ecdsa"),
     attrs = {
         "pub_key": attr.label(
             allow_single_file = [".der"],
