@@ -7,10 +7,27 @@ load(
     "//rules:otp.bzl",
     "otp_hex",
     "otp_json",
+    "otp_json_rot_keys",
     "otp_partition",
 )
 
 package(default_visibility = ["//visibility:public"])
+
+otp_json_rot_keys(
+    name = "rot_keys",
+    ecdsa_keys = [
+        "//sw/device/silicon_creator/rom/keys/fake/ecdsa:test_key_0_ecdsa_p256",
+        "//sw/device/silicon_creator/rom/keys/fake/ecdsa:dev_key_0_ecdsa_p256",
+        "//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256",
+        "//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_1_ecdsa_p256",
+    ],
+    sphincs_plus_keys = [
+        "//sw/device/silicon_creator/rom/keys/fake/spx:test_key_0_spx_key_info",
+        "//sw/device/silicon_creator/rom/keys/fake/spx:dev_key_0_spx_key_info",
+        "//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx_key_info",
+        "//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_1_spx_key_info",
+    ],
+)
 
 otp_json(
     name = "json_rot_keys",
