@@ -168,12 +168,25 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
     end
   endfunction
 
+  // These two tasks are overridden because the implementation in the base class performs checks
+  // against predictions, whereas the USBDEV packet buffer memory may change essentially at any
+  // time because packets are written into it automatically by the DUT.
+  //
+  // We could perhaps at some point be a little smarter and expect that only those buffers that
+  // have been made available for DUT use may change, since we _can_ track which buffers have been
+  // placed in the Av OUT/SETUP FIFOs and which have subsequently been removed from the RX FIFO.
+  virtual task process_mem_write(tl_seq_item item, string ral_name);
+    // Do nothing, not modeled.
+  endtask
+  virtual task process_mem_read(tl_seq_item item, string ral_name);
+    // Do nothing, not modeled.
+  endtask
+
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
     uvm_reg csr;
     bit     do_read_check   = 1'b1;
+    // Is the access is to the packet buffer memory of the USB device?
     bit     buffer_mem      = 1'b0;
-    bit     [11:0] buffer_start_offset = 12'h800;
-    bit     [11:0] buffer_end_offset = 12'hffc;
     bit     write           = item.is_write();
     string  csr_name;
     bit [TL_AW-1:0] addr_mask = ral.get_addr_mask();
@@ -185,18 +198,18 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
       `DV_CHECK_NE_FATAL(csr, null)
       csr_name = csr.get_name();
     end
-    // if access was to a valid mem buffer location
-    else if (((item.a_addr & addr_mask) inside {[buffer_start_offset : buffer_end_offset]})) begin
-      csr_name = "buffer";
+    // if access was to a valid mem buffer location; there is only a single memory window that
+    // provides access to the packet buffer memory.
+    else if (is_mem_addr(item, ral_name)) begin
       buffer_mem = 1'b1;
-    end
-    else begin
+      csr_name = "buffer";
+    end else begin
       `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
     end
 
     if (channel == AddrChannel) begin
       // if incoming access is a write to a valid csr, then make updates right away
-      if (write) begin
+      if (write & ~buffer_mem) begin
         void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
       end
     end
@@ -472,15 +485,16 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
     endcase
     // On reads, if do_read_check, is set, then check mirrored_value against item.d_data
     if (!write && channel == DataChannel) begin
-      if (do_read_check & ~buffer_mem) begin
-        `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data,
-                     $sformatf("reg name: %0s", csr.get_full_name()))
+      if (do_read_check) begin
+        if (buffer_mem) begin
+          // No predictions of packet buffer memory content within the scoreboard; checked in vseqs.
+        end else begin
+          `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data,
+                       $sformatf("reg name: %0s", csr.get_full_name()))
+        end
+      end else begin
+        void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
       end
-      else if (do_read_check & buffer_mem) begin
-        // do-nothing
-      end
-      else //if (~buffer_mem)
-      void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
     end
     // hand_shaking : send regs information required for hanshaking to predictor
     pkt_ack = ep_out_enable & (rx_enable_out || rx_enable_setup) & ~stall;

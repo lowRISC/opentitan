@@ -98,6 +98,10 @@
       uvm_test_seq: usbdev_out_trans_nak_vseq
     }
     {
+      name: usbdev_pkt_buffer
+      uvm_test_seq: usbdev_pkt_buffer_vseq
+    }
+    {
       name: usbdev_pkt_received
       uvm_test_seq: usbdev_pkt_received_vseq
     }
