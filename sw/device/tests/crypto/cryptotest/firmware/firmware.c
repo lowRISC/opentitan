@@ -20,6 +20,7 @@
 #include "sw/device/tests/crypto/cryptotest/json/hash_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/hmac_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/ibex_fi_commands.h"
+#include "sw/device/tests/crypto/cryptotest/json/ibex_sca_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/kmac_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/kmac_sca_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/otbn_fi_commands.h"
@@ -36,6 +37,7 @@
 #include "hash.h"
 #include "hmac.h"
 #include "ibex_fi.h"
+#include "ibex_sca.h"
 #include "kmac.h"
 #include "kmac_sca.h"
 #include "otbn_fi.h"
@@ -76,6 +78,9 @@ status_t process_cmd(ujson_t *uj) {
         break;
       case kCryptotestCommandIbexFi:
         RESP_ERR(uj, handle_ibex_fi(uj));
+        break;
+      case kCryptotestCommandIbexSca:
+        RESP_ERR(uj, handle_ibex_sca(uj));
         break;
       case kCryptotestCommandKmacSca:
         RESP_ERR(uj, handle_kmac_sca(uj));
