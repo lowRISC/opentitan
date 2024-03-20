@@ -102,7 +102,9 @@ module tb;
     assign (highz0, pull1) sio[i] = !cio_sd_en_o[i];
     assign si_pulldown[i] = sio[i];
 
-    assign spi_if.csb[i] = (i < NumCS && cio_csb_en_o[i]) ? cio_csb_o[i] : 1'b1;
+    if (i < NumCS) begin : gen_drive_csb
+      assign spi_if.csb[i] = cio_csb_en_o[i] ? cio_csb_o[i] : 1'b1;
+    end
   end
 
   assign interrupts[SpiHostError] = intr_error;
