@@ -431,8 +431,8 @@
             then write will only have an effect when the device is in the LinkPowered state.
 
             - Perform no operation in J state for more than 3 ms.
-            - Read the link state from usbstate register to see if it is in powered state and then send the
-              resume signal (K state) for 20 ms and set the usbctrl.resume_link_active.
+            - Read the link state from usbstate register to see if it is in powered state and set the
+              usbctrl.resume_link_active.
             - Verify that the resume_link_active interrupt goes high and device will be resumed.
             '''
       stage: V2
