@@ -11,9 +11,6 @@ class usbdev_pkt_sent_vseq extends usbdev_base_vseq;
   virtual task body();
     uvm_reg_data_t read_rxfifo;
 
-     super.dut_init("HARD");
-     clear_all_interrupts();
-
     // OUT TRANS
     // -------------------------------
     // Configure out transaction
