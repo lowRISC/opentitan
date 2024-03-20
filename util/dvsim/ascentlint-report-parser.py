@@ -67,6 +67,7 @@ def main():
             ("flow_error", r"^Error: .*"),
             ("flow_error", r"^ERROR.*"),
             ("flow_error", r"^  ERR .*"),
+            ("flow_info", r"^Warning: License will expire.*"),
             ("flow_warning", r"^Warning: .*"),
             # TODO: struct assignment labels within concatenation
             # not supported. check with newer ascentlint version.
