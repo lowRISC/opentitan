@@ -4972,7 +4972,14 @@ opentitan_test(
         ]),
         test_harness = "//sw/host/tests/chip/example_sival",
     ),
-    exec_env = EARLGREY_TEST_ENVS,
+    # We only run this test on the Hyper310 FPGA (the `fpga_cw310_sival_rom_ext`
+    # platform (as well as the RTL sim platforms) as these are the only
+    # compatible with both pre- and post-silicon test environments.
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+        "//hw/top_earlgrey:sim_dv": None,
+        "//hw/top_earlgrey:sim_verilator": None,
+    },
     deps = [
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/lib/testing/test_framework:ottf_utils",
