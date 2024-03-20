@@ -13,9 +13,9 @@ use opentitanlib::transport::chip_whisperer;
 
 /// Resets the SAM3X chip on the Chip Whisperer FPGA board.
 #[derive(Debug, Args)]
-pub struct ResetSam3x {}
+pub struct Reset {}
 
-impl CommandDispatch for ResetSam3x {
+impl CommandDispatch for Reset {
     fn run(
         &self,
         _context: &dyn Any,
@@ -23,5 +23,19 @@ impl CommandDispatch for ResetSam3x {
     ) -> Result<Option<Box<dyn Annotate>>> {
         log::info!("Resetting the SAM3X chip");
         transport.dispatch(&chip_whisperer::ResetSam3x {})
+    }
+}
+
+/// Gets the SAM3X firmware version on the Chip Whisperer FPGA board.
+#[derive(Debug, Args)]
+pub struct GetFwVersion {}
+
+impl CommandDispatch for GetFwVersion {
+    fn run(
+        &self,
+        _context: &dyn Any,
+        transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn Annotate>>> {
+        transport.dispatch(&chip_whisperer::GetSam3xFwVersion {})
     }
 }
