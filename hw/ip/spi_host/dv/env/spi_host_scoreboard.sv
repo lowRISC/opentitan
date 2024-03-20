@@ -298,11 +298,7 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
         end
 
         "configopts": begin
-          string      csr_str;
-          int         csr_idx;
-
-          csr_str = csr_name.getc(csr_name.len());
-          csr_idx = csr_str.atoi();
+          int csr_idx = csr_name.getc(csr_name.len()) - "0";
           spi_configopts.cpol[csr_idx]     = get_field_val(ral.configopts[csr_idx].cpol,
                                                            item.a_data);
           spi_configopts.cpha[csr_idx]     = get_field_val(ral.configopts[csr_idx].cpha,
