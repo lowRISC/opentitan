@@ -6,8 +6,10 @@
 
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
+#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_rv_core_ibex.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
@@ -17,6 +19,12 @@
 #include "sw/device/tests/crypto/cryptotest/json/ibex_fi_commands.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+
+// Make sure that this function does not get optimized by the compiler.
+uint32_t increment_counter(uint32_t counter) __attribute__((optnone)) {
+  uint32_t return_value = counter + 1;
+  return return_value;
+}
 
 // NOP macros.
 #define NOP1 "addi x0, x0, 0\n"
@@ -66,6 +74,504 @@ const uint32_t ref_values[32] = {
     0xDEADBEEF, 0xDEADCAFE, 0xDEADC0DE, 0xDEADFA11, 0xDEADF00D, 0xDEFEC8ED,
     0xDEADDEAD, 0xD00D2BAD, 0xEBEBEBEB, 0xFADEDEAD, 0xFDFDFDFD, 0xFEE1DEAD,
     0xFEEDFACE, 0xFEEEFEEE};
+
+// Flash information.
+static dif_flash_ctrl_state_t flash;
+static dif_flash_ctrl_device_info_t flash_info;
+#define FLASH_PAGES_PER_BANK flash_info.data_pages
+#define FLASH_WORD_SZ flash_info.bytes_per_word
+#define FLASH_PAGE_SZ flash_info.bytes_per_page
+#define FLASH_UINT32_WORDS_PER_PAGE \
+  (FLASH_PAGE_SZ / FLASH_WORD_SZ) * (FLASH_WORD_SZ / sizeof(uint32_t))
+
+// Buffer to allow the compiler to allocate a safe area in Main SRAM where
+// we can do the write/read test without the risk of clobbering data
+// used by the program.
+OT_SECTION(".data")
+static volatile uint32_t sram_main_buffer[32];
+
+/**
+ * ibex.char.flash_read command handler.
+ *
+ * This FI penetration tests executes the following instructions:
+ * - Write reference values into flash.
+ * - Set the trigger.
+ * - Add 10 NOPs to delay the trigger
+ * - Read values from flash.
+ * - Unset the trigger.
+ * - Compare the values.
+ * - Return the values over UART.
+ *
+ * Faults are injected during the trigger_high & trigger_low.
+ * It needs to be ensured that the compiler does not optimize this code.
+ *
+ * @param uj The received uJSON data.
+ */
+status_t handle_ibex_fi_char_flash_read(ujson_t *uj) {
+  // Configure Ibex to allow reading ERR_STATUS register.
+  dif_rv_core_ibex_t rv_core_ibex;
+  UJSON_CHECK_DIF_OK(dif_rv_core_ibex_init(
+      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
+      &rv_core_ibex));
+
+  // Configure the data flash.
+  // Flash configuration.
+  dif_flash_ctrl_region_properties_t region_properties = {
+      .rd_en = kMultiBitBool4True,
+      .prog_en = kMultiBitBool4True,
+      .erase_en = kMultiBitBool4True,
+      .scramble_en = kMultiBitBool4True,
+      .ecc_en = kMultiBitBool4True,
+      .high_endurance_en = kMultiBitBool4False};
+
+  dif_flash_ctrl_data_region_properties_t data_region = {
+      .base = FLASH_PAGES_PER_BANK,
+      .size = 0x1,
+      .properties = region_properties};
+
+  UJSON_CHECK_DIF_OK(
+      dif_flash_ctrl_set_data_region_properties(&flash, 0, data_region));
+  UJSON_CHECK_DIF_OK(
+      dif_flash_ctrl_set_data_region_enablement(&flash, 0, kDifToggleEnabled));
+
+  ptrdiff_t flash_bank_1_addr =
+      (ptrdiff_t)flash_info.data_pages * (ptrdiff_t)flash_info.bytes_per_page;
+  mmio_region_t flash_bank_1 = mmio_region_from_addr(
+      TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR + (uintptr_t)flash_bank_1_addr);
+
+  // Prepare page and write reference values into it.
+  uint32_t input_page[FLASH_UINT32_WORDS_PER_PAGE];
+  memset(input_page, 0x0, FLASH_UINT32_WORDS_PER_PAGE * sizeof(uint32_t));
+  for (int i = 0; i < 32; i++) {
+    input_page[i] = ref_values[i];
+  }
+
+  // Erase flash and write page with reference values.
+  UJSON_CHECK_STATUS_OK(flash_ctrl_testutils_erase_and_write_page(
+      &flash, (uint32_t)flash_bank_1_addr, /*partition_id=*/0, input_page,
+      kDifFlashCtrlPartitionTypeData, FLASH_UINT32_WORDS_PER_PAGE));
+
+  // FI code target.
+  uint32_t res_values[32];
+  sca_set_trigger_high();
+  for (int i = 0; i < 32; i++) {
+    res_values[i] =
+        mmio_region_read32(flash_bank_1, i * (ptrdiff_t)sizeof(uint32_t));
+  }
+  sca_set_trigger_low();
+
+  // Compare against reference values.
+  uint32_t res = 0;
+  for (int i = 0; i < 32; i++) {
+    if (res_values[i] != ref_values[i]) {
+      res |= 1;
+    }
+  }
+
+  // Read ERR_STATUS register.
+  dif_rv_core_ibex_error_status_t codes;
+  UJSON_CHECK_DIF_OK(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
+
+  // Send res & ERR_STATUS to host.
+  ibex_fi_test_result_t uj_output;
+  uj_output.result = res;
+  uj_output.err_status = codes;
+  RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
+  return OK_STATUS(0);
+}
+
+/**
+ * ibex.char.flash_write command handler.
+ *
+ * This FI penetration tests executes the following instructions:
+ * - Set the trigger.
+ * - Add 10 NOPs to delay the trigger
+ * - Write 32 values into flash.
+ * - Unset the trigger.
+ * - Read back values and compare.
+ * - Return the values over UART.
+ *
+ * Faults are injected during the trigger_high & trigger_low.
+ * It needs to be ensured that the compiler does not optimize this code.
+ *
+ * @param uj The received uJSON data.
+ */
+status_t handle_ibex_fi_char_flash_write(ujson_t *uj) {
+  // Configure Ibex to allow reading ERR_STATUS register.
+  dif_rv_core_ibex_t rv_core_ibex;
+  UJSON_CHECK_DIF_OK(dif_rv_core_ibex_init(
+      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
+      &rv_core_ibex));
+  // Configure the data flash.
+  // Flash configuration.
+  dif_flash_ctrl_region_properties_t region_properties = {
+      .rd_en = kMultiBitBool4True,
+      .prog_en = kMultiBitBool4True,
+      .erase_en = kMultiBitBool4True,
+      .scramble_en = kMultiBitBool4True,
+      .ecc_en = kMultiBitBool4True,
+      .high_endurance_en = kMultiBitBool4False};
+  dif_flash_ctrl_data_region_properties_t data_region = {
+      .base = FLASH_PAGES_PER_BANK,
+      .size = 0x1,
+      .properties = region_properties};
+  UJSON_CHECK_DIF_OK(
+      dif_flash_ctrl_set_data_region_properties(&flash, 0, data_region));
+  UJSON_CHECK_DIF_OK(
+      dif_flash_ctrl_set_data_region_enablement(&flash, 0, kDifToggleEnabled));
+
+  ptrdiff_t flash_bank_1_addr =
+      (ptrdiff_t)flash_info.data_pages * (ptrdiff_t)flash_info.bytes_per_page;
+  mmio_region_t flash_bank_1 = mmio_region_from_addr(
+      TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR + (uintptr_t)flash_bank_1_addr);
+
+  // Prepare page and write reference values into it.
+  uint32_t input_page[FLASH_UINT32_WORDS_PER_PAGE];
+  memset(input_page, 0x0, FLASH_UINT32_WORDS_PER_PAGE * sizeof(uint32_t));
+  for (int i = 0; i < 32; i++) {
+    input_page[i] = ref_values[i];
+  }
+
+  // FI code target.
+  sca_set_trigger_high();
+  // Erase flash and write page with reference values.
+  UJSON_CHECK_STATUS_OK(flash_ctrl_testutils_erase_and_write_page(
+      &flash, (uint32_t)flash_bank_1_addr, /*partition_id=*/0, input_page,
+      kDifFlashCtrlPartitionTypeData, FLASH_UINT32_WORDS_PER_PAGE));
+  sca_set_trigger_low();
+
+  // Read back and compare against reference values.
+  uint32_t res_values[32];
+  uint32_t res = 0;
+  for (int i = 0; i < 32; i++) {
+    res_values[i] =
+        mmio_region_read32(flash_bank_1, i * (ptrdiff_t)sizeof(uint32_t));
+    if (res_values[i] != ref_values[i]) {
+      res |= 1;
+    }
+  }
+
+  // Read ERR_STATUS register.
+  dif_rv_core_ibex_error_status_t codes;
+  UJSON_CHECK_DIF_OK(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
+
+  // Send res & ERR_STATUS to host.
+  ibex_fi_test_result_t uj_output;
+  uj_output.result = res;
+  uj_output.err_status = codes;
+  RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
+  return OK_STATUS(0);
+}
+
+/**
+ * ibex.char.sram_read command handler.
+ *
+ * This FI penetration tests executes the following instructions:
+ * - Write reference values into SRAM.
+ * - Set the trigger.
+ * - Add 10 NOPs to delay the trigger
+ * - Read values from SRAM.
+ * - Unset the trigger.
+ * - Compare the values.
+ * - Return the values over UART.
+ *
+ * Faults are injected during the trigger_high & trigger_low.
+ * It needs to be ensured that the compiler does not optimize this code.
+ *
+ * @param uj The received uJSON data.
+ */
+status_t handle_ibex_fi_char_sram_read(ujson_t *uj) {
+  // Configure Ibex to allow reading ERR_STATUS register.
+  dif_rv_core_ibex_t rv_core_ibex;
+  UJSON_CHECK_DIF_OK(dif_rv_core_ibex_init(
+      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
+      &rv_core_ibex));
+
+  // Get address of buffer located in SRAM.
+  uintptr_t sram_main_buffer_addr = (uintptr_t)&sram_main_buffer;
+  mmio_region_t sram_region_main_addr =
+      mmio_region_from_addr(sram_main_buffer_addr);
+
+  // Write reference values into SRAM.
+  for (int i = 0; i < 32; i++) {
+    mmio_region_write32(sram_region_main_addr, i * (ptrdiff_t)sizeof(uint32_t),
+                        ref_values[i]);
+  }
+
+  uint32_t res_values[32];
+  // FI code target.
+  sca_set_trigger_high();
+  for (int i = 0; i < 32; i++) {
+    res_values[i] = mmio_region_read32(sram_region_main_addr,
+                                       i * (ptrdiff_t)sizeof(uint32_t));
+  }
+  sca_set_trigger_low();
+
+  // Compare against reference values.
+  uint32_t res = 0;
+  for (int i = 0; i < 32; i++) {
+    if (res_values[i] != ref_values[i]) {
+      res |= 1;
+    }
+  }
+
+  // Read ERR_STATUS register.
+  dif_rv_core_ibex_error_status_t codes;
+  UJSON_CHECK_DIF_OK(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
+
+  // Send res & ERR_STATUS to host.
+  ibex_fi_test_result_t uj_output;
+  uj_output.result = res;
+  uj_output.err_status = codes;
+  RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
+  return OK_STATUS(0);
+}
+
+/**
+ * ibex.char.sram_write command handler.
+ *
+ * This FI penetration tests executes the following instructions:
+ * - Set the trigger.
+ * - Add 10 NOPs to delay the trigger
+ * - Write 32 values into SRAM.
+ * - Unset the trigger.
+ * - Read back values and compare.
+ * - Return the values over UART.
+ *
+ * Faults are injected during the trigger_high & trigger_low.
+ * It needs to be ensured that the compiler does not optimize this code.
+ *
+ * @param uj The received uJSON data.
+ */
+status_t handle_ibex_fi_char_sram_write(ujson_t *uj) {
+  // Configure Ibex to allow reading ERR_STATUS register.
+  dif_rv_core_ibex_t rv_core_ibex;
+  UJSON_CHECK_DIF_OK(dif_rv_core_ibex_init(
+      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
+      &rv_core_ibex));
+
+  // Get address of buffer located in SRAM.
+  uintptr_t sram_main_buffer_addr = (uintptr_t)&sram_main_buffer;
+  mmio_region_t sram_region_main_addr =
+      mmio_region_from_addr(sram_main_buffer_addr);
+
+  // FI code target.
+  sca_set_trigger_high();
+  for (int i = 0; i < 32; i++) {
+    mmio_region_write32(sram_region_main_addr, i * (ptrdiff_t)sizeof(uint32_t),
+                        ref_values[i]);
+  }
+  sca_set_trigger_low();
+
+  // Read back and compare against reference values.
+  uint32_t res_values[32];
+  uint32_t res = 0;
+  for (int i = 0; i < 32; i++) {
+    res_values[i] = mmio_region_read32(sram_region_main_addr,
+                                       i * (ptrdiff_t)sizeof(uint32_t));
+    if (res_values[i] != ref_values[i]) {
+      res |= 1;
+    }
+  }
+
+  // Read ERR_STATUS register.
+  dif_rv_core_ibex_error_status_t codes;
+  UJSON_CHECK_DIF_OK(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
+
+  // Send res & ERR_STATUS to host.
+  ibex_fi_test_result_t uj_output;
+  uj_output.result = res;
+  uj_output.err_status = codes;
+  RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
+  return OK_STATUS(0);
+}
+
+/**
+ * ibex.char.unconditional_branch command handler.
+ *
+ * This FI penetration tests executes the following instructions:
+ * - Add 10 NOPs to delay the trigger
+ * - 10000 iterations with a for loop:
+ *  - Execute an unconditional branch instruction
+ *  - Increment variable
+ * - Return the values over UART.
+ * Faults are injected during the trigger_high & trigger_low.
+ * It needs to be ensured that the compiler does not optimize this code.
+ *
+ * @param uj The received uJSON data.
+ */
+status_t handle_ibex_fi_char_unconditional_branch(ujson_t *uj) {
+  // Configure Ibex to allow reading ERR_STATUS register.
+  dif_rv_core_ibex_t rv_core_ibex;
+  UJSON_CHECK_DIF_OK(dif_rv_core_ibex_init(
+      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
+      &rv_core_ibex));
+
+  // FI code target.
+  uint32_t result = 0;
+  sca_set_trigger_high();
+  asm volatile(NOP10);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  result = increment_counter(result);
+  sca_set_trigger_low();
+
+  // Read ERR_STATUS register.
+  dif_rv_core_ibex_error_status_t codes;
+  UJSON_CHECK_DIF_OK(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
+
+  // Send loop counters & ERR_STATUS to host.
+  ibex_fi_test_result_t uj_output;
+  uj_output.result = result;
+  uj_output.err_status = codes;
+  RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
+  return OK_STATUS(0);
+}
+
+/**
+ * ibex.char.conditional_branch command handler.
+ *
+ * This FI penetration tests executes the following instructions:
+ * - Add 10 NOPs to delay the trigger
+ * - 10000 iterations with a for loop:
+ *  - Execute a branch instruction
+ *  - Increment variable if branch is taken or not
+ * - Return the values over UART.
+ * Faults are injected during the trigger_high & trigger_low.
+ * It needs to be ensured that the compiler does not optimize this code.
+ *
+ * @param uj The received uJSON data.
+ */
+status_t handle_ibex_fi_char_conditional_branch(ujson_t *uj) {
+  // Configure Ibex to allow reading ERR_STATUS register.
+  dif_rv_core_ibex_t rv_core_ibex;
+  UJSON_CHECK_DIF_OK(dif_rv_core_ibex_init(
+      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
+      &rv_core_ibex));
+
+  // FI code target.
+  uint32_t branch_if_ = 1;
+  uint32_t branch_else = 0;
+  sca_set_trigger_high();
+  asm volatile(NOP10);
+  for (int i = 0; i < 10000; i++) {
+    if (branch_if_ > 0) {
+      branch_if_++;
+    } else {
+      branch_else++;
+    }
+  }
+  sca_set_trigger_low();
+
+  // Read ERR_STATUS register.
+  dif_rv_core_ibex_error_status_t codes;
+  UJSON_CHECK_DIF_OK(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
+
+  // Send loop counters & ERR_STATUS to host.
+  ibex_fi_test_result_mult_t uj_output;
+  uj_output.result1 = branch_if_;
+  uj_output.result2 = branch_else;
+  uj_output.err_status = codes;
+  RESP_OK(ujson_serialize_ibex_fi_test_result_mult_t, uj, &uj_output);
+  return OK_STATUS(0);
+}
 
 /**
  * ibex.char.mem_op_loop command handler.
@@ -410,6 +916,12 @@ status_t handle_ibex_fi_init_trigger(ujson_t *uj) {
   // Disable the instruction cache and dummy instructions for FI attacks.
   sca_configure_cpu();
 
+  // Enable the flash.
+  flash_info = dif_flash_ctrl_get_device_info();
+  UJSON_CHECK_DIF_OK(dif_flash_ctrl_init_state(
+      &flash, mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+  UJSON_CHECK_STATUS_OK(flash_ctrl_testutils_wait_for_init(&flash));
+
   return OK_STATUS(0);
 }
 
@@ -438,6 +950,18 @@ status_t handle_ibex_fi(ujson_t *uj) {
       return handle_ibex_fi_char_register_file(uj);
     case kIbexFiSubcommandCharRegisterFileRead:
       return handle_ibex_fi_char_register_file_read(uj);
+    case kIbexFiSubcommandCharCondBranch:
+      return handle_ibex_fi_char_conditional_branch(uj);
+    case kIbexFiSubcommandCharUncondBranch:
+      return handle_ibex_fi_char_unconditional_branch(uj);
+    case kIbexFiSubcommandCharSramWrite:
+      return handle_ibex_fi_char_sram_write(uj);
+    case kIbexFiSubcommandCharSramRead:
+      return handle_ibex_fi_char_sram_read(uj);
+    case kIbexFiSubcommandCharFlashWrite:
+      return handle_ibex_fi_char_flash_write(uj);
+    case kIbexFiSubcommandCharFlashRead:
+      return handle_ibex_fi_char_flash_read(uj);
     default:
       LOG_ERROR("Unrecognized IBEX FI subcommand: %d", cmd);
       return INVALID_ARGUMENT();
