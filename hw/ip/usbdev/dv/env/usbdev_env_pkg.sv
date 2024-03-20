@@ -21,6 +21,10 @@ package usbdev_env_pkg;
 
   // parameters
 
+  // Number of Endpoints (in each direction) supported by the USB device
+  parameter uint NEndpoints       = usbdev_reg_pkg::NEndpoints;
+  // Maximum supported packet size, in bytes.
+  parameter uint MaxPktSizeByte   = 64;
   // Number of packet buffers available within the USB device
   parameter uint NumBuffers       = 32;
   // FIFO Depths; number of entries
@@ -67,6 +71,21 @@ package usbdev_env_pkg;
     DATA_PKT = 2'b11,
     HANDSHAKE_PKT = 2'b10
   } usbdev_pkt_type_e;
+
+  // Link State
+  // TODO: make this available in a DUT package file and import here.
+  typedef enum logic [2:0] {
+    // No power and/or no pull-up connected state
+    LinkDisconnected = 0,
+    // Powered / connected states
+    LinkPowered = 1,
+    LinkPoweredSuspended = 2,
+    // Active states
+    LinkActiveNoSOF = 5,
+    LinkActive = 3,
+    LinkSuspended = 4,
+    LinkResuming = 6
+  } usbdev_link_state_e;
 
   // functions
 

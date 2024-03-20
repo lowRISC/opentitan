@@ -98,6 +98,26 @@ virtual task dut_init(string reset_kind = "HARD");
   if (do_usbdev_init) usbdev_init();
 endtask
 
+  // Wait for the DUT to enter one of the given link states, with an optional timeout
+  //   (the default of -1 disables the timeout).
+  // Link state transitions occur in response to bus activity from the host driving the USB.
+  virtual task wait_for_link_state(usbdev_link_state_e states[], int timeout_clks = -1,
+                                   bit fatal = 1);
+    // Wait until the given state is attained or the (optionally
+    usbdev_link_state_e rd;
+    do begin
+      uvm_reg_data_t data;
+      // Delay and if timeout was requested, decrease the cycle count.
+      cfg.clk_rst_vif.wait_clks(128);
+      if (timeout_clks >= 0) timeout_clks -= (timeout_clks > 128) ? 128 : timeout_clks;
+      csr_rd(.ptr(ral.usbstat.link_state), .value(data));
+      rd = usbdev_link_state_e'(data);
+    end while (!(rd inside {states}) && (timeout_clks != 0));
+    if (fatal && !(rd inside {states})) begin
+      `dv_fatal($sformatf("DUT did not enter expected link state (still in %d)", rd))
+    end
+  endtask
+
   // Construct and transmit a token packet to the USB device
   virtual task call_token_seq(input pid_type_e pid_type);
     `uvm_create_on(m_token_pkt, p_sequencer.usb20_sequencer_h)
@@ -148,13 +168,91 @@ endtask
     finish_item(m_handshake_pkt);
   endtask
 
+  // Read and check the content of the given packet buffer against expectations.
+  task read_check_buffer(bit [4:0] buffer_id, byte unsigned exp_data[]);
+    int unsigned exp_size = exp_data.size();
+    byte unsigned pkt_data[];
+    bit mismatch = 0;
+
+    // Collect the packet data from the buffer within the DUT.
+    read_buffer(buffer_id, exp_size, pkt_data);
+    `DV_CHECK_EQ_FATAL(pkt_data.size(), exp_size, "Unexpected packet size")
+
+    // Check buffer content against packet data.
+    for (int unsigned idx = 0; idx < exp_size; idx++) begin
+      `uvm_info(`gfn, $sformatf("Checking %2d: 0x%02x against 0x%02x",
+                                idx, pkt_data[idx], exp_data[idx]), UVM_HIGH)
+      // `DV check on actual and exp data
+      mismatch |= (pkt_data[idx] !== exp_data[idx]);
+    end
+    // Now that all data has been reported, stop if anything mismatched.
+    `DV_CHECK_EQ(mismatch, 0, "Received buffer contents do not match expected data")
+  endtask
+
+  // Write some data into the USB device packet buffer memory.
+  task write_buffer(bit [4:0] buffer_id, byte unsigned pkt_data[]);
+    int unsigned pkt_size = pkt_data.size();
+    int unsigned offset;
+    `DV_CHECK(pkt_size <= MaxPktSizeByte);
+
+    // Calculate start address (in 32-bit words) of buffer.
+    offset = buffer_id * 'h10;
+
+    `uvm_info(`gfn, $sformatf("write_buffer id %d with %d bytes", buffer_id, pkt_size), UVM_MEDIUM)
+    for (int unsigned idx = 0; idx < pkt_size; idx++) begin
+      `uvm_info(`gfn, $sformatf("%2d: 0x%02x", idx, pkt_data[idx]), UVM_HIGH)
+    end
+
+    // Note that unfortunately we can write only complete data words to the DUT; partial word
+    // writes would raise an error if attempted using 'tl_access' because the packet buffer memory
+    // itself does not offer lane enables.
+    for (int unsigned idx = 0; idx < pkt_size; idx += 4) begin
+      // Number of valid bytes within this word.
+      int unsigned nb = (pkt_size - idx >= 4) ? 4 : (pkt_size - idx);
+      bit [TL_DBW-1:0] mask = TL_DBW'((1 << nb) - 1);
+      // Populate only the valid parts of the write data word, and importantly avoid
+      // out-of-bounds accesses to 'pkt_data.'
+      bit [TL_DW-1:0]  wdata;
+      wdata[7:0] = pkt_data[idx];
+      if (mask[1]) wdata[15:8]  = pkt_data[idx + 1];
+      if (mask[2]) wdata[23:16] = pkt_data[idx + 2];
+      if (mask[3]) wdata[31:24] = pkt_data[idx + 3];
+
+      mem_wr(.ptr(ral.buffer), .offset(offset), .data(wdata));
+      offset++;
+    end
+  endtask
+
+  // Read and return data from the given packet buffer.
+  task read_buffer(bit [4:0] buffer_id, int unsigned len, output byte unsigned data[]);
+    // Calculate start address (in 32-bit words) of buffer
+    int unsigned offset = buffer_id * 'h10;
+
+    `DV_CHECK_FATAL(len <= MaxPktSizeByte);
+    data = new [len];
+
+    for (int unsigned idx = 0; idx < len; idx += 4) begin
+      // Number of valid bytes within this word
+      int unsigned nb = (len - idx >= 4) ? 4 : (len - idx);
+      bit [TL_DBW-1:0] mask = TL_DBW'((1 << nb) - 1);
+      bit [31:0] act_data;
+
+      // We can only read complete bus words from the packet buffer memory, but the USB packet
+      // lengths have byte-level granularity.
+      mem_rd(.ptr(ral.buffer), .offset(offset), .data(act_data));
+      data[idx] = act_data[7:0];
+      if (mask[1]) data[idx + 1] = act_data[15:8];
+      if (mask[2]) data[idx + 2] = act_data[23:16];
+      if (mask[3]) data[idx + 3] = act_data[31:24];
+      offset++;
+    end
+  endtask
+
   // Check that a SETUP/OUT data packet with the given properties was received and stored by
   // the USB device in its packet buffer memory.
   task check_rx_packet(bit [3:0] endp, bit setup, bit [4:0] buffer_id,
                        byte unsigned exp_byte_data[]);
     uvm_reg_data_t rx_fifo_read;
-    int unsigned   aligned_size;
-    int unsigned   offset;
 
     // Read RX FIFO which should contain a buffer description matching the expectations
     csr_rd(.ptr(ral.rxfifo), .value(rx_fifo_read));
@@ -164,36 +262,7 @@ endtask
     `DV_CHECK_EQ(get_field_val(ral.rxfifo.buffer, rx_fifo_read), buffer_id);
     `DV_CHECK_EQ(get_field_val(ral.rxfifo.size, rx_fifo_read), exp_byte_data.size());
 
-    // Calculate start address (in 32-bit words) of buffer
-    offset = buffer_id * 'h10;
-
-    // TODO: This is partly a limitation of this test code and partly because we may expect to
-    // run into troubles trying to perform complete word reads from a packet buffer memory that
-    // has not been initialized, resulting in the transfer of undefined data even if it is
-    // ultimately unused.
-    aligned_size = exp_byte_data.size() & ~3;
-    if (aligned_size < exp_byte_data.size()) begin
-      `uvm_info(`gfn, $sformatf("WARNING: Packets must be 4n presently; final byte(s) not tested"),
-                UVM_LOW)
-    end
-    for (int unsigned idx = 0; idx < exp_byte_data.size(); idx++) begin
-      `uvm_info(`gfn, $sformatf("%d: 0x%x", idx, exp_byte_data[idx]), UVM_DEBUG)
-    end
-
-    // Check buffer content against packet data
-    for (int unsigned idx = 0; idx < aligned_size; idx += 4) begin
-      bit [31:0] act_data;
-      bit [31:0] exp_data;
-      // Expected value of this word
-      exp_data = {exp_byte_data[idx + 3], exp_byte_data[idx + 2],
-                  exp_byte_data[idx + 1], exp_byte_data[idx]};
-
-      mem_rd(.ptr(ral.buffer), .offset(offset), .data(act_data));
-      `uvm_info(`gfn, $sformatf("Checking 0x%x against 0x%x", act_data, exp_data), UVM_DEBUG)
-      // `DV check on actual and exp data
-      `DV_CHECK_CASE_EQ(act_data, exp_data, "Received buffer contents do not match data packet")
-      offset++;
-    end
+    read_check_buffer(buffer_id, exp_byte_data);
   endtask
 
   // Check that the IN DATA packet transmitted by the USB device matches our expectations
@@ -203,9 +272,10 @@ endtask
     int unsigned len = (act_len < exp_len) ? act_len : exp_len;
 
     `uvm_info(`gfn, $sformatf("IN packet PID 0x%x len %d expected PID 0x%x len %d",
-                              pkt.m_pid_type, act_len, exp_pid, exp_len), UVM_DEBUG)
+                              pkt.m_pid_type, act_len, exp_pid, exp_len), UVM_HIGH)
     `DV_CHECK_EQ(pkt.m_pid_type, exp_pid);
 
+    // Report all of the actual and expected bytes before checking, to aid diagnosis.
     for (int unsigned i = 0; i < exp_data.size(); i++) begin
       `uvm_info(`gfn, $sformatf("%d: 0x%x", i, exp_data[i]), UVM_HIGH)
     end
@@ -257,68 +327,93 @@ endtask
     `DV_CHECK_EQ(pkt_received, 0);
   endtask
 
-virtual task dut_shutdown();
-  // check for pending usbdev operations and wait for them to complete
-  // TODO
-endtask
+  virtual task dut_shutdown();
+    // check for pending usbdev operations and wait for them to complete
+    // TODO
+  endtask
 
-// setup basic usbdev features
-virtual task usbdev_init(bit [TL_DW-1:0] device_address = 0);
-  // Enable USBDEV
-  ral.usbctrl.enable.set(1'b1);
-  ral.usbctrl.device_address.set(device_address);
-  csr_update(ral.usbctrl);
-endtask
+  // setup basic usbdev features
+  virtual task usbdev_init(bit [TL_DW-1:0] device_address = 0);
+    // Enable USBDEV
+    ral.usbctrl.enable.set(1'b1);
+    ral.usbctrl.device_address.set(device_address);
+    csr_update(ral.usbctrl);
+  endtask
 
-virtual task configure_out_trans();
-  // Enable EP0 Out
-  csr_wr(.ptr(ral.ep_out_enable[0].enable[endp]), .value(1'b1));
-  csr_update(ral.ep_out_enable[0]);
-  // Enable rx out
-  ral.rxenable_out[0].out[endp].set(1'b1);
-  csr_update(ral.rxenable_out[0]);
-  // Put buffer in Available OUT Buffer _FIFO_, so use csr_wr _not_ csr_update
-  csr_wr(.ptr(ral.avoutbuffer.buffer), .value(out_buffer_id));
-endtask
+  // Configure all OUT endpoints for reception of OUT packets.
+  virtual task configure_out_all();
+    // Enable OUT endpoints
+    csr_wr(.ptr(ral.ep_out_enable[0]), .value({NEndpoints{1'b1}}));
+    // Enable rx out
+    csr_wr(.ptr(ral.rxenable_out[0]), .value({NEndpoints{1'b1}}));
+  endtask
 
-virtual task configure_setup_trans();
-  // Enable EP0 Out
-  csr_wr(.ptr(ral.ep_out_enable[0].enable[endp]), .value(1'b1));
-  csr_update(ral.ep_out_enable[0]);
-  // Enable rx setup
-  ral.rxenable_setup[0].setup[endp].set(1'b1);
-  csr_update(ral.rxenable_setup[0]);
-  // Put buffer in Available SETUP Buffer _FIFO_, so use csr_wr _not_ csr_update
-  csr_wr(.ptr(ral.avsetupbuffer.buffer), .value(setup_buffer_id));
-endtask
+  virtual task configure_out_trans();
+    // Enable EP0 Out
+    csr_wr(.ptr(ral.ep_out_enable[0].enable[endp]), .value(1'b1));
+    csr_update(ral.ep_out_enable[0]);
+    // Enable rx out
+    ral.rxenable_out[0].out[endp].set(1'b1);
+    csr_update(ral.rxenable_out[0]);
+    // Put buffer in Available OUT Buffer _FIFO_, so use csr_wr _not_ csr_update
+    csr_wr(.ptr(ral.avoutbuffer.buffer), .value(out_buffer_id));
+  endtask
 
-virtual task configure_in_trans(bit [4:0] buffer_id, bit [6:0] num_of_bytes);
-  // Enable Endp IN
-  csr_wr(.ptr(ral.ep_in_enable[0].enable[endp]),  .value(1'b1));
-  csr_update(ral.ep_in_enable[0]);
-  // Configure IN Transaction
-  ral.configin[endp].rdy.set(1'b1);
-  ral.configin[endp].size.set(num_of_bytes);
-  ral.configin[endp].buffer.set(buffer_id);
-  csr_update(ral.configin[endp]);
-endtask
+  // Configure all OUT endpoints for reception of SETUP packets.
+  virtual task configure_setup_all();
+    // Enable OUT endpoints
+    csr_wr(.ptr(ral.ep_out_enable[0]), .value({NEndpoints{1'b1}}));
+    // Enable rx SETUP
+    csr_wr(.ptr(ral.rxenable_setup[0]), .value({NEndpoints{1'b1}}));
+    // Clear STALL by default, as a precaution.
+    csr_wr(.ptr(ral.out_stall[0]), .value({NEndpoints{1'b1}}));
+  endtask
 
-virtual task call_sof_seq(input pkt_type_e pkt_type, input pid_type_e pid_type);
-  `uvm_create_on(m_sof_pkt, p_sequencer.usb20_sequencer_h)
-  m_sof_pkt.m_pkt_type = pkt_type;
-  m_sof_pkt.m_pid_type = pid_type;
-  assert(m_sof_pkt.randomize());
-  m_usb20_item = m_sof_pkt;
-  start_item(m_sof_pkt);
-  finish_item(m_sof_pkt);
-endtask
+  virtual task configure_setup_trans();
+    // Enable EP0 Out
+    csr_wr(.ptr(ral.ep_out_enable[0].enable[endp]), .value(1'b1));
+    csr_update(ral.ep_out_enable[0]);
+    // Enable rx setup
+    ral.rxenable_setup[0].setup[endp].set(1'b1);
+    csr_update(ral.rxenable_setup[0]);
+    // Put buffer in Available SETUP Buffer _FIFO_, so use csr_wr _not_ csr_update
+    csr_wr(.ptr(ral.avsetupbuffer.buffer), .value(setup_buffer_id));
+  endtask
 
-virtual task inter_packet_delay(int delay = 0);
-  // From section 7.1.18.1 Time interval between packets is between 2 to 6.5 bit times.
-  // Multiply with 4 because usb  samples on 4 clks.
-  if (delay == 0) delay = $urandom_range(8, 28);
-  else delay = delay * 4;
-  // for max/min inter pkt delay it can be changed with task argument
-  cfg.clk_rst_vif.wait_clks(delay);
-endtask
+  // Configure all IN endpoints to respond to IN requests.
+  virtual task configure_in_all();
+    // Enable IN endpoints
+    csr_wr(.ptr(ral.ep_in_enable[0]), .value({NEndpoints{1'b1}}));
+  endtask
+
+  virtual task configure_in_trans(bit [4:0] buffer_id, bit [6:0] num_of_bytes);
+    // Enable Endp IN
+    csr_wr(.ptr(ral.ep_in_enable[0].enable[endp]),  .value(1'b1));
+    csr_update(ral.ep_in_enable[0]);
+    // Configure IN Transaction
+    ral.configin[endp].rdy.set(1'b1);
+    ral.configin[endp].size.set(num_of_bytes);
+    ral.configin[endp].buffer.set(buffer_id);
+    csr_update(ral.configin[endp]);
+  endtask
+
+  virtual task call_sof_seq(input pkt_type_e pkt_type, input pid_type_e pid_type);
+    `uvm_create_on(m_sof_pkt, p_sequencer.usb20_sequencer_h)
+    m_sof_pkt.m_pkt_type = pkt_type;
+    m_sof_pkt.m_pid_type = pid_type;
+    assert(m_sof_pkt.randomize());
+    m_usb20_item = m_sof_pkt;
+    start_item(m_sof_pkt);
+    finish_item(m_sof_pkt);
+  endtask
+
+  virtual task inter_packet_delay(int delay = 0);
+    // From section 7.1.18.1 Time interval between packets is between 2 and 6.5 bit times.
+    // Multiply with 4 because usbdev samples every 4 clks.
+    if (delay == 0) delay = $urandom_range(8, 26);
+    else delay = delay * 4;
+    // for max/min inter pkt delay it can be changed with task argument
+    cfg.clk_rst_vif.wait_clks(delay);
+  endtask
+
 endclass : usbdev_base_vseq
