@@ -481,10 +481,10 @@ inline rom_error_t manifest_check(const manifest_t *manifest) {
     return kErrorManifestBadCodeRegion;
   }
 
-  // Entry point must be inside the executable region and word aligned.
+  // Entry point must be inside the executable region and be an even address.
   if (manifest->entry_point < manifest->code_start ||
       manifest->entry_point >= manifest->code_end ||
-      (manifest->entry_point & 0x3) != 0) {
+      (manifest->entry_point & 0x1) != 0) {
     return kErrorManifestBadEntryPoint;
   }
 
