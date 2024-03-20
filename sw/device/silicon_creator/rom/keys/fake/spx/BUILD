@@ -8,11 +8,11 @@ package(default_visibility = ["//visibility:public"])
 
 key_sphincs_plus(
     name = "test_key_0_spx_key_info",
-    pub_key = "test_key_0_spx.pub.pem",
-    private_key = "test_key_0_spx.pem",
     config = "Shake128s",
-    type = "TestKey",
     method = "local",
+    private_key = "test_key_0_spx.pem",
+    pub_key = "test_key_0_spx.pub.pem",
+    type = "TestKey",
 )
 
 filegroup(
@@ -22,11 +22,11 @@ filegroup(
 
 key_sphincs_plus(
     name = "dev_key_0_spx_key_info",
-    pub_key = "dev_key_0_spx.pub.pem",
-    private_key = "dev_key_0_spx.pem",
     config = "Shake128s",
-    type = "DevKey",
     method = "local",
+    private_key = "dev_key_0_spx.pem",
+    pub_key = "dev_key_0_spx.pub.pem",
+    type = "DevKey",
 )
 
 filegroup(
@@ -36,11 +36,11 @@ filegroup(
 
 key_sphincs_plus(
     name = "prod_key_0_spx_key_info",
-    pub_key = "prod_key_0_spx.pub.pem",
-    private_key = "prod_key_0_spx.pem",
     config = "Shake128s",
-    type = "ProdKey",
     method = "local",
+    private_key = "prod_key_0_spx.pem",
+    pub_key = "prod_key_0_spx.pub.pem",
+    type = "ProdKey",
 )
 
 filegroup(
@@ -50,11 +50,11 @@ filegroup(
 
 key_sphincs_plus(
     name = "prod_key_1_spx_key_info",
-    pub_key = "prod_key_1_spx.pub.pem",
-    private_key = "prod_key_1_spx.pem",
     config = "Shake128s",
-    type = "ProdKey",
     method = "local",
+    private_key = "prod_key_1_spx.pem",
+    pub_key = "prod_key_1_spx.pub.pem",
+    type = "ProdKey",
 )
 
 filegroup(
