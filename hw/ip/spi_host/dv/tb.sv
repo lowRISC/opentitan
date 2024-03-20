@@ -23,6 +23,7 @@ module tb;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
   wire [3:0]                    si_pulldown;
   wire [3:0]                    so_pulldown;
+  wire [3:0]                    sio;
 
   lc_tx_t                       scanmode_i;
   logic                         cio_sck_o;
@@ -42,7 +43,7 @@ module tb;
   clk_rst_if   clk_rst_if(.clk(clk), .rst_n(rst_n));
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(.pins(interrupts));
   tl_if        tl_if(.clk(clk), .rst_n(rst_n));
-  spi_if       spi_if(.rst_n(rst_n));
+  spi_if       spi_if(.rst_n(rst_n), .sio(sio));
   spi_passthrough_if       spi_passthrough_if(.rst_n(rst_n));
 
   `DV_ALERT_IF_CONNECT()
@@ -97,9 +98,9 @@ module tb;
   for (genvar i = 0; i < 4; i++) begin : gen_tri_state
     pullup (weak1) pd_in_i (si_pulldown[i]);
     pullup (weak1) pd_out_i (so_pulldown[i]);
-    assign spi_if.sio[i]  = (cio_sd_en_o[i]) ? cio_sd_o[i] : 'z;
-    assign (highz0, pull1) spi_if.sio[i] = !cio_sd_en_o[i];
-    assign si_pulldown[i] = spi_if.sio[i];
+    assign sio[i]  = (cio_sd_en_o[i]) ? cio_sd_o[i] : 'z;
+    assign (highz0, pull1) sio[i] = !cio_sd_en_o[i];
+    assign si_pulldown[i] = sio[i];
 
     assign spi_if.csb[i] = (i < NumCS && cio_csb_en_o[i]) ? cio_csb_o[i] : 1'b1;
   end
