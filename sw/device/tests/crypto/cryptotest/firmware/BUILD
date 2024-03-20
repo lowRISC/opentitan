@@ -183,6 +183,25 @@ cc_library(
 )
 
 cc_library(
+    name = "ibex_sca",
+    srcs = ["ibex_sca.c"],
+    hdrs = [
+        "ibex_sca.h",
+        "status.h",
+    ],
+    deps = [
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+        "//sw/device/sca/lib:sca",
+        "//sw/device/tests/crypto/cryptotest/firmware:sca_lib",
+        "//sw/device/tests/crypto/cryptotest/json:ibex_sca_commands",
+    ],
+)
+
+cc_library(
     name = "kmac_sca",
     srcs = ["kmac_sca.c"],
     hdrs = [
@@ -298,6 +317,7 @@ FIRMWARE_DEPS = [
     ":hash",
     ":hmac",
     ":ibex_fi",
+    ":ibex_sca",
     ":kmac_sca",
     ":kmac",
     ":otbn_fi",
