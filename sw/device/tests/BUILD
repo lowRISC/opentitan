@@ -1012,11 +1012,14 @@ opentitan_test(
 opentitan_test(
     name = "csrng_smoketest",
     srcs = ["csrng_smoketest.c"],
+    broken = new_cw310_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:silicon_creator": None,
+            # TODO(#22140): remove this lined when fixed.
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
         },
     ),
     silicon = silicon_params(tags = ["broken"]),
