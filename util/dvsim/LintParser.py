@@ -17,6 +17,7 @@ class LintParser():
 
     def __init__(self) -> None:
         self.buckets = {
+            'flow_info': [],
             'flow_warning': [],
             'flow_error': [],
             'lint_info': [],
@@ -27,6 +28,7 @@ class LintParser():
             'fusesoc-error': []
         }
         self.severities = {
+            'flow_info': 'info',
             'flow_warning': 'warning',
             'flow_error': 'error',
             'lint_info': 'info',
@@ -35,14 +37,28 @@ class LintParser():
         }
 
     def extract_messages(self, log_content: str, patterns: List[str]) -> None:
-        """
-        This extracts messages from the string buffer log_content.
+        """Extract messages from the string buffer log_content.
+
         The argument patterns needs to be a list of tuples with
         (<error_severity>, <pattern_to_match_for>).
+
+        A substring that matches two different patterns will be stored in the
+        bucket associated with the first pattern that matches.
         """
-        for bucket, pattern in patterns:
-            self.buckets[bucket] += \
-                re.findall(pattern, log_content, flags=re.MULTILINE)
+        # Iterate through all the patterns in reverse order and store hits
+        # against the index of their first character. Doing this in reverse
+        # order means that patterns earlier in the list "win": if two different
+        # patterns match a particular substring, only the bucket of the first
+        # one will end up in the found dict.
+        found = {}
+        for bucket, pattern in reversed(patterns):
+            for m in re.finditer(pattern, log_content, flags=re.MULTILINE):
+                found[m.pos] = (bucket, m.group(0))
+
+        # Now that we've ignored duplicate hits, flatten things out into
+        # self.buckets.
+        for bucket, hit in found.values():
+            self.buckets[bucket].append(hit)
 
     def get_results(self, args: Dict[Path, List[Tuple]]) -> Dict[str, int]:
         """
