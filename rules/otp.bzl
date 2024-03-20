@@ -38,8 +38,9 @@ format expected by the image generation tool.
 
 load("@bazel_skylib//lib:new_sets.bzl", "sets")
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
-load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 load("//rules:const.bzl", "CONST", "hex")
+load("//rules/opentitan:keyutils.bzl", "KeyInfo")
+load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 
 def get_otp_images():
     """Returns a list of (otp_name, img_target) tuples.
@@ -121,6 +122,43 @@ otp_json = rule(
             doc = "Seed to be used for generation of partition randomized values. Can be overridden by the OTP image generation tool.",
         ),
         "partitions": attr.string_list(doc = "A list of serialized partitions from otp_partition."),
+    },
+)
+
+def _otp_json_rot_keys(ctx):
+    keys = {}
+
+    # TODO(moidx): Error if more than 4 keys are provided.
+
+    spx_keys = []
+    for spx_key in ctx.attr.sphincs_plus_keys:
+        spx_keys.append(spx_key[KeyInfo].key_info)
+
+    if spx_keys:
+        keys["spx_keys"] = spx_keys
+
+    ecdsa_keys = []
+    for ecdsa_key in ctx.attr.ecdsa_keys:
+        ecdsa_keys.append(ecdsa_key[KeyInfo].key_info)
+
+    if ecdsa_keys:
+        keys["ecdsa_keys"] = ecdsa_keys
+
+    file = ctx.actions.declare_file("{}.json".format(ctx.attr.name))
+    ctx.actions.write(file, json.encode_indent(keys))
+    return [DefaultInfo(files = depset([file]))]
+
+otp_json_rot_keys = rule(
+    implementation = _otp_json_rot_keys,
+    attrs = {
+        "sphincs_plus_keys": attr.label_list(
+            doc = "Sphincs+ Keys.",
+            providers = [KeyInfo],
+        ),
+        "ecdsa_keys": attr.label_list(
+            doc = "ECDSA Keys.",
+            providers = [KeyInfo],
+        ),
     },
 )
 
