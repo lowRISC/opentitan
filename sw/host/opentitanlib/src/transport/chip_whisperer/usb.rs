@@ -34,7 +34,7 @@ struct PllMulDiv {
     fvco: u32,
 }
 
-#[derive(Ord, PartialOrd, Eq, PartialEq, Debug, Clone)]
+#[derive(Ord, PartialOrd, Eq, PartialEq, Debug, Clone, serde::Serialize)]
 pub struct FirmwareVersion(u8, u8, u8);
 
 impl<B: Board> Backend<B> {

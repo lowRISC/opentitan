@@ -166,6 +166,9 @@ impl<B: Board + 'static> Transport for ChipWhisperer<B> {
             usb.spi1_enable(false)?;
             usb.clear_bitstream()?;
             Ok(None)
+        } else if action.downcast_ref::<GetSam3xFwVersion>().is_some() {
+            let usb = self.device.borrow();
+            Ok(Some(Box::new(usb.get_firmware_version()?)))
         } else {
             Err(TransportError::UnsupportedOperation.into())
         }
@@ -177,3 +180,6 @@ pub struct SetPll {}
 
 /// Command for Transport::dispatch(). Resets the Chip whisperer board's SAM3X chip.
 pub struct ResetSam3x {}
+
+/// Command for Transport::dispatch(). Returns the SAM3X firmware version.
+pub struct GetSam3xFwVersion {}
