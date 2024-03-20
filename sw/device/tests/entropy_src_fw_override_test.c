@@ -263,6 +263,15 @@ static status_t entropy_config(
 }
 
 /**
+ * Check whether KMAC's SHA3 state is idle.
+ */
+static bool kmac_is_idle(void) {
+  dif_kmac_status_t status;
+  CHECK_DIF_OK(dif_kmac_get_status(&kmac, &status));
+  return status.sha3_state == kDifKmacSha3StateIdle;
+}
+
+/**
  * Configure the entropy source in extract and insert mode and run some entropy
  * consumers.
  */
@@ -328,6 +337,7 @@ status_t firmware_override_extract_insert(
   uint32_t output[8];
   LOG_INFO("Running KMAC...");
   for (int i = 0; i < kKmacRepeats; i++) {
+    IBEX_SPIN_FOR(kmac_is_idle(), 20);
     TRY(kmac_testutils_kmac(&kmac, kDifKmacModeKmacLen128, &software_key,
                             /*custom_string=*/NULL, /*custom_string_len=*/0,
                             /*message=*/"hello", /*message_len=*/6,
