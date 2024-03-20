@@ -447,7 +447,8 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
       cfg.spi_device_agent_cfg.add_cmd_info(info);
     end
 
-    `uvm_info(`gfn, $sformatf("Add this cmd_info \n%s", info.sprint()), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("Adding to cmd_info slot (%0d) this cmd_info \n%s", idx,
+                              info.sprint()), UVM_MEDIUM)
     case (info.num_lanes)
       0: lanes_en = 0;
       1: lanes_en = info.write_command ? 4'h1 : 4'h2;
@@ -461,6 +462,7 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     ral.cmd_info[idx].opcode.set(info.opcode);
     ral.cmd_info[idx].payload_en.set(lanes_en);
     ral.cmd_info[idx].payload_dir.set(!info.write_command);
+    ral.cmd_info[idx].read_pipeline_mode.set(info.read_pipeline_mode);
 
     // set dummy cycles
     if (info.dummy_cycles > 0) begin

@@ -160,19 +160,22 @@ class spi_agent_cfg extends dv_base_agent_cfg;
       output bit [2:0] num_addr_bytes,
       output bit write_command,
       output bit [2:0] num_lanes,
-      output int dummy_cycles);
+      output int dummy_cycles,
+      output int read_pipeline_mode);
     if (cmd_infos.exists(opcode)) begin
-      num_addr_bytes = get_num_addr_byte(opcode);
-      write_command  = cmd_infos[opcode].write_command;
-      num_lanes      = cmd_infos[opcode].num_lanes;
-      dummy_cycles   = cmd_infos[opcode].dummy_cycles;
+      num_addr_bytes     = get_num_addr_byte(opcode);
+      write_command      = cmd_infos[opcode].write_command;
+      num_lanes          = cmd_infos[opcode].num_lanes;
+      dummy_cycles       = cmd_infos[opcode].dummy_cycles;
+      read_pipeline_mode = cmd_infos[opcode].read_pipeline_mode;
     end else begin
       // if it's invalid opcode, here is the default setting
       `uvm_info(`gfn, $sformatf("extract invalid opcode: 0x%0h", opcode), UVM_MEDIUM)
-      write_command  = 1;
-      num_addr_bytes = 0;
-      num_lanes      = 1;
-      dummy_cycles   = 0;
+      write_command      = 1;
+      num_addr_bytes     = 0;
+      num_lanes          = 1;
+      dummy_cycles       = 0;
+      read_pipeline_mode = 0;
     end
   endfunction  : extract_cmd_info_from_opcode
 

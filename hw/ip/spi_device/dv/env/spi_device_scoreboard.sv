@@ -701,12 +701,39 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     end
     start_addr = convert_addr_from_byte_queue(up_item.address_q);
 
-    if (dn_item != null) `DV_CHECK_EQ(up_item.payload_q.size, dn_item.payload_q.size)
+    if (dn_item != null) begin
+      // If the read_pipeline is enabled, there will be data latched on the pipe which won't
+      // "come out" to the host since CSB has become inactive. This can be 2-bit, 4-bit or 8-bit
+      // depending whether we're doing a "normal" READ, READDUAL, READQUAD.
+      // Hence it's ok for the DS queue to be 1 item larger.
+
+      if(up_item.read_pipeline_mode && up_item.payload_q.size==0) begin
+        // If the read_pipeline is enabled is possible the DS item has sampled some data
+        // since it had 2 "extra cycles", it really depends on when the txn terminated.
+        if(!((up_item.payload_q.size==dn_item.payload_q.size) ||
+             (up_item.payload_q.size==dn_item.payload_q.size-1)))
+          `uvm_error(`gfn, $sformatf(
+                           "DS and US items don't have the same payload size (US - %0d) (DS - %0d)",
+                                     up_item.payload_q.size,dn_item.payload_q.size ))
+      end
+      else begin
+        if(!up_item.read_pipeline_mode ||
+           up_item.payload_q.size==0) begin //Read terminated before any data was returned
+          `DV_CHECK_EQ(up_item.payload_q.size, dn_item.payload_q.size)
+        end
+        else
+          `DV_CHECK_EQ(up_item.payload_q.size, dn_item.payload_q.size-1)
+      end
+    end // if (dn_item != null)
+
+
     foreach (up_item.payload_q[i]) begin
       cur_addr = start_addr + i;
 
       if (cfg.is_in_mailbox_region(cur_addr)) begin
         bit [31:0] offset = cur_addr % MAILBOX_BUFFER_SIZE;
+        `uvm_info(`gfn, $sformatf("Command has been intercepted and is in the MBX region"),
+                  UVM_DEBUG)
         compare_mem_byte(MAILBOX_START_ADDR, offset, up_item.payload_q[i], i, "Mailbox");
         if (i == 0) start_at_mailbox = 1;
         been_mailbox = 1;
@@ -715,11 +742,11 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
 
         `DV_CHECK_EQ_FATAL(is_passthru, 1)
         if (dn_item != null) begin
-          str = $sformatf("compare mbx data with downstread item. idx %0d, up: 0x%0x, dn: 0x%0x",
+          str = $sformatf("compare US data with DS item. idx %0d, up: 0x%0x, dn: 0x%0x",
                           i, up_item.payload_q[i], dn_item.payload_q[i]);
           `DV_CHECK_CASE_EQ(up_item.payload_q[i], dn_item.payload_q[i], str)
         end else begin // cmd is filtered
-          str = $sformatf("compare mbx data. idx %0d, value 0x%0x != z",
+          str = $sformatf("compare US data - command was filtered. idx %0d, value 0x%0x != z",
                           i, up_item.payload_q[i]);
           `DV_CHECK_CASE_EQ(up_item.payload_q[i], 8'dz, str)
         end
@@ -868,7 +895,34 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
         `DV_CHECK_EQ(upstream_item.address_q[i], downstream_item.address_q[i])
       end
     end else begin
-      if (!downstream_item.compare(upstream_item)) begin
+
+      if(upstream_item.read_pipeline_mode>0 &&
+         (downstream_item.payload_q.size==upstream_item.payload_q.size+1)) begin
+        string print_str;
+        // Read pipeline is enabled, so if the US item is 1 item short of payload bytes (due to CSB
+        // becoming inactive and the "missing" data still in the read pipeline), we need to
+        // "manually" compare the items (opcode, address, payload)
+        print_str = "Comparing only the number of payload items in US item (1 less than DS item)";
+        print_str = {print_str, " ","since read_pipeline is enabled"};
+        `uvm_info(`gfn, print_str, UVM_DEBUG);
+        //compare opcode
+        `DV_CHECK_CASE_EQ(upstream_item.opcode, downstream_item.opcode)
+        //compare addr
+        `DV_CHECK_EQ(upstream_item.address_q.size, downstream_item.address_q.size)
+        foreach(upstream_item.address_q[i]) begin
+          print_str = $sformatf("compare US address with DS item. idx %0d, up: 0x%0x, dn: 0x%0x",
+                                i, upstream_item.address_q[i], downstream_item.address_q[i]);
+          `DV_CHECK_CASE_EQ(upstream_item.address_q[i], downstream_item.address_q[i], print_str)
+        end
+        //compare payload
+        foreach(upstream_item.payload_q[i]) begin
+          print_str = $sformatf("compare US data with DS item. idx %0d, up: 0x%0x, dn: 0x%0x",
+                                i, upstream_item.payload_q[i], downstream_item.payload_q[i]);
+
+          `DV_CHECK_CASE_EQ(upstream_item.payload_q[i], downstream_item.payload_q[i], print_str)
+        end
+      end
+      else if (!downstream_item.compare(upstream_item)) begin
         `uvm_error(`gfn, $sformatf("Compare failed, downstream item:\n%s upstream item:\n%s",
               downstream_item.sprint(), upstream_item.sprint()))
       end

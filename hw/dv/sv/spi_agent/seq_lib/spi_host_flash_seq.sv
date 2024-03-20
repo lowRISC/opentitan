@@ -21,7 +21,7 @@ class spi_host_flash_seq extends spi_base_seq;
   `uvm_object_new
 
   virtual task body();
-    int num_addr_bytes, num_lanes, dummy_cycles;
+    int num_addr_bytes, num_lanes, dummy_cycles, read_pipeline_mode;
     bit write_command;
 
     req = spi_item::type_id::create("req");
@@ -30,7 +30,7 @@ class spi_host_flash_seq extends spi_base_seq;
     cfg.spi_func_mode = SpiModeFlash;
     cfg.extract_cmd_info_from_opcode(opcode,
         // output
-        num_addr_bytes, write_command, num_lanes, dummy_cycles);
+        num_addr_bytes, write_command, num_lanes, dummy_cycles, read_pipeline_mode);
     if (address_q.size() == 0) begin
       `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(address_q,
           address_q.size == num_addr_bytes;)
@@ -45,6 +45,7 @@ class spi_host_flash_seq extends spi_base_seq;
                                    write_command == local::write_command;
                                    num_lanes == local::num_lanes;
                                    dummy_cycles == local::dummy_cycles;
+                                   read_pipeline_mode == local::read_pipeline_mode;
                                    address_q.size() == num_addr_bytes;
                                    foreach (address_q[i]) {
                                      address_q[i] == local::address_q[i];

@@ -19,6 +19,7 @@ class spi_item extends uvm_sequence_item;
   // 1,2 or 4 lanes for read response, 0 means no data
   rand bit [2:0] num_lanes;
   rand int dummy_cycles;
+  rand int read_pipeline_mode;
 
   // for dummy transaction
   rand uint dummy_sck_cnt;
@@ -71,6 +72,7 @@ class spi_item extends uvm_sequence_item;
     `uvm_field_int(csb_sel,                      UVM_DEFAULT)
     `uvm_field_queue_int(payload_q,              UVM_DEFAULT)
     `uvm_field_queue_int(address_q,              UVM_DEFAULT)
+    `uvm_field_int(read_pipeline_mode,           UVM_DEFAULT)
   `uvm_object_utils_end
 
   `uvm_object_new
