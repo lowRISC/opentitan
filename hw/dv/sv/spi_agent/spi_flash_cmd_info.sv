@@ -11,11 +11,13 @@ class spi_flash_cmd_info extends uvm_sequence_item;
   // number of lanes when sending payload, set to 0 if no payload is expected
   rand bit [2:0] num_lanes;
   rand int dummy_cycles;
+  rand bit [1:0] read_pipeline_mode;
 
   constraint addr_mode_c {
     // for dual/quad mode, it always contains address
     num_lanes > 1 -> addr_mode != SpiFlashAddrDisabled;
   }
+
 
   constraint num_lanes_c {
     write_command -> num_lanes == 1;
@@ -23,6 +25,10 @@ class spi_flash_cmd_info extends uvm_sequence_item;
   }
 
   constraint dummy_cycles_c {
+    solve write_command before read_pipeline_mode;
+    write_command  -> read_pipeline_mode == 0;
+    !write_command -> read_pipeline_mode <= 2;
+
     // for dual/quad read, need at least 2 dummy cycles
     num_lanes > 1 && !write_command -> dummy_cycles >= 2;
     // write or no payload doesn't have dummy cycle.
@@ -40,6 +46,7 @@ class spi_flash_cmd_info extends uvm_sequence_item;
     `uvm_field_int(write_command, UVM_DEFAULT)
     `uvm_field_int(dummy_cycles,  UVM_DEFAULT)
     `uvm_field_int(num_lanes,     UVM_DEFAULT)
+    `uvm_field_int(read_pipeline_mode, UVM_DEFAULT)
   `uvm_object_utils_end
 
   `uvm_object_new
