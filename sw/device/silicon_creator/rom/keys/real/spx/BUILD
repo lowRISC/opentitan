@@ -2,6 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("//rules/opentitan:keyutils.bzl", "key_sphincs_plus")
+
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
@@ -45,9 +47,25 @@ filegroup(
     srcs = ["test_key_0_spx.pub.pem"],
 )
 
+key_sphincs_plus(
+    name = "test_key_0_spx_key",
+    config = "Shake128s",
+    method = "hsmtool",
+    pub_key = "test_key_0_spx.pub.pem",
+    type = "TestKey",
+)
+
 filegroup(
     name = "test_key_1_spx",
     srcs = ["test_key_1_spx.pub.pem"],
+)
+
+key_sphincs_plus(
+    name = "test_key_1_spx_key",
+    config = "Shake128s",
+    method = "hsmtool",
+    pub_key = "test_key_1_spx.pub.pem",
+    type = "TestKey",
 )
 
 filegroup(
@@ -55,9 +73,25 @@ filegroup(
     srcs = ["dev_key_0_spx.pub.pem"],
 )
 
+key_sphincs_plus(
+    name = "dev_key_0_spx_key",
+    config = "Shake128s",
+    method = "hsmtool",
+    pub_key = "dev_key_0_spx.pub.pem",
+    type = "TestKey",
+)
+
 filegroup(
     name = "dev_key_1_spx",
     srcs = ["dev_key_1_spx.pub.pem"],
+)
+
+key_sphincs_plus(
+    name = "dev_key_1_spx_key",
+    config = "Shake128s",
+    method = "hsmtool",
+    pub_key = "dev_key_1_spx.pub.pem",
+    type = "TestKey",
 )
 
 filegroup(
@@ -65,12 +99,36 @@ filegroup(
     srcs = ["prod_key_0_spx.pub.pem"],
 )
 
+key_sphincs_plus(
+    name = "prod_key_0_spx_key",
+    config = "Shake128s",
+    method = "hsmtool",
+    pub_key = "prod_key_0_spx.pub.pem",
+    type = "TestKey",
+)
+
 filegroup(
     name = "prod_key_1_spx",
     srcs = ["prod_key_1_spx.pub.pem"],
 )
 
+key_sphincs_plus(
+    name = "prod_key_1_spx_key",
+    config = "Shake128s",
+    method = "hsmtool",
+    pub_key = "prod_key_1_spx.pub.pem",
+    type = "TestKey",
+)
+
 filegroup(
     name = "prod_key_2_spx",
     srcs = ["prod_key_2_spx.pub.pem"],
+)
+
+key_sphincs_plus(
+    name = "prod_key_2_spx_key",
+    config = "Shake128s",
+    method = "hsmtool",
+    pub_key = "prod_key_2_spx.pub.pem",
+    type = "TestKey",
 )
