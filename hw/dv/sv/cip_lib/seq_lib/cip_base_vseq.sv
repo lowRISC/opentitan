@@ -789,7 +789,7 @@ class cip_base_vseq #(
   // break if stop_transaction_generators() is set.
   virtual task wait_to_issue_reset(uint reset_delay_bound = 10_000_000);
     int cycles_with_no_accesses = 0;
-    int cycles_waited = 0;
+    int cycles_waited;
 
     int wait_cycles = wait_cycles_with_no_outstanding_accesses();
 
@@ -807,7 +807,9 @@ class cip_base_vseq #(
     `uvm_info(`gfn, $sformatf(
               "Waiting up to %0d cycles for a long enough run of no accesses", wait_cycles),
               UVM_MEDIUM)
-    for (; cycles_waited < wait_cycles || cycles_with_no_accesses > 0; ++cycles_waited) begin
+    for (cycles_waited = 0;
+         cycles_waited < wait_cycles || cycles_with_no_accesses > 0;
+         ++cycles_waited) begin
       if (!has_outstanding_access()) begin
         ++cycles_with_no_accesses;
         if (cycles_with_no_accesses > CyclesWithNoAccessesThreshold) begin
