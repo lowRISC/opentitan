@@ -48,7 +48,7 @@ key_sphincs_plus = rule(
         "method": attr.string(
             doc = "Mechanism used to access the key. Can be local or hsmtool.",
             values = ["local", "hsmtool"],
-        )
+        ),
     },
 )
 
@@ -87,10 +87,9 @@ key_ecdsa = rule(
         "method": attr.string(
             doc = "Mechanism used to access the key. Can be local or hsmtool.",
             values = ["local", "hsmtool"],
-        )
+        ),
     },
 )
-
 
 def rsa_key_for_lc_state(key_structs, hw_lc_state):
     """Return a dictionary containing a single key that can be used in the given
