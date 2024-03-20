@@ -4,9 +4,8 @@
 //
 // coverage object for a fixed width mubi
 class mubi_cov #(parameter int Width = 4,
-                parameter int ValueTrue = prim_mubi_pkg::MuBi4True,
-                parameter int ValueFalse = prim_mubi_pkg::MuBi4False
-                ) extends uvm_object;
+                 parameter int unsigned ValueTrue = prim_mubi_pkg::MuBi4True,
+                 parameter int unsigned ValueFalse = prim_mubi_pkg::MuBi4False) extends uvm_object;
   `uvm_object_param_utils(mubi_cov #(Width, ValueTrue, ValueFalse))
 
   // Collect true, false and at least N other values (N = Width)
