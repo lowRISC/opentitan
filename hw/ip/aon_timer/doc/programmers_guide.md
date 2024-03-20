@@ -6,7 +6,7 @@
 2. Program the desired wakeup pre-scaler value in [`WKUP_CTRL`](registers.md#wkup_ctrl).
 3. Program the desired thresholds in [`WKUP_THOLD_LO`](registers.md#wkup_thold_lo), [`WKUP_THOLD_HI`](registers.md#wkup_thold_hi), [`WDOG_BARK_THOLD`](registers.md#wdog_bark_thold) and [`WDOG_BITE_THOLD`](registers.md#wdog_bite_thold).
 4. Set the enable bit to 1 in the [`WKUP_CTRL`](registers.md#wkup_ctrl) / [`WDOG_CTRL`](registers.md#wdog_ctrl) registers.
-5. If desired, lock the watchdog configuration by writing 1 to the `regwen` bit in [`WDOG_REGWEN`](registers.md#wdog_regwen).
+5. If desired, lock the watchdog configuration by writing 0 to the `regwen` bit in [`WDOG_REGWEN`](registers.md#wdog_regwen).
 
 ## Watchdog pet
 
