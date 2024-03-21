@@ -3013,81 +3013,41 @@ module usbdev_reg_top (
   );
 
 
-  // R[avoutbuffer]: V(False)
+  // R[avoutbuffer]: V(True)
   logic avoutbuffer_qe;
   logic [0:0] avoutbuffer_flds_we;
-  prim_flop #(
-    .Width(1),
-    .ResetValue(0)
-  ) u_avoutbuffer0_qe (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(&avoutbuffer_flds_we),
-    .q_o(avoutbuffer_qe)
-  );
-  prim_subreg #(
-    .DW      (5),
-    .SwAccess(prim_subreg_pkg::SwAccessWO),
-    .RESVAL  (5'h0),
-    .Mubi    (1'b0)
+  assign avoutbuffer_qe = &avoutbuffer_flds_we;
+  prim_subreg_ext #(
+    .DW    (5)
   ) u_avoutbuffer (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
+    .re     (1'b0),
     .we     (avoutbuffer_we),
     .wd     (avoutbuffer_wd),
-
-    // from internal hardware
-    .de     (1'b0),
     .d      ('0),
-
-    // to internal hardware
+    .qre    (),
     .qe     (avoutbuffer_flds_we[0]),
     .q      (reg2hw.avoutbuffer.q),
     .ds     (),
-
-    // to register interface (read)
     .qs     ()
   );
   assign reg2hw.avoutbuffer.qe = avoutbuffer_qe;
 
 
-  // R[avsetupbuffer]: V(False)
+  // R[avsetupbuffer]: V(True)
   logic avsetupbuffer_qe;
   logic [0:0] avsetupbuffer_flds_we;
-  prim_flop #(
-    .Width(1),
-    .ResetValue(0)
-  ) u_avsetupbuffer0_qe (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(&avsetupbuffer_flds_we),
-    .q_o(avsetupbuffer_qe)
-  );
-  prim_subreg #(
-    .DW      (5),
-    .SwAccess(prim_subreg_pkg::SwAccessWO),
-    .RESVAL  (5'h0),
-    .Mubi    (1'b0)
+  assign avsetupbuffer_qe = &avsetupbuffer_flds_we;
+  prim_subreg_ext #(
+    .DW    (5)
   ) u_avsetupbuffer (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
+    .re     (1'b0),
     .we     (avsetupbuffer_we),
     .wd     (avsetupbuffer_wd),
-
-    // from internal hardware
-    .de     (1'b0),
     .d      ('0),
-
-    // to internal hardware
+    .qre    (),
     .qe     (avsetupbuffer_flds_we[0]),
     .q      (reg2hw.avsetupbuffer.q),
     .ds     (),
-
-    // to register interface (read)
     .qs     ()
   );
   assign reg2hw.avsetupbuffer.qe = avsetupbuffer_qe;
