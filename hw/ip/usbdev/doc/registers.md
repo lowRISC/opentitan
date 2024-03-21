@@ -3,48 +3,60 @@
 <!-- BEGIN CMDGEN util/regtool.py -d ./hw/ip/usbdev/data/usbdev.hjson -->
 ## Summary
 
-| Name                                         | Offset   |   Length | Description                                                                |
-|:---------------------------------------------|:---------|---------:|:---------------------------------------------------------------------------|
-| usbdev.[`INTR_STATE`](#intr_state)           | 0x0      |        4 | Interrupt State Register                                                   |
-| usbdev.[`INTR_ENABLE`](#intr_enable)         | 0x4      |        4 | Interrupt Enable Register                                                  |
-| usbdev.[`INTR_TEST`](#intr_test)             | 0x8      |        4 | Interrupt Test Register                                                    |
-| usbdev.[`ALERT_TEST`](#alert_test)           | 0xc      |        4 | Alert Test Register                                                        |
-| usbdev.[`usbctrl`](#usbctrl)                 | 0x10     |        4 | USB Control                                                                |
-| usbdev.[`ep_out_enable`](#ep_out_enable)     | 0x14     |        4 | Enable an endpoint to respond to transactions in the downstream direction. |
-| usbdev.[`ep_in_enable`](#ep_in_enable)       | 0x18     |        4 | Enable an endpoint to respond to transactions in the upstream direction.   |
-| usbdev.[`usbstat`](#usbstat)                 | 0x1c     |        4 | USB Status                                                                 |
-| usbdev.[`avoutbuffer`](#avoutbuffer)         | 0x20     |        4 | Available OUT Buffer FIFO                                                  |
-| usbdev.[`avsetupbuffer`](#avsetupbuffer)     | 0x24     |        4 | Available SETUP Buffer FIFO                                                |
-| usbdev.[`rxfifo`](#rxfifo)                   | 0x28     |        4 | Received Buffer FIFO                                                       |
-| usbdev.[`rxenable_setup`](#rxenable_setup)   | 0x2c     |        4 | Receive SETUP transaction enable                                           |
-| usbdev.[`rxenable_out`](#rxenable_out)       | 0x30     |        4 | Receive OUT transaction enable                                             |
-| usbdev.[`set_nak_out`](#set_nak_out)         | 0x34     |        4 | Set NAK after OUT transactions                                             |
-| usbdev.[`in_sent`](#in_sent)                 | 0x38     |        4 | IN Transaction Sent                                                        |
-| usbdev.[`out_stall`](#out_stall)             | 0x3c     |        4 | OUT Endpoint STALL control                                                 |
-| usbdev.[`in_stall`](#in_stall)               | 0x40     |        4 | IN Endpoint STALL control                                                  |
-| usbdev.[`configin_0`](#configin)             | 0x44     |        4 | Configure IN Transaction                                                   |
-| usbdev.[`configin_1`](#configin)             | 0x48     |        4 | Configure IN Transaction                                                   |
-| usbdev.[`configin_2`](#configin)             | 0x4c     |        4 | Configure IN Transaction                                                   |
-| usbdev.[`configin_3`](#configin)             | 0x50     |        4 | Configure IN Transaction                                                   |
-| usbdev.[`configin_4`](#configin)             | 0x54     |        4 | Configure IN Transaction                                                   |
-| usbdev.[`configin_5`](#configin)             | 0x58     |        4 | Configure IN Transaction                                                   |
-| usbdev.[`configin_6`](#configin)             | 0x5c     |        4 | Configure IN Transaction                                                   |
-| usbdev.[`configin_7`](#configin)             | 0x60     |        4 | Configure IN Transaction                                                   |
-| usbdev.[`configin_8`](#configin)             | 0x64     |        4 | Configure IN Transaction                                                   |
-| usbdev.[`configin_9`](#configin)             | 0x68     |        4 | Configure IN Transaction                                                   |
-| usbdev.[`configin_10`](#configin)            | 0x6c     |        4 | Configure IN Transaction                                                   |
-| usbdev.[`configin_11`](#configin)            | 0x70     |        4 | Configure IN Transaction                                                   |
-| usbdev.[`out_iso`](#out_iso)                 | 0x74     |        4 | OUT Endpoint isochronous setting                                           |
-| usbdev.[`in_iso`](#in_iso)                   | 0x78     |        4 | IN Endpoint isochronous setting                                            |
-| usbdev.[`out_data_toggle`](#out_data_toggle) | 0x7c     |        4 | OUT Endpoints Data Toggles                                                 |
-| usbdev.[`in_data_toggle`](#in_data_toggle)   | 0x80     |        4 | IN Endpoints Data Toggles                                                  |
-| usbdev.[`phy_pins_sense`](#phy_pins_sense)   | 0x84     |        4 | USB PHY pins sense.                                                        |
-| usbdev.[`phy_pins_drive`](#phy_pins_drive)   | 0x88     |        4 | USB PHY pins drive.                                                        |
-| usbdev.[`phy_config`](#phy_config)           | 0x8c     |        4 | USB PHY Configuration                                                      |
-| usbdev.[`wake_control`](#wake_control)       | 0x90     |        4 | USB wake module control for suspend / resume                               |
-| usbdev.[`wake_events`](#wake_events)         | 0x94     |        4 | USB wake module events and debug                                           |
-| usbdev.[`fifo_ctrl`](#fifo_ctrl)             | 0x98     |        4 | FIFO control register                                                      |
-| usbdev.[`buffer`](#buffer)                   | 0x800    |     2048 | 2 kB packet buffer. Divided into 32 64-byte buffers.                       |
+| Name                                             | Offset   |   Length | Description                                                                           |
+|:-------------------------------------------------|:---------|---------:|:--------------------------------------------------------------------------------------|
+| usbdev.[`INTR_STATE`](#intr_state)               | 0x0      |        4 | Interrupt State Register                                                              |
+| usbdev.[`INTR_ENABLE`](#intr_enable)             | 0x4      |        4 | Interrupt Enable Register                                                             |
+| usbdev.[`INTR_TEST`](#intr_test)                 | 0x8      |        4 | Interrupt Test Register                                                               |
+| usbdev.[`ALERT_TEST`](#alert_test)               | 0xc      |        4 | Alert Test Register                                                                   |
+| usbdev.[`usbctrl`](#usbctrl)                     | 0x10     |        4 | USB Control                                                                           |
+| usbdev.[`ep_out_enable`](#ep_out_enable)         | 0x14     |        4 | Enable an endpoint to respond to transactions in the downstream direction.            |
+| usbdev.[`ep_in_enable`](#ep_in_enable)           | 0x18     |        4 | Enable an endpoint to respond to transactions in the upstream direction.              |
+| usbdev.[`usbstat`](#usbstat)                     | 0x1c     |        4 | USB Status                                                                            |
+| usbdev.[`avoutbuffer`](#avoutbuffer)             | 0x20     |        4 | Available OUT Buffer FIFO                                                             |
+| usbdev.[`avsetupbuffer`](#avsetupbuffer)         | 0x24     |        4 | Available SETUP Buffer FIFO                                                           |
+| usbdev.[`rxfifo`](#rxfifo)                       | 0x28     |        4 | Received Buffer FIFO                                                                  |
+| usbdev.[`rxenable_setup`](#rxenable_setup)       | 0x2c     |        4 | Receive SETUP transaction enable                                                      |
+| usbdev.[`rxenable_out`](#rxenable_out)           | 0x30     |        4 | Receive OUT transaction enable                                                        |
+| usbdev.[`set_nak_out`](#set_nak_out)             | 0x34     |        4 | Set NAK after OUT transactions                                                        |
+| usbdev.[`in_sent`](#in_sent)                     | 0x38     |        4 | IN Transaction Sent                                                                   |
+| usbdev.[`out_stall`](#out_stall)                 | 0x3c     |        4 | OUT Endpoint STALL control                                                            |
+| usbdev.[`in_stall`](#in_stall)                   | 0x40     |        4 | IN Endpoint STALL control                                                             |
+| usbdev.[`configin_0`](#configin)                 | 0x44     |        4 | Configure IN Transaction                                                              |
+| usbdev.[`configin_1`](#configin)                 | 0x48     |        4 | Configure IN Transaction                                                              |
+| usbdev.[`configin_2`](#configin)                 | 0x4c     |        4 | Configure IN Transaction                                                              |
+| usbdev.[`configin_3`](#configin)                 | 0x50     |        4 | Configure IN Transaction                                                              |
+| usbdev.[`configin_4`](#configin)                 | 0x54     |        4 | Configure IN Transaction                                                              |
+| usbdev.[`configin_5`](#configin)                 | 0x58     |        4 | Configure IN Transaction                                                              |
+| usbdev.[`configin_6`](#configin)                 | 0x5c     |        4 | Configure IN Transaction                                                              |
+| usbdev.[`configin_7`](#configin)                 | 0x60     |        4 | Configure IN Transaction                                                              |
+| usbdev.[`configin_8`](#configin)                 | 0x64     |        4 | Configure IN Transaction                                                              |
+| usbdev.[`configin_9`](#configin)                 | 0x68     |        4 | Configure IN Transaction                                                              |
+| usbdev.[`configin_10`](#configin)                | 0x6c     |        4 | Configure IN Transaction                                                              |
+| usbdev.[`configin_11`](#configin)                | 0x70     |        4 | Configure IN Transaction                                                              |
+| usbdev.[`out_iso`](#out_iso)                     | 0x74     |        4 | OUT Endpoint isochronous setting                                                      |
+| usbdev.[`in_iso`](#in_iso)                       | 0x78     |        4 | IN Endpoint isochronous setting                                                       |
+| usbdev.[`out_data_toggle`](#out_data_toggle)     | 0x7c     |        4 | OUT Endpoints Data Toggles                                                            |
+| usbdev.[`in_data_toggle`](#in_data_toggle)       | 0x80     |        4 | IN Endpoints Data Toggles                                                             |
+| usbdev.[`phy_pins_sense`](#phy_pins_sense)       | 0x84     |        4 | USB PHY pins sense.                                                                   |
+| usbdev.[`phy_pins_drive`](#phy_pins_drive)       | 0x88     |        4 | USB PHY pins drive.                                                                   |
+| usbdev.[`phy_config`](#phy_config)               | 0x8c     |        4 | USB PHY Configuration                                                                 |
+| usbdev.[`wake_control`](#wake_control)           | 0x90     |        4 | USB wake module control for suspend / resume                                          |
+| usbdev.[`wake_events`](#wake_events)             | 0x94     |        4 | USB wake module events and debug                                                      |
+| usbdev.[`fifo_ctrl`](#fifo_ctrl)                 | 0x98     |        4 | FIFO control register                                                                 |
+| usbdev.[`count_ign_avsetup`](#count_ign_avsetup) | 0x9c     |        4 | Count of SETUP packets ignored because there was no buffer available.                 |
+| usbdev.[`count_drop_avout`](#count_drop_avout)   | 0xa0     |        4 | Count of OUT packets dropped/NAKed because there was no buffer available.             |
+| usbdev.[`count_drop_rx`](#count_drop_rx)         | 0xa4     |        4 | Count of SETUP/OUT packets ignored, dropped or NAKed because the RX FIFO was full.    |
+| usbdev.[`count_datatog_out`](#count_datatog_out) | 0xa8     |        4 | Count of OUT transactions that were ACKnowledged and dropped as apparent retries.     |
+| usbdev.[`count_timeout_in`](#count_timeout_in)   | 0xac     |        4 | Count of IN transactions that did not receive a handshake response from the USB host. |
+| usbdev.[`count_nak_in`](#count_nak_in)           | 0xb0     |        4 | Count of rejected IN transactions; NAK received from host.                            |
+| usbdev.[`count_nodata_in0`](#count_nodata_in0)   | 0xb4     |        4 | Count of IN transactions for which no packet data was available.                      |
+| usbdev.[`count_nodata_in1`](#count_nodata_in1)   | 0xb8     |        4 | Count of IN transactions for which no packet data was available.                      |
+| usbdev.[`count_crc5_out`](#count_crc5_out)       | 0xbc     |        4 | Count of CRC5 errors detected on token packets from the host.                         |
+| usbdev.[`count_crc16_out`](#count_crc16_out)     | 0xc0     |        4 | Count of CRC16 errors detected on SETUP/OUT transactions from the host.               |
+| usbdev.[`count_bitstuff`](#count_bitstuff)       | 0xc4     |        4 | Count of Bit Stuffing errors detected on SETUP/OUT transactions from the host.        |
+| usbdev.[`count_pid_invalid`](#count_pid_invalid) | 0xc8     |        4 | Count of OUT transactions rejected because of Invalid Packet IDentifiers.             |
+| usbdev.[`buffer`](#buffer)                       | 0x800    |     2048 | 2 KiB packet buffer. Divided into thirty two 64-byte buffers.                         |
 
 ## INTR_STATE
 Interrupt State Register
@@ -1364,10 +1376,298 @@ FIFO control register
 |   1    |   wo   |   0x0   | avsetup_rst | Software reset of the Available SETUP Buffer FIFO. This must be used only when the USB device is not connected to the USB. |
 |   0    |   wo   |   0x0   | avout_rst   | Software reset of the Available OUT Buffer FIFO. This must be used only when the USB device is not connected to the USB.   |
 
-## buffer
-2 kB packet buffer. Divided into 32 64-byte buffers.
+## count_ign_avsetup
+Count of SETUP packets ignored because there was no buffer available.
+- Offset: `0x9c`
+- Reset default: `0x0`
+- Reset mask: `0x8fffffff`
 
-The packet buffer is used for sending and receiveing packets.
+### Fields
+
+```wavejson
+{"reg": [{"name": "count", "bits": 16, "attr": ["ro"], "rotate": 0}, {"name": "endpoints", "bits": 12, "attr": ["rw"], "rotate": 0}, {"bits": 3}, {"name": "rst", "bits": 1, "attr": ["wo"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name      | Description                                                                       |
+|:------:|:------:|:-------:|:----------|:----------------------------------------------------------------------------------|
+|   31   |   wo   |   0x0   | rst       | Write 1 to reset the counter.                                                     |
+| 30:28  |        |         |           | Reserved                                                                          |
+| 27:16  |   rw   |   0x0   | endpoints | Set of endpoints for which this counter is enabled.                               |
+|  15:0  |   ro   |   0x0   | count     | Number of SETUP packets ignored because there was no buffer in the Av SETUP FIFO. |
+
+## count_drop_avout
+Count of OUT packets dropped/NAKed because there was no buffer available.
+- Offset: `0xa0`
+- Reset default: `0x0`
+- Reset mask: `0x8fffffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "count", "bits": 16, "attr": ["ro"], "rotate": 0}, {"name": "endpoints", "bits": 12, "attr": ["rw"], "rotate": 0}, {"bits": 3}, {"name": "rst", "bits": 1, "attr": ["wo"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name      | Description                                                                                                                                                                         |
+|:------:|:------:|:-------:|:----------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|   31   |   wo   |   0x0   | rst       | Write 1 to reset the counter.                                                                                                                                                       |
+| 30:28  |        |         |           | Reserved                                                                                                                                                                            |
+| 27:16  |   rw   |   0x0   | endpoints | Set of endpoints for which this counter is enabled.                                                                                                                                 |
+|  15:0  |   ro   |   0x0   | count     | Number of OUT packets that could not be accepted because there was no buffer in the Av OUT FIFO. Non-Isochronous OUT packets have been NAKed. Isochronous OUT packets were ignored. |
+
+## count_drop_rx
+Count of SETUP/OUT packets ignored, dropped or NAKed because the RX FIFO was full.
+- Offset: `0xa4`
+- Reset default: `0x0`
+- Reset mask: `0x8fffffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "count", "bits": 16, "attr": ["ro"], "rotate": 0}, {"name": "endpoints", "bits": 12, "attr": ["rw"], "rotate": 0}, {"bits": 3}, {"name": "rst", "bits": 1, "attr": ["wo"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name      | Description                                                                                                                                                                                                      |
+|:------:|:------:|:-------:|:----------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|   31   |   wo   |   0x0   | rst       | Write 1 to reset the counter.                                                                                                                                                                                    |
+| 30:28  |        |         |           | Reserved                                                                                                                                                                                                         |
+| 27:16  |   rw   |   0x0   | endpoints | Set of endpoints for which this counter is enabled.                                                                                                                                                              |
+|  15:0  |   ro   |   0x0   | count     | Number of SETUP/OUT packets ignored, dropped or NAKed because the RX FIFO was full. SETUP packets have been ignored, Isochronous OUT packets have been dropped, and non-Isochronous OUT packets have been NAKed. |
+
+## count_datatog_out
+Count of OUT transactions that were ACKnowledged and dropped as apparent retries.
+- Offset: `0xa8`
+- Reset default: `0x0`
+- Reset mask: `0x8fffffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "count", "bits": 16, "attr": ["ro"], "rotate": 0}, {"name": "endpoints", "bits": 12, "attr": ["rw"], "rotate": 0}, {"bits": 3}, {"name": "rst", "bits": 1, "attr": ["wo"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name                                       |
+|:------:|:------:|:-------:|:-------------------------------------------|
+|   31   |   wo   |   0x0   | [rst](#count_datatog_out--rst)             |
+| 30:28  |        |         | Reserved                                   |
+| 27:16  |   rw   |   0x0   | [endpoints](#count_datatog_out--endpoints) |
+|  15:0  |   ro   |   0x0   | [count](#count_datatog_out--count)         |
+
+### count_datatog_out . rst
+Write 1 to reset the counter.
+
+### count_datatog_out . endpoints
+Set of endpoints for which this counter is enabled.
+
+### count_datatog_out . count
+Number of OUT transactions for which the USB device acknowledged the OUT packet
+and dropped it internally, which is the correct response to a packet transmitted
+with an incorrect Data Toggle.
+
+The expectation is that this packet is a retry of the previous packet transmission
+and that the handshake response was not received intact by the USB host, indicating
+unreliable communications.
+
+This counter may be enabled for a specific set of endpoints in the event that
+there there is another cause of the Data Toggle synchronization failure.
+
+## count_timeout_in
+Count of IN transactions that did not receive a handshake response from the USB host.
+- Offset: `0xac`
+- Reset default: `0x0`
+- Reset mask: `0x8fffffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "count", "bits": 16, "attr": ["ro"], "rotate": 0}, {"name": "endpoints", "bits": 12, "attr": ["rw"], "rotate": 0}, {"bits": 3}, {"name": "rst", "bits": 1, "attr": ["wo"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name                                      |
+|:------:|:------:|:-------:|:------------------------------------------|
+|   31   |   wo   |   0x0   | [rst](#count_timeout_in--rst)             |
+| 30:28  |        |         | Reserved                                  |
+| 27:16  |   rw   |   0x0   | [endpoints](#count_timeout_in--endpoints) |
+|  15:0  |   ro   |   0x0   | [count](#count_timeout_in--count)         |
+
+### count_timeout_in . rst
+Write 1 to reset the counter.
+
+### count_timeout_in . endpoints
+Set of endpoints for which this counter is enabled.
+
+### count_timeout_in . count
+Number of IN transactions for which the USB host did not respond with a handshake,
+and the transactions timed out. This indicates that the host did not receive it
+and decode it as a valid packet, suggesting that communication is unreliable.
+
+Isochronous IN transactions are excluded from this count because there is no
+handshake response to Isochronous packet transfers.
+
+This counter may be enabled for a specific set of endpoints in the event that
+particular pipes are unable to accept more data at the host.
+
+## count_nak_in
+Count of rejected IN transactions; NAK received from host.
+- Offset: `0xb0`
+- Reset default: `0x0`
+- Reset mask: `0x8fffffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "count", "bits": 16, "attr": ["ro"], "rotate": 0}, {"name": "endpoints", "bits": 12, "attr": ["rw"], "rotate": 0}, {"bits": 3}, {"name": "rst", "bits": 1, "attr": ["wo"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name      | Description                                                                                                                                                                                                                |
+|:------:|:------:|:-------:|:----------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|   31   |   wo   |   0x0   | rst       | Write 1 to reset the counter.                                                                                                                                                                                              |
+| 30:28  |        |         |           | Reserved                                                                                                                                                                                                                   |
+| 27:16  |   rw   |   0x0   | endpoints | Set of endpoints for which this counter is enabled.                                                                                                                                                                        |
+|  15:0  |   ro   |   0x0   | count     | Number of IN transactions rejected by the host responding with a NAK handshake. This counter may be enabled for a specific set of endpoints in the event that particular pipes are unable to accept more data at the host. |
+
+## count_nodata_in0
+Count of IN transactions for which no packet data was available.
+- Offset: `0xb4`
+- Reset default: `0x0`
+- Reset mask: `0x8fffffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "count", "bits": 16, "attr": ["ro"], "rotate": 0}, {"name": "endpoints", "bits": 12, "attr": ["rw"], "rotate": 0}, {"bits": 3}, {"name": "rst", "bits": 1, "attr": ["wo"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name                                      |
+|:------:|:------:|:-------:|:------------------------------------------|
+|   31   |   wo   |   0x0   | [rst](#count_nodata_in0--rst)             |
+| 30:28  |        |         | Reserved                                  |
+| 27:16  |   rw   |   0x0   | [endpoints](#count_nodata_in0--endpoints) |
+|  15:0  |   ro   |   0x0   | [count](#count_nodata_in0--count)         |
+
+### count_nodata_in0 . rst
+Write 1 to reset the counter.
+
+### count_nodata_in0 . endpoints
+Set of endpoints for which this counter is enabled.
+
+### count_nodata_in0 . count
+Number of IN transactions that were attempted when there was no packet available
+in the corresponding 'configin' register(s). This is not necessarily an error
+condition, and the counter primarily offers some visibility into when the IN
+traffic is underusing the available bus bandwidth.
+
+## count_nodata_in1
+Count of IN transactions for which no packet data was available.
+- Offset: `0xb8`
+- Reset default: `0x0`
+- Reset mask: `0x8fffffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "count", "bits": 16, "attr": ["ro"], "rotate": 0}, {"name": "endpoints", "bits": 12, "attr": ["rw"], "rotate": 0}, {"bits": 3}, {"name": "rst", "bits": 1, "attr": ["wo"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name                                      |
+|:------:|:------:|:-------:|:------------------------------------------|
+|   31   |   wo   |   0x0   | [rst](#count_nodata_in1--rst)             |
+| 30:28  |        |         | Reserved                                  |
+| 27:16  |   rw   |   0x0   | [endpoints](#count_nodata_in1--endpoints) |
+|  15:0  |   ro   |   0x0   | [count](#count_nodata_in1--count)         |
+
+### count_nodata_in1 . rst
+Write 1 to reset the counter.
+
+### count_nodata_in1 . endpoints
+Set of endpoints for which this counter is enabled.
+
+### count_nodata_in1 . count
+Number of IN transactions that were attempted when there was no packet available
+in the corresponding 'configin' register(s).
+This secondary register allows some partitioning of endpoints among the two
+counters, for more targeted measurement, eg. endpoints may be grouped according to
+the expected bandwidth usage, or Isochronous vs. non-Isochronous transfers.
+
+## count_crc5_out
+Count of CRC5 errors detected on token packets from the host.
+- Offset: `0xbc`
+- Reset default: `0x0`
+- Reset mask: `0xc000ffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "count", "bits": 16, "attr": ["ro"], "rotate": 0}, {"bits": 14}, {"name": "enable", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "rst", "bits": 1, "attr": ["wo"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                                                                                                                 |
+|:------:|:------:|:-------:|:-------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|   31   |   wo   |   0x0   | rst    | Write 1 to reset the counter.                                                                                                                                                                                                               |
+|   30   |   rw   |   0x0   | enable | Write 1 to enable the counter, 0 to disable.                                                                                                                                                                                                |
+| 29:16  |        |         |        | Reserved                                                                                                                                                                                                                                    |
+|  15:0  |   ro   |   0x0   | count  | Number of CRC5 errors detected on token packets sent by the host. CRC5 errors on token packets received from the host indicate very unreliable communication and possibly a substantial frequency mismatch between the host and the device. |
+
+## count_crc16_out
+Count of CRC16 errors detected on SETUP/OUT transactions from the host.
+- Offset: `0xc0`
+- Reset default: `0x0`
+- Reset mask: `0xc000ffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "count", "bits": 16, "attr": ["ro"], "rotate": 0}, {"bits": 14}, {"name": "enable", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "rst", "bits": 1, "attr": ["wo"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                              |
+|:------:|:------:|:-------:|:-------|:---------------------------------------------------------------------------------------------------------|
+|   31   |   wo   |   0x0   | rst    | Write 1 to reset the counter.                                                                            |
+|   30   |   rw   |   0x0   | enable | Write 1 to enable the counter, 0 to disable.                                                             |
+| 29:16  |        |         |        | Reserved                                                                                                 |
+|  15:0  |   ro   |   0x0   | count  | Number of SETUP/OUT DATA packets that were ignored, dropped or NAKed because a CRC16 error was detected. |
+
+## count_bitstuff
+Count of Bit Stuffing errors detected on SETUP/OUT transactions from the host.
+- Offset: `0xc4`
+- Reset default: `0x0`
+- Reset mask: `0xc000ffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "count", "bits": 16, "attr": ["ro"], "rotate": 0}, {"bits": 14}, {"name": "enable", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "rst", "bits": 1, "attr": ["wo"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                |
+|:------:|:------:|:-------:|:-------|:-----------------------------------------------------------------------------------------------------------|
+|   31   |   wo   |   0x0   | rst    | Write 1 to reset the counter.                                                                              |
+|   30   |   rw   |   0x0   | enable | Write 1 to enable the counter, 0 to disable.                                                               |
+| 29:16  |        |         |        | Reserved                                                                                                   |
+|  15:0  |   ro   |   0x0   | count  | Number of SETUP/OUT packets that were ignored, dropped or NAKed because a Bit Stuffing error was detected. |
+
+## count_pid_invalid
+Count of OUT transactions rejected because of Invalid Packet IDentifiers.
+- Offset: `0xc8`
+- Reset default: `0x0`
+- Reset mask: `0xc000ffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "count", "bits": 16, "attr": ["ro"], "rotate": 0}, {"bits": 14}, {"name": "enable", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "rst", "bits": 1, "attr": ["wo"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                                                                |
+|:------:|:------:|:-------:|:-------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|   31   |   wo   |   0x0   | rst    | Write 1 to reset the counter.                                                                                                                                                              |
+|   30   |   rw   |   0x0   | enable | Write 1 to enable the counter, 0 to disable.                                                                                                                                               |
+| 29:16  |        |         |        | Reserved                                                                                                                                                                                   |
+|  15:0  |   ro   |   0x0   | count  | Number of Invalid PIDs detected on packets from the host. Invalid PIDs may indicate very unreliable communication and/or a substantial frequency mismatch between the host and the device. |
+
+## buffer
+2 KiB packet buffer. Divided into thirty two 64-byte buffers.
+
+The packet buffer is used for sending and receiving packets.
 
 - Word Aligned Offset Range: `0x800`to`0xffc`
 - Size (words): `512`

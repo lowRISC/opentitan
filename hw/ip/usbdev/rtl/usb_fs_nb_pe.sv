@@ -96,7 +96,8 @@ module usb_fs_nb_pe #(
   output logic                   rx_j_det_o,
 
   // RX errors
-  output logic                   rx_crc_err_o,
+  output logic                   rx_crc5_err_o,
+  output logic                   rx_crc16_err_o,
   output logic                   rx_pid_err_o,
   output logic                   rx_bitstuff_err_o,
 
@@ -114,7 +115,13 @@ module usb_fs_nb_pe #(
   output logic                   usb_se0_o,
   output logic                   usb_dp_o,
   output logic                   usb_dn_o,
-  output logic                   usb_oe_o
+  output logic                   usb_oe_o,
+
+  // event counters
+  output logic                   event_datatog_out_o,
+  output logic                   event_timeout_in_o,
+  output logic                   event_nak_in_o,
+  output logic                   event_nodata_in_o
 );
 
   import usb_consts_pkg::*;
@@ -207,7 +214,12 @@ module usb_fs_nb_pe #(
     .tx_pid_o              (in_tx_pid),
     .tx_data_avail_o       (tx_data_avail),
     .tx_data_get_i         (tx_data_get),
-    .tx_data_o             (tx_data)
+    .tx_data_o             (tx_data),
+
+    // event counters
+    .event_timeout_in_o    (event_timeout_in_o),
+    .event_nak_in_o        (event_nak_in_o),
+    .event_nodata_in_o     (event_nodata_in_o)
   );
 
   usb_fs_nb_out_pe #(
@@ -253,7 +265,10 @@ module usb_fs_nb_pe #(
     // tx path
     .tx_pkt_start_o         (out_tx_pkt_start),
     .tx_pkt_end_i           (tx_pkt_end),
-    .tx_pid_o               (out_tx_pid)
+    .tx_pid_o               (out_tx_pid),
+
+    // event counters
+    .event_datatog_out_o    (event_datatog_out_o)
   );
 
   usb_fs_rx u_usb_fs_rx (
@@ -280,7 +295,8 @@ module usb_fs_nb_pe #(
     .valid_packet_o         (rx_pkt_valid),
     .rx_idle_det_o          (rx_idle_det_o),
     .rx_j_det_o             (rx_j_det_o),
-    .crc_error_o            (rx_crc_err_o),
+    .crc5_error_o           (rx_crc5_err_o),
+    .crc16_error_o          (rx_crc16_err_o),
     .pid_error_o            (rx_pid_err_o),
     .bitstuff_error_o       (rx_bitstuff_err_o)
   );

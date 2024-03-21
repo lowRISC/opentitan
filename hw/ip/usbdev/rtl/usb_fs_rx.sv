@@ -51,7 +51,8 @@ module usb_fs_rx (
   output logic rx_j_det_o,
 
   // Error detection
-  output logic crc_error_o,
+  output logic crc5_error_o,
+  output logic crc16_error_o,
   output logic pid_error_o,
   output logic bitstuff_error_o
 );
@@ -528,8 +529,8 @@ module usb_fs_rx (
   );
 
   // Detect CRC errors
-  assign crc_error_o = ((pkt_is_data && !crc16_valid) ||
-    (pkt_is_token && !crc5_valid)) && packet_end;
+  assign crc5_error_o  = pkt_is_token & packet_end & !crc5_valid;
+  assign crc16_error_o = pkt_is_data & packet_end & !crc16_valid;
 
   // Detect PID errors
   assign pid_error_o = !pid_valid && packet_end;

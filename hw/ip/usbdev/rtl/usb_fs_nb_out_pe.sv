@@ -39,7 +39,7 @@ module usb_fs_nb_out_pe #(
   output logic                   out_ep_data_put_o, // put the data (put addr advances after)
   output logic [PktW - 1:0]      out_ep_put_addr_o, // Offset to put data (0..pktlen)
   output logic [7:0]             out_ep_data_o,
-  output logic                   out_ep_newpkt_o, // new packed, current was set
+  output logic                   out_ep_newpkt_o, // new packet, current was set
   output logic                   out_ep_acked_o, // good termination, device has acked
   output logic                   out_ep_rollback_o, // bad termination, discard data
   output logic [NumOutEps-1:0]   out_ep_setup_o,
@@ -80,7 +80,10 @@ module usb_fs_nb_out_pe #(
   // Strobe to send new packet.
   output logic                 tx_pkt_start_o,
   input  logic                 tx_pkt_end_i,
-  output logic [3:0]           tx_pid_o
+  output logic [3:0]           tx_pid_o,
+
+  // event counters
+  output logic                 event_datatog_out_o
 );
 
   // suppress warnings
@@ -309,7 +312,6 @@ module usb_fs_nb_out_pe #(
           new_pkt_end    = 1'b1;
           out_ep_acked_o = 1'b1;
         end
-
       end
 
       default: out_xact_state_next = StIdle;
@@ -431,6 +433,13 @@ module usb_fs_nb_out_pe #(
       end
     end
   end
+
+  ///////////////////////////////////////////////////////////////////////////////////////////////
+  // Count OUT transactions that have been ACKed and dropped because of unexpected Data Toggles.
+  ///////////////////////////////////////////////////////////////////////////////////////////////
+  assign event_datatog_out_o = (out_xact_state == StRcvdDataStart) &&
+                               (ep_is_control || !out_ep_iso_i[out_ep_index]) &&
+                               !out_ep_stall_i[out_ep_index] && bad_data_toggle;
 
   ////////////////
   // Assertions //

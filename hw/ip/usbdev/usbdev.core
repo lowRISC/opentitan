@@ -20,6 +20,7 @@ filesets:
       - rtl/usbdev_usbif.sv
       - rtl/usbdev_linkstate.sv
       - rtl/usbdev_iomux.sv
+      - rtl/usbdev_counter.sv
       - rtl/usbdev_aon_wake.sv
       - rtl/usbdev.sv
     file_type: systemVerilogSource
