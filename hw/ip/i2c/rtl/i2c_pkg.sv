@@ -33,4 +33,16 @@ package i2c_pkg;
     AcqNackStart = 3'b101
   } i2c_acq_byte_id_e;
 
+  // Width of each entry in the FMT FIFO with enough space for an 8-bit data
+  // byte and 5 flags.
+  parameter int unsigned FMT_FIFO_WIDTH = 8 + 5;
+
+  // Width of each entry in the RX and TX FIFO: just an 8-bit data byte.
+  parameter int unsigned RX_FIFO_WIDTH = 8;
+  parameter int unsigned TX_FIFO_WIDTH = 8;
+
+  // Width of each entry in the ACQ FIFO with enough space for an 8-bit data
+  // byte and an identifier defined by i2c_acq_byte_id_e.
+  parameter int unsigned ACQ_FIFO_WIDTH = I2C_ACQ_BYTE_ID_WIDTH + 8;
+
 endpackage : i2c_pkg
