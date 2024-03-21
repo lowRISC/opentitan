@@ -53,8 +53,8 @@ class usbdev_fifo_rst_vseq extends usbdev_base_vseq;
       // Choose a random buffer number
       buffer = $urandom_range(0, usbdev_env_pkg::NumBuffers - 1);
       case (fifo)
-        AvOutFifo:   csr_wr(ral.avoutbuffer, buffer);
-        AvSetupFifo: csr_wr(ral.avsetupbuffer, buffer);
+        AvOutFifo:   csr_wr(.ptr(ral.avoutbuffer.buffer), .value(buffer));
+        AvSetupFifo: csr_wr(.ptr(ral.avsetupbuffer.buffer), .value(buffer));
         // Writing into the Rx FIFO require packet transmission from the host
         // TODO: here we need to connect the device, with some appropriate configuration of at least
         // one endpoint, and then transmit the appropriate number of packets to the OUT endpoint
