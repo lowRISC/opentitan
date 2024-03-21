@@ -16,6 +16,7 @@
 #include "sw/device/lib/testing/alert_handler_testutils.h"
 #include "sw/device/lib/testing/aon_timer_testutils.h"
 #include "sw/device/lib/testing/clkmgr_testutils.h"
+#include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/rv_plic_testutils.h"
@@ -422,14 +423,26 @@ void ast_enter_sleep_states_and_check_functionality(
  *  set edn auto mode
  */
 void set_edn_auto_mode(void) {
+  const dif_entropy_src_t entropy_src = {
+      .base_addr = mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR)};
+  const dif_csrng_t csrng = {
+      .base_addr = mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR)};
   const dif_edn_t edn0 = {
       .base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR)};
   const dif_edn_t edn1 = {
       .base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR)};
 
-  CHECK_DIF_OK(dif_edn_stop(&edn0));
-  CHECK_DIF_OK(dif_edn_stop(&edn1));
+  // Disable the entropy complex
+  CHECK_STATUS_OK(entropy_testutils_stop_all());
 
+  // Enable ENTROPY_SRC
+  CHECK_DIF_OK(dif_entropy_src_configure(
+      &entropy_src, entropy_testutils_config_default(), kDifToggleEnabled));
+
+  // Enable CSRNG
+  CHECK_DIF_OK(dif_csrng_configure(&csrng));
+
+  // Enable EDNs in auto request mode
   // Re-enable EDN0 in auto mode.
   const dif_edn_auto_params_t edn0_params = {
       // EDN0 provides lower-quality entropy.  Let one generate command return 8
