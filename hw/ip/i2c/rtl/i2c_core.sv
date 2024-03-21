@@ -44,10 +44,6 @@ module i2c_core import i2c_pkg::*;
   // Maximum number of bits required to represent the level/depth of any FIFO.
   localparam int unsigned MaxFifoDepthW = 12;
 
-  // Width of each entry in the ACQ FIFO with enough space for an 8-bit data
-  // byte and an identifier defined by i2c_acq_byte_id_e.
-  localparam int unsigned AcqFifoWidth = I2C_ACQ_BYTE_ID_WIDTH + 8;
-
   logic [15:0] thigh;
   logic [15:0] tlow;
   logic [15:0] t_r;
@@ -88,19 +84,19 @@ module i2c_core import i2c_pkg::*;
 
   logic override;
 
-  logic                     fmt_fifo_wvalid;
-  logic                     fmt_fifo_wready;
-  logic [12:0]              fmt_fifo_wdata;
-  logic [FifoDepthW-1:0]    fmt_fifo_depth;
-  logic                     fmt_fifo_rvalid;
-  logic                     fmt_fifo_rready;
-  logic [12:0]              fmt_fifo_rdata;
-  logic [7:0]               fmt_byte;
-  logic                     fmt_flag_start_before;
-  logic                     fmt_flag_stop_after;
-  logic                     fmt_flag_read_bytes;
-  logic                     fmt_flag_read_continue;
-  logic                     fmt_flag_nak_ok;
+  logic                      fmt_fifo_wvalid;
+  logic                      fmt_fifo_wready;
+  logic [FMT_FIFO_WIDTH-1:0] fmt_fifo_wdata;
+  logic [FifoDepthW-1:0]     fmt_fifo_depth;
+  logic                      fmt_fifo_rvalid;
+  logic                      fmt_fifo_rready;
+  logic [FMT_FIFO_WIDTH-1:0] fmt_fifo_rdata;
+  logic [7:0]                fmt_byte;
+  logic                      fmt_flag_start_before;
+  logic                      fmt_flag_stop_after;
+  logic                      fmt_flag_read_bytes;
+  logic                      fmt_flag_read_continue;
+  logic                      fmt_flag_nak_ok;
 
   logic                     i2c_fifo_rxrst;
   logic                     i2c_fifo_fmtrst;
@@ -109,11 +105,11 @@ module i2c_core import i2c_pkg::*;
 
   logic                     rx_fifo_wvalid;
   logic                     rx_fifo_wready;
-  logic [7:0]               rx_fifo_wdata;
+  logic [RX_FIFO_WIDTH-1:0] rx_fifo_wdata;
   logic [FifoDepthW-1:0]    rx_fifo_depth;
   logic                     rx_fifo_rvalid;
   logic                     rx_fifo_rready;
-  logic [7:0]               rx_fifo_rdata;
+  logic [RX_FIFO_WIDTH-1:0] rx_fifo_rdata;
 
   // FMT FIFO level below programmed threshold?
   logic                     fmt_lt_threshold;
@@ -122,19 +118,19 @@ module i2c_core import i2c_pkg::*;
 
   logic                     tx_fifo_wvalid;
   logic                     tx_fifo_wready;
-  logic [7:0]               tx_fifo_wdata;
+  logic [TX_FIFO_WIDTH-1:0] tx_fifo_wdata;
   logic [FifoDepthW-1:0]    tx_fifo_depth;
   logic                     tx_fifo_rvalid;
   logic                     tx_fifo_rready;
-  logic [7:0]               tx_fifo_rdata;
+  logic [TX_FIFO_WIDTH-1:0] tx_fifo_rdata;
 
-  logic                     acq_fifo_wvalid;
-  logic                     acq_fifo_wready;
-  logic [AcqFifoWidth-1:0]  acq_fifo_wdata;
-  logic [AcqFifoDepthW-1:0] acq_fifo_depth;
-  logic                     acq_fifo_rvalid;
-  logic                     acq_fifo_rready;
-  logic [AcqFifoWidth-1:0]  acq_fifo_rdata;
+  logic                      acq_fifo_wvalid;
+  logic                      acq_fifo_wready;
+  logic [ACQ_FIFO_WIDTH-1:0] acq_fifo_wdata;
+  logic [AcqFifoDepthW-1:0]  acq_fifo_depth;
+  logic                      acq_fifo_rvalid;
+  logic                      acq_fifo_rready;
+  logic [ACQ_FIFO_WIDTH-1:0] acq_fifo_rdata;
 
   logic                     i2c_fifo_txrst;
   logic                     i2c_fifo_acqrst;
@@ -166,7 +162,7 @@ module i2c_core import i2c_pkg::*;
   logic        unused_acq_thr_qe;
   logic [7:0]  unused_rx_fifo_rdata_q;
   logic [7:0]  unused_acq_fifo_adata_q;
-  logic [AcqFifoWidth-9:0] unused_acq_fifo_signal_q;
+  logic [ACQ_FIFO_WIDTH-9:0] unused_acq_fifo_signal_q;
   logic        unused_alert_test_qe;
   logic        unused_alert_test_q;
   logic        unused_txrst_on_cond_qe;
@@ -190,7 +186,7 @@ module i2c_core import i2c_pkg::*;
   assign hw2reg.target_fifo_status.txlvl.d = MaxFifoDepthW'(tx_fifo_depth);
   assign hw2reg.target_fifo_status.acqlvl.d = MaxFifoDepthW'(acq_fifo_depth);
   assign hw2reg.acqdata.abyte.d = acq_fifo_rdata[7:0];
-  assign hw2reg.acqdata.signal.d = acq_fifo_rdata[AcqFifoWidth-1:8];
+  assign hw2reg.acqdata.signal.d = acq_fifo_rdata[ACQ_FIFO_WIDTH-1:8];
 
   // Add one to the target NACK count if this target has sent a NACK and if
   // counter has not saturated.
@@ -300,7 +296,7 @@ module i2c_core import i2c_pkg::*;
   assign unused_txrst_on_cond_qe = reg2hw.target_fifo_config.txrst_on_cond.qe;
 
   prim_fifo_sync #(
-    .Width   (13),
+    .Width   (FMT_FIFO_WIDTH),
     .Pass    (1'b0),
     .Depth   (FifoDepth)
   ) u_i2c_fmtfifo (
@@ -321,7 +317,7 @@ module i2c_core import i2c_pkg::*;
   assign rx_fifo_rready = reg2hw.rdata.re;
 
   prim_fifo_sync #(
-    .Width   (8),
+    .Width   (RX_FIFO_WIDTH),
     .Pass    (1'b0),
     .Depth   (FifoDepth)
   ) u_i2c_rxfifo (
@@ -342,7 +338,7 @@ module i2c_core import i2c_pkg::*;
   // Need to add a valid qualification to write only payload bytes
   logic valid_target_lb_wr;
   i2c_acq_byte_id_e acq_type;
-  assign acq_type = i2c_acq_byte_id_e'(acq_fifo_rdata[AcqFifoWidth-1:8]);
+  assign acq_type = i2c_acq_byte_id_e'(acq_fifo_rdata[ACQ_FIFO_WIDTH-1:8]);
 
   assign valid_target_lb_wr = target_enable & (acq_type == AcqData);
 
@@ -351,7 +347,7 @@ module i2c_core import i2c_pkg::*;
   assign tx_fifo_wdata  = target_loopback ? acq_fifo_rdata[7:0] : reg2hw.txdata.q;
 
   prim_fifo_sync #(
-    .Width(8),
+    .Width(TX_FIFO_DEPTH),
     .Pass(1'b0),
     .Depth(FifoDepth)
   ) u_i2c_txfifo (
@@ -376,7 +372,7 @@ module i2c_core import i2c_pkg::*;
                            (target_loopback & (tx_fifo_wready | (acq_type != AcqData)));
 
   prim_fifo_sync #(
-    .Width(AcqFifoWidth),
+    .Width(ACQ_FIFO_WIDTH),
     .Pass(1'b0),
     .Depth(AcqFifoDepth)
   ) u_i2c_acqfifo (
@@ -417,8 +413,7 @@ module i2c_core import i2c_pkg::*;
 
   i2c_fsm #(
     .FifoDepth(FifoDepth),
-    .AcqFifoDepth(AcqFifoDepth),
-    .AcqFifoWidth(AcqFifoWidth)
+    .AcqFifoDepth(AcqFifoDepth)
   ) u_i2c_fsm (
     .clk_i,
     .rst_ni,

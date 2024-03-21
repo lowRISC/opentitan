@@ -8,7 +8,6 @@ module i2c_fsm import i2c_pkg::*;
 #(
   parameter int FifoDepth = 64,
   parameter int AcqFifoDepth = 64,
-  parameter int unsigned AcqFifoWidth = 11,
   localparam int FifoDepthWidth = $clog2(FifoDepth+1),
   localparam int AcqFifoDepthWidth = $clog2(AcqFifoDepth+1)
 ) (
@@ -33,18 +32,18 @@ module i2c_fsm import i2c_pkg::*;
   input                      fmt_flag_read_continue_i,// host to send Ack to final byte read
   input                      fmt_flag_nak_ok_i,       // no Ack is expected
 
-  output logic       rx_fifo_wvalid_o, // high if there is valid data in rx_fifo
-  output logic [7:0] rx_fifo_wdata_o,  // byte in rx_fifo read from target
+  output logic                     rx_fifo_wvalid_o, // high if there is valid data in rx_fifo
+  output logic [RX_FIFO_WIDTH-1:0] rx_fifo_wdata_o,  // byte in rx_fifo read from target
 
   input                      tx_fifo_rvalid_i, // indicates there is valid data in tx_fifo
   output logic               tx_fifo_rready_o, // pop entry from tx_fifo
-  input [7:0]                tx_fifo_rdata_i,  // byte in tx_fifo to be sent to host
+  input [TX_FIFO_WIDTH-1:0]  tx_fifo_rdata_i,  // byte in tx_fifo to be sent to host
 
-  output logic                    acq_fifo_wvalid_o, // high if there is valid data in acq_fifo
-  output logic [AcqFifoWidth-1:0] acq_fifo_wdata_o,  // byte and signal in acq_fifo read from target
-  input [AcqFifoDepthWidth-1:0]   acq_fifo_depth_i,  // fill level of acq_fifo
-  output logic                    acq_fifo_wready_o, // local version of ready
-  input [AcqFifoWidth-1:0]        acq_fifo_rdata_i,  // only used for assertion
+  output logic                      acq_fifo_wvalid_o, // high if there is valid data in acq_fifo
+  output logic [ACQ_FIFO_WIDTH-1:0] acq_fifo_wdata_o,  // data to write to acq_fifo from target
+  input [AcqFifoDepthWidth-1:0]     acq_fifo_depth_i,  // fill level of acq_fifo
+  output logic                      acq_fifo_wready_o, // local version of ready
+  input [ACQ_FIFO_WIDTH-1:0]        acq_fifo_rdata_i,  // only used for assertion
 
   output logic       host_idle_o,      // indicates the host is idle
   output logic       target_idle_o,    // indicates the target is idle
@@ -564,7 +563,7 @@ module i2c_fsm import i2c_pkg::*;
   end
 
   // Reverse the bit order since data should be sent out MSB first
-  logic [7:0] tx_fifo_rdata;
+  logic [TX_FIFO_WIDTH-1:0] tx_fifo_rdata;
   assign tx_fifo_rdata = {<<1{tx_fifo_rdata_i}};
 
   // The usage of target_idle_o directly confuses xcelium and leads the
@@ -587,10 +586,10 @@ module i2c_fsm import i2c_pkg::*;
     scl_d = 1'b1;
     fmt_fifo_rready_o = 1'b0;
     rx_fifo_wvalid_o = 1'b0;
-    rx_fifo_wdata_o = 8'h00;
+    rx_fifo_wdata_o = RX_FIFO_WIDTH'(0);
     tx_fifo_rready_o = 1'b0;
     acq_fifo_wvalid_o = 1'b0;
-    acq_fifo_wdata_o = AcqFifoWidth'(0);
+    acq_fifo_wdata_o = ACQ_FIFO_WIDTH'(0);
     event_nak_o = 1'b0;
     event_scl_interference_o = 1'b0;
     event_sda_unstable_o = 1'b0;
@@ -962,10 +961,10 @@ module i2c_fsm import i2c_pkg::*;
         scl_d = 1'b1;
         fmt_fifo_rready_o = 1'b0;
         rx_fifo_wvalid_o = 1'b0;
-        rx_fifo_wdata_o = 8'h00;
+        rx_fifo_wdata_o = RX_FIFO_WIDTH'(0);
         tx_fifo_rready_o = 1'b0;
         acq_fifo_wvalid_o = 1'b0;
-        acq_fifo_wdata_o = AcqFifoWidth'(0);
+        acq_fifo_wdata_o = ACQ_FIFO_WIDTH'(0);
         event_nak_o = 1'b0;
         event_scl_interference_o = 1'b0;
         event_sda_unstable_o = 1'b0;
