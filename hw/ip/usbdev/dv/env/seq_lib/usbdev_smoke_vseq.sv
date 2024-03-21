@@ -24,8 +24,8 @@ class usbdev_smoke_vseq extends usbdev_base_vseq;
     csr_wr(.ptr(ral.ep_in_enable[0]), .value(12'hfff));
     csr_wr(.ptr(ral.rxenable_out[0]), .value(12'hfff));
     csr_wr(.ptr(ral.rxenable_setup[0]), .value(12'hfff));
-    ral.avsetupbuffer.buffer.set(setup_buffer_id); // set buffer id =1
-    csr_update(ral.avsetupbuffer);
+    csr_wr(.ptr(ral.avsetupbuffer.buffer),
+           .value(setup_buffer_id));  // use csr_wr to guarantee write.
     ral.intr_enable.pkt_received.set(1'b1); // Enable pkt_received interrupt
     csr_update(ral.intr_enable);
 
@@ -44,8 +44,7 @@ class usbdev_smoke_vseq extends usbdev_base_vseq;
     // ---------------------------------------------------------------------------------------------
     // OUT data packet
     // ---------------------------------------------------------------------------------------------
-    ral.avoutbuffer.buffer.set(out_buffer_id);
-    csr_update(ral.avoutbuffer);
+    csr_wr(.ptr(ral.avoutbuffer.buffer), .value(out_buffer_id));  // use csr_wr to guarantee write.
     call_token_seq(PidTypeOutToken);
     cfg.clk_rst_vif.wait_clks(20);
     // TODO: want to use a randomized packet length here but may be 4n contrained presently.

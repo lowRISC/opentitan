@@ -277,9 +277,8 @@ virtual task configure_out_trans();
   // Enable rx out
   ral.rxenable_out[0].out[endp].set(1'b1);
   csr_update(ral.rxenable_out[0]);
-  // Set buffer
-  ral.avoutbuffer.buffer.set(out_buffer_id);
-  csr_update(ral.avoutbuffer);
+  // Put buffer in Available OUT Buffer _FIFO_, so use csr_wr _not_ csr_update
+  csr_wr(.ptr(ral.avoutbuffer.buffer), .value(out_buffer_id));
 endtask
 
 virtual task configure_setup_trans();
@@ -289,9 +288,8 @@ virtual task configure_setup_trans();
   // Enable rx setup
   ral.rxenable_setup[0].setup[endp].set(1'b1);
   csr_update(ral.rxenable_setup[0]);
-  // Set buffer
-  ral.avsetupbuffer.buffer.set(setup_buffer_id);
-  csr_update(ral.avsetupbuffer);
+  // Put buffer in Available SETUP Buffer _FIFO_, so use csr_wr _not_ csr_update
+  csr_wr(.ptr(ral.avsetupbuffer.buffer), .value(setup_buffer_id));
 endtask
 
 virtual task configure_in_trans(bit [4:0] buffer_id, bit [6:0] num_of_bytes);

@@ -45,8 +45,7 @@ class usbdev_nak_trans_vseq extends usbdev_base_vseq;
     // Read rxfifo reg
     csr_rd(.ptr(ral.rxfifo), .value(read_rxfifo));
     // Make sure buffer is availabe for next trans
-    ral.avoutbuffer.buffer.set(out_buffer_id + 1);
-    csr_update(ral.avoutbuffer);
+    csr_wr(.ptr(ral.avoutbuffer.buffer), .value(out_buffer_id + 1));
 
     // Out token packet followed by a data packet
     call_token_seq(PidTypeOutToken);

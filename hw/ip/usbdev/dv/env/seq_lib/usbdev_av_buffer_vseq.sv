@@ -37,8 +37,7 @@ class usbdev_av_buffer_vseq extends usbdev_base_vseq;
     ral.rxenable_out[0].out[endp].set(1'b1);
     csr_update(ral.rxenable_out[0]);
     // Set buffer
-    ral.avoutbuffer.buffer.set(out_buffer_id);
-    csr_update(ral.avoutbuffer);
+    csr_wr(.ptr(ral.avoutbuffer.buffer), .value(out_buffer_id));
   endtask
 
   task check_trans_accuracy();
