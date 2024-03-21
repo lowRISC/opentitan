@@ -19,7 +19,7 @@ class jtag_riscv_monitor extends dv_base_monitor #(
   endfunction
 
   // collect transactions
-  virtual protected task collect_trans();
+  virtual protected task collect_trans(uvm_phase phase);
     jtag_item item;
     logic [DMI_OPW-1:0] op_raw;
     jtag_op_e op;

@@ -24,7 +24,7 @@ class push_pull_monitor #(parameter int HostDataWidth = 32,
     cfg.in_reset = 0;
     fork
       monitor_reset();
-      collect_trans();
+      collect_trans(phase);
       // Collect partial pull reqs for the reactive pull device agent.
       collect_pull_req();
       collect_cov();
@@ -50,7 +50,7 @@ class push_pull_monitor #(parameter int HostDataWidth = 32,
   // Collect fully-completed transactions.
   //
   // TODO : sample covergroups
-  virtual protected task collect_trans();
+  virtual protected task collect_trans(uvm_phase phase);
     if (cfg.agent_type == PushAgent) begin
       forever begin
         @(cfg.vif.mon_cb);

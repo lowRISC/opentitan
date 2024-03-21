@@ -45,12 +45,12 @@ class usb20_monitor extends dv_base_monitor #(
   task run_phase(uvm_phase phase);
     detect_reset();
     forever begin
-      collect_trans();
+      collect_trans(phase);
     end
   endtask
 
 //-----------------------------------------Collect Trans------------------------------------------//
-  virtual protected task collect_trans();
+  virtual protected task collect_trans(uvm_phase phase);
     // Idle state detected here
     while(!(cfg.bif.usb_p & ~cfg.bif.usb_n)) @(posedge cfg.bif.usb_clk);
     @(posedge cfg.bif.usb_clk);

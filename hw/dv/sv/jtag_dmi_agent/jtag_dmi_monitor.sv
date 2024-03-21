@@ -36,7 +36,7 @@ class jtag_dmi_monitor #(type ITEM_T = jtag_dmi_item) extends dv_base_monitor#(
     join
   endtask
 
-  virtual protected task collect_trans();
+  virtual protected task collect_trans(uvm_phase phase);
     jtag_item jtag_item;
     bit dmi_selected;
 
