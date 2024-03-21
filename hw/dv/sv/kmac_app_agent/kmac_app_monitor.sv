@@ -23,7 +23,7 @@ class kmac_app_monitor extends dv_base_monitor #(
     data_fifo = new("data_fifo", this);
   endfunction
 
-  virtual protected task collect_trans(uvm_phase phase);
+  virtual protected task collect_trans();
     forever fork
       begin : isolation_fork
         fork

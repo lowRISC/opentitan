@@ -30,7 +30,7 @@ class ibex_icache_mem_monitor
   endtask
 
   // Collect transactions forever. Forked in dv_base_moditor::run_phase
-  protected task automatic collect_trans(uvm_phase phase);
+  protected task automatic collect_trans();
     fork
       collect_grants();
       collect_responses();

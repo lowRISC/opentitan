@@ -1,0 +1,51 @@
+From aef478fb6eba46234703f7600d2221f6e50ea025 Mon Sep 17 00:00:00 2001
+From: Rupert Swarbrick <rswarbrick@lowrisc.org>
+Date: Thu, 21 Mar 2024 13:14:32 +0000
+Subject: [PATCH] [dv] Remove phase argument from collect_trans
+
+The prototype of this task has to match the one in dv_base_monitor,
+which we are importing from OpenTitan (called "lowrisc_ip").
+Unfortunately, OpenTitan imports Ibex, causing a circular reference
+which makes it a bit fiddly to change any types.
+
+This commit switches the tasks to match the new prototype we're going
+to use in OpenTitan. We can't just apply it in Ibex
+immediately (because it won't work with our vendored lowrisc_ip code),
+but creating the commit *does* mean we can vendor in the changed Ibex
+code at the OpenTitan end.
+
+Once that's sorted, we can vendor OpenTitan back into Ibex and get
+everything cleaned up properly.
+
+In hindsight, we probably should have made sure our vendoring
+structure was a DAG.
+
+(This patch is manually edited from something that came out of git
+format-patch, but is now applied to just a subdirectory)
+
+diff --git a/uvm/icache/dv/ibex_icache_core_agent/ibex_icache_core_monitor.sv b/dv/uvm/icache/dv/ibex_icache_core_agent/ibex_icache_core_monitor.sv
+index deef3418..8b66823c 100644
+--- a/uvm/icache/dv/ibex_icache_core_agent/ibex_icache_core_monitor.sv
++++ b/uvm/icache/dv/ibex_icache_core_agent/ibex_icache_core_monitor.sv
+@@ -35,7 +35,7 @@ class ibex_icache_core_monitor extends dv_base_monitor #(
+   endtask
+ 
+   // collect transactions forever - already forked in dv_base_moditor::run_phase
+-  virtual protected task collect_trans(uvm_phase phase);
++  virtual protected task collect_trans();
+     ibex_icache_core_bus_item trans;
+     logic                     last_inval = 0;
+     logic                     last_enable = 0;
+diff --git a/uvm/icache/dv/ibex_icache_mem_agent/ibex_icache_mem_monitor.sv b/dv/uvm/icache/dv/ibex_icache_mem_agent/ibex_icache_mem_monitor.sv
+index b9e5c14d..6778cd5a 100644
+--- a/uvm/icache/dv/ibex_icache_mem_agent/ibex_icache_mem_monitor.sv
++++ b/uvm/icache/dv/ibex_icache_mem_agent/ibex_icache_mem_monitor.sv
+@@ -30,7 +30,7 @@ class ibex_icache_mem_monitor
+   endtask
+ 
+   // Collect transactions forever. Forked in dv_base_moditor::run_phase
+-  protected task automatic collect_trans(uvm_phase phase);
++  protected task automatic collect_trans();
+     fork
+       collect_grants();
+       collect_responses();

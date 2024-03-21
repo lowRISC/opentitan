@@ -74,7 +74,7 @@ class sba_access_monitor #(type ITEM_T = sba_access_item) extends dv_base_monito
     `DV_EOT_PRINT_TLM_FIFO_CONTENTS(jtag_dmi_item, jtag_dmi_fifo)
   endfunction
 
-  virtual protected task collect_trans(uvm_phase phase);
+  virtual protected task collect_trans();
     jtag_dmi_item dmi_item;
 
     forever begin
