@@ -1,19 +1,28 @@
 # Theory of Operation
 
-As already described, this IP block will collect bits of entropy for firmware or hardware consumption.
-This revision supports only an external interface for a PTRNG (Physical True Random Number Generator) noise source implementation.
+The ENTROPY_SRC hardawre block collects entropy bits from the PTRNG (Physical True Random Number Generator) noise source, performs health tests on the collected entropy bits, packs them, sends them through a conditioning unit, and finally stores them into the `esfinal` FIFO for consumption by firmware or hardware.
 
+It operates in a manner compliant with both FIPS (though NIST SP 800-90B) and CC (AIS31) recommendations.
+This revision supports only an external interface for a PTRNG noise source implementation.
+
+### Initialization and Enabling
+
+After power-up, the ENTROPY_SRC block is disabled.
 The first step is initialization and enabling.
-The PTRNG noise source mode is selected when the [`MODULE_ENABLE`](registers.md#module_enable) field is set.
-After the block is enabled and initialized, entropy bits will be collected up indefinitely until disabled.
 
+For simplicity of initialization, only a single write operation to the [`MODULE_ENABLE`](registers.md#module_enable) register is needed to start functional operation of the ENTROPY_SRC block.
+This assumes that proper defaults are chosen for the health test thresholds and other registers such as the [`CONF`](registers.md#conf) register.
+
+Once the ENTROPY_SRC block is enabled, also the PTRNG noise source starts up.
+The ENTROPY_SRC block will then start to collect entropy bits indefinitely until disabled.
+
+### Boot-Time / Bypass Mode
 
 After a reset, the ENTROPY_SRC block will start up in boot-time / bypass mode by default.
 This feature is designed to provide an initial seed's worth of entropy with lower latency than the normal FIPS/CC compliant health check process.
 Health testing will still be performed on boot-time mode entropy, but the window of checking is, by default, 384 bits instead of 2048 bits.
-When entropy is delivered to the downstream hardware block, a signal will indicate what type of entropy it is - FIPS/CC compliant or not.
-This signal is determined by the `FIPS_FLAG` field in the [`CONF`](registers.md#conf) register.
-When `RNG_FIPS` field in the [`CONF`](registers.md#conf) register is set to `kMultiBitBool4True`, the ENTROPY_SRC block will request higher quality entropy from the noise source by asserting the `rng_fips` output signal.
+
+### FIPS/CC Compliant Mode
 
 Once the initial boot-time mode phase has completed, the ENTROPY_SRC block can be switched to FIPS/CC compliant mode (for simplicity referred to as FIPS mode) by setting the `FIPS_ENABLE` field in the [`CONF`](registers.md#conf) register to `kMultiBitBool4True`.
 In this mode, once the raw entropy has been health checked, it will be passed into a conditioner block.
@@ -25,11 +34,19 @@ If a health test fails, the conditioner block continues absorbing the next windo
 Once the threshold is reached, the ENTROPY_SRC block stops serving entropy and signals a recoverable alert.
 Firmware then needs to disable/re-enable the block to restart operation.
 
+When entropy is delivered to the downstream hardware block, a signal will indicate what type of entropy it is - FIPS/CC compliant or not.
+This signal is determined by the `FIPS_FLAG` field in the [`CONF`](registers.md#conf) register.
+When `RNG_FIPS` field in the [`CONF`](registers.md#conf) register is set to `kMultiBitBool4True`, the ENTROPY_SRC block will request higher quality entropy from the noise source by asserting the `rng_fips` output signal.
+
+### Startup Health Testing
+
 Note that after enabling the ENTROPY_SRC block, the health tests need to pass for two subsequent windows of [`HEALTH_TEST_WINDOWS.FIPS_WINDOW`](registers.md#health_test_windows--fips_window) x 4 tested bits (startup health testing).
 By default, 1024 samples of 4 bits (4096 1-bit samples when running in single-channel mode), i.e., 4096 tested bits, are used for producing the startup seed.
 If a health test fails, the startup health testing starts over and the conditioner block continues absorbing the next window.
 If the health tests don't pass for two subsequent windows, the ENTROPY_SRC block stops operating and signals a recoverable alert.
 Firmware then needs to disable/re-enable the block to restart operation including the startup health testing.
+
+### Firmware Override Mode
 
 The hardware conditioning can also be bypassed and replaced in normal operation with a firmware-defined conditioning algorithm.
 This firmware conditioning algorithm can be disabled on boot for security purposes.
@@ -37,7 +54,7 @@ This firmware conditioning algorithm can be disabled on boot for security purpos
 The firmware override function has the capability to completely override the hardware health tests and the conditioner paths.
 In the case of health tests, firmware can turn off one or all of the health tests and perform the tests in firmware.
 A data path is provided in the hardware such that the inbound entropy can be trapped in the observe FIFO.
-Once a pre-determined threshold of entropy has been reached in this FIFO, the firmware can then read the entropy bits out of the FIFO.
+Once a pre-determined threshold of entropy has been reached in this FIFO, and interrupt is raised to let firmware read the entropy bits out of the FIFO.
 The exact mechanism for this functionality starts with setting the [`FW_OV_MODE`](registers.md#fw_ov_control--fw_ov_mode) field in the [`FW_OV_CONTROL`](registers.md#fw_ov_control) register.
 This will enable firmware to monitor post-health test entropy bits by reading from the [`FW_OV_RD_DATA`](registers.md#fw_ov_rd_data) register.
 Firmware can use the [`OBSERVE_FIFO_THRESH`](registers.md#observe_fifo_thresh) and [`OBSERVE_FIFO_DEPTH`](registers.md#observe_fifo_depth) to determine the state of the OBSERVE FIFO.
@@ -54,6 +71,10 @@ The [`FW_OV_WR_FIFO_FULL`](registers.md#fw_ov_wr_fifo_full) register should be m
 Once all of the data has been written, the [`FW_OV_INSERT_START`](registers.md#fw_ov_sha3_start--fw_ov_insert_start) field should be set to false.
 The normal SHA3 processing will continue and finally push the conditioned entropy through the module.
 
+For more details, refer to the [programmer's guide](programmers_guide.md/#firmware-override--bypass-modes).
+
+### Health Tests
+
 Health checks are performed on the input raw data from the PTRNG noise source when in that mode.
 There are four health tests that will be performed: repetitive count, adaptive proportion, bucket, and Markov tests.
 Each test has a pair of threshold values that determine that pass/fail of the test, one threshold for boot-time / bypass mode, and one for FIPS mode.
@@ -68,42 +89,28 @@ The above example for the adaptive proportion test also applies to the other hea
 See the timing diagrams below for more details on how the health tests work.
 It should be noted that for all error counter registers, they are sized for 16 bits, which prevents any case where counters might wrap.
 
+Additional, vendor-specific tests are supported through an [external health test interface (xht)](#external-health-tests).
 
-Vendor-specific tests are supported through an external health test interface (xht).
-This is the same interface that is used for the internal health tests.
-Below is a description of this interface:
-- entropy_bit: 4-bit wide bus of entropy to be tested.
-- entropy_bit_valid: indication of when the entropy is valid.
-- clear: signal to clear counters, and is register driven.
-- active: signal to indicate when the test should run, and is register driven.
-- thresh_hi: field to indicate what high threshold the test should use, and is register driven.
-- thresh_lo: field to indicate what low threshold the test should use, and is register driven.
-- window_wrap_pulse: field to indicate the end of the current window.
-- threshold_scope: field to indicate whether the thresholds are intended to be applied to all entropy lines collectively or on a line-by-line basis, to be read from a register.
-- test_cnt: generic test count result, to be read from a register.
-- test_fail_hi_pulse: indication that a high threshold comparison failed, to be read from a register.
-- test_fail_lo_pulse: indication that a low threshold comparison failed, to be read from a register.
-
+### Health Test Failure Alert
 
 The [`ALERT_THRESHOLD`](registers.md#alert_threshold) register determines how many fails can occur before an alert is issued.
 By default, the current threshold is set to two, such that the occurrence of two failing test cycles back-to-back would provide a very low &alpha; value.
 The [`ALERT_FAIL_COUNTS`](registers.md#alert_fail_counts) register holds the total number of fails, plus all of the individual contributing failing tests.
 Setting the [`ALERT_THRESHOLD`](registers.md#alert_threshold) register to zero will disable alert generation.
 
+### Routing Entropy to Firmware
+
 Firmware has a path to read entropy from the ENTROPY_SRC block.
-The [`ENTROPY_CONTROL`](registers.md#entropy_control) register allows firmware to set the internal multiplexers to steer entropy data to the [`ENTROPY_DATA`](registers.md#entropy_data) register.
-The control bit [`ES_TYPE`](registers.md#entropy_control--es_type) sets whether the entropy will come from the conditioning block or be sourced through the bypass path.
+The [`ES_ROUTE`](registers.md#entropy_control--es_route) field in the [`ENTROPY_CONTROL`](registers.md#entropy_control) register allows firmware to set the internal multiplexers to steer entropy data to the [`ENTROPY_DATA`](registers.md#entropy_data) register.
+When enabled, no entropy is being passed to the block hardware interface.
+The control field [`ES_TYPE`](registers.md#entropy_control--es_type) sets whether the entropy will come from the conditioning block or be sourced through the bypass path.
 A status bit will be set that can either be polled or generate an interrupt when the entropy bits are available to be read from the [`ENTROPY_DATA`](registers.md#entropy_data) register.
 The firmware needs to read the [`ENTROPY_DATA`](registers.md#entropy_data) register twelve times in order to cleanly evacuate the 384-bit seed from the hardware path (12 * 32 bits = 384 bits in total).
-The firmware will directly read out of the main entropy FIFO, and when the control bit [`ES_ROUTE`](registers.md#entropy_control--es_route) is set, no entropy is being passed to the block hardware interface.
 
-If the `esfinal` FIFO fills up, additional entropy that has been health checked will be dropped before entering the conditioner.
-This drop point will save on conditioner power, and still preserve `esfinal` FIFO entropy that has already been collected.
+### Disabling
 
-The above process will be repeated for as long as entropy bits are to be collected and processed.
-
-At any time, the [`MODULE_ENABLE`](registers.md#module_enable) field can be cleared to halt the entropy generation (and health check testing).
-See the Programmers Guide section for more details on the ENTROPY_SRC block disable sequence.
+At any time, the [`MODULE_ENABLE`](registers.md#module_enable) field can be cleared to halt the entropy generation and health testing.
+See the [programmer's guide section](programmers_guide.md/#entropy-source-module-disable) for more details on the ENTROPY_SRC block disable sequence.
 
 ## Block Diagram
 
@@ -111,31 +118,14 @@ See the Programmers Guide section for more details on the ENTROPY_SRC block disa
 
 ## Design Details
 
-### Initialization
-
-After power-up, the ENTROPY_SRC block is disabled.
-
-For simplicity of initialization, only a single register write is needed to start functional operation of the ENTROPY_SRC block.
-This assumes that proper defaults are chosen for thresholds, sampling rate, and other registers.
-
-For security reasons, a configuration and control register locking function is performed by the [`REGWEN`](registers.md#regwen) register.
-Clearing the bit in this register will prevent future modification of the [`CONF`](registers.md#conf) register or other writeable registers by firmware.
-
-### Entropy Processing
-
-When enabled, the ENTROPY_SRC block will generate entropy bits continuously.
-The `es_entropy_valid` bit in the [`INTR_STATE`](registers.md#intr_state) register will indicate to the firmware when entropy bits can read from the [`ENTROPY_DATA`](registers.md#entropy_data) register.
-The firmware will do 32-bit register reads of the [`ENTROPY_DATA`](registers.md#entropy_data) register to retrieve the entropy bits.
-Each read will automatically pop an entry from the entropy unpacker block.
-A full twelve 32-bit words need to be read at a time.
-
-The hardware entropy interface will move entropy bits out of the ENTROPY FIFO when it is not empty, and the downstream hardware is ready.
-If firmware is not currently reading entropy bits, all processed entropy bits will flow to the hardware entropy interface.
 
 ### Security
 
 All module assets and countermeasures performed by hardware are listed in the hjson countermeasures section.
 Labels for each instance of asset and countermeasure are located throughout the RTL source code.
+
+A configuration and control register locking function is performed by the [`REGWEN`](registers.md#regwen) register.
+Clearing the bit in this register will prevent future modification of the [`CONF`](registers.md#conf) register or other writeable registers by firmware.
 
 For all of the health test threshold registers, these registers could be protected with shadow registers.
 A design choice was made here to not use shadow registers and save on silicon cost.
@@ -160,7 +150,7 @@ The `es_fifo_err` interrupt will fire when an internal FIFO has a malfunction.
 The conditions that cause this to happen are either when there is a push to a full FIFO or a pull from an empty FIFO.
 
 
-## Main State Machine Diagram
+### Main State Machine Diagram
 The following diagram shows how the main state machine state is constructed.
 The larger circles show the how the overall state machine transitions.
 The sub-state machines with smaller circles show more detail about how the large circles operate.
@@ -319,3 +309,25 @@ In this example, the RNG lines are scored individually (i.e., [`CONF.THRESHOLD_S
    tick:0,
   },}
 ```
+
+### External Health Tests
+
+Vendor-specific tests are supported through an external health test interface (xht).
+This is the same interface that is used for the internal health tests.
+Below is a description of this interface:
+- entropy_bit: 4-bit wide bus of entropy to be tested.
+- entropy_bit_valid: indication of when the entropy is valid.
+- rng_bit_en: indication whether running in single-channel or multi-channel mode.
+- rng_bit_sel: 2-bit signal to indicate the selected channel when running in single-channel mode.
+- clear: signal to clear counters, and is register driven.
+- active: signal to indicate when the test should run, and is register driven.
+- thresh_hi: field to indicate what high threshold the test should use, and is register driven.
+- thresh_lo: field to indicate what low threshold the test should use, and is register driven.
+- health_test_window: 18-bit signal indicating the length of the health test window in symbols.
+- window_wrap_pulse: field to indicate the end of the current window.
+- threshold_scope: field to indicate whether the thresholds are intended to be applied to all entropy lines collectively or on a line-by-line basis, to be read from a register.
+- test_cnt_hi: 16-bit generic test count high result, to be read from a register.
+- test_cnt_low: 16-bit generic test count low result, to be read from a register.
+- continuous_test: signal to indicate whether the test is running continuously across health test window boundaries.
+- test_fail_hi_pulse: indication that a high threshold comparison failed, to be read from a register.
+- test_fail_lo_pulse: indication that a low threshold comparison failed, to be read from a register.
