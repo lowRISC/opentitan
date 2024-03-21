@@ -32,6 +32,16 @@
     life_stage:         "L1",
     design_stage:       "D3",
     verification_stage: "V2S",
+    commit_id:          "486ba480c12f8e71cfb0d41cdf8df1e51a1f26ab"
+    dif_stage:          "S2",
+    notes:              ""
+  }
+  {
+    version:            "2.0.0",
+    life_stage:         "L1",
+    design_stage:       "D2S",
+    verification_stage: "V2S",
+    commit_id:          "ffab8da7381c66b3d2e2b78a382a9f6937e5482e",
     dif_stage:          "S2",
     notes:              ""
   }
