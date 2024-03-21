@@ -13,7 +13,7 @@ ujson_rust(
 )
 
 rust_binary(
-    name = "personalize",
+    name = "personalize_functest",
     srcs = [
         "src/main.rs",
         "src/provisioning_data.rs",
