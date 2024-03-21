@@ -9,7 +9,7 @@ class chip_sw_sleep_por_reset_vseq extends chip_sw_base_vseq;
 
   // This test simply raises a POR via pins, and checks the device exits rom.
   rand int reset_delay;
-  constraint reset_delay_c {reset_delay inside {[25 : 40]};}
+  constraint reset_delay_c {reset_delay inside {[50 : 60]};}
 
   virtual task body();
     super.body();
