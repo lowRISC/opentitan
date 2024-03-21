@@ -295,45 +295,48 @@ module i2c_core import i2c_pkg::*;
   assign unused_alert_test_q = reg2hw.alert_test.q;
   assign unused_txrst_on_cond_qe = reg2hw.target_fifo_config.txrst_on_cond.qe;
 
-  prim_fifo_sync #(
-    .Width   (FMT_FIFO_WIDTH),
-    .Pass    (1'b0),
-    .Depth   (FifoDepth)
-  ) u_i2c_fmtfifo (
+  i2c_fifos u_fifos (
     .clk_i,
     .rst_ni,
-    .clr_i   (i2c_fifo_fmtrst),
-    .wvalid_i(fmt_fifo_wvalid),
-    .wready_o(fmt_fifo_wready),
-    .wdata_i (fmt_fifo_wdata),
-    .depth_o (fmt_fifo_depth),
-    .rvalid_o(fmt_fifo_rvalid),
-    .rready_i(fmt_fifo_rready),
-    .rdata_o (fmt_fifo_rdata),
-    .full_o  (),
-    .err_o   ()
+
+    .fmt_fifo_clr_i   (i2c_fifo_fmtrst),
+    .fmt_fifo_depth_o (fmt_fifo_depth),
+    .fmt_fifo_wvalid_i(fmt_fifo_wvalid),
+    .fmt_fifo_wready_o(fmt_fifo_wready),
+    .fmt_fifo_wdata_i (fmt_fifo_wdata),
+    .fmt_fifo_rvalid_o(fmt_fifo_rvalid),
+    .fmt_fifo_rready_i(fmt_fifo_rready),
+    .fmt_fifo_rdata_o (fmt_fifo_rdata),
+
+    .rx_fifo_clr_i   (i2c_fifo_rxrst),
+    .rx_fifo_depth_o (rx_fifo_depth),
+    .rx_fifo_wvalid_i(rx_fifo_wvalid),
+    .rx_fifo_wready_o(rx_fifo_wready),
+    .rx_fifo_wdata_i (rx_fifo_wdata),
+    .rx_fifo_rvalid_o(rx_fifo_rvalid),
+    .rx_fifo_rready_i(rx_fifo_rready),
+    .rx_fifo_rdata_o (rx_fifo_rdata),
+
+    .tx_fifo_clr_i   (i2c_fifo_txrst),
+    .tx_fifo_depth_o (tx_fifo_depth),
+    .tx_fifo_wvalid_i(tx_fifo_wvalid),
+    .tx_fifo_wready_o(tx_fifo_wready),
+    .tx_fifo_wdata_i (tx_fifo_wdata),
+    .tx_fifo_rvalid_o(tx_fifo_rvalid),
+    .tx_fifo_rready_i(tx_fifo_rready),
+    .tx_fifo_rdata_o (tx_fifo_rdata),
+
+    .acq_fifo_clr_i   (i2c_fifo_acqrst),
+    .acq_fifo_depth_o (acq_fifo_depth),
+    .acq_fifo_wvalid_i(acq_fifo_wvalid),
+    .acq_fifo_wready_o(),
+    .acq_fifo_wdata_i (acq_fifo_wdata),
+    .acq_fifo_rvalid_o(acq_fifo_rvalid),
+    .acq_fifo_rready_i(acq_fifo_rready),
+    .acq_fifo_rdata_o (acq_fifo_rdata)
   );
 
   assign rx_fifo_rready = reg2hw.rdata.re;
-
-  prim_fifo_sync #(
-    .Width   (RX_FIFO_WIDTH),
-    .Pass    (1'b0),
-    .Depth   (FifoDepth)
-  ) u_i2c_rxfifo (
-    .clk_i,
-    .rst_ni,
-    .clr_i   (i2c_fifo_rxrst),
-    .wvalid_i(rx_fifo_wvalid),
-    .wready_o(rx_fifo_wready),
-    .wdata_i (rx_fifo_wdata),
-    .depth_o (rx_fifo_depth),
-    .rvalid_o(rx_fifo_rvalid),
-    .rready_i(rx_fifo_rready),
-    .rdata_o (rx_fifo_rdata),
-    .full_o  (),
-    .err_o   ()
-  );
 
   // Need to add a valid qualification to write only payload bytes
   logic valid_target_lb_wr;
@@ -346,49 +349,11 @@ module i2c_core import i2c_pkg::*;
   assign tx_fifo_wvalid = target_loopback ? acq_fifo_rvalid & valid_target_lb_wr : reg2hw.txdata.qe;
   assign tx_fifo_wdata  = target_loopback ? acq_fifo_rdata[7:0] : reg2hw.txdata.q;
 
-  prim_fifo_sync #(
-    .Width(TX_FIFO_DEPTH),
-    .Pass(1'b0),
-    .Depth(FifoDepth)
-  ) u_i2c_txfifo (
-    .clk_i,
-    .rst_ni,
-    .clr_i   (i2c_fifo_txrst),
-    .wvalid_i(tx_fifo_wvalid),
-    .wready_o(tx_fifo_wready),
-    .wdata_i (tx_fifo_wdata),
-    .depth_o (tx_fifo_depth),
-    .rvalid_o(tx_fifo_rvalid),
-    .rready_i(tx_fifo_rready),
-    .rdata_o (tx_fifo_rdata),
-    .full_o  (),
-    .err_o   ()
-  );
-
   // During line loopback, pop from acquisition fifo only when there is space in
   // the tx_fifo.  We are also allowed to pop even if there is no space if th acq entry
   // is not data payload.
   assign acq_fifo_rready = (reg2hw.acqdata.abyte.re & reg2hw.acqdata.signal.re) |
                            (target_loopback & (tx_fifo_wready | (acq_type != AcqData)));
-
-  prim_fifo_sync #(
-    .Width(ACQ_FIFO_WIDTH),
-    .Pass(1'b0),
-    .Depth(AcqFifoDepth)
-  ) u_i2c_acqfifo (
-    .clk_i,
-    .rst_ni,
-    .clr_i   (i2c_fifo_acqrst),
-    .wvalid_i(acq_fifo_wvalid),
-    .wready_o(),
-    .wdata_i (acq_fifo_wdata),
-    .depth_o (acq_fifo_depth),
-    .rvalid_o(acq_fifo_rvalid),
-    .rready_i(acq_fifo_rready),
-    .rdata_o (acq_fifo_rdata),
-    .full_o  (),
-    .err_o   ()
-  );
 
   // sync the incoming SCL and SDA signals
   prim_flop_2sync #(
