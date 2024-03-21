@@ -1,0 +1,35 @@
+From e9c0a0223ad2111a3aff3647c63b22799f3a5532 Mon Sep 17 00:00:00 2001
+From: Rupert Swarbrick <rswarbrick@lowrisc.org>
+Date: Thu, 21 Mar 2024 14:13:50 +0000
+Subject: [PATCH 2/2] Make build_modes a dictionary in
+ ibex_icache_sim_cfg.hjson
+
+This mirrors a mistaken OpenTitan commit that I made in
+December (4c89520 on the OT side), editing a vendored file. Oops!
+
+Match that behaviour here, so that we can re-vendor without undoing
+the change.
+
+(This patch is manually edited from something that came out of git
+format-patch, but is now applied to just a subdirectory)
+
+diff --git a/dv/uvm/icache/dv/ibex_icache_sim_cfg.hjson b/dv/uvm/icache/dv/ibex_icache_sim_cfg.hjson
+index f1135870..20266605 100644
+--- a/uvm/icache/dv/ibex_icache_sim_cfg.hjson
++++ b/uvm/icache/dv/ibex_icache_sim_cfg.hjson
+@@ -29,12 +29,11 @@
+ 
+   sim_tops: ["ibex_icache_fcov_bind"]
+ 
+-  build_modes: [
+-    {
+-      name: default
++  build_modes: {
++    default: {
+       en_build_modes: ["{tool}_memutil_dpi_scrambled_build_opts"]
+     }
+-  ]
++  }
+ 
+   // Default iterations for all tests - each test entry can override this.
+   reseed: 50
