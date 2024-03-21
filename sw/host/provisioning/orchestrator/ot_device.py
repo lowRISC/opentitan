@@ -64,7 +64,7 @@ class OTDevice:
             elf = elf_path.format("sram_cp_provision_silicon_creator.elf")
 
         # Assemble bazel command
-        cmd = f"""bazel run //sw/host/tests/manuf/provisioning/cp:cp -- \
+        cmd = f"""bazel run //sw/host/provisioning/cp -- \
 --rcfile= --logging=info \
 {platform_flags} \
 --elf={elf} \
