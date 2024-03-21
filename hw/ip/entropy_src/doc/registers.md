@@ -75,13 +75,13 @@ Interrupt State Register
 {"reg": [{"name": "es_entropy_valid", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "es_health_test_failed", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "es_observe_fifo_ready", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "es_fatal_err", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 230}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                  | Description                                                                         |
-|:------:|:------:|:-------:|:----------------------|:------------------------------------------------------------------------------------|
-|  31:4  |        |         |                       | Reserved                                                                            |
-|   3    |  rw1c  |   0x0   | es_fatal_err          | Asserted when a FIFO error occurs, or if an illegal state machine state is reached. |
-|   2    |  rw1c  |   0x0   | es_observe_fifo_ready | Asserted when the observe FIFO has filled to the threshold level.                   |
-|   1    |  rw1c  |   0x0   | es_health_test_failed | Asserted when the alert count has been met.                                         |
-|   0    |  rw1c  |   0x0   | es_entropy_valid      | Asserted when entropy source bits are available.                                    |
+|  Bits  |  Type  |  Reset  | Name                  | Description                                                                                                                                                                             |
+|:------:|:------:|:-------:|:----------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|  31:4  |        |         |                       | Reserved                                                                                                                                                                                |
+|   3    |  rw1c  |   0x0   | es_fatal_err          | Asserted when an fatal error condition is met, e.g., upon FIFO errors, or if an illegal state machine state is reached.                                                                 |
+|   2    |  rw1c  |   0x0   | es_observe_fifo_ready | Asserted when the observe FIFO has filled to the configured threshold level (see [`OBSERVE_FIFO_THRESH`](#observe_fifo_thresh)).                                                        |
+|   1    |  rw1c  |   0x0   | es_health_test_failed | Asserted whenever the main state machine is in the alert state, e.g., due to health tests failing and reaching the threshold value configured in [`ALERT_THRESHOLD.`](#alert_threshold) |
+|   0    |  rw1c  |   0x0   | es_entropy_valid      | Asserted when entropy source bits are available for firmware for consumption via [`ENTROPY_DATA`](#entropy_data) register.                                                              |
 
 ## INTR_ENABLE
 Interrupt Enable Register

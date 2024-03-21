@@ -30,13 +30,13 @@
   ],
   interrupt_list: [
     { name: "es_entropy_valid"
-      desc: "Asserted when entropy source bits are available."}
+      desc: "Asserted when entropy source bits are available for firmware for consumption via !!ENTROPY_DATA register."}
     { name: "es_health_test_failed"
-      desc: "Asserted when the alert count has been met."}
+      desc: "Asserted whenever the main state machine is in the alert state, e.g., due to health tests failing and reaching the threshold value configured in !!ALERT_THRESHOLD."}
     { name: "es_observe_fifo_ready"
-      desc: "Asserted when the observe FIFO has filled to the threshold level."}
+      desc: "Asserted when the observe FIFO has filled to the configured threshold level (see !!OBSERVE_FIFO_THRESH)."}
     { name: "es_fatal_err"
-      desc: "Asserted when a FIFO error occurs, or if an illegal state machine state is reached."}
+      desc: "Asserted when an fatal error condition is met, e.g., upon FIFO errors, or if an illegal state machine state is reached."}
   ],
   inter_signal_list: [
     { struct:  "entropy_src_hw_if",

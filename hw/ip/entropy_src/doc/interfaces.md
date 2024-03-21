@@ -23,12 +23,12 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 ## Interrupts
 
-| Interrupt Name        | Type   | Description                                                                         |
-|:----------------------|:-------|:------------------------------------------------------------------------------------|
-| es_entropy_valid      | Event  | Asserted when entropy source bits are available.                                    |
-| es_health_test_failed | Event  | Asserted when the alert count has been met.                                         |
-| es_observe_fifo_ready | Event  | Asserted when the observe FIFO has filled to the threshold level.                   |
-| es_fatal_err          | Event  | Asserted when a FIFO error occurs, or if an illegal state machine state is reached. |
+| Interrupt Name        | Type   | Description                                                                                                                                                                                         |
+|:----------------------|:-------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| es_entropy_valid      | Event  | Asserted when entropy source bits are available for firmware for consumption via [`ENTROPY_DATA`](registers.md#entropy_data) register.                                                              |
+| es_health_test_failed | Event  | Asserted whenever the main state machine is in the alert state, e.g., due to health tests failing and reaching the threshold value configured in [`ALERT_THRESHOLD.`](registers.md#alert_threshold) |
+| es_observe_fifo_ready | Event  | Asserted when the observe FIFO has filled to the configured threshold level (see [`OBSERVE_FIFO_THRESH`](registers.md#observe_fifo_thresh)).                                                        |
+| es_fatal_err          | Event  | Asserted when an fatal error condition is met, e.g., upon FIFO errors, or if an illegal state machine state is reached.                                                                             |
 
 ## Security Alerts
 

@@ -137,19 +137,6 @@ This is done to make sure repeated values are not occurring.
 Only 64 bits (out of 384 bits) are checked, since this is statistically significant, and more checking would cost more silicon.
 
 
-
-### Interrupts
-
-The ENTROPY_SRC module has several interrupts: `es_entropy_valid`, `es_health_test_failed`, and `es_fifo_err`.
-
-The `es_entropy_valid` interrupt should be asserted when an entropy source has been implemented that is relatively slow.
-
-The `es_health_test_failed` interrupt will trigger when the internal health test fails and exceeds the alert threshold.
-
-The `es_fifo_err` interrupt will fire when an internal FIFO has a malfunction.
-The conditions that cause this to happen are either when there is a push to a full FIFO or a pull from an empty FIFO.
-
-
 ### Main State Machine Diagram
 The following diagram shows how the main state machine state is constructed.
 The larger circles show the how the overall state machine transitions.

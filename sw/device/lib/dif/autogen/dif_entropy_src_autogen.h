@@ -84,20 +84,24 @@ dif_result_t dif_entropy_src_alert_force(const dif_entropy_src_t *entropy_src,
  */
 typedef enum dif_entropy_src_irq {
   /**
-   * Asserted when entropy source bits are available.
+   * Asserted when entropy source bits are available for firmware for
+   * consumption via !!ENTROPY_DATA register.
    */
   kDifEntropySrcIrqEsEntropyValid = 0,
   /**
-   * Asserted when the alert count has been met.
+   * Asserted whenever the main state machine is in the alert state, e.g., due
+   * to health tests failing and reaching the threshold value configured in
+   * !!ALERT_THRESHOLD.
    */
   kDifEntropySrcIrqEsHealthTestFailed = 1,
   /**
-   * Asserted when the observe FIFO has filled to the threshold level.
+   * Asserted when the observe FIFO has filled to the configured threshold level
+   * (see !!OBSERVE_FIFO_THRESH).
    */
   kDifEntropySrcIrqEsObserveFifoReady = 2,
   /**
-   * Asserted when a FIFO error occurs, or if an illegal state machine state is
-   * reached.
+   * Asserted when an fatal error condition is met, e.g., upon FIFO errors, or
+   * if an illegal state machine state is reached.
    */
   kDifEntropySrcIrqEsFatalErr = 3,
 } dif_entropy_src_irq_t;
