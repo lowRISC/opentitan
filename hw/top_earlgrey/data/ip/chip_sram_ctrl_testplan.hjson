@@ -4,10 +4,10 @@
 {
   name: chip_sram_ctrl
   testpoints: [
-    // SRAM (pre-verified IP) integration tests:
     {
       name: chip_sw_sram_scrambled_access
-      desc: '''Verify scrambled memory accesses to both main and retention SRAMs.
+      desc: '''
+            Verify scrambled memory accesses to both main and retention SRAMs.
 
             - Initialize the entropy_src subsystem to enable OTP_CTRL fetch random data (already
               done by the test_rom startup code).
@@ -27,12 +27,12 @@
       stage: V2
       si_stage: SV3
       lc_states: ["PROD"]
-      tests: ["chip_sw_sram_ctrl_scrambled_access",
-              "chip_sw_sram_ctrl_scrambled_access_jitter_en"]
+      tests: ["chip_sw_sram_ctrl_scrambled_access", "chip_sw_sram_ctrl_scrambled_access_jitter_en"]
     }
     {
       name: chip_sw_sleep_sram_ret_contents
-      desc: '''Verify that the data within the retention SRAM survives low power entry-exit and reset.
+      desc: '''
+            Verify that the data within the retention SRAM survives low power entry-exit and reset.
 
             Ensure that the data within the retention SRAM survives as described in this table.
               |             Mode             | Scrambled | Data Preserved |
@@ -52,18 +52,13 @@
       stage: V2
       si_stage: SV3
       lc_states: ["PROD"]
-      tests: [
-        "chip_sw_sleep_sram_ret_contents_no_scramble",
-        "chip_sw_sleep_sram_ret_contents_scramble",
-      ]
-      bazel: [
-        "//sw/device/tests:sram_ctrl_sleep_sram_ret_contents_no_scramble_test",
-        "//sw/device/tests:sram_ctrl_sleep_sram_ret_contents_scramble_test",
-      ]
+      tests: ["chip_sw_sleep_sram_ret_contents_no_scramble", "chip_sw_sleep_sram_ret_contents_scramble"]
+      bazel: ["//sw/device/tests:sram_ctrl_sleep_sram_ret_contents_no_scramble_test", "//sw/device/tests:sram_ctrl_sleep_sram_ret_contents_scramble_test"]
     }
     {
       name: chip_sw_sram_execution
-      desc: '''Verify that CPU can fetch instructions from SRAM if enabled.
+      desc: '''
+            Verify that CPU can fetch instructions from SRAM if enabled.
 
             - Create the following combinations of 8 scenarios:
               - The fetch enable bit in the HW_CFG1 partition of OTP controller set and not set.
@@ -110,7 +105,8 @@
     }
     {
       name: chip_sw_sram_lc_escalation
-      desc: '''Verify the LC escalation path to the SRAMs.
+      desc: '''
+            Verify the LC escalation path to the SRAMs.
 
             - Configure the LC_CTRL to trigger an escalation request to the SRAMs.
             - Verify that the SRAMs stop accepting and responding to new memory requests.
@@ -124,13 +120,12 @@
       stage: V2
       si_stage: SV3
       lc_states: ["PROD"]
-      tests: ["chip_sw_all_escalation_resets",
-              "chip_sw_data_integrity_escalation"]
+      tests: ["chip_sw_all_escalation_resets", "chip_sw_data_integrity_escalation"]
     }
-
     {
       name: chip_sw_sram_memset
-      desc: '''Use the LFSR-based initialisation mechanism to wipe the contents of SRAM.
+      desc: '''
+            Use the LFSR-based initialisation mechanism to wipe the contents of SRAM.
 
              - Write some known data to the main SRAM and read it back to make sure the write worked
                as expected.
@@ -139,7 +134,8 @@
              - Read the location from the SRAM and check that the data has been wiped.
              - Repeat the steps above for the retention SRAM.
 
-             '''
+             
+            '''
       features: ["SRAM_CTRL.MEMSET"]
       stage: V3
       si_stage: SV3
@@ -149,7 +145,8 @@
     }
     {
       name: chip_sw_sram_subword_access
-      desc: '''Check that subword access works for each SRAM.
+      desc: '''
+            Check that subword access works for each SRAM.
 
              - Initialise a region of the SRAM with known patterns.
              - Read subwords (each length from one byte upwards; each address modulo 8) and check
@@ -157,7 +154,8 @@
              - Write subwords (same list as above) and read back the whole word that we touch in
                each case. Check that only the expected bytes have been changed.
 
-             '''
+             
+            '''
       features: ["SRAM_CTRL.SUBWORD_ACCESS"]
       stage: V3
       si_stage: SV3

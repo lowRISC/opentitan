@@ -4,10 +4,10 @@
 {
   name: chip_usbdev
   testpoints: [
-    // USBDEV integration tests
     {
       name: chip_sw_usbdev_mem
-      desc: '''Verify that the USB device packet memory works reliably from the CPU side.
+      desc: '''
+            Verify that the USB device packet memory works reliably from the CPU side.
 
             - With the USB device powered but not connected (pull up not enabled),
               check that the packet buffer memory works reliably from the CPU side.
@@ -23,7 +23,8 @@
     }
     {
       name: chip_sw_usbdev_vbus
-      desc: '''Verify that the USB device can detect the presence of VBUS from the USB host.
+      desc: '''
+            Verify that the USB device can detect the presence of VBUS from the USB host.
 
             - Set up the pinmux to ensure that the SENSE/VBUS input can reach usbdev
             - Check that VBUS is asserted indicating the presence of a connection to the
@@ -38,7 +39,8 @@
     }
     {
       name: chip_sw_usbdev_pullup
-      desc: '''Verify that the USB device can assert the pull up to indicate its presence.
+      desc: '''
+            Verify that the USB device can assert the pull up to indicate its presence.
 
             - This test extends from `chip_sw_usbdev_vbus` by checking that the DP line of
               the USB is deasserted after VBUS detection.
@@ -51,10 +53,7 @@
               for the DN line using the usbdev pin-flipping feature.
             - No other communication with the host, so indicating Low Speed is harmless.
             '''
-      features: [
-        "USBDEV.CONN.VBUS",
-        "USBDEV.CONN.PULLUP",
-      ]
+      features: ["USBDEV.CONN.VBUS", "USBDEV.CONN.PULLUP"]
       stage: V2
       si_stage: SV3
       lc_states: ["PROD"]
@@ -63,7 +62,8 @@
     }
     {
       name: chip_sw_usbdev_aon_pullup
-      desc: '''Verify that the AON Wake module can assume control of the pull ups.
+      desc: '''
+            Verify that the AON Wake module can assume control of the pull ups.
 
             - This test extends from `chip_sw_usbdev_pullup` by additionally exercising the
               ability of the 'usbdev_aon_wake' module to assume control of the DP/DN pull up
@@ -75,11 +75,7 @@
             - Repeat the above test with the DP line in the opposite state.
             - For those targets which support pinflipping, repeat the above for the DN line too.
             '''
-      features: [
-        "USBDEV.CONN.VBUS",
-        "USBDEV.CONN.PULLUP",
-        "USBDEV.POWER.AON",
-      ]
+      features: ["USBDEV.CONN.VBUS", "USBDEV.CONN.PULLUP", "USBDEV.POWER.AON"]
       stage: V2
       si_stage: SV3
       lc_states: ["PROD"]
@@ -88,7 +84,8 @@
     }
     {
       name: chip_sw_usbdev_sof
-      desc: '''Verify that the USB device can detect SOF and respond with `usb_ref_pulse_o`
+      desc: '''
+            Verify that the USB device can detect SOF and respond with `usb_ref_pulse_o`
             and `usb_ref_val_o`.
 
             - This test extends from `chip_sw_usbdev_pullup` by connecting to the host/DPI
@@ -101,11 +98,7 @@
             - Ascertain that the reference pulse is being used to adjust the usb clock
               frequency appropriately.
             '''
-      features: [
-        "USBDEV.CONN.VBUS",
-        "USBDEV.CONN.PULLUP",
-        "USBDEV.CONN.REF_PULSE",
-      ]
+      features: ["USBDEV.CONN.VBUS", "USBDEV.CONN.PULLUP", "USBDEV.CONN.REF_PULSE"]
       stage: V2
       si_stage: SV3
       lc_states: ["PROD"]
@@ -114,7 +107,8 @@
     }
     {
       name: chip_sw_usbdev_setup_rx
-      desc: '''Verify that the USB device can receive the SETUP stage of a Control Transfer
+      desc: '''
+            Verify that the USB device can receive the SETUP stage of a Control Transfer
             from the host/DPI model.
 
             - This test extends from `chip_sw_usbdev_pullup` by checking that the device
@@ -129,11 +123,7 @@
               This makes the test robust against alternative host behaviors, since the
               first Control Transfer to be sent upon connection is unspecified.
             '''
-      features: [
-        "USBDEV.CONN.VBUS",
-        "USBDEV.CONN.PULLUP",
-        "USBDEV.TRANSFER.CONTROL_RX",
-      ]
+      features: ["USBDEV.CONN.VBUS", "USBDEV.CONN.PULLUP", "USBDEV.TRANSFER.CONTROL_RX"]
       stage: V2
       si_stage: SV3
       lc_states: ["PROD"]
@@ -142,7 +132,8 @@
     }
     {
       name: chip_sw_usbdev_config_host
-      desc: '''Verify that the USB device can be configured by the host/DPI.
+      desc: '''
+            Verify that the USB device can be configured by the host/DPI.
 
             - This test extends from `chip_sw_usbdev_setup_rx` by using the usb_testutils
               software layer to receive, decode and respond to Control Transfers.
@@ -153,12 +144,7 @@
             - The device should present two serial ports (as /dev/ttyUSBn on a Linux
               host).
             '''
-      features: [
-        "USBDEV.CONN.VBUS",
-        "USBDEV.CONN.PULLUP",
-        "USBDEV.TRANSFER.CONTROL_RX",
-        "USBDEV.TRANSFER.CONTROL_TX",
-      ]
+      features: ["USBDEV.CONN.VBUS", "USBDEV.CONN.PULLUP", "USBDEV.TRANSFER.CONTROL_RX", "USBDEV.TRANSFER.CONTROL_TX"]
       stage: V2
       si_stage: SV3
       lc_states: ["PROD"]
@@ -167,7 +153,8 @@
     }
     {
       name: chip_sw_usbdev_pincfg
-      desc: '''Verify that the USB device can operate in all pin configurations.
+      desc: '''
+            Verify that the USB device can operate in all pin configurations.
 
             - This test extends from `chip_sw_usbdev_config_host` by testing all pin
               configurations.
@@ -178,14 +165,7 @@
               transmission on/off, and (iii) external differential receiver yes/no.
             - Targets differ in which modes/pin configurations are supported.
             '''
-      features: [
-        "USBDEV.CONN.VBUS",
-        "USBDEV.CONN.PULLUP",
-        "USBDEV.TRANSFER.CONTROL_RX",
-        "USBDEV.TRANSFER.CONTROL_TX",
-        "USBDEV.CONN.PIN_CONFIG",
-        "USBDEV.CONN.RESET",
-      ]
+      features: ["USBDEV.CONN.VBUS", "USBDEV.CONN.PULLUP", "USBDEV.TRANSFER.CONTROL_RX", "USBDEV.TRANSFER.CONTROL_TX", "USBDEV.CONN.PIN_CONFIG", "USBDEV.CONN.RESET"]
       stage: V2
       si_stage: SV3
       lc_states: ["PROD"]
@@ -194,7 +174,8 @@
     }
     {
       name: chip_sw_usbdev_tx_rx
-      desc: '''Verify operation of simple Bulk Transfers to/from host/DPI model.
+      desc: '''
+            Verify operation of simple Bulk Transfers to/from host/DPI model.
 
             - DPI model provides a simulation of a simple USB host; asserts VBUS
             - SW sets up the USB device, and enables the interface.
@@ -206,14 +187,7 @@
             - With a physical host this just requires character echo in response to
               a serial connection (eg. `cat /dev/ttyUSB0`).
             '''
-      features: [
-        "USBDEV.CONN.VBUS",
-        "USBDEV.CONN.PULLUP",
-        "USBDEV.TRANSFER.CONTROL_RX",
-        "USBDEV.TRANSFER.CONTROL_TX",
-        "USBDEV.TRANSFER.ENDPOINTS",
-        "USBDEV.TRANSFER.BULK",
-      ]
+      features: ["USBDEV.CONN.VBUS", "USBDEV.CONN.PULLUP", "USBDEV.TRANSFER.CONTROL_RX", "USBDEV.TRANSFER.CONTROL_TX", "USBDEV.TRANSFER.ENDPOINTS", "USBDEV.TRANSFER.BULK"]
       stage: V2
       si_stage: SV3
       lc_states: ["PROD"]
@@ -222,7 +196,8 @@
     }
     {
       name: chip_sw_usbdev_stream
-      desc: '''Verify the transmission of randomized Bulk Transfer stream data
+      desc: '''
+            Verify the transmission of randomized Bulk Transfer stream data
             to/from host/DPI model.
 
             - This test extends from `chip_sw_usbdev_tx_rx`.
@@ -234,14 +209,7 @@
             - With a physical host this requires the `usbdev/stream_test` host-
               side test application.
             '''
-      features: [
-        "USBDEV.CONN.VBUS",
-        "USBDEV.CONN.PULLUP",
-        "USBDEV.TRANSFER.CONTROL_RX",
-        "USBDEV.TRANSFER.CONTROL_TX",
-        "USBDEV.TRANSFER.ENDPOINTS",
-        "USBDEV.TRANSFER.BULK",
-      ]
+      features: ["USBDEV.CONN.VBUS", "USBDEV.CONN.PULLUP", "USBDEV.TRANSFER.CONTROL_RX", "USBDEV.TRANSFER.CONTROL_TX", "USBDEV.TRANSFER.ENDPOINTS", "USBDEV.TRANSFER.BULK"]
       stage: V3
       si_stage: SV3
       lc_states: ["PROD"]
@@ -250,7 +218,8 @@
     }
     {
       name: chip_sw_usbdev_iso
-      desc: '''Verify the transmission of randomized Isochronous Transfer stream
+      desc: '''
+            Verify the transmission of randomized Isochronous Transfer stream
             data to/from host/DPI model.
 
             - This test extends from `chip_sw_usbdev_stream`.
@@ -263,14 +232,7 @@
             - With a physical host this requires the `usbdev/stream_test` host-
               side test application.
             '''
-      features: [
-        "USBDEV.CONN.VBUS",
-        "USBDEV.CONN.PULLUP",
-        "USBDEV.TRANSFER.CONTROL_RX",
-        "USBDEV.TRANSFER.CONTROL_TX",
-        "USBDEV.TRANSFER.ENDPOINTS",
-        "USBDEV.TRANSFER.ISOCHRONOUS",
-      ]
+      features: ["USBDEV.CONN.VBUS", "USBDEV.CONN.PULLUP", "USBDEV.TRANSFER.CONTROL_RX", "USBDEV.TRANSFER.CONTROL_TX", "USBDEV.TRANSFER.ENDPOINTS", "USBDEV.TRANSFER.ISOCHRONOUS"]
       stage: V3
       si_stage: SV3
       lc_states: ["PROD"]
@@ -279,7 +241,8 @@
     }
     {
       name: chip_sw_usbdev_mixed
-      desc: '''Verify the transmission of randomized Control, Interrupt, Bulk and
+      desc: '''
+            Verify the transmission of randomized Control, Interrupt, Bulk and
             Isochronous Transfer stream data to/from host/DPI model.
 
             - This test extends from `chip_sw_usbdev_iso` by adding Control
@@ -289,16 +252,7 @@
             - With a physical host this requires the `usbdev/stream_test` host-
               side test application.
             '''
-      features: [
-        "USBDEV.CONN.VBUS",
-        "USBDEV.CONN.PULLUP",
-        "USBDEV.TRANSFER.CONTROL_RX",
-        "USBDEV.TRANSFER.CONTROL_TX",
-        "USBDEV.TRANSFER.ENDPOINTS",
-        "USBDEV.TRANSFER.ISOCHRONOUS",
-        "USBDEV.TRANSFER.CONTROL",
-        "USBDEV.TRANSFER.INTERRUPT",
-      ]
+      features: ["USBDEV.CONN.VBUS", "USBDEV.CONN.PULLUP", "USBDEV.TRANSFER.CONTROL_RX", "USBDEV.TRANSFER.CONTROL_TX", "USBDEV.TRANSFER.ENDPOINTS", "USBDEV.TRANSFER.ISOCHRONOUS", "USBDEV.TRANSFER.CONTROL", "USBDEV.TRANSFER.INTERRUPT"]
       stage: V3
       si_stage: SV3
       lc_states: ["PROD"]
@@ -307,7 +261,8 @@
     }
     {
       name: chip_sw_usbdev_suspend_resume
-      desc: '''Verify that the USB device can detect Suspend and Resume Signaling
+      desc: '''
+            Verify that the USB device can detect Suspend and Resume Signaling
             from the host.
 
             - Host configures the USB device as normal.
@@ -321,14 +276,7 @@
               application to perform Suspend/Resume Signaling.
             - Note: this test does not engage the AON Wake module or enter a low power state.
             '''
-      features: [
-        "USBDEV.CONN.VBUS",
-        "USBDEV.CONN.PULLUP",
-        "USBDEV.TRANSFER.CONTROL_RX",
-        "USBDEV.TRANSFER.CONTROL_TX",
-        "USBDEV.POWER.SUSPEND",
-        "USBDEV.POWER.RESUME",
-      ]
+      features: ["USBDEV.CONN.VBUS", "USBDEV.CONN.PULLUP", "USBDEV.TRANSFER.CONTROL_RX", "USBDEV.TRANSFER.CONTROL_TX", "USBDEV.POWER.SUSPEND", "USBDEV.POWER.RESUME"]
       stage: V3
       si_stage: SV3
       lc_states: ["PROD"]
@@ -337,7 +285,8 @@
     }
     {
       name: chip_sw_usbdev_aon_wake_reset
-      desc: '''Verify that the USB AON Wake module can detect Bus Resets from the host.
+      desc: '''
+            Verify that the USB AON Wake module can detect Bus Resets from the host.
 
             - Host configures the USB device as normal and subsequently performs
               Suspend signaling.
@@ -351,15 +300,7 @@
             - Note: this test does not exercise power manager-related functionality and does
               not enter any low power mode.
             '''
-      features: [
-        "USBDEV.CONN.VBUS",
-        "USBDEV.CONN.PULLUP",
-        "USBDEV.TRANSFER.CONTROL_RX",
-        "USBDEV.TRANSFER.CONTROL_TX",
-        "USBDEV.POWER.SUSPEND",
-        "USBDEV.POWER.AON",
-        "USBDEV.POWER.WAKE_BUS_RESET",
-      ]
+      features: ["USBDEV.CONN.VBUS", "USBDEV.CONN.PULLUP", "USBDEV.TRANSFER.CONTROL_RX", "USBDEV.TRANSFER.CONTROL_TX", "USBDEV.POWER.SUSPEND", "USBDEV.POWER.AON", "USBDEV.POWER.WAKE_BUS_RESET"]
       stage: V3
       si_stage: SV3
       lc_states: ["PROD"]
@@ -368,7 +309,8 @@
     }
     {
       name: chip_sw_usbdev_aon_wake_disconnect
-      desc: '''Verify that the USB AON Wake module can detect USB Disconnects.
+      desc: '''
+            Verify that the USB AON Wake module can detect USB Disconnects.
 
             - Host configures the USB device as normal and subsequently performs
               Suspend signaling.
@@ -384,15 +326,7 @@
             - Note: this test does not exercise power manager-related functionality and does
               not enter any low power mode.
             '''
-      features: [
-        "USBDEV.CONN.VBUS",
-        "USBDEV.CONN.PULLUP",
-        "USBDEV.TRANSFER.CONTROL_RX",
-        "USBDEV.TRANSFER.CONTROL_TX",
-        "USBDEV.POWER.SUSPEND",
-        "USBDEV.POWER.AON",
-        "USBDEV.POWER.WAKE_DISCONNECT",
-      ]
+      features: ["USBDEV.CONN.VBUS", "USBDEV.CONN.PULLUP", "USBDEV.TRANSFER.CONTROL_RX", "USBDEV.TRANSFER.CONTROL_TX", "USBDEV.POWER.SUSPEND", "USBDEV.POWER.AON", "USBDEV.POWER.WAKE_DISCONNECT"]
       stage: V3
       si_stage: SV3
       lc_states: ["PROD"]
@@ -401,7 +335,8 @@
     }
     {
       name: chip_sw_usbdev_toggle_restore
-      desc: '''Verify that the USB device is able to save and restore arbitrary permutations
+      desc: '''
+            Verify that the USB device is able to save and restore arbitrary permutations
             of the Data Toggle flags on both the IN and OUT sides.
 
             - With the USB device powered but not connected (pull up not enabled),

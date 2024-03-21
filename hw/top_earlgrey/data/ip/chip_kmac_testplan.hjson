@@ -4,27 +4,24 @@
 {
   name: chip_kmac
   testpoints: [
-    // KMAC integration tests
     {
       name: chip_sw_kmac_enc
-      desc: '''Verify the SHA3 operation.
+      desc: '''
+            Verify the SHA3 operation.
 
             SW test verifies SHA3 operation with a known key, plain text and digest (pick one of
             the NIST vectors). SW validates the reception of kmac done and fifo empty interrupts.
             '''
       stage: V2
       si_stage: SV2
-      tests: [
-        "chip_sw_kmac_mode_cshake",
-        "chip_sw_kmac_mode_kmac",
-        "chip_sw_kmac_mode_kmac_jitter_en",
-      ]
+      tests: ["chip_sw_kmac_mode_cshake", "chip_sw_kmac_mode_kmac", "chip_sw_kmac_mode_kmac_jitter_en"]
       lc_states: ["PROD"]
       bazel: ["//sw/device/tests:kmac_mode_kmac_test"]
     }
     {
       name: chip_sw_kmac_app_keymgr
-      desc: '''Verify the keymgr interface to KMAC.
+      desc: '''
+            Verify the keymgr interface to KMAC.
 
             - Configure the keymgr to start sending known message data to the KMAC.
             - Keymgr should transmit a sideloaded key to the KMAC as well.
@@ -41,7 +38,8 @@
     }
     {
       name: chip_sw_kmac_app_lc
-      desc: '''Verify the LC interface to KMAC.
+      desc: '''
+            Verify the LC interface to KMAC.
 
             - Configure the LC_CTRL to start a token hash using KMAC interface.
             - KMAC should finish hashing successfully (not visible to SW) and return digest to
@@ -55,7 +53,8 @@
     }
     {
       name: chip_sw_kmac_app_rom
-      desc: '''Verify the ROM interface to KMAC.
+      desc: '''
+            Verify the ROM interface to KMAC.
 
             - Backdoor initialize ROM memory immediately out of reset.
             - ROM will send message to the KMAC containing its memory contents,
@@ -71,7 +70,8 @@
     }
     {
       name: chip_sw_kmac_entropy
-      desc: '''Verify the EDN interface to KMAC.
+      desc: '''
+            Verify the EDN interface to KMAC.
 
             Requires `EnMasking` parameter to be enabled.
             SW randomly configures the KMAC in any hashing mode/strength, and enable EDN mode.
@@ -99,7 +99,8 @@
     }
     {
       name: chip_sw_kmac_idle
-      desc: '''Verify the KMAC idle signaling to clkmgr.
+      desc: '''
+            Verify the KMAC idle signaling to clkmgr.
 
             - Write the KMAC clk hint to 0 within clkmgr to indicate KMAC clk can be gated and
               verify that the KMAC clk hint status within clkmgr reads 0 (KMAC is disabled).
@@ -119,7 +120,8 @@
     }
     {
       name: chip_sw_kmac_sha3_stress
-      desc: '''Verify all SHA3 modes of operation.
+      desc: '''
+            Verify all SHA3 modes of operation.
 
             - Verify the following digest sizes: 224, 256, 384, 512
             - Verify input message size of 0 bytes.
@@ -135,7 +137,8 @@
     }
     {
       name: chip_sw_kmac_shake_stress
-      desc: '''Verify all SHAKE modes of operation.
+      desc: '''
+            Verify all SHAKE modes of operation.
 
             - Verify the following security configurations: 128, 256
             - Verify input message size of 0 bytes.
@@ -143,10 +146,7 @@
             - Use endianess configuration used in the crypto library.
             - Verify multiple XOF configurations.
             '''
-      features: [
-        "KMAC.MODE.SHAKE",
-        "KMAC.MODE.XOF",
-      ]
+      features: ["KMAC.MODE.SHAKE", "KMAC.MODE.XOF"]
       stage: V3
       si_stage: SV3
       lc_states: ["PROD"]
@@ -155,7 +155,8 @@
     }
     {
       name: chip_sw_kmac_cshake_stress
-      desc: '''Verify all cSHAKE modes of operation.
+      desc: '''
+            Verify all cSHAKE modes of operation.
 
             - Verify the following security configurations: 128, 256
             - Verify input message size of 0 bytes.
@@ -163,10 +164,7 @@
             - Use endianess configuration used in the crypto library.
             - Verify multiple XOF configurations.
             '''
-      features: [
-        "KMAC.MODE.CSHAKE",
-        "KMAC.MODE.XOF",
-      ]
+      features: ["KMAC.MODE.CSHAKE", "KMAC.MODE.XOF"]
       stage: V3
       si_stage: SV3
       lc_states: ["PROD"]
@@ -175,7 +173,8 @@
     }
     {
       name: chip_sw_kmac_kmac_stress
-      desc: '''Verify all KMAC modes of operation.
+      desc: '''
+            Verify all KMAC modes of operation.
 
             - Verify the following security configurations: 128, 256
             - Verify input message size of 0 bytes.
@@ -183,10 +182,7 @@
             - Use endianess configuration used in the crypto library.
             - Verify multiple XOF configurations.
             '''
-      features: [
-        "KMAC.MODE.KMAC",
-        "KMAC.MODE.XOF",
-      ]
+      features: ["KMAC.MODE.KMAC", "KMAC.MODE.XOF"]
       stage: V3
       si_stage: SV3
       lc_states: ["PROD"]
@@ -195,7 +191,8 @@
     }
     {
       name: chip_sw_kmac_kmac_key_sideload
-      desc: '''Verify all KMAC key sideload.
+      desc: '''
+            Verify all KMAC key sideload.
 
             Procedure:
 
@@ -221,17 +218,15 @@
     }
     {
       name: chip_sw_kmac_endianess
-      desc: '''Verify all KMAC endinaness options
+      desc: '''
+            Verify all KMAC endinaness options
 
             This is a low priority test P3.
 
             Test the permutation of all endinaness configuration options for message and digest
             registers.
             '''
-      features: [
-        "KMAC.ENDIANNESS.MESSAGE",
-        "KMAC.ENDIANNESS.DIGEST",
-      ]
+      features: ["KMAC.ENDIANNESS.MESSAGE", "KMAC.ENDIANNESS.DIGEST"]
       stage: V3
       si_stage: SV3
       lc_states: ["PROD"]
@@ -240,7 +235,8 @@
     }
     {
       name: chip_sw_kmac_entropy_stress
-      desc: '''Verify all KMAC entropy configuration options.
+      desc: '''
+            Verify all KMAC entropy configuration options.
 
             Verify all entropy modes of operation (e.g. software, EDN). Depending on the mode of
             operation, exercise relevant functionality, for example:
@@ -252,10 +248,7 @@
             Process many message blocks in KMAC configuration for all entropy modes, and verify
             that there are no error conditions.
             '''
-      features: [
-        "KMAC.ENDIANNESS.MESSAGE",
-        "KMAC.ENDIANNESS.DIGEST",
-      ]
+      features: ["KMAC.ENDIANNESS.MESSAGE", "KMAC.ENDIANNESS.DIGEST"]
       stage: V3
       si_stage: SV3
       lc_states: ["PROD"]
@@ -264,7 +257,8 @@
     }
     {
       name: chip_sw_kmac_error_conditions
-      desc: '''Verify reporting of KMAC errors
+      desc: '''
+            Verify reporting of KMAC errors
 
             This is a negative test case covering the following error conditions:
 

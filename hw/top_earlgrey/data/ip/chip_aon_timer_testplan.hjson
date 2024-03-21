@@ -6,7 +6,8 @@
   testpoints: [
     {
       name: chip_sw_aon_timer_wakeup_irq
-      desc: '''Verify the AON timer wake up interrupt in normal operating state.
+      desc: '''
+            Verify the AON timer wake up interrupt in normal operating state.
 
             - Program the PLIC to let the AON timer wake up interrupt the CPU.
             - Program the AON timer to generate the wake up timeout interrupt after some time.
@@ -23,7 +24,8 @@
     }
     {
       name: chip_sw_aon_timer_sleep_wakeup
-      desc: '''Verify that AON timer can wake up the chip from a deep sleep state.
+      desc: '''
+            Verify that AON timer can wake up the chip from a deep sleep state.
 
             - Read the reset cause register in rstmgr to confirm that the SW is in the POR reset
               phase.
@@ -45,7 +47,8 @@
     }
     {
       name: chip_sw_aon_timer_wdog_bark_irq
-      desc: '''Verify the watchdog bark reception in normal state.
+      desc: '''
+            Verify the watchdog bark reception in normal state.
 
             - Program the PLIC to let the wdog bark signal interrupt the CPU.
             - Program the AON timer wdog to 'bark' after some time and enable the bark interrupt.
@@ -60,7 +63,8 @@
     }
     {
       name: chip_sw_aon_timer_wdog_bite_reset
-      desc: '''Verify the watchdog bite causing reset in the normal state.
+      desc: '''
+            Verify the watchdog bite causing reset in the normal state.
 
             - Read the reset cause register in rstmgr to confirm that the SW is in the POR reset
               phase.
@@ -78,7 +82,8 @@
     }
     {
       name: chip_sw_aon_timer_sleep_wdog_bite_reset
-      desc: '''Verify the watchdog bite causing reset in sleep state.
+      desc: '''
+            Verify the watchdog bite causing reset in sleep state.
 
             - Repeat the steps in chip_aon_timer_wdog_bite_reset test, but with following changes:
             - Program the pwrmgr to go to deep sleep state (clocks off, power off).
@@ -96,7 +101,8 @@
     }
     {
       name: chip_sw_aon_timer_sleep_wdog_sleep_pause
-      desc: '''Verify that the wdog can be paused in sleep state.
+      desc: '''
+            Verify that the wdog can be paused in sleep state.
 
             - Repeat the steps in chip_aon_timer_sleep_wakeup test, but with following changes:
             - Program the wdog to 'bite' a little sooner than the AON timer wake up.
@@ -116,7 +122,8 @@
     }
     {
       name: chip_sw_aon_timer_wdog_lc_escalate
-      desc: '''Verify that the LC escalation signal disables the AON timer wdog.
+      desc: '''
+            Verify that the LC escalation signal disables the AON timer wdog.
 
             - Program the AON timer wdog to 'bark' after some time and enable the bark interrupt.
             - Start the escalation process and fail the test in the interrupt handler in case the

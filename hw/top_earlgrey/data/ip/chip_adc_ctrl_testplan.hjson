@@ -4,10 +4,10 @@
 {
   name: chip_adc_ctrl
   testpoints: [
-    // ADC_CTRL (pre-verified IP) integration tests:
     {
       name: chip_sw_adc_ctrl_debug_cable_irq
-      desc: '''Verify that the ADC correctly detects the voltage level programmed for each channel.
+      desc: '''
+            Verify that the ADC correctly detects the voltage level programmed for each channel.
 
             - Program both ADC channels to detect mutually exclusive range of voltages. Setting only
               one filter CSR is sufficient.
@@ -24,7 +24,7 @@
               filter caused the interrupt to fire. Read the ADC channel value register to verify the
               correctness of the detected value that was forced in the AST for each channel.
             '''
-      features:["ADC_CTRL.MODE.LOW_POWER"]
+      features: ["ADC_CTRL.MODE.LOW_POWER"]
       stage: V2
       si_stage: SV3
       lc_states: ["PROD"]
@@ -32,7 +32,8 @@
     }
     {
       name: chip_sw_adc_ctrl_sleep_debug_cable_wakeup
-      desc: '''Verify that in deep sleep, ADC ctrl can signal the ADC within the AST to power down.
+      desc: '''
+            Verify that in deep sleep, ADC ctrl can signal the ADC within the AST to power down.
 
             - Read the reset cause register in rstmgr to confirm we are in POR reset phase.
             - Follow the same steps as chip_adc_ctrl_debug_cable_irq, but instead of programming the
@@ -49,7 +50,7 @@
               that was forced in the AST.
             - Repeat for both ADC channels.
             '''
-      features:["ADC_CTRL.MODE.LOW_POWER"]
+      features: ["ADC_CTRL.MODE.LOW_POWER"]
       stage: V2
       si_stage: SV3
       lc_states: ["PROD"]
@@ -57,8 +58,8 @@
     }
     {
       name: chip_sw_adc_ctrl_normal
-      desc:"Verifiy that ADC can sample from channel 0 and 1 in normal mode."
-      features:["ADC_CTRL.MODE.NORMAL"]
+      desc: Verifiy that ADC can sample from channel 0 and 1 in normal mode.
+      features: ["ADC_CTRL.MODE.NORMAL"]
       stage: V3
       si_stage: SV2
       lc_states: ["PROD"]
@@ -66,8 +67,8 @@
     }
     {
       name: chip_sw_adc_ctrl_oneshot
-      desc:"Verifiy that ADC can sample from channel 0 and 1 in normal mode with oneshot filter config."
-      features:["ADC_CTRL.ONESHOT", "ADC_CTRL.MODE.NORMAL"]
+      desc: Verifiy that ADC can sample from channel 0 and 1 in normal mode with oneshot filter config.
+      features: ["ADC_CTRL.ONESHOT", "ADC_CTRL.MODE.NORMAL"]
       stage: V3
       si_stage: SV3
       lc_states: ["PROD"]

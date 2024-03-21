@@ -6,7 +6,8 @@
   testpoints: [
     {
       name: chip_sw_sysrst_ctrl_reset
-      desc: '''Verify the SYSRST ctrl can reset the chip from normal state.
+      desc: '''
+            Verify the SYSRST ctrl can reset the chip from normal state.
 
             - Read the reset cause register in rstmgr to confirm we are in POR reset phase.
             - Program one of the com_sel_ctl_* CSRs to choose a set of inputs to be detected as
@@ -32,7 +33,8 @@
     }
     {
       name: chip_sw_sysrst_ctrl_inputs
-      desc: '''Verify that the SYSRST ctrl input pin values can be read.
+      desc: '''
+            Verify that the SYSRST ctrl input pin values can be read.
 
             - Drive a known value on ac_reset, ec_rst_l, flash_wp_l, pwrb, lid_open and key* pins at
               the chip inputs.
@@ -47,7 +49,8 @@
     }
     {
       name: chip_sw_sysrst_ctrl_outputs
-      desc: '''Verify that the SYSRST ctrl output pin values can be set.
+      desc: '''
+            Verify that the SYSRST ctrl output pin values can be set.
 
             - Drive a known value on ac_reset, ec_rst_l, flash_wp_l, pwrb, lid_open and key* pins
               at the chip inputs.
@@ -70,7 +73,8 @@
     }
     {
       name: chip_sw_sysrst_ctrl_in_irq
-      desc: '''Verify the SYSRST ctrl can detect an input combination to signal an interrupt.
+      desc: '''
+            Verify the SYSRST ctrl can detect an input combination to signal an interrupt.
 
             - Program a specific combination of transitions on pwrb, key*, ac_present and ec_reset_l
               pins to trigger an interrupt by writing to key_intr_ctl register.
@@ -92,7 +96,8 @@
     }
     {
       name: chip_sw_sysrst_ctrl_sleep_wakeup
-      desc: '''Verify the SYSRST ctrl can wake up the chip from deep sleep.
+      desc: '''
+            Verify the SYSRST ctrl can wake up the chip from deep sleep.
 
             - Read the reset cause register in rstmgr to confirm we are in POR reset phase.
             - Program one of the com_sel_ctl_* CSRs to choose a set of inputs to be detected as
@@ -111,14 +116,15 @@
             '''
       features: ["SYSRST_CTRL.ULTRA_LOW_POWER_WAKEUP"]
       stage: V2
-      si_stage:SV3
+      si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_sw_sysrst_ctrl_reset"]
       bazel: ["//sw/device/tests:sysrst_ctrl_reset_test"]
     }
     {
       name: chip_sw_sysrst_ctrl_sleep_reset
-      desc: '''Verify the SYSRST ctrl can reset the chip from deep sleep.
+      desc: '''
+            Verify the SYSRST ctrl can reset the chip from deep sleep.
 
             - Read the reset cause register in rstmgr to confirm we are in POR reset phase.
             - Program one of the com_sel_ctl_* CSRs to choose a set of inputs to be detected as
@@ -139,14 +145,15 @@
             '''
       features: ["SYSRST_CTRL.ULTRA_LOW_POWER_RESET"]
       stage: V2
-      si_stage:SV3
+      si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_sw_sysrst_ctrl_reset"]
       bazel: ["//sw/device/tests:sysrst_ctrl_reset_test"]
     }
     {
       name: chip_sw_sysrst_ctrl_ec_rst_l
-      desc: '''Verify that the ec_rst_l stays asserted on power-on-reset until SW can control it.
+      desc: '''
+            Verify that the ec_rst_l stays asserted on power-on-reset until SW can control it.
 
             - Verify that ec_rst_l stays asserted as the chip is brought out of reset.
             - Verify that the pin continues to remain low until SW is alive.
@@ -157,27 +164,29 @@
             '''
       features: ["SYSRST_CTRL.EC_RESET_POR"]
       stage: V2
-      si_stage:SV3
+      si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_sw_sysrst_ctrl_ec_rst_l"]
       bazel: ["//sw/device/tests:sysrst_ctrl_ec_rst_l_test"]
     }
     {
       name: chip_sw_sysrst_ctrl_flash_wp_l
-      desc: '''Verify that the flash_wp_l stays asserted on power-on-reset until SW can control it.
+      desc: '''
+            Verify that the flash_wp_l stays asserted on power-on-reset until SW can control it.
 
             - Exactly the same as chip_sysrst_ctrl_ec_rst_l, but covers the flash_wp_l pin.
             '''
       features: ["SYSRST_CTRL.FLASH_WP_POR"]
       stage: V2
-      si_stage:SV3
+      si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_sw_sysrst_ctrl_ec_rst_l"]
       bazel: ["//sw/device/tests:sysrst_ctrl_ec_rst_l_test"]
     }
     {
       name: chip_sw_sysrst_ctrl_ulp_z3_wakeup
-      desc: '''Verify the z3_wakeup signaling.
+      desc: '''
+            Verify the z3_wakeup signaling.
 
             - Start off with ac_present = 0, lid_open = 0 and pwrb = 0 at the chip inputs.
             - Program the ulp_ac|lid|pwrb_debounce_ctl registers to debounce these inputs for an
@@ -191,12 +200,9 @@
             '''
       features: ["SYSRST_CTRL.ULTRA_LOW_POWER_WAKEUP"]
       stage: V2
-      si_stage:SV3
+      si_stage: SV3
       lc_states: ["PROD"]
-      tests: [
-        "chip_sw_adc_ctrl_sleep_debug_cable_wakeup",
-        "chip_sw_sysrst_ctrl_ulp_z3_wakeup"
-      ]
+      tests: ["chip_sw_adc_ctrl_sleep_debug_cable_wakeup", "chip_sw_sysrst_ctrl_ulp_z3_wakeup"]
       bazel: ["//sw/device/tests:sysrst_ctrl_ulp_z3_wakeup_test"]
     }
   ]

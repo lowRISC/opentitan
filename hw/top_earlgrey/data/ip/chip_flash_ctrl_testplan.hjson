@@ -4,10 +4,10 @@
 {
   name: chip_flash_ctrl
   testpoints: [
-    // FLASH integration tests
     {
       name: chip_sw_flash_init
-      desc: '''Verify that flash initialization routine works correctly.
+      desc: '''
+            Verify that flash initialization routine works correctly.
 
             - Initialize the flash ctrl by writing 1 to the INIT register.
             - Poll the status register for the initialization to complete.
@@ -20,8 +20,7 @@
             - This test needs to execute as a boot rom image.
             - In sival, this will be covered by manuf_ft_provision_rma_token_and_personalization.
             '''
-      features: ["FLASH_CTRL.INIT.SCRAMBLING_KEYS", "FLASH_CTRL.INIT.ROOT_SEEDS",
-                 "FLASH_CTRL.INFO.CREATOR_PARTITION", "FLASH_CTRL.INFO.OWNER_PARTITION"]
+      features: ["FLASH_CTRL.INIT.SCRAMBLING_KEYS", "FLASH_CTRL.INIT.ROOT_SEEDS", "FLASH_CTRL.INFO.CREATOR_PARTITION", "FLASH_CTRL.INFO.OWNER_PARTITION"]
       stage: V2
       si_stage: SV3
       lc_states: ["PROD"]
@@ -30,7 +29,8 @@
     }
     {
       name: chip_sw_flash_host_access
-      desc: '''Verify that the flash memory contents can be read by the CPU.
+      desc: '''
+            Verify that the flash memory contents can be read by the CPU.
 
             Nothing extra to do here - most SW based tests fetch code from flash.
             '''
@@ -38,13 +38,13 @@
       stage: V2
       si_stage: SV3
       lc_states: ["PROD"]
-      tests: ["chip_sw_flash_ctrl_access",
-              "chip_sw_flash_ctrl_access_jitter_en"]
+      tests: ["chip_sw_flash_ctrl_access", "chip_sw_flash_ctrl_access_jitter_en"]
       bazel: ["//sw/device/tests:flash_ctrl_ops_test"]
     }
     {
       name: chip_sw_flash_ctrl_ops
-      desc: '''Verify the SW can initiate flash operations via the controller.
+      desc: '''
+            Verify the SW can initiate flash operations via the controller.
 
             Verify that the CPU can read / program and erase the flash mem. Pick an operation on
             all data and info partitions. Erase both, bank and page. SW validates the reception of
@@ -59,7 +59,8 @@
     }
     {
       name: chip_sw_flash_memory_protection
-      desc: '''Extend chip_sw_flash_ctrl_access test to over following features.
+      desc: '''
+            Extend chip_sw_flash_ctrl_access test to over following features.
             Perform READ/ PROGRAM/ ERASE operations over protected regions and pages of data and
             info partitions.
             Use set and reset values of corresponding read, program and erase enable bits.
@@ -75,7 +76,8 @@
     }
     {
       name: chip_sw_flash_rma_unlocked
-      desc: '''Verify the flash memory contents can be accessed after in RMA unlock.
+      desc: '''
+            Verify the flash memory contents can be accessed after in RMA unlock.
 
             - Provision an RMA_UNLOCK token in OTP.
             - Repeat the following a few times:
@@ -97,7 +99,8 @@
     }
     {
       name: chip_sw_flash_scramble
-      desc: '''Verify flash scrambling via the controller.
+      desc: '''
+            Verify flash scrambling via the controller.
 
             - Extends the chip_flash_init test.
             - Verify flash scrambling with different key values programmed in OTP.
@@ -116,7 +119,8 @@
     }
     {
       name: chip_sw_flash_idle_low_power
-      desc: '''Verify flash_idle signaling to pwrmgr.
+      desc: '''
+            Verify flash_idle signaling to pwrmgr.
 
             - Initiate flash program or erase over the controller.
             - Program the pwrmgr to go into deep sleep.
@@ -131,7 +135,8 @@
     }
     {
       name: chip_sw_flash_keymgr_seeds
-      desc: '''Verify the creator and owner seeds are read on flash init provided lc_hw_seed_rd_en
+      desc: '''
+            Verify the creator and owner seeds are read on flash init provided lc_hw_seed_rd_en
             is set.
 
             X-ref'ed with keymgr test.
@@ -144,7 +149,8 @@
     }
     {
       name: chip_sw_flash_lc_creator_seed_sw_rw_en
-      desc: '''Verify the lc_creator_seed_sw_rw_en signal from LC ctrl.
+      desc: '''
+            Verify the lc_creator_seed_sw_rw_en signal from LC ctrl.
 
             - Transition from TEST_LOCKED to DEV/PROD to ESCALATION/SCRAP state via OTP and verify
               that this LC signal transitions from 0 to 1 and back to 0. Verify that the SW
@@ -155,14 +161,11 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_sw_flash_ctrl_lc_rw_en"]
-      bazel: ["//sw/device/tests:flash_ctrl_info_access_lc_states",
-              "//sw/device/tests:flash_ctrl_info_access_lc_states_personalized"]
-
+      bazel: ["//sw/device/tests:flash_ctrl_info_access_lc_states", "//sw/device/tests:flash_ctrl_info_access_lc_states_personalized"]
     }
     {
       name: chip_sw_flash_creator_seed_wipe_on_rma
-      desc: '''Verify that the creator seed is wiped by the flash ctrl on RMA entry.
-            '''
+      desc: Verify that the creator seed is wiped by the flash ctrl on RMA entry.
       features: ["FLASH_CTRL.RMA"]
       stage: V2
       si_stage: SV3
@@ -172,7 +175,8 @@
     }
     {
       name: chip_sw_flash_lc_owner_seed_sw_rw_en
-      desc: '''Verify the lc_owner_seed_sw_rw_en signal from LC ctrl.
+      desc: '''
+            Verify the lc_owner_seed_sw_rw_en signal from LC ctrl.
 
             - Transition from TEST_LOCKED to DEV/PROD to ESCALATION/SCRAP state via OTP and verify
               that this LC signal transitions from 0 to 1 and back to 0. Verify that the SW
@@ -187,7 +191,8 @@
     }
     {
       name: chip_sw_flash_lc_iso_part_sw_rd_en
-      desc: '''Verify the lc_iso_part_sw_rd_en signal from LC ctrl.
+      desc: '''
+            Verify the lc_iso_part_sw_rd_en signal from LC ctrl.
 
             - Transition from DEV or PROD to ESCALATION/SCRAP state via OTP and verify
               that this LC signal transitions from 0 to 1 and back to 0. Verify that the SW
@@ -202,7 +207,8 @@
     }
     {
       name: chip_sw_flash_lc_iso_part_sw_wr_en
-      desc: '''Verify the lc_creator_seed_sw_wr_en signal from LC ctrl.
+      desc: '''
+            Verify the lc_creator_seed_sw_wr_en signal from LC ctrl.
 
             - Transition from TEST_LOCKED to DEV/PROD to ESCALATION/SCRAP state via OTP and verify
               that this LC signal transitions from 0 to 1 and back to 0. Verify that the SW
@@ -217,7 +223,8 @@
     }
     {
       name: chip_sw_flash_lc_seed_hw_rd_en
-      desc: '''Verify the lc_seed_hw_rd_en signal from LC ctrl.
+      desc: '''
+            Verify the lc_seed_hw_rd_en signal from LC ctrl.
 
             - Transition from TEST_LOCKED to DEV/PROD to ESCALATION/SCRAP state via OTP and verify
               that this LC signal transitions from 0 to 1 and back to 0. Verify that the flash ctrl
@@ -233,7 +240,8 @@
     }
     {
       name: chip_sw_flash_lc_escalate_en
-      desc: '''Verify the lc_escalate_en signal from LC ctrl.
+      desc: '''
+            Verify the lc_escalate_en signal from LC ctrl.
 
             - Trigger an LC escalation signal by generating an alert.
             - Verify that all flash accesses are disabled when the escalation kicks in.
@@ -250,7 +258,8 @@
     }
     {
       name: chip_sw_flash_prim_tl_access
-      desc: '''Verify that the SW can read / write the prim tlul interface in flash phy.
+      desc: '''
+            Verify that the SW can read / write the prim tlul interface in flash phy.
 
             - The prim tlul interface is a open source placeholder for the closed source CSRs that
               will be implemented in a translation 'shim'.
@@ -262,7 +271,8 @@
     }
     {
       name: chip_sw_flash_ctrl_clock_freqs
-      desc: '''Verify flash program and erase operations over the ctrl over a range of clock freqs.
+      desc: '''
+            Verify flash program and erase operations over the ctrl over a range of clock freqs.
 
             - Enable jitter on the clock while performing erase, write and read operations
               to the flash.
@@ -276,7 +286,8 @@
     }
     {
       name: chip_sw_flash_ctrl_escalation_reset
-      desc: '''Verify the flash ctrl fatal error does not disturb escalation process
+      desc: '''
+            Verify the flash ctrl fatal error does not disturb escalation process
             and operation of ibex core.
 
             Trigger an internal fatal fault (host_gnt_err) from flash_ctrl
@@ -289,7 +300,8 @@
     }
     {
       name: chip_sw_flash_ctrl_write_clear
-      desc: '''Verify the flash is able to process a second write to clear all bits
+      desc: '''
+            Verify the flash is able to process a second write to clear all bits
             when ECC is enabled.
 
             Configure memory protected entries to override the default flash configuration as follows:

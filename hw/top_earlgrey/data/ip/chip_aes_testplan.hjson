@@ -6,7 +6,8 @@
   testpoints: [
     {
       name: chip_sw_aes_enc
-      desc: '''Verify the AES operation.
+      desc: '''
+            Verify the AES operation.
 
             Procedure:
             -Set up the desired operation, ECB mode, 256b key length, and set the engine to
@@ -19,21 +20,17 @@
             decryption of the result using the same key.
             -Check that the decryption result matches the original plaintext.
             '''
-      features: [
-        "AES.MODE.ECB",
-        "AES.KEY_LEN.256",
-        "AES.MANUAL_OPERATION",
-      ]
+      features: ["AES.MODE.ECB", "AES.KEY_LEN.256", "AES.MANUAL_OPERATION"]
       stage: V2
       si_stage: SV2
       lc_states: ["TEST_UNLOCKED", "PROD"]
-      tests: ["chip_sw_aes_enc",
-              "chip_sw_aes_enc_jitter_en"]
+      tests: ["chip_sw_aes_enc", "chip_sw_aes_enc_jitter_en"]
       bazel: ["//sw/device/tests:aes_smoketest"]
     }
     {
       name: chip_sw_aes_multi_block
-      desc: '''Verify the AES operations on multi-block messages.
+      desc: '''
+            Verify the AES operations on multi-block messages.
             This test should be performed for all supported modes (ECB, CBC, CFB-128, OFB and CTR)
             and all supported key lengths (128/192/256).
 
@@ -52,16 +49,7 @@
             decryption of the result using the same key (and same IV if needed).
             -Check that the decryption result matches the original plaintext.
             '''
-      features: [
-        "AES.MODE.ECB",
-        "AES.MODE.CBC",
-        "AES.MODE.CFB-128",
-        "AES.MODE.OFB",
-        "AES.MODE.CTR",
-        "AES.KEY_LEN.128",
-        "AES.KEY_LEN.192",
-        "AES.KEY_LEN.256",
-      ]
+      features: ["AES.MODE.ECB", "AES.MODE.CBC", "AES.MODE.CFB-128", "AES.MODE.OFB", "AES.MODE.CTR", "AES.KEY_LEN.128", "AES.KEY_LEN.192", "AES.KEY_LEN.256"]
       stage: V2
       si_stage: SV3
       lc_states: ["PROD"]
@@ -69,7 +57,8 @@
     }
     {
       name: chip_sw_aes_interrupt_encryption
-      desc: '''Verify that a multi-block encryption can be interrupted and continued.
+      desc: '''
+            Verify that a multi-block encryption can be interrupted and continued.
 
             This test should:
               - start the encryption of a four-block message.
@@ -95,12 +84,7 @@
             -Decrypt the result (using the original key and IV)
             -Check that the decryption result matches the original plaintext.
             '''
-      features: [
-        "AES.MODE.CBC",
-        "AES.MODE.CFB-128",
-        "AES.MODE.OFB",
-        "AES.MODE.CTR",
-      ]
+      features: ["AES.MODE.CBC", "AES.MODE.CFB-128", "AES.MODE.OFB", "AES.MODE.CTR"]
       stage: V2
       si_stage: SV3
       lc_states: ["PROD"]
@@ -108,7 +92,8 @@
     }
     {
       name: chip_sw_aes_entropy
-      desc: '''Verify the AES entropy input used by the internal PRNGs.
+      desc: '''
+            Verify the AES entropy input used by the internal PRNGs.
 
             - Configure encryption using the CBC mode, key length 256, and set the engine to
               manual operation.
@@ -123,11 +108,7 @@
             - Assertion check verifies that the IV are also garbage, i.e. different from the
               originally written values.
             '''
-      features: [
-        "AES.MODE.CBC",
-        "AES.CLEAR.DATA_OUT",
-        "AES.CLEAR.KEY_IV_DATA_IN",
-      ]
+      features: ["AES.MODE.CBC", "AES.CLEAR.DATA_OUT", "AES.CLEAR.KEY_IV_DATA_IN"]
       stage: V2
       si_stage: SV3
       lc_states: ["PROD"]
@@ -136,7 +117,8 @@
     }
     {
       name: chip_sw_aes_prng_reseed
-      desc: '''Verify that PRNG reseeding is triggered
+      desc: '''
+            Verify that PRNG reseeding is triggered
 
             This test should start encryption, disable the EDN, and verify that the
             encryption stalls when reseed is required. Afterwards it should verify that AES
@@ -165,10 +147,7 @@
             -Repeat the test for a reseed rate kDifAesReseedPer8kBlock and a message longer than 8K
             blocks.
             '''
-      features: [
-        "AES.MODE.ECB",
-        "AES.PRNG.RESEED_RATE",
-      ]
+      features: ["AES.MODE.ECB", "AES.PRNG.RESEED_RATE"]
       stage: V2
       si_stage: SV3
       lc_states: ["PROD"]
@@ -176,7 +155,8 @@
     }
     {
       name: chip_sw_aes_force_prng_reseed
-      desc: '''Verify that when KEY_TOUCH_FORCES_RESEED is set, the PRNG reseed is
+      desc: '''
+            Verify that when KEY_TOUCH_FORCES_RESEED is set, the PRNG reseed is
                triggered every time a key changes
 
             Procedure:
@@ -198,10 +178,7 @@
                 -Enable EDN
             -Verify that the AES completes encryption.
             '''
-      features: [
-        "AES.MODE.ECB",
-        "AES.PRNG.KEY_TOUCH_FORCES_RESEED",
-      ]
+      features: ["AES.MODE.ECB", "AES.PRNG.KEY_TOUCH_FORCES_RESEED"]
       stage: V2
       si_stage: SV3
       lc_states: ["PROD"]
@@ -209,7 +186,8 @@
     }
     {
       name: chip_sw_aes_idle
-      desc: '''Verify AES idle signaling to clkmgr.
+      desc: '''
+            Verify AES idle signaling to clkmgr.
 
             - Write the AES clk hint to 0 within clkmgr to indicate AES clk can be gated and
               verify that the AES clk hint status within clkmgr reads 0 (AES is disabled).
@@ -221,9 +199,7 @@
               clkmgr now reads 0 again (AES is disabled).
             - Write the AES clk hint to 1, read and check the AES output for correctness.
             '''
-      features: [
-        "AES.MODE.ECB",
-      ]
+      features: ["AES.MODE.ECB"]
       stage: V2
       si_stage: SV3
       lc_states: ["PROD"]
@@ -232,7 +208,8 @@
     }
     {
       name: chip_sw_aes_sideload
-      desc: '''Verify the AES sideload mechanism.
+      desc: '''
+            Verify the AES sideload mechanism.
 
             - Configure the keymgr to generate an aes key.
             - Configure the AES to use the sideloaded key.
@@ -245,10 +222,7 @@
             - Clear the key in the keymgr and decrypt the ciphertext again.
             - Verify that output is not equal to the plain text.
             '''
-      features: [
-        "AES.MODE.ECB",
-        "AES.KEY.SIDELOAD",
-      ]
+      features: ["AES.MODE.ECB", "AES.KEY.SIDELOAD"]
       stage: V2
       si_stage: SV3
       lc_states: ["PROD", "DEV"]
@@ -256,7 +230,8 @@
     }
     {
       name: chip_sw_aes_masking_off
-      desc: '''Verify the AES masking off feature for ES.
+      desc: '''
+            Verify the AES masking off feature for ES.
 
             - Perform known-answer test using CSRNG SW application interface.
             - Verify CSRNG produces the deterministic seed leading to an all-zero output of the AES
@@ -286,12 +261,10 @@
               The only thing that can be tested on silicon / FPGA for SiVal is the known-answer test using the CSRNG SW application interface for which a dedicated SiVal test exists.
               For this reason, the chip_sw_aes_masking_off test is run in simulation only.
             '''
-      features: [
-        "AES.PRNG.FORCE_MASKS"
-      ]
+      features: ["AES.PRNG.FORCE_MASKS"]
       stage: V2S
       si_stage: NA
       tests: ["chip_sw_aes_masking_off"]
-     }
+    }
   ]
 }

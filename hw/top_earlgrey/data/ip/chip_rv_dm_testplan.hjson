@@ -4,7 +4,6 @@
 {
   name: rv_dm
   testpoints: [
-    // RV_DM (JTAG) tests:
     {
       name: chip_jtag_csr_rw
       desc: '''
@@ -22,13 +21,10 @@
       stage: V2
       si_stage: SV3
       tests: ["chip_jtag_csr_rw"]
-      bazel: ["//sw/device/tests:rv_dm_csr_rw"],
+      bazel: ["//sw/device/tests:rv_dm_csr_rw"]
       lc_states: ["DEV"]
-      host_support: "true"
-      features: [
-        "RV_DM.JTAG.FSM",
-        "RV_DM.JTAG.DTM"
-      ]
+      host_support: True
+      features: ["RV_DM.JTAG.FSM", "RV_DM.JTAG.DTM"]
     }
     {
       name: chip_jtag_mem_access
@@ -53,14 +49,10 @@
       stage: V2
       si_stage: SV3
       tests: ["chip_jtag_mem_access"]
-      bazel: ["//sw/device/tests:rv_dm_mem_access"],
+      bazel: ["//sw/device/tests:rv_dm_mem_access"]
       lc_states: ["DEV"]
-      host_support: "true"
-      features: [
-        "RV_DM.JTAG.FSM",
-        "RV_DM.JTAG.DTM",
-        "RV_DM.DBG.SBA"
-      ]
+      host_support: True
+      features: ["RV_DM.JTAG.FSM", "RV_DM.JTAG.DTM", "RV_DM.DBG.SBA"]
     }
     {
       name: chip_rv_dm_perform_debug
@@ -75,19 +67,15 @@
             '''
       stage: V3
       si_stage: SV3
-      tests: ["rom_e2e_jtag_debug_test_unlocked0", "rom_e2e_jtag_debug_dev",
-              "rom_e2e_jtag_debug_rma"]
+      tests: ["rom_e2e_jtag_debug_test_unlocked0", "rom_e2e_jtag_debug_dev", "rom_e2e_jtag_debug_rma"]
       lc_states: ["DEV"]
-      host_support: "true"
-      features: [
-        "RV_DM.JTAG.FSM",
-        "RV_DM.JTAG.DTM",
-        "RV_DM.DBG.GDB"
-      ]
+      host_support: True
+      features: ["RV_DM.JTAG.FSM", "RV_DM.JTAG.DTM", "RV_DM.DBG.GDB"]
     }
     {
       name: chip_rv_dm_ndm_reset_req
-      desc: '''Verify non-debug reset request initiated from RV_DM when the chip is awake.
+      desc: '''
+            Verify non-debug reset request initiated from RV_DM when the chip is awake.
 
             - Program some CSRs / mem that are under life cycle reset tree and system reset tree.
             - Configure RV_DM to send NDM reset request to reset sytem reset tree.
@@ -100,18 +88,15 @@
       stage: V2
       si_stage: SV2
       tests: ["chip_rv_dm_ndm_reset_req"]
-      bazel: ["//sw/device/tests:rv_dm_ndm_reset_req"],
+      bazel: ["//sw/device/tests:rv_dm_ndm_reset_req"]
       lc_states: ["DEV"]
-      host_support: "true"
-      features: [
-        "RV_DM.JTAG.FSM",
-        "RV_DM.JTAG.DTM",
-        "RV_DM.DBG.NDM_RESET"
-      ]
+      host_support: True
+      features: ["RV_DM.JTAG.FSM", "RV_DM.JTAG.DTM", "RV_DM.DBG.NDM_RESET"]
     }
     {
       name: chip_sw_rv_dm_ndm_reset_req_when_cpu_halted
-      desc: '''Verify non-debug reset request initiated from RV_DM when the CPU  is in halted state.
+      desc: '''
+            Verify non-debug reset request initiated from RV_DM when the CPU  is in halted state.
 
             - Initialize the DUT in a HW-debug enabled life cycle state.
             - Activate the RISCV debug module.
@@ -132,18 +117,15 @@
       stage: V2
       si_stage: SV3
       tests: ["chip_sw_rv_dm_ndm_reset_req_when_cpu_halted"]
-      bazel: ["//sw/device/tests:rv_dm_ndm_reset_req_when_cpu_halted"],
+      bazel: ["//sw/device/tests:rv_dm_ndm_reset_req_when_cpu_halted"]
       lc_states: ["DEV"]
-      host_support: "true"
-      features: [
-        "RV_DM.JTAG.FSM",
-        "RV_DM.JTAG.DTM",
-        "RV_DM.DBG.NDM_RESET"
-      ]
+      host_support: True
+      features: ["RV_DM.JTAG.FSM", "RV_DM.JTAG.DTM", "RV_DM.DBG.NDM_RESET"]
     }
     {
       name: chip_rv_dm_access_after_wakeup
-      desc: '''Verify RV_DM works after wakes up from sleep.
+      desc: '''
+            Verify RV_DM works after wakes up from sleep.
 
             - Put the chip into sleep mode and then wake up (both deep sleep and normal sleep).
             - If waking up from normal sleep, an activation should not be required for RV_DM CSR
@@ -153,17 +135,15 @@
       stage: V2
       si_stage: SV3
       tests: ["chip_sw_rv_dm_access_after_wakeup"]
-      bazel: ["//sw/device/tests:rv_dm_access_after_wakeup"],
+      bazel: ["//sw/device/tests:rv_dm_access_after_wakeup"]
       lc_states: ["DEV"]
-      host_support: "true"
-      features: [
-        "RV_DM.JTAG.FSM",
-        "RV_DM.JTAG.DTM"
-      ]
+      host_support: True
+      features: ["RV_DM.JTAG.FSM", "RV_DM.JTAG.DTM"]
     }
     {
       name: chip_sw_rv_dm_access_after_hw_reset
-      desc: '''Verify RV_DM works after a watchdog or escalated reset.
+      desc: '''
+            Verify RV_DM works after a watchdog or escalated reset.
 
             - Access some RV_DM CSRs both before and after resets.
             - An activation would be required, as the tap strap would also be sampled again.
@@ -171,16 +151,14 @@
       stage: V3
       si_stage: SV3
       tests: ["chip_sw_rv_dm_access_after_escalation_reset"]
-      bazel: ["//sw/device/tests:rv_dm_access_after_hw_reset"],
+      bazel: ["//sw/device/tests:rv_dm_access_after_hw_reset"]
       lc_states: ["DEV"]
-      features: [
-        "RV_DM.JTAG.FSM",
-        "RV_DM.JTAG.DTM"
-      ]
+      features: ["RV_DM.JTAG.FSM", "RV_DM.JTAG.DTM"]
     }
     {
       name: chip_sw_rv_dm_jtag_tap_sel
-      desc: '''Verify ability to select all available TAPs.
+      desc: '''
+            Verify ability to select all available TAPs.
 
             - Put life cycle on Test or RMA state, so that TAPs can be selected between life cycle
               RV_DM and DFT.
@@ -190,17 +168,15 @@
       stage: V2
       si_stage: SV2
       tests: ["chip_tap_straps_rma"]
-      bazel: ["//sw/device/tests:rv_dm_jtag_tap_sel"],
+      bazel: ["//sw/device/tests:rv_dm_jtag_tap_sel"]
       lc_states: ["DEV"]
-      host_support: "true"
-      features: [
-        "RV_DM.JTAG.FSM",
-        "RV_DM.JTAG.DTM"
-      ]
+      host_support: True
+      features: ["RV_DM.JTAG.FSM", "RV_DM.JTAG.DTM"]
     }
     {
       name: chip_rv_dm_lc_disabled
-      desc: '''Verify that the debug capabilities are disabled in certain life cycle stages.
+      desc: '''
+            Verify that the debug capabilities are disabled in certain life cycle stages.
 
             - Put life cycle in a random life cycle state.
             - Verify that the rv_dm bus device is inaccessible from the CPU as well as external JTAG
@@ -218,22 +194,16 @@
             '''
       stage: V2
       si_stage: SV2
-      tests: ["chip_rv_dm_lc_disabled"],
-      bazel: [
-        "//sw/device/tests:rv_dm_lc_disabled_tl",
-        "//sw/device/tests:rv_dm_lc_disabled_jtag",
-      ],
-      lc_states: ["RAW", "TEST_LOCKED", "TEST_UNLOCKED", "DEV", "RMA", "PROD",
-        "PROD_END", "SCRAP"]
-      host_support: "true"
-      features: [
-        "RV_DM.JTAG.FSM",
-        "RV_DM.JTAG.DTM"
-      ]
+      tests: ["chip_rv_dm_lc_disabled"]
+      bazel: ["//sw/device/tests:rv_dm_lc_disabled_tl", "//sw/device/tests:rv_dm_lc_disabled_jtag"]
+      lc_states: ["RAW", "TEST_LOCKED", "TEST_UNLOCKED", "DEV", "RMA", "PROD", "PROD_END", "SCRAP"]
+      host_support: True
+      features: ["RV_DM.JTAG.FSM", "RV_DM.JTAG.DTM"]
     }
     {
       name: chip_rv_dm_jtag
-      desc: '''Verify basic JTAG functionality
+      desc: '''
+            Verify basic JTAG functionality
                 - Read IDCODE, check it is the expected value
                 - Attempt to write IDCODE, check the expected value remains
                   after a read
@@ -243,16 +213,15 @@
       stage: V2
       si_stage: SV3
       tests: []
-      bazel: ["//sw/device/tests:rv_dm_jtag"],
+      bazel: ["//sw/device/tests:rv_dm_jtag"]
       lc_states: ["DEV"]
-      host_support: "true"
-      features: [
-        "RV_DM.JTAG.FSM",
-      ]
+      host_support: True
+      features: ["RV_DM.JTAG.FSM"]
     }
     {
       name: chip_rv_dm_dtm
-      desc: '''Verify basic DTM functionality
+      desc: '''
+            Verify basic DTM functionality
                 - Select Ibex CPU with write to hartsel
                 - Read hartinfo and check value is as expected
                 - Write random values to data0 and data1
@@ -262,19 +231,15 @@
       stage: V2
       si_stage: SV3
       tests: []
-      bazel: ["//sw/device/tests:rv_dm_dtm"],
+      bazel: ["//sw/device/tests:rv_dm_dtm"]
       lc_states: ["DEV"]
-      host_support: "true"
-      features: [
-        "RV_DM.JTAG.FSM",
-        "RV_DM.JTAG.DTM",
-        "RV_DM.DBG.HARTINFO_REG",
-        "RV_DM.DBG.DATA_REGS"
-      ]
+      host_support: True
+      features: ["RV_DM.JTAG.FSM", "RV_DM.JTAG.DTM", "RV_DM.DBG.HARTINFO_REG", "RV_DM.DBG.DATA_REGS"]
     }
     {
       name: chip_rv_dm_control_status
-      desc: '''Verify the functionality of dmcontrol/dmstatus
+      desc: '''
+            Verify the functionality of dmcontrol/dmstatus
                 - Write 0 to hartsel (select Ibex)
                 - Check dmstatus indicates havereset for Ibex (power-on reset)
                 - Write 1 to ackhavereset
@@ -293,15 +258,10 @@
       stage: V2
       si_stage: SV3
       tests: []
-      bazel: ["//sw/device/tests:rv_dm_control_status"],
+      bazel: ["//sw/device/tests:rv_dm_control_status"]
       lc_states: ["DEV"]
-      host_support: "true"
-      features: [
-        "RV_DM.JTAG.FSM",
-        "RV_DM.JTAG.DTM",
-        "RV_DM.DBG.DMSTATUS_REG",
-        "RV_DM.DBG.DMCONTROL_REG"
-      ]
+      host_support: True
+      features: ["RV_DM.JTAG.FSM", "RV_DM.JTAG.DTM", "RV_DM.DBG.DMSTATUS_REG", "RV_DM.DBG.DMCONTROL_REG"]
     }
   ]
 }

@@ -6,7 +6,8 @@
   testpoints: [
     {
       name: chip_sw_gpio_out
-      desc: '''Verify GPIO outputs.
+      desc: '''
+            Verify GPIO outputs.
 
             SW test configures the GPIOs to be in the output mode. Configure pinmux such as
             gpio output signal loopback to gpio input. The test walks a 1 through the
@@ -22,7 +23,8 @@
     }
     {
       name: chip_sw_gpio_in
-      desc: '''Verify GPIO inputs.
+      desc: '''
+            Verify GPIO inputs.
 
             The SW test configures the GPIOs to be in input mode. The testbench walks a 1 through
             the pins. SW test ensures that the GPIO values read from the CSR is correct.
@@ -36,7 +38,8 @@
     }
     {
       name: chip_sw_gpio_irq
-      desc: '''Verify GPIO interrupts.
+      desc: '''
+            Verify GPIO interrupts.
 
             The SW test configures the GPIOs to be in input mode and enables all of them to generate
             an interrupt. The testbench walks a 1 through the pins. SW test ensures that the

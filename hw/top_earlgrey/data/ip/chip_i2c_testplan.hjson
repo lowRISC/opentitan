@@ -4,10 +4,10 @@
 {
   name: chip_i2c
   testpoints: [
-    // I2C (pre-verified IP) integration tests:
     {
       name: chip_sw_i2c_host_tx_rx
-      desc: '''Verify the transmission of data over the chip's I2C host interface.
+      desc: '''
+            Verify the transmission of data over the chip's I2C host interface.
 
             - Program the I2C to be in host mode.
             - The SW test writes a known payload over the chip's I2C host interface, which is
@@ -27,13 +27,12 @@
       si_stage: SV2
       lc_states: ["PROD"]
       bazel: ["//sw/device/tests/pmod:i2c_host_eeprom_test"]
-      tests: ["chip_sw_i2c_host_tx_rx",
-              "chip_sw_i2c_host_tx_rx_idx1",
-              "chip_sw_i2c_host_tx_rx_idx2"]
+      tests: ["chip_sw_i2c_host_tx_rx", "chip_sw_i2c_host_tx_rx_idx1", "chip_sw_i2c_host_tx_rx_idx2"]
     }
     {
       name: chip_sw_i2c_device_tx_rx
-      desc: '''Verify the transmission of data over the chip's I2C device interface.
+      desc: '''
+            Verify the transmission of data over the chip's I2C device interface.
 
             - Program the I2C to be in device mode.
             - The testbench writes a known payload over the chip's I2C device interface, which is
@@ -56,7 +55,8 @@
     }
     {
       name: chip_sw_i2c_speed
-      desc: '''Verify the transmission speed of data over the chip's I2C interfaces.
+      desc: '''
+            Verify the transmission speed of data over the chip's I2C interfaces.
 
             Run the following for standard, fast and fast plus speeds:
             - Program the I2C to be in the appropriate mode (host/target).
@@ -83,7 +83,8 @@
     }
     {
       name: chip_sw_i2c_override
-      desc: '''Verify overriding SDA and SCL on I2C interfaces.
+      desc: '''
+            Verify overriding SDA and SCL on I2C interfaces.
 
             For all I2C host mode instances:
             - Software cycles through all SDA/SCL combinations with long delays.
@@ -102,7 +103,8 @@
     }
     {
       name: chip_sw_i2c_clockstretching
-      desc: '''Verify clock stretching on I2C interfaces.
+      desc: '''
+            Verify clock stretching on I2C interfaces.
 
             For all I2C host mode instances:
             - Do a read and make target stretch after reading an address.
@@ -128,7 +130,8 @@
     }
     {
       name: chip_sw_i2c_nack
-      desc: '''Verify correct behavior of nack detection.
+      desc: '''
+            Verify correct behavior of nack detection.
 
             For all I2C host mode instances:
             - Program the I2C to be in host mode.
@@ -149,7 +152,8 @@
     }
     {
       name: chip_sw_i2c_repeatedstart
-      desc: '''Verify correct behavior of repeated start.
+      desc: '''
+            Verify correct behavior of repeated start.
 
             For all I2C target mode instances:
             - Program the I2C to be in target mode.

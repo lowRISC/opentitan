@@ -4,10 +4,10 @@
 {
   name: chip_hmac
   testpoints: [
-    // HMAC integration tests
     {
       name: chip_sw_hmac_enc
-      desc: '''Verify HMAC operation.
+      desc: '''
+            Verify HMAC operation.
 
             SW test verifies an HMAC operation with a known key, plain text and digest (pick one of
             the NIST vectors). SW test verifies the digest against the pre-computed value. Verify
@@ -16,13 +16,13 @@
       stage: V2
       si_stage: SV2
       lc_states: ["PROD"]
-      tests: ["chip_sw_hmac_enc",
-              "chip_sw_hmac_enc_jitter_en"]
+      tests: ["chip_sw_hmac_enc", "chip_sw_hmac_enc_jitter_en"]
       bazel: ["//sw/device/tests:hmac_enc_test"]
     }
     {
       name: chip_sw_hmac_idle
-      desc: '''Verify the HMAC clk idle signal to clkmgr.
+      desc: '''
+            Verify the HMAC clk idle signal to clkmgr.
 
             - Write the HMAC clk hint to 0 within clkmgr to indicate HMAC clk can be gated and
               verify that the HMAC clk hint status within clkmgr reads 0 (HMAC is disabled).
@@ -44,7 +44,8 @@
     }
     {
       name: chip_sw_hmac_sha2_stress
-      desc: '''Verify SHA2 mode of operation.
+      desc: '''
+            Verify SHA2 mode of operation.
 
             - Verify the following digest sizes: 256
             - Verify input message size of 0 bytes.
@@ -60,7 +61,8 @@
     }
     {
       name: chip_sw_hmac_stress
-      desc: '''Verify HMAC mode of operation.
+      desc: '''
+            Verify HMAC mode of operation.
 
             - Verify the following security configurations: HMAC-SHA2-256
             - Verify input message size of 0 bytes.
@@ -76,17 +78,15 @@
     }
     {
       name: chip_sw_hmac_endianness
-      desc: '''Verify all HMAC endianness options
+      desc: '''
+            Verify all HMAC endianness options
 
             This is a low priority test P3.
 
             Test the permutation of all endianness configuration options for message and digest
             registers.
             '''
-      features: [
-        "HMAC.ENDIANNESS.MESSAGE",
-        "HMAC.ENDIANNESS.DIGEST",
-      ]
+      features: ["HMAC.ENDIANNESS.MESSAGE", "HMAC.ENDIANNESS.DIGEST"]
       stage: V3
       si_stage: SV3
       lc_states: ["PROD"]
@@ -95,7 +95,8 @@
     }
     {
       name: chip_sw_hmac_secure_wipe
-      desc: '''Verify HMAC secure wipe
+      desc: '''
+            Verify HMAC secure wipe
 
             - Perform HMAC operation with known key and message.
             - Store MAC digest in memory after finalizing HMAC operation.
@@ -113,7 +114,8 @@
     }
     {
       name: chip_sw_hmac_error_conditions
-      desc: '''Verify reporting of HMAC errors
+      desc: '''
+            Verify reporting of HMAC errors
 
             This is a negative test case covering the following error conditions:
 

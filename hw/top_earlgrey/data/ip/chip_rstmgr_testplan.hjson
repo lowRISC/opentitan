@@ -4,10 +4,10 @@
 {
   name: chip_rstmgr
   testpoints: [
-    // RSTMGR tests:
     {
       name: chip_sw_rstmgr_non_sys_reset_info
-      desc: '''Verify the `reset_info` CSR register for lc or higher resets.
+      desc: '''
+            Verify the `reset_info` CSR register for lc or higher resets.
 
             Generate the 5 types of reset at `lc` level or higher, and check the retention SRAM's
             reset_reason to show that `reset_info` CSR is as expected. This and other rstmgr
@@ -29,25 +29,14 @@
       stage: V2
       si_stage: SV3
       lc_states: ["PROD"]
-      features: [
-        "RSTMGR.RESET_INFO.CAPTURE",
-        "RSTMGR.RESET_INFO.CLEAR"
-      ]
-      tests: [
-        "chip_sw_pwrmgr_smoketest",
-        "chip_sw_pwrmgr_random_sleep_all_reset_reqs",
-        "chip_sw_pwrmgr_all_reset_reqs",
-        "chip_sw_pwrmgr_wdog_reset",
-      ]
-      bazel: [
-        "//sw/device/tests:pwrmgr_all_reset_reqs_test",
-        "//sw/device/tests:pwrmgr_wdog_reset_reqs_test",
-        "//sw/device/tests:pwrmgr_random_sleep_all_reset_reqs_test",
-      ]
+      features: ["RSTMGR.RESET_INFO.CAPTURE", "RSTMGR.RESET_INFO.CLEAR"]
+      tests: ["chip_sw_pwrmgr_smoketest", "chip_sw_pwrmgr_random_sleep_all_reset_reqs", "chip_sw_pwrmgr_all_reset_reqs", "chip_sw_pwrmgr_wdog_reset"]
+      bazel: ["//sw/device/tests:pwrmgr_all_reset_reqs_test", "//sw/device/tests:pwrmgr_wdog_reset_reqs_test", "//sw/device/tests:pwrmgr_random_sleep_all_reset_reqs_test"]
     }
     {
       name: chip_sw_rstmgr_sys_reset_info
-      desc: '''Verify the `reset_info` CSR register for sys reset.
+      desc: '''
+            Verify the `reset_info` CSR register for sys reset.
 
             Generate reset triggered by `rv_dm`, which results in a sys level reset, and check the
             retention SRAM's reset_reason to show that the `reset_info` CSR is as expected. This
@@ -65,16 +54,14 @@
       stage: V2
       si_stage: SV3
       lc_states: ["PROD"]
-      features: [
-        "RSTMGR.RESET_INFO.CAPTURE",
-        "RSTMGR.RESET_INFO.CLEAR",
-      ]
+      features: ["RSTMGR.RESET_INFO.CAPTURE", "RSTMGR.RESET_INFO.CLEAR"]
       tests: ["chip_rv_dm_ndm_reset_req"]
-      bazel: ["//sw/device/tests:rv_dm_ndm_reset_req"],
+      bazel: ["//sw/device/tests:rv_dm_ndm_reset_req"]
     }
     {
       name: chip_sw_rstmgr_cpu_info
-      desc: '''Verify the expected values from the `cpu_info` CSR on reset.
+      desc: '''
+            Verify the expected values from the `cpu_info` CSR on reset.
 
             For some software induced resets we can predict the expected contents of `cpu_info`;
             reads of writes to unmapped addresses for example. Generate these resets and verify
@@ -88,16 +75,14 @@
       stage: V2
       si_stage: SV2
       lc_states: ["PROD"]
-      features: [
-        "RSTMGR.CPU_INFO.CAPTURE",
-        "RSTMGR.CPU_INFO.ENABLE",
-      ]
+      features: ["RSTMGR.CPU_INFO.CAPTURE", "RSTMGR.CPU_INFO.ENABLE"]
       tests: ["chip_sw_rstmgr_cpu_info"]
       bazel: ["//sw/device/tests:rstmgr_cpu_info_test"]
     }
     {
       name: chip_sw_rstmgr_sw_req_reset
-      desc: '''Verify software requested device reset.
+      desc: '''
+            Verify software requested device reset.
 
             Generate a reset request by directly writing the `reset_req` CSR.
             The reset created should be identical to those caused by hardware sources.
@@ -113,14 +98,12 @@
       lc_states: ["PROD"]
       features: ["RSTMGR.SW_RST.CHIP_RESET"]
       tests: ["chip_sw_rstmgr_sw_req"]
-      bazel: [
-        "//sw/device/tests:rstmgr_sw_req_test",
-        "//sw/device/tests:pwrmgr_random_sleep_all_reset_reqs",
-      ]
+      bazel: ["//sw/device/tests:rstmgr_sw_req_test", "//sw/device/tests:pwrmgr_random_sleep_all_reset_reqs"]
     }
     {
       name: chip_sw_rstmgr_alert_info
-      desc: '''Verify the expected values from the `alert_info` CSR on reset.
+      desc: '''
+            Verify the expected values from the `alert_info` CSR on reset.
 
             Various alerts can be created, for example, timeouts, and integrity errors, and at
             least part of the `alert_info` CSR can be predicted. To cause some of these to
@@ -135,16 +118,14 @@
       stage: V2
       si_stage: SV3
       lc_states: ["PROD"]
-      features: [
-        "RSTMGR.ALERT_INFO.CAPTURE",
-        "RSTMGR.ALERT_INFO.ENABLE",
-      ]
+      features: ["RSTMGR.ALERT_INFO.CAPTURE", "RSTMGR.ALERT_INFO.ENABLE"]
       tests: ["chip_sw_rstmgr_alert_info"]
       bazel: ["//sw/device/tests:rstmgr_alert_info_test"]
     }
     {
       name: chip_sw_rstmgr_sw_rst
-      desc: '''Verify `sw_rst_ctrl_n` CSR resets individual peripherals.
+      desc: '''
+            Verify `sw_rst_ctrl_n` CSR resets individual peripherals.
 
             - Pick a rw type CSR in each peripheral and program arbitrary value
               that does not cause any adverse side-effects.
@@ -161,28 +142,14 @@
       stage: V2
       si_stage: SV3
       lc_states: ["PROD"]
-      features: [
-        "RSTMGR.SW_RST.I2C2_ENABLE",
-        "RSTMGR.SW_RST.I2C2_REQUEST",
-        "RSTMGR.SW_RST.I2C1_ENABLE",
-        "RSTMGR.SW_RST.I2C1_REQUEST",
-        "RSTMGR.SW_RST.I2C0_ENABLE",
-        "RSTMGR.SW_RST.I2C0_REQUEST",
-        "RSTMGR.SW_RST.USB_ENABLE",
-        "RSTMGR.SW_RST.USB_REQUEST",
-        "RSTMGR.SW_RST.SPI_HOST1_ENABLE",
-        "RSTMGR.SW_RST.SPI_HOST1_REQUEST",
-        "RSTMGR.SW_RST.SPI_HOST0_ENABLE",
-        "RSTMGR.SW_RST.SPI_HOST0_REQUEST",
-        "RSTMGR.SW_RST.SPI_DEVICE_ENABLE",
-        "RSTMGR.SW_RST.SPI_DEVICE_REQUEST",
-      ]
+      features: ["RSTMGR.SW_RST.I2C2_ENABLE", "RSTMGR.SW_RST.I2C2_REQUEST", "RSTMGR.SW_RST.I2C1_ENABLE", "RSTMGR.SW_RST.I2C1_REQUEST", "RSTMGR.SW_RST.I2C0_ENABLE", "RSTMGR.SW_RST.I2C0_REQUEST", "RSTMGR.SW_RST.USB_ENABLE", "RSTMGR.SW_RST.USB_REQUEST", "RSTMGR.SW_RST.SPI_HOST1_ENABLE", "RSTMGR.SW_RST.SPI_HOST1_REQUEST", "RSTMGR.SW_RST.SPI_HOST0_ENABLE", "RSTMGR.SW_RST.SPI_HOST0_REQUEST", "RSTMGR.SW_RST.SPI_DEVICE_ENABLE", "RSTMGR.SW_RST.SPI_DEVICE_REQUEST"]
       tests: ["chip_sw_rstmgr_sw_rst"]
       bazel: ["//sw/device/tests:rstmgr_sw_rst_ctrl_test"]
     }
     {
       name: chip_sw_rstmgr_escalation_reset
-      desc: '''Verify the reset manager resets to a clean state after an escalation reset.
+      desc: '''
+            Verify the reset manager resets to a clean state after an escalation reset.
 
             Trigger an internal fatal fault for the regfile onehot checker and let it escalate to
             reset. Upon alert escalation reset, the internal status should be clear and rstmgr
@@ -197,16 +164,14 @@
       stage: V2
       si_stage: SV3
       lc_states: ["PROD"]
-      features: [
-        "RSTMGR.RESET_INFO.CAPTURE",
-        "RSTMGR.ALERT_INFO.CAPTURE",
-      ]
+      features: ["RSTMGR.RESET_INFO.CAPTURE", "RSTMGR.ALERT_INFO.CAPTURE"]
       tests: ["chip_sw_all_escalation_resets"]
       bazel: ["//sw/device/tests:pwrmgr_random_sleep_all_reset_reqs"]
     }
     {
       name: chip_sw_rstmgr_alert_handler_reset_enables
-      desc: '''Verify the reset manager sends the correct information to the alert handler
+      desc: '''
+            Verify the reset manager sends the correct information to the alert handler
             regarding individual resets being active so it can ignore missing ping responses
             from them and avoid triggering spurious escalation. This scenario is caused by
             software induced peripheral resets among others. The check is that spurious

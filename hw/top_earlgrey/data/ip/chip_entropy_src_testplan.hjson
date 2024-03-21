@@ -4,10 +4,10 @@
 {
   name: chip_entropy_src
   testpoints: [
-    // ENTROPY_SRC (pre-verified IP) integration tests:
     {
       name: chip_sw_entropy_src_ast_rng_req
-      desc: '''Verify the RNG req to AST.
+      desc: '''
+            Verify the RNG req to AST.
 
             - Enable ENTROPY_SRC in FIPS mode.
             - Enable Firmware Override - Extract & Insert to route entropy received from AST to the observe FIFO.
@@ -26,10 +26,11 @@
       lc_states: ["PROD"]
       tests: ["chip_sw_entropy_src_ast_rng_req"]
       bazel: ["//sw/device/tests:entropy_src_ast_rng_req_test"]
-    },
+    }
     {
       name: chip_sw_entropy_src_csrng
-      desc: '''Verify the transfer of entropy bits to CSRNG.
+      desc: '''
+            Verify the transfer of entropy bits to CSRNG.
 
             Verify the entropy valid interrupt.
             At the CSRNG, validate the reception of entropy req interrupt.
@@ -50,10 +51,11 @@
       lc_states: ["PROD"]
       tests: ["chip_sw_entropy_src_csrng"]
       bazel: ["//sw/device/tests:entropy_src_csrng_test"]
-    },
+    }
     {
       name: chip_sw_entropy_src_known_answer_tests
-      desc: '''Verify our ability to run known-answer tests in SW.
+      desc: '''
+            Verify our ability to run known-answer tests in SW.
 
             - Enable ENTROPY_SRC in FIPS mode.
             - Enable Firmware Override - Extract & Insert.
@@ -65,16 +67,13 @@
             - This test requires access to the ENTROPY_SRC.ROUTE_TO_FIRMWARE and ENTROPY_SRC.FW_OV.EXTRACT_AND_INSERT features, which are gated by OTP.
               This test might thus need to be done in a secure facility.
             '''
-      features: [
-        "ENTROPY_SRC.ROUTE_TO_FIRMWARE",
-        "ENTROPY_SRC.FW_OV.EXTRACT_AND_INSERT"
-      ]
+      features: ["ENTROPY_SRC.ROUTE_TO_FIRMWARE", "ENTROPY_SRC.FW_OV.EXTRACT_AND_INSERT"]
       stage: V2
       si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_sw_entropy_src_kat_test"]
       bazel: ["//sw/device/tests:entropy_src_kat_test"]
-    },
+    }
     {
       name: chip_sw_entropy_src_bypass_mode_health_tests
       desc: '''
@@ -100,16 +99,13 @@
             - Enable both EDNs in boot-time request mode.
             - Verify that ENTROPY_SRC triggers a recoverable alert and sets the RECOV_ALERT_STS.ES_MAIN_SM_ALERT bit.
             '''
-      features: [
-        "ENTROPY_SRC.MODE.BYPASS",
-        "ENTROPY_SRC.HEALTH_TESTS",
-      ]
+      features: ["ENTROPY_SRC.MODE.BYPASS", "ENTROPY_SRC.HEALTH_TESTS"]
       stage: V3
       si_stage: SV3
       lc_states: ["PROD"]
       tests: []
       bazel: []
-    },
+    }
     {
       name: chip_sw_entropy_src_fips_mode_health_tests
       desc: '''
@@ -137,16 +133,13 @@
             - Verify that ENTROPY_SRC triggers a recoverable alert and sets the RECOV_ALERT_STS.ES_MAIN_SM_ALERT bit.
             - Verify that various entropy consuming endpoints hang as ENTROPY_SRC stops generating entropy after triggering the recoverable alert.
             '''
-      features: [
-        "ENTROPY_SRC.MODE.FIPS",
-        "ENTROPY_SRC.HEALTH_TESTS",
-      ]
+      features: ["ENTROPY_SRC.MODE.FIPS", "ENTROPY_SRC.HEALTH_TESTS"]
       stage: V3
       si_stage: SV3
       lc_states: ["PROD"]
       tests: []
       bazel: []
-    },
+    }
     {
       name: chip_sw_entropy_src_validation
       desc: '''
@@ -168,20 +161,17 @@
             - This test requires access to the ENTROPY_SRC.FW_OV.OBSERVE feature, which is gated by OTP.
               This test might thus need to be done in a secure facility.
             '''
-      features: [
-        "ENTROPY_SRC.MODE.FIPS",
-        "ENTROPY_SRC.FW_OV.OBSERVE",
-        "ENTROPY_SRC.RNG_BIT_ENABLE",
-      ]
+      features: ["ENTROPY_SRC.MODE.FIPS", "ENTROPY_SRC.FW_OV.OBSERVE", "ENTROPY_SRC.RNG_BIT_ENABLE"]
       stage: V3
       si_stage: SV3
       lc_states: ["PROD"]
       tests: []
       bazel: []
-    },
+    }
     {
       name: chip_sw_entropy_src_fw_observe_many_contiguous
-      desc: '''Verify that the software can observe samples fast enough to extract many contiguous samples.
+      desc: '''
+            Verify that the software can observe samples fast enough to extract many contiguous samples.
 
             Procedure:
             - Disable the entropy complex.
@@ -202,20 +192,17 @@
             - This test requires access to the ENTROPY_SRC.FW_OV.OBSERVE feature, which is gated by OTP.
               This test might thus need to be done in a secure facility.
             '''
-      features: [
-        "ENTROPY_SRC.MODE.FIPS",
-        "ENTROPY_SRC.FW_OV.OBSERVE"
-        "ENTROPY_SRC.RNG_BIT_ENABLE",
-      ]
+      features: ["ENTROPY_SRC.MODE.FIPS", "ENTROPY_SRC.FW_OV.OBSERVE", "ENTROPY_SRC.RNG_BIT_ENABLE"]
       stage: V2
       si_stage: SV3
       lc_states: ["PROD"]
       tests: []
       bazel: ["//sw/device/tests:entropy_src_fw_observe_many_contiguous_test"]
-    },
+    }
     {
       name: chip_sw_entropy_src_fw_extract_and_insert
-      desc: '''Verify that the software can observe samples fast enough to extract many contiguous samples.
+      desc: '''
+            Verify that the software can observe samples fast enough to extract many contiguous samples.
 
             Procedure:
             - Disable the entropy complex.
@@ -242,16 +229,12 @@
             - This test requires access to the ENTROPY_SRC.ROUTE_TO_FIRMWARE and ENTROPY_SRC.FW_OV.EXTRACT_AND_INSERT features, which are gated by OTP.
               This test might thus need to be done in a secure facility.
             '''
-      features: [
-        "ENTROPY_SRC.MODE.FIPS",
-        "ENTROPY_SRC.FW_OV.EXTRACT_AND_INSERT",
-        "ENTROPY_SRC.RNG_BIT_ENABLE"
-      ]
+      features: ["ENTROPY_SRC.MODE.FIPS", "ENTROPY_SRC.FW_OV.EXTRACT_AND_INSERT", "ENTROPY_SRC.RNG_BIT_ENABLE"]
       stage: V2
       si_stage: SV3
       lc_states: ["PROD"]
       tests: []
       bazel: []
-    },
+    }
   ]
 }

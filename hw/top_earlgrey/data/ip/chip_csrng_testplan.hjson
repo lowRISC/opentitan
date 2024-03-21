@@ -4,10 +4,10 @@
 {
   name: chip_csrng
   testpoints: [
-    // CSRNG (pre-verified IP) integration tests:
     {
       name: chip_sw_csrng_edn_cmd
-      desc: '''Verify incoming command interface from EDN.
+      desc: '''
+            Verify incoming command interface from EDN.
 
             - Have each EDN instance issue an instantiate, reseed and generate command to CSRNG.
             - On each command done, verify the reception of edn_cmd_req_done interrupt.
@@ -18,11 +18,7 @@
             - In silicon, the connectivity cannot be checked using assertions.
               However, checking that the OTBN randomness test finishes allows to quickly assess if both EDNs deliver any entropy which is very fundamental.
             '''
-      features: [
-        "CSRNG.INTERFACE.HARDWARE0",
-        "CSRNG.INTERFACE.HARDWARE1",
-        "CSRNG.MODE.NONDETERMINISTIC",
-      ]
+      features: ["CSRNG.INTERFACE.HARDWARE0", "CSRNG.INTERFACE.HARDWARE1", "CSRNG.MODE.NONDETERMINISTIC"]
       stage: V2
       si_stage: SV2
       lc_states: ["TEST_UNLOCKED", "PROD"]
@@ -31,7 +27,8 @@
     }
     {
       name: chip_sw_csrng_fuse_en_sw_app_read
-      desc: '''Verify the fuse input to CSRNG.
+      desc: '''
+            Verify the fuse input to CSRNG.
 
             - Initialize the OTP with the fuse that control whether the SW can read the CSRNG state
               enabled.
@@ -45,10 +42,7 @@
             - The current understanding is that the en_csrng_sw_app_read OTP switch controlling the CSRNG.READ_INT_STATE feature will need to be enabled also in the PROD life-cycle state for validation and known-answer testing.
               Thus, burning the en_csrng_sw_app_read OTP fuses is not advisable for silicon validation.
             '''
-      features: [
-        "CSRNG.INTERFACE.SOFTWARE",
-        "CSRNG.READ_INT_STATE",
-      ]
+      features: ["CSRNG.INTERFACE.SOFTWARE", "CSRNG.READ_INT_STATE"]
       stage: V2
       si_stage: SV3
       lc_states: ["PROD"]
@@ -56,7 +50,8 @@
     }
     {
       name: chip_sw_csrng_lc_hw_debug_en
-      desc: '''Verify the effect of LC HW debug enable on CSRNG.
+      desc: '''
+            Verify the effect of LC HW debug enable on CSRNG.
 
             lc_hw_debug_en is used to diversify the csrng seed.
             - Configure ENTROPY_SRC into bypassing the conditioner and directly inject known
@@ -74,11 +69,7 @@
             - This test goes through life-cycle stages that will permanently change the characteristic of the chip.
             - These tests will need to be done in secure environments where there is access to chips in the TEST_UNLOCKED or DEV life-cycle states.
             '''
-      features: [
-        "CSRNG.INTERFACE.SOFTWARE",
-        "CSRNG.MODE.NONDETERMINISTIC",
-        "CSRNG.LIFECYCLE.DEBUGENABLE",
-      ]
+      features: ["CSRNG.INTERFACE.SOFTWARE", "CSRNG.MODE.NONDETERMINISTIC", "CSRNG.LIFECYCLE.DEBUGENABLE"]
       stage: V2
       si_stage: SV3
       lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END"]
@@ -86,7 +77,8 @@
     }
     {
       name: chip_sw_csrng_known_answer_tests
-      desc: '''Verify our ability to run known-answer tests in SW.
+      desc: '''
+            Verify our ability to run known-answer tests in SW.
 
             - Configure the software instance in deterministic mode with the expected seed (as per
               the NIST-specified test for CTR_DRBG operation).
@@ -99,11 +91,7 @@
               The current understanding is that this will need to be enabled also in the PROD life-cycle state for validation and known-answer testing.
               Thus, the test doesn't need to be run in a secure environment.
             '''
-      features: [
-        "CSRNG.INTERFACE.SOFTWARE",
-        "CSRNG.MODE.DETERMINISTIC",
-        "CSRNG.READ_INT_STATE",
-      ]
+      features: ["CSRNG.INTERFACE.SOFTWARE", "CSRNG.MODE.DETERMINISTIC", "CSRNG.READ_INT_STATE"]
       stage: V2
       si_stage: SV3
       lc_states: ["PROD"]

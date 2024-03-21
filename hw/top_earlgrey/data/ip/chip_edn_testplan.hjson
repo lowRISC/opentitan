@@ -4,10 +4,10 @@
 {
   name: chip_edn
   testpoints: [
-    // EDN (pre-verified IP) integration tests:
     {
       name: chip_sw_edn_entropy_reqs
-      desc: '''Verify the entropy requests from all peripherals.
+      desc: '''
+            Verify the entropy requests from all peripherals.
 
             Verify that there are no misconnects between each peripheral requesting entropy.
             TODO: system level scenario: have all entropy sources request entropy in the same test
@@ -18,16 +18,13 @@
       stage: V2
       si_stage: SV3
       lc_states: ["PROD"]
-      tests: ["chip_sw_edn_entropy_reqs",
-              "chip_sw_csrng_edn_concurrency",
-              "chip_sw_entropy_src_ast_rng_req",]
-      bazel: ["//sw/device/tests:entropy_src_edn_reqs_test",
-              "//sw/device/tests:csrng_edn_concurrency_test",
-              "//sw/device/tests:entropy_src_ast_rng_req_test",]
-    },
+      tests: ["chip_sw_edn_entropy_reqs", "chip_sw_csrng_edn_concurrency", "chip_sw_entropy_src_ast_rng_req"]
+      bazel: ["//sw/device/tests:entropy_src_edn_reqs_test", "//sw/device/tests:csrng_edn_concurrency_test", "//sw/device/tests:entropy_src_ast_rng_req_test"]
+    }
     {
       name: chip_sw_edn_boot_mode
-      desc: '''Verify EDN operation in boot-time request mode.
+      desc: '''
+            Verify EDN operation in boot-time request mode.
 
             Verify that EDN delivers entropy in boot-time request mode and that the `edn_fips` bit correctly signals to endpoints whether the delivered entropy is derived from a FIPS/CC compliant seed or not.
 
@@ -61,20 +58,17 @@
             - Verify that the OTBN program completes (entropy available) and that OTBN does not set ERR_BITS.RND_FIPS_CHK_FAIL.
             - Consume entropy through rv_core_ibex.RND_DATA and verify, using rv_core_ibex.RND_STATUS, that the received bits are FIPS compliant.
             '''
-      features: [
-        EDN.MODE.BOOT,
-        EDN.MODE.AUTO,
-        EDN.TRACK_SEED_COMPLIANCE
-      ]
+      features: ["EDN.MODE.BOOT,", "EDN.MODE.AUTO,", "EDN.TRACK_SEED_COMPLIANCE"]
       stage: V3
       si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_sw_edn_boot_mode"]
       bazel: ["//sw/device/tests:edn_boot_mode"]
-    },
+    }
     {
       name: chip_sw_edn_auto_mode
-      desc: '''Verify EDN operation in auto request mode.
+      desc: '''
+            Verify EDN operation in auto request mode.
 
             Verify that EDN delivers entropy in auto request mode.
 
@@ -91,18 +85,17 @@
               - The generate length parameter.
               - The MAX_NUM_REQS_BETWEEN_RESEEDS register.
             '''
-      features: [
-        EDN.MODE.AUTO
-      ]
+      features: ["EDN.MODE.AUTO"]
       stage: V3
       si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_sw_edn_auto_mode"]
       bazel: ["//sw/device/tests:edn_auto_mode"]
-    },
+    }
     {
       name: chip_sw_edn_sw_mode
-      desc: '''Verify EDN operation in software port mode.
+      desc: '''
+            Verify EDN operation in software port mode.
 
             Verify that EDN delivers entropy in software port mode.
 
@@ -117,18 +110,17 @@
             - Provide the required commands to EDN0 via SW_CMD_REQ register to start generating and delivering entropy to consumers.
             - Verify that the entropy consuming endpoint can finish its operations and does not hang.
             '''
-      features: [
-        EDN.MODE.SW
-      ]
+      features: ["EDN.MODE.SW"]
       stage: V3
       si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_sw_edn_sw_mode"]
       bazel: ["//sw/device/tests:edn_sw_mode"]
-    },
+    }
     {
       name: chip_sw_edn_kat
-      desc: '''Perform a Known-Answer Test with EDN.
+      desc: '''
+            Perform a Known-Answer Test with EDN.
 
             Verify that EDN delivers the expected entropy bits when running CSRNG in fully deterministic mode.
 
@@ -158,15 +150,12 @@
               - For an example, refer to `chip_sw_aes_masking_off_test`.
             - Verify that EDN0 triggers a recoverable alert and sets the RECOV_ALERT_STS.EDN_BUS_CMP_ALERT bit as more entropy is consumed via rv_core_ibex.RND_DATA and CSRNG continues to provide the same entropy bits to EDN0.
             '''
-      features: [
-        EDN.MODE.AUTO,
-        EDN.BUS_CMP_ALERT
-      ]
+      features: ["EDN.MODE.AUTO,", "EDN.BUS_CMP_ALERT"]
       stage: V3
       si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_sw_edn_kat"]
       bazel: ["//sw/device/tests:edn_kat"]
-    },
+    }
   ]
 }

@@ -1,14 +1,13 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-
 {
   name: chip_spi_device
   testpoints: [
-    // SPI_DEVICE (pre-verified IP) integration tests:
     {
       name: chip_sw_spi_device_flash_mode
-      desc: '''Verify the SPI device in flash mode.
+      desc: '''
+            Verify the SPI device in flash mode.
 
             - SW puts the SPI device in flash mode.
             - Load a firmware image (bootstrap) through flash commands to the spi_device memory.
@@ -18,20 +17,15 @@
             '''
       stage: V2
       si_stage: SV3
-      lc_states: [ "PROD" ]
-      features: [
-        "SPI_DEVICE.MODE.FLASH_EMULATION",
-        "SPI_DEVICE.MODE.FLASH_EMULATION.COMMANDS",
-        "SPI_DEVICE.MODE.FLASH_EMULATION.READ_COMMAND_PROCESSOR",
-        "SPI_DEVICE.HW.FLASH_EMULATION_BLOCKS",
-        "SPI_DEVICE.HW.LAST_READ_ADDR",
-      ]
+      lc_states: ["PROD"]
+      features: ["SPI_DEVICE.MODE.FLASH_EMULATION", "SPI_DEVICE.MODE.FLASH_EMULATION.COMMANDS", "SPI_DEVICE.MODE.FLASH_EMULATION.READ_COMMAND_PROCESSOR", "SPI_DEVICE.HW.FLASH_EMULATION_BLOCKS", "SPI_DEVICE.HW.LAST_READ_ADDR"]
       tests: ["rom_e2e_smoke"]
       bazel: ["//sw/device/silicon_creator/rom/e2e:rom_e2e_smoke", "//sw/device/tests:spi_device_flash_smoketest"]
     }
     {
       name: chip_sw_spi_device_pass_through
-      desc: '''Verify the passthrough mode from an end-to-end perspective.
+      desc: '''
+            Verify the passthrough mode from an end-to-end perspective.
 
             - Configure the SPI device and host in passthrough mode.
             - Program the cmd_filter_* CSRs to filter out random commands.
@@ -54,19 +48,15 @@
             '''
       stage: V2
       si_stage: SV3
-      lc_states: [ "PROD" ]
-      features: [
-        "SPI_DEVICE.MODE.PASSTHROUGH",
-        "SPI_DEVICE.HW.LANES",
-        "SPI_DEVICE.MODE.PASSTHROUGH.CMD_FILTER",
-      ]
+      lc_states: ["PROD"]
+      features: ["SPI_DEVICE.MODE.PASSTHROUGH", "SPI_DEVICE.HW.LANES", "SPI_DEVICE.MODE.PASSTHROUGH.CMD_FILTER"]
       tests: ["chip_sw_spi_device_pass_through"]
       bazel: []
     }
-
     {
       name: chip_sw_spi_device_pass_through_flash_model
-      desc: '''Verify the command filtering mechanism in passthrough mode.
+      desc: '''
+            Verify the command filtering mechanism in passthrough mode.
 
             - Extend the chip_spi_device_pass_through test.
             - Connect with a real flash model on spi_host.
@@ -75,16 +65,13 @@
             '''
       stage: V3
       si_stage: NA
-      features: [
-        "SPI_DEVICE.MODE.PASSTHROUGH",
-        "SPI_DEVICE.HW.LANES",
-        "SPI_DEVICE.MODE.PASSTHROUGH.CMD_FILTER",
-      ]
+      features: ["SPI_DEVICE.MODE.PASSTHROUGH", "SPI_DEVICE.HW.LANES", "SPI_DEVICE.MODE.PASSTHROUGH.CMD_FILTER"]
       tests: []
     }
     {
       name: chip_sw_spi_device_pass_through_collision
-      desc: '''Verify the collisions on driving spi_host is handled properly.
+      desc: '''
+            Verify the collisions on driving spi_host is handled properly.
 
             - Enable upload-related interrupts and configure the spi_device in passthrough mode.
             - Configure a command slot to enable upload for a flash program/erase command.
@@ -101,20 +88,15 @@
             '''
       stage: V2
       si_stage: SV3
-      lc_states: [ "PROD" ]
-      features: [
-        "SPI_DEVICE.MODE.PASSTHROUGH",
-        "SPI_DEVICE.HW.CMDINFOS",
-        "SPI_DEVICE.HW.COMMAND_UPLOAD",
-        "SPI_DEVICE.HW.FLASH_EMULATION_BLOCKS",
-        "SPI_DEVICE.MODE.PASSTHROUGH.INTERCEPT_EN",
-      ]
+      lc_states: ["PROD"]
+      features: ["SPI_DEVICE.MODE.PASSTHROUGH", "SPI_DEVICE.HW.CMDINFOS", "SPI_DEVICE.HW.COMMAND_UPLOAD", "SPI_DEVICE.HW.FLASH_EMULATION_BLOCKS", "SPI_DEVICE.MODE.PASSTHROUGH.INTERCEPT_EN"]
       tests: ["chip_sw_spi_device_pass_through_collision"]
       bazel: []
     }
     {
       name: chip_sw_spi_device_tpm
-      desc: '''Verify the basic operation of the spi_device in TPM mode.
+      desc: '''
+            Verify the basic operation of the spi_device in TPM mode.
 
             - The testbench sends a known payload to the spi_device TPM input port.
             - The testbench sends a read command.
@@ -124,17 +106,14 @@
             '''
       stage: V2
       si_stage: SV3
-      lc_states: [ "PROD" ]
-      features: [
-        "SPI_DEVICE.MODE.TPM",
-        "SPI_DEVICE.MODE.TPM.READ_FIFO_MODE",
-      ]
+      lc_states: ["PROD"]
+      features: ["SPI_DEVICE.MODE.TPM", "SPI_DEVICE.MODE.TPM.READ_FIFO_MODE"]
       tests: ["chip_sw_spi_device_tpm"]
     }
     {
-      // This test is more a pinmux/padctrl test than a spi_device one. Consider reclassification.
       name: chip_sw_spi_device_output_when_disabled_or_sleeping
-      desc: '''Verify spi_device output values when spi_device is disabled or the chip is sleeping.
+      desc: '''
+            Verify spi_device output values when spi_device is disabled or the chip is sleeping.
 
                SW needs to be able to set the SPI output value when spi_device is disabled or the
                chip is sleeping, to either all-zeros or all-ones, depending on integration
@@ -159,10 +138,11 @@
                Notes for silicon targets:
                This test currently does not exercise any features of the spi_device block itself,
                which is why the "features" list is empty. It may be reclassifed in the future.
-             '''
+
+            '''
       stage: V3
       si_stage: None
-      lc_states: [ "PROD" ]
+      lc_states: ["PROD"]
       features: []
       tests: []
       bazel: []

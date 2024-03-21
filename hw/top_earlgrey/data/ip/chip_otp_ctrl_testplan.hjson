@@ -4,10 +4,10 @@
 {
   name: chip_otp_ctrl
   testpoints: [
-    // OTP (pre-verified IP) integration tests:
     {
       name: chip_otp_ctrl_init
-      desc: '''Verify the OTP ctrl initialization on chip power up.
+      desc: '''
+            Verify the OTP ctrl initialization on chip power up.
 
             Verify that the chip powers up correctly on POR.
             - The pwrmgr initiates a handshake with OTP ctrl and later, with LC ctrl in subsequent
@@ -22,7 +22,8 @@
     }
     {
       name: chip_sw_otp_ctrl_keys
-      desc: '''Verify the proliferation of keys to security peripherals.
+      desc: '''
+            Verify the proliferation of keys to security peripherals.
 
             - Verify the correctness of keys provided to SRAM ctrl (main & ret), flash ctrl, keymgr,
               (note that keymgr does not have handshake).
@@ -42,16 +43,12 @@
       stage: V2
       si_stage: SV1
       lc_states: ["PROD"]
-      tests: [// Verifies both, main and retention SRAM scrambling.
-              "chip_sw_sram_ctrl_scrambled_access",
-              "chip_sw_flash_init",
-              "chip_sw_keymgr_key_derivation",
-              "chip_sw_otbn_mem_scramble",
-              "chip_sw_rv_core_ibex_icache_invalidate"]
+      tests: ["chip_sw_sram_ctrl_scrambled_access", "chip_sw_flash_init", "chip_sw_keymgr_key_derivation", "chip_sw_otbn_mem_scramble", "chip_sw_rv_core_ibex_icache_invalidate"]
     }
     {
       name: chip_sw_otp_ctrl_entropy
-      desc: '''Verify the entropy interface from OTP ctrl to EDN.
+      desc: '''
+            Verify the entropy interface from OTP ctrl to EDN.
 
             This is X-ref'ed with the chip_otp_ctrl_keys test, which needs to handshake with the EDN
             to receive some entropy bits before the keys for SRAM ctrl and OTBN are computed.
@@ -63,15 +60,12 @@
       stage: V2
       si_stage: SV1
       lc_states: ["PROD"]
-      tests: ["chip_sw_sram_ctrl_scrambled_access",
-              "chip_sw_flash_init",
-              "chip_sw_keymgr_key_derivation",
-              "chip_sw_otbn_mem_scramble",
-              "chip_sw_rv_core_ibex_icache_invalidate"]
+      tests: ["chip_sw_sram_ctrl_scrambled_access", "chip_sw_flash_init", "chip_sw_keymgr_key_derivation", "chip_sw_otbn_mem_scramble", "chip_sw_rv_core_ibex_icache_invalidate"]
     }
     {
       name: chip_sw_otp_ctrl_program
-      desc: '''Verify the program request from lc_ctrl.
+      desc: '''
+            Verify the program request from lc_ctrl.
 
             - Verify that upon an LC state transition request, LC ctrl signals the OTP ctrl with a
               program request.
@@ -84,8 +78,7 @@
             For sival, this test can be done by
             - manuf_ft_sku_individualization_preop
             '''
-      features: ["OTP_CTRL.PROGRAM", "OTP_CTRL.PARTITION.SECRET0",
-                 "OTP_CTRL.PARTITION.LIFE_CYCLE", "OTP_CTRL.PARTITION.SECRET2"]
+      features: ["OTP_CTRL.PROGRAM", "OTP_CTRL.PARTITION.SECRET0", "OTP_CTRL.PARTITION.LIFE_CYCLE", "OTP_CTRL.PARTITION.SECRET2"]
       stage: V2
       si_stage: SV1
       lc_states: ["PROD"]
@@ -93,7 +86,8 @@
     }
     {
       name: chip_sw_otp_ctrl_program_error
-      desc: '''Verify the otp program error.
+      desc: '''
+            Verify the otp program error.
 
             - Initiate an illegal program request from LC ctrl to OTP ctrl by forcing the
               `lc_otp_program_i`.
@@ -114,7 +108,8 @@
     }
     {
       name: chip_sw_otp_ctrl_hw_cfg0
-      desc: '''Verify the correctness of otp_hw_cfg0 bus in all peripherals that receive it.
+      desc: '''
+            Verify the correctness of otp_hw_cfg0 bus in all peripherals that receive it.
 
             Preload the OTP ctrl's `hw_cfg0` partition with random data and verify that all
             consumers of the hardware configuration bits are receiving the correct values.
@@ -132,7 +127,8 @@
     }
     {
       name: chip_sw_otp_ctrl_lc_signals
-      desc: '''Verify the broadcast signals from LC ctrl.
+      desc: '''
+            Verify the broadcast signals from LC ctrl.
 
             - `lc_creator_seed_sw_rw_en_i`: verify that the SECRET2 partition is locked.
             - `lc_seed_hw_rd_en_i`: verify that the keymgr outputs a default value when enabled.
@@ -152,22 +148,12 @@
       features: ["OTP_CTRL.PARTITION.SECRET2"]
       stage: V2
       si_stage: NA
-      tests: [
-        // lc_dft_en_i
-        "chip_prim_tl_access",
-        // lc_check_byp_en_i
-        "chip_sw_lc_ctrl_transition",
-        // lc_seed_hw_rd_en_i, lc_creator_seed_sw_rw_en_i, also checks lc_keymgr_en_i since it uses
-        // the keymgr.
-        "chip_sw_otp_ctrl_lc_signals_test_unlocked0",
-        "chip_sw_otp_ctrl_lc_signals_dev",
-        "chip_sw_otp_ctrl_lc_signals_prod",
-        "chip_sw_otp_ctrl_lc_signals_rma",
-        ]
+      tests: ["chip_prim_tl_access", "chip_sw_lc_ctrl_transition", "chip_sw_otp_ctrl_lc_signals_test_unlocked0", "chip_sw_otp_ctrl_lc_signals_dev", "chip_sw_otp_ctrl_lc_signals_prod", "chip_sw_otp_ctrl_lc_signals_rma"]
     }
     {
       name: chip_sw_otp_prim_tl_access
-      desc: '''Verify that the SW can read / write the prim tlul interface.
+      desc: '''
+            Verify that the SW can read / write the prim tlul interface.
 
             - The prim tlul interface is a open source placeholder for the closed source CSRs that
               will be implemented in a translation 'shim'.
@@ -197,16 +183,15 @@
             - For sival, real vendor test will be done by a silicon vendor and nothing need to be done
               in the open source side.
             '''
-      features: ["OTP_CTRL.PARTITION.VENDOR_TEST",
-                 "OTP_CTRL.PARTITIONS_FEATURE.READ_LOCK",
-                 "OTP_CTRL.PARTITIONS_FEATURE.WRITE_LOCK"]
+      features: ["OTP_CTRL.PARTITION.VENDOR_TEST", "OTP_CTRL.PARTITIONS_FEATURE.READ_LOCK", "OTP_CTRL.PARTITIONS_FEATURE.WRITE_LOCK"]
       stage: V3
       si_stage: NA
       tests: ["chip_sw_otp_ctrl_vendor_test_csr_access"]
     }
     {
       name: chip_sw_otp_ctrl_escalation
-      desc: '''Verify escalation from otp_ctrl macro fatal error.
+      desc: '''
+            Verify escalation from otp_ctrl macro fatal error.
 
             - Inject ECC fatal error into OTP macro's HW cfg partition, and read back this macro
               via DAI interface.
@@ -223,10 +208,11 @@
     }
     {
       name: otp_ctrl_calibration
-      desc: '''Verify all calibrated parameters are programmed during manufacturing stage calibration test phase.
+      desc: '''
+            Verify all calibrated parameters are programmed during manufacturing stage calibration test phase.
             For sival this test can be done by
             - manuf_cp_ast_test_execution
-      '''
+            '''
       features: ["OTP_CTRL.PARTITION.CREATOR_SW_CFG"]
       stage: V3
       si_stage: SV1
@@ -235,30 +221,31 @@
     }
     {
       name: otp_ctrl_partition_access_locked
-      desc: '''Verify accessibily of all partition except life_cycle partition.
+      desc: '''
+            Verify accessibily of all partition except life_cycle partition.
 
             - Without locking state, try random write and read back test over all sw accessible partitions.
             - Per each partition, enable write lock and try to do subsequent write then readback.
             - Dut should generate recoverable error (access error) and 2nd write won't go through.
             - Per each partition, enable read lock and try to read.
             - Dut should generate recoverable error (access error).
-      '''
-      features: ["OTP_CTRL.PARTITIONS_FEATURE.READ_LOCK", "OTP_CTRL.PARTITIONS_FEATURE.WRITE_LOCK",
-                 "OTP_CTRL.ERROR_HANDLING.RECOVERABLE"]
+            '''
+      features: ["OTP_CTRL.PARTITIONS_FEATURE.READ_LOCK", "OTP_CTRL.PARTITIONS_FEATURE.WRITE_LOCK", "OTP_CTRL.ERROR_HANDLING.RECOVERABLE"]
       stage: V3
       si_stage: NA
       tests: []
     }
     {
       name: otp_ctrl_check_timeout
-      desc: '''Verify check_tiemout feature.
+      desc: '''
+            Verify check_tiemout feature.
 
             - Program otp_ctrl.check_timeout value small value (e.g. 1000 cycles).
             - Write 1 to otp_ctrl.check_trigger.integrity.
             - After timeout cycle, check otp_ctrl.status.timeout_error = 1.
             - Write 1 to otp_ctrl.check_trigger.consistency.
             - After timeout cycle, check otp_ctrl.status.timeout_error = 1.
-      '''
+            '''
       features: ["OTP_CTRL.BACKGROUND_CHECK.CHECK_TIMEOUT"]
       stage: V3
       si_stage: NA

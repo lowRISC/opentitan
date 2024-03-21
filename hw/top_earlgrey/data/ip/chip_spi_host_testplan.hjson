@@ -4,10 +4,10 @@
 {
   name: chip_spi_host
   testpoints: [
-    // SPI_HOST (pre-verified IP) integration tests:
     {
       name: chip_sw_spi_host_tx_rx
-      desc: '''Verify the transmission of data on the chip's SPI host port.
+      desc: '''
+            Verify the transmission of data on the chip's SPI host port.
 
             - Program the SPI host to send a known payload out of the chip on the SPI host ports.
             - The testbench receives the payload and plays it back to the SPI host interface.
@@ -21,23 +21,17 @@
             - The testbench that mimics a physical SPI device should measure the clock to verify that the frequencies for each speed mode is correct.
               This can be done by checking timing of the beginning and the end of the packet.
             '''
-      features: [
-        "SPIHOST.RATE.STANDARD",
-        "SPIHOST.RATE.DUAL",
-        "SPIHOST.RATE.QUAD",
-      ]
+      features: ["SPIHOST.RATE.STANDARD", "SPIHOST.RATE.DUAL", "SPIHOST.RATE.QUAD"]
       stage: V2
       si_stage: SV2
       lc_states: ["PROD"]
       tests: ["chip_sw_spi_host_tx_rx"]
-      bazel: [
-        "//sw/device/tests:spi_host_winbond_flash_test",
-        "//sw/device/tests/pmod:spi_host_macronix_flash_test"
-      ]
+      bazel: ["//sw/device/tests:spi_host_winbond_flash_test", "//sw/device/tests/pmod:spi_host_macronix_flash_test"]
     }
     {
       name: chip_sw_spi_host_pass_through
-      desc: '''Verify that the SPI host can be configured in pass through mode.
+      desc: '''
+            Verify that the SPI host can be configured in pass through mode.
             Essentially the configuration is as follows: (real) host -> OT -> flash device
 
             - Connect one of the OpenTitan SPI hosts to a SPI device on a serial NOR flash.
@@ -46,10 +40,7 @@
             - Let the testbench read that word back, again through the pass through of the SPI host and device on OpenTitan.
             - The testbench should check that the word read back is the same as the one written.
             '''
-      features: [
-        "SPIHOST.USECASE.SERIALNORFLASH",
-        "SPIHOST.USECASE.PASSTHROUGH",
-      ]
+      features: ["SPIHOST.USECASE.SERIALNORFLASH", "SPIHOST.USECASE.PASSTHROUGH"]
       stage: V3
       si_stage: SV3
       lc_states: ["PROD"]
@@ -57,7 +48,8 @@
     }
     {
       name: chip_sw_spi_host_configuration
-      desc: ''' Verifiy that the polarity and clock divider configurations work appropriately.
+      desc: '''
+            Verifiy that the polarity and clock divider configurations work appropriately.
 
             1. Send a packet with no clock division and no polarity switch.
             2. Send a packet with no clock division and a polarity switch.
@@ -65,10 +57,7 @@
 
             The testbench should compare the three packets that are received; the second packet should be inverted from the first and the third should be send half as fast as the second.
             '''
-      features: [
-        "SPIHOST.CONFIG.CPOL",
-        "SPIHOST.CONFIG.CLOCKDIV",
-      ]
+      features: ["SPIHOST.CONFIG.CPOL", "SPIHOST.CONFIG.CLOCKDIV"]
       stage: V3
       si_stage: SV3
       lc_states: ["PROD"]
@@ -76,7 +65,8 @@
     }
     {
       name: chip_sw_spi_host_events
-      desc: ''' Verify that various events are correctly triggered by the SPI host.
+      desc: '''
+            Verify that various events are correctly triggered by the SPI host.
 
             - For the transmit empty and watermark events:
               - Fill the transmit queue on the Ibex side.
@@ -89,11 +79,7 @@
               - Testbench sends as much data as the receive queue can hold for the full interrupt or the amount necessary to hit the watermark.
               - Ibex checks that the receive full or watermark interrupt is raised.
             '''
-      features: [
-        "SPIHOST.EVENT.WATERMARK",
-        "SPIHOST.EVENT.FULL",
-        "SPIHOST.EVENT.EMPTY",
-      ]
+      features: ["SPIHOST.EVENT.WATERMARK", "SPIHOST.EVENT.FULL", "SPIHOST.EVENT.EMPTY"]
       stage: V3
       si_stage: SV3
       lc_states: ["PROD"]

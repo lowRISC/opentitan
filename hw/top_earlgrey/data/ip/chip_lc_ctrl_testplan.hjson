@@ -4,10 +4,10 @@
 {
   name: chip_lc_ctrl
   testpoints: [
-    // LC_CTRL integration tests
     {
       name: chip_sw_lc_ctrl_alert_handler_escalation
-      desc: '''Verify that the escalation signals from the alert handler are connected to LC ctrl.
+      desc: '''
+            Verify that the escalation signals from the alert handler are connected to LC ctrl.
 
             - Trigger an alert to initiate the escalations.
             - Check that the escalation signals are connected to the LC ctrl:
@@ -35,7 +35,8 @@
     }
     {
       name: chip_sw_lc_ctrl_jtag_access
-      desc: '''Verify enable to access LC ctrl via JTAG.
+      desc: '''
+            Verify enable to access LC ctrl via JTAG.
 
             Using the JTAG agent, write and read LC ctrl CSRs, verify the read value for
             correctness. Repeat test with clk_ext configuration.
@@ -50,7 +51,8 @@
     }
     {
       name: chip_sw_lc_ctrl_otp_hw_cfg0
-      desc: '''Verify the device_ID and ID_state CSRs.
+      desc: '''
+            Verify the device_ID and ID_state CSRs.
 
             - Preload the hw_cfg0 partition in OTP ctrl with random data.
             - Read the device ID and the ID state CSRs to verify their correctness.
@@ -69,7 +71,8 @@
     }
     {
       name: chip_sw_lc_ctrl_init
-      desc: '''Verify the LC ctrl initialization on power up.
+      desc: '''
+            Verify the LC ctrl initialization on power up.
 
             Verify that the chip powers up correctly on POR.
             - The pwrmgr initiates a handshake with OTP ctrl and later, with LC ctrl in subsequent
@@ -82,7 +85,8 @@
     }
     {
       name: chip_sw_lc_ctrl_transitions
-      desc: '''Verify the LC ctrl can transit from one state to another valid state with the
+      desc: '''
+            Verify the LC ctrl can transit from one state to another valid state with the
             correct tokens.
 
             - Preload OTP image with a LC state and required tokens to transfer to next state.
@@ -99,23 +103,19 @@
             X-ref'ed manuf_cp_test_lock
             X-ref'ed manuf_ft_exit_token
             '''
-      features: [
-        "LC_CTRL.AUTHENTICATED_TRANSITIONS"
-        "LC_CTRL.STATE.RAW",
-        "LC_CTRL.STATE.TEST_UNLOCKED",
-        "LC_CTRL.STATE.TEST_LOCKED",
-      ]
+      features: ["LC_CTRL.AUTHENTICATED_TRANSITIONS", "LC_CTRL.STATE.RAW", "LC_CTRL.STATE.TEST_UNLOCKED", "LC_CTRL.STATE.TEST_LOCKED"]
       tags: ["dv", "fpga", "silicon"]
       stage: V2
       si_stage: SV3
-      otp_mutate: true
+      otp_mutate: True
       lc_states: ["RAW", "TEST_UNLOCKED", "TEST_LOCKED"]
       tests: ["chip_sw_lc_ctrl_transition"]
       bazel: []
     }
     {
       name: chip_sw_lc_ctrl_kmac_req
-      desc: '''Verify the token requested from KMAC.
+      desc: '''
+            Verify the token requested from KMAC.
 
             - For conditional transition, the LC ctrl will send out a token request to KMAC.
             - Verify that the KMAC returns a hashed token, which should match one of the
@@ -131,14 +131,15 @@
       tags: ["dv", "fpga", "silicon"]
       stage: V2
       si_stage: SV1
-      otp_mutate: true
+      otp_mutate: True
       lc_states: ["RAW", "TEST_UNLOCKED", "TEST_LOCKED", "DEV", "PROD", "PROD_END"]
       tests: ["chip_sw_lc_ctrl_transition"]
       bazel: []
     }
     {
       name: chip_sw_lc_ctrl_key_div
-      desc: '''Verify the keymgr div output to keymgr.
+      desc: '''
+            Verify the keymgr div output to keymgr.
 
             - Verify in different LC states, LC ctrl outputs the correct `key_div_o` to keymgr.
             - Verify that the keymgr uses the given `key_div_o` value to compute the keys.
@@ -148,7 +149,8 @@
     }
     {
       name: chip_sw_lc_ctrl_broadcast
-      desc: '''Verify broadcast signals from lc_ctrl.
+      desc: '''
+            Verify broadcast signals from lc_ctrl.
 
             - Preload the LC partition in the otp_ctrl with the following states: RMA, DEV,
               TEST_LOCKED[N] & SCRAP.
@@ -178,30 +180,7 @@
               - lc_escalate_en_o (multiple)
             '''
       stage: V2
-      tests: [
-        "chip_prim_tl_access",                         // lc_dft_en_o: otp_ctrl
-        "chip_tap_straps_dev",                         // lc_dft_en_o, lc_hw_debug_en_o: pinmux
-        "chip_tap_straps_prod",                        // lc_dft_en_o, lc_hw_debug_en_o: pinmux
-        "chip_tap_straps_rma",                         // lc_dft_en_o, lc_hw_debug_en_o: pinmux
-        "chip_sw_rom_ctrl_integrity_check",            // lc_dft_en_o, lc_hw_debug_en_o: pwrmgr
-        "chip_sw_clkmgr_external_clk_src_for_sw_fast_test_unlocked0", // lc_hw_debug_en_o: clkmgr
-        "chip_sw_clkmgr_external_clk_src_for_sw_slow_test_unlocked0", // lc_hw_debug_en_o: clkmgr
-        "chip_sw_clkmgr_external_clk_src_for_sw_fast_dev",            // lc_hw_debug_en_o: clkmgr
-        "chip_sw_clkmgr_external_clk_src_for_sw_slow_dev",            // lc_hw_debug_en_o: clkmgr
-        "chip_sw_clkmgr_external_clk_src_for_sw_fast_rma",            // lc_hw_debug_en_o: clkmgr
-        "chip_sw_clkmgr_external_clk_src_for_sw_slow_rma",            // lc_hw_debug_en_o: clkmgr
-        "chip_sw_sram_ctrl_execution_main",            // lc_hw_debug_en_o: sram_ctrl main
-        "chip_rv_dm_lc_disabled"                       // lc_hw_debug_en_o: rv_dm
-        "chip_sw_keymgr_key_derivation",               // lc_keymgr_en_o: keymgr
-        "chip_sw_clkmgr_external_clk_src_for_lc",      // lc_clk_byp_req_o: clkmgr
-        "chip_sw_flash_rma_unlocked",                  // lc_flash_rma_req_o, lc_flash_rma_seed_o: flash_ctrl
-        "chip_sw_lc_ctrl_transition",                  // lc_check_byp_en_o: otp_ctrl
-        "chip_sw_flash_ctrl_lc_rw_en",                 // lc_creator*, lc_seed*, lc_owner*, lc_iso*: flash_ctrl
-        "chip_sw_otp_ctrl_lc_signals_test_unlocked0",  // lc_seed_hw_rd_en_i, lc_creator_seed_sw_rw_en_i, lc_keymgr_en_i: otp_ctrl
-        "chip_sw_otp_ctrl_lc_signals_dev",             // lc_seed_hw_rd_en_i, lc_creator_seed_sw_rw_en_i, lc_keymgr_en_i: otp_ctrl
-        "chip_sw_otp_ctrl_lc_signals_prod",            // lc_seed_hw_rd_en_i, lc_creator_seed_sw_rw_en_i, lc_keymgr_en_i: otp_ctrl
-        "chip_sw_otp_ctrl_lc_signals_rma",             // lc_seed_hw_rd_en_i, lc_creator_seed_sw_rw_en_i, lc_keymgr_en_i: otp_ctrl
-      ]
+      tests: ["chip_prim_tl_access", "chip_tap_straps_dev", "chip_tap_straps_prod", "chip_tap_straps_rma", "chip_sw_rom_ctrl_integrity_check", "chip_sw_clkmgr_external_clk_src_for_sw_fast_test_unlocked0", "chip_sw_clkmgr_external_clk_src_for_sw_slow_test_unlocked0", "chip_sw_clkmgr_external_clk_src_for_sw_fast_dev", "chip_sw_clkmgr_external_clk_src_for_sw_slow_dev", "chip_sw_clkmgr_external_clk_src_for_sw_fast_rma", "chip_sw_clkmgr_external_clk_src_for_sw_slow_rma", "chip_sw_sram_ctrl_execution_main", "chip_rv_dm_lc_disabled", "chip_sw_keymgr_key_derivation", "chip_sw_clkmgr_external_clk_src_for_lc", "chip_sw_flash_rma_unlocked", "chip_sw_lc_ctrl_transition", "chip_sw_flash_ctrl_lc_rw_en", "chip_sw_otp_ctrl_lc_signals_test_unlocked0", "chip_sw_otp_ctrl_lc_signals_dev", "chip_sw_otp_ctrl_lc_signals_prod", "chip_sw_otp_ctrl_lc_signals_rma"]
     }
     {
       name: chip_sw_lc_ctrl_kmac_error
@@ -219,7 +198,8 @@
     }
     {
       name: chip_lc_scrap
-      desc: '''Ensure it is possible to enter scrap state from every legal life cycle state.
+      desc: '''
+            Ensure it is possible to enter scrap state from every legal life cycle state.
 
             -  Request transition to SCRAP state using the JTAG interface.
             -  It should be possible to transition from every legal state using external clock.
@@ -238,17 +218,15 @@
       tags: ["dv", "fpga", "silicon"]
       stage: V2
       si_stage: SV3
-      otp_mutate: true
+      otp_mutate: True
       lc_states: ["RAW", "TEST_UNLOCKED", "TEST_LOCKED", "DEV", "PROD", "PROD_END", "RMA"]
-      tests: ["chip_sw_lc_ctrl_rand_to_scrap",
-              "chip_sw_lc_ctrl_raw_to_scrap",
-              "chip_sw_lc_ctrl_rma_to_scrap",
-              "chip_sw_lc_ctrl_test_locked0_to_scrap"]
+      tests: ["chip_sw_lc_ctrl_rand_to_scrap", "chip_sw_lc_ctrl_raw_to_scrap", "chip_sw_lc_ctrl_rma_to_scrap", "chip_sw_lc_ctrl_test_locked0_to_scrap"]
       bazel: []
     }
     {
       name: chip_lc_test_locked
-      desc: '''Transition from TEST_UNLOCKED to TEST_LOCKED using LC JTAG interface.
+      desc: '''
+            Transition from TEST_UNLOCKED to TEST_LOCKED using LC JTAG interface.
 
             -  Check in TEST_UNLOCKED RV JTAG interface is available.
             -  Verify When in TEST_LOCKED state:
@@ -266,15 +244,15 @@
       tags: ["dv", "fpga", "silicon"]
       stage: V2
       si_stage: SV3
-      otp_mutate: true
+      otp_mutate: True
       lc_states: ["TEST_UNLOCKED"]
-      tests: ["chip_sw_lc_walkthrough_testunlocks",
-              "chip_rv_dm_lc_disabled"]
+      tests: ["chip_sw_lc_walkthrough_testunlocks", "chip_rv_dm_lc_disabled"]
       bazel: []
     }
     {
       name: chip_sw_lc_walkthrough
-      desc: '''Walk through the life cycle stages from RAW state and reseting the chip each time.
+      desc: '''
+            Walk through the life cycle stages from RAW state and reseting the chip each time.
 
              - Pre-load OTP image with RAW lc_state.
              - Initiate the LC transition to one of the test unlock state.
@@ -282,17 +260,15 @@
              - Move forward to next valid LC states via JTAG interface or SW interface if CPU is
                enabled.
              Verify that the features that should indeed be disabled are indeed disabled.
-             '''
+
+            '''
       stage: V2
-      tests: ["chip_sw_lc_walkthrough_dev",
-              "chip_sw_lc_walkthrough_prod",
-              "chip_sw_lc_walkthrough_prodend",
-              "chip_sw_lc_walkthrough_rma",
-              "chip_sw_lc_walkthrough_testunlocks"]
+      tests: ["chip_sw_lc_walkthrough_dev", "chip_sw_lc_walkthrough_prod", "chip_sw_lc_walkthrough_prodend", "chip_sw_lc_walkthrough_rma", "chip_sw_lc_walkthrough_testunlocks"]
     }
     {
       name: chip_sw_lc_ctrl_volatile_raw_unlock
-      desc: '''Configure VOLATILE_RAW_UNLOCK via LC TAP interface and enable CPU execution.
+      desc: '''
+            Configure VOLATILE_RAW_UNLOCK via LC TAP interface and enable CPU execution.
 
              - Pre-load OTP image with RAW lc_state.
              - Initiate the LC transition to test_unlocked0 state using the
@@ -312,40 +288,26 @@
                when it is programmed to 1.
              - Check that the transition results in a token error (the real RAW unlock transition
                expects the unhashed token instead of the hashed token supplied for volatile RAW unlock).
-             '''
-      features: [
-        "LC_CTRL.STATE.RAW",
-        "LC_CTRL.STATE.TEST_UNLOCKED",
-        "LC_CTRL.ACCESS.JTAG",
-        "LC_CTRL.ACCESS.EXT_CLK",
-        "LC_CTRL.AUTHENTICATED_TRANSITIONS",
-      ]
+
+            '''
+      features: ["LC_CTRL.STATE.RAW", "LC_CTRL.STATE.TEST_UNLOCKED", "LC_CTRL.ACCESS.JTAG", "LC_CTRL.ACCESS.EXT_CLK", "LC_CTRL.AUTHENTICATED_TRANSITIONS"]
       tags: ["dv", "fpga", "silicon"]
       stage: V2
       si_stage: SV2
       lc_states: ["RAW"]
-      tests: ["chip_sw_lc_ctrl_volatile_raw_unlock",
-              "chip_sw_lc_ctrl_volatile_raw_unlock_ext_clk_48mhz",
-              "rom_volatile_raw_unlock"]
+      tests: ["chip_sw_lc_ctrl_volatile_raw_unlock", "chip_sw_lc_ctrl_volatile_raw_unlock_ext_clk_48mhz", "rom_volatile_raw_unlock"]
       bazel: []
     }
     {
       name: chip_sw_lc_ctrl_debug_access
-      desc: '''Verify debug access for each lifecycle state.
+      desc: '''
+            Verify debug access for each lifecycle state.
 
              For each lifecycle state verify the debug and CPU access to make sure it matches the
              specification.
-             '''
-      features: [
-        "LC_CTRL.STATE.RAW",
-        "LC_CTRL.STATE.TEST_UNLOCKED",
-        "LC_CTRL.STATE.TEST_LOCKED",
-        "LC_CTRL.STATE.DEV",
-        "LC_CTRL.STATE.PROD",
-        "LC_CTRL.STATE.PROD_END",
-        "LC_CTRL.STATE.RMA",
-        "LC_CTRL.STATE.SCRAP",
-      ]
+
+            '''
+      features: ["LC_CTRL.STATE.RAW", "LC_CTRL.STATE.TEST_UNLOCKED", "LC_CTRL.STATE.TEST_LOCKED", "LC_CTRL.STATE.DEV", "LC_CTRL.STATE.PROD", "LC_CTRL.STATE.PROD_END", "LC_CTRL.STATE.RMA", "LC_CTRL.STATE.SCRAP"]
       tags: ["dv", "fpga", "silicon"]
       stage: V3
       si_stage: SV2
