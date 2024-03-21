@@ -48,7 +48,7 @@ class usbdev_enable_vseq extends usbdev_base_vseq;
   // TODO: Presently the act of sending a data packet, destructively modifies it!
   // Restore the data packet to its original state. This just bit-reverses each byte
   // within the input array.
-  function recover_orig_data(input byte unsigned in[], output byte unsigned out[]);
+  function void recover_orig_data(input byte unsigned in[], output byte unsigned out[]);
     out = {<<8{in}};  // Reverse the order of the bytes
     out = {<<{out}};  // Bit-reverse everything
   endfunction

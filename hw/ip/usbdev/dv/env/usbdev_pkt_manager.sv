@@ -82,7 +82,7 @@ class token_packet extends usbdev_pkt_manager;
     this.crc5 = {<<{crc}};
 
     // Pack the token packet
-    this.pack(pack_token);
+    void'(this.pack(pack_token));
     super.push_packet(pack_token);
   endtask
 endclass
@@ -144,7 +144,7 @@ class data_packet extends usbdev_pkt_manager;
     this.crc16 = {<<{crc}};
 
     // Pack the data packet
-    this.pack(pack_data);
+    void'(this.pack(pack_data));
     super.push_packet(pack_data);
     data.delete();
   endtask
@@ -171,7 +171,7 @@ class hand_shake_packet extends usbdev_pkt_manager;
     this.pid = hpid;
 
     // Pack the handshake packet
-    this.pack(pack_handshake);
+    void'(this.pack(pack_handshake));
     super.push_packet(pack_handshake);
   endtask
 endclass

@@ -52,7 +52,7 @@ class usbdev_fifo_rst_vseq extends usbdev_base_vseq;
       bit [BufW-1:0] buffer;
       // Choose a random buffer number
       buffer = $urandom_range(0, usbdev_env_pkg::NumBuffers - 1);
-      unique case (fifo)
+      case (fifo)
         AvOutFifo:   csr_wr(ral.avoutbuffer, buffer);
         AvSetupFifo: csr_wr(ral.avsetupbuffer, buffer);
         // Writing into the Rx FIFO require packet transmission from the host
@@ -84,7 +84,7 @@ class usbdev_fifo_rst_vseq extends usbdev_base_vseq;
         // TODO: Rx FIFO not yet supported.
         `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(fifo, fifo != RxFifo;)
         // Hit the reset
-        unique case (fifo)
+        case (fifo)
           AvOutFifo: begin
             ral.fifo_ctrl.avout_rst.set(1'b1);
             csr_update(.csr(ral.fifo_ctrl));

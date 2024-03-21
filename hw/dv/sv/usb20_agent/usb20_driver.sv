@@ -65,7 +65,7 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     m_token_pkt.address = {<<{m_token_pkt.address}};
     m_token_pkt.endpoint = {<<{m_token_pkt.endpoint}};
     m_token_pkt.crc5 = {<<{m_token_pkt.crc5}};
-    m_token_pkt.pack(driver_token_pkt);
+    void'(m_token_pkt.pack(driver_token_pkt));
     // to make complete packet need to attach SYNC at start of packet
     comp_token_pkt = new[driver_token_pkt.size() + 8];
     for (int i = 0; i < 8; i++) begin
@@ -96,7 +96,7 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     m_data_pkt.data = {<<8{m_data_pkt.data}};
     m_data_pkt.data = {<<{m_data_pkt.data}};
     m_data_pkt.crc16 = {<<{m_data_pkt.crc16}};
-    m_data_pkt.pack(driver_data_pkt);
+    void'(m_data_pkt.pack(driver_data_pkt));
     `uvm_info(`gfn, $sformatf("Driver Data_Packet = %p", driver_data_pkt), UVM_DEBUG)
     // To make complete packet need to attach SYNC at start of packet
     comp_data_pkt = new[driver_data_pkt.size() + 8];
@@ -125,7 +125,7 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     $cast(m_handshake_pkt, seq_item);
     m_handshake_pkt.m_pid_type = pid_type_e'({<<4{m_handshake_pkt.m_pid_type}});
     m_handshake_pkt.m_pid_type = pid_type_e'({<<{m_handshake_pkt.m_pid_type}});
-    m_handshake_pkt.pack(driver_handshake_pkt);
+    void'(m_handshake_pkt.pack(driver_handshake_pkt));
     `uvm_info(`gfn, $sformatf("Driver Handshake_Packet = %p", driver_handshake_pkt), UVM_DEBUG)
     // To make complete packet need to attach SYNC at start of packet
     comp_handshake_pkt = new[driver_handshake_pkt.size() + 8];
@@ -150,7 +150,7 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     m_sof_pkt.m_pid_type = pid_type_e'({<<{m_sof_pkt.m_pid_type}});
     m_sof_pkt.framecnt = {<<{m_sof_pkt.framecnt}};
     m_sof_pkt.crc5 = {<<{m_sof_pkt.crc5}};
-    m_sof_pkt.pack(driver_sof_pkt);
+    void'(m_sof_pkt.pack(driver_sof_pkt));
     // to make complete packet need to attach SYNC at start of packet
     comp_sof_pkt = new[driver_sof_pkt.size() + 8];
     for (int i = 0; i < 8; i++) begin

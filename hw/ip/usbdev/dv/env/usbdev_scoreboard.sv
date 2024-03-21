@@ -82,7 +82,7 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
       if (item.m_pid_type != PidTypeSofToken) begin
         m_packetiser.pack_pkt(item);
         usbdev_expected_pkt();
-        item.pack(actual_pkt);
+        void'(item.pack(actual_pkt));
         actual_pkt_q.push_back(actual_pkt);
         for (int i = 0; i <= 7; i++) begin
           act_pid = {act_pid, actual_pkt[i]};
@@ -113,7 +113,7 @@ class usbdev_scoreboard extends cip_base_scoreboard #(
     forever begin
       rsp_usb20_fifo.get(item);
       usbdev_expected_pkt();
-      item.pack(actual_pkt);
+      void'(item.pack(actual_pkt));
       actual_pkt_q.push_back(actual_pkt);
       for (int i = 0; i <= 7; i++) begin
         act_pid = {act_pid, actual_pkt[i]};
