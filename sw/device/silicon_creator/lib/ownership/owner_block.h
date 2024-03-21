@@ -39,6 +39,16 @@ typedef struct owner_application_keyring {
 } owner_application_keyring_t;
 
 /**
+ * Initialize the owner config with default values.
+ *
+ * The sram_exec mode is set to DisabledLocked and the three configuration
+ * pointers are set to kHardenedBoolFalse.
+ *
+ * @param config A pointer to a config struct holding pointers to config items.
+ */
+void owner_config_default(owner_config_t *config);
+
+/**
  * Parse an owner block, extracting pointers to keys and configuration items.
  *
  * @param block The owner block to parse.

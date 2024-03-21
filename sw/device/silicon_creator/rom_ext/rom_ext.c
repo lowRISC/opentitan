@@ -43,6 +43,7 @@
 #include "sw/device/silicon_creator/lib/manifest_def.h"
 #include "sw/device/silicon_creator/lib/otbn_boot_services.h"
 #include "sw/device/silicon_creator/lib/ownership/ownership.h"
+#include "sw/device/silicon_creator/lib/ownership/ownership_activate.h"
 #include "sw/device/silicon_creator/lib/ownership/ownership_unlock.h"
 #include "sw/device/silicon_creator/lib/shutdown.h"
 #include "sw/device/silicon_creator/lib/sigverify/sigverify.h"
@@ -67,6 +68,12 @@ extern const char _chip_info_start[];
 
 // Life cycle state of the chip.
 lifecycle_state_t lc_state = kLcStateProd;
+
+// Owner configuration details parsed from the onwer info pages.
+owner_config_t owner_config;
+
+// Owner application keys.
+owner_application_keyring_t keyring;
 
 // ePMP regions for important address spaces.
 const epmp_region_t kRamRegion = {
@@ -243,9 +250,13 @@ OT_WARN_UNUSED_RESULT
 static rom_error_t rom_ext_verify(const manifest_t *manifest,
                                   const boot_data_t *boot_data) {
   RETURN_IF_ERROR(rom_ext_boot_policy_manifest_check(manifest, boot_data));
-  const sigverify_rsa_key_t *key;
-  RETURN_IF_ERROR(sigverify_rsa_key_get(
-      sigverify_rsa_key_id_get(&manifest->rsa_modulus), &key));
+  size_t kindex = 0;
+  RETURN_IF_ERROR(owner_keyring_find_key(
+      &keyring, kOwnershipKeyAlgRsa,
+      sigverify_rsa_key_id_get(&manifest->rsa_modulus), &kindex));
+
+  dbg_printf("application key %u: alg=%C domain=%C\r\n", kindex,
+             keyring.key[kindex]->key_alg, keyring.key[kindex]->key_domain);
 
   hmac_sha256_init();
   // Hash usage constraints.
@@ -262,7 +273,8 @@ static rom_error_t rom_ext_verify(const manifest_t *manifest,
   hmac_sha256_final(&act_digest);
 
   uint32_t flash_exec = 0;
-  return sigverify_rsa_verify_ibex(&manifest->rsa_signature, key, &act_digest,
+  return sigverify_rsa_verify_ibex(&manifest->rsa_signature,
+                                   &keyring.key[kindex]->data.rsa, &act_digest,
                                    lc_state, &flash_exec);
 }
 
@@ -695,10 +707,14 @@ static rom_error_t handle_boot_svc(boot_data_t *boot_data) {
       case kBootSvcOwnershipUnlockReqType:
         HARDENED_CHECK_EQ(msg_type, kBootSvcOwnershipUnlockReqType);
         return ownership_unlock_handler(boot_svc_msg, boot_data);
+      case kBootSvcOwnershipActivateReqType:
+        HARDENED_CHECK_EQ(msg_type, kBootSvcOwnershipActivateReqType);
+        return ownership_activate_handler(boot_svc_msg, boot_data);
       case kBootSvcEmptyResType:
       case kBootSvcNextBl0SlotResType:
       case kBootSvcMinBl0SecVerResType:
       case kBootSvcOwnershipUnlockResType:
+      case kBootSvcOwnershipActivateResType:
         // For response messages left in ret-ram we do nothing.
         break;
       default:
@@ -710,7 +726,8 @@ static rom_error_t handle_boot_svc(boot_data_t *boot_data) {
 }
 
 OT_WARN_UNUSED_RESULT
-static rom_error_t rom_ext_try_next_stage(boot_data_t *boot_data) {
+static rom_error_t rom_ext_try_next_stage(boot_data_t *boot_data,
+                                          boot_log_t *boot_log) {
   rom_ext_boot_policy_manifests_t manifests =
       rom_ext_boot_policy_manifests_get(boot_data);
   rom_error_t error = kErrorRomExtBootFailed;
@@ -722,7 +739,6 @@ static rom_error_t rom_ext_try_next_stage(boot_data_t *boot_data) {
       continue;
     }
 
-    boot_log_t *boot_log = &retention_sram_get()->creator.boot_log;
     if (manifests.ordered[i] == rom_ext_boot_policy_manifest_a_get()) {
       boot_log->bl0_slot = kBootSlotA;
     } else if (manifests.ordered[i] == rom_ext_boot_policy_manifest_b_get()) {
@@ -801,7 +817,10 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
   HARDENED_RETURN_IF_ERROR(otbn_boot_app_load());
 
   // Initialize the chip ownership state.
-  HARDENED_RETURN_IF_ERROR(ownership_init());
+  error = ownership_init(boot_data, &owner_config, &keyring);
+  if (error == kErrorWriteBootdataThenReboot) {
+    return error;
+  }
 
   // Handle any pending boot_svc commands.
   uint32_t skip_boot_svc = reset_reasons & (1 << kRstmgrReasonLowPowerExit);
@@ -824,9 +843,11 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
   if (uart_break_detect(kRescueDetectTime) == kHardenedBoolTrue) {
     dbg_printf("rescue: remember to clear break\r\n");
     uart_enable_receiver();
+    // TODO: update rescue protocol to accept boot data and rescue
+    // config from the owner_config.
     error = rescue_protocol();
   } else {
-    error = rom_ext_try_next_stage(boot_data);
+    error = rom_ext_try_next_stage(boot_data, boot_log);
   }
   return error;
 }
