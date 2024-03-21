@@ -7,7 +7,7 @@ load("@rules_rust//rust:defs.bzl", "rust_binary")
 package(default_visibility = ["//visibility:public"])
 
 rust_binary(
-    name = "individualize_sw_cfg",
+    name = "individualize_sw_cfg_functest",
     srcs = ["src/main.rs"],
     deps = [
         "//sw/host/opentitanlib",
