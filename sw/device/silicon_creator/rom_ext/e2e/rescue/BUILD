@@ -52,6 +52,8 @@ opentitan_test(
         binaries = {
             ":boot_test_slot_a": "slot_a",
         },
+        # This test requires serial break support which is not available in CI yet.
+        tags = ["broken"],
         test_cmd = """
             --exec="transport init"
             --exec="fpga load-bitstream {bitstream}"
@@ -78,6 +80,8 @@ opentitan_test(
             ":boot_test_slot_a": "slot_a",
             ":boot_test_slot_b": "slot_b",
         },
+        # This test requires serial break support which is not available in CI yet.
+        tags = ["broken"],
         test_cmd = """
             --exec="transport init"
             --exec="fpga load-bitstream {bitstream}"
@@ -106,6 +110,8 @@ opentitan_test(
             ":boot_test_slot_a": "slot_a",
             ":boot_test_slot_b": "slot_b",
         },
+        # This test requires serial break support which is not available in CI yet.
+        tags = ["broken"],
         test_cmd = """
             --exec="transport init"
             --exec="fpga load-bitstream {bitstream}"
