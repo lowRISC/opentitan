@@ -305,6 +305,8 @@ _FT_PROVISIONING_CMD_ARGS = """
   --third-bootstrap={ft_personalize_3}
 """ + FT_PROVISIONING_INPUTS
 
+_FT_PROVISIONING_HARNESS = "//sw/host/provisioning/ft"
+
 opentitan_test(
     name = "ft_provision",
     cw310 = cw310_params(
@@ -318,7 +320,7 @@ opentitan_test(
             "manuf",
         ],
         test_cmd = _FT_PROVISIONING_CMD_ARGS,
-        test_harness = "//sw/host/tests/manuf/provisioning/ft",
+        test_harness = _FT_PROVISIONING_HARNESS,
     ),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_sival": None,
@@ -331,7 +333,7 @@ opentitan_test(
         interface = "hyper310",
         needs_jtag = True,
         test_cmd = _FT_PROVISIONING_CMD_ARGS,
-        test_harness = "//sw/host/tests/manuf/provisioning/ft",
+        test_harness = _FT_PROVISIONING_HARNESS,
     ),
 )
 

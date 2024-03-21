@@ -113,7 +113,7 @@ class OTDevice:
 
             platform_bazel_flags = ""
             platform_harness_flags = """--interface=cw310 --clear-bitstream \
---bitstream=sw/host/tests/manuf/provisioning/ft/ft_test_bitstream.bit \
+--bitstream=sw/host/provisioning/ft/ft_test_bitstream.bit \
 --openocd=third_party/openocd/build_openocd/bin/openocd \
 --openocd-adapter-config=external/openocd/tcl/interface/ftdi/olimex-arm-usb-tiny-h.cfg"""
 
@@ -136,7 +136,7 @@ class OTDevice:
 --openocd=third_party/openocd/build_openocd/bin/openocd \
 --openocd-adapter-config=external/openocd/tcl/interface/cmsis-dap.cfg"""
 
-        cmd = f"""bazel run //sw/host/tests/manuf/provisioning/ft:ft {platform_bazel_flags} -- \
+        cmd = f"""bazel run //sw/host/provisioning/ft {platform_bazel_flags} -- \
 --rcfile= --logging=info \
 {platform_harness_flags} \
 --elf={elf} \
