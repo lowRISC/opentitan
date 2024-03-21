@@ -23,23 +23,20 @@ module i2c_fsm import i2c_pkg::*;
   input        host_enable_i, // enable host functionality
   input        target_enable_i, // enable target functionality
 
-  input        fmt_fifo_rvalid_i, // indicates there is valid data in fmt_fifo
-  input        fmt_fifo_wvalid_i, // indicates data is being put into fmt_fifo
-  input [6:0]  fmt_fifo_depth_i,  // fmt_fifo_depth
-  output logic fmt_fifo_rready_o, // populates fmt_fifo
-  input [7:0]  fmt_byte_i,        // byte in fmt_fifo to be sent to target
-  input        fmt_flag_start_before_i, // issue start before sending byte
-  input        fmt_flag_stop_after_i,   // issue stop after sending byte
-  input        fmt_flag_read_bytes_i,   // indicates byte is an number of reads
-  input        fmt_flag_read_continue_i,// host to send Ack to final byte read
-  input        fmt_flag_nak_ok_i,       // no Ack is expected
+  input                      fmt_fifo_rvalid_i, // indicates there is valid data in fmt_fifo
+  input [FifoDepthWidth-1:0] fmt_fifo_depth_i,  // fmt_fifo_depth
+  output logic               fmt_fifo_rready_o, // populates fmt_fifo
+  input [7:0]                fmt_byte_i,        // byte in fmt_fifo to be sent to target
+  input                      fmt_flag_start_before_i, // issue start before sending byte
+  input                      fmt_flag_stop_after_i,   // issue stop after sending byte
+  input                      fmt_flag_read_bytes_i,   // indicates byte is an number of reads
+  input                      fmt_flag_read_continue_i,// host to send Ack to final byte read
+  input                      fmt_flag_nak_ok_i,       // no Ack is expected
 
   output logic       rx_fifo_wvalid_o, // high if there is valid data in rx_fifo
   output logic [7:0] rx_fifo_wdata_o,  // byte in rx_fifo read from target
 
   input                      tx_fifo_rvalid_i, // indicates there is valid data in tx_fifo
-  input                      tx_fifo_wvalid_i, // indicates data is being put into tx_fifo
-  input [FifoDepthWidth-1:0] tx_fifo_depth_i,  // fill level of tx_fifo
   output logic               tx_fifo_rready_o, // pop entry from tx_fifo
   input [7:0]                tx_fifo_rdata_i,  // byte in tx_fifo to be sent to host
 
@@ -197,9 +194,6 @@ module i2c_fsm import i2c_pkg::*;
       tcount_d = tcount_q - 1'b1;
     end
   end
-
-  logic unused_fifo_outputs;
-  assign unused_fifo_outputs = |{tx_fifo_depth_i, tx_fifo_wvalid_i, fmt_fifo_wvalid_i};
 
   always_ff @ (posedge clk_i or negedge rst_ni) begin : clk_counter
     if (!rst_ni) begin

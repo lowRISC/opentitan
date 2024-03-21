@@ -432,7 +432,6 @@ module i2c_core import i2c_pkg::*;
     .target_enable_i         (target_enable),
 
     .fmt_fifo_rvalid_i       (fmt_fifo_rvalid),
-    .fmt_fifo_wvalid_i       (fmt_fifo_wvalid),
     .fmt_fifo_depth_i        (fmt_fifo_depth),
     .fmt_fifo_rready_o       (fmt_fifo_rready),
 
@@ -447,8 +446,6 @@ module i2c_core import i2c_pkg::*;
     .rx_fifo_wdata_o         (rx_fifo_wdata),
 
     .tx_fifo_rvalid_i        (tx_fifo_rvalid),
-    .tx_fifo_wvalid_i        (tx_fifo_wvalid),
-    .tx_fifo_depth_i         (tx_fifo_depth),
     .tx_fifo_rready_o        (tx_fifo_rready),
     .tx_fifo_rdata_i         (tx_fifo_rdata),
 
