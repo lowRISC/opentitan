@@ -38,12 +38,12 @@ class dv_base_monitor #(type ITEM_T = uvm_sequence_item,
 
   virtual task run_phase(uvm_phase phase);
     fork
-      collect_trans();
+      collect_trans(phase);
     join
   endtask
 
   // collect transactions forever
-  virtual protected task collect_trans();
+  virtual protected task collect_trans(uvm_phase phase);
     `uvm_fatal(`gfn, "this method is not supposed to be called directly!")
   endtask
 

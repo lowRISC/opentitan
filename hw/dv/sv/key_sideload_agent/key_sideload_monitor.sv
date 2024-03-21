@@ -27,7 +27,7 @@ class key_sideload_monitor #(
   endtask
 
   // collect transactions forever - already forked in dv_base_monitor::run_phase
-  virtual protected task collect_trans();
+  virtual protected task collect_trans(uvm_phase phase);
     key_sideload_item#(KEY_T) prev_item;
     key_sideload_item#(KEY_T) curr_item;
     prev_item = key_sideload_item#(KEY_T)::type_id::create("prev_item");
