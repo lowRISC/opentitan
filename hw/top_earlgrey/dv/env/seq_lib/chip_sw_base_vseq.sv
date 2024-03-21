@@ -755,7 +755,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
     for (i = 0; i < max_attempt; i++) begin
       bit [TL_DW-1:0] status_val;
       lc_ctrl_status_e dummy;
-      cfg.clk_rst_vif.wait_clks($urandom_range(0, 10));
+      cfg.clk_rst_vif.wait_clks($urandom_range(5, 10));
       jtag_riscv_agent_pkg::jtag_read_csr(ral.lc_ctrl.status.get_offset(),
                                           p_sequencer.jtag_sequencer_h,
                                           status_val);
