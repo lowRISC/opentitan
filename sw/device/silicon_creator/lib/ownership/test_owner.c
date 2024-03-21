@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/silicon_creator/lib/dbg_print.h"
+#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/ownership/keys/fake/activate_ecdsa_p256.h"
 #include "sw/device/silicon_creator/lib/ownership/keys/fake/app_dev_key_rsa_3072_exp_f4.h"
@@ -22,6 +24,9 @@
 
 rom_error_t test_owner_init(boot_data_t *bootdata, owner_config_t *config,
                             owner_application_keyring_t *keyring) {
+  bool flash_invalid = owner_page[0].header.tag == 0xFFFFFFFF &&
+                       owner_page[1].header.tag == 0xFFFFFFFF;
+
   owner_page[0].header.tag = kTlvTagOwner;
   owner_page[0].header.length = 2048;
   owner_page[0].version = 0;
@@ -92,12 +97,20 @@ rom_error_t test_owner_init(boot_data_t *bootdata, owner_config_t *config,
   RETURN_IF_ERROR(owner_block_flash_apply(config->flash, kBootSlotB,
                                           bootdata->primary_bl0_slot));
   RETURN_IF_ERROR(owner_block_info_apply(config->info));
-  // TODO: apply SRAM exec config
-  // TODO: apply rescue config
 
   // Since this module should only get linked in to FPGA builds, we can simply
   // thunk the ownership state to LockedOwner.
   bootdata->ownership_state = kOwnershipStateLockedOwner;
-  dbg_printf("Test owner initialized\r\n");
+  if (flash_invalid) {
+    OT_DISCARD(flash_ctrl_info_erase(&kFlashCtrlInfoPageOwnerSlot0,
+                                     kFlashCtrlEraseTypePage));
+    OT_DISCARD(flash_ctrl_info_write(&kFlashCtrlInfoPageOwnerSlot0, 0,
+                                     sizeof(owner_page[0]) / sizeof(uint32_t),
+                                     &owner_page[0]));
+    OT_DISCARD(boot_data_write(bootdata));
+    dbg_printf("Test owner flash initialized\r\n");
+  } else {
+    dbg_printf("Test owner ram initialized\r\n");
+  }
   return kErrorOk;
 }
