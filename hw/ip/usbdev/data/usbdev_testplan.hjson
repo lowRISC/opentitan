@@ -821,13 +821,33 @@
             Verify that the device times out transactions when a host packet is 18 bit times
             after the preceding one in the same transaction.
 
-            - Generate a host packet 18 bit times than the preceding packet in the same
+            - Generate a host packet 18 bit times after the preceding packet in the same
               transaction.
             - Verify that the device time out the transaction when a host packet is 18 bit times
               after the preceding one in the same transaction.
             '''
       stage: V2
       tests: []
+    }
+    {
+      name: packet_buffer
+      desc: '''
+            Exercise all buffers within the packet buffer memory, performing reads and writes of
+            packet buffer data from both sides (CSR and USB) simultaneously.
+
+            - Randomly choose between IN and OUT packet transfer on the USB side.
+            - Randomly choose between buffer read and buffer write on the CSR side.
+            - Ensure, however, that the CSR side and the USB side never access the same buffer
+              simultaneously; this is guaranteed by the contract that exists between hardware and
+              software.
+            - Check all transferred data on both sides.
+            - Ensure that it is possible for individual read and write accesses to occur at the
+              packet buffer memory from both sides within the same cycle.
+              Since the packet buffer memory is now a Single Port RAM implementation, this requires
+              the CSR-side access to be delayed until the USB side is idle.
+            '''
+      stage: V2
+      tests: ["usbdev_pkt_buffer"]
     }
     {
       name: nak_to_out_trans_when_avbuffer_empty_rxfifo_full
