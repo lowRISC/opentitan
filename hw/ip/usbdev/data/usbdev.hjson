@@ -615,6 +615,7 @@
       desc: "Available OUT Buffer FIFO",
       swaccess: "wo",
       hwaccess: "hro",
+      hwext: "true",
       hwqe: "true",
       fields: [
         {
@@ -634,6 +635,7 @@
       desc: "Available SETUP Buffer FIFO",
       swaccess: "wo",
       hwaccess: "hro",
+      hwext: "true",
       hwqe: "true",
       fields: [
         {

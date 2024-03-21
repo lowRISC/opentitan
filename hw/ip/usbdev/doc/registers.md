@@ -403,7 +403,7 @@ Available OUT Buffer FIFO
 |  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                             |
 |:------:|:------:|:-------:|:-------|:--------------------------------------------------------------------------------------------------------------------------------------------------------|
 |  31:5  |        |         |        | Reserved                                                                                                                                                |
-|  4:0   |   wo   |   0x0   | buffer | This field contains the buffer ID being passed to the USB receive engine. If the Available OUT Buffer FIFO is full, any write operations are discarded. |
+|  4:0   |   wo   |    x    | buffer | This field contains the buffer ID being passed to the USB receive engine. If the Available OUT Buffer FIFO is full, any write operations are discarded. |
 
 ## avsetupbuffer
 Available SETUP Buffer FIFO
@@ -420,7 +420,7 @@ Available SETUP Buffer FIFO
 |  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                               |
 |:------:|:------:|:-------:|:-------|:----------------------------------------------------------------------------------------------------------------------------------------------------------|
 |  31:5  |        |         |        | Reserved                                                                                                                                                  |
-|  4:0   |   wo   |   0x0   | buffer | This field contains the buffer ID being passed to the USB receive engine. If the Available SETUP Buffer FIFO is full, any write operations are discarded. |
+|  4:0   |   wo   |    x    | buffer | This field contains the buffer ID being passed to the USB receive engine. If the Available SETUP Buffer FIFO is full, any write operations are discarded. |
 
 ## rxfifo
 Received Buffer FIFO

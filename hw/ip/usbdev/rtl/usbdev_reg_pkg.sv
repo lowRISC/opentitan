@@ -750,6 +750,8 @@ package usbdev_reg_pkg;
   parameter logic [0:0] USBDEV_ALERT_TEST_FATAL_FAULT_RESVAL = 1'h 0;
   parameter logic [31:0] USBDEV_USBSTAT_RESVAL = 32'h 80000000;
   parameter logic [0:0] USBDEV_USBSTAT_RX_EMPTY_RESVAL = 1'h 1;
+  parameter logic [4:0] USBDEV_AVOUTBUFFER_RESVAL = 5'h 0;
+  parameter logic [4:0] USBDEV_AVSETUPBUFFER_RESVAL = 5'h 0;
   parameter logic [23:0] USBDEV_RXFIFO_RESVAL = 24'h 0;
   parameter logic [27:0] USBDEV_OUT_DATA_TOGGLE_RESVAL = 28'h 0;
   parameter logic [27:0] USBDEV_IN_DATA_TOGGLE_RESVAL = 28'h 0;
