@@ -10,7 +10,7 @@
 
 /**
  * The OwnershipNoOwnerRecoveryKey is a silicon_creator key that allows
- * recovery of a device should it get into the LockedNone state (ie:
+ * recovery of a device should it get into the Recovery state (ie:
  * a state where there is no valid owner).
  */
 extern const owner_key_t *const kNoOwnerRecoveryKey;
