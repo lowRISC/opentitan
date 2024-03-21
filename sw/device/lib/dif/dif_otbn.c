@@ -123,6 +123,27 @@ dif_result_t dif_otbn_get_insn_cnt(const dif_otbn_t *otbn, uint32_t *insn_cnt) {
   return kDifOk;
 }
 
+dif_result_t dif_otbn_get_load_checksum(const dif_otbn_t *otbn,
+                                        uint32_t *checksum) {
+  if (otbn == NULL || checksum == NULL) {
+    return kDifBadArg;
+  }
+
+  *checksum =
+      mmio_region_read32(otbn->base_addr, OTBN_LOAD_CHECKSUM_REG_OFFSET);
+  return kDifOk;
+}
+
+dif_result_t dif_otbn_clear_load_checksum(const dif_otbn_t *otbn) {
+  if (otbn == NULL) {
+    return kDifBadArg;
+  }
+
+  mmio_region_write32(otbn->base_addr, OTBN_LOAD_CHECKSUM_REG_OFFSET, 0);
+
+  return kDifOk;
+}
+
 dif_result_t dif_otbn_imem_write(const dif_otbn_t *otbn, uint32_t offset_bytes,
                                  const void *src, size_t len_bytes) {
   if (otbn == NULL || src == NULL ||

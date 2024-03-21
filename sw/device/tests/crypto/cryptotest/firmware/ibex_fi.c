@@ -396,7 +396,7 @@ status_t handle_ibex_fi_char_register_file_read(ujson_t *uj) {
 }
 
 /**
- * Initializes the SCA trigger.
+ * Initializes the trigger.
  *
  *
  * @param uj The received uJSON data.
