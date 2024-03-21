@@ -244,6 +244,14 @@ def get_pad_list(padstr):
     return pads
 
 
+def idx_of_last_module_with_params(top):
+    last = -1
+    for idx, module in enumerate(top["module"]):
+        if len(module["param_list"]):
+            last = idx
+    return last
+
+
 # Template functions
 def ljust(x, width):
     return "{:<{width}}".format(x, width=width)
