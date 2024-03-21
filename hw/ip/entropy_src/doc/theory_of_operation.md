@@ -191,6 +191,9 @@ The following waveform shows how a sampling of a data pattern will be tested by 
 Operating on each bit stream, this test will count when a signal is at a stuck level.
 This NIST test is intended to signal a catastrophic failure with the PTRNG noise source.
 
+Note that as per definition in SP 800-90B, the Repetition Count test does not operate on a fixed window.
+The repetition count test fails if any sequence of bits continuously asserts the same value for too many samples, as determined by the programmable threshold, regardless of whether that sequence crosses any window boundaries.
+
 
 ```wavejson
 {signal: [
