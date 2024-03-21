@@ -1002,6 +1002,7 @@ opentitan_test(
         "//sw/device/lib/testing:alert_handler_testutils",
         "//sw/device/lib/testing:aon_timer_testutils",
         "//sw/device/lib/testing:clkmgr_testutils",
+        "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing:isr_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
