@@ -42,7 +42,7 @@ typedef enum ownership_state {
   /* Unlocked Endorsed: `UEND`. */
   kOwnershipStateUnlockedEndorsed = 0x444e4555,
   /* Locked None: any bit pattern not listed above. */
-  kOwnershipStateLockedNone = 0,
+  kOwnershipStateRecovery = 0,
 } ownership_state_t;
 
 typedef enum ownership_key_alg {

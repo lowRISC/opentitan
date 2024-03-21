@@ -100,7 +100,11 @@ cc_library(
     deps = [
         ":datatypes",
         ":ecdsa",
+        ":owner_block",
         ":ownership_key",
+        "//sw/device/lib/base:hardened_memory",
+        "//sw/device/silicon_creator/lib:boot_data",
+        "//sw/device/silicon_creator/lib:dbg_print",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
     ],
 )
@@ -170,6 +174,39 @@ cc_test(
 )
 
 cc_library(
+    name = "ownership_activate",
+    srcs = ["ownership_activate.c"],
+    hdrs = ["ownership_activate.h"],
+    deps = [
+        ":datatypes",
+        ":ownership",
+        ":ownership_key",
+        "//sw/device/lib/base:memory",
+        "//sw/device/silicon_creator/lib:boot_data",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib/boot_svc:boot_svc_msg",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+    ],
+)
+
+cc_test(
+    name = "ownership_activate_unittest",
+    srcs = [
+        "ownership_activate_unittest.cc",
+    ],
+    deps = [
+        ":datatypes",
+        ":ownership_activate",
+        ":ownership_key",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/silicon_creator/lib:boot_data",
+        "//sw/device/silicon_creator/lib/boot_svc:boot_svc_header",
+        "//sw/device/silicon_creator/testing:rom_test",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
     name = "test_owner",
     testonly = True,
     srcs = ["test_owner.c"],
@@ -178,6 +215,7 @@ cc_library(
         ":owner_block",
         ":ownership",
         "//sw/device/silicon_creator/lib:boot_data",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/ownership/keys/fake:includes",
     ],
     alwayslink = True,
