@@ -14,8 +14,8 @@ use super::ChipDataError;
 use crate::with_unknown;
 
 with_unknown! {
-    pub enum OwnershipState: u32 [default = Self::None] {
-        None = 0,
+    pub enum OwnershipState: u32 [default = Self::Recovery] {
+        Recovery = 0,
         LockedOwner = 0x444e574f,
         LockedUpdate = 0x4450554c,
         UnlockedAny = 0x594e4155,
