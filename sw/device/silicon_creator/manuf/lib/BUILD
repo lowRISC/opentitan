@@ -208,7 +208,7 @@ opentitan_test(
         test_cmd = """
             --bootstrap={firmware}
         """,
-        test_harness = "//sw/host/tests/manuf/individualize_sw_cfg",
+        test_harness = "//sw/host/tests/manuf/individualize_sw_cfg_functest",
     ),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
@@ -276,7 +276,7 @@ opentitan_test(
             --bootstrap={firmware}
             --host-ecc-sk="$(rootpath //sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der)"
         """,
-        test_harness = "//sw/host/tests/manuf/personalize",
+        test_harness = "//sw/host/tests/manuf/personalize_functest",
     ),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_sival": None,

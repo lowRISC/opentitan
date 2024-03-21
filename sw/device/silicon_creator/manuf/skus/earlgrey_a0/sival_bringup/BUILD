@@ -149,7 +149,7 @@ opentitan_test(
             --provisioning-sram-elf={sram_cp_provision}
             --test-sram-elf={sram_cp_provision_functest}
         """ + CP_PROVISIONING_INPUTS,
-        test_harness = "//sw/host/tests/manuf/provisioning/cp_test",
+        test_harness = "//sw/host/tests/manuf/cp_provision_functest",
     ),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
