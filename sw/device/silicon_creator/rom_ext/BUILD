@@ -35,6 +35,7 @@ cc_library(
     deps = [
         "//hw/top_earlgrey/ip_autogen/flash_ctrl/data:flash_ctrl_c_regs",
         "//sw/device/lib/base:memory",
+        "//sw/device/silicon_creator/lib:boot_data",
         "//sw/device/silicon_creator/lib:dbg_print",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:xmodem",
@@ -256,6 +257,7 @@ cc_library(
         "//sw/device/silicon_creator/lib/drivers:rnd",
         "//sw/device/silicon_creator/lib/drivers:uart",
         "//sw/device/silicon_creator/lib/ownership",
+        "//sw/device/silicon_creator/lib/ownership:ownership_activate",
         "//sw/device/silicon_creator/lib/ownership:ownership_unlock",
         "//sw/device/silicon_creator/lib/sigverify",
         "//sw/otbn/crypto:boot",
@@ -280,6 +282,7 @@ manifest(d = {
 
 opentitan_binary(
     name = "rom_ext_slot_a",
+    testonly = True,
     # TODO(#22780): Integrate real keys for A1 flows.
     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
     exec_env = [
@@ -295,13 +298,14 @@ opentitan_binary(
         ":rom_ext",
         "//sw/device/lib/crt",
         "//sw/device/silicon_creator/lib:manifest_def",
+        "//sw/device/silicon_creator/lib/ownership:test_owner",
         "//sw/device/silicon_creator/lib/ownership/keys/fake",
-        "//sw/device/silicon_creator/rom_ext/keys/fake",
     ],
 )
 
 opentitan_binary(
     name = "rom_ext_slot_b",
+    testonly = True,
     # TODO(#22780): Integrate real keys for A1 flows.
     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
     exec_env = [
@@ -317,13 +321,14 @@ opentitan_binary(
         ":rom_ext",
         "//sw/device/lib/crt",
         "//sw/device/silicon_creator/lib:manifest_def",
+        "//sw/device/silicon_creator/lib/ownership:test_owner",
         "//sw/device/silicon_creator/lib/ownership/keys/fake",
-        "//sw/device/silicon_creator/rom_ext/keys/fake",
     ],
 )
 
 opentitan_binary(
     name = "rom_ext_slot_virtual",
+    testonly = True,
     # TODO(#22780): Integrate real keys for A1 flows.
     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
     exec_env = [
@@ -339,8 +344,8 @@ opentitan_binary(
         ":rom_ext",
         "//sw/device/lib/crt",
         "//sw/device/silicon_creator/lib:manifest_def",
+        "//sw/device/silicon_creator/lib/ownership:test_owner",
         "//sw/device/silicon_creator/lib/ownership/keys/fake",
-        "//sw/device/silicon_creator/rom_ext/keys/fake",
     ],
 )
 
