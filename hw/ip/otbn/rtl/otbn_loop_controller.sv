@@ -181,8 +181,11 @@ module otbn_loop_controller
   // empty when asked to pop so no need to factor that in here.
   assign loop_stack_pop = current_loop_finish;
 
-  // Pops always commit, pushes only commit if the loop start is committed
-  assign loop_stack_commit = loop_stack_pop | (loop_stack_push_req & loop_start_commit_i);
+  // Pops always commit, pushes only commit if the loop start is committing. The commit from a loop
+  // start takes priority otherwise when we get an push and pop request at the same time, which
+  // triggers a software error, we can commit whilst requesting push and pop which we should never
+  // do.
+  assign loop_stack_commit = loop_stack_push_req ? loop_start_commit_i : loop_stack_pop;
 
   otbn_stack #(
     .StackWidth($bits(loop_addr_info_t)),
@@ -314,7 +317,9 @@ module otbn_loop_controller
 
   // Check that an instruction that tries to cause a stack push and pop at the same time will be
   // reported as a SW error.
-  `ASSERT(NoLoopStackPushAndPop, loop_stack_push_req && loop_stack_pop |-> sw_err_o)
+  `ASSERT(LoopStackPushAndPopCausesErr, loop_stack_push_req && loop_stack_pop |-> sw_err_o)
+  `ASSERT(LoopStackPushAndPopNeverCommits,
+    loop_stack_push_req && loop_stack_pop |-> ~loop_stack_commit)
 
   // The stack counter shouldn't get decremented at the same time as we write to the top of the loop
   // stack. This can only happen on a combined push and pop, which will cause a SW error (so the
