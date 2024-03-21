@@ -121,7 +121,7 @@ See the [programmer's guide section](programmers_guide.md/#entropy-source-module
 
 ### Security
 
-All module assets and countermeasures performed by hardware are listed in the hjson countermeasures section.
+All module assets and countermeasures performed by hardware are listed in the [countermeasures section](interfaces.md/#security-countermeasures).
 Labels for each instance of asset and countermeasure are located throughout the RTL source code.
 
 A configuration and control register locking function is performed by the [`REGWEN`](registers.md#regwen) register.
@@ -135,7 +135,6 @@ It is expected that software will read the threshold registers on a periodic bas
 Bus integrity checking is performed for the final seed delivery to CSRNG.
 This is done to make sure repeated values are not occurring.
 Only 64 bits (out of 384 bits) are checked, since this is statistically significant, and more checking would cost more silicon.
-
 
 ### Main State Machine Diagram
 The following diagram shows how the main state machine state is constructed.
