@@ -121,7 +121,7 @@ opentitan_test(
             --exec="fpga clear-bitstream"
             --exec="fpga load-bitstream {bitstream}"
             --exec="bootstrap --clear-uart=true {firmware}"
-            --exec="console --non-interactive --exit-success='ownership_state = LockedNone\r\n' --exit-failure='{exit_failure}'"
+            --exec="console --non-interactive --exit-success='ownership: \\x00\\x00\\x00\\x00' --exit-failure='{exit_failure}'"
             --exec="rescue boot-svc ownership-unlock \
                     --mode Any \
                     --nonce 0 \

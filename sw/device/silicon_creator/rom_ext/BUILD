@@ -56,6 +56,7 @@ cc_library(
     deps = [
         "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
         "//sw/device/lib/base:memory",
+        "//sw/device/silicon_creator/lib:boot_data",
         "//sw/device/silicon_creator/lib:dbg_print",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:xmodem",
@@ -277,6 +278,7 @@ cc_library(
         "//sw/device/silicon_creator/lib/drivers:rnd",
         "//sw/device/silicon_creator/lib/drivers:uart",
         "//sw/device/silicon_creator/lib/ownership",
+        "//sw/device/silicon_creator/lib/ownership:ownership_activate",
         "//sw/device/silicon_creator/lib/ownership:ownership_unlock",
         "//sw/device/silicon_creator/lib/sigverify",
         "//sw/otbn/crypto:boot",
@@ -301,6 +303,7 @@ manifest(d = {
 
 opentitan_binary(
     name = "rom_ext_slot_a",
+    testonly = True,
     exec_env = [
         "//hw/top_earlgrey:fpga_cw310",
         "//hw/top_earlgrey:sim_dv_base",
@@ -318,13 +321,14 @@ opentitan_binary(
         ":rom_ext",
         "//sw/device/lib/crt",
         "//sw/device/silicon_creator/lib:manifest_def",
+        "//sw/device/silicon_creator/lib/ownership:test_owner",
         "//sw/device/silicon_creator/lib/ownership/keys/fake",
-        "//sw/device/silicon_creator/rom_ext/keys/fake",
     ],
 )
 
 opentitan_binary(
     name = "rom_ext_slot_b",
+    testonly = True,
     exec_env = [
         "//hw/top_earlgrey:fpga_cw310",
         "//hw/top_earlgrey:sim_dv_base",
@@ -341,13 +345,14 @@ opentitan_binary(
         ":rom_ext",
         "//sw/device/lib/crt",
         "//sw/device/silicon_creator/lib:manifest_def",
+        "//sw/device/silicon_creator/lib/ownership:test_owner",
         "//sw/device/silicon_creator/lib/ownership/keys/fake",
-        "//sw/device/silicon_creator/rom_ext/keys/fake",
     ],
 )
 
 opentitan_binary(
     name = "rom_ext_slot_virtual",
+    testonly = True,
     exec_env = [
         "//hw/top_earlgrey:fpga_cw310",
         "//hw/top_earlgrey:sim_dv_base",
@@ -364,8 +369,8 @@ opentitan_binary(
         ":rom_ext",
         "//sw/device/lib/crt",
         "//sw/device/silicon_creator/lib:manifest_def",
+        "//sw/device/silicon_creator/lib/ownership:test_owner",
         "//sw/device/silicon_creator/lib/ownership/keys/fake",
-        "//sw/device/silicon_creator/rom_ext/keys/fake",
     ],
 )
 
