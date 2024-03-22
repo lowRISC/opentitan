@@ -16,9 +16,10 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 ## [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
 
-| Port Name   | Package::Struct   | Type    | Act   |   Width | Description   |
-|:------------|:------------------|:--------|:------|--------:|:--------------|
-| tl          | tlul_pkg::tl      | req_rsp | rsp   |       1 |               |
+| Port Name   | Package::Struct             | Type    | Act   |   Width | Description   |
+|:------------|:----------------------------|:--------|:------|--------:|:--------------|
+| ram_cfg     | prim_ram_1p_pkg::ram_1p_cfg | uni     | rcv   |       1 |               |
+| tl          | tlul_pkg::tl                | req_rsp | rsp   |       1 |               |
 
 ## Interrupts
 

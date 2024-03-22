@@ -1249,6 +1249,7 @@ module top_earlgrey #(
       .alert_rx_i  ( alert_rx[6:6] ),
 
       // Inter-module signals
+      .ram_cfg_i(ast_ram_1p_cfg),
       .tl_i(i2c0_tl_req),
       .tl_o(i2c0_tl_rsp),
 
@@ -1291,6 +1292,7 @@ module top_earlgrey #(
       .alert_rx_i  ( alert_rx[7:7] ),
 
       // Inter-module signals
+      .ram_cfg_i(ast_ram_1p_cfg),
       .tl_i(i2c1_tl_req),
       .tl_o(i2c1_tl_rsp),
 
@@ -1333,6 +1335,7 @@ module top_earlgrey #(
       .alert_rx_i  ( alert_rx[8:8] ),
 
       // Inter-module signals
+      .ram_cfg_i(ast_ram_1p_cfg),
       .tl_i(i2c2_tl_req),
       .tl_o(i2c2_tl_rsp),
 

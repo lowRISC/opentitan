@@ -102,6 +102,15 @@
       '''
     }
   ],
+  inter_signal_list: [
+    // RAM configuration
+    { struct:  "ram_1p_cfg"
+      package: "prim_ram_1p_pkg"
+      type:    "uni"
+      name:    "ram_cfg"
+      act:     "rcv"
+    }
+  ]
   param_list: [
     { name: "FifoDepth",
       desc: '''

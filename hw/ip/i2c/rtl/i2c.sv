@@ -11,8 +11,9 @@ module i2c
 #(
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
 ) (
-  input                     clk_i,
-  input                     rst_ni,
+  input                               clk_i,
+  input                               rst_ni,
+  input prim_ram_1p_pkg::ram_1p_cfg_t ram_cfg_i,
 
   // Bus Interface
   input  tlul_pkg::tl_h2d_t tl_i,
@@ -91,6 +92,8 @@ module i2c
   i2c_core i2c_core (
     .clk_i,
     .rst_ni,
+    .ram_cfg_i,
+
     .reg2hw,
     .hw2reg,
 

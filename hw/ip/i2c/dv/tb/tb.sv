@@ -82,6 +82,7 @@ module tb;
   i2c dut (
     .clk_i                   (clk        ),
     .rst_ni                  (rst_n      ),
+    .ram_cfg_i               (prim_ram_1p_pkg::RAM_1P_CFG_DEFAULT),
 
     .tl_i                    (tl_if.h2d  ),
     .tl_o                    (tl_if.d2h  ),

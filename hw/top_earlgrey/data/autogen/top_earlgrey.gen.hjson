@@ -906,6 +906,18 @@
       inter_signal_list:
       [
         {
+          name: ram_cfg
+          struct: ram_1p_cfg
+          package: prim_ram_1p_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: i2c0
+          default: ""
+          top_signame: ast_ram_1p_cfg
+          index: -1
+        }
+        {
           name: tl
           struct: tl
           package: tlul_pkg
@@ -953,6 +965,18 @@
       inter_signal_list:
       [
         {
+          name: ram_cfg
+          struct: ram_1p_cfg
+          package: prim_ram_1p_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: i2c1
+          default: ""
+          top_signame: ast_ram_1p_cfg
+          index: -1
+        }
+        {
           name: tl
           struct: tl
           package: tlul_pkg
@@ -999,6 +1023,18 @@
       param_list: []
       inter_signal_list:
       [
+        {
+          name: ram_cfg
+          struct: ram_1p_cfg
+          package: prim_ram_1p_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: i2c2
+          default: ""
+          top_signame: ast_ram_1p_cfg
+          index: -1
+        }
         {
           name: tl
           struct: tl
@@ -8192,6 +8228,9 @@
       ast.ram_1p_cfg:
       [
         otbn.ram_cfg
+        i2c0.ram_cfg
+        i2c1.ram_cfg
+        i2c2.ram_cfg
         sram_ctrl_main.cfg
         sram_ctrl_ret_aon.cfg
         rv_core_ibex.ram_cfg
@@ -15956,6 +15995,18 @@
         index: -1
       }
       {
+        name: ram_cfg
+        struct: ram_1p_cfg
+        package: prim_ram_1p_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: i2c0
+        default: ""
+        top_signame: ast_ram_1p_cfg
+        index: -1
+      }
+      {
         name: tl
         struct: tl
         package: tlul_pkg
@@ -15969,6 +16020,18 @@
         index: -1
       }
       {
+        name: ram_cfg
+        struct: ram_1p_cfg
+        package: prim_ram_1p_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: i2c1
+        default: ""
+        top_signame: ast_ram_1p_cfg
+        index: -1
+      }
+      {
         name: tl
         struct: tl
         package: tlul_pkg
@@ -15979,6 +16042,18 @@
         default: ""
         end_idx: -1
         top_signame: i2c1_tl
+        index: -1
+      }
+      {
+        name: ram_cfg
+        struct: ram_1p_cfg
+        package: prim_ram_1p_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: i2c2
+        default: ""
+        top_signame: ast_ram_1p_cfg
         index: -1
       }
       {
