@@ -136,7 +136,7 @@ virtual function void otp_write_hw_cfg0_partition(
     write32(i + ManufStateOffset, manuf_state[i*8+:32]);
   end
 
-  hw_cfg0_data = {<<32 {32'h0, manuf_state, device_id}};
+  hw_cfg0_data = {<<32 {manuf_state, device_id}};
   digest = cal_digest(HwCfg0Idx, hw_cfg0_data);
 
   write64(HwCfg0DigestOffset, digest);
