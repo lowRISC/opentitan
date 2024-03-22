@@ -9,6 +9,8 @@ filesets:
     depend:
       - lowrisc:constants:top_pkg
       - lowrisc:prim:all
+      - lowrisc:prim:ram_1p_pkg
+      - lowrisc:prim:ram_1p_adv
       - lowrisc:ip:tlul
       - lowrisc:ip:i2c_pkg
     files:

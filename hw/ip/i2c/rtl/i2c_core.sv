@@ -6,8 +6,9 @@
 
 module i2c_core import i2c_pkg::*;
 (
-  input                            clk_i,
-  input                            rst_ni,
+  input                               clk_i,
+  input                               rst_ni,
+  input prim_ram_1p_pkg::ram_1p_cfg_t ram_cfg_i,
 
   input i2c_reg_pkg::i2c_reg2hw_t  reg2hw,
   output i2c_reg_pkg::i2c_hw2reg_t hw2reg,
@@ -298,6 +299,7 @@ module i2c_core import i2c_pkg::*;
   i2c_fifos u_fifos (
     .clk_i,
     .rst_ni,
+    .ram_cfg_i,
 
     .fmt_fifo_clr_i   (i2c_fifo_fmtrst),
     .fmt_fifo_depth_o (fmt_fifo_depth),
