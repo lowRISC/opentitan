@@ -34,13 +34,11 @@ class spi_device_env_cov extends cip_base_env_cov #(.CFG_T(spi_device_env_cfg));
     }
   endgroup
 
-  covergroup bit_order_clk_cfg_cg with function sample(bit tx_order, bit rx_order,
-                                                       bit cpol, bit cpha);
-    cp_bit_order: coverpoint tx_order;
+  covergroup cfg_settings_cg with function sample(bit mailbox_en, bit tx_order, bit rx_order);
+    cp_mailbox_en: coverpoint mailbox_en;
+    cp_tx_order: coverpoint tx_order;
     cp_rx_order: coverpoint rx_order;
-    cp_cpol: coverpoint cpol;
-    cp_cpha: coverpoint cpha;
-    cr_all: cross tx_order, rx_order, cp_cpol, cp_cpha;
+    cr_order: cross tx_order, rx_order;
   endgroup
 
   // TPM related
@@ -277,7 +275,7 @@ class spi_device_env_cov extends cip_base_env_cov #(.CFG_T(spi_device_env_cfg));
       tpm_read_hw_reg_cg_wraps[ALL_TPM_HW_REG_NAMES[i]] = new(ALL_TPM_HW_REG_NAMES[i]);
     end
     all_modes_cg = new();
-    bit_order_clk_cfg_cg = new();
+    cfg_settings_cg = new();
     // tpm
     tpm_cfg_cg = new();
     tpm_transfer_size_cg = new();
