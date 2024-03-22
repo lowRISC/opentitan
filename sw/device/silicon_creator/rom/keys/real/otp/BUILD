@@ -6,13 +6,13 @@ load("//rules:const.bzl", "CONST")
 load(
     "//rules:otp.bzl",
     "otp_hex",
-    "otp_json",
+    "otp_json_rot_keys",
     "otp_partition",
 )
 
 package(default_visibility = ["//visibility:public"])
 
-otp_json(
+otp_json_rot_keys(
     name = "json_rot_keys",
     partitions = [
         otp_partition(

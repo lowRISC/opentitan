@@ -57,6 +57,16 @@ py_binary(
 )
 
 py_binary(
+    name = "gen-otp-rot-auth-json",
+    srcs = ["gen-otp-rot-auth-json.py"],
+    imports = ["."],
+    deps = [
+        requirement("hjson"),
+        requirement("pycryptodome"),
+    ],
+)
+
+py_binary(
     name = "sparse-fsm-encode",
     srcs = ["sparse-fsm-encode.py"],
     imports = ["."],
