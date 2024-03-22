@@ -286,11 +286,7 @@ impl X509 {
                         constructed: false,
                         value: 0,
                     },
-                    |builder| {
-                        builder.push_octet_string(Some("auth_key_id".into()), |builder| {
-                            builder.push_byte_array(Some("authority_key_id".into()), auth_key_id)
-                        })
-                    },
+                    |builder| builder.push_byte_array(Some("authority_key_id".into()), auth_key_id),
                 )
             })
         })
