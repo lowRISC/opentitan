@@ -99,7 +99,7 @@ module adc_ctrl_core import adc_ctrl_reg_pkg::* ; (
   assign adc_chn_val_o[1].adc_chn_value_intr_ext.de = 1'b0;
   assign adc_chn_val_o[1].adc_chn_value_intr_ext.d  = 2'b0;
 
-  //Evaluate if there is a match from chn0 and chn1 samples
+  // Evaluate if there is a match from chn0 and chn1 samples
   for (genvar k = 0 ; k < NumAdcFilter ; k++) begin : gen_filter_match
     assign chn0_match[k] = (!aon_filter_ctl[0][k].cond) ?
             (aon_filter_ctl[0][k].min_v <= chn0_val) && (chn0_val <= aon_filter_ctl[0][k].max_v) :
@@ -108,7 +108,7 @@ module adc_ctrl_core import adc_ctrl_reg_pkg::* ; (
             (aon_filter_ctl[1][k].min_v <= chn1_val) && (chn1_val <= aon_filter_ctl[1][k].max_v) :
             (aon_filter_ctl[1][k].min_v >  chn1_val) || (chn1_val >  aon_filter_ctl[1][k].max_v);
 
-    // If the filter on a paritcular channel is NOT enabled, it does not participate in the final
+    // If the filter on a particular channel is NOT enabled, it does not participate in the final
     // match decision.  This means the match value should have no impact on the final result.
     // For example, if channel 0's filter is enabled, but channel 1's is not, the match result
     // is determined solely based on whether channel 0's filter shows a match.
@@ -121,7 +121,7 @@ module adc_ctrl_core import adc_ctrl_reg_pkg::* ; (
     assign match_pulse[k] = adc_ctrl_done && match[k];
 
    // Explicitly create assertions for all the matching conditions.
-   // These assertions are unwieldly and not suitable for expansion to more channels.
+   // These assertions are unwieldy and not suitable for expansion to more channels.
    // They should be adjusted eventually.
    `ASSERT(MatchCheck00_A, !aon_filter_ctl[0][k].en & !aon_filter_ctl[1][k].en |->
            !match[k], clk_aon_i, !rst_aon_ni)

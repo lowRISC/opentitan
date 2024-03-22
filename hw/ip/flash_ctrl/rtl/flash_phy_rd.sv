@@ -595,7 +595,7 @@ module flash_phy_rd
   // muxed responses
   // When "forward" is true, there is nothing ahead in the pipeline, directly feed data
   // and error forward.
-  // When "forward" is not true, take the output from the descrmable stage, which is
+  // When "forward" is not true, take the output from the descramble stage, which is
   // dependent on the scramble hint.
   assign muxed_data = forward      ? data_int :
                       hint_descram ? {fifo_data[PlainDataWidth-1 -: PlainIntgWidth],

@@ -146,7 +146,7 @@ class flash_otf_item extends uvm_object;
           `uvm_info("icv_debug", $sformatf("before:%4b after:%4b",
                     data_with_icv[67:64], ~data_with_icv[67:64]), UVM_DEBUG)
           data_with_icv[67:64] = ~data_with_icv[67:64];
-          // if icv is all zero, use different patter for error
+          // if icv is all zero, use different pattern for error
           if (data_with_icv[67:64] == 'h0) data_with_icv[67:64] = 4'b1100;
         end
       end else begin

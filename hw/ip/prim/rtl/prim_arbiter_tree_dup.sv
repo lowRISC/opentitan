@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// This is a wrapper module that instantiates two prim_aribter_tree modules.
+// This is a wrapper module that instantiates two prim_arbiter_tree modules.
 // The reason for two is similar to modules such as prim_count/prim_lfsr where
 // we use spatial redundancy to ensure the arbitration results are not altered.
 //
