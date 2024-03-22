@@ -36,17 +36,33 @@ module tb;
   wire intr_frame;
   wire intr_av_setup_empty;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
+
+  // Physical USB signals.
   wire usb_vbus;
   wire usb_p;
   wire usb_n;
+
+  // Pull ups are external to the DUT.
+  wire usb_dp_pullup_en;
+  wire usb_dn_pullup_en;
+  // Driver enables from the DUT.
+  wire cio_usb_dp_en;
+  wire cio_usb_dn_en;
+  // Driven outputs from the DUT.
+  wire cio_usb_dp;
+  wire cio_usb_dn;
 
   // interfaces
   clk_rst_if aon_clk_rst_if(.clk(aon_clk), .rst_n(aon_rst_n));
   clk_rst_if usb_clk_rst_if(.clk(usb_clk), .rst_n(usb_rst_n));
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(interrupts);
   tl_if tl_if(.clk(usb_clk), .rst_n(usb_rst_n));
+  // This interface models a physical USB connection to a host/USBDPI model.
   usb20_if usb20_if(.clk_i(usb_clk), .rst_ni(usb_rst_n), .usb_vbus(usb_vbus),
   .usb_p(usb_p), .usb_n(usb_n));
+  // This interface is for UVM-based block level DV and has additional connections
+  // that may be used to infer the PHY configuration of the DUT and thus exercise all
+  // of its configurable input/output modes.
   usb20_block_if usb20_block_if(.clk_i(usb_clk), .rst_ni(usb_rst_n),
                                 .usb_vbus(usb_vbus), .usb_p(usb_p), .usb_n(usb_n));
   `DV_ALERT_IF_CONNECT(usb_clk, usb_rst_n)
@@ -65,18 +81,18 @@ module tb;
     .alert_tx_o           (alert_tx   ),
 
     // USB Interface
-    .cio_usb_dp_i           (usb20_block_if.usb_p        ),
-    .cio_usb_dn_i           (usb20_block_if.usb_n        ),
+    .cio_usb_dp_i           (usb_p),
+    .cio_usb_dn_i           (usb_n),
     .usb_rx_d_i             (usb20_block_if.usb_rx_d_i   ),
-    .cio_usb_dp_o           (usb20_block_if.usb_dp_o     ),
-    .cio_usb_dp_en_o        (usb20_block_if.usb_dp_en_o  ),
-    .cio_usb_dn_o           (usb20_block_if.usb_dn_o     ),
-    .cio_usb_dn_en_o        (usb20_block_if.usb_dn_en_o  ),
+    .cio_usb_dp_o           (cio_usb_dp                  ),
+    .cio_usb_dp_en_o        (cio_usb_dp_en               ),
+    .cio_usb_dn_o           (cio_usb_dn                  ),
+    .cio_usb_dn_en_o        (cio_usb_dn_en               ),
     .usb_tx_d_o             (usb20_block_if.usb_tx_d_o   ),
     .usb_tx_se0_o           (usb20_block_if.usb_tx_se0_o ),
-    .cio_sense_i            (usb20_block_if.usb_vbus           ),
-    .usb_dp_pullup_o        (usb20_block_if.usb_dp_pullup_o    ),
-    .usb_dn_pullup_o        (usb20_block_if.usb_dn_pullup_o    ),
+    .cio_sense_i            (usb_vbus),
+    .usb_dp_pullup_o        (usb_dp_pullup_en),
+    .usb_dn_pullup_o        (usb_dn_pullup_en),
     .usb_rx_enable_o        (usb20_block_if.usb_rx_enable_o    ),
     .usb_tx_use_d_se0_o     (usb20_block_if.usb_tx_use_d_se0_o ),
     // Direct pinmux aon detect connections
@@ -116,9 +132,42 @@ module tb;
     .intr_av_setup_empty_o  (intr_av_setup_empty  )
   );
 
+  // Connections specific to the block-level DV interface.
+  assign usb20_block_if.usb_dp_pullup_o = usb_dp_pullup_en;
+  assign usb20_block_if.usb_dn_pullup_o = usb_dn_pullup_en;
+  assign usb20_block_if.usb_dp_en_o     = cio_usb_dp_en;
+  assign usb20_block_if.usb_dn_en_o     = cio_usb_dn_en;
+  assign usb20_block_if.usb_dp_o        = cio_usb_dp;
+  assign usb20_block_if.usb_dn_o        = cio_usb_dn;
+
   Clock_Divider clk_div (
     .clk     (usb_clk           ),
     .clk_out (usb20_block_if.usb_clk  )
+  );
+
+  // Drivers from the USB device
+  assign (strong0, strong1) usb_p = cio_usb_dp_en ? cio_usb_dp : 1'bZ;
+  assign (strong0, strong1) usb_n = cio_usb_dn_en ? cio_usb_dn : 1'bZ;
+  // Implement pull ups for the physical USB connection to USBDPI model.
+  assign (weak0, pull1) usb_p = (usb20_if.connected & usb_dp_pullup_en) ? 1'b1 : 1'bz;
+  assign (weak0, pull1) usb_n = (usb20_if.connected & usb_dn_pullup_en) ? 1'b1 : 1'bz;
+
+  // Instantiate & connect the USB DPI model for additional block-level testing and coverage.
+  usb20_usbdpi u_usb20_usbdpi (
+    .clk_i            (usb_clk),
+    .rst_ni           (usb_rst_n),
+
+    .enable           (usb20_if.connected),
+
+    // Outputs from the DPI module
+    .usb_sense_p2d_o  (usb20_if.usb_sense_p2d),
+    .usb_dp_en_p2d_o  (usb20_if.usb_dp_en_p2d),
+    .usb_dn_en_p2d_o  (usb20_if.usb_dn_en_p2d),
+    .usb_dp_p2d_o     (usb20_if.usb_dp_p2d),
+    .usb_dn_p2d_o     (usb20_if.usb_dn_p2d),
+
+    .usb_p            (usb_p),
+    .usb_n            (usb_n)
   );
 
   // Hook up the interrupt pins to the intr_if
