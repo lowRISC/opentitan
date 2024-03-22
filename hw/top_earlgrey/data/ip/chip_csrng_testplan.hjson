@@ -53,6 +53,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_sw_csrng_fuse_en_sw_app_read_test"]
+      bazel: []
     }
     {
       name: chip_sw_csrng_lc_hw_debug_en
@@ -83,6 +84,7 @@
       si_stage: SV3
       lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END"]
       tests: ["chip_sw_csrng_lc_hw_debug_en_test"]
+      bazel: []
     }
     {
       name: chip_sw_csrng_known_answer_tests

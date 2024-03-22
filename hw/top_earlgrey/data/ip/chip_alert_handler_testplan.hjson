@@ -43,6 +43,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_sw_alert_handler_escalation"]
+      bazel: []
       otp_mutate: true
       host_support: true
     }
@@ -67,6 +68,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: []
+      bazel: []
       otp_mutate: false
     }
     {
@@ -85,6 +87,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: []
+      bazel: []
     }
     {
       name: chip_sw_all_escalation_resets
@@ -109,6 +112,7 @@
       stage: V2
       si_stage: NA
       tests: ["chip_sw_all_escalation_resets"]
+      bazel: []
     }
     {
       name: chip_sw_alert_handler_irqs
@@ -139,6 +143,7 @@
       stage: V2
       si_stage: NA
       tests: ["chip_sw_alert_handler_entropy"]
+      bazel: []
     }
     {
       name: chip_sw_alert_handler_crashdump
@@ -190,6 +195,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_sw_alert_handler_lpg_sleep_mode_alerts"]
+      bazel: []
     }
     {
       name: chip_sw_alert_handler_lpg_sleep_mode_pings

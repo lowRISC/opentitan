@@ -41,6 +41,7 @@
       stage: V2
       si_stage: NA
       tests: ["chip_sw_rom_ctrl_integrity_check"]
+      bazel: []
     }
     {
       name: chip_sw_rom_ctrl_kmac_error
@@ -59,6 +60,7 @@
       stage: V3
       si_stage: NA
       tests: []
+      bazel: []
     }
     {
       name: chip_sw_rom_ctrl_digests
@@ -77,6 +79,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: []
+      bazel: []
     }
   ]
 }

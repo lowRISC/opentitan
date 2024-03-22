@@ -29,6 +29,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_sw_adc_ctrl_sleep_debug_cable_wakeup"]
+      bazel: []
     }
     {
       name: chip_sw_adc_ctrl_sleep_debug_cable_wakeup
@@ -54,6 +55,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_sw_adc_ctrl_sleep_debug_cable_wakeup"]
+      bazel: []
     }
     {
       name: chip_sw_adc_ctrl_normal
@@ -63,6 +65,7 @@
       si_stage: SV2
       lc_states: ["PROD"]
       tests: []
+      bazel: []
     }
     {
       name: chip_sw_adc_ctrl_oneshot
@@ -72,6 +75,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: []
+      bazel: []
     }
   ]
 }

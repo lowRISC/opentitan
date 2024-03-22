@@ -81,6 +81,7 @@
         "SPI_DEVICE.MODE.PASSTHROUGH.CMD_FILTER",
       ]
       tests: []
+      bazel: []
     }
     {
       name: chip_sw_spi_device_pass_through_collision

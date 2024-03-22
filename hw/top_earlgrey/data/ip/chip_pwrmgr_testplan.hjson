@@ -270,6 +270,7 @@
       stage: V2
       si_stage: NA
       tests: ["chip_sw_pwrmgr_main_power_glitch_reset"]
+      bazel: []
     }
     {
       name: chip_sw_pwrmgr_random_sleep_power_glitch_reset
@@ -292,6 +293,7 @@
       stage: V2
       si_stage: NA
       tests: ["chip_sw_pwrmgr_random_sleep_power_glitch_reset"]
+      bazel: []
     }
     {
       name: chip_sw_pwrmgr_deep_sleep_power_glitch_reset
@@ -311,6 +313,7 @@
       stage: V2
       si_stage: NA
       tests: ["chip_sw_pwrmgr_deep_sleep_power_glitch_reset"]
+      bazel: []
     }
     {
       name: chip_sw_pwrmgr_sleep_power_glitch_reset
@@ -325,6 +328,7 @@
       stage: V2
       si_stage: NA
       tests: ["chip_sw_pwrmgr_sleep_power_glitch_reset"]
+      bazel: []
     }
     {
       name: chip_sw_pwrmgr_random_sleep_all_reset_reqs
@@ -389,6 +393,7 @@
       stage: V2
       si_stage: NA
       tests: ["chip_sw_pwrmgr_b2b_sleep_reset_req"]
+      bazel: []
     }
     {
       name: chip_sw_pwrmgr_sleep_disabled
@@ -464,6 +469,7 @@
       si_stage: NA
       features: ["PWRMGR.RESET.ESCALATION_REQUEST"]
       tests: ["chip_sw_all_escalation_resets"]
+      bazel: []
     }
   ]
 }
