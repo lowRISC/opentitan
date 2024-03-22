@@ -230,7 +230,7 @@
         { bits: "29",
           name: "TXFULL",
           desc: '''When high, indicates that the transmit data fifo is full.
-                   Any further writes to !!RXDATA will create an error interrupt.
+                   Any further writes to !!TXDATA will create an error interrupt.
                 '''
           resval: "0x0"
         },

@@ -154,7 +154,7 @@ Status register
 |:------:|:------:|:-------:|:----------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 |   31   |   ro   |   0x0   | READY     | When high, indicates the SPI host is ready to receive commands. Writing to COMMAND when READY is low is an error, and will trigger an interrupt.                          |
 |   30   |   ro   |   0x0   | ACTIVE    | When high, indicates the SPI host is processing a previously issued command.                                                                                              |
-|   29   |   ro   |   0x0   | TXFULL    | When high, indicates that the transmit data fifo is full. Any further writes to [`RXDATA`](#rxdata) will create an error interrupt.                                       |
+|   29   |   ro   |   0x0   | TXFULL    | When high, indicates that the transmit data fifo is full. Any further writes to [`TXDATA`](#txdata) will create an error interrupt.                                       |
 |   28   |   ro   |   0x0   | TXEMPTY   | When high, indicates that the transmit data fifo is empty.                                                                                                                |
 |   27   |   ro   |   0x0   | TXSTALL   | If high, signifies that an ongoing transaction has stalled due to lack of data in the TX FIFO                                                                             |
 |   26   |   ro   |   0x0   | TXWM      | If high, the amount of data in the TX FIFO has fallen below the level of [`CONTROL.TX_WATERMARK`](#control) words (32b each).                                             |
