@@ -92,10 +92,10 @@ def otp_partition(name, **kwargs):
     partition.update(kwargs)
     return json.encode(partition)
 
-def _otp_json_impl(ctx):
+def _otp_json_builder(ctx, seed = None):
     otp = {}
-    if ctx.attr.seed != "":
-        otp["seed"] = ctx.attr.seed
+    if seed:
+        otp["seed"] = seed
     otp["partitions"] = [json.decode(p) for p in ctx.attr.partitions]
 
     # For every partition with an "items" dictionary, expand the dictionary of
@@ -112,7 +112,10 @@ def _otp_json_impl(ctx):
 
     file = ctx.actions.declare_file("{}.json".format(ctx.attr.name))
     ctx.actions.write(file, json.encode_indent(otp))
-    return [DefaultInfo(files = depset([file]))]
+    return file
+
+def _otp_json_impl(ctx):
+    return [DefaultInfo(files = depset([_otp_json_builder(ctx, ctx.attr.seed)]))]
 
 otp_json = rule(
     implementation = _otp_json_impl,
@@ -122,6 +125,30 @@ otp_json = rule(
         ),
         "partitions": attr.string_list(doc = "A list of serialized partitions from otp_partition."),
     },
+)
+
+def _otp_json_rot_keys_impl(ctx):
+    intput_file = _otp_json_builder(ctx, seed = None)
+    output_file = ctx.actions.declare_file("{}.with_digest.json".format(ctx.attr.name))
+    args = ctx.actions.args()
+    args.add("--input", intput_file)
+    args.add("--output", output_file)
+
+    tc = ctx.toolchains[LOCALTOOLS_TOOLCHAIN]
+    ctx.actions.run(
+        outputs = [output_file],
+        inputs = [intput_file],
+        arguments = [args],
+        executable = tc.tools.gen_otp_rot_auth_json,
+    )
+    return [DefaultInfo(files = depset([output_file]))]
+
+otp_json_rot_keys = rule(
+    implementation = _otp_json_rot_keys_impl,
+    attrs = {
+        "partitions": attr.string_list(doc = "A list of serialized partitions from otp_partition."),
+    },
+    toolchains = [LOCALTOOLS_TOOLCHAIN],
 )
 
 def _otp_alert_digest_impl(ctx):
