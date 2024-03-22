@@ -9,10 +9,10 @@
 module prim_fifo_sync_cnt #(
   // Depth of the FIFO, i.e., maximum number of entries the FIFO can contain
   parameter int Depth = 4,
-  // Width of the read and write pointers for the FIFO
-  parameter int Width = 16,
   // Whether to instantiate hardened counters
   parameter bit Secure = 1'b0,
+  // Width of the read and write pointers for the FIFO
+  localparam int unsigned PtrW = prim_util_pkg::vbits(Depth),
   // Width of the 'current depth' output
   localparam int unsigned DepthW = prim_util_pkg::vbits(Depth+1)
 ) (
@@ -21,8 +21,9 @@ module prim_fifo_sync_cnt #(
   input clr_i,
   input incr_wptr_i,
   input incr_rptr_i,
-  output logic [Width-1:0] wptr_o,
-  output logic [Width-1:0] rptr_o,
+  // Write and read pointers.  Value range: [0, Depth-1]
+  output logic [PtrW-1:0] wptr_o,
+  output logic [PtrW-1:0] rptr_o,
   output logic full_o,
   output logic empty_o,
   // Current depth of the FIFO, i.e., number of entries the FIFO currently contains.
@@ -31,65 +32,76 @@ module prim_fifo_sync_cnt #(
   output logic err_o
 );
 
-  logic wptr_wrap;
-  logic [Width-1:0] wptr_wrap_cnt;
-  logic rptr_wrap;
-  logic [Width-1:0] rptr_wrap_cnt;
+  // Internal 'wrap' pointers that have an extra leading bit to account for wraparounds.
+  localparam int unsigned WrapPtrW = PtrW + 1;
+  logic [WrapPtrW-1:0] wptr_wrap_cnt_q, wptr_wrap_set_cnt,
+                       rptr_wrap_cnt_q, rptr_wrap_set_cnt;
 
-  assign wptr_wrap = incr_wptr_i & (wptr_o[Width-2:0] == unsigned'((Width-1)'(Depth-1)));
-  assign rptr_wrap = incr_rptr_i & (rptr_o[Width-2:0] == unsigned'((Width-1)'(Depth-1)));
+  // Derive real read and write pointers by truncating the internal 'wrap' pointers.
+  assign wptr_o = wptr_wrap_cnt_q[PtrW-1:0];
+  assign rptr_o = rptr_wrap_cnt_q[PtrW-1:0];
 
-  assign wptr_wrap_cnt = {~wptr_o[Width-1], {(Width-1){1'b0}}};
-  assign rptr_wrap_cnt = {~rptr_o[Width-1], {(Width-1){1'b0}}};
+  // Extract the MSB of the 'wrap' pointers.
+  logic wptr_wrap_msb, rptr_wrap_msb;
+  assign wptr_wrap_msb = wptr_wrap_cnt_q[WrapPtrW-1];
+  assign rptr_wrap_msb = rptr_wrap_cnt_q[WrapPtrW-1];
 
-  logic wptr_msb, rptr_msb;
-  assign wptr_msb = wptr_o[Width-1];
-  assign rptr_msb = rptr_o[Width-1];
+  // Wrap pointers when they have reached the maximum value and are about to get incremented.
+  logic wptr_wrap_set, rptr_wrap_set;
+  assign wptr_wrap_set = incr_wptr_i & (wptr_o == unsigned'(PtrW'(Depth-1)));
+  assign rptr_wrap_set = incr_rptr_i & (rptr_o == unsigned'(PtrW'(Depth-1)));
 
-  logic [Width-2:0] wptr_value, rptr_value;
-  assign wptr_value = wptr_o[Width-2:0];
-  assign rptr_value = rptr_o[Width-2:0];
+  // When wrapping, invert the MSB and reset all lower bits to zero.
+  assign wptr_wrap_set_cnt = {~wptr_wrap_msb, {(WrapPtrW-1){1'b0}}};
+  assign rptr_wrap_set_cnt = {~rptr_wrap_msb, {(WrapPtrW-1){1'b0}}};
 
-  assign full_o = wptr_o == (rptr_o ^ {1'b1, {(Width-1){1'b0}}});
-  assign empty_o = wptr_o == rptr_o;
+  // Full when both 'wrap' counters have a different MSB but all lower bits are equal.
+  assign full_o = wptr_wrap_cnt_q == (rptr_wrap_cnt_q ^ {1'b1, {(WrapPtrW-1){1'b0}}});
+  // Empty when both 'wrap' counters are equal in all bits including the MSB.
+  assign empty_o = wptr_wrap_cnt_q == rptr_wrap_cnt_q;
 
-  assign depth_o = full_o               ? DepthW'(Depth) :
-                   wptr_msb == rptr_msb ? DepthW'(wptr_value) - DepthW'(rptr_value) :
-                   DepthW'(Depth) - DepthW'(rptr_value) + DepthW'(wptr_value);
+  // The current depth is equal to:
+  // - when full: the maximum depth;
+  // - when both or none of the 'wrap' pointers are wrapped: the difference of the real pointers;
+  // - when only one of the two 'wrap' pointers is wrapped: the maximum depth minus the difference
+  //   of the real pointers.
+  assign depth_o = full_o                         ? DepthW'(Depth) :
+                   wptr_wrap_msb == rptr_wrap_msb ? DepthW'(wptr_o) - DepthW'(rptr_o) :
+                   DepthW'(Depth) - DepthW'(rptr_o) + DepthW'(wptr_o);
 
   if (Secure) begin : gen_secure_ptrs
     logic wptr_err;
     prim_count #(
-      .Width(Width)
+      .Width(WrapPtrW)
     ) u_wptr (
       .clk_i,
       .rst_ni,
       .clr_i,
-      .set_i(wptr_wrap),
-      .set_cnt_i(wptr_wrap_cnt),
+      .set_i(wptr_wrap_set),
+      .set_cnt_i(wptr_wrap_set_cnt),
       .incr_en_i(incr_wptr_i),
       .decr_en_i(1'b0),
-      .step_i(Width'(1'b1)),
+      .step_i(WrapPtrW'(1'b1)),
       .commit_i(1'b1),
-      .cnt_o(wptr_o),
+      .cnt_o(wptr_wrap_cnt_q),
       .cnt_after_commit_o(),
       .err_o(wptr_err)
     );
 
     logic rptr_err;
     prim_count #(
-      .Width(Width)
+      .Width(WrapPtrW)
     ) u_rptr (
       .clk_i,
       .rst_ni,
       .clr_i,
-      .set_i(rptr_wrap),
-      .set_cnt_i(rptr_wrap_cnt),
+      .set_i(rptr_wrap_set),
+      .set_cnt_i(rptr_wrap_set_cnt),
       .incr_en_i(incr_rptr_i),
       .decr_en_i(1'b0),
-      .step_i(Width'(1'b1)),
+      .step_i(WrapPtrW'(1'b1)),
       .commit_i(1'b1),
-      .cnt_o(rptr_o),
+      .cnt_o(rptr_wrap_cnt_q),
       .cnt_after_commit_o(),
       .err_o(rptr_err)
     );
@@ -99,25 +111,25 @@ module prim_fifo_sync_cnt #(
   end else begin : gen_normal_ptrs
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) begin
-        wptr_o <= {(Width){1'b0}};
+        wptr_wrap_cnt_q <= {WrapPtrW{1'b0}};
       end else if (clr_i) begin
-        wptr_o <= {(Width){1'b0}};
-      end else if (wptr_wrap) begin
-        wptr_o <= wptr_wrap_cnt;
+        wptr_wrap_cnt_q <= {WrapPtrW{1'b0}};
+      end else if (wptr_wrap_set) begin
+        wptr_wrap_cnt_q <= wptr_wrap_set_cnt;
       end else if (incr_wptr_i) begin
-        wptr_o <= wptr_o + {{(Width-1){1'b0}},1'b1};
+        wptr_wrap_cnt_q <= wptr_wrap_cnt_q + {{(WrapPtrW-1){1'b0}}, 1'b1};
       end
     end
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) begin
-        rptr_o <= {(Width){1'b0}};
+        rptr_wrap_cnt_q <= {WrapPtrW{1'b0}};
       end else if (clr_i) begin
-        rptr_o <= {(Width){1'b0}};
-      end else if (rptr_wrap) begin
-         rptr_o <= rptr_wrap_cnt;
+        rptr_wrap_cnt_q <= {WrapPtrW{1'b0}};
+      end else if (rptr_wrap_set) begin
+        rptr_wrap_cnt_q <= rptr_wrap_set_cnt;
       end else if (incr_rptr_i) begin
-         rptr_o <= rptr_o + {{(Width-1){1'b0}},1'b1};
+        rptr_wrap_cnt_q <= rptr_wrap_cnt_q + {{(WrapPtrW-1){1'b0}}, 1'b1};
       end
     end
 
