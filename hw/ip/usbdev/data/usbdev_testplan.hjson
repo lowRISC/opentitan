@@ -1113,4 +1113,82 @@
       tests: ["usbdev_fifo_rst"]
     }
   ]
+
+  covergroups: [
+    {
+      name: pids_cg
+      desc: '''
+        Observe all PIDs about which we care; a number of the available PIDs are ignored by the USB
+        device because they related only to High Speed operation and/or hubs.
+      '''
+    }
+    {
+      name: framenum_rx_cg
+      desc: '''
+        Observe all significant/extreme frame numbers being reported via CSRs; this just ensures
+        that all bits have been decoded and presented; the frame number has no significance to
+        USBDEV but it's important to software.
+      '''
+    }
+    {
+      name: crc16_cg
+      desc: '''
+        CRC16 values on packets in each direction, because CRC16 is subject to bit stuffing.
+      '''
+    }
+    {
+      name: crc5_cg
+      desc: '''
+        Check some potentially problematic cases for bit stuffing with CRC5 in Token packets.
+      '''
+    }
+    {
+      name: address_cg
+      desc: '''
+        Check that all Device Address bits are decoded and usable and that those problematic
+        combinations with endpoint values that demand bit stuffing within the token packet have
+        been observed.
+      '''
+    }
+    {
+      name: ep_out_cfg_cg
+      desc: '''
+        Receipt of SETUP, OUT and PRE packets with different OUT endpoint configurations
+      '''
+    }
+    {
+      name: ep_in_cfg_cg
+      desc: '''
+        Receipt of IN and PRE packets with different IN endpoint configurations
+      '''
+    }
+    {
+      name: fifo_lvl_cg
+      desc: '''
+        Received SETUP/OUT packets with FIFO levels of interest
+      '''
+    }
+    {
+      name: data_pkt_cg
+      desc: '''
+        Length of DATA packets in each direction
+      '''
+    }
+    {
+      name: data_tog_endp_cg
+      desc: '''
+        Both DATA0 and DATA1 for each endpoint, and in each direction (Data Toggles), as well as
+        both ACK and NAK (rollback and retry transaction in Packet Engines).
+      '''
+    }
+    {
+      name: pid_type_endp_cg
+      desc: '''
+        All of SETUP, IN, and OUT for each endpoint
+      '''
+    }
+
+
+  ]
+
 }
