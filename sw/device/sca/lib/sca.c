@@ -8,6 +8,7 @@
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/macros.h"
+#include "sw/device/lib/crypto/drivers/otbn.h"
 #include "sw/device/lib/dif/dif_clkmgr.h"
 #include "sw/device/lib/dif/dif_entropy_src.h"
 #include "sw/device/lib/dif/dif_gpio.h"
@@ -310,7 +311,7 @@ void sca_set_trigger_low(void) {
 }
 
 void sca_call_and_sleep(sca_callee callee, uint32_t sleep_cycles,
-                        bool sw_trigger) {
+                        bool sw_trigger, bool otbn) {
   // Disable the IO_DIV4_PERI clock to reduce noise during the actual capture.
   // This also disables the UART(s) and GPIO modules required for
   // communication with the scope. Therefore, it has to be re-enabled after
@@ -336,6 +337,10 @@ void sca_call_and_sleep(sca_callee callee, uint32_t sleep_cycles,
   callee();
 
   wait_for_interrupt();
+
+  if (otbn) {
+    otbn_busy_wait_for_done();
+  }
 
   if (sw_trigger) {
     sca_set_trigger_low();
