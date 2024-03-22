@@ -550,6 +550,7 @@
 - [Committers](./doc/project_governance/committers.md)
 - [RFC Process](./doc/project_governance/rfc_process.md)
 - [Generalized Priority Definitions](./doc/project_governance/priority_definitions.md)
+- [Generalized Project Milestone Definitions](./doc/project_governance/project_milestone_definitions.md)
 - [OpenTitan Technical Committee](./doc/project_governance/technical_committee.md)
 - [Hardware Development Stages](./doc/project_governance/development_stages.md)
 - [Signoff Checklist](./doc/project_governance/checklist/README.md)
