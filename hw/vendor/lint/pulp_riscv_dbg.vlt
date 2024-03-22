@@ -53,3 +53,17 @@ lint_off -rule UNUSED -file "*/src/dmi_jtag.sv" -match "Bits of signal are not u
 // In debug_rom.sv, the addr_i input is a full 64-bit address. We only
 // use bits 7:3; waive the others.
 lint_off -rule UNUSED -file "*/debug_rom/debug_rom.sv" -match "Bits of signal are not used: 'addr_i'[63:8,2:0]"
+
+// Here dm::HaltAddress is a 64-bit localparam, so the expression that calculates RomEndAddr
+// looks like a 64-bit number. Ignore the mismatch: the value of h8ff will definitely fit in 12
+// bits (expanding the DbgAddressBits localparam parameter). Similarly for RomBaseAddr.
+lint_off -rule WIDTH -file "*/src/dm_mem.sv" -match "*'Rom*Addr' expects 12 bits*64 bits."
+
+// Waive a warning where we're subtracting an undecorated integer from a bit-vector with fixed
+// width.
+lint_off -rule WIDTH -file "*/src/dm_mem.sv" -match "*SUB expects 32 bits*'DataCount' generates 4 bits."
+
+// Subtraction between two part selects. Oddly, these look like they are actually the same size so
+// this might actually be Verilator doing something a bit strange.
+lint_off -rule WIDTH -file "*/src/dm_mem.sv" -match "*SUB expects 32*but*SEL*10 bits."
+
