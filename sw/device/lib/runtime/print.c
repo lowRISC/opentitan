@@ -39,6 +39,7 @@ enum {
   kHexLeLow = 'y',
   kHexLeHigh = 'Y',
   kStatusResult = 'r',
+  kFourCC = 'C',
 };
 
 // NOTE: all of the lengths of the strings below are given so that the NUL
@@ -386,6 +387,20 @@ static void process_specifier(buffer_sink_t out, format_specifier_t spec,
       }
       char value = (char)va_arg(*args, uint32_t);
       *bytes_written += out.sink(out.data, &value, 1);
+      break;
+    }
+    case kFourCC: {
+      uint32_t value = va_arg(*args, uint32_t);
+      for (size_t i = 0; i < sizeof(uint32_t); ++i, value >>= 8) {
+        uint8_t ch = (uint8_t)value;
+        if (ch >= 32 && ch < 127) {
+          *bytes_written += out.sink(out.data, (const char *)&ch, 1);
+        } else {
+          *bytes_written += out.sink(out.data, "\\x", 2);
+          *bytes_written += out.sink(out.data, &kDigitsLow[ch >> 4], 1);
+          *bytes_written += out.sink(out.data, &kDigitsLow[ch & 15], 1);
+        }
+      }
       break;
     }
     case kString: {
