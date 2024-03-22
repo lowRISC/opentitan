@@ -7,11 +7,13 @@ use clap::{Args, Subcommand};
 use opentitanlib::io::uart::UartParams;
 use serde_annotate::Annotate;
 use std::any::Any;
+use std::fs::File;
 use std::path::PathBuf;
 
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::chip::boot_svc::{BootDataSlot, NextBootBl0};
+use opentitanlib::chip::helper::OwnershipUnlockParams;
 use opentitanlib::rescue::serial::RescueSerial;
 
 #[derive(Debug, serde::Serialize, Annotate)]
@@ -142,11 +144,40 @@ impl CommandDispatch for SetPrimaryBl0Slot {
     }
 }
 
+#[derive(Debug, Args)]
+pub struct OwnershipUnlock {
+    #[command(flatten)]
+    params: UartParams,
+    #[command(flatten)]
+    unlock: OwnershipUnlockParams,
+    #[arg(short, long, help = "A file containing a binary unlock request")]
+    input: Option<PathBuf>,
+}
+
+impl CommandDispatch for OwnershipUnlock {
+    fn run(
+        &self,
+        _context: &dyn Any,
+        transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn Annotate>>> {
+        let unlock = self
+            .unlock
+            .apply_to(self.input.as_ref().map(File::open).transpose()?.as_mut())?;
+
+        let uart = self.params.create(transport)?;
+        let rescue = RescueSerial::new(uart);
+        rescue.enter(transport)?;
+        rescue.ownership_unlock(unlock)?;
+        Ok(None)
+    }
+}
+
 #[derive(Debug, Subcommand, CommandDispatch)]
 pub enum BootSvc {
     Get(GetBootSvc),
     SetNextBl0Slot(SetNextBl0Slot),
     SetPrimaryBl0Slot(SetPrimaryBl0Slot),
+    OwnershipUnlock(OwnershipUnlock),
 }
 
 #[derive(Debug, Subcommand, CommandDispatch)]

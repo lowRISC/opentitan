@@ -5,6 +5,8 @@
   name: "cryptoc",
   target_dir: "cryptoc",
 
+  patch_dir: "patches/cryptoc",
+
   upstream: {
     url: "https://chromium.googlesource.com/chromiumos/third_party/cryptoc/",
     rev: "master",
