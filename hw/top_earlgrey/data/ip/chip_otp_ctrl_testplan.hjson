@@ -19,6 +19,7 @@
       stage: V2
       si_stage: NA
       tests: ["chip_sw_lc_ctrl_transition"]
+      bazel: []
     }
     {
       name: chip_sw_otp_ctrl_keys
@@ -48,6 +49,7 @@
               "chip_sw_keymgr_key_derivation",
               "chip_sw_otbn_mem_scramble",
               "chip_sw_rv_core_ibex_icache_invalidate"]
+      bazel: []
     }
     {
       name: chip_sw_otp_ctrl_entropy
@@ -68,6 +70,7 @@
               "chip_sw_keymgr_key_derivation",
               "chip_sw_otbn_mem_scramble",
               "chip_sw_rv_core_ibex_icache_invalidate"]
+      bazel: []
     }
     {
       name: chip_sw_otp_ctrl_program
@@ -90,6 +93,7 @@
       si_stage: SV1
       lc_states: ["PROD"]
       tests: ["chip_sw_lc_ctrl_transition"]
+      bazel: []
     }
     {
       name: chip_sw_otp_ctrl_program_error
@@ -111,6 +115,7 @@
       stage: V2
       si_stage: NA
       tests: ["chip_sw_lc_ctrl_program_error"]
+      bazel: []
     }
     {
       name: chip_sw_otp_ctrl_hw_cfg0
@@ -164,6 +169,7 @@
         "chip_sw_otp_ctrl_lc_signals_prod",
         "chip_sw_otp_ctrl_lc_signals_rma",
         ]
+      bazel: []
     }
     {
       name: chip_sw_otp_prim_tl_access
@@ -180,6 +186,7 @@
       si_stage: SV3
       lc_states: ["TEST_UNLOCKED", "RMA"]
       tests: ["chip_prim_tl_access"]
+      bazel: []
     }
     {
       name: chip_sw_otp_ctrl_vendor_test_csr_access
@@ -203,6 +210,7 @@
       stage: V3
       si_stage: NA
       tests: ["chip_sw_otp_ctrl_vendor_test_csr_access"]
+      bazel: []
     }
     {
       name: chip_sw_otp_ctrl_escalation
@@ -220,6 +228,7 @@
       stage: V3
       si_stage: NA
       tests: ["chip_sw_otp_ctrl_escalation"]
+      bazel: []
     }
     {
       name: otp_ctrl_calibration
@@ -232,6 +241,7 @@
       si_stage: SV1
       lc_states: ["TEST_UNLOCKED"]
       tests: []
+      bazel: []
     }
     {
       name: otp_ctrl_partition_access_locked
@@ -248,6 +258,7 @@
       stage: V3
       si_stage: NA
       tests: []
+      bazel: []
     }
     {
       name: otp_ctrl_check_timeout
@@ -263,6 +274,7 @@
       stage: V3
       si_stage: NA
       tests: []
+      bazel: []
     }
   ]
 }
