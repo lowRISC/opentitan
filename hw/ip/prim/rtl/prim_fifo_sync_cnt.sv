@@ -2,13 +2,16 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Generic synchronous fifo for use in a variety of devices.
+// Read and write pointer logic for synchronous FIFOs
 
 `include "prim_assert.sv"
 
 module prim_fifo_sync_cnt #(
+  // Depth of the FIFO, i.e., maximum number of entries the FIFO can contain
   parameter int Depth = 4,
+  // Width of the read and write pointers for the FIFO
   parameter int Width = 16,
+  // Whether to instantiate hardened counters
   parameter bit Secure = 1'b0
 ) (
   input clk_i,
