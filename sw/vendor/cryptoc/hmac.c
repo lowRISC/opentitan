@@ -43,11 +43,6 @@ static void HMAC_init(LITE_HMAC_CTX* ctx, const void* key, unsigned int len) {
   }
 }
 
-void HMAC_MD5_init(LITE_HMAC_CTX* ctx, const void* key, unsigned int len) {
-  MD5_init(&ctx->hash);
-  HMAC_init(ctx, key, len);
-}
-
 void HMAC_SHA_init(LITE_HMAC_CTX* ctx, const void* key, unsigned int len) {
   SHA_init(&ctx->hash);
   HMAC_init(ctx, key, len);
