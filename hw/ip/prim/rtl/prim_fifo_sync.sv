@@ -74,29 +74,12 @@ module prim_fifo_sync #(
       end
     end
 
-    // create the write and read pointers
-    logic  full, empty;
-    logic  wptr_msb;
-    logic  rptr_msb;
-    logic  [PTRV_W-1:0] wptr_value;
-    logic  [PTRV_W-1:0] rptr_value;
-
-    assign wptr_msb = fifo_wptr[PTR_WIDTH-1];
-    assign rptr_msb = fifo_rptr[PTR_WIDTH-1];
-    assign wptr_value = fifo_wptr[0+:PTRV_W];
-    assign rptr_value = fifo_rptr[0+:PTRV_W];
-    assign depth_o = (full)                 ? DepthW'(Depth) :
-                     (wptr_msb == rptr_msb) ? DepthW'(wptr_value) - DepthW'(rptr_value) :
-                     (DepthW'(Depth) - DepthW'(rptr_value) + DepthW'(wptr_value)) ;
-
-    assign fifo_incr_wptr = wvalid_i & wready_o & ~under_rst;
-    assign fifo_incr_rptr = rvalid_o & rready_i & ~under_rst;
+    logic empty;
 
     // full and not ready for write are two different concepts.
     // The latter can be '0' when under reset, while the former is an indication that no more
     // entries can be written.
-    assign wready_o = ~full & ~under_rst;
-    assign full_o   = full;
+    assign wready_o = ~full_o & ~under_rst;
     assign rvalid_o = ~empty & ~under_rst;
 
     prim_fifo_sync_cnt #(
@@ -111,12 +94,13 @@ module prim_fifo_sync #(
       .incr_rptr_i(fifo_incr_rptr),
       .wptr_o(fifo_wptr),
       .rptr_o(fifo_rptr),
+      .full_o,
+      .empty_o(fifo_empty),
+      .depth_o,
       .err_o
     );
-
-    assign  full       = (fifo_wptr == (fifo_rptr ^ {1'b1,{(PTR_WIDTH-1){1'b0}}}));
-    assign  fifo_empty = (fifo_wptr ==  fifo_rptr);
-
+    assign fifo_incr_wptr = wvalid_i & wready_o & ~under_rst;
+    assign fifo_incr_rptr = rvalid_o & rready_i & ~under_rst;
 
     // the generate blocks below are needed to avoid lint errors due to array indexing
     // in the where the fifo only has one storage element
@@ -129,6 +113,10 @@ module prim_fifo_sync #(
         if (fifo_incr_wptr) begin
           storage[0] <= wdata_i;
         end
+
+      logic unused_ptrs;
+      assign unused_ptrs = ^{fifo_wptr, fifo_rptr};
+
     // fifo with more than one storage element
     end else begin : gen_depth_gt1
       assign storage_rdata = storage[fifo_rptr[PTR_WIDTH-2:0]];
