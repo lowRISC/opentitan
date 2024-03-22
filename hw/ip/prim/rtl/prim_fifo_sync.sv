@@ -114,34 +114,6 @@ module prim_fifo_sync #(
       .err_o
     );
 
-    //always_ff @(posedge clk_i or negedge rst_ni) begin
-    //  if (!rst_ni) begin
-    //    fifo_wptr <= {(PTR_WIDTH){1'b0}};
-    //  end else if (clr_i) begin
-    //    fifo_wptr <= {(PTR_WIDTH){1'b0}};
-    //  end else if (fifo_incr_wptr) begin
-    //    if (fifo_wptr[PTR_WIDTH-2:0] == (PTR_WIDTH-1)'(Depth-1)) begin
-    //      fifo_wptr <= {~fifo_wptr[PTR_WIDTH-1],{(PTR_WIDTH-1){1'b0}}};
-    //    end else begin
-    //      fifo_wptr <= fifo_wptr + {{(PTR_WIDTH-1){1'b0}},1'b1};
-    //    end
-    //  end
-    //end
-    //
-    //always_ff @(posedge clk_i or negedge rst_ni) begin
-    //  if (!rst_ni) begin
-    //    fifo_rptr <= {(PTR_WIDTH){1'b0}};
-    //  end else if (clr_i) begin
-    //    fifo_rptr <= {(PTR_WIDTH){1'b0}};
-    //  end else if (fifo_incr_rptr) begin
-    //    if (fifo_rptr[PTR_WIDTH-2:0] == (PTR_WIDTH-1)'(Depth-1)) begin
-    //      fifo_rptr <= {~fifo_rptr[PTR_WIDTH-1],{(PTR_WIDTH-1){1'b0}}};
-    //    end else begin
-    //      fifo_rptr <= fifo_rptr + {{(PTR_WIDTH-1){1'b0}},1'b1};
-    //    end
-    //  end
-    //end
-
     assign  full       = (fifo_wptr == (fifo_rptr ^ {1'b1,{(PTR_WIDTH-1){1'b0}}}));
     assign  fifo_empty = (fifo_wptr ==  fifo_rptr);
 
