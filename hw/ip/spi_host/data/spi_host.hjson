@@ -465,7 +465,7 @@
                  The serial order of bit transmission
                  is chosen to match SPI flash devices. Individual bytes
                  are always transmitted with the most significant bit first.
-                 Only four-bute reads are supported. If ByteOrder = 0,
+                 Only four-byte reads are supported. If ByteOrder = 0,
                  the first byte received is packed in the MSB of !!RXDATA.
                  For some processor architectures, this could lead to shuffling
                  of flash data as compared to how it is written in memory.
