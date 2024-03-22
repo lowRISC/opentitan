@@ -1,0 +1,16 @@
+diff --git a/sw/vendor/cryptoc/hmac.c b/sw/vendor/cryptoc/hmac.c
+index ef6ad824ba..ef19775db0 100644
+--- a/hmac.c
++++ b/hmac.c
+@@ -43,11 +43,6 @@ static void HMAC_init(LITE_HMAC_CTX* ctx, const void* key, unsigned int len) {
+   }
+ }
+ 
+-void HMAC_MD5_init(LITE_HMAC_CTX* ctx, const void* key, unsigned int len) {
+-  MD5_init(&ctx->hash);
+-  HMAC_init(ctx, key, len);
+-}
+-
+ void HMAC_SHA_init(LITE_HMAC_CTX* ctx, const void* key, unsigned int len) {
+   SHA_init(&ctx->hash);
+   HMAC_init(ctx, key, len);
