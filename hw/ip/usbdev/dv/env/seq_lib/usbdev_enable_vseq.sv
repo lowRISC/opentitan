@@ -7,25 +7,10 @@ class usbdev_enable_vseq extends usbdev_base_vseq;
 
   `uvm_object_new
 
-  task pre_start();
-    // need to disable device init.
-    // This sequence is designed to assess the functionality of the USB_CTRL register's
-    // enable field. During device initialization, the device is automatically enabled.
-    // Therefore, if we want to accurately test the device enable function,
-    // we need to manually set this.
-    do_usbdev_init = 1'b0;
-
-    super.pre_start();
-  endtask
-
   task body();
     // Expected data content of packet
     byte unsigned exp_data[];
     uvm_reg_data_t rd_data;
-
-    ral.usbctrl.enable.set(1'b1);  // Set usbdev control register enable bit.
-    ral.usbctrl.device_address.set(0);
-    csr_update(ral.usbctrl);
 
     configure_out_trans(); // register configurations for OUT Trans.
 
