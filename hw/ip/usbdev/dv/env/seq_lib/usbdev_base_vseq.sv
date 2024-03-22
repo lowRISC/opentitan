@@ -27,7 +27,14 @@ bit [4:0] in_buffer_id = 5'd13;
 constraint endpoint_c {
   endp inside {[0:11]};
 }
-// various knobs to enable certain routines
+
+// Connect the usb20_agent via the block level interface?
+bit do_agent_connect = 1'b1;
+
+// Activate the usb20 agent via the block level interface?
+bit do_agent_activate = 1'b1;
+
+// Connect the USBDEV to the USB by supplying some basic register configuration?
 bit do_usbdev_init = 1'b1;
 
 // add post_reset_delays for sync between bus clk and usb clk in the apply_reset task
@@ -92,11 +99,31 @@ virtual task wait_for_reset(string reset_kind     = "HARD",
   do_apply_post_reset_delays_for_sync();
 endtask
 
-// Override dut_init to do some basic usbdev initializations (if enabled).
-virtual task dut_init(string reset_kind = "HARD");
-  super.dut_init();
-  if (do_usbdev_init) usbdev_init();
-endtask
+  // Give derived sequences the opportunity to override the connection of the usb20_agent via the
+  // the interface.
+  virtual task pre_start();
+    if (do_agent_connect) begin
+      // Connect the USB20 agent and ensure that the USBDPI model is not connected.
+      cfg.m_usb20_agent_cfg.bif.enable_driver(1'b1);
+      cfg.m_usb20_agent_cfg.vif.enable_driver(1'b0);
+      // Activate it as well? For common sequences we need defined inputs into the DUT to prevent
+      // assertions and link-related interrupts from interfering with CSR tests, but we do not
+      // want the usb20_agent to be active.
+      if (do_agent_activate) begin
+        cfg.m_usb20_agent_cfg.bif.activate_driver(1'b1);
+      end
+    end
+    super.pre_start();
+  endtask
+
+  // Override dut_init to do some basic usbdev initializations (if enabled).
+  virtual task dut_init(string reset_kind = "HARD");
+    super.dut_init();
+    if (do_usbdev_init) begin
+      // Initialize the device via its registers.
+      usbdev_init();
+    end
+  endtask
 
   // Wait for the DUT to enter one of the given link states, with an optional timeout
   //   (the default of -1 disables the timeout).
