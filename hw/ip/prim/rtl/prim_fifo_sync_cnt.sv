@@ -8,7 +8,7 @@
 
 module prim_fifo_sync_cnt #(
   // Depth of the FIFO, i.e., maximum number of entries the FIFO can contain
-  parameter int Depth = 4,
+  parameter int unsigned Depth = 4,
   // Whether to instantiate hardened counters
   parameter bit Secure = 1'b0,
   // Width of the read and write pointers for the FIFO
