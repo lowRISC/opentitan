@@ -147,3 +147,16 @@ test_suite(
         "//sw/device/tests/pmod:i2c_host_fram_test",
     ],
 )
+
+test_suite(
+    name = "regression_test_suite",
+    tests = [
+        # Silicon validation test suites.
+        ":sv1_tests",
+        ":sv2_tests",
+        ":sv3_tests",
+
+        # Crypto test suites.
+        "//sw/device/tests/crypto:cryptolib_test_suite",
+    ],
+)
