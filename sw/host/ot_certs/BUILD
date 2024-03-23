@@ -6,6 +6,16 @@ load("@rules_rust//rust:defs.bzl", "rust_doc", "rust_library", "rust_test")
 
 package(default_visibility = ["//visibility:public"])
 
+filegroup(
+    name = "generic_cert",
+    srcs = ["tests/generic.hjson"],
+)
+
+filegroup(
+    name = "example_cert",
+    srcs = ["tests/example.hjson"],
+)
+
 rust_library(
     name = "ot_certs",
     srcs = [
