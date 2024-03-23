@@ -116,6 +116,23 @@ status_t keymgr_testutils_flash_init(
     const keymgr_testutils_secret_t *owner_secret);
 
 /**
+ * Wrapper function to `keymgr_testutils_startup()`.
+ *
+ * This function checks the state of the key manager before attempting to
+ * initialize its dependencies and state.
+ *
+ * The function will return an error if the keymgr is disabled or in invalid
+ * state.
+ *
+ * @param keymgr A key manager handle, may be uninitialized.
+ * @param kmac A KMAC handle, may be uninitialized.
+ * @param[out] keymgr_state The state of the keymgr after startup.
+ */
+OT_WARN_UNUSED_RESULT
+status_t keymgr_testutils_try_startup(dif_keymgr_t *keymgr, dif_kmac_t *kmac,
+                                      dif_keymgr_state_t *keymgr_state);
+
+/**
  * Programs flash, restarts, and advances keymgr to CreatorRootKey state.
  *
  * This procedure essentially gets the keymgr into the first state where it can
