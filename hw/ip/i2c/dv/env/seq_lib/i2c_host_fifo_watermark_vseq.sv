@@ -47,12 +47,17 @@ class i2c_host_fifo_watermark_vseq extends i2c_rx_tx_vseq;
           if (check_fmt_threshold) begin
             host_send_trans(.max_trans(1), .trans_type(WriteOnly));
             check_fmt_threshold = 1'b0;  // gracefully stop process_fmt_threshold_intr
-            // cnt_fmt_threshold could be asserted 0-2 times, depending upon whether
-            // the FMT FIFO ever exceeded the chosen fmt_thresh.
+            // cnt_fmt_threshold could be asserted 0 to 3 times:
+            // - 0 if a threshold of 0 is chosen, below which the FMT depth never falls
+            // - 1 if the FMT depth falls below the threshold once and stays there
+            // - 2 if the FMT depth starts below the threshold, raises above, and falls below again
+            // - 3 if the FMT depth briefly drops below the threshold once it has raised above,
+            //   which happens when the FSM pops an item from the FIFO after the FMT depth has
+            //   raised above the threshold and before the vseq pushes the next item
             if (!cfg.under_reset) begin
               `uvm_info(`gfn, $sformatf("\n cnt_fmt_threshold %0d", cnt_fmt_threshold), UVM_DEBUG)
               `DV_CHECK_GE(cnt_fmt_threshold, 0)
-              `DV_CHECK_LE(cnt_fmt_threshold, 2)
+              `DV_CHECK_LE(cnt_fmt_threshold, 3)
             end
           end
 
