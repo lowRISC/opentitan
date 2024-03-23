@@ -11,7 +11,6 @@
 #include "sw/device/silicon_creator/lib/attestation.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
-#include "sw/device/silicon_creator/lib/sigverify/rsa_key.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -22,7 +21,7 @@ extern "C" {
  *
  * Loads the OTBN program that runs attestation and code-signature
  * verification. The program can later be cleared by wiping OTBN's IMEM and
- * DMEM, or by loading a diffierent OTBN application.
+ * DMEM, or by loading a different OTBN application.
  *
  * @return The result of the operation.
  */

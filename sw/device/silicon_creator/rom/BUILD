@@ -127,6 +127,7 @@ cc_library(
         "//sw/device/lib/crt",
         "//sw/device/lib/runtime:hart",
         "//sw/device/silicon_creator/lib:boot_log",
+        "//sw/device/silicon_creator/lib:boot_services",
         "//sw/device/silicon_creator/lib:cfi",
         "//sw/device/silicon_creator/lib:chip_info",
         "//sw/device/silicon_creator/lib:epmp_state",
