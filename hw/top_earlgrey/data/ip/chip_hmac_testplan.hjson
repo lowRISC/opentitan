@@ -56,7 +56,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: []
-      bazel: []
+      bazel: ["//sw/device/tests/crypto/cryptotest:hash_kat"]
     }
     {
       name: chip_sw_hmac_stress
@@ -72,7 +72,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: []
-      bazel: []
+      bazel: ["//sw/device/tests/crypto/cryptotest:hmac_kat"]
     }
     {
       name: chip_sw_hmac_endianness
