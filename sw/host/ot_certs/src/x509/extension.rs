@@ -24,6 +24,7 @@ pub struct X509ExtensionRef<'a> {
     pub data: &'a Asn1OctetStringRef,
 }
 
+/// Return the list of extensions of an X509 cerificate.
 pub fn x509_get_extensions(x509: &X509) -> Result<Vec<X509ExtensionRef>> {
     let mut exts = Vec::new();
     // SAFETY: the rust openssl binding guarantees that x509 is a valid object.
@@ -105,14 +106,20 @@ pub fn x509_get_extensions(x509: &X509) -> Result<Vec<X509ExtensionRef>> {
 //     recovery (2),
 //     debug (3)
 // }
+
+// See DiceTcbInfo.
 #[derive(asn1::Asn1Read)]
-pub struct Fwid<'a> {
+struct Fwid<'a> {
     pub hash_alg: asn1::ObjectIdentifier,
     pub digest: &'a [u8],
 }
 
+// This is an internal structure used to parse a DiceTcbInfo extension using the `asn1`
+// crate. We cannot use the `DiceTcbInfoExtension` in `template` since we
+// need to use specific annotations and types so that the `asn` library can
+// derive an ASN1 parser.
 #[derive(asn1::Asn1Read)]
-pub struct DiceTcbInfo<'a> {
+struct DiceTcbInfo<'a> {
     #[implicit(0)]
     pub vendor: Option<asn1::Utf8String<'a>>,
     #[implicit(1)]
@@ -220,13 +227,14 @@ impl<'a> asn1::SimpleAsn1Readable<'a> for Flags {
     }
 }
 
-
+/// Try to parse an X509 extension as a DICE TCB info extension.
 pub fn parse_dice_tcb_info_extension(ext: &X509ExtensionRef) -> Result<DiceTcbInfoExtension> {
     asn1::parse_single::<DiceTcbInfo>(ext.data.as_slice())
         .context("cannot parse DICE extension")?
         .to_dice_extension()
 }
 
+/// Try to parse an X509 extension.
 pub fn parse_extension(ext: &X509ExtensionRef) -> Result<CertificateExtension> {
     let dice_oid =
         Asn1Object::from_str(Oid::DiceTcbInfo.oid()).expect("cannot create object ID from string");
