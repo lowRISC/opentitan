@@ -1,69 +1,28 @@
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-load(
-    "//rules/opentitan:defs.bzl",
-    "cw310_params",
-    "opentitan_test",
-    "silicon_params",
-)
+
+load(":cryptotest.bzl", "cryptotest")
 
 package(default_visibility = ["//visibility:public"])
 
-testvector_targets = [
+AES_TESTVECTOR_TARGETS = [
     "//sw/host/cryptotest/testvectors/data/aes_nist_kat:{}_{}_{}_json".format(alg, kat_type, key_len)
     for alg in ("cbc", "cfb128", "ecb", "ofb")
     for kat_type in ("varkey", "gfsbox", "vartxt", "keysbox")
     for key_len in ("128", "192", "256")
 ]
 
-testvector_args = " ".join([
+AES_TESTVECTOR_ARGS = " ".join([
     "--aes-json=\"$(rootpath {})\"".format(target)
-    for target in testvector_targets
+    for target in AES_TESTVECTOR_TARGETS
 ])
 
-# Defines default execution environments for cryptotest targets. All
-# opentitan_test must have the following attributes to configure
-# each execution environment:
-# - cw310
-# - silicon
-# - silicon_prodc
-CRYPTOTEST_EXEC_ENVS = {
-    "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-    "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon",
-    "//hw/top_earlgrey:silicon_owner_prodc_rom_ext": "silicon_prodc",
-}
-
-opentitan_test(
-    name = "aes_kat_test",
-    cw310 = cw310_params(
-        timeout = "long",
-        binaries = {"//sw/device/tests/crypto/cryptotest/firmware:firmware_fpga_cw310_test_rom": "firmware"},
-        data = testvector_targets,
-        test_cmd = """
-            --bootstrap={firmware}
-        """ + testvector_args,
-        test_harness = "//sw/host/tests/crypto/aes_nist_kat:harness",
-    ),
-    exec_env = CRYPTOTEST_EXEC_ENVS,
-    silicon = silicon_params(
-        timeout = "long",
-        binaries = {"//sw/device/tests/crypto/cryptotest/firmware:firmware_silicon_owner_sival_rom_ext": "firmware"},
-        data = testvector_targets,
-        test_cmd = """
-            --bootstrap={firmware}
-        """ + testvector_args,
-        test_harness = "//sw/host/tests/crypto/aes_nist_kat:harness",
-    ),
-    silicon_prodc = silicon_params(
-        timeout = "long",
-        binaries = {"//sw/device/tests/crypto/cryptotest/firmware:firmware_silicon_owner_prodc_rom_ext": "firmware"},
-        data = testvector_targets,
-        test_cmd = """
-            --bootstrap={firmware}
-        """ + testvector_args,
-        test_harness = "//sw/host/tests/crypto/aes_nist_kat:harness",
-    ),
+cryptotest(
+    name = "aes_kat",
+    test_args = AES_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/crypto/aes_nist_kat:harness",
+    test_vectors = AES_TESTVECTOR_TARGETS,
 )
 
 ECDSA_TESTVECTOR_TARGETS = [
@@ -88,36 +47,11 @@ ECDSA_TESTVECTOR_ARGS = " ".join([
     for target in ECDSA_TESTVECTOR_TARGETS
 ])
 
-opentitan_test(
+cryptotest(
     name = "ecdsa_kat",
-    cw310 = cw310_params(
-        timeout = "long",
-        binaries = {"//sw/device/tests/crypto/cryptotest/firmware:firmware_fpga_cw310_test_rom": "firmware"},
-        data = ECDSA_TESTVECTOR_TARGETS,
-        test_cmd = """
-            --bootstrap={firmware}
-        """ + ECDSA_TESTVECTOR_ARGS,
-        test_harness = "//sw/host/tests/crypto/ecdsa_kat:harness",
-    ),
-    exec_env = CRYPTOTEST_EXEC_ENVS,
-    silicon = silicon_params(
-        timeout = "long",
-        binaries = {"//sw/device/tests/crypto/cryptotest/firmware:firmware_silicon_owner_sival_rom_ext": "firmware"},
-        data = ECDSA_TESTVECTOR_TARGETS,
-        test_cmd = """
-            --bootstrap={firmware}
-        """ + ECDSA_TESTVECTOR_ARGS,
-        test_harness = "//sw/host/tests/crypto/ecdsa_kat:harness",
-    ),
-    silicon_prodc = silicon_params(
-        timeout = "long",
-        binaries = {"//sw/device/tests/crypto/cryptotest/firmware:firmware_silicon_owner_prodc_rom_ext": "firmware"},
-        data = ECDSA_TESTVECTOR_TARGETS,
-        test_cmd = """
-            --bootstrap={firmware}
-        """ + ECDSA_TESTVECTOR_ARGS,
-        test_harness = "//sw/host/tests/crypto/ecdsa_kat:harness",
-    ),
+    test_args = ECDSA_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/crypto/ecdsa_kat:harness",
+    test_vectors = ECDSA_TESTVECTOR_TARGETS,
 )
 
 ECDH_TESTVECTOR_TARGETS = [
@@ -136,36 +70,11 @@ ECDH_TESTVECTOR_ARGS = " ".join([
     for target in ECDH_TESTVECTOR_TARGETS
 ])
 
-opentitan_test(
+cryptotest(
     name = "ecdh_kat",
-    cw310 = cw310_params(
-        timeout = "long",
-        binaries = {"//sw/device/tests/crypto/cryptotest/firmware:firmware_fpga_cw310_test_rom": "firmware"},
-        data = ECDH_TESTVECTOR_TARGETS,
-        test_cmd = """
-            --bootstrap={firmware}
-        """ + ECDH_TESTVECTOR_ARGS,
-        test_harness = "//sw/host/tests/crypto/ecdh_kat:harness",
-    ),
-    exec_env = CRYPTOTEST_EXEC_ENVS,
-    silicon = silicon_params(
-        timeout = "long",
-        binaries = {"//sw/device/tests/crypto/cryptotest/firmware:firmware_silicon_owner_sival_rom_ext": "firmware"},
-        data = ECDH_TESTVECTOR_TARGETS,
-        test_cmd = """
-            --bootstrap={firmware}
-        """ + ECDH_TESTVECTOR_ARGS,
-        test_harness = "//sw/host/tests/crypto/ecdh_kat:harness",
-    ),
-    silicon_prodc = silicon_params(
-        timeout = "long",
-        binaries = {"//sw/device/tests/crypto/cryptotest/firmware:firmware_silicon_owner_prodc_rom_ext": "firmware"},
-        data = ECDH_TESTVECTOR_TARGETS,
-        test_cmd = """
-            --bootstrap={firmware}
-        """ + ECDH_TESTVECTOR_ARGS,
-        test_harness = "//sw/host/tests/crypto/ecdh_kat:harness",
-    ),
+    test_args = ECDH_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/crypto/ecdh_kat:harness",
+    test_vectors = ECDH_TESTVECTOR_TARGETS,
 )
 
 HASH_TESTVECTOR_TARGETS = [
@@ -205,36 +114,11 @@ HASH_TESTVECTOR_ARGS = " ".join([
     for target in HASH_TESTVECTOR_TARGETS
 ])
 
-opentitan_test(
+cryptotest(
     name = "hash_kat",
-    cw310 = cw310_params(
-        timeout = "long",
-        binaries = {"//sw/device/tests/crypto/cryptotest/firmware:firmware_fpga_cw310_test_rom": "firmware"},
-        data = HASH_TESTVECTOR_TARGETS,
-        test_cmd = """
-                --bootstrap={firmware}
-            """ + HASH_TESTVECTOR_ARGS,
-        test_harness = "//sw/host/tests/crypto/hash_kat:harness",
-    ),
-    exec_env = CRYPTOTEST_EXEC_ENVS,
-    silicon = silicon_params(
-        timeout = "long",
-        binaries = {"//sw/device/tests/crypto/cryptotest/firmware:firmware_silicon_owner_sival_rom_ext": "firmware"},
-        data = HASH_TESTVECTOR_TARGETS,
-        test_cmd = """
-                --bootstrap={firmware}
-            """ + HASH_TESTVECTOR_ARGS,
-        test_harness = "//sw/host/tests/crypto/hash_kat:harness",
-    ),
-    silicon_prodc = silicon_params(
-        timeout = "long",
-        binaries = {"//sw/device/tests/crypto/cryptotest/firmware:firmware_silicon_owner_prodc_rom_ext": "firmware"},
-        data = HASH_TESTVECTOR_TARGETS,
-        test_cmd = """
-                --bootstrap={firmware}
-            """ + HASH_TESTVECTOR_ARGS,
-        test_harness = "//sw/host/tests/crypto/hash_kat:harness",
-    ),
+    test_args = HASH_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/crypto/hash_kat:harness",
+    test_vectors = HASH_TESTVECTOR_TARGETS,
 )
 
 DRBG_TESTVECTOR_TARGETS = [
@@ -247,36 +131,11 @@ DRBG_TESTVECTOR_ARGS = " ".join([
     for target in DRBG_TESTVECTOR_TARGETS
 ])
 
-opentitan_test(
+cryptotest(
     name = "drbg_kat",
-    cw310 = cw310_params(
-        timeout = "long",
-        binaries = {"//sw/device/tests/crypto/cryptotest/firmware:firmware_fpga_cw310_test_rom": "firmware"},
-        data = DRBG_TESTVECTOR_TARGETS,
-        test_cmd = """
-                --bootstrap={firmware}
-            """ + DRBG_TESTVECTOR_ARGS,
-        test_harness = "//sw/host/tests/crypto/drbg_kat:harness",
-    ),
-    exec_env = CRYPTOTEST_EXEC_ENVS,
-    silicon = silicon_params(
-        timeout = "long",
-        binaries = {"//sw/device/tests/crypto/cryptotest/firmware:firmware_silicon_owner_sival_rom_ext": "firmware"},
-        data = DRBG_TESTVECTOR_TARGETS,
-        test_cmd = """
-                --bootstrap={firmware}
-            """ + DRBG_TESTVECTOR_ARGS,
-        test_harness = "//sw/host/tests/crypto/drbg_kat:harness",
-    ),
-    silicon_prodc = silicon_params(
-        timeout = "long",
-        binaries = {"//sw/device/tests/crypto/cryptotest/firmware:firmware_silicon_owner_prodc_rom_ext": "firmware"},
-        data = DRBG_TESTVECTOR_TARGETS,
-        test_cmd = """
-                --bootstrap={firmware}
-            """ + DRBG_TESTVECTOR_ARGS,
-        test_harness = "//sw/host/tests/crypto/drbg_kat:harness",
-    ),
+    test_args = DRBG_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/crypto/drbg_kat:harness",
+    test_vectors = DRBG_TESTVECTOR_TARGETS,
 )
 
 HMAC_TESTVECTOR_TARGETS = [
@@ -298,36 +157,11 @@ HMAC_TESTVECTOR_ARGS = " ".join([
     for target in HMAC_TESTVECTOR_TARGETS
 ])
 
-opentitan_test(
+cryptotest(
     name = "hmac_kat",
-    cw310 = cw310_params(
-        timeout = "long",
-        binaries = {"//sw/device/tests/crypto/cryptotest/firmware:firmware_fpga_cw310_test_rom": "firmware"},
-        data = HMAC_TESTVECTOR_TARGETS,
-        test_cmd = """
-            --bootstrap={firmware}
-        """ + HMAC_TESTVECTOR_ARGS,
-        test_harness = "//sw/host/tests/crypto/hmac_kat:harness",
-    ),
-    exec_env = CRYPTOTEST_EXEC_ENVS,
-    silicon = silicon_params(
-        timeout = "long",
-        binaries = {"//sw/device/tests/crypto/cryptotest/firmware:firmware_silicon_owner_sival_rom_ext": "firmware"},
-        data = HMAC_TESTVECTOR_TARGETS,
-        test_cmd = """
-            --bootstrap={firmware}
-        """ + HMAC_TESTVECTOR_ARGS,
-        test_harness = "//sw/host/tests/crypto/hmac_kat:harness",
-    ),
-    silicon_prodc = silicon_params(
-        timeout = "long",
-        binaries = {"//sw/device/tests/crypto/cryptotest/firmware:firmware_silicon_owner_prodc_rom_ext": "firmware"},
-        data = HMAC_TESTVECTOR_TARGETS,
-        test_cmd = """
-            --bootstrap={firmware}
-        """ + HMAC_TESTVECTOR_ARGS,
-        test_harness = "//sw/host/tests/crypto/hmac_kat:harness",
-    ),
+    test_args = HMAC_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/crypto/hmac_kat:harness",
+    test_vectors = HMAC_TESTVECTOR_TARGETS,
 )
 
 KMAC_TESTVECTOR_TARGETS = [
@@ -343,34 +177,30 @@ KMAC_TESTVECTOR_ARGS = " ".join([
     for target in KMAC_TESTVECTOR_TARGETS
 ])
 
-opentitan_test(
+cryptotest(
     name = "kmac_kat",
-    cw310 = cw310_params(
-        timeout = "long",
-        binaries = {"//sw/device/tests/crypto/cryptotest/firmware:firmware_fpga_cw310_test_rom": "firmware"},
-        data = KMAC_TESTVECTOR_TARGETS,
-        test_cmd = """
-            --bootstrap={firmware}
-        """ + KMAC_TESTVECTOR_ARGS,
-        test_harness = "//sw/host/tests/crypto/kmac_kat:harness",
-    ),
-    exec_env = CRYPTOTEST_EXEC_ENVS,
-    silicon = silicon_params(
-        timeout = "long",
-        binaries = {"//sw/device/tests/crypto/cryptotest/firmware:firmware_silicon_owner_sival_rom_ext": "firmware"},
-        data = KMAC_TESTVECTOR_TARGETS,
-        test_cmd = """
-            --bootstrap={firmware}
-        """ + KMAC_TESTVECTOR_ARGS,
-        test_harness = "//sw/host/tests/crypto/kmac_kat:harness",
-    ),
-    silicon_prodc = silicon_params(
-        timeout = "long",
-        binaries = {"//sw/device/tests/crypto/cryptotest/firmware:firmware_silicon_owner_prodc_rom_ext": "firmware"},
-        data = KMAC_TESTVECTOR_TARGETS,
-        test_cmd = """
-            --bootstrap={firmware}
-        """ + KMAC_TESTVECTOR_ARGS,
-        test_harness = "//sw/host/tests/crypto/kmac_kat:harness",
-    ),
+    test_args = KMAC_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/crypto/kmac_kat:harness",
+    test_vectors = KMAC_TESTVECTOR_TARGETS,
+)
+
+# Use the following command to run the entire test suite in a given target:
+# $ export OT_EXEC_ENV=silicon_owner_sival_rom_ext
+# $ bazel test --//signing:token=//signing/tokens:cloud_kms \
+#    --cache_test_results=no --test_output=errors --local_test_jobs=1 \
+#    --build_tag_filters=${OT_EXEC_ENV} \
+#    --test_tag_filters=${OT_EXEC_ENV}  \
+#    --test_output=errors \
+#     //sw/device/tests/crypto/cryptotest:crypto_kat_test_suite
+test_suite(
+    name = "crypto_kat_test_suite",
+    tests = [
+        ":aes_kat",
+        ":drbg_kat",
+        ":ecdh_kat",
+        ":ecdsa_kat",
+        ":hash_kat",
+        ":hmac_kat",
+        ":kmac_kat",
+    ],
 )
