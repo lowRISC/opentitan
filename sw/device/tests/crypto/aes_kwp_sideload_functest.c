@@ -15,7 +15,7 @@
 #define MODULE_ID MAKE_MODULE_ID('t', 's', 't')
 
 // Key version data for testing.
-static const uint32_t kKeyVersion = 0x9;
+static const uint32_t kKeyVersion = 0x0;
 
 // Key salt for testing.
 static const uint32_t kKeySalt[7] = {
@@ -125,9 +125,17 @@ status_t test_setup(void) {
   // the expected setup in production.
   dif_keymgr_t keymgr;
   dif_kmac_t kmac;
-  TRY(keymgr_testutils_startup(&keymgr, &kmac));
-  TRY(keymgr_testutils_advance_state(&keymgr, &kOwnerIntParams));
-  TRY(keymgr_testutils_advance_state(&keymgr, &kOwnerRootKeyParams));
+  dif_keymgr_state_t keymgr_state;
+  TRY(keymgr_testutils_try_startup(&keymgr, &kmac, &keymgr_state));
+
+  if (keymgr_state == kDifKeymgrStateInitialized) {
+    TRY(keymgr_testutils_advance_state(&keymgr, &kOwnerIntParams));
+  }
+
+  if (keymgr_state == kDifKeymgrStateOwnerIntermediateKey) {
+    TRY(keymgr_testutils_advance_state(&keymgr, &kOwnerRootKeyParams));
+  }
+
   TRY(keymgr_testutils_check_state(&keymgr, kDifKeymgrStateOwnerRootKey));
 
   // Initialize entropy complex for cryptolib, which the key manager uses to
