@@ -46,7 +46,7 @@ static const uint32_t kPrivateKeySalt[7] = {0xdeadbeef, 0xdeadbeef, 0xdeadbeef,
                                             0xdeadbeef, 0xdeadbeef, 0xdeadbeef,
                                             0xdeadbeef};
 
-static const uint32_t kPrivateKeyVersion = 0x9;
+static const uint32_t kPrivateKeyVersion = 0x0;
 
 status_t sign_then_verify_test(void) {
   // Allocate space for a hardware-backed key.
@@ -115,9 +115,17 @@ static status_t test_setup(void) {
   // the expected setup in production.
   dif_keymgr_t keymgr;
   dif_kmac_t kmac;
-  TRY(keymgr_testutils_startup(&keymgr, &kmac));
-  TRY(keymgr_testutils_advance_state(&keymgr, &kOwnerIntParams));
-  TRY(keymgr_testutils_advance_state(&keymgr, &kOwnerRootKeyParams));
+  dif_keymgr_state_t keymgr_state;
+  TRY(keymgr_testutils_try_startup(&keymgr, &kmac, &keymgr_state));
+
+  if (keymgr_state == kDifKeymgrStateInitialized) {
+    TRY(keymgr_testutils_advance_state(&keymgr, &kOwnerIntParams));
+  }
+
+  if (keymgr_state == kDifKeymgrStateOwnerIntermediateKey) {
+    TRY(keymgr_testutils_advance_state(&keymgr, &kOwnerRootKeyParams));
+  }
+
   TRY(keymgr_testutils_check_state(&keymgr, kDifKeymgrStateOwnerRootKey));
 
   // Initialize entropy complex for cryptolib, which the key manager uses to

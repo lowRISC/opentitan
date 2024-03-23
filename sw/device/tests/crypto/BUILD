@@ -2,11 +2,16 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load(
+    "@bazel_skylib//lib:dicts.bzl",
+    "dicts",
+)
 load("//rules:autogen.bzl", "autogen_cryptotest_header")
 load(
     "//rules/opentitan:defs.bzl",
-    "EARLGREY_TEST_ENVS",
     "cw310_params",
+    "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
+    "EARLGREY_TEST_ENVS",
     "opentitan_test",
     "verilator_params",
 )
@@ -18,10 +23,15 @@ load("@ot_python_deps//:requirements.bzl", "requirement")
 
 package(default_visibility = ["//visibility:public"])
 
+CRYPTOTEST_EXEC_ENVS = dicts.add(
+    EARLGREY_TEST_ENVS,
+    EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+)
+
 opentitan_test(
     name = "aes_functest",
     srcs = ["aes_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = CRYPTOTEST_EXEC_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -36,7 +46,7 @@ opentitan_test(
 opentitan_test(
     name = "aes_kwp_kat_functest",
     srcs = ["aes_kwp_kat_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = CRYPTOTEST_EXEC_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -50,7 +60,7 @@ opentitan_test(
 opentitan_test(
     name = "aes_kwp_functest",
     srcs = ["aes_kwp_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = CRYPTOTEST_EXEC_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -90,14 +100,7 @@ opentitan_test(
 opentitan_test(
     name = "aes_sideload_functest",
     srcs = ["aes_sideload_functest.c"],
-    broken = cw310_params(tags = ["broken"]),
-    exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        {
-            # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
-        },
-    ),
+    exec_env = CRYPTOTEST_EXEC_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),
