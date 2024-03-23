@@ -168,7 +168,10 @@ opentitan_flash_binary(
             t["name"],
         ),
         src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state),
-        overlays = STD_OTP_OVERLAYS + [":otp_json_sigverify_spx_{}".format(t["name"])],
+        overlays = STD_OTP_OVERLAYS + [
+            ":otp_json_sigverify_spx_{}".format(t["name"]),
+            "//sw/device/silicon_creator/rom/keys/fake/otp:json_rot_keys",
+        ],
         visibility = ["//visibility:private"],
     )
     for lc_state, _ in get_lc_items()
