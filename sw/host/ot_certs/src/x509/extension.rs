@@ -9,6 +9,7 @@ use foreign_types::{ForeignType, ForeignTypeRef};
 use openssl::asn1::{Asn1Object, Asn1ObjectRef, Asn1OctetStringRef};
 use openssl::x509::X509;
 
+use crate::asn1::Oid;
 use crate::template::{
     CertificateExtension, DiceTcbInfoExtension, FirmwareId, Flags, HashAlgorithm, Value,
 };
@@ -134,6 +135,18 @@ pub struct DiceTcbInfo<'a> {
     pub tcb_type: Option<&'a [u8]>,
 }
 
+fn convert_hash_algorithm(objid: &asn1::ObjectIdentifier) -> Result<HashAlgorithm> {
+    for (oid, hashalg) in [(Oid::Sha256, HashAlgorithm::Sha256)] {
+        if *objid
+            == asn1::ObjectIdentifier::from_string(oid.oid())
+                .expect("Cannot convert Oid to asn1::ObjectIdentifier")
+        {
+            return Ok(hashalg);
+        }
+    }
+    bail!("unsupported hash algorithm {}", objid);
+}
+
 fn asn1utf8_to_str(s: &asn1::Utf8String) -> Value<String> {
     Value::literal(s.as_str().to_string())
 }
@@ -143,16 +156,24 @@ fn asn1bigint_to_bn(bn: &asn1::BigInt) -> Value<BigUint> {
 }
 
 impl DiceTcbInfo<'_> {
-    pub fn to_dice_extension(&self) -> Result<DiceTcbInfoExtension> {
-        let fw_ids = self.fwids.as_ref().map(|fwids| {
-            fwids
-                .clone()
-                .map(|fwid| FirmwareId {
-                    hash_algorithm: HashAlgorithm::Sha256,
-                    digest: Value::literal(fwid.digest.to_vec()),
-                })
-                .collect::<Vec<_>>()
-        });
+    fn to_dice_extension(&self) -> Result<DiceTcbInfoExtension> {
+        let fw_ids = self
+            .fwids
+            .as_ref()
+            .map(|fwids| {
+                fwids
+                    .clone()
+                    .map(|fwid| {
+                        Ok(FirmwareId {
+                            hash_algorithm: convert_hash_algorithm(&fwid.hash_alg)
+                                .context("unknown hash algorithm")?,
+                            digest: Value::literal(fwid.digest.to_vec()),
+                        })
+                    })
+                    .collect::<Result<Vec<_>>>()
+            })
+            .transpose()
+            .context("cannot parse DICE TCB firmware IDs")?;
 
         // Vendor info is not supported.
         ensure!(
