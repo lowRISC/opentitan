@@ -9,10 +9,11 @@ load(
 load("//rules:autogen.bzl", "autogen_cryptotest_header")
 load(
     "//rules/opentitan:defs.bzl",
-    "cw310_params",
     "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
     "EARLGREY_TEST_ENVS",
+    "cw310_params",
     "opentitan_test",
+    "silicon_params",
     "verilator_params",
 )
 load(
@@ -76,14 +77,7 @@ opentitan_test(
 opentitan_test(
     name = "aes_kwp_sideload_functest",
     srcs = ["aes_kwp_sideload_functest.c"],
-    broken = cw310_params(tags = ["broken"]),
-    exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        {
-            # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
-        },
-    ),
+    exec_env = CRYPTOTEST_EXEC_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -127,7 +121,7 @@ cc_library(
 opentitan_test(
     name = "aes_gcm_functest",
     srcs = ["aes_gcm_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = CRYPTOTEST_EXEC_ENVS,
     verilator = verilator_params(
         timeout = "eternal",
     ),
@@ -207,7 +201,7 @@ opentitan_test(
 opentitan_test(
     name = "ecdh_p256_functest",
     srcs = ["ecdh_p256_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = CRYPTOTEST_EXEC_ENVS,
     verilator = verilator_params(
         timeout = "eternal",
     ),
@@ -223,14 +217,7 @@ opentitan_test(
 opentitan_test(
     name = "ecdh_p256_sideload_functest",
     srcs = ["ecdh_p256_sideload_functest.c"],
-    broken = cw310_params(tags = ["broken"]),
-    exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        {
-            # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
-        },
-    ),
+    exec_env = CRYPTOTEST_EXEC_ENVS,
     verilator = verilator_params(
         timeout = "eternal",
     ),
@@ -249,7 +236,7 @@ opentitan_test(
 opentitan_test(
     name = "ecdsa_p256_functest",
     srcs = ["ecdsa_p256_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = CRYPTOTEST_EXEC_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -268,14 +255,7 @@ opentitan_test(
 opentitan_test(
     name = "ecdsa_p256_sideload_functest",
     srcs = ["ecdsa_p256_sideload_functest.c"],
-    broken = cw310_params(tags = ["broken"]),
-    exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        {
-            # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
-        },
-    ),
+    exec_env = CRYPTOTEST_EXEC_ENVS,
     verilator = verilator_params(
         timeout = "eternal",
     ),
@@ -309,7 +289,7 @@ autogen_cryptotest_header(
 opentitan_test(
     name = "kmac_functest_hardcoded",
     srcs = ["kmac_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = CRYPTOTEST_EXEC_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -327,7 +307,7 @@ opentitan_test(
 opentitan_test(
     name = "ecdsa_p256_verify_functest_hardcoded",
     srcs = ["ecdsa_p256_verify_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = CRYPTOTEST_EXEC_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -344,7 +324,7 @@ opentitan_test(
 opentitan_test(
     name = "rsa_2048_encryption_functest",
     srcs = ["rsa_2048_encryption_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = CRYPTOTEST_EXEC_ENVS,
     verilator = verilator_params(
         timeout = "eternal",
     ),
@@ -360,7 +340,7 @@ opentitan_test(
 opentitan_test(
     name = "rsa_3072_encryption_functest",
     srcs = ["rsa_3072_encryption_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = CRYPTOTEST_EXEC_ENVS,
     verilator = verilator_params(
         timeout = "eternal",
     ),
@@ -376,7 +356,7 @@ opentitan_test(
 opentitan_test(
     name = "rsa_4096_encryption_functest",
     srcs = ["rsa_4096_encryption_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = CRYPTOTEST_EXEC_ENVS,
     verilator = verilator_params(
         timeout = "eternal",
     ),
@@ -392,7 +372,7 @@ opentitan_test(
 opentitan_test(
     name = "rsa_2048_key_from_cofactor_functest",
     srcs = ["rsa_2048_key_from_cofactor_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = CRYPTOTEST_EXEC_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -413,10 +393,10 @@ opentitan_test(
         timeout = "long",
     ),
     # This test is too slow for Verilator/DV, so target FPGA only.
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-    },
+    exec_env = CRYPTOTEST_EXEC_ENVS,
+    verilator = verilator_params(
+        timeout = "eternal",
+    ),
     deps = [
         "//sw/device/lib/crypto/impl:hash",
         "//sw/device/lib/crypto/impl:rsa",
@@ -431,7 +411,7 @@ opentitan_test(
 opentitan_test(
     name = "rsa_2048_signature_functest",
     srcs = ["rsa_2048_signature_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = CRYPTOTEST_EXEC_ENVS,
     verilator = verilator_params(
         timeout = "eternal",
     ),
@@ -452,10 +432,14 @@ opentitan_test(
         timeout = "long",
     ),
     # This test is too slow for Verilator/DV, so target FPGA only.
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-    },
+    exec_env = CRYPTOTEST_EXEC_ENVS,
+    silicon = silicon_params(
+        timeout = "long",
+    ),
+    verilator = verilator_params(
+        timeout = "eternal",
+        tags = ["manual"],
+    ),
     deps = [
         "//sw/device/lib/crypto/impl:hash",
         "//sw/device/lib/crypto/impl:rsa",
@@ -470,9 +454,10 @@ opentitan_test(
 opentitan_test(
     name = "rsa_3072_signature_functest",
     srcs = ["rsa_3072_signature_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = CRYPTOTEST_EXEC_ENVS,
     verilator = verilator_params(
         timeout = "eternal",
+        tags = ["manual"],
     ),
     deps = [
         "//sw/device/lib/crypto/impl:hash",
@@ -491,10 +476,14 @@ opentitan_test(
         timeout = "long",
     ),
     # This test is too slow for Verilator/DV, so target FPGA only.
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-    },
+    exec_env = CRYPTOTEST_EXEC_ENVS,
+    silicon = silicon_params(
+        timeout = "long",
+    ),
+    verilator = verilator_params(
+        timeout = "eternal",
+        tags = ["manual"],
+    ),
     deps = [
         "//sw/device/lib/crypto/impl:hash",
         "//sw/device/lib/crypto/impl:rsa",
@@ -509,9 +498,10 @@ opentitan_test(
 opentitan_test(
     name = "rsa_4096_signature_functest",
     srcs = ["rsa_4096_signature_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = CRYPTOTEST_EXEC_ENVS,
     verilator = verilator_params(
         timeout = "eternal",
+        tags = ["manual"],
     ),
     deps = [
         "//sw/device/lib/crypto/impl:hash",
@@ -538,10 +528,13 @@ opentitan_test(
     ),
     # The test vectors don't fit in the flash allocated for ROM_EXT stage, so
     # we have to restrict the environments to run with the test_rom.
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-        "//hw/top_earlgrey:sim_verilator": None,
-    },
+    exec_env = dicts.add(
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+            "//hw/top_earlgrey:sim_verilator": None,
+        },
+    ),
     verilator = verilator_params(
         timeout = "eternal",
     ),
@@ -566,7 +559,7 @@ autogen_cryptotest_header(
 opentitan_test(
     name = "rsa_3072_verify_functest_hardcoded",
     srcs = ["rsa_3072_verify_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = CRYPTOTEST_EXEC_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -584,7 +577,7 @@ opentitan_test(
 opentitan_test(
     name = "sha384_functest",
     srcs = ["sha384_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = CRYPTOTEST_EXEC_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -598,7 +591,7 @@ opentitan_test(
 opentitan_test(
     name = "sha512_functest",
     srcs = ["sha512_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = CRYPTOTEST_EXEC_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -613,7 +606,7 @@ opentitan_test(
 opentitan_test(
     name = "symmetric_keygen_functest",
     srcs = ["symmetric_keygen_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = CRYPTOTEST_EXEC_ENVS,
     deps = [
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/impl:drbg",
@@ -640,7 +633,7 @@ py_binary(
 opentitan_test(
     name = "hkdf_functest",
     srcs = ["hkdf_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = CRYPTOTEST_EXEC_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -656,7 +649,7 @@ opentitan_test(
 opentitan_test(
     name = "hmac_sha256_functest",
     srcs = ["hmac_sha256_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = CRYPTOTEST_EXEC_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -671,7 +664,7 @@ opentitan_test(
 opentitan_test(
     name = "hmac_sha384_functest",
     srcs = ["hmac_sha384_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = CRYPTOTEST_EXEC_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -685,7 +678,7 @@ opentitan_test(
 opentitan_test(
     name = "hmac_sha512_functest",
     srcs = ["hmac_sha512_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = CRYPTOTEST_EXEC_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -721,7 +714,7 @@ py_binary(
 opentitan_test(
     name = "sha256_functest",
     srcs = ["sha256_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = CRYPTOTEST_EXEC_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -736,9 +729,12 @@ opentitan_test(
 opentitan_test(
     name = "otcrypto_hash_test",
     srcs = ["otcrypto_hash_test.c"],
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
-    },
+    exec_env = dicts.add(
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+        },
+    ),
     deps = [
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:status",
@@ -751,9 +747,12 @@ opentitan_test(
 opentitan_test(
     name = "otcrypto_export_test",
     srcs = ["otcrypto_export_test.c"],
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
-    },
+    exec_env = dicts.add(
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+        },
+    ),
     deps = [
         "//sw/device/lib/crypto:crypto_exported_for_test",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -765,5 +764,46 @@ filegroup(
     srcs = [
         "ecdsa_p256_verify_testvectors.h.tpl",
         "rsa_3072_verify_testvectors.h.tpl",
+    ],
+)
+
+test_suite(
+    name = "cryptolib_test_suite",
+    tests = [
+        ":aes_functest",
+        ":aes_gcm_functest",
+        ":aes_gcm_timing_test",
+        ":aes_kwp_functest",
+        ":aes_kwp_kat_functest",
+        ":aes_kwp_sideload_functest",
+        ":aes_sideload_functest",
+        ":drbg_functest",
+        ":ecdh_p256_functest",
+        ":ecdh_p256_sideload_functest",
+        ":ecdsa_p256_functest",
+        ":ecdsa_p256_sideload_functest",
+        ":ecdsa_p256_verify_functest_hardcoded",
+        ":hkdf_functest",
+        ":hmac_sha256_functest",
+        ":hmac_sha384_functest",
+        ":hmac_sha512_functest",
+        ":otcrypto_export_test",
+        ":otcrypto_hash_test",
+        ":rsa_2048_encryption_functest",
+        ":rsa_2048_key_from_cofactor_functest",
+        ":rsa_2048_keygen_functest",
+        ":rsa_2048_signature_functest",
+        ":rsa_3072_encryption_functest",
+        ":rsa_3072_keygen_functest",
+        ":rsa_3072_signature_functest",
+        ":rsa_3072_verify_functest_hardcoded",
+        ":rsa_3072_verify_functest_wycheproof",
+        ":rsa_4096_encryption_functest",
+        ":rsa_4096_keygen_functest",
+        ":rsa_4096_signature_functest",
+        ":sha256_functest",
+        ":sha384_functest",
+        ":sha512_functest",
+        ":symmetric_keygen_functest",
     ],
 )
