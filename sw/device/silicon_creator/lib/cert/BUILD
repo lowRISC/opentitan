@@ -12,12 +12,12 @@ package(default_visibility = ["//visibility:public"])
 
 certificate_template(
     name = "generic_template",
-    template = "generic.hjson",
+    template = "//sw/host/ot_certs:generic_cert",
 )
 
 certificate_template(
     name = "example_template",
-    template = "example.hjson",
+    template = "//sw/host/ot_certs:example_cert",
 )
 
 certificate_template(
