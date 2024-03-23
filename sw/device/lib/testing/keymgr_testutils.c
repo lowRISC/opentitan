@@ -93,6 +93,43 @@ static status_t check_lock_otp_partition(void) {
   return OK_STATUS();
 }
 
+static status_t dif_init(dif_keymgr_t *keymgr, dif_kmac_t *kmac) {
+  // Initialize KMAC in preparation for keymgr use.
+  TRY(dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), kmac));
+
+  // We shouldn't use the KMAC block's default entropy setting for keymgr, so
+  // configure it to use software entropy (and a sideloaded key, although it
+  // shouldn't matter here and tests should reconfigure if needed).
+  TRY(kmac_testutils_config(kmac, /*sideload=*/true));
+
+  // Initialize keymgr context.
+  TRY(dif_keymgr_init(mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR),
+                      keymgr));
+  return OK_STATUS();
+}
+
+status_t keymgr_testutils_try_startup(dif_keymgr_t *keymgr, dif_kmac_t *kmac,
+                                      dif_keymgr_state_t *keymgr_state) {
+  TRY(dif_init(keymgr, kmac));
+
+  // Check keymgr state. If initialized, there is no need to proceed with
+  // the initialization process.
+  TRY(dif_keymgr_get_state(keymgr, keymgr_state));
+
+  if (*keymgr_state == kDifKeymgrStateInvalid ||
+      *keymgr_state == kDifKeymgrStateDisabled) {
+    LOG_INFO("Unexpected keymgr state: 0x%x", keymgr_state);
+    return INTERNAL();
+  }
+
+  if (*keymgr_state == kDifKeymgrStateReset) {
+    TRY(keymgr_testutils_startup(keymgr, kmac));
+    TRY(dif_keymgr_get_state(keymgr, keymgr_state));
+  }
+
+  return OK_STATUS();
+}
+
 status_t keymgr_testutils_startup(dif_keymgr_t *keymgr, dif_kmac_t *kmac) {
   dif_flash_ctrl_state_t flash;
   dif_rstmgr_t rstmgr;
@@ -134,18 +171,7 @@ status_t keymgr_testutils_startup(dif_keymgr_t *keymgr, dif_kmac_t *kmac) {
     LOG_INFO(
         "Powered up for the second time, actuate keymgr and perform test.");
 
-    // Initialize KMAC in preparation for keymgr use.
-    TRY(dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR),
-                      kmac));
-
-    // We shouldn't use the KMAC block's default entropy setting for keymgr, so
-    // configure it to use software entropy (and a sideloaded key, although it
-    // shouldn't matter here and tests should reconfigure if needed).
-    TRY(kmac_testutils_config(kmac, true));
-
-    // Initialize keymgr context.
-    TRY(dif_keymgr_init(mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR),
-                        keymgr));
+    TRY(dif_init(keymgr, kmac));
 
     // Advance to Initialized state.
     TRY(keymgr_testutils_check_state(keymgr, kDifKeymgrStateReset));
