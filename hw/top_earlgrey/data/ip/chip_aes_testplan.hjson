@@ -66,6 +66,9 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: []
+      bazel: [
+        "//sw/device/tests/crypto:aes_functest",
+      ]
     }
     {
       name: chip_sw_aes_interrupt_encryption
@@ -253,6 +256,10 @@
       si_stage: SV3
       lc_states: ["PROD", "DEV"]
       tests: ["chip_sw_keymgr_sideload_aes"]
+      bazel: [
+        "//sw/device/tests/crypto:aes_sideload_functest",
+        "//sw/device/tests/crypto:aes_kwp_sideload_functest",
+      ]
     }
     {
       name: chip_sw_aes_masking_off
