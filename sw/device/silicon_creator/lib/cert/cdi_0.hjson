@@ -68,19 +68,24 @@
         },
         authority_key_identifier: { var: "creator_pub_key_id" },
         subject_key_identifier: { var: "owner_intermediate_pub_key_id" },
-        vendor: "OpenTitan",
-        model: "ROM_EXT",
-        svn: { var: "rom_ext_security_version" },
-        layer: 1,
-        fw_ids: [
-            { hash_algorithm: "sha256", digest: { var: "rom_ext_hash" } },
-        ],
-        flags: {
-            not_configured: false,
-            not_secure: false,
-            recovery: false,
-            debug: false,
-        }
+        extensions: [
+            {
+                type: "dice_tcb_info",
+                vendor: "OpenTitan",
+                model: "ROM_EXT",
+                svn: { var: "rom_ext_security_version" },
+                layer: 1,
+                fw_ids: [
+                    { hash_algorithm: "sha256", digest: { var: "rom_ext_hash" } },
+                ],
+                flags: {
+                    not_configured: false,
+                    not_secure: false,
+                    recovery: false,
+                    debug: false,
+                }
+            },
+        ]
         signature: {
             algorithm: "ecdsa-with-sha256",
             // The value field is optional: if not present, the signature will be cleared.
