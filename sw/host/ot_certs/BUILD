@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@rules_rust//rust:defs.bzl", "rust_doc", "rust_library", "rust_test")
+load("@rules_rust//rust:defs.bzl", "rust_doc", "rust_library", "rust_test", "rust_test_suite")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -66,6 +66,19 @@ rust_test(
         "@crate_index//:indoc",
     ],
     deps = [
+        "@crate_index//:base64ct",
+    ],
+)
+
+rust_test_suite(
+    name = "ot_certs_e2e_test",
+    srcs = glob(["tests/*.rs"]),
+    compile_data = [
+        ":generic_cert",
+    ],
+    deps = [
+        ":ot_certs",
+        "@crate_index//:anyhow",
         "@crate_index//:base64ct",
     ],
 )
