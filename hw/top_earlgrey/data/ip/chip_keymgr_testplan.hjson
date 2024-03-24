@@ -110,7 +110,10 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_sw_keymgr_sideload_aes"]
-      bazel: []
+      bazel: [
+        "//sw/device/tests/crypto:aes_sideload_functest",
+        "//sw/device/tests/crypto:aes_kwp_sideload_functest",
+      ]
     }
     {
       name: chip_sw_keymgr_sideload_otbn
@@ -126,7 +129,10 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_sw_keymgr_sideload_otbn"]
-      bazel: []
+      bazel: [
+        "//sw/device/tests/crypto:ecdh_p256_sideload_functest",
+        "//sw/device/tests/crypto:ecdsa_p256_sideload_functest",
+      ]
     }
     {
       name: chip_sw_keymgr_derive_attestation
