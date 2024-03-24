@@ -3,28 +3,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
-use num_bigint_dig::BigUint;
 
 use crate::asn1::builder::Builder;
 use crate::asn1::x509::X509;
 use crate::asn1::{Oid, Tag};
-use crate::template::{FirmwareId, Flags, Value};
+use crate::template::DiceTcbInfoExtension;
 
-#[derive(Debug, Clone)]
-pub struct DiceTcbInfo<'a> {
-    pub vendor: &'a Option<Value<String>>,
-    pub model: &'a Option<Value<String>>,
-    pub version: &'a Option<Value<String>>,
-    pub svn: &'a Option<Value<BigUint>>,
-    pub layer: &'a Option<Value<BigUint>>,
-    pub index: &'a Option<Value<BigUint>>,
-    pub fwids: &'a Option<Vec<FirmwareId>>,
-    pub flags: &'a Option<Flags>,
-    pub vendor_info: &'a Option<Value<Vec<u8>>>,
-    pub tcb_type: &'a Option<Value<Vec<u8>>>,
-}
-
-impl DiceTcbInfo<'_> {
+impl DiceTcbInfoExtension {
     // From the DICE specification:
     // https://trustedcomputinggroup.org/wp-content/uploads/DICE-Attestation-Architecture-r23-final.pdf
     //
@@ -57,7 +42,7 @@ impl DiceTcbInfo<'_> {
     pub fn push_extension<B: Builder>(&self, builder: &mut B) -> Result<()> {
         X509::push_extension(builder, &Oid::DiceTcbInfo, false, |builder| {
             builder.push_seq(Some("dice_tcb_info".into()), |builder| {
-                if let Some(vendor) = self.vendor {
+                if let Some(vendor) = &self.vendor {
                     builder.push_string(
                         Some("dice_vendor".into()),
                         &Tag::Context {
@@ -67,7 +52,7 @@ impl DiceTcbInfo<'_> {
                         vendor,
                     )?;
                 }
-                if let Some(model) = self.model {
+                if let Some(model) = &self.model {
                     builder.push_string(
                         Some("dice_model".into()),
                         &Tag::Context {
@@ -77,7 +62,7 @@ impl DiceTcbInfo<'_> {
                         model,
                     )?;
                 }
-                if let Some(version) = self.version {
+                if let Some(version) = &self.version {
                     builder.push_string(
                         Some("dice_version".into()),
                         &Tag::Context {
@@ -87,7 +72,7 @@ impl DiceTcbInfo<'_> {
                         version,
                     )?;
                 }
-                if let Some(svn) = self.svn {
+                if let Some(svn) = &self.svn {
                     builder.push_integer(
                         Some("dice_svn".into()),
                         &Tag::Context {
@@ -97,7 +82,7 @@ impl DiceTcbInfo<'_> {
                         svn,
                     )?;
                 }
-                if let Some(layer) = self.layer {
+                if let Some(layer) = &self.layer {
                     builder.push_integer(
                         Some("dice_layer".into()),
                         &Tag::Context {
@@ -107,17 +92,7 @@ impl DiceTcbInfo<'_> {
                         layer,
                     )?;
                 }
-                if let Some(index) = self.index {
-                    builder.push_integer(
-                        Some("dice_index".into()),
-                        &Tag::Context {
-                            constructed: false,
-                            value: 5,
-                        },
-                        index,
-                    )?;
-                }
-                if let Some(fwids) = self.fwids {
+                if let Some(fwids) = &self.fw_ids {
                     builder.push_tag(
                         Some("dice_fwids".into()),
                         &Tag::Context {
@@ -143,7 +118,7 @@ impl DiceTcbInfo<'_> {
                         },
                     )?;
                 }
-                if let Some(flags) = self.flags {
+                if let Some(flags) = &self.flags {
                     builder.push_bitstring(
                         Some("dice_flags".into()),
                         &Tag::Context {
@@ -156,28 +131,6 @@ impl DiceTcbInfo<'_> {
                             flags.recovery.clone(),
                             flags.debug.clone(),
                         ],
-                    )?;
-                }
-                if let Some(vendor_info) = self.vendor_info {
-                    builder.push_tag(
-                        Some("dice_vendor_info".into()),
-                        &Tag::Context {
-                            constructed: false,
-                            value: 8,
-                        },
-                        |builder| {
-                            builder.push_byte_array(Some("dice_vendor_info".into()), vendor_info)
-                        },
-                    )?;
-                }
-                if let Some(tcb_type) = self.tcb_type {
-                    builder.push_tag(
-                        Some("dice_type".into()),
-                        &Tag::Context {
-                            constructed: false,
-                            value: 9,
-                        },
-                        |builder| builder.push_byte_array(Some("dice_type".into()), tcb_type),
                     )?;
                 }
                 Ok(())

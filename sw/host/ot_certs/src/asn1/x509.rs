@@ -8,11 +8,10 @@ use num_traits::FromPrimitive;
 use std::collections::HashMap;
 
 use crate::asn1::builder::{concat_suffix, Builder};
-use crate::asn1::dice_tcb::DiceTcbInfo;
 use crate::asn1::{Oid, Tag};
 use crate::template::{
-    AttributeType, Certificate, EcCurve, EcPublicKeyInfo, EcdsaSignature, HashAlgorithm, Signature,
-    SubjectPublicKeyInfo, Value,
+    AttributeType, Certificate, CertificateExtension, EcCurve, EcPublicKeyInfo, EcdsaSignature,
+    HashAlgorithm, Signature, SubjectPublicKeyInfo, Value,
 };
 
 impl HashAlgorithm {
@@ -146,23 +145,23 @@ impl X509 {
                         Self::push_key_usage_ext(builder)?;
                         Self::push_auth_key_id_ext(builder, &cert.authority_key_identifier)?;
                         Self::push_subject_key_id_ext(builder, &cert.subject_key_identifier)?;
-                        let dice_tcb = DiceTcbInfo {
-                            vendor: &cert.vendor,
-                            model: &cert.model,
-                            version: &cert.version,
-                            svn: &cert.svn,
-                            layer: &cert.layer,
-                            index: &None,
-                            fwids: &cert.fw_ids,
-                            flags: &cert.flags,
-                            vendor_info: &None,
-                            tcb_type: &None,
-                        };
-                        dice_tcb.push_extension(builder)
+                        for ext in &cert.extensions {
+                            Self::push_cert_extension(builder, ext)?
+                        }
+                        Ok(())
                     })
                 },
             )
         })
+    }
+
+    pub fn push_cert_extension<B: Builder>(
+        builder: &mut B,
+        ext: &CertificateExtension,
+    ) -> Result<()> {
+        match ext {
+            CertificateExtension::DiceTcbInfo(dice_ext) => dice_ext.push_extension(builder),
+        }
     }
 
     pub fn push_name<B: Builder>(

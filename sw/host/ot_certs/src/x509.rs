@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{bail, ensure, Context, Result};
+use anyhow::{bail, Context, Result};
 use num_bigint_dig::BigUint;
 use std::collections::HashMap;
 
@@ -19,8 +19,8 @@ use crate::asn1::der;
 use crate::asn1::x509;
 
 use crate::template::{
-    self, AttributeType, EcCurve, EcPublicKeyInfo, EcdsaSignature, HashAlgorithm, Signature,
-    SubjectPublicKeyInfo, Value,
+    self, AttributeType, EcCurve, EcPublicKeyInfo, EcdsaSignature, Signature, SubjectPublicKeyInfo,
+    Value,
 };
 
 mod extension;
@@ -63,20 +63,12 @@ fn asn1bignum_to_bn(bn: &BigNumRef) -> Value<BigUint> {
     Value::literal(BigUint::from_bytes_be(&bn.to_vec()))
 }
 
-fn asn1bigint_to_bn(bn: &asn1::BigInt) -> Value<BigUint> {
-    Value::literal(BigUint::from_bytes_be(bn.as_bytes()))
-}
-
 fn asn1str_to_str(field: &str, s: &Asn1StringRef) -> Result<Value<String>> {
     Ok(Value::literal(
         s.as_utf8()
             .with_context(|| format!("could not extract {} from certificate", field))?
             .to_string(),
     ))
-}
-
-fn asn1utf8_to_str(s: &asn1::Utf8String) -> Value<String> {
-    Value::literal(s.as_str().to_string())
 }
 
 fn asn1octets_to_vec(s: &Asn1OctetStringRef) -> Value<Vec<u8>> {
@@ -170,38 +162,26 @@ pub fn generate_certificate(tmpl: &template::Template) -> Result<Vec<u8>> {
 
 /// Parse a X509 certificate
 pub fn parse_certificate(cert: &[u8]) -> Result<template::Certificate> {
-    let x509 = X509::from_der(cert).expect("could not parse certificate with openssl");
-    let dice_tcb_info = extension::extract_dice_tcb_info_extension(&x509)
-        .expect("could not parse DICE TCB extension");
-
-    let fw_ids = dice_tcb_info.fwids.map(|fwids| {
-        fwids
-            .clone()
-            .map(|fwid| template::FirmwareId {
-                hash_algorithm: HashAlgorithm::Sha256,
-                digest: Value::literal(fwid.digest.to_vec()),
-            })
-            .collect::<Vec<_>>()
-    });
-
-    // Vendor info is not supported.
-    ensure!(
-        dice_tcb_info.index.is_none(),
-        "the parser does not support DICE index"
-    );
-    ensure!(
-        dice_tcb_info.vendor_info.is_none(),
-        "the parser does not support DICE vendor info"
-    );
-    ensure!(
-        dice_tcb_info.tcb_type.is_none(),
-        "the parser does not support DICE type"
-    );
+    let x509 = X509::from_der(cert).context("could not parse certificate with openssl")?;
+    let raw_extensions =
+        extension::x509_get_extensions(&x509).context("could not parse X509 extensions")?;
+    let mut extensions = Vec::new();
+    for ext in raw_extensions {
+        match ext.object.nid() {
+            // Ignore extensions that are standard and handled by openssl.
+            Nid::BASIC_CONSTRAINTS => (),
+            Nid::KEY_USAGE => (),
+            Nid::AUTHORITY_KEY_IDENTIFIER => (),
+            Nid::SUBJECT_KEY_IDENTIFIER => (),
+            _ => extensions
+                .push(extension::parse_extension(&ext).context("could not parse X509 extension")?),
+        }
+    }
 
     let subject_public_key_info = extract_pub_key(
         &x509
             .public_key()
-            .expect("the X509 does not have a valid public key!"),
+            .context("the X509 does not have a valid public key!")?,
     )?;
 
     Ok(template::Certificate {
@@ -217,13 +197,7 @@ pub fn parse_certificate(cert: &[u8]) -> Result<template::Certificate> {
             x509.subject_key_id()
                 .context("the certificate has not subject key id")?,
         ),
-        model: dice_tcb_info.model.as_ref().map(asn1utf8_to_str),
-        vendor: dice_tcb_info.vendor.as_ref().map(asn1utf8_to_str),
-        version: dice_tcb_info.version.as_ref().map(asn1utf8_to_str),
-        svn: dice_tcb_info.svn.as_ref().map(asn1bigint_to_bn),
-        layer: dice_tcb_info.layer.as_ref().map(asn1bigint_to_bn),
-        fw_ids,
-        flags: dice_tcb_info.flags,
+        extensions,
         signature: extract_signature(&x509)?,
     })
 }
