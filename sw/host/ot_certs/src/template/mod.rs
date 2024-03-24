@@ -43,6 +43,7 @@ use crate::template::subst::{ConvertValue, SubstValue};
 
 /// Full template file, including variable declarations and certificate spec.
 #[derive(Clone, Debug, Deserialize, PartialEq, Eq, Serialize)]
+#[serde(deny_unknown_fields)]
 pub struct Template {
     /// Name of the certificate.
     pub name: String,
@@ -54,6 +55,7 @@ pub struct Template {
 
 /// Certificate specification.
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
 pub struct Certificate {
     /// X509 certificate's serial number
     pub serial_number: Value<BigUint>,
@@ -67,22 +69,37 @@ pub struct Certificate {
     pub authority_key_identifier: Value<Vec<u8>>,
     /// X509 certificate's public key identifier.
     pub subject_key_identifier: Value<Vec<u8>>,
-    /// DICE TCB model.
-    pub model: Option<Value<String>>,
-    /// DICE TCB vendor.
-    pub vendor: Option<Value<String>>,
-    /// DICE TCB version.
-    pub version: Option<Value<String>>,
-    /// DICE TCB security version number.
-    pub svn: Option<Value<BigUint>>,
-    /// DICE TCB layer.
-    pub layer: Option<Value<BigUint>>,
-    /// DICE TCB firmware IDs.
-    pub fw_ids: Option<Vec<FirmwareId>>,
-    /// DICE TCB flags.
-    pub flags: Option<Flags>,
+    /// X509 certificate extensions.
+    pub extensions: Vec<CertificateExtension>,
     /// X509 certificate's signature.
     pub signature: Signature,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
+#[serde(tag = "type", rename_all = "snake_case")]
+pub enum CertificateExtension {
+    /// DICE TCB extension.
+    DiceTcbInfo(DiceTcbInfoExtension),
+}
+
+/// DICE TCB extension.
+#[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct DiceTcbInfoExtension {
+    /// TCB model.
+    pub model: Option<Value<String>>,
+    /// TCB vendor.
+    pub vendor: Option<Value<String>>,
+    /// TCB version.
+    pub version: Option<Value<String>>,
+    /// TCB security version number.
+    pub svn: Option<Value<BigUint>>,
+    /// TCB layer.
+    pub layer: Option<Value<BigUint>>,
+    /// TCB firmware IDs.
+    pub fw_ids: Option<Vec<FirmwareId>>,
+    /// TCB flags.
+    pub flags: Option<Flags>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Hash, strum::Display, Serialize)]
@@ -113,6 +130,7 @@ pub enum Value<T> {
 
 /// Value which may either be a variable name or literal.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+#[serde(deny_unknown_fields)]
 pub struct Variable {
     /// Name of the variable.
     pub name: String,
@@ -251,6 +269,7 @@ pub enum Signature {
 /// The signature consists of two integers "r" and "s".
 /// See X9.62
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
 pub struct EcdsaSignature {
     pub r: Value<BigUint>,
     pub s: Value<BigUint>,
@@ -265,6 +284,7 @@ pub enum SubjectPublicKeyInfo {
 
 /// Representation of an elliptic curve public key information.
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
 pub struct EcPublicKeyInfo {
     pub curve: EcCurve,
     pub public_key: EcPublicKey,
@@ -273,6 +293,7 @@ pub struct EcPublicKeyInfo {
 /// Representation of an elliptic curve public key in uncompressed
 /// form.
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
 pub struct EcPublicKey {
     pub x: Value<BigUint>,
     pub y: Value<BigUint>,
@@ -287,6 +308,7 @@ pub enum EcCurve {
 
 /// Flags that can be set for a certificate.
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
 pub struct Flags {
     pub not_configured: Value<bool>,
     pub not_secure: Value<bool>,
@@ -296,6 +318,7 @@ pub struct Flags {
 
 /// Firmware ID (fwid) field.
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
 pub struct FirmwareId {
     /// Algorithm used for the has of the firmware.
     pub hash_algorithm: HashAlgorithm,
@@ -414,21 +437,26 @@ mod tests {
                 },
                 authority_key_identifier: { var: "signing_pub_key_id" },
                 subject_key_identifier: { var: "owner_pub_key_id" },
-                vendor: "OpenTitan",
-                model: "ROM_EXT",
-                svn: { var: "rom_ext_security_version" },
-                layer: { var: "layer" },
-                version: "ES",
-                fw_ids: [
-                  { hash_algorithm: "sha256", digest: { var: "rom_ext_hash" } },
-                  { hash_algorithm: "sha256", digest: { var: "ownership_manifest_hash" } },
+                extensions: [
+                    {
+                        type: "dice_tcb_info",
+                        vendor: "OpenTitan",
+                        model: "ROM_EXT",
+                        svn: { var: "rom_ext_security_version" },
+                        layer: { var: "layer" },
+                        version: "ES",
+                        fw_ids: [
+                        { hash_algorithm: "sha256", digest: { var: "rom_ext_hash" } },
+                        { hash_algorithm: "sha256", digest: { var: "ownership_manifest_hash" } },
+                        ],
+                        flags: {
+                        not_configured: true,
+                        not_secure: false,
+                        recovery: true,
+                        debug: false,
+                        }
+                    },
                 ],
-                flags: {
-                  not_configured: true,
-                  not_secure: false,
-                  recovery: true,
-                  debug: false,
-                }
                 signature: {
                   algorithm: "ecdsa-with-sha256",
                   // The value field is optional: if not present, the signature will be cleared.
@@ -502,27 +530,29 @@ mod tests {
             }),
             authority_key_identifier: Value::variable("signing_pub_key_id"),
             subject_key_identifier: Value::variable("owner_pub_key_id"),
-            vendor: Some(Value::literal("OpenTitan")),
-            model: Some(Value::literal("ROM_EXT")),
-            svn: Some(Value::variable("rom_ext_security_version")),
-            layer: Some(Value::variable("layer")),
-            version: Some(Value::literal("ES")),
-            fw_ids: Some(Vec::from([
-                FirmwareId {
-                    hash_algorithm: HashAlgorithm::Sha256,
-                    digest: Value::variable("rom_ext_hash"),
-                },
-                FirmwareId {
-                    hash_algorithm: HashAlgorithm::Sha256,
-                    digest: Value::variable("ownership_manifest_hash"),
-                },
-            ])),
-            flags: Some(Flags {
-                not_configured: Value::Literal(true),
-                not_secure: Value::Literal(false),
-                recovery: Value::Literal(true),
-                debug: Value::Literal(false),
-            }),
+            extensions: vec![CertificateExtension::DiceTcbInfo(DiceTcbInfoExtension {
+                vendor: Some(Value::literal("OpenTitan")),
+                model: Some(Value::literal("ROM_EXT")),
+                svn: Some(Value::variable("rom_ext_security_version")),
+                layer: Some(Value::variable("layer")),
+                version: Some(Value::literal("ES")),
+                fw_ids: Some(Vec::from([
+                    FirmwareId {
+                        hash_algorithm: HashAlgorithm::Sha256,
+                        digest: Value::variable("rom_ext_hash"),
+                    },
+                    FirmwareId {
+                        hash_algorithm: HashAlgorithm::Sha256,
+                        digest: Value::variable("ownership_manifest_hash"),
+                    },
+                ])),
+                flags: Some(Flags {
+                    not_configured: Value::Literal(true),
+                    not_secure: Value::Literal(false),
+                    recovery: Value::Literal(true),
+                    debug: Value::Literal(false),
+                }),
+            })],
             signature: Signature::EcdsaWithSha256 {
                 value: Some(EcdsaSignature {
                     r: Value::variable("cert_signature_r"),
@@ -538,6 +568,10 @@ mod tests {
             certificate,
         };
         let actual = Template::from_hjson_str(input).expect("failed to parse template");
-        assert_eq!(expected, actual);
+        // Manual assertion for pretty-printing the huge output if necessary.
+        assert_eq!(
+            expected, actual,
+            "certificate mismatch: expected {expected:#?} but got {actual:#?}"
+        );
     }
 }
