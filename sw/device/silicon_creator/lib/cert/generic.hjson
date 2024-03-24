@@ -102,20 +102,25 @@
         },
         authority_key_identifier: { var: "auth_key_id" },
         subject_key_identifier: { var: "pub_key_id" },
-        vendor: { var: "vendor" },
-        model: { var: "model" },
-        svn: { var: "security_version" },
-        layer: { var: "layer" },
-        fw_ids: [
-            { hash_algorithm: "sha256", digest: { var: "hash_1" } },
-            { hash_algorithm: "sha256", digest: { var: "hash_2" } },
+        extensions: [
+            {
+                type: "dice_tcb_info",
+                vendor: { var: "vendor" },
+                model: { var: "model" },
+                svn: { var: "security_version" },
+                layer: { var: "layer" },
+                fw_ids: [
+                    { hash_algorithm: "sha256", digest: { var: "hash_1" } },
+                    { hash_algorithm: "sha256", digest: { var: "hash_2" } },
+                ],
+                flags: {
+                    not_configured: { var: "not_configured" },
+                    not_secure: { var: "not_secure" },
+                    recovery: { var: "recovery" },
+                    debug: { var: "debug" },
+                }
+            }
         ],
-        flags: {
-            not_configured: { var: "not_configured" },
-            not_secure: { var: "not_secure" },
-            recovery: { var: "recovery" },
-            debug: { var: "debug" },
-        }
         signature: {
             algorithm: "ecdsa-with-sha256",
             // The value field is optional: if not present, the signature will be cleared.

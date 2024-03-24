@@ -27,20 +27,25 @@
         },
         authority_key_identifier: "94589abcd87444",
         subject_key_identifier: "04897afec876db",
-        vendor: "lowRISC",
-        model: "OpenTitan",
-        svn: "0",
-        layer: "42",
-        fw_ids: [
-            { hash_algorithm: "sha256", digest: "465644d935385783658357583758c593583b6537" },
-            { hash_algorithm: "sha256", digest: "009e9809f85978327592857a093f539078626589" },
+        extensions: [
+            {
+                type: "dice_tcb_info",
+                vendor: "lowRISC",
+                model: "OpenTitan",
+                svn: "0",
+                layer: "42",
+                fw_ids: [
+                    { hash_algorithm: "sha256", digest: "465644d935385783658357583758c593583b6537" },
+                    { hash_algorithm: "sha256", digest: "009e9809f85978327592857a093f539078626589" },
+                ],
+                flags: {
+                    not_configured: false,
+                    not_secure: false,
+                    recovery: false,
+                    debug: false,
+                }
+            }
         ],
-        flags: {
-            not_configured: false,
-            not_secure: false,
-            recovery: false,
-            debug: false,
-        }
         signature: {
             algorithm: "ecdsa-with-sha256",
             // The value field is optional: if not present, the signature will be cleared.

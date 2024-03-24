@@ -94,24 +94,29 @@
         },
         authority_key_identifier: { var: "auth_key_key_id" },
         subject_key_identifier: { var: "creator_pub_key_id" },
-        vendor: "OpenTitan",
-        model: "Device",
-        layer: "0",
-        svn: "0",
-        fw_ids: [
-            { hash_algorithm: "sha256", digest: { var: "otp_creator_sw_cfg_hash" } },
-            { hash_algorithm: "sha256", digest: { var: "otp_owner_sw_cfg_hash" } },
-            { hash_algorithm: "sha256", digest: { var: "otp_rot_creator_auth_codesign_hash" } },
-            { hash_algorithm: "sha256", digest: { var: "otp_rot_creator_auth_state_hash" } },
-            { hash_algorithm: "sha256", digest: { var: "otp_hw_cfg0_hash" } },
-            { hash_algorithm: "sha256", digest: { var: "otp_hw_cfg1_hash" } },
+        extensions: [
+            {
+                type: "dice_tcb_info",
+                vendor: "OpenTitan",
+                model: "Device",
+                layer: "0",
+                svn: "0",
+                fw_ids: [
+                    { hash_algorithm: "sha256", digest: { var: "otp_creator_sw_cfg_hash" } },
+                    { hash_algorithm: "sha256", digest: { var: "otp_owner_sw_cfg_hash" } },
+                    { hash_algorithm: "sha256", digest: { var: "otp_rot_creator_auth_codesign_hash" } },
+                    { hash_algorithm: "sha256", digest: { var: "otp_rot_creator_auth_state_hash" } },
+                    { hash_algorithm: "sha256", digest: { var: "otp_hw_cfg0_hash" } },
+                    { hash_algorithm: "sha256", digest: { var: "otp_hw_cfg1_hash" } },
+                ],
+                flags: {
+                    not_configured: false,
+                    not_secure: false,
+                    recovery: false,
+                    debug: { var: "debug_flag" },
+                }
+            },
         ],
-        flags: {
-            not_configured: false,
-            not_secure: false,
-            recovery: false,
-            debug: { var: "debug_flag" },
-        }
         signature: {
             algorithm: "ecdsa-with-sha256",
             value: {

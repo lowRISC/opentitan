@@ -13,8 +13,9 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 use crate::template::{
-    Certificate, Conversion, EcPublicKey, EcPublicKeyInfo, EcdsaSignature, FirmwareId, Flags,
-    Signature, SubjectPublicKeyInfo, Template, Value, Variable, VariableType,
+    Certificate, CertificateExtension, Conversion, DiceTcbInfoExtension, EcPublicKey,
+    EcPublicKeyInfo, EcdsaSignature, FirmwareId, Flags, Signature, SubjectPublicKeyInfo, Template,
+    Value, Variable, VariableType,
 };
 
 /// Substitution value: this is the raw value loaded from a hjson/json file
@@ -360,6 +361,34 @@ impl Subst for Certificate {
                 .subject_key_identifier
                 .subst(data)
                 .context("cannot substitute subject key id")?,
+            extensions: self
+                .extensions
+                .iter()
+                .map(|ext| ext.subst(data))
+                .collect::<Result<Vec<_>>>()
+                .context("cannot substitute in extensions")?,
+            signature: self
+                .signature
+                .subst(data)
+                .context("cannot substitute signature")?,
+        })
+    }
+}
+
+impl Subst for CertificateExtension {
+    fn subst(&self, data: &SubstData) -> Result<CertificateExtension> {
+        match self {
+            CertificateExtension::DiceTcbInfo(dice) => Ok(CertificateExtension::DiceTcbInfo(
+                dice.subst(data)
+                    .context("cannot substitute in DICE extension")?,
+            )),
+        }
+    }
+}
+
+impl Subst for DiceTcbInfoExtension {
+    fn subst(&self, data: &SubstData) -> Result<DiceTcbInfoExtension> {
+        Ok(DiceTcbInfoExtension {
             model: self
                 .model
                 .subst(data)
@@ -385,10 +414,6 @@ impl Subst for Certificate {
                 .flags
                 .subst(data)
                 .context("cannot substitute DICE flags")?,
-            signature: self
-                .signature
-                .subst(data)
-                .context("cannot substitute signature")?,
         })
     }
 }
