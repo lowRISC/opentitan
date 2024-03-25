@@ -35,24 +35,6 @@ BUCKET_URL = 'https://storage.googleapis.com/opentitan-bitstreams/'
 XMLNS = {'': 'http://doc.s3.amazonaws.com/2006-03-01'}
 # Manifest schema directory
 MANIFESTS_DIR = os.path.dirname(__file__) if __file__ else os.path.dirname(sys.argv[0])
-# Required designs
-KNOWN_DESIGNS = {
-    "chip_earlgrey_cw310": {
-        "bitstream": "@//hw/bitstream/vivado:fpga_cw310_test_rom",
-        "rom_mmi": "@//hw/bitstream/vivado:rom_mmi",
-        "otp_mmi": "@//hw/bitstream/vivado:otp_mmi",
-    },
-    "chip_earlgrey_cw310_hyperdebug": {
-        "bitstream": "@//hw/bitstream/vivado:fpga_cw310_test_rom_hyp",
-        "rom_mmi": "@//hw/bitstream/vivado:rom_mmi_hyp",
-        "otp_mmi": "@//hw/bitstream/vivado:otp_mmi_hyp",
-    },
-    "chip_earlgrey_cw340": {
-        "bitstream": "@//hw/bitstream/vivado:fpga_cw340_test_rom",
-        "rom_mmi": "@//hw/bitstream/vivado:fpga_cw340_rom_mmi",
-        "otp_mmi": "@//hw/bitstream/vivado:fpga_cw340_otp_mmi",
-    },
-}
 
 parser = argparse.ArgumentParser(
     description='Bitstream Downloader & Cache manager')
@@ -86,6 +68,9 @@ parser.add_argument('--refresh-time',
 parser.add_argument('--repo',
                     default='',
                     help="Location of the source git repo")
+parser.add_argument('--unavailable',
+                    default='@//hw/bitstream/vivado',
+                    help="Package to use for unavailable bitstreams")
 parser.add_argument(
     'bitstream',
     default='HEAD',
@@ -170,6 +155,7 @@ class BitstreamCache(object):
             load_latest_update: bool; whether to load the latest_update file
         """
         if not refresh:
+            logging.error("looking")
             for (_, dirnames, _) in os.walk('cache'):
                 for d in dirnames:
                     self.available[d] = 'local'
@@ -185,6 +171,7 @@ class BitstreamCache(object):
                         logging.error(
                             f'Bitstream cache missing {self.latest_update}.')
                     sys.exit(1)
+            logging.error("available = {}".format(self.available))
             return
 
         # Fetching the list of all entries in the cache may require multiple
@@ -381,7 +368,27 @@ class BitstreamCache(object):
         with open(path, "w") as manifest_file:
             json.dump(contents, manifest_file, indent=True)
 
-    def _ConstructBazelString(self, build_file: Path, key: str) -> str:
+    @staticmethod
+    def GetKnownDesigns(package: str) -> Dict:
+        return {
+            "chip_earlgrey_cw310": {
+                "bitstream": package + ":fpga_cw310_test_rom",
+                "rom_mmi": package + ":rom_mmi",
+                "otp_mmi": package + ":otp_mmi",
+            },
+            "chip_earlgrey_cw310_hyperdebug": {
+                "bitstream": package + ":fpga_cw310_test_rom_hyp",
+                "rom_mmi": package + ":rom_mmi_hyp",
+                "otp_mmi": package + ":otp_mmi_hyp",
+            },
+            "chip_earlgrey_cw340": {
+                "bitstream": package + ":fpga_cw340_test_rom",
+                "rom_mmi": package + ":fpga_cw340_rom_mmi",
+                "otp_mmi": package + ":fpga_cw340_otp_mmi",
+            },
+        }
+
+    def _ConstructBazelString(self, build_file: Path, key: str, unavailable: str) -> str:
         # If `key` passed in is "latest", this updates the `key` to be the hash
         # that "latest" points to.
         if key == 'latest':
@@ -479,25 +486,27 @@ class BitstreamCache(object):
 
         bazel_lines += filegroup_lines("manifest", manifest_path)
 
-        for design_name in sorted(KNOWN_DESIGNS.keys()):
+        known_designs = self.GetKnownDesigns(unavailable)
+        for design_name in sorted(known_designs.keys()):
             if design_name not in designs:
-                for target_ext, alias in KNOWN_DESIGNS[design_name].items():
+                for target_ext, alias in known_designs[design_name].items():
                     target = "{}_{}".format(design_name, target_ext)
                     bazel_lines += alias_lines(target, alias)
 
         return '\n'.join(bazel_lines)
 
-    def WriteBazelFiles(self, build_file: Path, key: str) -> str:
+    def WriteBazelFiles(self, build_file: Path, key: str, unavailable: str) -> str:
         """Write a BUILD file for the requested bitstream files.
 
         Args:
             build: path; Filename of the BUILD file to write.
             key: str; A git hash or the string 'latest'.
+            unavailable: str; Package under //hw/bitstream/ to use for unavailable designs.
         Returns:
             Either `key` or the corresponding commit hash if `key` is 'latest'.
         """
         with open(build_file, 'wt') as f:
-            f.write(self._ConstructBazelString(build_file, key))
+            f.write(self._ConstructBazelString(build_file, key, unavailable))
 
         if key != 'latest':
             return key
@@ -508,6 +517,7 @@ def main(argv):
     # The user can override some basic behaviors with the BITSTREAM
     # environment variable.
     env = os.environ.get('BITSTREAM')
+    logging.error("BITSTREAM={}".format(env))
     if env:
         argv.extend(env.split(' '))
     args = parser.parse_args(args=argv[1:])
@@ -539,6 +549,7 @@ def main(argv):
 
     # If commanded to print bitstream availability, do so.
     if args.list:
+        logging.error("avail: {}".format(cache.available))
         for k, v in cache.available.items():
             print('{}: {}'.format(k, v))
 
@@ -559,7 +570,8 @@ def main(argv):
     # the labels:
     #   @bitstreams//:{design}_bitstream
     configured_bitream = cache.WriteBazelFiles(args.build_file,
-                                               desired_bitstream)
+                                               desired_bitstream,
+                                               args.unavailable)
     if desired_bitstream != 'latest' and configured_bitream != desired_bitstream:
         logging.error(
             'Configured bitstream {} does not match desired bitstream {}.'.
