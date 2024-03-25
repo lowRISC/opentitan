@@ -17,7 +17,7 @@
               ]
 
   run_opts:   [ "-outdir {build_dir}/qrun.out",
-                "-sv_seed {seed}",
+                "-sv_seed {short_seed}",
                 // dv_macros.svh has a macro printing null using %0d
                 // format specifier, Questa throws an error on this
                 // we demote this error in Questa
