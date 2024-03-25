@@ -67,6 +67,12 @@ static ecc_p256_public_key_t host_ecc_pk;
 static wrapped_rma_unlock_token_t wrapped_rma_token;
 
 /**
+ * Keymgr binding values.
+ */
+static keymgr_binding_value_t attestation_binding_value = {.data = {0}};
+static keymgr_binding_value_t sealing_binding_value = {.data = {0}};
+
+/**
  * Certificate data.
  */
 static const flash_ctrl_perms_t kCertificateFlashInfoPerms = {
@@ -165,6 +171,38 @@ static status_t personalize_otp_secrets(ujson_t *uj) {
 }
 
 /**
+ * Sets the attestation binding to the ROM_EXT measurement, and the sealing
+ * binding to all zeros.
+ *
+ * The sealing binding value is set to all zeros as it is unused in the current
+ * personalization flow. This may be changed in the future.
+ */
+static void compute_keymgr_owner_int_binding(manuf_certgen_inputs_t *inputs) {
+  memcpy(attestation_binding_value.data, inputs->rom_ext_measurement,
+         kAttestMeasurementSizeInBytes);
+  memset(sealing_binding_value.data, 0, kAttestMeasurementSizeInBytes);
+}
+
+/**
+ * Sets the attestation binding to a combination of the Owner firmware and
+ * Ownership Manifest measurements, and the sealing binding to all zeros.
+ *
+ * The sealing binding value is set to all zeros as it is unused in the current
+ * personalization flow. This may be changed in the future.
+ */
+static void compute_keymgr_owner_binding(manuf_certgen_inputs_t *inputs) {
+  hmac_digest_t combined_measurements;
+  hmac_sha256_init();
+  hmac_sha256_update((unsigned char *)inputs->owner_measurement,
+                     kAttestMeasurementSizeInBytes);
+  hmac_sha256_update((unsigned char *)inputs->owner_manifest_measurement,
+                     kAttestMeasurementSizeInBytes);
+  memcpy(attestation_binding_value.data, combined_measurements.digest,
+         kAttestMeasurementSizeInBytes);
+  memset(sealing_binding_value.data, 0, kAttestMeasurementSizeInBytes);
+}
+
+/**
  * Crank the keymgr to produce the DICE attestation keys and certificates.
  */
 static status_t personalize_dice_certificates(ujson_t *uj) {
@@ -182,11 +220,15 @@ static status_t personalize_dice_certificates(ujson_t *uj) {
   // Advance keymgr to Initialized state.
   TRY(sc_keymgr_state_check(kScKeymgrStateReset));
   sc_keymgr_advance_state();
+  TRY(sc_keymgr_state_check(kScKeymgrStateInit));
 
   // Load OTBN attestation keygen program.
+  // TODO(#21550): this should already be loaded by the ROM.
   TRY(otbn_boot_app_load());
 
   // Generate UDS keys and (TBS) cert.
+  sc_keymgr_advance_state();
+  TRY(sc_keymgr_state_check(kScKeymgrStateCreatorRootKey));
   TRY(dice_uds_cert_build(&certgen_inputs, &uds_pubkey_id,
                           dice_certs.uds_tbs_certificate,
                           &dice_certs.uds_tbs_certificate_size));
@@ -200,6 +242,10 @@ static status_t personalize_dice_certificates(ujson_t *uj) {
   LOG_INFO("Generated UDS certificate.");
 
   // Generate CDI_0 keys and cert.
+  compute_keymgr_owner_int_binding(&certgen_inputs);
+  TRY(sc_keymgr_owner_int_advance(&sealing_binding_value,
+                                  &attestation_binding_value,
+                                  /*max_key_version=*/0));
   TRY(dice_cdi_0_cert_build(&certgen_inputs, &uds_pubkey_id, &cdi_0_pubkey_id,
                             dice_certs.cdi_0_certificate,
                             &dice_certs.cdi_0_certificate_size));
@@ -213,6 +259,10 @@ static status_t personalize_dice_certificates(ujson_t *uj) {
   LOG_INFO("Generated CDI_0 certificate.");
 
   // Generate CDI_1 keys and cert.
+  compute_keymgr_owner_binding(&certgen_inputs);
+  TRY(sc_keymgr_owner_advance(&sealing_binding_value,
+                              &attestation_binding_value,
+                              /*max_key_version=*/0));
   TRY(dice_cdi_1_cert_build(&certgen_inputs, &cdi_0_pubkey_id,
                             dice_certs.cdi_1_certificate,
                             &dice_certs.cdi_1_certificate_size));
