@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// HMAC-SHA256/SHA384/SHA512
+// HMAC/SHA-2 256/384/512
 
 `include "prim_assert.sv"
 
@@ -38,7 +38,7 @@ module hmac
   tlul_pkg::tl_h2d_t  tl_win_h2d;
   tlul_pkg::tl_d2h_t  tl_win_d2h;
 
-  logic [1023:0] secret_key;
+  logic [1023:0] secret_key, secret_key_d;
 
   // Logic will support key length <= block size
   // Will default to key length = block size, if key length > block size or unsupported value
@@ -92,8 +92,8 @@ module hmac
   logic        reg_hash_stop;
   logic        reg_hash_continue;
   logic        sha_hash_continue;
-  logic        hash_start; // reg_hash_start gated with when it is allowed
-  logic        hash_continue; // reg_hash_continue gated with when it is allowed
+  logic        hash_start;     // hash_start is reg_hash_start gated with an extra check
+  logic        hash_continue;  // hash_continue is reg_hash_continue gated with an extra check
   logic        hash_start_or_continue;
   logic        hash_done_event;
   logic        reg_hash_process;
@@ -102,8 +102,8 @@ module hmac
   logic        reg_hash_done;
   logic        sha_hash_done;
 
-  logic [127:0] message_length;
-  logic [127:0] sha_message_length;
+  logic [63:0] message_length, message_length_d;
+  logic [63:0] sha_message_length;
 
   err_code_e   err_code;
   logic        err_valid;
@@ -164,8 +164,7 @@ module hmac
       DoneAwaitMessageComplete: begin
         if (sha_message_length[8:0] == '0 /* <=> sha_message_length % 512 == 0 */) begin
           // Once the current message block is complete, wait for the hash to complete.
-          // TODO: When adding SHA-384/512, the `512` (i.e., the block size) above must be
-          // dynamically changed between 512 (for SHA-256) and 1024 (for SHA-384/512).
+          // TODO (issue #21710): handle incomplete message size and check against 512 or 1024
           done_state_d = DoneAwaitHashComplete;
         end
       end
@@ -189,40 +188,45 @@ module hmac
     end
   end
 
-  // secret key
   assign wipe_secret = reg2hw.wipe_secret.qe;
   assign wipe_v      = reg2hw.wipe_secret.q;
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      secret_key <= '0;
-    end else if (wipe_secret) begin
-      secret_key <= {32{wipe_v}};
+  // update secret key
+  always_comb begin : update_secret_key
+    secret_key_d = secret_key;
+    if (wipe_secret) begin
+      secret_key_d = {32{wipe_v}};
     end else if (!cfg_block) begin
       // Allow updating secret key only when the engine is in Idle.
       for (int i = 0; i < 32; i++) begin
         if (reg2hw.key[31-i].qe) begin
-          secret_key[32*i+:32] <= reg2hw.key[31-i].q;
+          secret_key_d[32*i+:32] = reg2hw.key[31-i].q;
         end
       end
     end
+  end
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) secret_key <= '0;
+    else         secret_key <= secret_key_d;
   end
 
   for (genvar i = 0; i < 32; i++) begin : gen_key
     assign hw2reg.key[31-i].d      = '0;
   end
 
-  // TODO: decide how to deal with changing HMAC cfg (digest sizes) - do we clear previous
-  // digest CSRs once HMAC is newly configured? Or do we hold previous value and gate the digest
-  // signal to the output and CSRs only when HMAC is done or secret wiping is triggered?
-  // This also impacts DV and when we read and check the digest CSRs
+  // TODO (issue #22312): decide how to deal with changing HMAC cfg (digest sizes)
+  // retain previous digest or clear?
   always_comb begin : assign_digest_reg
     for (int i = 0; i < 16; i++) begin
       // default
       if (i < 8) begin
+        // digest SW -> HW
         digest_sw[i]    = '0;
         digest_sw_we[i] = '0;
       end
+      // digest HW -> SW
+      hw2reg.digest[i].d = '0;
 
       if (digest_size == SHA2_256) begin
         if (i < 8) begin
@@ -249,11 +253,6 @@ module hmac
           digest_sw[i/2]    = conv_endian64({reg2hw.digest[i].q,reg2hw.digest[i-1].q}, digest_swap);
           digest_sw_we[i/2] = reg2hw.digest[i].qe | reg2hw.digest[i-1].qe;
         end
-      end else begin // clear regs
-          hw2reg.digest[i].d     = '0;
-          // digest SW -> HW
-          digest_sw[i/2]         = '0;
-          digest_sw_we[i/2]      = '0;
       end
     end
   end
@@ -274,8 +273,7 @@ module hmac
       SHA2_512:  digest_size = SHA2_512;
       SHA2_None: digest_size = SHA2_None;
       default:   digest_size = SHA2_None; // unsupported values are mapped to SHA2_NONE
-      // TODO: what to do with SHA2_None? Return all-zero digest and error status or default to
-      // SHA-2 256? This is currently not tested in DV since not handled, so it times out
+      // TODO (issue #22312)
     endcase
   end
 
@@ -288,7 +286,7 @@ module hmac
       Key_512:  key_length = Key_512;
       Key_1024: key_length = Key_1024;
       default:  key_length = Key_256; // unsupported values are mapped to Key_256
-      // TODO: change default to Key_512?
+      // TODO (issue #22312)
     endcase
   end
 
@@ -372,6 +370,7 @@ module hmac
       msg_allowed <= 1'b 0;
     end
   end
+
   ////////////////
   // Interrupts //
   ////////////////
@@ -497,6 +496,7 @@ module hmac
   logic index;
   always_comb begin : select_fifo_wdata
     if (hmac_fifo_wsel) begin
+      fifo_wdata = '0;
       if (digest_size == SHA2_256) begin
         // only reads out lower 32 bits of each digest word and discards upper 32-bit zero padding
         fifo_wdata = '{data: digest[hmac_fifo_wdata_sel[2:0]][31:0], mask: '1};
@@ -504,8 +504,6 @@ module hmac
         // reads out first upper 32 bits then lower 32 bits of each digest word
         index = !hmac_fifo_wdata_sel[0];
         fifo_wdata = '{data: digest[hmac_fifo_wdata_sel >> 1][32*index+:32], mask: '1};
-      end else begin
-        fifo_wdata = '0;
       end
     end else begin
       fifo_wdata = reg_fifo_wentry;
@@ -578,23 +576,25 @@ module hmac
 
   // Calculate written message
   always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      message_length <= '0;
-    end else begin
-      if (!cfg_block) begin
-        if (reg2hw.msg_length_lower.qe) begin
-          message_length[31:0]  <= reg2hw.msg_length_lower.q;
-        end
-        if (reg2hw.msg_length_upper.qe) begin
-          message_length[63:32] <= reg2hw.msg_length_upper.q;
-        end
-        message_length[127:64]  <= '0;
+    if (!rst_ni) message_length <= '0;
+    else         message_length <= message_length_d;
+  end
+
+  always_comb begin
+    message_length_d = message_length;
+    if (!cfg_block) begin
+      if (reg2hw.msg_length_lower.qe) begin
+        message_length_d[31:0]  = reg2hw.msg_length_lower.q;
       end
-      if (hash_start) begin
-        message_length <= '0;
-      end else if (msg_write && sha_en && packer_ready) begin
-        message_length <= message_length + 128'(wmask_ones);
+      if (reg2hw.msg_length_upper.qe) begin
+        message_length_d[63:32] = reg2hw.msg_length_upper.q;
       end
+    end
+
+    if (hash_start) begin
+      message_length_d = '0;
+    end else if (msg_write && sha_en && packer_ready) begin
+      message_length_d = message_length + 64'(wmask_ones);
     end
   end
 
@@ -637,39 +637,39 @@ module hmac
   hmac_core u_hmac (
     .clk_i,
     .rst_ni,
-    .secret_key,
-    .wipe_secret,
-    .wipe_v,
-    .hmac_en,
-    .digest_size,
-    .key_length,
+    .secret_key_i  (secret_key),
+    .wipe_secret_i (wipe_secret),
+    .wipe_v_i      (wipe_v),
+    .hmac_en_i     (hmac_en),
+    .digest_size_i (digest_size),
+    .key_length_i  (key_length),
 
-    .reg_hash_start    (hash_start),
-    .reg_hash_continue (hash_continue),
-    .reg_hash_process  (packer_flush_done), // Trigger after all msg written
-    .hash_done         (reg_hash_done),
-    .sha_hash_start,
-    .sha_hash_continue,
-    .sha_hash_process,
-    .sha_hash_done,
+    .reg_hash_start_i    (hash_start),
+    .reg_hash_continue_i (hash_continue),
+    .reg_hash_process_i  (packer_flush_done), // Trigger after all msg written
+    .hash_done_o         (reg_hash_done),
+    .sha_hash_start_o    (sha_hash_start),
+    .sha_hash_continue_o (sha_hash_continue),
+    .sha_hash_process_o  (sha_hash_process),
+    .sha_hash_done_i     (sha_hash_done),
 
-    .sha_rvalid     (shaf_rvalid),
-    .sha_rdata      (shaf_rdata),
-    .sha_rready     (shaf_rready),
+    .sha_rvalid_o     (shaf_rvalid),
+    .sha_rdata_o      (shaf_rdata),
+    .sha_rready_i     (shaf_rready),
 
-    .fifo_rvalid,
-    .fifo_rdata,
-    .fifo_rready,
+    .fifo_rvalid_i (fifo_rvalid),
+    .fifo_rdata_i  (fifo_rdata),
+    .fifo_rready_o (fifo_rready),
 
-    .fifo_wsel      (hmac_fifo_wsel),
-    .fifo_wvalid    (hmac_fifo_wvalid),
-    .fifo_wdata_sel (hmac_fifo_wdata_sel),
-    .fifo_wready,
+    .fifo_wsel_o      (hmac_fifo_wsel),
+    .fifo_wvalid_o    (hmac_fifo_wvalid),
+    .fifo_wdata_sel_o (hmac_fifo_wdata_sel),
+    .fifo_wready_i    (fifo_wready),
 
-    .message_length,
-    .sha_message_length,
+    .message_length_i     (message_length),
+    .sha_message_length_o (sha_message_length),
 
-    .idle           (hmac_core_idle)
+    .idle_o           (hmac_core_idle)
   );
 
   // Instantiate SHA-2 256/384/512 engine

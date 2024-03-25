@@ -158,8 +158,7 @@ Alert Test Register
 HMAC Configuration register.
 
 The register is updated when the engine is in Idle.
-If the software updates the register while the engine computes the hash,
-the updated value is discarded.
+If the software updates the register while the engine computes the hash, the updated value is discarded.
 - Offset: `0x10`
 - Reset default: `0x210`
 - Reset mask: `0x1fff`
@@ -183,11 +182,9 @@ the updated value is discarded.
 ### CFG . key_length
 Key length configuration.
 
-This is a 5-bit one-hot encoded field to configure the key length for HMAC. The HMAC
-supports key lengths of 128-bit, 256-bit, 384-bit, 512-bit and 1024-bit, but will
-to block size if key length is greater than block size, i.e. max of 1024 bits
-for digest size SHA-2 384/512 and respectively 512 bits for SHA-2 256. The value of
-this register is irrelevant when only SHA-2 (not keyed HMAC) is configured.
+This is a 5-bit one-hot encoded field to configure the key length for HMAC.
+The HMAC supports key lengths of 128-bit, 256-bit, 384-bit, 512-bit and 1024-bit, but will to block size if key length is greater than block size, i.e. max of 1024 bits for digest size SHA-2 384/512 and respectively 512 bits for SHA-2 256.
+The value of this register is irrelevant when only SHA-2 (not keyed HMAC) is configured.
 
 | Value   | Name     | Description                                                                                          |
 |:--------|:---------|:-----------------------------------------------------------------------------------------------------|
@@ -203,8 +200,7 @@ Other values are reserved.
 Digest size configuration.
 
 This is a 4-bit one-hot encoded field to select digest size for either HMAC or SHA-2.
-Invalid values, i.e., values with multiple bits set and value 4'b0000 are
-mapped in HMAC to SHA2_NONE (4'b0001).
+Invalid values, i.e., values with multiple bits set and value 4'b0000 are mapped in HMAC to SHA2_NONE (4'b0001).
 
 | Value   | Name      | Description                                                                      |
 |:--------|:----------|:---------------------------------------------------------------------------------|
@@ -218,32 +214,23 @@ Other values are reserved.
 ### CFG . digest_swap
 Digest register byte swap.
 
-If 1 the value contained in each digest output register is
-converted to big-endian byte order.
-This setting does not affect the order of the digest output
-registers, [`DIGEST_0`](#digest_0) still contains the first 4 bytes of
-the digest.
+If 1 the value contained in each digest output register is converted to big-endian byte order.
+This setting does not affect the order of the digest output registers, [`DIGEST_0`](#digest_0) still contains the first 4 bytes of the digest.
 
 ### CFG . endian_swap
 Endian swap.
 
-If 0, each value will be added to the message in little-endian
-byte order. The value is written to MSG_FIFO same to the SW writes.
-
-If 1, then each individual multi-byte value, regardless of its
-alignment, written to [`MSG_FIFO`](#msg_fifo) will be added to the message
-in big-endian byte order.
-
-A message written to [`MSG_FIFO`](#msg_fifo) one byte at a time will not be
-affected by this setting.
-
-From a hardware perspective byte swaps are performed on a TL-UL
-word granularity.
+If 0, each value will be added to the message in little-endian byte order.
+The value is written to MSG_FIFO same to the SW writes.
+If 1, then each individual multi-byte value, regardless of its alignment, written to [`MSG_FIFO`](#msg_fifo) will be added to the message in big-endian byte order.
+A message written to [`MSG_FIFO`](#msg_fifo) one byte at a time will not be affected by this setting.
+From a hardware perspective byte swaps are performed on a TL-UL word granularity.
 
 ### CFG . sha_en
-SHA256 enable. If 0, SHA engine won't initiate compression,
-this is used to stop operation of the SHA engine until configuration
-has been done. When the SHA engine is disabled the digest is cleared.
+SHA-2 enable.
+
+ If 0, the SHA engine will not initiate compression, this is used to stop operation of the SHA-2 engine until configuration has been done.
+ When the SHA-2 engine is disabled the digest is cleared.
 
 ### CFG . hmac_en
 HMAC datapath enable.
@@ -271,26 +258,19 @@ HMAC command register
 |   0    | r0w1c  |    x    | [hash_start](#cmd--hash_start)       |
 
 ### CMD . hash_continue
-When 1 is written to this field, SHA or HMAC will continue hashing based on the
-current hash in the digest registers and the message length, which both have to be
-restored to switch context.
+When 1 is written to this field, SHA or HMAC will continue hashing based on the current hash in the digest registers and the message length, which both have to be restored to switch context.
 
 ### CMD . hash_stop
-When 1 is written to this field, SHA or HMAC will afterwards set the `hmac_done`
-interrupt as soon as the current block has been hashed. The hash can then be read
-from the registers [`DIGEST_0`](#digest_0) to [`DIGEST_7.`](#digest_7) Together with the message length in
-[`MSG_LENGTH_LOWER`](#msg_length_lower) and [`MSG_LENGTH_UPPER`](#msg_length_upper), this forms the information that has to be
-saved before switching context.
+When 1 is written to this field, SHA or HMAC will afterwards set the `hmac_done` interrupt as soon as the current block has been hashed.
+The hash can then be read from the registers [`DIGEST_0`](#digest_0) to [`DIGEST_7.`](#digest_7)
+Together with the message length in [`MSG_LENGTH_LOWER`](#msg_length_lower) and [`MSG_LENGTH_UPPER`](#msg_length_upper), this forms the information that has to be saved before switching context.
 
 ### CMD . hash_process
-If writes 1 into this field, SHA-2 or HMAC calculates the digest or signing
-based on currently received message.
+If 1 is written to this field, SHA-2 or HMAC calculates the digest or signing based on currently received message.
 
 ### CMD . hash_start
-If writes 1 into this field, SHA-2 or HMAC begins its operation.
-
-CPU must configure relative information first, such as the digest size, secret key
-and the key length.
+If 1 is written into this field, SHA-2 or HMAC begins its operation.
+CPU must configure relative information first, such as the digest size, secret key and the key length.
 
 ## STATUS
 HMAC Status register
@@ -331,11 +311,10 @@ HMAC Error Code
 ## WIPE_SECRET
 Clear internal secret registers.
 
-If CPU writes value into the register, the value is used to clear the internal
-variables such as secret key, internal state machine, or hash value. The clear
-secret operation uses XORs with the provided value as one of the operands. It is
-recommended to use a value extracted from an entropy source. A value equal to 0
-will leave all internal values unchanged.
+If CPU writes value into the register, the value is used to clear the internal variables such as secret key, internal state machine, or hash value.
+The clear secret operation uses XORs with the provided value as one of the operands.
+It is recommended to use a value extracted from an entropy source.
+A value equal to 0 will leave all internal values unchanged.
 - Offset: `0x20`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
@@ -353,14 +332,12 @@ will leave all internal values unchanged.
 ## KEY
 HMAC Secret Key
 
-HMAC using SHA-256/384/512 assumes any hashed secret key length up to the block size,
-thus capped at 1024-bit. [`key_length`](#key_length) determines how many of these registers are
-relevant for the HMAC operation. Order of the secret key is:
+HMAC using SHA-2 256/384/512 assumes any hashed secret key length up to the block size, thus capped at 1024-bit.
+[`key_length`](#key_length) determines how many of these registers are relevant for the HMAC operation. Order of the secret key is:
 key[1023:0] = {KEY0, KEY1, KEY2, ... , KEY31};
 
 The registers are allowed to be updated only when the engine is in Idle state.
-If the engine computes the hash, it discards any attempts to update the secret keys
-and report an error.
+If the engine computes the hash, it discards any attempts to update the secret keys and report an error.
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -416,11 +393,9 @@ and report an error.
 Digest output.
 
 If HMAC is disabled, the register shows result of SHA-2 256/384/512.
-Order of the digest is:
-digest[511:0] = {DIGEST0, DIGEST1, DIGEST2, ... , DIGEST15}. For SHA-2 256
-256-bit digest = {DIGEST0, DIGEST1, DIGEST2, DIGEST3, DIGEST4, DIGEST5, DIGEST6,
-DIGEST7} and {DIGEST8 - DIGEST15} are all-zero. For SHA-2 384, {DIGEST12-DIGEST15} are
-truncated and are all-zero.
+Order of the 512-bit digest[511:0] = {DIGEST0, DIGEST1, DIGEST2, ... , DIGEST15}.
+For SHA-2 256 order of the 256-bit digest[255:0] = {DIGEST0, DIGEST1, DIGEST2, DIGEST3, DIGEST4, DIGEST5, DIGEST6, DIGEST7} and {DIGEST8 - DIGEST15} are all-zero.
+For SHA-2 384, {DIGEST12-DIGEST15} are truncated and are all-zero.
 
 The digest gets cleared when `CFG.sha_en` transitions from 1 to 0.
 When `CFG.sha_en` is 0, these registers can be written by software.
@@ -463,7 +438,7 @@ When `CFG.sha_en` is 0, these registers can be written by software.
 Received Message Length calculated by the HMAC in bits [31:0]
 
 Message is byte granularity.
-lower 3bits [2:0] are ignored.
+Lower 3 bits [2:0] are ignored.
 
 When `CFG.sha_en` is 0, this register can be written by software.
 - Offset: `0xe4`
@@ -484,10 +459,8 @@ When `CFG.sha_en` is 0, this register can be written by software.
 Received Message Length calculated by the HMAC in bits [63:32]
 
 When `CFG.sha_en` is 0, this register can be written by software.
-For SHA-2-2 256 computations, message length is 64-bit
-{MSG_LENGTH_UPPER, MSG_LENGTH_LOWER}, and for SHA-2 384/512,
-message length is extended to 128-bit in line with [nist-fips-180-4] where the
-upper 64 bits get zero-padded: {32'b0, 32'b0, MSG_LENGTH_UPPER, MSG_LENGTH_LOWER}.
+For SHA-2-2 256 computations, message length is 64-bit {MSG_LENGTH_UPPER, MSG_LENGTH_LOWER}.f
+For SHA-2 384/512 message length is extended to 128-bit in line with [nist-fips-180-4] where the upper 64 bits get zero-padded: {32'b0, 32'b0, MSG_LENGTH_UPPER, MSG_LENGTH_LOWER}.
 - Offset: `0xe8`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
