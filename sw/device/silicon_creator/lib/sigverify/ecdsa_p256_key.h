@@ -15,7 +15,10 @@ extern "C" {
 
 enum {
   /** Number of 32-bit words in a P-256 public key. */
-  kP256PublicKeyWords = 512 / 32,
+  kP256PublicKeyWords = 512 / (sizeof(uint32_t) * BITS_PER_BYTE),
+
+  /** Number of 32-bit words in a P-256 public key component. */
+  kP256PublicKeyComponentWords = kP256PublicKeyWords / 2,
 };
 
 /**
