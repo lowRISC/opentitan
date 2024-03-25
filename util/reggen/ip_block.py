@@ -56,7 +56,11 @@ KNOWN_CIP_IDS = {
     32: 'alert_handler',
     33: 'rv_plic',
     34: 'ast',
-    35: 'sensor_ctrl'
+    35: 'sensor_ctrl',
+    36: 'dma',
+    37: 'mbx',
+    38: 'soc_proxy',
+    39: 'keymgr_dpe'
 }
 
 REQUIRED_ALIAS_FIELDS = {
