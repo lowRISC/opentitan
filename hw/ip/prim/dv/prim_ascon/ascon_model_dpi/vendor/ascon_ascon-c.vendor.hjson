@@ -1,0 +1,29 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: "ascon_ascon-c",
+  target_dir: "ascon_ascon-c",
+
+  upstream: {
+    url: "https://github.com/ascon/ascon-c.git",
+    rev: "main",
+  },
+
+  mapping : [
+    {from: 'crypto_aead/ascon128v12/ref', to: 'ascon128'},
+    {from: 'tests/crypto_aead.h', to: 'ascon128'}
+    {from: 'crypto_aead/ascon128av12/ref', to: 'ascon128a'},
+    {from: 'tests/crypto_aead.h', to: 'ascon128a'},
+    {from: 'LICENSE', to: 'LICENSE'}
+  ]
+
+  exclude_from_upstream : [
+    "crypto_aead/ascon128v12/ref/implementors",
+    "crypto_aead/ascon128v12/ref/goal-constindex",
+    "crypto_aead/ascon128v12/ref/goal-constbranch",
+    "crypto_aead/ascon128av12/ref/implementors",
+    "crypto_aead/ascon128av12/ref/goal-constindex",
+    "crypto_aead/ascon128av12/ref/goal-constbranch",
+  ]
+}
