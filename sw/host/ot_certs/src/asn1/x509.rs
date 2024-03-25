@@ -15,7 +15,7 @@ use crate::template::{
 };
 
 impl HashAlgorithm {
-    // Return the object indentifier of this algorithm.
+    // Return the object identifier of this algorithm.
     pub fn oid(&self) -> Oid {
         match self {
             HashAlgorithm::Sha256 => Oid::Sha256,
@@ -34,7 +34,7 @@ impl EcCurve {
 // Those attribute types are described in X.520. For UnboundedDirectoryString,
 // we have chosen the UTF-8 type.
 impl AttributeType {
-    // Return the object indentifier of this attribute type.
+    // Return the object identifier of this attribute type.
     pub fn oid(&self) -> Oid {
         match self {
             Self::Country => Oid::Country,
@@ -43,10 +43,13 @@ impl AttributeType {
             Self::State => Oid::State,
             Self::CommonName => Oid::CommonName,
             Self::SerialNumber => Oid::SerialNumber,
+            Self::TpmModel => Oid::SalTpmModel,
+            Self::TpmVendor => Oid::SalTpmVendor,
+            Self::TpmVersion => Oid::SalTpmVersion,
         }
     }
 
-    // Return the tag of the value associated with this attribyte type.
+    // Return the tag of the value associated with this attribute type.
     pub fn data_type(&self) -> Tag {
         match self {
             Self::Country => Tag::PrintableString,
@@ -55,6 +58,9 @@ impl AttributeType {
             Self::State => Tag::Utf8String,
             Self::CommonName => Tag::Utf8String,
             Self::SerialNumber => Tag::PrintableString,
+            Self::TpmModel => Tag::Utf8String,
+            Self::TpmVendor => Tag::Utf8String,
+            Self::TpmVersion => Tag::Utf8String,
         }
     }
 }
@@ -144,6 +150,7 @@ impl X509 {
                         if let Some(constraints) = &cert.basic_constraints {
                             Self::push_basic_constraints_ext(builder, constraints)?;
                         }
+                        Self::push_subject_alt_name_ext(builder, &cert.subject_alt_name)?;
                         Self::push_key_usage_ext(builder)?;
                         Self::push_auth_key_id_ext(builder, &cert.authority_key_identifier)?;
                         Self::push_subject_key_id_ext(builder, &cert.subject_key_identifier)?;
@@ -226,6 +233,28 @@ impl X509 {
         Self::push_extension(builder, &Oid::BasicConstraints, true, |builder| {
             builder.push_seq(Some("basic_constraints".into()), |builder| {
                 builder.push_boolean(&Tag::Boolean, &constraints.ca)
+            })
+        })
+    }
+
+    pub fn push_subject_alt_name_ext<B: Builder>(
+        builder: &mut B,
+        subject_alt_name: &IndexMap<AttributeType, Value<String>>,
+    ) -> Result<()> {
+        if subject_alt_name.is_empty() {
+            // Subject ALternative Name is an optional extension, it's ok not to be present.
+            return Ok(());
+        }
+        Self::push_extension(builder, &Oid::SubjectAltName, false, |builder| {
+            builder.push_seq(Some("subject_alt_name".into()), |builder| -> Result<()> {
+                builder.push_tag(
+                    None,
+                    &Tag::Context {
+                        constructed: true,
+                        value: 4,
+                    },
+                    |builder| -> Result<()> { Self::push_name(builder, None, subject_alt_name) },
+                )
             })
         })
     }
