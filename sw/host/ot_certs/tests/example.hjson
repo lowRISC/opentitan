@@ -50,6 +50,10 @@
                     debug: true,
                 }
             }
+            {
+                type: "tpm",
+                value: 37,
+            },
         ],
         signature: {
             algorithm: "ecdsa-with-sha256",
