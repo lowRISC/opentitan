@@ -267,3 +267,27 @@ rom_error_t keymgr_sideload_clear_otbn(void) {
 
   return kErrorOk;
 }
+
+rom_error_t keymgr_owner_int_advance(keymgr_binding_value_t *sealing_binding,
+                                     keymgr_binding_value_t *attest_binding,
+                                     uint32_t max_key_version) {
+  HARDENED_RETURN_IF_ERROR(keymgr_state_check(kKeymgrStateCreatorRootKey));
+  keymgr_sw_binding_set(sealing_binding, attest_binding);
+  keymgr_owner_int_max_ver_set(max_key_version);
+  keymgr_advance_state();
+  HARDENED_RETURN_IF_ERROR(
+      keymgr_state_check(kKeymgrStateOwnerIntermediateKey));
+  return kErrorOk;
+}
+
+rom_error_t keymgr_owner_advance(keymgr_binding_value_t *sealing_binding,
+                                 keymgr_binding_value_t *attest_binding,
+                                 uint32_t max_key_version) {
+  HARDENED_RETURN_IF_ERROR(
+      keymgr_state_check(kKeymgrStateOwnerIntermediateKey));
+  keymgr_sw_binding_set(sealing_binding, attest_binding);
+  keymgr_owner_max_ver_set(max_key_version);
+  keymgr_advance_state();
+  HARDENED_RETURN_IF_ERROR(keymgr_state_check(kKeymgrStateOwnerKey));
+  return kErrorOk;
+}
