@@ -48,8 +48,8 @@ module prim_fifo_sync_cnt #(
 
   // Wrap pointers when they have reached the maximum value and are about to get incremented.
   logic wptr_wrap_set, rptr_wrap_set;
-  assign wptr_wrap_set = incr_wptr_i & (wptr_o == unsigned'(PtrW'(Depth-1)));
-  assign rptr_wrap_set = incr_rptr_i & (rptr_o == unsigned'(PtrW'(Depth-1)));
+  assign wptr_wrap_set = incr_wptr_i & (wptr_o == PtrW'(Depth-1));
+  assign rptr_wrap_set = incr_rptr_i & (rptr_o == PtrW'(Depth-1));
 
   // When wrapping, invert the MSB and reset all lower bits to zero.
   assign wptr_wrap_set_cnt = {~wptr_wrap_msb, {(WrapPtrW-1){1'b0}}};
@@ -135,7 +135,5 @@ module prim_fifo_sync_cnt #(
 
     assign err_o = '0;
   end
-
-
 
 endmodule // prim_fifo_sync_cnt
