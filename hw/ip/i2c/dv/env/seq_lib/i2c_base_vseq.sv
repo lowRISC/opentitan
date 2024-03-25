@@ -462,7 +462,10 @@ class i2c_base_vseq extends cip_base_vseq #(
     print_format_flag(item, msg, do_print);
   endtask : program_format_flag
 
-  // read interrupts and randomly clear interrupts if set
+  // Read and clear interrupts
+  //
+  // - Clear all interrupts that are active
+  // - Add a delay of 'clear_intr_dly' cycles before the W1C operation
   virtual task process_interrupts();
     bit [TL_DW-1:0] intr_state, intr_clear;
 
