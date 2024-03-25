@@ -42,6 +42,9 @@ static_assert(kCdi1MaxCertSizeBytes == 631,
               "`manuf_dice_certs_t` struct should match the value of "
               "`kCdi1MaxCertSizeBytes`.");
 
+/**
+ * Certificate data.
+ */
 static manuf_certgen_inputs_t certgen_inputs;
 hmac_digest_t uds_pubkey_id;
 hmac_digest_t cdi_0_pubkey_id;
@@ -55,12 +58,20 @@ static manuf_dice_certs_t dice_certs = {
 };
 static manuf_endorsed_certs_t endorsed_certs;
 
+/**
+ * Keymgr binding values.
+ */
+static keymgr_binding_value_t attestation_binding_value = {.data = {0}};
+static keymgr_binding_value_t sealing_binding_value = {.data = {0}};
+
+/**
+ * Flash info page configurations.
+ */
 static const flash_ctrl_perms_t kCertificateFlashInfoPerms = {
     .read = kMultiBitBool4True,
     .write = kMultiBitBool4True,
     .erase = kMultiBitBool4True,
 };
-
 static const flash_ctrl_cfg_t kCertificateFlashInfoCfg = {
     .scrambling = kMultiBitBool4True,
     .ecc = kMultiBitBool4True,
@@ -82,6 +93,38 @@ static status_t config_certificate_flash_pages(void) {
 }
 
 /**
+ * Sets the attestation binding to the ROM_EXT measurement, and the sealing
+ * binding to all zeros.
+ *
+ * The sealing binding value is set to all zeros as it is unused in the current
+ * personalization flow. This may be changed in the future.
+ */
+static void compute_keymgr_owner_int_binding(manuf_certgen_inputs_t *inputs) {
+  memcpy(attestation_binding_value.data, inputs->rom_ext_measurement,
+         kAttestMeasurementSizeInBytes);
+  memset(sealing_binding_value.data, 0, kAttestMeasurementSizeInBytes);
+}
+
+/**
+ * Sets the attestation binding to a combination of the Owner firmware and
+ * Ownership Manifest measurements, and the sealing binding to all zeros.
+ *
+ * The sealing binding value is set to all zeros as it is unused in the current
+ * personalization flow. This may be changed in the future.
+ */
+static void compute_keymgr_owner_binding(manuf_certgen_inputs_t *inputs) {
+  hmac_digest_t combined_measurements;
+  hmac_sha256_init();
+  hmac_sha256_update((unsigned char *)inputs->owner_measurement,
+                     kAttestMeasurementSizeInBytes);
+  hmac_sha256_update((unsigned char *)inputs->owner_manifest_measurement,
+                     kAttestMeasurementSizeInBytes);
+  memcpy(attestation_binding_value.data, combined_measurements.digest,
+         kAttestMeasurementSizeInBytes);
+  memset(sealing_binding_value.data, 0, kAttestMeasurementSizeInBytes);
+}
+
+/**
  * Crank the keymgr to produce the attestation keys and certificates.
  */
 static status_t personalize(ujson_t *uj) {
@@ -99,11 +142,14 @@ static status_t personalize(ujson_t *uj) {
   // Advance keymgr to Initialized state.
   TRY(keymgr_state_check(kKeymgrStateReset));
   keymgr_advance_state();
+  TRY(keymgr_state_check(kKeymgrStateInit));
 
   // Load OTBN attestation keygen program.
   TRY(otbn_boot_app_load());
 
   // Generate UDS keys and (TBS) cert.
+  keymgr_advance_state();
+  TRY(keymgr_state_check(kKeymgrStateCreatorRootKey));
   TRY(dice_uds_cert_build(&certgen_inputs, &uds_pubkey_id,
                           dice_certs.uds_tbs_certificate,
                           &dice_certs.uds_tbs_certificate_size));
@@ -117,6 +163,10 @@ static status_t personalize(ujson_t *uj) {
   LOG_INFO("Generated UDS certificate.");
 
   // Generate CDI_0 keys and cert.
+  compute_keymgr_owner_int_binding(&certgen_inputs);
+  TRY(keymgr_owner_int_advance(&sealing_binding_value,
+                               &attestation_binding_value,
+                               /*max_key_version=*/0));
   TRY(dice_cdi_0_cert_build(&certgen_inputs, &uds_pubkey_id, &cdi_0_pubkey_id,
                             dice_certs.cdi_0_certificate,
                             &dice_certs.cdi_0_certificate_size));
@@ -130,6 +180,9 @@ static status_t personalize(ujson_t *uj) {
   LOG_INFO("Generated CDI_0 certificate.");
 
   // Generate CDI_1 keys and cert.
+  compute_keymgr_owner_binding(&certgen_inputs);
+  TRY(keymgr_owner_advance(&sealing_binding_value, &attestation_binding_value,
+                           /*max_key_version=*/0));
   TRY(dice_cdi_1_cert_build(&certgen_inputs, &cdi_0_pubkey_id,
                             dice_certs.cdi_1_certificate,
                             &dice_certs.cdi_1_certificate_size));
