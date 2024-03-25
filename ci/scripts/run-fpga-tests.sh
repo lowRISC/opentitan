@@ -44,6 +44,9 @@ trap 'ci/bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface=${fpga
 ci/bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface="$fpga" --logging debug fpga set-pll || true
 ci/bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface="$fpga" fpga clear-bitstream
 
+# Print the SAM3X firmware version. HyperDebug transports don't currently support this, so we ignore errors.
+ci/bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface="$fpga" fpga get-sam3x-fw-version || true
+
 pattern_file=$(mktemp)
 # Recognize special test set names, otherwise we interpret it as a list of tags.
 test_args=""
