@@ -35,6 +35,11 @@ certificate_template(
     template = "cdi_1.hjson",
 )
 
+certificate_template(
+    name = "tpm_template",
+    template = "tpm.hjson",
+)
+
 cc_library(
     name = "asn1",
     srcs = ["asn1.c"],

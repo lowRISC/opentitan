@@ -161,6 +161,7 @@ impl X509 {
     ) -> Result<()> {
         match ext {
             CertificateExtension::DiceTcbInfo(dice_ext) => dice_ext.push_extension(builder),
+            CertificateExtension::Tpm(tpm_ext) => tpm_ext.push_extension(builder),
         }
     }
 

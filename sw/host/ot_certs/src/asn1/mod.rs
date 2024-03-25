@@ -8,6 +8,7 @@ pub mod builder;
 pub mod codegen;
 pub mod der;
 pub mod dice_tcb;
+pub mod tpm;
 pub mod x509;
 
 /// An ASN1 tag.
@@ -40,6 +41,7 @@ pub enum Oid {
     DiceTcbInfo,
     KeyUsage,
     SubjectKeyIdentifier,
+    TpmExt,
     // Name attributes.
     CommonName,
     Country,
@@ -80,6 +82,9 @@ impl Oid {
             // tcg-dice OBJECT IDENTIFIER ::= { tcg platformClass(5) 4 }
             // tcg-dice-TcbInfo OBJECT IDENTIFIER ::= {tcg-dice 1}
             Oid::DiceTcbInfo => "2.23.133.5.4.1",
+
+            // Fake TPM extension.
+            Oid::TpmExt => "2.23.133.99",
 
             // From https://www.itu.int/rec/T-REC-X.501/en
             // ID ::= OBJECT IDENTIFIER

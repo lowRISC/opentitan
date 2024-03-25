@@ -81,6 +81,11 @@
         debug: {
             type: "boolean",
         }
+        // A TPM value.
+        tpm_value: {
+            type: "integer",
+            size: 4,
+        }
     },
 
     certificate: {
@@ -120,6 +125,10 @@
                     debug: { var: "debug" },
                 }
             }
+            {
+                type: "tpm",
+                value: { var: "tpm_value" }
+            },
         ],
         signature: {
             algorithm: "ecdsa-with-sha256",

@@ -77,9 +77,12 @@ pub struct Certificate {
 
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
+#[allow(clippy::large_enum_variant)]
 pub enum CertificateExtension {
     /// DICE TCB extension.
     DiceTcbInfo(DiceTcbInfoExtension),
+    /// TPMA_OBJECT extension
+    Tpm(TpmExtension),
 }
 
 /// DICE TCB extension.
@@ -100,6 +103,14 @@ pub struct DiceTcbInfoExtension {
     pub fw_ids: Option<Vec<FirmwareId>>,
     /// TCB flags.
     pub flags: Option<Flags>,
+}
+
+/// TPMA_OBJECT extension
+#[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct TpmExtension {
+    /// Some value.
+    pub value: Value<BigUint>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Hash, strum::Display, Serialize)]
