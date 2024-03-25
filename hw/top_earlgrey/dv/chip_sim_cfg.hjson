@@ -181,13 +181,13 @@
         //        -o hw/top_earlgrey --rnd_cnst_seed {seed}
         // ''',
         // Generate LC encoding
-        "cd {proj_root} && ./util/design/gen-lc-state-enc.py --seed {seed}",
+        "cd {proj_root} && ./util/design/gen-lc-state-enc.py --seed {long_seed}",
         // Generate OTP memory map and scrambling constants keys.
-        "cd {proj_root} && ./util/design/gen-otp-mmap.py --seed {seed}",
+        "cd {proj_root} && ./util/design/gen-otp-mmap.py --seed {long_seed}",
         // Use eval_cmd to save build_seed in a file and reuse that file during run phase.
         // Create the build directory first because eval_cmd runs before actual build phase command
         // execution.
-        '''{eval_cmd} mkdir -p {build_dir}; echo {seed} > {build_seed_file_path}; \
+        '''{eval_cmd} mkdir -p {build_dir}; echo {long_seed} > {build_seed_file_path}; \
            echo "echo create file {build_seed_file_path}"
         '''
       ]
@@ -233,7 +233,7 @@
   gen_otp_images_cfg_dir: "{proj_root}/hw/ip/otp_ctrl/data"
   gen_otp_images_cmd: "{proj_root}/util/design/gen-otp-img.py"
   gen_otp_images_cmd_opts: ["--quiet",
-                            "--img-seed {seed}",
+                            "--img-seed {long_seed}",
                             // Only provide `--otp-seed` argument if the file to store build_seed
                             // is found. Set this option at the end of the list to avoid `eval_cmd`
                             // take other options as eval_cmd.

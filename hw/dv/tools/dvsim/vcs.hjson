@@ -113,7 +113,7 @@
 
   run_opts:   ["-licqueue",
                "-ucli -do {run_script}",
-               "+ntb_random_seed={svseed}",
+               "+ntb_random_seed={short_seed}",
                // Disable the display of the SystemVerilog assert and cover statement summary
                // at the end of simulation. This summary is list of assertions that started but
                // did not finish because the simulation terminated, or assertions that did not
@@ -134,7 +134,7 @@
 
   // Individual test specific coverage data - this will be deleted if the test fails
   // so that coverage from failiing tests is not included in the final report.
-  cov_db_test_dir_name: "{run_dir_name}.{svseed}"
+  cov_db_test_dir_name: "{run_dir_name}.{seed}"
   cov_db_test_dir: "{cov_db_dir}/snps/coverage/db/testdata/{cov_db_test_dir_name}"
 
   // Merging coverage.

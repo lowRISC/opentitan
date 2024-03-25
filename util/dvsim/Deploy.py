@@ -472,9 +472,10 @@ class RunTest(Deploy):
         self.test_obj = test
         self.index = index
         self.build_seed = sim_cfg.build_seed
-        self.seed = RunTest.get_seed()
-        # Systemverilog accepts seeds with a maximum size of 32 bits.
-        self.svseed = int(self.seed) & 0xFFFFFFFF
+
+        self.base_seed, self.short_seed, self.long_seed = \
+            RunTest.get_test_seed()
+
         self.simulated_time = JobTime()
         super().__init__(sim_cfg)
 
@@ -561,17 +562,35 @@ class RunTest(Deploy):
             rm_path(self.cov_db_test_dir)
 
     @staticmethod
-    def get_seed():
+    def get_test_seed() -> (int, int, int):
+        '''Get the seed to use for a test, as three forms: base, short, long.
+
+        The base seed is the one that the user might want to supply, and the
+        other two seeds are derived from it. The short seed is guaranteed to be
+        usable as a SystemVerilog seed, so is not more than 2^32. The long seed
+        is generated from the base seed.
+        '''
+
         # If --seeds option is passed, then those custom seeds are consumed
         # first. If --fixed-seed <val> is also passed, the subsequent tests
         # (once the custom seeds are consumed) will be run with the fixed seed.
-        if not RunTest.seeds:
-            if RunTest.fixed_seed is not None:
-                return RunTest.fixed_seed
+        base = None
+        if RunTest.seeds:
+            base = RunTest.seeds.pop(0)
+        elif RunTest.fixed_seed is not None:
+            base = RunTest.fixed_seed
+        else:
             for i in range(1000):
-                seed = random.getrandbits(256)
-                RunTest.seeds.append(seed)
-        return RunTest.seeds.pop(0)
+                base = random.getrandbits(16)
+                RunTest.seeds.append(base)
+            base = RunTest.seeds.pop(0)
+
+        generator = random.Random(base)
+        long_seed = generator.getrandbits(256)
+
+        short_seed = base & 0xffffffff
+
+        return (base, short_seed, long_seed)
 
     def get_timeout_mins(self):
         """Returns the timeout in minutes.
