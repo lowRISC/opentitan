@@ -9,6 +9,9 @@ cc_library(
     testonly = True,
     hdrs = [
         "activate_ecdsa_p256.h",
+        "app_dev_key_rsa_3072_exp_f4.h",
+        "app_prod_key_rsa_3072_exp_f4.h",
+        "app_test_key_rsa_3072_exp_f4.h",
         "owner_ecdsa_p256.h",
         "unlock_ecdsa_p256.h",
     ],
