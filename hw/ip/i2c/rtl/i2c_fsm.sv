@@ -510,7 +510,7 @@ module i2c_fsm import i2c_pkg::*;
     AcquireByte,
     // Target function sends ack to external host
     AcquireAckWait, AcquireAckSetup, AcquireAckPulse, AcquireAckHold,
-    // Target function sends not ackowledge to external host
+    // Target function sends not acknowledge to external host
     NackWait, NackSetup, NackPulse, NackHold,
     // Target function clock stretch handling.
     StretchAddr,

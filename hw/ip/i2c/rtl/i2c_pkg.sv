@@ -23,7 +23,7 @@ package i2c_pkg;
     // 2. We received too many bytes in a write request and had to NACK a data
     // byte. The NACK'ed data byte is still in the data field for inspection.
     AcqNack      = 3'b100,
-    // AcqNackStart menas that we got a write request to our address, we sent
+    // AcqNackStart means that we got a write request to our address, we sent
     // an ACK to back to the host so that we can be compatible with SMBus, but
     // now we must unconditionally NACK the next byte. We cannot record that
     // NACK'ed byte because there is no space in the ACQ FIFO. The OpenTitan

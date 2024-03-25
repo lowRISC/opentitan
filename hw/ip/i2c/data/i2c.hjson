@@ -683,7 +683,14 @@
       ]
     }
     { name: "HOST_TIMEOUT_CTRL"
-      desc: "I2C host clock generation timeout value (in units of input clock frequency)"
+      desc: '''
+            I2C host clock generation timeout value (in units of input clock frequency).
+
+            In an active transaction in Target-Mode, if the Controller ceases to send SCL pulses
+            for this number of cycles then the "host_timeout" interrupt will be asserted.
+
+            Set this CSR to 0 to disable this behaviour.
+            '''
       swaccess: "rw"
       hwaccess: "hro"
       fields: [
