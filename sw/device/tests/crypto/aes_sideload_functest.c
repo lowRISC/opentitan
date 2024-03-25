@@ -145,11 +145,10 @@ status_t test_setup(void) {
   dif_keymgr_state_t keymgr_state;
   TRY(keymgr_testutils_try_startup(&keymgr, &kmac, &keymgr_state));
 
-  if (keymgr_state == kDifKeymgrStateInitialized) {
+  if (keymgr_state == kDifKeymgrStateCreatorRootKey) {
     TRY(keymgr_testutils_advance_state(&keymgr, &kOwnerIntParams));
-  }
-
-  if (keymgr_state == kDifKeymgrStateOwnerIntermediateKey) {
+    TRY(keymgr_testutils_advance_state(&keymgr, &kOwnerRootKeyParams));
+  } else if (keymgr_state == kDifKeymgrStateOwnerIntermediateKey) {
     TRY(keymgr_testutils_advance_state(&keymgr, &kOwnerRootKeyParams));
   }
 
