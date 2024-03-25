@@ -7,6 +7,7 @@
                      "hw/dv/tools/dvsim/testplans/alert_test_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson",
                      "uart_sec_cm_testplan.hjson"]
   testpoints: [
     {
@@ -195,12 +196,6 @@
             - Randomly add reset between each sequence'''
       stage: V2
       tests: ["uart_stress_all"]
-    }
-    {
-      name: stress_all_with_reset
-      desc: '''Have random reset in parallel with stress_all and tl_errors sequences'''
-      stage: V2
-      tests: ["uart_stress_all_with_rand_reset"]
     }
   ]
 
