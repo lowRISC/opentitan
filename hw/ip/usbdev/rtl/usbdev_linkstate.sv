@@ -18,7 +18,7 @@ module usbdev_linkstate (
   input  logic usb_pullup_en_i,
   input  logic rx_idle_det_i,
   input  logic rx_j_det_i,
-  input  logic sof_valid_i,
+  input  logic sof_detected_i,
   input  logic resume_link_active_i, // pulse
 
   output logic link_disconnect_o,  // level
@@ -194,7 +194,7 @@ module usbdev_linkstate (
         LinkActiveNoSOF: begin
           if (ev_bus_inactive) begin
             link_state_d = LinkSuspended;
-          end else if (sof_valid_i) begin
+          end else if (sof_detected_i) begin
             link_state_d = LinkActive;
           end
         end
@@ -367,7 +367,7 @@ module usbdev_linkstate (
     if (!rst_ni) begin
       missed_sof_count <= '0;
     end else begin
-      if (sof_valid_i || !link_active_o || link_reset) begin
+      if (sof_detected_i || !link_active_o || link_reset) begin
         missed_sof_count <= '0;
       end else if (sof_missed_o && !host_lost_o) begin
         missed_sof_count <= missed_sof_count + 1;
@@ -380,7 +380,7 @@ module usbdev_linkstate (
     if (!rst_ni) begin
       missing_sof_timer <= '0;
     end else begin
-      if (sof_missed_o || sof_valid_i || !link_active_o || link_reset) begin
+      if (sof_missed_o || sof_detected_i || !link_active_o || link_reset) begin
         missing_sof_timer <= '0;
       end else if (us_tick_i) begin
         missing_sof_timer <= missing_sof_timer + 1;
