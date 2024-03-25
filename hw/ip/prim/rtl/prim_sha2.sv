@@ -33,7 +33,7 @@ module prim_sha2 import prim_sha2_pkg::*;
   input               hash_process_i,
   output logic        hash_done_o,
 
-  input  [127:0]            message_length_i, // bits but byte based
+  input  [63:0]             message_length_i, // bits but byte based
   input  sha_word64_t [7:0] digest_i,
   input  logic [7:0]        digest_we_i,
   output sha_word64_t [7:0] digest_o, // tie off unused port slice when MultimodeEn = 0
@@ -141,10 +141,10 @@ module prim_sha2 import prim_sha2_pkg::*;
 
     // compute digest
     always_comb begin : compute_digest_multimode
-      digest_d          = digest_q;
+      digest_d = digest_q;
       if (wipe_secret_i) begin
         for (int i = 0 ; i < 8 ; i++) begin
-          digest_d[i]       = digest_q[i] ^ wipe_v_i;
+          digest_d[i] = digest_q[i] ^ wipe_v_i;
         end
       end else if (hash_start_i) begin
         for (int i = 0 ; i < 8 ; i++) begin
@@ -484,7 +484,7 @@ module prim_sha2 import prim_sha2_pkg::*;
     .digest_mode_i,
     .hash_process_i,
     .hash_done_i (hash_done_o),
-    .message_length_i,
+    .message_length_i ({64'b0, message_length_i}), // 128-bit message length per NIST-FIPS-180-4
     .msg_feed_complete_o (msg_feed_complete)
   );
 
