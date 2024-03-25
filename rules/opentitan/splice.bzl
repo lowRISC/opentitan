@@ -106,6 +106,11 @@ def _bitstream_splice_impl(ctx):
     exec_env = ctx.attr.exec_env[ExecEnvInfo]
     src = ctx.file.src if ctx.file.src else exec_env.base_bitstream
 
+    # If configured to skip bitstream loading, do not splice and forward the file:
+    # opentitantool skips loading if the file is named `skip.bit`.
+    if src.path.endswith("skip.bit"):
+        return [DefaultInfo(files = depset([src]))]
+
     # Splice in a ROM image if we have one either in attrs or the exec_env.
     if not ctx.attr.rom or ctx.attr.rom.label.name == "none":
         rom = exec_env.rom
