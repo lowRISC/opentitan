@@ -62,7 +62,7 @@ import i2c_reg_pkg::AcqFifoDepth;
 );
 
   // RAM synthesis parameters
-  localparam int unsigned RamDepth = 472;
+  localparam int unsigned RamDepth = 464;
   `ASSERT_INIT(RamDepthSuffices_A, RamDepth >= 3 * FifoDepth + AcqFifoDepth)
   localparam int unsigned RamAw = prim_util_pkg::vbits(RamDepth);
   localparam int unsigned RamWidth = 13;
