@@ -7,10 +7,10 @@
 
 #include <stdint.h>
 
-#include "sw/device/lib/base/status.h"
 #include "sw/device/lib/testing/json/provisioning_data.h"
 #include "sw/device/silicon_creator/lib/attestation.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
+#include "sw/device/silicon_creator/lib/error.h"
 
 enum {
   /**
@@ -40,9 +40,10 @@ enum {
  *                          computed size of the certificate).
  * @return The result of the operation.
  */
-status_t dice_uds_cert_build(manuf_certgen_inputs_t *inputs,
-                             hmac_digest_t *uds_pubkey_id, uint8_t *cert,
-                             size_t *cert_size);
+OT_WARN_UNUSED_RESULT
+rom_error_t dice_uds_cert_build(manuf_certgen_inputs_t *inputs,
+                                hmac_digest_t *uds_pubkey_id, uint8_t *cert,
+                                size_t *cert_size);
 
 /**
  * Generates the CDI_0 attestation keypair and X.509 certificate.
@@ -58,10 +59,11 @@ status_t dice_uds_cert_build(manuf_certgen_inputs_t *inputs,
  *                          computed size of the certificate).
  * @return The result of the operation.
  */
-status_t dice_cdi_0_cert_build(manuf_certgen_inputs_t *inputs,
-                               hmac_digest_t *uds_pubkey_id,
-                               hmac_digest_t *cdi_0_pubkey_id, uint8_t *cert,
-                               size_t *cert_size);
+OT_WARN_UNUSED_RESULT
+rom_error_t dice_cdi_0_cert_build(manuf_certgen_inputs_t *inputs,
+                                  hmac_digest_t *uds_pubkey_id,
+                                  hmac_digest_t *cdi_0_pubkey_id, uint8_t *cert,
+                                  size_t *cert_size);
 
 /**
  * Generates the CDI_1 attestation keypair and X.509 certificate.
@@ -76,8 +78,9 @@ status_t dice_cdi_0_cert_build(manuf_certgen_inputs_t *inputs,
  *                          computed size of the certificate).
  * @return The result of the operation.
  */
-status_t dice_cdi_1_cert_build(manuf_certgen_inputs_t *inputs,
-                               hmac_digest_t *cdi_0_pubkey_id, uint8_t *cert,
-                               size_t *cert_size);
+OT_WARN_UNUSED_RESULT
+rom_error_t dice_cdi_1_cert_build(manuf_certgen_inputs_t *inputs,
+                                  hmac_digest_t *cdi_0_pubkey_id, uint8_t *cert,
+                                  size_t *cert_size);
 
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_CERT_DICE_H_
