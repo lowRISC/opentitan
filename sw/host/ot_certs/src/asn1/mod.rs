@@ -55,6 +55,14 @@ pub enum Oid {
     Prime256v1,
     // Hash algorithms.
     Sha256,
+    // Subject alternative name and its components.
+    SubjectAltName,
+    // Vendor aka manufacturer.
+    SalTpmVendor,
+    // Tpm Model (i.e. Ti50).
+    SalTpmModel,
+    // Tpm firmware version at the time of manufacturing.
+    SalTpmVersion,
     // Custom oid.
     Custom(String),
 }
@@ -120,6 +128,31 @@ impl Oid {
             // id-sha256  OBJECT IDENTIFIER  ::=  { joint-iso-itu-t(2) country(16) us(840)
             //      organization(1) gov(101) csor(3) nistalgorithm(4) hashalgs(2) 1 }
             Oid::Sha256 => "2.16.840.1.101.3.4.2.1",
+
+            // From https://www.rfc-editor.org/rfc/rfc5280.html#section-4.2.1.6
+            // subject-alt-name OBJECT_IDENTIFIER ::= { joint-iso-itu-t(2) ds(5)
+            //          certificateExtension(29) subjectAltName(17)}
+            Oid::SubjectAltName => "2.5.29.17",
+
+            // The following three object IDs come from
+            // TCG EK Credential Profile
+            // For TPM Family 2.0; Level 0
+            // Version 2.5
+            // Revision 1
+            // January 26, 2022,
+            // Section 4  X.509 ASN.1 Structures and OIDs
+            // tcg OBJECT IDENTIFIER ::= {
+            // joint-iso-itu-t(2) international-organizations(23) tcg(133)
+            // tcg-attribute OBJECT IDENTIFIER ::= {tcg 2}
+            //
+            // tcg-at-tpmManufacturer OBJECT IDENTIFIER ::= {tcg-attribute 1}
+            Oid::SalTpmVendor => "2.23.133.2.1",
+
+            // tcg-at-tpmModel OBJECT IDENTIFIER ::= {tcg-attribute 2}
+            Oid::SalTpmModel => "2.23.133.2.2",
+
+            // tcg-at-tpmVersion OBJECT IDENTIFIER ::= {tcg-attribute 3}
+            Oid::SalTpmVersion => "2.23.133.2.3",
 
             Oid::Custom(oid) => oid,
         }

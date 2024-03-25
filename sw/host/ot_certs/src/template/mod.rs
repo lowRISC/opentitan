@@ -75,7 +75,10 @@ pub struct Certificate {
     pub subject_key_identifier: Value<Vec<u8>>,
     // X509 basic constraints extension, optional.
     pub basic_constraints: Option<BasicConstraints>,
-    /// X509 certificate extensions.
+    /// X509 Subject Alternative Name extension, optional.
+    #[serde(default)]
+    pub subject_alt_name: IndexMap<AttributeType, Value<String>>,
+    /// Non-standard X509 certificate extensions.
     pub extensions: Vec<CertificateExtension>,
     /// X509 certificate's signature.
     pub signature: Signature,
@@ -128,6 +131,9 @@ pub enum AttributeType {
     CommonName,
     #[serde(alias = "sn")]
     SerialNumber,
+    TpmVendor,
+    TpmModel,
+    TpmVersion,
 }
 
 /// Value which may either be a variable name or literal.
@@ -546,6 +552,7 @@ mod tests {
             authority_key_identifier: Value::variable("signing_pub_key_id"),
             subject_key_identifier: Value::variable("owner_pub_key_id"),
             basic_constraints: None,
+            subject_alt_name: IndexMap::from([]),
             extensions: vec![CertificateExtension::DiceTcbInfo(DiceTcbInfoExtension {
                 vendor: Some(Value::literal("OpenTitan")),
                 model: Some(Value::literal("ROM_EXT")),
