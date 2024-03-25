@@ -43,7 +43,9 @@ module usb_fs_rx (
   output logic rx_data_put_o,
   output logic [7:0] rx_data_o,
 
-  // Most recent packet passes PID and CRC checks
+  // Most recent packet passes PID check
+  output logic valid_pid_o,
+  // Most recent packet passes PID, length and CRC checks
   output logic valid_packet_o,
 
   // line status for the status detection (actual rx bits after clock recovery)
@@ -523,6 +525,7 @@ module usb_fs_rx (
   assign see_preamble = packet_valid_q & pid_valid & pid_complete &&
                         (usb_pid_e'(full_pid_q[4:1]) == UsbPidPre);
 
+  assign valid_pid_o = pid_valid;
 
   assign valid_packet_o = pid_valid && !bitstuff_error_q &&
     ((pkt_is_handshake && valid_handshake_len) ||

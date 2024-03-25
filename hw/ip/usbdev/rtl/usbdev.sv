@@ -651,7 +651,7 @@ module usbdev
     // status
     .frame_o              (frame),
     .frame_start_o        (event_frame),
-    .sof_valid_o          (event_sof),
+    .sof_detected_o       (event_sof),
     .link_state_o         (link_state),
     .link_disconnect_o    (link_disconnect),
     .link_powered_o       (link_powered),

@@ -88,7 +88,8 @@ module usb_fs_nb_pe #(
   input  logic  [NumInEps-1:0]   in_ep_iso_i, // Configure endpoint in isochronous mode
 
   // sof interface
-  output logic                   sof_valid_o,
+  output logic                   sof_detected_o, // SOF detected, PID valid
+  output logic                   sof_valid_o, // SOF packet valid; frame number may be trusted
   output logic [10:0]            frame_index_o,
 
   // RX line status
@@ -140,6 +141,7 @@ module usb_fs_nb_pe #(
   logic [10:0] rx_frame_num;
   logic rx_data_put;
   logic [7:0] rx_data;
+  logic rx_pid_valid;
   logic rx_pkt_valid;
 
   // tx mux
@@ -158,8 +160,14 @@ module usb_fs_nb_pe #(
 
   logic usb_oe;
 
-  // sof interface
+  // Start Of Frame handling
+  //
+  // - SOF is detected and may be used for timing/synchronization purposes if the PID is valid.
+  assign sof_detected_o = rx_pkt_end & rx_pid_valid & (usb_pid_e'(rx_pid) == UsbPidSof);
+  // - The SOF packet is considered valid iff the packet is also free of bit stuffing violations
+  //   and the CRC5 is correct.
   assign sof_valid_o = rx_pkt_end & rx_pkt_valid & (usb_pid_e'(rx_pid) == UsbPidSof);
+  // - The frame number shall be used only if the SOF packet is valid.
   assign frame_index_o = rx_frame_num;
   assign usb_oe_o = usb_oe;
 
@@ -292,6 +300,7 @@ module usb_fs_nb_pe #(
     .frame_num_o            (rx_frame_num),
     .rx_data_put_o          (rx_data_put),
     .rx_data_o              (rx_data),
+    .valid_pid_o            (rx_pid_valid),
     .valid_packet_o         (rx_pkt_valid),
     .rx_idle_det_o          (rx_idle_det_o),
     .rx_j_det_o             (rx_j_det_o),
