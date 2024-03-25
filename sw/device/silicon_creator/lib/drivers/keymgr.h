@@ -208,6 +208,42 @@ rom_error_t sc_keymgr_generate_attestation_key_otbn(
 OT_WARN_UNUSED_RESULT
 rom_error_t sc_keymgr_sideload_clear_otbn(void);
 
+/**
+ * Sets the binding registers and advances the keymgr to the
+ * `OwnerIntermediateKey` (CDI_0) key stage.
+ *
+ * Preconditions: keymgr has been initialized and cranked to the
+ * `CreatorRootKey` stage.
+ *
+ * @param attest_binding The attestation binding value to use.
+ * @param sealing_binding The sealing binding value to use.
+ * @param max_key_version Maximum key version associated with the Silicon Owner
+ *                        Intermediate key manager stage.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t sc_keymgr_owner_int_advance(keymgr_binding_value_t *attest_binding,
+                                        keymgr_binding_value_t *sealing_binding,
+                                        uint32_t max_key_version);
+
+/**
+ * Sets the binding registers and advances the keymgr to the `OwnerKey` (CDI_1)
+ * key stage.
+ *
+ * Preconditions: keymgr has been initialized and cranked to the
+ * `OwnerIntermediateKey` stage.
+ *
+ * @param attest_binding The attestation binding value to use.
+ * @param sealing_binding The sealing binding value to use.
+ * @param max_key_version Maximum key version associated with the Silicon Owner
+ *                        key manager stage.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t sc_keymgr_owner_advance(keymgr_binding_value_t *attest_binding,
+                                    keymgr_binding_value_t *sealing_binding,
+                                    uint32_t max_key_version);
+
 #ifdef __cplusplus
 }
 #endif
