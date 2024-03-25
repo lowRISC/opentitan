@@ -33,8 +33,6 @@ enum {
       sizeof(uint32_t),
 };
 
-static keymgr_binding_value_t attestation_binding_value = {.data = {0}};
-static keymgr_binding_value_t sealing_binding_value = {.data = {0}};
 static uint32_t otp_state[kDiceMeasuredOtpPartitionMaxSizeIn32bitWords] = {0};
 static attestation_public_key_t curr_pubkey = {.x = {0}, .y = {0}};
 static attestation_public_key_t curr_pubkey_be = {.x = {0}, .y = {0}};
@@ -136,19 +134,7 @@ static void measure_otp_partition(otp_partition_t partition,
 rom_error_t dice_uds_cert_build(manuf_certgen_inputs_t *inputs,
                                 hmac_digest_t *uds_pubkey_id, uint8_t *tbs_cert,
                                 size_t *tbs_cert_size) {
-  // Measure OTP partitions.
-  hmac_digest_t otp_creator_sw_cfg_measurement = {.digest = {0}};
-  hmac_digest_t otp_owner_sw_cfg_measurement = {.digest = {0}};
-  hmac_digest_t otp_hw_cfg_measurement = {.digest = {0}};
-  measure_otp_partition(kOtpPartitionCreatorSwCfg,
-                        &otp_creator_sw_cfg_measurement);
-  measure_otp_partition(kOtpPartitionOwnerSwCfg, &otp_owner_sw_cfg_measurement);
-  measure_otp_partition(kOtpPartitionHwCfg, &otp_hw_cfg_measurement);
-
   // Generate the UDS key.
-  HARDENED_RETURN_IF_ERROR(keymgr_state_check(kKeymgrStateInit));
-  keymgr_advance_state();
-  HARDENED_RETURN_IF_ERROR(keymgr_state_check(kKeymgrStateCreatorRootKey));
   HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_keygen(
       kUdsAttestationKeySeed, kUdsKeymgrDiversifier, &curr_pubkey));
   HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_key_save(
@@ -157,6 +143,15 @@ rom_error_t dice_uds_cert_build(manuf_certgen_inputs_t *inputs,
 
   // Generate the key ID.
   hmac_sha256(&curr_pubkey, kAttestationPublicKeyCoordBytes * 2, uds_pubkey_id);
+
+  // Measure OTP partitions.
+  hmac_digest_t otp_creator_sw_cfg_measurement = {.digest = {0}};
+  hmac_digest_t otp_owner_sw_cfg_measurement = {.digest = {0}};
+  hmac_digest_t otp_hw_cfg_measurement = {.digest = {0}};
+  measure_otp_partition(kOtpPartitionCreatorSwCfg,
+                        &otp_creator_sw_cfg_measurement);
+  measure_otp_partition(kOtpPartitionOwnerSwCfg, &otp_owner_sw_cfg_measurement);
+  measure_otp_partition(kOtpPartitionHwCfg, &otp_hw_cfg_measurement);
 
   // Generate the TBS certificate.
   uds_tbs_values_t uds_cert_tbs_params = {
@@ -188,21 +183,7 @@ rom_error_t dice_cdi_0_cert_build(manuf_certgen_inputs_t *inputs,
                                   hmac_digest_t *uds_pubkey_id,
                                   hmac_digest_t *cdi_0_pubkey_id, uint8_t *cert,
                                   size_t *cert_size) {
-  HARDENED_RETURN_IF_ERROR(keymgr_state_check(kKeymgrStateCreatorRootKey));
-
-  // Set attestation binding to the ROM_EXT measurement.
-  memcpy(attestation_binding_value.data, inputs->rom_ext_measurement,
-         kAttestMeasurementSizeInBytes);
-  // We set the sealing binding value to all zeros as it is unused in the
-  // current personalization flow. This may be changed in the future.
-  memset(sealing_binding_value.data, 0, kAttestMeasurementSizeInBytes);
-  keymgr_sw_binding_unlock_wait();
-  keymgr_sw_binding_set(&sealing_binding_value, &attestation_binding_value);
-
   // Generate the CDI_0 key.
-  keymgr_advance_state();
-  HARDENED_RETURN_IF_ERROR(
-      keymgr_state_check(kKeymgrStateOwnerIntermediateKey));
   HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_keygen(
       kCdi0AttestationKeySeed, kCdi0KeymgrDiversifier, &curr_pubkey));
   curr_pubkey_le_to_be_convert();
@@ -252,30 +233,7 @@ rom_error_t dice_cdi_0_cert_build(manuf_certgen_inputs_t *inputs,
 rom_error_t dice_cdi_1_cert_build(manuf_certgen_inputs_t *inputs,
                                   hmac_digest_t *cdi_0_pubkey_id, uint8_t *cert,
                                   size_t *cert_size) {
-  HARDENED_RETURN_IF_ERROR(
-      keymgr_state_check(kKeymgrStateOwnerIntermediateKey));
-
-  // Set attestation binding to combination of Owner firmware and Ownership
-  // Manifest measurements.
-  hmac_digest_t combined_measurements;
-  uint32_t owner_measurements[kAttestMeasurementSizeIn32BitWords * 2];
-  memcpy(owner_measurements, inputs->owner_measurement,
-         kAttestMeasurementSizeInBytes);
-  memcpy(&owner_measurements[kAttestMeasurementSizeIn32BitWords],
-         inputs->owner_manifest_measurement, kAttestMeasurementSizeInBytes);
-  hmac_sha256(owner_measurements, kAttestMeasurementSizeInBytes * 2,
-              &combined_measurements);
-  memcpy(attestation_binding_value.data, combined_measurements.digest,
-         kAttestMeasurementSizeInBytes);
-  // We set the sealing binding value to all zeros as it is unused in the
-  // current personalization flow. This may be changed in the future.
-  memset(sealing_binding_value.data, 0, kAttestMeasurementSizeInBytes);
-  keymgr_sw_binding_unlock_wait();
-  keymgr_sw_binding_set(&sealing_binding_value, &attestation_binding_value);
-
   // Generate the CDI_1 key.
-  keymgr_advance_state();
-  HARDENED_RETURN_IF_ERROR(keymgr_state_check(kKeymgrStateOwnerKey));
   HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_keygen(
       kCdi1AttestationKeySeed, kCdi1KeymgrDiversifier, &curr_pubkey));
   curr_pubkey_le_to_be_convert();
