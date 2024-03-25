@@ -189,7 +189,12 @@ module i2c_fsm import i2c_pkg::*;
         tNoDelay    : tcount_d = 20'h00001;
         default     : tcount_d = 20'h00001;
       endcase
-    end else if (host_enable_i || target_enable_i) begin
+    end else if (
+      host_enable_i ||
+      target_enable_i ||
+      // If we disable Host-Mode mid-txn, keep counting until the end of
+      // byte, at which point we create a STOP condition then return to Idle.
+      (!host_idle_o && !host_enable_i)) begin
       tcount_d = tcount_q - 1'b1;
     end
   end
