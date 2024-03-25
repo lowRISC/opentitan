@@ -75,6 +75,18 @@ typedef enum {
    * The CDI_1 attestation key seed.
    */
   kCdi1AttestationKeySeed = 2,
+  /**
+   * The TPM EK attestation key seed.
+   */
+  kTpmEkAttestationKeySeed = 3,
+  /**
+   * The TPM CEK attestation key seed.
+   */
+  kTpmCekAttestationKeySeed = 4,
+  /**
+   * The TPM CIK attestation key seed.
+   */
+  kTpmCikAttestationKeySeed = 5,
 } attestation_key_seed_t;
 
 /**

@@ -53,3 +53,49 @@ const sc_keymgr_diversification_t kCdi1KeymgrDiversifier = {
         },
     .version = 0,
 };
+
+const sc_keymgr_diversification_t kTpmEkKeymgrDiversifier = {
+    .salt =
+        {
+            0x3fd3bc42,
+            0x5a401205,
+            0xfa3fbe70,
+            0xc1d035da,
+            0x87292fe6,
+            0x4d94f30f,
+            0x2e954c30,
+            0x351c28f1,
+        },
+    .version = 0,
+};
+
+const sc_keymgr_diversification_t kTpmCekKeymgrDiversifier = {
+    .salt =
+        {
+            0x8a5d086c,
+            0xcbe850b4,
+            0x9aeab7c0,
+            0x8faf44a4,
+            0xc5bf5663,
+            0x217359ab,
+            0xb42fe0fd,
+            0xd06ad674,
+        },
+    .version = 0,
+
+};
+
+const sc_keymgr_diversification_t kTpmCikKeymgrDiversifier = {
+    .salt =
+        {
+            0x9d664be2,
+            0x8a9739a9,
+            0xe6f815bd,
+            0x8940348b,
+            0x6ee241f7,
+            0xea5b14cd,
+            0x9e81908b,
+            0x15ff16f0,
+        },
+    .version = 0,
+};

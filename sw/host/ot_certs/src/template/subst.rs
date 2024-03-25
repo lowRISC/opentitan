@@ -372,6 +372,11 @@ impl Subst for Certificate {
                 .signature
                 .subst(data)
                 .context("cannot substitute signature")?,
+
+            subject_alt_name: self
+                .subject_alt_name
+                .subst(data)
+                .context("cannot substitute subject alt name")?,
         })
     }
 }

@@ -184,6 +184,12 @@ pub fn generate_certificate(tmpl: &template::Template) -> Result<Vec<u8>> {
     Ok(cert)
 }
 
+fn get_subject_alt_name(_x509: &X509) -> Result<IndexMap<AttributeType, Value<String>>> {
+    let empty: IndexMap<AttributeType, Value<String>> = Default::default();
+
+    Ok(empty)
+}
+
 /// Parse a X509 certificate
 pub fn parse_certificate(cert: &[u8]) -> Result<template::Certificate> {
     let x509 = X509::from_der(cert).context("could not parse certificate with openssl")?;
@@ -206,6 +212,7 @@ pub fn parse_certificate(cert: &[u8]) -> Result<template::Certificate> {
             }
             Nid::KEY_USAGE => (),
             Nid::AUTHORITY_KEY_IDENTIFIER => (),
+            Nid::SUBJECT_ALT_NAME => (),
             Nid::SUBJECT_KEY_IDENTIFIER => (),
             _ => extensions
                 .push(extension::parse_extension(&ext).context("could not parse X509 extension")?),
@@ -235,6 +242,7 @@ pub fn parse_certificate(cert: &[u8]) -> Result<template::Certificate> {
                 .context("the certificate has not subject key id")?,
         ),
         basic_constraints,
+        subject_alt_name: get_subject_alt_name(&x509)?,
         extensions,
         signature: extract_signature(&x509)?,
     })

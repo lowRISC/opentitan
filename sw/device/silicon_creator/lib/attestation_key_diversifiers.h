@@ -15,6 +15,9 @@ extern "C" {
 extern const sc_keymgr_diversification_t kUdsKeymgrDiversifier;
 extern const sc_keymgr_diversification_t kCdi0KeymgrDiversifier;
 extern const sc_keymgr_diversification_t kCdi1KeymgrDiversifier;
+extern const sc_keymgr_diversification_t kTpmEkKeymgrDiversifier;
+extern const sc_keymgr_diversification_t kTpmCekKeymgrDiversifier;
+extern const sc_keymgr_diversification_t kTpmCikKeymgrDiversifier;
 
 #ifdef __cplusplus
 }  // extern "C"
