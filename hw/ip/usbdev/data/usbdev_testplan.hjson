@@ -661,7 +661,7 @@
             - Verify that we will get STALL response when try to attempt OUT transactions.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_stall_trans"]
     }
     {
       name: setup_priority_over_stall_response
