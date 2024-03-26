@@ -15,36 +15,19 @@
 .section .text.start
 
 p384_base_mult_test:
-
-  /* set dmem pointer to point to 1st scalar share d0 (private key) */
-  la       x2, d0
-  la       x3, dptr_d0
-  sw       x2, 0(x3)
-
-  /* set dmem pointer to point to 2nd scalar share d1 (private key) */
-  la       x2, d1
-  la       x3, dptr_d1
-  sw       x2, 0(x3)
-
-  /* set dmem pointer to point to x-coordinate */
-  la       x2, p1_x
-  la       x3, dptr_x
-  sw       x2, 0(x3)
-
-  /* set dmem pointer to point to y-coordinate */
-  la       x2, p1_y
-  la       x3, dptr_y
-  sw       x2, 0(x3)
+  /* Fill gpp registers pointers to variables */
+  la        x17, d0
+  la        x19, d1
 
   /* call base point multiplication routine in P-384 lib */
-  jal      x1, p384_base_mult
+  jal       x1, p384_base_mult
 
   /* load result to WDRs for comparison with reference */
   li        x2, 0
-  la        x3, p1_x
+  la        x3, x
   bn.lid    x2++, 0(x3)
   bn.lid    x2++, 32(x3)
-  la        x3, p1_y
+  la        x3, y
   bn.lid    x2++, 0(x3)
   bn.lid    x2, 32(x3)
 
@@ -54,6 +37,8 @@ p384_base_mult_test:
 .section .data
 
 /* 1st scalar share d0 (448-bit) */
+.globl d0
+.balign 32
 d0:
   .word 0x5c832a51
   .word 0x3eb17c27
@@ -72,6 +57,8 @@ d0:
   .zero 8
 
 /* 2nd scalar share d1 (448-bit) */
+.globl d1
+.balign 32
 d1:
   .word 0x33eae098
   .word 0xd31b18d5
@@ -106,9 +93,13 @@ scalar:
   .zero 16
 
 /* result buffer x-coordinate */
-p1_x:
+.globl x
+.balign 32
+x:
   .zero 64
 
 /* result buffer y-coordinate */
-p1_y:
+.globl y
+.balign 32
+y:
   .zero 64
