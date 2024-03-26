@@ -168,12 +168,13 @@ cc_library(
 
 cc_library(
     name = "ibex_fi",
-    srcs = ["ibex_fi.c"],
-    hdrs = [
-        "ibex_fi.h",
-        "status.h",
+    srcs = [
+        "ibex_fi.S",
+        "ibex_fi.c",
     ],
+    hdrs = ["ibex_fi.h"],
     deps = [
+        "//sw/device/lib/base:csr",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:flash_ctrl",
@@ -185,6 +186,25 @@ cc_library(
         "//sw/device/sca/lib:sca",
         "//sw/device/tests/crypto/cryptotest/firmware:sca_lib",
         "//sw/device/tests/crypto/cryptotest/json:ibex_fi_commands",
+    ],
+)
+
+cc_library(
+    name = "ibex_sca",
+    srcs = ["ibex_sca.c"],
+    hdrs = ["ibex_sca.h"],
+    deps = [
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/dif:keymgr",
+        "//sw/device/lib/dif:kmac",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+        "//sw/device/sca/lib:sca",
+        "//sw/device/tests/crypto/cryptotest/firmware:sca_lib",
+        "//sw/device/tests/crypto/cryptotest/json:ibex_sca_commands",
     ],
 )
 
@@ -304,6 +324,7 @@ FIRMWARE_DEPS = [
     ":hash",
     ":hmac",
     ":ibex_fi",
+    ":ibex_sca",
     ":kmac_sca",
     ":kmac",
     ":otbn_fi",
