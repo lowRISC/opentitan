@@ -106,7 +106,7 @@ module csrng_core import csrng_pkg::*; #(
   logic [KeyLen-1:0]           state_db_wr_key;
   logic [BlkLen-1:0]           state_db_wr_v;
   logic [CtrLen-1:0]           state_db_wr_rc;
-  logic                        state_db_wr_sts;
+  csrng_cmd_sts_e              state_db_wr_sts;
   logic                        state_db_wr_fips;
   logic [Cmd-1:0]              state_db_wr_ccmd;
 
@@ -125,7 +125,7 @@ module csrng_core import csrng_pkg::*; #(
 
   logic                        cmd_result_wr_req;
   logic                        cmd_result_ack;
-  logic                        cmd_result_ack_sts;
+  csrng_cmd_sts_e              cmd_result_ack_sts;
   logic [Cmd-1:0]              cmd_result_ccmd;
   logic                        cmd_result_ack_rdy;
   logic [StateId-1:0]          cmd_result_inst_id;
@@ -137,11 +137,11 @@ module csrng_core import csrng_pkg::*; #(
   logic [CtrLen-1:0]           cmd_result_rc;
 
   logic                        state_db_sts_ack;
-  logic                        state_db_sts_sts;
+  csrng_cmd_sts_e              state_db_sts_sts;
   logic [StateId-1:0]          state_db_sts_id;
 
   logic                        gen_result_wr_req;
-  logic                        gen_result_ack_sts;
+  csrng_cmd_sts_e              gen_result_ack_sts;
   logic                        gen_result_ack_rdy;
   logic [Cmd-1:0]              gen_result_ccmd;
   logic [StateId-1:0]          gen_result_inst_id;
@@ -303,54 +303,54 @@ module csrng_core import csrng_pkg::*; #(
   logic                        ctr_drbg_upd_v_ctr_err;
   logic                        ctr_drbg_gen_v_ctr_err;
 
-  logic [NApps-1:0]          cmd_stage_vld;
-  logic [StateId-1:0]        cmd_stage_shid[NApps];
-  logic [AppCmdWidth-1:0]    cmd_stage_bus[NApps];
-  logic [NApps-1:0]          cmd_stage_rdy;
-  logic [NApps-1:0]          cmd_arb_req;
-  logic [NApps-1:0]          cmd_arb_gnt;
-  logic [$clog2(NApps)-1:0]  cmd_arb_idx;
-  logic [NApps-1:0]          cmd_arb_sop;
-  logic [NApps-1:0]          cmd_arb_mop;
-  logic [NApps-1:0]          cmd_arb_eop;
-  logic [AppCmdWidth-1:0]    cmd_arb_bus[NApps];
-  logic [NApps-1:0]          cmd_core_ack;
-  logic [NApps-1:0]          cmd_core_ack_sts;
-  logic [NApps-1:0]          cmd_stage_ack;
-  logic [NApps-1:0]          cmd_stage_ack_sts;
-  logic [NApps-1:0]          genbits_core_vld;
-  logic [GenBitsWidth-1:0]   genbits_core_bus[NApps];
-  logic [NApps-1:0]          genbits_core_fips;
-  logic [NApps-1:0]          genbits_stage_vld;
-  logic [NApps-1:0]          genbits_stage_fips;
-  logic [GenBitsWidth-1:0]   genbits_stage_bus[NApps];
-  logic [NApps-1:0]          genbits_stage_rdy;
-  logic                      genbits_stage_vldo_sw;
-  logic                      genbits_stage_bus_rd_sw;
-  logic [31:0]               genbits_stage_bus_sw;
-  logic                      genbits_stage_fips_sw;
+  logic [NApps-1:0]            cmd_stage_vld;
+  logic [StateId-1:0]          cmd_stage_shid[NApps];
+  logic [AppCmdWidth-1:0]      cmd_stage_bus[NApps];
+  logic [NApps-1:0]            cmd_stage_rdy;
+  logic [NApps-1:0]            cmd_arb_req;
+  logic [NApps-1:0]            cmd_arb_gnt;
+  logic [$clog2(NApps)-1:0]    cmd_arb_idx;
+  logic [NApps-1:0]            cmd_arb_sop;
+  logic [NApps-1:0]            cmd_arb_mop;
+  logic [NApps-1:0]            cmd_arb_eop;
+  logic [AppCmdWidth-1:0]      cmd_arb_bus[NApps];
+  logic [NApps-1:0]            cmd_core_ack;
+  csrng_cmd_sts_e [NApps-1:0]  cmd_core_ack_sts;
+  logic [NApps-1:0]            cmd_stage_ack;
+  csrng_cmd_sts_e [NApps-1:0]  cmd_stage_ack_sts;
+  logic [NApps-1:0]            genbits_core_vld;
+  logic [GenBitsWidth-1:0]     genbits_core_bus[NApps];
+  logic [NApps-1:0]            genbits_core_fips;
+  logic [NApps-1:0]            genbits_stage_vld;
+  logic [NApps-1:0]            genbits_stage_fips;
+  logic [GenBitsWidth-1:0]     genbits_stage_bus[NApps];
+  logic [NApps-1:0]            genbits_stage_rdy;
+  logic                        genbits_stage_vldo_sw;
+  logic                        genbits_stage_bus_rd_sw;
+  logic [31:0]                 genbits_stage_bus_sw;
+  logic                        genbits_stage_fips_sw;
 
-  logic [15:0]               hw_exception_sts;
-  logic [LcHwDebugCopies-1:0]lc_hw_debug_on_fo;
-  logic                      state_db_is_dump_en;
-  logic                      state_db_reg_rd_sel;
-  logic                      state_db_reg_rd_id_pulse;
-  logic [StateId-1:0]        state_db_reg_rd_id;
-  logic [31:0]               state_db_reg_rd_val;
+  logic [15:0]                 hw_exception_sts;
+  logic [LcHwDebugCopies-1:0]  lc_hw_debug_on_fo;
+  logic                        state_db_is_dump_en;
+  logic                        state_db_reg_rd_sel;
+  logic                        state_db_reg_rd_id_pulse;
+  logic [StateId-1:0]          state_db_reg_rd_id;
+  logic [31:0]                 state_db_reg_rd_val;
 
-  logic [30:0]               err_code_test_bit;
-  logic                      ctr_drbg_upd_es_ack;
-  logic                      ctr_drbg_gen_es_ack;
-  logic                      block_encrypt_quiet;
+  logic [30:0]                 err_code_test_bit;
+  logic                        ctr_drbg_upd_es_ack;
+  logic                        ctr_drbg_gen_es_ack;
+  logic                        block_encrypt_quiet;
 
-  logic                      cs_rdata_capt_vld;
-  logic                      cs_bus_cmp_alert;
-  logic                      cmd_rdy;
-  logic [1:0]                efuse_sw_app_enable;
+  logic                        cs_rdata_capt_vld;
+  logic                        cs_bus_cmp_alert;
+  logic                        cmd_rdy;
+  logic [1:0]                  efuse_sw_app_enable;
 
-  logic                      unused_err_code_test_bit;
-  logic                      unused_reg2hw_genbits;
-  logic                      unused_int_state_val;
+  logic                        unused_err_code_test_bit;
+  logic                        unused_reg2hw_genbits;
+  logic                        unused_int_state_val;
 
   prim_mubi_pkg::mubi8_t [1:0] en_csrng_sw_app_read;
   prim_mubi_pkg::mubi4_t [CsEnableCopies-1:0] mubi_cs_enable_fanout;
@@ -372,6 +372,7 @@ module csrng_core import csrng_pkg::*; #(
   logic [63:0]               cs_rdata_capt_q, cs_rdata_capt_d;
   logic                      cs_rdata_capt_vld_q, cs_rdata_capt_vld_d;
   logic                      sw_rdy_sts_q, sw_rdy_sts_d;
+  logic                      sw_sts_ack_q, sw_sts_ack_d;
 
   always_ff @(posedge clk_i or negedge rst_ni)
     if (!rst_ni) begin
@@ -390,6 +391,7 @@ module csrng_core import csrng_pkg::*; #(
       cs_rdata_capt_q         <= '0;
       cs_rdata_capt_vld_q     <= '0;
       sw_rdy_sts_q            <= '0;
+      sw_sts_ack_q            <= '0;
     end else begin
       acmd_q                  <= acmd_d;
       shid_q                  <= shid_d;
@@ -406,6 +408,7 @@ module csrng_core import csrng_pkg::*; #(
       cs_rdata_capt_q         <= cs_rdata_capt_d;
       cs_rdata_capt_vld_q     <= cs_rdata_capt_vld_d;
       sw_rdy_sts_q            <= sw_rdy_sts_d;
+      sw_sts_ack_q            <= sw_sts_ack_d;
     end
 
   //--------------------------------------------
@@ -870,14 +873,23 @@ module csrng_core import csrng_pkg::*; #(
   assign hw2reg.sw_cmd_sts.cmd_rdy.d = cmd_rdy;
   assign cmd_rdy = !cmd_stage_vld[NApps-1] && sw_rdy_sts_q;
   assign sw_rdy_sts_d =
-         !cs_enable_fo[28] ? 1'b1 :
+         !cs_enable_fo[28] ? 1'b0 :
          cmd_stage_vld[NApps-1] ? 1'b0 :
          cmd_stage_rdy[NApps-1] ? 1'b1 :
          sw_rdy_sts_q;
-
+  // cmd sts ack
+  assign hw2reg.sw_cmd_sts.cmd_ack.de = 1'b1;
+  assign hw2reg.sw_cmd_sts.cmd_ack.d = sw_sts_ack_d;
+  assign sw_sts_ack_d =
+         !cs_enable_fo[28] ? 1'b0 :
+         cmd_stage_vld[NApps-1] ? 1'b0 :
+         cmd_stage_ack[NApps-1] ? 1'b1 :
+         sw_sts_ack_q;
   // cmd ack sts
-  assign hw2reg.sw_cmd_sts.cmd_sts.de = cmd_stage_ack[NApps-1];
-  assign hw2reg.sw_cmd_sts.cmd_sts.d = cmd_stage_ack_sts[NApps-1];
+  assign hw2reg.sw_cmd_sts.cmd_sts.de = (cs_main_sm_alert && (shid_q == StateId'(NApps-1))) ||
+      cmd_stage_ack[NApps-1];
+  assign hw2reg.sw_cmd_sts.cmd_sts.d = (cs_main_sm_alert && (shid_q == StateId'(NApps-1))) ?
+      CMD_STS_INVALID_ACMD : cmd_stage_ack_sts[NApps-1];
   // genbits
   assign hw2reg.genbits_vld.genbits_vld.d = genbits_stage_vldo_sw;
   assign hw2reg.genbits_vld.genbits_fips.d = genbits_stage_fips_sw;
@@ -963,8 +975,10 @@ module csrng_core import csrng_pkg::*; #(
     assign cmd_stage_bus[hai] = csrng_cmd_i[hai].csrng_req_bus;
     assign csrng_cmd_o[hai].csrng_req_ready = cmd_stage_rdy[hai];
     // cmd ack
-    assign csrng_cmd_o[hai].csrng_rsp_ack = cmd_stage_ack[hai];
-    assign csrng_cmd_o[hai].csrng_rsp_sts = cmd_stage_ack_sts[hai];
+    assign csrng_cmd_o[hai].csrng_rsp_ack = (cs_main_sm_alert && (shid_q == StateId'(hai))) ||
+        cmd_stage_ack[hai];
+    assign csrng_cmd_o[hai].csrng_rsp_sts = (cs_main_sm_alert && (shid_q == StateId'(hai))) ?
+        CMD_STS_INVALID_ACMD : cmd_stage_ack_sts[hai];
     // genbits
     assign csrng_cmd_o[hai].genbits_valid = genbits_stage_vld[hai];
     assign csrng_cmd_o[hai].genbits_fips = genbits_stage_fips[hai];

@@ -26,6 +26,8 @@ package edn_env_pkg;
   parameter uint     MAX_NUM_ENDPOINTS = 7;
   parameter string   LIST_OF_ALERTS[]  = {"recov_alert","fatal_alert"};
   parameter uint     NUM_ALERTS        = 2;
+  parameter uint     CMD_STS_SIZE      = 2;
+  parameter uint     CMD_TYPE_SIZE     = 4;
 
   // types
   typedef enum int {
@@ -127,17 +129,17 @@ package edn_env_pkg;
 
   typedef enum int {
     sw_cmd_reg_rdy = 0,
-    sw_cmd_rdy  = 1,
-    sw_cmd_sts = 2,
-    sw_cmd_ack = 3
+    sw_cmd_rdy     = 1,
+    sw_cmd_ack     = 2,
+    sw_cmd_sts     = 3
   } sw_cmd_sts_e;
 
   typedef enum int {
     hw_cmd_boot_mode = 0,
     hw_cmd_auto_mode = 1,
-    hw_cmd_sts = 2,
-    hw_cmd_ack = 3,
-    hw_cmd_type = 4
+    hw_cmd_type      = 2,
+    hw_cmd_ack       = 6,
+    hw_cmd_sts       = 7
   } hw_cmd_sts_e;
 
   // package sources

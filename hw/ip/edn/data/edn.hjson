@@ -329,18 +329,6 @@
           resval: "0"
         }
         { bits: "2",
-          name: "CMD_STS",
-          desc: '''
-                This one bit field represents the status code returned with the CSRNG application command ack.
-                It is updated each time a SW command is acknowledged by CSRNG.
-                To check whether a command was succesful, wait for !!INTR_STATE.EDN_CMD_REQ_DONE or
-                !!SW_CMD_STS.CMD_ACK to be high and then check the value of this field.
-                0b0: Request completed successfully.
-                0b1: Request completed with an error.
-                '''
-          resval: "0"
-        }
-        { bits: "3",
           name: "CMD_ACK",
           desc: '''
                 This one bit field indicates when a SW command has been acknowledged by the CSRNG.
@@ -348,6 +336,17 @@
                 The field is set to high once a SW command request has been acknowledged by the CSRNG.
                 0b0: The last SW command has not been acknowledged yet.
                 0b1: The last SW command has been acknowledged.
+                '''
+          resval: "0"
+        }
+        { bits: "4:3",
+          name: "CMD_STS",
+          desc: '''
+                This field represents the status code returned with the CSRNG application command ack.
+                It is updated each time a SW command is acknowledged by CSRNG.
+                To check whether a command was successful, wait for !!INTR_STATE.EDN_CMD_REQ_DONE or
+                !!SW_CMD_STS.CMD_ACK to be high and then check the value of this field.
+                A description of the command status types can be found [here](../../csrng/doc/registers.md#sw_cmd_sts--cmd_sts).
                 '''
           resval: "0"
         }
@@ -379,17 +378,16 @@
                 '''
           resval: "0"
         }
-        { bits: "2",
-          name: "CMD_STS",
+        { bits: "5:2",
+          name: "CMD_TYPE",
           desc: '''
-                This one bit field represents the status code returned with the CSRNG application command ack.
-                It is updated each time a HW command is acknowledged by CSRNG.
-                0b0: Request completed successfully.
-                0b1: Request completed with an error.
+                This field contains the application command type of the hardware controlled command issued last.
+                The application command selects one of five operations to perform.
+                A description of the application command types can be found [here](../../csrng/doc/theory_of_operation.md#command-description).
                 '''
           resval: "0"
         }
-        { bits: "3",
+        { bits: "6",
           name: "CMD_ACK",
           desc: '''
                 This one bit field indicates when a HW command has been acknowledged by the CSRNG.
@@ -400,12 +398,12 @@
                 '''
           resval: "0"
         }
-        { bits: "7:4",
-          name: "CMD_TYPE",
+        { bits: "8:7",
+          name: "CMD_STS",
           desc: '''
-                This field contains the application command type of the hardware controlled command issued last.
-                The application command selects one of five operations to perform.
-                A description of the application command types can be found [here](https://opentitan.org/book/hw/ip/csrng/doc/theory_of_operation.html#command-description).
+                This field represents the status code returned with the CSRNG application command ack.
+                It is updated each time a HW command is acknowledged by CSRNG.
+                A description of the command status types can be found [here](../../csrng/doc/registers.md#sw_cmd_sts--cmd_sts).
                 '''
           resval: "0"
         }

@@ -46,11 +46,12 @@ class edn_env_cfg extends cip_base_env_cfg #(.RAL_T(edn_reg_block));
   rand bit       force_disable;
   rand bit [csrng_pkg::CSRNG_CMD_WIDTH - 1:0]   boot_ins_cmd, boot_gen_cmd;
 
-  rand fatal_err_e      which_fatal_err;
-  rand err_code_e       which_err_code;
-  rand which_fifo_e     which_fifo;
-  rand which_fifo_err_e which_fifo_err;
-  rand invalid_mubi_e   which_invalid_mubi;
+  rand fatal_err_e                    which_fatal_err;
+  rand err_code_e                     which_err_code;
+  rand which_fifo_e                   which_fifo;
+  rand which_fifo_err_e               which_fifo_err;
+  rand invalid_mubi_e                 which_invalid_mubi;
+  rand csrng_pkg::csrng_cmd_sts_e     which_cmd_sts_err;
 
   // Constraints
   constraint glen_auto_mode_c {glen_auto_mode dist {
@@ -84,6 +85,9 @@ class edn_env_cfg extends cip_base_env_cfg #(.RAL_T(edn_reg_block));
     edn_cntr_err    :/ 5
     // All other error codes will implicitly get a weight of 1.
   };}
+
+  // CMD_STS_SUCCESS is not an error so ignore it.
+  constraint which_cmd_sts_err_c {{which_cmd_sts_err != csrng_pkg::CMD_STS_SUCCESS};}
 
   // Functions
   function void post_randomize();

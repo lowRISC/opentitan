@@ -188,9 +188,7 @@ status_t csrng_testutils_fips_generate_kat(const dif_csrng_t *csrng) {
 status_t csrng_testutils_cmd_status_check(const dif_csrng_t *csrng) {
   dif_csrng_cmd_status_t status;
   TRY(dif_csrng_get_cmd_interface_status(csrng, &status));
-  TRY_CHECK(status.errors == 0);
-  TRY_CHECK(status.unhealthy_fifos == 0);
-  TRY_CHECK(status.errors != kDifCsrngCmdStatusError);
+  TRY_CHECK(status.cmd_sts == kDifCsrngCmdStsSuccess);
   return OK_STATUS();
 }
 

@@ -14,6 +14,7 @@ package csrng_pkg;
   parameter int unsigned FIPS_GENBITS_BUS_WIDTH = entropy_src_pkg::FIPS_BUS_WIDTH +
                          GENBITS_BUS_WIDTH;
   parameter int unsigned MainSmStateWidth = 8;
+  parameter int unsigned CSRNG_CMD_STS_WIDTH = 2;
 
   // instantiation interface
   typedef struct packed {
@@ -22,17 +23,25 @@ package csrng_pkg;
     logic                       genbits_ready;
   } csrng_req_t;
 
+  typedef enum logic [CSRNG_CMD_STS_WIDTH-1:0] {
+    CMD_STS_SUCCESS              = 2'h0,
+    CMD_STS_INVALID_ACMD         = 2'h1,
+    CMD_STS_INVALID_STATE_PARAM  = 2'h2,
+    CMD_STS_INVALID_GEN_CMD      = 2'h3,
+    CMD_STS_UNDRIVEN             = 'z
+  } csrng_cmd_sts_e;
+
   typedef struct packed {
     logic                         csrng_req_ready;
     logic                         csrng_rsp_ack;
-    logic                         csrng_rsp_sts;
+    csrng_cmd_sts_e               csrng_rsp_sts;
     logic                         genbits_valid;
     logic                         genbits_fips;
     logic [GENBITS_BUS_WIDTH-1:0] genbits_bus;
   } csrng_rsp_t;
 
   parameter csrng_req_t CSRNG_REQ_DEFAULT = '{default: '0};
-  parameter csrng_rsp_t CSRNG_RSP_DEFAULT = '{default: '0};
+  parameter csrng_rsp_t CSRNG_RSP_DEFAULT = '0;
 
   typedef enum logic [2:0] {
     INV  = 3'h0,
@@ -76,7 +85,7 @@ package csrng_pkg;
   // Minimum Hamming weight: 1
   // Maximum Hamming weight: 7
   //
-  typedef    enum logic [MainSmStateWidth-1:0] {
+  typedef enum logic [MainSmStateWidth-1:0] {
     MainSmIdle          = 8'b01001110, // idle
     MainSmParseCmd      = 8'b10111011, // parse the cmd
     MainSmInstantPrep   = 8'b11000001, // instantiate prep

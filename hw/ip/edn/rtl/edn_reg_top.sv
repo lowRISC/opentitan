@@ -159,13 +159,13 @@ module edn_reg_top (
   logic [31:0] sw_cmd_req_wd;
   logic sw_cmd_sts_cmd_reg_rdy_qs;
   logic sw_cmd_sts_cmd_rdy_qs;
-  logic sw_cmd_sts_cmd_sts_qs;
   logic sw_cmd_sts_cmd_ack_qs;
+  logic [1:0] sw_cmd_sts_cmd_sts_qs;
   logic hw_cmd_sts_boot_mode_qs;
   logic hw_cmd_sts_auto_mode_qs;
-  logic hw_cmd_sts_cmd_sts_qs;
-  logic hw_cmd_sts_cmd_ack_qs;
   logic [3:0] hw_cmd_sts_cmd_type_qs;
+  logic hw_cmd_sts_cmd_ack_qs;
+  logic [1:0] hw_cmd_sts_cmd_sts_qs;
   logic reseed_cmd_we;
   logic [31:0] reseed_cmd_wd;
   logic generate_cmd_we;
@@ -658,34 +658,7 @@ module edn_reg_top (
     .qs     (sw_cmd_sts_cmd_rdy_qs)
   );
 
-  //   F[cmd_sts]: 2:2
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
-  ) u_sw_cmd_sts_cmd_sts (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (1'b0),
-    .wd     ('0),
-
-    // from internal hardware
-    .de     (hw2reg.sw_cmd_sts.cmd_sts.de),
-    .d      (hw2reg.sw_cmd_sts.cmd_sts.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (sw_cmd_sts_cmd_sts_qs)
-  );
-
-  //   F[cmd_ack]: 3:3
+  //   F[cmd_ack]: 2:2
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
@@ -710,6 +683,33 @@ module edn_reg_top (
 
     // to register interface (read)
     .qs     (sw_cmd_sts_cmd_ack_qs)
+  );
+
+  //   F[cmd_sts]: 4:3
+  prim_subreg #(
+    .DW      (2),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (2'h0),
+    .Mubi    (1'b0)
+  ) u_sw_cmd_sts_cmd_sts (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.sw_cmd_sts.cmd_sts.de),
+    .d      (hw2reg.sw_cmd_sts.cmd_sts.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (sw_cmd_sts_cmd_sts_qs)
   );
 
 
@@ -768,13 +768,13 @@ module edn_reg_top (
     .qs     (hw_cmd_sts_auto_mode_qs)
   );
 
-  //   F[cmd_sts]: 2:2
+  //   F[cmd_type]: 5:2
   prim_subreg #(
-    .DW      (1),
+    .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0),
+    .RESVAL  (4'h0),
     .Mubi    (1'b0)
-  ) u_hw_cmd_sts_cmd_sts (
+  ) u_hw_cmd_sts_cmd_type (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
@@ -783,8 +783,8 @@ module edn_reg_top (
     .wd     ('0),
 
     // from internal hardware
-    .de     (hw2reg.hw_cmd_sts.cmd_sts.de),
-    .d      (hw2reg.hw_cmd_sts.cmd_sts.d),
+    .de     (hw2reg.hw_cmd_sts.cmd_type.de),
+    .d      (hw2reg.hw_cmd_sts.cmd_type.d),
 
     // to internal hardware
     .qe     (),
@@ -792,10 +792,10 @@ module edn_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (hw_cmd_sts_cmd_sts_qs)
+    .qs     (hw_cmd_sts_cmd_type_qs)
   );
 
-  //   F[cmd_ack]: 3:3
+  //   F[cmd_ack]: 6:6
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
@@ -822,13 +822,13 @@ module edn_reg_top (
     .qs     (hw_cmd_sts_cmd_ack_qs)
   );
 
-  //   F[cmd_type]: 7:4
+  //   F[cmd_sts]: 8:7
   prim_subreg #(
-    .DW      (4),
+    .DW      (2),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (4'h0),
+    .RESVAL  (2'h0),
     .Mubi    (1'b0)
-  ) u_hw_cmd_sts_cmd_type (
+  ) u_hw_cmd_sts_cmd_sts (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
@@ -837,8 +837,8 @@ module edn_reg_top (
     .wd     ('0),
 
     // from internal hardware
-    .de     (hw2reg.hw_cmd_sts.cmd_type.de),
-    .d      (hw2reg.hw_cmd_sts.cmd_type.d),
+    .de     (hw2reg.hw_cmd_sts.cmd_sts.de),
+    .d      (hw2reg.hw_cmd_sts.cmd_sts.d),
 
     // to internal hardware
     .qe     (),
@@ -846,7 +846,7 @@ module edn_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (hw_cmd_sts_cmd_type_qs)
+    .qs     (hw_cmd_sts_cmd_sts_qs)
   );
 
 
@@ -1570,16 +1570,16 @@ module edn_reg_top (
       addr_hit[9]: begin
         reg_rdata_next[0] = sw_cmd_sts_cmd_reg_rdy_qs;
         reg_rdata_next[1] = sw_cmd_sts_cmd_rdy_qs;
-        reg_rdata_next[2] = sw_cmd_sts_cmd_sts_qs;
-        reg_rdata_next[3] = sw_cmd_sts_cmd_ack_qs;
+        reg_rdata_next[2] = sw_cmd_sts_cmd_ack_qs;
+        reg_rdata_next[4:3] = sw_cmd_sts_cmd_sts_qs;
       end
 
       addr_hit[10]: begin
         reg_rdata_next[0] = hw_cmd_sts_boot_mode_qs;
         reg_rdata_next[1] = hw_cmd_sts_auto_mode_qs;
-        reg_rdata_next[2] = hw_cmd_sts_cmd_sts_qs;
-        reg_rdata_next[3] = hw_cmd_sts_cmd_ack_qs;
-        reg_rdata_next[7:4] = hw_cmd_sts_cmd_type_qs;
+        reg_rdata_next[5:2] = hw_cmd_sts_cmd_type_qs;
+        reg_rdata_next[6] = hw_cmd_sts_cmd_ack_qs;
+        reg_rdata_next[8:7] = hw_cmd_sts_cmd_sts_qs;
       end
 
       addr_hit[11]: begin

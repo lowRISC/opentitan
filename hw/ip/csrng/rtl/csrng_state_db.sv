@@ -37,7 +37,7 @@ module csrng_state_db import csrng_pkg::*; #(
   input logic [KeyLen-1:0]   state_db_wr_key_i,
   input logic [BlkLen-1:0]   state_db_wr_v_i,
   input logic [CtrLen-1:0]   state_db_wr_res_ctr_i,
-  input logic                state_db_wr_sts_i,
+  input csrng_cmd_sts_e      state_db_wr_sts_i,
   // status interface
   input logic                state_db_is_dump_en_i,
   input logic                state_db_reg_rd_sel_i,
@@ -45,14 +45,14 @@ module csrng_state_db import csrng_pkg::*; #(
   input logic [StateId-1:0]  state_db_reg_rd_id_i,
   output logic [31:0]        state_db_reg_rd_val_o,
   output logic               state_db_sts_ack_o,
-  output logic               state_db_sts_sts_o,
+  output csrng_cmd_sts_e     state_db_sts_sts_o,
   output logic [StateId-1:0] state_db_sts_id_o
 );
 
   localparam int InternalStateWidth = 2+KeyLen+BlkLen+CtrLen;
   localparam int RegInternalStateWidth = 30+InternalStateWidth;
   localparam int RegW = 32;
-  localparam int StateWidth = 1+1+KeyLen+BlkLen+CtrLen+StateId+1;
+  localparam int StateWidth = 1+1+KeyLen+BlkLen+CtrLen+StateId+CSRNG_CMD_STS_WIDTH;
 
   logic [StateId-1:0]              state_db_id;
   logic [KeyLen-1:0]               state_db_key;
@@ -60,7 +60,7 @@ module csrng_state_db import csrng_pkg::*; #(
   logic [CtrLen-1:0]               state_db_rc;
   logic                            state_db_fips;
   logic                            state_db_inst_st;
-  logic                            state_db_sts;
+  csrng_cmd_sts_e                  state_db_sts;
   logic                            state_db_write;
   logic                            instance_status;
   logic [NApps-1:0]                int_st_out_sel;
@@ -74,7 +74,7 @@ module csrng_state_db import csrng_pkg::*; #(
 
   // flops
   logic                            state_db_sts_ack_q, state_db_sts_ack_d;
-  logic                            state_db_sts_sts_q, state_db_sts_sts_d;
+  csrng_cmd_sts_e                  state_db_sts_sts_q, state_db_sts_sts_d;
   logic [StateId-1:0]              state_db_sts_id_q, state_db_sts_id_d;
   logic [StateId-1:0]              reg_rd_ptr_q, reg_rd_ptr_d;
   logic [StateId-1:0]              int_st_dump_id_q, int_st_dump_id_d;
@@ -82,7 +82,7 @@ module csrng_state_db import csrng_pkg::*; #(
   always_ff @(posedge clk_i or negedge rst_ni)
     if (!rst_ni) begin
       state_db_sts_ack_q   <= '0;
-      state_db_sts_sts_q   <= '0;
+      state_db_sts_sts_q   <= CMD_STS_SUCCESS;
       state_db_sts_id_q    <= '0;
       reg_rd_ptr_q         <= '0;
       int_st_dump_id_q     <= '0;

@@ -1,3 +1,6 @@
+# Registers
+
+<!-- BEGIN CMDGEN util/regtool.py -d ./hw/ip/edn/data/edn.hjson -->
 ## Summary
 
 | Name                                                                | Offset   |   Length | Description                                                  |
@@ -224,21 +227,28 @@ in the CSRNG documentation.
 EDN software command status register
 - Offset: `0x24`
 - Reset default: `0x0`
-- Reset mask: `0xf`
+- Reset mask: `0x1f`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "CMD_REG_RDY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CMD_RDY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CMD_STS", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CMD_ACK", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 130}}
+{"reg": [{"name": "CMD_REG_RDY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CMD_RDY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CMD_ACK", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CMD_STS", "bits": 2, "attr": ["ro"], "rotate": -90}, {"bits": 27}], "config": {"lanes": 1, "fontsize": 10, "vspace": 130}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                    |
 |:------:|:------:|:-------:|:----------------------------------------|
-|  31:4  |        |         | Reserved                                |
-|   3    |   ro   |   0x0   | [CMD_ACK](#sw_cmd_sts--cmd_ack)         |
-|   2    |   ro   |   0x0   | [CMD_STS](#sw_cmd_sts--cmd_sts)         |
+|  31:5  |        |         | Reserved                                |
+|  4:3   |   ro   |   0x0   | [CMD_STS](#sw_cmd_sts--cmd_sts)         |
+|   2    |   ro   |   0x0   | [CMD_ACK](#sw_cmd_sts--cmd_ack)         |
 |   1    |   ro   |   0x0   | [CMD_RDY](#sw_cmd_sts--cmd_rdy)         |
 |   0    |   ro   |   0x0   | [CMD_REG_RDY](#sw_cmd_sts--cmd_reg_rdy) |
+
+### SW_CMD_STS . CMD_STS
+This field represents the status code returned with the CSRNG application command ack.
+It is updated each time a SW command is acknowledged by CSRNG.
+To check whether a command was successful, wait for [`INTR_STATE.EDN_CMD_REQ_DONE`](#intr_state) or
+[`SW_CMD_STS.CMD_ACK`](#sw_cmd_sts) to be high and then check the value of this field.
+A description of the command status types can be found [here](../../csrng/doc/registers.md#sw_cmd_sts--cmd_sts).
 
 ### SW_CMD_STS . CMD_ACK
 This one bit field indicates when a SW command has been acknowledged by the CSRNG.
@@ -246,14 +256,6 @@ It is set to low each time a new command is written to [`SW_CMD_REQ.`](#sw_cmd_r
 The field is set to high once a SW command request has been acknowledged by the CSRNG.
 0b0: The last SW command has not been acknowledged yet.
 0b1: The last SW command has been acknowledged.
-
-### SW_CMD_STS . CMD_STS
-This one bit field represents the status code returned with the CSRNG application command ack.
-It is updated each time a SW command is acknowledged by CSRNG.
-To check whether a command was succesful, wait for [`INTR_STATE.EDN_CMD_REQ_DONE`](#intr_state) or
-[`SW_CMD_STS.CMD_ACK`](#sw_cmd_sts) to be high and then check the value of this field.
-0b0: Request completed successfully.
-0b1: Request completed with an error.
 
 ### SW_CMD_STS . CMD_RDY
 This bit indicates when the EDN is ready to accept the next command.
@@ -271,27 +273,27 @@ This bit has to be polled before each word of a command is written to [`SW_CMD_R
 EDN hardware command status register
 - Offset: `0x28`
 - Reset default: `0x0`
-- Reset mask: `0xff`
+- Reset mask: `0x1ff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "BOOT_MODE", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "AUTO_MODE", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CMD_STS", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CMD_ACK", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CMD_TYPE", "bits": 4, "attr": ["ro"], "rotate": -90}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 110}}
+{"reg": [{"name": "BOOT_MODE", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "AUTO_MODE", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CMD_TYPE", "bits": 4, "attr": ["ro"], "rotate": -90}, {"name": "CMD_ACK", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CMD_STS", "bits": 2, "attr": ["ro"], "rotate": -90}, {"bits": 23}], "config": {"lanes": 1, "fontsize": 10, "vspace": 110}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                |
 |:------:|:------:|:-------:|:------------------------------------|
-|  31:8  |        |         | Reserved                            |
-|  7:4   |   ro   |   0x0   | [CMD_TYPE](#hw_cmd_sts--cmd_type)   |
-|   3    |   ro   |   0x0   | [CMD_ACK](#hw_cmd_sts--cmd_ack)     |
-|   2    |   ro   |   0x0   | [CMD_STS](#hw_cmd_sts--cmd_sts)     |
+|  31:9  |        |         | Reserved                            |
+|  8:7   |   ro   |   0x0   | [CMD_STS](#hw_cmd_sts--cmd_sts)     |
+|   6    |   ro   |   0x0   | [CMD_ACK](#hw_cmd_sts--cmd_ack)     |
+|  5:2   |   ro   |   0x0   | [CMD_TYPE](#hw_cmd_sts--cmd_type)   |
 |   1    |   ro   |   0x0   | [AUTO_MODE](#hw_cmd_sts--auto_mode) |
 |   0    |   ro   |   0x0   | [BOOT_MODE](#hw_cmd_sts--boot_mode) |
 
-### HW_CMD_STS . CMD_TYPE
-This field contains the application command type of the hardware controlled command issued last.
-The application command selects one of five operations to perform.
-A description of the application command types can be found [here](https://opentitan.org/book/hw/ip/csrng/doc/theory_of_operation.html#command-description).
+### HW_CMD_STS . CMD_STS
+This field represents the status code returned with the CSRNG application command ack.
+It is updated each time a HW command is acknowledged by CSRNG.
+A description of the command status types can be found [here](../../csrng/doc/registers.md#sw_cmd_sts--cmd_sts).
 
 ### HW_CMD_STS . CMD_ACK
 This one bit field indicates when a HW command has been acknowledged by the CSRNG.
@@ -300,11 +302,10 @@ The field is set to high once a HW command request has been acknowledged by the 
 0b0: The last HW command has not been acknowledged yet.
 0b1: The last HW command has been acknowledged.
 
-### HW_CMD_STS . CMD_STS
-This one bit field represents the status code returned with the CSRNG application command ack.
-It is updated each time a HW command is acknowledged by CSRNG.
-0b0: Request completed successfully.
-0b1: Request completed with an error.
+### HW_CMD_STS . CMD_TYPE
+This field contains the application command type of the hardware controlled command issued last.
+The application command selects one of five operations to perform.
+A description of the application command types can be found [here](../../csrng/doc/theory_of_operation.md#command-description).
 
 ### HW_CMD_STS . AUTO_MODE
 This one bit field indicates whether the EDN is in the hardware controlled part of auto mode.
@@ -532,3 +533,6 @@ Main state machine state observation register
 |:------:|:------:|:-------:|:--------------|:---------------------------------------------------------------------------------------------------------------|
 |  31:9  |        |         |               | Reserved                                                                                                       |
 |  8:0   |   ro   |  0xc1   | MAIN_SM_STATE | This is the state of the EDN main state machine. See the RTL file `edn_main_sm` for the meaning of the values. |
+
+
+<!-- END CMDGEN -->

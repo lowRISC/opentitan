@@ -89,7 +89,7 @@ class edn_alert_vseq extends edn_base_vseq;
         end
         `uvm_info(`gfn, $sformatf("State reached"), UVM_HIGH)
         // The next acknowledgement should return an error status.
-        cfg.m_csrng_agent_cfg.rsp_sts_err = 1;
+        cfg.m_csrng_agent_cfg.rsp_sts_err = cfg.which_cmd_sts_err;
       )
     join_none
 
@@ -104,10 +104,10 @@ class edn_alert_vseq extends edn_base_vseq;
     // If coverage is enabled, record the values of the hw_cmd_sts register.
     if (cfg.en_cov) begin
       cov_vif.cg_edn_hw_cmd_sts_sample(.boot_mode(value[hw_cmd_boot_mode]),
-                                       .auto_mode(value[hw_cmd_auto_mode]),
-                                       .cmd_sts(value[hw_cmd_sts]),
-                                       .cmd_ack(value[hw_cmd_ack]),
-                                       .acmd(csrng_pkg::acmd_e'(value[hw_cmd_type+:4])));
+          .auto_mode(value[hw_cmd_auto_mode]),
+          .cmd_sts(csrng_pkg::csrng_cmd_sts_e'(value[hw_cmd_sts+:CMD_STS_SIZE])),
+          .cmd_ack(value[hw_cmd_ack]),
+          .acmd(csrng_pkg::acmd_e'(value[hw_cmd_type+:CMD_TYPE_SIZE])));
     end
     // Issue the commands that are needed to get to exp_state in a fork.
     start_transition_to_main_sm_state(exp_state);
@@ -128,7 +128,7 @@ class edn_alert_vseq extends edn_base_vseq;
 
     // Wait for the CSRNG error status response to propagate through the EDN
     // to the hw_cmd_sts register.
-    csr_spinwait(.ptr(ral.hw_cmd_sts.cmd_sts), .exp_data(1'b1), .backdoor(1'b1));
+    csr_spinwait(.ptr(ral.hw_cmd_sts.cmd_sts), .exp_data(cfg.which_cmd_sts_err), .backdoor(1'b1));
     cfg.clk_rst_vif.wait_clks(10);
     // Expect the csrng_ack_err bit to be set in the recov_alert_sts register.
     exp_recov_alert_sts = 32'b0;
@@ -137,9 +137,9 @@ class edn_alert_vseq extends edn_base_vseq;
     // Check hw_cmd_sts in scoreboard.
     exp_hw_cmd_sts[hw_cmd_boot_mode] = (cfg.boot_req_mode == MuBi4True) ? 1'b1 : 1'b0;
     exp_hw_cmd_sts[hw_cmd_auto_mode] = (cfg.auto_req_mode == MuBi4True) ? 1'b1 : 1'b0;
-    exp_hw_cmd_sts[hw_cmd_sts] = 1'b1;
+    exp_hw_cmd_sts[hw_cmd_sts+:CMD_STS_SIZE] = cfg.which_cmd_sts_err;
     exp_hw_cmd_sts[hw_cmd_ack] = 1'b1;
-    exp_hw_cmd_sts[hw_cmd_type+:4] =
+    exp_hw_cmd_sts[hw_cmd_type+:CMD_TYPE_SIZE] =
         (exp_state inside {BootLoadIns, BootInsAckWait}) ? csrng_pkg::INS :
         (exp_state inside {BootPulse, BootDone, BootLoadUni}) ? csrng_pkg::UNI :
         (exp_state inside {AutoCaptReseedCnt, AutoSendReseedCmd}) ? csrng_pkg::RES :
@@ -148,10 +148,10 @@ class edn_alert_vseq extends edn_base_vseq;
     // If coverage is enabled, record the values of the hw_cmd_sts register.
     if (cfg.en_cov) begin
       cov_vif.cg_edn_hw_cmd_sts_sample(.boot_mode(exp_hw_cmd_sts[hw_cmd_boot_mode]),
-                                       .auto_mode(exp_hw_cmd_sts[hw_cmd_auto_mode]),
-                                       .cmd_sts(exp_hw_cmd_sts[hw_cmd_sts]),
-                                       .cmd_ack(exp_hw_cmd_sts[hw_cmd_ack]),
-                                       .acmd(csrng_pkg::acmd_e'(exp_hw_cmd_sts[hw_cmd_type+:4])));
+          .auto_mode(exp_hw_cmd_sts[hw_cmd_auto_mode]),
+          .cmd_sts(csrng_pkg::csrng_cmd_sts_e'(exp_hw_cmd_sts[hw_cmd_sts+:CMD_STS_SIZE])),
+          .cmd_ack(exp_hw_cmd_sts[hw_cmd_ack]),
+          .acmd(csrng_pkg::acmd_e'(exp_hw_cmd_sts[hw_cmd_type+:CMD_TYPE_SIZE])));
     end
     csr_rd_check(.ptr(ral.main_sm_state), .compare_value(edn_pkg::RejectCsrngEntropy));
     // See if we can request some data if the generate has been issued.
@@ -161,7 +161,7 @@ class edn_alert_vseq extends edn_base_vseq;
       m_endpoint_pull_seq.start(p_sequencer.endpoint_sequencer_h[endpoint_port]);
     end
     // From now on we want the CSRNG status responses to be valid again.
-    cfg.m_csrng_agent_cfg.rsp_sts_err = 0;
+    cfg.m_csrng_agent_cfg.rsp_sts_err = csrng_pkg::CMD_STS_SUCCESS;
     // Force the genbits valid signal to high and verify that the EDN does not accept
     // any further genbits.
     `DV_SPINWAIT_EXIT(`DV_CHECK(uvm_hdl_force(cfg.edn_vif.genbits_valid_path(), 1'b1));
