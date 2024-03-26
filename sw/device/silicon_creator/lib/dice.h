@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_CERT_DICE_H_
-#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_CERT_DICE_H_
+#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DICE_H_
+#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DICE_H_
 
 #include <stdint.h>
 
@@ -83,4 +83,4 @@ rom_error_t dice_cdi_1_cert_build(manuf_certgen_inputs_t *inputs,
                                   hmac_digest_t *cdi_0_pubkey_id, uint8_t *cert,
                                   size_t *cert_size);
 
-#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_CERT_DICE_H_
+#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DICE_H_
