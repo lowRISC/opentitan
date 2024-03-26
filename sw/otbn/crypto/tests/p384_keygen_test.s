@@ -24,54 +24,36 @@ p384_keygen_test:
   /* Init all-zero register. */
   bn.xor    w31, w31, w31
 
-  /* set dmem pointer to point to 1st scalar share k0 */
-  la        x2, k0
-  la        x3, dptr_k0
-  sw        x2, 0(x3)
-
-  /* set dmem pointer to point to 2nd scalar share k1 */
-  la        x2, k1
-  la        x3, dptr_k1
-  sw        x2, 0(x3)
-
-  /* set dmem pointer to point to 1st scalar share d0 (private key) */
-  la        x2, d0
-  la        x3, dptr_d0
-  sw        x2, 0(x3)
-
-  /* set dmem pointer to point to 2nd scalar share d1 (private key) */
-  la        x2, d1
-  la        x3, dptr_d1
-  sw        x2, 0(x3)
-
-  /* generate 4 random 448-bit values and write them to d0, d1, k0, k1 */
+  /* generate 4 random 448-bit values and write them to d0, d1 */
+  la        x20, d0
+  la        x21, d1
   jal       x1, p384_generate_random_key
+
+  /* generate 4 random 448-bit values and write them to k0, k1 */
+  la        x20, k0
+  la        x21, k1
   jal       x1, p384_generate_k
 
   /* load generated values into WDRs for range/distinctiveness check */
   li        x2, 4
 
   /* [w5,w4] <= d0 */
-  la        x3, dptr_d0
-  lw        x4, 0(x3)
+  la        x4, d0
   bn.lid    x2++, 0(x4)
   bn.lid    x2++, 32(x4)
 
   /* [w7,w6] <= d1 */
-  la        x3, dptr_d1
-  lw        x4, 0(x3)
+  la        x4, d1
   bn.lid    x2++, 0(x4)
   bn.lid    x2++, 32(x4)
 
   /* [w9,w8] <= k0 */
-  la        x3, dptr_k0
-  lw        x4, 0(x3)
+  la        x4, k0
   bn.lid    x2++, 0(x4)
   bn.lid    x2++, 32(x4)
 
   /* [w11,w10] <= k1 */
-  la        x3, dptr_k1
-  lw        x4, 0(x3)
+  la        x4, k1
   bn.lid    x2++, 0(x4)
   bn.lid    x2++, 32(x4)
 
@@ -346,17 +328,21 @@ p384_keygen_test:
 .balign 32
 
 /* 1st private key share d0 (448-bit) */
+.globl d0
 d0:
   .zero 64
 
 /* 2nd private key share d1 (448-bit) */
+.globl d1
 d1:
   .zero 64
 
 /* 1st scalar share k0 (448-bit) */
+.globl k0
 k0:
   .zero 64
 
 /* 2nd scalar share k1 (448-bit) */
+.globl k1
 k1:
   .zero 64
