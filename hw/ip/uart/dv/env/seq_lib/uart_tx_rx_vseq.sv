@@ -108,6 +108,7 @@ class uart_tx_rx_vseq extends uart_base_vseq;
       begin
         // repeat test sequencing upto 50 times
         for (int i = 1; i <= num_trans; i++) begin
+          if (cfg.stop_transaction_generators()) break;
           // start each new run by randomizing dut parameters
           `DV_CHECK_RANDOMIZE_FATAL(this)
 
@@ -218,6 +219,7 @@ class uart_tx_rx_vseq extends uart_base_vseq;
           // csr read is much faster than uart transfer, use bigger delay
           `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_rx_read)
           cfg.clk_rst_vif.wait_clks(dly_to_rx_read);
+          wait_if_stop_transaction_generators();
           rand_read_rx_byte(weight_to_skip_rx_read);
         end
       end

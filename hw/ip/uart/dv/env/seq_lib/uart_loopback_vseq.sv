@@ -20,6 +20,7 @@ class uart_loopback_vseq extends uart_tx_rx_vseq;
 
   task body();
     for (int i = 1; i <= num_trans; i++) begin
+      if (cfg.stop_transaction_generators()) break;
       `DV_CHECK_RANDOMIZE_FATAL(this)
       uart_init();
 
