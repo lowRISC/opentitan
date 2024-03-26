@@ -59,6 +59,63 @@ class KeymgrTest : public rom_test::RomTest {
     EXPECT_ABS_WRITE32(base_ + KEYMGR_SALT_7_REG_OFFSET,
                        diversification.salt[7]);
   }
+  void ExpectSwBindingUnlockWait(void) {
+    EXPECT_ABS_READ32(base_ + KEYMGR_SW_BINDING_REGWEN_REG_OFFSET, 1);
+    EXPECT_SEC_READ32(base_ + KEYMGR_SW_BINDING_REGWEN_REG_OFFSET, 1);
+  }
+  void ExpectSwBindingValueSet(
+      const keymgr_binding_value_t *binding_value_sealing,
+      const keymgr_binding_value_t *binding_value_attestation) {
+    EXPECT_SEC_WRITE32(base_ + KEYMGR_SEALING_SW_BINDING_0_REG_OFFSET,
+                       binding_value_sealing->data[0]);
+    EXPECT_SEC_WRITE32(base_ + KEYMGR_SEALING_SW_BINDING_1_REG_OFFSET,
+                       binding_value_sealing->data[1]);
+    EXPECT_SEC_WRITE32(base_ + KEYMGR_SEALING_SW_BINDING_2_REG_OFFSET,
+                       binding_value_sealing->data[2]);
+    EXPECT_SEC_WRITE32(base_ + KEYMGR_SEALING_SW_BINDING_3_REG_OFFSET,
+                       binding_value_sealing->data[3]);
+    EXPECT_SEC_WRITE32(base_ + KEYMGR_SEALING_SW_BINDING_4_REG_OFFSET,
+                       binding_value_sealing->data[4]);
+    EXPECT_SEC_WRITE32(base_ + KEYMGR_SEALING_SW_BINDING_5_REG_OFFSET,
+                       binding_value_sealing->data[5]);
+    EXPECT_SEC_WRITE32(base_ + KEYMGR_SEALING_SW_BINDING_6_REG_OFFSET,
+                       binding_value_sealing->data[6]);
+    EXPECT_SEC_WRITE32(base_ + KEYMGR_SEALING_SW_BINDING_7_REG_OFFSET,
+                       binding_value_sealing->data[7]);
+
+    EXPECT_SEC_WRITE32(base_ + KEYMGR_ATTEST_SW_BINDING_0_REG_OFFSET,
+                       binding_value_attestation->data[0]);
+    EXPECT_SEC_WRITE32(base_ + KEYMGR_ATTEST_SW_BINDING_1_REG_OFFSET,
+                       binding_value_attestation->data[1]);
+    EXPECT_SEC_WRITE32(base_ + KEYMGR_ATTEST_SW_BINDING_2_REG_OFFSET,
+                       binding_value_attestation->data[2]);
+    EXPECT_SEC_WRITE32(base_ + KEYMGR_ATTEST_SW_BINDING_3_REG_OFFSET,
+                       binding_value_attestation->data[3]);
+    EXPECT_SEC_WRITE32(base_ + KEYMGR_ATTEST_SW_BINDING_4_REG_OFFSET,
+                       binding_value_attestation->data[4]);
+    EXPECT_SEC_WRITE32(base_ + KEYMGR_ATTEST_SW_BINDING_5_REG_OFFSET,
+                       binding_value_attestation->data[5]);
+    EXPECT_SEC_WRITE32(base_ + KEYMGR_ATTEST_SW_BINDING_6_REG_OFFSET,
+                       binding_value_attestation->data[6]);
+    EXPECT_SEC_WRITE32(base_ + KEYMGR_ATTEST_SW_BINDING_7_REG_OFFSET,
+                       binding_value_attestation->data[7]);
+
+    EXPECT_SEC_WRITE32(base_ + KEYMGR_SW_BINDING_REGWEN_REG_OFFSET, 0);
+  }
+  void ExpectAdvanceState(void) {
+    EXPECT_ABS_WRITE32_SHADOWED(
+        base_ + KEYMGR_CONTROL_SHADOWED_REG_OFFSET,
+        {
+            {KEYMGR_CONTROL_SHADOWED_DEST_SEL_OFFSET,
+             KEYMGR_CONTROL_SHADOWED_DEST_SEL_VALUE_NONE},
+            {KEYMGR_CONTROL_SHADOWED_OPERATION_OFFSET,
+             KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_ADVANCE},
+        });
+    EXPECT_ABS_WRITE32(base_ + KEYMGR_START_REG_OFFSET,
+                       {
+                           {KEYMGR_START_EN_BIT, true},
+                       });
+  }
   void ExpectWaitUntilDone(size_t busy_cycles, uint32_t end_status) {
     for (size_t i = 0; i < busy_cycles; i++) {
       EXPECT_ABS_READ32(base_ + KEYMGR_OP_STATUS_REG_OFFSET,
@@ -87,48 +144,14 @@ TEST_F(KeymgrTest, EntropyReseedIntervalSet) {
 }
 
 TEST_F(KeymgrTest, SwBindingValuesSet) {
-  EXPECT_SEC_WRITE32(base_ + KEYMGR_SEALING_SW_BINDING_0_REG_OFFSET,
-                     cfg_.binding_value_sealing.data[0]);
-  EXPECT_SEC_WRITE32(base_ + KEYMGR_SEALING_SW_BINDING_1_REG_OFFSET,
-                     cfg_.binding_value_sealing.data[1]);
-  EXPECT_SEC_WRITE32(base_ + KEYMGR_SEALING_SW_BINDING_2_REG_OFFSET,
-                     cfg_.binding_value_sealing.data[2]);
-  EXPECT_SEC_WRITE32(base_ + KEYMGR_SEALING_SW_BINDING_3_REG_OFFSET,
-                     cfg_.binding_value_sealing.data[3]);
-  EXPECT_SEC_WRITE32(base_ + KEYMGR_SEALING_SW_BINDING_4_REG_OFFSET,
-                     cfg_.binding_value_sealing.data[4]);
-  EXPECT_SEC_WRITE32(base_ + KEYMGR_SEALING_SW_BINDING_5_REG_OFFSET,
-                     cfg_.binding_value_sealing.data[5]);
-  EXPECT_SEC_WRITE32(base_ + KEYMGR_SEALING_SW_BINDING_6_REG_OFFSET,
-                     cfg_.binding_value_sealing.data[6]);
-  EXPECT_SEC_WRITE32(base_ + KEYMGR_SEALING_SW_BINDING_7_REG_OFFSET,
-                     cfg_.binding_value_sealing.data[7]);
-
-  EXPECT_SEC_WRITE32(base_ + KEYMGR_ATTEST_SW_BINDING_0_REG_OFFSET,
-                     cfg_.binding_value_attestation.data[0]);
-  EXPECT_SEC_WRITE32(base_ + KEYMGR_ATTEST_SW_BINDING_1_REG_OFFSET,
-                     cfg_.binding_value_attestation.data[1]);
-  EXPECT_SEC_WRITE32(base_ + KEYMGR_ATTEST_SW_BINDING_2_REG_OFFSET,
-                     cfg_.binding_value_attestation.data[2]);
-  EXPECT_SEC_WRITE32(base_ + KEYMGR_ATTEST_SW_BINDING_3_REG_OFFSET,
-                     cfg_.binding_value_attestation.data[3]);
-  EXPECT_SEC_WRITE32(base_ + KEYMGR_ATTEST_SW_BINDING_4_REG_OFFSET,
-                     cfg_.binding_value_attestation.data[4]);
-  EXPECT_SEC_WRITE32(base_ + KEYMGR_ATTEST_SW_BINDING_5_REG_OFFSET,
-                     cfg_.binding_value_attestation.data[5]);
-  EXPECT_SEC_WRITE32(base_ + KEYMGR_ATTEST_SW_BINDING_6_REG_OFFSET,
-                     cfg_.binding_value_attestation.data[6]);
-  EXPECT_SEC_WRITE32(base_ + KEYMGR_ATTEST_SW_BINDING_7_REG_OFFSET,
-                     cfg_.binding_value_attestation.data[7]);
-
-  EXPECT_SEC_WRITE32(base_ + KEYMGR_SW_BINDING_REGWEN_REG_OFFSET, 0);
+  ExpectSwBindingValueSet(&cfg_.binding_value_sealing,
+                          &cfg_.binding_value_attestation);
   sc_keymgr_sw_binding_set(&cfg_.binding_value_sealing,
                            &cfg_.binding_value_attestation);
 }
 
 TEST_F(KeymgrTest, SwBindingUnlockWait) {
-  EXPECT_ABS_READ32(base_ + KEYMGR_SW_BINDING_REGWEN_REG_OFFSET, 1);
-  EXPECT_SEC_READ32(base_ + KEYMGR_SW_BINDING_REGWEN_REG_OFFSET, 1);
+  ExpectSwBindingUnlockWait();
   sc_keymgr_sw_binding_unlock_wait();
 }
 
@@ -155,18 +178,7 @@ TEST_F(KeymgrTest, SetOwnerMaxVerKey) {
 }
 
 TEST_F(KeymgrTest, AdvanceState) {
-  EXPECT_ABS_WRITE32_SHADOWED(
-      base_ + KEYMGR_CONTROL_SHADOWED_REG_OFFSET,
-      {
-          {KEYMGR_CONTROL_SHADOWED_DEST_SEL_OFFSET,
-           KEYMGR_CONTROL_SHADOWED_DEST_SEL_VALUE_NONE},
-          {KEYMGR_CONTROL_SHADOWED_OPERATION_OFFSET,
-           KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_ADVANCE},
-      });
-  EXPECT_ABS_WRITE32(base_ + KEYMGR_START_REG_OFFSET,
-                     {
-                         {KEYMGR_START_EN_BIT, true},
-                     });
+  ExpectAdvanceState();
   sc_keymgr_advance_state();
 }
 
@@ -324,6 +336,45 @@ TEST_F(KeymgrTest, SideloadClearOtbnReadbackMismatch) {
                     });
 
   EXPECT_EQ(sc_keymgr_sideload_clear_otbn(), kErrorKeymgrInternal);
+}
+
+TEST_F(KeymgrTest, OwnerIntAdvance) {
+  ExpectStatusCheck(KEYMGR_OP_STATUS_STATUS_VALUE_IDLE,
+                    KEYMGR_WORKING_STATE_STATE_VALUE_CREATOR_ROOT_KEY,
+                    /*err_code=*/0u);
+  ExpectSwBindingValueSet(&cfg_.binding_value_sealing,
+                          &cfg_.binding_value_attestation);
+  EXPECT_SEC_WRITE32_SHADOWED(
+      base_ + KEYMGR_MAX_OWNER_INT_KEY_VER_SHADOWED_REG_OFFSET,
+      cfg_.max_key_ver);
+  EXPECT_SEC_WRITE32(base_ + KEYMGR_MAX_OWNER_INT_KEY_VER_REGWEN_REG_OFFSET, 0);
+  ExpectAdvanceState();
+  ExpectStatusCheck(KEYMGR_OP_STATUS_STATUS_VALUE_IDLE,
+                    KEYMGR_WORKING_STATE_STATE_VALUE_OWNER_INTERMEDIATE_KEY,
+                    /*err_code=*/0u);
+  EXPECT_EQ(sc_keymgr_owner_int_advance(&cfg_.binding_value_sealing,
+                                        &cfg_.binding_value_attestation,
+                                        cfg_.max_key_ver),
+            kErrorOk);
+}
+
+TEST_F(KeymgrTest, OwnerAdvance) {
+  ExpectStatusCheck(KEYMGR_OP_STATUS_STATUS_VALUE_IDLE,
+                    KEYMGR_WORKING_STATE_STATE_VALUE_OWNER_INTERMEDIATE_KEY,
+                    /*err_code=*/0u);
+  ExpectSwBindingValueSet(&cfg_.binding_value_sealing,
+                          &cfg_.binding_value_attestation);
+  EXPECT_SEC_WRITE32_SHADOWED(
+      base_ + KEYMGR_MAX_OWNER_KEY_VER_SHADOWED_REG_OFFSET, cfg_.max_key_ver);
+  EXPECT_SEC_WRITE32(base_ + KEYMGR_MAX_OWNER_KEY_VER_REGWEN_REG_OFFSET, 0);
+  ExpectAdvanceState();
+  ExpectStatusCheck(KEYMGR_OP_STATUS_STATUS_VALUE_IDLE,
+                    KEYMGR_WORKING_STATE_STATE_VALUE_OWNER_KEY,
+                    /*err_code=*/0u);
+  EXPECT_EQ(sc_keymgr_owner_advance(&cfg_.binding_value_sealing,
+                                    &cfg_.binding_value_attestation,
+                                    cfg_.max_key_ver),
+            kErrorOk);
 }
 
 }  // namespace
