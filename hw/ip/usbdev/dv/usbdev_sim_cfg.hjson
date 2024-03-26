@@ -122,6 +122,10 @@
       uvm_test_seq: usbdev_stall_priority_over_nak_vseq
     }
     {
+      name: phy_config_usb_ref_disable
+      uvm_test_seq: usbdev_phy_config_usb_ref_disable_vseq
+    }
+    {
       name: usbdev_phy_pins_sense
       uvm_test_seq: usbdev_phy_pins_sense_vseq
     }

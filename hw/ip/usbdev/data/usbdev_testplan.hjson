@@ -164,7 +164,7 @@
             - Verify that the clock synchronization signal usb_ref_0 and usb_ref_val will not be generated.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_phy_config_usb_ref_disable"]
     }
     {
       name: max_length_out_transaction
