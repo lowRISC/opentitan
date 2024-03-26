@@ -24,7 +24,11 @@ extern "C" {
     value(_, CharSramWrite) \
     value(_, CharSramRead) \
     value(_, CharFlashWrite) \
-    value(_, CharFlashRead)
+    value(_, CharFlashRead) \
+    value(_, CharCsrRead) \
+    value(_, CharCsrWrite) \
+    value(_, AddressTranslationCfg) \
+    value(_, AddressTranslation)
 UJSON_SERDE_ENUM(IbexFiSubcommand, ibex_fi_subcommand_t, IBEXFI_SUBCOMMAND);
 
 #define IBEXFI_TEST_RESULT(field, string) \
