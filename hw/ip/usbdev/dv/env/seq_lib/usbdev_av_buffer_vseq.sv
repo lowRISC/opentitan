@@ -22,8 +22,9 @@ class usbdev_av_buffer_vseq extends usbdev_base_vseq;
     $cast(item, rsp_item);
     get_out_response_from_device(item, PidTypeAck);
     cfg.clk_rst_vif.wait_clks(20);
-    // Check transaction accuracy
-    check_trans_accuracy();
+
+    // Check that the USB device received a packet with the expected properties.
+    check_pkt_received(endp, 0, out_buffer_id, m_data_pkt.data);
   endtask
 
   task configure_trans();
@@ -38,33 +39,6 @@ class usbdev_av_buffer_vseq extends usbdev_base_vseq;
     csr_update(ral.rxenable_out[0]);
     // Set buffer
     csr_wr(.ptr(ral.avoutbuffer.buffer), .value(out_buffer_id));
-  endtask
-
-  task check_trans_accuracy();
-    bit         [31:0] read_data_1;
-    bit         [31:0] read_data_2;
-    typedef bit [63:0] expected_data;
-    byte unsigned      exp_byte_data[];
-    expected_data      exp_data;
-    uvm_reg_data_t     read_rxfifo;
-    int unsigned       offset;
-
-    // Calculate start address (in 32-bit words) of buffer
-    offset = out_buffer_id * 'h10;
-
-    // Read rxfifo reg
-    csr_rd(.ptr(ral.rxfifo), .value(read_rxfifo));
-    // Read buffer
-    mem_rd(.ptr(ral.buffer), .offset(offset), .data(read_data_1));
-    mem_rd(.ptr(ral.buffer), .offset(offset + 1), .data(read_data_2));
-    // Expected data or data send to DUT
-    exp_byte_data = m_data_pkt.data;
-    // Bit streaming to compliance with usb protocol LSB--->MSB
-    exp_byte_data = {>>8{exp_byte_data}};
-    exp_byte_data = {<<{exp_byte_data}};
-    exp_data = expected_data'(exp_byte_data);
-    // `DV check on actual and exp data
-    `DV_CHECK_EQ(exp_data, {read_data_2,read_data_1});
   endtask
 
 endclass

@@ -15,9 +15,6 @@ class usbdev_random_length_out_transaction_vseq extends usbdev_base_vseq;
   bit [6:0] num_of_bytes = 0;
 
   task body();
-    // Expected data content of packet
-    byte unsigned exp_data[];
-
     // Configure out transaction
     configure_out_trans();
     // Out token packet followed by a data packet of random bytes
@@ -29,17 +26,8 @@ class usbdev_random_length_out_transaction_vseq extends usbdev_base_vseq;
     get_out_response_from_device(m_usb20_item, PidTypeAck);
     cfg.clk_rst_vif.wait_clks(20);
 
-    recover_orig_data(m_data_pkt.data, exp_data);
     // Check that the USB device received a packet with the expected properties.
-    check_pkt_received(endp, 0, out_buffer_id, exp_data);
+    check_pkt_received(endp, 0, out_buffer_id, m_data_pkt.data);
   endtask
-
-  // TODO: Presently the act of sending a data packet, destructively modifies it!
-  // Restore the data packet to its original state. This just bit-reverses each byte
-  // within the input array.
-  function void recover_orig_data(input byte unsigned in[], output byte unsigned out[]);
-    out = {<<8{in}};  // Reverse the order of the bytes
-    out = {<<{out}};  // Bit-reverse everything
-  endfunction
 
 endclass

@@ -9,8 +9,6 @@ class usbdev_smoke_vseq extends usbdev_base_vseq;
   `uvm_object_new
 
   task body();
-    // Expected data content of packet
-    byte unsigned exp_data[];
     usb20_item response;
     data_pkt in_data;
 
@@ -34,12 +32,11 @@ class usbdev_smoke_vseq extends usbdev_base_vseq;
     // ---------------------------------------------------------------------------------------------
     call_token_seq(PidTypeSetupToken);
     cfg.clk_rst_vif.wait_clks(20);
+
     call_desc_sequence(PktTypeData, PidTypeData0);
     cfg.clk_rst_vif.wait_clks(20);
-
     // Check the contents of the packet buffer memory against the SETUP packet that was sent.
-    recover_orig_data(m_data_pkt.data, exp_data);
-    check_rx_packet(endp, 1'b1, setup_buffer_id, exp_data);
+    check_rx_packet(endp, 1'b1, setup_buffer_id, m_data_pkt.data);
 
     // ---------------------------------------------------------------------------------------------
     // OUT data packet
@@ -58,8 +55,7 @@ class usbdev_smoke_vseq extends usbdev_base_vseq;
     `DV_CHECK_EQ(response.m_pid_type, PidTypeAck);
 
     // Check the contents of the packet buffer memory against the OUT packet that was sent.
-    recover_orig_data(m_data_pkt.data, exp_data);
-    check_rx_packet(endp, 1'b0, out_buffer_id, exp_data);
+    check_rx_packet(endp, 1'b0, out_buffer_id, m_data_pkt.data);
 
     // ---------------------------------------------------------------------------------------------
     // Retrieve that data packet using an IN transaction.
@@ -67,7 +63,7 @@ class usbdev_smoke_vseq extends usbdev_base_vseq;
 
     // Declare that there is an IN packet available for collection, initially leaving the RDY bit
     // clear, to mimic the behavior of the DIF.
-    ral.configin[endp].size.set(exp_data.size());
+    ral.configin[endp].size.set(m_data_pkt.data.size());
     ral.configin[endp].buffer.set(out_buffer_id);
     ral.configin[endp].rdy.set(1'b0);
     csr_update(ral.configin[endp]);
@@ -81,7 +77,7 @@ class usbdev_smoke_vseq extends usbdev_base_vseq;
     $cast(response, m_response_item);
     `DV_CHECK_EQ(response.m_pkt_type, PktTypeData);
     $cast(in_data, response);
-    check_tx_packet(in_data, PidTypeData1, exp_data);
+    check_tx_packet(in_data, PidTypeData1, m_data_pkt.data);
     cfg.clk_rst_vif.wait_clks(20);
     call_handshake_sequence(PktTypeHandshake, PidTypeAck);
     cfg.clk_rst_vif.wait_clks(20);
@@ -89,14 +85,6 @@ class usbdev_smoke_vseq extends usbdev_base_vseq;
     check_in_sent();
 
   endtask
-
-  // TODO: Presently the act of sending a data packet, destructively modifies it!
-  // Restore the data packet to its original state. This just bit-reverses each byte
-  // within the input array.
-  function void recover_orig_data(input byte unsigned in[], output byte unsigned out[]);
-    out = {<<8{in}};  // Reverse the order of the bytes
-    out = {<<{out}};  // Bit-reverse everything
-  endfunction
 
   // Construct and transmit a DATA packet containing a SETUP descriptor to the USB device
   task call_desc_sequence(input pkt_type_e pkt_type, input pid_type_e pid_type);
