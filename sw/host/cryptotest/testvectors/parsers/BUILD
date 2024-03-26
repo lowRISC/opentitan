@@ -168,3 +168,12 @@ py_binary(
         requirement("jsonschema"),
     ],
 )
+
+py_binary(
+    name = "wycheproof_ed25519_parser",
+    srcs = ["wycheproof_ed25519_parser.py"],
+    deps = [
+        ":cryptotest_util",
+        requirement("jsonschema"),
+    ],
+)
