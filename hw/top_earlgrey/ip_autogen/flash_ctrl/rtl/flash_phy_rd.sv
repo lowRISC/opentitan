@@ -283,13 +283,18 @@ module flash_phy_rd
 
   // read complete
   // since done is broadcast to all the modules, need to know we are actually active
+  logic rd_start;
   logic rd_busy;
   logic rd_done;
 
+  assign rd_start = req_o & ack_i;
   assign rd_done = rd_busy & done_i;
 
   // scramble stage ready
   logic scramble_stage_rdy;
+
+  // mask calculation done
+  logic calc_req_done;
 
   // if buffer allocated, that is the return source
   // if buffer matched, that is the return source
@@ -355,7 +360,7 @@ module flash_phy_rd
       alloc_q <= '0;
       rd_attrs <= '0;
       rd_busy <= '0;
-    end else if (req_o && ack_i) begin
+    end else if (rd_start) begin
       rd_busy <= 1'b1;
       alloc_q <= alloc;
       rd_attrs.addr <= addr_i[BusBankAddrW-1:LsbAddrBit];
@@ -391,11 +396,17 @@ module flash_phy_rd
   // If all buffers are currently allocated or have a dependency, wait until
   // at least 1 dependency has cleared.
   assign rdy_o = (no_match ? ack_i & flash_rdy & rd_stages_rdy : rd_stages_rdy) &
-                 ~all_buf_dependency & no_buf_en_change;
+                 ~all_buf_dependency & no_buf_en_change &
+                 // If the current read requires descrambling, wait for the
+                 // mask calculation to finish before accepting the next request.
+                 (calc_req_o ? calc_req_done : 1'b1);
 
   // issue a transaction to flash only if there is space in read stages,
   // there is no buffer match and flash is not currently busy.
-  assign req_o = req_i & no_buf_en_change & flash_rdy & rd_stages_rdy & no_match;
+  assign req_o = req_i & no_buf_en_change & flash_rdy & rd_stages_rdy & no_match &
+                 // If the current read requires descrambling, wait for the
+                 // mask calculation to finish before accepting the next request.
+                 (calc_req_o ? calc_req_done : 1'b1);
 
   /////////////////////////////////
   // Handling Reliability ECC
@@ -540,7 +551,7 @@ module flash_phy_rd
     .clk_i,
     .rst_ni,
     .clr_i   (1'b0),
-    .wvalid_i(calc_req_o & calc_ack_i),
+    .wvalid_i(calc_req_done),
     .wready_o(mask_fifo_rdy),
     .wdata_i (mask_i),
     .depth_o (unused_mask_depth),
@@ -558,12 +569,15 @@ module flash_phy_rd
   // unlike calc_req_o, asserts the same cycle the transaction is
   // received, so much of the timing may have already been lost to
   // transaction routing.
+  logic calc_req_start;
+  assign calc_req_start = req_o & ack_i & descramble_i;
+  assign calc_req_done = calc_req_o & calc_ack_i;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       calc_req_o <= '0;
-    end else if (req_o && ack_i && descramble_i) begin
+    end else if (calc_req_start) begin
       calc_req_o <= 1'b1;
-    end else if (calc_req_o && calc_ack_i) begin
+    end else if (calc_req_done) begin
       calc_req_o <= 1'b0;
     end
   end
