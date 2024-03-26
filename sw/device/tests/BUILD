@@ -3986,6 +3986,27 @@ opentitan_test(
 )
 
 opentitan_test(
+    name = "usbdev_swdrive_test",
+    srcs = ["usbdev_swdrive_test.c"],
+    exec_env = {
+        # This test only makes sense for Verilator top-level simulations
+        # because it relies upon the coupling of sideband signals between the
+        # USB device and the USBDPI model.
+        "//hw/top_earlgrey:sim_verilator": None,
+    },
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/dif:usbdev",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing:pinmux_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
     name = "rstmgr_alert_info_test",
     srcs = ["rstmgr_alert_info_test.c"],
     cw310 = new_cw310_params(
