@@ -11,7 +11,6 @@
 #include "sw/device/silicon_creator/lib/drivers/rnd.h"
 #include "sw/device/silicon_creator/rom/sigverify_key_types.h"
 #include "sw/device/silicon_creator/rom/sigverify_keys_rsa.h"
-#include "sw/device/silicon_creator/rom/sigverify_keys_spx.h"
 #include "sw/lib/sw/device/base/bitfield.h"
 #include "sw/lib/sw/device/base/hardened.h"
 

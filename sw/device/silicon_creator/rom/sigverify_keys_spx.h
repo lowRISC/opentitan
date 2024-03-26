@@ -9,7 +9,7 @@
 
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/rom/sigverify_key_types.h"
-#include "sw/device/silicon_creator/rom/sigverify_keys.h"
+#include "sw/device/silicon_creator/rom/sigverify_otp_keys.h"
 #include "sw/lib/sw/device/silicon_creator/error.h"
 #include "sw/lib/sw/device/silicon_creator/sigverify/spx_key.h"
 
@@ -48,7 +48,8 @@ extern const sigverify_rom_spx_key_t kSigverifySpxKeys[];
  * @return Result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t sigverify_spx_key_get(uint32_t key_id, lifecycle_state_t lc_state,
+rom_error_t sigverify_spx_key_get(const sigverify_otp_key_ctx_t *sigverify_ctx,
+                                  uint32_t key_id, lifecycle_state_t lc_state,
                                   const sigverify_spx_key_t **key);
 
 #ifdef __cplusplus

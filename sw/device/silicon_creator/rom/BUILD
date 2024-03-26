@@ -198,6 +198,7 @@ cc_library(
         ":sigverify_keys",
         ":sigverify_keys_rsa",
         ":sigverify_keys_spx",
+        ":sigverify_otp_keys",
         "//hw/ip/aon_timer/data:aon_timer_regs",
         "//sw/device/silicon_creator/lib/drivers:alert",
         "//sw/device/silicon_creator/lib/drivers:ast",
@@ -244,7 +245,6 @@ cc_library(
         ":base_rom_epmp",
         ":sigverify_keys",
         ":sigverify_keys_rsa",
-        ":sigverify_keys_spx",
         "//sw/device/silicon_creator/lib/drivers:alert",
         "//sw/device/silicon_creator/lib/drivers:ast",
         "//sw/device/silicon_creator/lib/drivers:ibex",
@@ -290,7 +290,6 @@ cc_library(
         ":second_rom_epmp",
         ":sigverify_keys",
         ":sigverify_keys_rsa",
-        ":sigverify_keys_spx",
         "//hw/ip/aon_timer/data:aon_timer_regs",
         "//sw/device/silicon_creator/lib/drivers:alert",
         "//sw/device/silicon_creator/lib/drivers:ast",
@@ -335,7 +334,6 @@ opentitan_rom_binary(
     deps = [
         ":rom_without_keys",
         "//sw/device/silicon_creator/rom/keys/fake/rsa",
-        "//sw/device/silicon_creator/rom/keys/fake/spx",
     ],
 )
 
@@ -345,7 +343,6 @@ opentitan_rom_binary(
     deps = [
         ":rom_without_keys",
         "//sw/device/silicon_creator/rom/keys/real/rsa",
-        "//sw/device/silicon_creator/rom/keys/real/spx",
     ],
 )
 
@@ -356,7 +353,6 @@ opentitan_rom_binary(
     deps = [
         ":base_rom_without_keys",
         "//sw/device/silicon_creator/rom/keys/fake/rsa",
-        "//sw/device/silicon_creator/rom/keys/fake/spx",
     ],
 )
 
@@ -366,7 +362,6 @@ opentitan_rom_binary(
     deps = [
         ":base_rom_without_keys",
         "//sw/device/silicon_creator/rom/keys/real/rsa",
-        "//sw/device/silicon_creator/rom/keys/real/spx",
     ],
 )
 
@@ -377,7 +372,6 @@ opentitan_rom_binary(
     deps = [
         ":second_rom_without_keys",
         "//sw/device/silicon_creator/rom/keys/fake/rsa",
-        "//sw/device/silicon_creator/rom/keys/fake/spx",
     ],
 )
 
@@ -387,7 +381,6 @@ opentitan_rom_binary(
     deps = [
         ":second_rom_without_keys",
         "//sw/device/silicon_creator/rom/keys/real/rsa",
-        "//sw/device/silicon_creator/rom/keys/real/spx",
     ],
 )
 
@@ -576,6 +569,7 @@ cc_library(
     ],
     deps = [
         ":sigverify_key_types",
+        ":sigverify_otp_keys",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/device/silicon_creator/lib/drivers:rnd",
@@ -595,12 +589,12 @@ cc_library(
     deps = [
         ":sigverify_key_types",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-        "//sw/device/lib/base:macros",
-        "//sw/device/silicon_creator/lib:error",
-        "//sw/lib/sw/device/silicon_creator/drivers:hmac",
-        "//sw/lib/sw/device/silicon_creator/drivers:lifecycle",
-        "//sw/lib/sw/device/silicon_creator/drivers:otp",
-        "//sw/lib/sw/device/silicon_creator/drivers:rnd",
+        "//sw/device/silicon_creator/lib/drivers:hmac",
+        "//sw/device/silicon_creator/lib/drivers:lifecycle",
+        "//sw/device/silicon_creator/lib/drivers:otp",
+        "//sw/device/silicon_creator/lib/drivers:rnd",
+        "//sw/lib/sw/device/base:macros",
+        "//sw/lib/sw/device/silicon_creator:error",
     ],
 )
 
@@ -643,7 +637,7 @@ cc_library(
     ],
     deps = [
         ":sigverify_key_types",
-        ":sigverify_keys",
+        ":sigverify_otp_keys",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/lib/sw/device/base:macros",

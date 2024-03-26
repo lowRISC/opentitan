@@ -18,16 +18,24 @@ enum {
       OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_SIZE -
       OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_DIGEST_SIZE,
 
+  kAuthCodesignParitionSizeInWords =
+      kAuthCodesignParitionSize / sizeof(uint32_t),
+
   // The size of the `ROT_CREATOR_AUTH_CODESIGN` region used to store the key
   // material. This is the size of the partition minus the size of the HMAC
   // digest used to measure the integrity of the keys.
   kAuthcodesignPartitionMsgSize =
       kAuthCodesignParitionSize - sizeof(hmac_digest_t),
 
+  kAuthcodesignPartitionMsgSizeInWords =
+      kAuthcodesignPartitionMsgSize / sizeof(uint32_t),
+
   // The size of the `ROT_CREATOR_AUTH_STATE` partition ignoring the size of the
   // partition digest.
   kAuthStatePartitionSize = OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_SIZE -
                             OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_DIGEST_SIZE,
+
+  kAuthStatePartitionSizeInWords = kAuthStatePartitionSize / sizeof(uint32_t),
 };
 
 static_assert(sizeof(sigverify_otp_keys_t) == kAuthCodesignParitionSize,
@@ -179,18 +187,18 @@ static rom_error_t key_is_valid(sigverify_key_type_t key_type,
 rom_error_t sigverify_otp_keys_init(sigverify_otp_key_ctx_t *ctx) {
   uint32_t *raw_buffer = (uint32_t *)&ctx->keys;
   size_t i;
-  for (i = 0; launder32(i) < kAuthCodesignParitionSize; ++i) {
+  for (i = 0; launder32(i) < kAuthCodesignParitionSizeInWords; ++i) {
     raw_buffer[i] = otp_read32(OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_OFFSET +
                                i * sizeof(uint32_t));
   }
-  HARDENED_CHECK_EQ(i, kAuthCodesignParitionSize);
+  HARDENED_CHECK_EQ(i, kAuthCodesignParitionSizeInWords);
 
   uint32_t *raw_state = (uint32_t *)&ctx->states;
-  for (i = 0; launder32(i) < kAuthStatePartitionSize; ++i) {
+  for (i = 0; launder32(i) < kAuthStatePartitionSizeInWords; ++i) {
     raw_state[i] = otp_read32(OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_OFFSET +
                               i * sizeof(uint32_t));
   }
-  HARDENED_CHECK_EQ(i, kAuthStatePartitionSize);
+  HARDENED_CHECK_EQ(i, kAuthStatePartitionSizeInWords);
   return sigverify_otp_keys_check(ctx);
 }
 
@@ -254,12 +262,12 @@ rom_error_t sigverify_otp_keys_get(sigverify_otp_keys_get_params_t params,
           cand_key_index = i;
         }
       }
-      i++;
-      if (launder32(i) >= params.key_cnt) {
-        i -= params.key_cnt;
-      }
-      HARDENED_CHECK_LT(i, params.key_cnt);
     }
+    i++;
+    if (launder32(i) >= params.key_cnt) {
+      i -= params.key_cnt;
+    }
+    HARDENED_CHECK_LT(i, params.key_cnt);
   }
   // Ensure that the loop was executed exactly `params.key_cnt` times.
   HARDENED_CHECK_EQ(iter_cnt, params.key_cnt);

@@ -26,6 +26,7 @@
 #include "sw/device/silicon_creator/rom/rom_epmp.h"
 #include "sw/device/silicon_creator/rom/sigverify_keys_rsa.h"
 #include "sw/device/silicon_creator/rom/sigverify_keys_spx.h"
+#include "sw/device/silicon_creator/rom/sigverify_otp_keys.h"
 #include "sw/lib/sw/device/arch/device.h"
 #include "sw/lib/sw/device/base/bitfield.h"
 #include "sw/lib/sw/device/base/csr.h"
@@ -216,6 +217,9 @@ static rom_error_t rom_verify(const manifest_t *manifest,
     anti_rollback_len = sizeof(extra_word);
   }
 
+  sigverify_otp_key_ctx_t sigverify_ctx;
+  HARDENED_RETURN_IF_ERROR(sigverify_otp_keys_init(&sigverify_ctx));
+
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomVerify, 1);
   *flash_exec = 0;
   HARDENED_RETURN_IF_ERROR(boot_policy_manifest_check(manifest, &boot_data));
@@ -231,7 +235,8 @@ static rom_error_t rom_verify(const manifest_t *manifest,
     const manifest_ext_spx_key_t *ext_spx_key;
     HARDENED_RETURN_IF_ERROR(manifest_ext_get_spx_key(manifest, &ext_spx_key));
     HARDENED_RETURN_IF_ERROR(sigverify_spx_key_get(
-        sigverify_spx_key_id_get(&ext_spx_key->key), lc_state, &spx_key));
+        &sigverify_ctx, sigverify_spx_key_id_get(&ext_spx_key->key), lc_state,
+        &spx_key));
 
     const manifest_ext_spx_signature_t *ext_spx_signature;
     HARDENED_RETURN_IF_ERROR(
