@@ -151,9 +151,7 @@ The overhead to support both variants are basically three 2-to-1 64-bit muxes.
 
 
 
-![drawing](switch1.svg)
-
-![drawing](switch2.svg)
+![drawing](duplex_switch.svg)
 
 
 ### Tag Compare
