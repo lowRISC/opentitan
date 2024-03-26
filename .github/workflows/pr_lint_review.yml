@@ -27,7 +27,7 @@ jobs:
     env:
       verible_config: hw/lint/tools/veriblelint/lowrisc-styleguide.rules.verible_lint
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           # Because `pull_request_target` runs at the PR's base, we need to
           # checkout the head of the PR before running the lint.
