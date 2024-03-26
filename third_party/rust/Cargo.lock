@@ -2213,6 +2213,7 @@ dependencies = [
  "nix",
  "regex",
  "scopeguard",
+ "serde",
  "winapi",
 ]
 

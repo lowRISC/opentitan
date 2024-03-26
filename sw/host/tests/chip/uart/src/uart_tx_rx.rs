@@ -13,7 +13,7 @@ use object::{Object, ObjectSymbol};
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::execute_test;
-use opentitanlib::io::uart::Uart;
+use opentitanlib::io::uart::{Parity, Uart};
 use opentitanlib::test_utils;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::mem::MemWriteReq;
@@ -96,9 +96,12 @@ fn uart_tx_rx(
     UartConsole::wait_for(console, r"waiting for commands", opts.timeout)?;
     MemWriteReq::execute(console, *uart_id_addr as u32, &[*uart_id])?;
 
-    UartConsole::wait_for(console, r"Executing the test", opts.timeout)?;
-
     let uart = transport.uart("dut")?;
+    uart.set_parity(Parity::None)
+        .context("failed to set parity")?;
+    uart.clear_rx_buffer()?;
+
+    UartConsole::wait_for(console, r"Executing the test[^\n]*\n", opts.timeout)?;
 
     log::info!("Sending data...");
     uart.write(&tx_rx_data.rx_data)

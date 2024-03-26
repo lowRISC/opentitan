@@ -2,15 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{Context, Result};
-use serialport::ClearBuffer;
-//use serialport::{FlowControl, SerialPort};
-use serialport::{SerialPort, TTYPort};
 use std::cell::{Cell, RefCell};
 use std::collections::VecDeque;
 use std::io::{ErrorKind, Read, Write};
 use std::os::fd::{AsRawFd, BorrowedFd};
 use std::time::Duration;
+
+use anyhow::{Context, Result};
+use serialport::{ClearBuffer, Parity, SerialPort, TTYPort};
 
 //use crate::io::uart::{Uart, UartError};
 use crate::io::uart::{FlowControl, Uart, UartError};
@@ -192,6 +191,11 @@ impl Uart for SerialPortUart {
         } else {
             port.clear_break()?;
         }
+        Ok(())
+    }
+
+    fn set_parity(&self, parity: Parity) -> Result<()> {
+        self.port.borrow_mut().set_parity(parity)?;
         Ok(())
     }
 
