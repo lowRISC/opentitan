@@ -29,14 +29,15 @@
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
- * @param[in]  dmem[12]: dptr_rhs, pointer to dmem location where right
- *                               side result will be stored
- * @param[in]  dmem[16]: dptr_lhs, pointer to dmem location where left side
- *                               result will be stored
- * @param[in]  dmem[20]: dptr_x, pointer to dmem location containing affine
- *                               x-coordinate of input point
- * @param[in]  dmem[24]: dptr_y, pointer to dmem location containing affine
- *                               y-coordinate of input point
+ * @param[in]  [w13, w12]:  domain parameter p (modulus)
+ * @param[in]  x20:         dptr_x, pointer to dmem location containing affine
+ *                                  x-coordinate of input point
+ * @param[in]  x21:         dptr_y, pointer to dmem location containing affine
+ *                                  y-coordinate of input point
+ * @param[in]  x22:         dptr_rhs, pointer to dmem location where right
+ *                                    side result will be stored
+ * @param[in]  x23:         dptr_lhs, pointer to dmem location where left side
+ *                                    result will be stored
  *
  * clobbered registers: x2, x3, w0 to w5, w10 to w17
  * clobbered flag groups: FG0
@@ -49,25 +50,14 @@ p384_isoncurve:
 
   /* load affine x-coordinate of curve point from dmem
      [w1, w0] <= dmem[dptr_x] = dmem[20] */
-  la        x3, dptr_x
-  lw        x3, 0(x3)
   li        x2, 0
-  bn.lid    x2++, 0(x3)
-  bn.lid    x2++, 32(x3)
+  bn.lid    x2++, 0(x20)
+  bn.lid    x2++, 32(x20)
 
   /* load affine y-coordinate of curve point from dmem
      [w3, w2] <= dmem[dptr_y] = dmem[24] */
-  la        x3, dptr_y
-  lw        x3, 0(x3)
-  bn.lid    x2++, 0(x3)
-  bn.lid    x2, 32(x3)
-
-  /* load domain parameter p (modulus) from dmem
-     [w13, w12] = p = dmem[p384_p] */
-  li        x2, 12
-  la        x3, p384_p
-  bn.lid    x2++, 0(x3)
-  bn.lid    x2++, 32(x3)
+  bn.lid    x2++, 0(x21)
+  bn.lid    x2, 32(x21)
 
   /* load domain parameter b from dmem
      [w4, w5] = b = dmem[p384_b] */
@@ -84,11 +74,9 @@ p384_isoncurve:
   jal       x1, p384_mulmod_p
 
   /* store result (left side): dmem[dptr_lhs] <= y^2 = [w17,w16] */
-  la        x3, dptr_lhs
-  lw        x3, 0(x3)
   li        x2, 16
-  bn.sid    x2++, 0(x3)
-  bn.sid    x2++, 32(x3)
+  bn.sid    x2++, 0(x23)
+  bn.sid    x2++, 32(x23)
 
   /*  x^3 = [w17,w16] <= (x*x)*x = ([w1,w0]*(w1,w0])*[w1,w0] */
   bn.mov    w10, w0
@@ -123,11 +111,9 @@ p384_isoncurve:
 
   /* store result (right side)
      dmem[dptr_rhs] <= x^3 + ax + b mod p = [w17,w16] */
-  la        x3, dptr_rhs
-  lw        x3, 0(x3)
   li        x2, 16
-  bn.sid    x2++, 0(x3)
-  bn.sid    x2++, 32(x3)
+  bn.sid    x2++, 0(x22)
+  bn.sid    x2++, 32(x22)
 
   ret
 
@@ -145,14 +131,10 @@ p384_isoncurve:
  * This routine raises a software error and halts operation if the curve point
  * is invalid.
  *
- * @param[in]  dmem[12]: dptr_rhs, pointer to dmem location where right hand
- *                               side result rhs will be stored
- * @param[in]  dmem[16]: dptr_lhs, pointer to dmem location where left hand
- *                               side result lhs will be stored
- * @param[in]  dmem[20]: dptr_x, pointer to dmem location containing affine
- *                               x-coordinate of input point
- * @param[in]  dmem[24]: dptr_y, pointer to dmem location containing affine
- *                               y-coordinate of input point
+ * @param[in]  x20: dptr_x, pointer to dmem location containing affine
+ *                          x-coordinate of input point
+ * @param[in]  x21: dptr_y, pointer to dmem location containing affine
+ *                          y-coordinate of input point
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
@@ -173,8 +155,6 @@ p384_curve_point_valid:
 
   /* Load public key x-coordinate.
      [w11, w10] <= dmem[x] = x */
-  la        x20, dptr_x
-  lw        x20, 0(x20)
   li        x2, 10
   bn.lid    x2++, 0(x20)
   bn.lid    x2, 32(x20)
@@ -194,8 +174,6 @@ p384_curve_point_valid:
 
   /* Load public key y-coordinate.
        w2 <= dmem[y] = y */
-  la        x21, dptr_y
-  lw        x21, 0(x21)
   li        x2, 8
   bn.lid    x2++, 0(x21)
   bn.lid    x2, 32(x21)
@@ -213,6 +191,10 @@ p384_curve_point_valid:
 
   _y_valid:
 
+  /* Fill gpp registers with pointers to variables */
+  la        x22, rhs
+  la        x23, lhs
+
   /* Compute both sides of the Weierstrauss equation.
        dmem[rhs] <= (x^3 + ax + b) mod p
        dmem[lhs] <= (y^2) mod p */
@@ -221,13 +203,9 @@ p384_curve_point_valid:
   /* Load both sides of the equation.
        [w7, w6] <= dmem[rhs]
        [w5, w4] <= dmem[lhs] */
-  la        x22, dptr_rhs
-  lw        x22, 0(x22)
   li        x2, 6
   bn.lid    x2++, 0(x22)
   bn.lid    x2, 32(x22)
-  la        x23, dptr_lhs
-  lw        x23, 0(x23)
   li        x2, 4
   bn.lid    x2++, 0(x23)
   bn.lid    x2, 32(x23)
@@ -269,48 +247,14 @@ p384_curve_point_valid:
 
 /* Right side of Weierstrass equation */
 .globl rhs
+.weak rhs
 .balign 32
 rhs:
   .zero 64
 
 /* Left side of Weierstrass equation */
 .globl lhs
+.weak lhs
 .balign 32
 lhs:
   .zero 64
-
-/* Curve point x-coordinate. */
-.globl x
-.weak x
-.balign 32
-x:
-  .zero 64
-
-/* Curve point y-coordinate. */
-.globl y
-.weak y
-.balign 32
-y:
-  .zero 64
-
-/* pointer to R (dptr_rhs) */
-.globl dptr_rhs
-dptr_rhs:
-  .zero 4
-
-/* pointer to S (dptr_lhs) */
-.globl dptr_lhs
-dptr_lhs:
-  .zero 4
-
-/* pointer to X (dptr_x) */
-.globl dptr_x
-.weak dptr_x
-dptr_x:
-  .zero 4
-
-/* pointer to Y (dptr_y) */
-.globl dptr_y
-.weak dptr_y
-dptr_y:
-  .zero 4
