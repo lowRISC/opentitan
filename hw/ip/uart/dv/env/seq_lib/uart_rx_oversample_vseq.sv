@@ -29,6 +29,7 @@ class uart_rx_oversample_vseq extends uart_tx_rx_vseq;
     num_bits = ral.val.rx.get_n_bits();
     cfg.m_uart_agent_cfg.en_rx_monitor = 0;
     for (int i = 1; i <= num_trans; i++) begin
+      if (cfg.stop_transaction_generators()) break;
       `DV_CHECK_RANDOMIZE_FATAL(this)
       uart_init();
 
@@ -36,6 +37,7 @@ class uart_rx_oversample_vseq extends uart_tx_rx_vseq;
       // don't use big number here, the way TB measures cycle isn't the same as DUT
       // need to re-sync again after certain cycles
       repeat ($urandom_range(1, 3)) begin
+        if (cfg.stop_transaction_generators()) break;
         drive_rx_oversampled_val();
       end
       `uvm_info(`gfn, $sformatf("finished run %0d/%0d", i, num_trans), UVM_LOW)

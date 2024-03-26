@@ -25,10 +25,12 @@ class uart_intr_vseq extends uart_base_vseq;
     // will inject parity/stop error in this case
     cfg.m_uart_agent_cfg.en_rx_checks = 0;
     for (int i = 1; i <= num_trans; i++) begin
+      if (cfg.stop_transaction_generators()) break;
       `DV_CHECK_RANDOMIZE_FATAL(this)
       uart_init();
 
       repeat (NumUartIntr) begin
+        if (cfg.stop_transaction_generators()) break;
         `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(uart_intr,
                                            uart_intr != NumUartIntr;)
         `uvm_info(`gfn, $sformatf("\nTesting %0s", uart_intr.name), UVM_LOW)

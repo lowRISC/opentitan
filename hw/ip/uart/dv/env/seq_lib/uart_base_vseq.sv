@@ -134,20 +134,51 @@ class uart_base_vseq extends cip_base_vseq #(.CFG_T               (uart_env_cfg)
     cfg.m_uart_agent_cfg.set_baud_rate(baud_rate);
   endtask
 
-  virtual task spinwait_txidle();
-    if (ral.ctrl.tx.get_mirrored_value()) begin
-      // use a very big timeout as it takes long time to flush all the items
-      csr_spinwait(.ptr(ral.status.txidle), .exp_data(1'b1),
-                   .timeout_ns(TxFifoDepth * 1_250_000),
-                   .spinwait_delay_ns($urandom_range(0, 1000)));
+  task wait_if_stop_transaction_generators();
+    if (cfg.stop_transaction_generators()) begin
+      // Increase polling interval to allow requested reset without breaking test sequence
+      cfg.clk_rst_vif.wait_clks(CyclesWithNoAccessesThreshold * 2);
     end
   endtask
 
+  task reset_aware_simple_spinwait(input uvm_object ptr,
+                                   input uvm_reg_data_t exp_data,
+                                   input uint spinwait_delay_ns = 0,
+                                   input uint timeout_ns = 10_000_000);
+    fork
+      begin : isolation_fork
+        bit [TL_DW-1:0] rdata;
+        csr_field_t csr_or_fld = decode_csr_or_field(ptr);
+        fork
+          while (!cfg.under_reset) begin
+            if (spinwait_delay_ns) #(spinwait_delay_ns * 1ns);
+            wait_if_stop_transaction_generators();
+            csr_rd(.ptr(ptr), .value(rdata));
+            if (rdata == exp_data) break;
+          end
+          begin
+            `DV_WAIT_TIMEOUT(timeout_ns, `gfn,
+                             $sformatf("timeout %0s (addr=0x%0h) == 0x%0h",
+                                       ptr.get_full_name(), csr_or_fld.csr.get_address(), exp_data))
+          end
+        join_any
+        disable fork;
+      end : isolation_fork
+    join
+  endtask
+
+  virtual task spinwait_txidle();
+    if (!ral.ctrl.tx.get_mirrored_value()) return;
+    // use a very big timeout as it takes long time to flush all the items
+    reset_aware_simple_spinwait(.ptr(ral.status.txidle), .exp_data(1'b1),
+                                .timeout_ns(TxFifoDepth * 1_250_000),
+                                .spinwait_delay_ns($urandom_range(0, 1000)));
+  endtask
+
   virtual task spinwait_rxidle();
-    if (ral.ctrl.rx.get_mirrored_value()) begin
-      csr_spinwait(.ptr(ral.status.rxidle), .exp_data(1'b1),
-                   .spinwait_delay_ns($urandom_range(0, 1000)));
-    end
+    if (!ral.ctrl.rx.get_mirrored_value()) return;
+    reset_aware_simple_spinwait(.ptr(ral.status.rxidle), .exp_data(1'b1),
+                                .spinwait_delay_ns($urandom_range(0, 1000)));
   endtask
 
   // task to send a byte of data out of dut
@@ -230,7 +261,7 @@ class uart_base_vseq extends cip_base_vseq #(.CFG_T               (uart_env_cfg)
     csr_rd(.ptr(ral.rdata), .value(rdata));
   endtask
 
-  // task to wait for all rx bytes to be sent
+  // task to wait for all tx bytes to be sent
   virtual task wait_for_all_tx_bytes();
     bit [TL_DW-1:0] fifo_status, status;
 
@@ -239,6 +270,7 @@ class uart_base_vseq extends cip_base_vseq #(.CFG_T               (uart_env_cfg)
         if (cfg.under_reset) break;
         `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_access_fifo)
         cfg.clk_rst_vif.wait_clks(dly_to_access_fifo);
+        wait_if_stop_transaction_generators();
         csr_rd(.ptr(ral.fifo_status), .value(fifo_status));
         csr_rd(.ptr(ral.status),      .value(status));
       end while (get_field_val(ral.fifo_status.txlvl, fifo_status) > 0 ||
@@ -250,14 +282,11 @@ class uart_base_vseq extends cip_base_vseq #(.CFG_T               (uart_env_cfg)
 
   // task to wait for tx fifo not full
   virtual task wait_for_tx_fifo_not_full();
-    bit [TL_DW-1:0] status;
-
     if (ral.ctrl.tx.get_mirrored_value()) begin
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_access_fifo)
-      csr_spinwait(.ptr(ral.status.txfull), .exp_data(1'b0),
-                   .spinwait_delay_ns(dly_to_access_fifo));
+      reset_aware_simple_spinwait(.ptr(ral.status.txfull), .exp_data(1'b0),
+                                  .spinwait_delay_ns(dly_to_access_fifo));
     end
-
     `uvm_info(`gfn, "wait_for_tx_fifo_not_full is done", UVM_HIGH)
   endtask : wait_for_tx_fifo_not_full
 
@@ -265,9 +294,10 @@ class uart_base_vseq extends cip_base_vseq #(.CFG_T               (uart_env_cfg)
   virtual task wait_for_rx_fifo_not_full();
     if (ral.ctrl.rx.get_mirrored_value()) begin
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_access_fifo)
-      csr_spinwait(.ptr(ral.status.rxfull), .exp_data(1'b0),
-                   .spinwait_delay_ns(dly_to_access_fifo),
-                   .timeout_ns(50_000_000)); // use longer timeout as uart freq is low
+       // use longer timeout as uart freq is low
+      reset_aware_simple_spinwait(.ptr(ral.status.rxfull), .exp_data(1'b0),
+                                  .spinwait_delay_ns(dly_to_access_fifo),
+                                  .timeout_ns(50_000_000));
     end
     `uvm_info(`gfn, "wait_for_rx_fifo_not_full is done", UVM_HIGH)
   endtask : wait_for_rx_fifo_not_full
