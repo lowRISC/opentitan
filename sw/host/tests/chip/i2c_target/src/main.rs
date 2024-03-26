@@ -104,7 +104,7 @@ fn test_write_transaction_slow(
 fn test_wakeup_normal_sleep(opts: &Opts, transport: &TransportWrapper, address: u8) -> Result<()> {
     let uart = transport.uart("console")?;
     let i2c = transport.i2c(&opts.i2c)?;
-    TestCommand::EnterNormalSleep.send(&*uart)?;
+    TestCommand::EnterNormalSleep.send_with_crc(&*uart)?;
     std::thread::sleep(Duration::from_secs(2));
     let mut buf = [0u8; 8];
     log::info!("Issuing read transaction to sleeping chip. Expecting transaction error.");
@@ -123,7 +123,7 @@ fn test_wakeup_deep_sleep(
 ) -> Result<()> {
     let uart = transport.uart("console")?;
     let i2c = transport.i2c(&opts.i2c)?;
-    TestCommand::EnterDeepSleep.send(&*uart)?;
+    TestCommand::EnterDeepSleep.send_with_crc(&*uart)?;
     std::thread::sleep(Duration::from_secs(2));
     let mut buf = [0u8; 8];
     log::info!("Issuing read transaction to sleeping chip. Expecting transaction error.");
