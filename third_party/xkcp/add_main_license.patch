@@ -3,7 +3,7 @@ new file mode 100644
 index 0000000..662709a
 --- /dev/null
 +++ b/LICENSE
-@@ -0,0 +1,74 @@
+@@ -0,0 +1,76 @@
 +Note: This repo uses only some part of the code from XKCP library, therefore only the corresponding license notices are given below for the used part of the source code. The full version of the library and its comprehensive license can be found at https://github.com/XKCP/XKCP.
 +
 +The redistribution and use of this software (with or without changes) is allowed without the payment of fees or royalties provided that the terms of the licenses of the different source files used is respected. Most of the source and header files in the XKCP are released to the public domain and associated to the CC0 (http://creativecommons.org/publicdomain/zero/1.0/) deed, but there are exceptions.
@@ -12,6 +12,7 @@ index 0000000..662709a
 +
 +
 +For ./common/brg_endian.h (used in libXKCP, UnitTests, Benchmarks and KeccakSum):
++SPDX-License-Identifier: Brian-Gladman-3-Clause
 +
 +    ---------------------------------------------------------------------------
 +    Copyright (c) 1998-2008, Brian Gladman, Worcester, UK. All rights reserved.
@@ -39,6 +40,7 @@ index 0000000..662709a
 +
 +
 +For ./low/KeccakP-1600/AVX2/KeccakP-1600-AVX2.s and ./low/KeccakP-1600/AVX512/KeccakP-1600-AVX512.s (potentially used in libXKCP, UnitTests, Benchmarks and KeccakSum, depending on the target platform):
++SPDX-License-Identifier: LicenseRef-BSD-3-Clause-CRYPTOGRAMS
 +
 +    Copyright (c) 2006-2017, CRYPTOGAMS by <appro@openssl.org>
 +    All rights reserved.
