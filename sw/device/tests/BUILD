@@ -5289,7 +5289,6 @@ opentitan_binary(
 opentitan_test(
     name = "uart_tx_rx_test",
     srcs = ["uart_tx_rx_test.c"],
-    broken = cw310_params(tags = ["broken"]),
     cw310 = cw310_params(
         otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_prod_manuf_personalized",
         test_cmd = " ".join([
@@ -5299,13 +5298,11 @@ opentitan_test(
         test_harness = "//sw/host/tests/chip/uart:uart_tx_rx",
     ),
     exec_env = {
-        # FIXME has some flaky behaviour.
-        "//hw/top_earlgrey:fpga_cw310_sival": "broken",
-        # FIXME broken in sival ROM_EXT, change this line when fixed. See #21706.
-        "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
+        "//hw/top_earlgrey:fpga_cw310_sival": None,
+        "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
         "//hw/top_earlgrey:silicon_creator": None,
-        "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon_owner",
-        "//hw/top_earlgrey:silicon_owner_prodc_rom_ext": "silicon_owner",
+        "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
+        "//hw/top_earlgrey:silicon_owner_prodc_rom_ext": None,
         "//hw/top_earlgrey:sim_dv": None,
     },
     silicon = silicon_params(
@@ -5314,9 +5311,6 @@ opentitan_test(
             "--firmware-elf=\"{firmware:elf}\"",
         ]),
         test_harness = "//sw/host/tests/chip/uart:uart_tx_rx",
-    ),
-    silicon_owner = silicon_params(
-        tags = ["broken"],
     ),
     deps = [
         "//hw/ip/lc_ctrl/data:lc_ctrl_c_regs",
