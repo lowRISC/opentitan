@@ -13,34 +13,28 @@
 .section .text.start
 
 p384_oncurve_test:
+  /* load domain parameter p (modulus)
+     [w13, w12] = p = dmem[p384_p] */
+  li        x2, 12
+  la        x3, p384_p
+  bn.lid    x2++, 0(x3)
+  bn.lid    x2++, 32(x3)
 
-  /* set dmem to result */
-  la       x2, rhs
-  la       x3, dptr_rhs
-  sw       x2, 0(x3)
-  la       x2, lhs
-  la       x3, dptr_lhs
-  sw       x2, 0(x3)
-
-  /* set dmem pointer to point to cuve point */
-  la       x2, x
-  la       x3, dptr_x
-  sw       x2, 0(x3)
-  la       x2, y
-  la       x3, dptr_y
-  sw       x2, 0(x3)
+  /* Fill gpp registers with pointers to variables */
+  la        x20, x
+  la        x21, y
+  la        x22, rhs
+  la        x23, lhs
 
   /* call curve point test routine in P-384 lib */
-  jal      x1, p384_isoncurve
+  jal       x1, p384_isoncurve
 
   /* load result to WDRs for comparison with reference */
   li        x2, 0
-  la        x3, rhs
-  bn.lid    x2++, 0(x3)
-  bn.lid    x2++, 32(x3)
-  la        x3, lhs
-  bn.lid    x2++, 0(x3)
-  bn.lid    x2++, 32(x3)
+  bn.lid    x2++, 0(x22)
+  bn.lid    x2++, 32(x22)
+  bn.lid    x2++, 0(x23)
+  bn.lid    x2++, 32(x23)
 
   ecall
 
@@ -48,14 +42,17 @@ p384_oncurve_test:
 .data
 
 /* buffer for right side result of Weierstrass equation */
+.globl rhs
 rhs:
   .zero 64
 
 /* buffer for left side result of Weierstrass equation */
+.globl lhs
 lhs:
   .zero 64
 
 /* point affine x-coordinate */
+.globl x
 x:
   .word 0x4877f3d1
   .word 0x7b829460
@@ -72,6 +69,7 @@ x:
   .zero 16
 
 /* point affine y-coordinate */
+.globl y
 y:
   .word 0xc181f90f
   .word 0xc31ef079
