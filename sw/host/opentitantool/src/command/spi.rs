@@ -19,6 +19,7 @@ use opentitanlib::spiflash::{EraseMode, ReadMode, SpiFlash};
 use opentitanlib::tpm;
 use opentitanlib::transport::Capability;
 use opentitanlib::transport::ProgressIndicator;
+use opentitanlib::util::hexdump::hexdump;
 
 /// Read and parse an SFDP table.
 #[derive(Debug, Args)]
@@ -30,36 +31,6 @@ pub struct SpiSfdp {
     /// Start reading SFDP at offset.  Only valid with --raw.
     #[arg(short, long)]
     offset: Option<u32>,
-}
-
-// Print a hexdump of a buffer to `writer`.
-// The hexdump includes the offset, hex bytes and printable ASCII characters.
-//
-//  00000000: 53 46 44 50 06 01 02 ff 00 06 01 10 30 00 00 ff  SFDP........0...
-//  00000010: c2 00 01 04 10 01 00 ff 84 00 01 02 c0 00 00 ff  ................
-//  00000020: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff  ................
-//  00000030: e5 20 fb ff ff ff ff 3f 44 eb 08 6b 08 3b 04 bb  . .....?D..k.;..
-//
-// Note: This format can be consumed by `xxd -r` and converted back into binary.
-fn hexdump(mut writer: impl Write, buf: &[u8]) -> Result<()> {
-    for (i, chunk) in buf.chunks(16).enumerate() {
-        let mut ascii = [b'.'; 16];
-        write!(writer, "{:08x}:", i * 16)?;
-        for (j, byte) in chunk.iter().copied().enumerate() {
-            write!(writer, " {:02x}", byte)?;
-            // For printable ASCII chars, place them in the ascii buffer.
-            if byte == b' ' || byte.is_ascii_graphic() {
-                ascii[j] = byte;
-            }
-        }
-        // Align and print the ascii buffer.
-        let j = chunk.len();
-        for _ in 0..(16 - j) {
-            write!(writer, "   ")?;
-        }
-        writeln!(writer, "  {}", std::str::from_utf8(&ascii[0..j]).unwrap())?;
-    }
-    Ok(())
 }
 
 impl CommandDispatch for SpiSfdp {
