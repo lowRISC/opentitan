@@ -482,6 +482,7 @@ cc_library(
         "//sw/device/silicon_creator/lib/drivers:keymgr",
         "//sw/device/silicon_creator/lib/drivers:otbn",
         "//sw/device/silicon_creator/lib/sigverify:rsa_key",
+        "//sw/otbn/crypto:boot",
     ],
 )
 
@@ -504,7 +505,6 @@ opentitan_test(
         "//sw/device/lib/testing:keymgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
-        "//sw/otbn/crypto:boot",
     ],
 )
 
@@ -554,6 +554,5 @@ cc_library(
         "//sw/device/silicon_creator/lib/drivers:keymgr",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",
-        "//sw/otbn/crypto:boot",
     ],
 )
