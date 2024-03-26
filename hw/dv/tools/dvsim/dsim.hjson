@@ -33,7 +33,7 @@
                "-image image",
                // UVM DPI
                "-sv_lib {DSIM_HOME}/lib/libuvm_dpi.so",
-               "-sv_seed {seed}",
+               "-sv_seed {short_seed}",
                // tell DSim to write line-buffered stdout (lines will be written in proper order)
                "-linebuf",
                "+UVM_TESTNAME={uvm_test}",
