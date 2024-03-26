@@ -19,8 +19,8 @@
 #include "sw/device/silicon_creator/lib/base/boot_measurements.h"
 #include "sw/device/silicon_creator/lib/cert/cdi_0.h"  // Generated.
 #include "sw/device/silicon_creator/lib/cert/cdi_1.h"  // Generated.
-#include "sw/device/silicon_creator/lib/cert/dice.h"
-#include "sw/device/silicon_creator/lib/cert/uds.h"  // Generated.
+#include "sw/device/silicon_creator/lib/cert/uds.h"    // Generated.
+#include "sw/device/silicon_creator/lib/dice.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
