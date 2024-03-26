@@ -755,7 +755,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
       tl_addr[OTFHostId] = 1;
       overflow = end_addr[OTFHostId];
     end
-    `uvm_info("direct_read", $sformatf("addr: %x end_addr: %x overflow:% x",
+    `uvm_info("direct_read", $sformatf("addr: %x end_addr: %x overflow: %x",
                                        addr, end_addr, overflow), UVM_HIGH)
     rd_entry.bank = bank;
     tl_addr[OTFBankId] = bank;
