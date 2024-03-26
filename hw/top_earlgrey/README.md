@@ -14,7 +14,8 @@ and sit in the repository for browsing purpose.
 ### How to create top module
 
 Top module `rtl/top_earlgrey.sv` is created by `topgen.py`. Current top module
-is created with below command.
+is created with below command (assuming your current working directory is this
+directory):
 
 ```console
 ../../util/topgen.py -t data/top_earlgrey.hjson -o . -v
