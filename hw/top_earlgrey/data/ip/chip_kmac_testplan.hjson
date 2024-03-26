@@ -131,7 +131,9 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: []
-      bazel: []
+      bazel: [
+        "//sw/device/tests/crypto/cryptotest:hash_kat",
+      ]
     }
     {
       name: chip_sw_kmac_shake_stress
@@ -151,7 +153,9 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: []
-      bazel: []
+      bazel: [
+        "//sw/device/tests/crypto/cryptotest:hash_kat",
+      ]
     }
     {
       name: chip_sw_kmac_cshake_stress
@@ -171,7 +175,9 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: []
-      bazel: []
+      bazel: [
+        "//sw/device/tests/crypto/cryptotest:hash_kat",
+      ]
     }
     {
       name: chip_sw_kmac_kmac_stress
@@ -191,7 +197,9 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: []
-      bazel: []
+      bazel: [
+        "//sw/device/tests/crypto/cryptotest:kmac_kat",
+      ]
     }
     {
       name: chip_sw_kmac_kmac_key_sideload
