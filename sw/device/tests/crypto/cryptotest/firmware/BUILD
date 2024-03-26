@@ -168,12 +168,16 @@ cc_library(
 
 cc_library(
     name = "ibex_fi",
-    srcs = ["ibex_fi.c"],
+    srcs = [
+        "ibex_fi.S",
+        "ibex_fi.c",
+    ],
     hdrs = [
         "ibex_fi.h",
         "status.h",
     ],
     deps = [
+        "//sw/device/lib/base:csr",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:flash_ctrl",
@@ -198,7 +202,10 @@ cc_library(
     deps = [
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
+        "//sw/device/lib/dif:keymgr",
+        "//sw/device/lib/dif:kmac",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:keymgr_testutils",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/lib/ujson",
         "//sw/device/sca/lib:sca",

@@ -8,6 +8,7 @@
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/ujson/ujson.h"
 
+status_t handle_ibex_sca_key_sideloading(ujson_t *uj);
 status_t handle_ibex_sca_tl_write(ujson_t *uj);
 status_t handle_ibex_sca_tl_read(ujson_t *uj);
 status_t handle_ibex_sca_register_file_write(ujson_t *uj);
