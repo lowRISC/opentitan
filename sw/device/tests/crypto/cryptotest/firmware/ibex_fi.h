@@ -18,7 +18,7 @@ status_t handle_ibex_fi_char_mem_op_loop(ujson_t *uj);
 status_t handle_ibex_fi_char_reg_op_loop(ujson_t *uj);
 status_t handle_ibex_fi_char_unrolled_mem_op_loop(ujson_t *uj);
 status_t handle_ibex_fi_char_unrolled_reg_op_loop(ujson_t *uj);
-status_t handle_ibex_fi_init_trigger(ujson_t *uj);
+status_t handle_ibex_fi_init(ujson_t *uj);
 status_t handle_ibex_fi_char_register_file(ujson_t *uj);
 status_t handle_ibex_fi_char_register_file_read(ujson_t *uj);
 status_t handle_ibex_fi(ujson_t *uj);

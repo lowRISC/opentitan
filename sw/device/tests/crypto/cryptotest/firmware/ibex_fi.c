@@ -20,6 +20,9 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
+// Interface to Ibex.
+static dif_rv_core_ibex_t rv_core_ibex;
+
 // Make sure that this function does not get optimized by the compiler.
 uint32_t increment_counter(uint32_t counter) __attribute__((optnone)) {
   uint32_t return_value = counter + 1;
@@ -592,12 +595,8 @@ status_t handle_ibex_fi_char_conditional_branch(ujson_t *uj) {
  * @param uj The received uJSON data.
  */
 status_t handle_ibex_fi_char_mem_op_loop(ujson_t *uj) {
-  // Configure Ibex to allow reading ERR_STATUS register.
-  dif_rv_core_ibex_t rv_core_ibex;
-  UJSON_CHECK_DIF_OK(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
-      &rv_core_ibex));
-
+  // Clear registered alerts in alert handler.
+  uint32_t reg_alerts = sca_get_triggered_alerts();
   // FI code target.
   uint32_t loop_counter1 = 0;
   uint32_t loop_counter2 = 10000;
@@ -608,6 +607,8 @@ status_t handle_ibex_fi_char_mem_op_loop(ujson_t *uj) {
     asm volatile(LWSUBISW1 : : "r"((uint32_t *)&loop_counter2));
   }
   sca_set_trigger_low();
+  // Get registered alerts from alert handler.
+  reg_alerts = sca_get_triggered_alerts();
 
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
@@ -618,6 +619,7 @@ status_t handle_ibex_fi_char_mem_op_loop(ujson_t *uj) {
   uj_output.loop_counter1 = loop_counter1;
   uj_output.loop_counter2 = loop_counter2;
   uj_output.err_status = codes;
+  uj_output.alerts = reg_alerts;
   RESP_OK(ujson_serialize_ibex_fi_loop_counter_mirrored_t, uj, &uj_output);
   return OK_STATUS(0);
 }
@@ -638,12 +640,8 @@ status_t handle_ibex_fi_char_mem_op_loop(ujson_t *uj) {
  * @param uj The received uJSON data.
  */
 status_t handle_ibex_fi_char_unrolled_mem_op_loop(ujson_t *uj) {
-  // Configure Ibex to allow reading ERR_STATUS register.
-  dif_rv_core_ibex_t rv_core_ibex;
-  UJSON_CHECK_DIF_OK(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
-      &rv_core_ibex));
-
+  // Clear registered alerts in alert handler.
+  uint32_t reg_alerts = sca_get_triggered_alerts();
   // FI code target.
   uint32_t loop_counter = 0;
   sca_set_trigger_high();
@@ -659,6 +657,8 @@ status_t handle_ibex_fi_char_unrolled_mem_op_loop(ujson_t *uj) {
   asm volatile(LWADDISW1000 : : "r"((uint32_t *)&loop_counter));
   asm volatile(LWADDISW1000 : : "r"((uint32_t *)&loop_counter));
   sca_set_trigger_low();
+  // Get registered alerts from alert handler.
+  reg_alerts = sca_get_triggered_alerts();
 
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
@@ -668,6 +668,7 @@ status_t handle_ibex_fi_char_unrolled_mem_op_loop(ujson_t *uj) {
   ibex_fi_loop_counter_t uj_output;
   uj_output.loop_counter = loop_counter;
   uj_output.err_status = codes;
+  uj_output.alerts = reg_alerts;
   RESP_OK(ujson_serialize_ibex_fi_loop_counter_t, uj, &uj_output);
   return OK_STATUS(0);
 }
@@ -687,12 +688,8 @@ status_t handle_ibex_fi_char_unrolled_mem_op_loop(ujson_t *uj) {
  * @param uj The received uJSON data.
  */
 status_t handle_ibex_fi_char_reg_op_loop(ujson_t *uj) {
-  // Configure Ibex to allow reading ERR_STATUS register.
-  dif_rv_core_ibex_t rv_core_ibex;
-  UJSON_CHECK_DIF_OK(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
-      &rv_core_ibex));
-
+  // Clear registered alerts in alert handler.
+  uint32_t reg_alerts = sca_get_triggered_alerts();
   // FI code target.
   uint32_t loop_counter1 = 0;
   uint32_t loop_counter2 = 10000;
@@ -707,6 +704,8 @@ status_t handle_ibex_fi_char_reg_op_loop(ujson_t *uj) {
   asm volatile("mv %0, x5" : "=r"(loop_counter1));
   asm volatile("mv %0, x6" : "=r"(loop_counter2));
   sca_set_trigger_low();
+  // Get registered alerts from alert handler.
+  reg_alerts = sca_get_triggered_alerts();
 
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
@@ -717,6 +716,7 @@ status_t handle_ibex_fi_char_reg_op_loop(ujson_t *uj) {
   uj_output.loop_counter1 = loop_counter1;
   uj_output.loop_counter2 = loop_counter2;
   uj_output.err_status = codes;
+  uj_output.alerts = reg_alerts;
   RESP_OK(ujson_serialize_ibex_fi_loop_counter_mirrored_t, uj, &uj_output);
   return OK_STATUS(0);
 }
@@ -736,12 +736,8 @@ status_t handle_ibex_fi_char_reg_op_loop(ujson_t *uj) {
  * @param uj The received uJSON data.
  */
 status_t handle_ibex_fi_char_unrolled_reg_op_loop(ujson_t *uj) {
-  // Configure Ibex to allow reading ERR_STATUS register.
-  dif_rv_core_ibex_t rv_core_ibex;
-  UJSON_CHECK_DIF_OK(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
-      &rv_core_ibex));
-
+  // Clear registered alerts in alert handler.
+  uint32_t reg_alerts = sca_get_triggered_alerts();
   // FI code target.
   uint32_t loop_counter = 0;
   sca_set_trigger_high();
@@ -759,15 +755,17 @@ status_t handle_ibex_fi_char_unrolled_reg_op_loop(ujson_t *uj) {
   asm volatile(ADDI1000);
   asm volatile("mv %0, x5" : "=r"(loop_counter));
   sca_set_trigger_low();
+  // Get registered alerts from alert handler.
+  reg_alerts = sca_get_triggered_alerts();
 
   // Read ERR_STATUS register.
   dif_rv_core_ibex_error_status_t codes;
   UJSON_CHECK_DIF_OK(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
-
   // Send loop counter & ERR_STATUS to host.
   ibex_fi_loop_counter_t uj_output;
   uj_output.loop_counter = loop_counter;
   uj_output.err_status = codes;
+  uj_output.alerts = reg_alerts;
   RESP_OK(ujson_serialize_ibex_fi_loop_counter_t, uj, &uj_output);
   return OK_STATUS(0);
 }
@@ -786,14 +784,10 @@ status_t handle_ibex_fi_char_unrolled_reg_op_loop(ujson_t *uj) {
  * @param uj The received uJSON data.
  */
 status_t handle_ibex_fi_char_register_file(ujson_t *uj) {
-  // Configure Ibex to allow reading ERR_STATUS register.
-  dif_rv_core_ibex_t rv_core_ibex;
-  UJSON_CHECK_DIF_OK(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
-      &rv_core_ibex));
+  // Clear registered alerts in alert handler.
+  uint32_t reg_alerts = sca_get_triggered_alerts();
 
   uint32_t res_values[7];
-
   // Initialize temporary registers with reference values.
   asm volatile("li x5, %0" : : "i"(ref_values[0]));
   asm volatile("li x6, %0" : : "i"(ref_values[1]));
@@ -807,6 +801,8 @@ status_t handle_ibex_fi_char_register_file(ujson_t *uj) {
   sca_set_trigger_high();
   asm volatile(NOP1000);
   sca_set_trigger_low();
+  // Get registered alerts from alert handler.
+  reg_alerts = sca_get_triggered_alerts();
 
   // Load register values.
   asm volatile("mv %0, x5" : "=r"(res_values[0]));
@@ -834,6 +830,7 @@ status_t handle_ibex_fi_char_register_file(ujson_t *uj) {
   ibex_fi_test_result_t uj_output;
   uj_output.result = res;
   uj_output.err_status = codes;
+  uj_output.alerts = reg_alerts;
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
   return OK_STATUS(0);
 }
@@ -852,14 +849,10 @@ status_t handle_ibex_fi_char_register_file(ujson_t *uj) {
  * @param uj The received uJSON data.
  */
 status_t handle_ibex_fi_char_register_file_read(ujson_t *uj) {
-  // Configure Ibex to allow reading ERR_STATUS register.
-  dif_rv_core_ibex_t rv_core_ibex;
-  UJSON_CHECK_DIF_OK(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
-      &rv_core_ibex));
+  // Clear registered alerts in alert handler.
+  uint32_t reg_alerts = sca_get_triggered_alerts();
 
   uint32_t res_values[3];
-
   // Initialize temporary registers with reference values.
   asm volatile("li x5, %0" : : "i"(ref_values[0]));
   asm volatile("li x6, %0" : : "i"(ref_values[1]));
@@ -874,6 +867,8 @@ status_t handle_ibex_fi_char_register_file_read(ujson_t *uj) {
   asm volatile("mv x29, x6");
   asm volatile("mv x30, x7");
   sca_set_trigger_low();
+  // Get registered alerts from alert handler.
+  reg_alerts = sca_get_triggered_alerts();
 
   // Load register values.
   asm volatile("mv %0, x28" : "=r"(res_values[0]));
@@ -897,21 +892,31 @@ status_t handle_ibex_fi_char_register_file_read(ujson_t *uj) {
   ibex_fi_test_result_t uj_output;
   uj_output.result = res;
   uj_output.err_status = codes;
+  uj_output.alerts = reg_alerts;
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
   return OK_STATUS(0);
 }
 
 /**
- * Initializes the trigger.
+ * Initializes the Ibex FI test.
  *
+ * Setup the trigger and alert handler. Disable dummy instructions and the
+ * iCache.
  *
  * @param uj The received uJSON data.
  */
-status_t handle_ibex_fi_init_trigger(ujson_t *uj) {
+status_t handle_ibex_fi_init(ujson_t *uj) {
   sca_select_trigger_type(kScaTriggerTypeSw);
   // As we are using the software defined trigger, the first argument of
   // sca_init is not needed. kScaTriggerSourceAes is selected as a placeholder.
-  sca_init(kScaTriggerSourceAes, kScaPeripheralIoDiv4);
+  sca_init(kScaTriggerSourceAes,
+           kScaPeripheralIoDiv4 | kScaPeripheralEdn | kScaPeripheralCsrng |
+               kScaPeripheralEntropy | kScaPeripheralAes | kScaPeripheralHmac |
+               kScaPeripheralKmac | kScaPeripheralOtbn);
+
+  // Configure the alert handler. Alerts triggered by IP blocks are captured
+  // and reported to the test.
+  sca_configure_alert_handler();
 
   // Disable the instruction cache and dummy instructions for FI attacks.
   sca_configure_cpu();
@@ -922,6 +927,10 @@ status_t handle_ibex_fi_init_trigger(ujson_t *uj) {
       &flash, mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
   UJSON_CHECK_STATUS_OK(flash_ctrl_testutils_wait_for_init(&flash));
 
+  // Configure Ibex to allow reading ERR_STATUS register.
+  UJSON_CHECK_DIF_OK(dif_rv_core_ibex_init(
+      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
+      &rv_core_ibex));
   return OK_STATUS(0);
 }
 
@@ -936,8 +945,8 @@ status_t handle_ibex_fi(ujson_t *uj) {
   ibex_fi_subcommand_t cmd;
   TRY(ujson_deserialize_ibex_fi_subcommand_t(uj, &cmd));
   switch (cmd) {
-    case kIbexFiSubcommandInitTrigger:
-      return handle_ibex_fi_init_trigger(uj);
+    case kIbexFiSubcommandInit:
+      return handle_ibex_fi_init(uj);
     case kIbexFiSubcommandCharUnrolledRegOpLoop:
       return handle_ibex_fi_char_unrolled_reg_op_loop(uj);
     case kIbexFiSubcommandCharRegOpLoop:
