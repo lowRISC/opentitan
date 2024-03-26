@@ -103,6 +103,7 @@ static dif_flash_ctrl_device_info_t flash_info;
 // used by the program.
 OT_SECTION(".data")
 static volatile uint32_t sram_main_buffer[32];
+static volatile uint32_t sram_main_buffer_large[4000];
 
 status_t handle_ibex_fi_address_translation(ujson_t *uj) {
   // Clear registered alerts in alert handler.
@@ -469,6 +470,57 @@ status_t handle_ibex_fi_char_flash_write(ujson_t *uj) {
   uj_output.alerts = reg_alerts;
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
   return OK_STATUS();
+}
+
+status_t handle_ibex_fi_char_sram_static(ujson_t *uj) {
+  // Clear registered alerts in alert handler.
+  uint32_t reg_alerts = sca_get_triggered_alerts();
+
+  // Get address of buffer located in SRAM.
+  uintptr_t sram_main_buffer_addr = (uintptr_t)&sram_main_buffer_large;
+  mmio_region_t sram_region_main_addr =
+      mmio_region_from_addr(sram_main_buffer_addr);
+
+  // Write reference value into SRAM.
+  for (int i = 0; i < 4000; i++) {
+    mmio_region_write32(sram_region_main_addr, i * (ptrdiff_t)sizeof(uint32_t),
+                        ref_values[0]);
+  }
+
+  // FI code target.
+  sca_set_trigger_high();
+  asm volatile(NOP1000);
+  sca_set_trigger_low();
+  // Get registered alerts from alert handler.
+  reg_alerts = sca_get_triggered_alerts();
+
+  // Compare against reference values.
+  ibex_fi_faulty_addresses_t uj_output;
+  memset(uj_output.addresses, 0, sizeof(uj_output.addresses));
+  int faulty_address_pos = 0;
+  for (int sram_pos = 0; sram_pos < 4000; sram_pos++) {
+    uint32_t res_value = mmio_region_read32(
+        sram_region_main_addr, sram_pos * (ptrdiff_t)sizeof(uint32_t));
+    if (res_value != ref_values[0]) {
+      uj_output.addresses[faulty_address_pos] = (uint32_t)sram_pos;
+      faulty_address_pos++;
+      // Currently, we register only up to 8 faulty SRAM positions. If there
+      // are more, we overwrite the addresses array.
+      if (faulty_address_pos > 7) {
+        faulty_address_pos = 0;
+      }
+    }
+  }
+
+  // Read ERR_STATUS register.
+  dif_rv_core_ibex_error_status_t codes;
+  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
+
+  // Send res & ERR_STATUS to host.
+  uj_output.err_status = codes;
+  uj_output.alerts = reg_alerts;
+  RESP_OK(ujson_serialize_ibex_fi_faulty_addresses_t, uj, &uj_output);
+  return OK_STATUS(0);
 }
 
 status_t handle_ibex_fi_char_sram_read(ujson_t *uj) {
@@ -1014,6 +1066,8 @@ status_t handle_ibex_fi(ujson_t *uj) {
       return handle_ibex_fi_char_sram_write(uj);
     case kIbexFiSubcommandCharSramRead:
       return handle_ibex_fi_char_sram_read(uj);
+    case kIbexFiSubcommandCharSramStatic:
+      return handle_ibex_fi_char_sram_static(uj);
     case kIbexFiSubcommandCharFlashWrite:
       return handle_ibex_fi_char_flash_write(uj);
     case kIbexFiSubcommandCharFlashRead:

@@ -92,7 +92,7 @@ status_t handle_ibex_fi_char_csr_write(ujson_t *uj);
 status_t handle_ibex_fi_char_csr_read(ujson_t *uj);
 
 /**
- * ibex.char.flash_read command handler.
+ * ibex.fi.char.flash_read command handler.
  *
  * This FI penetration tests executes the following instructions:
  * - Write reference values into flash.
@@ -112,7 +112,7 @@ status_t handle_ibex_fi_char_csr_read(ujson_t *uj);
 status_t handle_ibex_fi_char_flash_read(ujson_t *uj);
 
 /**
- * ibex.char.flash_write command handler.
+ * ibex.fi.char.flash_write command handler.
  *
  * This FI penetration tests executes the following instructions:
  * - Set the trigger.
@@ -131,7 +131,26 @@ status_t handle_ibex_fi_char_flash_read(ujson_t *uj);
 status_t handle_ibex_fi_char_flash_write(ujson_t *uj);
 
 /**
- * ibex.char.sram_read command handler.
+ * ibex.fi.char.sram_static command handler.
+ *
+ * This FI penetration tests executes the following instructions:
+ * - Write ref_values[0] to 16kb of SRAM.
+ * - Set the trigger.
+ * - Add 1000 NOPs to give the setup the chance to inject faults.
+ * - Unset the trigger.
+ * - Read back content of 16kb of SRAM and compare against reference value.
+ * - If faulty words are detected, transmit addresses back to host.
+ *
+ * Faults are injected during the trigger_high & trigger_low.
+ * It needs to be ensured that the compiler does not optimize this code.
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_ibex_fi_char_sram_static(ujson_t *uj);
+
+/**
+ * ibex.fi.char.sram_read command handler.
  *
  * This FI penetration tests executes the following instructions:
  * - Write reference values into SRAM.
@@ -151,7 +170,7 @@ status_t handle_ibex_fi_char_flash_write(ujson_t *uj);
 status_t handle_ibex_fi_char_sram_read(ujson_t *uj);
 
 /**
- * ibex.char.sram_write command handler.
+ * ibex.fi.char.sram_write command handler.
  *
  * This FI penetration tests executes the following instructions:
  * - Set the trigger.
@@ -170,7 +189,7 @@ status_t handle_ibex_fi_char_sram_read(ujson_t *uj);
 status_t handle_ibex_fi_char_sram_write(ujson_t *uj);
 
 /**
- * ibex.char.unconditional_branch command handler.
+ * ibex.fi.char.unconditional_branch command handler.
  *
  * This FI penetration tests executes the following instructions:
  * - Add 10 NOPs to delay the trigger
@@ -187,7 +206,7 @@ status_t handle_ibex_fi_char_sram_write(ujson_t *uj);
 status_t handle_ibex_fi_char_unconditional_branch(ujson_t *uj);
 
 /**
- * ibex.char.conditional_branch command handler.
+ * ibex.fi.char.conditional_branch command handler.
  *
  * This FI penetration tests executes the following instructions:
  * - Add 10 NOPs to delay the trigger
@@ -204,7 +223,7 @@ status_t handle_ibex_fi_char_unconditional_branch(ujson_t *uj);
 status_t handle_ibex_fi_char_conditional_branch(ujson_t *uj);
 
 /**
- * ibex.char.mem_op_loop command handler.
+ * ibex.fi.char.mem_op_loop command handler.
  *
  * This FI penetration tests executes the following instructions:
  * - Add 100 NOPs to delay the trigger
@@ -225,7 +244,7 @@ status_t handle_ibex_fi_char_conditional_branch(ujson_t *uj);
 status_t handle_ibex_fi_char_mem_op_loop(ujson_t *uj);
 
 /**
- * ibex.char.reg_op_loop command handler.
+ * ibex.fi.char.reg_op_loop command handler.
  *
  * This FI penetration tests executes the following instructions:
  * - Initialize register x5=0 & x6=10000
@@ -242,7 +261,7 @@ status_t handle_ibex_fi_char_mem_op_loop(ujson_t *uj);
 status_t handle_ibex_fi_char_reg_op_loop(ujson_t *uj);
 
 /**
- * ibex.char.unrolled_mem_op_loop command handler.
+ * ibex.fi.char.unrolled_mem_op_loop command handler.
  *
  * This FI penetration tests executes the following instructions:
  * - Add 100 NOPs to delay the trigger
@@ -260,7 +279,7 @@ status_t handle_ibex_fi_char_reg_op_loop(ujson_t *uj);
 status_t handle_ibex_fi_char_unrolled_mem_op_loop(ujson_t *uj);
 
 /**
- * ibex.char.unrolled_reg_op_loop command handler.
+ * ibex.fi.char.unrolled_reg_op_loop command handler.
  *
  * This FI penetration tests executes the following instructions:
  * - Initialize register x5=0
@@ -285,7 +304,7 @@ status_t handle_ibex_fi_char_unrolled_reg_op_loop(ujson_t *uj);
 status_t handle_ibex_fi_init(ujson_t *uj);
 
 /**
- * ibex.char.register_file command handler.
+ * ibex.fi.char.register_file command handler.
  *
  * This FI penetration test executes the following instructions:
  * - Initialize temp. registers with reference values
@@ -301,7 +320,7 @@ status_t handle_ibex_fi_init(ujson_t *uj);
 status_t handle_ibex_fi_char_register_file(ujson_t *uj);
 
 /**
- * ibex.char.register_file_read command handler.
+ * ibex.fi.char.register_file_read command handler.
  *
  * This FI penetration test executes the following instructions:
  * - Initialize temp. registers with reference values
