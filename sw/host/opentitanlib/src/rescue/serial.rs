@@ -47,10 +47,12 @@ impl RescueSerial {
         }
     }
 
-    pub fn enter(&self, transport: &TransportWrapper) -> Result<()> {
+    pub fn enter(&self, transport: &TransportWrapper, reset_target: bool) -> Result<()> {
         log::info!("Setting serial break to trigger rescue mode.");
         self.uart.set_break(true)?;
-        transport.reset_target(self.reset_delay, /*clear_uart*=*/ true)?;
+        if reset_target {
+            transport.reset_target(self.reset_delay, /*clear_uart=*/ true)?;
+        }
         UartConsole::wait_for(&*self.uart, r"rescue:.*\r\n", self.enter_delay)?;
         log::info!("Rescue triggered. clearing serial break.");
         self.uart.set_break(false)?;
