@@ -3,53 +3,27 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 
 /**
- * Standalone elliptic curve P-384 ECDH shared key generation test
+ * Standalone test for P-384 curve point test
  *
- * Uses OTBN ECC P-384 lib to perform a scalar multiplication with a valid
- * example curve point and an example scalar. Both scalar and coordinates of
- * the curve point are contained in the .data section below.
- * The x coordinate of the resulting curve point is masked arithmetically
- * with a random value. As the x coorodinate represents the actual
- * shared key, the x coordinate and its mask are then converted from an
- * arithmetic to a boolean masking scheme.
- *
- * The result of boolean unmasking is then compared with the expected shared
- * key value.
+ * Runs the P-384 curve point test to check whether a point (given in affine
+ * space) is a valid P-384 curve point.
  */
 
 .section .text.start
 
 p384_curve_point_valid_test:
-  /* Set  pointer to x coordinate */
-  la        x3, dptr_x
-  la        x4, x
-  sw        x4, 0(x3)
-
-  /* Set  pointer to y coordinate */
-  la        x3, dptr_y
-  la        x4, x
-  sw        x4, 0(x3)
-
   /* Init all-zero register. */
   bn.xor    w31, w31, w31
+
+  /* Fill gpp registers with pointers to variables */
+  la        x20, x
+  la        x21, y
 
   jal       x1, p384_curve_point_valid
 
   ecall
 
 .data
-
-/* pointer to x-coordinate (dptr_x) */
-.globl dptr_x
-.balign 4
-dptr_x:
-  .zero 4
-
-/* pointer to y-coordinate (dptr_y) */
-.globl dptr_y
-.balign 4
-dptr_y:
-  .zero 4
 
 /* Curve point x-coordinate. */
 .globl x

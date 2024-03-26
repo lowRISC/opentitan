@@ -33,18 +33,6 @@ validate_point:
 
 .data
 
-/* pointer to x-coordinate (dptr_x) */
-.globl dptr_x
-.balign 4
-dptr_x:
-  .zero 4
-
-/* pointer to y-coordinate (dptr_y) */
-.globl dptr_y
-.balign 4
-dptr_y:
-  .zero 4
-
 /* Public key x-coordinate. */
 .globl x
 .balign 32
