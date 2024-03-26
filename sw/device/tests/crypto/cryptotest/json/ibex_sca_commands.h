@@ -16,13 +16,23 @@ extern "C" {
     value(_, RFRead) \
     value(_, RFWrite) \
     value(_, TLRead) \
-    value(_, TLWrite)
+    value(_, TLWrite) \
+    value(_, KeySideloading)
 UJSON_SERDE_ENUM(IbexScaSubcommand, ibex_sca_subcommand_t, IBEXSCA_SUBCOMMAND);
 
 #define IBEXSCA_TEST_DATA(field, string) \
     field(num_iterations, uint32_t) \
     field(data, uint32_t, 8)
 UJSON_SERDE_STRUCT(IbexScaTestData, ibex_sca_test_data_t, IBEXSCA_TEST_DATA);
+
+#define IBEXSCA_SALT(field, string) \
+    field(salt, uint32_t, 8)
+UJSON_SERDE_STRUCT(IbexScaSalt, ibex_sca_salt_t, IBEXSCA_SALT);
+
+#define IBEXSCA_KEY(field, string) \
+    field(share0, uint32_t, 8) \
+    field(share1, uint32_t, 8)
+UJSON_SERDE_STRUCT(IbexScaKey, ibex_sca_key_t, IBEXSCA_KEY);
 
 #define IBEXSCA_RESULT(field, string) \
     field(result, uint32_t)
