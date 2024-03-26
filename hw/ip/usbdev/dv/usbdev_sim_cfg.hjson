@@ -114,6 +114,10 @@
       uvm_test_seq: usbdev_random_length_out_transaction_vseq
     }
     {
+      name: usbdev_rx_pid_err
+      uvm_test_seq: usbdev_rx_pid_err_vseq
+    }
+    {
       name: usbdev_setup_trans_ignored
       uvm_test_seq: usbdev_setup_trans_ignored_vseq
     }

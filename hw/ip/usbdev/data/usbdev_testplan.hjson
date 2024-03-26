@@ -486,7 +486,7 @@
             - Verify that the interrupt pin goes high indicating PID error.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_rx_pid_err"]
     }
     {
       name: rx_bitstuff_err
