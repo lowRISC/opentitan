@@ -117,3 +117,24 @@ def str_to_byte_array(s: str) -> list:
     for i in range(0, len(s), 2):
         byte_array.append(int(s[i:i + 2], 16))
     return byte_array
+
+
+def int_to_byte_array(num: int, byteorder="big") -> list:
+    """
+    Converts an integer to a list of bytes with the specified
+    byte order.
+
+    """
+    # Remove the '0x'
+    h = hex(num)[2:]
+    # Append a leading zero if we do not have an even number of
+    # hexadecimal digits.
+    if len(h) % 2 == 1:
+        h = "0" + h
+    arr = list(bytes.fromhex(h))
+    if byteorder == "big":
+        return arr
+    elif byteorder == "little":
+        return arr[::-1]
+    else:
+        raise ValueError("Unrecognized byte order: " + byteorder)
