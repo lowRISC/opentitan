@@ -15,8 +15,8 @@ include!(env!("spi_passthru"));
 
 impl ConfigJedecId {
     pub fn execute(&self, uart: &dyn Uart) -> Result<()> {
-        TestCommand::SpiConfigureJedecId.send(uart)?;
-        self.send(uart)?;
+        TestCommand::SpiConfigureJedecId.send_with_crc(uart)?;
+        self.send_with_crc(uart)?;
         Status::recv(uart, Duration::from_secs(300), false)?;
         Ok(())
     }
@@ -24,13 +24,13 @@ impl ConfigJedecId {
 
 impl StatusRegister {
     pub fn read(uart: &dyn Uart) -> Result<Self> {
-        TestCommand::SpiReadStatus.send(uart)?;
+        TestCommand::SpiReadStatus.send_with_crc(uart)?;
         Self::recv(uart, Duration::from_secs(300), false)
     }
 
     pub fn write(&self, uart: &dyn Uart) -> Result<()> {
-        TestCommand::SpiWriteStatus.send(uart)?;
-        self.send(uart)?;
+        TestCommand::SpiWriteStatus.send_with_crc(uart)?;
+        self.send_with_crc(uart)?;
         Status::recv(uart, Duration::from_secs(300), false)?;
         Ok(())
     }
@@ -38,8 +38,8 @@ impl StatusRegister {
 
 impl SfdpData {
     pub fn write(&self, uart: &dyn Uart) -> Result<()> {
-        TestCommand::SpiWriteSfdp.send(uart)?;
-        self.send(uart)?;
+        TestCommand::SpiWriteSfdp.send_with_crc(uart)?;
+        self.send_with_crc(uart)?;
         Status::recv(uart, Duration::from_secs(300), false)?;
         Ok(())
     }
@@ -50,7 +50,7 @@ impl UploadInfo {
     where
         F: FnOnce() -> Result<()>,
     {
-        TestCommand::SpiWaitForUpload.send(uart)?;
+        TestCommand::SpiWaitForUpload.send_with_crc(uart)?;
         f()?;
         Self::recv(uart, Duration::from_secs(300), false)
     }
@@ -58,7 +58,7 @@ impl UploadInfo {
 
 impl SpiFlashReadId {
     pub fn execute(uart: &dyn Uart) -> Result<Self> {
-        TestCommand::SpiFlashReadId.send(uart)?;
+        TestCommand::SpiFlashReadId.send_with_crc(uart)?;
         let data = SpiFlashReadId::recv(uart, Duration::from_secs(300), false)?;
         Ok(data)
     }
@@ -66,8 +66,8 @@ impl SpiFlashReadId {
 
 impl SpiFlashReadSfdp {
     pub fn execute(&self, uart: &dyn Uart) -> Result<SfdpData> {
-        TestCommand::SpiFlashReadSfdp.send(uart)?;
-        self.send(uart)?;
+        TestCommand::SpiFlashReadSfdp.send_with_crc(uart)?;
+        self.send_with_crc(uart)?;
         let sfdp = SfdpData::recv(uart, Duration::from_secs(300), false)?;
         Ok(sfdp)
     }
@@ -75,8 +75,8 @@ impl SpiFlashReadSfdp {
 
 impl SpiFlashEraseSector {
     pub fn execute(&self, uart: &dyn Uart) -> Result<()> {
-        TestCommand::SpiFlashEraseSector.send(uart)?;
-        self.send(uart)?;
+        TestCommand::SpiFlashEraseSector.send_with_crc(uart)?;
+        self.send_with_crc(uart)?;
         Status::recv(uart, Duration::from_secs(300), false)?;
         Ok(())
     }
@@ -84,8 +84,8 @@ impl SpiFlashEraseSector {
 
 impl SpiFlashWrite {
     pub fn execute(&self, uart: &dyn Uart) -> Result<()> {
-        TestCommand::SpiFlashWrite.send(uart)?;
-        self.send(uart)?;
+        TestCommand::SpiFlashWrite.send_with_crc(uart)?;
+        self.send_with_crc(uart)?;
         Status::recv(uart, Duration::from_secs(300), false)?;
         Ok(())
     }
@@ -93,8 +93,8 @@ impl SpiFlashWrite {
 
 impl SpiPassthruSwapMap {
     pub fn apply_address_swap(&self, uart: &dyn Uart) -> Result<()> {
-        TestCommand::SpiPassthruSetAddressMap.send(uart)?;
-        self.send(uart)?;
+        TestCommand::SpiPassthruSetAddressMap.send_with_crc(uart)?;
+        self.send_with_crc(uart)?;
         Status::recv(uart, Duration::from_secs(300), false)?;
         Ok(())
     }
@@ -102,14 +102,14 @@ impl SpiPassthruSwapMap {
 
 impl SpiMailboxMap {
     pub fn apply(&self, uart: &dyn Uart) -> Result<()> {
-        TestCommand::SpiMailboxMap.send(uart)?;
-        self.send(uart)?;
+        TestCommand::SpiMailboxMap.send_with_crc(uart)?;
+        self.send_with_crc(uart)?;
         Status::recv(uart, Duration::from_secs(300), false)?;
         Ok(())
     }
 
     pub fn disable(uart: &dyn Uart) -> Result<()> {
-        TestCommand::SpiMailboxUnmap.send(uart)?;
+        TestCommand::SpiMailboxUnmap.send_with_crc(uart)?;
         Status::recv(uart, Duration::from_secs(300), false)?;
         Ok(())
     }
@@ -117,8 +117,8 @@ impl SpiMailboxMap {
 
 impl SpiMailboxWrite {
     pub fn execute(&self, uart: &dyn Uart) -> Result<()> {
-        TestCommand::SpiMailboxWrite.send(uart)?;
-        self.send(uart)?;
+        TestCommand::SpiMailboxWrite.send_with_crc(uart)?;
+        self.send_with_crc(uart)?;
         Status::recv(uart, Duration::from_secs(300), false)?;
         Ok(())
     }

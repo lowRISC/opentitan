@@ -34,7 +34,7 @@ static dif_spi_host_t spih;
 
 static status_t configure_jedec_id(ujson_t *uj, dif_spi_device_handle_t *spid) {
   config_jedec_id_t config;
-  TRY(ujson_deserialize_config_jedec_id_t(uj, &config));
+  TRY(UJSON_WITH_CRC(ujson_deserialize_config_jedec_id_t, uj, &config));
   dif_spi_device_flash_id_t id = {
       .device_id = config.device_id,
       .manufacturer_id = config.manufacturer_id,
@@ -48,7 +48,7 @@ static status_t configure_jedec_id(ujson_t *uj, dif_spi_device_handle_t *spid) {
 static status_t write_status_register(ujson_t *uj,
                                       dif_spi_device_handle_t *spid) {
   status_register_t sr;
-  TRY(ujson_deserialize_status_register_t(uj, &sr));
+  TRY(UJSON_WITH_CRC(ujson_deserialize_status_register_t, uj, &sr));
   TRY(dif_spi_device_set_flash_status_registers(spid, sr.status));
   return RESP_OK_STATUS(uj);
 }
@@ -66,7 +66,7 @@ static status_t read_status_register(ujson_t *uj,
 
 static status_t write_sfdp_data(ujson_t *uj, dif_spi_device_handle_t *spid) {
   sfdp_data_t sfdp;
-  TRY(ujson_deserialize_sfdp_data_t(uj, &sfdp));
+  TRY(UJSON_WITH_CRC(ujson_deserialize_sfdp_data_t, uj, &sfdp));
   TRY(dif_spi_device_write_flash_buffer(spid, kDifSpiDeviceFlashBufferTypeSfdp,
                                         0, sizeof(sfdp.data), sfdp.data));
   return RESP_OK_STATUS(uj);
@@ -101,7 +101,7 @@ status_t spi_flash_read_sfdp(ujson_t *uj, dif_spi_host_t *spih,
                              dif_spi_device_handle_t *spid) {
   TRY(dif_spi_device_set_passthrough_mode(spid, kDifToggleDisabled));
   spi_flash_read_sfdp_t op;
-  TRY(ujson_deserialize_spi_flash_read_sfdp_t(uj, &op));
+  TRY(UJSON_WITH_CRC(ujson_deserialize_spi_flash_read_sfdp_t, uj, &op));
 
   sfdp_data_t sfdp;
   CHECK(op.length <= sizeof(sfdp.data));
@@ -115,7 +115,7 @@ status_t spi_flash_erase_sector(ujson_t *uj, dif_spi_host_t *spih,
                                 dif_spi_device_handle_t *spid) {
   spi_flash_erase_sector_t op;
   TRY(dif_spi_device_set_passthrough_mode(spid, kDifToggleDisabled));
-  TRY(ujson_deserialize_spi_flash_erase_sector_t(uj, &op));
+  TRY(UJSON_WITH_CRC(ujson_deserialize_spi_flash_erase_sector_t, uj, &op));
   TRY(spi_flash_testutils_erase_sector(spih, op.address, op.addr4b));
   TRY(dif_spi_device_set_passthrough_mode(spid, kDifToggleEnabled));
   return RESP_OK_STATUS(uj);
@@ -125,7 +125,7 @@ status_t spi_flash_write(ujson_t *uj, dif_spi_host_t *spih,
                          dif_spi_device_handle_t *spid) {
   spi_flash_write_t op;
   TRY(dif_spi_device_set_passthrough_mode(spid, kDifToggleDisabled));
-  TRY(ujson_deserialize_spi_flash_write_t(uj, &op));
+  TRY(UJSON_WITH_CRC(ujson_deserialize_spi_flash_write_t, uj, &op));
   if (op.length > sizeof(op.data)) {
     LOG_ERROR("Flash write length larger than buffer: %u", op.length);
     return INVALID_ARGUMENT();
@@ -139,7 +139,7 @@ status_t spi_flash_write(ujson_t *uj, dif_spi_host_t *spih,
 
 status_t spi_mailbox_map(ujson_t *uj, dif_spi_device_handle_t *spid) {
   spi_mailbox_map_t map;
-  TRY(ujson_deserialize_spi_mailbox_map_t(uj, &map));
+  TRY(UJSON_WITH_CRC(ujson_deserialize_spi_mailbox_map_t, uj, &map));
   TRY(dif_spi_device_enable_mailbox(spid, map.address));
   return RESP_OK_STATUS(uj);
 }
@@ -151,7 +151,7 @@ status_t spi_mailbox_unmap(ujson_t *uj, dif_spi_device_handle_t *spid) {
 
 status_t spi_mailbox_write(ujson_t *uj, dif_spi_device_handle_t *spid) {
   spi_mailbox_write_t op;
-  TRY(ujson_deserialize_spi_mailbox_write_t(uj, &op));
+  TRY(UJSON_WITH_CRC(ujson_deserialize_spi_mailbox_write_t, uj, &op));
   if (op.length > sizeof(op.data)) {
     LOG_ERROR("Mailbox write length larger than buffer: %u", op.length);
     return INVALID_ARGUMENT();
@@ -165,7 +165,7 @@ status_t spi_mailbox_write(ujson_t *uj, dif_spi_device_handle_t *spid) {
 status_t spi_passthru_set_address_map(ujson_t *uj,
                                       dif_spi_device_handle_t *spid) {
   spi_passthru_swap_map_t swap;
-  TRY(ujson_deserialize_spi_passthru_swap_map_t(uj, &swap));
+  TRY(UJSON_WITH_CRC(ujson_deserialize_spi_passthru_swap_map_t, uj, &swap));
   TRY(dif_spi_device_set_flash_address_swap(spid, swap.mask, swap.value));
   return RESP_OK_STATUS(uj);
 }
@@ -173,7 +173,7 @@ status_t spi_passthru_set_address_map(ujson_t *uj,
 status_t command_processor(ujson_t *uj) {
   while (true) {
     test_command_t command;
-    TRY(ujson_deserialize_test_command_t(uj, &command));
+    TRY(UJSON_WITH_CRC(ujson_deserialize_test_command_t, uj, &command));
     status_t result = ujson_ottf_dispatch(uj, command);
     if (status_ok(result)) {
       // Check for changes to pipeline mode.
