@@ -68,8 +68,8 @@ store_proj_randomize:
 
   /* fetch x-coordinate from dmem
      [w16, w17] = x <= [dmem[dptr_x], dmem[dptr_x+32]] */
-  li x12, 16
-  li x13, 17
+  li        x12, 16
+  li        x13, 17
   bn.lid    x12,  0(x20)
   bn.lid    x13, 32(x20)
 
