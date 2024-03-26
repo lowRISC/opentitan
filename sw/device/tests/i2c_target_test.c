@@ -105,7 +105,7 @@ static status_t i2c_configure_instance(dif_i2c_t *i2c, dif_pinmux_t *pinmux,
 
 static status_t configure_device_address(ujson_t *uj, dif_i2c_t *i2c) {
   i2c_target_address_t address;
-  TRY(ujson_deserialize_i2c_target_address_t(uj, &address));
+  TRY(UJSON_WITH_CRC(ujson_deserialize_i2c_target_address_t, uj, &address));
 
   TRY(dif_i2c_host_set_enabled(i2c, kDifToggleDisabled));
   TRY(dif_i2c_device_set_enabled(i2c, kDifToggleDisabled));
@@ -182,7 +182,7 @@ static status_t recv_write_transaction(dif_i2c_t *i2c, i2c_transaction_t *txn,
 
 static status_t read_transaction(ujson_t *uj, dif_i2c_t *i2c) {
   i2c_transaction_t txn;
-  TRY(ujson_deserialize_i2c_transaction_t(uj, &txn));
+  TRY(UJSON_WITH_CRC(ujson_deserialize_i2c_transaction_t, uj, &txn));
   TRY(i2c_testutils_target_read(i2c, txn.length, txn.data));
   ibex_timeout_t deadline = ibex_timeout_init(kTestTimeout);
   TRY(wait_for_acq_fifo(i2c, 2, &deadline));
@@ -257,7 +257,7 @@ static status_t command_processor(ujson_t *uj) {
   TRY(wakeup_check(uj, &i2c));
   while (true) {
     test_command_t command;
-    TRY(ujson_deserialize_test_command_t(uj, &command));
+    TRY(UJSON_WITH_CRC(ujson_deserialize_test_command_t, uj, &command));
     switch (command) {
       case kTestCommandEnterNormalSleep:
         RESP_ERR(uj, enter_sleep(uj, &i2c, true));

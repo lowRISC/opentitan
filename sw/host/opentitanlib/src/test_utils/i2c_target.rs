@@ -15,8 +15,8 @@ include!(env!("i2c_target"));
 
 impl I2cTargetAddress {
     pub fn write(&self, uart: &dyn Uart) -> Result<()> {
-        TestCommand::I2cTargetAddress.send(uart)?;
-        self.send(uart)?;
+        TestCommand::I2cTargetAddress.send_with_crc(uart)?;
+        self.send_with_crc(uart)?;
         Status::recv(uart, Duration::from_secs(300), false)?;
         Ok(())
     }
@@ -39,8 +39,8 @@ impl I2cTransaction {
     where
         F: FnOnce() -> Result<()>,
     {
-        TestCommand::I2cReadTransaction.send(uart)?;
-        self.send(uart)?;
+        TestCommand::I2cReadTransaction.send_with_crc(uart)?;
+        self.send_with_crc(uart)?;
         f()?;
         I2cRxResult::recv(uart, Duration::from_secs(300), false)
     }
@@ -49,7 +49,7 @@ impl I2cTransaction {
     where
         F: FnOnce() -> Result<()>,
     {
-        command.send(uart)?;
+        command.send_with_crc(uart)?;
         f()?;
         Self::recv(uart, Duration::from_secs(300), false)
     }
