@@ -55,8 +55,7 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     token_pkt pkt;
     $cast(pkt, req_item.clone());
     pkt.print();
-    // Modified each field of the packet to start with the Least Significant Bit (LSB)
-    pkt.m_pid_type = pid_type_e'({<<4{pkt.m_pid_type}});
+    // Modify each field of the packet to start with the Least Significant Bit (LSB)
     pkt.m_pid_type = pid_type_e'({<<{pkt.m_pid_type}});
     pkt.address = {<<{pkt.address}};
     pkt.endpoint = {<<{pkt.endpoint}};
@@ -88,8 +87,7 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     data_pkt pkt;
     $cast(pkt, req_item.clone());
     pkt.print();
-    // Modified each field of the packet to start with the Least Significant Bit (LSB)
-    pkt.m_pid_type = pid_type_e'({<<4{pkt.m_pid_type}});
+    // Modify each field of the packet to start with the Least Significant Bit (LSB)
     pkt.m_pid_type = pid_type_e'({<<{pkt.m_pid_type}});
     pkt.data = {<<8{pkt.data}};
     pkt.data = {<<{pkt.data}};
@@ -123,7 +121,7 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     // Protect sender from modifications to the request item.
     handshake_pkt pkt;
     $cast(pkt, req_item.clone());
-    pkt.m_pid_type = pid_type_e'({<<4{pkt.m_pid_type}});
+    // Modify each field of the packet to start with the Least Significant Bit (LSB)
     pkt.m_pid_type = pid_type_e'({<<{pkt.m_pid_type}});
     void'(pkt.pack(driver_handshake_pkt));
     `uvm_info(`gfn, $sformatf("Driver Handshake_Packet = %p", driver_handshake_pkt), UVM_DEBUG)
@@ -147,8 +145,7 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     sof_pkt pkt;
     $cast(pkt, req_item.clone());
     pkt.print();
-    // Modified each field of the packet to start with the Least Significant Bit (LSB)
-    pkt.m_pid_type = pid_type_e'({<<4{pkt.m_pid_type}});
+    // Modify each field of the packet to start with the Least Significant Bit (LSB)
     pkt.m_pid_type = pid_type_e'({<<{pkt.m_pid_type}});
     pkt.framecnt = {<<{pkt.framecnt}};
     pkt.crc5 = {<<{pkt.crc5}};
@@ -351,8 +348,6 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     for (int i = 0 ; i < 8; i++) begin
       received_pid[i] = decoded_received_pkt[i + 8];
     end
-    // TODO: this contortion seems confusing and unnecessary
-    received_pid = {<<4{received_pid}};
 
     // Capture the Packet IDentifier and Packet Type
     rsp_item.m_pid_type = pid_type_e'(received_pid);
