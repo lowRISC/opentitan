@@ -262,7 +262,7 @@
             - Verify that the device responds with the PID STALL Handshake.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_in_stall"]
     }
     {
       name: out_iso
