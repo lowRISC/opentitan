@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@rules_rust//rust:defs.bzl", "rust_doc", "rust_library", "rust_test", "rust_test_suite")
+load("@rules_rust//rust:defs.bzl", "rust_doc", "rust_library", "rust_binary", "rust_test", "rust_test_suite")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -62,6 +62,23 @@ rust_library(
         # is merged.
         "@crate_index//:openssl-sys",
         "@crate_index//:foreign-types",
+    ],
+)
+
+rust_binary(
+    name = "tbs_sign",
+    testonly = True,
+    srcs = ["src/tbs_sign.rs"],
+    deps = [
+        "//sw/host/provisioning/ft_lib:ft_lib",
+        "//sw/host/opentitanlib",
+        "//sw/host/ot_certs",
+        "@crate_index//:anyhow",
+        "@crate_index//:clap",
+        "@crate_index//:elliptic-curve",
+        "@crate_index//:num-bigint-dig",
+        "@crate_index//:p256",
+        "@crate_index//:sha2",
     ],
 )
 
