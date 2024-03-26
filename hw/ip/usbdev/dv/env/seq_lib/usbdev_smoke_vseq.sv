@@ -8,6 +8,11 @@ class usbdev_smoke_vseq extends usbdev_base_vseq;
 
   `uvm_object_new
 
+  task pre_start();
+    // Enables driver
+    cfg.m_usb20_agent_cfg.bif.enable_driver(1'b1);
+  endtask
+
   task body();
     usb20_item response;
     data_pkt in_data;

@@ -19,16 +19,24 @@ interface usb20_block_if (
   logic usb_tx_se0_o;
   logic usb_tx_d_o;
   // Non-data pins
-  logic usb_dp_pullup_o ;
-  logic usb_dn_pullup_o ;
+  logic usb_dp_pullup_o;
+  logic usb_dn_pullup_o;
   logic usb_rx_enable_o;
   logic usb_tx_use_d_se0_o;
   logic drive_n;             // to drive usb_n from driver
   logic drive_p;             // to drive usb_n from driver
   logic usb_ref_val_o;
   logic usb_ref_pulse_o;
-  logic usb_clk;             // signal used to divide clock or send J/K symbols for 4 clock cycles
+  logic usb_clk;    // signal used to divide clock or send J/K symbols for 4 clock cycles
+  logic vbus_drive; // to drive usb_vbus from driver
+  bit connected = 0;
 
+  // Enable/disable the output drivers
+  function automatic void set_driver_enable(bit enabled);
+    connected = enabled;
+  endfunction
+
+  assign usb_vbus = connected ? vbus_drive : 1'bZ;
   assign usb_p = usb_dp_en_o ? usb_dp_o : drive_p;
   assign usb_n = usb_dn_en_o ? usb_dn_o : drive_n;
 
