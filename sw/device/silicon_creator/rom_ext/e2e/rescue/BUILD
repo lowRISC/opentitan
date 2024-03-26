@@ -93,7 +93,7 @@ opentitan_test(
             --exec="fpga load-bitstream {bitstream}"
             --exec="bootstrap --clear-uart=true {firmware}"
             # Set next slot via the rescue protocol
-            --exec="rescue boot-svc set-next-bl0-slot --next=SlotB"
+            --exec="rescue boot-svc set-next-bl0-slot --next=SlotB --get-response=false"
             # Check for firmware execution in slot B
             --exec="console --non-interactive --exit-success='bl0_slot = __BB\r\n' --exit-failure='{exit_failure}'"
             # Reset and observe return to slot A.
