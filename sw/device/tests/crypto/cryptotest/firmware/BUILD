@@ -229,6 +229,72 @@ cc_library(
 )
 
 cc_library(
+    name = "ecc256_keygen_sca",
+    srcs = ["ecc256_keygen_sca.c"],
+    hdrs = ["ecc256_keygen_sca.h"],
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/crypto/drivers:otbn",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+        "//sw/device/sca/lib:prng",
+        "//sw/device/sca/lib:sca",
+        "//sw/device/tests/crypto/cryptotest/json:otbn_sca_commands",
+        "//sw/otbn/crypto:p256_key_from_seed_sca",
+    ],
+)
+
+cc_library(
+    name = "ecc256_modinv_sca",
+    srcs = ["ecc256_modinv_sca.c"],
+    hdrs = ["ecc256_modinv_sca.h"],
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/crypto/drivers:otbn",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+        "//sw/device/sca/lib:prng",
+        "//sw/device/sca/lib:sca",
+        "//sw/device/tests/crypto/cryptotest/json:otbn_sca_commands",
+        "//sw/otbn/crypto:p256_mod_inv_sca",
+    ],
+)
+
+cc_library(
+    name = "otbn_sca",
+    srcs = ["otbn_sca.c"],
+    hdrs = ["otbn_sca.h"],
+    deps = [
+        ":ecc256_keygen_sca",
+        ":ecc256_modinv_sca",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/crypto/impl:status",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+        "//sw/device/sca/lib:prng",
+        "//sw/device/sca/lib:sca",
+        "//sw/device/tests/crypto/cryptotest/firmware:sca_lib",
+        "//sw/device/tests/crypto/cryptotest/json:otbn_sca_commands",
+    ],
+)
+
+cc_library(
     name = "otbn_fi",
     srcs = ["otbn_fi.c"],
     hdrs = [
@@ -331,6 +397,7 @@ FIRMWARE_DEPS = [
     ":ibex_sca",
     ":kmac_sca",
     ":kmac",
+    ":otbn_sca",
     ":otbn_fi",
     ":prng_sca",
     ":sha3_sca",
