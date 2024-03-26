@@ -8,6 +8,7 @@
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/ujson/ujson.h"
 
+status_t handle_aes_gcm(ujson_t *uj);
 status_t handle_aes_block(ujson_t *uj);
 status_t handle_aes(ujson_t *uj);
 
