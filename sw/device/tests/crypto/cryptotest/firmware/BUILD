@@ -201,6 +201,7 @@ cc_library(
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/lib/ujson",
+        "//sw/device/sca/lib:prng",
         "//sw/device/sca/lib:sca",
         "//sw/device/tests/crypto/cryptotest/firmware:sca_lib",
         "//sw/device/tests/crypto/cryptotest/json:ibex_sca_commands",

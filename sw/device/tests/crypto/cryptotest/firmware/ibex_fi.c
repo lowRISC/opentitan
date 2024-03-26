@@ -89,9 +89,10 @@ static dif_flash_ctrl_device_info_t flash_info;
 // used by the program.
 OT_SECTION(".data")
 static volatile uint32_t sram_main_buffer[32];
+static volatile uint32_t sram_main_buffer_large[4000];
 
 /**
- * ibex.char.flash_read command handler.
+ * ibex.fi.char.flash_read command handler.
  *
  * This FI penetration tests executes the following instructions:
  * - Write reference values into flash.
@@ -181,7 +182,7 @@ status_t handle_ibex_fi_char_flash_read(ujson_t *uj) {
 }
 
 /**
- * ibex.char.flash_write command handler.
+ * ibex.fi.char.flash_write command handler.
  *
  * This FI penetration tests executes the following instructions:
  * - Set the trigger.
@@ -264,7 +265,74 @@ status_t handle_ibex_fi_char_flash_write(ujson_t *uj) {
 }
 
 /**
- * ibex.char.sram_read command handler.
+ * ibex.fi.char.sram_static command handler.
+ *
+ * This FI penetration tests executes the following instructions:
+ * - Write ref_values[0] to 16kb of SRAM.
+ * - Set the trigger.
+ * - Add 1000 NOPs to give the setup the chance to inject faults.
+ * - Unset the trigger.
+ * - Read back content of 16kb of SRAM and compare against reference value.
+ * - If faulty words are detected, transmit addresses back to host.
+ *
+ * Faults are injected during the trigger_high & trigger_low.
+ * It needs to be ensured that the compiler does not optimize this code.
+ *
+ * @param uj The received uJSON data.
+ */
+status_t handle_ibex_fi_char_sram_static(ujson_t *uj) {
+  // Configure Ibex to allow reading ERR_STATUS register.
+  dif_rv_core_ibex_t rv_core_ibex;
+  UJSON_CHECK_DIF_OK(dif_rv_core_ibex_init(
+      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
+      &rv_core_ibex));
+
+  // Get address of buffer located in SRAM.
+  uintptr_t sram_main_buffer_addr = (uintptr_t)&sram_main_buffer_large;
+  mmio_region_t sram_region_main_addr =
+      mmio_region_from_addr(sram_main_buffer_addr);
+
+  // Write reference value into SRAM.
+  for (int i = 0; i < 4000; i++) {
+    mmio_region_write32(sram_region_main_addr, i * (ptrdiff_t)sizeof(uint32_t),
+                        ref_values[0]);
+  }
+
+  // FI code target.
+  sca_set_trigger_high();
+  asm volatile(NOP1000);
+  sca_set_trigger_low();
+
+  // Compare against reference values.
+  ibex_fi_faulty_addresses_t uj_output;
+  memset(uj_output.addresses, 0, sizeof(uj_output.addresses));
+  int faulty_address_pos = 0;
+  for (int sram_pos = 0; sram_pos < 4000; sram_pos++) {
+    uint32_t res_value = mmio_region_read32(
+        sram_region_main_addr, sram_pos * (ptrdiff_t)sizeof(uint32_t));
+    if (res_value != ref_values[0]) {
+      uj_output.addresses[faulty_address_pos] = (uint32_t)sram_pos;
+      faulty_address_pos++;
+      // Currently, we register only up to 8 faulty SRAM positions. If there
+      // are more, we overwrite the addresses array.
+      if (faulty_address_pos > 7) {
+        faulty_address_pos = 0;
+      }
+    }
+  }
+
+  // Read ERR_STATUS register.
+  dif_rv_core_ibex_error_status_t codes;
+  UJSON_CHECK_DIF_OK(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
+
+  // Send res & ERR_STATUS to host.
+  uj_output.err_status = codes;
+  RESP_OK(ujson_serialize_ibex_fi_faulty_addresses_t, uj, &uj_output);
+  return OK_STATUS(0);
+}
+
+/**
+ * ibex.fi.char.sram_read command handler.
  *
  * This FI penetration tests executes the following instructions:
  * - Write reference values into SRAM.
@@ -328,7 +396,7 @@ status_t handle_ibex_fi_char_sram_read(ujson_t *uj) {
 }
 
 /**
- * ibex.char.sram_write command handler.
+ * ibex.fi.char.sram_write command handler.
  *
  * This FI penetration tests executes the following instructions:
  * - Set the trigger.
@@ -387,7 +455,7 @@ status_t handle_ibex_fi_char_sram_write(ujson_t *uj) {
 }
 
 /**
- * ibex.char.unconditional_branch command handler.
+ * ibex.fi.char.unconditional_branch command handler.
  *
  * This FI penetration tests executes the following instructions:
  * - Add 10 NOPs to delay the trigger
@@ -526,7 +594,7 @@ status_t handle_ibex_fi_char_unconditional_branch(ujson_t *uj) {
 }
 
 /**
- * ibex.char.conditional_branch command handler.
+ * ibex.fi.char.conditional_branch command handler.
  *
  * This FI penetration tests executes the following instructions:
  * - Add 10 NOPs to delay the trigger
@@ -574,7 +642,7 @@ status_t handle_ibex_fi_char_conditional_branch(ujson_t *uj) {
 }
 
 /**
- * ibex.char.mem_op_loop command handler.
+ * ibex.fi.char.mem_op_loop command handler.
  *
  * This FI penetration tests executes the following instructions:
  * - Add 100 NOPs to delay the trigger
@@ -623,7 +691,7 @@ status_t handle_ibex_fi_char_mem_op_loop(ujson_t *uj) {
 }
 
 /**
- * ibex.char.unrolled_mem_op_loop command handler.
+ * ibex.fi.char.unrolled_mem_op_loop command handler.
  *
  * This FI penetration tests executes the following instructions:
  * - Add 100 NOPs to delay the trigger
@@ -673,7 +741,7 @@ status_t handle_ibex_fi_char_unrolled_mem_op_loop(ujson_t *uj) {
 }
 
 /**
- * ibex.char.reg_op_loop command handler.
+ * ibex.fi.char.reg_op_loop command handler.
  *
  * This FI penetration tests executes the following instructions:
  * - Initialize register x5=0 & x6=10000
@@ -722,7 +790,7 @@ status_t handle_ibex_fi_char_reg_op_loop(ujson_t *uj) {
 }
 
 /**
- * ibex.char.unrolled_reg_op_loop command handler.
+ * ibex.fi.char.unrolled_reg_op_loop command handler.
  *
  * This FI penetration tests executes the following instructions:
  * - Initialize register x5=0
@@ -773,7 +841,7 @@ status_t handle_ibex_fi_char_unrolled_reg_op_loop(ujson_t *uj) {
 }
 
 /**
- * ibex.char.register_file command handler.
+ * ibex.fi.char.register_file command handler.
  *
  * This FI penetration test executes the following instructions:
  * - Initialize temp. registers with reference values
@@ -839,7 +907,7 @@ status_t handle_ibex_fi_char_register_file(ujson_t *uj) {
 }
 
 /**
- * ibex.char.register_file_read command handler.
+ * ibex.fi.char.register_file_read command handler.
  *
  * This FI penetration test executes the following instructions:
  * - Initialize temp. registers with reference values
@@ -958,6 +1026,8 @@ status_t handle_ibex_fi(ujson_t *uj) {
       return handle_ibex_fi_char_sram_write(uj);
     case kIbexFiSubcommandCharSramRead:
       return handle_ibex_fi_char_sram_read(uj);
+    case kIbexFiSubcommandCharSramStatic:
+      return handle_ibex_fi_char_sram_static(uj);
     case kIbexFiSubcommandCharFlashWrite:
       return handle_ibex_fi_char_flash_write(uj);
     case kIbexFiSubcommandCharFlashRead:

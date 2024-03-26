@@ -10,6 +10,7 @@
 
 status_t handle_ibex_fi_char_flash_read(ujson_t *uj);
 status_t handle_ibex_fi_char_flash_write(ujson_t *uj);
+status_t handle_ibex_fi_char_sram_static(ujson_t *uj);
 status_t handle_ibex_fi_char_sram_read(ujson_t *uj);
 status_t handle_ibex_fi_char_sram_write(ujson_t *uj);
 status_t handle_ibex_fi_char_unconditional_branch(ujson_t *uj);
