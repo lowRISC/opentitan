@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://raw.githubusercontent.com/lowRISC/opentitan/master/sw/host/cryptotest/testvectors/data/schemas/ecdsa_sig_ver_schema.json",
+  "$id": "https://raw.githubusercontent.com/lowRISC/opentitan/master/sw/host/cryptotest/testvectors/data/schemas/ecdsa_schema.json",
   "title": "Cryptotest ECDSA Signature Verification Test Vector",
   "description": "A list of testvectors for ECDSA Signature Verification testing",
   "$defs": {
@@ -35,7 +35,7 @@
       "operation": {
         "description": "ECDSA operation",
         "type": "string",
-        "enum": ["verify"]
+        "enum": ["sign", "verify"]
       },
       "curve": {
         "description": "Curve type",
@@ -65,6 +65,10 @@
       },
       "s": {
         "description": "s parameter",
+        "type": "string"
+      },
+      "d": {
+        "description": "d parameter",
         "type": "string"
       },
       "result": {

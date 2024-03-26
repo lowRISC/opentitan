@@ -12,6 +12,7 @@ extern "C" {
 #define ECDSA_CMD_MAX_MESSAGE_BYTES 64
 #define ECDSA_CMD_MAX_SIGNATURE_SCALAR_BYTES 64
 #define ECDSA_CMD_MAX_COORDINATE_BYTES 64
+#define ECDSA_CMD_MAX_PRIVATE_KEY_SHARE_BYTES 64
 
 // clang-format off
 
@@ -25,6 +26,7 @@ extern "C" {
 // The device will then respond with:
 // - result (ECDSA_VERIFY_OUTPUT)
 #define ECDSA_OPERATION(_, value) \
+    value(_, Sign) \
     value(_, Verify)
 UJSON_SERDE_ENUM(CryptotestEcdsaOperation, cryptotest_ecdsa_operation_t, ECDSA_OPERATION);
 
@@ -58,6 +60,14 @@ UJSON_SERDE_STRUCT(CryptotestEcdsaSignature, cryptotest_ecdsa_signature_t, ECDSA
     field(coordinate, uint8_t, ECDSA_CMD_MAX_COORDINATE_BYTES) \
     field(coordinate_len, size_t)
 UJSON_SERDE_STRUCT(CryptotestEcdsaCoordinate, cryptotest_ecdsa_coordinate_t, ECDSA_COORDINATE);
+
+#define ECDSA_PRIVATE_KEY(field, string) \
+    field(d0, uint8_t, ECDSA_CMD_MAX_PRIVATE_KEY_SHARE_BYTES) \
+    field(d0_len, size_t) \
+    field(d1, uint8_t, ECDSA_CMD_MAX_PRIVATE_KEY_SHARE_BYTES) \
+    field(d1_len, size_t) \
+    field(unmasked_len, size_t)
+UJSON_SERDE_STRUCT(CryptotestEcdsaPrivateKey, cryptotest_ecdsa_private_key_t, ECDSA_PRIVATE_KEY);
 
 #define ECDSA_VERIFY_OUTPUT(_, value) \
     value(_, Success) \

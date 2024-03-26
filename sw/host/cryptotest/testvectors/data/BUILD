@@ -48,7 +48,7 @@ genrule(
 run_binary(
     name = "nist_cavp_ecdsa_fips_186_4_sig_ver_json",
     srcs = [
-        "//sw/host/cryptotest/testvectors/data/schemas:ecdsa_sig_ver_schema",
+        "//sw/host/cryptotest/testvectors/data/schemas:ecdsa_schema",
         "@nist_cavp_ecdsa_fips_186_4//:SigVer.rsp",
     ],
     outs = [":nist_cavp_ecdsa_fips_186_4_sig_ver.json"],
@@ -58,7 +58,31 @@ run_binary(
         "--dst",
         "$(location :nist_cavp_ecdsa_fips_186_4_sig_ver.json)",
         "--schema",
-        "$(location //sw/host/cryptotest/testvectors/data/schemas:ecdsa_sig_ver_schema)",
+        "$(location //sw/host/cryptotest/testvectors/data/schemas:ecdsa_schema)",
+        "--operation",
+        "verify",
+    ],
+    tool = "//sw/host/cryptotest/testvectors/parsers:nist_cavp_ecdsa_parser",
+)
+
+run_binary(
+    name = "nist_cavp_ecdsa_fips_186_4_sign_json",
+    srcs = [
+        "//sw/host/cryptotest/testvectors/data/schemas:ecdsa_schema",
+        # We use the .txt test vector file here, because the .rsp one does not
+        # include the private keys.
+        "@nist_cavp_ecdsa_fips_186_4//:SigGen.txt",
+    ],
+    outs = ["nist_cavp_ecdsa_fips_186_4_sign.json"],
+    args = [
+        "--src",
+        "$(location @nist_cavp_ecdsa_fips_186_4//:SigGen.txt)",
+        "--dst",
+        "$(location :nist_cavp_ecdsa_fips_186_4_sign.json)",
+        "--schema",
+        "$(location //sw/host/cryptotest/testvectors/data/schemas:ecdsa_schema)",
+        "--operation",
+        "sign",
     ],
     tool = "//sw/host/cryptotest/testvectors/parsers:nist_cavp_ecdsa_parser",
 )
@@ -68,7 +92,7 @@ run_binary(
         name = cryptotest_name,
         srcs = [
             "@wycheproof//testvectors_v1:{}".format(src_name),
-            "//sw/host/cryptotest/testvectors/data/schemas:ecdsa_sig_ver_schema",
+            "//sw/host/cryptotest/testvectors/data/schemas:ecdsa_schema",
         ],
         outs = [":{}.json".format(cryptotest_name)],
         args = [
@@ -77,7 +101,7 @@ run_binary(
             "--dst",
             "$(location :{}.json)".format(cryptotest_name),
             "--schema",
-            "$(location //sw/host/cryptotest/testvectors/data/schemas:ecdsa_sig_ver_schema)",
+            "$(location //sw/host/cryptotest/testvectors/data/schemas:ecdsa_schema)",
         ],
         tool = "//sw/host/cryptotest/testvectors/parsers:wycheproof_ecdsa_parser",
     )
