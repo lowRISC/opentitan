@@ -75,7 +75,6 @@ class usb20_monitor extends dv_base_monitor #(
     for (int i = 0; i < 8; i++) begin
     packet_type[i] = bit_destuffed[i + 8];
     end
-    packet_type = {<<4{packet_type}};
     `uvm_info(`gfn, $sformatf(".......Packet PID = %b ", packet_type), UVM_DEBUG)
     case (packet_type)
       PidTypeOutToken: token_packet();

@@ -14,13 +14,21 @@ package usb20_agent_pkg;
 
   // usb20_item enums
   typedef enum bit [2:0] {PktTypeSoF, PktTypeToken, PktTypeData, PktTypeHandshake} pkt_type_e;
-  // TODO: these are presently nibble-swapped relative to the specification.
-  typedef enum bit [7:0] {PidTypeOutToken = 8'b0001_1110, PidTypeInToken = 8'b1001_0110,
-      PidTypeSofToken = 8'b0101_1010, PidTypeSetupToken = 8'b1101_0010,
-      PidTypeData0 = 8'b0011_1100, PidTypeData1 = 8'b1011_0100, PidTypeData2 = 8'b0111_1000,
-      PidTypeMData = 8'b1111_0000, PidTypeAck = 8'b0010_1101, PidTypeNak = 8'b1010_0101,
-      PidTypeStall = 8'b1110_0001, PidTypeNyet = 8'b0110_1001, PidTypePre = 8'b1100_0011,
-      PidTypeSplit = 8'b1000_0111, PidTypePing = 8'b0100_1011} pid_type_e;
+  // Packet IDentifiers; the 4 LSBs identify the Packet type, and are reflected in inverted
+  //   form as the 4 MSBs to provide some internal error checking.
+  typedef enum bit [7:0] {
+      // Token PIDs
+      PidTypeOutToken = 8'b1110_0001, PidTypeInToken    = 8'b0110_1001,
+      PidTypeSofToken = 8'b1010_0101, PidTypeSetupToken = 8'b0010_1101,
+      // Data PIDs
+      PidTypeData0 = 8'b1100_0011, PidTypeData1 = 8'b0100_1011,
+      PidTypeData2 = 8'b1000_0111, PidTypeMData = 8'b0000_1111,
+      // Handshake PIDs
+      PidTypeAck   = 8'b1101_0010, PidTypeNak  = 8'b0101_1010,
+      PidTypeStall = 8'b0001_1110, PidTypeNyet = 8'b1001_0110,
+      // Special PIDs
+      PidTypePre   = 8'b0011_1100, PidTypeSplit = 8'b0111_1000,
+      PidTypePing  = 8'b1011_0100} pid_type_e;
 
   typedef enum byte {bmRequestType0 = 8'b0_00_00000, bmRequestType1 = 8'b0_00_00001,
       bmRequestType2 = 8'b0_00_00010, bmRequestType3 = 8'b1_00_00000,

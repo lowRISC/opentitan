@@ -61,10 +61,11 @@ package usbdev_env_pkg;
     STALL = 2
   } usbdev_handshake_pkt_e;
 
+  // The two LSBs of the PID identify the PID Type
   typedef enum bit [1:0] {
-    TOKEN_PKT = 2'b10,
-    DATA_PKT = 2'b00,
-    HANDSHAKE_PKT = 2'b01
+    TOKEN_PKT = 2'b01,
+    DATA_PKT = 2'b11,
+    HANDSHAKE_PKT = 2'b10
   } usbdev_pkt_type_e;
 
   // functions

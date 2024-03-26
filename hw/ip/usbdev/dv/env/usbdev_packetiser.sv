@@ -28,18 +28,22 @@ class usbdev_packetiser extends uvm_object;
   // Last 2 bits of pid classifies the pkt type
   // -------------------------------
   task pack_pkt(usb20_item m_usb20_item);
-    if (m_usb20_item.m_pid_type[1:0] == TOKEN_PKT) begin
-      $cast(m_tpkt, m_usb20_item.clone());
-      void'(m_tpkt.pack(token_pkt_arr));
-    end
-    else if (m_usb20_item.m_pid_type[1:0] == DATA_PKT) begin
-      $cast(m_dpkt, m_usb20_item.clone());
-      void'(m_dpkt.pack(data_pkt_arr));
-    end
-    else if (m_usb20_item.m_pid_type[1:0] == HANDSHAKE_PKT) begin
-      $cast(m_hpkt, m_usb20_item.clone());
-      void'(m_hpkt.pack(handshake_pkt_arr));
-    end
-    else;
+    case (m_usb20_item.m_pid_type[1:0])
+      TOKEN_PKT: begin
+          $cast(m_tpkt, m_usb20_item.clone());
+          void'(m_tpkt.pack(token_pkt_arr));
+        end
+      DATA_PKT: begin
+        $cast(m_dpkt, m_usb20_item.clone());
+        void'(m_dpkt.pack(data_pkt_arr));
+      end
+      HANDSHAKE_PKT: begin
+        $cast(m_hpkt, m_usb20_item.clone());
+        void'(m_hpkt.pack(handshake_pkt_arr));
+      end
+      default: begin
+        `uvm_fatal(`gfn, $sformatf("Special Token %x encountered", m_usb20_item.m_pid_type))
+      end
+    endcase
   endtask
 endclass
