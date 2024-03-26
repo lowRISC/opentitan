@@ -204,7 +204,7 @@ static void p256_run_keygen(uint32_t mode, const uint32_t *share0,
 
   // Execute program.
   sca_set_trigger_high();
-  sca_call_and_sleep(otbn_manual_trigger, kIbexOtbnSleepCycles);
+  sca_call_and_sleep(otbn_manual_trigger, kIbexOtbnSleepCycles, false);
   SS_CHECK_STATUS_OK(otbn_busy_wait_for_done());
   sca_set_trigger_low();
 }

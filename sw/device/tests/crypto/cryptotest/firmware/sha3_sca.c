@@ -418,15 +418,11 @@ sha3_sca_error_t sha3_serial_absorb(const uint8_t *msg, size_t msg_len) {
     // configured to start operation 320 cycles after receiving the START and
     // PROC commands. This allows Ibex to go to sleep in order to not disturb
     // the capture.
-    sca_set_trigger_high();
-    sca_call_and_sleep(kmac_start_process_cmd, kIbexSha3SleepCycles);
-    sca_set_trigger_low();
+    sca_call_and_sleep(kmac_start_process_cmd, kIbexSha3SleepCycles, true);
   } else {
     // On the chip, issue a PROCESS command to start operation and put Ibex
     // into sleep.
-    sca_set_trigger_high();
-    sca_call_and_sleep(kmac_process_cmd, kIbexLoadHashMessageSleepCycles);
-    sca_set_trigger_low();
+    sca_call_and_sleep(kmac_process_cmd, kIbexLoadHashMessageSleepCycles, true);
   }
 
   return sha3ScaOk;

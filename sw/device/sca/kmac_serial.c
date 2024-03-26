@@ -480,7 +480,7 @@ static void sha3_serial_absorb(const uint8_t *msg, size_t msg_len) {
   // configured to start operation 40 cycles after receiving the START and PROC
   // commands. This allows Ibex to go to sleep in order to not disturb the
   // capture.
-  sca_call_and_sleep(kmac_msg_proc, kIbexSha3SleepCycles);
+  sca_call_and_sleep(kmac_msg_proc, kIbexSha3SleepCycles, false);
 }
 
 /**

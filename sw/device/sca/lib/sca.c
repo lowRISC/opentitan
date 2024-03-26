@@ -309,7 +309,8 @@ void sca_set_trigger_low(void) {
   OT_DISCARD(dif_gpio_write(&gpio, trigger_bit_index, false));
 }
 
-void sca_call_and_sleep(sca_callee callee, uint32_t sleep_cycles) {
+void sca_call_and_sleep(sca_callee callee, uint32_t sleep_cycles,
+                        bool sw_trigger) {
   // Disable the IO_DIV4_PERI clock to reduce noise during the actual capture.
   // This also disables the UART(s) and GPIO modules required for
   // communication with the scope. Therefore, it has to be re-enabled after
@@ -328,7 +329,15 @@ void sca_call_and_sleep(sca_callee callee, uint32_t sleep_cycles) {
   OT_DISCARD(dif_rv_timer_counter_set_enabled(&timer, kRvTimerHart,
                                               kDifToggleEnabled));
 
+  if (sw_trigger) {
+    sca_set_trigger_high();
+  }
+
   callee();
+
+  if (sw_trigger) {
+    sca_set_trigger_low();
+  }
 
   wait_for_interrupt();
 
