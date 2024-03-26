@@ -582,7 +582,7 @@
               STALL for error and NAK for busy followed by ACK from Host.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_in_status_stage"]
     }
     {
       name: endpoint_access
