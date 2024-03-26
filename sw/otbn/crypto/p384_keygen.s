@@ -151,10 +151,8 @@ p384_random_scalar:
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
- * @param[in]  dmem[0]: dptr_d0, pointer to location in dmem containing
- *                      1st private key share d0
- * @param[in]  dmem[4]: dptr_d1, pointer to location in dmem containing
- *                      2nd private key share d1
+ * @param[in]  x20: dptr_d0, pointer to bufffer of 1st private key share d0
+ * @param[in]  x21: dptr_d1, pointer to bufffer of 2nd private key share d1
  *
  * clobbered registers: x2, x3, x20, w4 to w11, w14, w16 to w28
  * clobbered flag groups: FG0
@@ -171,18 +169,14 @@ p384_generate_random_key:
 
   /* Write first share to DMEM.
      dmem[d0] <= [w7,w6] = d0 */
-  la        x20, dptr_d0
-  lw        x20, 0(x20)
   li        x2, 6
   bn.sid    x2++, 0(x20)
   bn.sid    x2++, 32(x20)
 
   /* Write second share to DMEM.
      dmem[d1] <= [w9,w8] = d1 */
-  la        x20, dptr_d1
-  lw        x20, 0(x20)
-  bn.sid    x2++, 0(x20)
-  bn.sid    x2++, 32(x20)
+  bn.sid    x2++, 0(x21)
+  bn.sid    x2++, 32(x21)
 
   ret
 
@@ -191,10 +185,8 @@ p384_generate_random_key:
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
- * @param[in]  dmem[0]: dptr_k0, pointer to location in dmem containing
- *                      1st scalar share k0
- * @param[in]  dmem[4]: dptr_k1, pointer to location in dmem containing
- *                      2nd scalar share k1
+ * @param[in]  x20: dptr_k0, pointer to bufffer of 1st scalar share k0
+ * @param[in]  x21: dptr_k1, pointer to bufffer of 2nd scalar share k1
  *
  * clobbered registers: x2, x3, x20, w4 to w11, w14, w16 to w28
  * clobbered flag groups: FG0
@@ -211,46 +203,13 @@ p384_generate_k:
 
   /* Write first share to DMEM.
      dmem[k0] <= [w7,w6] = k0 */
-  la        x20, dptr_k0
-  lw        x20, 0(x20)
   li        x2, 6
   bn.sid    x2++, 0(x20)
   bn.sid    x2++, 32(x20)
 
   /* Write second share to DMEM.
      dmem[k1] <= [w9,w8] = k1 */
-  la        x20, dptr_k1
-  lw        x20, 0(x20)
-  bn.sid    x2++, 0(x20)
-  bn.sid    x2++, 32(x20)
+  bn.sid    x2++, 0(x21)
+  bn.sid    x2++, 32(x21)
 
   ret
-
-/* pointers */
-.section .data
-
-.balign 32
-
-/* pointer to k0 (dptr_k0) */
-.globl dptr_k0
-.weak dptr_k0
-dptr_k0:
-  .zero 4
-
-/* pointer to k1 (dptr_k1) */
-.globl dptr_k1
-.weak dptr_k1
-dptr_k1:
-  .zero 4
-
-/* pointer to d0 (dptr_d0) */
-.globl dptr_d0
-.weak dptr_d0
-dptr_d0:
-  .zero 4
-
-/* pointer to d1 (dptr_d1) */
-.globl dptr_d1
-.weak dptr_d1
-dptr_d1:
-  .zero 4
