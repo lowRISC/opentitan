@@ -23,6 +23,7 @@ extern "C" {
     value(_, CharUncondBranch) \
     value(_, CharSramWrite) \
     value(_, CharSramRead) \
+    value(_, CharSramStatic) \
     value(_, CharFlashWrite) \
     value(_, CharFlashRead) \
     value(_, CharCsrRead) \
@@ -56,6 +57,12 @@ UJSON_SERDE_STRUCT(IbexFiLoopCounterOutput, ibex_fi_loop_counter_t, IBEXFI_LOOP_
     field(err_status, uint32_t) \
     field(alerts, uint32_t)
 UJSON_SERDE_STRUCT(IbexFiLoopCounterMirroredOutput, ibex_fi_loop_counter_mirrored_t, IBEXFI_LOOP_COUNTER_MIRRORED_OUTPUT);
+
+#define IBEXFI_FAULTY_ADDRESSES(field, string) \
+    field(err_status, uint32_t) \
+    field(addresses, uint32_t, 8) \
+    field(alerts, uint32_t)
+UJSON_SERDE_STRUCT(IbexFiFaultyAddresses, ibex_fi_faulty_addresses_t, IBEXFI_FAULTY_ADDRESSES);
 
 // clang-format on
 
