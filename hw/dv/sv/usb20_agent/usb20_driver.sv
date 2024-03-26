@@ -11,10 +11,6 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
   int usb_idle_clk_cycles = 5;
   bit [7:0] SYNC_PATTERN = 8'b1000_0000;
   bit [1:0] EOP = 2'b00;
-  token_pkt m_token_pkt;
-  data_pkt  m_data_pkt ;
-  handshake_pkt m_handshake_pkt;
-  sof_pkt m_sof_pkt;
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
@@ -34,38 +30,38 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
   // get_and_drive Task
   // -------------------------------
   virtual task get_and_drive();
-    usb20_item seq_item;
+    usb20_item req_item;
     usb20_item rsp_item;
     forever begin
       if (cfg.if_mode == Host) begin
-        seq_item_port.get_next_item(seq_item);
-        $cast(rsp_item, seq_item.clone());
-        rsp_item.set_id_info(seq_item);
-        if (seq_item.m_pkt_type == PktTypeToken) begin
-          prepare_token_packet(seq_item, rsp_item);
-        end else if (seq_item.m_pkt_type == PktTypeData) begin
-          prepare_data_packet(seq_item, rsp_item);
-        end else if (seq_item.m_pkt_type == PktTypeHandshake) begin
-          prepare_handshake_packet(seq_item, rsp_item);
-        end else if (seq_item.m_pkt_type == PktTypeSoF) begin
-          prepare_sof_packet(seq_item, rsp_item);
-        end
+        seq_item_port.get_next_item(req_item);
+        $cast(rsp_item, req_item.clone());
+        rsp_item.set_id_info(req_item);
+        case (req_item.m_pkt_type)
+          PktTypeToken:     prepare_token_packet(req_item, rsp_item);
+          PktTypeData:      prepare_data_packet(req_item, rsp_item);
+          PktTypeHandshake: prepare_handshake_packet(req_item, rsp_item);
+          PktTypeSoF:       prepare_sof_packet(req_item, rsp_item);
+          default: `uvm_fatal(`gfn, $sformatf("Pkt type %x not supported", req_item.m_pkt_type))
+        endcase
       end
     end
   endtask
 
-  task prepare_token_packet(usb20_item seq_item, usb20_item rsp_item);
+  task prepare_token_packet(usb20_item req_item, usb20_item rsp_item);
     bit driver_token_pkt[];
     bit comp_token_pkt[];
-    $cast(m_token_pkt, seq_item);
-    m_token_pkt.print();
+    // Protect sender from modifications to the request item.
+    token_pkt pkt;
+    $cast(pkt, req_item.clone());
+    pkt.print();
     // Modified each field of the packet to start with the Least Significant Bit (LSB)
-    m_token_pkt.m_pid_type = pid_type_e'({<<4{m_token_pkt.m_pid_type}});
-    m_token_pkt.m_pid_type = pid_type_e'({<<{m_token_pkt.m_pid_type}});
-    m_token_pkt.address = {<<{m_token_pkt.address}};
-    m_token_pkt.endpoint = {<<{m_token_pkt.endpoint}};
-    m_token_pkt.crc5 = {<<{m_token_pkt.crc5}};
-    void'(m_token_pkt.pack(driver_token_pkt));
+    pkt.m_pid_type = pid_type_e'({<<4{pkt.m_pid_type}});
+    pkt.m_pid_type = pid_type_e'({<<{pkt.m_pid_type}});
+    pkt.address = {<<{pkt.address}};
+    pkt.endpoint = {<<{pkt.endpoint}};
+    pkt.crc5 = {<<{pkt.crc5}};
+    void'(pkt.pack(driver_token_pkt));
     // to make complete packet need to attach SYNC at start of packet
     comp_token_pkt = new[driver_token_pkt.size() + 8];
     for (int i = 0; i < 8; i++) begin
@@ -76,7 +72,7 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     end
     `uvm_info(`gfn, $sformatf("Complete Token_Packet = %p", comp_token_pkt), UVM_DEBUG)
     drive_pkt(comp_token_pkt);
-    if (seq_item.m_pid_type == PidTypeInToken) begin
+    if (req_item.m_pid_type == PidTypeInToken) begin
       get_dut_response(rsp_item);
       seq_item_port.item_done(rsp_item);
       `uvm_info (`gfn, $sformatf("In drive afer In packet : \n %0s", rsp_item.sprint()), UVM_DEBUG)
@@ -85,18 +81,20 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     end
   endtask
 
-  task prepare_data_packet (usb20_item seq_item, usb20_item rsp_item);
+  task prepare_data_packet(usb20_item req_item, usb20_item rsp_item);
     bit driver_data_pkt[];
     bit comp_data_pkt[];
-    $cast(m_data_pkt, seq_item);
-    m_data_pkt.print();
+    // Protect sender from modifications to the request item.
+    data_pkt pkt;
+    $cast(pkt, req_item.clone());
+    pkt.print();
     // Modified each field of the packet to start with the Least Significant Bit (LSB)
-    m_data_pkt.m_pid_type = pid_type_e'({<<4{m_data_pkt.m_pid_type}});
-    m_data_pkt.m_pid_type = pid_type_e'({<<{m_data_pkt.m_pid_type}});
-    m_data_pkt.data = {<<8{m_data_pkt.data}};
-    m_data_pkt.data = {<<{m_data_pkt.data}};
-    m_data_pkt.crc16 = {<<{m_data_pkt.crc16}};
-    void'(m_data_pkt.pack(driver_data_pkt));
+    pkt.m_pid_type = pid_type_e'({<<4{pkt.m_pid_type}});
+    pkt.m_pid_type = pid_type_e'({<<{pkt.m_pid_type}});
+    pkt.data = {<<8{pkt.data}};
+    pkt.data = {<<{pkt.data}};
+    pkt.crc16 = {<<{pkt.crc16}};
+    void'(pkt.pack(driver_data_pkt));
     `uvm_info(`gfn, $sformatf("Driver Data_Packet = %p", driver_data_pkt), UVM_DEBUG)
     // To make complete packet need to attach SYNC at start of packet
     comp_data_pkt = new[driver_data_pkt.size() + 8];
@@ -108,24 +106,26 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     end
     `uvm_info(`gfn, $sformatf("Complete Data_Packet = %p", comp_data_pkt), UVM_DEBUG)
     drive_pkt(comp_data_pkt);
-    `uvm_info(`gfn, $sformatf("\n\nTransfer Type = %s", seq_item.m_usb_transfer), UVM_HIGH)
-    if (seq_item.m_usb_transfer == IsoTrans) begin
+    `uvm_info(`gfn, $sformatf("\n\nTransfer Type = %s", req_item.m_usb_transfer), UVM_HIGH)
+    if (req_item.m_usb_transfer == IsoTrans) begin
       seq_item_port.item_done();
-      `uvm_info(`gfn, $sformatf("\n\nTransfer Type = %s", seq_item.m_usb_transfer), UVM_HIGH)
+      `uvm_info(`gfn, $sformatf("\n\nTransfer Type = %s", req_item.m_usb_transfer), UVM_HIGH)
     end else begin
-      `uvm_info(`gfn, $sformatf("\n\nTransfer Type = %s", seq_item.m_usb_transfer), UVM_HIGH)
+      `uvm_info(`gfn, $sformatf("\n\nTransfer Type = %s", req_item.m_usb_transfer), UVM_HIGH)
       get_dut_response(rsp_item);
       seq_item_port.item_done(rsp_item);
     end
   endtask
 
-  task prepare_handshake_packet(usb20_item seq_item, usb20_item rsp_item);
+  task prepare_handshake_packet(usb20_item req_item, usb20_item rsp_item);
     bit driver_handshake_pkt[];
     bit comp_handshake_pkt[];
-    $cast(m_handshake_pkt, seq_item);
-    m_handshake_pkt.m_pid_type = pid_type_e'({<<4{m_handshake_pkt.m_pid_type}});
-    m_handshake_pkt.m_pid_type = pid_type_e'({<<{m_handshake_pkt.m_pid_type}});
-    void'(m_handshake_pkt.pack(driver_handshake_pkt));
+    // Protect sender from modifications to the request item.
+    handshake_pkt pkt;
+    $cast(pkt, req_item.clone());
+    pkt.m_pid_type = pid_type_e'({<<4{pkt.m_pid_type}});
+    pkt.m_pid_type = pid_type_e'({<<{pkt.m_pid_type}});
+    void'(pkt.pack(driver_handshake_pkt));
     `uvm_info(`gfn, $sformatf("Driver Handshake_Packet = %p", driver_handshake_pkt), UVM_DEBUG)
     // To make complete packet need to attach SYNC at start of packet
     comp_handshake_pkt = new[driver_handshake_pkt.size() + 8];
@@ -140,17 +140,19 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     seq_item_port.item_done();
   endtask
 
-  task  prepare_sof_packet( usb20_item seq_item, usb20_item rsp_item);
+  task prepare_sof_packet(usb20_item req_item, usb20_item rsp_item);
     bit driver_sof_pkt[];
     bit comp_sof_pkt[];
-    $cast(m_sof_pkt, seq_item);
-    m_sof_pkt.print();
+    // Protect sender from modifications to the request item.
+    sof_pkt pkt;
+    $cast(pkt, req_item.clone());
+    pkt.print();
     // Modified each field of the packet to start with the Least Significant Bit (LSB)
-    m_sof_pkt.m_pid_type = pid_type_e'({<<4{m_sof_pkt.m_pid_type}});
-    m_sof_pkt.m_pid_type = pid_type_e'({<<{m_sof_pkt.m_pid_type}});
-    m_sof_pkt.framecnt = {<<{m_sof_pkt.framecnt}};
-    m_sof_pkt.crc5 = {<<{m_sof_pkt.crc5}};
-    void'(m_sof_pkt.pack(driver_sof_pkt));
+    pkt.m_pid_type = pid_type_e'({<<4{pkt.m_pid_type}});
+    pkt.m_pid_type = pid_type_e'({<<{pkt.m_pid_type}});
+    pkt.framecnt = {<<{pkt.framecnt}};
+    pkt.crc5 = {<<{pkt.crc5}};
+    void'(pkt.pack(driver_sof_pkt));
     // to make complete packet need to attach SYNC at start of packet
     comp_sof_pkt = new[driver_sof_pkt.size() + 8];
     for (int i = 0; i < 8; i++) begin
