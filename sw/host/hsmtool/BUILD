@@ -47,9 +47,6 @@ rust_library(
         "src/util/signing.rs",
     ],
     crate_name = "hsmtool",
-    proc_macro_deps = [
-        "@lowrisc_serde_annotate//annotate_derive:annotate_derive",
-    ],
     deps = [
         "@crate_index//:anyhow",
         "@crate_index//:clap",
@@ -71,7 +68,7 @@ rust_library(
         "@crate_index//:strum",
         "@crate_index//:thiserror",
         "@crate_index//:typetag",
-        "@lowrisc_serde_annotate//:serde_annotate",
+        "@lowrisc_serde_annotate//serde_annotate",
     ],
 )
 
