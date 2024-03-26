@@ -339,7 +339,6 @@ static status_t csrng_send_app_cmd(uint32_t base_address,
     return OUT_OF_RANGE();
   }
 
-  HARDENED_TRY(csrng_fsm_idle_wait());
   uint32_t cmd_reg_addr;
   uint32_t sts_reg_addr;
   uint32_t rdy_bit_offset;
