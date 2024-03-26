@@ -40,11 +40,13 @@ This is normally "lowRISC contributors".
 The style is to not include a year in the notice.
 Files adapted from other sources should retain any copyright messages and include details of the upstream location.
 
+<!-- REUSE-IgnoreStart -->
 The Apache License, Version 2.0 is the default for all files in the repository.
 Use of other licenses must be noted (and care is needed to ensure compatibility with the rest of the code).
 All files should include a comment line with the SPDX-License-Identifier: tag and the Identifier from the [License List](https://spdx.org/licenses/).
 An additional "Licensed under" line may be used to give a more human readable version.
 If the file is not covered by a SPDX license then the "Licensed under" line is required (note that such files are unlikely to be permitted in the main open source repository).
+<!-- REUSE-IgnoreEnd -->
 
 All files that use the default copyright and license should therefore include the following header (change the comment character as appropriate):
 
