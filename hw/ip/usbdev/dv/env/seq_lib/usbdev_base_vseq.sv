@@ -397,9 +397,9 @@ endtask
     csr_update(ral.configin[endp]);
   endtask
 
-  virtual task call_sof_seq(input pkt_type_e pkt_type, input pid_type_e pid_type);
+  virtual task call_sof_seq(input pid_type_e pid_type);
     `uvm_create_on(m_sof_pkt, p_sequencer.usb20_sequencer_h)
-    m_sof_pkt.m_pkt_type = pkt_type;
+    m_sof_pkt.m_pkt_type = PktTypeSoF;
     m_sof_pkt.m_pid_type = pid_type;
     assert(m_sof_pkt.randomize());
     m_usb20_item = m_sof_pkt;
@@ -415,5 +415,4 @@ endtask
     // for max/min inter pkt delay it can be changed with task argument
     cfg.clk_rst_vif.wait_clks(delay);
   endtask
-
 endclass : usbdev_base_vseq

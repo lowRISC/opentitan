@@ -176,7 +176,7 @@
               pulses in response to the arrival of SOF packets.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_phy_config_usb_ref_disable"]
     }
     {
       name: max_length_out_transaction
