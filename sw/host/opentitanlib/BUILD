@@ -256,7 +256,6 @@ rust_library(
     }),
     proc_macro_deps = [
         "//sw/host/opentitanlib/opentitantool_derive",
-        "@lowrisc_serde_annotate//annotate_derive:annotate_derive",
     ],
     rustc_env = {
         "e2e_command": "$(location :e2e_command)",
@@ -321,7 +320,7 @@ rust_library(
         "@crate_index//:typetag",
         "@crate_index//:zerocopy",
         "@lowrisc_safe_ftdi//:safe_ftdi",
-        "@lowrisc_serde_annotate//:serde_annotate",
+        "@lowrisc_serde_annotate//serde_annotate",
     ],
 )
 
