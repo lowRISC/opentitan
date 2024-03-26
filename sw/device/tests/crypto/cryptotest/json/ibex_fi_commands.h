@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -24,7 +24,11 @@ extern "C" {
     value(_, CharSramWrite) \
     value(_, CharSramRead) \
     value(_, CharFlashWrite) \
-    value(_, CharFlashRead)
+    value(_, CharFlashRead) \
+    value(_, CharCsrRead) \
+    value(_, CharCsrWrite) \
+    value(_, AddressTranslationCfg) \
+    value(_, AddressTranslation)
 UJSON_SERDE_ENUM(IbexFiSubcommand, ibex_fi_subcommand_t, IBEXFI_SUBCOMMAND);
 
 #define IBEXFI_TEST_RESULT(field, string) \

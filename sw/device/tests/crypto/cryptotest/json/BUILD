@@ -91,6 +91,13 @@ cc_library(
 )
 
 cc_library(
+    name = "ibex_sca_commands",
+    srcs = ["ibex_sca_commands.c"],
+    hdrs = ["ibex_sca_commands.h"],
+    deps = ["//sw/device/lib/ujson"],
+)
+
+cc_library(
     name = "kmac_sca_commands",
     srcs = ["kmac_sca_commands.c"],
     hdrs = ["kmac_sca_commands.h"],
