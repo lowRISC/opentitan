@@ -118,9 +118,7 @@ This block performs the operations that occur before, after or in between permut
 
 
 
-![drawing](switch1.svg)
-
-![drawing](switch2.svg)
+![drawing](duplex_switch.svg)
 
 
 ### Tag Compare
