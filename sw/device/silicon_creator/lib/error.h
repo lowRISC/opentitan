@@ -52,8 +52,9 @@ enum module_ {
   kModuleRetRam =          MODULE_CODE('R', 'R'),
   kModuleXModem =          MODULE_CODE('X', 'M'),
   kModuleRescue =          MODULE_CODE('R', 'S'),
-  kModuleOwnership =       MODULE_CODE('O', 'W'),
   kModuleDice =            MODULE_CODE('D', 'C'),
+  kModuleCert =            MODULE_CODE('C', 'E'),
+  kModuleOwnership =       MODULE_CODE('O', 'W'),
   // clang-format on
 };
 
@@ -191,13 +192,17 @@ enum module_ {
   X(kErrorRescueBadMode,              ERROR_(1, kModuleRescue, kInvalidArgument)), \
   X(kErrorRescueImageTooBig,          ERROR_(2, kModuleRescue, kFailedPrecondition)), \
   \
+  X(kErrorDiceInvalidArgument,        ERROR_(0, kModuleDice, kInvalidArgument)), \
+  \
+  X(kErrorCertInternal,               ERROR_(0, kModuleCert, kInternal)), \
+  X(kErrorCertInvalidArgument,        ERROR_(1, kModuleCert, kInvalidArgument)), \
+  X(kErrorCertCorrupted,              ERROR_(2, kModuleCert, kDataLoss)), \
+  \
   X(kErrorOwnershipInvalidNonce,      ERROR_(0, kModuleOwnership, kInvalidArgument)), \
   X(kErrorOwnershipInvalidMode,       ERROR_(1, kModuleOwnership, kInvalidArgument)), \
   X(kErrorOwnershipInvalidSignature,  ERROR_(2, kModuleOwnership, kInvalidArgument)), \
   X(kErrorOwnershipInvalidState,      ERROR_(3, kModuleOwnership, kInvalidArgument)), \
   X(kErrorOwnershipInvalidRequest,    ERROR_(4, kModuleOwnership, kInvalidArgument)), \
-  \
-  X(kErrorDiceInvalidArgument,        ERROR_(0, kModuleDice, kInvalidArgument)), \
   \
   /* This comment prevent clang from trying to format the macro. */
 
