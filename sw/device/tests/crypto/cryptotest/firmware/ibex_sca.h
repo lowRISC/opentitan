@@ -8,9 +8,21 @@
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/ujson/ujson.h"
 
+status_t handle_ibex_sca_tl_write_batch_fvsr_fix_address(ujson_t *uj);
+status_t handle_ibex_sca_tl_write_batch_fvsr(ujson_t *uj);
+status_t handle_ibex_sca_tl_write_batch_random_fix_address(ujson_t *uj);
+status_t handle_ibex_sca_tl_write_batch_random(ujson_t *uj);
 status_t handle_ibex_sca_tl_write(ujson_t *uj);
+status_t handle_ibex_sca_tl_read_batch_fvsr_fix_address(ujson_t *uj);
+status_t handle_ibex_sca_tl_read_batch_fvsr(ujson_t *uj);
+status_t handle_ibex_sca_tl_read_batch_random_fix_address(ujson_t *uj);
+status_t handle_ibex_sca_tl_read_batch_random(ujson_t *uj);
 status_t handle_ibex_sca_tl_read(ujson_t *uj);
+status_t handle_ibex_sca_register_file_write_batch_fvsr(ujson_t *uj);
+status_t handle_ibex_sca_register_file_write_batch_random(ujson_t *uj);
 status_t handle_ibex_sca_register_file_write(ujson_t *uj);
+status_t handle_ibex_sca_register_file_read_batch_fvsr(ujson_t *uj);
+status_t handle_ibex_sca_register_file_read_batch_random(ujson_t *uj);
 status_t handle_ibex_sca_register_file_read(ujson_t *uj);
 status_t handle_ibex_sca_init(ujson_t *uj);
 status_t handle_ibex_sca(ujson_t *uj);
