@@ -3,34 +3,41 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+# Find executable files that should not be executable.
+
 set -e
 
-allowed_suffixes=(
+# Files with these extensions may be executable.
+allowed_extensions=(
     py
     sh
 )
 
-suff_re=""
-for suff in "${allowed_suffixes[@]}"; do
-    suff_re="${suff_re}$suff\\|"
+# Arguments for `find`.
+args=(
+    # Do not look in these directories.
+    -name .git -prune -o
+    -name vendor -prune -o
+    -name scratch -prune -o
+    # Filter to executable files.
+    -type f
+    -executable
+    # Filter to files with extensions.
+    -name '*.*'
+)
+
+# Filter out files with allowed extensions.
+for ext in "${allowed_extensions[@]}"; do
+    args+=(-not -name "*.${ext}")
 done
-suff_re="\\(${suff_re:0:-2}\\)"
 
-path_re=".*\\.${suff_re}$"
+# Find the names of bad files.
+bad_files=$(find . "${args[@]}" -print)
 
-TMPFILE="$(mktemp)" || {
-    echo >&2 "Failed to create temporary file"
-    exit 1
-}
-trap 'rm -f "$TMPFILE"' EXIT
-
-find -name vendor -prune -o \
-     -name .git -prune -o \
-     -type f -executable -name '*.*' -not -regex "$path_re" \
-     -print >"$TMPFILE"
-if [ -s "$TMPFILE" ]; then
+# Fail if any exist.
+if [ -n "$bad_files" ]; then
     echo -n "##vso[task.logissue type=error]"
-    echo "One or more files have the executable bit set when they shouldn't."
-    cat "$TMPFILE"
+    echo "The following files should not have their executable bit set:" >&2
+    echo "$bad_files" >&2
     exit 1
 fi
