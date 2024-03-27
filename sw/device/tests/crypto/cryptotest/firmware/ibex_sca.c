@@ -6,7 +6,10 @@
 
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
+#include "sw/device/lib/dif/dif_keymgr.h"
+#include "sw/device/lib/dif/dif_kmac.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/keymgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
@@ -17,11 +20,71 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
+static dif_keymgr_t keymgr;
+static dif_kmac_t kmac;
+
 // Buffer to allow the compiler to allocate a safe area in Main SRAM where
 // we can do the write/read test without the risk of clobbering data
 // used by the program.
 OT_SECTION(".data")
 static volatile uint32_t sram_main_buffer[8];
+
+/**
+ * ibex.sca.key_sideloading
+ *
+ * This SCA penetration test executes the following instructions:
+ * - Retrieve salt over UART & feed salt into keymanager
+ * - Set trigger
+ * - Instruct the keymanager to generate a key based on the salt.
+ * - Unset trigger
+ * - Read back generated key provided at the SW interface of the keymanager.
+ *
+ * SCA traces are captured during trigger_high & trigger_low.
+ *
+ * @param uj The received uJSON data.
+ */
+status_t handle_ibex_sca_key_sideloading(ujson_t *uj) {
+  ibex_sca_salt_t uj_data;
+  TRY(ujson_deserialize_ibex_sca_salt_t(uj, &uj_data));
+
+  // Initialize keymgr and advance to CreatorRootKey state.
+  UJSON_CHECK_STATUS_OK(keymgr_testutils_startup(&keymgr, &kmac));
+
+  // Generate identity at CreatorRootKey (to follow same sequence and reuse
+  // chip_sw_keymgr_key_derivation_vseq.sv).
+  UJSON_CHECK_STATUS_OK(keymgr_testutils_generate_identity(&keymgr));
+
+  // Advance to OwnerIntermediateKey state.
+  UJSON_CHECK_STATUS_OK(
+      keymgr_testutils_advance_state(&keymgr, &kOwnerIntParams));
+  UJSON_CHECK_STATUS_OK(keymgr_testutils_check_state(
+      &keymgr, kDifKeymgrStateOwnerIntermediateKey));
+
+  // Set the salt based on the input.
+  dif_keymgr_versioned_key_params_t sideload_params = kKeyVersionedParams;
+  for (int i = 0; i < 8; i++) {
+    sideload_params.salt[i] = uj_data.salt[i];
+  }
+
+  // Trigger keymanager to create a new key based on the provided salt.
+  sca_set_trigger_high();
+  UJSON_CHECK_STATUS_OK(
+      keymgr_testutils_generate_versioned_key(&keymgr, sideload_params));
+  sca_set_trigger_low();
+
+  // Read back generated key provided at the software interface.
+  dif_keymgr_output_t key;
+  UJSON_CHECK_DIF_OK(dif_keymgr_read_output(&keymgr, &key));
+
+  // Acknowledge test.
+  ibex_sca_key_t uj_key;
+  for (int i = 0; i < 8; i++) {
+    uj_key.share0[i] = key.value[0][i];
+    uj_key.share1[i] = key.value[1][i];
+  }
+  RESP_OK(ujson_serialize_ibex_sca_key_t, uj, &uj_key);
+  return OK_STATUS(0);
+}
 
 /**
  * ibex.sca.tl_write
@@ -201,7 +264,7 @@ status_t handle_ibex_sca_init(ujson_t *uj) {
   sca_select_trigger_type(kScaTriggerTypeSw);
   // As we are using the software defined trigger, the first argument of
   // sca_init is not needed. kScaTriggerSourceAes is selected as a placeholder.
-  sca_init(kScaTriggerSourceAes, kScaPeripheralIoDiv4);
+  sca_init(kScaTriggerSourceAes, kScaPeripheralIoDiv4 | kScaPeripheralKmac);
 
   // Disable the instruction cache and dummy instructions for SCA.
   sca_configure_cpu();
@@ -230,6 +293,8 @@ status_t handle_ibex_sca(ujson_t *uj) {
       return handle_ibex_sca_tl_read(uj);
     case kIbexScaSubcommandTLWrite:
       return handle_ibex_sca_tl_write(uj);
+    case kIbexScaSubcommandKeySideloading:
+      return handle_ibex_sca_key_sideloading(uj);
     default:
       LOG_ERROR("Unrecognized IBEX SCA subcommand: %d", cmd);
       return INVALID_ARGUMENT();

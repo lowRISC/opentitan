@@ -4,6 +4,8 @@
 
 #include "sw/device/tests/crypto/cryptotest/firmware/ibex_fi.h"
 
+#include "sw/device/lib/base/csr.h"
+#include "sw/device/lib/base/csr_registers.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
@@ -19,6 +21,26 @@
 #include "sw/device/tests/crypto/cryptotest/json/ibex_fi_commands.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+
+// A function which takes an uint32_t as its only argument.
+typedef uint32_t (*str_fn_t)(uint32_t);
+
+/**
+ * Increment start_value 100 times by 10.
+ *
+ * @param start_value The initial value which gets incremented.
+ */
+extern uint32_t expected_function(uint32_t start_value);
+
+/**
+ * Increment start_value 100 times by 1
+ *
+ * @param input The initial value which gets incremented.
+ */
+extern uint32_t target_function(uint32_t start_value);
+
+static str_fn_t expected_function_remapped = (str_fn_t)expected_function;
+static str_fn_t target_function_remapped = (str_fn_t)target_function;
 
 // Make sure that this function does not get optimized by the compiler.
 uint32_t increment_counter(uint32_t counter) __attribute__((optnone)) {
@@ -89,6 +111,306 @@ static dif_flash_ctrl_device_info_t flash_info;
 // used by the program.
 OT_SECTION(".data")
 static volatile uint32_t sram_main_buffer[32];
+
+/**
+ * ibex.fi.address_translation command handler.
+ *
+ * This FI penetration tests executes the following instructions:
+ * - Configure the address translation for slot 0 and 1.
+ * - target_function gets remapped to expected_function and
+ *   expected_function gets remapped to target_function using the address
+ *   translation unit
+ * - Set the trigger.
+ * - Add 100 NOPs to delay the trigger.
+ * - Execute the expected_function.
+ * - Unset the trigger.
+ * - Check if instead of the expected function the target function was called.
+ * - Return the values over UART.
+ *
+ * Faults are injected during the trigger_high & trigger_low.
+ * It needs to be ensured that the compiler does not optimize this code.
+ *
+ * @param uj The received uJSON data.
+ */
+status_t handle_ibex_fi_address_translation(ujson_t *uj) {
+  // Configure Ibex to allow reading ERR_STATUS register.
+  dif_rv_core_ibex_t rv_core_ibex;
+  UJSON_CHECK_DIF_OK(dif_rv_core_ibex_init(
+      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
+      &rv_core_ibex));
+
+  // Create translation descriptions.
+  dif_rv_core_ibex_addr_translation_mapping_t expected_function_mapping = {
+      .matching_addr = (uintptr_t)target_function,
+      .remap_addr = (uintptr_t)expected_function,
+      .size = 256,
+  };
+  dif_rv_core_ibex_addr_translation_mapping_t target_function_mapping = {
+      .matching_addr = (uintptr_t)expected_function,
+      .remap_addr = (uintptr_t)target_function,
+      .size = 256,
+  };
+
+  // Configure slot 0 for the expected_function.
+  UJSON_CHECK_DIF_OK(dif_rv_core_ibex_configure_addr_translation(
+      &rv_core_ibex, kDifRvCoreIbexAddrTranslationSlot_0,
+      kDifRvCoreIbexAddrTranslationIBus, expected_function_mapping));
+  UJSON_CHECK_DIF_OK(dif_rv_core_ibex_configure_addr_translation(
+      &rv_core_ibex, kDifRvCoreIbexAddrTranslationSlot_0,
+      kDifRvCoreIbexAddrTranslationDBus, expected_function_mapping));
+
+  // Configure slot 1 for the target_function.
+  UJSON_CHECK_DIF_OK(dif_rv_core_ibex_configure_addr_translation(
+      &rv_core_ibex, kDifRvCoreIbexAddrTranslationSlot_1,
+      kDifRvCoreIbexAddrTranslationIBus, target_function_mapping));
+  UJSON_CHECK_DIF_OK(dif_rv_core_ibex_configure_addr_translation(
+      &rv_core_ibex, kDifRvCoreIbexAddrTranslationSlot_1,
+      kDifRvCoreIbexAddrTranslationDBus, target_function_mapping));
+
+  // Enable the slots.
+  UJSON_CHECK_DIF_OK(dif_rv_core_ibex_enable_addr_translation(
+      &rv_core_ibex, kDifRvCoreIbexAddrTranslationSlot_0,
+      kDifRvCoreIbexAddrTranslationIBus));
+  UJSON_CHECK_DIF_OK(dif_rv_core_ibex_enable_addr_translation(
+      &rv_core_ibex, kDifRvCoreIbexAddrTranslationSlot_0,
+      kDifRvCoreIbexAddrTranslationDBus));
+
+  UJSON_CHECK_DIF_OK(dif_rv_core_ibex_enable_addr_translation(
+      &rv_core_ibex, kDifRvCoreIbexAddrTranslationSlot_1,
+      kDifRvCoreIbexAddrTranslationIBus));
+  UJSON_CHECK_DIF_OK(dif_rv_core_ibex_enable_addr_translation(
+      &rv_core_ibex, kDifRvCoreIbexAddrTranslationSlot_1,
+      kDifRvCoreIbexAddrTranslationDBus));
+
+  // FI code target.
+  uint32_t result_expected = 0;
+  sca_set_trigger_high();
+  asm volatile(NOP100);
+  result_expected = expected_function_remapped(0);
+  sca_set_trigger_low();
+  uint32_t result_target = target_function_remapped(0);
+  // Compare values
+  uint32_t res = 0;
+  if (result_expected != 100) {
+    res = 1;
+  }
+
+  if (result_target != 1000) {
+    res |= 1;
+  }
+
+  // Read ERR_STATUS register.
+  dif_rv_core_ibex_error_status_t codes;
+  UJSON_CHECK_DIF_OK(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
+
+  // Send res & ERR_STATUS to host.
+  ibex_fi_test_result_t uj_output;
+  uj_output.result = res;
+  uj_output.err_status = codes;
+  RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
+  return OK_STATUS(0);
+}
+
+/**
+ * ibex.fi.address_translation_config command handler.
+ *
+ * This FI penetration tests executes the following instructions:
+ * - Configure the address translation for DMEM and IMEM.
+ * - Set the trigger.
+ * - Add 1000 NOPs.
+ * - Unset the trigger.
+ * - Read address translation config.
+ * - Compare the values.
+ * - Return the values over UART.
+ *
+ * Faults are injected during the trigger_high & trigger_low.
+ * It needs to be ensured that the compiler does not optimize this code.
+ *
+ * @param uj The received uJSON data.
+ */
+status_t handle_ibex_fi_address_translation_config(ujson_t *uj) {
+  // Configure Ibex to allow reading ERR_STATUS register.
+  dif_rv_core_ibex_t rv_core_ibex;
+  UJSON_CHECK_DIF_OK(dif_rv_core_ibex_init(
+      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
+      &rv_core_ibex));
+
+  // Address translation configuration.
+  dif_rv_core_ibex_addr_translation_mapping_t mapping1 = {
+      .matching_addr = 0xa0000000,
+      .remap_addr = (uintptr_t)handle_ibex_fi_address_translation_config,
+      .size = 256,
+  };
+
+  dif_rv_core_ibex_addr_translation_mapping_t mapping2 = {
+      .matching_addr = 0xa0000000,
+      .remap_addr = (uintptr_t)handle_ibex_fi_address_translation_config,
+      .size = 256,
+  };
+
+  // Write address translation configuration.
+  UJSON_CHECK_DIF_OK(dif_rv_core_ibex_configure_addr_translation(
+      &rv_core_ibex, kDifRvCoreIbexAddrTranslationSlot_0,
+      kDifRvCoreIbexAddrTranslationIBus, mapping1));
+
+  // FI code target.
+  // Either slot 0 config, which is already written, or slot 1 config, which
+  // gets written is targeted using FI.
+  sca_set_trigger_high();
+  UJSON_CHECK_DIF_OK(dif_rv_core_ibex_configure_addr_translation(
+      &rv_core_ibex, kDifRvCoreIbexAddrTranslationSlot_1,
+      kDifRvCoreIbexAddrTranslationDBus, mapping2));
+  asm volatile(NOP1000);
+  sca_set_trigger_low();
+
+  // Read back address translation configuration.
+  dif_rv_core_ibex_addr_translation_mapping_t mapping1_read_back;
+  dif_rv_core_ibex_addr_translation_mapping_t mapping2_read_back;
+  UJSON_CHECK_DIF_OK(dif_rv_core_ibex_read_addr_translation(
+      &rv_core_ibex, kDifRvCoreIbexAddrTranslationSlot_0,
+      kDifRvCoreIbexAddrTranslationIBus, &mapping1_read_back));
+  UJSON_CHECK_DIF_OK(dif_rv_core_ibex_read_addr_translation(
+      &rv_core_ibex, kDifRvCoreIbexAddrTranslationSlot_1,
+      kDifRvCoreIbexAddrTranslationDBus, &mapping2_read_back));
+
+  uint32_t res = 0;
+  // Compare mapping 1.
+  if ((mapping1_read_back.matching_addr != mapping1.matching_addr) ||
+      (mapping1_read_back.remap_addr != mapping1.remap_addr) ||
+      (mapping1_read_back.size != mapping1.size)) {
+    res = 1;
+  }
+
+  // Compare mapping 2.
+  if ((mapping2_read_back.matching_addr != mapping2.matching_addr) ||
+      (mapping2_read_back.remap_addr != mapping2.remap_addr) ||
+      (mapping2_read_back.size != mapping2.size)) {
+    res = 1;
+  }
+
+  // Read ERR_STATUS register.
+  dif_rv_core_ibex_error_status_t codes;
+  UJSON_CHECK_DIF_OK(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
+
+  // Send res & ERR_STATUS to host.
+  ibex_fi_test_result_t uj_output;
+  uj_output.result = res;
+  uj_output.err_status = codes;
+  RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
+  return OK_STATUS(0);
+}
+
+/**
+ * ibex.fi.char.csr_write command handler.
+ *
+ * This FI penetration tests executes the following instructions:
+ * - Set the trigger.
+ * - Add 10 NOPs to delay the trigger
+ * - Write reference values into CSR.
+ * - Unset the trigger.
+ * - Read value from CSR.
+ * - Compare the values.
+ * - Return the values over UART.
+ *
+ * Faults are injected during the trigger_high & trigger_low.
+ * It needs to be ensured that the compiler does not optimize this code.
+ *
+ * @param uj The received uJSON data.
+ */
+status_t handle_ibex_fi_char_csr_write(ujson_t *uj) {
+  // Configure Ibex to allow reading ERR_STATUS register.
+  dif_rv_core_ibex_t rv_core_ibex;
+  UJSON_CHECK_DIF_OK(dif_rv_core_ibex_init(
+      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
+      &rv_core_ibex));
+
+  // FI code target.
+  sca_set_trigger_high();
+  asm volatile(NOP10);
+  for (int i = 0; i < 100; i++) {
+    CSR_WRITE(CSR_REG_MSCRATCH, ref_values[0]);
+  }
+  asm volatile(NOP10);
+  sca_set_trigger_low();
+
+  uint32_t res_values;
+  // Read values from CSRs.
+  CSR_READ(CSR_REG_MSCRATCH, &res_values);
+
+  // Compare against reference values.
+  uint32_t res = 0;
+  if (res_values != ref_values[0]) {
+    res = 1;
+  }
+
+  // Read ERR_STATUS register.
+  dif_rv_core_ibex_error_status_t codes;
+  UJSON_CHECK_DIF_OK(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
+
+  // Send res & ERR_STATUS to host.
+  ibex_fi_test_result_t uj_output;
+  uj_output.result = res;
+  uj_output.err_status = codes;
+  RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
+  return OK_STATUS(0);
+}
+
+/**
+ * ibex.fi.char.csr_read command handler.
+ *
+ * This FI penetration tests executes the following instructions:
+ * - Write reference values into CSRs.
+ * - Set the trigger.
+ * - Add 10 NOPs to delay the trigger
+ * - Read values from CSRs.
+ * - Unset the trigger.
+ * - Compare the values.
+ * - Return the values over UART.
+ *
+ * Faults are injected during the trigger_high & trigger_low.
+ * It needs to be ensured that the compiler does not optimize this code.
+ *
+ * @param uj The received uJSON data.
+ */
+status_t handle_ibex_fi_char_csr_read(ujson_t *uj) {
+  // Configure Ibex to allow reading ERR_STATUS register.
+  dif_rv_core_ibex_t rv_core_ibex;
+  UJSON_CHECK_DIF_OK(dif_rv_core_ibex_init(
+      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
+      &rv_core_ibex));
+
+  // Write reference value into CSR.
+  CSR_WRITE(CSR_REG_MSCRATCH, ref_values[0]);
+
+  uint32_t res_values[32];
+  // FI code target.
+  sca_set_trigger_high();
+  asm volatile(NOP10);
+  for (int i = 0; i < 32; i++) {
+    CSR_READ(CSR_REG_MSCRATCH, &res_values[i]);
+  }
+  asm volatile(NOP10);
+  sca_set_trigger_low();
+
+  // Compare against reference values.
+  uint32_t res = 0;
+  for (int i = 0; i < 32; i++) {
+    if (res_values[i] != ref_values[0]) {
+      res |= 1;
+    }
+  }
+
+  // Read ERR_STATUS register.
+  dif_rv_core_ibex_error_status_t codes;
+  UJSON_CHECK_DIF_OK(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
+
+  // Send res & ERR_STATUS to host.
+  ibex_fi_test_result_t uj_output;
+  uj_output.result = res;
+  uj_output.err_status = codes;
+  RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
+  return OK_STATUS(0);
+}
 
 /**
  * ibex.char.flash_read command handler.
@@ -962,6 +1284,14 @@ status_t handle_ibex_fi(ujson_t *uj) {
       return handle_ibex_fi_char_flash_write(uj);
     case kIbexFiSubcommandCharFlashRead:
       return handle_ibex_fi_char_flash_read(uj);
+    case kIbexFiSubcommandCharCsrWrite:
+      return handle_ibex_fi_char_csr_write(uj);
+    case kIbexFiSubcommandCharCsrRead:
+      return handle_ibex_fi_char_csr_read(uj);
+    case kIbexFiSubcommandAddressTranslationCfg:
+      return handle_ibex_fi_address_translation_config(uj);
+    case kIbexFiSubcommandAddressTranslation:
+      return handle_ibex_fi_address_translation(uj);
     default:
       LOG_ERROR("Unrecognized IBEX FI subcommand: %d", cmd);
       return INVALID_ARGUMENT();

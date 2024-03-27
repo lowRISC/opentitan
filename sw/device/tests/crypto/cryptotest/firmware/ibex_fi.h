@@ -8,6 +8,11 @@
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/ujson/ujson.h"
 
+status_t handle_ibex_fi_address_translation(ujson_t *uj);
+status_t handle_ibex_fi_address_translation_config(ujson_t *uj);
+status_t handle_ibex_fi_char_csr_read(ujson_t *uj);
+status_t handle_ibex_fi_char_csr_write(ujson_t *uj);
+status_t handle_ibex_fi_char_flash_write(ujson_t *uj);
 status_t handle_ibex_fi_char_flash_read(ujson_t *uj);
 status_t handle_ibex_fi_char_flash_write(ujson_t *uj);
 status_t handle_ibex_fi_char_sram_read(ujson_t *uj);
