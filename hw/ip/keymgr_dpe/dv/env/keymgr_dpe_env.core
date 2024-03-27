@@ -24,6 +24,7 @@ filesets:
       - seq_lib/keymgr_dpe_base_vseq.sv: {is_include_file: true}
       - seq_lib/keymgr_dpe_common_vseq.sv: {is_include_file: true}
       - seq_lib/keymgr_dpe_smoke_vseq.sv: {is_include_file: true}
+      - seq_lib/keymgr_dpe_allow_child_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:
