@@ -77,7 +77,7 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     `uvm_info(`gfn, $sformatf("Complete Token_Packet = %p", comp_token_pkt), UVM_DEBUG)
     drive_pkt(comp_token_pkt);
     if (seq_item.m_pid_type == PidTypeInToken) begin
-      get_dut_response(rsp_item);
+      device_response(rsp_item);
       seq_item_port.item_done(rsp_item);
       `uvm_info (`gfn, $sformatf("In drive afer In packet : \n %0s", rsp_item.sprint()), UVM_DEBUG)
     end else begin
@@ -108,13 +108,10 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     end
     `uvm_info(`gfn, $sformatf("Complete Data_Packet = %p", comp_data_pkt), UVM_DEBUG)
     drive_pkt(comp_data_pkt);
-    `uvm_info(`gfn, $sformatf("\n\nTransfer Type = %s", seq_item.m_usb_transfer), UVM_HIGH)
     if (seq_item.m_usb_transfer == IsoTrans) begin
       seq_item_port.item_done();
-      `uvm_info(`gfn, $sformatf("\n\nTransfer Type = %s", seq_item.m_usb_transfer), UVM_HIGH)
     end else begin
-      `uvm_info(`gfn, $sformatf("\n\nTransfer Type = %s", seq_item.m_usb_transfer), UVM_HIGH)
-      get_dut_response(rsp_item);
+      device_response(rsp_item);
       seq_item_port.item_done(rsp_item);
     end
   endtask
@@ -191,7 +188,8 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
       cfg.bif.drive_p =  EOP[j];
       cfg.bif.drive_n =  EOP[j];
     end
-    @(posedge cfg.bif.usb_clk) begin
+     if (~cfg.single_bit_SE0) begin
+       @(posedge cfg.bif.usb_clk)
       `uvm_info(`gfn, "\n After EOP Idle state", UVM_DEBUG)
       cfg.bif.drive_p = 1'b1;
       cfg.bif.drive_n = 1'b0;
@@ -203,6 +201,10 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
   task bit_stuffing(input bit packet[], output bit bit_stuff_out[]);
     int consecutive_ones_count = 0;
     bit stuffed[$];
+    if (cfg.usb_bitstuff_error) begin
+      bit_stuff_out = packet;
+      return;
+    end
     for (int i = 0; i < packet.size(); i++) begin
       stuffed.push_back(packet[i]);
       if (packet[i] == 1'b1) begin
@@ -306,10 +308,37 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     repeat(usb_idle_clk_cycles) @(posedge cfg.bif.usb_clk);
   endtask
 
-  // Get_DUT_Response
-  // -------------------------------
-  task get_dut_response(ref usb20_item rsp_item);
-    bit received_pkt[];
+  // This task verifies the device status following the transmission of an OUT packet or IN token.
+  // Upon receiving the IN token/ out packet, the device is expected to initiate a response.
+  // This task monitors whether the device initiates the response in the form of a
+  // handshake or data packet within the specified timeout period.
+  // If no response is detected within timeout frame that is 18 bit times(from section 7.1.18.2),
+  // it send timeout response to sequence.
+  task device_response(ref usb20_item rsp_item);
+    bit timed_out = 1'b0;
+    `uvm_info(`gfn, "After drive Packet in wait to check usb_dp_en_o signal", UVM_LOW)
+    fork begin : isolation_fork
+      fork
+        begin
+          repeat (18) begin
+            @(posedge cfg.bif.usb_clk);
+            if (cfg.bif.usb_dp_en_o) break;
+          end
+          if (!cfg.bif.usb_dp_en_o) begin
+            timed_out = 1'b1;
+            disable get_device_response;
+          end
+        end
+        get_device_response(rsp_item);
+      join
+      if (timed_out) begin
+        rsp_item.m_pid_type = pid_type_e'(PidTypeTimeOut);
+      end
+    end join
+  endtask
+
+  task get_device_response(ref usb20_item rsp_item);
+    bit received_pkt[$];
     bit nrzi_out_pkt[];
     bit decoded_received_pkt[];
     int receive_index = 0;
@@ -318,7 +347,6 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     bit use_negedge;
     // TODO: DV should not be stealing access to the driver enable of the DUT and would ideally
     // be able to synchronize to just the USB_P/N signals are they are received.
-    `uvm_info(`gfn, "After drive Packet in wait to check usb_dp_en_o signal", UVM_DEBUG)
     wait(cfg.bif.usb_dp_en_o);
     // TODO: Operating on a div 4 clock is inherently fraught and runs into sampling problems;
     // a simple solution would be to use the 4x oversampling and detect the initial transition away
@@ -335,9 +363,7 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
       else @(posedge cfg.bif.usb_clk);
       // Detect SE0 signaling which indicates End Of Packet
       if (cfg.bif.usb_p === 1'b0 && cfg.bif.usb_n === 1'b0) break;
-      received_pkt = new[received_pkt.size() + 1](received_pkt);
-      received_pkt[receive_index] = cfg.bif.usb_p;
-      receive_index = receive_index + 1;
+      received_pkt.push_back(cfg.bif.usb_p);
     end
     `uvm_info(`gfn, $sformatf("Received Packet = %p", received_pkt), UVM_LOW)
     nrzi_decoder(received_pkt, nrzi_out_pkt);

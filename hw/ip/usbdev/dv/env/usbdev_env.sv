@@ -18,8 +18,11 @@ class usbdev_env extends cip_base_env #(
     super.build_phase(phase);
     // get vifs
     if (!uvm_config_db#(virtual clk_rst_if)::get(this, "", "aon_clk_rst_vif",
-        cfg.aon_clk_rst_vif)) begin
+                                                 cfg.aon_clk_rst_vif)) begin
       `uvm_fatal(get_full_name(), "failed to get aon_clk_rst_if from uvm_config_db")
+    end
+    if (!uvm_config_db#(virtual usb20_block_if)::get(this, "", "bif", cfg.bif)) begin
+      `uvm_fatal(`gfn, "failed to get usb20_block_if handle from uvm_config_db")
     end
 
     // Use the configured USB speed for the main clock
