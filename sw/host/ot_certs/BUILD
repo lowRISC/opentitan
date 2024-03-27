@@ -16,6 +16,11 @@ filegroup(
     srcs = ["tests/example.hjson"],
 )
 
+filegroup(
+    name = "example_data",
+    srcs = ["tests/example_data.json"],
+)
+
 rust_library(
     name = "ot_certs",
     srcs = [
@@ -75,6 +80,8 @@ rust_test_suite(
     srcs = glob(["tests/*.rs"]),
     compile_data = [
         ":generic_cert",
+        ":example_cert",
+        ":example_data",
     ],
     deps = [
         ":ot_certs",
