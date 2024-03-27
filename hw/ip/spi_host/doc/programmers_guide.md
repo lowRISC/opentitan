@@ -32,13 +32,15 @@ The proper settings for the [`CONFIGOPTS`](registers.md#configopts) fields (e.g.
 ### Interrupt configuration
 
 The next step is to configuration the interrupts for the SPI_HOST.
-This should also be done at initialization using the following register fields:
-- The [`ERROR_ENABLE`](registers.md#error_enable) register should be configured to indicate what types of error conditions (if any) should be ignored to not trigger an interrupt.
-At reset, these fields are all set indicating that all error classes trigger an interrupt.
+There are two comportable interrupts [`ERROR`](interfaces.md#interrupts) and [`SPI_EVENT`](interfaces.md#interrupts) which are configured using the following register fields:
 
-- For interrupt driven I/O the [`EVENT_ENABLE`](registers.md#event_enable) register must be configured to select the desired event interrupts to signal the desired conditions (e.g. "FIFO empty", "FIFO at the watermark level", or "ready for next command segment").
-By default, this register is all zeros, meaning all event interrupts are disabled, and thus all transactions must be managed by polling the status register.
+- The [`ERROR_ENABLE`](registers.md#error_enable) register should be configured to indicate what types of error conditions (if any) will trigger an  [`ERROR`](interfaces.md#interrupts) interrupt.
+At reset all fields in `ERROR_ENABLE` are set, indicating that all error classes will trigger an interrupt.
+
+- The [`EVENT_ENABLE`](registers.md#event_enable) register should be configured to select which classes of event assert the [`SPI_EVENT`](interfaces.md#interrupts) irq for interrupt driven I/O (e.g. "FIFO empty", "FIFO at the watermark level", or "ready for next command segment").
+At reset all fields in this register are cleared, meaning all event interrupts are disabled, and thus all transactions must be managed by polling the status register.
    - When using the FIFO watermarks to send interrupts, the watermark levels must be set via the [`CONTROL.RX_WATERMARK`](registers.md#control) and [`CONTROL.TX_WATERMARK`](registers.md#control) fields.
+   - **N.B.** While the interrupt is named `SPI_EVENT`, it is signalled as [CIP Status-Type](../../../../doc/contributing/hw/comportability/README.md#cip-interrupt-types) for the purpose of software handling.
 
 - The event and error interrupts must finally be enabled using the [`INTR_ENABLE`](registers.md#intr_enable) register.
 
