@@ -18,6 +18,7 @@ class MockFlashCtrl : public global_mock::GlobalMock<MockFlashCtrl> {
  public:
   MOCK_METHOD(void, Init, ());
   MOCK_METHOD(void, StatusGet, (flash_ctrl_status_t *));
+  MOCK_METHOD(void, ErrorCodeGet, (flash_ctrl_error_code_t *));
   MOCK_METHOD(rom_error_t, DataRead, (uint32_t, uint32_t, void *));
   MOCK_METHOD(rom_error_t, InfoRead,
               (const flash_ctrl_info_page_t *, uint32_t, uint32_t, void *));
