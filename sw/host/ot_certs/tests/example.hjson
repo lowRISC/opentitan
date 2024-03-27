@@ -1,6 +1,9 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+
+// This example must correspond to taking the generic.hjson template and substituting the variables
+// using example_data.json
 {
     name: "example",
 
@@ -25,8 +28,8 @@
                 y: "0x0a0636f5073209440adb17dd8b102bc1154dc95394abfaeecd89852e1d622be1",
             },
         },
-        authority_key_identifier: "94589abcd87444",
-        subject_key_identifier: "04897afec876db",
+        authority_key_identifier: "94589abcd8744445ef329bc4186a11ff9a74bc4d",
+        subject_key_identifier: "04897afec876db876d4efbc6a3dd9f164965dfac",
         extensions: [
             {
                 type: "dice_tcb_info",
@@ -40,16 +43,19 @@
                 ],
                 flags: {
                     not_configured: false,
-                    not_secure: false,
+                    not_secure: true,
                     recovery: false,
-                    debug: false,
+                    debug: true,
                 }
             }
         ],
         signature: {
             algorithm: "ecdsa-with-sha256",
             // The value field is optional: if not present, the signature will be cleared.
-            // Otherwise, we can reference the various fields of the signature.
+            value: {
+                r: "0",
+                s: "0",
+            }
         }
     }
 }
