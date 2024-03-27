@@ -13,6 +13,10 @@ void flash_ctrl_status_get(flash_ctrl_status_t *status) {
   MockFlashCtrl::Instance().StatusGet(status);
 }
 
+void flash_ctrl_error_code_get(flash_ctrl_error_code_t *error_code) {
+  MockFlashCtrl::Instance().ErrorCodeGet(error_code);
+}
+
 rom_error_t flash_ctrl_data_read(uint32_t addr, uint32_t word_count,
                                  void *data) {
   return MockFlashCtrl::Instance().DataRead(addr, word_count, data);

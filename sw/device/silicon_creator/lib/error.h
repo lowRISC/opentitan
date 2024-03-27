@@ -53,6 +53,7 @@ enum module_ {
   kModuleXModem =          MODULE_CODE('X', 'M'),
   kModuleRescue =          MODULE_CODE('R', 'S'),
   kModuleDice =            MODULE_CODE('D', 'C'),
+  kModuleCert =            MODULE_CODE('C', 'E'),
   kModuleOwnership =       MODULE_CODE('O', 'W'),
   // clang-format on
 };
@@ -194,6 +195,10 @@ enum module_ {
   X(kErrorRescueImageTooBig,          ERROR_(2, kModuleRescue, kFailedPrecondition)), \
   \
   X(kErrorDiceInvalidArgument,        ERROR_(0, kModuleDice, kInvalidArgument)), \
+  \
+  X(kErrorCertInternal,               ERROR_(0, kModuleCert, kInternal)), \
+  X(kErrorCertInvalidArgument,        ERROR_(1, kModuleCert, kInvalidArgument)), \
+  X(kErrorCertCorrupted,              ERROR_(2, kModuleCert, kDataLoss)), \
   \
   X(kErrorOwnershipInvalidNonce,      ERROR_(0, kModuleOwnership, kInvalidArgument)), \
   X(kErrorOwnershipInvalidMode,       ERROR_(1, kModuleOwnership, kInvalidArgument)), \

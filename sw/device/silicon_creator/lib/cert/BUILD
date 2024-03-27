@@ -52,3 +52,28 @@ cc_test(
         "@googletest//:gtest_main",
     ],
 )
+
+cc_library(
+    name = "cert",
+    srcs = ["cert.c"],
+    hdrs = ["cert.h"],
+    deps = [
+        ":asn1",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+    ],
+)
+
+cc_test(
+    name = "cert_unittest",
+    srcs = ["cert_unittest.cc"],
+    deps = [
+        ":cert",
+        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_c_regs",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/testing:rom_test",
+        "@googletest//:gtest_main",
+    ],
+)
