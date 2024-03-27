@@ -110,21 +110,22 @@ tar -C /tools/verible -xf "$verible_tar" --strip-components=1
 export PATH=/tools/verible/bin:$PATH
 
 # Install verilator
-if [ $lsb_sr = "18.04" ]; then
+if [ "$lsb_sr" = "18.04" ]; then
   UBUNTU_SUFFIX="-u18"
 fi
 
 VERILATOR_TARBALL=verilator"$UBUNTU_SUFFIX-v$VERILATOR_VERSION".tar.gz
 VERILATOR_URL=https://storage.googleapis.com/verilator-builds/$VERILATOR_TARBALL
-echo "Fetching verilator tarball" $VERILATOR_URL
+echo "Fetching verilator tarball" "$VERILATOR_URL"
 curl -f -Ls -o "$VERILATOR_TARBALL" "$VERILATOR_URL" || {
     error "Failed to download verilator from ${VERILATOR_URL}"
 }
 
 sudo mkdir -p /tools/verilator
 sudo chmod 777 /tools/verilator
-tar -C /tools/verilator -xvzf $VERILATOR_TARBALL
-export PATH=/tools/verilator/v$VERILATOR_VERSION/bin:$PATH
+tar -C /tools/verilator -xvzf "$VERILATOR_TARBALL"
+rm "$VERILATOR_TARBALL"
+export PATH="/tools/verilator/v${VERILATOR_VERSION}/bin:${PATH}"
 
 # Propagate PATH changes to all subsequent steps of the job
-echo "##vso[task.setvariable variable=PATH]$PATH"
+echo "##vso[task.setvariable variable=PATH]${PATH}"
