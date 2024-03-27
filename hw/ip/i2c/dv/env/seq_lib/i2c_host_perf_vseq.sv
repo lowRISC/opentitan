@@ -169,9 +169,7 @@ class i2c_host_perf_vseq extends i2c_rx_tx_vseq;
     thigh.rand_mode(0);
     // Coerce value after quantization. Actual frequency is different from the
     // randomized setting, due to the granularity of the dividers.
-    // TODO(#18492): Remove round-trip latency of 3 cycles when appropriate fixes
-    // go into the RTL.
-    coerced_scl_period = t_r + t_f + thigh + tlow + 3;
+    coerced_scl_period = t_r + t_f + thigh + tlow;
     coerced_scl_frequency = 10**9/(coerced_scl_period*cfg.clk_rst_vif.clk_period_ps);
   endfunction
 
