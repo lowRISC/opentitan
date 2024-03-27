@@ -9,6 +9,14 @@
             type: "integer",
             size: 32,
         },
+        not_before: {
+            type: "string",
+            size: 15,
+        }
+        not_after: {
+            type: "string",
+            size: 15,
+        }
         subject_serial_number: {
             type: "string",
             size: 40,
@@ -92,6 +100,8 @@
         subject: {
             serial_number: { var: "subject_serial_number" },
         },
+        not_before: { var: "not_before" },
+        not_after: { var: "not_after" },
         subject_public_key_info: {
             algorithm: "ec-public-key",
             curve: "prime256v1",

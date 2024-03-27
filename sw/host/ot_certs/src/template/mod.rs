@@ -59,6 +59,10 @@ pub struct Template {
 pub struct Certificate {
     /// X509 certificate's serial number
     pub serial_number: Value<BigUint>,
+    /// X509 validity's not before date. The format must be a valid ASN1 GeneralizedTime.
+    pub not_before: Value<String>,
+    /// X509 validity's not after date. The format must be a valid ASN1 GeneralizedTime.
+    pub not_after: Value<String>,
     /// X509 certificate's issuer.
     pub issuer: HashMap<AttributeType, Value<String>>,
     /// X509 certificate's subject.
@@ -424,6 +428,8 @@ mod tests {
                 issuer: {
                   serial_number: { var: "signing_pub_key_id", convert: "lowercase-hex" },
                 },
+                not_before: "20230101000000Z",
+                not_after: "99991231235959Z",
                 subject: {
                   serial_number: { var: "owner_pub_key_id", convert: "lowercase-hex" },
                 },
@@ -517,6 +523,8 @@ mod tests {
                 AttributeType::SerialNumber,
                 Value::convert("signing_pub_key_id", Conversion::LowercaseHex),
             )]),
+            not_before: Value::literal("20230101000000Z"),
+            not_after: Value::literal("99991231235959Z"),
             subject: HashMap::from([(
                 AttributeType::SerialNumber,
                 Value::convert("owner_pub_key_id", Conversion::LowercaseHex),
