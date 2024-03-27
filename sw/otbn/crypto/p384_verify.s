@@ -95,13 +95,13 @@ store_proj:
  * host side. The signature is valid if x1 == r.
  * This routine runs in variable time.
  *
- * @param[in]  dmem[4]: dptr_rnd, pointer to dmem location where the reduced
- *                           affine x1-coordinate will be stored
- * @param[in]  dmem[8]: dptr_msg, pointer to the message to be verified in dmem
- * @param[in]  dmem[12]: dptr_r, pointer to r of signature in dmem
- * @param[in]  dmem[16]: dptr_s, pointer to s of signature in dmem
- * @param[in]  dmem[20]: dptr_x, pointer to x-coordinate of public key in dmem
- * @param[in]  dmem[20]: dptr_y, pointer to y-coordinate of public key in dmem
+ * @param[in]  x6:  dptr_r, pointer to r of signature in dmem
+ * @param[in]  x7:  dptr_s, pointer to s of signature in dmem
+ * @param[in]  x8:  dptr_rnd, pointer to dmem location where the reduced
+ *                            affine x1-coordinate will be stored
+ * @param[in]  x9:  dptr_msg, pointer to the message to be verified in dmem
+ * @param[in]  x13: dptr_x, pointer to x-coordinate of public key in dmem
+ * @param[in]  x14: dptr_y, pointer to y-coordinate of public key in dmem
  *
  * Scratchpad memory layout:
  * The routine expects at least 896 bytes of scratchpad memory at dmem
@@ -135,10 +135,8 @@ p384_verify:
   /* load s of signature from dmem
      [w30,w29] <= s = dmem[*dptr_s] */
   li        x2, 29
-  la        x3, dptr_s
-  lw        x3, 0(x3)
-  bn.lid    x2++, 0(x3)
-  bn.lid    x2++, 32(x3)
+  bn.lid    x2++, 0(x7)
+  bn.lid    x2++, 32(x7)
 
   /* goto 'fail' if [w30,w29] == [w31, w31] <=> s == 0 */
   bn.cmp    w31, w29
@@ -176,10 +174,8 @@ p384_verify:
   /* load r of signature from dmem
      [w11,w10] <= r = dmem[*dptr_r] */
   li        x2, 10
-  la        x3, dptr_r
-  lw        x3, 0(x3)
-  bn.lid    x2++, 0(x3)
-  bn.lid    x2++, 32(x3)
+  bn.lid    x2++, 0(x6)
+  bn.lid    x2++, 32(x6)
 
   /* goto 'fail' if [w11, w10] == [w31, w31] <=> r == 0 */
   bn.cmp    w31, w10
@@ -207,10 +203,8 @@ p384_verify:
   /* load message from dmem
      [w11,w10] <= msg = dmem[*dptr_msg] */
   li        x2, 10
-  la        x3, dptr_msg
-  lw        x3, 0(x3)
-  bn.lid    x2++, 0(x3)
-  bn.lid    x2++, 32(x3)
+  bn.lid    x2++, 0(x9)
+  bn.lid    x2++, 32(x9)
 
   /* u1 = [w1,w0] <= [w17,w16] <= msg*s^-1 mod n
         = [w11,w10]*[w9,w8] mod [w13,w12] */
@@ -261,10 +255,8 @@ p384_verify:
 
   /* load public key Q from dmem and use in projective form (set z to 1)
      Q = (x,y,z) = scratchpad[384] <= (dmem[*dptr_x], dmem[*dptr_y], 1) */
-  la        x3, dptr_x
-  lw        x10, 0(x3)
-  la        x3, dptr_y
-  lw        x11, 0(x3)
+  add       x10, x13, x0
+  add       x11, x14, x0
   jal       x1,  store_aff_proj
 
   /* The remaining part of the routine implements a variable time
@@ -398,10 +390,8 @@ p384_verify:
 
   /* store affine x-coordinate in dmem: dmem[dptr_rnd] <= x1 = [w5,w4] */
   li        x2, 4
-  la        x3, dptr_rnd
-  lw        x3, 0(x3)
-  bn.sid    x2++, 0(x3)
-  bn.sid    x2++, 32(x3)
+  bn.sid    x2++, 0(x8)
+  bn.sid    x2++, 32(x8)
 
   ret
 
@@ -414,45 +404,8 @@ fail:
   unimp
 
 
-/* pointers and scratchpad memory */
+/* scratchpad memory */
 .section .data
-
-/* pointer to rnd (dptr_rnd)
-   used for result here */
-.globl dptr_rnd
-.weak dptr_rnd
-dptr_rnd:
-  .zero 4
-
-/* pointer to msg (dptr_msg) */
-.globl dptr_msg
-.weak dptr_msg
-dptr_msg:
-  .zero 4
-
-/* pointer to X (dptr_x) */
-.globl dptr_x
-.weak dptr_x
-dptr_x:
-  .zero 4
-
-/* pointer to Y (dptr_y) */
-.globl dptr_y
-.weak dptr_y
-dptr_y:
-  .zero 4
-
-/* pointer to R (dptr_r) */
-.globl dptr_r
-.weak dptr_r
-dptr_r:
-  .zero 4
-
-/* pointer to S (dptr_s) */
-.globl dptr_s
-.weak dptr_s
-dptr_s:
-  .zero 4
 
 /* Scratchpad memory */
 .balign 32
