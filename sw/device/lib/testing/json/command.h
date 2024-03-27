@@ -17,9 +17,10 @@ extern "C" {
     value(_, EnterNormalSleep) \
     value(_, EnterDeepSleep) \
     value(_, I2cTargetAddress) \
-    value(_, I2cReadTransaction) \
-    value(_, I2cWriteTransaction) \
-    value(_, I2cWriteTransactionSlow) \
+    value(_, I2cStartTransferWrite) \
+    value(_, I2cStartTransferWriteSlow) \
+    value(_, I2cStartTransferRead) \
+    value(_, I2cStartTransferWriteRead) \
     value(_, MemRead) \
     value(_, MemRead32) \
     value(_, MemWrite) \

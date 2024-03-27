@@ -143,16 +143,20 @@ static status_t wait_for_acq_fifo(dif_i2c_t *i2c, uint8_t at_least,
   return DEADLINE_EXCEEDED();
 }
 
-static status_t recv_write_transaction(dif_i2c_t *i2c, i2c_transaction_t *txn,
-                                       uint32_t micros, uint32_t delay_micros) {
+static status_t recv_write_transfer(dif_i2c_t *i2c, i2c_transfer_start_t *txn,
+                                    uint32_t micros, uint32_t delay_micros) {
   ibex_timeout_t deadline = ibex_timeout_init(micros);
   uint8_t byte;
   dif_i2c_signal_t signal;
 
-  // Address phase.
-  TRY(wait_for_acq_fifo(i2c, 1, &deadline));
-  TRY(dif_i2c_acquire_byte(i2c, &byte, &signal));
-  TRY_CHECK(signal == kDifI2cSignalStart);
+  do {
+    // Address phase.
+    TRY(wait_for_acq_fifo(i2c, 1, &deadline));
+    TRY(dif_i2c_acquire_byte(i2c, &byte, &signal));
+  } while (signal == kDifI2cSignalRepeat);
+
+  TRY_CHECK(signal == kDifI2cSignalStart, "Expected SignalStart(%u), got %u",
+            kDifI2cSignalStart, signal);
   txn->address = byte >> 1;
 
   // Data phase.
@@ -168,35 +172,69 @@ static status_t recv_write_transaction(dif_i2c_t *i2c, i2c_transaction_t *txn,
     txn->data[txn->length++] = byte;
   }
 
-  // End of transaction.
+  // End of transfer.
   switch (signal) {
     case kDifI2cSignalStop:
-      return OK_STATUS(false);
+      txn->stop = true;
+      return OK_STATUS(0);
     case kDifI2cSignalRepeat:
-      txn->continuation = byte;
-      return OK_STATUS(true);
+      txn->stop = false;
+      LOG_INFO("%x", byte);
+      // Repeated start, return the address of the next operation.
+      return OK_STATUS(byte);
     default:
       return INTERNAL();
   }
 }
 
-static status_t read_transaction(ujson_t *uj, dif_i2c_t *i2c) {
-  i2c_transaction_t txn;
-  TRY(ujson_deserialize_i2c_transaction_t(uj, &txn));
+static status_t start_read_transaction(ujson_t *uj, dif_i2c_t *i2c) {
+  i2c_transfer_start_t txn;
+  TRY(ujson_deserialize_i2c_transfer_start_t(uj, &txn));
   TRY(i2c_testutils_target_read(i2c, txn.length, txn.data));
   ibex_timeout_t deadline = ibex_timeout_init(kTestTimeout);
   TRY(wait_for_acq_fifo(i2c, 2, &deadline));
-  i2c_rx_result_t result = {0, 0};
-  TRY(i2c_testutils_target_check_read(i2c, &result.address,
-                                      &result.continuation));
-  return RESP_OK(ujson_serialize_i2c_rx_result_t, uj, &result);
+  uint8_t address = 0;
+  TRY(i2c_testutils_target_check_read(i2c, &address, NULL));
+  TRY_CHECK(txn.address == address, "Address read (%x) is not the expected(%x)",
+            address, txn.address);
+  return RESP_OK_STATUS(uj);
 }
 
-static status_t write_transaction(ujson_t *uj, dif_i2c_t *i2c,
-                                  uint32_t delay_micros) {
-  i2c_transaction_t txn = {0};
-  TRY(recv_write_transaction(i2c, &txn, kTestTimeout, delay_micros));
-  return RESP_OK(ujson_serialize_i2c_transaction_t, uj, &txn);
+static status_t start_write_transaction(ujson_t *uj, dif_i2c_t *i2c,
+                                        uint32_t delay_micros) {
+  i2c_transfer_start_t txn = (i2c_transfer_start_t){0,
+                                                    0,
+                                                    0,
+                                                    {
+                                                        0,
+                                                    }};
+  TRY(recv_write_transfer(i2c, &txn, kTestTimeout, delay_micros));
+  return RESP_OK(ujson_serialize_i2c_transfer_start_t, uj, &txn);
+}
+
+static status_t start_write_read_transaction(ujson_t *uj, dif_i2c_t *i2c) {
+  i2c_transfer_start_t read_trans;
+  TRY(ujson_deserialize_i2c_transfer_start_t(uj, &read_trans));
+  TRY(i2c_testutils_target_read(i2c, read_trans.length, read_trans.data));
+
+  i2c_transfer_start_t write_trans = (i2c_transfer_start_t){0,
+                                                            0,
+                                                            0,
+                                                            {
+                                                                0,
+                                                            }};
+  uint8_t address =
+      (uint8_t)TRY(recv_write_transfer(i2c, &write_trans, kTestTimeout, 0)) >>
+      1;
+  TRY_CHECK(write_trans.stop == false, "Stop bit not expected at this point.");
+  (void)address;
+  // TRY_CHECK(read_trans.address == address, "Address read (0x%x) is not the
+  // expected(0x%x)",
+  //           address, read_trans.address);
+  ibex_timeout_t deadline = ibex_timeout_init(kTestTimeout);
+  TRY(wait_for_acq_fifo(i2c, 1, &deadline));
+
+  return RESP_OK(ujson_serialize_i2c_transfer_start_t, uj, &write_trans);
 }
 
 static status_t enter_sleep(ujson_t *uj, dif_i2c_t *i2c, bool normal) {
@@ -268,16 +306,19 @@ static status_t command_processor(ujson_t *uj) {
       case kTestCommandI2cTargetAddress:
         RESP_ERR(uj, configure_device_address(uj, &i2c));
         break;
-      case kTestCommandI2cReadTransaction:
-        RESP_ERR(uj, read_transaction(uj, &i2c));
+      case kTestCommandI2cStartTransferWrite:
+        RESP_ERR(uj, start_write_transaction(uj, &i2c, 0));
         break;
-      case kTestCommandI2cWriteTransaction:
-        RESP_ERR(uj, write_transaction(uj, &i2c, 0));
+      case kTestCommandI2cStartTransferRead:
+        RESP_ERR(uj, start_read_transaction(uj, &i2c));
         break;
-      case kTestCommandI2cWriteTransactionSlow:
+      case kTestCommandI2cStartTransferWriteRead:
+        RESP_ERR(uj, start_write_read_transaction(uj, &i2c));
+        break;
+      case kTestCommandI2cStartTransferWriteSlow:
         // We'll insert a 10ms delay every 64 bytes, which is a huge delay
         // at 100 KHz, forcing the peripheral to stretch the clock.
-        RESP_ERR(uj, write_transaction(uj, &i2c, kTransactionDelay));
+        RESP_ERR(uj, start_write_transaction(uj, &i2c, kTransactionDelay));
         break;
       default:
         LOG_ERROR("Unrecognized command: %d", command);

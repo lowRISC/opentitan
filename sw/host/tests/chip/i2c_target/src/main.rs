@@ -8,13 +8,19 @@ use std::time::Duration;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::execute_test;
+use opentitanlib::io::gpio::BitbangEntry;
+use opentitanlib::io::gpio::GpioPin;
+use opentitanlib::io::gpio::PinMode;
 use opentitanlib::io::i2c::Transfer;
+use opentitanlib::test_utils;
 use opentitanlib::test_utils::e2e_command::TestCommand;
-use opentitanlib::test_utils::i2c_target::{I2cTargetAddress, I2cTransaction};
+use opentitanlib::test_utils::i2c_target::{I2cTargetAddress, I2cTransferStart};
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::rpc::{UartRecv, UartSend};
 use opentitanlib::test_utils::status::Status;
 use opentitanlib::uart::console::UartConsole;
+use std::borrow::Borrow;
+use std::rc::Rc;
 
 #[derive(Debug, Parser)]
 struct Opts {
@@ -38,13 +44,12 @@ proposition that all men are created equal."#;
 
 fn test_set_target_address(_opts: &Opts, transport: &TransportWrapper, instance: u8) -> Result<()> {
     let uart = transport.uart("console")?;
-    //let i2c = transport.i2c(&opts.i2c)?;
     let address = I2cTargetAddress {
         instance,
         // Respond to address 0x33.
         id0: 0x33,
         mask0: 0x7f,
-        // Respond to addressess 0x70-0x73.
+        // Respond to addresses 0x70-0x73.
         id1: 0x70,
         mask1: 0x7c,
     };
@@ -57,14 +62,12 @@ fn test_read_transaction(opts: &Opts, transport: &TransportWrapper, address: u8)
     let i2c = transport.i2c(&opts.i2c)?;
 
     log::info!("Testing read transaction at I2C address {address:02x}");
-    let txn = I2cTransaction::new(b"Hello");
+    let txn = I2cTransferStart::new(address, b"Hello", true);
     let mut result = vec![0u8; txn.length as usize];
-    let rx_result = txn.execute_read(&*uart, || {
+    txn.execute_read(&*uart, || {
         i2c.run_transaction(Some(address), &mut [Transfer::Read(&mut result)])
     })?;
     assert_eq!(result.as_slice(), txn.data.as_slice());
-    assert_eq!(rx_result.address, address);
-    assert_eq!(rx_result.continuation, 0);
     Ok(())
 }
 
@@ -72,13 +75,14 @@ fn test_write_transaction(opts: &Opts, transport: &TransportWrapper, address: u8
     let uart = transport.uart("console")?;
     let i2c = transport.i2c(&opts.i2c)?;
     log::info!("Testing write transaction at I2C address {address:02x}");
-    let result = I2cTransaction::execute_write(&*uart, TestCommand::I2cWriteTransaction, || {
+
+    let transfer = I2cTransferStart::execute_write(&*uart, || {
         i2c.run_transaction(Some(address), &mut [Transfer::Write(b"Hello World")])
     })?;
-    let len = result.length as usize;
-    assert_eq!(&result.data[0..len], b"Hello World");
-    assert_eq!(result.address, address);
-    assert_eq!(result.continuation, 0);
+    let len = transfer.length as usize;
+    assert_eq!(&transfer.data[0..len], b"Hello World");
+    assert_eq!(transfer.address, address);
+    assert!(transfer.stop);
     Ok(())
 }
 
@@ -90,14 +94,13 @@ fn test_write_transaction_slow(
     let uart = transport.uart("console")?;
     let i2c = transport.i2c(&opts.i2c)?;
     log::info!("Testing slow write transaction at I2C address {address:02x}");
-    let result =
-        I2cTransaction::execute_write(&*uart, TestCommand::I2cWriteTransactionSlow, || {
-            i2c.run_transaction(Some(address), &mut [Transfer::Write(GETTYSBURG.as_bytes())])
-        })?;
+    let result = I2cTransferStart::execute_write_slow(&*uart, || {
+        i2c.run_transaction(Some(address), &mut [Transfer::Write(GETTYSBURG.as_bytes())])
+    })?;
     let len = result.length as usize;
     assert_eq!(&result.data[0..len], GETTYSBURG.as_bytes());
     assert_eq!(result.address, address);
-    assert_eq!(result.continuation, 0);
+    assert!(result.stop);
     Ok(())
 }
 
@@ -135,6 +138,145 @@ fn test_wakeup_deep_sleep(
     test_read_transaction(opts, transport, address)
 }
 
+fn test_write_repeated_start(
+    _opts: &Opts,
+    transport: &TransportWrapper,
+    address: u8,
+) -> Result<()> {
+    let uart = transport.uart("console")?;
+
+    log::info!("Emulating start with bit-banging");
+    let gpio_bitbanging = transport.gpio_bitbanging()?;
+    let gpio_pins = transport.gpio_pins(&["IOA7", "IOA8"].map(|s| s.to_string()))?;
+    let i2c_bitbang = test_utils::bitbanging::i2c::encoder::Encoder::<0, 1> {};
+
+    for pin in &gpio_pins {
+        pin.set_mode(PinMode::OpenDrain)?;
+    }
+    const REFERENCE_DATA: &[u8] = b"Hello World!";
+    let broken_byte = vec![
+        test_utils::bitbanging::i2c::Bit::High,
+        test_utils::bitbanging::i2c::Bit::Low,
+        test_utils::bitbanging::i2c::Bit::Low,
+        test_utils::bitbanging::i2c::Bit::High,
+    ];
+    let transaction = &i2c_bitbang.run(&[
+        test_utils::bitbanging::i2c::encoder::Transfer::Start,
+        //This nibble simulates a broken byte.
+        test_utils::bitbanging::i2c::encoder::Transfer::Broken(broken_byte),
+        test_utils::bitbanging::i2c::encoder::Transfer::Start,
+        test_utils::bitbanging::i2c::encoder::Transfer::Addr {
+            addr: address,
+            read: false,
+            nack: true,
+        },
+        test_utils::bitbanging::i2c::encoder::Transfer::Write(REFERENCE_DATA),
+        test_utils::bitbanging::i2c::encoder::Transfer::Stop,
+    ]);
+    let mut waveform = [BitbangEntry::Write(transaction)];
+
+    log::info!("Testing write transaction at I2C address {address:02x}");
+    let transfer = I2cTransferStart::execute_write(&*uart, || {
+        gpio_bitbanging.run(
+            &gpio_pins
+                .iter()
+                .map(Rc::borrow)
+                .collect::<Vec<&dyn GpioPin>>(),
+            Duration::from_micros(10),
+            &mut waveform,
+        )?;
+        Ok(())
+    })?;
+
+    transport.apply_default_configuration(None)?;
+
+    let len = transfer.length as usize;
+    assert_eq!(&transfer.data[0..len], REFERENCE_DATA);
+    assert_eq!(transfer.address, address);
+    Ok(())
+}
+
+fn test_write_read_repeated_start(
+    _opts: &Opts,
+    transport: &TransportWrapper,
+    address: u8,
+) -> Result<()> {
+    let uart = transport.uart("console")?;
+
+    let gpio_bitbanging = transport.gpio_bitbanging()?;
+    let gpio_pins = transport.gpio_pins(&["IOA7", "IOA8"].map(|s| s.to_string()))?;
+    let i2c_bitbang_encoder = test_utils::bitbanging::i2c::encoder::Encoder::<0, 1> {};
+    let mut i2c_bitbang_decoder =
+        test_utils::bitbanging::i2c::decoder::Decoder::<0, 1> { buffer: [0; 256] };
+
+    for pin in &gpio_pins {
+        pin.set_mode(PinMode::OpenDrain)?;
+    }
+    const WRITE_REFERENCE_DATA: &[u8] = b"Sending Hello!";
+    const READ_REFERENCE_DATA: &[u8] = b"Receiving Hello!";
+
+    // This test verifies that the i2c target can do a write and read operation within the same
+    // transaction with repeated start.
+    let transfer = &i2c_bitbang_encoder.run(&[
+        test_utils::bitbanging::i2c::encoder::Transfer::Start,
+        test_utils::bitbanging::i2c::encoder::Transfer::Addr {
+            addr: address,
+            read: false,
+            nack: true,
+        },
+        test_utils::bitbanging::i2c::encoder::Transfer::Write(WRITE_REFERENCE_DATA),
+        test_utils::bitbanging::i2c::encoder::Transfer::Start,
+        test_utils::bitbanging::i2c::encoder::Transfer::Addr {
+            addr: address,
+            read: true,
+            nack: false,
+        },
+        test_utils::bitbanging::i2c::encoder::Transfer::Read(READ_REFERENCE_DATA.len()),
+        test_utils::bitbanging::i2c::encoder::Transfer::Stop,
+    ]);
+    let mut buffer = vec![0u8; transfer.len()];
+    let mut waveform = [BitbangEntry::Both(transfer, &mut buffer)];
+
+    log::info!("Testing write transaction at I2C address 0x{address:02x}");
+    let txn = I2cTransferStart::new(address, READ_REFERENCE_DATA, false);
+    let _ = txn.execute_write_read(&*uart, || {
+        gpio_bitbanging.run(
+            &gpio_pins
+                .iter()
+                .map(Rc::borrow)
+                .collect::<Vec<&dyn GpioPin>>(),
+            Duration::from_micros(10),
+            &mut waveform,
+        )?;
+        Ok(())
+    })?;
+
+    transport.apply_default_configuration(None)?;
+
+    let decoded = i2c_bitbang_decoder.run(buffer)?;
+    let read: Vec<_> = decoded
+        .iter()
+        .skip_while(|x| match x {
+            test_utils::bitbanging::i2c::decoder::Transfer::Addr {
+                addr,
+                read,
+                nack: _,
+            } => !(*addr == address && *read),
+            _ => true,
+        })
+        .skip(1)
+        .collect();
+
+    assert_eq!(
+        **read.first().unwrap(),
+        test_utils::bitbanging::i2c::decoder::Transfer::Bytes {
+            data: READ_REFERENCE_DATA,
+            nack: true
+        }
+    );
+    Ok(())
+}
+
 fn main() -> Result<()> {
     let opts = Opts::parse();
     opts.init.init_logging();
@@ -151,9 +293,11 @@ fn main() -> Result<()> {
         execute_test!(test_read_transaction, &opts, &transport, 0x70);
         execute_test!(test_read_transaction, &opts, &transport, 0x71);
         execute_test!(test_read_transaction, &opts, &transport, 0x72);
+        execute_test!(test_write_repeated_start, &opts, &transport, 0x33);
         execute_test!(test_read_transaction, &opts, &transport, 0x73);
         execute_test!(test_write_transaction, &opts, &transport, 0x33);
         execute_test!(test_write_transaction_slow, &opts, &transport, 0x33);
+        execute_test!(test_write_read_repeated_start, &opts, &transport, 0x70);
     }
     execute_test!(test_wakeup_normal_sleep, &opts, &transport, 0x33);
     execute_test!(test_wakeup_deep_sleep, &opts, &transport, 0x33, 0);

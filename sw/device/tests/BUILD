@@ -4750,15 +4750,17 @@ opentitan_test(
         "i2c_target_test.c",
     ],
     cw310 = new_cw310_params(
-        # otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_prod_manuf_personalized",
         test_cmd = """
             --bootstrap="{firmware}"
         """,
         test_harness = "//sw/host/tests/chip/i2c_target",
     ),
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_sival": None,
-    },
+    exec_env = dicts.add(
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw310_sival": None,
+        },
+    ),
     deps = [
         "//sw/device/lib/arch:device",
         "//sw/device/lib/dif:gpio",
