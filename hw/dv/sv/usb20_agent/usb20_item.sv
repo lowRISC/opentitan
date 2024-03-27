@@ -69,10 +69,15 @@ class data_pkt extends usb20_item;
     data.size() <= 64;
    }
 
-  function void set_payload(byte bmRequestType, byte bRequest, byte wVH, byte wVL, byte wIH,
-                            byte wIL, byte wLH, byte wLL);
+  // Construct the Setup packet of a standard USB Device Request
+  function void set_payload(byte unsigned bmRequestType, byte unsigned bRequest,
+                            // 16-bit 'wValue' field but the bytes are used separately
+                            byte unsigned wVL, byte unsigned wVH,
+                            bit [15:0] wIndex, bit [15:0] wLength);
 
-    data = '{bmRequestType, bRequest, wVH, wVL, wIH, wIL, wLH, wLL};
+    data = '{bmRequestType, bRequest, wVL, wVH,  // 16-bit fields are sent as Little Endian
+             wIndex[7:0], wIndex[15:8],
+             wLength[7:0], wLength[15:8]};
     crc16 = generate_crc16(data);
   endfunction
 
