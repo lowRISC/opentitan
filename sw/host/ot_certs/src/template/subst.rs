@@ -330,6 +330,14 @@ impl Subst for Certificate {
                 .serial_number
                 .subst(data)
                 .context("cannot substitute serial number")?,
+            not_before: self
+                .not_before
+                .subst(data)
+                .context("cannot substitute not_before")?,
+            not_after: self
+                .not_after
+                .subst(data)
+                .context("cannot substitute not_after")?,
             issuer: self
                 .issuer
                 .subst(data)

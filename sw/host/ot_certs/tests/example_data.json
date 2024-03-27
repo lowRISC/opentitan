@@ -1,5 +1,7 @@
 {
     "serial_number": "0xc32a9847abefc5074ad",
+    "not_before": "20230101000000Z",
+    "not_after": "99991231235959Z",
     "issuer_c": "UK",
     "issuer_cn": "lowRISC",
     "subject_serial_number": "5498694878674878747894768746897849",
