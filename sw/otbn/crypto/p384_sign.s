@@ -22,19 +22,19 @@
  *
  * This routine runs in constant time.
  *
- * @param[in]  dmem[0]: dptr_k0, pointer to location in dmem containing
- *                      1st scalar share k0
- * @param[in]  dmem[4]: dptr_k1, pointer to location in dmem containing
- *                      2nd scalar share k1
- * @param[in]  dmem[8]: dptr_msg, pointer to the message to be signed in dmem
- * @param[in]  dmem[12]: dptr_r, pointer to dmem location where s component
- *                               of signature will be placed
- * @param[in]  dmem[16]: dptr_s, pointer to dmem location where r component
- *                               of signature will be placed
- * @param[in]  dmem[28]: dptr_d0, pointer to location in dmem containing
- *                      1st private key share d0
- * @param[in]  dmem[32]: dptr_d1, pointer to location in dmem containing
- *                      2nd private key share d1
+ * @param[in]  x17:  dptr_k0, pointer to location in dmem containing
+ *                            1st scalar share k0
+ * @param[in]  x19:  dptr_k1, pointer to location in dmem containing
+ *                            2nd scalar share k1
+ * @param[in]   x6:  dptr_msg, pointer to the message to be signed in dmem
+ * @param[in]  x14:  dptr_r, pointer to dmem location where s component
+ *                           of signature will be placed
+ * @param[in]  x15:  dptr_s, pointer to dmem location where r component
+ *                           of signature will be placed
+ * @param[in]   x4:  dptr_d0, pointer to location in dmem containing
+ *                            1st private key share d0
+ * @param[in]   x5:  dptr_d1, pointer to location in dmem containing
+ *                            2nd private key share d1
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
@@ -55,34 +55,6 @@ p384_sign:
 
   /* get dmem pointer of base point y-coordinate */
   la        x21, p384_gy
-
-  /* get dmem pointer of 1st scalar share k0 */
-  la        x17, dptr_k0
-  lw        x17, 0(x17)
-
-  /* get dmem pointer of 2nd scalar share k1 */
-  la        x19, dptr_k1
-  lw        x19, 0(x19)
-
-  /* get dmem pointer of 1st private key share d0 */
-  la        x4, dptr_d0
-  lw        x4, 0(x4)
-
-  /* get dmem pointer of 2nd private key share d1 */
-  la        x5, dptr_d1
-  lw        x5, 0(x5)
-
-  /* get dmem pointer of message msg */
-  la        x6, dptr_msg
-  lw        x6, 0(x6)
-
-  /* get dmem pointer of signature r */
-  la        x14, dptr_r
-  lw        x14, 0(x14)
-
-  /* get dmem pointer of signature s */
-  la        x15, dptr_s
-  lw        x15, 0(x15)
 
   /* get dmem pointer of scratchpad */
   la        x30, scratchpad
@@ -266,64 +238,8 @@ p384_sign:
   ret
 
 
-/* pointers and scratchpad memory */
+/* scratchpad memory */
 .section .data
-
-.balign 32
-
-/* pointer to k0 (dptr_k0) */
-.globl dptr_k0
-.weak dptr_k0
-dptr_k0:
-  .zero 4
-
-/* pointer to k1 (dptr_k1) */
-.globl dptr_k1
-.weak dptr_k1
-dptr_k1:
-  .zero 4
-
-/* pointer to msg (dptr_msg) */
-.globl dptr_msg
-.weak dptr_msg
-dptr_msg:
-  .zero 4
-
-/* pointer to R (dptr_r) */
-.globl dptr_r
-.weak dptr_r
-dptr_r:
-  .zero 4
-
-/* pointer to S (dptr_s) */
-.globl dptr_s
-.weak dptr_s
-dptr_s:
-  .zero 4
-
-/* pointer to X (dptr_x) */
-.globl dptr_x
-.weak dptr_x
-dptr_x:
-  .zero 4
-
-/* pointer to Y (dptr_y) */
-.globl dptr_y
-.weak dptr_y
-dptr_y:
-  .zero 4
-
-/* pointer to d0 (dptr_d0) */
-.globl dptr_d0
-.weak dptr_d0
-dptr_d0:
-  .zero 4
-
-/* pointer to d1 (dptr_d1) */
-.globl dptr_d1
-.weak dptr_d1
-dptr_d1:
-  .zero 4
 
 /* 704 bytes of scratchpad memory */
 .balign 32

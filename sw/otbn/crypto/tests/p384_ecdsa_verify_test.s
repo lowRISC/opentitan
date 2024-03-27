@@ -14,39 +14,20 @@
 .section .text.start
 
 p384_ecdsa_verify_test:
-
-  /* set dmem pointer to point to message */
-  la       x2, msg
-  la       x3, dptr_msg
-  sw       x2, 0(x3)
-
-  /* set dmem pointer to point to signature */
-  la       x2, sig_r
-  la       x3, dptr_r
-  sw       x2, 0(x3)
-  la       x2, sig_s
-  la       x3, dptr_s
-  sw       x2, 0(x3)
-
-  /* set dmem pointer to point to public key */
-  la       x2, pub_x
-  la       x3, dptr_x
-  sw       x2, 0(x3)
-  la       x2, pub_y
-  la       x3, dptr_y
-  sw       x2, 0(x3)
-
-  /* set dmem pointer to point to signature verifcation result */
-  la       x2, sig_xres
-  la       x3, dptr_rnd
-  sw       x2, 0(x3)
+  /* Fill gpp registers with pointers to variables */
+  la        x6, r
+  la        x7, s
+  la        x8, rnd
+  la        x9, msg
+  la        x13, x
+  la        x14, y
 
   /* call ECDSA signature verification subroutine in P-384 lib */
   jal      x1, p384_verify
 
   /* load signature to wregs for comparison with reference */
   li        x2, 0
-  la        x3, sig_xres
+  la        x3, rnd
   bn.lid    x2++, 0(x3)
   bn.lid    x2, 32(x3)
 
@@ -72,7 +53,7 @@ msg:
   .zero 16
 
 /* signature R */
-sig_r:
+r:
   .word 0xb68c28d8
   .word 0x2b23ce3a
   .word 0x9a1a30fc
@@ -88,7 +69,7 @@ sig_r:
   .zero 16
 
 /* signature S */
-sig_s:
+s:
   .word 0x24bc1bf9
   .word 0x752042f5
   .word 0x98144c27
@@ -104,7 +85,7 @@ sig_s:
   .zero 16
 
 /* public key x-coordinate */
-pub_x:
+x:
   .word 0x4877f3d1
   .word 0x7b829460
   .word 0xb1cac609
@@ -120,7 +101,7 @@ pub_x:
   .zero 16
 
 /* public key y-coordinate */
-pub_y:
+y:
   .word 0xc181f90f
   .word 0xc31ef079
   .word 0xbf3aff6e
@@ -135,6 +116,6 @@ pub_y:
   .word 0xaaafcad2
   .zero 16
 
-/* signature verification result x_res */
-sig_xres:
+/* signature verification result x_res (rnd) */
+rnd:
   .zero 64

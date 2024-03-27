@@ -14,50 +14,25 @@
 .section .text.start
 
 p384_ecdsa_sign_test:
-
-  /* set dmem pointer to point to 1st scalar share k0 */
-  la       x2, k0
-  la       x3, dptr_k0
-  sw       x2, 0(x3)
-
-  /* set dmem pointer to point to 2nd scalar share k1 */
-  la       x2, k1
-  la       x3, dptr_k1
-  sw       x2, 0(x3)
-
-  /* set dmem pointer to point to 1st scalar share d0 (private key) */
-  la       x2, d0
-  la       x3, dptr_d0
-  sw       x2, 0(x3)
-
-  /* set dmem pointer to point to 2nd scalar share d1 (private key) */
-  la       x2, d1
-  la       x3, dptr_d1
-  sw       x2, 0(x3)
-
-  /* set dmem pointer to point to message */
-  la       x2, msg
-  la       x3, dptr_msg
-  sw       x2, 0(x3)
-
-  /* set dmem pointer to point to signature */
-  la       x2, sig_r
-  la       x3, dptr_r
-  sw       x2, 0(x3)
-  la       x2, sig_s
-  la       x3, dptr_s
-  sw       x2, 0(x3)
+  /* Fill gpp registers with pointers to variables */
+  la        x17, k0
+  la        x19, k1
+  la        x6, msg
+  la        x14, r
+  la        x15, s
+  la        x4, d0
+  la        x5, d1
 
   /* call ECDSA signing subroutine in P-384 lib */
-  jal      x1, p384_sign
+  jal       x1, p384_sign
 
   /* load signature to wregs for comparison with reference */
   li        x2, 0
-  la        x3, sig_r
+  la        x3, r
   bn.lid    x2++, 0(x3)
   bn.lid    x2, 32(x3)
   li        x2, 2
-  la        x3, sig_s
+  la        x3, s
   bn.lid    x2++, 0(x3)
   bn.lid    x2, 32(x3)
 
@@ -187,9 +162,9 @@ msg:
   .zero 16
 
 /* signature R */
-sig_r:
+r:
   .zero 64
 
 /* signature S */
-sig_s:
+s:
   .zero 64
