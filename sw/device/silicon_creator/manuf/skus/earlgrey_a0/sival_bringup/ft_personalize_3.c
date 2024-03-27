@@ -78,7 +78,10 @@ static const flash_ctrl_cfg_t kCertificateFlashInfoCfg = {
     .he = kMultiBitBool4False,
 };
 
-static status_t config_certificate_flash_pages(void) {
+/**
+ * Configures flash info pages to store device certificates.
+ */
+static status_t config_and_erase_certificate_flash_pages(void) {
   const flash_ctrl_info_page_t *kCertFlashInfoPages[] = {
       &kFlashCtrlInfoPageUdsCertificate,
       &kFlashCtrlInfoPageCdi0Certificate,
@@ -89,6 +92,12 @@ static status_t config_certificate_flash_pages(void) {
     flash_ctrl_info_perms_set(kCertFlashInfoPages[i],
                               kCertificateFlashInfoPerms);
   }
+  TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageUdsCertificate,
+                            kFlashCtrlEraseTypePage));
+  TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageCdi0Certificate,
+                            kFlashCtrlEraseTypePage));
+  TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageCdi1Certificate,
+                            kFlashCtrlEraseTypePage));
   return OK_STATUS();
 }
 
@@ -133,7 +142,7 @@ static status_t personalize(ujson_t *uj) {
   TRY(ujson_deserialize_manuf_certgen_inputs_t(uj, &certgen_inputs));
 
   // Configure certificate flash info page permissions.
-  TRY(config_certificate_flash_pages());
+  TRY(config_and_erase_certificate_flash_pages());
 
   // Initialize entropy complex / KMAC for key manager operations.
   TRY(entropy_complex_init());
@@ -153,14 +162,7 @@ static status_t personalize(ujson_t *uj) {
   TRY(dice_uds_cert_build(&certgen_inputs, &uds_pubkey_id,
                           dice_certs.uds_tbs_certificate,
                           &dice_certs.uds_tbs_certificate_size));
-  TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageUdsCertificate,
-                            kFlashCtrlEraseTypePage));
-  TRY(flash_ctrl_info_write(
-      &kFlashCtrlInfoPageUdsCertificate,
-      kFlashInfoFieldUdsCertificate.byte_offset,
-      dice_certs.uds_tbs_certificate_size / sizeof(uint32_t),
-      dice_certs.uds_tbs_certificate));
-  LOG_INFO("Generated UDS certificate.");
+  LOG_INFO("Generated UDS TBS certificate.");
 
   // Generate CDI_0 keys and cert.
   compute_keymgr_owner_int_binding(&certgen_inputs);
@@ -170,8 +172,6 @@ static status_t personalize(ujson_t *uj) {
   TRY(dice_cdi_0_cert_build(&certgen_inputs, &uds_pubkey_id, &cdi_0_pubkey_id,
                             dice_certs.cdi_0_certificate,
                             &dice_certs.cdi_0_certificate_size));
-  TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageCdi0Certificate,
-                            kFlashCtrlEraseTypePage));
   TRY(flash_ctrl_info_write(
       &kFlashCtrlInfoPageCdi0Certificate,
       kFlashInfoFieldCdi0Certificate.byte_offset,
@@ -186,8 +186,6 @@ static status_t personalize(ujson_t *uj) {
   TRY(dice_cdi_1_cert_build(&certgen_inputs, &cdi_0_pubkey_id,
                             dice_certs.cdi_1_certificate,
                             &dice_certs.cdi_1_certificate_size));
-  TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageCdi1Certificate,
-                            kFlashCtrlEraseTypePage));
   TRY(flash_ctrl_info_write(
       &kFlashCtrlInfoPageCdi1Certificate,
       kFlashInfoFieldCdi1Certificate.byte_offset,
@@ -204,8 +202,6 @@ static status_t personalize(ujson_t *uj) {
   TRY(ujson_deserialize_manuf_endorsed_certs_t(uj, &endorsed_certs));
 
   // Write the endorsed UDS certificate to flash and ack to host.
-  TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageUdsCertificate,
-                            kFlashCtrlEraseTypePage));
   TRY(flash_ctrl_info_write(
       &kFlashCtrlInfoPageUdsCertificate,
       kFlashInfoFieldUdsCertificate.byte_offset,
