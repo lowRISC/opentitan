@@ -46,15 +46,15 @@
     {
       name: in_trans
       desc: '''
-            Verify read and write 1 to clear corresponding bits of the register.
+            Verify read and write 1 to clear corresponding bits of the 'in_sent' register.
 
             - Configure the device for an IN transaction to a particular endpoint.
-            - Read the register value to get current status of sent packets and
+            - Read the 'in_sent' register value to get current status of sent packets and
               then write 1s to the bits which are already high.
-            - Verify that the Reading the register will show only those bits high whose corresponding
-              endpoints have sent a packet and received ACK from host.
-            - Writing ones must clear the corresponding bits of the register
-            - Excluding the ACK for isochronous transfer.
+            - Verify that reading the register shows only those bits high whose corresponding
+              endpoints have sent a packet, and - for non-Isochronous transfers - received an ACK
+              from the host.
+            - Writing ones must clear the corresponding bits of the 'in_sent' register.
             '''
       stage: V2
       tests: ["usbdev_in_trans"]
@@ -77,11 +77,11 @@
     {
       name: phy_pins_sense
       desc: '''
-            Verify the read functionality of phy_pins_sense register via TLUL interface.
+            Verify that the 'phy_pins_sense' register reflects the current state of the DUT pins.
 
-            - read the phy_pins_sense register via TLUL interface and sample the inputs
-              and outputs values of the DUT at that particular instance.
-            - Verify that the read value of the register should reflect the sampled values of the
+            - Read the 'phy_pins_sense' register via TL-UL interface and sample the input
+              and output signals of the DUT at that particular instant.
+            - Verify that the read value of the register reflects the sampled values of the
               inputs and outputs.
             '''
       stage: V2
@@ -90,13 +90,15 @@
     {
       name: av_buffer
       desc: '''
-            Verify the functionality of availability of buffer.
+            Verify the behavior of the Available OUT and Available SETUP Buffer FIFOs.
 
-            - write the [4:0] bit buffer ID in the avbuffer.
-            - Then send a setup/out token to the usbdev followed by data packet.
-            - Then read from the buffer ID written in the AVBUFFER register.
-            - Verify that the SRAM buffer supplied to the avbuffer should contain the same data
-              as received in the data packet payloads.
+            - Choose at random whether to send a SETUP packet or an OUT packet.
+            - Write a random 5-bit buffer ID into the 'avoutbuffer' or 'avsetupbuffer' as appropriate.
+            - Send a SETUP/OUT token packet followed by a DATA packet to the DUT.
+            - Verify that the packet arrives in the RX FIFO with the expected properties
+              (buffer ID, packet length and setup/non-setup packet).
+            - Verify that the specified buffer within the packet buffer memory contains the data that
+              was transmitted.
             '''
       stage: V2
       tests: ["usbdev_av_buffer"]
@@ -106,12 +108,12 @@
       desc: '''
             Verify the functionality of rx fifo.
 
-            - send an OUT transaction to the USBdev with appropriate data packets.
+            - Send an OUT transaction to the DUT with appropriate data packet.
             - After successful reception read the buffer id, setup/out flag and size
-              from the RX fifo earlier.
+              from the RX FIFO entry.
             - Then perform a read operation on the SRAM with address and control info
               provided by the rxfifo.
-            - Verify that the data read from the SRAM should contain the same data as sent to the
+            - Verify that the data read from the SRAM matches the data sent to the
               device in the data packet of the OUT transaction.
             '''
       stage: V2
@@ -135,9 +137,10 @@
             where a single SE0 bit is recognized as an end of packet, while two successive bits are
             required otherwise.
 
-            - set eop_single_bit field true in the phy config register and then send a packet with
-              a single SE0 bit at the end followed by J state.
-            - Verify that the device should recognize this eop as valid and should not raise any link_err interrupts.
+            - Set eop_single_bit field true in the 'phy_config' register and then send an OUT data packet with
+              a single SE0 bit interval at the end followed by J state (bus Idle).
+            - Verify that the device recognizes this EOP as valid, accepts the packet into the RX FIFO and
+	      does not ignore the packet or raise any link_err interrupts.
             '''
       stage: V2
       tests: []
@@ -145,10 +148,15 @@
     {
       name: phy_config_pinflip
       desc: '''
-            Verify the functionality of Pinflip that is used to flip Dp and Dn.
+            Verify that the 'phy_config.pinflip' bit swaps the use of the DP and DN signals on both
+            the input and the output sides of the DUT.
 
-            - set the pinflip field true in the phy_config register.
-            - Verify that the usb_dn goes high and usb_dp will become high impedance (Z).
+            - Set up the DUT as normal but ensure that the 'pinflip' bit is instead set to true.
+            - Ensure that the agent, including driver and monitor are aware of the pins being swapped.
+            - Connect the device to the USB.
+            - Verify that USB_DN is pulled high instead of USB_DP, and that USB_DP remains low.
+            - Verify that OUT and and IN transactions complete normally and with the expected data
+              being transferred.
             '''
       stage: V2
       tests: []
@@ -156,11 +164,16 @@
     {
       name: phy_config_usb_ref_disable
       desc: '''
-            Verify the reference signal generation for clock synchronization.
+            Verify the reference signal generation for clock synchronization may be disabled.
 
-            - set the usb_ref_disable field true in the phy_config register and SOF packet
-              is sent to the device.
-            - Verify that the clock synchronization signal usb_ref_0 and usb_ref_val will not be generated.
+            - Generate a number of SOF packets to the DUT.
+            - Check that the 'usb_ref_val_o' rises indicating that valid packets are being detected.
+            - Check that 'usb_ref_pulse_o' pulses periodically, in time with the transmission of
+              SOF packets to the DUT.
+            - Set the usb_ref_disable field true in the phy_config register, but continue to transmit
+              the SOF packets.
+            - Verify that the 'usb_ref_val_o' becomes deasserted and 'usb_ref_pulse_o' no longer
+              pulses in response to the arrival of SOF packets.
             '''
       stage: V2
       tests: []
@@ -168,11 +181,13 @@
     {
       name: max_length_out_transaction
       desc: '''
-            Verify the packet of maximum payload length for OUT tranasction.
+            Verify the reception of maximum length OUT data packets.
 
-            - rxenable_out bit is set along with ep_enable_out.
-            - Hosts send an OUT token followed by the data packet with maximum payload length of 64 bytes.
-            - Verify that the Device acknowledge through an ACK in handshake packet.
+            - Configure the endpoint with 'rxenable_out' bit set and 'ep_enable_out' set.
+            - Host sends an OUT token followed by the data packet with maximum payload length of 64 bytes.
+            - Verify that the DUT acknowledges through an ACK handshake packet.
+            - Check that the received data packet within the DUT packet buffer memory matches the
+              packet data that was transmitted.
             '''
       stage: V2
       tests: ["usbdev_max_length_out_transaction"]
@@ -180,11 +195,15 @@
     {
       name: max_length_in_transaction
       desc: '''
-            Verify the packet of maximum payload length for IN tranasction.
+            Verify the transmission of maximum length IN data packets.
 
-            - Hosts send an IN token than device sends the data packet with maximum payload length of 64 bytes.
-            - Verify that the usbdev shall respond appropriately to the ACK by recording that IN DATA packet
+            - Configure the DUT to present a known packet of maximum length (64 bytes) for collection
+              by the host.
+            - Host sends an IN token, then device sends the data packet with maximum payload length of 64 bytes.
+            - Verify that the usbdev responds appropriately to the ACK by recording that the IN DATA packet
               was successfully transmitted.
+            - DV host-side shall check that the IN data packet contains the expected data with no
+              bit stuffing errors and with a correct CRC16.
             '''
       stage: V2
       tests: []
@@ -192,11 +211,13 @@
     {
       name: min_length_out_transaction
       desc: '''
-            Verify the packet of minimum payload length for OUT tranasction.
+            Verify the reception of minimum length OUT data packets.
 
-            - rxenable_out and ep_enable_out is set than Hosts send an OUT token followed by the
-              data packet with minimum payload length of 0 bytes.
-            - Verify that the Device acknowledge through PID ACK bit in the handshake packet.
+            - Configure the endpoint with 'rxenable_out' bit set and 'ep_enable_out' set.
+            - Host sends an OUT token followed by the data packet with minimum payload length of 0 bytes.
+            - Verify that the DUT acknowledges through an ACK handshake packet.
+            - Check that the received data packet within the DUT packet buffer memory matches the
+              packet data that was transmitted.
             '''
       stage: V2
       tests: ["usbdev_min_length_out_transaction"]
@@ -204,11 +225,15 @@
     {
       name: min_length_in_transaction
       desc: '''
-            Verify the packet of minimum payload length for IN tranasction.
+            Verify the transmission of minimum length IN data packets.
 
-            - Hosts send an IN token than device sends the data packet with minimum payload length of 0 bytes.
-            - Verify that the Host acknowledge through PID ACK bit in the handshake packet and once the ACK
-              is received then in_sent register's bit will be 1.
+            - Configure the DUT to present the known packet of minimum length (0 bytes) for collection
+              by the host.
+            - Host sends an IN token, then device sends the data packet with minimum payload length of 0 bytes.
+            - Verify that the usbdev responds appropriately to the ACK by recording that the IN DATA packet
+              was successfully transmitted.
+            - DV host-side shall check that the IN data packet contains the expected data with no
+              bit stuffing errors and with a correct CRC16.
             '''
       stage: V2
       tests: []
@@ -216,12 +241,13 @@
     {
       name: random_length_out_trans
       desc: '''
-            Verify the packet of random payload length for OUT tranasction.
+            Verify the reception of random length OUT data packets.
 
-            - rxenable_out  bit is set than Host sends an OUT token followed by the data packet with
-              random payload length between 0 and 64 bytes.
+            - Configure the endpoint with 'rxenable_out' bit set and 'ep_enable_out' set.
+            - Host sends an OUT token followed by the data packet with random payload length
+              between 0 and 64 bytes.
             - Length from 0 inclusive to 64 inclusive should be supported.
-            - Verify that the Device acknowledge through PID ACK bit in the handshake packet.
+            - Verify that the DUT acknowledges receipt with an ACK handshake packet.
             '''
       stage: V2
       tests: ["usbdev_random_length_out_trans"]
@@ -229,12 +255,13 @@
     {
       name: random_length_in_trans
       desc: '''
-            Verify the packet of random payload length for IN tranasction.
+            Verify the transmission of random length IN data packets.
 
-            - Hosts send an IN token then device sends the data packet with random payload length between 0
-              and 64 bytes.
-            - Verify that the Host acknowledge through PID ACK bit in the handshake packet then in_sent
-              register's bit will be 1.
+            - Configure the DUT to present a packet of known random length (0-64 bytes, inclusive) and
+              content for collection by the host.
+            - Host sends an IN token, then device sends the data packet.
+            - Verify that the DUT records successful transmission of the data packet by setting the
+              corresponding bit of the 'in_sent' register.
             '''
       stage: V2
       tests: []
@@ -244,7 +271,7 @@
       desc: '''
             Verify the functionality of OUT endpoint stall.
 
-            - sets the out_stall register's bit for a particular endpoint then host issues an OUT token packet
+            - Set the 'out_stall' register's bit to 1 for a particular endpoint, then host issues an OUT token packet
               followed by data packet for that endpoint.
             - Verify that the device responds with the PID STALL Handshake.
             '''
@@ -256,7 +283,7 @@
       desc: '''
             Verify the functionality of IN endpoint stall.
 
-            - sets the in_stall register's bit to 1 for a particular endpoint then host issues an IN token packet
+            - Set the 'in_stall' register's bit to 1 for a particular endpoint, then host issues an IN token packet
               for a particular endpoint.
             - Verify that the device responds with the PID STALL Handshake.
             '''
@@ -268,9 +295,9 @@
       desc: '''
             Verify the functionality of isochronous transfer for OUT transaction.
 
-            - sets the out_iso register's bit to 1 for a paricular endpoint then host issues an OUT token to that
+            - Set the 'out_iso' register's bit to 1 for a paricular endpoint, then host issues an OUT token to that
               endpoint followed by the OUT data packet.
-            - Verify that the device will not send any handshake packet.
+            - Verify that the device does not send any handshake packet in response.
             '''
       stage: V2
       tests: []
@@ -280,8 +307,11 @@
       desc: '''
             Verify the functionality of isochronous transfer for IN transaction.
 
-            - sets the in_iso register's bit to 1 for an endpoint then host issues an IN token to that endpoint.
-            - Verify that the device will send data packet but will not expect any handshake packet from host.
+            - Set the 'in_iso' register's bit to 1 for an endpoint, then host issues an IN token to that endpoint.
+            - Configure the DUT with a data packet availabile for collection from that endpoint.
+            - Host sends an IN request and collects the IN data packet, but does not send a handshake response.
+            - Verify that the device signals successful transmission of the packet via the 'in_sent' register
+              without awaiting a handshake packet from the host.
             '''
       stage: V2
       tests: []
@@ -291,7 +321,7 @@
       desc: '''
             Verify the interrupt functionality of packet reception.
 
-            - send an OUT/SETUP token packet to an enabled endpoint while enabling the INTR_ENABLE[0] followed by the data.
+            - Send an OUT/SETUP token packet to an enabled endpoint while enabling the INTR_ENABLE[0] followed by the data.
             - Verify that the corresponding interrupt pin goes high after the successful OUT/SETUP packet reception.
             '''
       stage: V2
@@ -302,7 +332,7 @@
       desc: '''
             Verify the interrupt functionality of packet transmission.
 
-            - send an IN transaction token packet to an enabled endpoint while INTR_ENABLE[1] is 1.
+            - Send an IN transaction token packet to an enabled endpoint while INTR_ENABLE[1] is 1.
             - Verify that the corresponding interrupt pin goes high after sending the successful IN packet.
             '''
       stage: V2
@@ -363,10 +393,10 @@
     {
       name: link_resume
       desc: '''
-            Verify that when the link becomes active again after being suspended link resume will raise.
+            Verify that when the link becomes active again after being suspended link resume will rise.
 
             - First suspend the link by keeping J signal for 3.1ms and then resume it by changing the
-              polarity for 20ms. While the INTR_ENABLE [6] bit is set , also set the wake_control.wake_ack signal.
+              polarity for 20ms. While the INTR_ENABLE[6] bit is set, also set the wake_control.wake_ack signal.
             - Verify that the interrupt pin link_resume goes high once the link resume.
             '''
       stage: V2
@@ -375,12 +405,14 @@
     {
       name: av_empty
       desc: '''
-            Verify the functionality of AV FIFO when av_empty signal is high and device interface is enabled.
+            Verify the functionality of 'av_out_empty' and 'av_setup_empty' interrupts when the
+	    Av OUT/SETUP Buffer FIFO is empty.
 
-            - Enable the interrupt for AV empty by setting INTR_ENABLE[7] and then send back to back
+            - Choose at random whether to test the AV OUT Buffer FIFO or the AV SETUP Buffer FIFO.
+            - Enable the interrupt for AV OUT/SETUP empty by setting INTR_ENABLE[7/17] and then send back to back
               packets to the device.
-            - Don't service the packet reception by popping out from rx_fifo.
-            - Verify that this interrupt pin goes high once the available fifo is empty.
+            - Receive and discard any buffers that appear in the RX FIFO.
+            - Verify that this interrupt pin goes high once the Av OUT/SETUP Buffer FIFO is empty.
             '''
       stage: V2
       tests: []
@@ -388,12 +420,12 @@
     {
       name: rx_full
       desc: '''
-            Verify the functionality of rx FIFO when rx_full signal is high and device interface is enabled.
+            Verify the functionality of rx_full signal when RX FIFO is full.
 
             - Enable the interrupt for RX full by setting INTR_ENABLE[8] and then send back to back packets
               to the device.
-            - Don't just service the packets received by popping out from rx_fifo.
-            - Verify that this interrupt pin should go high once the received fifo is full.
+            - Don't service the packets received by popping out from rx_fifo; leave it to become full.
+            - Verify that this interrupt pin goes high once the received fifo is full.
             '''
       stage: V2
       tests: []
@@ -401,10 +433,12 @@
     {
       name: av_overflow
       desc: '''
-            Verify that if a write was done to the Available Buffer FIFO when the FIFO was full then
-            av_overflow signal is high.
+            Verify that if a write was done to either the Available OUT Buffer FIFO or the Available
+            SETUP Buffer FIFO when the FIFO was full the 'av_overflow' signal becomes high.
 
-            - Write a particular buffer ID to the available buffer FIFO when it is already full.
+            - Fill both of the Available buffer FIFOs.
+            - Choose at random whether to supply an additional OUT buffer or a SETUP buffer.
+            - Attempt to write a buffer ID to the chosen FIFO.
             - Verify that this interrupt pin goes high indicating that the available fifo has
               reached the overflowing condition.
             '''
@@ -418,9 +452,9 @@
             then link_in_err will raise.
 
             - Send an IN token to the device for initiating an IN transaction.
-            - The device should respond with IN data packets.
+            - The device should respond with an IN data packet.
             - DV environment returns an invalid crc16 or unexpected PID in the handshake packet.
-            - Verify that the link_in_err should go high following the handshake packet sent by the host.
+            - Verify that the link_in_err interrupt goes high following the handshake packet sent by the host.
             '''
       stage: V2
       tests: []
@@ -499,12 +533,13 @@
     {
       name: device_address
       desc: '''
-            Verify that the device ignores all packets intended for other addresses.
+            Verify that the device ignores all packets with addresses that do not match the
+            assigned device address.
 
-            - Assigned device address to (usbctrl[22:16]) and send packets to this address.
+            - Assign device address to (usbctrl[22:16]) and send packets to this address.
             - Send packets to other addresses.
             - Verify that the device responds to all packets sent by the DV environment (USB side)
-              that are sent to its assigned address.
+              to the assigned address.
             - Verify that the device ignores all packets that are sent to other addresses.
             '''
       stage: V2
@@ -513,11 +548,12 @@
     {
       name: invalid_data1_data0_toggle_test
       desc: '''
-            Verify the functionality of invalid toggling of Data1 and Data0 bits.
+            Verify the detection and reporting of unexpected Data Toggle bits.
 
-            - send an out data packet to the device in an ongoing transaction without toggling data0 and data1
-              PIDs in consecutive data packets.
-            - Verify that the interrupt pin goes high indicating an error in the link while OUT transaction.
+            - Send a sequence of OUT data packets to the device without toggling between DATA0 and
+              DATA1 PIDs in consecutive data packets.
+            - Verify that the interrupt pin goes high indicating a link error during OUT
+              transactions.
             '''
       stage: V2
       tests: []
@@ -528,8 +564,8 @@
             Verify the SETUP stage of enumeration.
 
             - Send a setup token with a valid setup packet containing the address(0), endpoint number(0)
-              followed by Data0 packet requesting information about device i.e. descriptors.
-            - Verify that the device ACK the setup packet and prepare for the data stage.
+              followed by DATA0 packet requesting information about device i.e. descriptors.
+            - Verify that the device ACKs the setup packet and prepares for the data stage.
             '''
       stage: V2
       tests: []
@@ -561,11 +597,11 @@
     {
       name: endpoint_access
       desc: '''
-            Verify the accessibility of all endpoint when endpoints are enabled.
+            Verify the accessibility of all endpoints when endpoints are enabled.
 
             - Access all the endpoints of the device in IN and OUT direction by enabling ep_out_enable and
               ep_in_enable along with rxenable_out for OUT transaction.
-            - Verify that the device should allow access to all endpoints by responding with ACK for OUT
+            - Verify that the device allows access to all endpoints by responding with ACK for OUT
               accesses and data_packet for IN Accesses.
             '''
       stage: V2
@@ -670,9 +706,10 @@
             Verify that the a Link Reset or SETUP transaction cancels any waiting IN transactions
             by clearing the rdy bit in the configin register of all endpoints.
 
-            - configure an endpoint for transmission by setting field in configin_ep register and
-              set the rdy bit 1.Then send a SETUP transaction to that endpoint or issue a link reset.
-            - Verify that the rdy bit in the configin_ep will be cleared and pend bit will be set to 1.
+            - Configure an endpoint for transmission by setting fields in 'configin[ep]' register and
+              then setting the 'rdy' bit to 1.
+            - Send a SETUP transaction to that endpoint or issue a link reset.
+            - Verify that the 'rdy' bit in 'configin[ep]' is cleared and the 'pend' bit is set to 1.
             '''
       stage: V2
       tests: []
@@ -683,12 +720,12 @@
             Verify the streaming capability of an endpoint in OUT transaction mode.
 
             - Issue back to back data packets to a particular enabled endpoint.
-            - Read the information from RX fifo as soon as a packet is received
+            - Read the information from RX FIFO as soon as a packet is received
               along with the buffer in the SRAM.
             - Send the buffer ID back to Available buffer FIFO after successful buffer read.
-            - Verify that the device must be capable of handling the streaming traffic for a
-              large number of iterations without Available buffer becoming empty and RX FIFO
-              going full.
+            - Verify that the device is capable of handling the streaming traffic for a
+              large number of iterations without Available OUT Buffer FIFO becoming empty or the
+              RX FIFO becoming full.
             '''
       stage: V2
       tests: []
@@ -753,9 +790,9 @@
             Verify the minimum 2 bit times from the SE0-to-J transition (from EOP) to the
             J-to-K transition.
 
-            - Ensure that the successive packets follow the minimum interpacket delay.
-            - Verify that the device will raise a link_err interrupt if the gap between
-              successive packets is less than 2 bit times.
+            - Send at random either a SETUP token packet or an OUT token packet to the DUT.
+            - After just 2 bit intervals of Idle state, transmit a DATA packet to the DUT.
+            - Verify that the packet is received, decoded correctly and ACKnowledged by the DUT.
             '''
       stage: V2
       tests: []
@@ -763,12 +800,12 @@
     {
       name: max_inter_pkt_delay
       desc: '''
-            Verify the maximum 6 bit times from the SE0-to-J transition (from EOP) to
+            Verify the maximum 7.5 bit times from the SE0-to-J transition (from EOP) to
             the J-to-K transition.
 
-            - Ensure that the successive packets follow the maximum interpacket delay.
-            - Verify that the device must raise timeout error for transaction that takes
-              more than max interpacket delay.
+            - Send at random either a SETUP token packet or an OUT token packet to the DUT.
+            - After 7.5 bit intervals of Idle state, transmit a DATA packet to the DUT.
+            - Verify that the packet is received, decoded correctly and ACKnowledged by the DUT.
             '''
       stage: V2
       tests: []
@@ -776,15 +813,17 @@
     {
       name: device_timeout_missing_host_handshake
       desc: '''
-            Verify that the device must time out an IN transaction if it does not
-            receive handshake packets from the host.
+            Verify that the device times out an IN transaction if it does not receive a
+            handshake response from the host.
 
-            - Initiate a transaction with USBdev with an IN token and accept data packets
-              from the device.
-            - Don't send any handshake packet to the device.
-            - Verify that after waiting for a specific timeout limit the device will timeout
-              that transaction and can be seen from the in_sent register of the device.
-              The register bit will be 0 for the endpoint involved in the transaction.
+            - Configure the DUT to present a single packet for IN collection.
+            - Collect a non-Isochronous IN packet from the DUT but do not send a handshake packet.
+            - Host sends a random choice of SETUP, OUT or IN token packet to the DUT.
+            - Check that the packet is still marked as 'rdy' and that 'in_sent' is not set.
+            - Retry the IN packet collection and this time send the ACK handshake within the normal
+              response period.
+            - Check that that packet is collected, that 'rdy' is cleared and that the
+              'in_sent' register bit indicates successful transmission of the packet.
             '''
       stage: V2
       tests: []
@@ -792,13 +831,19 @@
     {
       name: device_timeout
       desc: '''
-            Verify that the device times out transactions when a host packet is 18 bit times
-            after the preceding one in the same transaction.
+            Verify that the device times out transactions when a host response is 18 bit times
+            after the packet transmitted by the DUT.
 
-            - Generate a host packet 18 bit times after the preceding packet in the same
-              transaction.
-            - Verify that the device time out the transaction when a host packet is 18 bit times
-              after the preceding one in the same transaction.
+            - Configure the DUT to present a single packet for IN collection.
+            - Collect a non-Isochronous IN packet from the DUT but do not send a handshake packet
+              in response within 18 bit intervals.
+            - Check that the packet is still marked as 'rdy' and that 'in_sent' is not set.
+            - Send a delayed ACKnowledge handshake packet to the DUT.
+            - Check that the packet is still marked as 'rdy' and that 'in_sent' is not set.
+            - Retry the IN packet collection and this time send the ACK handshake within the normal
+              response period.
+            - Check that that packet is collected, that 'rdy' is cleared and that the
+              'in_sent' register bit indicates successful transmission of the packet.
             '''
       stage: V2
       tests: []
