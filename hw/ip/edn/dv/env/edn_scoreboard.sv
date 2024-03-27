@@ -239,7 +239,7 @@ class edn_scoreboard extends cip_base_scoreboard #(
             backdoor_disable_fifo_clr = 1'b0;
             reset_happened = 1'b0;
             sw_cmd_sts[sw_cmd_ack] = 1'b0;
-            sw_cmd_sts[sw_cmd_sts] = 1'b0;
+            sw_cmd_sts[sw_cmd_sts+:CMD_STS_SIZE-1] = csrng_pkg::CMD_STS_SUCCESS;
             sw_cmd_sts[sw_cmd_rdy] = !boot_mode;
             sw_cmd_sts[sw_cmd_reg_rdy] = !boot_mode;
 
@@ -314,7 +314,8 @@ class edn_scoreboard extends cip_base_scoreboard #(
                        $sformatf("reg name: %0s", csr.get_full_name()))
           if (cfg.en_cov) begin
             cov_vif.cg_edn_sw_cmd_sts_sample(item.d_data[sw_cmd_rdy], item.d_data[sw_cmd_reg_rdy],
-                                             item.d_data[sw_cmd_sts], item.d_data[sw_cmd_ack]);
+                csrng_pkg::csrng_cmd_sts_e'(item.d_data[sw_cmd_sts+:CMD_STS_SIZE]),
+                item.d_data[sw_cmd_ack]);
           end
         end
       end
@@ -656,7 +657,7 @@ class edn_scoreboard extends cip_base_scoreboard #(
         if ((auto_mode && instantiated) || boot_mode) begin
           hw_cmd_sts = `gmv(ral.hw_cmd_sts);
           hw_cmd_sts[hw_cmd_ack] = 1'b0;
-          hw_cmd_sts[hw_cmd_type:+4] = acmd_cur;
+          hw_cmd_sts[hw_cmd_type+:CMD_TYPE_SIZE-1] = acmd_cur;
           void'(ral.hw_cmd_sts.predict(.value(hw_cmd_sts)));
         end
       end
@@ -703,7 +704,7 @@ class edn_scoreboard extends cip_base_scoreboard #(
               csr_spinwait(.ptr(ral.sw_cmd_sts.cmd_ack),
                            .exp_data(rsp_sts.csrng_rsp_ack), .backdoor(1'b1));
               sw_cmd_sts[sw_cmd_ack] = rsp_sts.csrng_rsp_ack;
-              sw_cmd_sts[sw_cmd_sts] = rsp_sts.csrng_rsp_sts;
+              sw_cmd_sts[sw_cmd_sts+:CMD_STS_SIZE-1] = rsp_sts.csrng_rsp_sts;
               sw_cmd_sts[sw_cmd_rdy] = !auto_mode;
               sw_cmd_sts[sw_cmd_reg_rdy] = !auto_mode;,
               wait (cfg.backdoor_disable || reset_happened);
@@ -713,7 +714,7 @@ class edn_scoreboard extends cip_base_scoreboard #(
       end else begin
         hw_cmd_sts = `gmv(ral.hw_cmd_sts);
         hw_cmd_sts[hw_cmd_ack] = rsp_sts.csrng_rsp_ack;
-        hw_cmd_sts[hw_cmd_sts] = rsp_sts.csrng_rsp_sts;
+        hw_cmd_sts[hw_cmd_sts+:CMD_STS_SIZE-1] = rsp_sts.csrng_rsp_sts;
         void'(ral.hw_cmd_sts.predict(.value(hw_cmd_sts)));
       end
     end

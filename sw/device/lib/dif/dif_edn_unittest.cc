@@ -171,8 +171,13 @@ TEST_F(SetModeTest, Auto) {
   EXPECT_READ32(EDN_SW_CMD_STS_REG_OFFSET,
                 {{EDN_SW_CMD_STS_CMD_ACK_BIT, true}});
 
-  EXPECT_READ32(EDN_SW_CMD_STS_REG_OFFSET,
-                {{EDN_SW_CMD_STS_CMD_STS_BIT, false}});
+  uint32_t ctrl_reg = 0;
+  ctrl_reg = bitfield_bit32_write(ctrl_reg, EDN_SW_CMD_STS_CMD_RDY_BIT, 1);
+  ctrl_reg = bitfield_bit32_write(ctrl_reg, EDN_SW_CMD_STS_CMD_REG_RDY_BIT, 1);
+  ctrl_reg =
+      bitfield_field32_write(ctrl_reg, EDN_SW_CMD_STS_CMD_STS_FIELD, 0x0);
+  ctrl_reg = bitfield_bit32_write(ctrl_reg, EDN_SW_CMD_STS_CMD_ACK_BIT, 1);
+  EXPECT_READ32(EDN_SW_CMD_STS_REG_OFFSET, ctrl_reg);
 
   EXPECT_DIF_OK(dif_edn_set_auto_mode(&edn_, params));
 }
@@ -188,52 +193,61 @@ class GetStatusTest : public DifEdnTest {};
 
 TEST_F(GetStatusTest, BadArgs) {
   bool flag;
+  uint32_t ctrl_reg = 0;
   EXPECT_DIF_BADARG(dif_edn_get_status(nullptr, kDifEdnStatusReady, &flag));
+
+  ctrl_reg = bitfield_bit32_write(ctrl_reg, EDN_SW_CMD_STS_CMD_RDY_BIT, 1);
+  ctrl_reg = bitfield_bit32_write(ctrl_reg, EDN_SW_CMD_STS_CMD_REG_RDY_BIT, 1);
+  ctrl_reg =
+      bitfield_field32_write(ctrl_reg, EDN_SW_CMD_STS_CMD_STS_FIELD, 0x0);
+  ctrl_reg = bitfield_bit32_write(ctrl_reg, EDN_SW_CMD_STS_CMD_ACK_BIT, 0);
+  EXPECT_READ32(EDN_SW_CMD_STS_REG_OFFSET, ctrl_reg);
   EXPECT_DIF_BADARG(
       dif_edn_get_status(&edn_, static_cast<dif_edn_status_t>(-1), &flag));
+
   EXPECT_DIF_BADARG(dif_edn_get_status(&edn_, kDifEdnStatusReady, nullptr));
 }
 
 TEST_F(GetStatusTest, Ok) {
   bool flag;
+  uint32_t ctrl_reg = 0;
 
-  EXPECT_READ32(EDN_SW_CMD_STS_REG_OFFSET,
-                {
-                    {EDN_SW_CMD_STS_CMD_RDY_BIT, true},
-                    {EDN_SW_CMD_STS_CMD_REG_RDY_BIT, true},
-                    {EDN_SW_CMD_STS_CMD_STS_BIT, false},
-                    {EDN_SW_CMD_STS_CMD_ACK_BIT, false},
-                });
+  ctrl_reg = bitfield_bit32_write(ctrl_reg, EDN_SW_CMD_STS_CMD_RDY_BIT, 1);
+  ctrl_reg = bitfield_bit32_write(ctrl_reg, EDN_SW_CMD_STS_CMD_REG_RDY_BIT, 1);
+  ctrl_reg =
+      bitfield_field32_write(ctrl_reg, EDN_SW_CMD_STS_CMD_STS_FIELD, 0x0);
+  ctrl_reg = bitfield_bit32_write(ctrl_reg, EDN_SW_CMD_STS_CMD_ACK_BIT, 0);
+  EXPECT_READ32(EDN_SW_CMD_STS_REG_OFFSET, ctrl_reg);
   EXPECT_DIF_OK(dif_edn_get_status(&edn_, kDifEdnStatusRegReady, &flag));
   EXPECT_TRUE(flag);
 
-  EXPECT_READ32(EDN_SW_CMD_STS_REG_OFFSET,
-                {
-                    {EDN_SW_CMD_STS_CMD_RDY_BIT, true},
-                    {EDN_SW_CMD_STS_CMD_REG_RDY_BIT, true},
-                    {EDN_SW_CMD_STS_CMD_STS_BIT, false},
-                    {EDN_SW_CMD_STS_CMD_ACK_BIT, false},
-                });
+  ctrl_reg = 0;
+  ctrl_reg = bitfield_bit32_write(ctrl_reg, EDN_SW_CMD_STS_CMD_RDY_BIT, 1);
+  ctrl_reg = bitfield_bit32_write(ctrl_reg, EDN_SW_CMD_STS_CMD_REG_RDY_BIT, 1);
+  ctrl_reg =
+      bitfield_field32_write(ctrl_reg, EDN_SW_CMD_STS_CMD_STS_FIELD, 0x0);
+  ctrl_reg = bitfield_bit32_write(ctrl_reg, EDN_SW_CMD_STS_CMD_ACK_BIT, 0);
+  EXPECT_READ32(EDN_SW_CMD_STS_REG_OFFSET, ctrl_reg);
   EXPECT_DIF_OK(dif_edn_get_status(&edn_, kDifEdnStatusReady, &flag));
   EXPECT_TRUE(flag);
 
-  EXPECT_READ32(EDN_SW_CMD_STS_REG_OFFSET,
-                {
-                    {EDN_SW_CMD_STS_CMD_RDY_BIT, true},
-                    {EDN_SW_CMD_STS_CMD_REG_RDY_BIT, true},
-                    {EDN_SW_CMD_STS_CMD_STS_BIT, false},
-                    {EDN_SW_CMD_STS_CMD_ACK_BIT, false},
-                });
+  ctrl_reg = 0;
+  ctrl_reg = bitfield_bit32_write(ctrl_reg, EDN_SW_CMD_STS_CMD_RDY_BIT, 1);
+  ctrl_reg = bitfield_bit32_write(ctrl_reg, EDN_SW_CMD_STS_CMD_REG_RDY_BIT, 1);
+  ctrl_reg =
+      bitfield_field32_write(ctrl_reg, EDN_SW_CMD_STS_CMD_STS_FIELD, 0x0);
+  ctrl_reg = bitfield_bit32_write(ctrl_reg, EDN_SW_CMD_STS_CMD_ACK_BIT, 0);
+  EXPECT_READ32(EDN_SW_CMD_STS_REG_OFFSET, ctrl_reg);
   EXPECT_DIF_OK(dif_edn_get_status(&edn_, kDifEdnStatusCsrngStatus, &flag));
   EXPECT_FALSE(flag);
 
-  EXPECT_READ32(EDN_SW_CMD_STS_REG_OFFSET,
-                {
-                    {EDN_SW_CMD_STS_CMD_RDY_BIT, true},
-                    {EDN_SW_CMD_STS_CMD_REG_RDY_BIT, true},
-                    {EDN_SW_CMD_STS_CMD_STS_BIT, false},
-                    {EDN_SW_CMD_STS_CMD_ACK_BIT, false},
-                });
+  ctrl_reg = 0;
+  ctrl_reg = bitfield_bit32_write(ctrl_reg, EDN_SW_CMD_STS_CMD_RDY_BIT, 1);
+  ctrl_reg = bitfield_bit32_write(ctrl_reg, EDN_SW_CMD_STS_CMD_REG_RDY_BIT, 1);
+  ctrl_reg =
+      bitfield_field32_write(ctrl_reg, EDN_SW_CMD_STS_CMD_STS_FIELD, 0x0);
+  ctrl_reg = bitfield_bit32_write(ctrl_reg, EDN_SW_CMD_STS_CMD_ACK_BIT, 0);
+  EXPECT_READ32(EDN_SW_CMD_STS_REG_OFFSET, ctrl_reg);
   EXPECT_DIF_OK(dif_edn_get_status(&edn_, kDifEdnStatusCsrngAck, &flag));
   EXPECT_FALSE(flag);
 }

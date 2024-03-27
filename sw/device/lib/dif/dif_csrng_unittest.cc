@@ -54,18 +54,10 @@ TEST_F(GetCmdInterfaceStatusTest, NullArgs) {
 
 struct StatusTestCase {
   bool cmd_ready;
-  bool cmd_status;
-  uint32_t err_codes;
+  bool cmd_ack;
+  uint32_t cmd_status;
   dif_csrng_cmd_status_t expected_status;
 };
-
-template <typename... Ints>
-uint32_t BitSet(Ints... bits) {
-  uint32_t x = 0;
-  auto ignored = {x |= 1 << static_cast<int>(bits)...};
-  (void)ignored;
-  return x;
-}
 
 class GetCmdInterfaceStatusTestAllParams
     : public GetCmdInterfaceStatusTest,
@@ -74,38 +66,31 @@ class GetCmdInterfaceStatusTestAllParams
 TEST_P(GetCmdInterfaceStatusTestAllParams, ValidConfigurationMode) {
   const auto &test_param = GetParam();
   dif_csrng_cmd_status_t status{};
-  EXPECT_READ32(CSRNG_SW_CMD_STS_REG_OFFSET,
-                {
-                    {CSRNG_SW_CMD_STS_CMD_RDY_BIT, test_param.cmd_ready},
-                    {CSRNG_SW_CMD_STS_CMD_STS_BIT, test_param.cmd_status},
-                });
-  if (test_param.expected_status.kind == kDifCsrngCmdStatusError) {
-    EXPECT_READ32(CSRNG_ERR_CODE_REG_OFFSET, test_param.err_codes);
-  }
+  uint32_t ctrl_reg = 0;
+  ctrl_reg = bitfield_bit32_write(ctrl_reg, CSRNG_SW_CMD_STS_CMD_RDY_BIT,
+                                  test_param.cmd_ready);
+  ctrl_reg = bitfield_bit32_write(ctrl_reg, CSRNG_SW_CMD_STS_CMD_ACK_BIT,
+                                  test_param.cmd_ack);
+  ctrl_reg = bitfield_field32_write(ctrl_reg, CSRNG_SW_CMD_STS_CMD_STS_FIELD,
+                                    test_param.cmd_status);
+  EXPECT_READ32(CSRNG_SW_CMD_STS_REG_OFFSET, ctrl_reg);
   EXPECT_DIF_OK(dif_csrng_get_cmd_interface_status(&csrng_, &status));
   EXPECT_EQ(status.kind, test_param.expected_status.kind);
-  EXPECT_EQ(status.unhealthy_fifos, test_param.expected_status.unhealthy_fifos);
-  EXPECT_EQ(status.errors, test_param.expected_status.errors);
+  EXPECT_EQ(status.cmd_sts, test_param.expected_status.cmd_sts);
 }
 
 INSTANTIATE_TEST_SUITE_P(
     GetCmdInterfaceStatusTestAllParams, GetCmdInterfaceStatusTestAllParams,
-    testing::Values(StatusTestCase{true, false, 0, {kDifCsrngCmdStatusReady}},
-                    StatusTestCase{false, false, 0, {kDifCsrngCmdStatusBusy}},
-                    StatusTestCase{true, true, 0, {kDifCsrngCmdStatusError}},
+    testing::Values(StatusTestCase{true, 0, 0x0, {kDifCsrngCmdStatusReady}},
+                    StatusTestCase{false, 0, 0x0, {kDifCsrngCmdStatusBusy}},
+                    StatusTestCase{true, 1, 0x0, {kDifCsrngCmdStatusReady}},
                     StatusTestCase{
                         false,
-                        true,
-                        BitSet(CSRNG_ERR_CODE_SFIFO_GENBITS_ERR_BIT,
-                               CSRNG_ERR_CODE_SFIFO_PDATA_ERR_BIT,
-                               CSRNG_ERR_CODE_AES_CIPHER_SM_ERR_BIT,
-                               CSRNG_ERR_CODE_FIFO_STATE_ERR_BIT),
+                        1,
+                        kDifCsrngCmdStsInvalidAcmd,
                         {
                             .kind = kDifCsrngCmdStatusError,
-                            .unhealthy_fifos = BitSet(kDifCsrngFifoGenBits,
-                                                      kDifCsrngFifoPData),
-                            .errors = BitSet(kDifCsrngErrorAesSm,
-                                             kDifCsrngErrorFifoFullAndEmpty),
+                            .cmd_sts = kDifCsrngCmdStsInvalidAcmd,
                         },
                     }));
 

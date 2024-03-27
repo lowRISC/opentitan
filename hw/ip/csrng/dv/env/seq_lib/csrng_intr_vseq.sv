@@ -31,6 +31,14 @@ class csrng_intr_vseq extends csrng_base_vseq;
     cs_item.glen  = 'h1;
     `uvm_info(`gfn, $sformatf("%s", cs_item.convert2string()), UVM_DEBUG)
     send_cmd_req(SW_APP, cs_item);
+
+    // Write CSRNG Cmd_Req Register - Uninstantiate Command
+    cs_item.acmd  = csrng_pkg::UNI;
+    cs_item.clen  = 'h0;
+    cs_item.flags = MuBi4True;
+    cs_item.glen  = 'h0;
+    `uvm_info(`gfn, $sformatf("%s", cs_item.convert2string()), UVM_DEBUG)
+    send_cmd_req(SW_APP, cs_item);
   endtask // test_cs_cmd_req_done
 
   task test_cs_entropy_req();
@@ -58,6 +66,14 @@ class csrng_intr_vseq extends csrng_base_vseq;
     cfg.clk_rst_vif.wait_clks(100);
     // Make sure the interrupt bit is cleared
     csr_rd_check(.ptr(ral.intr_state.cs_entropy_req), .compare_value(1'b0));
+
+    // Write CSRNG Cmd_Req Register - Uninstantiate Command
+    cs_item.acmd  = csrng_pkg::UNI;
+    cs_item.clen  = 'h0;
+    cs_item.flags = MuBi4True;
+    cs_item.glen  = 'h0;
+    `uvm_info(`gfn, $sformatf("%s", cs_item.convert2string()), UVM_DEBUG)
+    send_cmd_req(SW_APP, cs_item);
   endtask // test_cs_entropy_req
 
   task test_cs_sw_cmd_sts();
@@ -278,18 +294,23 @@ class csrng_intr_vseq extends csrng_base_vseq;
 
     // Test cs_cmd_req_done interrupt
     // cs_cmd_req_done interrupt is checked in the send_cmd_req()
+    `uvm_info(`gfn, "test_cs_cmd_req_done", UVM_LOW)
     test_cs_cmd_req_done();
 
     // Test cs_entropy_req interrupt
+    `uvm_info(`gfn, "test_cs_entropy_req", UVM_LOW)
     test_cs_entropy_req();
 
     // Test cs_hw_inst_exc interrupt
+    `uvm_info(`gfn, "test_cs_hw_inst_exc", UVM_LOW)
     test_cs_hw_inst_exc();
 
     // Test faulty SW APP response by forcing sts output
+    `uvm_info(`gfn, "test_cs_sw_cmd_sts", UVM_LOW)
     test_cs_sw_cmd_sts();
 
     // Test cs_fatal_err interrupt
+    `uvm_info(`gfn, "test_cs_fatal_err", UVM_LOW)
     test_cs_fatal_err();
 
     cfg.clk_rst_vif.wait_clks(50);

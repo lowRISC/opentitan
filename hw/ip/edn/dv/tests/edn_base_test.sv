@@ -33,7 +33,8 @@ class edn_base_test extends cip_base_test #(
     cfg.m_csrng_agent_cfg.max_genbits_dly = 32;
     cfg.m_csrng_agent_cfg.min_cmd_rdy_dly = 0;
     cfg.m_csrng_agent_cfg.max_cmd_rdy_dly = 1;
-    cfg.m_csrng_agent_cfg.rsp_sts_err     = 0; // CSRNG should not return errors
+    // CSRNG should not return errors
+    cfg.m_csrng_agent_cfg.rsp_sts_err     = csrng_pkg::CMD_STS_SUCCESS;
   endfunction
 
 endclass : edn_base_test
