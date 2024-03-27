@@ -6,7 +6,8 @@ use anyhow::{bail, Context, Result};
 use num_bigint_dig::BigUint;
 use std::collections::HashMap;
 
-use openssl::asn1::{Asn1IntegerRef, Asn1OctetStringRef, Asn1StringRef};
+use foreign_types::ForeignTypeRef;
+use openssl::asn1::{Asn1IntegerRef, Asn1OctetStringRef, Asn1StringRef, Asn1TimeRef};
 use openssl::bn::{BigNum, BigNumContext, BigNumRef};
 use openssl::ec::{EcGroupRef, EcKey};
 use openssl::ecdsa::EcdsaSig;
@@ -73,6 +74,29 @@ fn asn1str_to_str(field: &str, s: &Asn1StringRef) -> Result<Value<String>> {
 
 fn asn1octets_to_vec(s: &Asn1OctetStringRef) -> Value<Vec<u8>> {
     Value::literal(s.as_slice().to_vec())
+}
+
+fn asn1time_to_string(time: &Asn1TimeRef) -> Result<Value<String>> {
+    // OpenSSL guarantees that an ASN1_TIME is in fact just a typedef for ASN1_STRING
+    // https://www.openssl.org/docs/man1.1.1/man3/ASN1_TIME_to_generalizedtime.html
+    let time_str = time.as_ptr() as *mut openssl_sys::ASN1_STRING;
+    // SAFETY: the above pointer is guaranteed to be valid since `time` is valid reference.
+    let time_type = unsafe { openssl_sys::ASN1_STRING_type(time_str) };
+    // FIXME: we only support GeneralizedTime and openssl_sys does not export the OpenSSL method to
+    // convert to a GeneralizedTime so we just error out.
+    if time_type == openssl_sys::V_ASN1_UTCTIME {
+        bail!("time uses UtcTime but only GeneralizedTime is supported")
+    }
+    if time_type != openssl_sys::V_ASN1_GENERALIZEDTIME {
+        bail!("time uses type {time_type} but only GeneralizedTime is supported")
+    }
+    // SAFETY: the above pointer is guaranteed to be valid since `time` is valid reference.
+    let time_str = unsafe { Asn1StringRef::from_ptr(time_str) }.as_slice();
+    Ok(Value::literal(
+        std::str::from_utf8(time_str)
+            .context("GeneralizedTime is not a valid UTF8 string")?
+            .to_string(),
+    ))
 }
 
 fn asn1name_to_hashmap(
@@ -188,6 +212,9 @@ pub fn parse_certificate(cert: &[u8]) -> Result<template::Certificate> {
         serial_number: asn1int_to_bn("serial number", x509.serial_number())?,
         issuer: asn1name_to_hashmap("issuer", x509.issuer_name())?,
         subject: asn1name_to_hashmap("subject", x509.subject_name())?,
+        not_before: asn1time_to_string(x509.not_before())
+            .context("cannot parse not_before time")?,
+        not_after: asn1time_to_string(x509.not_after()).context("cannot parse not_after time")?,
         subject_public_key_info,
         authority_key_identifier: asn1octets_to_vec(
             x509.authority_key_id()

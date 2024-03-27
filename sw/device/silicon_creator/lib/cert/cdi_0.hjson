@@ -58,6 +58,13 @@
         subject: {
             serial_number: { var: "owner_intermediate_pub_key_id", convert: "lowercase-hex" },
         },
+        // From the Open Profile for DICE specification:
+        // https://pigweed.googlesource.com/open-dice/+/refs/heads/main/docs/specification.md#x_509-cdi-certificates
+        // The certificate expiration time is set to a fixed date in the future.
+        // The "not before" date is chosen to be in the past (publication date of the DICE TCG) since the device does not
+        // have a reliable way to get the time.
+        not_before: "20180322235959Z",
+        not_after: "99991231235959Z",
         subject_public_key_info: {
             algorithm: "ec-public-key",
             curve: "prime256v1",
