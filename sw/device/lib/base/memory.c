@@ -81,6 +81,7 @@ void *OT_PREFIX_IF_NOT_RV32(memcpy)(void *restrict dest,
   return dest;
 }
 
+OT_NOINLINE
 void *OT_PREFIX_IF_NOT_RV32(memset)(void *dest, int value, size_t len) {
   unsigned char *dest8 = (unsigned char *)dest;
   const uint8_t value8 = (uint8_t)value;

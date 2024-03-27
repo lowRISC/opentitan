@@ -86,6 +86,7 @@ void sec_mmio_next_stage_init(void) {
 }
 
 OT_WARN_UNUSED_RESULT
+OT_NOINLINE
 uint32_t sec_mmio_read32(uint32_t addr) {
   uint32_t value = abs_mmio_read32(addr);
   uint32_t masked_value = value ^ kSecMmioMaskVal;
@@ -96,6 +97,7 @@ uint32_t sec_mmio_read32(uint32_t addr) {
   return value;
 }
 
+OT_NOINLINE
 void sec_mmio_write32(uint32_t addr, uint32_t value) {
   abs_mmio_write32(addr, value);
   uint32_t masked_value = value ^ kSecMmioMaskVal;
@@ -106,6 +108,7 @@ void sec_mmio_write32(uint32_t addr, uint32_t value) {
   ++sec_mmio_ctx.write_count;
 }
 
+OT_NOINLINE
 void sec_mmio_write32_shadowed(uint32_t addr, uint32_t value) {
   // Shadowed registers require two writes.
   abs_mmio_write32(addr, value);
@@ -139,6 +142,7 @@ void sec_mmio_check_values(uint32_t rnd_offset) {
   ++sec_mmio_ctx.check_count;
 }
 
+OT_NOINLINE
 void sec_mmio_check_counters(uint32_t expected_check_count) {
   uint32_t result = launder32(kSecMmioValZero) ^ sec_mmio_ctx.write_count;
   result ^= sec_mmio_ctx.expected_write_count;

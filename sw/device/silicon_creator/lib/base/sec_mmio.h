@@ -158,6 +158,7 @@ void sec_mmio_next_stage_init(void);
  * @return the read value.
  */
 OT_WARN_UNUSED_RESULT
+OT_NOINLINE
 uint32_t sec_mmio_read32(uint32_t addr);
 
 /**
@@ -177,6 +178,7 @@ uint32_t sec_mmio_read32(uint32_t addr);
  * @param addr The address to write to.
  * @param value The value to write.
  */
+OT_NOINLINE
 void sec_mmio_write32(uint32_t addr, uint32_t value);
 
 /**

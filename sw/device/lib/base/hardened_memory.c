@@ -10,6 +10,7 @@
 
 // NOTE: The three hardened_mem* functions have similar contents, but the parts
 // that are shared between them are commented only in `memcpy()`.
+OT_NOINLINE
 void hardened_memcpy(uint32_t *restrict dest, const uint32_t *restrict src,
                      size_t word_len) {
   random_order_t order;
