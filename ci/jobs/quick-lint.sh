@@ -33,7 +33,7 @@ echo -e "\n### Check commit metadata"
 ci/scripts/lint-commits.sh $tgt_branch
 
 echo -e "\n### Check Licence Headers"
-ci/scripts/check-licence-headers.sh $tgt_branch
+reuse --suppress-deprecation lint
 
 echo -e "\n### Check executable bits"
 ci/scripts/exec-check.sh
