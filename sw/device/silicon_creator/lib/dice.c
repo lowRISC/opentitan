@@ -34,8 +34,6 @@ enum {
 };
 
 static uint32_t otp_state[kDiceMeasuredOtpPartitionMaxSizeIn32bitWords] = {0};
-static attestation_public_key_t curr_pubkey = {.x = {0}, .y = {0}};
-static attestation_public_key_t curr_pubkey_be = {.x = {0}, .y = {0}};
 static attestation_signature_t curr_tbs_signature = {.r = {0}, .s = {0}};
 static attestation_signature_t curr_tbs_signature_be = {.r = {0}, .s = {0}};
 static uint8_t cdi_0_tbs_buffer[kCdi0MaxTbsSizeBytes];
@@ -61,9 +59,9 @@ static_assert(
     "kDiceMeasuredOtpPartitionMaxSizeIn32bitWords constant.");
 // clang-format on
 
-static_assert(kAttestMeasurementSizeInBytes == 32,
-              "The attestation measurement size should equal the size of the "
-              "keymgr binding registers.");
+static_assert(kDiceMeasurementSizeInBytes == 32,
+              "The DICE attestation measurement size should equal the size of "
+              "the keymgr binding registers.");
 
 /**
  * Returns true if debug (JTAG) access is exposed in the current LC state.
@@ -87,15 +85,64 @@ static void le_be_buf_format(unsigned char *dst, unsigned char *src,
 }
 
 /**
- * Helper function to convert an attestation public from little to big endian.
+ * Helper function to convert an attestation public key from little to big
+ * endian.
  */
-static void curr_pubkey_le_to_be_convert(void) {
-  le_be_buf_format((unsigned char *)curr_pubkey_be.x,
-                   (unsigned char *)curr_pubkey.x,
+static void curr_pubkey_le_to_be_convert(attestation_public_key_t *pubkey_le,
+                                         attestation_public_key_t *pubkey_be) {
+  le_be_buf_format((unsigned char *)pubkey_be->x, (unsigned char *)pubkey_le->x,
                    kAttestationPublicKeyCoordBytes);
-  le_be_buf_format((unsigned char *)curr_pubkey_be.y,
-                   (unsigned char *)curr_pubkey.y,
+  le_be_buf_format((unsigned char *)pubkey_be->y, (unsigned char *)pubkey_le->y,
                    kAttestationPublicKeyCoordBytes);
+}
+
+rom_error_t dice_attestation_keygen(dice_key_t desired_key,
+                                    hmac_digest_t *pubkey_id,
+                                    attestation_public_key_t *pubkey) {
+  attestation_key_seed_t otbn_ecc_keygen_seed;
+  sc_keymgr_diversification_t keymgr_diversifier = {
+      .salt = {0},
+      .version = 0,
+  };
+
+  switch (desired_key) {
+    case kDiceKeyUds:
+      HARDENED_RETURN_IF_ERROR(
+          sc_keymgr_state_check(kScKeymgrStateCreatorRootKey));
+      otbn_ecc_keygen_seed = kUdsAttestationKeySeed;
+      keymgr_diversifier = kUdsKeymgrDiversifier;
+      break;
+    case kDiceKeyCdi0:
+      HARDENED_RETURN_IF_ERROR(
+          sc_keymgr_state_check(kScKeymgrStateOwnerIntermediateKey));
+      keymgr_diversifier = kCdi0KeymgrDiversifier;
+      otbn_ecc_keygen_seed = kCdi0AttestationKeySeed;
+      break;
+    case kDiceKeyCdi1:
+      HARDENED_RETURN_IF_ERROR(sc_keymgr_state_check(kScKeymgrStateOwnerKey));
+      keymgr_diversifier = kCdi1KeymgrDiversifier;
+      otbn_ecc_keygen_seed = kCdi1AttestationKeySeed;
+      break;
+    default:
+      return kErrorDiceInvalidArgument;
+  };
+
+  // Generate / sideload key material into OTBN, and generate the ECC keypair.
+  attestation_public_key_t pubkey_le;
+  HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_keygen(
+      otbn_ecc_keygen_seed, keymgr_diversifier, &pubkey_le));
+  HARDENED_RETURN_IF_ERROR(
+      otbn_boot_attestation_key_save(otbn_ecc_keygen_seed, keymgr_diversifier));
+
+  // Keys are represented in certificates in big endian format, but the key is
+  // output from OTBN in little endian format, so we convert the key to
+  // big endian format.
+  curr_pubkey_le_to_be_convert(&pubkey_le, pubkey);
+
+  // Generate the key ID.
+  hmac_sha256(pubkey, kAttestationPublicKeyCoordBytes * 2, pubkey_id);
+
+  return kErrorOk;
 }
 
 /**
@@ -136,18 +183,9 @@ static void measure_otp_partition(otp_partition_t partition,
 }
 
 rom_error_t dice_uds_cert_build(manuf_certgen_inputs_t *inputs,
-                                hmac_digest_t *uds_pubkey_id, uint8_t *tbs_cert,
-                                size_t *tbs_cert_size) {
-  // Generate the UDS key.
-  HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_keygen(
-      kUdsAttestationKeySeed, kUdsKeymgrDiversifier, &curr_pubkey));
-  HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_key_save(
-      kUdsAttestationKeySeed, kUdsKeymgrDiversifier));
-  curr_pubkey_le_to_be_convert();
-
-  // Generate the key ID.
-  hmac_sha256(&curr_pubkey, kAttestationPublicKeyCoordBytes * 2, uds_pubkey_id);
-
+                                hmac_digest_t *uds_pubkey_id,
+                                attestation_public_key_t *uds_pubkey,
+                                uint8_t *tbs_cert, size_t *tbs_cert_size) {
   // Measure OTP partitions.
   hmac_digest_t otp_creator_sw_cfg_measurement = {.digest = {0}};
   hmac_digest_t otp_owner_sw_cfg_measurement = {.digest = {0}};
@@ -185,12 +223,12 @@ rom_error_t dice_uds_cert_build(manuf_certgen_inputs_t *inputs,
       .otp_hw_cfg1_hash_size = kHmacDigestNumBytes,
       .debug_flag = is_debug_exposed(),
       .creator_pub_key_id = (unsigned char *)uds_pubkey_id->digest,
-      .creator_pub_key_id_size = kCertKeyIdSizeInBytes,
+      .creator_pub_key_id_size = kDiceCertKeyIdSizeInBytes,
       .auth_key_key_id = inputs->auth_key_key_id,
-      .auth_key_key_id_size = kCertKeyIdSizeInBytes,
-      .creator_pub_key_ec_x = (unsigned char *)curr_pubkey_be.x,
+      .auth_key_key_id_size = kDiceCertKeyIdSizeInBytes,
+      .creator_pub_key_ec_x = (unsigned char *)uds_pubkey->x,
       .creator_pub_key_ec_x_size = kAttestationPublicKeyCoordBytes,
-      .creator_pub_key_ec_y = (unsigned char *)curr_pubkey_be.y,
+      .creator_pub_key_ec_y = (unsigned char *)uds_pubkey->y,
       .creator_pub_key_ec_y_size = kAttestationPublicKeyCoordBytes,
   };
   HARDENED_RETURN_IF_ERROR(
@@ -201,29 +239,21 @@ rom_error_t dice_uds_cert_build(manuf_certgen_inputs_t *inputs,
 
 rom_error_t dice_cdi_0_cert_build(manuf_certgen_inputs_t *inputs,
                                   hmac_digest_t *uds_pubkey_id,
-                                  hmac_digest_t *cdi_0_pubkey_id, uint8_t *cert,
-                                  size_t *cert_size) {
-  // Generate the CDI_0 key.
-  HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_keygen(
-      kCdi0AttestationKeySeed, kCdi0KeymgrDiversifier, &curr_pubkey));
-  curr_pubkey_le_to_be_convert();
-
-  // Generate the key ID.
-  hmac_sha256(&curr_pubkey, kAttestationPublicKeyCoordBytes * 2,
-              cdi_0_pubkey_id);
-
+                                  hmac_digest_t *cdi_0_pubkey_id,
+                                  attestation_public_key_t *cdi_0_pubkey,
+                                  uint8_t *cert, size_t *cert_size) {
   // Generate the TBS certificate.
   cdi_0_tbs_values_t cdi_0_cert_tbs_params = {
       .rom_ext_hash = (unsigned char *)inputs->rom_ext_measurement,
-      .rom_ext_hash_size = kAttestMeasurementSizeInBytes,
+      .rom_ext_hash_size = kDiceMeasurementSizeInBytes,
       .rom_ext_security_version = inputs->rom_ext_security_version,
       .owner_intermediate_pub_key_id = (unsigned char *)cdi_0_pubkey_id->digest,
-      .owner_intermediate_pub_key_id_size = kCertKeyIdSizeInBytes,
+      .owner_intermediate_pub_key_id_size = kDiceCertKeyIdSizeInBytes,
       .creator_pub_key_id = (unsigned char *)uds_pubkey_id->digest,
-      .creator_pub_key_id_size = kCertKeyIdSizeInBytes,
-      .owner_intermediate_pub_key_ec_x = (unsigned char *)curr_pubkey_be.x,
+      .creator_pub_key_id_size = kDiceCertKeyIdSizeInBytes,
+      .owner_intermediate_pub_key_ec_x = (unsigned char *)cdi_0_pubkey->x,
       .owner_intermediate_pub_key_ec_x_size = kAttestationPublicKeyCoordBytes,
-      .owner_intermediate_pub_key_ec_y = (unsigned char *)curr_pubkey_be.y,
+      .owner_intermediate_pub_key_ec_y = (unsigned char *)cdi_0_pubkey->y,
       .owner_intermediate_pub_key_ec_y_size = kAttestationPublicKeyCoordBytes,
   };
   HARDENED_RETURN_IF_ERROR(cdi_0_build_tbs(&cdi_0_cert_tbs_params,
@@ -251,33 +281,25 @@ rom_error_t dice_cdi_0_cert_build(manuf_certgen_inputs_t *inputs,
 }
 
 rom_error_t dice_cdi_1_cert_build(manuf_certgen_inputs_t *inputs,
-                                  hmac_digest_t *cdi_0_pubkey_id, uint8_t *cert,
-                                  size_t *cert_size) {
-  // Generate the CDI_1 key.
-  HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_keygen(
-      kCdi1AttestationKeySeed, kCdi1KeymgrDiversifier, &curr_pubkey));
-  curr_pubkey_le_to_be_convert();
-
-  // Generate the key ID.
-  hmac_digest_t cdi_1_pubkey_id;
-  hmac_sha256(&curr_pubkey, kAttestationPublicKeyCoordBytes * 2,
-              &cdi_1_pubkey_id);
-
+                                  hmac_digest_t *cdi_0_pubkey_id,
+                                  hmac_digest_t *cdi_1_pubkey_id,
+                                  attestation_public_key_t *cdi_1_pubkey,
+                                  uint8_t *cert, size_t *cert_size) {
   // Generate the TBS certificate.
   cdi_1_tbs_values_t cdi_1_cert_tbs_params = {
       .owner_hash = (unsigned char *)inputs->owner_measurement,
-      .owner_hash_size = kAttestMeasurementSizeInBytes,
+      .owner_hash_size = kDiceMeasurementSizeInBytes,
       .owner_manifest_hash =
           (unsigned char *)inputs->owner_manifest_measurement,
-      .owner_manifest_hash_size = kAttestMeasurementSizeInBytes,
+      .owner_manifest_hash_size = kDiceMeasurementSizeInBytes,
       .owner_security_version = inputs->owner_security_version,
-      .owner_pub_key_id = (unsigned char *)cdi_1_pubkey_id.digest,
-      .owner_pub_key_id_size = kCertKeyIdSizeInBytes,
+      .owner_pub_key_id = (unsigned char *)cdi_1_pubkey_id->digest,
+      .owner_pub_key_id_size = kDiceCertKeyIdSizeInBytes,
       .owner_intermediate_pub_key_id = (unsigned char *)cdi_0_pubkey_id->digest,
-      .owner_intermediate_pub_key_id_size = kCertKeyIdSizeInBytes,
-      .owner_pub_key_ec_x = (unsigned char *)curr_pubkey_be.x,
+      .owner_intermediate_pub_key_id_size = kDiceCertKeyIdSizeInBytes,
+      .owner_pub_key_ec_x = (unsigned char *)cdi_1_pubkey->x,
       .owner_pub_key_ec_x_size = kAttestationPublicKeyCoordBytes,
-      .owner_pub_key_ec_y = (unsigned char *)curr_pubkey_be.y,
+      .owner_pub_key_ec_y = (unsigned char *)cdi_1_pubkey->y,
       .owner_pub_key_ec_y_size = kAttestationPublicKeyCoordBytes,
   };
   HARDENED_RETURN_IF_ERROR(cdi_1_build_tbs(&cdi_1_cert_tbs_params,
