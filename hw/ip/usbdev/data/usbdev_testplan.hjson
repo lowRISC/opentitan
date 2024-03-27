@@ -14,19 +14,31 @@
     {
       name: smoke
       desc: '''
-            Smoke test of simple packet transmission in both directions over the USB.
+            Smoke test of data transfers in each direction, on both the CSR interface
+            (buffer read/write) and the USB (packet transmission/reception).
 
             - DV environment programs CSRs for suitable pin configuration, leaving the device
               unconnected by not driving the DP pullup.
-            - Program CSRs to enable SETUP packet reception and OUT traffic on Endpoint Zero.
-            - Present a buffer description in the AvBuffer, to receive the SETUP packet.
+            - Program CSRs to enable SETUP packet reception, OUT traffic and IN traffic to a chosen
+              endpoint.
+            - Present a buffer description in the AvSetup Buffer FIFO, to receive the SETUP packet.
             - Enable the interface (assert DP pull up) to indicate device presence.
             - DV host-side detects device presence.
-            - DV host-side transmits a SETUP packet to Address 0, Endpoint 0.
+            - DV host-side transmits a SETUP packet to device address 0, chosen endpoint.
             - Check that the description of the SETUP packet appears in the RxFiFo, with the
               expected 'setup' indicator, buffer ID, and a packet length of 8 bytes.
-            - Check that the SETUP packet has been received into the packet buffer memory.
+            - Check that the SETUP packet has been received into the packet buffer memory and
+              that the buffer holds the expected content.
             - DV host-side checks that ACK was received from usbdev in response to the SETUP packet.
+            - Repeat the above for a regular OUT data packet using the AvOut Buffer FIFO, using the
+              same endpoint.
+            - Populate a buffer with known randomized packet data for collection from a
+              randomly-chosen endpoint.
+            - Program CSRs to present the packet for collection by the host.
+            - DV host-side transmits an IN request to device address 0, chosen endpoint.
+            - DV host-side collect IN DATA packet, and ACKnowledges receipt.
+            - Check that the received packet matches against that data written into the buffer.
+            - Check that CSRs indicate that the packet has been sent.
             '''
       stage: V1
       tests: ["usbdev_smoke"]
