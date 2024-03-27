@@ -86,8 +86,10 @@ static const flash_ctrl_cfg_t kCertificateFlashInfoCfg = {
     .he = kMultiBitBool4False,
 };
 static manuf_certgen_inputs_t certgen_inputs;
-hmac_digest_t uds_pubkey_id;
-hmac_digest_t cdi_0_pubkey_id;
+static hmac_digest_t uds_pubkey_id;
+static hmac_digest_t cdi_0_pubkey_id;
+static hmac_digest_t cdi_1_pubkey_id;
+static attestation_public_key_t curr_pubkey = {.x = {0}, .y = {0}};
 static manuf_dice_certs_t dice_certs = {
     .uds_tbs_certificate = {0},
     .uds_tbs_certificate_size = kUdsMaxTbsSizeBytes,
@@ -185,8 +187,8 @@ static status_t personalize_otp_secrets(ujson_t *uj) {
  */
 static void compute_keymgr_owner_int_binding(manuf_certgen_inputs_t *inputs) {
   memcpy(attestation_binding_value.data, inputs->rom_ext_measurement,
-         kAttestMeasurementSizeInBytes);
-  memset(sealing_binding_value.data, 0, kAttestMeasurementSizeInBytes);
+         kDiceMeasurementSizeInBytes);
+  memset(sealing_binding_value.data, 0, kDiceMeasurementSizeInBytes);
 }
 
 /**
@@ -200,12 +202,12 @@ static void compute_keymgr_owner_binding(manuf_certgen_inputs_t *inputs) {
   hmac_digest_t combined_measurements;
   hmac_sha256_init();
   hmac_sha256_update((unsigned char *)inputs->owner_measurement,
-                     kAttestMeasurementSizeInBytes);
+                     kDiceMeasurementSizeInBytes);
   hmac_sha256_update((unsigned char *)inputs->owner_manifest_measurement,
-                     kAttestMeasurementSizeInBytes);
+                     kDiceMeasurementSizeInBytes);
   memcpy(attestation_binding_value.data, combined_measurements.digest,
-         kAttestMeasurementSizeInBytes);
-  memset(sealing_binding_value.data, 0, kAttestMeasurementSizeInBytes);
+         kDiceMeasurementSizeInBytes);
+  memset(sealing_binding_value.data, 0, kDiceMeasurementSizeInBytes);
 }
 
 /**
@@ -234,8 +236,8 @@ static status_t personalize_dice_certificates(ujson_t *uj) {
 
   // Generate UDS keys and (TBS) cert.
   sc_keymgr_advance_state();
-  TRY(sc_keymgr_state_check(kScKeymgrStateCreatorRootKey));
-  TRY(dice_uds_cert_build(&certgen_inputs, &uds_pubkey_id,
+  TRY(dice_attestation_keygen(kDiceKeyUds, &uds_pubkey_id, &curr_pubkey));
+  TRY(dice_uds_cert_build(&certgen_inputs, &uds_pubkey_id, &curr_pubkey,
                           dice_certs.uds_tbs_certificate,
                           &dice_certs.uds_tbs_certificate_size));
   LOG_INFO("Generated UDS TBS certificate.");
@@ -245,8 +247,9 @@ static status_t personalize_dice_certificates(ujson_t *uj) {
   TRY(sc_keymgr_owner_int_advance(&sealing_binding_value,
                                   &attestation_binding_value,
                                   /*max_key_version=*/0));
+  TRY(dice_attestation_keygen(kDiceKeyCdi0, &cdi_0_pubkey_id, &curr_pubkey));
   TRY(dice_cdi_0_cert_build(&certgen_inputs, &uds_pubkey_id, &cdi_0_pubkey_id,
-                            dice_certs.cdi_0_certificate,
+                            &curr_pubkey, dice_certs.cdi_0_certificate,
                             &dice_certs.cdi_0_certificate_size));
   TRY(flash_ctrl_info_write(
       &kFlashCtrlInfoPageCdi0Certificate,
@@ -260,8 +263,9 @@ static status_t personalize_dice_certificates(ujson_t *uj) {
   TRY(sc_keymgr_owner_advance(&sealing_binding_value,
                               &attestation_binding_value,
                               /*max_key_version=*/0));
-  TRY(dice_cdi_1_cert_build(&certgen_inputs, &cdi_0_pubkey_id,
-                            dice_certs.cdi_1_certificate,
+  TRY(dice_attestation_keygen(kDiceKeyCdi1, &cdi_1_pubkey_id, &curr_pubkey));
+  TRY(dice_cdi_1_cert_build(&certgen_inputs, &cdi_0_pubkey_id, &cdi_1_pubkey_id,
+                            &curr_pubkey, dice_certs.cdi_1_certificate,
                             &dice_certs.cdi_1_certificate_size));
   TRY(flash_ctrl_info_write(
       &kFlashCtrlInfoPageCdi1Certificate,
