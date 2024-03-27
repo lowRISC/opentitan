@@ -47,6 +47,10 @@ struct Opts {
     ecdsa_json: Vec<String>,
 }
 
+fn scalar_zero() -> String {
+    String::from("00")
+}
+
 #[derive(Debug, Deserialize)]
 struct EcdsaTestCase {
     vendor: String,
@@ -58,9 +62,9 @@ struct EcdsaTestCase {
     message: Vec<u8>,
     qx: String,
     qy: String,
-    #[serde(default)]
+    #[serde(default = "scalar_zero")]
     r: String,
-    #[serde(default)]
+    #[serde(default = "scalar_zero")]
     s: String,
     #[serde(default)]
     d: String,
@@ -246,6 +250,15 @@ fn run_ecdsa_testcase(
                 hasher.finalize().to_vec(),
             )
         }
+        "sha3-384" => {
+            let mut hasher = sha3::Sha3_384::new();
+            hasher.update(test_case.message.as_slice());
+            (
+                CryptotestEcdsaHashAlg::Sha3_384,
+                None,
+                hasher.finalize().to_vec(),
+            )
+        }
         "sha3-512" => {
             let mut hasher = sha3::Sha3_512::new();
             hasher.update(test_case.message.as_slice());
@@ -289,8 +302,15 @@ fn run_ecdsa_testcase(
             let (operation, d0, d1) = match test_case.operation.as_str() {
                 "sign" => {
                     // Calculate masked private key
+
+                    // Pad private key `d` to 32 bytes
+                    let mut padded_d = String::with_capacity(64);
+                    for _ in 0..(64 - test_case.d.len()) {
+                        padded_d.push('0');
+                    }
+                    padded_d.push_str(&test_case.d);
                     let d = p256::Scalar::from(
-                        ScalarPrimitiveP256::new(U256::from_be_hex(&test_case.d)).unwrap(),
+                        ScalarPrimitiveP256::new(U256::from_be_hex(&padded_d)).unwrap(),
                     );
                     let d0 = p256::Scalar::from(
                         ScalarPrimitiveP256::new(U256::from_be_hex(RANDOM_MASK_P256)).unwrap(),
@@ -333,11 +353,24 @@ fn run_ecdsa_testcase(
                 r.len(),
                 ECDSA_CMD_MAX_SIGNATURE_SCALAR_BYTES_P384,
             );
+            assert!(
+                s.len() <= ECDSA_CMD_MAX_SIGNATURE_SCALAR_BYTES_P384,
+                "ECDSA signature value s was too long for curve p384 (got: {}, max: {})",
+                s.len(),
+                ECDSA_CMD_MAX_SIGNATURE_SCALAR_BYTES_P384,
+            );
             let (operation, d0, d1) = match test_case.operation.as_str() {
                 "sign" => {
                     // Calculate masked private key
+
+                    // Pad private key `d` to 48 bytes
+                    let mut padded_d = String::with_capacity(96);
+                    for _ in 0..(96 - test_case.d.len()) {
+                        padded_d.push('0');
+                    }
+                    padded_d.push_str(&test_case.d);
                     let d = p384::Scalar::from(
-                        ScalarPrimitiveP384::new(U384::from_be_hex(&test_case.d)).unwrap(),
+                        ScalarPrimitiveP384::new(U384::from_be_hex(&padded_d)).unwrap(),
                     );
                     let d0 = p384::Scalar::from(
                         ScalarPrimitiveP384::new(U384::from_be_hex(RANDOM_MASK_P384)).unwrap(),
