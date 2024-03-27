@@ -5,7 +5,7 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("//rules:repo.bzl", "http_archive_or_local")
 
-def lint_repos(lowrisc_lint = None):
+def lint_repos():
     # We have a 'vendored' copy of the google_verible_verilog_syntax_py repo
     native.local_repository(
         name = "google_verible_verilog_syntax_py",
@@ -24,12 +24,4 @@ def lint_repos(lowrisc_lint = None):
             Label("//third_party/lint:0001-enable-buildifier-test-without-sandbox.patch"),
         ],
         patch_args = ["-p1"],
-    )
-
-    http_archive_or_local(
-        name = "lowrisc_lint",
-        local = lowrisc_lint,
-        sha256 = "0d07c45abdec72b464cda9626ec14955a073f5a2754fd0356de8e7cd4eee856d",
-        strip_prefix = "misc-linters-20240319_01",
-        url = "https://github.com/lowRISC/misc-linters/archive/refs/tags/20240319_01.tar.gz",
     )
