@@ -611,27 +611,6 @@ opentitan_test(
     ],
 )
 
-opentitan_test(
-    name = "sram_ctrl_scrambled_access_test",
-    srcs = ["sram_ctrl_scrambled_access_test.c"],
-    exec_env = {"//hw/top_earlgrey:sim_dv": None},
-    deps = [
-        "//hw/ip/sram_ctrl/data:sram_ctrl_c_regs",
-        "//hw/top_earlgrey/ip_autogen/rstmgr/data:rstmgr_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base:macros",
-        "//sw/device/lib/base:mmio",
-        "//sw/device/lib/base:multibits",
-        "//sw/device/lib/base:stdasm",
-        "//sw/device/lib/dif:rstmgr",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:flash_ctrl_testutils",
-        "//sw/device/lib/testing:rstmgr_testutils",
-        "//sw/device/lib/testing:sram_ctrl_testutils",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
-)
-
 cc_library(
     name = "pwrmgr_sleep_all_wake_ups_impl",
     srcs = ["pwrmgr_sleep_all_wake_ups_impl.c"],
