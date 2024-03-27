@@ -88,19 +88,6 @@
       tests: ["usbdev_phy_pins_sense"]
     }
     {
-      name: wake_events
-      desc: '''
-            Verify the read functionality of wake_event register via TLUL interface.
-
-            - Allow the usbdev to go to deep sleep mode then read the wake_events register
-              from the TLUL interface.
-            - Verify that the read value of the register should reflect the correct value of module_aon
-              as well as bus_disconnected and bus_reset during deep sleep.
-            '''
-      stage: V2
-      tests: []
-    }
-    {
       name: av_buffer
       desc: '''
             Verify the functionality of availability of buffer.
@@ -425,46 +412,6 @@
       tests: []
     }
     {
-      name: enable
-      desc: '''
-            Verify that USB connect to interface when enable is set.
-
-            - set USB_CTRL_enable pin high.
-            - Make sure phy_config_pinflip isn't set.
-            - Verify that the usb_dp_pullup_o pin goes high.
-            '''
-      stage: V2
-      tests: ["usbdev_enable"]
-    }
-    {
-      name: resume_link_active
-      desc: '''
-            Verify that when Write a 1 to this bit to instruct usbdev to jump to the LinkResuming state
-            then write will only have an effect when the device is in the LinkPowered state.
-
-            - Perform no operation in J state for more than 3 ms.
-            - Read the link state from usbstate register to see if it is in powered state and then send the
-              resume signal (K state) for 20 ms and set the usbctrl.resume_link_active.
-            - Verify that the resume_link_active interrupt goes high and device will be resumed.
-            '''
-      stage: V2
-      tests: []
-    }
-    {
-      name: device_address
-      desc: '''
-            Verify that the device ignores all the packets that have invalid address.
-
-            - Assigned device address to (usbctrl[22:16]) and send packets to a valid address.
-            - Send packets to invalid address.
-            - Verify that the device responds to all packets sent by the DV environment (USB side)
-              that are sent to its assigned address.
-            - Verify that the device ignores all packets that are sent to other address.
-            '''
-      stage: V2
-      tests: []
-    }
-    {
       name: link_in_err
       desc: '''
             Verify that if a packet to an IN endpoint started to be received but was then dropped due to an error
@@ -524,6 +471,46 @@
       tests: []
     }
     {
+      name: enable
+      desc: '''
+            Verify that DUT connects to the USB when enable is set.
+
+            - set USB_CTRL_enable pin high.
+            - Make sure 'phy_config.pinflip' isn't set.
+            - Verify that the 'usb_dp_pullup_o' pin goes high.
+            '''
+      stage: V2
+      tests: ["usbdev_enable"]
+    }
+    {
+      name: resume_link_active
+      desc: '''
+            Verify that when Write a 1 to this bit to instruct usbdev to jump to the LinkResuming state
+            then write will only have an effect when the device is in the LinkPowered state.
+
+            - Perform no operation in J state for more than 3 ms.
+            - Read the link state from usbstate register to see if it is in powered state and then send the
+              resume signal (K state) for 20 ms and set the usbctrl.resume_link_active.
+            - Verify that the resume_link_active interrupt goes high and device will be resumed.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: device_address
+      desc: '''
+            Verify that the device ignores all packets intended for other addresses.
+
+            - Assigned device address to (usbctrl[22:16]) and send packets to this address.
+            - Send packets to other addresses.
+            - Verify that the device responds to all packets sent by the DV environment (USB side)
+              that are sent to its assigned address.
+            - Verify that the device ignores all packets that are sent to other addresses.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
       name: invalid_data1_data0_toggle_test
       desc: '''
             Verify the functionality of invalid toggling of Data1 and Data0 bits.
@@ -567,31 +554,6 @@
             - Send an OUT token followed by a data packet containing control data to the device.
             - Verify that the device should acknowledge the successful receipt of data by sending
               an ACK packet or return a NAK if it is still processing previous data.
-            '''
-      stage: V2
-      tests: []
-    }
-    {
-      name: out_status_stage
-      desc: '''
-            Verify the OUT Transfer for Status Reporting.
-
-            - If the host used IN tokens during data stage then status stage is initiated with an OUT token.
-            - Send an OUT token followed by a zero-length DATA0 data packet to the device.
-            - Verify that the device should acknowledge the successful receipt of the status request by
-              sending an ACK packet or return NAK if it is still processing or STALL if an error occurred.
-            '''
-      stage: V2
-      tests: []
-    }
-    {
-      name: in_status_stage
-      desc: '''
-            Verify the IN Transfer for Status Reporting.
-
-            - If the host used OUT tokens during data stage then status stage must start with an IN Token.
-            - Verify that the device must respond with zero length Data0 packet for succesful completion
-              STALL for error and NAK for busy followed by ACK from Host.
             '''
       stage: V2
       tests: []
