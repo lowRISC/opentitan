@@ -120,3 +120,99 @@ Files:
   hw/top_earlgrey/ip/ast/data/ast_cdc_abstract.sgdc
 Copyright: lowRISC contributors (OpenTitan project)
 License: Apache-2.0
+
+# NIST test vectors are in the public domain but REUSE requires some assignment.
+Files:
+  hw/dv/sv/test_vectors/*.rsp
+  sw/device/tests/crypto/testvectors/*.hjson
+  sw/host/cryptotest/testvectors/data/*.json
+  sw/host/cryptotest/testvectors/data/*.rsp
+  sw/host/cryptotest/testvectors/data/*.txt
+Copyright: National Institute of Standards and Technology (NIST)
+License: Apache-2.0
+
+# Coremark
+Files: sw/vendor/eembc_coremark/*
+Copyright: Embedded Microprocessor Benchmark Consortium (EEMBC)
+License: Apache-2.0
+
+# Cryptoc
+Files: sw/vendor/cryptoc/*
+Copyright: Google Inc.
+License: Apache-2.0
+
+# Pulp RISC-V debug module
+Files: hw/vendor/pulp_riscv_dbg/*
+Copyright: ETH Zurich and University of Bologna
+License: SHL-0.51
+
+# Google RISC-V DV
+Files: hw/vendor/lowrisc_ibex/vendor/google_riscv-dv/*
+Copyright: Google LLC
+License: Apache-2.0
+
+# Google Verible Verilog syntax
+Files: hw/ip/prim/util/vendor/google_verible_verilog_syntax_py/*
+Copyright: The Verible Authors
+License: Apache-2.0
+
+# Google RTL sim
+Files: hw/vendor/lowrisc_ibex/dv/uvm/core_ibex/*
+Copyright: Google LLC
+License: Apache-2.0
+
+# Veri-Titan
+Files: sw/vendor/veri-titan/*
+Copyright: Secure Foundations Lab
+License: MIT
+
+# FreeRTOS kernel
+Files:
+  sw/vendor/freertos_freertos_kernel/.gitmodules
+  sw/vendor/freertos_freertos_kernel/History.txt
+  sw/vendor/freertos_freertos_kernel/portable/readme.txt
+  sw/vendor/freertos_freertos_kernel/*.url
+Copyright: Amazon.com, Inc. or its affiliates
+License: MIT
+
+# digestpp
+Files: hw/ip/kmac/dv/dpi/vendor/kerukuro_digestpp/*
+Copyright: N/A
+License: Unlicense
+
+# MdBook
+Files:
+  site/book-theme/css/*.css
+  site/book-theme/index.hbs
+Copyright:
+  Mathieu David
+  Michael-F-Bryan
+  Matt Ickstadt
+License: MPL-2.0
+
+# Recursive font
+Files: site/book-theme/Recursive_wght,CASL@300__800,0_5.woff2
+Copyright: The Recursive Project Authors (https://github.com/arrowtype/recursive)
+License: OFL-1.1
+
+# tiny-slider
+Files: site/landing/static/js/tiny-slider.js
+Copyright: ganlanyuan
+License: MIT
+
+# Doxygen theme files
+Files:
+  site/doxygen/footer.html
+  site/doxygen/header.html
+  site/doxygen/layout.xml
+Copyright: Dimitri van Heesch
+License: GPL-2.0-only
+
+# Ibex - NOTE: these are fixed upstream and can be removed at the next vendor.
+Files:
+  hw/vendor/lowrisc_ibex/dv/uvm/icache/dv/fcov/ibex_icache_fcov_if.sv
+  hw/vendor/lowrisc_ibex/rtl/ibex_core.f
+  hw/vendor/lowrisc_ibex/rtl/ibex_counter.sv
+  hw/vendor/lowrisc_ibex/util/Makefile
+Copyright: lowRISC contributors
+License: Apache-2.0
