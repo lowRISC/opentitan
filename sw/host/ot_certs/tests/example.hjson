@@ -12,6 +12,8 @@
 
     certificate: {
         serial_number: "0xc32a9847abefc5074ad",
+        not_before: "20230101000000Z",
+        not_after: "99991231235959Z",
         issuer: {
             country: "UK",
             common_name: "lowRISC",
