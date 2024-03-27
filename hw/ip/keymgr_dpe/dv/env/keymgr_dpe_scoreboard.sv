@@ -1102,6 +1102,13 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
                   op.name, current_state.name), UVM_MEDIUM)
               return 1;
             end
+            // invalid op if src_slot allow child == 0
+            if (current_internal_key[current_key_slot.src_slot].key_policy.allow_child == 0) begin
+              `uvm_info(`gfn,
+                $sformatf("get_invalid_op: op %s current_state: %s allow_child == 0 err",
+                  op.name, current_state.name), UVM_MEDIUM)
+              return 1;
+            end
             // invalid op src_slot is invalid. src slot could have been "erased"
             if (current_internal_key[current_key_slot.src_slot].valid == 0) begin
               `uvm_info(`gfn,
