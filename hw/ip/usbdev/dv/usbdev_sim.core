@@ -13,6 +13,9 @@ filesets:
     depend:
       - lowrisc:dv:usbdev_test
       - lowrisc:dv:usbdev_sva
+      - lowrisc:dv:usb20_usbdpi
+      - lowrisc:dv_dpi_c:usbdpi
+      - lowrisc:dv_dpi_sv:usbdpi
     files:
       - tb/tb.sv
       - tb/Clock_Divider.sv

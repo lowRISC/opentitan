@@ -42,7 +42,7 @@ class usbdev_packetiser extends uvm_object;
         void'(m_hpkt.pack(handshake_pkt_arr));
       end
       default: begin
-        `uvm_fatal(`gfn, $sformatf("Special Token %x encountered", m_usb20_item.m_pid_type))
+        `uvm_fatal(`gfn, $sformatf("Special Token 0x%x encountered", m_usb20_item.m_pid_type))
       end
     endcase
   endtask

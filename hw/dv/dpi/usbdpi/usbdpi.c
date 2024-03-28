@@ -545,7 +545,7 @@ void getDescriptor(usbdpi_ctx_t *ctx, uint8_t desc_type, uint8_t desc_idx,
           ctx->cfg_desc_len = wTotalLength;
         }
 
-        transfer_token(tr, USB_PID_ACK, ctx->dev_address, ENDPOINT_ZERO);
+        transfer_status(ctx, tr, USB_PID_ACK);
 
         transfer_send(ctx, tr);
         ctx->bus_state = kUsbControlDataInAck;
@@ -701,7 +701,7 @@ void getTestConfig(usbdpi_ctx_t *ctx, uint16_t desc_len) {
             ctx->hostSt = HS_NEXTFRAME;
             break;
         }
-        transfer_token(tr, USB_PID_ACK, ctx->dev_address, ENDPOINT_ZERO);
+        transfer_status(ctx, tr, USB_PID_ACK);
 
         transfer_send(ctx, tr);
         ctx->bus_state = kUsbControlDataInAck;
@@ -1263,7 +1263,7 @@ uint8_t usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
           //
           // TODO - Set the descriptor length to the minimum because the DPI
           // model does not yet catch and report errors properly
-          ctx->cfg_desc_len = 12U;
+          ctx->cfg_desc_len = 0x12U;
           getDescriptor(ctx, USB_DESC_TYPE_DEVICE, 0U, 0x12U);
           break;
 
