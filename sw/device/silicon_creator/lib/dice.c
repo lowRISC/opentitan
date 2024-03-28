@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/base/memory.h"
+#include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/json/provisioning_data.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/silicon_creator/lib/attestation.h"
@@ -35,7 +36,6 @@ enum {
 
 static uint32_t otp_state[kDiceMeasuredOtpPartitionMaxSizeIn32bitWords] = {0};
 static attestation_signature_t curr_tbs_signature = {.r = {0}, .s = {0}};
-static attestation_signature_t curr_tbs_signature_be = {.r = {0}, .s = {0}};
 static uint8_t cdi_0_tbs_buffer[kCdi0MaxTbsSizeBytes];
 static cdi_0_sig_values_t cdi_0_cert_params = {
     .tbs = cdi_0_tbs_buffer,
@@ -75,25 +75,25 @@ static bool is_debug_exposed(void) {
 }
 
 /**
- * Helper function to convert a buffer of bytes from little to big endian.
+ * Helper function to convert a buffer of bytes from little to big endian in
+ * place.
  */
-static void le_be_buf_format(unsigned char *dst, unsigned char *src,
-                             size_t num_bytes) {
-  for (size_t i = 0; i < num_bytes; ++i) {
-    dst[i] = src[num_bytes - i - 1];
+static void le_be_buf_format(unsigned char *buf, size_t num_bytes) {
+  unsigned char temp;
+  for (size_t i = 0; i < (num_bytes / 2); ++i) {
+    temp = buf[i];
+    buf[i] = buf[num_bytes - i - 1];
+    buf[num_bytes - i - 1] = temp;
   }
 }
 
 /**
  * Helper function to convert an attestation public key from little to big
- * endian.
+ * endian in place.
  */
-static void curr_pubkey_le_to_be_convert(attestation_public_key_t *pubkey_le,
-                                         attestation_public_key_t *pubkey_be) {
-  le_be_buf_format((unsigned char *)pubkey_be->x, (unsigned char *)pubkey_le->x,
-                   kAttestationPublicKeyCoordBytes);
-  le_be_buf_format((unsigned char *)pubkey_be->y, (unsigned char *)pubkey_le->y,
-                   kAttestationPublicKeyCoordBytes);
+static void curr_pubkey_le_to_be_convert(attestation_public_key_t *pubkey) {
+  le_be_buf_format((unsigned char *)pubkey->x, kAttestationPublicKeyCoordBytes);
+  le_be_buf_format((unsigned char *)pubkey->y, kAttestationPublicKeyCoordBytes);
 }
 
 rom_error_t dice_attestation_keygen(dice_key_t desired_key,
@@ -128,16 +128,15 @@ rom_error_t dice_attestation_keygen(dice_key_t desired_key,
   };
 
   // Generate / sideload key material into OTBN, and generate the ECC keypair.
-  attestation_public_key_t pubkey_le;
   HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_keygen(
-      otbn_ecc_keygen_seed, keymgr_diversifier, &pubkey_le));
+      otbn_ecc_keygen_seed, keymgr_diversifier, pubkey));
   HARDENED_RETURN_IF_ERROR(
       otbn_boot_attestation_key_save(otbn_ecc_keygen_seed, keymgr_diversifier));
 
   // Keys are represented in certificates in big endian format, but the key is
   // output from OTBN in little endian format, so we convert the key to
   // big endian format.
-  curr_pubkey_le_to_be_convert(&pubkey_le, pubkey);
+  curr_pubkey_le_to_be_convert(pubkey);
 
   // Generate the key ID.
   hmac_sha256(pubkey, kAttestationPublicKeyCoordBytes * 2, pubkey_id);
@@ -149,13 +148,11 @@ rom_error_t dice_attestation_keygen(dice_key_t desired_key,
  * Helper function to convert an attestation certificate signature from little
  * to big endian.
  */
-static void curr_tbs_signature_le_to_be_convert(void) {
-  le_be_buf_format((unsigned char *)curr_tbs_signature_be.r,
-                   (unsigned char *)curr_tbs_signature.r,
-                   kAttestationSignatureBytes / 2);
-  le_be_buf_format((unsigned char *)curr_tbs_signature_be.s,
-                   (unsigned char *)curr_tbs_signature.s,
-                   kAttestationSignatureBytes / 2);
+static void curr_tbs_signature_le_to_be_convert(attestation_signature_t *sig) {
+  le_be_buf_format((unsigned char *)sig->r,
+                   kAttestationSignatureComponentBytes);
+  le_be_buf_format((unsigned char *)sig->s,
+                   kAttestationSignatureComponentBytes);
 }
 
 /**
@@ -265,10 +262,10 @@ rom_error_t dice_cdi_0_cert_build(manuf_certgen_inputs_t *inputs,
   hmac_sha256(cdi_0_cert_params.tbs, cdi_0_cert_params.tbs_size, &tbs_digest);
   HARDENED_RETURN_IF_ERROR(
       otbn_boot_attestation_endorse(&tbs_digest, &curr_tbs_signature));
-  curr_tbs_signature_le_to_be_convert();
-  cdi_0_cert_params.cert_signature_r = (unsigned char *)curr_tbs_signature_be.r;
+  curr_tbs_signature_le_to_be_convert(&curr_tbs_signature);
+  cdi_0_cert_params.cert_signature_r = (unsigned char *)curr_tbs_signature.r;
   cdi_0_cert_params.cert_signature_r_size = kAttestationSignatureBytes / 2;
-  cdi_0_cert_params.cert_signature_s = (unsigned char *)curr_tbs_signature_be.s;
+  cdi_0_cert_params.cert_signature_s = (unsigned char *)curr_tbs_signature.s;
   cdi_0_cert_params.cert_signature_s_size = kAttestationSignatureBytes / 2;
   HARDENED_RETURN_IF_ERROR(
       cdi_0_build_cert(&cdi_0_cert_params, cert, cert_size));
@@ -311,10 +308,10 @@ rom_error_t dice_cdi_1_cert_build(manuf_certgen_inputs_t *inputs,
   hmac_sha256(cdi_1_cert_params.tbs, cdi_1_cert_params.tbs_size, &tbs_digest);
   HARDENED_RETURN_IF_ERROR(
       otbn_boot_attestation_endorse(&tbs_digest, &curr_tbs_signature));
-  curr_tbs_signature_le_to_be_convert();
-  cdi_1_cert_params.cert_signature_r = (unsigned char *)curr_tbs_signature_be.r;
+  curr_tbs_signature_le_to_be_convert(&curr_tbs_signature);
+  cdi_1_cert_params.cert_signature_r = (unsigned char *)curr_tbs_signature.r;
   cdi_1_cert_params.cert_signature_r_size = kAttestationSignatureBytes / 2;
-  cdi_1_cert_params.cert_signature_s = (unsigned char *)curr_tbs_signature_be.s;
+  cdi_1_cert_params.cert_signature_s = (unsigned char *)curr_tbs_signature.s;
   cdi_1_cert_params.cert_signature_s_size = kAttestationSignatureBytes / 2;
   HARDENED_RETURN_IF_ERROR(
       cdi_1_build_cert(&cdi_1_cert_params, cert, cert_size));
