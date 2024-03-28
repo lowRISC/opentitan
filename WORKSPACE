@@ -37,8 +37,6 @@ go_deps()
 # Various linters
 load("//third_party/lint:repos.bzl", "lint_repos")
 lint_repos()
-load("//third_party/lint:deps.bzl", "lint_deps")
-lint_deps()
 
 # Lychee link checker.
 load("//third_party/lychee:repos.bzl", "lychee_repos")

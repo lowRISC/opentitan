@@ -253,9 +253,10 @@ bazel run //quality:buildifier_fix
 
 ## Checking License Headers
 
-Lastly, the OpenTitan supported linter for checking that every source code file contains a license header may be run with:
+Lastly, the OpenTitan project uses the REUSE tool for checking that every source code file contains a license header may be run with:
+
 ```sh
-bazel run //quality:license_check --test_output=streamed
+reuse --suppress-deprecation lint
 ```
 
 # Building Hardware

@@ -24,7 +24,6 @@ echo "Linting python code changed since $merge_base"
 
 ignored_subtrees=(
     "*/vendor/"
-    util/lowrisc_misc-linters
 )
 
 pathspec_args=("*.py")
