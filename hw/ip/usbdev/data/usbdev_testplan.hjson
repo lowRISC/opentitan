@@ -664,11 +664,11 @@
     {
       name: stall_trans
       desc: '''
-            Verify that by enabling in_stall/out_stall shall cause STALL response to
-            attempted IN/OUT transactions.
+            Verify that enabling out_stall shall cause STALL response to
+            attempted OUT transactions.
 
-            - setting in_stall/out_stall register bits for a particular transaction.
-            - Verify that we will get STALL response when try to attempt IN/OUT transactions.
+            - Set out_stall register bits for a particular transaction.
+            - Verify that we will get STALL response when we try to attempt OUT transactions.
             '''
       stage: V2
       tests: []
