@@ -5,46 +5,46 @@
 class usbdev_transaction_manager extends uvm_object;
   `uvm_object_utils(usbdev_transaction_manager)
 
-  usbdev_packetiser m_usbdev_packetiser;
+  usbdev_packetiser        m_usbdev_packetiser;
   usbdev_packet_classifier m_usbdev_packet_classifier;
-  usbdev_data_integrity  m_usbdev_data_integrity;
-  usb20_item m_usb20_item;
-  token_packet m_token_pkt;
-  data_packet m_data_pkt;
-  hand_shake_packet m_handshake_pkt;
-  usbdev_handshake_pkt_e m_usbdev_handshake_pkt;
-  usb_transfer_e m_usb_transfer;
+  usbdev_data_integrity    m_usbdev_data_integrity;
+  usb20_item               m_usb20_item;
+  token_packet             m_token_pkt;
+  data_packet              m_data_pkt;
+  hand_shake_packet        m_handshake_pkt;
+  usbdev_handshake_pkt_e   m_usbdev_handshake_pkt;
+  usb_transfer_e           m_usb_transfer;
 
   logic [1:0] state;
   logic [6:0] address;
   logic [3:0] endpoint;
-  bit data[];
-  bit [7:0] pid;
+  bit         data[];
+  bit [7:0]   pid;
 
-  function new(string name  = "usbdev_transaction_manager");
+  function new(string name = "usbdev_transaction_manager");
     super.new(name);
-    m_usbdev_packetiser = new();
+    m_usbdev_packetiser        = new();
     m_usbdev_packet_classifier = new();
-    m_usbdev_data_integrity = new();
-    m_token_pkt = new();
-    m_data_pkt = new();
-    m_handshake_pkt = new();
-    m_usb20_item = new();
-    state = 2'b0;
-    pid = 8'b0;
-    address = 7'b0;
-    endpoint = 4'b0;
+    m_usbdev_data_integrity    = new();
+    m_token_pkt                = new();
+    m_data_pkt                 = new();
+    m_handshake_pkt            = new();
+    m_usb20_item               = new();
+    state    = '0;
+    pid      = '0;
+    address  = '0;
+    endpoint = '0;
   endfunction
 
   task transaction_manager(input bit t_pkt[], input bit d_pkt[], input bit h_pkt[]);
     m_usbdev_packet_classifier.checkPacket(t_pkt);
-    if (m_usbdev_packet_classifier.packetType == usbdev_packet_classifier::TOKEN_SETUP) begin
+    if (m_usbdev_packet_classifier.m_pid_type == PidTypeSetupToken) begin
       setup_transaction(d_pkt, h_pkt);
     end
-    if (m_usbdev_packet_classifier.packetType == usbdev_packet_classifier::TOKEN_IN) begin
+    if (m_usbdev_packet_classifier.m_pid_type == PidTypeInToken) begin
       in_transaction(d_pkt, h_pkt);
     end
-    if (m_usbdev_packet_classifier.packetType == usbdev_packet_classifier::TOKEN_OUT) begin
+    if (m_usbdev_packet_classifier.m_pid_type == PidTypeOutToken) begin
       out_transaction(d_pkt, h_pkt);
     end
   endtask
@@ -62,7 +62,7 @@ class usbdev_transaction_manager extends uvm_object;
       end
       1 : begin
         m_usbdev_packet_classifier.checkPacket(d_pkt);
-        if (m_usbdev_packet_classifier.packetType == usbdev_packet_classifier::DATA_0) begin
+        if (m_usbdev_packet_classifier.m_pid_type == PidTypeData0) begin
           pid = m_usbdev_packet_classifier.pid;
           data = m_usbdev_packet_classifier.data;
           m_data_pkt.send_data_packet(pid, data);
@@ -151,8 +151,8 @@ class usbdev_transaction_manager extends uvm_object;
       end
       1 : begin
         m_usbdev_packet_classifier.checkPacket(d_pkt);
-        if (m_usbdev_packet_classifier.packetType == usbdev_packet_classifier::DATA_0 ||
-            m_usbdev_packet_classifier.packetType == usbdev_packet_classifier::DATA_1) begin
+        if (m_usbdev_packet_classifier.m_pid_type == PidTypeData0 ||
+            m_usbdev_packet_classifier.m_pid_type == PidTypeData1) begin
           pid = m_usbdev_packet_classifier.pid;
           data = m_usbdev_packet_classifier.data;
           m_data_pkt.send_data_packet(pid, data);
