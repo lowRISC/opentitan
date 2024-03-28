@@ -13,10 +13,6 @@ class usbdev_nak_trans_vseq extends usbdev_base_vseq;
     uvm_reg_data_t read_rxfifo;
     bit            rx_enable_out;
 
-    super.dut_init("HARD");
-    cfg.clk_rst_vif.wait_clks(20);
-    clear_all_interrupts();
-
     // Configure transaction
     configure_out_trans();
     // Set nak_out
@@ -25,7 +21,7 @@ class usbdev_nak_trans_vseq extends usbdev_base_vseq;
 
     // Out token packet followed by a data packet
     call_token_seq(PidTypeOutToken);
-    cfg.clk_rst_vif.wait_clks(20);
+    inter_packet_delay();
     call_data_seq(PidTypeData0, .randomize_length(1'b1), .num_of_bytes(0));
     cfg.clk_rst_vif.wait_clks(20);
 
@@ -49,7 +45,7 @@ class usbdev_nak_trans_vseq extends usbdev_base_vseq;
 
     // Out token packet followed by a data packet
     call_token_seq(PidTypeOutToken);
-    cfg.clk_rst_vif.wait_clks(20);
+    inter_packet_delay();
     call_data_seq(PidTypeData1, .randomize_length(1'b1), .num_of_bytes(0));
     cfg.clk_rst_vif.wait_clks(20);
 
@@ -57,7 +53,6 @@ class usbdev_nak_trans_vseq extends usbdev_base_vseq;
     get_response(m_response_item);
     $cast(m_usb20_item, m_response_item);
     get_out_response_from_device(m_usb20_item, PidTypeNak);
-    cfg.clk_rst_vif.wait_clks(20);
   endtask
 
 endclass

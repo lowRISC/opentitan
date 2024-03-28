@@ -51,18 +51,35 @@ class usb20_monitor extends dv_base_monitor #(
 
 //-----------------------------------------Collect Trans------------------------------------------//
   virtual protected task collect_trans();
-    // Idle state detected here
+    bit use_negedge;
+
+    // Wait until bus becomes Idle
     while(!(cfg.bif.usb_p & ~cfg.bif.usb_n)) @(posedge cfg.bif.usb_clk);
     @(posedge cfg.bif.usb_clk);
+    // Departure from Idle state detected here; this is assumed to be the start of a packet.
     wait(~cfg.bif.usb_p);
 
+    // TODO: Operating on a div 4 clock is inherently fraught and runs into sampling problems;
+    // a simple solution would be to use the 4x oversampling and detect the initial transition away
+    // from Idle state, then choose an appropriate sampling phase [0,3] on the 4x clock.
+    //
+    // Here, for now, we just choose the clock edge to sidestep sampling errors.
+    // This only works because the div 4 clock is derived from and phase-locked to the 48MHz device
+    // clock.
+    use_negedge = (cfg.bif.usb_clk === 1'b1);
+    `uvm_info(`gfn, $sformatf("use_neg %d clk %d", use_negedge, cfg.bif.usb_clk), UVM_LOW)
+    if (use_negedge) @(negedge cfg.bif.usb_clk);
+    else @(posedge cfg.bif.usb_clk);
+
     // Collecting usb_p from interface
-    @(posedge cfg.bif.usb_clk);
     while (cfg.bif.usb_p || cfg.bif.usb_n) begin
       packet.push_back(cfg.bif.usb_p);
-      @(posedge cfg.bif.usb_clk);
+      if (use_negedge) @(negedge cfg.bif.usb_clk);
+      else @(posedge cfg.bif.usb_clk);
     end
+    // TODO: this does not even check the EOP!
     repeat (3) packet.push_back(cfg.bif.usb_p);
+
     `uvm_info(`gfn, $sformatf("Complete monitored packet = %p ", packet), UVM_DEBUG)
     nrzi_decoder(packet, monitored_decoded_packet);
     bit_destuffing(monitored_decoded_packet, bit_destuffed);
