@@ -69,13 +69,23 @@ class data_pkt extends usb20_item;
     data.size() <= 64;
    }
 
-  // Construct the Setup packet of a standard USB Device Request
-  function void set_payload(byte unsigned bmRequestType, byte unsigned bRequest,
-                            // 16-bit 'wValue' field but the bytes are used separately
-                            byte unsigned wVL, byte unsigned wVH,
-                            bit [15:0] wIndex, bit [15:0] wLength);
-
-    data = '{bmRequestType, bRequest, wVL, wVH,  // 16-bit fields are sent as Little Endian
+  // Set the data contents to form the Setup packet of a USB device request, as described in section
+  // 9.3 of the USB spec.
+  //
+  // Argument names match the field names in the spec except that the wValue field is split into its
+  // lower and upper bytes (wVL, wVH), matching the way that wValue is often split into a descriptor
+  // type and descriptor index.
+  function void make_device_request(bit [7:0]  bmRequestType,
+                                    bit [7:0]  bRequest,
+                                    bit [7:0]  wVL,
+                                    bit [7:0]  wVH,
+                                    bit [15:0] wIndex,
+                                    bit [15:0] wLength);
+    // Construct the data array by ordering bytes with increasing address. USB fields must always be
+    // sent little-endian. Since our driver already sends bytes little-endian, we can send a
+    // multi-byte field in the correct order by supplying its bytes from low to high.
+    data = '{bmRequestType, bRequest,
+             wVL, wVH,
              wIndex[7:0], wIndex[15:8],
              wLength[7:0], wLength[15:8]};
     crc16 = generate_crc16(data);
