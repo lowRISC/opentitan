@@ -563,9 +563,9 @@
       desc: '''
             Verify the SETUP stage of enumeration.
 
-            - Send a setup token with a valid setup packet containing the address(0), endpoint number(0)
-              followed by DATA0 packet requesting information about device i.e. descriptors.
-            - Verify that the device ACKs the setup packet and prepares for the data stage.
+            - Send a setup token with a valid setup packet followed by a DATA0 packet requesting
+              information about device i.e. descriptors.
+            - Verify that the device ACKs the setup packet.
             '''
       stage: V2
       tests: []
