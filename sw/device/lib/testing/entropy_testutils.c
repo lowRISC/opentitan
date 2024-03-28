@@ -260,10 +260,10 @@ status_t entropy_testutils_error_check(const dif_entropy_src_t *entropy_src,
 
   dif_csrng_cmd_status_t status;
   TRY(dif_csrng_get_cmd_interface_status(csrng, &status));
-  if (status.errors) {
+  if (status.cmd_sts != kDifCsrngCmdStsSuccess) {
     found_error = true;
-    LOG_ERROR("csrng error status. err: 0x%x, fifo_err: 0x%x, kind: 0x%x",
-              status.errors, status.unhealthy_fifos, status.kind);
+    LOG_ERROR("csrng error status. err: 0x%x, kind: 0x%x", status.cmd_sts,
+              status.kind);
   }
 
   uint32_t fifo_errors;

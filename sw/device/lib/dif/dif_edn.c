@@ -157,26 +157,26 @@ dif_result_t dif_edn_get_status(const dif_edn_t *edn, dif_edn_status_t flag,
     return kDifBadArg;
   }
 
-  uint32_t bit;
+  uint32_t reg = mmio_region_read32(edn->base_addr, EDN_SW_CMD_STS_REG_OFFSET);
+  uint32_t field_val;
   switch (flag) {
     case kDifEdnStatusRegReady:
-      bit = EDN_SW_CMD_STS_CMD_REG_RDY_BIT;
+      *set = bitfield_bit32_read(reg, EDN_SW_CMD_STS_CMD_REG_RDY_BIT);
       break;
     case kDifEdnStatusReady:
-      bit = EDN_SW_CMD_STS_CMD_RDY_BIT;
+      *set = bitfield_bit32_read(reg, EDN_SW_CMD_STS_CMD_RDY_BIT);
       break;
     case kDifEdnStatusCsrngStatus:
-      bit = EDN_SW_CMD_STS_CMD_STS_BIT;
+      field_val = bitfield_field32_read(reg, EDN_SW_CMD_STS_CMD_STS_FIELD);
+      *set = field_val ? true : false;
       break;
     case kDifEdnStatusCsrngAck:
-      bit = EDN_SW_CMD_STS_CMD_ACK_BIT;
+      *set = bitfield_bit32_read(reg, EDN_SW_CMD_STS_CMD_ACK_BIT);
       break;
     default:
       return kDifBadArg;
   }
 
-  uint32_t reg = mmio_region_read32(edn->base_addr, EDN_SW_CMD_STS_REG_OFFSET);
-  *set = bitfield_bit32_read(reg, bit);
   return kDifOk;
 }
 

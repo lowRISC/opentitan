@@ -33,7 +33,7 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; #(
   input logic                ctr_drbg_cmd_fips_i,
 
   output logic               ctr_drbg_cmd_ack_o, // final ack when update process has been completed
-  output logic               ctr_drbg_cmd_sts_o, // final ack status
+  output csrng_cmd_sts_e     ctr_drbg_cmd_sts_o, // final ack status
   input logic                ctr_drbg_cmd_rdy_i, // ready to process the ack above
   output logic [Cmd-1:0]     ctr_drbg_cmd_ccmd_o,
   output logic [StateId-1:0] ctr_drbg_cmd_inst_id_o,
@@ -71,6 +71,7 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; #(
   localparam int RCStageFifoWidth = KeyLen+BlkLen+StateId+CtrLen+1+SeedLen+1+Cmd;
   localparam int KeyVRCFifoDepth = 1;
   localparam int KeyVRCFifoWidth = KeyLen+BlkLen+CtrLen+1+SeedLen+1+StateId+Cmd;
+  localparam int UniZeroizeWidth = KeyLen+BlkLen+CtrLen+1+SeedLen;
 
 
   // signals
@@ -98,6 +99,7 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; #(
   logic [SeedLen-1:0] rcstage_adata;
   logic               rcstage_fips;
   logic               fips_modified;
+  logic               ctr_drbg_cmd_sts_err;
 
   // cmdreq fifo
   logic [CmdreqFifoWidth-1:0] sfifo_cmdreq_rdata;
@@ -318,8 +320,11 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; #(
   // block ack
   assign ctr_drbg_cmd_ack_o = sfifo_keyvrc_pop;
 
-  assign ctr_drbg_cmd_sts_o = sfifo_keyvrc_pop && (ctr_drbg_cmd_ccmd_o == UNI) &&
-         ((KeyLen == '0) && (BlkLen == '0) && (CtrLen == '0));
+  // Return a status error when the state is not zeroized properly during a UNI command.
+  assign ctr_drbg_cmd_sts_err = sfifo_keyvrc_pop && (ctr_drbg_cmd_ccmd_o == UNI) &&
+         (sfifo_keyvrc_wdata >> (KeyVRCFifoWidth-UniZeroizeWidth)) == '0;
+
+  assign ctr_drbg_cmd_sts_o = ctr_drbg_cmd_sts_err ? CMD_STS_INVALID_STATE_PARAM : CMD_STS_SUCCESS;
 
 
 endmodule

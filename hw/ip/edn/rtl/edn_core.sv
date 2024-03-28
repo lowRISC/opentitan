@@ -202,10 +202,10 @@ module edn_core import edn_pkg::*;
   logic [63:0]                        cs_rdata_capt_q, cs_rdata_capt_d;
   logic                               cs_rdata_capt_vld_q, cs_rdata_capt_vld_d;
   logic                               cmd_rdy_q, cmd_rdy_d;
-  logic                               csrng_cmd_sts_q, csrng_cmd_sts_d;
+  csrng_pkg::csrng_cmd_sts_e          csrng_cmd_sts_q, csrng_cmd_sts_d;
   logic                               csrng_sw_cmd_ack_q, csrng_sw_cmd_ack_d;
   logic                               csrng_hw_cmd_ack_q, csrng_hw_cmd_ack_d;
-  logic                               csrng_hw_cmd_sts_q, csrng_hw_cmd_sts_d;
+  csrng_pkg::csrng_cmd_sts_e          csrng_hw_cmd_sts_q, csrng_hw_cmd_sts_d;
   logic                               boot_mode_q, boot_mode_d,
                                       auto_mode_q, auto_mode_d;
   logic [3:0]                         cmd_type_q, cmd_type_d;
@@ -223,9 +223,9 @@ module edn_core import edn_pkg::*;
       cs_rdata_capt_q <= '0;
       cs_rdata_capt_vld_q <= '0;
       cmd_rdy_q   <= '0;
-      csrng_cmd_sts_q   <= '0;
+      csrng_cmd_sts_q   <= csrng_pkg::CMD_STS_SUCCESS;
       csrng_sw_cmd_ack_q   <= '0;
-      csrng_hw_cmd_sts_q   <= '0;
+      csrng_hw_cmd_sts_q   <= csrng_pkg::CMD_STS_SUCCESS;
       boot_mode_q   <= '0;
       auto_mode_q   <= '0;
       cmd_type_q   <= '0;
@@ -568,7 +568,7 @@ module edn_core import edn_pkg::*;
   assign hw2reg.sw_cmd_sts.cmd_sts.de = 1'b1;
   assign hw2reg.sw_cmd_sts.cmd_sts.d = csrng_cmd_sts_d;
   assign csrng_cmd_sts_d =
-         !edn_enable_fo[SwCmdSts] ? 1'b0 :
+         !edn_enable_fo[SwCmdSts] ? csrng_pkg::CMD_STS_SUCCESS :
          (csrng_cmd_i.csrng_rsp_ack && sw_cmd_valid) ? csrng_cmd_i.csrng_rsp_sts :
          csrng_cmd_sts_q;
 
@@ -601,10 +601,10 @@ module edn_core import edn_pkg::*;
   assign hw2reg.hw_cmd_sts.cmd_sts.de = 1'b1;
   assign hw2reg.hw_cmd_sts.cmd_sts.d = csrng_hw_cmd_sts_d;
   assign csrng_hw_cmd_sts_d =
-         !edn_enable_fo[HwCmdSts] ? 1'b0 :
+         !edn_enable_fo[HwCmdSts] ? csrng_pkg::CMD_STS_SUCCESS :
          sw_cmd_valid ? csrng_hw_cmd_sts_q :
-         (cs_cmd_req_vld_out_q && csrng_cmd_i.csrng_req_ready) ? 1'b0 :
-         csrng_cmd_i.csrng_rsp_ack && csrng_cmd_i.csrng_rsp_sts ? 1'b1 :
+         (cs_cmd_req_vld_out_q && csrng_cmd_i.csrng_req_ready) ? csrng_pkg::CMD_STS_SUCCESS :
+         csrng_cmd_i.csrng_rsp_ack && csrng_cmd_i.csrng_rsp_sts ? csrng_cmd_i.csrng_rsp_sts :
          csrng_hw_cmd_sts_q;
   // Set the cmd_ack signal to high whenever a hardware command is acknowledged and set it
   // to low whenever a new hardware command is issued to the CSRNG.
