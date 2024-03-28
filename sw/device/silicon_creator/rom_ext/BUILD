@@ -42,6 +42,7 @@ cc_library(
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
         "//sw/device/silicon_creator/lib/drivers:rstmgr",
+        "//sw/device/silicon_creator/lib/ownership:owner_block",
     ],
 )
 
