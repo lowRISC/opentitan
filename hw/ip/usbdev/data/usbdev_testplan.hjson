@@ -568,7 +568,7 @@
             - Verify that the device ACKs the setup packet.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_setup_stage"]
     }
     {
       name: in_data_stage
