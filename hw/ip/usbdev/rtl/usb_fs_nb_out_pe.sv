@@ -28,7 +28,6 @@ module usb_fs_nb_out_pe #(
   input  logic                   clk_48mhz_i,
   input  logic                   rst_ni,
   input  logic                   link_reset_i,
-  input  logic                   link_active_i,
   input  logic [6:0]             dev_addr_i,
 
   ////////////////////////
@@ -332,11 +331,6 @@ module usb_fs_nb_out_pe #(
       timeout_cntdown_q <= timeout_cntdown_d;
     end
   end
-
-  // TODO(#18940): Use the link state to prevent the FSM from responding to
-  // packets until software is ready.
-  logic unused_link_active_i;
-  assign unused_link_active_i = ^link_active_i;
 
   always_ff @(posedge clk_48mhz_i or negedge rst_ni) begin
     if (!rst_ni) begin
