@@ -19,8 +19,8 @@
 #include "sw/device/silicon_creator/lib/base/boot_measurements.h"
 #include "sw/device/silicon_creator/lib/cert/cdi_0.h"  // Generated.
 #include "sw/device/silicon_creator/lib/cert/cdi_1.h"  // Generated.
-#include "sw/device/silicon_creator/lib/cert/dice.h"
-#include "sw/device/silicon_creator/lib/cert/uds.h"  // Generated.
+#include "sw/device/silicon_creator/lib/cert/uds.h"    // Generated.
+#include "sw/device/silicon_creator/lib/dice.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
@@ -86,8 +86,10 @@ static const flash_ctrl_cfg_t kCertificateFlashInfoCfg = {
     .he = kMultiBitBool4False,
 };
 static manuf_certgen_inputs_t certgen_inputs;
-hmac_digest_t uds_pubkey_id;
-hmac_digest_t cdi_0_pubkey_id;
+static hmac_digest_t uds_pubkey_id;
+static hmac_digest_t cdi_0_pubkey_id;
+static hmac_digest_t cdi_1_pubkey_id;
+static attestation_public_key_t curr_pubkey = {.x = {0}, .y = {0}};
 static manuf_dice_certs_t dice_certs = {
     .uds_tbs_certificate = {0},
     .uds_tbs_certificate_size = kUdsMaxTbsSizeBytes,
@@ -126,7 +128,7 @@ static void sw_reset(void) {
 /**
  * Configures flash info pages to store device certificates.
  */
-static status_t config_certificate_flash_pages(void) {
+static status_t config_and_erase_certificate_flash_pages(void) {
   const flash_ctrl_info_page_t *kCertFlashInfoPages[] = {
       &kFlashCtrlInfoPageUdsCertificate,
       &kFlashCtrlInfoPageCdi0Certificate,
@@ -137,6 +139,12 @@ static status_t config_certificate_flash_pages(void) {
     flash_ctrl_info_perms_set(kCertFlashInfoPages[i],
                               kCertificateFlashInfoPerms);
   }
+  TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageUdsCertificate,
+                            kFlashCtrlEraseTypePage));
+  TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageCdi0Certificate,
+                            kFlashCtrlEraseTypePage));
+  TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageCdi1Certificate,
+                            kFlashCtrlEraseTypePage));
   return OK_STATUS();
 }
 
@@ -179,8 +187,8 @@ static status_t personalize_otp_secrets(ujson_t *uj) {
  */
 static void compute_keymgr_owner_int_binding(manuf_certgen_inputs_t *inputs) {
   memcpy(attestation_binding_value.data, inputs->rom_ext_measurement,
-         kAttestMeasurementSizeInBytes);
-  memset(sealing_binding_value.data, 0, kAttestMeasurementSizeInBytes);
+         kDiceMeasurementSizeInBytes);
+  memset(sealing_binding_value.data, 0, kDiceMeasurementSizeInBytes);
 }
 
 /**
@@ -194,12 +202,12 @@ static void compute_keymgr_owner_binding(manuf_certgen_inputs_t *inputs) {
   hmac_digest_t combined_measurements;
   hmac_sha256_init();
   hmac_sha256_update((unsigned char *)inputs->owner_measurement,
-                     kAttestMeasurementSizeInBytes);
+                     kDiceMeasurementSizeInBytes);
   hmac_sha256_update((unsigned char *)inputs->owner_manifest_measurement,
-                     kAttestMeasurementSizeInBytes);
+                     kDiceMeasurementSizeInBytes);
   memcpy(attestation_binding_value.data, combined_measurements.digest,
-         kAttestMeasurementSizeInBytes);
-  memset(sealing_binding_value.data, 0, kAttestMeasurementSizeInBytes);
+         kDiceMeasurementSizeInBytes);
+  memset(sealing_binding_value.data, 0, kDiceMeasurementSizeInBytes);
 }
 
 /**
@@ -211,7 +219,7 @@ static status_t personalize_dice_certificates(ujson_t *uj) {
   TRY(ujson_deserialize_manuf_certgen_inputs_t(uj, &certgen_inputs));
 
   // Configure certificate flash info page permissions.
-  TRY(config_certificate_flash_pages());
+  TRY(config_and_erase_certificate_flash_pages());
 
   // Initialize entropy complex / KMAC for key manager operations.
   TRY(entropy_complex_init());
@@ -228,29 +236,21 @@ static status_t personalize_dice_certificates(ujson_t *uj) {
 
   // Generate UDS keys and (TBS) cert.
   sc_keymgr_advance_state();
-  TRY(sc_keymgr_state_check(kScKeymgrStateCreatorRootKey));
-  TRY(dice_uds_cert_build(&certgen_inputs, &uds_pubkey_id,
+  TRY(dice_attestation_keygen(kDiceKeyUds, &uds_pubkey_id, &curr_pubkey));
+  TRY(dice_uds_cert_build(&certgen_inputs, &uds_pubkey_id, &curr_pubkey,
                           dice_certs.uds_tbs_certificate,
                           &dice_certs.uds_tbs_certificate_size));
-  TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageUdsCertificate,
-                            kFlashCtrlEraseTypePage));
-  TRY(flash_ctrl_info_write(
-      &kFlashCtrlInfoPageUdsCertificate,
-      kFlashInfoFieldUdsCertificate.byte_offset,
-      dice_certs.uds_tbs_certificate_size / sizeof(uint32_t),
-      dice_certs.uds_tbs_certificate));
-  LOG_INFO("Generated UDS certificate.");
+  LOG_INFO("Generated UDS TBS certificate.");
 
   // Generate CDI_0 keys and cert.
   compute_keymgr_owner_int_binding(&certgen_inputs);
   TRY(sc_keymgr_owner_int_advance(&sealing_binding_value,
                                   &attestation_binding_value,
                                   /*max_key_version=*/0));
+  TRY(dice_attestation_keygen(kDiceKeyCdi0, &cdi_0_pubkey_id, &curr_pubkey));
   TRY(dice_cdi_0_cert_build(&certgen_inputs, &uds_pubkey_id, &cdi_0_pubkey_id,
-                            dice_certs.cdi_0_certificate,
+                            &curr_pubkey, dice_certs.cdi_0_certificate,
                             &dice_certs.cdi_0_certificate_size));
-  TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageCdi0Certificate,
-                            kFlashCtrlEraseTypePage));
   TRY(flash_ctrl_info_write(
       &kFlashCtrlInfoPageCdi0Certificate,
       kFlashInfoFieldCdi0Certificate.byte_offset,
@@ -263,11 +263,10 @@ static status_t personalize_dice_certificates(ujson_t *uj) {
   TRY(sc_keymgr_owner_advance(&sealing_binding_value,
                               &attestation_binding_value,
                               /*max_key_version=*/0));
-  TRY(dice_cdi_1_cert_build(&certgen_inputs, &cdi_0_pubkey_id,
-                            dice_certs.cdi_1_certificate,
+  TRY(dice_attestation_keygen(kDiceKeyCdi1, &cdi_1_pubkey_id, &curr_pubkey));
+  TRY(dice_cdi_1_cert_build(&certgen_inputs, &cdi_0_pubkey_id, &cdi_1_pubkey_id,
+                            &curr_pubkey, dice_certs.cdi_1_certificate,
                             &dice_certs.cdi_1_certificate_size));
-  TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageCdi1Certificate,
-                            kFlashCtrlEraseTypePage));
   TRY(flash_ctrl_info_write(
       &kFlashCtrlInfoPageCdi1Certificate,
       kFlashInfoFieldCdi1Certificate.byte_offset,
@@ -284,8 +283,6 @@ static status_t personalize_dice_certificates(ujson_t *uj) {
   TRY(ujson_deserialize_manuf_endorsed_certs_t(uj, &endorsed_certs));
 
   // Write the endorsed UDS certificate to flash and ack to host.
-  TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageUdsCertificate,
-                            kFlashCtrlEraseTypePage));
   TRY(flash_ctrl_info_write(
       &kFlashCtrlInfoPageUdsCertificate,
       kFlashInfoFieldUdsCertificate.byte_offset,
