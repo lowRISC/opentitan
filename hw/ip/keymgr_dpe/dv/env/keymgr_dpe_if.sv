@@ -585,6 +585,7 @@ interface keymgr_dpe_if(input clk, input rst_n);
           kmac_key_exp <= '{1'b1, kmac_sideload_key_shares};
           is_kmac_key_good <= 1;
         end else begin
+          kmac_key_exp <= '0;
           kmac_key_exp.valid <= 0;
           is_kmac_key_good   <= 0;
         end
