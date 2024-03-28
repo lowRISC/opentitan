@@ -13,7 +13,9 @@ use std::path::{Path, PathBuf};
 
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
-use opentitanlib::crypto::ecdsa::{EcdsaPrivateKey, EcdsaPublicKey};
+use opentitanlib::crypto::ecdsa::{
+    EcdsaPrivateKey, EcdsaPublicKey, EcdsaRawPublicKey, EcdsaRawSignature,
+};
 use opentitanlib::crypto::sha256::Sha256Digest;
 use opentitanlib::util::parse_int::ParseInt;
 
@@ -42,8 +44,7 @@ impl CommandDispatch for EcdsaKeyShowCommand {
         _transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
         let key = load_pub_or_priv_key(&self.der_file)?;
-
-        Ok(Some(Box::new(key.to_raw())))
+        Ok(Some(Box::new(EcdsaRawPublicKey::try_from(&key)?)))
     }
 }
 
@@ -94,7 +95,7 @@ impl CommandDispatch for EcdsaKeyExportCommand {
         _transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
         let key = load_pub_or_priv_key(&self.der_file)?;
-        let key = key.to_raw();
+        let key = EcdsaRawPublicKey::try_from(&key)?;
 
         let output_path = match &self.output_file {
             Some(path) => path.clone(),
@@ -134,18 +135,14 @@ impl CommandDispatch for EcdsaKeyExportCommand {
         writeln!(&mut file)?;
         writeln!(&mut file, "#define {} \\", keyname)?;
         writeln!(&mut file, " {{ \\")?;
-        let mut x = key.x.clone();
-        x.reverse();
-        for val in x.as_slice().chunks(4) {
+        for val in key.x.as_slice().chunks(4) {
             writeln!(
                 &mut file,
                 "    0x{:02x}{:02x}{:02x}{:02x}, \\",
                 val[3], val[2], val[1], val[0]
             )?;
         }
-        let mut y = key.y.clone();
-        y.reverse();
-        for val in y.as_slice().chunks(4) {
+        for val in key.y.as_slice().chunks(4) {
             writeln!(
                 &mut file,
                 "    0x{:02x}{:02x}{:02x}{:02x}, \\",
@@ -212,7 +209,7 @@ impl CommandDispatch for EcdsaSignCommand {
         } else {
             self.digest.clone().unwrap()
         };
-        let signature = private_key.sign(&digest)?;
+        let signature = private_key.sign(&digest)?.to_vec()?;
         if let Some(output) = &self.output {
             std::fs::write(output, &signature)?;
         }
@@ -231,7 +228,7 @@ pub struct EcdsaVerifyCommand {
     /// SHA256 digest of the message as a hex string (big-endian), i.e. 0x...
     #[arg(value_name = "SHA256_DIGEST")]
     digest: String,
-    /// Signature to be verified as a hex string (big-endian), i.e. 0x...
+    /// Signature to be verified as a hex string.
     signature: String,
 }
 
@@ -243,7 +240,7 @@ impl CommandDispatch for EcdsaVerifyCommand {
     ) -> Result<Option<Box<dyn Annotate>>> {
         let key = load_pub_or_priv_key(&self.der_file)?;
         let digest = Sha256Digest::from_str(&self.digest)?;
-        let signature = hex::decode(&self.signature)?;
+        let signature = EcdsaRawSignature::try_from(hex::decode(&self.signature)?.as_slice())?;
         key.verify(&digest, &signature)?;
         Ok(None)
     }

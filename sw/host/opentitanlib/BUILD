@@ -216,6 +216,7 @@ rust_library(
         "src/util/printer.rs",
         "src/util/raw_tty.rs",
         "src/util/rom_detect.rs",
+        "src/util/serde.rs",
         "src/util/status.rs",
         "src/util/testing.rs",
         "src/util/unknown.rs",
