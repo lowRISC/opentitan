@@ -38,73 +38,105 @@ class jtag_dmi_monitor #(type ITEM_T = jtag_dmi_item) extends dv_base_monitor#(
 
   virtual protected task collect_trans();
     jtag_item jtag_item;
-    bit dmi_selected;
+
+    // This bit is set if the JTAG FSM currently has an instruction register equal to the DMI
+    // address.
+    bit dmi_selected = 1'b0;
+
+    // Normally, we consider a request to have gone through if the JTAG transaction has a rsp_op
+    // other than DmiOpInProgress. Unfortunately, there's a confusing window immediately after a
+    // request is made: the first JTAG transaction immediately after a request won't necessarily
+    // realise it should respond with DmiOpInProgress.
+    //
+    // To avoid things getting out of sync, we don't have an opinion about whether that transaction
+    // managed to cause a request. If we see a transaction other than DmiOpNone in that position,
+    // the monitor raises an error. The quiet_period flag is set if we can't trust the response of
+    // the next JTAG transaction.
+    bit quiet_period = 1'b0;
 
     forever begin
-      bit busy;
+      bit is_ir_update, is_dr_update;
+
       jtag_item_fifo.get(jtag_item);
-      // jtag_item can either be an IR update or a DR update. Check packet for validity.
-      if ((jtag_item.ir_len > 0) ~^ (jtag_item.dr_len > 0)) begin
+
+      is_ir_update = jtag_item.ir_len > 0;
+      is_dr_update = jtag_item.dr_len > 0;
+
+      // A JTAG item can either be an IR update or a DR update. Check packet for validity.
+      if (is_ir_update ~^ is_dr_update) begin
         `uvm_error(`gfn, $sformatf("Bad packet: %0s. ir_len & dr_len are both zero, or non-zero.",
                                    jtag_item.sprint(uvm_default_line_printer)))
         continue;
       end
-      if (jtag_item.ir_len) begin
-        dmi_selected = is_dmi_selected(jtag_item);
-        if (!dmi_selected) non_dmi_jtag_dtm_analysis_port.write(jtag_item);
-        continue;
+
+      // If this is an IR update, update our dmi_selected flag to reflect the new IR.
+      if (is_ir_update) begin
+        dmi_selected = (jtag_item.ir == cfg.jtag_dtm_ral.dmi.get_address());
       end
+
+      // If we're not currently operating on the DMI register, pass the item to our non-DMI analysis
+      // port.
       if (!dmi_selected) begin
         non_dmi_jtag_dtm_analysis_port.write(jtag_item);
         continue;
       end
 
-      // Item has both, the new DMI request, as well as the response for the previous request.
-      // Capture the response first, then the request.
-      busy = capture_response(jtag_item);
+      // At this point, we know we're operating on the DMI register. Handle any DR update.
+      if (is_dr_update) begin
+        jtag_dmi_op_req_e req_op = jtag_dmi_op_req_e'(get_field_val(cfg.jtag_dtm_ral.dmi.op,
+                                                                    jtag_item.dr));
 
-      // A new DMI request is accepted only if the previous DMI transaction completed.
-      if (!busy) capture_request(jtag_item);
+        if (quiet_period) begin
+          if (req_op != DmiOpNone) begin
+            `uvm_error(`gfn, $sformatf("JTAG operation %0d != DmiOpNone in quiet period", req_op))
+          end
+          quiet_period = 1'b0;
+        end else begin
+          // The item has both the response for the previous request and a new DMI request. Capture
+          // the response first.
+          bit in_progress = capture_response(jtag_item);
+
+          // Since we know we are not in the quiet period, the DUT will have taken the request if it
+          // did not report an operation in progress. Set the quiet_period flag unless the operation
+          // was DmiOpNone.
+          if (req_op != DmiOpNone && !in_progress) begin
+            capture_request(jtag_item);
+            quiet_period = 1'b1;
+          end
+        end
+      end
     end
   endtask
 
-  // Checks if the DMI IR is chosen.
-  virtual function bit is_dmi_selected(jtag_item item);
-    // A non-zero IR length indicates an IR update transacrtion.
-    if (!item.ir_len) return 0;
-    // If IR value matches DTM DMI address, return 1, else 0.
-    if (item.ir == cfg.jtag_dtm_ral.dmi.get_address()) return 1;
-    return 0;
-  endfunction
-
   // Capture a new DMI request, if the previous DMI transaction is not in progress.
   //
-  // Returns true if the response was captured, or if there was no previous request, false if the
-  // response returned was busy.
+  // Returns true if there was a previous request which is still in progress. Otherwise returns
+  // false.
   virtual function bit capture_response(jtag_item jtag_item);
     jtag_dmi_op_rsp_e rsp_op = jtag_dmi_op_rsp_e'(
         get_field_val(cfg.jtag_dtm_ral.dmi.op, jtag_item.dout));
 
+    if (rsp_op == DmiOpInProgress) begin
+      return 1;
+    end
+
     if (dmi_req_q.size() != 0) begin
-      if (rsp_op == DmiOpInProgress) begin
-        return 1;
-      end else begin
-        ITEM_T dmi_item = dmi_req_q.pop_front();
-        dmi_item.rsp_op = rsp_op;
-        if (dmi_item.req_op == DmiOpRead) begin
-          uvm_reg_data_t data = get_field_val(cfg.jtag_dtm_ral.dmi.data,
-                                              jtag_item.dout);
-          dmi_item.rdata = data;
-        end
-        `uvm_info(`gfn, $sformatf("Writing DMI item to analysis_port: %0s",
-                                  dmi_item.sprint(uvm_default_line_printer)), UVM_HIGH)
-        analysis_port.write(dmi_item);
+      ITEM_T dmi_item = dmi_req_q.pop_front();
+      dmi_item.rsp_op = rsp_op;
+      if (dmi_item.req_op == DmiOpRead) begin
+        uvm_reg_data_t data = get_field_val(cfg.jtag_dtm_ral.dmi.data,
+                                            jtag_item.dout);
+        dmi_item.rdata = data;
       end
+      `uvm_info(`gfn, $sformatf("Writing DMI item to analysis_port: %0s",
+                                dmi_item.sprint(uvm_default_line_printer)), UVM_HIGH)
+      analysis_port.write(dmi_item);
     end else begin
       if (rsp_op != DmiOpOk) begin
         `uvm_error(`gfn, $sformatf("Non-ok response seen with no previous DMI request."))
       end
     end
+
     return 0;
   endfunction
 
