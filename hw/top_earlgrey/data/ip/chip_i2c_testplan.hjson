@@ -99,6 +99,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: []
+      bazel: []
     }
     {
       name: chip_sw_i2c_clockstretching
@@ -125,6 +126,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: []
+      bazel: []
     }
     {
       name: chip_sw_i2c_nack
@@ -165,6 +167,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: []
+      bazel: []
     }
   ]
 }

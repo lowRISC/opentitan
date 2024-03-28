@@ -29,6 +29,7 @@
       lc_states: ["PROD"]
       tests: ["chip_sw_sram_ctrl_scrambled_access",
               "chip_sw_sram_ctrl_scrambled_access_jitter_en"]
+      bazel: []
     }
     {
       name: chip_sw_sleep_sram_ret_contents
@@ -126,6 +127,7 @@
       lc_states: ["PROD"]
       tests: ["chip_sw_all_escalation_resets",
               "chip_sw_data_integrity_escalation"]
+      bazel: []
     }
 
     {
