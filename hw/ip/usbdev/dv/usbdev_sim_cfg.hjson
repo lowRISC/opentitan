@@ -44,23 +44,12 @@
   uvm_test: usbdev_base_test
   uvm_test_seq: usbdev_base_vseq
 
-  // TODO: temporary fix for CSR tests - USB link reset interrupt is sticky - clearing it
-  // has no effect. Update "csr_test_mode" to add +do_clear_all_interrupts=0 switch to
-  // prevent the intr checks from being run.
-  run_modes: [
-    {
-      name: csr_tests_mode
-      run_opts: ["+do_clear_all_interrupts=0"]
-    }
-  ]
-
   // List of test specifications.
   tests: [
     {
       name: usbdev_smoke
       uvm_test_seq: usbdev_smoke_vseq
     }
-
     {
       name: usbdev_av_buffer
       uvm_test_seq: usbdev_av_buffer_vseq
@@ -128,7 +117,7 @@
       uvm_test_seq: usbdev_stall_priority_over_nak_vseq
     }
     {
-      name: phy_config_usb_ref_disable
+      name: usbdev_phy_config_usb_ref_disable
       uvm_test_seq: usbdev_phy_config_usb_ref_disable_vseq
     }
     {
