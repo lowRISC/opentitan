@@ -28,9 +28,6 @@ class usbdev_av_buffer_vseq extends usbdev_base_vseq;
   endtask
 
   task configure_trans();
-    super.apply_reset("HARD");
-    super.dut_init("HARD");
-    cfg.clk_rst_vif.wait_clks(200);
     // Enable EP0 Out
     csr_wr(.ptr(ral.ep_out_enable[0].enable[endp]), .value(1'b1));
     csr_update(ral.ep_out_enable[0]);
