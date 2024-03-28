@@ -6,7 +6,6 @@ load(
     "//rules:certificates.bzl",
     "certificate_template",
 )
-load("//rules:opentitan.bzl", "OPENTITAN_CPU")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -51,30 +50,5 @@ cc_test(
     deps = [
         ":asn1",
         "@googletest//:gtest_main",
-    ],
-)
-
-cc_library(
-    name = "dice",
-    srcs = ["dice.c"],
-    hdrs = ["dice.h"],
-    target_compatible_with = [OPENTITAN_CPU],
-    deps = [
-        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-        "//sw/device/lib/base:memory",
-        "//sw/device/lib/base:status",
-        "//sw/device/lib/testing/json:provisioning_data",
-        "//sw/device/lib/testing/test_framework:check",
-        "//sw/device/silicon_creator/lib:attestation",
-        "//sw/device/silicon_creator/lib:attestation_key_diversifiers",
-        "//sw/device/silicon_creator/lib:otbn_boot_services",
-        "//sw/device/silicon_creator/lib/cert:cdi_0_template_library",
-        "//sw/device/silicon_creator/lib/cert:cdi_1_template_library",
-        "//sw/device/silicon_creator/lib/cert:uds_template_library",
-        "//sw/device/silicon_creator/lib/drivers:hmac",
-        "//sw/device/silicon_creator/lib/drivers:keymgr",
-        "//sw/device/silicon_creator/lib/drivers:lifecycle",
-        "//sw/device/silicon_creator/lib/drivers:otp",
-        "//sw/otbn/crypto:boot",
     ],
 )
