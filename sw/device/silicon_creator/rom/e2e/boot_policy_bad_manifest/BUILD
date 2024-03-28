@@ -155,7 +155,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
             "identifier": hex(CONST.ROM_EXT),
             "code_start": hex(CONST.MANIFEST_SIZE + 8),
             "code_end": hex(CONST.MANIFEST_SIZE + 12),
-            "entry_point": hex(CONST.MANIFEST_SIZE + 10),
+            "entry_point": hex(CONST.MANIFEST_SIZE + 11),
         },
         "exit_success": MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.MANIFEST.BAD_ENTRY_POINT)),
         "exit_failure": msg_template_bfv_all_except(CONST.BFV.MANIFEST.BAD_ENTRY_POINT),
