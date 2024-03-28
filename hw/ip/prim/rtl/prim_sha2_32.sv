@@ -26,7 +26,7 @@ module prim_sha2_32 import prim_sha2_pkg::*;
   input digest_mode_e       digest_mode_i,
   input                     hash_process_i,
   output logic              hash_done_o,
-  input [127:0]             message_length_i, // use extended message length 128 bits
+  input [63:0]              message_length_i,
   input  sha_word64_t [7:0] digest_i,
   input  logic [7:0]        digest_we_i,
   output sha_word64_t [7:0] digest_o,         // use extended digest length
@@ -44,7 +44,7 @@ module prim_sha2_32 import prim_sha2_pkg::*;
   // tie off unused ports/port slices
   if (!MultimodeEn) begin : gen_tie_unused
     logic unused_signals;
-    assign unused_signals = ^{message_length_i[127:64], digest_mode_i, hash_go};
+    assign unused_signals = ^{digest_mode_i, hash_go};
   end
 
   // logic and prim_sha2 instantiation for MultimodeEn = 1
@@ -78,29 +78,14 @@ module prim_sha2_32 import prim_sha2_pkg::*;
             word_buffer_d.mask[7:4]   = fifo_rdata_i.mask;
             word_part_inc             = 1'b1;
             fifo_rready_o             = 1'b1;
-            /* if (hash_process_i || process_flag_q) begin // ready to push out word (partial)
-              word_valid      = 1'b1;
-              // add least significant padding
-              full_word.data  =  {fifo_rdata_i.data, 32'b0};
-              full_word.mask  =  {fifo_rdata_i.mask, 4'h0};
-              sha_process     = 1'b1;
-              if (sha_ready == 1'b1) begin
-                // if word has been absorbed into hash engine
-                fifo_rready_o = 1'b1; // word pushed out to SHA engine, word buffer ready
-                word_part_inc = 1'b0;
-              end else begin
-                fifo_rready_o = 1'b0;
-              end
-            end */
           end else begin   // SHA2_256 so pad and push out the word
             word_valid = 1'b1;
             // store the word with most significant padding
             word_buffer_d.data = {32'b0, fifo_rdata_i.data};
             word_buffer_d.mask = {4'hF, fifo_rdata_i.mask}; // pad with all-1 byte mask
-
             // pad with all-zero data and all-one byte masking and push word out already for 256
             full_word.data =  {32'b0, fifo_rdata_i.data};
-            full_word.mask = {4'hF, fifo_rdata_i.mask};
+            full_word.mask =  {4'hF, fifo_rdata_i.mask};
             if (hash_process_i || process_flag_q) begin
                 sha_process = 1'b1;
             end
@@ -188,7 +173,7 @@ module prim_sha2_32 import prim_sha2_pkg::*;
 
       // assign digest_mode_flag_d
       if (hash_go)          digest_mode_flag_d = digest_mode_i;      // latch in configured mode
-      else if (hash_done_o) digest_mode_flag_d = SHA2_None;               // clear
+      else if (hash_done_o) digest_mode_flag_d = SHA2_None;          // clear
       else                  digest_mode_flag_d = digest_mode_flag_q; // keep
 
       // assign process_flag
@@ -264,7 +249,7 @@ module prim_sha2_32 import prim_sha2_pkg::*;
       .digest_mode_i      (SHA2_None),      // unused input port tied to ground
       .hash_process_i     (hash_process_i), // feed input port directly to SHA-2 engine
       .hash_done_o        (hash_done_o),
-      .message_length_i   ({{64'b0}, message_length_i[63:0]}),
+      .message_length_i   (message_length_i),
       .digest_i           (digest_i),
       .digest_we_i        (digest_we_i),
       .digest_o           (digest_o),
