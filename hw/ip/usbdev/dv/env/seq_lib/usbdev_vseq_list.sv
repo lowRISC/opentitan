@@ -11,6 +11,7 @@
 `include "usbdev_csr_test_vseq.sv"
 `include "usbdev_enable_vseq.sv"
 `include "usbdev_fifo_rst_vseq.sv"
+`include "usbdev_in_rand_trans_vseq.sv"
 `include "usbdev_in_stall_vseq.sv"
 `include "usbdev_in_trans_vseq.sv"
 `include "usbdev_in_iso_vseq.sv"
