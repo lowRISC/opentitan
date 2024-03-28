@@ -225,6 +225,7 @@ class spi_monitor extends dv_base_monitor#(
 
   virtual protected task collect_flash_trans(spi_item item, ref bit flash_opcode_received);
     int num_addr_bytes;
+    int unsigned total_cycles_wait;
     flash_opcode_received = 0;
     // for mode 1 and 3, get the leading edges out of the way
     cfg.wait_sck_edge(LeadingEdge, active_csb);
@@ -234,20 +235,38 @@ class spi_monitor extends dv_base_monitor#(
                           .data(item.opcode), .check_data_not_z(1));
     flash_opcode_received = 1;
     cfg.extract_cmd_info_from_opcode(item.opcode,
-        // output
-        num_addr_bytes, item.write_command, item.num_lanes, item.dummy_cycles);
+                                     // output
+                                     num_addr_bytes, item.write_command, item.num_lanes,
+                                     item.dummy_cycles, item.read_pipeline_mode);
     `uvm_info(`gfn, $sformatf("sampled flash opcode: 0x%0h", item.opcode), UVM_HIGH)
 
     sample_address(num_addr_bytes, item.address_q);
-
+    total_cycles_wait = item.dummy_cycles + (item.read_pipeline_mode>0 ? 2 : 0);
     repeat (item.dummy_cycles) begin
       cfg.wait_sck_edge(SamplingEdge, active_csb);
     end
     req_analysis_port.write(item);
 
+    if (cfg.if_mode == dv_utils_pkg::Device) begin
+      `uvm_info(`gfn,
+         "spi monitor is configured in Device mode -> don't need to add extra read_pipeline delay",
+         UVM_HIGH)
+    end
+    else begin
+      repeat ((item.read_pipeline_mode>0 ? 2 : 0)) begin
+        cfg.wait_sck_edge(SamplingEdge, active_csb);
+      end
+    end
+
+    `uvm_info(`gfn, $sformatf(
+      "TB waited for (%0d) dummy_cycles + (%0d) cycles due to read_pipeline",
+      item.dummy_cycles, (item.read_pipeline_mode && cfg.if_mode != dv_utils_pkg::Device)  ? 2 : 0),
+              UVM_DEBUG)
+
     forever begin
       logic[7:0] byte_data;
       sample_and_check_byte(item.num_lanes, !item.write_command, byte_data);
+      `uvm_info(`gfn, $sformatf("Sampled: 0x%0x data",byte_data), UVM_DEBUG)
       item.payload_q.push_back(byte_data);
     end
   endtask : collect_flash_trans
