@@ -237,7 +237,6 @@ module usb_fs_nb_pe #(
     .clk_48mhz_i            (clk_48mhz_i),
     .rst_ni                 (rst_ni),
     .link_reset_i           (link_reset_i),
-    .link_active_i          (link_active_i),
     .dev_addr_i             (dev_addr_i),
 
     // endpoint interface
