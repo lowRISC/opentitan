@@ -130,7 +130,7 @@ impl X509 {
             )?;
             Self::push_sig_alg_id(builder, &cert.signature)?;
             Self::push_name(builder, Some("issuer".into()), &cert.issuer)?;
-            Self::push_validity(builder)?;
+            Self::push_validity(builder, &cert.not_before, &cert.not_after)?;
             Self::push_name(builder, Some("subject".into()), &cert.subject)?;
             Self::push_public_key_info(builder, &cert.subject_public_key_info)?;
             builder.push_tag(
@@ -427,7 +427,11 @@ impl X509 {
         Ok(())
     }
 
-    pub fn push_validity<B: Builder>(builder: &mut B) -> Result<()> {
+    pub fn push_validity<B: Builder>(
+        builder: &mut B,
+        not_before: &Value<String>,
+        not_after: &Value<String>,
+    ) -> Result<()> {
         // From https://datatracker.ietf.org/doc/html/rfc5280#section-4.1:
         // Validity ::= SEQUENCE {
         //   notBefore      Time,
@@ -439,23 +443,9 @@ impl X509 {
         //
         // From the X680 spec: section 46
         // GeneralizedTime ::= [UNIVERSAL 24] IMPLICIT VisibleString
-        //
-        // From the Open Profile for DICE specification:
-        // https://pigweed.googlesource.com/open-dice/+/refs/heads/main/docs/specification.md#x_509-cdi-certificates
-        // The certificate expiration time is set to a fixed date in the future.
-        // The "not before" date is chosen to be in the past since the device does not
-        // have a reliable way to get the time.
         builder.push_seq(Some("validity".into()), |builder| {
-            builder.push_string(
-                Some("not_before".into()),
-                &Tag::GeneralizedTime,
-                &Value::Literal("20230101000000Z".to_string()),
-            )?;
-            builder.push_string(
-                Some("not_after".into()),
-                &Tag::GeneralizedTime,
-                &Value::Literal("99991231235959Z".to_string()),
-            )
+            builder.push_string(Some("not_before".into()), &Tag::GeneralizedTime, not_before)?;
+            builder.push_string(Some("not_after".into()), &Tag::GeneralizedTime, not_after)
         })
     }
 
