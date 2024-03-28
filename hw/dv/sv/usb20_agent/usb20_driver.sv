@@ -277,14 +277,16 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
   // -------------------------------
   virtual task reset_signals();
     cfg.bif.usb_rx_d_i = 1'b1;
-    cfg.bif.usb_vbus = 1'b1;
+    cfg.bif.vbus_drive = 1'b1;
     cfg.bif.drive_p  = 1'b0;
     cfg.bif.drive_n = 1'b0;
     @(posedge cfg.bif.rst_ni);
-    cfg.bif.usb_vbus = 1'b0;
+    cfg.bif.vbus_drive = 1'b0;
     repeat(usb_idle_clk_cycles) @(posedge cfg.bif.usb_clk);
-    cfg.bif.usb_vbus = 1'b1;
-    bus_reset();
+    cfg.bif.vbus_drive = 1'b1;
+    // Check that driver is enabled then starts bus_reset.
+    // This change is introduced to avoid csr test failures due to reactive driver.
+    if (cfg.bif.connected) bus_reset();
   endtask
 
   // USB Bus Reset Task
