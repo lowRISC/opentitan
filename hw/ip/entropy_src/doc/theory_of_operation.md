@@ -118,6 +118,49 @@ See the [programmer's guide section](programmers_guide.md/#entropy-source-module
 
 ## Design Details
 
+### Entropy Dropping and Conditioner Back Pressure
+
+When enabled, the ENTROPY_SRC block has no way to exercise back pressure onto the PTRNG noise source.
+Any sample coming in from the noise source is being health tested and continues to flow down the entropy pipeline.
+However, if the ENTROPY_SRC block experiences internal back pressure, health tested samples may be dropped in different locations depending on the source of the back pressure and the configured mode of operation.
+
+- **Input of `esfinal` FIFO**: If the `esfinal` FIFO is full, e.g., because the hardware entropy interface doesn't request entropy, entire 384-bit seeds coming out of the conditioner or the bypass packer FIFO get dropped.
+  Firmware is not informed when dropping entire seeds.
+  When running in [Firmware Override: Extract & Insert mode](programmers_guide.md#firmware_override_-_extract_&_insert), firmware may want to infer whether the next seed is likely going to be dropped at this moment by reading the current depth of the `esfinal` FIFO from the [`DEBUG_STATUS`](registers.md#debug_status) register.
+- **Input of Observe FIFO**: When running in any of the [Firmware Override modes](programmers_guide.md#firmware_override_/_bypass_modes) health tested entropy bits are collected in the Observe FIFO for observation / extraction by firmware.
+  Whenever the Observe FIFO runs full, the [`FW_OV_RD_FIFO_OVERFLOW`](registers.md#fw_ov_rd_fifo_overflow) bit is asserted and the hardware stops collecting entropy bits in the Observe FIFO until firmware has emptied the FIFO.
+  This helps ensuring that observed / extracted entropy bits are contiguous.
+- **Input of `postht` / `esbit` FIFO**: When experiencing back pressure from the hardware conditioner (see below), health tested entropy bits may get dropped at the input of the `postht` or `esbit` FIFO when running in multi-channel or single-channel mode, respectively.
+  Note that the dropped bits are still health tested and contribute to the overall results for the current window.
+  However, to keep the number of bits passed to the conditioner constant, the health test window is stretched by the number of dropped samples.
+  Whenever post-health test entropy bits are being dropped from the hardware pipeline, a recoverable alert is triggered and the [`RECOV_ALERT_STS.POSTHT_ENTROPY_DROP_ALERT`](registers.md#recov_alert_sts--postht_entropy_drop_alert) bit is asserted.
+  Note that this may also happen in [Firmware Override: Observe mode](programmers_guide.md#firmware_override_-_observe).
+  Firmware should thus explicitly check the [`RECOV_ALERT_STS.POSTHT_ENTROPY_DROP_ALERT`](registers.md#recov_alert_sts--postht_entropy_drop_alert) bit to ensure the bits retrieved from the Observe FIFO are indeed contiguous.
+
+The reduce the probability of dropping post-health test entropy bits, the **Distribution FIFO** can be used.
+This FIFO has pass-through mode enabled meaning it doesn't add latency to hardware pipeline.
+It has a width of 32 bits.
+Its depth is configurable via compile-time Verilog parameter and should matched to the expected level of conditioner back pressure.
+The level of conditioner back pressure depends on the following factors:
+- The maximum latency it takes for the conditioner to add the padding bits \\(n_{pad}\\) (25 clock cycles) and to run the internal SHA3 primitive \\(n_{sha3}\\) (24 clock cycles).
+- The maximum latency of the [CS AES halt request interface](interfaces.md/#inter-module-signals) \\(n_{halt}\\) (48 clock cycles corresponding to CSRNG performing the Update function).
+
+The required depth \\(d_distr\\) of the Distribution FIFO can be computed as
+$$ d_{distr} = { (r_{PTRNG} * s_{symbol}) * (2 * (n_{halt} + n_{sha3}) + n_{pad} + n_{uarch}) - 32 - 64 \over 32} $$
+
+where
+- \\(r_{PTRNG}\\) is the rate at which the PTRNG noise source generates entropy samples,
+- \\(s_{symbol}\\) (= 4) is the symbol size of these samples in bits,
+- \\(n_{uarch}\\) (= 5) is the latency of the ENTROPY_SRC micro architecture between producing seeds, and
+- the -32 and -64 terms are to account for the number of entropy bits stored in the `postht` and the `precon` FIFOs, respectively.
+
+For [Top Earlgrey](../../../top_earlgrey/README.md), the assumption is that the PTRNG noise source generates entropy bits at a rate of roughly 50 kbps.
+With the ENTROPY_SRC block running at 100 MHz, this leads to noise source rate \\(r_{PTRNG}\\) = 1/8000.
+
+The noise source model inside the DV environment generates symbols with an average rate of 1 4-bit symbol every 6.5 clock cycles.
+To reach functional coverage metrics, the `entropy_src_rng_max_rate` configures the noise source to generate a 4-bit symbol every other clock cycle (\\(r_{PTRNG}\\) = 1/2) an the CS AES halt request interface to always respond immediately (\\(n_{halt}\\) = 0).
+With these settings, the ENTROPY_SRC block should never drop samples due to conditioner back pressure if a depth of two is chosen for the Distribution FIFO (\\(d_{distr}\\) = 2).
+
 
 ### Security
 

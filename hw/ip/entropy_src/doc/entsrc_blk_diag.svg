@@ -29,15 +29,15 @@
      fit-margin-left="0"
      fit-margin-right="0"
      fit-margin-bottom="0"
-     inkscape:zoom="2.1997092"
-     inkscape:cx="531.43388"
-     inkscape:cy="339.81765"
-     inkscape:window-width="3770"
-     inkscape:window-height="2096"
+     inkscape:zoom="0.94071307"
+     inkscape:cx="1031.6642"
+     inkscape:cy="513.97181"
+     inkscape:window-width="3378"
+     inkscape:window-height="1376"
      inkscape:window-x="0"
      inkscape:window-y="0"
      inkscape:window-maximized="1"
-     inkscape:current-layer="shape942-131" />
+     inkscape:current-layer="g781" />
   <defs
      id="defs2">
     <marker
@@ -301,6 +301,25 @@
          width="100%"
          height="100%" />
     </marker>
+    <marker
+       id="mrkr5-69-36"
+       class="st11"
+       v:arrowType="5"
+       v:arrowSize="2"
+       v:setback="7.63"
+       refX="-7.6300001"
+       orient="auto"
+       markerUnits="strokeWidth"
+       overflow="visible">
+      <use
+         xlink:href="#lend5"
+         transform="scale(-4.36)"
+         id="use16-7"
+         x="0"
+         y="0"
+         width="100%"
+         height="100%" />
+    </marker>
   </defs>
   <g
      inkscape:label="Layer 1"
@@ -369,15 +388,14 @@
                sodipodi:role="line"
                id="tspan108532"
                x="74.520332"
-               y="382"><v:paragraph
-                 v:horizAlign="1" /><v:tabList /><tspan
-                 style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle"
-                 id="tspan100311"
-                 dy="0 0 0 0 0 0 0 0 0 0 0">Entropy Src</tspan><v:newlineChar /></tspan><tspan
+               y="382">ENTROPY_SRC<v:paragraph
+   v:horizAlign="1" /><v:tabList /><tspan
+   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle"
+   id="tspan100311" /><v:newlineChar /></tspan><tspan
                sodipodi:role="line"
                id="tspan108534"
                x="74.520332"
-               y="394.65988"><tspan
+               y="394.5"><tspan
                  style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle"
                  id="tspan108536">Registers</tspan></tspan></text>
         </g>
@@ -748,7 +766,7 @@
            id="shape907-55"
            v:mID="907"
            v:groupContext="shape"
-           transform="translate(644.30846,-456.30713)">
+           transform="translate(644.30846,-460.80713)">
           <title
              id="title146">Sheet.907</title>
           <rect
@@ -763,7 +781,7 @@
            id="shape908-57"
            v:mID="908"
            v:groupContext="shape"
-           transform="translate(633.6274,-418.95954)">
+           transform="translate(633.6274,-423.45954)">
           <title
              id="title151">Sheet.908</title>
           <desc
@@ -801,13 +819,13 @@
                style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle">esbit</tspan><tspan
                sodipodi:role="line"
                x="18.756163"
-               y="610.99988"
+               y="610.99976"
                id="tspan37303"
                style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle">Packer</tspan></text>
         </g>
         <g
            id="group909-61"
-           transform="translate(590.51756,-456.73695)"
+           transform="translate(590.51756,-461.23695)"
            v:mID="909"
            v:groupContext="group">
           <title
@@ -1129,6 +1147,52 @@
                  id="tspan187060">FIFO</tspan></tspan></text>
         </g>
         <g
+           id="shape946-140-3"
+           v:mID="946"
+           v:groupContext="shape"
+           transform="translate(555.00893,-390.00036)"
+           style="color-interpolation-filters:sRGB">
+          <title
+             id="title304-5">Sheet.946</title>
+          <desc
+             id="desc306-6">64 x 32b FIFO</desc>
+          <v:textBlock
+             v:margins="rect(4,4,4,4)" />
+          <v:textRect
+             cx="23.5032"
+             cy="596.25"
+             width="47.01"
+             height="31.5" />
+          <rect
+             x="0"
+             y="580.5"
+             width="47.006302"
+             height="31.5"
+             class="st1"
+             id="rect308-2" />
+          <text
+             x="22.733574"
+             y="593.25"
+             class="st2"
+             v:langID="1033"
+             id="text312-9"
+             style="font-size:10px;font-family:Arial;text-align:center;text-anchor:middle;fill:#000000"><tspan
+               sodipodi:role="line"
+               id="tspan187056-1"
+               x="22.733574"
+               y="593.25"><v:paragraph
+                 v:horizAlign="1" /><v:tabList /><tspan
+                 style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle"
+                 id="tspan184287-2"
+                 dy="0 0 0 0 0 0 0 0">2 x 32b</tspan><v:newlineChar /></tspan><tspan
+               sodipodi:role="line"
+               id="tspan187058-7"
+               x="22.733574"
+               y="605.90991"><tspan
+                 style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;text-align:center;text-anchor:middle"
+                 id="tspan187060-0">FIFO</tspan></tspan></text>
+        </g>
+        <g
            id="shape948-144"
            v:mID="948"
            v:groupContext="shape"
@@ -1172,7 +1236,7 @@
            id="shape950-148"
            v:mID="950"
            v:groupContext="shape"
-           transform="translate(485.277,-213.792)">
+           transform="translate(517.49941,-213.792)">
           <title
              id="title326">Sheet.950</title>
           <rect
@@ -1247,7 +1311,7 @@
              class="st2"
              v:langID="1033"
              id="text363"
-             style="text-align:center;text-anchor:middle;font-size:10px;font-family:Arial;fill:#000000"><tspan
+             style="font-size:10px;font-family:Arial;text-align:center;text-anchor:middle;fill:#000000"><tspan
                sodipodi:role="line"
                id="tspan73830"
                x="26.346827"
@@ -1260,9 +1324,9 @@
                style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal">swread</tspan><tspan
                sodipodi:role="line"
                x="26.346827"
-               y="610.99988"
+               y="610.99976"
                id="tspan73838"
-               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal">Unpacker</tspan></text>
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal">Unpacking</tspan></text>
         </g>
         <g
            id="shape959-163"
@@ -1299,9 +1363,10 @@
           <title
              id="title389">Sheet.966</title>
           <path
-             d="M 0,612 H 127.68"
+             d="M 32.252561,612.00071 127.68,612"
              class="st10"
-             id="path391" />
+             id="path391"
+             sodipodi:nodetypes="cc" />
         </g>
         <g
            id="shape967-180"
@@ -2273,7 +2338,7 @@
            id="shape1200-379"
            v:mID="1200"
            v:groupContext="shape"
-           transform="translate(499.5,-342)">
+           transform="translate(493.5,-342)">
           <title
              id="title735">Sheet.1200</title>
           <circle
@@ -2330,6 +2395,17 @@
                style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.75"
                x="8.6261654"
                y="536.6441">Observe FIFO</tspan></text>
+          <text
+             xml:space="preserve"
+             style="font-style:normal;font-weight:normal;font-size:10px;line-height:1.25;font-family:aakar;letter-spacing:0px;word-spacing:0px;color-interpolation-filters:sRGB;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.75"
+             x="180.73187"
+             y="536.42719"
+             id="text15189-9"><tspan
+               sodipodi:role="line"
+               id="tspan15187-3"
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;stroke-width:0.75"
+               x="180.73187"
+               y="536.42719">Distribution FIFO</tspan></text>
         </g>
         <path
            style="fill:none;stroke:#000000;stroke-width:0.745031px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#mrkr5-69)"
@@ -2347,14 +2423,19 @@
            sodipodi:nodetypes="cccc" />
         <path
            style="fill:none;stroke:#000000;stroke-width:0.75px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#mrkr5-69)"
-           d="m 501.55132,267.67944 v 21.24332 h -53.85559 v 75.55613 l 31.48922,-0.15397"
+           d="m 495.72661,267.67944 0,21.24332 v 6 69.57795 h 15.95492"
            id="path3304"
            sodipodi:nodetypes="ccccc" />
         <path
            style="fill:none;stroke:#000000;stroke-width:0.75px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#mrkr5-69)"
-           d="m 744.22252,125.01052 10.13322,-0.0932 0.10048,81.99827 -304.22386,-0.1375 v 51.13908 h 9.72982"
+           d="m 554.97619,206.82409 -104.74383,-0.046 v 51.13908 h 9.72982"
            id="path4577"
-           sodipodi:nodetypes="cccccc" />
+           sodipodi:nodetypes="cccc" />
+        <path
+           style="color-interpolation-filters:sRGB;fill:none;stroke:#000000;stroke-width:0.75px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#mrkr5-69-36)"
+           d="m 744.22252,125.01048 10.13322,-0.0932 0.10048,81.99981 -122.08376,-0.0341 -9.89561,0.0341 h -5.74449 l -6,4e-5 -2.91779,-4e-5"
+           id="path4577-5"
+           sodipodi:nodetypes="cccccccc" />
         <path
            style="fill:none;stroke:#000000;stroke-width:0.75px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#mrkr5-69)"
            d="M 450.23236,206.77806 H 425.98248"
@@ -2382,8 +2463,9 @@
            sodipodi:nodetypes="cccc" />
         <path
            style="fill:none;stroke:#000000;stroke-width:0.75px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#mrkr5-69)"
-           d="m 657.59893,140.50576 h 18.76449 v -6.34761 h 21.8583"
-           id="path12760" />
+           d="m 657.59893,134.76013 h 18.76449 v 0 l 21.8583,7.5e-4"
+           id="path12760"
+           sodipodi:nodetypes="cccc" />
         <path
            style="fill:none;stroke:#000000;stroke-width:0.75px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#mrkr5-69)"
            d="M 713.28765,124.44762 H 724.7829"
@@ -2411,12 +2493,12 @@
            sodipodi:nodetypes="cc" />
         <path
            style="fill:none;stroke:#000000;stroke-width:0.75px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#mrkr5-69-38)"
-           d="m 589.98283,115.28827 v 24.29651 h 12.74062"
+           d="m 589.98283,115.28827 v 19.47291 h 12.74062"
            id="path19349"
            sodipodi:nodetypes="ccc" />
         <path
            style="fill:none;stroke:#000000;stroke-width:0.75px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#mrkr5-69-38)"
-           d="m 616.97042,139.92616 h 21.43874"
+           d="m 616.97042,134.76118 21.43874,2.3e-4"
            id="path19563"
            sodipodi:nodetypes="cc" />
         <path
@@ -2431,7 +2513,7 @@
            sodipodi:nodetypes="ccccc" />
         <path
            style="fill:none;stroke:#000000;stroke-width:0.75px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#mrkr5-69-38)"
-           d="m 612.61606,163.62538 v -6.16714"
+           d="m 612.61606,157.62538 v -4.66714"
            id="path21209"
            inkscape:transform-center-x="-0.0040623438"
            inkscape:transform-center-y="-0.15701186"
@@ -2498,19 +2580,14 @@
         <text
            xml:space="preserve"
            style="font-size:9.99998px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:center;text-anchor:middle;stroke-width:0.75"
-           x="611.44293"
-           y="172.7451"
+           x="603.94293"
+           y="168.2451"
            id="text388799"><tspan
              sodipodi:role="line"
-             id="tspan388797"
              style="text-align:center;text-anchor:middle;stroke-width:0.75"
-             x="611.44293"
-             y="172.7451">Select</tspan><tspan
-             sodipodi:role="line"
-             style="text-align:center;text-anchor:middle;stroke-width:0.75"
-             x="611.44293"
-             y="185.24507"
-             id="tspan388801">1 bit</tspan></text>
+             x="603.94293"
+             y="168.2451"
+             id="tspan388801">Select 1 bit</tspan></text>
         <text
            xml:space="preserve"
            style="font-size:9.99998px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:center;text-anchor:middle;stroke-width:0.75"
@@ -2567,23 +2644,23 @@
         <text
            xml:space="preserve"
            style="font-size:9.99998px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';text-align:center;text-anchor:middle;stroke-width:0.75"
-           x="490.93671"
-           y="309.20099"
+           x="524.29272"
+           y="409.78128"
            id="text410201"><tspan
              sodipodi:role="line"
              id="tspan410199"
              style="stroke-width:0.75"
-             x="490.93671"
-             y="309.20099">32 to 384</tspan><tspan
+             x="524.29272"
+             y="409.78128">32 to 384</tspan><tspan
              sodipodi:role="line"
              style="stroke-width:0.75"
-             x="490.93671"
-             y="321.70096"
+             x="524.29272"
+             y="422.28125"
              id="tspan410203">bypass</tspan><tspan
              sodipodi:role="line"
              style="stroke-width:0.75"
-             x="490.93671"
-             y="334.20093"
+             x="524.29272"
+             y="434.78122"
              id="tspan410205">Packer</tspan></text>
       </g>
     </g>
