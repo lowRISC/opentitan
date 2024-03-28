@@ -51,11 +51,11 @@
         },
         hash_1: {
             type: "byte-array",
-            size: 32,
+            size: 20,
         },
         hash_2: {
             type: "byte-array",
-            size: 32,
+            size: 20,
         },
         security_version: {
             type: "integer",

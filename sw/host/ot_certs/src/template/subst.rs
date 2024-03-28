@@ -112,10 +112,6 @@ impl SubstValue {
                 Ok(self.clone())
             }
             SubstValue::String(s) => {
-                // To be consistent with the template, interpret this as
-                // an integer and convert it to a big-endian byte array.
-                // See template::hjson::BigUintVisitor.
-
                 // Unless the string starts with '0x', expect a decimal string.
                 let (radix, s) = s
                     .strip_prefix("0x")
@@ -124,26 +120,19 @@ impl SubstValue {
                     .with_context(|| format!("cannot parse {s} as an integer"))?;
                 let bytes = val.to_bytes_be();
                 ensure!(
-                    size == 0 || bytes.len() == size,
+                    size == 0 || bytes.len() <= size,
                     "expected an integer that fits on {size} bytes but it uses {} bytes",
                     bytes.len()
                 );
                 Ok(SubstValue::ByteArray(bytes))
             }
             SubstValue::Int32(x) => {
-                // TODO: make this check smarter (ie 0xff could fit on byte but is considered to use 4)
                 let bigint = x.to_bigint().expect("cannot convert a i32 to BigInt");
-                let mut bytes = bigint.to_signed_bytes_be();
+                let bytes = bigint.to_signed_bytes_be();
                 ensure!(
                     size == 0 || bytes.len() <= size,
                     "expected an integer that fits on {size} bytes but it uses 4 bytes"
                 );
-                // We need to pad to the right size.
-                let pad = if *x < 0 { 0xff } else { 0x00 };
-                while bytes.len() < size {
-                    // Pad to preserve sign.
-                    bytes.insert(0, pad);
-                }
                 Ok(SubstValue::ByteArray(bytes))
             }
             _ => bail!("cannot parse value {self:?} as an integer"),
@@ -587,55 +576,35 @@ mod tests {
     fn parse_integers() {
         // Big-endian integer.
         let byte_array = SubstValue::ByteArray(vec![0x3f, 0x2e, 0x1d, 0x0c]);
-        // Size 0 means any size.
-        assert_eq!(
-            byte_array
-                .parse(&VariableType::Integer { size: 0 })
-                .unwrap(),
-            byte_array
-        );
-        assert_eq!(
-            byte_array
-                .parse(&VariableType::Integer { size: 4 })
-                .unwrap(),
-            byte_array
-        );
-        // Size does not need not match exactly.
-        assert_eq!(
-            byte_array
-                .parse(&VariableType::Integer { size: 5 })
-                .unwrap(),
-            byte_array
-        );
-        assert!(byte_array
-            .parse(&VariableType::Integer { size: 3 })
-            .is_err());
-
+        // Strings: hexdecimal and decimal.
+        let byte_array_str_hex = SubstValue::String("0x3f2e1d0c".to_string());
+        let byte_array_str_dec = SubstValue::String("1059986700".to_string());
+        // Fixed-size integer.
         let byte_array_int = SubstValue::Int32(0x3f2e1d0c);
-        // Size 0 means any size.
-        assert_eq!(
-            byte_array_int
-                .parse(&VariableType::Integer { size: 0 })
-                .unwrap(),
-            byte_array
-        );
-        assert_eq!(
-            byte_array_int
-                .parse(&VariableType::Integer { size: 4 })
-                .unwrap(),
-            byte_array
-        );
-        assert!(byte_array_int
-            .parse(&VariableType::Integer { size: 3 })
-            .is_err());
-        // A bigger size is acceptable and it should be padded.
-        let byte_array_pad = SubstValue::ByteArray(vec![0x00, 0x3f, 0x2e, 0x1d, 0x0c]);
-        assert_eq!(
-            byte_array_int
-                .parse(&VariableType::Integer { size: 5 })
-                .unwrap(),
-            byte_array_pad
-        );
+
+        for val in [
+            &byte_array,
+            &byte_array_int,
+            &byte_array_str_hex,
+            &byte_array_str_dec,
+        ] {
+            // Size 0 means any size.
+            assert_eq!(
+                val.parse(&VariableType::Integer { size: 0 }).unwrap(),
+                byte_array
+            );
+            assert_eq!(
+                val.parse(&VariableType::Integer { size: 4 }).unwrap(),
+                byte_array
+            );
+            // Size does not need not match exactly.
+            assert_eq!(
+                val.parse(&VariableType::Integer { size: 5 }).unwrap(),
+                byte_array
+            );
+            // Too small size in an error.
+            assert!(val.parse(&VariableType::Integer { size: 3 }).is_err());
+        }
     }
 
     /// Test parsing of strings.
