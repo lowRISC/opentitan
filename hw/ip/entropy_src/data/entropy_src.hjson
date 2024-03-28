@@ -1143,7 +1143,16 @@
       ]
     },
     { name: "ALERT_THRESHOLD",
-      desc: "Alert threshold register",
+      desc: '''
+            Alert threshold register
+
+            This register determines during how many subsequent health test windows one or more health test failures can occur before a recoverable alert is raised and the ENTROPY_SRC block stops operating.
+            In case the configured threshold is reached, firmware needs to disable/re-enable the block to restart operation including the startup health testing.
+
+            Note that when reaching the threshold while running in Firmware Override: Extract & Insert mode, the recoverable alert is not raised nor does the block stop operating.
+            In other modes, the generation of the recoverable alert can be disabled by configuring a value of zero.
+            The default value is set to two.
+            '''
       swaccess: "rw",
       hwaccess: "hro",
       regwen:   "REGWEN",
@@ -1152,121 +1161,129 @@
       fields: [
         { bits: "15:0",
           name: "ALERT_THRESHOLD",
-          desc: '''This is the threshold size that will signal an alert when
-                   value is reached. A value of zero will disable alerts.
-                   The default value is 2.
+          desc: '''
+                This is the threshold at which a recoverable alert is signaled and the blocks stops operating.
                 '''
           resval: "0x0002"
         }
         { bits: "31:16",
           name: "ALERT_THRESHOLD_INV",
-          desc: '''This should be set to the value above, but inverted.
+          desc: '''
+                This should be set to the value above, but inverted.
                 '''
           resval: "0xfffd"
         }
       ]
     },
-    { name:     "ALERT_SUMMARY_FAIL_COUNTS",
-      desc:     "Alert summary failure counts register",
+    { name: "ALERT_SUMMARY_FAIL_COUNTS",
+      desc: '''
+            Alert summary failure counts register
+
+            This register holds the total number of subsequent health test windows during which one or more health test failures occurred.
+            For information on which health tests failed specifically, refer to !!ALERT_FAIL_COUNTS and !!EXTHT_FAIL_COUNTS.
+
+            If the value of this register reaches the value configured in the !!ALERT_THRESHOLD register, a recoverable alert is raised and the ENTROPY_SRC block stops operating.
+            If an alert is signaled, the value persists until it is cleared by firmware.
+
+            The register is automatically cleared after every passing health test window unless the ENTROPY_SRC is configured in Firmware Override: Extract & Insert mode.
+            The register is also cleared after re-enabling the block.
+            '''
       swaccess: "ro",
       hwaccess: "hwo",
       hwext: "true",
       fields: [
         { bits: "15:0",
           name: "ANY_FAIL_COUNT",
-          desc: '''This field will hold a running count of
-                   the total alert count, which is a sum of all of the other
-                   counters in the !!ALERT_FAIL_COUNTS register.
-                   It will be reset after every passing test sequence unless in firmware override mode (extract and insert only).
-                   If an alert is signaled, this value will persist until it is cleared.
+          desc: '''
+                The number of subsequent health test windows during which one or more health tests failed.
                 '''
         }
       ]
     },
-    { name:     "ALERT_FAIL_COUNTS",
-      desc:     "Alert failure counts register",
+    { name: "ALERT_FAIL_COUNTS",
+      desc: '''
+            Alert failure counts register
+
+            This register holds the number of health test failures since the last passing health test window.
+            The values are reported on a per-test basis.
+            Note that if multiple health tests fail for a certain window, the value in !!ALERT_SUMMARY_FAIL_COUNTS is incremented by just one whereas multiple fields in this register may get incremented.
+
+            All fields of this register are automatically cleared after every passing health test window unless the ENTROPY_SRC is configured in Firmware Override: Extract & Insert mode.
+            The fields are also cleared after re-enabling the block.
+            '''
       swaccess: "ro",
       hwaccess: "hwo",
       hwext: "true",
       fields: [
         { bits: "7:4",
           name: "REPCNT_FAIL_COUNT",
-          desc: '''This field will hold a running count of test failures that
-                   contribute to the total alert count.
-                   It will be reset after every passing test sequence unless in firmware override mode (extract and insert only).
-                   If an alert is signaled, this value will persist until it is cleared.
+          desc: '''
+                The number of health test windows during which this test failed since the last passing health test window.
                 '''
         }
         { bits: "11:8",
           name: "ADAPTP_HI_FAIL_COUNT",
-          desc: '''This field will hold a running count of test failures that
-                   contribute to the total alert count.
-                   It will be reset after every passing test sequence unless in firmware override mode (extract and insert only).
-                   If an alert is signaled, this value will persist until it is cleared.
+          desc: '''
+                The number of health test windows during which this test failed since the last passing health test window.
                 '''
         }
         { bits: "15:12",
           name: "ADAPTP_LO_FAIL_COUNT",
-          desc: '''This field will hold a running count of test failures that
-                   contribute to the total alert count.
-                   It will be reset after every passing test sequence unless in firmware override mode (extract and insert only).
-                   If an alert is signaled, this value will persist until it is cleared.
+          desc: '''
+                The number of health test windows during which this test failed since the last passing health test window.
                 '''
         }
         { bits: "19:16",
           name: "BUCKET_FAIL_COUNT",
-          desc: '''This field will hold a running count of test failures that
-                   contribute to the total alert count.
-                   It will be reset after every passing test sequence unless in firmware override mode (extract and insert only).
-                   If an alert is signaled, this value will persist until it is cleared.
+          desc: '''
+                The number of health test windows during which this test failed since the last passing health test window.
                 '''
         }
         { bits: "23:20",
           name: "MARKOV_HI_FAIL_COUNT",
-          desc: '''This field will hold a running count of test failures that
-                   contribute to the total alert count.
-                   It will be reset after every passing test sequence unless in firmware override mode (extract and insert only).
-                   If an alert is signaled, this value will persist until it is cleared.
+          desc: '''
+                The number of health test windows during which this test failed since the last passing health test window.
                 '''
         }
         { bits: "27:24",
           name: "MARKOV_LO_FAIL_COUNT",
-          desc: '''This field will hold a running count of test failures that
-                   contribute to the total alert count.
-                   It will be reset after every passing test sequence unless in firmware override mode (extract and insert only).
-                   If an alert is signaled, this value will persist until it is cleared.
+          desc: '''
+                The number of health test windows during which this test failed since the last passing health test window.
                 '''
         }
         { bits: "31:28",
           name: "REPCNTS_FAIL_COUNT",
-          desc: '''This field will hold a running count of test failures that
-                   contribute to the total alert count.
-                   It will be reset after every passing test sequence unless in firmware override mode (extract and insert only).
-                   If an alert is signaled, this value will persist until it is cleared.
+          desc: '''
+                The number of health test windows during which this test failed since the last passing health test window.
                 '''
         }
       ]
     },
-    { name:     "EXTHT_FAIL_COUNTS",
-      desc:     "External health test alert failure counts register",
+    { name: "EXTHT_FAIL_COUNTS",
+      desc: '''
+            External health test alert failure counts register
+
+            This register holds the number of external health test failures since the last passing health test window.
+            The values are reported on a per-test basis.
+            Note that if multiple health tests fail for a certain window, the value in !!ALERT_SUMMARY_FAIL_COUNTS is incremented by just one whereas multiple fields in this register may get incremented.
+
+            All fields of this register are automatically cleared after every passing health test window unless the ENTROPY_SRC is configured in Firmware Override: Extract & Insert mode.
+            The fields are also cleared after re-enabling the block.
+            '''
       swaccess: "ro",
       hwaccess: "hwo",
       hwext: "true",
       fields: [
         { bits: "3:0",
           name: "EXTHT_HI_FAIL_COUNT",
-          desc: '''This field will hold a running count of test failures that
-                   contribute to the total alert count.
-                   It will be reset after every passing test sequence unless in firmware override mode (extract and insert only).
-                   If an alert is signaled, this value will persist until it is cleared.
+          desc: '''
+                The number of health test windows during which this test failed since the last passing health test window.
                 '''
         }
         { bits: "7:4",
           name: "EXTHT_LO_FAIL_COUNT",
-          desc: '''This field will hold a running count of test failures that
-                   contribute to the total alert count.
-                   It will be reset after every passing test sequence unless in firmware override mode (extract and insert only).
-                   If an alert is signaled, this value will persist until it is cleared.
+          desc: '''
+                The number of health test windows during which this test failed since the last passing health test window.
                 '''
         }
       ]

@@ -93,10 +93,18 @@ Additional, vendor-specific tests are supported through an [external health test
 
 ### Health Test Failure Alert
 
-The [`ALERT_THRESHOLD`](registers.md#alert_threshold) register determines how many fails can occur before an alert is issued.
-By default, the current threshold is set to two, such that the occurrence of two failing test cycles back-to-back would provide a very low &alpha; value.
-The [`ALERT_FAIL_COUNTS`](registers.md#alert_fail_counts) register holds the total number of fails, plus all of the individual contributing failing tests.
-Setting the [`ALERT_THRESHOLD`](registers.md#alert_threshold) register to zero will disable alert generation.
+The [`ALERT_THRESHOLD`](registers.md#alert_threshold) register determines during how many subsequent health test windows one or more health test failures can occur before a recoverable alert is raised and the ENTROPY_SRC block stops operating.
+In case this threshold is reached, firmware needs to disable/re-enable the block to restart operation including the startup health testing.
+By default, the threshold is set to two, such that the occurrence of two failing test cycles back-to-back would provide a very low &alpha; value.
+When reaching the threshold while running in [Firmware Override: Extract & Insert mode](programmers_guide.md#firmware_override_-_extract_&_insert), the recoverable alert is not raised nor does the block stop operating.
+In other modes, the generation of the recoverable alert can be disabled by configuring a value of zero.
+
+The [`ALERT_SUMMARY_FAIL_COUNTS`](registers.md#alert_summary_fail_counts) register holds the total number of health test windows during which one or more health test failures occurred.
+The register is automatically cleared after every passing health test window unless the ENTROPY_SRC is configured in [Firmware Override: Extract & Insert mode](programmers_guide.md#firmware_override_-_extract_&_insert).
+
+The [`ALERT_FAIL_COUNTS`](registers.md#alert_fail_counts) reports the number of health test failures since the last passing health test window on a per-test basis.
+If multiple health tests fail for a certain window, the value in [`ALERT_SUMMARY_FAIL_COUNTS`](registers.md#alert_summary_fail_counts) is incremented by just one whereas multiple fields in [`ALERT_FAIL_COUNTS`](registers.md#alert_fail_counts) may get incremented.
+The same holds for [`EXTHT_FAIL_COUNTS`](registers.md#extht_fail_counts) which reports the number of external health test failures since the last passing health test window on a per-test basis.
 
 ### Routing Entropy to Firmware
 
