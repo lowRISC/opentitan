@@ -169,3 +169,17 @@ cc_test(
         "@googletest//:gtest_main",
     ],
 )
+
+cc_library(
+    name = "test_owner",
+    testonly = True,
+    srcs = ["test_owner.c"],
+    deps = [
+        ":datatypes",
+        ":owner_block",
+        ":ownership",
+        "//sw/device/silicon_creator/lib:boot_data",
+        "//sw/device/silicon_creator/lib/ownership/keys/fake:includes",
+    ],
+    alwayslink = True,
+)
