@@ -54,14 +54,17 @@ void dbg_printf(const char *format, ...) {
         break;
       }
       case 'C': {
-        uint8_t ch = (uint8_t)va_arg(args, int);
-        if (ch >= 32 && ch < 127) {
-          uart_putchar((char)ch);
-        } else {
-          uart_putchar('\\');
-          uart_putchar('x');
-          uart_putchar(kHexTable[ch >> 4]);
-          uart_putchar(kHexTable[ch & 15]);
+        uint32_t val = va_arg(args, uint32_t);
+        for (size_t i = 0; i < sizeof(uint32_t); ++i, val >>= 8) {
+          uint8_t ch = (uint8_t)val;
+          if (ch >= 32 && ch < 127) {
+            uart_putchar((char)ch);
+          } else {
+            uart_putchar('\\');
+            uart_putchar('x');
+            uart_putchar(kHexTable[ch >> 4]);
+            uart_putchar(kHexTable[ch & 15]);
+          }
         }
         break;
       }

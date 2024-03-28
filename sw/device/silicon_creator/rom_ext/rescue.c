@@ -57,8 +57,7 @@ rom_error_t flash_owner_block(rescue_state_t *state) {
 }
 
 static void validate_mode(uint32_t mode, rescue_state_t *state) {
-  char *m = (char *)&mode;
-  dbg_printf("\r\nmode: %C%C%C%C\r\n", m[3], m[2], m[1], m[0]);
+  dbg_printf("\r\nmode: %C\r\n", bitfield_byteswap32(mode));
   switch (mode) {
     case kRescueModeBootLog:
       dbg_printf("ok: receive boot_log via xmodem-crc\r\n");

@@ -18,14 +18,13 @@ extern "C" {
  *
  * This function only supports the format specifiers required by the
  * ROM:
- * - %c, which prints a single character.
- * - %C, which prints a printable character or a C-style hex escape.
- * - %d, which prints a signed int in decimal.
- * - %u, which prints an unsigned int in decimal.
- * - %s, which prints a nul-terminated string.
- * - %p, which prints pointer in hexadecimal.
- * - %x, which prints an `unsigned int` in hexadecimal using lowercase
- *   characters.
+ * - %c prints a single character.
+ * - %C prints a 'FourCC' style uint32_t (ASCII bytes in little-endian order).
+ * - %d prints a signed int in decimal.
+ * - %u prints an unsigned int in decimal.
+ * - %s prints a nul-terminated string.
+ * - %p prints pointer in hexadecimal.
+ * - %x prints an `unsigned int` in hexadecimal using lowercase characters.
  *
  * No modifiers are supported and the leading zeros in hexidecimal
  * values are always printed.

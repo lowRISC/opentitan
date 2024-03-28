@@ -65,6 +65,7 @@ typedef struct buffer_sink {
  * - %b, which prints an unsigned binary uint32_t.
  *
  * Finally, additional nonstandard format specifiers is supported:
+ * - %C prints a 'FourCC' style uint32_t (ASCII bytes in little-endian order).
  * - %!s, which takes a size_t followed by a pointer to a buffer, and prints
  *   out that many characters from the buffer.
  * - %!x, %!X, %!y, and %!Y, which are like %!s but print out a hex dump
