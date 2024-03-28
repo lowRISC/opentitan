@@ -59,7 +59,7 @@ cp util/git/hooks/post-checkout .git/hooks/
 Synthesizing a design for an FPGA board is simple with Bazel.
 While Bazel is the entry point for kicking off the FPGA synthesis, under the hood, it invokes FuseSoC, the hardware package manager / build system supported by OpenTitan.
 During the build process, the boot ROM is baked into the bitstream.
-As mentioned above, we maintain two boot ROM programs, one for testing (_test ROM_), and one for production (_ROM_).
+As mentioned above, we maintain two boot ROM programs, one for faster testing (_test ROM_), and one for production (_ROM_).
 
 To build an FPGA bitstream with the _test ROM_ for the chosen board, use:
 ```sh
@@ -70,7 +70,7 @@ cd $REPO_TOP
 To build an FPGA bitstream with the _ROM_ for the chosen board, use:
 ```sh
 cd $REPO_TOP
-./bazelisk.sh build //hw/bitstream/vivado:fpga_${BOARD}_rom
+./bazelisk.sh build //hw/bitstream/vivado:fpga_${BOARD}_rom_with_fake_keys
 ```
 
 >**Note**: Building these bitstreams will require Vivado be installed on your system, with access to the proper licenses, described [here](./install_vivado/README.md).
@@ -170,7 +170,7 @@ You will then need to run this command to configure the board. You only need to 
 Check that it's working by [running the demo](#bootstrapping-the-demo-software) or a test, such as the `uart_smoketest` below.
 ```sh
 cd $REPO_TOP
-./bazelisk.sh test --test_output=streamed //sw/device/tests:uart_smoketest_fpga_${BOARD}_test_rom
+./bazelisk.sh test --test_output=streamed //sw/device/tests:uart_smoketest_fpga_${BOARD}_rom_with_fake_keys
 ```
 
 ### Troubleshooting
@@ -204,7 +204,7 @@ cd $REPO_TOP
 or
 ```sh
 cd $REPO_TOP
-./bazelisk.sh test --test_output=streamed //sw/device/tests:uart_smoketest_fpga_${BOARD}_test_rom
+./bazelisk.sh test --test_output=streamed //sw/device/tests:uart_smoketest_fpga_${BOARD}_rom_with_fake_keys
 ```
 
 Under the hood, Bazel conveniently dispatches `opentitantool` to both:
@@ -218,14 +218,14 @@ To get a better understanding of the `opentitantool` functions Bazel invokes aut
 By default, the above invocations of `./bazelisk.sh test ...` use the pre-built (Internet downloaded) FPGA bitstream.
 To instruct bazel to load the bitstream built earlier, or to have bazel build an FPGA bitstream on the fly, and load that bitstream onto the FPGA, add the `--define bitstream=vivado` flag to either of the above Bazel commands, for example, run:
 ```sh
-./bazelisk.sh test --define bitstream=vivado --test_output=streamed //sw/device/tests:uart_smoketest_fpga_${BOARD}_test_rom
+./bazelisk.sh test --define bitstream=vivado --test_output=streamed //sw/device/tests:uart_smoketest_fpga_${BOARD}_rom_with_fake_keys
 ```
 
 #### Configuring Bazel to skip loading a bitstream
 
 Alternatively, if you would like to instruct Bazel to skip loading any bitstream at all, and simply use the bitstream that is already loaded, add the `--define bitstream=skip` flag, for example, run:
 ```sh
-./bazelisk.sh test --define bitstream=skip --test_output=streamed //sw/device/tests:uart_smoketest_fpga_${BOARD}_test_rom
+./bazelisk.sh test --define bitstream=skip --test_output=streamed //sw/device/tests:uart_smoketest_fpga_${BOARD}_rom_with_fake_keys
 ```
 
 ### Manually loading FPGA bitstreams and bootstrapping OpenTitan software with `opentitantool`
@@ -258,7 +258,7 @@ cd $REPO_TOP
 **if you built the bitstream yourself:**
 ```sh
 cd $REPO_TOP
-./bazelisk.sh run //sw/host/opentitantool -- fpga load-bitstream $(ci/scripts/target-location.sh //hw/bitstream/vivado:fpga_${BOARD}_test_rom)
+./bazelisk.sh run //sw/host/opentitantool -- fpga load-bitstream $(ci/scripts/target-location.sh //hw/bitstream/vivado:fpga_${BOARD}_rom_with_fake_keys)
 ```
 
 Depending on the FPGA device, the flashing itself may take several seconds.
@@ -440,7 +440,7 @@ First, make sure the device software has been built with debug symbols (by defau
 For example, to build and test the UART smoke test with debug symbols, you can add `--copt=-g` flag to the `./bazelisk.sh test ...` command:
 ```sh
 cd $REPO_TOP
-./bazelisk.sh test --copt=-g --test_output=streamed //sw/device/tests:uart_smoketest_fpga_cw340_test_rom
+./bazelisk.sh test --copt=-g --test_output=streamed //sw/device/tests:uart_smoketest_fpga_cw340_rom_with_fake_keys
 ```
 
 Then a connection between OpenOCD and GDB may be established with:
