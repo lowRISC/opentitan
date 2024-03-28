@@ -1,16 +1,13 @@
 # Programmer's Guide
 
-This chapter shows how to use the HMAC-SHA256 IP by showing some snippets such
-as initialization, initiating SHA-256 or HMAC process and processing the
-interrupts. This code is not compilable but serves to demonstrate the IO
-required.
+This chapter shows how to use the HMAC-SHA-2 IP by showing some snippets such as initialization, initiating SHA-2 or HMAC process and processing the interrupts.
+This code is not compilable but serves to demonstrate the IO required.
 More detailed and complete code can be found in the software under `sw/`, [ROM code](https://github.com/lowRISC/opentitan/blob/master/sw/device/silicon_creator/lib/drivers/hmac.c) and [HMAC DIF](https://github.com/lowRISC/opentitan/blob/master/sw/device/lib/dif/dif_hmac.c).
 
 ## Initialization
 
-This section of the code describes initializing the HMAC-SHA256, setting up the
-interrupts, endianness, and HMAC, SHA-256 mode. [`CFG.endian_swap`](registers.md#cfg) reverses
-the byte-order of input words when software writes into the message FIFO.
+This section of the code describes initializing the HMAC with SHA-2 256 digest using a 256-bit key: setting up the interrupts, endianness, and HMAC/SHA-2 mode.
+[`CFG.endian_swap`](registers.md#cfg) reverses the byte-order of input words when software writes into the message FIFO.
 [`CFG.digest_swap`](registers.md#cfg) reverses the byte-order in the final HMAC or SHA hash.
 
 ```c
@@ -18,7 +15,9 @@ void hmac_init(unsigned int endianess, unsigned int digest_endian) {
   HMAC_CFG(0) = HMAC_CFG_SHA_EN
               | HMAC_CFG_HMAC_EN
               | (endianess << HMAC_CFG_ENDIAN_SWAP_LSB)
-              | (digest_endian << HMAC_CFG_DIGEST_SWAP_LSB);
+              | (digest_endian << HMAC_CFG_DIGEST_SWAP_LSB)
+              | (HMAC_CFG_DIGEST_SIZE_FIELD << HMAC_CFG_DIGEST_SIZE_VALUE_SHA2_256)
+              | (HMAC_CFG_KEY_LENGTH_FIELD << HMAC_CFG_KEY_LENGTH_FIELD);
 
   // Enable interrupts if needed.
 
@@ -34,14 +33,11 @@ void hmac_init(unsigned int endianess, unsigned int digest_endian) {
 }
 ```
 
-## Triggering HMAC/SHA-256 engine
+## Triggering HMAC/SHA-2 engine
 
-The following code shows how to send a message to the HMAC, the procedure is
-the same whether a full HMAC or just a SHA-256 calculation is required (choose
-between them using [`CFG.hmac_en`](registers.md#cfg)). In both cases the SHA-256 engine must be
-enabled using [`CFG.sha_en`](registers.md#cfg) (once all other configuration has been properly set).
-If the message is bigger than 512-bit, the software must wait until the FIFO
-isn't full before writing further bits.
+The following code shows how to send a message to the HMAC, the procedure is the same whether a full HMAC or just a SHA-2 computation is required (choose between them using [`CFG.hmac_en`](registers.md#cfg)).
+In both cases the SHA-2 engine must be enabled using [`CFG.sha_en`](registers.md#cfg) (once all other configuration has been properly set).
+If the message is larger than 512-bit, the software must wait until the FIFO is not full before writing further bits.
 
 ```c
 void run_hmac(uint32_t *msg, uint32_t msg_len, uint32_t *hash) {
@@ -72,16 +68,17 @@ void run_hmac(uint32_t *msg, uint32_t msg_len, uint32_t *hash) {
 
 ## Updating the configurations
 
-The HMAC IP prevents [`CFG`](registers.md#cfg) and [`KEY`](registers.md#key) registers from updating while the engine is processing messages.
+The HMAC IP prevents [`CFG`](registers.md#cfg) and [`KEY`](registers.md#key) registers from getting updating while the engine is processing messages.
 Such attempts are discarded.
 The [`KEY`](registers.md#key) register ignores any attempt to access the secret key in the middle of the process.
-If the software tries to update the KEY, the IP reports an error through the Error FIFO. The error code is `SwUpdateSecretKeyInProcess`, `0x0003`.
+If the software tries to update the KEY, the IP reports an error through the Error FIFO.
+The error code is `SwUpdateSecretKeyInProcess`, `0x0003`.
 
 ## Saving and restoring the context
 
 Software can let the HMAC IP process multiple message streams in a time-interleaved fashion by saving and restoring the context (i.e., parts of the hardware-internal state).
 
-Such context switches are possible only at the boundary of complete message blocks (512 bit for SHA-256).
+Such context switches are possible only at the boundary of complete message blocks (512-bit for SHA-2 256 or 1024-bit for SHA-2 384/512).
 When SW doesn't know each instant at which a full message block is available, it can buffer data in memory until a block is full and only write HMAC's FIFOs once the buffer in memory contains a full message block.
 
 The context that needs to be saved and restored is in the following registers: [`CFG`](registers.md#cfg), [`DIGEST_*`](registers.md#digest), and [`MSG_LENGTH_*`](registers.md#msg_length_lower).
@@ -93,9 +90,9 @@ Here is an example usage pattern of this feature:
 1. Start processing message stream A by configuring HMAC and then setting the `CMD.hash_start` bit.
 2. Write an arbitrary number of message blocks to HMAC's `MSG_FIFO`.
 3. Stop HMAC by setting the `CMD.hash_stop` bit and wait for the `hmac_done` interrupt (or poll the interrupt status register).
-4. Save the context by reading the `DIGEST_0`..`7` and `MSG_LENGTH_`{`LOWER`,`UPPER`} registers. (The values in the `CFG` register must also be preserved, but that is purely SW-controlled so doesn't need to be read from HW.)
+4. Save the context by reading the `DIGEST_0`..`15` and `MSG_LENGTH_`{`LOWER`,`UPPER`} registers. (The values in the `CFG` register must also be preserved, but that is purely SW-controlled so doesn't need to be read from HW.)
 5. Repeat steps 1-4 for message stream B.
-6. Restore the context of message stream A by writing the `CFG`, `DIGEST_0`..`7`, and `MSG_LENGTH_`{`LOWER`,`UPPER`} registers.
+6. Restore the context of message stream A by writing the `CFG`, `DIGEST_0`..`15`, and `MSG_LENGTH_`{`LOWER`,`UPPER`} registers.
 7. Continue processing message stream A by setting the `CMD.hash_continue` bit.
 8. Write an arbitrary number of message blocks to HMAC's `MSG_FIFO`.
 9. Continue this with as many message blocks and parallel message streams as needed. The final hash for any message stream can be obtained at any time (no need for complete blocks) by setting `CMD.hash_process` and waiting for the `hmac_done` interrupt / status bit, finally reading the digest from the `DIGEST` registers.
@@ -118,9 +115,9 @@ Error                        | Value | Description
 If the SW is slow and the SHA2 engine pops the data fast enough, the Message FIFO's depth may remain **0**.
 The Message FIFO's `fifo_empty` status bit, however, is lowered for a cycle.
 
-However, if the SHA2 engine is currently busy, the Message FIFO may actually run full (indicated by the `fifo_full` status bit).
+However, if the SHA-2 engine is currently busy, the Message FIFO may actually run full (indicated by the `fifo_full` status bit).
 Resolving this conditions may take several dozens of cycles.
-After the SHA2 engine starts popping the data again, the Message FIFO will eventually run empty again and the `fifo_empty` status interrupt will fire.
+After the SHA-2 engine starts popping the data again, the Message FIFO will eventually run empty again and the `fifo_empty` status interrupt will fire.
 Note that the `fifo_empty` status interrupt will not fire if i) the Message FIFO is not writable by software, or ii) after software has written either the `Process` or `Stop` command.
 
 The recommended approach for software to write messages is:
