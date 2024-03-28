@@ -898,7 +898,7 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
     uart_enable_receiver();
     // TODO: update rescue protocol to accept boot data and rescue
     // config from the owner_config.
-    error = rescue_protocol();
+    error = rescue_protocol(boot_data, owner_config.rescue);
   } else {
     error = rom_ext_try_next_stage(boot_data, boot_log);
   }
