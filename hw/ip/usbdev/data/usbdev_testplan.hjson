@@ -556,7 +556,7 @@
               transactions.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_invalid_data1_data0_toggle_test"]
     }
     {
       name: setup_stage
