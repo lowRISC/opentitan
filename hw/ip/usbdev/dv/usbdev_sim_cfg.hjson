@@ -114,6 +114,10 @@
       uvm_test_seq: usbdev_random_length_out_transaction_vseq
     }
     {
+      name: usbdev_resume_link_active
+      uvm_test_seq: usbdev_resume_link_active_vseq
+    }
+    {
       name: usbdev_setup_trans_ignored
       uvm_test_seq: usbdev_setup_trans_ignored_vseq
     }
