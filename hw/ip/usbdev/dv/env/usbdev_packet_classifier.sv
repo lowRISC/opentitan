@@ -43,7 +43,7 @@ class usbdev_packet_classifier extends uvm_object;
   endfunction
   // Function to check the packet
   function void checkPacket(input bit  pkt[]);
-    for(int i = 0; i <= 3; i++) begin
+    for(int i = 4; i <= 7; i++) begin
       pid_iden = {pid_iden, pkt[i]};
     end
     packetType = usbpackettype_e'(pid_iden);
