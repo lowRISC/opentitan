@@ -28,6 +28,8 @@ Note that this procedure to hand control over to `usbdev_aon_wake` does not appl
      It begins monitoring for events that trigger waking / resuming / resetting.
 3. Software prepares for deep sleep.
    - It saves the current "device state" in the AON retention RAM, including the current configuration and device address (if any).
+   - In order to restore open data pipes to their current state upon return from a sleep state, the software must also capture the current
+     state of all relevant Data Toggle bits by reading from the [`in_data_toggle`](registers.md#in_data_toggle) and [`out_data_toggle`](registers.md#out_data_toggle) registers.
    - The `usbdev_linkstate` module is still powered and monitoring events, and it can resume at any time.
      Note that if a resume event does occur before the point of no return, software need only set [`wake_control.wake_ack`](../data/usbdev.hjson#wake_control) to restore control to `usbdev`.
    - Software also does any other tasks for preparing for deep sleep, such as enabling USB events to wake the chip.
@@ -57,3 +59,6 @@ Note that this procedure to hand control over to `usbdev_aon_wake` does not appl
    - The `usbdev_linkstate` module transitions from `LinkPowered` to `LinkResuming` state.
 8. The upstream hub stops signaling K to resume.
    - The `usbdev_linkstate` module transitions from `LinkResuming` to `LinkActiveNoSOF` state, and USB is active once again.
+9. In order to restore all data pipes to their pre-sleep state and resume communication with the USB host, the Data Toggle bits must be restored by setting them to the values captured when suspending.
+   - Writing to the [`in_data_toggle`](registers.md#in_data_toggle) and [`out_data_toggle`](registers.md#out_data_toggle) registers prevents subsequent packets being ignored as retransmission attempts.
+

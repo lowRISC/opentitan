@@ -106,6 +106,16 @@ They should be understood to be an indication of possible performance or latency
 
 Each of these interrupts may be useful during development but consideration should be given to whether the raising and handling of these interrupts is beneficial in production software, given that the usbdev hardware handles these events automatically.
 
+## Performance and Diagnostic Event Counters
+
+The usbdev IP block is required to perform a number of operations automatically in hardware without software intervention, because these actions are part of the error recovery and guaranteed delivery mechanisms of the USB. In particular, packets that suffer transmission issues are retried in a manner that would not necessarily be visible to software via the CSR interface. Such events may therefore be monitored through the use of these counters.
+
+The counters may also be used to monitor whether software is meeting performance expectations by presenting IN side packets in a timely fashion for collection by the USB host. The four counters [`count_out`](registers.md#count_out), [`count_in`](registers.md#count_in), [`count_nodata_in`](registers.md#count_nodata_in) and [`count_errors`](registers.md#count_errors) all operate in the same manner, incrementing whenever one of the enabled events occurs on one of the enabled endpoints.
+
+Software may issue a reset of any of these counters at any time and, because the counters have limited width, they should be monitored and reset at regular intervals when it is important to gather statistics over a longer time period, eg. when monitoring performance. The `frame` interrupt from the USB device itself, indicating the passing of bus frames, may be used for this purpose if desired. Since a new event may occur within the brief time interval between reading a counter and the action of resetting the counter, it is worth avoiding the reset if the counter reads as zero, particularly if the counter is being used to detect the presence of any unanticipated or infrequent event such as a decoding error.
+
+Lastly, the counters have been designed to permit the set of enables to be changed at any instant, so by varying the per-endpoint enables and/or the per-event enables within the register over time, the four counters may be multiplexed to gather average statistics over a much larger number of data pipes and endpoints.
+
 ## Device Interface Functions (DIFs)
 
 - [Device Interface Functions](../../../../sw/device/lib/dif/dif_usbdev.h)
