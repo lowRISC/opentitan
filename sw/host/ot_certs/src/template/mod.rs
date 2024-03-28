@@ -59,6 +59,10 @@ pub struct Template {
 pub struct Certificate {
     /// X509 certificate's serial number
     pub serial_number: Value<BigUint>,
+    /// X509 validity's not before date. The format must be a valid ASN1 GeneralizedTime.
+    pub not_before: Value<String>,
+    /// X509 validity's not after date. The format must be a valid ASN1 GeneralizedTime.
+    pub not_after: Value<String>,
     /// X509 certificate's issuer.
     pub issuer: HashMap<AttributeType, Value<String>>,
     /// X509 certificate's subject.
@@ -77,9 +81,12 @@ pub struct Certificate {
 
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
+#[allow(clippy::large_enum_variant)]
 pub enum CertificateExtension {
     /// DICE TCB extension.
     DiceTcbInfo(DiceTcbInfoExtension),
+    /// TPMA_OBJECT extension
+    Tpm(TpmExtension),
 }
 
 /// DICE TCB extension.
@@ -100,6 +107,14 @@ pub struct DiceTcbInfoExtension {
     pub fw_ids: Option<Vec<FirmwareId>>,
     /// TCB flags.
     pub flags: Option<Flags>,
+}
+
+/// TPMA_OBJECT extension
+#[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct TpmExtension {
+    /// Some value.
+    pub value: Value<BigUint>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Hash, strum::Display, Serialize)]
@@ -424,6 +439,8 @@ mod tests {
                 issuer: {
                   serial_number: { var: "signing_pub_key_id", convert: "lowercase-hex" },
                 },
+                not_before: "20230101000000Z",
+                not_after: "99991231235959Z",
                 subject: {
                   serial_number: { var: "owner_pub_key_id", convert: "lowercase-hex" },
                 },
@@ -517,6 +534,8 @@ mod tests {
                 AttributeType::SerialNumber,
                 Value::convert("signing_pub_key_id", Conversion::LowercaseHex),
             )]),
+            not_before: Value::literal("20230101000000Z"),
+            not_after: Value::literal("99991231235959Z"),
             subject: HashMap::from([(
                 AttributeType::SerialNumber,
                 Value::convert("owner_pub_key_id", Conversion::LowercaseHex),
