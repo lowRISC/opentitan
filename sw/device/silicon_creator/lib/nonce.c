@@ -11,4 +11,4 @@ void nonce_new(nonce_t *nonce) {
   nonce->value[1] = rnd_uint32();
 }
 
-extern bool nonce_equal(nonce_t *a, nonce_t *b);
+extern bool nonce_equal(const nonce_t *a, const nonce_t *b);
