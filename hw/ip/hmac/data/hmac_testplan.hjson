@@ -95,6 +95,33 @@
       tests: ["hmac_wipe_secret"]
     }
     {
+      name: save_and_restore
+      desc: '''Verify save & restore, which allows SW to switch between different parallel message streams.
+
+               TODO(lowRISC/opentitan#21307)
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: fifo_empty_status_interrupt
+      desc: '''Verify the FIFO empty status interrupt.
+
+               TODO(lowRISC/opentitan#21815)
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: wide_digest_configurable_key_length
+      desc: '''Verify wider (SHA-384 and SHA-512) digests as well as configurable key lengths.
+
+               TODO(lowRISC/opentitan#22102)
+            '''
+      stage: V2
+      tests: []
+    }
+    {
       name: stress_all
       desc: "Stress_all test is a random mix of all the test above except csr tests."
       stage: V2
