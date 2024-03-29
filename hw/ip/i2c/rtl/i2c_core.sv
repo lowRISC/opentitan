@@ -65,6 +65,8 @@ module i2c_core import i2c_pkg::*;
 
   logic scl_sync;
   logic sda_sync;
+  logic scl_out_controller_fsm, sda_out_controller_fsm;
+  logic scl_out_target_fsm, sda_out_target_fsm;
   logic scl_out_fsm;
   logic sda_out_fsm;
 
@@ -75,6 +77,7 @@ module i2c_core import i2c_pkg::*;
   logic event_stretch_timeout;
   logic event_sda_unstable;
   logic event_cmd_complete;
+  logic event_controller_cmd_complete, event_target_cmd_complete;
   logic event_target_nack;
   logic event_tx_stretch;
   logic event_unexp_stop;
@@ -218,6 +221,8 @@ module i2c_core import i2c_pkg::*;
   assign target_enable = reg2hw.ctrl.enabletarget.q;
   assign line_loopback = reg2hw.ctrl.llpbk.q;
 
+  assign event_cmd_complete = event_controller_cmd_complete | event_target_cmd_complete;
+
   // Target loopback simply plays back whatever is received from the external host
   // back to it.
   assign target_loopback = target_enable & line_loopback;
@@ -226,6 +231,18 @@ module i2c_core import i2c_pkg::*;
   assign target_mask0 = reg2hw.target_id.mask0.q;
   assign target_address1 = reg2hw.target_id.address1.q;
   assign target_mask1 = reg2hw.target_id.mask1.q;
+
+  // Flop I2C bus outputs
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      scl_out_fsm <= 1'b1;
+      sda_out_fsm <= 1'b1;
+    end else begin
+      // Drive 0 if any FSM requests it.
+      scl_out_fsm <= scl_out_controller_fsm & scl_out_target_fsm;
+      sda_out_fsm <= sda_out_controller_fsm & sda_out_target_fsm;
+    end
+  end
 
   // Sample scl_i and sda_i at system clock
   always_ff @ (posedge clk_i or negedge rst_ni) begin : rx_oversampling
@@ -408,20 +425,18 @@ module i2c_core import i2c_pkg::*;
     .q_o (sda_sync)
   );
 
-  i2c_fsm #(
-    .FifoDepth(FifoDepth),
-    .AcqFifoDepth(AcqFifoDepth)
-  ) u_i2c_fsm (
+  i2c_controller_fsm #(
+    .FifoDepth(FifoDepth)
+  ) u_i2c_controller_fsm (
     .clk_i,
     .rst_ni,
 
     .scl_i                          (scl_sync),
-    .scl_o                          (scl_out_fsm),
+    .scl_o                          (scl_out_controller_fsm),
     .sda_i                          (sda_sync),
-    .sda_o                          (sda_out_fsm),
+    .sda_o                          (sda_out_controller_fsm),
 
     .host_enable_i                  (host_enable),
-    .target_enable_i                (target_enable),
     .host_disable_o                 (host_disable),
 
     .fmt_fifo_rvalid_i       (fmt_fifo_rvalid),
@@ -439,18 +454,7 @@ module i2c_core import i2c_pkg::*;
     .rx_fifo_wvalid_o               (rx_fifo_wvalid),
     .rx_fifo_wdata_o                (rx_fifo_wdata),
 
-    .tx_fifo_rvalid_i        (tx_fifo_rvalid),
-    .tx_fifo_rready_o        (tx_fifo_rready),
-    .tx_fifo_rdata_i         (tx_fifo_rdata),
-
-    .acq_fifo_wready_o              (acq_fifo_wready),
-    .acq_fifo_wvalid_o              (acq_fifo_wvalid),
-    .acq_fifo_wdata_o               (acq_fifo_wdata),
-    .acq_fifo_rdata_i               (acq_fifo_rdata),
-    .acq_fifo_depth_i               (acq_fifo_depth),
-
     .host_idle_o                    (host_idle),
-    .target_idle_o                  (target_idle),
 
     .thigh_i                        (thigh),
     .tlow_i                         (tlow),
@@ -464,23 +468,54 @@ module i2c_core import i2c_pkg::*;
     .t_buf_i                        (t_buf),
     .stretch_timeout_i              (stretch_timeout),
     .timeout_enable_i               (timeout_enable),
+    .host_nack_handler_timeout_i    (host_nack_handler_timeout),
+    .host_nack_handler_timeout_en_i (host_nack_handler_timeout_en),
+    .event_nak_o                    (event_nak),
+    .event_scl_interference_o       (event_scl_interference),
+    .event_sda_interference_o       (event_sda_interference),
+    .event_stretch_timeout_o        (event_stretch_timeout),
+    .event_sda_unstable_o           (event_sda_unstable),
+    .event_cmd_complete_o           (event_controller_cmd_complete)
+  );
+
+  i2c_target_fsm #(
+    .AcqFifoDepth(AcqFifoDepth)
+  ) u_i2c_target_fsm (
+    .clk_i,
+    .rst_ni,
+
+    .scl_i                          (scl_sync),
+    .scl_o                          (scl_out_target_fsm),
+    .sda_i                          (sda_sync),
+    .sda_o                          (sda_out_target_fsm),
+
+    .target_enable_i                (target_enable),
+
+    .tx_fifo_rvalid_i        (tx_fifo_rvalid),
+    .tx_fifo_rready_o        (tx_fifo_rready),
+    .tx_fifo_rdata_i         (tx_fifo_rdata),
+
+    .acq_fifo_wready_o              (acq_fifo_wready),
+    .acq_fifo_wvalid_o              (acq_fifo_wvalid),
+    .acq_fifo_wdata_o               (acq_fifo_wdata),
+    .acq_fifo_rdata_i               (acq_fifo_rdata),
+    .acq_fifo_depth_i               (acq_fifo_depth),
+
+    .target_idle_o                  (target_idle),
+
+    .t_r_i                          (t_r),
+    .tsu_dat_i                      (tsu_dat),
+    .thd_dat_i                      (thd_dat),
     .host_timeout_i                 (host_timeout),
     .nack_timeout_i                 (nack_timeout),
     .nack_timeout_en_i              (nack_timeout_en),
-    .host_nack_handler_timeout_i    (host_nack_handler_timeout),
-    .host_nack_handler_timeout_en_i (host_nack_handler_timeout_en),
     .target_address0_i              (target_address0),
     .target_mask0_i                 (target_mask0),
     .target_address1_i              (target_address1),
     .target_mask1_i                 (target_mask1),
     .target_sr_p_cond_o             (target_sr_p_cond),
     .event_target_nack_o            (event_target_nack),
-    .event_nak_o                    (event_nak),
-    .event_scl_interference_o       (event_scl_interference),
-    .event_sda_interference_o       (event_sda_interference),
-    .event_stretch_timeout_o        (event_stretch_timeout),
-    .event_sda_unstable_o           (event_sda_unstable),
-    .event_cmd_complete_o           (event_cmd_complete),
+    .event_cmd_complete_o           (event_target_cmd_complete),
     .event_tx_stretch_o             (event_tx_stretch),
     .event_unexp_stop_o             (event_unexp_stop),
     .event_host_timeout_o           (event_host_timeout)
@@ -739,6 +774,9 @@ module i2c_core import i2c_pkg::*;
   ////////////////
 
   `ASSERT_PULSE(HostDisablePulse_A, host_disable)
+
+  // Check to make sure scl_i is never a single cycle glitch
+  `ASSERT(SclInputGlitch_A, $rose(scl_sync) |-> ##1 scl_sync)
 
   `ASSERT_INIT(FifoDepthValid_A, FifoDepth > 0 && FifoDepthW <= MaxFifoDepthW)
   `ASSERT_INIT(AcqFifoDepthValid_A, AcqFifoDepth > 0 && AcqFifoDepthW <= MaxFifoDepthW)

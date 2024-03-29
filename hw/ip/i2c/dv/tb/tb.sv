@@ -50,6 +50,7 @@ module tb;
     .sda_io(sda)
   );
 
+  // TODO: Remove this unused interface.
   i2c_dv_if i2c_dv_if(
     .clk(clk),
     .rst_n(rst_n)
@@ -58,8 +59,6 @@ module tb;
   `ifndef I2C_HIER
     `define I2C_HIER tb.dut.i2c_core
   `endif
-
-  assign i2c_dv_if.i2c_state = `I2C_HIER.u_i2c_fsm.state_q;
 
   // Model PAD behavior
   i2c_port_conv i2c_port_conv (
