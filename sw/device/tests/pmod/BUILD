@@ -285,6 +285,7 @@ opentitan_test(
         tags = [
             "manual",
             "pmod",
+            "skip_in_ci",
         ],  # Requires the PMOD::BoB.
     ),
     exec_env = {
