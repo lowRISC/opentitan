@@ -215,7 +215,8 @@ class chip_sw_base_vseq extends chip_base_vseq;
     _sram_get_params(mem, num_tiles, size_bytes, is_main_ram);
 
     // calculate the scramble address
-    addr_scr = cfg.mem_bkdr_util_h[mem].get_sram_encrypt_addr(addr, nonce, $clog2(num_tiles));
+    addr_scr = cfg.mem_bkdr_util_h[mem].get_sram_encrypt_addr(
+        .addr(addr), .nonce(nonce), .extra_addr_bits($clog2(num_tiles)));
     addr_mask = size_bytes - 1;
 
     // determine which tile the scrambled address belongs
@@ -223,8 +224,9 @@ class chip_sw_base_vseq extends chip_base_vseq;
     mem = chip_mem_e'(mem + tile_idx);
 
     // calculate the scrambled data
-    data_scr = cfg.mem_bkdr_util_h[mem].get_sram_encrypt32_intg_data(addr, data, key, nonce,
-                                                                     $clog2(num_tiles));
+    data_scr = cfg.mem_bkdr_util_h[mem].get_sram_encrypt32_intg_data(
+       .addr(addr), .data(data), .key(key), .nonce(nonce), .extra_addr_bits($clog2(num_tiles)),
+       .flip_bits(flip_bits));
     cfg.mem_bkdr_util_h[mem].write39integ(addr_scr & addr_mask, data_scr ^ flip_bits);
   endfunction
 
@@ -247,7 +249,8 @@ class chip_sw_base_vseq extends chip_base_vseq;
     _sram_get_params(mem, num_tiles, size_bytes, is_main_ram);
 
     // calculate the scramble address
-    addr_scr = cfg.mem_bkdr_util_h[mem].get_sram_encrypt_addr(addr, nonce, $clog2(num_tiles));
+    addr_scr = cfg.mem_bkdr_util_h[mem].get_sram_encrypt_addr(
+        .addr(addr), .nonce(nonce), .extra_addr_bits($clog2(num_tiles)));
 
     // determine which tile the scrambled address belongs
     tile_idx = addr_scr / size_bytes;
@@ -255,7 +258,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
     addr_mask = size_bytes - 1;
     cfg.mem_bkdr_util_h[mem].sram_inject_integ_error(addr & addr_mask, addr_scr & addr_mask, key,
-                                                     nonce);
+                                                     nonce, $clog2(num_tiles));
   endfunction
 
   virtual task body();

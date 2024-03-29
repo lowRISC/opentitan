@@ -159,7 +159,7 @@ class chip_sw_sram_ctrl_scrambled_access_vseq extends chip_sw_base_vseq;
         // Write the data to a known offset in the SRAM. The random byte data
         // is used little-endian.
         for (int i = 0; i < BACKDOOR_DATA_WORDS; i++) begin
-         ret_sram_bkdr_write32(offset + (i * 4), {
+          ret_sram_bkdr_write32(offset + (i * 4), {
                                 backdoor_data[(i*4)+3],
                                 backdoor_data[(i*4)+2],
                                 backdoor_data[(i*4)+1],
@@ -182,7 +182,7 @@ class chip_sw_sram_ctrl_scrambled_access_vseq extends chip_sw_base_vseq;
                    "uvm_hdl_read failed for %0s", SRAM_CTRL_MAIN_SCR_KEY_VALID_PATH))
       // Wait for sram_ctrl.STATUS.SCR_KEY_VALID.
       if (scr_key_valid == 1) begin
-        `uvm_info(`gfn, $sformatf("main_backdoor_write start %x", offset), UVM_LOW)
+        `uvm_info(`gfn, $sformatf("main_backdoor_write to 0x%x", offset), UVM_LOW)
         // Write the data to a known offset in the SRAM. The random byte data
         // is used little-endian.
         for (int i = 0; i < BACKDOOR_DATA_WORDS; i++) begin

@@ -9,7 +9,7 @@
 function logic [bus_params_pkg::BUS_AW-1:0] get_sram_encrypt_addr (
   logic [bus_params_pkg::BUS_AW-1:0] addr,
   logic [SRAM_BLOCK_WIDTH-1:0] nonce,
-  logic [31:0] extra_addr_bits = '0);
+  logic [31:0] extra_addr_bits);
 
   int full_addr_width = addr_width + extra_addr_bits;
 
@@ -43,8 +43,8 @@ function logic [38:0] get_sram_encrypt32_intg_data (
   logic [31:0]                       data,
   logic [SRAM_KEY_WIDTH-1:0]         key,
   logic [SRAM_BLOCK_WIDTH-1:0]       nonce,
-  bit   [38:0]                       flip_bits = '0,
-  int                                extra_addr_bits=0);
+  int                                extra_addr_bits,
+  bit   [38:0]                       flip_bits = '0);
 
   logic [38:0]                       integ_data;
   logic [38:0]                       scrambled_data;
@@ -77,9 +77,10 @@ endfunction : get_sram_encrypt32_intg_data
 // It simply ignores the integrity bits.
 virtual function logic [38:0] sram_encrypt_read32_integ(logic [bus_params_pkg::BUS_AW-1:0] addr,
                                                         logic [SRAM_KEY_WIDTH-1:0]         key,
-                                                        logic [SRAM_BLOCK_WIDTH-1:0]       nonce);
-  logic [bus_params_pkg::BUS_AW-1:0] scr_addr = get_sram_encrypt_addr(addr, nonce);
-  logic [38:0] rdata39 = _sram_decrypt_read39(addr, scr_addr, key, nonce);
+                                                        logic [SRAM_BLOCK_WIDTH-1:0]       nonce,
+                                                        int extra_addr_bits);
+  logic [bus_params_pkg::BUS_AW-1:0] scr_addr = get_sram_encrypt_addr(addr, nonce, extra_addr_bits);
+  logic [38:0] rdata39 = _sram_decrypt_read39(addr, scr_addr, key, nonce, extra_addr_bits);
   return rdata39[31:0];
 endfunction : sram_encrypt_read32_integ
 
@@ -89,17 +90,19 @@ local function logic [38:0] _sram_decrypt_read39(
     logic [bus_params_pkg::BUS_AW-1:0] addr,
     logic [bus_params_pkg::BUS_AW-1:0] scr_addr,
     logic [SRAM_KEY_WIDTH-1:0]   key,
-    logic [SRAM_BLOCK_WIDTH-1:0] nonce);
+    logic [SRAM_BLOCK_WIDTH-1:0] nonce,
+    int extra_addr_bits);
   logic [38:0]                       rdata39 = '0;
 
   logic rdata_arr     [] = new[39];
   logic addr_arr      [] = new[addr_width];
   logic key_arr       [] = new[SRAM_KEY_WIDTH];
   logic nonce_arr     [] = new[SRAM_BLOCK_WIDTH];
+  int   full_addr_width = addr_width + extra_addr_bits;
 
   key_arr   = {<<{key}};
   nonce_arr = {<<{nonce}};
-  for (int i = 0; i < addr_width; i++) begin
+  for (int i = 0; i < full_addr_width; i++) begin
     addr_arr[i] = addr[addr_lsb + i];
   end
 
@@ -107,7 +110,7 @@ local function logic [38:0] _sram_decrypt_read39(
   `uvm_info(`gfn, $sformatf("scr data: 0x%0x", rdata39), UVM_HIGH)
   rdata_arr = {<<{rdata39}};
   rdata_arr = sram_scrambler_pkg::decrypt_sram_data(
-      rdata_arr, 39, 39, addr_arr, addr_width, key_arr, nonce_arr
+      rdata_arr, 39, 39, addr_arr, full_addr_width, key_arr, nonce_arr
   );
   rdata39 = {<<{rdata_arr}};
   return rdata39;
@@ -119,10 +122,12 @@ virtual function void sram_encrypt_write32_integ(logic [bus_params_pkg::BUS_AW-1
                                                  logic [31:0]                       data,
                                                  logic [SRAM_KEY_WIDTH-1:0]         key,
                                                  logic [SRAM_BLOCK_WIDTH-1:0]       nonce,
+                                                 int                                extra_addr_bits,
                                                  bit   [38:0]                       flip_bits = 0);
-  logic [bus_params_pkg::BUS_AW-1:0] scr_addr = get_sram_encrypt_addr(addr, nonce);
-  _sram_encrypt_write39(addr, scr_addr, data, key, nonce, flip_bits);
+  logic [bus_params_pkg::BUS_AW-1:0] scr_addr = get_sram_encrypt_addr(addr, nonce, extra_addr_bits);
+  _sram_encrypt_write39(addr, scr_addr, data, key, nonce, extra_addr_bits, flip_bits);
 endfunction : sram_encrypt_write32_integ
+
 
 // This encrypts, possibly flips some bits to inject errors, and writes the resulting data
 // to a scrambled address.
@@ -131,8 +136,9 @@ local function void _sram_encrypt_write39(logic [bus_params_pkg::BUS_AW-1:0] add
                                           logic [31:0]                 data,
                                           logic [SRAM_KEY_WIDTH-1:0]   key,
                                           logic [SRAM_BLOCK_WIDTH-1:0] nonce,
+                                          int                          extra_addr_bits,
                                           bit [38:0]                   flip_bits);
-  logic [38:0] scrambled_data = get_sram_encrypt32_intg_data(addr, data, key, nonce, flip_bits);
+  logic [38:0] scrambled_data = get_sram_encrypt32_intg_data(addr, data, key, nonce, extra_addr_bits, flip_bits);
   write39integ(scr_addr, scrambled_data);
 endfunction : _sram_encrypt_write39
 
@@ -145,7 +151,8 @@ endfunction : _sram_encrypt_write39
 virtual function void sram_inject_integ_error(logic [bus_params_pkg::BUS_AW-1:0] addr,
                                               logic [bus_params_pkg::BUS_AW-1:0] scr_addr,
                                               logic [SRAM_KEY_WIDTH-1:0]   key,
-                                              logic [SRAM_BLOCK_WIDTH-1:0] nonce);
+                                              logic [SRAM_BLOCK_WIDTH-1:0] nonce,
+                                              int extra_addr_bits);
   int max_attempts = 40;
   int attempt = 0;
 
@@ -154,8 +161,8 @@ virtual function void sram_inject_integ_error(logic [bus_params_pkg::BUS_AW-1:0]
     bit [38:0] rdata_integ;
     prim_secded_pkg::secded_inv_39_32_t dec;
     // The specific bits to be flipped should be irrelevant.
-    _sram_encrypt_write39(addr, scr_addr, data, key, nonce, 39'h1001);
-    rdata_integ = _sram_decrypt_read39(addr, scr_addr, key, nonce);
+    _sram_encrypt_write39(addr, scr_addr, data, key, nonce, extra_addr_bits, 39'h1001);
+    rdata_integ = _sram_decrypt_read39(addr, scr_addr, key, nonce, extra_addr_bits);
     dec = prim_secded_pkg::prim_secded_inv_39_32_dec(rdata_integ);
     if (dec.err) begin
       `uvm_info(`gfn, $sformatf(
