@@ -716,6 +716,39 @@ TEST_F(FlashCtrlTest, BankErasePermsSet) {
   flash_ctrl_bank_erase_perms_set(kHardenedBoolFalse);
 }
 
+TEST_F(FlashCtrlTest, CertInfoCreatorCfg) {
+  std::array<const flash_ctrl_info_page_t *, 3> cert_pages = {
+      &kFlashCtrlInfoPageUdsCertificate,
+      &kFlashCtrlInfoPageCdi0Certificate,
+      &kFlashCtrlInfoPageCdi1Certificate,
+  };
+  for (auto page : cert_pages) {
+    auto info_page = InfoPages().at(page);
+    EXPECT_SEC_READ32(base_ + info_page.cfg_offset,
+                      FLASH_CTRL_BANK1_INFO0_PAGE_CFG_0_REG_RESVAL);
+    EXPECT_SEC_WRITE32(base_ + info_page.cfg_offset, 0x9669996);
+    EXPECT_SEC_READ32(base_ + info_page.cfg_offset, 0x9669996);
+    EXPECT_SEC_WRITE32(base_ + info_page.cfg_offset, 0x9666666);
+  }
+
+  flash_ctrl_cert_info_pages_creator_cfg();
+}
+
+TEST_F(FlashCtrlTest, CertInfoOwnerRestrict) {
+  std::array<const flash_ctrl_info_page_t *, 3> cert_pages = {
+      &kFlashCtrlInfoPageUdsCertificate,
+      &kFlashCtrlInfoPageCdi0Certificate,
+      &kFlashCtrlInfoPageCdi1Certificate,
+  };
+  for (auto page : cert_pages) {
+    auto info_page = InfoPages().at(page);
+    EXPECT_SEC_READ32(base_ + info_page.cfg_offset, 0x9666666);
+    EXPECT_SEC_WRITE32(base_ + info_page.cfg_offset, 0x9669966);
+  }
+
+  flash_ctrl_cert_info_pages_owner_restrict();
+}
+
 struct EraseVerifyCase {
   /**
    * Address.
