@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@bazel_skylib//lib:paths.bzl", "paths")
-load("//rules:rv.bzl", "rv_rule")
 load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 
 def _certificate_codegen_impl(ctx):
@@ -66,7 +65,7 @@ def _certificate_codegen_impl(ctx):
 # - "sources": contains the implementation of the generator.
 # - "headers": contains the header containing the definitions and declaration.
 # All files produced by this rule will be formatted by clang-format.
-certificate_codegen = rv_rule(
+certificate_codegen = rule(
     implementation = _certificate_codegen_impl,
     attrs = {
         "template": attr.label(allow_single_file = True, doc = "path to the hjson template file"),
