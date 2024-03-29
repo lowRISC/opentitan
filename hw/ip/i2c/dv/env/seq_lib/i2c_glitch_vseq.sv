@@ -20,31 +20,15 @@ class i2c_glitch_vseq extends i2c_target_smoke_vseq;
   uint scl_period;
 
   // Variable used to detect start internally
-  string start_detected_path = "tb.dut.i2c_core.u_i2c_fsm.start_det";
+  string start_detected_path = "tb.dut.i2c_core.u_i2c_target_fsm.start_det";
   // Variable used to detect Stop internally
-  string stop_detected_path = "tb.dut.i2c_core.u_i2c_fsm.stop_det";
+  string stop_detected_path = "tb.dut.i2c_core.u_i2c_target_fsm.stop_det";
   // Internal FSM variable
-  string fsm_state_path = "tb.dut.i2c_core.u_i2c_fsm.state_q";
+  string fsm_state_path = "tb.dut.i2c_core.u_i2c_target_fsm.state_q";
 
   // State definitions
   typedef enum logic [5:0] {
     Idle,
-    ///////////////////////
-    // Host function states
-    ///////////////////////
-    Active, PopFmtFifo,
-    // Host function starts a transaction
-    SetupStart, HoldStart, ClockStart,
-    // Host function stops a transaction
-    SetupStop, HoldStop, ClockStop,
-    // Host function transmits a bit to the external target
-    ClockLow, ClockPulse, HoldBit,
-    // Host function recevies an ack from the external target
-    ClockLowAck, ClockPulseAck, HoldDevAck,
-    // Host function reads a bit from the external target
-    ReadClockLow, ReadClockPulse, ReadHoldBit,
-    // Host function transmits an ack to the external target
-    HostClockLowAck, HostClockPulseAck, HostHoldBitAck,
 
     /////////////////////////
     // Target function states
