@@ -51,13 +51,13 @@ module spi_host_fsm
   logic             full_cyc, cpha, cpol;
   logic             full_cyc_q, cpha_q, cpol_q;
 
-  // Unlike the configopts fields, the segment fields can change in back-to-backsegment operation.
+  // Unlike the configopts fields, the segment fields can change in back-to-back segment operation.
   // (If a change in only the configopts fields is detected, the FSM transitions to idle instead).
   // For that reason, when using the segment fields in back-to-back operations,  we have to bear
   // in mind context and determine whether it is appropriate to use the value for the previous
   // segment or the following segment.
-  // For instance, the cmd_rd_en signal is sometimes used to push segment byte into the shift
-  // register, and so in that case it is important to use cmd_rd_en_q in that sense.  The same
+  // For instance, the cmd_rd_en signal is sometimes used to push segment bytes into the shift
+  // register, and so in that case it is important to use cmd_rd_en_q in that sense. The same
   // signal is consulted to load the bit counter at the /beginning/ of each byte or dummy cycle,
   // and so in this context it is appropriate to use cmd_rd_en_d (which refers to the value from
   // the immediately following segment).

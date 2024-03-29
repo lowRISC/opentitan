@@ -302,14 +302,15 @@ The speed for this command segment: "0" = Standard SPI. "1" = Dual SPI.
    "2"=Quad SPI,  "3": RESERVED.
 
 ### COMMAND . CSAAT
-Chip select active after transaction.  If CSAAT = 0, the
-   chip select line is raised immediately at the end of the
-   command segment.   If [`COMMAND.CSAAT`](#command) = 1, the chip select
-   line is left low at the end of the current transaction
-   segment.  This allows the creation longer, more
-   complete SPI transactions, consisting of several separate
-   segments for issuing instructions, pausing for dummy cycles,
-   and transmitting or receiving data from the device.
+**C**hip **S**elect **A**ctive **A**fter **T**ransaction.
+   If [`COMMAND.CSAAT`](#command) = 0, the chip select line is raised immediately
+   at the end of the command segment.
+   If [`COMMAND.CSAAT`](#command) = 1, the chip select line is left low at the
+   end of the current transaction segment.
+   This allows the creation of longer, more complete SPI transactions,
+   consisting of several separate segments for issuing instructions,
+   pausing for dummy cycles, and transmitting or receiving data from
+   the device.
 
 ### COMMAND . LEN
 Segment Length.

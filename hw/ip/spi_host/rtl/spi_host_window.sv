@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Module to manage TX FIFO window for Serial Peripheral Interface (SPI) host IP.
+// Module to manage TX & RX FIFO windows for Serial Peripheral Interface (SPI) host IP.
 //
 
 module spi_host_window (
