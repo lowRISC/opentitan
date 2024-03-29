@@ -192,11 +192,9 @@ static void rom_pre_boot_check(void) {
   HARDENED_CHECK_EQ(lc_state_check, lc_state);
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomPreBootCheck, 3);
 
-  CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomPreBootCheck, 4);
-
   // Check the ePMP state
   SHUTDOWN_IF_ERROR(epmp_state_check());
-  CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomPreBootCheck, 5);
+  CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomPreBootCheck, 4);
 
   // Check the cpuctrl CSR.
   uint32_t cpuctrl_csr;
@@ -213,10 +211,10 @@ static void rom_pre_boot_check(void) {
   // Check rstmgr alert and cpu info collection configuration.
   SHUTDOWN_IF_ERROR(
       rstmgr_info_en_check(retention_sram_get()->creator.reset_reasons));
-  CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomPreBootCheck, 6);
+  CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomPreBootCheck, 5);
 
   sec_mmio_check_counters(/*expected_check_count=*/2);
-  CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomPreBootCheck, 7);
+  CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomPreBootCheck, 6);
 }
 
 /**
@@ -231,7 +229,7 @@ static rom_error_t rom_try_boot(void) {
                             kCfiRomPreBootCheck);
   rom_pre_boot_check();
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomTryBoot, 4);
-  CFI_FUNC_COUNTER_CHECK(rom_counters, kCfiRomPreBootCheck, 8);
+  CFI_FUNC_COUNTER_CHECK(rom_counters, kCfiRomPreBootCheck, 7);
 
   // TODO: Do not hardcode that.
   uintptr_t rom_ext_lma = 0x41080000;
