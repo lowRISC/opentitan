@@ -18,14 +18,12 @@ curly-quotes = true
 mathjax-support = true
 
 additional-js = [
-    "./util/mdbook/wavejson/default.js",
-    "./util/mdbook/wavejson/wavedrom.min.js",
-    "./util/mdbook/wavejson/wavejson.js",
+    "./site/book-theme/codeblock-conversions.js",
     "./site/book-theme/pagetoc.js",
 ]
 
 additional-css = [
-    "./util/mdbook/wavejson/wavejson.css",
+    "./site/book-theme/wavejson.css",
     "./site/book-theme/pagetoc.css",
     "./site/book-theme/recursive.css",
     "./site/book-theme/tweaks.css",
@@ -36,9 +34,6 @@ enable = false
 
 [preprocessor.readme2index]
 command = "./util/mdbook_readme2index.py"
-
-[preprocessor.wavejson]
-command = "./util/mdbook_wavejson.py"
 
 [preprocessor.reggen]
 command = "./util/mdbook_reggen.py"

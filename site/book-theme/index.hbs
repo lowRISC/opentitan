@@ -59,6 +59,7 @@
         <!-- MathJax -->
         <script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
         {{/if}}
+        <script async src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.0/mermaid.min.js"></script>
     </head>
     <body>
         <!-- Provide site root to javascript -->
@@ -309,14 +310,22 @@
         <script src="{{ path_to_root }}searcher.js"></script>
         {{/if}}
 
-        <script src="{{ path_to_root }}clipboard.min.js"></script>
-        <script src="{{ path_to_root }}highlight.js"></script>
-        <script src="{{ path_to_root }}book.js"></script>
+        <!-- WaveDrom -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/wavedrom/3.5.0/skins/default.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/wavedrom/3.5.0/wavedrom.min.js"></script>
 
         <!-- Custom JS scripts -->
         {{#each additional_js}}
         <script src="{{ ../path_to_root }}{{this}}"></script>
         {{/each}}
+
+        <!--
+          Running the codeblock highlighter after the custom JS scripts' transforms
+          reduces the numbe of warnings in the log.
+        -->
+        <script src="{{ path_to_root }}highlight.js"></script>
+        <script src="{{ path_to_root }}clipboard.min.js"></script>
+        <script src="{{ path_to_root }}book.js"></script>
 
         {{#if is_print}}
         {{#if mathjax_support}}

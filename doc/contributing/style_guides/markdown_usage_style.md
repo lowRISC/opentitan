@@ -139,9 +139,11 @@ Hello World
 Pictures can be included using the standard Commonmark syntax (`![Alt Text](url)`).
 The preferred format is Scalable Vector Graphics (`.svg`), alternatively Portable Network Graphics (`.png`).
 
-## Waveforms
+## Code Blocks Renderers
 
 Waveforms can be included by describing them in [wavejson](https://github.com/wavedrom/schema/blob/master/WaveJSON.md) within a code block with a `wavejson` [info string][].
+
+[Mermaid](https://mermaid.js.org/) can be used for creating quick diagrams, like the one below, by surround mermaiding markup in a code block with a `mermaid` [info string][].
 
 ## Maths
 
