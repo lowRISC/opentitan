@@ -7,7 +7,6 @@
 #include <stdint.h>
 
 #include "sw/device/lib/base/memory.h"
-#include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/json/provisioning_data.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/silicon_creator/lib/attestation.h"
@@ -130,8 +129,6 @@ rom_error_t dice_attestation_keygen(dice_key_t desired_key,
   // Generate / sideload key material into OTBN, and generate the ECC keypair.
   HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_keygen(
       otbn_ecc_keygen_seed, keymgr_diversifier, pubkey));
-  HARDENED_RETURN_IF_ERROR(
-      otbn_boot_attestation_key_save(otbn_ecc_keygen_seed, keymgr_diversifier));
 
   // Keys are represented in certificates in big endian format, but the key is
   // output from OTBN in little endian format, so we convert the key to

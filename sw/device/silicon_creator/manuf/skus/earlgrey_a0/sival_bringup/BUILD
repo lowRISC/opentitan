@@ -228,6 +228,7 @@ opentitan_binary(
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/silicon_creator/lib:attestation_key_diversifiers",
         "//sw/device/silicon_creator/lib:dice",
         "//sw/device/silicon_creator/lib:otbn_boot_services",
         "//sw/device/silicon_creator/lib/cert:cdi_0_template_library",
