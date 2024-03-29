@@ -100,6 +100,17 @@
       tests: ["entropy_src_rng"]
     }
     {
+      name: sec_cm_fifo_ctr_redun
+      desc: '''
+            Verify the countermeasure(s) FIFO.CTR.REDUN.
+            The entropy_src_functional_errors test verifies that if there is any mismatch in the redundant pointers inside the FIFOs this is reported in the ERR_CODE register.
+            It currently doesn't check whether the DUT actually triggers a fatal alert.
+            Alert connection and triggering are verified through automated FPV.
+            '''
+      stage: V2S
+      tests: ["entropy_src_sec_cm", "entropy_src_functional_errors"]
+    }
+    {
       name: sec_cm_ctr_redun
       desc: '''
             Verify the countermeasure(s) CTR.REDUN.

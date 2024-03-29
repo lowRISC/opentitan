@@ -1027,7 +1027,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // receive in RNG bus input
   //--------------------------------------------
 
-
+  // SEC_CM: FIFO.CTR.REDUN
   prim_fifo_sync #(
     .Width(RngBusWidth),
     .Pass(0),
@@ -2486,6 +2486,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // under pessimistic operating conditions (see entropy_src_rng_max_rate test), entropy bits never
   // need to be dropped from the hardware pipeline.
 
+  // SEC_CM: FIFO.CTR.REDUN
   prim_fifo_sync #(
     .Width(DistrFifoWidth),
     .Pass(1),
@@ -2534,9 +2535,10 @@ module entropy_src_core import entropy_src_pkg::*; #(
          (sfifo_distr_full && !sfifo_distr_not_empty) || sfifo_distr_int_err};
 
   //--------------------------------------------
-  // store entropy into a 64 entry deep FIFO
+  // store entropy into a 32 entry deep FIFO
   //--------------------------------------------
 
+  // SEC_CM: FIFO.CTR.REDUN
   prim_fifo_sync #(
     .Width(ObserveFifoWidth),
     .Pass(0),
@@ -2901,6 +2903,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // send processed entropy to final fifo
   //--------------------------------------------
 
+  // SEC_CM: FIFO.CTR.REDUN
   prim_fifo_sync #(
     .Width(1+SeedLen),
     .Pass(0),

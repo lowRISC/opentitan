@@ -48,6 +48,7 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | ENTROPY_SRC.MAIN_SM.FSM.SPARSE            | The ENTROPY_SRC main state machine uses a sparse state encoding.                    |
 | ENTROPY_SRC.ACK_SM.FSM.SPARSE             | The ENTROPY_SRC ack state machine uses a sparse state encoding.                     |
 | ENTROPY_SRC.RNG.BKGN_CHK                  | Random number generator is protected with continuous background health checks.      |
+| ENTROPY_SRC.FIFO.CTR.REDUN                | The FIFO pointers of several FIFOs are implemented with duplicate counters.         |
 | ENTROPY_SRC.CTR.REDUN                     | Counter hardening for all health test counters.                                     |
 | ENTROPY_SRC.CTR.LOCAL_ESC                 | Redundant counter failures will cause a local escalation to the main state machine. |
 | ENTROPY_SRC.ESFINAL_RDATA.BUS.CONSISTENCY | Comparison on successive bus values for the post-conditioned entropy seed bus.      |
