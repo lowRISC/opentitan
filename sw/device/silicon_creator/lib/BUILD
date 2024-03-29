@@ -543,7 +543,6 @@ cc_library(
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
-        "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/json:provisioning_data",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/silicon_creator/lib:attestation",

@@ -16,6 +16,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
+#include "sw/device/silicon_creator/lib/attestation_key_diversifiers.h"
 #include "sw/device/silicon_creator/lib/base/boot_measurements.h"
 #include "sw/device/silicon_creator/lib/cert/cdi_0.h"  // Generated.
 #include "sw/device/silicon_creator/lib/cert/cdi_1.h"  // Generated.
@@ -237,6 +238,8 @@ static status_t personalize_dice_certificates(ujson_t *uj) {
   // Generate UDS keys and (TBS) cert.
   sc_keymgr_advance_state();
   TRY(dice_attestation_keygen(kDiceKeyUds, &uds_pubkey_id, &curr_pubkey));
+  TRY(otbn_boot_attestation_key_save(kUdsAttestationKeySeed,
+                                     kUdsKeymgrDiversifier));
   TRY(dice_uds_cert_build(&certgen_inputs, &uds_pubkey_id, &curr_pubkey,
                           dice_certs.uds_tbs_certificate,
                           &dice_certs.uds_tbs_certificate_size));
