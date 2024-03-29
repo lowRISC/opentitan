@@ -324,6 +324,10 @@ covergroup i2c_scl_stretch_cg(bit[15:0] FIFO_SIZE) with function sample(
   uint acq_fifo_size,
   uint tx_fifo_size
 );
+  /////////////////////////////////////////
+  // CLOCK STRETCHING : DUT -> HOST_MODE //
+  /////////////////////////////////////////
+
   // Stretch detected if cio_scl_en_o is not asserted but still cio_scl_i low which indicates
   // target device is stretching the clock, if the number of cycles SCL is stretched exceeds
   // a timeout value intr_stretch_timeout is raised
@@ -332,6 +336,10 @@ covergroup i2c_scl_stretch_cg(bit[15:0] FIFO_SIZE) with function sample(
     bins stretch = {1};
     ignore_bins unused = {0};
   }
+
+  ///////////////////////////////////////////
+  // CLOCK STRETCHING : DUT -> TARGET_MODE //
+  ///////////////////////////////////////////
 
   // Target mode SCL stretch due to three scenarios
   // 1. ACQ full, can be an Address or Write data byte, both indicated by intr_acq_full
