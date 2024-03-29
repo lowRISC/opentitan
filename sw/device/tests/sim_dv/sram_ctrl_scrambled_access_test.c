@@ -158,7 +158,7 @@ static noreturn void main_sram_scramble(void) {
       "sw a3, 0(%[retFrame])                                         \n"
 
       // Copy the backdoor and pattern buffers from main to the retention SRAM.
-      " addi t1, a3,  %[kCopyLen]                                   \n"
+      "addi t1, a3,  %[kCopyLen]                                    \n"
       ".L_buffer_copy_loop:                                         \n"
       "  lw t0, 0(a2)                                               \n"
       "  sw t0, 0(a3)                                               \n"

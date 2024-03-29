@@ -57,7 +57,7 @@ class sram_ctrl_common_vseq extends sram_ctrl_base_vseq;
     bit[bus_params_pkg::BUS_DW-1:0] rdata;
     bit[tlul_pkg::DataIntgWidth+bus_params_pkg::BUS_DW-1:0] flip_bits;
 
-    rdata = cfg.mem_bkdr_util_h.sram_encrypt_read32_integ(addr, cfg.scb.key, cfg.scb.nonce);
+    rdata = cfg.mem_bkdr_util_h.sram_encrypt_read32_integ(addr, cfg.scb.key, cfg.scb.nonce, 0);
 
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(flip_bits,
         $countones(flip_bits) inside {[1:cip_base_pkg::MAX_TL_ECC_ERRORS]};)
@@ -65,7 +65,7 @@ class sram_ctrl_common_vseq extends sram_ctrl_base_vseq;
     `uvm_info(`gfn, $sformatf("Backdoor change mem (addr 0x%0h) value 0x%0h by flipping bits %0h",
                               addr, rdata, flip_bits), UVM_LOW)
 
-    cfg.mem_bkdr_util_h.sram_encrypt_write32_integ(addr, rdata, cfg.scb.key, cfg.scb.nonce,
+    cfg.mem_bkdr_util_h.sram_encrypt_write32_integ(addr, rdata, cfg.scb.key, cfg.scb.nonce, 0,
                                                    flip_bits);
   endfunction
 
