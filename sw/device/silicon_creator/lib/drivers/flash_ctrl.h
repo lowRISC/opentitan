@@ -166,6 +166,8 @@ FLASH_CTRL_INFO_PAGES_DEFINE(INFO_PAGE_STRUCT_DECL_);
  */
 enum {
   kFlashCtrlSecMmioCreatorInfoPagesLockdown = 18,
+  kFlashCtrlSecMmioCertInfoPagesCreatorCfg = 6,
+  kFlashCtrlSecMmioCertInfoPagesOwnerRestrict = 3,
   kFlashCtrlSecMmioDataDefaultCfgSet = 1,
   kFlashCtrlSecMmioDataDefaultPermsSet = 1,
   kFlashCtrlSecMmioExecSet = 1,
@@ -584,6 +586,29 @@ void flash_ctrl_exec_set(uint32_t exec_val);
  * sec_mmio is being used to check expectations.
  */
 void flash_ctrl_creator_info_pages_lockdown(void);
+
+/**
+ * Configures certificate flash info pages for access by the silicon creator.
+ *
+ * Flash info pages that hold device certificates are fully accessable by the
+ * silicon creator, but are restricted to read-only access by the ROM_EXT before
+ * handing over execution to the owner boot stage.
+ *
+ * The caller is responsible for calling
+ * `SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioCertInfoPagesCreatorCfg)`
+ * when sec_mmio is being used to check expectations.
+ */
+void flash_ctrl_cert_info_pages_creator_cfg(void);
+
+/**
+ * Restricts access of certificate flash info pages to read-only for the silicon
+ * owner.
+ *
+ * The caller is responsible for calling
+ * `SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioCertInfoPagesOwnerRestrict)`
+ * when sec_mmio is being used to check expectations.
+ */
+void flash_ctrl_cert_info_pages_owner_restrict(void);
 
 #ifdef __cplusplus
 }
