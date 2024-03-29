@@ -258,6 +258,9 @@
     { name: "RNG.BKGN_CHK"
       desc: "Random number generator is protected with continuous background health checks."
     }
+    { name: "FIFO.CTR.REDUN"
+      desc: "The FIFO pointers of several FIFOs are implemented with duplicate counters."
+    }
     { name: "CTR.REDUN"
       desc: "Counter hardening for all health test counters."
     }
