@@ -515,11 +515,13 @@ This can be achieved by also setting the [`CONTROL.OUTPUT_EN`](registers.md#cont
 In addition to the global hardware reset, there is a software reset option which completely resets the SPI host.
 To use this reset, assert [`CONTROL.SW_RST`](registers.md#control), and then wait for the device to reset ([`STATUS.ACTIVE`](registers.md#status), [`STATUS.TXQD`](registers.md#status) and [`STATUS.RXQD`](registers.md#status) to all go to zero), before releasing [`CONTROL.SW_RST`](registers.md#control).
 
-## Block Diagram
+# Design Details
+
+## Block Diagrams
 
 ![](../doc/spi_host_block_diagram.svg)
 
-# Design Details
+![](../doc/spi_host_passthrough.svg)
 
 ## Component Overview
 
