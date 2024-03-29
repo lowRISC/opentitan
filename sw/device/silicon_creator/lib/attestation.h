@@ -36,9 +36,22 @@ enum {
   kAttestationPublicKeyCoordWords =
       kAttestationPublicKeyCoordBytes / sizeof(uint32_t),
   /**
+   * Size of an attestation signature component in bits.
+   */
+  kAttestationSignatureComponentBits = 256,
+  /**
+   * Size of an attestation signature component in bytes.
+   */
+  kAttestationSignatureComponentBytes = kAttestationSignatureComponentBits / 8,
+  /**
+   * Size of an attestation signature component in 32b words.
+   */
+  kAttestationSignatureComponentWords =
+      kAttestationSignatureComponentBytes / sizeof(uint32_t),
+  /**
    * Size of an attestation signature in bits.
    */
-  kAttestationSignatureBits = 512,
+  kAttestationSignatureBits = kAttestationSignatureComponentBits * 2,
   /**
    * Size of an attestation signature in bytes.
    */
