@@ -96,7 +96,7 @@
       tests: ["i2c_host_stress_all_with_rand_reset"]
     }
     {
-      name: host_perf
+      name: host_maxperf
       desc: '''
             The Host DUT sends and receives transactions at max bandwidth.
 
@@ -341,7 +341,7 @@
       tests: ["i2c_target_stress_all_with_rand_reset"]
     }
     {
-      name: target_perf
+      name: target_maxperf
       desc: '''
             The Host Agent sends and receives transactions at max bandwidth.
 
@@ -466,7 +466,7 @@
       desc: '''
             Test handling of RStart ot Stop glitches in Target mode
 
-           Stimulus:
+            Stimulus:
               - Configure DUT/Agent to Target/Host mode respectively
               - Issue a new request(RStart) to DUT during an active transfer
               - Stop current request(Stop) to DUT during an active transfer
@@ -477,6 +477,160 @@
             '''
       stage: V2
       tests: ["i2c_target_hrst"]
+    }
+    {
+      name: target_fifo_watermark
+      desc: '''
+            Test the watermark interrupts of acq_fifo("acq_threshold") and tx_fifo("tx_threshold").
+
+            Stimulus:
+              - Configure DUT/Agent to Target/Host mode respectively.
+              - Program random acq_fifo and tx_fifo watermark level.
+              - Write data into the tx_fifo above the watermark level.
+              - Stimulate transactions from the Agent that fills the acq_fifo above the watermark
+                level and reads data to bring the tx_fifo below the watermark level.
+              - When interrupt is asserted, read the acq_fifo to bring level back down below
+                the watermark.
+
+            Checking:
+              - Ensure the acq_fifo and tx_fifo watermark interrupts are asserted when crossing
+                above/below the configured thresholds.
+              - As Status-Type interrupts, ensure the acq_fifo and tx_fifo watermark interrupts
+                stay asserted until the causes are addressed.
+            '''
+      stage: V2
+      tests: ["i2c_host_fifo_watermark"]
+    }
+    {
+      name: host_mode_config_perf
+      desc: '''
+            Test bus performance matches expectation based on configured timing parameters and clk_i
+
+            It is possible to predict the expected bus frequency during data bytes for a given configuration
+            in Host-Mode, assuming that both endpoints do not automatically flow-control the bus (due to
+            e.g. data starvation or backpressure).
+
+            Stimulus
+              - Configure DUT/Agent to Host/Target mode respectively
+              - Randomly configure clk_i and any valid set of timing parameters
+              - Ensure all transactions experience no delays (no stretching, data starvation etc.)
+
+            Checking:
+              - Calculate expected bus performance based on configuration
+              - Ensure that SCL frequency during data bytes matches expectation
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: host_mode_clock_stretching
+      desc: '''
+            Test that the Byte-Formatted Host-Mode FSM correctly handles a Target that clock-stretches
+
+            Host-mode has support for Targets which perform clock-stretching, and we should verify that
+            this implementation is robust for long and short periods of clock stretching. In particular,
+            there is a implementation restriction of "THIGH >= 4" to guarantee clock stretching is
+            detectable, so behaviour should be stimulated around that edge case.
+            Target-deassertion of clock stretching may not necessarily be synchronous to the Host's clock,
+            so ensure the Agent may release SCL asynchronously to the Host's input clock.
+
+            Stimulus
+              - Configure DUT/Agent to Host/Target mode respectively
+              - Randomly configure clk_i and any valid set of timing parameters
+                - Ensure sufficient test coverage around lower bound of "THIGH".
+              - Configure Agent to stretch SCL for randomized times.
+
+            Checking:
+              - Ensure that data is correctly received, and transactions complete successfully, for the
+                given valid space of timing parameters.
+              - Ensure that any documented restrictions are consistent with the behaviour.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: target_mode_txrst_on_cond
+      desc: '''
+            Test that the TXRST_ON_COND feature resets the TXFIFO at the appropriate time
+
+            Stimulus
+              - Configure DUT/Agent to Target/Host mode respectively.
+              - Randomly enable TXRST_ON_COND feature
+              - Stimulate transactions, including transactions with multiple transfers
+                interspersed by RSTART conditions.
+
+            Checking
+              - Ensure that the TXFIFO is automatically reset when the TXRST_ON_COND feature is enabled
+                each time a Sr/P condition is observed during an active transaction.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: target_mode_nack_generation
+      desc: '''
+            Test Target-Mode automatic NACK generation, particularly around hardware features
+            such as:
+              - NACK when ACQFIFO is full.
+              - NACK when TARGET_TIMEOUT_CTRL threshold has elapsed.
+              - ACQDATA.NACK/ACQDATA.NACKSTART is correctly recorded in the ACQFIFO.
+              - TARGET_NACK_COUNT recording the number of NACK'd bytes.
+
+            Stimulus
+              - Configure DUT/Agent to Target/Host mode respectively.
+              - Do not proactively fill the TXFIFO, to elicit clock stretching
+              - Stimulate transactions that will fill the ACQFIFO
+              - Only read the ACQFIFO when it is full, possibly adding extra delays so
+                that new transactions while full will be automatically NACK'd
+
+            Checking:
+              - Check all bytes (except address bytes) are NACK'd when the ACQFIFO is full.
+              - Check that NACKs are generated when the clock is stretched past the threshold
+                configured in TARGET_TIMEOUT_CONTROL.
+              - Check that ACQDATA.{NACK,NACKSTART} are set correctly when automatic NACKs have
+                space to add a new entry to the ACQFIFO.
+              - Check that ACQDATA.ABYTE contains the NACKd byte when automatic NACKs have space
+                to add a new entry to the ACQFIFO.
+              - Readback TARGET_NACK_COUNT to check that number of NACK'd bytes matches the
+                number observed by the Agent.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: host_mode_halt_on_nak
+      desc: '''
+            Test that the Halt-on-NACK feature operates correctly. This functionality is in-effect
+            when a Target NACKs a byte, and the Byte-Formatted FSM halts awaiting software to
+            intervene.
+              - The active transaction should be halted whenever a NACK is observed (except if the
+                FMTFIFO entry had the NAKOK bit set).
+              - Sofware acknowledging the 'nak' interrupt allows the FSM to continue.
+              - Upon continuation, the next entry from the FMTFIFO is popped.
+              - If the HOST_NACK_HANDLER_TIMEOUT is enabled and expires, hardware will automatically
+                end the transaction, sending a Stop condition and transitioning to Idle/Disabled.
+              - If the transaction ends due to this timeout, the STATUS.HOST_DISABLED_NACK_TIMEOUT
+                bit is set. This bit is cleared upon starting a new transaction.
+
+            Stimulus
+              - Configure DUT/Agent to Host/Target mode respectively.
+              - Stimulate transactions, and randomly allow the Target to NACK.
+              - Randomize the HOST_NACK_HANDLER_TIMEOUT / 'nak' handler latency, to allow the timeout
+                behaviour to trigger.
+              - Software should randomly disable the HOST_NACK_HANDLER_TIMEOUT mid-stretch, to disable
+                the automatic stop generation.
+
+            Checking:
+              - Data validity continues to match expectation when software uses the 'nak' interrupt
+                to change up the dataflow.
+              - During halt, the bus should be idle (both signals released)
+              - If the 'nak' interrupt is unhandled, after the HOST_NACK_HANDLER_TIMEOUT delay the DUT
+                should be observed to have returned to disabled, and a Stop condition should have been
+                generated to end the active transaction.
+              - Check that the STATUS.HOST_DISABLED_NACK_TIMEOUT bit is set when the timeout is reached.
+            '''
+      stage: V2
+      tests: []
     }
   ]
   covergroups: [
@@ -497,15 +651,19 @@
             Cross rx_overflow with RXRST
             Cross acq_overflow with ACQRST
             Cross tx_threshold with TXRST
+            Cover the TXRST_ON_COND bit in TARGET_FIFO_CONFIG
+            Cross TXRST_ON_COND with Sr/P bus conditions
             '''
     }
     {
       name: i2c_fifo_level_cg
       desc: '''
-             Cover the trigger level for FMT_FIFO and RX_FIFO interupts
+             Cover the watermark levels for all FIFO interupts
              * Cross fmt_threshold interrupt with FMT_FIFO trigger level
              * Cross rx_threshold interrupt with RX_FIFO trigger level
-             Cover the FIFO levels in FIFO_STATUS
+             * Cross acq_threshold interrupt with ACQ_FIFO trigger level
+             * Cross tx_threshold interrupt with TX_FIFO trigger level
+             Cover the FIFO levels in HOST_FIFO_STATUS/TARGET_FIFO_STATUS
             '''
     }
     {
@@ -588,6 +746,10 @@
             * NACK before STOP
             * RSTART with previous ACK for READ
             * RSTART with previous NACK for READ
+            Cover NACK behaviours
+            * NACK/NACKSTART bits
+            * Cross against ACQFIFO level
+            * Cross against TARGET_TIMEOUT_CONTROL.EN
             '''
     }
     {
@@ -595,9 +757,10 @@
       desc: '''
             Cover SCL stretch in Host mode
             * Cover clock stretch after address byte
+            * Cross stretching against THIGH, particularly around the lower bound
             Cover SCL stretch in Target mode
             Cover Target mode SCL stretch in the following scenario
-            * Read command received in ACQ FIFo and more than one entry in ACQ FIFO
+            * Read command received in ACQ FIFO and more than one entry in ACQ FIFO
             '''
     }
     {
@@ -625,6 +788,21 @@
       desc: '''
             Cover combination of back to back read and write transfers covered in test suite
             Instantiate a separate covergroup for host and target mode of operation
+            '''
+    }
+    {
+      name: i2c_nack_timeout_cg
+      desc: '''
+            Cover range of possible timeout val in TARGET_TIMEOUT_CONTROL
+            '''
+    }
+    {
+      name: i2c_halt_on_nack_cg
+      desc: '''
+            Cover range of possible timeout val in HOST_NACK_HANDLER_TIMEOUT
+            * Cross timeout val with 'nak' handler latency {gt, lt}
+            Cover STATUS.HOST_DISABLED_NACK_TIMEOUT
+            Cover mid-halt disable of timeout en
             '''
     }
   ]
