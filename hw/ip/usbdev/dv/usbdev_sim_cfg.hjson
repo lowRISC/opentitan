@@ -134,7 +134,7 @@
       uvm_test_seq: usbdev_in_stall_vseq
     }
     {
-      name: in_iso
+      name: usbdev_in_iso
       uvm_test_seq: usbdev_in_iso_vseq
     }
   ]
