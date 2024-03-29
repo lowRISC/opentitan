@@ -252,6 +252,27 @@
       tests: ["spi_host_idlecsbactive"]
     }
     {
+      name: data_fifo_status
+      desc: '''
+            Ensure we are modelling the Fifo depths, to ensure we can compare against predictions
+            of their state, particularly current depth.
+            - TXDATA
+              Push on CSR writes, Pop on submitting new word to ByteSel/SR
+            - RXDATA
+              Push on new word from SR/ByteMerge, Pop on CSR read
+
+            Stimulus:
+              - Create transactions that Pop/Push to the data fifos
+              - Readback the queue depths at various points during active and after completed
+                transactions.
+
+            Checking:
+              - Ensure rx/tx_qd and rx/tx_full/empty match predictions.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
       name: winbond
       desc: '''
           Replace SPI agent with the Winbond Flash model
@@ -305,12 +326,6 @@
             '''
     }
     {
-      name: interrupts_cg
-      desc: '''
-            Collect coverage that all types of interrupt was seen
-            '''
-    }
-    {
       name: control_cg
       desc: '''
             Collect coverage on the control register to make sure all options are excercised
@@ -360,8 +375,11 @@
     {
       name: interrupt_cg
       desc: '''
+            Collect coverage that all types of interrupt was seen
             - check that we see all scenarios that can cause an interrupt and that the interrupts is fired.
             - also check we can clear the interrupt
+
+            (Coverage gathered in base class :: intr_test_cg)
             '''
     }
     {
