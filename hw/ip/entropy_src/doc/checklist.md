@@ -36,7 +36,7 @@ Type          | Item                      | Resolution  | Note/Collaterals
 Documentation | [NEW_FEATURES][]          | Done        |
 Documentation | [BLOCK_DIAGRAM][]         | Done        |
 Documentation | [DOC_INTERFACE][]         | Done        |
-Documentation | [DOC_INTEGRATION_GUIDE][] | Waived      | This checklist item has been added retrospectively.
+Documentation | [DOC_INTEGRATION_GUIDE][] | N/A         |
 Documentation | [MISSING_FUNC][]          | Done        |
 Documentation | [FEATURE_FROZEN][]        | Done        |
 RTL           | [FEATURE_COMPLETE][]      | Done        |
@@ -124,7 +124,7 @@ Review        | Signoff date            | Not Started |
  Type         | Item                                  | Resolution  | Note/Collaterals
 --------------|---------------------------------------|-------------|------------------
 Documentation | [DV_DOC_DRAFT_COMPLETED][]            | Done        | [ENTROPY_SRC DV document](../dv/README.md)
-Documentation | [TESTPLAN_COMPLETED][]                | In Progress | [ENTROPY_SRC Testplan](../dv/README.md#testplan)
+Documentation | [TESTPLAN_COMPLETED][]                | Done        | [ENTROPY_SRC Testplan](../dv/README.md#testplan)
 Testbench     | [TB_TOP_CREATED][]                    | Done        |
 Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Done        |
 Testbench     | [SIM_TB_ENV_CREATED][]                | Done        |
@@ -140,7 +140,7 @@ Regression    | [SIM_NIGHTLY_REGRESSION_SETUP][]      | Done        |
 Regression    | [FPV_REGRESSION_SETUP][]              | N/A         |
 Coverage      | [SIM_COVERAGE_MODEL_ADDED][]          | Done        |
 Code Quality  | [TB_LINT_SETUP][]                     | Done        |
-Integration   | [PRE_VERIFIED_SUB_MODULES_V1][]       | Done        | AES
+Integration   | [PRE_VERIFIED_SUB_MODULES_V1][]       | Done        | SHA3/KMAC
 Review        | [DESIGN_SPEC_REVIEWED][]              | Done        |
 Review        | [TESTPLAN_REVIEWED][]                 | Done        |
 Review        | [STD_TEST_CATEGORIES_PLANNED][]       | Done        | Exception (Security, Power, Debug)
@@ -184,13 +184,13 @@ Tests         | [FPV_ALL_ASSERTIONS_WRITTEN][]          | N/A         |
 Tests         | [FPV_ALL_ASSUMPTIONS_REVIEWED][]        | N/A         | No explicit assumptions
 Tests         | [SIM_FW_SIMULATED][]                    | N/A         |
 Regression    | [SIM_NIGHTLY_REGRESSION_V2][]           | Done        |
-Coverage      | [SIM_CODE_COVERAGE_V2][]                | Done        | Toggle coverage waived/refines added for ExtHT interface (Issue #16276)
-Coverage      | [SIM_FUNCTIONAL_COVERAGE_V2][]          | Done        |
+Coverage      | [SIM_CODE_COVERAGE_V2][]                | In progress | Toggle coverage waived/refines added for ExtHT interface (Issue #16276)
+Coverage      | [SIM_FUNCTIONAL_COVERAGE_V2][]          | In progress |
 Coverage      | [FPV_CODE_COVERAGE_V2][]                | N/A         | SecCM Assertions not covered for V2
 Coverage      | [FPV_COI_COVERAGE_V2][]                 | N/A         |
-Integration   | [PRE_VERIFIED_SUB_MODULES_V2][]         | Done        |
+Integration   | [PRE_VERIFIED_SUB_MODULES_V2][]         | Done        | SHA3/KMAC
 Issues        | [NO_HIGH_PRIORITY_ISSUES_PENDING][]     | Done        |
-Issues        | [ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED][] | Done        | #15381 moved to M3, #16146: Agreed Low prio. No RTL/DV changes until M3
+Issues        | [ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED][] | Done        |
 Review        | [DV_DOC_TESTPLAN_REVIEWED][]            | Done        |
 Review        | [V3_CHECKLIST_SCOPED][]                 | Done        |
 
@@ -221,8 +221,8 @@ Review        | [V3_CHECKLIST_SCOPED][]                 | Done        |
 --------------|-----------------------------------------|-------------|------------------
 Documentation | [SEC_CM_TESTPLAN_COMPLETED][]           | Done        |
 Tests         | [FPV_SEC_CM_VERIFIED][]                 | Done        |
-Tests         | [SIM_SEC_CM_VERIFIED][]                 | Done        |
-Coverage      | [SIM_COVERAGE_REVIEWED][]               | Done        |
+Tests         | [SIM_SEC_CM_VERIFIED][]                 | In progress |
+Coverage      | [SIM_COVERAGE_REVIEWED][]               | In progress |
 Review        | [SEC_CM_DV_REVIEWED][]                  | Done        |
 
 [SEC_CM_TESTPLAN_COMPLETED]:          ../../../../doc/project_governance/checklist/README.md#sec_cm_testplan_completed
