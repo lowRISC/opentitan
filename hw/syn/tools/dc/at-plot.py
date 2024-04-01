@@ -61,7 +61,7 @@ def main():
                         action='store_true',
                         help='semilogy plot.')
 
-    l = 0
+    line = 0
     labels = []
 
     # line style and color setup
@@ -105,7 +105,7 @@ def main():
                             tmp_area[1]) / args.gate_equivalent
                     else:
                         print("Error, could not find total cell area in %s" %
-                              (report_area))
+                              (rpt_area))
                         sys.exit(1)
 
             except IOError as e:
@@ -148,26 +148,26 @@ def main():
             if args.semilogy:
                 plt.semilogy(results[:, 2],
                              results[:, 1],
-                             color=cmap(l),
-                             linestyle=linestyles[l],
-                             marker=markers[l],
+                             color=cmap(line),
+                             linestyle=linestyles[line],
+                             marker=markers[line],
                              linewidth=1.5,
                              markersize=6,
                              markeredgecolor='k')
             else:
                 plt.plot(results[:, 2],
                          results[:, 1],
-                         color=cmap(l),
-                         linestyle=linestyles[l],
-                         marker=markers[l],
+                         color=cmap(line),
+                         linestyle=linestyles[line],
+                         marker=markers[line],
                          linewidth=1.5,
                          markersize=6,
                          markeredgecolor='k')
 
-            l += 1
+            line += 1
             labels += [report_filebase.name]
 
-    print("Parsed %d result series" % l)
+    print("Parsed %d result series" % line)
 
     plt.xlabel('Period [ns]')
     if args.gate_equivalent == 1.0:

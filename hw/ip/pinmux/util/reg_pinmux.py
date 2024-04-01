@@ -56,7 +56,6 @@ def main():
                         help='Pad attribute data width',
                         default = 10)
 
-
     args = parser.parse_args()
 
     # Determine output: if stdin then stdout if not then ??
