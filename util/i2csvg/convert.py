@@ -31,7 +31,7 @@ def check_int(x, err_prefix):
                       ": int must start digit, 0b, 0B, 0o, 0O, 0x or 0X")
             return 0, True
         for c in x[2:]:
-            if not c in validch:
+            if c not in validch:
                 log.error(err_prefix + ": Bad character " + c + " in " + x)
                 return 0, True
     else:
@@ -187,7 +187,6 @@ def parse_file(infile, fifodata=False, prefix=None):
     '''
     transaction = []
     errors = 0
-    firstline = True
 
     for line in infile:
         if prefix:
@@ -202,7 +201,7 @@ def parse_file(infile, fifodata=False, prefix=None):
             transaction.append(line[1:].lstrip())
             continue
         schar = ','
-        if fifodata and not ',' in line:
+        if fifodata and ',' not in line:
             # fifodata could also be whitespace spearated
             schar = None
 

@@ -36,7 +36,7 @@ def lint_commit_author(commit):
     success = True
     if commit.author.email.endswith('users.noreply.github.com'):
         error(
-            f'Commit author has no valid email address set: '
+            f'Commit author has no valid email address set: '  # noqa: F541
             '{commit.author.email!r}. '
             'Use "git config user.email user@example.com" to '
             'set a valid email address, then update the commit '
