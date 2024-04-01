@@ -76,16 +76,6 @@ static keymgr_binding_value_t sealing_binding_value = {.data = {0}};
 /**
  * Certificate data.
  */
-static const flash_ctrl_perms_t kCertificateFlashInfoPerms = {
-    .read = kMultiBitBool4True,
-    .write = kMultiBitBool4True,
-    .erase = kMultiBitBool4True,
-};
-static const flash_ctrl_cfg_t kCertificateFlashInfoCfg = {
-    .scrambling = kMultiBitBool4True,
-    .ecc = kMultiBitBool4True,
-    .he = kMultiBitBool4False,
-};
 static manuf_certgen_inputs_t certgen_inputs;
 static hmac_digest_t uds_pubkey_id;
 static hmac_digest_t cdi_0_pubkey_id;
@@ -130,16 +120,7 @@ static void sw_reset(void) {
  * Configures flash info pages to store device certificates.
  */
 static status_t config_and_erase_certificate_flash_pages(void) {
-  const flash_ctrl_info_page_t *kCertFlashInfoPages[] = {
-      &kFlashCtrlInfoPageUdsCertificate,
-      &kFlashCtrlInfoPageCdi0Certificate,
-      &kFlashCtrlInfoPageCdi1Certificate,
-  };
-  for (size_t i = 0; i < ARRAYSIZE(kCertFlashInfoPages); ++i) {
-    flash_ctrl_info_cfg_set(kCertFlashInfoPages[i], kCertificateFlashInfoCfg);
-    flash_ctrl_info_perms_set(kCertFlashInfoPages[i],
-                              kCertificateFlashInfoPerms);
-  }
+  flash_ctrl_cert_info_pages_creator_cfg();
   TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageUdsCertificate,
                             kFlashCtrlEraseTypePage));
   TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageCdi0Certificate,
