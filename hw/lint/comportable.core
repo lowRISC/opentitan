@@ -20,5 +20,3 @@ targets:
     filesets:
       - tool_verilator  ? (files_verilator_waiver)
       - tool_ascentlint ? (files_ascentlint_waiver)
-
-

@@ -13,4 +13,3 @@ waive -rules INPUT_NOT_READ -location {sram2tlul.sv} -regexp {Input.*'(clk_i|rst
       -comment "leaving clock and reset in converter for future use, handling a_ready"
 waive -rules INPUT_NOT_READ -location {sram2tlul.sv} -regexp {Input.*'tl_i\.[ad]_(ready|param|sink|size|source|user.*)' is not read} \
       -comment "Those values are not checked by SRAM TL-UL adapter"
-

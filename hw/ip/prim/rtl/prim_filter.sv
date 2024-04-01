@@ -70,4 +70,3 @@ module prim_filter #(
   assign filter_o = enable_i ? stored_value_q : filter_synced;
 
 endmodule
-

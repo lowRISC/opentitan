@@ -6,4 +6,3 @@
 module sysrst_ctrl_cov_bind;
   bind sysrst_ctrl sysrst_ctrl_cov_if u_sysrst_ctrl_cov_if (.*);
 endmodule
-

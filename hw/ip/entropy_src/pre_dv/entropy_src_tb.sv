@@ -341,4 +341,3 @@ module entropy_src_tb;
        );
 
 endmodule
-

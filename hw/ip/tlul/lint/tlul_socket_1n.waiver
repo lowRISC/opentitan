@@ -21,4 +21,3 @@ waive -rules INPUT_NOT_READ    -location {tlul_err_resp.sv} -regexp {Input port 
       -comment "error response does not require command/address information"
 waive -rules CONST_OUTPUT      -location {tlul_err_resp.sv} -regexp {Output 'tl_h_o.d_.*' is driven by constant} \
       -comment "error response hard codes reponse data collateral"
-

@@ -17,4 +17,3 @@ targets:
     filesets:
       - files_rtl
     toplevel: tb
-

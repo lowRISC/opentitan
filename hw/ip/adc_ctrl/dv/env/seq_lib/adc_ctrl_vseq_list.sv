@@ -16,4 +16,3 @@
 `include "adc_ctrl_filters_both_vseq.sv"
 `include "adc_ctrl_clock_gating_vseq.sv"
 `include "adc_ctrl_stress_all_vseq.sv"
-

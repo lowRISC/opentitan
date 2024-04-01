@@ -19,4 +19,3 @@ class cip_base_virtual_sequencer #(type CFG_T = cip_base_env_cfg,
   `uvm_component_new
 
 endclass
-

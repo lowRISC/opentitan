@@ -6,6 +6,3 @@
 
 waive -rules {SAME_NAME_TYPE} -location {prim_mubi*.sv} -regexp {'ResetValue' is used as an enumeration value here, and as a parameter at prim.*} \
       -comment "Parameter name reuse"
-
-
-
