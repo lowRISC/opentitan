@@ -16,16 +16,10 @@ use crate::crypto::ecdsa::{EcdsaPrivateKey, EcdsaPublicKey, EcdsaRawPublicKey, E
 use crate::with_unknown;
 
 with_unknown! {
-    pub enum NextBootBl0: u32 [default = Self::Unknown] {
+    pub enum BootSlot: u32 [default = Self::Unknown] {
         Unknown = 0,
-        SlotA = 0x08c0d499,
-        SlotB = 0x7821e03a,
-    }
-
-    pub enum BootDataSlot: u32 [default = Self::Unknown] {
-        Unknown = 0,
-        SlotA = 0x9cdc8d50,
-        SlotB = 0xcd598a4a,
+        SlotA = u32::from_le_bytes(*b"AA__"),
+        SlotB = u32::from_le_bytes(*b"__BB"),
     }
 
     /// The unlock mode for the OwnershipUnlock command.
@@ -99,7 +93,7 @@ pub struct MinBl0SecVerResponse {
 #[derive(Debug, Default, Serialize, Annotate)]
 pub struct NextBl0SlotRequest {
     /// The slot to boot.
-    pub next_bl0_slot: NextBootBl0,
+    pub next_bl0_slot: BootSlot,
 }
 
 /// Response to the set next boot slot request.
@@ -113,14 +107,14 @@ pub struct NextBl0SlotResponse {
 #[derive(Debug, Default, Serialize, Annotate)]
 pub struct PrimaryBl0SlotRequest {
     /// The slot to boot.
-    pub primary_bl0_slot: BootDataSlot,
+    pub primary_bl0_slot: BootSlot,
 }
 
 /// Response to the set primary boot slot request.
 #[derive(Debug, Default, Serialize, Annotate)]
 pub struct PrimaryBl0SlotResponse {
     /// The current primary slot.
-    pub primary_bl0_slot: BootDataSlot,
+    pub primary_bl0_slot: BootSlot,
     /// The status response to the request.
     pub status: u32,
 }
@@ -154,7 +148,7 @@ pub struct OwnershipUnlockResponse {
 #[derive(Debug, Default, Serialize, Annotate)]
 pub struct OwnershipActivateRequest {
     /// The new primary boot slot after activating ownership.
-    pub primary_bl0_slot: BootDataSlot,
+    pub primary_bl0_slot: BootSlot,
     /// Whether to erase the previous owner's data during activation.
     pub erase_previous: HardenedBool,
     /// Reserved for future use.
@@ -288,7 +282,7 @@ impl BootSvc {
         }
     }
 
-    pub fn next_boot_bl0_slot(slot: NextBootBl0) -> Self {
+    pub fn next_boot_bl0_slot(slot: BootSlot) -> Self {
         BootSvc {
             header: Header {
                 digest: [0u32; 8],
@@ -302,7 +296,7 @@ impl BootSvc {
         }
     }
 
-    pub fn primary_bl0_slot(slot: BootDataSlot) -> Self {
+    pub fn primary_bl0_slot(slot: BootSlot) -> Self {
         BootSvc {
             header: Header {
                 digest: [0u32; 8],
@@ -431,7 +425,7 @@ impl TryFrom<&[u8]> for NextBl0SlotRequest {
     fn try_from(buf: &[u8]) -> std::result::Result<Self, Self::Error> {
         let mut reader = std::io::Cursor::new(buf);
         Ok(NextBl0SlotRequest {
-            next_bl0_slot: NextBootBl0(reader.read_u32::<LittleEndian>()?),
+            next_bl0_slot: BootSlot(reader.read_u32::<LittleEndian>()?),
         })
     }
 }
@@ -465,7 +459,7 @@ impl TryFrom<&[u8]> for PrimaryBl0SlotRequest {
     fn try_from(buf: &[u8]) -> std::result::Result<Self, Self::Error> {
         let mut reader = std::io::Cursor::new(buf);
         Ok(PrimaryBl0SlotRequest {
-            primary_bl0_slot: BootDataSlot(reader.read_u32::<LittleEndian>()?),
+            primary_bl0_slot: BootSlot(reader.read_u32::<LittleEndian>()?),
         })
     }
 }
@@ -482,7 +476,7 @@ impl TryFrom<&[u8]> for PrimaryBl0SlotResponse {
     fn try_from(buf: &[u8]) -> std::result::Result<Self, Self::Error> {
         let mut reader = std::io::Cursor::new(buf);
         Ok(PrimaryBl0SlotResponse {
-            primary_bl0_slot: BootDataSlot(reader.read_u32::<LittleEndian>()?),
+            primary_bl0_slot: BootSlot(reader.read_u32::<LittleEndian>()?),
             status: reader.read_u32::<LittleEndian>()?,
         })
     }
@@ -561,7 +555,7 @@ impl TryFrom<&[u8]> for OwnershipActivateRequest {
     fn try_from(buf: &[u8]) -> std::result::Result<Self, Self::Error> {
         let mut reader = std::io::Cursor::new(buf);
         let mut val = Self::default();
-        val.primary_bl0_slot = BootDataSlot(reader.read_u32::<LittleEndian>()?);
+        val.primary_bl0_slot = BootSlot(reader.read_u32::<LittleEndian>()?);
         val.erase_previous = HardenedBool(reader.read_u32::<LittleEndian>()?);
         val.reserved.resize(Self::RESERVED_SIZE, 0);
         reader.read_exact(&mut val.reserved)?;

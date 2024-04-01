@@ -51,8 +51,8 @@ class BootLogTest : public rom_test::RomTest {
       .scm_revision_high = 0xcafecafe,
   };
 
-  uint32_t expected_rom_ext_slot = kRomExtBootSlotA;
-  uint32_t expected_bl0_slot = kBl0BootSlotB;
+  uint32_t expected_rom_ext_slot = kBootSlotA;
+  uint32_t expected_bl0_slot = kBootSlotB;
 
   boot_log_t boot_log = {
       .digest = expected_digest,

@@ -29,15 +29,23 @@ static const flash_ctrl_info_page_t *kPages[2] = {
  * Boot data entry used in tests.
  */
 boot_data_t kTestBootData = (boot_data_t){
-    .digest = {{0x8ee18396, 0xbc21d5de, 0x288c27bb, 0x7388061c, 0xe7382e8a,
-                0x8af122bc, 0xd851f67a, 0xdcc440a2}},
+    .digest = {{
+        0x44e757cb,
+        0x19899a04,
+        0xf872d77f,
+        0x58361229,
+        0x48d748f1,
+        0xfcafabf1,
+        0x4fbc4153,
+        0x0f05e1c9,
+    }},
     .identifier = kBootDataIdentifier,
     .version = kBootDataVersion2,
     .is_valid = kBootDataValidEntry,
     // `kBootDataDefaultCounterVal` + 1 for consistency.
     .counter = kBootDataDefaultCounterVal + 1,
     .min_security_version_rom_ext = 0,
-    .primary_bl0_slot = kBootDataSlotA,
+    .primary_bl0_slot = kBootSlotA,
 };
 
 /**
