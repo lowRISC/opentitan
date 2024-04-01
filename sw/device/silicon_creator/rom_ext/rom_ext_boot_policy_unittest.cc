@@ -99,15 +99,15 @@ TEST_P(ManifestOrderTest, ManifestsGet) {
       .WillOnce(Return(&manifest_b));
 
   boot_data_t boot_data{};
-  if (GetParam().primary == kBootDataSlotA) {
-    boot_data.primary_bl0_slot = kBootDataSlotA;
+  if (GetParam().primary == kBootSlotA) {
+    boot_data.primary_bl0_slot = kBootSlotA;
   } else {
-    boot_data.primary_bl0_slot = kBootDataSlotB;
+    boot_data.primary_bl0_slot = kBootSlotB;
   }
 
   rom_ext_boot_policy_manifests_t res =
       rom_ext_boot_policy_manifests_get(&boot_data);
-  if (GetParam().primary == kBootDataSlotA) {
+  if (GetParam().primary == kBootSlotA) {
     EXPECT_EQ(res.ordered[0], &manifest_a);
     EXPECT_EQ(res.ordered[1], &manifest_b);
   } else {
@@ -119,10 +119,10 @@ TEST_P(ManifestOrderTest, ManifestsGet) {
 INSTANTIATE_TEST_SUITE_P(SecurityVersionCases, ManifestOrderTest,
                          testing::Values(
                              ManifestOrderTestCase{
-                                 .primary = kBootDataSlotA,
+                                 .primary = kBootSlotA,
                              },
                              ManifestOrderTestCase{
-                                 .primary = kBootDataSlotB,
+                                 .primary = kBootSlotB,
                              }));
 }  // namespace
 }  // namespace manifest_unittest

@@ -90,6 +90,7 @@ cc_library(
     srcs = ["boot_log.c"],
     hdrs = ["boot_log.h"],
     deps = [
+        ":boot_data",
         ":nonce",
         "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib:chip_info",

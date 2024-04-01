@@ -133,6 +133,7 @@ cc_library(
     deps = [
         ":boot_svc_header",
         "//sw/device/lib/base:macros",
+        "//sw/device/silicon_creator/lib:boot_data",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/base:chip",
     ],

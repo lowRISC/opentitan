@@ -132,15 +132,15 @@ static uint32_t rom_ext_current_slot(void) {
       kFlashSlotA + TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES;
   if (pc >= kFlashSlotA && pc < kFlashSlotB) {
     // Running in Slot A.
-    return kRomExtBootSlotA;
+    return kBootSlotA;
   } else if (pc >= kFlashSlotB && pc < kFlashSlotEnd) {
     // Running in Slot B.
-    return kRomExtBootSlotB;
+    return kBootSlotB;
   } else {
     // Running elsewhere (ie: the remap window).
     // TODO: read the remap register configuration to determine the execution
     // slot.
-    return kBootLogUninitialized;
+    return 0;
   }
 }
 
@@ -528,13 +528,13 @@ static rom_error_t boot_svc_next_boot_bl0_slot_handler(
   // This will cause a one-time boot of the requested side.
   rom_error_t error = kErrorOk;
   switch (launder32(msg_bl0_slot)) {
-    case kBootSvcNextBootBl0SlotA:
-      HARDENED_CHECK_EQ(msg_bl0_slot, kBootSvcNextBootBl0SlotA);
-      boot_data->primary_bl0_slot = kBootDataSlotA;
+    case kBootSlotA:
+      HARDENED_CHECK_EQ(msg_bl0_slot, kBootSlotA);
+      boot_data->primary_bl0_slot = kBootSlotA;
       break;
-    case kBootSvcNextBootBl0SlotB:
-      HARDENED_CHECK_EQ(msg_bl0_slot, kBootSvcNextBootBl0SlotB);
-      boot_data->primary_bl0_slot = kBootDataSlotB;
+    case kBootSlotB:
+      HARDENED_CHECK_EQ(msg_bl0_slot, kBootSlotB);
+      boot_data->primary_bl0_slot = kBootSlotB;
       break;
     default:
       error = kErrorBootSvcBadSlot;
@@ -558,12 +558,12 @@ static rom_error_t boot_svc_primary_boot_bl0_slot_handler(
   if (launder32(active_slot) != launder32(requested_slot)) {
     HARDENED_CHECK_NE(active_slot, requested_slot);
     switch (launder32(requested_slot)) {
-      case kBootDataSlotA:
-        HARDENED_CHECK_EQ(requested_slot, kBootDataSlotA);
+      case kBootSlotA:
+        HARDENED_CHECK_EQ(requested_slot, kBootSlotA);
         boot_data->primary_bl0_slot = requested_slot;
         break;
-      case kBootDataSlotB:
-        HARDENED_CHECK_EQ(requested_slot, kBootDataSlotB);
+      case kBootSlotB:
+        HARDENED_CHECK_EQ(requested_slot, kBootSlotB);
         boot_data->primary_bl0_slot = requested_slot;
         break;
       default:
@@ -672,9 +672,9 @@ static rom_error_t rom_ext_try_next_stage(boot_data_t *boot_data) {
 
     boot_log_t *boot_log = &retention_sram_get()->creator.boot_log;
     if (manifests.ordered[i] == rom_ext_boot_policy_manifest_a_get()) {
-      boot_log->bl0_slot = kBl0BootSlotA;
+      boot_log->bl0_slot = kBootSlotA;
     } else if (manifests.ordered[i] == rom_ext_boot_policy_manifest_b_get()) {
-      boot_log->bl0_slot = kBl0BootSlotB;
+      boot_log->bl0_slot = kBootSlotB;
     } else {
       return kErrorRomExtBootFailed;
     }

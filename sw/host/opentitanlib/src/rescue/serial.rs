@@ -8,9 +8,7 @@ use std::time::Duration;
 
 use crate::app::TransportWrapper;
 use crate::chip::boot_log::BootLog;
-use crate::chip::boot_svc::{
-    BootDataSlot, BootSvc, NextBootBl0, OwnershipActivateRequest, OwnershipUnlockRequest,
-};
+use crate::chip::boot_svc::{BootSlot, BootSvc, OwnershipActivateRequest, OwnershipUnlockRequest};
 use crate::io::uart::Uart;
 use crate::rescue::xmodem::Xmodem;
 use crate::rescue::RescueError;
@@ -108,13 +106,13 @@ impl RescueSerial {
         Ok(())
     }
 
-    pub fn set_next_bl0_slot(&self, slot: NextBootBl0) -> Result<()> {
+    pub fn set_next_bl0_slot(&self, slot: BootSlot) -> Result<()> {
         let message = BootSvc::next_boot_bl0_slot(slot);
         let data = message.to_bytes()?;
         self.set_boot_svc_raw(&data)
     }
 
-    pub fn set_primary_bl0_slot(&self, slot: BootDataSlot) -> Result<()> {
+    pub fn set_primary_bl0_slot(&self, slot: BootSlot) -> Result<()> {
         let message = BootSvc::primary_bl0_slot(slot);
         let data = message.to_bytes()?;
         self.set_boot_svc_raw(&data)

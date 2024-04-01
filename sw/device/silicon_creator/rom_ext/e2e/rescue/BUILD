@@ -85,11 +85,11 @@ opentitan_test(
             # Set next slot via the rescue protocol
             --exec="rescue boot-svc set-next-bl0-slot SlotB"
             # Check for firmware execution in slot B
-            --exec="console --non-interactive --exit-success='bl0_slot = B\r\n' --exit-failure='{exit_failure}'"
+            --exec="console --non-interactive --exit-success='bl0_slot = __BB\r\n' --exit-failure='{exit_failure}'"
             # Reset and observe return to slot A.
             --exec="gpio apply RESET"
             --exec="gpio remove RESET"
-            --exec="console --non-interactive --exit-success='bl0_slot = A\r\n' --exit-failure='{exit_failure}'"
+            --exec="console --non-interactive --exit-success='bl0_slot = AA__\r\n' --exit-failure='{exit_failure}'"
             no-op
         """,
     ),
@@ -113,15 +113,15 @@ opentitan_test(
             # Set primary slot via the rescue protocol
             --exec="rescue boot-svc set-primary-bl0-slot SlotB"
             # Check for firmware execution in slot B
-            --exec="console --non-interactive --exit-success='bl0_slot = B\r\n' --exit-failure='{exit_failure}'"
+            --exec="console --non-interactive --exit-success='bl0_slot = __BB\r\n' --exit-failure='{exit_failure}'"
             # Reset and observe continued execution in slot B
             --exec="gpio apply RESET"
             --exec="gpio remove RESET"
-            --exec="console --non-interactive --exit-success='bl0_slot = B\r\n' --exit-failure='{exit_failure}'"
+            --exec="console --non-interactive --exit-success='bl0_slot = __BB\r\n' --exit-failure='{exit_failure}'"
             # Set primary slot via the rescue protocol
             --exec="rescue boot-svc set-primary-bl0-slot SlotA"
             # Check for firmware execution in slot A
-            --exec="console --non-interactive --exit-success='bl0_slot = A\r\n' --exit-failure='{exit_failure}'"
+            --exec="console --non-interactive --exit-success='bl0_slot = AA__\r\n' --exit-failure='{exit_failure}'"
             no-op
         """,
     ),

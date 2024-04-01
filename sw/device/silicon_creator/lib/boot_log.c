@@ -83,7 +83,7 @@ void boot_log_check_or_init(boot_log_t *boot_log, uint32_t rom_ext_slot,
   boot_log->chip_version.scm_revision_high =
       info->scm_revision.scm_revision_high;
   boot_log->rom_ext_slot = rom_ext_slot;
-  boot_log->bl0_slot = kBootLogUninitialized;
+  boot_log->bl0_slot = 0;  // Unknown: no BL0 slot selected yet.
   for (size_t i = 0; i < ARRAYSIZE(boot_log->reserved); ++i) {
     boot_log->reserved[i] = 0;
   }
