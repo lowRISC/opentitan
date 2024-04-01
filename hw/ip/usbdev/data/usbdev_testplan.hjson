@@ -712,7 +712,7 @@
             - Verify that the 'rdy' bit in 'configin[ep]' is cleared and the 'pend' bit is set to 1.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_pending_in_trans"]
     }
     {
       name: streaming_test
