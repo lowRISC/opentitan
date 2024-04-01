@@ -15,4 +15,3 @@ waive -rules NOT_READ          -location {tlul_socket_m1.sv} -regexp {Signal 'ar
       -comment "valid is not used, it is assumed valid if it got into the arbiter"
 waive -rules NOT_READ          -location {tlul_socket_m1.sv} -regexp {Signal 'arb_data.d_ready' is not read from in module 'tlul_socket_m1'} \
       -comment "ready is not used, it is assumed valid if it got into the arbiter"
-

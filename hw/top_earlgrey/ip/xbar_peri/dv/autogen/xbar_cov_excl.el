@@ -12,4 +12,3 @@ Assert \uvm_reg_map::do_read .unnamed$$_0.unnamed$$_1 "assertion"
 ANNOTATION: "[UNSUPPORTED] scan mode isn't available in RTL sim"
 MODULE: xbar_peri
 Block 1 "0" "assign unused_scanmode = scanmode_i;"
-

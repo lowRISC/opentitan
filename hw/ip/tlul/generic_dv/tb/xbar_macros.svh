@@ -47,4 +47,3 @@
      uvm_config_db#(virtual tl_if)::set(null, $sformatf("*%0s*", `"tl_name`"), "vif", \
                                         ``tl_name``_tl_if); \
    end
-

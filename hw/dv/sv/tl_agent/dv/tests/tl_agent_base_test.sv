@@ -7,4 +7,3 @@ class tl_agent_base_test extends dv_base_test #(.ENV_T(tl_agent_env), .CFG_T(tl_
   `uvm_component_new
 
 endclass : tl_agent_base_test
-
