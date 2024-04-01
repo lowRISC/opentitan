@@ -183,6 +183,9 @@ static rom_error_t rom_ext_verify(const manifest_t *manifest,
   RETURN_IF_ERROR(sigverify_rsa_key_get(
       sigverify_rsa_key_id_get(&manifest->rsa_modulus), &key));
 
+  memset(boot_measurements.bl0.data, (int)rnd_uint32(),
+         sizeof(boot_measurements.bl0.data));
+
   hmac_sha256_init();
   // Hash usage constraints.
   manifest_usage_constraints_t usage_constraints_from_hw;
@@ -193,9 +196,14 @@ static rom_error_t rom_ext_verify(const manifest_t *manifest,
   // Hash the remaining part of the image.
   manifest_digest_region_t digest_region = manifest_digest_region_get(manifest);
   hmac_sha256_update(digest_region.start, digest_region.length);
+  // TODO(#19596): add owner configuration block to measurement.
   // Verify signature
   hmac_digest_t act_digest;
   hmac_sha256_final(&act_digest);
+
+  static_assert(sizeof(boot_measurements.bl0) == sizeof(act_digest),
+                "Unexpected BL0 digest size.");
+  memcpy(&boot_measurements.bl0, &act_digest, sizeof(boot_measurements.bl0));
 
   uint32_t flash_exec = 0;
   return sigverify_rsa_verify(&manifest->rsa_signature, key, &act_digest,
