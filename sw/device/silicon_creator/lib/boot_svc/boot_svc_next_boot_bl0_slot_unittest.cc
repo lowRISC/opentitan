@@ -5,6 +5,7 @@
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_next_boot_bl0_slot.h"
 
 #include "gtest/gtest.h"
+#include "sw/device/silicon_creator/lib/boot_data.h"
 #include "sw/device/silicon_creator/lib/boot_svc/mock_boot_svc_header.h"
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
@@ -18,7 +19,7 @@ class BootSvcNextBootBl0SlotTest : public rom_test::RomTest {
 
 TEST_F(BootSvcNextBootBl0SlotTest, ReqInit) {
   boot_svc_next_boot_bl0_slot_req_t msg{};
-  constexpr uint32_t kNextSlot = kBootSvcNextBootBl0SlotB;
+  constexpr uint32_t kNextSlot = kBootSlotB;
   EXPECT_CALL(boot_svc_header_,
               Finalize(kBootSvcNextBl0SlotReqType, sizeof(msg), &msg.header));
 

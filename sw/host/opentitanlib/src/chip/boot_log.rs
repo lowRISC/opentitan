@@ -9,18 +9,11 @@ use serde_annotate::Annotate;
 use sha2::{Digest, Sha256};
 use std::convert::TryFrom;
 
+use super::boot_svc::BootSlot;
 use super::ChipDataError;
 use crate::with_unknown;
 
 with_unknown! {
-    pub enum BootSlot: u32 [default = Self::Unknown] {
-        Unknown = 0,
-        RomExtBootSlotA = 0x5abf68ea,
-        RomExtBootSlotB = 0x53ebdf83,
-        Bl0BootSlotA = 0xb851f57e,
-        Bl0BootSlotB = 0x17cfb6bf,
-    }
-
     pub enum OwnershipState: u32 [default = Self::None] {
         None = 0,
         LockedOwner = 0x444e574f,

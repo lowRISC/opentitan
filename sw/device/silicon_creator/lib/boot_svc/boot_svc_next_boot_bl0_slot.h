@@ -18,19 +18,6 @@ extern "C" {
 
 enum {
   /*
-   * Encoding generated with
-   * $ ./util/design/sparse-fsm-encode.py -d 6 -m 2 -n 32 \
-   *     -s 2121036560 --language=c
-   *
-   * Minimum Hamming distance: 14
-   * Maximum Hamming distance: 14
-   * Minimum Hamming weight: 11
-   * Maximum Hamming weight: 13
-   */
-  kBootSvcNextBootBl0SlotA = 0x08c0d499,
-  kBootSvcNextBootBl0SlotB = 0x7821e03a,
-
-  /*
    *  Encoding generated with
    *  $ ./util/design/sparse-fsm-encode.py -d 6 -m 2 -n 32 \
    *      -s 3290097361 --language=c

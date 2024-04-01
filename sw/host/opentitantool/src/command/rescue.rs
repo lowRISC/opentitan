@@ -12,7 +12,7 @@ use std::path::PathBuf;
 
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
-use opentitanlib::chip::boot_svc::{BootDataSlot, NextBootBl0};
+use opentitanlib::chip::boot_svc::BootSlot;
 use opentitanlib::chip::helper::{OwnershipActivateParams, OwnershipUnlockParams};
 use opentitanlib::rescue::serial::RescueSerial;
 
@@ -105,7 +105,7 @@ pub struct SetNextBl0Slot {
     #[command(flatten)]
     params: UartParams,
     #[arg(default_value = "SlotA")]
-    slot: NextBootBl0,
+    slot: BootSlot,
 }
 
 impl CommandDispatch for SetNextBl0Slot {
@@ -127,7 +127,7 @@ pub struct SetPrimaryBl0Slot {
     #[command(flatten)]
     params: UartParams,
     #[arg(default_value = "SlotA")]
-    slot: BootDataSlot,
+    slot: BootSlot,
 }
 
 impl CommandDispatch for SetPrimaryBl0Slot {

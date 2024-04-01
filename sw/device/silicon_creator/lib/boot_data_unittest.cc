@@ -37,7 +37,7 @@ constexpr boot_data_t kValidEntry0 = {
     .counter = kBootDataDefaultCounterVal,
     .min_security_version_rom_ext = 0,
     .min_security_version_bl0 = 0,
-    .primary_bl0_slot = kBootDataSlotA,
+    .primary_bl0_slot = kBootSlotA,
 };
 
 /**
@@ -52,7 +52,7 @@ constexpr boot_data_t kValidEntry1 = {
     .counter = kBootDataDefaultCounterVal + 1,
     .min_security_version_rom_ext = 0,
     .min_security_version_bl0 = 0,
-    .primary_bl0_slot = kBootDataSlotA,
+    .primary_bl0_slot = kBootSlotA,
 };
 
 /**
@@ -81,7 +81,7 @@ constexpr boot_data_t kDefaultEntry = {
     .counter = kBootDataDefaultCounterVal,
     .min_security_version_rom_ext = 0x01234567,
     .min_security_version_bl0 = 0x89abcdef,
-    .primary_bl0_slot = kBootDataSlotA,
+    .primary_bl0_slot = kBootSlotA,
 };
 
 namespace boot_data_unittest {
