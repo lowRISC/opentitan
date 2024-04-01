@@ -7,4 +7,3 @@
 // The EnableAlertTriggerSVA parameter is only used by modules bound
 // in for DV testing. Waive the warning that we don't read it.
 lint_off -rule UNUSED -file "*/rtl/prim_double_lfsr.sv" -match "*EnableAlertTriggerSVA*"
-

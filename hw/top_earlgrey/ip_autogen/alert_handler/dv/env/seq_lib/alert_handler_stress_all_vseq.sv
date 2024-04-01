@@ -53,4 +53,3 @@ class alert_handler_stress_all_vseq extends alert_handler_base_vseq;
   endtask : body
 
 endclass
-

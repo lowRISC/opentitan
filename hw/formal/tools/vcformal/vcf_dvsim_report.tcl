@@ -42,4 +42,3 @@ proc vcf_dvsim_report { } {
 	echo "${prop_id},assume,${prop_status},${prop_name},${prop_vacuity},,,,"
     }
 }
-

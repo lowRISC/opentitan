@@ -11,7 +11,7 @@
  *
  * The name of this library is historical. In many toolchains, a file called
  * "crt0.o" is linked into each executable, which does something similar to
- * what these functions 
+ * what these functions
  */
 
   // NOTE: The "ax" flag below is necessary to ensure that this section

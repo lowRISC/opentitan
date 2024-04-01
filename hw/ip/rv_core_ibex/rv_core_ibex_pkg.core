@@ -17,4 +17,3 @@ targets:
   default:
     filesets:
       - files_rtl
-

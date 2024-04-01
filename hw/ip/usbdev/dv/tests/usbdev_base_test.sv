@@ -18,4 +18,3 @@ class usbdev_base_test extends cip_base_test #(
   // the run_phase; as such, nothing more needs to be done
 
 endclass : usbdev_base_test
-

@@ -29,4 +29,3 @@ targets:
 
   lint:
     <<: *sim_target
-

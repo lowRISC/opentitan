@@ -65,4 +65,3 @@ class dv_base_agent #(type CFG_T            = dv_base_agent_cfg,
   endfunction
 
 endclass
-

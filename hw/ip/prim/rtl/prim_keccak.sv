@@ -292,4 +292,3 @@ module prim_keccak #(
   //endfunction : keccak_rnd
 
 endmodule
-
