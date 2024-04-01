@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/base/macros.h"
+#include "sw/device/silicon_creator/lib/boot_data.h"
 #include "sw/device/silicon_creator/lib/chip_info.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/error.h"
@@ -28,7 +29,7 @@ typedef struct boot_log {
   uint32_t identifier;
   /** Chip version (from the ROM). */
   chip_info_scm_revision_t chip_version;
-  /** Which ROM_EXT slot booted. */
+  /** Which ROM_EXT slot booted (boot_slot_t). */
   uint32_t rom_ext_slot;
   /** ROM_EXT major version number. */
   uint16_t rom_ext_major;
@@ -38,7 +39,7 @@ typedef struct boot_log {
   uint32_t rom_ext_size;
   /** ROM_EXT nonce for challenge/response boot_svc commands. */
   nonce_t rom_ext_nonce;
-  /** Which BL0 slot booted. */
+  /** Which BL0 slot booted (boot_slot_t). */
   uint32_t bl0_slot;
   /** Chip ownership state. */
   uint32_t ownership_state;
@@ -63,28 +64,6 @@ enum {
    * Boot log identifier value (ASCII "BLOG").
    */
   kBootLogIdentifier = 0x474f4c42,
-
-  /**
-   * Boot Slot designators
-   *
-   * Encoding generated with:
-   * $ ./util/design/sparse-fsm-encode.py -d 6 -m 5 -n 32 \
-   *     -s 2335952935 --language=c
-   *
-   * Minimum Hamming distance: 12
-   * Maximum Hamming distance: 21
-   * Minimum Hamming weight: 18
-   * Maximum Hamming weight: 22
-   */
-  kRomExtBootSlotA = 0x5abf68ea,
-  kRomExtBootSlotB = 0x53ebdf83,
-  kBl0BootSlotA = 0xb851f57e,
-  kBl0BootSlotB = 0x17cfb6bf,
-
-  /**
-   * Indicates an unpopulated field in the boot log.
-   */
-  kBootLogUninitialized = 0xe67f0d52,
 };
 
 /**
