@@ -5,7 +5,7 @@
 use std::rc::Rc;
 use std::time::Duration;
 
-use anyhow::Result;
+use anyhow::{Context, Result};
 use rusb::{Direction, Recipient, RequestType};
 use serialport::Parity;
 
@@ -97,13 +97,15 @@ impl Uart for HyperdebugUart {
 
     fn set_break(&self, enable: bool) -> Result<()> {
         let usb_handle = self.inner.usb_device.borrow();
-        usb_handle.write_control(
-            rusb::request_type(Direction::Out, RequestType::Vendor, Recipient::Interface),
-            ControlRequest::Break as u8,
-            if enable { 0xFFFF } else { 0 },
-            self.usb_interface as u16,
-            &[],
-        )?;
+        usb_handle
+            .write_control(
+                rusb::request_type(Direction::Out, RequestType::Vendor, Recipient::Interface),
+                ControlRequest::Break as u8,
+                if enable { 0xFFFF } else { 0 },
+                self.usb_interface as u16,
+                &[],
+            )
+            .context("Setting break condition")?;
         Ok(())
     }
 
