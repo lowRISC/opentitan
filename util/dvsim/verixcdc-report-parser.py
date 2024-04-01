@@ -8,8 +8,6 @@ import argparse
 import logging as log
 import re
 import sys
-import os
-import hjson
 
 from pathlib import Path
 from LintParser import LintParser
@@ -34,7 +32,6 @@ def extract_rule_patterns(file_path: Path):
     category = ''
     severity = ''
     known_rule_names = {}
-    total_msgs = 0
     # extract the summary table
     m = re.findall(
         r'^Summary of Policy: NEW((?:.|\n|\r\n)*)Rule Details of Policy: NEW',
@@ -43,10 +40,7 @@ def extract_rule_patterns(file_path: Path):
         # step through the table and identify rule names and their
         # category and severity
         for line in m[0].split('\n'):
-            if re.match(r'^POLICY\s+NEW', line):
-                total = re.findall(r'^POLICY\s+NEW\s+([0-9]+)', line)
-                total_msgs = int(total[0])
-            elif re.match(r'^ GROUP\s+SDC_ENV_LINT', line):
+            if re.match(r'^ GROUP\s+SDC_ENV_LINT', line):
                 category = 'sdc'
             elif re.match(r'^ GROUP\s+VCDC_SETUP_CHECKS', line):
                 category = 'setup'
@@ -66,7 +60,6 @@ def extract_rule_patterns(file_path: Path):
                 rule = re.findall(
                     r'^  INSTANCE\s+([a-zA-Z0-9\_]+)\s+([0-9\_]+)', line)
                 name = rule[0][0]
-                count = int(rule[0][1])
                 # a few rules produce messages with different severities but
                 # the same rule labels. for simplicity, we promote messages
                 # from lower severity buckets to the severity bucket where
@@ -163,19 +156,19 @@ def main():
     # Patterns for lint.log
     parser_args.update({
         args.repdir.joinpath('build.log'): [
-        # If lint warnings have been found, the lint tool will exit
-        # with a nonzero status code and fusesoc will always spit out
-        # an error like
-        #
-        #    ERROR: Failed to build ip:core:name:0.1 : 'make' exited with an error code
-        #
-        # If we found any other warnings or errors, there's no point in
-        # listing this too. BUT we want to make sure we *do* see this
-        # error if there are no other errors or warnings, since that
-        # shows something has come unstuck. (Probably the lint tool
-        # spat out a warning that we don't understand)
-        ("fusesoc-error",
-         r"^ERROR: Failed to build .* : 'make' exited with an error code")
+            # If lint warnings have been found, the lint tool will exit
+            # with a nonzero status code and fusesoc will always spit out
+            # an error like
+            #
+            #    ERROR: Failed to build ip:core:name:0.1 : 'make' exited with an error code
+            #
+            # If we found any other warnings or errors, there's no point in
+            # listing this too. BUT we want to make sure we *do* see this
+            # error if there are no other errors or warnings, since that
+            # shows something has come unstuck. (Probably the lint tool
+            # spat out a warning that we don't understand)
+            ("fusesoc-error",
+             r"^ERROR: Failed to build .* : 'make' exited with an error code")
         ]
     })
 
@@ -197,14 +190,14 @@ def main():
             # #39122: non-positive repeat
             # #39491: parameter in package
             ("flow_warning", r"^  "
-                             "(?!WARN \[#25010\])"
-                             "(?!WARN \[#25011\])"
-                             "(?!WARN \[#25012\])"
-                             "(?!WARN \[#25013\])"
-                             "(?!WARN \[#26038\])"
-                             "(?!WARN \[#39035\])"
-                             "(?!WARN \[#39122\])"
-                             "(?!WARN \[#39491\])"
+                             "(?!WARN \[#25010\])"  # noqa: W605
+                             "(?!WARN \[#25011\])"  # noqa: W605
+                             "(?!WARN \[#25012\])"  # noqa: W605
+                             "(?!WARN \[#25013\])"  # noqa: W605
+                             "(?!WARN \[#26038\])"  # noqa: W605
+                             "(?!WARN \[#39035\])"  # noqa: W605
+                             "(?!WARN \[#39122\])"  # noqa: W605
+                             "(?!WARN \[#39491\])"  # noqa: W605
                              "WARN .*"),
             ("flow_info", r"^  INFO .*")
         ]

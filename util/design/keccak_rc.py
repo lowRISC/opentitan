@@ -43,25 +43,25 @@ def main():
         # Update from t=1 to t=255
         r_d = ba.bitarray('0') + r
         if r_d[8]:
-            #Flip 0,4,5,6
+            # Flip 0,4,5,6
             r = r_d[0:8] ^ ba.bitarray('10001110')
         else:
             r = r_d[0:8]
 
         rc[i] = r[0]
 
-    ## Print rc
+    # Print rc
     print(rc)
 
-    ## Round
+    # Round
 
-    rcs = []  # Each entry represent the round
+    # Each entry represent the round
     for rnd in range(0, args.r):
         # Let RC=0
         rndconst = ba.bitarray(64)
         rndconst.setall(0)
         # for j [0 .. L] RC[2**j-1] = rc(j+7*rnd)
-        for j in range(0, 7):  #0 to 6
+        for j in range(0, 7):  # 0 to 6
             rndconst[2**j - 1] = rc[(j + 7 * rnd) % 255]
         print("64'h{}, // Round {}".format(rndhex(rndconst), rnd))
 

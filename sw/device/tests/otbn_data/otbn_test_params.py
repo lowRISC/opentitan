@@ -13,11 +13,15 @@ import secrets
 
 C_DATATYPE = "static const uint8_t"
 
+
 def print_array(varname: str, val: int, size_bytes: int):
-    print("%s %s[%d] = {%s};" % (C_DATATYPE, varname, size_bytes, ', '.join(["0x%02x" % i for i in int(val).to_bytes(size_bytes, byteorder="little")])))
+    print("%s %s[%d] = {%s};" % (C_DATATYPE, varname, size_bytes,
+          ', '.join(["0x%02x" % i for i in int(val).to_bytes(size_bytes, byteorder="little")])))
+
 
 def print_string(varname: str, val: str, size_bytes: int):
     print("%s %s[%d] = {\"%s\"};" % (C_DATATYPE, varname, size_bytes, val))
+
 
 def print_rsa_params(private_key_file: str, in_str: str) -> None:
     in_bytes = in_str.encode("utf-8")
@@ -44,6 +48,7 @@ def print_rsa_params(private_key_file: str, in_str: str) -> None:
     encrypted = private_key._encrypt(data)
     print_array("kEncryptedExpected", encrypted, private_key.size_in_bytes())
     print("")
+
 
 def print_ecc_params(private_key_file: str, in_str: str) -> None:
     in_bytes = in_str.encode("utf-8")
@@ -105,6 +110,7 @@ def main() -> int:
         print_ecc_params(args.private_key_pem_file, args.message)
     else:
         raise ValueError("Unknown type {!r}".format(args.type))
+
 
 if __name__ == "__main__":
     sys.exit(main())

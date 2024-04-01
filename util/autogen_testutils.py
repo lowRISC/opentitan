@@ -15,6 +15,7 @@ $ util/autogen_testutils.py
 
 import argparse
 import glob
+import logging
 import sys
 from pathlib import Path
 

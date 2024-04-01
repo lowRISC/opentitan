@@ -11,8 +11,6 @@ import hmac as hm
 import hashlib  # for comparison
 import logging as log
 import sys
-from array import array
-from io import StringIO
 
 import numpy as np
 
@@ -57,7 +55,7 @@ def sha256(msg: bin) -> bin:
 
     log.info("Padded message: %s" % (binascii.b2a_hex(new_msg)))
     # Convert byte to 32bit array
-    #w_array = np.array(new_msg, dtype=np.uint32)
+    # w_array = np.array(new_msg, dtype=np.uint32)
     dt = np.dtype(np.uint32)
     dt = dt.newbyteorder('>')  # bigendian
     w_array = np.frombuffer(new_msg, dtype=dt)
@@ -68,7 +66,7 @@ def sha256(msg: bin) -> bin:
         # create w
         # 16 entry x 32 bit word
         w = w_array[i:i + 16]
-        #for j in range(16):
+        # for j in range(16):
 
         [a, b, c, d, e, f, g, h] = [h0, h1, h2, h3, h4, h5, h6, h7]
         for i in range(64):

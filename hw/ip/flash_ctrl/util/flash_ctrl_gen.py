@@ -56,11 +56,11 @@ class Flash:
                        (self.pages_per_bank <= Flash.max_pages_per_bank))
 
         if not pow2_check:
-            raise ValueError(f'flash power of 2 check failed. A supplied parameter '
+            raise ValueError('flash power of 2 check failed. A supplied parameter '
                              'is not power of 2')
 
         if not limit_check:
-            raise ValueError(f'flash number of banks and pages per bank too large')
+            raise ValueError('flash number of banks and pages per bank too large')
 
 
 # Common header for generated files
@@ -85,7 +85,6 @@ def main():
     except ValueError:
         log.error("{} not found".format(cfgpath))
         raise SystemExit(sys.exc_info()[1])
-
 
     flash_mems = [module for module in topcfg['module'] if module['type'] == 'flash_ctrl']
     if len(flash_mems) > 1:
