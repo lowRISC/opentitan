@@ -131,9 +131,10 @@ static status_t config_and_erase_certificate_flash_pages(void) {
 }
 
 /**
- * Provision OTP SECRET{1,2} partitions, enable flash scrambling, and reboot.
+ * Provision OTP SECRET{1,2} partitions, keymgr flash info pages, enable flash
+ * scrambling, and reboot.
  */
-static status_t personalize_otp_secrets(ujson_t *uj) {
+static status_t personalize_otp_and_flash_secrets(ujson_t *uj) {
   // Provision OTP Secret1 partition, and complete provisioning of OTP
   // CreatorSwCfg partition.
   if (!status_ok(manuf_personalize_device_secret1_check(&otp_ctrl))) {
@@ -296,7 +297,7 @@ bool test_main(void) {
   ujson_t uj = ujson_ottf_console();
   log_self_hash();
   CHECK_STATUS_OK(lc_ctrl_testutils_operational_state_check(&lc_ctrl));
-  CHECK_STATUS_OK(personalize_otp_secrets(&uj));
+  CHECK_STATUS_OK(personalize_otp_and_flash_secrets(&uj));
   CHECK_STATUS_OK(personalize_dice_certificates(&uj));
   return true;
 }
