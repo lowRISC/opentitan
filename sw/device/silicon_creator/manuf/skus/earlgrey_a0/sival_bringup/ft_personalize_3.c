@@ -68,20 +68,6 @@ static keymgr_binding_value_t attestation_binding_value = {.data = {0}};
 static keymgr_binding_value_t sealing_binding_value = {.data = {0}};
 
 /**
- * Flash info page configurations.
- */
-static const flash_ctrl_perms_t kCertificateFlashInfoPerms = {
-    .read = kMultiBitBool4True,
-    .write = kMultiBitBool4True,
-    .erase = kMultiBitBool4True,
-};
-static const flash_ctrl_cfg_t kCertificateFlashInfoCfg = {
-    .scrambling = kMultiBitBool4True,
-    .ecc = kMultiBitBool4True,
-    .he = kMultiBitBool4False,
-};
-
-/**
  * Configures flash info pages to store device certificates.
  */
 static status_t config_and_erase_certificate_flash_pages(void) {
