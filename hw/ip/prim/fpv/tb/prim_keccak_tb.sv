@@ -71,4 +71,3 @@ module prim_keccak_tb #(
   `ASSERT(DigestForData0TestSHA3_256_A, done_o |-> state_o[255:0] == digest_0)
 
 endmodule
-

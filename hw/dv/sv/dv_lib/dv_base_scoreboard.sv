@@ -78,4 +78,3 @@ class dv_base_scoreboard #(type RAL_T = dv_base_reg_block,
   endfunction : pre_abort
 
 endclass
-

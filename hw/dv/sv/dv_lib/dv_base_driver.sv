@@ -34,4 +34,3 @@ class dv_base_driver #(type ITEM_T     = uvm_sequence_item,
   endtask
 
 endclass
-

@@ -18,4 +18,3 @@ waive -rules {HIER_BRANCH_NOT_READ} \
       -location {padring.sv} \
       -regexp   {Net 'clk_scan_i' in module 'padring'.*} \
       -comment "This net is not read from if no scan role is defined for the pads (which is the case in the opensource view)."
-

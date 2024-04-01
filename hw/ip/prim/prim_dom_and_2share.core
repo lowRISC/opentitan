@@ -47,5 +47,3 @@ targets:
     filesets:
       - files_rtl
     toplevel: prim_dom_and_2share
-
-

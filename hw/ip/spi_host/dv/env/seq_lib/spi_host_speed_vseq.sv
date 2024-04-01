@@ -47,4 +47,3 @@ class spi_host_speed_vseq extends spi_host_smoke_vseq;
   endtask
 
 endclass : spi_host_speed_vseq
-

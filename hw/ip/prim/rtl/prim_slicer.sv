@@ -29,4 +29,3 @@ module prim_slicer #(
   `ASSERT_INIT(ValidWidth_A, InW <= OutW*(2**IndexW))
 
 endmodule
-

@@ -13,4 +13,3 @@ class uart_base_test extends cip_base_test #(.ENV_T(uart_env), .CFG_T(uart_env_c
   endfunction : build_phase
 
 endclass : uart_base_test
-

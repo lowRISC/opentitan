@@ -7,7 +7,7 @@
 // -----------------------------------------------------------------------------
 
   /**
-   * FreeRTOS, expects this function to exist and uses it to start the first task. 
+   * FreeRTOS, expects this function to exist and uses it to start the first task.
    */
   .balign 4
   .global xPortStartFirstTask
@@ -67,29 +67,29 @@ xPortStartFirstTask:
 
 // -----------------------------------------------------------------------------
 
-  /** 
+  /**
    * The prototype for this function depends on configurations defined in
    * FreeRTOSConfig.h, and is defined in:
    * sw/vendor/freertos_freertos_kernel/include/portable.h
-   * 
+   *
    * The implementation of this assembly function assumes the prototype for this
    * function looks like:
-   * 
+   *
    * StackType_t *pxPortInitialiseStack(StackType_t *pxTopOfStack,
    *                                    TaskFunction_t pxCode,
    *                                    void *pvParameters);
-   * 
+   *
    * TODO: add some checks to verify this is the configured prototype.
    * TODO: configure to allow use of checking for stack overflows.
    * TODO: configure return address for first (main) task.
-   * 
+   *
    * As per the standard RISC-V ABI pxTopcOfStack is passed in in a0, pxCode in
    * a1, and pvParameters in a2. The new top of stack is passed out in a0.
-   * 
+   *
    * The RISC-V context is saved to FreeRTOS tasks in the following stack frame,
    * where the global and thread pointers are currently assumed to be constant,
    * and therefore are not saved:
-   * 
+   *
    * ---Stack Bottom---
    * ---............---
    * Offset - Reg/Value
