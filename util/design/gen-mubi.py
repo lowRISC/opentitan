@@ -7,11 +7,13 @@ r"""Converts mubi mako templates
 from mubi import prim_mubi
 from secded_gen import format_c_files
 
+
 def main():
     prim_mubi.gen()
     c_path = prim_mubi.get_c_path()
 
     format_c_files(c_path, c_path)
+
 
 if __name__ == "__main__":
     main()

@@ -10,8 +10,6 @@ import logging as log
 import sys
 from pathlib import PurePath
 
-import pkg_resources  # part of setuptools
-
 from i2csvg import convert
 from reggen import version
 
@@ -94,13 +92,10 @@ def main():
 
     if args.nosvg:
         makehtml = False
-        outext = '.txt'
     elif extrainfo:
         makehtml = True
-        outext = '.html'
     else:
         makehtml = False
-        outext = '.svg'
 
     with outfile:
         for filename in args.srcfile:

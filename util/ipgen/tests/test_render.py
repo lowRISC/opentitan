@@ -9,10 +9,10 @@ import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../'))
 
-import pytest
-from ipgen import IpBlockRenderer, IpConfig, IpTemplate
-from ipgen.lib import TemplateParams
-from reggen.params import BaseParam
+import pytest  # noqa: E402
+from ipgen import IpBlockRenderer, IpConfig, IpTemplate  # noqa: E402
+from ipgen.lib import TemplateParams  # noqa: E402
+from reggen.params import BaseParam  # noqa: E402
 
 
 @pytest.fixture
