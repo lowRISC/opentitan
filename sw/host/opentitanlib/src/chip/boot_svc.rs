@@ -37,17 +37,17 @@ with_unknown! {
 
     pub enum BootSvcKind: u32 [default = Self::Unknown] {
         Unknown = 0,
-        Empty = 0xb4594546,
-        MinBl0SecVerRequest = 0xdac59e6e,
-        MinBl0SecVerResponse = 0x756385f1,
-        NextBl0SlotRequest = 0xe1edf546,
-        NextBl0SlotResponse = 0x657051be,
-        PrimaryBl0SlotRequest = 0x3d6c47b8,
-        PrimaryBl0SlotResponse = 0xf2a4a609,
-        OwnershipUnlockRequest = 0x51524e55,
-        OwnershipUnlockResponse = 0x53524e55,
-        OwnershipActivateRequest = 0x51524f41,
-        OwnershipActivateResponse = 0x53524f41,
+        Empty = u32::from_le_bytes(*b"EMPT"),
+        MinBl0SecVerRequest = u32::from_le_bytes(*b"MSEC"),
+        MinBl0SecVerResponse = u32::from_le_bytes(*b"CESM"),
+        NextBl0SlotRequest = u32::from_le_bytes(*b"NEXT"),
+        NextBl0SlotResponse = u32::from_le_bytes(*b"TXEN"),
+        PrimaryBl0SlotRequest = u32::from_le_bytes(*b"PRIM"),
+        PrimaryBl0SlotResponse = u32::from_le_bytes(*b"MIRP"),
+        OwnershipUnlockRequest = u32::from_le_bytes(*b"UNLK"),
+        OwnershipUnlockResponse = u32::from_le_bytes(*b"LKNU"),
+        OwnershipActivateRequest = u32::from_le_bytes(*b"ACTV"),
+        OwnershipActivateResponse = u32::from_le_bytes(*b"VTCA"),
     }
 }
 
