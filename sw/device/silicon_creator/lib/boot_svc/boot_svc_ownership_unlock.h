@@ -28,10 +28,10 @@ enum {
   // ASCII: ABRT
   kBootSvcUnlockAbort = 0x54524241,
 
-  // ASCII: UNRQ.
-  kBootSvcOwnershipUnlockReqType = 0x51524e55,
-  // ASCII: UNRS.
-  kBootSvcOwnershipUnlockResType = 0x53524e55,
+  /** Ownership unlock request: `UNLK`. */
+  kBootSvcOwnershipUnlockReqType = 0x4b4c4e55,
+  /** Ownership unlock response: `KLNU`. */
+  kBootSvcOwnershipUnlockResType = 0x554e4c4b,
 };
 
 /**
