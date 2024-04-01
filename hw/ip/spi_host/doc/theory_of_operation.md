@@ -242,7 +242,7 @@ $$T_{\textrm{SCK},0}=\frac{1}{2}\frac{T_\textrm{clk}}{\textrm{CONFIGOPTS.CLKDIV}
 Typically the `CSB` line is automatically deasserted after the last edge of `SCK`.
 However, by asserting [`COMMAND.CSAAT`](registers.md#command) when issuing a particular command, one can instruct the core to hold `CSB` low indefinitely after the last clock edge.
 This is useful for merging two adjacent command segments together, to create more complex commands, such as flash Quad read commands which require a mix of segments with different speeds and directions.
-The `CSB` line can then be deasserted by either issuing another command without the [`COMMAND.CSAAT`](registers.md#command) field, issuing a command to a different device (after changing the [`CSID`](registers.md#csid) register), or simply resetting the core FSM via the [`CONTROL.RST`](registers.md#control) register.
+The `CSB` line can then be deasserted by either issuing another command without the [`COMMAND.CSAAT`](registers.md#command) field, issuing a command to a different device (after changing the [`CSID`](registers.md#csid) register), or simply resetting the core FSM via the [`CONTROL.SW_RST`](registers.md#control) register.
 
 To avoid spurious clock signals, changes to the [`CONFIGOPTS`](registers.md#configopts) parameters take effect only at the end of a command segment and only when all `CSB` lines are deasserted.
 There are two cases to consider:
