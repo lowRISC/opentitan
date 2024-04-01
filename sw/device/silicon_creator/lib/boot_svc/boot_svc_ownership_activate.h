@@ -19,10 +19,10 @@ extern "C" {
 #endif  // __cplusplus
 
 enum {
-  // ASCII: AORQ.
-  kBootSvcOwnershipActivateReqType = 0x51524f41,
-  // ASCII: AORS.
-  kBootSvcOwnershipActivateResType = 0x53524f41,
+  /** Ownership activate request: `ACTV`. */
+  kBootSvcOwnershipActivateReqType = 0x56544341,
+  /** Ownership activate response: `VTCA`. */
+  kBootSvcOwnershipActivateResType = 0x41435456,
 };
 
 /**

@@ -15,7 +15,8 @@ extern "C" {
 #endif  // __cplusplus
 
 enum {
-  kBootSvcEmptyType = 0xb4594546,
+  /** Empty boot services request: `EMPT`. */
+  kBootSvcEmptyType = 0x54504d45,
   kBootSvcEmptyPayloadWordCount =
       CHIP_BOOT_SVC_MSG_PAYLOAD_SIZE_MAX / sizeof(uint32_t),
 };

@@ -15,19 +15,11 @@
 extern "C" {
 #endif  // __cplusplus
 
-/*
- * Encoding generated with
- * $ ./util/design/sparse-fsm-encode.py -d 6 -m 2 -n 32 \
- *     -s 1625797253 --language=c
- *
- * Minimum Hamming distance: 20
- * Maximum Hamming distance: 20
- * Minimum Hamming weight: 17
- * Maximum Hamming weight: 19
- */
 enum {
-  kBootSvcMinBl0SecVerReqType = 0xdac59e6e,
-  kBootSvcMinBl0SecVerResType = 0x756385f1,
+  /** Minimum BL0 security version request: `MSEC` */
+  kBootSvcMinBl0SecVerReqType = 0x4345534d,
+  /** Minimum BL0 security version response: `CESM` */
+  kBootSvcMinBl0SecVerResType = 0x4d534543,
 };
 
 /**
