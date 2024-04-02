@@ -126,7 +126,7 @@ cc_library(
     hdrs = ["entropy_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//hw/ip/edn/data:edn_regs",
+        "//hw/ip/edn/data:edn_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:csrng",
@@ -143,7 +143,7 @@ cc_library(
     hdrs = ["flash_ctrl_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
+        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:mmio",
@@ -160,7 +160,7 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":flash_ctrl_testutils",
-        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
+        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/testing/test_framework:check",
@@ -191,7 +191,7 @@ cc_library(
     hdrs = ["hmac_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//hw/ip/hmac/data:hmac_regs",
+        "//hw/ip/hmac/data:hmac_c_regs",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:hmac",
         "//sw/device/lib/runtime:ibex",
@@ -205,7 +205,7 @@ cc_library(
     hdrs = ["i2c_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//hw/ip/i2c/data:i2c_regs",
+        "//hw/ip/i2c/data:i2c_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:i2c",
         "//sw/device/lib/dif:pinmux",
@@ -221,7 +221,7 @@ cc_library(
     hdrs = ["keymgr_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//hw/ip/keymgr/data:keymgr_regs",
+        "//hw/ip/keymgr/data:keymgr_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:flash_ctrl",
@@ -510,7 +510,7 @@ cc_library(
     hdrs = ["uart_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//hw/ip/uart/data:uart_regs",
+        "//hw/ip/uart/data:uart_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:uart",

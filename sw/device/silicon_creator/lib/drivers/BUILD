@@ -48,8 +48,8 @@ dual_cc_library(
     ),
     deps = dual_inputs(
         device = [
-            "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-            "//hw/top_earlgrey:alert_handler_regs",
+            "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+            "//hw/top_earlgrey:alert_handler_c_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         ],
         host = [
@@ -74,7 +74,7 @@ cc_test(
     srcs = ["alert_unittest.cc"],
     deps = [
         dual_cc_device_library_of(":alert"),
-        "//hw/top_earlgrey:alert_handler_regs",
+        "//hw/top_earlgrey:alert_handler_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:crc32",
         "@googletest//:gtest_main",
@@ -98,10 +98,10 @@ opentitan_test(
     deps = [
         ":alert",
         ":rstmgr",
-        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-        "//hw/top_earlgrey:alert_handler_regs",
-        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
-        "//hw/top_earlgrey/ip_autogen/rstmgr/data:rstmgr_regs",
+        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+        "//hw/top_earlgrey:alert_handler_c_regs",
+        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_c_regs",
+        "//hw/top_earlgrey/ip_autogen/rstmgr/data:rstmgr_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/testing:rstmgr_testutils",
@@ -117,9 +117,9 @@ cc_library(
         ":flash_ctrl",
         ":lifecycle",
         ":otp",
-        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-        "//hw/top_earlgrey/ip/ast/data:ast_regs",
-        "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_regs",
+        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+        "//hw/top_earlgrey/ip/ast/data:ast_c_regs",
+        "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:abs_mmio",
@@ -155,7 +155,7 @@ dual_cc_library(
     ),
     deps = dual_inputs(
         device = [
-            "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+            "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         ],
         host = [
             "//sw/device/lib/base:global_mock",
@@ -163,7 +163,7 @@ dual_cc_library(
             "@googletest//:gtest",
         ],
         shared = [
-            "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
+            "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_c_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/base:bitfield",
@@ -199,7 +199,7 @@ dual_cc_library(
     ),
     deps = dual_inputs(
         device = [
-            "//hw/ip/hmac/data:hmac_regs",
+            "//hw/ip/hmac/data:hmac_c_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         ],
         host = [
@@ -222,7 +222,7 @@ cc_test(
     srcs = ["hmac_unittest.cc"],
     deps = [
         dual_cc_device_library_of(":hmac"),
-        "//hw/ip/hmac/data:hmac_regs",
+        "//hw/ip/hmac/data:hmac_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/silicon_creator/lib:error",
@@ -254,7 +254,7 @@ dual_cc_library(
     ),
     deps = dual_inputs(
         shared = [
-            "//hw/ip/rv_core_ibex/data:rv_core_ibex_regs",
+            "//hw/ip/rv_core_ibex/data:rv_core_ibex_c_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
             "//sw/device/lib/arch:device",
             "//sw/device/lib/base:abs_mmio",
@@ -281,7 +281,7 @@ cc_library(
     srcs = ["keymgr.c"],
     hdrs = ["keymgr.h"],
     deps = [
-        "//hw/ip/keymgr/data:keymgr_regs",
+        "//hw/ip/keymgr/data:keymgr_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:macros",
@@ -322,7 +322,7 @@ opentitan_test(
         ":kmac",
         ":lifecycle",
         ":retention_sram",
-        "//hw/ip/kmac/data:kmac_regs",
+        "//hw/ip/kmac/data:kmac_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/dif:otp_ctrl",
@@ -345,7 +345,7 @@ cc_library(
     srcs = ["kmac.c"],
     hdrs = ["kmac.h"],
     deps = [
-        "//hw/ip/kmac/data:kmac_regs",
+        "//hw/ip/kmac/data:kmac_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:macros",
@@ -391,7 +391,7 @@ dual_cc_library(
     ),
     deps = dual_inputs(
         device = [
-            "//hw/ip/lc_ctrl/data:lc_ctrl_regs",
+            "//hw/ip/lc_ctrl/data:lc_ctrl_c_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         ],
         host = [
@@ -413,7 +413,7 @@ cc_test(
     srcs = ["lifecycle_unittest.cc"],
     deps = [
         dual_cc_device_library_of(":lifecycle"),
-        "//hw/ip/lc_ctrl/data:lc_ctrl_regs",
+        "//hw/ip/lc_ctrl/data:lc_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
@@ -425,7 +425,7 @@ cc_library(
     srcs = ["otbn.c"],
     hdrs = ["otbn.h"],
     deps = [
-        "//hw/ip/otbn/data:otbn_regs",
+        "//hw/ip/otbn/data:otbn_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
@@ -457,7 +457,7 @@ dual_cc_library(
     ),
     deps = dual_inputs(
         device = [
-            "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+            "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         ],
         host = [
@@ -489,9 +489,9 @@ cc_library(
     srcs = ["pinmux.c"],
     hdrs = ["pinmux.h"],
     deps = [
-        "//hw/ip/gpio/data:gpio_regs",
-        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-        "//hw/top_earlgrey/ip/pinmux/data/autogen:pinmux_regs",
+        "//hw/ip/gpio/data:gpio_c_regs",
+        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+        "//hw/top_earlgrey/ip/pinmux/data/autogen:pinmux_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:csr",
@@ -523,7 +523,7 @@ cc_library(
     srcs = ["retention_sram.c"],
     hdrs = ["retention_sram.h"],
     deps = [
-        "//hw/ip/sram_ctrl/data:sram_ctrl_regs",
+        "//hw/ip/sram_ctrl/data:sram_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:macros",
@@ -579,9 +579,9 @@ dual_cc_library(
             "//sw/device/lib/base:csr",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/base:hardened",
-            "//hw/ip/entropy_src/data:entropy_src_regs",
-            "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-            "//hw/ip/rv_core_ibex/data:rv_core_ibex_regs",
+            "//hw/ip/entropy_src/data:entropy_src_c_regs",
+            "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+            "//hw/ip/rv_core_ibex/data:rv_core_ibex_c_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
             "//sw/device/lib/base:crc32",
         ],
@@ -604,8 +604,8 @@ cc_test(
     deps = [
         dual_cc_device_library_of(":rnd"),
         ":otp",
-        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-        "//hw/ip/rv_core_ibex/data:rv_core_ibex_regs",
+        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+        "//hw/ip/rv_core_ibex/data:rv_core_ibex_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:csr",
@@ -651,7 +651,7 @@ dual_cc_library(
     ),
     deps = dual_inputs(
         device = [
-            "//hw/top_earlgrey/ip_autogen/rstmgr/data:rstmgr_regs",
+            "//hw/top_earlgrey/ip_autogen/rstmgr/data:rstmgr_c_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         ],
         host = [
@@ -660,7 +660,7 @@ dual_cc_library(
             "@googletest//:gtest",
         ],
         shared = [
-            "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+            "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
             "//sw/device/lib/base:bitfield",
             "//sw/device/lib/base:macros",
             "//sw/device/lib/base:multibits",
@@ -709,7 +709,7 @@ cc_library(
     hdrs = ["uart.h"],
     deps = [
         ":ibex",
-        "//hw/ip/uart/data:uart_regs",
+        "//hw/ip/uart/data:uart_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:abs_mmio",
@@ -749,9 +749,9 @@ cc_library(
     srcs = ["watchdog.c"],
     hdrs = ["watchdog.h"],
     deps = [
-        "//hw/ip/aon_timer/data:aon_timer_regs",
-        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-        "//hw/top_earlgrey/ip_autogen/pwrmgr/data:pwrmgr_regs",
+        "//hw/ip/aon_timer/data:aon_timer_c_regs",
+        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+        "//hw/top_earlgrey/ip_autogen/pwrmgr/data:pwrmgr_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
@@ -765,8 +765,8 @@ cc_test(
     srcs = ["watchdog_unittest.cc"],
     deps = [
         ":watchdog",
-        "//hw/ip/aon_timer/data:aon_timer_regs",
-        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        "//hw/ip/aon_timer/data:aon_timer_c_regs",
+        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
@@ -815,8 +815,8 @@ dual_cc_library(
     ),
     deps = dual_inputs(
         device = [
-            "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
-            "//hw/ip/spi_device/data:spi_device_regs",
+            "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_c_regs",
+            "//hw/ip/spi_device/data:spi_device_c_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         ],
         host = [
@@ -840,7 +840,7 @@ cc_test(
     ],
     deps = [
         dual_cc_device_library_of(":spi_device"),
-        "//hw/ip/spi_device/data:spi_device_regs",
+        "//hw/ip/spi_device/data:spi_device_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/silicon_creator/lib:error",
@@ -854,7 +854,7 @@ cc_library(
     srcs = ["pwrmgr.c"],
     hdrs = ["pwrmgr.h"],
     deps = [
-        "//hw/top_earlgrey/ip_autogen/pwrmgr/data:pwrmgr_regs",
+        "//hw/top_earlgrey/ip_autogen/pwrmgr/data:pwrmgr_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/silicon_creator/lib/base:sec_mmio",

@@ -75,7 +75,7 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
     },
     deps = [
-        "//hw/top_earlgrey/ip_autogen/pwrmgr/data:pwrmgr_regs",
+        "//hw/top_earlgrey/ip_autogen/pwrmgr/data:pwrmgr_c_regs",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/dif:aon_timer",
         "//sw/device/lib/dif:pwrmgr",

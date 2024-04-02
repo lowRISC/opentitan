@@ -4,10 +4,21 @@
 
 package(default_visibility = ["//visibility:public"])
 
-load("//rules:autogen.bzl", "autogen_hjson_header")
+load(
+    "//rules:autogen.bzl",
+    "autogen_hjson_c_header",
+    "autogen_hjson_rust_header",
+)
 
-autogen_hjson_header(
-    name = "rstmgr_regs",
+autogen_hjson_c_header(
+    name = "rstmgr_c_regs",
+    srcs = [
+        "rstmgr.hjson",
+    ],
+)
+
+autogen_hjson_rust_header(
+    name = "rstmgr_rust_regs",
     srcs = [
         "rstmgr.hjson",
     ],

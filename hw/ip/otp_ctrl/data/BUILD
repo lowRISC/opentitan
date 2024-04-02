@@ -2,7 +2,11 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:autogen.bzl", "autogen_hjson_header")
+load(
+    "//rules:autogen.bzl",
+    "autogen_hjson_c_header",
+    "autogen_hjson_rust_header",
+)
 load(
     "//rules:otp.bzl",
     "STD_OTP_OVERLAYS",
@@ -61,8 +65,16 @@ filegroup(
 
 exports_files(["otp_ctrl_img.h.tpl"])
 
-autogen_hjson_header(
-    name = "otp_ctrl_regs",
+autogen_hjson_c_header(
+    name = "otp_ctrl_c_regs",
+    srcs = [
+        "otp_ctrl.hjson",
+    ],
+    node = "core",
+)
+
+autogen_hjson_rust_header(
+    name = "otp_ctrl_rust_regs",
     srcs = [
         "otp_ctrl.hjson",
     ],

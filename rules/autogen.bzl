@@ -11,8 +11,9 @@ used by the OpenTitan build, such as register definition files generated
 from hjson register descriptions.
 """
 
-def _hjson_header(ctx):
-    header = ctx.actions.declare_file("{}.h".format(ctx.label.name))
+def _hjson_c_header(ctx):
+    output_stem = (ctx.attr.output_stem if ctx.attr.output_stem else ctx.label.name.replace("_c_", "_"))
+    header = ctx.actions.declare_file("{}.h".format(output_stem))
     node = []
     if ctx.attr.node:
         node.append("--node={}".format(ctx.attr.node))
@@ -29,13 +30,51 @@ def _hjson_header(ctx):
         executable = ctx.executable._regtool,
     )
 
+    return [
+        CcInfo(compilation_context = cc_common.create_compilation_context(
+            includes = depset([header.dirname]),
+            headers = depset([header]),
+        )),
+        DefaultInfo(files = depset([header])),
+        OutputGroupInfo(
+            header = depset([header]),
+        ),
+    ]
+
+autogen_hjson_c_header = rule(
+    implementation = _hjson_c_header,
+    attrs = {
+        "srcs": attr.label_list(allow_files = True),
+        "node": attr.string(
+            doc = "Register block node to generate",
+        ),
+        "output_stem": attr.string(
+            doc = """
+                The name of the output file with no suffix.
+                This is optional, and if not given it will be set to the
+                target name replacing "_c_" by "_".
+                """,
+        ),
+        "_regtool": attr.label(
+            default = "//util:regtool",
+            executable = True,
+            cfg = "exec",
+        ),
+    },
+)
+
+def _hjson_rust_header(ctx):
+    node = []
+    if ctx.attr.node:
+        node.append("--node={}".format(ctx.attr.node))
     stamp_args = []
     stamp_files = []
     if stamping_enabled(ctx):
         stamp_files = [ctx.version_file]
         stamp_args.append("--version-stamp={}".format(ctx.version_file.path))
 
-    tock = ctx.actions.declare_file("{}.rs".format(ctx.label.name))
+    output_stem = (ctx.attr.output_stem if ctx.attr.output_stem else ctx.label.name.replace("_rust_", "_"))
+    tock = ctx.actions.declare_file("{}.rs".format(output_stem))
     ctx.actions.run(
         outputs = [tock],
         inputs = ctx.files.srcs + [ctx.executable._regtool] + stamp_files,
@@ -49,23 +88,25 @@ def _hjson_header(ctx):
     )
 
     return [
-        CcInfo(compilation_context = cc_common.create_compilation_context(
-            includes = depset([header.dirname]),
-            headers = depset([header]),
-        )),
-        DefaultInfo(files = depset([header, tock])),
+        DefaultInfo(files = depset([tock])),
         OutputGroupInfo(
-            header = depset([header]),
             tock = depset([tock]),
         ),
     ]
 
-autogen_hjson_header = rule(
-    implementation = _hjson_header,
+autogen_hjson_rust_header = rule(
+    implementation = _hjson_rust_header,
     attrs = {
         "srcs": attr.label_list(allow_files = True),
         "node": attr.string(
             doc = "Register block node to generate",
+        ),
+        "output_stem": attr.string(
+            doc = """
+                The name of the output file with no suffix.
+                This is optional, and if not given it will be set to the
+                target name replacing "_rust_" by "_".
+                """,
         ),
         "_regtool": attr.label(
             default = "//util:regtool",

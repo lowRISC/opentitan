@@ -10,8 +10,8 @@ opentitan_test(
     srcs = ["i2c_host_tx_rx_test.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
-        "//hw/ip/lc_ctrl/data:lc_ctrl_regs",
-        "//hw/top_earlgrey/ip/clkmgr/data/autogen:clkmgr_regs",
+        "//hw/ip/lc_ctrl/data:lc_ctrl_c_regs",
+        "//hw/top_earlgrey/ip/clkmgr/data/autogen:clkmgr_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:i2c",
@@ -32,8 +32,8 @@ opentitan_test(
     srcs = ["i2c_device_tx_rx_test.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
-        "//hw/ip/lc_ctrl/data:lc_ctrl_regs",
-        "//hw/top_earlgrey/ip/clkmgr/data/autogen:clkmgr_regs",
+        "//hw/ip/lc_ctrl/data:lc_ctrl_c_regs",
+        "//hw/top_earlgrey/ip/clkmgr/data/autogen:clkmgr_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:i2c",
@@ -595,7 +595,7 @@ opentitan_test(
     srcs = ["sram_ctrl_execution_main_test.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
-        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
@@ -616,8 +616,8 @@ opentitan_test(
     srcs = ["sram_ctrl_scrambled_access_test.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
-        "//hw/ip/sram_ctrl/data:sram_ctrl_regs",
-        "//hw/top_earlgrey/ip_autogen/rstmgr/data:rstmgr_regs",
+        "//hw/ip/sram_ctrl/data:sram_ctrl_c_regs",
+        "//hw/top_earlgrey/ip_autogen/rstmgr/data:rstmgr_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:mmio",
@@ -639,7 +639,7 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     visibility = ["//sw/device/tests:__pkg__"],
     deps = [
-        "//hw/top_earlgrey/ip_autogen/pwrmgr/data:pwrmgr_regs",
+        "//hw/top_earlgrey/ip_autogen/pwrmgr/data:pwrmgr_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:mmio",
@@ -687,7 +687,7 @@ opentitan_test(
     srcs = ["pwrmgr_b2b_sleep_reset_test.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
-        "//hw/ip/aon_timer/data:aon_timer_regs",
+        "//hw/ip/aon_timer/data:aon_timer_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:mmio",
@@ -711,7 +711,7 @@ opentitan_test(
     srcs = ["sensor_ctrl_status.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
-        "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_regs",
+        "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:memory",
@@ -734,7 +734,7 @@ opentitan_test(
     srcs = ["alert_handler_escalation.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
-        "//hw/top_earlgrey:alert_handler_regs",
+        "//hw/top_earlgrey:alert_handler_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
@@ -759,7 +759,7 @@ opentitan_test(
     srcs = ["alert_handler_entropy_test.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
-        "//hw/top_earlgrey:alert_handler_regs",
+        "//hw/top_earlgrey:alert_handler_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
@@ -778,7 +778,7 @@ opentitan_test(
     # The test requires to drive fatal alerts which is possible only in DV sim.
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
-        "//hw/top_earlgrey:alert_handler_regs",
+        "//hw/top_earlgrey:alert_handler_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:mmio",
@@ -835,7 +835,7 @@ opentitan_test(
     srcs = ["ast_usb_clk_calib.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
-        "//hw/top_earlgrey/ip/ast/data:ast_regs",
+        "//hw/top_earlgrey/ip/ast/data:ast_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -898,8 +898,8 @@ opentitan_test(
     srcs = ["inject_scramble_seed.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
-        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
-        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
+        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:mmio",
@@ -922,7 +922,7 @@ opentitan_test(
     srcs = ["exit_test_unlocked_bootstrap.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
-        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:mmio",
@@ -985,7 +985,7 @@ opentitan_test(
     srcs = ["ast_clk_rst_inputs.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
-        "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_regs",
+        "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",

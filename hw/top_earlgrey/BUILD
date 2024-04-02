@@ -2,7 +2,11 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:autogen.bzl", "autogen_hjson_header")
+load(
+    "//rules:autogen.bzl",
+    "autogen_hjson_c_header",
+    "autogen_hjson_rust_header",
+)
 load(
     "//rules/opentitan:defs.bzl",
     "DEFAULT_TEST_FAILURE_MSG",
@@ -17,15 +21,29 @@ load(
 
 package(default_visibility = ["//visibility:public"])
 
-autogen_hjson_header(
-    name = "rv_plic_regs",
+autogen_hjson_c_header(
+    name = "rv_plic_c_regs",
     srcs = [
         "ip_autogen/rv_plic/data/rv_plic.hjson",
     ],
 )
 
-autogen_hjson_header(
-    name = "alert_handler_regs",
+autogen_hjson_rust_header(
+    name = "rv_plic_rust_regs",
+    srcs = [
+        "ip_autogen/rv_plic/data/rv_plic.hjson",
+    ],
+)
+
+autogen_hjson_c_header(
+    name = "alert_handler_c_regs",
+    srcs = [
+        "ip_autogen/alert_handler/data/alert_handler.hjson",
+    ],
+)
+
+autogen_hjson_rust_header(
+    name = "alert_handler_rust_regs",
     srcs = [
         "ip_autogen/alert_handler/data/alert_handler.hjson",
     ],

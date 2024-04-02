@@ -4,10 +4,21 @@
 
 package(default_visibility = ["//visibility:public"])
 
-load("//rules:autogen.bzl", "autogen_hjson_header")
+load(
+    "//rules:autogen.bzl",
+    "autogen_hjson_c_header",
+    "autogen_hjson_rust_header",
+)
 
-autogen_hjson_header(
-    name = "usbdev_regs",
+autogen_hjson_c_header(
+    name = "usbdev_c_regs",
+    srcs = [
+        "usbdev.hjson",
+    ],
+)
+
+autogen_hjson_rust_header(
+    name = "usbdev_rust_regs",
     srcs = [
         "usbdev.hjson",
     ],

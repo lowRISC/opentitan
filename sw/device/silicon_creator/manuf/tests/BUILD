@@ -121,7 +121,7 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
     },
     deps = [
-        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",
@@ -143,7 +143,7 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
     },
     deps = [
-        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",
@@ -182,7 +182,7 @@ opentitan_test(
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         },
         deps = [
-            "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+            "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
             "//sw/device/lib/testing/test_framework:ottf_main",
             "//sw/device/silicon_creator/lib/drivers:lifecycle",
             "//sw/device/silicon_creator/lib/drivers:otp",
@@ -272,7 +272,7 @@ opentitan_binary(
     linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
     deps = [
         ":test_wafer_auth_secret",
-        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
@@ -362,7 +362,7 @@ opentitan_binary(
     kind = "ram",
     linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
     deps = [
-        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
@@ -433,7 +433,7 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
     },
     deps = [
-        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",
@@ -461,7 +461,7 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
     },
     deps = [
-        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",

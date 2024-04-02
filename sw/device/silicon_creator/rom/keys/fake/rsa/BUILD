@@ -13,7 +13,7 @@ cc_library(
         "test_key_0_rsa_3072_exp_f4.h",
     ],
     deps = [
-        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/rom:sigverify_key_types",
         "//sw/device/silicon_creator/rom:sigverify_keys",

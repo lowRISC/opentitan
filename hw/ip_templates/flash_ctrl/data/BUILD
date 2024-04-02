@@ -4,10 +4,22 @@
 
 package(default_visibility = ["//visibility:public"])
 
-load("//rules:autogen.bzl", "autogen_hjson_header")
+load(
+    "//rules:autogen.bzl",
+    "autogen_hjson_c_header",
+    "autogen_hjson_rust_header",
+)
 
-autogen_hjson_header(
-    name = "flash_ctrl_regs",
+autogen_hjson_c_header(
+    name = "flash_ctrl_c_regs",
+    srcs = [
+        "flash_ctrl.hjson",
+    ],
+    node = "core",
+)
+
+autogen_hjson_rust_header(
+    name = "flash_ctrl_rust_regs",
     srcs = [
         "flash_ctrl.hjson",
     ],
