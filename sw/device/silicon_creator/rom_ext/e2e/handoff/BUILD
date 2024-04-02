@@ -67,7 +67,7 @@ _FAULT_TEST_CASES = {
         linker_script = ":ld_slot_a",
         manifest = "//sw/device/silicon_owner:manifest_standard",
         deps = [
-            "//hw/ip/uart/data:uart_regs",
+            "//hw/ip/uart/data:uart_c_regs",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/base:bitfield",
             "//sw/device/lib/base:hardened",

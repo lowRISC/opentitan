@@ -29,7 +29,7 @@ cc_library(
     srcs = ["rescue.c"],
     hdrs = ["rescue.h"],
     deps = [
-        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
+        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_c_regs",
         "//sw/device/lib/base:memory",
         "//sw/device/silicon_creator/lib:dbg_print",
         "//sw/device/silicon_creator/lib:error",
@@ -94,7 +94,7 @@ cc_library(
     srcs = ["bootstrap.c"],
     hdrs = ["bootstrap.h"],
     deps = [
-        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib:bootstrap",
@@ -111,7 +111,7 @@ cc_test(
     srcs = ["bootstrap_unittest.cc"],
     deps = [
         ":bootstrap",
-        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
+        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_c_regs",
         "//sw/device/lib/base:memory",
         "//sw/device/silicon_creator/lib:bootstrap",
         "//sw/device/silicon_creator/lib:bootstrap_unittest_util",
@@ -216,7 +216,7 @@ cc_library(
         ":rom_ext_boot_policy_ptrs",
         ":rom_ext_epmp",
         ":sigverify_keys",
-        "//hw/ip/sram_ctrl/data:sram_ctrl_regs",
+        "//hw/ip/sram_ctrl/data:sram_ctrl_c_regs",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:macros",

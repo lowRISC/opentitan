@@ -4,10 +4,21 @@
 
 package(default_visibility = ["//visibility:public"])
 
-load("//rules:autogen.bzl", "autogen_hjson_header")
+load(
+    "//rules:autogen.bzl",
+    "autogen_hjson_c_header",
+    "autogen_hjson_rust_header",
+)
 
-autogen_hjson_header(
-    name = "rv_core_ibex_regs",
+autogen_hjson_c_header(
+    name = "rv_core_ibex_c_regs",
+    srcs = [
+        "rv_core_ibex.hjson",
+    ],
+)
+
+autogen_hjson_rust_header(
+    name = "rv_core_ibex_rust_regs",
     srcs = [
         "rv_core_ibex.hjson",
     ],

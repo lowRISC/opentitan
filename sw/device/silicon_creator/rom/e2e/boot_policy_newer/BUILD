@@ -68,7 +68,7 @@ SEC_VERS = [
         # Use the prod key because it is valid in every LC state.
         rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:prod_private_key_0": "prod_key_0"},
         deps = [
-            "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+            "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
             "//sw/device/lib/testing/test_framework:ottf_main",
             "//sw/device/silicon_creator/lib/drivers:lifecycle",
             "//sw/device/silicon_creator/lib/drivers:otp",

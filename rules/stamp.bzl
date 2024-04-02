@@ -9,7 +9,7 @@
 # Return a rule attribute to add a stamp parameters. This stamping parameter follows
 # the usual bazel convention:
 # - `stamp = 1` means that stamping information is available, even if stamping is
-#   is disabled on the command line (`--nostamp`).
+#   disabled on the command line (`--nostamp`).
 # - `stamp = 0` means that stamping information is not available, even if stamping is
 #   is enabled on the command line (`--stamp`).
 # - `stamp = -1` means that stamping is controlled by the command line `--stamp` or

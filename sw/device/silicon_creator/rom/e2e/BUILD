@@ -128,7 +128,7 @@ opentitan_functest(
         ],
         signed = True,
         deps = [
-            "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+            "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
             "//sw/device/lib/testing/test_framework:ottf_main",
             "//sw/device/silicon_creator/lib/drivers:lifecycle",
             "//sw/device/silicon_creator/lib/drivers:otp",
@@ -153,7 +153,7 @@ opentitan_functest(
         ],
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
         deps = [
-            "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+            "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
             "//sw/device/lib/testing/test_framework:ottf_main",
             "//sw/device/silicon_creator/lib/drivers:lifecycle",
             "//sw/device/silicon_creator/lib/drivers:otp",
@@ -179,7 +179,7 @@ opentitan_functest(
         manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
         rsa_key = rsa_key_by_name(RSA_ONLY_KEY_STRUCTS, key),
         deps = [
-            "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+            "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
             "//sw/device/lib/testing/test_framework:ottf_main",
             "//sw/device/silicon_creator/lib/drivers:lifecycle",
             "//sw/device/silicon_creator/lib/drivers:otp",
@@ -378,8 +378,8 @@ opentitan_functest(
         "cw310_rom_with_fake_keys",
     ],
     deps = [
-        "//hw/ip/uart/data:uart_regs",
-        "//hw/top_earlgrey/ip/pinmux/data/autogen:pinmux_regs",
+        "//hw/ip/uart/data:uart_c_regs",
+        "//hw/top_earlgrey/ip/pinmux/data/autogen:pinmux_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
@@ -426,7 +426,7 @@ opentitan_flash_binary(
         "fpga_cw310",
     ],
     deps = [
-        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:boot_data",

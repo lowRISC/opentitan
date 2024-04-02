@@ -62,7 +62,7 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
     },
     deps = [
-        "//hw/ip/sram_ctrl/data:sram_ctrl_regs",
+        "//hw/ip/sram_ctrl/data:sram_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:status",
         "//sw/device/lib/testing/test_framework:ottf_main",

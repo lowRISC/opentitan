@@ -23,7 +23,7 @@ cc_library(
     hdrs = ["aes.h"],
     deps = [
         ":entropy",
-        "//hw/ip/aes/data:aes_regs",
+        "//hw/ip/aes/data:aes_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
@@ -58,7 +58,7 @@ cc_library(
     ],
     deps = [
         ":entropy",
-        "//hw/ip/keymgr/data:keymgr_regs",
+        "//hw/ip/keymgr/data:keymgr_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
@@ -102,7 +102,7 @@ cc_library(
     ],
     deps = [
         ":entropy",
-        "//hw/ip/kmac/data:kmac_regs",
+        "//hw/ip/kmac/data:kmac_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
@@ -117,9 +117,9 @@ cc_library(
     srcs = ["entropy.c"],
     hdrs = ["entropy.h"],
     deps = [
-        "//hw/ip/csrng/data:csrng_regs",
-        "//hw/ip/edn/data:edn_regs",
-        "//hw/ip/entropy_src/data:entropy_src_regs",
+        "//hw/ip/csrng/data:csrng_c_regs",
+        "//hw/ip/edn/data:edn_c_regs",
+        "//hw/ip/entropy_src/data:entropy_src_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
@@ -137,7 +137,7 @@ cc_library(
     hdrs = ["entropy_kat.h"],
     deps = [
         ":entropy",
-        "//hw/ip/csrng/data:csrng_regs",
+        "//hw/ip/csrng/data:csrng_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
@@ -174,7 +174,7 @@ cc_library(
     srcs = ["hmac.c"],
     hdrs = ["hmac.h"],
     deps = [
-        "//hw/ip/hmac/data:hmac_regs",
+        "//hw/ip/hmac/data:hmac_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
@@ -191,7 +191,7 @@ cc_library(
     hdrs = ["otbn.h"],
     deps = [
         ":entropy",
-        "//hw/ip/otbn/data:otbn_regs",
+        "//hw/ip/otbn/data:otbn_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
