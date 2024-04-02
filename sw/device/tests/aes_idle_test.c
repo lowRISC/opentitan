@@ -96,7 +96,7 @@ status_t execute_test(dif_aes_t *aes) {
   // Initiate an AES operation with a known key, cipher text and plain text,
   // write AES clk hint to 0 and verify that the AES clk hint status within
   // clkmgr now reads 1 (AES is enabled), before the AES operation is complete.
-  CHECK_DIF_OK(dif_aes_start(aes, &transaction, &key, NULL));
+  TRY(dif_aes_start(aes, &transaction, &key, NULL));
 
   // "Convert" plain data byte arrays to `dif_aes_data_t`.
   dif_aes_data_t in_data_cipher;
@@ -105,7 +105,7 @@ status_t execute_test(dif_aes_t *aes) {
 
   // Load the plain text to trigger the encryption operation.
   AES_TESTUTILS_WAIT_FOR_STATUS(aes, kDifAesStatusInputReady, true, TIMEOUT);
-  CHECK_DIF_OK(dif_aes_load_data(aes, in_data_cipher));
+  TRY(dif_aes_load_data(aes, in_data_cipher));
 
   // Write the clock hint to 0 and verify that the clock is still enabled.
   CLKMGR_TESTUTILS_SET_AND_CHECK_CLOCK_HINT(
@@ -127,12 +127,12 @@ status_t execute_test(dif_aes_t *aes) {
   CLKMGR_TESTUTILS_SET_AND_CHECK_CLOCK_HINT(
       clkmgr, kAesClock, kDifToggleEnabled, kDifToggleEnabled);
   dif_aes_data_t out_data;
-  CHECK_DIF_OK(dif_aes_read_output(aes, &out_data));
+  TRY(dif_aes_read_output(aes, &out_data));
 
   // Finish the ECB decryption transaction.
-  CHECK_DIF_OK(dif_aes_end(aes));
-  CHECK_ARRAYS_EQ((uint8_t *)out_data.data, kAesModesPlainText,
-                  sizeof(out_data.data));
+  TRY(dif_aes_end(aes));
+  TRY_CHECK_ARRAYS_EQ((uint8_t *)out_data.data, kAesModesPlainText,
+                      sizeof(out_data.data));
   return OK_STATUS();
 }
 
