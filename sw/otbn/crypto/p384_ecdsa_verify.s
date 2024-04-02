@@ -33,13 +33,11 @@ start:
  * host side. The signature is valid if x1 == r.
  * This routine runs in variable time.
  *
- * @param[in]  dmem[4]: dptr_rnd, pointer to dmem location where the reduced
- *                           affine x1-coordinate will be stored
- * @param[in]  dmem[8]: dptr_msg, pointer to the message to be verified in dmem
- * @param[in]  dmem[12]: dptr_r, pointer to r of signature in dmem
- * @param[in]  dmem[16]: dptr_s, pointer to s of signature in dmem
- * @param[in]  dmem[20]: dptr_x, pointer to x-coordinate of public key in dmem
- * @param[in]  dmem[20]: dptr_y, pointer to y-coordinate of public key in dmem
+ * @param[in]  dmem[msg]: message to be verified
+ * @param[in]    dmem[r]: r part of signature
+ * @param[in]    dmem[s]: s part of signature
+ * @param[in]    dmem[x]: x-coordinate of public key
+ * @param[in]    dmem[y]: y-coordinate of public key
  * @param[out] dmem[rnd]: x1 coordinate to be compared to rs
  *
  * !!! Attention !!! - before signature verification p384_curve_point_valid
@@ -47,44 +45,24 @@ start:
  *
  */
 ecdsa_verify:
+  /* Fill gpp registers with pointers to variables required for p384_verify */
+  /* signature values */
+  la        x6, r
+  la        x7, s
+  /* reduced x1-coordinate */
+  la        x8, rnd
+  /* message */
+  la        x9, msg
+  /* public key coordinates*/
+  la        x13, x
+  la        x14, y
+
   /* Verify the signature (compute x1). */
   jal      x1, p384_verify
 
   ecall
 
 .bss
-
-/* pointer to x-coordinate (dptr_x) */
-.globl dptr_x
-.balign 4
-dptr_x:
-  .zero 4
-
-/* pointer to y-coordinate (dptr_y) */
-.globl dptr_y
-.balign 4
-dptr_y:
-  .zero 4
-
-/* pointer to rnd (dptr_rnd) */
-.globl dptr_rnd
-dptr_rnd:
-  .zero 4
-
-/* pointer to msg (dptr_msg) */
-.globl dptr_msg
-dptr_msg:
-  .zero 4
-
-/* pointer to R (dptr_r) */
-.globl dptr_r
-dptr_r:
-  .zero 4
-
-/* pointer to S (dptr_s) */
-.globl dptr_s
-dptr_s:
-  .zero 4
 
 /* result of verify (x1 coordinate) */
 .globl rnd

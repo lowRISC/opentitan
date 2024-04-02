@@ -59,26 +59,28 @@ start:
  * This routine runs in constant time (except potentially waiting for entropy
  * from RND).
  *
- * @param[in]       w31: all-zero
- * @param[in]   dmem[0]: dptr_d0, pointer to location in dmem containing
- *                       1st private key share d0
- * @param[in]   dmem[4]: dptr_d1, pointer to location in dmem containing
- *                       2nd private key share d1
- * @param[in]  dmem[20]: dptr_x, pointer to result buffer for x-coordinate
- * @param[in]  dmem[24]: dptr_y, pointer to result buffer for y-coordinate
- * @param[out] dmem[d0]: 1st private key share d0
- * @param[out] dmem[d1]: 2nd private key share d1
- * @param[out]  dmem[x]: Public key x-coordinate
- * @param[out]  dmem[y]: Public key y-coordinate
+ * @param[in]        w31: all-zero
+ * @param[out]  dmem[d0]: 1st private key share d0
+ * @param[out]  dmem[d1]: 2nd private key share d1
+ * @param[out]   dmem[x]: Public key x-coordinate
+ * @param[out]   dmem[y]: Public key y-coordinate
  *
  * clobbered registers: x2, x3, x9 to x13, x18 to x21, x26 to x30, w0 to w30
  * clobbered flag groups: FG0
  */
 keypair_random:
+  /* Fill gpp registers with pointers to key shares */
+  la        x20, d0
+  la        x21, d1
+
   /* Generate secret key d in shares.
        dmem[d0] <= d0
        dmem[d1] <= d1 */
   jal       x1, p384_generate_random_key
+
+  /* Fill gpp registers with pointers to key shares */
+  la        x17, d0
+  la        x19, d1
 
   /* Generate public key d*G.
        dmem[x] <= (d*G).x
@@ -99,20 +101,26 @@ keypair_random:
  * !!! Attention !!! - before shared key computation p384_curve_point_valid
  * binary has to be executed to check if the provided public key is valid.
  *
- * @param[in]       w31: all-zero
- * @param[in]   dmem[0]: dptr_k0, pointer to location in dmem containing
- *                       1st private key share d0/k0
- * @param[in]   dmem[4]: dptr_k1, pointer to location in dmem containing
- *                       2nd private key share d1/k0
- * @param[in]  dmem[20]: dptr_x, pointer to result buffer for x-coordinate
- * @param[in]  dmem[24]: dptr_y, pointer to result buffer for y-coordinate
- * @param[out]  dmem[x]: x0, first share of shared key.
- * @param[out]  dmem[y]: x1, second share of shared key.
+ * @param[in]        w31: all-zero
+ * @param[in]   dmem[k0]: 1st private key share d0/k0
+ * @param[in]   dmem[k1]: 2nd private key share d1/k0
+ * @param[in]    dmem[x]: x-coordinate of public key
+ * @param[in]    dmem[y]: y-coordinate of public key
+ * @param[out]   dmem[x]: x0, first share of shared key.
+ * @param[out]   dmem[y]: x1, second share of shared key.
  *
  * clobbered registers: x2, x3, x9 to x13, x18 to x21, x26 to x30, w0 to w30
  * clobbered flag groups: FG0
  */
 shared_key:
+  /* Fill gpp registers with pointers to coordinates */
+  la        x20, x
+  la        x21, y
+
+  /* Fill gpp registers with pointers to scalar shares */
+  la        x17, k0
+  la        x19, k1
+
     /* Generate arithmetically masked shared key d*Q.
        dmem[x] <= (d*Q).x - m mod p
        dmem[y] <= m */
@@ -124,13 +132,11 @@ shared_key:
      [w12,w11] <= dmem[x] = x_m
      [w19,w18] <= dmem[y] = m */
   li        x2, 11
-  la        x3, dptr_x
-  lw        x3, 0(x3)
+  la        x3, x
   bn.lid    x2++, 0(x3)
   bn.lid    x2++, 32(x3)
   li        x2, 18
-  la        x3, dptr_y
-  lw        x3, 0(x3)
+  la        x3, y
   bn.lid    x2++, 0(x3)
   bn.lid    x2, 32(x3)
 
@@ -146,8 +152,7 @@ shared_key:
   /* Store arithmetically masked key to DMEM
      dmem[x] <= [w21,w20] = x_m' */
   li        x2, 20
-  la        x3, dptr_x
-  lw        x3, 0(x3)
+  la        x3, x
   bn.sid    x2++, 0(x3)
   bn.sid    x2++, 32(x3)
 
@@ -159,18 +164,6 @@ shared_key:
 .globl mode
 .balign 4
 mode:
-  .zero 4
-
-/* pointer to x-coordinate (dptr_x) */
-.globl dptr_x
-.balign 4
-dptr_x:
-  .zero 4
-
-/* pointer to y-coordinate (dptr_y) */
-.globl dptr_y
-.balign 4
-dptr_y:
   .zero 4
 
 /* Public key x-coordinate. */
@@ -191,22 +184,6 @@ y:
    is also used for ECDSA signing and reads from those labels; in the case of
    ECDH, the scalar in `p384_scalar_mult` is always the private key (d). */
 
-/* pointer to d0 (dptr_d0) */
-.globl dptr_k0
-.globl dptr_d0
-.balign 4
-dptr_d0:
-dptr_k0:
-  .zero 4
-
-/* pointer to d1 (dptr_d1) */
-.globl dptr_k1
-.globl dptr_d1
-.balign 4
-dptr_d1:
-dptr_k1:
-  .zero 4
-
 .globl d0
 .globl k0
 .balign 32
@@ -220,5 +197,3 @@ k0:
 d1:
 k1:
   .zero 64
-
-.balign 32
