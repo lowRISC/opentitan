@@ -85,6 +85,10 @@
       uvm_test_seq: usbdev_min_length_out_transaction_vseq
     }
     {
+      name: usbdev_disconnected
+      uvm_test_seq: usbdev_disconnected_vseq
+    }
+    {
       name: usbdev_nak_trans
       uvm_test_seq: usbdev_nak_trans_vseq
     }
