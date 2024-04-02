@@ -105,11 +105,11 @@ status_t execute_test(dif_aes_t *aes) {
 
   // Load the plain text to trigger the encryption operation.
   AES_TESTUTILS_WAIT_FOR_STATUS(aes, kDifAesStatusInputReady, true, TIMEOUT);
-  TRY(dif_aes_load_data(aes, in_data_cipher));
-
+  dif_result_t ret = dif_aes_load_data(aes, in_data_cipher);
   // Write the clock hint to 0 and verify that the clock is still enabled.
   CLKMGR_TESTUTILS_SET_AND_CHECK_CLOCK_HINT(
       clkmgr, kAesClock, kDifToggleDisabled, kDifToggleEnabled);
+  TRY(ret);
 
   // This is a bit awkward, but when the AES finishes the operation the clock
   // will be gated as the clock hint has requested and the AES registers can't
