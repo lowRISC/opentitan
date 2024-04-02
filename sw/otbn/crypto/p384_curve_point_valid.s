@@ -26,6 +26,10 @@ start:
   unimp
 
 validate_point:
+  /* Fill gpp registers with pointers to coordinates */
+  la        x20, x
+  la        x21, y
+
   /* Call curve point validation function */
   jal       x1, p384_curve_point_valid
 
