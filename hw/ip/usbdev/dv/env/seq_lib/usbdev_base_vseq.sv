@@ -170,12 +170,14 @@ endtask
   endtask
 
   // Construct and transmit a token packet to the USB device
-  virtual task call_token_seq(input pid_type_e pid_type);
+  virtual task call_token_seq(input pid_type_e pid_type, bit inject_crc_error = 0);
     `uvm_create_on(m_token_pkt, p_sequencer.usb20_sequencer_h)
     m_token_pkt.m_pkt_type = PktTypeToken;
     m_token_pkt.m_pid_type = pid_type;
     assert(m_token_pkt.randomize() with {m_token_pkt.address inside {7'b0};
                                          m_token_pkt.endpoint == endp;});
+    // Any fault injections requested?
+    if (inject_crc_error) m_token_pkt.crc5 = ~m_token_pkt.crc5;
     m_usb20_item = m_token_pkt;
     start_item(m_token_pkt);
     finish_item(m_token_pkt);
