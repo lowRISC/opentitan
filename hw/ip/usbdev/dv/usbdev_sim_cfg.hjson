@@ -121,6 +121,10 @@
       uvm_test_seq: usbdev_stall_trans_vseq
     }
     {
+      name: usbdev_rx_crc_err
+      uvm_test_seq: usbdev_rx_crc_err_vseq
+    }
+    {
       name: usbdev_setup_trans_ignored
       uvm_test_seq: usbdev_setup_trans_ignored_vseq
     }
