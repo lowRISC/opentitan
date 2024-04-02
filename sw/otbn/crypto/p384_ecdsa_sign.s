@@ -25,27 +25,36 @@ start:
  * P-384 ECDSA signature generation.
  * Generate the secret scalar k from a random seed.
  *
- * @param[in]  dmem[0]: dptr_k0, pointer to location in dmem containing
- *                      1st scalar share k0
- * @param[in]  dmem[4]: dptr_k1, pointer to location in dmem containing
- *                      2nd scalar share k1
- * @param[in]  dmem[8]: dptr_msg, pointer to the message to be signed in dmem
- * @param[in]  dmem[12]: dptr_r, pointer to dmem location where s component
- *                               of signature will be placed
- * @param[in]  dmem[16]: dptr_s, pointer to dmem location where r component
- *                               of signature will be placed
- * @param[in]  dmem[28]: dptr_d0, pointer to location in dmem containing
- *                      1st private key share d0
- * @param[in]  dmem[32]: dptr_d1, pointer to location in dmem containing
- *                      2nd private key share d1
- * @param[out] dmem[r]: r component of signature
- * @param[out] dmem[s]: s component of signature
+ * @param[in]   dmem[k0]: 1st scalar share k0
+ * @param[in]   dmem[k1]: 2nd scalar share k1
+ * @param[in]  dmem[msg]: message to be signed in dmem
+ * @param[in]   dmem[d0]: 1st private key share d0
+ * @param[in]   dmem[d1]: 2nd private key share d1
+ * @param[out]   dmem[r]: r component of signature
+ * @param[out]   dmem[s]: s component of signature
  */
 ecdsa_sign:
+  /* Fill gpp registers with pointers to scalar shares */
+  la       x20, k0
+  la       x21, k1
+
   /* Generate a fresh random scalar for signing.
        dmem[k0] <= first share of k
        dmem[k1] <= second share of k */
   jal      x1, p384_generate_k
+
+  /* Fill gpp registers with pointers to variables required for p384_sign */
+  /* scalar shares */
+  la        x17, k0
+  la        x19, k1
+  /* message */
+  la        x6, msg
+  /* signature values */
+  la        x14, r
+  la        x15, s
+  /* secret key shares */
+  la        x4, d0
+  la        x5, d1
 
   /* Generate the signature. */
   jal      x1, p384_sign
@@ -53,53 +62,6 @@ ecdsa_sign:
   ecall
 
 .bss
-
-/* pointer to x-coordinate (dptr_x) */
-.globl dptr_x
-.balign 4
-dptr_x:
-  .zero 4
-
-/* pointer to y-coordinate (dptr_y) */
-.globl dptr_y
-.balign 4
-dptr_y:
-  .zero 4
-
-/* pointer to k0 (dptr_k0) */
-.globl dptr_k0
-dptr_k0:
-  .zero 4
-
-/* pointer to k1 (dptr_k1) */
-.globl dptr_k1
-dptr_k1:
-  .zero 4
-
-/* pointer to d0 (dptr_d0) */
-.globl dptr_d0
-dptr_d0:
-  .zero 4
-
-/* pointer to d1 (dptr_d1) */
-.globl dptr_d1
-dptr_d1:
-  .zero 4
-
-/* pointer to msg (dptr_msg) */
-.globl dptr_msg
-dptr_msg:
-  .zero 4
-
-/* pointer to R (dptr_r) */
-.globl dptr_r
-dptr_r:
-  .zero 4
-
-/* pointer to S (dptr_s) */
-.globl dptr_s
-dptr_s:
-  .zero 4
 
 /* x-coordinate. */
 .globl x

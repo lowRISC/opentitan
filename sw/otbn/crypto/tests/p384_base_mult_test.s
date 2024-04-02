@@ -15,7 +15,7 @@
 .section .text.start
 
 p384_base_mult_test:
-  /* Fill gpp registers pointers to variables */
+  /* Fill gpp registers with pointers to variables */
   la        x17, d0
   la        x19, d1
 
