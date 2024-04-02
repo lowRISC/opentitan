@@ -304,7 +304,17 @@ class SimCfg(FlowCfg):
                 log.error("No %s defined for %s.", list_item, self.variant_name)
 
             for item in items:
-                log.info(item)
+                # Convert the item into something that can be printed in the
+                # list. Some modes are specified as strings themselves (so
+                # there's no conversion needed). Others should be subclasses of
+                # Mode, which has a name field that we can use.
+                if isinstance(item, str):
+                    mode_name = item
+                else:
+                    assert isinstance(item, Modes)
+                    mode_name = item.name
+
+                log.info(mode_name)
 
     def _create_build_and_run_list(self):
         '''Generates a list of deployable objects from the provided items.
