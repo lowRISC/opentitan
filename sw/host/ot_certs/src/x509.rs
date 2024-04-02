@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::{bail, ensure, Context, Result};
+use indexmap::IndexMap;
 use num_bigint_dig::BigUint;
-use std::collections::HashMap;
 
 use openssl::asn1::{Asn1IntegerRef, Asn1OctetStringRef, Asn1StringRef};
 use openssl::bn::{BigNum, BigNumContext, BigNumRef};
@@ -86,8 +86,8 @@ fn asn1octets_to_vec(s: &Asn1OctetStringRef) -> Value<Vec<u8>> {
 fn asn1name_to_hashmap(
     field: &str,
     name: &X509NameRef,
-) -> Result<HashMap<AttributeType, Value<String>>> {
-    let mut res = HashMap::<AttributeType, Value<String>>::new();
+) -> Result<IndexMap<AttributeType, Value<String>>> {
+    let mut res = IndexMap::<AttributeType, Value<String>>::new();
     for entry in name.entries() {
         let attr = AttributeType::try_from(entry.object().nid())?;
         if res
