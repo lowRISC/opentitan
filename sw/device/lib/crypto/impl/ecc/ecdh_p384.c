@@ -16,18 +16,8 @@
 
 OTBN_DECLARE_APP_SYMBOLS(p384_ecdh);          // The OTBN ECDSH/P-384 app.
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdh, mode);    // ECDH application mode.
-OTBN_DECLARE_SYMBOL_ADDR(p384_ecdh, dptr_x);  // The public key x-coordinate.
-OTBN_DECLARE_SYMBOL_ADDR(p384_ecdh, dptr_y);  // The public key y-coordinate.
-OTBN_DECLARE_SYMBOL_ADDR(p384_ecdh,
-                         x);  // The pointer to public key x-coordinate.
-OTBN_DECLARE_SYMBOL_ADDR(p384_ecdh,
-                         y);  // The pointer to public key y-coordinate.
-OTBN_DECLARE_SYMBOL_ADDR(
-    p384_ecdh,
-    dptr_d0);  // The pointer to private key scalar d (share 0).
-OTBN_DECLARE_SYMBOL_ADDR(
-    p384_ecdh,
-    dptr_d1);  // The pointer to private key scalar d (share 1).
+OTBN_DECLARE_SYMBOL_ADDR(p384_ecdh, x);  // The public key x-coordinate.
+OTBN_DECLARE_SYMBOL_ADDR(p384_ecdh, y);  // The public key y-coordinate.
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdh,
                          d0);  // The private key scalar d (share 0).
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdh,
@@ -35,16 +25,8 @@ OTBN_DECLARE_SYMBOL_ADDR(p384_ecdh,
 
 static const otbn_app_t kOtbnAppEcdh = OTBN_APP_T_INIT(p384_ecdh);
 static const otbn_addr_t kOtbnVarEcdhMode = OTBN_ADDR_T_INIT(p384_ecdh, mode);
-static const otbn_addr_t kOtbnVarEcdhDptrX =
-    OTBN_ADDR_T_INIT(p384_ecdh, dptr_x);
-static const otbn_addr_t kOtbnVarEcdhDptrY =
-    OTBN_ADDR_T_INIT(p384_ecdh, dptr_y);
 static const otbn_addr_t kOtbnVarEcdhX = OTBN_ADDR_T_INIT(p384_ecdh, x);
 static const otbn_addr_t kOtbnVarEcdhY = OTBN_ADDR_T_INIT(p384_ecdh, y);
-static const otbn_addr_t kOtbnVarEcdhDptrD0 =
-    OTBN_ADDR_T_INIT(p384_ecdh, dptr_d0);
-static const otbn_addr_t kOtbnVarEcdhDptrD1 =
-    OTBN_ADDR_T_INIT(p384_ecdh, dptr_d1);
 static const otbn_addr_t kOtbnVarEcdhD0 = OTBN_ADDR_T_INIT(p384_ecdh, d0);
 static const otbn_addr_t kOtbnVarEcdhD1 = OTBN_ADDR_T_INIT(p384_ecdh, d1);
 
@@ -65,38 +47,9 @@ enum {
   // TODO: kOtbnEcdhModeSharedKeyFromSeed = 0x74b;
 };
 
-/**
- * Makes a single dptr in the P384 library point to where its value is stored.
- */
-static void setup_data_pointer(const otbn_addr_t dptr,
-                               const otbn_addr_t value) {
-  otbn_dmem_write(sizeof(value) / sizeof(uint32_t), &value, dptr);
-}
-
-/**
- * Sets up all data pointers used by the P384 library to point to DMEM.
- *
- * The ECDH P384 OTBN library makes use of "named" data pointers as part of
- * its calling convention, which are exposed as symbol starting with `dptr_`.
- * The DMEM locations these pointers refer to is not mandated by the P384
- * calling convention; the values can be placed anywhere in OTBN DMEM.
- *
- * This function makes the data pointers refer to the pre-allocated DMEM
- * regions to store the actual values.
- */
-static void setup_data_pointers(void) {
-  setup_data_pointer(kOtbnVarEcdhDptrX, kOtbnVarEcdhX);
-  setup_data_pointer(kOtbnVarEcdhDptrY, kOtbnVarEcdhY);
-  setup_data_pointer(kOtbnVarEcdhDptrD0, kOtbnVarEcdhD0);
-  setup_data_pointer(kOtbnVarEcdhDptrD1, kOtbnVarEcdhD1);
-}
-
 status_t ecdh_p384_keypair_start(void) {
   // Load the ECDH/P-384 app. Fails if OTBN is non-idle.
   HARDENED_TRY(otbn_load_app(kOtbnAppEcdh));
-
-  // Set up the data pointers
-  setup_data_pointers();
 
   // Set mode so start() will jump into keygen.
   uint32_t mode = kOtbnEcdhModeKeypairRandom;
@@ -135,9 +88,6 @@ status_t ecdh_p384_shared_key_start(const p384_masked_scalar_t *private_key,
 
   // Load the ECDH/P-384 app. Fails if OTBN is non-idle.
   HARDENED_TRY(otbn_load_app(kOtbnAppEcdh));
-
-  // Set up the data pointers
-  setup_data_pointers();
 
   // Set mode so start() will jump into shared-key generation.
   uint32_t mode = kOtbnEcdhModeSharedKey;

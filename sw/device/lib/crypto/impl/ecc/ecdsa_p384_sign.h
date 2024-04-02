@@ -16,9 +16,6 @@
 extern "C" {
 #endif  // __cplusplus
 
-extern otbn_addr_t kOtbnVarEcdsaR;
-extern otbn_addr_t kOtbnVarEcdsaS;
-
 /**
  * Start an async ECDSA/P-384 signature generation operation on OTBN.
  *

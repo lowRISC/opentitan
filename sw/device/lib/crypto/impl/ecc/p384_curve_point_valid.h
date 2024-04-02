@@ -25,6 +25,7 @@ extern "C" {
  * @param public_key Public key (Q).
  * @return Result of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t p384_curve_point_validate_start(const p384_point_t *public_key);
 
 /**
@@ -34,6 +35,7 @@ status_t p384_curve_point_validate_start(const p384_point_t *public_key);
  *
  * @return Result of the operation (OK or error).
  */
+OT_WARN_UNUSED_RESULT
 status_t p384_curve_point_validate_finalize(void);
 
 #ifdef __cplusplus
