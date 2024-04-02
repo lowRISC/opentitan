@@ -108,8 +108,8 @@ jobs:
     displayName: "Run all ROM E2E tests"
   - template: ../ci/publish-bazel-test-results.yml
 
-- job: slow_otbn_crypto_tests
-  displayName: "Slow OTBN Crypto Tests"
+- job: nightly_tagged_sw_tests
+  displayName: "Software tests explicitly tagged as 'nightly'"
   timeoutInMinutes: 180
   dependsOn: checkout
   pool:
@@ -120,7 +120,13 @@ jobs:
   - template: ../ci/install-package-dependencies.yml
   - bash: |
       set -x
-      ci/bazelisk.sh test --test_tag_filters=nightly //sw/otbn/crypto/...
+      ci/bazelisk.sh test \
+        --define DISABLE_VERILATOR_BUILD=true \
+        --define bitstream=gcp_splice \
+        --build_tests_only \
+        --test_output=errors \
+        --test_tag_filters=nightly,-broken \
+        //sw/...
     displayName: "Run the tests"
   - template: ../ci/publish-bazel-test-results.yml
 
