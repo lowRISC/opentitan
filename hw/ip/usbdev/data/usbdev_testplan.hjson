@@ -347,7 +347,7 @@
             - Verify that the corresponding Interrupt pin goes high after the link disconnected.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_disconnected"]
     }
     {
       name: host_lost
