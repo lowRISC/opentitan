@@ -167,6 +167,54 @@ cc_library(
 )
 
 cc_library(
+    name = "edn_fi",
+    srcs = ["edn_fi.c"],
+    hdrs = ["edn_fi.h"],
+    deps = [
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/dif:csrng",
+        "//sw/device/lib/dif:csrng_shared",
+        "//sw/device/lib/dif:edn",
+        "//sw/device/lib/dif:entropy_src",
+        "//sw/device/lib/dif:rv_core_ibex",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:edn_testutils",
+        "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/lib/testing:rv_core_ibex_testutils",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+        "//sw/device/sca/lib:sca",
+        "//sw/device/tests/crypto/cryptotest/firmware:sca_lib",
+        "//sw/device/tests/crypto/cryptotest/json:edn_fi_commands",
+    ],
+)
+
+cc_library(
+    name = "edn_sca",
+    srcs = ["edn_sca.c"],
+    hdrs = ["edn_sca.h"],
+    deps = [
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/dif:csrng",
+        "//sw/device/lib/dif:csrng_shared",
+        "//sw/device/lib/dif:edn",
+        "//sw/device/lib/dif:entropy_src",
+        "//sw/device/lib/dif:rv_core_ibex",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/lib/testing:rv_core_ibex_testutils",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+        "//sw/device/sca/lib:prng",
+        "//sw/device/sca/lib:sca",
+        "//sw/device/tests/crypto/cryptotest/firmware:sca_lib",
+        "//sw/device/tests/crypto/cryptotest/json:edn_sca_commands",
+    ],
+)
+
+cc_library(
     name = "ibex_fi",
     srcs = [
         "ibex_fi.S",
@@ -326,6 +374,8 @@ FIRMWARE_DEPS = [
     ":drbg",
     ":ecdh",
     ":ecdsa",
+    ":edn_fi",
+    ":edn_sca",
     ":hash",
     ":hmac",
     ":ibex_fi",

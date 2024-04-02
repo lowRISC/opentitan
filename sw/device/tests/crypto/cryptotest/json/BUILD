@@ -85,6 +85,20 @@ cc_library(
 )
 
 cc_library(
+    name = "edn_fi_commands",
+    srcs = ["edn_fi_commands.c"],
+    hdrs = ["edn_fi_commands.h"],
+    deps = ["//sw/device/lib/ujson"],
+)
+
+cc_library(
+    name = "edn_sca_commands",
+    srcs = ["edn_sca_commands.c"],
+    hdrs = ["edn_sca_commands.h"],
+    deps = ["//sw/device/lib/ujson"],
+)
+
+cc_library(
     name = "ibex_fi_commands",
     srcs = ["ibex_fi_commands.c"],
     hdrs = ["ibex_fi_commands.h"],

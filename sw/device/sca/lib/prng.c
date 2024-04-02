@@ -158,6 +158,8 @@ __attribute__((noinline)) static uint32_t genrand_int32(void) {
 
 void prng_seed(uint32_t seed) { init_by_array(&seed, 1); }
 
+uint32_t prng_rand_uint32(void) { return genrand_int32(); }
+
 uint8_t prng_rand_byte(void) {
   uint32_t rand = 0;
   do {
