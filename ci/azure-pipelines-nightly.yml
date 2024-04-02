@@ -108,8 +108,8 @@ jobs:
     displayName: "Run all ROM E2E tests"
   - template: ../ci/publish-bazel-test-results.yml
 
-- job: nightly_tagged_sw_tests
-  displayName: "Software tests explicitly tagged as 'nightly'"
+- job: nightly_tagged_tests
+  displayName: "Tests explicitly tagged as 'nightly'"
   timeoutInMinutes: 180
   dependsOn: checkout
   pool:
@@ -126,8 +126,8 @@ jobs:
         --build_tests_only \
         --test_output=errors \
         --test_tag_filters=nightly,-broken \
-        //sw/...
-    displayName: "Run the tests"
+        //...
+    displayName: "Run nightly tests"
   - template: ../ci/publish-bazel-test-results.yml
 
 - job: bob_spi_i2c

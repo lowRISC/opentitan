@@ -86,7 +86,7 @@ then
     " \
     > "${pattern_file}"
     # We need to remove tests tagged as manual since we are not using a wildcard target.
-    test_args="${test_args} --test_tag_filters=cw310_sival,-broken,-skip_in_ci,-manual"
+    test_args="${test_args} --test_tag_filters=cw310_sival,-broken,-skip_in_ci,-manual,-nightly"
 elif [ "${fpga_tags}" == "cw310_rom_but_not_manuf_and_sival_tests" ]
 then
     # Only consider tests that are tagged `cw310_rom_with_fake_keys` or `cw310_rom_with_real_keys`
@@ -120,9 +120,9 @@ then
     " \
     > "${pattern_file}"
     # We need to remove tests tagged as manual since we are not using a wildcard target.
-    test_args="${test_args} --test_tag_filters=cw310_rom_with_fake_keys,cw310_rom_with_real_keys,-manuf,-broken,-skip_in_ci,-manual"
+    test_args="${test_args} --test_tag_filters=cw310_rom_with_fake_keys,cw310_rom_with_real_keys,-manuf,-broken,-skip_in_ci,-manual,-nightly"
 else
-    test_args="${test_args} --test_tag_filters=${fpga_tags},-broken,-skip_in_ci"
+    test_args="${test_args} --test_tag_filters=${fpga_tags},-broken,-skip_in_ci,-nightly"
     echo "//..." > "${pattern_file}"
     echo "@manufacturer_test_hooks//..." >> "${pattern_file}"
 fi
