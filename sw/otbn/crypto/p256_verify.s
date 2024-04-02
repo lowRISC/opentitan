@@ -244,7 +244,7 @@ p256_verify:
   la        x3, p256_n
   bn.lid    x0, 0(x3)
   bn.wsrw   MOD, w0
-  bn.subm   w24, w19, w31
+  bn.addm   w24, w19, w31
 
   /* If we got here the basic validity checks passed, so set `ok` to true. */
   la       x2, ok
