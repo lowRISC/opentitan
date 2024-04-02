@@ -47,6 +47,7 @@ rust_library(
         "@crate_index//:deser-hjson",
         "@crate_index//:heck",
         "@crate_index//:hex",
+        "@crate_index//:indexmap",
         "@crate_index//:log",
         "@crate_index//:memchr",
         "@crate_index//:num-bigint-dig",

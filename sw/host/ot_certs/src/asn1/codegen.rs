@@ -4,8 +4,8 @@
 
 use anyhow::{bail, ensure, Result};
 use heck::{ToSnakeCase, ToUpperCamelCase};
+use indexmap::IndexMap;
 use num_bigint_dig::BigUint;
-use std::collections::HashMap;
 
 use crate::asn1::builder::Builder;
 use crate::asn1::{Oid, Tag};
@@ -19,13 +19,13 @@ struct ConstantEntry {
 /// Constant pool for code generation.
 #[derive(Default)]
 pub struct ConstantPool {
-    constants: HashMap<Vec<u8>, ConstantEntry>,
+    constants: IndexMap<Vec<u8>, ConstantEntry>,
 }
 
 impl ConstantPool {
     pub fn new() -> ConstantPool {
         ConstantPool {
-            constants: HashMap::new(),
+            constants: IndexMap::new(),
         }
     }
 

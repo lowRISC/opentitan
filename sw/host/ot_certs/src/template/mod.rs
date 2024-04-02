@@ -32,9 +32,9 @@
 //! ```
 
 use anyhow::Result;
+use indexmap::IndexMap;
 use num_bigint_dig::BigUint;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use std::collections::HashMap;
 
 pub mod subst;
 pub mod testgen;
@@ -48,7 +48,7 @@ pub struct Template {
     /// Name of the certificate.
     pub name: String,
     /// Variable declarations.
-    pub variables: HashMap<String, VariableType>,
+    pub variables: IndexMap<String, VariableType>,
     /// Certificate specification.
     pub certificate: Certificate,
 }
@@ -64,9 +64,9 @@ pub struct Certificate {
     /// X509 validity's not after date. The format must be a valid ASN1 GeneralizedTime.
     pub not_after: Value<String>,
     /// X509 certificate's issuer.
-    pub issuer: HashMap<AttributeType, Value<String>>,
+    pub issuer: IndexMap<AttributeType, Value<String>>,
     /// X509 certificate's subject.
-    pub subject: HashMap<AttributeType, Value<String>>,
+    pub subject: IndexMap<AttributeType, Value<String>>,
     /// X509 certificate's public key.
     pub subject_public_key_info: SubjectPublicKeyInfo,
     /// X509 certificate's authority key identifier.
@@ -483,7 +483,7 @@ mod tests {
             }
         "#};
 
-        let variables = HashMap::from([
+        let variables = IndexMap::from([
             (
                 "owner_pub_key_ec_x".to_string(),
                 VariableType::Integer { size: 32 },
@@ -526,13 +526,13 @@ mod tests {
         // Certificate template values.
         let certificate = Certificate {
             serial_number: Value::convert("owner_pub_key_id", Conversion::BigEndian),
-            issuer: HashMap::from([(
+            issuer: IndexMap::from([(
                 AttributeType::SerialNumber,
                 Value::convert("signing_pub_key_id", Conversion::LowercaseHex),
             )]),
             not_before: Value::literal("20230101000000Z"),
             not_after: Value::literal("99991231235959Z"),
-            subject: HashMap::from([(
+            subject: IndexMap::from([(
                 AttributeType::SerialNumber,
                 Value::convert("owner_pub_key_id", Conversion::LowercaseHex),
             )]),
