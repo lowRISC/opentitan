@@ -110,6 +110,10 @@ opentitan_test(
     srcs = ["mod_exp_ibex_functest.c"],
     cw310 = cw310_params(
         timeout = "long",
+        tags = [
+            # The wycheproof suite has a lot of tests; run it only on the nightly CI.
+            "nightly",
+        ],
     ),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
@@ -184,6 +188,12 @@ opentitan_test(
 opentitan_test(
     name = "mod_exp_otbn_functest_wycheproof",
     srcs = ["mod_exp_otbn_functest.c"],
+    cw310 = cw310_params(
+        tags = [
+            # The wycheproof suite has a lot of tests; run it only on the nightly CI.
+            "nightly",
+        ],
+    ),
     exec_env = {
         # Test set is too large as ROM_EXT
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
@@ -380,6 +390,10 @@ opentitan_test(
     srcs = ["sigverify_dynamic_functest.c"],
     cw310 = cw310_params(
         timeout = "long",
+        tags = [
+            # The wycheproof suite has a lot of tests; run it only on the nightly CI.
+            "nightly",
+        ],
     ),
     exec_env = {
         # Test set is too large as ROM_EXT
