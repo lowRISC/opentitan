@@ -299,12 +299,12 @@ class SimCfg(FlowCfg):
     def _print_list(self):
         for list_item in self.list_items:
             log.info("---- List of %s in %s ----", list_item, self.variant_name)
-            if hasattr(self, list_item):
-                items = getattr(self, list_item)
-                for item in items:
-                    log.info(item)
-            else:
-                log.error("Item %s does not exist!", list_item)
+            items = getattr(self, list_item, None)
+            if items is None:
+                log.error("No %s defined for %s.", list_item, self.variant_name)
+
+            for item in items:
+                log.info(item)
 
     def _create_build_and_run_list(self):
         '''Generates a list of deployable objects from the provided items.
