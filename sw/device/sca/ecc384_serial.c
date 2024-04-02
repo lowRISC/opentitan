@@ -100,16 +100,6 @@ uint32_t ecc384_msg[kEcc384NumWords] = {
 // p384_ecdsa_sca has randomnization removed.
 OTBN_DECLARE_APP_SYMBOLS(p384_ecdsa_sca);
 
-OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sca, dptr_msg);
-OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sca, dptr_r);
-OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sca, dptr_s);
-OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sca, dptr_x);
-OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sca, dptr_y);
-OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sca, dptr_d0);
-OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sca, dptr_d1);
-OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sca, dptr_k0);
-OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sca, dptr_k1);
-
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sca, mode);
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sca, msg);
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sca, r);
@@ -123,25 +113,6 @@ OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sca, k1);
 
 static const otbn_app_t kOtbnAppP384Ecdsa = OTBN_APP_T_INIT(p384_ecdsa_sca);
 
-static const otbn_addr_t kOtbnVarDptrMsg =
-    OTBN_ADDR_T_INIT(p384_ecdsa_sca, dptr_msg);
-static const otbn_addr_t kOtbnVarDptrR =
-    OTBN_ADDR_T_INIT(p384_ecdsa_sca, dptr_r);
-static const otbn_addr_t kOtbnVarDptrS =
-    OTBN_ADDR_T_INIT(p384_ecdsa_sca, dptr_s);
-static const otbn_addr_t kOtbnVarDptrX =
-    OTBN_ADDR_T_INIT(p384_ecdsa_sca, dptr_x);
-static const otbn_addr_t kOtbnVarDptrY =
-    OTBN_ADDR_T_INIT(p384_ecdsa_sca, dptr_y);
-static const otbn_addr_t kOtbnVarDptrD0 =
-    OTBN_ADDR_T_INIT(p384_ecdsa_sca, dptr_d0);
-static const otbn_addr_t kOtbnVarDptrD1 =
-    OTBN_ADDR_T_INIT(p384_ecdsa_sca, dptr_d1);
-static const otbn_addr_t kOtbnVarDptrK0 =
-    OTBN_ADDR_T_INIT(p384_ecdsa_sca, dptr_k0);
-static const otbn_addr_t kOtbnVarDptrK1 =
-    OTBN_ADDR_T_INIT(p384_ecdsa_sca, dptr_k1);
-
 static const otbn_addr_t kOtbnVarMode = OTBN_ADDR_T_INIT(p384_ecdsa_sca, mode);
 static const otbn_addr_t kOtbnVarMsg = OTBN_ADDR_T_INIT(p384_ecdsa_sca, msg);
 static const otbn_addr_t kOtbnVarR = OTBN_ADDR_T_INIT(p384_ecdsa_sca, r);
@@ -152,40 +123,6 @@ static const otbn_addr_t kOtbnVarD0 = OTBN_ADDR_T_INIT(p384_ecdsa_sca, d0);
 static const otbn_addr_t kOtbnVarD1 = OTBN_ADDR_T_INIT(p384_ecdsa_sca, d1);
 static const otbn_addr_t kOtbnVarK0 = OTBN_ADDR_T_INIT(p384_ecdsa_sca, k0);
 static const otbn_addr_t kOtbnVarK1 = OTBN_ADDR_T_INIT(p384_ecdsa_sca, k1);
-
-/**
- * Makes a single dptr in the P384 library point to where its value is stored.
- */
-static void setup_data_pointer(const otbn_addr_t dptr,
-                               const otbn_addr_t value) {
-  SS_CHECK_STATUS_OK(
-      otbn_dmem_write(sizeof(value) / sizeof(uint32_t), &value, dptr));
-}
-
-/**
- * Sets up all data pointers used by the P384 library to point to DMEM.
- *
- * The ECDSA P384 OTBN library makes use of "named" data pointers as part of
- * its calling convention, which are exposed as symbol starting with `dptr_`.
- * The DMEM locations these pointers refer to is not mandated by the P384
- * calling convention; the values can be placed anywhere in OTBN DMEM.
- *
- * As convenience, `ecdsa_p384_sca.s` pre-allocates space for the data values.
- *
- * This function makes the data pointers refer to the pre-allocated DMEM
- * regions to store the actual values.
- */
-static void setup_data_pointers(void) {
-  setup_data_pointer(kOtbnVarDptrMsg, kOtbnVarMsg);
-  setup_data_pointer(kOtbnVarDptrR, kOtbnVarR);
-  setup_data_pointer(kOtbnVarDptrS, kOtbnVarS);
-  setup_data_pointer(kOtbnVarDptrX, kOtbnVarX);
-  setup_data_pointer(kOtbnVarDptrY, kOtbnVarY);
-  setup_data_pointer(kOtbnVarDptrD0, kOtbnVarD0);
-  setup_data_pointer(kOtbnVarDptrD1, kOtbnVarD1);
-  setup_data_pointer(kOtbnVarDptrK0, kOtbnVarK0);
-  setup_data_pointer(kOtbnVarDptrK1, kOtbnVarK1);
-}
 
 /**
  * Simple serial 'k' (set ephemeral key) command handler.
@@ -278,9 +215,6 @@ static void p384_dmem_write(const uint32_t src[kEcc384NumWords],
 static void p384_ecdsa_sign(const uint32_t *msg, const uint32_t *private_key_d,
                             uint32_t *signature_r, uint32_t *signature_s,
                             const uint32_t *k) {
-  LOG_INFO("Setup data pointers");
-  setup_data_pointers();
-
   uint32_t mode = 1;  // mode 1 => sign
   // LOG_INFO("Copy data");
   SS_CHECK_STATUS_OK(otbn_dmem_write(/*num_words=*/1, &mode, kOtbnVarMode));
