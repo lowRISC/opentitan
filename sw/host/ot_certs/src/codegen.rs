@@ -7,7 +7,7 @@
 
 use anyhow::{bail, Context, Result};
 use heck::ToUpperCamelCase;
-use std::collections::HashMap;
+use indexmap::IndexMap;
 use std::fmt::Write;
 
 use crate::asn1::codegen::{self, ConstantPool, VariableCodegenInfo, VariableInfo};
@@ -84,8 +84,8 @@ pub fn generate_cert(from_file: &str, tmpl: &Template) -> Result<Codegen> {
     source_h.push_str("#include \"sw/device/lib/base/status.h\"\n\n");
 
     // Partition variables between TBS and signature.
-    let mut tbs_vars = HashMap::<String, VariableType>::new();
-    let mut sig_vars = HashMap::<String, VariableType>::new();
+    let mut tbs_vars = IndexMap::<String, VariableType>::new();
+    let mut sig_vars = IndexMap::<String, VariableType>::new();
     for (var_name, var) in tmpl.variables.clone() {
         if var_appears_in_sig(&var_name, &tmpl.certificate.signature) {
             sig_vars.insert(var_name, var);
@@ -266,7 +266,7 @@ pub fn generate_cert(from_file: &str, tmpl: &Template) -> Result<Codegen> {
 // Generate a structure holding the value of the variables.
 fn generate_value_struct(
     value_struct_name: &str,
-    variables: &HashMap<String, VariableType>,
+    variables: &IndexMap<String, VariableType>,
 ) -> String {
     let mut source = String::new();
     writeln!(source, "typedef struct {value_struct_name} {{").unwrap();
@@ -280,7 +280,7 @@ fn generate_value_struct(
 
 // Generate an assignment of a structure holding the values of the variables.
 // This is used in the unittest to fill the TBS and sig structures.
-fn generate_value_struct_assignment(variables: &HashMap<String, VariableType>) -> Result<String> {
+fn generate_value_struct_assignment(variables: &IndexMap<String, VariableType>) -> Result<String> {
     let mut source = String::new();
     for (var_name, var_type) in variables {
         let (codegen, _) = c_variable_info(var_name, "", var_type);
@@ -328,7 +328,7 @@ fn generate_builder(
     fn_name: &str,
     fn_params_str: &str,
     constants: &mut ConstantPool,
-    variables: &HashMap<String, VariableType>,
+    variables: &IndexMap<String, VariableType>,
     gen: impl FnOnce(&mut codegen::Codegen) -> Result<()>,
 ) -> Result<(String, String, usize)> {
     let mut generate_fn_impl = String::new();

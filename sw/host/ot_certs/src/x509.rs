@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::{bail, ensure, Context, Result};
+use indexmap::IndexMap;
 use num_bigint_dig::BigUint;
-use std::collections::HashMap;
 
 use foreign_types::ForeignTypeRef;
 use openssl::asn1::{Asn1IntegerRef, Asn1OctetStringRef, Asn1StringRef, Asn1TimeRef};
@@ -102,8 +102,8 @@ fn asn1time_to_string(time: &Asn1TimeRef) -> Result<Value<String>> {
 fn asn1name_to_hashmap(
     field: &str,
     name: &X509NameRef,
-) -> Result<HashMap<AttributeType, Value<String>>> {
-    let mut res = HashMap::<AttributeType, Value<String>>::new();
+) -> Result<IndexMap<AttributeType, Value<String>>> {
+    let mut res = IndexMap::<AttributeType, Value<String>>::new();
     for entry in name.entries() {
         let attr = AttributeType::try_from(entry.object().nid())?;
         if res

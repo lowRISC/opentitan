@@ -7,10 +7,10 @@
 
 use anyhow::{bail, ensure, Context, Result};
 use hex::{FromHex, ToHex};
+use indexmap::IndexMap;
 use num_bigint_dig::{BigUint, ToBigInt};
 use num_traits::Num;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 
 use crate::template::{
     BasicConstraints, Certificate, CertificateExtension, Conversion, DiceTcbInfoExtension,
@@ -34,13 +34,13 @@ pub enum SubstValue {
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct SubstData {
     #[serde(flatten)]
-    pub values: HashMap<String, SubstValue>,
+    pub values: IndexMap<String, SubstValue>,
 }
 
 impl SubstData {
     pub fn new() -> SubstData {
         SubstData {
-            values: HashMap::new(),
+            values: IndexMap::new(),
         }
     }
 
@@ -526,15 +526,15 @@ where
     }
 }
 
-impl<K, V> Subst for HashMap<K, V>
+impl<K, V> Subst for IndexMap<K, V>
 where
     K: Clone + Eq + std::hash::Hash,
     V: Subst,
 {
-    fn subst(&self, data: &SubstData) -> Result<HashMap<K, V>> {
+    fn subst(&self, data: &SubstData) -> Result<IndexMap<K, V>> {
         self.iter()
             .map(|(k, v)| Ok((k.clone(), v.subst(data)?)))
-            .collect::<Result<HashMap<K, V>>>()
+            .collect::<Result<IndexMap<K, V>>>()
     }
 }
 

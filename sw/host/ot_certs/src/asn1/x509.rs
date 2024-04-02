@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
+use indexmap::IndexMap;
 use num_bigint_dig::BigUint;
 use num_traits::FromPrimitive;
-use std::collections::HashMap;
 
 use crate::asn1::builder::{concat_suffix, Builder};
 use crate::asn1::{Oid, Tag};
@@ -169,7 +169,7 @@ impl X509 {
     pub fn push_name<B: Builder>(
         builder: &mut B,
         name_hint: Option<String>,
-        name: &HashMap<AttributeType, Value<String>>,
+        name: &IndexMap<AttributeType, Value<String>>,
     ) -> Result<()> {
         // https://datatracker.ietf.org/doc/html/rfc5280#section-4.1.2.4
         // Name ::= CHOICE { -- only one possibility for now --
