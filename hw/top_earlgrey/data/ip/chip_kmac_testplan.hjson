@@ -177,6 +177,7 @@
       tests: []
       bazel: [
         "//sw/device/tests/crypto/cryptotest:hash_kat",
+        "//sw/device/tests:kmac_mode_cshake_test",
       ]
     }
     {
