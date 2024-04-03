@@ -253,12 +253,6 @@ class entropy_src_base_vseq extends cip_base_vseq #(
                                 output bit regwen);
     completed = 0;
 
-    // If the new configuration is intentionally trying to force bad mubi
-    // configurations, disable the alerts before applying the bad configs
-    if (newcfg.use_invalid_mubi) begin
-      cfg.entropy_src_assert_vif.assert_off_alert();
-    end
-
     if (newcfg.preconfig_disable) begin
       disable_dut();
       `uvm_info(`gfn, "DUT Disabled", UVM_MEDIUM)
