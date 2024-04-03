@@ -46,10 +46,15 @@ module tlul_assert #(
 
   pend_req_t [2**TL_AIW-1:0] pend_req;
 
-  // set `disable_sva` before testing TLUL error cases
+  // To test TLUL error cases in UVM tests, pass the tlul_assert_en argument in the UVM config db,
+  // which will cause disable_sva to be set to 1. This disables some assertions about the
+  // well-formedness of the TL input.
   bit disable_sva;
-  // d_error related SVA doesn't work for xbar, as it doesn't return d_error for protocol errors
-  // set this to disable the check
+
+  // We have some assertions below about the behaviour of d2h.d_error. These aren't actually true
+  // for the xbar, since it doesn't return d_error for protocol errors. Disable these checks by
+  // passing tlul_d_error_assert_en in the UVM config db, which causes disable_d_error_sva to be set
+  // to 1.
   bit disable_d_error_sva;
 
   logic [7:0]  a_mask, d_mask;
@@ -413,6 +418,14 @@ module tlul_assert #(
         `uvm_fatal("tlul_assert", "Can't find tlul_d_error_assert_en")
       end
       disable_d_error_sva = !tlul_assert_en;
+    end
+  `else
+    // Set default values for the disable_*_sva signals (not disabling the assertions)
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) begin
+        disable_sva <= 0;
+        disable_d_error_sva <= 0;
+      end
     end
   `endif
 
