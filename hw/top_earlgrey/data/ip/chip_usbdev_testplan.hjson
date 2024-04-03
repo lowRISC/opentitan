@@ -19,7 +19,7 @@
       si_stage: SV2
       lc_states: ["PROD"]
       tests: []
-      bazel: []
+      bazel: ["//sw/device/tests:usbdev_mem_test"]
     }
     {
       name: chip_sw_usbdev_vbus
@@ -110,7 +110,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: []
-      bazel: []
+      bazel: ["//sw/device/tests:usbdev_sof_test"]
     }
     {
       name: chip_sw_usbdev_setup_rx
@@ -246,7 +246,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_sw_usbdev_stream"]
-      bazel: []
+      bazel: ["//sw/device/tests:usbdev_stream_test"]
     }
     {
       name: chip_sw_usbdev_iso
@@ -275,7 +275,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: []
-      bazel: []
+      bazel: ["//sw/device/tests:usbdev_iso_test"]
     }
     {
       name: chip_sw_usbdev_mixed
@@ -303,7 +303,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: []
-      bazel: []
+      bazel: ["//sw/device/tests:usbdev_mixed_test"]
     }
     {
       name: chip_sw_usbdev_suspend_resume
@@ -333,7 +333,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: []
-      bazel: []
+      bazel: ["//sw/device/tests:usbdev_suspend_resume_test"]
     }
     {
       name: chip_sw_usbdev_aon_wake_reset
@@ -364,7 +364,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: []
-      bazel: ["//sw/device/tests:usbdev_aon_wake_reset"]
+      bazel: ["//sw/device/tests:usbdev_aon_wake_reset_test"]
     }
     {
       name: chip_sw_usbdev_aon_wake_disconnect
@@ -397,7 +397,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: []
-      bazel: ["//sw/device/tests:usbdev_aon_wake_disconnect"]
+      bazel: ["//sw/device/tests:usbdev_aon_wake_disconnect_test"]
     }
     {
       name: chip_sw_usbdev_toggle_restore
@@ -416,7 +416,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: []
-      bazel: []
+      bazel: ["//sw/device/tests:usbdev_toggle_restore_test"]
     }
   ]
 }
