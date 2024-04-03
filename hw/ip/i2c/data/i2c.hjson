@@ -89,8 +89,8 @@
       desc: "target mode interrupt: asserted whilst the TX FIFO level is below the low threshold. This is a level status interrupt."
       type: "status"
     }
-    { name: "acq_full"
-      desc: "target mode interrupt: raised if ACQ FIFO becomes full. This is a level status interrupt."
+    { name: "acq_stretch"
+      desc: "target mode interrupt: raised if the target is stretching clocks due to full ACQ FIFO or zero count in !!TARGET_ACK_CTRL.NBYTES (if enabled). This is a level status interrupt."
       type: "status"
     }
     { name: "unexp_stop"
@@ -143,6 +143,15 @@
     { name: "I2C.MODE.TARGET",
       desc: '''
             The I2C block can be configured in target mode.
+            '''
+    },
+    { name: "I2C.MODE.ACKCONTROL",
+      desc: '''
+            The I2C Target module can be configured to support N-byte ACK Control Mode.
+            With ACK Control Mode off, software provides no protocol-level control of deciding whether to ACK or NACK bytes.
+            With ACK Control Mode on, software may choose whether to ACK Write data bytes.
+            Software may program the Target module to ACK up to N bytes without software intervention.
+            The configuration resets to 0 for the next transfer.
             '''
     },
     { name: "I2C.SPEED.STANDARD",
@@ -252,6 +261,17 @@
                 For reads, the Target module will release SDA, causing 0xff to be returned for all data bytes until it receives a Stop.
                 '''
         }
+        { bits: "4"
+          resval: "0"
+          name: "ACK_CTRL_EN"
+          desc: '''
+                Enable I2C Target ACK Control Mode.
+
+                ACK Control Mode works together with !!TARGET_ACK_CTRL.NBYTES to allow software to control upper-layer protocol (N)ACKing (e.g. as in SMBus).
+                This bit enables the mode when 1, and !!TARGET_ACK_CTRL.NBYTES limits how many bytes may be automatically ACK'd while the ACQ FIFO has space.
+                If it is 0, the decision to ACK or NACK is made only from stretching timeouts and !!CTRL.NACK_ADDR_AFTER_TIMEOUT.
+                '''
+        }
       ]
     }
     { name:     "STATUS"
@@ -305,6 +325,10 @@
           name: "ACQEMPTY"
           desc: "Target mode receive FIFO is empty"
           resval: "1"
+        }
+        { bits: "10"
+          name: "ACK_CTRL_STRETCH"
+          desc: "Target mode stretching at (N)ACK phase due to zero count in !!TARGET_ACK_CTRL.NBYTES"
         }
       ]
       tags: [// Updated by the hw. Exclude from write-checks.
@@ -780,6 +804,65 @@
             '''
       swaccess: "rc"
       hwaccess: "hrw"
+      fields: [
+        { bits: "7:0" }
+      ]
+    }
+    { name: "TARGET_ACK_CTRL"
+      desc: "Controls for mid-transfer (N)ACK phase handling"
+      swaccess: "rw"
+      hwaccess: "hrw"
+      hwqe: true
+      hwext: true
+      fields: [
+        { bits: "8:0"
+          name: "NBYTES"
+          desc: '''
+                Remaining number of bytes the Target module may ACK automatically.
+
+                If !!CTRL.ACK_CTRL_EN is set to 1, the Target module will stretch the clock at the (N)ACK phase of a byte if this CSR is 0, awaiting software's instructions.
+
+                At the beginning of each Write transfer, this byte count is reset to 0.
+                Writes to this CSR also are only accepted while the Target module is stretching the clock.
+                The Target module will always ACK its address if the ACQ FIFO has space.
+                For data bytes afterwards, it will stop at the (N)ACK phase and stretch the clock when this CSR is 0.
+                For each data byte that is ACK'd in a transaction, the byte count will decrease by 1.
+
+                Note that a full ACQ FIFO can still cause the Target module to halt at the beginning of a new byte.
+                The ACK Control Mode provides an additional synchronization point, during the (N)ACK phase instead of after.
+                For both cases, !!TARGET_TIMEOUT_CTRL applies, and stretching past the timeout will produce an automatic NACK.
+
+                This mode can be used to implement the mid-transfer (N)ACK responses required by various SMBus protocols.
+                '''
+          tags: [// Writes only succeed in a specific stretching state. Exclude from write-checks.
+                 "excl:CsrNonInitTests:CsrExclWriteCheck"]
+        }
+        { bits: "31"
+          name: "NACK"
+          swaccess: "wo"
+          hwaccess: "hro"
+          desc: '''
+                When the Target module stretches on the (N)ACK phase of a Write due to !!TARGET_ACK_CTRL.NBYTES being 0, writing a 1 here will cause it to send a NACK.
+
+                If software chooses to NACK, note that the NACKing behavior is the same as if a stretch timeout occurred.
+                The rest of the transaction will be NACK'd, including subsequent transfers.
+                For the address byte, the (N)ACK phase of subsequent transfers will follow the behavior specified by !!CTRL.NACK_ADDR_AFTER_TIMEOUT.
+
+                Automatically clears to 0.
+                '''
+        }
+      ]
+    }
+    { name: "ACQ_FIFO_NEXT_DATA"
+      desc: '''
+            The data byte pending to be written to the ACQ FIFO.
+
+            This CSR is only valid while the Target module is stretching in the (N)ACK phase, indicated by !!STATUS.ACK_CTRL_STRETCH .
+            It is intended to be used with ACK Control Mode, so software may check the current byte.
+            '''
+      swaccess: "ro"
+      hwaccess: "hwo"
+      hwext: true
       fields: [
         { bits: "7:0" }
       ]

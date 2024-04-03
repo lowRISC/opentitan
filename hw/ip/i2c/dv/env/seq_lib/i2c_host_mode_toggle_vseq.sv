@@ -25,7 +25,7 @@ class i2c_host_mode_toggle_vseq extends i2c_base_vseq;
 
   virtual task pre_start();
     super.pre_start();
-    expected_intr[AcqFull] = 1;
+    expected_intr[AcqStretch] = 1;
     expected_intr[TxStretch] = 1;
     expected_intr[CmdComplete] = 1;
     // Since after driver reset, SDA will be high, NAK interrupt will be raised

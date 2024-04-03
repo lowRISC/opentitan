@@ -26,7 +26,7 @@ module tb;
   wire intr_cmd_complete;
   wire intr_tx_stretch;
   wire intr_tx_threshold;
-  wire intr_acq_full;
+  wire intr_acq_stretch;
   wire intr_unexp_stop;
   wire intr_host_timeout;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
@@ -108,7 +108,7 @@ module tb;
     .intr_cmd_complete_o     (intr_cmd_complete     ),
     .intr_tx_stretch_o       (intr_tx_stretch       ),
     .intr_tx_threshold_o     (intr_tx_threshold     ),
-    .intr_acq_full_o         (intr_acq_full         ),
+    .intr_acq_stretch_o      (intr_acq_stretch      ),
     .intr_unexp_stop_o       (intr_unexp_stop       ),
     .intr_host_timeout_o     (intr_host_timeout     )
   );
@@ -126,7 +126,7 @@ module tb;
   assign interrupts[CmdComplete]    = intr_cmd_complete;
   assign interrupts[TxStretch]      = intr_tx_stretch;
   assign interrupts[TxThreshold]    = intr_tx_threshold;
-  assign interrupts[AcqFull]        = intr_acq_full;
+  assign interrupts[AcqStretch]     = intr_acq_stretch;
   assign interrupts[UnexpStop]      = intr_unexp_stop;
   assign interrupts[HostTimeout]    = intr_host_timeout;
 

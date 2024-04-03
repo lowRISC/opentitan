@@ -43,6 +43,7 @@ dif_result_t dif_i2c_get_status(const dif_i2c_t *i2c,
   status->enable_host = bitfield_bit32_read(reg, I2C_CTRL_ENABLEHOST_BIT);
   status->enable_target = bitfield_bit32_read(reg, I2C_CTRL_ENABLETARGET_BIT);
   status->line_loopback = bitfield_bit32_read(reg, I2C_CTRL_LLPBK_BIT);
+  status->ack_control_en = bitfield_bit32_read(reg, I2C_CTRL_ACK_CTRL_EN_BIT);
   reg = mmio_region_read32(i2c->base_addr, I2C_STATUS_REG_OFFSET);
   status->fmt_fifo_full = bitfield_bit32_read(reg, I2C_STATUS_FMTFULL_BIT);
   status->rx_fifo_full = bitfield_bit32_read(reg, I2C_STATUS_RXFULL_BIT);
@@ -54,6 +55,8 @@ dif_result_t dif_i2c_get_status(const dif_i2c_t *i2c,
   status->acq_fifo_full = bitfield_bit32_read(reg, I2C_STATUS_ACQFULL_BIT);
   status->tx_fifo_empty = bitfield_bit32_read(reg, I2C_STATUS_TXEMPTY_BIT);
   status->acq_fifo_empty = bitfield_bit32_read(reg, I2C_STATUS_ACQEMPTY_BIT);
+  status->ack_ctrl_stretch =
+      bitfield_bit32_read(reg, I2C_STATUS_ACK_CTRL_STRETCH_BIT);
 
   return kDifOk;
 }
@@ -403,6 +406,24 @@ dif_result_t dif_i2c_addr_nack_set_enabled(const dif_i2c_t *i2c,
   return kDifOk;
 }
 
+dif_result_t dif_i2c_ack_ctrl_set_enabled(const dif_i2c_t *i2c,
+                                          dif_toggle_t state) {
+  if (i2c == NULL) {
+    return kDifBadArg;
+  }
+
+  if (!dif_is_valid_toggle(state)) {
+    return kDifBadArg;
+  }
+  bool flag = dif_toggle_to_bool(state);
+
+  uint32_t reg = mmio_region_read32(i2c->base_addr, I2C_CTRL_REG_OFFSET);
+  reg = bitfield_bit32_write(reg, I2C_CTRL_ACK_CTRL_EN_BIT, flag);
+  mmio_region_write32(i2c->base_addr, I2C_CTRL_REG_OFFSET, reg);
+
+  return kDifOk;
+}
+
 dif_result_t dif_i2c_override_set_enabled(const dif_i2c_t *i2c,
                                           dif_toggle_t state) {
   if (i2c == NULL) {
@@ -489,6 +510,56 @@ dif_result_t dif_i2c_get_fifo_levels(const dif_i2c_t *i2c,
     *acq_fifo_level = (dif_i2c_level_t)bitfield_field32_read(
         values, I2C_TARGET_FIFO_STATUS_ACQLVL_FIELD);
   }
+
+  return kDifOk;
+}
+
+dif_result_t dif_i2c_get_auto_ack_count(const dif_i2c_t *i2c, uint16_t *count) {
+  if (i2c == NULL || count == NULL) {
+    return kDifBadArg;
+  }
+
+  uint32_t reg =
+      mmio_region_read32(i2c->base_addr, I2C_TARGET_ACK_CTRL_REG_OFFSET);
+  *count =
+      (uint16_t)bitfield_field32_read(reg, I2C_TARGET_ACK_CTRL_NBYTES_FIELD);
+
+  return kDifOk;
+}
+
+dif_result_t dif_i2c_set_auto_ack_count(const dif_i2c_t *i2c, uint16_t count) {
+  if (i2c == NULL) {
+    return kDifBadArg;
+  }
+  if (count > I2C_TARGET_ACK_CTRL_NBYTES_MASK) {
+    return kDifBadArg;
+  }
+
+  uint32_t reg =
+      bitfield_field32_write(0, I2C_TARGET_ACK_CTRL_NBYTES_FIELD, count);
+  mmio_region_write32(i2c->base_addr, I2C_TARGET_ACK_CTRL_REG_OFFSET, reg);
+
+  return kDifOk;
+}
+
+dif_result_t dif_i2c_nack_transaction(const dif_i2c_t *i2c) {
+  if (i2c == NULL) {
+    return kDifBadArg;
+  }
+
+  uint32_t reg = bitfield_bit32_write(0, I2C_TARGET_ACK_CTRL_NACK_BIT, true);
+  mmio_region_write32(i2c->base_addr, I2C_TARGET_ACK_CTRL_REG_OFFSET, reg);
+
+  return kDifOk;
+}
+
+dif_result_t dif_i2c_get_pending_acq_byte(const dif_i2c_t *i2c, uint8_t *data) {
+  if (i2c == NULL || data == NULL) {
+    return kDifBadArg;
+  }
+
+  *data = 0xffu &
+          mmio_region_read32(i2c->base_addr, I2C_ACQ_FIFO_NEXT_DATA_REG_OFFSET);
 
   return kDifOk;
 }

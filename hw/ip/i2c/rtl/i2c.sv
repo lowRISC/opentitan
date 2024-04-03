@@ -44,7 +44,7 @@ module i2c
   output logic              intr_cmd_complete_o,
   output logic              intr_tx_stretch_o,
   output logic              intr_tx_threshold_o,
-  output logic              intr_acq_full_o,
+  output logic              intr_acq_stretch_o,
   output logic              intr_unexp_stop_o,
   output logic              intr_host_timeout_o
 );
@@ -114,7 +114,7 @@ module i2c
     .intr_cmd_complete_o,
     .intr_tx_stretch_o,
     .intr_tx_threshold_o,
-    .intr_acq_full_o,
+    .intr_acq_stretch_o,
     .intr_unexp_stop_o,
     .intr_host_timeout_o
   );
@@ -148,7 +148,7 @@ module i2c
   `ASSERT_KNOWN(IntrCommandCompleteKnownO_A, intr_cmd_complete_o)
   `ASSERT_KNOWN(IntrTxStretchKnownO_A, intr_tx_stretch_o)
   `ASSERT_KNOWN(IntrTxWtmkKnownO_A, intr_tx_threshold_o)
-  `ASSERT_KNOWN(IntrAcqFulllwKnownO_A, intr_acq_full_o)
+  `ASSERT_KNOWN(IntrAcqStretchKnownO_A, intr_acq_stretch_o)
   `ASSERT_KNOWN(IntrUnexpStopKnownO_A, intr_unexp_stop_o)
   `ASSERT_KNOWN(IntrHostTimeoutKnownO_A, intr_host_timeout_o)
 

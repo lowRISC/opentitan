@@ -197,7 +197,7 @@ class i2c_scoreboard extends cip_base_scoreboard #(
           fork
             wait(cfg.intr_vif.pins[StretchTimeout]);
             wait(cfg.intr_vif.pins[TxStretch]);
-            wait(cfg.intr_vif.pins[AcqFull]);
+            wait(cfg.intr_vif.pins[AcqStretch]);
           join_any
           csr_rd(.ptr(ral.target_fifo_status.acqlvl), .value(acqlvl), .backdoor(UVM_BACKDOOR));
           csr_rd(.ptr(ral.target_fifo_status.txlvl), .value(txlvl), .backdoor(UVM_BACKDOOR));
@@ -206,7 +206,7 @@ class i2c_scoreboard extends cip_base_scoreboard #(
             .intr_stretch_timeout(cfg.intr_vif.pins[StretchTimeout]),
             .host_timeout_ctrl_en(host_timeout_ctrl_en),
             .intr_tx_stretch(cfg.intr_vif.pins[TxStretch]),
-            .intr_acq_full(cfg.intr_vif.pins[AcqFull]),
+            .intr_acq_stretch(cfg.intr_vif.pins[AcqStretch]),
             .acq_fifo_size(acqlvl),
             .tx_fifo_size(txlvl)
             );
@@ -396,7 +396,7 @@ class i2c_scoreboard extends cip_base_scoreboard #(
                                      .rx_threshold (cfg.intr_vif.pins[RxThreshold]),
                                      .acq_threshold(cfg.intr_vif.pins[AcqThreshold]),
                                      .rx_overflow  (cfg.intr_vif.pins[RxOverflow]),
-                                     .acq_overflow (cfg.intr_vif.pins[AcqFull]),
+                                     .acq_overflow (cfg.intr_vif.pins[AcqStretch]),
                                      .tx_threshold (cfg.intr_vif.pins[TxThreshold]));
           end
         end

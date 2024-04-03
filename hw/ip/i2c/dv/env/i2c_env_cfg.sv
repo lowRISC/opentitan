@@ -37,6 +37,9 @@ class i2c_env_cfg extends cip_base_env_cfg #(.RAL_T(i2c_reg_block));
   bit        stop_intr_handler = 1'b0;
   bit        read_all_acq_entries = 1'b0;
 
+  // Use ACK Control Mode
+  bit        ack_ctrl_en = 1'b0;
+
   // Slow acq process
   bit        slow_acq = 1'b0;
 

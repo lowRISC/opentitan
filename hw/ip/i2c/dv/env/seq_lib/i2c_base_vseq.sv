@@ -297,6 +297,7 @@ class i2c_base_vseq extends cip_base_vseq #(
       ral.ctrl.enablehost.set(1'b0);
       ral.ctrl.enabletarget.set(1'b1);
       ral.ctrl.llpbk.set(1'b0);
+      ral.ctrl.ack_ctrl_en.set(cfg.ack_ctrl_en);
       csr_update(ral.ctrl);
       ral.target_id.address0.set(target_addr0);
       ral.target_id.mask0.set(7'h7f);
@@ -939,20 +940,36 @@ class i2c_base_vseq extends cip_base_vseq #(
   // This task needs to set do_clear_all_interrupts = 0
   virtual task process_target_interrupts();
     int delay;
+    int auto_ack_bytes;
     bit acq_fifo_empty;
     bit read_one = 0;
     while (!cfg.stop_intr_handler) begin
       @(posedge cfg.clk_rst_vif.clk);
-      if (cfg.intr_vif.pins[AcqFull]) begin
-        if (cfg.slow_acq) begin
-          acq_fifo_empty = 0;
-          while (!acq_fifo_empty) begin
-            delay = $urandom_range(50, 100);
-            #(delay * 1us);
-            read_acq_fifo(1, acq_fifo_empty);
+      if (cfg.intr_vif.pins[AcqStretch]) begin
+        bit [TL_DW-1:0] status;
+        bit ack_ctrl_stretch;
+        bit acq_full;
+
+        csr_rd(.ptr(ral.status), .value(status));
+        ack_ctrl_stretch = bit'(get_field_val(ral.status.ack_ctrl_stretch, status));
+        acq_full = bit'(get_field_val(ral.status.acqfull, status));
+
+        if (ack_ctrl_stretch) begin
+          auto_ack_bytes = $urandom_range(1, 30);
+          csr_wr(.ptr(ral.target_ack_ctrl.nbytes), .value(auto_ack_bytes));
+        end
+
+        if (acq_full) begin
+          if (cfg.slow_acq) begin
+            acq_fifo_empty = 0;
+            while (!acq_fifo_empty) begin
+              delay = $urandom_range(50, 100);
+              #(delay * 1us);
+              read_acq_fifo(1, acq_fifo_empty);
+            end
+          end else begin
+            read_acq_fifo(0, acq_fifo_empty);
           end
-        end else begin
-          read_acq_fifo(0, acq_fifo_empty);
         end
       end else if (cfg.intr_vif.pins[TxStretch]) begin
         proc_intr_txstretch();
