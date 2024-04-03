@@ -665,7 +665,9 @@ jobs:
 
 - job: execute_rom_fpga_tests_cw340
   displayName: CW340 ROM Tests
-  pool: FPGA CW340
+  pool:
+    name: $(fpga_pool)
+    demands: BOARD -equals cw340
   timeoutInMinutes: 60
   dependsOn:
     - chip_earlgrey_cw340
