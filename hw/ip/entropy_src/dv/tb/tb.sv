@@ -41,7 +41,6 @@ module tb;
   push_pull_if#(.HostDataWidth(0)) aes_halt_if(.clk(clk), .rst_n(csrng_rst_n && rst_n));
   entropy_src_xht_if xht_if(.clk(clk), .rst_n(rst_n));
   entropy_src_path_if entropy_src_path_if ();
-  entropy_src_assert_if entropy_src_assert_if ();
 
   `DV_ALERT_IF_CONNECT()
 
@@ -146,8 +145,6 @@ module tb;
     uvm_config_db#(virtual push_pull_if#(.HostDataWidth(0)))::
         set(null, "*.env.m_aes_halt_agent*", "vif", aes_halt_if);
     uvm_config_db#(virtual entropy_src_xht_if)::set(null, "*.env.m_xht_agent*", "vif", xht_if);
-    uvm_config_db#(virtual entropy_src_assert_if)::set(null, "*.env", "entropy_src_assert_vif",
-        entropy_src_assert_if);
     uvm_config_db#(virtual entropy_src_path_if)::set(null, "*.env", "entropy_src_path_vif",
         entropy_src_path_if);
     $timeformat(-12, 0, " ps", 12);
