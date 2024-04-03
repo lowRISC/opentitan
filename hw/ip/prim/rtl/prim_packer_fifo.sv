@@ -66,6 +66,7 @@ module prim_packer_fifo #(
 
   localparam int unsigned   WidthRatio = MaxW / MinW;
   localparam bit [DepthW:0] FullDepth = WidthRatio[DepthW:0];
+  localparam bit [DepthW:0] DepthOne = 1;
 
   // signals
   logic  load_data;
@@ -103,7 +104,7 @@ module prim_packer_fifo #(
     assign load_data = wvalid_i && wready_o;
 
     assign depth_d =  clear_status ? '0 :
-           load_data ? depth_q+1 :
+           load_data ? (depth_q + DepthOne):
            depth_q;
 
     assign data_d = clear_data ? '0 :
@@ -140,11 +141,11 @@ module prim_packer_fifo #(
 
     assign depth_d =  clear_status ? '0 :
            load_data ? max_value :
-           pull_data ? depth_q-1 :
+           pull_data ? (depth_q - DepthOne) :
            depth_q;
 
     assign ptr_d =  clear_status ? '0 :
-           pull_data ? ptr_q+1 :
+           pull_data ? (ptr_q + DepthOne) :
            ptr_q;
 
     assign data_d = clear_data ? '0 :

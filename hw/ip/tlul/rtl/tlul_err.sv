@@ -48,9 +48,10 @@ module tlul_err import tlul_pkg::*; (
   logic mask_chk;       // inactive lane a_mask check
   logic fulldata_chk;   // PutFullData should have size match to mask
 
+  localparam bit [MW-1:0] MaskOne = 1;
   logic [MW-1:0] mask;
 
-  assign mask = (1 << tl_i.a_address[SubAW-1:0]);
+  assign mask = MaskOne << tl_i.a_address[SubAW-1:0];
 
   always_comb begin
     addr_sz_chk  = 1'b0;
