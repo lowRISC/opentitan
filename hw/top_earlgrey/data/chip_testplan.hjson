@@ -299,6 +299,7 @@
       si_stage: SV2
       lc_states: ["PROD"]
       tests: ["chip_sw_sleep_pwm_pulses"]
+      bazel: ["//sw/device/tests:sleep_pwm_pulses_test"]
     }
 
     //////////////////////////////////////////////////////////////////////////////////////
@@ -434,6 +435,7 @@
       lc_states: ["PROD"]
       tests: ["chip_sw_pwrmgr_sleep_sensor_ctrl_alert_wakeup",
               "chip_sw_sensor_ctrl_alert"]
+      bazel: ["//sw/device/tests:sensor_ctrl_alert_test", "//sw/device/tests:sensor_ctrl_wakeup_test"]
     }
     {
       name: chip_sw_sensor_ctrl_ast_status
@@ -679,6 +681,7 @@
       si_stage: SV2
       lc_states: ["PROD"]
       tests: ["chip_sw_power_virus"]
+      bazel: ["//sw/device/tests:power_virus_systemtest"]
     }
     {
       name: chip_sw_power_idle_load
@@ -709,6 +712,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_sw_power_idle_load"]
+      bazel: ["//sw/device/tests:chip_power_idle_load"]
     }
     {
       name: chip_sw_power_sleep_load
