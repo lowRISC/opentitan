@@ -36,14 +36,6 @@
 
 interface entropy_src_assert_if ();
 
-  task automatic assert_off_alert ();
-
-  endtask // assert_off_alert
-
-  task automatic assert_on_alert ();
-
-  endtask // assert_on_alert
-
   task automatic assert_off_err ();
     $assertoff(0, tb.dut.AlertTxKnownO_A);
     $assertoff(0, tb.dut.IntrEsFifoErrKnownO_A);
