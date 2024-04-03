@@ -205,7 +205,7 @@
         "chip_sw_sram_ctrl_scrambled_access_jitter_en",
         "chip_sw_edn_entropy_reqs_jitter",
       ]
-      bazel: []
+      bazel: ["//sw/device/tests:clkmgr_jitter_test"]
     }
     {
       name: chip_sw_clkmgr_jitter_cycle_measurements
