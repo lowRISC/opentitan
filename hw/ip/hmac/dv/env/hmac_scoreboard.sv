@@ -17,6 +17,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
   bit [3:0]       digest_size, previous_digest_size, expected_digest_size;
   bit             previous_digest_swap, expected_digest_swap;
   bit [5:0]       key_length;
+  bit             invalid_cfg;
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
@@ -81,21 +82,39 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
             if (sha_en && !(hmac_start && item.a_data[HashStart])) begin
               if (item.a_data[HashProcess] && hmac_start) begin
                 {hmac_process, hmac_start} = item.a_data[1:0];
-                predict_digest(msg_q);
-                check_idle_o(1'b0);
+                if (!invalid_cfg) begin
+                  check_idle_o(1'b0);
+                  // only predict a new digest if configuration is valid and HMAC was indeed started
+                  // otherwise previous digest is retained in CSRs
+                  predict_digest(msg_q);
+                end else begin
+                  check_idle_o(1'b1);
+                end
               end else if (item.a_data[HashStart]) begin
                 {hmac_process, hmac_start} = item.a_data[1:0];
-                check_idle_o(1'b0);
-                msg_q.delete(); // make sure next transaction won't include this msg_q
-                update_wr_msg_length(0);
-                // update digest size and swap to the new one only at the start signal
-                previous_digest_size = ral.cfg.digest_size.get_mirrored_value();
-                previous_digest_swap = ral.cfg.digest_swap.get_mirrored_value();
+                // check that HMAC is configured correctly before starting
+                invalid_cfg = (ral.cfg.digest_size.get_mirrored_value() == SHA2_None) |
+                              ((ral.cfg.key_length.get_mirrored_value() == Key_None)  &
+                                ral.cfg.hmac_en.get_mirrored_value())                  |
+                              ((ral.cfg.digest_size.get_mirrored_value() == SHA2_256) &
+                               (ral.cfg.key_length.get_mirrored_value() == Key_1024) &
+                                ral.cfg.hmac_en.get_mirrored_value());
 
-                `uvm_info(`gfn, $sformatf(
-                          "Setting previous digest and digest swap: %4b",
-                           previous_digest_size), UVM_HIGH)
+                `uvm_info(`gfn, $sformatf("invalid config: %1b", invalid_cfg), UVM_LOW)
 
+                if (invalid_cfg) begin
+                  update_err_intr_code(SwInvalidConfig);
+                end else begin
+                  check_idle_o(1'b0);
+                  msg_q.delete(); // make sure next transaction won't include this msg_q
+                  update_wr_msg_length(0);
+                  // update digest size and swap to the new one only at the start signal
+                  previous_digest_size = ral.cfg.digest_size.get_mirrored_value();
+                  previous_digest_swap = ral.cfg.digest_swap.get_mirrored_value();
+                  `uvm_info(`gfn, $sformatf(
+                              "Setting previous digest and digest swap: %4b",
+                               previous_digest_size), UVM_HIGH)
+                end
               end
             end else if (item.a_data[HashStart] == 1) begin
               if (!sha_en) begin
@@ -127,7 +146,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
             if (cfg.en_cov) cov.cfg_cg.sample(item.a_data);
             if (sha_en && !item.a_data[ShaEn]) begin
               // Digest gets cleared on disabling.
-              exp_digest = {default: '0};
+              exp_digest = '{default:0};
             end
             sha_en = item.a_data[ShaEn];
           end
@@ -147,6 +166,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
           "wipe_secret", "intr_enable", "intr_state", "alert_test": begin
             // Do nothing
           end
+          "digest_0", "digest_1", "digest_2", "digest_3", "digest_4", "digest_5", "digest_6",
           "digest_7", "digest_8", "digest_9", "digest_10", "digest_11", "digest_12", "digest_13",
           "digest_14", "digest_15", "status", "msg_length_upper", "msg_length_lower": begin
             // Predict updated value coming from write iff SHA core is disabled.
@@ -357,8 +377,8 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
     hmac_start = 0;
 
     key             = '{default:0};
-    key_length      = 5'b0_0001;
-    digest_size     = 4'b0001;
+    key_length      = 6'b10_0000;
+    digest_size     = 4'b1000;
     exp_digest      = '{default:0};
     msg_q.delete();
     cfg.wipe_secret_triggered = 0;
@@ -509,7 +529,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
     bit       sha_en      = ral.cfg.sha_en.get_mirrored_value(),
     bit       hmac_en     = ral.cfg.hmac_en.get_mirrored_value(),
     bit [3:0] digest_size = ral.cfg.digest_size.get_mirrored_value(),
-    bit [4:0] key_length  = ral.cfg.key_length.get_mirrored_value());
+    bit [5:0] key_length  = ral.cfg.key_length.get_mirrored_value());
     exp_digest = '{default:0}; // clear previous expected digest
 
     `uvm_info(`gfn, $sformatf("Computing digest prediction"), UVM_LOW)

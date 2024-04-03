@@ -19,7 +19,7 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
   rand bit                wr_key_during_hash;
   rand bit                hmac_en;
   rand bit [3:0]          digest_size;
-  rand bit [4:0]          key_length;
+  rand bit [5:0]          key_length;
 
   constraint wr_addr_c {
     wr_addr inside {[HMAC_MSG_FIFO_BASE : HMAC_MSG_FIFO_LAST_ADDR]};
@@ -32,25 +32,15 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
     };
   }
 
-  // key length only factors in for testing HMAC
-  // only testing 256-bit key now
-  constraint key_digest_c {
-    key_length dist {
-      5'b0_0001 := 0,
-      5'b0_0010 := 10, // 256-bit key
-      5'b0_0100 := 0,
-      5'b0_1000 := 0,
-      5'b1_0000 := 0
+constraint key_digest_c {
+    $countones(key_length) == 1 dist {
+      1 :/ 8,  // Key_128/Key_256/Key_384/Key_512/Key_1024/Key_None
+      0 :/ 2   // Illegal -> should get casted to Key_None in HW
     };
-  }
 
-  // only testing SHA-2 256 now
-  constraint digest_size_c {
-    digest_size dist {
-      4'b0010 := 10, // SHA-2 256
-      4'b0100 := 0, // SHA-2 384
-      4'b1000 := 0, // SHA-2 512
-      4'b0001 := 0  // SHA-2 None
+    $countones(digest_size) == 1 dist {
+      1 :/ 8,  // SHA2_256/SHA2_384/SHA2_512/SHA2_None
+      0 :/ 2   // Illegal -> should get casted to SHA2_None in HW
     };
   }
 
@@ -73,8 +63,8 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
                          bit hmac_en            = 1'b1,
                          bit endian_swap        = 1'b1,
                          bit digest_swap        = 1'b1,
-                         bit [3:0] digest_size  = 4'b0010,   // SHA-256
-                         bit [4:0] key_length   = 5'b0_1000, // 512-bit key
+                         bit [3:0] digest_size  = 4'b0001, // SHA-256
+                         bit [5:0] key_length   = 6'b00_0010, // 256-bit key
                          bit intr_fifo_empty_en = 1'b1,
                          bit intr_hmac_done_en  = 1'b1,
                          bit intr_hmac_err_en   = 1'b1);
@@ -143,6 +133,7 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
 
   // trigger calculation of digest at the end of a message
   virtual task trigger_process();
+    // read digest size and key length and update their mirrored values
     csr_wr(.ptr(ral.cmd), .value(1'b1 << HashProcess));
     cfg.hash_process_triggered = 1;
   endtask
@@ -162,7 +153,7 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
     cfg.wipe_secret_triggered = 0;
   endtask
 
-    // read digest value and output read value
+  // read digest value and output read value
   virtual task csr_rd_digest(output bit [TL_DW-1:0] digest[16]);
     foreach (digest[i]) begin
       csr_rd(.ptr(ral.digest[i]), .value(digest[i]));
@@ -173,6 +164,18 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
   // write digest value
   virtual task csr_wr_digest(bit [TL_DW-1:0] digest[16]);
     foreach (digest[i]) csr_wr(.ptr(ral.digest[i]), .value(digest[i]));
+  endtask
+
+  // read digest size and update mirrored value
+  virtual task csr_rd_digest_size(output bit [3:0] read_digest_size);
+    csr_rd(.ptr(ral.cfg.digest_size), .value(read_digest_size));
+    `uvm_info(`gfn, $sformatf("reading digest size: %04b", read_digest_size), UVM_MEDIUM)
+  endtask
+
+  // read key length and update mirrored value
+  virtual task csr_rd_key_length(output bit [5:0] read_key_length);
+    csr_rd(.ptr(ral.cfg.key_length), .value(read_key_length));
+    `uvm_info(`gfn, $sformatf("reading key length: %06b", read_key_length), UVM_MEDIUM)
   endtask
 
   // write 1024-bit hashed key
@@ -365,9 +368,8 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
       // can safely assume that `exp_digest` always has 16 elements
       // since HMAC output digest size is 512 bits.
       foreach (act_digest[i]) begin
-        `uvm_info(`gfn, $sformatf("Actual digest %0d, 0x%0h", i, act_digest[i]), UVM_MEDIUM)
-        `uvm_info(`gfn, $sformatf("Expected digest %0d, 0x%0h", i, packed_exp_digest[i]),
-                  UVM_MEDIUM)
+        `uvm_info(`gfn, $sformatf("Actual digest[%0d]: 0x%0h", i, act_digest[i]), UVM_HIGH)
+        `uvm_info(`gfn, $sformatf("Expected digest[%0d]: 0x%0h", i, packed_exp_digest[i]), UVM_HIGH)
       end
 
       // comparing for SHA-2 256

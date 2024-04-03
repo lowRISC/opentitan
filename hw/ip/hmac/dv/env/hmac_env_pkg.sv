@@ -34,8 +34,8 @@ package hmac_env_pkg;
   // 1 cycles to write a msg word to hmac_msg_fifo
   parameter uint32 HMAC_WR_WORD_CYCLE        = 1;
 
-  parameter uint NUM_DIGESTS  = 16;
-  parameter uint NUM_KEYS     = 32;
+  parameter uint NUM_DIGESTS = 16;
+  parameter uint NUM_KEYS    = 32;
 
   // alerts
   parameter uint NUM_ALERTS = 1;
@@ -75,7 +75,8 @@ package hmac_env_pkg;
     SwHashStartWhenShaDisabled = 32'h 0000_0002,
     SwUpdateSecretKeyInProcess = 32'h 0000_0003,
     SwHashStartWhenActive      = 32'h 0000_0004,
-    SwPushMsgWhenIdle          = 32'h 0000_0005
+    SwPushMsgWhenIdle          = 32'h 0000_0005,
+    SwInvalidConfig            = 32'h 0000_0006
   } err_code_e;
 
   // Enum for the timing when issue wipe_secret CSR.
