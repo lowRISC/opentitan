@@ -51,7 +51,7 @@
   ],
   interrupt_list: [
     { name: "hmac_done",
-      desc: "HMAC-256 completes a message with key"
+      desc: "HMAC/SHA-2 has completed."
     }
     { name: "fifo_empty",
       type: "status",
@@ -65,7 +65,7 @@
             '''
     }
     { name: "hmac_err",
-      desc: "HMAC error occurred. ERR_CODE register shows which error occurred"
+      desc: "HMAC error has occurred. ERR_CODE register shows which error occurred."
     }
   ],
   alert_list: [
@@ -160,7 +160,7 @@
     }
     {
       name: "HMAC.SECURE_WIPE",
-      desc: "Wipe of internal state with constant value provided by software."
+      desc: "Wipe of internal state and secret key with constant value provided by software."
     }
   ]
   countermeasures: [
@@ -215,7 +215,7 @@
           name: "digest_swap",
           desc: '''Digest register byte swap.
 
-                If 1 the value contained in each digest output register is converted to big-endian byte order.
+                If 1 the value in each digest output register is converted to big-endian byte order.
                 This setting does not affect the order of the digest output registers, !!DIGEST_0 still contains the first 4 bytes of the digest.
                 ''',
           resval: "0",
@@ -227,80 +227,89 @@
         }
         { bits: "7:4",
           name: "digest_size",
-          resval: "0x01",
+          resval: "0x08",
           desc: '''Digest size configuration.
 
                 This is a 4-bit one-hot encoded field to select digest size for either HMAC or SHA-2.
-                Invalid values, i.e., values with multiple bits set and value 4'b0000 are mapped in HMAC to SHA2_NONE (4'b0001).
+                Invalid/unsupported values, i.e., values that don't correspond to SHA2_256, SHA2_384, or SHA2_512, are mapped to SHA2_None.
                 '''
           enum: [
             { value: "1",
-              name: "SHA2_None",
+              name: "SHA2_256",
               desc: '''
-              4'b0001: Unsupported/invalid values and all-zero values are mapped to SHA2_None.
+              4'b0001: SHA-2 256 digest.
               '''
             },
             { value: "2",
-              name: "SHA2_256",
+              name: "SHA2_384",
               desc: '''
-              4'b0010: SHA-2 256 digest.
+              4'b0010: SHA-2 384 digest.
               '''
             },
             { value: "4",
-              name: "SHA2_384",
+              name: "SHA2_512",
               desc: '''
-              4'b0100: SHA-2 384 digest.
+              4'b0100: SHA-2 512 digest.
               '''
             },
             { value: "8",
-              name: "SHA2_512",
+              name: "SHA2_None",
               desc: '''
-              4'b1000: SHA-2 512 digest.
+              4'b1000: Unsupported/invalid values and all-zero values are mapped to SHA2_None.
+              With this value, when HMAC/SHA-2 is triggered to start operation (via `hash_start` or `hash_continue`), it will be blocked from starting and an error is signalled to the SW.
               '''
             },
           ]
           tags: [// Exclude fields with non-zero reset value from write-read checks.
                "excl:CsrNonInitTests:CsrExclWriteCheck"]
         }
-        { bits: "12:8",
+        { bits: "13:8",
           name: "key_length",
-          resval: "0x02",
+          resval: "0x20",
           desc: '''Key length configuration.
 
-                This is a 5-bit one-hot encoded field to configure the key length for HMAC.
-                The HMAC supports key lengths of 128-bit, 256-bit, 384-bit, 512-bit and 1024-bit, but will to block size if key length is greater than block size, i.e. max of 1024 bits for digest size SHA-2 384/512 and respectively 512 bits for SHA-2 256.
+                This is a 6-bit one-hot encoded field to configure the key length for HMAC.
+                The HMAC supports key lengths of 128-bit, 256-bit, 384-bit, 512-bit and 1024-bit, as long as the key length is not greater than the block size: up to 1024-bit for SHA-2 384/512 and up to 512-bit for SHA-2 256.
                 The value of this register is irrelevant when only SHA-2 (not keyed HMAC) is configured.
+                However, for HMAC mode (`hmac_en == 1`), when HMAC is triggered to start while !!KEY_LENGTH holds `Key_None` or !!KEY_LENGTH holds `Key_1024` for !!DIGEST_SIZE = `SHA2_256`, starting is blocked and an error is signalled to SW.
                 '''
           enum: [
             { value: "1",
               name: "Key_128",
               desc: '''
-              5'b0_0001: 128-bit secret key.
+              6'b00_0001: 128-bit secret key.
               '''
             },
             { value: "2",
               name: "Key_256",
               desc: '''
-              5'b0_0010: 256-bit secret key. Unsupported/invalid values and all-zero values
-              are mapped to Key_256.
+              6'b00_0010: 256-bit secret key.
               '''
             },
             { value: "4",
               name: "Key_384",
               desc: '''
-              5'b0_0100: 384-bit secret key.
+              6'b00_0100: 384-bit secret key.
               '''
             },
             { value: "8",
               name: "Key_512",
               desc: '''
-              5'b0_1000: 512-bit secret key.
+              6'b00_1000: 512-bit secret key.
               '''
             },
             { value: "16",
               name: "Key_1024",
               desc: '''
-              5'b1_0000: 1024-bit secret key.
+              6'b01_0000: 1024-bit secret key.
+              '''
+            },
+            { value: "32",
+              name: "Key_None",
+              desc: '''
+              6'b10_0000: Unsupported/invalid values and all-zero values are mapped to Key_None.
+              With this value, when HMAC is triggered to start operation (via `hash_start` or `hash_continue`), it will be blocked from starting and an error is signalled to the SW.
+              If only unkeyed SHA-2 is configured (`hmac_en == 0`), starting is not blocked, since this does not require a key.
               '''
             },
           ]
@@ -333,15 +342,15 @@
         { bits: "2",
           name: "hash_stop",
           desc: '''
-                When 1 is written to this field, SHA or HMAC will afterwards set the `hmac_done` interrupt as soon as the current block has been hashed.
-                The hash can then be read from the registers !!DIGEST_0 to !!DIGEST_7.
+                When 1 is written to this field, SHA-2 or HMAC will afterwards set the `hmac_done` interrupt as soon as the current block has been hashed.
+                The hash can then be read from the registers !!DIGEST_0 to !!DIGEST_15.
                 Together with the message length in !!MSG_LENGTH_LOWER and !!MSG_LENGTH_UPPER, this forms the information that has to be saved before switching context.
                 '''
         }
         { bits: "3",
           name: "hash_continue",
           desc: '''
-                When 1 is written to this field, SHA or HMAC will continue hashing based on the current hash in the digest registers and the message length, which both have to be restored to switch context.
+                When 1 is written to this field, SHA-2 or HMAC will continue hashing based on the current hash in the digest registers and the message length, which both have to be restored to switch context.
                 '''
         }
       ],

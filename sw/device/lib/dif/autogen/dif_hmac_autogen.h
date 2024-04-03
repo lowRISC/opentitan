@@ -76,7 +76,7 @@ dif_result_t dif_hmac_alert_force(const dif_hmac_t *hmac,
  */
 typedef enum dif_hmac_irq {
   /**
-   * HMAC-256 completes a message with key
+   * HMAC/SHA-2 has completed.
    */
   kDifHmacIrqHmacDone = 0,
   /**
@@ -93,7 +93,7 @@ typedef enum dif_hmac_irq {
    */
   kDifHmacIrqFifoEmpty = 1,
   /**
-   * HMAC error occurred. ERR_CODE register shows which error occurred
+   * HMAC error has occurred. ERR_CODE register shows which error occurred.
    */
   kDifHmacIrqHmacErr = 2,
 } dif_hmac_irq_t;
