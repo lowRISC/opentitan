@@ -97,7 +97,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_sw_keymgr_sideload_kmac"]
-      bazel: []
+      bazel: ["//sw/device/tests:keymgr_sideload_kmac_test"]
     }
     {
       name: chip_sw_keymgr_sideload_aes
@@ -113,6 +113,7 @@
       bazel: [
         "//sw/device/tests/crypto:aes_sideload_functest",
         "//sw/device/tests/crypto:aes_kwp_sideload_functest",
+        "//sw/device/tests:keymgr_sideload_aes_test",
       ]
     }
     {
