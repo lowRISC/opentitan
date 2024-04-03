@@ -631,7 +631,7 @@ void ottf_external_isr(uint32_t *exc_info) {
 
         // If this is a status type interrupt, we do not have to acknowledge the interrupt at
         // the IP side, but we need to clear the test force register.
-        if (0x1c07 & (1 << irq)) {
+        if (0x1c17 & (1 << irq)) {
           CHECK_DIF_OK(dif_i2c_irq_force(&i2c0, irq, false));
           // In case this status interrupt is asserted by default, we also disable it at
           // this point so that it does not interfere with the rest of the test.
@@ -664,7 +664,7 @@ void ottf_external_isr(uint32_t *exc_info) {
 
         // If this is a status type interrupt, we do not have to acknowledge the interrupt at
         // the IP side, but we need to clear the test force register.
-        if (0x1c07 & (1 << irq)) {
+        if (0x1c17 & (1 << irq)) {
           CHECK_DIF_OK(dif_i2c_irq_force(&i2c1, irq, false));
           // In case this status interrupt is asserted by default, we also disable it at
           // this point so that it does not interfere with the rest of the test.
@@ -697,7 +697,7 @@ void ottf_external_isr(uint32_t *exc_info) {
 
         // If this is a status type interrupt, we do not have to acknowledge the interrupt at
         // the IP side, but we need to clear the test force register.
-        if (0x1c07 & (1 << irq)) {
+        if (0x1c17 & (1 << irq)) {
           CHECK_DIF_OK(dif_i2c_irq_force(&i2c2, irq, false));
           // In case this status interrupt is asserted by default, we also disable it at
           // this point so that it does not interfere with the rest of the test.

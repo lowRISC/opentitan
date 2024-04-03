@@ -109,8 +109,11 @@ static status_t write_byte(const uint8_t addr[2], uint8_t byte) {
 
 static status_t nak_irq(void) {
   // Clean any previous state.
-  TRY(dif_i2c_irq_acknowledge(&i2c, kDifI2cIrqNak));
-  TRY(dif_i2c_irq_set_enabled(&i2c, kDifI2cIrqNak, kDifToggleEnabled));
+  dif_i2c_controller_halt_events_t halt_events = {0};
+  TRY(dif_i2c_get_controller_halt_events(&i2c, &halt_events));
+  TRY(dif_i2c_clear_controller_halt_events(&i2c, halt_events));
+  TRY(dif_i2c_irq_set_enabled(&i2c, kDifI2cIrqControllerHalt,
+                              kDifToggleEnabled));
 
   // Write a byte to some random address.
   const uint8_t kAddr[2] = {0x03, 0x21};
@@ -123,16 +126,28 @@ static status_t nak_irq(void) {
   // Wait for the write to finish.
   uint8_t dummy = 0;
   TRY(i2c_testutils_read(&i2c, kDeviceAddr, sizeof(dummy), &dummy, 1));
-  ATOMIC_WAIT_FOR_INTERRUPT(irq_fired == kDifI2cIrqNak);
+  ATOMIC_WAIT_FOR_INTERRUPT(irq_fired == kDifI2cIrqControllerHalt);
 
-  TRY(dif_i2c_irq_set_enabled(&i2c, kDifI2cIrqNak, kDifToggleDisabled));
+  TRY(dif_i2c_irq_set_enabled(&i2c, kDifI2cIrqControllerHalt,
+                              kDifToggleDisabled));
+  TRY(dif_i2c_get_controller_halt_events(&i2c, &halt_events));
+  CHECK(halt_events.nack_received == true);
+  CHECK(halt_events.unhandled_nack_timeout == false);
+  TRY(dif_i2c_reset_fmt_fifo(i2c));
+  TRY(dif_i2c_clear_controller_halt_events(i2c, halt_events));
+  // Force Stop to be sent after the unexpected NACK.
+  TRY(dif_i2c_host_set_enabled(i2c, kDifToggleDisabled));
+  TRY(dif_i2c_host_set_enabled(i2c, kDifToggleEnabled));
   return OK_STATUS();
 }
 
 static status_t nak_irq_disabled(void) {
   // Clean any previous state.
-  TRY(dif_i2c_irq_acknowledge(&i2c, kDifI2cIrqNak));
-  TRY(dif_i2c_irq_set_enabled(&i2c, kDifI2cIrqNak, kDifToggleEnabled));
+  dif_i2c_controller_halt_events_t halt_events = {0};
+  TRY(dif_i2c_get_controller_halt_events(&i2c, &halt_events));
+  TRY(dif_i2c_clear_controller_halt_events(&i2c, halt_events));
+  TRY(dif_i2c_irq_set_enabled(&i2c, kDifI2cIrqControllerHalt,
+                              kDifToggleEnabled));
 
   // Write a byte to some random address to be read.
   const uint8_t kAddr[2] = {0x03, 0x21};
@@ -153,9 +168,11 @@ static status_t nak_irq_disabled(void) {
   TRY(dif_i2c_write_byte_raw(&i2c, kDeviceAddr << 1 | 0x01, flags));
 
   TRY(i2c_testutils_wait_transaction_finish(&i2c));
-  TRY_CHECK(irq_fired != kDifI2cIrqNak, "Unexpected IRQ %u", irq_fired);
+  TRY_CHECK(irq_fired != kDifI2cIrqControllerHalt, "Unexpected IRQ %u",
+            irq_fired);
 
-  TRY(dif_i2c_irq_set_enabled(&i2c, kDifI2cIrqNak, kDifToggleDisabled));
+  TRY(dif_i2c_irq_set_enabled(&i2c, kDifI2cIrqControllerHalt,
+                              kDifToggleDisabled));
   return OK_STATUS();
 }
 

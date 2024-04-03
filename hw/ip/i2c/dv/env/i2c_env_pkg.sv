@@ -25,7 +25,7 @@ package i2c_env_pkg;
     RxThreshold    = 1,
     AcqThreshold   = 2,
     RxOverflow     = 3,
-    Nak            = 4,
+    ControllerHalt = 4,
     SclInference   = 5,
     SdaInference   = 6,
     StretchTimeout = 7,

@@ -415,7 +415,7 @@ module top_earlgrey #(
   logic intr_i2c0_rx_threshold;
   logic intr_i2c0_acq_threshold;
   logic intr_i2c0_rx_overflow;
-  logic intr_i2c0_nak;
+  logic intr_i2c0_controller_halt;
   logic intr_i2c0_scl_interference;
   logic intr_i2c0_sda_interference;
   logic intr_i2c0_stretch_timeout;
@@ -430,7 +430,7 @@ module top_earlgrey #(
   logic intr_i2c1_rx_threshold;
   logic intr_i2c1_acq_threshold;
   logic intr_i2c1_rx_overflow;
-  logic intr_i2c1_nak;
+  logic intr_i2c1_controller_halt;
   logic intr_i2c1_scl_interference;
   logic intr_i2c1_sda_interference;
   logic intr_i2c1_stretch_timeout;
@@ -445,7 +445,7 @@ module top_earlgrey #(
   logic intr_i2c2_rx_threshold;
   logic intr_i2c2_acq_threshold;
   logic intr_i2c2_rx_overflow;
-  logic intr_i2c2_nak;
+  logic intr_i2c2_controller_halt;
   logic intr_i2c2_scl_interference;
   logic intr_i2c2_sda_interference;
   logic intr_i2c2_stretch_timeout;
@@ -1233,7 +1233,7 @@ module top_earlgrey #(
       .intr_rx_threshold_o     (intr_i2c0_rx_threshold),
       .intr_acq_threshold_o    (intr_i2c0_acq_threshold),
       .intr_rx_overflow_o      (intr_i2c0_rx_overflow),
-      .intr_nak_o              (intr_i2c0_nak),
+      .intr_controller_halt_o  (intr_i2c0_controller_halt),
       .intr_scl_interference_o (intr_i2c0_scl_interference),
       .intr_sda_interference_o (intr_i2c0_sda_interference),
       .intr_stretch_timeout_o  (intr_i2c0_stretch_timeout),
@@ -1276,7 +1276,7 @@ module top_earlgrey #(
       .intr_rx_threshold_o     (intr_i2c1_rx_threshold),
       .intr_acq_threshold_o    (intr_i2c1_acq_threshold),
       .intr_rx_overflow_o      (intr_i2c1_rx_overflow),
-      .intr_nak_o              (intr_i2c1_nak),
+      .intr_controller_halt_o  (intr_i2c1_controller_halt),
       .intr_scl_interference_o (intr_i2c1_scl_interference),
       .intr_sda_interference_o (intr_i2c1_sda_interference),
       .intr_stretch_timeout_o  (intr_i2c1_stretch_timeout),
@@ -1319,7 +1319,7 @@ module top_earlgrey #(
       .intr_rx_threshold_o     (intr_i2c2_rx_threshold),
       .intr_acq_threshold_o    (intr_i2c2_acq_threshold),
       .intr_rx_overflow_o      (intr_i2c2_rx_overflow),
-      .intr_nak_o              (intr_i2c2_nak),
+      .intr_controller_halt_o  (intr_i2c2_controller_halt),
       .intr_scl_interference_o (intr_i2c2_scl_interference),
       .intr_sda_interference_o (intr_i2c2_sda_interference),
       .intr_stretch_timeout_o  (intr_i2c2_stretch_timeout),
@@ -2720,7 +2720,7 @@ module top_earlgrey #(
       intr_i2c2_stretch_timeout, // IDs [110 +: 1]
       intr_i2c2_sda_interference, // IDs [109 +: 1]
       intr_i2c2_scl_interference, // IDs [108 +: 1]
-      intr_i2c2_nak, // IDs [107 +: 1]
+      intr_i2c2_controller_halt, // IDs [107 +: 1]
       intr_i2c2_rx_overflow, // IDs [106 +: 1]
       intr_i2c2_acq_threshold, // IDs [105 +: 1]
       intr_i2c2_rx_threshold, // IDs [104 +: 1]
@@ -2735,7 +2735,7 @@ module top_earlgrey #(
       intr_i2c1_stretch_timeout, // IDs [95 +: 1]
       intr_i2c1_sda_interference, // IDs [94 +: 1]
       intr_i2c1_scl_interference, // IDs [93 +: 1]
-      intr_i2c1_nak, // IDs [92 +: 1]
+      intr_i2c1_controller_halt, // IDs [92 +: 1]
       intr_i2c1_rx_overflow, // IDs [91 +: 1]
       intr_i2c1_acq_threshold, // IDs [90 +: 1]
       intr_i2c1_rx_threshold, // IDs [89 +: 1]
@@ -2750,7 +2750,7 @@ module top_earlgrey #(
       intr_i2c0_stretch_timeout, // IDs [80 +: 1]
       intr_i2c0_sda_interference, // IDs [79 +: 1]
       intr_i2c0_scl_interference, // IDs [78 +: 1]
-      intr_i2c0_nak, // IDs [77 +: 1]
+      intr_i2c0_controller_halt, // IDs [77 +: 1]
       intr_i2c0_rx_overflow, // IDs [76 +: 1]
       intr_i2c0_acq_threshold, // IDs [75 +: 1]
       intr_i2c0_rx_threshold, // IDs [74 +: 1]

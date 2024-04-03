@@ -36,7 +36,7 @@ module i2c
   output logic              intr_rx_threshold_o,
   output logic              intr_acq_threshold_o,
   output logic              intr_rx_overflow_o,
-  output logic              intr_nak_o,
+  output logic              intr_controller_halt_o,
   output logic              intr_scl_interference_o,
   output logic              intr_sda_interference_o,
   output logic              intr_stretch_timeout_o,
@@ -106,7 +106,7 @@ module i2c
     .intr_rx_threshold_o,
     .intr_acq_threshold_o,
     .intr_rx_overflow_o,
-    .intr_nak_o,
+    .intr_controller_halt_o,
     .intr_scl_interference_o,
     .intr_sda_interference_o,
     .intr_stretch_timeout_o,
@@ -140,7 +140,7 @@ module i2c
   `ASSERT_KNOWN(IntrRxWtmkKnownO_A, intr_rx_threshold_o)
   `ASSERT_KNOWN(IntrAcqWtmkKnownO_A, intr_acq_threshold_o)
   `ASSERT_KNOWN(IntrRxOflwKnownO_A, intr_rx_overflow_o)
-  `ASSERT_KNOWN(IntrNakKnownO_A, intr_nak_o)
+  `ASSERT_KNOWN(IntrControllerHaltKnownO_A, intr_controller_halt_o)
   `ASSERT_KNOWN(IntrSclInterfKnownO_A, intr_scl_interference_o)
   `ASSERT_KNOWN(IntrSdaInterfKnownO_A, intr_sda_interference_o)
   `ASSERT_KNOWN(IntrStretchTimeoutKnownO_A, intr_stretch_timeout_o)

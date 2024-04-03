@@ -195,10 +195,10 @@ status_t i2c_testutils_issue_read(const dif_i2c_t *i2c, uint8_t addr,
   data_frame = (uint8_t)(addr << 1) | (uint8_t)kI2cRead;
   TRY(dif_i2c_write_byte_raw(i2c, data_frame, flags));
 
-  bool nak = false;
   TRY(i2c_testutils_wait_transaction_finish(i2c));
-  TRY(dif_i2c_irq_is_pending(i2c, kDifI2cIrqNak, &nak));
-  if (!nak) {
+  dif_i2c_controller_halt_events_t halt_events = {0};
+  TRY(dif_i2c_get_controller_halt_events(i2c, &halt_events));
+  if (!halt_events.nack_received) {
     // We got an ack, schedule the read transaction.
     flags = kDefaultFlags;
     flags.read = true;
@@ -206,10 +206,14 @@ status_t i2c_testutils_issue_read(const dif_i2c_t *i2c, uint8_t addr,
     // Inform the controller how many bytes to read overall.
     TRY(dif_i2c_write_byte_raw(i2c, byte_count, flags));
   } else {
-    // We got a nak, clear the irq and return. The caller my retry later.
-    TRY(dif_i2c_irq_acknowledge(i2c, kDifI2cIrqNak));
+    // We got a nack, clear the irq and return. The caller may retry later.
+    TRY(dif_i2c_reset_fmt_fifo(i2c));
+    TRY(dif_i2c_clear_controller_halt_events(i2c, halt_events));
+    // Force Stop to be sent after the unexpected NACK.
+    TRY(dif_i2c_host_set_enabled(i2c, kDifToggleDisabled));
+    TRY(dif_i2c_host_set_enabled(i2c, kDifToggleEnabled));
   }
-  return OK_STATUS(nak);
+  return OK_STATUS(halt_events.nack_received);
 }
 
 status_t i2c_testutils_read(const dif_i2c_t *i2c, uint8_t addr,
@@ -218,7 +222,9 @@ status_t i2c_testutils_read(const dif_i2c_t *i2c, uint8_t addr,
   ibex_timeout_t timer = ibex_timeout_init(timeout);
 
   // Make sure to start from a clean state.
-  TRY(dif_i2c_irq_acknowledge(i2c, kDifI2cIrqNak));
+  dif_i2c_controller_halt_events_t halt_events = {0};
+  TRY(dif_i2c_get_controller_halt_events(i2c, &halt_events));
+  TRY(dif_i2c_clear_controller_halt_events(i2c, halt_events));
   TRY(dif_i2c_reset_rx_fifo(i2c));
   do {
     // Per chunk, as many bytes as fit into the RX FIFO could be transferred.

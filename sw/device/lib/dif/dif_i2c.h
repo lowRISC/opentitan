@@ -177,8 +177,8 @@ typedef struct dif_i2c_fmt_flags {
   bool read_cont;
   /**
    * By default, the hardware expects an ACK after every byte sent, and raises
-   * an exception (surfaced as the `kDifi2cIrqNak` interrupt). This flag
-   * disables that behavior.
+   * an exception (contributing to the `kDifi2cIrqControllerHalt` interrupt).
+   * This flag disables that behavior.
    *
    * This flag cannot be set along with `read` or `read_cont`.
    */
@@ -345,6 +345,35 @@ typedef struct dif_i2c_status {
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_i2c_get_status(const dif_i2c_t *i2c, dif_i2c_status_t *status);
+
+typedef struct dif_i2c_controller_halt_events {
+  /** Received a NACK from the target. */
+  bool nack_received;
+  /** Failed to handle a NACK before the handling timeout. */
+  bool unhandled_nack_timeout;
+} dif_i2c_controller_halt_events_t;
+
+/**
+ * Get the events that contributed to the controller halting, if any.
+ *
+ * @param i2c handle,
+ * @param[out] events The events causing the controller FSM to halt.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_i2c_get_controller_halt_events(
+    const dif_i2c_t *i2c, dif_i2c_controller_halt_events_t *events);
+
+/**
+ * Clear the selected events that contributed to the controller halting, if any.
+ *
+ * @param i2c handle,
+ * @param events The events to clear.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_i2c_clear_controller_halt_events(
+    const dif_i2c_t *i2c, dif_i2c_controller_halt_events_t events);
 
 /**
  * Computes timing parameters for an I2C host and stores them in `config`.

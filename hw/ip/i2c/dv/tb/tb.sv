@@ -18,7 +18,7 @@ module tb;
   wire intr_rx_threshold;
   wire intr_acq_threshold;
   wire intr_rx_overflow;
-  wire intr_nak;
+  wire intr_controller_halt;
   wire intr_scl_interference;
   wire intr_sda_interference;
   wire intr_stretch_timeout;
@@ -100,7 +100,7 @@ module tb;
     .intr_rx_threshold_o     (intr_rx_threshold     ),
     .intr_acq_threshold_o    (intr_acq_threshold    ),
     .intr_rx_overflow_o      (intr_rx_overflow      ),
-    .intr_nak_o              (intr_nak              ),
+    .intr_controller_halt_o  (intr_controller_halt  ),
     .intr_scl_interference_o (intr_scl_interference ),
     .intr_sda_interference_o (intr_sda_interference ),
     .intr_stretch_timeout_o  (intr_stretch_timeout  ),
@@ -118,7 +118,7 @@ module tb;
   assign interrupts[RxThreshold]    = intr_rx_threshold;
   assign interrupts[AcqThreshold]   = intr_acq_threshold;
   assign interrupts[RxOverflow]     = intr_rx_overflow;
-  assign interrupts[Nak]            = intr_nak;
+  assign interrupts[ControllerHalt] = intr_controller_halt;
   assign interrupts[SclInference]   = intr_scl_interference;
   assign interrupts[SdaInference]   = intr_sda_interference;
   assign interrupts[StretchTimeout] = intr_stretch_timeout;

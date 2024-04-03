@@ -22,7 +22,7 @@ module i2c_core import i2c_pkg::*;
   output logic                     intr_rx_threshold_o,
   output logic                     intr_acq_threshold_o,
   output logic                     intr_rx_overflow_o,
-  output logic                     intr_nak_o,
+  output logic                     intr_controller_halt_o,
   output logic                     intr_scl_interference_o,
   output logic                     intr_sda_interference_o,
   output logic                     intr_stretch_timeout_o,
@@ -71,7 +71,9 @@ module i2c_core import i2c_pkg::*;
   logic sda_out_fsm;
 
   logic event_rx_overflow;
+  logic status_controller_halt;
   logic event_nak;
+  logic event_unhandled_nak_timeout;
   logic event_scl_interference;
   logic event_sda_interference;
   logic event_stretch_timeout;
@@ -85,8 +87,6 @@ module i2c_core import i2c_pkg::*;
 
   logic target_sr_p_cond;
   logic unhandled_unexp_nak;
-  logic status_host_disabled_nack_timeout_d;
-  logic status_host_disabled_nack_timeout_de;
 
   logic [15:0] scl_rx_val;
   logic [15:0] sda_rx_val;
@@ -156,7 +156,6 @@ module i2c_core import i2c_pkg::*;
 
   logic        host_enable;
   logic        target_enable;
-  logic        host_disable;
   logic        line_loopback;
   logic        target_loopback;
 
@@ -166,7 +165,6 @@ module i2c_core import i2c_pkg::*;
   logic [6:0]  target_mask1;
 
   // Unused parts of exposed bits
-  logic        unused_ctrl_bits;
   logic        unused_rx_thr_qe;
   logic        unused_fmt_thr_qe;
   logic        unused_tx_thr_qe;
@@ -177,13 +175,6 @@ module i2c_core import i2c_pkg::*;
   logic        unused_alert_test_qe;
   logic        unused_alert_test_q;
   logic        unused_txrst_on_cond_qe;
-
-  assign hw2reg.ctrl.enablehost.d = 1'b0;
-  assign hw2reg.ctrl.enablehost.de = host_disable;
-  assign hw2reg.ctrl.enabletarget.d = 1'b0;
-  assign hw2reg.ctrl.enabletarget.de = 1'b0;
-  assign hw2reg.ctrl.llpbk.d = 1'b0;
-  assign hw2reg.ctrl.llpbk.de = 1'b0;
 
   assign hw2reg.status.fmtfull.d = ~fmt_fifo_wready;
   assign hw2reg.status.rxfull.d = ~rx_fifo_wready;
@@ -321,17 +312,12 @@ module i2c_core import i2c_pkg::*;
   // Operating this HWIP as a controller-transmitter, the addressed Target device
   // may NACK our bytes. In Byte-Formatted Programming Mode, each FDATA format indicator
   // can set the 'NAKOK' bit to ignore the Target's NACK and proceed to the next item in
-  // the FMTFIFO. If 'NAKOK' is not set, the 'nak' interrupt is asserted, and the FSM
-  // halts until software intervenes.
-  // To acknowledge the 'NACK', software should acknowledge the interrupt using the
-  // standard W1C mechanism to the INTR_STATE register.
-  assign unhandled_unexp_nak = reg2hw.intr_state.nak.q;
+  // the FMTFIFO. If 'NAKOK' is not set, the 'controller_halt' interrupt is asserted, and the FSM
+  // halts until software intervenes. In addition, the 'controller_events.nack' status bit is set.
+  // To acknowledge the 'NACK', software should clear the status bit by writing 1 to it in the
+  // CONTROLLER_EVENTS register.
+  assign unhandled_unexp_nak = reg2hw.controller_events.nack.q;
 
-  // Unused parts of exposed bits
-  assign unused_ctrl_bits = ^{
-    reg2hw.ctrl.enabletarget.qe,
-    reg2hw.ctrl.llpbk.qe
-  };
   assign unused_rx_thr_qe  = reg2hw.host_fifo_config.rx_thresh.qe;
   assign unused_fmt_thr_qe = reg2hw.host_fifo_config.fmt_thresh.qe;
   assign unused_tx_thr_qe  = reg2hw.target_fifo_config.tx_thresh.qe;
@@ -437,7 +423,6 @@ module i2c_core import i2c_pkg::*;
     .sda_o                          (sda_out_controller_fsm),
 
     .host_enable_i                  (host_enable),
-    .host_disable_o                 (host_disable),
 
     .fmt_fifo_rvalid_i       (fmt_fifo_rvalid),
     .fmt_fifo_depth_i        (fmt_fifo_depth),
@@ -450,6 +435,7 @@ module i2c_core import i2c_pkg::*;
     .fmt_flag_read_continue_i       (fmt_flag_read_continue),
     .fmt_flag_nak_ok_i              (fmt_flag_nak_ok),
     .unhandled_unexp_nak_i          (unhandled_unexp_nak),
+    .unhandled_nak_timeout_i        (reg2hw.controller_events.unhandled_nack_timeout.q),
 
     .rx_fifo_wvalid_o               (rx_fifo_wvalid),
     .rx_fifo_wdata_o                (rx_fifo_wdata),
@@ -471,6 +457,7 @@ module i2c_core import i2c_pkg::*;
     .host_nack_handler_timeout_i    (host_nack_handler_timeout),
     .host_nack_handler_timeout_en_i (host_nack_handler_timeout_en),
     .event_nak_o                    (event_nak),
+    .event_unhandled_nak_timeout_o  (event_unhandled_nak_timeout),
     .event_scl_interference_o       (event_scl_interference),
     .event_sda_interference_o       (event_sda_interference),
     .event_stretch_timeout_o        (event_stretch_timeout),
@@ -582,17 +569,20 @@ module i2c_core import i2c_pkg::*;
     .intr_o                 (intr_rx_overflow_o)
   );
 
-  prim_intr_hw #(.Width(1)) intr_hw_nak (
+  prim_intr_hw #(
+    .Width(1),
+    .IntrT("Status")
+  ) intr_hw_controller_halt (
     .clk_i,
     .rst_ni,
-    .event_intr_i           (event_nak),
-    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.nak.q),
-    .reg2hw_intr_test_q_i   (reg2hw.intr_test.nak.q),
-    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.nak.qe),
-    .reg2hw_intr_state_q_i  (reg2hw.intr_state.nak.q),
-    .hw2reg_intr_state_de_o (hw2reg.intr_state.nak.de),
-    .hw2reg_intr_state_d_o  (hw2reg.intr_state.nak.d),
-    .intr_o                 (intr_nak_o)
+    .event_intr_i           (status_controller_halt),
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.controller_halt.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.controller_halt.q),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.controller_halt.qe),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.controller_halt.q),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.controller_halt.de),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.controller_halt.d),
+    .intr_o                 (intr_controller_halt_o)
   );
 
   prim_intr_hw #(.Width(1)) intr_hw_scl_interference (
@@ -734,46 +724,18 @@ module i2c_core import i2c_pkg::*;
     .intr_o                 (intr_host_timeout_o)
   );
 
-  // The STATUS CSR is defined as hwext, as most values in it are swaccess: "ro" and
-  // simply forward certain internal signals to the register interface.
-  // However, the HOST_DISABLED_NACK_TIMEOUT field is flopped, so manually instantiate here.
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
-  ) u_status_host_disabled_nack_timeout_reg (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (1'b0),
-    .wd     ('0),
-
-    // from internal hardware
-    .de     (status_host_disabled_nack_timeout_de),
-    .d      (status_host_disabled_nack_timeout_d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (hw2reg.status.host_disabled_nack_timeout.d)
-  );
-  // Set -> When the 'host_disable' signal is pulsed by the FSM.
-  // Clear -> When SW sets ctrl.enablehost to 1'b1.
-  assign status_host_disabled_nack_timeout_de =
-    host_disable |                                           // Set
-    (reg2hw.ctrl.enablehost.qe & reg2hw.ctrl.enablehost.q) ; // Clear
-  assign status_host_disabled_nack_timeout_d = host_disable;
+  assign hw2reg.controller_events.nack.d  = 1'b1;
+  assign hw2reg.controller_events.nack.de = event_nak;
+  assign hw2reg.controller_events.unhandled_nack_timeout.d  = 1'b1;
+  assign hw2reg.controller_events.unhandled_nack_timeout.de = event_unhandled_nak_timeout;
+  assign status_controller_halt = | {
+    reg2hw.controller_events.nack.q,
+    reg2hw.controller_events.unhandled_nack_timeout.q
+  };
 
   ////////////////
   // ASSERTIONS //
   ////////////////
-
-  `ASSERT_PULSE(HostDisablePulse_A, host_disable)
 
   // Check to make sure scl_i is never a single cycle glitch
   `ASSERT(SclInputGlitch_A, $rose(scl_sync) |-> ##1 scl_sync)

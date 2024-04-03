@@ -119,13 +119,13 @@ static void en_plic_irqs(dif_rv_plic_t *plic) {
 }
 
 static void en_i2c_irqs(dif_i2c_t *i2c) {
-  dif_i2c_irq_t i2c_irqs[] = {kDifI2cIrqRxThreshold, kDifI2cIrqRxOverflow,
-                              kDifI2cIrqNak, kDifI2cIrqSclInterference,
-                              kDifI2cIrqSdaInterference,
-                              kDifI2cIrqStretchTimeout,
-                              // Removed for now, see plic_irqs above for
-                              // explanation kDifI2cIrqSdaUnstable,
-                              kDifI2cIrqCmdComplete};
+  dif_i2c_irq_t i2c_irqs[] = {
+      kDifI2cIrqRxThreshold, kDifI2cIrqRxOverflow, kDifI2cIrqControllerHalt,
+      kDifI2cIrqSclInterference, kDifI2cIrqSdaInterference,
+      kDifI2cIrqStretchTimeout,
+      // Removed for now, see plic_irqs above for
+      // explanation kDifI2cIrqSdaUnstable,
+      kDifI2cIrqCmdComplete};
 
   for (uint32_t i = 0; i <= ARRAYSIZE(i2c_irqs); ++i) {
     CHECK_DIF_OK(dif_i2c_irq_set_enabled(i2c, i2c_irqs[i], kDifToggleEnabled));
@@ -153,7 +153,7 @@ void config_i2c_with_index(void) {
       plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c0FmtThreshold;
       plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c0RxThreshold;
       plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c0RxOverflow;
-      plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c0Nak;
+      plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c0ControllerHalt;
       plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c0SclInterference;
       plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c0SdaInterference;
       plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c0StretchTimeout;
@@ -183,7 +183,7 @@ void config_i2c_with_index(void) {
       plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c1FmtThreshold;
       plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c1RxThreshold;
       plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c1RxOverflow;
-      plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c1Nak;
+      plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c1ControllerHalt;
       plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c1SclInterference;
       plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c1SdaInterference;
       plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c1StretchTimeout;
@@ -213,7 +213,7 @@ void config_i2c_with_index(void) {
       plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c2FmtThreshold;
       plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c2RxThreshold;
       plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c2RxOverflow;
-      plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c2Nak;
+      plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c2ControllerHalt;
       plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c2SclInterference;
       plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c2SdaInterference;
       plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c2StretchTimeout;

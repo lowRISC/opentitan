@@ -29,7 +29,7 @@ class i2c_host_mode_toggle_vseq extends i2c_base_vseq;
     expected_intr[TxStretch] = 1;
     expected_intr[CmdComplete] = 1;
     // Since after driver reset, SDA will be high, NAK interrupt will be raised
-    expected_intr[Nak] = 1;
+    expected_intr[ControllerHalt] = 1;
     expected_intr[HostTimeout] = 1;
     for (int i = 0; i < NumI2cIntr; i++) intr_q.push_back(i2c_intr_e'(i));
     if (cfg.bad_addr_pct > 0) cfg.m_i2c_agent_cfg.allow_bad_addr = 1;

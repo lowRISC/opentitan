@@ -1092,7 +1092,7 @@ typedef enum top_earlgrey_plic_irq_id {
   kTopEarlgreyPlicIrqIdI2c0RxThreshold = 74, /**< i2c0_rx_threshold */
   kTopEarlgreyPlicIrqIdI2c0AcqThreshold = 75, /**< i2c0_acq_threshold */
   kTopEarlgreyPlicIrqIdI2c0RxOverflow = 76, /**< i2c0_rx_overflow */
-  kTopEarlgreyPlicIrqIdI2c0Nak = 77, /**< i2c0_nak */
+  kTopEarlgreyPlicIrqIdI2c0ControllerHalt = 77, /**< i2c0_controller_halt */
   kTopEarlgreyPlicIrqIdI2c0SclInterference = 78, /**< i2c0_scl_interference */
   kTopEarlgreyPlicIrqIdI2c0SdaInterference = 79, /**< i2c0_sda_interference */
   kTopEarlgreyPlicIrqIdI2c0StretchTimeout = 80, /**< i2c0_stretch_timeout */
@@ -1107,7 +1107,7 @@ typedef enum top_earlgrey_plic_irq_id {
   kTopEarlgreyPlicIrqIdI2c1RxThreshold = 89, /**< i2c1_rx_threshold */
   kTopEarlgreyPlicIrqIdI2c1AcqThreshold = 90, /**< i2c1_acq_threshold */
   kTopEarlgreyPlicIrqIdI2c1RxOverflow = 91, /**< i2c1_rx_overflow */
-  kTopEarlgreyPlicIrqIdI2c1Nak = 92, /**< i2c1_nak */
+  kTopEarlgreyPlicIrqIdI2c1ControllerHalt = 92, /**< i2c1_controller_halt */
   kTopEarlgreyPlicIrqIdI2c1SclInterference = 93, /**< i2c1_scl_interference */
   kTopEarlgreyPlicIrqIdI2c1SdaInterference = 94, /**< i2c1_sda_interference */
   kTopEarlgreyPlicIrqIdI2c1StretchTimeout = 95, /**< i2c1_stretch_timeout */
@@ -1122,7 +1122,7 @@ typedef enum top_earlgrey_plic_irq_id {
   kTopEarlgreyPlicIrqIdI2c2RxThreshold = 104, /**< i2c2_rx_threshold */
   kTopEarlgreyPlicIrqIdI2c2AcqThreshold = 105, /**< i2c2_acq_threshold */
   kTopEarlgreyPlicIrqIdI2c2RxOverflow = 106, /**< i2c2_rx_overflow */
-  kTopEarlgreyPlicIrqIdI2c2Nak = 107, /**< i2c2_nak */
+  kTopEarlgreyPlicIrqIdI2c2ControllerHalt = 107, /**< i2c2_controller_halt */
   kTopEarlgreyPlicIrqIdI2c2SclInterference = 108, /**< i2c2_scl_interference */
   kTopEarlgreyPlicIrqIdI2c2SdaInterference = 109, /**< i2c2_sda_interference */
   kTopEarlgreyPlicIrqIdI2c2StretchTimeout = 110, /**< i2c2_stretch_timeout */

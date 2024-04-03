@@ -58,6 +58,35 @@ dif_result_t dif_i2c_get_status(const dif_i2c_t *i2c,
   return kDifOk;
 }
 
+dif_result_t dif_i2c_get_controller_halt_events(
+    const dif_i2c_t *i2c, dif_i2c_controller_halt_events_t *events) {
+  if (i2c == NULL || events == NULL) {
+    return kDifBadArg;
+  }
+  uint32_t reg =
+      mmio_region_read32(i2c->base_addr, I2C_CONTROLLER_EVENTS_REG_OFFSET);
+  events->nack_received =
+      bitfield_bit32_read(reg, I2C_CONTROLLER_EVENTS_NACK_BIT);
+  events->unhandled_nack_timeout = bitfield_bit32_read(
+      reg, I2C_CONTROLLER_EVENTS_UNHANDLED_NACK_TIMEOUT_BIT);
+  return kDifOk;
+}
+
+dif_result_t dif_i2c_clear_controller_halt_events(
+    const dif_i2c_t *i2c, dif_i2c_controller_halt_events_t events) {
+  if (i2c == NULL) {
+    return kDifBadArg;
+  }
+  uint32_t reg = 0;
+  reg = bitfield_bit32_write(reg, I2C_CONTROLLER_EVENTS_NACK_BIT,
+                             events.nack_received);
+  reg = bitfield_bit32_write(reg,
+                             I2C_CONTROLLER_EVENTS_UNHANDLED_NACK_TIMEOUT_BIT,
+                             events.unhandled_nack_timeout);
+  mmio_region_write32(i2c->base_addr, I2C_CONTROLLER_EVENTS_REG_OFFSET, reg);
+  return kDifOk;
+}
+
 /**
  * Computes default timing parameters for a particular I2C speed, given the
  * clock period, in nanoseconds.

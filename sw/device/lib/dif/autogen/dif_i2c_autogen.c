@@ -63,8 +63,8 @@ static bool i2c_get_irq_bit_index(dif_i2c_irq_t irq,
     case kDifI2cIrqRxOverflow:
       *index_out = I2C_INTR_COMMON_RX_OVERFLOW_BIT;
       break;
-    case kDifI2cIrqNak:
-      *index_out = I2C_INTR_COMMON_NAK_BIT;
+    case kDifI2cIrqControllerHalt:
+      *index_out = I2C_INTR_COMMON_CONTROLLER_HALT_BIT;
       break;
     case kDifI2cIrqSclInterference:
       *index_out = I2C_INTR_COMMON_SCL_INTERFERENCE_BIT;
@@ -105,7 +105,7 @@ static bool i2c_get_irq_bit_index(dif_i2c_irq_t irq,
 
 static dif_irq_type_t irq_types[] = {
     kDifIrqTypeStatus, kDifIrqTypeStatus, kDifIrqTypeStatus, kDifIrqTypeEvent,
-    kDifIrqTypeEvent,  kDifIrqTypeEvent,  kDifIrqTypeEvent,  kDifIrqTypeEvent,
+    kDifIrqTypeStatus, kDifIrqTypeEvent,  kDifIrqTypeEvent,  kDifIrqTypeEvent,
     kDifIrqTypeEvent,  kDifIrqTypeEvent,  kDifIrqTypeStatus, kDifIrqTypeStatus,
     kDifIrqTypeStatus, kDifIrqTypeEvent,  kDifIrqTypeEvent,
 };
