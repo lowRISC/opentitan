@@ -41,12 +41,14 @@
   end                                                                                \
 
 `define ASSERT_FINAL(__name, __prop)                                         \
+`ifndef FPV_ON                                                               \
   final begin                                                                \
     __name: assert (__prop || $test$plusargs("disable_assert_final_checks")) \
       else begin                                                             \
         `ASSERT_ERROR(__name)                                                \
       end                                                                    \
-  end
+  end                                                                        \
+`endif
 
 `define ASSERT_AT_RESET(__name, __prop, __rst = `ASSERT_DEFAULT_RST)         \
   // `__rst` is active-high for these macros, so trigger on its posedge.     \
