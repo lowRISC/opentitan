@@ -24,8 +24,6 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   // Configuration for DUT CSRs (held in a separate object for easy re-randomization)
   entropy_src_dut_cfg dut_cfg;
 
-  // handle to entropy_src assert interface
-  virtual entropy_src_assert_if entropy_src_assert_vif;
   // handle to entropy_src path interface
   virtual entropy_src_path_if   entropy_src_path_vif;
 
@@ -259,12 +257,6 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
 
     // set num_interrupts & num_alerts
     num_interrupts = ral.intr_state.get_n_used_bits();
-
-    // get entropy_src assert interface handle
-    if (!uvm_config_db#(virtual entropy_src_assert_if)::
-        get(null, "*.env" , "entropy_src_assert_vif", entropy_src_assert_vif)) begin
-      `uvm_fatal(`gfn, $sformatf("FAILED TO GET HANDLE TO ASSERT IF"))
-    end
 
     // only support 1 outstanding TL item
     m_tl_agent_cfg.max_outstanding_req = 1;
