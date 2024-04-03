@@ -40,7 +40,7 @@
       lc_states: ["PROD"]
       tests: ["chip_sw_flash_ctrl_access",
               "chip_sw_flash_ctrl_access_jitter_en"]
-      bazel: ["//sw/device/tests:flash_ctrl_ops_test"]
+      bazel: ["//sw/device/tests:flash_ctrl_ops_test", "//sw/device/tests:flash_ctrl_test"]
     }
     {
       name: chip_sw_flash_ctrl_ops
