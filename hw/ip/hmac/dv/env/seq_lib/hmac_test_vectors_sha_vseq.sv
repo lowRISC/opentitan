@@ -9,6 +9,10 @@ class hmac_test_vectors_sha_vseq extends hmac_base_vseq;
   `uvm_object_new
 
   rand bit [31:0] key[]; // random because SHA-2 will not use the key
+  // TODO (#22932): remove this and use the constraints from hmac_base_vseq once
+  // this test is adapted for all digest sizes and key lengths
+  rand bit [5:0]  key_length;
+  rand bit [3:0]  digest_size;
 
   string vector_list[] = test_vectors_pkg::sha_file_list;
 
@@ -20,6 +24,28 @@ class hmac_test_vectors_sha_vseq extends hmac_base_vseq;
 
   constraint hmac_disabled_c {
     soft hmac_en == 0;
+  }
+
+  // only testing 256-bit key now
+  // TODO (#22932): remove this constraint and use the constraints from hmac_base_vseq once
+  // this test is adapted for all digest sizes and key lengths
+  constraint key_digest_c {
+    key_length dist {
+      6'b00_0001 := 0,
+      6'b00_0010 := 10, // 256-bit key
+      6'b00_0100 := 0,
+      6'b00_1000 := 0,
+      6'b01_0000 := 0,
+      6'b10_0000 := 0
+    };
+
+    // only testing SHA-2 256 now
+    digest_size dist {
+      4'b0001 := 10, // SHA-2 256
+      4'b0010 := 0,  // SHA-2 384
+      4'b0100 := 0,  // SHA-2 512
+      4'b1000 := 0   // SHA-2 None
+    };
   }
 
   virtual task pre_start();
@@ -48,7 +74,7 @@ class hmac_test_vectors_sha_vseq extends hmac_base_vseq;
         hmac_init(.hmac_en(hmac_en), .endian_swap(1'b1), .digest_swap(1'b0),
                   .digest_size(digest_size), .key_length(key_length));
 
-        `uvm_info(`gfn, $sformatf("digest size=%4b, key length=%5b",
+        `uvm_info(`gfn, $sformatf("digest size=%4b, key length=%6b",
                 digest_size, key_length), UVM_LOW)
 
         `uvm_info(`gtn, $sformatf("%s, starting seq %0d, msg size = %0d",

@@ -19,6 +19,9 @@ class hmac_smoke_vseq extends hmac_base_vseq;
   rand bit               do_hash_start;
   rand bit               re_enable_sha;
   rand wipe_secret_req_e do_wipe_secret;
+  bit                    invalid_cfg;
+  bit [5:0]              cast_key_length;
+  bit [3:0]              cast_digest_size;
 
   // HMAC key size will always be 1024 bits.
   // key_length determines actual key size used in HW and scoreboard.
@@ -81,7 +84,7 @@ class hmac_smoke_vseq extends hmac_base_vseq;
       `DV_CHECK_RANDOMIZE_FATAL(this)
       `uvm_info(`gfn, $sformatf("starting seq %0d/%0d, message size %0d, hmac=%0d, sha=%0d",
                 i, num_trans, msg.size(), hmac_en, sha_en), UVM_LOW)
-      `uvm_info(`gfn, $sformatf("digest size=%4b, key length=%5b",
+      `uvm_info(`gfn, $sformatf("digest size=%4b, key length=%6b",
                 digest_size, key_length), UVM_LOW)
       `uvm_info(`gfn, $sformatf("intr_fifo_empty/hmac_done/hmac_err_en=%b, endian/digest_swap=%b",
                 {intr_fifo_empty_en, intr_hmac_done_en, intr_hmac_err_en},
@@ -93,6 +96,21 @@ class hmac_smoke_vseq extends hmac_base_vseq;
                 .digest_swap(digest_swap), .digest_size(digest_size), .key_length(key_length),
                 .intr_fifo_empty_en(intr_fifo_empty_en),
                 .intr_hmac_done_en(intr_hmac_done_en), .intr_hmac_err_en(intr_hmac_err_en));
+
+      // read digest size and key length after casting from CSRs and update mirrored values
+      csr_rd_digest_size(cast_digest_size);
+      csr_rd_key_length(cast_key_length);
+
+      // indicate if config is invalid and would block triggering the hash to start
+      if ((cast_digest_size == SHA2_None) ||
+          ((cast_key_length == Key_None) && hmac_en) ||
+          ((cast_digest_size == SHA2_256) && (cast_key_length == Key_1024) && hmac_en)) begin
+        invalid_cfg = 1;
+      end else begin
+        invalid_cfg = 0;
+      end
+
+      `uvm_info(`gfn, $sformatf("invalid config: %1b", invalid_cfg), UVM_LOW)
 
       // can randomly read previous digest
       if (i != 1 && $urandom_range(0, 1)) rd_digest();
@@ -112,7 +130,6 @@ class hmac_smoke_vseq extends hmac_base_vseq;
 
       if (do_wipe_secret == WipeSecretBeforeStart) begin
         `uvm_info(`gfn, $sformatf("wiping before start"), UVM_LOW)
-
         wipe_secrets();
         // Here the wipe secret will only corrupt secret keys and current digests.
         // If HMAC is not enabled, check if digest is corrupted.
@@ -125,7 +142,15 @@ class hmac_smoke_vseq extends hmac_base_vseq;
         fork
           begin
             if (do_hash_start) trigger_hash();
-
+            if (invalid_cfg & do_hash_start) begin // error would only be signalled when started
+              // wait for interrupt to assert, check status and clear it
+              if (intr_hmac_err_en) begin
+                `DV_WAIT(cfg.intr_vif.pins[HmacErr] === 1'b1);
+              end else begin
+                csr_spinwait(.ptr(ral.intr_state.hmac_err), .exp_data(1'b1));
+              end
+              `uvm_info(`gfn, $sformatf("HMAC Error,  %b", cfg.intr_vif.pins[HmacErr]), UVM_LOW)
+            end
             if (do_burst_wr) burst_wr_msg(msg, burst_wr_length);
             else             wr_msg(msg);
           end
@@ -172,11 +197,13 @@ class hmac_smoke_vseq extends hmac_base_vseq;
         if (do_hash_start) begin
           fork
             begin
-              // wait for interrupt to assert, check status and clear it
-              if (intr_hmac_done_en) begin
-                wait(cfg.intr_vif.pins[HmacDone] === 1'b1);
-              end else begin
-                csr_spinwait(.ptr(ral.intr_state.hmac_done), .exp_data(1'b1));
+              if (!invalid_cfg) begin
+                // wait for interrupt to assert, check status and clear it
+                if (intr_hmac_done_en) begin
+                  `DV_WAIT(cfg.intr_vif.pins[HmacDone] === 1'b1);
+                end else begin
+                  csr_spinwait(.ptr(ral.intr_state.hmac_done), .exp_data(1'b1));
+                end
               end
             end
             begin
@@ -198,7 +225,7 @@ class hmac_smoke_vseq extends hmac_base_vseq;
       if ($urandom_range(0, 1)) rd_msg_length();
 
       // read digest from DUT
-      `uvm_info(`gfn, $sformatf("will read digest now"), UVM_LOW)
+      `uvm_info(`gfn, $sformatf("reading digest now"), UVM_HIGH)
       rd_digest();
     end
   endtask : body
