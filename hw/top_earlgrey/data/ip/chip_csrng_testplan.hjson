@@ -108,6 +108,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_sw_csrng_kat_test"]
+      bazel: ["//sw/device/tests:csrng_kat_test"]
     }
   ]
 }
