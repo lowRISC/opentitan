@@ -11,6 +11,7 @@ import os.path
 import re
 import subprocess
 import sys
+from collections import defaultdict
 
 parser = argparse.ArgumentParser(
     description='Mapfile converter and visualizer')
@@ -32,6 +33,17 @@ parser.add_argument('-v',
                     default=False,
                     action=argparse.BooleanOptionalAction,
                     help='Open the generated html in a browser')
+parser.add_argument('-d',
+                    '--dimensions',
+                    default='1920x1080',
+                    type=str,
+                    help='Set the dimensions of the generated html diagram')
+parser.add_argument('-a',
+                    '--arrangement',
+                    default='file',
+                    type=str,
+                    choices=['region', 'file'],
+                    help='Arrange the hierarchy by this condition')
 parser.add_argument('--ignore-debug',
                     default=True,
                     action=argparse.BooleanOptionalAction,
@@ -51,8 +63,8 @@ import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
 var data = @DATA@;
 
 // Specify the chart’s dimensions.
-const width = 1154;
-const height = 1154;
+const width = @WIDTH@;
+const height = @HEIGHT@;
 const tile = d3.treemapSquarify;
 const {DOM} = new observablehq.Library;
 
@@ -95,6 +107,16 @@ const node = svg.selectAll("g")
   .join("g")
     .attr("transform", d => `translate(${d.x0},${d.y0})`);
 
+function symlist(d) {
+  if (d.data.symbols) {
+    return d.data.symbols.map(d => d.name + ": 0x" + d.addr.toString(16)).join("  \n");
+  } else if (d.children) {
+    return d.children.map(d => symlist(d)).join("  \n");
+  } else {
+    return "";
+  }
+}
+
 // Append a tooltip.
 const format = d3.format(",d");
 node.append("title")
@@ -102,7 +124,7 @@ node.append("title")
 `${d.ancestors().reverse().map(d => d.data.name).join(".")}
 Size: ${format(d.value)}
 Symbols:
-  ${d.data.symbols.map(d => d.name + ": 0x" + d.addr.toString(16)).join("  \n")}`);
+  ${symlist(d)}`);
 
 node.append("rect")
     .attr("id", d => (d.nodeUid = DOM.uid("node")).id)
@@ -321,7 +343,7 @@ class Mapfile(object):
                     continue
                 if section.startswith(parent):
                     section = section[len(parent):]
-                obj = self.object_file(section, addr, size, section)
+                obj = self.object_file(section, addr, size, file)
                 sections[-1]['children'].append(obj)
             elif symbol and sections:
                 # Info about an individual symbol.
@@ -365,6 +387,19 @@ class Mapfile(object):
         }
         return top
 
+    def by_filename(self):
+        top = self.by_memory_region()
+        for region in top['children']:
+            for section in region['children']:
+                files = defaultdict(list)
+                for file in section['children']:
+                    files[file['filename']].append(file)
+                section['children'] = [
+                    dict(name='[{}]'.format(name), children=info)
+                    for name, info in files.items()
+                ]
+        return top
+
     def sum_children(self, item):
         """Sum up children and report discrepancies between sizes."""
         name = item.get('name', '__unknown__')
@@ -387,7 +422,12 @@ def main(args):
     m = Mapfile(regions=args.regions.split(','),
                 ignore_debug=args.ignore_debug)
     m.parse(args.mapfile)
-    regions = m.by_memory_region()
+    if args.arrangement == 'region':
+        regions = m.by_memory_region()
+    elif args.arrangement == 'file':
+        regions = m.by_filename()
+    else:
+        raise Exception('Unknown arrangement type:', args.arrangement)
     m.sum_children(regions)
     text = json.dumps(regions, indent=4)
     if args.json:
@@ -396,8 +436,12 @@ def main(args):
     if args.html or args.view:
         filename = args.html if args.html else os.path.basename(
             args.mapfile).replace('.map', '') + '.html'
+        width, height = args.dimensions.split('x')
         with open(filename, 'wt') as f:
-            f.write(D3_TEMPLATE.replace('@DATA@', text))
+            f.write(
+                D3_TEMPLATE.replace('@DATA@',
+                                    text).replace('@WIDTH@', width).replace(
+                                        '@HEIGHT@', height))
         if args.view:
             subprocess.call(['xdg-open', filename])
     return 0
