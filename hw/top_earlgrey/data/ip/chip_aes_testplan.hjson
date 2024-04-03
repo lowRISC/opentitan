@@ -259,6 +259,7 @@
       bazel: [
         "//sw/device/tests/crypto:aes_sideload_functest",
         "//sw/device/tests/crypto:aes_kwp_sideload_functest",
+        "//sw/device/tests/crypto:keymgr_sideload_aes_test",
       ]
     }
     {
