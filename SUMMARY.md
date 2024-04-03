@@ -472,6 +472,7 @@
       - [Shutdown Specification](./sw/device/silicon_creator/rom/doc/shutdown.md)
     - [ROM\_EXT](./sw/device/silicon_creator/rom_ext/README.md)
       - [ROM\_EXT for Silicon Validation](./sw/device/silicon_creator/rom_ext/doc/si_val.md)
+      - [ROM\_EXT Ownership Transfer](./sw/device/silicon_creator/rom_ext/doc/ownership.md)
       - [ROM\_EXT Rescue Protocol](./sw/device/silicon_creator/rom_ext/doc/rescue.md)
     - [Manifest Format](./sw/device/silicon_creator/rom_ext/doc/manifest.md)
     - [Boot Log](./sw/device/silicon_creator/doc/boot_log.md)
