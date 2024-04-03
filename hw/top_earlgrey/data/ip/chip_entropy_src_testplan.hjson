@@ -25,7 +25,11 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_sw_entropy_src_ast_rng_req"]
-      bazel: ["//sw/device/tests:entropy_src_ast_rng_req_test"]
+      bazel: [
+        "//sw/device/tests:entropy_src_ast_rng_req_test",
+        "//sw/device/tests:entropy_src_fw_ovr_test",
+        "//sw/device/tests:entropy_src_fw_override_test"
+      ]
     },
     {
       name: chip_sw_entropy_src_csrng
