@@ -64,6 +64,7 @@
 #include "usb_device.h"
 #if STREAMTEST_LIBUSB
 #include "usbdev_int.h"
+#include "usbdev_iso.h"
 #endif
 #include "usbdev_serial.h"
 #include "usbdev_utils.h"
@@ -286,6 +287,18 @@ static int RunTest(USBDevice *dev, const char *in_port, const char *out_port) {
       } break;
 
 #if STREAMTEST_LIBUSB
+      case USBDevStream::StreamType_Isochronous: {
+        USBDevIso *iso;
+        iso = new USBDevIso(dev, idx, transfer_bytes, cfg.retrieve, cfg.check,
+                            cfg.send, cfg.verbose);
+        if (iso) {
+          opened = iso->Open(idx);
+          if (opened) {
+            streams[idx] = iso;
+          }
+        }
+      } break;
+
       case USBDevStream::StreamType_Interrupt:
         bulk = false;
         // no break; Bulk Transfers are handled identically to Interrupt
