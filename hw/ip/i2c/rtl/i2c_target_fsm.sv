@@ -39,6 +39,15 @@ module i2c_target_fsm import i2c_pkg::*;
   input        nack_timeout_en_i,  // enable nack timeout
   input        nack_addr_after_timeout_i,
 
+  // ACK Control Mode signals
+  input              ack_ctrl_mode_i,       // Whether ACK Control Mode is enabled
+  output logic [8:0] auto_ack_cnt_o,        // Current Auto ACK count
+  input              auto_ack_load_i,       // SW requests load of the Auto ACK counter
+  input        [8:0] auto_ack_load_value_i, // SW's value to load into the Auto ACK counter
+  input              sw_nack_i,             // SW pulses high to NACK while stretching in ack_ctrl
+  output logic       ack_ctrl_stretching_o, // Stretching due to zero Auto ACK count
+  output logic [7:0] acq_fifo_next_data_o,  // SW uses this for deciding whether to NACK data bytes
+
   input logic [6:0] target_address0_i,
   input logic [6:0] target_mask0_i,
   input logic [6:0] target_address1_i,
@@ -62,6 +71,7 @@ module i2c_target_fsm import i2c_pkg::*;
                                    // the NACK timeout feature.
 
   logic        actively_stretching; // Only high when this target is holding SCL low to stretch.
+  logic        ack_ctrl_stretching; // Stretching due to Auto ACK Count exhausted
 
   logic        nack_transaction_q; // Set if the rest of the transaction needs to be nack'd.
   logic        nack_transaction_d;
@@ -98,6 +108,10 @@ module i2c_target_fsm import i2c_pkg::*;
   logic        stretch_tx;
   logic        nack_timeout;
   logic        expect_stop;
+
+  // Target ACK control variables
+  logic [8:0]  auto_ack_cnt_q, auto_ack_cnt_d; // Remaining bytes that may be auto ACK'd
+  logic        can_auto_ack; // Whether the FSM may automatically ACK
 
   // Target bit counter variables
   logic [3:0]  bit_idx;       // bit index including ack/nack
@@ -166,6 +180,23 @@ module i2c_target_fsm import i2c_pkg::*;
       stretch_active_cnt <= '0;
     end
   end
+
+  // Track remaining number of bytes that may be automatically ACK'd
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      auto_ack_cnt_q <= '0;
+    end else if (auto_ack_load_i && ack_ctrl_stretching) begin
+      // Loads are only accepted while stretching to avoid races.
+      auto_ack_cnt_q <= auto_ack_load_value_i;
+    end else begin
+      auto_ack_cnt_q <= auto_ack_cnt_d;
+    end
+  end
+
+  assign can_auto_ack = !ack_ctrl_mode_i || (auto_ack_cnt_q > '0);
+  assign auto_ack_cnt_o = auto_ack_cnt_q;
+  assign ack_ctrl_stretching_o = ack_ctrl_stretching;
+  assign acq_fifo_next_data_o = input_byte;
 
   // Latch whether this transaction is to be NACK'd.
   always_ff @ (posedge clk_i or negedge rst_ni) begin : clk_nack_transaction
@@ -379,6 +410,8 @@ module i2c_target_fsm import i2c_pkg::*;
     restart_det_d = restart_det_q;
     xact_for_us_d = xact_for_us_q;
     xfer_for_us_d = xfer_for_us_q;
+    auto_ack_cnt_d = auto_ack_cnt_q;
+    ack_ctrl_stretching = 1'b0;
     nack_transaction_d = nack_transaction_q;
     actively_stretching = 1'b0;
 
@@ -403,6 +436,7 @@ module i2c_target_fsm import i2c_pkg::*;
       AcquireStart : begin
         target_idle_o = 1'b0;
         xfer_for_us_d = 1'b0;
+        auto_ack_cnt_d = '0;
       end
       // AddrRead: read and compare target address
       AddrRead : begin
@@ -528,6 +562,7 @@ module i2c_target_fsm import i2c_pkg::*;
         sda_d = 1'b0;
 
         if (tcount_q == 20'd1) begin
+          auto_ack_cnt_d = auto_ack_cnt_q - 1'b1;
           acq_fifo_wvalid_o = ~stretch_rx;          // assert that acq_fifo has space
           acq_fifo_wdata_o = {AcqData, input_byte}; // transfer data to acq_fifo
         end
@@ -601,9 +636,11 @@ module i2c_target_fsm import i2c_pkg::*;
       StretchAcqFull : begin
         target_idle_o = 1'b0;
         scl_d = 1'b0;
+        ack_ctrl_stretching = !can_auto_ack;
         actively_stretching = stretch_rx;
 
-        if (nack_timeout) begin
+
+        if (nack_timeout || (sw_nack_i && !can_auto_ack)) begin
           nack_transaction_d = 1'b1;
           acq_fifo_wvalid_o = !acq_fifo_full_or_last_space;
           acq_fifo_wdata_o = {AcqNack, input_byte};
@@ -627,6 +664,8 @@ module i2c_target_fsm import i2c_pkg::*;
         event_cmd_complete_o = 1'b0;
         restart_det_d = 1'b0;
         xact_for_us_d = 1'b0;
+        auto_ack_cnt_d = '0;
+        ack_ctrl_stretching = 1'b0;
         nack_transaction_d = 1'b0;
         actively_stretching = 1'b0;
       end
@@ -651,8 +690,8 @@ module i2c_target_fsm import i2c_pkg::*;
     end
   end
 
-  assign stretch_rx   = !acq_fifo_plenty_space;
-  assign stretch_addr = stretch_rx;
+  assign stretch_rx   = !acq_fifo_plenty_space || !can_auto_ack;
+  assign stretch_addr = !acq_fifo_plenty_space;
 
   // This condition determines whether this target has stretched beyond the
   // timeout in which case it must now send a NACK to the host.
@@ -861,7 +900,8 @@ module i2c_target_fsm import i2c_pkg::*;
             state_d = WaitForStop;
           end else if (stretch_rx) begin
             // If there is no space for the current entry, stretch clocks and
-            // wait for software to make space.
+            // wait for software to make space. Also stretch if ACK Control
+            // Mode is enabled and the auto_ack_cnt is exhausted.
             state_d = StretchAcqFull;
           end else begin
             state_d = AcquireAckSetup;
@@ -953,8 +993,11 @@ module i2c_target_fsm import i2c_pkg::*;
       // When space becomes available, move on to prepare to ACK. If we hit
       // our NACK timeout we must continue and unconditionally NACK the next
       // one.
+      // If ACK Control Mode is enabled, also stretch if the Auto ACK counter
+      // is exhausted. If the conditions for an ACK Control stretch are
+      // present, NACK the transaction if directed by SW.
       StretchAcqFull : begin
-        if (nack_timeout) begin
+        if (nack_timeout || (sw_nack_i && !can_auto_ack)) begin
           state_d = WaitForStop;
         end else if (~stretch_rx) begin
           state_d = StretchAcqSetup;

@@ -1100,7 +1100,7 @@ typedef enum top_earlgrey_plic_irq_id {
   kTopEarlgreyPlicIrqIdI2c0CmdComplete = 82, /**< i2c0_cmd_complete */
   kTopEarlgreyPlicIrqIdI2c0TxStretch = 83, /**< i2c0_tx_stretch */
   kTopEarlgreyPlicIrqIdI2c0TxThreshold = 84, /**< i2c0_tx_threshold */
-  kTopEarlgreyPlicIrqIdI2c0AcqFull = 85, /**< i2c0_acq_full */
+  kTopEarlgreyPlicIrqIdI2c0AcqStretch = 85, /**< i2c0_acq_stretch */
   kTopEarlgreyPlicIrqIdI2c0UnexpStop = 86, /**< i2c0_unexp_stop */
   kTopEarlgreyPlicIrqIdI2c0HostTimeout = 87, /**< i2c0_host_timeout */
   kTopEarlgreyPlicIrqIdI2c1FmtThreshold = 88, /**< i2c1_fmt_threshold */
@@ -1115,7 +1115,7 @@ typedef enum top_earlgrey_plic_irq_id {
   kTopEarlgreyPlicIrqIdI2c1CmdComplete = 97, /**< i2c1_cmd_complete */
   kTopEarlgreyPlicIrqIdI2c1TxStretch = 98, /**< i2c1_tx_stretch */
   kTopEarlgreyPlicIrqIdI2c1TxThreshold = 99, /**< i2c1_tx_threshold */
-  kTopEarlgreyPlicIrqIdI2c1AcqFull = 100, /**< i2c1_acq_full */
+  kTopEarlgreyPlicIrqIdI2c1AcqStretch = 100, /**< i2c1_acq_stretch */
   kTopEarlgreyPlicIrqIdI2c1UnexpStop = 101, /**< i2c1_unexp_stop */
   kTopEarlgreyPlicIrqIdI2c1HostTimeout = 102, /**< i2c1_host_timeout */
   kTopEarlgreyPlicIrqIdI2c2FmtThreshold = 103, /**< i2c2_fmt_threshold */
@@ -1130,7 +1130,7 @@ typedef enum top_earlgrey_plic_irq_id {
   kTopEarlgreyPlicIrqIdI2c2CmdComplete = 112, /**< i2c2_cmd_complete */
   kTopEarlgreyPlicIrqIdI2c2TxStretch = 113, /**< i2c2_tx_stretch */
   kTopEarlgreyPlicIrqIdI2c2TxThreshold = 114, /**< i2c2_tx_threshold */
-  kTopEarlgreyPlicIrqIdI2c2AcqFull = 115, /**< i2c2_acq_full */
+  kTopEarlgreyPlicIrqIdI2c2AcqStretch = 115, /**< i2c2_acq_stretch */
   kTopEarlgreyPlicIrqIdI2c2UnexpStop = 116, /**< i2c2_unexp_stop */
   kTopEarlgreyPlicIrqIdI2c2HostTimeout = 117, /**< i2c2_host_timeout */
   kTopEarlgreyPlicIrqIdPattgenDoneCh0 = 118, /**< pattgen_done_ch0 */

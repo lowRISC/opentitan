@@ -136,10 +136,11 @@ typedef enum dif_i2c_irq {
    */
   kDifI2cIrqTxThreshold = 11,
   /**
-   * Target mode interrupt: raised if ACQ FIFO becomes full. This is a level
-   * status interrupt.
+   * Target mode interrupt: raised if the target is stretching clocks due to
+   * full ACQ FIFO or zero count in !!TARGET_ACK_CTRL.NBYTES (if enabled). This
+   * is a level status interrupt.
    */
-  kDifI2cIrqAcqFull = 12,
+  kDifI2cIrqAcqStretch = 12,
   /**
    * Target mode interrupt: raised if STOP is received without a preceding NACK
    * during an external host read.

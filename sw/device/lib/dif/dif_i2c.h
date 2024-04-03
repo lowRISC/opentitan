@@ -304,6 +304,10 @@ typedef struct dif_i2c_status {
    */
   bool line_loopback;
   /**
+   * ACK Control Mode enabled
+   */
+  bool ack_control_en;
+  /**
    * Format FIFO is full, SW cannot write commands to transact into the FIFO
    * until I2C host is able to act on the contents.
    */
@@ -346,9 +350,13 @@ typedef struct dif_i2c_status {
    */
   bool tx_fifo_empty;
   /**
-   * Aquire FIFO is empty and will remain so until I2C Device recieves a Write
+   * Acquire FIFO is empty and will remain so until I2C Device receives a Write
    */
   bool acq_fifo_empty;
+  /**
+   * Target is stretching due to the Auto ACK Counter expiring.
+   */
+  bool ack_ctrl_stretch;
 } dif_i2c_status_t;
 
 /**
@@ -542,6 +550,19 @@ dif_result_t dif_i2c_addr_nack_set_enabled(const dif_i2c_t *i2c,
                                            dif_toggle_t state);
 
 /**
+ * Enables or disables the ACK Control Mode functionality.
+ *
+ * This function should be called prior to enabling the i2c target module.
+ *
+ * @param i2c An I2C handle.
+ * @param state The new toggle state for the device functionality.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_i2c_ack_ctrl_set_enabled(const dif_i2c_t *i2c,
+                                          dif_toggle_t state);
+
+/**
  * Enables or disables the "override mode". In override mode, software is able
  * to directly control the driven values of the SCL and SDA lines using
  * `dif_i2c_override_drive_pins()`.
@@ -602,6 +623,66 @@ dif_result_t dif_i2c_get_fifo_levels(const dif_i2c_t *i2c,
                                      dif_i2c_level_t *rx_fifo_level,
                                      dif_i2c_level_t *tx_fifo_level,
                                      dif_i2c_level_t *acq_fifo_level);
+
+/**
+ * Read the current value of the Auto ACK Counter.
+ *
+ * The counter is only active if ACK Control Mode is enabled.
+ *
+ * The Auto ACK Counter represents the remaining number of bytes the Target
+ * module will ACK automatically, so long as the ACQ FIFO has capacity.
+ *
+ * @param i2c An I2C handle.
+ * @param count[out] The number of additional bytes to ACK in the current
+ * transfer.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_i2c_get_auto_ack_count(const dif_i2c_t *i2c, uint16_t *count);
+
+/**
+ * Reloads the Auto ACK Counter with the provided value.
+ *
+ * The count will only be accepted if the I2C target module is currently
+ * stretching the clock, and the count is currently 0. In other words, the
+ * target module is stretching because the Auto ACK Count was exhausted.
+ *
+ * In addition, the counter is only active if ACK Control Mode is enabled.
+ *
+ * Set the value to 1 to ACK only the current pending data byte. Increase the
+ * `count` argument for each additional byte desired to be automatically ACK'd,
+ * assuming the ACQ FIFO has capacity.
+ *
+ * @param i2c An I2C handle.
+ * @param count The number of additional bytes to ACK in the current transfer.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_i2c_set_auto_ack_count(const dif_i2c_t *i2c, uint16_t count);
+
+/**
+ * Instruct the I2C Target module to issue a NACK for the current transaction.
+ *
+ * Only takes effect if the Target module is stretching the clock because the
+ * Auto ACK Count has expired. ACK Control Mode must be enabled.
+ *
+ * @param i2c An I2C handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_i2c_nack_transaction(const dif_i2c_t *i2c);
+
+/**
+ * Get the pending data byte when stretching due to Auto Ack Count exhaustion.
+ *
+ * This value is only valid if ACK Control Mode is enabled.
+ *
+ * @param i2c An I2C handle.
+ * @param[out] data The data pending for (N)ACK.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_i2c_get_pending_acq_byte(const dif_i2c_t *i2c, uint8_t *data);
 
 /**
  * Pops an entry (a byte) off of the RX FIFO. Passing in `NULL` to the out-param

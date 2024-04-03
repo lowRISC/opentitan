@@ -33,7 +33,7 @@ package i2c_env_pkg;
     CmdComplete    = 9,
     TxStretch      = 10,
     TxThreshold    = 11,
-    AcqFull        = 12,
+    AcqStretch     = 12,
     UnexpStop      = 13,
     HostTimeout    = 14,
     NumI2cIntr     = 15

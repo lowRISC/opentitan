@@ -30,7 +30,7 @@ module i2c_core import i2c_pkg::*;
   output logic                     intr_cmd_complete_o,
   output logic                     intr_tx_stretch_o,
   output logic                     intr_tx_threshold_o,
-  output logic                     intr_acq_full_o,
+  output logic                     intr_acq_stretch_o,
   output logic                     intr_unexp_stop_o,
   output logic                     intr_host_timeout_o
 );
@@ -82,11 +82,14 @@ module i2c_core import i2c_pkg::*;
   logic event_controller_cmd_complete, event_target_cmd_complete;
   logic event_target_nack;
   logic event_tx_stretch;
+  logic event_acq_stretch;
   logic event_unexp_stop;
   logic event_host_timeout;
 
   logic target_sr_p_cond;
   logic unhandled_unexp_nak;
+  logic target_ack_ctrl_stretching;
+  logic target_ack_ctrl_sw_nack;
 
   logic [15:0] scl_rx_val;
   logic [15:0] sda_rx_val;
@@ -182,6 +185,7 @@ module i2c_core import i2c_pkg::*;
   assign hw2reg.status.hostidle.d = host_idle;
   assign hw2reg.status.targetidle.d = target_idle;
   assign hw2reg.status.rxempty.d = ~rx_fifo_rvalid;
+  assign hw2reg.status.ack_ctrl_stretch.d = target_ack_ctrl_stretching;
 
   assign hw2reg.rdata.d = rx_fifo_rdata;
   assign hw2reg.host_fifo_status.fmtlvl.d = MaxFifoDepthW'(fmt_fifo_depth);
@@ -263,6 +267,8 @@ module i2c_core import i2c_pkg::*;
   assign nack_timeout_en              = reg2hw.target_timeout_ctrl.en.q;
   assign host_nack_handler_timeout    = reg2hw.host_nack_handler_timeout.val.q;
   assign host_nack_handler_timeout_en = reg2hw.host_nack_handler_timeout.en.q;
+  assign target_ack_ctrl_sw_nack      = reg2hw.target_ack_ctrl.nack.qe &
+                                        reg2hw.target_ack_ctrl.nack.q;
 
   assign i2c_fifo_rxrst      = reg2hw.fifo_ctrl.rxrst.q & reg2hw.fifo_ctrl.rxrst.qe;
   assign i2c_fifo_fmtrst     = reg2hw.fifo_ctrl.fmtrst.q & reg2hw.fifo_ctrl.fmtrst.qe;
@@ -285,6 +291,7 @@ module i2c_core import i2c_pkg::*;
   assign acq_gt_threshold = (MaxFifoDepthW'(acq_fifo_depth) > i2c_fifo_acq_thresh);
 
   assign event_rx_overflow = rx_fifo_wvalid & ~rx_fifo_wready;
+  assign event_acq_stretch = acq_fifo_full || target_ack_ctrl_stretching;
 
   // The fifo write enable is controlled by fbyte, start, stop, read, rcont,
   // and nakok field qe bits.
@@ -497,6 +504,13 @@ module i2c_core import i2c_pkg::*;
     .nack_timeout_i                 (nack_timeout),
     .nack_timeout_en_i              (nack_timeout_en),
     .nack_addr_after_timeout_i      (reg2hw.ctrl.nack_addr_after_timeout.q),
+    .ack_ctrl_mode_i                (reg2hw.ctrl.ack_ctrl_en.q),
+    .auto_ack_cnt_o                 (hw2reg.target_ack_ctrl.nbytes.d),
+    .auto_ack_load_i                (reg2hw.target_ack_ctrl.nbytes.qe),
+    .auto_ack_load_value_i          (reg2hw.target_ack_ctrl.nbytes.q),
+    .sw_nack_i                      (target_ack_ctrl_sw_nack),
+    .ack_ctrl_stretching_o          (target_ack_ctrl_stretching),
+    .acq_fifo_next_data_o           (hw2reg.acq_fifo_next_data.d),
     .target_address0_i              (target_address0),
     .target_mask0_i                 (target_mask0),
     .target_address1_i              (target_address1),
@@ -689,14 +703,14 @@ module i2c_core import i2c_pkg::*;
   ) intr_hw_acq_overflow (
     .clk_i,
     .rst_ni,
-    .event_intr_i           (acq_fifo_full),
-    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.acq_full.q),
-    .reg2hw_intr_test_q_i   (reg2hw.intr_test.acq_full.q),
-    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.acq_full.qe),
-    .reg2hw_intr_state_q_i  (reg2hw.intr_state.acq_full.q),
-    .hw2reg_intr_state_de_o (hw2reg.intr_state.acq_full.de),
-    .hw2reg_intr_state_d_o  (hw2reg.intr_state.acq_full.d),
-    .intr_o                 (intr_acq_full_o)
+    .event_intr_i           (event_acq_stretch),
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.acq_stretch.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.acq_stretch.q),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.acq_stretch.qe),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.acq_stretch.q),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.acq_stretch.de),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.acq_stretch.d),
+    .intr_o                 (intr_acq_stretch_o)
   );
 
   prim_intr_hw #(.Width(1)) intr_hw_unexp_stop (

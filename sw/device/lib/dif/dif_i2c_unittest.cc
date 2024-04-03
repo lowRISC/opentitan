@@ -313,18 +313,20 @@ TEST_F(ConfigTest, NormalInit) {
   EXPECT_DIF_OK(dif_i2c_configure(&i2c_, config));
 
   dif_i2c_status status, expectedStatus;
-  EXPECT_READ32(I2C_CTRL_REG_OFFSET, 0x00000003);    // Host and Target active
-  EXPECT_READ32(I2C_STATUS_REG_OFFSET, 0x0000033c);  // All empty and idle
+  EXPECT_READ32(I2C_CTRL_REG_OFFSET, 0x0000000b);    // Host and Target active
+  EXPECT_READ32(I2C_STATUS_REG_OFFSET, 0x0000073c);  // All empty and idle
   EXPECT_DIF_OK(dif_i2c_get_status(&i2c_, &status));
   expectedStatus = {
       .enable_host = true,
       .enable_target = true,
+      .ack_control_en = true,
       .fmt_fifo_empty = true,
       .rx_fifo_empty = true,
       .host_idle = true,
       .target_idle = true,
       .tx_fifo_empty = true,
       .acq_fifo_empty = true,
+      .ack_ctrl_stretch = true,
   };
   EXPECT_EQ(status, expectedStatus);
 }
@@ -594,6 +596,57 @@ TEST_F(ControlTest, AddrNack) {
 
 TEST_F(ControlTest, AddrNackNullArgs) {
   EXPECT_DIF_BADARG(dif_i2c_addr_nack_set_enabled(nullptr, kDifToggleEnabled));
+}
+
+TEST_F(ControlTest, AckControl) {
+  EXPECT_MASK32(I2C_CTRL_REG_OFFSET, {{I2C_CTRL_ACK_CTRL_EN_BIT, 0x1, 0x1}});
+  EXPECT_DIF_OK(dif_i2c_ack_ctrl_set_enabled(&i2c_, kDifToggleEnabled));
+
+  EXPECT_MASK32(I2C_CTRL_REG_OFFSET, {{I2C_CTRL_ACK_CTRL_EN_BIT, 0x1, 0x0}});
+  EXPECT_DIF_OK(dif_i2c_ack_ctrl_set_enabled(&i2c_, kDifToggleDisabled));
+
+  uint16_t auto_ack_count = 0;
+  EXPECT_READ32(I2C_TARGET_ACK_CTRL_REG_OFFSET,
+                {
+                    {I2C_TARGET_ACK_CTRL_NBYTES_OFFSET, 0xa5},
+                });
+  EXPECT_DIF_OK(dif_i2c_get_auto_ack_count(&i2c_, &auto_ack_count));
+  EXPECT_EQ(auto_ack_count, 0xa5);
+
+  EXPECT_WRITE32(I2C_TARGET_ACK_CTRL_REG_OFFSET,
+                 {
+                     {I2C_TARGET_ACK_CTRL_NBYTES_OFFSET, 256},
+                 });
+  EXPECT_DIF_OK(dif_i2c_set_auto_ack_count(&i2c_, 256));
+
+  EXPECT_WRITE32(I2C_TARGET_ACK_CTRL_REG_OFFSET,
+                 {
+                     {I2C_TARGET_ACK_CTRL_NACK_BIT, 1},
+                 });
+  EXPECT_DIF_OK(dif_i2c_nack_transaction(&i2c_));
+
+  uint8_t pending_data;
+  EXPECT_READ32(I2C_ACQ_FIFO_NEXT_DATA_REG_OFFSET, 0x76);
+  EXPECT_DIF_OK(dif_i2c_get_pending_acq_byte(&i2c_, &pending_data));
+  EXPECT_EQ(pending_data, 0x76);
+}
+
+TEST_F(ControlTest, AckControlNullArgs) {
+  EXPECT_DIF_BADARG(dif_i2c_ack_ctrl_set_enabled(nullptr, kDifToggleEnabled));
+
+  uint16_t count_arg = 0;
+  EXPECT_DIF_BADARG(dif_i2c_get_auto_ack_count(nullptr, &count_arg));
+  EXPECT_DIF_BADARG(dif_i2c_get_auto_ack_count(&i2c_, nullptr));
+
+  EXPECT_DIF_BADARG(dif_i2c_set_auto_ack_count(nullptr, /*count=*/0));
+  // Check BadArgument for count larger than CSR.
+  count_arg = I2C_TARGET_ACK_CTRL_NBYTES_MASK + 1;
+  EXPECT_DIF_BADARG(dif_i2c_set_auto_ack_count(&i2c_, count_arg));
+  EXPECT_DIF_BADARG(dif_i2c_nack_transaction(nullptr));
+
+  uint8_t data_arg = 0;
+  EXPECT_DIF_BADARG(dif_i2c_get_pending_acq_byte(nullptr, &data_arg));
+  EXPECT_DIF_BADARG(dif_i2c_get_pending_acq_byte(&i2c_, nullptr));
 }
 
 class OverrideTest : public I2cTest {};

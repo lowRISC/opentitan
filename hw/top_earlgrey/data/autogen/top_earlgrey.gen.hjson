@@ -13890,7 +13890,7 @@
       default_val: false
     }
     {
-      name: i2c0_acq_full
+      name: i2c0_acq_stretch
       width: 1
       type: interrupt
       module_name: i2c0
@@ -14010,7 +14010,7 @@
       default_val: false
     }
     {
-      name: i2c1_acq_full
+      name: i2c1_acq_stretch
       width: 1
       type: interrupt
       module_name: i2c1
@@ -14130,7 +14130,7 @@
       default_val: false
     }
     {
-      name: i2c2_acq_full
+      name: i2c2_acq_stretch
       width: 1
       type: interrupt
       module_name: i2c2

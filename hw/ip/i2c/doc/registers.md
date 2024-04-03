@@ -32,8 +32,10 @@
 | i2c.[`HOST_TIMEOUT_CTRL`](#host_timeout_ctrl)                 | 0x60     |        4 | I2C host clock generation timeout value (in units of input clock frequency).                       |
 | i2c.[`TARGET_TIMEOUT_CTRL`](#target_timeout_ctrl)             | 0x64     |        4 | I2C target internal stretching timeout control.                                                    |
 | i2c.[`TARGET_NACK_COUNT`](#target_nack_count)                 | 0x68     |        4 | Number of times the I2C target has NACK'ed a new transaction since the last read of this register. |
-| i2c.[`HOST_NACK_HANDLER_TIMEOUT`](#host_nack_handler_timeout) | 0x6c     |        4 | Timeout in Host-Mode for an unhandled NACK before hardware automatically ends the transaction.     |
-| i2c.[`CONTROLLER_EVENTS`](#controller_events)                 | 0x70     |        4 | Latched events that explain why the controller halted.                                             |
+| i2c.[`TARGET_ACK_CTRL`](#target_ack_ctrl)                     | 0x6c     |        4 | Controls for mid-transfer (N)ACK phase handling                                                    |
+| i2c.[`ACQ_FIFO_NEXT_DATA`](#acq_fifo_next_data)               | 0x70     |        4 | The data byte pending to be written to the ACQ FIFO.                                               |
+| i2c.[`HOST_NACK_HANDLER_TIMEOUT`](#host_nack_handler_timeout) | 0x74     |        4 | Timeout in Host-Mode for an unhandled NACK before hardware automatically ends the transaction.     |
+| i2c.[`CONTROLLER_EVENTS`](#controller_events)                 | 0x78     |        4 | Latched events that explain why the controller halted.                                             |
 
 ## INTR_STATE
 Interrupt State Register
@@ -44,7 +46,7 @@ Interrupt State Register
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "fmt_threshold", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "rx_threshold", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "acq_threshold", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "rx_overflow", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "controller_halt", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "scl_interference", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "sda_interference", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "stretch_timeout", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "sda_unstable", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "cmd_complete", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "tx_stretch", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "tx_threshold", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "acq_full", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "unexp_stop", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "host_timeout", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 17}], "config": {"lanes": 1, "fontsize": 10, "vspace": 180}}
+{"reg": [{"name": "fmt_threshold", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "rx_threshold", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "acq_threshold", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "rx_overflow", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "controller_halt", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "scl_interference", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "sda_interference", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "stretch_timeout", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "sda_unstable", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "cmd_complete", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "tx_stretch", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "tx_threshold", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "acq_stretch", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "unexp_stop", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "host_timeout", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 17}], "config": {"lanes": 1, "fontsize": 10, "vspace": 180}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name             | Description                                                                                                                                                                                                                                                        |
@@ -52,7 +54,7 @@ Interrupt State Register
 | 31:15  |        |         |                  | Reserved                                                                                                                                                                                                                                                           |
 |   14   |  rw1c  |   0x0   | host_timeout     | target mode interrupt: raised if the host stops sending the clock during an ongoing transaction.                                                                                                                                                                   |
 |   13   |  rw1c  |   0x0   | unexp_stop       | target mode interrupt: raised if STOP is received without a preceding NACK during an external host read.                                                                                                                                                           |
-|   12   |   ro   |   0x0   | acq_full         | target mode interrupt: raised if ACQ FIFO becomes full. This is a level status interrupt.                                                                                                                                                                          |
+|   12   |   ro   |   0x0   | acq_stretch      | target mode interrupt: raised if the target is stretching clocks due to full ACQ FIFO or zero count in [`TARGET_ACK_CTRL.NBYTES`](#target_ack_ctrl) (if enabled). This is a level status interrupt.                                                                |
 |   11   |   ro   |   0x0   | tx_threshold     | target mode interrupt: asserted whilst the TX FIFO level is below the low threshold. This is a level status interrupt.                                                                                                                                             |
 |   10   |   ro   |   0x0   | tx_stretch       | target mode interrupt: raised if the target is stretching clocks for a read command. This is a level status interrupt.                                                                                                                                             |
 |   9    |  rw1c  |   0x0   | cmd_complete     | host and target mode interrupt. In host mode, raised if the host issues a repeated START or terminates the transaction by issuing STOP. In target mode, raised if the external host issues a STOP or repeated START.                                               |
@@ -75,7 +77,7 @@ Interrupt Enable Register
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "fmt_threshold", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "rx_threshold", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "acq_threshold", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "rx_overflow", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "controller_halt", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "scl_interference", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "sda_interference", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "stretch_timeout", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "sda_unstable", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "cmd_complete", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "tx_stretch", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "tx_threshold", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "acq_full", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "unexp_stop", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "host_timeout", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 17}], "config": {"lanes": 1, "fontsize": 10, "vspace": 180}}
+{"reg": [{"name": "fmt_threshold", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "rx_threshold", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "acq_threshold", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "rx_overflow", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "controller_halt", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "scl_interference", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "sda_interference", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "stretch_timeout", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "sda_unstable", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "cmd_complete", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "tx_stretch", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "tx_threshold", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "acq_stretch", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "unexp_stop", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "host_timeout", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 17}], "config": {"lanes": 1, "fontsize": 10, "vspace": 180}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name             | Description                                                                |
@@ -83,7 +85,7 @@ Interrupt Enable Register
 | 31:15  |        |         |                  | Reserved                                                                   |
 |   14   |   rw   |   0x0   | host_timeout     | Enable interrupt when [`INTR_STATE.host_timeout`](#intr_state) is set.     |
 |   13   |   rw   |   0x0   | unexp_stop       | Enable interrupt when [`INTR_STATE.unexp_stop`](#intr_state) is set.       |
-|   12   |   rw   |   0x0   | acq_full         | Enable interrupt when [`INTR_STATE.acq_full`](#intr_state) is set.         |
+|   12   |   rw   |   0x0   | acq_stretch      | Enable interrupt when [`INTR_STATE.acq_stretch`](#intr_state) is set.      |
 |   11   |   rw   |   0x0   | tx_threshold     | Enable interrupt when [`INTR_STATE.tx_threshold`](#intr_state) is set.     |
 |   10   |   rw   |   0x0   | tx_stretch       | Enable interrupt when [`INTR_STATE.tx_stretch`](#intr_state) is set.       |
 |   9    |   rw   |   0x0   | cmd_complete     | Enable interrupt when [`INTR_STATE.cmd_complete`](#intr_state) is set.     |
@@ -106,7 +108,7 @@ Interrupt Test Register
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "fmt_threshold", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "rx_threshold", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "acq_threshold", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "rx_overflow", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "controller_halt", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "scl_interference", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "sda_interference", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "stretch_timeout", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "sda_unstable", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "cmd_complete", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "tx_stretch", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "tx_threshold", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "acq_full", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "unexp_stop", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "host_timeout", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 17}], "config": {"lanes": 1, "fontsize": 10, "vspace": 180}}
+{"reg": [{"name": "fmt_threshold", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "rx_threshold", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "acq_threshold", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "rx_overflow", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "controller_halt", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "scl_interference", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "sda_interference", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "stretch_timeout", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "sda_unstable", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "cmd_complete", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "tx_stretch", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "tx_threshold", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "acq_stretch", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "unexp_stop", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "host_timeout", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 17}], "config": {"lanes": 1, "fontsize": 10, "vspace": 180}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name             | Description                                                         |
@@ -114,7 +116,7 @@ Interrupt Test Register
 | 31:15  |        |         |                  | Reserved                                                            |
 |   14   |   wo   |   0x0   | host_timeout     | Write 1 to force [`INTR_STATE.host_timeout`](#intr_state) to 1.     |
 |   13   |   wo   |   0x0   | unexp_stop       | Write 1 to force [`INTR_STATE.unexp_stop`](#intr_state) to 1.       |
-|   12   |   wo   |   0x0   | acq_full         | Write 1 to force [`INTR_STATE.acq_full`](#intr_state) to 1.         |
+|   12   |   wo   |   0x0   | acq_stretch      | Write 1 to force [`INTR_STATE.acq_stretch`](#intr_state) to 1.      |
 |   11   |   wo   |   0x0   | tx_threshold     | Write 1 to force [`INTR_STATE.tx_threshold`](#intr_state) to 1.     |
 |   10   |   wo   |   0x0   | tx_stretch       | Write 1 to force [`INTR_STATE.tx_stretch`](#intr_state) to 1.       |
 |   9    |   wo   |   0x0   | cmd_complete     | Write 1 to force [`INTR_STATE.cmd_complete`](#intr_state) to 1.     |
@@ -149,21 +151,29 @@ Alert Test Register
 I2C Control Register
 - Offset: `0x10`
 - Reset default: `0x0`
-- Reset mask: `0xf`
+- Reset mask: `0x1f`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "ENABLEHOST", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "ENABLETARGET", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "LLPBK", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "NACK_ADDR_AFTER_TIMEOUT", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 250}}
+{"reg": [{"name": "ENABLEHOST", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "ENABLETARGET", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "LLPBK", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "NACK_ADDR_AFTER_TIMEOUT", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "ACK_CTRL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 27}], "config": {"lanes": 1, "fontsize": 10, "vspace": 250}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                                      |
 |:------:|:------:|:-------:|:----------------------------------------------------------|
-|  31:4  |        |         | Reserved                                                  |
+|  31:5  |        |         | Reserved                                                  |
+|   4    |   rw   |   0x0   | [ACK_CTRL_EN](#ctrl--ack_ctrl_en)                         |
 |   3    |   rw   |   0x0   | [NACK_ADDR_AFTER_TIMEOUT](#ctrl--nack_addr_after_timeout) |
 |   2    |   rw   |   0x0   | [LLPBK](#ctrl--llpbk)                                     |
 |   1    |   rw   |   0x0   | [ENABLETARGET](#ctrl--enabletarget)                       |
 |   0    |   rw   |   0x0   | [ENABLEHOST](#ctrl--enablehost)                           |
+
+### CTRL . ACK_CTRL_EN
+Enable I2C Target ACK Control Mode.
+
+ACK Control Mode works together with [`TARGET_ACK_CTRL.NBYTES`](#target_ack_ctrl) to allow software to control upper-layer protocol (N)ACKing (e.g. as in SMBus).
+This bit enables the mode when 1, and [`TARGET_ACK_CTRL.NBYTES`](#target_ack_ctrl) limits how many bytes may be automatically ACK'd while the ACQ FIFO has space.
+If it is 0, the decision to ACK or NACK is made only from stretching timeouts and [`CTRL.NACK_ADDR_AFTER_TIMEOUT.`](#ctrl)
 
 ### CTRL . NACK_ADDR_AFTER_TIMEOUT
 Enable NACKing the address on a stretch timeout.
@@ -192,27 +202,28 @@ Enable Host I2C functionality
 I2C Live Status Register for Host and Target modes
 - Offset: `0x14`
 - Reset default: `0x33c`
-- Reset mask: `0x3ff`
+- Reset mask: `0x7ff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "FMTFULL", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "RXFULL", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "FMTEMPTY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "HOSTIDLE", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TARGETIDLE", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "RXEMPTY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TXFULL", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ACQFULL", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TXEMPTY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ACQEMPTY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 22}], "config": {"lanes": 1, "fontsize": 10, "vspace": 120}}
+{"reg": [{"name": "FMTFULL", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "RXFULL", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "FMTEMPTY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "HOSTIDLE", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TARGETIDLE", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "RXEMPTY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TXFULL", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ACQFULL", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TXEMPTY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ACQEMPTY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ACK_CTRL_STRETCH", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 21}], "config": {"lanes": 1, "fontsize": 10, "vspace": 180}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name       | Description                                                        |
-|:------:|:------:|:-------:|:-----------|:-------------------------------------------------------------------|
-| 31:10  |        |         |            | Reserved                                                           |
-|   9    |   ro   |   0x1   | ACQEMPTY   | Target mode receive FIFO is empty                                  |
-|   8    |   ro   |   0x1   | TXEMPTY    | Target mode TX FIFO is empty                                       |
-|   7    |   ro   |    x    | ACQFULL    | Target mode receive FIFO is full                                   |
-|   6    |   ro   |    x    | TXFULL     | Target mode TX FIFO is full                                        |
-|   5    |   ro   |   0x1   | RXEMPTY    | Host mode RX FIFO is empty                                         |
-|   4    |   ro   |   0x1   | TARGETIDLE | Target functionality is idle. No Target transaction is in progress |
-|   3    |   ro   |   0x1   | HOSTIDLE   | Host functionality is idle. No Host transaction is in progress     |
-|   2    |   ro   |   0x1   | FMTEMPTY   | Host mode FMT FIFO is empty                                        |
-|   1    |   ro   |    x    | RXFULL     | Host mode RX FIFO is full                                          |
-|   0    |   ro   |    x    | FMTFULL    | Host mode FMT FIFO is full                                         |
+|  Bits  |  Type  |  Reset  | Name             | Description                                                                                              |
+|:------:|:------:|:-------:|:-----------------|:---------------------------------------------------------------------------------------------------------|
+| 31:11  |        |         |                  | Reserved                                                                                                 |
+|   10   |   ro   |    x    | ACK_CTRL_STRETCH | Target mode stretching at (N)ACK phase due to zero count in [`TARGET_ACK_CTRL.NBYTES`](#target_ack_ctrl) |
+|   9    |   ro   |   0x1   | ACQEMPTY         | Target mode receive FIFO is empty                                                                        |
+|   8    |   ro   |   0x1   | TXEMPTY          | Target mode TX FIFO is empty                                                                             |
+|   7    |   ro   |    x    | ACQFULL          | Target mode receive FIFO is full                                                                         |
+|   6    |   ro   |    x    | TXFULL           | Target mode TX FIFO is full                                                                              |
+|   5    |   ro   |   0x1   | RXEMPTY          | Host mode RX FIFO is empty                                                                               |
+|   4    |   ro   |   0x1   | TARGETIDLE       | Target functionality is idle. No Target transaction is in progress                                       |
+|   3    |   ro   |   0x1   | HOSTIDLE         | Host functionality is idle. No Host transaction is in progress                                           |
+|   2    |   ro   |   0x1   | FMTEMPTY         | Host mode FMT FIFO is empty                                                                              |
+|   1    |   ro   |    x    | RXFULL           | Host mode RX FIFO is full                                                                                |
+|   0    |   ro   |    x    | FMTFULL          | Host mode FMT FIFO is full                                                                               |
 
 ## RDATA
 I2C Read Data
@@ -638,6 +649,70 @@ When it reaches its maximum value it will stay at that value.
 |  31:8  |        |         |                   | Reserved      |
 |  7:0   |   rc   |   0x0   | TARGET_NACK_COUNT |               |
 
+## TARGET_ACK_CTRL
+Controls for mid-transfer (N)ACK phase handling
+- Offset: `0x6c`
+- Reset default: `0x0`
+- Reset mask: `0x800001ff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "NBYTES", "bits": 9, "attr": ["rw"], "rotate": 0}, {"bits": 22}, {"name": "NACK", "bits": 1, "attr": ["wo"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name                               |
+|:------:|:------:|:-------:|:-----------------------------------|
+|   31   |   wo   |    x    | [NACK](#target_ack_ctrl--nack)     |
+|  30:9  |        |         | Reserved                           |
+|  8:0   |   rw   |    x    | [NBYTES](#target_ack_ctrl--nbytes) |
+
+### TARGET_ACK_CTRL . NACK
+When the Target module stretches on the (N)ACK phase of a Write due to [`TARGET_ACK_CTRL.NBYTES`](#target_ack_ctrl) being 0, writing a 1 here will cause it to send a NACK.
+
+If software chooses to NACK, note that the NACKing behavior is the same as if a stretch timeout occurred.
+The rest of the transaction will be NACK'd, including subsequent transfers.
+For the address byte, the (N)ACK phase of subsequent transfers will follow the behavior specified by [`CTRL.NACK_ADDR_AFTER_TIMEOUT.`](#ctrl)
+
+Automatically clears to 0.
+
+### TARGET_ACK_CTRL . NBYTES
+Remaining number of bytes the Target module may ACK automatically.
+
+If [`CTRL.ACK_CTRL_EN`](#ctrl) is set to 1, the Target module will stretch the clock at the (N)ACK phase of a byte if this CSR is 0, awaiting software's instructions.
+
+At the beginning of each Write transfer, this byte count is reset to 0.
+Writes to this CSR also are only accepted while the Target module is stretching the clock.
+The Target module will always ACK its address if the ACQ FIFO has space.
+For data bytes afterwards, it will stop at the (N)ACK phase and stretch the clock when this CSR is 0.
+For each data byte that is ACK'd in a transaction, the byte count will decrease by 1.
+
+Note that a full ACQ FIFO can still cause the Target module to halt at the beginning of a new byte.
+The ACK Control Mode provides an additional synchronization point, during the (N)ACK phase instead of after.
+For both cases, [`TARGET_TIMEOUT_CTRL`](#target_timeout_ctrl) applies, and stretching past the timeout will produce an automatic NACK.
+
+This mode can be used to implement the mid-transfer (N)ACK responses required by various SMBus protocols.
+
+## ACQ_FIFO_NEXT_DATA
+The data byte pending to be written to the ACQ FIFO.
+
+This CSR is only valid while the Target module is stretching in the (N)ACK phase, indicated by [`STATUS.ACK_CTRL_STRETCH`](#status) .
+It is intended to be used with ACK Control Mode, so software may check the current byte.
+- Offset: `0x70`
+- Reset default: `0x0`
+- Reset mask: `0xff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "ACQ_FIFO_NEXT_DATA", "bits": 8, "attr": ["ro"], "rotate": -90}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 200}}
+```
+
+|  Bits  |  Type  |  Reset  | Name               | Description   |
+|:------:|:------:|:-------:|:-------------------|:--------------|
+|  31:8  |        |         |                    | Reserved      |
+|  7:0   |   ro   |    x    | ACQ_FIFO_NEXT_DATA |               |
+
 ## HOST_NACK_HANDLER_TIMEOUT
 Timeout in Host-Mode for an unhandled NACK before hardware automatically ends the transaction.
 (in units of input clock frequency)
@@ -652,7 +727,7 @@ If the timeout expires, the Controller FSM will issue a STOP (P) condition on th
 Additionally, the [`CONTROLLER_EVENTS.UNHANDLED_NACK_TIMEOUT`](#controller_events) bit is set to alert software, and the FSM will return to the idle state and halt until the bit is cleared.
 
 The enable bit must be set for this feature to operate.
-- Offset: `0x6c`
+- Offset: `0x74`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -671,7 +746,7 @@ The enable bit must be set for this feature to operate.
 Latched events that explain why the controller halted.
 
 Any bits that are set must be written (with a 1) to clear the CONTROLLER_HALT interrupt.
-- Offset: `0x70`
+- Offset: `0x78`
 - Reset default: `0x0`
 - Reset mask: `0x3`
 

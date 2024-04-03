@@ -64,10 +64,11 @@ class i2c_target_smoke_vseq extends i2c_base_vseq;
       expected_intr[FmtThreshold] = 1;
       expected_intr[TxThreshold] = 1;
       expected_intr[AcqThreshold] = 1;
-      expected_intr[AcqFull] = 1;
+      expected_intr[AcqStretch] = 1;
       expected_intr[TxStretch] = 1;
       expected_intr[CmdComplete] = 1;
       for (int i = 0; i < NumI2cIntr; i++) intr_q.push_back(i2c_intr_e'(i));
+      cfg.ack_ctrl_en = $urandom_range(0, 1);
     end
     if (cfg.bad_addr_pct > 0) cfg.m_i2c_agent_cfg.allow_bad_addr = 1;
   endtask
@@ -81,6 +82,7 @@ class i2c_target_smoke_vseq extends i2c_base_vseq;
     `uvm_info("cfg_summary",
               $sformatf("target_addr0:0x%x target_addr1:0x%x illegal_addr:0x%x num_trans:%0d",
                              target_addr0, target_addr1, illegal_addr, num_trans), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("ack_ctrl_en:%0d", cfg.ack_ctrl_en), UVM_MEDIUM);
 
     fork
       begin
