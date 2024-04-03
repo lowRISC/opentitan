@@ -98,6 +98,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: []
+      bazel: ["//sw/device/tests:spi_host_irq_test"]
     }
   ]
 }
