@@ -46,6 +46,11 @@ module ${mod_base}_csr_assert_fpv import tlul_pkg::*;
   hro_map = {r.offset: (idx, r) for idx, r in enumerate(hro_regs_list)}
   max_reg_addr = rb.flat_regs[-1].offset
   windows = rb.windows
+
+  # This is the width of hro_idx, which indexes into regwen, access_policy and
+  # exp_vals. Each of those arrays has an index for each HRO register plus an
+  # extra index that represents "non-HRO registers".
+  hro_idx_width = (num_hro_regs + 1).bit_length()
 %>\
 
 `ifdef UVM
@@ -76,7 +81,10 @@ module ${mod_base}_csr_assert_fpv import tlul_pkg::*;
   assign a_mask_bit[23:16] = h2d.a_mask[2] ? '1 : '0;
   assign a_mask_bit[31:24] = h2d.a_mask[3] ? '1 : '0;
 
-  bit [${addr_msb}:0] hro_idx; // index for exp_vals
+  // An index used for regwen, access_policy and exp_vals. These arrays all have one element per HRO
+  // register, plus an extra dummy entry to represent "non-HRO registers" (avoiding out-of-bounds
+  // accesses).
+  bit [${hro_idx_width-1}:0] hro_idx;
   bit [${addr_msb}:0] normalized_addr;
 
   `ifdef FPV_ON
@@ -129,21 +137,22 @@ module ${mod_base}_csr_assert_fpv import tlul_pkg::*;
 
 % if num_hro_regs > 0:
   // Assign regwen to registers. If the register does not have regwen, it will default to value 1.
-  logic [${num_hro_regs}-1:0] regwen;
+  logic [${num_hro_regs}:0] regwen;
   % for hro_reg in hro_regs_list:
 <% regwen = hro_reg.regwen %>\
     % if regwen == None:
-      assign regwen[${hro_map.get(hro_reg.offset)[0]}] = 1;
+  assign regwen[${hro_map.get(hro_reg.offset)[0]}] = 1;
     % else:
-      assign regwen[${hro_map.get(hro_reg.offset)[0]}] = `REGWEN_PATH.${regwen.lower()}_qs;
+  assign regwen[${hro_map.get(hro_reg.offset)[0]}] = `REGWEN_PATH.${regwen.lower()}_qs;
     % endif
   % endfor
+  assign regwen[${num_hro_regs}] = 1;
 
   typedef enum bit {
     FpvDefault,
     FpvRw0c
   } fpv_reg_access_e;
-  fpv_reg_access_e access_policy [${num_hro_regs}];
+  fpv_reg_access_e access_policy [${num_hro_regs+1}];
 
   // for write HRO registers, store the write data into exp_vals
   always_ff @(negedge clk_i or negedge rst_ni) begin
@@ -158,6 +167,8 @@ module ${mod_base}_csr_assert_fpv import tlul_pkg::*;
        access_policy[${hro_map.get(hro_reg.offset)[0]}] <= FpvDefault;
       % endif
   % endfor
+       exp_vals[${num_hro_regs}] <= 'h0;
+       access_policy[${num_hro_regs}] <= FpvDefault;
     end else begin
       oob_addr_err <= 1'b0;
       if (h2d.a_valid && d2h.a_ready) begin
