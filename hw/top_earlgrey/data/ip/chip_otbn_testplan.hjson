@@ -41,7 +41,12 @@
       si_stage: SV3
       tests: ["chip_sw_otbn_ecdsa_op_irq",
               "chip_sw_otbn_ecdsa_op_irq_jitter_en"]
-      bazel: ["//sw/device/tests:otbn_ecdsa_op_irq_test"]
+      bazel: [
+              "//sw/device/tests:otbn_ecdsa_op_irq_test",
+              "//sw/device/tests:otbn_irq_test",
+              "//sw/device/tests:otbn_rsa_test",
+              "//sw/device/tests:otbn_smoketest"
+      ]
       lc_states: ["PROD"]
       features: [
         "OTBN.ISA"
@@ -126,6 +131,7 @@
       stage: V2
       si_stage: SV3
       tests: ["chip_sw_otbn_mem_scramble"]
+      bazel: ["//sw/device/tests:otbn_mem_scramble_test"]
       lc_states: ["PROD"]
       features: [
         "OTBN.MEM_SCRAMBLE",
@@ -148,6 +154,7 @@
         "//sw/device/tests:keymgr_sideload_otbn_simple_test",
         "//sw/device/tests/crypto:ecdh_p256_sideload_functest",
         "//sw/device/tests/crypto:ecdsa_p256_sideload_functest",
+        "//sw/device/tests:keymgr_sideload_otbn_test"
       ]
       lc_states: ["PROD"]
       features: [
