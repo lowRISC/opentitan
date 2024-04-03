@@ -27,13 +27,13 @@ load(
     "//rules/opentitan:defs.bzl",
     "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
     "EARLGREY_TEST_ENVS",
+    "cw310_params",
+    "dv_params",
     "opentitan_binary",
     "opentitan_test",
     "rsa_key_for_lc_state",
     "silicon_params",
-    new_cw310_params = "cw310_params",
-    new_dv_params = "dv_params",
-    new_verilator_params = "verilator_params",
+    "verilator_params",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -53,7 +53,7 @@ opentitan_test(
     name = "aes_masking_off_test",
     srcs = ["aes_masking_off_test.c"],
     exec_env = EARLGREY_TEST_ENVS,
-    verilator = new_verilator_params(
+    verilator = verilator_params(
         timeout = "long",
     ),
     deps = [
@@ -178,12 +178,12 @@ opentitan_test(
 opentitan_test(
     name = "alert_handler_ping_timeout_test",
     srcs = ["alert_handler_ping_timeout_test.c"],
-    cw310 = new_cw310_params(timeout = "moderate"),
+    cw310 = cw310_params(timeout = "moderate"),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
     ),
-    verilator = new_verilator_params(timeout = "long"),
+    verilator = verilator_params(timeout = "long"),
     deps = [
         "//hw/top_earlgrey:alert_handler_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -205,7 +205,7 @@ opentitan_test(
 opentitan_test(
     name = "alert_handler_lpg_clkoff_test",
     srcs = ["alert_handler_lpg_clkoff_test.c"],
-    cw310 = new_cw310_params(timeout = "moderate"),
+    cw310 = cw310_params(timeout = "moderate"),
     exec_env = dicts.add(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
@@ -286,7 +286,7 @@ opentitan_test(
 opentitan_test(
     name = "alert_handler_lpg_reset_toggle_test",
     srcs = ["alert_handler_lpg_reset_toggle.c"],
-    cw310 = new_cw310_params(
+    cw310 = cw310_params(
         timeout = "moderate",
     ),
     exec_env = dicts.add(
@@ -337,7 +337,7 @@ opentitan_test(
 opentitan_test(
     name = "alert_handler_lpg_sleep_mode_pings_test",
     srcs = ["alert_handler_lpg_sleep_mode_pings.c"],
-    cw310 = new_cw310_params(
+    cw310 = cw310_params(
         timeout = "moderate",
     ),
     exec_env = {
@@ -433,7 +433,7 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
-    verilator = new_verilator_params(tags = ["broken"]),
+    verilator = verilator_params(tags = ["broken"]),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:math",
@@ -482,7 +482,7 @@ opentitan_test(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
     ),
-    verilator = new_verilator_params(timeout = "long"),
+    verilator = verilator_params(timeout = "long"),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:math",
@@ -528,7 +528,7 @@ opentitan_test(
 opentitan_test(
     name = "chip_power_idle_load",
     srcs = ["chip_power_idle_load.c"],
-    broken = new_cw310_params(tags = ["broken"]),
+    broken = cw310_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         {
@@ -543,7 +543,7 @@ opentitan_test(
         tags = ["broken"],
     ),
     # TODO(#16374): test doesn't make progress after enabling PWM
-    verilator = new_verilator_params(tags = ["broken"]),
+    verilator = verilator_params(tags = ["broken"]),
     deps = [
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:alert_handler",
@@ -564,7 +564,7 @@ opentitan_test(
 opentitan_test(
     name = "chip_power_sleep_load",
     srcs = ["chip_power_sleep_load.c"],
-    broken = new_cw310_params(tags = ["broken"]),
+    broken = cw310_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         {
@@ -573,7 +573,7 @@ opentitan_test(
         },
     ),
     # TODO(#16374): test doesn't make progress after enabling PWM
-    verilator = new_verilator_params(tags = ["broken"]),
+    verilator = verilator_params(tags = ["broken"]),
     deps = [
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:adc_ctrl",
@@ -616,7 +616,7 @@ cc_library(
 opentitan_test(
     name = "clkmgr_external_clk_src_for_sw_fast_test",
     srcs = ["clkmgr_external_clk_src_for_sw_fast_test.c"],
-    cw310 = new_cw310_params(
+    cw310 = cw310_params(
         otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival_bringup:otp_img_dev_manuf_personalized",
     ),
     exec_env = {
@@ -629,7 +629,7 @@ opentitan_test(
         "//hw/top_earlgrey:sim_dv": None,
         "//hw/top_earlgrey:sim_verilator": None,
     },
-    verilator = new_verilator_params(tags = ["broken"]),
+    verilator = verilator_params(tags = ["broken"]),
     deps = [
         ":clkmgr_external_clk_src_for_sw_impl",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -639,7 +639,7 @@ opentitan_test(
 opentitan_test(
     name = "clkmgr_external_clk_src_for_sw_slow_test",
     srcs = ["clkmgr_external_clk_src_for_sw_slow_test.c"],
-    cw310 = new_cw310_params(
+    cw310 = cw310_params(
         otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival_bringup:otp_img_dev_manuf_personalized",
         # TODO(lowrisc/opentitan#19620): fpga doesn't support lowering main clk frequency
         tags = ["broken"],
@@ -648,7 +648,7 @@ opentitan_test(
         "//hw/top_earlgrey:sim_dv": None,
         "//hw/top_earlgrey:sim_verilator": None,
     },
-    verilator = new_verilator_params(tags = ["broken"]),
+    verilator = verilator_params(tags = ["broken"]),
     deps = [
         ":clkmgr_external_clk_src_for_sw_impl",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -711,7 +711,7 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
-    verilator = new_verilator_params(timeout = "eternal"),
+    verilator = verilator_params(timeout = "eternal"),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
@@ -821,7 +821,7 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
-    verilator = new_verilator_params(timeout = "long"),
+    verilator = verilator_params(timeout = "long"),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -849,7 +849,7 @@ opentitan_test(
         },
     ),
     # TODO(#13611): Splice ast_init in FPGA/Verilator.
-    verilator = new_verilator_params(tags = ["broken"]),
+    verilator = verilator_params(tags = ["broken"]),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -898,7 +898,7 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
-    verilator = new_verilator_params(timeout = "long"),
+    verilator = verilator_params(timeout = "long"),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -937,7 +937,7 @@ opentitan_test(
 opentitan_test(
     name = "csrng_edn_concurrency_test",
     srcs = ["csrng_edn_concurrency_test.c"],
-    broken = new_cw310_params(tags = ["broken"]),
+    broken = cw310_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         {
@@ -951,7 +951,7 @@ opentitan_test(
     silicon_owner = silicon_params(
         tags = ["broken"],
     ),
-    verilator = new_verilator_params(timeout = "eternal"),
+    verilator = verilator_params(timeout = "eternal"),
     deps = [
         ":otbn_randomness_impl",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -977,7 +977,7 @@ opentitan_test(
 opentitan_test(
     name = "csrng_kat_test",
     srcs = ["csrng_kat_test.c"],
-    broken = new_cw310_params(tags = ["broken"]),
+    broken = cw310_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
@@ -1003,7 +1003,7 @@ opentitan_test(
 opentitan_test(
     name = "csrng_smoketest",
     srcs = ["csrng_smoketest.c"],
-    broken = new_cw310_params(tags = ["broken"]),
+    broken = cw310_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
@@ -1034,7 +1034,7 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
-    verilator = new_verilator_params(
+    verilator = verilator_params(
         timeout = "eternal",
     ),
     deps = [
@@ -1073,7 +1073,7 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
-    verilator = new_verilator_params(
+    verilator = verilator_params(
         timeout = "eternal",
     ),
     deps = [
@@ -1107,7 +1107,7 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
-    verilator = new_verilator_params(
+    verilator = verilator_params(
         timeout = "long",
     ),
     deps = [
@@ -1133,7 +1133,7 @@ opentitan_test(
     name = "edn_kat",
     srcs = ["edn_kat.c"],
     # Remove this line when fixed.
-    broken = new_cw310_params(tags = ["broken"]),
+    broken = cw310_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
@@ -1143,7 +1143,7 @@ opentitan_test(
             "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
         },
     ),
-    verilator = new_verilator_params(
+    verilator = verilator_params(
         timeout = "long",
     ),
     deps = [
@@ -1169,7 +1169,7 @@ opentitan_test(
     name = "entropy_src_fw_ovr_test",
     srcs = ["entropy_src_fw_ovr_test.c"],
     # TODO(#12486): [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
-    cw310 = new_cw310_params(tags = ["broken"]),
+    cw310 = cw310_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         {
@@ -1181,7 +1181,7 @@ opentitan_test(
     silicon_owner = silicon_params(
         tags = ["broken"],
     ),
-    verilator = new_verilator_params(tags = ["broken"]),
+    verilator = verilator_params(tags = ["broken"]),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
@@ -1275,7 +1275,7 @@ opentitan_test(
 opentitan_test(
     name = "entropy_src_csrng_test",
     srcs = ["entropy_src_csrng_test.c"],
-    broken = new_cw310_params(tags = ["broken"]),
+    broken = cw310_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         {
@@ -1289,7 +1289,7 @@ opentitan_test(
     silicon_owner = silicon_params(
         tags = ["broken"],
     ),
-    verilator = new_verilator_params(
+    verilator = verilator_params(
         timeout = "long",
     ),
     deps = [
@@ -1343,7 +1343,7 @@ opentitan_test(
 opentitan_test(
     name = "entropy_src_edn_reqs_test",
     srcs = ["entropy_src_edn_reqs_test.c"],
-    broken = new_cw310_params(tags = ["broken"]),
+    broken = cw310_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         {
@@ -1357,7 +1357,7 @@ opentitan_test(
     silicon_owner = silicon_params(
         tags = ["broken"],
     ),
-    verilator = new_verilator_params(timeout = "long"),
+    verilator = verilator_params(timeout = "long"),
     deps = [
         ":otbn_randomness_impl",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -1401,7 +1401,7 @@ opentitan_test(
 opentitan_test(
     name = "example_mem_ujcmd_test",
     srcs = ["example_mem_ujcmd.c"],
-    cw310 = new_cw310_params(
+    cw310 = cw310_params(
         test_cmd = " ".join([
             "--bootstrap=\"{firmware}\"",
             "\"{firmware:elf}\"",
@@ -1409,7 +1409,7 @@ opentitan_test(
         test_harness = "//sw/host/tests/chip/mem",
     ),
     exec_env = EARLGREY_TEST_ENVS,
-    verilator = new_verilator_params(
+    verilator = verilator_params(
         timeout = "eternal",
         tags = ["manual"],
         test_cmd = " ".join([
@@ -1497,7 +1497,7 @@ opentitan_test(
 opentitan_test(
     name = "flash_ctrl_ops_test",
     srcs = ["flash_ctrl_ops_test.c"],
-    broken = new_cw310_params(tags = ["broken"]),
+    broken = cw310_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
@@ -1558,7 +1558,7 @@ _FLASH_CTRL_INFO_ACCESS_LC_STATES = get_lc_items(
     opentitan_test(
         name = "flash_ctrl_info_access_lc_{}".format(lc_state.lower()),
         srcs = ["flash_ctrl_info_access_lc.c"],
-        cw310 = new_cw310_params(
+        cw310 = cw310_params(
             bitstream = "//hw/bitstream:rom_with_fake_keys_otp_{}".format(lc_state.lower()),
         ),
         exec_env = {
@@ -1595,10 +1595,10 @@ test_suite(
     opentitan_test(
         name = "flash_ctrl_info_access_lc_{}_personalized".format(lc_state),
         srcs = ["flash_ctrl_info_access_lc.c"],
-        cw310 = new_cw310_params(
+        cw310 = cw310_params(
             otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival_bringup:otp_img_{}_manuf_personalized".format(lc_state),
         ),
-        dv = new_dv_params(
+        dv = dv_params(
             otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival_bringup:otp_img_{}_manuf_personalized".format(lc_state),
         ),
         exec_env = {
@@ -1642,7 +1642,7 @@ test_suite(
 opentitan_test(
     name = "flash_ctrl_clock_freqs_test",
     srcs = ["flash_ctrl_clock_freqs_test.c"],
-    broken = new_cw310_params(tags = ["broken"]),
+    broken = cw310_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
@@ -1652,7 +1652,7 @@ opentitan_test(
             "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
         },
     ),
-    verilator = new_verilator_params(timeout = "long"),
+    verilator = verilator_params(timeout = "long"),
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//sw/device/lib/base:abs_mmio",
@@ -1670,7 +1670,7 @@ opentitan_test(
 opentitan_test(
     name = "flash_ctrl_test",
     srcs = ["flash_ctrl_test.c"],
-    broken = new_cw310_params(tags = ["broken"]),
+    broken = cw310_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
@@ -1681,7 +1681,7 @@ opentitan_test(
         },
     ),
     silicon = silicon_params(tags = ["broken"]),
-    verilator = new_verilator_params(timeout = "long"),
+    verilator = verilator_params(timeout = "long"),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:macros",
@@ -1703,7 +1703,7 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
         },
     ),
-    verilator = new_verilator_params(timeout = "long"),
+    verilator = verilator_params(timeout = "long"),
     deps = [
         "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -1720,7 +1720,7 @@ opentitan_test(
 opentitan_test(
     name = "flash_ctrl_mem_protection_test",
     srcs = ["flash_ctrl_mem_protection_test.c"],
-    broken = new_cw310_params(tags = ["broken"]),
+    broken = cw310_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         {
@@ -1729,7 +1729,7 @@ opentitan_test(
             "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
         },
     ),
-    verilator = new_verilator_params(timeout = "long"),
+    verilator = verilator_params(timeout = "long"),
     deps = [
         "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -1746,7 +1746,7 @@ opentitan_test(
 opentitan_test(
     name = "flash_ctrl_rma_test",
     srcs = ["flash_ctrl_rma_test.c"],
-    cw310 = new_cw310_params(
+    cw310 = cw310_params(
         changes_otp = True,
         needs_jtag = True,
         otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival_bringup:otp_img_dev_manuf_personalized",
@@ -1809,7 +1809,7 @@ opentitan_test(
 opentitan_test(
     name = "gpio_pinmux_test",
     srcs = ["gpio_pinmux_test.c"],
-    cw310 = new_cw310_params(
+    cw310 = cw310_params(
         test_cmd = """
             --bootstrap="{firmware}"
         """,
@@ -1839,7 +1839,7 @@ opentitan_test(
 opentitan_test(
     name = "gpio_intr_test",
     srcs = ["gpio_intr_test.c"],
-    cw310 = new_cw310_params(
+    cw310 = cw310_params(
         timeout = "moderate",
         test_cmd = """
             --bootstrap="{firmware}"
@@ -1966,7 +1966,7 @@ opentitan_test(
 opentitan_test(
     name = "keymgr_key_derivation_test",
     srcs = ["keymgr_key_derivation_test.c"],
-    broken = new_cw310_params(tags = ["broken"]),
+    broken = cw310_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         {
@@ -1977,7 +1977,7 @@ opentitan_test(
             "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
         },
     ),
-    verilator = new_verilator_params(timeout = "long"),
+    verilator = verilator_params(timeout = "long"),
     deps = [
         "//hw/ip/keymgr/data:keymgr_c_regs",
         "//hw/ip/kmac/data:kmac_c_regs",
@@ -1997,7 +1997,7 @@ opentitan_test(
 opentitan_test(
     name = "keymgr_sideload_aes_test",
     srcs = ["keymgr_sideload_aes_test.c"],
-    broken = new_cw310_params(tags = ["broken"]),
+    broken = cw310_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
@@ -2008,7 +2008,7 @@ opentitan_test(
         },
     ),
     silicon = silicon_params(tags = ["broken"]),
-    verilator = new_verilator_params(timeout = "long"),
+    verilator = verilator_params(timeout = "long"),
     deps = [
         "//hw/ip/aes/data:aes_c_regs",
         "//hw/ip/keymgr/data:keymgr_c_regs",
@@ -2032,7 +2032,7 @@ opentitan_test(
 opentitan_test(
     name = "keymgr_sideload_kmac_test",
     srcs = ["keymgr_sideload_kmac_test.c"],
-    broken = new_cw310_params(tags = ["broken"]),
+    broken = cw310_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
@@ -2043,7 +2043,7 @@ opentitan_test(
         },
     ),
     silicon = silicon_params(tags = ["broken"]),
-    verilator = new_verilator_params(timeout = "long"),
+    verilator = verilator_params(timeout = "long"),
     deps = [
         "//hw/ip/keymgr/data:keymgr_c_regs",
         "//hw/ip/kmac/data:kmac_c_regs",
@@ -2074,7 +2074,7 @@ opentitan_test(
         },
     ),
     silicon = silicon_params(tags = ["broken"]),
-    verilator = new_verilator_params(timeout = "long"),
+    verilator = verilator_params(timeout = "long"),
     deps = [
         "//hw/ip/otbn/data:otbn_c_regs",
         "//sw/device/lib/arch:device",
@@ -2104,7 +2104,7 @@ opentitan_test(
         },
     ),
     silicon = silicon_params(tags = ["broken"]),
-    verilator = new_verilator_params(timeout = "long"),
+    verilator = verilator_params(timeout = "long"),
     deps = [
         "//hw/ip/otbn/data:otbn_c_regs",
         "//sw/device/lib/arch:device",
@@ -2139,7 +2139,7 @@ opentitan_test(
     name = "kmac_entropy_test",
     srcs = ["kmac_entropy_test.c"],
     # TODO(#15530): EDN doesn't timeout on FPGA
-    cw310 = new_cw310_params(tags = ["broken"]),
+    cw310 = cw310_params(tags = ["broken"]),
     exec_env = EARLGREY_TEST_ENVS,
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -2182,7 +2182,7 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
-    verilator = new_verilator_params(timeout = "long"),
+    verilator = verilator_params(timeout = "long"),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -2240,7 +2240,7 @@ opentitan_test(
 opentitan_test(
     name = "lc_ctrl_otp_hw_cfg0_test",
     srcs = ["lc_ctrl_otp_hw_cfg0_test.c"],
-    broken = new_cw310_params(tags = ["broken"]),
+    broken = cw310_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         {
@@ -2271,7 +2271,7 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
-    verilator = new_verilator_params(timeout = "long"),
+    verilator = verilator_params(timeout = "long"),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:otbn",
@@ -2297,7 +2297,7 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
-    verilator = new_verilator_params(timeout = "long"),
+    verilator = verilator_params(timeout = "long"),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:otbn",
@@ -2316,7 +2316,7 @@ opentitan_test(
     name = "otbn_mem_scramble_test",
     srcs = ["otbn_mem_scramble_test.c"],
     # TODO(#12486) [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
-    cw310 = new_cw310_params(tags = ["broken"]),
+    cw310 = cw310_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
@@ -2324,7 +2324,7 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
-    verilator = new_verilator_params(timeout = "long"),
+    verilator = verilator_params(timeout = "long"),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:base",
@@ -2362,7 +2362,7 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
-    verilator = new_verilator_params(timeout = "long"),
+    verilator = verilator_params(timeout = "long"),
     deps = [
         ":otbn_randomness_impl",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -2391,7 +2391,7 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
-    verilator = new_verilator_params(timeout = "eternal"),
+    verilator = verilator_params(timeout = "eternal"),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:otbn",
@@ -2416,7 +2416,7 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
-    verilator = new_verilator_params(timeout = "long"),
+    verilator = verilator_params(timeout = "long"),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:otbn",
@@ -2455,7 +2455,7 @@ opentitan_test(
 opentitan_test(
     name = "otp_ctrl_smoketest",
     srcs = ["otp_ctrl_smoketest.c"],
-    broken = new_cw310_params(tags = ["broken"]),
+    broken = cw310_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         {
@@ -2501,7 +2501,7 @@ opentitan_test(
 opentitan_test(
     name = "pmp_smoketest_napot",
     srcs = ["pmp_smoketest_napot.c"],
-    broken = new_cw310_params(tags = ["broken"]),
+    broken = cw310_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         {
@@ -2522,7 +2522,7 @@ opentitan_test(
 opentitan_test(
     name = "pmp_smoketest_tor",
     srcs = ["pmp_smoketest_tor.c"],
-    broken = new_cw310_params(tags = ["broken"]),
+    broken = cw310_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         {
@@ -2574,7 +2574,7 @@ cc_library(
 opentitan_test(
     name = "pwrmgr_all_reset_reqs_test",
     srcs = ["pwrmgr_all_reset_reqs_test.c"],
-    broken = new_cw310_params(tags = ["broken"]),
+    broken = cw310_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
@@ -2587,7 +2587,7 @@ opentitan_test(
         },
     ),
     silicon = silicon_params(tags = ["broken"]),
-    test_harness = new_cw310_params(
+    test_harness = cw310_params(
         test_cmd = """
             --bootstrap={firmware}
         """,
@@ -2613,7 +2613,7 @@ opentitan_test(
 opentitan_test(
     name = "pwrmgr_random_sleep_all_reset_reqs_test",
     srcs = ["pwrmgr_random_sleep_all_reset_reqs_test.c"],
-    broken = new_cw310_params(tags = ["broken"]),
+    broken = cw310_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
@@ -2631,7 +2631,7 @@ opentitan_test(
         """,
         test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_resets",
     ),
-    test_harness = new_cw310_params(
+    test_harness = cw310_params(
         test_cmd = """
             --bootstrap={firmware}
         """,
@@ -2657,7 +2657,7 @@ opentitan_test(
 opentitan_test(
     name = "pwrmgr_deep_sleep_all_reset_reqs_test",
     srcs = ["pwrmgr_deep_sleep_all_reset_reqs_test.c"],
-    cw310 = new_cw310_params(
+    cw310 = cw310_params(
         test_cmd = """
             --bootstrap={firmware}
         """,
@@ -2694,7 +2694,7 @@ opentitan_test(
 opentitan_test(
     name = "pwrmgr_normal_sleep_all_reset_reqs_test",
     srcs = ["pwrmgr_normal_sleep_all_reset_reqs_test.c"],
-    cw310 = new_cw310_params(
+    cw310 = cw310_params(
         test_cmd = """
             --bootstrap={firmware}
         """,
@@ -2724,7 +2724,7 @@ opentitan_test(
 opentitan_test(
     name = "pwrmgr_deep_sleep_por_reset_test",
     srcs = ["pwrmgr_deep_sleep_por_reset_test.c"],
-    cw310 = new_cw310_params(
+    cw310 = cw310_params(
         test_cmd = """
             --bootstrap={firmware}
         """,
@@ -2763,7 +2763,7 @@ opentitan_test(
 opentitan_test(
     name = "pwrmgr_normal_sleep_por_reset_test",
     srcs = ["pwrmgr_normal_sleep_por_reset_test.c"],
-    cw310 = new_cw310_params(
+    cw310 = cw310_params(
         test_cmd = """
             --bootstrap={firmware}
         """,
@@ -2802,7 +2802,7 @@ opentitan_test(
 opentitan_test(
     name = "pwrmgr_normal_sleep_all_wake_ups",
     srcs = ["pwrmgr_normal_sleep_all_wake_ups.c"],
-    cw310 = new_cw310_params(
+    cw310 = cw310_params(
         test_cmd = """
             --bootstrap={firmware}
         """,
@@ -2835,7 +2835,7 @@ opentitan_test(
 opentitan_test(
     name = "pwrmgr_deep_sleep_all_wake_ups",
     srcs = ["pwrmgr_deep_sleep_all_wake_ups.c"],
-    cw310 = new_cw310_params(
+    cw310 = cw310_params(
         test_cmd = """
             --bootstrap={firmware}
         """,
@@ -2870,7 +2870,7 @@ opentitan_test(
 opentitan_test(
     name = "pwrmgr_random_sleep_all_wake_ups",
     srcs = ["pwrmgr_random_sleep_all_wake_ups.c"],
-    cw310 = new_cw310_params(
+    cw310 = cw310_params(
         test_cmd = """
             --bootstrap={firmware}
         """,
@@ -2916,7 +2916,7 @@ opentitan_test(
 opentitan_test(
     name = "pwrmgr_sleep_wake_5_bug_test",
     srcs = ["pwrmgr_sleep_wake_5_bug_test.c"],
-    cw310 = new_cw310_params(
+    cw310 = cw310_params(
         test_cmd = """
             --bootstrap={firmware}
         """,
@@ -2986,7 +2986,7 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
-    verilator = new_verilator_params(timeout = "long"),
+    verilator = verilator_params(timeout = "long"),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
@@ -3011,7 +3011,7 @@ opentitan_test(
             "//hw/top_earlgrey:fpga_cw310_sival": None,
         },
     ),
-    verilator = new_verilator_params(tags = ["broken"]),
+    verilator = verilator_params(tags = ["broken"]),
     deps = [
         "//sw/device/lib/dif:aon_timer",
         "//sw/device/lib/dif:pwrmgr",
@@ -3079,7 +3079,7 @@ opentitan_test(
             "//hw/top_earlgrey:sim_verilator": None,
         },
     ),
-    verilator = new_verilator_params(
+    verilator = verilator_params(
         timeout = "long",
         tags = ["broken"],
     ),
@@ -3131,7 +3131,7 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
-    verilator = new_verilator_params(timeout = "long"),
+    verilator = verilator_params(timeout = "long"),
     deps = [
         "//hw/ip/i2c/data:i2c_c_regs",
         "//hw/ip/spi_device/data:spi_device_c_regs",
@@ -3220,7 +3220,7 @@ opentitan_test(
 opentitan_test(
     name = "spi_device_tpm_tx_rx_test",
     srcs = ["spi_device_tpm_tx_rx_test.c"],
-    cw310 = new_cw310_params(
+    cw310 = cw310_params(
         # This test requires the spi full duplex on the hyperdebug board.
         tags = [
             "broken",
@@ -3263,7 +3263,7 @@ opentitan_test(
 opentitan_test(
     name = "spi_device_flash_smoketest",
     srcs = ["spi_device_flash_smoketest.c"],
-    cw310 = new_cw310_params(
+    cw310 = cw310_params(
         test_cmd = """
             --bootstrap="{firmware}"
             "{firmware:elf}"
@@ -3324,7 +3324,7 @@ cc_library(
 opentitan_test(
     name = "spi_host_smoketest",
     srcs = ["spi_host_smoketest.c"],
-    cw310 = new_cw310_params(timeout = "moderate"),
+    cw310 = cw310_params(timeout = "moderate"),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
     },
@@ -3440,7 +3440,7 @@ opentitan_test(
     silicon = silicon_params(
         tags = ["broken"],
     ),
-    verilator = new_verilator_params(
+    verilator = verilator_params(
         timeout = "long",
     ),
     deps = [
@@ -3473,7 +3473,7 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
-    verilator = new_verilator_params(
+    verilator = verilator_params(
         timeout = "eternal",
         tags = ["broken"],
     ),
@@ -3497,7 +3497,7 @@ opentitan_test(
 opentitan_test(
     name = "sram_ctrl_execution_test",
     srcs = ["sram_ctrl_execution_test.c"],
-    broken = new_cw310_params(tags = ["broken"]),
+    broken = cw310_params(tags = ["broken"]),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
         "//hw/top_earlgrey:fpga_cw310_sival": None,
@@ -3551,7 +3551,7 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
-    verilator = new_verilator_params(
+    verilator = verilator_params(
         timeout = "long",
     ),
     deps = [
@@ -3563,7 +3563,7 @@ opentitan_test(
 opentitan_test(
     name = "sram_ctrl_sleep_sram_ret_contents_scramble_test",
     srcs = ["sram_ctrl_sleep_sram_ret_contents_scramble_test.c"],
-    broken = new_cw310_params(tags = ["broken"]),
+    broken = cw310_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         {
@@ -3578,7 +3578,7 @@ opentitan_test(
     silicon_owner = silicon_params(
         tags = ["broken"],
     ),
-    verilator = new_verilator_params(
+    verilator = verilator_params(
         timeout = "long",
     ),
     deps = [
@@ -3657,7 +3657,7 @@ opentitan_test(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
     ),
-    verilator = new_verilator_params(timeout = "long"),
+    verilator = verilator_params(timeout = "long"),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:pinmux",
@@ -3762,7 +3762,7 @@ opentitan_test(
 opentitan_test(
     name = "usbdev_aon_wake_reset_test",
     srcs = ["usbdev_aon_wake_reset_test.c"],
-    cw310 = new_cw310_params(
+    cw310 = cw310_params(
         tags = ["manual"],
         test_cmd = """
             --bootstrap="{firmware}"
@@ -3810,7 +3810,7 @@ opentitan_test(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
     ),
-    verilator = new_verilator_params(timeout = "long"),
+    verilator = verilator_params(timeout = "long"),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:pinmux",
@@ -3826,12 +3826,12 @@ opentitan_test(
 opentitan_test(
     name = "usbdev_test",
     srcs = ["usbdev_test.c"],
-    cw310 = new_cw310_params(tags = ["manual"]),
+    cw310 = cw310_params(tags = ["manual"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
     ),
-    verilator = new_verilator_params(timeout = "long"),
+    verilator = verilator_params(timeout = "long"),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:pinmux",
@@ -3848,7 +3848,7 @@ opentitan_test(
 opentitan_test(
     name = "usbdev_mixed_test",
     srcs = ["usbdev_mixed_test.c"],
-    cw310 = new_cw310_params(
+    cw310 = cw310_params(
         timeout = "eternal",
         tags = ["manual"],
     ),
@@ -3856,7 +3856,7 @@ opentitan_test(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
     ),
-    verilator = new_verilator_params(timeout = "long"),
+    verilator = verilator_params(timeout = "long"),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:pinmux",
@@ -3872,7 +3872,7 @@ opentitan_test(
 opentitan_test(
     name = "usbdev_iso_test",
     srcs = ["usbdev_iso_test.c"],
-    cw310 = new_cw310_params(
+    cw310 = cw310_params(
         timeout = "eternal",
         tags = ["manual"],
     ),
@@ -3880,7 +3880,7 @@ opentitan_test(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
     ),
-    verilator = new_verilator_params(timeout = "long"),
+    verilator = verilator_params(timeout = "long"),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:pinmux",
@@ -3896,7 +3896,7 @@ opentitan_test(
 opentitan_test(
     name = "usbdev_stream_test",
     srcs = ["usbdev_stream_test.c"],
-    cw310 = new_cw310_params(
+    cw310 = cw310_params(
         timeout = "eternal",
         tags = ["manual"],
     ),
@@ -3904,7 +3904,7 @@ opentitan_test(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
     ),
-    verilator = new_verilator_params(timeout = "long"),
+    verilator = verilator_params(timeout = "long"),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:pinmux",
@@ -3920,7 +3920,7 @@ opentitan_test(
 opentitan_test(
     name = "usbdev_logging_test",
     srcs = ["usbdev_logging_test.c"],
-    cw310 = new_cw310_params(
+    cw310 = cw310_params(
         timeout = "eternal",
         tags = ["manual"],
     ),
@@ -3929,7 +3929,7 @@ opentitan_test(
         "//hw/top_earlgrey:sim_dv": None,
         "//hw/top_earlgrey:sim_verilator": None,
     },
-    verilator = new_verilator_params(timeout = "long"),
+    verilator = verilator_params(timeout = "long"),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:pinmux",
@@ -3946,7 +3946,7 @@ opentitan_test(
 opentitan_test(
     name = "rstmgr_alert_info_test",
     srcs = ["rstmgr_alert_info_test.c"],
-    cw310 = new_cw310_params(
+    cw310 = cw310_params(
         timeout = "moderate",
     ),
     exec_env = {
@@ -3963,7 +3963,7 @@ opentitan_test(
     silicon_owner = silicon_params(
         tags = ["broken"],
     ),
-    verilator = new_verilator_params(
+    verilator = verilator_params(
         timeout = "long",
         tags = ["broken"],
     ),
@@ -4034,7 +4034,7 @@ opentitan_test(
         "rv_core_ibex_address_translation_test.S",
         "rv_core_ibex_address_translation_test.c",
     ],
-    broken = new_cw310_params(tags = ["broken"]),
+    broken = cw310_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         {
@@ -4113,7 +4113,7 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
-    verilator = new_verilator_params(
+    verilator = verilator_params(
         # FIXME #13611
         timeout = "eternal",
         tags = ["broken"],
@@ -4156,14 +4156,14 @@ otp_image(
 opentitan_test(
     name = "power_virus_systemtest",
     srcs = ["power_virus_systemtest.c"],
-    cw310 = new_cw310_params(
+    cw310 = cw310_params(
         otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival_bringup:otp_img_prod_manuf_personalized",
         test_cmd = """
             --bootstrap="{firmware}"
         """,
         test_harness = "//sw/host/tests/chip/power_virus",
     ),
-    dv = new_dv_params(
+    dv = dv_params(
         otp = ":power_virus_systemtest_otp_img_rma",
     ),
     exec_env = dicts.add(
@@ -4233,7 +4233,7 @@ opentitan_test(
 opentitan_test(
     name = "spi_passthru_test",
     srcs = ["spi_passthru_test.c"],
-    cw310 = new_cw310_params(
+    cw310 = cw310_params(
         test_cmd = """
             --bootstrap="{firmware}"
             "{firmware:elf}"
@@ -4245,7 +4245,7 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "hyper310",
         "//hw/top_earlgrey:fpga_hyper310_rom_ext": "hyper310",
     },
-    hyper310 = new_cw310_params(
+    hyper310 = cw310_params(
         tags = ["manual"],  # TODO: QE bit handling
         test_cmd = """
             --bootstrap="{firmware}"
@@ -4290,7 +4290,7 @@ otp_image(
 opentitan_test(
     name = "flash_scrambling_smoketest",
     srcs = ["example_test_from_flash.c"],
-    dv = new_dv_params(
+    dv = dv_params(
         otp = ":flash_scrambling_smoketest_otp_img_rma",
     ),
     exec_env = {
@@ -4320,7 +4320,7 @@ _RV_DM_JTAG_LC_STATES = get_lc_items(
     opentitan_test(
         name = "rv_dm_csr_rw_{}".format(lc_state),
         srcs = ["example_test_from_flash.c"],
-        cw310 = new_cw310_params(
+        cw310 = cw310_params(
             needs_jtag = True,
             otp = _SIVAL_OTP_IMAGE[lc_state],
             tags = [
@@ -4352,7 +4352,7 @@ test_suite(
     opentitan_test(
         name = "rv_dm_mem_access_{}".format(lc_state),
         srcs = ["example_test_from_flash.c"],
-        cw310 = new_cw310_params(
+        cw310 = cw310_params(
             timeout = "moderate",
             needs_jtag = True,
             otp = _SIVAL_OTP_IMAGE[lc_state],
@@ -4386,7 +4386,7 @@ test_suite(
     opentitan_test(
         name = "rv_dm_jtag_{}".format(lc_state),
         srcs = ["example_test_from_flash.c"],
-        cw310 = new_cw310_params(
+        cw310 = cw310_params(
             needs_jtag = True,
             otp = _SIVAL_OTP_IMAGE[lc_state],
             tags = [
@@ -4418,7 +4418,7 @@ test_suite(
     opentitan_test(
         name = "rv_dm_jtag_tap_sel_{}".format(lc_state),
         srcs = ["example_test_from_flash.c"],
-        cw310 = new_cw310_params(
+        cw310 = cw310_params(
             needs_jtag = True,
             otp = _SIVAL_OTP_IMAGE[lc_state],
             tags = [
@@ -4474,7 +4474,7 @@ _LC_STATES_DEBUG_DISALLOWED = [
     opentitan_test(
         name = "rv_dm_lc_disabled_tl_{}".format(lc_state),
         srcs = ["rv_dm_lc_disabled.c"],
-        cw310 = new_cw310_params(
+        cw310 = cw310_params(
             otp = _SIVAL_OTP_IMAGE[lc_state],
             tags = [
                 "lc_{}".format(lc_state),
@@ -4507,7 +4507,7 @@ test_suite(
     opentitan_test(
         name = "rv_dm_lc_disabled_jtag_{}".format(lc_state),
         srcs = ["example_test_from_flash.c"],
-        cw310 = new_cw310_params(
+        cw310 = cw310_params(
             needs_jtag = True,
             otp = _SIVAL_OTP_IMAGE[lc_state],
             tags = [
@@ -4540,7 +4540,7 @@ test_suite(
     opentitan_test(
         name = "rv_dm_ndm_reset_req_{}".format(lc_state),
         srcs = ["rv_dm_ndm_reset_req.c"],
-        cw310 = new_cw310_params(
+        cw310 = cw310_params(
             needs_jtag = True,
             otp = _SIVAL_OTP_IMAGE[lc_state],
             tags = [
@@ -4594,7 +4594,7 @@ test_suite(
     opentitan_test(
         name = "rv_dm_ndm_reset_req_when_cpu_halted_{}".format(lc_state),
         srcs = ["rv_dm_ndm_reset_req_when_cpu_halted.c"],
-        cw310 = new_cw310_params(
+        cw310 = cw310_params(
             needs_jtag = True,
             otp = _SIVAL_OTP_IMAGE[lc_state],
             tags = [
@@ -4635,7 +4635,7 @@ test_suite(
     opentitan_test(
         name = "rv_dm_dtm_{}".format(lc_state),
         srcs = ["example_test_from_flash.c"],
-        cw310 = new_cw310_params(
+        cw310 = cw310_params(
             needs_jtag = True,
             otp = _SIVAL_OTP_IMAGE[lc_state],
             tags = [
@@ -4676,7 +4676,7 @@ test_suite(
     opentitan_test(
         name = "rv_dm_control_status_{}".format(lc_state),
         srcs = ["example_test_from_flash.c"],
-        cw310 = new_cw310_params(
+        cw310 = cw310_params(
             needs_jtag = True,
             otp = _SIVAL_OTP_IMAGE[lc_state],
             tags = [
@@ -4717,7 +4717,7 @@ test_suite(
     opentitan_test(
         name = "rv_dm_access_after_wakeup_{}".format(lc_state),
         srcs = ["rv_dm_access_after_wakeup.c"],
-        cw310 = new_cw310_params(
+        cw310 = cw310_params(
             needs_jtag = True,
             otp = _SIVAL_OTP_IMAGE[lc_state],
             tags = [
@@ -4776,7 +4776,7 @@ test_suite(
     opentitan_test(
         name = "rv_dm_access_after_hw_reset_{}".format(lc_state),
         srcs = ["rv_dm_access_after_hw_reset.c"],
-        cw310 = new_cw310_params(
+        cw310 = cw310_params(
             needs_jtag = True,
             otp = _SIVAL_OTP_IMAGE[lc_state],
             tags = [
@@ -4817,7 +4817,7 @@ test_suite(
 opentitan_test(
     name = "openocd_test",
     srcs = ["example_test_from_flash.c"],
-    cw310 = new_cw310_params(
+    cw310 = cw310_params(
         needs_jtag = True,
         otp = "//hw/ip/otp_ctrl/data:img_test_unlocked0",
         test_cmd = """
@@ -4842,7 +4842,7 @@ opentitan_test(
     srcs = [
         "i2c_target_test.c",
     ],
-    cw310 = new_cw310_params(
+    cw310 = cw310_params(
         # otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_prod_manuf_personalized",
         test_cmd = """
             --bootstrap="{firmware}"
@@ -4882,7 +4882,7 @@ _STATUS_REPORT_TEST_MSG = "\r\n".join([
 opentitan_test(
     name = "status_report_test",
     srcs = ["status_report_test.c"],
-    cw310 = new_cw310_params(
+    cw310 = cw310_params(
         exit_failure = "PASS!",
         exit_success = _STATUS_REPORT_TEST_MSG,
     ),
@@ -4907,7 +4907,7 @@ _STATUS_REPORT_OVERFLOW_TEST_MSG = "\r\n".join([
 opentitan_test(
     name = "status_report_overflow_test",
     srcs = ["status_report_overflow_test.c"],
-    cw310 = new_cw310_params(
+    cw310 = cw310_params(
         exit_failure = "PASS!",
         exit_success = _STATUS_REPORT_OVERFLOW_TEST_MSG,
     ),
@@ -4923,7 +4923,7 @@ opentitan_test(
 opentitan_test(
     name = "example_sival",
     srcs = ["example_sival.c"],
-    cw310 = new_cw310_params(
+    cw310 = cw310_params(
         test_cmd = " ".join([
             "--bootstrap=\"{firmware}\"",
             "\"{firmware:elf}\"",
@@ -4947,7 +4947,7 @@ opentitan_test(
 opentitan_test(
     name = "sysrst_ctrl_inputs_test",
     srcs = ["sysrst_ctrl_inputs_test.c"],
-    cw310 = new_cw310_params(
+    cw310 = cw310_params(
         test_cmd = """
             --bootstrap="{firmware}"
             "{firmware:elf}"
@@ -4984,7 +4984,7 @@ opentitan_test(
 opentitan_test(
     name = "sysrst_ctrl_outputs_test",
     srcs = ["sysrst_ctrl_outputs_test.c"],
-    cw310 = new_cw310_params(
+    cw310 = cw310_params(
         test_cmd = """
             --bootstrap="{firmware}"
             "{firmware:elf}"
@@ -5022,7 +5022,7 @@ opentitan_test(
 opentitan_test(
     name = "sysrst_ctrl_in_irq_test",
     srcs = ["sysrst_ctrl_in_irq_test.c"],
-    cw310 = new_cw310_params(
+    cw310 = cw310_params(
         test_cmd = """
             --bootstrap="{firmware}"
             "{firmware:elf}"
@@ -5061,7 +5061,7 @@ opentitan_test(
 opentitan_test(
     name = "sysrst_ctrl_ec_rst_l_test",
     srcs = ["sysrst_ctrl_ec_rst_l_test.c"],
-    cw310 = new_cw310_params(
+    cw310 = cw310_params(
         test_cmd = """
             --bootstrap="{firmware}"
         """,
@@ -5099,7 +5099,7 @@ opentitan_test(
 opentitan_test(
     name = "sysrst_ctrl_ulp_z3_wakeup_test",
     srcs = ["sysrst_ctrl_ulp_z3_wakeup_test.c"],
-    cw310 = new_cw310_params(
+    cw310 = cw310_params(
         test_cmd = """
             --bootstrap="{firmware}"
             "{firmware:elf}"
@@ -5141,7 +5141,7 @@ opentitan_test(
 opentitan_test(
     name = "sysrst_ctrl_reset_test",
     srcs = ["sysrst_ctrl_reset_test.c"],
-    cw310 = new_cw310_params(
+    cw310 = cw310_params(
         test_cmd = """
             --bootstrap="{firmware}"
             "{firmware:elf}"
@@ -5200,7 +5200,7 @@ opentitan_test(
 opentitan_test(
     name = "rv_core_ibex_isa_test_functest",
     srcs = ["//sw/device/silicon_creator/manuf/tests:idle_functest.c"],
-    cw310 = new_cw310_params(
+    cw310 = cw310_params(
         binaries = {
             ":rv_core_ibex_isa_test": "sram_program",
         },
@@ -5253,7 +5253,7 @@ opentitan_binary(
 opentitan_test(
     name = "rv_core_ibex_epmp_test_functest",
     srcs = ["//sw/device/silicon_creator/manuf/tests:idle_functest.c"],
-    cw310 = new_cw310_params(
+    cw310 = cw310_params(
         binaries = {
             ":rv_core_ibex_epmp_test": "sram_program",
         },
@@ -5313,8 +5313,8 @@ opentitan_binary(
 opentitan_test(
     name = "uart_tx_rx_test",
     srcs = ["uart_tx_rx_test.c"],
-    broken = new_cw310_params(tags = ["broken"]),
-    cw310 = new_cw310_params(
+    broken = cw310_params(tags = ["broken"]),
+    cw310 = cw310_params(
         otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_prod_manuf_personalized",
         test_cmd = " ".join([
             "--bootstrap=\"{firmware}\"",
@@ -5366,7 +5366,7 @@ opentitan_test(
 opentitan_test(
     name = "rv_core_ibex_mem_test_functest",
     srcs = ["//sw/device/silicon_creator/manuf/tests:idle_functest.c"],
-    cw310 = new_cw310_params(
+    cw310 = cw310_params(
         binaries = {
             ":rv_core_ibex_mem_test": "sram_program",
         },
@@ -5433,8 +5433,8 @@ opentitan_binary(
 opentitan_test(
     name = "uart_baud_rate_test",
     srcs = ["uart_baud_rate_test.c"],
-    broken = new_cw310_params(tags = ["broken"]),
-    cw310 = new_cw310_params(
+    broken = cw310_params(tags = ["broken"]),
+    cw310 = cw310_params(
         test_cmd = " ".join([
             "--bootstrap=\"{firmware}\"",
             "--firmware-elf=\"{firmware:elf}\"",
@@ -5470,7 +5470,7 @@ opentitan_test(
 opentitan_test(
     name = "uart_loopback_test",
     srcs = ["uart_loopback_test.c"],
-    cw310 = new_cw310_params(
+    cw310 = cw310_params(
         test_cmd = " ".join([
             "--bootstrap=\"{firmware}\"",
             "--firmware-elf=\"{firmware:elf}\"",
