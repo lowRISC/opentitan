@@ -305,7 +305,7 @@ package flash_ctrl_env_pkg;
     flash_prog_sel_e prog_sel;    // program select
     uint             num_words;   // number of words to read or program (TL_DW)
     addr_t           addr;        // starting addr for the op
-    // addres for the ctrl interface per bank, 18:0
+    // address for the ctrl interface per bank, 18:0
     bit [flash_ctrl_pkg::BusAddrByteW-2:0] otf_addr;
   } flash_op_t;
 
@@ -527,7 +527,6 @@ package flash_ctrl_env_pkg;
     env_info.he_en         = info.he_en;
     return env_info;
   endfunction
-
 
   // package sources
   `include "flash_mem_bkdr_util.sv"

@@ -244,12 +244,12 @@
       name: sec_cm_phy_arbiter_ctrl_redun
       desc: '''Verify the countermeasure(s) PHY_ARBITER.CTRL.REDUN.
 
-      The phy arbiter for controller and host is redundant.
-      The arbiter has two instance underneath that are constantly compared to each other.
-      tb.dut.u_eflash.gen_flash_cores[0].u_core.u_host_arb.gen_input_bufs[0].u_req_buf.out_o[1:0]
-      tb.dut.u_eflash.gen_flash_cores[0].u_core.u_host_arb.gen_input_bufs[1].u_req_buf.out_o[1:0]
-
-      Make output of both mismatch and check fault_status.arb_err is triggered.
+      The phy arbiters for controller and host are redundant. There are four
+      of these. Each arbiter has two instance underneath that are constantly
+      compared to each other. This test injects arbitration faults randomly
+      choosing any of the four redundant arbiters, and randomly grounding any
+      of the two copies. The fault is caused by having the request to both
+      copies mismatch, and the test checks fault_status.arb_err is triggered.
       '''
       stage: V2S
       tests: ["flash_ctrl_phy_arb_redun"]
