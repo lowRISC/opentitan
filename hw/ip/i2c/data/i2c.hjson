@@ -54,8 +54,13 @@
     { name: "rx_overflow"
       desc: "host mode interrupt: raised if the RX FIFO has overflowed."
     }
-    { name: "nak"
-      desc: "host mode interrupt: raised if there is no ACK in response to an address or data write"
+    { name: "controller_halt"
+      desc: '''
+            host mode interrupt: raised if the controller FSM is halted, such as on an unexpected NACK.
+            Check !!CONTROLLER_EVENTS for the reason.
+            The interrupt will be released when the bits in !!CONTROLLER_EVENTS are cleared.
+            '''
+      type: "status"
     }
     { name: "scl_interference"
       desc: "host mode interrupt: raised if the SCL line drops early (not supported without clock synchronization)."
@@ -204,8 +209,7 @@
     { name: "CTRL"
       desc: "I2C Control Register"
       swaccess: "rw"
-      hwaccess: "hrw"
-      hwqe:     "true",
+      hwaccess: "hro"
       fields: [
         { bits: "0"
           resval: "0"
@@ -284,13 +288,6 @@
           name: "ACQEMPTY"
           desc: "Target mode receive FIFO is empty"
           resval: "1"
-        }
-        { bits: "10"
-          name: "HOST_DISABLED_NACK_TIMEOUT"
-          desc: '''
-                A Host-Mode active transaction has been ended by the !!HOST_NACK_HANDLER_TIMEOUT mechanism.
-                This bit is cleared when !!CTRL.ENABLEHOST is set by software to start a new transaction.
-                '''
         }
       ]
       tags: [// Updated by the hw. Exclude from write-checks.
@@ -741,17 +738,14 @@
             Timeout in Host-Mode for an unhandled NACK before hardware automatically ends the transaction.
             (in units of input clock frequency)
 
-            In Host-Mode during an active Controller-Transmitter transfer, if the Target NACKs a byte
-            the 'nak' interrupt is asserted and the Byte-Formatted Programming Mode FSM halts awaiting
-            software intervention. Software must acknowledge the interrupt (CIP 'Event-Type') to allow
-            the state machine to continue, typically after clearing out the FMTFIFO to start a new transfer.
-            While halted, the active transaction is not ended (no STOP (P) condition is created), and the
-            block releases both SCL and SDA.
+            If an active Controller-Transmitter transfer receives a NACK from the Target, the !!CONTROLLER_EVENTS.NACK bit is set.
+            In turn, this causes the Controller FSM to halt awaiting software intervention, and the 'controller_halt' interrupt may assert.
+            Software must clear the !!CONTROLLER_EVENTS.NACK bit to allow the state machine to continue, typically after clearing out the FMTFIFO to start a new transfer.
+            While halted, the active transaction is not ended (no STOP (P) condition is created), and the block asserts SCL and leaves SDA released.
 
-            This timeout can be used to automatically disable the block if software does not handle the
-            'nak' interrupt in a timely manner. If the timeout expires, (!!CTRL.HOSTMODE) will be disabled
-            which creates a STOP (P) condition on the bus ending the active transaction. Additionally, the
-            !!STATUS.HOST_DISABLED_NACK_TIMEOUT bit is set to alert software.
+            This timeout can be used to automatically produce a STOP condition, whether as a backstop for slow software responses (longer timeout) or as a convenience (short timeout).
+            If the timeout expires, the Controller FSM will issue a STOP (P) condition on the bus to end the active transaction.
+            Additionally, the !!CONTROLLER_EVENTS.UNHANDLED_NACK_TIMEOUT bit is set to alert software, and the FSM will return to the idle state and halt until the bit is cleared.
 
             The enable bit must be set for this feature to operate.
             '''
@@ -765,6 +759,25 @@
         { bits: "31"
           name: "EN"
           desc: "Timeout enable"
+        }
+      ]
+    }
+    { name: "CONTROLLER_EVENTS"
+      desc: '''
+            Latched events that explain why the controller halted.
+
+            Any bits that are set must be written (with a 1) to clear the CONTROLLER_HALT interrupt.
+            '''
+      swaccess: "rw1c"
+      hwaccess: "hrw"
+      fields: [
+        { bits: "0"
+          name: "NACK"
+          desc: "Received an unexpected NACK"
+        }
+        { bits: "1"
+          name: "UNHANDLED_NACK_TIMEOUT"
+          desc: "A Host-Mode active transaction has been ended by the !!HOST_NACK_HANDLER_TIMEOUT mechanism."
         }
       ]
     }

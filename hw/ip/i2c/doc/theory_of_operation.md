@@ -87,23 +87,29 @@ Typically every byte transmitted must also receive an ACK signal, and the IP wil
 However, there are some I2C commands which do not require an ACK.
 In those cases this flag should be asserted with FBYTE indicating no ACK is expected and no interrupt should be raised if the ACK is not received.
 
-#### Halt-on-NAK
+#### Halt-on-NACK
 
-If the Host-Mode Controller-Transmitter transmits a byte and the 9th bit is a NACK from the Target/Bus, the `nak` interrupt is usually asserted (modulo the effect of [`FDATA.NAKOK`](registers.md#fdata)).
-If the 'nak' interrupt is asserted, the Byte-Formatted Programming Mode FSM will halt until the interrupt has been acknowledged using the standard 'Event-Type' interrupt acknowledgement (W1C to INTR_STATE).
+If the Host-Mode Controller-Transmitter transmits a byte and the 9th bit is a NACK from the Target/Bus, the `controller_halt` interrupt is usually asserted (modulo the effect of [`FDATA.NAKOK`](registers.md#fdata)).
+If the `controller_halt` interrupt is asserted, the Byte-Formatted Programming Mode FSM will halt until the interrupt condition has been cleared in the [`CONTROLLER_EVENTS.NACK`](registers.md#controller_events) register.
 Software will likely want to do one of two things in handling this irq:
-1. End the current transaction by setting [`CTRL.ENABLEHOST`](registers.md#ctrl) to `1'b0`, and clear the FIFOs ready to begin a new transaction.
-2. Clear the FIFOs, then begin a new transfer without ending the transaction by add new FDATA indicators to the FMTFIFO.
+1. End the current transaction by setting [`CTRL.ENABLEHOST`](registers.md#ctrl) to `1'b0`, and clear the FIFOs to be ready to begin a new transaction.
+2. Clear the FIFOs, then begin a new transfer without ending the transaction by adding new FDATA indicators to the FMTFIFO.
    In this case, the first entry written to the FMTFIFO should have [`FDATA.START`](registers.md#fdata) set to `1'b1` to create a repeated start condition.
 
-While the FSM is halted, SCL/SDA are released and the bus is observed as having an elongated 9th clock period.
+Software should then clear the [`CONTROLLER_EVENTS.NACK`](registers.md#controller_events) to proceed with the next operation.
+The `controller_halt` interrupt is a CIP status type, so it doesn't clear by writing to the [`INTR_STATE.CONTROLLER_HALT`](registers.md#intr_state) bit.
+Instead, the `CONTROLLER_EVENTS` CSR tracks the contributing events, and all must be cleared for the interrupt to de-assert.
 
-The Halt-on-'NAK' behaviour may be problematic if SW is not responsive, so there is a timeout mechanism that can automatically end the transaction by creating a STOP condition and disabling Host-Mode.
+The Halt-on-'NAK' behaviour may be problematic if SW is not responsive, so there is a timeout mechanism that can automatically end the transaction by creating a STOP condition and returning to halt in an idle state.
 This is configured using the [`HOST_NACK_HANDLER_TIMEOUT`](registers.md#host_nack_handler_timeout) CSR, which allows software to configure the delay before hardware will terminate the transaction.
-Hardware will also automatically clear [`CTRL.ENABLEHOST`](registers.md#ctrl) when this occurs.
-If this mechanism activates, software can be informed by reading the [`STATUS.HOST_DISABLED_NACK_TIMEOUT`](registers.md#status) bit.
-This field is cleared when software next activates Host-Mode by setting [`CTRL.ENABLEHOST`](registers.md#ctrl) to `1'b1`.
-Before re-activating Host-Mode, software should ensure that the 'nak' interrupt has been handled and acknowledged.
+When the timeout occurs, the [`CONTROLLER_EVENTS.UNHANDLED_NACK_TIMEOUT`] bit will set, and this condition will also cause the `controller_halt` interrupt to assert (or remain asserted).
+Like the original NACK event, the timeout bit will cause the controller to remain halted until it is cleared.
+To continue with a new transaction, software should ensure that the `controller_halt` interrupt has been handled, with all contributing event bits cleared.
+
+When the FSM first halts due to an unexpected NACK, there is still an ongoing transaction.
+The controller stops immediately following the (N)ACK bit's hold time after the SCL falling edge, and SCL remains asserted low.
+If a NACK handling timeout occurs or [`CTRL.ENABLEHOST`] is cleared, then the FSM will halt again after the STOP condition is sent.
+The STOP condition terminates the transaction, leaving the FSM halted in the "bus idle" state, with SDA and SCL released.
 
 ### Target Address Registers
 

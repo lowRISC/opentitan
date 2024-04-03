@@ -491,10 +491,11 @@ class i2c_base_vseq extends cip_base_vseq #(
     if (bit'(get_field_val(ral.intr_state.tx_stretch, intr_clear))) begin
       `uvm_info(`gfn, "\n  clearing tx_stretch", UVM_DEBUG)
     end
-    if (bit'(get_field_val(ral.intr_state.nak, intr_clear))) begin
+    if (bit'(get_field_val(ral.intr_state.controller_halt, intr_clear))) begin
       // Add a longer delay to mimic a software handler clearing the NAK condition
       cfg.clk_rst_vif.wait_clks(1_000);
       `uvm_info(`gfn, "Clearing 'NAK' interrupt, allowing FSM to continue...", UVM_DEBUG)
+      csr_wr(.ptr(ral.controller_events.nack), .value(1));
     end
 
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(clear_intr_dly)

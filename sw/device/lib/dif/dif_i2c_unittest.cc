@@ -504,6 +504,48 @@ TEST_F(ControlTest, HostEnable) {
 
 TEST_F(ControlTest, HostEnableNullArgs) {
   EXPECT_DIF_BADARG(dif_i2c_host_set_enabled(nullptr, kDifToggleEnabled));
+
+  dif_i2c_controller_halt_events_t events_arg = {0};
+  EXPECT_DIF_BADARG(dif_i2c_get_controller_halt_events(nullptr, &events_arg));
+  EXPECT_DIF_BADARG(dif_i2c_get_controller_halt_events(&i2c_, nullptr));
+  EXPECT_DIF_BADARG(dif_i2c_clear_controller_halt_events(nullptr, events_arg));
+}
+
+TEST_F(ControlTest, HaltEvents) {
+  dif_i2c_controller_halt_events_t events_arg = {0};
+  EXPECT_READ32(I2C_CONTROLLER_EVENTS_REG_OFFSET,
+                {
+                    {I2C_CONTROLLER_EVENTS_NACK_BIT, 1},
+                });
+  EXPECT_DIF_OK(dif_i2c_get_controller_halt_events(&i2c_, &events_arg));
+  EXPECT_TRUE(events_arg.nack_received);
+  EXPECT_FALSE(events_arg.unhandled_nack_timeout);
+
+  EXPECT_READ32(I2C_CONTROLLER_EVENTS_REG_OFFSET,
+                {
+                    {I2C_CONTROLLER_EVENTS_UNHANDLED_NACK_TIMEOUT_BIT, 1},
+                });
+  EXPECT_DIF_OK(dif_i2c_get_controller_halt_events(&i2c_, &events_arg));
+  EXPECT_FALSE(events_arg.nack_received);
+  EXPECT_TRUE(events_arg.unhandled_nack_timeout);
+
+  events_arg.nack_received = false;
+  events_arg.unhandled_nack_timeout = true;
+  EXPECT_WRITE32(I2C_CONTROLLER_EVENTS_REG_OFFSET,
+                 {
+                     {I2C_CONTROLLER_EVENTS_NACK_BIT, 0},
+                     {I2C_CONTROLLER_EVENTS_UNHANDLED_NACK_TIMEOUT_BIT, 1},
+                 });
+  EXPECT_DIF_OK(dif_i2c_clear_controller_halt_events(&i2c_, events_arg));
+
+  events_arg.nack_received = true;
+  events_arg.unhandled_nack_timeout = false;
+  EXPECT_WRITE32(I2C_CONTROLLER_EVENTS_REG_OFFSET,
+                 {
+                     {I2C_CONTROLLER_EVENTS_NACK_BIT, 1},
+                     {I2C_CONTROLLER_EVENTS_UNHANDLED_NACK_TIMEOUT_BIT, 0},
+                 });
+  EXPECT_DIF_OK(dif_i2c_clear_controller_halt_events(&i2c_, events_arg));
 }
 
 TEST_F(ControlTest, DeviceEnable) {

@@ -94,10 +94,11 @@ typedef enum dif_i2c_irq {
    */
   kDifI2cIrqRxOverflow = 3,
   /**
-   * Host mode interrupt: raised if there is no ACK in response to an address or
-   * data write
+   * Host mode interrupt: raised if the controller FSM is halted, such as on an
+   * unexpected NACK. Check !!CONTROLLER_EVENTS for the reason. The interrupt
+   * will be released when the bits in !!CONTROLLER_EVENTS are cleared.
    */
-  kDifI2cIrqNak = 4,
+  kDifI2cIrqControllerHalt = 4,
   /**
    * Host mode interrupt: raised if the SCL line drops early (not supported
    * without clock synchronization).

@@ -13826,11 +13826,11 @@
       default_val: false
     }
     {
-      name: i2c0_nak
+      name: i2c0_controller_halt
       width: 1
       type: interrupt
       module_name: i2c0
-      intr_type: IntrType.Event
+      intr_type: IntrType.Status
       default_val: false
     }
     {
@@ -13946,11 +13946,11 @@
       default_val: false
     }
     {
-      name: i2c1_nak
+      name: i2c1_controller_halt
       width: 1
       type: interrupt
       module_name: i2c1
-      intr_type: IntrType.Event
+      intr_type: IntrType.Status
       default_val: false
     }
     {
@@ -14066,11 +14066,11 @@
       default_val: false
     }
     {
-      name: i2c2_nak
+      name: i2c2_controller_halt
       width: 1
       type: interrupt
       module_name: i2c2
-      intr_type: IntrType.Event
+      intr_type: IntrType.Status
       default_val: false
     }
     {

@@ -1017,8 +1017,8 @@ pub enum PlicIrqId {
     I2c0AcqThreshold = 75,
     /// i2c0_rx_overflow
     I2c0RxOverflow = 76,
-    /// i2c0_nak
-    I2c0Nak = 77,
+    /// i2c0_controller_halt
+    I2c0ControllerHalt = 77,
     /// i2c0_scl_interference
     I2c0SclInterference = 78,
     /// i2c0_sda_interference
@@ -1047,8 +1047,8 @@ pub enum PlicIrqId {
     I2c1AcqThreshold = 90,
     /// i2c1_rx_overflow
     I2c1RxOverflow = 91,
-    /// i2c1_nak
-    I2c1Nak = 92,
+    /// i2c1_controller_halt
+    I2c1ControllerHalt = 92,
     /// i2c1_scl_interference
     I2c1SclInterference = 93,
     /// i2c1_sda_interference
@@ -1077,8 +1077,8 @@ pub enum PlicIrqId {
     I2c2AcqThreshold = 105,
     /// i2c2_rx_overflow
     I2c2RxOverflow = 106,
-    /// i2c2_nak
-    I2c2Nak = 107,
+    /// i2c2_controller_halt
+    I2c2ControllerHalt = 107,
     /// i2c2_scl_interference
     I2c2SclInterference = 108,
     /// i2c2_sda_interference
@@ -1310,7 +1310,7 @@ impl TryFrom<u32> for PlicIrqId {
             74 => Ok(Self::I2c0RxThreshold),
             75 => Ok(Self::I2c0AcqThreshold),
             76 => Ok(Self::I2c0RxOverflow),
-            77 => Ok(Self::I2c0Nak),
+            77 => Ok(Self::I2c0ControllerHalt),
             78 => Ok(Self::I2c0SclInterference),
             79 => Ok(Self::I2c0SdaInterference),
             80 => Ok(Self::I2c0StretchTimeout),
@@ -1325,7 +1325,7 @@ impl TryFrom<u32> for PlicIrqId {
             89 => Ok(Self::I2c1RxThreshold),
             90 => Ok(Self::I2c1AcqThreshold),
             91 => Ok(Self::I2c1RxOverflow),
-            92 => Ok(Self::I2c1Nak),
+            92 => Ok(Self::I2c1ControllerHalt),
             93 => Ok(Self::I2c1SclInterference),
             94 => Ok(Self::I2c1SdaInterference),
             95 => Ok(Self::I2c1StretchTimeout),
@@ -1340,7 +1340,7 @@ impl TryFrom<u32> for PlicIrqId {
             104 => Ok(Self::I2c2RxThreshold),
             105 => Ok(Self::I2c2AcqThreshold),
             106 => Ok(Self::I2c2RxOverflow),
-            107 => Ok(Self::I2c2Nak),
+            107 => Ok(Self::I2c2ControllerHalt),
             108 => Ok(Self::I2c2SclInterference),
             109 => Ok(Self::I2c2SdaInterference),
             110 => Ok(Self::I2c2StretchTimeout),
@@ -1894,7 +1894,7 @@ pub const PLIC_INTERRUPT_FOR_PERIPHERAL: [PlicPeripheral; 182] = [
     PlicPeripheral::I2c0,
     // I2c0RxOverflow -> PlicPeripheral::I2c0
     PlicPeripheral::I2c0,
-    // I2c0Nak -> PlicPeripheral::I2c0
+    // I2c0ControllerHalt -> PlicPeripheral::I2c0
     PlicPeripheral::I2c0,
     // I2c0SclInterference -> PlicPeripheral::I2c0
     PlicPeripheral::I2c0,
@@ -1924,7 +1924,7 @@ pub const PLIC_INTERRUPT_FOR_PERIPHERAL: [PlicPeripheral; 182] = [
     PlicPeripheral::I2c1,
     // I2c1RxOverflow -> PlicPeripheral::I2c1
     PlicPeripheral::I2c1,
-    // I2c1Nak -> PlicPeripheral::I2c1
+    // I2c1ControllerHalt -> PlicPeripheral::I2c1
     PlicPeripheral::I2c1,
     // I2c1SclInterference -> PlicPeripheral::I2c1
     PlicPeripheral::I2c1,
@@ -1954,7 +1954,7 @@ pub const PLIC_INTERRUPT_FOR_PERIPHERAL: [PlicPeripheral; 182] = [
     PlicPeripheral::I2c2,
     // I2c2RxOverflow -> PlicPeripheral::I2c2
     PlicPeripheral::I2c2,
-    // I2c2Nak -> PlicPeripheral::I2c2
+    // I2c2ControllerHalt -> PlicPeripheral::I2c2
     PlicPeripheral::I2c2,
     // I2c2SclInterference -> PlicPeripheral::I2c2
     PlicPeripheral::I2c2,

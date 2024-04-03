@@ -18,7 +18,6 @@ module i2c_controller_fsm import i2c_pkg::*;
   output logic sda_o,  // serial data output to i2c bus
 
   input        host_enable_i, // enable host functionality
-  output logic host_disable_o, // disable host mode
 
   input                      fmt_fifo_rvalid_i, // indicates there is valid data in fmt_fifo
   input [FifoDepthWidth-1:0] fmt_fifo_depth_i,  // fmt_fifo_depth
@@ -30,6 +29,7 @@ module i2c_controller_fsm import i2c_pkg::*;
   input                      fmt_flag_read_continue_i,// host to send Ack to final byte read
   input                      fmt_flag_nak_ok_i,       // no Ack is expected
   input                      unhandled_unexp_nak_i,
+  input                      unhandled_nak_timeout_i, // NACK handler timeout event not cleared
 
   output logic                     rx_fifo_wvalid_o, // high if there is valid data in rx_fifo
   output logic [RX_FIFO_WIDTH-1:0] rx_fifo_wdata_o,  // byte in rx_fifo read from target
@@ -52,6 +52,7 @@ module i2c_controller_fsm import i2c_pkg::*;
   input        host_nack_handler_timeout_en_i,
 
   output logic event_nak_o,              // target didn't Ack when expected
+  output logic event_unhandled_nak_timeout_o, // SW didn't handle the NACK in time
   output logic event_scl_interference_o, // other device forcing SCL low
   output logic event_sda_interference_o, // other device forcing SDA low
   output logic event_stretch_timeout_o,  // target stretches clock past max time
@@ -67,6 +68,7 @@ module i2c_controller_fsm import i2c_pkg::*;
                                  // or clock idle by host.
   logic [30:0] unhandled_nak_cnt; // In Host-mode, count cycles where the FSM is halted awaiting
                                   // the nak irq to be handled by SW.
+  logic        incr_nak_cnt;
 
   // (IP in HOST-Mode) This bit is active when the FSM is in a state where a TARGET might
   // be trying to stretch the clock, preventing the controller FSM from continuing.
@@ -94,6 +96,7 @@ module i2c_controller_fsm import i2c_pkg::*;
   logic        req_restart;   // request restart
   logic        log_start;     // indicates start is been issued
   logic        log_stop;      // indicates stop is been issued
+  logic        auto_stop_d, auto_stop_q; // Tracks whether a Stop symbol was autonomously generated.
 
   // Clock counter implementation
   typedef enum logic [3:0] {
@@ -200,8 +203,8 @@ module i2c_controller_fsm import i2c_pkg::*;
     if (!rst_ni) begin
       unhandled_nak_cnt <= '0;
       unhandled_nak_cnt_expired <= 1'b0;
-    end else if (unhandled_unexp_nak_i && host_enable_i && host_nack_handler_timeout_en_i) begin
-      // Increment the counter while the FSM is halted.
+    end else if (incr_nak_cnt) begin
+      // Increment the counter while the FSM is halted in Idle.
       unhandled_nak_cnt <= unhandled_nak_cnt + 1'b1;
       if (unhandled_nak_cnt > host_nack_handler_timeout_i) begin
         unhandled_nak_cnt_expired <= 1'b1;
@@ -211,6 +214,8 @@ module i2c_controller_fsm import i2c_pkg::*;
       unhandled_nak_cnt_expired <= 1'b0;
     end
   end
+
+  assign event_unhandled_nak_timeout_o = unhandled_nak_cnt_expired;
 
   // Bit index implementation
   always_ff @ (posedge clk_i or negedge rst_ni) begin : bit_counter
@@ -295,6 +300,14 @@ module i2c_controller_fsm import i2c_pkg::*;
     end
   end
 
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      auto_stop_q <= 1'b0;
+    end else begin
+      auto_stop_q <= auto_stop_d;
+    end
+  end
+
   // State definitions
   typedef enum logic [4:0] {
     Idle,
@@ -356,6 +369,11 @@ module i2c_controller_fsm import i2c_pkg::*;
   assign event_sda_interference_o = (host_idle_o & host_enable_i & !sda_i) |
                                     ((sda_rise_cnt == sda_rise_latency) & (sda_o & !sda_i));
 
+  // Increment the NACK timeout count if the controller is halted in Idle and
+  // the timeout hasn't yet occurred.
+  assign incr_nak_cnt = unhandled_unexp_nak_i && host_enable_i && (state_q == Idle) &&
+                        host_nack_handler_timeout_en_i && !unhandled_nak_timeout_i;
+
   // Outputs for each state
   always_comb begin : state_outputs
     host_idle_o = 1'b1;
@@ -375,7 +393,7 @@ module i2c_controller_fsm import i2c_pkg::*;
       // continue pulling SCL low in host mode.
       Idle : begin
         sda_d = 1'b1;
-        if (host_enable_i && trans_started) begin
+        if (trans_started) begin
           host_idle_o = 1'b0;
           scl_d = 1'b0;
         end else begin
@@ -574,13 +592,39 @@ module i2c_controller_fsm import i2c_pkg::*;
     log_stop = 1'b0;
     req_restart = 1'b0;
     en_sda_interf_det = 1'b0;
-    host_disable_o = 1'b0;
+    auto_stop_d = auto_stop_q;
 
     unique case (state_q)
-      // Idle: initial state, SDA and SCL are released (high)
+      // Idle: initial state, SDA is released (high), and SCL is released if there is no ongoing
+      // transaction.
       Idle : begin
         if (host_enable_i) begin
-          if (fmt_fifo_rvalid_i) state_d = Active;
+          if (unhandled_unexp_nak_i || unhandled_nak_timeout_i) begin
+            // If we are awaiting software to handle an unexpected NACK, halt the FSM here.
+            // The current transaction does not end, and SCL remains in its current state.
+            // Software typically should handle an unexpected NACK by either disabling the
+            // controller (causing host_enable_i to fall) or by the following sequence:
+            //   1. Clear and/or populate the FMT FIFO.
+            //   2. Clear CONTROLLER_EVENTS.NACK
+            // Note that if the timeout feature is enabled, the controller will be forced to
+            // issue a Stop if software takes too long to address the NACK. A short timeout
+            // could also be used to automatically issue a Stop whenever an unexpected NACK
+            // occurs.
+            if (trans_started && unhandled_nak_cnt_expired) begin
+              // If our timeout counter expires, generate a STOP condition automatically.
+              auto_stop_d = 1'b1;
+              state_d = ClockStop;
+              load_tcount = 1'b1;
+              tcount_sel = tClockStop;
+            end
+          end else if (fmt_fifo_rvalid_i) begin
+            state_d = Active;
+          end
+        end else if (trans_started && !host_enable_i) begin
+            auto_stop_d = 1'b1;
+            state_d = ClockStop;
+            load_tcount = 1'b1;
+            tcount_sel = tClockStop;
         end
       end
 
@@ -672,21 +716,7 @@ module i2c_controller_fsm import i2c_pkg::*;
           load_tcount = 1'b1;
           tcount_sel = tClockHigh;
         end else begin
-          if (unhandled_unexp_nak_i) begin
-            // If we are awaiting software to handle an unexpected NACK, halt the FSM here.
-            // The current transaction does not end, and SCL remains released so the observed
-            // bus behaviour is a very long 9th clock pulse. The next entry from the FMTFIFO
-            // is not popped until the NACK is acknowledged by software.
-            load_tcount = 1'b1;
-            tcount_sel = tClockHigh;
-            if (unhandled_nak_cnt_expired) begin
-              // If our timeout counter expires, generate a STOP condition and disable Host-Mode.
-              state_d = ClockStop;
-              load_tcount = 1'b1;
-              tcount_sel = tClockStop;
-              host_disable_o = 1'b1;
-            end
-          end else if (tcount_q == 20'd1) begin
+          if (tcount_q == 20'd1) begin
             state_d = HoldDevAck;
             load_tcount = 1'b1;
             tcount_sel = tHoldBit;
@@ -811,7 +841,9 @@ module i2c_controller_fsm import i2c_pkg::*;
         en_sda_interf_det = 1'b1;
         if (tcount_q == 20'd1) begin
           en_sda_interf_det = 1'b0;
-          if (!host_enable_i) begin
+          auto_stop_d = 1'b0;
+          if (auto_stop_q) begin
+            // If this Stop symbol was generated automatically, go back to Idle.
             state_d = Idle;
             load_tcount = 1'b1;
             tcount_sel = tNoDelay;
@@ -840,13 +872,14 @@ module i2c_controller_fsm import i2c_pkg::*;
           tcount_sel = tClockLow;
         end
       end
-      // PopFmtFifo: populate fmt_fifo
+      // PopFmtFifo: pop fmt_fifo item
       PopFmtFifo : begin
-        if (!host_enable_i) begin
+        if (!host_enable_i && trans_started) begin
+          auto_stop_d = 1'b1;
           state_d = ClockStop;
           load_tcount = 1'b1;
           tcount_sel = tClockStop;
-        end else if (fmt_fifo_depth_i == 7'h1) begin
+        end else if (!host_enable_i || (fmt_fifo_depth_i == 7'h1) || unhandled_unexp_nak_i) begin
           state_d = Idle;
           load_tcount = 1'b1;
           tcount_sel = tNoDelay;
@@ -870,7 +903,7 @@ module i2c_controller_fsm import i2c_pkg::*;
         shift_data_en = 1'b0;
         log_start = 1'b0;
         log_stop = 1'b0;
-        host_disable_o = 1'b0;
+        auto_stop_d = 1'b0;
       end
     endcase // unique case (state_q)
   end
