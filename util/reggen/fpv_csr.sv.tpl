@@ -204,8 +204,11 @@ module ${mod_base}_csr_assert_fpv import tlul_pkg::*;
 
   `ASSERT(TlulOOBAddrErr_A, oob_addr_err |-> s_eventually(d2h.d_valid && d2h.d_error))
 
-  // This FPV only assumption is to reduce the FPV runtime.
-  `ASSUME_FPV(TlulSource_M, h2d.a_source >=  0 && h2d.a_source <= MAX_A_SOURCE, clk_i, !rst_ni)
+  // These two assumptions are only for FPV and allow us to shorten the pend_trans array, reducing
+  // FPV runtime. We have to bound h2d.a_source and d2h.d_source because they are used as indices
+  // for the array.
+  `ASSUME_FPV(TlulSourceA_M, h2d.a_source >=  0 && h2d.a_source <= MAX_A_SOURCE, clk_i, !rst_ni)
+  `ASSUME_FPV(TlulSourceD_M, d2h.d_source >=  0 && d2h.d_source <= MAX_A_SOURCE, clk_i, !rst_ni)
 
   `ifdef UVM
     initial forever begin
