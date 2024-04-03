@@ -86,7 +86,7 @@ Interrupt State Register
 |   0    |  rw1c  |   0x0   | [hmac_done](#intr_state--hmac_done)   |
 
 ### INTR_STATE . hmac_err
-HMAC error occurred. ERR_CODE register shows which error occurred
+HMAC error has occurred. ERR_CODE register shows which error occurred.
 
 ### INTR_STATE . fifo_empty
 The message FIFO is empty.
@@ -97,7 +97,7 @@ For the interrupt to be raised, the message FIFO must also have been full previo
 Otherwise, the hardware empties the FIFO faster than software can fill it and there is no point in interrupting the software to inform it about the message FIFO being empty.
 
 ### INTR_STATE . hmac_done
-HMAC-256 completes a message with key
+HMAC/SHA-2 has completed.
 
 ## INTR_ENABLE
 Interrupt Enable Register
@@ -160,20 +160,20 @@ HMAC Configuration register.
 The register is updated when the engine is in Idle.
 If the software updates the register while the engine computes the hash, the updated value is discarded.
 - Offset: `0x10`
-- Reset default: `0x210`
-- Reset mask: `0x1fff`
+- Reset default: `0x2080`
+- Reset mask: `0x3fff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "hmac_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "sha_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "endian_swap", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "digest_swap", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "digest_size", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "key_length", "bits": 5, "attr": ["rw"], "rotate": -90}, {"bits": 19}], "config": {"lanes": 1, "fontsize": 10, "vspace": 130}}
+{"reg": [{"name": "hmac_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "sha_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "endian_swap", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "digest_swap", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "digest_size", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "key_length", "bits": 6, "attr": ["rw"], "rotate": 0}, {"bits": 18}], "config": {"lanes": 1, "fontsize": 10, "vspace": 130}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                             |
 |:------:|:------:|:-------:|:---------------------------------|
-| 31:13  |        |         | Reserved                         |
-|  12:8  |   rw   |   0x2   | [key_length](#cfg--key_length)   |
-|  7:4   |   rw   |   0x1   | [digest_size](#cfg--digest_size) |
+| 31:14  |        |         | Reserved                         |
+|  13:8  |   rw   |  0x20   | [key_length](#cfg--key_length)   |
+|  7:4   |   rw   |   0x8   | [digest_size](#cfg--digest_size) |
 |   3    |   rw   |   0x0   | [digest_swap](#cfg--digest_swap) |
 |   2    |   rw   |   0x0   | [endian_swap](#cfg--endian_swap) |
 |   1    |   rw   |    x    | [sha_en](#cfg--sha_en)           |
@@ -182,17 +182,19 @@ If the software updates the register while the engine computes the hash, the upd
 ### CFG . key_length
 Key length configuration.
 
-This is a 5-bit one-hot encoded field to configure the key length for HMAC.
-The HMAC supports key lengths of 128-bit, 256-bit, 384-bit, 512-bit and 1024-bit, but will to block size if key length is greater than block size, i.e. max of 1024 bits for digest size SHA-2 384/512 and respectively 512 bits for SHA-2 256.
+This is a 6-bit one-hot encoded field to configure the key length for HMAC.
+The HMAC supports key lengths of 128-bit, 256-bit, 384-bit, 512-bit and 1024-bit, as long as the key length is not greater than the block size: up to 1024-bit for SHA-2 384/512 and up to 512-bit for SHA-2 256.
 The value of this register is irrelevant when only SHA-2 (not keyed HMAC) is configured.
+However, for HMAC mode (`hmac_en == 1`), when HMAC is triggered to start while [`KEY_LENGTH`](#key_length) holds `Key_None` or [`KEY_LENGTH`](#key_length) holds `Key_1024` for [`DIGEST_SIZE`](#digest_size) = `SHA2_256`, starting is blocked and an error is signalled to SW.
 
-| Value   | Name     | Description                                                                                          |
-|:--------|:---------|:-----------------------------------------------------------------------------------------------------|
-| 0x01    | Key_128  | 5'b0_0001: 128-bit secret key.                                                                       |
-| 0x02    | Key_256  | 5'b0_0010: 256-bit secret key. Unsupported/invalid values and all-zero values are mapped to Key_256. |
-| 0x04    | Key_384  | 5'b0_0100: 384-bit secret key.                                                                       |
-| 0x08    | Key_512  | 5'b0_1000: 512-bit secret key.                                                                       |
-| 0x10    | Key_1024 | 5'b1_0000: 1024-bit secret key.                                                                      |
+| Value   | Name     | Description                                                                                                                                                                                                                                                                                                                                                                  |
+|:--------|:---------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0x01    | Key_128  | 6'b00_0001: 128-bit secret key.                                                                                                                                                                                                                                                                                                                                              |
+| 0x02    | Key_256  | 6'b00_0010: 256-bit secret key.                                                                                                                                                                                                                                                                                                                                              |
+| 0x04    | Key_384  | 6'b00_0100: 384-bit secret key.                                                                                                                                                                                                                                                                                                                                              |
+| 0x08    | Key_512  | 6'b00_1000: 512-bit secret key.                                                                                                                                                                                                                                                                                                                                              |
+| 0x10    | Key_1024 | 6'b01_0000: 1024-bit secret key.                                                                                                                                                                                                                                                                                                                                             |
+| 0x20    | Key_None | 6'b10_0000: Unsupported/invalid values and all-zero values are mapped to Key_None. With this value, when HMAC is triggered to start operation (via `hash_start` or `hash_continue`), it will be blocked from starting and an error is signalled to the SW. If only unkeyed SHA-2 is configured (`hmac_en == 0`), starting is not blocked, since this does not require a key. |
 
 Other values are reserved.
 
@@ -200,21 +202,21 @@ Other values are reserved.
 Digest size configuration.
 
 This is a 4-bit one-hot encoded field to select digest size for either HMAC or SHA-2.
-Invalid values, i.e., values with multiple bits set and value 4'b0000 are mapped in HMAC to SHA2_NONE (4'b0001).
+Invalid/unsupported values, i.e., values that don't correspond to SHA2_256, SHA2_384, or SHA2_512, are mapped to SHA2_None.
 
-| Value   | Name      | Description                                                                      |
-|:--------|:----------|:---------------------------------------------------------------------------------|
-| 0x1     | SHA2_None | 4'b0001: Unsupported/invalid values and all-zero values are mapped to SHA2_None. |
-| 0x2     | SHA2_256  | 4'b0010: SHA-2 256 digest.                                                       |
-| 0x4     | SHA2_384  | 4'b0100: SHA-2 384 digest.                                                       |
-| 0x8     | SHA2_512  | 4'b1000: SHA-2 512 digest.                                                       |
+| Value   | Name      | Description                                                                                                                                                                                                                                                    |
+|:--------|:----------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0x1     | SHA2_256  | 4'b0001: SHA-2 256 digest.                                                                                                                                                                                                                                     |
+| 0x2     | SHA2_384  | 4'b0010: SHA-2 384 digest.                                                                                                                                                                                                                                     |
+| 0x4     | SHA2_512  | 4'b0100: SHA-2 512 digest.                                                                                                                                                                                                                                     |
+| 0x8     | SHA2_None | 4'b1000: Unsupported/invalid values and all-zero values are mapped to SHA2_None. With this value, when HMAC/SHA-2 is triggered to start operation (via `hash_start` or `hash_continue`), it will be blocked from starting and an error is signalled to the SW. |
 
 Other values are reserved.
 
 ### CFG . digest_swap
 Digest register byte swap.
 
-If 1 the value contained in each digest output register is converted to big-endian byte order.
+If 1 the value in each digest output register is converted to big-endian byte order.
 This setting does not affect the order of the digest output registers, [`DIGEST_0`](#digest_0) still contains the first 4 bytes of the digest.
 
 ### CFG . endian_swap
@@ -258,11 +260,11 @@ HMAC command register
 |   0    | r0w1c  |    x    | [hash_start](#cmd--hash_start)       |
 
 ### CMD . hash_continue
-When 1 is written to this field, SHA or HMAC will continue hashing based on the current hash in the digest registers and the message length, which both have to be restored to switch context.
+When 1 is written to this field, SHA-2 or HMAC will continue hashing based on the current hash in the digest registers and the message length, which both have to be restored to switch context.
 
 ### CMD . hash_stop
-When 1 is written to this field, SHA or HMAC will afterwards set the `hmac_done` interrupt as soon as the current block has been hashed.
-The hash can then be read from the registers [`DIGEST_0`](#digest_0) to [`DIGEST_7.`](#digest_7)
+When 1 is written to this field, SHA-2 or HMAC will afterwards set the `hmac_done` interrupt as soon as the current block has been hashed.
+The hash can then be read from the registers [`DIGEST_0`](#digest_0) to [`DIGEST_15.`](#digest_15)
 Together with the message length in [`MSG_LENGTH_LOWER`](#msg_length_lower) and [`MSG_LENGTH_UPPER`](#msg_length_upper), this forms the information that has to be saved before switching context.
 
 ### CMD . hash_process

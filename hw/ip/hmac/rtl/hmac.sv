@@ -92,8 +92,9 @@ module hmac
   logic        reg_hash_stop;
   logic        reg_hash_continue;
   logic        sha_hash_continue;
-  logic        hash_start;     // hash_start is reg_hash_start gated with an extra check
-  logic        hash_continue;  // hash_continue is reg_hash_continue gated with an extra check
+  logic        hash_start;     // hash_start is reg_hash_start gated with extra checks
+  logic        hash_continue;  // hash_continue is reg_hash_continue gated with extra checks
+  logic        hash_process;   // hash_process is reg_hash_process gated with extra checks
   logic        hash_start_or_continue;
   logic        hash_done_event;
   logic        reg_hash_process;
@@ -105,14 +106,18 @@ module hmac
   logic [63:0] message_length, message_length_d;
   logic [63:0] sha_message_length;
 
-  err_code_e   err_code;
-  logic        err_valid;
+  err_code_e  err_code;
+  logic       err_valid;
+  logic       invalid_config; // HMAC/SHA-2 is configured with invalid digest size/key length
+  logic       invalid_config_atstart;
 
   sha_word64_t [7:0] digest, digest_sw;
   logic [7:0]        digest_sw_we;
   sha_word64_t       inter_digest;
 
-  digest_mode_e      digest_size, digest_size_supplied;
+  digest_mode_e digest_size, digest_size_supplied;
+  // this is the digest size captured into HMAC when it gets started
+  digest_mode_e digest_size_started_d, digest_size_started_q;
 
   hmac_reg2hw_cfg_reg_t cfg_reg;
   logic                 cfg_block;   // Prevents changing config
@@ -215,8 +220,7 @@ module hmac
     assign hw2reg.key[31-i].d      = '0;
   end
 
-  // TODO (issue #22312): decide how to deal with changing HMAC cfg (digest sizes)
-  // retain previous digest or clear?
+  // Retain the previous digest in CSRs until HMAC is actually started with a valid configuration
   always_comb begin : assign_digest_reg
     for (int i = 0; i < 16; i++) begin
       // default
@@ -228,7 +232,7 @@ module hmac
       // digest HW -> SW
       hw2reg.digest[i].d = '0;
 
-      if (digest_size == SHA2_256) begin
+      if (digest_size_started_q == SHA2_256) begin
         if (i < 8) begin
           // digest HW -> SW
           hw2reg.digest[i].d = conv_endian32(digest[i][31:0], digest_swap);
@@ -238,7 +242,7 @@ module hmac
         end else begin
           hw2reg.digest[i].d = '0;
         end
-      end else if ((digest_size == SHA2_384) || (digest_size == SHA2_512)) begin
+      end else if ((digest_size_started_q == SHA2_384) || (digest_size_started_q == SHA2_512)) begin
         if (i % 2 == 0 && i < 15) begin // even index
           // digest HW -> SW
           inter_digest       = conv_endian64(digest[i/2], digest_swap);
@@ -271,10 +275,19 @@ module hmac
       SHA2_256:  digest_size = SHA2_256;
       SHA2_384:  digest_size = SHA2_384;
       SHA2_512:  digest_size = SHA2_512;
-      SHA2_None: digest_size = SHA2_None;
-      default:   digest_size = SHA2_None; // unsupported values are mapped to SHA2_NONE
-      // TODO (issue #22312)
+      // unsupported digest size values are mapped to SHA2_None
+      // if HMAC/SHA-2 is triggered to start with this digest size, it is blocked
+      // and an error is signalled to SW
+      default:   digest_size = SHA2_None;
     endcase
+  end
+
+  // Hold the previous digest size till HMAC is started with the new digest size configured
+  assign digest_size_started_d = (hash_start_or_continue) ? digest_size : digest_size_started_q;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) digest_size_started_q <= SHA2_None;
+    else         digest_size_started_q <= digest_size_started_d;
   end
 
   assign key_length_supplied  = key_length_e'(cfg_reg.key_length.q);
@@ -285,8 +298,10 @@ module hmac
       Key_384:  key_length = Key_384;
       Key_512:  key_length = Key_512;
       Key_1024: key_length = Key_1024;
-      default:  key_length = Key_256; // unsupported values are mapped to Key_256
-      // TODO (issue #22312)
+      // unsupported key length values are mapped to Key_None
+      // if HMAC (not SHA-2) is triggered to start with this key length, it is blocked
+      // and an error is signalled to SW
+      default:  key_length = Key_None;
     endcase
   end
 
@@ -312,8 +327,9 @@ module hmac
   /////////////////////
   // Control signals //
   /////////////////////
-  assign hash_start = reg_hash_start & sha_en & ~cfg_block;
-  assign hash_continue = reg_hash_continue & sha_en & ~cfg_block;
+  assign hash_start             = reg_hash_start    & sha_en & ~cfg_block & ~invalid_config;
+  assign hash_continue          = reg_hash_continue & sha_en & ~cfg_block & ~invalid_config;
+  assign hash_process           = reg_hash_process  & sha_en & cfg_block &  ~invalid_config;
   assign hash_start_or_continue = hash_start | hash_continue;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -628,7 +644,7 @@ module hmac
     .mask_o       (reg_fifo_wmask),
     .ready_i      (fifo_wready & ~hmac_fifo_wsel),
 
-    .flush_i      (reg_hash_process),
+    .flush_i      (hash_process),
     .flush_done_o (packer_flush_done), // ignore at this moment
 
     .err_o  () // Not used
@@ -744,9 +760,20 @@ module hmac
   logic hash_start_sha_disabled, update_seckey_inprocess;
   logic hash_start_active;  // `reg_hash_start` or `reg_hash_continue` set when hash already active
   logic msg_push_not_allowed; // Message is received when `hash_start_or_continue` isn't set
+
   assign hash_start_sha_disabled = (reg_hash_start | reg_hash_continue) & ~sha_en;
   assign hash_start_active = (reg_hash_start | reg_hash_continue) & cfg_block;
   assign msg_push_not_allowed = msg_fifo_req & ~msg_allowed;
+
+  // Invalid/unconfigured HMAC/SHA-2: not configured/invalid digest size or
+  // not configured/invalid key length for HMAC mode or
+  // key_length = 1024-bit for digest_size = SHA2_256 (max 512-bit is supported for SHA-2 256)
+  assign invalid_config = ((digest_size == SHA2_None)            |
+                           ((key_length == Key_None) && hmac_en) |
+                           ((key_length == Key_1024) && (digest_size == SHA2_256) && hmac_en));
+
+  // invalid_config at reg_hash_start will signal an error to the SW
+  assign invalid_config_atstart = reg_hash_start & invalid_config;
 
   always_comb begin
     update_seckey_inprocess = 1'b0;
@@ -767,7 +794,7 @@ module hmac
   // is pending to avoid any race conditions.
   assign err_valid = ~reg2hw.intr_state.hmac_err.q &
                    ( hash_start_sha_disabled | update_seckey_inprocess
-                   | hash_start_active | msg_push_not_allowed );
+                   | hash_start_active | msg_push_not_allowed | invalid_config_atstart);
 
   always_comb begin
     err_code = NoError;
@@ -786,6 +813,10 @@ module hmac
 
       msg_push_not_allowed: begin
         err_code = SwPushMsgWhenDisallowed;
+      end
+
+      invalid_config_atstart: begin
+        err_code = SwInvalidConfig;
       end
 
       default: begin
@@ -842,7 +873,7 @@ module hmac
   logic in_process;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni)               in_process <= 1'b0;
-    else if (reg_hash_process) in_process <= 1'b1;
+    else if (hash_process)     in_process <= 1'b1;
     else if (reg_hash_done)    in_process <= 1'b0;
   end
 
@@ -850,16 +881,16 @@ module hmac
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni)                     initiated <= 1'b0;
     else if (hash_start_or_continue) initiated <= 1'b1;
-    else if (reg_hash_process)       initiated <= 1'b0;
+    else if (hash_process)           initiated <= 1'b0;
   end
 
   // the host doesn't write data after hash_process until hash_start_or_continue.
   `ASSERT(ValidWriteAssert, msg_fifo_req |-> !in_process)
 
-  // `hash_process` shall be toggle and paired with `hash_start_or_continue`.
+  // `hash_process` shall be toggled and paired with `hash_start_or_continue`.
   // Below condition is covered by the design (2020-02-19)
   //`ASSERT(ValidHashStartAssert, hash_start_or_continue |-> !initiated)
-  `ASSERT(ValidHashProcessAssert, reg_hash_process |-> initiated)
+  `ASSERT(ValidHashProcessAssert, hash_process |-> initiated)
 
   // hmac_en should be modified only when the logic is Idle
   `ASSERT(ValidHmacEnConditionAssert,

@@ -127,7 +127,7 @@ module hmac_core import prim_sha2_pkg::*; (
   assign pad_index_512 = txcount[BlockSizeBitsSHA512-1:HashWordBitsSHA256];
   assign pad_index_256 = txcount[BlockSizeBitsSHA256-1:HashWordBitsSHA256];
 
-  // this defaults key length to block size if supplied key length is larger than block size
+  // adjust inner and outer padding depending on key length and block size
   always_comb begin : adjust_key_pad_length
     unique case (key_length_i)
       Key_128: begin
@@ -168,23 +168,19 @@ module hmac_core import prim_sha2_pkg::*; (
         o_pad_512 = {secret_key_i[1023:512],
                     {(BlockSizeSHA512-512){1'b0}}} ^ {(BlockSizeSHA512/8){8'h5c}};
       end
-      Key_1024: begin
-        // cap key to 512-bit for SHA-256
-        i_pad_256 = secret_key_i[1023:512] ^ {(BlockSizeSHA256/8){8'h36}};
+      Key_1024: begin // not allowed to be configured for SHA-2 256
+        // zero out for SHA-2 256
+        i_pad_256 = '{default: '0};
         i_pad_512 = secret_key_i[1023:0]   ^ {(BlockSizeSHA512/8){8'h36}};
-        // cap key to 512-bit for SHA-256
-        o_pad_256 = secret_key_i[1023:512] ^ {(BlockSizeSHA256/8){8'h5c}};
+        // zero out for SHA-2 256
+        o_pad_256 = '{default: '0};
         o_pad_512 = secret_key_i[1023:0]   ^ {(BlockSizeSHA512/8){8'h5c}};
       end
-      default: begin // TODO (issue  #22312)
-        i_pad_256 = {secret_key_i[1023:768],
-                    {(BlockSizeSHA256-256){1'b0}}} ^ {(BlockSizeSHA256/8){8'h36}};
-        i_pad_512 = {secret_key_i[1023:768],
-                    {(BlockSizeSHA512-256){1'b0}}} ^ {(BlockSizeSHA512/8){8'h36}};
-        o_pad_256 = {secret_key_i[1023:768],
-                    {(BlockSizeSHA256-256){1'b0}}} ^ {(BlockSizeSHA256/8){8'h5c}};
-        o_pad_512 = {secret_key_i[1023:768],
-                    {(BlockSizeSHA512-256){1'b0}}} ^ {(BlockSizeSHA512/8){8'h5c}};
+      default: begin // set default
+        i_pad_256 = '{default: '0};
+        i_pad_512 = '{default: '0};
+        o_pad_256 = '{default: '0};
+        o_pad_512 = '{default: '0};
       end
     endcase
   end

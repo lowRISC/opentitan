@@ -64,7 +64,7 @@ package hmac_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic [4:0]  q;
+      logic [5:0]  q;
       logic        qe;
     } key_length;
     struct packed {
@@ -165,7 +165,7 @@ package hmac_reg_pkg;
       logic [3:0]  d;
     } digest_size;
     struct packed {
-      logic [4:0]  d;
+      logic [5:0]  d;
     } key_length;
   } hmac_hw2reg_cfg_reg_t;
 
@@ -204,11 +204,11 @@ package hmac_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    hmac_reg2hw_intr_state_reg_t intr_state; // [1723:1721]
-    hmac_reg2hw_intr_enable_reg_t intr_enable; // [1720:1718]
-    hmac_reg2hw_intr_test_reg_t intr_test; // [1717:1712]
-    hmac_reg2hw_alert_test_reg_t alert_test; // [1711:1710]
-    hmac_reg2hw_cfg_reg_t cfg; // [1709:1691]
+    hmac_reg2hw_intr_state_reg_t intr_state; // [1724:1722]
+    hmac_reg2hw_intr_enable_reg_t intr_enable; // [1721:1719]
+    hmac_reg2hw_intr_test_reg_t intr_test; // [1718:1713]
+    hmac_reg2hw_alert_test_reg_t alert_test; // [1712:1711]
+    hmac_reg2hw_cfg_reg_t cfg; // [1710:1691]
     hmac_reg2hw_cmd_reg_t cmd; // [1690:1683]
     hmac_reg2hw_wipe_secret_reg_t wipe_secret; // [1682:1650]
     hmac_reg2hw_key_mreg_t [31:0] key; // [1649:594]
@@ -219,8 +219,8 @@ package hmac_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    hmac_hw2reg_intr_state_reg_t intr_state; // [1659:1654]
-    hmac_hw2reg_cfg_reg_t cfg; // [1653:1641]
+    hmac_hw2reg_intr_state_reg_t intr_state; // [1660:1655]
+    hmac_hw2reg_cfg_reg_t cfg; // [1654:1641]
     hmac_hw2reg_status_reg_t status; // [1640:1633]
     hmac_hw2reg_err_code_reg_t err_code; // [1632:1600]
     hmac_hw2reg_key_mreg_t [31:0] key; // [1599:576]
@@ -297,11 +297,11 @@ package hmac_reg_pkg;
   parameter logic [0:0] HMAC_INTR_TEST_HMAC_ERR_RESVAL = 1'h 0;
   parameter logic [0:0] HMAC_ALERT_TEST_RESVAL = 1'h 0;
   parameter logic [0:0] HMAC_ALERT_TEST_FATAL_FAULT_RESVAL = 1'h 0;
-  parameter logic [12:0] HMAC_CFG_RESVAL = 13'h 210;
+  parameter logic [13:0] HMAC_CFG_RESVAL = 14'h 2080;
   parameter logic [0:0] HMAC_CFG_ENDIAN_SWAP_RESVAL = 1'h 0;
   parameter logic [0:0] HMAC_CFG_DIGEST_SWAP_RESVAL = 1'h 0;
-  parameter logic [3:0] HMAC_CFG_DIGEST_SIZE_RESVAL = 4'h 1;
-  parameter logic [4:0] HMAC_CFG_KEY_LENGTH_RESVAL = 5'h 2;
+  parameter logic [3:0] HMAC_CFG_DIGEST_SIZE_RESVAL = 4'h 8;
+  parameter logic [5:0] HMAC_CFG_KEY_LENGTH_RESVAL = 6'h 20;
   parameter logic [3:0] HMAC_CMD_RESVAL = 4'h 0;
   parameter logic [9:0] HMAC_STATUS_RESVAL = 10'h 1;
   parameter logic [0:0] HMAC_STATUS_FIFO_EMPTY_RESVAL = 1'h 1;
