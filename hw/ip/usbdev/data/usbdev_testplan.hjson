@@ -314,7 +314,7 @@
               without awaiting a handshake packet from the host.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_in_iso"]
     }
     {
       name: pkt_received
