@@ -130,6 +130,7 @@
         "SPI_DEVICE.MODE.TPM.READ_FIFO_MODE",
       ]
       tests: ["chip_sw_spi_device_tpm"]
+      bazel: ["//sw/device/tests:spi_device_tpm_tx_rx_test"]
     }
     {
       // This test is more a pinmux/padctrl test than a spi_device one. Consider reclassification.
