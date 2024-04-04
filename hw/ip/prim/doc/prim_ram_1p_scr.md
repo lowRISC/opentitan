@@ -2,9 +2,9 @@
 
 # Overview
 
-The scrambling primitive `prim_ram_1p_scr` employs a reduced-round (5 instead of 11) PRINCE block cipher in CTR mode to scramble the data.
+The scrambling primitive `prim_ram_1p_scr` employs a reduced-round (7 instead of 11) PRINCE block cipher in CTR mode to scramble the data.
 The PRINCE lightweight block cipher has been selected due to its low latency and low area characteristics, see also [prim_prince](./prim_prince.md) for more information on PRINCE.
-The number of rounds is reduced to 5 in order to ease timing pressure and ensure single cycle operation (the number of rounds can always be increased if it turns out that there is enough timing slack).
+The number of rounds is reduced to 7 in order to ease timing pressure and ensure single cycle operation (the number of rounds can always be increased if it turns out that there is enough timing slack).
 
 In [CTR mode](https://en.wikipedia.org/wiki/Block_cipher_mode_of_operation#Counter_(CTR)), the block cipher is used to encrypt a 64bit IV with the scrambling key in order to create a 64bit keystream block that is bitwise XOR'ed with the data in order to transform plaintext into ciphertext and vice versa.
 The IV is assembled by concatenating a nonce with the word address.
@@ -33,7 +33,7 @@ Parameter                   | Default (Max)         | Top Earlgrey | Description
 `DataBitsPerMask`           | 8                     | 8            | Number of data bits per write mask.
 `EnableParity`              | 1                     | 1            | This parameter enables byte parity.
 `CfgWidth`                  | 8                     | 8            | Width of SRAM attributes field.
-`NumPrinceRoundsHalf`       | 2 (5)                 | 2            | Number of PRINCE half-rounds.
+`NumPrinceRoundsHalf`       | 3 (5)                 | 3            | Number of PRINCE half-rounds.
 `NumDiffRounds`             | 2                     | 2            | Number of additional diffusion rounds, set to 0 to disable.
 `DiffWidth`                 | 8                     | 8            | Width of additional diffusion rounds, set to 8 for intra-byte diffusion.
 `NumAddrScrRounds`          | 2                     | 2            | Number of address scrambling rounds, set to 0 to disable.

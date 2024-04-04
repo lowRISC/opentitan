@@ -108,7 +108,7 @@ def subst_perm_dec(data: int, key: int, width: int, num_rounds: int) -> int:
 
 class Scrambler:
     subst_perm_rounds = 2
-    num_rounds_half = 2
+    num_rounds_half = 3
 
     def __init__(self, nonce: int, key: int, rom_size_words: int):
         assert 0 <= nonce < (1 << 64)

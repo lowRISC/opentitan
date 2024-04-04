@@ -31,9 +31,9 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
 
   // Scrambling parameters. Note that this needs to be low-latency, hence we have to keep the
   // amount of cipher rounds low. PRINCE has 5 half rounds in its original form, which corresponds
-  // to 2*5 + 1 effective rounds. Setting this to 2 halves this to approximately 5 effective rounds.
+  // to 2*5 + 1 effective rounds. Setting this to 3 lowers this to approximately 7 effective rounds.
   // Number of PRINCE half rounds, can be [1..5]
-  parameter  int NumPrinceRoundsHalf = 2,
+  parameter  int NumPrinceRoundsHalf = 3,
   // Number of extra diffusion rounds. Setting this to 0 to disables diffusion.
   // NOTE: this is zero by default, since the non-linear transformation of data bits can interact
   // adversely with end-to-end ECC integrity. Only enable this if you know what you are doing

@@ -20,7 +20,7 @@ These come in through the TL-UL SRAM adapter (top-left of block diagram).
 In normal operation, the green multiplexer will give access to these TL reads.
 The address is scrambled at the first substitution-permutation network (marked S&P in the diagram).
 
-In parallel with the ROM access, a reduced `prim_prince` primitive (5 rounds with latency 1; equivalent to the cipher used for SRAM) computes a 39-bit truncated keystream for the block.
+In parallel with the ROM access, a reduced `prim_prince` primitive (7 rounds with latency 1; equivalent to the cipher used for SRAM) computes a 39-bit truncated keystream for the block.
 On the following cycle, the scrambled data from ROM goes through a substitution-permutation network and is then XOR'd with the keystream.
 This scheme is the same as that used by the [SRAM controller](../../sram_ctrl/README.md), but is much simplified because the ROM doesn't have to deal with writes, byte accesses or key changes.
 

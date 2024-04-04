@@ -10,8 +10,8 @@
 //
 // This code follows the structure of prim_ram_1p_scr.sv (although it's much simplified because the
 // key is fixed and we don't support writes). For more information about what is going on, see that
-// file. Using the parameter names in prim_ram_1p_scr, we have NumPrinceRoundsHalf = 2 (so
-// approximately 5 effective rounds), NumDiffRounds = 2 and NumAddrScrRounds = 2 (enabling address
+// file. Using the parameter names in prim_ram_1p_scr, we have NumPrinceRoundsHalf = 3 (so
+// approximately 7 effective rounds), NumDiffRounds = 2 and NumAddrScrRounds = 2 (enabling address
 // scrambling with 2 rounds).
 //
 // There are two input address ports (rom_addr_i and prince_addr_i). These are expected to be
@@ -108,7 +108,7 @@ module rom_ctrl_scrambled_rom
   prim_prince #(
     .DataWidth      (64),
     .KeyWidth       (128),
-    .NumRoundsHalf  (2),
+    .NumRoundsHalf  (3),
     .HalfwayDataReg (1'b1),
     .HalfwayKeyReg  (1'b1)
   ) u_prince (
