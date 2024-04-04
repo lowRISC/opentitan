@@ -426,12 +426,15 @@ bool test_main(void) {
   // Initialize keymgr and advance to CreatorRootKey state.
   dif_keymgr_t keymgr;
   dif_kmac_t kmac;
-  CHECK_STATUS_OK(keymgr_testutils_startup(&keymgr, &kmac));
+  dif_keymgr_state_t keymgr_state;
+  CHECK_STATUS_OK(keymgr_testutils_try_startup(&keymgr, &kmac, &keymgr_state));
 
-  CHECK_STATUS_OK(keymgr_testutils_advance_state(&keymgr, &kOwnerIntParams));
-  CHECK_STATUS_OK(keymgr_testutils_check_state(
-      &keymgr, kDifKeymgrStateOwnerIntermediateKey));
-  LOG_INFO("Keymgr entered OwnerIntKey State");
+  if (keymgr_state == kDifKeymgrStateInitialized) {
+    CHECK_STATUS_OK(keymgr_testutils_advance_state(&keymgr, &kOwnerIntParams));
+    CHECK_STATUS_OK(keymgr_testutils_check_state(
+        &keymgr, kDifKeymgrStateOwnerIntermediateKey));
+    LOG_INFO("Keymgr entered OwnerIntKey State");
+  }
   LOG_INFO("Testing cryptolib KDF-KMAC driver with sideloaded key.");
 
   // Initialize the core with default parameters
