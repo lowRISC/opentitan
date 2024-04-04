@@ -49,8 +49,8 @@ module ${mod_base}_csr_assert_fpv import tlul_pkg::*;
 
   # This is the width of hro_idx, which indexes into regwen, access_policy and
   # exp_vals. Each of those arrays has an index for each HRO register plus an
-  # extra index that represents "non-HRO registers".
-  hro_idx_width = (num_hro_regs + 1).bit_length()
+  # extra index (with value num_hro_regs) that represents "non-HRO registers".
+  hro_idx_width = num_hro_regs.bit_length()
 %>\
 
 `ifdef UVM
