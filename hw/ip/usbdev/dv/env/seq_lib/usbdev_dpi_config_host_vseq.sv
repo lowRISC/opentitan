@@ -7,8 +7,6 @@ class usbdev_dpi_config_host_vseq extends usbdev_base_vseq;
 
   `uvm_object_new
 
-  import usb_consts_pkg::*;
-
   // State within the present Control Transfer
   typedef enum {
     // Awaiting receipt of SETUP stage
@@ -155,6 +153,8 @@ class usbdev_dpi_config_host_vseq extends usbdev_base_vseq;
   // Wait until the DPI host has issued the normal Control Transfers to set the
   // device configuration.
   virtual task configuration_wait();
+    import usb_consts_pkg::*;
+
     ctl_state_e ctl_state = Ctl_AwaitSETUP;
     cfg_state_e cfg_state = Cfg_DescDev;
 
