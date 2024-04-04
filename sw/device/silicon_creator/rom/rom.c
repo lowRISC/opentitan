@@ -186,7 +186,7 @@ static rom_error_t rom_init(void) {
 
   // Always store the retention RAM version so the ROM_EXT can depend on its
   // accuracy even after scrambling.
-  retention_sram_get()->version = kRetentionSramVersion3;
+  retention_sram_get()->version = kRetentionSramVersion4;
 
   // Store the reset reason in retention RAM and clear the register.
   retention_sram_get()->creator.reset_reasons = reset_reasons;
