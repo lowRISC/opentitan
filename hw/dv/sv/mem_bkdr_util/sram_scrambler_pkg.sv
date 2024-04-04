@@ -40,7 +40,8 @@ package sram_scrambler_pkg;
   // Fixed data block size - PRINCE cipher operates on 64-bit data blocks.
   parameter int SRAM_BLOCK_WIDTH = 64;
 
-  parameter int NUM_ROUNDS = 2;
+  parameter int NUM_PRINCE_ROUNDS_HALF = 3;
+  parameter int NUM_SP_ROUNDS = 2;
 
   // Create a generic typedef for dynamic array of logic to be able to return these values.
   typedef logic state_t[];
@@ -97,10 +98,10 @@ package sram_scrambler_pkg;
     return state_out;
   endfunction : perm_layer
 
-  // Performs NUM_ROUNDS full encryption rounds
+  // Performs NUM_SP_ROUNDS full encryption rounds
   function automatic state_t sp_encrypt(state_t data, int width, state_t key);
     logic state[] = new[width](data);
-    for (int i = 0; i < NUM_ROUNDS; i++) begin
+    for (int i = 0; i < NUM_SP_ROUNDS; i++) begin
       // xor the data and key
       for (int j = 0; j < width; j++) begin
         state[j] = state[j] ^ key[j];
@@ -119,10 +120,10 @@ package sram_scrambler_pkg;
     return state;
   endfunction : sp_encrypt
 
-  // Performs NUM_ROUNDS full decryption rounds
+  // Performs NUM_SP_ROUNDS full decryption rounds
   function automatic state_t sp_decrypt(state_t data, int width, state_t key);
     logic state[] = new[width](data);
-    for (int i = 0; i < NUM_ROUNDS; i++) begin
+    for (int i = 0; i < NUM_SP_ROUNDS; i++) begin
       // xor data and key
       for (int j = 0; j < width; j++) begin
         state[j] = state[j] ^ key[j];
@@ -147,7 +148,7 @@ package sram_scrambler_pkg;
   // Should not be called directly.
   function automatic state_t gen_keystream(logic addr[], int addr_width,
                                            logic key[], logic nonce[]);
-    logic [NUM_ROUNDS-1:0][SRAM_BLOCK_WIDTH-1:0] prince_result_arr;
+    logic [NUM_PRINCE_ROUNDS_HALF-1:0][SRAM_BLOCK_WIDTH-1:0] prince_result_arr;
 
     logic [SRAM_BLOCK_WIDTH-1:0]  prince_plaintext;
     logic [SRAM_KEY_WIDTH-1:0]    prince_key;
@@ -182,7 +183,7 @@ package sram_scrambler_pkg;
                                                  .key(prince_key),
                                                  .old_key_schedule(0),
                                                  .ciphertext(prince_result_arr));
-    prince_result = prince_result_arr[NUM_ROUNDS-1];
+    prince_result = prince_result_arr[NUM_PRINCE_ROUNDS_HALF-1];
 
     key_out = {<< {prince_result}};
 
@@ -234,7 +235,7 @@ package sram_scrambler_pkg;
 
   endfunction : decrypt_sram_addr
 
-  // SRAM data encryption is more involved, we need to run 2 rounds of PRINCE on the nonce and key
+  // SRAM data encryption is more involved, we need to run 3 rounds of PRINCE on the nonce and key
   // and then XOR the result with the data.
   //
   // Optionally, the XORed data can be passed through the S&P network.
