@@ -14,8 +14,8 @@ filesets:
       - lowrisc:prim:clock_gating
       - lowrisc:prim:clock_inv
       - lowrisc:prim:mubi
-      - lowrisc:prim:ram_2p_adv
       - lowrisc:prim:ram_2p_pkg
+      - lowrisc:prim:ram_2p_async_adv
       - lowrisc:prim:ram_1r1w_async_adv
       - lowrisc:prim:edge_detector
       - lowrisc:prim:rst_sync
