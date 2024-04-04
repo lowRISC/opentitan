@@ -42,7 +42,7 @@ bit apply_post_reset_delays_for_sync = 1'b1;
 
 `uvm_object_new
 
-// Override apply_reset to cater to AON domain as well.
+// Override apply_reset to cater to AON domain and host as well.
 virtual task apply_reset(string kind = "HARD");
   fork
     if (kind == "HARD") begin
@@ -55,14 +55,21 @@ virtual task apply_reset(string kind = "HARD");
     if (kind == "HARD" || kind == "BUS_IF") begin
       super.apply_reset("HARD");
     end
+    if (kind == "HARD") begin
+      cfg.host_clk_rst_vif.apply_reset();
+    end
   join
   do_apply_post_reset_delays_for_sync();
 endtask
 
 virtual task apply_resets_concurrently(int reset_duration_ps = 0);
+  // Assert other resets.
   cfg.aon_clk_rst_vif.drive_rst_pin(0);
+  cfg.host_clk_rst_vif.drive_rst_pin(0);
   super.apply_resets_concurrently(cfg.aon_clk_rst_vif.clk_period_ps);
+  // Release resets.
   cfg.aon_clk_rst_vif.drive_rst_pin(1);
+  cfg.host_clk_rst_vif.drive_rst_pin(1);
 endtask
 
 // Apply additional delays at the dut_init stage when either apply_reset or
@@ -74,6 +81,7 @@ virtual task do_apply_post_reset_delays_for_sync();
     fork
       cfg.clk_rst_vif.wait_clks($urandom_range(5, 10));
       cfg.aon_clk_rst_vif.wait_clks($urandom_range(5, 10));
+      cfg.host_clk_rst_vif.wait_clks($urandom_range(5, 10));
     join
   end
 endtask
@@ -84,9 +92,11 @@ virtual task wait_for_reset(string reset_kind     = "HARD",
   bit wait_for_deassert = 1);
 
   fork
+    // main DUT reset.
     if (reset_kind == "HARD" || reset_kind == "BUS_IF") begin
       super.wait_for_reset(reset_kind, wait_for_assert, wait_for_deassert);
     end
+    // reset for usbdev_aon_wake module.
     if (reset_kind == "HARD") begin
       if (wait_for_assert) begin
         `uvm_info(`gfn, "waiting for aon_rst_n assertion...", UVM_MEDIUM)
@@ -95,6 +105,17 @@ virtual task wait_for_reset(string reset_kind     = "HARD",
       if (wait_for_deassert) begin
         `uvm_info(`gfn, "waiting for aon_rst_n de-assertion...", UVM_MEDIUM)
         @(posedge cfg.aon_clk_rst_vif.rst_n);
+      end
+    end
+    // reset for host model.
+    if (reset_kind == "HARD") begin
+      if (wait_for_assert) begin
+        `uvm_info(`gfn, "waiting for host_rst_n assertion...", UVM_MEDIUM)
+        @(negedge cfg.host_clk_rst_vif.rst_n);
+      end
+      if (wait_for_deassert) begin
+        `uvm_info(`gfn, "waiting for host_rst_n de-assertion...", UVM_MEDIUM)
+        @(posedge cfg.host_clk_rst_vif.rst_n);
       end
     end
   join

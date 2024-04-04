@@ -14,9 +14,14 @@ module tb;
   `include "dv_macros.svh"
   `include "cip_macros.svh"
 
-
+  // Always ON clock and reset (usbdev_aon_wake module)
   wire aon_clk, aon_rst_n;
+  // USBDEV clock and reset
+  //   (frequency varies to maintain synchronization with the USB host
   wire usb_clk, usb_rst_n;
+  // USB Host (usb20_agent or usbdpi) clock and reset
+  wire host_clk, host_rst_n;
+
   wire intr_pkt_received;
   wire intr_pkt_sent;
   wire intr_powered;
@@ -69,11 +74,12 @@ module tb;
 
   // interfaces
   clk_rst_if aon_clk_rst_if(.clk(aon_clk), .rst_n(aon_rst_n));
-  clk_rst_if usb_clk_rst_if(.clk(usb_clk), .rst_n(usb_rst_n));
+  clk_rst_if usbdev_clk_rst_if(.clk(usb_clk), .rst_n(usb_rst_n));
+  clk_rst_if host_clk_rst_if(.clk(host_clk), .rst_n(host_rst_n));
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(interrupts);
   tl_if tl_if(.clk(usb_clk), .rst_n(usb_rst_n));
   // This interface models a physical USB connection to a host/USBDPI model.
-  usb20_if usb20_if(.clk_i(usb_clk), .rst_ni(usb_rst_n), .usb_vbus(usb_vbus),
+  usb20_if usb20_if(.clk_i(host_clk), .rst_ni(host_rst_n), .usb_vbus(usb_vbus),
   .usb_p(usb_p), .usb_n(usb_n));
   // This interface is for UVM-based block level DV and has additional connections
   // that may be used to infer the PHY configuration of the DUT and thus exercise all
@@ -170,8 +176,8 @@ module tb;
 
   // Instantiate & connect the USB DPI model for additional block-level testing and coverage.
   usb20_usbdpi u_usb20_usbdpi (
-    .clk_i            (usb_clk),
-    .rst_ni           (usb_rst_n),
+    .clk_i            (host_clk),
+    .rst_ni           (host_rst_n),
 
     .enable           (usb20_if.connected),
 
@@ -241,9 +247,11 @@ module tb;
   initial begin
     // drive clk and rst_n from clk_if
     aon_clk_rst_if.set_active();
-    usb_clk_rst_if.set_active();
-    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", usb_clk_rst_if);
+    usbdev_clk_rst_if.set_active();
+    host_clk_rst_if.set_active();
+    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", usbdev_clk_rst_if);
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "aon_clk_rst_vif", aon_clk_rst_if);
+    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "host_clk_rst_vif", host_clk_rst_if);
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(virtual usb20_if)::set(null, "*.env", "vif", usb20_if);

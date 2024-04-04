@@ -16,10 +16,14 @@ class usbdev_env extends cip_base_env #(
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    // get vifs
+    // get clock/resets
     if (!uvm_config_db#(virtual clk_rst_if)::get(this, "", "aon_clk_rst_vif",
         cfg.aon_clk_rst_vif)) begin
       `uvm_fatal(get_full_name(), "failed to get aon_clk_rst_if from uvm_config_db")
+    end
+    if (!uvm_config_db#(virtual clk_rst_if)::get(this, "", "host_clk_rst_vif",
+        cfg.host_clk_rst_vif)) begin
+      `uvm_fatal(get_full_name(), "failed to get host_clk_rst_if from uvm_config_db")
     end
     // get usb20_if handle
     if (!uvm_config_db#(virtual usb20_if)::get(this, "", "vif", cfg.usb20_usbdpi_vif)) begin
@@ -31,6 +35,15 @@ class usbdev_env extends cip_base_env #(
 
     // Use a sensible speed for the AON clock
     cfg.aon_clk_rst_vif.set_freq_khz(cfg.aon_clk_freq_khz);
+
+    // Use the selected host clock frequency; this may differ from that of the DUT.
+    // The DUT is required to cope with a certain amount of disparity, and adjust itself
+    // to match the frequency of the host over time.
+    cfg.host_clk_rst_vif.set_freq_khz(cfg.host_clk_freq_khz);
+
+    // Report the clock frequencies.
+    `uvm_info(`gfn, $sformatf("usb_clk %dkHz, host_clk %dkHz",
+                              cfg.usb_clk_freq_khz, cfg.host_clk_freq_khz), UVM_MEDIUM)
 
     // create components
     m_usb20_agent = usb20_agent::type_id::create("m_usb20_agent", this);
