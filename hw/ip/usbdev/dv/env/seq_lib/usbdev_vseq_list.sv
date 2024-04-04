@@ -18,6 +18,7 @@
 `include "usbdev_in_stall_vseq.sv"
 `include "usbdev_in_trans_vseq.sv"
 `include "usbdev_in_iso_vseq.sv"
+`include "usbdev_link_in_err_vseq.sv"
 `include "usbdev_nak_trans_vseq.sv"
 `include "usbdev_out_iso_vseq.sv"
 `include "usbdev_out_stall_vseq.sv"
