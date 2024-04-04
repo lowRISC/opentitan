@@ -42,7 +42,12 @@ module tb;
   wire usb_p;
   wire usb_n;
 
-  // Pull ups are external to the DUT.
+  // Pull up enables from usbdev (primary DUT).
+  wire usbdev_dp_pullup_en;
+  wire usbdev_dn_pullup_en;
+
+  // Pull ups are external to the DUT, and may be controlled by either usbdev (primary DUT)
+  // or the usbdev_aon_wake module.
   wire usb_dp_pullup_en;
   wire usb_dn_pullup_en;
   // Driver enables from the DUT.
@@ -51,6 +56,16 @@ module tb;
   // Driven outputs from the DUT.
   wire cio_usb_dp;
   wire cio_usb_dn;
+
+  // Requests from usbdev to usbdev_aon_wake module.
+  wire usb_aon_suspend_req;
+  wire usb_aon_wake_ack;
+
+  // Event and debug indicators from the usbdev_aon_wake module to usbdev.
+  wire usb_aon_bus_not_idle;
+  wire usb_aon_bus_reset;
+  wire usb_aon_sense_lost;
+  wire usb_aon_wake_detect_active;
 
   // interfaces
   clk_rst_if aon_clk_rst_if(.clk(aon_clk), .rst_n(aon_rst_n));
@@ -91,18 +106,19 @@ module tb;
     .usb_tx_d_o             (usb20_block_if.usb_tx_d_o   ),
     .usb_tx_se0_o           (usb20_block_if.usb_tx_se0_o ),
     .cio_sense_i            (usb_vbus),
-    .usb_dp_pullup_o        (usb_dp_pullup_en),
-    .usb_dn_pullup_o        (usb_dn_pullup_en),
+    // Pull up enables from primary DUT, but usbdev_aon_wake may override them.
+    .usb_dp_pullup_o        (usbdev_dp_pullup_en),
+    .usb_dn_pullup_o        (usbdev_dn_pullup_en),
     .usb_rx_enable_o        (usb20_block_if.usb_rx_enable_o    ),
     .usb_tx_use_d_se0_o     (usb20_block_if.usb_tx_use_d_se0_o ),
     // Direct pinmux aon detect connections
-    .usb_aon_suspend_req_o  (),
-    .usb_aon_wake_ack_o     (),
+    .usb_aon_suspend_req_o  (usb_aon_suspend_req),
+    .usb_aon_wake_ack_o     (usb_aon_wake_ack),
     // Events and debug info from wakeup module
-    .usb_aon_bus_not_idle_i       ('0),
-    .usb_aon_bus_reset_i          ('0),
-    .usb_aon_sense_lost_i         ('0),
-    .usb_aon_wake_detect_active_i ('0),
+    .usb_aon_bus_not_idle_i       (usb_aon_bus_not_idle),
+    .usb_aon_bus_reset_i          (usb_aon_bus_reset),
+    .usb_aon_sense_lost_i         (usb_aon_sense_lost),
+    .usb_aon_wake_detect_active_i (usb_aon_wake_detect_active),
 
     // SOF reference for clock calibration
     .usb_ref_val_o          (usb20_block_if.usb_ref_val_o  ),
@@ -189,6 +205,38 @@ module tb;
   assign interrupts[IntrRxBitstuffErr]  = intr_rx_bitstuff_err;
   assign interrupts[IntrFrame]          = intr_frame;
   assign interrupts[IntrAvSetupEmpty]   = intr_av_setup_empty;
+
+  // USB Always On Wake module; this module monitors the USB for events whilst usbdev itself is
+  // unclocked and/or unpowered.
+  usbdev_aon_wake u_usbdev_aon_wake (
+    .clk_aon_i                (aon_clk),
+    .rst_aon_ni               (aon_rst_n),
+
+    .usb_dp_i                 (usb_p),
+    .usb_dn_i                 (usb_n),
+    .usb_sense_i              (usb_vbus),
+
+    // Pull up enables from USBDEV
+    .usbdev_dppullup_en_i     (usbdev_dp_pullup_en),
+    .usbdev_dnpullup_en_i     (usbdev_dn_pullup_en),
+
+    // Requests from USBDEV register configuration
+    .wake_ack_aon_i           (usb_aon_wake_ack),
+    .suspend_req_aon_i        (usb_aon_suspend_req),
+
+    // Actual pull up enables; driven by usbdev or usbdev_aon_wake
+    .usb_dppullup_en_o        (usb_dp_pullup_en),
+    .usb_dnpullup_en_o        (usb_dn_pullup_en),
+
+    // TODO: this signal should be made available for testing somehow.
+    .wake_req_aon_o           (),
+
+    .bus_not_idle_aon_o       (usb_aon_bus_not_idle),
+    .bus_reset_aon_o          (usb_aon_bus_reset),
+    .sense_lost_aon_o         (usb_aon_sense_lost),
+
+    .wake_detect_active_aon_o (usb_aon_wake_detect_active)
+  );
 
   initial begin
     // drive clk and rst_n from clk_if

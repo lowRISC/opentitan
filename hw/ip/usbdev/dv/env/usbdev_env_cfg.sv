@@ -11,18 +11,20 @@ class usbdev_env_cfg extends cip_base_env_cfg #(.RAL_T(usbdev_reg_block));
   string reset_kinds[] = {"HARD", "TL_IF"};
 
   // Constrain the main clock to be at 48MHz based on spec
-  rand uint usb_clk_freq_mhz;
-  constraint usb_clk_freq_mhz_c {
-    usb_clk_freq_mhz == 48;
+  rand uint usb_clk_freq_khz;
+  constraint usb_clk_freq_khz_c {
+    usb_clk_freq_khz == 48_000;
   }
 
-  // Constrain the AON clock to be slower than the USB clock. Make it between 1/2 and 1/3 of the
-  // speed. (This isn't as big a ratio as we'll have on the chip, but the tests are a bit more
-  // efficient when the clocks are similar speeds)
-  rand uint aon_clk_freq_mhz;
-  constraint aon_clk_freq_mhz_c {
-    aon_clk_freq_mhz >= usb_clk_freq_mhz / 3 &&
-    aon_clk_freq_mhz <= usb_clk_freq_mhz / 2;
+  // Constrain the AON clock to be slower than the USB clock. For the usbdev_aon_wake logic
+  // to operate correctly and not generate spurious reports of bus resets when detecting Low Speed
+  // signaling, it requires a clock frequency lower than 2MHz cf the usbdev clock at 48MHz, so the
+  // ratio should exceed 24.
+  // In a real device we expect it to be as low as 200kHz.
+  rand uint aon_clk_freq_khz;
+  constraint aon_clk_freq_khz_c {
+    aon_clk_freq_khz >  usb_clk_freq_khz / 300 &&
+    aon_clk_freq_khz <= usb_clk_freq_khz / 24;
   }
 
   // ext component cfgs
@@ -30,7 +32,8 @@ class usbdev_env_cfg extends cip_base_env_cfg #(.RAL_T(usbdev_reg_block));
 
   `uvm_object_utils_begin(usbdev_env_cfg)
     `uvm_field_object(m_usb20_agent_cfg,  UVM_DEFAULT)
-    `uvm_field_int   (usb_clk_freq_mhz,   UVM_DEFAULT)
+    `uvm_field_int   (usb_clk_freq_khz,   UVM_DEFAULT)
+    `uvm_field_int   (aon_clk_freq_khz,   UVM_DEFAULT)
   `uvm_object_utils_end
 
   `uvm_object_new

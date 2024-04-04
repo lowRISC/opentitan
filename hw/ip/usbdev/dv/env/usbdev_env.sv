@@ -27,10 +27,10 @@ class usbdev_env extends cip_base_env #(
     end
 
     // Use the configured USB speed for the main clock
-    cfg.clk_rst_vif.set_freq_mhz(cfg.usb_clk_freq_mhz);
+    cfg.clk_rst_vif.set_freq_khz(cfg.usb_clk_freq_khz);
 
     // Use a sensible speed for the AON clock
-    cfg.aon_clk_rst_vif.set_freq_mhz(cfg.aon_clk_freq_mhz);
+    cfg.aon_clk_rst_vif.set_freq_khz(cfg.aon_clk_freq_khz);
 
     // create components
     m_usb20_agent = usb20_agent::type_id::create("m_usb20_agent", this);
