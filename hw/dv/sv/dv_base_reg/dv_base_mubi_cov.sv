@@ -84,5 +84,3 @@ class dv_base_mubi_cov extends uvm_object;
     endcase
   endfunction : sample
 endclass : dv_base_mubi_cov
-
-
