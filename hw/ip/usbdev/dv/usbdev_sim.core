@@ -18,7 +18,6 @@ filesets:
       - lowrisc:dv_dpi_sv:usbdpi
     files:
       - tb/tb.sv
-      - tb/Clock_Divider.sv
     file_type: systemVerilogSource
 
 targets:

@@ -29,7 +29,6 @@ interface usb20_block_if (
   logic drive_p;             // to drive usb_n from driver
   logic usb_ref_val_o;
   logic usb_ref_pulse_o;
-  logic usb_clk;             // signal used to divide clock or send J/K symbols for 4 clock cycles
 
   // Are our drivers connected?
   bit connected = 0;
