@@ -61,6 +61,7 @@ module tlul_adapter_host
   end else begin : g_multiple_reqs
     localparam int ReqNumW  = $clog2(MAX_REQS);
     localparam int unsigned MaxSource = MAX_REQS - 1;
+    localparam logic [ReqNumW-1:0] ReqNumOne = ReqNumW'(1'b1);
 
     logic [ReqNumW-1:0] source_d;
     logic [ReqNumW-1:0] source_q;
@@ -80,7 +81,7 @@ module tlul_adapter_host
         if (source_q == MaxSource[ReqNumW-1:0]) begin
           source_d = '0;
         end else  begin
-          source_d = source_q + 1;
+          source_d = source_q + ReqNumOne;
         end
       end
     end
@@ -158,6 +159,7 @@ module tlul_adapter_host
   // pragma coverage off
   localparam int OutstandingReqCntW =
     (MAX_REQS == 2 ** $clog2(MAX_REQS)) ? $clog2(MAX_REQS) + 1 : $clog2(MAX_REQS);
+  localparam logic [OutstandingReqCntW-1:0] OutstandingReqCntOne = OutstandingReqCntW'(1'b1);
 
   logic [OutstandingReqCntW-1:0] outstanding_reqs_q;
   logic [OutstandingReqCntW-1:0] outstanding_reqs_d;
@@ -166,9 +168,9 @@ module tlul_adapter_host
     outstanding_reqs_d = outstanding_reqs_q;
 
     if ((req_i && gnt_o) && !valid_o) begin
-      outstanding_reqs_d = outstanding_reqs_q + 1;
+      outstanding_reqs_d = outstanding_reqs_q + OutstandingReqCntOne;
     end else if (!(req_i && gnt_o) && valid_o) begin
-      outstanding_reqs_d = outstanding_reqs_q - 1;
+      outstanding_reqs_d = outstanding_reqs_q - OutstandingReqCntOne;
     end
   end
 
