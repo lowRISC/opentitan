@@ -78,7 +78,7 @@ static kdf_kmac_test_vector_t kKdfTestVectors[] = {
                 .keyblob_length = 32,
                 .keyblob =
                     (uint32_t[]){
-                        0x00000002,
+                        0x00000000,
                         0xa0d0e9b4,
                         0x7e790e8b,
                         0x2ed764b2,
@@ -136,7 +136,7 @@ static kdf_kmac_test_vector_t kKdfTestVectors[] = {
                 .keyblob_length = 32,
                 .keyblob =
                     (uint32_t[]){
-                        0x0000000f,
+                        0x00000000,
                         0x1600a35a,
                         0x6f03675a,
                         0x6b0d549b,
@@ -218,7 +218,7 @@ static kdf_kmac_test_vector_t kKdfTestVectors[] = {
                 .keyblob_length = 32,
                 .keyblob =
                     (uint32_t[]){
-                        0x00000001,
+                        0x00000000,
                         0xe5f6db1d,
                         0x9acd8acd,
                         0x14b044d7,

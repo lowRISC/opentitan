@@ -57,7 +57,7 @@ static kmac_test_vector_t kKmacTestVectors[] = {
                 .keyblob_length = 32,
                 .keyblob =
                     (uint32_t[]){
-                        0x00000001,
+                        0x00000000,
                         0x47464544,
                         0x4b4a4948,
                         0x4f4e4d4c,
@@ -112,7 +112,7 @@ static kmac_test_vector_t kKmacTestVectors[] = {
                 .keyblob_length = 32,
                 .keyblob =
                     (uint32_t[]){
-                        0x00000002,
+                        0x00000000,
                         0x11111111,
                         0x4b4a4948,
                         0x4f4e4d4c,
@@ -191,7 +191,7 @@ static kmac_test_vector_t kKmacTestVectors[] = {
                 .keyblob_length = 32,
                 .keyblob =
                     (uint32_t[]){
-                        0x00000001,
+                        0x00000000,
                         0x00000000,
                         0x00000000,
                         0x00000000,
