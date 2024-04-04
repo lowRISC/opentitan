@@ -6,8 +6,11 @@
 
 #include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/base/status.h"
+#include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/dif/dif_clkmgr.h"
+#include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
@@ -15,7 +18,18 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
+// Switching to external clocks causes the clocks to be unstable for some time.
+// This is used to delay further action when the switch happens.
+static const int kSettleDelayMicros = 200;
+
 static dif_clkmgr_t clkmgr;
+
+// For passing into `IBEX_SPIN_FOR`.
+static bool did_extclk_settle(const dif_clkmgr_t *clkmgr) {
+  bool status;
+  CHECK_DIF_OK(dif_clkmgr_external_clock_is_settled(clkmgr, &status));
+  return status;
+}
 
 status_t handle_extclk_sca_fi_configure(ujson_t *uj) {
   cryptotest_extclk_sca_fi_cfg_t uj_data;
@@ -23,7 +37,7 @@ status_t handle_extclk_sca_fi_configure(ujson_t *uj) {
 
   TRY(dif_clkmgr_init(mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR),
                       &clkmgr));
-
+  LOG_INFO("Configuring Extclk...");
   multi_bit_bool_t is_low_speed = kMultiBitBool4True;
   if (uj_data.hi_speed_sel) {
     is_low_speed = kMultiBitBool4False;
@@ -32,13 +46,13 @@ status_t handle_extclk_sca_fi_configure(ujson_t *uj) {
   if (uj_data.sel) {
     // Enable external clock.
     TRY(dif_clkmgr_external_clock_set_enabled(&clkmgr, is_low_speed));
+    // Wait for the external clock to become active.
+    IBEX_SPIN_FOR(did_extclk_settle(&clkmgr), kSettleDelayMicros);
+    LOG_INFO("External clock enabled.");
   } else {
     // Disable external clock.
-    TRY(dif_clkmgr_external_clock_set_disabled(&clkmgr));
+    LOG_INFO("Manually reset the device to switch back to internal clock.");
   }
-  // Check CLKMGR_EXTCLK_STATUS_REG_OFFSET register. Blocks if clock does not
-  // switch.
-  TRY(dif_clkmgr_wait_for_ext_clk_switch(&clkmgr));
 
   return OK_STATUS();
 }
