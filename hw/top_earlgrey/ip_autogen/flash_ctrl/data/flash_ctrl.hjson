@@ -73,7 +73,15 @@
       desc: "flash standard fatal errors"
     },
     { name: "fatal_err",
-      desc: "flash fatal errors"
+      desc: '''
+        Flash fatal errors including uncorrectable ECC errors.
+
+        Note that this alert is not always fatal.
+        The underlying error bits in the !!FAULT_STATUS register remain set until reset, meaning the alert keeps firing.
+        This doesn't hold for !!FAULT_STATUS.PHY_RELBL_ERR and !!FAULT_STATUS.PHY_STORAGE_ERR.
+        To enable firmware dealing with multi-bit ECC and ICV errors during firmware selection and verification, these error bits can be cleared.
+        After passing this stage, it is recommended that firmware classifies the corresponding alert as fatal on the receiver end, i.e, inside the alert handler.
+      '''
     },
     { name: "fatal_prim_flash_alert",
       desc: "Fatal alert triggered inside the flash primitive, including fatal TL-UL bus integrity faults of the test interface."
@@ -2043,14 +2051,16 @@
         desc: '''
           This register tabulates customized fault status of the flash.
 
-          These are errors that are impossible to have been caused by software or unrecoverable
-          in nature.
+          These are errors that are impossible to have been caused by software or unrecoverable in nature.
+
+          All errors except for multi-bit ECC errors (!!FAULT_STATUS.PHY_RELBL_ERR) and ICV (!!FAULT_STATUS.PHY_STORAGE_ERR) trigger a fatal alert.
+          Once set, they remain set until reset.
         '''
-        swaccess: "ro",
         hwaccess: "hrw",
         fields: [
           { bits: "0",
             name: "op_err",
+            swaccess: "ro",
             desc: '''
               The flash life cycle management interface has supplied an undefined operation.
               See !!CONTROL.OP for list of valid operations.
@@ -2058,12 +2068,14 @@
           },
           { bits: "1",
             name: "mp_err",
+            swaccess: "ro",
             desc: '''
               The flash life cycle management interface encountered a memory permission error.
             '''
           },
           { bits: "2",
             name: "rd_err",
+            swaccess: "ro",
             desc: '''
               The flash life cycle management interface encountered a read error.
               This could be a reliability ECC error or an integrity ECC error
@@ -2072,6 +2084,7 @@
           },
           { bits: "3",
             name: "prog_err",
+            swaccess: "ro",
             desc: '''
               The flash life cycle management interface encountered a program error.
               This could be a program integirty eror, see !!STD_FAULT_STATUS for more details.
@@ -2079,12 +2092,14 @@
           },
           { bits: "4",
             name: "prog_win_err",
+            swaccess: "ro",
             desc: '''
               The flash life cycle management interface encountered a program resolution error.
             '''
           },
           { bits: "5",
             name: "prog_type_err",
+            swaccess: "ro",
             desc: '''
               The flash life cycle management interface encountered a program type error.
               A program type not supported by the flash macro was issued.
@@ -2092,36 +2107,48 @@
           },
           { bits: "6",
             name: "seed_err",
+            swaccess: "ro",
             desc: '''
               The seed reading process encountered an unexpected error.
             '''
           },
           { bits: "7",
             name: "phy_relbl_err",
+            swaccess: "rw0c",
             desc: '''
               The flash macro encountered a storage reliability ECC error.
+
+              Note that this error bit can be cleared to allow firmware dealing with multi-bit ECC errors during firmware selection and verification.
+              After passing this stage, it is recommended that firmware classifies the corresponding alert as fatal on the receiver end, i.e, inside the alert handler.
             '''
           },
           { bits: "8",
             name: "phy_storage_err",
+            swaccess: "rw0c",
             desc: '''
               The flash macro encountered a storage integrity ECC error.
+
+              Note that this error bit can be cleared to allow firmware dealing with ICV errors during firmware selection and verification.
+              After passing this stage, it is recommended that firmware classifies the corresponding alert as fatal on the receiver end, i.e, inside the alert handler.
             '''
           },
           { bits: "9",
             name: "spurious_ack",
+            swaccess: "ro",
             desc: '''
               The flash emitted an unexpected acknowledgement.
             '''
           },
           { bits: "10",
             name: "arb_err",
+            swaccess: "ro",
             desc: '''
               The phy arbiter encountered inconsistent results.
             '''
           },
           { bits: "11",
             name: "host_gnt_err",
+            swaccess: "ro",
             desc: '''
               A host transaction was granted with illegal properties.
             '''

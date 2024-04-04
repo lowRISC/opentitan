@@ -1163,8 +1163,10 @@ ${"###"} Fields
 ${"##"} FAULT_STATUS
 This register tabulates customized fault status of the flash.
 
-These are errors that are impossible to have been caused by software or unrecoverable
-in nature.
+These are errors that are impossible to have been caused by software or unrecoverable in nature.
+
+All errors except for multi-bit ECC errors ([`FAULT_STATUS.PHY_RELBL_ERR`](#fault_status)) and ICV ([`FAULT_STATUS.PHY_STORAGE_ERR`](#fault_status)) trigger a fatal alert.
+Once set, they remain set until reset.
 - Offset: `0x184`
 - Reset default: `0x0`
 - Reset mask: `0xfff`
@@ -1172,24 +1174,71 @@ in nature.
 ${"###"} Fields
 
 ```wavejson
-{"reg": [{"name": "op_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "mp_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "rd_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "prog_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "prog_win_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "prog_type_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "seed_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "phy_relbl_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "phy_storage_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "spurious_ack", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "arb_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "host_gnt_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 20}], "config": {"lanes": 1, "fontsize": 10, "vspace": 170}}
+{"reg": [{"name": "op_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "mp_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "rd_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "prog_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "prog_win_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "prog_type_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "seed_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "phy_relbl_err", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "phy_storage_err", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "spurious_ack", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "arb_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "host_gnt_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 20}], "config": {"lanes": 1, "fontsize": 10, "vspace": 170}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name            | Description                                                                                                                                                                                                                  |
-|:------:|:------:|:-------:|:----------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 31:12  |        |         |                 | Reserved                                                                                                                                                                                                                     |
-|   11   |   ro   |   0x0   | host_gnt_err    | A host transaction was granted with illegal properties.                                                                                                                                                                      |
-|   10   |   ro   |   0x0   | arb_err         | The phy arbiter encountered inconsistent results.                                                                                                                                                                            |
-|   9    |   ro   |   0x0   | spurious_ack    | The flash emitted an unexpected acknowledgement.                                                                                                                                                                             |
-|   8    |   ro   |   0x0   | phy_storage_err | The flash macro encountered a storage integrity ECC error.                                                                                                                                                                   |
-|   7    |   ro   |   0x0   | phy_relbl_err   | The flash macro encountered a storage reliability ECC error.                                                                                                                                                                 |
-|   6    |   ro   |   0x0   | seed_err        | The seed reading process encountered an unexpected error.                                                                                                                                                                    |
-|   5    |   ro   |   0x0   | prog_type_err   | The flash life cycle management interface encountered a program type error. A program type not supported by the flash macro was issued.                                                                                      |
-|   4    |   ro   |   0x0   | prog_win_err    | The flash life cycle management interface encountered a program resolution error.                                                                                                                                            |
-|   3    |   ro   |   0x0   | prog_err        | The flash life cycle management interface encountered a program error. This could be a program integirty eror, see [`STD_FAULT_STATUS`](#std_fault_status) for more details.                                                 |
-|   2    |   ro   |   0x0   | rd_err          | The flash life cycle management interface encountered a read error. This could be a reliability ECC error or an integrity ECC error encountered during a read, see [`STD_FAULT_STATUS`](#std_fault_status) for more details. |
-|   1    |   ro   |   0x0   | mp_err          | The flash life cycle management interface encountered a memory permission error.                                                                                                                                             |
-|   0    |   ro   |   0x0   | op_err          | The flash life cycle management interface has supplied an undefined operation. See [`CONTROL.OP`](#control) for list of valid operations.                                                                                    |
+|  Bits  |  Type  |  Reset  | Name                                              |
+|:------:|:------:|:-------:|:--------------------------------------------------|
+| 31:12  |        |         | Reserved                                          |
+|   11   |   ro   |   0x0   | [host_gnt_err](#fault_status--host_gnt_err)       |
+|   10   |   ro   |   0x0   | [arb_err](#fault_status--arb_err)                 |
+|   9    |   ro   |   0x0   | [spurious_ack](#fault_status--spurious_ack)       |
+|   8    |  rw0c  |   0x0   | [phy_storage_err](#fault_status--phy_storage_err) |
+|   7    |  rw0c  |   0x0   | [phy_relbl_err](#fault_status--phy_relbl_err)     |
+|   6    |   ro   |   0x0   | [seed_err](#fault_status--seed_err)               |
+|   5    |   ro   |   0x0   | [prog_type_err](#fault_status--prog_type_err)     |
+|   4    |   ro   |   0x0   | [prog_win_err](#fault_status--prog_win_err)       |
+|   3    |   ro   |   0x0   | [prog_err](#fault_status--prog_err)               |
+|   2    |   ro   |   0x0   | [rd_err](#fault_status--rd_err)                   |
+|   1    |   ro   |   0x0   | [mp_err](#fault_status--mp_err)                   |
+|   0    |   ro   |   0x0   | [op_err](#fault_status--op_err)                   |
+
+${"###"} FAULT_STATUS . host_gnt_err
+A host transaction was granted with illegal properties.
+
+${"###"} FAULT_STATUS . arb_err
+The phy arbiter encountered inconsistent results.
+
+${"###"} FAULT_STATUS . spurious_ack
+The flash emitted an unexpected acknowledgement.
+
+${"###"} FAULT_STATUS . phy_storage_err
+The flash macro encountered a storage integrity ECC error.
+
+Note that this error bit can be cleared to allow firmware dealing with ICV errors during firmware selection and verification.
+After passing this stage, it is recommended that firmware classifies the corresponding alert as fatal on the receiver end, i.e, inside the alert handler.
+
+${"###"} FAULT_STATUS . phy_relbl_err
+The flash macro encountered a storage reliability ECC error.
+
+Note that this error bit can be cleared to allow firmware dealing with multi-bit ECC errors during firmware selection and verification.
+After passing this stage, it is recommended that firmware classifies the corresponding alert as fatal on the receiver end, i.e, inside the alert handler.
+
+${"###"} FAULT_STATUS . seed_err
+The seed reading process encountered an unexpected error.
+
+${"###"} FAULT_STATUS . prog_type_err
+The flash life cycle management interface encountered a program type error.
+A program type not supported by the flash macro was issued.
+
+${"###"} FAULT_STATUS . prog_win_err
+The flash life cycle management interface encountered a program resolution error.
+
+${"###"} FAULT_STATUS . prog_err
+The flash life cycle management interface encountered a program error.
+This could be a program integirty eror, see [`STD_FAULT_STATUS`](#std_fault_status) for more details.
+
+${"###"} FAULT_STATUS . rd_err
+The flash life cycle management interface encountered a read error.
+This could be a reliability ECC error or an integrity ECC error
+encountered during a read, see [`STD_FAULT_STATUS`](#std_fault_status) for more details.
+
+${"###"} FAULT_STATUS . mp_err
+The flash life cycle management interface encountered a memory permission error.
+
+${"###"} FAULT_STATUS . op_err
+The flash life cycle management interface has supplied an undefined operation.
+See [`CONTROL.OP`](#control) for list of valid operations.
 
 ${"##"} ERR_ADDR
 Synchronous error address

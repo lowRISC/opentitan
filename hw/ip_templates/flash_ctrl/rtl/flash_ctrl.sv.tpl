@@ -952,7 +952,20 @@ module flash_ctrl
     reg2hw.alert_test.recov_err.q & reg2hw.alert_test.recov_err.qe
   };
 
-  localparam logic [NumAlerts-1:0] IsFatal = {1'b0, 1'b1, 1'b1, 1'b1, 1'b0};
+  // The alert generated for errors reported in the fault status CSR (fatal_err) is not fatal.
+  // This is to enable firmware dealing with multi-bit ECC errors (phy_relbl_err) as well as ICV
+  // (phy_storage_err) errors inside the PHY during firmware selection and verification.
+  // Once firmware has cleared the corresponding bits in the fault status CSR and the alert
+  // handler has acknowledged the alert, the prim_alert_sender will stop triggering the alert.
+  // After firmware has passed the firmware selection / verification stage, the alert handler
+  // config can be adjusted to still classify the alert as fatal on the receiver side.
+  //
+  // This doesn't hold for the other errors conditions reported in the fault status CSR. The
+  // corresponding bits in the register cannot be unset. The alert thus keeps triggering until
+  // reset for these bits.
+  //
+  // For more details, refer to lowRISC/OpenTitan#21353.
+  localparam logic [NumAlerts-1:0] IsFatal = {1'b0, 1'b1, 1'b0, 1'b1, 1'b0};
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_senders
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[i]),
