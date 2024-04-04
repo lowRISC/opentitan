@@ -457,7 +457,7 @@
             - Verify that the link_in_err interrupt goes high following the handshake packet sent by the host.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_link_in_err"]
     }
     {
       name: rx_crc_err
