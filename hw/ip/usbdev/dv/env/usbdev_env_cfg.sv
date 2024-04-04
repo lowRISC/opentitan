@@ -4,8 +4,12 @@
 
 class usbdev_env_cfg extends cip_base_env_cfg #(.RAL_T(usbdev_reg_block));
 
-  virtual clk_rst_if  aon_clk_rst_vif;
-  virtual usb20_if    usb20_usbdpi_vif;
+  // Clock/reset for usbdev_aon_wake module.
+  virtual clk_rst_if aon_clk_rst_vif;
+  // Clock/reset for usbdpi host model (not usb20_agent).
+  virtual clk_rst_if host_clk_rst_vif;
+  // USB connection to usbdpi host model.
+  virtual usb20_if   usb20_usbdpi_vif;
 
   // Reset kinds for USB
   string reset_kinds[] = {"HARD", "TL_IF"};
@@ -25,6 +29,18 @@ class usbdev_env_cfg extends cip_base_env_cfg #(.RAL_T(usbdev_reg_block));
   constraint aon_clk_freq_khz_c {
     aon_clk_freq_khz >  usb_clk_freq_khz / 300 &&
     aon_clk_freq_khz <= usb_clk_freq_khz / 24;
+  }
+
+  // Constrain the host clock to be close to that of the DUT at present; in time we shall want
+  // to exercise a greater disparity and implement oscillator tuning for the DUT to track the
+  // host.
+  // For now we must ensure that the disparity cannot induce sampling errors over the maximum
+  // length of a packet, with maximal initial phase shift. ie. less than one sampling interval
+  // (at 48MHz) of drift over 4 x (16 + ((64x8) + 16)x7/6 + 2) bit intervals).
+  rand uint host_clk_freq_khz;
+  constraint host_clk_freq_khz_c {
+    host_clk_freq_khz >= usb_clk_freq_khz - 18 &&
+    host_clk_freq_khz <= usb_clk_freq_khz + 18;
   }
 
   // ext component cfgs
