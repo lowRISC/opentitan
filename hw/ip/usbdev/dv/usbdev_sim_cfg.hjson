@@ -85,6 +85,10 @@
       uvm_test_seq: usbdev_nak_trans_vseq
     }
     {
+      name: out_data_stage
+      uvm_test_seq: usbdev_out_data_stage_vseq
+    }
+    {
       name: usbdev_out_stall
       uvm_test_seq: usbdev_out_stall_vseq
     }

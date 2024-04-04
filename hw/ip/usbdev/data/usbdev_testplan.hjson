@@ -592,7 +592,7 @@
               an ACK packet or return a NAK if it is still processing previous data.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_out_data_stage"]
     }
     {
       name: endpoint_access
