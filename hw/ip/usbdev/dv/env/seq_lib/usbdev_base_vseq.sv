@@ -45,12 +45,15 @@ bit apply_post_reset_delays_for_sync = 1'b1;
 // Override apply_reset to cater to AON domain as well.
 virtual task apply_reset(string kind = "HARD");
   fork
+    if (kind == "HARD") begin
+      // Ensure that the AON domain (slower clock) is in reset when the DUT domain
+      // leaves reset, to prevent X propagation into the DUT.
+      cfg.aon_clk_rst_vif.drive_rst_pin(0);
+      // Explicitly specify a shorter reset interval to prevent test timeout.
+      cfg.aon_clk_rst_vif.apply_reset(.reset_width_clks($urandom_range(5, 10)));
+    end
     if (kind == "HARD" || kind == "BUS_IF") begin
       super.apply_reset("HARD");
-    end
-
-    if (kind == "HARD") begin
-      cfg.aon_clk_rst_vif.apply_reset();
     end
   join
   do_apply_post_reset_delays_for_sync();
@@ -86,16 +89,16 @@ virtual task wait_for_reset(string reset_kind     = "HARD",
     end
     if (reset_kind == "HARD") begin
       if (wait_for_assert) begin
-        `uvm_info(`gfn, "waiting for aon rst_n assertion...", UVM_MEDIUM)
+        `uvm_info(`gfn, "waiting for aon_rst_n assertion...", UVM_MEDIUM)
         @(negedge cfg.aon_clk_rst_vif.rst_n);
       end
       if (wait_for_deassert) begin
-        `uvm_info(`gfn, "waiting for aon rst_n de-assertion...", UVM_MEDIUM)
+        `uvm_info(`gfn, "waiting for aon_rst_n de-assertion...", UVM_MEDIUM)
         @(posedge cfg.aon_clk_rst_vif.rst_n);
       end
-      `uvm_info(`gfn, "usbdev wait_for_reset done", UVM_HIGH)
     end
   join
+  `uvm_info(`gfn, "usbdev wait_for_reset done", UVM_HIGH)
   do_apply_post_reset_delays_for_sync();
 endtask
 
