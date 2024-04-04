@@ -23,8 +23,27 @@ signing_tool(
     tool = "//sw/host/hsmtool",
 )
 
+# TODO(lowrisc#22428): Remove this target once everyone has started using `cloud_kms_sival`.
 signing_tool(
     name = "cloud_kms",
+    data = [
+        "earlgrey_z1_sival.yaml",
+        "@cloud_kms_hsm//:libkmsp11",
+    ],
+    deprecation = "Please use the token `//signing/tokens:cloud_kms_sival`.",
+    env = {
+        # The Cloud KMS PKCS11 provider needs to know where the user's home
+        # is in order to load the gclould credentials.
+        "HOME": ENV["HOME"],
+        "HSMTOOL_MODULE": "$(location @cloud_kms_hsm//:libkmsp11)",
+        "KMS_PKCS11_CONFIG": "$(location earlgrey_z1_sival.yaml)",
+    },
+    location = "token",
+    tool = "//sw/host/hsmtool",
+)
+
+signing_tool(
+    name = "cloud_kms_sival",
     data = [
         "earlgrey_z1_sival.yaml",
         "@cloud_kms_hsm//:libkmsp11",
