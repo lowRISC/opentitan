@@ -198,7 +198,7 @@ module tb;
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "aon_clk_rst_vif", aon_clk_rst_if);
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
-    uvm_config_db#(virtual usb20_if)::set(null, "*.env.m_usb20_agent*", "vif", usb20_if);
+    uvm_config_db#(virtual usb20_if)::set(null, "*.env", "vif", usb20_if);
     uvm_config_db#(virtual usb20_block_if)::set(null, "*.env.m_usb20_agent*","bif",usb20_block_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();

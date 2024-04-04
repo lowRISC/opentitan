@@ -105,7 +105,7 @@ endtask
     if (do_agent_connect) begin
       // Connect the USB20 agent and ensure that the USBDPI model is not connected.
       cfg.m_usb20_agent_cfg.bif.enable_driver(1'b1);
-      cfg.m_usb20_agent_cfg.vif.enable_driver(1'b0);
+      cfg.usb20_usbdpi_vif.enable_driver(1'b0);
       // Activate it as well? For common sequences we need defined inputs into the DUT to prevent
       // assertions and link-related interrupts from interfering with CSR tests, but we do not
       // want the usb20_agent to be active.
