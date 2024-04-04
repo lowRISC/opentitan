@@ -84,7 +84,7 @@ module tb;
   // This interface is for UVM-based block level DV and has additional connections
   // that may be used to infer the PHY configuration of the DUT and thus exercise all
   // of its configurable input/output modes.
-  usb20_block_if usb20_block_if(.clk_i(usb_clk), .rst_ni(usb_rst_n),
+  usb20_block_if usb20_block_if(.clk_i(host_clk), .rst_ni(host_rst_n),
                                 .usb_vbus(usb_vbus), .usb_p(usb_p), .usb_n(usb_n));
   `DV_ALERT_IF_CONNECT(usb_clk, usb_rst_n)
 
@@ -161,11 +161,6 @@ module tb;
   assign usb20_block_if.usb_dn_en_o     = cio_usb_dn_en;
   assign usb20_block_if.usb_dp_o        = cio_usb_dp;
   assign usb20_block_if.usb_dn_o        = cio_usb_dn;
-
-  Clock_Divider clk_div (
-    .clk     (usb_clk           ),
-    .clk_out (usb20_block_if.usb_clk  )
-  );
 
   // Drivers from the USB device
   assign (strong0, strong1) usb_p = cio_usb_dp_en ? cio_usb_dp : 1'bZ;

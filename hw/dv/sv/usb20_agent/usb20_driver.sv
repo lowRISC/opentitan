@@ -7,8 +7,11 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
 
   `uvm_component_new
 
+  // These delays are in terms of bit intervals
   int usb_rst_time = 100_000;  // upto 10ms
   int usb_idle_clk_cycles = 5;
+  int usb_pwr_good_clk_cycles = 100;  // arbitrary short delay post-VBUS assertion.
+
   bit [7:0] SYNC_PATTERN = 8'b1000_0000;
   bit [1:0] EOP = 2'b00;
 
@@ -163,6 +166,16 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     seq_item_port.item_done();
   endtask
 
+  // Drive the USB to the given state for a single bit interval.
+  task drive_bit_interval(bit dp, bit dn);
+    @(posedge cfg.bif.clk_i)
+    cfg.bif.drive_p = dp;
+    cfg.bif.drive_n = dn;
+    @(posedge cfg.bif.clk_i);
+    @(posedge cfg.bif.clk_i);
+    @(posedge cfg.bif.clk_i);
+  endtask
+
   task drive_pkt(bit comp_pkt[]);
     bit nrzi_out[];
     bit bit_stuff_out[];
@@ -174,10 +187,7 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     `uvm_info(`gfn, $sformatf("Complete Packet after NRZI = %p", nrzi_out), UVM_DEBUG)
     // Loop to drive packet bit by bit
     for (int i = 0; i < nrzi_out.size(); i++) begin
-      @(posedge cfg.bif.usb_clk) begin
-        cfg.bif.drive_p =  nrzi_out[i];
-        cfg.bif.drive_n = ~nrzi_out[i];
-      end
+      drive_bit_interval(nrzi_out[i], ~nrzi_out[i]);
     end
     end_of_packet();
   endtask
@@ -186,15 +196,10 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
   // -------------------------------
   task end_of_packet();
     for (int j = 0; j < 2; j++) begin
-      @(posedge cfg.bif.usb_clk)
-      cfg.bif.drive_p =  EOP[j];
-      cfg.bif.drive_n =  EOP[j];
+      drive_bit_interval(EOP[j], EOP[j]);
     end
-    @(posedge cfg.bif.usb_clk) begin
-      `uvm_info(`gfn, "\n After EOP Idle state", UVM_DEBUG)
-      cfg.bif.drive_p = 1'b1;
-      cfg.bif.drive_n = 1'b0;
-    end
+    `uvm_info(`gfn, "\n After EOP Idle state", UVM_DEBUG)
+    drive_bit_interval(1'b1, 1'b0);
   endtask
 
   // Bit Stuffing/Unstuffing Task
@@ -276,18 +281,22 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
   // RESET signals  Task
   // -------------------------------
   virtual task reset_signals();
-    cfg.bif.usb_rx_d_i = 1'b1;
-    cfg.bif.drive_vbus = 1'b1;
+    // Bus is unpowered and inactive.
+    cfg.bif.drive_vbus = 1'b0;
+    cfg.bif.usb_rx_d_i = 1'b0;
     cfg.bif.drive_p  = 1'b0;
     cfg.bif.drive_n = 1'b0;
     @(posedge cfg.bif.rst_ni);
-    cfg.bif.drive_vbus = 1'b0;
-    repeat(usb_idle_clk_cycles) @(posedge cfg.bif.usb_clk);
-    // TODO: the generation of Bus Reset on the USB shall probably want to become a sequence item,
-    // so that it my be done on demand during sequences, and to prevent it interfering with other
-    // test sequences.
     if (cfg.bif.active) begin
+      // Idle period post DUT reset.
+      repeat (usb_idle_clk_cycles)
+        drive_bit_interval(1'b0, 1'b0);
+      // TODO: the generation of Bus Reset on the USB shall probably want to become a sequence item,
+      // so that it my be done on demand during sequences, and to prevent it interfering with other
+      // test sequences.
       cfg.bif.drive_vbus = 1'b1;
+      repeat (usb_pwr_good_clk_cycles)
+        drive_bit_interval(1'b1, 1'b0);
       bus_reset();
     end
   endtask
@@ -297,17 +306,13 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
   task bus_reset();
     // Waitfor device active state
     `DV_SPINWAIT(wait(cfg.bif.usb_dp_pullup_o);, "timeout waiting for usb_pullup", 500_000)
-    @(posedge cfg.bif.usb_clk)
-    cfg.bif.drive_p = 1'b0;
-    cfg.bif.drive_n = 1'b0;
     // Reset bus or drive 0 on both DP and DN for 10ms
-    repeat(usb_rst_time) @(posedge cfg.bif.usb_clk);
+    repeat (usb_rst_time)
+      drive_bit_interval(1'b0, 1'b0);
     `uvm_info(`gfn, "Reset for 10ms completed", UVM_DEBUG)
     // After reset change state to IDLE
-    @(posedge cfg.bif.usb_clk)
-    cfg.bif.drive_p = 1'b1;
-    cfg.bif.drive_n = 1'b0;
-    repeat(usb_idle_clk_cycles) @(posedge cfg.bif.usb_clk);
+    repeat(usb_idle_clk_cycles)
+      drive_bit_interval(1'b1, 1'b0);
   endtask
 
   // Get_DUT_Response
@@ -324,24 +329,16 @@ class usb20_driver extends dv_base_driver #(usb20_item, usb20_agent_cfg);
     // be able to synchronize to just the USB_P/N signals are they are received.
     `uvm_info(`gfn, "After drive Packet in wait to check usb_dp_en_o signal", UVM_DEBUG)
     wait(cfg.bif.usb_dp_en_o);
-    // TODO: Operating on a div 4 clock is inherently fraught and runs into sampling problems;
-    // a simple solution would be to use the 4x oversampling and detect the initial transition away
-    // from Idle state, then choose an appropriate sampling phase [0,3] on the 4x clock.
-    //
-    // Here, for now, we just choose the clock edge to sidestep sampling errors.
-    // This only works because the div 4 clock is derived from and phase-locked to the 48MHz device
-    // clock.
-    use_negedge = (cfg.bif.usb_clk === 1'b0);
-    `uvm_info(`gfn, $sformatf("use_neg %d clk %d", use_negedge, cfg.bif.usb_clk), UVM_LOW)
-
     while (cfg.bif.usb_dp_en_o) begin
-      if (use_negedge) @(negedge cfg.bif.usb_clk);
-      else @(posedge cfg.bif.usb_clk);
+      @(posedge cfg.bif.clk_i);
+      @(posedge cfg.bif.clk_i);
       // Detect SE0 signaling which indicates End Of Packet
       if (cfg.bif.usb_p === 1'b0 && cfg.bif.usb_n === 1'b0) break;
       received_pkt = new[received_pkt.size() + 1](received_pkt);
       received_pkt[receive_index] = cfg.bif.usb_p;
       receive_index = receive_index + 1;
+      @(posedge cfg.bif.clk_i);
+      @(posedge cfg.bif.clk_i);
     end
     `uvm_info(`gfn, $sformatf("Received Packet = %p", received_pkt), UVM_LOW)
     nrzi_decoder(received_pkt, nrzi_out_pkt);

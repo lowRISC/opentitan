@@ -54,31 +54,24 @@ class usb20_monitor extends dv_base_monitor #(
     bit use_negedge;
 
     // Wait until bus becomes Idle
-    while(!(cfg.bif.usb_p & ~cfg.bif.usb_n)) @(posedge cfg.bif.usb_clk);
-    @(posedge cfg.bif.usb_clk);
-    // Departure from Idle state detected here; this is assumed to be the start of a packet.
-    wait(~cfg.bif.usb_p);
-
-    // TODO: Operating on a div 4 clock is inherently fraught and runs into sampling problems;
-    // a simple solution would be to use the 4x oversampling and detect the initial transition away
-    // from Idle state, then choose an appropriate sampling phase [0,3] on the 4x clock.
-    //
-    // Here, for now, we just choose the clock edge to sidestep sampling errors.
-    // This only works because the div 4 clock is derived from and phase-locked to the 48MHz device
-    // clock.
-    use_negedge = (cfg.bif.usb_clk === 1'b1);
-    `uvm_info(`gfn, $sformatf("use_neg %d clk %d", use_negedge, cfg.bif.usb_clk), UVM_LOW)
-    if (use_negedge) @(negedge cfg.bif.usb_clk);
-    else @(posedge cfg.bif.usb_clk);
+    while(!(cfg.bif.usb_p & ~cfg.bif.usb_n)) @(posedge cfg.bif.clk_i);
+    @(posedge cfg.bif.clk_i);
+    // Entry to K state detected here; SOP signaling.
+    wait(~cfg.bif.usb_p & cfg.bif.usb_n);
+    @(posedge cfg.bif.clk_i);
+    @(posedge cfg.bif.clk_i);
 
     // Collecting usb_p from interface
     while (cfg.bif.usb_p || cfg.bif.usb_n) begin
       packet.push_back(cfg.bif.usb_p);
-      if (use_negedge) @(negedge cfg.bif.usb_clk);
-      else @(posedge cfg.bif.usb_clk);
+      @(posedge cfg.bif.clk_i);
+      @(posedge cfg.bif.clk_i);
+      @(posedge cfg.bif.clk_i);
+      @(posedge cfg.bif.clk_i);
     end
     // TODO: this does not even check the EOP!
     repeat (3) packet.push_back(cfg.bif.usb_p);
+    // TODO: we should almost certainly be consuming the EOP interval here.
 
     `uvm_info(`gfn, $sformatf("Complete monitored packet = %p ", packet), UVM_DEBUG)
     nrzi_decoder(packet, monitored_decoded_packet);
@@ -237,21 +230,22 @@ class usb20_monitor extends dv_base_monitor #(
   // Reset detection
   task detect_reset();
     bit next_rst_phase = 1'b1;
-    @(posedge cfg.bif.usb_clk);
+    @(posedge cfg.bif.clk_i);
 
-    while (cfg.bif.rst_ni != next_rst_phase) @(posedge cfg.bif.usb_clk);
+    while (cfg.bif.rst_ni != next_rst_phase) @(posedge cfg.bif.clk_i);
 
     // Initially we have have only posedge so assigning 0 to negedge bit because it never detects
     // the negedge of the clk.
     cfg.clk_rst_if_i.wait_for_reset(0, 1);
   endtask
 
+  // TODO: is this used; what was it meant to do?!
   virtual task monitor_ready_to_end();
     detect_reset();
     wait(cfg.bif.usb_p & ~cfg.bif.usb_n);
-    while(!(cfg.bif.usb_p & ~cfg.bif.usb_n)) @(posedge cfg.bif.usb_clk)
+    while(!(cfg.bif.usb_p & ~cfg.bif.usb_n)) @(posedge cfg.bif.clk_i);
     forever begin
-      @(posedge cfg.bif.usb_clk);
+      @(posedge cfg.bif.clk_i);
       if (~cfg.bif.usb_p & ~cfg.bif.usb_n) begin
         eop_cnt++;
         if (eop_cnt == 3'b110) begin
