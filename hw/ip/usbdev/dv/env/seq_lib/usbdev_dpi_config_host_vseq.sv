@@ -60,7 +60,7 @@ class usbdev_dpi_config_host_vseq extends usbdev_base_vseq;
     // First of all we want to ensure that the DPI model is connected via the 'usb20_if' which
     // models a physical USB, rather than employing the block-level DV interface.
     cfg.m_usb20_agent_cfg.bif.enable_driver(1'b0);
-    cfg.m_usb20_agent_cfg.vif.enable_driver(1'b1);
+    cfg.usb20_usbdpi_vif.enable_driver(1'b1);
 
     // We want full control of the DUT configuration and communications with the DPI model.
     do_agent_connect = 1'b0;

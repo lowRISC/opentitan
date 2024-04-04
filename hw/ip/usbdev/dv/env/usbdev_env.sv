@@ -21,6 +21,10 @@ class usbdev_env extends cip_base_env #(
         cfg.aon_clk_rst_vif)) begin
       `uvm_fatal(get_full_name(), "failed to get aon_clk_rst_if from uvm_config_db")
     end
+    // get usb20_if handle
+    if (!uvm_config_db#(virtual usb20_if)::get(this, "", "vif", cfg.usb20_usbdpi_vif)) begin
+      `uvm_fatal(`gfn, "failed to get usb20_if handle from uvm_config_db")
+    end
 
     // Use the configured USB speed for the main clock
     cfg.clk_rst_vif.set_freq_mhz(cfg.usb_clk_freq_mhz);

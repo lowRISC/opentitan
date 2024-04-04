@@ -5,6 +5,7 @@
 class usbdev_env_cfg extends cip_base_env_cfg #(.RAL_T(usbdev_reg_block));
 
   virtual clk_rst_if  aon_clk_rst_vif;
+  virtual usb20_if    usb20_usbdpi_vif;
 
   // Reset kinds for USB
   string reset_kinds[] = {"HARD", "TL_IF"};
