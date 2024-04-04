@@ -1,4 +1,4 @@
-# Copyright lowRISC contributors.
+# Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -17,7 +17,7 @@ from reggen.ip_block import IpBlock
 
 from .lib import IpConfig, IpTemplate, TemplateParameter, TemplateRenderError
 
-_HJSON_LICENSE_HEADER = ("""// Copyright lowRISC contributors.
+_HJSON_LICENSE_HEADER = ("""// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 """)

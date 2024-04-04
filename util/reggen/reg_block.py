@@ -1,4 +1,4 @@
-# Copyright lowRISC contributors.
+# Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 '''Code representing the registers, windows etc. for a block'''

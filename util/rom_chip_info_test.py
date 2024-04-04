@@ -1,4 +1,4 @@
-# Copyright lowRISC contributors.
+# Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -17,7 +17,7 @@ class TestGenerateChipInfoCSource(unittest.TestCase):
     def test_simple(self):
         source = rom_chip_info.generate_chip_info_c_source(EXAMPLE_SHA1_DIGEST)
         expected = """
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
@@ -42,7 +42,7 @@ const chip_info_t kChipInfo = {
         digest = EXAMPLE_SHA1_DIGEST >> 8
         source = rom_chip_info.generate_chip_info_c_source(digest)
         expected = """
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //

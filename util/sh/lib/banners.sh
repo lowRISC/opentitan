@@ -1,11 +1,11 @@
-# Copyright lowRISC contributors.
+# Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 # shellcheck shell=bash
 
 add_license_banner() {
   local outfile="$1"
-  local license_banner="# Copyright lowRISC contributors.
+  local license_banner="# Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0"
   TMP=$(mktemp)

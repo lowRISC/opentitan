@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 class chip_sw_lc_ctrl_scrap_vseq extends chip_sw_lc_base_vseq;
