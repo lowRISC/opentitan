@@ -1,4 +1,4 @@
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
@@ -61,7 +61,7 @@ pub fn generate_cert(from_file: &str, tmpl: &Template) -> Result<Codegen> {
     let mut source_unittest = String::new();
 
     let license_and_warning = indoc::formatdoc! { r#"
-    // Copyright lowRISC contributors.
+    // Copyright lowRISC contributors (OpenTitan project).
     // Licensed under the Apache License, Version 2.0, see LICENSE for details.
     // SPDX-License-Identifier: Apache-2.0
 

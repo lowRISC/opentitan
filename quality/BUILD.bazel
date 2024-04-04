@@ -1,4 +1,4 @@
-# Copyright lowRISC contributors.
+# Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
@@ -73,7 +73,7 @@ licence_test(
         "hw/ip/kmac/pre_sca/alma/cpp/verilator_tb_keccak_2share.cpp",
     ],
     licence = """
-    Copyright lowRISC contributors.
+    Copyright lowRISC contributors (OpenTitan project).
     Licensed under the Apache License, Version 2.0, see LICENSE for details.
     SPDX-License-Identifier: Apache-2.0
     """,

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright lowRISC contributors.
+# Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 """Generates chip_info.c for ROM build."""
@@ -24,7 +24,7 @@ def generate_chip_info_c_source(scm_revision: int) -> str:
     scm_revision_low = int.from_bytes(scm_rev_byte_be[4:8], "big")
 
     return f"""
-// Copyright lowRISC contributors.
+// Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
