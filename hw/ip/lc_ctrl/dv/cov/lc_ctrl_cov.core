@@ -15,6 +15,7 @@ filesets:
     files:
       - lc_ctrl_fsm_cov_if.sv
       - lc_ctrl_cov_bind.sv
+      - lc_tx_cov_array_if.sv
     file_type: systemVerilogSource
 
 targets:
