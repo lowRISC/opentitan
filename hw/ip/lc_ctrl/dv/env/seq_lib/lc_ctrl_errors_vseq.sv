@@ -593,7 +593,7 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
                                            // allowed, we cannot use these states as base states to
                                            // test the transition counter saturation error.
                                            if (err_inj.transition_count_err) {
-                                             !(lc_state inside {DecLcStProdEnd, DecLcStRma});
+                                             !(lc_state inside {LcStProdEnd, LcStRma});
                                            }
                                            )
         `uvm_info(`gfn, $sformatf("drive_otp_i: driving lc_state=%s", lc_state.name), UVM_MEDIUM)
