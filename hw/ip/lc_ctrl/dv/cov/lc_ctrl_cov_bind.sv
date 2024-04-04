@@ -18,7 +18,7 @@ module lc_ctrl_cov_bind;
     .rst_ni(rst_ni),
     .val(lc_clk_byp_ack_i)
   );
-  bind lc_ctrl cip_lc_tx_cov_if u_lc_flash_rma_ack_i_if (
+  bind lc_ctrl lc_tx_cov_array_if #(.Count(NumRmaAckSigs)) u_lc_flash_rma_ack_i_if (
     .rst_ni(rst_ni),
     .val(lc_flash_rma_ack_i)
   );
