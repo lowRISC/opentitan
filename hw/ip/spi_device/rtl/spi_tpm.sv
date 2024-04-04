@@ -723,7 +723,7 @@ module spi_tpm
       // check_locality is asserted at the 24th beat.
       // Look at the assertion LocalityLatchCondition_A
       check_locality: begin
-        addr = {sck_cmdaddr_wdata_d[19:0], 4'h 00};
+        addr = {sck_cmdaddr_wdata_d[19:0], 4'h 0};
       end
 
       check_hw_reg: begin
