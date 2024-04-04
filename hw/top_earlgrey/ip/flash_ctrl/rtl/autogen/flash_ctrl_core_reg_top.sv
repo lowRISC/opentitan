@@ -971,6 +971,7 @@ module flash_ctrl_core_reg_top (
   logic std_fault_status_phy_fsm_err_qs;
   logic std_fault_status_ctrl_cnt_err_qs;
   logic std_fault_status_fifo_err_qs;
+  logic fault_status_we;
   logic fault_status_op_err_qs;
   logic fault_status_mp_err_qs;
   logic fault_status_rd_err_qs;
@@ -979,7 +980,9 @@ module flash_ctrl_core_reg_top (
   logic fault_status_prog_type_err_qs;
   logic fault_status_seed_err_qs;
   logic fault_status_phy_relbl_err_qs;
+  logic fault_status_phy_relbl_err_wd;
   logic fault_status_phy_storage_err_qs;
+  logic fault_status_phy_storage_err_wd;
   logic fault_status_spurious_ack_qs;
   logic fault_status_arb_err_qs;
   logic fault_status_host_gnt_err_qs;
@@ -11255,7 +11258,7 @@ module flash_ctrl_core_reg_top (
   //   F[phy_relbl_err]: 7:7
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_fault_status_phy_relbl_err (
@@ -11263,8 +11266,8 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (1'b0),
-    .wd     ('0),
+    .we     (fault_status_we),
+    .wd     (fault_status_phy_relbl_err_wd),
 
     // from internal hardware
     .de     (hw2reg.fault_status.phy_relbl_err.de),
@@ -11282,7 +11285,7 @@ module flash_ctrl_core_reg_top (
   //   F[phy_storage_err]: 8:8
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_fault_status_phy_storage_err (
@@ -11290,8 +11293,8 @@ module flash_ctrl_core_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (1'b0),
-    .wd     ('0),
+    .we     (fault_status_we),
+    .wd     (fault_status_phy_storage_err_wd),
 
     // from internal hardware
     .de     (hw2reg.fault_status.phy_storage_err.de),
@@ -12824,6 +12827,11 @@ module flash_ctrl_core_reg_top (
   assign err_code_update_err_wd = reg_wdata[6];
 
   assign err_code_macro_err_wd = reg_wdata[7];
+  assign fault_status_we = addr_hit[97] & reg_we & !reg_error;
+
+  assign fault_status_phy_relbl_err_wd = reg_wdata[7];
+
+  assign fault_status_phy_storage_err_wd = reg_wdata[8];
   assign ecc_single_err_cnt_we = addr_hit[99] & reg_we & !reg_error;
 
   assign ecc_single_err_cnt_ecc_single_err_cnt_0_wd = reg_wdata[7:0];
@@ -12947,7 +12955,7 @@ module flash_ctrl_core_reg_top (
     reg_we_check[94] = 1'b0;
     reg_we_check[95] = err_code_we;
     reg_we_check[96] = 1'b0;
-    reg_we_check[97] = 1'b0;
+    reg_we_check[97] = fault_status_we;
     reg_we_check[98] = 1'b0;
     reg_we_check[99] = ecc_single_err_cnt_we;
     reg_we_check[100] = 1'b0;
