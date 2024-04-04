@@ -5,21 +5,18 @@
 r"""FuseSoc generator for UVM RAL package created with either regtool or
 topgen tools.
 """
-import argparse
 import os
-import subprocess
 import sys
 import logging as log
 from shutil import copyfile
 from collections import OrderedDict
-import pathlib
 
 import yaml
 
 try:
-    from yaml import CSafeLoader as YamlLoader, CSafeDumper as YamlDumper
+    from yaml import CSafeLoader as YamlLoader
 except ImportError:
-    from yaml import SafeLoader as YamlLoader, SafeDumper as YamlDumper
+    from yaml import SafeLoader as YamlLoader
 
 # RSTMGR root
 RSTMGR_ROOT = "/../"
@@ -61,13 +58,9 @@ def main():
         print("RTL path %s" % (rtl_path, ))
 
     # Retrieve the command from the yml.
-    cmd = ""
     if 'cmd' not in gapi['parameters']:
         log.error("command not given")
         sys.exit(1)
-    else:
-        cmd = gapi['parameters']['cmd']
-
 
     # Copy generated rtl files
     copyfile(rtl_path + "/rstmgr_pkg.sv", "rstmgr_pkg.sv")
@@ -75,7 +68,6 @@ def main():
     copyfile(rtl_path + "/rstmgr_reg_top.sv", "rstmgr_reg_top.sv")
 
     # Copy common rtl files
-    common_path = self_path + RSTMGR_ROOT + "rtl"
     copyfile(rtl_path + "/rstmgr_ctrl.sv", "rstmgr_ctrl.sv")
     copyfile(rtl_path + "/rstmgr_por.sv", "rstmgr_por.sv")
     copyfile(rtl_path + "/rstmgr_info.sv", "rstmgr_info.sv")
@@ -167,7 +159,6 @@ def main():
         },
     }
     cores.append(core)
-
 
     print("cores {}".format(cores))
 
