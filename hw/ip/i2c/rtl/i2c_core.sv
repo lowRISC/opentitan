@@ -496,6 +496,7 @@ module i2c_core import i2c_pkg::*;
     .host_timeout_i                 (host_timeout),
     .nack_timeout_i                 (nack_timeout),
     .nack_timeout_en_i              (nack_timeout_en),
+    .nack_addr_after_timeout_i      (reg2hw.ctrl.nack_addr_after_timeout.q),
     .target_address0_i              (target_address0),
     .target_mask0_i                 (target_mask0),
     .target_address1_i              (target_address1),

@@ -185,6 +185,9 @@ package i2c_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
+    } nack_addr_after_timeout;
+    struct packed {
+      logic        q;
     } llpbk;
     struct packed {
       logic        q;
@@ -557,11 +560,11 @@ package i2c_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    i2c_reg2hw_intr_state_reg_t intr_state; // [505:491]
-    i2c_reg2hw_intr_enable_reg_t intr_enable; // [490:476]
-    i2c_reg2hw_intr_test_reg_t intr_test; // [475:446]
-    i2c_reg2hw_alert_test_reg_t alert_test; // [445:444]
-    i2c_reg2hw_ctrl_reg_t ctrl; // [443:441]
+    i2c_reg2hw_intr_state_reg_t intr_state; // [506:492]
+    i2c_reg2hw_intr_enable_reg_t intr_enable; // [491:477]
+    i2c_reg2hw_intr_test_reg_t intr_test; // [476:447]
+    i2c_reg2hw_alert_test_reg_t alert_test; // [446:445]
+    i2c_reg2hw_ctrl_reg_t ctrl; // [444:441]
     i2c_reg2hw_rdata_reg_t rdata; // [440:432]
     i2c_reg2hw_fdata_reg_t fdata; // [431:413]
     i2c_reg2hw_fifo_ctrl_reg_t fifo_ctrl; // [412:405]
