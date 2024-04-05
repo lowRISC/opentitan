@@ -32,7 +32,7 @@ later.
 
 **GitHub Milestone**: `_project code_.M1`
 
-**Goa**: Initial design scaffolding to start floorplanning and PD iterations.
+**Goal**: Initial design scaffolding to start floorplanning and PD iterations.
 
 **Exit Criteria**:
 
