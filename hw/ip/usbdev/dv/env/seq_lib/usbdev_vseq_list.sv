@@ -20,6 +20,7 @@
 `include "usbdev_out_stall_vseq.sv"
 `include "usbdev_out_trans_nak_vseq.sv"
 `include "usbdev_phy_config_usb_ref_disable_vseq.sv"
+`include "usbdev_phy_config_tx_osc_test_mode_vseq.sv"
 `include "usbdev_phy_pins_sense_vseq.sv"
 `include "usbdev_pkt_buffer_vseq.sv"
 `include "usbdev_pkt_received_vseq.sv"
