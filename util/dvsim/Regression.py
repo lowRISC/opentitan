@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-from modes import Mode, find_mode, find_and_merge_modes
+from modes import Mode, find_mode, find_mode_list
 from Test import Test
 
 import logging as log
@@ -84,11 +84,8 @@ class Regression(Mode):
 
         for regression_obj in regression_objs:
             # Unpack the sim modes
-            found_sim_mode_objs = find_and_merge_modes(
-                regression_obj, regression_obj.en_sim_modes, build_modes,
-                False)
-
-            for sim_mode_obj in found_sim_mode_objs:
+            for sim_mode_obj in find_mode_list(regression_obj.en_sim_modes,
+                                               build_modes):
                 if sim_mode_obj.is_sim_mode == 0:
                     log.error(
                         "Enabled mode \"%s\" within the regression \"%s\" is not a sim mode",
@@ -125,12 +122,11 @@ class Regression(Mode):
             # Unpack the run_modes
             # TODO: If there are other params other than run_opts throw an
             # error and exit
-            found_run_mode_objs = find_and_merge_modes(
-                regression_obj, regression_obj.en_run_modes, run_modes, False)
 
             # Only merge the pre_run_cmds, post_run_cmds & run_opts from the
             # run_modes enabled
-            for run_mode_obj in found_run_mode_objs:
+            for run_mode_obj in find_mode_list(regression_obj.en_run_modes,
+                                               run_modes):
                 # Check if run_mode_obj is also passed on the command line, in
                 # which case, skip
                 if run_mode_obj.name in sim_cfg.en_run_modes:
