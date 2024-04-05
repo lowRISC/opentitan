@@ -39,3 +39,5 @@
 // These depend on usbdev_random_length_out_transaction, so need to come after it.
 `include "usbdev_max_length_out_transaction_vseq.sv"
 `include "usbdev_min_length_out_transaction_vseq.sv"
+// This must follow usbdev_in_trans
+`include "usbdev_endpoint_access_vseq.sv"

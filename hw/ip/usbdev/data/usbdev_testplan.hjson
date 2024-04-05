@@ -605,7 +605,7 @@
               accesses and data_packet for IN Accesses.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_endpoint_access"]
     }
     {
       name: disable_endpoint
