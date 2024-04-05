@@ -205,8 +205,23 @@ typedef enum dif_i2c_signal {
    */
   kDifI2cSignalRepeat = 3,
   /**
+   * The associated data byte was NACK'd.
+   */
+  kDifI2cSignalNack = 4,
+  /**
+   * There was a stretch timeout on the associated address byte, leading to
+   * NACKing all subsequent incoming bytes for the rest of the transaction (and
+   * returning 0xFF bytes on any subsequent reads in that transaction).
+   */
+  kDifI2cSignalNackStart = 5,
+  /**
+   * A STOP signal was received to end a transaction that experienced a stretch
+   * timeout or other I/O error condition.
+   */
+  kDifI2cSignalNackStop = 6,
+  /**
    * There's no associated STOP or START signal this is just a byte that's been
-   * written to the I2C target in an ongoing transaction
+   * written to the I2C target in an ongoing transaction, and it was ACK'd.
    */
   kDifI2cSignalNone = 0,
 } dif_i2c_signal_t;

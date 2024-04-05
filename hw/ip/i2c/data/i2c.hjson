@@ -645,31 +645,62 @@
         }
         { bits: "10:8"
           name: "SIGNAL"
-          desc: "Host issued a START before transmitting ABYTE, a STOP or a RESTART after the preceeding ABYTE"
+          desc: '''
+                Indicates any control symbols associated with the ABYTE.
+
+                For the STOP symbol, a stretch timeout will cause a NACK_STOP to appear in the ACQ FIFO.
+                If the ACQ FIFO doesn't have enough space to record a START and a STOP, the transaction will be dropped entirely on a stretch timeout.
+                In that case, the START byte will not appear (neither as START nor NACK_START), but a standalone NACK_STOP may, if there was space.
+                Software can discard any standalone NACK_STOP that appears.
+
+                See the associated values for more information about the contents.
+                '''
           enum: [
             { value: "0",
               name: "NONE",
-              desc: "ABYTE contains ordinary data byte as received"
+              desc: "ABYTE contains an ordinary data byte that was received and ACK'd."
             },
             { value: "1",
               name: "START",
-              desc: "ABYTE contains the 8-bit I2C address (R/W in lsb)"
+              desc: '''
+                    A START condition preceded the ABYTE to start a new transaction.
+                    ABYTE contains the 7-bit I2C address plus R/W command bit in the order received on the bus, MSB first.
+                    '''
             },
             { value: "2",
               name: "STOP",
-              desc: "ABYTE contains junk"
+              desc: '''
+                    A STOP condition was received for a transaction including a transfer that addressed this Target.
+                    No transfers addressing this Target in that transaction were NACK'd.
+                    ABYTE contains no data.
+                    '''
             },
             { value: "3",
               name: "RESTART",
-              desc: "ABYTE contains junk, START with address will follow"
+              desc: '''
+                    A repeated START condition preceded the ABYTE, extending the current transaction with a new transfer.
+                    ABYTE contains the 7-bit I2C address plus R/W command bit in the order received on the bus, MSB first.
+                    '''
             },
             { value: "4",
               name: "NACK",
-              desc: "ABYTE contains either the address or data that was NACK'ed"
+              desc: '''ABYTE contains an ordinary data byte that was received and NACK'd.'''
             },
             { value: "5",
-              name: "NACKSTART",
-              desc: "ABYTE contains the I2C address which was ACK'ed, but the block will continue and NACK the next data byte that was received: this only happens for writes"
+              name: "NACK_START",
+              desc: '''
+                    A START condition preceded the ABYTE (including repeated START) that was part of a NACK'd transer.
+                    The ABYTE contains the matching I2C address and command bit.
+                    The ABYTE was ACK'd, but the rest of the transaction was NACK'ed.
+                    '''
+            },
+            { value: "6",
+              name: "NACK_STOP",
+              desc: '''
+                    A STOP condition was received for a transaction including a transfer that addressed this Target.
+                    A transfer addressing this Target was NACK'd.
+                    ABYTE contains no data.
+                    '''
             },
           ]
         }
@@ -705,7 +736,7 @@
     { name: "TARGET_TIMEOUT_CTRL"
       desc: '''
             I2C target internal stretching timeout control.
-            When the target has stretched beyond this time it will send a NACK.
+            When the target has stretched beyond this time it will send a NACK for incoming data bytes or release SDA for outgoing data bytes.
             '''
       swaccess: "rw"
       hwaccess: "hro"
