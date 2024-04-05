@@ -41,7 +41,7 @@
       lc_states: ["PROD"]
       features: ["AON_TIMER.WAKEUP.WAKEUP_CONFIG", "AON_TIMER.WAKEUP.WAKEUP_REQUEST"]
       tests: ["chip_sw_pwrmgr_smoketest"]
-      bazel: ["//sw/device/tests:pwrmgr_smoketest"]
+      bazel: ["//sw/device/tests:pwrmgr_smoketest", "//sw/device/tests:aon_timer_smoketest"]
     }
     {
       name: chip_sw_aon_timer_wdog_bark_irq
