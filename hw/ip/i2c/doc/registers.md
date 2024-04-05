@@ -511,16 +511,24 @@ I2C target acquired data
 |  7:0   |   ro   |    x    | [ABYTE](#acqdata--abyte)   |
 
 ### ACQDATA . SIGNAL
-Host issued a START before transmitting ABYTE, a STOP or a RESTART after the preceeding ABYTE
+Indicates any control symbols associated with the ABYTE.
 
-| Value   | Name      | Description                                                                                                                                              |
-|:--------|:----------|:---------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0x0     | NONE      | ABYTE contains ordinary data byte as received                                                                                                            |
-| 0x1     | START     | ABYTE contains the 8-bit I2C address (R/W in lsb)                                                                                                        |
-| 0x2     | STOP      | ABYTE contains junk                                                                                                                                      |
-| 0x3     | RESTART   | ABYTE contains junk, START with address will follow                                                                                                      |
-| 0x4     | NACK      | ABYTE contains either the address or data that was NACK'ed                                                                                               |
-| 0x5     | NACKSTART | ABYTE contains the I2C address which was ACK'ed, but the block will continue and NACK the next data byte that was received: this only happens for writes |
+For the STOP symbol, a stretch timeout will cause a NACK_STOP to appear in the ACQ FIFO.
+If the ACQ FIFO doesn't have enough space to record a START and a STOP, the transaction will be dropped entirely on a stretch timeout.
+In that case, the START byte will not appear (neither as START nor NACK_START), but a standalone NACK_STOP may, if there was space.
+Software can discard any standalone NACK_STOP that appears.
+
+See the associated values for more information about the contents.
+
+| Value   | Name       | Description                                                                                                                                                                                                                       |
+|:--------|:-----------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0x0     | NONE       | ABYTE contains an ordinary data byte that was received and ACK'd.                                                                                                                                                                 |
+| 0x1     | START      | A START condition preceded the ABYTE to start a new transaction. ABYTE contains the 7-bit I2C address plus R/W command bit in the order received on the bus, MSB first.                                                           |
+| 0x2     | STOP       | A STOP condition was received for a transaction including a transfer that addressed this Target. No transfers addressing this Target in that transaction were NACK'd. ABYTE contains no data.                                     |
+| 0x3     | RESTART    | A repeated START condition preceded the ABYTE, extending the current transaction with a new transfer. ABYTE contains the 7-bit I2C address plus R/W command bit in the order received on the bus, MSB first.                      |
+| 0x4     | NACK       | ABYTE contains an ordinary data byte that was received and NACK'd.                                                                                                                                                                |
+| 0x5     | NACK_START | A START condition preceded the ABYTE (including repeated START) that was part of a NACK'd transer. The ABYTE contains the matching I2C address and command bit. The ABYTE was ACK'd, but the rest of the transaction was NACK'ed. |
+| 0x6     | NACK_STOP  | A STOP condition was received for a transaction including a transfer that addressed this Target. A transfer addressing this Target was NACK'd. ABYTE contains no data.                                                            |
 
 Other values are reserved.
 
@@ -567,7 +575,7 @@ Set this CSR to 0 to disable this behaviour.
 
 ## TARGET_TIMEOUT_CTRL
 I2C target internal stretching timeout control.
-When the target has stretched beyond this time it will send a NACK.
+When the target has stretched beyond this time it will send a NACK for incoming data bytes or release SDA for outgoing data bytes.
 - Offset: `0x64`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`

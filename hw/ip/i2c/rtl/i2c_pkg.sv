@@ -23,14 +23,13 @@ package i2c_pkg;
     // 2. We received too many bytes in a write request and had to NACK a data
     // byte. The NACK'ed data byte is still in the data field for inspection.
     AcqNack      = 3'b100,
-    // AcqNackStart means that we got a write request to our address, we sent
-    // an ACK to back to the host so that we can be compatible with SMBus, but
-    // now we must unconditionally NACK the next byte. We cannot record that
-    // NACK'ed byte because there is no space in the ACQ FIFO. The OpenTitan
-    // software must know this distinction from a normal AcqNack because the
-    // state machine must still continue through the AcquireByte and Nack*
-    // states.
-    AcqNackStart = 3'b101
+    // AcqNackStart means that we were addressed on this item, but we timed
+    // out after stretching.
+    AcqNackStart = 3'b101,
+    // AcqNackStop means that we were addressed during the transaction, but we
+    // timed out after stretching and received the Stop to end the
+    // transaction.
+    AcqNackStop  = 3'b110
   } i2c_acq_byte_id_e;
 
   // Width of each entry in the FMT FIFO with enough space for an 8-bit data

@@ -134,9 +134,9 @@ module i2c_core import i2c_pkg::*;
   logic [TX_FIFO_WIDTH-1:0] tx_fifo_rdata;
 
   logic                      acq_fifo_wvalid;
-  logic                      acq_fifo_wready;
   logic [ACQ_FIFO_WIDTH-1:0] acq_fifo_wdata;
   logic [AcqFifoDepthW-1:0]  acq_fifo_depth;
+  logic                      acq_fifo_full;
   logic                      acq_fifo_rvalid;
   logic                      acq_fifo_rready;
   logic [ACQ_FIFO_WIDTH-1:0] acq_fifo_rdata;
@@ -190,7 +190,7 @@ module i2c_core import i2c_pkg::*;
   assign hw2reg.val.sda_rx.d = sda_rx_val;
 
   assign hw2reg.status.txfull.d = ~tx_fifo_wready;
-  assign hw2reg.status.acqfull.d = ~acq_fifo_wready;
+  assign hw2reg.status.acqfull.d = acq_fifo_full;
   assign hw2reg.status.txempty.d = ~tx_fifo_rvalid;
   assign hw2reg.status.acqempty.d = ~acq_fifo_rvalid;
   assign hw2reg.target_fifo_status.txlvl.d = MaxFifoDepthW'(tx_fifo_depth);
@@ -482,10 +482,10 @@ module i2c_core import i2c_pkg::*;
     .tx_fifo_rready_o        (tx_fifo_rready),
     .tx_fifo_rdata_i         (tx_fifo_rdata),
 
-    .acq_fifo_wready_o              (acq_fifo_wready),
     .acq_fifo_wvalid_o              (acq_fifo_wvalid),
     .acq_fifo_wdata_o               (acq_fifo_wdata),
     .acq_fifo_rdata_i               (acq_fifo_rdata),
+    .acq_fifo_full_o                (acq_fifo_full),
     .acq_fifo_depth_i               (acq_fifo_depth),
 
     .target_idle_o                  (target_idle),
@@ -688,7 +688,7 @@ module i2c_core import i2c_pkg::*;
   ) intr_hw_acq_overflow (
     .clk_i,
     .rst_ni,
-    .event_intr_i           (~acq_fifo_wready),
+    .event_intr_i           (acq_fifo_full),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.acq_full.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.acq_full.q),
     .reg2hw_intr_test_qe_i  (reg2hw.intr_test.acq_full.qe),
