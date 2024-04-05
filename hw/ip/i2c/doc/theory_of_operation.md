@@ -124,10 +124,15 @@ The assigned address and mask pairs are set in registers [`TARGET_ID.ADDRESS0`](
 ### Acquired Formatted Data
 
 This section applies to I2C in the target mode.
-When the target accepts a transaction, it inserts the transaction address, read/write bit, and START signal sent by the host into ACQ FIFO where they can be accessed by software.
+When the target accepts a transfer, it inserts the transfer address, read/write bit, and START signal sent by the host into ACQ FIFO where they can be accessed by software.
 ACQ FIFO output corresponds to [`ACQDATA`](registers.md#acqdata).
-If the transaction is a write operation (R/W bit = 0), the target proceeds to read bytes from the bus and insert them into ACQ FIFO until the host terminates the transaction by sending a STOP or a repeated START signal.
-A STOP or repeated START indicator is inserted into ACQ FIFO as the next entry following the last byte received, in which case other bits may be junk.
+If the transfer is a write operation (R/W bit = 0), the target proceeds to read bytes from the bus and insert them into ACQ FIFO until the host terminates the transfer by sending a STOP or a repeated START signal.
+A STOP or repeated START indicator is inserted into ACQ FIFO as the next entry following the last byte received, in which case other bits may be junk or the target address, respectively.
+
+Note that the repeated START indicator only appears if it matches the address.
+Typically, this is the case, and a transaction that changes targets between transfers is strongly discouraged.
+If no additional transfers targeting this target's address occur, an entry representing the end of the transfer will wait for the STOP symbol.
+
 The following diagram shows consecutive entries inserted into ACQ FIFO during a write operation:
 
 ![](../doc/I2C_acq_fifo_write.svg)
@@ -143,14 +148,17 @@ The following diagram shows consecutive entries inserted into ACQ FIFO during a 
 
 ![](../doc/I2C_acq_fifo_read.svg)
 
-The ACQ FIFO entry consists of 10 bits:
+The ACQ FIFO entry consists of 11 bits:
 - Address (bits 7:1) and R/W bit (bit 0) or data byte
-- Format flags (bits 9:8)
+- Format flags (bits 10:8)
 The format flags indicate the following signals received from the host:
-- START: 01
-- STOP: 10
-- repeated START: 11
-- No START, or STOP: 00
+- START: 001
+- STOP completing transaction without errors: 010
+- repeated START: 011
+- No START, or STOP: 000
+- NACK during target-receiver transfer: 100
+- NACK of this target's address: 101
+- STOP received for a transaction with errors: 110
 
 ### Timing Control Registers
 

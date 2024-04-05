@@ -199,25 +199,24 @@ class i2c_target_hrst_vseq extends i2c_target_smoke_vseq;
     // Update glitch data
     if (glitch inside {AddressByteStart, AddressByteStop}) begin
       i2c_item  glitch_txn;
-      exp_txn.wdata = 8'hAA;
       txn.wait_cycles = $urandom_range(2,6);
       // Add entry for Address glitch
       `uvm_create_obj(i2c_item, glitch_txn)
       if (glitch == AddressByteStart) begin
         txn.wdata = 8'hFF;
-        exp_txn.rstart = 1;
         // Add Start glitch
         glitch_txn.drv_type = HostRStart;
         skip_start = 1;
       end else begin
         txn.wdata = 8'h00;
-        exp_txn.stop = 1;
         // Add Stop glitch
         glitch_txn.drv_type = HostStop;
       end
       // Push transaction for driver
       driver_q.push_back(glitch_txn);
-      push_exp_txn(exp_txn);
+      // There should be no entry in the ACQ FIFO for an AddressByte*
+      // glitch, since this is a new transaction that never completes
+      // addressing the target.
       return; // return, since glitch entry is done
     end else begin
       // for valid address transaction indicate start bit
@@ -236,11 +235,8 @@ class i2c_target_hrst_vseq extends i2c_target_smoke_vseq;
       txn.wait_cycles = $urandom_range(2, 6);
       if(glitch == WriteDataByteStart) begin
         txn.wdata = 8'hFF;
-        exp_txn.rstart = 1;
-        skip_start = 1;
       end else if (glitch == WriteDataByteStop) begin
         txn.wdata = 8'h00;
-        exp_txn.stop = 1;
       end
       // Push transaction to driver queue
       driver_q.push_back(txn);
@@ -253,12 +249,18 @@ class i2c_target_hrst_vseq extends i2c_target_smoke_vseq;
       end else begin
         txn.drv_type = HostStop;
         txn.stop = 1;
+        exp_txn.stop = 1;
       end
       // Push transaction for driver
       driver_q.push_back(txn);
     end
     // Push transaction for expected ACQ data
-    push_exp_txn(exp_txn);
+    // No need to do this with skip_start, since it would duplicate fetch_txn()
+    // Is this horrible spaghetti code? Why, yes, yes it is.
+    // TODO(): Cleanup?
+    if (!skip_start) begin
+      push_exp_txn(exp_txn);
+    end
   endfunction
 
   task create_read_glitch(ref i2c_item driver_q[$]);

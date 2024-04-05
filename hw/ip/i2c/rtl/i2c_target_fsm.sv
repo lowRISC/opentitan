@@ -80,9 +80,15 @@ module i2c_target_fsm import i2c_pkg::*;
   logic        start_det;     // indicates start or repeated start is detected on the bus
   logic        stop_det_trigger, stop_det_pending;
   logic        stop_det;      // indicates stop is detected on the bus
+  logic        restart_det_q; // indicates the latest start was a repeated start
+  logic        restart_det_d;
   logic        address0_match;// indicates target's address0 matches the one sent by host
   logic        address1_match;// indicates target's address1 matches the one sent by host
   logic        address_match; // indicates one of target's addresses matches the one sent by host
+  logic        xact_for_us_q; // Target was addressed in this transaction
+  logic        xact_for_us_d; //     - We only record Stop if the Target was addressed.
+  logic        xfer_for_us_q; // Target was addressed in this transfer
+  logic        xfer_for_us_d; //     - event_cmd_complete_o is only for our transfers
   logic [7:0]  input_byte;    // register for reads from host
   logic        input_byte_clr;// clear input_byte contents
   logic        acq_fifo_plenty_space;
@@ -182,6 +188,19 @@ module i2c_target_fsm import i2c_pkg::*;
     end else begin
       scl_i_q <= scl_i;
       sda_i_q <= sda_i;
+    end
+  end
+
+  // Track the transaction framing and this target's participation in it.
+  always_ff @ (posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      restart_det_q <= 1'b0;
+      xact_for_us_q <= 1'b0;
+      xfer_for_us_q <= 1'b0;
+    end else begin
+      restart_det_q <= restart_det_d;
+      xact_for_us_q <= xact_for_us_d;
+      xfer_for_us_q <= xfer_for_us_d;
     end
   end
 
@@ -347,7 +366,7 @@ module i2c_target_fsm import i2c_pkg::*;
 
   // During a host issued read, a stop was received without first seeing a nack.
   // This may be harmless but is technically illegal behavior, notify software.
-  assign event_unexp_stop_o = !target_idle & rw_bit_q & stop_det & !expect_stop;
+  assign event_unexp_stop_o = xfer_for_us_q & rw_bit_q & stop_det & !expect_stop;
 
   // Outputs for each state
   always_comb begin : state_outputs
@@ -361,7 +380,11 @@ module i2c_target_fsm import i2c_pkg::*;
     event_target_nack_o = 1'b0;
     rw_bit = rw_bit_q;
     expect_stop = 1'b0;
+    restart_det_d = restart_det_q;
+    xact_for_us_d = xact_for_us_q;
+    xfer_for_us_d = xfer_for_us_q;
     actively_stretching = 1'b0;
+
     unique case (state_q)
       // Idle: initial state, SDA is released (high), SCL is released if the
       // bus is idle. Otherwise, if no STOP condition has been sent yet,
@@ -369,20 +392,31 @@ module i2c_target_fsm import i2c_pkg::*;
       Idle : begin
         sda_d = 1'b1;
         scl_d = 1'b1;
+        restart_det_d = 1'b0;
+        xact_for_us_d = 1'b0;
+        xfer_for_us_d = 1'b0;
       end
 
       /////////////////
       // TARGET MODE //
       /////////////////
 
-      // AcquireStart: hold start condition
+      // AcquireStart: hold for the end of the start condition
       AcquireStart : begin
         target_idle_o = 1'b0;
+        xfer_for_us_d = 1'b0;
       end
       // AddrRead: read and compare target address
       AddrRead : begin
         target_idle_o = 1'b0;
         rw_bit = input_byte[0];
+
+        if (bit_ack) begin
+          if (address_match) begin
+            xact_for_us_d = 1'b1;
+            xfer_for_us_d = 1'b1;
+          end
+        end
       end
       // AddrAckWait: pause before acknowledging
       AddrAckWait : begin
@@ -414,6 +448,11 @@ module i2c_target_fsm import i2c_pkg::*;
           end else begin
             // Only write to fifo if stretching conditions are not met
             acq_fifo_wvalid_o = ~stretch_addr;
+          end
+
+          if (restart_det_q) begin
+            acq_fifo_wdata_o = {AcqRestart, input_byte};
+          end else begin
             acq_fifo_wdata_o = {AcqStart, input_byte};
           end
         end
@@ -525,10 +564,19 @@ module i2c_target_fsm import i2c_pkg::*;
       StretchAddr : begin
         target_idle_o = 1'b0;
         scl_d = 1'b0;
-
-        acq_fifo_wvalid_o = !stretch_addr || nack_timeout;
-        acq_fifo_wdata_o = {AcqStart, input_byte};
         actively_stretching = stretch_addr;
+
+        if (nack_timeout) begin
+          acq_fifo_wvalid_o = 1'b1;
+          acq_fifo_wdata_o = {AcqNackStart, input_byte};
+        end else if (!stretch_addr) begin
+          acq_fifo_wvalid_o = 1'b1;
+          if (restart_det_q) begin
+            acq_fifo_wdata_o = {AcqRestart, input_byte};
+          end else begin
+            acq_fifo_wdata_o = {AcqStart, input_byte};
+          end
+        end
       end
       // StretchTx: target stretches the clock when tx_fifo is empty
       StretchTx : begin
@@ -561,17 +609,24 @@ module i2c_target_fsm import i2c_pkg::*;
         acq_fifo_wdata_o = ACQ_FIFO_WIDTH'(0);
         event_cmd_complete_o = 1'b0;
         event_target_nack_o = 1'b0;
+        restart_det_d = 1'b0;
+        xact_for_us_d = 1'b0;
         actively_stretching = 1'b0;
       end
     endcase // unique case (state_q)
 
     // start / stop override
-    if (start_det || stop_det) begin
-      // Only add an entry if this is a repeated start or stop.
-      acq_fifo_wvalid_o = !target_idle_o;
-      acq_fifo_wdata_o = start_det ? {AcqRestart, input_byte} :
-                                     {AcqStop, input_byte};
-      event_cmd_complete_o = !target_idle_o;
+    if (stop_det) begin
+      event_cmd_complete_o = xfer_for_us_q;
+      // Note that we assume the ACQ FIFO can accept a new item and will
+      // receive the arbiter grant without delay. No other FIFOs should have
+      // activity during a Start or Stop symbol.
+      // TODO: Add an assertion.
+      acq_fifo_wvalid_o = xact_for_us_q;
+      acq_fifo_wdata_o = {AcqStop, input_byte};
+    end else if (start_det) begin
+      restart_det_d = !target_idle_o;
+      event_cmd_complete_o = xfer_for_us_q;
     end
   end
 
@@ -609,6 +664,7 @@ module i2c_target_fsm import i2c_pkg::*;
     unique case (state_q)
       // Idle: initial state, SDA and SCL are released (high)
       Idle : begin
+        // The bus is idle. Waiting for a Start.
         clear_nack_next_byte = 1'b1;
       end
 
@@ -616,9 +672,9 @@ module i2c_target_fsm import i2c_pkg::*;
       // TARGET MODE //
       /////////////////
 
-      // AcquireStart: hold start condition
+      // AcquireStart: hold for the end of the start condition
       AcquireStart : begin
-        if (scl_i_q && !scl_i) begin
+        if (!scl_i) begin
           state_d = AddrRead;
           input_byte_clr = 1'b1;
         end
@@ -645,9 +701,9 @@ module i2c_target_fsm import i2c_pkg::*;
             // Wait for hold time to avoid interfering with the controller.
             load_tcount = 1'b1;
             tcount_sel = tHoldData;
-          end else begin
-            // This means this transaction is not meant for us.
-            state_d = Idle;
+          end else begin // !address_match
+            // This means this transfer is not meant for us.
+            state_d = WaitForStop;
           end
         end
       end
