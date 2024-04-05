@@ -143,10 +143,10 @@ module otbn_controller
   input  logic urnd_reseed_err_i,
 
   // Secure Wipe
-  output logic secure_wipe_req_o,
-  input  logic secure_wipe_ack_i,
-  input  logic sec_wipe_zero_i,
-  input  logic secure_wipe_running_i,
+  output logic                  secure_wipe_req_o,
+  input  logic                  secure_wipe_ack_i,
+  input  logic                  sec_wipe_zero_i,
+  input  prim_mubi_pkg::mubi4_t secure_wipe_running_i,
 
   input  logic        state_reset_i,
   output logic [31:0] insn_cnt_o,
@@ -319,18 +319,23 @@ module otbn_controller
   logic [4:0] insn_bignum_rd_addr_a_q, insn_bignum_rd_addr_b_q, insn_bignum_wr_addr_q;
 
   logic       start_secure_wipe;
-  logic       secure_wipe_running_q, secure_wipe_running_d;
+  mubi4_t     secure_wipe_running_q, secure_wipe_running_d;
 
-  assign secure_wipe_running_d = start_secure_wipe | (secure_wipe_running_q & ~secure_wipe_ack_i);
+  assign secure_wipe_running_d =
+    mubi4_or_hi(mubi4_bool_to_mubi(start_secure_wipe),
+                mubi4_and_hi(secure_wipe_running_q, mubi4_bool_to_mubi(~secure_wipe_ack_i)));
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      secure_wipe_running_q <= 1'b0;
-    end else begin
-      secure_wipe_running_q <= secure_wipe_running_d;
-    end
-  end
-  assign secure_wipe_req_o = start_secure_wipe | secure_wipe_running_q;
+  prim_flop #(
+    .Width(MuBi4Width),
+    .ResetValue(MuBi4False)
+  ) u_secure_wipe_running_flop(
+    .clk_i,
+    .rst_ni,
+    .d_i(secure_wipe_running_d),
+    .q_o({secure_wipe_running_q})
+  );
+
+  assign secure_wipe_req_o = start_secure_wipe | mubi4_test_true_strict(secure_wipe_running_q);
 
   // Spot spurious acks on the secure wipe interface. There is a an ack at the end of the initial
   // secure wipe, and as `secure_wipe_running_q` is only high during secure wipes triggered by this
@@ -344,10 +349,10 @@ module otbn_controller
       spurious_secure_wipe_ack_q <= spurious_secure_wipe_ack_d;
     end
   end
-  assign spurious_secure_wipe_ack_d = spurious_secure_wipe_ack_q |
-                                      (secure_wipe_ack_i      &
-                                       ~secure_wipe_running_q &
-                                       ~secure_wipe_running_i);
+  assign spurious_secure_wipe_ack_d = spurious_secure_wipe_ack_q                      |
+                                      (secure_wipe_ack_i                             &
+                                       mubi4_test_false_loose(secure_wipe_running_q) &
+                                       mubi4_test_false_loose(secure_wipe_running_i));
 
   // Stall a cycle on loads to allow load data writeback to happen the following cycle. Stall not
   // required on stores as there is no response to deal with.
@@ -380,8 +385,11 @@ module otbn_controller
   // `secure_wipe_req_o` and `urnd_reseed_err_i` will remain high).  The condition for secure wipe
   // running involves `secure_wipe_running_i`, which is high for the initial secure wipe, and
   // `secure_wipe_req_o`, which is high for post-execution secure wipes.
-  assign locking_o = (state_d == OtbnStateLocked) & (~(secure_wipe_running_i | secure_wipe_req_o) |
-                                                     urnd_reseed_err_i | mubi_err_d);
+  assign locking_o =
+    (state_d == OtbnStateLocked) &
+    (~(mubi4_test_true_strict(secure_wipe_running_i) | secure_wipe_req_o) |
+     urnd_reseed_err_i                                                    |
+     mubi_err_d);
 
   assign start_secure_wipe = executing & (done_complete | err);
 
@@ -704,7 +712,8 @@ module otbn_controller
 
   assign insn_cnt_o = insn_cnt_q;
 
-  assign loop_reset = state_reset_i | sec_wipe_zero_i;
+  assign loop_reset = state_reset_i |
+    (sec_wipe_zero_i & mubi4_test_true_strict(secure_wipe_running_i));
 
   otbn_loop_controller #(
     .ImemAddrWidth(ImemAddrWidth)

@@ -27,8 +27,12 @@ module otbn_mac_bignum
 
   output logic [ExtWLEN-1:0] ispr_acc_intg_o,
   input  logic [ExtWLEN-1:0] ispr_acc_wr_data_intg_i,
-  input  logic               ispr_acc_wr_en_i
+  input  logic               ispr_acc_wr_en_i,
+
+  input prim_mubi_pkg::mubi4_t secure_wipe_running_i
 );
+  import prim_mubi_pkg::*;
+
   // The MAC operates on quarter-words, QWLEN gives the number of bits in a quarter-word.
   localparam int unsigned QWLEN = WLEN / 4;
 
@@ -190,11 +194,21 @@ module otbn_mac_bignum
   assign operation_flags_o.C    = 1'b0;
   assign operation_flags_en_o.C = 1'b0;
 
+  logic sec_wipe_acc_urnd_qualified_unbuf, sec_wipe_acc_urnd_qualified;
+
+  assign sec_wipe_acc_urnd_qualified_unbuf =
+    sec_wipe_acc_urnd_i & (mubi4_test_true_strict(secure_wipe_running_i));
+
+  prim_buf #(.Width(1)) u_sec_wipe_acc_urnd_qualified_buf (
+    .in_i (sec_wipe_acc_urnd_qualified_unbuf),
+    .out_o(sec_wipe_acc_urnd_qualified)
+  );
+
   always_comb begin
     acc_no_intg_d = '0;
     unique case (1'b1)
       // Non-encoded inputs have to be encoded before writing to the register.
-      sec_wipe_acc_urnd_i: begin
+      sec_wipe_acc_urnd_qualified: begin
         acc_no_intg_d = urnd_data_i;
         acc_intg_d = acc_intg_calc;
       end
@@ -215,7 +229,7 @@ module otbn_mac_bignum
 
   // Only write to accumulator if the MAC is enabled or an ACC ISPR write is occuring or secure
   // wipe of the internal state is occuring.
-  assign acc_en = (mac_en_i & mac_commit_i) | ispr_acc_wr_en_i | sec_wipe_acc_urnd_i;
+  assign acc_en = (mac_en_i & mac_commit_i) | ispr_acc_wr_en_i | sec_wipe_acc_urnd_qualified;
 
   always_ff @(posedge clk_i) begin
     if (acc_en) begin

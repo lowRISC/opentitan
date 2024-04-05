@@ -36,10 +36,11 @@ module otbn_core
   input logic clk_i,
   input logic rst_ni,
 
-  input  logic start_i,   // start the operation
-  output logic done_o,    // operation done
-  output logic locking_o, // The core is in or is entering the locked state
-  output logic secure_wipe_running_o, // the core is securely wiping its internal state
+  input  logic                  start_i,   // start the operation
+  output logic                  done_o,    // operation done
+  output logic                  locking_o, // The core is in or is entering the locked state
+  // the core is securely wiping its internal state
+  output prim_mubi_pkg::mubi4_t secure_wipe_running_o,
 
   output core_err_bits_t err_bits_o,  // valid when done_o is asserted
   output logic           recoverable_err_o,
@@ -246,15 +247,18 @@ module otbn_core
 
   logic secure_wipe_req, secure_wipe_ack;
 
-  logic sec_wipe_wdr_d, sec_wipe_wdr_q;
+  logic   sec_wipe_wdr;
+  mubi4_t sec_wipe_wdr_d, sec_wipe_wdr_q;
   logic sec_wipe_wdr_urnd_d, sec_wipe_wdr_urnd_q;
   logic sec_wipe_base;
+  logic sec_wipe_base_qualified_unbuf, sec_wipe_base_qualified;
   logic sec_wipe_base_urnd;
   logic [4:0] sec_wipe_addr, sec_wipe_wdr_addr_q;
 
   logic sec_wipe_acc_urnd;
   logic sec_wipe_mod_urnd;
   logic sec_wipe_zero;
+  logic sec_wipe_zero_qualified_unbuf, sec_wipe_zero_qualified;
 
   logic zero_flags;
 
@@ -300,12 +304,12 @@ module otbn_core
     .urnd_reseed_err_o (urnd_reseed_err),
     .urnd_advance_o    (urnd_advance_start_stop_control),
 
-    .secure_wipe_req_i (secure_wipe_req),
-    .secure_wipe_ack_o (secure_wipe_ack),
+    .secure_wipe_req_i    (secure_wipe_req),
+    .secure_wipe_ack_o    (secure_wipe_ack),
     .secure_wipe_running_o,
     .done_o,
 
-    .sec_wipe_wdr_o      (sec_wipe_wdr_d),
+    .sec_wipe_wdr_o      (sec_wipe_wdr),
     .sec_wipe_wdr_urnd_o (sec_wipe_wdr_urnd_d),
     .sec_wipe_base_o     (sec_wipe_base),
     .sec_wipe_base_urnd_o(sec_wipe_base_urnd),
@@ -327,9 +331,17 @@ module otbn_core
   // consistent grouping of signals with their valid signal.
   assign insn_addr = insn_fetch_resp_addr;
 
+  assign sec_wipe_zero_qualified_unbuf =
+    sec_wipe_zero & mubi4_test_true_strict(secure_wipe_running_o);
+
+  prim_buf #(.Width(1)) u_sec_wipe_zero_qualified_unbuf (
+    .in_i (sec_wipe_zero_qualified_unbuf),
+    .out_o(sec_wipe_zero_qualified)
+  );
+
   // For secure wipe and ISPR initialization, flags need to be cleared to 0. This is achieved
   // through the blanking mechanism controlled by the instruction fetch/predecoder stage.
-  assign zero_flags = sec_wipe_zero | ispr_init;
+  assign zero_flags = sec_wipe_zero_qualified | ispr_init;
 
   // Instruction fetch unit
   otbn_instruction_fetch #(
@@ -377,7 +389,7 @@ module otbn_core
     .prefetch_loop_jump_addr_i (prefetch_loop_jump_addr),
     .prefetch_ignore_errs_i    (prefetch_ignore_errs),
 
-    .sec_wipe_wdr_en_i  (sec_wipe_wdr_d),
+    .sec_wipe_wdr_en_i  (sec_wipe_wdr),
     .sec_wipe_wdr_addr_i(sec_wipe_addr),
 
     .zero_flags_i(zero_flags)
@@ -703,16 +715,33 @@ module otbn_core
     .call_stack_sw_err_o(rf_base_call_stack_sw_err),
     .call_stack_hw_err_o(rf_base_call_stack_hw_err),
     .intg_err_o         (rf_base_intg_err),
-    .spurious_we_err_o  (rf_base_spurious_we_err)
+    .spurious_we_err_o  (rf_base_spurious_we_err),
+
+    .secure_wipe_running_i(secure_wipe_running_o)
   );
 
-  assign rf_base_wr_addr         = sec_wipe_base ? sec_wipe_addr : rf_base_wr_addr_ctrl;
-  assign rf_base_wr_en           = sec_wipe_base ? 1'b1          : rf_base_wr_en_ctrl;
-  assign rf_base_wr_commit       = sec_wipe_base ? 1'b1          : rf_base_wr_commit_ctrl;
+  // TODO: Resolve circular logic if sec_wipe_base is qualified with secure_wipe_running_o. The
+  // issue is the inputs to the base register file factor into whether an error occurs that can in
+  // turn cause an escalation (when software errors cause alerts) which factors into the logic
+  // driving secure_wipe_running_o.
+  // A potential fix would be to flop the secure wipe address and secure wipe enable as is done with
+  // the bignum register file.
+  //assign sec_wipe_base_qualified_unbuf =
+  //  sec_wipe_base & mubi4_test_true_strict(secure_wipe_running_o);
+  assign sec_wipe_base_qualified_unbuf = sec_wipe_base;
+
+  prim_buf #(.Width(1)) u_sec_wipe_base_qualified_buf (
+    .in_i (sec_wipe_base_qualified_unbuf),
+    .out_o(sec_wipe_base_qualified)
+  );
+
+  assign rf_base_wr_addr   = sec_wipe_base_qualified ? sec_wipe_addr : rf_base_wr_addr_ctrl;
+  assign rf_base_wr_en     = sec_wipe_base_qualified ? 1'b1          : rf_base_wr_en_ctrl;
+  assign rf_base_wr_commit = sec_wipe_base_qualified ? 1'b1          : rf_base_wr_commit_ctrl;
 
   // Write data to Base RF
   always_comb begin
-    if (sec_wipe_base) begin
+    if (sec_wipe_base_qualified) begin
       // Wipe the Base RF with either random numbers or zeroes.
       if (sec_wipe_base_urnd) begin
         rf_base_wr_data_no_intg = urnd_data[31:0];
@@ -764,28 +793,36 @@ module otbn_core
     .spurious_we_err_o(rf_bignum_spurious_we_err)
   );
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if(!rst_ni) begin
-      sec_wipe_wdr_q <= 1'b0;
-    end else begin
-      sec_wipe_wdr_q <= sec_wipe_wdr_d;
-    end
-  end
+  assign sec_wipe_wdr_d = mubi4_and_hi(mubi4_bool_to_mubi(sec_wipe_wdr), secure_wipe_running_o);
+
+  prim_flop #(
+    .Width(MuBi4Width),
+    .ResetValue(MuBi4False)
+  ) u_sec_wipe_wdr_flop (
+    .clk_i,
+    .rst_ni,
+    .d_i(sec_wipe_wdr_d),
+    .q_o(sec_wipe_wdr_q)
+  );
 
   always_ff @(posedge clk_i) begin
-    if (sec_wipe_wdr_d) begin
+    if (sec_wipe_wdr) begin
       sec_wipe_wdr_addr_q <= sec_wipe_addr;
       sec_wipe_wdr_urnd_q <= sec_wipe_wdr_urnd_d;
     end
   end
 
-  assign rf_bignum_wr_addr   = sec_wipe_wdr_q ? sec_wipe_wdr_addr_q : rf_bignum_wr_addr_ctrl;
-  assign rf_bignum_wr_en     = sec_wipe_wdr_q ? 2'b11               : rf_bignum_wr_en_ctrl;
-  assign rf_bignum_wr_commit = sec_wipe_wdr_q ? 1'b1                : rf_bignum_wr_commit_ctrl;
+  assign rf_bignum_wr_addr =
+    mubi4_test_true_strict(sec_wipe_wdr_q) ? sec_wipe_wdr_addr_q : rf_bignum_wr_addr_ctrl;
+
+  assign rf_bignum_wr_en = mubi4_test_true_strict(sec_wipe_wdr_q) ? 2'b11 : rf_bignum_wr_en_ctrl;
+
+  assign rf_bignum_wr_commit =
+    mubi4_test_true_strict(sec_wipe_wdr_q) ? 1'b1 : rf_bignum_wr_commit_ctrl;
 
   // Write data to WDR
   always_comb begin
-    if (sec_wipe_wdr_q) begin
+    if (mubi4_test_true_strict(sec_wipe_wdr_q)) begin
       // Wipe the WDR with either random numbers or zeroes.
       if (sec_wipe_wdr_urnd_q) begin
         rf_bignum_wr_data_no_intg = urnd_data;
@@ -840,7 +877,9 @@ module otbn_core
     .sideload_key_shares_i,
 
     .alu_predec_error_o(alu_bignum_predec_error),
-    .ispr_predec_error_o(ispr_predec_error)
+    .ispr_predec_error_o(ispr_predec_error),
+
+    .secure_wipe_running_i(secure_wipe_running_o)
   );
 
   otbn_mac_bignum u_otbn_mac_bignum (
@@ -864,7 +903,9 @@ module otbn_core
 
     .ispr_acc_intg_o        (ispr_acc_intg),
     .ispr_acc_wr_data_intg_i(ispr_acc_wr_data_intg),
-    .ispr_acc_wr_en_i       (ispr_acc_wr_en)
+    .ispr_acc_wr_en_i       (ispr_acc_wr_en),
+
+    .secure_wipe_running_i(secure_wipe_running_o)
   );
 
   otbn_rnd #(

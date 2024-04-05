@@ -59,8 +59,12 @@ module otbn_rf_base
   output logic                     call_stack_sw_err_o,
   output logic                     call_stack_hw_err_o,
   output logic                     intg_err_o,
-  output logic                     spurious_we_err_o
+  output logic                     spurious_we_err_o,
+
+  input  prim_mubi_pkg::mubi4_t    secure_wipe_running_i
 );
+  import prim_mubi_pkg::*;
+
   localparam int unsigned CallStackRegIndex = 1;
   localparam int unsigned CallStackDepth = 8;
 
@@ -94,7 +98,17 @@ module otbn_rf_base
 
   logic state_reset;
 
-  assign state_reset = state_reset_i | sec_wipe_stack_reset_i;
+  logic sec_wipe_stack_reset_qualified_unbuf, sec_wipe_stack_reset_qualified;
+
+  assign sec_wipe_stack_reset_qualified_unbuf =
+    sec_wipe_stack_reset_i & mubi4_test_true_strict(secure_wipe_running_i);
+
+  prim_buf #(.Width(1)) u_sec_wipe_stack_reset_qualified_buf (
+    .in_i (sec_wipe_stack_reset_qualified_unbuf),
+    .out_o(sec_wipe_stack_reset_qualified)
+  );
+
+  assign state_reset = state_reset_i | sec_wipe_stack_reset_qualified;
 
   // rd_stack_[a/b] indicates the RF addr will read from the call stack if enabled
   assign rd_stack_a = rd_addr_a_i == CallStackRegIndex[4:0];

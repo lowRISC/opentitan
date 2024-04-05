@@ -64,7 +64,7 @@ module otbn_top_sim (
   assign keymgr_key.key[1] = sideload_key_shares[1];
   assign keymgr_key.valid  = 1'b1;
 
-  logic secure_wipe_running;
+  prim_mubi_pkg::mubi4_t secure_wipe_running;
 
   otbn_core #(
     .ImemSizeByte             ( ImemSizeByte ),
@@ -209,7 +209,7 @@ module otbn_top_sim (
       init_sec_wipe_done_qq <= 1'b0;
     end else begin
       init_sec_wipe_done_qq <= init_sec_wipe_done_q;
-      if (!secure_wipe_running) init_sec_wipe_done_q <= 1'b1;
+      if (!prim_mubi_pkg::mubi4_test_true_strict(secure_wipe_running)) init_sec_wipe_done_q <= 1'b1;
     end
   end
 

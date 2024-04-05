@@ -97,18 +97,18 @@ module otbn
   `ASSERT_INIT(ImemSizePowerOfTwo, 2 ** ImemAddrWidth == ImemSizeByte)
   `ASSERT_INIT(DmemSizePowerOfTwo, 2 ** DmemAddrWidth == DmemSizeByte)
 
-  logic start_d, start_q;
-  logic busy_execute_d, busy_execute_q;
-  logic done, done_core, locking, locking_q;
-  logic busy_secure_wipe;
-  logic init_sec_wipe_done_d, init_sec_wipe_done_q;
-  logic illegal_bus_access_d, illegal_bus_access_q;
-  logic missed_gnt_error_d, missed_gnt_error_q;
-  logic dmem_sec_wipe;
-  logic imem_sec_wipe;
-  logic mems_sec_wipe;
-  logic req_sec_wipe_urnd_keys;
-  logic [127:0] dmem_sec_wipe_urnd_key, imem_sec_wipe_urnd_key;
+  logic   start_d, start_q;
+  logic   busy_execute_d, busy_execute_q;
+  logic   done, done_core, locking, locking_q;
+  mubi4_t busy_secure_wipe;
+  logic   init_sec_wipe_done_d, init_sec_wipe_done_q;
+  logic   illegal_bus_access_d, illegal_bus_access_q;
+  logic   missed_gnt_error_d, missed_gnt_error_q;
+  logic   dmem_sec_wipe;
+  logic   imem_sec_wipe;
+  logic   mems_sec_wipe;
+  logic   req_sec_wipe_urnd_keys;
+  logic   [127:0] dmem_sec_wipe_urnd_key, imem_sec_wipe_urnd_key;
 
   logic core_recoverable_err, recoverable_err_d, recoverable_err_q;
   mubi4_t core_escalate_en;
@@ -146,7 +146,7 @@ module otbn
   assign is_not_running_d = ~|{busy_execute_d,
                                otbn_dmem_scramble_key_req_busy,
                                otbn_imem_scramble_key_req_busy,
-                               busy_secure_wipe};
+                               mubi4_test_true_strict(busy_secure_wipe)};
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if(!rst_ni) begin
@@ -827,12 +827,12 @@ module otbn
   // Note that these signals are all "a cycle early". For example, the locking signal gets asserted
   // combinatorially on the cycle that an error is injected. The STATUS register change, done
   // interrupt and any change to the idle signal will be delayed by 2 cycles.
-  assign status_d = locking                         ? StatusLocked          :
-                    busy_secure_wipe                ? StatusBusySecWipeInt  :
-                    busy_execute_d                  ? StatusBusyExecute     :
-                    otbn_dmem_scramble_key_req_busy ? StatusBusySecWipeDmem :
-                    otbn_imem_scramble_key_req_busy ? StatusBusySecWipeImem :
-                                                      StatusIdle;
+  assign status_d = locking                                  ? StatusLocked          :
+                    mubi4_test_true_strict(busy_secure_wipe) ? StatusBusySecWipeInt  :
+                    busy_execute_d                           ? StatusBusyExecute     :
+                    otbn_dmem_scramble_key_req_busy          ? StatusBusySecWipeDmem :
+                    otbn_imem_scramble_key_req_busy          ? StatusBusySecWipeImem :
+                                                               StatusIdle;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       status_q <= StatusBusySecWipeInt;
@@ -1067,7 +1067,7 @@ module otbn
     end
   end
   assign busy_execute_d = (busy_execute_q | start_d) & ~done_core;
-  assign init_sec_wipe_done_d = init_sec_wipe_done_q | ~busy_secure_wipe;
+  assign init_sec_wipe_done_d = init_sec_wipe_done_q | ~mubi4_test_true_strict(busy_secure_wipe);
 
   otbn_core #(
     .RegFile(RegFile),
@@ -1200,6 +1200,14 @@ module otbn
     )
   end
 
+  // A single bit version of the mubi4 busy_secure_wipe. This is exclusively for assertions as
+  // convenience.
+  logic busy_secure_wipe_a;
+  assign busy_secure_wipe_a = mubi4_test_true_strict(busy_secure_wipe);
+
+  logic unused_busy_secure_wipe_a;
+  assign unused_busy_secure_wipe_a = busy_secure_wipe_a;
+
   // GPR assertions for secure wipe
   // 1. urnd_reseed_err disables the assertion because secure wipe finishes with failure and OTBN
   // goes to LOCKED state immediately after this error which means that it's not guaranteed to have
@@ -1210,19 +1218,19 @@ module otbn
   for (genvar i = 2; i < NGpr; ++i) begin : gen_sec_wipe_gpr_asserts
     // Initial secure wipe needs to initialise all registers to nonzero
     `ASSERT(InitSecWipeNonZeroBaseRegs_A,
-      $fell(busy_secure_wipe) |->
+      $fell(busy_secure_wipe_a) |->
       u_otbn_core.u_otbn_rf_base.gen_rf_base_ff.u_otbn_rf_base_inner.g_rf_flops[i].rf_reg_q !=
         EccZeroWord,
       clk_i,
       !rst_ni || u_otbn_core.urnd_reseed_err || u_otbn_core.u_otbn_start_stop_control.mubi_err_d)
     // After execution, it's expected to see a change resulting with a nonzero register value
     `ASSERT(SecWipeChangedBaseRegs_A,
-      $rose(busy_secure_wipe) |-> ((##[0:$]
+      $rose(busy_secure_wipe_a) |-> ((##[0:$]
         u_otbn_core.u_otbn_rf_base.gen_rf_base_ff.u_otbn_rf_base_inner.g_rf_flops[i].rf_reg_q !=
           EccZeroWord &&
         $changed(
           u_otbn_core.u_otbn_rf_base.gen_rf_base_ff.u_otbn_rf_base_inner.g_rf_flops[i].rf_reg_q))
-        within ($rose(busy_secure_wipe) ##[0:$] $fell(busy_secure_wipe))),
+        within ($rose(busy_secure_wipe_a) ##[0:$] $fell(busy_secure_wipe_a))),
       clk_i,
       !rst_ni || u_otbn_core.urnd_reseed_err || u_otbn_core.u_otbn_start_stop_control.mubi_err_d)
   end
@@ -1248,7 +1256,7 @@ module otbn
     for (genvar i = 0; i < NWdr; ++i) begin : gen_sec_wipe_wdr_asserts
       // Initial secure wipe needs to initialise all registers to nonzero
       `ASSERT(InitSecWipeNonZeroWideRegs_A,
-              $fell(busy_secure_wipe) |->
+              $fell(busy_secure_wipe_a) |->
                 u_otbn_core.u_otbn_rf_bignum.gen_rf_bignum_ff.u_otbn_rf_bignum_inner.rf[i] !=
                   EccWideZeroWord,
               clk_i,
@@ -1257,12 +1265,12 @@ module otbn
 
       // After execution, it's expected to see a change resulting with a nonzero register value
       `ASSERT(SecWipeChangedWideRegs_A,
-              $rose(busy_secure_wipe) |-> ((##[0:$]
+              $rose(busy_secure_wipe_a) |-> ((##[0:$]
                 u_otbn_core.u_otbn_rf_bignum.gen_rf_bignum_ff.u_otbn_rf_bignum_inner.rf[i] !=
                   EccWideZeroWord &&
                 $changed(
                   u_otbn_core.u_otbn_rf_bignum.gen_rf_bignum_ff.u_otbn_rf_bignum_inner.rf[i]))
-                within ($rose(busy_secure_wipe) ##[0:$] $fell(busy_secure_wipe))),
+                within ($rose(busy_secure_wipe_a) ##[0:$] $fell(busy_secure_wipe_a))),
             clk_i, !rst_ni || u_otbn_core.urnd_reseed_err ||
               u_otbn_core.u_otbn_start_stop_control.mubi_err_d)
     end
@@ -1277,32 +1285,32 @@ module otbn
   // fatal error affecting internal secure wiping could cause an immediate locking behaviour
   // in which it's not guaranteed to see a succesful secure wipe.
   `ASSERT(SecWipeInvalidCallStack_A,
-          $fell(busy_secure_wipe) |-> (!u_otbn_core.u_otbn_rf_base.u_call_stack.top_valid_o),
+          $fell(busy_secure_wipe_a) |-> (!u_otbn_core.u_otbn_rf_base.u_call_stack.top_valid_o),
           clk_i,
           !rst_ni || u_otbn_core.urnd_reseed_err ||
             u_otbn_core.u_otbn_start_stop_control.mubi_err_d)
   `ASSERT(SecWipeInvalidLoopStack_A,
-          $fell(busy_secure_wipe) |->
+          $fell(busy_secure_wipe_a) |->
             (!u_otbn_core.u_otbn_controller.u_otbn_loop_controller.loop_info_stack.top_valid_o),
           clk_i,
           !rst_ni || u_otbn_core.urnd_reseed_err ||
             u_otbn_core.u_otbn_start_stop_control.mubi_err_d)
 
   `ASSERT(SecWipeNonZeroMod_A,
-          $fell(busy_secure_wipe) |-> u_otbn_core.u_otbn_alu_bignum.mod_intg_q != EccWideZeroWord,
+          $fell(busy_secure_wipe_a) |-> u_otbn_core.u_otbn_alu_bignum.mod_intg_q != EccWideZeroWord,
           clk_i,
           !rst_ni || u_otbn_core.urnd_reseed_err ||
             u_otbn_core.u_otbn_start_stop_control.mubi_err_d)
 
   `ASSERT(SecWipeNonZeroACC_A,
-          $fell(busy_secure_wipe) |->
+          $fell(busy_secure_wipe_a) |->
             u_otbn_core.u_otbn_alu_bignum.ispr_acc_intg_i != EccWideZeroWord,
           clk_i,
           !rst_ni || u_otbn_core.urnd_reseed_err ||
             u_otbn_core.u_otbn_start_stop_control.mubi_err_d)
 
   `ASSERT(SecWipeNonZeroFlags_A,
-          $fell(busy_secure_wipe) |-> (!u_otbn_core.u_otbn_alu_bignum.flags_flattened),
+          $fell(busy_secure_wipe_a) |-> (!u_otbn_core.u_otbn_alu_bignum.flags_flattened),
           clk_i,
           !rst_ni || u_otbn_core.urnd_reseed_err ||
             u_otbn_core.u_otbn_start_stop_control.mubi_err_d)

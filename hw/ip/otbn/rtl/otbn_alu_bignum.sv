@@ -111,8 +111,11 @@ module otbn_alu_bignum
   input  logic [1:0][SideloadKeyWidth-1:0] sideload_key_shares_i,
 
   output logic alu_predec_error_o,
-  output logic ispr_predec_error_o
+  output logic ispr_predec_error_o,
+
+  input prim_mubi_pkg::mubi4_t secure_wipe_running_i
 );
+  import prim_mubi_pkg::*;
 
   logic [WLEN+1:0] adder_y_res;
   logic [WLEN-1:0] logical_res;
@@ -348,6 +351,17 @@ module otbn_alu_bignum
   logic [WLEN-1:0]                mod_no_intg_q;
   logic [ExtWLEN-1:0]             mod_intg_calc;
   logic [2*BaseWordsPerWLEN-1:0]  mod_intg_err;
+
+  logic sec_wipe_mod_urnd_qualified_unbuf, sec_wipe_mod_urnd_qualified;
+
+  assign sec_wipe_mod_urnd_qualified_unbuf =
+    sec_wipe_mod_urnd_i & mubi4_test_true_strict(secure_wipe_running_i);
+
+  prim_buf #(.Width(1)) u_sec_wipe_mod_urnd_qualified_buf (
+    .in_i (sec_wipe_mod_urnd_qualified_unbuf),
+    .out_o(sec_wipe_mod_urnd_qualified)
+  );
+
   for (genvar i_word = 0; i_word < BaseWordsPerWLEN; i_word++) begin : g_mod_words
     prim_secded_inv_39_32_enc i_secded_enc (
       .data_i (mod_no_intg_d[i_word*32+:32]),
@@ -371,7 +385,7 @@ module otbn_alu_bignum
       mod_no_intg_d[i_word*32+:32] = '0;
       unique case (1'b1)
         // Non-encoded inputs have to be encoded before writing to the register.
-        sec_wipe_mod_urnd_i: begin
+        sec_wipe_mod_urnd_qualified: begin
           // In a secure wipe, `urnd_data_i` is written to the register before the zero word.  The
           // ECC bits should not matter between the two writes, but nonetheless we encode
           // `urnd_data_i` so there is no spurious integrity error.
@@ -400,7 +414,7 @@ module otbn_alu_bignum
 
     assign mod_wr_en[i_word] = ispr_init_i            |
                                mod_ispr_wr_en[i_word] |
-                               sec_wipe_mod_urnd_i;
+                               sec_wipe_mod_urnd_qualified;
   end
 
   /////////

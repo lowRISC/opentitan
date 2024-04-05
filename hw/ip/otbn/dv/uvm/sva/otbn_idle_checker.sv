@@ -20,11 +20,13 @@ module otbn_idle_checker
   input logic otbn_dmem_scramble_key_req_busy_i,
   input logic otbn_imem_scramble_key_req_busy_i,
 
-  input logic [7:0] status_q_i,
-  input logic busy_secure_wipe,
-  input logic [38:0] imem_rdata_bus,
-  input logic [ExtWLEN-1:0] dmem_rdata_bus
+  input logic [7:0]            status_q_i,
+  input prim_mubi_pkg::mubi4_t busy_secure_wipe,
+  input logic [38:0]           imem_rdata_bus,
+  input logic [ExtWLEN-1:0]    dmem_rdata_bus
 );
+  logic busy_secure_wipe_dec;
+  assign busy_secure_wipe_dec = prim_mubi_pkg::mubi4_test_true_strict(busy_secure_wipe);
 
   // Several of the internal signals that we snoop from the otbn module run "a cycle early". This
   // lets the design flop some outputs, but we need to do some converting here to get everything to
@@ -57,7 +59,7 @@ module otbn_idle_checker
     if (!rst_ni) begin
       init_sec_wipe_done <= 1'b0;
     end else begin
-      if (~busy_secure_wipe) begin
+      if (~busy_secure_wipe_dec) begin
         init_sec_wipe_done <= 1'b1;
       end
     end
@@ -77,7 +79,7 @@ module otbn_idle_checker
   end
   assign running_d = do_start & init_sec_wipe_done ? 1'b1 : // set
                      done ? 1'b0 : // clear
-                     ~init_sec_wipe_done & ~busy_secure_wipe ? 1'b0 : // clear
+                     ~init_sec_wipe_done & ~busy_secure_wipe_dec ? 1'b0 : // clear
                      running_q; // keep
 
   // We should never see done when we're not already running. The converse assertion, that we never
@@ -129,7 +131,7 @@ module otbn_idle_checker
           running_q |-> ##[0:1] (idle_o_i == prim_mubi_pkg::MuBi4False))
 
   `ASSERT(IdleIfNotRunningOrLocked_A,
-          !(running_qq || busy_secure_wipe || status_q_i == otbn_pkg::StatusLocked) |->
+          !(running_qq || busy_secure_wipe_dec || status_q_i == otbn_pkg::StatusLocked) |->
           (idle_o_i == prim_mubi_pkg::MuBi4True))
 
   `ASSERT(NotIdleIfLockedAndRotatingKeys_A,
@@ -137,10 +139,10 @@ module otbn_idle_checker
           (idle_o_i == prim_mubi_pkg::MuBi4False))
 
   `ASSERT(IdleIfLockedAndNotRotatingKeys_A,
-          // `keys_busy` runs a cycle late compared to `busy_secure_wipe`.  Thus, depending on which
+          // `keys_busy` runs a cycle late compared to `busy_secure_wipe_dec`.  Thus, depending on which
           // component causes the condition to become true, it can take one or two cycles for `idle`
           // to become true.
-          ((status_q_i == otbn_pkg::StatusLocked) && !keys_busy && !busy_secure_wipe) |-> ##[1:2]
+          ((status_q_i == otbn_pkg::StatusLocked) && !keys_busy && !busy_secure_wipe_dec) |-> ##[1:2]
           (idle_o_i == prim_mubi_pkg::MuBi4True))
 
   `ASSERT(NoStartKeyRotationWhenLocked_A,
@@ -150,7 +152,7 @@ module otbn_idle_checker
           keys_busy |-> (running_q || (status_q_i == otbn_pkg::StatusLocked)))
 
   `ASSERT(NotRunningWhenLocked_A,
-          (status_q_i == otbn_pkg::StatusLocked && !busy_secure_wipe) |->
+          (status_q_i == otbn_pkg::StatusLocked && !busy_secure_wipe_dec) |->
           !running_d)
 
   // When OTBN locks bus read data integrity is forced to the correct value for 0 data (so reads to
