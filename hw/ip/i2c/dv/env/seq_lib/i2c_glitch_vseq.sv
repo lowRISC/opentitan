@@ -47,7 +47,7 @@ class i2c_glitch_vseq extends i2c_target_smoke_vseq;
     // Target function sends ack to external host
     AcquireAckWait, AcquireAckSetup, AcquireAckPulse, AcquireAckHold,
     // Target function clock stretch handling.
-    StretchAddr,
+    StretchAddrAck, StretchAddrAckSetup, StretchAddr,
     StretchTx, StretchTxSetup,
     StretchAcqFull, StretchAcqSetup
   } state_e;
@@ -57,8 +57,8 @@ class i2c_glitch_vseq extends i2c_target_smoke_vseq;
   // WaitForStop -> Idle and WaitForStop -> AcquireStart
   // TransmitAckPulse -> Idle and TransmitAckPulse -> AcquireStart
   // AcquireByte -> Idle and AcquireByte -> AcquireStart
-  // StretchAcqSetup is also an invalid start, as a control symbol is impossible
-  // in this state.
+  // StretchAcqSetup, StretchAddrAck, and StretchAddrAckSetup are also invalid start states, as a
+  // control symbol is impossible in these states.
   state_e read_states[]  = '{TransmitWait, TransmitSetup, TransmitPulse, TransmitHold, TransmitAck,
                             TransmitAckPulse, StretchTx, StretchTxSetup};
   state_e write_states[] = '{AcquireAckWait, AcquireAckSetup, AcquireAckPulse, AcquireAckHold,

@@ -149,20 +149,44 @@ Alert Test Register
 I2C Control Register
 - Offset: `0x10`
 - Reset default: `0x0`
-- Reset mask: `0x7`
+- Reset mask: `0xf`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "ENABLEHOST", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "ENABLETARGET", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "LLPBK", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 29}], "config": {"lanes": 1, "fontsize": 10, "vspace": 140}}
+{"reg": [{"name": "ENABLEHOST", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "ENABLETARGET", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "LLPBK", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "NACK_ADDR_AFTER_TIMEOUT", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 250}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name         | Description                                                                                                |
-|:------:|:------:|:-------:|:-------------|:-----------------------------------------------------------------------------------------------------------|
-|  31:3  |        |         |              | Reserved                                                                                                   |
-|   2    |   rw   |   0x0   | LLPBK        | Enable I2C line loopback test If line loopback is enabled, the internal design sees ACQ and RX data as "1" |
-|   1    |   rw   |   0x0   | ENABLETARGET | Enable Target I2C functionality                                                                            |
-|   0    |   rw   |   0x0   | ENABLEHOST   | Enable Host I2C functionality                                                                              |
+|  Bits  |  Type  |  Reset  | Name                                                      |
+|:------:|:------:|:-------:|:----------------------------------------------------------|
+|  31:4  |        |         | Reserved                                                  |
+|   3    |   rw   |   0x0   | [NACK_ADDR_AFTER_TIMEOUT](#ctrl--nack_addr_after_timeout) |
+|   2    |   rw   |   0x0   | [LLPBK](#ctrl--llpbk)                                     |
+|   1    |   rw   |   0x0   | [ENABLETARGET](#ctrl--enabletarget)                       |
+|   0    |   rw   |   0x0   | [ENABLEHOST](#ctrl--enablehost)                           |
+
+### CTRL . NACK_ADDR_AFTER_TIMEOUT
+Enable NACKing the address on a stretch timeout.
+
+This is a Target mode feature.
+If enabled (1), a stretch timeout will cause the device to NACK the address byte.
+If disabled (0), a stretch timeout will cause the device to ACK the address byte.
+SMBus requires that devices always ACK their address, even for read commands.
+However, non-SMBus protocols may have a different approach and can choose to NACK instead.
+
+Note that both cases handle data bytes the same way.
+For writes, the Target module will NACK all subsequent data bytes until it receives a Stop.
+For reads, the Target module will release SDA, causing 0xff to be returned for all data bytes until it receives a Stop.
+
+### CTRL . LLPBK
+Enable I2C line loopback test
+If line loopback is enabled, the internal design sees ACQ and RX data as "1"
+
+### CTRL . ENABLETARGET
+Enable Target I2C functionality
+
+### CTRL . ENABLEHOST
+Enable Host I2C functionality
 
 ## STATUS
 I2C Live Status Register for Host and Target modes
@@ -576,6 +600,9 @@ Set this CSR to 0 to disable this behaviour.
 ## TARGET_TIMEOUT_CTRL
 I2C target internal stretching timeout control.
 When the target has stretched beyond this time it will send a NACK for incoming data bytes or release SDA for outgoing data bytes.
+The behavior for the address byte is configurable via [`CTRL.ACK_ADDR_AFTER_TIMEOUT.`](#ctrl)
+Note that the count accumulates stretching time over the course of a transaction.
+In other words, this is equivalent to the SMBus cumulative target clock extension time.
 - Offset: `0x64`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`

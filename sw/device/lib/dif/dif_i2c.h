@@ -529,6 +529,19 @@ dif_result_t dif_i2c_line_loopback_set_enabled(const dif_i2c_t *i2c,
                                                dif_toggle_t state);
 
 /**
+ * Enables or disables the functionality to NACK when timing out on an address
+ * (N)ACK phase stretch.
+ * This function should be called prior to enabling the i2c target module.
+ *
+ * @param i2c An I2C handle.
+ * @param state The new toggle state for the device functionality.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_i2c_addr_nack_set_enabled(const dif_i2c_t *i2c,
+                                           dif_toggle_t state);
+
+/**
  * Enables or disables the "override mode". In override mode, software is able
  * to directly control the driven values of the SCL and SDA lines using
  * `dif_i2c_override_drive_pins()`.

@@ -37,6 +37,7 @@ module i2c_target_fsm import i2c_pkg::*;
   input [31:0] host_timeout_i,     // max time target waits for host to pull clock down
   input [30:0] nack_timeout_i,     // max time target may stretch until it should NACK
   input        nack_timeout_en_i,  // enable nack timeout
+  input        nack_addr_after_timeout_i,
 
   input logic [6:0] target_address0_i,
   input logic [6:0] target_mask0_i,
@@ -329,7 +330,7 @@ module i2c_target_fsm import i2c_pkg::*;
     // Target function sends ack to external host
     AcquireAckWait, AcquireAckSetup, AcquireAckPulse, AcquireAckHold,
     // Target function clock stretch handling.
-    StretchAddr,
+    StretchAddrAck, StretchAddrAckSetup, StretchAddr,
     StretchTx, StretchTxSetup,
     StretchAcqFull, StretchAcqSetup
   } state_e;
@@ -531,6 +532,29 @@ module i2c_target_fsm import i2c_pkg::*;
           acq_fifo_wdata_o = {AcqData, input_byte}; // transfer data to acq_fifo
         end
       end
+      // StretchAddrAck: target stretches the clock if matching address cannot be
+      // deposited yet. (During ACK phase)
+      StretchAddrAck : begin
+        target_idle_o = 1'b0;
+        scl_d = 1'b0;
+        actively_stretching = stretch_addr;
+
+        if (nack_timeout) begin
+          nack_transaction_d = 1'b1;
+          // Record NACK'd Start bytes as long as there is space.
+          // The next state is always WaitForStop, so the ACQ FIFO needs to be
+          // written here.
+          acq_fifo_wvalid_o = !acq_fifo_full_or_last_space;
+          acq_fifo_wdata_o = {AcqNackStart, input_byte};
+        end
+      end
+      // StretchAddrAckSetup: target pulls SDA low while pulling SCL low for
+      // setup time. This is to prepare the setup time after a stretch.
+      StretchAddrAckSetup : begin
+        target_idle_o = 1'b0;
+        sda_d = 1'b0;
+        scl_d = 1'b0;
+      end
       // StretchAddr: target stretches the clock if matching address cannot be
       // deposited yet.
       StretchAddr : begin
@@ -695,8 +719,28 @@ module i2c_target_fsm import i2c_pkg::*;
           // The controller is going too fast. Abandon the transaction.
           state_d = WaitForStop;
         end else if (tcount_q == 20'd1) begin
-          // Always ACK addresses.
-          state_d = AddrAckSetup;
+          if (!nack_addr_after_timeout_i) begin
+            // Always ACK addresses in this mode.
+            state_d = AddrAckSetup;
+          end else begin
+            if (nack_transaction_q) begin
+              // We must have stretched before, and software has been notified
+              // through an ACQ FIFO full event. For writes we should NACK all
+              // bytes in the transfer unconditionally. For reads, we NACK
+              // the address byte, then release SDA for the rest of the
+              // transfer.
+              // Essentially, we're waiting for the end of the transaction.
+              state_d = WaitForStop;
+            end else if (stretch_addr) begin
+              // Not enough bytes to capture the Start/address byte, but might
+              // need to NACK.
+              state_d = StretchAddrAck;
+            end else begin
+              // The transaction hasn't already been NACK'd, and there is
+              // room in the ACQ FIFO. Proceed.
+              state_d = AddrAckSetup;
+            end
+          end
         end
       end
       // AddrAckSetup: target pulls SDA low while SCL is low
@@ -729,6 +773,9 @@ module i2c_target_fsm import i2c_pkg::*;
           end else if (stretch_addr) begin // !nack_transaction_q
             // Stretching because there is insufficient space to hold the
             // start / address format byte.
+            // We should only reach here with !nack_addr_after_timeout_i, since
+            // we had enough space for nack_addr_after_timeout_i already,
+            // before issuing the ACK.
             state_d = StretchAddr;
           end else if (rw_bit_q) begin
             // Not NACKing automatically, not stretching, and it's a read.
@@ -837,6 +884,26 @@ module i2c_target_fsm import i2c_pkg::*;
       AcquireAckHold : begin
         if (tcount_q == 20'd1) begin
           state_d = AcquireByte;
+        end
+      end
+      // StretchAddrAck: The address phase can not yet be completed, stretch
+      // clock and wait.
+      StretchAddrAck : begin
+        // When there is space in the FIFO go to the next state.
+        // If we hit our nack timeout, we must nack the full transaction.
+        if (nack_timeout) begin
+          state_d = WaitForStop;
+        end else if (!stretch_addr) begin
+          state_d = StretchAddrAckSetup;
+          load_tcount = 1'b1;
+          tcount_sel = tSetupData;
+        end
+      end
+      // StretchAddrAckSetup: target pulls SDA low while pulling SCL low for
+      // setup time. This is to prepare the setup time after a stretch.
+      StretchAddrAckSetup : begin
+        if (tcount_q == 20'd1) begin
+          state_d = AddrAckSetup;
         end
       end
       // StretchAddr: The address phase can not yet be completed, stretch

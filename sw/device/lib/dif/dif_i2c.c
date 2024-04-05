@@ -384,6 +384,25 @@ dif_result_t dif_i2c_line_loopback_set_enabled(const dif_i2c_t *i2c,
 
   return kDifOk;
 }
+
+dif_result_t dif_i2c_addr_nack_set_enabled(const dif_i2c_t *i2c,
+                                           dif_toggle_t state) {
+  if (i2c == NULL) {
+    return kDifBadArg;
+  }
+
+  if (!dif_is_valid_toggle(state)) {
+    return kDifBadArg;
+  }
+  bool flag = dif_toggle_to_bool(state);
+
+  uint32_t reg = mmio_region_read32(i2c->base_addr, I2C_CTRL_REG_OFFSET);
+  reg = bitfield_bit32_write(reg, I2C_CTRL_NACK_ADDR_AFTER_TIMEOUT_BIT, flag);
+  mmio_region_write32(i2c->base_addr, I2C_CTRL_REG_OFFSET, reg);
+
+  return kDifOk;
+}
+
 dif_result_t dif_i2c_override_set_enabled(const dif_i2c_t *i2c,
                                           dif_toggle_t state) {
   if (i2c == NULL) {
