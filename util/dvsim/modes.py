@@ -222,17 +222,6 @@ def find_mode_list(mode_names: List[str], modes: List[Mode]) -> List[Mode]:
     return found_list
 
 
-def find_and_merge_modes(mode: Mode,
-                         mode_names: List[str],
-                         modes: List[Mode],
-                         merge_modes: bool = True) -> List[Mode]:
-    found_list = find_mode_list(mode_names, modes)
-    if merge_modes:
-        for found in found_list:
-            mode.merge_mode(found)
-    return found_list
-
-
 class BuildMode(Mode):
     """
     Build modes.
