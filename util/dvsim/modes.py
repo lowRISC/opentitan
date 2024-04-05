@@ -207,22 +207,30 @@ def find_mode(mode_name: str, modes: List[Mode]) -> Optional[Mode]:
     return None
 
 
+def find_mode_list(mode_names: List[str], modes: List[Mode]) -> List[Mode]:
+    '''Find modes matching a list of names.'''
+    found_list = []
+    for mode_name in mode_names:
+        mode = find_mode(mode_name, modes)
+        if mode is None:
+            log.error("Cannot find requested mode ({}) in list. Known names: {}"
+                      .format(mode_name, [m.name for m in modes]))
+            sys.exit(1)
+
+        found_list.append(mode)
+
+    return found_list
+
+
 def find_and_merge_modes(mode: Mode,
                          mode_names: List[str],
                          modes: List[Mode],
-                         merge_modes: bool = True):
-    found_mode_objs = []
-    for mode_name in mode_names:
-        sub_mode = find_mode(mode_name, modes)
-        if sub_mode is not None:
-            found_mode_objs.append(sub_mode)
-            if merge_modes is True:
-                mode.merge_mode(sub_mode)
-        else:
-            log.error("Mode \"%s\" enabled within mode \"%s\" not found!",
-                      mode_name, mode.name)
-            sys.exit(1)
-    return found_mode_objs
+                         merge_modes: bool = True) -> List[Mode]:
+    found_list = find_mode_list(mode_names, modes)
+    if merge_modes:
+        for found in found_list:
+            mode.merge_mode(found)
+    return found_list
 
 
 class BuildMode(Mode):
