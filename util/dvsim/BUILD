@@ -35,7 +35,11 @@ py_library(
 
 py_library(
     name = "modes",
-    srcs = ["Modes.py"],
+    srcs = [
+        "Regression.py",
+        "Test.py",
+        "modes.py",
+    ],
     deps = [
         ":utils",
     ],

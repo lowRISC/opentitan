@@ -19,10 +19,12 @@ from typing import Optional
 
 from Deploy import CompileSim, CovAnalyze, CovMerge, CovReport, CovUnr, RunTest
 from FlowCfg import FlowCfg
-from Modes import BuildMode, Mode, Regression, RunMode, Test, find_mode
+from modes import BuildMode, Mode, RunMode, find_mode
+from Regression import Regression
 from results_server import ResultsServer
 from SimResults import SimResults
 from tabulate import tabulate
+from Test import Test
 from Testplan import Testplan
 from utils import TS_FORMAT, rm_path
 
