@@ -5538,7 +5538,7 @@ opentitan_test(
 opentitan_test(
     name = "uart_parity_test",
     srcs = ["uart_parity_test.c"],
-    cw310 = new_cw310_params(
+    cw310 = cw310_params(
         test_cmd = " ".join([
             "--bootstrap=\"{firmware}\"",
             "--firmware-elf=\"{firmware:elf}\"",
