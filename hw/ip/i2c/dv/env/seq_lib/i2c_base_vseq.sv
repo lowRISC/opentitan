@@ -629,7 +629,7 @@ class i2c_base_vseq extends cip_base_vseq #(
     foreach (myq[i]) begin
       if (myq[i].rstart) begin
         if (cfg.m_i2c_agent_cfg.allow_ack_stop & read) begin
-            `uvm_info("seq", $sformatf("eos: %s", (read_ack_nack_q[rd_idx++]) ?
+            `uvm_info("seq", $sformatf("(n)ack: %s", (read_ack_nack_q[rd_idx++]) ?
                                        "NACK" : "ACK"), UVM_MEDIUM)
         end
         read = myq[i].read;
@@ -640,7 +640,7 @@ class i2c_base_vseq extends cip_base_vseq #(
       end
     end
     if (cfg.m_i2c_agent_cfg.allow_ack_stop & read) begin
-      `uvm_info("seq", $sformatf("eos: %s", (read_ack_nack_q[rd_idx]) ?
+      `uvm_info("seq", $sformatf("(n)ack: %s", (read_ack_nack_q[rd_idx]) ?
                                  "NACK" : "ACK"), UVM_MEDIUM)
     end
   endfunction
@@ -750,15 +750,18 @@ class i2c_base_vseq extends cip_base_vseq #(
   // and compared with received transaction at the scoreboard.
   virtual function void fetch_txn(ref i2c_item src_q[$], i2c_item dst_q[$],
                                   input bit force_ack = 0, bit skip_start = 0);
+    // A temporary, representing each item that is pushed to the dst_q intended for the driver.
     i2c_item txn;
     i2c_item rs_txn;
+    // The subset of items that address the DUT that are expected from the ACQ FIFO.
     i2c_item exp_txn;
+    // All items to go on the bus, including those that don't address the DUT.
     i2c_item full_txn;
     int read_size;
     bit is_read = get_read_write();
     bit [6:0] t_addr;
     bit valid_addr;
-    bit got_valid;
+    bit addressed;
 
     `uvm_info("seq", $sformatf("idx %0d:is_read:%0b size:%0d fetch_txn:%0d", start_cnt++, is_read,
                                src_q.size(), full_txn_num++), UVM_MEDIUM)
@@ -785,7 +788,11 @@ class i2c_base_vseq extends cip_base_vseq #(
     `uvm_create_obj(i2c_item, txn)
     `uvm_create_obj(i2c_item, exp_txn)
     txn.drv_type = HostData;
-    txn.start = 1;
+    if (skip_start) begin
+      txn.rstart = 1;
+    end else begin
+      txn.start = 1;
+    end
     txn.wdata[7:1] = get_target_addr(); //target_addr0;
     txn.wdata[0] = is_read;
     valid_addr = is_target_addr(txn.wdata[7:1]);
@@ -801,8 +808,8 @@ class i2c_base_vseq extends cip_base_vseq #(
       p_sequencer.target_mode_wr_exp_port.write(exp_txn);
       cfg.sent_acq_cnt++;
       this.tran_id++;
-      got_valid = 1;
       if (is_read) this.exp_rd_id++;
+      addressed = 1;
     end
     read_size = get_read_data_size(src_q, is_read, read_rcvd);
     cfg.m_i2c_agent_cfg.sent_rd_byte += read_size;
@@ -815,37 +822,19 @@ class i2c_base_vseq extends cip_base_vseq #(
         full_txn.data_q.push_back(txn.wdata);
       end
 
-      // RS creates 2 extra acq entry
-      // one for RS
-      // the other for a new start acq_entry with address
       if (txn.drv_type == HostRStart) begin
         bit prv_read = 0;
         bit prv_valid = valid_addr;
-
-        t_addr = get_target_addr();
-        valid_addr = is_target_addr(t_addr);
-        `uvm_create_obj(i2c_item, exp_txn)
-        exp_txn.drv_type = HostRStart;
-        exp_txn.tran_id = this.tran_id;
-
-        // In 'txn' boundary, only if previous segment is valid,
-        // we create current RS header.
-        if (prv_valid) begin
-           exp_txn.rstart = 1;
-           this.tran_id++;
-           // RS head
-           p_sequencer.target_mode_wr_exp_port.write(exp_txn);
-           cfg.sent_acq_cnt++;
-        end
-        got_valid = valid_addr;
 
         `uvm_create_obj(i2c_item, rs_txn)
         `downcast(rs_txn, txn.clone())
         dst_q.push_back(txn);
 
+        t_addr = get_target_addr();
+        valid_addr = is_target_addr(t_addr);
         rs_txn.drv_type = HostData;
-        rs_txn.start = 1;
-        rs_txn.rstart = 0;
+        rs_txn.start = 0;
+        rs_txn.rstart = 1;
         rs_txn.wdata[7:1] = t_addr;
         prv_read = is_read;
         is_read = rs_txn.read;
@@ -857,6 +846,7 @@ class i2c_base_vseq extends cip_base_vseq #(
         exp_txn.tran_id = this.tran_id;
 
 
+        addressed |= valid_addr;
         // Restart command entry
         if (valid_addr) begin
            p_sequencer.target_mode_wr_exp_port.write(exp_txn);
@@ -881,10 +871,10 @@ class i2c_base_vseq extends cip_base_vseq #(
           `downcast(read_txn, txn.clone())
           full_txn.num_data++;
           if (src_q.size() == 0) begin
-            txn.drv_type = get_eos(.is_stop(1));
+            txn.drv_type = get_ack_nack(.is_stop(1));
           end else begin
             // if your next item is restart Do nack
-            if (src_q[0].drv_type == HostRStart) txn.drv_type = get_eos();
+            if (src_q[0].drv_type == HostRStart) txn.drv_type = get_ack_nack();
             else txn.drv_type = HostAck;
           end
           dst_q.push_back(txn);
@@ -911,7 +901,7 @@ class i2c_base_vseq extends cip_base_vseq #(
     `downcast(exp_txn, txn.clone());
     dst_q.push_back(txn);
     full_txn.stop = 1;
-    if (valid_addr) begin
+    if (addressed) begin
        p_sequencer.target_mode_wr_exp_port.write(exp_txn);
        cfg.sent_acq_cnt++;
        this.tran_id++;
@@ -1111,7 +1101,8 @@ class i2c_base_vseq extends cip_base_vseq #(
     end
   endtask // read_acq_fifo
 
-  function drv_type_e get_eos(bit is_stop = 0);
+  // is_stop: Whether the next symbol is to be a Stop
+  function drv_type_e get_ack_nack(bit is_stop = 0);
     drv_type_e rsp = HostNAck;
     if (cfg.m_i2c_agent_cfg.allow_ack_stop) begin
       if (read_ack_nack_q.pop_front()) begin
@@ -1124,7 +1115,7 @@ class i2c_base_vseq extends cip_base_vseq #(
       end
     end
     return rsp;
-  endfunction // get_eos
+  endfunction // get_ack_nack
 
   // Calling this task will trigger unexp_stop interrupt.
   task send_ack_stop();

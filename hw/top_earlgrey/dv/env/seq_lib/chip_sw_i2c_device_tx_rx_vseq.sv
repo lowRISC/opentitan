@@ -12,7 +12,6 @@ class chip_sw_i2c_device_tx_rx_vseq extends chip_sw_i2c_tx_rx_vseq;
 
   `uvm_object_new
 
-  int exp_rd_id = 0;
   int tran_id = 0;
   i2c_item read_txn_q[$];
 
@@ -177,23 +176,16 @@ class chip_sw_i2c_device_tx_rx_vseq extends chip_sw_i2c_tx_rx_vseq;
   virtual function void fetch_txn(ref i2c_item src_q[$], i2c_item dst_q[$], input bit is_read);
     i2c_item txn;
     i2c_item rs_txn;
-    i2c_item exp_txn;
-    i2c_item full_txn;
     int read_size;
     bit [6:0] address_0;
     bit [6:0] address_1;
-
-    `uvm_create_obj(i2c_item, full_txn)
 
     // Add 'START' to the front
     `uvm_create_obj(i2c_item, txn)
     txn.drv_type = HostStart;
     dst_q.push_back(txn);
-    full_txn.start = 1;
-    if (is_read) full_txn.tran_id = this.exp_rd_id++;
     // Address
     `uvm_create_obj(i2c_item, txn)
-    `uvm_create_obj(i2c_item, exp_txn)
     // randomly select any matching address
     address_0 = i2c_device_address_0 | (r & ~i2c_device_mask_0);
     address_1 = i2c_device_address_1 | (r & ~i2c_device_mask_1);
@@ -202,10 +194,7 @@ class chip_sw_i2c_device_tx_rx_vseq extends chip_sw_i2c_tx_rx_vseq;
     txn.wdata[7:1] = choose_address ? address_0 : address_1;
     txn.wdata[0] = is_read;
     txn.tran_id = this.tran_id++;
-    `downcast(exp_txn, txn.clone());
     dst_q.push_back(txn);
-    full_txn.addr = txn.wdata[7:1];
-    full_txn.read = is_read;
 
     read_size = byte_count;
     cfg.m_i2c_agent_cfgs[i2c_idx].sent_rd_byte += read_size;
@@ -214,53 +203,29 @@ class chip_sw_i2c_device_tx_rx_vseq extends chip_sw_i2c_tx_rx_vseq;
     while (src_q.size() > 0) begin
       `uvm_create_obj(i2c_item, txn)
       txn = src_q.pop_front();
-      if (txn.drv_type != HostRStart) begin
-        // Restart only has empty data for address holder
-        full_txn.data_q.push_back(txn.wdata);
-      end
 
-      // RS creates 2 extra acq entry
-      // one for RS
-      // the other for a new start acq_entry with address
       if (txn.drv_type == HostRStart) begin
         bit prv_read = 0;
-        `uvm_create_obj(i2c_item, exp_txn)
-        exp_txn.drv_type = HostRStart;
-        exp_txn.rstart = 1;
-        exp_txn.tran_id = this.tran_id++;
 
         `uvm_create_obj(i2c_item, rs_txn)
         `downcast(rs_txn, txn.clone())
         dst_q.push_back(txn);
 
         rs_txn.drv_type = HostData;
-        rs_txn.start = 1;
-        rs_txn.rstart = 0;
+        rs_txn.start = 0;
+        rs_txn.rstart = 1;
         rs_txn.wdata[7:1] = choose_address ? address_0 : address_1;
         prv_read = is_read;
         is_read = rs_txn.read;
         rs_txn.wdata[0] = is_read;
         dst_q.push_back(rs_txn);
         // create a separate stat/addr entry for exp
-        `uvm_create_obj(i2c_item, exp_txn)
-        `downcast(exp_txn, rs_txn.clone());
-        exp_txn.tran_id = this.tran_id++;
-
-        // fetch previous full_txn and creat a new one
-        if (prv_read) begin
-          full_txn.stop = 1;
-        end
-        `uvm_create_obj(i2c_item, full_txn)
-        `downcast(full_txn, rs_txn);
-        if (is_read) begin
-          full_txn.tran_id = exp_rd_id++;
-        end
+        this.tran_id++;
       end else begin
         if (is_read) begin
           i2c_item read_txn;
           `uvm_create_obj(i2c_item, read_txn)
           `downcast(read_txn, txn.clone())
-          full_txn.num_data++;
           if (src_q.size() == 0) begin
             txn.drv_type = HostNAck;
           end else begin
@@ -271,24 +236,20 @@ class chip_sw_i2c_device_tx_rx_vseq extends chip_sw_i2c_tx_rx_vseq;
           dst_q.push_back(txn);
           read_txn_q.push_back(read_txn);
         end else begin
-          `downcast(exp_txn, txn.clone());
           // Add RS transaction to driver only
           // and create address transaction after
           dst_q.push_back(txn);
-          exp_txn.tran_id = this.tran_id++;
+          this.tran_id++;
         end
       end
     end // while (src_q.size() > 0)
 
     // Stop
     `uvm_create_obj(i2c_item, txn)
-    `uvm_create_obj(i2c_item, exp_txn)
     txn.tran_id = this.tran_id++;
     txn.stop = 1;
     txn.drv_type = HostStop;
-    `downcast(exp_txn, txn.clone());
     dst_q.push_back(txn);
-    full_txn.stop = 1;
   endfunction
 
 
