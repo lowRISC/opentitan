@@ -6,7 +6,7 @@ from copy import deepcopy
 import logging as log
 import sys
 
-from modes import RunMode, find_and_merge_modes
+from modes import RunMode, find_mode, find_mode_list
 
 
 class Test(RunMode):
@@ -39,14 +39,6 @@ class Test(RunMode):
         Process enabled run modes and the set build mode.
         Return a list of test objects.
         '''
-
-        def get_pruned_en_run_modes(test_en_run_modes, global_en_run_modes):
-            pruned_en_run_modes = []
-            for test_en_run_mode in test_en_run_modes:
-                if test_en_run_mode not in global_en_run_modes:
-                    pruned_en_run_modes.append(test_en_run_mode)
-            return pruned_en_run_modes
-
         tests_objs = []
         # Pass 1: Create unique set of tests by merging tests with the same name
         for tdict in tdicts:
@@ -72,9 +64,16 @@ class Test(RunMode):
         attrs = Test.defaults
         for test_obj in tests_objs:
             # Unpack run_modes first
-            en_run_modes = get_pruned_en_run_modes(test_obj.en_run_modes,
-                                                   sim_cfg.en_run_modes)
-            find_and_merge_modes(test_obj, en_run_modes, run_modes)
+
+            # Get the list of names of run modes that are needed for this test
+            # but aren't also enabled globally.
+            local_run_mode_names = [name for name in test_obj.en_run_modes
+                                    if name not in sim_cfg.en_run_modes]
+
+            # Look up the modes with these names then merge each of these modes
+            # into test_obj
+            for m in find_mode_list(local_run_mode_names, run_modes):
+                test_obj.merge_mode(m)
 
             # Find and set the missing attributes from sim_cfg
             # If not found in sim_cfg either, then throw a warning
@@ -95,12 +94,9 @@ class Test(RunMode):
                         # solution! We should probably tidy this up properly.
                         setattr(test_obj, attr, deepcopy(global_val))
 
-            # Unpack the build mode for this test
-            build_mode_objs = find_and_merge_modes(test_obj,
-                                                   [test_obj.build_mode],
-                                                   build_modes,
-                                                   merge_modes=False)
-            test_obj.build_mode = build_mode_objs[0]
+            # Look up the build mode named in the test and write it back to the
+            # test.
+            test_obj.build_mode = find_mode(test_obj.build_mode, build_modes)
 
             # Error if set build mode is actually a sim mode
             if test_obj.build_mode.is_sim_mode is True:
