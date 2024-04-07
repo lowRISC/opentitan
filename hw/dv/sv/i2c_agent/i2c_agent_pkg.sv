@@ -10,6 +10,8 @@ package i2c_agent_pkg;
   import uvm_pkg::*;
   import dv_utils_pkg::*;
   import dv_lib_pkg::*;
+  import i2c_pkg::*; // RTL pkg
+  import i2c_timing_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -32,34 +34,6 @@ package i2c_agent_pkg;
     DrvRd,
     DrvStop
   } drv_phase_e;
-
-  // register values
-  typedef struct {
-    // derived parameters
-    bit  [31:0]  tSetupStart;
-    bit  [31:0]  tHoldStart;
-    bit  [31:0]  tClockStart;
-    bit  [31:0]  tClockLow;
-    bit  [31:0]  tSetupBit;
-    bit  [31:0]  tClockPulse;
-    bit  [31:0]  tHoldBit;
-    bit  [31:0]  tClockStop;
-    bit  [31:0]  tSetupStop;
-    bit  [31:0]  tHoldStop;
-    bit          enbTimeOut;
-    bit  [30:0]  tTimeOut;
-    uint         tStretchHostClock;
-
-    // sda_unstable interrupt will be asserted if
-    // tSdaUnstable is set to a non-zero value, otherwise
-    uint         tSdaUnstable;
-    // scl_interference interrupt will be asserted if
-    // tSclInterference is set to a zero value, otherwise
-    uint         tSclInterference;
-    // sda_interference interrupt will be asserted if
-    // tSdaInterference is set to a zero value, otherwise
-    uint         tSdaInterference;
-  } timing_cfg_t;
 
   typedef enum int {
     Addr7BitMode  = 7,

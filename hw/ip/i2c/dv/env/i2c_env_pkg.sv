@@ -10,11 +10,13 @@ package i2c_env_pkg;
   import csr_utils_pkg::*;
   import dv_base_reg_pkg::*;
   import tl_agent_pkg::*;
-  import i2c_agent_pkg::*;
   import dv_lib_pkg::*;
   import cip_base_pkg::*;
+  import i2c_pkg::*; // RTL pkg
   import i2c_reg_pkg::*;
   import i2c_ral_pkg::*;
+  import i2c_agent_pkg::*;
+  import i2c_timing_pkg::*;
 
   // macro includes
   `include "dv_macros.svh"
@@ -62,12 +64,6 @@ package i2c_env_pkg;
     ReadDataAckStart   = 5,
     ReadDataAckStop    = 6
   } glitch_e;
-
-  typedef enum int {
-    Standard,
-    Fast,
-    FastPlus
-  } speed_mode_e;
 
   parameter uint I2C_FMT_FIFO_DEPTH = i2c_reg_pkg::FifoDepth;
   parameter uint I2C_RX_FIFO_DEPTH  = i2c_reg_pkg::FifoDepth;

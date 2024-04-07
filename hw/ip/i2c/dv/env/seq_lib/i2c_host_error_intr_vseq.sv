@@ -20,9 +20,9 @@ class i2c_host_error_intr_vseq extends i2c_rx_tx_vseq;
     super.pre_start();
     // allow agent/target creating interference and unstable signals so
     // sda_interference, scl_interference, sda_unstable are asserted
-    cfg.seq_cfg.en_sda_unstable     = 1'b1;
-    cfg.seq_cfg.en_sda_interference = 1'b1;
-    cfg.seq_cfg.en_scl_interference = 1'b1;
+    tcc.en_sda_unstable     = 1'b1;
+    tcc.en_sda_interference = 1'b1;
+    tcc.en_scl_interference = 1'b1;
     print_seq_cfg_vars("pre-start");
   endtask : pre_start
 

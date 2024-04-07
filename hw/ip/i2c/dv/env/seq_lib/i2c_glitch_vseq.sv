@@ -66,9 +66,6 @@ class i2c_glitch_vseq extends i2c_target_smoke_vseq;
   // Common steps for DUT initialization
   virtual task setup();
     initialization();
-    get_timing_values();
-    print_time_property();
-    program_registers();
     // Set maximum and minimum number of transactions to 1 since
     // only once sequence can be used to test behaviour of DUT after glitch
     cfg.seq_cfg.i2c_min_num_trans = 1;
@@ -76,7 +73,12 @@ class i2c_glitch_vseq extends i2c_target_smoke_vseq;
     cfg.min_data = 1;
     cfg.max_data = 5;
     cfg.rs_pct = 0;
-    scl_period = t_f + t_r + thigh + tlow + tsu_dat + thd_dat;
+    scl_period = tcc.tc.t_f +
+                 tcc.tc.t_r +
+                 tcc.tc.thigh +
+                 tcc.tc.tlow +
+                 tcc.tc.tsu_dat +
+                 tcc.tc.thd_dat;
     `uvm_info(`gfn, $sformatf("Setting scl_period to %0d", scl_period), UVM_MEDIUM)
   endtask
 

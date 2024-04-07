@@ -15,7 +15,7 @@ class i2c_host_timeout_vseq extends i2c_rx_tx_vseq;
   constraint num_trans_c { num_trans inside {[50 : 100]}; }
 
   // constraints for i2c timing registers
-  constraint t_timeout_c { t_timeout == cfg.seq_cfg.i2c_max_timing; }
-  constraint e_timeout_c { e_timeout == 1'b1; }
+  constraint t_timeout_c { tcc.tc.tTimeout == tcc.i2c_max_timing; }
+  constraint e_timeout_c { tcc.tc.eTimeout == 1'b1; }
 
 endclass : i2c_host_timeout_vseq

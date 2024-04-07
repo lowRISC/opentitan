@@ -27,7 +27,7 @@ class i2c_target_runtime_base_vseq extends i2c_target_smoke_vseq;
     initialization();
     `uvm_info("cfg_summary", $sformatf("target_addr0:0x%x target_addr1:0x%x num_trans:%0d",
                              target_addr0, target_addr1, num_trans), UVM_MEDIUM)
-    acq_rd_cyc = 9 * (thigh + tlow);
+    acq_rd_cyc = 9 * (tcc.tc.thigh + tcc.tc.tlow);
     fork
       begin
         fork

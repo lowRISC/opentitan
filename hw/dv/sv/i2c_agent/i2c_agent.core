@@ -9,7 +9,10 @@ filesets:
     depend:
       - lowrisc:dv:dv_utils
       - lowrisc:dv:dv_lib
+      - lowrisc:ip:i2c
     files:
+      - i2c_timing_pkg.sv
+      - i2c_timing_cfg.sv: {is_include_file: true}
       - i2c_agent_pkg.sv
       - i2c_if.sv
       - i2c_agent_cfg.sv: {is_include_file: true}

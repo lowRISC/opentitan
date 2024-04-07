@@ -40,7 +40,7 @@ class chip_sw_i2c_tx_rx_vseq extends chip_sw_base_vseq;
     str = {str, $sformatf("\n    timing_cfg.tTimeOut          : %d",
               cfg.m_i2c_agent_cfgs[i2c_idx].timing_cfg.tTimeOut)};
     str = {str, $sformatf("\n    timing_cfg.enbTimeOut        : %d",
-              cfg.m_i2c_agent_cfgs[i2c_idx].timing_cfg.enbTimeOut)};
+              cfg.m_i2c_agent_cfgs[i2c_idx].timing_cfg.eTimeOut)};
     str = {str, $sformatf("\n    timing_cfg.tStretchHostClock : %d",
               cfg.m_i2c_agent_cfgs[i2c_idx].timing_cfg.tStretchHostClock)};
     str = {str, $sformatf("\n    timing_cfg.tSdaUnstable      : %d",

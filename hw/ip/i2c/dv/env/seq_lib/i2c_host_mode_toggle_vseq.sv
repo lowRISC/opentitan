@@ -39,8 +39,6 @@ class i2c_host_mode_toggle_vseq extends i2c_base_vseq;
     i2c_item fmt_item = new("addr_item");
     bit [TL_DW-1:0] reg_val;
     initialization();
-    get_timing_values();
-    program_registers();
     `uvm_info(`gfn, "Start i2c_host_mode_toggle_vseq", UVM_HIGH)
     // start transmission in Host mode with a random read or write transaction
     fmt_item.start = 1;

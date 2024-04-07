@@ -91,8 +91,7 @@ class i2c_target_hrst_vseq extends i2c_target_smoke_vseq;
           end
           // exclude timing param update during and right after runt transaction
           if (!(i inside {reset_txn_num, (reset_txn_num + 1)})) begin
-            get_timing_values();
-            program_registers();
+            update_timing_parameters();
           end
           `uvm_create_obj(i2c_target_base_seq, m_i2c_host_seq)
 
@@ -374,7 +373,7 @@ class i2c_target_hrst_vseq extends i2c_target_smoke_vseq;
   task stop_target_interrupt_handler();
     string id = "stop_interrupt_handler";
     int    acq_rd_cyc;
-    acq_rd_cyc = 9 * (thigh + tlow);
+    acq_rd_cyc = 9 * (tcc.tc.thigh + tcc.tc.tlow);
     `DV_WAIT(cfg.sent_acq_cnt > 0,, cfg.spinwait_timeout_ns, id)
     `DV_WAIT(sent_txn_cnt == num_trans,, cfg.long_spinwait_timeout_ns, id)
     cfg.read_all_acq_entries = 1;
