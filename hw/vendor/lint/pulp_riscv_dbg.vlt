@@ -62,3 +62,14 @@ lint_off -rule WIDTH -file "*/src/dm_mem.sv" -match "*SUB expects 32 bits*'DataC
 // this might actually be Verilator doing something a bit strange.
 lint_off -rule WIDTH -file "*/src/dm_mem.sv" -match "*SUB expects 32*but*SEL*10 bits."
 
+// Avoid a warning about address truncation. These addresses are both derived
+// from the 64-bit dm::HaltAddress. They get assigned to something with
+// DbgAddressBits (12) bits. Both HaltAddress and DbgAddressBits come from the
+// original code (neither is a parameter that is being passed in from
+// OpenTitan)
+lint_off -rule WIDTH -file "*/src/dm_mem.sv" -match "Operator VAR 'Rom*Addr' expects 12 bits*generates 64 bits."
+
+// Avoid a warning about widths from a line that computes with "ABC / 2" rather
+// than "ABC >> 1". Verilator doesn't infer that the widths will fit in the way
+// the author expects.
+lint_off -rule WIDTH -file "*/src/dm_mem.sv" -match "Operator DIV expects 32 bits*ProgBufSize*5 bits."
