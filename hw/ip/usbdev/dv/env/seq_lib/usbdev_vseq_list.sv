@@ -41,3 +41,5 @@
 `include "usbdev_min_length_out_transaction_vseq.sv"
 // This must follow usbdev_in_trans
 `include "usbdev_endpoint_access_vseq.sv"
+// This must follow usbdev_pkt_sent
+`include "usbdev_link_suspend_vseq.sv"
