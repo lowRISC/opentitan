@@ -36,7 +36,7 @@ class usbdev_enable_vseq extends usbdev_base_vseq;
     call_data_seq(PidTypeData0, .randomize_length(1'b0), .num_of_bytes(8));
     get_response(m_response_item);
     $cast(m_usb20_item, m_response_item);
-    get_out_response_from_device(m_usb20_item, PidTypeAck);
+    m_usb20_item.check_pid_type(PidTypeAck);
 
     // Check that the USB device received a packet with the expected properties.
     check_pkt_received(endp, 0, out_buffer_id, m_data_pkt.data);

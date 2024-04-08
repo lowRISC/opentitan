@@ -24,6 +24,6 @@ class usbdev_out_trans_nak_vseq extends usbdev_base_vseq;
     cfg.clk_rst_vif.wait_clks(20);
     get_response(m_response_item);
     $cast(m_usb20_item, m_response_item);
-    get_out_response_from_device(m_usb20_item, PidTypeNak);
+    m_usb20_item.check_pid_type(PidTypeNak);
   endtask
 endclass

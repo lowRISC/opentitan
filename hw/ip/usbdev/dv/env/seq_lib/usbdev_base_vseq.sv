@@ -170,14 +170,6 @@ endtask
     finish_item(m_data_pkt);
   endtask
 
-  virtual task get_out_response_from_device(usb20_item rsp_itm, input pid_type_e pid_type);
-    `uvm_create_on(m_handshake_pkt, p_sequencer.usb20_sequencer_h)
-    m_handshake_pkt.m_pid_type = pid_type;
-    m_usb20_item = m_handshake_pkt;
-    // DV_CHECK on device reponse
-    `DV_CHECK_EQ(m_usb20_item.m_pid_type, rsp_itm.m_pid_type);
-  endtask
-
   virtual task get_data_pid_from_device(usb20_item rsp_itm, input pid_type_e pid_type);
     `uvm_create_on(m_data_pkt, p_sequencer.usb20_sequencer_h)
     m_data_pkt.m_pid_type = pid_type;

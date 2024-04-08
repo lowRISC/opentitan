@@ -101,7 +101,7 @@ class usbdev_smoke_vseq extends usbdev_base_vseq;
     finish_item(m_data_pkt);
     get_response(rsp_item);
     $cast(response, rsp_item);
-    get_out_response_from_device(response, PidTypeAck);
+    response.check_pid_type(PidTypeAck);
   endtask
 
 endclass : usbdev_smoke_vseq

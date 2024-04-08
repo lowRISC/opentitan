@@ -20,7 +20,7 @@ class usbdev_av_buffer_vseq extends usbdev_base_vseq;
     call_data_seq(PidTypeData0, .randomize_length(1'b0), .num_of_bytes(8));
     get_response(rsp_item);
     $cast(item, rsp_item);
-    get_out_response_from_device(item, PidTypeAck);
+    item.check_pid_type(PidTypeAck);
     cfg.clk_rst_vif.wait_clks(20);
 
     // Check that the USB device received a packet with the expected properties.

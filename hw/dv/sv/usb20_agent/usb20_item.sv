@@ -9,8 +9,12 @@ class usb20_item extends uvm_sequence_item;
   brequest_e m_bR;
   usb_transfer_e m_usb_transfer;
 
-  `uvm_object_new
+  // Check the PID type of this item is the expected value. If not, raise a fatal error.
+  function void check_pid_type(pid_type_e expected);
+    `DV_CHECK_EQ_FATAL(m_pid_type, expected)
+  endfunction
 
+  `uvm_object_new
 endclass
 
 class token_pkt extends usb20_item;

@@ -16,6 +16,6 @@ class usbdev_in_stall_vseq extends usbdev_base_vseq;
     call_token_seq(PidTypeInToken);
     get_response(m_response_item);
     $cast(m_usb20_item, m_response_item);
-    get_out_response_from_device(m_usb20_item, PidTypeStall);
+    m_usb20_item.check_pid_type(PidTypeStall);
   endtask
 endclass
