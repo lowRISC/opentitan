@@ -85,6 +85,10 @@
       uvm_test_seq: usbdev_link_in_err_vseq
     }
     {
+      name: usbdev_link_suspend
+      uvm_test_seq: usbdev_link_suspend_vseq
+    }
+    {
       name: usbdev_max_length_out_transaction
       uvm_test_seq: usbdev_max_length_out_transaction_vseq
     }
