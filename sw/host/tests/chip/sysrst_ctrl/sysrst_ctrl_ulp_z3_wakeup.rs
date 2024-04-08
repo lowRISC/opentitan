@@ -2,15 +2,16 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{ensure, Result};
+use anyhow::{bail, ensure, Context, Result};
 use clap::Parser;
 use once_cell::sync::Lazy;
 use std::time::Duration;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::execute_test;
-use opentitanlib::io::gpio::PinMode;
+use opentitanlib::io::gpio::{Edge, MonitoringEvent, PinMode};
 use opentitanlib::io::uart::Uart;
+use opentitanlib::test_utils::gpio_monitor::GpioMon;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::test_status::TestStatus;
 use opentitanlib::uart::console::UartConsole;
@@ -46,9 +47,9 @@ static CONFIG: Lazy<Config> = Lazy::new(|| {
         // pwrb_in_i, ac_present_i, lid_open_i
         output_pins: vec!["IOR10", "IOR11", "IOR12"],
         open_drain: vec![false, false, false],
-        // z3_wakeup
-        input_pins: vec!["IOR5"],
-        pullup_pins: vec![],
+        // z3_wakeup, ec_rst, flash_wp
+        input_pins: vec!["IOR5", "SYSRST_CTRL_EC_RST_L", "SYSRST_CTRL_FLASH_WP_L"],
+        pullup_pins: vec!["SYSRST_CTRL_EC_RST_L", "SYSRST_CTRL_FLASH_WP_L"],
     }
 });
 
@@ -86,6 +87,7 @@ fn wait_wakeup_time() {
     std::thread::sleep(Duration::from_micros(DEBOUNCE_SW_VALUE_USEC));
 }
 
+#[allow(clippy::too_many_arguments)]
 fn chip_sw_sysrst_ctrl_ulp_z3_wakeup(
     opts: &Opts,
     transport: &TransportWrapper,
@@ -93,6 +95,8 @@ fn chip_sw_sysrst_ctrl_ulp_z3_wakeup(
     uart: &dyn Uart,
     pins_initial: u8,
     pins_wakeup: u8,
+    trigger_pin: &str,
+    trigger_edge: Edge,
 ) -> Result<()> {
     // Setup phase pins and set phase to 0 before reset.
     setup_phase_pins(transport)?;
@@ -106,19 +110,34 @@ fn chip_sw_sysrst_ctrl_ulp_z3_wakeup(
     // Wait until device is ready to accept commands.
     UartConsole::wait_for(uart, &TestStatus::InWfi.wait_pattern(), opts.timeout)?;
 
+    let mut gpio_mon = GpioMon::start(
+        transport,
+        &[
+            ("IOR10", "pwrb_in_i"),
+            ("IOR11", "ac_present_i"),
+            ("IOR12", "lid_open_i"),
+            ("IOR5", "z3_wakeup"),
+            ("SYSRST_CTRL_EC_RST_L", "ec_rst_l"),
+        ],
+        true,
+    )?;
+
     // Tell device that we have driven pins to the initial value.
     log::info!("Go to PhaseDriveInitial");
     set_test_phase(transport, TestPhase::DriveInitial)?;
     // Wait for device to configure the wakeup source.
     log::info!("Wait for device to configure wakeup source");
     sync_with_sw(opts, uart)?;
+    // Make sure hardware block has released EC_RST_L and FLASH_WP.
+    log::info!("Make sure ec_rst and flash_wp were released");
+    ensure!(read_pins(transport, config)? == 0b110);
 
     // Wait for the debounce time: the pins are still in the initial value so it should not trigger.
     log::info!("Wait debounce time.");
     wait_wakeup_time();
-    // Make sure hardware block has not driven the wakeup pin.
+    // Make sure hardware block has not driven the wakeup pin but has released EC_RST_L and FLASH_WP.
     log::info!("Make sure wakeup pin was not asserted");
-    ensure!(read_pins(transport, config)? == 0b0);
+    ensure!(read_pins(transport, config)? == 0b110);
     // Tell device that we have done nothing and it should check nothing happened.
     log::info!("Go to PhaseWaitNoWakeup");
     set_test_phase(transport, TestPhase::WaitNoWakeup)?;
@@ -137,11 +156,50 @@ fn chip_sw_sysrst_ctrl_ulp_z3_wakeup(
     // Check that the hardware block is correctly driving the wakeup pin and that the
     // EC_RST and FLASH_WP pins are still high.
     log::info!("Make sure wakeup pin was asserted");
-    ensure!(read_pins(transport, config)? == 0b1);
+    ensure!(read_pins(transport, config)? == 0b111);
 
     // Finish test.
     log::info!("Go to PhaseDone");
     set_test_phase(transport, TestPhase::Done)?;
+
+    // Stop monitoring and check that there were no glitches.
+    let events = gpio_mon.read(false)?;
+    let mut events_iter = events.iter();
+    let first_event = events_iter
+        .next()
+        .context("Expected at least one GPIO event during reset")?;
+    let second_event = events_iter
+        .next()
+        .context("Expected at least two GPIO events during reset")?;
+    ensure!(
+        events_iter.next().is_none(),
+        "Unexpected third GPIO event during reset"
+    );
+    // We expect to see the "trigger" pin change and then the z3 pin go high.
+    match (first_event, second_event) {
+        (
+            &MonitoringEvent {
+                signal_index: first_index,
+                edge,
+                ..
+            },
+            &MonitoringEvent {
+                signal_index: second_index,
+                edge: Edge::Rising,
+                ..
+            },
+        ) => {
+            // Sanity check: make sure each pin (ec_rst and flash_wp) is now low.
+            ensure!(
+                first_index as usize == gpio_mon.signal_index(trigger_pin).unwrap()
+                    && second_index as usize == gpio_mon.signal_index("z3_wakeup").unwrap()
+                    && edge == trigger_edge
+            );
+        }
+        _ => bail!(
+            "the GPIO events do not match what was expected: {first_event:?}, {second_event:?}"
+        ),
+    }
 
     let _ = UartConsole::wait_for(uart, r"PASS!", opts.timeout)?;
     Ok(())
@@ -164,13 +222,13 @@ fn main() -> Result<()> {
     // - A H -> L transition on the pwrb_in_i signal
     // - A L -> H transition on the lid_open_i signal
 
-    for (initial, wakeup, msg) in [
-        (0b000, 0b010, "ac_present_i high"),
-        (0b001, 0b000, "pwrb_in_i high to low"),
-        (0b000, 0b100, "lid_open_i low to high"),
+    for (initial, wakeup, trigger_pin, trigger_edge) in [
+        (0b000, 0b010, "ac_present_i", Edge::Rising),
+        (0b001, 0b000, "pwrb_in_i", Edge::Falling),
+        (0b000, 0b100, "lid_open_i", Edge::Rising),
     ] {
         log::info!("=======================");
-        log::info!("Test wakeup using {msg}");
+        log::info!("Test wakeup using {trigger_pin} {trigger_edge:?}");
         execute_test!(
             chip_sw_sysrst_ctrl_ulp_z3_wakeup,
             &opts,
@@ -179,6 +237,8 @@ fn main() -> Result<()> {
             &*uart,
             initial,
             wakeup,
+            trigger_pin,
+            trigger_edge,
         );
     }
     Ok(())
