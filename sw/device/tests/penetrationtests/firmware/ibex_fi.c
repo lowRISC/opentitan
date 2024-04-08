@@ -34,6 +34,11 @@ static str_fn_t increment_100x1_remapped = (str_fn_t)increment_100x1;
 // Interface to Ibex.
 static dif_rv_core_ibex_t rv_core_ibex;
 
+// Indicates whether flash already was initialized for the test or not.
+static bool flash_init;
+// Indicates whether flash content is valid or not.
+static bool flash_data_valid;
+
 // Make sure that this function does not get optimized by the compiler.
 uint32_t increment_counter(uint32_t counter) __attribute__((optnone)) {
   uint32_t return_value = counter + 1;
@@ -102,6 +107,7 @@ static dif_flash_ctrl_device_info_t flash_info;
 // we can do the write/read test without the risk of clobbering data
 // used by the program.
 OT_SECTION(".data")
+
 static volatile uint32_t sram_main_buffer[256];
 static volatile uint32_t sram_main_buffer_large[4000];
 
@@ -347,40 +353,49 @@ status_t handle_ibex_fi_char_flash_read(ujson_t *uj) {
   // Clear registered alerts in alert handler.
   sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
 
-  // Configure the data flash.
-  // Flash configuration.
-  dif_flash_ctrl_region_properties_t region_properties = {
-      .rd_en = kMultiBitBool4True,
-      .prog_en = kMultiBitBool4True,
-      .erase_en = kMultiBitBool4True,
-      .scramble_en = kMultiBitBool4True,
-      .ecc_en = kMultiBitBool4True,
-      .high_endurance_en = kMultiBitBool4False};
+  if (!flash_init) {
+    // Configure the data flash.
+    // Flash configuration.
+    dif_flash_ctrl_region_properties_t region_properties = {
+        .rd_en = kMultiBitBool4True,
+        .prog_en = kMultiBitBool4True,
+        .erase_en = kMultiBitBool4True,
+        .scramble_en = kMultiBitBool4True,
+        .ecc_en = kMultiBitBool4True,
+        .high_endurance_en = kMultiBitBool4False};
 
-  dif_flash_ctrl_data_region_properties_t data_region = {
-      .base = FLASH_PAGES_PER_BANK,
-      .size = 0x1,
-      .properties = region_properties};
+    dif_flash_ctrl_data_region_properties_t data_region = {
+        .base = FLASH_PAGES_PER_BANK,
+        .size = 0x1,
+        .properties = region_properties};
 
-  TRY(dif_flash_ctrl_set_data_region_properties(&flash, 0, data_region));
-  TRY(dif_flash_ctrl_set_data_region_enablement(&flash, 0, kDifToggleEnabled));
+    TRY(dif_flash_ctrl_set_data_region_properties(&flash, 0, data_region));
+    TRY(dif_flash_ctrl_set_data_region_enablement(&flash, 0,
+                                                  kDifToggleEnabled));
+
+    flash_init = true;
+  }
 
   ptrdiff_t flash_bank_1_addr =
       (ptrdiff_t)flash_info.data_pages * (ptrdiff_t)flash_info.bytes_per_page;
   mmio_region_t flash_bank_1 = mmio_region_from_addr(
       TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR + (uintptr_t)flash_bank_1_addr);
 
-  // Prepare page and write reference values into it.
-  uint32_t input_page[FLASH_UINT32_WORDS_PER_PAGE];
-  memset(input_page, 0x0, FLASH_UINT32_WORDS_PER_PAGE * sizeof(uint32_t));
-  for (int i = 0; i < 32; i++) {
-    input_page[i] = ref_values[i];
-  }
+  if (!flash_data_valid) {
+    // Prepare page and write reference values into it.
+    uint32_t input_page[FLASH_UINT32_WORDS_PER_PAGE];
+    memset(input_page, 0x0, FLASH_UINT32_WORDS_PER_PAGE * sizeof(uint32_t));
+    for (int i = 0; i < 32; i++) {
+      input_page[i] = ref_values[i];
+    }
 
-  // Erase flash and write page with reference values.
-  TRY(flash_ctrl_testutils_erase_and_write_page(
-      &flash, (uint32_t)flash_bank_1_addr, /*partition_id=*/0, input_page,
-      kDifFlashCtrlPartitionTypeData, FLASH_UINT32_WORDS_PER_PAGE));
+    // Erase flash and write page with reference values.
+    TRY(flash_ctrl_testutils_erase_and_write_page(
+        &flash, (uint32_t)flash_bank_1_addr, /*partition_id=*/0, input_page,
+        kDifFlashCtrlPartitionTypeData, FLASH_UINT32_WORDS_PER_PAGE));
+
+    flash_data_valid = true;
+  }
 
   // FI code target.
   uint32_t res_values[32];
@@ -398,6 +413,7 @@ status_t handle_ibex_fi_char_flash_read(ujson_t *uj) {
   for (int i = 0; i < 32; i++) {
     if (res_values[i] != ref_values[i]) {
       res |= 1;
+      flash_data_valid = false;
     }
   }
 
@@ -420,21 +436,26 @@ status_t handle_ibex_fi_char_flash_write(ujson_t *uj) {
   // Clear registered alerts in alert handler.
   sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
 
-  // Configure the data flash.
-  // Flash configuration.
-  dif_flash_ctrl_region_properties_t region_properties = {
-      .rd_en = kMultiBitBool4True,
-      .prog_en = kMultiBitBool4True,
-      .erase_en = kMultiBitBool4True,
-      .scramble_en = kMultiBitBool4True,
-      .ecc_en = kMultiBitBool4True,
-      .high_endurance_en = kMultiBitBool4False};
-  dif_flash_ctrl_data_region_properties_t data_region = {
-      .base = FLASH_PAGES_PER_BANK,
-      .size = 0x1,
-      .properties = region_properties};
-  TRY(dif_flash_ctrl_set_data_region_properties(&flash, 0, data_region));
-  TRY(dif_flash_ctrl_set_data_region_enablement(&flash, 0, kDifToggleEnabled));
+  if (!flash_init) {
+    // Configure the data flash.
+    // Flash configuration.
+    dif_flash_ctrl_region_properties_t region_properties = {
+        .rd_en = kMultiBitBool4True,
+        .prog_en = kMultiBitBool4True,
+        .erase_en = kMultiBitBool4True,
+        .scramble_en = kMultiBitBool4True,
+        .ecc_en = kMultiBitBool4True,
+        .high_endurance_en = kMultiBitBool4False};
+    dif_flash_ctrl_data_region_properties_t data_region = {
+        .base = FLASH_PAGES_PER_BANK,
+        .size = 0x1,
+        .properties = region_properties};
+    TRY(dif_flash_ctrl_set_data_region_properties(&flash, 0, data_region));
+    TRY(dif_flash_ctrl_set_data_region_enablement(&flash, 0,
+                                                  kDifToggleEnabled));
+
+    flash_init = true;
+  }
 
   ptrdiff_t flash_bank_1_addr =
       (ptrdiff_t)flash_info.data_pages * (ptrdiff_t)flash_info.bytes_per_page;
@@ -547,26 +568,32 @@ status_t handle_ibex_fi_char_sram_read(ujson_t *uj) {
       mmio_region_from_addr(sram_main_buffer_addr);
 
   // Write reference values into SRAM.
-  for (int i = 0; i < 32; i++) {
+  for (int i = 0; i < 256; i++) {
     mmio_region_write32(sram_region_main_addr, i * (ptrdiff_t)sizeof(uint32_t),
-                        ref_values[i]);
+                        ref_values[i % 32]);
   }
 
-  uint32_t res_values[32];
+  uint32_t res_values[256];
   // FI code target.
   sca_set_trigger_high();
-  for (int i = 0; i < 32; i++) {
+  asm volatile(NOP10);
+  // Invoke 256 reads from SRAM. The number of reads is chosen in such a way
+  // that the trigger window is large enough for the FI gear to inject a fault.
+  // To keep the code size low, only 32 different values (stored in ref_values)
+  // are read.
+  for (int i = 0; i < 256; i++) {
     res_values[i] = mmio_region_read32(sram_region_main_addr,
                                        i * (ptrdiff_t)sizeof(uint32_t));
   }
+  asm volatile(NOP10);
   sca_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = sca_get_triggered_alerts();
 
   // Compare against reference values.
   uint32_t res = 0;
-  for (int i = 0; i < 32; i++) {
-    if (res_values[i] != ref_values[i]) {
+  for (int i = 0; i < 256; i++) {
+    if (res_values[i] != ref_values[i % 32]) {
       res |= 1;
     }
   }
@@ -699,6 +726,13 @@ status_t handle_ibex_fi_char_sram_write(ujson_t *uj) {
   uintptr_t sram_main_buffer_addr = (uintptr_t)&sram_main_buffer;
   mmio_region_t sram_region_main_addr =
       mmio_region_from_addr(sram_main_buffer_addr);
+
+  // Initialize SRAM region with inverse ref_values to avoid that data from a
+  // previous run are still in memory.
+  for (int i = 0; i < 32; i++) {
+    mmio_region_write32(sram_region_main_addr, i * (ptrdiff_t)sizeof(uint32_t),
+                        ~ref_values[i]);
+  }
 
   // FI code target.
   sca_set_trigger_high();
@@ -863,7 +897,8 @@ status_t handle_ibex_fi_char_unconditional_branch(ujson_t *uj) {
   return OK_STATUS();
 }
 
-status_t handle_ibex_fi_char_conditional_branch(ujson_t *uj) {
+status_t handle_ibex_fi_char_conditional_branch(ujson_t *uj)
+    __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
   sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
 
@@ -876,7 +911,7 @@ status_t handle_ibex_fi_char_conditional_branch(ujson_t *uj) {
     if (branch_if_ > 0) {
       branch_if_++;
     } else {
-      branch_else++;
+      branch_else += 10;
     }
   }
   sca_set_trigger_low();
@@ -1176,6 +1211,10 @@ status_t handle_ibex_fi_init(ujson_t *uj) {
   TRY(dif_rv_core_ibex_init(
       mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
       &rv_core_ibex));
+
+  // Initialize flash for the flash test and write reference values into page.
+  flash_init = false;
+  flash_data_valid = false;
 
   // Read the device ID and return it back to the host.
   TRY(sca_read_device_id(uj));

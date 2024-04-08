@@ -20,6 +20,43 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "otbn_regs.h"
 
+// Indicates whether the load_integrity test is already initialized.
+static bool load_integrity_init;
+// Reference checksum for the load integrity test.
+static uint32_t load_checksum_ref;
+// Load integrity test. Initialize OTBN app, load it, and get interface to
+// OTBN data memory.
+OTBN_DECLARE_APP_SYMBOLS(otbn_load_integrity);
+OTBN_DECLARE_SYMBOL_ADDR(otbn_load_integrity, refval1);
+OTBN_DECLARE_SYMBOL_ADDR(otbn_load_integrity, refval2);
+OTBN_DECLARE_SYMBOL_ADDR(otbn_load_integrity, refval3);
+const otbn_app_t kOtbnAppLoadIntegrity = OTBN_APP_T_INIT(otbn_load_integrity);
+static const otbn_addr_t kOtbnAppLoadIntegrityRefVal1 =
+    OTBN_ADDR_T_INIT(otbn_load_integrity, refval1);
+static const otbn_addr_t kOtbnAppLoadIntegrityRefVal2 =
+    OTBN_ADDR_T_INIT(otbn_load_integrity, refval2);
+static const otbn_addr_t kOtbnAppLoadIntegrityRefVal3 =
+    OTBN_ADDR_T_INIT(otbn_load_integrity, refval3);
+
+// Indicates whether the key sideloading test is already initialized.
+static bool key_sideloading_init;
+// Key sideloading test. Initialize OTBN app, load it, and get interface to
+// OTBN data memory.
+OTBN_DECLARE_APP_SYMBOLS(otbn_key_sideload);
+OTBN_DECLARE_SYMBOL_ADDR(otbn_key_sideload, k_s0_l);
+OTBN_DECLARE_SYMBOL_ADDR(otbn_key_sideload, k_s0_h);
+OTBN_DECLARE_SYMBOL_ADDR(otbn_key_sideload, k_s1_l);
+OTBN_DECLARE_SYMBOL_ADDR(otbn_key_sideload, k_s1_h);
+const otbn_app_t kOtbnAppKeySideload = OTBN_APP_T_INIT(otbn_key_sideload);
+static const otbn_addr_t kOtbnAppKeySideloadks0l =
+    OTBN_ADDR_T_INIT(otbn_key_sideload, k_s0_l);
+static const otbn_addr_t kOtbnAppKeySideloadks0h =
+    OTBN_ADDR_T_INIT(otbn_key_sideload, k_s0_h);
+static const otbn_addr_t kOtbnAppKeySideloadks1l =
+    OTBN_ADDR_T_INIT(otbn_key_sideload, k_s1_l);
+static const otbn_addr_t kOtbnAppKeySideloadks1h =
+    OTBN_ADDR_T_INIT(otbn_key_sideload, k_s1_h);
+
 // Key diversification data for testing
 static const keymgr_diversification_t kTestDiversification = {
     .salt =
@@ -35,6 +72,19 @@ static const keymgr_diversification_t kTestDiversification = {
         },
     .version = 0x9,
 };
+
+/**
+ * Clears the OTBN DMEM and IMEM.
+ *
+ * @returns OK or error.
+ */
+static status_t clear_otbn(void) {
+  // Clear OTBN memory.
+  TRY(otbn_dmem_sec_wipe());
+  TRY(otbn_imem_sec_wipe());
+
+  return OK_STATUS(0);
+}
 
 /**
  * Read the error bits of the OTBN accelerator.
@@ -80,24 +130,11 @@ status_t clear_otbn_load_checksum(void) {
  * @param uj The received uJSON data.
  */
 status_t handle_otbn_fi_key_sideload(ujson_t *uj) {
-  // Initialize OTBN app, load it, and get interface to OTBN data memory.
-  OTBN_DECLARE_APP_SYMBOLS(otbn_key_sideload);
-  OTBN_DECLARE_SYMBOL_ADDR(otbn_key_sideload, k_s0_l);
-  OTBN_DECLARE_SYMBOL_ADDR(otbn_key_sideload, k_s0_h);
-  OTBN_DECLARE_SYMBOL_ADDR(otbn_key_sideload, k_s1_l);
-  OTBN_DECLARE_SYMBOL_ADDR(otbn_key_sideload, k_s1_h);
-  const otbn_app_t kOtbnAppKeySideload = OTBN_APP_T_INIT(otbn_key_sideload);
-  static const otbn_addr_t kOtbnAppKeySideloadks0l =
-      OTBN_ADDR_T_INIT(otbn_key_sideload, k_s0_l);
-  static const otbn_addr_t kOtbnAppKeySideloadks0h =
-      OTBN_ADDR_T_INIT(otbn_key_sideload, k_s0_h);
-  static const otbn_addr_t kOtbnAppKeySideloadks1l =
-      OTBN_ADDR_T_INIT(otbn_key_sideload, k_s1_l);
-  static const otbn_addr_t kOtbnAppKeySideloadks1h =
-      OTBN_ADDR_T_INIT(otbn_key_sideload, k_s1_h);
-
-  // Setup keymanager for sideloading key into OTBN.
-  otbn_load_app(kOtbnAppKeySideload);
+  if (!key_sideloading_init) {
+    // Setup keymanager for sideloading key into OTBN.
+    otbn_load_app(kOtbnAppKeySideload);
+    key_sideloading_init = true;
+  }
 
   // FI code target.
   sca_set_trigger_high();
@@ -147,6 +184,9 @@ status_t handle_otbn_fi_key_sideload(ujson_t *uj) {
     res |= 2;
   }
 
+  // Clear OTBN memory.
+  TRY(clear_otbn());
+
   // Send result & ERR_STATUS to host.
   otbn_fi_result_t uj_output;
   uj_output.result = res;
@@ -171,26 +211,16 @@ status_t handle_otbn_fi_key_sideload(ujson_t *uj) {
  * @param uj The received uJSON data.
  */
 status_t handle_otbn_fi_load_integrity(ujson_t *uj) {
-  // Initialize OTBN app, load it, and get interface to OTBN data memory.
-  OTBN_DECLARE_APP_SYMBOLS(otbn_load_integrity);
-  OTBN_DECLARE_SYMBOL_ADDR(otbn_load_integrity, refval1);
-  OTBN_DECLARE_SYMBOL_ADDR(otbn_load_integrity, refval2);
-  OTBN_DECLARE_SYMBOL_ADDR(otbn_load_integrity, refval3);
-  const otbn_app_t kOtbnAppLoadIntegrity = OTBN_APP_T_INIT(otbn_load_integrity);
-  static const otbn_addr_t kOtbnAppLoadIntegrityRefVal1 =
-      OTBN_ADDR_T_INIT(otbn_load_integrity, refval1);
-  static const otbn_addr_t kOtbnAppLoadIntegrityRefVal2 =
-      OTBN_ADDR_T_INIT(otbn_load_integrity, refval2);
-  static const otbn_addr_t kOtbnAppLoadIntegrityRefVal3 =
-      OTBN_ADDR_T_INIT(otbn_load_integrity, refval3);
+  if (!load_integrity_init) {
+    // Load the OTBN app and read the load checksum without FI to retrieve
+    // reference value.
+    clear_otbn_load_checksum();
+    otbn_load_app(kOtbnAppLoadIntegrity);
+    read_otbn_load_checksum(&load_checksum_ref);
+    clear_otbn_load_checksum();
 
-  // Load the OTBN app and read the load checksum without FI to retrieve
-  // reference value.
-  uint32_t load_checksum_ref;
-  clear_otbn_load_checksum();
-  otbn_load_app(kOtbnAppLoadIntegrity);
-  read_otbn_load_checksum(&load_checksum_ref);
-  clear_otbn_load_checksum();
+    load_integrity_init = true;
+  }
 
   // FI code target.
   sca_set_trigger_high();
@@ -200,6 +230,7 @@ status_t handle_otbn_fi_load_integrity(ujson_t *uj) {
   // Read back checksum.
   uint32_t load_checksum;
   read_otbn_load_checksum(&load_checksum);
+  clear_otbn_load_checksum();
 
   // Read loop counter from OTBN data memory.
   uint32_t ref_val1, ref_val2, ref_val3;
@@ -224,6 +255,9 @@ status_t handle_otbn_fi_load_integrity(ujson_t *uj) {
   // Read ERR_STATUS register from OTBN.
   dif_otbn_err_bits_t err_bits;
   read_otbn_err_bits(&err_bits);
+
+  // Clear OTBN memory.
+  TRY(clear_otbn());
 
   // Send result & ERR_STATUS to host.
   otbn_fi_result_t uj_output;
@@ -276,6 +310,9 @@ status_t handle_otbn_fi_char_hardware_dmem_op_loop(ujson_t *uj) {
   // Read ERR_STATUS register from OTBN.
   dif_otbn_err_bits_t err_bits;
   read_otbn_err_bits(&err_bits);
+
+  // Clear OTBN memory.
+  TRY(clear_otbn());
 
   // Send loop counter & ERR_STATUS to host.
   otbn_fi_loop_counter_t uj_output;
@@ -330,6 +367,9 @@ status_t handle_otbn_fi_char_hardware_reg_op_loop(ujson_t *uj) {
   // Read ERR_STATUS register from OTBN.
   dif_otbn_err_bits_t err_bits;
   read_otbn_err_bits(&err_bits);
+
+  // Clear OTBN memory.
+  TRY(clear_otbn());
 
   // Send loop counter & ERR_STATUS to host.
   otbn_fi_loop_counter_t uj_output;
@@ -387,6 +427,9 @@ status_t handle_otbn_fi_char_unrolled_dmem_op_loop(ujson_t *uj) {
   dif_otbn_err_bits_t err_bits;
   read_otbn_err_bits(&err_bits);
 
+  // Clear OTBN memory.
+  TRY(clear_otbn());
+
   // Send loop counter & ERR_STATUS to host.
   otbn_fi_loop_counter_t uj_output;
   uj_output.loop_counter = loop_counter;
@@ -441,6 +484,9 @@ status_t handle_otbn_fi_char_unrolled_reg_op_loop(ujson_t *uj) {
   dif_otbn_err_bits_t err_bits;
   read_otbn_err_bits(&err_bits);
 
+  // Clear OTBN memory.
+  TRY(clear_otbn());
+
   // Send loop counter & ERR_STATUS to host.
   otbn_fi_loop_counter_t uj_output;
   uj_output.loop_counter = loop_counter;
@@ -490,6 +536,11 @@ status_t handle_otbn_fi_init(ujson_t *uj) {
 
   // Disable the instruction cache and dummy instructions for FI attacks.
   sca_configure_cpu();
+
+  // The load integrity & key sideloading tests get initialized at the first
+  // run.
+  load_integrity_init = false;
+  key_sideloading_init = false;
 
   // Read the device ID and return it back to the host.
   TRY(sca_read_device_id(uj));
