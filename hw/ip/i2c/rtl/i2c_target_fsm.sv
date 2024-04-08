@@ -331,7 +331,7 @@ module i2c_target_fsm import i2c_pkg::*;
     // Target function clock stretch handling.
     StretchAddr,
     StretchTx, StretchTxSetup,
-    StretchAcqFull
+    StretchAcqFull, StretchAcqSetup
   } state_e;
 
   state_e state_q, state_d;
@@ -583,11 +583,14 @@ module i2c_target_fsm import i2c_pkg::*;
           nack_transaction_d = 1'b1;
           acq_fifo_wvalid_o = !acq_fifo_full_or_last_space;
           acq_fifo_wdata_o = {AcqNack, input_byte};
-        end else if (!stretch_rx) begin
-          // When space becomes available, deposit entry
-          acq_fifo_wvalid_o = 1'b1;                 // assert that acq_fifo has space
-          acq_fifo_wdata_o = {AcqData, input_byte}; // transfer data to acq_fifo
         end
+      end
+      // StretchAcqSetup: Drive the ACK and wait for tSetupData before
+      // releasing SCL
+      StretchAcqSetup : begin
+        target_idle_o = 1'b0;
+        scl_d = 1'b0;
+        sda_d = 1'b0;
       end
       // default
       default : begin
@@ -880,15 +883,23 @@ module i2c_target_fsm import i2c_pkg::*;
         end
       end
       // StretchAcqFull: target stretches the clock when acq_fifo is full
-      // When space becomes available, deposit the entry into the acqusition fifo
-      // and move on to receive the next byte.
-      // If we hit our NACK timeout we must continue and unconditionally NACK
-      // the next one.
+      // When space becomes available, move on to prepare to ACK. If we hit
+      // our NACK timeout we must continue and unconditionally NACK the next
+      // one.
       StretchAcqFull : begin
         if (nack_timeout) begin
           state_d = WaitForStop;
         end else if (~stretch_rx) begin
-          state_d = AcquireByte;
+          state_d = StretchAcqSetup;
+          load_tcount = 1'b1;
+          tcount_sel = tSetupData;
+        end
+      end
+      // StretchAcqSetup: Drive the ACK and wait for tSetupData before
+      // releasing SCL
+      StretchAcqSetup : begin
+        if (tcount_q == 20'd1) begin
+          state_d = AcquireAckSetup;
         end
       end
       // default
