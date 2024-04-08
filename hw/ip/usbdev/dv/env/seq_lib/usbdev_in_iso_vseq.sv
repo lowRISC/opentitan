@@ -15,7 +15,7 @@ class usbdev_in_iso_vseq extends usbdev_base_vseq;
     get_response(m_response_item);
     $cast(m_usb20_item, m_response_item);
     // check OUT response
-    get_out_response_from_device(m_usb20_item, PidTypeAck);
+    m_usb20_item.check_pid_type(PidTypeAck);
     inter_packet_delay();
     // register configurations for IN Trans.
     configure_in_trans(out_buffer_id, m_data_pkt.data.size());

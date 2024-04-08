@@ -23,7 +23,7 @@ class usbdev_random_length_out_transaction_vseq extends usbdev_base_vseq;
     call_data_seq(PidTypeData0, .randomize_length(randomize_length), .num_of_bytes(num_of_bytes));
     get_response(m_response_item);
     $cast(m_usb20_item, m_response_item);
-    get_out_response_from_device(m_usb20_item, PidTypeAck);
+    m_usb20_item.check_pid_type(PidTypeAck);
     cfg.clk_rst_vif.wait_clks(20);
 
     // Check that the USB device received a packet with the expected properties.

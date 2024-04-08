@@ -24,7 +24,7 @@ class usbdev_pending_in_trans_vseq extends usbdev_base_vseq;
     call_data_seq(PidTypeData0, .randomize_length(1'b1), .num_of_bytes(0));
     get_response(m_response_item);
     $cast(m_usb20_item, m_response_item);
-    get_out_response_from_device(m_usb20_item, PidTypeAck);
+    m_usb20_item.check_pid_type(PidTypeAck);
     // Verify that after the setup transaction, the waiting IN transction is canceled
     // by checking 'rdy' and 'pend' bit of configin register.
     csr_rd(ral.configin[endp], config_in);

@@ -27,7 +27,7 @@ class usbdev_in_rand_trans_vseq extends usbdev_base_vseq;
     call_data_seq(PidTypeData0, 1'b0, num_of_bytes);
     get_response(m_response_item);
     $cast(m_usb20_item, m_response_item);
-    get_out_response_from_device(m_usb20_item, PidTypeAck); // check OUT response with ACK
+    m_usb20_item.check_pid_type(PidTypeAck);
     inter_packet_delay();
     // IN Trans configurations
     configure_in_trans(out_buffer_id, m_data_pkt.data.size());
