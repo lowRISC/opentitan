@@ -5,14 +5,13 @@
 use anyhow::{bail, ensure, Result};
 use clap::Parser;
 use once_cell::sync::Lazy;
-use std::borrow::Borrow;
-use std::rc::Rc;
 use std::time::Duration;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::execute_test;
-use opentitanlib::io::gpio::{ClockNature, Edge, MonitoringEvent, PinMode};
+use opentitanlib::io::gpio::{Edge, MonitoringEvent, PinMode};
 use opentitanlib::io::uart::Uart;
+use opentitanlib::test_utils::gpio_monitor::GpioMon;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::test_status::TestStatus;
 use opentitanlib::uart::console::UartConsole;
@@ -52,8 +51,6 @@ const COMBO_PINS_HIGH: u8 = 0x3;
 const COMBO_PINS_LOW: u8 = 0;
 const COMBO_PINS_KEY0_HIGH: u8 = 1;
 const EC_RST_FLASH_WP_HIGH: u8 = 0x3;
-const EC_RST_PIN_INDEX: u8 = 0;
-const FLASH_WP_PIN_INDEX: u8 = 1;
 const EC_RST_PIN: &str = "IOR8";
 
 const EC_RST_COMBO_PULSE_WIDTH_USEC: u64 = 100_000; // Set on the device.
@@ -87,23 +84,16 @@ fn chip_sw_sysrst_ctrl_input(params: &Params) -> Result<()> {
     ensure!(read_pins(params.transport, params.config)? == EC_RST_FLASH_WP_HIGH);
 
     // We are going to set the combo pins to low and monitor the GPIO.
-    let gpio_monitoring = params.transport.gpio_monitoring()?;
-    let clock_nature = gpio_monitoring.get_clock_nature()?;
-    let ClockNature::Wallclock { resolution, .. } = clock_nature else {
-        bail!("Cannot measure EC reset pulse width: the transport GPIO monitor does not have reliable clock source");
-    };
-    log::info!("GPIO monitor clock resolution: {resolution}");
-    let gpio_pins = &params
-        .config
-        .input_pins
-        .iter()
-        .map(|x| x.to_string())
-        .collect::<Vec<_>>();
-    let gpio_pins = params.transport.gpio_pins(gpio_pins)?;
-    let gpios_pins = &gpio_pins.iter().map(Rc::borrow).collect::<Vec<_>>();
-    let start_resp = gpio_monitoring.monitoring_start(gpios_pins)?;
+    let mut gpio_mon = GpioMon::start(
+        params.transport,
+        &[
+            ("SYSRST_CTRL_EC_RST_L", "ec_rst_l"),
+            ("SYSRST_CTRL_FLASH_WP_L", "flash_wp_l"),
+        ],
+        true,
+    )?;
     // The initial levels should match the pins: all ones.
-    ensure!(!start_resp.initial_levels.iter().any(|level| !level));
+    ensure!(!gpio_mon.initial_levels().iter().any(|level| !level));
 
     // Set combo pins to low which triggers the combo and resets the device.
     set_pins(params.transport, params.config, COMBO_PINS_LOW)?;
@@ -113,20 +103,11 @@ fn chip_sw_sysrst_ctrl_input(params: &Params) -> Result<()> {
     std::thread::sleep(Duration::from_millis(500));
     // Stop monitoring and check that ec_rst and flash_wp were held low during
     // the entire time.
-    let events = gpio_monitoring.monitoring_read(gpios_pins, false)?;
-    for event in &events.events {
-        log::info!("{event:?}");
-    }
-    let mut events_iter = events.events.iter();
-    let Some(first_event) = events_iter.next() else {
-        bail!("Expected at least one GPIO event during reset");
-    };
-    let Some(second_event) = events_iter.next() else {
-        bail!("Expected at least two GPIO events during reset");
-    };
-    if let Some(third_event) = events_iter.next() {
-        bail!("Unexpected third GPIO event during reset: {third_event:?}");
-    }
+    let events = gpio_mon.read(false)?;
+    let mut events_iter = events.iter();
+    let first_event = events_iter.next().context("Expected at least one GPIO event during reset")?;
+    let second_event = events_iter.next().context("Expected at least two GPIO events during reset")?;
+    ensure!(events_iter.next().is_none(), "Unexpected third GPIO event during reset");
     match (first_event, second_event) {
         (
             &MonitoringEvent {
@@ -140,10 +121,12 @@ fn chip_sw_sysrst_ctrl_input(params: &Params) -> Result<()> {
                 ..
             },
         ) => {
+            let ec_rst_pin_index = gpio_mon.signal_index("ec_rst_l").unwrap() as u8;
+            let flash_wp_pin_index = gpio_mon.signal_index("flash_wp_l").unwrap() as u8;
             // Sanity check: make sure each pin (ec_rst and flash_wp) is now low.
             ensure!(
-                (first_index == EC_RST_PIN_INDEX && second_index == FLASH_WP_PIN_INDEX)
-                    || (first_index == FLASH_WP_PIN_INDEX && second_index == EC_RST_PIN_INDEX)
+                (first_index == ec_rst_pin_index && second_index == flash_wp_pin_index)
+                    || (first_index == flash_wp_pin_index && second_index == ec_rst_pin_index)
             );
         }
         _ => bail!(
@@ -158,9 +141,16 @@ fn chip_sw_sysrst_ctrl_input(params: &Params) -> Result<()> {
 
     // Exercise the EC reset pulse: pull ec_rst low and then high, measure how long
     // it is held low.
-    let start_resp = gpio_monitoring.monitoring_start(gpios_pins)?;
+    gpio_mon = GpioMon::start(
+        params.transport,
+        &[
+            ("SYSRST_CTRL_EC_RST_L", "ec_rst_l"),
+            ("SYSRST_CTRL_FLASH_WP_L", "flash_wp_l"),
+        ],
+        true,
+    )?;
     // The initial levels should be all ones.
-    ensure!(!start_resp.initial_levels.iter().any(|level| !level));
+    ensure!(!gpio_mon.initial_levels().iter().any(|level| !level));
     // Change the EC_RST pin to output, pull low and reset to input.
     params
         .transport
@@ -174,9 +164,9 @@ fn chip_sw_sysrst_ctrl_input(params: &Params) -> Result<()> {
         Duration::from_micros(EC_RST_COMBO_PULSE_WIDTH_USEC) + Duration::from_millis(100),
     );
     // Stop monitoring.
-    let events = gpio_monitoring.monitoring_read(gpios_pins, false)?;
+    let events = gpio_mon.read(false)?;
     // We expect to see EC_RST go low and then high.
-    let mut events_iter = events.events.iter();
+    let mut events_iter = events.iter();
     let Some(first_event) = events_iter.next() else {
         bail!("Expected at least one GPIO event during reset");
     };
@@ -189,22 +179,22 @@ fn chip_sw_sysrst_ctrl_input(params: &Params) -> Result<()> {
     match (first_event, second_event) {
         (
             &MonitoringEvent {
-                signal_index: EC_RST_PIN_INDEX,
+                signal_index: first_index,
                 edge: Edge::Falling,
                 timestamp: fall_timestamp,
             },
             &MonitoringEvent {
-                signal_index: EC_RST_PIN_INDEX,
+                signal_index: second_index,
                 edge: Edge::Rising,
                 timestamp: rise_timestamp,
             },
         ) => {
-            // Convert a timestamp in transport unit to something in nanoseconds.
-            let timestamp_to_ns =
-                |timestamp: u64| -> u64 { timestamp * 1000000000u64 / resolution };
+            ensure!(first_index == gpio_mon.signal_index("ec_rst_l").unwrap() as u8);
+            ensure!(second_index == gpio_mon.signal_index("ec_rst_l").unwrap() as u8);
             // Make sure the pulse width matches what we expect.
-            let pulse_width_us =
-                (timestamp_to_ns(rise_timestamp) - timestamp_to_ns(fall_timestamp)) / 1000;
+            let pulse_width_us = (gpio_mon.timestamp_ns(rise_timestamp)
+                - gpio_mon.timestamp_ns(fall_timestamp))
+                / 1000;
             let delta = EC_RST_STRETCH_PULSE_WIDTH_USEC.abs_diff(pulse_width_us);
             log::info!("reset pulse width =  {pulse_width_us} us, delta = {delta} us");
             ensure!(delta <= EC_RST_PULE_WIDTH_MARGIN_USEC);
