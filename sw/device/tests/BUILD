@@ -5108,6 +5108,7 @@ opentitan_test(
         "//sw/device/lib/testing:flash_ctrl_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
+        "//sw/device/lib/testing:sysrst_ctrl_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/lib/testing/test_framework:ottf_utils",
     ],
