@@ -83,6 +83,37 @@ static CONFIG: Lazy<HashMap<&'static str, Config>> = Lazy::new(|| {
                 PinmuxMioOut::Ior13 => PinmuxOutsel::GpioGpio28,
             },
         },
+        // Replication of the hyper310 config.
+        "teacup" => Config {
+            input: collection! {
+                PinmuxPeripheralIn::GpioGpio17 => PinmuxInsel::Ioc10,
+                PinmuxPeripheralIn::GpioGpio18 => PinmuxInsel::Ioc11,
+                PinmuxPeripheralIn::GpioGpio19 => PinmuxInsel::Ioc12,
+
+                PinmuxPeripheralIn::GpioGpio20 => PinmuxInsel::Ior5,
+                PinmuxPeripheralIn::GpioGpio21 => PinmuxInsel::Ior6,
+                PinmuxPeripheralIn::GpioGpio22 => PinmuxInsel::Ior7,
+
+                PinmuxPeripheralIn::GpioGpio25 => PinmuxInsel::Ior10,
+                PinmuxPeripheralIn::GpioGpio26 => PinmuxInsel::Ior11,
+                PinmuxPeripheralIn::GpioGpio27 => PinmuxInsel::Ior12,
+                PinmuxPeripheralIn::GpioGpio28 => PinmuxInsel::Ior13,
+            },
+            output: collection! {
+                PinmuxMioOut::Ioc10 => PinmuxOutsel::GpioGpio17,
+                PinmuxMioOut::Ioc11 => PinmuxOutsel::GpioGpio18,
+                PinmuxMioOut::Ioc12 => PinmuxOutsel::GpioGpio19,
+
+                PinmuxMioOut::Ior5 => PinmuxOutsel::GpioGpio20,
+                PinmuxMioOut::Ior6 => PinmuxOutsel::GpioGpio21,
+                PinmuxMioOut::Ior7 => PinmuxOutsel::GpioGpio22,
+
+                PinmuxMioOut::Ior10 => PinmuxOutsel::GpioGpio25,
+                PinmuxMioOut::Ior11 => PinmuxOutsel::GpioGpio26,
+                PinmuxMioOut::Ior12 => PinmuxOutsel::GpioGpio27,
+                PinmuxMioOut::Ior13 => PinmuxOutsel::GpioGpio28,
+            },
+        },
     }
 });
 
