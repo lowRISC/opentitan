@@ -5078,7 +5078,6 @@ opentitan_test(
     cw310 = cw310_params(
         test_cmd = """
             --bootstrap="{firmware}"
-            "{firmware:elf}"
         """,
         test_harness = "//sw/host/tests/chip/sysrst_ctrl:sysrst_ctrl_ulp_z3_wakeup",
     ),
@@ -5092,7 +5091,6 @@ opentitan_test(
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
-            "{firmware:elf}"
         """,
         test_harness = "//sw/host/tests/chip/sysrst_ctrl:sysrst_ctrl_ulp_z3_wakeup",
     ),
@@ -5100,6 +5098,7 @@ opentitan_test(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:status",
+        "//sw/device/lib/dif:gpio",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:pwrmgr",
         "//sw/device/lib/dif:rstmgr",

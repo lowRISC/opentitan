@@ -5,16 +5,13 @@
 use anyhow::{ensure, Result};
 use clap::Parser;
 use once_cell::sync::Lazy;
-use std::fs;
-use std::path::PathBuf;
 use std::time::Duration;
 
-use object::{Object, ObjectSymbol};
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::execute_test;
+use opentitanlib::io::gpio::PinMode;
 use opentitanlib::io::uart::Uart;
 use opentitanlib::test_utils::init::InitializeTest;
-use opentitanlib::test_utils::mem::MemWriteReq;
 use opentitanlib::test_utils::test_status::TestStatus;
 use opentitanlib::uart::console::UartConsole;
 
@@ -28,10 +25,6 @@ struct Opts {
     /// Console receive timeout.
     #[arg(long, value_parser = humantime::parse_duration, default_value = "10s")]
     timeout: Duration,
-
-    /// Path to the firmware's ELF file, for querying symbol addresses.
-    #[arg(value_name = "FIRMWARE_ELF")]
-    firmware_elf: PathBuf,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -59,6 +52,30 @@ static CONFIG: Lazy<Config> = Lazy::new(|| {
     }
 });
 
+const PHASE_PINS: &[&str] = &["IOB0", "IOB1", "IOB2"];
+
+fn setup_phase_pins(transport: &TransportWrapper) -> Result<()> {
+    for pin in PHASE_PINS {
+        transport.gpio_pin(pin)?.set_mode(PinMode::PushPull)?;
+    }
+    Ok(())
+}
+
+fn set_test_phase(transport: &TransportWrapper, phase: TestPhase) -> Result<()> {
+    // Since the transport may not be able to change all pins atomically, we use
+    // a Gray code encoding so that it suffices to change one pin to go to
+    // the next phase.
+    const GRAY_CODE: &[u8] = &[0b000, 0b001, 0b011, 0b010, 0b110];
+
+    let mut val = GRAY_CODE[phase as usize];
+    for pin in PHASE_PINS {
+        transport.gpio_pin(pin)?.write((val & 1) == 1)?;
+        val >>= 1;
+    }
+    ensure!(val == 0, "test phase value does not fit on the phase pins");
+    Ok(())
+}
+
 fn sync_with_sw(opts: &Opts, uart: &dyn Uart) -> Result<()> {
     UartConsole::wait_for(uart, &TestStatus::InWfi.wait_pattern(), opts.timeout)?;
     UartConsole::wait_for(uart, &TestStatus::InTest.wait_pattern(), opts.timeout)?;
@@ -74,10 +91,13 @@ fn chip_sw_sysrst_ctrl_ulp_z3_wakeup(
     transport: &TransportWrapper,
     config: &Config,
     uart: &dyn Uart,
-    test_phase_addr: u32,
     pins_initial: u8,
     pins_wakeup: u8,
 ) -> Result<()> {
+    // Setup phase pins and set phase to 0 before reset.
+    setup_phase_pins(transport)?;
+    set_test_phase(transport, TestPhase::Init)?;
+
     // Reset target.
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
     // Set pins to zero.
@@ -88,7 +108,7 @@ fn chip_sw_sysrst_ctrl_ulp_z3_wakeup(
 
     // Tell device that we have driven pins to the initial value.
     log::info!("Go to PhaseDriveInitial");
-    MemWriteReq::execute(uart, test_phase_addr, &[TestPhase::DriveInitial as u8])?;
+    set_test_phase(transport, TestPhase::DriveInitial)?;
     // Wait for device to configure the wakeup source.
     log::info!("Wait for device to configure wakeup source");
     sync_with_sw(opts, uart)?;
@@ -101,30 +121,27 @@ fn chip_sw_sysrst_ctrl_ulp_z3_wakeup(
     ensure!(read_pins(transport, config)? == 0b0);
     // Tell device that we have done nothing and it should check nothing happened.
     log::info!("Go to PhaseWaitNoWakeup");
-    MemWriteReq::execute(uart, test_phase_addr, &[TestPhase::WaitNoWakeup as u8])?;
+    set_test_phase(transport, TestPhase::WaitNoWakeup)?;
     // Wait for device to go to sleep.
     log::info!("Wait for device to sleep");
     UartConsole::wait_for(uart, &TestStatus::InWfi.wait_pattern(), opts.timeout)?;
-
+    // Set phase for when the device wakes up.
+    log::info!("Go to PhaseWaitWakeup");
+    set_test_phase(transport, TestPhase::WaitWakeup)?;
+    log::info!("Wake up device");
     // We cannot simulate a glitch so simply trigger the wakeup.
     set_pins(transport, config, pins_wakeup)?;
-
     // Wait for device to wake up.
     log::info!("Wait for device to wake up");
     sync_with_sw(opts, uart)?;
-    // Tell device to check the wakeup cause.
-    log::info!("Go to PhaseWaitWakeup");
-    MemWriteReq::execute(uart, test_phase_addr, &[TestPhase::WaitWakeup as u8])?;
-    // Wait device to confirm.
-    log::info!("Wait for device to confirm wakeup cause");
-    sync_with_sw(opts, uart)?;
-    // Check that the hardware block is correctly driving the wakeup pin.
+    // Check that the hardware block is correctly driving the wakeup pin and that the
+    // EC_RST and FLASH_WP pins are still high.
     log::info!("Make sure wakeup pin was asserted");
     ensure!(read_pins(transport, config)? == 0b1);
 
     // Finish test.
     log::info!("Go to PhaseDone");
-    MemWriteReq::execute(uart, test_phase_addr, &[TestPhase::Done as u8])?;
+    set_test_phase(transport, TestPhase::Done)?;
 
     let _ = UartConsole::wait_for(uart, r"PASS!", opts.timeout)?;
     Ok(())
@@ -134,18 +151,6 @@ fn main() -> Result<()> {
     let opts = Opts::parse();
     opts.init.init_logging();
     let transport = opts.init.init_target()?;
-
-    let elf_binary = fs::read(&opts.firmware_elf)?;
-    let elf_file = object::File::parse(&*elf_binary)?;
-    let symbol = elf_file
-        .symbols()
-        .find(|symbol| symbol.name() == Ok("kTestPhaseReal"))
-        .expect("Provided ELF missing 'kTestPhaseReal' symbol");
-    assert_eq!(
-        symbol.size(),
-        1,
-        "symbol 'kTestPhaseReal' does not have the expected size"
-    );
 
     let uart = transport.uart("console")?;
     uart.set_flow_control(true)?;
@@ -172,7 +177,6 @@ fn main() -> Result<()> {
             &transport,
             &CONFIG,
             &*uart,
-            symbol.address() as u32,
             initial,
             wakeup,
         );
