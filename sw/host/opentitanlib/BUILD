@@ -139,6 +139,7 @@ rust_library(
         "src/test_utils/epmp.rs",
         "src/test_utils/extclk.rs",
         "src/test_utils/gpio.rs",
+        "src/test_utils/gpio_monitor.rs",
         "src/test_utils/i2c_target.rs",
         "src/test_utils/init.rs",
         "src/test_utils/lc.rs",
