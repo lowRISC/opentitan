@@ -29,6 +29,9 @@ static dif_kmac_t kmac;
 #define NOP10 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1
 #define NOP100 NOP10 NOP10 NOP10 NOP10 NOP10 NOP10 NOP10 NOP10 NOP10 NOP10
 
+// Indicates whether the key manager is already configured for the test.
+static bool key_manager_init;
+
 // Buffer to allow the compiler to allocate a safe area in Main SRAM where
 // we can do the write/read test without the risk of clobbering data
 // used by the program.
@@ -212,17 +215,20 @@ status_t handle_ibex_sca_key_sideloading(ujson_t *uj) {
   ibex_sca_salt_t uj_data;
   TRY(ujson_deserialize_ibex_sca_salt_t(uj, &uj_data));
 
-  // Initialize keymgr and advance to CreatorRootKey state.
-  TRY(keymgr_testutils_startup(&keymgr, &kmac));
+  if (!key_manager_init) {
+    // Initialize keymgr and advance to CreatorRootKey state.
+    TRY(keymgr_testutils_startup(&keymgr, &kmac));
 
-  // Generate identity at CreatorRootKey (to follow same sequence and reuse
-  // chip_sw_keymgr_key_derivation_vseq.sv).
-  TRY(keymgr_testutils_generate_identity(&keymgr));
+    // Generate identity at CreatorRootKey (to follow same sequence and reuse
+    // chip_sw_keymgr_key_derivation_vseq.sv).
+    TRY(keymgr_testutils_generate_identity(&keymgr));
 
-  // Advance to OwnerIntermediateKey state.
-  TRY(keymgr_testutils_advance_state(&keymgr, &kOwnerIntParams));
-  TRY(keymgr_testutils_check_state(&keymgr,
-                                   kDifKeymgrStateOwnerIntermediateKey));
+    // Advance to OwnerIntermediateKey state.
+    TRY(keymgr_testutils_advance_state(&keymgr, &kOwnerIntParams));
+    TRY(keymgr_testutils_check_state(&keymgr,
+                                     kDifKeymgrStateOwnerIntermediateKey));
+    key_manager_init = true;
+  }
 
   // Set the salt based on the input.
   dif_keymgr_versioned_key_params_t sideload_params = kKeyVersionedParams;
@@ -646,6 +652,9 @@ status_t handle_ibex_sca_init(ujson_t *uj) {
 
   // Disable the instruction cache and dummy instructions for SCA.
   sca_configure_cpu();
+
+  // Key manager not initialized for the handle_ibex_sca_key_sideloading test.
+  key_manager_init = false;
 
   // Read the device ID and return it back to the host.
   TRY(sca_read_device_id(uj));
