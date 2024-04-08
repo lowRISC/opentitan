@@ -14,6 +14,7 @@
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
+#include "sw/device/lib/testing/sysrst_ctrl_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ottf_utils.h"
@@ -105,6 +106,8 @@ static void pinmux_setup(void) {
     CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kOutputPads[i],
                                           kPeripheralOutputs[i]));
   }
+  sysrst_ctrl_testutils_setup_dio(&pinmux);
+  sysrst_ctrl_testutils_release_dio(&sysrst_ctrl, true, true);
 }
 
 static uint8_t read_phase_pins(void) {
