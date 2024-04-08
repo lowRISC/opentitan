@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/status.h"
+#include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
@@ -28,14 +29,13 @@ OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 // we must use variables in RAM.
 OT_SECTION(".rodata")
 static volatile const uint8_t kTestPhaseDV[1];
-OT_SECTION(".data")
-static volatile const uint8_t kTestPhaseReal = 0;
 
 static dif_pwrmgr_t pwrmgr;
 static dif_rstmgr_t rstmgr;
 static dif_pinmux_t pinmux;
 static dif_sysrst_ctrl_t sysrst_ctrl;
 static dif_flash_ctrl_state_t flash;
+static dif_gpio_t gpio;
 
 enum {
   kNumMioInPads = 3,
@@ -84,6 +84,9 @@ static const dif_pinmux_index_t kOutputPadsReal[] = {
     kTopEarlgreyPinmuxMioOutIor5,
 };
 
+// Mask of the GPIOs used on the real device to read the test phase.
+static const uint32_t kGpioMask = 0x7;
+
 /**
  * Sets up the pinmux to assign input and output pads to the sysrst_ctrl
  * peripheral as required.
@@ -102,6 +105,16 @@ static void pinmux_setup(void) {
     CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kOutputPads[i],
                                           kPeripheralOutputs[i]));
   }
+}
+
+static uint8_t read_phase_pins(void) {
+  uint32_t gpio_state;
+  CHECK_DIF_OK(dif_gpio_read_all(&gpio, &gpio_state));
+  // Since the host may not be able to change all pins atomically, we use
+  // a Gray code encoding so that it suffices to change one pin to go to
+  // the next phase.
+  static const uint8_t kGrayCode[] = {0, 1, 3, 2, 7, 6, 4, 5};
+  return kGrayCode[gpio_state & kGpioMask];
 }
 
 /**
@@ -126,7 +139,8 @@ static status_t wait_next_test_phase(uint8_t prior_phase) {
     }
     return status;
   } else {
-    OTTF_WAIT_FOR(kTestPhaseReal != prior_phase, kTestPhaseTimeoutUsecReal);
+    IBEX_TRY_SPIN_FOR(read_phase_pins() != prior_phase,
+                      kTestPhaseTimeoutUsecReal);
     return OK_STATUS();
   }
 }
@@ -184,15 +198,31 @@ bool test_main(void) {
       mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
   CHECK_DIF_OK(dif_rstmgr_init(
       mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+  CHECK_DIF_OK(
+      dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
 
+  // In DV, we use flash backdoor writes to store the phase.
   if (kDeviceType == kDeviceSimDV) {
     CHECK_STATUS_OK(flash_ctrl_testutils_backdoor_init(&flash));
   }
+  // On real devices, we cannot store it in RAM since the wakeup will erase
+  // it so use three pins to read the test phase.
+  else {
+    CHECK_DIF_OK(dif_pinmux_input_select(
+        &pinmux, kTopEarlgreyPinmuxPeripheralInGpioGpio0,
+        kTopEarlgreyPinmuxInselIob0));
+    CHECK_DIF_OK(dif_pinmux_input_select(
+        &pinmux, kTopEarlgreyPinmuxPeripheralInGpioGpio1,
+        kTopEarlgreyPinmuxInselIob1));
+    CHECK_DIF_OK(dif_pinmux_input_select(
+        &pinmux, kTopEarlgreyPinmuxPeripheralInGpioGpio2,
+        kTopEarlgreyPinmuxInselIob2));
+  }
+  LOG_INFO("reset");
 
-  const volatile uint8_t *kTestPhase =
-      kDeviceType == kDeviceSimDV ? kTestPhaseDV : &kTestPhaseReal;
-  uint8_t current_test_phase = kTestPhase[0];
-  while (current_test_phase < kTestPhaseDone) {
+  while (true) {
+    uint8_t current_test_phase =
+        kDeviceType == kDeviceSimDV ? *kTestPhaseDV : read_phase_pins();
     LOG_INFO("Test phase %d", current_test_phase);
     switch (current_test_phase) {
       case kTestPhaseInit:
@@ -213,6 +243,9 @@ bool test_main(void) {
         CHECK(has_wakeup_happened());
         LOG_INFO("kTestPhaseWaitWakeup");
         break;
+      case kTestPhaseDone:
+        // End of test.
+        return true;
       default:
         LOG_ERROR("Unexpected test phase : %d", current_test_phase);
         LOG_INFO("END");
@@ -223,7 +256,6 @@ bool test_main(void) {
     if (!status_ok(status)) {
       return false;
     }
-    current_test_phase = kTestPhase[0];
   }
   return true;
 }
