@@ -140,11 +140,20 @@ const dif_pinmux_index_t kPinmuxTestutilsGpioMioOutPins[kDifGpioNumPins] = {
     kTopEarlgreyPinmuxMioOutIor12, kTopEarlgreyPinmuxMioOutIor13};
 
 uint32_t pinmux_testutils_get_testable_gpios_mask(void) {
-  if (kDeviceType == kDeviceFpgaCw310) {
-    // Only IOR6, IOR7, and IOR10 to IOR13 are available for use as GPIOs.
-    return 0xfc000000;
-  } else {
-    return 0xffffffff;
+  switch (kDeviceType) {
+    case kDeviceSimDV:
+    case kDeviceSimVerilator:
+      // All GPIOs are testable in DV.
+      return 0xffffffff;
+    case kDeviceFpgaCw310:
+      // Only IOR6, IOR7, and IOR10 to IOR13 are available for use as GPIOs.
+      return 0xfc000000;
+    case kDeviceSilicon:
+      // IOA3/6, IOB6, IOC9-12, IOR5-7 and IOR10-13.
+      return 0xfe0f0248;
+    default:
+      CHECK(false);
+      return 0;
   }
 }
 
