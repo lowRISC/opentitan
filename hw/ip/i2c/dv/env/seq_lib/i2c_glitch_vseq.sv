@@ -49,7 +49,7 @@ class i2c_glitch_vseq extends i2c_target_smoke_vseq;
     // Target function clock stretch handling.
     StretchAddr,
     StretchTx, StretchTxSetup,
-    StretchAcqFull
+    StretchAcqFull, StretchAcqSetup
   } state_e;
 
   // initialize the states in which glitch is to be introduced
@@ -57,12 +57,16 @@ class i2c_glitch_vseq extends i2c_target_smoke_vseq;
   // WaitForStop -> Idle and WaitForStop -> AcquireStart
   // TransmitAckPulse -> Idle and TransmitAckPulse -> AcquireStart
   // AcquireByte -> Idle and AcquireByte -> AcquireStart
+  // StretchAcqSetup is also an invalid start, as a control symbol is impossible
+  // in this state.
   state_e read_states[]  = '{TransmitWait, TransmitSetup, TransmitPulse, TransmitHold, TransmitAck,
                             TransmitAckPulse, StretchTx, StretchTxSetup};
   state_e write_states[] = '{AcquireAckWait, AcquireAckSetup, AcquireAckPulse, AcquireAckHold,
                              StretchAcqFull};
   state_e addr_states[]  = '{StretchAddr, AddrAckWait, AddrAckSetup, AddrAckPulse, AddrAckHold};
-  state_e scl_high_states[]  = '{TransmitPulse, AcquireAckPulse, AddrAckPulse};
+  // AddrAckSetup is here because SCL and SDA can change simultaneously,
+  // leading to failures after the modeled CDC random insertion delay.
+  state_e scl_high_states[]  = '{TransmitPulse, AcquireAckPulse, AddrAckSetup, AddrAckPulse};
 
   // Common steps for DUT initialization
   virtual task setup();
