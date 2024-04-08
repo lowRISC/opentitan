@@ -573,7 +573,7 @@
   end
 
   clkmgr_meas_chk #(
-    .Cnt(960),
+    .Cnt(10000),
     .RefCnt(1)
   ) u_io_meas (
     .clk_i,
@@ -600,7 +600,7 @@
 
 
   clkmgr_meas_chk #(
-    .Cnt(480),
+    .Cnt(5000),
     .RefCnt(1)
   ) u_io_div2_meas (
     .clk_i,
@@ -627,7 +627,7 @@
 
 
   clkmgr_meas_chk #(
-    .Cnt(240),
+    .Cnt(2500),
     .RefCnt(1)
   ) u_io_div4_meas (
     .clk_i,
@@ -654,7 +654,7 @@
 
 
   clkmgr_meas_chk #(
-    .Cnt(1000),
+    .Cnt(10000),
     .RefCnt(1)
   ) u_main_meas (
     .clk_i,

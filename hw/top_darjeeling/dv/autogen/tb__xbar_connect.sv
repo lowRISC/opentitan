@@ -232,11 +232,11 @@ initial begin
     xbar_clk_rst_if.wait_for_reset(.wait_posedge(1'b0));
 
     clk_rst_if_main.set_active(.drive_rst_n_val(0));
-    clk_rst_if_main.set_freq_khz(100000000 / 1000);
+    clk_rst_if_main.set_freq_khz(1000000000 / 1000);
     clk_rst_if_usb.set_active(.drive_rst_n_val(0));
     clk_rst_if_usb.set_freq_khz(48000000 / 1000);
     clk_rst_if_io_div4.set_active(.drive_rst_n_val(0));
-    clk_rst_if_io_div4.set_freq_khz(24000000 / 1000);
+    clk_rst_if_io_div4.set_freq_khz(250000000 / 1000);
 
   end
 end

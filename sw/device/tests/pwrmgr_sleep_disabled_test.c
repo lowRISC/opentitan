@@ -78,11 +78,11 @@ bool test_main(void) {
 
   // Issue a wakeup signal in 200us through the AON timer.
   //
-  // At 200kHz, threshold of 40 is equal to 200us.
+  // At 62.5MHz, threshold of 12500 is equal to 200us.
   //
   // Adjust the threshold for Verilator since it runs on different clock
   // frequencies.
-  uint32_t wakeup_threshold = 40;
+  uint32_t wakeup_threshold = 12500;
   if (kDeviceType == kDeviceSimVerilator) {
     wakeup_threshold *= 10;
   }
