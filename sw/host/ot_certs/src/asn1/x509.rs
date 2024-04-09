@@ -10,8 +10,8 @@ use std::collections::HashMap;
 use crate::asn1::builder::{concat_suffix, Builder};
 use crate::asn1::{Oid, Tag};
 use crate::template::{
-    AttributeType, Certificate, CertificateExtension, EcCurve, EcPublicKeyInfo, EcdsaSignature,
-    HashAlgorithm, Signature, SubjectPublicKeyInfo, Value,
+    AttributeType, BasicConstraints, Certificate, CertificateExtension, EcCurve, EcPublicKeyInfo,
+    EcdsaSignature, HashAlgorithm, Signature, SubjectPublicKeyInfo, Value,
 };
 
 impl HashAlgorithm {
@@ -141,7 +141,9 @@ impl X509 {
                 },
                 |builder| {
                     builder.push_seq(Some("tbs_extensions".into()), |builder| {
-                        Self::push_basic_constraints_ext(builder)?;
+                        if let Some(constraints) = &cert.basic_constraints {
+                            Self::push_basic_constraints_ext(builder, constraints)?;
+                        }
                         Self::push_key_usage_ext(builder)?;
                         Self::push_auth_key_id_ext(builder, &cert.authority_key_identifier)?;
                         Self::push_subject_key_id_ext(builder, &cert.subject_key_identifier)?;
@@ -211,18 +213,19 @@ impl X509 {
         })
     }
 
-    pub fn push_basic_constraints_ext<B: Builder>(builder: &mut B) -> Result<()> {
+    pub fn push_basic_constraints_ext<B: Builder>(
+        builder: &mut B,
+        constraints: &BasicConstraints,
+    ) -> Result<()> {
         // https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.9
         // BasicConstraints ::= SEQUENCE {
         //   cA                      BOOLEAN DEFAULT FALSE,
         //   pathLenConstraint       INTEGER (0..MAX) OPTIONAL }
-        //
-        // From the Open Profile for DICE specification:
-        // https://pigweed.googlesource.com/open-dice/+/refs/heads/main/docs/specification.md#certificate-details
-        // The standard extensions are fixed by the specification.
+
+        // Retrieve the configured value of the extension.
         Self::push_extension(builder, &Oid::BasicConstraints, true, |builder| {
             builder.push_seq(Some("basic_constraints".into()), |builder| {
-                builder.push_boolean(&Tag::Boolean, &Value::Literal(true))
+                builder.push_boolean(&Tag::Boolean, &constraints.ca)
             })
         })
     }

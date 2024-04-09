@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{bail, Context, Result};
+use anyhow::{bail, ensure, Context, Result};
 use num_bigint_dig::BigUint;
 use std::collections::HashMap;
 
@@ -190,10 +190,20 @@ pub fn parse_certificate(cert: &[u8]) -> Result<template::Certificate> {
     let raw_extensions =
         extension::x509_get_extensions(&x509).context("could not parse X509 extensions")?;
     let mut extensions = Vec::new();
+    let mut basic_constraints = None;
     for ext in raw_extensions {
         match ext.object.nid() {
             // Ignore extensions that are standard and handled by openssl.
-            Nid::BASIC_CONSTRAINTS => (),
+            Nid::BASIC_CONSTRAINTS => {
+                ensure!(
+                    basic_constraints.is_none(),
+                    "certificate contains several basic constraints extensions"
+                );
+                basic_constraints = Some(
+                    extension::parse_basic_constraints(&ext)
+                        .context("could not parse X509 basic constraints")?,
+                );
+            }
             Nid::KEY_USAGE => (),
             Nid::AUTHORITY_KEY_IDENTIFIER => (),
             Nid::SUBJECT_KEY_IDENTIFIER => (),
@@ -224,6 +234,7 @@ pub fn parse_certificate(cert: &[u8]) -> Result<template::Certificate> {
             x509.subject_key_id()
                 .context("the certificate has not subject key id")?,
         ),
+        basic_constraints,
         extensions,
         signature: extract_signature(&x509)?,
     })

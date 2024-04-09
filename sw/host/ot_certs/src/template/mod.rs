@@ -73,10 +73,17 @@ pub struct Certificate {
     pub authority_key_identifier: Value<Vec<u8>>,
     /// X509 certificate's public key identifier.
     pub subject_key_identifier: Value<Vec<u8>>,
+    // X509 basic constraints extension, optional.
+    pub basic_constraints: Option<BasicConstraints>,
     /// X509 certificate extensions.
     pub extensions: Vec<CertificateExtension>,
     /// X509 certificate's signature.
     pub signature: Signature,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
+pub struct BasicConstraints {
+    pub ca: Value<bool>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
@@ -538,6 +545,7 @@ mod tests {
             }),
             authority_key_identifier: Value::variable("signing_pub_key_id"),
             subject_key_identifier: Value::variable("owner_pub_key_id"),
+            basic_constraints: None,
             extensions: vec![CertificateExtension::DiceTcbInfo(DiceTcbInfoExtension {
                 vendor: Some(Value::literal("OpenTitan")),
                 model: Some(Value::literal("ROM_EXT")),
