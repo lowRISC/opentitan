@@ -19,6 +19,7 @@
     "not_secure": true,
     "recovery": "false",
     "debug": "true",
+    "tpm_value": 37,
     "cert_signature_r": "0",
     "cert_signature_s": "0"
 }

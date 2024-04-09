@@ -15,7 +15,7 @@ use std::collections::HashMap;
 use crate::template::{
     Certificate, CertificateExtension, Conversion, DiceTcbInfoExtension, EcPublicKey,
     EcPublicKeyInfo, EcdsaSignature, FirmwareId, Flags, Signature, SubjectPublicKeyInfo, Template,
-    Value, Variable, VariableType,
+    TpmExtension, Value, Variable, VariableType,
 };
 
 /// Substitution value: this is the raw value loaded from a hjson/json file
@@ -379,6 +379,10 @@ impl Subst for CertificateExtension {
                 dice.subst(data)
                     .context("cannot substitute in DICE extension")?,
             )),
+            CertificateExtension::Tpm(tpm) => Ok(CertificateExtension::Tpm(
+                tpm.subst(data)
+                    .context("cannot substitute in TPM extension")?,
+            )),
         }
     }
 }
@@ -411,6 +415,17 @@ impl Subst for DiceTcbInfoExtension {
                 .flags
                 .subst(data)
                 .context("cannot substitute DICE flags")?,
+        })
+    }
+}
+
+impl Subst for TpmExtension {
+    fn subst(&self, data: &SubstData) -> Result<TpmExtension> {
+        Ok(TpmExtension {
+            value: self
+                .value
+                .subst(data)
+                .context("cannot substitute TPM value")?,
         })
     }
 }

@@ -11,7 +11,8 @@ use openssl::x509::X509;
 
 use crate::asn1::Oid;
 use crate::template::{
-    CertificateExtension, DiceTcbInfoExtension, FirmwareId, Flags, HashAlgorithm, Value,
+    CertificateExtension, DiceTcbInfoExtension, FirmwareId, Flags, HashAlgorithm, TpmExtension,
+    Value,
 };
 
 /// X509 extension reference.
@@ -227,6 +228,20 @@ impl<'a> asn1::SimpleAsn1Readable<'a> for Flags {
     }
 }
 
+// This is an internal structure, same as `DiceTcbInfo`.
+#[derive(asn1::Asn1Read)]
+struct TpmExt<'a> {
+    pub value: asn1::BigInt<'a>,
+}
+
+impl TpmExt<'_> {
+    fn to_tpm_extension(&self) -> Result<TpmExtension> {
+        Ok(TpmExtension {
+            value: asn1bigint_to_bn(&self.value),
+        })
+    }
+}
+
 /// Try to parse an X509 extension as a DICE TCB info extension.
 pub fn parse_dice_tcb_info_extension(ext: &X509ExtensionRef) -> Result<DiceTcbInfoExtension> {
     asn1::parse_single::<DiceTcbInfo>(ext.data.as_slice())
@@ -234,15 +249,25 @@ pub fn parse_dice_tcb_info_extension(ext: &X509ExtensionRef) -> Result<DiceTcbIn
         .to_dice_extension()
 }
 
+/// Try to parse an X509 extension as a TPM extension.
+pub fn parse_tpm_extension(ext: &X509ExtensionRef) -> Result<TpmExtension> {
+    asn1::parse_single::<TpmExt>(ext.data.as_slice())
+        .context("cannot parse TPM extension")?
+        .to_tpm_extension()
+}
+
 /// Try to parse an X509 extension.
 pub fn parse_extension(ext: &X509ExtensionRef) -> Result<CertificateExtension> {
     let dice_oid =
         Asn1Object::from_str(Oid::DiceTcbInfo.oid()).expect("cannot create object ID from string");
+    let tpm_oid =
+        Asn1Object::from_str(Oid::TpmExt.oid()).expect("cannot create object ID from string");
     // The openssl library does not provide a way to compare between two Asn1Object so compare the raw DER.
     Ok(match ext.object.to_owned().as_slice() {
         obj if obj == dice_oid.as_slice() => {
             CertificateExtension::DiceTcbInfo(parse_dice_tcb_info_extension(ext)?)
         }
+        obj if obj == tpm_oid.as_slice() => CertificateExtension::Tpm(parse_tpm_extension(ext)?),
         _ => bail!("unknown extension type {}", ext.object,),
     })
 }
