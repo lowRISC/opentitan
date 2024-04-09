@@ -14,6 +14,7 @@ cc_library(
         ":drbg_commands",
         ":ecdh_commands",
         ":ecdsa_commands",
+        ":extclk_sca_fi_commands",
         ":hash_commands",
         ":hmac_commands",
         ":ibex_fi_commands",
@@ -115,6 +116,13 @@ cc_library(
     name = "prng_sca_commands",
     srcs = ["prng_sca_commands.c"],
     hdrs = ["prng_sca_commands.h"],
+    deps = ["//sw/device/lib/ujson"],
+)
+
+cc_library(
+    name = "extclk_sca_fi_commands",
+    srcs = ["extclk_sca_fi_commands.c"],
+    hdrs = ["extclk_sca_fi_commands.h"],
     deps = ["//sw/device/lib/ujson"],
 )
 

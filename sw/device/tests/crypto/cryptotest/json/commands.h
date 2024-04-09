@@ -20,6 +20,7 @@ extern "C" {
     value(_, Hmac) \
     value(_, Kmac) \
     value(_, AesSca) \
+    value(_, ExtClkScaFi) \
     value(_, IbexFi) \
     value(_, KmacSca) \
     value(_, OtbnFi) \

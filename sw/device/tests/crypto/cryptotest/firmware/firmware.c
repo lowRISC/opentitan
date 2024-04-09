@@ -17,6 +17,7 @@
 #include "sw/device/tests/crypto/cryptotest/json/drbg_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/ecdh_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/ecdsa_commands.h"
+#include "sw/device/tests/crypto/cryptotest/json/extclk_sca_fi_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/hash_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/hmac_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/ibex_fi_commands.h"
@@ -33,6 +34,7 @@
 #include "drbg.h"
 #include "ecdh.h"
 #include "ecdsa.h"
+#include "extclk_sca_fi.h"
 #include "hash.h"
 #include "hmac.h"
 #include "ibex_fi.h"
@@ -73,6 +75,9 @@ status_t process_cmd(ujson_t *uj) {
         break;
       case kCryptotestCommandAesSca:
         RESP_ERR(uj, handle_aes_sca(uj));
+        break;
+      case kCryptotestCommandExtClkScaFi:
+        RESP_ERR(uj, handle_extclk_sca_fi(uj));
         break;
       case kCryptotestCommandIbexFi:
         RESP_ERR(uj, handle_ibex_fi(uj));
