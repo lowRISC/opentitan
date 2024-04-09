@@ -1055,7 +1055,7 @@ Enable open drain.
 Enable the schmitt trigger.
 
 ### MIO_PAD_ATTR . keeper_en
-Enable pull-up or pull-down resistor.
+Enable keeper termination. This weakly drives the previous pad output value when output is disabled, similar to a verilog `trireg`.
 
 ### MIO_PAD_ATTR . pull_select
 Pull select (0: pull-down, 1: pull-up).
@@ -1176,7 +1176,7 @@ Enable open drain.
 Enable the schmitt trigger.
 
 ### DIO_PAD_ATTR . keeper_en
-Enable pull-up or pull-down resistor.
+Enable keeper termination. This weakly drives the previous pad output value when output is disabled, similar to a verilog `trireg`.
 
 ### DIO_PAD_ATTR . pull_select
 Pull select (0: pull-down, 1: pull-up).
