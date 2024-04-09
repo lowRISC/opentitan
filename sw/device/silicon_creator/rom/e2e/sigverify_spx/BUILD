@@ -75,11 +75,11 @@ SIGVERIFY_SPX_CASES = [
         "spx_en": 0,
         "exit_success": dicts.add(
             {
-                lc_state: "spx_en=0x00000000, spx_en_otp=0x00000000, spx_key_en=0x4ba5a5a5a5a5a5a5"
+                lc_state: "spx_en=0x00000000, spx_en_otp=0x00000000"
                 for lc_state in SPX_OTP_LC_STATES
             },
             {
-                lc_state: "spx_en=0x8d6c8c17, spx_en_otp=0x00000000, spx_key_en=0x4ba5a5a5a5a5a5a5"
+                lc_state: "spx_en=0x8d6c8c17, spx_en_otp=0x00000000"
                 for lc_state in SPX_DISABLED_LC_STATES
             },
         ),
@@ -89,11 +89,11 @@ SIGVERIFY_SPX_CASES = [
         "spx_en": CONST.HARDENED_TRUE,
         "exit_success": dicts.add(
             {
-                lc_state: "spx_en=0x00000739, spx_en_otp=0x00000739, spx_key_en=0x4ba5a5a5a5a5a5a5"
+                lc_state: "spx_en=0x00000739, spx_en_otp=0x00000739"
                 for lc_state in SPX_OTP_LC_STATES
             },
             {
-                lc_state: "spx_en=0x8d6c8c17, spx_en_otp=0x00000739, spx_key_en=0x4ba5a5a5a5a5a5a5"
+                lc_state: "spx_en=0x8d6c8c17, spx_en_otp=0x00000739"
                 for lc_state in SPX_DISABLED_LC_STATES
             },
         ),
@@ -102,7 +102,7 @@ SIGVERIFY_SPX_CASES = [
         "name": "disabled",
         "spx_en": CONST.SPX_DISABLED,
         "exit_success": {
-            lc_state: "spx_en=0x8d6c8c17, spx_en_otp=0x8d6c8c17, spx_key_en=0x4ba5a5a5a5a5a5a5"
+            lc_state: "spx_en=0x8d6c8c17, spx_en_otp=0x8d6c8c17"
             for lc_state in SPX_OTP_LC_STATES + SPX_DISABLED_LC_STATES
         },
     },
@@ -144,16 +144,6 @@ opentitan_flash_binary(
                 name = "CREATOR_SW_CFG",
                 items = {
                     "CREATOR_SW_CFG_SIGVERIFY_SPX_EN": otp_hex(t["spx_en"]),
-                    "CREATOR_SW_CFG_SIGVERIFY_SPX_KEY_EN": otp_bytestring([
-                        CONST.HARDENED_BYTE_TRUE,  # key0
-                        CONST.HARDENED_BYTE_TRUE,  # key1
-                        CONST.HARDENED_BYTE_TRUE,  # key2
-                        CONST.HARDENED_BYTE_TRUE,  # key3
-                        CONST.HARDENED_BYTE_TRUE,  # key4
-                        CONST.HARDENED_BYTE_TRUE,  # key5
-                        CONST.HARDENED_BYTE_TRUE,  # key6
-                        CONST.HARDENED_BYTE_FALSE,  # key7
-                    ]),
                 },
             ),
         ],
@@ -168,7 +158,9 @@ opentitan_flash_binary(
             t["name"],
         ),
         src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state),
-        overlays = STD_OTP_OVERLAYS + [":otp_json_sigverify_spx_{}".format(t["name"])],
+        overlays = STD_OTP_OVERLAYS + [
+            ":otp_json_sigverify_spx_{}".format(t["name"]),
+        ],
         visibility = ["//visibility:private"],
     )
     for lc_state, _ in get_lc_items()
