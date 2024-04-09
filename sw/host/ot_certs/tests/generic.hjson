@@ -89,6 +89,9 @@
         debug: {
             type: "boolean",
         }
+        basic_constraints_ca: {
+            type: "boolean",
+        }
     },
 
     certificate: {
@@ -112,6 +115,9 @@
         },
         authority_key_identifier: { var: "auth_key_id" },
         subject_key_identifier: { var: "pub_key_id" },
+        basic_constraints: {
+            ca: { var: "basic_constraints_ca" }
+        }
         extensions: [
             {
                 type: "dice_tcb_info",

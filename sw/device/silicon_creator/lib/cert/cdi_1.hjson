@@ -80,6 +80,10 @@
         },
         authority_key_identifier: { var: "owner_intermediate_pub_key_id" },
         subject_key_identifier: { var: "owner_pub_key_id" },
+        // From the Open Profile for DICE specification:
+        // https://pigweed.googlesource.com/open-dice/+/refs/heads/main/docs/specification.md#certificate-details
+        // The standard extensions are fixed by the specification.
+        basic_constraints: { ca: true },
         extensions: [
             {
                 type: "dice_tcb_info",

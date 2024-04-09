@@ -32,6 +32,9 @@
         },
         authority_key_identifier: "94589abcd8744445ef329bc4186a11ff9a74bc4d",
         subject_key_identifier: "04897afec876db876d4efbc6a3dd9f164965dfac",
+        basic_constraints: {
+            ca: true,
+        }
         extensions: [
             {
                 type: "dice_tcb_info",

@@ -20,5 +20,6 @@
     "recovery": "false",
     "debug": "true",
     "cert_signature_r": "0",
-    "cert_signature_s": "0"
+    "cert_signature_s": "0",
+    "basic_constraints_ca": true
 }
