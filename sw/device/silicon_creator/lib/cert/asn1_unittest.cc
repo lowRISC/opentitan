@@ -98,14 +98,14 @@ TEST(Asn1, PushBoolean) {
   asn1_state_t state;
   uint8_t buf[16];
   EXPECT_EQ(asn1_start(&state, buf, sizeof(buf)), kErrorOk);
-  EXPECT_EQ(asn1_push_bool(&state, true), kErrorOk);
-  EXPECT_EQ(asn1_push_bool(&state, false), kErrorOk);
+  EXPECT_EQ(asn1_push_bool(&state, kAsn1TagNumberBoolean, true), kErrorOk);
+  EXPECT_EQ(asn1_push_bool(&state, kAsn1TagClassContext | 42, false), kErrorOk);
   size_t out_size;
   EXPECT_EQ(asn1_finish(&state, &out_size), kErrorOk);
   const std::array<uint8_t, 6> kExpectedResult = {
       // Identifier octet (universal, boolean), length, content (can be any
       // nonzero value, the library uses 0xff).
-      0x01, 0x01, 0xff, 0x01, 0x01, 0x00,
+      0x01, 0x01, 0xff, 0xaa, 0x01, 0x00,
   };
   EXPECT_EQ_CONST_ARRAY(buf, out_size, kExpectedResult);
 }

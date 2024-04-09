@@ -163,9 +163,10 @@ rom_error_t asn1_finish_tag(asn1_tag_t *tag);
  * acceptable per the specification).
  *
  * @param state Pointer to the state initialized by asn1_start.
+ * @param tag Identifier octet of the tag.
  * @param value Boolean value.
  */
-rom_error_t asn1_push_bool(asn1_state_t *state, bool value);
+rom_error_t asn1_push_bool(asn1_state_t *state, uint8_t tag, bool value);
 
 /**
  * Push a tagged integer into the buffer.

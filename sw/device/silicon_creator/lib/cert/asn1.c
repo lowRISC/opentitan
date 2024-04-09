@@ -123,11 +123,11 @@ rom_error_t asn1_finish_tag(asn1_tag_t *tag) {
   return kErrorOk;
 }
 
-rom_error_t asn1_push_bool(asn1_state_t *state, bool value) {
-  asn1_tag_t tag;
-  RETURN_IF_ERROR(asn1_start_tag(state, &tag, kAsn1TagNumberBoolean));
+rom_error_t asn1_push_bool(asn1_state_t *state, uint8_t tag, bool value) {
+  asn1_tag_t tag_st;
+  RETURN_IF_ERROR(asn1_start_tag(state, &tag_st, tag));
   RETURN_IF_ERROR(asn1_push_byte(state, value ? 0xff : 0));
-  return asn1_finish_tag(&tag);
+  return asn1_finish_tag(&tag_st);
 }
 
 rom_error_t asn1_push_int32(asn1_state_t *state, uint8_t tag, int32_t value) {
