@@ -222,7 +222,7 @@ impl X509 {
         // The standard extensions are fixed by the specification.
         Self::push_extension(builder, &Oid::BasicConstraints, true, |builder| {
             builder.push_seq(Some("basic_constraints".into()), |builder| {
-                builder.push_boolean(true)
+                builder.push_boolean(&Tag::Boolean, &Value::Literal(true))
             })
         })
     }
@@ -321,7 +321,7 @@ impl X509 {
         //         }
         builder.push_seq(concat_suffix(&Some(oid.to_string()), "ext"), |builder| {
             builder.push_oid(oid)?;
-            builder.push_boolean(critical)?;
+            builder.push_boolean(&Tag::Boolean, &Value::Literal(critical))?;
             builder.push_octet_string(concat_suffix(&Some(oid.to_string()), "ext_value"), gen)
         })
     }

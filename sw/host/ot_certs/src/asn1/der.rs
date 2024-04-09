@@ -87,9 +87,10 @@ impl Builder for Der {
     }
 
     /// Push a tagged boolean into the ASN1 output.
-    fn push_boolean(&mut self, val: bool) -> Result<()> {
-        let val = if val { 0xffu8 } else { 0x00u8 };
-        self.push_tag(None, &Tag::Boolean, |builder| builder.push_byte(val))
+    fn push_boolean(&mut self, tag: &Tag, val: &Value<bool>) -> Result<()> {
+        let val = Self::get_value_or_error(val)?;
+        let val = if *val { 0xffu8 } else { 0x00u8 };
+        self.push_tag(None, tag, |builder| builder.push_byte(val))
     }
 
     /// Push a tagged integer into the ASN1 output. The name hint can be used by
@@ -237,13 +238,13 @@ mod tests {
     #[test]
     fn test_asn1_der_boolean() -> Result<()> {
         let der = Der::generate(|builder| {
-            builder.push_boolean(true)?;
-            builder.push_boolean(false)
+            builder.push_boolean(&Tag::Boolean, &Value::Literal(true))?;
+            builder.push_boolean(&Tag::Integer, &Value::Literal(false))
         })?;
         const RESULT: &[u8] = &[
             // Identifier octet (universal, boolean), length, content (can be any nonzero value, our DER generator uses 0xff).
-            0x01, 0x01, 0xff, // Identifier octet (universal, boolean), length, content.
-            0x01, 0x01, 0x00,
+            0x01, 0x01, 0xff, // Identifier octet (universal, integer), length, content.
+            0x02, 0x01, 0x00,
         ];
         assert_eq!(&der, RESULT);
         Ok(())
