@@ -13,9 +13,9 @@ use num_traits::Num;
 use serde::{Deserialize, Serialize};
 
 use crate::template::{
-    Certificate, CertificateExtension, Conversion, DiceTcbInfoExtension, EcPublicKey,
-    EcPublicKeyInfo, EcdsaSignature, FirmwareId, Flags, Signature, SubjectPublicKeyInfo, Template,
-    Value, Variable, VariableType,
+    BasicConstraints, Certificate, CertificateExtension, Conversion, DiceTcbInfoExtension,
+    EcPublicKey, EcPublicKeyInfo, EcdsaSignature, FirmwareId, Flags, Signature,
+    SubjectPublicKeyInfo, Template, Value, Variable, VariableType,
 };
 
 /// Substitution value: this is the raw value loaded from a hjson/json file
@@ -350,6 +350,10 @@ impl Subst for Certificate {
                 .subject_key_identifier
                 .subst(data)
                 .context("cannot substitute subject key id")?,
+            basic_constraints: self
+                .basic_constraints
+                .subst(data)
+                .context("cannot substitute basic constraints")?,
             extensions: self
                 .extensions
                 .iter()
@@ -360,6 +364,14 @@ impl Subst for Certificate {
                 .signature
                 .subst(data)
                 .context("cannot substitute signature")?,
+        })
+    }
+}
+
+impl Subst for BasicConstraints {
+    fn subst(&self, data: &SubstData) -> Result<BasicConstraints> {
+        Ok(BasicConstraints {
+            ca: self.ca.subst(data)?,
         })
     }
 }

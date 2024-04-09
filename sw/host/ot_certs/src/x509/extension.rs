@@ -11,7 +11,8 @@ use openssl::x509::X509;
 
 use crate::asn1::Oid;
 use crate::template::{
-    CertificateExtension, DiceTcbInfoExtension, FirmwareId, Flags, HashAlgorithm, Value,
+    BasicConstraints, CertificateExtension, DiceTcbInfoExtension, FirmwareId, Flags, HashAlgorithm,
+    Value,
 };
 
 /// X509 extension reference.
@@ -232,6 +233,29 @@ pub fn parse_dice_tcb_info_extension(ext: &X509ExtensionRef) -> Result<DiceTcbIn
     asn1::parse_single::<DiceTcbInfo>(ext.data.as_slice())
         .context("cannot parse DICE extension")?
         .to_dice_extension()
+}
+
+// This is an internal structure used to parse a Basic Constraints extension using the `asn1`
+// crate. We cannot use the `BasicConstraints` in `template` since we
+// need to use specific annotations and types so that the `asn` library can
+// derive an ASN1 parser.
+#[derive(asn1::Asn1Read)]
+struct BasicConstraintsInternal {
+    ca: bool,
+}
+
+impl BasicConstraintsInternal {
+    fn to_basic_constraints(&self) -> Result<BasicConstraints> {
+        Ok(BasicConstraints {
+            ca: Value::Literal(self.ca),
+        })
+    }
+}
+
+pub fn parse_basic_constraints(ext: &X509ExtensionRef) -> Result<BasicConstraints> {
+    asn1::parse_single::<BasicConstraintsInternal>(ext.data.as_slice())
+        .context("cannot parse DICE extension")?
+        .to_basic_constraints()
 }
 
 /// Try to parse an X509 extension.
