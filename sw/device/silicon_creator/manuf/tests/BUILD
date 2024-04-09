@@ -8,7 +8,11 @@ load(
     "//rules:opentitan.bzl",
     "RSA_ONLY_KEY_STRUCTS",
 )
-load("//rules:otp.bzl", "otp_image")
+load(
+    "//rules:otp.bzl",
+    "OTP_SIGVERIFY_FAKE_KEYS",
+    "otp_image",
+)
 load(
     "//rules/opentitan:defs.bzl",
     "cw310_params",
@@ -152,6 +156,7 @@ opentitan_test(
 )
 
 # This is the same as rom_with_fake_keys_otp_test_unlocked* but with ROM execution disabled.
+# TODO(#21204): Enable configuration of ROT AUTH partitions in CP stage.
 [
     otp_image(
         name = "otp_img_rom_exec_disabled_test_unlocked{}".format(i),
@@ -159,7 +164,7 @@ opentitan_test(
         overlays = [
             "//hw/ip/otp_ctrl/data:otp_json_fixed_secret0",
             "//hw/ip/otp_ctrl/data:otp_json_exec_disabled",
-        ],
+        ] + OTP_SIGVERIFY_FAKE_KEYS,
         visibility = ["//visibility:public"],
     )
     for i in range(0, 8)

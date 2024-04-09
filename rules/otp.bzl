@@ -338,10 +338,17 @@ otp_image_consts = rule(
     },
 )
 
+# The following overlays are used to generate a generic OTP image with fake
+# keys. This is useful for testing in dv_sim, fpga and verilator
+# environments.
+OTP_SIGVERIFY_FAKE_KEYS = [
+    "//sw/device/silicon_creator/rom/keys/fake/otp:json_rot_keys",
+]
+
 # This is a set of overlays to generate a generic, standard OTP image.
 # Additional overlays can be applied on top to further customize the OTP.
 # This set overlays does not include any of the SECRET[0-2] partitions.
-STD_OTP_OVERLAYS_WITHOUT_SECRET_PARTITIONS = [
+STD_OTP_OVERLAYS_WITHOUT_SECRET_PARTITIONS = OTP_SIGVERIFY_FAKE_KEYS + [
     "//hw/ip/otp_ctrl/data:otp_json_creator_sw_cfg",
     "//hw/ip/otp_ctrl/data:otp_json_owner_sw_cfg",
     "//hw/ip/otp_ctrl/data:otp_json_alert_digest_cfg",

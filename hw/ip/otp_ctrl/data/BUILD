@@ -9,6 +9,7 @@ load(
 )
 load(
     "//rules:otp.bzl",
+    "OTP_SIGVERIFY_FAKE_KEYS",
     "STD_OTP_OVERLAYS",
     "otp_alert_classification",
     "otp_alert_digest",
@@ -495,7 +496,7 @@ otp_image(
         overlays = [
             ":otp_json_secret0",
             ":otp_json_creator_sw_cfg_test_unlocked",
-        ],
+        ] + OTP_SIGVERIFY_FAKE_KEYS,
     )
     for i in range(0, 8)
 ]
@@ -527,7 +528,7 @@ otp_image(
         ":otp_json_creator_sw_cfg",
         ":otp_json_owner_sw_cfg",
         ":otp_json_alert_digest_cfg",
-    ],
+    ] + OTP_SIGVERIFY_FAKE_KEYS,
 )
 
 otp_image(

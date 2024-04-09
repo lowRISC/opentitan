@@ -27,6 +27,7 @@ load(
 )
 load(
     "//rules:otp.bzl",
+    "OTP_SIGVERIFY_FAKE_KEYS",
     "otp_image",
     "otp_json",
     "otp_partition",
@@ -85,6 +86,7 @@ otp_json(
 otp_image(
     name = "otp_img_default",
     src = ":otp_json_default",
+    overlays = OTP_SIGVERIFY_FAKE_KEYS,
     visibility = ["//visibility:private"],
 )
 
