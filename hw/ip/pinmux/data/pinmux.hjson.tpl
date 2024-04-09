@@ -596,7 +596,7 @@
                     },
                     { bits: "4",
                       name: "keeper_en",
-                      desc: "Enable pull-up or pull-down resistor."
+                      desc: "Enable keeper termination. This weakly drives the previous pad output value when output is disabled, similar to a verilog `trireg`."
                     },
                     { bits: "5",
                       name: "schmitt_en",
@@ -691,7 +691,7 @@
                     },
                     { bits: "4",
                       name: "keeper_en",
-                      desc: "Enable pull-up or pull-down resistor."
+                      desc: "Enable keeper termination. This weakly drives the previous pad output value when output is disabled, similar to a verilog `trireg`."
                     },
                     { bits: "5",
                       name: "schmitt_en",
