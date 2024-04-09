@@ -298,12 +298,40 @@ impl Builder for Codegen<'_> {
     }
 
     /// Push a tagged boolean into the ASN1 output.
-    fn push_boolean(&mut self, val: bool) -> Result<()> {
-        let bool_str = if val { "true" } else { "false" };
-        self.push_str_with_indent(&format!(
-            "RETURN_IF_ERROR(asn1_push_bool(&state, {}));\n",
-            bool_str
-        ));
+    fn push_boolean(&mut self, tag: &Tag, val: &Value<bool>) -> Result<()> {
+        match val {
+            Value::Literal(x) => {
+                let bool_str = if *x { "true" } else { "false" };
+                self.push_str_with_indent(&format!(
+                    "RETURN_IF_ERROR(asn1_push_bool(&state, {}, {}));\n",
+                    tag.codestring(),
+                    bool_str
+                ));
+            }
+            Value::Variable(Variable { name, convert }) => {
+                let VariableInfo {
+                    codegen,
+                    var_type: source_type,
+                } = (self.variable_info)(name)?;
+                // Verify that type is correct.
+                match source_type {
+                    VariableType::Boolean =>
+                        ensure!(convert.is_none(), "using an boolean variable for an boolean field cannot specify a conversion"),
+                    _ => bail!(
+                        "using a variable of type {source_type:?} for a boolean field is not supported"
+                        ),
+                }
+                match codegen {
+                    VariableCodegenInfo::Boolean { value_expr } => {
+                        self.push_str_with_indent(&format!(
+                            "RETURN_IF_ERROR(asn1_push_bool(&state, {}, {value_expr}));\n",
+                            tag.codestring()
+                        ))
+                    }
+                    _ => bail!("internal error: boolean represented by a {source_type:?}"),
+                }
+            }
+        }
         // A boolean only requires one byte of data (plus the tag).
         self.max_out_size += Self::tag_and_content_size(1);
         Ok(())

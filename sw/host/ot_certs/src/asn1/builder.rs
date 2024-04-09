@@ -30,7 +30,7 @@ pub trait Builder {
     fn push_byte(&mut self, val: u8) -> Result<()>;
 
     /// Push a tagged boolean into the ASN1 output.
-    fn push_boolean(&mut self, val: bool) -> Result<()>;
+    fn push_boolean(&mut self, tag: &Tag, val: &Value<bool>) -> Result<()>;
 
     /// Push a tagged integer into the ASN1 output. The name hint can be used by
     /// the implementation for documentation purpose, or completely ignored.
