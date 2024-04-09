@@ -11,6 +11,17 @@
 //
 // If in the future this assumption changes, we can modify this module easily to
 // support the new behavior.
+//
+// Note on domain resets
+//
+// When a single domain is reset, assertions of the internal signals 'dst_req'
+// and/or 'src_ack' may occur as the two ends of a pulse synchronizer
+// (prim_pulse_sync or prim_sync_reqack, NRZ option) are briefly inconsistent,
+// generating a spurious pulse at the destination.
+//
+// These pulses are prevented from propagating outside of this module, provided
+// that the reset does not occur whilst a transaction is in progress; firmware
+// is responsible for preventing that.
 
 `include "prim_assert.sv"
 
@@ -77,7 +88,7 @@ module prim_reg_cdc #(
   // register.
   // When software performs a write, the write data is captured in src_q for
   // CDC purposes.  When not performing a write, the src_q reflects the most recent
-  // hardware value. For registes with no hardware access, this is simply the
+  // hardware value. For registers with no hardware access, this is simply the
   // the value programmed by software (or in the case R1C, W1C etc) the value after
   // the operation. For registers with hardware access, this reflects a potentially
   // delayed version of the real value, as the software facing updates lag real
@@ -115,7 +126,7 @@ module prim_reg_cdc #(
       // sample data whenever a busy transaction finishes OR
       // when an update pulse is seen.
       // TODO: We should add a cover group to test different sync timings
-      // between src_ack and src_update. Ie, there can be 3 scearios:
+      // between src_ack and src_update. ie. there can be 3 scenarios:
       // 1. update one cycle before ack
       // 2. ack one cycle before update
       // 3. update / ack on the same cycle
@@ -183,7 +194,9 @@ module prim_reg_cdc #(
   );
 
 
-  // Each is valid only when destination request pulse is high
+  // Each is valid only when destination request pulse is high; this is important in not propagating
+  // the internal assertion of 'dst_req' by the 'prim_pulse_sync' channel when just one domain is
+  // reset.
   assign {dst_we_o, dst_re_o, dst_regwen_o} = txn_bits_q & {TxnWidth{dst_req}};
 
   `ASSERT_KNOWN(SrcBusyKnown_A, src_busy_o, clk_src_i, !rst_src_ni)
