@@ -538,7 +538,7 @@ module sram_ctrl
   // Alert assertions for redundant counters.
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntCheck_A,
       u_prim_count, alert_tx_o[0])
-  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ERR(LcGateFsmCheck_A,
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(LcGateFsmCheck_A,
       u_tlul_lc_gate.u_state_regs, alert_tx_o[0])
 
   // Alert assertions for reg_we onehot check.
