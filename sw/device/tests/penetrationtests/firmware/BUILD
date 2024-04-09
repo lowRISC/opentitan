@@ -163,6 +163,7 @@ cc_library(
         "//sw/device/lib/testing:alert_handler_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/ujson",
     ],
 )
 

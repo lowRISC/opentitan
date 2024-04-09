@@ -107,7 +107,7 @@ static volatile uint32_t sram_main_buffer_large[4000];
 
 status_t handle_ibex_fi_address_translation(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  uint32_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
 
   // Create translation descriptions.
   dif_rv_core_ibex_addr_translation_mapping_t increment_100x10_mapping = {
@@ -180,14 +180,16 @@ status_t handle_ibex_fi_address_translation(ujson_t *uj) {
   ibex_fi_test_result_t uj_output;
   uj_output.result = res;
   uj_output.err_status = codes;
-  uj_output.alerts = reg_alerts;
+  uj_output.alerts_1 = reg_alerts.alerts_1;
+  uj_output.alerts_2 = reg_alerts.alerts_2;
+  uj_output.alerts_3 = reg_alerts.alerts_3;
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
   return OK_STATUS();
 }
 
 status_t handle_ibex_fi_address_translation_config(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  uint32_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
 
   // Address translation configuration.
   dif_rv_core_ibex_addr_translation_mapping_t mapping1 = {
@@ -252,14 +254,16 @@ status_t handle_ibex_fi_address_translation_config(ujson_t *uj) {
   ibex_fi_test_result_t uj_output;
   uj_output.result = res;
   uj_output.err_status = codes;
-  uj_output.alerts = reg_alerts;
+  uj_output.alerts_1 = reg_alerts.alerts_1;
+  uj_output.alerts_2 = reg_alerts.alerts_2;
+  uj_output.alerts_3 = reg_alerts.alerts_3;
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
   return OK_STATUS();
 }
 
 status_t handle_ibex_fi_char_csr_write(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  uint32_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
 
   // FI code target.
   sca_set_trigger_high();
@@ -290,14 +294,16 @@ status_t handle_ibex_fi_char_csr_write(ujson_t *uj) {
   ibex_fi_test_result_t uj_output;
   uj_output.result = res;
   uj_output.err_status = codes;
-  uj_output.alerts = reg_alerts;
+  uj_output.alerts_1 = reg_alerts.alerts_1;
+  uj_output.alerts_2 = reg_alerts.alerts_2;
+  uj_output.alerts_3 = reg_alerts.alerts_3;
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
   return OK_STATUS();
 }
 
 status_t handle_ibex_fi_char_csr_read(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  uint32_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
 
   // Write reference value into CSR.
   CSR_WRITE(CSR_REG_MSCRATCH, ref_values[0]);
@@ -330,14 +336,16 @@ status_t handle_ibex_fi_char_csr_read(ujson_t *uj) {
   ibex_fi_test_result_t uj_output;
   uj_output.result = res;
   uj_output.err_status = codes;
-  uj_output.alerts = reg_alerts;
+  uj_output.alerts_1 = reg_alerts.alerts_1;
+  uj_output.alerts_2 = reg_alerts.alerts_2;
+  uj_output.alerts_3 = reg_alerts.alerts_3;
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
   return OK_STATUS();
 }
 
 status_t handle_ibex_fi_char_flash_read(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  uint32_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
 
   // Configure the data flash.
   // Flash configuration.
@@ -401,14 +409,16 @@ status_t handle_ibex_fi_char_flash_read(ujson_t *uj) {
   ibex_fi_test_result_t uj_output;
   uj_output.result = res;
   uj_output.err_status = codes;
-  uj_output.alerts = reg_alerts;
+  uj_output.alerts_1 = reg_alerts.alerts_1;
+  uj_output.alerts_2 = reg_alerts.alerts_2;
+  uj_output.alerts_3 = reg_alerts.alerts_3;
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
   return OK_STATUS();
 }
 
 status_t handle_ibex_fi_char_flash_write(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  uint32_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
 
   // Configure the data flash.
   // Flash configuration.
@@ -467,7 +477,9 @@ status_t handle_ibex_fi_char_flash_write(ujson_t *uj) {
   ibex_fi_test_result_t uj_output;
   uj_output.result = res;
   uj_output.err_status = codes;
-  uj_output.alerts = reg_alerts;
+  uj_output.alerts_1 = reg_alerts.alerts_1;
+  uj_output.alerts_2 = reg_alerts.alerts_2;
+  uj_output.alerts_3 = reg_alerts.alerts_3;
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
   return OK_STATUS();
 }
@@ -525,7 +537,7 @@ status_t handle_ibex_fi_char_sram_static(ujson_t *uj) {
 
 status_t handle_ibex_fi_char_sram_read(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  uint32_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
 
   // Get address of buffer located in SRAM.
   uintptr_t sram_main_buffer_addr = (uintptr_t)&sram_main_buffer;
@@ -565,14 +577,16 @@ status_t handle_ibex_fi_char_sram_read(ujson_t *uj) {
   ibex_fi_test_result_t uj_output;
   uj_output.result = res;
   uj_output.err_status = codes;
-  uj_output.alerts = reg_alerts;
+  uj_output.alerts_1 = reg_alerts.alerts_1;
+  uj_output.alerts_2 = reg_alerts.alerts_2;
+  uj_output.alerts_3 = reg_alerts.alerts_3;
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
   return OK_STATUS();
 }
 
 status_t handle_ibex_fi_char_sram_write(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  uint32_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
 
   // Get address of buffer located in SRAM.
   uintptr_t sram_main_buffer_addr = (uintptr_t)&sram_main_buffer;
@@ -608,14 +622,16 @@ status_t handle_ibex_fi_char_sram_write(ujson_t *uj) {
   ibex_fi_test_result_t uj_output;
   uj_output.result = res;
   uj_output.err_status = codes;
-  uj_output.alerts = reg_alerts;
+  uj_output.alerts_1 = reg_alerts.alerts_1;
+  uj_output.alerts_2 = reg_alerts.alerts_2;
+  uj_output.alerts_3 = reg_alerts.alerts_3;
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
   return OK_STATUS();
 }
 
 status_t handle_ibex_fi_char_unconditional_branch(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  uint32_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
 
   // FI code target.
   uint32_t result = 0;
@@ -733,14 +749,16 @@ status_t handle_ibex_fi_char_unconditional_branch(ujson_t *uj) {
   ibex_fi_test_result_t uj_output;
   uj_output.result = result;
   uj_output.err_status = codes;
-  uj_output.alerts = reg_alerts;
+  uj_output.alerts_1 = reg_alerts.alerts_1;
+  uj_output.alerts_2 = reg_alerts.alerts_2;
+  uj_output.alerts_3 = reg_alerts.alerts_3;
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
   return OK_STATUS();
 }
 
 status_t handle_ibex_fi_char_conditional_branch(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  uint32_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
 
   // FI code target.
   uint32_t branch_if_ = 1;
@@ -767,14 +785,16 @@ status_t handle_ibex_fi_char_conditional_branch(ujson_t *uj) {
   uj_output.result1 = branch_if_;
   uj_output.result2 = branch_else;
   uj_output.err_status = codes;
-  uj_output.alerts = reg_alerts;
+  uj_output.alerts_1 = reg_alerts.alerts_1;
+  uj_output.alerts_2 = reg_alerts.alerts_2;
+  uj_output.alerts_3 = reg_alerts.alerts_3;
   RESP_OK(ujson_serialize_ibex_fi_test_result_mult_t, uj, &uj_output);
   return OK_STATUS();
 }
 
 status_t handle_ibex_fi_char_mem_op_loop(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  uint32_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
 
   // FI code target.
   uint32_t loop_counter1 = 0;
@@ -798,14 +818,16 @@ status_t handle_ibex_fi_char_mem_op_loop(ujson_t *uj) {
   uj_output.loop_counter1 = loop_counter1;
   uj_output.loop_counter2 = loop_counter2;
   uj_output.err_status = codes;
-  uj_output.alerts = reg_alerts;
+  uj_output.alerts_1 = reg_alerts.alerts_1;
+  uj_output.alerts_2 = reg_alerts.alerts_2;
+  uj_output.alerts_3 = reg_alerts.alerts_3;
   RESP_OK(ujson_serialize_ibex_fi_loop_counter_mirrored_t, uj, &uj_output);
   return OK_STATUS();
 }
 
 status_t handle_ibex_fi_char_unrolled_mem_op_loop(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  uint32_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
 
   // FI code target.
   uint32_t loop_counter = 0;
@@ -833,14 +855,16 @@ status_t handle_ibex_fi_char_unrolled_mem_op_loop(ujson_t *uj) {
   ibex_fi_loop_counter_t uj_output;
   uj_output.loop_counter = loop_counter;
   uj_output.err_status = codes;
-  uj_output.alerts = reg_alerts;
+  uj_output.alerts_1 = reg_alerts.alerts_1;
+  uj_output.alerts_2 = reg_alerts.alerts_2;
+  uj_output.alerts_3 = reg_alerts.alerts_3;
   RESP_OK(ujson_serialize_ibex_fi_loop_counter_t, uj, &uj_output);
   return OK_STATUS();
 }
 
 status_t handle_ibex_fi_char_reg_op_loop(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  uint32_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
 
   // FI code target.
   uint32_t loop_counter1 = 0;
@@ -868,14 +892,16 @@ status_t handle_ibex_fi_char_reg_op_loop(ujson_t *uj) {
   uj_output.loop_counter1 = loop_counter1;
   uj_output.loop_counter2 = loop_counter2;
   uj_output.err_status = codes;
-  uj_output.alerts = reg_alerts;
+  uj_output.alerts_1 = reg_alerts.alerts_1;
+  uj_output.alerts_2 = reg_alerts.alerts_2;
+  uj_output.alerts_3 = reg_alerts.alerts_3;
   RESP_OK(ujson_serialize_ibex_fi_loop_counter_mirrored_t, uj, &uj_output);
   return OK_STATUS();
 }
 
 status_t handle_ibex_fi_char_unrolled_reg_op_loop(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  uint32_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
 
   // FI code target.
   uint32_t loop_counter = 0;
@@ -905,14 +931,16 @@ status_t handle_ibex_fi_char_unrolled_reg_op_loop(ujson_t *uj) {
   ibex_fi_loop_counter_t uj_output;
   uj_output.loop_counter = loop_counter;
   uj_output.err_status = codes;
-  uj_output.alerts = reg_alerts;
+  uj_output.alerts_1 = reg_alerts.alerts_1;
+  uj_output.alerts_2 = reg_alerts.alerts_2;
+  uj_output.alerts_3 = reg_alerts.alerts_3;
   RESP_OK(ujson_serialize_ibex_fi_loop_counter_t, uj, &uj_output);
   return OK_STATUS();
 }
 
 status_t handle_ibex_fi_char_register_file(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  uint32_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
 
   uint32_t res_values[7];
   // Initialize temporary registers with reference values.
@@ -957,14 +985,16 @@ status_t handle_ibex_fi_char_register_file(ujson_t *uj) {
   ibex_fi_test_result_t uj_output;
   uj_output.result = res;
   uj_output.err_status = codes;
-  uj_output.alerts = reg_alerts;
+  uj_output.alerts_1 = reg_alerts.alerts_1;
+  uj_output.alerts_2 = reg_alerts.alerts_2;
+  uj_output.alerts_3 = reg_alerts.alerts_3;
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
   return OK_STATUS();
 }
 
 status_t handle_ibex_fi_char_register_file_read(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  uint32_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
 
   uint32_t res_values[3];
   // Initialize temporary registers with reference values.
@@ -1006,7 +1036,9 @@ status_t handle_ibex_fi_char_register_file_read(ujson_t *uj) {
   ibex_fi_test_result_t uj_output;
   uj_output.result = res;
   uj_output.err_status = codes;
-  uj_output.alerts = reg_alerts;
+  uj_output.alerts_1 = reg_alerts.alerts_1;
+  uj_output.alerts_2 = reg_alerts.alerts_2;
+  uj_output.alerts_3 = reg_alerts.alerts_3;
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
   return OK_STATUS();
 }
@@ -1037,6 +1069,7 @@ status_t handle_ibex_fi_init(ujson_t *uj) {
   TRY(dif_rv_core_ibex_init(
       mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
       &rv_core_ibex));
+
   return OK_STATUS();
 }
 
