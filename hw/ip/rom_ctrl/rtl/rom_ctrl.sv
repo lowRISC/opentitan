@@ -187,20 +187,21 @@ module rom_ctrl
     .clk_i,
     .rst_ni,
 
-    .tl_i         (tl_rom_h2d_downstream),
-    .tl_o         (rom_tl_o),
-    .en_ifetch_i  (prim_mubi_pkg::MuBi4True),
-    .req_o        (bus_rom_req),
-    .req_type_o   (),
-    .gnt_i        (bus_rom_gnt),
-    .we_o         (),
-    .addr_o       (bus_rom_rom_index),
-    .wdata_o      (),
-    .wmask_o      (),
-    .intg_error_o (rom_integrity_error),
-    .rdata_i      (bus_rom_rdata),
-    .rvalid_i     (bus_rom_rvalid),
-    .rerror_i     (2'b00)
+    .tl_i             (tl_rom_h2d_downstream),
+    .tl_o             (rom_tl_o),
+    .en_ifetch_i      (prim_mubi_pkg::MuBi4True),
+    .req_o            (bus_rom_req),
+    .req_type_o       (),
+    .gnt_i            (bus_rom_gnt),
+    .we_o             (),
+    .addr_o           (bus_rom_rom_index),
+    .wdata_o          (),
+    .wmask_o          (),
+    .intg_error_o     (rom_integrity_error),
+    .rdata_i          (bus_rom_rdata),
+    .rvalid_i         (bus_rom_rvalid),
+    .rerror_i         (2'b00),
+    .rmw_in_progress_o()
   );
 
   // Snoop on the "upstream" TL transaction to infer the address to pass to the PRINCE cipher.

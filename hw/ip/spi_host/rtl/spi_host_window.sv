@@ -83,7 +83,8 @@ module spi_host_window (
     .intg_error_o(),
     .rdata_i('0),
     .rvalid_i('0),
-    .rerror_i('0)
+    .rerror_i('0),
+    .rmw_in_progress_o()
   );
 
 endmodule : spi_host_window

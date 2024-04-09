@@ -374,21 +374,22 @@ module otbn
     .SecFifoPtr      (1)  // SEC_CM: TLUL_FIFO.CTR.REDUN
   ) u_tlul_adapter_sram_imem (
     .clk_i,
-    .rst_ni      (rst_n),
-    .tl_i        (tl_win_h2d[TlWinImem]),
-    .tl_o        (tl_win_d2h[TlWinImem]),
-    .en_ifetch_i (MuBi4False),
-    .req_o       (imem_req_bus),
-    .req_type_o  (),
-    .gnt_i       (imem_gnt_bus),
-    .we_o        (imem_write_bus),
-    .addr_o      (imem_index_bus),
-    .wdata_o     (imem_wdata_bus),
-    .wmask_o     (imem_wmask_bus),
-    .intg_error_o(imem_bus_intg_violation),
-    .rdata_i     (imem_rdata_bus),
-    .rvalid_i    (imem_rvalid_bus),
-    .rerror_i    (imem_rerror_bus)
+    .rst_ni           (rst_n),
+    .tl_i             (tl_win_h2d[TlWinImem]),
+    .tl_o             (tl_win_d2h[TlWinImem]),
+    .en_ifetch_i      (MuBi4False),
+    .req_o            (imem_req_bus),
+    .req_type_o       (),
+    .gnt_i            (imem_gnt_bus),
+    .we_o             (imem_write_bus),
+    .addr_o           (imem_index_bus),
+    .wdata_o          (imem_wdata_bus),
+    .wmask_o          (imem_wmask_bus),
+    .intg_error_o     (imem_bus_intg_violation),
+    .rdata_i          (imem_rdata_bus),
+    .rvalid_i         (imem_rvalid_bus),
+    .rerror_i         (imem_rerror_bus),
+    .rmw_in_progress_o()
   );
 
 
@@ -612,21 +613,22 @@ module otbn
     .SecFifoPtr      (1)  // SEC_CM: TLUL_FIFO.CTR.REDUN
   ) u_tlul_adapter_sram_dmem (
     .clk_i,
-    .rst_ni      (rst_n),
-    .tl_i        (tl_win_h2d[TlWinDmem]),
-    .tl_o        (tl_win_d2h[TlWinDmem]),
-    .en_ifetch_i (MuBi4False),
-    .req_o       (dmem_req_bus),
-    .req_type_o  (),
-    .gnt_i       (dmem_gnt_bus),
-    .we_o        (dmem_write_bus),
-    .addr_o      (dmem_index_bus),
-    .wdata_o     (dmem_wdata_bus),
-    .wmask_o     (dmem_wmask_bus),
-    .intg_error_o(dmem_bus_intg_violation),
-    .rdata_i     (dmem_rdata_bus),
-    .rvalid_i    (dmem_rvalid_bus),
-    .rerror_i    (dmem_rerror_bus)
+    .rst_ni           (rst_n),
+    .tl_i             (tl_win_h2d[TlWinDmem]),
+    .tl_o             (tl_win_d2h[TlWinDmem]),
+    .en_ifetch_i      (MuBi4False),
+    .req_o            (dmem_req_bus),
+    .req_type_o       (),
+    .gnt_i            (dmem_gnt_bus),
+    .we_o             (dmem_write_bus),
+    .addr_o           (dmem_index_bus),
+    .wdata_o          (dmem_wdata_bus),
+    .wmask_o          (dmem_wmask_bus),
+    .intg_error_o     (dmem_bus_intg_violation),
+    .rdata_i          (dmem_rdata_bus),
+    .rvalid_i         (dmem_rvalid_bus),
+    .rerror_i         (dmem_rerror_bus),
+    .rmw_in_progress_o()
   );
 
   // Mux core and bus access into dmem
