@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{bail, ensure, Result};
+use anyhow::{bail, Context, ensure, Result};
 use clap::Parser;
 use once_cell::sync::Lazy;
 use std::time::Duration;
@@ -167,15 +167,9 @@ fn chip_sw_sysrst_ctrl_input(params: &Params) -> Result<()> {
     let events = gpio_mon.read(false)?;
     // We expect to see EC_RST go low and then high.
     let mut events_iter = events.iter();
-    let Some(first_event) = events_iter.next() else {
-        bail!("Expected at least one GPIO event during reset");
-    };
-    let Some(second_event) = events_iter.next() else {
-        bail!("Expected at least two GPIO events during reset");
-    };
-    if let Some(third_event) = events_iter.next() {
-        bail!("Unexpected third GPIO event during reset: {third_event:?}");
-    }
+    let first_event = events_iter.next().context("Expected at least one GPIO event during reset")?;
+    let second_event = events_iter.next().context("Expected at least two GPIO events during reset")?;
+    ensure!(events_iter.next().is_none(), "Unexpected third GPIO event during reset");
     match (first_event, second_event) {
         (
             &MonitoringEvent {
