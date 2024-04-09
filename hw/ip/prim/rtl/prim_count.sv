@@ -57,10 +57,14 @@ module prim_count #(
   localparam logic [NumCnt-1:0][Width-1:0] ResetValues = {{Width{1'b1}} - ResetValue, // secondary
                                                           ResetValue};                // primary
 
-  logic [NumCnt-1:0][Width-1:0] cnt_d, cnt_d_committed, cnt_q, fpv_force;
+  logic [NumCnt-1:0][Width-1:0] cnt_d, cnt_d_committed, cnt_q;
 
-`ifndef FPV_SEC_CM_ON
-  // This becomes a free variable in FPV.
+  // The fpv_force signal can be used in FPV runs to make the internal counters (cnt_q) jump
+  // unexpectedly. We only want to use this mechanism when we're doing FPV on prim_count itself. In
+  // that situation, we will have the PrimCountFpv define and wish to leave fpv_force undriven so
+  // that it becomes a free variable in FPV. In any other situation, we drive the signal with zero.
+  logic [NumCnt-1:0][Width-1:0] fpv_force;
+`ifndef PrimCountFpv
   assign fpv_force = '0;
 `endif
 
