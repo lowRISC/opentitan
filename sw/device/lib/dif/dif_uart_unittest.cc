@@ -64,6 +64,12 @@ TEST_F(ConfigTest, NullArgs) {
   EXPECT_DIF_BADARG(dif_uart_configure(nullptr, config_));
 }
 
+TEST_F(ConfigTest, BadRxBreakLevel) {
+  dif_uart_config_t config = config_;
+  config.rx_break_level = (dif_uart_rx_break_level_t)5;
+  EXPECT_DIF_BADARG(dif_uart_configure(&uart_, config));
+}
+
 TEST_F(ConfigTest, DefaultTxRxEnabled) {
   ExpectDeviceReset();
   EXPECT_WRITE32(UART_CTRL_REG_OFFSET, {
@@ -141,6 +147,29 @@ TEST_F(ConfigTest, ParityOdd) {
   EXPECT_WRITE32(UART_INTR_ENABLE_REG_OFFSET, 0);
 
   EXPECT_DIF_OK(dif_uart_configure(&uart_, config_));
+}
+
+class RxBreakLevelSetTest : public UartTest {};
+
+TEST_F(RxBreakLevelSetTest, UartNull) {
+  EXPECT_DIF_BADARG(
+      dif_uart_rx_break_level_set(nullptr, kDifUartRxBreakLevel2));
+}
+
+TEST_F(RxBreakLevelSetTest, Success) {
+  EXPECT_MASK32(UART_CTRL_REG_OFFSET,
+                {
+                    {UART_CTRL_RXBLVL_OFFSET, UART_CTRL_RXBLVL_MASK,
+                     UART_CTRL_RXBLVL_VALUE_BREAK2},
+                });
+  EXPECT_DIF_OK(dif_uart_rx_break_level_set(&uart_, kDifUartRxBreakLevel2));
+
+  EXPECT_MASK32(UART_CTRL_REG_OFFSET,
+                {
+                    {UART_CTRL_RXBLVL_OFFSET, UART_CTRL_RXBLVL_MASK,
+                     UART_CTRL_RXBLVL_VALUE_BREAK16},
+                });
+  EXPECT_DIF_OK(dif_uart_rx_break_level_set(&uart_, kDifUartRxBreakLevel16));
 }
 
 class WatermarkRxSetTest : public UartTest {};
