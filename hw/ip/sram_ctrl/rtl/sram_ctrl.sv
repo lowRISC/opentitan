@@ -478,9 +478,16 @@ module sram_ctrl
     .rmw_in_progress_o(sram_rmw_in_progress)
   );
 
+  logic key_valid;
+
   // Interposing mux logic for initialization with pseudo random data.
   assign sram_req        = tlul_req | init_req;
-  assign tlul_gnt        = sram_gnt & ~init_req;
+  // This grant signal acts more like a ready internally in tlul_adapter_sram. In particular it's
+  // fine to assert it when tlul_req is low (it has no effect). So here tlul_gnt is asserted when
+  // a request from tlul_req will be granted regardless of whether a request exists. This is done
+  // for timing reasons so that the output TL ready isn't combinatorially connected to the incoming
+  // TL valid. In particular we must not use `sram_gnt` in the expression to avoid this.
+  assign tlul_gnt        = key_valid & ~init_req;
   assign sram_we         = tlul_we | init_req;
   assign sram_intg_error = |bus_integ_error[2:1] & ~init_req;
   assign sram_addr       = (init_req) ? init_cnt          : tlul_addr;
@@ -496,7 +503,6 @@ module sram_ctrl
   // read-modify-write transaction in the SRAM adapter. In that case we force key_valid high to
   // enable that to complete so it returns a response, the TL gate won't accept any new
   // transactions and the SRAM keys have been clobbered already.
-  logic key_valid;
   assign key_valid =
     (key_req_pending_q)         ? 1'b0 :
     (reg2hw.status.escalated.q) ? (tl_gate_resp_pending & sram_rmw_in_progress) : 1'b1;
@@ -528,6 +534,11 @@ module sram_ctrl
     .raddr_o     ( ),
     .cfg_i
   );
+
+  logic unused_sram_gnt;
+  // Ignore sram_gnt signal to avoid creating a bad timing path, see comment on `tlul_gnt` above for
+  // more details.
+  assign unused_sram_gnt = sram_gnt;
 
   ////////////////
   // Assertions //
