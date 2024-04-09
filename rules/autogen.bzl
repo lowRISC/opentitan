@@ -18,15 +18,32 @@ def _hjson_c_header(ctx):
     if ctx.attr.node:
         node.append("--node={}".format(ctx.attr.node))
 
+    arguments = [
+        "-D",
+        "-q",
+        "-o",
+        header.path,
+    ] + node + [src.path for src in ctx.files.srcs]
+
+    inputs = ctx.files.srcs + [ctx.executable._regtool]
+
+    # add path to an alias path if it's needed
+    if ctx.attr.alias:
+        alias = ctx.file.alias
+
+        # add the alias argument
+        arguments.extend([
+            "--alias",
+            alias.path
+        ])
+
+        # add the alias as an input file
+        inputs.append(alias)
+
     ctx.actions.run(
         outputs = [header],
-        inputs = ctx.files.srcs + [ctx.executable._regtool],
-        arguments = [
-            "-D",
-            "-q",
-            "-o",
-            header.path,
-        ] + node + [src.path for src in ctx.files.srcs],
+        inputs = inputs,
+        arguments = arguments,
         executable = ctx.executable._regtool,
     )
 
@@ -47,6 +64,11 @@ autogen_hjson_c_header = rule(
         "srcs": attr.label_list(allow_files = True),
         "node": attr.string(
             doc = "Register block node to generate",
+        ),
+        "alias": attr.label(
+            mandatory = False,
+            allow_single_file = True,
+            doc = "A path to an alias file",
         ),
         "output_stem": attr.string(
             doc = """
