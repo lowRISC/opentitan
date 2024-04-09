@@ -59,7 +59,8 @@ module tlul_adapter_sram
   output logic                intg_error_o,
   input        [DataOutW-1:0] rdata_i,
   input                       rvalid_i,
-  input        [1:0]          rerror_i // 2 bit error [1]: Uncorrectable, [0]: Correctable
+  input        [1:0]          rerror_i, // 2 bit error [1]: Uncorrectable, [0]: Correctable
+  output logic                rmw_in_progress_o
 );
 
   localparam int SramByte = SramDw/8;
@@ -170,7 +171,8 @@ module tlul_adapter_sram
     .tl_sram_o(tl_i_int),
     .tl_sram_i(tl_o_int),
     .error_i(error_det),
-    .error_o(error_internal)
+    .error_o(error_internal),
+    .rmw_in_progress_o
   );
 
   typedef struct packed {

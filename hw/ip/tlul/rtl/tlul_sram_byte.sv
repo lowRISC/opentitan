@@ -33,7 +33,9 @@ module tlul_sram_byte import tlul_pkg::*; #(
   // feedthrough and allow the system to directly error back.
   // The error indication is also fed through
   input error_i,
-  output logic error_o
+  output logic error_o,
+
+  output logic rmw_in_progress_o
 );
 
   if (EnableIntg) begin : gen_integ_handling
@@ -315,11 +317,12 @@ module tlul_sram_byte import tlul_pkg::*; #(
     `ASSERT(ReadCompleteStateChange_A,
         (state_q == StWaitRd) && (pending_txn_cnt == 1) && sram_d_ack |=> state_q == StWriteCmd)
 
+    assign rmw_in_progress_o = wr_phase;
   end else begin : gen_no_integ_handling
     // In this case we pass everything just through.
     assign tl_sram_o = tl_i;
     assign tl_o = tl_sram_i;
     assign error_o = error_i;
+    assign rmw_in_progress_o = 1'b0;
   end
-
 endmodule // tlul_adapter_sram

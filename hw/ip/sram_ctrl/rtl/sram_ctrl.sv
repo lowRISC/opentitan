@@ -445,6 +445,8 @@ module sram_ctrl
   logic [AddrWidth-1:0] sram_addr;
   logic [DataWidth-1:0] sram_wdata, sram_wmask, sram_rdata;
 
+  logic sram_rmw_in_progress;
+
   tlul_adapter_sram #(
     .SramAw(AddrWidth),
     .SramDw(DataWidth - tlul_pkg::DataIntgWidth),
@@ -458,21 +460,22 @@ module sram_ctrl
   ) u_tlul_adapter_sram (
     .clk_i,
     .rst_ni,
-    .tl_i        (ram_tl_in_gated),
-    .tl_o        (ram_tl_out_gated),
-    .en_ifetch_i (en_ifetch),
-    .req_o       (tlul_req),
-    .req_type_o  (),
-    .gnt_i       (tlul_gnt),
-    .we_o        (tlul_we),
-    .addr_o      (tlul_addr),
-    .wdata_o     (tlul_wdata),
-    .wmask_o     (tlul_wmask),
+    .tl_i             (ram_tl_in_gated),
+    .tl_o             (ram_tl_out_gated),
+    .en_ifetch_i      (en_ifetch),
+    .req_o            (tlul_req),
+    .req_type_o       (),
+    .gnt_i            (tlul_gnt),
+    .we_o             (tlul_we),
+    .addr_o           (tlul_addr),
+    .wdata_o          (tlul_wdata),
+    .wmask_o          (tlul_wmask),
     // SEC_CM: BUS.INTEGRITY
-    .intg_error_o(bus_integ_error[1]),
-    .rdata_i     (sram_rdata),
-    .rvalid_i    (sram_rvalid),
-    .rerror_i    ('0)
+    .intg_error_o     (bus_integ_error[1]),
+    .rdata_i          (sram_rdata),
+    .rvalid_i         (sram_rvalid),
+    .rerror_i         ('0),
+    .rmw_in_progress_o(sram_rmw_in_progress)
   );
 
   // Interposing mux logic for initialization with pseudo random data.
@@ -489,13 +492,14 @@ module sram_ctrl
   // the scr_key_valid CSR here, such that the SRAM can be used right after
   // reset, where the keys are reset to the default netlist constant.
   //
-  // If we have escalated, but there is a pending request in the TL gate, we
-  // may have a pending read-modify-write transaction in the SRAM adapter. In
-  // that case we let a write proceed, since the TL gate won't accept any new
+  // If we have escalated, but there is a pending request in the TL gate, we may have a pending
+  // read-modify-write transaction in the SRAM adapter. In that case we force key_valid high to
+  // enable that to complete so it returns a response, the TL gate won't accept any new
   // transactions and the SRAM keys have been clobbered already.
   logic key_valid;
-  assign key_valid = (key_req_pending_q)         ? 1'b0 :
-                     (reg2hw.status.escalated.q) ? (tl_gate_resp_pending & tlul_we) : 1'b1;
+  assign key_valid =
+    (key_req_pending_q)         ? 1'b0 :
+    (reg2hw.status.escalated.q) ? (tl_gate_resp_pending & sram_rmw_in_progress) : 1'b1;
 
   // SEC_CM: MEM.SCRAMBLE, ADDR.SCRAMBLE
   prim_ram_1p_scr #(
@@ -552,5 +556,9 @@ module sram_ctrl
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(FifoRptrCheck_A,
       u_tlul_adapter_sram.u_rspfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr,
       alert_tx_o[0])
+
+  // `tlul_gnt` doesn't factor in `sram_gnt` for timing reasons. This assertion checks that
+  // a `tlul_req` is always granted when `sram_gnt` has been asserted and we're not doing an init.
+  `ASSERT(TlulGntIsCorrect_A, tlul_req & sram_gnt & ~init_req |-> tlul_gnt)
 
 endmodule : sram_ctrl

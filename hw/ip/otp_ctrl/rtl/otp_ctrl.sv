@@ -221,21 +221,22 @@ module otp_ctrl
   ) u_tlul_adapter_sram (
     .clk_i,
     .rst_ni,
-    .en_ifetch_i ( MuBi4False         ),
-    .tl_i        ( tl_win_h2d         ),
-    .tl_o        ( tl_win_d2h         ),
-    .req_o       (  tlul_req          ),
-    .gnt_i       (  tlul_gnt          ),
-    .we_o        (                    ), // unused
-    .addr_o      (  tlul_addr         ),
-    .wdata_o     (                    ), // unused
-    .wmask_o     (                    ), // unused
+    .en_ifetch_i      ( MuBi4False         ),
+    .tl_i             ( tl_win_h2d         ),
+    .tl_o             ( tl_win_d2h         ),
+    .req_o            (  tlul_req          ),
+    .gnt_i            (  tlul_gnt          ),
+    .we_o             (                    ), // unused
+    .addr_o           (  tlul_addr         ),
+    .wdata_o          (                    ), // unused
+    .wmask_o          (                    ), // unused
     // SEC_CM: BUS.INTEGRITY
-    .intg_error_o(  intg_error[1]     ),
-    .rdata_i     (  tlul_rdata        ),
-    .rvalid_i    (  tlul_rvalid       ),
-    .rerror_i    (  tlul_rerror       ),
-    .req_type_o  (                    )
+    .intg_error_o     (  intg_error[1]     ),
+    .rdata_i          (  tlul_rdata        ),
+    .rvalid_i         (  tlul_rvalid       ),
+    .rerror_i         (  tlul_rerror       ),
+    .req_type_o       (                    ),
+    .rmw_in_progress_o(                    )
   );
 
   logic [NumPart-1:0] tlul_part_sel_oh;
