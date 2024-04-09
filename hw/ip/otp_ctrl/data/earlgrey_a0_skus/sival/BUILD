@@ -292,6 +292,7 @@ LC_MISSION_STATES = get_lc_items(
 # `LC_MISSION_STATES`.
 MANUF_INITIALIZED = [
     "//hw/ip/otp_ctrl/data:otp_json_fixed_secret0",
+    "//sw/device/silicon_creator/rom/keys/fake/otp:json_rot_keys",
 ]
 
 MANUF_SW_INITIALIZED = [
