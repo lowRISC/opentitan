@@ -20,8 +20,8 @@
 //   - 1 source + 2 destination + 1 destination + 2 source clock cycles until the handshake is
 //     performed in the SRC domain.
 // - Optionally, the module can also use a return-to-zero (RZ), four-phase handshake protocol.
-//   That one has lower throughput, but it is safe to partially reset either side, since the
-//   two FSMs cannot get out of sync due to persisting EVEN/ODD states. The handshake latencies
+//   That one has lower throughput, but it is safe to reset either domain in isolation, since the
+//   two FSMs cannot get out of sync due to persistent EVEN/ODD states. The handshake latencies
 //   are the same as for the NRZ protocol, but the throughput is half that of the NRZ protocol
 //   since the signals neet to return to zero first, causing two round-trips through the
 //   synchronizers instead of just one.

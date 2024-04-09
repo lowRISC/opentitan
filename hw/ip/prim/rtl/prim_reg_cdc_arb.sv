@@ -93,7 +93,7 @@ module prim_reg_cdc_arb #(
   } state_e;
 
 
-  // Only honor the incoming destinate update request if the incoming
+  // Only honor the incoming destination update request if the incoming
   // value is actually different from what is already completed in the
   // handshake
   logic dst_update;
@@ -107,7 +107,6 @@ module prim_reg_cdc_arb #(
     req_sel_e id_q;
 
     state_e state_q, state_d;
-    // Make sure to indent the following later
     always_ff @(posedge clk_dst_i or negedge rst_dst_ni) begin
       if (!rst_dst_ni) begin
         state_q <= StIdle;
