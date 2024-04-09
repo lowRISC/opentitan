@@ -346,7 +346,7 @@
                 '''
           resval: "0"
         }
-        { bits: "5:3",
+        { bits: "4:3",
           name: "CMD_STS",
           desc: '''
                 This field represents the status code returned with the application command ack.
@@ -358,13 +358,10 @@
                 0x1: Request completed with an invalid application command error.
                      This error indicates that the issued application command doesn't represent a valid operation.
                      If this error appears, the main state machine will hang and the entropy complex has to be restarted.
-                0x2: Request completed with an invalid state parameter error.
-                     This error indicates that the state wasn't zeroized properly after an uninstantiate command.
-                     In this case the entropy complex should be restarted to properly zeroize the state.
-                0x3: Request completed with an invalid counter drbg generation command error.
+                0x2: Request completed with an invalid counter drbg generation command error.
                      This error indicates that CSRNG entropy was generated for a command that is not a generate command.
                      In this case the entropy should not be considered as valid.
-                0x4: This error indicates that the last command was issued out of sequence.
+                0x3: This error indicates that the last command was issued out of sequence.
                      This happens when a command other than instantiate was issued without sending an instantiate command first.
                      This can also happen when an uninstantiate command is sent without instantiating first.
                 '''
