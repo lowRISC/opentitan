@@ -158,18 +158,18 @@ Command request register
 Application interface command status register
 - Offset: `0x1c`
 - Reset default: `0x0`
-- Reset mask: `0x3e`
+- Reset mask: `0x1e`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"bits": 1}, {"name": "CMD_RDY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CMD_ACK", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CMD_STS", "bits": 3, "attr": ["ro"], "rotate": -90}, {"bits": 26}], "config": {"lanes": 1, "fontsize": 10, "vspace": 90}}
+{"reg": [{"bits": 1}, {"name": "CMD_RDY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CMD_ACK", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CMD_STS", "bits": 2, "attr": ["ro"], "rotate": -90}, {"bits": 27}], "config": {"lanes": 1, "fontsize": 10, "vspace": 90}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                            |
 |:------:|:------:|:-------:|:--------------------------------|
-|  31:6  |        |         | Reserved                        |
-|  5:3   |   ro   |   0x0   | [CMD_STS](#sw_cmd_sts--cmd_sts) |
+|  31:5  |        |         | Reserved                        |
+|  4:3   |   ro   |   0x0   | [CMD_STS](#sw_cmd_sts--cmd_sts) |
 |   2    |   ro   |   0x0   | [CMD_ACK](#sw_cmd_sts--cmd_ack) |
 |   1    |   ro   |   0x0   | [CMD_RDY](#sw_cmd_sts--cmd_rdy) |
 
@@ -183,13 +183,10 @@ To check whether a command was succesful, wait for [`INTR_STATE.CS_CMD_REQ_DONE`
 0x1: Request completed with an invalid application command error.
      This error indicates that the issued application command doesn't represent a valid operation.
      If this error appears, the main state machine will hang and the entropy complex has to be restarted.
-0x2: Request completed with an invalid state parameter error.
-     This error indicates that the state wasn't zeroized properly after an uninstantiate command.
-     In this case the entropy complex should be restarted to properly zeroize the state.
-0x3: Request completed with an invalid counter drbg generation command error.
+0x2: Request completed with an invalid counter drbg generation command error.
      This error indicates that CSRNG entropy was generated for a command that is not a generate command.
      In this case the entropy should not be considered as valid.
-0x4: This error indicates that the last command was issued out of sequence.
+0x3: This error indicates that the last command was issued out of sequence.
      This happens when a command other than instantiate was issued without sending an instantiate command first.
      This can also happen when an uninstantiate command is sent without instantiating first.
 

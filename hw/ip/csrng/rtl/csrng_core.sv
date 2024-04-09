@@ -1711,6 +1711,14 @@ module csrng_core import csrng_pkg::*; #(
       aes_active_q <= aes_active_d;
     end
   end
+
+  logic state_db_zeroize;
+  assign state_db_zeroize = state_db_wr_req && (state_db_wr_ccmd == UNI);
+  `ASSERT(CsrngUniZeroizeFips_A, state_db_zeroize -> (state_db_wr_fips == '0))
+  `ASSERT(CsrngUniZeroizeKey_A,  state_db_zeroize -> (state_db_wr_key  == '0))
+  `ASSERT(CsrngUniZeroizeV_A,    state_db_zeroize -> (state_db_wr_v    == '0))
+  `ASSERT(CsrngUniZeroizeRc_A,   state_db_zeroize -> (state_db_wr_rc   == '0))
+  `ASSERT(CsrngUniZeroizeSts_A,  state_db_zeroize -> (state_db_wr_sts  == '0))
 `endif
 
 endmodule // csrng_core

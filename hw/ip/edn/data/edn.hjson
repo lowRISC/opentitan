@@ -342,7 +342,7 @@
                 '''
           resval: "0"
         }
-        { bits: "5:3",
+        { bits: "4:3",
           name: "CMD_STS",
           desc: '''
                 This field represents the status code returned with the CSRNG application command ack.
@@ -401,7 +401,7 @@
                 '''
           resval: "0"
         }
-        { bits: "9:7",
+        { bits: "8:7",
           name: "CMD_STS",
           desc: '''
                 This field represents the status code returned with the CSRNG application command ack.
