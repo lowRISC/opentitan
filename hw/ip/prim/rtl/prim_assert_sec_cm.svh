@@ -39,7 +39,12 @@
   `ASSUME_FPV(``NAME_``TriggerAfterAlertInit_S,                                            \
               $stable(rst_ni) == 0 |-> HIER_.ERR_NAME_ == 0 [*10])
 
-// macros for security countermeasures that will trigger alert
+////////////////////////////////////////////////////////////////////////////////
+//
+// Assertions for CMs that trigger alerts
+//
+////////////////////////////////////////////////////////////////////////////////
+
 `define ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(NAME_, HIER_, ALERT_, GATE_ = 0, MAX_CYCLES_ = `_SEC_CM_ALERT_MAX_CYC) \
   `ASSERT_ERROR_TRIGGER_ALERT(NAME_, HIER_, ALERT_, GATE_, MAX_CYCLES_, err_o)
 
@@ -56,7 +61,12 @@
   `ASSERT_PRIM_ONEHOT_ERROR_TRIGGER_ALERT(NAME_, \
     REG_TOP_HIER_.u_prim_reg_we_check.u_prim_onehot_check, ALERT_, GATE_, MAX_CYCLES_)
 
-// macros for security countermeasures that will trigger other errors
+////////////////////////////////////////////////////////////////////////////////
+//
+// Assertions for CMs that trigger some other form of error
+//
+////////////////////////////////////////////////////////////////////////////////
+
 `define ASSERT_PRIM_FSM_ERROR_TRIGGER_ERR(NAME_, HIER_, ERR_, GATE_ = 0, MAX_CYCLES_ = 2, CLK_ = clk_i, RST_ = !rst_ni) \
   `ASSERT_ERROR_TRIGGER_ERR(NAME_, HIER_, ERR_, GATE_, MAX_CYCLES_, unused_err_o, CLK_, RST_)
 
