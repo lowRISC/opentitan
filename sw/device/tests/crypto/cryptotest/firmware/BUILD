@@ -209,6 +209,24 @@ cc_library(
 )
 
 cc_library(
+    name = "extclk_sca_fi",
+    srcs = ["extclk_sca_fi.c"],
+    hdrs = ["extclk_sca_fi.h"],
+    deps = [
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:multibits",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/dif:clkmgr",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+        "//sw/device/tests/crypto/cryptotest/json:extclk_sca_fi_commands",
+    ],
+)
+
+cc_library(
     name = "kmac_sca",
     srcs = ["kmac_sca.c"],
     hdrs = [
@@ -321,6 +339,7 @@ FIRMWARE_DEPS = [
     ":drbg",
     ":ecdh",
     ":ecdsa",
+    ":extclk_sca_fi",
     ":hash",
     ":hmac",
     ":ibex_fi",
