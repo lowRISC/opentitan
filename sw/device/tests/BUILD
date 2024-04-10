@@ -1144,8 +1144,6 @@ opentitan_test(
 opentitan_test(
     name = "entropy_src_fw_ovr_test",
     srcs = ["entropy_src_fw_ovr_test.c"],
-    # TODO(#12486): [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
-    cw310 = cw310_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         {
