@@ -124,9 +124,10 @@
       features: ["SRAM_CTRL.LOCK_ON_ERROR"]
       stage: V2
       si_stage: SV3
-      lc_states: ["PROD"]
+      lc_states: ["RMA"]
       tests: ["chip_sw_all_escalation_resets",
               "chip_sw_data_integrity_escalation"]
+      bazel: ["//sw/device/tests:sram_ctrl_lc_escalation"]
     }
 
     {
