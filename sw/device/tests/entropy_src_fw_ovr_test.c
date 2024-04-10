@@ -61,7 +61,7 @@ static void entropy_data_flush(dif_entropy_src_t *entropy_src) {
  * @param entropy An Entropy handle.
  */
 void test_firmware_override(dif_entropy_src_t *entropy) {
-  CHECK_DIF_OK(dif_entropy_src_set_enabled(entropy, kDifToggleDisabled));
+  CHECK_STATUS_OK(entropy_testutils_stop_all());
   CHECK_STATUS_OK(
       entropy_testutils_fw_override_enable(entropy, kEntropyFifoBufferSize,
                                            /*route_to_firmware=*/true,
