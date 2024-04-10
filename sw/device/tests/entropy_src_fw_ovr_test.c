@@ -78,9 +78,15 @@ void test_firmware_override(dif_entropy_src_t *entropy) {
     for (size_t i = 0; i < kEntropyFifoBufferSize; ++i) {
       CHECK(buf[i] != 0);
     }
+    // Start the SHA3 process so that it is ready to accept entropy data.
+    CHECK_DIF_OK(dif_entropy_src_fw_override_sha3_start_insert(
+        entropy, kDifToggleEnabled));
     CHECK_DIF_OK(dif_entropy_src_fw_ov_data_write(
         entropy, buf, kEntropyFifoBufferSize, NULL));
     word_count += kEntropyFifoBufferSize;
+    // Stop insertion so that the SHA3 can process data.
+    CHECK_DIF_OK(dif_entropy_src_fw_override_sha3_start_insert(
+        entropy, kDifToggleDisabled));
   } while (dif_entropy_src_is_entropy_available(entropy) == kDifUnavailable);
   LOG_INFO("Processed %d words via FIFO_OVR buffer.", word_count);
   entropy_data_flush(entropy);
