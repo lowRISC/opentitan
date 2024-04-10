@@ -13,6 +13,7 @@ extern "C" {
 
 #define COMMAND(_, value) \
     value(_, AesSca) \
+    value(_, CryptoFi) \
     value(_, ExtClkScaFi) \
     value(_, HmacSca) \
     value(_, IbexFi) \

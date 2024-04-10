@@ -13,6 +13,7 @@
 // Include commands
 #include "sw/device/tests/penetrationtests/json/aes_sca_commands.h"
 #include "sw/device/tests/penetrationtests/json/commands.h"
+#include "sw/device/tests/penetrationtests/json/crypto_fi_commands.h"
 #include "sw/device/tests/penetrationtests/json/extclk_sca_fi_commands.h"
 #include "sw/device/tests/penetrationtests/json/hmac_sca_commands.h"
 #include "sw/device/tests/penetrationtests/json/ibex_fi_commands.h"
@@ -25,6 +26,7 @@
 
 // Include handlers
 #include "aes_sca.h"
+#include "crypto_fi.h"
 #include "extclk_sca_fi.h"
 #include "hmac_sca.h"
 #include "ibex_fi.h"
@@ -44,6 +46,9 @@ status_t process_cmd(ujson_t *uj) {
     switch (cmd) {
       case kPenetrationtestCommandAesSca:
         RESP_ERR(uj, handle_aes_sca(uj));
+        break;
+      case kPenetrationtestCommandCryptoFi:
+        RESP_ERR(uj, handle_crypto_fi(uj));
         break;
       case kPenetrationtestCommandExtClkScaFi:
         RESP_ERR(uj, handle_extclk_sca_fi(uj));
