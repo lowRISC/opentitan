@@ -378,14 +378,43 @@
             },
           ]
         }
-        { bits: "3",
+        { bits: "4:3",
+          name: "ASCON_VARIANT",
+          desc: '''
+            Specifies which variant of Ascon is used.
+            It can be either Ascon-128 (2'b01) or Ascon-128a (2'b10).
+            They only differ in the input block size and the number of permutations per round.
+            The size of the key, nonce, tag is 128 bits for both variants.
+            This field is only relevant for encryption or decryption.
+            It is ignored for Ascon-XOF.
+          '''
+          enum: [
+            { value: "1",
+              name: "ASCON_128",
+              desc: '''
+                Ascon-128 is the primary choice.
+                In this mode, the rate and thus the input block size is 64 bit.
+                There are 6 rounds of permutation between different inputs.
+              '''
+            },
+            { value: "2",
+              name: "ASCON_128a",
+              desc: '''
+                Ascon-128a is the secondary choice.
+                In this mode, the rate and thus the input block size is 128 bit.
+                There are 8 rounds of permutation between different inputs.
+              '''
+            },
+          ]
+        }
+        { bits: "5",
           name: "SIDELOAD_KEY",
           desc:  '''
             Controls whether the Ascon unit uses the key provided by the key manager via key sideload interface (1)
             or the key provided by software via Initial Key Registers KEY_SHARE1 and KEY_SHARE_0 (0).
           '''
         }
-        { bits: "4",
+        { bits: "6",
           name: "MASKED_AD_INPUT",
           desc:  '''
             Controls whether the associated data input is provided in shares (1) or not (0).
@@ -396,7 +425,7 @@
             Once all registers of Share 0 have been written, Ascon starts to process the data depending on the !!CTRL_AUX_SHADOWED.manual_start_trigger.
           '''
         }
-        { bits: "5",
+        { bits: "7",
           name: "MASKED_MSG_INPUT",
           desc:  '''
             Controls whether the message input is provided in shares (1) or not (0).
@@ -407,14 +436,14 @@
             Once all registers of Share 0 have been written, Ascon starts to process the data depending on the !!CTRL_AUX_SHADOWED.manual_start_trigger.
           '''
         }
-        { bits: "6",
+        { bits: "8",
           name: "NO_MSG",
           desc:  '''
             There is no (1) message (plaintext/ciphertext) to be processed.
             There is (0) a message.
           '''
         }
-        { bits: "7",
+        { bits: "9",
           name: "NO_AD",
           desc:  '''
             There is no (1) associated data to be processed.
