@@ -11,7 +11,6 @@
 | [`csrng`]        | Takes entropy bits to produce cryptographically secure random numbers for consumption by hardware blocks and by software          |
 | [`edn`]          | Distributes random numbers produced by CSRNG to hardware blocks                                                                   |
 | [`entropy_src`]  | Filters and checks raw entropy bits from a random noise source and forwards them to CSRNG                                         |
-| [`flash_ctrl`]   | Interfaces and manages integrated non-volatile flash memory; supports scrambling, integrity, and secure wipe                      |
 | [`gpio`]         | General-purpose I/O pin control interface for software                                                                            |
 | [`hmac`]         | Accelerator for SHA-2 256/384/512-based keyed HMAC and the hash function                                                          |
 | [`i2c`]          | I2C interface for host and device mode, supporting up to 1 Mbaud data rates                                                       |
@@ -44,7 +43,6 @@
 [`csrng`]: ./csrng/README.md
 [`edn`]: ./edn/README.md
 [`entropy_src`]: ./entropy_src/README.md
-[`flash_ctrl`]: ./flash_ctrl/README.md
 [`gpio`]: ./gpio/README.md
 [`hmac`]: ./hmac/README.md
 [`i2c`]: ./i2c/README.md

@@ -361,7 +361,7 @@ The flash controller peripheral in this release approximates those expected time
 
 Security is also a concern, since secret data can be stored in the flash.
 Some memory protection is provided by the flash controller.
-For more details see the [flash controller module specification](../../../ip/flash_ctrl/README.md).
+For more details see the [flash controller module specification](../../ip_autogen/flash_ctrl/README.md).
 
 ### Interconnection
 
