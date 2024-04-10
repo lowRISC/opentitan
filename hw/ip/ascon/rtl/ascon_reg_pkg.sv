@@ -98,6 +98,10 @@ package ascon_reg_pkg;
       logic        qe;
     } sideload_key;
     struct packed {
+      logic [1:0]  q;
+      logic        qe;
+    } ascon_variant;
+    struct packed {
       logic [2:0]  q;
       logic        qe;
     } operation;
@@ -257,17 +261,17 @@ package ascon_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    ascon_reg2hw_alert_test_reg_t alert_test; // [1276:1273]
-    ascon_reg2hw_key_share0_mreg_t [3:0] key_share0; // [1272:1141]
-    ascon_reg2hw_key_share1_mreg_t [3:0] key_share1; // [1140:1009]
-    ascon_reg2hw_nonce_share0_mreg_t [3:0] nonce_share0; // [1008:877]
-    ascon_reg2hw_nonce_share1_mreg_t [3:0] nonce_share1; // [876:745]
-    ascon_reg2hw_data_in_share0_mreg_t [3:0] data_in_share0; // [744:613]
-    ascon_reg2hw_data_in_share1_mreg_t [3:0] data_in_share1; // [612:481]
-    ascon_reg2hw_tag_in_mreg_t [3:0] tag_in; // [480:349]
-    ascon_reg2hw_msg_out_mreg_t [3:0] msg_out; // [348:217]
-    ascon_reg2hw_tag_out_mreg_t [3:0] tag_out; // [216:85]
-    ascon_reg2hw_ctrl_shadowed_reg_t ctrl_shadowed; // [84:71]
+    ascon_reg2hw_alert_test_reg_t alert_test; // [1279:1276]
+    ascon_reg2hw_key_share0_mreg_t [3:0] key_share0; // [1275:1144]
+    ascon_reg2hw_key_share1_mreg_t [3:0] key_share1; // [1143:1012]
+    ascon_reg2hw_nonce_share0_mreg_t [3:0] nonce_share0; // [1011:880]
+    ascon_reg2hw_nonce_share1_mreg_t [3:0] nonce_share1; // [879:748]
+    ascon_reg2hw_data_in_share0_mreg_t [3:0] data_in_share0; // [747:616]
+    ascon_reg2hw_data_in_share1_mreg_t [3:0] data_in_share1; // [615:484]
+    ascon_reg2hw_tag_in_mreg_t [3:0] tag_in; // [483:352]
+    ascon_reg2hw_msg_out_mreg_t [3:0] msg_out; // [351:220]
+    ascon_reg2hw_tag_out_mreg_t [3:0] tag_out; // [219:88]
+    ascon_reg2hw_ctrl_shadowed_reg_t ctrl_shadowed; // [87:71]
     ascon_reg2hw_ctrl_aux_shadowed_reg_t ctrl_aux_shadowed; // [70:67]
     ascon_reg2hw_block_ctrl_shadowed_reg_t block_ctrl_shadowed; // [66:35]
     ascon_reg2hw_trigger_reg_t trigger; // [34:33]
@@ -476,7 +480,7 @@ package ascon_reg_pkg;
     4'b 1111, // index[34] ASCON_TAG_OUT_1
     4'b 1111, // index[35] ASCON_TAG_OUT_2
     4'b 1111, // index[36] ASCON_TAG_OUT_3
-    4'b 0001, // index[37] ASCON_CTRL_SHADOWED
+    4'b 0011, // index[37] ASCON_CTRL_SHADOWED
     4'b 0001, // index[38] ASCON_CTRL_AUX_SHADOWED
     4'b 0001, // index[39] ASCON_CTRL_AUX_REGWEN
     4'b 1111, // index[40] ASCON_BLOCK_CTRL_SHADOWED

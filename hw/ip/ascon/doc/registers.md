@@ -377,22 +377,23 @@ A write to the Control Register is considered the start of a new message.
 Hence, software needs to provide a new Nonce and input data afterwards.
 - Offset: `0x94`
 - Reset default: `0x0`
-- Reset mask: `0xff`
+- Reset mask: `0x3ff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "OPERATION", "bits": 3, "attr": ["rw"], "rotate": -90}, {"name": "SIDELOAD_KEY", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "MASKED_AD_INPUT", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "MASKED_MSG_INPUT", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "NO_MSG", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "NO_AD", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 180}}
+{"reg": [{"name": "OPERATION", "bits": 3, "attr": ["rw"], "rotate": -90}, {"name": "ASCON_VARIANT", "bits": 2, "attr": ["rw"], "rotate": -90}, {"name": "SIDELOAD_KEY", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "MASKED_AD_INPUT", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "MASKED_MSG_INPUT", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "NO_MSG", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "NO_AD", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 22}], "config": {"lanes": 1, "fontsize": 10, "vspace": 180}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                                 |
 |:------:|:------:|:-------:|:-----------------------------------------------------|
-|  31:8  |        |         | Reserved                                             |
-|   7    |   rw   |   0x0   | [NO_AD](#ctrl_shadowed--no_ad)                       |
-|   6    |   rw   |   0x0   | [NO_MSG](#ctrl_shadowed--no_msg)                     |
-|   5    |   rw   |   0x0   | [MASKED_MSG_INPUT](#ctrl_shadowed--masked_msg_input) |
-|   4    |   rw   |   0x0   | [MASKED_AD_INPUT](#ctrl_shadowed--masked_ad_input)   |
-|   3    |   rw   |   0x0   | [SIDELOAD_KEY](#ctrl_shadowed--sideload_key)         |
+| 31:10  |        |         | Reserved                                             |
+|   9    |   rw   |   0x0   | [NO_AD](#ctrl_shadowed--no_ad)                       |
+|   8    |   rw   |   0x0   | [NO_MSG](#ctrl_shadowed--no_msg)                     |
+|   7    |   rw   |   0x0   | [MASKED_MSG_INPUT](#ctrl_shadowed--masked_msg_input) |
+|   6    |   rw   |   0x0   | [MASKED_AD_INPUT](#ctrl_shadowed--masked_ad_input)   |
+|   5    |   rw   |   0x0   | [SIDELOAD_KEY](#ctrl_shadowed--sideload_key)         |
+|  4:3   |   rw   |   0x0   | [ASCON_VARIANT](#ctrl_shadowed--ascon_variant)       |
 |  2:0   |   rw   |   0x0   | [OPERATION](#ctrl_shadowed--operation)               |
 
 ### CTRL_SHADOWED . NO_AD
@@ -422,6 +423,21 @@ Once all registers of Share 0 have been written, Ascon starts to process the dat
 ### CTRL_SHADOWED . SIDELOAD_KEY
 Controls whether the Ascon unit uses the key provided by the key manager via key sideload interface (1)
 or the key provided by software via Initial Key Registers KEY_SHARE1 and KEY_SHARE_0 (0).
+
+### CTRL_SHADOWED . ASCON_VARIANT
+Specifies which variant of Ascon is used.
+It can be either Ascon-128 (2'b01) or Ascon-128a (2'b10).
+They only differ in the input block size and the number of permutations per round.
+The size of the key, nonce, tag is 128 bits for both variants.
+This field is only relevant for encryption or decryption.
+It is ignored for Ascon-XOF.
+
+| Value   | Name       | Description                                                                                                                                                      |
+|:--------|:-----------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0x1     | ASCON_128  | Ascon-128 is the primary choice. In this mode, the rate and thus the input block size is 64 bit. There are 6 rounds of permutation between different inputs.     |
+| 0x2     | ASCON_128a | Ascon-128a is the secondary choice. In this mode, the rate and thus the input block size is 128 bit. There are 8 rounds of permutation between different inputs. |
+
+Other values are reserved.
 
 ### CTRL_SHADOWED . OPERATION
 Specifies which operation ascon should perform.
