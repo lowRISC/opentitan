@@ -12,6 +12,21 @@ PreSigningBinaryInfo = provider(fields = ["files"])
 SigningToolInfo = provider(fields = ["tool", "data", "env", "location"])
 KeySetInfo = provider(fields = ["keys", "selected_key", "profile", "sign", "tool"])
 
+KeyInfo = provider(
+    """Key Information.
+
+    Used to capture all required information about a key.
+    """,
+    fields = {
+        "id": "Identifier used by the consumers of the provider to determine the key algorithm.",
+        "config": "The config of the key. Specific to the key algorithm.",
+        "method": "Mechanism used to access the key. Can be local or hsmtool.",
+        "pub_key": "Public key `file`.",
+        "private_key": "Private key `file`. May be None when method is set to hsmtool.",
+        "type": "The type of the key. Can be TestKey, DevKey or ProdKey.",
+    },
+)
+
 def _label_str(label):
     return "@{}//{}:{}".format(label.workspace_name, label.package, label.name)
 
@@ -40,6 +55,14 @@ def key_from_dict(key, attr_name):
             file = ksi.keys[name],
             name = name,
         )
+    elif KeyInfo in key:
+        key_info = key[KeyInfo]
+        return struct(
+            label = key,
+            file = None,
+            name = name,
+            info = key_info,
+        )
     elif DefaultInfo in key:
         key_file = key[DefaultInfo].files.to_list()
         if len(key_file) != 1:
@@ -61,7 +84,7 @@ def _signing_tool_info(ctx, key, opentitantool):
     Returns:
         (SigningToolInfo, signing function, profile)
     """
-    key, name = key.items()[0]
+    key, _ = key.items()[0]
     if KeySetInfo in key:
         ksi = key[KeySetInfo]
         return ksi.tool, ksi.sign, ksi.profile
@@ -75,22 +98,40 @@ def _signing_tool_info(ctx, key, opentitantool):
         return toolinfo, _local_sign, None
     fail("Expected a KeySetInfo or DefaultInfo provider")
 
-def key_ext(rsa, spx):
-    if spx:
-        return ".{}.{}".format(rsa.name, spx.name)
-    else:
-        return ".{}".format(rsa.name)
+def key_ext(ecdsa, rsa, spx):
+    """Returns the key extension for a given key.
 
-def _presigning_artifacts(ctx, opentitantool, src, manifest, rsa_key, spx_key, basename = None, keyname_in_filenames = False):
+    Args:
+        ecdsa: struct; The ECDSA key.
+        rsa: struct; The RSA key.
+        spx: struct; The SPX+ key.
+    Returns:
+        str: The key extension.
+    """
+    if ecdsa:
+        name = ecdsa.name
+    elif rsa:
+        name = rsa.name
+    else:
+        fail("Expected an ECDSA or RSA key")
+
+    if spx:
+        return ".{}.{}".format(name, spx.name)
+    else:
+        return ".{}".format(name)
+
+def _presigning_artifacts(ctx, opentitantool, src, manifest, ecdsa_key, rsa_key, spx_key, basename = None, keyname_in_filenames = False):
     """Create the pre-signing artifacts for a given input binary.
 
     Applies the manifest and public components of the keys.  Creates the
     digests/messages required for signing.
 
     Args:
+        ctx: The rule context.
         opentitantool: file; The opentitantool binary.
         src: file; The source binary
         manifest: file; The manifest file.
+        ecdsa_key: struct; The ECDSA public key.
         rsa_key: struct; The RSA public key.
         spx_key: struct; The SPX+ public key.
         basename: str; Optional basename of the outputs.  Defaults to src.basename.
@@ -100,7 +141,10 @@ def _presigning_artifacts(ctx, opentitantool, src, manifest, rsa_key, spx_key, b
     Returns:
         struct: A struct containing the pre-signing binary, the digest and spx message files.
     """
-    kext = key_ext(rsa_key, spx_key)
+    if ecdsa_key and rsa_key:
+        fail("Only one of ECDSA or RSA key should be provided")
+
+    kext = key_ext(ecdsa_key, rsa_key, spx_key)
     if not basename:
         basename = src.basename
     if keyname_in_filenames:
@@ -113,8 +157,22 @@ def _presigning_artifacts(ctx, opentitantool, src, manifest, rsa_key, spx_key, b
     inputs = [
         src,
         manifest,
-        rsa_key.file,
     ]
+
+    ecdsa_or_rsa_args = []
+    if ecdsa_key:
+        if ecdsa_key.info.private_key:
+            selected_ecdsa_key = ecdsa_key.info.private_key
+        elif ecdsa_key.info.pub_key:
+            selected_ecdsa_key = ecdsa_key.info.pub_key
+        else:
+            fail("Expected an ECDSA key with a private_key or pub_key attributes.")
+        ecdsa_or_rsa_args.append("--ecdsa-key={}".format(selected_ecdsa_key.path))
+        inputs.append(selected_ecdsa_key)
+    elif rsa_key:
+        ecdsa_or_rsa_args.append("--rsa-key={}".format(rsa_key.file.path))
+        inputs.append(rsa_key.file)
+
     spx_args = []
     if spx_key:
         spx_args.append("--spx-key={}".format(spx_key.file.path))
@@ -129,15 +187,14 @@ def _presigning_artifacts(ctx, opentitantool, src, manifest, rsa_key, spx_key, b
             "manifest",
             "update",
             "--manifest={}".format(manifest.path),
-            "--rsa-key={}".format(rsa_key.file.path),
             "--output={}".format(pre.path),
             src.path,
-        ] + spx_args,
+        ] + ecdsa_or_rsa_args + spx_args,
         executable = opentitantool,
         mnemonic = "PreSigningArtifacts",
     )
 
-    # Compute digest to be signed with RSA.
+    # Compute digest to be signed with RSA or ECDSA.
     digest = ctx.actions.declare_file("{}.digest".format(basename))
     ctx.actions.run(
         outputs = [digest],
@@ -153,15 +210,27 @@ def _presigning_artifacts(ctx, opentitantool, src, manifest, rsa_key, spx_key, b
         executable = opentitantool,
         mnemonic = "PreSigningDigest",
     )
-    signing_directives.append(struct(
-        command = "rsa-sign",
-        id = None,
-        label = rsa_key.name,
-        format = "Sha256Hash",
-        little_endian = True,
-        output = "{}.rsa_sig".format(basename),
-        input = "{}.digest".format(basename),
-    ))
+
+    if rsa_key:
+        signing_directives.append(struct(
+            command = "rsa-sign",
+            id = None,
+            label = rsa_key.name,
+            format = "Sha256Hash",
+            little_endian = True,
+            output = "{}.rsa_sig".format(basename),
+            input = "{}.digest".format(basename),
+        ))
+    elif ecdsa_key:
+        signing_directives.append(struct(
+            command = "ecdsa-sign",
+            id = None,
+            label = ecdsa_key.name,
+            format = "Sha256Hash",
+            little_endian = True,
+            output = "{}.ecdsa_sig".format(basename),
+            input = "{}.digest".format(basename),
+        ))
 
     # Compute message to be signed with SPX+.
     spxmsg = None
@@ -186,34 +255,52 @@ def _presigning_artifacts(ctx, opentitantool, src, manifest, rsa_key, spx_key, b
 
     return struct(pre = pre, digest = digest, spxmsg = spxmsg, script = signing_directives)
 
-def _local_sign(ctx, tool, digest, rsa_key, spxmsg = None, spx_key = None, profile = None):
+def _local_sign(ctx, tool, digest, ecdsa_key, rsa_key, spxmsg = None, spx_key = None, profile = None):
     """Sign a digest with a local on-disk RSA private key.
 
     Args:
-      tool: SigningToolInfo; A provider refering to the opentitantool binary.
-      digest: file; The digest of the binary to be signed.
-      rsa_key: struct; The RSA private key.
-      spxmsg: file; The SPX+ message to be signed.
-      spx_key: struct; The SPX+ private key.
-      profile: str; The token profile.  Not used by this function.
+        ctx: The rule context.
+        tool: SigningToolInfo; A provider refering to the opentitantool binary.
+        digest: file; The digest of the binary to be signed.
+        ecdsa_key: struct; The ECDSA private key.
+        rsa_key: struct; The RSA private key.
+        spxmsg: file; The SPX+ message to be signed.
+        spx_key: struct; The SPX+ private key.
+        profile: str; The token profile.  Not used by this function.
     Returns:
-      file, file: The RSA and SPX signature files.
+        file, file, file: The ECDSA, RSA and SPX signature files.
     """
-    rsa_sig = ctx.actions.declare_file(paths.replace_extension(digest.basename, ".rsa_sig"))
+    if rsa_key and ecdsa_key:
+        fail("Only one of ECDSA or RSA key should be provided")
+
+    inputs = [digest]
+    if rsa_key:
+        output_sig = ctx.actions.declare_file(paths.replace_extension(digest.basename, ".rsa_sig"))
+        inputs.append(rsa_key.file)
+        key_path = rsa_key.file.path
+        key_command = "rsa"
+    elif ecdsa_key:
+        output_sig = ctx.actions.declare_file(paths.replace_extension(digest.basename, ".ecdsa_sig"))
+        inputs.append(ecdsa_key.info.private_key)
+        key_path = ecdsa_key.info.private_key.path
+        key_command = "ecdsa"
+    else:
+        fail("Expected an ECDSA or RSA key")
+
     ctx.actions.run(
-        outputs = [rsa_sig],
-        inputs = [digest, rsa_key.file],
+        outputs = [output_sig],
+        inputs = inputs,
         arguments = [
             "--rcfile=",
             "--quiet",
-            "rsa",
+            key_command,
             "sign",
             "--input={}".format(digest.path),
-            "--output={}".format(rsa_sig.path),
-            rsa_key.file.path,
+            "--output={}".format(output_sig.path),
+            key_path,
         ],
         executable = tool.tool,
-        mnemonic = "LocalRsaSign",
+        mnemonic = "LocalRsaOrEcdsaSign",
     )
 
     spx_sig = None
@@ -235,20 +322,30 @@ def _local_sign(ctx, tool, digest, rsa_key, spxmsg = None, spx_key = None, profi
             mnemonic = "LocalSpxSign",
         )
 
-    return rsa_sig, spx_sig
+    if rsa_key:
+        return None, output_sig, spx_sig
+    elif ecdsa_key:
+        return output_sig, None, spx_sig
+    else:
+        fail("Expected an ECDSA or RSA key")
 
-def _hsmtool_sign(ctx, tool, digest, rsa_key, spxmsg = None, spx_key = None, profile = None):
+def _hsmtool_sign(ctx, tool, digest, ecdsa_key, rsa_key, spxmsg = None, spx_key = None, profile = None):
     """Sign a digest with a local on-disk RSA private key.
+
     Args:
-      tool: file; A SigningToolInfo provider referring to the hsmtool binary.
-      digest: file; The digest of the binary to be signed.
-      rsa_key: struct; The RSA private key.
-      spxmsg: file; The SPX+ message to be signed.
-      spx_key: struct; The SPX+ private key.
-      profile: str; The hsmtool profile.
+        ctx: The rule context.
+        tool: file; A SigningToolInfo provider referring to the hsmtool binary.
+        digest: file; The digest of the binary to be signed.
+        ecdsa_key: struct; The ECDSA private key.
+        rsa_key: struct; The RSA private key.
+        spxmsg: file; The SPX+ message to be signed.
+        spx_key: struct; The SPX+ private key.
+        profile: str; The hsmtool profile.
     Returns:
-      file, file: The RSA and SPX signature files.
+        file, file, file: The RSA and SPX signature files.
     """
+    if ecdsa_key:
+        fail("hsmtool currently does not support ECDSA signing")
     if spxmsg or spx_key:
         fail("hsmtool currently does not support SPX+ signing")
     if not profile:
@@ -276,22 +373,27 @@ def _hsmtool_sign(ctx, tool, digest, rsa_key, spxmsg = None, spx_key = None, pro
         env = tool.env,
         mnemonic = "HsmtoolRsaSign",
     )
-    return rsa_sig, None
+    return None, rsa_sig, None
 
-def _post_signing_attach(ctx, opentitantool, pre, rsa_sig, spx_sig):
+def _post_signing_attach(ctx, opentitantool, pre, ecdsa_sig, rsa_sig, spx_sig):
     """Attach signatures to an unsigned binary.
 
     Args:
-      opentitantool: file; The opentitantool binary.
-      pre: file; The pre-signed input binary.
-      rsa_sig: file; The RSA-signed digest of the binary.
-      spx_sig: file; The SPX-signed message of the binary.
-      manifest: file; Optional manifest file.
+        ctx: The rule context.
+        opentitantool: file; The opentitantool binary.
+        pre: file; The pre-signed input binary.
+        ecdsa_sig: file; The ECDSA-signed digest of the binary.
+        rsa_sig: file; The RSA-signed digest of the binary.
+        spx_sig: file; The SPX-signed message of the binary.
     Returns:
-      file: The signed binary.
+        file: The signed binary.
     """
+    if ecdsa_sig and rsa_sig:
+        fail("Only one of ECDSA or RSA signature should be provided")
+
     signed = ctx.actions.declare_file(paths.replace_extension(pre.basename, ".signed.bin"))
-    inputs = [pre, rsa_sig]
+    inputs = [pre]
+
     args = [
         "--rcfile=",
         "--quiet",
@@ -299,10 +401,17 @@ def _post_signing_attach(ctx, opentitantool, pre, rsa_sig, spx_sig):
         "manifest",
         "update",
         "--update-length=false",
-        "--rsa-signature={}".format(rsa_sig.path),
         "--output={}".format(signed.path),
         pre.path,
     ]
+
+    if rsa_sig:
+        inputs.append(rsa_sig)
+        args.append("--rsa-signature={}".format(rsa_sig.path))
+
+    if ecdsa_sig:
+        inputs.append(ecdsa_sig)
+        args.append("--ecdsa-signature={}".format(ecdsa_sig.path))
 
     if spx_sig:
         inputs.append(spx_sig)
@@ -319,6 +428,7 @@ def _post_signing_attach(ctx, opentitantool, pre, rsa_sig, spx_sig):
 
 def _offline_presigning_artifacts(ctx):
     tc = ctx.toolchains[LOCALTOOLS_TOOLCHAIN]
+    ecdsa_key = key_from_dict(ctx.attr.ecdsa_key, "ecdsa_key")
     rsa_key = key_from_dict(ctx.attr.rsa_key, "rsa_key")
     spx_key = key_from_dict(ctx.attr.spx_key, "spx_key")
     digests = []
@@ -330,6 +440,7 @@ def _offline_presigning_artifacts(ctx):
             tc.tools.opentitantool,
             src,
             ctx.file.manifest,
+            ecdsa_key,
             rsa_key,
             spx_key,
         )
@@ -356,10 +467,14 @@ offline_presigning_artifacts = rule(
     attrs = {
         "srcs": attr.label_list(allow_files = True, doc = "Binary files to generate digests for"),
         "manifest": attr.label(allow_single_file = True, doc = "Manifest for this image"),
+        "ecdsa_key": attr.label_keyed_string_dict(
+            providers = [[KeySetInfo], [DefaultInfo]],
+            allow_files = True,
+            doc = "ECDSA public key to validate this image",
+        ),
         "rsa_key": attr.label_keyed_string_dict(
             providers = [[KeySetInfo], [DefaultInfo]],
             allow_files = True,
-            mandatory = True,
             doc = "RSA public key to validate this image",
         ),
         "spx_key": attr.label_keyed_string_dict(
@@ -377,7 +492,7 @@ def _offline_fake_rsa_sign(ctx):
     rsa_key = key_from_dict(ctx.attr.rsa_key, "rsa_key")
     tool, _, _ = _signing_tool_info(ctx, ctx.attr.rsa_key, tc.tools.opentitantool)
     for file in ctx.files.srcs:
-        sig, _ = _local_sign(ctx, tool, file, rsa_key)
+        _, sig, _ = _local_sign(ctx, tool, file, None, rsa_key)
         outputs.append(sig)
     return [DefaultInfo(files = depset(outputs), data_runfiles = ctx.runfiles(files = outputs))]
 
@@ -395,7 +510,34 @@ offline_fake_rsa_sign = rule(
     doc = "Create detached signatures using on-disk private keys via opentitantool.",
 )
 
+def _offline_fake_ecdsa_sign(ctx):
+    tc = ctx.toolchains[LOCALTOOLS_TOOLCHAIN]
+    outputs = []
+    ecdsa_key = key_from_dict(ctx.attr.ecdsa_key, "ecdsa_key")
+    tool, _, _ = _signing_tool_info(ctx, ctx.attr.ecdsa_key, tc.tools.opentitantool)
+    for file in ctx.files.srcs:
+        sig, _, _ = _local_sign(ctx, tool, file, ecdsa_key, None)
+        outputs.append(sig)
+    return [DefaultInfo(files = depset(outputs), data_runfiles = ctx.runfiles(files = outputs))]
+
+offline_fake_ecdsa_sign = rule(
+    implementation = _offline_fake_ecdsa_sign,
+    attrs = {
+        "srcs": attr.label_list(allow_files = True, doc = "Digest files to sign"),
+        "ecdsa_key": attr.label_keyed_string_dict(
+            allow_files = True,
+            mandatory = True,
+            doc = "ECDSA private key to sign this image",
+        ),
+    },
+    toolchains = [LOCALTOOLS_TOOLCHAIN],
+    doc = "Create detached signatures using on-disk private keys via opentitantool.",
+)
+
 def _offline_signature_attach(ctx):
+    if ctx.files.rsa_signatures and ctx.files.ecdsa_signatures:
+        fail("Only one of RSA or ECDSA signatures should be provided")
+
     tc = ctx.toolchains[LOCALTOOLS_TOOLCHAIN]
     inputs = {}
     for src in ctx.attr.srcs:
@@ -412,6 +554,11 @@ def _offline_signature_attach(ctx):
         if f not in inputs:
             fail("RSA signature {} does not have a corresponding entry in srcs".format(sig.path))
         inputs[f]["rsa_sig"] = sig
+    for sig in ctx.files.ecdsa_signatures:
+        f, _ = paths.split_extension(sig.basename)
+        if f not in inputs:
+            fail("ECDSA signature {} does not have a corresponding entry in srcs".format(sig.path))
+        inputs[f]["ecdsa_sig"] = sig
     for sig in ctx.files.spx_signatures:
         f, _ = paths.split_extension(sig.basename)
         if f not in inputs:
@@ -425,14 +572,15 @@ def _offline_signature_attach(ctx):
         if inputs[f].get("bin") == None:
             print("WARNING: No pre-signed binary for", f)
             continue
-        if inputs[f].get("rsa_sig") == None:
-            print("WARNING: No RSA signature file for", f)
+        if inputs[f].get("rsa_sig") == None and inputs[f].get("ecdsa_sig") == None:
+            print("WARNING: No RSA or ECDSA signature file for", f)
             continue
         out = _post_signing_attach(
             ctx,
             tc.tools.opentitantool,
             inputs[f]["bin"],
-            inputs[f]["rsa_sig"],
+            getattr(inputs[f], "ecdsa_sig", None),
+            getattr(inputs[f], "rsa_sig", None),
             inputs[f].get("spx_sig"),
         )
         outputs.append(out)
@@ -442,6 +590,7 @@ offline_signature_attach = rule(
     implementation = _offline_signature_attach,
     attrs = {
         "srcs": attr.label_list(allow_files = True, providers = [PreSigningBinaryInfo], doc = "Binary files to sign"),
+        "ecdsa_signatures": attr.label_list(allow_files = True, doc = "ECDSA signed digest files"),
         "rsa_signatures": attr.label_list(allow_files = True, doc = "RSA signed digest files"),
         "spx_signatures": attr.label_list(allow_files = True, doc = "SPX+ signed digest files"),
     },
@@ -454,7 +603,8 @@ def sign_binary(ctx, opentitantool, **kwargs):
     Args:
       ctx: The rule context.
       opentitantool: An opentitantool FilesToRun provider.
-      kwargs: Overrides of values normally retrived from the context object.
+      **kwargs: Overrides of values normally retrived from the context object.
+        ecdsa_key: The ECDSA signing key.
         rsa_key: The RSA signing key.
         spx_key: The SPHINCS+ signing key.
         bin: The input binary.
@@ -465,12 +615,21 @@ def sign_binary(ctx, opentitantool, **kwargs):
           pre: The pre-signing binary (input binary with manifest changes applied).
           digest: The SHA256 hash over the pre-signing binary.
           spxmsg: The SPHINCS+ message to be signed.
+          ecdsa_sig: The ECDSA signature of the digest.
           rsa_sig: The RSA signature of the digest.
           spx_sig: The SPHINCS+ signature over the message.
           signed: The final signed binary.
     """
+    key_attr = get_override(ctx, "attr.ecdsa_key", kwargs)
+    ecdsa_key = key_from_dict(key_attr, "ecdsa_key")
+
     rsa_attr = get_override(ctx, "attr.rsa_key", kwargs)
+    if rsa_attr and key_attr:
+        fail("Only one of ECDSA or RSA key should be provided")
+
+    key_attr = rsa_attr
     rsa_key = key_from_dict(rsa_attr, "rsa_key")
+
     spx_key = key_from_dict(get_override(ctx, "attr.spx_key", kwargs), "spx_key")
 
     artifacts = _presigning_artifacts(
@@ -478,15 +637,17 @@ def sign_binary(ctx, opentitantool, **kwargs):
         opentitantool,
         get_override(ctx, "file.bin", kwargs),
         get_override(ctx, "file.manifest", kwargs),
+        ecdsa_key,
         rsa_key,
         spx_key,
         keyname_in_filenames = True,
     )
-    tool, signing_func, profile = _signing_tool_info(ctx, rsa_attr, opentitantool)
-    rsa_sig, spx_sig = signing_func(
+    tool, signing_func, profile = _signing_tool_info(ctx, key_attr, opentitantool)
+    ecdsa_sig, rsa_sig, spx_sig = signing_func(
         ctx,
         tool,
         artifacts.digest,
+        ecdsa_key,
         rsa_key,
         artifacts.spxmsg,
         spx_key,
@@ -496,6 +657,7 @@ def sign_binary(ctx, opentitantool, **kwargs):
         ctx,
         opentitantool,
         artifacts.pre,
+        ecdsa_sig,
         rsa_sig,
         spx_sig,
     )
@@ -503,6 +665,7 @@ def sign_binary(ctx, opentitantool, **kwargs):
         "pre": artifacts.pre,
         "digest": artifacts.digest,
         "spxmsg": artifacts.spxmsg,
+        "ecdsa_sig": ecdsa_sig,
         "rsa_sig": rsa_sig,
         "spx_sig": spx_sig,
         "signed": signed,
@@ -519,9 +682,12 @@ sign_bin = rv_rule(
     implementation = _sign_bin_impl,
     attrs = {
         "bin": attr.label(allow_single_file = True),
+        "ecdsa_key": attr.label_keyed_string_dict(
+            allow_files = True,
+            doc = "ECDSA public key to validate this image",
+        ),
         "rsa_key": attr.label_keyed_string_dict(
             allow_files = True,
-            mandatory = True,
             doc = "RSA public key to validate this image",
         ),
         "spx_key": attr.label_keyed_string_dict(
