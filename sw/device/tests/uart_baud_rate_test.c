@@ -53,24 +53,24 @@ OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 static status_t test_uart_baud(void) {
   test_phase = kTestPhaseCfg;
 
-  CHECK_DIF_OK(dif_uart_configure(
-      &uart, (dif_uart_config_t){
-                 .baudrate = (uint32_t)baud_rate,
-                 .clk_freq_hz = (uint32_t)kClockFreqPeripheralHz,
-                 .parity_enable = kDifToggleDisabled,
-                 .parity = kDifUartParityEven,
-                 .tx_enable = kDifToggleEnabled,
-                 .rx_enable = kDifToggleEnabled,
-             }));
+  TRY(dif_uart_configure(&uart,
+                         (dif_uart_config_t){
+                             .baudrate = (uint32_t)baud_rate,
+                             .clk_freq_hz = (uint32_t)kClockFreqPeripheralHz,
+                             .parity_enable = kDifToggleDisabled,
+                             .parity = kDifUartParityEven,
+                             .tx_enable = kDifToggleEnabled,
+                             .rx_enable = kDifToggleEnabled,
+                         }));
 
-  CHECK_DIF_OK(dif_uart_fifo_reset(&uart, kDifUartDatapathAll));
+  TRY(dif_uart_fifo_reset(&uart, kDifUartDatapathAll));
 
   LOG_INFO("Configured UART%d with Baud rate %d", uart_idx, baud_rate);
 
   OTTF_WAIT_FOR(test_phase == kTestPhaseSend, kTestTimeoutMillis);
 
   LOG_INFO("Sending data...");
-  CHECK_DIF_OK(dif_uart_bytes_send(&uart, kSendData, sizeof(kSendData), NULL));
+  TRY(dif_uart_bytes_send(&uart, kSendData, sizeof(kSendData), NULL));
   LOG_INFO("Data sent");
 
   OTTF_WAIT_FOR(test_phase == kTestPhaseRecv, kTestTimeoutMillis);
@@ -78,9 +78,9 @@ static status_t test_uart_baud(void) {
   LOG_INFO("Receiving data...");
   uint8_t data[sizeof(kSendData)] = {0};
   for (size_t i = 0; i < sizeof(data); ++i) {
-    CHECK_DIF_OK(dif_uart_byte_receive_polled(&uart, &data[i]));
+    TRY(dif_uart_byte_receive_polled(&uart, &data[i]));
   }
-  CHECK_ARRAYS_EQ(data, kSendData, sizeof(kSendData));
+  TRY_CHECK_ARRAYS_EQ(data, kSendData, sizeof(kSendData));
 
   test_phase = kTestPhaseDone;
 
