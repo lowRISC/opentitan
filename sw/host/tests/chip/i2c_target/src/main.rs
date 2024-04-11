@@ -219,25 +219,30 @@ fn test_write_read_repeated_start(
 
     // This test verifies that the i2c target can do a write and read operation within the same
     // transaction with repeated start.
-    let transfer = &i2c_bitbang_encoder.run(&[
-        test_utils::bitbanging::i2c::encoder::Transfer::Start,
-        test_utils::bitbanging::i2c::encoder::Transfer::Addr {
-            addr: address,
-            read: false,
-            nack: true,
-        },
-        test_utils::bitbanging::i2c::encoder::Transfer::Write(WRITE_REFERENCE_DATA),
-        test_utils::bitbanging::i2c::encoder::Transfer::Start,
-        test_utils::bitbanging::i2c::encoder::Transfer::Addr {
-            addr: address,
-            read: true,
-            nack: false,
-        },
-        test_utils::bitbanging::i2c::encoder::Transfer::Read(READ_REFERENCE_DATA.len()),
-        test_utils::bitbanging::i2c::encoder::Transfer::Stop,
-    ]);
+    let mut transfer = i2c_bitbang_encoder
+        .run(&[
+            test_utils::bitbanging::i2c::encoder::Transfer::Start,
+            test_utils::bitbanging::i2c::encoder::Transfer::Addr {
+                addr: address,
+                read: false,
+                nack: true,
+            },
+            test_utils::bitbanging::i2c::encoder::Transfer::Write(WRITE_REFERENCE_DATA),
+            test_utils::bitbanging::i2c::encoder::Transfer::Start,
+            test_utils::bitbanging::i2c::encoder::Transfer::Addr {
+                addr: address,
+                read: true,
+                nack: false,
+            },
+            test_utils::bitbanging::i2c::encoder::Transfer::Read(READ_REFERENCE_DATA.len()),
+            test_utils::bitbanging::i2c::encoder::Transfer::Stop,
+        ])
+        .to_vec();
+
+    // Extend the number of samples to make sure that the stop bit will be captured in the read buffer.
+    transfer.extend([0x03; 5]);
     let mut buffer = vec![0u8; transfer.len()];
-    let mut waveform = [BitbangEntry::Both(transfer, &mut buffer)];
+    let mut waveform = [BitbangEntry::Both(&transfer, &mut buffer)];
 
     log::info!("Testing write transaction at I2C address 0x{address:02x}");
     let txn = I2cTransferStart::new(address, READ_REFERENCE_DATA, false);
