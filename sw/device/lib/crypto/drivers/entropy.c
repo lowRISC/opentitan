@@ -414,6 +414,7 @@ static status_t csrng_send_app_cmd(uint32_t base_address,
   reg = bitfield_field32_write(0, kAppCmdFieldCmdId, cmd.id);
   reg = bitfield_field32_write(reg, kAppCmdFieldCmdLen, cmd_len);
   reg = bitfield_field32_write(reg, kAppCmdFieldGlen, cmd.generate_len);
+  reg = bitfield_field32_write(reg, kAppCmdFieldFlag0, kMultiBitBool4False);
 
   if (launder32(cmd.disable_trng_input) == kHardenedBoolTrue) {
     reg = bitfield_field32_write(reg, kAppCmdFieldFlag0, kMultiBitBool4True);
