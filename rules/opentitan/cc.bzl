@@ -162,6 +162,7 @@ def _binary_name(ctx, exec_env):
 
 def _build_binary(ctx, exec_env, name, deps, kind):
     """Build a binary, sign and perform output file transformations.
+
     This function is the core of the `opentitan_binary` and `opentitan_test`
     implementations.
 
@@ -190,6 +191,7 @@ def _build_binary(ctx, exec_env, name, deps, kind):
     )
 
     manifest = get_fallback(ctx, "file.manifest", exec_env)
+    ecdsa_key = get_fallback(ctx, "attr.ecdsa_key", exec_env)
     rsa_key = get_fallback(ctx, "attr.rsa_key", exec_env)
     spx_key = get_fallback(ctx, "attr.spx_key", exec_env)
     if (manifest or rsa_key) and kind != "ram":
@@ -199,6 +201,7 @@ def _build_binary(ctx, exec_env, name, deps, kind):
             ctx,
             opentitantool = exec_env._opentitantool,
             bin = binary,
+            ecdsa_key = ecdsa_key,
             rsa_key = rsa_key,
             spx_key = spx_key,
             manifest = manifest,
@@ -272,6 +275,10 @@ common_binary_attrs = {
     "linker_script": attr.label(
         providers = [CcInfo],
         doc = "Linker script for linking this binary",
+    ),
+    "ecdsa_key": attr.label_keyed_string_dict(
+        allow_files = True,
+        doc = "ECDSA key to sign images",
     ),
     "rsa_key": attr.label_keyed_string_dict(
         allow_files = True,

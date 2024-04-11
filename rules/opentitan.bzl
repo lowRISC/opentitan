@@ -83,8 +83,9 @@ def create_prod_key(name, label):
         CONST.LCV.RMA,
     ])
 
-def create_key_struct(rsa_key, spx_key):
+def create_key_struct(ecdsa_key, rsa_key, spx_key):
     return struct(
+        ecdsa = ecdsa_key,
         rsa = rsa_key,
         spx = spx_key,
     )
@@ -171,7 +172,7 @@ def get_key_structs_for_lc_state(hw_lc_state, rsa = SILICON_CREATOR_KEYS.FAKE.RS
         fail("Lists have different lengths")
     keys = zip(rsa, spx)
     res = [
-        create_key_struct(rsa, spx)
+        create_key_struct(None, rsa, spx)
         for rsa, spx in keys
         if (rsa == None or key_allowed_in_lc_state(rsa, hw_lc_state)) and (spx == None or key_allowed_in_lc_state(spx, hw_lc_state))
     ]
@@ -181,22 +182,22 @@ def filter_key_structs_for_lc_state(key_structs, hw_lc_state):
     return [k for k in key_structs if (not k.rsa or key_allowed_in_lc_state(k.rsa, hw_lc_state)) and (not k.spx or key_allowed_in_lc_state(k.spx, hw_lc_state))]
 
 RSA_ONLY_KEY_STRUCTS = [
-    create_key_struct(SILICON_CREATOR_KEYS.FAKE.RSA.TEST[0], None),
-    create_key_struct(SILICON_CREATOR_KEYS.FAKE.RSA.DEV[0], None),
-    create_key_struct(SILICON_CREATOR_KEYS.FAKE.RSA.PROD[0], None),
-    create_key_struct(SILICON_CREATOR_KEYS.UNAUTHORIZED.RSA[0], None),
+    create_key_struct(None, SILICON_CREATOR_KEYS.FAKE.RSA.TEST[0], None),
+    create_key_struct(None, SILICON_CREATOR_KEYS.FAKE.RSA.DEV[0], None),
+    create_key_struct(None, SILICON_CREATOR_KEYS.FAKE.RSA.PROD[0], None),
+    create_key_struct(None, SILICON_CREATOR_KEYS.UNAUTHORIZED.RSA[0], None),
 ]
 
 RSA_SPX_KEY_STRUCTS = [
-    create_key_struct(SILICON_CREATOR_KEYS.FAKE.RSA.TEST[0], SILICON_CREATOR_KEYS.FAKE.SPX.TEST[0]),
-    create_key_struct(SILICON_CREATOR_KEYS.FAKE.RSA.DEV[0], SILICON_CREATOR_KEYS.FAKE.SPX.DEV[0]),
-    create_key_struct(SILICON_CREATOR_KEYS.FAKE.RSA.PROD[0], SILICON_CREATOR_KEYS.FAKE.SPX.PROD[0]),
-    create_key_struct(SILICON_CREATOR_KEYS.UNAUTHORIZED.RSA[0], SILICON_CREATOR_KEYS.UNAUTHORIZED.SPX[0]),
+    create_key_struct(None, SILICON_CREATOR_KEYS.FAKE.RSA.TEST[0], SILICON_CREATOR_KEYS.FAKE.SPX.TEST[0]),
+    create_key_struct(None, SILICON_CREATOR_KEYS.FAKE.RSA.DEV[0], SILICON_CREATOR_KEYS.FAKE.SPX.DEV[0]),
+    create_key_struct(None, SILICON_CREATOR_KEYS.FAKE.RSA.PROD[0], SILICON_CREATOR_KEYS.FAKE.SPX.PROD[0]),
+    create_key_struct(None, SILICON_CREATOR_KEYS.UNAUTHORIZED.RSA[0], SILICON_CREATOR_KEYS.UNAUTHORIZED.SPX[0]),
 ]
 
 RSA_ONLY_ROM_EXT_KEY_STRUCTS = [
-    create_key_struct(SILICON_OWNER_KEYS.FAKE.RSA.TEST[0], None),
-    create_key_struct(SILICON_OWNER_KEYS.FAKE.RSA.DEV[0], None),
+    create_key_struct(None, SILICON_OWNER_KEYS.FAKE.RSA.TEST[0], None),
+    create_key_struct(None, SILICON_OWNER_KEYS.FAKE.RSA.DEV[0], None),
 ]
 
 def _obj_transform_impl(ctx):

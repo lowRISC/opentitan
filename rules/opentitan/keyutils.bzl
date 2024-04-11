@@ -3,21 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules:opentitan.bzl", "key_allowed_in_lc_state")
-
-KeyInfo = provider(
-    """Key Information.
-
-    Used to capture all required information about a key.
-    """,
-    fields = {
-        "id": "Identifier used by the consumers of the provider to determine the key algorithm.",
-        "config": "The config of the key. Specific to the key algorithm.",
-        "method": "Mechanism used to access the key. Can be local or hsmtool.",
-        "pub_key": "Public key `file`.",
-        "private_key": "Private key `file`. May be None when method is set to hsmtool.",
-        "type": "The type of the key. Can be TestKey, DevKey or ProdKey.",
-    },
-)
+load("//rules:signing.bzl", "KeyInfo")
 
 def _build_key_info_handler(id):
     """Return a handler that creates a KeyInfo provider.
