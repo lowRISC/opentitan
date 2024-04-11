@@ -13,6 +13,7 @@ _FIELDS = {
     "exec_env": ("attr.exec_env", False),
     "libs": ("attr.libs", True),
     "linker_script": ("attr.linker_script", False),
+    "ecdsa_key": ("attr.ecdsa_key", False),
     "rsa_key": ("attr.rsa_key", False),
     "spx_key": ("attr.spx_key", False),
     "manifest": ("file.manifest", False),
@@ -119,6 +120,11 @@ def exec_env_common_attrs(**kwargs):
             default = kwargs.get("linker_script"),
             providers = [CcInfo],
             doc = "Library providing the environment-specific linker script",
+        ),
+        "ecdsa_key": attr.label_keyed_string_dict(
+            default = kwargs.get("ecdsa_key", {}),
+            allow_files = True,
+            doc = "ECDSA key to sign images",
         ),
         "rsa_key": attr.label_keyed_string_dict(
             default = kwargs.get("rsa_key", {}),
