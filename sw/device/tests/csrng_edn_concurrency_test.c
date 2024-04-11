@@ -297,6 +297,9 @@ static void main_task(void *task_parameters) {
     for (size_t i = 0; i < kTestTaskIdCount; ++i) {
       task_done[i] = false;
     }
+    // Clear any recoverable alert that could have been triggered before or
+    // during setup.
+    CHECK_DIF_OK(dif_csrng_clear_recoverable_alerts(&csrng));
     // Signal the other tasks to start test execution.
     execution_state_update(kTestStateRun);
     // This is required to ensure the aggregation of task_done entries is equal
