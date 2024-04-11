@@ -26,7 +26,6 @@
              "{proj_root}/hw/ip/csrng/dv/csrng_sim_cfg.hjson",
              "{proj_root}/hw/ip/edn/dv/edn_sim_cfg.hjson",
              "{proj_root}/hw/ip/entropy_src/dv/entropy_src_sim_cfg.hjson",
-             "{proj_root}/hw/ip/flash_ctrl/dv/flash_ctrl_sim_cfg.hjson",
              "{proj_root}/hw/ip/gpio/dv/gpio_sim_cfg.hjson",
              "{proj_root}/hw/ip/hmac/dv/hmac_sim_cfg.hjson",
              "{proj_root}/hw/ip/i2c/dv/i2c_sim_cfg.hjson",
@@ -59,6 +58,7 @@
              // Top level IPs.
              "{proj_root}/hw/top_earlgrey/ip_autogen/alert_handler/dv/alert_handler_sim_cfg.hjson",
              "{proj_root}/hw/top_earlgrey/ip_autogen/clkmgr/dv/clkmgr_sim_cfg.hjson",
+             "{proj_root}/hw/top_earlgrey/ip_autogen/flash_ctrl/dv/flash_ctrl_sim_cfg.hjson",
              "{proj_root}/hw/top_earlgrey/ip_autogen/pwrmgr/dv/pwrmgr_sim_cfg.hjson",
              "{proj_root}/hw/top_earlgrey/ip_autogen/rstmgr/dv/rstmgr_cnsty_chk/rstmgr_cnsty_chk_sim_cfg.hjson",
              "{proj_root}/hw/top_earlgrey/ip_autogen/rstmgr/dv/rstmgr_sim_cfg.hjson",

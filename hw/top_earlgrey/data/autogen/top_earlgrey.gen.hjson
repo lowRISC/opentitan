@@ -4836,7 +4836,7 @@
           size: 0x100000
         }
       }
-      attr: templated
+      attr: ipgen
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_infra
