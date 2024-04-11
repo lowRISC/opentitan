@@ -90,11 +90,11 @@ hw/ip/csrng/dv/tests/csrng_smoke_test.sv
 hw/ip/edn/dv/env/seq_lib/edn_vseq_list.sv
 hw/ip/edn/dv/tests/edn_smoke_test.sv
 hw/ip/edn/dv/tests/edn_test_pkg.sv
-hw/ip/flash_ctrl/dv/env/seq_lib/flash_ctrl_common_vseq.sv
-hw/ip/flash_ctrl/dv/env/seq_lib/flash_ctrl_rand_ops_vseq.sv
-hw/ip/flash_ctrl/dv/env/seq_lib/flash_ctrl_smoke_vseq.sv
-hw/ip/flash_ctrl/dv/env/seq_lib/flash_ctrl_vseq_list.sv
-hw/ip/flash_ctrl/dv/tests/flash_ctrl_test_pkg.sv
+hw/top_earlgrey/ip_autogen/flash_ctrl/dv/env/seq_lib/flash_ctrl_common_vseq.sv
+hw/top_earlgrey/ip_autogen/flash_ctrl/dv/env/seq_lib/flash_ctrl_rand_ops_vseq.sv
+hw/top_earlgrey/ip_autogen/flash_ctrl/dv/env/seq_lib/flash_ctrl_smoke_vseq.sv
+hw/top_earlgrey/ip_autogen/flash_ctrl/dv/env/seq_lib/flash_ctrl_vseq_list.sv
+hw/top_earlgrey/ip_autogen/flash_ctrl/dv/tests/flash_ctrl_test_pkg.sv
 hw/ip/gpio/dv/env/gpio_env.sv
 hw/ip/gpio/dv/env/gpio_env_cfg.sv
 hw/ip/gpio/dv/env/seq_lib/gpio_intr_rand_pgm_vseq.sv
