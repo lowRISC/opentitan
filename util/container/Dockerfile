@@ -33,24 +33,6 @@ LABEL maintainer="opentitan-dev@opentitan.org"
 # Use bash as default shell.
 RUN ln -sf /bin/bash /bin/sh
 
-# Add OBS repository to apt sources.
-RUN OBS_URL="https://download.opensuse.org/repositories"; \
-    OBS_PATH="/home:/phiwag:/edatools/xUbuntu_20.04"; \
-    REPO_URL="${OBS_URL}${OBS_PATH}"; \
-    \
-    EDATOOLS_REPO_KEY="${REPO_URL}/Release.key"; \
-    EDATOOLS_REPO="deb ${REPO_URL}/ /"; \
-    \
-    apt-get update && \
-    apt-get install -y curl && \
-    \
-    curl -f -sL -o "$TMPDIR/obs.asc" "$EDATOOLS_REPO_KEY" || { \
-        error "Failed to download repository key from ${REPO_URL}"; \
-    } && \
-    echo "$EDATOOLS_REPO" > "$TMPDIR/obs.list" && \
-    mv "$TMPDIR/obs.asc"  /etc/apt/trusted.gpg.d/obs.asc && \
-    mv "$TMPDIR/obs.list" /etc/apt/sources.list.d/edatools.list
-
 # Install system packages
 #
 # Install (and cleanup) required packages (from apt-requirements.txt).
@@ -68,8 +50,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ=UTC
 
 COPY apt-requirements.txt /tmp/apt-requirements.txt
-RUN echo "verilator-${VERILATOR_VERSION}" >>/tmp/apt-requirements.txt \
-    && sed -i -e '/^$/d' -e '/^#/d' -e 's/#.*//' /tmp/apt-requirements.txt \
+RUN sed -i -e '/^$/d' -e '/^#/d' -e 's/#.*//' /tmp/apt-requirements.txt \
     && apt-get update \
     && xargs apt-get install -y </tmp/apt-requirements.txt \
     && apt-get install -y \
@@ -144,6 +125,11 @@ RUN curl https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add \
         done; \
         ${cmd} ; \
     )
+
+# Install verilator prebuild binary
+RUN mkdir -p /tools/verilator \
+    && curl -sSfL https://storage.googleapis.com/verilator-builds/verilator-v${VERILATOR_VERSION}.tar.gz | tar -C /tools/verilator -xvzf -
+ENV PATH "/tools/verilator/v${VERILATOR_VERSION}/bin:${PATH}"
 
 # Install Verible
 RUN curl -f -Ls -o verible.tar.gz \
