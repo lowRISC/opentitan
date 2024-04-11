@@ -485,71 +485,8 @@ def generate_rstmgr(topcfg: Dict[str, object], out_path: Path) -> None:
     ipgen_render("rstmgr", topname, params, out_path)
 
 
-# generate flash
-def generate_flash(topcfg: Dict[str, object], out_path: Path) -> None:
-    log.info("Generating flash")
-
-    # Define target path
-    spec_ip_path = out_path / "ip" / "flash_ctrl"
-    rtl_path = spec_ip_path / "rtl" / "autogen"
-    rtl_path.mkdir(parents=True, exist_ok=True)
-    data_path = spec_ip_path / "data/autogen"
-    data_path.mkdir(parents=True, exist_ok=True)
-
-    orig_ip_path = SRCTREE_TOP / "hw" / "ip" / "flash_ctrl"
-    tpl_path = orig_ip_path / "data"
-    original_rtl_path = orig_ip_path / "rtl"
-
-    # Read template files from ip directory.
-    tpls = []
-    outputs = []
-    names = [
-        "flash_ctrl.hjson", "flash_ctrl.sv", "flash_ctrl_pkg.sv",
-        "flash_ctrl_region_cfg.sv"
-    ]
-
-    for x in names:
-        tpls.append(tpl_path / Path(x + ".tpl"))
-        if "hjson" in x:
-            outputs.append(data_path / Path(x))
-        else:
-            outputs.append(rtl_path / Path(x))
-
-    # Parameters needed for generation
-    flash_mems = [
-        module for module in topcfg["module"] if module["type"] == "flash_ctrl"
-    ]
-    if len(flash_mems) > 1:
-        log.error("This design does not currently support multiple flashes")
-        return
-
-    cfg = flash_mems[0]["memory"]["mem"]["config"]
-
-    # Generate templated files
-    for idx, t in enumerate(tpls):
-        out = StringIO()
-        with t.open(mode="r", encoding="UTF-8") as fin:
-            tpl = Template(fin.read())
-            try:
-                out = tpl.render(cfg=cfg)
-
-            except:  # noqa: E722
-                log.error(exceptions.text_error_template().render())
-
-        if out == "":
-            log.error("Cannot generate {}".format(names[idx]))
-            return
-
-        with outputs[idx].open(mode="w", encoding="UTF-8") as fout:
-            fout.write(genhdr + out)
-
-    # Generate reg files
-    hjson_path = outputs[0]
-    generate_regfile_from_path(hjson_path, rtl_path, original_rtl_path)
-
-
 # generate flash_ctrl with ipgen
-def generate_ipgen_flash(topcfg: Dict[str, object], out_path: Path) -> None:
+def generate_flash(topcfg: Dict[str, object], out_path: Path) -> None:
     log.info("Generating flash_ctrl with ipgen")
     topname = topcfg["name"]
 
@@ -901,7 +838,6 @@ def _process_top(topcfg: Dict[str, object], args: argparse.Namespace,
 
     # Generate flash controller and flash memory
     generate_flash(topcfg, out_path)
-    generate_ipgen_flash(topcfg, out_path)
 
     # Generate PLIC
     if not args.no_plic and \

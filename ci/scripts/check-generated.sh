@@ -77,10 +77,6 @@ gen_and_check_clean \
     util/sh/scripts/gen-python-requirements.sh || bad=1
 
 gen_and_check_clean \
-    "flash_ctrl code" \
-    hw/ip/flash_ctrl/util/flash_ctrl_gen.py || bad=1
-
-gen_and_check_clean \
     "secded primitive code" \
     util/design/secded_gen.py --no_fpv || bad=1
 
