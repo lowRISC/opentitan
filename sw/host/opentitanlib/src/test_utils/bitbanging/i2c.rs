@@ -357,7 +357,10 @@ pub mod decoder {
                             trans.push(symbol.into());
                             DecodingState::Start
                         }
-                        _ => panic!("Can't parse {:?}", symbol),
+                        Symbol::Broken(_) => {
+                            trans.push(symbol.into());
+                            DecodingState::Start
+                        }
                     },
                 }
             }
