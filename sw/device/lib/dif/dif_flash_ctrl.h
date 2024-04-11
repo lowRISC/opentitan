@@ -7,8 +7,8 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/flash_ctrl/doc/">Flash Controller</a> Device
- * Interface Functions
+ * @brief <a href="/hw/top_earlgrey/ip_autogen/flash_ctrl/doc/">Flash
+ * Controller</a> Device Interface Functions
  */
 
 #include "sw/device/lib/base/macros.h"
