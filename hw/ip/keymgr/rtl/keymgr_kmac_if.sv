@@ -7,7 +7,11 @@
 
 `include "prim_assert.sv"
 
-module keymgr_kmac_if import keymgr_pkg::*;(
+module keymgr_kmac_if
+  import keymgr_pkg::*;
+#(
+  parameter rand_perm_t RndCnstRandPerm = RndCnstRandPermDefault
+) (
   input clk_i,
   input rst_ni,
 
@@ -93,7 +97,7 @@ module keymgr_kmac_if import keymgr_pkg::*;(
   localparam int CntWidth = $clog2(MaxRounds);
   localparam int IfBytes = KmacDataIfWidth / 8;
   localparam int DecoyCopies = KmacDataIfWidth / RandWidth;
-  localparam int DecoyOutputCopies = (kmac_pkg::AppDigestW / RandWidth) * Shares;
+  localparam int DecoyOutputCopies = (kmac_pkg::AppDigestW / RandWidth);
 
   localparam int unsigned LastAdvRoundInt = AdvRounds - 1;
   localparam int unsigned LastIdRoundInt = IdRounds - 1;
@@ -283,7 +287,8 @@ module keymgr_kmac_if import keymgr_pkg::*;(
   assign data_o = start && done_o ?
                   {kmac_data_i.digest_share1,
                    kmac_data_i.digest_share0} :
-                  {DecoyOutputCopies{entropy_i[0]}};
+                  {{DecoyOutputCopies{entropy_i[1]}},
+                   {DecoyOutputCopies{entropy_i[0]}}};
 
   // The input invalid check is done whenever transactions are ongoing with kmac
   // once set, it cannot be unset until transactions are fully complete
@@ -307,6 +312,12 @@ module keymgr_kmac_if import keymgr_pkg::*;(
   // immediately assert errors
   assign inputs_invalid_o = |inputs_invalid_d;
 
+  // Permute Share 1 of the entropy input once more to get the decoy data.
+  // Share 0 and 1 are used as is for data_o (connected to the sideload ports).
+  logic [RandWidth-1:0] decoy_entropy;
+  assign decoy_entropy = perm_data(entropy_i[1], RndCnstRandPerm);
+  assign decoy_data = {DecoyCopies{decoy_entropy}};
+
   logic [CntWidth-1:0] adv_sel, id_sel, gen_sel;
   assign adv_sel = LastAdvRound - cnt;
   assign id_sel = LastIdRound - cnt;
@@ -315,7 +326,6 @@ module keymgr_kmac_if import keymgr_pkg::*;(
   // The count is maintained as a downcount
   // so a subtract is necessary to send the right byte
   // alternatively we can also reverse the order of the input
-  assign decoy_data = {DecoyCopies{entropy_i[1]}};
   always_comb begin
     kmac_data_o.data  = decoy_data;
     if (|cmd_error_o || inputs_invalid_o || fsm_error_o) begin
