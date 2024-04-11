@@ -24,16 +24,11 @@ static const uint32_t kBaseAddrs[4] = {
     TOP_EARLGREY_UART2_BASE_ADDR,
     TOP_EARLGREY_UART3_BASE_ADDR,
 };
-static uint32_t kBauds[7] = {
-    9600, 115200, 230400, 128000, 256000, 1000000, 1500000,
-};
+static const uint32_t kBauds[9] = {4800,   9600,   19200,  38400, 57600,
+                                   115200, 230400, 128000, 256000};
 
 enum {
   kTestTimeoutMillis = 500000,
-  // Number of Bauds to test from `kBauds`.
-  kBaudCountSilicon = 7,
-  // The two highest Bauds won't work at the clock speed we run the FPGAs at.
-  kBaudCountFpga = 5,
 };
 
 typedef enum test_phase {
@@ -112,12 +107,9 @@ bool test_main(void) {
   CHECK_STATUS_OK(
       uart_testutils_select_pinmux(&pinmux, uart_idx, kUartPinmuxChannelDut));
 
-  size_t baud_count =
-      kDeviceType == kDeviceSilicon ? kBaudCountSilicon : kBaudCountFpga;
-
   // Check every baud rate is sent and received okay.
   status_t result = OK_STATUS();
-  for (size_t baud_idx = 0; baud_idx < baud_count; ++baud_idx) {
+  for (size_t baud_idx = 0; baud_idx < ARRAYSIZE(kBauds); ++baud_idx) {
     baud_rate = kBauds[baud_idx];
     EXECUTE_TEST(result, test_uart_baud);
   }
