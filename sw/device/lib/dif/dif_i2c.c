@@ -317,7 +317,7 @@ dif_result_t dif_i2c_set_target_watermarks(const dif_i2c_t *i2c,
   // Check that the FIFO levels are sensible; setting ACQ level equal to the
   // depth deactivates its interrupt, but setting TX level to that would result
   // in continual interrupt assertion.
-  if (i2c == NULL || acq_level > I2C_PARAM_FIFO_DEPTH ||
+  if (i2c == NULL || acq_level > I2C_PARAM_ACQ_FIFO_DEPTH ||
       tx_level >= I2C_PARAM_FIFO_DEPTH) {
     return kDifBadArg;
   }

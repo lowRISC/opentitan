@@ -21,3 +21,19 @@ rust_binary(
         "@crate_index//:serde_json",
     ],
 )
+
+rust_binary(
+    name = "i2c_target_smbus_arp",
+    srcs = [
+        "src/smbus_arp.rs",
+    ],
+    deps = [
+        "//sw/host/opentitanlib",
+        "@crate_index//:anyhow",
+        "@crate_index//:clap",
+        "@crate_index//:humantime",
+        "@crate_index//:log",
+        "@crate_index//:object",
+        "@crate_index//:serde_json",
+    ],
+)

@@ -4806,6 +4806,35 @@ opentitan_test(
     ],
 )
 
+opentitan_test(
+    name = "i2c_target_smbus_arp_test",
+    srcs = [
+        "i2c_target_smbus_arp_test.c",
+    ],
+    cw310 = cw310_params(
+        test_cmd = """
+            --bootstrap="{firmware}"
+            "{firmware:elf}"
+        """,
+        test_harness = "//sw/host/tests/chip/i2c_target:i2c_target_smbus_arp",
+    ),
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_sival": None,
+    },
+    deps = [
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/dif:i2c",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/dif:rv_plic",
+        "//sw/device/lib/testing:i2c_testutils",
+        "//sw/device/lib/testing:rv_plic_testutils",
+        "//sw/device/lib/testing/json:command",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/testing/test_framework:ujson_ottf_commands",
+    ],
+)
+
 # TODO(#19902): Migrate to `opentitan_test` once there is support for the
 # hyperdebug310 target.
 opentitan_test(
