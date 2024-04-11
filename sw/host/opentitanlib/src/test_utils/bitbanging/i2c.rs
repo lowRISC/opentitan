@@ -184,6 +184,7 @@ pub mod decoder {
         Bytes,
     }
 
+    #[derive(Clone, Debug)]
     struct Sample<const SDA: u8, const SCL: u8> {
         raw: u8,
     }
@@ -202,41 +203,44 @@ pub mod decoder {
     }
 
     impl<const SDA: u8, const SCL: u8> Decoder<SDA, SCL> {
-        /// Returns a sample when a fall clock edge happen.
-        /// The returned sample is taken *before* the falling edge, when SCL is high.
+        /// Loops until the clk transitions to low.
+        /// Returns a symbol (Start|Stop) in case the sda transitions while the clk is high.
         /// The caller must make sure that the clock was high in the previous sample.
-        fn sample_on_fall_edge<I>(samples: &mut Peekable<I>) -> Result<Option<Sample<SDA, SCL>>>
+        fn sample_on_fall_edge<I>(samples: &mut I) -> Result<Option<Symbol>>
         where
             I: Iterator<Item = Sample<SDA, SCL>>,
         {
-            let mut sda = None;
-            loop {
-                if samples
-                    .peek()
-                    .context("Ran out of samples and did not find fall edge")?
-                    .scl()
-                    == Bit::Low
-                {
-                    return Ok(sda);
+            let mut previous: Option<Sample<SDA, SCL>> = None;
+            for sample in samples.by_ref() {
+                if sample.scl() == Bit::Low {
+                    return Ok(None); // No symbol found.
                 }
-                sda = Some(
-                    samples
-                        .next()
-                        .context("Ran out of samples and did not find fall edge")?,
-                );
+                // If sda transitioned with the scl high it either means a stop or start symbol.
+                if let Some(previous) = previous {
+                    if previous.sda() != sample.sda() {
+                        return Ok(Some(match sample.sda() {
+                            Bit::High => Symbol::Stop,
+                            Bit::Low => Symbol::Start,
+                        }));
+                    }
+                }
+                previous = Some(sample);
             }
+            bail!("Ran out of samples and did not find fall edge")
         }
 
-        /// Returns a sample when a raise clock edge happen.
+        /// Returns a sample when a raise clock edge is detected.
+        /// This function will not consume the sample where the raise clock is detected.
         /// The caller must make sure that the clock was low in the previous sample.
         fn sample_on_raise_edge<I>(samples: &mut Peekable<I>) -> Option<Sample<SDA, SCL>>
         where
             I: Iterator<Item = Sample<SDA, SCL>>,
         {
-            samples.by_ref().find(|sample| sample.scl() == Bit::High)
+            while samples.next_if(|sample| sample.scl() == Bit::Low).is_some() {}
+            samples.peek().cloned()
         }
 
-        fn loop_until<I>(samples: &mut Peekable<I>, sda: Bit, scl: Bit) -> Option<Sample<SDA, SCL>>
+        fn loop_until<I>(samples: &mut I, sda: Bit, scl: Bit) -> Option<Sample<SDA, SCL>>
         where
             I: Iterator<Item = Sample<SDA, SCL>>,
         {
@@ -245,7 +249,7 @@ pub mod decoder {
                 .find(|sample| sample.sda() == sda && sample.scl() == scl)
         }
 
-        fn find_start<I>(samples: &mut Peekable<I>) -> Result<Sample<SDA, SCL>>
+        fn find_start<I>(samples: &mut I) -> Result<Sample<SDA, SCL>>
         where
             I: Iterator<Item = Sample<SDA, SCL>>,
         {
@@ -273,31 +277,22 @@ pub mod decoder {
             I: Iterator<Item = Sample<SDA, SCL>>,
         {
             let mut byte = 0u16;
-            let mut raise_sample: Option<Sample<SDA, SCL>> = None;
-
             // 8 bits data + 1 bit ack/nack
             for index in 0..9 {
                 let Ok(fall_sample) = Self::sample_on_fall_edge(samples) else {
                     return Symbol::broken(byte as u8, index);
                 };
-                if let (Some(raise), Some(fall)) = (raise_sample, fall_sample) {
-                    // if sda transitioned while clock was high, it either mean a stop or start bit.
-                    let sda = raise.sda();
-                    if fall.sda() != sda {
-                        return Ok(match sda {
-                            Bit::High => Symbol::Start,
-                            Bit::Low => Symbol::Stop,
-                        });
-                    }
+
+                // Return in case a symbol was detected during fall sampling.
+                if let Some(symbol) = fall_sample {
+                    return Ok(symbol);
                 }
 
                 let Some(sample) = Self::sample_on_raise_edge(samples) else {
                     return Symbol::broken(byte as u8, index);
                 };
-
                 byte <<= 1;
                 byte |= sample.sda() as u16;
-                raise_sample = Some(sample);
             }
 
             Ok(Symbol::Byte {
@@ -350,13 +345,15 @@ pub mod decoder {
                             }
                         }
                         Symbol::Start | Symbol::Stop => {
-                            let (filled, empty) = buffer.split_at_mut(head_offset);
-                            buffer = empty;
-                            head_offset = 0;
-                            trans.push(Transfer::Bytes {
-                                data: filled,
-                                nack: false,
-                            });
+                            if head_offset > 0 {
+                                let (filled, empty) = buffer.split_at_mut(head_offset);
+                                buffer = empty;
+                                head_offset = 0;
+                                trans.push(Transfer::Bytes {
+                                    data: filled,
+                                    nack: false,
+                                });
+                            }
                             trans.push(symbol.into());
                             DecodingState::Start
                         }
