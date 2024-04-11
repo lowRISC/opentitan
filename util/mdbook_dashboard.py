@@ -27,7 +27,6 @@ DASHBOARDS: Dict[str, List[Union[Path, Tuple[Path, Path]]]] = {
         REPO_TOP / "hw/ip/csrng/data/csrng.hjson",
         REPO_TOP / "hw/ip/adc_ctrl/data/adc_ctrl.hjson",
         REPO_TOP / "hw/ip/edn/data/edn.hjson",
-        REPO_TOP / "hw/ip/flash_ctrl/data/flash_ctrl.hjson",
         REPO_TOP / "hw/ip/gpio/data/gpio.hjson",
         REPO_TOP / "hw/ip/hmac/data/hmac.hjson",
         REPO_TOP / "hw/ip/i2c/data/i2c.hjson",
@@ -59,11 +58,15 @@ DASHBOARDS: Dict[str, List[Union[Path, Tuple[Path, Path]]]] = {
             REPO_TOP / "hw/top_earlgrey/ip_autogen/clkmgr/",
         ),
         (
+            REPO_TOP / "hw/top_earlgrey/ip_autogen/flash_ctrl/data/flash_ctrl.hjson",
+            REPO_TOP / "hw/top_earlgrey/ip_autogen/flash_ctrl/",
+        ),
+        (
             REPO_TOP / "hw/top_earlgrey/ip_autogen/pwrmgr/data/pwrmgr.hjson",
             REPO_TOP / "hw/top_earlgrey/ip_autogen/pwrmgr/",
         ),
         (
-            REPO_TOP / "hw/top_earlgrey/ip_autogen/rstmgr/data/autogen/rstmgr.hjson",
+            REPO_TOP / "hw/top_earlgrey/ip_autogen/rstmgr/data/rstmgr.hjson",
             REPO_TOP / "hw/top_earlgrey/ip_autogen/rstmgr/",
         ),
         REPO_TOP / "hw/top_earlgrey/ip_autogen/alert_handler/data/alert_handler.hjson",
