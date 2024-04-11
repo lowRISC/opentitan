@@ -12,11 +12,16 @@ use std::mem::{align_of, size_of};
 use std::path::{Path, PathBuf};
 use thiserror::Error;
 
+use crate::crypto::ecdsa::{EcdsaPublicKey, EcdsaRawPublicKey, EcdsaRawSignature};
 use crate::crypto::rsa::Modulus;
+use crate::crypto::rsa::RsaPublicKey;
 use crate::crypto::rsa::Signature as RsaSignature;
 use crate::crypto::sha256;
-use crate::image::manifest::{Manifest, CHIP_ROM_EXT_IDENTIFIER, CHIP_ROM_EXT_SIZE_MAX};
-use crate::image::manifest_def::{ManifestRsaBuffer, ManifestSpec};
+use crate::image::manifest::{
+    Manifest, CHIP_MANIFEST_VERSION_MAJOR1, CHIP_MANIFEST_VERSION_MAJOR2,
+    CHIP_MANIFEST_VERSION_MINOR1, CHIP_ROM_EXT_IDENTIFIER, CHIP_ROM_EXT_SIZE_MAX,
+};
+use crate::image::manifest_def::{ManifestSigverifyBuffer, ManifestSpec};
 use crate::image::manifest_ext::{ManifestExtEntry, ManifestExtSpec};
 use crate::util::file::{FromReader, ToWriter};
 use crate::util::parse_int::ParseInt;
@@ -37,6 +42,28 @@ pub enum ImageError {
     BadExtensionAlignment(u32),
     #[error("Invalid placement of signed extension 0x{0:x}.")]
     MisplacedSignedExtension(u32),
+    #[error("Invalid manifest major version: {0}. ECDSA support requires major version {1}.")]
+    InvalidManifestVersionforEcdsa(u16, u16),
+}
+
+pub enum SigverifyParams {
+    Rsa(RsaPublicKey, RsaSignature),
+    Ecdsa(EcdsaRawPublicKey, EcdsaRawSignature),
+}
+
+impl SigverifyParams {
+    pub fn verify(&self, digest: &sha256::Sha256Digest) -> Result<()> {
+        match self {
+            SigverifyParams::Rsa(key, sig) => {
+                key.verify(digest, sig)?;
+            }
+            SigverifyParams::Ecdsa(key, sig) => {
+                let ecdsa_key: EcdsaPublicKey = key.try_into()?;
+                ecdsa_key.verify(digest, sig)?;
+            }
+        }
+        Ok(())
+    }
 }
 
 /// A buffer with the same alignment as `Manifest` for storing image data.
@@ -118,6 +145,34 @@ impl Image {
         }
 
         Ok(())
+    }
+
+    pub fn get_sigverify_params_from_manifest(&self) -> Result<SigverifyParams> {
+        let manifest = self.borrow_manifest()?;
+        let manifest_def: ManifestSpec = manifest.try_into()?;
+
+        let pub_key = manifest_def
+            .pub_key()
+            .ok_or(ImageError::Parse)?
+            .to_le_bytes();
+
+        let signature = manifest_def
+            .signature()
+            .ok_or(ImageError::Parse)?
+            .to_le_bytes();
+
+        if (manifest.manifest_version.major == CHIP_MANIFEST_VERSION_MAJOR1)
+            && (manifest.manifest_version.minor == CHIP_MANIFEST_VERSION_MINOR1)
+        {
+            let rsa_key = RsaPublicKey::new(Modulus::from_le_bytes(pub_key)?)?;
+            let rsa_sig = RsaSignature::from_le_bytes(signature)?;
+            return Ok(SigverifyParams::Rsa(rsa_key, rsa_sig));
+        }
+
+        let ecdsa_pub_key = EcdsaRawPublicKey::read(&mut std::io::Cursor::new(pub_key))?;
+        let ecdsa_sig = EcdsaRawSignature::read(&mut std::io::Cursor::new(signature))?;
+
+        Ok(SigverifyParams::Ecdsa(ecdsa_pub_key, ecdsa_sig))
     }
 
     /// Overwrites all fields in the image's manifest that are defined in `other`.
@@ -244,26 +299,95 @@ impl Image {
         Ok(())
     }
 
-    /// Updates the rsa_signature field in the `Manifest`.
+    /// Updates the signature field in the `Manifest` with the provided RSA signature.
     pub fn update_rsa_signature(&mut self, signature: RsaSignature) -> Result<()> {
         let manifest = self.borrow_manifest_mut()?;
 
         // Convert to a `ManifestSpec` so we can supply the signature as a `BigInt`.
         let mut manifest_def: ManifestSpec = (&*manifest).try_into()?;
-        manifest_def
-            .update_rsa_signature(ManifestRsaBuffer::from_le_bytes(signature.to_le_bytes())?);
+        manifest_def.update_signature(ManifestSigverifyBuffer::from_le_bytes(
+            signature.to_le_bytes(),
+        )?);
         *manifest = manifest_def.try_into()?;
         Ok(())
     }
 
-    /// Updates the rsa_modulus field in the `Manifest`.
+    /// Updates the signature field in the `Manifest` with the provided ECDSA signature.
+    pub fn update_ecdsa_signature(&mut self, signature: EcdsaRawSignature) -> Result<()> {
+        let manifest = self.borrow_manifest_mut()?;
+
+        // TODO(moidx): Remove check once we have migrated away from RSA keys
+        // and start using a key type field in the manifest.
+        ensure!(
+            manifest.manifest_version.major == CHIP_MANIFEST_VERSION_MAJOR2,
+            ImageError::InvalidManifestVersionforEcdsa(
+                manifest.manifest_version.major,
+                CHIP_MANIFEST_VERSION_MAJOR2
+            )
+        );
+
+        let mut manifest_def: ManifestSpec = (&*manifest).try_into()?;
+
+        // Convert the signature to a byte array and pad it to 3072 bits.
+        let signature_bytes = signature
+            .r
+            .iter()
+            .chain(signature.s.iter())
+            .copied()
+            .collect::<Vec<u8>>();
+        let sig_padding = vec![0xa5u8; 384 - 64];
+        let signature_bytes = signature_bytes
+            .iter()
+            .chain(sig_padding.iter())
+            .copied()
+            .collect::<Vec<u8>>();
+
+        manifest_def.update_signature(ManifestSigverifyBuffer::from_le_bytes(signature_bytes)?);
+        *manifest = manifest_def.try_into()?;
+        Ok(())
+    }
+
+    /// Updates the pub_key field in the `Manifest` with the RSA Modulus.
     pub fn update_modulus(&mut self, rsa_modulus: Modulus) -> Result<()> {
         let manifest = self.borrow_manifest_mut()?;
 
         // Convert to a `ManifestSpec` so we can supply the rsa_modulus as a `BigInt`.
         let mut manifest_def: ManifestSpec = (&*manifest).try_into()?;
-        manifest_def.update_modulus(ManifestRsaBuffer::from_le_bytes(rsa_modulus.to_le_bytes())?);
+        manifest_def.update_pub_key(ManifestSigverifyBuffer::from_le_bytes(
+            rsa_modulus.to_le_bytes(),
+        )?);
         *manifest = manifest_def.try_into()?;
+        Ok(())
+    }
+
+    /// Updates the pub_key field in the `Manifest` with the ECDSA public key.
+    pub fn update_ecdsa_public_key(&mut self, ecdsa_public_key: EcdsaRawPublicKey) -> Result<()> {
+        let manifest = self.borrow_manifest_mut()?;
+        let mut manifest_def: ManifestSpec = (&*manifest).try_into()?;
+
+        // Convert the public key to a byte array and pad it to 3072 bits.
+        let key_bytes = ecdsa_public_key
+            .x
+            .iter()
+            .chain(ecdsa_public_key.y.iter())
+            .copied()
+            .collect::<Vec<u8>>();
+        let key_padding = vec![0xa5u8; 384 - 64];
+        let key_bytes = key_bytes
+            .iter()
+            .chain(key_padding.iter())
+            .copied()
+            .collect::<Vec<u8>>();
+
+        manifest_def.update_pub_key(ManifestSigverifyBuffer::from_le_bytes(key_bytes)?);
+        *manifest = manifest_def.try_into()?;
+
+        // Update the manifest major version to be able to detect the signing
+        // key type.
+        // TODO(moidx): Replace this with a key type field in the manifest once
+        // support for RSA keys is removed.
+        manifest.manifest_version.major = CHIP_MANIFEST_VERSION_MAJOR2;
+        manifest.manifest_version.minor = CHIP_MANIFEST_VERSION_MINOR1;
         Ok(())
     }
 

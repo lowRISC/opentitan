@@ -26,6 +26,10 @@ use zerocopy::{AsBytes, FromBytes, FromZeroes};
 // TODO: Generate some constants as hex if possible, replacing manually for now.
 
 pub const CHIP_MANIFEST_SIZE: u32 = 1024;
+
+// TODO(moidx): Update to a valid number once we figure out a manifest
+// versioning scheme.
+pub const CHIP_MANIFEST_VERSION_MAJOR2: u16 = 0x0002;
 pub const CHIP_MANIFEST_VERSION_MINOR1: u16 = 0x6c47;
 pub const CHIP_MANIFEST_VERSION_MAJOR1: u16 = 0x71c3;
 pub const CHIP_MANIFEST_EXT_TABLE_COUNT: usize = 15;
@@ -45,9 +49,9 @@ pub const CHIP_BL0_SIZE_MAX: u32 = 0x70000;
 #[repr(C)]
 #[derive(AsBytes, FromBytes, FromZeroes, Debug, Default)]
 pub struct Manifest {
-    pub rsa_signature: SigverifyRsaBuffer,
+    pub signature: SigverifyBuffer,
     pub usage_constraints: ManifestUsageConstraints,
-    pub rsa_modulus: SigverifyRsaBuffer,
+    pub pub_key: SigverifyBuffer,
     pub address_translation: u32,
     pub identifier: u32,
     pub manifest_version: ManifestVersion,
@@ -122,11 +126,11 @@ pub struct ManifestExtSpxKey {
 /// A type that holds 96 32-bit words for RSA-3072.
 #[repr(C)]
 #[derive(AsBytes, FromBytes, FromZeroes, Debug)]
-pub struct SigverifyRsaBuffer {
+pub struct SigverifyBuffer {
     pub data: [u32; 96usize],
 }
 
-impl Default for SigverifyRsaBuffer {
+impl Default for SigverifyBuffer {
     fn default() -> Self {
         Self { data: [0; 96usize] }
     }
@@ -203,9 +207,9 @@ mod tests {
     /// requires a nightly compiler.
     #[test]
     pub fn test_manifest_layout() {
-        assert_eq!(offset_of!(Manifest, rsa_signature), 0);
+        assert_eq!(offset_of!(Manifest, signature), 0);
         assert_eq!(offset_of!(Manifest, usage_constraints), 384);
-        assert_eq!(offset_of!(Manifest, rsa_modulus), 432);
+        assert_eq!(offset_of!(Manifest, pub_key), 432);
         assert_eq!(offset_of!(Manifest, address_translation), 816);
         assert_eq!(offset_of!(Manifest, identifier), 820);
         assert_eq!(offset_of!(Manifest, manifest_version), 824);
