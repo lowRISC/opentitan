@@ -9,7 +9,7 @@ filesets:
     depend:
       - lowrisc:dv:dv_utils
       - lowrisc:dv:dv_lib
-      - lowrisc:ip:flash_ctrl_pkg
+      - lowrisc:ip_interfaces:flash_ctrl_pkg
     files:
       - flash_phy_prim_if.sv
       - flash_phy_prim_agent_pkg.sv

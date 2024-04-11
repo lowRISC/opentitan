@@ -33,7 +33,6 @@ filesets:
       - lowrisc:ip:otbn
       - lowrisc:prim:ram_1p_scr
       - lowrisc:prim:flash
-      - lowrisc:ip:flash_ctrl
       - lowrisc:ip:sram_ctrl
       - lowrisc:ip:keymgr
       - lowrisc:constants:top_pkg
@@ -44,6 +43,7 @@ filesets:
       - lowrisc:top_earlgrey:xbar_main
       - lowrisc:top_earlgrey:xbar_peri
       - lowrisc:opentitan:top_earlgrey_clkmgr
+      - lowrisc:opentitan:top_earlgrey_flash_ctrl
       - lowrisc:opentitan:top_earlgrey_rstmgr
       - lowrisc:opentitan:top_earlgrey_pwrmgr
       - lowrisc:ip:aon_timer

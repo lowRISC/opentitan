@@ -18,7 +18,7 @@ filesets:
       - lowrisc:prim:sec_anchor
       - lowrisc:prim:secded
       - lowrisc:prim:sparse_fsm
-      - lowrisc:ip:flash_ctrl_pkg
+      - lowrisc:ip_interfaces:flash_ctrl_pkg
       - lowrisc:ip:keymgr_pkg
       - lowrisc:ip:kmac_pkg
       - lowrisc:ip:otp_ctrl_pkg
