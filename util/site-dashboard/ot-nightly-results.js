@@ -11,7 +11,7 @@ const block_level_urls = {
   "csrng": ["https://reports.opentitan.org/hw/ip/csrng/dv/2024.01.22_10.48.06/"],
   "edn": ["https://reports.opentitan.org/hw/ip/edn/dv/2024.01.22_10.48.55/"],
   "entropy_src": ["https://reports.opentitan.org/hw/ip/entropy_src/dv/2024.01.22_10.49.35/"],
-  "flash_ctrl": ["https://reports.opentitan.org/hw/ip/flash_ctrl/dv/2024.01.22_10.51.11/"],
+  "flash_ctrl": ["https://reports.opentitan.org/hw/top_earlgrey/ip_autogen/flash_ctrl/dv/2024.01.22_10.51.11/"],
   "gpio": ["https://reports.opentitan.org/hw/ip/gpio/dv/2024.01.22_10.52.52/"],
   "hmac": ["https://reports.opentitan.org/hw/ip/hmac/dv/2024.01.22_10.53.53/"],
   "i2c": ["https://reports.opentitan.org/hw/ip/i2c/dv/2024.01.22_10.54.47/"],
