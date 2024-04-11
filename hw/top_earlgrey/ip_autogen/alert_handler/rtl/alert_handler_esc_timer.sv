@@ -57,7 +57,10 @@ module alert_handler_esc_timer import alert_pkg::*; (
     .Width(EscCntDw),
     // The alert handler behaves differently than other comportable IP. I.e., instead of sending out
     // an alert signal, this condition is handled internally in the alert handler.
-    .EnableAlertTriggerSVA(0)
+    .EnableAlertTriggerSVA(0),
+    // Pass a parameter to disable some assertions that are unreachable because decr_en_i is tied to
+    // zero.
+    .DecrNeverTrue(1)
   ) u_prim_count (
     .clk_i,
     .rst_ni,

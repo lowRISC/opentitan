@@ -32,7 +32,17 @@ module prim_count #(
   parameter logic [Width-1:0] ResetValue = '0,
   // This should only be disabled in special circumstances, for example
   // in non-comportable IPs where an error does not trigger an alert.
-  parameter bit EnableAlertTriggerSVA = 1
+  parameter bit EnableAlertTriggerSVA = 1,
+
+  // We have some assertions below with preconditions that depend on decr_en_i == 1. If the design
+  // has instantiated prim_count with decr_en_i tied to zero, those preconditions will not be
+  // satisfiable. The result is an unreachable item, which we treat as a failed assertion in the
+  // report.
+  //
+  // To avoid this, we allow a DecrNeverTrue parameter. If this is set, we will have an assertion
+  // called DecrNeverTrue_A which asserts that the port connected as we expect. We can then use this
+  // to avoid the unreachable assertions.
+  parameter bit DecrNeverTrue = 1'b0
 ) (
   input clk_i,
   input rst_ni,
@@ -160,6 +170,10 @@ module prim_count #(
   //VCS coverage on
   // pragma coverage on
 
+  if (DecrNeverTrue) begin : g_check_decr_never_true
+    `ASSERT(DecrNeverTrue_A, decr_en_i !== 1'b1)
+  end
+
   // Cnt next
   `ASSERT(CntNext_A,
       rst_ni
@@ -196,11 +210,13 @@ module prim_count #(
       clk_i, err_o || fpv_err_present || !rst_ni)
 
   // Do not count if both increment and decrement are asserted.
-  `ASSERT(IncrDecrUpDnCnt_A,
-      rst_ni && incr_en_i && decr_en_i && !(clr_i || set_i)
-      |=>
-      $stable(cnt_o) && $stable(cnt_q[1]),
-      clk_i, err_o || fpv_err_present || !rst_ni)
+  if (!DecrNeverTrue) begin : g_check_inc_and_dec
+    `ASSERT(IncrDecrUpDnCnt_A,
+        rst_ni && incr_en_i && decr_en_i && !(clr_i || set_i)
+        |=>
+        $stable(cnt_o) && $stable(cnt_q[1]),
+        clk_i, err_o || fpv_err_present || !rst_ni)
+  end
 
   // Up counter
   `ASSERT(IncrUpCnt_A,
@@ -219,33 +235,37 @@ module prim_count #(
       |=>
       $stable(cnt_o),
       clk_i, err_o || fpv_err_present || !rst_ni)
-  `ASSERT(UpCntDecrStable_A,
-      decr_en_i && !(clr_i || set_i || incr_en_i) &&
-      cnt_o == '0
-      |=>
-      $stable(cnt_o),
-      clk_i, err_o || fpv_err_present || !rst_ni)
+  if (!DecrNeverTrue) begin : g_check_decr_zero
+    `ASSERT(UpCntDecrStable_A,
+            decr_en_i && !(clr_i || set_i || incr_en_i) &&
+            cnt_o == '0
+            |=>
+            $stable(cnt_o),
+            clk_i, err_o || fpv_err_present || !rst_ni)
+  end
 
   // Down counter
-  `ASSERT(DecrUpCnt_A,
-      rst_ni && decr_en_i && !(clr_i || set_i || incr_en_i) && commit_i
-      |=>
-      cnt_o == max($past(signed'({2'b0, cnt_o})) - $past({2'b0, step_i}), '0),
-      clk_i, err_o || fpv_err_present || !rst_ni)
-  `ASSERT(DecrDnCnt_A,
-      rst_ni && decr_en_i && !(clr_i || set_i || incr_en_i) && commit_i
-      |=>
-      cnt_q[1] == min($past(cnt_q[1]) + $past({2'b0, step_i}), {2'b0, {Width{1'b1}}}),
-      clk_i, err_o || fpv_err_present || !rst_ni)
+  if (!DecrNeverTrue) begin : g_check_decr
+    `ASSERT(DecrUpCnt_A,
+        rst_ni && decr_en_i && !(clr_i || set_i || incr_en_i) && commit_i
+        |=>
+        cnt_o == max($past(signed'({2'b0, cnt_o})) - $past({2'b0, step_i}), '0),
+        clk_i, err_o || fpv_err_present || !rst_ni)
+    `ASSERT(DecrDnCnt_A,
+        rst_ni && decr_en_i && !(clr_i || set_i || incr_en_i) && commit_i
+        |=>
+        cnt_q[1] == min($past(cnt_q[1]) + $past({2'b0, step_i}), {2'b0, {Width{1'b1}}}),
+        clk_i, err_o || fpv_err_present || !rst_ni)
+    `ASSERT(DnCntDecrStable_A,
+        rst_ni && decr_en_i && !(clr_i || set_i || incr_en_i) &&
+        cnt_q[1] == {Width{1'b1}}
+        |=>
+        $stable(cnt_q[1]),
+        clk_i, err_o || fpv_err_present || !rst_ni)
+  end
   `ASSERT(DnCntIncrStable_A,
       rst_ni && incr_en_i && !(clr_i || set_i || decr_en_i) &&
       cnt_q[1] == '0
-      |=>
-      $stable(cnt_q[1]),
-      clk_i, err_o || fpv_err_present || !rst_ni)
-  `ASSERT(DnCntDecrStable_A,
-      rst_ni && decr_en_i && !(clr_i || set_i || incr_en_i) &&
-      cnt_q[1] == {Width{1'b1}}
       |=>
       $stable(cnt_q[1]),
       clk_i, err_o || fpv_err_present || !rst_ni)
