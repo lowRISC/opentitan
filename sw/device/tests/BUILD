@@ -5274,7 +5274,6 @@ opentitan_binary(
 opentitan_test(
     name = "uart_baud_rate_test",
     srcs = ["uart_baud_rate_test.c"],
-    broken = cw310_params(tags = ["broken"]),
     cw310 = cw310_params(
         test_cmd = " ".join([
             "--bootstrap=\"{firmware}\"",
@@ -5283,8 +5282,7 @@ opentitan_test(
         test_harness = "//sw/host/tests/chip/uart:uart_baud_rate",
     ),
     exec_env = dicts.add(
-        # FIXME broken in sival ROM_EXT, change this line when fixed. See #21706.
-        {"//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken"},
+        EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     silicon = silicon_params(
