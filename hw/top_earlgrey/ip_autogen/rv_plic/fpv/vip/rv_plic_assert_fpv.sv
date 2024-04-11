@@ -27,14 +27,17 @@ module rv_plic_assert_fpv #(parameter int NumSrc = 1,
   input [PRIOW-1:0]  threshold [NumTarget]
 );
 
+  localparam int SrcIdxWidth = NumSrc > 1 ? $clog2(NumSrc - 1) : 1;
+  localparam int TgtIdxWidth = NumTarget > 1 ? $clog2(NumTarget - 1) : 1;
+
   logic claim_reg, claimed;
   logic max_priority;
   logic irq;
   logic [$clog2(NumSrc)-1:0] i_high_prio;
 
   // symbolic variables
-  int unsigned src_sel;
-  int unsigned tgt_sel;
+  bit [SrcIdxWidth-1:0] src_sel;
+  bit [TgtIdxWidth-1:0] tgt_sel;
 
   `ASSUME_FPV(IsrcRange_M, src_sel >  0 && src_sel < NumSrc, clk_i, !rst_ni)
   `ASSUME_FPV(ItgtRange_M, tgt_sel >= 0 && tgt_sel < NumTarget, clk_i, !rst_ni)
