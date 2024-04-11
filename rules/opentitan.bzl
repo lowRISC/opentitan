@@ -93,6 +93,17 @@ def create_key_struct(ecdsa_key, rsa_key, spx_key):
 # Keys available in the repo
 SILICON_CREATOR_KEYS = struct(
     FAKE = struct(
+        ECDSA = struct(
+            TEST = [
+                create_test_key("fake_ecdsa_test_key_0", "@//sw/device/silicon_creator/rom/keys/fake/ecdsa:test_private_key_0"),
+            ],
+            DEV = [
+                create_dev_key("fake_ecdsa_dev_key_0", "@//sw/device/silicon_creator/rom/keys/fake/ecdsa:dev_private_key_0"),
+            ],
+            PROD = [
+                create_prod_key("fake_ecdsa_prod_key_0", "@//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_private_key_0"),
+            ],
+        ),
         RSA = struct(
             TEST = [
                 create_test_key("fake_rsa_test_key_0", "@//sw/device/silicon_creator/rom/keys/fake/rsa:test_private_key_0"),
