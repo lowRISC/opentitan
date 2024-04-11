@@ -2,7 +2,12 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:signing.bzl", "offline_fake_rsa_sign", "offline_presigning_artifacts", "offline_signature_attach")
+load(
+    "//rules:signing.bzl",
+    "offline_fake_rsa_sign",
+    "offline_presigning_artifacts",
+    "offline_signature_attach",
+)
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 
 package(default_visibility = ["//visibility:public"])
@@ -28,6 +33,31 @@ pkg_tar(
     name = "digests",
     testonly = True,
     srcs = [":presigning"],
+    mode = "0644",
+    tags = ["manual"],
+)
+
+offline_presigning_artifacts(
+    name = "presigning_ecdsa",
+    testonly = True,
+    srcs = [
+        "//sw/device/examples/hello_world",
+    ],
+    # To sign with real keys, replace the ecdsa_key with the label of a real
+    # key.
+    # This is left as a fake key so that the presigning artifacts will be
+    # appropriate for the `fake_sign` rule below.
+    ecdsa_key = {
+        "//sw/device/silicon_creator/rom/keys/fake/ecdsa:test_key_0_ecdsa_p256": "fake_test_key_0",
+    },
+    manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
+    tags = ["manual"],
+)
+
+pkg_tar(
+    name = "digests_ecdsa",
+    testonly = True,
+    srcs = [":presigning_ecdsa"],
     mode = "0644",
     tags = ["manual"],
 )
