@@ -424,11 +424,30 @@ module rv_plic import rv_plic_reg_pkg::*; #(
   // Assume
   `ASSUME(Irq0Tied_A, intr_src_i[0] == 1'b0)
 
- // RV_PLIC does not have a block-level DV environment, hence we add an FPV assertion to test this.
+  // This assertion should be provable in FPV because we don't have a block-level DV environment. It
+  // is trying to say that any integrity error detected inside the register block (u_reg) will cause
+  // an alert to be asserted within at most _SEC_CM_ALERT_MAX_CYC cycles.
+  //
+  // This isn't *quite* true because there are two extra requirements for prim_alert_sender to send
+  // an alert with alert_p high:
+  //
+  //  - The multi-phase alert handshake might not be in the expected phase. Rather than adding an
+  //    assumption that says alert_rx_i acks a signal when it is raised, we cheat and add a
+  //    precondition about the initial state of the prim_alert_sender FSM, guaranteeing that we're
+  //    not waiting for an ack.
+  //
+  //  - The prim_alert_sender musn't detect a signal integrity issue on the alert signal coming in
+  //    (alert_rx_i). Normally FpvSecCm tests get analysed with an FPV_ALERT_NO_SIGINT_ERR define,
+  //    but we don't have that defined here. To avoid this happening, we want an assertion of the
+  //    form "If no integrity error is detected for _SEC_CM_ALERT_MAX_CYC cycles, the alert_p signal
+  //    must go high". To encode this cleanly in SVA, we actually say "We can't have neither an
+  //    integrity error nor an alert signal for too many cycles".
   `ASSERT(FpvSecCmBusIntegrity_A,
-          $rose(u_reg.intg_err)
+          ($rose(u_reg.intg_err) &&
+           gen_alert_tx[0].u_prim_alert_sender.state_q == gen_alert_tx[0].u_prim_alert_sender.Idle)
           |->
-          ##[0:`_SEC_CM_ALERT_MAX_CYC] (alert_tx_o[0].alert_p))
+          not ((!gen_alert_tx[0].u_prim_alert_sender.sigint_detected && !alert_tx_o[0].alert_p)
+               [*`_SEC_CM_ALERT_MAX_CYC]))
 
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
