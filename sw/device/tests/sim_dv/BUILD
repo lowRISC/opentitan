@@ -863,7 +863,7 @@ opentitan_test(
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
-        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_c_regs",
+        "//hw/top_earlgrey/ip_autogen/flash_ctrl/data:flash_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:mmio",

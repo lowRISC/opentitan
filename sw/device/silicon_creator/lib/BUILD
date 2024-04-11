@@ -31,8 +31,8 @@ dual_cc_library(
     ),
     deps = dual_inputs(
         device = [
-            "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_c_regs",
             "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+            "//hw/top_earlgrey/ip_autogen/flash_ctrl/data:flash_ctrl_c_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
             "//sw/device/lib/base:hardened",
             "//sw/device/lib/base:memory",
@@ -195,7 +195,7 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//hw/ip/aon_timer/data:aon_timer_c_regs",
-        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_c_regs",
+        "//hw/top_earlgrey/ip_autogen/flash_ctrl/data:flash_ctrl_c_regs",
         "//hw/top_earlgrey/ip_autogen/pwrmgr/data:pwrmgr_c_regs",
         "//hw/top_earlgrey/ip_autogen/rstmgr/data:rstmgr_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -367,7 +367,7 @@ dual_cc_library(
             "//hw/ip/sram_ctrl/data:sram_ctrl_c_regs",
             "//hw/ip/uart/data:uart_c_regs",
             "//hw/top_earlgrey:alert_handler_c_regs",
-            "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_c_regs",
+            "//hw/top_earlgrey/ip_autogen/flash_ctrl/data:flash_ctrl_c_regs",
             "//hw/top_earlgrey/ip_autogen/rstmgr/data:rstmgr_c_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
             "//sw/device/silicon_creator/lib/drivers:retention_sram",
@@ -421,7 +421,7 @@ cc_library(
     srcs = ["bootstrap_fuzzer_util.cc"],
     hdrs = ["bootstrap_fuzzer_util.h"],
     deps = [
-        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_c_regs",
+        "//hw/top_earlgrey/ip_autogen/flash_ctrl/data:flash_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:hardened",
         "//sw/device/silicon_creator/lib:bootstrap_unittest_util",
@@ -441,7 +441,7 @@ cc_library(
         ":bootstrap",
         "//hw/ip/gpio/data:gpio_c_regs",
         "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
-        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_c_regs",
+        "//hw/top_earlgrey/ip_autogen/flash_ctrl/data:flash_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/silicon_creator/lib/base:chip",
     ],
