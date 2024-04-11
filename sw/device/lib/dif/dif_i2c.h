@@ -709,8 +709,9 @@ dif_result_t dif_i2c_enable_clock_stretching_timeout(const dif_i2c_t *i2c,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_i2c_set_device_id(const dif_i2c_t *i2c, dif_i2c_id_t *id0,
-                                   dif_i2c_id_t *id1);
+dif_result_t dif_i2c_set_device_id(const dif_i2c_t *i2c,
+                                   const dif_i2c_id_t *id0,
+                                   const dif_i2c_id_t *id1);
 
 /**
  * Set host timeout. When OT is acting as target device, set the number of
