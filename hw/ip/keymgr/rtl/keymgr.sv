@@ -553,7 +553,9 @@ module keymgr
   assign invalid_data[OpGenSwOut] = ~key_vld | ~key_version_vld;
   assign invalid_data[OpGenHwOut] = ~key_vld | ~key_version_vld;
 
-  keymgr_kmac_if u_kmac_if (
+  keymgr_kmac_if #(
+    .RndCnstRandPerm(RndCnstRandPerm)
+  ) u_kmac_if (
     .clk_i,
     .rst_ni,
     .prng_en_o(data_lfsr_en),
