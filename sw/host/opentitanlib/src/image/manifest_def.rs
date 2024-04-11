@@ -24,15 +24,15 @@ pub enum ManifestError {
     MissingField(&'static str),
 }
 
-fixed_size_bigint!(ManifestRsaBuffer, at_most 3072);
+fixed_size_bigint!(ManifestSigverifyBuffer, at_most 3072);
 
 #[derive(Clone, Default, Debug, Deserialize, Serialize)]
-struct ManifestRsaBigInt(Option<HexEncoded<ManifestRsaBuffer>>);
+struct ManifestSigverifyBigInt(Option<HexEncoded<ManifestSigverifyBuffer>>);
 
 #[derive(Clone, Default, Debug, Deserialize, Serialize)]
 struct ManifestSmallInt<T: ParseInt + fmt::LowerHex>(Option<HexEncoded<T>>);
 
-impl fmt::LowerHex for ManifestRsaBuffer {
+impl fmt::LowerHex for ManifestSigverifyBuffer {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         fmt::LowerHex::fmt(&self.as_biguint(), f)
     }
@@ -103,20 +103,20 @@ impl ManifestSpec {
         self.overwrite(other)
     }
 
-    pub fn update_rsa_signature(&mut self, rsa_signature: ManifestRsaBuffer) {
-        self.rsa_signature.0 = Some(HexEncoded(rsa_signature))
+    pub fn update_signature(&mut self, signature: ManifestSigverifyBuffer) {
+        self.signature.0 = Some(HexEncoded(signature))
     }
 
-    pub fn update_modulus(&mut self, rsa_modulus: ManifestRsaBuffer) {
-        self.rsa_modulus.0 = Some(HexEncoded(rsa_modulus))
+    pub fn update_pub_key(&mut self, pub_key: ManifestSigverifyBuffer) {
+        self.pub_key.0 = Some(HexEncoded(pub_key))
     }
 
-    pub fn rsa_signature(&self) -> Option<&ManifestRsaBuffer> {
-        self.rsa_signature.0.as_ref().map(|v| &v.0)
+    pub fn signature(&self) -> Option<&ManifestSigverifyBuffer> {
+        self.signature.0.as_ref().map(|v| &v.0)
     }
 
-    pub fn rsa_modulus(&self) -> Option<&ManifestRsaBuffer> {
-        self.rsa_modulus.0.as_ref().map(|v| &v.0)
+    pub fn pub_key(&self) -> Option<&ManifestSigverifyBuffer> {
+        self.pub_key.0.as_ref().map(|v| &v.0)
     }
 
     pub fn has_length(&self) -> bool {
@@ -137,8 +137,8 @@ trait ManifestPacked<T> {
     fn overwrite(&mut self, o: Self);
 }
 
-impl ManifestPacked<ManifestRsaBuffer> for ManifestRsaBigInt {
-    fn unpack(self, name: &'static str) -> Result<ManifestRsaBuffer> {
+impl ManifestPacked<ManifestSigverifyBuffer> for ManifestSigverifyBigInt {
+    fn unpack(self, name: &'static str) -> Result<ManifestSigverifyBuffer> {
         match self.0 {
             Some(v) => Ok(v.0),
             None => self.unpack_err(name),
@@ -222,9 +222,9 @@ impl<T: ParseInt + fmt::LowerHex, const N: usize> ManifestPacked<[T; N]>
 
 manifest_def! {
     pub struct ManifestSpec {
-        rsa_signature: ManifestRsaBigInt,
+        signature: ManifestSigverifyBigInt,
         usage_constraints: ManifestUsageConstraintsDef,
-        rsa_modulus: ManifestRsaBigInt,
+        pub_key: ManifestSigverifyBigInt,
         address_translation: ManifestSmallInt<u32>,
         identifier: ManifestSmallInt<u32>,
         manifest_version: ManifestVersionDef,
@@ -275,20 +275,20 @@ enum ManifestExtEntryVar {
 #[derive(Clone, Default, Deserialize, Serialize, Debug)]
 pub struct ManifestExtTableEntryDef(ManifestExtEntryVar);
 
-impl TryFrom<ManifestRsaBuffer> for SigverifyRsaBuffer {
+impl TryFrom<ManifestSigverifyBuffer> for SigverifyBuffer {
     type Error = anyhow::Error;
 
-    fn try_from(rsa: ManifestRsaBuffer) -> Result<SigverifyRsaBuffer> {
-        if rsa.eq(&ManifestRsaBuffer::from_le_bytes([0])?) {
+    fn try_from(buffer: ManifestSigverifyBuffer) -> Result<SigverifyBuffer> {
+        if buffer.eq(&ManifestSigverifyBuffer::from_le_bytes([0])?) {
             // In the case where the BigInt fields are defined but == 0 we should just keep it 0.
             // Without this the conversion to [u32; 96] would fail.
-            Ok(SigverifyRsaBuffer {
+            Ok(SigverifyBuffer {
                 data: le_slice_to_arr(&[0]),
             })
         } else {
             // Convert between the BigInt byte representation and the manifest word representation.
-            Ok(SigverifyRsaBuffer {
-                data: le_bytes_to_word_arr(&rsa.to_le_bytes())?,
+            Ok(SigverifyBuffer {
+                data: le_bytes_to_word_arr(&buffer.to_le_bytes())?,
             })
         }
     }
@@ -314,11 +314,11 @@ fn le_slice_to_arr<T: Default + Copy, const N: usize>(slice: &[T]) -> [T; N] {
     arr
 }
 
-impl TryFrom<[u32; 96]> for SigverifyRsaBuffer {
+impl TryFrom<[u32; 96]> for SigverifyBuffer {
     type Error = anyhow::Error;
 
-    fn try_from(words: [u32; 96]) -> Result<SigverifyRsaBuffer> {
-        Ok(SigverifyRsaBuffer { data: words })
+    fn try_from(words: [u32; 96]) -> Result<SigverifyBuffer> {
+        Ok(SigverifyBuffer { data: words })
     }
 }
 
@@ -349,20 +349,20 @@ impl TryFrom<[u32; 8]> for LifecycleDeviceId {
     }
 }
 
-impl TryFrom<SigverifyRsaBuffer> for ManifestRsaBigInt {
+impl TryFrom<SigverifyBuffer> for ManifestSigverifyBigInt {
     type Error = anyhow::Error;
 
-    fn try_from(o: SigverifyRsaBuffer) -> Result<ManifestRsaBigInt> {
+    fn try_from(o: SigverifyBuffer) -> Result<ManifestSigverifyBigInt> {
         (&o).try_into()
     }
 }
 
-impl TryFrom<&SigverifyRsaBuffer> for ManifestRsaBigInt {
+impl TryFrom<&SigverifyBuffer> for ManifestSigverifyBigInt {
     type Error = anyhow::Error;
 
-    fn try_from(o: &SigverifyRsaBuffer) -> Result<ManifestRsaBigInt> {
-        let rsa = ManifestRsaBuffer::from_le_bytes(o.data.as_bytes())?;
-        Ok(ManifestRsaBigInt(Some(HexEncoded(rsa))))
+    fn try_from(o: &SigverifyBuffer) -> Result<ManifestSigverifyBigInt> {
+        let rsa = ManifestSigverifyBuffer::from_le_bytes(o.data.as_bytes())?;
+        Ok(ManifestSigverifyBigInt(Some(HexEncoded(rsa))))
     }
 }
 

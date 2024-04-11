@@ -10,6 +10,8 @@ use p256::ecdsa::{Signature, SigningKey, VerifyingKey};
 use rand::rngs::OsRng;
 use serde::{Deserialize, Serialize};
 use serde_annotate::Annotate;
+use sha2::digest::generic_array::GenericArray;
+use std::fs::File;
 use std::io::{Read, Write};
 use std::path::Path;
 use std::str::FromStr;
@@ -115,6 +117,12 @@ impl EcdsaRawSignature {
         Ok(sig)
     }
 
+    pub fn read_from_file(path: &Path) -> Result<EcdsaRawSignature> {
+        let mut file =
+            File::open(path).with_context(|| format!("Failed to read file: {path:?}"))?;
+        EcdsaRawSignature::read(&mut file)
+    }
+
     pub fn write(&self, dest: &mut impl Write) -> Result<()> {
         ensure!(
             self.r.len() == 32,
@@ -162,6 +170,26 @@ impl EcdsaPublicKey {
         let signature = Signature::from_slice(&bytes)?;
         self.key.verify_prehash(&digest.to_be_bytes(), &signature)?;
         Ok(())
+    }
+}
+
+impl TryFrom<&EcdsaRawPublicKey> for EcdsaPublicKey {
+    type Error = Error;
+    fn try_from(v: &EcdsaRawPublicKey) -> Result<Self, Self::Error> {
+        let mut x = v.x.clone();
+        let mut y = v.y.clone();
+
+        x.reverse();
+        y.reverse();
+
+        let key = VerifyingKey::from_encoded_point(&p256::EncodedPoint::from_affine_coordinates(
+            &GenericArray::from(<[u8; 32]>::try_from(x.as_slice()).unwrap()),
+            &GenericArray::from(<[u8; 32]>::try_from(y.as_slice()).unwrap()),
+            false,
+        ))
+        .map_err(|e| Error::Other(anyhow!(e)))
+        .context("Failed to create verifying key from raw public key")?;
+        Ok(Self { key })
     }
 }
 
