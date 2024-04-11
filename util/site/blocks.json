@@ -56,8 +56,8 @@
     },
     "flash": {
         "name": "Flash",
-        "data_file": "hw/ip/flash_ctrl/data/flash_ctrl.hjson",
-        "report": "/hw/ip/flash_ctrl/dv"
+        "data_file": "hw/top_earlgrey/ip_autogen/flash_ctrl/data/flash_ctrl.hjson",
+        "report": "/hw/top_earlgrey/ip_autogen/flash_ctrl/dv"
     },
     "edn": {
         "name": "EDN",
