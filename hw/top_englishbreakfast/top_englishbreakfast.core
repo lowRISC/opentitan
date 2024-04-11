@@ -19,7 +19,6 @@ filesets:
       - lowrisc:prim:ram_1p_adv
       - lowrisc:prim:ram_1p_scr
       - lowrisc:prim:flash
-      - lowrisc:ip:flash_ctrl
       - lowrisc:ip:sram_ctrl
       # Instantiated by topgen
       - lowrisc:ip:uart:0.1
@@ -39,6 +38,7 @@ filesets:
       - lowrisc:top_englishbreakfast:xbar_main
       - lowrisc:top_englishbreakfast:xbar_peri
       - lowrisc:opentitan:top_englishbreakfast_clkmgr
+      - lowrisc:opentitak:top_englishbreakfast_flash_ctrl
       - lowrisc:opentitan:top_englishbreakfast_pwrmgr
       - lowrisc:opentitan:top_englishbreakfast_rstmgr
       - lowrisc:ip:rom_ctrl

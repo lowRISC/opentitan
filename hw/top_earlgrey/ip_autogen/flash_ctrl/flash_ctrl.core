@@ -33,6 +33,7 @@ filesets:
       - rtl/flash_ctrl_arb.sv
       - rtl/flash_ctrl_info_cfg.sv
       - rtl/flash_ctrl_lcmgr.sv
+      - rtl/flash_ctrl_region_cfg.sv
       - rtl/flash_mp.sv
       - rtl/flash_mp_data_region_sel.sv
       - rtl/flash_phy.sv
