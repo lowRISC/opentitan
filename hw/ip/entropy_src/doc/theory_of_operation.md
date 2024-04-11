@@ -1,6 +1,6 @@
 # Theory of Operation
 
-The ENTROPY_SRC hardawre block collects entropy bits from the PTRNG (Physical True Random Number Generator) noise source, performs health tests on the collected entropy bits, packs them, sends them through a conditioning unit, and finally stores them into the `esfinal` FIFO for consumption by firmware or hardware.
+The ENTROPY_SRC hardware block collects entropy bits from the PTRNG (Physical True Random Number Generator) noise source, performs health tests on the collected entropy bits, packs them, sends them through a conditioning unit, and finally stores them into the `esfinal` FIFO for consumption by firmware or hardware.
 
 It operates in a manner compliant with both FIPS (though NIST SP 800-90B) and CC (AIS31) recommendations.
 This revision supports only an external interface for a PTRNG noise source implementation.
@@ -148,25 +148,25 @@ However, if the ENTROPY_SRC block experiences internal back pressure, health tes
 The reduce the probability of dropping post-health test entropy bits, the **Distribution FIFO** can be used.
 This FIFO has pass-through mode enabled meaning it doesn't add latency to hardware pipeline.
 It has a width of 32 bits.
-Its depth is configurable via compile-time Verilog parameter and should matched to the expected level of conditioner back pressure.
+Its depth is configurable via compile-time Verilog parameter and should match the expected level of conditioner back pressure.
 The level of conditioner back pressure depends on the following factors:
-- The maximum latency it takes for the conditioner to add the padding bits \\(n_{pad}\\) (25 clock cycles) and to run the internal SHA3 primitive \\(n_{sha3}\\) (24 clock cycles).
+- The maximum latency for the conditioner to add the padding bits \\(n_{pad}\\) (25 clock cycles) and to run the internal SHA3 primitive \\(n_{sha3}\\) (24 clock cycles).
 - The maximum latency of the [CS AES halt request interface](interfaces.md/#inter-module-signals) \\(n_{halt}\\) (48 clock cycles corresponding to CSRNG performing the Update function).
 
-The required depth \\(d_distr\\) of the Distribution FIFO can be computed as
-$$ d_{distr} = { (r_{PTRNG} * s_{symbol}) * (2 * (n_{halt} + n_{sha3}) + n_{pad} + n_{uarch}) - 32 - 64 \over 32} $$
+The required depth \\(d_{distr}\\) of the Distribution FIFO can be computed as
+$$ d_{distr} = { (r_{ptrng} * s_{symbol}) * (2 * (n_{halt} + n_{sha3}) + n_{pad} + n_{uarch}) - 32 - 64 \over 32} $$
 
 where
-- \\(r_{PTRNG}\\) is the rate at which the PTRNG noise source generates entropy samples,
+- \\(r_{ptrng}\\) is the rate at which the PTRNG noise source generates entropy samples,
 - \\(s_{symbol}\\) (= 4) is the symbol size of these samples in bits,
 - \\(n_{uarch}\\) (= 5) is the latency of the ENTROPY_SRC micro architecture between producing seeds, and
 - the -32 and -64 terms are to account for the number of entropy bits stored in the `postht` and the `precon` FIFOs, respectively.
 
 For [Top Earlgrey](../../../top_earlgrey/README.md), the assumption is that the PTRNG noise source generates entropy bits at a rate of roughly 50 kbps.
-With the ENTROPY_SRC block running at 100 MHz, this leads to noise source rate \\(r_{PTRNG}\\) = 1/8000.
+With the ENTROPY_SRC block running at 100 MHz, this leads to noise source rate \\(r_{ptrng}\\) = 1/8000.
 
 The noise source model inside the DV environment generates symbols with an average rate of 1 4-bit symbol every 6.5 clock cycles.
-To reach functional coverage metrics, the `entropy_src_rng_max_rate` configures the noise source to generate a 4-bit symbol every other clock cycle (\\(r_{PTRNG}\\) = 1/2) an the CS AES halt request interface to always respond immediately (\\(n_{halt}\\) = 0).
+To reach functional coverage metrics, the `entropy_src_rng_max_rate` configures the noise source to generate a 4-bit symbol every other clock cycle (\\(r_{ptrng}\\) = 1/2) an the CS AES halt request interface to always respond immediately (\\(n_{halt}\\) = 0).
 With these settings, the ENTROPY_SRC block should never drop samples due to conditioner back pressure if a depth of two is chosen for the Distribution FIFO (\\(d_{distr}\\) = 2).
 
 
