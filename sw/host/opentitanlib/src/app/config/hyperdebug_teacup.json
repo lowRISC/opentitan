@@ -254,20 +254,20 @@
     },
     {
       "name": "SPI1_CSB",
-      "mode": "Input",
+      "mode": "Alternate",
       "pull_mode": "PullUp",
       "alias_of": "IOA7"
     },
     {
       "name": "CC1",
       "mode": "AnalogOutput",
-      "volts": 0.0
+      "volts": 0.0,
       "alias_of": "CN7_9"
     },
     {
       "name": "CC2",
       "mode": "AnalogOutput",
-      "volts": 0.0
+      "volts": 0.0,
       "alias_of": "CN7_10"
     },
     {
