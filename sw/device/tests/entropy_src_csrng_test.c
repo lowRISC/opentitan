@@ -118,13 +118,7 @@ static void plic_interrupts_enable(void) {
  * `ottf_external_isr()` routine.
  */
 static void irq_block_wait(irq_flag_id_t isr_id) {
-  // The interrupt can come before we enter sleep, so we check beforehand.
-  while (true) {
-    if (irq_flags[isr_id]) {
-      break;
-    }
-    wait_for_interrupt();
-  }
+  ATOMIC_WAIT_FOR_INTERRUPT(irq_flags[isr_id]);
   switch (isr_id) {
     case kTestIrqFlagIdCsrngEntropyReq:
       CHECK_DIF_OK(dif_csrng_irq_set_enabled(&csrng, kDifCsrngIrqCsEntropyReq,
