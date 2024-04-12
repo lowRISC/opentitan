@@ -39,102 +39,109 @@ impl DiceTcbInfoExtension {
     //     recovery (2),
     //     debug (3)
     // }
+
+    // Push a raw DICE TCB Info extension data, without the X509 extension header.
+    pub fn push_extension_raw<B: Builder>(&self, builder: &mut B) -> Result<()> {
+        builder.push_seq(Some("dice_tcb_info".into()), |builder| {
+            if let Some(vendor) = &self.vendor {
+                builder.push_string(
+                    Some("dice_vendor".into()),
+                    &Tag::Context {
+                        constructed: false,
+                        value: 0,
+                    },
+                    vendor,
+                )?;
+            }
+            if let Some(model) = &self.model {
+                builder.push_string(
+                    Some("dice_model".into()),
+                    &Tag::Context {
+                        constructed: false,
+                        value: 1,
+                    },
+                    model,
+                )?;
+            }
+            if let Some(version) = &self.version {
+                builder.push_string(
+                    Some("dice_version".into()),
+                    &Tag::Context {
+                        constructed: false,
+                        value: 2,
+                    },
+                    version,
+                )?;
+            }
+            if let Some(svn) = &self.svn {
+                builder.push_integer(
+                    Some("dice_svn".into()),
+                    &Tag::Context {
+                        constructed: false,
+                        value: 3,
+                    },
+                    svn,
+                )?;
+            }
+            if let Some(layer) = &self.layer {
+                builder.push_integer(
+                    Some("dice_layer".into()),
+                    &Tag::Context {
+                        constructed: false,
+                        value: 4,
+                    },
+                    layer,
+                )?;
+            }
+            if let Some(fwids) = &self.fw_ids {
+                builder.push_tag(
+                    Some("dice_fwids".into()),
+                    &Tag::Context {
+                        constructed: true,
+                        value: 6,
+                    },
+                    |builder| {
+                        for (idx, fwid) in fwids.iter().enumerate() {
+                            builder.push_seq(Some("fwid".into()), |builder| {
+                                builder.push_oid(&fwid.hash_algorithm.oid())?;
+                                builder.push_octet_string(
+                                    Some(format!("dice_fwids_{}", idx)),
+                                    |builder| {
+                                        builder.push_byte_array(
+                                            Some(format!("dice_fwids_{}", idx)),
+                                            &fwid.digest,
+                                        )
+                                    },
+                                )
+                            })?;
+                        }
+                        Ok(())
+                    },
+                )?;
+            }
+            if let Some(flags) = &self.flags {
+                builder.push_bitstring(
+                    Some("dice_flags".into()),
+                    &Tag::Context {
+                        constructed: false,
+                        value: 7,
+                    },
+                    &[
+                        flags.not_configured.clone(),
+                        flags.not_secure.clone(),
+                        flags.recovery.clone(),
+                        flags.debug.clone(),
+                    ],
+                )?;
+            }
+            Ok(())
+        })
+    }
+
+    // Push a DICE TCB Info X509 extension.
     pub fn push_extension<B: Builder>(&self, builder: &mut B) -> Result<()> {
         X509::push_extension(builder, &Oid::DiceTcbInfo, false, |builder| {
-            builder.push_seq(Some("dice_tcb_info".into()), |builder| {
-                if let Some(vendor) = &self.vendor {
-                    builder.push_string(
-                        Some("dice_vendor".into()),
-                        &Tag::Context {
-                            constructed: false,
-                            value: 0,
-                        },
-                        vendor,
-                    )?;
-                }
-                if let Some(model) = &self.model {
-                    builder.push_string(
-                        Some("dice_model".into()),
-                        &Tag::Context {
-                            constructed: false,
-                            value: 1,
-                        },
-                        model,
-                    )?;
-                }
-                if let Some(version) = &self.version {
-                    builder.push_string(
-                        Some("dice_version".into()),
-                        &Tag::Context {
-                            constructed: false,
-                            value: 2,
-                        },
-                        version,
-                    )?;
-                }
-                if let Some(svn) = &self.svn {
-                    builder.push_integer(
-                        Some("dice_svn".into()),
-                        &Tag::Context {
-                            constructed: false,
-                            value: 3,
-                        },
-                        svn,
-                    )?;
-                }
-                if let Some(layer) = &self.layer {
-                    builder.push_integer(
-                        Some("dice_layer".into()),
-                        &Tag::Context {
-                            constructed: false,
-                            value: 4,
-                        },
-                        layer,
-                    )?;
-                }
-                if let Some(fwids) = &self.fw_ids {
-                    builder.push_tag(
-                        Some("dice_fwids".into()),
-                        &Tag::Context {
-                            constructed: true,
-                            value: 6,
-                        },
-                        |builder| {
-                            for (idx, fwid) in fwids.iter().enumerate() {
-                                builder.push_seq(Some("fwid".into()), |builder| {
-                                    builder.push_oid(&fwid.hash_algorithm.oid())?;
-                                    builder.push_octet_string(
-                                        Some(format!("dice_fwids_{}", idx)),
-                                        |builder| {
-                                            builder.push_byte_array(
-                                                Some(format!("dice_fwids_{}", idx)),
-                                                &fwid.digest,
-                                            )
-                                        },
-                                    )
-                                })?;
-                            }
-                            Ok(())
-                        },
-                    )?;
-                }
-                if let Some(flags) = &self.flags {
-                    builder.push_bitstring(
-                        Some("dice_flags".into()),
-                        &Tag::Context {
-                            constructed: false,
-                            value: 7,
-                        },
-                        &[
-                            flags.not_configured.clone(),
-                            flags.not_secure.clone(),
-                            flags.recovery.clone(),
-                            flags.debug.clone(),
-                        ],
-                    )?;
-                }
-                Ok(())
-            })
+            self.push_extension_raw(builder)
         })
     }
 }
