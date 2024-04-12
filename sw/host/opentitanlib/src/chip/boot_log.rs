@@ -40,9 +40,9 @@ pub struct BootLog {
     /// The boot slot the ROM chose to boot the ROM_EXT.
     pub rom_ext_slot: BootSlot,
     /// The ROM_EXT major version number.
-    pub rom_ext_major: u16,
+    pub rom_ext_major: u32,
     /// The ROM_EXT minor version number.
-    pub rom_ext_minor: u16,
+    pub rom_ext_minor: u32,
     /// The ROM_EXT size in bytes.
     #[annotate(format=hex)]
     pub rom_ext_size: u32,
@@ -55,7 +55,7 @@ pub struct BootLog {
     pub ownership_state: OwnershipState,
     /// Reserved for future use.
     #[annotate(format=hex)]
-    pub reserved: [u32; 14],
+    pub reserved: [u32; 13],
 }
 
 impl TryFrom<&[u8]> for BootLog {
@@ -73,8 +73,8 @@ impl TryFrom<&[u8]> for BootLog {
         val.identifier = reader.read_u32::<LittleEndian>()?;
         val.chip_version = reader.read_u64::<LittleEndian>()?;
         val.rom_ext_slot = BootSlot(reader.read_u32::<LittleEndian>()?);
-        val.rom_ext_major = reader.read_u16::<LittleEndian>()?;
-        val.rom_ext_minor = reader.read_u16::<LittleEndian>()?;
+        val.rom_ext_major = reader.read_u32::<LittleEndian>()?;
+        val.rom_ext_minor = reader.read_u32::<LittleEndian>()?;
         val.rom_ext_size = reader.read_u32::<LittleEndian>()?;
         val.rom_ext_nonce = reader.read_u64::<LittleEndian>()?;
         val.bl0_slot = BootSlot(reader.read_u32::<LittleEndian>()?);
