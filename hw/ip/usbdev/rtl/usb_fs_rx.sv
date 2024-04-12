@@ -242,8 +242,10 @@ module usb_fs_rx (
   logic [1:0] bit_phase_q, bit_phase_d;
   logic line_state_valid;
 
-  assign line_state_valid = (bit_phase_q == 2'd1);
-  assign bit_strobe_o     = (bit_phase_q == 2'd2);
+  // Capture the line state if presently moving from phase 1 to 2 and we haven't just detected a
+  // transition in phase 1; this can happen if the usbdev is running faster than the host and
+  // CDC causes the differential signals to be sampled on either sides of our clock edge.
+  assign line_state_valid = (bit_phase_d == 2'd2);
 
   // keep track of phase within each bit
   assign bit_phase_d = (line_state_rx == DT) ? 0 : bit_phase_q + 1;
@@ -260,6 +262,8 @@ module usb_fs_rx (
     end
   end
 
+  // Strobe to tx logic.
+  assign bit_strobe_o = (bit_phase_q == 2'd2);
 
   //////////////////////
   // packet detection //
