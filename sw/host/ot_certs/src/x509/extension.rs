@@ -229,8 +229,8 @@ impl<'a> asn1::SimpleAsn1Readable<'a> for DiceTcbInfoFlags {
 }
 
 /// Try to parse an X509 extension as a DICE TCB info extension.
-pub fn parse_dice_tcb_info_extension(ext: &X509ExtensionRef) -> Result<DiceTcbInfoExtension> {
-    asn1::parse_single::<DiceTcbInfo>(ext.data.as_slice())
+pub fn parse_dice_tcb_info_extension(ext: &[u8]) -> Result<DiceTcbInfoExtension> {
+    asn1::parse_single::<DiceTcbInfo>(ext)
         .context("cannot parse DICE extension")?
         .to_dice_extension()
 }
@@ -265,7 +265,7 @@ pub fn parse_extension(ext: &X509ExtensionRef) -> Result<CertificateExtension> {
     // The openssl library does not provide a way to compare between two Asn1Object so compare the raw DER.
     Ok(match ext.object.to_owned().as_slice() {
         obj if obj == dice_oid.as_slice() => {
-            CertificateExtension::DiceTcbInfo(parse_dice_tcb_info_extension(ext)?)
+            CertificateExtension::DiceTcbInfo(parse_dice_tcb_info_extension(ext.data.as_slice())?)
         }
         _ => bail!("unknown extension type {}", ext.object,),
     })
