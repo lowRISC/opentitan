@@ -412,4 +412,19 @@ module alert_handler_esc_timer import alert_pkg::*; (
       |->
       esc_sig_req_o == '1)
 
+`ifdef INC_ASSERT
+  // Check that our internal FSM matches the state index that we're exposing with esc_state_o. The
+  // StateEncodings parameter does the mapping to match. (Practically speaking, this is just adding
+  // "St" to each name so e.g. Idle gets mapped to IdleSt).
+  parameter logic [StateWidth-1:0] StateEncodings [8] = '{IdleSt,
+                                                          TimeoutSt,
+                                                          FsmErrorSt,
+                                                          TerminalSt,
+                                                          Phase0St,
+                                                          Phase1St,
+                                                          Phase2St,
+                                                          Phase3St};
+  `ASSERT(EscStateOut_A, state_q == StateEncodings[esc_state_o])
+`endif
+
 endmodule : alert_handler_esc_timer
