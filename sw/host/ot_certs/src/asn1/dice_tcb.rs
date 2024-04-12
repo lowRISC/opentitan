@@ -140,7 +140,8 @@ impl DiceTcbInfoExtension {
 
     // Push a DICE TCB Info X509 extension.
     pub fn push_extension<B: Builder>(&self, builder: &mut B) -> Result<()> {
-        X509::push_extension(builder, &Oid::DiceTcbInfo, false, |builder| {
+        // Per the DICE specification, the DiceTcbInfo extension SHOULD be marked critical.
+        X509::push_extension(builder, &Oid::DiceTcbInfo, true, |builder| {
             self.push_extension_raw(builder)
         })
     }
