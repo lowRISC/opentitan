@@ -32,7 +32,7 @@ struct Opts {
     timeout: Duration,
 
     /// Name of the debugger's I2C interface.
-    #[arg(long, default_value = "0")]
+    #[arg(long, default_value = "TPM")]
     i2c: String,
 }
 
@@ -190,8 +190,6 @@ fn test_write_repeated_start(
         Ok(())
     })?;
 
-    transport.apply_default_configuration(None)?;
-
     let len = transfer.length as usize;
     assert_eq!(&transfer.data[0..len], REFERENCE_DATA);
     assert_eq!(transfer.address, address);
@@ -258,8 +256,6 @@ fn test_write_read_repeated_start(
         Ok(())
     })?;
 
-    transport.apply_default_configuration(None)?;
-
     let decoded = i2c_bitbang_decoder.run(buffer)?;
     let read: Vec<_> = decoded
         .into_iter()
@@ -291,7 +287,7 @@ fn main() -> Result<()> {
 
     let uart = transport.uart("console")?;
     uart.set_flow_control(true)?;
-    let _ = UartConsole::wait_for(&*uart, r"Running [^\r\n]*", opts.timeout)?;
+    UartConsole::wait_for(&*uart, r"Running [^\r\n]*", opts.timeout)?;
     uart.clear_rx_buffer()?;
 
     for i2c_instance in 0..3 {
@@ -300,13 +296,25 @@ fn main() -> Result<()> {
         execute_test!(test_read_transaction, &opts, &transport, 0x70);
         execute_test!(test_read_transaction, &opts, &transport, 0x71);
         execute_test!(test_read_transaction, &opts, &transport, 0x72);
-        execute_test!(test_write_repeated_start, &opts, &transport, 0x33);
         execute_test!(test_read_transaction, &opts, &transport, 0x73);
         execute_test!(test_write_transaction, &opts, &transport, 0x33);
         execute_test!(test_write_transaction_slow, &opts, &transport, 0x33);
-        execute_test!(test_write_read_repeated_start, &opts, &transport, 0x70);
     }
     execute_test!(test_wakeup_normal_sleep, &opts, &transport, 0x33);
     execute_test!(test_wakeup_deep_sleep, &opts, &transport, 0x33, 0);
+
+    transport.pin_strapping("RESET")?.apply()?;
+    transport.pin_strapping("RESET")?.remove()?;
+    UartConsole::wait_for(&*uart, r"Running [^\r\n]*", opts.timeout)?;
+
+    // The hyperdebug board does not like that pins mode are constantly changed,
+    // so this commit separate the sub-tests that use the hyperdebug i2c from
+    // the ones that do gpio bitbanging in order the make the test more
+    // reliable.
+    for i2c_instance in 0..3 {
+        execute_test!(test_set_target_address, &opts, &transport, i2c_instance);
+        execute_test!(test_write_repeated_start, &opts, &transport, 0x33);
+        execute_test!(test_write_read_repeated_start, &opts, &transport, 0x33);
+    }
     Ok(())
 }
