@@ -88,6 +88,8 @@ rust_test_suite(
         ":ot_certs",
         "@crate_index//:anyhow",
         "@crate_index//:base64ct",
+        "@crate_index//:num-bigint-dig",
+        "@crate_index//:num-traits",
     ],
 )
 
