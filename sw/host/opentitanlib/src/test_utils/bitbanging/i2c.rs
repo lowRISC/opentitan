@@ -57,13 +57,13 @@ impl Symbol {
     }
 
     fn bitbanging_byte<const SDA: u8, const SCL: u8>(byte: u8, nack: bool, samples: &mut Vec<u8>) {
-        samples.extend((0..8u8).rev().flat_map(|bit| {
+        let data: u16 = (byte as u16) << 1u16 | nack as u16;
+        samples.extend((0..9u8).rev().flat_map(|bit| {
             [
-                (((byte >> bit) & 0x01) << SDA) | 0x01 << SCL,
-                (((byte >> bit) & 0x01) << SDA) | 0x00 << SCL,
+                ((((data >> bit) & 0x01) << SDA) | 0x01 << SCL) as u8,
+                ((((data >> bit) & 0x01) << SDA) | 0x00 << SCL) as u8,
             ]
         }));
-        Self::bitbanging_nack::<SDA, SCL>(nack, samples);
     }
 
     fn bitbanging_bits<const SDA: u8, const SCL: u8>(bits: &[Bit], samples: &mut Vec<u8>) {
@@ -73,13 +73,6 @@ impl Symbol {
                 ((*bit as u8) << SDA) | 0x00 << SCL,
             ]
         }));
-    }
-
-    fn bitbanging_nack<const SDA: u8, const SCL: u8>(nack: bool, samples: &mut Vec<u8>) {
-        samples.extend([
-            (nack as u8) << SDA | 0x01 << SCL,
-            (nack as u8) << SDA | 0x00 << SCL,
-        ]);
     }
 }
 
