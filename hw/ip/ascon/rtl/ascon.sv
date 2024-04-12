@@ -27,7 +27,7 @@ module ascon
   input  edn_pkg::edn_rsp_t edn_i,
 
   // Key manager (keymgr) key sideload interface
-  input  keymgr_pkg::hw_key_req_t eymgr_key_i,
+  input  keymgr_pkg::hw_key_req_t keymgr_key_i,
 
   // Bus Interface
   input  tlul_pkg::tl_h2d_t tl_i,
@@ -70,7 +70,7 @@ module ascon
   );
 
   ascon_core ascon_core (
-    .clk_i (clk_i)
+    .clk_i (clk_i),
     .rst_ni(rst_ni),
 
     .lc_escalate_en_i(lc_escalate_en_i),
