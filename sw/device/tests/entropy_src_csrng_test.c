@@ -248,16 +248,26 @@ static void test_edn_cmd_done(const dif_edn_seed_material_t *seed_material) {
 
   plic_interrupts_enable();
 
-  // Generate enough entropy for the otbn randomness test.
-  // The len provided here is in number of words as opposed to num of 128b
-  // blocks. The requested len **must** also be equal to the amount of entroy
-  // required by the OTBN randomness test, otherwise the Generate command will
+  // The EDN0 is connected to other peripherals that regularly request entropy
+  // so we keep generating entropy on the EDN0 to make sure that the OTBN
+  // gets enough to finish the test. The EDN1 is only connected to the OTBN
+  // so we generate exactly the amount of entropy necessary for the test and not
+  // more otherwise the Generate command will
   // not be fully executed, causing a hang in the `irq_block_wait()` calls
-  // following the end of the OTBN test.
-  // EDN0: 20 words = 5x128b blocks
-  // EDN1: 44 words = 11x128b blocks
+  // following the end of the OTBN test. The OTBN test reads `RND` 5 times
+  // and each read consumes 256b of entropy. The EDN1 generates entropy per
+  // blocks of 128b so we need to generate 10 blocks.
+  const size_t kEdnBlockSizeBits = 128;     // Each EDN block contains 128b.
+  const size_t kOtbnRequestSizeBits = 256;  // Each OTBN request requires 256b.
+  const size_t kOtbnTestRequestCount =
+      5;  // The number of `RND` reads in the randomness test.
+
+  // Number of blocks generated on the EDN1.
+  size_t edn1_generated_blocks = 0;
+
+  // Warning: `dif_edn_generate_start` takes a length in words (32b).
   CHECK_DIF_OK(dif_edn_generate_start(&edn0, /*len=*/1));
-  CHECK_DIF_OK(dif_edn_generate_start(&edn1, /*len=*/1));
+  CHECK_DIF_OK(dif_edn_generate_start(&edn1, kEdnBlockSizeBits / 32));
   edn_ready_wait(&edn0);
   edn_ready_wait(&edn1);
   CHECK_STATUS_OK(
@@ -275,8 +285,13 @@ static void test_edn_cmd_done(const dif_edn_seed_material_t *seed_material) {
       CHECK_DIF_OK(dif_edn_generate_start(&edn0, /*len=*/1));
     }
     if (irq_flags[kTestIrqFlagIdEdn1CmdDone]) {
-      irq_flags[kTestIrqFlagIdEdn1CmdDone] = false;
-      CHECK_DIF_OK(dif_edn_generate_start(&edn1, /*len=*/1));
+      edn1_generated_blocks++;
+      if (edn1_generated_blocks <
+          kOtbnTestRequestCount * kOtbnRequestSizeBits / kEdnBlockSizeBits) {
+        irq_flags[kTestIrqFlagIdEdn1CmdDone] = false;
+        // Warning: `dif_edn_generate_start` takes a length in words (32b).
+        CHECK_DIF_OK(dif_edn_generate_start(&edn1, kEdnBlockSizeBits / 32));
+      }
     }
     // Check if OTBN is still running.
     dif_otbn_status_t status;
@@ -288,7 +303,7 @@ static void test_edn_cmd_done(const dif_edn_seed_material_t *seed_material) {
   LOG_INFO("OTBN:END");
 
   // See comment above regarding generate command length and potential test
-  // locking issues.
+  // locking issues for EDN1.
   irq_block_wait(kTestIrqFlagIdEdn1CmdDone);
   irq_block_wait(kTestIrqFlagIdEdn0CmdDone);
   LOG_INFO("DONE");
