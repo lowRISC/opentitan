@@ -486,7 +486,7 @@ status_t handle_ibex_fi_char_flash_write(ujson_t *uj) {
 
 status_t handle_ibex_fi_char_sram_static(ujson_t *uj) {
   // Clear registered alerts in alert handler.
-  uint32_t reg_alerts = sca_get_triggered_alerts();
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
 
   // Get address of buffer located in SRAM.
   uintptr_t sram_main_buffer_addr = (uintptr_t)&sram_main_buffer_large;
@@ -530,7 +530,9 @@ status_t handle_ibex_fi_char_sram_static(ujson_t *uj) {
 
   // Send res & ERR_STATUS to host.
   uj_output.err_status = codes;
-  uj_output.alerts = reg_alerts;
+  uj_output.alerts_1 = reg_alerts.alerts_1;
+  uj_output.alerts_2 = reg_alerts.alerts_2;
+  uj_output.alerts_3 = reg_alerts.alerts_3;
   RESP_OK(ujson_serialize_ibex_fi_faulty_addresses_t, uj, &uj_output);
   return OK_STATUS(0);
 }
