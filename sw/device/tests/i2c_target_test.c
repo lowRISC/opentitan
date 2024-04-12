@@ -326,6 +326,7 @@ static status_t test_init(void) {
 
   base_addr = mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);
   TRY(dif_rv_plic_init(base_addr, &plic));
+  TRY(dif_rv_plic_reset(&plic));
   // Enable global and external IRQ at Ibex.
   irq_global_ctrl(true);
   irq_external_ctrl(true);
