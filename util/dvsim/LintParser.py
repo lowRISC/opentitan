@@ -53,7 +53,7 @@ class LintParser():
         found = {}
         for bucket, pattern in reversed(patterns):
             for m in re.finditer(pattern, log_content, flags=re.MULTILINE):
-                found[m.pos] = (bucket, m.group(0))
+                found[m.start()] = (bucket, m.group(0))
 
         # Now that we've ignored duplicate hits, flatten things out into
         # self.buckets.
