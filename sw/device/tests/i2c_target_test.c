@@ -22,6 +22,7 @@
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
 #include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/lib/testing/test_framework/ottf_console.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
@@ -60,15 +61,34 @@ static pwrmgr_isr_ctx_t pwrmgr_isr_ctx = {
  * External interrupt handler.
  */
 void ottf_external_isr(uint32_t *exc_info) {
-  dif_pwrmgr_irq_t irq_id;
-  top_earlgrey_plic_peripheral_t peripheral;
-
-  isr_testutils_pwrmgr_isr(plic_ctx, pwrmgr_isr_ctx, &peripheral, &irq_id);
+  dif_rv_plic_irq_id_t plic_irq_id = 0;
+  CHECK_DIF_OK(dif_rv_plic_irq_claim(&plic, plic_ctx.hart_id, &plic_irq_id));
+  top_earlgrey_plic_peripheral_t peripheral = (top_earlgrey_plic_peripheral_t)
+      top_earlgrey_plic_interrupt_for_peripheral[plic_irq_id];
 
   // Check that both the peripheral and the irq id is correct
-  CHECK(peripheral == kTopEarlgreyPlicPeripheralPwrmgrAon,
-        "IRQ peripheral: %d is incorrect", peripheral);
-  CHECK(irq_id == kDifPwrmgrIrqWakeup, "IRQ ID: %d is incorrect", irq_id);
+  switch (peripheral) {
+    case kTopEarlgreyPlicPeripheralUart0:
+      CHECK(ottf_console_flow_control_isr(exc_info),
+            "Unexpected non-flow control UART IRQ, with PLIC ID %d",
+            plic_irq_id);
+      break;
+    case kTopEarlgreyPlicPeripheralPwrmgrAon: {
+      dif_pwrmgr_irq_t irq =
+          (dif_pwrmgr_irq_t)(plic_irq_id -
+                             pwrmgr_isr_ctx.plic_pwrmgr_start_irq_id);
+      dif_irq_type_t type;
+      CHECK_DIF_OK(dif_pwrmgr_irq_get_type(&pwrmgr, irq, &type));
+      CHECK(irq == kDifPwrmgrIrqWakeup, "IRQ ID: %d is incorrect", irq);
+      if (type == kDifIrqTypeEvent) {
+        CHECK_DIF_OK(dif_pwrmgr_irq_acknowledge(pwrmgr_isr_ctx.pwrmgr, irq));
+      }
+    } break;
+    default:
+      CHECK(false, "IRQ peripheral: %d is incorrect", peripheral);
+      break;
+  }
+  CHECK_DIF_OK(dif_rv_plic_irq_complete(&plic, plic_ctx.hart_id, plic_irq_id));
 }
 
 static status_t reset_fifos(dif_i2c_t *i2c) {
@@ -326,6 +346,7 @@ static status_t test_init(void) {
 
   base_addr = mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);
   TRY(dif_rv_plic_init(base_addr, &plic));
+  TRY(dif_rv_plic_reset(&plic));
   // Enable global and external IRQ at Ibex.
   irq_global_ctrl(true);
   irq_external_ctrl(true);
