@@ -11,8 +11,8 @@ use openssl::x509::X509;
 
 use crate::asn1::Oid;
 use crate::template::{
-    BasicConstraints, CertificateExtension, DiceTcbInfoExtension, FirmwareId, Flags, HashAlgorithm,
-    Value,
+    BasicConstraints, CertificateExtension, DiceTcbInfoExtension, DiceTcbInfoFlags, FirmwareId,
+    HashAlgorithm, Value,
 };
 
 /// X509 extension reference.
@@ -136,7 +136,7 @@ struct DiceTcbInfo<'a> {
     #[implicit(6)]
     pub fwids: Option<asn1::SequenceOf<'a, Fwid<'a>>>,
     #[implicit(7)]
-    pub flags: Option<Flags>,
+    pub flags: Option<DiceTcbInfoFlags>,
     #[implicit(8)]
     pub vendor_info: Option<&'a [u8]>,
     #[implicit(9)]
@@ -209,7 +209,7 @@ impl DiceTcbInfo<'_> {
     }
 }
 
-impl<'a> asn1::SimpleAsn1Readable<'a> for Flags {
+impl<'a> asn1::SimpleAsn1Readable<'a> for DiceTcbInfoFlags {
     const TAG: asn1::Tag = asn1::OwnedBitString::TAG;
     fn parse_data(_data: &'a [u8]) -> asn1::ParseResult<Self> {
         let result = asn1::OwnedBitString::parse_data(_data)?;
@@ -218,7 +218,7 @@ impl<'a> asn1::SimpleAsn1Readable<'a> for Flags {
             // We expect 4 bits.
             asn1::ParseResult::Err(asn1::ParseError::new(asn1::ParseErrorKind::InvalidLength))
         } else {
-            Ok(Flags {
+            Ok(DiceTcbInfoFlags {
                 not_configured: Value::Literal(bs.has_bit_set(0)),
                 not_secure: Value::Literal(bs.has_bit_set(1)),
                 recovery: Value::Literal(bs.has_bit_set(2)),
