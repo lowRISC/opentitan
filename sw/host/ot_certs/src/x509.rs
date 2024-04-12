@@ -24,7 +24,7 @@ use crate::template::{
     Value,
 };
 
-mod extension;
+pub mod extension;
 
 fn curve_from_ecgroup(group: &EcGroupRef) -> Result<EcCurve> {
     let Some(name) = group.curve_name() else {
