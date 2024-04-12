@@ -380,6 +380,10 @@
       uvm_test_seq: usbdev_streaming_vseq
     }
     {
+      name: usbdev_stream_len_max
+      uvm_test_seq: usbdev_stream_len_max_vseq
+    }
+    {
       name: usbdev_stress_all_with_rand_reset
       reseed: 10
     }

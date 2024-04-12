@@ -223,7 +223,7 @@
               packet data that was transmitted.
             '''
       stage: V2
-      tests: ["usbdev_max_length_out_transaction"]
+      tests: ["usbdev_max_length_out_transaction", "usbdev_stream_len_max"]
     }
     {
       name: max_length_in_transaction

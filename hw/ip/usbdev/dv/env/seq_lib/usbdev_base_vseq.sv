@@ -872,7 +872,7 @@ endtask
     csr_wr(.ptr(ral.in_stall[0]), .value(stall));
   endtask
 
-  // Send 'Start Of Frame' packet (bus frame/timing referenace).
+  // Send 'Start Of Frame' packet (bus frame/timing reference).
   virtual task send_sof_packet(input pid_type_e pid_type);
     `uvm_create_on(m_sof_pkt, p_sequencer.usb20_sequencer_h)
     start_item(m_sof_pkt);
