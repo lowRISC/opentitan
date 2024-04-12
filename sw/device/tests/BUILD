@@ -1249,19 +1249,15 @@ opentitan_test(
 opentitan_test(
     name = "entropy_src_csrng_test",
     srcs = ["entropy_src_csrng_test.c"],
-    broken = cw310_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
             "//hw/top_earlgrey:silicon_creator": None,
-            "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon_owner",
-            "//hw/top_earlgrey:silicon_owner_prodc_rom_ext": "silicon_owner",
+            "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
+            "//hw/top_earlgrey:silicon_owner_prodc_rom_ext": None,
         },
-    ),
-    silicon_owner = silicon_params(
-        tags = ["broken"],
     ),
     verilator = verilator_params(
         timeout = "long",
