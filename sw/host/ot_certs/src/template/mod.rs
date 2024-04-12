@@ -110,7 +110,7 @@ pub struct DiceTcbInfoExtension {
     /// TCB firmware IDs.
     pub fw_ids: Option<Vec<FirmwareId>>,
     /// TCB flags.
-    pub flags: Option<Flags>,
+    pub flags: Option<DiceTcbInfoFlags>,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Hash, strum::Display, Serialize)]
@@ -320,7 +320,7 @@ pub enum EcCurve {
 /// Flags that can be set for a certificate.
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
-pub struct Flags {
+pub struct DiceTcbInfoFlags {
     pub not_configured: Value<bool>,
     pub not_secure: Value<bool>,
     pub recovery: Value<bool>,
@@ -562,7 +562,7 @@ mod tests {
                         digest: Value::variable("ownership_manifest_hash"),
                     },
                 ])),
-                flags: Some(Flags {
+                flags: Some(DiceTcbInfoFlags {
                     not_configured: Value::Literal(true),
                     not_secure: Value::Literal(false),
                     recovery: Value::Literal(true),

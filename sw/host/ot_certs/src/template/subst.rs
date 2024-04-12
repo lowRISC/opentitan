@@ -14,7 +14,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::template::{
     BasicConstraints, Certificate, CertificateExtension, Conversion, DiceTcbInfoExtension,
-    EcPublicKey, EcPublicKeyInfo, EcdsaSignature, FirmwareId, Flags, Signature,
+    DiceTcbInfoFlags, EcPublicKey, EcPublicKeyInfo, EcdsaSignature, FirmwareId, Signature,
     SubjectPublicKeyInfo, Template, Value, Variable, VariableType,
 };
 
@@ -436,9 +436,9 @@ impl Subst for FirmwareId {
     }
 }
 
-impl Subst for Flags {
-    fn subst(&self, data: &SubstData) -> Result<Flags> {
-        Ok(Flags {
+impl Subst for DiceTcbInfoFlags {
+    fn subst(&self, data: &SubstData) -> Result<DiceTcbInfoFlags> {
+        Ok(DiceTcbInfoFlags {
             not_configured: self
                 .not_configured
                 .subst(data)
