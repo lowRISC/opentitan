@@ -4856,6 +4856,12 @@ opentitan_test(
             "//hw/top_earlgrey:fpga_cw310_sival": "broken",
         },
     ),
+    silicon = silicon_params(
+        test_cmd = """
+            --bootstrap="{firmware}"
+        """,
+        test_harness = "//sw/host/tests/chip/i2c_target",
+    ),
     deps = [
         "//sw/device/lib/arch:device",
         "//sw/device/lib/dif:gpio",
