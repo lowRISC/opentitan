@@ -153,30 +153,6 @@ def key_allowed_in_lc_state(key, hw_lc_state_val):
         fail("Wrong life cycle state value: '{}', must be one of {}. Did you pass a string instead of the integer value?".format(hw_lc_state_val, all_hw_lc_state_vals))
     return hw_lc_state_val in key.hw_lc_states
 
-def get_key_structs_for_lc_state(hw_lc_state, rsa = SILICON_CREATOR_KEYS.FAKE.RSA, spx = SILICON_CREATOR_KEYS.FAKE.SPX):
-    # [(rsa_key, spx_key), ...]
-    if rsa and spx:
-        rsa = flatten(structs.to_dict(s = rsa).values())
-        spx = flatten(structs.to_dict(s = spx).values())
-    elif rsa and not spx:
-        rsa = flatten(structs.to_dict(s = rsa).values())
-        spx = [None] * len(rsa)
-    elif not rsa and spx:
-        spx = flatten(structs.to_dict(s = spx).values())
-        rsa = [None] * len(spx)
-    else:
-        fail("No keys were provided")
-
-    if len(rsa) != len(spx):
-        fail("Lists have different lengths")
-    keys = zip(rsa, spx)
-    res = [
-        create_key_struct(rsa, spx)
-        for rsa, spx in keys
-        if (rsa == None or key_allowed_in_lc_state(rsa, hw_lc_state)) and (spx == None or key_allowed_in_lc_state(spx, hw_lc_state))
-    ]
-    return res
-
 def filter_key_structs_for_lc_state(key_structs, hw_lc_state):
     return [k for k in key_structs if (not k.rsa or key_allowed_in_lc_state(k.rsa, hw_lc_state)) and (not k.spx or key_allowed_in_lc_state(k.spx, hw_lc_state))]
 
