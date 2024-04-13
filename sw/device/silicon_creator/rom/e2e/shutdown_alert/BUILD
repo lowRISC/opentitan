@@ -3,9 +3,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "//rules:opentitan_test.bzl",
-    "cw310_params",
-    "opentitan_functest",
+    "//rules:opentitan.bzl",
+    "RSA_ONLY_KEY_STRUCTS",
 )
 load(
     "//rules:const.bzl",
@@ -13,12 +12,12 @@ load(
     "EARLGREY_ALERTS",
     "EARLGREY_LOC_ALERTS",
     "get_lc_items",
-    "hex",
 )
 load(
-    "//rules:opentitan.bzl",
-    "get_key_structs_for_lc_state",
-    "opentitan_flash_binary",
+    "//rules/opentitan:defs.bzl",
+    "cw310_params",
+    "opentitan_test",
+    "rsa_key_for_lc_state",
 )
 load(
     "//rules:otp.bzl",
@@ -37,10 +36,6 @@ load(
     "//rules:rom_e2e.bzl",
     "maybe_skip_in_ci",
 )
-load(
-    "//rules:splice.bzl",
-    "bitstream_splice",
-)
 
 package(default_visibility = ["//visibility:public"])
 
@@ -57,58 +52,31 @@ ALERT_LC_STATES = get_lc_items(
     CONST.LCV.RMA,
 )
 
-[otp_image(
-    name = "otp_img_alert_{}".format(lc_state),
-    src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state),
-    overlays = STD_OTP_OVERLAYS,
-) for lc_state, _ in ALERT_LC_STATES]
-
-[bitstream_splice(
-    name = "bitstream_alert_{}".format(lc_state),
-    src = "//hw/bitstream:rom_with_fake_keys",
-    data = ":otp_img_alert_{}".format(lc_state),
-    meminfo = "//hw/bitstream:otp_mmi",
-    tags = maybe_skip_in_ci(lc_state_val),
-    update_usr_access = True,
-) for lc_state, lc_state_val in ALERT_LC_STATES]
-
-[opentitan_flash_binary(
-    name = "rom_e2e_alert_config_test_{}".format(lc_state),
-    testonly = True,
-    srcs = ["rom_e2e_alert_config_test.c"],
-    devices = [
-        "fpga_cw310",
-    ],
-    local_defines = [
-        "OTP_ALERT_DIGEST=OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_ALERT_DIGEST_{}_OFFSET".format(lc_state.upper()),
-    ],
-    deps = [
-        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
-        "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib/drivers:alert",
-        "//sw/device/silicon_creator/lib/drivers:lifecycle",
-        "//sw/device/silicon_creator/lib/drivers:otp",
-    ],
-) for lc_state, _ in ALERT_LC_STATES]
-
 [
-    opentitan_functest(
-        name = "alert_{}".format(
-            lc_state,
-        ),
+    opentitan_test(
+        name = "alert_{}".format(lc_state),
+        srcs = ["rom_e2e_alert_config_test.c"],
         cw310 = cw310_params(
-            bitstream = ":bitstream_alert_{}".format(lc_state),
+            otp = "//hw/ip/otp_ctrl/data:img_{}".format(lc_state),
             tags = maybe_skip_in_ci(lc_state_val),
         ),
-        key_struct = get_key_structs_for_lc_state(
-            CONST.LCV.PROD,
-            spx = None,
-        )[0],
-        ot_flash_binary = ":rom_e2e_alert_config_test_{}".format(lc_state),
-        signed = True,
-        targets = [
-            "cw310_rom_with_fake_keys",
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        },
+        local_defines = [
+            "OTP_ALERT_DIGEST=OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_ALERT_DIGEST_{}_OFFSET".format(lc_state.upper()),
+        ],
+        rsa_key = rsa_key_for_lc_state(
+            RSA_ONLY_KEY_STRUCTS,
+            lc_state_val,
+        ),
+        deps = [
+            "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+            "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
+            "//sw/device/lib/testing/test_framework:ottf_main",
+            "//sw/device/silicon_creator/lib/drivers:alert",
+            "//sw/device/silicon_creator/lib/drivers:lifecycle",
+            "//sw/device/silicon_creator/lib/drivers:otp",
         ],
     )
     for lc_state, lc_state_val in ALERT_LC_STATES
@@ -190,56 +158,40 @@ otp_alert_digest(
     otp_img = ":shutdown_alert_owner_sw_cfg",
 )
 
-[otp_image(
-    name = "otp_img_shutdown_alert_{}".format(lc_state),
-    src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state),
-    overlays = STD_OTP_OVERLAYS + [
-        ":shutdown_alert_owner_sw_cfg",
-        ":shutdown_alert_digest_cfg",
-    ],
-) for lc_state, _ in ALERT_LC_STATES]
-
-[bitstream_splice(
-    name = "bitstream_shutdown_alert_{}".format(lc_state),
-    src = "//hw/bitstream:rom_with_fake_keys",
-    data = ":otp_img_shutdown_alert_{}".format(lc_state),
-    meminfo = "//hw/bitstream:otp_mmi",
-    tags = maybe_skip_in_ci(lc_state_val),
-    update_usr_access = True,
-) for lc_state, lc_state_val in ALERT_LC_STATES]
-
-[opentitan_flash_binary(
-    name = "rom_e2e_shutdown_alert_config_test_{}".format(lc_state),
-    testonly = True,
-    srcs = ["rom_e2e_shutdown_alert_config_test.c"],
-    devices = [
-        "fpga_cw310",
-    ],
-    deps = [
-        "//hw/ip/uart/data:uart_c_regs",
-        "//sw/device/lib/base:abs_mmio",
-        "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib/drivers:retention_sram",
-        "//sw/device/silicon_creator/lib/drivers:rstmgr",
-    ],
-) for lc_state, _ in ALERT_LC_STATES]
+[
+    otp_image(
+        name = "otp_img_shutdown_alert_{}".format(lc_state),
+        src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state),
+        overlays = STD_OTP_OVERLAYS + [
+            ":shutdown_alert_owner_sw_cfg",
+            ":shutdown_alert_digest_cfg",
+        ],
+    )
+    for lc_state, _ in ALERT_LC_STATES
+]
 
 [
-    opentitan_functest(
+    opentitan_test(
         name = "shutdown_alert_{}".format(lc_state),
+        srcs = ["rom_e2e_shutdown_alert_config_test.c"],
         cw310 = cw310_params(
-            bitstream = ":bitstream_shutdown_alert_{}".format(lc_state),
+            otp = ":otp_img_shutdown_alert_{}".format(lc_state),
             tags = maybe_skip_in_ci(lc_state_val),
         ),
-        key_struct = get_key_structs_for_lc_state(
-            CONST.LCV.PROD,
-            spx = None,
-        )[0],
-        ot_flash_binary = ":rom_e2e_shutdown_alert_config_test_{}".format(lc_state),
-        signed = True,
-        targets = [
-            "cw310_rom_with_fake_keys",
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        },
+        rsa_key = rsa_key_for_lc_state(
+            RSA_ONLY_KEY_STRUCTS,
+            lc_state_val,
+        ),
+        deps = [
+            "//hw/ip/uart/data:uart_c_regs",
+            "//sw/device/lib/base:abs_mmio",
+            "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
+            "//sw/device/lib/testing/test_framework:ottf_main",
+            "//sw/device/silicon_creator/lib/drivers:retention_sram",
+            "//sw/device/silicon_creator/lib/drivers:rstmgr",
         ],
     )
     for lc_state, lc_state_val in ALERT_LC_STATES
