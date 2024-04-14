@@ -25,7 +25,7 @@ def _hjson_c_header(ctx):
         header.path,
     ] + node + [src.path for src in ctx.files.srcs]
     
-    # `inputs = ctx.files.srcs` will create `inputs` as an unmutable list
+    # `inputs = ctx.files.srcs` will create `inputs` as an immutable list
     # so need to unpack like this before appending the alias later
     inputs = list(ctx.files.srcs)
 
