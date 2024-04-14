@@ -24,7 +24,7 @@ def _hjson_c_header(ctx):
         "-o",
         header.path,
     ] + node + [src.path for src in ctx.files.srcs]
-    
+
     # `inputs = ctx.files.srcs` will create `inputs` as an immutable list
     # so need to unpack like this before appending the alias later
     inputs = list(ctx.files.srcs)
@@ -36,7 +36,7 @@ def _hjson_c_header(ctx):
         # add the alias argument
         arguments.extend([
             "--alias",
-            alias.path
+            alias.path,
         ])
 
         # add the alias as an input file
