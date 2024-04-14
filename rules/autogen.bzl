@@ -24,8 +24,10 @@ def _hjson_c_header(ctx):
         "-o",
         header.path,
     ] + node + [src.path for src in ctx.files.srcs]
-
-    inputs = ctx.files.srcs + [ctx.executable._regtool]
+    
+    # `inputs = ctx.files.srcs` will create `inputs` as an unmutable list
+    # so need to unpack like this before appending the alias later
+    inputs = list(ctx.files.srcs)
 
     # add path to an alias path if it's needed
     if ctx.attr.alias:
