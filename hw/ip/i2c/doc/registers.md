@@ -404,90 +404,111 @@ All values are expressed in units of the input clock period.
 These must be greater than 2 in order for the change in SCL to propagate to the input of the FSM so that acknowledgements are detected correctly.
 - Offset: `0x3c`
 - Reset default: `0x0`
-- Reset mask: `0xffffffff`
+- Reset mask: `0x1fff1fff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "THIGH", "bits": 16, "attr": ["rw"], "rotate": 0}, {"name": "TLOW", "bits": 16, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "THIGH", "bits": 13, "attr": ["rw"], "rotate": 0}, {"bits": 3}, {"name": "TLOW", "bits": 13, "attr": ["rw"], "rotate": 0}, {"bits": 3}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                           |
-|:------:|:------:|:-------:|:-------|:------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 31:16  |   rw   |   0x0   | TLOW   | The actual time to hold SCL low between any two SCL pulses                                                                                            |
-|  15:0  |   rw   |   0x0   | THIGH  | The actual time to hold SCL high in a given pulse: in host mode, when there is no stretching this value is 3 cycles longer as tracked in issue #18962 |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                                        |
+|:------:|:------:|:-------:|:-------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 31:29  |        |         |        | Reserved                                                                                                                                                           |
+| 28:16  |   rw   |   0x0   | TLOW   | The actual time to hold SCL low between any two SCL pulses. This field is sized to have a range of at least Standard Mode's 4.7 us max with a core clock at 1 GHz. |
+| 15:13  |        |         |        | Reserved                                                                                                                                                           |
+|  12:0  |   rw   |   0x0   | THIGH  | The actual time to hold SCL high in a given pulse. This field is sized to have a range of at least Standard Mode's 4.0 us max with a core clock at 1 GHz.          |
 
 ## TIMING1
 Detailed I2C Timings (directly corresponding to table 10 in the I2C Specification).
 All values are expressed in units of the input clock period.
 - Offset: `0x40`
 - Reset default: `0x0`
-- Reset mask: `0xffffffff`
+- Reset mask: `0x1ff03ff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "T_R", "bits": 16, "attr": ["rw"], "rotate": 0}, {"name": "T_F", "bits": 16, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "T_R", "bits": 10, "attr": ["rw"], "rotate": 0}, {"bits": 6}, {"name": "T_F", "bits": 9, "attr": ["rw"], "rotate": 0}, {"bits": 7}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                          |
-|:------:|:------:|:-------:|:-------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
-| 31:16  |   rw   |   0x0   | T_F    | The nominal fall time to anticipate for the bus (influences SDA hold times): this is currently counted twice in host mode as tracked in issue #18958 |
-|  15:0  |   rw   |   0x0   | T_R    | The nominal rise time to anticipate for the bus (depends on capacitance)                                                                             |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                                                         |
+|:------:|:------:|:-------:|:-------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 31:25  |        |         |        | Reserved                                                                                                                                                                            |
+| 24:16  |   rw   |   0x0   | T_F    | The nominal fall time to anticipate for the bus (influences SDA hold times). This field is sized to have a range of at least Standard Mode's 300 ns max with a core clock at 1 GHz. |
+| 15:10  |        |         |        | Reserved                                                                                                                                                                            |
+|  9:0   |   rw   |   0x0   | T_R    | The nominal rise time to anticipate for the bus (depends on capacitance). This field is sized to have a range of at least Standard Mode's 1000 ns max with a core clock at 1 GHz.   |
 
 ## TIMING2
 Detailed I2C Timings (directly corresponding to table 10 in the I2C Specification).
 All values are expressed in units of the input clock period.
 - Offset: `0x44`
 - Reset default: `0x0`
-- Reset mask: `0xffffffff`
+- Reset mask: `0x1fff1fff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "TSU_STA", "bits": 16, "attr": ["rw"], "rotate": 0}, {"name": "THD_STA", "bits": 16, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "TSU_STA", "bits": 13, "attr": ["rw"], "rotate": 0}, {"bits": 3}, {"name": "THD_STA", "bits": 13, "attr": ["rw"], "rotate": 0}, {"bits": 3}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name    | Description                                  |
-|:------:|:------:|:-------:|:--------|:---------------------------------------------|
-| 31:16  |   rw   |   0x0   | THD_STA | Actual hold time for start signals           |
-|  15:0  |   rw   |   0x0   | TSU_STA | Actual setup time for repeated start signals |
+|  Bits  |  Type  |  Reset  | Name    | Description                                                                                                                                          |
+|:------:|:------:|:-------:|:--------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 31:29  |        |         |         | Reserved                                                                                                                                             |
+| 28:16  |   rw   |   0x0   | THD_STA | Actual hold time for start signals. This field is sized to have a range of at least Standard Mode's 4.0 us max with a core clock at 1 GHz.           |
+| 15:13  |        |         |         | Reserved                                                                                                                                             |
+|  12:0  |   rw   |   0x0   | TSU_STA | Actual setup time for repeated start signals. This field is sized to have a range of at least Standard Mode's 4.7 us max with a core clock at 1 GHz. |
 
 ## TIMING3
 Detailed I2C Timings (directly corresponding to table 10, in the I2C Specification).
 All values are expressed in units of the input clock period.
 - Offset: `0x48`
 - Reset default: `0x0`
-- Reset mask: `0xffffffff`
+- Reset mask: `0x1fff01ff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "TSU_DAT", "bits": 16, "attr": ["rw"], "rotate": 0}, {"name": "THD_DAT", "bits": 16, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "TSU_DAT", "bits": 9, "attr": ["rw"], "rotate": 0}, {"bits": 7}, {"name": "THD_DAT", "bits": 13, "attr": ["rw"], "rotate": 0}, {"bits": 3}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name    | Description                                                                                                       |
-|:------:|:------:|:-------:|:--------|:------------------------------------------------------------------------------------------------------------------|
-| 31:16  |   rw   |   0x0   | THD_DAT | Actual hold time for data (or ack) bits (Note, where required, the parameters TVD_DAT is taken to be THD_DAT+T_F) |
-|  15:0  |   rw   |   0x0   | TSU_DAT | Actual setup time for data (or ack) bits                                                                          |
+|  Bits  |  Type  |  Reset  | Name                         |
+|:------:|:------:|:-------:|:-----------------------------|
+| 31:29  |        |         | Reserved                     |
+| 28:16  |   rw   |   0x0   | [THD_DAT](#timing3--thd_dat) |
+|  15:9  |        |         | Reserved                     |
+|  8:0   |   rw   |   0x0   | [TSU_DAT](#timing3--tsu_dat) |
+
+### TIMING3 . THD_DAT
+Actual hold time for data (or ack) bits.
+(Note, where required, the parameters TVD_DAT is taken to be THD_DAT+T_F)
+This field is sized to have a range that accommodates Standard Mode's 3.45 us max for TVD_DAT with a core clock at 1 GHz.
+However, this field is generally expected to represent a time substantially shorter than that.
+It should be long enough to cover the maximum round-trip latency from output pins, through pads and voltage transitions on the board, and back to the input pins, but it should not be substantially greater.
+
+### TIMING3 . TSU_DAT
+Actual setup time for data (or ack) bits.
+This field is sized to have a range of at least Standard Mode's 250 ns max with a core clock at 1 GHz.
 
 ## TIMING4
 Detailed I2C Timings (directly corresponding to table 10, in the I2C Specification).
 All values are expressed in units of the input clock period.
 - Offset: `0x4c`
 - Reset default: `0x0`
-- Reset mask: `0xffffffff`
+- Reset mask: `0x1fff1fff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "TSU_STO", "bits": 16, "attr": ["rw"], "rotate": 0}, {"name": "T_BUF", "bits": 16, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "TSU_STO", "bits": 13, "attr": ["rw"], "rotate": 0}, {"bits": 3}, {"name": "T_BUF", "bits": 13, "attr": ["rw"], "rotate": 0}, {"bits": 3}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name    | Description                                                         |
-|:------:|:------:|:-------:|:--------|:--------------------------------------------------------------------|
-| 31:16  |   rw   |   0x0   | T_BUF   | Actual time between each STOP signal and the following START signal |
-|  15:0  |   rw   |   0x0   | TSU_STO | Actual setup time for stop signals                                  |
+|  Bits  |  Type  |  Reset  | Name    | Description                                                                                                                                                                 |
+|:------:|:------:|:-------:|:--------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 31:29  |        |         |         | Reserved                                                                                                                                                                    |
+| 28:16  |   rw   |   0x0   | T_BUF   | Actual time between each STOP signal and the following START signal. This field is sized to have a range of at least Standard Mode's 4.7 us max with a core clock at 1 GHz. |
+| 15:13  |        |         |         | Reserved                                                                                                                                                                    |
+|  12:0  |   rw   |   0x0   | TSU_STO | Actual setup time for stop signals. This field is sized to have a range of at least Standard Mode's 4.0 us max with a core clock at 1 GHz.                                  |
 
 ## TIMEOUT_CTRL
 I2C clock stretching timeout control.

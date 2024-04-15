@@ -36,16 +36,15 @@ module i2c_controller_fsm import i2c_pkg::*;
 
   output logic       host_idle_o,      // indicates the host is idle
 
-  input [15:0] thigh_i,    // high period of the SCL in clock units
-  input [15:0] tlow_i,     // low period of the SCL in clock units
-  input [15:0] t_r_i,      // rise time of both SDA and SCL in clock units
-  input [15:0] t_f_i,      // fall time of both SDA and SCL in clock units
-  input [15:0] thd_sta_i,  // hold time for (repeated) START in clock units
-  input [15:0] tsu_sta_i,  // setup time for repeated START in clock units
-  input [15:0] tsu_sto_i,  // setup time for STOP in clock units
-  input [15:0] tsu_dat_i,  // data setup time in clock units
-  input [15:0] thd_dat_i,  // data hold time in clock units
-  input [15:0] t_buf_i,    // bus free time between STOP and START in clock units
+  input [12:0] thigh_i,    // high period of the SCL in clock units
+  input [12:0] tlow_i,     // low period of the SCL in clock units
+  input [12:0] t_r_i,      // rise time of both SDA and SCL in clock units
+  input [12:0] t_f_i,      // fall time of both SDA and SCL in clock units
+  input [12:0] thd_sta_i,  // hold time for (repeated) START in clock units
+  input [12:0] tsu_sta_i,  // setup time for repeated START in clock units
+  input [12:0] tsu_sto_i,  // setup time for STOP in clock units
+  input [12:0] thd_dat_i,  // data hold time in clock units
+  input [12:0] t_buf_i,    // bus free time between STOP and START in clock units
   input [30:0] stretch_timeout_i,  // max time target connected to this host may stretch the clock
   input        timeout_enable_i,   // assert if target stretches clock past max
   input [30:0] host_nack_handler_timeout_i, // Timeout threshold for unhandled Host-Mode 'nak' irq.
@@ -61,8 +60,8 @@ module i2c_controller_fsm import i2c_pkg::*;
 );
 
   // I2C bus clock timing variables
-  logic [19:0] tcount_q;      // current counter for setting delays
-  logic [19:0] tcount_d;      // next counter for setting delays
+  logic [15:0] tcount_q;      // current counter for setting delays
+  logic [15:0] tcount_d;      // next counter for setting delays
   logic        load_tcount;   // indicates counter must be loaded
   logic [31:0] stretch_idle_cnt; // counter for clock being stretched by target
                                  // or clock idle by host.
@@ -102,7 +101,6 @@ module i2c_controller_fsm import i2c_pkg::*;
   typedef enum logic [3:0] {
     tSetupStart,
     tHoldStart,
-    tSetupData,
     tClockStart,
     tClockLow,
     tClockPulse,
@@ -120,19 +118,18 @@ module i2c_controller_fsm import i2c_pkg::*;
     tcount_d = tcount_q;
     if (load_tcount) begin
       unique case (tcount_sel)
-        tSetupStart : tcount_d = 20'(t_r_i) + 20'(tsu_sta_i);
-        tHoldStart  : tcount_d = 20'(t_f_i) + 20'(thd_sta_i);
-        tSetupData  : tcount_d = 20'(t_r_i) + 20'(tsu_dat_i);
-        tClockStart : tcount_d = 20'(thd_dat_i);
-        tClockLow   : tcount_d = 20'(tlow_i) - 20'(thd_dat_i);
-        tClockPulse : tcount_d = 20'(t_r_i) + 20'(thigh_i);
-        tClockHigh  : tcount_d = 20'(thigh_i);
-        tHoldBit    : tcount_d = 20'(t_f_i) + 20'(thd_dat_i);
-        tClockStop  : tcount_d = 20'(t_f_i) + 20'(tlow_i) - 20'(thd_dat_i);
-        tSetupStop  : tcount_d = 20'(t_r_i) + 20'(tsu_sto_i);
-        tHoldStop   : tcount_d = 20'(t_r_i) + 20'(t_buf_i) - 20'(tsu_sta_i);
-        tNoDelay    : tcount_d = 20'h00001;
-        default     : tcount_d = 20'h00001;
+        tSetupStart : tcount_d = 13'(t_r_i) + 13'(tsu_sta_i);
+        tHoldStart  : tcount_d = 13'(t_f_i) + 13'(thd_sta_i);
+        tClockStart : tcount_d = 16'(thd_dat_i);
+        tClockLow   : tcount_d = 13'(tlow_i) - 13'(thd_dat_i);
+        tClockPulse : tcount_d = 13'(t_r_i) + 13'(thigh_i);
+        tClockHigh  : tcount_d = 16'(thigh_i);
+        tHoldBit    : tcount_d = 13'(t_f_i) + 13'(thd_dat_i);
+        tClockStop  : tcount_d = 13'(t_f_i) + 13'(tlow_i) - 13'(thd_dat_i);
+        tSetupStop  : tcount_d = 13'(t_r_i) + 13'(tsu_sto_i);
+        tHoldStop   : tcount_d = 13'(t_r_i) + 13'(t_buf_i) - 13'(tsu_sta_i);
+        tNoDelay    : tcount_d = 16'h0001;
+        default     : tcount_d = 16'h0001;
       endcase
     end else if (
       host_enable_i ||

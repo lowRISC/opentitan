@@ -31,9 +31,9 @@ module i2c_target_fsm import i2c_pkg::*;
 
   output logic       target_idle_o,    // indicates the target is idle
 
-  input [15:0] t_r_i,      // rise time of both SDA and SCL in clock units
-  input [15:0] tsu_dat_i,  // data setup time in clock units
-  input [15:0] thd_dat_i,  // data hold time in clock units
+  input [12:0] t_r_i,      // rise time of both SDA and SCL in clock units
+  input [12:0] tsu_dat_i,  // data setup time in clock units
+  input [12:0] thd_dat_i,  // data hold time in clock units
   input [31:0] host_timeout_i,     // max time target waits for host to pull clock down
   input [30:0] nack_timeout_i,     // max time target may stretch until it should NACK
   input        nack_timeout_en_i,  // enable nack timeout
@@ -62,8 +62,8 @@ module i2c_target_fsm import i2c_pkg::*;
 );
 
   // I2C bus clock timing variables
-  logic [19:0] tcount_q;      // current counter for setting delays
-  logic [19:0] tcount_d;      // next counter for setting delays
+  logic [15:0] tcount_q;      // current counter for setting delays
+  logic [15:0] tcount_d;      // next counter for setting delays
   logic        load_tcount;   // indicates counter must be loaded
   logic [31:0] stretch_idle_cnt; // counter for clock being stretched by target
                                  // or clock idle by host.
@@ -133,10 +133,10 @@ module i2c_target_fsm import i2c_pkg::*;
     tcount_d = tcount_q;
     if (load_tcount) begin
       unique case (tcount_sel)
-        tSetupData  : tcount_d = 20'(t_r_i) + 20'(tsu_dat_i);
-        tHoldData   : tcount_d = 20'(thd_dat_i);
-        tNoDelay    : tcount_d = 20'h00001;
-        default     : tcount_d = 20'h00001;
+        tSetupData  : tcount_d = 13'(t_r_i) + 13'(tsu_dat_i);
+        tHoldData   : tcount_d = 16'(thd_dat_i);
+        tNoDelay    : tcount_d = 16'h0001;
+        default     : tcount_d = 16'h0001;
       endcase
     end else if (target_enable_i) begin
       tcount_d = tcount_q - 1'b1;
@@ -275,11 +275,11 @@ module i2c_target_fsm import i2c_pkg::*;
 
   // (Repeated) Start condition detection by target
   assign start_det_trigger = target_enable_i && (scl_i_q && scl_i) & (sda_i_q && !sda_i);
-  assign start_det = target_enable_i && start_det_pending && (ctrl_det_count >= thd_dat_i);
+  assign start_det = target_enable_i && start_det_pending && (ctrl_det_count >= 16'(thd_dat_i));
 
   // Stop condition detection by target
   assign stop_det_trigger = target_enable_i && (scl_i_q && scl_i) & (!sda_i_q && sda_i);
-  assign stop_det = target_enable_i && stop_det_pending && (ctrl_det_count >= thd_dat_i);
+  assign stop_det = target_enable_i && stop_det_pending && (ctrl_det_count >= 16'(thd_dat_i));
 
   // Bit counter on the target side
   assign bit_ack = (bit_idx == 4'd8); // ack
