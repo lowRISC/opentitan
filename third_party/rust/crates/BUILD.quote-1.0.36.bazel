@@ -11,11 +11,11 @@ load("@rules_rust//rust:defs.bzl", "rust_library")
 package(default_visibility = ["//visibility:public"])
 
 # licenses([
-#     "TODO",  # MIT/Apache-2.0
+#     "TODO",  # MIT OR Apache-2.0
 # ])
 
 rust_library(
-    name = "wasm_bindgen_macro_support",
+    name = "quote",
     srcs = glob(["**/*.rs"]),
     compile_data = glob(
         include = ["**"],
@@ -29,14 +29,15 @@ rust_library(
         ],
     ),
     crate_features = [
-        "spans",
+        "default",
+        "proc-macro",
     ],
     crate_root = "src/lib.rs",
     edition = "2018",
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
-        "crate-name=wasm-bindgen-macro-support",
+        "crate-name=quote",
         "manual",
         "noclippy",
         "norustfmt",
@@ -75,12 +76,8 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-none": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.2.87",
+    version = "1.0.36",
     deps = [
         "@crate_index__proc-macro2-1.0.80//:proc_macro2",
-        "@crate_index__quote-1.0.36//:quote",
-        "@crate_index__syn-2.0.59//:syn",
-        "@crate_index__wasm-bindgen-backend-0.2.87//:wasm_bindgen_backend",
-        "@crate_index__wasm-bindgen-shared-0.2.87//:wasm_bindgen_shared",
     ],
 )

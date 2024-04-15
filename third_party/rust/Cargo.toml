@@ -25,10 +25,10 @@ clap = { version = "4.4", features = ["derive", "env", "deprecated"] }
 crc = "3.0"
 deser-hjson = "2.0.0"
 directories = "5.0.1"
-ecdsa = { version = "0.16.9", features = ["pkcs8", "pem", "signing", "verifying", "std"] }
+ecdsa = { version = "0.16.9", features = ["pkcs8", "pem", "signing", "verifying", "sha2", "std"] }
 env_logger = "0.10"
 elliptic-curve = { version = "0.13.4", features = ["ecdh", "pkcs8", "sec1", "std"] }
-erased-serde = "0.3.12"
+erased-serde = "0.4.3"
 # Note: this is needed because openssl does not re-rexports this, we cannot use a
 # too recent version because it break things.
 foreign-types = "0.3.2"
@@ -38,6 +38,7 @@ hex = "0.4.3"
 humantime = "2.1.0"
 humantime-serde = "1.1"
 indicatif = "0.17.6"
+inventory = "0.3.5"
 log = "0.4"
 memchr = "2.6.4"
 memoffset = "0.9.0"
@@ -71,6 +72,7 @@ serde_json = "1.0.69"
 serde_with = "3.4.0"
 serialport = { version = "4.2.2", features = ["serde"] }
 sha2 = { version = "0.10", features = ["oid"] }
+sha3 = { version = "0.10", features = ["oid"] }
 shellwords = "1.1.0"
 syn = "2.0"
 tempfile = "3.3.0"
