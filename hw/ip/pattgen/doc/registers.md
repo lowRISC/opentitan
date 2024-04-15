@@ -93,21 +93,25 @@ Alert Test Register
 PATTGEN control register
 - Offset: `0x10`
 - Reset default: `0x0`
-- Reset mask: `0xf`
+- Reset mask: `0xff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "ENABLE_CH0", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "ENABLE_CH1", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "POLARITY_CH0", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "POLARITY_CH1", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 140}}
+{"reg": [{"name": "ENABLE_CH0", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "ENABLE_CH1", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "POLARITY_CH0", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "POLARITY_CH1", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "INACTIVE_LEVEL_PCL_CH0", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "INACTIVE_LEVEL_PDA_CH0", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "INACTIVE_LEVEL_PCL_CH1", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "INACTIVE_LEVEL_PDA_CH1", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 240}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name         | Description                                                                                                                                                                                                                                     |
-|:------:|:------:|:-------:|:-------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|  31:4  |        |         |              | Reserved                                                                                                                                                                                                                                        |
-|   3    |   rw   |   0x0   | POLARITY_CH1 | Clock (`pcl`) polarity for Channel 1.  If low, `pda` signal changes on falling edge of `pcl` signal, otherwise pda changes on rising edge. Note that writes to a channel's configuration registers have no effect while the channel is enabled. |
-|   2    |   rw   |   0x0   | POLARITY_CH0 | Clock (`pcl`) polarity for Channel 0.  If low, `pda` signal changes on falling edge of pcl signal, otherwise pda changes on rising edge. Note that writes to a channel's configuration registers have no effect while the channel is enabled.   |
-|   1    |   rw   |   0x0   | ENABLE_CH1   | Enable pattern generator functionality for Channel 1                                                                                                                                                                                            |
-|   0    |   rw   |   0x0   | ENABLE_CH0   | Enable pattern generator functionality for Channel 0                                                                                                                                                                                            |
+|  Bits  |  Type  |  Reset  | Name                   | Description                                                                                                                                                                                                                                     |
+|:------:|:------:|:-------:|:-----------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|  31:8  |        |         |                        | Reserved                                                                                                                                                                                                                                        |
+|   7    |   rw   |   0x0   | INACTIVE_LEVEL_PDA_CH1 | If 0, `pda` is low when pattgen is not actively sending data bits (i.e., when pattgen is disabled or all data bits have been sent). If 1, `pda` is high when pattgen is not actively sending data bits.                                         |
+|   6    |   rw   |   0x0   | INACTIVE_LEVEL_PCL_CH1 | If 0, `pcl` is low when pattgen is not actively sending data bits (i.e., when pattgen is disabled or all data bits have been sent). If 1, `pcl` is high when pattgen is not actively sending data bits.                                         |
+|   5    |   rw   |   0x0   | INACTIVE_LEVEL_PDA_CH0 | If 0, `pda` is low when pattgen is not actively sending data bits (i.e., when pattgen is disabled or all data bits have been sent). If 1, `pda` is high when pattgen is not actively sending data bits.                                         |
+|   4    |   rw   |   0x0   | INACTIVE_LEVEL_PCL_CH0 | If 0, `pcl` is low when pattgen is not actively sending data bits (i.e., when pattgen is disabled or all data bits have been sent). If 1, `pcl` is high when pattgen is not actively sending data bits.                                         |
+|   3    |   rw   |   0x0   | POLARITY_CH1           | Clock (`pcl`) polarity for Channel 1.  If low, `pda` signal changes on falling edge of `pcl` signal, otherwise pda changes on rising edge. Note that writes to a channel's configuration registers have no effect while the channel is enabled. |
+|   2    |   rw   |   0x0   | POLARITY_CH0           | Clock (`pcl`) polarity for Channel 0.  If low, `pda` signal changes on falling edge of pcl signal, otherwise pda changes on rising edge. Note that writes to a channel's configuration registers have no effect while the channel is enabled.   |
+|   1    |   rw   |   0x0   | ENABLE_CH1             | Enable pattern generator functionality for Channel 1                                                                                                                                                                                            |
+|   0    |   rw   |   0x0   | ENABLE_CH0             | Enable pattern generator functionality for Channel 0                                                                                                                                                                                            |
 
 ## PREDIV_CH0
 PATTGEN pre-divider register for Channel 0

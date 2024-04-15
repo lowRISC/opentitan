@@ -145,6 +145,14 @@ module pattgen_reg_top (
   logic ctrl_polarity_ch0_wd;
   logic ctrl_polarity_ch1_qs;
   logic ctrl_polarity_ch1_wd;
+  logic ctrl_inactive_level_pcl_ch0_qs;
+  logic ctrl_inactive_level_pcl_ch0_wd;
+  logic ctrl_inactive_level_pda_ch0_qs;
+  logic ctrl_inactive_level_pda_ch0_wd;
+  logic ctrl_inactive_level_pcl_ch1_qs;
+  logic ctrl_inactive_level_pcl_ch1_wd;
+  logic ctrl_inactive_level_pda_ch1_qs;
+  logic ctrl_inactive_level_pda_ch1_wd;
   logic prediv_ch0_we;
   logic [31:0] prediv_ch0_qs;
   logic [31:0] prediv_ch0_wd;
@@ -450,6 +458,114 @@ module pattgen_reg_top (
 
     // to register interface (read)
     .qs     (ctrl_polarity_ch1_qs)
+  );
+
+  //   F[inactive_level_pcl_ch0]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_ctrl_inactive_level_pcl_ch0 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (ctrl_we),
+    .wd     (ctrl_inactive_level_pcl_ch0_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.ctrl.inactive_level_pcl_ch0.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (ctrl_inactive_level_pcl_ch0_qs)
+  );
+
+  //   F[inactive_level_pda_ch0]: 5:5
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_ctrl_inactive_level_pda_ch0 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (ctrl_we),
+    .wd     (ctrl_inactive_level_pda_ch0_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.ctrl.inactive_level_pda_ch0.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (ctrl_inactive_level_pda_ch0_qs)
+  );
+
+  //   F[inactive_level_pcl_ch1]: 6:6
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_ctrl_inactive_level_pcl_ch1 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (ctrl_we),
+    .wd     (ctrl_inactive_level_pcl_ch1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.ctrl.inactive_level_pcl_ch1.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (ctrl_inactive_level_pcl_ch1_qs)
+  );
+
+  //   F[inactive_level_pda_ch1]: 7:7
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_ctrl_inactive_level_pda_ch1 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (ctrl_we),
+    .wd     (ctrl_inactive_level_pda_ch1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.ctrl.inactive_level_pda_ch1.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (ctrl_inactive_level_pda_ch1_qs)
   );
 
 
@@ -800,6 +916,14 @@ module pattgen_reg_top (
   assign ctrl_polarity_ch0_wd = reg_wdata[2];
 
   assign ctrl_polarity_ch1_wd = reg_wdata[3];
+
+  assign ctrl_inactive_level_pcl_ch0_wd = reg_wdata[4];
+
+  assign ctrl_inactive_level_pda_ch0_wd = reg_wdata[5];
+
+  assign ctrl_inactive_level_pcl_ch1_wd = reg_wdata[6];
+
+  assign ctrl_inactive_level_pda_ch1_wd = reg_wdata[7];
   assign prediv_ch0_we = addr_hit[5] & reg_we & !reg_error;
 
   assign prediv_ch0_wd = reg_wdata[31:0];
@@ -873,6 +997,10 @@ module pattgen_reg_top (
         reg_rdata_next[1] = ctrl_enable_ch1_qs;
         reg_rdata_next[2] = ctrl_polarity_ch0_qs;
         reg_rdata_next[3] = ctrl_polarity_ch1_qs;
+        reg_rdata_next[4] = ctrl_inactive_level_pcl_ch0_qs;
+        reg_rdata_next[5] = ctrl_inactive_level_pda_ch0_qs;
+        reg_rdata_next[6] = ctrl_inactive_level_pcl_ch1_qs;
+        reg_rdata_next[7] = ctrl_inactive_level_pda_ch1_qs;
       end
 
       addr_hit[5]: begin

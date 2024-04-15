@@ -15,6 +15,8 @@ module pattgen_chan
 
   logic        enable;
   logic        polarity_q;
+  logic        inactive_level_pcl_q;
+  logic        inactive_level_pda_q;
   logic [31:0] prediv_q;
   logic [63:0] data_q;
   logic [5:0]  len_q;
@@ -39,22 +41,28 @@ module pattgen_chan
   logic        complete_q;
   logic        complete_q2;
 
+  logic        active, active_d, active_q;
+
   // only accept new control signals when
   // enable is deasserted
   assign enable = ctrl_i.enable;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      polarity_q <=  1'h0;
-      prediv_q   <= 32'h0;
-      data_q     <= 64'h0;
-      len_q      <=  6'h0;
-      reps_q     <= 10'h0;
+      polarity_q           <=  1'h0;
+      inactive_level_pcl_q <=  1'h0;
+      inactive_level_pda_q <=  1'h0;
+      prediv_q             <= 32'h0;
+      data_q               <= 64'h0;
+      len_q                <=  6'h0;
+      reps_q               <= 10'h0;
     end else begin
-      polarity_q <= enable ? polarity_q : ctrl_i.polarity;
-      prediv_q   <= enable ? prediv_q   : ctrl_i.prediv;
-      data_q     <= enable ? data_q     : ctrl_i.data;
-      len_q      <= enable ? len_q      : ctrl_i.len;
-      reps_q     <= enable ? reps_q     : ctrl_i.reps;
+      polarity_q           <= enable ? polarity_q           : ctrl_i.polarity;
+      inactive_level_pcl_q <= enable ? inactive_level_pcl_q : ctrl_i.inactive_level_pcl;
+      inactive_level_pda_q <= enable ? inactive_level_pda_q : ctrl_i.inactive_level_pda;
+      prediv_q             <= enable ? prediv_q             : ctrl_i.prediv;
+      data_q               <= enable ? data_q               : ctrl_i.data;
+      len_q                <= enable ? len_q                : ctrl_i.len;
+      reps_q               <= enable ? reps_q               : ctrl_i.reps;
     end
   end
 
@@ -64,8 +72,10 @@ module pattgen_chan
       pcl_o <= 1'b0;
       pda_o <= 1'b0;
     end else begin
-      pcl_o <= polarity_q ? ~pcl_int_q : pcl_int_q;
-      pda_o <= (!enable) ? 1'b0 : data_q[bit_cnt_q];
+      pcl_o <= active ? (polarity_q ? ~pcl_int_q : pcl_int_q)
+                      : inactive_level_pcl_q;
+      pda_o <= active ? data_q[bit_cnt_q]
+                      : inactive_level_pda_q;
     end
   end
 
@@ -131,5 +141,19 @@ module pattgen_chan
   end
 
   assign event_done_o = complete_q & ~complete_q2;
+
+  assign active_d = complete_q ? 1'b0 : // clearing on completion takes precedence
+                    enable     ? 1'b1 : // set to active when enabled (and not complete)
+                    active_q;           // otherwise hold
+
+  assign active = enable ? active_d : active_q;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      active_q <= 1'b0;
+    end else begin
+      active_q <= active_d;
+    end
+  end
 
 endmodule : pattgen_chan
