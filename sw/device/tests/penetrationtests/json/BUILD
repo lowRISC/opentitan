@@ -52,6 +52,13 @@ cc_library(
 )
 
 cc_library(
+    name = "sca_lib_commands",
+    srcs = ["sca_lib_commands.c"],
+    hdrs = ["sca_lib_commands.h"],
+    deps = ["//sw/device/lib/ujson"],
+)
+
+cc_library(
     name = "kmac_sca_commands",
     srcs = ["kmac_sca_commands.c"],
     hdrs = ["kmac_sca_commands.h"],

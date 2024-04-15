@@ -6,6 +6,7 @@
 #define OPENTITAN_SW_DEVICE_TESTS_PENETRATIONTESTS_FIRMWARE_SCA_LIB_H_
 
 #include "sw/device/lib/ujson/ujson.h"
+#include "sw/device/tests/penetrationtests/json/sca_lib_commands.h"
 
 typedef struct sca_registered_alerts {
   uint32_t alerts_1;
@@ -30,6 +31,16 @@ sca_registered_alerts_t sca_get_triggered_alerts(void);
  * Register all alerts and let them escalate to Phase0 only.
  */
 void sca_configure_alert_handler(void);
+
+/**
+ * Reads the device ID from the LC.
+ *
+ * Can be used to categorize different SCA and FI runs.
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t sca_read_device_id(ujson_t *uj);
 
 /**
  * Configures CPU for SCA and FI penetration tests.
