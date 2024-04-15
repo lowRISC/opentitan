@@ -757,7 +757,8 @@
             - Verify that there are no reports of bit stuffing errors or CRC errors.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_freq_loclk",
+              "usbdev_freq_hiclk"]
     }
     {
       name: max_clock_error_tracking
@@ -780,7 +781,8 @@
               the USB device starting at the maximum frequecy.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_freq_loclk_max",
+              "usbdev_freq_hiclk_max"]
     }
     {
       name: max_phase_error
@@ -794,7 +796,7 @@
               of the transaction.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_freq_phase"]
     }
     {
       name: min_inter_pkt_delay

@@ -79,6 +79,9 @@ module tb;
 
   // Wake request from AON/Wake to usb20_agent
   wire wake_req_aon;
+  // Bus timing reference signals.
+  wire usb_ref_val;
+  wire usb_ref_pulse;
 
   // interfaces
   clk_rst_if aon_clk_rst_if(.clk(aon_clk), .rst_n(aon_rst_n));
@@ -150,8 +153,8 @@ module tb;
     .usb_aon_wake_detect_active_i (usb_aon_wake_detect_active),
 
     // SOF reference for clock calibration
-    .usb_ref_val_o          (usb20_block_if.usb_ref_val_o  ),
-    .usb_ref_pulse_o        (usb20_block_if.usb_ref_pulse_o),
+    .usb_ref_val_o          (usb_ref_val),
+    .usb_ref_pulse_o        (usb_ref_pulse),
 
     // memory configuration
     .ram_cfg_i              ('0),
@@ -185,6 +188,8 @@ module tb;
   assign usb20_block_if.usb_dp_o        = cio_usb_dp;
   assign usb20_block_if.usb_dn_o        = cio_usb_dn;
   assign usb20_block_if.wake_req_aon    = wake_req_aon;
+  assign usb20_block_if.usb_ref_val_o   = usb_ref_val;
+  assign usb20_block_if.usb_ref_pulse_o = usb_ref_pulse;
 
   // Drivers from the USB device
   assign (strong0, strong1) usb_p = cio_usb_dp_en ? cio_usb_dp : 1'bZ;
@@ -263,6 +268,24 @@ module tb;
     .wake_detect_active_aon_o (usb_aon_wake_detect_active)
   );
 
+  // Monitoring of the host and DUT clocks, to drive oscillator tuning and assist with checking in
+  // the freq/phase delta test sequences. This monitoring information is both visible in waveforms
+  // and used by the DV to measure the time intervals between assertions of 'usb_ref_pulse_o.'
+  //
+  // A separate interface performs the monitoring because it is required for use with both
+  // 'usb20_agent' and 'usb20_usbdpi.'
+  usbdev_osc_tuning_if usbdev_osc_tuning_if (
+    // Host signals.
+    .host_clk_i       (host_clk),
+    .host_rst_ni      (host_rst_n),
+    // DUT signals.
+    .usb_clk_i        (usb_clk),
+    .usb_rst_ni       (usb_rst_n),
+    // Timing reference signals.
+    .usb_ref_val_i    (usb_ref_val),
+    .usb_ref_pulse_i  (usb_ref_pulse)
+  );
+
   initial begin
     // drive clk and rst_n from clk_if
     aon_clk_rst_if.set_active();
@@ -271,6 +294,8 @@ module tb;
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", usbdev_clk_rst_if);
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "aon_clk_rst_vif", aon_clk_rst_if);
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "host_clk_rst_vif", host_clk_rst_if);
+    uvm_config_db#(virtual usbdev_osc_tuning_if)::set(null, "*.env", "usbdev_osc_tuning_vif",
+                   usbdev_osc_tuning_if);
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(virtual usb20_if)::set(null, "*.env", "vif", usb20_if);

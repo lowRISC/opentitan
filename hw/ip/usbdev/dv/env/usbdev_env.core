@@ -14,6 +14,7 @@ filesets:
       - lowrisc:dv:dv_base_reg
     files:
       - usbdev_env_pkg.sv
+      - usbdev_osc_tuning_if.sv
       - usbdev_env_cfg.sv: {is_include_file: true}
       - usbdev_env_cov.sv: {is_include_file: true}
       - usbdev_virtual_sequencer.sv: {is_include_file: true}
@@ -44,6 +45,7 @@ filesets:
       - seq_lib/usbdev_enable_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_endpoint_access_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_fifo_rst_vseq.sv: {is_include_file: true}
+      - seq_lib/usbdev_freq_phase_delta_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_host_lost_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_in_iso_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_in_rand_trans_vseq.sv: {is_include_file: true}

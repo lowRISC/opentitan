@@ -29,22 +29,14 @@ class usbdev_env extends cip_base_env #(
     if (!uvm_config_db#(virtual usb20_if)::get(this, "", "vif", cfg.usb20_usbdpi_vif)) begin
       `uvm_fatal(`gfn, "failed to get usb20_if handle from uvm_config_db")
     end
-
-    // Use the configured USB speed for the main clock
-    cfg.clk_rst_vif.set_freq_khz(cfg.usb_clk_freq_khz);
-
-    // Use a sensible speed for the AON clock
-    cfg.aon_clk_rst_vif.set_freq_khz(cfg.aon_clk_freq_khz);
+    // Access to oscillator tuning/timing reference interface.
+    if (!uvm_config_db#(virtual usbdev_osc_tuning_if)::get(this, "", "usbdev_osc_tuning_vif",
+        cfg.osc_tuning_vif)) begin
+      `uvm_fatal(`gfn, "failed to get usbdev_osc_tuning_if handle from uvm_config_db")
+    end
 
     // Use the selected host clock frequency; this may differ from that of the DUT.
     // The DUT is required to cope with a certain amount of disparity, and adjust itself
-    // to match the frequency of the host over time.
-    cfg.host_clk_rst_vif.set_freq_khz(cfg.host_clk_freq_khz);
-
-    // Report the clock frequencies.
-    `uvm_info(`gfn, $sformatf("usb_clk %dkHz, host_clk %dkHz",
-                              cfg.usb_clk_freq_khz, cfg.host_clk_freq_khz), UVM_MEDIUM)
-
     // create components
     m_usb20_agent = usb20_agent::type_id::create("m_usb20_agent", this);
     uvm_config_db#(usb20_agent_cfg)::set(this, "m_usb20_agent*", "cfg", cfg.m_usb20_agent_cfg);

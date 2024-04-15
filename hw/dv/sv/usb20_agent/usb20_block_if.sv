@@ -20,8 +20,8 @@ interface usb20_block_if (
   logic usb_tx_se0_o;
   logic usb_tx_d_o;
   // Non-data pins
-  logic usb_dp_pullup_o ;
-  logic usb_dn_pullup_o ;
+  logic usb_dp_pullup_o;
+  logic usb_dn_pullup_o;
   logic usb_rx_enable_o;
   logic usb_tx_use_d_se0_o;
   logic drive_vbus;          // to drive usb_vbus from driver
