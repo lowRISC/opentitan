@@ -8,8 +8,11 @@ class hmac_test_vectors_hmac_vseq extends hmac_test_vectors_sha_vseq;
   `uvm_object_utils(hmac_test_vectors_hmac_vseq)
   `uvm_object_new
 
+  constraint hmac_enabled_c {
+    hmac_en == 1;
+  }
+
   task body();
-    hmac_en = 1'b1;
     vector_list = test_vectors_pkg::hmac_file_list;
     super.body();
   endtask

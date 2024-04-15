@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 class hmac_env_cfg extends cip_base_env_cfg #(.RAL_T(hmac_reg_block));
+  `uvm_object_utils(hmac_env_cfg)
+  `uvm_object_new
 
   // A flag to nofity scoreboard if digest is corrupted by wipe_secret command.
   bit wipe_secret_triggered;
@@ -18,9 +20,6 @@ class hmac_env_cfg extends cip_base_env_cfg #(.RAL_T(hmac_reg_block));
   int save_and_restore_pct;
 
   hmac_vif hmac_vif;
-
-  `uvm_object_utils(hmac_env_cfg)
-  `uvm_object_new
 
   virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1);
     list_of_alerts = hmac_env_pkg::LIST_OF_ALERTS;
