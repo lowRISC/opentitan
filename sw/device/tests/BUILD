@@ -25,6 +25,7 @@ load(
 )
 load(
     "//rules/opentitan:defs.bzl",
+    "EARLGREY_CW340_TEST_ENVS",
     "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
     "EARLGREY_TEST_ENVS",
     "cw310_params",
@@ -3604,10 +3605,9 @@ opentitan_test(
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EARLGREY_CW340_TEST_ENVS,
         {
             "//hw/top_earlgrey:silicon_creator": None,
-            "//hw/top_earlgrey:fpga_cw340_test_rom": None,
-            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
         },
     ),
     deps = [

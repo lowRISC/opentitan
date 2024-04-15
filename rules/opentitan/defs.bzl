@@ -86,6 +86,15 @@ EARLGREY_SILICON_OWNER_ROM_EXT_ENVS = {
     "//hw/top_earlgrey:silicon_owner_prodc_rom_ext": None,
 }
 
+# All CW340 test environments for Earlgrey.
+EARLGREY_CW340_TEST_ENVS = {
+    "//hw/top_earlgrey:fpga_cw340_test_rom": None,
+    "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+    "//hw/top_earlgrey:fpga_cw340_sival": None,
+    "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
+    "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+}
+
 # Messages we expect for possible test outcomes.
 OTTF_SUCCESS_MSG = r"PASS.*\n"
 OTTF_FAILURE_MSG = r"(FAIL|FAULT).*\n"
