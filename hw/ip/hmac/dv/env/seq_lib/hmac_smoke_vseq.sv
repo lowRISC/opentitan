@@ -6,26 +6,18 @@ class hmac_smoke_vseq extends hmac_base_vseq;
   `uvm_object_utils(hmac_smoke_vseq)
   `uvm_object_new
 
-  constraint num_trans_c {
-    num_trans inside {[1:50]};
-  }
-
-  rand bit               hmac_en;
   rand bit               sha_en;
   rand bit               endian_swap;
   rand bit               digest_swap;
-  rand bit [3:0]         digest_size;
   rand bit               intr_fifo_empty_en;
   rand bit               intr_hmac_done_en;
   rand bit               intr_hmac_err_en;
   rand bit [31:0]        key[];
-  rand bit [4:0]         key_length;
   rand bit [7:0]         msg[];
   rand int               burst_wr_length;
   rand bit               do_hash_start_when_active;
   rand bit               do_hash_start;
   rand bit               re_enable_sha;
-  rand bit               do_sha_hash;
   rand wipe_secret_req_e do_wipe_secret;
 
   // HMAC key size will always be 1024 bits.
@@ -34,43 +26,29 @@ class hmac_smoke_vseq extends hmac_base_vseq;
     key.size() == NUM_KEYS;
   }
 
+  constraint num_trans_c {
+    num_trans inside {[1:50]};
+  }
+
   constraint legal_seq_c {
-    do_hash_start == 1;
-    sha_en == 1;
+    do_hash_start             == 1;
+    sha_en                    == 1;
     do_hash_start_when_active == 0;
-    wr_key_during_hash == 0;
-    wr_config_during_hash == 0;
+    wr_key_during_hash        == 0;
+    wr_config_during_hash     == 0;
   }
 
   //msg[] is a streaming msg input so can be of any size and needs its size dist-constrained
   constraint msg_c {
     msg.size() dist {
-        0       :/ 1,
-        [1 :60] :/ 8,
-        [61:64] :/ 1
+      0       :/ 1,
+      [1 :60] :/ 8,
+      [61:64] :/ 1
     }; // upto 64 bytes (16 words, 512 bits)
   }
 
   constraint burst_wr_c {
     burst_wr_length inside {[1 : HMAC_MSG_FIFO_DEPTH]};
-  }
-
-  constraint key_digest_c {
-    key_length dist {
-      5'b0_0001 := 0,
-      5'b0_0010 := 10, // 256-bit key
-      5'b0_0100 := 0,
-      5'b0_1000 := 0,
-      5'b1_0000 := 0
-    };
-    // smoke passes for all digest sizes and key lengths but
-    // only testing 256 for rest of tests for M2 milestone
-    digest_size dist {
-      4'b0010 := 10, // SHA-2 256
-      4'b0100 := 0, // SHA-2 384
-      4'b1000 := 0, // SHA-2 512
-      4'b0001 := 0  // SHA-2 None //TODO: test unsupported config
-    };
   }
 
   constraint intr_enable_c {
@@ -133,7 +111,7 @@ class hmac_smoke_vseq extends hmac_base_vseq;
       if (i != 1 && $urandom_range(0, 1)) rd_digest();
 
       if (do_wipe_secret == WipeSecretBeforeStart) begin
-      `uvm_info(`gfn, $sformatf("wiping before start"), UVM_LOW)
+        `uvm_info(`gfn, $sformatf("wiping before start"), UVM_LOW)
 
         wipe_secrets();
         // Here the wipe secret will only corrupt secret keys and current digests.
@@ -150,8 +128,7 @@ class hmac_smoke_vseq extends hmac_base_vseq;
 
             if (do_burst_wr) burst_wr_msg(msg, burst_wr_length);
             else             wr_msg(msg);
-
-         end
+          end
           begin
             if (do_wipe_secret == WipeSecretBeforeProcess) begin
               `uvm_info(`gfn, $sformatf("wiping before process"), UVM_LOW)

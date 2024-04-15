@@ -9,10 +9,6 @@ class hmac_test_vectors_sha_vseq extends hmac_base_vseq;
   `uvm_object_new
 
   rand bit [31:0] key[]; // random because SHA-2 will not use the key
-  rand bit [4:0]  key_length;
-  rand bit [3:0]  digest_size;
-
-  bit hmac_en;           // SHA-2 only
 
   string vector_list[] = test_vectors_pkg::sha_file_list;
 
@@ -22,26 +18,10 @@ class hmac_test_vectors_sha_vseq extends hmac_base_vseq;
     key.size() == NUM_KEYS;
   }
 
-  // key length only factors in for testing HMAC
-  // only testing 256-bit key now
-  // TODO: extend to test other key lengths
-  constraint key_digest_c {
-    key_length dist {
-      5'b0_0001 := 0,
-      5'b0_0010 := 10, // 256-bit key
-      5'b0_0100 := 0,
-      5'b0_1000 := 0,
-      5'b1_0000 := 0
-    };
-    // only testing SHA-2 256 now
-    // TODO: extend to test other digest sizes
-    digest_size dist {
-      4'b0010 := 10, // SHA-2 256
-      4'b0100 := 0, // SHA-2 384
-      4'b1000 := 0, // SHA-2 512
-      4'b0001 := 0  // SHA-2 None
-    };
+  constraint hmac_disabled_c {
+    soft hmac_en == 0;
   }
+
   virtual task pre_start();
     do_hmac_init = 1'b0;
     super.pre_start();

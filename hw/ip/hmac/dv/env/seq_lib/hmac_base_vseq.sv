@@ -12,9 +12,14 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
   bit do_hmac_init     = 1'b1;
   bit do_back_pressure = 1'b0;
   bit do_burst_wr      = 1'b0;
-  rand bit [TL_AW-1:0]  wr_addr;
-  rand bit [TL_DBW-1:0] wr_mask;
-  rand bit wr_config_during_hash, wr_key_during_hash;
+
+  rand bit [TL_AW-1:0]    wr_addr;
+  rand bit [TL_DBW-1:0]   wr_mask;
+  rand bit                wr_config_during_hash;
+  rand bit                wr_key_during_hash;
+  rand bit                hmac_en;
+  rand bit [3:0]          digest_size;
+  rand bit [4:0]          key_length;
 
   constraint wr_addr_c {
     wr_addr inside {[HMAC_MSG_FIFO_BASE : HMAC_MSG_FIFO_LAST_ADDR]};
@@ -22,8 +27,30 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
 
   constraint wr_mask_c {
     $countones(wr_mask) dist {
-        TL_DBW       :/ 1,
-        [1:TL_DBW-1] :/ 1
+      TL_DBW       :/ 1,
+      [1:TL_DBW-1] :/ 1
+    };
+  }
+
+  // key length only factors in for testing HMAC
+  // only testing 256-bit key now
+  constraint key_digest_c {
+    key_length dist {
+      5'b0_0001 := 0,
+      5'b0_0010 := 10, // 256-bit key
+      5'b0_0100 := 0,
+      5'b0_1000 := 0,
+      5'b1_0000 := 0
+    };
+  }
+
+  // only testing SHA-2 256 now
+  constraint digest_size_c {
+    digest_size dist {
+      4'b0010 := 10, // SHA-2 256
+      4'b0100 := 0, // SHA-2 384
+      4'b1000 := 0, // SHA-2 512
+      4'b0001 := 0  // SHA-2 None
     };
   }
 
@@ -338,8 +365,9 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
       // can safely assume that `exp_digest` always has 16 elements
       // since HMAC output digest size is 512 bits.
       foreach (act_digest[i]) begin
-         `uvm_info(`gfn, $sformatf("Actual digest %0d, 0x%0h", i, act_digest[i]), UVM_LOW)
-         `uvm_info(`gfn, $sformatf("Expected digest %0d, 0x%0h", i, packed_exp_digest[i]), UVM_LOW)
+        `uvm_info(`gfn, $sformatf("Actual digest %0d, 0x%0h", i, act_digest[i]), UVM_MEDIUM)
+        `uvm_info(`gfn, $sformatf("Expected digest %0d, 0x%0h", i, packed_exp_digest[i]),
+                  UVM_MEDIUM)
       end
 
       // comparing for SHA-2 256
@@ -350,7 +378,6 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
           `DV_CHECK_EQ(act_digest[i], '0);
         end
       end
-
     end else begin
       `uvm_info(`gfn, "skipped comparison due to reset", UVM_LOW)
     end

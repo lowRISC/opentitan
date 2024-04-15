@@ -34,8 +34,8 @@ package hmac_env_pkg;
   // 1 cycles to write a msg word to hmac_msg_fifo
   parameter uint32 HMAC_WR_WORD_CYCLE        = 1;
 
-  parameter uint NUM_DIGESTS = 16;
-  parameter uint NUM_KEYS = 32;
+  parameter uint NUM_DIGESTS  = 16;
+  parameter uint NUM_KEYS     = 32;
 
   // alerts
   parameter uint NUM_ALERTS = 1;
