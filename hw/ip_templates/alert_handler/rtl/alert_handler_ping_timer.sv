@@ -58,6 +58,9 @@ module alert_handler_ping_timer import alert_pkg::*; #(
   localparam int unsigned ReseedLfsrExtraBits = 3;
   localparam int unsigned ReseedLfsrWidth = PING_CNT_DW + ReseedLfsrExtraBits;
 
+  // The number of bits needed for an index into the esc senders
+  localparam int unsigned EscSenderIdxWidth = $clog2(N_ESC_SEV);
+
   // A few smoke checks for the DV mask:
   // 1) make sure the value is a right-aligned mask.
   //    this can be done by checking that mask+1 is a power of 2.
@@ -189,12 +192,12 @@ module alert_handler_ping_timer import alert_pkg::*; #(
   // are permanently asserted.
 
   logic esc_cnt_en, esc_cnt_clr, esc_cnt_error;
-  logic [PING_CNT_DW-1:0] esc_cnt;
-  assign esc_cnt_clr = (esc_cnt >= PING_CNT_DW'(N_ESC_SEV-1)) && esc_cnt_en;
+  logic [EscSenderIdxWidth-1:0] esc_cnt;
+  assign esc_cnt_clr = (esc_cnt >= EscSenderIdxWidth'(N_ESC_SEV-1)) && esc_cnt_en;
 
   // SEC_CM: PING_TIMER.CTR.REDUN
   prim_count #(
-    .Width(PING_CNT_DW),
+    .Width(EscSenderIdxWidth),
     // The alert handler behaves differently than other comportable IP. I.e., instead of sending out
     // an alert signal, this condition is handled internally in the alert handler.
     .EnableAlertTriggerSVA(0)
@@ -206,7 +209,7 @@ module alert_handler_ping_timer import alert_pkg::*; #(
     .set_cnt_i('0),
     .incr_en_i(esc_cnt_en),
     .decr_en_i(1'b0),
-    .step_i(PING_CNT_DW'(1)),
+    .step_i(EscSenderIdxWidth'(1)),
     .commit_i(1'b1),
     .cnt_o(esc_cnt),
     .cnt_after_commit_o(),
@@ -265,7 +268,7 @@ module alert_handler_ping_timer import alert_pkg::*; #(
 
   // generate ping enable vector
   assign alert_ping_req_o = NAlerts'(alert_ping_en) << id_to_ping_q;
-  assign esc_ping_req_o   = N_ESC_SEV'(esc_ping_en) << esc_cnt;
+  assign esc_ping_req_o   = EscSenderIdxWidth'(esc_ping_en) << esc_cnt;
 
   // under normal operation, these signals should never be asserted.
   // we place hand instantiated buffers here such that these signals are not
