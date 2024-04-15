@@ -907,6 +907,9 @@ status_t handle_aes_sca_init(ujson_t *uj) {
   // measurements.
   sca_configure_cpu();
 
+  // Read the device ID and return it back to the host.
+  TRY(sca_read_device_id(uj));
+
   return OK_STATUS(0);
 }
 

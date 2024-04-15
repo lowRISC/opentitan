@@ -7,6 +7,7 @@
 #include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_alert_handler.h"
+#include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/dif/dif_rv_core_ibex.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
@@ -14,12 +15,14 @@
 #include "sw/device/lib/testing/alert_handler_testutils.h"
 #include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
+#include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 static dif_rv_plic_t plic;
 static dif_rstmgr_t rstmgr;
 static dif_alert_handler_t alert_handler;
+static dif_lc_ctrl_t lc;
 
 sca_registered_alerts_t sca_get_triggered_alerts(void) {
   bool is_cause;
@@ -107,6 +110,21 @@ void sca_configure_alert_handler(void) {
   // Enables alert handler irq.
   CHECK_DIF_OK(dif_alert_handler_irq_set_enabled(
       &alert_handler, kDifAlertHandlerIrqClassa, kDifToggleEnabled));
+}
+
+status_t sca_read_device_id(ujson_t *uj) {
+  mmio_region_t lc_reg = mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_BASE_ADDR);
+  CHECK_DIF_OK(dif_lc_ctrl_init(lc_reg, &lc));
+
+  dif_lc_ctrl_device_id_t lc_device_id;
+  CHECK_DIF_OK(dif_lc_ctrl_get_device_id(&lc, &lc_device_id));
+
+  // Send back to the host.
+  penetrationtest_device_id_t uj_output;
+  memcpy(uj_output.device_id, lc_device_id.data, 8 * sizeof(uint32_t));
+  RESP_OK(ujson_serialize_penetrationtest_device_id_t, uj, &uj_output);
+
+  return OK_STATUS();
 }
 
 void sca_configure_cpu(void) {

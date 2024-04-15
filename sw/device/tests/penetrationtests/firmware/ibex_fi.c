@@ -1072,6 +1072,9 @@ status_t handle_ibex_fi_init(ujson_t *uj) {
       mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
       &rv_core_ibex));
 
+  // Read the device ID and return it back to the host.
+  TRY(sca_read_device_id(uj));
+
   return OK_STATUS();
 }
 
