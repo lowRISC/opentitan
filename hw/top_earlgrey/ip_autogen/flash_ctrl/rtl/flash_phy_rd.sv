@@ -465,63 +465,64 @@ module flash_phy_rd
 
   logic fifo_data_ready;
   logic fifo_data_valid;
+  logic fifo_forward_pop;
+  logic rd_and_mask_fifo_pop;
   logic mask_valid;
   logic [PlainDataWidth-1:0] fifo_data;
   logic [DataWidth-1:0] mask;
   logic data_fifo_rdy;
   logic mask_fifo_rdy;
   logic descram;
+  logic dropmsk;
   logic forward;
+  logic descram_q;
+  logic dropmsk_q;
+  logic forward_q;
   logic hint_forward;
+  logic hint_dropmsk;
   logic hint_descram;
   logic data_err_q;
   logic [NumBuf-1:0] alloc_q2;
+  logic [1:0] unused_rd_depth, unused_mask_depth;
 
   assign scramble_stage_rdy = data_fifo_rdy & mask_fifo_rdy;
 
-  // data is consumed when:
-  // 1. When descrambling completes
-  // 2. Immediately consumed when descrambling not required
-  // 3. In both cases, when data has not already been forwarded
-  assign fifo_data_ready = hint_descram ? descramble_req_o & descramble_ack_i :
-                                          fifo_data_valid;
-
   // descramble is only required if the location is scramble enabled AND it is not erased.
   assign descram = rd_done & rd_attrs.descramble & ~data_erased;
+
+  // If the location is scramble enabled but has been erased, we'll need to drop the computed mask.
+  assign dropmsk = rd_done & rd_attrs.descramble & data_erased;
 
   // data is forwarded whenever it does not require descrambling and there are no entries in the
   // FIFO to ensure the current read cannot run ahead of the descramble.
   assign forward = rd_done & ~descram & ~fifo_data_valid;
 
-  // storage for read outputs
-  // This storage element can be fully merged with the fifo below if the time it takes
-  // to do a read is matched to gf_mult.  This is doable and should be considered.
-  // However it would create a dependency on constraints (multicycle) instead of
-  // being correct by construction.
-  //
-  // In addition to potential different completion times, the mask storage may also
-  // be pushed even if it is not required (erase case). The solution for this issue
-  // is that the mask / data are always pushed, it is then selectively popped based
-  // on the forward / de-scrambling hints.
-  //
-  // All these problems could be resolved if the timings matched exactly, however
-  // the user would need to correctly setup constraints on either flash / gf_mult
-  // timing change.
-  logic fifo_forward_pop;
-  assign fifo_forward_pop = hint_forward & fifo_data_valid;
-
-  logic [1:0] unused_rd_depth, unused_mask_depth;
-  logic rd_and_mask_fifo_pop;
-  assign rd_and_mask_fifo_pop = fifo_data_ready | fifo_forward_pop;
-
-  logic descram_q, forward_q;
   assign hint_descram = fifo_data_valid & descram_q;
+  assign hint_dropmsk = fifo_data_valid & dropmsk_q;
   assign hint_forward = fifo_data_valid & forward_q;
+
+  // Data is consumed when:
+  // 1. If the location is scramble enabled:
+  //    a) When descrambling completes.
+  //    b) As soon as the mask computation finishes, in case the mask is to be dropped.
+  // 2. If the location is not scramble enabled:
+  //    - As soon as the data is ready from the FIFO. For the forwarding case, see below.
+  assign fifo_data_ready = hint_descram ? descramble_req_o & descramble_ack_i :
+                           hint_dropmsk ? mask_valid                          : fifo_data_valid;
+
+  // In the case of forwarding, the storage FIFOs are bypassed but still pushed. Once the forwarded
+  // entries arrive at the output of the read FIFO, we need to drop them. If a mask has been
+  // computed that is not used (e.g. because of erasing a location that is scramble enabled), wait
+  // for the mask computation to be done and then drop the forwarded data together with the
+  // corresponding mask.
+  assign fifo_forward_pop = hint_forward & (hint_dropmsk ? mask_valid : 1'b1);
+
+  assign rd_and_mask_fifo_pop = fifo_data_ready | fifo_forward_pop;
 
   // See comment above on how FIFO popping can be improved in the future
   logic rd_stage_fifo_err;
   prim_fifo_sync #(
-    .Width   (PlainDataWidth + 3 + NumBuf),
+    .Width   (PlainDataWidth + 4 + NumBuf),
     .Pass    (0),
     .Depth   (2),
     .OutputZeroIfEmpty (1),
@@ -532,12 +533,12 @@ module flash_phy_rd
     .clr_i   (1'b0),
     .wvalid_i(rd_done),
     .wready_o(data_fifo_rdy),
-    .wdata_i ({alloc_q, descram, forward, data_err, data_int}),
+    .wdata_i ({alloc_q, descram, dropmsk, forward, data_err, data_int}),
     .depth_o (unused_rd_depth),
     .full_o (),
     .rvalid_o(fifo_data_valid),
     .rready_i(rd_and_mask_fifo_pop),
-    .rdata_o ({alloc_q2, descram_q, forward_q, data_err_q, fifo_data}),
+    .rdata_o ({alloc_q2, descram_q, dropmsk_q, forward_q, data_err_q, fifo_data}),
     .err_o   (rd_stage_fifo_err)
   );
 
