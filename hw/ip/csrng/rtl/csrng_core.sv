@@ -1002,7 +1002,7 @@ module csrng_core import csrng_pkg::*; #(
 
   // set ack status for configured instances
   for (genvar i = 0; i < NHwApps; i = i+1) begin : gen_app_if_sts
-    assign hw_exception_sts[i] = cmd_stage_ack[i] && cmd_stage_ack_sts[i];
+    assign hw_exception_sts[i] = cmd_stage_ack[i] && (cmd_stage_ack_sts[i] != CMD_STS_SUCCESS);
   end : gen_app_if_sts
 
   // set ack status to zero for un-configured instances
