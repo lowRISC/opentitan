@@ -531,7 +531,7 @@ The FPGA tests attempt to load the latest bitstream by default, but because we w
 
 ```console
 # Load the bitstream with opentitantool
-./bazelisk.sh run //sw/host/opentitantool --interface=cw340 fpga load-bitstream <path_to_your_bitstream>
+./bazelisk.sh run //sw/host/opentitantool -- --interface=cw340 fpga load-bitstream <path_to_your_bitstream>
 
 # Run the broken test locally, showing all test output and skipping the bitstream loading
 ./bazelisk.sh test <broken_test_rule> --define bitstream=skip --test_output=streamed
