@@ -270,6 +270,7 @@ opentitan_binary(
     name = "rom_ext_slot_a",
     exec_env = [
         "//hw/top_earlgrey:fpga_cw310",
+        "//hw/top_earlgrey:fpga_cw340",
         "//hw/top_earlgrey:sim_dv_base",
         "//hw/top_earlgrey:sim_verilator_base",
         "//hw/top_earlgrey:silicon_creator",
@@ -292,6 +293,7 @@ opentitan_binary(
     name = "rom_ext_slot_b",
     exec_env = [
         "//hw/top_earlgrey:fpga_cw310",
+        "//hw/top_earlgrey:fpga_cw340",
         "//hw/top_earlgrey:sim_dv_base",
         "//hw/top_earlgrey:sim_verilator_base",
         "//hw/top_earlgrey:silicon_creator",
@@ -314,6 +316,7 @@ opentitan_binary(
     name = "rom_ext_slot_virtual",
     exec_env = [
         "//hw/top_earlgrey:fpga_cw310",
+        "//hw/top_earlgrey:fpga_cw340",
         "//hw/top_earlgrey:sim_dv_base",
         "//hw/top_earlgrey:sim_verilator_base",
         "//hw/top_earlgrey:silicon_creator",
@@ -342,6 +345,7 @@ opentitan_binary(
     name = "rom_ext_slot_a_bad_address_translation",
     exec_env = [
         "//hw/top_earlgrey:fpga_cw310",
+        "//hw/top_earlgrey:fpga_cw340",
         "//hw/top_earlgrey:sim_dv_base",
         "//hw/top_earlgrey:sim_verilator_base",
     ],

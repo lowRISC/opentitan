@@ -331,6 +331,66 @@ fpga_cw340(
     """,
 )
 
+fpga_cw340(
+    name = "fpga_cw340_rom_ext",
+    testonly = True,
+    base = ":fpga_cw340_rom_with_fake_keys",
+    exec_env = "fpga_cw340_rom_ext",
+    libs = [
+        "//sw/device/lib/arch:boot_stage_owner",
+        "//sw/device/lib/arch:fpga_cw340",
+    ],
+    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
+    manifest = "//sw/device/silicon_owner:manifest_standard",
+    otp = "//sw/device/silicon_creator/rom_ext/e2e:otp_img_secret2_locked_rma",
+    param = {
+        "interface": "hyper340",
+        "exit_success": DEFAULT_TEST_SUCCESS_MSG,
+        "exit_failure": DEFAULT_TEST_FAILURE_MSG,
+        "assemble": "{rom_ext}@0 {firmware}@0x10000",
+    },
+    rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a",
+    rsa_key = {"//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_test_private_key_0": "test_key_0"},
+)
+
+# FPGA configuration used to emulate silicon targets. This rule can be used by
+# targets that require executing at the `rom_ext` stage level in flash, as well
+# as SRAM programs. Use the `fpga_cw340_sival_rom_ext` execution environment to
+# emulate silicon targets containing a `rom_ext` stage.
+# See sw/device/tests/doc/sival/devguide.md for more details.
+fpga_cw340(
+    name = "fpga_cw340_sival",
+    testonly = True,
+    base = ":fpga_cw340_rom_with_fake_keys",
+    exec_env = "fpga_cw340_sival",
+    otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival_bringup:otp_img_prod_manuf_personalized",
+
+    # PROD keys are allowed to run across all life cycle stages. This prod key
+    # is used to enable execution across life cycle stages with a single
+    # binary.
+    rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:prod_private_key_0": "prod_key_0"},
+    tags = ["cw340_sival"],
+)
+
+# FPGA configuration used to emulate silicon targets containing a `rom_ext`
+# stage.
+# See `fpga_cw340_sival` for more details.
+# Also, see sw/device/tests/doc/sival/devguide.md.
+fpga_cw340(
+    name = "fpga_cw340_sival_rom_ext",
+    testonly = True,
+    base = ":fpga_cw340_rom_ext",
+    exec_env = "fpga_cw340_sival_rom_ext",
+    libs = [
+        "//sw/device/lib/arch:boot_stage_owner",
+        "//sw/device/lib/arch:fpga_cw340",
+    ],
+    otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival_bringup:otp_img_prod_manuf_personalized",
+    rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a",
+    rsa_key = {"//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_prod_private_key_0": "prod_key_0"},
+    tags = ["cw340_sival_rom_ext"],
+)
+
 ###########################################################################
 # Silicon Environments
 ###########################################################################
