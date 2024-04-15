@@ -4,7 +4,7 @@
 
 use anyhow::{bail, Result};
 use clap::{Args, Subcommand, ValueEnum};
-use serde_annotate::Annotate;
+
 use std::any::Any;
 use std::convert::From;
 use std::time::Duration;
@@ -34,7 +34,7 @@ impl CommandDispatch for I2cRawRead {
         &self,
         context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport.capabilities()?.request(Capability::I2C).ok()?;
         let context = context.downcast_ref::<I2cCommand>().unwrap();
         let i2c_bus = context.params.create(transport, "DEFAULT")?;
@@ -59,7 +59,7 @@ impl CommandDispatch for I2cRawWrite {
         &self,
         context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport.capabilities()?.request(Capability::I2C).ok()?;
         let context = context.downcast_ref::<I2cCommand>().unwrap();
         let i2c_bus = context.params.create(transport, "DEFAULT")?;
@@ -89,7 +89,7 @@ impl CommandDispatch for I2cRawWriteRead {
         &self,
         context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport.capabilities()?.request(Capability::I2C).ok()?;
         let context = context.downcast_ref::<I2cCommand>().unwrap();
         let i2c_bus = context.params.create(transport, "DEFAULT")?;
@@ -131,7 +131,7 @@ impl CommandDispatch for I2cSetMode {
         &self,
         context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport.capabilities()?.request(Capability::I2C).ok()?;
         let context = context.downcast_ref::<I2cCommand>().unwrap();
         let i2c_bus = context.params.create(transport, "DEFAULT")?;
@@ -219,7 +219,7 @@ impl CommandDispatch for I2cGetDeviceStatus {
         &self,
         context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport.capabilities()?.request(Capability::I2C).ok()?;
         let context = context.downcast_ref::<I2cCommand>().unwrap();
         let i2c_bus = context.params.create(transport, "DEFAULT")?;
@@ -248,7 +248,7 @@ impl CommandDispatch for I2cPrepareRead {
         &self,
         context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport.capabilities()?.request(Capability::I2C).ok()?;
         let context = context.downcast_ref::<I2cCommand>().unwrap();
         let i2c_bus = context.params.create(transport, "DEFAULT")?;
@@ -272,7 +272,7 @@ impl CommandDispatch for I2cTpm {
         &self,
         context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let context = context.downcast_ref::<I2cCommand>().unwrap();
         let ready_pin = match &self.gsc_ready {
             Some(pin) => Some((transport.gpio_pin(pin)?, transport.gpio_monitoring()?)),
@@ -312,7 +312,7 @@ impl CommandDispatch for I2cCommand {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         // None of the I2C commands care about the prior context, but they do
         // care about the `bus` parameter in the current node.
         self.command.run(self, transport)

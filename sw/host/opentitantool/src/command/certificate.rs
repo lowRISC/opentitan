@@ -4,7 +4,7 @@
 
 use anyhow::{bail, Context, Result};
 use clap::{Args, Subcommand, ValueEnum};
-use serde_annotate::Annotate;
+
 use std::any::Any;
 use std::fs::{self, File};
 use std::io::Write;
@@ -78,7 +78,7 @@ impl CommandDispatch for CodegenCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let template = load_template(&self.template)?;
         // Generate C and header files.
         let (output_c, output_h) = if let Some(output_dir) = &self.output_dir {
@@ -132,7 +132,7 @@ impl CommandDispatch for GenCertCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         // Load template.
         let template = load_template(&self.template)?;
         // Load data.
@@ -183,7 +183,7 @@ impl CommandDispatch for ParseCertificate {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let cert = fs::read(&self.certificate).context("could not read certificate from file")?;
         let cert = x509::parse_certificate(&cert)?;
         Ok(Some(Box::new(cert)))
@@ -206,7 +206,7 @@ impl CommandDispatch for SubstCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         // Load template.
         let template = load_template(&self.template)?;
         // Load data.

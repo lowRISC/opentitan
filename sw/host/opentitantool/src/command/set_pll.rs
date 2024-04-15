@@ -4,7 +4,7 @@
 
 use anyhow::Result;
 use clap::Args;
-use serde_annotate::Annotate;
+
 use std::any::Any;
 
 use opentitanlib::app::command::CommandDispatch;
@@ -20,7 +20,7 @@ impl CommandDispatch for SetPll {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         log::info!("Programming the CDCE906 PLL chip with defaults");
         transport.dispatch(&chip_whisperer::SetPll {})
     }

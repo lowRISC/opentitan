@@ -9,7 +9,7 @@ use std::path::PathBuf;
 
 use anyhow::Result;
 
-use serde_annotate::{serialize, Annotate, Base};
+use serde_annotate::{serialize, Base};
 
 use clap::{Args, Subcommand};
 
@@ -37,7 +37,7 @@ impl CommandDispatch for AlertDigest {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         // From kErrorOk in ROM.
         const ERROR_OK: u32 = 0x739;
 

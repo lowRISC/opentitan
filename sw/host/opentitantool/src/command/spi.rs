@@ -38,7 +38,7 @@ impl CommandDispatch for SpiSfdp {
         &self,
         context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport.capabilities()?.request(Capability::SPI).ok()?;
         let context = context.downcast_ref::<SpiCommand>().unwrap();
         let spi = context.params.create(transport, "BOOTSTRAP")?;
@@ -80,7 +80,7 @@ impl CommandDispatch for SpiReadId {
         &self,
         context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport.capabilities()?.request(Capability::SPI).ok()?;
         let context = context.downcast_ref::<SpiCommand>().unwrap();
         let spi = context.params.create(transport, "BOOTSTRAP")?;
@@ -138,7 +138,7 @@ impl CommandDispatch for SpiRead {
         &self,
         context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport.capabilities()?.request(Capability::SPI).ok()?;
         let context = context.downcast_ref::<SpiCommand>().unwrap();
         let spi = context.params.create(transport, "BOOTSTRAP")?;
@@ -204,7 +204,7 @@ impl CommandDispatch for SpiErase {
         &self,
         context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport.capabilities()?.request(Capability::SPI).ok()?;
         let context = context.downcast_ref::<SpiCommand>().unwrap();
         let spi = context.params.create(transport, "BOOTSTRAP")?;
@@ -259,7 +259,7 @@ impl CommandDispatch for SpiProgram {
         &self,
         context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport.capabilities()?.request(Capability::SPI).ok()?;
         let context = context.downcast_ref::<SpiCommand>().unwrap();
         let spi = context.params.create(transport, "BOOTSTRAP")?;
@@ -292,7 +292,7 @@ impl CommandDispatch for SpiTpm {
         &self,
         context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let context = context.downcast_ref::<SpiCommand>().unwrap();
         let ready_pin = match &self.gsc_ready {
             Some(pin) => Some((transport.gpio_pin(pin)?, transport.gpio_monitoring()?)),
@@ -324,7 +324,7 @@ impl CommandDispatch for SpiRawRead {
         &self,
         context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport.capabilities()?.request(Capability::SPI).ok()?;
         let context = context.downcast_ref::<SpiCommand>().unwrap();
         let spi_bus = context.params.create(transport, "BOOTSTRAP")?;
@@ -349,7 +349,7 @@ impl CommandDispatch for SpiRawWrite {
         &self,
         context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport.capabilities()?.request(Capability::SPI).ok()?;
         let context = context.downcast_ref::<SpiCommand>().unwrap();
         let spi_bus = context.params.create(transport, "BOOTSTRAP")?;
@@ -375,7 +375,7 @@ impl CommandDispatch for SpiRawWriteRead {
         &self,
         context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport.capabilities()?.request(Capability::SPI).ok()?;
         let context = context.downcast_ref::<SpiCommand>().unwrap();
         let spi_bus = context.params.create(transport, "BOOTSTRAP")?;
@@ -403,7 +403,7 @@ impl CommandDispatch for SpiRawTransceive {
         &self,
         context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         transport.capabilities()?.request(Capability::SPI).ok()?;
         let context = context.downcast_ref::<SpiCommand>().unwrap();
         let spi_bus = context.params.create(transport, "BOOTSTRAP")?;
@@ -445,7 +445,7 @@ impl CommandDispatch for SpiCommand {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         // None of the SPI commands care about the prior context, but they do
         // care about the `bus` parameter in the current node.
         self.command.run(self, transport)

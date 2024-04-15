@@ -53,6 +53,7 @@ rust_library(
         "@crate_index//:cryptoki",
         "@crate_index//:cryptoki-sys",
         "@crate_index//:directories",
+        "@crate_index//:erased-serde",
         "@crate_index//:hex",
         "@crate_index//:indexmap",
         "@crate_index//:log",

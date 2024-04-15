@@ -5,7 +5,7 @@
 use anyhow::Result;
 use cryptoki::session::Session;
 use serde::{Deserialize, Serialize};
-use serde_annotate::Annotate;
+
 use std::any::Any;
 use std::str::FromStr;
 
@@ -34,7 +34,7 @@ impl Dispatch for List {
         _context: &dyn Any,
         _hsm: &Module,
         session: Option<&Session>,
-    ) -> Result<Box<dyn Annotate>> {
+    ) -> Result<Box<dyn erased_serde::Serialize>> {
         let session = session.ok_or(HsmError::SessionRequired)?;
         let default_attr = [
             AttributeType::Id,
