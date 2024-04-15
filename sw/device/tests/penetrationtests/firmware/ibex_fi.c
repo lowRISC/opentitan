@@ -102,7 +102,7 @@ static dif_flash_ctrl_device_info_t flash_info;
 // we can do the write/read test without the risk of clobbering data
 // used by the program.
 OT_SECTION(".data")
-static volatile uint32_t sram_main_buffer[32];
+static volatile uint32_t sram_main_buffer[256];
 static volatile uint32_t sram_main_buffer_large[4000];
 
 status_t handle_ibex_fi_address_translation(ujson_t *uj) {
@@ -567,6 +567,111 @@ status_t handle_ibex_fi_char_sram_read(ujson_t *uj) {
   uint32_t res = 0;
   for (int i = 0; i < 32; i++) {
     if (res_values[i] != ref_values[i]) {
+      res |= 1;
+    }
+  }
+
+  // Read ERR_STATUS register.
+  dif_rv_core_ibex_error_status_t codes;
+  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
+
+  // Send res & ERR_STATUS to host.
+  ibex_fi_test_result_t uj_output;
+  uj_output.result = res;
+  uj_output.err_status = codes;
+  uj_output.alerts_1 = reg_alerts.alerts_1;
+  uj_output.alerts_2 = reg_alerts.alerts_2;
+  uj_output.alerts_3 = reg_alerts.alerts_3;
+  RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
+  return OK_STATUS();
+}
+
+status_t handle_ibex_fi_char_sram_write_static(ujson_t *uj) {
+  // Clear registered alerts in alert handler.
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+
+  // Initialize SRAM region with inverse ref_values to avoid that data from a
+  // previous run is still in memory.
+  for (size_t i = 0; i < 64; i++) {
+    sram_main_buffer[i] = ~ref_values[0];
+  }
+
+  // FI code target.
+  // Unrolled to create 64 consecutive SW instructions as a FI target.
+  sca_set_trigger_high();
+  asm volatile(NOP10);
+  sram_main_buffer[0] = ref_values[0];
+  sram_main_buffer[1] = ref_values[0];
+  sram_main_buffer[2] = ref_values[0];
+  sram_main_buffer[3] = ref_values[0];
+  sram_main_buffer[4] = ref_values[0];
+  sram_main_buffer[5] = ref_values[0];
+  sram_main_buffer[6] = ref_values[0];
+  sram_main_buffer[7] = ref_values[0];
+  sram_main_buffer[8] = ref_values[0];
+  sram_main_buffer[9] = ref_values[0];
+  sram_main_buffer[10] = ref_values[0];
+  sram_main_buffer[11] = ref_values[0];
+  sram_main_buffer[12] = ref_values[0];
+  sram_main_buffer[13] = ref_values[0];
+  sram_main_buffer[14] = ref_values[0];
+  sram_main_buffer[15] = ref_values[0];
+  sram_main_buffer[16] = ref_values[0];
+  sram_main_buffer[17] = ref_values[0];
+  sram_main_buffer[18] = ref_values[0];
+  sram_main_buffer[19] = ref_values[0];
+  sram_main_buffer[20] = ref_values[0];
+  sram_main_buffer[21] = ref_values[0];
+  sram_main_buffer[22] = ref_values[0];
+  sram_main_buffer[23] = ref_values[0];
+  sram_main_buffer[24] = ref_values[0];
+  sram_main_buffer[25] = ref_values[0];
+  sram_main_buffer[26] = ref_values[0];
+  sram_main_buffer[27] = ref_values[0];
+  sram_main_buffer[28] = ref_values[0];
+  sram_main_buffer[29] = ref_values[0];
+  sram_main_buffer[30] = ref_values[0];
+  sram_main_buffer[31] = ref_values[0];
+  sram_main_buffer[32] = ref_values[0];
+  sram_main_buffer[33] = ref_values[0];
+  sram_main_buffer[34] = ref_values[0];
+  sram_main_buffer[35] = ref_values[0];
+  sram_main_buffer[36] = ref_values[0];
+  sram_main_buffer[37] = ref_values[0];
+  sram_main_buffer[38] = ref_values[0];
+  sram_main_buffer[39] = ref_values[0];
+  sram_main_buffer[40] = ref_values[0];
+  sram_main_buffer[41] = ref_values[0];
+  sram_main_buffer[42] = ref_values[0];
+  sram_main_buffer[43] = ref_values[0];
+  sram_main_buffer[44] = ref_values[0];
+  sram_main_buffer[45] = ref_values[0];
+  sram_main_buffer[46] = ref_values[0];
+  sram_main_buffer[47] = ref_values[0];
+  sram_main_buffer[48] = ref_values[0];
+  sram_main_buffer[49] = ref_values[0];
+  sram_main_buffer[50] = ref_values[0];
+  sram_main_buffer[51] = ref_values[0];
+  sram_main_buffer[52] = ref_values[0];
+  sram_main_buffer[53] = ref_values[0];
+  sram_main_buffer[54] = ref_values[0];
+  sram_main_buffer[55] = ref_values[0];
+  sram_main_buffer[56] = ref_values[0];
+  sram_main_buffer[57] = ref_values[0];
+  sram_main_buffer[58] = ref_values[0];
+  sram_main_buffer[59] = ref_values[0];
+  sram_main_buffer[60] = ref_values[0];
+  sram_main_buffer[61] = ref_values[0];
+  sram_main_buffer[62] = ref_values[0];
+  sram_main_buffer[63] = ref_values[0];
+  sca_set_trigger_low();
+  // Get registered alerts from alert handler.
+  reg_alerts = sca_get_triggered_alerts();
+
+  // Read back and compare against reference values.
+  uint32_t res = 0;
+  for (int i = 0; i < 64; i++) {
+    if (sram_main_buffer[i] != ref_values[0]) {
       res |= 1;
     }
   }
@@ -1099,6 +1204,8 @@ status_t handle_ibex_fi(ujson_t *uj) {
       return handle_ibex_fi_char_unconditional_branch(uj);
     case kIbexFiSubcommandCharSramWrite:
       return handle_ibex_fi_char_sram_write(uj);
+    case kIbexFiSubcommandCharSramWriteStatic:
+      return handle_ibex_fi_char_sram_write_static(uj);
     case kIbexFiSubcommandCharSramRead:
       return handle_ibex_fi_char_sram_read(uj);
     case kIbexFiSubcommandCharSramStatic:
