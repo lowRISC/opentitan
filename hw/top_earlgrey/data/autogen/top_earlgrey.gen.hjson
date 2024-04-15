@@ -2873,9 +2873,30 @@
         clk_esc_i: clkmgr_aon_clocks.clk_io_div4_secure
       }
       param_decl: {}
-      param_list: []
+      memory: {}
+      param_list:
+      [
+        {
+          name: PwrFsmWaitForExtRst
+          desc: Wait for external reset to complete
+          type: bit
+          default: "0"
+          expose: "true"
+          name_top: PwrmgrAonPwrFsmWaitForExtRst
+        }
+      ]
       inter_signal_list:
       [
+        {
+          name: boot_status
+          struct: pwr_boot_status
+          package: pwrmgr_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: pwrmgr_aon
+          index: -1
+        }
         {
           name: pwr_ast
           struct: pwr_ast
@@ -17145,6 +17166,16 @@
         default: ""
         end_idx: -1
         top_signame: usbdev_tl
+        index: -1
+      }
+      {
+        name: boot_status
+        struct: pwr_boot_status
+        package: pwrmgr_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: pwrmgr_aon
         index: -1
       }
       {

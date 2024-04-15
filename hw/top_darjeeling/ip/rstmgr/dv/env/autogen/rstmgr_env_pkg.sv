@@ -47,7 +47,6 @@ package rstmgr_env_pkg;
     "u_daon_lc",
     "u_daon_lc_shadowed",
     "u_daon_lc_aon",
-    "u_d0_lc_aon",
     "u_daon_lc_io",
     "u_d0_lc_io",
     "u_daon_lc_io_div2",

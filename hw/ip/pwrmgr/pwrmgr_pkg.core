@@ -9,6 +9,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:ip:pwrmgr_reg
+      - lowrisc:ip:rom_ctrl_pkg
     files:
       - rtl/pwrmgr_pkg.sv
     file_type: systemVerilogSource

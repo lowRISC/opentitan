@@ -875,6 +875,7 @@ module chip_darjeeling_cw310 #(
   // pwrmgr interface
   pwrmgr_pkg::pwr_ast_req_t base_ast_pwr;
   pwrmgr_pkg::pwr_ast_rsp_t ast_base_pwr;
+  pwrmgr_pkg::pwr_boot_status_t pwrmgr_boot_status;
 
   // assorted ast status
   ast_pkg::ast_pwst_t ast_pwst;
@@ -1360,6 +1361,7 @@ module chip_darjeeling_cw310 #(
   assign manual_oe_por_button_n = 1'b0;
 
   assign srst_n = manual_in_por_button_n;
+
 
 
   //////////////////////

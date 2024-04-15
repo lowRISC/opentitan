@@ -976,6 +976,7 @@ module chip_earlgrey_cw310 #(
   assign srst_n = manual_in_por_button_n;
 
 
+
   //////////////////////
   // Top-level design //
   //////////////////////

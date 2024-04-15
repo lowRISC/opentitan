@@ -292,6 +292,9 @@
     },
     { name: "pwrmgr_aon",
       type: "pwrmgr",
+      param_decl: {
+        PwrFsmWaitForExtRst: "1"
+      }
       clock_group: "powerup",
       clock_srcs: {
         clk_i: "io_div4",
@@ -510,7 +513,17 @@
       type: "soc_proxy",
       clock_srcs: {clk_i: "main", clk_aon_i: "aon"},
       clock_group: "infra",
-      reset_connections: {rst_ni: "lc", rst_aon_ni: "lc_aon"},
+      reset_connections: {
+        rst_ni: {
+          name: "lc",
+          domain: "0",
+        },
+        rst_por_ni: {
+          name: "por_io_div4",
+          domain: "Aon",
+        },
+      },
+      domain: ["Aon", "0"],
       base_addrs: {
         core: {hart: "0x22030000"},
         ctn:  {hart: "0x40000000"},
@@ -1214,6 +1227,7 @@
         'ast.ram_1p_cfg'                  : 'ram_1p_cfg',
         'ast.spi_ram_2p_cfg'              : 'spi_ram_2p_cfg',
         'ast.rom_cfg'                     : 'rom_cfg',
+        'pwrmgr_aon.boot_status'          : 'pwrmgr_boot_status',
         'clkmgr_aon.jitter_en'            : 'clk_main_jitter_en',
         'clkmgr_aon.io_clk_byp_req'       : 'io_clk_byp_req',
         'clkmgr_aon.io_clk_byp_ack'       : 'io_clk_byp_ack',
