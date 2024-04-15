@@ -28,21 +28,25 @@ module pattgen_core
   pattgen_chan_ctrl_t ch0_ctrl;
   pattgen_chan_ctrl_t ch1_ctrl;
 
-  assign ch0_ctrl.enable      = reg2hw.ctrl.enable_ch0.q;
-  assign ch0_ctrl.polarity    = reg2hw.ctrl.polarity_ch0.q;
-  assign ch0_ctrl.data[63:32] = reg2hw.data_ch0[1].q;
-  assign ch0_ctrl.data[31:0]  = reg2hw.data_ch0[0].q;
-  assign ch0_ctrl.prediv      = reg2hw.prediv_ch0.q;
-  assign ch0_ctrl.len         = reg2hw.size.len_ch0.q;
-  assign ch0_ctrl.reps        = reg2hw.size.reps_ch0.q;
+  assign ch0_ctrl.enable             = reg2hw.ctrl.enable_ch0.q;
+  assign ch0_ctrl.polarity           = reg2hw.ctrl.polarity_ch0.q;
+  assign ch0_ctrl.inactive_level_pcl = reg2hw.ctrl.inactive_level_pcl_ch0.q;
+  assign ch0_ctrl.inactive_level_pda = reg2hw.ctrl.inactive_level_pda_ch0.q;
+  assign ch0_ctrl.data[63:32]        = reg2hw.data_ch0[1].q;
+  assign ch0_ctrl.data[31:0]         = reg2hw.data_ch0[0].q;
+  assign ch0_ctrl.prediv             = reg2hw.prediv_ch0.q;
+  assign ch0_ctrl.len                = reg2hw.size.len_ch0.q;
+  assign ch0_ctrl.reps               = reg2hw.size.reps_ch0.q;
 
-  assign ch1_ctrl.enable      = reg2hw.ctrl.enable_ch1.q;
-  assign ch1_ctrl.polarity    = reg2hw.ctrl.polarity_ch1.q;
-  assign ch1_ctrl.data[63:32] = reg2hw.data_ch1[1].q;
-  assign ch1_ctrl.data[31:0]  = reg2hw.data_ch1[0].q;
-  assign ch1_ctrl.prediv      = reg2hw.prediv_ch1.q;
-  assign ch1_ctrl.len         = reg2hw.size.len_ch1.q;
-  assign ch1_ctrl.reps        = reg2hw.size.reps_ch1.q;
+  assign ch1_ctrl.enable             = reg2hw.ctrl.enable_ch1.q;
+  assign ch1_ctrl.polarity           = reg2hw.ctrl.polarity_ch1.q;
+  assign ch1_ctrl.inactive_level_pcl = reg2hw.ctrl.inactive_level_pcl_ch1.q;
+  assign ch1_ctrl.inactive_level_pda = reg2hw.ctrl.inactive_level_pda_ch1.q;
+  assign ch1_ctrl.data[63:32]        = reg2hw.data_ch1[1].q;
+  assign ch1_ctrl.data[31:0]         = reg2hw.data_ch1[0].q;
+  assign ch1_ctrl.prediv             = reg2hw.prediv_ch1.q;
+  assign ch1_ctrl.len                = reg2hw.size.len_ch1.q;
+  assign ch1_ctrl.reps               = reg2hw.size.reps_ch1.q;
 
   pattgen_chan chan0 (
     .clk_i,
