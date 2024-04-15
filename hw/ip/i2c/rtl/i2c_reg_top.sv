@@ -260,30 +260,30 @@ module i2c_reg_top (
   logic [15:0] val_scl_rx_qs;
   logic [15:0] val_sda_rx_qs;
   logic timing0_we;
-  logic [15:0] timing0_thigh_qs;
-  logic [15:0] timing0_thigh_wd;
-  logic [15:0] timing0_tlow_qs;
-  logic [15:0] timing0_tlow_wd;
+  logic [12:0] timing0_thigh_qs;
+  logic [12:0] timing0_thigh_wd;
+  logic [12:0] timing0_tlow_qs;
+  logic [12:0] timing0_tlow_wd;
   logic timing1_we;
-  logic [15:0] timing1_t_r_qs;
-  logic [15:0] timing1_t_r_wd;
-  logic [15:0] timing1_t_f_qs;
-  logic [15:0] timing1_t_f_wd;
+  logic [9:0] timing1_t_r_qs;
+  logic [9:0] timing1_t_r_wd;
+  logic [8:0] timing1_t_f_qs;
+  logic [8:0] timing1_t_f_wd;
   logic timing2_we;
-  logic [15:0] timing2_tsu_sta_qs;
-  logic [15:0] timing2_tsu_sta_wd;
-  logic [15:0] timing2_thd_sta_qs;
-  logic [15:0] timing2_thd_sta_wd;
+  logic [12:0] timing2_tsu_sta_qs;
+  logic [12:0] timing2_tsu_sta_wd;
+  logic [12:0] timing2_thd_sta_qs;
+  logic [12:0] timing2_thd_sta_wd;
   logic timing3_we;
-  logic [15:0] timing3_tsu_dat_qs;
-  logic [15:0] timing3_tsu_dat_wd;
-  logic [15:0] timing3_thd_dat_qs;
-  logic [15:0] timing3_thd_dat_wd;
+  logic [8:0] timing3_tsu_dat_qs;
+  logic [8:0] timing3_tsu_dat_wd;
+  logic [12:0] timing3_thd_dat_qs;
+  logic [12:0] timing3_thd_dat_wd;
   logic timing4_we;
-  logic [15:0] timing4_tsu_sto_qs;
-  logic [15:0] timing4_tsu_sto_wd;
-  logic [15:0] timing4_t_buf_qs;
-  logic [15:0] timing4_t_buf_wd;
+  logic [12:0] timing4_tsu_sto_qs;
+  logic [12:0] timing4_tsu_sto_wd;
+  logic [12:0] timing4_t_buf_qs;
+  logic [12:0] timing4_t_buf_wd;
   logic timeout_ctrl_we;
   logic [30:0] timeout_ctrl_val_qs;
   logic [30:0] timeout_ctrl_val_wd;
@@ -2384,11 +2384,11 @@ module i2c_reg_top (
 
 
   // R[timing0]: V(False)
-  //   F[thigh]: 15:0
+  //   F[thigh]: 12:0
   prim_subreg #(
-    .DW      (16),
+    .DW      (13),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (16'h0),
+    .RESVAL  (13'h0),
     .Mubi    (1'b0)
   ) u_timing0_thigh (
     .clk_i   (clk_i),
@@ -2411,11 +2411,11 @@ module i2c_reg_top (
     .qs     (timing0_thigh_qs)
   );
 
-  //   F[tlow]: 31:16
+  //   F[tlow]: 28:16
   prim_subreg #(
-    .DW      (16),
+    .DW      (13),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (16'h0),
+    .RESVAL  (13'h0),
     .Mubi    (1'b0)
   ) u_timing0_tlow (
     .clk_i   (clk_i),
@@ -2440,11 +2440,11 @@ module i2c_reg_top (
 
 
   // R[timing1]: V(False)
-  //   F[t_r]: 15:0
+  //   F[t_r]: 9:0
   prim_subreg #(
-    .DW      (16),
+    .DW      (10),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (16'h0),
+    .RESVAL  (10'h0),
     .Mubi    (1'b0)
   ) u_timing1_t_r (
     .clk_i   (clk_i),
@@ -2467,11 +2467,11 @@ module i2c_reg_top (
     .qs     (timing1_t_r_qs)
   );
 
-  //   F[t_f]: 31:16
+  //   F[t_f]: 24:16
   prim_subreg #(
-    .DW      (16),
+    .DW      (9),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (16'h0),
+    .RESVAL  (9'h0),
     .Mubi    (1'b0)
   ) u_timing1_t_f (
     .clk_i   (clk_i),
@@ -2496,11 +2496,11 @@ module i2c_reg_top (
 
 
   // R[timing2]: V(False)
-  //   F[tsu_sta]: 15:0
+  //   F[tsu_sta]: 12:0
   prim_subreg #(
-    .DW      (16),
+    .DW      (13),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (16'h0),
+    .RESVAL  (13'h0),
     .Mubi    (1'b0)
   ) u_timing2_tsu_sta (
     .clk_i   (clk_i),
@@ -2523,11 +2523,11 @@ module i2c_reg_top (
     .qs     (timing2_tsu_sta_qs)
   );
 
-  //   F[thd_sta]: 31:16
+  //   F[thd_sta]: 28:16
   prim_subreg #(
-    .DW      (16),
+    .DW      (13),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (16'h0),
+    .RESVAL  (13'h0),
     .Mubi    (1'b0)
   ) u_timing2_thd_sta (
     .clk_i   (clk_i),
@@ -2552,11 +2552,11 @@ module i2c_reg_top (
 
 
   // R[timing3]: V(False)
-  //   F[tsu_dat]: 15:0
+  //   F[tsu_dat]: 8:0
   prim_subreg #(
-    .DW      (16),
+    .DW      (9),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (16'h0),
+    .RESVAL  (9'h0),
     .Mubi    (1'b0)
   ) u_timing3_tsu_dat (
     .clk_i   (clk_i),
@@ -2579,11 +2579,11 @@ module i2c_reg_top (
     .qs     (timing3_tsu_dat_qs)
   );
 
-  //   F[thd_dat]: 31:16
+  //   F[thd_dat]: 28:16
   prim_subreg #(
-    .DW      (16),
+    .DW      (13),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (16'h0),
+    .RESVAL  (13'h0),
     .Mubi    (1'b0)
   ) u_timing3_thd_dat (
     .clk_i   (clk_i),
@@ -2608,11 +2608,11 @@ module i2c_reg_top (
 
 
   // R[timing4]: V(False)
-  //   F[tsu_sto]: 15:0
+  //   F[tsu_sto]: 12:0
   prim_subreg #(
-    .DW      (16),
+    .DW      (13),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (16'h0),
+    .RESVAL  (13'h0),
     .Mubi    (1'b0)
   ) u_timing4_tsu_sto (
     .clk_i   (clk_i),
@@ -2635,11 +2635,11 @@ module i2c_reg_top (
     .qs     (timing4_tsu_sto_qs)
   );
 
-  //   F[t_buf]: 31:16
+  //   F[t_buf]: 28:16
   prim_subreg #(
-    .DW      (16),
+    .DW      (13),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (16'h0),
+    .RESVAL  (13'h0),
     .Mubi    (1'b0)
   ) u_timing4_t_buf (
     .clk_i   (clk_i),
@@ -3395,29 +3395,29 @@ module i2c_reg_top (
   assign val_re = addr_hit[14] & reg_re & !reg_error;
   assign timing0_we = addr_hit[15] & reg_we & !reg_error;
 
-  assign timing0_thigh_wd = reg_wdata[15:0];
+  assign timing0_thigh_wd = reg_wdata[12:0];
 
-  assign timing0_tlow_wd = reg_wdata[31:16];
+  assign timing0_tlow_wd = reg_wdata[28:16];
   assign timing1_we = addr_hit[16] & reg_we & !reg_error;
 
-  assign timing1_t_r_wd = reg_wdata[15:0];
+  assign timing1_t_r_wd = reg_wdata[9:0];
 
-  assign timing1_t_f_wd = reg_wdata[31:16];
+  assign timing1_t_f_wd = reg_wdata[24:16];
   assign timing2_we = addr_hit[17] & reg_we & !reg_error;
 
-  assign timing2_tsu_sta_wd = reg_wdata[15:0];
+  assign timing2_tsu_sta_wd = reg_wdata[12:0];
 
-  assign timing2_thd_sta_wd = reg_wdata[31:16];
+  assign timing2_thd_sta_wd = reg_wdata[28:16];
   assign timing3_we = addr_hit[18] & reg_we & !reg_error;
 
-  assign timing3_tsu_dat_wd = reg_wdata[15:0];
+  assign timing3_tsu_dat_wd = reg_wdata[8:0];
 
-  assign timing3_thd_dat_wd = reg_wdata[31:16];
+  assign timing3_thd_dat_wd = reg_wdata[28:16];
   assign timing4_we = addr_hit[19] & reg_we & !reg_error;
 
-  assign timing4_tsu_sto_wd = reg_wdata[15:0];
+  assign timing4_tsu_sto_wd = reg_wdata[12:0];
 
-  assign timing4_t_buf_wd = reg_wdata[31:16];
+  assign timing4_t_buf_wd = reg_wdata[28:16];
   assign timeout_ctrl_we = addr_hit[20] & reg_we & !reg_error;
 
   assign timeout_ctrl_val_wd = reg_wdata[30:0];
@@ -3638,28 +3638,28 @@ module i2c_reg_top (
       end
 
       addr_hit[15]: begin
-        reg_rdata_next[15:0] = timing0_thigh_qs;
-        reg_rdata_next[31:16] = timing0_tlow_qs;
+        reg_rdata_next[12:0] = timing0_thigh_qs;
+        reg_rdata_next[28:16] = timing0_tlow_qs;
       end
 
       addr_hit[16]: begin
-        reg_rdata_next[15:0] = timing1_t_r_qs;
-        reg_rdata_next[31:16] = timing1_t_f_qs;
+        reg_rdata_next[9:0] = timing1_t_r_qs;
+        reg_rdata_next[24:16] = timing1_t_f_qs;
       end
 
       addr_hit[17]: begin
-        reg_rdata_next[15:0] = timing2_tsu_sta_qs;
-        reg_rdata_next[31:16] = timing2_thd_sta_qs;
+        reg_rdata_next[12:0] = timing2_tsu_sta_qs;
+        reg_rdata_next[28:16] = timing2_thd_sta_qs;
       end
 
       addr_hit[18]: begin
-        reg_rdata_next[15:0] = timing3_tsu_dat_qs;
-        reg_rdata_next[31:16] = timing3_thd_dat_qs;
+        reg_rdata_next[8:0] = timing3_tsu_dat_qs;
+        reg_rdata_next[28:16] = timing3_thd_dat_qs;
       end
 
       addr_hit[19]: begin
-        reg_rdata_next[15:0] = timing4_tsu_sto_qs;
-        reg_rdata_next[31:16] = timing4_t_buf_qs;
+        reg_rdata_next[12:0] = timing4_tsu_sto_qs;
+        reg_rdata_next[28:16] = timing4_t_buf_qs;
       end
 
       addr_hit[20]: begin

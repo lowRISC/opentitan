@@ -45,16 +45,16 @@ module i2c_core import i2c_pkg::*;
   // Maximum number of bits required to represent the level/depth of any FIFO.
   localparam int unsigned MaxFifoDepthW = 12;
 
-  logic [15:0] thigh;
-  logic [15:0] tlow;
-  logic [15:0] t_r;
-  logic [15:0] t_f;
-  logic [15:0] thd_sta;
-  logic [15:0] tsu_sta;
-  logic [15:0] tsu_sto;
-  logic [15:0] tsu_dat;
-  logic [15:0] thd_dat;
-  logic [15:0] t_buf;
+  logic [12:0] thigh;
+  logic [12:0] tlow;
+  logic [12:0] t_r;
+  logic [12:0] t_f;
+  logic [12:0] thd_sta;
+  logic [12:0] tsu_sta;
+  logic [12:0] tsu_sto;
+  logic [12:0] tsu_dat;
+  logic [12:0] thd_dat;
+  logic [12:0] t_buf;
   logic [30:0] stretch_timeout;
   logic        timeout_enable;
   logic [31:0] host_timeout;
@@ -252,11 +252,11 @@ module i2c_core import i2c_pkg::*;
 
   assign thigh                        = reg2hw.timing0.thigh.q;
   assign tlow                         = reg2hw.timing0.tlow.q;
-  assign t_r                          = reg2hw.timing1.t_r.q;
-  assign t_f                          = reg2hw.timing1.t_f.q;
+  assign t_r                          = 13'(reg2hw.timing1.t_r.q);
+  assign t_f                          = 13'(reg2hw.timing1.t_f.q);
   assign tsu_sta                      = reg2hw.timing2.tsu_sta.q;
   assign thd_sta                      = reg2hw.timing2.thd_sta.q;
-  assign tsu_dat                      = reg2hw.timing3.tsu_dat.q;
+  assign tsu_dat                      = 13'(reg2hw.timing3.tsu_dat.q);
   assign thd_dat                      = reg2hw.timing3.thd_dat.q;
   assign tsu_sto                      = reg2hw.timing4.tsu_sto.q;
   assign t_buf                        = reg2hw.timing4.t_buf.q;
@@ -456,7 +456,6 @@ module i2c_core import i2c_pkg::*;
     .thd_sta_i                      (thd_sta),
     .tsu_sta_i                      (tsu_sta),
     .tsu_sto_i                      (tsu_sto),
-    .tsu_dat_i                      (tsu_dat),
     .thd_dat_i                      (thd_dat),
     .t_buf_i                        (t_buf),
     .stretch_timeout_i              (stretch_timeout),

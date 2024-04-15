@@ -547,13 +547,19 @@
       swaccess: "rw"
       hwaccess: "hro"
       fields: [
-        { bits: "15:0"
+        { bits: "12:0"
           name: "THIGH"
-          desc: "The actual time to hold SCL high in a given pulse: in host mode, when there is no stretching this value is 3 cycles longer as tracked in issue #18962"
+          desc: '''
+                The actual time to hold SCL high in a given pulse.
+                This field is sized to have a range of at least Standard Mode's 4.0 us max with a core clock at 1 GHz.
+                '''
         }
-        { bits: "31:16"
+        { bits: "28:16"
           name: "TLOW"
-          desc: "The actual time to hold SCL low between any two SCL pulses"
+          desc: '''
+                The actual time to hold SCL low between any two SCL pulses.
+                This field is sized to have a range of at least Standard Mode's 4.7 us max with a core clock at 1 GHz.
+                '''
         }
       ]
     }
@@ -565,13 +571,19 @@
       swaccess: "rw"
       hwaccess: "hro"
       fields: [
-        { bits: "15:0"
+        { bits: "9:0"
           name: "T_R"
-          desc: "The nominal rise time to anticipate for the bus (depends on capacitance)"
+          desc: '''
+                The nominal rise time to anticipate for the bus (depends on capacitance).
+                This field is sized to have a range of at least Standard Mode's 1000 ns max with a core clock at 1 GHz.
+                '''
         }
-        { bits: "31:16"
+        { bits: "24:16"
           name: "T_F"
-          desc: "The nominal fall time to anticipate for the bus (influences SDA hold times): this is currently counted twice in host mode as tracked in issue #18958"
+          desc: '''
+                The nominal fall time to anticipate for the bus (influences SDA hold times).
+                This field is sized to have a range of at least Standard Mode's 300 ns max with a core clock at 1 GHz.
+                '''
         }
       ]
     }
@@ -583,13 +595,19 @@
       swaccess: "rw"
       hwaccess: "hro"
       fields: [
-        { bits: "15:0"
+        { bits: "12:0"
           name: "TSU_STA"
-          desc: "Actual setup time for repeated start signals"
+          desc: '''
+                Actual setup time for repeated start signals.
+                This field is sized to have a range of at least Standard Mode's 4.7 us max with a core clock at 1 GHz.
+                '''
         }
-        { bits: "31:16"
+        { bits: "28:16"
           name: "THD_STA"
-          desc: "Actual hold time for start signals"
+          desc: '''
+                Actual hold time for start signals.
+                This field is sized to have a range of at least Standard Mode's 4.0 us max with a core clock at 1 GHz.
+                '''
         }
       ]
     }
@@ -601,15 +619,21 @@
       swaccess: "rw"
       hwaccess: "hro"
       fields: [
-        { bits: "15:0"
+        { bits: "8:0"
           name: "TSU_DAT"
-          desc: "Actual setup time for data (or ack) bits"
+          desc: '''
+                Actual setup time for data (or ack) bits.
+                This field is sized to have a range of at least Standard Mode's 250 ns max with a core clock at 1 GHz.
+                '''
         }
-        { bits: "31:16"
+        { bits: "28:16"
           name: "THD_DAT"
           desc: '''
-                Actual hold time for data (or ack) bits
+                Actual hold time for data (or ack) bits.
                 (Note, where required, the parameters TVD_DAT is taken to be THD_DAT+T_F)
+                This field is sized to have a range that accommodates Standard Mode's 3.45 us max for TVD_DAT with a core clock at 1 GHz.
+                However, this field is generally expected to represent a time substantially shorter than that.
+                It should be long enough to cover the maximum round-trip latency from output pins, through pads and voltage transitions on the board, and back to the input pins, but it should not be substantially greater.
                 '''
         }
       ]
@@ -622,13 +646,19 @@
       swaccess: "rw"
       hwaccess: "hro"
       fields: [
-        { bits: "15:0"
+        { bits: "12:0"
           name: "TSU_STO"
-          desc: "Actual setup time for stop signals"
+          desc: '''
+                Actual setup time for stop signals.
+                This field is sized to have a range of at least Standard Mode's 4.0 us max with a core clock at 1 GHz.
+                '''
         }
-        { bits: "31:16"
+        { bits: "28:16"
           name: "T_BUF"
-          desc: "Actual time between each STOP signal and the following START signal"
+          desc: '''
+                Actual time between each STOP signal and the following START signal.
+                This field is sized to have a range of at least Standard Mode's 4.7 us max with a core clock at 1 GHz.
+                '''
         }
       ]
     }
