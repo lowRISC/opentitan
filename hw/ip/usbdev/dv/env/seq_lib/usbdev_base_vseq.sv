@@ -28,6 +28,8 @@ bit [4:0] setup_buffer_id = 5'd1;
 bit [4:0] out_buffer_id = 5'd7;
 // Current IN buffer number
 bit [4:0] in_buffer_id = 5'd13;
+// Current frame number
+bit [10:0] frame_number = 11'b0;
 
 // Chosen /default/ endpoint, for those sequences concerned with only a single endpoint.
 rand bit [3:0] ep_default;
@@ -92,6 +94,9 @@ uint aon_wake_events_rd_clks = usbdev_aon_wake_clk_ratio;
 // - some multi-stage operations must be performed atomically,
 //   eg. token packet and handshake response, or VBUS connection and Bus Reset.
 semaphore m_drv_lock;
+
+// Current period of the DUT clock, in picoseconds.
+int unsigned usb_clk_period_ps;
 
 `uvm_object_new
 
@@ -194,6 +199,25 @@ endtask
     // Create the lock controlling exclusive access to the driver.
     m_drv_lock = new(1);
 
+    // Use the configured DUT clock frequency.
+    //
+    // Retain the clock period in picoseconds for oscillator tracking calculations, rounding to
+    // nearest because we have no particular bias towards lower/higher frequency.
+    usb_clk_period_ps = (1000_000_000 + cfg.usb_clk_freq_khz / 2) / cfg.usb_clk_freq_khz;
+    cfg.clk_rst_vif.set_period_ps(usb_clk_period_ps);
+
+    // Use a sensible speed for the AON clock
+    cfg.aon_clk_rst_vif.set_freq_khz(cfg.aon_clk_freq_khz);
+
+    // Use the selected host clock frequency; this may differ from that of the DUT.
+    // The DUT is required to cope with a certain amount of disparity, and adjust itself
+    // to match the frequency of the host over time.
+    cfg.host_clk_rst_vif.set_freq_khz(cfg.host_clk_freq_khz);
+
+    // Report the clock frequencies.
+    `uvm_info(`gfn, $sformatf("usb_clk %dkHz, host_clk %dkHz",
+                              cfg.usb_clk_freq_khz, cfg.host_clk_freq_khz), UVM_MEDIUM)
+
     if (do_agent_connect) begin
       // Connect the USB20 agent and ensure that the USBDPI model is not connected.
       cfg.m_usb20_agent_cfg.bif.enable_driver(1'b1);
@@ -241,6 +265,24 @@ endtask
       `dv_fatal($sformatf("DUT did not generate any of the expected interrupt(s) 0x%x", snapshot))
     end
     if (clear) csr_wr(.ptr(ral.intr_state), .value(data & snapshot));
+  endtask
+
+  // Set the host clock to the given frequency (kHz).
+  virtual task set_host_clk(uint freq_khz);
+    `uvm_info(`gfn, $sformatf("Setting host clk to %dkHz", freq_khz), UVM_MEDIUM)
+    `DV_CHECK(freq_khz >= 47_880 && freq_khz <= 48_120);  // Sanity check, but also USB compliance.
+    cfg.host_clk_rst_vif.set_freq_khz(freq_khz);
+    cfg.host_clk_freq_khz = freq_khz;
+  endtask
+
+  // Adjust the DUT clock period by the given number of picoseconds.
+  virtual task adjust_usb_clk(int delta_ps);
+    // Ensure that the period will not become zero/negative when decreasing it.
+    `DV_CHECK(int'(usb_clk_period_ps) > -delta_ps);
+    usb_clk_period_ps += delta_ps;
+    `uvm_info(`gfn, $sformatf("Adjusting usb_clk_period by %dps to %d",
+                              delta_ps, usb_clk_period_ps), UVM_MEDIUM)
+    cfg.clk_rst_vif.set_period_ps(usb_clk_period_ps);
   endtask
 
   // Wait for the DUT to enter one of the given link states, with an optional timeout
@@ -873,16 +915,28 @@ endtask
   endtask
 
   // Send 'Start Of Frame' packet (bus frame/timing reference).
-  virtual task send_sof_packet(input pid_type_e pid_type);
+  virtual task send_sof_packet(input pid_type_e pid_type, int framenum = -1);
+    // If the caller did not request a specific frame number, then advance sequentially as per
+    // a real host; specific frame numbers should really only be specified to check awkward cases
+    // such as those which induce bit stuffing, making SOF packets longer.
+    if (framenum < 0) begin
+      // Starting a new bus frame.
+      framenum = frame_number + 1;
+      if (framenum > 11'h7ff) framenum = 0;
+    end else `DV_CHECK(framenum <= 11'h7ff, "Frame number is only 11 bits")
+    // Remember the current frame number.
+    frame_number = framenum;
     `uvm_create_on(m_sof_pkt, p_sequencer.usb20_sequencer_h)
     start_item(m_sof_pkt);
     m_sof_pkt.m_ev_type  = EvPacket;
     m_sof_pkt.m_pkt_type = PktTypeSoF;
     m_sof_pkt.m_pid_type = pid_type;
-    assert(m_sof_pkt.randomize());
+    // Randomization also completes the CRC5 value.
+    assert(m_sof_pkt.randomize() with {m_sof_pkt.framenum == framenum;});
     // Any fault injections requested?
     if (inject_invalid_token_sync) m_sof_pkt.valid_sync = 1'b0;
     if (inject_bad_token_crc5) m_sof_pkt.crc5 = ~m_sof_pkt.crc5;
+    `uvm_info(`gfn, $sformatf("Sending SOF packet with frame number 0x%03x", framenum), UVM_MEDIUM)
     finish_item(m_sof_pkt);
   endtask
 

@@ -121,6 +121,66 @@
       uvm_test_seq: usbdev_fifo_rst_vseq
     }
     {
+      name: usbdev_freq_hiclk
+      uvm_test_seq: usbdev_freq_phase_delta_vseq
+      // Run the host slower than the usbdev.
+      // Check that with this small offset, packet reception works without any frequency tracking.
+      run_opts: ["+host_freq_delta=-18500"]
+      // Very long simulation times
+      reseed: 5
+    }
+    {
+      name: usbdev_freq_hiclk_max
+      uvm_test_seq: usbdev_freq_phase_delta_vseq
+      // Run the host slower than the usbdev, at the minimum permissible frequency cf 48MHz.
+      //
+      // Packet reception shall initially be expected to fail, but the SOF reception should be
+      // good enough to track the host frequency by modifying the DUT oscillator.
+      run_opts: [
+        "+cdc_instrumentation_enabled=0",
+        "+host_drifting=1",
+        "+host_freq_delta=-120000",
+        "+osc_tracking=1",
+        "+reset_recovery=1",
+        "+usb_freq_delta=+120000"
+      ]
+      // Very long simulation times
+      reseed: 5
+    }
+    {
+      name: usbdev_freq_loclk
+      uvm_test_seq: usbdev_freq_phase_delta_vseq
+      // Run the host faster than the usbdev.
+      // Check that with this small offset, packet reception works without any frequency tracking.
+      run_opts: ["+host_freq_delta=+18500"]
+      // Very long simulation times
+      reseed: 5
+    }
+    {
+      name: usbdev_freq_loclk_max
+      uvm_test_seq: usbdev_freq_phase_delta_vseq
+      // Run the host faster than the usbdev, at the maximum permissible frequency cf 48MHz.
+      //
+      // Packet reception shall initially be expected to fail, but the SOF reception should be
+      // good enough to track the host frequency by modifying the DUT oscillator.
+      run_opts: [
+        "+cdc_instrumentation_enabled=0",
+        "+osc_tracking=1",
+        "+host_drifting=1",
+        "+host_freq_delta=+120000",
+        "+reset_recovery=1",
+        "+usb_freq_delta=-120000"
+      ]
+      // Very long simulation times
+      reseed: 5
+    }
+    {
+      name: usbdev_freq_phase
+      uvm_test_seq: usbdev_freq_phase_delta_vseq
+      // Very long simulation times
+      reseed: 5
+    }
+    {
       name: usbdev_host_lost
       uvm_test_seq: usbdev_host_lost_vseq
       // No need for randomization.
@@ -403,6 +463,10 @@
                  "+wt_bitstuff_errs=1"]
       // Very long simulation times
       reseed: 5
+    }
+    {
+      name: usbdev_stream_len_max
+      uvm_test_seq: usbdev_stream_len_max_vseq
     }
   ]
 
