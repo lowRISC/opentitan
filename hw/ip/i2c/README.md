@@ -26,6 +26,7 @@ See that document for integration overview within the broader top level system.
 - Support for the following optional capabilities:
     - Clock stretching in the host mode
     - Automatic clock stretching in the target mode<sup>2</sup>
+    - Programmable automatic ACK control in the target mode
 - *No support at this time* for any of the features related to multi-host control:
     - No support for host-host clock synchronization
     - No support for host bus arbitration.
