@@ -188,12 +188,6 @@ module prim_count #(
       (cnt_o == ResetValue) &&
       (cnt_q[1] == ({Width{1'b1}} - ResetValue)),
       clk_i, err_o || fpv_err_present || !rst_ni)
-  `ASSERT(ClrBkwd_A,
-      rst_ni && !(incr_en_i || decr_en_i || set_i) ##1
-      $changed(cnt_o) && $changed(cnt_q[1])
-      |->
-      $past(clr_i),
-      clk_i, err_o || fpv_err_present || !rst_ni)
 
   // Set
   `ASSERT(SetFwd_A,
@@ -201,12 +195,6 @@ module prim_count #(
       |=>
       (cnt_o == $past(set_cnt_i)) &&
       (cnt_q[1] == ({Width{1'b1}} - $past(set_cnt_i))),
-      clk_i, err_o || fpv_err_present || !rst_ni)
-  `ASSERT(SetBkwd_A,
-      rst_ni && !(incr_en_i || decr_en_i || clr_i) ##1
-      $changed(cnt_o) && $changed(cnt_q[1])
-      |->
-      $past(set_i),
       clk_i, err_o || fpv_err_present || !rst_ni)
 
   // Do not count if both increment and decrement are asserted.
@@ -269,6 +257,14 @@ module prim_count #(
       |=>
       $stable(cnt_q[1]),
       clk_i, err_o || fpv_err_present || !rst_ni)
+
+  // A backwards check for count changes. This asserts that the count only changes if one of the
+  // inputs that should tell it to change (clear, set, increment, decrement) does so.
+  `ASSERT(ChangeBackward_A,
+          rst_ni ##1 $changed(cnt_o) && $changed(cnt_q[1])
+          |->
+          $past(clr_i || set_i || (commit_i && (incr_en_i || decr_en_i))),
+          clk_i, err_o || fpv_err_present || !rst_ni)
 
   // Check that count errors are reported properly in err_o
   `ASSERT(CntErrReported_A, ((cnt_q[1] + cnt_q[0]) != {Width{1'b1}}) == err_o)
