@@ -19,6 +19,7 @@ module tb;
   wire clk_slow, rst_slow_n;
   wire devmode;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
+  wire int_reset_req;
 
   // interfaces
   clk_rst_if clk_rst_if (
@@ -49,6 +50,7 @@ module tb;
   );
 
   assign interrupts[0] = pwrmgr_if.intr_wakeup;
+  assign int_reset_req = tb.dut.internal_reset_req ;
 
   pwrmgr_if pwrmgr_if (
     .clk,
@@ -97,7 +99,8 @@ module tb;
 
     .fetch_en_o(pwrmgr_if.fetch_en),
     .wakeups_i (pwrmgr_if.wakeups_i),
-    .rstreqs_i (pwrmgr_if.rstreqs_i),
+    // TOOD(#22710): properly cooperate with `pwrmgr_if.rstreqs_i[1]`
+    .rstreqs_i ({int_reset_req, pwrmgr_if.rstreqs_i[0]}),
     .ndmreset_req_i(pwrmgr_if.cpu_i.ndmreset_req),
 
     .lc_dft_en_i     (pwrmgr_if.lc_dft_en),

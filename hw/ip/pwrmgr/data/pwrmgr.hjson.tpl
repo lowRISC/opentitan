@@ -68,6 +68,12 @@
   ],
 
   inter_signal_list: [
+    { struct:  "pwr_boot_status",
+      type:    "uni",
+      name:    "boot_status",
+      act:     "req",
+      package: "pwrmgr_pkg",
+    },
     { struct:  "pwr_ast",
       type:    "req_rsp",
       name:    "pwr_ast",
@@ -222,6 +228,14 @@
     },
 
     % endfor
+
+    { name: "PwrFsmWaitForExtRst",
+      desc: "Wait for external reset to complete",
+      type: "bit",
+      default: "0",
+      local:   "false",
+      expose:  "true"
+    },
 
     { name: "NumRstReqs",
       desc: "Number of peripheral reset requets",

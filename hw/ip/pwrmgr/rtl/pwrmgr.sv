@@ -11,7 +11,8 @@ module pwrmgr
   import pwrmgr_pkg::*;
   import pwrmgr_reg_pkg::*;
 #(
-  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
+  parameter bit PwrFsmWaitForExtRst = 0
 ) (
   // Clocks and resets
   input clk_slow_i,
@@ -59,12 +60,13 @@ module pwrmgr
   input  pwr_cpu_t pwr_cpu_i,
   // SEC_CM: LC_CTRL.INTERSIG.MUBI
   output lc_ctrl_pkg::lc_tx_t fetch_en_o,
-  input lc_ctrl_pkg::lc_tx_t lc_hw_debug_en_i,
-  input lc_ctrl_pkg::lc_tx_t lc_dft_en_i,
+  input  lc_ctrl_pkg::lc_tx_t lc_hw_debug_en_i,
+  input  lc_ctrl_pkg::lc_tx_t lc_dft_en_i,
 
+  output pwr_boot_status_t    boot_status_o,
   // peripherals wakeup and reset requests
-  input  [NumWkups-1:0] wakeups_i,
-  input  [NumRstReqs-1:0] rstreqs_i,
+  input  [NumWkups-1:0]       wakeups_i,
+  input  [NumRstReqs-1:0]     rstreqs_i,
 
   // cpu related inputs
   input  ndmreset_req_i,
@@ -88,6 +90,11 @@ module pwrmgr
   output intr_wakeup_o
 
 );
+
+  logic   internal_reset_req;
+  logic   strap_sampled;
+  logic   ext_reset_req;
+
   ////////////////////////////////////////////////////
   // Input handling                                 //
   ////////////////////////////////////////////////////
@@ -504,6 +511,21 @@ module pwrmgr
                                           {NumIntRstReqs{1'b1}},
                                           slow_reset_en};
 
+  // TODO(#22711): Make this work also when `rstreqs` is structured differently.
+  assign internal_reset_req            =|(
+                                         slow_peri_reqs.rstreqs &
+                                         {{NumSwRstReq{1'b1}},      // SW driven reset
+                                          {NumDebugRstReqs{1'b1}},  // debugger reset
+                                          {NumIntRstReqs{1'b1}},    // {ESC reset, slow_fsm}
+                                          // exclude the external async reset
+                                          {1'b0, slow_reset_en[0]}
+                                         }
+                                        );
+
+  // The MSB of `slow_peri_reqs.rstreqs` is the external reset request. We want it to always
+  // propagate, in order to continue from the Reset Wait state in the fast FSM.
+  assign ext_reset_req              = slow_peri_reqs.rstreqs[NumRstReqs-1];
+
   for (genvar i = 0; i < NumWkups; i++) begin : gen_wakeup_status
     assign hw2reg.wake_status[i].de = 1'b1;
     assign hw2reg.wake_status[i].d  = peri_reqs_masked.wakeups[i];
@@ -574,7 +596,9 @@ module pwrmgr
 
   assign low_power_hint = reg2hw.control.low_power_hint.q == LowPower;
 
-  pwrmgr_fsm u_fsm (
+  pwrmgr_fsm #(
+    .PwrFsmWaitForExtRst(PwrFsmWaitForExtRst)
+  ) u_fsm (
     .clk_i,
     .rst_ni,
     .clk_slow_i,
@@ -602,6 +626,8 @@ module pwrmgr
     .fall_through_o    (low_power_fall_through),
     .abort_o           (low_power_abort),
     .clr_hint_o        (clr_hint),
+    .int_reset_req_i   (internal_reset_req),
+    .ext_reset_req_i   (ext_reset_req),
 
     // rstmgr
     .pwr_rst_o         (pwr_rst_o),
@@ -635,6 +661,7 @@ module pwrmgr
 
     // pinmux and other peripherals
     .strap_o,
+    .strap_sampled_o   (strap_sampled),     // to debug monitoring logic
     .low_power_o
   );
 
@@ -685,6 +712,16 @@ module pwrmgr
     .intr_o                 (intr_wakeup_o)
   );
 
+  ////////////////////////////////////////////////////
+  // Routing sstaus signal outputs for monitoring
+  ////////////////////////////////////////////////////
+  assign boot_status_o.cpu_fetch_en    = fetch_en_o;
+  assign boot_status_o.rom_ctrl_status = rom_ctrl_i;
+  assign boot_status_o.lc_done         = pwr_lc_i.lc_done;
+  assign boot_status_o.otp_done        = otp_rsp.otp_done;
+  assign boot_status_o.clk_status      = pwr_clk_i;
+  assign boot_status_o.light_reset_req = internal_reset_req;
+  assign boot_status_o.strap_sampled   = strap_sampled;
 
   ////////////////////////////
   ///  Assertions

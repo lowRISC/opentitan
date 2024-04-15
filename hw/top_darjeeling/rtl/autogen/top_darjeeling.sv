@@ -33,6 +33,7 @@ module top_darjeeling #(
   // parameters for alert_handler
   // parameters for spi_host0
   // parameters for pwrmgr_aon
+  parameter bit PwrmgrAonPwrFsmWaitForExtRst = 1,
   // parameters for rstmgr_aon
   parameter bit SecRstmgrAonCheck = 1'b1,
   parameter int SecRstmgrAonMaxSyncDelay = 2,
@@ -148,6 +149,7 @@ module top_darjeeling #(
   input  prim_ram_1p_pkg::ram_1p_cfg_t       ram_1p_cfg_i,
   input  prim_ram_2p_pkg::ram_2p_cfg_t       spi_ram_2p_cfg_i,
   input  prim_rom_pkg::rom_cfg_t       rom_cfg_i,
+  output pwrmgr_pkg::pwr_boot_status_t       pwrmgr_boot_status_o,
   output prim_mubi_pkg::mubi4_t       clk_main_jitter_en_o,
   output prim_mubi_pkg::mubi4_t       io_clk_byp_req_o,
   input  prim_mubi_pkg::mubi4_t       io_clk_byp_ack_i,
@@ -1293,7 +1295,8 @@ module top_darjeeling #(
       .rst_ni (rstmgr_aon_resets.rst_spi_host0_n[rstmgr_pkg::Domain0Sel])
   );
   pwrmgr #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[14:14])
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[14:14]),
+    .PwrFsmWaitForExtRst(PwrmgrAonPwrFsmWaitForExtRst)
   ) u_pwrmgr_aon (
 
       // Interrupt
@@ -1303,6 +1306,7 @@ module top_darjeeling #(
       .alert_rx_i  ( alert_rx[14:14] ),
 
       // Inter-module signals
+      .boot_status_o(pwrmgr_boot_status_o),
       .pwr_ast_o(pwrmgr_ast_req_o),
       .pwr_ast_i(pwrmgr_ast_rsp_i),
       .pwr_rst_o(pwrmgr_aon_pwr_rst_req),
@@ -1623,7 +1627,7 @@ module top_darjeeling #(
       .clk_i (clkmgr_aon_clocks.clk_main_infra),
       .clk_aon_i (clkmgr_aon_clocks.clk_aon_infra),
       .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
-      .rst_aon_ni (rstmgr_aon_resets.rst_lc_aon_n[rstmgr_pkg::Domain0Sel])
+      .rst_por_ni (rstmgr_aon_resets.rst_por_io_div4_n[rstmgr_pkg::DomainAonSel])
   );
   sram_ctrl #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[52:52]),

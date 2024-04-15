@@ -44,6 +44,7 @@ module top_earlgrey #(
   parameter bit UsbdevStub = 0,
   parameter int UsbdevRcvrWakeTimeUs = 100,
   // parameters for pwrmgr_aon
+  parameter bit PwrmgrAonPwrFsmWaitForExtRst = 0,
   // parameters for rstmgr_aon
   parameter bit SecRstmgrAonCheck = 1'b1,
   parameter int SecRstmgrAonMaxSyncDelay = 2,
@@ -1703,7 +1704,8 @@ module top_earlgrey #(
       .rst_aon_ni (rstmgr_aon_resets.rst_usb_aon_n[rstmgr_pkg::Domain0Sel])
   );
   pwrmgr #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[22:22])
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[22:22]),
+    .PwrFsmWaitForExtRst(PwrmgrAonPwrFsmWaitForExtRst)
   ) u_pwrmgr_aon (
 
       // Interrupt
@@ -1713,6 +1715,7 @@ module top_earlgrey #(
       .alert_rx_i  ( alert_rx[22:22] ),
 
       // Inter-module signals
+      .boot_status_o(),
       .pwr_ast_o(pwrmgr_ast_req_o),
       .pwr_ast_i(pwrmgr_ast_rsp_i),
       .pwr_rst_o(pwrmgr_aon_pwr_rst_req),

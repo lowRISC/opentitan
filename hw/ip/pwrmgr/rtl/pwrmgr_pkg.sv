@@ -155,6 +155,16 @@ package pwrmgr_pkg;
     logic ndmreset_req;
   } pwrmgr_cpu_t;
 
+  typedef struct packed {
+    lc_ctrl_pkg::lc_tx_t                            cpu_fetch_en;
+    rom_ctrl_pkg::pwrmgr_data_t [pwrmgr_reg_pkg::NumRomInputs-1:0]  rom_ctrl_status;
+    logic                                           lc_done;
+    logic                                           otp_done;
+    logic                                           strap_sampled;
+    logic                                           light_reset_req;
+    pwr_clk_rsp_t                                   clk_status;
+  } pwr_boot_status_t;
+
   // exported resets
 
   // default value for pwrmgr_ast_rsp_t (for dangling ports)
