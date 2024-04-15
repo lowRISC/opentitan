@@ -15,7 +15,7 @@ module soc_proxy
   input  logic clk_i,
   input  logic rst_ni,
   input  logic clk_aon_i,
-  input  logic rst_aon_ni,
+  input  logic rst_por_ni,
 
   input  tlul_pkg::tl_h2d_t core_tl_i,
   output tlul_pkg::tl_d2h_t core_tl_o,
@@ -372,7 +372,7 @@ module soc_proxy
     .Width(1)
   ) u_prim_flop_2sync_soc_wkup (
     .clk_i  (clk_aon_i),
-    .rst_ni (rst_aon_ni),
+    .rst_ni (rst_por_ni),
     .d_i    (soc_wkup_async_i),
     .q_o    (wkup_external_req_o)
   );
@@ -387,7 +387,7 @@ module soc_proxy
     .Cycles(3)
   ) u_prim_filter_wkup (
     .clk_i    (clk_aon_i),
-    .rst_ni   (rst_aon_ni),
+    .rst_ni   (rst_por_ni),
     .enable_i (1'b1),
     .filter_i (async_wkup),
     .filter_o (wkup_internal_req_o)
@@ -399,7 +399,7 @@ module soc_proxy
     .Cycles(4)
   ) u_prim_filter_soc_rst_req (
     .clk_i    (clk_aon_i),
-    .rst_ni   (rst_aon_ni),
+    .rst_ni   (rst_por_ni),
     .enable_i (1'b1),
     .filter_i (soc_rst_req_async_i),
     .filter_o (rst_req_external_o)
