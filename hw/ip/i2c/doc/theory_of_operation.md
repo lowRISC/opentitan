@@ -220,11 +220,11 @@ In the first two scenarios, it is after the ACK bit sent by the target, in the l
 #### Stretching after address read
 - When a target device receives a start, the address and R/W bit are written into the ACQ FIFO.
 - If there is no space in the ACQ FIFO to receive such a write, the target stretches the clock after the ACK bit and waits for software to make space.
-- The `acq_full` interrupt is generated to alert software to such a situation.
+- The `acq_stretch` interrupt is generated to alert software to such a situation.
 
 #### Stretching during write
 - Similar to the scenario above, if the host tries to write a data byte into the ACQ FIFO when there is no available space, the clock is also stretched after the ACK bit.
-- The `acq_full` interrupt is generated to alert software to such a situation.
+- The `acq_stretch` interrupt is generated to alert software to such a situation.
 
 #### Stretching during read
 - When a target device receives a start and read command, it may stretch the clock for either of the following two reasons.
@@ -233,6 +233,30 @@ In the first two scenarios, it is after the ACK bit sent by the target, in the l
     - Having more than 1 entry in the ACQ FIFO suggests there is potentially an unhandled condition (STOP / RESTART) or an unhandled command (START) that requires software intervention before the read can proceed.
 - The `tx_stretch` interrupt is generated to alert software to such a situation.
 
+### Target ACK Control Mode
+
+ACK Control Mode is a feature that allows software to take control of ACK/NACK decisions during a Write transfer.
+When ACK Control Mode is disabled in [`CTRL.ACK_CTRL_EN`](registers.md#ctrl), the Target module will automatically ACK any incoming data byte, so long as there is sufficient space in the ACQ FIFO.
+If there isn't enough space for the data byte and a STOP, the Target module will stretch the clock until space is made available (or a stretch timeout occurs).
+However, if ACK Control Mode is enabled, the [`TARGET_ACK_CTRL`](registers.md#target_ack_ctrl) CSR can also cause the Target module to stretch the clock at the (N)ACK phase.
+
+In ACK Control Mode, an Auto ACK Counter influences whether the Target module automatically ACKs a data byte when there is space in the ACQ FIFO.
+The counter begins at 0 for every transfer, and it decrements for every data byte that is ACK'd.
+In addition, this counter only applies to the bytes in a Write transfer that follow the address byte.
+When a transfer reaches the (N)ACK phase and the [`TARGET_ACK_CTRL.NBYTES`](registers.md#target_ack_ctrl) CSR is 0, the Target module stretches the clock and awaits instructions from software, up to the stretch timeout.
+Note that because the Auto ACK Counter begins every transfer at 0, the first data byte will always stretch the clock.
+
+To release SCL before the timeout, software can choose whether to ACK or NACK the byte.
+To ACK the byte, software would program the Auto ACK Counter to a greater number, and if the value programmed is greater than 1, it would automatically ACK subsequent bytes as well.
+Even with a nonzero count, though, the Target module could still stop and stretch the clock if the ACQ FIFO doesn't have sufficient space.
+Otherwise, software can explicitly NACK that byte and the rest of the transaction by writing a 1 to [`TARGET_ACK_CTRL.NACK`](registers.md#target_ack_ctrl).
+If the Target module is not stretching the clock, writes to [`TARGET_ACK_CTRL`](registers.md#target_ack_ctrl) are ignored.
+
+With the data byte pending in the (N)ACK phase, it hasn't been written to the ACQ FIFO yet.
+Instead, software can read the [`ACQ_FIFO_NEXT_DATA`](registers.md#acq_fifo_next_data) CSR to decide what to do.
+Note that after software indicates its decision, this pending byte will still enter the ACQ FIFO if there is space, accompanied by the metadata reflecting whether it was ACK'd or NACK'd.
+
+This feature is intended to support protocols that require mid-transfer NACK decisions based on the current data transferred (e.g. as in SMBus).
 
 ### Interrupts
 The I2C module has a few interrupts including general data flow interrupts and unexpected event interrupts.
@@ -320,7 +344,10 @@ If firmware sets the bit [`TARGET_FIFO_CONFIG.TXRST_ON_COND`](registers.md#targe
 This behaviour may be useful to software, as any remaining data in the TXFIFO after a Sr/P condition is probably no-longer applicable to the next transfer, so will likely have to be cleared out anyway.
 Keeping this behaviour as a toggle allows software to observe the fifo state before resetting it, which may be useful to understand how much of the previous transfer completed if that information is helpful or relevant.
 
-If ACQ FIFO becomes full, the interrupt `acq_full` is asserted.
+If the Target module stretches the clock as a target-receiver, the interrupt `acq_stretch` is asserted.
+This can be due to a full ACQ FIFO, or it can be due to an ACK Control Mode stretch request.
+If ACK Control Mode is enabled, check the relevant bits in [`STATUS`](registers.md#status) to determine the reason(s).
+The `acq_stretch` interrupt is a Status type, so it will only de-assert once the stretch conditions are cleared.
 
 If a host ceases to send SCL pulses at any point during an ongoing transaction, the target waits for a specified time period and then asserts the interrupt `host_timeout`.
 Host sending an address and R/W bit to all target devices, writing to the selected target, or reading from the target are examples of ongoing transactions.
