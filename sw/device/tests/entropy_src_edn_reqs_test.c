@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_aes.h"
@@ -83,10 +84,15 @@ static void kmac_test(dif_kmac_t *kmac) {
 }
 
 /**
- * Configure the opt to request entropy from the edn.
+ * Configure the otp to request entropy from the edn.
  */
 static void otp_ctrl_test(const dif_otp_ctrl_t *otp) {
   LOG_INFO("%s", __func__);
+  // In the owner stage, the OTP direct access interface is blocked by the ePMP
+  // so we cannot run this test.
+  if (kBootStage == kBootStageOwner) {
+    return;
+  }
 
   // For security reasons, the LFSR is periodically reseeded with entropy coming
   // from EDN. Setting the integrity period to a small value will make the
@@ -109,11 +115,20 @@ static void keymgr_test(const dif_keymgr_t *kmgr) {
    * Key manager can only be tested once per boot.
    */
   static bool tested = false;
+  dif_keymgr_state_t expected_stage_before = kBootStage == kBootStageOwner
+                                                 ? kDifKeymgrStateOwnerRootKey
+                                                 : kDifKeymgrStateReset;
+  dif_keymgr_state_t expected_stage_after = kBootStage == kBootStageOwner
+                                                ? kDifKeymgrStateDisabled
+                                                : kDifKeymgrStateInitialized;
   if (!tested) {
     LOG_INFO("%s", __func__);
     dif_keymgr_config_t config = {.entropy_reseed_interval = 4};
     CHECK_DIF_OK(dif_keymgr_configure(kmgr, config));
+    CHECK_STATUS_OK(keymgr_testutils_check_state(kmgr, expected_stage_before));
     CHECK_DIF_OK(dif_keymgr_advance_state(kmgr, NULL));
+    CHECK_STATUS_OK(keymgr_testutils_wait_for_operation_done(kmgr));
+    CHECK_STATUS_OK(keymgr_testutils_check_state(kmgr, expected_stage_after));
     tested = true;
   }
 }
@@ -228,9 +243,6 @@ status_t execute_test(void) {
     AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusIdle, /*value=*/true,
                                   /*timeout_usec=*/100000);
     CHECK(otbn_randomness_test_end(&otbn, /*skip_otbn_done_check=*/false));
-    CHECK_STATUS_OK(keymgr_testutils_wait_for_operation_done(&kmgr));
-    CHECK_STATUS_OK(
-        keymgr_testutils_check_state(&kmgr, kDifKeymgrStateInitialized));
     CHECK_STATUS_OK(
         entropy_testutils_error_check(&entropy_src, &csrng, &edn0, &edn1));
   }
@@ -241,7 +253,11 @@ status_t execute_test(void) {
 bool test_main(void) {
   test_initialize();
 
-  CHECK_STATUS_OK(keymgr_testutils_init_nvm_then_reset());
+  // The keymgr cannot be initialized after ROM_EXT because the flash controller
+  // is locked out with the ePMP.
+  if (kBootStage != kBootStageOwner) {
+    CHECK_STATUS_OK(keymgr_testutils_init_nvm_then_reset());
+  }
 
   alert_handler_configure(&alert_handler);
   CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
