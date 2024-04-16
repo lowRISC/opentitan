@@ -228,6 +228,7 @@ def cw310_params(
         needs_jtag = False,
         test_cmd = "",
         data = [],
+        defines = [],
         **kwargs):
     """A macro to create CW310 parameters for OpenTitan tests.
 
@@ -277,4 +278,5 @@ def cw310_params(
         param = kwargs,
         post_test_cmd = post_test_cmd,
         post_test_harness = post_test_harness,
+        defines = defines,
     )

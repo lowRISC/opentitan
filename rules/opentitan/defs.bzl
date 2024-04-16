@@ -206,7 +206,7 @@ def opentitan_test(
             kind = kind,
             deps = deps,
             copts = copts,
-            defines = defines,
+            defines = defines + getattr(tparam, "defines", []),
             local_defines = local_defines,
             includes = includes,
             linker_script = linker_script,
