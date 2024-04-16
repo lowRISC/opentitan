@@ -46,6 +46,18 @@
   // Default iterations for all tests - each test entry can override this.
   reseed: 50
 
+  overrides: [
+    // Override the default scratch directory and rel_path to take variant into account
+    {
+      name: scratch_path
+      value: "{scratch_base_path}/{name}_{variant}-{flow}-{tool}"
+    }
+    {
+      name: rel_path
+      value: "hw/ip/{name}_{variant}/dv"
+    }
+  ]
+
   // Add ROM_CTRL specific exclusion files.
   vcs_cov_excl_files: ["{proj_root}/hw/ip/rom_ctrl/dv/cov/rom_ctrl_cov_unr_excl.el",
                        "{proj_root}/hw/ip/rom_ctrl/dv/cov/rom_ctrl_cov_excl.el"]
