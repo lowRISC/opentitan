@@ -568,8 +568,9 @@ module sram_ctrl
       u_tlul_adapter_sram.u_rspfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr,
       alert_tx_o[0])
 
-  // `tlul_gnt` doesn't factor in `sram_gnt` for timing reasons. This assertion checks that
-  // a `tlul_req` is always granted when `sram_gnt` has been asserted and we're not doing an init.
-  `ASSERT(TlulGntIsCorrect_A, tlul_req & sram_gnt & ~init_req |-> tlul_gnt)
+  // `tlul_gnt` doesn't factor in `sram_gnt` for timing reasons. This assertions checks that
+  // `tlul_gnt` is the same as `sram_gnt` when there's an active `tlul_req` that isn't being ignored
+  // because the SRAM is initializing.
+  `ASSERT(TlulGntIsCorrect_A, tlul_req |-> (sram_gnt & ~init_req) == tlul_gnt)
 
 endmodule : sram_ctrl
