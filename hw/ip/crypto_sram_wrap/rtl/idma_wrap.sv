@@ -109,7 +109,6 @@ module idma_wrap  import idma_pkg::*; #(
   idma_rsp_t            be_idma_rsp;
   idma_nd_req_t         fe_idma_req;
 
-  idma_rsp_t    idma_nd_rsp;
   logic         idma_nd_rsp_valid;
   logic         idma_nd_rsp_ready;
   logic         issue_id;
