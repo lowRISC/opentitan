@@ -83,4 +83,28 @@ class edn_common_vseq extends edn_base_vseq;
     cfg.clk_rst_vif.wait_clks($urandom_range(0, 100));
   endtask
 
+  `define RESCMD_FIFO tb.dut.u_edn_core.u_prim_fifo_sync_rescmd
+  `define GENCMD_FIFO tb.dut.u_edn_core.u_prim_fifo_sync_gencmd
+
+  `define HIER_PATH(prefix, suffix) `"prefix.suffix`"
+
+  virtual task pre_run_sec_cm_fi_vseq();
+    $assertoff(0, `HIER_PATH(`RESCMD_FIFO, DataKnown_A));
+    $assertoff(0, `HIER_PATH(`GENCMD_FIFO, DataKnown_A));
+    $assertoff(0, `HIER_PATH(`RESCMD_FIFO, gen_normal_fifo.depthShallNotExceedParamDepth));
+    $assertoff(0, `HIER_PATH(`GENCMD_FIFO, gen_normal_fifo.depthShallNotExceedParamDepth));
+  endtask
+
+  virtual task post_run_sec_cm_fi_vseq();
+    $asserton(0, `HIER_PATH(`RESCMD_FIFO, DataKnown_A));
+    $asserton(0, `HIER_PATH(`GENCMD_FIFO, DataKnown_A));
+    $asserton(0, `HIER_PATH(`RESCMD_FIFO, gen_normal_fifo.depthShallNotExceedParamDepth));
+    $asserton(0, `HIER_PATH(`GENCMD_FIFO, gen_normal_fifo.depthShallNotExceedParamDepth));
+  endtask
+
+  `undef RESCMD_FIFO
+  `undef GENCMD_FIFO
+
+  `undef HIER_PATH
+
 endclass

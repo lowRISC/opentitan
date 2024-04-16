@@ -154,6 +154,20 @@ module edn
       alert_tx_o[1])
   end
 
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(ResCmdFifoWptrCheck_A,
+    u_edn_core.u_prim_fifo_sync_rescmd.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr,
+    alert_tx_o[1])
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(ResCmdFifoRptrCheck_A,
+    u_edn_core.u_prim_fifo_sync_rescmd.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr,
+    alert_tx_o[1])
+
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(GenCmdFifoWptrCheck_A,
+    u_edn_core.u_prim_fifo_sync_gencmd.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr,
+    alert_tx_o[1])
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(GenCmdFifoRptrCheck_A,
+    u_edn_core.u_prim_fifo_sync_gencmd.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr,
+    alert_tx_o[1])
+
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[1])
 endmodule
