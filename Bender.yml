@@ -6,8 +6,8 @@ dependencies:
 
   axi:                  { git: "https://github.com/pulp-platform/axi.git", version: =0.39.1  }
   cluster_interconnect: { git: "https://github.com/pulp-platform/cluster_interconnect.git", version: "1.1.2" }
-  idma:                 { git: "git@github.com:pulp-platform/idma.git", version: 0.5.1 }
-  register_interface:   { git: "https://github.com/pulp-platform/register_interface.git", version: 0.3.2 }
+  idma:                 { git: "git@github.com:pulp-platform/idma.git", version: 0.6.0 }
+  register_interface:   { git: "https://github.com/pulp-platform/register_interface.git",  version: 0.4.3  }
 
 export_include_dirs:
        - hw/ip/prim/rtl
@@ -828,6 +828,8 @@ sources:
            - hw/tb/vip_security_island_soc.sv
            - hw/tb/testbench.sv
            - hw/tb/testbench_asynch.sv
+           - hw/tb/testbench_asynch_astral.sv
+
 
       -  target: test_ot_vip
          defines:
