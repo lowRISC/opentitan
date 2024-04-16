@@ -52,6 +52,13 @@ class rv_dm_base_vseq extends cip_base_vseq #(
     cfg.rv_dm_vif.scanmode <= scanmode;
     cfg.rv_dm_vif.unavailable <= unavailable;
 
+    // TODO(#23096): We're currently wiring all the enable signals to match lc_hw_debug_en and
+    //               hard-coding the late debug enable flag to be true. These eventually need to be
+    //               separately controlled.
+    cfg.rv_dm_vif.pinmux_hw_debug_en       <= lc_hw_debug_en;
+    cfg.rv_dm_vif.lc_dft_en                <= lc_hw_debug_en;
+    cfg.rv_dm_vif.otp_dis_rv_dm_late_debug <= prim_mubi_pkg::MuBi8True;
+
     super.pre_start();
   endtask
 
