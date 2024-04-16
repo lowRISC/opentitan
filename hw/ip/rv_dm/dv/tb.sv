@@ -29,42 +29,39 @@ module tb;
 
   // dut
   rv_dm #(
-    .IdcodeValue          (rv_dm_env_pkg::RV_DM_JTAG_IDCODE)
+    .IdcodeValue (rv_dm_env_pkg::RV_DM_JTAG_IDCODE)
   ) dut (
-    .clk_i                (clk  ),
-    .rst_ni               (rst_n),
-    .clk_lc_i             (clk_lc  ),
-    .rst_lc_ni            (rst_lc_n),
-    // the differing behavior of lc_hw_debug_en_i and pinmux_hw_debug_en_i
-    // will be tested at the top-level. for the purposes of this TB we connect
-    // both signals to the same life cycle signal.
-    .lc_hw_debug_en_i     (rv_dm_if.lc_hw_debug_en),
-    .pinmux_hw_debug_en_i (rv_dm_if.lc_hw_debug_en),
-    // TODO: this needs to be hooked up to the interface properly so that all combinations
-    // of access control combinations can be tested.
-    .lc_dft_en_i          (rv_dm_if.lc_hw_debug_en),
-    .otp_dis_rv_dm_late_debug_i(prim_mubi_pkg::MuBi8True),
-    .scanmode_i           (rv_dm_if.scanmode      ),
-    .scan_rst_ni          (rv_dm_if.scan_rst_n    ),
-    .ndmreset_req_o       (rv_dm_if.ndmreset_req  ),
-    .dmactive_o           (rv_dm_if.dmactive      ),
-    .debug_req_o          (rv_dm_if.debug_req     ),
-    .unavailable_i        (rv_dm_if.unavailable   ),
+    .clk_i                     (clk  ),
+    .rst_ni                    (rst_n),
+    .clk_lc_i                  (clk_lc  ),
+    .rst_lc_ni                 (rst_lc_n),
 
-    .regs_tl_d_i          (regs_tl_if.h2d),
-    .regs_tl_d_o          (regs_tl_if.d2h),
+    .lc_hw_debug_en_i          (rv_dm_if.lc_hw_debug_en           ),
+    .pinmux_hw_debug_en_i      (rv_dm_if.pinmux_hw_debug_en       ),
+    .lc_dft_en_i               (rv_dm_if.lc_dft_en                ),
+    .otp_dis_rv_dm_late_debug_i(rv_dm_if.otp_dis_rv_dm_late_debug ),
 
-    .mem_tl_d_i           (mem_tl_if.h2d),
-    .mem_tl_d_o           (mem_tl_if.d2h),
+    .scanmode_i                (rv_dm_if.scanmode      ),
+    .scan_rst_ni               (rv_dm_if.scan_rst_n    ),
+    .ndmreset_req_o            (rv_dm_if.ndmreset_req  ),
+    .dmactive_o                (rv_dm_if.dmactive      ),
+    .debug_req_o               (rv_dm_if.debug_req     ),
+    .unavailable_i             (rv_dm_if.unavailable   ),
 
-    .sba_tl_h_o           (sba_tl_if.h2d),
-    .sba_tl_h_i           (sba_tl_if.d2h),
+    .regs_tl_d_i               (regs_tl_if.h2d),
+    .regs_tl_d_o               (regs_tl_if.d2h),
 
-    .alert_rx_i           (alert_rx ),
-    .alert_tx_o           (alert_tx ),
+    .mem_tl_d_i                (mem_tl_if.h2d),
+    .mem_tl_d_o                (mem_tl_if.d2h),
 
-    .jtag_i               ({jtag_if.tck, jtag_if.tms, jtag_if.trst_n, jtag_if.tdi}),
-    .jtag_o               ({jtag_if.tdo, jtag_tdo_oe})
+    .sba_tl_h_o                (sba_tl_if.h2d),
+    .sba_tl_h_i                (sba_tl_if.d2h),
+
+    .alert_rx_i                (alert_rx ),
+    .alert_tx_o                (alert_tx ),
+
+    .jtag_i                    ({jtag_if.tck, jtag_if.tms, jtag_if.trst_n, jtag_if.tdi}),
+    .jtag_o                    ({jtag_if.tdo, jtag_tdo_oe})
   );
 
   initial begin

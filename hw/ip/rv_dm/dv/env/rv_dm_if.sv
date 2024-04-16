@@ -6,8 +6,13 @@ interface rv_dm_if(input logic clk, input logic rst_n);
 
   import rv_dm_env_pkg::*;
 
-  // DUT inputs.
+  // "Enable" inputs
   lc_ctrl_pkg::lc_tx_t    lc_hw_debug_en;
+  lc_ctrl_pkg::lc_tx_t    pinmux_hw_debug_en;
+  lc_ctrl_pkg::lc_tx_t    lc_dft_en;
+  prim_mubi_pkg::mubi8_t  otp_dis_rv_dm_late_debug;
+
+  // Other DUT inputs.
   prim_mubi_pkg::mubi4_t  scanmode;
   logic                   scan_rst_n;
   logic [NUM_HARTS-1:0]   unavailable;
@@ -22,6 +27,9 @@ interface rv_dm_if(input logic clk, input logic rst_n);
 
   clocking cb @(posedge clk);
     output lc_hw_debug_en;
+    output pinmux_hw_debug_en;
+    output lc_dft_en;
+    output otp_dis_rv_dm_late_debug;
     output scanmode;
     output scan_rst_n;
     output unavailable;
