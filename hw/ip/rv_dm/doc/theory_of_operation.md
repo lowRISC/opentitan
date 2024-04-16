@@ -25,13 +25,13 @@ In the DEV life cycle state, this gating mechanism supports "late enablement" vi
 
 The following truth table summarizes the behavior of this mechanism
 
-LC State | DIS_RV_DM_LATE_DEBUG (OTP Fuse) | LATE_DEBUG_ENABLE (CSR) | RV_DM reachable via TAP | RV_DM fully ungated
-------------|------------|------------|------------|------------
-TEST_UNLOCKED* or RMA | x | x | yes | yes
-PROD*, RAW or invalid states | x | x | no | no
-DEV | kMuBi8True | x | yes | yes
-DEV | not kMuBi8True | not kMuBi32True | yes | no
-DEV | not kMuBi8True | kMuBi32True | yes | yes
+LC State                     | DIS_RV_DM_LATE_DEBUG (OTP Fuse) | LATE_DEBUG_ENABLE (CSR) | RV_DM reachable via TAP | RV_DM fully ungated
+-----------------------------|---------------------------------|-------------------------|-------------------------|--------------------
+TEST_UNLOCKED* or RMA        | x                               | x                       | yes                     | yes
+PROD*, RAW or invalid states | x                               | x                       | no                      | no
+DEV                          | kMuBi8True                      | x                       | yes                     | yes
+DEV                          | not kMuBi8True                  | not kMuBi32True         | yes                     | no
+DEV                          | not kMuBi8True                  | kMuBi32True             | yes                     | yes
 
 ### Non-debug Module Reset Support
 
