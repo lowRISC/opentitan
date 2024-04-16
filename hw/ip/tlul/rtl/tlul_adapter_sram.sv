@@ -300,6 +300,24 @@ module tlul_adapter_sram
                      (vld_rd_rsp)                        ? rspfifo_rdata.data_intg : // valid read
                      prim_secded_pkg::SecdedInv3932ZeroEcc;                          // valid write
 
+  // When an error is seen on an incoming transaction it gets an immediate response without
+  // performing an SRAM request. It may be the transaction receives a ready the first cycle it is
+  // seen, but if not we force a ready the following cycle. This avoids factoring the error
+  // calculation into the outgoing ready preventing a feedthrough path from the incoming tilelink
+  // signals to the outgoing tilelink signals.
+  logic missed_err_gnt_d, missed_err_gnt_q;
+
+  // Track whether we've seen an incoming transaction with an error that didn't get a ready
+  assign missed_err_gnt_d = error_internal & tl_i_int.a_valid & ~tl_o_int.a_ready;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      missed_err_gnt_q <= 1'b0;
+    end else begin
+      missed_err_gnt_q <= missed_err_gnt_d;
+    end
+  end
+
   assign tl_o_int = '{
       d_valid  : d_valid ,
       d_opcode : (d_valid && reqfifo_rdata.op != OpRead) ? AccessAck : AccessAckData,
@@ -310,7 +328,7 @@ module tlul_adapter_sram
       d_data   : d_data,
       d_user   : '{default: '0, data_intg: data_intg},
       d_error  : d_valid && d_error,
-      a_ready  : (gnt_i | error_internal) & reqfifo_wready & sramreqfifo_wready
+      a_ready  : (gnt_i | missed_err_gnt_q) & reqfifo_wready & sramreqfifo_wready
   };
 
   // a_ready depends on the FIFO full condition and grant from SRAM (or SRAM arbiter)
