@@ -22,6 +22,8 @@ module tb;
   wire intr_done_ch1;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
 
+  logic cio_pda0_tx_en, cio_pcl0_tx_en, cio_pda1_tx_en, cio_pcl1_tx_en;
+
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(interrupts);
@@ -46,11 +48,10 @@ module tb;
     .cio_pda1_tx_o        (pda_tx_o[1]   ),
     .cio_pcl1_tx_o        (pcl_tx_o[1]   ),
 
-    // TODO: Connect and monitor these ports.
-    .cio_pda0_tx_en_o     (),
-    .cio_pcl0_tx_en_o     (),
-    .cio_pda1_tx_en_o     (),
-    .cio_pcl1_tx_en_o     (),
+    .cio_pda0_tx_en_o     (cio_pda0_tx_en),
+    .cio_pcl0_tx_en_o     (cio_pcl0_tx_en),
+    .cio_pda1_tx_en_o     (cio_pda1_tx_en),
+    .cio_pcl1_tx_en_o     (cio_pcl1_tx_en),
 
     .intr_done_ch0_o      (intr_done_ch0 ),
     .intr_done_ch1_o      (intr_done_ch1 )
@@ -63,6 +64,11 @@ module tb;
 
   assign interrupts[DoneCh0] = intr_done_ch0;
   assign interrupts[DoneCh1] = intr_done_ch1;
+
+  // Pattgen has four "enable" ports that are just wired to 1'b1. Rather than doing any functional
+  // verification about these signals, it's easiest to assert that they are '1.
+  `ASSERT(TxEnHigh_A, &{cio_pda0_tx_en, cio_pcl0_tx_en, cio_pda1_tx_en, cio_pcl1_tx_en},
+          clk_rst_if.clk, !clk_rst_if.rst_n)
 
   initial begin
     // drive clk and rst_n from clk_if
