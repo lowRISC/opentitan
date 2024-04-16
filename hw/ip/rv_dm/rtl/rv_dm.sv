@@ -23,9 +23,8 @@ module rv_dm
                                            // tooling connects the correct clk/rst domains.
   input  logic                rst_ni,      // asynchronous reset active low, connect PoR
                                            // here, not the system reset
-  input  logic                rst_lc_ni,  // asynchronous reset active low, connect the lc
+  input  logic                rst_lc_ni,   // asynchronous reset active low, connect the lc
                                            // reset here. this is only used for NDM reset tracking.
-  input  logic [31:0]         next_dm_addr_i, // static word address of the next debug module.
   // SEC_CM: LC_HW_DEBUG_EN.INTERSIG.MUBI
   // HW Debug lifecycle enable signal (live version from the life cycle controller)
   input  lc_ctrl_pkg::lc_tx_t lc_hw_debug_en_i,
@@ -567,7 +566,10 @@ module rv_dm
   ) u_dm_top (
     .clk_i,
     .rst_ni,
-    .next_dm_addr_i,
+    // The debug module can support having a chain of debug modules (and this gives a the static
+    // address of the next module in the chain). We are not using this feature, so give an address
+    // of 0, which means this is the last module in the chain.
+    .next_dm_addr_i        (32'h0                 ),
     .testmode_i            (testmode              ),
     .ndmreset_o            (ndmreset_req          ),
     .ndmreset_ack_i        (ndmreset_ack          ),
