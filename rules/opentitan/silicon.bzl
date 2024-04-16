@@ -140,6 +140,7 @@ def silicon_params(
         needs_jtag = False,
         test_cmd = "",
         data = [],
+        defines = [],
         **kwargs):
     """A macro to create Silicon parameters for OpenTitan tests.
 
@@ -175,4 +176,5 @@ def silicon_params(
         """ if needs_jtag else "") + test_cmd,
         data = data,
         param = kwargs,
+        defines = defines,
     )

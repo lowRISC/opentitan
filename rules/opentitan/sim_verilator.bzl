@@ -168,6 +168,7 @@ def verilator_params(
         otp = None,
         test_cmd = "",
         data = [],
+        defines = [],
         **kwargs):
     """A macro to create verilator parameters for OpenTitan tests.
 
@@ -199,4 +200,5 @@ def verilator_params(
         test_cmd = test_cmd,
         data = data,
         param = kwargs,
+        defines = defines,
     )
