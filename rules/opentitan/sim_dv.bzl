@@ -175,6 +175,7 @@ def dv_params(
         otp = None,
         test_cmd = "",
         data = [],
+        defines = [],
         **kwargs):
     """A macro to create dv parameters for OpenTitan tests.
 
@@ -206,4 +207,5 @@ def dv_params(
         test_cmd = test_cmd,
         data = data,
         param = kwargs,
+        defines = defines,
     )
