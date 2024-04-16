@@ -73,18 +73,28 @@ module tb;
     // drive clk and rst_n from clk_if
     clk_rst_if.set_active();
 
+    uvm_config_db#(virtual rv_dm_if)::set(null, "*.env", "rv_dm_vif", rv_dm_if);
+
+    // Connect the clk/rst and TL interfaces that apply to the main memory model. These get
+    // retrieved in dv_base_env::build_phase.
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
-    uvm_config_db#(virtual clk_rst_if)::set(
-        null, "*.env", "clk_rst_vif_rv_dm_regs_reg_block", clk_rst_if);
-    uvm_config_db#(virtual clk_rst_if)::set(
-        null, "*.env", "clk_rst_vif_rv_dm_mem_reg_block", clk_rst_if);
-    uvm_config_db#(virtual tl_if)::set(
-        null, "*.env.m_tl_agent_rv_dm_regs_reg_block*", "vif", regs_tl_if);
-    uvm_config_db#(virtual tl_if)::set(
-        null, "*.env.m_tl_agent_rv_dm_mem_reg_block*", "vif", mem_tl_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_sba_agent*", "vif", sba_tl_if);
-    uvm_config_db#(virtual jtag_if)::set(null, "*.env.m_jtag_agent*", "vif", jtag_if);
-    uvm_config_db#(virtual rv_dm_if)::set(null, "*.env*", "rv_dm_vif", rv_dm_if);
+
+    // Similarly, connect clk/rst/TL for regs_reg_block
+    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env",
+                                            "clk_rst_vif_rv_dm_regs_reg_block", clk_rst_if);
+    uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent_rv_dm_regs_reg_block*",
+                                       "vif", regs_tl_if);
+
+    // Similarly, connect clk/rst/TL for mem_reg_block
+    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env",
+                                            "clk_rst_vif_rv_dm_mem_reg_block", clk_rst_if);
+    uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent_rv_dm_mem_reg_block*",
+                                       "vif", mem_tl_if);
+
+    // Connect the JTAG interface, which is used by the jtag_agent build_phase
+    uvm_config_db#(virtual jtag_if)::set(null, "*.env.m_jtag_agent", "vif", jtag_if);
+
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end
