@@ -447,21 +447,15 @@ Hardware detection of fatal error conditions status register
 |   0    |   ro   |   0x0   | [SFIFO_RESCMD_ERR](#err_code--sfifo_rescmd_err) |
 
 ### ERR_CODE . FIFO_STATE_ERR
-This bit will be set to one when any of the source bits (bits 0 through 1 of this
-this register) are asserted as a result of an error pulse generated from
-any FIFO where both the empty and full status bits are set.
+This bit will be set to one when any of the source bits (bits 0 through 1 of this register) are asserted as a result of an error pulse generated from any FIFO where both the empty and full status bits are set or in case of error conditions inside the hardened counters.
 This bit will stay set until the next reset.
 
 ### ERR_CODE . FIFO_READ_ERR
-This bit will be set to one when any of the source bits (bits 0 through 1 of this
-this register) are asserted as a result of an error pulse generated from
-any empty FIFO that has recieved a read pulse.
+This bit will be set to one when any of the source bits (bits 0 through 1 of this register) are asserted as a result of an error pulse generated from any empty FIFO that has received a read pulse.
 This bit will stay set until the next reset.
 
 ### ERR_CODE . FIFO_WRITE_ERR
-This bit will be set to one when any of the source bits (bits 0 through 1 of this
-this register) are asserted as a result of an error pulse generated from
-any full FIFO that has been recieved a write pulse.
+This bit will be set to one when any of the source bits (bits 0 through 1 of this register) are asserted as a result of an error pulse generated from any full FIFO that has received a write pulse.
 This bit will stay set until the next reset.
 
 ### ERR_CODE . EDN_CNTR_ERR

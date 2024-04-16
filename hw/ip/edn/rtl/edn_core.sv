@@ -147,6 +147,7 @@ module edn_core import edn_pkg::*;
   logic [2:0]                         sfifo_rescmd_err;
   logic                               sfifo_rescmd_full;
   logic                               sfifo_rescmd_not_empty;
+  logic                               sfifo_rescmd_int_err;
 
   // gencmd fifo
   logic [GencmdFifoWidth-1:0]         sfifo_gencmd_rdata;
@@ -159,6 +160,7 @@ module edn_core import edn_pkg::*;
   logic [2:0]                         sfifo_gencmd_err;
   logic                               sfifo_gencmd_full;
   logic                               sfifo_gencmd_not_empty;
+  logic                               sfifo_gencmd_int_err;
 
   logic                               edn_main_sm_err_sum;
   logic [8:0]                         edn_main_sm_state;
@@ -289,10 +291,12 @@ module edn_core import edn_pkg::*;
   // interrupt for sw app interface only
   assign event_edn_cmd_req_done = csrng_cmd_i.csrng_rsp_ack && sw_cmd_valid;
 
-  // Counter and fsm errors are structural errors and are always
-  // active regardless of the functional state.
+  // Counter, internal FIFO errors and FSM errors are structural errors and are always active
+  // regardless of the functional state.
   logic fatal_loc_events;
-  assign fatal_loc_events =  edn_cntr_err_sum ||
+  assign fatal_loc_events =  sfifo_rescmd_int_err ||
+                             sfifo_gencmd_int_err ||
+                             edn_cntr_err_sum ||
                              edn_main_sm_err_sum ||
                              edn_ack_sm_err_sum;
 
@@ -390,7 +394,7 @@ module edn_core import edn_pkg::*;
   );
 
   // alert - send all interrupt sources to the alert for the fatal case
-  assign fatal_alert_o = event_edn_fatal_err;
+  assign fatal_alert_o = event_edn_fatal_err || sfifo_rescmd_int_err || sfifo_gencmd_int_err;
 
   // alert test
   assign recov_alert_test_o = {
@@ -624,10 +628,13 @@ module edn_core import edn_pkg::*;
                        && csrng_cmd_i.csrng_req_ready) ? cs_cmd_req_out_q[3:0] : cmd_type_q;
 
   // rescmd fifo
+  // SEC_CM: FIFO.CTR.REDUN
   prim_fifo_sync #(
     .Width(RescmdFifoWidth),
     .Pass(0),
-    .Depth(RescmdFifoDepth)
+    .Depth(RescmdFifoDepth),
+    .OutputZeroIfEmpty(0),
+    .Secure(1)
   ) u_prim_fifo_sync_rescmd (
     .clk_i    (clk_i),
     .rst_ni   (rst_ni),
@@ -640,7 +647,7 @@ module edn_core import edn_pkg::*;
     .rdata_o  (sfifo_rescmd_rdata),
     .full_o   (sfifo_rescmd_full),
     .depth_o  (sfifo_rescmd_depth),
-    .err_o    ()
+    .err_o    (sfifo_rescmd_int_err)
   );
 
   // Gate rescmd FIFO operations in case of CSRNG backpressure.
@@ -661,13 +668,16 @@ module edn_core import edn_pkg::*;
   assign sfifo_rescmd_err =
          {(sfifo_rescmd_push && sfifo_rescmd_full),
           (sfifo_rescmd_pop && !sfifo_rescmd_not_empty),
-          (sfifo_rescmd_full && !sfifo_rescmd_not_empty)};
+          (sfifo_rescmd_full && !sfifo_rescmd_not_empty) || sfifo_rescmd_int_err};
 
   // gencmd fifo
+  // SEC_CM: FIFO.CTR.REDUN
   prim_fifo_sync #(
     .Width(GencmdFifoWidth),
     .Pass(0),
-    .Depth(GencmdFifoDepth)
+    .Depth(GencmdFifoDepth),
+    .OutputZeroIfEmpty(0),
+    .Secure(1)
   ) u_prim_fifo_sync_gencmd (
     .clk_i    (clk_i),
     .rst_ni   (rst_ni),
@@ -680,7 +690,7 @@ module edn_core import edn_pkg::*;
     .rdata_o  (sfifo_gencmd_rdata),
     .full_o   (sfifo_gencmd_full),
     .depth_o  (sfifo_gencmd_depth),
-    .err_o    ()
+    .err_o    (sfifo_gencmd_int_err)
   );
 
   // Gate gencmd FIFO operations in case of CSRNG backpressure.
@@ -701,7 +711,7 @@ module edn_core import edn_pkg::*;
   assign sfifo_gencmd_err =
          {(sfifo_gencmd_push && sfifo_gencmd_full),
           (sfifo_gencmd_pop && !sfifo_gencmd_not_empty),
-          (sfifo_gencmd_full && !sfifo_gencmd_not_empty)};
+          (sfifo_gencmd_full && !sfifo_gencmd_not_empty) || sfifo_gencmd_int_err};
 
   // sm to process csrng commands
   // SEC_CM: MAIN_SM.FSM.SPARSE

@@ -38,6 +38,7 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | EDN.CONFIG.MUBI              | Registers have multi-bit encoded fields.                                                                          |
 | EDN.MAIN_SM.FSM.SPARSE       | The EDN main state machine uses a sparse state encoding.                                                          |
 | EDN.ACK_SM.FSM.SPARSE        | The EDN ACK state machine uses a sparse state encoding.                                                           |
+| EDN.FIFO.CTR.REDUN           | The FIFO pointers of several FIFOs are implemented with duplicate counters.                                       |
 | EDN.CTR.REDUN                | Counter hardening on the generate command maximum requests counter.                                               |
 | EDN.MAIN_SM.CTR.LOCAL_ESC    | A mismatch detected inside any EDN counter moves the main state machine into a terminal error state.              |
 | EDN.CS_RDATA.BUS.CONSISTENCY | Comparison on successive bus values for genbits returned from csrng that will distribute over the endpoint buses. |
