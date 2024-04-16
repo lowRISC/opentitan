@@ -49,6 +49,7 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "otp_ctrl_regs.h"
+#include "rstmgr_regs.h"
 
 /**
  * Table of forward branch Control Flow Integrity (CFI) counters.
@@ -85,6 +86,8 @@ CFI_DEFINE_COUNTERS(rom_counters, ROM_CFI_FUNC_COUNTERS_TABLE);
 lifecycle_state_t lc_state = (lifecycle_state_t)0;
 // Boot data from flash.
 boot_data_t boot_data = {0};
+// Whether we are "simply" waking from low power mode.
+static hardened_bool_t waking_from_low_power = 0;
 
 OT_ALWAYS_INLINE
 OT_WARN_UNUSED_RESULT
@@ -131,8 +134,23 @@ OT_WARN_UNUSED_RESULT
 static rom_error_t rom_init(void) {
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomInit, 1);
   sec_mmio_init();
-  // Initialize pinmux configuration so we can use the UART.
-  pinmux_init();
+  uint32_t reset_reasons = rstmgr_reason_get();
+  if (reset_reasons != (1U << RSTMGR_RESET_INFO_LOW_POWER_EXIT_BIT)) {
+    // The above compares all bits, rather than just the one indication "low
+    // power exit", because if there is any other reset reason, besides
+    // LOW_POWER_EXIT, it means that the chip did full reset while coming out of
+    // low power.  In that case, the state of AON IP blocks would have been
+    // reset, and the ROM should not treat this as "waking from low power".
+    waking_from_low_power = kHardenedBoolFalse;
+
+    // Initialize pinmux configuration so we can use the UART, (except if waking
+    // up from low power, as the pinmux will in such case have retained its
+    // previous configuration.)
+    pinmux_init();
+  } else {
+    waking_from_low_power = kHardenedBoolTrue;
+  }
+
   // Configure UART0 as stdout.
   uart_init(kUartNCOValue);
 
@@ -157,9 +175,14 @@ static rom_error_t rom_init(void) {
   // Update epmp config for debug rom according to lifecycle state.
   rom_epmp_config_debug_rom(lc_state);
 
-  // Re-initialize the watchdog timer.
-  watchdog_init(lc_state);
-  SEC_MMIO_WRITE_INCREMENT(kWatchdogSecMmioInit);
+  if (launder32(waking_from_low_power) != kHardenedBoolTrue) {
+    HARDENED_CHECK_EQ(waking_from_low_power, kHardenedBoolFalse);
+    // Re-initialize the watchdog timer, if the RESET was caused by anything
+    // besides waking from low power (which would have left the watchdog in its
+    // previous configuration).
+    watchdog_init(lc_state);
+    SEC_MMIO_WRITE_INCREMENT(kWatchdogSecMmioInit);
+  }
 
   // Initialize the shutdown policy.
   HARDENED_RETURN_IF_ERROR(shutdown_init(lc_state));
@@ -175,7 +198,6 @@ static rom_error_t rom_init(void) {
 
   // Initialize the retention RAM based on the reset reason and the OTP value.
   // Note: Retention RAM is always reset on PoR regardless of the OTP value.
-  uint32_t reset_reasons = rstmgr_reason_get();
   uint32_t reset_mask =
       (1 << kRstmgrReasonPowerOn) |
       otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_RET_RAM_RESET_MASK_OFFSET);
@@ -573,12 +595,15 @@ void rom_main(void) {
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomMain, 3);
   CFI_FUNC_COUNTER_CHECK(rom_counters, kCfiRomInit, 3);
 
-  hardened_bool_t bootstrap_req = bootstrap_requested();
-  if (launder32(bootstrap_req) == kHardenedBoolTrue) {
-    HARDENED_CHECK_EQ(bootstrap_req, kHardenedBoolTrue);
-    rom_bootstrap_message();
-    watchdog_disable();
-    shutdown_finalize(bootstrap());
+  if (launder32(waking_from_low_power) != kHardenedBoolTrue) {
+    HARDENED_CHECK_EQ(waking_from_low_power, kHardenedBoolFalse);
+    hardened_bool_t bootstrap_req = bootstrap_requested();
+    if (launder32(bootstrap_req) == kHardenedBoolTrue) {
+      HARDENED_CHECK_EQ(bootstrap_req, kHardenedBoolTrue);
+      rom_bootstrap_message();
+      watchdog_disable();
+      shutdown_finalize(bootstrap());
+    }
   }
 
   // `rom_try_boot` will not return unless there is an error.
