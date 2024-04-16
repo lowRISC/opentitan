@@ -45,6 +45,17 @@ enum {
   kFpgaLoop = 5,
 };
 
+#ifndef SIVAL_ROM_EXT
+// Expected key manage state after boot + one state advance.
+// If this tests runs after the ROM, we expect the state to
+// be kDifKeymgrStateReset and to move to kDifKeymgrStateInitialized.
+#define EXPECTED_KEYMGR_STATE kDifKeymgrStateInitialized
+#else
+// In SiVal, the state after the ROM_EXT is kDifKeymgrStateOwnerRootKey
+// so advancing will move it to kDifKeymgrStateDisabled.
+#define EXPECTED_KEYMGR_STATE kDifKeymgrStateDisabled
+#endif
+
 OTTF_DEFINE_TEST_CONFIG();
 
 /**
@@ -82,8 +93,11 @@ static void kmac_test(dif_kmac_t *kmac) {
   CHECK_DIF_OK(dif_kmac_configure(kmac, config));
 }
 
+// In SiVal, the OTP direct access interface is blocked by the ePMP
+// so we cannot run this test.
+#ifndef SIVAL_ROM_EXT
 /**
- * Configure the opt to request entropy from the edn.
+ * Configure the otp to request entropy from the edn.
  */
 static void otp_ctrl_test(const dif_otp_ctrl_t *otp) {
   LOG_INFO("%s", __func__);
@@ -99,6 +113,7 @@ static void otp_ctrl_test(const dif_otp_ctrl_t *otp) {
   CHECK_DIF_OK(dif_otp_ctrl_configure(otp, config));
   CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(otp));
 }
+#endif /* SIVAL_ROM_EXT */
 
 /**
  * Configure the reseed interval to a short period and
@@ -221,7 +236,11 @@ status_t execute_test(void) {
     aes_test(&aes);
     otbn_randomness_test_start(&otbn, /*iters=*/0);
     keymgr_test(&kmgr);
+#ifndef SIVAL_ROM_EXT
     otp_ctrl_test(&otp);
+#else
+    LOG_INFO("OTP test disable in SiVal ROM_EXT");
+#endif
     kmac_test(&kmac);
     ibex_test(&ibex);
 
@@ -229,8 +248,7 @@ status_t execute_test(void) {
                                   /*timeout_usec=*/100000);
     CHECK(otbn_randomness_test_end(&otbn, /*skip_otbn_done_check=*/false));
     CHECK_STATUS_OK(keymgr_testutils_wait_for_operation_done(&kmgr));
-    CHECK_STATUS_OK(
-        keymgr_testutils_check_state(&kmgr, kDifKeymgrStateInitialized));
+    CHECK_STATUS_OK(keymgr_testutils_check_state(&kmgr, EXPECTED_KEYMGR_STATE));
     CHECK_STATUS_OK(
         entropy_testutils_error_check(&entropy_src, &csrng, &edn0, &edn1));
   }
