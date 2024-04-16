@@ -170,8 +170,10 @@ void sc_keymgr_entropy_reseed_interval_set(uint16_t entropy_reseed_interval);
  * the secure mmio `sec_mmio_check_values()` function to make sure the value of
  * the `SW_BINDING_REGWEN` register is updated in the secure mmio expectations
  * table.
+ *
+ * @return true for passing into IBEX_SPIN_FOR.
  */
-void sc_keymgr_advance_state(void);
+bool sc_keymgr_advance_state(void);
 
 /**
  * Checks the state of the key manager.

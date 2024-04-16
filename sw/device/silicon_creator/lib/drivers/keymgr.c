@@ -9,6 +9,8 @@
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/runtime/hart.h"
+#include "sw/device/lib/runtime/ibex.h"
+#include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -127,7 +129,7 @@ void sc_keymgr_owner_max_ver_set(uint32_t max_key_ver) {
   sec_mmio_write32(kBase + KEYMGR_MAX_OWNER_KEY_VER_REGWEN_REG_OFFSET, 0);
 }
 
-void sc_keymgr_advance_state(void) {
+bool sc_keymgr_advance_state(void) {
   uint32_t reg =
       bitfield_field32_write(0, KEYMGR_CONTROL_SHADOWED_DEST_SEL_FIELD,
                              KEYMGR_CONTROL_SHADOWED_DEST_SEL_VALUE_NONE);
@@ -136,6 +138,7 @@ void sc_keymgr_advance_state(void) {
   abs_mmio_write32_shadowed(kBase + KEYMGR_CONTROL_SHADOWED_REG_OFFSET, reg);
 
   abs_mmio_write32(kBase + KEYMGR_START_REG_OFFSET, 1);
+  return true;
 }
 
 rom_error_t sc_keymgr_state_check(sc_keymgr_state_t expected_state) {
@@ -276,7 +279,7 @@ rom_error_t sc_keymgr_owner_int_advance(keymgr_binding_value_t *sealing_binding,
   HARDENED_RETURN_IF_ERROR(sc_keymgr_state_check(kScKeymgrStateCreatorRootKey));
   sc_keymgr_sw_binding_set(sealing_binding, attest_binding);
   sc_keymgr_owner_int_max_ver_set(max_key_version);
-  sc_keymgr_advance_state();
+  IBEX_SPIN_FOR(sc_keymgr_advance_state(), 10000);
   HARDENED_RETURN_IF_ERROR(
       sc_keymgr_state_check(kScKeymgrStateOwnerIntermediateKey));
   return kErrorOk;
@@ -289,7 +292,7 @@ rom_error_t sc_keymgr_owner_advance(keymgr_binding_value_t *sealing_binding,
       sc_keymgr_state_check(kScKeymgrStateOwnerIntermediateKey));
   sc_keymgr_sw_binding_set(sealing_binding, attest_binding);
   sc_keymgr_owner_max_ver_set(max_key_version);
-  sc_keymgr_advance_state();
+  IBEX_SPIN_FOR(sc_keymgr_advance_state(), 10000);
   HARDENED_RETURN_IF_ERROR(sc_keymgr_state_check(kScKeymgrStateOwnerKey));
   return kErrorOk;
 }

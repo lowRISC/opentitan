@@ -179,7 +179,7 @@ TEST_F(KeymgrTest, SetOwnerMaxVerKey) {
 
 TEST_F(KeymgrTest, AdvanceState) {
   ExpectAdvanceState();
-  sc_keymgr_advance_state();
+  IBEX_SPIN_FOR(sc_keymgr_advance_state(), 10000);
 }
 
 TEST_F(KeymgrTest, CheckState) {

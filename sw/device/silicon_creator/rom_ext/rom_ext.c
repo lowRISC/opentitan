@@ -239,9 +239,9 @@ static rom_error_t rom_ext_attestation_keygen(const manifest_t *manifest) {
   // ROM sets the SW binding values for the first key stage (CreatorRootKey) but
   // does not initialize the key manager. Advance key manager state twice to
   // transition to the creator root key state.
-  sc_keymgr_advance_state();
+  IBEX_SPIN_FOR(sc_keymgr_advance_state(), 10000);
   HARDENED_RETURN_IF_ERROR(sc_keymgr_state_check(kScKeymgrStateInit));
-  sc_keymgr_advance_state();
+  IBEX_SPIN_FOR(sc_keymgr_advance_state(), 10000);
   HARDENED_RETURN_IF_ERROR(sc_keymgr_state_check(kScKeymgrStateCreatorRootKey));
 
   // Generate UDS attestation keys.
@@ -265,7 +265,7 @@ static rom_error_t rom_ext_attestation_keygen(const manifest_t *manifest) {
   sc_keymgr_owner_int_max_ver_set(rom_ext_manifest->max_key_version);
   SEC_MMIO_WRITE_INCREMENT(kScKeymgrSecMmioSwBindingSet +
                            kScKeymgrSecMmioOwnerIntMaxVerSet);
-  sc_keymgr_advance_state();
+  IBEX_SPIN_FOR(sc_keymgr_advance_state(), 10000);
   HARDENED_RETURN_IF_ERROR(
       sc_keymgr_state_check(kScKeymgrStateOwnerIntermediateKey));
 
@@ -286,7 +286,7 @@ static rom_error_t rom_ext_attestation_keygen(const manifest_t *manifest) {
   sc_keymgr_owner_max_ver_set(manifest->max_key_version);
   SEC_MMIO_WRITE_INCREMENT(kScKeymgrSecMmioSwBindingSet +
                            kScKeymgrSecMmioOwnerMaxVerSet);
-  sc_keymgr_advance_state();
+  IBEX_SPIN_FOR(sc_keymgr_advance_state(), 10000);
   HARDENED_RETURN_IF_ERROR(sc_keymgr_state_check(kScKeymgrStateOwnerKey));
 
   // Generate CDI_1 attestation keys.

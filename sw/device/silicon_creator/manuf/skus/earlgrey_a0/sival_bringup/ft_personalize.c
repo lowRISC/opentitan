@@ -228,7 +228,7 @@ static status_t personalize_dice_certificates(ujson_t *uj) {
 
   // Advance keymgr to Initialized state.
   TRY(sc_keymgr_state_check(kScKeymgrStateReset));
-  sc_keymgr_advance_state();
+  IBEX_SPIN_FOR(sc_keymgr_advance_state(), 10000);
   TRY(sc_keymgr_state_check(kScKeymgrStateInit));
 
   // Load OTBN attestation keygen program.
@@ -236,7 +236,7 @@ static status_t personalize_dice_certificates(ujson_t *uj) {
   TRY(otbn_boot_app_load());
 
   // Generate UDS keys and (TBS) cert.
-  sc_keymgr_advance_state();
+  IBEX_SPIN_FOR(sc_keymgr_advance_state(), 10000);
   TRY(dice_attestation_keygen(kDiceKeyUds, &uds_pubkey_id, &curr_pubkey));
   TRY(otbn_boot_attestation_key_save(kUdsAttestationKeySeed,
                                      kUdsKeymgrDiversifier));
@@ -263,9 +263,9 @@ static status_t personalize_dice_certificates(ujson_t *uj) {
 
   // Generate CDI_1 keys and cert.
   compute_keymgr_owner_binding(&certgen_inputs);
-  TRY(sc_keymgr_owner_advance(&sealing_binding_value,
-                              &attestation_binding_value,
-                              /*max_key_version=*/0));
+  IBEX_TRY_SPIN_FOR(sc_keymgr_owner_advance(&sealing_binding_value,
+                                            &attestation_binding_value,
+                                            /*max_key_version=*/0), 10000);
   TRY(dice_attestation_keygen(kDiceKeyCdi1, &cdi_1_pubkey_id, &curr_pubkey));
   TRY(dice_cdi_1_cert_build(&certgen_inputs, &cdi_0_pubkey_id, &cdi_1_pubkey_id,
                             &curr_pubkey, dice_certs.cdi_1_certificate,

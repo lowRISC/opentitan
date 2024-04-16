@@ -153,12 +153,12 @@ rom_error_t keymgr_rom_test(void) {
   sec_mmio_check_values(/*rnd_offset=*/0);
 
   // Advance keymgr to Initialized state.
-  sc_keymgr_advance_state();
+  IBEX_SPIN_FOR(sc_keymgr_advance_state(), 10000);
   ASSERT_OK(sc_keymgr_state_check(kScKeymgrStateInit));
   LOG_INFO("Keymgr State: Init");
 
   // Advance keymgr to CreatorRootKey state.
-  sc_keymgr_advance_state();
+  IBEX_SPIN_FOR(sc_keymgr_advance_state(), 10000);
   ASSERT_OK(sc_keymgr_state_check(kScKeymgrStateCreatorRootKey));
   LOG_INFO("Keymgr State: CreatorRootKey");
 
@@ -174,7 +174,7 @@ rom_error_t keymgr_rom_test(void) {
   SEC_MMIO_WRITE_INCREMENT(kScKeymgrSecMmioSwBindingSet +
                            kScKeymgrSecMmioOwnerIntMaxVerSet);
   sec_mmio_check_values(/*rnd_offset=*/0);
-  sc_keymgr_advance_state();
+  IBEX_SPIN_FOR(sc_keymgr_advance_state(), 10000);
   ASSERT_OK(sc_keymgr_state_check(kScKeymgrStateOwnerIntermediateKey));
   LOG_INFO("Keymgr State: OwnerIntermediateKey");
 
@@ -196,7 +196,7 @@ rom_error_t keymgr_rom_ext_test(void) {
   SEC_MMIO_WRITE_INCREMENT(kScKeymgrSecMmioSwBindingSet +
                            kScKeymgrSecMmioOwnerMaxVerSet);
   sec_mmio_check_values(/*rnd_offset=*/0);
-  sc_keymgr_advance_state();
+  IBEX_SPIN_FOR(sc_keymgr_advance_state(), 10000);
   ASSERT_OK(sc_keymgr_state_check(kScKeymgrStateOwnerKey));
 
   sec_mmio_check_counters(/*expected_check_count=*/7);
