@@ -35,6 +35,10 @@ class rv_dm_env extends cip_base_env #(
     if (!uvm_config_db#(virtual rv_dm_if)::get(this, "", "rv_dm_vif", cfg.rv_dm_vif)) begin
       `uvm_fatal(get_full_name(), "failed to get rv_dm_vif from uvm_config_db")
     end
+    if (!uvm_config_db#(virtual clk_rst_if)::get(this, "",
+                                                 "clk_lc_rst_vif", cfg.clk_lc_rst_vif)) begin
+      `uvm_fatal(`gfn, "failed to get clk_lc_rst_vif from uvm_config_db")
+    end
 
     // create components
     m_tl_sba_agent = tl_agent::type_id::create("m_tl_sba_agent", this);

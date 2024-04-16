@@ -13,11 +13,12 @@ module tb;
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
-  wire clk, rst_n;
+  wire clk, rst_n, clk_lc, rst_lc_n;
   wire jtag_tdo_oe;
 
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
+  clk_rst_if clk_lc_rst_if (.clk(clk_lc), .rst_n(rst_lc_n));
   tl_if regs_tl_if(.clk(clk), .rst_n(rst_n));
   tl_if mem_tl_if(.clk(clk), .rst_n(rst_n));
   tl_if sba_tl_if(.clk(clk), .rst_n(rst_n));
@@ -32,11 +33,8 @@ module tb;
   ) dut (
     .clk_i                (clk  ),
     .rst_ni               (rst_n),
-    // TODO: this should be attached to another reset that can be driven low separately from rst_n.
-    // It is used for tracking NDM reset requests internally (the clock input is unused, but
-    // required so that the topgen tooling works correctly).
-    .clk_lc_i             (clk  ),
-    .rst_lc_ni            (rst_n),
+    .clk_lc_i             (clk_lc  ),
+    .rst_lc_ni            (rst_lc_n),
     // the differing behavior of lc_hw_debug_en_i and pinmux_hw_debug_en_i
     // will be tested at the top-level. for the purposes of this TB we connect
     // both signals to the same life cycle signal.
@@ -70,8 +68,8 @@ module tb;
   );
 
   initial begin
-    // drive clk and rst_n from clk_if
     clk_rst_if.set_active();
+    clk_lc_rst_if.set_active();
 
     uvm_config_db#(virtual rv_dm_if)::set(null, "*.env", "rv_dm_vif", rv_dm_if);
 
@@ -79,6 +77,10 @@ module tb;
     // retrieved in dv_base_env::build_phase.
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_sba_agent*", "vif", sba_tl_if);
+
+    // The clk/rst interface used for clk_lc_i and rst_lc_ni
+    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env",
+                                            "clk_lc_rst_vif", clk_lc_rst_if);
 
     // Similarly, connect clk/rst/TL for regs_reg_block
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env",
