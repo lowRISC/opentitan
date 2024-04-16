@@ -255,7 +255,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: []
-      bazel: []
+      bazel: ["//sw/device/tests:entropy_src_fw_override_test"]
     },
   ]
 }
