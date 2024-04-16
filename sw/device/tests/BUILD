@@ -1323,21 +1323,21 @@ opentitan_test(
 opentitan_test(
     name = "entropy_src_edn_reqs_test",
     srcs = ["entropy_src_edn_reqs_test.c"],
-    broken = cw310_params(tags = ["broken"]),
+    # The SiVal ROM_EXT locks down the OTP and prevents reads by using the ePMP
+    # and the key manager state is different, so the test needs to behave differently.
+    cw310_sival = cw310_params(defines = ["SIVAL_ROM_EXT"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         {
             "//hw/top_earlgrey:silicon_creator": None,
-            "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon_owner",
-            "//hw/top_earlgrey:silicon_owner_prodc_rom_ext": "silicon_owner",
-            "//hw/top_earlgrey:silicon_owner_proda_rom_ext": "silicon_owner",
-            # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
+            "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon_sival",
+            "//hw/top_earlgrey:silicon_owner_prodc_rom_ext": None,
+            "//hw/top_earlgrey:silicon_owner_proda_rom_ext": None,
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "cw310_sival",
         },
     ),
-    silicon_owner = silicon_params(
-        tags = ["broken"],
-    ),
+    # See cw310_sival.
+    silicon_sival = silicon_params(defines = ["SIVAL_ROM_EXT"]),
     verilator = verilator_params(timeout = "long"),
     deps = [
         ":otbn_randomness_impl",
