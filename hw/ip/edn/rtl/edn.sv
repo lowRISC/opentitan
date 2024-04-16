@@ -117,15 +117,16 @@ module edn
   for (genvar i = 0; i < NumEndPoints; i = i+1) begin : gen_edn_if_asserts
     `ASSERT_KNOWN(EdnEndPointOut_A, edn_o[i])
 
-    // These assertions check that EDN data will be stable from edn_ack until the next EDN request
-    // or until next EDN enablement.
+    // Check that EDN data stays stable from edn_ack until the next EDN request or until EDN
+    // disablement.
     `ASSERT(EdnDataStable_A,
-            ($rose(edn_o[i].edn_ack) && $past(u_edn_core.edn_enable_fo[0])) |=>
-                $stable(edn_o[i].edn_bus) throughout edn_i[i].edn_req[->1],
-            clk_i, !rst_ni)
+        ($rose(edn_o[i].edn_ack) && $past(|u_edn_core.edn_enable_fo)) |=>
+            $stable(edn_o[i].edn_bus) throughout
+            (edn_i[i].edn_req || !(|u_edn_core.edn_enable_fo))[->1])
 
+    // Check that EDN data stays stable while EDN is disabled.
     `ASSERT(EdnDataStableDisable_A,
-            u_edn_core.edn_enable_fo[0] == 0 |=> ##1 $stable(edn_o[i].edn_bus), clk_i, !rst_ni)
+        !(|u_edn_core.edn_enable_fo) |=> ##1 $stable(edn_o[i].edn_bus))
 
     `ASSERT(EdnFatalAlertNoRsp_A, alert[1] |-> edn_o[i].edn_ack == 0)
   end : gen_edn_if_asserts
