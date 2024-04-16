@@ -206,7 +206,7 @@
               bit stuffing errors and with a correct CRC16.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_max_length_in_transaction"]
     }
     {
       name: min_length_out_transaction
@@ -236,7 +236,7 @@
               bit stuffing errors and with a correct CRC16.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_min_length_in_transaction"]
     }
     {
       name: random_length_out_trans
@@ -264,7 +264,7 @@
               corresponding bit of the 'in_sent' register.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_random_length_in_trans"]
     }
     {
       name: out_stall
