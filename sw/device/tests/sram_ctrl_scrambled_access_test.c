@@ -319,16 +319,28 @@ typedef enum test_phases {
 static volatile const uint8_t kTestPhase = kTestPhaseSetup;
 const uint32_t kTestPhaseTimeoutUsec = 2500;
 
+/**
+ * Synchronise the current test phase with the test bench.
+ *
+ * Note that this is a no-op outside of the DV SIM environment where this test
+ * does not have a test bench.
+ *
+ * @param prior_phase The phase before the sync.
+ * @param next_phase The phase expected after the sync.
+ * @return The status of the synchronisation.
+ */
 static status_t sync_testbench(uint8_t prior_phase, uint8_t next_phase) {
-  // Set WFI status for testbench synchronization,
-  // no actual WFI instruction is issued.
-  test_status_set(kTestStatusInWfi);
-  test_status_set(kTestStatusInTest);
+  if (kDeviceType == kDeviceSimDV) {
+    // Set WFI status for testbench synchronization,
+    // no actual WFI instruction is issued.
+    test_status_set(kTestStatusInWfi);
+    test_status_set(kTestStatusInTest);
 
-  TRY(flash_ctrl_testutils_backdoor_wait_update(
-      &kTestPhase, prior_phase, kTestPhaseTimeoutUsec));
+    TRY(flash_ctrl_testutils_backdoor_wait_update(&kTestPhase, prior_phase,
+                                                  kTestPhaseTimeoutUsec));
 
-  TRY_CHECK(kTestPhase == next_phase);
+    TRY_CHECK(kTestPhase == next_phase);
+  }
 
   return OK_STATUS();
 }
@@ -397,7 +409,9 @@ bool test_main(void) {
       mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR),
       &ret_sram));
 
-  CHECK_STATUS_OK(flash_ctrl_testutils_backdoor_init(&flash));
+  if (kDeviceType == kDeviceSimDV) {
+    CHECK_STATUS_OK(flash_ctrl_testutils_backdoor_init(&flash));
+  }
 
   main_sram_addr = OT_ALIGN_MEM(rand_testutils_gen32_range(
       (uintptr_t)_freertos_heap_start,
