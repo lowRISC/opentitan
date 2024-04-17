@@ -270,7 +270,10 @@ opentitan_test(
         "//hw/top_earlgrey:silicon_owner_proda_rom_ext": "silicon_owner",
     },
     silicon_owner = silicon_params(
-        tags = ["broken"],
+        tags = [
+            "broken",
+            "manual",
+        ],
     ),
     deps = FIRMWARE_DEPS,
 )
