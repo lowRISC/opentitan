@@ -257,17 +257,39 @@ static void check_sram_data(scramble_test_frame *mem_frame) {
   CHECK_ARRAYS_NE((uint32_t *)tmp_buffer, kRamTestPattern2,
                   kTestBufferSizeWords);
 
-  LOG_INFO("Checking Ecc %d", reference_frame->ecc_error_counter);
-  CHECK(reference_frame->ecc_error_counter <= kTestBufferSizeWords);
+  // Decide whether to perform ECC error count checks after memory is scrambled.
+  //
+  // This is not done on FPGAs because the interrupt handler that counts them
+  // does not currently trigger on our FPGA platforms.
+  // See #20119 for more details.
+  bool check_ecc_errors = false;
+  switch (kDeviceType) {
+    case kDeviceFpgaCw305:
+    case kDeviceFpgaCw310:
+    case kDeviceFpgaCw340:
+      check_ecc_errors = false;
+      break;
+    case kDeviceSilicon:
+    case kDeviceSimDV:
+    case kDeviceSimVerilator:
+      check_ecc_errors = true;
+      break;
+    default:
+      CHECK(false, "Device type not handled: %d", kDeviceType);
+      return;
+  }
+
   // Statistically there is always a chance that after changing the scrambling
   // key the ECC bits are correct and no IRQ is triggered. So we tolerate a
   // minimum of false positives.
-  // Note: `false_positives` should be incremented across the tests, so we make
-  // it `static`.
+  // Note: `false_positives` should be incremented across the tests, so we
+  // make it `static`.
   static int32_t false_positives = 0;
+  LOG_INFO("Checking Ecc %d", reference_frame->ecc_error_counter);
+  CHECK(reference_frame->ecc_error_counter <= kTestBufferSizeWords);
   false_positives += kTestBufferSizeWords - reference_frame->ecc_error_counter;
 
-  if (false_positives > 0) {
+  if (check_ecc_errors && false_positives > 0) {
     CHECK(false_positives <= kEccErrorsFalsePositiveFloorLimit,
           "Failed as it didn't generate enough ECC errors(%d/%d)",
           false_positives, kEccErrorsFalsePositiveFloorLimit);
@@ -308,7 +330,6 @@ static void execute_retention_sram_test(void) {
  * the number of integrity exceptions.
  */
 void ottf_internal_isr(uint32_t *exc_info) {
-  LOG_INFO("%s - %d", __func__, reference_frame->ecc_error_counter);
   reference_frame->ecc_error_counter++;
 }
 
