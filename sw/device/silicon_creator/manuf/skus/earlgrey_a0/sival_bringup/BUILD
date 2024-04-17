@@ -238,7 +238,6 @@ opentitan_binary(
         "//sw/device/silicon_creator/lib/drivers:hmac",
         "//sw/device/silicon_creator/lib/drivers:keymgr",
         "//sw/device/silicon_creator/lib/drivers:kmac",
-        "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
         "//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_earlgrey_a0_sku_sival_bringup",
         "//sw/device/silicon_creator/manuf/lib:personalize",
     ],
