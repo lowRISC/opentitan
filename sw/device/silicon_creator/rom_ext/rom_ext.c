@@ -363,6 +363,9 @@ static rom_error_t rom_ext_attestation_keygen(
         /*offset=*/0, cdi_1_cert_size / sizeof(uint32_t), cdi_1_cert));
   }
 
+  // TODO: elimiate this call when we've fully programmed keymgr and lock it.
+  sc_keymgr_sw_binding_unlock_wait();
+
   return kErrorOk;
 }
 
@@ -496,7 +499,18 @@ static rom_error_t rom_ext_boot(const manifest_t *manifest) {
   // Forbid code execution from SRAM.
   rom_ext_sram_exec(kHardenedBoolFalse);
 
+  // Lock the address translation windows.
+  ibex_addr_remap_lockdown(0);
+  ibex_addr_remap_lockdown(1);
+
   dbg_print_epmp();
+
+  // Verify expectations before jumping to owner code.
+  // TODO: we really want to call rnd_uint32 here to select a random starting
+  // location for checking expectations.  However, rnd_uint32 read from OTP
+  // to know if it's allowed to used the CSRNG and OTP is locked down.
+  sec_mmio_check_values_except_otp(/*rnd_uint32()*/ 0,
+                                   TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR);
   // Jump to OWNER entry point.
   dbg_printf("entry: 0x%x\r\n", (unsigned int)entry_point);
   ((owner_stage_entry_point *)entry_point)();

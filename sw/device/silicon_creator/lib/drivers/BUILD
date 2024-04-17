@@ -259,6 +259,7 @@ dual_cc_library(
             "//sw/device/lib/arch:device",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/base:csr",
+            "//sw/device/lib/base:hardened",
             "//sw/device/lib/base:macros",
             "//sw/device/lib/runtime:hart",
             "//sw/device/silicon_creator/lib/base:sec_mmio",

@@ -84,6 +84,15 @@ void ibex_addr_remap_0_set(uint32_t matching_addr, uint32_t remap_addr,
  */
 void ibex_addr_remap_1_set(uint32_t matching_addr, uint32_t remap_addr,
                            size_t size);
+
+/**
+ * Lock the remap windows so they cannot be reprogrammed.
+ * This function locks the given the IBUS and DBUS windows simultaneously.
+ *
+ * @param index Which window to lock (0 or 1).
+ */
+void ibex_addr_remap_lockdown(uint32_t index);
+
 #ifdef __cplusplus
 }
 #endif
