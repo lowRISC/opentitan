@@ -319,15 +319,18 @@ typedef enum test_phases {
 static volatile const uint8_t kTestPhase = kTestPhaseSetup;
 const uint32_t kTestPhaseTimeoutUsec = 2500;
 
-static void sync_testbench(uint8_t prior_phase) {
+static status_t sync_testbench(uint8_t prior_phase, uint8_t next_phase) {
   // Set WFI status for testbench synchronization,
   // no actual WFI instruction is issued.
   test_status_set(kTestStatusInWfi);
   test_status_set(kTestStatusInTest);
 
-  CHECK_STATUS_OK(flash_ctrl_testutils_backdoor_wait_update(
+  TRY(flash_ctrl_testutils_backdoor_wait_update(
       &kTestPhase, prior_phase, kTestPhaseTimeoutUsec));
-  LOG_INFO("Test phase = %d", kTestPhase);
+
+  TRY_CHECK(kTestPhase == next_phase);
+
+  return OK_STATUS();
 }
 
 /**
@@ -412,15 +415,13 @@ bool test_main(void) {
   if (info == kDifRstmgrResetInfoPor) {
     LOG_INFO("RET_SRAM addr: %x MAIN_SRAM addr: %x", ret_sram_addr,
              main_sram_addr);
-    sync_testbench(current_phase);
-    CHECK(kTestPhase == kTestPhaseMainSramScramble);
+    CHECK_STATUS_OK(sync_testbench(current_phase, kTestPhaseMainSramScramble));
     LOG_INFO("First boot, testing main sram");
     // First boot, start with ret sram.
     execute_main_sram_test();
 
   } else if (info == kDifRstmgrResetInfoSw) {
-    sync_testbench(current_phase);
-    CHECK(kTestPhase == kTestPhaseMainSramCheck);
+    CHECK_STATUS_OK(sync_testbench(current_phase, kTestPhaseMainSramCheck));
     LOG_INFO("Second boot, checking main sram");
 
     check_sram_data(reference_frame);
@@ -430,16 +431,14 @@ bool test_main(void) {
         kRetSramBaseAddr, kRetRamLastAddr - sizeof(scramble_test_frame)));
     LOG_INFO("RET_SRAM addr: %x MAIN_SRAM addr: %x", ret_sram_addr,
              main_sram_addr);
-    sync_testbench(current_phase);
-    CHECK(kTestPhase == kTestPhaseRetSramScramble);
+    CHECK_STATUS_OK(sync_testbench(current_phase, kTestPhaseRetSramScramble));
 
     scrambling_frame = (scramble_test_frame *)ret_sram_addr;
     reference_frame = (scramble_test_frame *)main_sram_addr;
 
     execute_retention_sram_test();
 
-    sync_testbench(current_phase);
-    CHECK(kTestPhase == kTestPhaseRetSramCheck);
+    CHECK_STATUS_OK(sync_testbench(current_phase, kTestPhaseRetSramCheck));
     LOG_INFO("Checking retention sram");
 
     // Reset the Ecc error count that lies on the main sram.
