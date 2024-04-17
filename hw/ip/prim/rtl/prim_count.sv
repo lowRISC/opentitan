@@ -183,7 +183,7 @@ module prim_count #(
 
   // Clear
   `ASSERT(ClrFwd_A,
-      rst_ni && clr_i
+      rst_ni && commit_i && clr_i
       |=>
       (cnt_o == ResetValue) &&
       (cnt_q[1] == ({Width{1'b1}} - ResetValue)),
@@ -191,7 +191,7 @@ module prim_count #(
 
   // Set
   `ASSERT(SetFwd_A,
-      rst_ni && set_i && !clr_i
+      rst_ni && commit_i && set_i && !clr_i
       |=>
       (cnt_o == $past(set_cnt_i)) &&
       (cnt_q[1] == ({Width{1'b1}} - $past(set_cnt_i))),
