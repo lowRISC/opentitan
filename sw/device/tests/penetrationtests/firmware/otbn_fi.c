@@ -523,7 +523,10 @@ status_t handle_otbn_fi_init_keymgr(ujson_t *uj) {
  * @param uj The received uJSON data.
  */
 status_t handle_otbn_fi_init(ujson_t *uj) {
-  status_t err = entropy_testutils_auto_mode_init();
+  // Configure the entropy complex for OTBN. Set the reseed interval to max
+  // to avoid a non-constant trigger window.
+  TRY(sca_configure_entropy_source_max_reseed_interval());
+
   sca_select_trigger_type(kScaTriggerTypeSw);
   sca_init(kScaTriggerSourceOtbn,
            kScaPeripheralIoDiv4 | kScaPeripheralEdn | kScaPeripheralCsrng |
@@ -545,7 +548,7 @@ status_t handle_otbn_fi_init(ujson_t *uj) {
   // Read the device ID and return it back to the host.
   TRY(sca_read_device_id(uj));
 
-  return err;
+  return OK_STATUS();
 }
 
 /**
