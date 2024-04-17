@@ -38,14 +38,15 @@ status_t handle_extclk_sca_fi_configure(ujson_t *uj) {
   TRY(dif_clkmgr_init(mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR),
                       &clkmgr));
   LOG_INFO("Configuring Extclk...");
-  multi_bit_bool_t is_low_speed = kMultiBitBool4True;
-  if (uj_data.hi_speed_sel) {
-    is_low_speed = kMultiBitBool4False;
-  }
 
   if (uj_data.sel) {
+    if (!uj_data.hi_speed_sel) {
+      LOG_INFO("Switching to low speed Extclk...");
+    } else {
+      LOG_INFO("Switching to high speed Extclk...");
+    }
     // Enable external clock.
-    TRY(dif_clkmgr_external_clock_set_enabled(&clkmgr, is_low_speed));
+    TRY(dif_clkmgr_external_clock_set_enabled(&clkmgr, !uj_data.hi_speed_sel));
     // Wait for the external clock to become active.
     IBEX_SPIN_FOR(did_extclk_settle(&clkmgr), kSettleDelayMicros);
     LOG_INFO("External clock enabled.");
