@@ -35,6 +35,21 @@ typedef enum dice_key {
 } dice_key_t;
 
 /**
+ * A set of public key IDs required to generate an X.509 certificate.
+ */
+typedef struct dice_cert_key_id_pair {
+  /**
+   * Pointer to SHA256 digest of the public key matching the private key used to
+   * endorse the certificate.
+   */
+  hmac_digest_t *endorsement;
+  /**
+   * Pointer to SHA256 digest of the public key the certificate is created for.
+   */
+  hmac_digest_t *cert;
+} dice_cert_key_id_pair_t;
+
+/**
  * Generates the requested attestation ECC keypair, returning the public key and
  * a key ID (which is a SHA256 digest of the public key).
  *
@@ -50,10 +65,9 @@ rom_error_t dice_attestation_keygen(dice_key_t desired_key,
                                     attestation_public_key_t *pubkey);
 
 /**
- * Generates the UDS attestation keypair and (unendorsed) X.509 certificate.
+ * Generates the UDS attestation keypair and (unendorsed) X.509 TBS certificate.
  *
- * @param inputs Pointer to the personalization input data payload.
- * @param uds_pubkey_id Pointer to the (current stage) UDS public key ID.
+ * @param key_ids Pointer to the (current and endorsement) public key IDs.
  * @param uds_pubkey Pointer to the (current stage) public key in big endian.
  * @param[out] cert Buffer to hold the generated UDS certificate.
  * @param[in,out] cert_size Size of the UDS certificate (input value is the size
@@ -62,17 +76,15 @@ rom_error_t dice_attestation_keygen(dice_key_t desired_key,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t dice_uds_cert_build(manuf_certgen_inputs_t *inputs,
-                                hmac_digest_t *uds_pubkey_id,
-                                attestation_public_key_t *uds_pubkey,
-                                uint8_t *cert, size_t *cert_size);
+rom_error_t dice_uds_tbs_cert_build(dice_cert_key_id_pair_t *key_ids,
+                                    attestation_public_key_t *uds_pubkey,
+                                    uint8_t *tbs_cert, size_t *tbs_cert_size);
 
 /**
  * Generates the CDI_0 attestation keypair and X.509 certificate.
  *
  * @param inputs Pointer to the personalization input data payload.
- * @param uds_pubkey_id Pointer to the (previous stage) UDS public key ID.
- * @param cdi_0_pubkey_id Pointer to the (current stage) CDI_0 public key ID.
+ * @param key_ids Pointer to the (current and endorsement) public key IDs.
  * @param cdi_0_pubkey Pointer to the (current stage) public key in big endian.
  * @param[out] cert Buffer to hold the generated CDI_0 certificate.
  * @param[in,out] cert_size Size of the CDI_0 certificate (input value is the
@@ -82,8 +94,7 @@ rom_error_t dice_uds_cert_build(manuf_certgen_inputs_t *inputs,
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t dice_cdi_0_cert_build(manuf_certgen_inputs_t *inputs,
-                                  hmac_digest_t *uds_pubkey_id,
-                                  hmac_digest_t *cdi_0_pubkey_id,
+                                  dice_cert_key_id_pair_t *key_ids,
                                   attestation_public_key_t *cdi_0_pubkey,
                                   uint8_t *cert, size_t *cert_size);
 
@@ -91,8 +102,7 @@ rom_error_t dice_cdi_0_cert_build(manuf_certgen_inputs_t *inputs,
  * Generates the CDI_1 attestation keypair and X.509 certificate.
  *
  * @param inputs Pointer to the personalization input data payload.
- * @param cdi_0_pubkey_id Pointer to the (previous stage) CDI_0 public key ID.
- * @param cdi_1_pubkey_id Pointer to the (current stage) CDI_1 public key ID.
+ * @param key_ids Pointer to the (current and endorsement) public key IDs.
  * @param cdi_1_pubkey Pointer to the (current stage) public key in big endian.
  * @param[out] cert Buffer to hold the generated CDI_1 certificate.
  * @param[in,out] cert_size Size of the CDI_1 certificate (input value is the
@@ -102,8 +112,7 @@ rom_error_t dice_cdi_0_cert_build(manuf_certgen_inputs_t *inputs,
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t dice_cdi_1_cert_build(manuf_certgen_inputs_t *inputs,
-                                  hmac_digest_t *cdi_0_pubkey_id,
-                                  hmac_digest_t *cdi_1_pubkey_id,
+                                  dice_cert_key_id_pair_t *key_ids,
                                   attestation_public_key_t *cdi_1_pubkey,
                                   uint8_t *cert, size_t *cert_size);
 

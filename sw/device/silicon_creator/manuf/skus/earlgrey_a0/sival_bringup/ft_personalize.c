@@ -76,9 +76,22 @@ static keymgr_binding_value_t sealing_binding_value = {.data = {0}};
  * Certificate data.
  */
 static manuf_certgen_inputs_t certgen_inputs;
+static hmac_digest_t uds_endorsement_key_id;
 static hmac_digest_t uds_pubkey_id;
 static hmac_digest_t cdi_0_pubkey_id;
 static hmac_digest_t cdi_1_pubkey_id;
+dice_cert_key_id_pair_t uds_key_ids = {
+    .endorsement = &uds_endorsement_key_id,
+    .cert = &uds_pubkey_id,
+};
+static dice_cert_key_id_pair_t cdi_0_key_ids = {
+    .endorsement = &uds_pubkey_id,
+    .cert = &cdi_0_pubkey_id,
+};
+static dice_cert_key_id_pair_t cdi_1_key_ids = {
+    .endorsement = &cdi_0_pubkey_id,
+    .cert = &cdi_1_pubkey_id,
+};
 static attestation_public_key_t curr_pubkey = {.x = {0}, .y = {0}};
 static manuf_dice_certs_t dice_certs = {
     .uds_tbs_certificate = {0},
@@ -221,9 +234,14 @@ static status_t personalize_dice_certificates(ujson_t *uj) {
   TRY(dice_attestation_keygen(kDiceKeyUds, &uds_pubkey_id, &curr_pubkey));
   TRY(otbn_boot_attestation_key_save(kUdsAttestationKeySeed,
                                      kUdsKeymgrDiversifier));
-  TRY(dice_uds_cert_build(&certgen_inputs, &uds_pubkey_id, &curr_pubkey,
-                          dice_certs.uds_tbs_certificate,
-                          &dice_certs.uds_tbs_certificate_size));
+  // We copy over the UDS endorsement key ID to an SHA256 digest type, since
+  // this is the format of key IDs generated on-dice.
+  memcpy(uds_endorsement_key_id.digest, certgen_inputs.auth_key_key_id,
+         kDiceCertKeyIdSizeInBytes);
+  TRY(dice_uds_tbs_cert_build(&uds_key_ids, &curr_pubkey,
+                              dice_certs.uds_tbs_certificate,
+                              &dice_certs.uds_tbs_certificate_size));
+
   LOG_INFO("Generated UDS TBS certificate.");
 
   // Generate CDI_0 keys and cert.
@@ -232,8 +250,8 @@ static status_t personalize_dice_certificates(ujson_t *uj) {
                                   &attestation_binding_value,
                                   /*max_key_version=*/0));
   TRY(dice_attestation_keygen(kDiceKeyCdi0, &cdi_0_pubkey_id, &curr_pubkey));
-  TRY(dice_cdi_0_cert_build(&certgen_inputs, &uds_pubkey_id, &cdi_0_pubkey_id,
-                            &curr_pubkey, dice_certs.cdi_0_certificate,
+  TRY(dice_cdi_0_cert_build(&certgen_inputs, &cdi_0_key_ids, &curr_pubkey,
+                            dice_certs.cdi_0_certificate,
                             &dice_certs.cdi_0_certificate_size));
   TRY(flash_ctrl_info_write(
       &kFlashCtrlInfoPageCdi0Certificate,
@@ -247,8 +265,8 @@ static status_t personalize_dice_certificates(ujson_t *uj) {
                               &attestation_binding_value,
                               /*max_key_version=*/0));
   TRY(dice_attestation_keygen(kDiceKeyCdi1, &cdi_1_pubkey_id, &curr_pubkey));
-  TRY(dice_cdi_1_cert_build(&certgen_inputs, &cdi_0_pubkey_id, &cdi_1_pubkey_id,
-                            &curr_pubkey, dice_certs.cdi_1_certificate,
+  TRY(dice_cdi_1_cert_build(&certgen_inputs, &cdi_1_key_ids, &curr_pubkey,
+                            dice_certs.cdi_1_certificate,
                             &dice_certs.cdi_1_certificate_size));
   TRY(flash_ctrl_info_write(
       &kFlashCtrlInfoPageCdi1Certificate,
