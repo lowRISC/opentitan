@@ -362,7 +362,7 @@
             - SOF should normally be received every 1 ms.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_host_lost"]
     }
     {
       name: link_reset

@@ -97,6 +97,10 @@
       uvm_test_seq: usbdev_pkt_buffer_vseq
     }
     {
+      name: usbdev_host_lost
+      uvm_test_seq: usbdev_host_lost_vseq
+    }
+    {
       name: usbdev_pkt_received
       uvm_test_seq: usbdev_pkt_received_vseq
     }
