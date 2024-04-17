@@ -14,7 +14,7 @@ load(
     _opentitan_test = "opentitan_test",
 )
 load(
-    "@lowrisc_opentitan//rules/opentitan:fpga_cw310.bzl",
+    "@lowrisc_opentitan//rules/opentitan:fpga.bzl",
     _cw310_params = "cw310_params",
     _fpga_cw305 = "fpga_cw305",
     _fpga_cw310 = "fpga_cw310",
