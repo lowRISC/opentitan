@@ -78,6 +78,7 @@ module i2c_core import i2c_pkg::*;
   logic scl_out_fsm;
   logic sda_out_fsm;
   logic controller_transmitting;
+  logic target_transmitting;
 
   // bus_event_detect goes low after any drive change from this IP, and it
   // returns to high once enough time has passed for the output change to
@@ -88,6 +89,7 @@ module i2c_core import i2c_pkg::*;
   logic [10:0] bus_event_detect_cnt;
   logic sda_released_but_low;
   logic controller_arbitration_lost;
+  logic target_arbitration_lost;
 
   logic event_rx_overflow;
   logic status_controller_halt;
@@ -471,6 +473,7 @@ module i2c_core import i2c_pkg::*;
   assign bus_event_detect = (bus_event_detect_cnt == '0);
   assign sda_released_but_low = bus_event_detect && scl_sync && (sda_fsm_q != sda_sync);
   assign controller_arbitration_lost = controller_transmitting && sda_released_but_low;
+  assign target_arbitration_lost = target_transmitting && sda_released_but_low;
 
   i2c_controller_fsm #(
     .FifoDepth(FifoDepth)
@@ -539,6 +542,7 @@ module i2c_core import i2c_pkg::*;
     .scl_o                          (scl_out_target_fsm),
     .sda_i                          (sda_sync),
     .sda_o                          (sda_out_target_fsm),
+    .transmitting_o                 (target_transmitting),
 
     .target_enable_i                (target_enable),
 
@@ -561,6 +565,7 @@ module i2c_core import i2c_pkg::*;
     .nack_timeout_i                 (nack_timeout),
     .nack_timeout_en_i              (nack_timeout_en),
     .nack_addr_after_timeout_i      (reg2hw.ctrl.nack_addr_after_timeout.q),
+    .arbitration_lost_i             (target_arbitration_lost),
     .ack_ctrl_mode_i                (reg2hw.ctrl.ack_ctrl_en.q),
     .auto_ack_cnt_o                 (hw2reg.target_ack_ctrl.nbytes.d),
     .auto_ack_load_i                (reg2hw.target_ack_ctrl.nbytes.qe),
