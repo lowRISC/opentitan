@@ -902,7 +902,22 @@
         "0"
       ]
       param_decl: {}
-      param_list: []
+      memory: {}
+      param_list:
+      [
+        {
+          name: InputDelayCycles
+          desc:
+            '''
+            Maximum number of cycles of propagation delay between a change on the cio_scl_en_o or cio_sda_en_o pins and sensing the new values on the corresponding input pins, not including the rise/fall times.
+            For the purposes of this calculation, an input delay of 0 cycles means an output pin changing at the beginning of clock edge N will be sampled and observed on the input pins at clock edge N+1.
+            '''
+          type: int
+          default: "0"
+          expose: "true"
+          name_top: I2c0InputDelayCycles
+        }
+      ]
       inter_signal_list:
       [
         {
@@ -961,7 +976,22 @@
         "0"
       ]
       param_decl: {}
-      param_list: []
+      memory: {}
+      param_list:
+      [
+        {
+          name: InputDelayCycles
+          desc:
+            '''
+            Maximum number of cycles of propagation delay between a change on the cio_scl_en_o or cio_sda_en_o pins and sensing the new values on the corresponding input pins, not including the rise/fall times.
+            For the purposes of this calculation, an input delay of 0 cycles means an output pin changing at the beginning of clock edge N will be sampled and observed on the input pins at clock edge N+1.
+            '''
+          type: int
+          default: "0"
+          expose: "true"
+          name_top: I2c1InputDelayCycles
+        }
+      ]
       inter_signal_list:
       [
         {
@@ -1020,7 +1050,22 @@
         "0"
       ]
       param_decl: {}
-      param_list: []
+      memory: {}
+      param_list:
+      [
+        {
+          name: InputDelayCycles
+          desc:
+            '''
+            Maximum number of cycles of propagation delay between a change on the cio_scl_en_o or cio_sda_en_o pins and sensing the new values on the corresponding input pins, not including the rise/fall times.
+            For the purposes of this calculation, an input delay of 0 cycles means an output pin changing at the beginning of clock edge N will be sampled and observed on the input pins at clock edge N+1.
+            '''
+          type: int
+          default: "0"
+          expose: "true"
+          name_top: I2c2InputDelayCycles
+        }
+      ]
       inter_signal_list:
       [
         {

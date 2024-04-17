@@ -1074,6 +1074,9 @@ module chip_earlgrey_asic #(
   //////////////////////
   top_earlgrey #(
     .PinmuxAonTargetCfg(PinmuxTargetCfg),
+    .I2c0InputDelayCycles(1),
+    .I2c1InputDelayCycles(1),
+    .I2c2InputDelayCycles(1),
     .SecAesAllowForcingMasks(1'b1),
     .SecRomCtrlDisableScrambling(SecRomCtrlDisableScrambling)
   ) top_earlgrey (
