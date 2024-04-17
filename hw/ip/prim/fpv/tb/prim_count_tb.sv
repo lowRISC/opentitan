@@ -19,8 +19,9 @@ module prim_count_tb #(
   input incr_en_i,
   input decr_en_i,
   input [Width-1:0] step_i,
+  input commit_i,
   output logic [Width-1:0] cnt_o,
-  output logic [Width-1:0] cnt_next_o,
+  output logic [Width-1:0] cnt_after_commit_o,
   output logic err_o
 );
 
@@ -36,8 +37,9 @@ module prim_count_tb #(
     .incr_en_i,
     .decr_en_i,
     .step_i,
+    .commit_i,
     .cnt_o,
-    .cnt_next_o,
+    .cnt_after_commit_o,
     .err_o
   );
 
