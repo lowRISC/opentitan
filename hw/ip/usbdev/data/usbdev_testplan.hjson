@@ -375,7 +375,7 @@
             - Verify that the interrupt pin link_reset goes high once the link reset.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_link_rst"]
     }
     {
       name: link_suspend

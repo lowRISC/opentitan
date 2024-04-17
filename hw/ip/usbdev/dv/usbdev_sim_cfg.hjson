@@ -129,6 +129,10 @@
       uvm_test_seq: usbdev_setup_stage_vseq
     }
     {
+      name: usbdev_link_rst
+      uvm_test_seq: usbdev_link_rst_vseq
+    }
+    {
       name: usbdev_pending_in_trans
       uvm_test_seq: usbdev_pending_in_trans_vseq
     }
