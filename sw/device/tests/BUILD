@@ -2780,6 +2780,45 @@ opentitan_test(
     ],
 )
 
+opentitan_test(
+    name = "pwm_smoketest",
+    srcs = ["pwm_smoketest.c"],
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        {
+            "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
+            "//hw/top_earlgrey:fpga_cw310_sival": None,
+        },
+    ),
+    fpga = fpga_params(
+        test_cmd = """
+            --bootstrap="{firmware}"
+            "{firmware:elf}"
+        """,
+        test_harness = "//sw/host/tests/chip/pwm_smoketest",
+    ),
+    silicon = silicon_params(
+        test_cmd = """
+            --bootstrap="{firmware}"
+            "{firmware:elf}"
+        """,
+        test_harness = "//sw/host/tests/chip/pwm_smoketest",
+    ),
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/dif:gpio",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/dif:pwm",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/runtime:irq",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/testing/test_framework:ottf_utils",
+    ],
+)
+
 cc_library(
     name = "pwrmgr_sleep_resets_lib",
     srcs = ["pwrmgr_sleep_resets_lib.c"],
