@@ -9,9 +9,7 @@
 #include "sw/device/tests/penetrationtests/json/sca_lib_commands.h"
 
 typedef struct sca_registered_alerts {
-  uint32_t alerts_1;
-  uint32_t alerts_2;
-  uint32_t alerts_3;
+  uint32_t alerts[3];
 } sca_registered_alerts_t;
 
 /**
