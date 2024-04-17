@@ -46,6 +46,10 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
                  end while(!flag);)
   endtask
 
+  function void report_err_type(string desc);
+    `uvm_info(`gfn, $sformatf("Injecting an error of type: %s", desc), UVM_MEDIUM)
+  endfunction
+
   task inject_redun_err();
     bit [3:0] err_type;
     string err_path;
@@ -63,8 +67,8 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
 
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(err_type, err_type inside {[0:6]};)
     case(err_type)
-      // Injecting error on ispr_addr during a write
       0: begin
+        report_err_type("error on ispr_addr during a write");
         err_path = "tb.dut.u_otbn_core.u_otbn_alu_bignum.ispr_addr_i";
         wait_for_flag("tb.dut.u_otbn_core.u_otbn_alu_bignum.ispr_wr_en");
         `DV_CHECK_FATAL(uvm_hdl_read(err_path, good_addr));
@@ -73,8 +77,8 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
         bad_addr = good_addr ^ mask;
         `DV_CHECK_FATAL(uvm_hdl_force(err_path, bad_addr) == 1);
       end
-      // Injecting error on ispr_addr during a read
       1: begin
+        report_err_type("error on ispr_addr during a read");
         err_path = "tb.dut.u_otbn_core.u_otbn_alu_bignum.ispr_addr_i";
         wait_for_flag("tb.dut.u_otbn_core.u_otbn_alu_bignum.ispr_rd_en_i");
         `DV_CHECK_FATAL(uvm_hdl_read(err_path, good_addr));
@@ -83,9 +87,9 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
         bad_addr = good_addr ^ mask;
         `DV_CHECK_FATAL(uvm_hdl_force(err_path, bad_addr) == 1);
       end
-      // Injecting error in opcode on the bignum side
       2: begin
         logic [3:0] good_op, bad_op;
+        report_err_type("error in opcode on the bignum side");
         err_path = "tb.dut.u_otbn_core.u_otbn_alu_bignum.operation_i.op";
 
         // We want to inject an error when the bignum ALU is performing an operation, so its
@@ -105,14 +109,16 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
                                            bad_op != otbn_pkg::AluOpBignumNone;);
         `DV_CHECK_FATAL(uvm_hdl_force(err_path, bad_op) == 1);
       end
-      // injecting error on lsu_addr_en
       3: begin
         bit choose_err;
         otbn_pkg::insn_dec_shared_t insn_dec_shared_i;
+        `DV_CHECK_STD_RANDOMIZE_FATAL(choose_err)
+
+        report_err_type($sformatf("error on lsu_addr_en (choose_err = %0d)", choose_err));
+
         err_path = "tb.dut.u_otbn_core.u_otbn_controller.insn_dec_shared_i";
         wait_for_flag("tb.dut.u_otbn_core.u_otbn_controller.insn_valid_i");
         `DV_CHECK_FATAL(uvm_hdl_read(err_path, insn_dec_shared_i));
-        `DV_CHECK_STD_RANDOMIZE_FATAL(choose_err)
         case(choose_err)
           0: begin
             insn_dec_shared_i.ld_insn = !insn_dec_shared_i.ld_insn;
@@ -126,12 +132,15 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
         endcase
         `DV_CHECK_FATAL(uvm_hdl_force(err_path, insn_dec_shared_i) == 1);
       end
-      // injects error into otbn_core
       4: begin
         bit [1:0] choose_err;
-        cfg.clk_rst_vif.wait_clks($urandom_range(10, 1000));
-        wait_for_flag("tb.dut.u_otbn_core.insn_valid");
+        int unsigned num_clks = $urandom_range(10, 1000);
         `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(choose_err, choose_err inside {[0:2]};)
+
+        report_err_type($sformatf("core error (choose_err = %0d, after %0d clocks)",
+                                  choose_err, num_clks));
+        cfg.clk_rst_vif.wait_clks(num_clks);
+        wait_for_flag("tb.dut.u_otbn_core.insn_valid");
         case(choose_err)
           0: begin
             bit [31:0] bad_rf_ren_a;
@@ -165,13 +174,17 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
           end
         endcase
       end
-      // injects error into otbn_mac_bignum
       5: begin
         bit mac_en;
         bit choose_err;
-        `DV_WAIT(cfg.model_agent_cfg.vif.status == otbn_pkg::StatusBusyExecute)
-        cfg.clk_rst_vif.wait_clks($urandom_range(10, 100));
+        int unsigned num_clks = $urandom_range(10, 100);
         `DV_CHECK_STD_RANDOMIZE_FATAL(choose_err)
+
+        report_err_type($sformatf("error in otbn_mac_bignum (choose_err=%0d, after %0d clocks)",
+                                  choose_err, num_clks));
+
+        `DV_WAIT(cfg.model_agent_cfg.vif.status == otbn_pkg::StatusBusyExecute)
+        cfg.clk_rst_vif.wait_clks(num_clks);
         // Wait for valid instruction, because `otbn_core` only propagates bignum MAC predec errors
         // for valid instructions.
         wait_for_flag("tb.dut.u_otbn_core.insn_valid");
@@ -193,12 +206,13 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
           end
         endcase
       end
-      // injects errors into otbn_rf_bignum
       6: begin
         bit [1:0] choose_err;
         bit [4:0] addr;
         bit [4:0] mask;
         `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(choose_err, choose_err inside {[0:2]};)
+
+        report_err_type($sformatf("error in otbn_rf_bignum (choose_err=%0d)", choose_err));
         case(choose_err)
           0: begin
             err_path = "tb.dut.u_otbn_core.u_otbn_rf_bignum.wr_addr_i[4:0]";
