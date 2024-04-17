@@ -955,6 +955,9 @@ module chip_${top["name"]}_${target["name"]} #(
     .PinmuxAonTargetCfg(PinmuxTargetCfg)
 % else:
     .PinmuxAonTargetCfg(PinmuxTargetCfg),
+    .I2c0InputDelayCycles(1),
+    .I2c1InputDelayCycles(1),
+    .I2c2InputDelayCycles(1),
     .SecAesAllowForcingMasks(1'b1),
     .SecRomCtrlDisableScrambling(SecRomCtrlDisableScrambling)
 % endif

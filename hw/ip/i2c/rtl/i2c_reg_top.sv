@@ -337,6 +337,8 @@ module i2c_reg_top (
   logic controller_events_unhandled_nack_timeout_wd;
   logic controller_events_bus_timeout_qs;
   logic controller_events_bus_timeout_wd;
+  logic controller_events_arbitration_lost_qs;
+  logic controller_events_arbitration_lost_wd;
   logic target_events_we;
   logic target_events_tx_pending_qs;
   logic target_events_tx_pending_wd;
@@ -3268,6 +3270,33 @@ module i2c_reg_top (
     .qs     (controller_events_bus_timeout_qs)
   );
 
+  //   F[arbitration_lost]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_controller_events_arbitration_lost (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (controller_events_we),
+    .wd     (controller_events_arbitration_lost_wd),
+
+    // from internal hardware
+    .de     (hw2reg.controller_events.arbitration_lost.de),
+    .d      (hw2reg.controller_events.arbitration_lost.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.controller_events.arbitration_lost.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (controller_events_arbitration_lost_qs)
+  );
+
 
   // R[target_events]: V(False)
   //   F[tx_pending]: 0:0
@@ -3619,6 +3648,8 @@ module i2c_reg_top (
   assign controller_events_unhandled_nack_timeout_wd = reg_wdata[1];
 
   assign controller_events_bus_timeout_wd = reg_wdata[2];
+
+  assign controller_events_arbitration_lost_wd = reg_wdata[3];
   assign target_events_we = addr_hit[31] & reg_we & !reg_error;
 
   assign target_events_tx_pending_wd = reg_wdata[0];
@@ -3877,6 +3908,7 @@ module i2c_reg_top (
         reg_rdata_next[0] = controller_events_nack_qs;
         reg_rdata_next[1] = controller_events_unhandled_nack_timeout_qs;
         reg_rdata_next[2] = controller_events_bus_timeout_qs;
+        reg_rdata_next[3] = controller_events_arbitration_lost_qs;
       end
 
       addr_hit[31]: begin

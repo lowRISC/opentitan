@@ -17,6 +17,7 @@ module i2c_controller_fsm import i2c_pkg::*;
   input        sda_i,  // serial data input from i2c bus
   output logic sda_o,  // serial data output to i2c bus
   input        bus_free_i,     // High if the bus is free for a new transmission
+  output logic transmitting_o, // Controller is currently transmitting SDA
 
   input        host_enable_i,     // enable host functionality
   input        halt_controller_i, // Halt the controller FSM in Idle
@@ -46,6 +47,7 @@ module i2c_controller_fsm import i2c_pkg::*;
   input [12:0] tsu_sta_i,  // setup time for repeated START in clock units
   input [12:0] tsu_sto_i,  // setup time for STOP in clock units
   input [12:0] thd_dat_i,  // data hold time in clock units
+  input        arbitration_lost_i, // High when bus arbitration has been lost.
   input [29:0] stretch_timeout_i,  // max time target connected to this host may stretch the clock
   input        timeout_enable_i,   // assert if target stretches clock past max
   input [30:0] host_nack_handler_timeout_i, // Timeout threshold for unhandled Host-Mode 'nak' irq.
@@ -53,6 +55,7 @@ module i2c_controller_fsm import i2c_pkg::*;
 
   output logic event_nak_o,              // target didn't Ack when expected
   output logic event_unhandled_nak_timeout_o, // SW didn't handle the NACK in time
+  output logic event_arbitration_lost_o, // Lost arbitration after beginning a transaction
   output logic event_scl_interference_o, // other device forcing SCL low
   output logic event_sda_interference_o, // other device forcing SDA low
   output logic event_stretch_timeout_o,  // target stretches clock past max time
@@ -275,7 +278,7 @@ module i2c_controller_fsm import i2c_pkg::*;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       trans_started <= '0;
-    end else if (trans_started && !host_enable_i) begin
+    end else if (trans_started && (!host_enable_i || arbitration_lost_i)) begin
       trans_started <= '0;
     end else if (log_start) begin
       trans_started <= 1'b1;
@@ -332,35 +335,12 @@ module i2c_controller_fsm import i2c_pkg::*;
   // Detects when the controller releases sda to be pulled high, but the line
   // is unexpectedly held low by another driver.
   logic en_sda_interf_det;
-  logic [16:0] sda_rise_cnt;
-
-  // sda_rise_latency refers to the time between
-  // changing sda_o to 1 and sampling sda_i as 1.
-  // This value is a combination of the bus rise time and the
-  // input sychronization delay
-  logic [16:0] sda_rise_latency;
-  assign sda_rise_latency = t_r_i + 16'h2;
-
-  // When detection is enabled, count through the rise time.
-  // Once rise time count is reached, hold in place until disabled.
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      sda_rise_cnt <= '0;
-    end else if (!en_sda_interf_det && |sda_rise_cnt) begin
-      // When detection is disabled, 0 the count.
-      // Only 0 the count if the count is currently non-zero to avoid
-      // unnecessary toggling.
-      sda_rise_cnt <= '0;
-    end else if (en_sda_interf_det && sda_rise_cnt < sda_rise_latency) begin
-      sda_rise_cnt <= sda_rise_cnt + 1'b1;
-    end
-  end
 
   // Report SDA interference when the host function tries to drive a 1 but observes a 0 instead.
   //
   // When the count is reached, we are pass the rise time period.
   // Now check for any inconsistency in the sda value.
-  assign event_sda_interference_o = (sda_rise_cnt == sda_rise_latency) & (sda_o & !sda_i);
+  assign event_sda_interference_o = (en_sda_interf_det & arbitration_lost_i);
 
   // Increment the NACK timeout count if the controller is halted in Idle and
   // the timeout hasn't yet occurred.
@@ -372,10 +352,12 @@ module i2c_controller_fsm import i2c_pkg::*;
     host_idle_o = 1'b1;
     sda_d = 1'b1;
     scl_d = 1'b1;
+    transmitting_o = 1'b0;
     fmt_fifo_rready_o = 1'b0;
     rx_fifo_wvalid_o = 1'b0;
     rx_fifo_wdata_o = RX_FIFO_WIDTH'(0);
     event_nak_o = 1'b0;
+    event_arbitration_lost_o = 1'b0;
     event_scl_interference_o = 1'b0;
     event_sda_unstable_o = 1'b0;
     event_cmd_complete_o = 1'b0;
@@ -404,6 +386,7 @@ module i2c_controller_fsm import i2c_pkg::*;
         host_idle_o = 1'b0;
         sda_d = 1'b1;
         scl_d = 1'b1;
+        transmitting_o = 1'b1;
         if (log_start) event_cmd_complete_o = pend_restart;
       end
       // HoldStart: SDA is pulled low, SCL is released
@@ -411,12 +394,14 @@ module i2c_controller_fsm import i2c_pkg::*;
         host_idle_o = 1'b0;
         sda_d = 1'b0;
         scl_d = 1'b1;
+        transmitting_o = 1'b1;
       end
       // ClockStart: SCL is pulled low, SDA stays low
       ClockStart : begin
         host_idle_o = 1'b0;
         sda_d = 1'b0;
         scl_d = 1'b0;
+        transmitting_o = 1'b1;
       end
       ClockLow : begin
         host_idle_o = 1'b0;
@@ -426,12 +411,14 @@ module i2c_controller_fsm import i2c_pkg::*;
           sda_d = fmt_byte_i[bit_index];
         end
         scl_d = 1'b0;
+        transmitting_o = 1'b1;
       end
       // ClockPulse: SCL is released, SDA keeps the indexed bit value
       ClockPulse : begin
         host_idle_o = 1'b0;
         sda_d = fmt_byte_i[bit_index];
         scl_d = 1'b1;
+        transmitting_o = 1'b1;
         stretch_en = 1'b1;
         if (scl_i_q && !scl_i)  event_scl_interference_o = 1'b1;
         if (sda_i_q != sda_i)   event_sda_unstable_o = 1'b1;
@@ -441,6 +428,7 @@ module i2c_controller_fsm import i2c_pkg::*;
         host_idle_o = 1'b0;
         sda_d = fmt_byte_i[bit_index];
         scl_d = 1'b0;
+        transmitting_o = 1'b1;
       end
       // ClockLowAck: SCL pulled low, SDA is released
       ClockLowAck : begin
@@ -491,6 +479,7 @@ module i2c_controller_fsm import i2c_pkg::*;
       HostClockLowAck : begin
         host_idle_o = 1'b0;
         scl_d = 1'b0;
+        transmitting_o = 1'b1;
 
         // If it is the last byte of a read, send a NAK before the stop.
         // Otherwise send the ack.
@@ -505,6 +494,7 @@ module i2c_controller_fsm import i2c_pkg::*;
         else if (byte_index == 9'd1) sda_d = 1'b1;
         else sda_d = 1'b0;
         scl_d = 1'b1;
+        transmitting_o = 1'b1;
         stretch_en = 1'b1;
         if (scl_i_q && !scl_i)  event_scl_interference_o = 1'b1;
         if (sda_i_q != sda_i)   event_sda_unstable_o = 1'b1;
@@ -516,18 +506,21 @@ module i2c_controller_fsm import i2c_pkg::*;
         else if (byte_index == 9'd1) sda_d = 1'b1;
         else sda_d = 1'b0;
         scl_d = 1'b0;
+        transmitting_o = 1'b1;
       end
       // ClockStop: SCL is pulled low, SDA stays low
       ClockStop : begin
         host_idle_o = 1'b0;
         sda_d = 1'b0;
         scl_d = 1'b0;
+        transmitting_o = 1'b1;
       end
       // SetupStop: SDA is pulled low, SCL is released
       SetupStop : begin
         host_idle_o = 1'b0;
         sda_d = 1'b0;
         scl_d = 1'b1;
+        transmitting_o = 1'b1;
       end
       // HoldStop: SDA and SCL are released
       HoldStop : begin
@@ -559,6 +552,7 @@ module i2c_controller_fsm import i2c_pkg::*;
         host_idle_o = 1'b1;
         sda_d = 1'b1;
         scl_d = 1'b1;
+        transmitting_o = 1'b0;
         fmt_fifo_rready_o = 1'b0;
         rx_fifo_wvalid_o = 1'b0;
         rx_fifo_wdata_o = RX_FIFO_WIDTH'(0);
@@ -568,6 +562,10 @@ module i2c_controller_fsm import i2c_pkg::*;
         event_cmd_complete_o = 1'b0;
       end
     endcase // unique case (state_q)
+
+    if (trans_started && arbitration_lost_i) begin
+      event_arbitration_lost_o = 1'b1;
+    end
   end
 
   // Conditional state transition
@@ -603,8 +601,8 @@ module i2c_controller_fsm import i2c_pkg::*;
             // issue a Stop if software takes too long to address the NACK. A short timeout
             // could also be used to automatically issue a Stop whenever an unexpected NACK
             // occurs.
-            // Note that we may also halt here on a bus timeout, so software may fix up the FIFOs
-            // before beginning a new transaction.
+            // Note that we may also halt here on a bus timeout or if arbitration was lost, so
+            // software may fix up the FIFOs before beginning a new transaction.
             if (trans_started && unhandled_nak_cnt_expired) begin
               // If our timeout counter expires, generate a STOP condition automatically.
               auto_stop_d = 1'b1;
@@ -902,6 +900,10 @@ module i2c_controller_fsm import i2c_pkg::*;
         auto_stop_d = 1'b0;
       end
     endcase // unique case (state_q)
+
+    if (trans_started && arbitration_lost_i) begin
+      state_d = Idle;
+    end
   end
 
   // Synchronous state transition

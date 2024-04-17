@@ -56,7 +56,7 @@
     }
     { name: "controller_halt"
       desc: '''
-            host mode interrupt: raised if the controller FSM is halted, such as on an unexpected NACK.
+            host mode interrupt: raised if the controller FSM is halted, such as on an unexpected NACK or lost arbitration.
             Check !!CONTROLLER_EVENTS for the reason.
             The interrupt will be released when the bits in !!CONTROLLER_EVENTS are cleared.
             '''
@@ -132,6 +132,16 @@
             ''',
       type: int
       default: "268",
+    }
+    { name:    "InputDelayCycles",
+      type:    "int",
+      default: "0",
+      desc:    '''
+               Maximum number of cycles of propagation delay between a change on the cio_scl_en_o or cio_sda_en_o pins and sensing the new values on the corresponding input pins, not including the rise/fall times.
+               For the purposes of this calculation, an input delay of 0 cycles means an output pin changing at the beginning of clock edge N will be sampled and observed on the input pins at clock edge N+1.
+               '''
+      local:   "false",
+      expose:  "true"
     }
   ],
   features: [
@@ -1017,6 +1027,10 @@
         { bits: "2"
           name: "BUS_TIMEOUT"
           desc: "A Host-Mode active transaction has terminated due to a bus timeout activated by !!TIMEOUT_CTRL."
+        }
+        { bits: "3"
+          name: "ARBITRATION_LOST"
+          desc: "A Host-Mode active transaction has terminated due to lost arbitration."
         }
       ]
     }
