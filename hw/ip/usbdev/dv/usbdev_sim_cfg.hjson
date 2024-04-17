@@ -61,6 +61,10 @@
       reseed: 1
     }
     {
+      name: usbdev_device_timeout
+      uvm_test_seq: usbdev_device_timeout_vseq
+    }
+    {
       name: usbdev_enable
       uvm_test_seq: usbdev_enable_vseq
     }
