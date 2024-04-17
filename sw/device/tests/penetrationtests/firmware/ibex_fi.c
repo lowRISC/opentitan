@@ -180,9 +180,7 @@ status_t handle_ibex_fi_address_translation(ujson_t *uj) {
   ibex_fi_test_result_t uj_output;
   uj_output.result = res;
   uj_output.err_status = codes;
-  uj_output.alerts_1 = reg_alerts.alerts_1;
-  uj_output.alerts_2 = reg_alerts.alerts_2;
-  uj_output.alerts_3 = reg_alerts.alerts_3;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
   return OK_STATUS();
 }
@@ -254,9 +252,7 @@ status_t handle_ibex_fi_address_translation_config(ujson_t *uj) {
   ibex_fi_test_result_t uj_output;
   uj_output.result = res;
   uj_output.err_status = codes;
-  uj_output.alerts_1 = reg_alerts.alerts_1;
-  uj_output.alerts_2 = reg_alerts.alerts_2;
-  uj_output.alerts_3 = reg_alerts.alerts_3;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
   return OK_STATUS();
 }
@@ -294,9 +290,7 @@ status_t handle_ibex_fi_char_csr_write(ujson_t *uj) {
   ibex_fi_test_result_t uj_output;
   uj_output.result = res;
   uj_output.err_status = codes;
-  uj_output.alerts_1 = reg_alerts.alerts_1;
-  uj_output.alerts_2 = reg_alerts.alerts_2;
-  uj_output.alerts_3 = reg_alerts.alerts_3;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
   return OK_STATUS();
 }
@@ -336,9 +330,7 @@ status_t handle_ibex_fi_char_csr_read(ujson_t *uj) {
   ibex_fi_test_result_t uj_output;
   uj_output.result = res;
   uj_output.err_status = codes;
-  uj_output.alerts_1 = reg_alerts.alerts_1;
-  uj_output.alerts_2 = reg_alerts.alerts_2;
-  uj_output.alerts_3 = reg_alerts.alerts_3;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
   return OK_STATUS();
 }
@@ -409,9 +401,7 @@ status_t handle_ibex_fi_char_flash_read(ujson_t *uj) {
   ibex_fi_test_result_t uj_output;
   uj_output.result = res;
   uj_output.err_status = codes;
-  uj_output.alerts_1 = reg_alerts.alerts_1;
-  uj_output.alerts_2 = reg_alerts.alerts_2;
-  uj_output.alerts_3 = reg_alerts.alerts_3;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
   return OK_STATUS();
 }
@@ -477,9 +467,7 @@ status_t handle_ibex_fi_char_flash_write(ujson_t *uj) {
   ibex_fi_test_result_t uj_output;
   uj_output.result = res;
   uj_output.err_status = codes;
-  uj_output.alerts_1 = reg_alerts.alerts_1;
-  uj_output.alerts_2 = reg_alerts.alerts_2;
-  uj_output.alerts_3 = reg_alerts.alerts_3;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
   return OK_STATUS();
 }
@@ -530,9 +518,7 @@ status_t handle_ibex_fi_char_sram_static(ujson_t *uj) {
 
   // Send res & ERR_STATUS to host.
   uj_output.err_status = codes;
-  uj_output.alerts_1 = reg_alerts.alerts_1;
-  uj_output.alerts_2 = reg_alerts.alerts_2;
-  uj_output.alerts_3 = reg_alerts.alerts_3;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_faulty_addresses_t, uj, &uj_output);
   return OK_STATUS(0);
 }
@@ -579,9 +565,7 @@ status_t handle_ibex_fi_char_sram_read(ujson_t *uj) {
   ibex_fi_test_result_t uj_output;
   uj_output.result = res;
   uj_output.err_status = codes;
-  uj_output.alerts_1 = reg_alerts.alerts_1;
-  uj_output.alerts_2 = reg_alerts.alerts_2;
-  uj_output.alerts_3 = reg_alerts.alerts_3;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
   return OK_STATUS();
 }
@@ -624,9 +608,7 @@ status_t handle_ibex_fi_char_sram_write(ujson_t *uj) {
   ibex_fi_test_result_t uj_output;
   uj_output.result = res;
   uj_output.err_status = codes;
-  uj_output.alerts_1 = reg_alerts.alerts_1;
-  uj_output.alerts_2 = reg_alerts.alerts_2;
-  uj_output.alerts_3 = reg_alerts.alerts_3;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
   return OK_STATUS();
 }
@@ -751,9 +733,7 @@ status_t handle_ibex_fi_char_unconditional_branch(ujson_t *uj) {
   ibex_fi_test_result_t uj_output;
   uj_output.result = result;
   uj_output.err_status = codes;
-  uj_output.alerts_1 = reg_alerts.alerts_1;
-  uj_output.alerts_2 = reg_alerts.alerts_2;
-  uj_output.alerts_3 = reg_alerts.alerts_3;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
   return OK_STATUS();
 }
@@ -787,9 +767,7 @@ status_t handle_ibex_fi_char_conditional_branch(ujson_t *uj) {
   uj_output.result1 = branch_if_;
   uj_output.result2 = branch_else;
   uj_output.err_status = codes;
-  uj_output.alerts_1 = reg_alerts.alerts_1;
-  uj_output.alerts_2 = reg_alerts.alerts_2;
-  uj_output.alerts_3 = reg_alerts.alerts_3;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_mult_t, uj, &uj_output);
   return OK_STATUS();
 }
@@ -820,9 +798,7 @@ status_t handle_ibex_fi_char_mem_op_loop(ujson_t *uj) {
   uj_output.loop_counter1 = loop_counter1;
   uj_output.loop_counter2 = loop_counter2;
   uj_output.err_status = codes;
-  uj_output.alerts_1 = reg_alerts.alerts_1;
-  uj_output.alerts_2 = reg_alerts.alerts_2;
-  uj_output.alerts_3 = reg_alerts.alerts_3;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_loop_counter_mirrored_t, uj, &uj_output);
   return OK_STATUS();
 }
@@ -857,9 +833,7 @@ status_t handle_ibex_fi_char_unrolled_mem_op_loop(ujson_t *uj) {
   ibex_fi_loop_counter_t uj_output;
   uj_output.loop_counter = loop_counter;
   uj_output.err_status = codes;
-  uj_output.alerts_1 = reg_alerts.alerts_1;
-  uj_output.alerts_2 = reg_alerts.alerts_2;
-  uj_output.alerts_3 = reg_alerts.alerts_3;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_loop_counter_t, uj, &uj_output);
   return OK_STATUS();
 }
@@ -894,9 +868,7 @@ status_t handle_ibex_fi_char_reg_op_loop(ujson_t *uj) {
   uj_output.loop_counter1 = loop_counter1;
   uj_output.loop_counter2 = loop_counter2;
   uj_output.err_status = codes;
-  uj_output.alerts_1 = reg_alerts.alerts_1;
-  uj_output.alerts_2 = reg_alerts.alerts_2;
-  uj_output.alerts_3 = reg_alerts.alerts_3;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_loop_counter_mirrored_t, uj, &uj_output);
   return OK_STATUS();
 }
@@ -933,9 +905,7 @@ status_t handle_ibex_fi_char_unrolled_reg_op_loop(ujson_t *uj) {
   ibex_fi_loop_counter_t uj_output;
   uj_output.loop_counter = loop_counter;
   uj_output.err_status = codes;
-  uj_output.alerts_1 = reg_alerts.alerts_1;
-  uj_output.alerts_2 = reg_alerts.alerts_2;
-  uj_output.alerts_3 = reg_alerts.alerts_3;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_loop_counter_t, uj, &uj_output);
   return OK_STATUS();
 }
@@ -987,9 +957,7 @@ status_t handle_ibex_fi_char_register_file(ujson_t *uj) {
   ibex_fi_test_result_t uj_output;
   uj_output.result = res;
   uj_output.err_status = codes;
-  uj_output.alerts_1 = reg_alerts.alerts_1;
-  uj_output.alerts_2 = reg_alerts.alerts_2;
-  uj_output.alerts_3 = reg_alerts.alerts_3;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
   return OK_STATUS();
 }
@@ -1038,9 +1006,7 @@ status_t handle_ibex_fi_char_register_file_read(ujson_t *uj) {
   ibex_fi_test_result_t uj_output;
   uj_output.result = res;
   uj_output.err_status = codes;
-  uj_output.alerts_1 = reg_alerts.alerts_1;
-  uj_output.alerts_2 = reg_alerts.alerts_2;
-  uj_output.alerts_3 = reg_alerts.alerts_3;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
   return OK_STATUS();
 }

@@ -281,9 +281,7 @@ status_t handle_otbn_fi_char_hardware_dmem_op_loop(ujson_t *uj) {
   otbn_fi_loop_counter_t uj_output;
   uj_output.loop_counter = loop_counter;
   uj_output.err_status = err_bits;
-  uj_output.alerts_1 = reg_alerts.alerts_1;
-  uj_output.alerts_2 = reg_alerts.alerts_2;
-  uj_output.alerts_3 = reg_alerts.alerts_3;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   RESP_OK(ujson_serialize_otbn_fi_loop_counter_t, uj, &uj_output);
   return OK_STATUS(0);
 }
@@ -335,9 +333,7 @@ status_t handle_otbn_fi_char_hardware_reg_op_loop(ujson_t *uj) {
   otbn_fi_loop_counter_t uj_output;
   uj_output.loop_counter = loop_counter;
   uj_output.err_status = err_bits;
-  uj_output.alerts_1 = reg_alerts.alerts_1;
-  uj_output.alerts_2 = reg_alerts.alerts_2;
-  uj_output.alerts_3 = reg_alerts.alerts_3;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   RESP_OK(ujson_serialize_otbn_fi_loop_counter_t, uj, &uj_output);
   return OK_STATUS(0);
 }
@@ -391,9 +387,7 @@ status_t handle_otbn_fi_char_unrolled_dmem_op_loop(ujson_t *uj) {
   otbn_fi_loop_counter_t uj_output;
   uj_output.loop_counter = loop_counter;
   uj_output.err_status = err_bits;
-  uj_output.alerts_1 = reg_alerts.alerts_1;
-  uj_output.alerts_2 = reg_alerts.alerts_2;
-  uj_output.alerts_3 = reg_alerts.alerts_3;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   RESP_OK(ujson_serialize_otbn_fi_loop_counter_t, uj, &uj_output);
   return OK_STATUS(0);
 }
@@ -445,9 +439,7 @@ status_t handle_otbn_fi_char_unrolled_reg_op_loop(ujson_t *uj) {
   otbn_fi_loop_counter_t uj_output;
   uj_output.loop_counter = loop_counter;
   uj_output.err_status = err_bits;
-  uj_output.alerts_1 = reg_alerts.alerts_1;
-  uj_output.alerts_2 = reg_alerts.alerts_2;
-  uj_output.alerts_3 = reg_alerts.alerts_3;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   RESP_OK(ujson_serialize_otbn_fi_loop_counter_t, uj, &uj_output);
   return OK_STATUS(0);
 }

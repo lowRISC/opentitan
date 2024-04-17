@@ -25,9 +25,7 @@ sca_registered_alerts_t sca_get_triggered_alerts(void) {
   bool is_cause;
 
   sca_registered_alerts_t registered;
-  registered.alerts_1 = 0;
-  registered.alerts_2 = 0;
-  registered.alerts_3 = 0;
+  memset(registered.alerts, 0, sizeof(registered.alerts));
 
   // Loop over all alert_cause regs
   for (size_t alert = 0; alert < ALERT_HANDLER_PARAM_N_ALERTS; alert++) {
@@ -35,11 +33,11 @@ sca_registered_alerts_t sca_get_triggered_alerts(void) {
         dif_alert_handler_alert_is_cause(&alert_handler, alert, &is_cause));
     if (is_cause) {
       if (alert < 32) {
-        registered.alerts_1 |= (1 << alert);
+        registered.alerts[0] |= (1 << alert);
       } else if (alert < 64) {
-        registered.alerts_2 |= (1 << (alert - 32));
+        registered.alerts[1] |= (1 << (alert - 32));
       } else {
-        registered.alerts_3 |= (1 << (alert - 64));
+        registered.alerts[2] |= (1 << (alert - 64));
       }
     }
   }

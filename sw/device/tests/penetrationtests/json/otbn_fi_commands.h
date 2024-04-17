@@ -25,9 +25,7 @@ UJSON_SERDE_ENUM(OtbnFiSubcommand, otbn_fi_subcommand_t, OTBNFI_SUBCOMMAND);
 #define OTBNFI_LOOP_COUNTER_OUTPUT(field, string) \
     field(loop_counter, uint32_t) \
     field(err_status, uint32_t) \
-    field(alerts_1, uint32_t) \
-    field(alerts_2, uint32_t) \
-    field(alerts_3, uint32_t)
+    field(alerts, uint32_t, 3)
 UJSON_SERDE_STRUCT(OtbnFiLoopCounterOutput, otbn_fi_loop_counter_t, OTBNFI_LOOP_COUNTER_OUTPUT);
 
 #define OTBNFI_RESULT_OUTPUT(field, string) \
