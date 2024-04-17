@@ -14,6 +14,7 @@ load(
     "sim_dv",
     "sim_verilator",
 )
+load("//rules/opentitan:jtag.bzl", "jtag_server")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -41,6 +42,29 @@ filegroup(
     ],
 )
 
+label_flag(
+    name = "jtag_env",
+    build_setting_default = ":silicon_creator",
+)
+
+jtag_server(
+    name = "jtag_server",
+    testonly = True,
+    chip_setup = [
+        "gpio write TAP_STRAP0 false",
+        "gpio write TAP_STRAP1 true",
+        "gpio apply RMA_BOOTSTRAP",
+        "gpio apply RESET",
+        "no-op --delay 50ms",
+        "gpio remove RESET",
+    ],
+    exec_env = ":jtag_env",
+    openocd_chip_config = "//util/openocd/target:lowrisc-earlgrey.cfg",
+    openocd_commands = [
+        "adapter speed 500; transport select jtag; reset_config trst_only",
+    ],
+)
+
 ###########################################################################
 # FPGA CW310 Environments
 ###########################################################################
@@ -53,6 +77,7 @@ fpga_cw310(
         "//sw/device/lib/arch:fpga_cw310",
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
+    openocd_adapter_config = "//third_party/openocd:jtag_olimex_cfg",
     rom_scramble_config = "//hw/top_earlgrey/data:autogen/top_earlgrey.gen.hjson",
     test_cmd = "testing-not-supported",
 )
@@ -71,7 +96,6 @@ fpga_cw310(
     base = ":fpga_cw310",
     base_bitstream = "//hw/bitstream:bitstream",
     exec_env = "fpga_cw310_test_rom",
-    openocd_adapter_config = "//third_party/openocd:jtag_olimex_cfg",
     otp = "//hw/ip/otp_ctrl/data:img_rma",
     otp_mmi = "//hw/bitstream:otp_mmi",
     param = {
@@ -141,6 +165,7 @@ fpga_cw310(
     base_bitstream = "//hw/bitstream/hyperdebug:bitstream",
     exec_env = "fpga_hyper310_rom_with_fake_keys",
     manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
+    openocd_adapter_config = "//third_party/openocd:jtag_cmsis_dap_adapter_cfg",
     otp = "//hw/ip/otp_ctrl/data:img_rma",
     otp_mmi = "//hw/bitstream/hyperdebug:otp_mmi",
     param = {
@@ -338,6 +363,7 @@ silicon(
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
     manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
+    openocd_adapter_config = "//third_party/openocd:jtag_cmsis_dap_adapter_cfg",
     param = {
         "interface": "teacup",
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
@@ -371,6 +397,7 @@ silicon(
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
     manifest = "//sw/device/silicon_owner:manifest_standard",
+    openocd_adapter_config = "//third_party/openocd:jtag_cmsis_dap_adapter_cfg",
     param = {
         "interface": "teacup",
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,

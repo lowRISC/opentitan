@@ -397,6 +397,16 @@ cd $REPO_TOP
     -f util/openocd/target/lowrisc-earlgrey.cfg
 ```
 
+#### Bazel-managed OpenOCD startup
+Bazel can configure and execute an OpenOCD process for you.
+Bazel will set the appropriate configuration straps for the chip, issue a reset and then start OpenOCD.
+This is currently supported for CW310 and Silicon environments:
+
+```
+bazel run //hw/top_earlgrey:jtag_server \
+    --//hw/top_earlgrey:jtag_env=//hw/top_earlgrey:fpga_cw310
+```
+
 Example OpenOCD output:
 ```console
 Open On-Chip Debugger 0.11.0

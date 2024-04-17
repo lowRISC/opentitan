@@ -20,3 +20,6 @@ Currently, we only expose OpenTitan's default JTAG adapter config as `//third_pa
 # Get the path of the OpenOCD binary:
 ./bazelisk.sh outquery //third_party/openocd:openocd_bin
 ```
+
+See also the [Bazel-managed OpenOCD
+startup](setup_fpga.md#bazel-managed-openocd-startup) section of the FPGA guide.
