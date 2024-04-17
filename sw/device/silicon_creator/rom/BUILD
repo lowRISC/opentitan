@@ -177,6 +177,16 @@ opentitan_binary(
     ],
 )
 
+[
+    filegroup(
+        name = "rom_with_fake_keys_{}_hashfile".format(dev),
+        testonly = True,
+        srcs = [":rom_with_fake_keys"],
+        output_group = "{}_hashfile".format(dev),
+    )
+    for dev in _ROM_DEVICES
+]
+
 # Create the legacy ROM target names so that existing opentitan_functest and
 # splicing rules can find the rom VMEM files.
 legacy_rom_targets(

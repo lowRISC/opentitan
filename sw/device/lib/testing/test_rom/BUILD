@@ -42,6 +42,19 @@ opentitan_binary(
     ],
 )
 
+[
+    filegroup(
+        name = "test_rom_{}_hashfile".format(dev),
+        srcs = [":test_rom"],
+        output_group = "{}_hashfile".format(dev),
+    )
+    for dev in [
+        "sim_verilator",
+        "fpga_cw310",
+        "sim_dv",
+    ]
+]
+
 # Create the legacy ROM target names so that existing opentitan_functest and
 # splicing rules can find the test_rom VMEM files.
 legacy_rom_targets(
