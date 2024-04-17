@@ -1549,7 +1549,8 @@
     {
       name: chip_sw_kmac_app_rom
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["//sw/device/tests:kmac_app_rom_test:1:new_rules"]
+      // The `sim_dv` prefix is necessary due to how the targets are created, see BUILD file.
+      sw_images: ["//sw/device/tests:kmac_app_rom_test_sim_dv:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
