@@ -22,7 +22,6 @@
 #include "sw/device/silicon_creator/lib/drivers/kmac.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/otbn_boot_services.h"
-#include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 
 OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 
@@ -157,8 +156,7 @@ static status_t personalize(ujson_t *uj) {
                             &dice_certs.cdi_0_certificate_size));
   TRY(flash_ctrl_info_write(
       &kFlashCtrlInfoPageCdi0Certificate,
-      kFlashInfoFieldCdi0Certificate.byte_offset,
-      dice_certs.cdi_0_certificate_size / sizeof(uint32_t),
+      /*offset=*/0, dice_certs.cdi_0_certificate_size / sizeof(uint32_t),
       dice_certs.cdi_0_certificate));
   LOG_INFO("Generated CDI_0 certificate.");
 
@@ -172,8 +170,7 @@ static status_t personalize(ujson_t *uj) {
                             &dice_certs.cdi_1_certificate_size));
   TRY(flash_ctrl_info_write(
       &kFlashCtrlInfoPageCdi1Certificate,
-      kFlashInfoFieldCdi1Certificate.byte_offset,
-      dice_certs.cdi_1_certificate_size / sizeof(uint32_t),
+      /*offset=*/0, dice_certs.cdi_1_certificate_size / sizeof(uint32_t),
       dice_certs.cdi_1_certificate));
   LOG_INFO("Generated CDI_1 certificate.");
 
@@ -188,8 +185,7 @@ static status_t personalize(ujson_t *uj) {
   // Write the endorsed UDS certificate to flash and ack to host.
   TRY(flash_ctrl_info_write(
       &kFlashCtrlInfoPageUdsCertificate,
-      kFlashInfoFieldUdsCertificate.byte_offset,
-      endorsed_certs.uds_certificate_size / sizeof(uint32_t),
+      /*offset=*/0, endorsed_certs.uds_certificate_size / sizeof(uint32_t),
       endorsed_certs.uds_certificate));
   LOG_INFO("Imported UDS certificate.");
 
