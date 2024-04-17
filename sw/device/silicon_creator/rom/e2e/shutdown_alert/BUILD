@@ -15,8 +15,8 @@ load(
 )
 load(
     "//rules/opentitan:defs.bzl",
-    "fpga_params",
     "ecdsa_key_for_lc_state",
+    "fpga_params",
     "opentitan_test",
 )
 load(
@@ -56,10 +56,6 @@ ALERT_LC_STATES = get_lc_items(
     opentitan_test(
         name = "alert_{}".format(lc_state),
         srcs = ["rom_e2e_alert_config_test.c"],
-        fpga = fpga_params(
-            otp = "//hw/ip/otp_ctrl/data:img_{}".format(lc_state),
-            tags = maybe_skip_in_ci(lc_state_val),
-        ),
         ecdsa_key = ecdsa_key_for_lc_state(
             ECDSA_ONLY_KEY_STRUCTS,
             lc_state_val,
@@ -67,6 +63,10 @@ ALERT_LC_STATES = get_lc_items(
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         },
+        fpga = fpga_params(
+            otp = "//hw/ip/otp_ctrl/data:img_{}".format(lc_state),
+            tags = maybe_skip_in_ci(lc_state_val),
+        ),
         local_defines = [
             "OTP_ALERT_DIGEST=OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_ALERT_DIGEST_{}_OFFSET".format(lc_state.upper()),
         ],
@@ -174,10 +174,6 @@ otp_alert_digest(
     opentitan_test(
         name = "shutdown_alert_{}".format(lc_state),
         srcs = ["rom_e2e_shutdown_alert_config_test.c"],
-        fpga = fpga_params(
-            otp = ":otp_img_shutdown_alert_{}".format(lc_state),
-            tags = maybe_skip_in_ci(lc_state_val),
-        ),
         ecdsa_key = ecdsa_key_for_lc_state(
             ECDSA_ONLY_KEY_STRUCTS,
             lc_state_val,
@@ -185,6 +181,10 @@ otp_alert_digest(
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         },
+        fpga = fpga_params(
+            otp = ":otp_img_shutdown_alert_{}".format(lc_state),
+            tags = maybe_skip_in_ci(lc_state_val),
+        ),
         deps = [
             "//hw/ip/uart/data:uart_c_regs",
             "//sw/device/lib/base:abs_mmio",

@@ -214,6 +214,10 @@ KEY_VALIDITY_TESTS = [
             key.spx.name,
         ),
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
+        ecdsa_key = {key.ecdsa.label: key.ecdsa.name},
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        },
         fpga = fpga_params(
             exit_failure = test["exit_failure"][lc_state],
             exit_success = test["exit_success"][lc_state],
@@ -223,10 +227,6 @@ KEY_VALIDITY_TESTS = [
             ),
             tags = maybe_skip_in_ci(lc_state_val),
         ),
-        ecdsa_key = {key.ecdsa.label: key.ecdsa.name},
-        exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-        },
         spx_key = {key.spx.label: key.spx.name},
         deps = [
             "//sw/device/lib/testing/test_framework:ottf_main",

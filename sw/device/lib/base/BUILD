@@ -62,14 +62,14 @@ opentitan_test(
 opentitan_test(
     name = "crc32_perftest",
     srcs = ["crc32_perftest.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+    },
     fpga = fpga_params(
         tags = [
             "manual",
         ],
     ),
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-    },
     deps = [
         ":crc32",
         ":macros",

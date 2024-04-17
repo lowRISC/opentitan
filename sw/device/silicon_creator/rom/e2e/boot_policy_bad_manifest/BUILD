@@ -239,6 +239,11 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
             slot,
         ),
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
+        # Use the prod key because it is valid in every LC state.
+        ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        },
         fpga = fpga_params(
             assemble = "{firmware}@{offset}",
             exit_failure = t["exit_failure"],
@@ -250,11 +255,6 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
             ),
             tags = maybe_skip_in_ci(lc_state_val),
         ),
-        # Use the prod key because it is valid in every LC state.
-        ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
-        exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-        },
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
         manifest = ":{}_{}".format(
             t["name"],

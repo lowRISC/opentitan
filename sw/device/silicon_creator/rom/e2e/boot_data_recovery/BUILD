@@ -5,8 +5,8 @@
 load(
     "//rules/opentitan:defs.bzl",
     "DEFAULT_TEST_FAILURE_MSG",
-    "fpga_params",
     "ecdsa_key_for_lc_state",
+    "fpga_params",
     "opentitan_test",
 )
 load(
@@ -143,6 +143,14 @@ BOOT_DATA_RECOVERY_MANIFEST = manifest(
             case["default_boot_data"],
         ),
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
+        # PROD keys can sign binaries able to run across all life cycle states.
+        ecdsa_key = ecdsa_key_for_lc_state(
+            ECDSA_ONLY_KEY_STRUCTS,
+            CONST.LCV.PROD,
+        ),
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        },
         fpga = fpga_params(
             exit_failure = msg_template_bfv_all_except(case["expected_bfv"]) if case["expected_bfv"] != None else DEFAULT_TEST_FAILURE_MSG,
             exit_success = MSG_TEMPLATE_BFV.format(hex_digits(case["expected_bfv"])) if case["expected_bfv"] != None else MSG_PASS,
@@ -155,14 +163,6 @@ BOOT_DATA_RECOVERY_MANIFEST = manifest(
                 case["lc_state"].upper(),
             )),
         ),
-        # PROD keys can sign binaries able to run across all life cycle states.
-        ecdsa_key = ecdsa_key_for_lc_state(
-            ECDSA_ONLY_KEY_STRUCTS,
-            CONST.LCV.PROD,
-        ),
-        exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-        },
         manifest = BOOT_DATA_RECOVERY_MANIFEST,
         deps = [
             "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",

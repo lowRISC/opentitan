@@ -35,6 +35,9 @@ package(default_visibility = ["//visibility:public"])
 [
     opentitan_test(
         name = "e2e_bootstrap_entry_{}".format(lc_state),
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        },
         fpga = fpga_params(
             timeout = "moderate",
             binaries = {"//sw/device/silicon_creator/rom/e2e:new_empty_test_slot_a": "firmware"},
@@ -45,9 +48,6 @@ package(default_visibility = ["//visibility:public"])
             """,
             test_harness = "//sw/host/tests/rom/e2e_bootstrap_entry",
         ),
-        exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-        },
         # We don't want the `empty_test` to run, but we _also_ don't want some
         # leftover flash image from a previous test to run.  So, bootstrap an
         # unsigned image to force a boot failure.

@@ -333,6 +333,10 @@ _FLOW_CONTROL_MESSAGE = (
 opentitan_test(
     name = "ottf_flow_control_functest",
     srcs = ["ottf_flow_control_functest.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:sim_verilator": None,
+    },
     fpga = fpga_params(
         flow_control_message = _FLOW_CONTROL_MESSAGE,
         test_cmd = """
@@ -347,10 +351,6 @@ opentitan_test(
             --exit-failure="PASS|FAIL"
         """,
     ),
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-        "//hw/top_earlgrey:sim_verilator": None,
-    },
     verilator = verilator_params(
         flow_control_message = _FLOW_CONTROL_MESSAGE,
         test_cmd = """

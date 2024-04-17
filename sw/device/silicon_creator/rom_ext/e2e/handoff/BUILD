@@ -57,13 +57,13 @@ _FAULT_TEST_CASES = {
             "fault_start.S",
             "fault_test.c",
         ],
-        fpga = fpga_params(
-            exit_success = test_data["exit_success"],
-        ),
         defines = test_data["defines"],
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
         },
+        fpga = fpga_params(
+            exit_success = test_data["exit_success"],
+        ),
         linker_script = ":ld_slot_a",
         manifest = "//sw/device/silicon_owner:manifest",
         deps = [
