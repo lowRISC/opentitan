@@ -6,7 +6,7 @@
 
 import argparse
 import sys
-from typing import Dict, List
+from typing import Dict, List, IO
 
 import hjson  # type: ignore
 from Crypto.Hash import cSHAKE256
@@ -110,7 +110,7 @@ class Scrambler:
     subst_perm_rounds = 2
     num_rounds_half = 2
 
-    def __init__(self, nonce: int, key: int, rom_size_words: int):
+    def __init__(self, nonce: int, key: int, rom_size_words: int, hash_file: IO[str]):
         assert 0 <= nonce < (1 << 64)
         assert 0 <= key < (1 << 128)
         assert 0 < rom_size_words < (1 << 64)
@@ -119,6 +119,7 @@ class Scrambler:
         self.key = key
         self.rom_size_words = rom_size_words
         self.config = load_secded_config()
+        self.hash_file = hash_file
 
         self._addr_width = (rom_size_words - 1).bit_length()
 
@@ -163,7 +164,7 @@ class Scrambler:
         return int_val
 
     @staticmethod
-    def from_hjson_path(path: str, rom_size_words: int) -> 'Scrambler':
+    def from_hjson_path(path: str, rom_size_words: int, hash_file: IO[str]) -> 'Scrambler':
         assert 0 < rom_size_words
 
         with open(path) as handle:
@@ -179,7 +180,7 @@ class Scrambler:
         nonce = Scrambler._get_param_value(params, 'RndCnstScrNonce', 64)
         key = Scrambler._get_param_value(params, 'RndCnstScrKey', 128)
 
-        return Scrambler(nonce, key, rom_size_words)
+        return Scrambler(nonce, key, rom_size_words, hash_file)
 
     def flatten(self, mem: MemFile) -> MemFile:
         '''Flatten and pad mem up to the correct size
@@ -329,6 +330,9 @@ class Scrambler:
         # invalid ECC checksums.
         mask32 = (1 << 32) - 1
         first_digest_idx = self.rom_size_words - num_digest_words
+        # Create a file to store the ROM hash.
+        print('#include <stdint.h>\n', file = self.hash_file)
+        print(f'const uint32_t kRomImageHash[{num_digest_words}] = {{', file = self.hash_file)
         for digest_idx in range(num_digest_words):
             log_addr = first_digest_idx + digest_idx
             w32 = (digest256 >> (32 * digest_idx)) & mask32
@@ -351,6 +355,8 @@ class Scrambler:
 
             phy_addr = self.addr_sp_enc(log_addr)
             scr_chunk.words[phy_addr] = w32
+            print(f'  {w32:#08x},', file = self.hash_file)
+        print('};', file = self.hash_file)
 
 
 def main() -> int:
@@ -358,9 +364,10 @@ def main() -> int:
     parser.add_argument('hjson')
     parser.add_argument('infile', type=argparse.FileType('rb'))
     parser.add_argument('outfile', type=argparse.FileType('w'))
+    parser.add_argument('hashfile', type=argparse.FileType('w'))
 
     args = parser.parse_args()
-    scrambler = Scrambler.from_hjson_path(args.hjson, ROM_SIZE_WORDS)
+    scrambler = Scrambler.from_hjson_path(args.hjson, ROM_SIZE_WORDS, args.hashfile)
 
     # Load the input ELF file
     clr_mem = MemFile.load_elf32(args.infile, 4 * ROM_BASE_WORD)

@@ -418,6 +418,7 @@ elf_to_disassembly = rv_rule(
 
 def _elf_to_scrambled_rom_impl(ctx):
     outputs = []
+    digest_outs = []
     for src in ctx.files.srcs:
         if src.extension != "elf":
             fail("only ROM images in the ELF format may be converted to the VMEM format and scrambled.")
@@ -427,9 +428,16 @@ def _elf_to_scrambled_rom_impl(ctx):
                 src.basename.replace("." + src.extension, ""),
             ),
         )
+        digest = ctx.actions.declare_file(
+            "{}.39.scr.vmem.digest.h".format(
+                # Remove ".elf" from file basename.
+                src.basename.replace("." + src.extension, ""),
+            ),
+        )
         outputs.append(scrambled)
+        digest_outs.append(digest)
         ctx.actions.run(
-            outputs = [scrambled],
+            outputs = [scrambled, digest],
             inputs = [
                 src,
                 ctx.executable._scramble_tool,
@@ -439,13 +447,19 @@ def _elf_to_scrambled_rom_impl(ctx):
                 ctx.file._config.path,
                 src.path,
                 scrambled.path,
+                digest.path,
             ],
             executable = ctx.executable._scramble_tool,
         )
-    return [DefaultInfo(
-        files = depset(outputs),
-        data_runfiles = ctx.runfiles(files = outputs),
-    )]
+    return [
+        DefaultInfo(
+            files = depset(outputs),
+            data_runfiles = ctx.runfiles(files = outputs),
+        ),
+        OutputGroupInfo(
+            hashfile = depset(digest_outs),
+        ),
+    ]
 
 elf_to_scrambled_rom_vmem = rv_rule(
     implementation = _elf_to_scrambled_rom_impl,
