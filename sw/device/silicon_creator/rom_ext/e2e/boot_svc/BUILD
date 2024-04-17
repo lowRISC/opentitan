@@ -27,14 +27,14 @@ cc_library(
 opentitan_test(
     name = "boot_svc_empty_test",
     srcs = ["boot_svc_empty_test.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+    },
     fpga = fpga_params(
         assemble = "{rom_ext}@0 {firmware}@0x10000 {firmware}@0x90000",
         exit_failure = "BFV|PASS|FAIL",
         exit_success = "FinalBootLog: 2:AA\r\n",
     ),
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
-    },
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
     deps = [
         ":boot_svc_test_lib",
@@ -52,14 +52,14 @@ opentitan_test(
 opentitan_test(
     name = "boot_svc_next_test",
     srcs = ["boot_svc_next_test.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+    },
     fpga = fpga_params(
         assemble = "{rom_ext}@0 {firmware}@0x10000 {firmware}@0x90000",
         exit_failure = "BFV:.*|PASS|FAIL",
         exit_success = "FinalBootLog: 3:ABA\r\n",
     ),
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
-    },
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
     deps = [
         ":boot_svc_test_lib",
@@ -78,14 +78,14 @@ opentitan_test(
 opentitan_test(
     name = "boot_svc_bad_next_test",
     srcs = ["boot_svc_bad_next_test.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+    },
     fpga = fpga_params(
         assemble = "{rom_ext}@0 {firmware}@0x10000 {firmware}@0x90000",
         exit_failure = "BFV:.*|PASS|FAIL",
         exit_success = "FinalBootLog: 3:AAA\r\n",
     ),
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
-    },
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
     deps = [
         ":boot_svc_test_lib",
@@ -106,6 +106,9 @@ opentitan_test(
     srcs = [
         "//sw/device/silicon_creator/rom_ext/e2e/verified_boot:boot_test",
     ],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+    },
     fpga = fpga_params(
         data = [
             "//sw/device/silicon_creator/lib/ownership/keys/fake:no_owner_recovery_key",
@@ -127,9 +130,6 @@ opentitan_test(
             no-op
         """,
     ),
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
-    },
     deps = [
         "//sw/device/lib/base:status",
         "//sw/device/lib/testing/test_framework:ottf_main",

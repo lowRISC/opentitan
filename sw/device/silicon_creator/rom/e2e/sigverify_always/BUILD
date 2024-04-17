@@ -72,6 +72,9 @@ SIGVERIFY_BAD_CASES = [
             case["a"],
             case["b"],
         ),
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        },
         fpga = fpga_params(
             assemble = " ".join([
                 "{{slot_{}}}@{}".format(slot, addr)
@@ -95,9 +98,6 @@ SIGVERIFY_BAD_CASES = [
             otp = ":otp_img_sigverify_always_{}".format(lc_state),
             tags = maybe_skip_in_ci(lc_state_val),
         ),
-        exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-        },
     )
     for case in SIGVERIFY_BAD_CASES
     for lc_state, lc_state_val in get_lc_items()

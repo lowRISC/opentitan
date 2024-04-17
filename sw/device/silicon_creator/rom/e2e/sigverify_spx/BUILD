@@ -4,8 +4,8 @@
 
 load(
     "//rules/opentitan:defs.bzl",
-    "fpga_params",
     "ecdsa_key_for_lc_state",
+    "fpga_params",
     "opentitan_binary",
     "opentitan_test",
     "spx_key_for_lc_state",
@@ -187,6 +187,13 @@ opentitan_binary(
             t["name"],
         ),
         srcs = ["sigverify_spx_test.c"],
+        ecdsa_key = ecdsa_key_for_lc_state(
+            ECDSA_SPX_KEY_STRUCTS,
+            lc_state_val,
+        ),
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        },
         fpga = fpga_params(
             bitstream = ":bitstream_sigverify_spx_{}_{}".format(
                 lc_state,
@@ -195,13 +202,6 @@ opentitan_binary(
             exit_success = t["exit_success"][lc_state],
             tags = maybe_skip_in_ci(lc_state_val),
         ),
-        ecdsa_key = ecdsa_key_for_lc_state(
-            ECDSA_SPX_KEY_STRUCTS,
-            lc_state_val,
-        ),
-        exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-        },
         spx_key = spx_key_for_lc_state(
             ECDSA_SPX_KEY_STRUCTS,
             lc_state_val,

@@ -111,12 +111,12 @@ opentitan_test(
 opentitan_test(
     name = "mod_exp_ibex_functest_wycheproof",
     srcs = ["mod_exp_ibex_functest.c"],
-    fpga = fpga_params(
-        timeout = "long",
-    ),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
     },
+    fpga = fpga_params(
+        timeout = "long",
+    ),
     deps = [
         ":mod_exp_ibex",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -301,13 +301,13 @@ opentitan_test(
 opentitan_test(
     name = "sigverify_dynamic_functest_wycheproof",
     srcs = ["sigverify_dynamic_functest.c"],
-    fpga = fpga_params(
-        timeout = "long",
-    ),
     exec_env = {
         # Test set is too large as ROM_EXT
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
     },
+    fpga = fpga_params(
+        timeout = "long",
+    ),
     deps = [
         ":sigverify",
         "//sw/device/lib/testing/test_framework:ottf_main",

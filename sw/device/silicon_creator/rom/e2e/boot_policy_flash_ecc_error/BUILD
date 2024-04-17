@@ -144,6 +144,9 @@ SEC_VERS = [
 [
     opentitan_test(
         name = "boot_policy_flash_ecc_error_{}".format(c["name"]),
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        },
         fpga = fpga_params(
             assemble = "{fw_a}@{slot_a} {fw_b}@{slot_b}",
             binaries = {
@@ -154,9 +157,6 @@ SEC_VERS = [
             slot_a = SLOTS["a"],
             slot_b = SLOTS["b"],
         ),
-        exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-        },
     )
     for c in BOOT_POLICY_FLASH_ECC_ERROR_CASES
 ]

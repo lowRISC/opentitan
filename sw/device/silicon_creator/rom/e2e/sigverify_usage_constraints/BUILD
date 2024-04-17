@@ -5,8 +5,8 @@
 load(
     "//rules/opentitan:defs.bzl",
     "DEFAULT_TEST_SUCCESS_MSG",
-    "fpga_params",
     "ecdsa_key_for_lc_state",
+    "fpga_params",
     "opentitan_test",
 )
 load(
@@ -276,12 +276,6 @@ test_cases = device_id_test_cases + lc_state_test_cases + manuf_state_test_cases
     opentitan_test(
         name = "sigverify_usage_constraint_{}".format(t["name"]),
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
-        fpga = fpga_params(
-            exit_failure = t["exit_failure"],
-            exit_success = t["exit_success"],
-            otp = t["otp"],
-            tags = maybe_skip_in_ci(t["lc_state_val"]),
-        ),
         ecdsa_key = ecdsa_key_for_lc_state(
             ECDSA_ONLY_KEY_STRUCTS,
             t["lc_state_val"],
@@ -289,6 +283,12 @@ test_cases = device_id_test_cases + lc_state_test_cases + manuf_state_test_cases
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         },
+        fpga = fpga_params(
+            exit_failure = t["exit_failure"],
+            exit_success = t["exit_success"],
+            otp = t["otp"],
+            tags = maybe_skip_in_ci(t["lc_state_val"]),
+        ),
         manifest = manifest(
             dict(
                 t["manifest"],

@@ -92,6 +92,9 @@ otp_json(
             t["a"],
             t["b"],
         ),
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        },
         fpga = fpga_params(
             assemble = "{fw_a}@{slot_a} {fw_b}@{slot_b}",
             binaries = {
@@ -105,9 +108,6 @@ otp_json(
             slot_b = SLOTS["b"],
             tags = maybe_skip_in_ci(lc_state_val),
         ),
-        exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-        },
     )
     for lc_state, lc_state_val in get_lc_items()
     for t in BOOT_POLICY_ROLLBACK_CASES

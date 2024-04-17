@@ -4,8 +4,8 @@
 
 load(
     "//rules/opentitan:defs.bzl",
-    "opentitan_test",
     "fpga_params",
+    "opentitan_test",
 )
 load(
     "//rules:const.bzl",
@@ -24,6 +24,9 @@ package(default_visibility = ["//visibility:public"])
 
 opentitan_test(
     name = "rom_ext_a_flash_a",
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
     fpga = fpga_params(
         assemble = "{firmware}@{offset}",
         binaries = {
@@ -33,13 +36,13 @@ opentitan_test(
         exit_success = MSG_STARTING_ROM_EXT,
         offset = SLOTS["a"],
     ),
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-    },
 )
 
 opentitan_test(
     name = "rom_ext_b_flash_b",
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
     fpga = fpga_params(
         assemble = "{firmware}@{offset}",
         binaries = {
@@ -49,13 +52,13 @@ opentitan_test(
         exit_success = MSG_STARTING_ROM_EXT,
         offset = SLOTS["b"],
     ),
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-    },
 )
 
 opentitan_test(
     name = "rom_ext_a_flash_b",
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
     fpga = fpga_params(
         assemble = "{firmware}@{offset}",
         binaries = {
@@ -65,13 +68,13 @@ opentitan_test(
         exit_success = MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.INTERRUPT.STORE_ACCESS)),
         offset = SLOTS["b"],
     ),
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-    },
 )
 
 opentitan_test(
     name = "rom_ext_b_flash_a",
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
     fpga = fpga_params(
         assemble = "{firmware}@{offset}",
         binaries = {
@@ -81,13 +84,13 @@ opentitan_test(
         exit_success = MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.INTERRUPT.STORE_ACCESS)),
         offset = SLOTS["a"],
     ),
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-    },
 )
 
 opentitan_test(
     name = "rom_ext_v_flash_a",
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
     fpga = fpga_params(
         assemble = "{firmware}@{offset}",
         binaries = {
@@ -97,13 +100,13 @@ opentitan_test(
         exit_success = MSG_STARTING_ROM_EXT,
         offset = SLOTS["a"],
     ),
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-    },
 )
 
 opentitan_test(
     name = "rom_ext_v_flash_b",
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
     fpga = fpga_params(
         assemble = "{firmware}@{offset}",
         binaries = {
@@ -113,13 +116,13 @@ opentitan_test(
         exit_success = MSG_STARTING_ROM_EXT,
         offset = SLOTS["b"],
     ),
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-    },
 )
 
 opentitan_test(
     name = "rom_ext_a_flash_a_bad_addr_trans",
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
     fpga = fpga_params(
         assemble = "{firmware}@{offset}",
         binaries = {
@@ -129,9 +132,6 @@ opentitan_test(
         exit_success = MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.INTERRUPT.ILLEGAL_INSTRUCTION)),
         offset = SLOTS["a"],
     ),
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-    },
 )
 
 test_suite(

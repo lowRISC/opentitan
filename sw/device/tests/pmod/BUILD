@@ -15,16 +15,16 @@ package(default_visibility = ["//visibility:public"])
 opentitan_test(
     name = "spi_host_macronix_flash_test",
     srcs = ["spi_host_macronix_flash_test.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+    },
     fpga = fpga_params(
         tags = [
             "manual",
             "pmod",
         ],  # Requires the PMOD::BoB.
     ),
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-    },
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -45,16 +45,16 @@ opentitan_test(
 opentitan_test(
     name = "spi_host_gigadevice256Mb_flash_test",
     srcs = ["spi_host_gigadevice256Mb_flash_test.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+    },
     fpga = fpga_params(
         tags = [
             "manual",
             "pmod",
         ],  # Requires the PMOD::BoB.
     ),
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-    },
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -76,16 +76,16 @@ opentitan_test(
 opentitan_test(
     name = "spi_host_gigadevice1Gb_flash_test",
     srcs = ["spi_host_gigadevice1Gb_flash_test.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+    },
     fpga = fpga_params(
         tags = [
             "manual",
             "pmod",
         ],  # Requires the PMOD::BoB.
     ),
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-    },
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -107,16 +107,16 @@ opentitan_test(
 opentitan_test(
     name = "spi_host_micron512Mb_flash_test",
     srcs = ["spi_host_micron512Mb_flash_test.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+    },
     fpga = fpga_params(
         tags = [
             "manual",
             "pmod",
         ],  # Requires the PMOD::BoB.
     ),
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-    },
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -138,16 +138,16 @@ opentitan_test(
 opentitan_test(
     name = "i2c_host_accelerometer_test",
     srcs = ["i2c_host_accelerometer_test.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_sival": None,
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+    },
     fpga = fpga_params(
         tags = [
             "manual",
             "pmod",
         ],  # Requires the PMOD::BoB.
     ),
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_sival": None,
-        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-    },
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -166,16 +166,16 @@ opentitan_test(
 opentitan_test(
     name = "i2c_host_ambient_light_detector_test",
     srcs = ["i2c_host_ambient_light_detector_test.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_sival": None,
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+    },
     fpga = fpga_params(
         tags = [
             "manual",
             "pmod",
         ],  # Requires the PMOD::BoB.
     ),
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_sival": None,
-        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-    },
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -194,16 +194,16 @@ opentitan_test(
 opentitan_test(
     name = "i2c_host_hdc1080_humidity_temp_test",
     srcs = ["i2c_host_hdc1080_humidity_temp_test.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_sival": None,
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+    },
     fpga = fpga_params(
         tags = [
             "manual",
             "pmod",
         ],  # Requires the PMOD::BoB.
     ),
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_sival": None,
-        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-    },
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -222,16 +222,16 @@ opentitan_test(
 opentitan_test(
     name = "i2c_host_clock_stretching_test",
     srcs = ["i2c_host_clock_stretching_test.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_sival": None,
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+    },
     fpga = fpga_params(
         tags = [
             "manual",
             "pmod",
         ],  # Requires the PMOD::BoB.
     ),
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_sival": None,
-        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-    },
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -252,16 +252,16 @@ opentitan_test(
 opentitan_test(
     name = "i2c_host_compass_test",
     srcs = ["i2c_host_compass_test.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_sival": None,
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+    },
     fpga = fpga_params(
         tags = [
             "manual",
             "pmod",
         ],  # Requires the PMOD::BoB.
     ),
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_sival": None,
-        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-    },
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -281,6 +281,10 @@ opentitan_test(
 opentitan_test(
     name = "i2c_host_eeprom_test",
     srcs = ["i2c_host_eeprom_test.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_sival": None,
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+    },
     fpga = fpga_params(
         tags = [
             "manual",
@@ -288,10 +292,6 @@ opentitan_test(
             "skip_in_ci",
         ],  # Requires the PMOD::BoB.
     ),
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_sival": None,
-        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-    },
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -310,17 +310,17 @@ opentitan_test(
 opentitan_test(
     name = "i2c_host_fram_test",
     srcs = ["i2c_host_fram_test.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_sival": None,
+        "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon_owner",
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+    },
     fpga = fpga_params(
         tags = [
             "manual",
             "pmod",
         ],  # Requires the PMOD::BoB.
     ),
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_sival": None,
-        "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon_owner",
-        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-    },
     silicon_owner = silicon_params(
         tags = [
             "pmod",
@@ -344,16 +344,16 @@ opentitan_test(
 opentitan_test(
     name = "i2c_host_gas_sensor_test",
     srcs = ["i2c_host_gas_sensor_test.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_sival": None,
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+    },
     fpga = fpga_params(
         tags = [
             "manual",
             "pmod",
         ],  # Requires the PMOD::BoB.
     ),
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_sival": None,
-        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-    },
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -372,16 +372,16 @@ opentitan_test(
 opentitan_test(
     name = "i2c_host_power_monitor_test",
     srcs = ["i2c_host_power_monitor_test.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_sival": None,
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+    },
     fpga = fpga_params(
         tags = [
             "manual",
             "pmod",
         ],  # Requires the PMOD::BoB.
     ),
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_sival": None,
-        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-    },
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -400,16 +400,16 @@ opentitan_test(
 opentitan_test(
     name = "i2c_host_irq_test",
     srcs = ["i2c_host_irq_test.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_sival": None,
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+    },
     fpga = fpga_params(
         tags = [
             "manual",
             "pmod",
         ],  # Requires the PMOD::BoB.
     ),
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_sival": None,
-        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-    },
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",

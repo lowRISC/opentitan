@@ -32,15 +32,15 @@ BOOT_POLICY_BIG_IMAGE_CASES = [
             t["suffix"],
         ),
         srcs = ["resizable_test.c"],
-        fpga = fpga_params(
-            otp = "//hw/ip/otp_ctrl/data:img_{}".format(lc_state),
-            tags = maybe_skip_in_ci(lc_state_val),
-        ),
         # Use the prod key because it is valid in every LC state.
         ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         },
+        fpga = fpga_params(
+            otp = "//hw/ip/otp_ctrl/data:img_{}".format(lc_state),
+            tags = maybe_skip_in_ci(lc_state_val),
+        ),
         local_defines = ["ARRAY_SIZE={}".format(t["array_size"])],
         deps = [
             "//sw/device/lib/testing/test_framework:check",

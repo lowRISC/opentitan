@@ -4,8 +4,8 @@
 
 load(
     "//rules/opentitan:defs.bzl",
-    "fpga_params",
     "ecdsa_key_for_lc_state",
+    "fpga_params",
     "opentitan_test",
     "verilator_params",
 )
@@ -29,10 +29,6 @@ package(default_visibility = ["//visibility:public"])
     opentitan_test(
         name = "epmp_init_otp_" + lc_state,
         srcs = ["epmp_init_test.c"],
-        fpga = fpga_params(
-            otp = "//hw/ip/otp_ctrl/data:img_" + lc_state,
-            tags = maybe_skip_in_ci(lc_state_val),
-        ),
         ecdsa_key = ecdsa_key_for_lc_state(
             ECDSA_ONLY_KEY_STRUCTS,
             lc_state_val,
@@ -41,6 +37,10 @@ package(default_visibility = ["//visibility:public"])
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
             "//hw/top_earlgrey:sim_verilator": None,
         },
+        fpga = fpga_params(
+            otp = "//hw/ip/otp_ctrl/data:img_" + lc_state,
+            tags = maybe_skip_in_ci(lc_state_val),
+        ),
         local_defines = [
             "EXPECT_DEBUG={}".format(1 if lc_state_val in [
                 CONST.LCV.TEST_UNLOCKED0,

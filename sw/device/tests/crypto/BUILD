@@ -158,12 +158,12 @@ cc_library(
 opentitan_test(
     name = "aes_gcm_timing_test",
     srcs = ["aes_gcm_timing_test.c"],
+    exec_env = EARLGREY_TEST_ENVS,
     fpga = fpga_params(
         timeout = "long",
         tags = ["broken"],  # https://github.com/lowRISC/opentitan/issues/15788
         # [test-triage] test not constant time with icache enabled
     ),
-    exec_env = EARLGREY_TEST_ENVS,
     verilator = verilator_params(
         timeout = "long",
         tags = ["broken"],  # https://github.com/lowRISC/opentitan/issues/15788
@@ -577,11 +577,11 @@ opentitan_test(
 opentitan_test(
     name = "rsa_2048_keygen_functest",
     srcs = ["rsa_2048_keygen_functest.c"],
+    # This test is too slow for Verilator/DV, so target FPGA only.
+    exec_env = CRYPTOTEST_EXEC_ENVS,
     fpga = fpga_params(
         timeout = "long",
     ),
-    # This test is too slow for Verilator/DV, so target FPGA only.
-    exec_env = CRYPTOTEST_EXEC_ENVS,
     verilator = verilator_params(
         timeout = "eternal",
     ),
@@ -616,11 +616,11 @@ opentitan_test(
 opentitan_test(
     name = "rsa_3072_keygen_functest",
     srcs = ["rsa_3072_keygen_functest.c"],
+    # This test is too slow for Verilator/DV, so target FPGA only.
+    exec_env = CRYPTOTEST_EXEC_ENVS,
     fpga = fpga_params(
         timeout = "long",
     ),
-    # This test is too slow for Verilator/DV, so target FPGA only.
-    exec_env = CRYPTOTEST_EXEC_ENVS,
     silicon = silicon_params(
         timeout = "long",
     ),
@@ -660,11 +660,11 @@ opentitan_test(
 opentitan_test(
     name = "rsa_4096_keygen_functest",
     srcs = ["rsa_4096_keygen_functest.c"],
+    # This test is too slow for Verilator/DV, so target FPGA only.
+    exec_env = CRYPTOTEST_EXEC_ENVS,
     fpga = fpga_params(
         timeout = "long",
     ),
-    # This test is too slow for Verilator/DV, so target FPGA only.
-    exec_env = CRYPTOTEST_EXEC_ENVS,
     silicon = silicon_params(
         timeout = "long",
     ),
@@ -711,9 +711,6 @@ autogen_cryptotest_header(
 opentitan_test(
     name = "rsa_3072_verify_functest_wycheproof",
     srcs = ["rsa_3072_verify_functest.c"],
-    fpga = fpga_params(
-        timeout = "moderate",
-    ),
     # The test vectors don't fit in the flash allocated for ROM_EXT stage, so
     # we have to restrict the environments to run with the test_rom.
     exec_env = dicts.add(
@@ -722,6 +719,9 @@ opentitan_test(
             "//hw/top_earlgrey:fpga_cw310_test_rom": None,
             "//hw/top_earlgrey:sim_verilator": None,
         },
+    ),
+    fpga = fpga_params(
+        timeout = "moderate",
     ),
     verilator = verilator_params(
         timeout = "eternal",

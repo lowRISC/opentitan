@@ -114,6 +114,10 @@ _CP_PROVISIONING_HARNESS = "//sw/host/provisioning/cp"
 
 opentitan_test(
     name = "cp_provision",
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_sival": None,
+        "//hw/top_earlgrey:silicon_creator": None,
+    },
     fpga = fpga_params(
         binaries = {":sram_cp_provision": "sram_cp_provision"},
         changes_otp = True,
@@ -127,10 +131,6 @@ opentitan_test(
         test_cmd = _CP_PROVISIONING_CMD_ARGS,
         test_harness = _CP_PROVISIONING_HARNESS,
     ),
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_sival": None,
-        "//hw/top_earlgrey:silicon_creator": None,
-    },
     silicon = silicon_params(
         binaries = {":sram_cp_provision": "sram_cp_provision"},
         changes_otp = True,
@@ -143,6 +143,9 @@ opentitan_test(
 
 opentitan_test(
     name = "cp_provision_functest",
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+    },
     fpga = fpga_params(
         binaries = {
             ":sram_cp_provision": "sram_cp_provision",
@@ -158,9 +161,6 @@ opentitan_test(
         """ + CP_PROVISIONING_INPUTS,
         test_harness = "//sw/host/tests/manuf/cp_provision_functest",
     ),
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-    },
 )
 
 [
@@ -281,6 +281,10 @@ _FT_PROVISIONING_HARNESS = "//sw/host/provisioning/ft"
 
 opentitan_test(
     name = "ft_provision",
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_sival": None,
+        "//hw/top_earlgrey:silicon_creator": None,
+    },
     fpga = fpga_params(
         binaries = _FT_PROVISIONING_BINARIES,
         changes_otp = True,
@@ -296,10 +300,6 @@ opentitan_test(
         test_cmd = _FT_PROVISIONING_CMD_ARGS,
         test_harness = _FT_PROVISIONING_HARNESS,
     ),
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_sival": None,
-        "//hw/top_earlgrey:silicon_creator": None,
-    },
     silicon = silicon_params(
         binaries = _FT_PROVISIONING_BINARIES,
         changes_otp = True,

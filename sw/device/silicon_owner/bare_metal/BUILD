@@ -120,15 +120,15 @@ BOOT_SUCCESS_MSG = "Bare metal PASS!"
 
 opentitan_test(
     name = "rom_ext_virtual_bare_metal_virtual_boot_test",
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+    },
     fpga = fpga_params(
         binaries = {
             ":bare_metal_slot_virtual": "firmware",
         },
         exit_success = BOOT_SUCCESS_MSG,
     ),
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
-    },
 )
 
 ################################################################################
