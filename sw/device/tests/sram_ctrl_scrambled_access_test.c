@@ -276,14 +276,20 @@ static void check_sram_data(scramble_test_frame *mem_frame) {
              false_positives);
   }
 
-  // Reading before comparing just to make sure it will always read all the
-  // words and the right amount of ECC errors will be generated.
-  LOG_INFO("Checking backdoor  0x%x", mem_frame->backdoor);
-  uint32_t kBackdoorExpectedWords[kTestBufferSizeWords];
-  memcpy(kBackdoorExpectedWords, kBackdoorExpectedBytes, kTestBufferSizeBytes);
+  if (kDeviceType == kDeviceSimDV) {
+    // Reading before comparing just to make sure it will always read all the
+    // words and the right amount of ECC errors will be generated.
+    LOG_INFO("Checking backdoor  0x%x", mem_frame->backdoor);
+    uint32_t kBackdoorExpectedWords[kTestBufferSizeWords];
+    memcpy(kBackdoorExpectedWords, kBackdoorExpectedBytes,
+           kTestBufferSizeBytes);
 
-  CHECK_ARRAYS_EQ(mem_frame->backdoor, kBackdoorExpectedWords,
-                  kTestBufferSizeWords);
+    CHECK_ARRAYS_EQ(mem_frame->backdoor, kBackdoorExpectedWords,
+                    kTestBufferSizeWords);
+  } else {
+    // Outside of DV SIM we can only check that the pattern was scrambled.
+    CHECK_ARRAYS_NE(mem_frame->pattern, kRamTestPattern2, kTestBufferSizeWords);
+  }
 }
 
 static void execute_retention_sram_test(void) {
