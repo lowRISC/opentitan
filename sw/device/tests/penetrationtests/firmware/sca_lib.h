@@ -15,6 +15,18 @@ typedef struct sca_registered_alerts {
 } sca_registered_alerts_t;
 
 /**
+ * Configures the entropy complex for OTBN tests.
+ *
+ * Similar to entropy_testutils_auto_mode_init(), this function inits the
+ * entropy complex. However, in comparison to the function available in the
+ * testutils, this function maximizes the reseed intervall to 0xffffffff.
+ * This is necessary to guarantee a fixed trigger window for OTBN tests.
+ *
+ * @return OK or error.
+ */
+status_t sca_configure_entropy_source_max_reseed_interval(void);
+
+/**
  * Returns the registered alerts.
  *
  * If a fault injection triggered an alert, this function returns the alert ID

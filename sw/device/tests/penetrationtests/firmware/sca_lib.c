@@ -5,14 +5,20 @@
 #include "sw/device/tests/penetrationtests/firmware/sca_lib.h"
 
 #include "sw/device/lib/base/csr.h"
+#include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_alert_handler.h"
+#include "sw/device/lib/dif/dif_csrng.h"
+#include "sw/device/lib/dif/dif_csrng_shared.h"
+#include "sw/device/lib/dif/dif_edn.h"
+#include "sw/device/lib/dif/dif_entropy_src.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/dif/dif_rv_core_ibex.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
 #include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/testing/alert_handler_testutils.h"
+#include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
@@ -23,6 +29,112 @@ static dif_rv_plic_t plic;
 static dif_rstmgr_t rstmgr;
 static dif_alert_handler_t alert_handler;
 static dif_lc_ctrl_t lc;
+
+status_t sca_configure_entropy_source_max_reseed_interval(void) {
+  const dif_entropy_src_t entropy_src = {
+      .base_addr = mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR)};
+  const dif_csrng_t csrng = {
+      .base_addr = mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR)};
+  const dif_edn_t edn0 = {
+      .base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR)};
+  const dif_edn_t edn1 = {
+      .base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR)};
+
+  TRY(entropy_testutils_stop_all());
+
+  // Re-eanble entropy src and csrng.
+  TRY(dif_entropy_src_configure(
+      &entropy_src, entropy_testutils_config_default(), kDifToggleEnabled));
+  TRY(dif_csrng_configure(&csrng));
+
+  // Re-enable EDN0 in auto mode.
+  TRY(dif_edn_set_auto_mode(
+      &edn0,
+      (dif_edn_auto_params_t){
+          // EDN0 provides lower-quality entropy.  Let one generate command
+          // return 8
+          // blocks, and reseed every 32 generates.
+          .instantiate_cmd =
+              {
+                  .cmd = csrng_cmd_header_build(kCsrngAppCmdInstantiate,
+                                                kDifCsrngEntropySrcToggleEnable,
+                                                /*cmd_len=*/0,
+                                                /*generate_len=*/0),
+                  .seed_material =
+                      {
+                          .len = 0,
+                      },
+              },
+          .reseed_cmd =
+              {
+                  .cmd = csrng_cmd_header_build(
+                      kCsrngAppCmdReseed, kDifCsrngEntropySrcToggleEnable,
+                      /*cmd_len=*/0, /*generate_len=*/0),
+                  .seed_material =
+                      {
+                          .len = 0,
+                      },
+              },
+          .generate_cmd =
+              {
+                  // Generate 8 128-bit blocks.
+                  .cmd = csrng_cmd_header_build(kCsrngAppCmdGenerate,
+                                                kDifCsrngEntropySrcToggleEnable,
+                                                /*cmd_len=*/0,
+                                                /*generate_len=*/8),
+                  .seed_material =
+                      {
+                          .len = 0,
+                      },
+              },
+          // Reseed every 0xffffffff generates.
+          .reseed_interval = 0xffffffff,
+      }));
+
+  // Re-enable EDN1 in auto mode.
+  TRY(dif_edn_set_auto_mode(
+      &edn1,
+      (dif_edn_auto_params_t){
+          // EDN1 provides highest-quality entropy.  Let one generate command
+          // return 1 block, and reseed after every generate.
+          .instantiate_cmd =
+              {
+                  .cmd = csrng_cmd_header_build(kCsrngAppCmdInstantiate,
+                                                kDifCsrngEntropySrcToggleEnable,
+                                                /*cmd_len=*/0,
+                                                /*generate_len=*/0),
+                  .seed_material =
+                      {
+                          .len = 0,
+                      },
+              },
+          .reseed_cmd =
+              {
+                  .cmd = csrng_cmd_header_build(
+                      kCsrngAppCmdReseed, kDifCsrngEntropySrcToggleEnable,
+                      /*cmd_len=*/0, /*generate_len=*/0),
+                  .seed_material =
+                      {
+                          .len = 0,
+                      },
+              },
+          .generate_cmd =
+              {
+                  // Generate 1 128-bit block.
+                  .cmd = csrng_cmd_header_build(kCsrngAppCmdGenerate,
+                                                kDifCsrngEntropySrcToggleEnable,
+                                                /*cmd_len=*/0,
+                                                /*generate_len=*/1),
+                  .seed_material =
+                      {
+                          .len = 0,
+                      },
+              },
+          // Reseed after every 0xffffffff generates.
+          .reseed_interval = 0xffffffff,
+      }));
+  return OK_STATUS();
+}
 
 sca_registered_alerts_t sca_get_triggered_alerts(void) {
   bool is_cause;
