@@ -151,8 +151,8 @@
       xbar: false
       stub: false
       inst_type: ""
-      req_fifo_pass: true
-      rsp_fifo_pass: true
+      req_fifo_pass: false
+      rsp_fifo_pass: false
     }
     {
       name: rv_dm.sba

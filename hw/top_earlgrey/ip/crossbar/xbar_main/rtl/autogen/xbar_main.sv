@@ -1071,6 +1071,8 @@ end
     .tl_d_i       (tl_sm1_37_ds_d2h)
   );
   tlul_socket_1n #(
+    .HReqPass  (1'b0),
+    .HRspPass  (1'b0),
     .DReqDepth (112'h1000000000000000),
     .DRspDepth (112'h1000000000000000),
     .N         (28)

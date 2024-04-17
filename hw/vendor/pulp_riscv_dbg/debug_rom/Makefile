@@ -5,13 +5,12 @@ debug_rom = debug_rom.sv debug_rom_one_scratch.sv
 GCC?=riscv64-unknown-elf-gcc
 OBJCOPY?=riscv64-unknown-elf-objcopy
 OBJDUMP?=riscv64-unknown-elf-objdump
-PYTHON?=python
 FLAGS?=
 
 all: $(debug_rom) rename
 
 %.sv: %.img
-	$(PYTHON) gen_rom.py $<
+	python gen_rom.py $<
 
 %.img: %.bin
 	dd if=$< of=$@ bs=256 count=1
