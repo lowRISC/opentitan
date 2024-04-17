@@ -134,7 +134,7 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
       end
       4: begin
         bit [1:0] choose_err;
-        int unsigned num_clks = $urandom_range(10, 1000);
+        int unsigned num_clks = $urandom_range(10, 100);
         `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(choose_err, choose_err inside {[0:2]};)
 
         report_err_type($sformatf("core error (choose_err = %0d, after %0d clocks)",
