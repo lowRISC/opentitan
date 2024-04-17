@@ -26,6 +26,7 @@
 `include "usbdev_random_length_out_transaction_vseq.sv"
 `include "usbdev_stall_trans_vseq.sv"
 `include "usbdev_setup_trans_ignored_vseq.sv"
+`include "setup_priority_over_stall_response_vseq.sv"
 `include "usbdev_stall_priority_over_nak_vseq.sv"
 
 // These depend on usbdev_random_length_out_transaction, so need to come after it.

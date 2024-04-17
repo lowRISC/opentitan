@@ -48,7 +48,14 @@ filesets:
       - seq_lib/usbdev_phy_pins_sense_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_in_stall_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_stall_priority_over_nak_vseq.sv: {is_include_file: true}
+<<<<<<< HEAD
       - seq_lib/usbdev_in_iso_vseq.sv: {is_include_file: true}
+=======
+      - seq_lb/usbdev_in_iso_vseq.sv: {is_include_file: true}
+      - seq_lib/usbdev_rx_pid_err_vseq.sv: {is_include_file: true}
+      - seq_lib/usbdev_setup_priority_over_stall_response_vseq.sv: {is_include_file: true}
+
+>>>>>>> 4b646ba62e... [usbdev] Setup priority over stall response
     file_type: systemVerilogSource
 
 generate:

@@ -685,7 +685,7 @@
               bits for that endpoint
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_setup_priority_over_stall_response"]
     }
     {
       name: stall_priority_over_nak
