@@ -176,10 +176,9 @@ static void measure_otp_partition(otp_partition_t partition,
   }
 }
 
-rom_error_t dice_uds_cert_build(manuf_certgen_inputs_t *inputs,
-                                hmac_digest_t *uds_pubkey_id,
-                                attestation_public_key_t *uds_pubkey,
-                                uint8_t *tbs_cert, size_t *tbs_cert_size) {
+rom_error_t dice_uds_tbs_cert_build(dice_cert_key_id_pair_t *key_ids,
+                                    attestation_public_key_t *uds_pubkey,
+                                    uint8_t *tbs_cert, size_t *tbs_cert_size) {
   // Measure OTP partitions.
   hmac_digest_t otp_creator_sw_cfg_measurement = {.digest = {0}};
   hmac_digest_t otp_owner_sw_cfg_measurement = {.digest = {0}};
@@ -216,9 +215,9 @@ rom_error_t dice_uds_cert_build(manuf_certgen_inputs_t *inputs,
       .otp_hw_cfg1_hash = (unsigned char *)otp_hw_cfg1_measurement.digest,
       .otp_hw_cfg1_hash_size = kHmacDigestNumBytes,
       .debug_flag = is_debug_exposed(),
-      .creator_pub_key_id = (unsigned char *)uds_pubkey_id->digest,
+      .creator_pub_key_id = (unsigned char *)key_ids->cert->digest,
       .creator_pub_key_id_size = kDiceCertKeyIdSizeInBytes,
-      .auth_key_key_id = inputs->auth_key_key_id,
+      .auth_key_key_id = (unsigned char *)key_ids->endorsement->digest,
       .auth_key_key_id_size = kDiceCertKeyIdSizeInBytes,
       .creator_pub_key_ec_x = (unsigned char *)uds_pubkey->x,
       .creator_pub_key_ec_x_size = kAttestationPublicKeyCoordBytes,
@@ -232,8 +231,7 @@ rom_error_t dice_uds_cert_build(manuf_certgen_inputs_t *inputs,
 }
 
 rom_error_t dice_cdi_0_cert_build(manuf_certgen_inputs_t *inputs,
-                                  hmac_digest_t *uds_pubkey_id,
-                                  hmac_digest_t *cdi_0_pubkey_id,
+                                  dice_cert_key_id_pair_t *key_ids,
                                   attestation_public_key_t *cdi_0_pubkey,
                                   uint8_t *cert, size_t *cert_size) {
   // Generate the TBS certificate.
@@ -241,9 +239,9 @@ rom_error_t dice_cdi_0_cert_build(manuf_certgen_inputs_t *inputs,
       .rom_ext_hash = (unsigned char *)inputs->rom_ext_measurement,
       .rom_ext_hash_size = kDiceMeasurementSizeInBytes,
       .rom_ext_security_version = inputs->rom_ext_security_version,
-      .owner_intermediate_pub_key_id = (unsigned char *)cdi_0_pubkey_id->digest,
+      .owner_intermediate_pub_key_id = (unsigned char *)key_ids->cert->digest,
       .owner_intermediate_pub_key_id_size = kDiceCertKeyIdSizeInBytes,
-      .creator_pub_key_id = (unsigned char *)uds_pubkey_id->digest,
+      .creator_pub_key_id = (unsigned char *)key_ids->endorsement->digest,
       .creator_pub_key_id_size = kDiceCertKeyIdSizeInBytes,
       .owner_intermediate_pub_key_ec_x = (unsigned char *)cdi_0_pubkey->x,
       .owner_intermediate_pub_key_ec_x_size = kAttestationPublicKeyCoordBytes,
@@ -275,8 +273,7 @@ rom_error_t dice_cdi_0_cert_build(manuf_certgen_inputs_t *inputs,
 }
 
 rom_error_t dice_cdi_1_cert_build(manuf_certgen_inputs_t *inputs,
-                                  hmac_digest_t *cdi_0_pubkey_id,
-                                  hmac_digest_t *cdi_1_pubkey_id,
+                                  dice_cert_key_id_pair_t *key_ids,
                                   attestation_public_key_t *cdi_1_pubkey,
                                   uint8_t *cert, size_t *cert_size) {
   // Generate the TBS certificate.
@@ -287,9 +284,10 @@ rom_error_t dice_cdi_1_cert_build(manuf_certgen_inputs_t *inputs,
           (unsigned char *)inputs->owner_manifest_measurement,
       .owner_manifest_hash_size = kDiceMeasurementSizeInBytes,
       .owner_security_version = inputs->owner_security_version,
-      .owner_pub_key_id = (unsigned char *)cdi_1_pubkey_id->digest,
+      .owner_pub_key_id = (unsigned char *)key_ids->cert->digest,
       .owner_pub_key_id_size = kDiceCertKeyIdSizeInBytes,
-      .owner_intermediate_pub_key_id = (unsigned char *)cdi_0_pubkey_id->digest,
+      .owner_intermediate_pub_key_id =
+          (unsigned char *)key_ids->endorsement->digest,
       .owner_intermediate_pub_key_id_size = kDiceCertKeyIdSizeInBytes,
       .owner_pub_key_ec_x = (unsigned char *)cdi_1_pubkey->x,
       .owner_pub_key_ec_x_size = kAttestationPublicKeyCoordBytes,
