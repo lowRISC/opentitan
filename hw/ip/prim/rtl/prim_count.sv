@@ -250,15 +250,11 @@ module prim_count #(
       $stable(cnt_q[1]),
       clk_i, err_o || fpv_err_present || !rst_ni)
 
-  // Error
-  `ASSERT(CntErrForward_A,
-      (cnt_q[1] + cnt_q[0]) != {Width{1'b1}}
-      |->
-      err_o)
-  `ASSERT(CntErrBackward_A,
-      err_o
-      |->
-      (cnt_q[1] + cnt_q[0]) != {Width{1'b1}})
+  // Check that count errors are reported properly in err_o
+  `ASSERT(CntErrReported_A, ((cnt_q[1] + cnt_q[0]) != {Width{1'b1}}) == err_o)
+ `ifdef PrimCountFpv
+  `COVER(CntErr_C, err_o)
+ `endif
 
   // This logic that will be assign to one, when user adds macro
   // ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT to check the error with alert, in case that prim_count
