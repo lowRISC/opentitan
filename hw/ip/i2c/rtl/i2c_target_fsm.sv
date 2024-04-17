@@ -18,6 +18,7 @@ module i2c_target_fsm import i2c_pkg::*;
   output logic sda_o,  // serial data output to i2c bus
   input        start_detect_i,
   input        stop_detect_i,
+  output logic transmitting_o, // Target is transmitting SDA (disambiguates high sda_o)
 
   input        target_enable_i, // enable target functionality
 
@@ -39,6 +40,7 @@ module i2c_target_fsm import i2c_pkg::*;
   input [30:0] nack_timeout_i,     // max time target may stretch until it should NACK
   input        nack_timeout_en_i,  // enable nack timeout
   input        nack_addr_after_timeout_i,
+  input        arbitration_lost_i, // Lost arbitration while transmitting
   input        bus_timeout_i,      // The bus timed out, with SCL held low for too long.
 
   input        unhandled_tx_stretch_event_i, // An unhandled event requests TX stretching
@@ -61,6 +63,7 @@ module i2c_target_fsm import i2c_pkg::*;
   output logic event_cmd_complete_o,        // Command is complete
   output logic event_tx_stretch_o,          // tx transaction is being stretched
   output logic event_unexp_stop_o,          // target received an unexpected stop
+  output logic event_tx_arbitration_lost_o, // Arbitration was lost during a read transfer
   output logic event_tx_bus_timeout_o,      // Bus timed out during a read transfer
   output logic event_read_cmd_received_o    // A read awaits confirmation for TX FIFO release
 );
@@ -328,6 +331,7 @@ module i2c_target_fsm import i2c_pkg::*;
     target_idle_o = 1'b1;
     sda_d = 1'b1;
     scl_d = 1'b1;
+    transmitting_o = 1'b0;
     tx_fifo_rready_o = 1'b0;
     acq_fifo_wvalid_o = 1'b0;
     acq_fifo_wdata_o = ACQ_FIFO_WIDTH'(0);
@@ -341,6 +345,7 @@ module i2c_target_fsm import i2c_pkg::*;
     ack_ctrl_stretching = 1'b0;
     nack_transaction_d = nack_transaction_q;
     actively_stretching = 1'b0;
+    event_tx_arbitration_lost_o = 1'b0;
     event_tx_bus_timeout_o = 1'b0;
     event_read_cmd_received_o = 1'b0;
 
@@ -393,16 +398,19 @@ module i2c_target_fsm import i2c_pkg::*;
       AddrAckSetup : begin
         target_idle_o = 1'b0;
         sda_d = 1'b0;
+        transmitting_o = 1'b1;
       end
       // AddrAckPulse: target pulls SDA low while SCL is released
       AddrAckPulse : begin
         target_idle_o = 1'b0;
         sda_d = 1'b0;
+        transmitting_o = 1'b1;
       end
       // AddrAckHold: target pulls SDA low while SCL is pulled low
       AddrAckHold : begin
         target_idle_o = 1'b0;
         sda_d = 1'b0;
+        transmitting_o = 1'b1;
 
         // Upon transition to next state, populate the acquisition fifo
         if (tcount_q == 20'd1) begin
@@ -431,6 +439,7 @@ module i2c_target_fsm import i2c_pkg::*;
       TransmitSetup : begin
         target_idle_o = 1'b0;
         sda_d = tx_fifo_rdata[3'(bit_idx)];
+        transmitting_o = 1'b1;
       end
       // TransmitPulse: target holds indexed bit onto SDA while SCL is released
       TransmitPulse : begin
@@ -438,6 +447,7 @@ module i2c_target_fsm import i2c_pkg::*;
 
         // Hold value
         sda_d = sda_q;
+        transmitting_o = 1'b1;
       end
       // TransmitHold: target holds indexed bit onto SDA while SCL is pulled low, for the hold time
       TransmitHold : begin
@@ -445,6 +455,7 @@ module i2c_target_fsm import i2c_pkg::*;
 
         // Hold value
         sda_d = sda_q;
+        transmitting_o = 1'b1;
       end
       // TransmitAck: target waits for host to ACK transmission
       TransmitAck : begin
@@ -480,16 +491,19 @@ module i2c_target_fsm import i2c_pkg::*;
       AcquireAckSetup : begin
         target_idle_o = 1'b0;
         sda_d = 1'b0;
+        transmitting_o = 1'b1;
       end
       // AcquireAckPulse: target pulls SDA low while SCL is released
       AcquireAckPulse : begin
         target_idle_o = 1'b0;
         sda_d = 1'b0;
+        transmitting_o = 1'b1;
       end
       // AcquireAckHold: target pulls SDA low while SCL is pulled low
       AcquireAckHold : begin
         target_idle_o = 1'b0;
         sda_d = 1'b0;
+        transmitting_o = 1'b1;
 
         if (tcount_q == 20'd1) begin
           auto_ack_cnt_d = auto_ack_cnt_q - 1'b1;
@@ -519,6 +533,7 @@ module i2c_target_fsm import i2c_pkg::*;
         target_idle_o = 1'b0;
         sda_d = 1'b0;
         scl_d = 1'b0;
+        transmitting_o = 1'b1;
       end
       // StretchAddr: target stretches the clock if matching address cannot be
       // deposited yet.
@@ -561,6 +576,7 @@ module i2c_target_fsm import i2c_pkg::*;
         target_idle_o = 1'b0;
         scl_d = 1'b0;
         sda_d = tx_fifo_rdata[3'(bit_idx)];
+        transmitting_o = 1'b1;
       end
       // StretchAcqFull: target stretches the clock when acq_fifo is full
       StretchAcqFull : begin
@@ -582,12 +598,14 @@ module i2c_target_fsm import i2c_pkg::*;
         target_idle_o = 1'b0;
         scl_d = 1'b0;
         sda_d = 1'b0;
+        transmitting_o = 1'b1;
       end
       // default
       default : begin
         target_idle_o = 1'b1;
         sda_d = 1'b1;
         scl_d = 1'b1;
+        transmitting_o = 1'b0;
         tx_fifo_rready_o = 1'b0;
         acq_fifo_wvalid_o = 1'b0;
         acq_fifo_wdata_o = ACQ_FIFO_WIDTH'(0);
@@ -618,6 +636,10 @@ module i2c_target_fsm import i2c_pkg::*;
     end else if (target_enable_i && start_detect_i) begin
       restart_det_d = !target_idle_o;
       event_cmd_complete_o = xfer_for_us_q;
+    end else if (arbitration_lost_i) begin
+      nack_transaction_d = 1'b1;
+      event_cmd_complete_o = xfer_for_us_q;
+      event_tx_arbitration_lost_o = rw_bit_q;
     end
   end
 
@@ -975,6 +997,8 @@ module i2c_target_fsm import i2c_pkg::*;
       state_d = AcquireStart;
     end else if (stop_detect_i || bus_timeout_i) begin
       state_d = Idle;
+    end else if (arbitration_lost_i) begin
+      state_d = WaitForStop;
     end
   end
 
