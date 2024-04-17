@@ -6,7 +6,7 @@ load(
     "DEFAULT_TEST_FAILURE_MSG",
     "DEFAULT_TEST_SUCCESS_MSG",
     "EARLGREY_TEST_ENVS",
-    "cw310_params",
+    "fpga_params",
     "opentitan_binary",
     "opentitan_test",
 )
@@ -50,7 +50,7 @@ _POSITIONS = {
 [
     opentitan_test(
         name = "rescue_firmware_{}".format(name),
-        cw310 = cw310_params(
+        fpga = fpga_params(
             assemble = "",
             binaries = {
                 ":boot_test_{}".format(name): "payload",
@@ -78,7 +78,7 @@ _POSITIONS = {
 
 opentitan_test(
     name = "next_slot",
-    cw310 = cw310_params(
+    fpga = fpga_params(
         assemble = "{rom_ext}@0 {slot_a:signed_bin}@0x10000 {slot_b:signed_bin}@0x90000",
         binaries = {
             ":boot_test_slot_a": "slot_a",
@@ -106,7 +106,7 @@ opentitan_test(
 
 opentitan_test(
     name = "primary_slot",
-    cw310 = cw310_params(
+    fpga = fpga_params(
         assemble = "{rom_ext}@0 {slot_a:signed_bin}@0x10000 {slot_b:signed_bin}@0x90000",
         binaries = {
             ":boot_test_slot_a": "slot_a",

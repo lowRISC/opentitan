@@ -5,7 +5,7 @@
 load("//rules:const.bzl", "CONST", "hex")
 load("//rules:linker.bzl", "ld_library")
 load("//rules:manifest.bzl", "manifest")
-load("//rules/opentitan:defs.bzl", "cw310_params", "opentitan_binary", "opentitan_test")
+load("//rules/opentitan:defs.bzl", "fpga_params", "opentitan_binary", "opentitan_test")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -120,7 +120,7 @@ BOOT_SUCCESS_MSG = "Bare metal PASS!"
 
 opentitan_test(
     name = "rom_ext_virtual_bare_metal_virtual_boot_test",
-    cw310 = cw310_params(
+    fpga = fpga_params(
         binaries = {
             ":bare_metal_slot_virtual": "firmware",
         },

@@ -31,7 +31,7 @@ load(
 )
 load(
     "//rules/opentitan:defs.bzl",
-    "cw310_params",
+    "fpga_params",
     "opentitan_test",
 )
 load(
@@ -239,7 +239,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
             slot,
         ),
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
-        cw310 = cw310_params(
+        fpga = fpga_params(
             assemble = "{firmware}@{offset}",
             exit_failure = t["exit_failure"],
             exit_success = t["exit_success"],

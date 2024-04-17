@@ -42,7 +42,7 @@ load(
 load(
     "//rules/opentitan:defs.bzl",
     "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
-    "cw310_params",
+    "fpga_params",
     "dv_params",
     "ecdsa_key_by_name",
     "opentitan_binary",
@@ -95,7 +95,7 @@ bitstream_splice(
 opentitan_test(
     name = "rom_e2e_default_otp_bootup",
     srcs = [":empty_test"],
-    cw310 = cw310_params(
+    fpga = fpga_params(
         bitstream = ":bitstream_default_otp",
         tags = maybe_skip_in_ci(CONST.LCV.RMA),
     ),
@@ -305,7 +305,7 @@ opentitan_test(
 opentitan_test(
     name = "rom_e2e_shutdown_exception_c",
     srcs = ["rom_e2e_shutdown_exception_c_test.c"],
-    cw310 = cw310_params(
+    fpga = fpga_params(
         # Note: This test never prints a failure message so it will fail only
         # when it times out.
         exit_failure = "NO_FAILURE_MESSAGE",
@@ -386,7 +386,7 @@ opentitan_test(
 opentitan_test(
     name = "rom_e2e_c_init",
     srcs = ["rom_e2e_c_init_test.c"],
-    cw310 = cw310_params(
+    fpga = fpga_params(
         exit_failure = CONST.SHUTDOWN.PREFIX.BFV,
         exit_success = MSG_PASS,
     ),
@@ -413,7 +413,7 @@ opentitan_test(
 opentitan_test(
     name = "e2e_bootup_success_otp_dev",
     srcs = [":empty_test"],
-    cw310 = cw310_params(
+    fpga = fpga_params(
         otp = "//hw/ip/otp_ctrl/data:img_dev",
         # TODO(lowRISC/opentitan#13603): Remove this "manual" tag when the
         # bitstream target can fetch pre-spliced bitstream from GCP.
@@ -435,7 +435,7 @@ opentitan_test(
 opentitan_test(
     name = "sigverify_key_auth",
     srcs = [":empty_test"],
-    cw310 = cw310_params(
+    fpga = fpga_params(
         exit_failure = MSG_PASS,
         exit_success = MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.SIGVERIFY.BAD_ECDSA_KEY)),
     ),
@@ -458,7 +458,7 @@ opentitan_test(
 opentitan_test(
     name = "rom_ext_upgrade",
     srcs = ["rom_ext_upgrade_test.c"],
-    cw310 = cw310_params(
+    fpga = fpga_params(
         # Fail if we see version 3, because the test has updated twice, FAIL, version 0 twice, or PASS
         exit_failure = "(min_security_version_rom_ext:[^01])|(FAIL)|((min_security_version_rom_ext:0(?s:.*)){2,})|(PASS)",
         exit_success = "min_security_version_rom_ext:0(?s:.*)min_security_version_rom_ext:1(?s:.*)" + MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.BOOT_POLICY.ROLLBACK)),

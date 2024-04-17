@@ -4,7 +4,7 @@
 
 load(
     "//rules/opentitan:defs.bzl",
-    "cw310_params",
+    "fpga_params",
     "ecdsa_key_for_lc_state",
     "opentitan_test",
 )
@@ -27,7 +27,7 @@ package(default_visibility = ["//visibility:public"])
     opentitan_test(
         name = "e2e_chip_specific_startup_{}".format(lc_state),
         srcs = ["chip_specific_startup.c"],
-        cw310 = cw310_params(
+        fpga = fpga_params(
             otp = "//sw/device/silicon_creator/rom/e2e/rom_e2e_bootstrap_entry:otp_img_e2e_bootstrap_entry_{}".format(lc_state),
             tags = maybe_skip_in_ci(lc_state_val),
             test_cmd = """

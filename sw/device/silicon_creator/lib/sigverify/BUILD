@@ -11,7 +11,7 @@ load(
 load(
     "//rules/opentitan:defs.bzl",
     "EARLGREY_TEST_ENVS",
-    "cw310_params",
+    "fpga_params",
     "opentitan_test",
     "verilator_params",
 )
@@ -111,7 +111,7 @@ opentitan_test(
 opentitan_test(
     name = "mod_exp_ibex_functest_wycheproof",
     srcs = ["mod_exp_ibex_functest.c"],
-    cw310 = cw310_params(
+    fpga = fpga_params(
         timeout = "long",
     ),
     exec_env = {
@@ -168,7 +168,7 @@ cc_library(
 opentitan_test(
     name = "rsa_verify_functest",
     srcs = ["rsa_verify_functest.c"],
-    broken = cw310_params(tags = ["broken"]),
+    broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         {
@@ -276,7 +276,7 @@ cc_test(
 opentitan_test(
     name = "sigverify_dynamic_functest_hardcoded",
     srcs = ["sigverify_dynamic_functest.c"],
-    broken = cw310_params(tags = ["broken"]),
+    broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         {
@@ -301,7 +301,7 @@ opentitan_test(
 opentitan_test(
     name = "sigverify_dynamic_functest_wycheproof",
     srcs = ["sigverify_dynamic_functest.c"],
-    cw310 = cw310_params(
+    fpga = fpga_params(
         timeout = "long",
     ),
     exec_env = {

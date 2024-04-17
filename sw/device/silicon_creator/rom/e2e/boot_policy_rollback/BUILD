@@ -5,7 +5,7 @@
 load(
     "//rules/opentitan:defs.bzl",
     "DEFAULT_TEST_FAILURE_MSG",
-    "cw310_params",
+    "fpga_params",
     "opentitan_test",
 )
 load(
@@ -92,7 +92,7 @@ otp_json(
             t["a"],
             t["b"],
         ),
-        cw310 = cw310_params(
+        fpga = fpga_params(
             assemble = "{fw_a}@{slot_a} {fw_b}@{slot_b}",
             binaries = {
                 "//sw/device/silicon_creator/rom/e2e/boot_policy_newer:empty_test_slot_a_sec_ver_{}".format(t["a"]): "fw_a",
