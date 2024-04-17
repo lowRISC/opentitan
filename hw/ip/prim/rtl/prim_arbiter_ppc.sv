@@ -177,7 +177,7 @@ end
 // FPV-only assertions with symbolic variables
 `ifdef FPV_ON
   // symbolic variables
-  int unsigned k;
+  bit [IdxW-1:0] k;
   bit ReadyIsStable;
   bit ReqsAreStable;
 
