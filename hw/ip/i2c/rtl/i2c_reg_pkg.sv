@@ -414,6 +414,9 @@ package i2c_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
+    } arbitration_lost;
+    struct packed {
+      logic        q;
     } unhandled_nack_timeout;
     struct packed {
       logic        q;
@@ -583,51 +586,55 @@ package i2c_reg_pkg;
       logic        d;
       logic        de;
     } unhandled_nack_timeout;
+    struct packed {
+      logic        d;
+      logic        de;
+    } arbitration_lost;
   } i2c_hw2reg_controller_events_reg_t;
 
   // Register -> HW type
   typedef struct packed {
-    i2c_reg2hw_intr_state_reg_t intr_state; // [478:464]
-    i2c_reg2hw_intr_enable_reg_t intr_enable; // [463:449]
-    i2c_reg2hw_intr_test_reg_t intr_test; // [448:419]
-    i2c_reg2hw_alert_test_reg_t alert_test; // [418:417]
-    i2c_reg2hw_ctrl_reg_t ctrl; // [416:412]
-    i2c_reg2hw_rdata_reg_t rdata; // [411:403]
-    i2c_reg2hw_fdata_reg_t fdata; // [402:384]
-    i2c_reg2hw_fifo_ctrl_reg_t fifo_ctrl; // [383:376]
-    i2c_reg2hw_host_fifo_config_reg_t host_fifo_config; // [375:350]
-    i2c_reg2hw_target_fifo_config_reg_t target_fifo_config; // [349:322]
-    i2c_reg2hw_ovrd_reg_t ovrd; // [321:319]
-    i2c_reg2hw_timing0_reg_t timing0; // [318:293]
-    i2c_reg2hw_timing1_reg_t timing1; // [292:274]
-    i2c_reg2hw_timing2_reg_t timing2; // [273:248]
-    i2c_reg2hw_timing3_reg_t timing3; // [247:226]
-    i2c_reg2hw_timing4_reg_t timing4; // [225:200]
-    i2c_reg2hw_timeout_ctrl_reg_t timeout_ctrl; // [199:168]
-    i2c_reg2hw_target_id_reg_t target_id; // [167:140]
-    i2c_reg2hw_acqdata_reg_t acqdata; // [139:127]
-    i2c_reg2hw_txdata_reg_t txdata; // [126:118]
-    i2c_reg2hw_host_timeout_ctrl_reg_t host_timeout_ctrl; // [117:86]
-    i2c_reg2hw_target_timeout_ctrl_reg_t target_timeout_ctrl; // [85:54]
-    i2c_reg2hw_target_nack_count_reg_t target_nack_count; // [53:46]
-    i2c_reg2hw_target_ack_ctrl_reg_t target_ack_ctrl; // [45:34]
-    i2c_reg2hw_host_nack_handler_timeout_reg_t host_nack_handler_timeout; // [33:2]
-    i2c_reg2hw_controller_events_reg_t controller_events; // [1:0]
+    i2c_reg2hw_intr_state_reg_t intr_state; // [479:465]
+    i2c_reg2hw_intr_enable_reg_t intr_enable; // [464:450]
+    i2c_reg2hw_intr_test_reg_t intr_test; // [449:420]
+    i2c_reg2hw_alert_test_reg_t alert_test; // [419:418]
+    i2c_reg2hw_ctrl_reg_t ctrl; // [417:413]
+    i2c_reg2hw_rdata_reg_t rdata; // [412:404]
+    i2c_reg2hw_fdata_reg_t fdata; // [403:385]
+    i2c_reg2hw_fifo_ctrl_reg_t fifo_ctrl; // [384:377]
+    i2c_reg2hw_host_fifo_config_reg_t host_fifo_config; // [376:351]
+    i2c_reg2hw_target_fifo_config_reg_t target_fifo_config; // [350:323]
+    i2c_reg2hw_ovrd_reg_t ovrd; // [322:320]
+    i2c_reg2hw_timing0_reg_t timing0; // [319:294]
+    i2c_reg2hw_timing1_reg_t timing1; // [293:275]
+    i2c_reg2hw_timing2_reg_t timing2; // [274:249]
+    i2c_reg2hw_timing3_reg_t timing3; // [248:227]
+    i2c_reg2hw_timing4_reg_t timing4; // [226:201]
+    i2c_reg2hw_timeout_ctrl_reg_t timeout_ctrl; // [200:169]
+    i2c_reg2hw_target_id_reg_t target_id; // [168:141]
+    i2c_reg2hw_acqdata_reg_t acqdata; // [140:128]
+    i2c_reg2hw_txdata_reg_t txdata; // [127:119]
+    i2c_reg2hw_host_timeout_ctrl_reg_t host_timeout_ctrl; // [118:87]
+    i2c_reg2hw_target_timeout_ctrl_reg_t target_timeout_ctrl; // [86:55]
+    i2c_reg2hw_target_nack_count_reg_t target_nack_count; // [54:47]
+    i2c_reg2hw_target_ack_ctrl_reg_t target_ack_ctrl; // [46:35]
+    i2c_reg2hw_host_nack_handler_timeout_reg_t host_nack_handler_timeout; // [34:3]
+    i2c_reg2hw_controller_events_reg_t controller_events; // [2:0]
   } i2c_reg2hw_t;
 
   // HW -> register type
   typedef struct packed {
-    i2c_hw2reg_intr_state_reg_t intr_state; // [169:140]
-    i2c_hw2reg_status_reg_t status; // [139:129]
-    i2c_hw2reg_rdata_reg_t rdata; // [128:121]
-    i2c_hw2reg_host_fifo_status_reg_t host_fifo_status; // [120:97]
-    i2c_hw2reg_target_fifo_status_reg_t target_fifo_status; // [96:73]
-    i2c_hw2reg_val_reg_t val; // [72:41]
-    i2c_hw2reg_acqdata_reg_t acqdata; // [40:30]
-    i2c_hw2reg_target_nack_count_reg_t target_nack_count; // [29:21]
-    i2c_hw2reg_target_ack_ctrl_reg_t target_ack_ctrl; // [20:12]
-    i2c_hw2reg_acq_fifo_next_data_reg_t acq_fifo_next_data; // [11:4]
-    i2c_hw2reg_controller_events_reg_t controller_events; // [3:0]
+    i2c_hw2reg_intr_state_reg_t intr_state; // [171:142]
+    i2c_hw2reg_status_reg_t status; // [141:131]
+    i2c_hw2reg_rdata_reg_t rdata; // [130:123]
+    i2c_hw2reg_host_fifo_status_reg_t host_fifo_status; // [122:99]
+    i2c_hw2reg_target_fifo_status_reg_t target_fifo_status; // [98:75]
+    i2c_hw2reg_val_reg_t val; // [74:43]
+    i2c_hw2reg_acqdata_reg_t acqdata; // [42:32]
+    i2c_hw2reg_target_nack_count_reg_t target_nack_count; // [31:23]
+    i2c_hw2reg_target_ack_ctrl_reg_t target_ack_ctrl; // [22:14]
+    i2c_hw2reg_acq_fifo_next_data_reg_t acq_fifo_next_data; // [13:6]
+    i2c_hw2reg_controller_events_reg_t controller_events; // [5:0]
   } i2c_hw2reg_t;
 
   // Register offsets

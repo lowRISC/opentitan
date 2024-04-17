@@ -5,7 +5,9 @@
 // Description: I2C core module
 
 module i2c_core import i2c_pkg::*;
-(
+#(
+  parameter int unsigned InputDelayCycles = 0
+) (
   input                               clk_i,
   input                               rst_ni,
   input prim_ram_1p_pkg::ram_1p_cfg_t ram_cfg_i,
@@ -45,6 +47,12 @@ module i2c_core import i2c_pkg::*;
   // Maximum number of bits required to represent the level/depth of any FIFO.
   localparam int unsigned MaxFifoDepthW = 12;
 
+  // Round-trip delay for outputs to appear on the inputs, not including rise
+  // time. This is the input delay external to this IP, plus the output flop,
+  // plus the 2-flop synchronizer on the input. The total value here
+  // represents the minimum allowed high time for SCL.
+  localparam int unsigned RoundTripCycles = InputDelayCycles + 2 + 1;
+
   logic [12:0] thigh;
   logic [12:0] tlow;
   logic [12:0] t_r;
@@ -69,11 +77,23 @@ module i2c_core import i2c_pkg::*;
   logic scl_out_target_fsm, sda_out_target_fsm;
   logic scl_out_fsm;
   logic sda_out_fsm;
+  logic controller_transmitting;
+
+  // bus_event_detect goes low after any drive change from this IP, and it
+  // returns to high once enough time has passed for the output change to
+  // reach the FSMs. This is used to qualify detection of unexpected bus events,
+  // where some other I2C controller or target is driving SCL or SDA
+  // simultaneously.
+  logic bus_event_detect;
+  logic [10:0] bus_event_detect_cnt;
+  logic sda_released_but_low;
+  logic controller_arbitration_lost;
 
   logic event_rx_overflow;
   logic status_controller_halt;
   logic event_nak;
   logic event_unhandled_nak_timeout;
+  logic event_controller_arbitration_lost;
   logic event_scl_interference;
   logic event_sda_interference;
   logic event_stretch_timeout;
@@ -418,6 +438,40 @@ module i2c_core import i2c_pkg::*;
     .q_o (sda_sync)
   );
 
+  // Various bus collision events are detected while SCL is high.
+  logic sda_fsm, sda_fsm_q;
+  logic scl_fsm, scl_fsm_q;
+  assign sda_fsm = sda_out_controller_fsm & sda_out_target_fsm;
+  assign scl_fsm = scl_out_controller_fsm & scl_out_target_fsm;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      sda_fsm_q <= 1'b1;
+      scl_fsm_q <= 1'b1;
+    end else begin
+      sda_fsm_q <= sda_fsm;
+      scl_fsm_q <= scl_fsm;
+    end
+  end
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      bus_event_detect_cnt <= '1;
+    end else if ((scl_fsm != scl_fsm_q) || (sda_fsm != sda_fsm_q)) begin
+      // Wait for the round-trip time on SCL changes or on SDA changes. The
+      // latter handles Start and Stop conditions, so changes while SCL is high
+      // are allowed to propagate. The rise time is used here because it
+      // should be the longer value. The (-1) term here is to account for the
+      // delay in the counter.
+      bus_event_detect_cnt <= reg2hw.timing1.t_r.q + 10'(RoundTripCycles - 1);
+    end else if (bus_event_detect_cnt != '0) begin
+      bus_event_detect_cnt <= bus_event_detect_cnt - 1'b1;
+    end
+  end
+  assign bus_event_detect = (bus_event_detect_cnt == '0);
+  assign sda_released_but_low = bus_event_detect && scl_sync && (sda_fsm_q != sda_sync);
+  assign controller_arbitration_lost = controller_transmitting && sda_released_but_low;
+
   i2c_controller_fsm #(
     .FifoDepth(FifoDepth)
   ) u_i2c_controller_fsm (
@@ -428,8 +482,10 @@ module i2c_core import i2c_pkg::*;
     .scl_o                          (scl_out_controller_fsm),
     .sda_i                          (sda_sync),
     .sda_o                          (sda_out_controller_fsm),
+    .transmitting_o                 (controller_transmitting),
 
     .host_enable_i                  (host_enable),
+    .halt_controller_i              (status_controller_halt),
 
     .fmt_fifo_rvalid_i       (fmt_fifo_rvalid),
     .fmt_fifo_depth_i        (fmt_fifo_depth),
@@ -458,12 +514,14 @@ module i2c_core import i2c_pkg::*;
     .tsu_sto_i                      (tsu_sto),
     .thd_dat_i                      (thd_dat),
     .t_buf_i                        (t_buf),
+    .arbitration_lost_i             (controller_arbitration_lost),
     .stretch_timeout_i              (stretch_timeout),
     .timeout_enable_i               (timeout_enable),
     .host_nack_handler_timeout_i    (host_nack_handler_timeout),
     .host_nack_handler_timeout_en_i (host_nack_handler_timeout_en),
     .event_nak_o                    (event_nak),
     .event_unhandled_nak_timeout_o  (event_unhandled_nak_timeout),
+    .event_arbitration_lost_o       (event_controller_arbitration_lost),
     .event_scl_interference_o       (event_scl_interference),
     .event_sda_interference_o       (event_sda_interference),
     .event_stretch_timeout_o        (event_stretch_timeout),
@@ -742,9 +800,12 @@ module i2c_core import i2c_pkg::*;
   assign hw2reg.controller_events.nack.de = event_nak;
   assign hw2reg.controller_events.unhandled_nack_timeout.d  = 1'b1;
   assign hw2reg.controller_events.unhandled_nack_timeout.de = event_unhandled_nak_timeout;
+  assign hw2reg.controller_events.arbitration_lost.d  = 1'b1;
+  assign hw2reg.controller_events.arbitration_lost.de = event_controller_arbitration_lost;
   assign status_controller_halt = | {
     reg2hw.controller_events.nack.q,
-    reg2hw.controller_events.unhandled_nack_timeout.q
+    reg2hw.controller_events.unhandled_nack_timeout.q,
+    reg2hw.controller_events.arbitration_lost.q
   };
 
   ////////////////

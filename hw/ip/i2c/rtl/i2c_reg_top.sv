@@ -331,6 +331,8 @@ module i2c_reg_top (
   logic controller_events_nack_wd;
   logic controller_events_unhandled_nack_timeout_qs;
   logic controller_events_unhandled_nack_timeout_wd;
+  logic controller_events_arbitration_lost_qs;
+  logic controller_events_arbitration_lost_wd;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -3177,6 +3179,33 @@ module i2c_reg_top (
     .qs     (controller_events_unhandled_nack_timeout_qs)
   );
 
+  //   F[arbitration_lost]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_controller_events_arbitration_lost (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (controller_events_we),
+    .wd     (controller_events_arbitration_lost_wd),
+
+    // from internal hardware
+    .de     (hw2reg.controller_events.arbitration_lost.de),
+    .d      (hw2reg.controller_events.arbitration_lost.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.controller_events.arbitration_lost.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (controller_events_arbitration_lost_qs)
+  );
+
 
 
   logic [30:0] addr_hit;
@@ -3465,6 +3494,8 @@ module i2c_reg_top (
 
   assign controller_events_unhandled_nack_timeout_wd = reg_wdata[1];
 
+  assign controller_events_arbitration_lost_wd = reg_wdata[2];
+
   // Assign write-enables to checker logic vector.
   always_comb begin
     reg_we_check = '0;
@@ -3713,6 +3744,7 @@ module i2c_reg_top (
       addr_hit[30]: begin
         reg_rdata_next[0] = controller_events_nack_qs;
         reg_rdata_next[1] = controller_events_unhandled_nack_timeout_qs;
+        reg_rdata_next[2] = controller_events_arbitration_lost_qs;
       end
 
       default: begin

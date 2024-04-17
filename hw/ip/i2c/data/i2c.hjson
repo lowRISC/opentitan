@@ -56,7 +56,7 @@
     }
     { name: "controller_halt"
       desc: '''
-            host mode interrupt: raised if the controller FSM is halted, such as on an unexpected NACK.
+            host mode interrupt: raised if the controller FSM is halted, such as on an unexpected NACK or lost arbitration.
             Check !!CONTROLLER_EVENTS for the reason.
             The interrupt will be released when the bits in !!CONTROLLER_EVENTS are cleared.
             '''
@@ -945,6 +945,10 @@
         { bits: "1"
           name: "UNHANDLED_NACK_TIMEOUT"
           desc: "A Host-Mode active transaction has been ended by the !!HOST_NACK_HANDLER_TIMEOUT mechanism."
+        }
+        { bits: "2"
+          name: "ARBITRATION_LOST"
+          desc: "A Host-Mode active transaction has terminated due to lost arbitration."
         }
       ]
     }
