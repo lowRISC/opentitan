@@ -4,7 +4,7 @@
 
 load(
     "//rules/opentitan:defs.bzl",
-    "cw310_params",
+    "fpga_params",
     "ecdsa_key_for_lc_state",
     "opentitan_binary",
     "opentitan_test",
@@ -127,7 +127,7 @@ WATCHDOG_OTP = {
             watchdog_config,
             lc_state,
         ),
-        cw310 = cw310_params(
+        fpga = fpga_params(
             binaries = {
                 ":test_watchdog_{}_{}".format(
                     WATCHDOG_TEST_CASES[watchdog_config][lc_state],

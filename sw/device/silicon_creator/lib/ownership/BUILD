@@ -5,7 +5,6 @@
 load(
     "//rules/opentitan:defs.bzl",
     "EARLGREY_TEST_ENVS",
-    "cw310_params",
     "opentitan_test",
     "verilator_params",
 )

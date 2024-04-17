@@ -21,6 +21,7 @@ load(
 load(
     "//rules/opentitan:defs.bzl",
     "cw310_params",
+    "fpga_params",
     "opentitan_binary",
     "opentitan_test",
 )
@@ -143,7 +144,7 @@ SEC_VERS = [
 [
     opentitan_test(
         name = "boot_policy_flash_ecc_error_{}".format(c["name"]),
-        cw310 = cw310_params(
+        fpga = fpga_params(
             assemble = "{fw_a}@{slot_a} {fw_b}@{slot_b}",
             binaries = {
                 c["a"]: "fw_a",

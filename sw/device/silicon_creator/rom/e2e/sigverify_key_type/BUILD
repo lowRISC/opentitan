@@ -13,7 +13,7 @@ load(
 )
 load(
     "//rules/opentitan:defs.bzl",
-    "cw310_params",
+    "fpga_params",
     "opentitan_test",
 )
 load(
@@ -154,7 +154,7 @@ otp_json(
         srcs = [
             "//sw/device/silicon_creator/rom/e2e:empty_test",
         ],
-        cw310 = cw310_params(
+        fpga = fpga_params(
             exit_failure = test["exit_failure"][lc_state],
             exit_success = test["exit_success"][lc_state],
             otp = "otp_img_sigverify_key_type_{}".format(lc_state),

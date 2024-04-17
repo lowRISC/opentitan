@@ -10,7 +10,7 @@ load("//rules:autogen.bzl", "autogen_cryptotest_header")
 load(
     "//rules/opentitan:defs.bzl",
     "EARLGREY_TEST_ENVS",
-    "cw310_params",
+    "fpga_params",
     "opentitan_test",
     "verilator_params",
 )
@@ -57,7 +57,7 @@ opentitan_test(
     name = "verify_test_hardcoded",
     srcs = ["verify_test.c"],
     # TODO(#22871): Remove "broken" tag once the tests are fixed.
-    broken = cw310_params(tags = ["broken"]),
+    broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         {

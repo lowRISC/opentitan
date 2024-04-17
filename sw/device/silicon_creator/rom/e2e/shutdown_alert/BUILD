@@ -15,7 +15,7 @@ load(
 )
 load(
     "//rules/opentitan:defs.bzl",
-    "cw310_params",
+    "fpga_params",
     "ecdsa_key_for_lc_state",
     "opentitan_test",
 )
@@ -56,7 +56,7 @@ ALERT_LC_STATES = get_lc_items(
     opentitan_test(
         name = "alert_{}".format(lc_state),
         srcs = ["rom_e2e_alert_config_test.c"],
-        cw310 = cw310_params(
+        fpga = fpga_params(
             otp = "//hw/ip/otp_ctrl/data:img_{}".format(lc_state),
             tags = maybe_skip_in_ci(lc_state_val),
         ),
@@ -174,7 +174,7 @@ otp_alert_digest(
     opentitan_test(
         name = "shutdown_alert_{}".format(lc_state),
         srcs = ["rom_e2e_shutdown_alert_config_test.c"],
-        cw310 = cw310_params(
+        fpga = fpga_params(
             otp = ":otp_img_shutdown_alert_{}".format(lc_state),
             tags = maybe_skip_in_ci(lc_state_val),
         ),

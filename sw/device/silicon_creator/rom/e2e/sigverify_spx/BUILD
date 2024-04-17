@@ -4,7 +4,7 @@
 
 load(
     "//rules/opentitan:defs.bzl",
-    "cw310_params",
+    "fpga_params",
     "ecdsa_key_for_lc_state",
     "opentitan_binary",
     "opentitan_test",
@@ -187,7 +187,7 @@ opentitan_binary(
             t["name"],
         ),
         srcs = ["sigverify_spx_test.c"],
-        cw310 = cw310_params(
+        fpga = fpga_params(
             bitstream = ":bitstream_sigverify_spx_{}_{}".format(
                 lc_state,
                 t["name"],

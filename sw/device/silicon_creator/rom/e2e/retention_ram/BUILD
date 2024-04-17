@@ -4,7 +4,7 @@
 
 load(
     "//rules/opentitan:defs.bzl",
-    "cw310_params",
+    "fpga_params",
     "opentitan_test",
 )
 load(
@@ -48,7 +48,7 @@ otp_image(
 opentitan_test(
     name = "rom_e2e_ret_ram_init",
     srcs = ["rom_e2e_ret_ram_init_test.c"],
-    cw310 = cw310_params(
+    fpga = fpga_params(
         otp = ":otp_img_reset_ret_ram",
         tags = maybe_skip_in_ci(CONST.LCV.RMA),
     ),
@@ -68,7 +68,7 @@ opentitan_test(
 opentitan_test(
     name = "rom_e2e_ret_ram_keep",
     srcs = ["rom_e2e_ret_ram_keep_test.c"],
-    cw310 = cw310_params(
+    fpga = fpga_params(
         tags = maybe_skip_in_ci(CONST.LCV.RMA),
     ),
     exec_env = {

@@ -15,7 +15,7 @@ load(
 )
 load(
     "//rules/opentitan:defs.bzl",
-    "cw310_params",
+    "fpga_params",
     "ecdsa_key_for_lc_state",
     "opentitan_binary",
     "opentitan_test",
@@ -73,7 +73,7 @@ _MANUF_TEST_LOCKED_KEY = None
     opentitan_test(
         name = "manuf_scrap_functest_{}".format(lc_state.lower()),
         srcs = ["empty_functest.c"],
-        cw310 = cw310_params(
+        fpga = fpga_params(
             bitstream = "//hw/bitstream:mask_rom_otp_{}".format(lc_state.lower()),
             changes_otp = True,
             lc_state = lc_state,  # will be expanded in test_cmd
@@ -114,7 +114,7 @@ lc_raw_unlock_token(
 opentitan_test(
     name = "manuf_cp_unlock_raw_functest",
     srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test.c"],
-    cw310 = cw310_params(
+    fpga = fpga_params(
         bitstream = "//hw/bitstream:mask_rom_otp_raw",
         changes_otp = True,
         needs_jtag = True,
@@ -136,7 +136,7 @@ opentitan_test(
 opentitan_test(
     name = "manuf_cp_volatile_unlock_raw_functest",
     srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test.c"],
-    cw310 = cw310_params(
+    fpga = fpga_params(
         bitstream = "//hw/bitstream:mask_rom_otp_raw",
         changes_otp = True,
         needs_jtag = True,
@@ -174,7 +174,7 @@ opentitan_test(
     opentitan_test(
         name = "manuf_cp_yield_test_functest_{}".format(lc_state.lower()),
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test.c"],
-        cw310 = cw310_params(
+        fpga = fpga_params(
             changes_otp = True,
             lc_state = lc_state,  # will be expanded in test_cmd
             needs_jtag = True,
@@ -223,7 +223,7 @@ cc_library(
     opentitan_test(
         name = "manuf_sram_program_crc_{}_functest".format(lc_state.lower()),
         srcs = ["sram_empty_functest.c"],
-        cw310 = cw310_params(
+        fpga = fpga_params(
             needs_jtag = True,
             otp = ":otp_img_rom_exec_disabled_{}".format(lc_state.lower()),
             test_cmd = "--elf={firmware}",
@@ -306,7 +306,7 @@ opentitan_binary(
             target_lc_state.lower(),
         ),
         srcs = ["flash_device_info_flash_wr_functest.c"],
-        cw310 = cw310_params(
+        fpga = fpga_params(
             binaries = {
                 ":sram_device_info_flash_wr_functest": "sram_program",
             },
@@ -390,7 +390,7 @@ opentitan_binary(
     opentitan_test(
         name = "manuf_cp_ast_test_execution_{}_functest".format(lc_state.lower()),
         srcs = ["idle_functest.c"],
-        cw310 = cw310_params(
+        fpga = fpga_params(
             binaries = {
                 ":sram_exec_test": "sram_program",
             },
@@ -427,7 +427,7 @@ test_suite(
 opentitan_test(
     name = "manuf_cp_test_lock_functest",
     srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test.c"],
-    cw310 = cw310_params(
+    fpga = fpga_params(
         changes_otp = True,
         needs_jtag = True,
         otp = ":otp_img_otp_ctrl_functest",
@@ -455,7 +455,7 @@ otp_image(
 opentitan_test(
     name = "otp_ctrl_functest",
     srcs = [":empty_functest.c"],
-    cw310 = cw310_params(
+    fpga = fpga_params(
         changes_otp = True,
         needs_jtag = True,
         otp = ":otp_img_otp_ctrl_functest",

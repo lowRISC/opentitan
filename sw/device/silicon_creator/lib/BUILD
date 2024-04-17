@@ -12,7 +12,7 @@ load("//rules:opentitan.bzl", "OPENTITAN_CPU")
 load(
     "//rules/opentitan:defs.bzl",
     "EARLGREY_TEST_ENVS",
-    "cw310_params",
+    "fpga_params",
     "opentitan_test",
     "verilator_params",
 )
@@ -206,7 +206,7 @@ cc_library(
 opentitan_test(
     name = "irq_asm_functest",
     srcs = ["irq_asm_functest.c"],
-    broken = cw310_params(tags = ["broken"]),
+    broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         {

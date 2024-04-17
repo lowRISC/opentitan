@@ -4,7 +4,7 @@
 
 load(
     "//rules/opentitan:defs.bzl",
-    "cw310_params",
+    "fpga_params",
     "opentitan_test",
 )
 load(
@@ -72,7 +72,7 @@ SIGVERIFY_BAD_CASES = [
             case["a"],
             case["b"],
         ),
-        cw310 = cw310_params(
+        fpga = fpga_params(
             assemble = " ".join([
                 "{{slot_{}}}@{}".format(slot, addr)
                 for (slot, addr) in SLOTS.items()

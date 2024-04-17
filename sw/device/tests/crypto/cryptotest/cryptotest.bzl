@@ -6,7 +6,7 @@
 
 load(
     "//rules/opentitan:defs.bzl",
-    "cw310_params",
+    "fpga_params",
     "opentitan_test",
     "silicon_params",
 )
@@ -34,7 +34,7 @@ def cryptotest(name, test_vectors, test_args, test_harness):
     """
     opentitan_test(
         name = name,
-        cw310 = cw310_params(
+        fpga = fpga_params(
             timeout = "long",
             binaries = {"//sw/device/tests/crypto/cryptotest/firmware:firmware_fpga_cw310_test_rom": "firmware"},
             data = test_vectors,

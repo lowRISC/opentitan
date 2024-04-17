@@ -214,7 +214,7 @@ fpga_cw340 = rule(
     toolchains = [LOCALTOOLS_TOOLCHAIN],
 )
 
-def cw310_params(
+def fpga_params(
         tags = [],
         timeout = "short",
         local = True,

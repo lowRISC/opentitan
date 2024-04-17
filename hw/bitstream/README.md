@@ -34,7 +34,7 @@ how to inject an `otp` image to a test target.
 opentitan_test(
     name = "individualize_sw_cfg_functest",
     srcs = ["individualize_sw_cfg_functest.c"],
-    cw310 = cw310_params(
+    fpga = fpga_params(
         otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival_bringup:otp_img_test_unlocked0_manuf_initialized",
         tags = ["manuf"],
     ),
@@ -76,7 +76,7 @@ The following example is taken from `sw/device/silicon_creator/manuf/lib/BUILD`:
 opentitan_test(
     name = "individualize_sw_cfg_functest",
     srcs = ["individualize_sw_cfg_functest.c"],
-    cw310 = cw310_params(
+    fpga = fpga_params(
         bitstream = "//hw/bitstream:mask_rom_otp_test_unlocked0",
         tags = ["manuf"],
     ),

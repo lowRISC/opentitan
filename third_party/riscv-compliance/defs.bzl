@@ -11,7 +11,7 @@ load(
 load(
     "//rules/opentitan:defs.bzl",
     "EARLGREY_TEST_ENVS",
-    "cw310_params",
+    "fpga_params",
     "opentitan_test",
     "verilator_params",
 )
@@ -52,7 +52,7 @@ def rv_compliance_test(name, arch):
             timeout = "long",
         ),
         # TODO(#22871): Remove "broken" tag once the tests are fixed.
-        broken = cw310_params(tags = ["broken"]),
+        broken = fpga_params(tags = ["broken"]),
         exec_env = dicts.add(
             EARLGREY_TEST_ENVS,
             {

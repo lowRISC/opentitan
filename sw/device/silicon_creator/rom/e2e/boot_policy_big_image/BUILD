@@ -12,7 +12,7 @@ load(
 )
 load(
     "//rules/opentitan:defs.bzl",
-    "cw310_params",
+    "fpga_params",
     "opentitan_test",
 )
 
@@ -32,7 +32,7 @@ BOOT_POLICY_BIG_IMAGE_CASES = [
             t["suffix"],
         ),
         srcs = ["resizable_test.c"],
-        cw310 = cw310_params(
+        fpga = fpga_params(
             otp = "//hw/ip/otp_ctrl/data:img_{}".format(lc_state),
             tags = maybe_skip_in_ci(lc_state_val),
         ),

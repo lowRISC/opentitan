@@ -72,7 +72,7 @@ Like the binary rule, the test rule builds and links a binary, but then dispatch
 opentitan_test(
     name = "uart_smoketest",
     srcs = ["uart_smoketest.c"],
-    cw310 = cw310_params(timeout = "long"),
+    fpga = fpga_params(timeout = "long"),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
         "//hw/top_earlgrey:sim_dv": None,
@@ -96,6 +96,6 @@ In the example above, the tests will be:
 - `uart_smoketest_sim_verilator`
 
 While the binary rule accepts a list of exec\_envs, the test macro requires a dictionary.
-This is because tests can specify additional parameters via a params block (ie: `cw310_params(...)`). A dict value of `None` instructs the macro to fetch the params block from the default-named argument for the exec\_env (ie: the `fpga_cw310` exec\_env gets it's param block from the `cw310` parameter).
+This is because tests can specify additional parameters via a params block (ie: `fpga_params(...)`). A dict value of `None` instructs the macro to fetch the params block from the default-named argument for the exec\_env (ie: the `fpga_cw310` exec\_env gets it's param block from the `cw310` parameter).
 Any other dict str-value instructs the macro to find a parameter with the same name as the value.
 This allows us to dispatch a test to multiple `fpga_cw310_...` exec\_envs with different parameter blocks (as needed).

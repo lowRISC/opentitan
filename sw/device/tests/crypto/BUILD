@@ -11,7 +11,7 @@ load(
     "//rules/opentitan:defs.bzl",
     "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
     "EARLGREY_TEST_ENVS",
-    "cw310_params",
+    "fpga_params",
     "opentitan_test",
     "silicon_params",
     "verilator_params",
@@ -158,7 +158,7 @@ cc_library(
 opentitan_test(
     name = "aes_gcm_timing_test",
     srcs = ["aes_gcm_timing_test.c"],
-    cw310 = cw310_params(
+    fpga = fpga_params(
         timeout = "long",
         tags = ["broken"],  # https://github.com/lowRISC/opentitan/issues/15788
         # [test-triage] test not constant time with icache enabled
@@ -439,7 +439,7 @@ opentitan_test(
 opentitan_test(
     name = "kdf_kmac_sideload_functest_hardcoded",
     srcs = ["kdf_kmac_sideload_functest.c"],
-    broken = cw310_params(tags = ["broken"]),
+    broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         {
@@ -467,7 +467,7 @@ opentitan_test(
 opentitan_test(
     name = "kmac_sideload_functest_hardcoded",
     srcs = ["kmac_sideload_functest.c"],
-    broken = cw310_params(tags = ["broken"]),
+    broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         {
@@ -577,7 +577,7 @@ opentitan_test(
 opentitan_test(
     name = "rsa_2048_keygen_functest",
     srcs = ["rsa_2048_keygen_functest.c"],
-    cw310 = cw310_params(
+    fpga = fpga_params(
         timeout = "long",
     ),
     # This test is too slow for Verilator/DV, so target FPGA only.
@@ -616,7 +616,7 @@ opentitan_test(
 opentitan_test(
     name = "rsa_3072_keygen_functest",
     srcs = ["rsa_3072_keygen_functest.c"],
-    cw310 = cw310_params(
+    fpga = fpga_params(
         timeout = "long",
     ),
     # This test is too slow for Verilator/DV, so target FPGA only.
@@ -660,7 +660,7 @@ opentitan_test(
 opentitan_test(
     name = "rsa_4096_keygen_functest",
     srcs = ["rsa_4096_keygen_functest.c"],
-    cw310 = cw310_params(
+    fpga = fpga_params(
         timeout = "long",
     ),
     # This test is too slow for Verilator/DV, so target FPGA only.
@@ -711,7 +711,7 @@ autogen_cryptotest_header(
 opentitan_test(
     name = "rsa_3072_verify_functest_wycheproof",
     srcs = ["rsa_3072_verify_functest.c"],
-    cw310 = cw310_params(
+    fpga = fpga_params(
         timeout = "moderate",
     ),
     # The test vectors don't fit in the flash allocated for ROM_EXT stage, so

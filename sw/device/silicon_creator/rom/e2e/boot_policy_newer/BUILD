@@ -4,7 +4,7 @@
 
 load(
     "//rules/opentitan:defs.bzl",
-    "cw310_params",
+    "fpga_params",
     "opentitan_binary",
     "opentitan_test",
 )
@@ -118,7 +118,7 @@ BOOT_POLICY_NEWER_CASES = [
             t["a"],
             t["b"],
         ),
-        cw310 = cw310_params(
+        fpga = fpga_params(
             assemble = "{fw_a}@{slot_a} {fw_b}@{slot_b}",
             binaries = {
                 ":empty_test_slot_a_sec_ver_{}".format(t["a"]): "fw_a",
