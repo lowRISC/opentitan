@@ -29,6 +29,7 @@
       lc_states: ["PROD"]
       tests: ["chip_sw_sram_ctrl_scrambled_access",
               "chip_sw_sram_ctrl_scrambled_access_jitter_en"]
+      bazel: ["//sw/device/tests:sram_ctrl_scrambled_access_test"]
     }
     {
       name: chip_sw_sleep_sram_ret_contents
