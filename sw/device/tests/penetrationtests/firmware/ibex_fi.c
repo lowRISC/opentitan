@@ -592,9 +592,7 @@ status_t handle_ibex_fi_char_sram_read(ujson_t *uj) {
   ibex_fi_test_result_t uj_output;
   uj_output.result = res;
   uj_output.err_status = codes;
-  uj_output.alerts_1 = reg_alerts.alerts_1;
-  uj_output.alerts_2 = reg_alerts.alerts_2;
-  uj_output.alerts_3 = reg_alerts.alerts_3;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
   return OK_STATUS();
 }
