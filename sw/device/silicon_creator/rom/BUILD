@@ -217,6 +217,20 @@ legacy_rom_targets(
     target = "mask_rom",
 )
 
+[
+    filegroup(
+        name = "mask_rom_{}_hashfile".format(dev),
+        testonly = True,
+        srcs = [":mask_rom"],
+        output_group = "{}_hashfile".format(dev),
+    )
+    for dev in [
+        "fpga_cw310",
+        "fpga_cw340",
+        "silicon_creator",
+    ]
+]
+
 cc_library(
     name = "rom_epmp",
     srcs = [
