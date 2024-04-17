@@ -243,7 +243,7 @@ def convert_to_scrambled_rom_vmem(ctx, **kwargs):
         rom_scramble_config: The scrambling config.
         rom_scramble_tool: The scrambling tool.
     Returns:
-      The transformed File.
+      (The transformed File, The hashfile)
     """
     output = kwargs.get("output")
     if not output:
@@ -252,19 +252,23 @@ def convert_to_scrambled_rom_vmem(ctx, **kwargs):
         output = "{}.{}".format(name, suffix)
 
     output = ctx.actions.declare_file(output)
+
+    hashfile = ctx.actions.declare_file("{}.hash.c".format(output.basename))
+
     src = get_override(ctx, "attr.src", kwargs)
 
     config = get_override(ctx, "file.rom_scramble_config", kwargs)
     tool = get_override(ctx, "executable.rom_scramble_tool", kwargs)
 
     ctx.actions.run(
-        outputs = [output],
+        outputs = [output, hashfile],
         inputs = [src, tool, config],
         arguments = [
             config.path,
             src.path,
             output.path,
+            hashfile.path,
         ],
         executable = tool,
     )
-    return output
+    return (output, hashfile)
