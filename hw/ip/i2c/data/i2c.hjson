@@ -846,7 +846,7 @@
                     The end can be due to a STOP condition or unexpected events, such as a bus timeout (if enabled).
                     ABYTE contains no data.
 
-                    NACKing can occur for multiple reasons, including a stretch timeout or a SW-directed NACK.
+                    NACKing can occur for multiple reasons, including a stretch timeout, a SW-directed NACK, or lost arbitration.
                     This signal is a bucket for all these error-type terminations.
                     '''
             },
@@ -1060,6 +1060,10 @@
         { bits: "1"
           name: "BUS_TIMEOUT"
           desc: "A Target-Mode read transfer has terminated due to a bus timeout activated by !!TIMEOUT_CTRL."
+        }
+        { bits: "2"
+          name: "ARBITRATION_LOST"
+          desc: "A Target-Mode read transfer has terminated due to lost arbitration."
         }
       ]
     }

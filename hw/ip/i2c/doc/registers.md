@@ -629,15 +629,15 @@ Software can discard any standalone NACK_STOP that appears.
 
 See the associated values for more information about the contents.
 
-| Value   | Name       | Description                                                                                                                                                                                                                                                                                                                                                                                                                      |
-|:--------|:-----------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0x0     | NONE       | ABYTE contains an ordinary data byte that was received and ACK'd.                                                                                                                                                                                                                                                                                                                                                                |
-| 0x1     | START      | A START condition preceded the ABYTE to start a new transaction. ABYTE contains the 7-bit I2C address plus R/W command bit in the order received on the bus, MSB first.                                                                                                                                                                                                                                                          |
-| 0x2     | STOP       | A STOP condition was received for a transaction including a transfer that addressed this Target. No transfers addressing this Target in that transaction were NACK'd. ABYTE contains no data.                                                                                                                                                                                                                                    |
-| 0x3     | RESTART    | A repeated START condition preceded the ABYTE, extending the current transaction with a new transfer. ABYTE contains the 7-bit I2C address plus R/W command bit in the order received on the bus, MSB first.                                                                                                                                                                                                                     |
-| 0x4     | NACK       | ABYTE contains an ordinary data byte that was received and NACK'd.                                                                                                                                                                                                                                                                                                                                                               |
-| 0x5     | NACK_START | A START condition preceded the ABYTE (including repeated START) that was part of a NACK'd transer. The ABYTE contains the matching I2C address and command bit. The ABYTE was ACK'd, but the rest of the transaction was NACK'ed.                                                                                                                                                                                                |
-| 0x6     | NACK_STOP  | A transaction including a transfer that addressed this Target was ended, but the transaction ended abnormally and/or the transfer was NACK'd. The end can be due to a STOP condition or unexpected events, such as a bus timeout (if enabled). ABYTE contains no data. NACKing can occur for multiple reasons, including a stretch timeout or a SW-directed NACK. This signal is a bucket for all these error-type terminations. |
+| Value   | Name       | Description                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+|:--------|:-----------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0x0     | NONE       | ABYTE contains an ordinary data byte that was received and ACK'd.                                                                                                                                                                                                                                                                                                                                                                                   |
+| 0x1     | START      | A START condition preceded the ABYTE to start a new transaction. ABYTE contains the 7-bit I2C address plus R/W command bit in the order received on the bus, MSB first.                                                                                                                                                                                                                                                                             |
+| 0x2     | STOP       | A STOP condition was received for a transaction including a transfer that addressed this Target. No transfers addressing this Target in that transaction were NACK'd. ABYTE contains no data.                                                                                                                                                                                                                                                       |
+| 0x3     | RESTART    | A repeated START condition preceded the ABYTE, extending the current transaction with a new transfer. ABYTE contains the 7-bit I2C address plus R/W command bit in the order received on the bus, MSB first.                                                                                                                                                                                                                                        |
+| 0x4     | NACK       | ABYTE contains an ordinary data byte that was received and NACK'd.                                                                                                                                                                                                                                                                                                                                                                                  |
+| 0x5     | NACK_START | A START condition preceded the ABYTE (including repeated START) that was part of a NACK'd transer. The ABYTE contains the matching I2C address and command bit. The ABYTE was ACK'd, but the rest of the transaction was NACK'ed.                                                                                                                                                                                                                   |
+| 0x6     | NACK_STOP  | A transaction including a transfer that addressed this Target was ended, but the transaction ended abnormally and/or the transfer was NACK'd. The end can be due to a STOP condition or unexpected events, such as a bus timeout (if enabled). ABYTE contains no data. NACKing can occur for multiple reasons, including a stretch timeout, a SW-directed NACK, or lost arbitration. This signal is a bucket for all these error-type terminations. |
 
 Other values are reserved.
 
@@ -849,19 +849,23 @@ Any bits that are set must be written (with a 1) to clear the tx_stretch interru
 This CSR serves as a gate to prevent the Target module from responding to a read command with unrelated, leftover data.
 - Offset: `0x7c`
 - Reset default: `0x0`
-- Reset mask: `0x3`
+- Reset mask: `0x7`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "TX_PENDING", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "BUS_TIMEOUT", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 30}], "config": {"lanes": 1, "fontsize": 10, "vspace": 130}}
+{"reg": [{"name": "TX_PENDING", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "BUS_TIMEOUT", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "ARBITRATION_LOST", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 29}], "config": {"lanes": 1, "fontsize": 10, "vspace": 180}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                                       |
-|:------:|:------:|:-------:|:-------------------------------------------|
-|  31:2  |        |         | Reserved                                   |
-|   1    |  rw1c  |   0x0   | [BUS_TIMEOUT](#target_events--bus_timeout) |
-|   0    |  rw1c  |   0x0   | [TX_PENDING](#target_events--tx_pending)   |
+|  Bits  |  Type  |  Reset  | Name                                                 |
+|:------:|:------:|:-------:|:-----------------------------------------------------|
+|  31:3  |        |         | Reserved                                             |
+|   2    |  rw1c  |   0x0   | [ARBITRATION_LOST](#target_events--arbitration_lost) |
+|   1    |  rw1c  |   0x0   | [BUS_TIMEOUT](#target_events--bus_timeout)           |
+|   0    |  rw1c  |   0x0   | [TX_PENDING](#target_events--tx_pending)             |
+
+### TARGET_EVENTS . ARBITRATION_LOST
+A Target-Mode read transfer has terminated due to lost arbitration.
 
 ### TARGET_EVENTS . BUS_TIMEOUT
 A Target-Mode read transfer has terminated due to a bus timeout activated by [`TIMEOUT_CTRL.`](#timeout_ctrl)

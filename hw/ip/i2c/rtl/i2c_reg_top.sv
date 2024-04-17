@@ -344,6 +344,8 @@ module i2c_reg_top (
   logic target_events_tx_pending_wd;
   logic target_events_bus_timeout_qs;
   logic target_events_bus_timeout_wd;
+  logic target_events_arbitration_lost_qs;
+  logic target_events_arbitration_lost_wd;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -3353,6 +3355,33 @@ module i2c_reg_top (
     .qs     (target_events_bus_timeout_qs)
   );
 
+  //   F[arbitration_lost]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_target_events_arbitration_lost (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (target_events_we),
+    .wd     (target_events_arbitration_lost_wd),
+
+    // from internal hardware
+    .de     (hw2reg.target_events.arbitration_lost.de),
+    .d      (hw2reg.target_events.arbitration_lost.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.target_events.arbitration_lost.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (target_events_arbitration_lost_qs)
+  );
+
 
 
   logic [31:0] addr_hit;
@@ -3656,6 +3685,8 @@ module i2c_reg_top (
 
   assign target_events_bus_timeout_wd = reg_wdata[1];
 
+  assign target_events_arbitration_lost_wd = reg_wdata[2];
+
   // Assign write-enables to checker logic vector.
   always_comb begin
     reg_we_check = '0;
@@ -3914,6 +3945,7 @@ module i2c_reg_top (
       addr_hit[31]: begin
         reg_rdata_next[0] = target_events_tx_pending_qs;
         reg_rdata_next[1] = target_events_bus_timeout_qs;
+        reg_rdata_next[2] = target_events_arbitration_lost_qs;
       end
 
       default: begin
