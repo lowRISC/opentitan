@@ -32,20 +32,18 @@ export BITSTREAM="--offline --list ci_bitstreams"
 
 # We will lose serial access when we reboot, but if tests fail we should reboot
 # in case we've crashed the UART handler on the CW310's SAM3U
-# Note that the hyperdebug backend does not have the reset-sam3x command so this will fail but not trigger an error.
-trap 'ci/bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface=${fpga} fpga reset-sam3x || true' EXIT
+ci/bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface=${fpga} fpga reset-sam3x
 
 # In case tests update OTP or otherwise leave state on the FPGA we should start
 # by clearing the bitstream.
 # FIXME: #16543 The following step sometimes has trouble reading the I2C we'll
 # log it better and continue even if it fails (the pll is mostly correctly set
 # anyway).
-# Note that the hyperdebug backend does not have the set-pll command so this will fail but not trigger an error.
 ci/bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface="$fpga" --logging debug fpga set-pll || true
 ci/bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface="$fpga" fpga clear-bitstream
 
-# Print the SAM3X firmware version. HyperDebug transports don't currently support this, so we ignore errors.
-ci/bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface="$fpga" fpga get-sam3x-fw-version || true
+# Print the SAM3X firmware version.
+ci/bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface="$fpga" fpga get-sam3x-fw-version
 
 pattern_file=$(mktemp)
 # Recognize special test set names, otherwise we interpret it as a list of tags.

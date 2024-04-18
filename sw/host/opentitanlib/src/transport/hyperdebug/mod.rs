@@ -27,7 +27,6 @@ use crate::io::spi::Target;
 use crate::io::uart::Uart;
 use crate::transport::chip_whisperer::board::Board;
 use crate::transport::chip_whisperer::ChipWhisperer;
-use crate::transport::common::fpga::{ClearBitstream, FpgaProgram};
 use crate::transport::common::uart::flock_serial;
 use crate::transport::{
     Capabilities, Capability, Transport, TransportError, TransportInterfaceType, UpdateFirmware,
@@ -64,6 +63,11 @@ pub struct Hyperdebug<T: Flavor> {
 /// Trait allowing slightly different treatment of USB devices that work almost like a
 /// HyperDebug.  E.g. C2D2 and Servo micro.
 pub trait Flavor {
+    // Try to dispatch an action to this flavor's alternate transport.
+    fn dispatch(_action: &dyn Any) -> Result<Option<Box<dyn Annotate>>> {
+        Err(TransportError::UnsupportedOperation.into())
+    }
+
     fn gpio_pin(inner: &Rc<Inner>, pinname: &str) -> Result<Rc<dyn GpioPin>>;
     fn spi_index(_inner: &Rc<Inner>, instance: &str) -> Result<(u8, u8)> {
         bail!(TransportError::InvalidInstance(
@@ -79,12 +83,6 @@ pub trait Flavor {
     }
     fn get_default_usb_vid() -> u16;
     fn get_default_usb_pid() -> u16;
-    fn load_bitstream(_fpga_program: &FpgaProgram) -> Result<()> {
-        Err(TransportError::UnsupportedOperation.into())
-    }
-    fn clear_bitstream(_clear: &ClearBitstream) -> Result<()> {
-        Err(TransportError::UnsupportedOperation.into())
-    }
     fn perform_initial_fw_check() -> bool {
         true
     }
@@ -731,12 +729,8 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
                 update_firmware_action.progress.as_ref(),
                 update_firmware_action.force,
             )
-        } else if let Some(fpga_program) = action.downcast_ref::<FpgaProgram>() {
-            T::load_bitstream(fpga_program).map(|_| None)
-        } else if let Some(clear) = action.downcast_ref::<ClearBitstream>() {
-            T::clear_bitstream(clear).map(|_| None)
         } else {
-            Err(TransportError::UnsupportedOperation.into())
+            T::dispatch(action).map(|_| None)
         }
     }
 
@@ -830,7 +824,7 @@ pub struct ChipWhispererFlavor<B: Board> {
     _phantom: PhantomData<B>,
 }
 
-impl<B: Board> Flavor for ChipWhispererFlavor<B> {
+impl<B: Board + 'static> Flavor for ChipWhispererFlavor<B> {
     fn gpio_pin(inner: &Rc<Inner>, pinname: &str) -> Result<Rc<dyn GpioPin>> {
         StandardFlavor::gpio_pin(inner, pinname)
     }
@@ -846,24 +840,9 @@ impl<B: Board> Flavor for ChipWhispererFlavor<B> {
     fn get_default_usb_pid() -> u16 {
         StandardFlavor::get_default_usb_pid()
     }
-    fn load_bitstream(fpga_program: &FpgaProgram) -> Result<()> {
-        // First, try to establish a connection to the native Chip Whisperer interface
-        // which we will use for bitstream loading.
+    fn dispatch(action: &dyn Any) -> Result<Option<Box<dyn Annotate>>> {
         let board = ChipWhisperer::<B>::new(None, None, None, &[])?;
-
-        // Program the FPGA bitstream.
-        log::info!("Programming the FPGA bitstream.");
-        let usb = board.device.borrow();
-        usb.spi1_enable(false)?;
-        usb.fpga_program(&fpga_program.bitstream, fpga_program.progress.as_ref())?;
-        Ok(())
-    }
-    fn clear_bitstream(_clear: &ClearBitstream) -> Result<()> {
-        let board = ChipWhisperer::<B>::new(None, None, None, &[])?;
-        let usb = board.device.borrow();
-        usb.spi1_enable(false)?;
-        usb.clear_bitstream()?;
-        Ok(())
+        board.dispatch(action)
     }
 }
 
