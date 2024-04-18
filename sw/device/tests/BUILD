@@ -182,7 +182,11 @@ opentitan_test(
 opentitan_test(
     name = "alert_handler_lpg_clkoff_test",
     srcs = ["alert_handler_lpg_clkoff_test.c"],
-    cw310 = cw310_params(timeout = "moderate"),
+    cw310 = cw310_params(
+        timeout = "moderate",
+        # This test is slow; run it only on the nightly CI.
+        tags = ["nightly"],
+    ),
     exec_env = dicts.add(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
@@ -265,6 +269,8 @@ opentitan_test(
     srcs = ["alert_handler_lpg_reset_toggle.c"],
     cw310 = cw310_params(
         timeout = "moderate",
+        # This test is slow; run it only on the nightly CI.
+        tags = ["nightly"],
     ),
     exec_env = dicts.add(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
@@ -316,6 +322,8 @@ opentitan_test(
     srcs = ["alert_handler_lpg_sleep_mode_pings.c"],
     cw310 = cw310_params(
         timeout = "moderate",
+        # This test is slow; run it only on the nightly CI.
+        tags = ["nightly"],
     ),
     exec_env = {
         # The test requires the Ibex core to wait long enough
@@ -3918,6 +3926,8 @@ opentitan_test(
     srcs = ["rstmgr_alert_info_test.c"],
     cw310 = cw310_params(
         timeout = "moderate",
+        # This test is slow; run it only on the nightly CI.
+        tags = ["nightly"],
     ),
     exec_env = {
         # TODO(lowrisc/opentitan#20589): Enable _sival* tests when bug is fixed

@@ -8,6 +8,7 @@ load("//rules:autogen.bzl", "autogen_cryptotest_header")
 load(
     "//rules/opentitan:defs.bzl",
     "EARLGREY_TEST_ENVS",
+    "cw310_params",
     "opentitan_test",
     "verilator_params",
 )
@@ -161,6 +162,12 @@ autogen_cryptotest_header(
 opentitan_test(
     name = "verify_test_kat0",
     srcs = ["verify_test.c"],
+    cw310 = cw310_params(
+        tags = [
+            # Run KATs only on the nightly CI.
+            "nightly",
+        ],
+    ),
     exec_env = {
         # Test set is too large for Verilator or as ROM_EXT
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
@@ -178,6 +185,12 @@ opentitan_test(
 opentitan_test(
     name = "verify_test_kat1",
     srcs = ["verify_test.c"],
+    cw310 = cw310_params(
+        tags = [
+            # Run KATs only on the nightly CI.
+            "nightly",
+        ],
+    ),
     exec_env = {
         # Test set is too large for Verilator or as ROM_EXT
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
@@ -195,6 +208,12 @@ opentitan_test(
 opentitan_test(
     name = "verify_test_kat2",
     srcs = ["verify_test.c"],
+    cw310 = cw310_params(
+        tags = [
+            # Run KATs only on the nightly CI.
+            "nightly",
+        ],
+    ),
     exec_env = {
         # Test set is too large for Verilator or as ROM_EXT
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
@@ -212,6 +231,12 @@ opentitan_test(
 opentitan_test(
     name = "verify_test_kat3",
     srcs = ["verify_test.c"],
+    cw310 = cw310_params(
+        tags = [
+            # Run KATs only on the nightly CI.
+            "nightly",
+        ],
+    ),
     exec_env = {
         # Test set is too large for Verilator or as ROM_EXT
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
@@ -229,6 +254,12 @@ opentitan_test(
 opentitan_test(
     name = "verify_test_kat4",
     srcs = ["verify_test.c"],
+    cw310 = cw310_params(
+        tags = [
+            # Run KATs only on the nightly CI.
+            "nightly",
+        ],
+    ),
     exec_env = {
         # Test set is too large for Verilator or as ROM_EXT
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
@@ -246,6 +277,12 @@ opentitan_test(
 opentitan_test(
     name = "verify_test_kat5",
     srcs = ["verify_test.c"],
+    cw310 = cw310_params(
+        tags = [
+            # Run KATs only on the nightly CI.
+            "nightly",
+        ],
+    ),
     exec_env = {
         # Test set is too large for Verilator or as ROM_EXT
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
@@ -263,6 +300,12 @@ opentitan_test(
 opentitan_test(
     name = "verify_test_kat6",
     srcs = ["verify_test.c"],
+    cw310 = cw310_params(
+        tags = [
+            # Run KATs only on the nightly CI.
+            "nightly",
+        ],
+    ),
     exec_env = {
         # Test set is too large for Verilator or as ROM_EXT
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
@@ -280,6 +323,12 @@ opentitan_test(
 opentitan_test(
     name = "verify_test_kat7",
     srcs = ["verify_test.c"],
+    cw310 = cw310_params(
+        tags = [
+            # Run KATs only on the nightly CI.
+            "nightly",
+        ],
+    ),
     exec_env = {
         # Test set is too large for Verilator or as ROM_EXT
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
@@ -297,6 +346,12 @@ opentitan_test(
 opentitan_test(
     name = "verify_test_kat8",
     srcs = ["verify_test.c"],
+    cw310 = cw310_params(
+        tags = [
+            # Run KATs only on the nightly CI.
+            "nightly",
+        ],
+    ),
     exec_env = {
         # Test set is too large for Verilator or as ROM_EXT
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
@@ -314,6 +369,12 @@ opentitan_test(
 opentitan_test(
     name = "verify_test_kat9",
     srcs = ["verify_test.c"],
+    cw310 = cw310_params(
+        tags = [
+            # Run KATs only on the nightly CI.
+            "nightly",
+        ],
+    ),
     exec_env = {
         # Test set is too large for Verilator or as ROM_EXT
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,

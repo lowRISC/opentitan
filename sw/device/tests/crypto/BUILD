@@ -673,6 +673,8 @@ opentitan_test(
     srcs = ["rsa_3072_verify_functest.c"],
     cw310 = cw310_params(
         timeout = "moderate",
+        # The wycheproof test suite is large; only run it on the nightly CI.
+        tags = ["nightly"],
     ),
     # The test vectors don't fit in the flash allocated for ROM_EXT stage, so
     # we have to restrict the environments to run with the test_rom.
