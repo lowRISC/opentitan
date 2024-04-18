@@ -83,7 +83,8 @@ rom_error_t dice_uds_tbs_cert_build(dice_cert_key_id_pair_t *key_ids,
 /**
  * Generates the CDI_0 attestation keypair and X.509 certificate.
  *
- * @param inputs Pointer to the personalization input data payload.
+ * @param rom_ext_measurement Pointer to the ROM_EXT measurement.
+ * @param rom_ext_security_version ROM_EXT security version.
  * @param key_ids Pointer to the (current and endorsement) public key IDs.
  * @param cdi_0_pubkey Pointer to the (current stage) public key in big endian.
  * @param[out] cert Buffer to hold the generated CDI_0 certificate.
@@ -93,7 +94,8 @@ rom_error_t dice_uds_tbs_cert_build(dice_cert_key_id_pair_t *key_ids,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t dice_cdi_0_cert_build(manuf_certgen_inputs_t *inputs,
+rom_error_t dice_cdi_0_cert_build(hmac_digest_t *rom_ext_measurement,
+                                  uint32_t rom_ext_security_version,
                                   dice_cert_key_id_pair_t *key_ids,
                                   attestation_public_key_t *cdi_0_pubkey,
                                   uint8_t *cert, size_t *cert_size);
@@ -101,7 +103,9 @@ rom_error_t dice_cdi_0_cert_build(manuf_certgen_inputs_t *inputs,
 /**
  * Generates the CDI_1 attestation keypair and X.509 certificate.
  *
- * @param inputs Pointer to the personalization input data payload.
+ * @param owner_measurement Pointer to the owner firmware measurement.
+ * @param owner_manifest_measurement Pointer to the owner manifest measurement.
+ * @param owner_security_version Owner firmware security version.
  * @param key_ids Pointer to the (current and endorsement) public key IDs.
  * @param cdi_1_pubkey Pointer to the (current stage) public key in big endian.
  * @param[out] cert Buffer to hold the generated CDI_1 certificate.
@@ -111,7 +115,9 @@ rom_error_t dice_cdi_0_cert_build(manuf_certgen_inputs_t *inputs,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t dice_cdi_1_cert_build(manuf_certgen_inputs_t *inputs,
+rom_error_t dice_cdi_1_cert_build(hmac_digest_t *owner_measurement,
+                                  hmac_digest_t *owner_manifest_measurement,
+                                  uint32_t owner_security_version,
                                   dice_cert_key_id_pair_t *key_ids,
                                   attestation_public_key_t *cdi_1_pubkey,
                                   uint8_t *cert, size_t *cert_size);

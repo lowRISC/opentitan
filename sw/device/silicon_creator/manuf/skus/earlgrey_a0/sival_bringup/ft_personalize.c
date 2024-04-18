@@ -80,7 +80,7 @@ static hmac_digest_t uds_endorsement_key_id;
 static hmac_digest_t uds_pubkey_id;
 static hmac_digest_t cdi_0_pubkey_id;
 static hmac_digest_t cdi_1_pubkey_id;
-dice_cert_key_id_pair_t uds_key_ids = {
+static dice_cert_key_id_pair_t uds_key_ids = {
     .endorsement = &uds_endorsement_key_id,
     .cert = &uds_pubkey_id,
 };
@@ -250,9 +250,10 @@ static status_t personalize_dice_certificates(ujson_t *uj) {
                                   &attestation_binding_value,
                                   /*max_key_version=*/0));
   TRY(dice_attestation_keygen(kDiceKeyCdi0, &cdi_0_pubkey_id, &curr_pubkey));
-  TRY(dice_cdi_0_cert_build(&certgen_inputs, &cdi_0_key_ids, &curr_pubkey,
-                            dice_certs.cdi_0_certificate,
-                            &dice_certs.cdi_0_certificate_size));
+  TRY(dice_cdi_0_cert_build(
+      (hmac_digest_t *)certgen_inputs.rom_ext_measurement,
+      certgen_inputs.rom_ext_security_version, &cdi_0_key_ids, &curr_pubkey,
+      dice_certs.cdi_0_certificate, &dice_certs.cdi_0_certificate_size));
   TRY(flash_ctrl_info_write(
       &kFlashCtrlInfoPageCdi0Certificate,
       /*offset=*/0, dice_certs.cdi_0_certificate_size / sizeof(uint32_t),
@@ -265,9 +266,11 @@ static status_t personalize_dice_certificates(ujson_t *uj) {
                               &attestation_binding_value,
                               /*max_key_version=*/0));
   TRY(dice_attestation_keygen(kDiceKeyCdi1, &cdi_1_pubkey_id, &curr_pubkey));
-  TRY(dice_cdi_1_cert_build(&certgen_inputs, &cdi_1_key_ids, &curr_pubkey,
-                            dice_certs.cdi_1_certificate,
-                            &dice_certs.cdi_1_certificate_size));
+  TRY(dice_cdi_1_cert_build(
+      (hmac_digest_t *)certgen_inputs.owner_measurement,
+      (hmac_digest_t *)certgen_inputs.owner_manifest_measurement,
+      certgen_inputs.owner_security_version, &cdi_1_key_ids, &curr_pubkey,
+      dice_certs.cdi_1_certificate, &dice_certs.cdi_1_certificate_size));
   TRY(flash_ctrl_info_write(
       &kFlashCtrlInfoPageCdi1Certificate,
       /*offset=*/0, dice_certs.cdi_1_certificate_size / sizeof(uint32_t),
