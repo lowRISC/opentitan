@@ -400,7 +400,7 @@
             - Verify that the interrupt pin link_resume goes high once the link resume.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_link_resume"]
     }
     {
       name: av_empty
