@@ -669,11 +669,13 @@ module i2c_controller_fsm import i2c_pkg::*;
       // ClockPulse: SCL is released, SDA keeps the indexed bit value
       ClockPulse : begin
         en_sda_interf_det = 1'b1;
-        if (!scl_i && stretch_predict_cnt_expired) begin
+        if (!scl_i && !scl_i_q && stretch_predict_cnt_expired) begin
           // Saw stretching. Remain in this state and don't count down until we see SCL high.
           load_tcount = 1'b1;
           tcount_sel = tClockHigh;
-        end else if (tcount_q == 20'd1) begin
+        end else if (tcount_q == 20'd1 || (!scl_i && scl_i_q)) begin
+          // Transition either when we finish counting our high period or
+          // another controller pulls clock low.
           state_d = HoldBit;
           load_tcount = 1'b1;
           tcount_sel = tHoldBit;
@@ -706,12 +708,12 @@ module i2c_controller_fsm import i2c_pkg::*;
       end
       // ClockPulseAck: SCL is released
       ClockPulseAck : begin
-        if (!scl_i && stretch_predict_cnt_expired) begin
+        if (!scl_i && !scl_i_q && stretch_predict_cnt_expired) begin
           // Saw stretching. Remain in this state and don't count down until we see SCL high.
           load_tcount = 1'b1;
           tcount_sel = tClockHigh;
         end else begin
-          if (tcount_q == 20'd1) begin
+          if (tcount_q == 20'd1 || (!scl_i && scl_i_q)) begin
             state_d = HoldDevAck;
             load_tcount = 1'b1;
             tcount_sel = tHoldBit;
@@ -742,11 +744,11 @@ module i2c_controller_fsm import i2c_pkg::*;
       end
       // ReadClockPulse: SCL is released, the indexed bit value is read off SDA
       ReadClockPulse : begin
-        if (!scl_i && stretch_predict_cnt_expired) begin
+        if (!scl_i && !scl_i_q && stretch_predict_cnt_expired) begin
           // Saw stretching. Remain in this state and don't count down until we see SCL high.
           load_tcount = 1'b1;
           tcount_sel = tClockHigh;
-        end else if (tcount_q == 20'd1) begin
+        end else if (tcount_q == 20'd1 || (!scl_i && scl_i_q)) begin
           state_d = ReadHoldBit;
           load_tcount = 1'b1;
           tcount_sel = tHoldBit;
@@ -781,11 +783,11 @@ module i2c_controller_fsm import i2c_pkg::*;
       // HostClockPulseAck: SCL is released
       HostClockPulseAck : begin
         en_sda_interf_det = 1'b1;
-        if (!scl_i && stretch_predict_cnt_expired) begin
+        if (!scl_i && !scl_i_q && stretch_predict_cnt_expired) begin
           // Saw stretching. Remain in this state and don't count down until we see SCL high.
           load_tcount = 1'b1;
           tcount_sel = tClockHigh;
-        end else if (tcount_q == 20'd1) begin
+        end else if (tcount_q == 20'd1 || (!scl_i && scl_i_q)) begin
           state_d = HostHoldBitAck;
           load_tcount = 1'b1;
           tcount_sel = tHoldBit;
