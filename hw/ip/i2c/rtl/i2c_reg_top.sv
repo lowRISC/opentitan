@@ -304,8 +304,8 @@ module i2c_reg_top (
   logic txdata_we;
   logic [7:0] txdata_wd;
   logic host_timeout_ctrl_we;
-  logic [31:0] host_timeout_ctrl_qs;
-  logic [31:0] host_timeout_ctrl_wd;
+  logic [19:0] host_timeout_ctrl_qs;
+  logic [19:0] host_timeout_ctrl_wd;
   logic target_timeout_ctrl_we;
   logic [30:0] target_timeout_ctrl_val_qs;
   logic [30:0] target_timeout_ctrl_val_wd;
@@ -2903,9 +2903,9 @@ module i2c_reg_top (
 
   // R[host_timeout_ctrl]: V(False)
   prim_subreg #(
-    .DW      (32),
+    .DW      (20),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h0),
+    .RESVAL  (20'h0),
     .Mubi    (1'b0)
   ) u_host_timeout_ctrl (
     .clk_i   (clk_i),
@@ -3438,7 +3438,7 @@ module i2c_reg_top (
   assign txdata_wd = reg_wdata[7:0];
   assign host_timeout_ctrl_we = addr_hit[24] & reg_we & !reg_error;
 
-  assign host_timeout_ctrl_wd = reg_wdata[31:0];
+  assign host_timeout_ctrl_wd = reg_wdata[19:0];
   assign target_timeout_ctrl_we = addr_hit[25] & reg_we & !reg_error;
 
   assign target_timeout_ctrl_val_wd = reg_wdata[30:0];
@@ -3684,7 +3684,7 @@ module i2c_reg_top (
       end
 
       addr_hit[24]: begin
-        reg_rdata_next[31:0] = host_timeout_ctrl_qs;
+        reg_rdata_next[19:0] = host_timeout_ctrl_qs;
       end
 
       addr_hit[25]: begin

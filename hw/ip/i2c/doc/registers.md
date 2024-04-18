@@ -617,17 +617,18 @@ for this number of cycles then the "host_timeout" interrupt will be asserted.
 Set this CSR to 0 to disable this behaviour.
 - Offset: `0x60`
 - Reset default: `0x0`
-- Reset mask: `0xffffffff`
+- Reset mask: `0xfffff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "HOST_TIMEOUT_CTRL", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "HOST_TIMEOUT_CTRL", "bits": 20, "attr": ["rw"], "rotate": 0}, {"bits": 12}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name              | Description   |
 |:------:|:------:|:-------:|:------------------|:--------------|
-|  31:0  |   rw   |   0x0   | HOST_TIMEOUT_CTRL |               |
+| 31:20  |        |         |                   | Reserved      |
+|  19:0  |   rw   |   0x0   | HOST_TIMEOUT_CTRL |               |
 
 ## TARGET_TIMEOUT_CTRL
 I2C target internal stretching timeout control.

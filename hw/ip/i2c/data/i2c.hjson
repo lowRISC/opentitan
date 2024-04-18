@@ -807,7 +807,7 @@
       swaccess: "rw"
       hwaccess: "hro"
       fields: [
-        { bits: "31:0" }
+        { bits: "19:0" }
       ]
     }
     { name: "TARGET_TIMEOUT_CTRL"
