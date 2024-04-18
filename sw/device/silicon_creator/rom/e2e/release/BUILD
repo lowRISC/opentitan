@@ -78,16 +78,9 @@ opentitan_flash_binary(
     ],
 )
 
-bitstream_splice(
-    name = "bitstream_rom_self_hash_test_rma_otbn_mod_exp",
-    src = "//hw/bitstream:rom_with_real_keys",
-    data = "//sw/device/silicon_creator/rom/e2e/sigverify_mod_exp:otp_img_sigverify_mod_exp_rma_otbn",
-    meminfo = "//hw/bitstream:otp_mmi",
-    update_usr_access = True,
-    visibility = ["//visibility:private"],
-)
-
 # TODO(#19199): reactivate this test when doing a ROM release.
+# TODO(moidx): Migrate to opentitan_test target and switch to a bitstream not
+# requiring otbn_mod_exp.
 # opentitan_functest(
 #     name = "rom_e2e_self_hash_test",
 #     cw310 = cw310_params(

@@ -777,39 +777,6 @@
     }
 
     {
-      name: rom_e2e_sigverify_mod_exp
-      desc: '''Verify that ROM can verify signatures using both implementations of mod_exp.
-
-            Note: The chip can be in any life cycle state except TEST since we use the software
-            implementation without reading from the OTP in TEST.
-
-            - Prepare a ROM_EXT image with a valid signature generated using an authorized key.
-            - Apply bootstrap pin strapping and reset the chip and load the image.
-            - Verify that boot succeeeds. Repeat with the following values:
-
-            | `CREATOR_SW_CFG_SIGVERIFY_RSA_MOD_EXP_IBEX_EN` | Result  |
-            |:----------------------------------:|:-------:|
-            | `kHardenedBoolTrue`                | Success |
-            | `kHardenedBoolFalse`               | Success |
-            | `0`                                | Failure |
-            '''
-      tags: ["rom", "dv", "fpga", "silicon"]
-      stage: V2
-      tests: [
-        "rom_e2e_sigverify_mod_exp_test_unlocked0_otbn",
-        "rom_e2e_sigverify_mod_exp_test_unlocked0_sw",
-        "rom_e2e_sigverify_mod_exp_dev_otbn",
-        "rom_e2e_sigverify_mod_exp_dev_sw",
-        "rom_e2e_sigverify_mod_exp_prod_otbn",
-        "rom_e2e_sigverify_mod_exp_prod_sw",
-        "rom_e2e_sigverify_mod_exp_prod_end_otbn",
-        "rom_e2e_sigverify_mod_exp_prod_end_sw",
-        "rom_e2e_sigverify_mod_exp_rma_otbn",
-        "rom_e2e_sigverify_mod_exp_rma_sw",
-      ]
-    }
-
-    {
       name: rom_e2e_sigverify_usage_constraints
       desc: '''Verify that ROM enforces usage constraints.
 
