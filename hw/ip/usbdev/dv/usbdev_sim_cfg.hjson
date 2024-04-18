@@ -117,6 +117,10 @@
       uvm_test_seq: usbdev_setup_trans_ignored_vseq
     }
     {
+      name: usbdev_link_resume
+      uvm_test_seq: usbdev_link_resume_vseq
+    }
+    {
       name: usbdev_stall_priority_over_nak
       uvm_test_seq: usbdev_stall_priority_over_nak_vseq
     }
