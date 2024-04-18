@@ -4,6 +4,7 @@
 
 #include <stdint.h>
 
+#include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_alert_handler.h"
 #include "sw/device/lib/dif/dif_gpio.h"
@@ -269,15 +270,18 @@ bool test_main(void) {
 
   // OTP
 
-  static const dif_otp_ctrl_config_t otp_ctrl_config = {
-      .check_timeout = UINT32_MAX,
-      .integrity_period_mask = 0x1,
-      .consistency_period_mask = 0x1,
-  };
+  // Access to the OTP is locked by the ROM_EXT
+  if (kBootStage == kBootStageRom) {
+    static const dif_otp_ctrl_config_t otp_ctrl_config = {
+        .check_timeout = UINT32_MAX,
+        .integrity_period_mask = 0x1,
+        .consistency_period_mask = 0x1,
+    };
 
-  CHECK_DIF_OK(dif_otp_ctrl_configure(&otp_ctrl, otp_ctrl_config));
+    CHECK_DIF_OK(dif_otp_ctrl_configure(&otp_ctrl, otp_ctrl_config));
 
-  LOG_INFO("OTP periodic checks active");
+    LOG_INFO("OTP periodic checks active");
+  }
 
   // AON Timer - activate in Watchdog mode (not wakeup mode) & IRQ
   static const uint64_t kTimeTillBark = 1000;
