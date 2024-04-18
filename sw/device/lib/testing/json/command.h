@@ -21,6 +21,7 @@ extern "C" {
     value(_, I2cStartTransferWriteSlow) \
     value(_, I2cStartTransferRead) \
     value(_, I2cStartTransferWriteRead) \
+    value(_, I2cTestConfig) \
     value(_, MemRead) \
     value(_, MemRead32) \
     value(_, MemWrite) \

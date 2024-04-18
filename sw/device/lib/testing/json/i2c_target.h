@@ -30,6 +30,11 @@ UJSON_SERDE_STRUCT(I2cTargetAddress, i2c_target_address_t, STRUCT_I2C_TARGET_ADD
     field(data, uint8_t, 256)
 UJSON_SERDE_STRUCT(I2cTransferStart, i2c_transfer_start_t, STRUCT_I2C_TRANSFER_START);
 
+// Should be used to set parameters for i2c tests.
+#define STRUCT_I2C_TEST_CONFIG(field, string) \
+    field(clock_stretching_delay_millis, uint32_t)
+UJSON_SERDE_STRUCT(I2cTestConfig, i2c_test_config_t, STRUCT_I2C_TEST_CONFIG);
+
 #undef MODULE_ID
 
 // clang-format on
