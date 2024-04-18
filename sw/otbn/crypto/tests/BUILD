@@ -329,6 +329,17 @@ otbn_sim_test(
 )
 
 otbn_sim_test(
+    name = "p256_proj_double_test",
+    srcs = [
+        "p256_proj_double_test.s",
+    ],
+    exp = "p256_proj_double_test.exp",
+    deps = [
+        "//sw/otbn/crypto:p256_base",
+    ],
+)
+
+otbn_sim_test(
     name = "p256_scalar_mult_test",
     srcs = [
         "p256_scalar_mult_test.s",
