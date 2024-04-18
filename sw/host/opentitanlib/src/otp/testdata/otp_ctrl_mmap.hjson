@@ -126,6 +126,8 @@
                 {
                     name: "CREATOR_SW_CFG_SIGVERIFY_RSA_MOD_EXP_IBEX_EN",
                     size: "4"
+                    desc: '''Deprecated. This field is no longer being used as part
+                    of lowRIC/opentitan#21204.'''
                 }
                 {
                     name: "CREATOR_SW_CFG_SIGVERIFY_RSA_KEY_EN",
