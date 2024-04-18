@@ -48,14 +48,11 @@ p256_proj_add_test:
   bn.xor   w31, w31, w31
 
   /* Call doubling.
-     (w11, w12, w13) <= P + P */
+     (w8, w9, w10) <= P + P */
   jal      x1, proj_double
 
   /* Convert to affine coordinates for comparison with expected result.
        (w11, w12) <= (x, y) */
-  bn.mov    w8, w11
-  bn.mov    w9, w12
-  bn.mov    w10, w13
   jal       x1, proj_to_affine
 
   ecall
