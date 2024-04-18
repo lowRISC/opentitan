@@ -22,7 +22,36 @@ struct jtagdpi_ctx {
   uint8_t tdo;
   uint8_t trst_n;
   uint8_t srst_n;
+  // Lookahead buffer - non-zero if valid
+  char cmd;
 };
+
+static bool lookahead(struct jtagdpi_ctx *ctx) {
+  // Look at the next command if available. Return true if it's an
+  // 'R', otherwise buffer it to return via get_cmd().
+  char cmd;
+  if (!tcp_server_read(ctx->sock, &cmd)) {
+    return false;
+  }
+  if (cmd == 'R') {
+    return true;
+  } else {
+    ctx->cmd = cmd;
+    return false;
+  }
+}
+
+static bool get_cmd(struct jtagdpi_ctx *ctx, char *cmd) {
+  // Return a buffered command if available, or try to pull one from
+  // the socket.
+  if (ctx->cmd) {
+    *cmd = ctx->cmd;
+    ctx->cmd = 0;
+    return true;
+  } else {
+    return tcp_server_read(ctx->sock, cmd);
+  }
+}
 
 /**
  * Reset the JTAG signals to a "dongle unplugged" state
@@ -56,7 +85,7 @@ static void update_jtag_signals(struct jtagdpi_ctx *ctx) {
 
   // read a command byte
   char cmd;
-  if (!tcp_server_read(ctx->sock, &cmd)) {
+  if (!get_cmd(ctx, &cmd)) {
     return;
   }
 
@@ -66,10 +95,18 @@ static void update_jtag_signals(struct jtagdpi_ctx *ctx) {
   // parse received command byte
   if (cmd >= '0' && cmd <= '7') {
     // JTAG write
+    uint8_t tck = ctx->tck;
     char cmd_bit = cmd - '0';
     ctx->tdi = (cmd_bit >> 0) & 0x1;
     ctx->tms = (cmd_bit >> 1) & 0x1;
     ctx->tck = (cmd_bit >> 2) & 0x1;
+    // On a rising edge of TCK, we can process a following 'R' command
+    // to sense the current TDO without waiting for the next DPI
+    // callback. Since TDO changes on the falling edge of TCK, it is
+    // already stable and valid.
+    if (!tck && ctx->tck && lookahead(ctx)) {
+      act_send_resp = true;
+    }
   } else if (cmd >= 'r' && cmd <= 'u') {
     // JTAG reset (active high from OpenOCD)
     char cmd_bit = cmd - 'r';
