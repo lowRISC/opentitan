@@ -737,146 +737,6 @@
       ]
       run_timeout_mins: 120
     }
-    {
-      name: rom_e2e_sigverify_mod_exp_test_unlocked0_otbn
-      uvm_test_seq: chip_sw_base_vseq
-      sw_images: [
-        "//sw/device/silicon_creator/rom/e2e/sigverify_mod_exp:empty_test_sigverify_mod_exp:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
-        "//sw/device/silicon_creator/rom/e2e/sigverify_mod_exp:otp_img_sigverify_mod_exp_test_unlocked0_otbn:4",
-      ]
-      en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
-      run_opts: [
-        "+sw_test_timeout_ns=200_000_000"
-        "+use_otp_image=OtpTypeCustom",
-      ]
-      run_timeout_mins: 480
-    }
-    {
-      name: rom_e2e_sigverify_mod_exp_test_unlocked0_sw
-      uvm_test_seq: chip_sw_base_vseq
-      sw_images: [
-        "//sw/device/silicon_creator/rom/e2e/sigverify_mod_exp:empty_test_sigverify_mod_exp:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
-        "//sw/device/silicon_creator/rom/e2e/sigverify_mod_exp:otp_img_sigverify_mod_exp_test_unlocked0_sw:4",
-      ]
-      en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
-      run_opts: [
-        "+sw_test_timeout_ns=200_000_000"
-        "+use_otp_image=OtpTypeCustom",
-      ]
-      run_timeout_mins: 480
-    }
-    {
-      name: rom_e2e_sigverify_mod_exp_dev_otbn
-      uvm_test_seq: chip_sw_base_vseq
-      sw_images: [
-        "//sw/device/silicon_creator/rom/e2e/sigverify_mod_exp:empty_test_sigverify_mod_exp:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
-        "//sw/device/silicon_creator/rom/e2e/sigverify_mod_exp:otp_img_sigverify_mod_exp_dev_otbn:4",
-      ]
-      en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
-      run_opts: [
-        "+sw_test_timeout_ns=20_000_000"
-        "+use_otp_image=OtpTypeCustom",
-      ]
-      run_timeout_mins: 120
-    }
-    {
-      name: rom_e2e_sigverify_mod_exp_dev_sw
-      uvm_test_seq: chip_sw_base_vseq
-      sw_images: [
-        "//sw/device/silicon_creator/rom/e2e/sigverify_mod_exp:empty_test_sigverify_mod_exp:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
-        "//sw/device/silicon_creator/rom/e2e/sigverify_mod_exp:otp_img_sigverify_mod_exp_dev_sw:4",
-      ]
-      en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
-      run_opts: [
-        "+sw_test_timeout_ns=20_000_000"
-        "+use_otp_image=OtpTypeCustom",
-      ]
-      run_timeout_mins: 120
-    }
-    {
-      name: rom_e2e_sigverify_mod_exp_prod_otbn
-      uvm_test_seq: chip_sw_base_vseq
-      sw_images: [
-        "//sw/device/silicon_creator/rom/e2e/sigverify_mod_exp:empty_test_sigverify_mod_exp:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
-        "//sw/device/silicon_creator/rom/e2e/sigverify_mod_exp:otp_img_sigverify_mod_exp_prod_otbn:4",
-      ]
-      en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
-      run_opts: [
-        "+sw_test_timeout_ns=20_000_000"
-        "+use_otp_image=OtpTypeCustom",
-      ]
-      run_timeout_mins: 120
-    }
-    {
-      name: rom_e2e_sigverify_mod_exp_prod_sw
-      uvm_test_seq: chip_sw_base_vseq
-      sw_images: [
-        "//sw/device/silicon_creator/rom/e2e/sigverify_mod_exp:empty_test_sigverify_mod_exp:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
-        "//sw/device/silicon_creator/rom/e2e/sigverify_mod_exp:otp_img_sigverify_mod_exp_prod_sw:4",
-      ]
-      en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
-      run_opts: [
-        "+sw_test_timeout_ns=20_000_000"
-        "+use_otp_image=OtpTypeCustom",
-      ]
-      run_timeout_mins: 120
-    }
-    {
-      name: rom_e2e_sigverify_mod_exp_prod_end_otbn
-      uvm_test_seq: chip_sw_base_vseq
-      sw_images: [
-        "//sw/device/silicon_creator/rom/e2e/sigverify_mod_exp:empty_test_sigverify_mod_exp:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
-        "//sw/device/silicon_creator/rom/e2e/sigverify_mod_exp:otp_img_sigverify_mod_exp_prod_end_otbn:4",
-      ]
-      en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
-      run_opts: [
-        "+sw_test_timeout_ns=20_000_000"
-        "+use_otp_image=OtpTypeCustom",
-      ]
-      run_timeout_mins: 120
-    }
-    {
-      name: rom_e2e_sigverify_mod_exp_prod_end_sw
-      uvm_test_seq: chip_sw_base_vseq
-      sw_images: [
-        "//sw/device/silicon_creator/rom/e2e/sigverify_mod_exp:empty_test_sigverify_mod_exp:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
-        "//sw/device/silicon_creator/rom/e2e/sigverify_mod_exp:otp_img_sigverify_mod_exp_prod_end_sw:4",
-      ]
-      en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
-      run_opts: [
-        "+sw_test_timeout_ns=20_000_000"
-        "+use_otp_image=OtpTypeCustom",
-      ]
-      run_timeout_mins: 120
-    }
-    {
-      name: rom_e2e_sigverify_mod_exp_rma_otbn
-      uvm_test_seq: chip_sw_base_vseq
-      sw_images: [
-        "//sw/device/silicon_creator/rom/e2e/sigverify_mod_exp:empty_test_sigverify_mod_exp:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
-        "//sw/device/silicon_creator/rom/e2e/sigverify_mod_exp:otp_img_sigverify_mod_exp_rma_otbn:4",
-      ]
-      en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
-      run_opts: [
-        "+sw_test_timeout_ns=20_000_000"
-        "+use_otp_image=OtpTypeCustom",
-      ]
-      run_timeout_mins: 120
-    }
-    {
-      name: rom_e2e_sigverify_mod_exp_rma_sw
-      uvm_test_seq: chip_sw_base_vseq
-      sw_images: [
-        "//sw/device/silicon_creator/rom/e2e/sigverify_mod_exp:empty_test_sigverify_mod_exp:1:ot_flash_binary:signed:fake_rsa_prod_key_0",
-        "//sw/device/silicon_creator/rom/e2e/sigverify_mod_exp:otp_img_sigverify_mod_exp_rma_sw:4",
-      ]
-      en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
-      run_opts: [
-        "+sw_test_timeout_ns=20_000_000"
-        "+use_otp_image=OtpTypeCustom",
-      ]
-      run_timeout_mins: 120
-    }
 
     // Life cycle transitions with production ROM.
     {
@@ -914,6 +774,7 @@
 
     // ROM self hash test.
     // TODO(#19199): reactivate this test before PROD tapeout, when doing a ROM release.
+    // TODO(moidx): Update to ROM e2e target not requiring sigverify_mod_exp dependency.
     // {
     //   name: rom_e2e_self_hash
     //   uvm_test_seq: chip_sw_base_vseq
@@ -1036,21 +897,6 @@
         "rom_e2e_keymgr_init_rom_ext_meas",
         "rom_e2e_keymgr_init_rom_ext_no_meas",
         "rom_e2e_keymgr_init_rom_ext_invalid_meas",
-      ]
-    }
-    {
-      name: rom_e2e_sigverify_mod_exp
-      tests: [
-        "rom_e2e_sigverify_mod_exp_test_unlocked0_otbn",
-        "rom_e2e_sigverify_mod_exp_test_unlocked0_sw",
-        "rom_e2e_sigverify_mod_exp_dev_otbn",
-        "rom_e2e_sigverify_mod_exp_dev_sw",
-        "rom_e2e_sigverify_mod_exp_prod_otbn",
-        "rom_e2e_sigverify_mod_exp_prod_sw",
-        "rom_e2e_sigverify_mod_exp_prod_end_otbn",
-        "rom_e2e_sigverify_mod_exp_prod_end_sw",
-        "rom_e2e_sigverify_mod_exp_rma_otbn",
-        "rom_e2e_sigverify_mod_exp_rma_sw",
       ]
     }
     {
