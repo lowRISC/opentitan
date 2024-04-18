@@ -148,7 +148,7 @@ module i2c_target_fsm import i2c_pkg::*;
       stretch_active_cnt <= '0;
     end else if (actively_stretching) begin
       stretch_active_cnt <= stretch_active_cnt + 1'b1;
-    end else begin
+    end else if (start_detect_i && target_idle_o) begin
       stretch_active_cnt <= '0;
     end
   end
