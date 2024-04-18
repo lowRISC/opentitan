@@ -35,7 +35,6 @@ cc_test(
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/device/silicon_creator/lib/sigverify:mod_exp_ibex_device_library",
-        "//sw/device/silicon_creator/lib/sigverify:mod_exp_otbn",
         "//sw/device/silicon_creator/lib/sigverify:rsa_key",
         "//sw/device/silicon_creator/rom:sigverify_keys",
         "//sw/device/silicon_creator/rom:sigverify_keys_rsa",

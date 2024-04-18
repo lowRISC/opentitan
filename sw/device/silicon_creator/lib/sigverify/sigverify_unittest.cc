@@ -15,7 +15,6 @@
 #include "sw/device/silicon_creator/lib/drivers/mock_lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_otp.h"
 #include "sw/device/silicon_creator/lib/sigverify/mock_mod_exp_ibex.h"
-#include "sw/device/silicon_creator/lib/sigverify/mock_mod_exp_otbn.h"
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
 #include "otp_ctrl_regs.h"
@@ -85,7 +84,7 @@ constexpr sigverify_rsa_buffer_t kEncMsg{
     }};
 
 // The value of `kSignature` is not significant since we use mocks for
-// `sigverify_mod_exp_ibex()` and `sigverify_mod_exp_otbn()`.
+// `sigverify_mod_exp_ibex()`.
 constexpr sigverify_rsa_buffer_t kSignature{};
 
 /**
@@ -101,18 +100,12 @@ class SigverifyInLcState
       public testing::WithParamInterface<lifecycle_state_t> {
  protected:
   rom_test::MockSigverifyModExpIbex sigverify_mod_exp_ibex_;
-  rom_test::MockSigverifyModExpOtbn sigverify_mod_exp_otbn_;
   rom_test::MockOtp otp_;
   // The content of this key is not significant since we use mocks.
   sigverify_rsa_key_t key_{};
 };
 
 TEST_P(SigverifyInLcState, GoodSignatureIbex) {
-  EXPECT_CALL(
-      otp_,
-      read32(
-          OTP_CTRL_PARAM_CREATOR_SW_CFG_SIGVERIFY_RSA_MOD_EXP_IBEX_EN_OFFSET))
-      .WillOnce(Return(kHardenedBoolTrue));
   EXPECT_CALL(sigverify_mod_exp_ibex_, mod_exp(&key_, &kSignature, NotNull()))
       .WillOnce(DoAll(SetArgPointee<2>(kEncMsg), Return(kErrorOk)));
 
@@ -121,67 +114,9 @@ TEST_P(SigverifyInLcState, GoodSignatureIbex) {
                                  &flash_exec),
             kErrorOk);
   EXPECT_EQ(flash_exec, kSigverifyRsaSuccess);
-}
-
-TEST_P(SigverifyInLcState, GoodSignatureOtbn) {
-  EXPECT_CALL(
-      otp_,
-      read32(
-          OTP_CTRL_PARAM_CREATOR_SW_CFG_SIGVERIFY_RSA_MOD_EXP_IBEX_EN_OFFSET))
-      .WillOnce(Return(kHardenedBoolFalse));
-  EXPECT_CALL(sigverify_mod_exp_otbn_, mod_exp(&key_, &kSignature, NotNull()))
-      .WillOnce(DoAll(SetArgPointee<2>(kEncMsg), Return(kErrorOk)));
-
-  uint32_t flash_exec = 0;
-  EXPECT_EQ(sigverify_rsa_verify(&kSignature, &key_, &kTestDigest, GetParam(),
-                                 &flash_exec),
-            kErrorOk);
-  EXPECT_EQ(flash_exec, kSigverifyRsaSuccess);
-}
-
-TEST_P(SigverifyInLcState, BadSignatureOtbn) {
-  // Corrupt the words of the encoded message by flipping their bits and check
-  // that signature verification fails.
-  for (size_t i = 0; i < kSigVerifyRsaNumWords; ++i) {
-    auto bad_enc_msg = kEncMsg;
-    bad_enc_msg.data[i] = ~bad_enc_msg.data[i];
-
-    EXPECT_CALL(
-        otp_,
-        read32(
-            OTP_CTRL_PARAM_CREATOR_SW_CFG_SIGVERIFY_RSA_MOD_EXP_IBEX_EN_OFFSET))
-        .WillOnce(Return(kHardenedBoolFalse));
-    EXPECT_CALL(sigverify_mod_exp_otbn_, mod_exp(&key_, &kSignature, NotNull()))
-        .WillOnce(DoAll(SetArgPointee<2>(bad_enc_msg), Return(kErrorOk)));
-
-    uint32_t flash_exec = 0;
-    EXPECT_EQ(sigverify_rsa_verify(&kSignature, &key_, &kTestDigest, GetParam(),
-                                   &flash_exec),
-              kErrorSigverifyBadRsaSignature);
-    EXPECT_EQ(flash_exec, std::numeric_limits<uint32_t>::max());
-  }
 }
 
 INSTANTIATE_TEST_SUITE_P(AllLcStates, SigverifyInLcState,
-                         testing::ValuesIn(kLcStates));
-
-TEST_P(SigverifyInLcState, InvalidOtpValue) {
-  EXPECT_CALL(
-      otp_,
-      read32(
-          OTP_CTRL_PARAM_CREATOR_SW_CFG_SIGVERIFY_RSA_MOD_EXP_IBEX_EN_OFFSET))
-      .WillOnce(Return(0xA5A5A5A5));
-  EXPECT_CALL(sigverify_mod_exp_ibex_, mod_exp(&key_, &kSignature, NotNull()))
-      .WillOnce(DoAll(SetArgPointee<2>(kEncMsg), Return(kErrorOk)));
-
-  uint32_t flash_exec = 0;
-  EXPECT_EQ(sigverify_rsa_verify(&kSignature, &key_, &kTestDigest, GetParam(),
-                                 &flash_exec),
-            kErrorOk);
-  EXPECT_EQ(flash_exec, kSigverifyRsaSuccess);
-}
-
-INSTANTIATE_TEST_SUITE_P(IbexDefaultSigverifyInLcState, SigverifyInLcState,
                          testing::ValuesIn(kLcStates));
 
 struct UsageConstraintsTestCase {

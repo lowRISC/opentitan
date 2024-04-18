@@ -188,18 +188,9 @@ TEST(RsaVerifyTestCases, AllKeys) {
 
 class SigverifyRsaVerify
     : public rom_test::RomTest,
-      public testing::WithParamInterface<RsaVerifyTestCase> {
- protected:
-  rom_test::MockOtp otp_;
-};
+      public testing::WithParamInterface<RsaVerifyTestCase> {};
 
 TEST_P(SigverifyRsaVerify, Ibex) {
-  EXPECT_CALL(
-      otp_,
-      read32(
-          OTP_CTRL_PARAM_CREATOR_SW_CFG_SIGVERIFY_RSA_MOD_EXP_IBEX_EN_OFFSET))
-      .WillOnce(Return(kHardenedBoolTrue));
-
   uint32_t flash_exec = 0;
   EXPECT_EQ(sigverify_rsa_verify(&GetParam().sig, GetParam().key, &kDigest,
                                  kLcStateProd, &flash_exec),

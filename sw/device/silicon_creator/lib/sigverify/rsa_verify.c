@@ -6,7 +6,6 @@
 
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/sigverify/mod_exp_ibex.h"
-#include "sw/device/silicon_creator/lib/sigverify/mod_exp_otbn.h"
 
 #include "otp_ctrl_regs.h"
 
@@ -157,21 +156,8 @@ rom_error_t sigverify_rsa_verify(const sigverify_rsa_buffer_t *signature,
                                  const hmac_digest_t *act_digest,
                                  lifecycle_state_t lc_state,
                                  uint32_t *flash_exec) {
-  uint32_t sw_en = otp_read32(
-      OTP_CTRL_PARAM_CREATOR_SW_CFG_SIGVERIFY_RSA_MOD_EXP_IBEX_EN_OFFSET);
   sigverify_rsa_buffer_t enc_msg;
-  rom_error_t error = kErrorSigverifyBadRsaSignature;
-  // If OTP is not initialized, we default to Ibex signature verification.
-  switch (launder32(sw_en)) {
-    case kHardenedBoolFalse:
-      HARDENED_CHECK_EQ(sw_en, kHardenedBoolFalse);
-      error = sigverify_mod_exp_otbn(key, signature, &enc_msg);
-      break;
-    default:
-      HARDENED_CHECK_NE(sw_en, kHardenedBoolFalse);
-      error = sigverify_mod_exp_ibex(key, signature, &enc_msg);
-      break;
-  }
+  rom_error_t error = sigverify_mod_exp_ibex(key, signature, &enc_msg);
   if (launder32(error) != kErrorOk) {
     *flash_exec ^= UINT32_MAX;
     return error;
