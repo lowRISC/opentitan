@@ -19,6 +19,7 @@ filesets:
       - rtl/i2c_fifo_sync_sram_adapter.sv
       - rtl/i2c_fifos.sv
       - rtl/i2c_core.sv
+      - rtl/i2c_bus_monitor.sv
       - rtl/i2c_controller_fsm.sv
       - rtl/i2c_target_fsm.sv
       - rtl/i2c.sv
