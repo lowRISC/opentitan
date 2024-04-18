@@ -14,7 +14,7 @@ use opentitanlib::io::gpio::PinMode;
 use opentitanlib::io::i2c::Transfer;
 use opentitanlib::test_utils;
 use opentitanlib::test_utils::e2e_command::TestCommand;
-use opentitanlib::test_utils::i2c_target::{I2cTargetAddress, I2cTransferStart};
+use opentitanlib::test_utils::i2c_target::{I2cTargetAddress, I2cTestConfig, I2cTransferStart};
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::rpc::{UartRecv, UartSend};
 use opentitanlib::test_utils::status::Status;
@@ -67,6 +67,31 @@ fn test_read_transaction(opts: &Opts, transport: &TransportWrapper, address: u8)
     txn.execute_read(&*uart, || {
         i2c.run_transaction(Some(address), &mut [Transfer::Read(&mut result)])
     })?;
+    assert_eq!(result.as_slice(), txn.data.as_slice());
+    Ok(())
+}
+
+fn test_clock_stretching(opts: &Opts, transport: &TransportWrapper, address: u8) -> Result<()> {
+    let uart = transport.uart("console")?;
+    let i2c = transport.i2c(&opts.i2c)?;
+
+    let stretching_delay = I2cTestConfig {
+        clock_stretching_delay_millis: 10,
+    };
+    stretching_delay.write(&*uart)?;
+
+    log::info!("Testing read transaction with clock stretching at I2C address {address:02x}");
+    let txn = I2cTransferStart::new(address, b"Stretching the clock", true);
+    let mut result = vec![0u8; txn.length as usize];
+    txn.execute_read(&*uart, || {
+        i2c.run_transaction(Some(address), &mut [Transfer::Read(&mut result)])
+    })?;
+
+    let stretching_delay = I2cTestConfig {
+        clock_stretching_delay_millis: 0,
+    };
+    stretching_delay.write(&*uart)?;
+
     assert_eq!(result.as_slice(), txn.data.as_slice());
     Ok(())
 }
@@ -290,6 +315,7 @@ fn main() -> Result<()> {
         execute_test!(test_read_transaction, &opts, &transport, 0x70);
         execute_test!(test_read_transaction, &opts, &transport, 0x71);
         execute_test!(test_read_transaction, &opts, &transport, 0x72);
+        execute_test!(test_clock_stretching, &opts, &transport, 0x72);
         execute_test!(test_read_transaction, &opts, &transport, 0x73);
         execute_test!(test_write_transaction, &opts, &transport, 0x33);
         execute_test!(test_write_transaction_slow, &opts, &transport, 0x33);
