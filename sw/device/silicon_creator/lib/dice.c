@@ -230,15 +230,16 @@ rom_error_t dice_uds_tbs_cert_build(dice_cert_key_id_pair_t *key_ids,
   return kErrorOk;
 }
 
-rom_error_t dice_cdi_0_cert_build(manuf_certgen_inputs_t *inputs,
+rom_error_t dice_cdi_0_cert_build(hmac_digest_t *rom_ext_measurement,
+                                  uint32_t rom_ext_security_version,
                                   dice_cert_key_id_pair_t *key_ids,
                                   attestation_public_key_t *cdi_0_pubkey,
                                   uint8_t *cert, size_t *cert_size) {
   // Generate the TBS certificate.
   cdi_0_tbs_values_t cdi_0_cert_tbs_params = {
-      .rom_ext_hash = (unsigned char *)inputs->rom_ext_measurement,
+      .rom_ext_hash = (unsigned char *)rom_ext_measurement->digest,
       .rom_ext_hash_size = kDiceMeasurementSizeInBytes,
-      .rom_ext_security_version = inputs->rom_ext_security_version,
+      .rom_ext_security_version = rom_ext_security_version,
       .owner_intermediate_pub_key_id = (unsigned char *)key_ids->cert->digest,
       .owner_intermediate_pub_key_id_size = kDiceCertKeyIdSizeInBytes,
       .creator_pub_key_id = (unsigned char *)key_ids->endorsement->digest,
@@ -272,18 +273,20 @@ rom_error_t dice_cdi_0_cert_build(manuf_certgen_inputs_t *inputs,
   return kErrorOk;
 }
 
-rom_error_t dice_cdi_1_cert_build(manuf_certgen_inputs_t *inputs,
+rom_error_t dice_cdi_1_cert_build(hmac_digest_t *owner_measurement,
+                                  hmac_digest_t *owner_manifest_measurement,
+                                  uint32_t owner_security_version,
                                   dice_cert_key_id_pair_t *key_ids,
                                   attestation_public_key_t *cdi_1_pubkey,
                                   uint8_t *cert, size_t *cert_size) {
   // Generate the TBS certificate.
   cdi_1_tbs_values_t cdi_1_cert_tbs_params = {
-      .owner_hash = (unsigned char *)inputs->owner_measurement,
+      .owner_hash = (unsigned char *)owner_measurement->digest,
       .owner_hash_size = kDiceMeasurementSizeInBytes,
       .owner_manifest_hash =
-          (unsigned char *)inputs->owner_manifest_measurement,
+          (unsigned char *)owner_manifest_measurement->digest,
       .owner_manifest_hash_size = kDiceMeasurementSizeInBytes,
-      .owner_security_version = inputs->owner_security_version,
+      .owner_security_version = owner_security_version,
       .owner_pub_key_id = (unsigned char *)key_ids->cert->digest,
       .owner_pub_key_id_size = kDiceCertKeyIdSizeInBytes,
       .owner_intermediate_pub_key_id =
