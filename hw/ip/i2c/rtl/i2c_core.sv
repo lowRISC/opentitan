@@ -57,7 +57,7 @@ module i2c_core import i2c_pkg::*;
   logic [12:0] t_buf;
   logic [30:0] stretch_timeout;
   logic        timeout_enable;
-  logic [31:0] host_timeout;
+  logic [19:0] host_timeout;
   logic [30:0] nack_timeout;
   logic        nack_timeout_en;
   logic [30:0] host_nack_handler_timeout;
@@ -69,6 +69,10 @@ module i2c_core import i2c_pkg::*;
   logic scl_out_target_fsm, sda_out_target_fsm;
   logic scl_out_fsm;
   logic sda_out_fsm;
+
+  logic bus_free;
+  logic start_detect;
+  logic stop_detect;
 
   logic event_rx_overflow;
   logic status_controller_halt;
@@ -418,6 +422,27 @@ module i2c_core import i2c_pkg::*;
     .q_o (sda_sync)
   );
 
+  i2c_bus_monitor u_i2c_bus_monitor (
+    .clk_i,
+    .rst_ni,
+
+    .scl_i                          (scl_sync),
+    .sda_i                          (sda_sync),
+
+    .controller_enable_i            (host_enable),
+    .target_enable_i                (target_enable),
+    .target_idle_i                  (target_idle),
+    .thd_dat_i                      (thd_dat),
+    .t_buf_i                        (t_buf),
+    .bus_timeout_i                  (host_timeout),
+
+    .bus_free_o                     (bus_free),
+    .start_detect_o                 (start_detect),
+    .stop_detect_o                  (stop_detect),
+
+    .event_host_timeout_o           (event_host_timeout)
+  );
+
   i2c_controller_fsm #(
     .FifoDepth(FifoDepth)
   ) u_i2c_controller_fsm (
@@ -428,6 +453,7 @@ module i2c_core import i2c_pkg::*;
     .scl_o                          (scl_out_controller_fsm),
     .sda_i                          (sda_sync),
     .sda_o                          (sda_out_controller_fsm),
+    .bus_free_i                     (bus_free),
 
     .host_enable_i                  (host_enable),
 
@@ -457,7 +483,6 @@ module i2c_core import i2c_pkg::*;
     .tsu_sta_i                      (tsu_sta),
     .tsu_sto_i                      (tsu_sto),
     .thd_dat_i                      (thd_dat),
-    .t_buf_i                        (t_buf),
     .stretch_timeout_i              (stretch_timeout),
     .timeout_enable_i               (timeout_enable),
     .host_nack_handler_timeout_i    (host_nack_handler_timeout),
@@ -481,6 +506,8 @@ module i2c_core import i2c_pkg::*;
     .scl_o                          (scl_out_target_fsm),
     .sda_i                          (sda_sync),
     .sda_o                          (sda_out_target_fsm),
+    .start_detect_i                 (start_detect),
+    .stop_detect_i                  (stop_detect),
 
     .target_enable_i                (target_enable),
 
@@ -499,7 +526,6 @@ module i2c_core import i2c_pkg::*;
     .t_r_i                          (t_r),
     .tsu_dat_i                      (tsu_dat),
     .thd_dat_i                      (thd_dat),
-    .host_timeout_i                 (host_timeout),
     .nack_timeout_i                 (nack_timeout),
     .nack_timeout_en_i              (nack_timeout_en),
     .nack_addr_after_timeout_i      (reg2hw.ctrl.nack_addr_after_timeout.q),
@@ -518,8 +544,7 @@ module i2c_core import i2c_pkg::*;
     .event_target_nack_o            (event_target_nack),
     .event_cmd_complete_o           (event_target_cmd_complete),
     .event_tx_stretch_o             (event_tx_stretch),
-    .event_unexp_stop_o             (event_unexp_stop),
-    .event_host_timeout_o           (event_host_timeout)
+    .event_unexp_stop_o             (event_unexp_stop)
   );
 
   prim_intr_hw #(

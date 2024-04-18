@@ -16,8 +16,9 @@ module i2c_controller_fsm import i2c_pkg::*;
   output logic scl_o,  // serial clock output to i2c bus
   input        sda_i,  // serial data input from i2c bus
   output logic sda_o,  // serial data output to i2c bus
+  input        bus_free_i,     // High if the bus is free for a new transmission
 
-  input        host_enable_i, // enable host functionality
+  input        host_enable_i,     // enable host functionality
 
   input                      fmt_fifo_rvalid_i, // indicates there is valid data in fmt_fifo
   input [FifoDepthWidth-1:0] fmt_fifo_depth_i,  // fmt_fifo_depth
@@ -44,7 +45,6 @@ module i2c_controller_fsm import i2c_pkg::*;
   input [12:0] tsu_sta_i,  // setup time for repeated START in clock units
   input [12:0] tsu_sto_i,  // setup time for STOP in clock units
   input [12:0] thd_dat_i,  // data hold time in clock units
-  input [12:0] t_buf_i,    // bus free time between STOP and START in clock units
   input [30:0] stretch_timeout_i,  // max time target connected to this host may stretch the clock
   input        timeout_enable_i,   // assert if target stretches clock past max
   input [30:0] host_nack_handler_timeout_i, // Timeout threshold for unhandled Host-Mode 'nak' irq.
@@ -108,7 +108,6 @@ module i2c_controller_fsm import i2c_pkg::*;
     tHoldBit,
     tClockStop,
     tSetupStop,
-    tHoldStop,
     tNoDelay
   } tcount_sel_e;
 
@@ -127,7 +126,6 @@ module i2c_controller_fsm import i2c_pkg::*;
         tHoldBit    : tcount_d = 13'(t_f_i) + 13'(thd_dat_i);
         tClockStop  : tcount_d = 13'(t_f_i) + 13'(tlow_i) - 13'(thd_dat_i);
         tSetupStop  : tcount_d = 13'(t_r_i) + 13'(tsu_sto_i);
-        tHoldStop   : tcount_d = 13'(t_r_i) + 13'(t_buf_i) - 13'(tsu_sta_i);
         tNoDelay    : tcount_d = 16'h0001;
         default     : tcount_d = 16'h0001;
       endcase
@@ -357,14 +355,11 @@ module i2c_controller_fsm import i2c_pkg::*;
     end
   end
 
-  // There are two conditions of sda interference:
-  // 1. When the host function is first enabled, but for some reason sda_i is already 0.
-  // 2. Any time the host function is trying to drive a 1 but it observes a 0 instead.
+  // Report SDA interference when the host function tries to drive a 1 but observes a 0 instead.
   //
   // When the count is reached, we are pass the rise time period.
   // Now check for any inconsistency in the sda value.
-  assign event_sda_interference_o = (host_idle_o & host_enable_i & !sda_i) |
-                                    ((sda_rise_cnt == sda_rise_latency) & (sda_o & !sda_i));
+  assign event_sda_interference_o = (sda_rise_cnt == sda_rise_latency) & (sda_o & !sda_i);
 
   // Increment the NACK timeout count if the controller is halted in Idle and
   // the timeout hasn't yet occurred.
@@ -615,7 +610,9 @@ module i2c_controller_fsm import i2c_pkg::*;
               tcount_sel = tClockStop;
             end
           end else if (fmt_fifo_rvalid_i) begin
-            state_d = Active;
+            if (trans_started || bus_free_i) begin
+              state_d = Active;
+            end
           end
         end else if (trans_started && !host_enable_i) begin
             auto_stop_d = 1'b1;
@@ -828,15 +825,13 @@ module i2c_controller_fsm import i2c_pkg::*;
       SetupStop : begin
         if (tcount_q == 20'd1) begin
           state_d = HoldStop;
-          load_tcount = 1'b1;
-          tcount_sel = tHoldStop;
           log_stop = 1'b1;
         end
       end
       // HoldStop: SDA and SCL are released
       HoldStop : begin
         en_sda_interf_det = 1'b1;
-        if (tcount_q == 20'd1) begin
+        if (scl_i && sda_i) begin
           en_sda_interf_det = 1'b0;
           auto_stop_d = 1'b0;
           if (auto_stop_q) begin
@@ -876,7 +871,8 @@ module i2c_controller_fsm import i2c_pkg::*;
           state_d = ClockStop;
           load_tcount = 1'b1;
           tcount_sel = tClockStop;
-        end else if (!host_enable_i || (fmt_fifo_depth_i == 7'h1) || unhandled_unexp_nak_i) begin
+        end else if (!host_enable_i || (fmt_fifo_depth_i == 7'h1) ||
+                     unhandled_unexp_nak_i || !trans_started) begin
           state_d = Idle;
           load_tcount = 1'b1;
           tcount_sel = tNoDelay;

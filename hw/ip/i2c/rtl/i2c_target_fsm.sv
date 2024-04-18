@@ -16,6 +16,8 @@ module i2c_target_fsm import i2c_pkg::*;
   output logic scl_o,  // serial clock output to i2c bus
   input        sda_i,  // serial data input from i2c bus
   output logic sda_o,  // serial data output to i2c bus
+  input        start_detect_i,
+  input        stop_detect_i,
 
   input        target_enable_i, // enable target functionality
 
@@ -34,7 +36,6 @@ module i2c_target_fsm import i2c_pkg::*;
   input [12:0] t_r_i,      // rise time of both SDA and SCL in clock units
   input [12:0] tsu_dat_i,  // data setup time in clock units
   input [12:0] thd_dat_i,  // data hold time in clock units
-  input [31:0] host_timeout_i,     // max time target waits for host to pull clock down
   input [30:0] nack_timeout_i,     // max time target may stretch until it should NACK
   input        nack_timeout_en_i,  // enable nack timeout
   input        nack_addr_after_timeout_i,
@@ -57,16 +58,13 @@ module i2c_target_fsm import i2c_pkg::*;
   output logic event_target_nack_o,      // this target sent a NACK (this is used to keep count)
   output logic event_cmd_complete_o,     // Command is complete
   output logic event_tx_stretch_o,       // tx transaction is being stretched
-  output logic event_unexp_stop_o,       // target received an unexpected stop
-  output logic event_host_timeout_o      // host ceased sending SCL pulses during ongoing transactn
+  output logic event_unexp_stop_o        // target received an unexpected stop
 );
 
   // I2C bus clock timing variables
   logic [15:0] tcount_q;      // current counter for setting delays
   logic [15:0] tcount_d;      // next counter for setting delays
   logic        load_tcount;   // indicates counter must be loaded
-  logic [31:0] stretch_idle_cnt; // counter for clock being stretched by target
-                                 // or clock idle by host.
   logic [30:0] stretch_active_cnt; // In target mode keep track of how long it has stretched for
                                    // the NACK timeout feature.
 
@@ -76,20 +74,12 @@ module i2c_target_fsm import i2c_pkg::*;
   logic        nack_transaction_q; // Set if the rest of the transaction needs to be nack'd.
   logic        nack_transaction_d;
 
-  // Stop / Start detection counter
-  logic [15:0] ctrl_det_count;
-
   // Other internal variables
   logic        scl_d;         // scl internal
   logic        sda_d, sda_q;  // data internal
   logic        scl_i_q;       // scl_i delayed by one clock
-  logic        sda_i_q;       // sda_i delayed by one clock
 
   // Target specific variables
-  logic        start_det_trigger, start_det_pending;
-  logic        start_det;     // indicates start or repeated start is detected on the bus
-  logic        stop_det_trigger, stop_det_pending;
-  logic        stop_det;      // indicates stop is detected on the bus
   logic        restart_det_q; // indicates the latest start was a repeated start
   logic        restart_det_d;
   logic        address0_match;// indicates target's address0 matches the one sent by host
@@ -151,24 +141,6 @@ module i2c_target_fsm import i2c_pkg::*;
     end
   end
 
-  // Clock stretching/idle detection when i2c_ctrl.
-  // When in host mode, this is a stretch count for how long an external target
-  // has stretched the clock.
-  // When in target mode, this is an idle count for how long an external host
-  // has kept the clock idle after a START indication.
-  always_ff @ (posedge clk_i or negedge rst_ni) begin : clk_stretch
-    if (!rst_ni) begin
-      stretch_idle_cnt <= '0;
-    end else if (!target_idle_o && event_host_timeout_o) begin
-      // If the host has timed out, reset the counter and try again
-      stretch_idle_cnt <= '0;
-    end else if (!target_idle_o && scl_i) begin
-      stretch_idle_cnt <= stretch_idle_cnt + 1'b1;
-    end else begin
-      stretch_idle_cnt <= '0;
-    end
-  end
-
   // Keep track of how long the target has been stretching. This is used to
   // timeout and send a NACK instead.
   always_ff @ (posedge clk_i or negedge rst_ni) begin : clk_nack_after_stretch
@@ -211,10 +183,8 @@ module i2c_target_fsm import i2c_pkg::*;
   always_ff @ (posedge clk_i or negedge rst_ni) begin : bus_prev
     if (!rst_ni) begin
       scl_i_q <= 1'b1;
-      sda_i_q <= 1'b1;
     end else begin
       scl_i_q <= scl_i;
-      sda_i_q <= sda_i;
     end
   end
 
@@ -231,56 +201,6 @@ module i2c_target_fsm import i2c_pkg::*;
     end
   end
 
-  // To resolve ambiguity with early SDA arrival, reject control symbols when
-  // SCL goes low too soon. The hold time for ordinary data/ACK bits is too
-  // short to reliably see SCL change before SDA. Use the hold time for
-  // control signals to ensure a Start or Stop symbol was actually received.
-  // Requirements: thd_dat + 1 < thd_sta
-  //   The extra (+1) here is to account for a late SDA arrival due to CDC
-  //   skew.
-  //
-  // Note that this counter combines Start and Stop detection into one
-  // counter. A controller-only reset scenario could end up with a Stop
-  // following shortly after a Start, with the requisite setup time not
-  // observed.
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      ctrl_det_count <= '0;
-    end else if (start_det_trigger || stop_det_trigger) begin
-      ctrl_det_count <= 16'd1;
-    end else if (start_det_pending || stop_det_pending) begin
-      ctrl_det_count <= ctrl_det_count + 1'b1;
-    end
-  end
-
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      start_det_pending <= 1'b0;
-    end else if (start_det_trigger) begin
-      start_det_pending <= 1'b1;
-    end else if (!target_enable_i || !scl_i || start_det || stop_det_trigger) begin
-      start_det_pending <= 1'b0;
-    end
-  end
-
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      stop_det_pending <= 1'b0;
-    end else if (stop_det_trigger) begin
-      stop_det_pending <= 1'b1;
-    end else if (!target_enable_i || !scl_i || stop_det || start_det_trigger) begin
-      stop_det_pending <= 1'b0;
-    end
-  end
-
-  // (Repeated) Start condition detection by target
-  assign start_det_trigger = target_enable_i && (scl_i_q && scl_i) & (sda_i_q && !sda_i);
-  assign start_det = target_enable_i && start_det_pending && (ctrl_det_count >= 16'(thd_dat_i));
-
-  // Stop condition detection by target
-  assign stop_det_trigger = target_enable_i && (scl_i_q && scl_i) & (!sda_i_q && sda_i);
-  assign stop_det = target_enable_i && stop_det_pending && (ctrl_det_count >= 16'(thd_dat_i));
-
   // Bit counter on the target side
   assign bit_ack = (bit_idx == 4'd8); // ack
 
@@ -288,7 +208,7 @@ module i2c_target_fsm import i2c_pkg::*;
   always_ff @ (posedge clk_i or negedge rst_ni) begin : tgt_bit_counter
     if (!rst_ni) begin
       bit_idx <= 4'd0;
-    end else if (start_det) begin
+    end else if (start_detect_i) begin
       bit_idx <= 4'd0;
     end else if (scl_i_q && !scl_i) begin
       // input byte clear is always asserted on a "start"
@@ -393,7 +313,8 @@ module i2c_target_fsm import i2c_pkg::*;
 
   // During a host issued read, a stop was received without first seeing a nack.
   // This may be harmless but is technically illegal behavior, notify software.
-  assign event_unexp_stop_o = xfer_for_us_q & rw_bit_q & stop_det & !expect_stop;
+  assign event_unexp_stop_o = target_enable_i & xfer_for_us_q & rw_bit_q &
+                              stop_detect_i & !expect_stop;
 
   // Record each transaction that gets NACK'd.
   assign event_target_nack_o = !nack_transaction_q && nack_transaction_d;
@@ -674,7 +595,7 @@ module i2c_target_fsm import i2c_pkg::*;
     endcase // unique case (state_q)
 
     // start / stop override
-    if (stop_det) begin
+    if (target_enable_i && stop_detect_i) begin
       event_cmd_complete_o = xfer_for_us_q;
       // Note that we assume the ACQ FIFO can accept a new item and will
       // receive the arbiter grant without delay. No other FIFOs should have
@@ -686,7 +607,7 @@ module i2c_target_fsm import i2c_pkg::*;
       end else begin
         acq_fifo_wdata_o = {AcqStop, input_byte};
       end
-    end else if (start_det) begin
+    end else if (target_enable_i && start_detect_i) begin
       restart_det_d = !target_idle_o;
       event_cmd_complete_o = xfer_for_us_q;
     end
@@ -1037,9 +958,9 @@ module i2c_target_fsm import i2c_pkg::*;
       // ICEBOX(#18004): It may be worth having a force stop condition to force the host back to
       // Idle in case graceful termination is not possible.
       state_d = Idle;
-    end else if (start_det) begin
+    end else if (target_enable_i && start_detect_i) begin
       state_d = AcquireStart;
-    end else if (stop_det) begin
+    end else if (stop_detect_i) begin
       state_d = Idle;
     end
   end
@@ -1047,7 +968,7 @@ module i2c_target_fsm import i2c_pkg::*;
   // TARGET-Mode -> RSTART or STOP condition observed
   // This output is used to (optionally) reset the TXFIFO, as any data populated by
   // software is now highly-unlikely to be applicable to the next transaction.
-  assign target_sr_p_cond_o = target_enable_i && !target_idle && (stop_det | start_det);
+  assign target_sr_p_cond_o = target_enable_i && !target_idle && (stop_detect_i | start_detect_i);
 
   // Synchronous state transition
   always_ff @ (posedge clk_i or negedge rst_ni) begin : state_transition
@@ -1069,9 +990,6 @@ module i2c_target_fsm import i2c_pkg::*;
 
   assign scl_o = scl_d;
   assign sda_o = sda_d;
-
-  // Host ceased sending SCL pulses during ongoing transaction
-  assign event_host_timeout_o = !target_idle_o & (stretch_idle_cnt > host_timeout_i);
 
   // Fed out for interrupt purposes
   assign acq_fifo_full_o = !acq_fifo_plenty_space;

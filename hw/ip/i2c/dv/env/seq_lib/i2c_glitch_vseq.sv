@@ -20,9 +20,9 @@ class i2c_glitch_vseq extends i2c_target_smoke_vseq;
   uint scl_period;
 
   // Variable used to detect start internally
-  string start_detected_path = "tb.dut.i2c_core.u_i2c_target_fsm.start_det";
+  string start_detected_path = "tb.dut.i2c_core.u_i2c_bus_monitor.start_det";
   // Variable used to detect Stop internally
-  string stop_detected_path = "tb.dut.i2c_core.u_i2c_target_fsm.stop_det";
+  string stop_detected_path = "tb.dut.i2c_core.u_i2c_bus_monitor.stop_det";
   // Internal FSM variable
   string fsm_state_path = "tb.dut.i2c_core.u_i2c_target_fsm.state_q";
 
