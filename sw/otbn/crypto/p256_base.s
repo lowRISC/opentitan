@@ -1089,13 +1089,13 @@ fetch_proj_randomize:
  * @param[in]  w29: r448, constant, 2^448 mod p
  * @param[in]  w31: all-zero.
  * @param[in]  MOD: p, modulus of P-256 underlying finite field
- * @param[out]  w11: x_r, x-coordinate of resulting point
- * @param[out]  w12: y_r, y-coordinate of resulting point
- * @param[out]  w13: z_r, z-coordinate of resulting point
+ * @param[out]  w8: x_r, x-coordinate of resulting point
+ * @param[out]  w9: y_r, y-coordinate of resulting point
+ * @param[out]  w10: z_r, z-coordinate of resulting point
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
- * clobbered registers: w11 to w25
+ * clobbered registers: w14 to w25
  * clobbered flag groups: FG0
  */
 proj_double:
@@ -1131,20 +1131,20 @@ proj_double:
   bn.subm   w18, w19, w17
   bn.subm   w18, w18, w17
 
-  /* w11 <= w18 * w15 = h * s = X1 */
+  /* w8 <= w18 * w15 = h * s = X1 */
   bn.mov    w24, w18
   bn.mov    w25, w15
   jal       x1, mul_modp
-  bn.mov    w11, w19
+  bn.mov    w8, w19
 
-  /* w13 <= w15 * w15 * w15 = s * s * s = sss  = Z1 */
+  /* w10 <= w15 * w15 * w15 = s * s * s = sss  = Z1 */
   bn.mov    w24, w15
   bn.mov    w25, w15
   jal       x1, mul_modp
   bn.mov    w24, w19
   bn.mov    w25, w15
   jal       x1, mul_modp
-  bn.mov    w13, w19
+  bn.mov    w10, w19
 
   /* w15 <= w14 * (w17 - w18) = w*(B-h) */
   bn.mov    w24, w14
@@ -1163,9 +1163,8 @@ proj_double:
      infinity (any point where Y is nonzero and both X=0 and Z=0). Detect this
      case and select a 1 for Y if all coordinates are 0. */
   bn.addi   w16, w31, 1
-  bn.or     w14, w11, w13
-  bn.or     w14, w14, w15
-  bn.sel    w12, w16, w15, Z
+  bn.or     w14, w8, w10
+  bn.sel    w9, w16, w15, Z
 
   ret
 
@@ -1244,9 +1243,9 @@ scalar_mult_int:
      loop when the bit at the current index is 1 for both shares of the scalar.
      2P = (w4, w5, w6) <= (w11, w12, w13) <= 2*(w8, w9, w10) = 2*P */
   jal       x1, proj_double
-  bn.mov    w4, w11
-  bn.mov    w5, w12
-  bn.mov    w6, w13
+  bn.mov    w4, w8
+  bn.mov    w5, w9
+  bn.mov    w6, w10
 
   /* init double-and-add with point in infinity
      Q = (w8, w9, w10) <= (0, 1, 0) */
@@ -1267,7 +1266,7 @@ scalar_mult_int:
   loopi     320, 34
 
     /* double point Q
-       Q = (w11, w12, w13) <= 2*(w8, w9, w10) = 2*Q */
+       Q = (w8, w9, w10) <= 2*(w8, w9, w10) = 2*Q */
     jal       x1, proj_double
 
     /* re-fetch and randomize P again
@@ -1287,17 +1286,17 @@ scalar_mult_int:
        hamming distance from the destination's previous value to its new value
        will be 0 in one of the cases and potentially reveal M.
 
-       P = (w8, w9, w10)
+       P = (w11, w12, w13)
         <= (w0[255] xor w1[255])?P=(w14, w15, w16):2P=(w4, w5, w6) */
-    bn.sel    w8, w14, w4, M
-    bn.sel    w9, w15, w5, M
-    bn.sel    w10, w16, w6, M
+    bn.sel    w11, w14, w4, M
+    bn.sel    w12, w15, w5, M
+    bn.sel    w13, w16, w6, M
 
     /* save doubling result to survive follow-up subroutine call
        Q = (w7, w26, w30) <= (w11, w12, w13) */
-    bn.mov    w7, w11
-    bn.mov    w26, w12
-    bn.mov    w30, w13
+    bn.mov    w7, w8
+    bn.mov    w26, w9
+    bn.mov    w30, w10
 
     /* add points
        Q+P = (w11, w12, w13) <= (w11, w12, w13) + (w8, w9, w10) */
@@ -1357,6 +1356,7 @@ scalar_mult_int:
      FG0.Z <= if (w10 == 0) then 1 else 0 */
   bn.cmp    w10, w31
   jal       x0, trigger_fault_if_fg0_z
+
 
 /**
  * P-256 scalar multiplication with base point G
