@@ -209,6 +209,10 @@ static void compute_keymgr_owner_binding(manuf_certgen_inputs_t *inputs) {
  * Crank the keymgr to produce the DICE attestation keys and certificates.
  */
 static status_t personalize_dice_certificates(ujson_t *uj) {
+  // Load OTBN attestation keygen program.
+  // TODO(#21550): this should already be loaded by the ROM.
+  TRY(otbn_boot_app_load());
+
   // Retrieve certificate provisioning data.
   LOG_INFO("Waiting for DICE certificate inputs ...");
   TRY(ujson_deserialize_manuf_certgen_inputs_t(uj, &certgen_inputs));
@@ -224,10 +228,6 @@ static status_t personalize_dice_certificates(ujson_t *uj) {
   TRY(sc_keymgr_state_check(kScKeymgrStateReset));
   sc_keymgr_advance_state();
   TRY(sc_keymgr_state_check(kScKeymgrStateInit));
-
-  // Load OTBN attestation keygen program.
-  // TODO(#21550): this should already be loaded by the ROM.
-  TRY(otbn_boot_app_load());
 
   // Generate UDS keys and (TBS) cert.
   sc_keymgr_advance_state();
