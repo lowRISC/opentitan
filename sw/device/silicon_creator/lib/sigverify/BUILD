@@ -2,9 +2,12 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:opentitan.bzl", "OPENTITAN_CPU")
-load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library", "dual_inputs")
-load("//rules:otbn.bzl", "otbn_insn_count_range")
+load(
+    "//rules:cross_platform.bzl",
+    "dual_cc_device_library_of",
+    "dual_cc_library",
+    "dual_inputs",
+)
 load(
     "//rules/opentitan:defs.bzl",
     "EARLGREY_TEST_ENVS",
@@ -122,118 +125,12 @@ opentitan_test(
     ],
 )
 
-dual_cc_library(
-    name = "mod_exp_otbn",
-    srcs = dual_inputs(
-        device = ["mod_exp_otbn.c"],
-        host = ["mock_mod_exp_otbn.cc"],
-    ),
-    hdrs = dual_inputs(
-        host = ["mock_mod_exp_otbn.h"],
-        shared = ["mod_exp_otbn.h"],
-    ),
-    target_compatible_with = dual_inputs(
-        # This target uses OTBN pointers internally, so it cannot
-        # work host-side.
-        device = [OPENTITAN_CPU],
-    ),
-    deps = dual_inputs(
-        device = [
-            "//sw/device/lib/base:macros",
-            "//sw/device/lib/base:memory",
-            "//sw/device/silicon_creator/lib/drivers:otbn",
-            "//sw/otbn/crypto:run_rsa_verify_3072_rr_modexp",
-        ],
-        host = [
-            "//sw/device/lib/base:global_mock",
-            "//sw/device/silicon_creator/testing:rom_test",
-            "@googletest//:gtest",
-        ],
-        shared = [
-            ":rsa_key",
-            "//sw/device/silicon_creator/lib:error",
-        ],
-    ),
-)
-
-opentitan_test(
-    name = "mod_exp_otbn_functest_hardcoded",
-    srcs = ["mod_exp_otbn_functest.c"],
-    broken = cw310_params(tags = ["broken"]),
-    exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        {
-            # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
-        },
-    ),
-    verilator = verilator_params(
-        timeout = "long",
-        tags = [
-            "manual",
-        ],
-    ),
-    deps = [
-        ":mod_exp_otbn",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib/base:sec_mmio",
-        "//sw/device/silicon_creator/lib/sigverify/sigverify_tests:sigverify_testvectors_hardcoded",
-    ],
-)
-
-opentitan_test(
-    name = "mod_exp_otbn_functest_wycheproof",
-    srcs = ["mod_exp_otbn_functest.c"],
-    exec_env = {
-        # Test set is too large as ROM_EXT
-        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-        "//hw/top_earlgrey:sim_verilator": None,
-    },
-    verilator = verilator_params(
-        timeout = "long",
-        tags = [
-            "manual",
-        ],
-    ),
-    deps = [
-        ":mod_exp_otbn",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib/base:sec_mmio",
-        "//sw/device/silicon_creator/lib/sigverify/sigverify_tests:sigverify_testvectors_wycheproof",
-    ],
-)
-
-# This rule runs the instruction-counting script for OTBN and gets the expected
-# min/max instruction counts.
-otbn_insn_count_range(
-    name = "mod_exp_otbn_insn_count_range",
-    deps = [
-        "//sw/otbn/crypto:run_rsa_verify_3072_rr_modexp",
-    ],
-)
-
-# Check the OTBN instruction count in mod_exp_otbn.h
-sh_test(
-    name = "mod_exp_otbn_insn_count_check",
-    size = "small",
-    srcs = ["mod_exp_otbn_insn_count_check.sh"],
-    args = [
-        "$(location :mod_exp_otbn_insn_count_range)",
-        "$(location mod_exp_otbn.h)",
-    ],
-    data = [
-        "mod_exp_otbn.h",
-        ":mod_exp_otbn_insn_count_range",
-    ],
-)
-
 cc_library(
     name = "rsa_verify",
     srcs = ["rsa_verify.c"],
     hdrs = ["rsa_verify.h"],
     deps = [
         ":mod_exp_ibex",
-        ":mod_exp_otbn",
         ":rsa_key",
         "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//sw/device/lib/base:hardened",
@@ -250,8 +147,8 @@ opentitan_test(
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         {
-            # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
             "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
+            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
         },
     ),
     verilator = verilator_params(
