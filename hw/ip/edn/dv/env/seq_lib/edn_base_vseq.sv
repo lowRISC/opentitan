@@ -135,7 +135,7 @@ class edn_base_vseq extends cip_base_vseq #(
     if (write_reserved_err_code_test_reg) begin
       `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.err_code_test.err_code_test,
           !(value inside
-          {EdnSfifoRescmdErrTest, EdnSfifoGencmdErrTest, EdnSfifoOutputErrTest, EdnAckSmErrTest,
+          {EdnSfifoRescmdErrTest, EdnSfifoGencmdErrTest, EdnAckSmErrTest,
            EdnMainSmErrTest, EdnCntrErrTest, EdnFifoWriteErrTest, EdnFifoReadErrTest,
            EdnFifoStateErrTest});)
       csr_update(ral.err_code_test);
