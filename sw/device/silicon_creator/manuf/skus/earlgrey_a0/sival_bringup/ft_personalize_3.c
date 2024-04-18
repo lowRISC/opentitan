@@ -129,6 +129,9 @@ static void compute_keymgr_owner_binding(manuf_certgen_inputs_t *inputs) {
  * Crank the keymgr to produce the attestation keys and certificates.
  */
 static status_t personalize(ujson_t *uj) {
+  // Load OTBN attestation keygen program.
+  TRY(otbn_boot_app_load());
+
   // Retrieve certificate provisioning data.
   LOG_INFO("Waiting for DICE certificate inputs ...");
   TRY(ujson_deserialize_manuf_certgen_inputs_t(uj, &certgen_inputs));
@@ -144,9 +147,6 @@ static status_t personalize(ujson_t *uj) {
   TRY(keymgr_state_check(kKeymgrStateReset));
   keymgr_advance_state();
   TRY(keymgr_state_check(kKeymgrStateInit));
-
-  // Load OTBN attestation keygen program.
-  TRY(otbn_boot_app_load());
 
   // Generate UDS keys and (TBS) cert.
   keymgr_advance_state();
