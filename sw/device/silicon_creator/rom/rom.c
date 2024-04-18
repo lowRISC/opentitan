@@ -537,12 +537,12 @@ static rom_error_t rom_try_boot(void) {
   boot_log_t *boot_log = &retention_sram_get()->creator.boot_log;
   boot_log->identifier = kBootLogIdentifier;
   boot_log->chip_version = kChipInfo.scm_revision;
-  boot_log->bl0_slot = kBootLogUninitialized;
+  boot_log->bl0_slot = 0;  // Unknown at this point in the boot process.
 
   if (launder32(error) == kErrorOk) {
     HARDENED_CHECK_EQ(error, kErrorOk);
 
-    boot_log->rom_ext_slot = kRomExtBootSlotA;
+    boot_log->rom_ext_slot = kBootSlotA;
     boot_log_digest_update(boot_log);
 
     CFI_FUNC_COUNTER_CHECK(rom_counters, kCfiRomVerify, 3);
@@ -552,7 +552,7 @@ static rom_error_t rom_try_boot(void) {
     return kErrorRomBootFailed;
   }
 
-  boot_log->rom_ext_slot = kRomExtBootSlotB;
+  boot_log->rom_ext_slot = kBootSlotB;
   boot_log_digest_update(boot_log);
 
   CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomTryBoot, 5, kCfiRomVerify);
