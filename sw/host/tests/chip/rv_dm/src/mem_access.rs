@@ -12,6 +12,7 @@ use opentitanlib::app::TransportWrapper;
 use opentitanlib::execute_test;
 use opentitanlib::io::jtag::JtagTap;
 use opentitanlib::test_utils::init::InitializeTest;
+use opentitanlib::util::parse_int::ParseInt;
 
 use bindgen::dif;
 use top_earlgrey::top_earlgrey;
@@ -26,11 +27,14 @@ struct Opts {
     rom: PathBuf,
 
     /// Seed for random number generator.
-    #[arg(long)]
+    #[arg(long, value_parser = u64::from_str)]
     seed: Option<u64>,
 }
 
 const NUM_ACCESSES_PER_REGION: usize = 32;
+
+// The last 32 bytes of ROM (ROM digest) are not accessible.
+const ROM_ACCESSIBLE_BYTES: usize = top_earlgrey::ROM_SIZE_BYTES - 32;
 
 fn test_mem_access(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let seed = opts.seed.unwrap_or_else(|| thread_rng().gen());
@@ -96,7 +100,7 @@ fn test_mem_access(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     }
 
     // For ROM contents, instead of using random values, use the known value from ROM binary
-    for offset in (0..top_earlgrey::ROM_SIZE_BYTES as u32)
+    for offset in (0..ROM_ACCESSIBLE_BYTES as u32)
         .step_by(4)
         .choose_multiple(&mut rng, NUM_ACCESSES_PER_REGION)
     {
