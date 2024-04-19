@@ -59,27 +59,24 @@ bool test_main(void) {
     CHECK_STATUS_OK(ret_sram_testutils_counter_clear(kCounterResets));
   }
   CHECK_STATUS_OK(rstmgr_testutils_pre_reset(rstmgr));
-  CHECK(rst_info == kDifRstmgrResetInfoPor ||
-            rst_info == kDifRstmgrResetInfoSysRstCtrl ||
-            rst_info == kDifRstmgrResetInfoWatchdog ||
-            rst_info == kDifRstmgrResetInfoEscalation ||
-            rst_info == kDifRstmgrResetInfoLowPowerExit ||
-            rst_info == kDifRstmgrResetInfoSw,
-        "Wrong reset reason %02X", rst_info);
 
   uint32_t reset_case = 0;
   CHECK_STATUS_OK(ret_sram_testutils_counter_get(kCounterResets, &reset_case));
   CHECK_STATUS_OK(ret_sram_testutils_counter_increment(kCounterResets));
   LOG_INFO("New reset event");
-  LOG_INFO("  case %d, active mode", reset_case);
+  LOG_INFO("  case %d, active mode. reason 0x%x", reset_case, rst_info);
 
   switch (reset_case) {
     case 0:
+      CHECK(rst_info == kDifRstmgrResetInfoPor, "Wrong reset reason 0x%x",
+            rst_info);
       config_sysrst(kDeviceType == kDeviceSimDV ? kTopEarlgreyPinmuxInselIor13
                                                 : kTopEarlgreyPinmuxInselIoc0);
       prepare_for_sysrst(kPwrmgrSleepResetsLibModesActive);
       break;
     case 1:
+      CHECK(rst_info == kDifRstmgrResetInfoSysRstCtrl,
+            "Wrong reset reason 0x%x", rst_info);
       LOG_INFO("Watchdog reset in deep sleep mode");
       LOG_INFO("Let SV wait timer reset");
       CHECK_STATUS_OK(rstmgr_testutils_pre_reset(rstmgr));
@@ -87,6 +84,8 @@ bool test_main(void) {
       prepare_for_wdog(kPwrmgrSleepResetsLibModesActive);
       break;
     case 2:
+      CHECK(rst_info == kDifRstmgrResetInfoWatchdog, "Wrong reset reason 0x%x",
+            rst_info);
       LOG_INFO("Rstmgr software reset in deep sleep mode");
       LOG_INFO("Let SV wait timer reset");
       CHECK_STATUS_OK(rstmgr_testutils_pre_reset(rstmgr));
@@ -101,11 +100,15 @@ bool test_main(void) {
       prepare_for_wdog(kPwrmgrSleepResetsLibModesActive);
       break;
     case 3:
+      CHECK(rst_info == kDifRstmgrResetInfoSw, "Wrong reset reason 0x%x",
+            rst_info);
       LOG_INFO("Booting and running normal sleep followed by escalation reset");
       LOG_INFO("Let SV wait timer reset");
       trigger_escalation();
       break;
     case 4:
+      CHECK(rst_info == kDifRstmgrResetInfoEscalation,
+            "Wrong reset reason 0x%x", rst_info);
       LOG_INFO("Last Booting");
       return true;
     default:
