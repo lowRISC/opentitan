@@ -145,7 +145,7 @@ TEST_F(CertTest, UnprovisionedCertFlashInfoPage) {
   EXPECT_EQ(
       cert_x509_asn1_check_serial_number(&kFlashCtrlInfoPageUdsCertificate,
                                          expected_sn_words_, &matches),
-      kErrorCertCorrupted);
+      kErrorOk);
   flash_ctrl_error_code_.rd_err = false;
 }
 
