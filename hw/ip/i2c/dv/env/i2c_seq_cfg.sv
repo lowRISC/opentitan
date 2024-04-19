@@ -54,6 +54,9 @@ class i2c_seq_cfg extends uvm_object;
   // set en_sda_interference to allow sda_interference irq is triggered
   bit en_sda_interference        = 1'b0;
 
+  // bit to control whether the bus timeout is enabled
+  bit en_bus_timeout             = 1'b0;
+
   `uvm_object_new
 
   // Timing parameters of I2C for different speed modes in nanoseconds

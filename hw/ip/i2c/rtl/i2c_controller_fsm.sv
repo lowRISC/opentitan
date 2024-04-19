@@ -48,7 +48,7 @@ module i2c_controller_fsm import i2c_pkg::*;
   input [12:0] tsu_sto_i,  // setup time for STOP in clock units
   input [12:0] thd_dat_i,  // data hold time in clock units
   input        arbitration_lost_i, // High when bus arbitration has been lost.
-  input [30:0] stretch_timeout_i,  // max time target connected to this host may stretch the clock
+  input [29:0] stretch_timeout_i,  // max time target connected to this host may stretch the clock
   input        timeout_enable_i,   // assert if target stretches clock past max
   input [30:0] host_nack_handler_timeout_i, // Timeout threshold for unhandled Host-Mode 'nak' irq.
   input        host_nack_handler_timeout_en_i,
@@ -67,7 +67,7 @@ module i2c_controller_fsm import i2c_pkg::*;
   logic [15:0] tcount_q;      // current counter for setting delays
   logic [15:0] tcount_d;      // next counter for setting delays
   logic        load_tcount;   // indicates counter must be loaded
-  logic [31:0] stretch_idle_cnt; // counter for clock being stretched by target
+  logic [30:0] stretch_idle_cnt; // counter for clock being stretched by target
                                  // or clock idle by host.
   logic [30:0] unhandled_nak_cnt; // In Host-mode, count cycles where the FSM is halted awaiting
                                   // the nak irq to be handled by SW.
@@ -178,8 +178,8 @@ module i2c_controller_fsm import i2c_pkg::*;
   // 'stretch_predict_cnt_expired' becomes active once we have observed (4 + t_r) cycles of
   // delay, and if !scl_i at this point we know that the TARGET is stretching the clock.
   // > This implementation requires 'thigh >= 4' to guarantee we don't miss stretching.
-  logic [31:0] stretch_cnt_threshold;
-  assign stretch_cnt_threshold = 32'd2 + 32'(t_r_i);
+  logic [30:0] stretch_cnt_threshold;
+  assign stretch_cnt_threshold = 31'd2 + 31'(t_r_i);
 
   logic stretch_predict_cnt_expired;
   always_ff @ (posedge clk_i or negedge rst_ni) begin
@@ -924,8 +924,8 @@ module i2c_controller_fsm import i2c_pkg::*;
   assign sda_o = sda_d;
 
   // Target stretched clock beyond timeout
-  assign event_stretch_timeout_o = stretch_en &&
-                                   (stretch_idle_cnt[30:0] > stretch_timeout_i) && timeout_enable_i;
+  assign event_stretch_timeout_o = stretch_en && timeout_enable_i &&
+                                   (stretch_idle_cnt > 31'(stretch_timeout_i));
 
   // Make sure we never attempt to send a single cycle glitch
   `ASSERT(SclOutputGlitch_A, $rose(scl_o) |-> ##1 scl_o)

@@ -63,8 +63,9 @@ module i2c_core import i2c_pkg::*;
   logic [12:0] tsu_dat;
   logic [12:0] thd_dat;
   logic [12:0] t_buf;
-  logic [30:0] stretch_timeout;
-  logic        timeout_enable;
+  logic [29:0] bus_active_timeout;
+  logic        stretch_timeout_enable;
+  logic        bus_timeout_enable;
   logic [19:0] host_timeout;
   logic [30:0] nack_timeout;
   logic        nack_timeout_en;
@@ -102,6 +103,7 @@ module i2c_core import i2c_pkg::*;
   logic event_controller_arbitration_lost;
   logic event_scl_interference;
   logic event_sda_interference;
+  logic event_bus_active_timeout;
   logic event_stretch_timeout;
   logic event_sda_unstable;
   logic event_cmd_complete;
@@ -286,8 +288,11 @@ module i2c_core import i2c_pkg::*;
   assign thd_dat                      = reg2hw.timing3.thd_dat.q;
   assign tsu_sto                      = reg2hw.timing4.tsu_sto.q;
   assign t_buf                        = reg2hw.timing4.t_buf.q;
-  assign stretch_timeout              = reg2hw.timeout_ctrl.val.q;
-  assign timeout_enable               = reg2hw.timeout_ctrl.en.q;
+  assign bus_active_timeout           = reg2hw.timeout_ctrl.val.q;
+  assign stretch_timeout_enable       = reg2hw.timeout_ctrl.en.q &&
+                                        !reg2hw.timeout_ctrl.bus_timeout_en.q;
+  assign bus_timeout_enable           = reg2hw.timeout_ctrl.en.q &&
+                                        reg2hw.timeout_ctrl.bus_timeout_en.q;
   assign host_timeout                 = reg2hw.host_timeout_ctrl.q;
   assign nack_timeout                 = reg2hw.target_timeout_ctrl.val.q;
   assign nack_timeout_en              = reg2hw.target_timeout_ctrl.en.q;
@@ -491,12 +496,15 @@ module i2c_core import i2c_pkg::*;
     .target_idle_i                  (target_idle),
     .thd_dat_i                      (thd_dat),
     .t_buf_i                        (t_buf),
-    .bus_timeout_i                  (host_timeout),
+    .bus_active_timeout_i           (bus_active_timeout),
+    .bus_active_timeout_en_i        (bus_timeout_enable),
+    .bus_inactive_timeout_i         (host_timeout),
 
     .bus_free_o                     (bus_free),
     .start_detect_o                 (start_detect),
     .stop_detect_o                  (stop_detect),
 
+    .event_bus_active_timeout_o     (event_bus_active_timeout),
     .event_host_timeout_o           (event_host_timeout)
   );
 
@@ -543,8 +551,8 @@ module i2c_core import i2c_pkg::*;
     .tsu_sto_i                      (tsu_sto),
     .thd_dat_i                      (thd_dat),
     .arbitration_lost_i             (controller_arbitration_lost),
-    .stretch_timeout_i              (stretch_timeout),
-    .timeout_enable_i               (timeout_enable),
+    .stretch_timeout_i              (bus_active_timeout),
+    .timeout_enable_i               (stretch_timeout_enable),
     .host_nack_handler_timeout_i    (host_nack_handler_timeout),
     .host_nack_handler_timeout_en_i (host_nack_handler_timeout_en),
     .event_nak_o                    (event_nak),
@@ -832,10 +840,13 @@ module i2c_core import i2c_pkg::*;
   assign hw2reg.controller_events.unhandled_nack_timeout.de = event_unhandled_nak_timeout;
   assign hw2reg.controller_events.arbitration_lost.d  = 1'b1;
   assign hw2reg.controller_events.arbitration_lost.de = event_controller_arbitration_lost;
+  assign hw2reg.controller_events.bus_timeout.d  = 1'b1;
+  assign hw2reg.controller_events.bus_timeout.de = event_bus_active_timeout && !host_idle;
   assign status_controller_halt = | {
     reg2hw.controller_events.nack.q,
     reg2hw.controller_events.unhandled_nack_timeout.q,
-    reg2hw.controller_events.arbitration_lost.q
+    reg2hw.controller_events.arbitration_lost.q,
+    reg2hw.controller_events.bus_timeout.q
   };
 
   ////////////////
