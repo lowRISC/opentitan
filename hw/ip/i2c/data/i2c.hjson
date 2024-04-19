@@ -664,19 +664,53 @@
     }
     { name: "TIMEOUT_CTRL"
       desc: '''
-            I2C clock stretching timeout control.
-            This is used in I2C host mode to detect whether a connected target is stretching for too long.
+            I2C clock stretching and bus timeout control.
+            The behavior of this feature depends on the value of TIMEOUT_CTRL.BUS_TIMEOUT_EN.
+            If the bus timeout is disabled, this is used in I2C controller mode to detect whether a connected target is stretching a single low time beyond the timeout value.
+            When the bus timeout feature is disabled, this feature is more informative and doesn't do more than assert the "stretch_timeout" interrupt.
+
+            If the bus timeout feature is enabled, it is used to detect whether the clock has been held low for too long instead, inclusive of the controller's clock low time.
+            In an SMBus context, the VAL programmed should be tTIMEOUT:MIN, and EN and BUS_TIMEOUT_EN should be 1.
             '''
       swaccess: "rw"
       hwaccess: "hro"
       fields: [
-        { bits: "30:0"
+        { bits: "29:0"
           name: "VAL"
           desc: "Clock stretching timeout value (in units of input clock frequency)"
         }
+        { bits: "30"
+          name: "MODE"
+          desc: '''
+                Selects the timeout mode, between a stretch timeout and a bus timeout.
+
+                Between the two modes, the primary difference is how much of the clock low period is counted.
+                For a stretch timeout, only the time that another device holds the clock low will be counted.
+                For a bus timeout, the entire clock low time is counted, consistent with the SMBus tTIMEOUT type.
+
+                !!TIMEOUT_CTRL.EN must be 1 for either of these features to be enabled.
+                '''
+          enum: [
+            { value: "0",
+              name: "STRETCH_TIMEOUT",
+              desc: '''
+                    The timeout is a target stretch timeout.
+                    The counter will track how long the clock has been stretched by another device while the controller is active.
+                    '''
+            },
+            { value: "1",
+              name: "BUS_TIMEOUT",
+              desc: '''
+                    The timeout is a clock low timeout.
+                    The counter will track how long the clock low period is, inclusive of the controller's ordinary low count.
+                    A timeout will set !!CONTROLLER_EVENTS.BUS_TIMEOUT and cause a "controller_halt" interrupt.
+                    '''
+            },
+          ],
+        }
         { bits: "31"
           name: "EN"
-          desc: "Enable timeout feature"
+          desc: "Enable stretch timeout or bus timeout feature"
         }
       ]
     }
@@ -951,6 +985,10 @@
         { bits: "1"
           name: "UNHANDLED_NACK_TIMEOUT"
           desc: "A Host-Mode active transaction has been ended by the !!HOST_NACK_HANDLER_TIMEOUT mechanism."
+        }
+        { bits: "2"
+          name: "BUS_TIMEOUT"
+          desc: "A Host-Mode active transaction has terminated due to a bus timeout activated by !!TIMEOUT_CTRL."
         }
       ]
     }

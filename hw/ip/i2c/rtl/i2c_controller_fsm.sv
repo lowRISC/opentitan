@@ -19,6 +19,7 @@ module i2c_controller_fsm import i2c_pkg::*;
   input        bus_free_i,     // High if the bus is free for a new transmission
 
   input        host_enable_i,     // enable host functionality
+  input        halt_controller_i, // Halt the controller FSM in Idle
 
   input                      fmt_fifo_rvalid_i, // indicates there is valid data in fmt_fifo
   input [FifoDepthWidth-1:0] fmt_fifo_depth_i,  // fmt_fifo_depth
@@ -45,7 +46,7 @@ module i2c_controller_fsm import i2c_pkg::*;
   input [12:0] tsu_sta_i,  // setup time for repeated START in clock units
   input [12:0] tsu_sto_i,  // setup time for STOP in clock units
   input [12:0] thd_dat_i,  // data hold time in clock units
-  input [30:0] stretch_timeout_i,  // max time target connected to this host may stretch the clock
+  input [29:0] stretch_timeout_i,  // max time target connected to this host may stretch the clock
   input        timeout_enable_i,   // assert if target stretches clock past max
   input [30:0] host_nack_handler_timeout_i, // Timeout threshold for unhandled Host-Mode 'nak' irq.
   input        host_nack_handler_timeout_en_i,
@@ -63,7 +64,7 @@ module i2c_controller_fsm import i2c_pkg::*;
   logic [15:0] tcount_q;      // current counter for setting delays
   logic [15:0] tcount_d;      // next counter for setting delays
   logic        load_tcount;   // indicates counter must be loaded
-  logic [31:0] stretch_idle_cnt; // counter for clock being stretched by target
+  logic [30:0] stretch_idle_cnt; // counter for clock being stretched by target
                                  // or clock idle by host.
   logic [30:0] unhandled_nak_cnt; // In Host-mode, count cycles where the FSM is halted awaiting
                                   // the nak irq to be handled by SW.
@@ -174,8 +175,8 @@ module i2c_controller_fsm import i2c_pkg::*;
   // 'stretch_predict_cnt_expired' becomes active once we have observed (4 + t_r) cycles of
   // delay, and if !scl_i at this point we know that the TARGET is stretching the clock.
   // > This implementation requires 'thigh >= 4' to guarantee we don't miss stretching.
-  logic [31:0] stretch_cnt_threshold;
-  assign stretch_cnt_threshold = 32'd2 + 32'(t_r_i);
+  logic [30:0] stretch_cnt_threshold;
+  assign stretch_cnt_threshold = 31'd2 + 31'(t_r_i);
 
   logic stretch_predict_cnt_expired;
   always_ff @ (posedge clk_i or negedge rst_ni) begin
@@ -591,7 +592,7 @@ module i2c_controller_fsm import i2c_pkg::*;
       // transaction.
       Idle : begin
         if (host_enable_i) begin
-          if (unhandled_unexp_nak_i || unhandled_nak_timeout_i) begin
+          if (unhandled_unexp_nak_i || unhandled_nak_timeout_i || halt_controller_i) begin
             // If we are awaiting software to handle an unexpected NACK, halt the FSM here.
             // The current transaction does not end, and SCL remains in its current state.
             // Software typically should handle an unexpected NACK by either disabling the
@@ -602,6 +603,8 @@ module i2c_controller_fsm import i2c_pkg::*;
             // issue a Stop if software takes too long to address the NACK. A short timeout
             // could also be used to automatically issue a Stop whenever an unexpected NACK
             // occurs.
+            // Note that we may also halt here on a bus timeout, so software may fix up the FIFOs
+            // before beginning a new transaction.
             if (trans_started && unhandled_nak_cnt_expired) begin
               // If our timeout counter expires, generate a STOP condition automatically.
               auto_stop_d = 1'b1;
@@ -914,8 +917,8 @@ module i2c_controller_fsm import i2c_pkg::*;
   assign sda_o = sda_d;
 
   // Target stretched clock beyond timeout
-  assign event_stretch_timeout_o = stretch_en &&
-                                   (stretch_idle_cnt[30:0] > stretch_timeout_i) && timeout_enable_i;
+  assign event_stretch_timeout_o = stretch_en && timeout_enable_i &&
+                                   (stretch_idle_cnt > 31'(stretch_timeout_i));
 
   // Make sure we never attempt to send a single cycle glitch
   `ASSERT(SclOutputGlitch_A, $rose(scl_o) |-> ##1 scl_o)

@@ -285,8 +285,10 @@ module i2c_reg_top (
   logic [12:0] timing4_t_buf_qs;
   logic [12:0] timing4_t_buf_wd;
   logic timeout_ctrl_we;
-  logic [30:0] timeout_ctrl_val_qs;
-  logic [30:0] timeout_ctrl_val_wd;
+  logic [29:0] timeout_ctrl_val_qs;
+  logic [29:0] timeout_ctrl_val_wd;
+  logic timeout_ctrl_mode_qs;
+  logic timeout_ctrl_mode_wd;
   logic timeout_ctrl_en_qs;
   logic timeout_ctrl_en_wd;
   logic target_id_we;
@@ -331,6 +333,8 @@ module i2c_reg_top (
   logic controller_events_nack_wd;
   logic controller_events_unhandled_nack_timeout_qs;
   logic controller_events_unhandled_nack_timeout_wd;
+  logic controller_events_bus_timeout_qs;
+  logic controller_events_bus_timeout_wd;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -2664,11 +2668,11 @@ module i2c_reg_top (
 
 
   // R[timeout_ctrl]: V(False)
-  //   F[val]: 30:0
+  //   F[val]: 29:0
   prim_subreg #(
-    .DW      (31),
+    .DW      (30),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (31'h0),
+    .RESVAL  (30'h0),
     .Mubi    (1'b0)
   ) u_timeout_ctrl_val (
     .clk_i   (clk_i),
@@ -2689,6 +2693,33 @@ module i2c_reg_top (
 
     // to register interface (read)
     .qs     (timeout_ctrl_val_qs)
+  );
+
+  //   F[mode]: 30:30
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_timeout_ctrl_mode (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (timeout_ctrl_we),
+    .wd     (timeout_ctrl_mode_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.timeout_ctrl.mode.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (timeout_ctrl_mode_qs)
   );
 
   //   F[en]: 31:31
@@ -3177,6 +3208,33 @@ module i2c_reg_top (
     .qs     (controller_events_unhandled_nack_timeout_qs)
   );
 
+  //   F[bus_timeout]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_controller_events_bus_timeout (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (controller_events_we),
+    .wd     (controller_events_bus_timeout_wd),
+
+    // from internal hardware
+    .de     (hw2reg.controller_events.bus_timeout.de),
+    .d      (hw2reg.controller_events.bus_timeout.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.controller_events.bus_timeout.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (controller_events_bus_timeout_qs)
+  );
+
 
 
   logic [30:0] addr_hit;
@@ -3420,7 +3478,9 @@ module i2c_reg_top (
   assign timing4_t_buf_wd = reg_wdata[28:16];
   assign timeout_ctrl_we = addr_hit[20] & reg_we & !reg_error;
 
-  assign timeout_ctrl_val_wd = reg_wdata[30:0];
+  assign timeout_ctrl_val_wd = reg_wdata[29:0];
+
+  assign timeout_ctrl_mode_wd = reg_wdata[30];
 
   assign timeout_ctrl_en_wd = reg_wdata[31];
   assign target_id_we = addr_hit[21] & reg_we & !reg_error;
@@ -3464,6 +3524,8 @@ module i2c_reg_top (
   assign controller_events_nack_wd = reg_wdata[0];
 
   assign controller_events_unhandled_nack_timeout_wd = reg_wdata[1];
+
+  assign controller_events_bus_timeout_wd = reg_wdata[2];
 
   // Assign write-enables to checker logic vector.
   always_comb begin
@@ -3663,7 +3725,8 @@ module i2c_reg_top (
       end
 
       addr_hit[20]: begin
-        reg_rdata_next[30:0] = timeout_ctrl_val_qs;
+        reg_rdata_next[29:0] = timeout_ctrl_val_qs;
+        reg_rdata_next[30] = timeout_ctrl_mode_qs;
         reg_rdata_next[31] = timeout_ctrl_en_qs;
       end
 
@@ -3713,6 +3776,7 @@ module i2c_reg_top (
       addr_hit[30]: begin
         reg_rdata_next[0] = controller_events_nack_qs;
         reg_rdata_next[1] = controller_events_unhandled_nack_timeout_qs;
+        reg_rdata_next[2] = controller_events_bus_timeout_qs;
       end
 
       default: begin
