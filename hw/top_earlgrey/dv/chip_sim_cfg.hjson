@@ -2210,7 +2210,10 @@
               "chip_sw_pwrmgr_sleep_disabled",
               "chip_sw_csrng_kat_test",
               "chip_sw_sysrst_ctrl_inputs",
-              "rom_e2e_smoke"]
+              // TODO(#21204): Disable ROM e2e smoke test until we are done
+              // migrating ROM to use ECDSA keys.
+              // "rom_e2e_smoke",
+            ]
     }
   ]
 }
