@@ -42,7 +42,7 @@ bool test_main(void) {
 
   init_peripherals();
 
-  // Enable all the AON interrupts used in this test.
+  // Enable all the Alert handler interrupts used in this test.
   rv_plic_testutils_irq_range_enable(plic, kPlicTarget,
                                      kTopEarlgreyPlicIrqIdAlertHandlerClassa,
                                      kTopEarlgreyPlicIrqIdAlertHandlerClassd);
@@ -109,7 +109,7 @@ bool test_main(void) {
       LOG_INFO("Last Booting");
       return true;
     default:
-      LOG_INFO("Booting for undefined case %0d", reset_case);
+      LOG_INFO("Booting for undefined case %d", reset_case);
   }
 
   return false;
