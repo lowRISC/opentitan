@@ -2565,7 +2565,12 @@ opentitan_test(
             "//hw/top_earlgrey:sim_dv": None,
         },
     ),
-    silicon = silicon_params(tags = ["broken"]),
+    silicon = silicon_params(
+        test_cmd = """
+            --bootstrap={firmware}
+        """,
+        test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_resets",
+    ),
     test_harness = cw310_params(
         test_cmd = """
             --bootstrap={firmware}
