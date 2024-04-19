@@ -25,7 +25,7 @@
 | i2c.[`TIMING2`](#timing2)                                     | 0x44     |        4 | Detailed I2C Timings (directly corresponding to table 10 in the I2C Specification).                |
 | i2c.[`TIMING3`](#timing3)                                     | 0x48     |        4 | Detailed I2C Timings (directly corresponding to table 10, in the I2C Specification).               |
 | i2c.[`TIMING4`](#timing4)                                     | 0x4c     |        4 | Detailed I2C Timings (directly corresponding to table 10, in the I2C Specification).               |
-| i2c.[`TIMEOUT_CTRL`](#timeout_ctrl)                           | 0x50     |        4 | I2C clock stretching timeout control.                                                              |
+| i2c.[`TIMEOUT_CTRL`](#timeout_ctrl)                           | 0x50     |        4 | I2C clock stretching and bus timeout control.                                                      |
 | i2c.[`TARGET_ID`](#target_id)                                 | 0x54     |        4 | I2C target address and mask pairs                                                                  |
 | i2c.[`ACQDATA`](#acqdata)                                     | 0x58     |        4 | I2C target acquired data                                                                           |
 | i2c.[`TXDATA`](#txdata)                                       | 0x5c     |        4 | I2C target transmit data                                                                           |
@@ -511,8 +511,13 @@ All values are expressed in units of the input clock period.
 |  12:0  |   rw   |   0x0   | TSU_STO | Actual setup time for stop signals. This field is sized to have a range of at least Standard Mode's 4.0 us max with a core clock at 1 GHz.                                  |
 
 ## TIMEOUT_CTRL
-I2C clock stretching timeout control.
-This is used in I2C host mode to detect whether a connected target is stretching for too long.
+I2C clock stretching and bus timeout control.
+The behavior of this feature depends on the value of TIMEOUT_CTRL.BUS_TIMEOUT_EN.
+If the bus timeout is disabled, this is used in I2C controller mode to detect whether a connected target is stretching a single low time beyond the timeout value.
+When the bus timeout feature is disabled, this feature is more informative and doesn't do more than assert the "stretch_timeout" interrupt.
+
+If the bus timeout feature is enabled, it is used to detect whether the clock has been held low for too long instead, inclusive of the controller's clock low time.
+In an SMBus context, the VAL programmed should be tTIMEOUT:MIN, and EN and BUS_TIMEOUT_EN should be 1.
 - Offset: `0x50`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
@@ -520,13 +525,35 @@ This is used in I2C host mode to detect whether a connected target is stretching
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "VAL", "bits": 31, "attr": ["rw"], "rotate": 0}, {"name": "EN", "bits": 1, "attr": ["rw"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "VAL", "bits": 30, "attr": ["rw"], "rotate": 0}, {"name": "MODE", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "EN", "bits": 1, "attr": ["rw"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                        |
-|:------:|:------:|:-------:|:-------|:-------------------------------------------------------------------|
-|   31   |   rw   |   0x0   | EN     | Enable timeout feature                                             |
-|  30:0  |   rw   |   0x0   | VAL    | Clock stretching timeout value (in units of input clock frequency) |
+|  Bits  |  Type  |  Reset  | Name                        |
+|:------:|:------:|:-------:|:----------------------------|
+|   31   |   rw   |   0x0   | [EN](#timeout_ctrl--en)     |
+|   30   |   rw   |   0x0   | [MODE](#timeout_ctrl--mode) |
+|  29:0  |   rw   |   0x0   | [VAL](#timeout_ctrl--val)   |
+
+### TIMEOUT_CTRL . EN
+Enable stretch timeout or bus timeout feature
+
+### TIMEOUT_CTRL . MODE
+Selects the timeout mode, between a stretch timeout and a bus timeout.
+
+Between the two modes, the primary difference is how much of the clock low period is counted.
+For a stretch timeout, only the time that another device holds the clock low will be counted.
+For a bus timeout, the entire clock low time is counted, consistent with the SMBus tTIMEOUT type.
+
+[`TIMEOUT_CTRL.EN`](#timeout_ctrl) must be 1 for either of these features to be enabled.
+
+| Value   | Name            | Description                                                                                                                                                                                                                                |
+|:--------|:----------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0x0     | STRETCH_TIMEOUT | The timeout is a target stretch timeout. The counter will track how long the clock has been stretched by another device while the controller is active.                                                                                    |
+| 0x1     | BUS_TIMEOUT     | The timeout is a clock low timeout. The counter will track how long the clock low period is, inclusive of the controller's ordinary low count. A timeout will set !!CONTROLLER_EVENTS.BUS_TIMEOUT and cause a "controller_halt" interrupt. |
+
+
+### TIMEOUT_CTRL . VAL
+Clock stretching timeout value (in units of input clock frequency)
 
 ## TARGET_ID
 I2C target address and mask pairs
@@ -770,17 +797,18 @@ Latched events that explain why the controller halted.
 Any bits that are set must be written (with a 1) to clear the CONTROLLER_HALT interrupt.
 - Offset: `0x78`
 - Reset default: `0x0`
-- Reset mask: `0x3`
+- Reset mask: `0x7`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "NACK", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "UNHANDLED_NACK_TIMEOUT", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 30}], "config": {"lanes": 1, "fontsize": 10, "vspace": 240}}
+{"reg": [{"name": "NACK", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "UNHANDLED_NACK_TIMEOUT", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "BUS_TIMEOUT", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 29}], "config": {"lanes": 1, "fontsize": 10, "vspace": 240}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                   | Description                                                                                                               |
 |:------:|:------:|:-------:|:-----------------------|:--------------------------------------------------------------------------------------------------------------------------|
-|  31:2  |        |         |                        | Reserved                                                                                                                  |
+|  31:3  |        |         |                        | Reserved                                                                                                                  |
+|   2    |  rw1c  |   0x0   | BUS_TIMEOUT            | A Host-Mode active transaction has terminated due to a bus timeout activated by [`TIMEOUT_CTRL.`](#timeout_ctrl)          |
 |   1    |  rw1c  |   0x0   | UNHANDLED_NACK_TIMEOUT | A Host-Mode active transaction has been ended by the [`HOST_NACK_HANDLER_TIMEOUT`](#host_nack_handler_timeout) mechanism. |
 |   0    |  rw1c  |   0x0   | NACK                   | Received an unexpected NACK                                                                                               |
 
