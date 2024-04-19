@@ -17,6 +17,12 @@ load(
     "RSA_ONLY_KEY_STRUCTS",
 )
 load(
+    "//rules:opentitan_test.bzl",
+    "ROM_BOOT_FAILURE_MSG",
+    "opentitan_functest",
+    dv_params_functest = "dv_params",
+)
+load(
     "//rules:otp.bzl",
     "STD_OTP_OVERLAYS",
     "otp_image",
@@ -3598,6 +3604,27 @@ opentitan_test(
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
+    ],
+)
+
+# Used by DVSIM test-points to test signed binaries.
+# Please do not remove until those tests are updated to use `uart_smoketest`.
+opentitan_functest(
+    name = "uart_smoketest_signed",
+    srcs = ["uart_smoketest.c"],
+    dv = dv_params_functest(
+        rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
+    ),
+    manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
+    signed = True,
+    targets = ["dv"],
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:uart",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
