@@ -1367,6 +1367,9 @@ module ascon_reg_top (
     .d_i(&ctrl_aux_shadowed_flds_we),
     .q_o(ctrl_aux_shadowed_qe)
   );
+  // Create REGWEN-gated WE signal
+  logic ctrl_aux_shadowed_gated_we;
+  assign ctrl_aux_shadowed_gated_we = ctrl_aux_shadowed_we & ctrl_aux_regwen_qs;
   //   F[manual_start_trigger]: 0:0
   prim_subreg_shadow #(
     .DW      (1),
@@ -1380,7 +1383,7 @@ module ascon_reg_top (
 
     // from register interface
     .re     (ctrl_aux_shadowed_re),
-    .we     (ctrl_aux_shadowed_we),
+    .we     (ctrl_aux_shadowed_gated_we),
     .wd     (ctrl_aux_shadowed_manual_start_trigger_wd),
 
     // from internal hardware
@@ -1417,7 +1420,7 @@ module ascon_reg_top (
 
     // from register interface
     .re     (ctrl_aux_shadowed_re),
-    .we     (ctrl_aux_shadowed_we),
+    .we     (ctrl_aux_shadowed_gated_we),
     .wd     (ctrl_aux_shadowed_force_data_overwrite_wd),
 
     // from internal hardware
@@ -2370,7 +2373,7 @@ module ascon_reg_top (
     reg_we_check[35] = 1'b0;
     reg_we_check[36] = 1'b0;
     reg_we_check[37] = ctrl_shadowed_we;
-    reg_we_check[38] = ctrl_aux_shadowed_we;
+    reg_we_check[38] = ctrl_aux_shadowed_gated_we;
     reg_we_check[39] = ctrl_aux_regwen_we;
     reg_we_check[40] = block_ctrl_shadowed_we;
     reg_we_check[41] = trigger_we;
