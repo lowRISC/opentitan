@@ -22,10 +22,6 @@ class token_pkt extends usb20_item;
   rand bit [3:0] endpoint;
   bit [4:0] crc5;
 
-  constraint endpoint_c {
-    endpoint inside {[0:11]};
-  }
-
   `uvm_object_utils_begin(token_pkt)
     `uvm_field_enum(pid_type_e, m_pid_type, UVM_DEFAULT)
     `uvm_field_int(address,                 UVM_DEFAULT)
@@ -38,6 +34,7 @@ class token_pkt extends usb20_item;
   function void post_randomize();
     crc5 = generate_crc5(address, endpoint);
   endfunction
+
   function bit [4:0] generate_crc5(bit [6:0] address, bit [3:0] endpoint);
     bit [4:0] crc;
     bit [4:0] crc_reg;
@@ -92,6 +89,12 @@ class data_pkt extends usb20_item;
              wVL, wVH,
              wIndex[7:0], wIndex[15:8],
              wLength[7:0], wLength[15:8]};
+    crc16 = generate_crc16(data);
+  endfunction
+
+  // Set the content of the data packet and ensure that the CRC is set accordingly.
+  function void set_data(byte unsigned content[]);
+    data = content;
     crc16 = generate_crc16(data);
   endfunction
 
