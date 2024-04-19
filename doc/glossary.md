@@ -30,6 +30,10 @@ Unit of measurement for "symbols per second" where symbols are some unit being c
 
 Often abbreviated to Bd, kBd (1000 Bd), MBd (1000 kBd), and GBd (1000 MBd).
 
+#### BFV
+
+Boot Fault Value.
+
 #### CIP
 
 Comportable (hardware) Intellectual Property.
@@ -190,6 +194,10 @@ Keccak Message Authentication Code.
 
 Life-Cycle (controller).
 
+### LCV
+
+Life Cycle Value.
+
 #### Mask ROM
 
 Read-Only Memory encoded into the "mask" used to fabricate silicon.
@@ -341,3 +349,7 @@ Trusted Platform Module.
 #### UART
 
 Universal Asynchronous Receiver-Transmitter.
+
+#### VER
+
+Version.
