@@ -56,13 +56,13 @@ In the case of health tests, firmware can turn off one or all of the health test
 A data path is provided in the hardware such that the inbound entropy can be trapped in the observe FIFO.
 Once a pre-determined threshold of entropy has been reached in this FIFO, and interrupt is raised to let firmware read the entropy bits out of the FIFO.
 The exact mechanism for this functionality starts with setting the [`FW_OV_MODE`](registers.md#fw_ov_control--fw_ov_mode) field in the [`FW_OV_CONTROL`](registers.md#fw_ov_control) register.
-This will enable firmware to monitor post-health test entropy bits by reading from the [`FW_OV_RD_DATA`](registers.md#fw_ov_rd_data) register.
+This will enable firmware to monitor post-health test entropy bits (including entropy bits used for startup health testing) by reading from the [`FW_OV_RD_DATA`](registers.md#fw_ov_rd_data) register.
 Firmware can use the [`OBSERVE_FIFO_THRESH`](registers.md#observe_fifo_thresh) and [`OBSERVE_FIFO_DEPTH`](registers.md#observe_fifo_depth) to determine the state of the OBSERVE FIFO.
 At this point, firmware can do additional health checks on the entropy.
 Optionally, firmware can do the conditioning function, assuming the hardware is configured to bypass the conditioner block.
 Once firmware has processed the entropy, it can then write the results back into the [`FW_OV_WR_DATA`](registers.md#fw_ov_wr_data) register (pre-conditioner FIFO).
 The [`FW_OV_ENTROPY_INSERT`](registers.md#fw_ov_control--fw_ov_entropy_insert) in the [`FW_OV_CONTROL`](registers.md#fw_ov_control) register will enable inserting entropy bits back into the entropy flow.
-The firmware override control fields will be set such that the new entropy will resume normal flow operation.
+If enabled, any startup health testing has to be performed by the firmware.
 
 An additional feature of the firmware override function is to insert entropy bits into the flow and still use the conditioning function in the hardware.
 Setting the [`FW_OV_INSERT_START`](registers.md#fw_ov_sha3_start--fw_ov_insert_start) field in the [`FW_OV_SHA3_START`](registers.md#fw_ov_sha3_start) register will prepare the hardware for this flow.
