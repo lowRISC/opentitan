@@ -88,6 +88,11 @@ bool test_main(void) {
   dif_pwrmgr_domain_config_t sleep_config =
       kDifPwrmgrDomainOptionMainPowerInLowPower;
 
+  // Clear any prior events before we start the test
+  for (size_t i = 0; i < sensor_ctrl_events; ++i) {
+    CHECK_DIF_OK(dif_sensor_ctrl_clear_recov_event(&sensor_ctrl, i));
+  }
+
   for (size_t i = 0; i < sensor_ctrl_events; ++i) {
     LOG_INFO("Testing sensor_ctrl event %d", i);
 
