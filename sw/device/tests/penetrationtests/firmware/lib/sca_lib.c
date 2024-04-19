@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/tests/penetrationtests/firmware/sca_lib.h"
+#include "sw/device/tests/penetrationtests/firmware/lib/sca_lib.h"
 
 #include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/base/mmio.h"

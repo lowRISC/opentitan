@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_TESTS_PENETRATIONTESTS_FIRMWARE_OTBN_FI_H_
-#define OPENTITAN_SW_DEVICE_TESTS_PENETRATIONTESTS_FIRMWARE_OTBN_FI_H_
+#ifndef OPENTITAN_SW_DEVICE_TESTS_PENETRATIONTESTS_FIRMWARE_FI_OTBN_FI_H_
+#define OPENTITAN_SW_DEVICE_TESTS_PENETRATIONTESTS_FIRMWARE_FI_OTBN_FI_H_
 
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/crypto/drivers/otbn.h"
@@ -24,4 +24,4 @@ status_t handle_otbn_fi_init_keymgr(ujson_t *uj);
 status_t handle_otbn_init(ujson_t *uj);
 status_t handle_otbn_fi(ujson_t *uj);
 
-#endif  // OPENTITAN_SW_DEVICE_TESTS_PENETRATIONTESTS_FIRMWARE_OTBN_FI_H_
+#endif  // OPENTITAN_SW_DEVICE_TESTS_PENETRATIONTESTS_FIRMWARE_FI_OTBN_FI_H_

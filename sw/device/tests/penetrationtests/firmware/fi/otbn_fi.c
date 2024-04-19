@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/tests/penetrationtests/firmware/otbn_fi.h"
+#include "sw/device/tests/penetrationtests/firmware/fi/otbn_fi.h"
 
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
@@ -14,7 +14,7 @@
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
 #include "sw/device/sca/lib/sca.h"
-#include "sw/device/tests/penetrationtests/firmware/sca_lib.h"
+#include "sw/device/tests/penetrationtests/firmware/lib/sca_lib.h"
 #include "sw/device/tests/penetrationtests/json/otbn_fi_commands.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"

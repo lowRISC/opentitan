@@ -13,21 +13,14 @@
 // Include commands
 #include "sw/device/tests/penetrationtests/json/aes_sca_commands.h"
 #include "sw/device/tests/penetrationtests/json/commands.h"
-#include "sw/device/tests/penetrationtests/json/crypto_fi_commands.h"
-#include "sw/device/tests/penetrationtests/json/extclk_sca_fi_commands.h"
 #include "sw/device/tests/penetrationtests/json/hmac_sca_commands.h"
-#include "sw/device/tests/penetrationtests/json/ibex_fi_commands.h"
 #include "sw/device/tests/penetrationtests/json/ibex_sca_commands.h"
 #include "sw/device/tests/penetrationtests/json/kmac_sca_commands.h"
-#include "sw/device/tests/penetrationtests/json/otbn_fi_commands.h"
 #include "sw/device/tests/penetrationtests/json/prng_sca_commands.h"
 #include "sw/device/tests/penetrationtests/json/sha3_sca_commands.h"
 #include "sw/device/tests/penetrationtests/json/trigger_sca_commands.h"
 
 // Include handlers
-#include "fi/crypto_fi.h"
-#include "fi/ibex_fi.h"
-#include "fi/otbn_fi.h"
 #include "lib/extclk_sca_fi.h"
 #include "sca/aes_sca.h"
 #include "sca/hmac_sca.h"
@@ -47,26 +40,17 @@ status_t process_cmd(ujson_t *uj) {
       case kPenetrationtestCommandAesSca:
         RESP_ERR(uj, handle_aes_sca(uj));
         break;
-      case kPenetrationtestCommandCryptoFi:
-        RESP_ERR(uj, handle_crypto_fi(uj));
-        break;
       case kPenetrationtestCommandExtClkScaFi:
         RESP_ERR(uj, handle_extclk_sca_fi(uj));
         break;
       case kPenetrationtestCommandHmacSca:
         RESP_ERR(uj, handle_hmac_sca(uj));
         break;
-      case kPenetrationtestCommandIbexFi:
-        RESP_ERR(uj, handle_ibex_fi(uj));
-        break;
       case kPenetrationtestCommandIbexSca:
         RESP_ERR(uj, handle_ibex_sca(uj));
         break;
       case kPenetrationtestCommandKmacSca:
         RESP_ERR(uj, handle_kmac_sca(uj));
-        break;
-      case kPenetrationtestCommandOtbnFi:
-        RESP_ERR(uj, handle_otbn_fi(uj));
         break;
       case kPenetrationtestCommandPrngSca:
         RESP_ERR(uj, handle_prng_sca(uj));

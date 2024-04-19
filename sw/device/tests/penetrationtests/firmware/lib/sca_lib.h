@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_TESTS_PENETRATIONTESTS_FIRMWARE_SCA_LIB_H_
-#define OPENTITAN_SW_DEVICE_TESTS_PENETRATIONTESTS_FIRMWARE_SCA_LIB_H_
+#ifndef OPENTITAN_SW_DEVICE_TESTS_PENETRATIONTESTS_FIRMWARE_LIB_SCA_LIB_H_
+#define OPENTITAN_SW_DEVICE_TESTS_PENETRATIONTESTS_FIRMWARE_LIB_SCA_LIB_H_
 
 #include "sw/device/lib/ujson/ujson.h"
 #include "sw/device/tests/penetrationtests/json/sca_lib_commands.h"
@@ -60,4 +60,4 @@ status_t sca_read_device_id(ujson_t *uj);
  */
 void sca_configure_cpu(void);
 
-#endif  // OPENTITAN_SW_DEVICE_TESTS_PENETRATIONTESTS_FIRMWARE_SCA_LIB_H_
+#endif  // OPENTITAN_SW_DEVICE_TESTS_PENETRATIONTESTS_FIRMWARE_LIB_SCA_LIB_H_

@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/tests/penetrationtests/firmware/trigger_sca.h"
+#include "sw/device/tests/penetrationtests/firmware/sca/trigger_sca.h"
 
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
