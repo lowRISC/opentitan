@@ -437,6 +437,7 @@
       hwext:    "false"
       hwqe:     "true"
       shadowed: "true"
+      regwen:   "CTRL_AUX_REGWEN"
       fields: [
         { bits: "0",
           name: "MANUAL_START_TRIGGER",

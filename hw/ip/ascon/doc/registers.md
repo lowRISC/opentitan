@@ -447,6 +447,7 @@ For normal operation these options should all be set to zero.
 - Offset: `0x98`
 - Reset default: `0x0`
 - Reset mask: `0x3`
+- Register enable: [`CTRL_AUX_REGWEN`](#ctrl_aux_regwen)
 
 ### Fields
 
