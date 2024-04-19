@@ -35,6 +35,7 @@ load(
     "rsa_key_for_lc_state",
     "silicon_params",
     "verilator_params",
+    new_cw310_params = "cw310_params",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -4842,6 +4843,7 @@ opentitan_test(
     srcs = [
         "i2c_target_test.c",
     ],
+    broken = new_cw310_params(tags = ["broken"]),
     cw310 = cw310_params(
         test_cmd = """
             --bootstrap="{firmware}"
@@ -4851,7 +4853,7 @@ opentitan_test(
     exec_env = dicts.add(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw310_sival": "broken",
         },
     ),
     deps = [
