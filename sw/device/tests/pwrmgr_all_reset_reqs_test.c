@@ -47,8 +47,6 @@ bool test_main(void) {
                                      kTopEarlgreyPlicIrqIdAlertHandlerClassa,
                                      kTopEarlgreyPlicIrqIdAlertHandlerClassd);
 
-  config_alert_handler();
-
   // Check if there was a HW reset caused by expected cases.
   dif_rstmgr_reset_info_bitfield_t rst_info;
   rst_info = rstmgr_testutils_reason_get();
@@ -104,6 +102,7 @@ bool test_main(void) {
             rst_info);
       LOG_INFO("Booting and running normal sleep followed by escalation reset");
       LOG_INFO("Let SV wait timer reset");
+      config_alert_handler();
       trigger_escalation();
       break;
     case 4:
