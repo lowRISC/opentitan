@@ -34,7 +34,7 @@ For more details on the individual modes, refer to [Theory of Operations](theory
 
 ### Firmware Override - Observe
 
-Using the firmware override function, firmware can observe post-health test entropy bits by reading from the [`FW_OV_RD_DATA`](registers.md#fw_ov_rd_data) register (observe FIFO), e.g., for validation testing.
+Using the firmware override function, firmware can observe post-health test entropy bits (including entropy bits used for startup health testing) by reading from the [`FW_OV_RD_DATA`](registers.md#fw_ov_rd_data) register (observe FIFO), e.g., for validation testing.
 To this end, the `otp_en_entropy_src_fw_over` input needs to be set to `kMultiBitBool8True`.
 In addition, firmware has to set the `FW_OV_MODE` field in the [`FW_OV_CONTROL`](registers.md#fw_ov_control) register to `kMultiBitBool4True`.
 
@@ -60,6 +60,8 @@ The observe FIFO will collect 1 kBit of contiguous entropy bits.
 Any entropy bits arriving after the observe FIFO is full are being discarded.
 Firmware has to read out the entire observe FIFO to restart entropy collection.
 Only entropy bits inserted by firmware by writing the [`FW_OV_WR_DATA`](registers.md#fw_ov_wr_data) register may eventually reach the block hardware interface.
+
+Also, the hardware startup health testing is skipped and firmware becomes responsible for performing any startup health testing.
 
 If firmware does not want to use hardware conditioning for the inserted entropy bits, it has to do one of the two following points:
 1. Set the `FIPS_ENABLE` field in the [`CONF`](registers.md#conf) register to `kMultiBitBool4False`.
