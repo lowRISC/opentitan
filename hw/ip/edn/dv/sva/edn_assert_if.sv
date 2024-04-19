@@ -23,13 +23,13 @@
 interface edn_assert_if(input clk, input rst_n);
 
   task automatic assert_off ();
-    $assertoff(0, `PATH1.CntErrBackward_A);
+    $assertoff(0, `PATH1.CntErrReported_A);
     $assertoff(0, `PATH6.u_state_regs_A);
     $assertoff(0, `PATH7.u_state_regs_A);
   endtask // assert_off
 
   task automatic assert_on ();
-    $asserton(0, `PATH1.CntErrBackward_A);
+    $asserton(0, `PATH1.CntErrReported_A);
     $asserton(0, `PATH6.u_state_regs_A);
     $asserton(0, `PATH7.u_state_regs_A);
   endtask // assert_on
