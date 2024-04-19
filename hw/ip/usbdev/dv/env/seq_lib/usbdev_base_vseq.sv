@@ -16,6 +16,9 @@ token_pkt      m_token_pkt;
 data_pkt       m_data_pkt;
 handshake_pkt  m_handshake_pkt;
 sof_pkt        m_sof_pkt;
+// Selected device address
+rand bit [6:0] dev_addr;
+// Chosen endpoint for current transaction
 rand bit [3:0] endp;
 // Current SETUP buffer number
 bit [4:0] setup_buffer_id = 5'd1;
@@ -174,13 +177,28 @@ endtask
     `uvm_create_on(m_token_pkt, p_sequencer.usb20_sequencer_h)
     m_token_pkt.m_pkt_type = PktTypeToken;
     m_token_pkt.m_pid_type = pid_type;
-    assert(m_token_pkt.randomize() with {m_token_pkt.address inside {7'b0};
+    assert(m_token_pkt.randomize() with {m_token_pkt.address == dev_addr;
                                          m_token_pkt.endpoint == endp;});
     // Any fault injections requested?
     if (inject_crc_error) m_token_pkt.crc5 = ~m_token_pkt.crc5;
     m_usb20_item = m_token_pkt;
     start_item(m_token_pkt);
     finish_item(m_token_pkt);
+  endtask
+
+  // Send a data packet to the USB device
+  virtual task send_data_packet(input pid_type_e pid_type, input byte unsigned data[],
+                                input bit isochronous_transfer = 1'b0);
+    `uvm_create_on(m_data_pkt, p_sequencer.usb20_sequencer_h)
+    m_data_pkt.m_pkt_type = PktTypeData;
+    m_data_pkt.m_pid_type = pid_type;
+    if (isochronous_transfer) begin
+      m_data_pkt.m_usb_transfer = usb_transfer_e'(IsoTrans);
+    end
+    m_data_pkt.set_data(data);  // This also completes the CRC16.
+    m_usb20_item = m_data_pkt;
+    start_item(m_data_pkt);
+    finish_item(m_data_pkt);
   endtask
 
   // Construct and transmit a DATA packet to the USB device
@@ -381,11 +399,38 @@ endtask
     // TODO
   endtask
 
-  // setup basic usbdev features
-  virtual task usbdev_init(bit [TL_DW-1:0] device_address = 0);
-    // Enable USBDEV
+  // Set up basic configuration, optionally using a fixed device address
+  virtual task usbdev_init(bit [6:0] device_address = 0);
+    // Has a specified address been requested? Zero is not a valid device address
+    // on the USB except during the initial configuration process, so we'll just
+    // keep the previous value if asked for zero.
+    if (!device_address) begin
+      device_address = dev_addr;
+    end
+    `uvm_info(`gfn, $sformatf("Setting device address to 0x%02x", device_address), UVM_MEDIUM)
+    usbdev_connect();
+    wait_for_link_state({LinkActive, LinkActiveNoSOF}, 10 * 1000 * 48);  // 10ms timeout, at 48MHz
+    usbdev_set_address(device_address);
+  endtask
+
+  // Connect to the USB.
+  virtual task usbdev_connect();
     ral.usbctrl.enable.set(1'b1);
-    ral.usbctrl.device_address.set(device_address);
+    csr_update(ral.usbctrl);
+  endtask
+
+  // Disconnect from the USB.
+  virtual task usbdev_disconnect();
+    ral.usbctrl.enable.set(1'b0);
+    csr_update(ral.usbctrl);
+  endtask
+
+  // Set the device address of the DUT on the USB.
+  virtual task usbdev_set_address(bit [6:0] address);
+    // Use this address for all subsequent token packets.
+    dev_addr = address;
+    // Inform the DUT of its assigned device address.
+    ral.usbctrl.device_address.set(address);
     csr_update(ral.usbctrl);
   endtask
 
