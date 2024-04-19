@@ -8,6 +8,7 @@
 `include "usbdev_smoke_vseq.sv"
 
 `include "usbdev_av_buffer_vseq.sv"
+`include "usbdev_bitstuff_err_vseq.sv"
 `include "usbdev_csr_test_vseq.sv"
 `include "usbdev_data_toggle_restore_vseq.sv"
 `include "usbdev_disconnected_vseq.sv"

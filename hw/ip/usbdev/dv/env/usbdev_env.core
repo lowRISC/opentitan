@@ -26,6 +26,7 @@ filesets:
       - usbdev_env.sv: {is_include_file: true}
       - seq_lib/usbdev_vseq_list.sv: {is_include_file: true}
       - seq_lib/usbdev_base_vseq.sv: {is_include_file: true}
+      - seq_lib/usbdev_bitstuff_err_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_common_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_data_toggle_restore_vseq.sv: {is_include_file: true}
       - seq_lib/usbdev_dpi_config_host_vseq.sv: {is_include_file: true}
