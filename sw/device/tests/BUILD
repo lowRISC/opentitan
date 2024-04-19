@@ -4484,9 +4484,12 @@ _LC_STATES_DEBUG_DISALLOWED = [
                 "lc_{}".format(lc_state),
             ],
         ),
-        exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-        },
+        exec_env = dicts.add(
+            EARLGREY_SILICON_OWNER_ROM_EXT_ENVS if lc_state == "prod" else {},
+            {
+                "//hw/top_earlgrey:fpga_cw310_sival": None,
+            },
+        ),
         deps = [
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
             "//sw/device/lib/base:mmio",
@@ -4520,9 +4523,17 @@ test_suite(
             test_cmd = " --expect-fail" if lc_state_val in _LC_STATES_DEBUG_DISALLOWED else "",
             test_harness = "//sw/host/tests/chip/rv_dm:lc_disabled",
         ),
-        exec_env = {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-        },
+        exec_env = dicts.add(
+            EARLGREY_SILICON_OWNER_ROM_EXT_ENVS if lc_state == "prod" else {},
+            {
+                "//hw/top_earlgrey:fpga_cw310_sival": None,
+            },
+        ),
+        silicon = silicon_params(
+            needs_jtag = True,
+            test_cmd = " --expect-fail" if lc_state_val in _LC_STATES_DEBUG_DISALLOWED else "",
+            test_harness = "//sw/host/tests/chip/rv_dm:lc_disabled",
+        ),
         deps = [
             "//sw/device/lib/runtime:log",
             "//sw/device/lib/testing/test_framework:ottf_main",
