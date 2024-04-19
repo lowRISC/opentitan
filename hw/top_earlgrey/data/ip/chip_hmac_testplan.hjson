@@ -108,7 +108,10 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: []
-      bazel: ["//sw/device/tests/crypto/cryptotest:hash_kat"]
+      bazel: [
+        "//sw/device/tests/crypto/cryptotest:hash_kat",
+        "//sw/device/tests/crypto:hmac_sha256_functest",
+      ]
     }
     {
       name: chip_sw_hmac_stress
@@ -124,7 +127,12 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: []
-      bazel: ["//sw/device/tests/crypto/cryptotest:hmac_kat"]
+      bazel: [
+        "//sw/device/tests/crypto/cryptotest:hmac_kat",
+        "//sw/device/tests/crypto:kmac_functest_hardcoded",
+        "//sw/device/tests/crypto:hmac_sha512_functest",
+        "//sw/device/tests/crypto:hmac_sha384_functest"
+      ]
     }
     {
       name: chip_sw_hmac_endianness
