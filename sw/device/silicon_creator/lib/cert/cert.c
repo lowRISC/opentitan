@@ -32,7 +32,7 @@ rom_error_t cert_x509_asn1_check_serial_number(
       // re-generating the certificates.
       HARDENED_RETURN_IF_ERROR(
           flash_ctrl_info_erase(info_page, kFlashCtrlEraseTypePage));
-      return kErrorCertCorrupted;
+      return kErrorOk;
     }
     return err;
   }
