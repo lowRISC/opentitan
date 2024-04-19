@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/tests/penetrationtests/firmware/extclk_sca_fi.h"
+#include "sw/device/tests/penetrationtests/firmware/lib/extclk_sca_fi.h"
 
 #include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/base/status.h"

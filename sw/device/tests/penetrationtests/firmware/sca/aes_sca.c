@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/tests/penetrationtests/firmware/aes_sca.h"
+#include "sw/device/tests/penetrationtests/firmware/sca/aes_sca.h"
 
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
@@ -14,7 +14,7 @@
 #include "sw/device/sca/lib/aes.h"
 #include "sw/device/sca/lib/prng.h"
 #include "sw/device/sca/lib/sca.h"
-#include "sw/device/tests/penetrationtests/firmware/sca_lib.h"
+#include "sw/device/tests/penetrationtests/firmware/lib/sca_lib.h"
 #include "sw/device/tests/penetrationtests/json/aes_sca_commands.h"
 
 #if !OT_IS_ENGLISH_BREAKFAST
