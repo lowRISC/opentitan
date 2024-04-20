@@ -627,9 +627,12 @@ def sign_binary(ctx, opentitantool, **kwargs):
     if rsa_attr and key_attr:
         fail("Only one of ECDSA or RSA key should be provided")
 
-    key_attr = rsa_attr
-    rsa_key = key_from_dict(rsa_attr, "rsa_key")
+    if rsa_attr:
+        # Select RSA as the key attribute since at this point we have already
+        # determined that only one of ECDSA or RSA key should be provided.
+        key_attr = rsa_attr
 
+    rsa_key = key_from_dict(rsa_attr, "rsa_key")
     spx_key = key_from_dict(get_override(ctx, "attr.spx_key", kwargs), "spx_key")
 
     artifacts = _presigning_artifacts(

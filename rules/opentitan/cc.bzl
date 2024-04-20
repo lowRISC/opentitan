@@ -195,8 +195,8 @@ def _build_binary(ctx, exec_env, name, deps, kind):
     rsa_key = get_fallback(ctx, "attr.rsa_key", exec_env)
     spx_key = get_fallback(ctx, "attr.spx_key", exec_env)
     if (manifest or rsa_key) and kind != "ram":
-        if not (manifest and rsa_key):
-            fail("Signing requires a manifest and an rsa_key, and optionally an spx_key")
+        if not (manifest and (rsa_key or ecdsa_key)):
+            fail("Signing requires a manifest and an rsa_key or ecdsa_key, and optionally an spx_key")
         signed = sign_binary(
             ctx,
             opentitantool = exec_env._opentitantool,
