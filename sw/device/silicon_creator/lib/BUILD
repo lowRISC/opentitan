@@ -2,13 +2,13 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:opentitan.bzl", "OPENTITAN_CPU")
-load("//rules:autogen.bzl", "autogen_chip_info")
-load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library", "dual_inputs")
 load(
     "@bazel_skylib//lib:dicts.bzl",
     "dicts",
 )
+load("//rules:autogen.bzl", "autogen_chip_info")
+load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library", "dual_inputs")
+load("//rules:opentitan.bzl", "OPENTITAN_CPU")
 load(
     "//rules/opentitan:defs.bzl",
     "EARLGREY_TEST_ENVS",
