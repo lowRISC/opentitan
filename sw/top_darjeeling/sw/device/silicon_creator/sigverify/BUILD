@@ -133,6 +133,25 @@ opentitan_functest(
     ],
 )
 
+opentitan_functest(
+    name = "ecdsa_p256_verify_functest",
+    srcs = [
+        "//sw/lib/sw/device/silicon_creator/sigverify:ecdsa_p256_verify_functest.c",
+    ],
+    verilator = verilator_params(
+        timeout = "long",
+        tags = [
+            "manual",
+        ],
+    ),
+    deps = [
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/lib/sw/device/silicon_creator/sigverify:ecdsa_p256_verify",
+        "//sw/otbn/crypto:boot",
+        "//sw/top_darjeeling/sw/device/runtime:print",
+    ],
+)
+
 cc_test(
     name = "flash_exec_unittest",
     srcs = [

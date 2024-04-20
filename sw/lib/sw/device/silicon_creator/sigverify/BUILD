@@ -140,6 +140,18 @@ sh_test(
 )
 
 cc_library(
+    name = "ecdsa_p256_verify",
+    srcs = ["ecdsa_p256_verify.c"],
+    hdrs = ["ecdsa_p256_verify.h"],
+    deps = [
+        ":ecdsa_p256_key",
+        "//sw/device/silicon_creator/lib/drivers:hmac",
+        "//sw/lib/sw/device/base:hardened",
+        "//sw/lib/sw/device/silicon_creator:otbn_boot_services",
+    ],
+)
+
+cc_library(
     name = "rsa_verify",
     srcs = ["rsa_verify.c"],
     hdrs = ["rsa_verify.h"],
@@ -217,6 +229,7 @@ exports_files([
     "mod_exp_ibex_functest.c",
     "mod_exp_otbn_functest.c",
     "mod_exp_otbn_functest.c",
+    "ecdsa_p256_verify_functest.c",
     "rsa_verify_functest.c",
     "spx_verify_functest.c",
     "flash_exec_unittest.cc",
