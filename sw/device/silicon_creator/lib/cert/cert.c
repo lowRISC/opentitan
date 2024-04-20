@@ -18,7 +18,7 @@ rom_error_t cert_x509_asn1_check_serial_number(
   *matches = kHardenedBoolFalse;
 
   // Read first part of certificate, up to, and including, the serial number.
-  uint32_t cert_words[kCertX509Asn1FirstBytesWithSerialNumber] = {0};
+  uint32_t cert_words[kCertX509Asn1FirstWordsWithSerialNumber] = {0};
   rom_error_t err = flash_ctrl_info_read(
       info_page, /*offset=*/0,
       /*word_count=*/kCertX509Asn1FirstWordsWithSerialNumber, cert_words);
@@ -35,6 +35,19 @@ rom_error_t cert_x509_asn1_check_serial_number(
       return kErrorOk;
     }
     return err;
+  }
+
+  // Check if the cert is missing by checking if the first and last words are
+  // all 1s. If it is, it because the device is unprovisioned, in which case, we
+  // want to continue, and allow the ROM_EXT to attempt to update the cert.
+  if (launder32(cert_words[0]) == UINT32_MAX) {
+    HARDENED_CHECK_EQ(cert_words[0], UINT32_MAX);
+    if (launder32(cert_words[kCertX509Asn1FirstWordsWithSerialNumber - 1]) ==
+        UINT32_MAX) {
+      HARDENED_CHECK_EQ(cert_words[kCertX509Asn1FirstWordsWithSerialNumber - 1],
+                        UINT32_MAX);
+      return kErrorOk;
+    }
   }
 
   // Extract tag and length.
