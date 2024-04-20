@@ -133,6 +133,7 @@ impl<T: Flavor> Hyperdebug<T> {
     const GOOGLE_CAP_I2C_DEVICE: u16 = 0x0002;
     const GOOGLE_CAP_GPIO_MONITORING: u16 = 0x0004;
     const GOOGLE_CAP_GPIO_BITBANGING: u16 = 0x0008;
+    const GOOGLE_CAP_UART_QUEUE_CLEAR: u16 = 0x0010;
 
     /// Establish connection with a particular HyperDebug.
     pub fn open(
@@ -655,8 +656,13 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
                 if let Some(instance) = self.inner.uarts.borrow().get(&uart_interface.tty) {
                     return Ok(Rc::clone(instance));
                 }
-                let instance: Rc<dyn Uart> =
-                    Rc::new(uart::HyperdebugUart::open(&self.inner, uart_interface)?);
+                let supports_clearing_queues =
+                    self.get_cmsis_google_capabilities()? & Self::GOOGLE_CAP_UART_QUEUE_CLEAR != 0;
+                let instance: Rc<dyn Uart> = Rc::new(uart::HyperdebugUart::open(
+                    &self.inner,
+                    uart_interface,
+                    supports_clearing_queues,
+                )?);
                 self.inner
                     .uarts
                     .borrow_mut()
