@@ -133,7 +133,11 @@ TEST_F(CertTest, InvalidArgs) {
             kErrorCertInvalidArgument);
 }
 
-TEST_F(CertTest, UnprovisionedCertFlashInfoPage) {
+/**
+ * Here we test if the a flash page looks like garbage as scrambling is enabled
+ * but the page has never been erased.
+ */
+TEST_F(CertTest, CorruptedOrUnprovisionedCertFlashInfoPage) {
   hardened_bool_t matches = kHardenedBoolFalse;
   flash_ctrl_error_code_.rd_err = true;
   ExpectFlashInfoPageRead(&kFlashCtrlInfoPageUdsCertificate,
@@ -147,6 +151,30 @@ TEST_F(CertTest, UnprovisionedCertFlashInfoPage) {
                                          expected_sn_words_, &matches),
       kErrorOk);
   flash_ctrl_error_code_.rd_err = false;
+}
+
+/**
+ * Here we test if the a flash page has been erased (i.e., is all 1s) but the
+ * page has never been provisioned with a certificate.
+ */
+TEST_F(CertTest, UnprovisionedCertFlashInfoPage) {
+  hardened_bool_t matches = kHardenedBoolFalse;
+  uint8_t unprovisioned_cert_bytes[kDiceCertSizeInBytes] = {0};
+  unprovisioned_cert_bytes[0] = 0xFF;
+  unprovisioned_cert_bytes[1] = 0xFF;
+  unprovisioned_cert_bytes[2] = 0xFF;
+  unprovisioned_cert_bytes[3] = 0xFF;
+  unprovisioned_cert_bytes[kCertX509Asn1FirstBytesWithSerialNumber - 4] = 0xFF;
+  unprovisioned_cert_bytes[kCertX509Asn1FirstBytesWithSerialNumber - 3] = 0xFF;
+  unprovisioned_cert_bytes[kCertX509Asn1FirstBytesWithSerialNumber - 2] = 0xFF;
+  unprovisioned_cert_bytes[kCertX509Asn1FirstBytesWithSerialNumber - 1] = 0xFF;
+  ExpectFlashInfoPageRead(&kFlashCtrlInfoPageUdsCertificate,
+                          /*offset=*/0, kCertX509Asn1FirstWordsWithSerialNumber,
+                          (uint32_t *)unprovisioned_cert_bytes, kErrorOk);
+  EXPECT_EQ(
+      cert_x509_asn1_check_serial_number(&kFlashCtrlInfoPageUdsCertificate,
+                                         expected_sn_words_, &matches),
+      kErrorOk);
 }
 
 TEST_F(CertTest, BadSerialNumberTag) {
