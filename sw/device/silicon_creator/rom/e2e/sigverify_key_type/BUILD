@@ -6,12 +6,11 @@ load(
     "//rules:const.bzl",
     "CONST",
     "get_lc_items",
-    "hex",
     "hex_digits",
 )
 load(
     "//rules:opentitan.bzl",
-    "RSA_ONLY_KEY_STRUCTS",
+    "ECDSA_ONLY_KEY_STRUCTS",
     "key_allowed_in_lc_state",
 )
 load(
@@ -23,7 +22,6 @@ load(
     "//rules:otp.bzl",
     "STD_OTP_OVERLAYS",
     "otp_image",
-    "otp_json",
 )
 load(
     "//rules:rom_e2e.bzl",
@@ -32,7 +30,6 @@ load(
 load(
     "//sw/device/silicon_creator/rom/e2e:defs.bzl",
     "MSG_PASS",
-    "MSG_TEMPLATE_BFV",
     "MSG_TEMPLATE_BFV_LCV",
 )
 
@@ -51,33 +48,33 @@ package(default_visibility = ["//visibility:public"])
     opentitan_test(
         name = "sigverify_key_type_{}_{}".format(
             lc_state,
-            key.rsa.name,
+            key.ecdsa.name,
         ),
         srcs = [
             "//sw/device/silicon_creator/rom/e2e:empty_test",
         ],
         cw310 = cw310_params(
             exit_failure = MSG_PASS if not key_allowed_in_lc_state(
-                key.rsa,
+                key.ecdsa,
                 lc_state_val,
             ) else MSG_TEMPLATE_BFV_LCV.format(
-                hex_digits(CONST.BFV.SIGVERIFY.BAD_RSA_KEY),
+                hex_digits(CONST.BFV.SIGVERIFY.BAD_ECDSA_KEY),
                 hex_digits(lc_state_val),
             ),
             exit_success = MSG_PASS if key_allowed_in_lc_state(
-                key.rsa,
+                key.ecdsa,
                 lc_state_val,
             ) else MSG_TEMPLATE_BFV_LCV.format(
-                hex_digits(CONST.BFV.SIGVERIFY.BAD_RSA_KEY),
+                hex_digits(CONST.BFV.SIGVERIFY.BAD_ECDSA_KEY),
                 hex_digits(lc_state_val),
             ),
             otp = "otp_img_sigverify_key_type_{}".format(lc_state),
             tags = maybe_skip_in_ci(lc_state_val),
         ),
+        ecdsa_key = {key.ecdsa.label: key.ecdsa.name},
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         },
-        rsa_key = {key.rsa.label: key.rsa.name},
         deps = [
             "//sw/device/lib/testing/test_framework:ottf_main",
             "//sw/device/silicon_creator/lib/drivers:otp",
@@ -85,7 +82,7 @@ package(default_visibility = ["//visibility:public"])
         ],
     )
     for lc_state, lc_state_val in get_lc_items()
-    for key in RSA_ONLY_KEY_STRUCTS
+    for key in ECDSA_ONLY_KEY_STRUCTS
 ]
 
 test_suite(
@@ -97,6 +94,6 @@ test_suite(
             key_name,
         )
         for lc_state, _ in get_lc_items()
-        for key_name in [key.rsa.name for key in RSA_ONLY_KEY_STRUCTS]
+        for key_name in [key.ecdsa.name for key in ECDSA_ONLY_KEY_STRUCTS]
     ],
 )

@@ -113,8 +113,7 @@ cc_library(
         ":boot_policy",
         ":bootstrap",
         ":rom_epmp",
-        ":sigverify_keys",
-        ":sigverify_keys_rsa",
+        ":sigverify_keys_ecdsa_p256",
         ":sigverify_keys_spx",
         ":sigverify_otp_keys",
         "//hw/ip/aon_timer/data:aon_timer_c_regs",
@@ -133,6 +132,7 @@ cc_library(
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:irq_asm",
         "//sw/device/silicon_creator/lib:manifest",
+        "//sw/device/silicon_creator/lib:otbn_boot_services",
         "//sw/device/silicon_creator/lib:shutdown",
         "//sw/device/silicon_creator/lib/base:chip",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
@@ -175,7 +175,6 @@ opentitan_binary(
     linker_script = ":linker_script",
     deps = [
         ":rom_without_keys",
-        "//sw/device/silicon_creator/rom/keys/fake/rsa",
     ],
 )
 
@@ -206,7 +205,6 @@ opentitan_binary(
     linker_script = ":linker_script",
     deps = [
         ":rom_without_keys",
-        "//sw/device/silicon_creator/rom/keys/real/rsa",
     ],
 )
 

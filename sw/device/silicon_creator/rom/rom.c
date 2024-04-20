@@ -37,12 +37,13 @@
 #include "sw/device/silicon_creator/lib/drivers/uart.h"
 #include "sw/device/silicon_creator/lib/drivers/watchdog.h"
 #include "sw/device/silicon_creator/lib/error.h"
+#include "sw/device/silicon_creator/lib/otbn_boot_services.h"
 #include "sw/device/silicon_creator/lib/shutdown.h"
 #include "sw/device/silicon_creator/lib/sigverify/sigverify.h"
 #include "sw/device/silicon_creator/rom/boot_policy.h"
 #include "sw/device/silicon_creator/rom/bootstrap.h"
 #include "sw/device/silicon_creator/rom/rom_epmp.h"
-#include "sw/device/silicon_creator/rom/sigverify_keys_rsa.h"
+#include "sw/device/silicon_creator/rom/sigverify_keys_ecdsa_p256.h"
 #include "sw/device/silicon_creator/rom/sigverify_keys_spx.h"
 #include "sw/device/silicon_creator/rom/sigverify_otp_keys.h"
 
@@ -221,6 +222,8 @@ static rom_error_t rom_verify(const manifest_t *manifest,
     anti_rollback_len = sizeof(extra_word);
   }
 
+  HARDENED_RETURN_IF_ERROR(otbn_boot_app_load());
+
   sigverify_otp_key_ctx_t sigverify_ctx;
   HARDENED_RETURN_IF_ERROR(sigverify_otp_keys_init(&sigverify_ctx));
 
@@ -228,9 +231,11 @@ static rom_error_t rom_verify(const manifest_t *manifest,
   *flash_exec = 0;
   HARDENED_RETURN_IF_ERROR(boot_policy_manifest_check(manifest, &boot_data));
 
-  const sigverify_rsa_key_t *rsa_key;
-  HARDENED_RETURN_IF_ERROR(sigverify_rsa_key_get(
-      sigverify_rsa_key_id_get(&manifest->rsa_modulus), lc_state, &rsa_key));
+  const sigverify_ecdsa_p256_buffer_t *ecdsa_key = NULL;
+  HARDENED_RETURN_IF_ERROR(sigverify_ecdsa_p256_key_get(
+      &sigverify_ctx,
+      sigverify_ecdsa_p256_key_id_get(&manifest->ecdsa_public_key), lc_state,
+      &ecdsa_key));
 
   const sigverify_spx_key_t *spx_key = NULL;
   const sigverify_spx_signature_t *spx_signature = NULL;
@@ -281,8 +286,9 @@ static rom_error_t rom_verify(const manifest_t *manifest,
   // Swap the order of signature verifications randomly.
   *flash_exec = 0;
   if (rnd_uint32() < 0x80000000) {
-    HARDENED_RETURN_IF_ERROR(sigverify_rsa_verify(
-        &manifest->rsa_signature, rsa_key, &act_digest, lc_state, flash_exec));
+    HARDENED_RETURN_IF_ERROR(sigverify_ecdsa_p256_verify(
+        &manifest->ecdsa_signature, ecdsa_key, &act_digest, flash_exec));
+
     return sigverify_spx_verify(
         spx_signature, spx_key, lc_state, &usage_constraints_from_hw,
         sizeof(usage_constraints_from_hw), anti_rollback, anti_rollback_len,
@@ -292,8 +298,9 @@ static rom_error_t rom_verify(const manifest_t *manifest,
         spx_signature, spx_key, lc_state, &usage_constraints_from_hw,
         sizeof(usage_constraints_from_hw), anti_rollback, anti_rollback_len,
         digest_region.start, digest_region.length, flash_exec));
-    return sigverify_rsa_verify(&manifest->rsa_signature, rsa_key, &act_digest,
-                                lc_state, flash_exec);
+
+    return sigverify_ecdsa_p256_verify(&manifest->ecdsa_signature, ecdsa_key,
+                                       &act_digest, flash_exec);
   }
 }
 

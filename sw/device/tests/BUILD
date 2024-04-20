@@ -13,8 +13,8 @@ load(
 )
 load(
     "//rules:opentitan.bzl",
+    "ECDSA_ONLY_KEY_STRUCTS",
     "OPENTITAN_CPU",
-    "RSA_ONLY_KEY_STRUCTS",
 )
 load(
     "//rules:otp.bzl",
@@ -30,9 +30,9 @@ load(
     "EARLGREY_TEST_ENVS",
     "cw310_params",
     "dv_params",
+    "ecdsa_key_for_lc_state",
     "opentitan_binary",
     "opentitan_test",
-    "rsa_key_for_lc_state",
     "silicon_params",
     "verilator_params",
     new_cw310_params = "cw310_params",
@@ -1533,13 +1533,13 @@ _FLASH_CTRL_INFO_ACCESS_LC_STATES = get_lc_items(
         cw310 = cw310_params(
             bitstream = "//hw/bitstream:rom_with_fake_keys_otp_{}".format(lc_state.lower()),
         ),
+        ecdsa_key = ecdsa_key_for_lc_state(
+            ECDSA_ONLY_KEY_STRUCTS,
+            lc_state_val,
+        ),
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         },
-        rsa_key = rsa_key_for_lc_state(
-            RSA_ONLY_KEY_STRUCTS,
-            lc_state_val,
-        ),
         deps = [
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
             "//sw/device/lib/base:mmio",

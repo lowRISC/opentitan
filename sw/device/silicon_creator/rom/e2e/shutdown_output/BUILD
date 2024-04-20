@@ -6,12 +6,12 @@ load(
     "//rules/opentitan:defs.bzl",
     "cw310_params",
     "dv_params",
+    "ecdsa_key_for_lc_state",
     "opentitan_test",
-    "rsa_key_for_lc_state",
 )
 load(
     "//rules:opentitan.bzl",
-    "RSA_ONLY_KEY_STRUCTS",
+    "ECDSA_ONLY_KEY_STRUCTS",
 )
 load(
     "//rules:const.bzl",
@@ -76,15 +76,15 @@ manifest(
             otp = ":otp_img_shutdown_output_{}".format(lc_state),
             rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
         ),
+        ecdsa_key = ecdsa_key_for_lc_state(
+            ECDSA_ONLY_KEY_STRUCTS,
+            lc_state_val,
+        ),
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
             "//hw/top_earlgrey:sim_dv": None,
         },
         manifest = ":manifest_bad_identifier",
-        rsa_key = rsa_key_for_lc_state(
-            RSA_ONLY_KEY_STRUCTS,
-            lc_state_val,
-        ),
     )
     for lc_state, lc_state_val in get_lc_items()
 ]

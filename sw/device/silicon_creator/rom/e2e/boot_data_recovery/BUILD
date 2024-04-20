@@ -6,12 +6,12 @@ load(
     "//rules/opentitan:defs.bzl",
     "DEFAULT_TEST_FAILURE_MSG",
     "cw310_params",
+    "ecdsa_key_for_lc_state",
     "opentitan_test",
-    "rsa_key_for_lc_state",
 )
 load(
     "//rules:opentitan.bzl",
-    "RSA_ONLY_KEY_STRUCTS",
+    "ECDSA_ONLY_KEY_STRUCTS",
 )
 load(
     "//rules:const.bzl",
@@ -155,15 +155,15 @@ BOOT_DATA_RECOVERY_MANIFEST = manifest(
                 case["lc_state"].upper(),
             )),
         ),
+        # PROD keys can sign binaries able to run across all life cycle states.
+        ecdsa_key = ecdsa_key_for_lc_state(
+            ECDSA_ONLY_KEY_STRUCTS,
+            CONST.LCV.PROD,
+        ),
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         },
         manifest = BOOT_DATA_RECOVERY_MANIFEST,
-        # PROD keys can sign binaries able to run across all life cycle states.
-        rsa_key = rsa_key_for_lc_state(
-            RSA_ONLY_KEY_STRUCTS,
-            CONST.LCV.PROD,
-        ),
         deps = [
             "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
             "//sw/device/lib/testing/test_framework:ottf_main",

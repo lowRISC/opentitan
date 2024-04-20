@@ -273,6 +273,8 @@ manifest(d = {
 
 opentitan_binary(
     name = "rom_ext_slot_a",
+    # TODO(#22780): Integrate real keys for A1 flows.
+    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
     exec_env = [
         "//hw/top_earlgrey:fpga_cw310",
         "//hw/top_earlgrey:fpga_cw340",
@@ -282,10 +284,6 @@ opentitan_binary(
     ],
     linker_script = ":ld_slot_a",
     manifest = ":manifest_standard",
-    rsa_key = select({
-        "//signing:test_keys": {"//sw/device/silicon_creator/rom/keys/fake/rsa:prod_private_key_0": "prod_key_0"},
-        "//conditions:default": {"//sw/device/silicon_creator/rom/keys/real/rsa:keyset": "earlgrey_a0_test_0"},
-    }),
     deps = [
         ":rom_ext",
         "//sw/device/lib/crt",
@@ -297,6 +295,8 @@ opentitan_binary(
 
 opentitan_binary(
     name = "rom_ext_slot_b",
+    # TODO(#22780): Integrate real keys for A1 flows.
+    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
     exec_env = [
         "//hw/top_earlgrey:fpga_cw310",
         "//hw/top_earlgrey:fpga_cw340",
@@ -306,10 +306,6 @@ opentitan_binary(
     ],
     linker_script = ":ld_slot_b",
     manifest = ":manifest_standard",
-    rsa_key = select({
-        "//signing:test_keys": {"//sw/device/silicon_creator/rom/keys/fake/rsa:prod_private_key_0": "prod_key_0"},
-        "//conditions:default": {"//sw/device/silicon_creator/rom/keys/real/rsa:keyset": "earlgrey_a0_test_0"},
-    }),
     deps = [
         ":rom_ext",
         "//sw/device/lib/crt",
@@ -321,6 +317,8 @@ opentitan_binary(
 
 opentitan_binary(
     name = "rom_ext_slot_virtual",
+    # TODO(#22780): Integrate real keys for A1 flows.
+    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
     exec_env = [
         "//hw/top_earlgrey:fpga_cw310",
         "//hw/top_earlgrey:fpga_cw340",
@@ -330,10 +328,6 @@ opentitan_binary(
     ],
     linker_script = ":ld_slot_virtual",
     manifest = ":manifest_virtual",
-    rsa_key = select({
-        "//signing:test_keys": {"//sw/device/silicon_creator/rom/keys/fake/rsa:prod_private_key_0": "prod_key_0"},
-        "//conditions:default": {"//sw/device/silicon_creator/rom/keys/real/rsa:keyset": "earlgrey_a0_test_0"},
-    }),
     deps = [
         ":rom_ext",
         "//sw/device/lib/crt",
@@ -351,6 +345,7 @@ manifest(d = {
 
 opentitan_binary(
     name = "rom_ext_slot_a_bad_address_translation",
+    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:test_key_0_ecdsa_p256": "test_key_0"},
     exec_env = [
         "//hw/top_earlgrey:fpga_cw310",
         "//hw/top_earlgrey:fpga_cw340",
@@ -359,7 +354,6 @@ opentitan_binary(
     ],
     linker_script = ":ld_slot_a",
     manifest = ":manifest_bad_address_translation",
-    rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:test_private_key_0": "test_key_0"},
     deps = [
         ":rom_ext",
         "//sw/device/lib/crt",

@@ -144,10 +144,10 @@ opentitan_test(
         bitstream = "//hw/bitstream:rom_with_fake_keys_otp_test_unlocked1_initial",
         tags = ["manuf"],
     ),
+    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:test_key_0_ecdsa_p256": "test_key_0"},
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
     },
-    rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:test_private_key_0": "test_key_0"},
     deps = [
         ":individualize",
         ":otp_fields",
@@ -277,10 +277,10 @@ opentitan_test(
         """,
         test_harness = "//sw/host/tests/manuf/personalize_functest",
     ),
+    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:dev_key_0_ecdsa_p256": "dev_key_0"},
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_sival": None,
     },
-    rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:dev_private_key_0": "dev_key_0"},
     deps = [
         ":flash_info_fields",
         ":personalize",

@@ -5,14 +5,14 @@
 load(
     "//rules/opentitan:defs.bzl",
     "cw310_params",
+    "ecdsa_key_for_lc_state",
     "opentitan_binary",
     "opentitan_test",
-    "rsa_key_for_lc_state",
     "verilator_params",
 )
 load(
     "@//rules:opentitan.bzl",
-    "RSA_ONLY_KEY_STRUCTS",
+    "ECDSA_ONLY_KEY_STRUCTS",
 )
 load(
     "//rules:const.bzl",
@@ -88,6 +88,10 @@ WATCHDOG_TEST_CASES = {
         name = "test_watchdog_{}_{}".format(watchdog_config, lc_state),
         testonly = True,
         srcs = ["watchdog_test.c"],
+        ecdsa_key = ecdsa_key_for_lc_state(
+            ECDSA_ONLY_KEY_STRUCTS,
+            lc_state_val,
+        ),
         exec_env = [
             "//hw/top_earlgrey:fpga_cw310",
             "//hw/top_earlgrey:sim_verilator",
@@ -97,10 +101,6 @@ WATCHDOG_TEST_CASES = {
             "WATCHDOG_BITE_THRESHOLD={}".format(WATCHDOG_BITE_THRESHOLD),
         ],
         manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
-        rsa_key = rsa_key_for_lc_state(
-            RSA_ONLY_KEY_STRUCTS,
-            lc_state_val,
-        ),
         deps = [
             "//hw/ip/aon_timer/data:aon_timer_c_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",

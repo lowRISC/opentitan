@@ -13,7 +13,7 @@ load(
 )
 load(
     "//rules:opentitan.bzl",
-    "RSA_ONLY_KEY_STRUCTS",
+    "ECDSA_ONLY_KEY_STRUCTS",
     "bin_to_vmem",
     "scramble_flash_vmem",
 )
@@ -44,9 +44,9 @@ load(
     "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
     "cw310_params",
     "dv_params",
+    "ecdsa_key_by_name",
     "opentitan_binary",
     "opentitan_test",
-    "rsa_key_by_name",
     "verilator_params",
 )
 
@@ -160,6 +160,7 @@ opentitan_test(
         name = "empty_test_slot_{}_{}".format(slot, key),
         testonly = True,
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
+        ecdsa_key = ecdsa_key_by_name(ECDSA_ONLY_KEY_STRUCTS, key),
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
             "//hw/top_earlgrey:sim_dv": None,
@@ -169,7 +170,6 @@ opentitan_test(
         # We need to specify the manifest because the simulation environments do not
         # specify one by default.
         manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
-        rsa_key = rsa_key_by_name(RSA_ONLY_KEY_STRUCTS, key),
         deps = [
             "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
             "//sw/device/lib/testing/test_framework:ottf_main",
@@ -408,15 +408,15 @@ opentitan_test(
     srcs = [":empty_test"],
     cw310 = cw310_params(
         exit_failure = MSG_PASS,
-        exit_success = MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.SIGVERIFY.BAD_RSA_KEY)),
+        exit_success = MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.SIGVERIFY.BAD_ECDSA_KEY)),
     ),
+    ecdsa_key = {
+        "//sw/device/silicon_creator/rom/keys/unauthorized/ecdsa:unauthorized_key_0_ecdsa_p256": "unauthorized_key_0",
+    },
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
     },
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
-    rsa_key = {
-        "//sw/device/silicon_creator/rom/keys/unauthorized/rsa:unauthorized_private_key_0": "unauthorized_key_0",
-    },
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//sw/device/lib/testing/test_framework:ottf_main",

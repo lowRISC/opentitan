@@ -5,8 +5,8 @@
 load(
     "//rules/opentitan:defs.bzl",
     "cw310_params",
+    "ecdsa_key_for_lc_state",
     "opentitan_test",
-    "rsa_key_for_lc_state",
 )
 load(
     "//rules:const.bzl",
@@ -15,7 +15,7 @@ load(
 )
 load(
     "//rules:opentitan.bzl",
-    "RSA_ONLY_KEY_STRUCTS",
+    "ECDSA_ONLY_KEY_STRUCTS",
 )
 load(
     "//rules:otp.bzl",
@@ -116,6 +116,10 @@ SHUTDOWN_WATCHDOG_CASES = [
                 t["lc_state"].upper(),
             )),
         ),
+        ecdsa_key = ecdsa_key_for_lc_state(
+            ECDSA_ONLY_KEY_STRUCTS,
+            t["lc_state_val"],
+        ),
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         },
@@ -123,10 +127,6 @@ SHUTDOWN_WATCHDOG_CASES = [
             "HANG_SECS=2",
         ],
         manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
-        rsa_key = rsa_key_for_lc_state(
-            RSA_ONLY_KEY_STRUCTS,
-            t["lc_state_val"],
-        ),
         deps = [
             "//sw/device/lib/base:memory",
             "//sw/device/lib/dif:aon_timer",

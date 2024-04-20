@@ -565,8 +565,6 @@ def _offline_signature_attach(ctx):
         f, _ = paths.split_extension(sig.basename)
         if f not in inputs:
             fail("SPX signature {} does not have a corresponding entry in srcs".format(sig.path))
-        if "rsa_sig" not in inputs[f]:
-            fail("SPX signature {} does not have corresponding RSA signature".format(sig.path))
         inputs[f]["spx_sig"] = sig
 
     outputs = []

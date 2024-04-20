@@ -5,8 +5,9 @@
 load(
     "//rules/opentitan:defs.bzl",
     "cw310_params",
+    "ecdsa_key_for_lc_state",
+    "opentitan_binary",
     "opentitan_test",
-    "rsa_key_for_lc_state",
     "spx_key_for_lc_state",
 )
 load(
@@ -17,8 +18,7 @@ load(
 )
 load(
     "//rules:opentitan.bzl",
-    "RSA_SPX_KEY_STRUCTS",
-    "opentitan_flash_binary",
+    "ECDSA_SPX_KEY_STRUCTS",
 )
 load(
     "//rules:otp.bzl",
@@ -108,24 +108,24 @@ SIGVERIFY_SPX_CASES = [
     },
 ]
 
-opentitan_flash_binary(
+opentitan_binary(
     name = "empty_test_sigverify_spx",
     testonly = True,
-    srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
-    devices = [
-        "fpga_cw310",
-        "sim_dv",
-        "sim_verilator",
+    srcs = ["sigverify_spx_test.c"],
+    ecdsa_key = ecdsa_key_for_lc_state(
+        ECDSA_SPX_KEY_STRUCTS,
+        CONST.LCV.RMA,
+    ),
+    exec_env = [
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys",
+        "//hw/top_earlgrey:sim_dv",
+        "//hw/top_earlgrey:sim_verilator",
     ],
-    local_defines = [
-        shell.quote("EMPTY_TEST_MSG=\"spx_en=0x%08x, spx_en_otp=0x%08x, spx_key_en=0x%08x%08x\", " +
-                    "sigverify_spx_verify_enabled(lifecycle_state_get()), " +
-                    "otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_SIGVERIFY_SPX_EN_OFFSET), " +
-                    "otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_SIGVERIFY_SPX_KEY_EN_OFFSET + sizeof(uint32_t)), " +
-                    "otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_SIGVERIFY_SPX_KEY_EN_OFFSET)"),
-    ],
-    signed = True,
-    signing_key_structs = RSA_SPX_KEY_STRUCTS,
+    kind = "flash",
+    spx_key = spx_key_for_lc_state(
+        ECDSA_SPX_KEY_STRUCTS,
+        CONST.LCV.RMA,
+    ),
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
@@ -201,15 +201,15 @@ opentitan_flash_binary(
             exit_success = t["exit_success"][lc_state],
             tags = maybe_skip_in_ci(lc_state_val),
         ),
+        ecdsa_key = ecdsa_key_for_lc_state(
+            ECDSA_SPX_KEY_STRUCTS,
+            lc_state_val,
+        ),
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         },
-        rsa_key = rsa_key_for_lc_state(
-            RSA_SPX_KEY_STRUCTS,
-            lc_state_val,
-        ),
         spx_key = spx_key_for_lc_state(
-            RSA_SPX_KEY_STRUCTS,
+            ECDSA_SPX_KEY_STRUCTS,
             lc_state_val,
         ),
         deps = [
