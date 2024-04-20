@@ -816,9 +816,12 @@
     {
       name: chip_sw_uart_smoketest_signed
       uvm_test_seq: chip_sw_uart_smoke_vseq
-      sw_images: ["//sw/device/tests:uart_smoketest_signed:1:signed:fake_rsa_test_key_0"]
+      sw_images: [
+        "//sw/device/tests:uart_smoketest:1:new_rules",
+        "//hw/ip/otp_ctrl/data:img_rma:4",
+      ]
       en_run_modes: ["sw_test_mode_rom_with_fake_keys"]
-      run_opts: ["+sw_test_timeout_ns=20000000"]
+      run_opts: ["+sw_test_timeout_ns=20000000", "+use_otp_image=OtpTypeCustom"]
       run_timeout_mins: 180
     }
 

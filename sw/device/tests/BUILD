@@ -3608,6 +3608,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         EARLGREY_CW340_TEST_ENVS,
         {
+            "//hw/top_earlgrey:sim_dv_rom_with_fake_keys": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),

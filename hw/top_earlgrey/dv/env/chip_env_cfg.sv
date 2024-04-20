@@ -425,6 +425,9 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
           if ("test_in_rom" inside {sw_image_flags[i]} &&
               !("new_rules" inside {sw_image_flags[i]})) begin
             sw_images[i] = $sformatf("%0s_rom_prog_%0s", sw_images[i], sw_build_device);
+          // If Rom type is new_rules, use the target directly.
+          end else if ("new_rules" inside {sw_image_flags[i]}) begin
+            sw_images[i] = $sformatf("%0s", sw_images[i]);
           // If Rom type but not test_in_rom, no need to tweak name further.
           end else begin
             sw_images[i] = $sformatf("%0s_%0s", sw_images[i], sw_build_device);

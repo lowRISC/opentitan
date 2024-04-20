@@ -345,7 +345,8 @@
     }
     {
       name: sw_test_mode_rom_with_fake_keys
-      sw_images: ["//sw/device/silicon_creator/rom:rom_with_fake_keys:0"]
+      sw_build_device: sim_dv_rom_with_fake_keys
+      sw_images: ["//sw/device/silicon_creator/rom:rom_with_fake_keys_sim_dv:0:new_rules"]
       en_run_modes: ["sw_test_mode_common"]
     }
     {
@@ -376,7 +377,7 @@
       en_run_modes: ["sw_test_mode_common"]
       // The tests using this mode only require the ROM init check to succeed.
       // The example_test_from_rom test is sufficient.
-      sw_images: ["//sw/device/tests:example_test_from_rom:0:test_in_rom:new_rules"]
+      sw_images: ["//sw/device/tests:example_test_from_rom_sim_dv:0:test_in_rom:new_rules"]
       run_opts: ["+create_jtag_riscv_map=1"]
       reseed: 5
     }
@@ -439,7 +440,7 @@
     {
       name: chip_sw_example_rom
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["//sw/device/tests:example_test_from_rom:0:test_in_rom:new_rules"]
+      sw_images: ["//sw/device/tests:example_test_from_rom_sim_dv:0:test_in_rom:new_rules"]
       en_run_modes: ["sw_test_mode_common"]
     }
     {
@@ -774,14 +775,14 @@
     {
       name: chip_sw_flash_init
       uvm_test_seq: chip_sw_flash_init_vseq
-      sw_images: ["//sw/device/tests/sim_dv:flash_init_test:0:test_in_rom:new_rules"]
+      sw_images: ["//sw/device/tests/sim_dv:flash_init_test_sim_dv:0:test_in_rom:new_rules"]
       en_run_modes: ["sw_test_mode_common"]
       run_opts: ["+sw_test_timeout_ns=25_000_000"]
     }
     {
       name: chip_sw_flash_rma_unlocked
       uvm_test_seq: chip_sw_flash_rma_unlocked_vseq
-      sw_images: ["//sw/device/tests/sim_dv:flash_rma_unlocked_test:0:test_in_rom:new_rules"]
+      sw_images: ["//sw/device/tests/sim_dv:flash_rma_unlocked_test_sim_dv:0:test_in_rom:new_rules"]
       en_run_modes: ["sw_test_mode_common"]
       run_opts: ["+flash_program_latency=5", "+sw_test_timeout_ns=150_000_000"]
       run_timeout_mins: 200
@@ -2041,7 +2042,7 @@
     {
       name: chip_sw_flash_init_reduced_freq
       uvm_test_seq: chip_sw_flash_init_vseq
-      sw_images: ["//sw/device/tests/sim_dv:flash_init_test:0:test_in_rom:new_rules"]
+      sw_images: ["//sw/device/tests/sim_dv:flash_init_test_sim_dv:0:test_in_rom:new_rules"]
       en_run_modes: ["sw_test_mode_common"]
       run_opts: ["+sw_test_timeout_ns=25_000_000", "+cal_sys_clk_70mhz=1"]
     }

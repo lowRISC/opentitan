@@ -560,3 +560,13 @@ sim_dv(
     exec_env = "sim_dv",
     rom = "//sw/device/lib/testing/test_rom:test_rom",
 )
+
+sim_dv(
+    name = "sim_dv_rom_with_fake_keys",
+    testonly = True,
+    base = ":sim_dv_base",
+    exec_env = "sim_dv",
+    manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
+    rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
+    rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:test_private_key_0": "test_key_0"},
+)
