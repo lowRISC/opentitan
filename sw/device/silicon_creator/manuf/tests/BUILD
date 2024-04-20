@@ -6,7 +6,7 @@ load("//rules:const.bzl", "CONST", "get_lc_items")
 load("//rules:lc.bzl", "lc_raw_unlock_token")
 load(
     "//rules:opentitan.bzl",
-    "RSA_ONLY_KEY_STRUCTS",
+    "ECDSA_ONLY_KEY_STRUCTS",
 )
 load(
     "//rules:otp.bzl",
@@ -16,9 +16,9 @@ load(
 load(
     "//rules/opentitan:defs.bzl",
     "cw310_params",
+    "ecdsa_key_for_lc_state",
     "opentitan_binary",
     "opentitan_test",
-    "rsa_key_for_lc_state",
     "silicon_params",
 )
 
@@ -86,10 +86,10 @@ _MANUF_TEST_LOCKED_KEY = None
             ) + " --initial-lc-state={lc_state}",
             test_harness = "//sw/host/tests/manuf/manuf_scrap",
         ),
+        ecdsa_key = _MANUF_TEST_LOCKED_KEY if (lc_state, lc_val) in _TEST_LOCKED_LC_ITEMS else ecdsa_key_for_lc_state(ECDSA_ONLY_KEY_STRUCTS, lc_val),
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         },
-        rsa_key = _MANUF_TEST_LOCKED_KEY if (lc_state, lc_val) in _TEST_LOCKED_LC_ITEMS else rsa_key_for_lc_state(RSA_ONLY_KEY_STRUCTS, lc_val),
         deps = [
             "//sw/device/lib/runtime:log",
             "//sw/device/lib/testing/test_framework:ottf_main",
@@ -322,14 +322,14 @@ opentitan_binary(
             """,
             test_harness = "//sw/host/tests/manuf/manuf_cp_device_info_flash_wr",
         ),
+        # We select the PROD key since the SRAM test program does an LC transition to DEV.
+        ecdsa_key = ecdsa_key_for_lc_state(
+            ECDSA_ONLY_KEY_STRUCTS,
+            CONST.LCV.PROD,
+        ),
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         },
-        # We select the PROD key since the SRAM test program does an LC transition to DEV.
-        rsa_key = rsa_key_for_lc_state(
-            RSA_ONLY_KEY_STRUCTS,
-            CONST.LCV.PROD,
-        ),
         deps = [
             ":test_wafer_auth_secret",
             "//sw/device/lib/dif:flash_ctrl",

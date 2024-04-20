@@ -31,6 +31,38 @@ rom_ext_boot_policy_manifests_t rom_ext_boot_policy_manifests_get(
   }
 }
 
+// TODO(#21204): Refactor to use `manifest_check` from `lib/manifest.h`.
+OT_WARN_UNUSED_RESULT
+static inline rom_error_t manifest_check_rom_ext(const manifest_t *manifest) {
+  // Major version must be `kManifestVersionMajor1`.
+  if (manifest->manifest_version.major != kManifestVersionMajor1) {
+    return kErrorManifestBadVersionMajor;
+  }
+
+  // Signed region must be inside the image.
+  if (manifest->signed_region_end > manifest->length) {
+    return kErrorManifestBadSignedRegion;
+  }
+
+  // Executable region must be non-empty, inside the signed region, located
+  // after the manifest, and word aligned.
+  if (manifest->code_start >= manifest->code_end ||
+      manifest->code_start < sizeof(manifest_t) ||
+      manifest->code_end > manifest->signed_region_end ||
+      (manifest->code_start & 0x3) != 0 || (manifest->code_end & 0x3) != 0) {
+    return kErrorManifestBadCodeRegion;
+  }
+
+  // Entry point must be inside the executable region and word aligned.
+  if (manifest->entry_point < manifest->code_start ||
+      manifest->entry_point >= manifest->code_end ||
+      (manifest->entry_point & 0x3) != 0) {
+    return kErrorManifestBadEntryPoint;
+  }
+
+  return kErrorOk;
+}
+
 rom_error_t rom_ext_boot_policy_manifest_check(const manifest_t *manifest,
                                                const boot_data_t *boot_data) {
   if (manifest->identifier != CHIP_BL0_IDENTIFIER) {
@@ -46,7 +78,7 @@ rom_error_t rom_ext_boot_policy_manifest_check(const manifest_t *manifest,
   HARDENED_CHECK_GE(manifest->security_version,
                     boot_data->min_security_version_bl0);
 
-  RETURN_IF_ERROR(manifest_check(manifest));
+  RETURN_IF_ERROR(manifest_check_rom_ext(manifest));
   return kErrorOk;
 }
 

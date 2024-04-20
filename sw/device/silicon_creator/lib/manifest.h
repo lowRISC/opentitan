@@ -462,8 +462,8 @@ typedef struct manifest_ext_spx_signature {
  */
 OT_WARN_UNUSED_RESULT
 inline rom_error_t manifest_check(const manifest_t *manifest) {
-  // Major version must be `kManifestVersionMajor1`.
-  if (manifest->manifest_version.major != kManifestVersionMajor1) {
+  // Major version must be `kManifestVersionMajor2`.
+  if (manifest->manifest_version.major != kManifestVersionMajor2) {
     return kErrorManifestBadVersionMajor;
   }
 

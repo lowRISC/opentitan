@@ -36,7 +36,5 @@ FT_PROVISIONING_INPUTS = _DEVICE_ID_AND_TEST_TOKENS + """
   --owner-security-version="0"
 """
 
-FT_PERSONALIZE_SIGNING_KEYS = select({
-    "//signing:test_keys": {"//sw/device/silicon_creator/rom/keys/fake/rsa:prod_private_key_0": "prod_key_0"},
-    "//conditions:default": {"//sw/device/silicon_creator/rom/keys/real/rsa:keyset": "earlgrey_a0_dev_0"},
-})
+# TODO(#22780): Integrate real keys for A1 flows.
+FT_PERSONALIZE_SIGNING_KEYS = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"}

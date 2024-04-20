@@ -5,12 +5,12 @@
 load(
     "//rules/opentitan:defs.bzl",
     "cw310_params",
+    "ecdsa_key_for_lc_state",
     "opentitan_test",
-    "rsa_key_for_lc_state",
 )
 load(
     "//rules:opentitan.bzl",
-    "RSA_ONLY_KEY_STRUCTS",
+    "ECDSA_ONLY_KEY_STRUCTS",
 )
 load(
     "//rules:const.bzl",
@@ -36,14 +36,14 @@ package(default_visibility = ["//visibility:public"])
             """,
             test_harness = "//sw/host/tests/rom/e2e_chip_specific_startup",
         ),
+        ecdsa_key = ecdsa_key_for_lc_state(
+            ECDSA_ONLY_KEY_STRUCTS,
+            lc_state_val,
+        ),
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         },
         manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
-        rsa_key = rsa_key_for_lc_state(
-            RSA_ONLY_KEY_STRUCTS,
-            lc_state_val,
-        ),
         deps = [
             "//hw/ip/csrng/data:csrng_c_regs",
             "//hw/ip/edn/data:edn_c_regs",

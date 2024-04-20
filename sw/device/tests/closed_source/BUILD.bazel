@@ -5,13 +5,13 @@
 load("@//rules:const.bzl", "CONST")
 load(
     "@//rules:opentitan.bzl",
-    "RSA_ONLY_KEY_STRUCTS",
+    "ECDSA_ONLY_KEY_STRUCTS",
 )
 load(
     "@//rules/opentitan:defs.bzl",
     "dv_params",
+    "ecdsa_key_for_lc_state",
     "opentitan_test",
-    "rsa_key_for_lc_state",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -144,6 +144,10 @@ opentitan_test(
     dv = dv_params(
         rom = "@//sw/device/silicon_creator/rom:rom_with_fake_keys",
     ),
+    ecdsa_key = ecdsa_key_for_lc_state(
+        ECDSA_ONLY_KEY_STRUCTS,
+        CONST.LCV.TEST_UNLOCKED0,
+    ),
     exec_env = {
         "@//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         "@//hw/top_earlgrey:fpga_cw310_test_rom": None,
@@ -152,10 +156,6 @@ opentitan_test(
     # We need to specify the manifest because the simulation environments do not
     # specify one by default.
     manifest = "@//sw/device/silicon_creator/rom_ext:manifest_standard",
-    rsa_key = rsa_key_for_lc_state(
-        RSA_ONLY_KEY_STRUCTS,
-        CONST.LCV.TEST_UNLOCKED0,
-    ),
     deps = [
         "@//sw/device/lib/testing/test_framework:ottf_main",
     ],
@@ -185,6 +185,10 @@ opentitan_test(
     dv = dv_params(
         rom = "@//sw/device/silicon_creator/rom:rom_with_fake_keys",
     ),
+    ecdsa_key = ecdsa_key_for_lc_state(
+        ECDSA_ONLY_KEY_STRUCTS,
+        CONST.LCV.TEST_UNLOCKED0,
+    ),
     exec_env = {
         "@//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         "@//hw/top_earlgrey:fpga_cw310_test_rom": None,
@@ -193,10 +197,6 @@ opentitan_test(
     # We need to specify the manifest because the simulation environments do not
     # specify one by default.
     manifest = "@//sw/device/silicon_creator/rom_ext:manifest_standard",
-    rsa_key = rsa_key_for_lc_state(
-        RSA_ONLY_KEY_STRUCTS,
-        CONST.LCV.TEST_UNLOCKED0,
-    ),
     deps = [
         "@//sw/device/lib/testing/test_framework:ottf_main",
         "@manufacturer_test_hooks//:test_hooks_1",

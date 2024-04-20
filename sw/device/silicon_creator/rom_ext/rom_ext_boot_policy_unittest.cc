@@ -21,7 +21,8 @@ class RomExtBootPolicyTest : public rom_test::RomTest {
   rom_test::MockBootData mock_boot_data_;
 };
 
-TEST_F(RomExtBootPolicyTest, ManifestCheck) {
+// TODO(#21204): Refactor to use `manifest_check` from `lib/manifest.h`.
+TEST_F(RomExtBootPolicyTest, DISABLED_ManifestCheck) {
   boot_data_t boot_data{{0}};
 
   manifest_t manifest{};

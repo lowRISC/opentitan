@@ -209,12 +209,12 @@ opentitan_binary(
     name = "ft_personalize",
     testonly = True,
     srcs = ["ft_personalize.c"],
+    ecdsa_key = FT_PERSONALIZE_SIGNING_KEYS,
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         "//hw/top_earlgrey:silicon_creator": None,
     },
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
-    rsa_key = FT_PERSONALIZE_SIGNING_KEYS,
     deps = [
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/dif:flash_ctrl",

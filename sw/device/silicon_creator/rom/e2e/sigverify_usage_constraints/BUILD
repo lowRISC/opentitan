@@ -6,8 +6,8 @@ load(
     "//rules/opentitan:defs.bzl",
     "DEFAULT_TEST_SUCCESS_MSG",
     "cw310_params",
+    "ecdsa_key_for_lc_state",
     "opentitan_test",
-    "rsa_key_for_lc_state",
 )
 load(
     "//rules:const.bzl",
@@ -19,7 +19,7 @@ load(
 )
 load(
     "//rules:opentitan.bzl",
-    "RSA_ONLY_KEY_STRUCTS",
+    "ECDSA_ONLY_KEY_STRUCTS",
 )
 load(
     "//rules:manifest.bzl",
@@ -97,7 +97,7 @@ otp_json(
     for lc_state, _ in get_lc_items()
 ]
 
-_SIGVERIFY_FAIL_MSG = MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.SIGVERIFY.BAD_RSA_SIGNATURE))
+_SIGVERIFY_FAIL_MSG = MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.SIGVERIFY.BAD_ECDSA_SIGNATURE))
 
 device_id_test_cases = [
     {
@@ -282,6 +282,10 @@ test_cases = device_id_test_cases + lc_state_test_cases + manuf_state_test_cases
             otp = t["otp"],
             tags = maybe_skip_in_ci(t["lc_state_val"]),
         ),
+        ecdsa_key = ecdsa_key_for_lc_state(
+            ECDSA_ONLY_KEY_STRUCTS,
+            t["lc_state_val"],
+        ),
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         },
@@ -292,10 +296,6 @@ test_cases = device_id_test_cases + lc_state_test_cases + manuf_state_test_cases
                 address_translation = hex(CONST.HARDENED_FALSE),
                 identifier = hex(CONST.ROM_EXT),
             ),
-        ),
-        rsa_key = rsa_key_for_lc_state(
-            RSA_ONLY_KEY_STRUCTS,
-            t["lc_state_val"],
         ),
         deps = [
             "//sw/device/lib/testing/test_framework:ottf_main",

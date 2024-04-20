@@ -4,7 +4,7 @@
 
 load(
     "//rules:opentitan.bzl",
-    "RSA_ONLY_KEY_STRUCTS",
+    "ECDSA_ONLY_KEY_STRUCTS",
 )
 load(
     "//rules:const.bzl",
@@ -16,8 +16,8 @@ load(
 load(
     "//rules/opentitan:defs.bzl",
     "cw310_params",
+    "ecdsa_key_for_lc_state",
     "opentitan_test",
-    "rsa_key_for_lc_state",
 )
 load(
     "//rules:otp.bzl",
@@ -60,16 +60,16 @@ ALERT_LC_STATES = get_lc_items(
             otp = "//hw/ip/otp_ctrl/data:img_{}".format(lc_state),
             tags = maybe_skip_in_ci(lc_state_val),
         ),
+        ecdsa_key = ecdsa_key_for_lc_state(
+            ECDSA_ONLY_KEY_STRUCTS,
+            lc_state_val,
+        ),
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         },
         local_defines = [
             "OTP_ALERT_DIGEST=OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_ALERT_DIGEST_{}_OFFSET".format(lc_state.upper()),
         ],
-        rsa_key = rsa_key_for_lc_state(
-            RSA_ONLY_KEY_STRUCTS,
-            lc_state_val,
-        ),
         deps = [
             "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
             "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
@@ -178,13 +178,13 @@ otp_alert_digest(
             otp = ":otp_img_shutdown_alert_{}".format(lc_state),
             tags = maybe_skip_in_ci(lc_state_val),
         ),
+        ecdsa_key = ecdsa_key_for_lc_state(
+            ECDSA_ONLY_KEY_STRUCTS,
+            lc_state_val,
+        ),
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         },
-        rsa_key = rsa_key_for_lc_state(
-            RSA_ONLY_KEY_STRUCTS,
-            lc_state_val,
-        ),
         deps = [
             "//hw/ip/uart/data:uart_c_regs",
             "//sw/device/lib/base:abs_mmio",

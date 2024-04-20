@@ -6,29 +6,18 @@ load(
     "//rules/opentitan:defs.bzl",
     "DEFAULT_TEST_FAILURE_MSG",
     "cw310_params",
-    "opentitan_binary",
     "opentitan_test",
-    "rsa_key_for_lc_state",
 )
 load(
     "//rules:const.bzl",
     "CONST",
     "get_lc_items",
-    "hex",
     "hex_digits",
-)
-load(
-    "//rules:opentitan.bzl",
-    "RSA_ONLY_KEY_STRUCTS",
-    "bin_to_vmem",
-    "opentitan_multislot_flash_binary",
-    "scramble_flash_vmem",
 )
 load(
     "//rules:otp.bzl",
     "STD_OTP_OVERLAYS",
     "otp_image",
-    "otp_json",
 )
 load(
     "//rules:rom_e2e.bzl",
@@ -42,7 +31,6 @@ load(
     "//sw/device/silicon_creator/rom/e2e:defs.bzl",
     "MSG_PASS",
     "MSG_TEMPLATE_BFV",
-    "SIGVERIFY_LC_KEYS",
     "SLOTS",
 )
 
@@ -94,12 +82,12 @@ BOOT_POLICY_VALID_CASES = [
             ),
             binaries = {
                 # PROD keys can sign binaries able to run across all life cycle states.
-                "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_fake_rsa_prod_key_0{}".format(a["suffix"]): "slot_a",
-                "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_fake_rsa_prod_key_0{}".format(b["suffix"]): "slot_b",
+                "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_fake_ecdsa_prod_key_0{}".format(a["suffix"]): "slot_a",
+                "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_fake_ecdsa_prod_key_0{}".format(b["suffix"]): "slot_b",
             },
             bitstream = "bitstream_boot_policy_valid_{}".format(lc_state),
             exit_failure = MSG_PASS if a["desc"] == b["desc"] and a["desc"] == "bad" else DEFAULT_TEST_FAILURE_MSG,
-            exit_success = MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.SIGVERIFY.BAD_RSA_SIGNATURE)) if a["desc"] == b["desc"] and a["desc"] == "bad" else MSG_PASS,
+            exit_success = MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.SIGVERIFY.BAD_ECDSA_SIGNATURE)) if a["desc"] == b["desc"] and a["desc"] == "bad" else MSG_PASS,
             tags = maybe_skip_in_ci(lc_state_val),
         ),
         exec_env = {

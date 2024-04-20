@@ -4,28 +4,24 @@
 
 load(
     "//rules/opentitan:defs.bzl",
-    "EARLGREY_TEST_ENVS",
     "cw310_params",
-    "opentitan_binary",
     "opentitan_test",
 )
 load(
     "//rules:const.bzl",
     "CONST",
     "get_lc_items",
-    "hex",
     "hex_digits",
 )
 load(
     "//rules:opentitan.bzl",
-    "RSA_ONLY_KEY_STRUCTS",
+    "ECDSA_ONLY_KEY_STRUCTS",
     "filter_key_structs_for_lc_state",
 )
 load(
     "//rules:otp.bzl",
     "STD_OTP_OVERLAYS",
     "otp_image",
-    "otp_json",
 )
 load(
     "//rules:rom_e2e.bzl",
@@ -34,9 +30,7 @@ load(
 load(
     "//sw/device/silicon_creator/rom/e2e:defs.bzl",
     "MSG_PASS",
-    "MSG_TEMPLATE_BFV",
     "MSG_TEMPLATE_BFV_LCV",
-    "SIGVERIFY_LC_KEYS",
     "SLOTS",
 )
 
@@ -52,17 +46,17 @@ SIGVERIFY_BAD_CASES = [
     {
         "a": "nothing",
         "b": "bad",
-        "expected_bfv": hex_digits(CONST.BFV.SIGVERIFY.BAD_RSA_SIGNATURE),
+        "expected_bfv": hex_digits(CONST.BFV.SIGVERIFY.BAD_ECDSA_SIGNATURE),
     },
     {
         "a": "bad",
         "b": "nothing",
-        "expected_bfv": hex_digits(CONST.BFV.SIGVERIFY.BAD_RSA_SIGNATURE),
+        "expected_bfv": hex_digits(CONST.BFV.SIGVERIFY.BAD_ECDSA_SIGNATURE),
     },
     {
         "a": "bad",
         "b": "bad",
-        "expected_bfv": hex_digits(CONST.BFV.SIGVERIFY.BAD_RSA_SIGNATURE),
+        "expected_bfv": hex_digits(CONST.BFV.SIGVERIFY.BAD_ECDSA_SIGNATURE),
     },
     {
         "a": "nothing",
@@ -88,7 +82,7 @@ SIGVERIFY_BAD_CASES = [
                 "//sw/device/silicon_creator/rom/e2e:empty_test_slot_{}_{}_corrupted_fpga_cw310_rom_with_fake_keys_signed_bin"
                     .format(
                     slot,
-                    filter_key_structs_for_lc_state(RSA_ONLY_KEY_STRUCTS, lc_state_val)[0].rsa.name,
+                    filter_key_structs_for_lc_state(ECDSA_ONLY_KEY_STRUCTS, lc_state_val)[0].ecdsa.name,
                 ): "slot_{}".format(slot)
                 for (slot, addr) in SLOTS.items()
                 if case[slot] == "bad"

@@ -5,8 +5,8 @@
 load(
     "//rules/opentitan:defs.bzl",
     "cw310_params",
+    "ecdsa_key_for_lc_state",
     "opentitan_test",
-    "rsa_key_for_lc_state",
     "verilator_params",
 )
 load(
@@ -16,7 +16,7 @@ load(
 )
 load(
     "//rules:opentitan.bzl",
-    "RSA_ONLY_KEY_STRUCTS",
+    "ECDSA_ONLY_KEY_STRUCTS",
 )
 load(
     "//rules:rom_e2e.bzl",
@@ -33,6 +33,10 @@ package(default_visibility = ["//visibility:public"])
             otp = "//hw/ip/otp_ctrl/data:img_" + lc_state,
             tags = maybe_skip_in_ci(lc_state_val),
         ),
+        ecdsa_key = ecdsa_key_for_lc_state(
+            ECDSA_ONLY_KEY_STRUCTS,
+            lc_state_val,
+        ),
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
             "//hw/top_earlgrey:sim_verilator": None,
@@ -45,10 +49,6 @@ package(default_visibility = ["//visibility:public"])
             ] else 0),
         ],
         manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
-        rsa_key = rsa_key_for_lc_state(
-            RSA_ONLY_KEY_STRUCTS,
-            lc_state_val,
-        ),
         verilator = verilator_params(
             timeout = "eternal",
             otp = "//hw/ip/otp_ctrl/data:img_" + lc_state,

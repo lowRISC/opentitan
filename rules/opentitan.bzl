@@ -166,7 +166,11 @@ def key_allowed_in_lc_state(key, hw_lc_state_val):
     return hw_lc_state_val in key.hw_lc_states
 
 def filter_key_structs_for_lc_state(key_structs, hw_lc_state):
-    return [k for k in key_structs if (not k.rsa or key_allowed_in_lc_state(k.rsa, hw_lc_state)) and (not k.spx or key_allowed_in_lc_state(k.spx, hw_lc_state))]
+    return [k for k in key_structs if (
+        (not k.rsa or key_allowed_in_lc_state(k.rsa, hw_lc_state)) and
+        (not k.ecdsa or key_allowed_in_lc_state(k.ecdsa, hw_lc_state)) and
+        (not k.spx or key_allowed_in_lc_state(k.spx, hw_lc_state))
+    )]
 
 RSA_ONLY_KEY_STRUCTS = [
     create_key_struct(None, SILICON_CREATOR_KEYS.FAKE.RSA.TEST[0], None),
