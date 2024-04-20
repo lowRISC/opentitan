@@ -37,7 +37,7 @@ typedef struct sigverify_ecdsa_p256_buffer {
  * @return ID of the key.
  */
 OT_WARN_UNUSED_RESULT
-inline uint32_t sigverify_ecdsa_key_id_get(
+inline uint32_t sigverify_ecdsa_p256_key_id_get(
     const sigverify_ecdsa_p256_buffer_t *pub_key) {
   return pub_key->data[0];
 }

@@ -4,5 +4,5 @@
 #include "sw/lib/sw/device/silicon_creator/sigverify/ecdsa_p256_key.h"
 
 // `extern` declarations for `inline` functions in the header.
-extern uint32_t sigverify_ecdsa_key_id_get(
+extern uint32_t sigverify_ecdsa_p256_key_id_get(
     const sigverify_ecdsa_p256_buffer_t *pub_key);
