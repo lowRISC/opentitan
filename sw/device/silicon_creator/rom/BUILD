@@ -393,6 +393,25 @@ cc_library(
 )
 
 cc_library(
+    name = "sigverify_keys_ecdsa_p256",
+    srcs = [
+        "sigverify_keys_ecdsa_p256.c",
+    ],
+    hdrs = [
+        "sigverify_keys_ecdsa_p256.h",
+    ],
+    deps = [
+        ":sigverify_key_types",
+        ":sigverify_otp_keys",
+        "//sw/device/lib/base:macros",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib/drivers:lifecycle",
+        "//sw/device/silicon_creator/lib/sigverify",
+        "//sw/device/silicon_creator/lib/sigverify:ecdsa_p256_key",
+    ],
+)
+
+cc_library(
     name = "sigverify_keys_rsa",
     srcs = [
         "sigverify_keys_rsa.c",
