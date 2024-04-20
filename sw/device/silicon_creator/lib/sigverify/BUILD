@@ -229,6 +229,31 @@ sh_test(
 )
 
 cc_library(
+    name = "ecdsa_p256_verify",
+    srcs = ["ecdsa_p256_verify.c"],
+    hdrs = ["ecdsa_p256_verify.h"],
+    deps = [
+        ":ecdsa_p256_key",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/silicon_creator/lib:otbn_boot_services",
+        "//sw/device/silicon_creator/lib/drivers:hmac",
+    ],
+)
+
+opentitan_test(
+    name = "ecdsa_p256_verify_functest",
+    srcs = ["ecdsa_p256_verify_functest.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        "//hw/top_earlgrey:fpga_cw340_test_rom": None,
+    },
+    deps = [
+        ":ecdsa_p256_verify",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+cc_library(
     name = "rsa_verify",
     srcs = ["rsa_verify.c"],
     hdrs = ["rsa_verify.h"],
