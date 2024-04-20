@@ -20,6 +20,9 @@
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_empty.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_header.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_msg.h"
+#include "sw/device/silicon_creator/lib/cert/cdi_0.h"  // Generated.
+#include "sw/device/silicon_creator/lib/cert/cdi_1.h"  // Generated.
+#include "sw/device/silicon_creator/lib/cert/cert.h"
 #include "sw/device/silicon_creator/lib/dbg_print.h"
 #include "sw/device/silicon_creator/lib/dice.h"
 #include "sw/device/silicon_creator/lib/drivers/ast.h"
@@ -81,6 +84,22 @@ const epmp_region_t kOtpRegion = {
     .start = TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR,
     .end = TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + 0x1000,
 };
+
+// Certificate data.
+static hmac_digest_t uds_pubkey_id;
+static hmac_digest_t cdi_0_pubkey_id;
+static hmac_digest_t cdi_1_pubkey_id;
+static dice_cert_key_id_pair_t cdi_0_key_ids = {
+    .endorsement = &uds_pubkey_id,
+    .cert = &cdi_0_pubkey_id,
+};
+static dice_cert_key_id_pair_t cdi_1_key_ids = {
+    .endorsement = &cdi_0_pubkey_id,
+    .cert = &cdi_1_pubkey_id,
+};
+static attestation_public_key_t curr_attestation_pubkey = {.x = {0}, .y = {0}};
+static uint8_t cdi_0_cert[kCdi0MaxCertSizeBytes] = {0};
+static uint8_t cdi_1_cert[kCdi1MaxCertSizeBytes] = {0};
 
 OT_WARN_UNUSED_RESULT
 static rom_error_t rom_ext_irq_error(void) {
@@ -240,8 +259,11 @@ static uintptr_t owner_vma_get(const manifest_t *manifest, uintptr_t lma_addr) {
 OT_WARN_UNUSED_RESULT
 static rom_error_t rom_ext_attestation_keygen(
     const manifest_t *owner_manifest) {
-  attestation_public_key_t curr_attestation_pubkey = {.x = {0}, .y = {0}};
-  hmac_digest_t curr_attestation_key_id = {.digest = {0}};
+  hardened_bool_t curr_cert_valid = kHardenedBoolFalse;
+
+  // Load OTBN attestation keygen program.
+  // TODO(#21550): this should already be loaded by the ROM.
+  HARDENED_RETURN_IF_ERROR(otbn_boot_app_load());
 
   // Configure certificate flash info pages.
   flash_ctrl_cert_info_pages_creator_cfg();
@@ -259,19 +281,30 @@ static rom_error_t rom_ext_attestation_keygen(
   sc_keymgr_advance_state();
   HARDENED_RETURN_IF_ERROR(sc_keymgr_state_check(kScKeymgrStateInit));
 
-  // Load OTBN attestation keygen program.
-  // TODO(#21550): this should already be loaded by the ROM.
-  HARDENED_RETURN_IF_ERROR(otbn_boot_app_load());
-
   // Generate UDS keys.
   sc_keymgr_advance_state();
-  HARDENED_RETURN_IF_ERROR(dice_attestation_keygen(
-      kDiceKeyUds, &curr_attestation_key_id, &curr_attestation_pubkey));
+  HARDENED_RETURN_IF_ERROR(dice_attestation_keygen(kDiceKeyUds, &uds_pubkey_id,
+                                                   &curr_attestation_pubkey));
   HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_key_save(
       kUdsAttestationKeySeed, kUdsKeymgrDiversifier));
-  // TODO(#19588): check UDS key ID matches that in the UDS cert.
+  curr_cert_valid = kHardenedBoolFalse;
+  HARDENED_RETURN_IF_ERROR(cert_x509_asn1_check_serial_number(
+      &kFlashCtrlInfoPageUdsCertificate, uds_pubkey_id.digest,
+      &curr_cert_valid));
+  if (launder32(curr_cert_valid) == kHardenedBoolFalse) {
+    // The UDS key ID (and cert itself) should never change unless:
+    // 1. there is a hardware issue, or
+    // 2. the cert has not yet been provisioned.
+    //
+    // In either case, we do not need to (re)generate the certificate since an
+    // out of band attestation attempt will detect both conditions. Moreover
+    // on sim and FPGA platforms we expect the cert to be missing and do not
+    // want to break tests that run on these platforms.
+    HARDENED_CHECK_EQ(curr_cert_valid, kHardenedBoolFalse);
+    dbg_printf("Warning: UDS certificate not valid.\r\n");
+  }
 
-  // Generate CDI_0 attestation keys.
+  // Generate CDI_0 attestation keys and (potentially) update certificate.
   keymgr_binding_value_t zero_binding_value = {.data = {0}};
   const manifest_t *rom_ext_manifest =
       (const manifest_t *)_rom_ext_start_address;
@@ -282,13 +315,25 @@ static rom_error_t rom_ext_attestation_keygen(
                                   /*attest_binding=*/&boot_measurements.rom_ext,
                                   rom_ext_manifest->max_key_version));
   HARDENED_RETURN_IF_ERROR(dice_attestation_keygen(
-      kDiceKeyCdi0, &curr_attestation_key_id, &curr_attestation_pubkey));
-  // TODO(#19588): check the CDI_0 key ID matches that in the CDI_0 cert. If
-  // not, update the cert.
-  HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_key_save(
-      kCdi0AttestationKeySeed, kCdi0KeymgrDiversifier));
+      kDiceKeyCdi0, &cdi_0_pubkey_id, &curr_attestation_pubkey));
+  curr_cert_valid = kHardenedBoolFalse;
+  HARDENED_RETURN_IF_ERROR(cert_x509_asn1_check_serial_number(
+      &kFlashCtrlInfoPageCdi0Certificate, cdi_0_pubkey_id.digest,
+      &curr_cert_valid));
+  if (launder32(curr_cert_valid) == kHardenedBoolFalse) {
+    HARDENED_CHECK_EQ(curr_cert_valid, kHardenedBoolFalse);
+    dbg_printf("CDI_0 certificate not valid. Updating it ...\r\n");
+    size_t cdi_0_cert_size = kCdi0MaxCertSizeBytes;
+    HARDENED_RETURN_IF_ERROR(dice_cdi_0_cert_build(
+        (hmac_digest_t *)boot_measurements.rom_ext.data,
+        rom_ext_manifest->security_version, &cdi_0_key_ids,
+        &curr_attestation_pubkey, cdi_0_cert, &cdi_0_cert_size));
+    HARDENED_RETURN_IF_ERROR(flash_ctrl_info_write(
+        &kFlashCtrlInfoPageCdi0Certificate,
+        /*offset=*/0, cdi_0_cert_size / sizeof(uint32_t), cdi_0_cert));
+  }
 
-  // Generate CDI_1 attestation keys.
+  // Generate CDI_1 attestation keys and (potentially) update certificate.
   SEC_MMIO_WRITE_INCREMENT(kScKeymgrSecMmioSwBindingSet +
                            kScKeymgrSecMmioOwnerIntMaxVerSet);
   // TODO(cfrantz): setup sealing binding to value specified in owner
@@ -297,13 +342,26 @@ static rom_error_t rom_ext_attestation_keygen(
       sc_keymgr_owner_advance(/*sealing_binding=*/&zero_binding_value,
                               /*attest_binding=*/&boot_measurements.bl0,
                               owner_manifest->max_key_version));
-  HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_keygen(
-      kCdi1AttestationKeySeed, kCdi1KeymgrDiversifier,
-      &curr_attestation_pubkey));
-  // TODO(#19588): check the CDI_1 key ID matches that in the CDI_1 cert. If
-  // not, update the cert.
-  HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_key_save(
-      kCdi1AttestationKeySeed, kCdi1KeymgrDiversifier));
+  HARDENED_RETURN_IF_ERROR(dice_attestation_keygen(
+      kDiceKeyCdi1, &cdi_1_pubkey_id, &curr_attestation_pubkey));
+  curr_cert_valid = kHardenedBoolFalse;
+  HARDENED_RETURN_IF_ERROR(cert_x509_asn1_check_serial_number(
+      &kFlashCtrlInfoPageCdi1Certificate, cdi_1_pubkey_id.digest,
+      &curr_cert_valid));
+  if (launder32(curr_cert_valid) == kHardenedBoolFalse) {
+    HARDENED_CHECK_EQ(curr_cert_valid, kHardenedBoolFalse);
+    dbg_printf("CDI_1 certificate not valid. Updating it ...\r\n");
+    size_t cdi_1_cert_size = kCdi1MaxCertSizeBytes;
+    // TODO(#19596): add owner configuration block measurement to CDI_1 cert.
+    HARDENED_RETURN_IF_ERROR(dice_cdi_1_cert_build(
+        (hmac_digest_t *)boot_measurements.bl0.data,
+        (hmac_digest_t *)zero_binding_value.data,
+        owner_manifest->security_version, &cdi_1_key_ids,
+        &curr_attestation_pubkey, cdi_1_cert, &cdi_1_cert_size));
+    HARDENED_RETURN_IF_ERROR(flash_ctrl_info_write(
+        &kFlashCtrlInfoPageCdi1Certificate,
+        /*offset=*/0, cdi_1_cert_size / sizeof(uint32_t), cdi_1_cert));
+  }
 
   return kErrorOk;
 }
