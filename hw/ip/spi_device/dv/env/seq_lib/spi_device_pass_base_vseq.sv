@@ -639,7 +639,7 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
           // before CSB is active, but the D-channel response being back-pressured until the next
           //  inactive CSB
 
-          if(new_flash_status != old_flash_status)
+          if (new_flash_status != old_flash_status)
             busy_unset_early = 1;
 
         end

@@ -70,7 +70,7 @@ class spi_device_intercept_vseq extends spi_device_pass_cmd_filtering_vseq;
 
     access_option = wrong;
     randcase
-      25: access_option = sequential_access;
+      30: access_option = sequential_access;
       70: access_option = concurrent_access;
       // Advice is for stimulus not to operate with 'two_writes' access option. However, the option
       //  is left here in case we'd need to exercise any RTL feature which becomes
