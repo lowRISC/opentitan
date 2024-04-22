@@ -7,7 +7,9 @@ use indexmap::IndexMap;
 use num_bigint_dig::BigUint;
 
 use foreign_types::ForeignTypeRef;
-use openssl::asn1::{Asn1IntegerRef, Asn1OctetStringRef, Asn1StringRef, Asn1TimeRef};
+use openssl::asn1::{
+    Asn1IntegerRef, Asn1ObjectRef, Asn1OctetStringRef, Asn1StringRef, Asn1TimeRef,
+};
 use openssl::bn::{BigNum, BigNumContext, BigNumRef};
 use openssl::ec::{EcGroupRef, EcKey};
 use openssl::ecdsa::EcdsaSig;
@@ -36,18 +38,28 @@ fn curve_from_ecgroup(group: &EcGroupRef) -> Result<EcCurve> {
     }
 }
 
-impl TryFrom<Nid> for AttributeType {
+impl TryFrom<&Asn1ObjectRef> for AttributeType {
     type Error = anyhow::Error;
 
-    fn try_from(nid: Nid) -> Result<AttributeType, Self::Error> {
-        Ok(match nid {
+    fn try_from(obj: &Asn1ObjectRef) -> Result<AttributeType, Self::Error> {
+        // Try to match attriutes that OpenSSL does not known about.
+        for attr in [
+            AttributeType::TpmVendor,
+            AttributeType::TpmModel,
+            AttributeType::TpmVersion,
+        ] {
+            if obj.to_owned().as_slice() == attr.oid().to_der().unwrap().as_slice() {
+                return Ok(attr);
+            }
+        }
+        Ok(match obj.nid() {
             Nid::COUNTRYNAME => AttributeType::Country,
             Nid::ORGANIZATIONNAME => AttributeType::Organization,
             Nid::ORGANIZATIONALUNITNAME => AttributeType::OrganizationalUnit,
             Nid::STATEORPROVINCENAME => AttributeType::State,
             Nid::COMMONNAME => AttributeType::CommonName,
             Nid::SERIALNUMBER => AttributeType::SerialNumber,
-            _ => bail!("unrecognized OID {:?}", nid),
+            _ => bail!("unrecognized OID {:?}", obj),
         })
     }
 }
@@ -105,7 +117,7 @@ fn asn1name_to_hashmap(
 ) -> Result<IndexMap<AttributeType, Value<String>>> {
     let mut res = IndexMap::<AttributeType, Value<String>>::new();
     for entry in name.entries() {
-        let attr = AttributeType::try_from(entry.object().nid())?;
+        let attr = AttributeType::try_from(entry.object())?;
         if res
             .insert(attr, asn1str_to_str(field, entry.data())?)
             .is_some()
