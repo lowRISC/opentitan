@@ -664,7 +664,8 @@ class edn_scoreboard extends cip_base_scoreboard #(
 
       // Each time a handshake happens in SW mode, the cmd_reg_rdy signal goes high.
       // In auto mode the signal also goes high but only for the initial instantiate command.
-      if ((!auto_mode || (!instantiated && clen_cntr)) && !boot_mode && predict_sts) begin
+      if ((!auto_mode || (!instantiated && clen_cntr) || (instantiated && inst_ack_outstanding))
+          && !boot_mode && predict_sts) begin
         sw_cmd_sts[sw_cmd_reg_rdy] = 1'b1;
       end
     end
