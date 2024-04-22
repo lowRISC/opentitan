@@ -40,8 +40,8 @@ The implementation requires `THIGH` to be at least this large to guarantee that 
 Based on the inputs, the timing parameters may be chosen using the following algorithm:
 1. The physical timing parameters t<sub>HD,STA</sub>, t<sub>SU,STA</sub>, t<sub>HD.DAT</sub>, t<sub>SU,DAT</sub>, t<sub>BUF</sub>, and t<sub>STO</sub>, t<sub>HIGH</sub>, and t<sub>LOW</sub> all have minimum allowed values which depend on the choice of speed mode (Standard-mode, Fast-mode or Fast-mode Plus).
 Using the speed mode input, look up the appropriate minimum value (in ns) for each parameter (i.e. t<sub>HD,STA,min</sub>, t<sub>SU,STA,min</sub>, etc)
-1. For each of these eight parameters, obtain an integer minimum by dividing the physical minimum parameter by the clock frequency and rounding up to the next highest integer:
-$$ \textrm{THIGH_MIN}=(\lceil{t\_{HIGH,min}/t\_{clk}}\rceil,4)\_{max} $$
+1. For each of these eight parameters, obtain an integer minimum by dividing the physical minimum parameter by the clock period and rounding up to the next highest integer:
+$$ \textrm{THIGH_MIN}=\max(\lceil{t\_{HIGH,min}/t\_{clk}}\rceil,4) $$
 $$ \textrm{TLOW_MIN}=\lceil{t\_{LOW,min}/t\_{clk}}\rceil $$
 $$ \textrm{THD_STA_MIN}= \lceil{t\_{HD,STA,min}/t\_{clk}}\rceil $$
 $$ \textrm{TSU_STA_MIN}= \lceil{t\_{SU,STA,min}/t\_{clk}}\rceil $$
