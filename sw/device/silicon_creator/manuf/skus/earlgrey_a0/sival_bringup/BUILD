@@ -278,7 +278,7 @@ opentitan_test(
         binaries = _FT_PROVISIONING_BINARIES,
         changes_otp = True,
         data = FT_PERSONALIZE_KEYS,
-        interface = "hyper310",
+        interface = "teacup",
         needs_jtag = True,
         test_cmd = _FT_PROVISIONING_CMD_ARGS,
         test_harness = _FT_PROVISIONING_HARNESS,
