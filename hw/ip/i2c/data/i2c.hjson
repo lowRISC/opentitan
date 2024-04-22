@@ -291,6 +291,19 @@
                 When 0, the bus monitor will report that the bus is always free, so the controller FSM is never blocked from transmitting.
                 '''
         }
+        { bits: "6"
+          resval: "0"
+          name: "TX_STRETCH_CTRL_EN"
+          desc: '''
+                If set to 1, this bit causes a read transfer addressed to this target to set the corresponding bit in !!TARGET_EVENTS.
+
+                While !!TARGET_EVENTS.TX_PENDING is 1, subsequent read transactions will stretch the clock, even if there is data in the TX FIFO.
+
+                If enabled, this function allows software to confirm the data in the TX FIFO should be released for the current read.
+                This may be useful for cases where the TX FIFO has data that does not apply to the current transfer.
+                For example, the transaction could've targeted an alternate function via another address.
+                '''
+        }
       ]
     }
     { name:     "STATUS"
@@ -459,14 +472,6 @@
           name: "TX_THRESH"
           desc: '''Threshold level for TX interrupts. Whilst the number of used entries in the
                 TX FIFO is below this setting, the tx_threshold interrupt will be asserted.
-                '''
-          resval: "0"
-        }
-        { bits: "15"
-          name: "TXRST_ON_COND"
-          desc: '''If set, automatically reset the TX FIFO (TXRST) upon seeing a RSTART/STOP condition
-                during an active transaction in Target Mode. This may be useful if the remaining data
-                in the TX FIFO becomes no longer applicable to the next transaction.
                 '''
           resval: "0"
         }
@@ -778,7 +783,7 @@
           desc: '''
                 Indicates any control symbols associated with the ABYTE.
 
-                For the STOP symbol, a stretch timeout will cause a NACK_STOP to appear in the ACQ FIFO.
+                For the STOP symbol, a stretch timeout or other unexpected events will cause a NACK_STOP to appear in the ACQ FIFO.
                 If the ACQ FIFO doesn't have enough space to record a START and a STOP, the transaction will be dropped entirely on a stretch timeout.
                 In that case, the START byte will not appear (neither as START nor NACK_START), but a standalone NACK_STOP may, if there was space.
                 Software can discard any standalone NACK_STOP that appears.
@@ -830,6 +835,9 @@
                     A transaction including a transfer that addressed this Target was ended, but the transaction ended abnormally and/or the transfer was NACK'd.
                     The end can be due to a STOP condition or unexpected events, such as a bus timeout (if enabled).
                     ABYTE contains no data.
+
+                    NACKing can occur for multiple reasons, including a stretch timeout or a SW-directed NACK.
+                    This signal is a bucket for all these error-type terminations.
                     '''
             },
           ]
@@ -1009,6 +1017,35 @@
         { bits: "2"
           name: "BUS_TIMEOUT"
           desc: "A Host-Mode active transaction has terminated due to a bus timeout activated by !!TIMEOUT_CTRL."
+        }
+      ]
+    }
+    { name: "TARGET_EVENTS"
+      desc: '''
+            Latched events that can cause the target module to stretch the clock at the beginning of a read transfer.
+
+            These events cause TX FIFO-related stretching even when the TX FIFO has data available.
+            Any bits that are set must be written (with a 1) to clear the tx_stretch interrupt.
+
+            This CSR serves as a gate to prevent the Target module from responding to a read command with unrelated, leftover data.
+            '''
+      swaccess: "rw1c"
+      hwaccess: "hrw"
+      fields: [
+        { bits: "0"
+          name: "TX_PENDING"
+          desc: '''
+                A new Target-Mode read transfer has arrived that addressed this target.
+
+                This bit is used by software to confirm the release of the contents in the TX FIFO.
+                If the contents do not apply, software should first reset the TX FIFO, then load it with the correct data, then clear this bit.
+
+                Optionally enabled by !!CTRL.TX_STRETCH_CTRL_EN.
+                '''
+        }
+        { bits: "1"
+          name: "BUS_TIMEOUT"
+          desc: "A Target-Mode read transfer has terminated due to a bus timeout activated by !!TIMEOUT_CTRL."
         }
       ]
     }

@@ -549,19 +549,22 @@
       tests: []
     }
     {
-      name: target_mode_txrst_on_cond
+      name: target_mode_tx_stretch_ctrl
       desc: '''
-            Test that the TXRST_ON_COND feature resets the TXFIFO at the appropriate time
+            Test that the TX_STRETCH_CTRL feature prevents the TX
 
             Stimulus
               - Configure DUT/Agent to Target/Host mode respectively.
-              - Randomly enable TXRST_ON_COND feature
+              - Randomly enable TX_STRETCH_CTRL feature and write data into the TX FIFO prior to the
+                transfer start.
               - Stimulate transactions, including transactions with multiple transfers
                 interspersed by RSTART conditions.
 
             Checking
-              - Ensure that the TXFIFO is automatically reset when the TXRST_ON_COND feature is enabled
-                each time a Sr/P condition is observed during an active transaction.
+              - Ensure that the TARGET_EVENTS.TX_PENDING bit goes high for new reads when the
+                TX_STRETCH_CTRL feature is enabled.
+              - Ensure that the target holds SCL low and does not continue the transfer until the
+                TARGET_EVENTS.TX_PENDING bit has cleared.
             '''
       stage: V2
       tests: []
@@ -651,8 +654,6 @@
             Cross rx_overflow with RXRST
             Cross acq_overflow with ACQRST
             Cross tx_threshold with TXRST
-            Cover the TXRST_ON_COND bit in TARGET_FIFO_CONFIG
-            Cross TXRST_ON_COND with Sr/P bus conditions
             '''
     }
     {
