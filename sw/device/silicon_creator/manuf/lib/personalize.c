@@ -380,6 +380,15 @@ status_t manuf_personalize_device_secrets(
   TRY(flash_attestation_key_seed_write(flash_state,
                                        kFlashInfoFieldCdi1AttestationKeySeed,
                                        kAttestationSeedWords));
+  TRY(flash_attestation_key_seed_write(flash_state,
+                                       kFlashInfoFieldTpmEkAttestationKeySeed,
+                                       kAttestationSeedWords));
+  TRY(flash_attestation_key_seed_write(flash_state,
+                                       kFlashInfoFieldTpmCekAttestationKeySeed,
+                                       kAttestationSeedWords));
+  TRY(flash_attestation_key_seed_write(flash_state,
+                                       kFlashInfoFieldTpmCikAttestationKeySeed,
+                                       kAttestationSeedWords));
 
   // Provision the OTP SECRET2 partition.
   TRY(otp_partition_secret2_configure(otp_ctrl, wrapped_rma_token));
