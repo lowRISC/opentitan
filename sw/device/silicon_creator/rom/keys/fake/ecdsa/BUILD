@@ -19,8 +19,8 @@ key_ecdsa(
     name = "dev_key_0_ecdsa_p256",
     config = "EcdsaP256",
     method = "local",
-    private_key = "test_key_1_ecdsa_p256.der",
-    pub_key = "test_key_1_ecdsa_p256.pub.der",
+    private_key = "dev_key_0_ecdsa_p256.der",
+    pub_key = "dev_key_0_ecdsa_p256.pub.der",
     type = "DevKey",
 )
 
