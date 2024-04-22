@@ -24,6 +24,7 @@ with_unknown! {
         FlashConfig = u32::from_le_bytes(*b"FLSH"),
         FlashInfoConfig = u32::from_le_bytes(*b"INFO"),
         Rescue = u32::from_le_bytes(*b"RESQ"),
+        NotPresent = u32::from_le_bytes(*b"ZZZZ"),
     }
 
     pub enum OwnershipKeyAlg: u32 [default = Self::Unknown] {
