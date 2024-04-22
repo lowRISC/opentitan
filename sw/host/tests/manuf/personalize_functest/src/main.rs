@@ -86,7 +86,7 @@ fn rma_unlock_token_export(opts: &Opts, transport: &TransportWrapper) -> Result<
     )?;
 
     // Send the host ECC public key to the device over the console.
-    host_pk.send(&*uart)?;
+    host_pk.send_with_crc(&*uart)?;
 
     // Wait for output data to be transimitted over the console.
     let _ = UartConsole::wait_for(&*uart, r"Exporting RMA unlock token ...", opts.timeout)?;
