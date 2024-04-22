@@ -5392,21 +5392,21 @@ opentitan_test(
     name = "uart_tx_rx_test",
     srcs = ["uart_tx_rx_test.c"],
     cw310 = cw310_params(
-        otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival:otp_img_prod_manuf_personalized",
         test_cmd = " ".join([
             "--bootstrap=\"{firmware}\"",
             "--firmware-elf=\"{firmware:elf}\"",
         ]),
         test_harness = "//sw/host/tests/chip/uart:uart_tx_rx",
     ),
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_sival": None,
-        "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
-        "//hw/top_earlgrey:silicon_creator": None,
-        "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
-        "//hw/top_earlgrey:silicon_owner_prodc_rom_ext": None,
-        "//hw/top_earlgrey:sim_dv": None,
-    },
+    exec_env = dicts.add(
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_earlgrey:sim_dv": None,
+        },
+    ),
     silicon = silicon_params(
         test_cmd = " ".join([
             "--bootstrap=\"{firmware}\"",
