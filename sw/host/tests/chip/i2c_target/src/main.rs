@@ -142,6 +142,7 @@ fn test_write_repeated_start(
     _opts: &Opts,
     transport: &TransportWrapper,
     address: u8,
+    gpio_pins: &[Rc<dyn GpioPin>],
 ) -> Result<()> {
     let uart = transport.uart("console")?;
 
@@ -150,9 +151,6 @@ fn test_write_repeated_start(
     let gpio_pins = transport.gpio_pins(&["IOA7", "IOA8"].map(|s| s.to_string()))?;
     let i2c_bitbang = test_utils::bitbanging::i2c::encoder::Encoder::<0, 1> {};
 
-    for pin in &gpio_pins {
-        pin.set_mode(PinMode::OpenDrain)?;
-    }
     const REFERENCE_DATA: &[u8] = b"Hello World!";
     let broken_byte = [
         test_utils::bitbanging::i2c::Bit::High,
@@ -200,18 +198,15 @@ fn test_write_read_repeated_start(
     _opts: &Opts,
     transport: &TransportWrapper,
     address: u8,
+    gpio_pins: &[Rc<dyn GpioPin>],
 ) -> Result<()> {
     let uart = transport.uart("console")?;
 
     let gpio_bitbanging = transport.gpio_bitbanging()?;
-    let gpio_pins = transport.gpio_pins(&["IOA7", "IOA8"].map(|s| s.to_string()))?;
     let i2c_bitbang_encoder = test_utils::bitbanging::i2c::encoder::Encoder::<0, 1> {};
     let mut i2c_bitbang_decoder =
         test_utils::bitbanging::i2c::decoder::Decoder::<0, 1> { buffer: [0; 256] };
 
-    for pin in &gpio_pins {
-        pin.set_mode(PinMode::OpenDrain)?;
-    }
     const WRITE_REFERENCE_DATA: &[u8] = b"Sending Hello!";
     const READ_REFERENCE_DATA: &[u8] = b"Receiving Hello!";
 
@@ -311,10 +306,27 @@ fn main() -> Result<()> {
     // so this commit separate the sub-tests that use the hyperdebug i2c from
     // the ones that do gpio bitbanging in order the make the test more
     // reliable.
+
+    let gpio_pins = transport.gpio_pins(&["IOA7", "IOA8"].map(|s| s.to_string()))?;
+    for pin in &gpio_pins {
+        pin.set_mode(PinMode::OpenDrain)?;
+    }
     for i2c_instance in 0..3 {
         execute_test!(test_set_target_address, &opts, &transport, i2c_instance);
-        execute_test!(test_write_repeated_start, &opts, &transport, 0x33);
-        execute_test!(test_write_read_repeated_start, &opts, &transport, 0x33);
+        execute_test!(
+            test_write_repeated_start,
+            &opts,
+            &transport,
+            0x33,
+            &gpio_pins
+        );
+        execute_test!(
+            test_write_read_repeated_start,
+            &opts,
+            &transport,
+            0x33,
+            &gpio_pins
+        );
     }
     Ok(())
 }
