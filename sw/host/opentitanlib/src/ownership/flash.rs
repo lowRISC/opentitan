@@ -9,6 +9,7 @@ use serde_annotate::Annotate;
 use std::io::{Read, Write};
 
 use super::misc::{TlvHeader, TlvTag};
+use crate::chip::boolean::MultiBitBool4;
 
 /// Describes the proprerties of a flash region.
 #[derive(Debug, Default, Clone, Copy, Serialize, Deserialize, Annotate)]
@@ -40,6 +41,9 @@ pub struct FlashFlags {
 }
 
 impl FlashFlags {
+    const TRUE: u64 = MultiBitBool4::True.0 as u64;
+    const FALSE: u64 = MultiBitBool4::False.0 as u64;
+
     /// A basic set of flash properties.
     pub fn basic() -> Self {
         FlashFlags {
@@ -101,35 +105,41 @@ impl FlashFlags {
     }
 }
 
-impl From<u32> for FlashFlags {
-    fn from(flags: u32) -> Self {
+impl From<u64> for FlashFlags {
+    fn from(flags: u64) -> Self {
         #[rustfmt::skip]
         let value = Self {
-            read:                 flags & 0x00000001 != 0,
-            program:              flags & 0x00000002 != 0,
-            erase:                flags & 0x00000004 != 0,
-            scramble:             flags & 0x00000008 != 0,
-            ecc:                  flags & 0x00000010 != 0,
-            high_endurance:       flags & 0x00000020 != 0,
-            protect_when_primary: flags & 0x40000000 != 0,
-            lock:                 flags & 0x80000000 != 0,
+            // First 32-bit word: access/protection flags.
+            read:                 flags & 0xF == Self::TRUE,
+            program:              (flags >> 4) & 0xF == Self::TRUE,
+            erase:                (flags >> 8) & 0xF == Self::TRUE,
+            protect_when_primary: (flags >> 24) & 0xF == Self::TRUE,
+            lock:                 (flags >> 28) & 0xF == Self::TRUE,
+
+            // Second 32-bit word: flash properties.
+            scramble:             (flags >> 32) & 0xF == Self::TRUE,
+            ecc:                  (flags >> 36) & 0xF == Self::TRUE,
+            high_endurance:       (flags >> 40) & 0xF == Self::TRUE,
         };
         value
     }
 }
 
-impl From<FlashFlags> for u32 {
-    fn from(flags: FlashFlags) -> u32 {
+impl From<FlashFlags> for u64 {
+    fn from(flags: FlashFlags) -> u64 {
         #[rustfmt::skip]
         let value =
-            if flags.read                 { 0x00000001 } else { 0 } |
-            if flags.program              { 0x00000002 } else { 0 } |
-            if flags.erase                { 0x00000004 } else { 0 } |
-            if flags.scramble             { 0x00000008 } else { 0 } |
-            if flags.ecc                  { 0x00000010 } else { 0 } |
-            if flags.high_endurance       { 0x00000020 } else { 0 } |
-            if flags.protect_when_primary { 0x40000000 } else { 0 } |
-            if flags.lock                 { 0x80000000 } else { 0 } ;
+            // First 32-bit word: access/protection flags.
+            if flags.read                 { FlashFlags::TRUE } else { FlashFlags::FALSE } |
+            if flags.program              { FlashFlags::TRUE } else { FlashFlags::FALSE } << 4 |
+            if flags.erase                { FlashFlags::TRUE } else { FlashFlags::FALSE } << 8 |
+            if flags.protect_when_primary { FlashFlags::TRUE } else { FlashFlags::FALSE } << 24 |
+            if flags.lock                 { FlashFlags::TRUE } else { FlashFlags::FALSE } << 28 |
+
+            // Second 32-bit word: flash properties.
+            if flags.scramble             { FlashFlags::TRUE } else { FlashFlags::FALSE } << 32 |
+            if flags.ecc                  { FlashFlags::TRUE } else { FlashFlags::FALSE } << 36 |
+            if flags.high_endurance       { FlashFlags::TRUE } else { FlashFlags::FALSE } << 40 ;
         value
     }
 }
@@ -146,20 +156,20 @@ pub struct OwnerFlashRegion {
 }
 
 impl OwnerFlashRegion {
-    const SIZE: usize = 8;
+    const SIZE: usize = 12;
     pub fn new(start: u16, size: u16, flags: FlashFlags) -> Self {
         Self { start, size, flags }
     }
-    pub fn read(src: &mut impl Read) -> Result<Self> {
+    pub fn read(src: &mut impl Read, crypt: u64) -> Result<Self> {
         let start = src.read_u16::<LittleEndian>()?;
         let size = src.read_u16::<LittleEndian>()?;
-        let flags = FlashFlags::from(src.read_u32::<LittleEndian>()?);
+        let flags = FlashFlags::from(src.read_u64::<LittleEndian>()? ^ crypt);
         Ok(Self { start, size, flags })
     }
-    pub fn write(&self, dest: &mut impl Write) -> Result<()> {
+    pub fn write(&self, dest: &mut impl Write, crypt: u64) -> Result<()> {
         dest.write_u16::<LittleEndian>(self.start)?;
         dest.write_u16::<LittleEndian>(self.size)?;
-        dest.write_u32::<LittleEndian>(u32::from(self.flags))?;
+        dest.write_u64::<LittleEndian>(u64::from(self.flags) ^ crypt)?;
         Ok(())
     }
 }
@@ -201,8 +211,9 @@ impl OwnerFlashConfig {
     pub fn read(src: &mut impl Read, header: TlvHeader) -> Result<Self> {
         let config_len = (header.length - Self::BASE_SIZE) / OwnerFlashRegion::SIZE;
         let mut config = Vec::new();
-        for _ in 0..config_len {
-            config.push(OwnerFlashRegion::read(src)?)
+        for i in 0..config_len {
+            let crypt = 0x1111_1111_1111_1111u64 * (i as u64);
+            config.push(OwnerFlashRegion::read(src, crypt)?)
         }
         Ok(Self { header, config })
     }
@@ -212,8 +223,9 @@ impl OwnerFlashConfig {
             Self::BASE_SIZE + self.config.len() * OwnerFlashRegion::SIZE,
         );
         header.write(dest)?;
-        for config in &self.config {
-            config.write(dest)?;
+        for (i, config) in self.config.iter().enumerate() {
+            let crypt = 0x1111_1111_1111_1111u64 * (i as u64);
+            config.write(dest, crypt)?;
         }
         Ok(())
     }
@@ -224,14 +236,17 @@ mod test {
     use super::*;
     use crate::util::hexdump::{hexdump_parse, hexdump_string};
 
-    const OWNER_FLASH_CONFIG_BIN: &str = "\
-00000000: 46 4c 53 48 20 00 00 00 00 00 00 00 11 00 00 00  FLSH ...........\n\
-00000010: 01 00 02 00 03 00 00 00 03 00 05 00 3f 00 00 00  ............?...\n\
-";
+    #[rustfmt::skip]
+    const OWNER_FLASH_CONFIG_BIN: &str =
+r#"00000000: 46 4c 53 48 2c 00 00 00 00 00 00 00 96 09 00 99  FLSH,...........
+00000010: 69 09 00 00 01 00 02 00 77 18 11 88 88 18 11 11  i.......w.......
+00000020: 03 00 05 00 44 24 22 bb 44 24 22 22              ....D$".D$""
+"#;
+
     const OWNER_FLASH_CONFIG_JSON: &str = r#"{
   header: {
     identifier: "FlashConfig",
-    length: 32
+    length: 44
   },
   config: [
     {
