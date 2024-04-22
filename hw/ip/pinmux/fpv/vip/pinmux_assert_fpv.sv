@@ -46,6 +46,7 @@ module pinmux_assert_fpv
   input usb_dnpullup_en_o,
   input usbdev_suspend_req_i,
   input usbdev_wake_ack_i,
+  input usbdev_bus_not_idle_o,
   input usbdev_bus_reset_o,
   input usbdev_sense_lost_o,
   input usbdev_wake_detect_active_o,
