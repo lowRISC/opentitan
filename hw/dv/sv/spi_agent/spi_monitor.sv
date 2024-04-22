@@ -51,7 +51,6 @@ class spi_monitor extends dv_base_monitor#(
     cfg.vif.sck_phase = cfg.sck_phase[active_csb];
     host_item   = spi_item::type_id::create("host_item", this);
     device_item = spi_item::type_id::create("device_item", this);
-    csb_active_analysis_port.write(host_item);
     fork
       begin : isolation_thread
         fork
@@ -67,7 +66,12 @@ class spi_monitor extends dv_base_monitor#(
                 cmd_byte = 0;
                 collect_curr_trans();
               end
-              SpiModeFlash: collect_flash_trans(host_item, flash_opcode_received);
+              SpiModeFlash: begin
+                `uvm_info(`gfn, "Item sent 'csb_active_analysis_port' since flash_txn just started",
+                          UVM_DEBUG)
+                csb_active_analysis_port.write(host_item);
+                collect_flash_trans(host_item, flash_opcode_received);
+              end
               SpiModeTpm: collect_tpm_trans(host_item);
               default: begin
                 `uvm_fatal(`gfn, $sformatf("Invalid mode %s", cfg.spi_func_mode.name))
@@ -79,13 +83,12 @@ class spi_monitor extends dv_base_monitor#(
       end : isolation_thread
     join
 
-    -> host_item.item_finished_ev;
-    `uvm_info(`gfn, "Triggering 'host_item.item_finished' since CSB just became inactive",
-              UVM_DEBUG)
-
     // write to host_analysis_port
     case (cfg.spi_func_mode)
       SpiModeFlash: begin
+        -> host_item.item_finished_ev; // 
+        `uvm_info(`gfn, "Triggering 'host_item.item_finished' since CSB just became inactive",
+                  UVM_DEBUG)
         if (flash_opcode_received) begin
           host_analysis_port.write(host_item);
           host_item.mon_item_complete = 1;
@@ -279,8 +282,6 @@ class spi_monitor extends dv_base_monitor#(
     decode_tpm_cmd(cmd, item.write_command, size);
     if (!item.write_command) item.read_size = size;
     `uvm_info(`gfn, $sformatf("Received TPM command: 0x%0x", cmd), UVM_MEDIUM)
-    `uvm_info(`gfn, "Triggering 'host_item.byte_sampled' after sampling opcode", UVM_DEBUG)
-    -> host_item.byte_sampled_ev;
 
     // read 3 bytes address
     fork
@@ -300,11 +301,6 @@ class spi_monitor extends dv_base_monitor#(
     join
     `uvm_info(`gfn, $sformatf("Received TPM addr: %p", item.address_q), UVM_MEDIUM)
 
-    if(item.address_q.size > 0) begin
-      `uvm_info(`gfn, "Triggering 'host_item.byte_sampled' after sampling address", UVM_DEBUG)
-      -> host_item.byte_sampled_ev;
-    end
-
     req_analysis_port.write(item);
 
     // poll TPM_START
@@ -323,9 +319,6 @@ class spi_monitor extends dv_base_monitor#(
                             .data(item.data[i]), .check_data_not_z(1));
       `uvm_info(`gfn, $sformatf("collect %s data for TPM, idx %0d: 0x%0x",
                               item.write_command ? "write" : "read", i, item.data[i]), UVM_MEDIUM)
-      `uvm_info(`gfn, "Triggering 'host_item.byte_sampled' after sampling a data byte", UVM_DEBUG)
-      -> host_item.byte_sampled_ev;
-
     end
   endtask
 
