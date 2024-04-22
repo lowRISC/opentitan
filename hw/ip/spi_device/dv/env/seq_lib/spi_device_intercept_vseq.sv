@@ -69,10 +69,15 @@ class spi_device_intercept_vseq extends spi_device_pass_cmd_filtering_vseq;
     // flash_status and not a byte made of two partial different writes
 
     access_option = wrong;
+    randcase
+      25: access_option = sequential_access;
+      70: access_option = concurrent_access;
+      // Advice is for stimulus not to operate with 'two_writes' access option. However, the option
+      //  is left here in case we'd need to exercise any RTL feature which becomes
+      // difficult/impossible to exercise with the 'two_writes' configuration
+      //      5 : access_option = two_writes;
+    endcase // randcase
 
-    if (!std::randomize(access_option) with { access_option dist
-      {sequential_access := 3, concurrent_access := 7 }; })
-      `uvm_fatal(`gfn, "Randomization Failure")
 
     case (access_option)
       sequential_access: begin // Sequential accesses
