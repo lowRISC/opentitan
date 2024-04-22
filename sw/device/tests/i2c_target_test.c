@@ -169,14 +169,12 @@ static status_t recv_write_transfer(dif_i2c_t *i2c, i2c_transfer_start_t *txn,
   uint8_t byte;
   dif_i2c_signal_t signal;
 
-  do {
-    // Address phase.
-    TRY(wait_for_acq_fifo(i2c, 1, &deadline));
-    TRY(dif_i2c_acquire_byte(i2c, &byte, &signal));
-  } while (signal == kDifI2cSignalRepeat);
+  // Address phase.
+  TRY(wait_for_acq_fifo(i2c, 1, &deadline));
+  TRY(dif_i2c_acquire_byte(i2c, &byte, &signal));
 
-  TRY_CHECK(signal == kDifI2cSignalStart, "Expected SignalStart(%u), got %u",
-            kDifI2cSignalStart, signal);
+  TRY_CHECK(signal == kDifI2cSignalStart || signal == kDifI2cSignalRepeat,
+            "Expected SignalStart(%u), got %u", kDifI2cSignalStart, signal);
   txn->address = byte >> 1;
 
   // Data phase.
