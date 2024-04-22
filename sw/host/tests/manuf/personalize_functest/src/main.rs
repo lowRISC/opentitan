@@ -17,11 +17,12 @@ use elliptic_curve::{PublicKey, SecretKey};
 use p256::NistP256;
 
 use opentitanlib::app::TransportWrapper;
-use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg, LcCtrlStatus};
+use opentitanlib::dif::lc_ctrl::DifLcCtrlState;
 use opentitanlib::execute_test;
 use opentitanlib::io::jtag::JtagTap;
 use opentitanlib::test_utils::init::InitializeTest;
-use opentitanlib::test_utils::lc_transition::{trigger_lc_transition, wait_for_status};
+use opentitanlib::test_utils::lc::read_lc_state;
+use opentitanlib::test_utils::lc_transition::trigger_lc_transition;
 use opentitanlib::test_utils::rpc::{UartRecv, UartSend};
 use opentitanlib::uart::console::UartConsole;
 
@@ -43,6 +44,9 @@ struct Opts {
 }
 
 fn rma_unlock_token_export(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
+    let uart = transport.uart("console")?;
+    uart.set_flow_control(true)?;
+
     // Load host (HSM) generated ECC keys.
     let host_sk = SecretKey::<NistP256>::read_pkcs8_der_file(&opts.host_ecc_sk)?;
     let host_pk = PublicKey::<NistP256>::from_secret_scalar(&host_sk.to_nonzero_scalar());
@@ -65,18 +69,12 @@ fn rma_unlock_token_export(opts: &Opts, transport: &TransportWrapper) -> Result<
         y: host_pk_y,
     };
 
-    let uart = transport.uart("console")?;
-    uart.set_flow_control(true)?;
-
     // Wait for the program to complete SECRET1 configuration and apply a ROM
     // bootstrap operation. This is needed because the flash scrambling key
     // may cause the flash contents to be garbled after locking the SECRET1
     // partition.
     let _ = UartConsole::wait_for(&*uart, r"Provisioning OTP SECRET1 Done ...", opts.timeout)?;
     uart.clear_rx_buffer()?;
-    transport.pin_strapping("ROM_BOOTSTRAP")?.apply()?;
-    transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
-    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
     opts.init.bootstrap.init(transport)?;
 
     let _ = UartConsole::wait_for(
@@ -126,33 +124,26 @@ fn rma_unlock_token_export(opts: &Opts, transport: &TransportWrapper) -> Result<
         *word = u32::from_le_bytes(plaintext[(i * 4)..((i * 4) + 4)].try_into().unwrap());
     }
 
-    // Connect to JTAG LC TAP.
-    let mut jtag = opts
-        .init
-        .jtag_params
-        .create(transport)?
-        .connect(JtagTap::LcTap)?;
-
-    // Check the current LC state is Dev or Prod.
-    // We must wait for the lc_ctrl to initialize before the LC state is exposed.
-    wait_for_status(
-        &mut *jtag,
-        Duration::from_secs(3),
-        LcCtrlStatus::INITIALIZED,
+    // Check the LC state is Dev or Prod.
+    let current_lc_state = read_lc_state(
+        transport,
+        &opts.init.jtag_params,
+        opts.init.bootstrap.options.reset_delay,
     )?;
-    let valid_lc_states = HashSet::from([
-        DifLcCtrlState::Dev.redundant_encoding(),
-        DifLcCtrlState::Prod.redundant_encoding(),
-    ]);
-    let current_lc_state = jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?;
+    let valid_lc_states = HashSet::from([DifLcCtrlState::Dev, DifLcCtrlState::Prod]);
     assert!(
         valid_lc_states.contains(&current_lc_state),
         "Invalid initial LC state (must be in Dev or Prod to test transition to RMA).",
     );
 
-    // Issue an LC transition to RMA to verify unlock token.
-    // The device program will spin when it detects the RMA state so we can safely
-    // reconnect to the LC TAP after the transition without risking the chip resetting.
+    // Attempt to transition to RMA to check the validity of the RMA unlock token.
+    transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
+    transport.pin_strapping("ROM_BOOTSTRAP")?.apply()?;
+    let jtag = opts
+        .init
+        .jtag_params
+        .create(transport)?
+        .connect(JtagTap::LcTap)?;
     trigger_lc_transition(
         transport,
         jtag,
@@ -160,29 +151,21 @@ fn rma_unlock_token_export(opts: &Opts, transport: &TransportWrapper) -> Result<
         Some(rma_unlock_token),
         /*use_external_clk=*/ false,
         opts.init.bootstrap.options.reset_delay,
-        Some(JtagTap::LcTap),
+        /*reset_tap_straps=*/ None,
     )?;
-
-    jtag = opts
-        .init
-        .jtag_params
-        .create(transport)?
-        .connect(JtagTap::LcTap)?;
+    transport.pin_strapping("ROM_BOOTSTRAP")?.apply()?;
+    transport.pin_strapping("PINMUX_TAP_LC")?.remove()?;
 
     // Check the LC state is RMA.
-    // We must wait for the lc_ctrl to initialize before the LC state is exposed.
-    wait_for_status(
-        &mut *jtag,
-        Duration::from_secs(3),
-        LcCtrlStatus::INITIALIZED,
-    )?;
     assert_eq!(
-        jtag.read_lc_ctrl_reg(&LcCtrlReg::LcState)?,
-        DifLcCtrlState::Rma.redundant_encoding(),
+        read_lc_state(
+            transport,
+            &opts.init.jtag_params,
+            opts.init.bootstrap.options.reset_delay,
+        )?,
+        DifLcCtrlState::Rma,
         "Did not transition to RMA.",
     );
-
-    jtag.disconnect()?;
 
     Ok(())
 }
