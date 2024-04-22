@@ -95,13 +95,13 @@ SILICON_CREATOR_KEYS = struct(
     FAKE = struct(
         ECDSA = struct(
             TEST = [
-                create_test_key("fake_ecdsa_test_key_0", "@//sw/device/silicon_creator/rom/keys/fake/ecdsa:test_private_key_0"),
+                create_test_key("fake_ecdsa_test_key_0", "@//sw/device/silicon_creator/rom/keys/fake/ecdsa:test_key_0_ecdsa_p256"),
             ],
             DEV = [
-                create_dev_key("fake_ecdsa_dev_key_0", "@//sw/device/silicon_creator/rom/keys/fake/ecdsa:dev_private_key_0"),
+                create_dev_key("fake_ecdsa_dev_key_0", "@//sw/device/silicon_creator/rom/keys/fake/ecdsa:dev_key_0_ecdsa_p256"),
             ],
             PROD = [
-                create_prod_key("fake_ecdsa_prod_key_0", "@//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_private_key_0"),
+                create_prod_key("fake_ecdsa_prod_key_0", "@//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256"),
             ],
         ),
         RSA = struct(
