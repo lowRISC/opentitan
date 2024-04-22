@@ -41,6 +41,7 @@ struct Opts {
 fn test_override(
     opts: &Opts,
     transport: &TransportWrapper,
+    gpio_pins: &[Rc<dyn GpioPin>],
     backdoor_start_addr: u32,
     data: u8,
 ) -> Result<()> {
@@ -59,11 +60,6 @@ fn test_override(
     )?;
     MemWriteReq::execute(&*uart, backdoor_start_addr, &[1u8])?;
 
-    let gpio_pins = transport.gpio_pins(&["IOA7", "IOA8"].map(str::to_owned))?;
-    for pin in &gpio_pins {
-        pin.set_mode(PinMode::OpenDrain)?;
-    }
-
     gpio_bitbanging.run(
         &gpio_pins
             .iter()
@@ -76,8 +72,6 @@ fn test_override(
     let mut i2c_bitbang_decoder =
         test_utils::bitbanging::i2c::decoder::Decoder::<0, 1> { buffer: [0; 256] };
     let decoded = i2c_bitbang_decoder.run(samples)?;
-
-    transport.apply_default_configuration(None)?;
 
     assert_eq!(
         vec![
@@ -112,14 +106,23 @@ fn main() -> Result<()> {
     let data = test_utils::object::symbol_data(&object, "kBitbangData")?;
     let backdoor_start_addr = test_utils::object::symbol_addr(&object, "backdoor_start")?;
 
+    let gpio_pins = transport.gpio_pins(&["IOA7", "IOA8"].map(str::to_owned))?;
+    for pin in &gpio_pins {
+        pin.set_mode(PinMode::OpenDrain)?;
+    }
+
     for _ in 0..3 {
         execute_test!(
             test_override,
             &opts,
             &transport,
+            &gpio_pins,
             backdoor_start_addr,
             data[0]
         );
     }
+
+    transport.apply_default_configuration(None)?;
+
     Ok(())
 }
