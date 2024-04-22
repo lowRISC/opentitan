@@ -25,7 +25,7 @@ pub struct OwnerInfoPage {
     pub flags: FlashFlags,
 }
 impl OwnerInfoPage {
-    const SIZE: usize = 8;
+    const SIZE: usize = 12;
     pub fn new(bank: u8, page: u8, flags: FlashFlags) -> Self {
         Self {
             bank,
@@ -34,11 +34,11 @@ impl OwnerInfoPage {
             ..Default::default()
         }
     }
-    pub fn read(src: &mut impl Read) -> Result<Self> {
+    pub fn read(src: &mut impl Read, crypt: u64) -> Result<Self> {
         let bank = src.read_u8()?;
         let page = src.read_u8()?;
         let pad = src.read_u16::<LittleEndian>()?;
-        let flags = FlashFlags::from(src.read_u32::<LittleEndian>()?);
+        let flags = FlashFlags::from(src.read_u64::<LittleEndian>()? ^ crypt);
         Ok(Self {
             bank,
             page,
@@ -46,11 +46,11 @@ impl OwnerInfoPage {
             flags,
         })
     }
-    pub fn write(&self, dest: &mut impl Write) -> Result<()> {
+    pub fn write(&self, dest: &mut impl Write, crypt: u64) -> Result<()> {
         dest.write_u8(self.bank)?;
         dest.write_u8(self.page)?;
         dest.write_u16::<LittleEndian>(self.pad)?;
-        dest.write_u32::<LittleEndian>(u32::from(self.flags))?;
+        dest.write_u64::<LittleEndian>(u64::from(self.flags) ^ crypt)?;
         Ok(())
     }
 }
@@ -92,8 +92,9 @@ impl OwnerFlashInfoConfig {
     pub fn read(src: &mut impl Read, header: TlvHeader) -> Result<Self> {
         let config_len = (header.length - Self::BASE_SIZE) / OwnerInfoPage::SIZE;
         let mut config = Vec::new();
-        for _ in 0..config_len {
-            config.push(OwnerInfoPage::read(src)?)
+        for i in 0..config_len {
+            let crypt = 0x1111_1111_1111_1111u64 * (i as u64);
+            config.push(OwnerInfoPage::read(src, crypt)?)
         }
         Ok(Self { header, config })
     }
@@ -103,8 +104,9 @@ impl OwnerFlashInfoConfig {
             Self::BASE_SIZE + self.config.len() * OwnerInfoPage::SIZE,
         );
         header.write(dest)?;
-        for config in &self.config {
-            config.write(dest)?;
+        for (i, config) in self.config.iter().enumerate() {
+            let crypt = 0x1111_1111_1111_1111u64 * (i as u64);
+            config.write(dest, crypt)?;
         }
         Ok(())
     }
@@ -115,14 +117,17 @@ mod test {
     use super::*;
     use crate::util::hexdump::{hexdump_parse, hexdump_string};
 
-    const OWNER_FLASH_INFO_CONFIG_BIN: &str = "\
-00000000: 49 4e 46 4f 20 00 00 00 00 00 00 00 11 00 00 00  INFO ...........\n\
-00000010: 01 02 00 00 03 00 00 00 01 05 00 00 3f 00 00 00  ............?...\n\
-";
+    #[rustfmt::skip]
+    const OWNER_FLASH_INFO_CONFIG_BIN: &str =
+r#"00000000: 49 4e 46 4f 2c 00 00 00 00 00 00 00 96 09 00 99  INFO,...........
+00000010: 69 09 00 00 01 02 00 00 77 18 11 88 88 18 11 11  i.......w.......
+00000020: 01 05 00 00 44 24 22 bb 44 24 22 22              ....D$".D$""
+"#;
+
     const OWNER_FLASH_INFO_CONFIG_JSON: &str = r#"{
   header: {
     identifier: "FlashInfoConfig",
-    length: 32
+    length: 44
   },
   config: [
     {
@@ -195,6 +200,7 @@ mod test {
         };
         let mut bin = Vec::new();
         ofic.write(&mut bin)?;
+        eprintln!("{}", hexdump_string(&bin)?);
         assert_eq!(hexdump_string(&bin)?, OWNER_FLASH_INFO_CONFIG_BIN);
         Ok(())
     }
