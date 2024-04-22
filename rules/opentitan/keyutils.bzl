@@ -89,6 +89,17 @@ key_ecdsa = rule(
     },
 )
 
+def ecdsa_key_for_lc_state(key_structs, hw_lc_state):
+    """Return a dictionary containing a single key that can be used in the given
+    LC state. The format of the dictionary is compatible with opentitan_test.
+    """
+    keys = [k for k in key_structs if (k.ecdsa != None and key_allowed_in_lc_state(k.ecdsa, hw_lc_state))]
+    if len(keys) == 0:
+        fail("There are no ECDSA keys compatible with HW LC state {} in key structs".format(hw_lc_state))
+    return {
+        keys[0].ecdsa.label: keys[0].ecdsa.name,
+    }
+
 def rsa_key_for_lc_state(key_structs, hw_lc_state):
     """Return a dictionary containing a single key that can be used in the given
     LC state. The format of the dictionary is compatible with opentitan_test.

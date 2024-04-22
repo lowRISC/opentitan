@@ -39,6 +39,7 @@ load(
 )
 load(
     "@lowrisc_opentitan//rules/opentitan:keyutils.bzl",
+    _ecdsa_key_for_lc_state = "ecdsa_key_for_lc_state",
     _rsa_key_by_name = "rsa_key_by_name",
     _rsa_key_for_lc_state = "rsa_key_for_lc_state",
 )
@@ -71,6 +72,8 @@ verilator_params = _verilator_params
 
 sim_dv = _sim_dv
 dv_params = _dv_params
+
+ecdsa_key_for_lc_state = _ecdsa_key_for_lc_state
 
 rsa_key_for_lc_state = _rsa_key_for_lc_state
 rsa_key_by_name = _rsa_key_by_name
@@ -152,6 +155,7 @@ def opentitan_test(
         includes = [],
         linkopts = [],
         linker_script = None,
+        ecdsa_key = None,
         rsa_key = None,
         spx_key = None,
         manifest = None,
@@ -174,6 +178,7 @@ def opentitan_test(
       local_defines: Compiler defines for this test.
       includes: Additional compiler include dirs for this test.
       linker_script: Linker script for this test.
+      ecdsa_key: ECDSA key to sign the binary for this test.
       rsa_key: RSA key to sign the binary for this test.
       spx_key: SPX key to sign the binary for this test.
       manifest: manifest used during signing for this test.
@@ -243,6 +248,7 @@ def opentitan_test(
             test_cmd = tparam.test_cmd,
             param = tparam.param,
             data = data + tparam.data,
+            ecdsa_key = ecdsa_key,
             rsa_key = rsa_key,
             spx_key = spx_key,
             manifest = manifest,
