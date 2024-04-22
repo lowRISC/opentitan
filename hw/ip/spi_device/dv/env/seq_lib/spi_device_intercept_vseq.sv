@@ -57,7 +57,8 @@ class spi_device_intercept_vseq extends spi_device_pass_cmd_filtering_vseq;
     // Note: there shouldn't be two flash_status writes in a row without SPI command in between
     // The RTL could absord a second write, but it wouldn't be correct operation in terms of SW
     // behaviour. In theory, one could write the upper-bits of flash_status, followed by another
-    // write to clear the busy bit (done in least probable case within the randcase below).
+    // write to clear the busy bit (the case is commented out just in case the stimulus is needed
+    // to close coverage).
     //
     // In practice, SW writes to flash_status should only occur as a response to a command which
     // sets the busy bit.
@@ -65,14 +66,18 @@ class spi_device_intercept_vseq extends spi_device_pass_cmd_filtering_vseq;
     // bits to return to the host. So if SW were to write flash_status whilst the host was sending
     // a READ_STATUS command, and the host left the CSB line low "fow a while" expecting for
     // instance to read the busy bit unset, the host would see complete bytes written to
-    // flash_status and not a byte made of two different writes
+    // flash_status and not a byte made of two partial different writes
 
     access_option = wrong;
     randcase
-      25: access_option = sequential_access;
+      30: access_option = sequential_access;
       70: access_option = concurrent_access;
-      5 : access_option = two_writes;
+      // Advice is for stimulus not to operate with 'two_writes' access option. However, the option
+      //  is left here in case we'd need to exercise any RTL feature which becomes
+      // difficult/impossible to exercise with the 'two_writes' configuration
+      //      5 : access_option = two_writes;
     endcase // randcase
+
 
     case (access_option)
       sequential_access: begin // Sequential accesses
