@@ -196,10 +196,36 @@ pub fn generate_certificate(tmpl: &template::Template) -> Result<Vec<u8>> {
     Ok(cert)
 }
 
-fn get_subject_alt_name(_x509: &X509) -> Result<IndexMap<AttributeType, Value<String>>> {
-    let empty: IndexMap<AttributeType, Value<String>> = Default::default();
+fn get_subject_alt_name(x509: &X509) -> Result<IndexMap<AttributeType, Value<String>>> {
+    let mut alt_names: IndexMap<AttributeType, Value<String>> = Default::default();
+    let Some(names) = x509.subject_alt_names() else {
+        return Ok(alt_names);
+    };
+    for general_name in names {
+        let type_ = unsafe { (*general_name.as_ptr()).type_ };
+        // We expect a directoryName.
+        ensure!(
+            type_ == openssl_sys::GEN_DIRNAME,
+            "only directory names are supported for subject alt names"
+        );
+        // SAFETY: OpenSSL's directoryName is represented by X509_NAME when the type
+        // is GEN_DIRNAME. It looks like this (only relevant parts shown):
+        // typedef struct GENERAL_NAME_st {
+        // #define GEN_DIRNAME     4
+        //     int type;
+        //     union {
+        //         X509_NAME *directoryName;
+        //     } d;
+        // } GENERAL_NAME;
+        let x509_name_ref = unsafe {
+            X509NameRef::from_ptr((*general_name.as_ptr()).d as *mut openssl_sys::X509_NAME)
+        };
+        for (key, value) in asn1name_to_hashmap("Subject Alternative Names", x509_name_ref)? {
+            alt_names.insert(key, value);
+        }
+    }
 
-    Ok(empty)
+    Ok(alt_names)
 }
 
 /// Parse a X509 certificate
