@@ -3,39 +3,40 @@
 <!-- BEGIN CMDGEN util/regtool.py -d ./hw/ip/i2c/data/i2c.hjson -->
 ## Summary
 
-| Name                                                          | Offset   |   Length | Description                                                                                        |
-|:--------------------------------------------------------------|:---------|---------:|:---------------------------------------------------------------------------------------------------|
-| i2c.[`INTR_STATE`](#intr_state)                               | 0x0      |        4 | Interrupt State Register                                                                           |
-| i2c.[`INTR_ENABLE`](#intr_enable)                             | 0x4      |        4 | Interrupt Enable Register                                                                          |
-| i2c.[`INTR_TEST`](#intr_test)                                 | 0x8      |        4 | Interrupt Test Register                                                                            |
-| i2c.[`ALERT_TEST`](#alert_test)                               | 0xc      |        4 | Alert Test Register                                                                                |
-| i2c.[`CTRL`](#ctrl)                                           | 0x10     |        4 | I2C Control Register                                                                               |
-| i2c.[`STATUS`](#status)                                       | 0x14     |        4 | I2C Live Status Register for Host and Target modes                                                 |
-| i2c.[`RDATA`](#rdata)                                         | 0x18     |        4 | I2C Read Data                                                                                      |
-| i2c.[`FDATA`](#fdata)                                         | 0x1c     |        4 | I2C Host Format Data                                                                               |
-| i2c.[`FIFO_CTRL`](#fifo_ctrl)                                 | 0x20     |        4 | I2C FIFO control register                                                                          |
-| i2c.[`HOST_FIFO_CONFIG`](#host_fifo_config)                   | 0x24     |        4 | Host mode FIFO configuration                                                                       |
-| i2c.[`TARGET_FIFO_CONFIG`](#target_fifo_config)               | 0x28     |        4 | Target mode FIFO configuration                                                                     |
-| i2c.[`HOST_FIFO_STATUS`](#host_fifo_status)                   | 0x2c     |        4 | Host mode FIFO status register                                                                     |
-| i2c.[`TARGET_FIFO_STATUS`](#target_fifo_status)               | 0x30     |        4 | Target mode FIFO status register                                                                   |
-| i2c.[`OVRD`](#ovrd)                                           | 0x34     |        4 | I2C Override Control Register                                                                      |
-| i2c.[`VAL`](#val)                                             | 0x38     |        4 | Oversampled RX values                                                                              |
-| i2c.[`TIMING0`](#timing0)                                     | 0x3c     |        4 | Detailed I2C Timings (directly corresponding to table 10 in the I2C Specification).                |
-| i2c.[`TIMING1`](#timing1)                                     | 0x40     |        4 | Detailed I2C Timings (directly corresponding to table 10 in the I2C Specification).                |
-| i2c.[`TIMING2`](#timing2)                                     | 0x44     |        4 | Detailed I2C Timings (directly corresponding to table 10 in the I2C Specification).                |
-| i2c.[`TIMING3`](#timing3)                                     | 0x48     |        4 | Detailed I2C Timings (directly corresponding to table 10, in the I2C Specification).               |
-| i2c.[`TIMING4`](#timing4)                                     | 0x4c     |        4 | Detailed I2C Timings (directly corresponding to table 10, in the I2C Specification).               |
-| i2c.[`TIMEOUT_CTRL`](#timeout_ctrl)                           | 0x50     |        4 | I2C clock stretching and bus timeout control.                                                      |
-| i2c.[`TARGET_ID`](#target_id)                                 | 0x54     |        4 | I2C target address and mask pairs                                                                  |
-| i2c.[`ACQDATA`](#acqdata)                                     | 0x58     |        4 | I2C target acquired data                                                                           |
-| i2c.[`TXDATA`](#txdata)                                       | 0x5c     |        4 | I2C target transmit data                                                                           |
-| i2c.[`HOST_TIMEOUT_CTRL`](#host_timeout_ctrl)                 | 0x60     |        4 | I2C host clock generation timeout value (in units of input clock frequency).                       |
-| i2c.[`TARGET_TIMEOUT_CTRL`](#target_timeout_ctrl)             | 0x64     |        4 | I2C target internal stretching timeout control.                                                    |
-| i2c.[`TARGET_NACK_COUNT`](#target_nack_count)                 | 0x68     |        4 | Number of times the I2C target has NACK'ed a new transaction since the last read of this register. |
-| i2c.[`TARGET_ACK_CTRL`](#target_ack_ctrl)                     | 0x6c     |        4 | Controls for mid-transfer (N)ACK phase handling                                                    |
-| i2c.[`ACQ_FIFO_NEXT_DATA`](#acq_fifo_next_data)               | 0x70     |        4 | The data byte pending to be written to the ACQ FIFO.                                               |
-| i2c.[`HOST_NACK_HANDLER_TIMEOUT`](#host_nack_handler_timeout) | 0x74     |        4 | Timeout in Host-Mode for an unhandled NACK before hardware automatically ends the transaction.     |
-| i2c.[`CONTROLLER_EVENTS`](#controller_events)                 | 0x78     |        4 | Latched events that explain why the controller halted.                                             |
+| Name                                                          | Offset   |   Length | Description                                                                                               |
+|:--------------------------------------------------------------|:---------|---------:|:----------------------------------------------------------------------------------------------------------|
+| i2c.[`INTR_STATE`](#intr_state)                               | 0x0      |        4 | Interrupt State Register                                                                                  |
+| i2c.[`INTR_ENABLE`](#intr_enable)                             | 0x4      |        4 | Interrupt Enable Register                                                                                 |
+| i2c.[`INTR_TEST`](#intr_test)                                 | 0x8      |        4 | Interrupt Test Register                                                                                   |
+| i2c.[`ALERT_TEST`](#alert_test)                               | 0xc      |        4 | Alert Test Register                                                                                       |
+| i2c.[`CTRL`](#ctrl)                                           | 0x10     |        4 | I2C Control Register                                                                                      |
+| i2c.[`STATUS`](#status)                                       | 0x14     |        4 | I2C Live Status Register for Host and Target modes                                                        |
+| i2c.[`RDATA`](#rdata)                                         | 0x18     |        4 | I2C Read Data                                                                                             |
+| i2c.[`FDATA`](#fdata)                                         | 0x1c     |        4 | I2C Host Format Data                                                                                      |
+| i2c.[`FIFO_CTRL`](#fifo_ctrl)                                 | 0x20     |        4 | I2C FIFO control register                                                                                 |
+| i2c.[`HOST_FIFO_CONFIG`](#host_fifo_config)                   | 0x24     |        4 | Host mode FIFO configuration                                                                              |
+| i2c.[`TARGET_FIFO_CONFIG`](#target_fifo_config)               | 0x28     |        4 | Target mode FIFO configuration                                                                            |
+| i2c.[`HOST_FIFO_STATUS`](#host_fifo_status)                   | 0x2c     |        4 | Host mode FIFO status register                                                                            |
+| i2c.[`TARGET_FIFO_STATUS`](#target_fifo_status)               | 0x30     |        4 | Target mode FIFO status register                                                                          |
+| i2c.[`OVRD`](#ovrd)                                           | 0x34     |        4 | I2C Override Control Register                                                                             |
+| i2c.[`VAL`](#val)                                             | 0x38     |        4 | Oversampled RX values                                                                                     |
+| i2c.[`TIMING0`](#timing0)                                     | 0x3c     |        4 | Detailed I2C Timings (directly corresponding to table 10 in the I2C Specification).                       |
+| i2c.[`TIMING1`](#timing1)                                     | 0x40     |        4 | Detailed I2C Timings (directly corresponding to table 10 in the I2C Specification).                       |
+| i2c.[`TIMING2`](#timing2)                                     | 0x44     |        4 | Detailed I2C Timings (directly corresponding to table 10 in the I2C Specification).                       |
+| i2c.[`TIMING3`](#timing3)                                     | 0x48     |        4 | Detailed I2C Timings (directly corresponding to table 10, in the I2C Specification).                      |
+| i2c.[`TIMING4`](#timing4)                                     | 0x4c     |        4 | Detailed I2C Timings (directly corresponding to table 10, in the I2C Specification).                      |
+| i2c.[`TIMEOUT_CTRL`](#timeout_ctrl)                           | 0x50     |        4 | I2C clock stretching and bus timeout control.                                                             |
+| i2c.[`TARGET_ID`](#target_id)                                 | 0x54     |        4 | I2C target address and mask pairs                                                                         |
+| i2c.[`ACQDATA`](#acqdata)                                     | 0x58     |        4 | I2C target acquired data                                                                                  |
+| i2c.[`TXDATA`](#txdata)                                       | 0x5c     |        4 | I2C target transmit data                                                                                  |
+| i2c.[`HOST_TIMEOUT_CTRL`](#host_timeout_ctrl)                 | 0x60     |        4 | I2C host clock generation timeout value (in units of input clock frequency).                              |
+| i2c.[`TARGET_TIMEOUT_CTRL`](#target_timeout_ctrl)             | 0x64     |        4 | I2C target internal stretching timeout control.                                                           |
+| i2c.[`TARGET_NACK_COUNT`](#target_nack_count)                 | 0x68     |        4 | Number of times the I2C target has NACK'ed a new transaction since the last read of this register.        |
+| i2c.[`TARGET_ACK_CTRL`](#target_ack_ctrl)                     | 0x6c     |        4 | Controls for mid-transfer (N)ACK phase handling                                                           |
+| i2c.[`ACQ_FIFO_NEXT_DATA`](#acq_fifo_next_data)               | 0x70     |        4 | The data byte pending to be written to the ACQ FIFO.                                                      |
+| i2c.[`HOST_NACK_HANDLER_TIMEOUT`](#host_nack_handler_timeout) | 0x74     |        4 | Timeout in Host-Mode for an unhandled NACK before hardware automatically ends the transaction.            |
+| i2c.[`CONTROLLER_EVENTS`](#controller_events)                 | 0x78     |        4 | Latched events that explain why the controller halted.                                                    |
+| i2c.[`TARGET_EVENTS`](#target_events)                         | 0x7c     |        4 | Latched events that can cause the target module to stretch the clock at the beginning of a read transfer. |
 
 ## INTR_STATE
 Interrupt State Register
@@ -151,23 +152,33 @@ Alert Test Register
 I2C Control Register
 - Offset: `0x10`
 - Reset default: `0x0`
-- Reset mask: `0x3f`
+- Reset mask: `0x7f`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "ENABLEHOST", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "ENABLETARGET", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "LLPBK", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "NACK_ADDR_AFTER_TIMEOUT", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "ACK_CTRL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "MULTI_CONTROLLER_MONITOR_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 26}], "config": {"lanes": 1, "fontsize": 10, "vspace": 290}}
+{"reg": [{"name": "ENABLEHOST", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "ENABLETARGET", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "LLPBK", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "NACK_ADDR_AFTER_TIMEOUT", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "ACK_CTRL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "MULTI_CONTROLLER_MONITOR_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX_STRETCH_CTRL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 25}], "config": {"lanes": 1, "fontsize": 10, "vspace": 290}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                                              |
 |:------:|:------:|:-------:|:------------------------------------------------------------------|
-|  31:6  |        |         | Reserved                                                          |
+|  31:7  |        |         | Reserved                                                          |
+|   6    |   rw   |   0x0   | [TX_STRETCH_CTRL_EN](#ctrl--tx_stretch_ctrl_en)                   |
 |   5    |   rw   |   0x0   | [MULTI_CONTROLLER_MONITOR_EN](#ctrl--multi_controller_monitor_en) |
 |   4    |   rw   |   0x0   | [ACK_CTRL_EN](#ctrl--ack_ctrl_en)                                 |
 |   3    |   rw   |   0x0   | [NACK_ADDR_AFTER_TIMEOUT](#ctrl--nack_addr_after_timeout)         |
 |   2    |   rw   |   0x0   | [LLPBK](#ctrl--llpbk)                                             |
 |   1    |   rw   |   0x0   | [ENABLETARGET](#ctrl--enabletarget)                               |
 |   0    |   rw   |   0x0   | [ENABLEHOST](#ctrl--enablehost)                                   |
+
+### CTRL . TX_STRETCH_CTRL_EN
+If set to 1, this bit causes a read transfer addressed to this target to set the corresponding bit in [`TARGET_EVENTS.`](#target_events)
+
+While [`TARGET_EVENTS.TX_PENDING`](#target_events) is 1, subsequent read transactions will stretch the clock, even if there is data in the TX FIFO.
+
+If enabled, this function allows software to confirm the data in the TX FIFO should be released for the current read.
+This may be useful for cases where the TX FIFO has data that does not apply to the current transfer.
+For example, the transaction could've targeted an alternate function via another address.
 
 ### CTRL . MULTI_CONTROLLER_MONITOR_EN
 Enable the bus monitor in multi-controller mode.
@@ -324,21 +335,20 @@ Host mode FIFO configuration
 Target mode FIFO configuration
 - Offset: `0x28`
 - Reset default: `0x0`
-- Reset mask: `0xfff8fff`
+- Reset mask: `0xfff0fff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "TX_THRESH", "bits": 12, "attr": ["rw"], "rotate": 0}, {"bits": 3}, {"name": "TXRST_ON_COND", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "ACQ_THRESH", "bits": 12, "attr": ["rw"], "rotate": 0}, {"bits": 4}], "config": {"lanes": 1, "fontsize": 10, "vspace": 150}}
+{"reg": [{"name": "TX_THRESH", "bits": 12, "attr": ["rw"], "rotate": 0}, {"bits": 4}, {"name": "ACQ_THRESH", "bits": 12, "attr": ["rw"], "rotate": 0}, {"bits": 4}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name          | Description                                                                                                                                                                                                                                    |
-|:------:|:------:|:-------:|:--------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 31:28  |        |         |               | Reserved                                                                                                                                                                                                                                       |
-| 27:16  |   rw   |   0x0   | ACQ_THRESH    | Threshold level for ACQ interrupts. Whilst the level of data in the ACQ FIFO is above this setting, the acq_threshold interrupt will be asserted.                                                                                              |
-|   15   |   rw   |   0x0   | TXRST_ON_COND | If set, automatically reset the TX FIFO (TXRST) upon seeing a RSTART/STOP condition during an active transaction in Target Mode. This may be useful if the remaining data in the TX FIFO becomes no longer applicable to the next transaction. |
-| 14:12  |        |         |               | Reserved                                                                                                                                                                                                                                       |
-|  11:0  |   rw   |   0x0   | TX_THRESH     | Threshold level for TX interrupts. Whilst the number of used entries in the TX FIFO is below this setting, the tx_threshold interrupt will be asserted.                                                                                        |
+|  Bits  |  Type  |  Reset  | Name       | Description                                                                                                                                             |
+|:------:|:------:|:-------:|:-----------|:--------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 31:28  |        |         |            | Reserved                                                                                                                                                |
+| 27:16  |   rw   |   0x0   | ACQ_THRESH | Threshold level for ACQ interrupts. Whilst the level of data in the ACQ FIFO is above this setting, the acq_threshold interrupt will be asserted.       |
+| 15:12  |        |         |            | Reserved                                                                                                                                                |
+|  11:0  |   rw   |   0x0   | TX_THRESH  | Threshold level for TX interrupts. Whilst the number of used entries in the TX FIFO is below this setting, the tx_threshold interrupt will be asserted. |
 
 ## HOST_FIFO_STATUS
 Host mode FIFO status register
@@ -612,22 +622,22 @@ I2C target acquired data
 ### ACQDATA . SIGNAL
 Indicates any control symbols associated with the ABYTE.
 
-For the STOP symbol, a stretch timeout will cause a NACK_STOP to appear in the ACQ FIFO.
+For the STOP symbol, a stretch timeout or other unexpected events will cause a NACK_STOP to appear in the ACQ FIFO.
 If the ACQ FIFO doesn't have enough space to record a START and a STOP, the transaction will be dropped entirely on a stretch timeout.
 In that case, the START byte will not appear (neither as START nor NACK_START), but a standalone NACK_STOP may, if there was space.
 Software can discard any standalone NACK_STOP that appears.
 
 See the associated values for more information about the contents.
 
-| Value   | Name       | Description                                                                                                                                                                                                                                                            |
-|:--------|:-----------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0x0     | NONE       | ABYTE contains an ordinary data byte that was received and ACK'd.                                                                                                                                                                                                      |
-| 0x1     | START      | A START condition preceded the ABYTE to start a new transaction. ABYTE contains the 7-bit I2C address plus R/W command bit in the order received on the bus, MSB first.                                                                                                |
-| 0x2     | STOP       | A STOP condition was received for a transaction including a transfer that addressed this Target. No transfers addressing this Target in that transaction were NACK'd. ABYTE contains no data.                                                                          |
-| 0x3     | RESTART    | A repeated START condition preceded the ABYTE, extending the current transaction with a new transfer. ABYTE contains the 7-bit I2C address plus R/W command bit in the order received on the bus, MSB first.                                                           |
-| 0x4     | NACK       | ABYTE contains an ordinary data byte that was received and NACK'd.                                                                                                                                                                                                     |
-| 0x5     | NACK_START | A START condition preceded the ABYTE (including repeated START) that was part of a NACK'd transer. The ABYTE contains the matching I2C address and command bit. The ABYTE was ACK'd, but the rest of the transaction was NACK'ed.                                      |
-| 0x6     | NACK_STOP  | A transaction including a transfer that addressed this Target was ended, but the transaction ended abnormally and/or the transfer was NACK'd. The end can be due to a STOP condition or unexpected events, such as a bus timeout (if enabled). ABYTE contains no data. |
+| Value   | Name       | Description                                                                                                                                                                                                                                                                                                                                                                                                                      |
+|:--------|:-----------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0x0     | NONE       | ABYTE contains an ordinary data byte that was received and ACK'd.                                                                                                                                                                                                                                                                                                                                                                |
+| 0x1     | START      | A START condition preceded the ABYTE to start a new transaction. ABYTE contains the 7-bit I2C address plus R/W command bit in the order received on the bus, MSB first.                                                                                                                                                                                                                                                          |
+| 0x2     | STOP       | A STOP condition was received for a transaction including a transfer that addressed this Target. No transfers addressing this Target in that transaction were NACK'd. ABYTE contains no data.                                                                                                                                                                                                                                    |
+| 0x3     | RESTART    | A repeated START condition preceded the ABYTE, extending the current transaction with a new transfer. ABYTE contains the 7-bit I2C address plus R/W command bit in the order received on the bus, MSB first.                                                                                                                                                                                                                     |
+| 0x4     | NACK       | ABYTE contains an ordinary data byte that was received and NACK'd.                                                                                                                                                                                                                                                                                                                                                               |
+| 0x5     | NACK_START | A START condition preceded the ABYTE (including repeated START) that was part of a NACK'd transer. The ABYTE contains the matching I2C address and command bit. The ABYTE was ACK'd, but the rest of the transaction was NACK'ed.                                                                                                                                                                                                |
+| 0x6     | NACK_STOP  | A transaction including a transfer that addressed this Target was ended, but the transaction ended abnormally and/or the transfer was NACK'd. The end can be due to a STOP condition or unexpected events, such as a bus timeout (if enabled). ABYTE contains no data. NACKing can occur for multiple reasons, including a stretch timeout or a SW-directed NACK. This signal is a bucket for all these error-type terminations. |
 
 Other values are reserved.
 
@@ -828,6 +838,40 @@ Any bits that are set must be written (with a 1) to clear the CONTROLLER_HALT in
 |   2    |  rw1c  |   0x0   | BUS_TIMEOUT            | A Host-Mode active transaction has terminated due to a bus timeout activated by [`TIMEOUT_CTRL.`](#timeout_ctrl)          |
 |   1    |  rw1c  |   0x0   | UNHANDLED_NACK_TIMEOUT | A Host-Mode active transaction has been ended by the [`HOST_NACK_HANDLER_TIMEOUT`](#host_nack_handler_timeout) mechanism. |
 |   0    |  rw1c  |   0x0   | NACK                   | Received an unexpected NACK                                                                                               |
+
+## TARGET_EVENTS
+Latched events that can cause the target module to stretch the clock at the beginning of a read transfer.
+
+These events cause TX FIFO-related stretching even when the TX FIFO has data available.
+Any bits that are set must be written (with a 1) to clear the tx_stretch interrupt.
+
+This CSR serves as a gate to prevent the Target module from responding to a read command with unrelated, leftover data.
+- Offset: `0x7c`
+- Reset default: `0x0`
+- Reset mask: `0x3`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "TX_PENDING", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "BUS_TIMEOUT", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 30}], "config": {"lanes": 1, "fontsize": 10, "vspace": 130}}
+```
+
+|  Bits  |  Type  |  Reset  | Name                                       |
+|:------:|:------:|:-------:|:-------------------------------------------|
+|  31:2  |        |         | Reserved                                   |
+|   1    |  rw1c  |   0x0   | [BUS_TIMEOUT](#target_events--bus_timeout) |
+|   0    |  rw1c  |   0x0   | [TX_PENDING](#target_events--tx_pending)   |
+
+### TARGET_EVENTS . BUS_TIMEOUT
+A Target-Mode read transfer has terminated due to a bus timeout activated by [`TIMEOUT_CTRL.`](#timeout_ctrl)
+
+### TARGET_EVENTS . TX_PENDING
+A new Target-Mode read transfer has arrived that addressed this target.
+
+This bit is used by software to confirm the release of the contents in the TX FIFO.
+If the contents do not apply, software should first reset the TX FIFO, then load it with the correct data, then clear this bit.
+
+Optionally enabled by [`CTRL.TX_STRETCH_CTRL_EN.`](#ctrl)
 
 
 <!-- END CMDGEN -->

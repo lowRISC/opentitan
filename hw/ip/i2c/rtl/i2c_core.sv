@@ -84,16 +84,18 @@ module i2c_core import i2c_pkg::*;
   logic event_bus_active_timeout;
   logic event_stretch_timeout;
   logic event_sda_unstable;
+  logic event_read_cmd_received;
   logic event_cmd_complete;
   logic event_controller_cmd_complete, event_target_cmd_complete;
   logic event_target_nack;
+  logic event_tx_bus_timeout;
   logic event_tx_stretch;
   logic event_acq_stretch;
   logic event_unexp_stop;
   logic event_host_timeout;
 
-  logic target_sr_p_cond;
   logic unhandled_unexp_nak;
+  logic unhandled_tx_stretch_event;
   logic target_ack_ctrl_stretching;
   logic target_ack_ctrl_sw_nack;
 
@@ -183,7 +185,6 @@ module i2c_core import i2c_pkg::*;
   logic [ACQ_FIFO_WIDTH-9:0] unused_acq_fifo_signal_q;
   logic        unused_alert_test_qe;
   logic        unused_alert_test_q;
-  logic        unused_txrst_on_cond_qe;
 
   assign hw2reg.status.fmtfull.d = ~fmt_fifo_wready;
   assign hw2reg.status.rxfull.d = ~rx_fifo_wready;
@@ -284,8 +285,7 @@ module i2c_core import i2c_pkg::*;
   assign i2c_fifo_rx_thresh  = reg2hw.host_fifo_config.rx_thresh.q;
   assign i2c_fifo_fmt_thresh = reg2hw.host_fifo_config.fmt_thresh.q;
 
-  assign i2c_fifo_txrst      = (reg2hw.fifo_ctrl.txrst.q & reg2hw.fifo_ctrl.txrst.qe) ||
-                               (reg2hw.target_fifo_config.txrst_on_cond.q & target_sr_p_cond);
+  assign i2c_fifo_txrst      = reg2hw.fifo_ctrl.txrst.q & reg2hw.fifo_ctrl.txrst.qe;
   assign i2c_fifo_acqrst     = reg2hw.fifo_ctrl.acqrst.q & reg2hw.fifo_ctrl.acqrst.qe;
   assign i2c_fifo_tx_thresh  = reg2hw.target_fifo_config.tx_thresh.q;
   assign i2c_fifo_acq_thresh = reg2hw.target_fifo_config.acq_thresh.q;
@@ -343,7 +343,6 @@ module i2c_core import i2c_pkg::*;
   assign unused_acq_fifo_signal_q = reg2hw.acqdata.signal.q;
   assign unused_alert_test_qe = reg2hw.alert_test.qe;
   assign unused_alert_test_q = reg2hw.alert_test.q;
-  assign unused_txrst_on_cond_qe = reg2hw.target_fifo_config.txrst_on_cond.qe;
 
   i2c_fifos u_fifos (
     .clk_i,
@@ -539,6 +538,8 @@ module i2c_core import i2c_pkg::*;
     .nack_timeout_i                 (nack_timeout),
     .nack_timeout_en_i              (nack_timeout_en),
     .nack_addr_after_timeout_i      (reg2hw.ctrl.nack_addr_after_timeout.q),
+    .bus_timeout_i                  (event_bus_active_timeout),
+    .unhandled_tx_stretch_event_i   (unhandled_tx_stretch_event),
     .ack_ctrl_mode_i                (reg2hw.ctrl.ack_ctrl_en.q),
     .auto_ack_cnt_o                 (hw2reg.target_ack_ctrl.nbytes.d),
     .auto_ack_load_i                (reg2hw.target_ack_ctrl.nbytes.qe),
@@ -550,11 +551,12 @@ module i2c_core import i2c_pkg::*;
     .target_mask0_i                 (target_mask0),
     .target_address1_i              (target_address1),
     .target_mask1_i                 (target_mask1),
-    .target_sr_p_cond_o             (target_sr_p_cond),
     .event_target_nack_o            (event_target_nack),
+    .event_read_cmd_received_o      (event_read_cmd_received),
     .event_cmd_complete_o           (event_target_cmd_complete),
     .event_tx_stretch_o             (event_tx_stretch),
-    .event_unexp_stop_o             (event_unexp_stop)
+    .event_unexp_stop_o             (event_unexp_stop),
+    .event_tx_bus_timeout_o         (event_tx_bus_timeout)
   );
 
   prim_intr_hw #(
@@ -783,6 +785,16 @@ module i2c_core import i2c_pkg::*;
     reg2hw.controller_events.nack.q,
     reg2hw.controller_events.unhandled_nack_timeout.q,
     reg2hw.controller_events.bus_timeout.q
+  };
+
+  assign hw2reg.target_events.tx_pending.d  = 1'b1;
+  assign hw2reg.target_events.tx_pending.de = event_read_cmd_received &&
+                                              reg2hw.ctrl.tx_stretch_ctrl_en.q;
+  assign hw2reg.target_events.bus_timeout.d  = 1'b1;
+  assign hw2reg.target_events.bus_timeout.de = event_tx_bus_timeout;
+  assign unhandled_tx_stretch_event = | {
+    reg2hw.target_events.tx_pending.q,
+    reg2hw.target_events.bus_timeout.q
   };
 
   ////////////////
