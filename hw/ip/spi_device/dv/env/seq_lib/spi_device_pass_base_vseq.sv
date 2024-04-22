@@ -639,7 +639,7 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
           // before CSB is active, but the D-channel response being back-pressured until the next
           //  inactive CSB
 
-          if (new_flash_status != old_flash_status)
+          if(new_flash_status != old_flash_status)
             busy_unset_early = 1;
 
         end
@@ -658,7 +658,6 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     // If busy bit is not cleared, check once more else raise an error
     if (busy) begin
       get_flash_status_busy(busy);
-
       // busy_unset_early will be set if there's back-pressure for the D-channel: The RTL takes the
       // written_value on A-channel handshake, and if the back-pressure lasts for 1+ flash_commands
       // csr_update will block until D-channel handshake completes.
