@@ -502,7 +502,7 @@
             - Verify that the interrupt pin goes high indicating an error in the link in OUT transaction.
             '''
       stage: V2
-      tests: []
+      tests: ["usbdev_link_out_err"]
     }
     {
       name: enable

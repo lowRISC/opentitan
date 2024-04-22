@@ -145,6 +145,10 @@
       uvm_test_seq: usbdev_in_iso_vseq
     }
     {
+      name: usbdev_link_out_err
+      uvm_test_seq: usbdev_link_out_err_vseq
+    }
+    {
       name: random_length_in_trans
       uvm_test_seq: usbdev_in_rand_trans_vseq
     }
