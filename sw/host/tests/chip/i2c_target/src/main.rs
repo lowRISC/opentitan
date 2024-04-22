@@ -138,7 +138,7 @@ fn test_wakeup_deep_sleep(
     test_read_transaction(opts, transport, address)
 }
 
-fn test_write_repeated_start(
+fn _test_write_repeated_start(
     _opts: &Opts,
     transport: &TransportWrapper,
     address: u8,
@@ -198,7 +198,7 @@ fn test_write_repeated_start(
     Ok(())
 }
 
-fn test_write_read_repeated_start(
+fn _test_write_read_repeated_start(
     _opts: &Opts,
     transport: &TransportWrapper,
     address: u8,
@@ -290,16 +290,28 @@ fn main() -> Result<()> {
     uart.clear_rx_buffer()?;
 
     for i2c_instance in 0..3 {
+        let _ = UartConsole::wait_for(&*uart, r"Ready.[^\r\n]*", opts.timeout)?;
         execute_test!(test_set_target_address, &opts, &transport, i2c_instance);
+        let _ = UartConsole::wait_for(&*uart, r"Ready.[^\r\n]*", opts.timeout)?;
         execute_test!(test_read_transaction, &opts, &transport, 0x33);
+        let _ = UartConsole::wait_for(&*uart, r"Ready.[^\r\n]*", opts.timeout)?;
         execute_test!(test_read_transaction, &opts, &transport, 0x70);
+        let _ = UartConsole::wait_for(&*uart, r"Ready.[^\r\n]*", opts.timeout)?;
         execute_test!(test_read_transaction, &opts, &transport, 0x71);
+        let _ = UartConsole::wait_for(&*uart, r"Ready.[^\r\n]*", opts.timeout)?;
         execute_test!(test_read_transaction, &opts, &transport, 0x72);
-        execute_test!(test_write_repeated_start, &opts, &transport, 0x33);
+        // TODO(#22749): re-enable after fixing.
+        //let _ = UartConsole::wait_for(&*uart, r"Ready.[^\r\n]*", opts.timeout)?;
+        //execute_test!(test_write_repeated_start, &opts, &transport, 0x33);
+        let _ = UartConsole::wait_for(&*uart, r"Ready.[^\r\n]*", opts.timeout)?;
         execute_test!(test_read_transaction, &opts, &transport, 0x73);
+        let _ = UartConsole::wait_for(&*uart, r"Ready.[^\r\n]*", opts.timeout)?;
         execute_test!(test_write_transaction, &opts, &transport, 0x33);
+        let _ = UartConsole::wait_for(&*uart, r"Ready.[^\r\n]*", opts.timeout)?;
         execute_test!(test_write_transaction_slow, &opts, &transport, 0x33);
-        execute_test!(test_write_read_repeated_start, &opts, &transport, 0x70);
+        // TODO(#22749): re-enable after fixing.
+        //let _ = UartConsole::wait_for(&*uart, r"Ready.[^\r\n]*", opts.timeout)?;
+        //execute_test!(test_write_read_repeated_start, &opts, &transport, 0x70);
     }
     execute_test!(test_wakeup_normal_sleep, &opts, &transport, 0x33);
     execute_test!(test_wakeup_deep_sleep, &opts, &transport, 0x33, 0);

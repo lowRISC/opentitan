@@ -282,6 +282,7 @@ static status_t command_processor(ujson_t *uj) {
   TRY(wakeup_check(uj, &i2c));
   while (true) {
     test_command_t command;
+    LOG_INFO("Ready.");
     TRY(UJSON_WITH_CRC(ujson_deserialize_test_command_t, uj, &command));
     switch (command) {
       case kTestCommandEnterNormalSleep:
@@ -294,7 +295,7 @@ static status_t command_processor(ujson_t *uj) {
         RESP_ERR(uj, configure_device_address(uj, &i2c));
         break;
       case kTestCommandI2cStartTransferWrite:
-        RESP_ERR(uj, start_write_transaction(uj, &i2c, 0));
+        RESP_ERR(uj, start_write_transaction(uj, &i2c, /*delay_micros=*/0));
         break;
       case kTestCommandI2cStartTransferRead:
         RESP_ERR(uj, start_read_transaction(uj, &i2c));
@@ -305,7 +306,8 @@ static status_t command_processor(ujson_t *uj) {
       case kTestCommandI2cStartTransferWriteSlow:
         // We'll insert a 10ms delay every 64 bytes, which is a huge delay
         // at 100 KHz, forcing the peripheral to stretch the clock.
-        RESP_ERR(uj, start_write_transaction(uj, &i2c, kTransactionDelay));
+        RESP_ERR(uj, start_write_transaction(
+                         uj, &i2c, /*delay_micros=*/kTransactionDelay));
         break;
       default:
         LOG_ERROR("Unrecognized command: %d", command);
