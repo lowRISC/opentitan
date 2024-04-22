@@ -241,8 +241,24 @@ impl X509 {
         builder: &mut B,
         subject_alt_name: &IndexMap<AttributeType, Value<String>>,
     ) -> Result<()> {
+        // SubjectAltName ::= GeneralNames
+        //
+        // GeneralNames ::= SEQUENCE SIZE (1..MAX) OF GeneralName
+        //
+        // GeneralName ::= CHOICE {
+        //     otherName                       [0]     OtherName,
+        //     rfc822Name                      [1]     IA5String,
+        //     dNSName                         [2]     IA5String,
+        //     x400Address                     [3]     ORAddress,
+        //     directoryName                   [4]     Name,
+        //     ediPartyName                    [5]     EDIPartyName,
+        //     uniformResourceIdentifier       [6]     IA5String,
+        //     iPAddress                       [7]     OCTET STRING,
+        //     registeredID                    [8]     OBJECT IDENTIFIER }
+        //
+        // We only support `directoryName` at the moment.
         if subject_alt_name.is_empty() {
-            // Subject ALternative Name is an optional extension, it's ok not to be present.
+            // Subject Alternative Name is an optional extension, it's ok not to be present.
             return Ok(());
         }
         Self::push_extension(builder, &Oid::SubjectAltName, false, |builder| {
