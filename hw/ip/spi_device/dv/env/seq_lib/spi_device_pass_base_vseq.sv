@@ -613,18 +613,36 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
 
   virtual task clear_flash_busy_bit();
     bit busy;
-    uint wait_sck_count = 5;
+    bit busy_unset_early;
+    uint num_sck_pulses = 5;
+    uint wait_sck_count = num_sck_pulses;
+    flash_status_t old_flash_status, new_flash_status;
     `uvm_info(`gfn, "Clearing flash busy bit", UVM_MEDIUM)
     // clear busy bit
     ral.flash_status.busy.set(0);
+    csr_rd(.ptr(ral.flash_status), .value(old_flash_status), .backdoor(1));
+
     csr_update(ral.flash_status);
     // The intent here is to check the flash_status after csr_wr and then read the register
     // after end of SPI transaction (since flash_status gets update after CSB is deasserted)
     // First, ensure enough SPI clock cycles occur to make the transition into
     // the SPI domain.
+
     while (wait_sck_count > 0) begin
       @(posedge cfg.spi_host_agent_cfg.vif.sck);
       if (cfg.spi_host_agent_cfg.vif.csb[FW_FLASH_CSB_ID] == 0) begin
+        if (wait_sck_count == num_sck_pulses) begin
+          // On the first SCK clock, we check if the value has already made it
+          csr_rd(.ptr(ral.flash_status), .value(new_flash_status), .backdoor(1));
+          // Note: it can happen the written flash_status is already synced with both SCK and SYS
+          // domains. This could happen in cases where the written_value in the A-channel occurs
+          // before CSB is active, but the D-channel response being back-pressured until the next
+          //  inactive CSB
+
+          if (new_flash_status != old_flash_status)
+            busy_unset_early = 1;
+
+        end
         wait_sck_count--;
       end else begin
         wait_sck_count = 5;
@@ -640,7 +658,13 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     // If busy bit is not cleared, check once more else raise an error
     if (busy) begin
       get_flash_status_busy(busy);
-      `DV_CHECK_EQ(busy, 0, "flash_status.busy == 1 expected to be 0")
+
+      // busy_unset_early will be set if there's back-pressure for the D-channel: The RTL takes the
+      // written_value on A-channel handshake, and if the back-pressure lasts for 1+ flash_commands
+      // csr_update will block until D-channel handshake completes.
+      // So, up to here when we wait for CSB becoming inactive, the busy bit may have been set again
+      if (!busy_unset_early && !cfg.last_flash_cmd_set_busy)
+        `DV_CHECK_EQ(busy, 0, "flash_status.busy == 1 expected to be 0")
     end
     `uvm_info(`gfn, "Cleared flash busy bit", UVM_MEDIUM)
   endtask
