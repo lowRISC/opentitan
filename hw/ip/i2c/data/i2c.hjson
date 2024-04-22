@@ -896,6 +896,9 @@
       fields: [
         { bits: "7:0" }
       ]
+      tags: [// Updated by the hw. Exclude from init and write-checks.
+             // Without actual I2C traffic, read from this CSR returns Xs.
+             "excl:CsrAllTests:CsrExclCheck"]
     }
     { name: "HOST_NACK_HANDLER_TIMEOUT"
       desc: '''
