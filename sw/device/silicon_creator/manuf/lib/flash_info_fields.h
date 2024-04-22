@@ -44,6 +44,9 @@ extern const flash_info_field_t kFlashInfoFieldWaferAuthSecret;
 extern const flash_info_field_t kFlashInfoFieldUdsAttestationKeySeed;
 extern const flash_info_field_t kFlashInfoFieldCdi0AttestationKeySeed;
 extern const flash_info_field_t kFlashInfoFieldCdi1AttestationKeySeed;
+extern const flash_info_field_t kFlashInfoFieldTpmEkAttestationKeySeed;
+extern const flash_info_field_t kFlashInfoFieldTpmCekAttestationKeySeed;
+extern const flash_info_field_t kFlashInfoFieldTpmCikAttestationKeySeed;
 
 /**
  * Reads info flash page field.
