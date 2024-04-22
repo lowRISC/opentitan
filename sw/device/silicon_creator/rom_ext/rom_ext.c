@@ -67,9 +67,19 @@ extern const char _chip_info_start[];
 lifecycle_state_t lc_state = kLcStateProd;
 
 // ePMP regions for important address spaces.
+const epmp_region_t kRamRegion = {
+    .start = TOP_EARLGREY_RAM_MAIN_BASE_ADDR,
+    .end = TOP_EARLGREY_RAM_MAIN_BASE_ADDR + TOP_EARLGREY_RAM_MAIN_SIZE_BYTES,
+};
+
 const epmp_region_t kMmioRegion = {
     .start = TOP_EARLGREY_MMIO_BASE_ADDR,
     .end = TOP_EARLGREY_MMIO_BASE_ADDR + TOP_EARLGREY_MMIO_SIZE_BYTES,
+};
+
+const epmp_region_t kRvDmRegion = {
+    .start = TOP_EARLGREY_RV_DM_MEM_BASE_ADDR,
+    .end = TOP_EARLGREY_RV_DM_MEM_BASE_ADDR + TOP_EARLGREY_RV_DM_MEM_SIZE_BYTES,
 };
 
 const epmp_region_t kFlashRegion = {
@@ -414,18 +424,25 @@ static rom_error_t rom_ext_boot(const manifest_t *manifest) {
   SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioCreatorInfoPagesLockdown +
                            kOtpSecMmioCreatorSwCfgLockDown);
 
-  // ePMP region 15 gives access to RAM and is already configured correctly.
+  // ePMP region 15 gives read/write access to RAM.
+  rom_ext_epmp_set_napot(15, kRamRegion, kEpmpPermReadWrite);
 
   // Reconfigure the ePMP MMIO region to be NAPOT region 14, thus freeing
   // up an ePMP entry for use elsewhere.
-  rom_ext_epmp_set_napot(14, kMmioRegion, kEpmpPermLockedReadWrite);
+  rom_ext_epmp_set_napot(14, kMmioRegion, kEpmpPermReadWrite);
 
-  // ePMP region 13 allows RvDM access and is already configured correctly.
+  // ePMP region 13 allows RvDM access.
+  if (lc_state == kLcStateProd || lc_state == kLcStateProdEnd) {
+    // No RvDM access in Prod states, so we can clear the entry.
+    rom_ext_epmp_clear(13);
+  } else {
+    rom_ext_epmp_set_napot(13, kRvDmRegion, kEpmpPermReadWriteExecute);
+  }
 
   // ePMP region 12 gives read access to all of flash for both M and U modes.
   // The flash access was in ePMP region 5.  Clear it so it doesn't take
   // priority over 12.
-  rom_ext_epmp_set_napot(12, kFlashRegion, kEpmpPermLockedReadOnly);
+  rom_ext_epmp_set_napot(12, kFlashRegion, kEpmpPermReadOnly);
   rom_ext_epmp_clear(5);
 
   // Move the ROM_EXT TOR region from entries 3/4/6 to 9/10/11.
