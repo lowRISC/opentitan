@@ -70,8 +70,14 @@ typedef enum epmp_perm {
   /** M mode: read/write/execute. U mode: read only. */
   kEpmpPermReadOnly = EPMP_CFG_R,
 
+  /** M mode: read/write/execute. U mode: read/write. */
+  kEpmpPermReadWrite = EPMP_CFG_R | EPMP_CFG_W,
+
   /** M mode: read/write/execute. U mode: read/execute. */
   kEpmpPermReadExecute = EPMP_CFG_R | EPMP_CFG_X,
+
+  /** M mode: read/write/execute. U mode: read/write/execute. */
+  kEpmpPermReadWriteExecute = EPMP_CFG_R | EPMP_CFG_W | EPMP_CFG_X,
 } epmp_perm_t;
 
 /**
