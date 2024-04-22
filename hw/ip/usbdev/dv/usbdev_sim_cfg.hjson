@@ -61,6 +61,10 @@
       reseed: 1
     }
     {
+      name: usbdev_disable_endpoint
+      uvm_test_seq: usbdev_disable_endpoint_vseq
+    }
+    {
       name: usbdev_enable
       uvm_test_seq: usbdev_enable_vseq
     }
