@@ -21,5 +21,8 @@
     "debug": "true",
     "cert_signature_r": "0",
     "cert_signature_s": "0",
-    "basic_constraints_ca": true
+    "basic_constraints_ca": true,
+    "tpm_vendor": "TPM Vendor",
+    "tpm_model": "TPM Model",
+    "tpm_version": "TPM Version"
 }

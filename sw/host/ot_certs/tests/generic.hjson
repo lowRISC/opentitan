@@ -92,6 +92,18 @@
         basic_constraints_ca: {
             type: "boolean",
         }
+        tpm_vendor: {
+            type: "string",
+            size: 100,
+        }
+        tpm_model: {
+            type: "string",
+            size: 100,
+        }
+        tpm_version: {
+            type: "string",
+            size: 100,
+        }
     },
 
     certificate: {
@@ -118,6 +130,11 @@
         basic_constraints: {
             ca: { var: "basic_constraints_ca" }
         }
+        subject_alt_name: {
+            tpm_vendor: { var: "tpm_vendor" },
+            tpm_model: { var: "tpm_model" },
+            tpm_version: { var: "tpm_version" },
+        },
         extensions: [
             {
                 type: "dice_tcb_info",
