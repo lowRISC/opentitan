@@ -52,9 +52,9 @@ module i2c_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [30:0] reg_we_check;
+  logic [31:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(31)
+    .OneHotWidth(32)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -205,6 +205,8 @@ module i2c_reg_top (
   logic ctrl_nack_addr_after_timeout_wd;
   logic ctrl_ack_ctrl_en_qs;
   logic ctrl_ack_ctrl_en_wd;
+  logic ctrl_tx_stretch_ctrl_en_qs;
+  logic ctrl_tx_stretch_ctrl_en_wd;
   logic status_re;
   logic status_fmtfull_qs;
   logic status_rxfull_qs;
@@ -239,8 +241,6 @@ module i2c_reg_top (
   logic target_fifo_config_we;
   logic [11:0] target_fifo_config_tx_thresh_qs;
   logic [11:0] target_fifo_config_tx_thresh_wd;
-  logic target_fifo_config_txrst_on_cond_qs;
-  logic target_fifo_config_txrst_on_cond_wd;
   logic [11:0] target_fifo_config_acq_thresh_qs;
   logic [11:0] target_fifo_config_acq_thresh_wd;
   logic host_fifo_status_re;
@@ -337,6 +337,13 @@ module i2c_reg_top (
   logic controller_events_arbitration_lost_wd;
   logic controller_events_bus_timeout_qs;
   logic controller_events_bus_timeout_wd;
+  logic target_events_we;
+  logic target_events_arbitration_lost_qs;
+  logic target_events_arbitration_lost_wd;
+  logic target_events_bus_timeout_qs;
+  logic target_events_bus_timeout_wd;
+  logic target_events_tx_pending_qs;
+  logic target_events_tx_pending_wd;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -1554,6 +1561,33 @@ module i2c_reg_top (
     .qs     (ctrl_ack_ctrl_en_qs)
   );
 
+  //   F[tx_stretch_ctrl_en]: 5:5
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_ctrl_tx_stretch_ctrl_en (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (ctrl_we),
+    .wd     (ctrl_tx_stretch_ctrl_en_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.ctrl.tx_stretch_ctrl_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (ctrl_tx_stretch_ctrl_en_qs)
+  );
+
 
   // R[status]: V(True)
   //   F[fmtfull]: 0:0
@@ -2115,7 +2149,7 @@ module i2c_reg_top (
 
   // R[target_fifo_config]: V(False)
   logic target_fifo_config_qe;
-  logic [2:0] target_fifo_config_flds_we;
+  logic [1:0] target_fifo_config_flds_we;
   prim_flop #(
     .Width(1),
     .ResetValue(0)
@@ -2153,34 +2187,6 @@ module i2c_reg_top (
   );
   assign reg2hw.target_fifo_config.tx_thresh.qe = target_fifo_config_qe;
 
-  //   F[txrst_on_cond]: 15:15
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
-  ) u_target_fifo_config_txrst_on_cond (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (target_fifo_config_we),
-    .wd     (target_fifo_config_txrst_on_cond_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (target_fifo_config_flds_we[1]),
-    .q      (reg2hw.target_fifo_config.txrst_on_cond.q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (target_fifo_config_txrst_on_cond_qs)
-  );
-  assign reg2hw.target_fifo_config.txrst_on_cond.qe = target_fifo_config_qe;
-
   //   F[acq_thresh]: 27:16
   prim_subreg #(
     .DW      (12),
@@ -2200,7 +2206,7 @@ module i2c_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (target_fifo_config_flds_we[2]),
+    .qe     (target_fifo_config_flds_we[1]),
     .q      (reg2hw.target_fifo_config.acq_thresh.q),
     .ds     (),
 
@@ -3265,8 +3271,91 @@ module i2c_reg_top (
   );
 
 
+  // R[target_events]: V(False)
+  //   F[arbitration_lost]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_target_events_arbitration_lost (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-  logic [30:0] addr_hit;
+    // from register interface
+    .we     (target_events_we),
+    .wd     (target_events_arbitration_lost_wd),
+
+    // from internal hardware
+    .de     (hw2reg.target_events.arbitration_lost.de),
+    .d      (hw2reg.target_events.arbitration_lost.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.target_events.arbitration_lost.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (target_events_arbitration_lost_qs)
+  );
+
+  //   F[bus_timeout]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_target_events_bus_timeout (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (target_events_we),
+    .wd     (target_events_bus_timeout_wd),
+
+    // from internal hardware
+    .de     (hw2reg.target_events.bus_timeout.de),
+    .d      (hw2reg.target_events.bus_timeout.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.target_events.bus_timeout.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (target_events_bus_timeout_qs)
+  );
+
+  //   F[tx_pending]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_target_events_tx_pending (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (target_events_we),
+    .wd     (target_events_tx_pending_wd),
+
+    // from internal hardware
+    .de     (hw2reg.target_events.tx_pending.de),
+    .d      (hw2reg.target_events.tx_pending.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.target_events.tx_pending.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (target_events_tx_pending_qs)
+  );
+
+
+
+  logic [31:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[ 0] = (reg_addr == I2C_INTR_STATE_OFFSET);
@@ -3300,6 +3389,7 @@ module i2c_reg_top (
     addr_hit[28] = (reg_addr == I2C_ACQ_FIFO_NEXT_DATA_OFFSET);
     addr_hit[29] = (reg_addr == I2C_HOST_NACK_HANDLER_TIMEOUT_OFFSET);
     addr_hit[30] = (reg_addr == I2C_CONTROLLER_EVENTS_OFFSET);
+    addr_hit[31] = (reg_addr == I2C_TARGET_EVENTS_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -3337,7 +3427,8 @@ module i2c_reg_top (
                (addr_hit[27] & (|(I2C_PERMIT[27] & ~reg_be))) |
                (addr_hit[28] & (|(I2C_PERMIT[28] & ~reg_be))) |
                (addr_hit[29] & (|(I2C_PERMIT[29] & ~reg_be))) |
-               (addr_hit[30] & (|(I2C_PERMIT[30] & ~reg_be)))));
+               (addr_hit[30] & (|(I2C_PERMIT[30] & ~reg_be))) |
+               (addr_hit[31] & (|(I2C_PERMIT[31] & ~reg_be)))));
   end
 
   // Generate write-enables
@@ -3434,6 +3525,8 @@ module i2c_reg_top (
   assign ctrl_nack_addr_after_timeout_wd = reg_wdata[3];
 
   assign ctrl_ack_ctrl_en_wd = reg_wdata[4];
+
+  assign ctrl_tx_stretch_ctrl_en_wd = reg_wdata[5];
   assign status_re = addr_hit[5] & reg_re & !reg_error;
   assign rdata_re = addr_hit[6] & reg_re & !reg_error;
   assign fdata_we = addr_hit[7] & reg_we & !reg_error;
@@ -3466,8 +3559,6 @@ module i2c_reg_top (
   assign target_fifo_config_we = addr_hit[10] & reg_we & !reg_error;
 
   assign target_fifo_config_tx_thresh_wd = reg_wdata[11:0];
-
-  assign target_fifo_config_txrst_on_cond_wd = reg_wdata[15];
 
   assign target_fifo_config_acq_thresh_wd = reg_wdata[27:16];
   assign host_fifo_status_re = addr_hit[11] & reg_re & !reg_error;
@@ -3557,6 +3648,13 @@ module i2c_reg_top (
   assign controller_events_arbitration_lost_wd = reg_wdata[2];
 
   assign controller_events_bus_timeout_wd = reg_wdata[3];
+  assign target_events_we = addr_hit[31] & reg_we & !reg_error;
+
+  assign target_events_arbitration_lost_wd = reg_wdata[0];
+
+  assign target_events_bus_timeout_wd = reg_wdata[1];
+
+  assign target_events_tx_pending_wd = reg_wdata[2];
 
   // Assign write-enables to checker logic vector.
   always_comb begin
@@ -3592,6 +3690,7 @@ module i2c_reg_top (
     reg_we_check[28] = 1'b0;
     reg_we_check[29] = host_nack_handler_timeout_we;
     reg_we_check[30] = controller_events_we;
+    reg_we_check[31] = target_events_we;
   end
 
   // Read data return
@@ -3662,6 +3761,7 @@ module i2c_reg_top (
         reg_rdata_next[2] = ctrl_llpbk_qs;
         reg_rdata_next[3] = ctrl_nack_addr_after_timeout_qs;
         reg_rdata_next[4] = ctrl_ack_ctrl_en_qs;
+        reg_rdata_next[5] = ctrl_tx_stretch_ctrl_en_qs;
       end
 
       addr_hit[5]: begin
@@ -3705,7 +3805,6 @@ module i2c_reg_top (
 
       addr_hit[10]: begin
         reg_rdata_next[11:0] = target_fifo_config_tx_thresh_qs;
-        reg_rdata_next[15] = target_fifo_config_txrst_on_cond_qs;
         reg_rdata_next[27:16] = target_fifo_config_acq_thresh_qs;
       end
 
@@ -3809,6 +3908,12 @@ module i2c_reg_top (
         reg_rdata_next[1] = controller_events_unhandled_nack_timeout_qs;
         reg_rdata_next[2] = controller_events_arbitration_lost_qs;
         reg_rdata_next[3] = controller_events_bus_timeout_qs;
+      end
+
+      addr_hit[31]: begin
+        reg_rdata_next[0] = target_events_arbitration_lost_qs;
+        reg_rdata_next[1] = target_events_bus_timeout_qs;
+        reg_rdata_next[2] = target_events_tx_pending_qs;
       end
 
       default: begin

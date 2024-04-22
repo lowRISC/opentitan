@@ -41,6 +41,9 @@ module i2c_target_fsm import i2c_pkg::*;
   input        nack_timeout_en_i,  // enable nack timeout
   input        nack_addr_after_timeout_i,
   input        arbitration_lost_i, // Lost arbitration while transmitting
+  input        bus_timeout_i,      // The bus timed out, with SCL held low for too long.
+
+  input        unhandled_tx_stretch_event_i, // An unhandled event requests TX stretching
 
   // ACK Control Mode signals
   input              ack_ctrl_mode_i,       // Whether ACK Control Mode is enabled
@@ -56,11 +59,13 @@ module i2c_target_fsm import i2c_pkg::*;
   input logic [6:0] target_address1_i,
   input logic [6:0] target_mask1_i,
 
-  output logic target_sr_p_cond_o,       // Saw RSTART/STOP in Target-Mode.
-  output logic event_target_nack_o,      // this target sent a NACK (this is used to keep count)
-  output logic event_cmd_complete_o,     // Command is complete
-  output logic event_tx_stretch_o,       // tx transaction is being stretched
-  output logic event_unexp_stop_o        // target received an unexpected stop
+  output logic event_target_nack_o,         // this target sent a NACK (this is used to keep count)
+  output logic event_cmd_complete_o,        // Command is complete
+  output logic event_tx_stretch_o,          // tx transaction is being stretched
+  output logic event_unexp_stop_o,          // target received an unexpected stop
+  output logic event_tx_arbitration_lost_o, // Arbitration was lost during a read transfer
+  output logic event_tx_bus_timeout_o,      // Bus timed out during a read transfer
+  output logic event_read_cmd_received_o    // A read awaits confirmation for TX FIFO release
 );
 
   // I2C bus clock timing variables
@@ -338,6 +343,9 @@ module i2c_target_fsm import i2c_pkg::*;
     ack_ctrl_stretching = 1'b0;
     nack_transaction_d = nack_transaction_q;
     actively_stretching = 1'b0;
+    event_tx_arbitration_lost_o = 1'b0;
+    event_tx_bus_timeout_o = 1'b0;
+    event_read_cmd_received_o = 1'b0;
 
     unique case (state_q)
       // Idle: initial state, SDA is released (high), SCL is released if the
@@ -411,6 +419,7 @@ module i2c_target_fsm import i2c_pkg::*;
           end else if (!stretch_addr) begin
             // Only write to fifo if stretching conditions are not met
             acq_fifo_wvalid_o = 1'b1;
+            event_read_cmd_received_o = rw_bit_q;
           end
 
           if (restart_det_q) begin
@@ -609,15 +618,15 @@ module i2c_target_fsm import i2c_pkg::*;
     endcase // unique case (state_q)
 
     // start / stop override
-    // TODO: Also figure out what to do when the bus times out.
-    if (target_enable_i && stop_detect_i) begin
+    if (target_enable_i && (stop_detect_i || bus_timeout_i)) begin
       event_cmd_complete_o = xfer_for_us_q;
+      event_tx_bus_timeout_o = bus_timeout_i && rw_bit_q;
       // Note that we assume the ACQ FIFO can accept a new item and will
       // receive the arbiter grant without delay. No other FIFOs should have
       // activity during a Start or Stop symbol.
       // TODO: Add an assertion.
       acq_fifo_wvalid_o = xact_for_us_q;
-      if (nack_transaction_q) begin
+      if (nack_transaction_q || bus_timeout_i) begin
         acq_fifo_wdata_o = {AcqNackStop, input_byte};
       end else begin
         acq_fifo_wdata_o = {AcqStop, input_byte};
@@ -626,8 +635,9 @@ module i2c_target_fsm import i2c_pkg::*;
       restart_det_d = !target_idle_o;
       event_cmd_complete_o = xfer_for_us_q;
     end else if (arbitration_lost_i) begin
-      // TODO: Should loss of arbitration be reported some other way?
       nack_transaction_d = 1'b1;
+      event_cmd_complete_o = xfer_for_us_q;
+      event_tx_arbitration_lost_o = rw_bit_q;
     end
   end
 
@@ -645,7 +655,7 @@ module i2c_target_fsm import i2c_pkg::*;
   //
   // Only the fifo depth is checked here, because stretch_tx is only evaluated by the
   // fsm on the read path. This means a read start byte has already been deposited.
-  assign stretch_tx = ~tx_fifo_rvalid_i |
+  assign stretch_tx = !tx_fifo_rvalid_i || unhandled_tx_stretch_event_i ||
                       (acq_fifo_depth_i > AcqFifoDepthWidth'(1'b1));
 
   // Only used for assertion
@@ -978,17 +988,12 @@ module i2c_target_fsm import i2c_pkg::*;
       state_d = Idle;
     end else if (target_enable_i && start_detect_i) begin
       state_d = AcquireStart;
-    end else if (stop_detect_i) begin
+    end else if (stop_detect_i || bus_timeout_i) begin
       state_d = Idle;
     end else if (arbitration_lost_i) begin
       state_d = WaitForStop;
     end
   end
-
-  // TARGET-Mode -> RSTART or STOP condition observed
-  // This output is used to (optionally) reset the TXFIFO, as any data populated by
-  // software is now highly-unlikely to be applicable to the next transaction.
-  assign target_sr_p_cond_o = target_enable_i && !target_idle && (stop_detect_i | start_detect_i);
 
   // Synchronous state transition
   always_ff @ (posedge clk_i or negedge rst_ni) begin : state_transition
