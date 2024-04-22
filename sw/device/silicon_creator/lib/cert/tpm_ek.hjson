@@ -56,7 +56,7 @@
     certificate: {
         serial_number: { var: "tpm_ek_pub_key_id", convert: "big-endian" },
         issuer: {
-            country: "USA",
+            country: "US",
             state: "CA",
             organization: "Google",
             organizational_unit: "Engineering",
@@ -65,7 +65,7 @@
         not_before: "20230101000000Z",
         not_after: "20500101000000Z",
         subject: {
-            country: "USA",
+            country: "US",
             state: "CA",
             organization: "Google",
             organizational_unit: "Engineering",
