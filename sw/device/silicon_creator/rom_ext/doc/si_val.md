@@ -29,10 +29,10 @@ An example of how the SiVal `ROM_EXT` will configure the ePMP:
  9: 00000000 ----- ---- sz=00000000
 10: 20000400 ----- ---- sz=00000000     ; ROM_EXT code start.
 11: 20005bc8   TOR -X-R sz=000057c8     ; ROM_EXT code end.
-12: 20000000 NAPOT L--R sz=00100000     ; FLASH data (1 MB).
-13: 00010000 NAPOT LXWR sz=00001000     ; RvDM region (not PROD, RMA/DEV only).
-14: 40000000 NAPOT L-WR sz=10000000     ; MMIO region.
-15: 10000000 NAPOT L-WR sz=00020000     ; RAM region.
+12: 20000000 NAPOT ---R sz=00100000     ; FLASH data (1 MB).
+13: 00010000 NAPOT -XWR sz=00001000     ; RvDM region (not PROD, RMA/DEV only).
+14: 40000000 NAPOT --WR sz=10000000     ; MMIO region.
+15: 10000000 NAPOT --WR sz=00020000     ; RAM region.
 mseccfg = 00000002                      ; RLB=0, MMWP=1, MML=0.
 ```
 
