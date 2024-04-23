@@ -26,3 +26,6 @@ waive -rules {TAG_OVERLAP} -location {kmac_app.sv} \
 waive -rules {INTEGER} -location {kmac_entropy.sv} \
     -regexp {'i' of type int used as a non-constant value} \
     -comment "int i is compared with the storage_idx"
+
+waive -rules {CASE_SEL_EXPR} -location {kmac_app.sv} \
+    -comment "not a problem, just a suggested alternate implementation"
