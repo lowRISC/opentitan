@@ -362,8 +362,8 @@ impl Subst for Certificate {
                 .basic_constraints
                 .subst(data)
                 .context("cannot substitute basic constraints")?,
-            extensions: self
-                .extensions
+            private_extensions: self
+                .private_extensions
                 .iter()
                 .map(|ext| ext.subst(data))
                 .collect::<Result<Vec<_>>>()

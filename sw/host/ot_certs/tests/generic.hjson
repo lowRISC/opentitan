@@ -135,7 +135,7 @@
             tpm_model: { var: "tpm_model" },
             tpm_version: { var: "tpm_version" },
         },
-        extensions: [
+        private_extensions: [
             {
                 type: "dice_tcb_info",
                 vendor: { var: "vendor" },
