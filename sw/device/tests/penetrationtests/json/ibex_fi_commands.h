@@ -59,6 +59,13 @@ UJSON_SERDE_STRUCT(IbexFiLoopCounterOutput, ibex_fi_loop_counter_t, IBEXFI_LOOP_
     field(alerts, uint32_t, 3)
 UJSON_SERDE_STRUCT(IbexFiLoopCounterMirroredOutput, ibex_fi_loop_counter_mirrored_t, IBEXFI_LOOP_COUNTER_MIRRORED_OUTPUT);
 
+#define IBEXFI_FAULTY_ADDRESSES_DATA(field, string) \
+    field(err_status, uint32_t) \
+    field(addresses, uint32_t, 8) \
+    field(data, uint32_t, 8) \
+    field(alerts, uint32_t, 3)
+UJSON_SERDE_STRUCT(IbexFiFaultyAddressesData, ibex_fi_faulty_addresses_data_t, IBEXFI_FAULTY_ADDRESSES_DATA);
+
 #define IBEXFI_FAULTY_ADDRESSES(field, string) \
     field(err_status, uint32_t) \
     field(addresses, uint32_t, 8) \
