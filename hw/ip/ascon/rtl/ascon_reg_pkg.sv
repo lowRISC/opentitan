@@ -79,57 +79,45 @@ package ascon_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-      logic        qe;
     } no_ad;
     struct packed {
       logic        q;
-      logic        qe;
     } no_msg;
     struct packed {
       logic        q;
-      logic        qe;
     } masked_msg_input;
     struct packed {
       logic        q;
-      logic        qe;
     } masked_ad_input;
     struct packed {
       logic        q;
-      logic        qe;
     } sideload_key;
     struct packed {
       logic [1:0]  q;
-      logic        qe;
     } ascon_variant;
     struct packed {
       logic [2:0]  q;
-      logic        qe;
     } operation;
   } ascon_reg2hw_ctrl_shadowed_reg_t;
 
   typedef struct packed {
     struct packed {
       logic        q;
-      logic        qe;
     } force_data_overwrite;
     struct packed {
       logic        q;
-      logic        qe;
     } manual_start_trigger;
   } ascon_reg2hw_ctrl_aux_shadowed_reg_t;
 
   typedef struct packed {
     struct packed {
       logic [4:0]  q;
-      logic        qe;
     } valid_bytes;
     struct packed {
       logic [11:0] q;
-      logic        qe;
     } data_type_last;
     struct packed {
       logic [11:0] q;
-      logic        qe;
     } data_type_start;
   } ascon_reg2hw_block_ctrl_shadowed_reg_t;
 
@@ -261,19 +249,19 @@ package ascon_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    ascon_reg2hw_alert_test_reg_t alert_test; // [1279:1276]
-    ascon_reg2hw_key_share0_mreg_t [3:0] key_share0; // [1275:1144]
-    ascon_reg2hw_key_share1_mreg_t [3:0] key_share1; // [1143:1012]
-    ascon_reg2hw_nonce_share0_mreg_t [3:0] nonce_share0; // [1011:880]
-    ascon_reg2hw_nonce_share1_mreg_t [3:0] nonce_share1; // [879:748]
-    ascon_reg2hw_data_in_share0_mreg_t [3:0] data_in_share0; // [747:616]
-    ascon_reg2hw_data_in_share1_mreg_t [3:0] data_in_share1; // [615:484]
-    ascon_reg2hw_tag_in_mreg_t [3:0] tag_in; // [483:352]
-    ascon_reg2hw_msg_out_mreg_t [3:0] msg_out; // [351:220]
-    ascon_reg2hw_tag_out_mreg_t [3:0] tag_out; // [219:88]
-    ascon_reg2hw_ctrl_shadowed_reg_t ctrl_shadowed; // [87:71]
-    ascon_reg2hw_ctrl_aux_shadowed_reg_t ctrl_aux_shadowed; // [70:67]
-    ascon_reg2hw_block_ctrl_shadowed_reg_t block_ctrl_shadowed; // [66:35]
+    ascon_reg2hw_alert_test_reg_t alert_test; // [1267:1264]
+    ascon_reg2hw_key_share0_mreg_t [3:0] key_share0; // [1263:1132]
+    ascon_reg2hw_key_share1_mreg_t [3:0] key_share1; // [1131:1000]
+    ascon_reg2hw_nonce_share0_mreg_t [3:0] nonce_share0; // [999:868]
+    ascon_reg2hw_nonce_share1_mreg_t [3:0] nonce_share1; // [867:736]
+    ascon_reg2hw_data_in_share0_mreg_t [3:0] data_in_share0; // [735:604]
+    ascon_reg2hw_data_in_share1_mreg_t [3:0] data_in_share1; // [603:472]
+    ascon_reg2hw_tag_in_mreg_t [3:0] tag_in; // [471:340]
+    ascon_reg2hw_msg_out_mreg_t [3:0] msg_out; // [339:208]
+    ascon_reg2hw_tag_out_mreg_t [3:0] tag_out; // [207:76]
+    ascon_reg2hw_ctrl_shadowed_reg_t ctrl_shadowed; // [75:66]
+    ascon_reg2hw_ctrl_aux_shadowed_reg_t ctrl_aux_shadowed; // [65:64]
+    ascon_reg2hw_block_ctrl_shadowed_reg_t block_ctrl_shadowed; // [63:35]
     ascon_reg2hw_trigger_reg_t trigger; // [34:33]
     ascon_reg2hw_fsm_state_reg_t fsm_state; // [32:0]
   } ascon_reg2hw_t;
