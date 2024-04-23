@@ -22,8 +22,8 @@ use crate::asn1::der;
 use crate::asn1::x509;
 
 use crate::template::{
-    self, AttributeType, EcCurve, EcPublicKeyInfo, EcdsaSignature, Signature, SubjectPublicKeyInfo,
-    Value,
+    self, AttributeType, EcCurve, EcPublicKeyInfo, EcdsaSignature, Name, Signature,
+    SubjectPublicKeyInfo, Value,
 };
 
 pub mod extension;
@@ -111,21 +111,20 @@ fn asn1time_to_string(time: &Asn1TimeRef) -> Result<Value<String>> {
     ))
 }
 
-fn asn1name_to_hashmap(
-    field: &str,
-    name: &X509NameRef,
-) -> Result<IndexMap<AttributeType, Value<String>>> {
-    let mut res = IndexMap::<AttributeType, Value<String>>::new();
+fn asn1name_to_name(field: &str, name: &X509NameRef) -> Result<Name> {
+    // FIXME The OpenSSL representation of names is a bit odd: it flattens
+    // the sequence of sets into a sequence but for each name entry remembers
+    // the index into the sequence. Unfortunately, we need to call X509_NAME_ENTRY_set
+    // to get the index but this is not exported by openssl-sys. For now, and since
+    // multi-valued RDNs are rare, simply assume that all sets have size 1.
+    let mut name_res = Name::new();
     for entry in name.entries() {
         let attr = AttributeType::try_from(entry.object())?;
-        if res
-            .insert(attr, asn1str_to_str(field, entry.data())?)
-            .is_some()
-        {
-            bail!("bad")
-        }
+        let mut res = IndexMap::new();
+        res.insert(attr, asn1str_to_str(field, entry.data())?);
+        name_res.push(res)
     }
-    Ok(res)
+    Ok(name_res)
 }
 
 fn extract_ec_pubkey(eckey: &EcKey<Public>) -> Result<EcPublicKeyInfo> {
@@ -196,36 +195,38 @@ pub fn generate_certificate(tmpl: &template::Template) -> Result<Vec<u8>> {
     Ok(cert)
 }
 
-fn get_subject_alt_name(x509: &X509) -> Result<IndexMap<AttributeType, Value<String>>> {
-    let mut alt_names: IndexMap<AttributeType, Value<String>> = Default::default();
+fn get_subject_alt_name(x509: &X509) -> Result<Name> {
     let Some(names) = x509.subject_alt_names() else {
-        return Ok(alt_names);
+        return Ok(Name::default());
     };
-    for general_name in names {
-        let type_ = unsafe { (*general_name.as_ptr()).type_ };
-        // We expect a directoryName.
-        ensure!(
-            type_ == openssl_sys::GEN_DIRNAME,
-            "only directory names are supported for subject alt names"
-        );
-        // SAFETY: OpenSSL's directoryName is represented by X509_NAME when the type
-        // is GEN_DIRNAME. It looks like this (only relevant parts shown):
-        // typedef struct GENERAL_NAME_st {
-        // #define GEN_DIRNAME     4
-        //     int type;
-        //     union {
-        //         X509_NAME *directoryName;
-        //     } d;
-        // } GENERAL_NAME;
-        let x509_name_ref = unsafe {
-            X509NameRef::from_ptr((*general_name.as_ptr()).d as *mut openssl_sys::X509_NAME)
-        };
-        for (key, value) in asn1name_to_hashmap("Subject Alternative Names", x509_name_ref)? {
-            alt_names.insert(key, value);
-        }
-    }
+    // We expect a single general name.
+    let mut iter = names.iter();
+    let Some(general_name) = iter.next() else {
+        return Ok(Name::default());
+    };
+    ensure!(
+        iter.next().is_none(),
+        "only one general name is supported for subject alt names"
+    );
 
-    Ok(alt_names)
+    let type_ = unsafe { (*general_name.as_ptr()).type_ };
+    // We expect a directoryName.
+    ensure!(
+        type_ == openssl_sys::GEN_DIRNAME,
+        "only directory names are supported for subject alt names"
+    );
+    // SAFETY: OpenSSL's directoryName is represented by X509_NAME when the type
+    // is GEN_DIRNAME. It looks like this (only relevant parts shown):
+    // typedef struct GENERAL_NAME_st {
+    // #define GEN_DIRNAME     4
+    //     int type;
+    //     union {
+    //         X509_NAME *directoryName;
+    //     } d;
+    // } GENERAL_NAME;
+    let x509_name_ref =
+        unsafe { X509NameRef::from_ptr((*general_name.as_ptr()).d as *mut openssl_sys::X509_NAME) };
+    asn1name_to_name("Subject Alternative Names", x509_name_ref)
 }
 
 /// Parse a X509 certificate
@@ -265,8 +266,8 @@ pub fn parse_certificate(cert: &[u8]) -> Result<template::Certificate> {
 
     Ok(template::Certificate {
         serial_number: asn1int_to_bn("serial number", x509.serial_number())?,
-        issuer: asn1name_to_hashmap("issuer", x509.issuer_name())?,
-        subject: asn1name_to_hashmap("subject", x509.subject_name())?,
+        issuer: asn1name_to_name("issuer", x509.issuer_name())?,
+        subject: asn1name_to_name("subject", x509.subject_name())?,
         not_before: asn1time_to_string(x509.not_before())
             .context("cannot parse not_before time")?,
         not_after: asn1time_to_string(x509.not_after()).context("cannot parse not_after time")?,

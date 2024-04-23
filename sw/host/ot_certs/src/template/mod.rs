@@ -64,9 +64,9 @@ pub struct Certificate {
     /// X509 validity's not after date. The format must be a valid ASN1 GeneralizedTime.
     pub not_after: Value<String>,
     /// X509 certificate's issuer.
-    pub issuer: IndexMap<AttributeType, Value<String>>,
+    pub issuer: Name,
     /// X509 certificate's subject.
-    pub subject: IndexMap<AttributeType, Value<String>>,
+    pub subject: Name,
     /// X509 certificate's public key.
     pub subject_public_key_info: SubjectPublicKeyInfo,
     /// X509 certificate's authority key identifier.
@@ -77,12 +77,22 @@ pub struct Certificate {
     pub basic_constraints: Option<BasicConstraints>,
     /// X509 Subject Alternative Name extension, optional.
     #[serde(default)]
-    pub subject_alt_name: IndexMap<AttributeType, Value<String>>,
+    pub subject_alt_name: Name,
     /// Non-standard X509 certificate extensions.
-    pub extensions: Vec<CertificateExtension>,
+    #[serde(default)]
+    pub private_extensions: Vec<CertificateExtension>,
     /// X509 certificate's signature.
     pub signature: Signature,
 }
+
+/// An X501 Name (or DistinguishedName, aka DN): a DN consists of a sequence of
+/// RelativeDistinguishedName (RDN). An RDN is an ordered set of attribute type
+/// and value pairs. Within an RDN, each attribute type can only appear once.
+/// Therefore, we represent a name as a vector of RDN, and each RDN is represented
+/// by a map. The order of the vector is important: changing the order changes
+/// the name. The order within the map is not important but we use an `IndexMap`
+/// to make the consumers of this template use a deterministic order.
+pub type Name = Vec<IndexMap<AttributeType, Value<String>>>;
 
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
 pub struct BasicConstraints {
@@ -438,14 +448,14 @@ mod tests {
 
               certificate: {
                 serial_number: { var: "owner_pub_key_id", convert: "big-endian" },
-                issuer: {
-                  serial_number: { var: "signing_pub_key_id", convert: "lowercase-hex" },
-                },
+                issuer: [
+                  { serial_number: { var: "signing_pub_key_id", convert: "lowercase-hex" } },
+                ],
                 not_before: "20230101000000Z",
                 not_after: "99991231235959Z",
-                subject: {
-                  serial_number: { var: "owner_pub_key_id", convert: "lowercase-hex" },
-                },
+                subject: [
+                  { serial_number: { var: "owner_pub_key_id", convert: "lowercase-hex" } },
+                ],
                 subject_public_key_info: {
                   algorithm: "ec-public-key",
                   curve: "prime256v1",
@@ -532,16 +542,16 @@ mod tests {
         // Certificate template values.
         let certificate = Certificate {
             serial_number: Value::convert("owner_pub_key_id", Conversion::BigEndian),
-            issuer: IndexMap::from([(
+            issuer: vec![IndexMap::from([(
                 AttributeType::SerialNumber,
                 Value::convert("signing_pub_key_id", Conversion::LowercaseHex),
-            )]),
+            )])],
             not_before: Value::literal("20230101000000Z"),
             not_after: Value::literal("99991231235959Z"),
-            subject: IndexMap::from([(
+            subject: vec![IndexMap::from([(
                 AttributeType::SerialNumber,
                 Value::convert("owner_pub_key_id", Conversion::LowercaseHex),
-            )]),
+            )])],
             subject_public_key_info: SubjectPublicKeyInfo::EcPublicKey(EcPublicKeyInfo {
                 curve: EcCurve::Prime256v1,
                 public_key: EcPublicKey {
@@ -552,7 +562,7 @@ mod tests {
             authority_key_identifier: Value::variable("signing_pub_key_id"),
             subject_key_identifier: Value::variable("owner_pub_key_id"),
             basic_constraints: None,
-            subject_alt_name: IndexMap::from([]),
+            subject_alt_name: vec![],
             private_extensions: vec![CertificateExtension::DiceTcbInfo(DiceTcbInfoExtension {
                 vendor: Some(Value::literal("OpenTitan")),
                 model: Some(Value::literal("ROM_EXT")),
