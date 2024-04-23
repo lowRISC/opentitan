@@ -401,10 +401,23 @@ status_t handle_ibex_fi_char_flash_read(ujson_t *uj) {
   reg_alerts = sca_get_triggered_alerts();
 
   // Compare against reference values.
-  uint32_t res = 0;
-  for (int i = 0; i < 32; i++) {
-    if (res_values[i] != ref_values[i]) {
-      res |= 1;
+  ibex_fi_faulty_addresses_data_t uj_output;
+  memset(uj_output.addresses, 0, sizeof(uj_output.addresses));
+  memset(uj_output.data, 0, sizeof(uj_output.data));
+  int faulty_address_pos = 0;
+
+  for (uint32_t flash_pos = 0; flash_pos < 32; flash_pos++) {
+    if (res_values[flash_pos] != ref_values[flash_pos]) {
+      uj_output.addresses[faulty_address_pos] = flash_pos;
+      uj_output.data[faulty_address_pos] = res_values[flash_pos];
+      faulty_address_pos++;
+      // Currently, we register only up to 8 faulty FLASH positions. If there
+      // are more, we overwrite the addresses array.
+      if (faulty_address_pos > 7) {
+        faulty_address_pos = 0;
+      }
+
+      // Re-init flash with valid data.
       flash_data_valid = false;
     }
   }
@@ -414,11 +427,9 @@ status_t handle_ibex_fi_char_flash_read(ujson_t *uj) {
   TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
 
   // Send res & ERR_STATUS to host.
-  ibex_fi_test_result_t uj_output;
-  uj_output.result = res;
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
-  RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
+  RESP_OK(ujson_serialize_ibex_fi_faulty_addresses_data_t, uj, &uj_output);
   return OK_STATUS();
 }
 
@@ -563,10 +574,6 @@ status_t handle_ibex_fi_char_sram_read(ujson_t *uj) {
   // FI code target.
   sca_set_trigger_high();
   asm volatile(NOP10);
-  // Invoke 256 reads from SRAM. The number of reads is chosen in such a way
-  // that the trigger window is large enough for the FI gear to inject a fault.
-  // To keep the code size low, only 32 different values (stored in ref_values)
-  // are read.
   for (int i = 0; i < 256; i++) {
     res_values[i] = mmio_region_read32(sram_region_main_addr,
                                        i * (ptrdiff_t)sizeof(uint32_t));
@@ -576,11 +583,21 @@ status_t handle_ibex_fi_char_sram_read(ujson_t *uj) {
   // Get registered alerts from alert handler.
   reg_alerts = sca_get_triggered_alerts();
 
-  // Compare against reference values.
-  uint32_t res = 0;
-  for (int i = 0; i < 256; i++) {
-    if (res_values[i] != ref_values[i % 32]) {
-      res |= 1;
+  ibex_fi_faulty_addresses_data_t uj_output;
+  memset(uj_output.addresses, 0, sizeof(uj_output.addresses));
+  memset(uj_output.data, 0, sizeof(uj_output.data));
+  int faulty_address_pos = 0;
+
+  for (uint32_t sram_pos = 0; sram_pos < 256; sram_pos++) {
+    if (res_values[sram_pos] != ref_values[sram_pos % 32]) {
+      uj_output.addresses[faulty_address_pos] = sram_pos;
+      uj_output.data[faulty_address_pos] = res_values[sram_pos];
+      faulty_address_pos++;
+      // Currently, we register only up to 8 faulty SRAM positions. If there
+      // are more, we overwrite the addresses array.
+      if (faulty_address_pos > 7) {
+        faulty_address_pos = 0;
+      }
     }
   }
 
@@ -589,13 +606,9 @@ status_t handle_ibex_fi_char_sram_read(ujson_t *uj) {
   TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
 
   // Send res & ERR_STATUS to host.
-  ibex_fi_test_result_t uj_output;
-  uj_output.result = res;
   uj_output.err_status = codes;
-  uj_output.alerts[0] = reg_alerts.alerts[0];
-  uj_output.alerts[1] = reg_alerts.alerts[1];
-  uj_output.alerts[2] = reg_alerts.alerts[2];
-  RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  RESP_OK(ujson_serialize_ibex_fi_faulty_addresses_data_t, uj, &uj_output);
   return OK_STATUS();
 }
 
