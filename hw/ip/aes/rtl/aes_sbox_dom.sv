@@ -988,7 +988,6 @@ module aes_sbox_dom
   input  logic              clk_i,
   input  logic              rst_ni,
   input  logic              en_i,
-  input  logic              prd_we_i,
   output logic              out_req_o,
   input  logic              out_ack_i,
   input  aes_pkg::ciph_op_e op_i,
@@ -1007,7 +1006,6 @@ module aes_sbox_dom
   logic            [7:0] in_data_basis_x, out_data_basis_x;
   logic            [7:0] in_mask_basis_x, out_mask_basis_x;
   logic            [3:0] we;
-  logic            [7:0] prd1_d, prd1_q;
   aes_sbox_dom_prd_in_t  in_prd;
   aes_sbox_dom_prd_out_t out_prd;
 
@@ -1068,19 +1066,9 @@ module aes_sbox_dom
   assign we[2] = en_i & count_q == 3'd2;
   assign we[3] = en_i & count_q == 3'd3;
 
-  // Buffer and forward PRD for the individual stages. We get 8 bits from the PRNG for usage in the
-  // first cycle. Stages 2, 3 and 4 are driven by other S-Box instances.
-  assign prd1_d = prd_we_i ? prd_i[7:0] : prd1_q;
-  prim_flop #(
-    .Width      ( 8  ),
-    .ResetValue ( '0 )
-  ) u_prim_flop_prd1_q (
-    .clk_i  ( clk_i  ),
-    .rst_ni ( rst_ni ),
-    .d_i    ( prd1_d ),
-    .q_o    ( prd1_q )
-  );
-  assign in_prd = '{prd_1: prd1_q,
+  // PRD forwarding for the individual stages. We get 8 bits from the PRNG for usage in Stage 1.
+  // Stages 2, 3 and 4 are driven by other S-Box instances.
+  assign in_prd = '{prd_1: prd_i[7:0],
                     prd_2: prd_i[11:8],
                     prd_3: prd_i[19:12],
                     prd_4: prd_i[27:20]};
