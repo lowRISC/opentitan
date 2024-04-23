@@ -32,16 +32,12 @@ UJSON_SERDE_STRUCT(CryptoFiKmacMode, crypto_fi_kmac_mode_t, CRYPTOFI_KMAC_MODE);
 
 #define CRYPTOFI_AES_CIPHERTEXT(field, string) \
     field(ciphertext, uint8_t, 16) \
-    field(alerts_1, uint32_t) \
-    field(alerts_2, uint32_t) \
-    field(alerts_3, uint32_t)
+    field(alerts, uint32_t, 3)
 UJSON_SERDE_STRUCT(FiAesCiphertext, crypto_fi_aes_ciphertext_t, CRYPTOFI_AES_CIPHERTEXT);
 
 #define CRYPTOFI_KMAC_DIGEST(field, string) \
     field(digest, uint8_t, 8) \
-    field(alerts_1, uint32_t) \
-    field(alerts_2, uint32_t) \
-    field(alerts_3, uint32_t)
+    field(alerts, uint32_t, 3)
 UJSON_SERDE_STRUCT(FiKmacDigest, crypto_fi_kmac_digest_t, CRYPTOFI_KMAC_DIGEST);
 
 // clang-format on
