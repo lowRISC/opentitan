@@ -145,6 +145,13 @@
             The I2C block can be configured in target mode.
             '''
     },
+    { name: "I2C.MODE.MULTICONTROLLER",
+      desc: '''
+            The I2C block can be configured as both a controller and a target.
+            In addition, the block supports the necessary bus arbitration and clock synchronization for multi-controller setups.
+            It also supports SMBus's bus idle detection for the controller, and bus active timeout for both controller and target.
+            '''
+    },
     { name: "I2C.MODE.ACKCONTROL",
       desc: '''
             The I2C Target module can be configured to support N-byte ACK Control Mode.
