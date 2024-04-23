@@ -129,11 +129,12 @@ rom_error_t otbn_boot_app_load(void) { return otbn_load_app(kOtbnAppBoot); }
 
 rom_error_t otbn_boot_attestation_keygen(
     attestation_key_seed_t additional_seed,
+    otbn_boot_attestation_key_type_t key_type,
     keymgr_diversification_t diversification,
     attestation_public_key_t *public_key) {
   // Trigger key manager to sideload the attestation key into OTBN.
   HARDENED_RETURN_IF_ERROR(
-      keymgr_generate_attestation_key_otbn(diversification));
+      keymgr_generate_key_otbn((keymgr_key_type_t)key_type, diversification));
 
   // Write the mode.
   uint32_t mode = kOtbnBootModeAttestationKeygen;
@@ -172,10 +173,11 @@ rom_error_t otbn_boot_attestation_keygen(
 
 rom_error_t otbn_boot_attestation_key_save(
     attestation_key_seed_t additional_seed,
+    otbn_boot_attestation_key_type_t key_type,
     keymgr_diversification_t diversification) {
   // Trigger key manager to sideload the attestation key into OTBN.
   HARDENED_RETURN_IF_ERROR(
-      keymgr_generate_attestation_key_otbn(diversification));
+      keymgr_generate_key_otbn((keymgr_key_type_t)key_type, diversification));
 
   // Write the mode.
   uint32_t mode = kOtbnBootModeAttestationKeySave;
