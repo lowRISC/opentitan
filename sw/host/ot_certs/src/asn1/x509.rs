@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
-use indexmap::IndexMap;
 use num_bigint_dig::BigUint;
 use num_traits::FromPrimitive;
 
@@ -11,7 +10,7 @@ use crate::asn1::builder::{concat_suffix, Builder};
 use crate::asn1::{Oid, Tag};
 use crate::template::{
     AttributeType, BasicConstraints, Certificate, CertificateExtension, EcCurve, EcPublicKeyInfo,
-    EcdsaSignature, HashAlgorithm, Signature, SubjectPublicKeyInfo, Value,
+    EcdsaSignature, HashAlgorithm, Name, Signature, SubjectPublicKeyInfo, Value,
 };
 
 impl HashAlgorithm {
@@ -176,7 +175,7 @@ impl X509 {
     pub fn push_name<B: Builder>(
         builder: &mut B,
         name_hint: Option<String>,
-        name: &IndexMap<AttributeType, Value<String>>,
+        name: &Name,
     ) -> Result<()> {
         // https://datatracker.ietf.org/doc/html/rfc5280#section-4.1.2.4
         // Name ::= CHOICE { -- only one possibility for now --
@@ -195,25 +194,22 @@ impl X509 {
         //
         // AttributeValue ::= ANY -- DEFINED BY AttributeType
         builder.push_seq(name_hint.clone(), |builder| {
-            // Always sort the entries to have a deterministic order: use the OID as order.
-            let mut values = name
-                .iter()
-                .map(|x| (x, x.0.oid().oid().to_string()))
-                .collect::<Vec<_>>();
-            values.sort_by(|a, b| a.1.cmp(&b.1));
-            for ((attr_type, val), _) in values {
+            for attributes in name {
                 builder.push_set(concat_suffix(&name_hint, "set"), |builder| {
-                    builder.push_seq(
-                        concat_suffix(&name_hint, &attr_type.to_string()),
-                        |builder| {
-                            builder.push_oid(&attr_type.oid())?;
-                            builder.push_string(
-                                concat_suffix(&name_hint, &attr_type.to_string()),
-                                &attr_type.data_type(),
-                                val,
-                            )
-                        },
-                    )
+                    for (attr_type, val) in attributes {
+                        builder.push_seq(
+                            concat_suffix(&name_hint, &attr_type.to_string()),
+                            |builder| {
+                                builder.push_oid(&attr_type.oid())?;
+                                builder.push_string(
+                                    concat_suffix(&name_hint, &attr_type.to_string()),
+                                    &attr_type.data_type(),
+                                    val,
+                                )
+                            },
+                        )?;
+                    }
+                    Ok(())
                 })?;
             }
             Ok(())
@@ -239,7 +235,7 @@ impl X509 {
 
     pub fn push_subject_alt_name_ext<B: Builder>(
         builder: &mut B,
-        subject_alt_name: &IndexMap<AttributeType, Value<String>>,
+        subject_alt_name: &Name,
     ) -> Result<()> {
         // SubjectAltName ::= GeneralNames
         //
