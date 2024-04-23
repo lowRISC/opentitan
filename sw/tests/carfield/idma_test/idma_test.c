@@ -7,7 +7,7 @@
 
 #define IDMA_BASE 		 0xfef00000
 #define TCDM_BASE      0xfff00000
-#define L2_BASE        0x78000000
+#define L2_BASE        0x14000000
 #define L3_BASE        0x80000000
 
 #define IDMA_SRC_ADDR_OFFSET         0x000000d8
@@ -25,7 +25,7 @@ int main() {
   int buff,b;
   int err = 0;
 
-  for(int i = 0; i<1024; i++){
+  for(int i = 0; i<100; i++){
     ptr = (int *) TCDM_BASE + i*4;
     *ptr = i;
   }
@@ -43,18 +43,18 @@ int main() {
   ptr = (int *) (IDMA_BASE + IDMA_NEXT_ID_OFFSET);
   buff = *ptr;
 
-  for(int i = 0; i<1024; i++){
+  for(int i = 0; i<100; i++){
     ptr = (int *) L2_BASE + i;
 
     b = *ptr;
-    if(b=!i)
+    if(b!=i)
       err++;
   }
 
   if(err!=0){
     ptr = (int *) EOC;
     *ptr = 0xFFFFFFFF;
-    return -1;
+    while(1);
   }
   else
     return 0;
