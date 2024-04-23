@@ -134,11 +134,11 @@ status_t handle_ibex_fi_char_flash_write(ujson_t *uj);
  * ibex.fi.char.sram_static command handler.
  *
  * This FI penetration tests executes the following instructions:
- * - Write ref_values[0] to 16kb of SRAM.
+ * - Write ref_values[0] to the 4kB retention SRAM.
  * - Set the trigger.
  * - Add 1000 NOPs to give the setup the chance to inject faults.
  * - Unset the trigger.
- * - Read back content of 16kb of SRAM and compare against reference value.
+ * - Read back content of the ret. SRAM and compare against reference value.
  * - If faulty words are detected, transmit addresses back to host.
  *
  * Faults are injected during the trigger_high & trigger_low.
