@@ -208,24 +208,9 @@ fn get_subject_alt_name(x509: &X509) -> Result<Name> {
         iter.next().is_none(),
         "only one general name is supported for subject alt names"
     );
-
-    let type_ = unsafe { (*general_name.as_ptr()).type_ };
-    // We expect a directoryName.
-    ensure!(
-        type_ == openssl_sys::GEN_DIRNAME,
-        "only directory names are supported for subject alt names"
-    );
-    // SAFETY: OpenSSL's directoryName is represented by X509_NAME when the type
-    // is GEN_DIRNAME. It looks like this (only relevant parts shown):
-    // typedef struct GENERAL_NAME_st {
-    // #define GEN_DIRNAME     4
-    //     int type;
-    //     union {
-    //         X509_NAME *directoryName;
-    //     } d;
-    // } GENERAL_NAME;
-    let x509_name_ref =
-        unsafe { X509NameRef::from_ptr((*general_name.as_ptr()).d as *mut openssl_sys::X509_NAME) };
+    let x509_name_ref = general_name
+        .directory_name()
+        .context("only directory names are supported for subject alt names")?;
     asn1name_to_name("Subject Alternative Names", x509_name_ref)
 }
 
