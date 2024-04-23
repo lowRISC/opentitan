@@ -103,6 +103,7 @@ static void curr_pubkey_le_to_be_convert(attestation_public_key_t *pubkey) {
  * generated public key is saved at pubkey.
  */
 static rom_error_t common_attestation_keygen(
+    otbn_boot_attestation_key_type_t key_type,
     const sc_keymgr_diversification_t *diversifier, attestation_key_seed_t seed,
     sc_keymgr_state_t desired_keymgr_state, hmac_digest_t *pubkey_id,
     attestation_public_key_t *pubkey) {
@@ -110,7 +111,7 @@ static rom_error_t common_attestation_keygen(
 
   // Generate / sideload key material into OTBN, and generate the ECC keypair.
   HARDENED_RETURN_IF_ERROR(
-      otbn_boot_attestation_keygen(seed, *diversifier, pubkey));
+      otbn_boot_attestation_keygen(seed, key_type, *diversifier, pubkey));
 
   // Keys are represented in certificates in big endian format, but the key is
   // output from OTBN in little endian format, so we convert the key to
@@ -152,7 +153,8 @@ rom_error_t dice_attestation_keygen(dice_key_t desired_key,
     default:
       return kErrorDiceInvalidArgument;
   };
-  return common_attestation_keygen(keymgr_diversifier, otbn_ecc_keygen_seed,
+  return common_attestation_keygen(kOtbnBootAttestationKeyTypeDice,
+                                   keymgr_diversifier, otbn_ecc_keygen_seed,
                                    desired_state, pubkey_id, pubkey);
 }
 
@@ -180,7 +182,8 @@ rom_error_t tpm_cert_keygen(tpm_key_t desired_key, hmac_digest_t *pubkey_id,
     default:
       return kErrorDiceInvalidArgument;
   };
-  return common_attestation_keygen(keymgr_diversifier, otbn_ecc_keygen_seed,
+  return common_attestation_keygen(kOtbnBootAttestationKeyTypeTpm,
+                                   keymgr_diversifier, otbn_ecc_keygen_seed,
                                    kScKeymgrStateOwnerKey, pubkey_id, pubkey);
 }
 
@@ -311,7 +314,8 @@ rom_error_t dice_cdi_0_cert_build(hmac_digest_t *rom_ext_measurement,
 
   // Save the CDI_0 private key to OTBN DMEM so it can endorse the next stage.
   HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_key_save(
-      kCdi0AttestationKeySeed, kCdi0KeymgrDiversifier));
+      kCdi0AttestationKeySeed, kOtbnBootAttestationKeyTypeDice,
+      kCdi0KeymgrDiversifier));
 
   return kErrorOk;
 }
@@ -359,7 +363,8 @@ rom_error_t dice_cdi_1_cert_build(hmac_digest_t *owner_measurement,
 
   // Save the CDI_1 private key to OTBN DMEM so it can endorse the next stage.
   HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_key_save(
-      kCdi1AttestationKeySeed, kCdi1KeymgrDiversifier));
+      kCdi1AttestationKeySeed, kOtbnBootAttestationKeyTypeDice,
+      kCdi1KeymgrDiversifier));
 
   return kErrorOk;
 }
