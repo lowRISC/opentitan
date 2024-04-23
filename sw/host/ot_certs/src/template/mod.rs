@@ -456,7 +456,7 @@ mod tests {
                 },
                 authority_key_identifier: { var: "signing_pub_key_id" },
                 subject_key_identifier: { var: "owner_pub_key_id" },
-                extensions: [
+                private_extensions: [
                     {
                         type: "dice_tcb_info",
                         vendor: "OpenTitan",
@@ -553,7 +553,7 @@ mod tests {
             subject_key_identifier: Value::variable("owner_pub_key_id"),
             basic_constraints: None,
             subject_alt_name: IndexMap::from([]),
-            extensions: vec![CertificateExtension::DiceTcbInfo(DiceTcbInfoExtension {
+            private_extensions: vec![CertificateExtension::DiceTcbInfo(DiceTcbInfoExtension {
                 vendor: Some(Value::literal("OpenTitan")),
                 model: Some(Value::literal("ROM_EXT")),
                 svn: Some(Value::variable("rom_ext_security_version")),
