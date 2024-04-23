@@ -141,7 +141,7 @@ impl<T: Flavor> Hyperdebug<T> {
         usb_pid: Option<u16>,
         usb_serial: Option<&str>,
     ) -> Result<Self> {
-        let device = UsbBackend::new(
+        let mut device = UsbBackend::new(
             usb_vid.unwrap_or_else(T::get_default_usb_vid),
             usb_pid.unwrap_or_else(T::get_default_usb_pid),
             usb_serial,
@@ -209,6 +209,13 @@ impl<T: Flavor> Hyperdebug<T> {
                         Ok(interface_name) => interface_name,
                         _ => continue,
                     };
+
+                    if !device.kernel_driver_active(interface.number())? {
+                        device.attach_kernel_driver(interface.number())?;
+                        // Wait for udev rules to apply proper permissions to new device.
+                        std::thread::sleep(std::time::Duration::from_millis(100));
+                    }
+
                     if interface_name.ends_with("Shell") {
                         // We found the "main" control interface of HyperDebug, allowing textual
                         // commands to be sent, to e.g. manipulate GPIOs.
