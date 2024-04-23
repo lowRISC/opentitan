@@ -1121,17 +1121,6 @@ module ascon_reg_top (
 
 
   // R[ctrl_shadowed]: V(False)
-  logic ctrl_shadowed_qe;
-  logic [5:0] ctrl_shadowed_flds_we;
-  prim_flop #(
-    .Width(1),
-    .ResetValue(0)
-  ) u_ctrl_shadowed0_qe (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(&ctrl_shadowed_flds_we),
-    .q_o(ctrl_shadowed_qe)
-  );
   //   F[operation]: 2:0
   prim_subreg_shadow #(
     .DW      (3),
@@ -1153,7 +1142,7 @@ module ascon_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (ctrl_shadowed_flds_we[0]),
+    .qe     (),
     .q      (reg2hw.ctrl_shadowed.operation.q),
     .ds     (),
 
@@ -1167,7 +1156,6 @@ module ascon_reg_top (
     .err_update  (ctrl_shadowed_operation_update_err),
     .err_storage (ctrl_shadowed_operation_storage_err)
   );
-  assign reg2hw.ctrl_shadowed.operation.qe = ctrl_shadowed_qe;
 
   //   F[sideload_key]: 3:3
   prim_subreg_shadow #(
@@ -1190,7 +1178,7 @@ module ascon_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (ctrl_shadowed_flds_we[1]),
+    .qe     (),
     .q      (reg2hw.ctrl_shadowed.sideload_key.q),
     .ds     (),
 
@@ -1204,7 +1192,6 @@ module ascon_reg_top (
     .err_update  (ctrl_shadowed_sideload_key_update_err),
     .err_storage (ctrl_shadowed_sideload_key_storage_err)
   );
-  assign reg2hw.ctrl_shadowed.sideload_key.qe = ctrl_shadowed_qe;
 
   //   F[masked_ad_input]: 4:4
   prim_subreg_shadow #(
@@ -1227,7 +1214,7 @@ module ascon_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (ctrl_shadowed_flds_we[2]),
+    .qe     (),
     .q      (reg2hw.ctrl_shadowed.masked_ad_input.q),
     .ds     (),
 
@@ -1241,7 +1228,6 @@ module ascon_reg_top (
     .err_update  (ctrl_shadowed_masked_ad_input_update_err),
     .err_storage (ctrl_shadowed_masked_ad_input_storage_err)
   );
-  assign reg2hw.ctrl_shadowed.masked_ad_input.qe = ctrl_shadowed_qe;
 
   //   F[masked_msg_input]: 5:5
   prim_subreg_shadow #(
@@ -1264,7 +1250,7 @@ module ascon_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (ctrl_shadowed_flds_we[3]),
+    .qe     (),
     .q      (reg2hw.ctrl_shadowed.masked_msg_input.q),
     .ds     (),
 
@@ -1278,7 +1264,6 @@ module ascon_reg_top (
     .err_update  (ctrl_shadowed_masked_msg_input_update_err),
     .err_storage (ctrl_shadowed_masked_msg_input_storage_err)
   );
-  assign reg2hw.ctrl_shadowed.masked_msg_input.qe = ctrl_shadowed_qe;
 
   //   F[no_msg]: 6:6
   prim_subreg_shadow #(
@@ -1301,7 +1286,7 @@ module ascon_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (ctrl_shadowed_flds_we[4]),
+    .qe     (),
     .q      (reg2hw.ctrl_shadowed.no_msg.q),
     .ds     (),
 
@@ -1315,7 +1300,6 @@ module ascon_reg_top (
     .err_update  (ctrl_shadowed_no_msg_update_err),
     .err_storage (ctrl_shadowed_no_msg_storage_err)
   );
-  assign reg2hw.ctrl_shadowed.no_msg.qe = ctrl_shadowed_qe;
 
   //   F[no_ad]: 7:7
   prim_subreg_shadow #(
@@ -1338,7 +1322,7 @@ module ascon_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (ctrl_shadowed_flds_we[5]),
+    .qe     (),
     .q      (reg2hw.ctrl_shadowed.no_ad.q),
     .ds     (),
 
@@ -1352,21 +1336,9 @@ module ascon_reg_top (
     .err_update  (ctrl_shadowed_no_ad_update_err),
     .err_storage (ctrl_shadowed_no_ad_storage_err)
   );
-  assign reg2hw.ctrl_shadowed.no_ad.qe = ctrl_shadowed_qe;
 
 
   // R[ctrl_aux_shadowed]: V(False)
-  logic ctrl_aux_shadowed_qe;
-  logic [1:0] ctrl_aux_shadowed_flds_we;
-  prim_flop #(
-    .Width(1),
-    .ResetValue(0)
-  ) u_ctrl_aux_shadowed0_qe (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(&ctrl_aux_shadowed_flds_we),
-    .q_o(ctrl_aux_shadowed_qe)
-  );
   // Create REGWEN-gated WE signal
   logic ctrl_aux_shadowed_gated_we;
   assign ctrl_aux_shadowed_gated_we = ctrl_aux_shadowed_we & ctrl_aux_regwen_qs;
@@ -1391,7 +1363,7 @@ module ascon_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (ctrl_aux_shadowed_flds_we[0]),
+    .qe     (),
     .q      (reg2hw.ctrl_aux_shadowed.manual_start_trigger.q),
     .ds     (),
 
@@ -1405,7 +1377,6 @@ module ascon_reg_top (
     .err_update  (ctrl_aux_shadowed_manual_start_trigger_update_err),
     .err_storage (ctrl_aux_shadowed_manual_start_trigger_storage_err)
   );
-  assign reg2hw.ctrl_aux_shadowed.manual_start_trigger.qe = ctrl_aux_shadowed_qe;
 
   //   F[force_data_overwrite]: 1:1
   prim_subreg_shadow #(
@@ -1428,7 +1399,7 @@ module ascon_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (ctrl_aux_shadowed_flds_we[1]),
+    .qe     (),
     .q      (reg2hw.ctrl_aux_shadowed.force_data_overwrite.q),
     .ds     (),
 
@@ -1442,7 +1413,6 @@ module ascon_reg_top (
     .err_update  (ctrl_aux_shadowed_force_data_overwrite_update_err),
     .err_storage (ctrl_aux_shadowed_force_data_overwrite_storage_err)
   );
-  assign reg2hw.ctrl_aux_shadowed.force_data_overwrite.qe = ctrl_aux_shadowed_qe;
 
 
   // R[ctrl_aux_regwen]: V(False)
@@ -1474,17 +1444,6 @@ module ascon_reg_top (
 
 
   // R[block_ctrl_shadowed]: V(False)
-  logic block_ctrl_shadowed_qe;
-  logic [2:0] block_ctrl_shadowed_flds_we;
-  prim_flop #(
-    .Width(1),
-    .ResetValue(0)
-  ) u_block_ctrl_shadowed0_qe (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(&block_ctrl_shadowed_flds_we),
-    .q_o(block_ctrl_shadowed_qe)
-  );
   //   F[data_type_start]: 11:0
   prim_subreg_shadow #(
     .DW      (12),
@@ -1506,7 +1465,7 @@ module ascon_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (block_ctrl_shadowed_flds_we[0]),
+    .qe     (),
     .q      (reg2hw.block_ctrl_shadowed.data_type_start.q),
     .ds     (),
 
@@ -1520,7 +1479,6 @@ module ascon_reg_top (
     .err_update  (block_ctrl_shadowed_data_type_start_update_err),
     .err_storage (block_ctrl_shadowed_data_type_start_storage_err)
   );
-  assign reg2hw.block_ctrl_shadowed.data_type_start.qe = block_ctrl_shadowed_qe;
 
   //   F[data_type_last]: 23:12
   prim_subreg_shadow #(
@@ -1543,7 +1501,7 @@ module ascon_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (block_ctrl_shadowed_flds_we[1]),
+    .qe     (),
     .q      (reg2hw.block_ctrl_shadowed.data_type_last.q),
     .ds     (),
 
@@ -1557,7 +1515,6 @@ module ascon_reg_top (
     .err_update  (block_ctrl_shadowed_data_type_last_update_err),
     .err_storage (block_ctrl_shadowed_data_type_last_storage_err)
   );
-  assign reg2hw.block_ctrl_shadowed.data_type_last.qe = block_ctrl_shadowed_qe;
 
   //   F[valid_bytes]: 28:24
   prim_subreg_shadow #(
@@ -1580,7 +1537,7 @@ module ascon_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (block_ctrl_shadowed_flds_we[2]),
+    .qe     (),
     .q      (reg2hw.block_ctrl_shadowed.valid_bytes.q),
     .ds     (),
 
@@ -1594,7 +1551,6 @@ module ascon_reg_top (
     .err_update  (block_ctrl_shadowed_valid_bytes_update_err),
     .err_storage (block_ctrl_shadowed_valid_bytes_storage_err)
   );
-  assign reg2hw.block_ctrl_shadowed.valid_bytes.qe = block_ctrl_shadowed_qe;
 
 
   // R[trigger]: V(False)
