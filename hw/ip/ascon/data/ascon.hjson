@@ -344,7 +344,7 @@
       swaccess: "rw",
       hwaccess: "hro",
       hwext:    "false"
-      hwqe:     "true"
+      hwqe:     "false"
       shadowed: "true"
       fields: [
         { bits: "2:0",
@@ -464,7 +464,7 @@
       swaccess: "rw",
       hwaccess: "hro",
       hwext:    "false"
-      hwqe:     "true"
+      hwqe:     "false"
       shadowed: "true"
       regwen:   "CTRL_AUX_REGWEN"
       fields: [
@@ -517,7 +517,7 @@
       swaccess: "rw",
       hwaccess: "hro",
       hwext:    "false"
-      hwqe:     "true"
+      hwqe:     "false"
       shadowed: "true"
       fields: [
         { bits: "11:0",
