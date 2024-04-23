@@ -279,13 +279,13 @@ alias(
 
 alias(
     name = "openssl",
-    actual = "@crate_index__openssl-0.10.59//:openssl",
+    actual = "@crate_index__openssl-0.10.64//:openssl",
     tags = ["manual"],
 )
 
 alias(
     name = "openssl-sys",
-    actual = "@crate_index__openssl-sys-0.9.95//:openssl_sys",
+    actual = "@crate_index__openssl-sys-0.9.102//:openssl_sys",
     tags = ["manual"],
 )
 
@@ -382,6 +382,12 @@ alias(
 alias(
     name = "rusb",
     actual = "@crate_index__rusb-0.9.3//:rusb",
+    tags = ["manual"],
+)
+
+alias(
+    name = "rust-crypto",
+    actual = "@crate_index__rust-crypto-0.2.36//:crypto",
     tags = ["manual"],
 )
 
