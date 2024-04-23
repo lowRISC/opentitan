@@ -22,6 +22,7 @@ extern "C" {
     value(_, CharCondBranch) \
     value(_, CharUncondBranch) \
     value(_, CharSramWrite) \
+    value(_, CharSramWriteRead) \
     value(_, CharSramWriteStaticUnrolled) \
     value(_, CharSramRead) \
     value(_, CharSramStatic) \
