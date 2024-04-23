@@ -43,22 +43,22 @@
 
     certificate: {
         serial_number: { var: "tpm_cek_pub_key_id", convert: "big-endian" },
-        issuer: {
-            country: "US",
-            state: "CA",
-            organization: "Google",
-            organizational_unit: "Engineering",
-            common_name: "ChromeOS OT ICA"
-        },
+        issuer: [
+            { organization: "Google" },
+            { organizational_unit: "Engineering" },
+            { common_name: "ChromeOS OT ICA" },
+            { country: "USA" },
+            { state: "CA" },
+        ],
         not_before: "20230101000000Z",
         not_after: "20500101000000Z",
-        subject: {
-            country: "US",
-            state: "CA",
-            organization: "Google",
-            organizational_unit: "Engineering",
-            common_name: "ChromeOS OT TPM CEK",
-        },
+        subject: [
+            { country: "US" },
+            { state: "CA" },
+            { organization: "Google" },
+            { organizational_unit: "Engineering" },
+            { common_name: "ChromeOS OT TPM CEK" },
+        ],
         subject_public_key_info: {
             algorithm: "ec-public-key",
             curve: "prime256v1",
