@@ -55,22 +55,22 @@
 
     certificate: {
         serial_number: { var: "tpm_ek_pub_key_id", convert: "big-endian" },
-        issuer: {
-            country: "US",
-            state: "CA",
-            organization: "Google",
-            organizational_unit: "Engineering",
-            common_name: "ChromeOS OT ICA",
-        },
+        issuer: [
+            { organization: "Google" },
+            { organizational_unit: "Engineering" },
+            { common_name: "ChromeOS OT ICA" },
+            { country: "US" },
+            { state: "CA" },
+        ],
         not_before: "20230101000000Z",
         not_after: "20500101000000Z",
-        subject: {
-            country: "US",
-            state: "CA",
-            organization: "Google",
-            organizational_unit: "Engineering",
-            common_name: "ChromeOS OT TPM EK",
-        },
+        subject: [
+            { country: "USA" },
+            { state: "CA" },
+            { organization: "Google" },
+            { organizational_unit: "Engineering" },
+            { common_name: "ChromeOS OT TPM EK" },
+        ],
         subject_public_key_info: {
             algorithm: "ec-public-key",
             curve: "prime256v1",
@@ -82,11 +82,11 @@
         authority_key_identifier: { var: "auth_key_key_id" },
         subject_key_identifier: { var: "tpm_ek_pub_key_id" },
         basic_constraints: { ca: false },
-        subject_alt_name: {
-            tpm_vendor: { var: "tpm_vendor" },
-            tpm_model: { var: "tpm_model" },
-            tpm_version: { var: "tpm_version" },
-        },
+        subject_alt_name: [
+            { tpm_vendor: { var: "tpm_vendor" } },
+            { tpm_model: { var: "tpm_model" } },
+            { tpm_version: { var: "tpm_version" } },
+        ],
         signature: {
             algorithm: "ecdsa-with-sha256",
             value: {
