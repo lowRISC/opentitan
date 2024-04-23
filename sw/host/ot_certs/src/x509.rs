@@ -233,7 +233,7 @@ pub fn parse_certificate(cert: &[u8]) -> Result<template::Certificate> {
     let x509 = X509::from_der(cert).context("could not parse certificate with openssl")?;
     let raw_extensions =
         extension::x509_get_extensions(&x509).context("could not parse X509 extensions")?;
-    let mut extensions = Vec::new();
+    let mut private_extensions = Vec::new();
     let mut basic_constraints = None;
     for ext in raw_extensions {
         match ext.object.nid() {
@@ -252,7 +252,7 @@ pub fn parse_certificate(cert: &[u8]) -> Result<template::Certificate> {
             Nid::AUTHORITY_KEY_IDENTIFIER => (),
             Nid::SUBJECT_ALT_NAME => (),
             Nid::SUBJECT_KEY_IDENTIFIER => (),
-            _ => extensions
+            _ => private_extensions
                 .push(extension::parse_extension(&ext).context("could not parse X509 extension")?),
         }
     }
@@ -281,7 +281,7 @@ pub fn parse_certificate(cert: &[u8]) -> Result<template::Certificate> {
         ),
         basic_constraints,
         subject_alt_name: get_subject_alt_name(&x509)?,
-        extensions,
+        private_extensions,
         signature: extract_signature(&x509)?,
     })
 }

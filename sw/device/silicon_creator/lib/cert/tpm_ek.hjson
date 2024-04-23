@@ -87,7 +87,6 @@
             tpm_model: { var: "tpm_model" },
             tpm_version: { var: "tpm_version" },
         },
-        extensions: [],
         signature: {
             algorithm: "ecdsa-with-sha256",
             value: {
