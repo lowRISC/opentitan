@@ -201,17 +201,21 @@ static rom_error_t keymgr_wait_until_done(void) {
   return kErrorKeymgrInternal;
 }
 
-rom_error_t keymgr_generate_attestation_key_otbn(
-    keymgr_diversification_t diversification) {
+rom_error_t keymgr_generate_key_otbn(keymgr_key_type_t key_type,
+                                     keymgr_diversification_t diversification) {
   HARDENED_RETURN_IF_ERROR(keymgr_is_idle());
 
+  uint32_t ctrl = 0;
+
   // Select OTBN as the destination.
-  uint32_t ctrl =
-      bitfield_field32_write(0, KEYMGR_CONTROL_SHADOWED_DEST_SEL_FIELD,
-                             KEYMGR_CONTROL_SHADOWED_DEST_SEL_VALUE_OTBN);
+  ctrl = bitfield_field32_write(0, KEYMGR_CONTROL_SHADOWED_DEST_SEL_FIELD,
+                                KEYMGR_CONTROL_SHADOWED_DEST_SEL_VALUE_OTBN);
 
   // Select the attestation CDI.
-  ctrl = bitfield_bit32_write(ctrl, KEYMGR_CONTROL_SHADOWED_CDI_SEL_BIT, true);
+  if (key_type == kKeymgrKeyTypeAttestation) {
+    ctrl =
+        bitfield_bit32_write(ctrl, KEYMGR_CONTROL_SHADOWED_CDI_SEL_BIT, true);
+  }
 
   // Select the "generate" operation.
   ctrl = bitfield_field32_write(

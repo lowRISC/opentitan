@@ -300,7 +300,8 @@ static rom_error_t rom_ext_attestation_keygen(
   HARDENED_RETURN_IF_ERROR(dice_attestation_keygen(kDiceKeyUds, &uds_pubkey_id,
                                                    &curr_attestation_pubkey));
   HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_key_save(
-      kUdsAttestationKeySeed, kUdsKeymgrDiversifier));
+      kUdsAttestationKeySeed, kOtbnBootAttestationKeyTypeDice,
+      kUdsKeymgrDiversifier));
   // TODO(#22921): fix cert updating check and re-enable checks below.
   curr_cert_valid = kHardenedBoolTrue;
   /*HARDENED_RETURN_IF_ERROR(cert_x509_asn1_check_serial_number(*/
