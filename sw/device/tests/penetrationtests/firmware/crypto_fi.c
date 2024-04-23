@@ -165,9 +165,9 @@ status_t handle_crypto_fi_aes(ujson_t *uj) {
   // Send the ciphertext and the alerts back to the host.
   crypto_fi_aes_ciphertext_t uj_output;
   memcpy(uj_output.ciphertext, ciphertext.data, 16);
-  uj_output.alerts_1 = reg_alerts.alerts_1;
-  uj_output.alerts_2 = reg_alerts.alerts_2;
-  uj_output.alerts_3 = reg_alerts.alerts_3;
+  uj_output.alerts_1 = reg_alerts.alerts[0];
+  uj_output.alerts_2 = reg_alerts.alerts[1];
+  uj_output.alerts_3 = reg_alerts.alerts[2];
   RESP_OK(ujson_serialize_crypto_fi_aes_ciphertext_t, uj, &uj_output);
   return OK_STATUS();
 }
@@ -222,9 +222,9 @@ status_t handle_crypto_fi_kmac(ujson_t *uj) {
   // Send the first 8 bytes of the digest and the alerts back to the host.
   crypto_fi_kmac_digest_t uj_output;
   memcpy(uj_output.digest, (uint8_t *)digest, 8);
-  uj_output.alerts_1 = reg_alerts.alerts_1;
-  uj_output.alerts_2 = reg_alerts.alerts_2;
-  uj_output.alerts_3 = reg_alerts.alerts_3;
+  uj_output.alerts_1 = reg_alerts.alerts[0];
+  uj_output.alerts_2 = reg_alerts.alerts[1];
+  uj_output.alerts_3 = reg_alerts.alerts[2];
   RESP_OK(ujson_serialize_crypto_fi_kmac_digest_t, uj, &uj_output);
   return OK_STATUS();
 }
