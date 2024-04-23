@@ -108,6 +108,8 @@ module kmac_app
   // SW sets err_processed bit in CTRL then the logic goes to Idle
   input err_processed_i,
 
+  output prim_mubi_pkg::mubi4_t clear_after_error_o,
+
   // error_o value is pushed to Error FIFO at KMAC/SHA3 top and reported to SW
   output kmac_pkg::err_t error_o,
 
@@ -170,43 +172,31 @@ module kmac_app
   };
 
   // Encoding generated with:
-  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 11 -n 10 \
-  //      -s 155490773 --language=sv
+  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 14 -n 10 \
+  //     -s 2454278799 --language=sv
   //
   // Hamming distance histogram:
   //
   //  0: --
   //  1: --
   //  2: --
-  //  3: ||||||||||||| (14.55%)
-  //  4: |||||||||||||||||||| (21.82%)
-  //  5: |||||||||||||||||| (20.00%)
-  //  6: |||||||||||||||||||| (21.82%)
-  //  7: |||||||||||||||||| (20.00%)
-  //  8: | (1.82%)
+  //  3: |||||||||| (14.29%)
+  //  4: |||||||||||||||||||| (27.47%)
+  //  5: ||||||||||||| (18.68%)
+  //  6: |||||||||||||||| (21.98%)
+  //  7: |||||||| (10.99%)
+  //  8: |||| (6.59%)
   //  9: --
   // 10: --
   //
   // Minimum Hamming distance: 3
   // Maximum Hamming distance: 8
-  // Minimum Hamming weight: 2
-  // Maximum Hamming weight: 9
+  // Minimum Hamming weight: 3
+  // Maximum Hamming weight: 8
   //
   localparam int StateWidth = 10;
-  // States
-  //  StIdle                  = 10'b0101110011,
-  //  StAppCfg                = 10'b0001010000,
-  //  StAppMsg                = 10'b0001011111,
-  //  StAppOutLen             = 10'b1011001111,
-  //  StAppProcess            = 10'b1000100110,
-  //  StAppWait               = 10'b0010010110,
-  //  StSw                    = 10'b0111111111,
-  //  StKeyMgrErrKeyNotValid  = 10'b1001110100,
-  //  StError                 = 10'b1101011101,
-  //  StServiceRejectedError  = 10'b1110000110,
-  //  StTerminalError         = 10'b0010001001
   typedef enum logic [StateWidth-1:0] {
-    StIdle = 10'b0101110011,
+    StIdle = 10'b1010111110,
 
     // Application operation.
     //
@@ -223,31 +213,33 @@ module kmac_app
 
     // In StAppCfg state, it latches the cfg from AppCfg parameter to determine
     // the kmac_mode, sha3_mode, keccak strength.
-    StAppCfg = 10'b0001010000,
+    StAppCfg = 10'b1010101101,
 
-    StAppMsg = 10'b0001011111,
+    StAppMsg = 10'b1110001011,
 
     // In StKeyOutLen, this module pushes encoded outlen to the MSG_FIFO.
     // Assume the length is 256 bit, the data will be 48'h 02_0100
-    StAppOutLen  = 10'b1011001111,
-    StAppProcess = 10'b1000100110,
-    StAppWait    = 10'b0010010110,
+    StAppOutLen  = 10'b1010011000,
+    StAppProcess = 10'b1110110010,
+    StAppWait    = 10'b1001010000,
 
     // SW Controlled
     // If start request comes from SW first, until the operation ends, all
     // requests from KeyMgr will be discarded.
-    StSw = 10'b0111111111,
+    StSw = 10'b0010111011,
 
     // Error KeyNotValid
     // When KeyMgr operates, the secret key is not ready yet.
-    StKeyMgrErrKeyNotValid = 10'b1001110100,
+    StKeyMgrErrKeyNotValid = 10'b0111011111,
 
-    StError = 10'b1101011101,
-
-    StServiceRejectedError = 10'b1110000110,
+    StError = 10'b1110010111,
+    StErrorAwaitSw = 10'b0110001100,
+    StErrorAwaitApp = 10'b1011100000,
+    StErrorWaitAbsorbed = 10'b0010100100,
+    StErrorServiceRejected = 10'b1101000111,
 
     // This state is used for terminal errors
-    StTerminalError = 10'b0010001001
+    StTerminalError = 10'b0101110110
   } st_e;
 
   /////////////
@@ -289,6 +281,7 @@ module kmac_app
 
   logic service_rejected_error;
   logic service_rejected_error_set, service_rejected_error_clr;
+  logic err_during_sw_d, err_during_sw_q;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni)                         service_rejected_error <= 1'b 0;
@@ -412,6 +405,8 @@ module kmac_app
     fsm_err = '{valid: 1'b 0, code: ErrNone, info: '0};
     sparse_fsm_error_o = 1'b 0;
 
+    clear_after_error_o = prim_mubi_pkg::MuBi4False;
+
     service_rejected_error_set = 1'b 0;
     service_rejected_error_clr = 1'b 0;
 
@@ -530,36 +525,101 @@ module kmac_app
         // In this state, the state machine flush out the request
         st_d = StError;
 
-        fsm_data_ready = 1'b 1;
+        // Absorb data on the app interface.
+        fsm_data_ready = ~err_during_sw_q;
 
-        if (err_processed_i) begin
-          st_d = StIdle;
-
-          // clear internal variables
-          clr_appid = 1'b 1;
-        end
-
-        if (app_i[app_id].valid && app_i[app_id].last) begin
-          // Send garbage digest to the app interface to complete transaction
-          fsm_digest_done_d = 1'b 1;
-
-          if (service_rejected_error) begin
-            // If service was rejected, it is assumed the SW is not loaded
-            // yet. In this case, return the request with error and keep
-            // moving, hoping SW may handle the errors later
-            st_d = StServiceRejectedError;
+        // Next step depends on two conditions:
+        // 1) Error being processed by SW
+        // 2) Last data provided from the app interface (so that the app interface is completely)
+        //    drained.  If the error occurred during a SW operation, the app interface is not
+        //    involved, so this condition gets skipped.
+        unique case ({err_processed_i,
+                      (app_i[app_id].valid && app_i[app_id].last) || err_during_sw_q})
+          2'b00: begin
+            // Error not processed by SW and not last data from app interface -> keep current state.
+            st_d = StError;
           end
-        end
-
+          2'b01: begin
+            // Error not processed by SW but last data from app interface:
+            // 1. Send garbage digest to the app interface (in the next cycle) to complete the
+            // transaction.
+            fsm_digest_done_d = ~err_during_sw_q;
+            if (service_rejected_error) begin
+              // 2.a) Service was rejected because an app interface tried to configure KMAC while no
+              // entropy was available. It is assumed that SW is not loaded yet, so don't wait for
+              // SW to process the error. The last data from the app interface has now arrived, but
+              // we don't need to wait for the SHA3 core to have absorbed it because the data never
+              // entered the SHA3 core: the request from the app interface was terminated during the
+              // configuration phase.
+              st_d = StErrorServiceRejected;
+            end else begin
+              // 2.b) If service was not rejected, wait for SW to process the error.
+              st_d = StErrorAwaitSw;
+            end
+          end
+          2'b10: begin
+            // Error processed by SW but not last data from app interface -> wait for app interface.
+            st_d = StErrorAwaitApp;
+          end
+          2'b11: begin
+            // Error processed by SW and last data from app interface:
+            // Send garbage digest to the app interface (in the next cycle) to complete the
+            // transaction.
+            fsm_digest_done_d = ~err_during_sw_q;
+            // Flush the message FIFO and let the SHA3 engine compute a digest (which won't be used
+            // but serves to bring the SHA3 engine back to the idle state).
+            cmd_o = CmdProcess;
+            st_d = StErrorWaitAbsorbed;
+          end
+          default: st_d = StError;
+        endcase
       end
 
-      StServiceRejectedError: begin
-        // Clear the error and move to Idle
-        // At this state, the app responses the request with an error.
-        st_d = StIdle;
+      StErrorAwaitSw: begin
+        // Just wait for SW to process the error.
+        if (err_processed_i) begin
+          // Flush the message FIFO and let the SHA3 engine compute a digest (which won't be used
+          // but serves to bring the SHA3 engine back to the idle state).
+          cmd_o = CmdProcess;
+          st_d = StErrorWaitAbsorbed;
+        end
+      end
 
-        clr_appid = 1'b 1;
-        service_rejected_error_clr = 1'b 1;
+      StErrorAwaitApp: begin
+        // Keep absorbing data on the app interface until the last data.
+        fsm_data_ready = 1'b1;
+        if (app_i[app_id].valid && app_i[app_id].last) begin
+          // Send garbage digest to the app interface (in the next cycle) to complete the
+          // transaction.
+          fsm_digest_done_d = 1'b1;
+          // Flush the message FIFO and let the SHA3 engine compute a digest (which won't be used
+          // but serves to bring the SHA3 engine back to the idle state).
+          cmd_o = CmdProcess;
+          st_d = StErrorWaitAbsorbed;
+        end
+      end
+
+      StErrorWaitAbsorbed: begin
+        if (prim_mubi_pkg::mubi4_test_true_strict(absorbed_i)) begin
+          // Clear internal variables, send done command, and return to idle.
+          clr_appid = 1'b1;
+          clear_after_error_o = prim_mubi_pkg::MuBi4True;
+          service_rejected_error_clr = 1'b1;
+          cmd_o = CmdDone;
+          st_d = StIdle;
+          // If error originated from SW, report 'absorbed' to SW.
+          if (err_during_sw_q) begin
+            absorbed_o = prim_mubi_pkg::MuBi4True;
+          end
+        end
+      end
+
+      StErrorServiceRejected: begin
+        // Clear internal variables and return to idle.
+        clr_appid = 1'b1;
+        clear_after_error_o = prim_mubi_pkg::MuBi4True;
+        service_rejected_error_clr = 1'b1;
+        st_d = StIdle;
       end
 
       StTerminalError: begin
@@ -582,6 +642,20 @@ module kmac_app
     // if the life cycle controller triggers an escalation.
     if (lc_ctrl_pkg::lc_tx_test_true_loose(lc_escalate_en_i)) begin
       st_d = StTerminalError;
+    end
+  end
+
+  // Track errors occurring in SW mode.
+  assign err_during_sw_d =
+      (mux_sel == SelSw) && (st_d inside {StError, StKeyMgrErrKeyNotValid}) ? 1'b1 : // set
+      (st_d == StIdle)                                                      ? 1'b0 : // clear
+      err_during_sw_q;                                                               // hold
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      err_during_sw_q <= 1'b0;
+    end else begin
+      err_during_sw_q <= err_during_sw_d;
     end
   end
 

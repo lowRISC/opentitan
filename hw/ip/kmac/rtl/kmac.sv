@@ -326,6 +326,8 @@ module kmac
 
   logic err_processed;
 
+  prim_mubi_pkg::mubi4_t clear_after_error;
+
   logic alert_fatal, alert_recov_operation;
   logic alert_intg_err;
 
@@ -1099,6 +1101,8 @@ module kmac
     .error_i         (sha3_err.valid),
     .err_processed_i (err_processed),
 
+    .clear_after_error_o (clear_after_error),
+
     // Command interface
     .sw_cmd_i (checked_sw_cmd),
     .cmd_o    (kmac_cmd),
@@ -1202,6 +1206,7 @@ module kmac
     .lc_escalate_en_i (lc_escalate_en[4]),
 
     .err_processed_i (err_processed),
+    .clear_after_error_i (clear_after_error),
 
     .error_o            (errchecker_err),
     .sparse_fsm_error_o (kmac_errchk_state_error)
