@@ -10,6 +10,7 @@
 `include "usbdev_av_buffer_vseq.sv"
 `include "usbdev_csr_test_vseq.sv"
 `include "usbdev_dpi_config_host_vseq.sv"
+`include "usbdev_device_address_vseq.sv"
 `include "usbdev_enable_vseq.sv"
 `include "usbdev_fifo_rst_vseq.sv"
 `include "usbdev_in_rand_trans_vseq.sv"
