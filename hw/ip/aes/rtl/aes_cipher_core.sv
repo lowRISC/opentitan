@@ -340,6 +340,11 @@ module aes_cipher_core import aes_pkg::*;
     end
   end
 
+  // Convert the 3-dimensional prd_sub_bytes_q array to a 1-dimensional packed array for the
+  // aes_prd_get_lsbs() function used below.
+  logic [WidthPRDData-1:0] prd_sub_bytes;
+  assign prd_sub_bytes = prd_sub_bytes_q;
+
   // Extract randomness for masking the input data.
   //
   // The masking PRNG is used for generating both the PRD for the S-Boxes/SubBytes operation as
@@ -363,7 +368,7 @@ module aes_cipher_core import aes_pkg::*;
   // a row basis.
   localparam int unsigned WidthPRDRow = 4*WidthPRDSBox;
   for (genvar i = 0; i < 4; i++) begin : gen_in_mask
-    assign data_in_mask[i] = aes_prd_get_lsbs(prd_masking[i * WidthPRDRow +: WidthPRDRow]);
+    assign data_in_mask[i] = aes_prd_get_lsbs(prd_sub_bytes[i * WidthPRDRow +: WidthPRDRow]);
   end
 
   // Rotate the data input masks by 64 bits to ensure the data input masks are independent
