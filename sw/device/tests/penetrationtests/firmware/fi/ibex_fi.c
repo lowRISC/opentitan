@@ -599,7 +599,7 @@ status_t handle_ibex_fi_char_sram_read(ujson_t *uj) {
   return OK_STATUS();
 }
 
-status_t handle_ibex_fi_char_sram_write_static(ujson_t *uj) {
+status_t handle_ibex_fi_char_sram_write_static_unrolled(ujson_t *uj) {
   // Clear registered alerts in alert handler.
   sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
 
@@ -1212,8 +1212,8 @@ status_t handle_ibex_fi(ujson_t *uj) {
       return handle_ibex_fi_char_unconditional_branch(uj);
     case kIbexFiSubcommandCharSramWrite:
       return handle_ibex_fi_char_sram_write(uj);
-    case kIbexFiSubcommandCharSramWriteStatic:
-      return handle_ibex_fi_char_sram_write_static(uj);
+    case kIbexFiSubcommandCharSramWriteStaticUnrolled:
+      return handle_ibex_fi_char_sram_write_static_unrolled(uj);
     case kIbexFiSubcommandCharSramRead:
       return handle_ibex_fi_char_sram_read(uj);
     case kIbexFiSubcommandCharSramStatic:
