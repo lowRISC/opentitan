@@ -335,11 +335,11 @@ void sca_call_and_sleep(sca_callee callee, uint32_t sleep_cycles,
 
   callee();
 
+  wait_for_interrupt();
+
   if (sw_trigger) {
     sca_set_trigger_low();
   }
-
-  wait_for_interrupt();
 
   // Re-enable IO_DIV4_PERI clock to resume communication with the scope.
   OT_DISCARD(dif_clkmgr_gateable_clock_set_enabled(
