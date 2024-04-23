@@ -729,36 +729,23 @@ void flash_ctrl_creator_info_pages_lockdown(void) {
   HARDENED_CHECK_EQ((uint32_t)r, UINT32_MAX);
 }
 
-/**
- * Info pages that contain device certificates.
- */
-static const flash_ctrl_info_page_t *kCertificateInfoPages[] = {
-    &kFlashCtrlInfoPageUdsCertificate,
-    &kFlashCtrlInfoPageCdi0Certificate,
-    &kFlashCtrlInfoPageCdi1Certificate,
+const flash_ctrl_info_page_t
+    *kCertificateInfoPages[kFlashCtrlNumCertInfoPages] = {
+        &kFlashCtrlInfoPageUdsCertificate,
+        &kFlashCtrlInfoPageCdi0Certificate,
+        &kFlashCtrlInfoPageCdi1Certificate,
 };
-
-enum {
-  kCertificateInfoPagesCount = ARRAYSIZE(kCertificateInfoPages),
-};
-
-/**
- * Certificate info page configurations and permissions.
- *
- * Certificate info pages are fully accessable by the creator code (ROM +
- * ROM_EXT), but read-only for owner code.
- */
-static const flash_ctrl_cfg_t kCertificateInfoPagesCfg = {
+const flash_ctrl_cfg_t kCertificateInfoPagesCfg = {
     .scrambling = kMultiBitBool4True,
     .ecc = kMultiBitBool4True,
     .he = kMultiBitBool4False,
 };
-static const flash_ctrl_perms_t kCertificateInfoPagesCreatorAccess = {
+const flash_ctrl_perms_t kCertificateInfoPagesCreatorAccess = {
     .read = kMultiBitBool4True,
     .write = kMultiBitBool4True,
     .erase = kMultiBitBool4True,
 };
-static const flash_ctrl_perms_t kCertificateInfoPagesOwnerAccess = {
+const flash_ctrl_perms_t kCertificateInfoPagesOwnerAccess = {
     .read = kMultiBitBool4True,
     .write = kMultiBitBool4False,
     .erase = kMultiBitBool4False,
@@ -766,29 +753,29 @@ static const flash_ctrl_perms_t kCertificateInfoPagesOwnerAccess = {
 
 void flash_ctrl_cert_info_pages_creator_cfg(void) {
   SEC_MMIO_ASSERT_WRITE_INCREMENT(kFlashCtrlSecMmioCertInfoPagesCreatorCfg,
-                                  2 * kCertificateInfoPagesCount);
-  size_t i = 0, r = kCertificateInfoPagesCount - 1;
-  for (; launder32(i) < kCertificateInfoPagesCount &&
-         launder32(r) < kCertificateInfoPagesCount;
+                                  2 * kFlashCtrlNumCertInfoPages);
+  size_t i = 0, r = kFlashCtrlNumCertInfoPages - 1;
+  for (; launder32(i) < kFlashCtrlNumCertInfoPages &&
+         launder32(r) < kFlashCtrlNumCertInfoPages;
        ++i, --r) {
     flash_ctrl_info_cfg_set(kCertificateInfoPages[i], kCertificateInfoPagesCfg);
     flash_ctrl_info_perms_set(kCertificateInfoPages[i],
                               kCertificateInfoPagesCreatorAccess);
   }
-  HARDENED_CHECK_EQ(i, kCertificateInfoPagesCount);
+  HARDENED_CHECK_EQ(i, kFlashCtrlNumCertInfoPages);
   HARDENED_CHECK_EQ((uint32_t)r, UINT32_MAX);
 }
 
 void flash_ctrl_cert_info_pages_owner_restrict(void) {
   SEC_MMIO_ASSERT_WRITE_INCREMENT(kFlashCtrlSecMmioCertInfoPagesOwnerRestrict,
-                                  kCertificateInfoPagesCount);
-  size_t i = 0, r = kCertificateInfoPagesCount - 1;
-  for (; launder32(i) < kCertificateInfoPagesCount &&
-         launder32(r) < kCertificateInfoPagesCount;
+                                  kFlashCtrlNumCertInfoPages);
+  size_t i = 0, r = kFlashCtrlNumCertInfoPages - 1;
+  for (; launder32(i) < kFlashCtrlNumCertInfoPages &&
+         launder32(r) < kFlashCtrlNumCertInfoPages;
        ++i, --r) {
     flash_ctrl_info_perms_set(kCertificateInfoPages[i],
                               kCertificateInfoPagesOwnerAccess);
   }
-  HARDENED_CHECK_EQ(i, kCertificateInfoPagesCount);
+  HARDENED_CHECK_EQ(i, kFlashCtrlNumCertInfoPages);
   HARDENED_CHECK_EQ((uint32_t)r, UINT32_MAX);
 }
