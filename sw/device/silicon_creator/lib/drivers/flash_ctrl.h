@@ -588,6 +588,29 @@ void flash_ctrl_exec_set(uint32_t exec_val);
 void flash_ctrl_creator_info_pages_lockdown(void);
 
 /**
+ * Number of flash info pages reserved for storing certificates.
+ */
+enum {
+  kFlashCtrlNumCertInfoPages = 3,
+};
+
+/**
+ * Info pages that contain device certificates.
+ */
+extern const flash_ctrl_info_page_t
+    *kCertificateInfoPages[kFlashCtrlNumCertInfoPages];
+
+/**
+ * Certificate info page configurations and permissions.
+ *
+ * Certificate info pages are fully accessable by the creator code (ROM +
+ * ROM_EXT), but read-only for owner code.
+ */
+extern const flash_ctrl_cfg_t kCertificateInfoPagesCfg;
+extern const flash_ctrl_perms_t kCertificateInfoPagesCreatorAccess;
+extern const flash_ctrl_perms_t kCertificateInfoPagesOwnerAccess;
+
+/**
  * Configures certificate flash info pages for access by the silicon creator.
  *
  * Flash info pages that hold device certificates are fully accessable by the
