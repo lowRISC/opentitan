@@ -69,7 +69,6 @@
         },
         authority_key_identifier: { var: "auth_key_key_id" },
         subject_key_identifier: { var: "tpm_cek_pub_key_id" },
-        extensions: [],
         signature: {
             algorithm: "ecdsa-with-sha256",
             value: {

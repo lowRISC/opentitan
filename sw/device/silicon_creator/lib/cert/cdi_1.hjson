@@ -84,7 +84,7 @@
         // https://pigweed.googlesource.com/open-dice/+/refs/heads/main/docs/specification.md#certificate-details
         // The standard extensions are fixed by the specification.
         basic_constraints: { ca: true },
-        extensions: [
+        private_extensions: [
             {
                 type: "dice_tcb_info",
                 vendor: "OpenTitan",
