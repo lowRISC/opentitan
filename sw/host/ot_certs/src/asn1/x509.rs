@@ -154,7 +154,7 @@ impl X509 {
                         Self::push_key_usage_ext(builder)?;
                         Self::push_auth_key_id_ext(builder, &cert.authority_key_identifier)?;
                         Self::push_subject_key_id_ext(builder, &cert.subject_key_identifier)?;
-                        for ext in &cert.extensions {
+                        for ext in &cert.private_extensions {
                             Self::push_cert_extension(builder, ext)?
                         }
                         Ok(())
