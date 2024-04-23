@@ -674,7 +674,6 @@ module kmac
   );
 
   // Error
-  // As of now, only SHA3 error exists. More error codes will be added.
 
   logic event_error;
   assign event_error = sha3_err.valid    | app_err.valid

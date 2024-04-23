@@ -79,13 +79,19 @@ static void test_kmac_with_sideloaded_key(dif_keymgr_t *keymgr,
       keymgr_testutils_generate_versioned_key(keymgr, sideload_params));
   LOG_INFO("Keymgr generated HW output for Kmac at OwnerIntKey State");
 
+  uint32_t output_sideload_good0[kKmacOutputLen];
   CHECK_STATUS_OK(kmac_testutils_kmac(
       kmac, kKmacMode, &kSoftwareKey, kCustomString, kCustomStringLen,
-      kKmacMessage, kKmacMessageLen, kKmacOutputLen, output));
+      kKmacMessage, kKmacMessageLen, kKmacOutputLen, output_sideload_good0));
   LOG_INFO("Computed KMAC output for sideloaded key.");
 
   if (kDeviceType == kDeviceSimDV) {
-    CHECK_ARRAYS_EQ(output, (uint32_t *)sideload_digest_result, kKmacOutputLen);
+    // From the DV environment we get the expected digest, so check that the
+    // output using the sideloaded key matches the expectation.  We cannot do
+    // this check outside the DV environment because we cannot observe the
+    // sideloaded key, thus cannot compute the expected digest.
+    CHECK_ARRAYS_EQ(output_sideload_good0, (uint32_t *)sideload_digest_result,
+                    kKmacOutputLen);
   }
 
   LOG_INFO("Clearing the sideloaded key.");
@@ -101,13 +107,23 @@ static void test_kmac_with_sideloaded_key(dif_keymgr_t *keymgr,
   CHECK_DIF_OK(
       dif_keymgr_sideload_clear_set_enabled(keymgr, kDifToggleDisabled));
 
-  CHECK_STATUS_OK(kmac_testutils_kmac(
-      kmac, kKmacMode, &kSoftwareKey, kCustomString, kCustomStringLen,
-      kKmacMessage, kKmacMessageLen, kKmacOutputLen, output));
-  LOG_INFO("Computed KMAC output for software key (for inequality check.)");
+  uint32_t output_sideload_bad[kKmacOutputLen];
+  // Initialize this output array because the following `kmac_testutils_kmac`
+  // function call fails early and is expected to *not* overwrite this array.
+  for (size_t i = 0; i < kKmacOutputLen; i++) {
+    output_sideload_bad[i] = i;
+  }
+  CHECK(kFailedPrecondition ==
+        status_err(kmac_testutils_kmac(kmac, kKmacMode, &kSoftwareKey,
+                                       kCustomString, kCustomStringLen,
+                                       kKmacMessage, kKmacMessageLen,
+                                       kKmacOutputLen, output_sideload_bad)));
+  LOG_INFO("Ran KMAC with an invalid sideload key and checked that it fails.");
 
-  // Verify that KMAC output is not equal to the one the from the sideload.
-  CHECK_ARRAYS_NE(output, (uint32_t *)sideload_digest_result, kKmacOutputLen);
+  // Verify that the output array did not get overwritten.
+  for (size_t i = 0; i < kKmacOutputLen; i++) {
+    CHECK(output_sideload_bad[i] == i);
+  }
 
   // Sideload the same KMAC key again and check if we can compute the same
   // result as before.
@@ -115,14 +131,13 @@ static void test_kmac_with_sideloaded_key(dif_keymgr_t *keymgr,
       keymgr_testutils_generate_versioned_key(keymgr, sideload_params));
   LOG_INFO("Keymgr regenerated HW output for Kmac at OwnerIntKey State");
 
+  uint32_t output_sideload_good1[kKmacOutputLen];
   CHECK_STATUS_OK(kmac_testutils_kmac(
       kmac, kKmacMode, &kSoftwareKey, kCustomString, kCustomStringLen,
-      kKmacMessage, kKmacMessageLen, kKmacOutputLen, output));
+      kKmacMessage, kKmacMessageLen, kKmacOutputLen, output_sideload_good1));
   LOG_INFO("Re-computed KMAC output for sideloaded key.");
 
-  if (kDeviceType == kDeviceSimDV) {
-    CHECK_ARRAYS_EQ(output, (uint32_t *)sideload_digest_result, kKmacOutputLen);
-  }
+  CHECK_ARRAYS_EQ(output_sideload_good1, output_sideload_good0, kKmacOutputLen);
 }
 
 bool test_main(void) {

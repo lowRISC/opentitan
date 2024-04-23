@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // Trigger KeyNotValid error by not providing valid keymgr key during kmac transaction.
-// ICEBOX(#10704): current RTL only supports this error in app mode.
 class kmac_key_error_vseq extends kmac_app_vseq;
 
   `uvm_object_utils(kmac_key_error_vseq)
