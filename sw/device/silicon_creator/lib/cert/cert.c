@@ -78,8 +78,9 @@ rom_error_t cert_x509_asn1_check_serial_number(
   for (size_t i = 0; i < kCertX509Asn1SerialNumberSizeIn32BitWords; ++i) {
     curr_sn_word = 0;
     for (size_t j = 0; j < sizeof(uint32_t); ++j) {
-      curr_sn_word = (curr_sn_word << 8) |
-                     cert_bytes[sn_bytes_offset + (i * sizeof(uint32_t)) + j];
+      curr_sn_word |=
+          (uint32_t)cert_bytes[sn_bytes_offset + (i * sizeof(uint32_t)) + j]
+          << (8 * j);
     }
     if (launder32(curr_sn_word) != expected_sn_words[i]) {
       HARDENED_CHECK_NE(curr_sn_word, expected_sn_words[i]);
