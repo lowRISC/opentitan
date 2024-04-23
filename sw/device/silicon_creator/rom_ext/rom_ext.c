@@ -287,7 +287,8 @@ static rom_error_t rom_ext_attestation_keygen(
   HARDENED_RETURN_IF_ERROR(dice_attestation_keygen(kDiceKeyUds, &uds_pubkey_id,
                                                    &curr_attestation_pubkey));
   HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_key_save(
-      kUdsAttestationKeySeed, kUdsKeymgrDiversifier));
+      kUdsAttestationKeySeed, kOtbnBootAttestationKeyTypeDice,
+      kUdsKeymgrDiversifier));
   curr_cert_valid = kHardenedBoolFalse;
   HARDENED_RETURN_IF_ERROR(cert_x509_asn1_check_serial_number(
       &kFlashCtrlInfoPageUdsCertificate, uds_pubkey_id.digest,

@@ -211,7 +211,7 @@ TEST_F(KeymgrTest, CheckStateInvalidResponse) {
             kErrorKeymgrInternal);
 }
 
-TEST_F(KeymgrTest, GenAttestationKey) {
+TEST_F(KeymgrTest, GenOtbnAttestationKey) {
   sc_keymgr_diversification_t test_diversification = {
       .salt = {0xf0f1f2f3, 0xf4f5f6f7, 0xf8f9fafb, 0xfcfdfeff, 0xd0d1d2d3,
                0xd4d5d6d7, 0xd8d9dadb, 0xdcdddedf},
@@ -236,11 +236,42 @@ TEST_F(KeymgrTest, GenAttestationKey) {
   ExpectWaitUntilDone(/*busy_cycles=*/2,
                       KEYMGR_OP_STATUS_STATUS_VALUE_DONE_SUCCESS);
 
-  EXPECT_EQ(sc_keymgr_generate_attestation_key_otbn(test_diversification),
+  EXPECT_EQ(sc_keymgr_generate_key_otbn(kScKeymgrKeyTypeAttestation,
+                                        test_diversification),
             kErrorOk);
 }
 
-TEST_F(KeymgrTest, GenAttestationKeyNotIdle) {
+TEST_F(KeymgrTest, GenOtbnSealingKey) {
+  sc_keymgr_diversification_t test_diversification = {
+      .salt = {0xf0f1f2f3, 0xf4f5f6f7, 0xf8f9fafb, 0xfcfdfeff, 0xd0d1d2d3,
+               0xd4d5d6d7, 0xd8d9dadb, 0xdcdddedf},
+      .version = cfg_.max_key_ver - 1,
+  };
+
+  ExpectIdleCheck(KEYMGR_OP_STATUS_STATUS_VALUE_IDLE);
+  EXPECT_ABS_WRITE32_SHADOWED(
+      base_ + KEYMGR_CONTROL_SHADOWED_REG_OFFSET,
+      {
+          {KEYMGR_CONTROL_SHADOWED_DEST_SEL_OFFSET,
+           KEYMGR_CONTROL_SHADOWED_DEST_SEL_VALUE_OTBN},
+          {KEYMGR_CONTROL_SHADOWED_CDI_SEL_BIT, false},
+          {KEYMGR_CONTROL_SHADOWED_OPERATION_OFFSET,
+           KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_GENERATE_HW_OUTPUT},
+      });
+  ExpectDiversificationWrite(test_diversification);
+  EXPECT_ABS_WRITE32(base_ + KEYMGR_START_REG_OFFSET,
+                     {
+                         {KEYMGR_START_EN_BIT, true},
+                     });
+  ExpectWaitUntilDone(/*busy_cycles=*/2,
+                      KEYMGR_OP_STATUS_STATUS_VALUE_DONE_SUCCESS);
+
+  EXPECT_EQ(sc_keymgr_generate_key_otbn(kScKeymgrKeyTypeSealing,
+                                        test_diversification),
+            kErrorOk);
+}
+
+TEST_F(KeymgrTest, GenOtbnKeyNotIdle) {
   sc_keymgr_diversification_t test_diversification = {
       .salt = {0xf0f1f2f3, 0xf4f5f6f7, 0xf8f9fafb, 0xfcfdfeff, 0xd0d1d2d3,
                0xd4d5d6d7, 0xd8d9dadb, 0xdcdddedf},
@@ -248,17 +279,20 @@ TEST_F(KeymgrTest, GenAttestationKeyNotIdle) {
   };
 
   ExpectIdleCheck(KEYMGR_OP_STATUS_STATUS_VALUE_WIP);
-  EXPECT_EQ(sc_keymgr_generate_attestation_key_otbn(test_diversification),
+  EXPECT_EQ(sc_keymgr_generate_key_otbn(kScKeymgrKeyTypeAttestation,
+                                        test_diversification),
             kErrorKeymgrInternal);
   ExpectIdleCheck(KEYMGR_OP_STATUS_STATUS_VALUE_DONE_ERROR);
-  EXPECT_EQ(sc_keymgr_generate_attestation_key_otbn(test_diversification),
+  EXPECT_EQ(sc_keymgr_generate_key_otbn(kScKeymgrKeyTypeAttestation,
+                                        test_diversification),
             kErrorKeymgrInternal);
   ExpectIdleCheck(KEYMGR_OP_STATUS_STATUS_VALUE_DONE_SUCCESS);
-  EXPECT_EQ(sc_keymgr_generate_attestation_key_otbn(test_diversification),
+  EXPECT_EQ(sc_keymgr_generate_key_otbn(kScKeymgrKeyTypeAttestation,
+                                        test_diversification),
             kErrorKeymgrInternal);
 }
 
-TEST_F(KeymgrTest, GenAttestationKeyError) {
+TEST_F(KeymgrTest, GenOtbnKeyError) {
   sc_keymgr_diversification_t test_diversification = {
       .salt = {0xf0f1f2f3, 0xf4f5f6f7, 0xf8f9fafb, 0xfcfdfeff, 0xd0d1d2d3,
                0xd4d5d6d7, 0xd8d9dadb, 0xdcdddedf},
@@ -286,7 +320,8 @@ TEST_F(KeymgrTest, GenAttestationKeyError) {
   EXPECT_ABS_READ32(base_ + KEYMGR_ERR_CODE_REG_OFFSET, err_code);
   EXPECT_ABS_WRITE32(base_ + KEYMGR_ERR_CODE_REG_OFFSET, err_code);
 
-  EXPECT_EQ(sc_keymgr_generate_attestation_key_otbn(test_diversification),
+  EXPECT_EQ(sc_keymgr_generate_key_otbn(kScKeymgrKeyTypeAttestation,
+                                        test_diversification),
             kErrorKeymgrInternal);
 }
 
