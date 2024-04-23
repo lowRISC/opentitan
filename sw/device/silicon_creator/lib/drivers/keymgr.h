@@ -184,18 +184,27 @@ OT_WARN_UNUSED_RESULT
 rom_error_t keymgr_state_check(keymgr_state_t expected_state);
 
 /**
- * Derive a key manager key for the OTBN block.
+ * Keymgr output-generate key types (attestation or sealing).
+ */
+typedef enum keymgr_key_type {
+  kKeymgrKeyTypeAttestation = 0,
+  kKeymgrKeyTypeSealing = 1,
+} keymgr_key_type_t;
+
+/**
+ * Generate a key manager key and sideload to the OTBN block.
  *
  * Calls the key manager to sideload a key into the OTBN hardware block and
- * waits until the operation is complete before returning. Always uses the
- * attestation (not sealing) CDI; call this only for attestation keys.
+ * waits until the operation is complete before returning. Can sideload an
+ * attestation or sealing key based on user input.
  *
+ * @param key_type Key type: attestation or sealing.
  * @param diversification Diversification input for the key derivation.
  * @return OK or error.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t keymgr_generate_attestation_key_otbn(
-    const keymgr_diversification_t diversification);
+rom_error_t keymgr_generate_key_otbn(keymgr_key_type_t key_type,
+                                     keymgr_diversification_t diversification);
 
 /**
  * Clear OTBN's sideloaded key slot.
