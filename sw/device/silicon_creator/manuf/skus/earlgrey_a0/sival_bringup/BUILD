@@ -32,6 +32,7 @@ opentitan_binary(
     srcs = ["sram_cp_provision.c"],
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
         "//hw/top_earlgrey:silicon_creator": None,
     },
     kind = "ram",
@@ -71,6 +72,7 @@ opentitan_binary(
     srcs = ["sram_cp_provision_functest.c"],
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
         "//hw/top_earlgrey:silicon_creator": None,
     },
     kind = "ram",
@@ -109,19 +111,23 @@ _CP_PROVISIONING_CMD_ARGS = """
 
 _CP_PROVISIONING_HARNESS = "//sw/host/provisioning/cp"
 
+_CP_PROVISIONING_CW_PARAMS = cw310_params(
+    binaries = {":sram_cp_provision": "sram_cp_provision"},
+    changes_otp = True,
+    needs_jtag = True,
+    otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival_bringup:otp_img_test_unlocked0_manuf_empty",
+    tags = ["manuf"],
+    test_cmd = _CP_PROVISIONING_CMD_ARGS,
+    test_harness = _CP_PROVISIONING_HARNESS,
+)
+
 opentitan_test(
     name = "cp_provision",
-    cw310 = cw310_params(
-        binaries = {":sram_cp_provision": "sram_cp_provision"},
-        changes_otp = True,
-        needs_jtag = True,
-        otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival_bringup:otp_img_test_unlocked0_manuf_empty",
-        tags = ["manuf"],
-        test_cmd = _CP_PROVISIONING_CMD_ARGS,
-        test_harness = _CP_PROVISIONING_HARNESS,
-    ),
+    cw310 = _CP_PROVISIONING_CW_PARAMS,
+    cw340 = _CP_PROVISIONING_CW_PARAMS,
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_sival": None,
+        "//hw/top_earlgrey:fpga_cw340_sival": None,
         "//hw/top_earlgrey:silicon_creator": None,
     },
     silicon = silicon_params(
@@ -136,23 +142,11 @@ opentitan_test(
 
 opentitan_test(
     name = "cp_provision_functest",
-    cw310 = cw310_params(
-        binaries = {
-            ":sram_cp_provision": "sram_cp_provision",
-            ":sram_cp_provision_functest": "sram_cp_provision_functest",
-        },
-        bitstream = "//hw/bitstream:rom_with_fake_keys_otp_raw",
-        changes_otp = True,
-        needs_jtag = True,
-        tags = ["manuf"],
-        test_cmd = """
-            --provisioning-sram-elf={sram_cp_provision}
-            --test-sram-elf={sram_cp_provision_functest}
-        """ + CP_PROVISIONING_INPUTS,
-        test_harness = "//sw/host/tests/manuf/cp_provision_functest",
-    ),
+    cw310 = _CP_PROVISIONING_CW_PARAMS,
+    cw340 = _CP_PROVISIONING_CW_PARAMS,
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
     },
 )
 
@@ -163,6 +157,7 @@ opentitan_test(
         srcs = ["sram_ft_individualize.c"],
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
         kind = "ram",
@@ -211,6 +206,7 @@ opentitan_binary(
     srcs = ["ft_personalize.c"],
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
         "//hw/top_earlgrey:silicon_creator": None,
     },
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
@@ -255,23 +251,27 @@ _FT_PROVISIONING_CMD_ARGS = """
 
 _FT_PROVISIONING_HARNESS = "//sw/host/provisioning/ft"
 
+_FT_PROVISIONING_CW_PARAMS = cw310_params(
+    binaries = _FT_PROVISIONING_BINARIES,
+    changes_otp = True,
+    data = FT_PERSONALIZE_KEYS,
+    needs_jtag = True,
+    otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival_bringup:otp_img_test_locked0_manuf_initialized",
+    tags = [
+        "lc_test_locked0",
+        "manuf",
+    ],
+    test_cmd = _FT_PROVISIONING_CMD_ARGS,
+    test_harness = _FT_PROVISIONING_HARNESS,
+)
+
 opentitan_test(
     name = "ft_provision",
-    cw310 = cw310_params(
-        binaries = _FT_PROVISIONING_BINARIES,
-        changes_otp = True,
-        data = FT_PERSONALIZE_KEYS,
-        needs_jtag = True,
-        otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival_bringup:otp_img_test_locked0_manuf_initialized",
-        tags = [
-            "lc_test_locked0",
-            "manuf",
-        ],
-        test_cmd = _FT_PROVISIONING_CMD_ARGS,
-        test_harness = _FT_PROVISIONING_HARNESS,
-    ),
+    cw310 = _FT_PROVISIONING_CW_PARAMS,
+    cw340 = _FT_PROVISIONING_CW_PARAMS,
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_sival": None,
+        "//hw/top_earlgrey:fpga_cw340_sival": None,
         "//hw/top_earlgrey:silicon_creator": None,
     },
     silicon = silicon_params(
