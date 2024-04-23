@@ -207,15 +207,8 @@ module aes_key_expand import aes_pkg::*;
     assign sw_in_mask = use_rot_word ? rot_word_out[1] : rot_word_in[1];
   end
 
-  // SubWord - individually substitute bytes.
-  // Every DOM S-Box instance consumes 28 bits of randomness but itself produces 20 bits for use in
-  // another S-Box instance. For other S-Box implementations, only the bits corresponding to prd_i
-  // are used. Other bits are ignored and tied to 0.
-  logic [3:0][WidthPRDSBox+19:0] in_prd;
-  logic [3:0]             [19:0] out_prd;
-
-  // Make sure that whenever the data/mask inputs of the S-Boxes update, the internally buffered
-  // PRD is updated in sync. There are two special cases we need to handle here:
+  // Make sure that whenever the data/mask inputs of the S-Boxes update, the buffered PRD is
+  // updated in sync. There are two special cases we need to handle here:
   // - For AES-256, the initial round is short (no round key computation). But the data/mask inputs
   //   are updated either way. Thus, we need to force a PRD update as well.
   // - For AES-192 in FWD mode, the data/mask inputs aren't updated in Round 1, 4, 7 and 10. Thus,
@@ -225,10 +218,43 @@ module aes_key_expand import aes_pkg::*;
       (rnd == 0 || rnd == 3 || rnd == 6 || rnd == 9);
   assign prd_we = (prd_we_i & ~prd_we_inhibit) | prd_we_force;
 
+  // PRD buffering
+  logic [WidthPRDKey-1:0] prd_q;
+
+  if (!SecMasking) begin : gen_no_prd_buffer
+    // The masks are ignored anyway.
+    assign prd_q = prd_i;
+
+    // Tie-off unused signals.
+    logic unused_prd_we;
+    assign unused_prd_we = prd_we;
+
+  end else begin : gen_prd_buffer
+    // PRD buffer stage to:
+    // 1. Make sure the S-Boxes get always presented new data/mask inputs together with fresh PRD
+    //    for remasking.
+    // 2. Prevent glitches originating from inside the masking PRNG from propagating into the
+    //    masked S-Boxes.
+    always_ff @(posedge clk_i or negedge rst_ni) begin : prd_reg
+      if (!rst_ni) begin
+        prd_q <= '0;
+      end else if (prd_we) begin
+        prd_q <= prd_i;
+      end
+    end
+  end
+
+  // SubWord - individually substitute bytes.
+  // Every DOM S-Box instance consumes 28 bits of randomness but itself produces 20 bits for use in
+  // another S-Box instance. For other S-Box implementations, only the bits corresponding to prd_q
+  // are used. Other bits are ignored and tied to 0.
+  logic [3:0][WidthPRDSBox+19:0] in_prd;
+  logic [3:0]             [19:0] out_prd;
+
   for (genvar i = 0; i < 4; i++) begin : gen_sbox
     // Rotate the randomness produced by the S-Boxes. The LSBs are taken from the masking PRNG
-    // (prd_i) whereas the MSBs are produced by the other S-Box instances.
-    assign in_prd[i] = {out_prd[aes_rot_int(i,4)], prd_i[WidthPRDSBox*i +: WidthPRDSBox]};
+    // (prd_q) whereas the MSBs are produced by the other S-Box instances.
+    assign in_prd[i] = {out_prd[aes_rot_int(i,4)], prd_q[WidthPRDSBox*i +: WidthPRDSBox]};
 
     aes_sbox #(
       .SecSBoxImpl ( SecSBoxImpl )
@@ -236,7 +262,6 @@ module aes_key_expand import aes_pkg::*;
       .clk_i     ( clk_i                  ),
       .rst_ni    ( rst_ni                 ),
       .en_i      ( en == SP2V_HIGH        ),
-      .prd_we_i  ( prd_we                 ),
       .out_req_o ( sub_word_out_req[i]    ),
       .out_ack_i ( out_ack == SP2V_HIGH   ),
       .op_i      ( CIPH_FWD               ),

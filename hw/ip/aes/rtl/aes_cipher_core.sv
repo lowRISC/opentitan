@@ -163,7 +163,6 @@ module aes_cipher_core import aes_pkg::*;
   logic                               state_sel_err;
 
   sp2v_e                              sub_bytes_en;
-  logic                               sub_bytes_prd_we;
   sp2v_e                              sub_bytes_out_req;
   sp2v_e                              sub_bytes_out_ack;
   logic                               sub_bytes_err;
@@ -225,7 +224,8 @@ module aes_cipher_core import aes_pkg::*;
 
   // Pseudo-random data for masking purposes
   logic         [WidthPRDMasking-1:0] prd_masking;
-  logic  [3:0][3:0][WidthPRDSBox-1:0] prd_sub_bytes;
+  logic  [3:0][3:0][WidthPRDSBox-1:0] prd_sub_bytes_d;
+  logic  [3:0][3:0][WidthPRDSBox-1:0] prd_sub_bytes_q;
   logic             [WidthPRDKey-1:0] prd_key_expand;
   logic                               prd_masking_upd;
   logic                               prd_masking_rsd_req;
@@ -316,9 +316,29 @@ module aes_cipher_core import aes_pkg::*;
   // Extract randomness for key expand module and SubBytes.
   //
   // The masking PRNG output has the following shape:
-  // prd_masking = { prd_key_expand, prd_sub_bytes }
-  assign prd_key_expand = prd_masking[WidthPRDMasking-1 -: WidthPRDKey];
-  assign prd_sub_bytes  = prd_masking[WidthPRDData-1 -: WidthPRDData];
+  // prd_masking = { prd_key_expand, prd_sub_bytes_d }
+  assign prd_key_expand  = prd_masking[WidthPRDMasking-1 -: WidthPRDKey];
+  assign prd_sub_bytes_d = prd_masking[WidthPRDData-1 -: WidthPRDData];
+
+  // PRD buffering
+  if (!SecMasking) begin : gen_no_prd_buffer
+    // The masks are ignored anyway.
+    assign prd_sub_bytes_q = prd_sub_bytes_d;
+
+  end else begin : gen_prd_buffer
+    // PRD buffer stage to:
+    // 1. Make sure the S-Boxes get always presented new data/mask inputs together with fresh PRD
+    //    for remasking.
+    // 2. Prevent glitches originating from inside the masking PRNG from propagating into the
+    //    masked S-Boxes.
+    always_ff @(posedge clk_i or negedge rst_ni) begin : prd_sub_bytes_reg
+      if (!rst_ni) begin
+        prd_sub_bytes_q <= '0;
+      end else if (state_we == SP2V_HIGH) begin
+        prd_sub_bytes_q <= prd_sub_bytes_d;
+      end
+    end
+  end
 
   // Extract randomness for masking the input data.
   //
@@ -351,10 +371,6 @@ module aes_cipher_core import aes_pkg::*;
   // from the PRD fed to the S-Boxes/SubBytes operation.
   assign data_in_mask_o = {data_in_mask[1], data_in_mask[0], data_in_mask[3], data_in_mask[2]};
 
-  // Make sure that whenever the data/mask inputs of the S-Boxes update, the internally buffered
-  // PRD is updated in sync.
-  assign sub_bytes_prd_we = (state_we == SP2V_HIGH) ? 1'b1 : 1'b0;
-
   // Cipher data path
   aes_sub_bytes #(
     .SecSBoxImpl ( SecSBoxImpl )
@@ -362,13 +378,12 @@ module aes_cipher_core import aes_pkg::*;
     .clk_i     ( clk_i             ),
     .rst_ni    ( rst_ni            ),
     .en_i      ( sub_bytes_en      ),
-    .prd_we_i  ( sub_bytes_prd_we  ),
     .out_req_o ( sub_bytes_out_req ),
     .out_ack_i ( sub_bytes_out_ack ),
     .op_i      ( op_i              ),
     .data_i    ( state_q[0]        ),
     .mask_i    ( sb_in_mask        ),
-    .prd_i     ( prd_sub_bytes     ),
+    .prd_i     ( prd_sub_bytes_q   ),
     .data_o    ( sub_bytes_out     ),
     .mask_o    ( sb_out_mask       ),
     .err_o     ( sub_bytes_err     )
@@ -821,7 +836,7 @@ module aes_cipher_core import aes_pkg::*;
           sub_bytes_en == SP2V_HIGH && ($past(sub_bytes_en) == SP2V_LOW ||
               ($past(sub_bytes_out_req) == SP2V_HIGH &&
                $past(sub_bytes_out_ack) == SP2V_HIGH)) |=>
-          $past(prd_sub_bytes) != $past(prd_sub_bytes, NumCyclesPerRound + 1) ||
+          $past(prd_sub_bytes_q) != $past(prd_sub_bytes_q, NumCyclesPerRound + 1) ||
           SecAllowForcingMasks && force_masks_i)
 
       // Ensure that the PRNG has been updated between masking the input and starting the first
