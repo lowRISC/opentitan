@@ -6,17 +6,12 @@
 #     bazel run @//third_party/rust:crate_index
 ###############################################################################
 
-load("@rules_rust//cargo:defs.bzl", "cargo_build_script")
 load("@rules_rust//rust:defs.bzl", "rust_library")
 
 package(default_visibility = ["//visibility:public"])
 
-# licenses([
-#     "TODO",  # MIT
-# ])
-
 rust_library(
-    name = "openssl_sys",
+    name = "fuchsia_cprng",
     srcs = glob(["**/*.rs"]),
     compile_data = glob(
         include = ["**"],
@@ -34,7 +29,7 @@ rust_library(
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
-        "crate-name=openssl-sys",
+        "crate-name=fuchsia-cprng",
         "manual",
         "noclippy",
         "norustfmt",
@@ -73,57 +68,5 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-none": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.9.95",
-    deps = [
-        "@crate_index__libc-0.2.149//:libc",
-        "@crate_index__openssl-sys-0.9.95//:build_script_main",
-    ],
-)
-
-cargo_build_script(
-    name = "openssl-sys_build_script",
-    srcs = glob(["**/*.rs"]),
-    build_script_env = {
-        "OPENSSL_STATIC": "1",
-        "PKG_CONFIG_PATH": "$(OPENSSL_PKG_CONFIG_PATH)",
-    },
-    crate_name = "build_script_main",
-    crate_root = "build/main.rs",
-    data = glob(
-        include = ["**"],
-        exclude = [
-            "**/* *",
-            ".tmp_git_root/**/*",
-            "BUILD",
-            "BUILD.bazel",
-            "WORKSPACE",
-            "WORKSPACE.bazel",
-        ],
-    ),
-    edition = "2018",
-    links = "openssl",
-    rustc_flags = [
-        "--cap-lints=allow",
-    ],
-    tags = [
-        "cargo-bazel",
-        "crate-name=openssl-sys",
-        "manual",
-        "noclippy",
-        "norustfmt",
-    ],
-    toolchains = ["@//third_party/rust:openssl_pkg_config_path"],
-    version = "0.9.95",
-    visibility = ["//visibility:private"],
-    deps = [
-        "@crate_index__cc-1.0.83//:cc",
-        "@crate_index__pkg-config-0.3.27//:pkg_config",
-        "@crate_index__vcpkg-0.2.15//:vcpkg",
-    ],
-)
-
-alias(
-    name = "build_script_main",
-    actual = "openssl-sys_build_script",
-    tags = ["manual"],
+    version = "0.1.1",
 )
