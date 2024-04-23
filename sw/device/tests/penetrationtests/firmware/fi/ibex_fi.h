@@ -170,12 +170,12 @@ status_t handle_ibex_fi_char_sram_static(ujson_t *uj);
 status_t handle_ibex_fi_char_sram_read(ujson_t *uj);
 
 /**
- * ibex.fi.char.sram_write_static command handler.
+ * ibex.fi.char.sram_write_static_unrolled command handler.
  *
  * This FI penetration tests executes the following instructions:
  * - Set the trigger.
  * - Add 10 NOPs to delay the trigger
- * - Write 64 static values into SRAM.
+ * - Write 64 static values into SRAM using an unrolled instruction sequence.
  * - Unset the trigger.
  * - Read back values and compare.
  * - Return the values over UART.
@@ -186,7 +186,7 @@ status_t handle_ibex_fi_char_sram_read(ujson_t *uj);
  * @param uj An initialized uJSON context.
  * @return OK or error.
  */
-status_t handle_ibex_fi_char_sram_write_static(ujson_t *uj);
+status_t handle_ibex_fi_char_sram_write_static_unrolled(ujson_t *uj);
 
 /**
  * ibex.fi.char.sram_write command handler.
