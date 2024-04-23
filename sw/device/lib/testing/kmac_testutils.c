@@ -45,24 +45,26 @@ status_t kmac_testutils_kmac(const dif_kmac_t *kmac,
   TRY(dif_kmac_customization_string_init(custom_string, custom_string_len,
                                          &kmac_custom_string));
 
-  // Start the KMAC operation.
+  // Start the KMAC operation and check that KMAC doesn't report an error.
   dif_kmac_operation_state_t operation_state;
   TRY(dif_kmac_mode_kmac_start(kmac, &operation_state, mode, output_len, key,
                                &kmac_custom_string));
+  TRY(kmac_testutils_check_error(kmac));
 
-  // Pass the entire message to KMAC ("absorb" stage).
+  // Pass the entire message to KMAC ("absorb" stage) and check that KMAC
+  // doesn't report an error.
   TRY(dif_kmac_absorb(kmac, &operation_state, message, message_len, NULL));
+  TRY(kmac_testutils_check_error(kmac));
 
-  // Get the output ("squeeze" stage).
+  // Get the output ("squeeze" stage) and check that KMAC doesn't report an
+  // error.
   TRY(dif_kmac_squeeze(kmac, &operation_state, output, output_len, NULL));
+  TRY(kmac_testutils_check_error(kmac));
 
-  // End the operation.
+  // End the operation and check that KMAC doesn't report an error.
   TRY(dif_kmac_end(kmac, &operation_state));
+  TRY(kmac_testutils_check_error(kmac));
 
-  // Double-check that there were no errors.
-  dif_kmac_error_t err;
-  TRY(dif_kmac_get_error(kmac, &err));
-  TRY_CHECK(err == kDifErrorNone);
   return OK_STATUS();
 }
 

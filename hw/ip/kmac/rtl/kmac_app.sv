@@ -249,6 +249,8 @@ module kmac_app
 
   st_e st, st_d;
 
+  logic keymgr_key_used;
+
   // app_rsp_t signals
   // The state machine controls mux selection, which controls the ready signal
   // the other responses are controled in separate logic. So define the signals
@@ -443,13 +445,6 @@ module kmac_app
 
           service_rejected_error_set = 1'b 1;
 
-        end else if ((AppCfg[app_id].Mode == AppKMAC) &&
-          !keymgr_key_i.valid) begin
-          st_d = StKeyMgrErrKeyNotValid;
-
-          // As mux_sel is not set to SelApp, app_data_ready is still 0.
-          // This logic won't accept the requests from the selected App.
-
         end else begin
           // As Cfg is stable now, it sends cmd
           st_d = StAppMsg;
@@ -643,6 +638,14 @@ module kmac_app
     // if the life cycle controller triggers an escalation.
     if (lc_ctrl_pkg::lc_tx_test_true_loose(lc_escalate_en_i)) begin
       st_d = StTerminalError;
+    end
+
+    // Handle errors outside the terminal error state.
+    if (st_d != StTerminalError) begin
+      // Key from keymgr is used but not valid, so abort into the invalid key error state.
+      if (keymgr_key_used && !keymgr_key_i.valid) begin
+        st_d = StKeyMgrErrKeyNotValid;
+      end
     end
   end
 
@@ -847,6 +850,7 @@ module kmac_app
   // Sideloaded key manage: Keep use sideloaded key for KMAC AppIntf until the
   // hashing operation is finished.
   always_comb begin
+    keymgr_key_used = 1'b0;
     key_len_o  = reg_key_len_i;
     for (int i = 0 ; i < Share; i++) begin
       key_data_o[i] = reg_key_data_i[i];
@@ -857,6 +861,8 @@ module kmac_app
 
     unique case (st)
       StAppCfg, StAppMsg, StAppOutLen, StAppProcess, StAppWait: begin
+        // Key from keymgr is actually used if the current HW app interface does *keyed* MAC.
+        keymgr_key_used = AppCfg[app_id].Mode == AppKMAC;
         key_len_o = SideloadedKey;
         for (int i = 0 ; i < Share; i++) begin
           key_data_o[i] = keymgr_key[i];
@@ -868,6 +874,8 @@ module kmac_app
 
       StSw: begin
         if (keymgr_key_en_i) begin
+          // Key from keymgr is actually used if *keyed* MAC is enabled.
+          keymgr_key_used = kmac_en_o;
           key_len_o = SideloadedKey;
           for (int i = 0 ; i < Share; i++) begin
             key_data_o[i] = keymgr_key[i];
