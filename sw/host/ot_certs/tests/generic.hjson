@@ -108,13 +108,13 @@
 
     certificate: {
         serial_number: { var: "serial_number" },
-        issuer: {
-            country: { var: "issuer_c" },
-            common_name: { var: "issuer_cn" },
-        },
-        subject: {
-            serial_number: { var: "subject_serial_number" },
-        },
+        issuer: [
+            { country: { var: "issuer_c" } },
+            { common_name: { var: "issuer_cn" } },
+        ],
+        subject: [
+            { serial_number: { var: "subject_serial_number" } },
+        ],
         not_before: { var: "not_before" },
         not_after: { var: "not_after" },
         subject_public_key_info: {
@@ -130,11 +130,11 @@
         basic_constraints: {
             ca: { var: "basic_constraints_ca" }
         }
-        subject_alt_name: {
-            tpm_vendor: { var: "tpm_vendor" },
-            tpm_model: { var: "tpm_model" },
-            tpm_version: { var: "tpm_version" },
-        },
+        subject_alt_name: [
+            { tpm_vendor: { var: "tpm_vendor" } },
+            { tpm_model: { var: "tpm_model" } },
+            { tpm_version: { var: "tpm_version" } },
+        ],
         private_extensions: [
             {
                 type: "dice_tcb_info",

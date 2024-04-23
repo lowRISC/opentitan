@@ -52,12 +52,12 @@
 
     certificate: {
         serial_number: { var: "owner_intermediate_pub_key_id", convert: "big-endian" },
-        issuer: {
-            serial_number: { var: "creator_pub_key_id", convert: "lowercase-hex" },
-        },
-        subject: {
-            serial_number: { var: "owner_intermediate_pub_key_id", convert: "lowercase-hex" },
-        },
+        issuer: [
+            { serial_number: { var: "creator_pub_key_id", convert: "lowercase-hex" } },
+        ],
+        subject: [
+            { serial_number: { var: "owner_intermediate_pub_key_id", convert: "lowercase-hex" } },
+        ],
         // From the Open Profile for DICE specification:
         // https://pigweed.googlesource.com/open-dice/+/refs/heads/main/docs/specification.md#x_509-cdi-certificates
         // The certificate expiration time is set to a fixed date in the future.
