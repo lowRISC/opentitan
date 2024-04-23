@@ -10,12 +10,15 @@
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_rv_core_ibex.h"
+#include "sw/device/lib/dif/dif_sram_ctrl.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
+#include "sw/device/lib/testing/sram_ctrl_testutils.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
 #include "sw/device/sca/lib/sca.h"
+#include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #include "sw/device/tests/penetrationtests/firmware/lib/sca_lib.h"
 #include "sw/device/tests/penetrationtests/json/ibex_fi_commands.h"
 
@@ -38,6 +41,8 @@ static dif_rv_core_ibex_t rv_core_ibex;
 static bool flash_init;
 // Indicates whether flash content is valid or not.
 static bool flash_data_valid;
+// Indicates whether ret SRAM already was initialized for the test or not.
+static bool sram_ret_init;
 
 // Make sure that this function does not get optimized by the compiler.
 uint32_t increment_counter(uint32_t counter) __attribute__((optnone)) {
@@ -109,7 +114,6 @@ static dif_flash_ctrl_device_info_t flash_info;
 OT_SECTION(".data")
 
 static volatile uint32_t sram_main_buffer[256];
-static volatile uint32_t sram_main_buffer_large[4000];
 
 status_t handle_ibex_fi_address_translation(ujson_t *uj) {
   // Clear registered alerts in alert handler.
@@ -505,17 +509,33 @@ status_t handle_ibex_fi_char_flash_write(ujson_t *uj) {
 }
 
 status_t handle_ibex_fi_char_sram_static(ujson_t *uj) {
+  if (!sram_ret_init) {
+    // Init retention SRAM, wipe and scramble it.
+    dif_sram_ctrl_t ret_sram;
+    mmio_region_t addr =
+        mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR);
+    TRY(dif_sram_ctrl_init(addr, &ret_sram));
+    TRY(sram_ctrl_testutils_wipe(&ret_sram));
+    TRY(sram_ctrl_testutils_scramble(&ret_sram));
+    sram_ret_init = true;
+  }
+
+  int max_words =
+      (TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES / sizeof(uint32_t)) - 1;
+
   // Clear registered alerts in alert handler.
   sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
 
-  // Get address of buffer located in SRAM.
-  uintptr_t sram_main_buffer_addr = (uintptr_t)&sram_main_buffer_large;
-  mmio_region_t sram_region_main_addr =
-      mmio_region_from_addr(sram_main_buffer_addr);
+  // Get address of the ret. SRAM at the beginning of the owner section.
+  uintptr_t sram_ret_buffer_addr =
+      TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR +
+      offsetof(retention_sram_t, owner);
+  mmio_region_t sram_region_ret_addr =
+      mmio_region_from_addr(sram_ret_buffer_addr);
 
   // Write reference value into SRAM.
-  for (int i = 0; i < 4000; i++) {
-    mmio_region_write32(sram_region_main_addr, i * (ptrdiff_t)sizeof(uint32_t),
+  for (int i = 0; i < max_words; i++) {
+    mmio_region_write32(sram_region_ret_addr, i * (ptrdiff_t)sizeof(uint32_t),
                         ref_values[0]);
   }
 
@@ -530,9 +550,9 @@ status_t handle_ibex_fi_char_sram_static(ujson_t *uj) {
   ibex_fi_faulty_addresses_t uj_output;
   memset(uj_output.addresses, 0, sizeof(uj_output.addresses));
   int faulty_address_pos = 0;
-  for (int sram_pos = 0; sram_pos < 4000; sram_pos++) {
+  for (int sram_pos = 0; sram_pos < max_words; sram_pos++) {
     uint32_t res_value = mmio_region_read32(
-        sram_region_main_addr, sram_pos * (ptrdiff_t)sizeof(uint32_t));
+        sram_region_ret_addr, sram_pos * (ptrdiff_t)sizeof(uint32_t));
     if (res_value != ref_values[0]) {
       uj_output.addresses[faulty_address_pos] = (uint32_t)sram_pos;
       faulty_address_pos++;
@@ -1194,6 +1214,8 @@ status_t handle_ibex_fi_init(ujson_t *uj) {
   // Initialize flash for the flash test and write reference values into page.
   flash_init = false;
   flash_data_valid = false;
+  // Initialize retention SRAM.
+  sram_ret_init = false;
 
   // Read the device ID and return it back to the host.
   TRY(sca_read_device_id(uj));
