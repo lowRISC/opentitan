@@ -5702,7 +5702,7 @@
         }
         {
           name: RndCnstMaskingLfsrPerm
-          desc: Permutation applied to the concatenated LFSRs of the PRNG used for masking.
+          desc: Permutation applied to the output of the PRNG used for masking.
           type: aes_pkg::masking_lfsr_perm_t
           randcount: 160
           randtype: perm

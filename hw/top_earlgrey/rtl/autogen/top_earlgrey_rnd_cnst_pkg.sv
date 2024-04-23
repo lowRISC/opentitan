@@ -158,7 +158,7 @@ package top_earlgrey_rnd_cnst_pkg;
     256'hCCE64CEA_FD282C0E_33FD2C07_986C2A51_1755F072_EE7A8E2F_C45E111D_F07FA067
   };
 
-  // Permutation applied to the concatenated LFSRs of the PRNG used for masking.
+  // Permutation applied to the output of the PRNG used for masking.
   parameter aes_pkg::masking_lfsr_perm_t RndCnstAesMaskingLfsrPerm = {
     256'h5227992E_22693A16_3F8B5D8D_58914A1E_3283106A_866C4C2D_760E4978_31847C29,
     256'h67377924_0A710D95_81424147_06663948_8702639F_7A144F17_8009209D_0834447B,
