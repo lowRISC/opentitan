@@ -130,6 +130,18 @@ impl UsbBackend {
         self.handle.claim_interface(iface).context("USB error")
     }
 
+    pub fn kernel_driver_active(&self, iface: u8) -> Result<bool> {
+        self.handle.kernel_driver_active(iface).context("USB error")
+    }
+
+    pub fn detach_kernel_driver(&mut self, iface: u8) -> Result<()> {
+        self.handle.detach_kernel_driver(iface).context("USB error")
+    }
+
+    pub fn attach_kernel_driver(&mut self, iface: u8) -> Result<()> {
+        self.handle.attach_kernel_driver(iface).context("USB error")
+    }
+
     //
     // Enumerating interfaces of the USB device.  The methods below leak rusb data structures,
     // and may have to be refactored, when we convert UsbDevice into a trait, and want to
