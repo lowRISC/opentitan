@@ -115,6 +115,16 @@ OT_SECTION(".data")
 
 static volatile uint32_t sram_main_buffer[256];
 
+// Inline function used by the sram_write_read test.
+static inline void sram_write_read_instr(void) {
+  asm volatile("sw x5, (%0)" : : "r"(&sram_main_buffer[0]));
+  asm volatile("lw x5, (%0)" : : "r"(&sram_main_buffer[0]));
+  asm volatile("sw x6, (%0)" : : "r"(&sram_main_buffer[0]));
+  asm volatile("lw x6, (%0)" : : "r"(&sram_main_buffer[0]));
+  asm volatile("sw x7, (%0)" : : "r"(&sram_main_buffer[0]));
+  asm volatile("lw x7, (%0)" : : "r"(&sram_main_buffer[0]));
+}
+
 status_t handle_ibex_fi_address_translation(ujson_t *uj) {
   // Clear registered alerts in alert handler.
   sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
@@ -735,6 +745,70 @@ status_t handle_ibex_fi_char_sram_write_static_unrolled(ujson_t *uj) {
   return OK_STATUS();
 }
 
+status_t handle_ibex_fi_char_sram_write_read(ujson_t *uj)
+    __attribute__((optnone)) {
+  // Clear registered alerts in alert handler.
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+
+  // Initialize SRAM region with inverse reference value.
+  sram_main_buffer[0] = ~ref_values[0];
+
+  // Init x5, x6, x6 with the reference values.
+  asm volatile("li x5, %0" : : "i"(ref_values[0]));
+  asm volatile("li x6, %0" : : "i"(ref_values[1]));
+  asm volatile("li x7, %0" : : "i"(ref_values[2]));
+
+  sca_set_trigger_high();
+  asm volatile(NOP10);
+  sram_write_read_instr();
+  sram_write_read_instr();
+  sram_write_read_instr();
+  sram_write_read_instr();
+  sram_write_read_instr();
+  sram_write_read_instr();
+  sram_write_read_instr();
+  sram_write_read_instr();
+  sram_write_read_instr();
+  sram_write_read_instr();
+  sram_write_read_instr();
+  sram_write_read_instr();
+  sram_write_read_instr();
+  sram_write_read_instr();
+  sram_write_read_instr();
+  sram_write_read_instr();
+  asm volatile(NOP10);
+  sca_set_trigger_low();
+  // Get registered alerts from alert handler.
+  reg_alerts = sca_get_triggered_alerts();
+
+  uint32_t res_values[3];
+  asm volatile("mv %0, x5" : "=r"(res_values[0]));
+  asm volatile("mv %0, x6" : "=r"(res_values[1]));
+  asm volatile("mv %0, x7" : "=r"(res_values[2]));
+
+  // Compare against reference values.
+  ibex_fi_faulty_addresses_data_t uj_output;
+  memset(uj_output.addresses, 0, sizeof(uj_output.addresses));
+  memset(uj_output.data, 0, sizeof(uj_output.data));
+
+  for (size_t addr = 0; addr < 3; addr++) {
+    if (res_values[addr] != ref_values[addr]) {
+      uj_output.addresses[addr] = (uint32_t)&sram_main_buffer[0];
+      uj_output.data[addr] = res_values[addr];
+    }
+  }
+
+  // Read ERR_STATUS register.
+  dif_rv_core_ibex_error_status_t codes;
+  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
+
+  // Send res & ERR_STATUS to host.
+  uj_output.err_status = codes;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  RESP_OK(ujson_serialize_ibex_fi_faulty_addresses_data_t, uj, &uj_output);
+  return OK_STATUS();
+}
+
 status_t handle_ibex_fi_char_sram_write(ujson_t *uj) {
   // Clear registered alerts in alert handler.
   sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
@@ -1247,6 +1321,8 @@ status_t handle_ibex_fi(ujson_t *uj) {
       return handle_ibex_fi_char_unconditional_branch(uj);
     case kIbexFiSubcommandCharSramWrite:
       return handle_ibex_fi_char_sram_write(uj);
+    case kIbexFiSubcommandCharSramWriteRead:
+      return handle_ibex_fi_char_sram_write_read(uj);
     case kIbexFiSubcommandCharSramWriteStaticUnrolled:
       return handle_ibex_fi_char_sram_write_static_unrolled(uj);
     case kIbexFiSubcommandCharSramRead:
