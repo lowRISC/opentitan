@@ -3,11 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "//rules:opentitan_test.bzl",
-    "cw310_params",
-    "opentitan_functest",
-)
-load(
     "//rules:const.bzl",
     "CONST",
     "get_lc_items",
@@ -20,6 +15,11 @@ load(
     "key_allowed_in_lc_state",
 )
 load(
+    "//rules/opentitan:defs.bzl",
+    "cw310_params",
+    "opentitan_test",
+)
+load(
     "//rules:otp.bzl",
     "STD_OTP_OVERLAYS",
     "otp_image",
@@ -28,10 +28,6 @@ load(
 load(
     "//rules:rom_e2e.bzl",
     "maybe_skip_in_ci",
-)
-load(
-    "//rules:splice.bzl",
-    "bitstream_splice",
 )
 load(
     "//sw/device/silicon_creator/rom/e2e:defs.bzl",
@@ -52,30 +48,15 @@ package(default_visibility = ["//visibility:public"])
 ]
 
 [
-    bitstream_splice(
-        name = "bitstream_sigverify_key_type_{}".format(
-            lc_state,
-        ),
-        src = "//hw/bitstream:rom_with_fake_keys",
-        data = ":otp_img_sigverify_key_type_{}".format(
-            lc_state,
-        ),
-        meminfo = "//hw/bitstream:otp_mmi",
-        tags = maybe_skip_in_ci(lc_state_val),
-        update_usr_access = True,
-        visibility = ["//visibility:private"],
-    )
-    for lc_state, lc_state_val in get_lc_items()
-]
-
-[
-    opentitan_functest(
+    opentitan_test(
         name = "sigverify_key_type_{}_{}".format(
             lc_state,
             key.rsa.name,
         ),
+        srcs = [
+            "//sw/device/silicon_creator/rom/e2e:empty_test",
+        ],
         cw310 = cw310_params(
-            bitstream = ":bitstream_sigverify_key_type_{}".format(lc_state),
             exit_failure = MSG_PASS if not key_allowed_in_lc_state(
                 key.rsa,
                 lc_state_val,
@@ -90,12 +71,17 @@ package(default_visibility = ["//visibility:public"])
                 hex_digits(CONST.BFV.SIGVERIFY.BAD_RSA_KEY),
                 hex_digits(lc_state_val),
             ),
+            otp = "otp_img_sigverify_key_type_{}".format(lc_state),
             tags = maybe_skip_in_ci(lc_state_val),
         ),
-        key_struct = key,
-        ot_flash_binary = "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a",
-        targets = [
-            "cw310_rom_with_fake_keys",
+        exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        },
+        rsa_key = {key.rsa.label: key.rsa.name},
+        deps = [
+            "//sw/device/lib/testing/test_framework:ottf_main",
+            "//sw/device/silicon_creator/lib/drivers:otp",
+            "//sw/device/silicon_creator/lib/sigverify:spx_verify",
         ],
     )
     for lc_state, lc_state_val in get_lc_items()
