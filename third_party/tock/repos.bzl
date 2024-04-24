@@ -40,9 +40,9 @@ def tock_repos(tock = None, libtock = None, elf2tab = None):
     bare_repository(
         name = "tock",
         local = tock,
-        strip_prefix = "tock-81602d4894bb5bb9e5157b5ea2876a902996ba1d",
-        url = "https://github.com/tock/tock/archive/81602d4894bb5bb9e5157b5ea2876a902996ba1d.tar.gz",
-        sha256 = "69d1fa4789909cb3206bfd9e1b3453f9cf1b1211ec989b7b753b2917cc653306",
+        strip_prefix = "tock-25d9f42c9f4672c54840e4623d79279ff6abd820",
+        url = "https://github.com/tock/tock/archive/25d9f42c9f4672c54840e4623d79279ff6abd820.tar.gz",
+        sha256 = "56b528ad0da04e05053f2c8220b8a0bb44bc1233b51d742f05e05f5c950787b9",
         additional_files_content = {
             "BUILD": """exports_files(glob(["**"]))""",
             "arch/riscv/BUILD": crate_build(
@@ -152,9 +152,9 @@ def tock_repos(tock = None, libtock = None, elf2tab = None):
     bare_repository(
         name = "libtock",
         local = libtock,
-        strip_prefix = "libtock-rs-75c92fc92c2ee3d8dbbbb288a2521837e069e0be",
-        url = "https://github.com/tock/libtock-rs/archive/75c92fc92c2ee3d8dbbbb288a2521837e069e0be.tar.gz",
-        sha256 = "0c56524b2534313404f600c24328307c565f61621d83ae32ba68ea9174863614",
+        strip_prefix = "libtock-rs-552ff2fa6394a879267d8a8bbaae615c3f787781",
+        url = "https://github.com/tock/libtock-rs/archive/552ff2fa6394a879267d8a8bbaae615c3f787781.tar.gz",
+        sha256 = "0aad50044d4c5902f5ea175e98d0bd0fd7926cb4d80989a85ab90c2810e83a58",
         additional_files_content = {
             "BUILD": crate_build(
                 name = "libtock",
@@ -167,7 +167,9 @@ def tock_repos(tock = None, libtock = None, elf2tab = None):
                     "//apis/buzzer",
                     "//apis/console",
                     "//apis/gpio",
+                    "//apis/i2c_master",
                     "//apis/i2c_master_slave",
+                    "//apis/key_value",
                     "//apis/leds",
                     "//apis/low_level_debug",
                     "//apis/ninedof",
@@ -220,8 +222,18 @@ def tock_repos(tock = None, libtock = None, elf2tab = None):
                 crate_name = "libtock_{name}",
                 deps = ["//platform"],
             ),
+            "apis/i2c_master/BUILD": crate_build(
+                name = "i2c_master",
+                crate_name = "libtock_{name}",
+                deps = ["//platform"],
+            ),
             "apis/i2c_master_slave/BUILD": crate_build(
                 name = "i2c_master_slave",
+                crate_name = "libtock_{name}",
+                deps = ["//platform"],
+            ),
+            "apis/key_value/BUILD": crate_build(
+                name = "key_value",
                 crate_name = "libtock_{name}",
                 deps = ["//platform"],
             ),

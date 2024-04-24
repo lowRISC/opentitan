@@ -76,7 +76,7 @@ rust_library(
     version = "0.14.7",
     deps = [
         "@tock_index__generic-array-0.14.7//:build_script_build",
-        "@tock_index__typenum-1.16.0//:typenum",
+        "@tock_index__typenum-1.17.0//:typenum",
     ],
 )
 

@@ -75,68 +75,68 @@ rust_library(
     version = "0.5.3",
     deps = [
         "@tock_index__cfg-if-1.0.0//:cfg_if",
-        "@tock_index__opaque-debug-0.3.0//:opaque_debug",
+        "@tock_index__opaque-debug-0.3.1//:opaque_debug",
         "@tock_index__universal-hash-0.4.1//:universal_hash",
     ] + select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "@tock_index__cpufeatures-0.2.9//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86_64", target_arch = "x86"))
+            "@tock_index__cpufeatures-0.2.12//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86_64", target_arch = "x86"))
         ],
         "@rules_rust//rust/platform:aarch64-apple-ios": [
-            "@tock_index__cpufeatures-0.2.9//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86_64", target_arch = "x86"))
+            "@tock_index__cpufeatures-0.2.12//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86_64", target_arch = "x86"))
         ],
         "@rules_rust//rust/platform:aarch64-apple-ios-sim": [
-            "@tock_index__cpufeatures-0.2.9//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86_64", target_arch = "x86"))
+            "@tock_index__cpufeatures-0.2.12//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86_64", target_arch = "x86"))
         ],
         "@rules_rust//rust/platform:aarch64-fuchsia": [
-            "@tock_index__cpufeatures-0.2.9//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86_64", target_arch = "x86"))
+            "@tock_index__cpufeatures-0.2.12//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86_64", target_arch = "x86"))
         ],
         "@rules_rust//rust/platform:aarch64-linux-android": [
-            "@tock_index__cpufeatures-0.2.9//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86_64", target_arch = "x86"))
+            "@tock_index__cpufeatures-0.2.12//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86_64", target_arch = "x86"))
         ],
         "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "@tock_index__cpufeatures-0.2.9//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86_64", target_arch = "x86"))
+            "@tock_index__cpufeatures-0.2.12//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86_64", target_arch = "x86"))
         ],
         "@rules_rust//rust/platform:aarch64-unknown-linux-gnu": [
-            "@tock_index__cpufeatures-0.2.9//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86_64", target_arch = "x86"))
+            "@tock_index__cpufeatures-0.2.12//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86_64", target_arch = "x86"))
         ],
         "@rules_rust//rust/platform:i686-apple-darwin": [
-            "@tock_index__cpufeatures-0.2.9//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86_64", target_arch = "x86"))
+            "@tock_index__cpufeatures-0.2.12//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86_64", target_arch = "x86"))
         ],
         "@rules_rust//rust/platform:i686-linux-android": [
-            "@tock_index__cpufeatures-0.2.9//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86_64", target_arch = "x86"))
+            "@tock_index__cpufeatures-0.2.12//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86_64", target_arch = "x86"))
         ],
         "@rules_rust//rust/platform:i686-pc-windows-msvc": [
-            "@tock_index__cpufeatures-0.2.9//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86_64", target_arch = "x86"))
+            "@tock_index__cpufeatures-0.2.12//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86_64", target_arch = "x86"))
         ],
         "@rules_rust//rust/platform:i686-unknown-freebsd": [
-            "@tock_index__cpufeatures-0.2.9//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86_64", target_arch = "x86"))
+            "@tock_index__cpufeatures-0.2.12//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86_64", target_arch = "x86"))
         ],
         "@rules_rust//rust/platform:i686-unknown-linux-gnu": [
-            "@tock_index__cpufeatures-0.2.9//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86_64", target_arch = "x86"))
+            "@tock_index__cpufeatures-0.2.12//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86_64", target_arch = "x86"))
         ],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "@tock_index__cpufeatures-0.2.9//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86_64", target_arch = "x86"))
+            "@tock_index__cpufeatures-0.2.12//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86_64", target_arch = "x86"))
         ],
         "@rules_rust//rust/platform:x86_64-apple-ios": [
-            "@tock_index__cpufeatures-0.2.9//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86_64", target_arch = "x86"))
+            "@tock_index__cpufeatures-0.2.12//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86_64", target_arch = "x86"))
         ],
         "@rules_rust//rust/platform:x86_64-fuchsia": [
-            "@tock_index__cpufeatures-0.2.9//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86_64", target_arch = "x86"))
+            "@tock_index__cpufeatures-0.2.12//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86_64", target_arch = "x86"))
         ],
         "@rules_rust//rust/platform:x86_64-linux-android": [
-            "@tock_index__cpufeatures-0.2.9//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86_64", target_arch = "x86"))
+            "@tock_index__cpufeatures-0.2.12//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86_64", target_arch = "x86"))
         ],
         "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "@tock_index__cpufeatures-0.2.9//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86_64", target_arch = "x86"))
+            "@tock_index__cpufeatures-0.2.12//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86_64", target_arch = "x86"))
         ],
         "@rules_rust//rust/platform:x86_64-unknown-freebsd": [
-            "@tock_index__cpufeatures-0.2.9//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86_64", target_arch = "x86"))
+            "@tock_index__cpufeatures-0.2.12//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86_64", target_arch = "x86"))
         ],
         "@rules_rust//rust/platform:x86_64-unknown-linux-gnu": [
-            "@tock_index__cpufeatures-0.2.9//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86_64", target_arch = "x86"))
+            "@tock_index__cpufeatures-0.2.12//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86_64", target_arch = "x86"))
         ],
         "@rules_rust//rust/platform:x86_64-unknown-none": [
-            "@tock_index__cpufeatures-0.2.9//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86_64", target_arch = "x86"))
+            "@tock_index__cpufeatures-0.2.12//:cpufeatures",  # cfg(any(target_arch = "aarch64", target_arch = "x86_64", target_arch = "x86"))
         ],
         "//conditions:default": [],
     }),
