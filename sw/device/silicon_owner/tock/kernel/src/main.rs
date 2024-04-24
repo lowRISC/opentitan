@@ -44,8 +44,6 @@ use rv32i::csr;
 pub mod io;
 mod otbn;
 mod pinmux_layout;
-#[cfg(test)]
-mod tests;
 
 const NUM_PROCS: usize = 4;
 
