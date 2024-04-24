@@ -154,10 +154,10 @@ $$ {{baud} < {{40 * f\_{pclk}} \over {2^{$bits(NCO)+4}}}} \qquad OR \qquad
 {{f\_{pclk}} > {{{2^{$bits(NCO)+4}} * {baud}} \over {40}}} $$
 
 Using rounded frequencies and common baud rates, this implies that
-care is needed for 9600 baud and below if the system clock is under
-250MHz, with 4800 baud and below if the system clock is under 125MHz,
-2400 baud and below if the system clock us under 63MHz, and 1200 baud
-and below if the system clock is under 32MHz.
+care is needed for 9600 baud and below if the system clock is over
+250MHz, with 4800 baud and below if the system clock is over 125MHz,
+2400 baud and below if the system clock is over 62MHz, and 1200 baud
+and below if the system clock is over 31MHz.
 
 
 ### Interrupts
