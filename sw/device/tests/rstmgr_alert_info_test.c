@@ -701,6 +701,11 @@ static void init_expected_cause(void) {
       .alert_info.alert_cause[kTopEarlgreyAlertIdI2c0FatalFault] = 1;
   kExpectedInfo[kRound3]
       .alert_info.alert_cause[kTopEarlgreyAlertIdSpiHost0FatalFault] = 1;
+
+  if (kDeviceType == kDeviceFpgaCw310 || kDeviceType == kDeviceFpgaCw340) {
+    kExpectedInfo[kRound3]
+        .alert_info.alert_cause[kTopEarlgreyAlertIdFlashCtrlFatalErr] = 1;
+  }
 }
 
 bool test_main(void) {
