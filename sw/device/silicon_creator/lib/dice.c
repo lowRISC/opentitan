@@ -98,20 +98,60 @@ static void curr_pubkey_le_to_be_convert(attestation_public_key_t *pubkey) {
   le_be_buf_format((unsigned char *)pubkey->y, kAttestationPublicKeyCoordBytes);
 }
 
-/**
- * Function generating a DICE or TPM certificate key pair. If successful, the
- * generated public key is saved at pubkey.
- */
-static rom_error_t common_attestation_keygen(
-    otbn_boot_attestation_key_type_t key_type,
-    const sc_keymgr_diversification_t *diversifier, attestation_key_seed_t seed,
-    sc_keymgr_state_t desired_keymgr_state, hmac_digest_t *pubkey_id,
-    attestation_public_key_t *pubkey) {
+rom_error_t dice_attestation_keygen(dice_key_t desired_key,
+                                    hmac_digest_t *pubkey_id,
+                                    attestation_public_key_t *pubkey) {
+  otbn_boot_attestation_key_type_t key_type;
+  attestation_key_seed_t otbn_ecc_keygen_seed;
+  const sc_keymgr_diversification_t *keymgr_diversifier;
+  sc_keymgr_state_t desired_keymgr_state;
+
+  switch (desired_key) {
+    case kDiceKeyUds:
+      desired_keymgr_state = kScKeymgrStateCreatorRootKey;
+      key_type = kOtbnBootAttestationKeyTypeDice;
+      keymgr_diversifier = &kUdsKeymgrDiversifier;
+      otbn_ecc_keygen_seed = kUdsAttestationKeySeed;
+      break;
+    case kDiceKeyCdi0:
+      desired_keymgr_state = kScKeymgrStateOwnerIntermediateKey;
+      key_type = kOtbnBootAttestationKeyTypeDice;
+      keymgr_diversifier = &kCdi0KeymgrDiversifier;
+      otbn_ecc_keygen_seed = kCdi0AttestationKeySeed;
+      break;
+    case kDiceKeyCdi1:
+      desired_keymgr_state = kScKeymgrStateOwnerKey;
+      key_type = kOtbnBootAttestationKeyTypeDice;
+      keymgr_diversifier = &kCdi1KeymgrDiversifier;
+      otbn_ecc_keygen_seed = kCdi1AttestationKeySeed;
+      break;
+    case kDiceKeyTpmEk:
+      desired_keymgr_state = kScKeymgrStateOwnerKey;
+      key_type = kOtbnBootAttestationKeyTypeTpm;
+      keymgr_diversifier = &kTpmEkKeymgrDiversifier;
+      otbn_ecc_keygen_seed = kTpmEkAttestationKeySeed;
+      break;
+    case kDiceKeyTpmCek:
+      desired_keymgr_state = kScKeymgrStateOwnerKey;
+      key_type = kOtbnBootAttestationKeyTypeTpm;
+      keymgr_diversifier = &kTpmCekKeymgrDiversifier;
+      otbn_ecc_keygen_seed = kTpmCekAttestationKeySeed;
+      break;
+    case kDiceKeyTpmCik:
+      desired_keymgr_state = kScKeymgrStateOwnerKey;
+      key_type = kOtbnBootAttestationKeyTypeTpm;
+      keymgr_diversifier = &kTpmCikKeymgrDiversifier;
+      otbn_ecc_keygen_seed = kTpmCikAttestationKeySeed;
+      break;
+    default:
+      return kErrorDiceInvalidKeyType;
+  };
+
   HARDENED_RETURN_IF_ERROR(sc_keymgr_state_check(desired_keymgr_state));
 
   // Generate / sideload key material into OTBN, and generate the ECC keypair.
-  HARDENED_RETURN_IF_ERROR(
-      otbn_boot_attestation_keygen(seed, key_type, *diversifier, pubkey));
+  HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_keygen(
+      otbn_ecc_keygen_seed, key_type, *keymgr_diversifier, pubkey));
 
   // Keys are represented in certificates in big endian format, but the key is
   // output from OTBN in little endian format, so we convert the key to
@@ -122,69 +162,6 @@ static rom_error_t common_attestation_keygen(
   hmac_sha256(pubkey, kAttestationPublicKeyCoordBytes * 2, pubkey_id);
 
   return kErrorOk;
-}
-
-/**
- * Function preparing parameters for generating DICE attestation keys.
- */
-rom_error_t dice_attestation_keygen(dice_key_t desired_key,
-                                    hmac_digest_t *pubkey_id,
-                                    attestation_public_key_t *pubkey) {
-  attestation_key_seed_t otbn_ecc_keygen_seed;
-  const sc_keymgr_diversification_t *keymgr_diversifier;
-  sc_keymgr_state_t desired_state;
-
-  switch (desired_key) {
-    case kDiceKeyUds:
-      desired_state = kScKeymgrStateCreatorRootKey;
-      keymgr_diversifier = &kUdsKeymgrDiversifier;
-      otbn_ecc_keygen_seed = kUdsAttestationKeySeed;
-      break;
-    case kDiceKeyCdi0:
-      desired_state = kScKeymgrStateOwnerIntermediateKey;
-      keymgr_diversifier = &kCdi0KeymgrDiversifier;
-      otbn_ecc_keygen_seed = kCdi0AttestationKeySeed;
-      break;
-    case kDiceKeyCdi1:
-      desired_state = kScKeymgrStateOwnerKey;
-      keymgr_diversifier = &kCdi1KeymgrDiversifier;
-      otbn_ecc_keygen_seed = kCdi1AttestationKeySeed;
-      break;
-    default:
-      return kErrorDiceInvalidArgument;
-  };
-  return common_attestation_keygen(kOtbnBootAttestationKeyTypeDice,
-                                   keymgr_diversifier, otbn_ecc_keygen_seed,
-                                   desired_state, pubkey_id, pubkey);
-}
-
-/**
- * Function preparing parameters for generating TPM keys.
- */
-rom_error_t tpm_cert_keygen(tpm_key_t desired_key, hmac_digest_t *pubkey_id,
-                            attestation_public_key_t *pubkey) {
-  attestation_key_seed_t otbn_ecc_keygen_seed;
-  const sc_keymgr_diversification_t *keymgr_diversifier;
-
-  switch (desired_key) {
-    case kTpmKeyEk:
-      keymgr_diversifier = &kTpmEkKeymgrDiversifier;
-      otbn_ecc_keygen_seed = kTpmEkAttestationKeySeed;
-      break;
-    case kTpmKeyCek:
-      keymgr_diversifier = &kTpmCekKeymgrDiversifier;
-      otbn_ecc_keygen_seed = kTpmCekAttestationKeySeed;
-      break;
-    case kTpmKeyCik:
-      keymgr_diversifier = &kTpmCikKeymgrDiversifier;
-      otbn_ecc_keygen_seed = kTpmCikAttestationKeySeed;
-      break;
-    default:
-      return kErrorDiceInvalidArgument;
-  };
-  return common_attestation_keygen(kOtbnBootAttestationKeyTypeTpm,
-                                   keymgr_diversifier, otbn_ecc_keygen_seed,
-                                   kScKeymgrStateOwnerKey, pubkey_id, pubkey);
 }
 
 /**
@@ -371,7 +348,8 @@ rom_error_t dice_cdi_1_cert_build(hmac_digest_t *owner_measurement,
 
 rom_error_t dice_tpm_ek_cert_build(manuf_certgen_inputs_t *inputs,
                                    attestation_public_key_t *tpm_ek_pubkey,
-                                   hmac_digest_t *digest, uint8_t *tpm_ek_tbs,
+                                   hmac_digest_t *pubkey_id,
+                                   uint8_t *tpm_ek_tbs,
                                    size_t *tpm_ek_tbs_size) {
   tpm_ek_tbs_values_t tpm_ek_tbs_params = {
       .auth_key_key_id = inputs->auth_key_key_id,
@@ -380,7 +358,7 @@ rom_error_t dice_tpm_ek_cert_build(manuf_certgen_inputs_t *inputs,
       .tpm_ek_pub_key_ec_x_size = kAttestationPublicKeyCoordBytes,
       .tpm_ek_pub_key_ec_y = (unsigned char *)tpm_ek_pubkey->y,
       .tpm_ek_pub_key_ec_y_size = kAttestationPublicKeyCoordBytes,
-      .tpm_ek_pub_key_id = (unsigned char *)digest->digest,  // Nobody cares.
+      .tpm_ek_pub_key_id = (unsigned char *)pubkey_id->digest,
       .tpm_ek_pub_key_id_size = kDiceCertKeyIdSizeInBytes,
       .tpm_version = "0.0.1",
       .tpm_version_len = 5,
@@ -398,7 +376,8 @@ rom_error_t dice_tpm_ek_cert_build(manuf_certgen_inputs_t *inputs,
 
 rom_error_t dice_tpm_cek_cert_build(manuf_certgen_inputs_t *inputs,
                                     attestation_public_key_t *tpm_cek_pubkey,
-                                    hmac_digest_t *digest, uint8_t *tpm_cek_tbs,
+                                    hmac_digest_t *pubkey_id,
+                                    uint8_t *tpm_cek_tbs,
                                     size_t *tpm_cek_tbs_size) {
   tpm_cek_tbs_values_t tpm_cek_tbs_params = {
       .auth_key_key_id = inputs->auth_key_key_id,
@@ -407,7 +386,7 @@ rom_error_t dice_tpm_cek_cert_build(manuf_certgen_inputs_t *inputs,
       .tpm_cek_pub_key_ec_x_size = kAttestationPublicKeyCoordBytes,
       .tpm_cek_pub_key_ec_y = (unsigned char *)tpm_cek_pubkey->y,
       .tpm_cek_pub_key_ec_y_size = kAttestationPublicKeyCoordBytes,
-      .tpm_cek_pub_key_id = (unsigned char *)digest->digest,
+      .tpm_cek_pub_key_id = (unsigned char *)pubkey_id->digest,
       .tpm_cek_pub_key_id_size = kDiceCertKeyIdSizeInBytes,
   };
 
@@ -419,7 +398,8 @@ rom_error_t dice_tpm_cek_cert_build(manuf_certgen_inputs_t *inputs,
 
 rom_error_t dice_tpm_cik_cert_build(manuf_certgen_inputs_t *inputs,
                                     attestation_public_key_t *tpm_cik_pubkey,
-                                    hmac_digest_t *digest, uint8_t *tpm_cik_tbs,
+                                    hmac_digest_t *pubkey_id,
+                                    uint8_t *tpm_cik_tbs,
                                     size_t *tpm_cik_tbs_size) {
   tpm_cik_tbs_values_t tpm_cik_tbs_params = {
       .auth_key_key_id = inputs->auth_key_key_id,
@@ -428,7 +408,7 @@ rom_error_t dice_tpm_cik_cert_build(manuf_certgen_inputs_t *inputs,
       .tpm_cik_pub_key_ec_x_size = kAttestationPublicKeyCoordBytes,
       .tpm_cik_pub_key_ec_y = (unsigned char *)tpm_cik_pubkey->y,
       .tpm_cik_pub_key_ec_y_size = kAttestationPublicKeyCoordBytes,
-      .tpm_cik_pub_key_id = (unsigned char *)digest->digest,
+      .tpm_cik_pub_key_id = (unsigned char *)pubkey_id->digest,
       .tpm_cik_pub_key_id_size = kDiceCertKeyIdSizeInBytes,
   };
 
