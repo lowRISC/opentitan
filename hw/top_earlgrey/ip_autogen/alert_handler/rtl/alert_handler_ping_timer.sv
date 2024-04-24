@@ -200,7 +200,11 @@ module alert_handler_ping_timer import alert_pkg::*; #(
     .Width(EscSenderIdxWidth),
     // The alert handler behaves differently than other comportable IP. I.e., instead of sending out
     // an alert signal, this condition is handled internally in the alert handler.
-    .EnableAlertTriggerSVA(0)
+    .EnableAlertTriggerSVA(0),
+    // Pass a parameter to disable coverage for some assertions that are unreachable because set_i
+    // and decr_en_i are tied to zero.
+    .PossibleActions(prim_count_pkg::Clr |
+                     prim_count_pkg::Incr)
   ) u_prim_count_esc_cnt (
     .clk_i,
     .rst_ni,
@@ -234,7 +238,11 @@ module alert_handler_ping_timer import alert_pkg::*; #(
     .Width(PING_CNT_DW),
     // The alert handler behaves differently than other comportable IP. I.e., instead of sending out
     // an alert signal, this condition is handled internally in the alert handler.
-    .EnableAlertTriggerSVA(0)
+    .EnableAlertTriggerSVA(0),
+    // Pass a parameter to disable coverage for some assertions that are unreachable because clr_i
+    // and incr_en_i are tied to zero.
+    .PossibleActions(prim_count_pkg::Set |
+                     prim_count_pkg::Decr)
   ) u_prim_count_cnt (
     .clk_i,
     .rst_ni,
