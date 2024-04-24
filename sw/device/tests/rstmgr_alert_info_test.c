@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_alert_handler.h"
@@ -77,10 +78,10 @@
 OTTF_DEFINE_TEST_CONFIG();
 
 enum {
-  kWdogBarkMicros = 200,
-  kWdogBiteMicros = 200,
+  kWdogBarkMicros = 20000,
+  kWdogBiteMicros = 20000,
   kRoundOneDelay = 100,
-  kRoundTwoDelay = 100,
+  kRoundTwoDelay = kWdogBiteMicros,
   kRoundThreeDelay = 1000,
   kEventCounter = 0  // the retention sram counter tracking events
 };
@@ -114,6 +115,7 @@ typedef enum test_round {
 
 static volatile test_round_t global_test_round;
 static volatile uint32_t global_alert_called;
+
 static const dif_alert_handler_escalation_phase_t
     kEscProfiles[][ALERT_HANDLER_PARAM_N_CLASSES] = {
         [kDifAlertHandlerClassA] = {{.phase = kDifAlertHandlerClassStatePhase0,
@@ -345,27 +347,32 @@ static void prgm_alert_handler_round1(void) {
  * watchdog timer freeze.
  */
 static void prgm_alert_handler_round2(void) {
-  dif_alert_handler_class_t alert_classes[] = {kDifAlertHandlerClassC,
-                                               kDifAlertHandlerClassB};
-  dif_alert_handler_class_config_t class_configs[] = {
-      kConfigProfiles[kDifAlertHandlerClassC],
-      kConfigProfiles[kDifAlertHandlerClassB]};
-
   for (int i = kTopEarlgreyAlertPeripheralUart0;
        i <= kTopEarlgreyAlertPeripheralUart3; ++i) {
     CHECK_DIF_OK(dif_alert_handler_configure_alert(
         &alert_handler, test_node[i].alert, test_node[i].class,
         /*enabled=*/kDifToggleEnabled, /*locked=*/kDifToggleEnabled));
   }
-  CHECK_DIF_OK(dif_alert_handler_configure_alert(
-      &alert_handler, test_node[kTopEarlgreyAlertPeripheralOtpCtrl].alert,
-      test_node[kTopEarlgreyAlertPeripheralOtpCtrl].class,
-      /*enabled=*/kDifToggleEnabled,
-      /*locked=*/kDifToggleEnabled));
 
-  for (int i = 0; i < ARRAYSIZE(alert_classes); ++i) {
+  CHECK_DIF_OK(
+      dif_alert_handler_configure_class(&alert_handler, kDifAlertHandlerClassC,
+                                        kConfigProfiles[kDifAlertHandlerClassC],
+                                        /*enabled=*/kDifToggleEnabled,
+                                        /*locked=*/kDifToggleEnabled));
+
+  if (kBootStage != kBootStageOwner) {
+    // The ROM_EXT locks up the OTP register in the ePMP, any attempt to write
+    // to it would generate an exception. Therfore we can't test the OTP alert
+    // when the test runs after the ROM_EXT.
+    CHECK_DIF_OK(dif_alert_handler_configure_alert(
+        &alert_handler, test_node[kTopEarlgreyAlertPeripheralOtpCtrl].alert,
+        test_node[kTopEarlgreyAlertPeripheralOtpCtrl].class,
+        /*enabled=*/kDifToggleEnabled,
+        /*locked=*/kDifToggleEnabled));
+
     CHECK_DIF_OK(dif_alert_handler_configure_class(
-        &alert_handler, alert_classes[i], class_configs[i],
+        &alert_handler, kDifAlertHandlerClassB,
+        kConfigProfiles[kDifAlertHandlerClassB],
         /*enabled=*/kDifToggleEnabled,
         /*locked=*/kDifToggleEnabled));
   }
@@ -410,7 +417,7 @@ static void prgm_alert_handler_round3(void) {
 
   dif_alert_handler_escalation_phase_t class_d_esc[3];
 
-  if (kDeviceType == kDeviceFpgaCw310) {
+  if (kDeviceType == kDeviceFpgaCw310 || kDeviceType == kDeviceFpgaCw340) {
     CHECK(kUartBaudrate <= UINT32_MAX, "kUartBaudrate must fit in uint32_t");
     CHECK(kClockFreqPeripheralHz <= UINT32_MAX,
           "kClockFreqPeripheralHz must fit in uint32_t");
@@ -673,6 +680,19 @@ static void init_expected_cause(void) {
   kExpectedInfo[kRound2]
       .alert_info.alert_cause[kTopEarlgreyAlertIdOtpCtrlFatalBusIntegError] = 1;
 
+  if (kBootStage == kBootStageOwner) {
+    // The ROM_EXT locks up the OTP register in the ePMP, any attempt to write
+    // to it would generate an exception. Therfore we can't test the OTP alert
+    // when the test runs after the ROM_EXT.
+    kExpectedInfo[kRound2]
+        .alert_info.alert_cause[kTopEarlgreyAlertIdOtpCtrlFatalBusIntegError] =
+        0;
+    kExpectedInfo[kRound2].alert_info.class_accum_cnt[kDifAlertHandlerClassB] =
+        0;
+    kExpectedInfo[kRound2].alert_info.class_esc_state[kDifAlertHandlerClassB] =
+        0;
+  }
+
   kExpectedInfo[kRound3]
       .alert_info.alert_cause[kTopEarlgreyAlertIdRvCoreIbexRecovSwErr] = 1;
   kExpectedInfo[kRound3]
@@ -682,6 +702,7 @@ static void init_expected_cause(void) {
   kExpectedInfo[kRound3]
       .alert_info.alert_cause[kTopEarlgreyAlertIdSpiHost0FatalFault] = 1;
 }
+
 bool test_main(void) {
   uint32_t event_idx = 0;
 
@@ -776,10 +797,17 @@ bool test_main(void) {
       CHECK_DIF_OK(dif_uart_alert_force(&uart1, kDifUartAlertFatalFault));
       CHECK_DIF_OK(dif_uart_alert_force(&uart2, kDifUartAlertFatalFault));
       CHECK_DIF_OK(dif_uart_alert_force(&uart3, kDifUartAlertFatalFault));
-      CHECK_DIF_OK(dif_otp_ctrl_alert_force(
-          &otp_ctrl, kDifOtpCtrlAlertFatalBusIntegError));
-      CHECK_DIF_OK(dif_alert_handler_irq_set_enabled(
-          &alert_handler, kDifAlertHandlerIrqClassb, kDifToggleEnabled));
+      if (kBootStage != kBootStageOwner) {
+        // The ROM_EXT locks up the OTP register in the ePMP, any attempt to
+        // write to it would generate an exception. Therfore we can't test the
+        // OTP alert when the test runs after the ROM_EXT.
+        CHECK_DIF_OK(dif_otp_ctrl_alert_force(
+            &otp_ctrl, kDifOtpCtrlAlertFatalBusIntegError));
+        CHECK_DIF_OK(dif_alert_handler_irq_set_enabled(
+            &alert_handler, kDifAlertHandlerIrqClassb, kDifToggleEnabled));
+      } else {
+        LOG_INFO("Skipping OTP test due to ROM_EXT ePMP configuration");
+      }
       CHECK_DIF_OK(dif_alert_handler_irq_set_enabled(
           &alert_handler, kDifAlertHandlerIrqClassc, kDifToggleEnabled));
 
