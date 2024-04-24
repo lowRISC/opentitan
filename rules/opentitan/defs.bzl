@@ -2,6 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+"""Rules to build OpenTitan for the RISC-V target"""
+
 load(
     "@lowrisc_opentitan//rules:rv.bzl",
     _OPENTITAN_CPU = "OPENTITAN_CPU",
@@ -41,7 +43,10 @@ load(
     _rsa_key_for_lc_state = "rsa_key_for_lc_state",
 )
 
-"""Rules to build OpenTitan for the RISC-V target"""
+# The following definition is used to clear the key set in the signing
+# configuration for execution environments (exec_env) and opentitan_test
+# and opentitan_binary rules.
+CLEAR_KEY_SET = {"//signing:none_key": "none_key"}
 
 # Re-exports of names from transition.bzl; many files in the repo use opentitan.bzl
 # to get to them.
