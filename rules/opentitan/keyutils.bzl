@@ -104,6 +104,24 @@ def rsa_key_for_lc_state(key_structs, hw_lc_state):
         keys[0].rsa.label: keys[0].rsa.name,
     }
 
+def ecdsa_key_by_name(key_structs, nickname):
+    """Return a dictionary containing a single key that matches the name given.
+
+    The format of the dictionary is compatible with opentitan_test.
+
+    Args:
+        key_structs: List of key structs.
+        nickname: Name of the key to search for.
+    Returns:
+        A dictionary containing the key.
+    """
+    keys = [k for k in key_structs if (k.ecdsa != None and k.ecdsa.name == nickname)]
+    if len(keys) == 0:
+        fail("There are no ECDSA keys compatible with name {} in key structs".format(nickname))
+    return {
+        keys[0].ecdsa.label: keys[0].ecdsa.name,
+    }
+
 def rsa_key_by_name(key_structs, nickname):
     """Return a dictionary containing a single key that matches the name given.
     The format of the dictionary is compatible with opentitan_test.
