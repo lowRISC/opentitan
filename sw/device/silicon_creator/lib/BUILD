@@ -489,12 +489,11 @@ cc_library(
 opentitan_test(
     name = "otbn_boot_services_functest",
     srcs = ["otbn_boot_services_functest.c"],
-    exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        {
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-        },
-    ),
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_sival": None,
+        "//hw/top_earlgrey:sim_dv": None,
+        "//hw/top_earlgrey:sim_verilator": None,
+    },
     # This target uses OTBN pointers internally, so it cannot work host-side.
     deps = [
         ":otbn_boot_services",
