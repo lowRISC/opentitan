@@ -49,6 +49,26 @@ void increment_counter(void) __attribute__((optnone)) {
   asm volatile("addi x5, x5, 1");
 }
 
+// Cond. branch macros.
+#define CONDBRANCHBEQ "beq x5, x6, endfitestfaultybeq\n"
+#define CONDBRANCHBNE "bne x5, x6, endfitestfaultybne\n"
+#define CONDBRANCHBGE "bge x5, x6, endfitestfaultybge\n"
+#define CONDBRANCHBGEU "bgeu x5, x6, endfitestfaultybgeu\n"
+#define CONDBRANCHBLT "blt x5, x6, endfitestfaultyblt\n"
+#define CONDBRANCHBLTU "bltu x5, x6, endfitestfaultybltu\n"
+
+#define CONDBRANCHREP1(X) X
+#define CONDBRANCHREP10(X) \
+  CONDBRANCHREP1(X)        \
+  CONDBRANCHREP1(X)        \
+  CONDBRANCHREP1(X)        \
+  CONDBRANCHREP1(X)        \
+  CONDBRANCHREP1(X)        \
+  CONDBRANCHREP1(X)        \
+  CONDBRANCHREP1(X) CONDBRANCHREP1(X) CONDBRANCHREP1(X) CONDBRANCHREP1(X)
+#define CONDBRANCHREP30(X) \
+  CONDBRANCHREP10(X) CONDBRANCHREP10(X) CONDBRANCHREP10(X)
+
 // NOP macros.
 #define NOP1 "addi x0, x0, 0\n"
 #define NOP10 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1
@@ -898,23 +918,30 @@ status_t handle_ibex_fi_char_unconditional_branch(ujson_t *uj) {
   return OK_STATUS();
 }
 
-status_t handle_ibex_fi_char_conditional_branch(ujson_t *uj)
+status_t handle_ibex_fi_char_conditional_branch_beq(ujson_t *uj)
     __attribute__((optnone)) {
   // Clear registered alerts in alert handler.
   sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
 
+  uint32_t result1 = 0;
+  uint32_t result2 = 0;
+
   // FI code target.
-  uint32_t branch_if_ = 1;
-  uint32_t branch_else = 0;
   sca_set_trigger_high();
+  asm volatile("addi x5, x0, 0xaf");
+  asm volatile("addi x6, x0, 0xef");
   asm volatile(NOP10);
-  for (int i = 0; i < 10000; i++) {
-    if (branch_if_ > 0) {
-      branch_if_++;
-    } else {
-      branch_else += 10;
-    }
-  }
+  asm volatile(CONDBRANCHREP30(CONDBRANCHBEQ));
+  asm volatile("mv %0, x5" : "=r"(result1));
+  asm volatile("mv %0, x6" : "=r"(result2));
+  asm volatile("beq x0, x0, endfitestbeq");
+  asm volatile(
+      "endfitestfaultybeq:\n"
+      "addi x5, x0, 0x11\n"
+      "addi x6, x0, 0x22");
+  asm volatile("mv %0, x5" : "=r"(result1));
+  asm volatile("mv %0, x6" : "=r"(result2));
+  asm volatile("endfitestbeq:\n");
   sca_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = sca_get_triggered_alerts();
@@ -925,8 +952,218 @@ status_t handle_ibex_fi_char_conditional_branch(ujson_t *uj)
 
   // Send loop counters & ERR_STATUS to host.
   ibex_fi_test_result_mult_t uj_output;
-  uj_output.result1 = branch_if_;
-  uj_output.result2 = branch_else;
+  uj_output.result1 = result1;
+  uj_output.result2 = result2;
+  uj_output.err_status = codes;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  RESP_OK(ujson_serialize_ibex_fi_test_result_mult_t, uj, &uj_output);
+  return OK_STATUS();
+}
+
+status_t handle_ibex_fi_char_conditional_branch_bne(ujson_t *uj)
+    __attribute__((optnone)) {
+  // Clear registered alerts in alert handler.
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+
+  uint32_t result1 = 0;
+  uint32_t result2 = 0;
+
+  // FI code target.
+  sca_set_trigger_high();
+  asm volatile("addi x5, x0, 0xaf");
+  asm volatile("addi x6, x0, 0xaf");
+  asm volatile(NOP10);
+  asm volatile(CONDBRANCHREP30(CONDBRANCHBNE));
+  asm volatile("mv %0, x5" : "=r"(result1));
+  asm volatile("mv %0, x6" : "=r"(result2));
+  asm volatile("beq x0, x0, endfitestbne");
+  asm volatile(
+      "endfitestfaultybne:\n"
+      "addi x5, x0, 0x11\n"
+      "addi x6, x0, 0x22");
+  asm volatile("mv %0, x5" : "=r"(result1));
+  asm volatile("mv %0, x6" : "=r"(result2));
+  asm volatile("endfitestbne:\n");
+  sca_set_trigger_low();
+  // Get registered alerts from alert handler.
+  reg_alerts = sca_get_triggered_alerts();
+
+  // Read ERR_STATUS register.
+  dif_rv_core_ibex_error_status_t codes;
+  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
+
+  // Send loop counters & ERR_STATUS to host.
+  ibex_fi_test_result_mult_t uj_output;
+  uj_output.result1 = result1;
+  uj_output.result2 = result2;
+  uj_output.err_status = codes;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  RESP_OK(ujson_serialize_ibex_fi_test_result_mult_t, uj, &uj_output);
+  return OK_STATUS();
+}
+
+status_t handle_ibex_fi_char_conditional_branch_bge(ujson_t *uj)
+    __attribute__((optnone)) {
+  // Clear registered alerts in alert handler.
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+
+  uint32_t result1 = 0;
+  uint32_t result2 = 0;
+
+  // FI code target.
+  sca_set_trigger_high();
+  asm volatile("addi x5, x0, 0xaf");
+  asm volatile("addi x6, x0, 0xef");
+  asm volatile(NOP10);
+  asm volatile(CONDBRANCHREP30(CONDBRANCHBGE));
+  asm volatile("mv %0, x5" : "=r"(result1));
+  asm volatile("mv %0, x6" : "=r"(result2));
+  asm volatile("beq x0, x0, endfitestbge");
+  asm volatile(
+      "endfitestfaultybge:\n"
+      "addi x5, x0, 0x11\n"
+      "addi x6, x0, 0x22");
+  asm volatile("mv %0, x5" : "=r"(result1));
+  asm volatile("mv %0, x6" : "=r"(result2));
+  asm volatile("endfitestbge:\n");
+  sca_set_trigger_low();
+  // Get registered alerts from alert handler.
+  reg_alerts = sca_get_triggered_alerts();
+
+  // Read ERR_STATUS register.
+  dif_rv_core_ibex_error_status_t codes;
+  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
+
+  // Send loop counters & ERR_STATUS to host.
+  ibex_fi_test_result_mult_t uj_output;
+  uj_output.result1 = result1;
+  uj_output.result2 = result2;
+  uj_output.err_status = codes;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  RESP_OK(ujson_serialize_ibex_fi_test_result_mult_t, uj, &uj_output);
+  return OK_STATUS();
+}
+
+status_t handle_ibex_fi_char_conditional_branch_bgeu(ujson_t *uj)
+    __attribute__((optnone)) {
+  // Clear registered alerts in alert handler.
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+
+  uint32_t result1 = 0;
+  uint32_t result2 = 0;
+
+  // FI code target.
+  sca_set_trigger_high();
+  asm volatile("addi x5, x0, 0xaf");
+  asm volatile("addi x6, x0, 0xef");
+  asm volatile(NOP10);
+  asm volatile(CONDBRANCHREP30(CONDBRANCHBGEU));
+  asm volatile("mv %0, x5" : "=r"(result1));
+  asm volatile("mv %0, x6" : "=r"(result2));
+  asm volatile("beq x0, x0, endfitestbgeu");
+  asm volatile(
+      "endfitestfaultybgeu:\n"
+      "addi x5, x0, 0x11\n"
+      "addi x6, x0, 0x22");
+  asm volatile("mv %0, x5" : "=r"(result1));
+  asm volatile("mv %0, x6" : "=r"(result2));
+  asm volatile("endfitestbgeu:\n");
+  sca_set_trigger_low();
+  // Get registered alerts from alert handler.
+  reg_alerts = sca_get_triggered_alerts();
+
+  // Read ERR_STATUS register.
+  dif_rv_core_ibex_error_status_t codes;
+  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
+
+  // Send loop counters & ERR_STATUS to host.
+  ibex_fi_test_result_mult_t uj_output;
+  uj_output.result1 = result1;
+  uj_output.result2 = result2;
+  uj_output.err_status = codes;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  RESP_OK(ujson_serialize_ibex_fi_test_result_mult_t, uj, &uj_output);
+  return OK_STATUS();
+}
+
+status_t handle_ibex_fi_char_conditional_branch_blt(ujson_t *uj)
+    __attribute__((optnone)) {
+  // Clear registered alerts in alert handler.
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+
+  uint32_t result1 = 0;
+  uint32_t result2 = 0;
+
+  // FI code target.
+  sca_set_trigger_high();
+  asm volatile("addi x5, x0, 0xef");
+  asm volatile("addi x6, x0, 0xaf");
+  asm volatile(NOP10);
+  asm volatile(CONDBRANCHREP30(CONDBRANCHBLT));
+  asm volatile("mv %0, x5" : "=r"(result1));
+  asm volatile("mv %0, x6" : "=r"(result2));
+  asm volatile("beq x0, x0, endfitestblt");
+  asm volatile(
+      "endfitestfaultyblt:\n"
+      "addi x5, x0, 0x11\n"
+      "addi x6, x0, 0x22");
+  asm volatile("mv %0, x5" : "=r"(result1));
+  asm volatile("mv %0, x6" : "=r"(result2));
+  asm volatile("endfitestblt:\n");
+  sca_set_trigger_low();
+  // Get registered alerts from alert handler.
+  reg_alerts = sca_get_triggered_alerts();
+
+  // Read ERR_STATUS register.
+  dif_rv_core_ibex_error_status_t codes;
+  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
+
+  // Send loop counters & ERR_STATUS to host.
+  ibex_fi_test_result_mult_t uj_output;
+  uj_output.result1 = result1;
+  uj_output.result2 = result2;
+  uj_output.err_status = codes;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  RESP_OK(ujson_serialize_ibex_fi_test_result_mult_t, uj, &uj_output);
+  return OK_STATUS();
+}
+
+status_t handle_ibex_fi_char_conditional_branch_bltu(ujson_t *uj)
+    __attribute__((optnone)) {
+  // Clear registered alerts in alert handler.
+  sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
+
+  uint32_t result1 = 0;
+  uint32_t result2 = 0;
+
+  // FI code target.
+  sca_set_trigger_high();
+  asm volatile("addi x5, x0, 0xef");
+  asm volatile("addi x6, x0, 0xaf");
+  asm volatile(NOP10);
+  asm volatile(CONDBRANCHREP30(CONDBRANCHBLTU));
+  asm volatile("mv %0, x5" : "=r"(result1));
+  asm volatile("mv %0, x6" : "=r"(result2));
+  asm volatile("beq x0, x0, endfitestbltu");
+  asm volatile(
+      "endfitestfaultybltu:\n"
+      "addi x5, x0, 0x11\n"
+      "addi x6, x0, 0x22");
+  asm volatile("mv %0, x5" : "=r"(result1));
+  asm volatile("mv %0, x6" : "=r"(result2));
+  asm volatile("endfitestbltu:\n");
+  sca_set_trigger_low();
+  // Get registered alerts from alert handler.
+  reg_alerts = sca_get_triggered_alerts();
+
+  // Read ERR_STATUS register.
+  dif_rv_core_ibex_error_status_t codes;
+  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
+
+  // Send loop counters & ERR_STATUS to host.
+  ibex_fi_test_result_mult_t uj_output;
+  uj_output.result1 = result1;
+  uj_output.result2 = result2;
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   RESP_OK(ujson_serialize_ibex_fi_test_result_mult_t, uj, &uj_output);
@@ -1260,8 +1497,18 @@ status_t handle_ibex_fi(ujson_t *uj) {
       return handle_ibex_fi_char_register_file(uj);
     case kIbexFiSubcommandCharRegisterFileRead:
       return handle_ibex_fi_char_register_file_read(uj);
-    case kIbexFiSubcommandCharCondBranch:
-      return handle_ibex_fi_char_conditional_branch(uj);
+    case kIbexFiSubcommandCharCondBranchBeq:
+      return handle_ibex_fi_char_conditional_branch_beq(uj);
+    case kIbexFiSubcommandCharCondBranchBne:
+      return handle_ibex_fi_char_conditional_branch_bne(uj);
+    case kIbexFiSubcommandCharCondBranchBge:
+      return handle_ibex_fi_char_conditional_branch_bge(uj);
+    case kIbexFiSubcommandCharCondBranchBgeu:
+      return handle_ibex_fi_char_conditional_branch_bgeu(uj);
+    case kIbexFiSubcommandCharCondBranchBlt:
+      return handle_ibex_fi_char_conditional_branch_blt(uj);
+    case kIbexFiSubcommandCharCondBranchBltu:
+      return handle_ibex_fi_char_conditional_branch_bltu(uj);
     case kIbexFiSubcommandCharUncondBranch:
       return handle_ibex_fi_char_unconditional_branch(uj);
     case kIbexFiSubcommandCharSramWrite:

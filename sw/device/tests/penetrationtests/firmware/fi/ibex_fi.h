@@ -250,13 +250,14 @@ status_t handle_ibex_fi_char_sram_write(ujson_t *uj);
 status_t handle_ibex_fi_char_unconditional_branch(ujson_t *uj);
 
 /**
- * ibex.fi.char.conditional_branch command handler.
+ * ibex.fi.char.conditional_branch_beq command handler.
  *
  * This FI penetration tests executes the following instructions:
  * - Add 10 NOPs to delay the trigger
- * - 10000 iterations with a for loop:
- *  - Execute a branch instruction
- *  - Increment variable if branch is taken or not
+ * - Execute 30 beq instructions. Without a fault, the branch is not taken.
+ *   In the faulty case, a branch redirects the control-flow to the label
+ *   endfitestfaultybeq where two register values are set to a pattern that can
+ *   be detected at the host.
  * - Return the values over UART.
  * Faults are injected during the trigger_high & trigger_low.
  * It needs to be ensured that the compiler does not optimize this code.
@@ -264,7 +265,97 @@ status_t handle_ibex_fi_char_unconditional_branch(ujson_t *uj);
  * @param uj An initialized uJSON context.
  * @return OK or error.
  */
-status_t handle_ibex_fi_char_conditional_branch(ujson_t *uj);
+status_t handle_ibex_fi_char_conditional_branch_beq(ujson_t *uj);
+
+/**
+ * ibex.fi.char.conditional_branch_bne command handler.
+ *
+ * This FI penetration tests executes the following instructions:
+ * - Add 10 NOPs to delay the trigger
+ * - Execute 30 bne instructions. Without a fault, the branch is not taken.
+ *   In the faulty case, a branch redirects the control-flow to the label
+ *   endfitestfaultybne where two register values are set to a pattern that can
+ *   be detected at the host.
+ * - Return the values over UART.
+ * Faults are injected during the trigger_high & trigger_low.
+ * It needs to be ensured that the compiler does not optimize this code.
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_ibex_fi_char_conditional_branch_bne(ujson_t *uj);
+
+/**
+ * ibex.fi.char.conditional_branch_bge command handler.
+ *
+ * This FI penetration tests executes the following instructions:
+ * - Add 10 NOPs to delay the trigger
+ * - Execute 30 bge instructions. Without a fault, the branch is not taken.
+ *   In the faulty case, a branch redirects the control-flow to the label
+ *   endfitestfaultybge where two register values are set to a pattern that can
+ *   be detected at the host.
+ * - Return the values over UART.
+ * Faults are injected during the trigger_high & trigger_low.
+ * It needs to be ensured that the compiler does not optimize this code.
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_ibex_fi_char_conditional_branch_bge(ujson_t *uj);
+
+/**
+ * ibex.fi.char.conditional_branch_bgeu command handler.
+ *
+ * This FI penetration tests executes the following instructions:
+ * - Add 10 NOPs to delay the trigger
+ * - Execute 30 bgeu instructions. Without a fault, the branch is not taken.
+ *   In the faulty case, a branch redirects the control-flow to the label
+ *   endfitestfaultybgeu where two register values are set to a pattern that can
+ *   be detected at the host.
+ * - Return the values over UART.
+ * Faults are injected during the trigger_high & trigger_low.
+ * It needs to be ensured that the compiler does not optimize this code.
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_ibex_fi_char_conditional_branch_bgeu(ujson_t *uj);
+
+/**
+ * ibex.fi.char.conditional_branch_blt command handler.
+ *
+ * This FI penetration tests executes the following instructions:
+ * - Add 10 NOPs to delay the trigger
+ * - Execute 30 blt instructions. Without a fault, the branch is not taken.
+ *   In the faulty case, a branch redirects the control-flow to the label
+ *   endfitestfaultyblt where two register values are set to a pattern that can
+ *   be detected at the host.
+ * - Return the values over UART.
+ * Faults are injected during the trigger_high & trigger_low.
+ * It needs to be ensured that the compiler does not optimize this code.
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_ibex_fi_char_conditional_branch_blt(ujson_t *uj);
+
+/**
+ * ibex.fi.char.conditional_branch_bltu command handler.
+ *
+ * This FI penetration tests executes the following instructions:
+ * - Add 10 NOPs to delay the trigger
+ * - Execute 30 bltu instructions. Without a fault, the branch is not taken.
+ *   In the faulty case, a branch redirects the control-flow to the label
+ *   endfitestfaultybltu where two register values are set to a pattern that can
+ *   be detected at the host.
+ * - Return the values over UART.
+ * Faults are injected during the trigger_high & trigger_low.
+ * It needs to be ensured that the compiler does not optimize this code.
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_ibex_fi_char_conditional_branch_bltu(ujson_t *uj);
 
 /**
  * ibex.fi.char.mem_op_loop command handler.
