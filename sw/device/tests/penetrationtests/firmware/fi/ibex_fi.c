@@ -45,9 +45,8 @@ static bool flash_data_valid;
 static bool sram_ret_init;
 
 // Make sure that this function does not get optimized by the compiler.
-uint32_t increment_counter(uint32_t counter) __attribute__((optnone)) {
-  uint32_t return_value = counter + 1;
-  return return_value;
+void increment_counter(void) __attribute__((optnone)) {
+  asm volatile("addi x5, x5, 1");
 }
 
 // NOP macros.
@@ -89,6 +88,13 @@ uint32_t increment_counter(uint32_t counter) __attribute__((optnone)) {
 
 // Load word, subi, sw macro.
 #define LWSUBISW1 "lw x6, (%0)\n addi x6, x6, -1\n sw x6, (%0)\n"
+
+// JAL to increment counter funciton macros.
+#define JALCNTR1 "jal ra, increment_counter\n"
+#define JALCNTR10                                                         \
+  JALCNTR1 JALCNTR1 JALCNTR1 JALCNTR1 JALCNTR1 JALCNTR1 JALCNTR1 JALCNTR1 \
+      JALCNTR1 JALCNTR1
+#define JALCNTR30 JALCNTR10 JALCNTR10 JALCNTR10
 
 // Reference values.
 const uint32_t ref_values[32] = {
@@ -868,107 +874,13 @@ status_t handle_ibex_fi_char_unconditional_branch(ujson_t *uj) {
   // FI code target.
   uint32_t result = 0;
   sca_set_trigger_high();
+  // Init x5 register we are using for the increment.
+  asm volatile(INITX5);
+  // Delay the trigger.
   asm volatile(NOP10);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
-  result = increment_counter(result);
+  // Attack target.
+  asm volatile(JALCNTR30);
+  asm volatile("mv %0, x5" : "=r"(result));
   sca_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = sca_get_triggered_alerts();

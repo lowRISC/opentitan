@@ -237,10 +237,10 @@ status_t handle_ibex_fi_char_sram_write(ujson_t *uj);
  *
  * This FI penetration tests executes the following instructions:
  * - Add 10 NOPs to delay the trigger
- * - 10000 iterations with a for loop:
- *  - Execute an unconditional branch instruction
- *  - Increment variable
- * - Return the values over UART.
+ * - Execute 30 JAL uncond. branches to the following instruction sequence:
+ *   addi x5, x5, 1
+ *   ret
+ * - Return the increment counter value over UART.
  * Faults are injected during the trigger_high & trigger_low.
  * It needs to be ensured that the compiler does not optimize this code.
  *
