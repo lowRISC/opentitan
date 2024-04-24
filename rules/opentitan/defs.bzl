@@ -39,6 +39,7 @@ load(
 )
 load(
     "@lowrisc_opentitan//rules/opentitan:keyutils.bzl",
+    _ecdsa_key_by_name = "ecdsa_key_by_name",
     _ecdsa_key_for_lc_state = "ecdsa_key_for_lc_state",
     _rsa_key_by_name = "rsa_key_by_name",
     _rsa_key_for_lc_state = "rsa_key_for_lc_state",
@@ -73,6 +74,7 @@ sim_dv = _sim_dv
 dv_params = _dv_params
 
 ecdsa_key_for_lc_state = _ecdsa_key_for_lc_state
+ecdsa_key_by_name = _ecdsa_key_by_name
 
 rsa_key_for_lc_state = _rsa_key_for_lc_state
 rsa_key_by_name = _rsa_key_by_name
