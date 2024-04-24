@@ -4,6 +4,6 @@
 
 `verilator_config
 
-// This parameter is only used in DV/FPV.
+// These parameters are only used in DV/FPV.
 lint_off -rule UNUSED -file "*/rtl/prim_count.sv" -match "*EnableAlertTriggerSVA*"
-lint_off -rule UNUSED -file "*/rtl/prim_count.sv" -match "*DecrNeverTrue*"
+lint_off -rule UNUSED -file "*/rtl/prim_count.sv" -match "*PossibleActions*"

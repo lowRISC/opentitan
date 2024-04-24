@@ -6,7 +6,7 @@
 
 waive -rules {PARAM_NOT_USED} -location {prim_count.sv} -regexp {.*EnableAlertTriggerSVA.*} \
       -comment "The disable parameter is used only during DV / FPV."
-waive -rules {PARAM_NOT_USED} -location {prim_count.sv} -regexp {.*DecrNeverTrue.*} \
+waive -rules {PARAM_NOT_USED} -location {prim_count.sv} -regexp {.*PossibleActions.*} \
       -comment "The parameter is just used to control assertions in DV / FPV."
 
 waive -rules {IFDEF_CODE} -location {prim_count.sv} -msg {Assignment to 'fpv_force' contained within `ifndef 'PrimCountFpv' block at} \

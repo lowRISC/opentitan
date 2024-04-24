@@ -25,24 +25,26 @@
 
 `include "prim_assert.sv"
 
-module prim_count #(
-  parameter int Width = 2,
+module prim_count
+  import prim_count_pkg::*;
+#(
+  parameter int               Width = 2,
   // Can be used to reset the counter to a different value than 0, for example when
   // the counter is used as a down-counter.
   parameter logic [Width-1:0] ResetValue = '0,
   // This should only be disabled in special circumstances, for example
   // in non-comportable IPs where an error does not trigger an alert.
-  parameter bit EnableAlertTriggerSVA = 1,
+  parameter bit               EnableAlertTriggerSVA = 1,
 
-  // We have some assertions below with preconditions that depend on decr_en_i == 1. If the design
-  // has instantiated prim_count with decr_en_i tied to zero, those preconditions will not be
-  // satisfiable. The result is an unreachable item, which we treat as a failed assertion in the
-  // report.
+  // We have some assertions below with preconditions that depend on particular input actions
+  // (clear, set, incr, decr). If the design has instantiated prim_count with one of these actions
+  // tied to zero, the preconditions for the associated assertions will not be satisfiable. The
+  // result is an unreachable item, which we treat as a failed assertion in the report.
   //
-  // To avoid this, we allow a DecrNeverTrue parameter. If this is set, we will have an assertion
-  // called DecrNeverTrue_A which asserts that the port connected as we expect. We can then use this
-  // to avoid the unreachable assertions.
-  parameter bit DecrNeverTrue = 1'b0
+  // To avoid this, we the instantiation to specify the actions which might happen. If this is not
+  // '1, we will have an assertion which assert the corresponding action is never triggered. We can
+  // then use this to avoid the unreachable assertions.
+  parameter action_mask_t     PossibleActions = {$bits(action_mask_t){1'b1}}
 ) (
   input clk_i,
   input rst_ni,
@@ -170,7 +172,16 @@ module prim_count #(
   //VCS coverage on
   // pragma coverage on
 
-  if (DecrNeverTrue) begin : g_check_decr_never_true
+  if (!(PossibleActions & Clr)) begin : g_check_no_clr
+    `ASSERT(ClrNeverTrue_A, clr_i !== 1'b1)
+  end
+  if (!(PossibleActions & Set)) begin : g_check_no_set
+    `ASSERT(SetNeverTrue_A, set_i !== 1'b1)
+  end
+  if (!(PossibleActions & Incr)) begin : g_check_no_incr
+    `ASSERT(IncrNeverTrue_A, incr_en_i !== 1'b1)
+  end
+  if (!(PossibleActions & Decr)) begin : g_check_no_decr
     `ASSERT(DecrNeverTrue_A, decr_en_i !== 1'b1)
   end
 
@@ -182,23 +193,27 @@ module prim_count #(
       clk_i, err_o || fpv_err_present || !rst_ni)
 
   // Clear
-  `ASSERT(ClrFwd_A,
-      rst_ni && commit_i && clr_i
-      |=>
-      (cnt_o == ResetValue) &&
-      (cnt_q[1] == ({Width{1'b1}} - ResetValue)),
-      clk_i, err_o || fpv_err_present || !rst_ni)
+  if (PossibleActions & Clr) begin : g_check_clr_fwd_a
+    `ASSERT(ClrFwd_A,
+            rst_ni && commit_i && clr_i
+            |=>
+            (cnt_o == ResetValue) &&
+            (cnt_q[1] == ({Width{1'b1}} - ResetValue)),
+            clk_i, err_o || fpv_err_present || !rst_ni)
+  end
 
   // Set
-  `ASSERT(SetFwd_A,
-      rst_ni && commit_i && set_i && !clr_i
-      |=>
-      (cnt_o == $past(set_cnt_i)) &&
-      (cnt_q[1] == ({Width{1'b1}} - $past(set_cnt_i))),
-      clk_i, err_o || fpv_err_present || !rst_ni)
+  if (PossibleActions & Set) begin : g_check_set_fwd_a
+    `ASSERT(SetFwd_A,
+        rst_ni && commit_i && set_i && !clr_i
+        |=>
+        (cnt_o == $past(set_cnt_i)) &&
+        (cnt_q[1] == ({Width{1'b1}} - $past(set_cnt_i))),
+        clk_i, err_o || fpv_err_present || !rst_ni)
+  end
 
   // Do not count if both increment and decrement are asserted.
-  if (!DecrNeverTrue) begin : g_check_inc_and_dec
+  if ((PossibleActions & Incr) && (PossibleActions & Decr)) begin : g_check_inc_and_dec
     `ASSERT(IncrDecrUpDnCnt_A,
         rst_ni && incr_en_i && decr_en_i && !(clr_i || set_i)
         |=>
@@ -206,34 +221,34 @@ module prim_count #(
         clk_i, err_o || fpv_err_present || !rst_ni)
   end
 
-  // Up counter
-  `ASSERT(IncrUpCnt_A,
-      rst_ni && incr_en_i && !(clr_i || set_i || decr_en_i) && commit_i
-      |=>
-      cnt_o == min($past(cnt_o) + $past({2'b0, step_i}), {2'b0, {Width{1'b1}}}),
-      clk_i, err_o || fpv_err_present || !rst_ni)
-  `ASSERT(IncrDnCnt_A,
-      rst_ni && incr_en_i && !(clr_i || set_i || decr_en_i) && commit_i
-      |=>
-      cnt_q[1] == max($past(signed'({2'b0, cnt_q[1]})) - $past({2'b0, step_i}), '0),
-      clk_i, err_o || fpv_err_present || !rst_ni)
-  `ASSERT(UpCntIncrStable_A,
-      incr_en_i && !(clr_i || set_i || decr_en_i) &&
-      cnt_o == {Width{1'b1}}
-      |=>
-      $stable(cnt_o),
-      clk_i, err_o || fpv_err_present || !rst_ni)
-  if (!DecrNeverTrue) begin : g_check_decr_zero
-    `ASSERT(UpCntDecrStable_A,
-            decr_en_i && !(clr_i || set_i || incr_en_i) &&
-            cnt_o == '0
-            |=>
-            $stable(cnt_o),
-            clk_i, err_o || fpv_err_present || !rst_ni)
+  // Increment
+  if ((PossibleActions & Incr)) begin : g_check_incr
+    `ASSERT(IncrUpCnt_A,
+        rst_ni && incr_en_i && !(clr_i || set_i || decr_en_i) && commit_i
+        |=>
+        cnt_o == min($past(cnt_o) + $past({2'b0, step_i}), {2'b0, {Width{1'b1}}}),
+        clk_i, err_o || fpv_err_present || !rst_ni)
+    `ASSERT(IncrDnCnt_A,
+        rst_ni && incr_en_i && !(clr_i || set_i || decr_en_i) && commit_i
+        |=>
+        cnt_q[1] == max($past(signed'({2'b0, cnt_q[1]})) - $past({2'b0, step_i}), '0),
+        clk_i, err_o || fpv_err_present || !rst_ni)
+    `ASSERT(UpCntIncrStable_A,
+        incr_en_i && !(clr_i || set_i || decr_en_i) &&
+        cnt_o == {Width{1'b1}}
+        |=>
+        $stable(cnt_o),
+        clk_i, err_o || fpv_err_present || !rst_ni)
+    `ASSERT(DnCntIncrStable_A,
+        rst_ni && incr_en_i && !(clr_i || set_i || decr_en_i) &&
+        cnt_q[1] == '0
+        |=>
+        $stable(cnt_q[1]),
+        clk_i, err_o || fpv_err_present || !rst_ni)
   end
 
-  // Down counter
-  if (!DecrNeverTrue) begin : g_check_decr
+  // Decrement
+  if ((PossibleActions & Decr)) begin : g_check_decr
     `ASSERT(DecrUpCnt_A,
         rst_ni && decr_en_i && !(clr_i || set_i || incr_en_i) && commit_i
         |=>
@@ -244,6 +259,12 @@ module prim_count #(
         |=>
         cnt_q[1] == min($past(cnt_q[1]) + $past({2'b0, step_i}), {2'b0, {Width{1'b1}}}),
         clk_i, err_o || fpv_err_present || !rst_ni)
+    `ASSERT(UpCntDecrStable_A,
+        decr_en_i && !(clr_i || set_i || incr_en_i) &&
+        cnt_o == '0
+        |=>
+        $stable(cnt_o),
+        clk_i, err_o || fpv_err_present || !rst_ni)
     `ASSERT(DnCntDecrStable_A,
         rst_ni && decr_en_i && !(clr_i || set_i || incr_en_i) &&
         cnt_q[1] == {Width{1'b1}}
@@ -251,12 +272,6 @@ module prim_count #(
         $stable(cnt_q[1]),
         clk_i, err_o || fpv_err_present || !rst_ni)
   end
-  `ASSERT(DnCntIncrStable_A,
-      rst_ni && incr_en_i && !(clr_i || set_i || decr_en_i) &&
-      cnt_q[1] == '0
-      |=>
-      $stable(cnt_q[1]),
-      clk_i, err_o || fpv_err_present || !rst_ni)
 
   // A backwards check for count changes. This asserts that the count only changes if one of the
   // inputs that should tell it to change (clear, set, increment, decrement) does so.
