@@ -250,7 +250,7 @@ module alert_handler_ping_timer import alert_pkg::*; #(
     .set_i(cnt_set),
     .set_cnt_i(cnt_setval),
     .incr_en_i(1'b0),
-    .decr_en_i(!timer_expired), // we are counting down here.
+    .decr_en_i(1'b1), // we are counting down here.
     .step_i(PING_CNT_DW'(1'b1)),
     .commit_i(1'b1),
     .cnt_o(cnt),
