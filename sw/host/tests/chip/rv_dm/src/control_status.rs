@@ -49,7 +49,10 @@ fn test_control_status(opts: &Opts, transport: &TransportWrapper) -> Result<()> 
     dmi.dmi_write(consts::DMCONTROL, dmcontrol)?;
     // Since this target only supports 1 hart, the WARL behavior of this register is such that no
     // bits should be set at this point, except for dmactive.
-    assert_eq!(dmi.dmi_read(consts::DMCONTROL)?, consts::DMCONTROL_DMACTIVE_MASK);
+    assert_eq!(
+        dmi.dmi_read(consts::DMCONTROL)?,
+        consts::DMCONTROL_DMACTIVE_MASK
+    );
 
     let mut hart = dmi.select_hart(0)?;
     assert!(hart.state()?.running);

@@ -65,7 +65,9 @@ static mut PLATFORM: Option<&'static EarlGrey> = None;
 #[cfg(test)]
 static mut MAIN_CAP: Option<&dyn kernel::capabilities::MainLoopCapability> = None;
 // Test access to alarm
-static mut ALARM: Option<&'static MuxAlarm<'static, earlgrey::timer::RvTimer<'static, ChipConfig>>> = None;
+static mut ALARM: Option<
+    &'static MuxAlarm<'static, earlgrey::timer::RvTimer<'static, ChipConfig>>,
+> = None;
 // Test access to TicKV
 static mut TICKV: Option<
     &capsules_extra::tickv::TicKVSystem<
@@ -94,7 +96,9 @@ static mut RSA_HARDWARE: Option<&lowrisc::rsa::OtbnRsa<'static>> = None;
 #[cfg(test)]
 static mut SHA256SOFT: Option<&capsules_extra::sha256::Sha256Software<'static>> = None;
 
-static mut CHIP: Option<&'static earlgrey::chip::EarlGrey<EarlGreyDefaultPeripherals<ChipConfig>, ChipConfig>> = None;
+static mut CHIP: Option<
+    &'static earlgrey::chip::EarlGrey<EarlGreyDefaultPeripherals<ChipConfig>, ChipConfig>,
+> = None;
 static mut PROCESS_PRINTER: Option<&'static kernel::process::ProcessPrinterText> = None;
 
 // How should the kernel respond when a process faults.
@@ -174,8 +178,9 @@ struct EarlGrey {
     >,
     syscall_filter: &'static TbfHeaderFilterDefaultAllow,
     scheduler: &'static PrioritySched,
-    scheduler_timer:
-        &'static VirtualSchedulerTimer<VirtualMuxAlarm<'static, earlgrey::timer::RvTimer<'static, ChipConfig>>>,
+    scheduler_timer: &'static VirtualSchedulerTimer<
+        VirtualMuxAlarm<'static, earlgrey::timer::RvTimer<'static, ChipConfig>>,
+    >,
     watchdog: &'static lowrisc::aon_timer::AonTimer,
 }
 
@@ -202,16 +207,23 @@ impl SyscallDriverLookup for EarlGrey {
     }
 }
 
-impl KernelResources<earlgrey::chip::EarlGrey<'static, EarlGreyDefaultPeripherals<'static, ChipConfig>, ChipConfig>>
-    for EarlGrey
+impl
+    KernelResources<
+        earlgrey::chip::EarlGrey<
+            'static,
+            EarlGreyDefaultPeripherals<'static, ChipConfig>,
+            ChipConfig,
+        >,
+    > for EarlGrey
 {
     type SyscallDriverLookup = Self;
     type SyscallFilter = TbfHeaderFilterDefaultAllow;
     type ProcessFault = ();
     type CredentialsCheckingPolicy = ();
     type Scheduler = PrioritySched;
-    type SchedulerTimer =
-        VirtualSchedulerTimer<VirtualMuxAlarm<'static, earlgrey::timer::RvTimer<'static, ChipConfig>>>;
+    type SchedulerTimer = VirtualSchedulerTimer<
+        VirtualMuxAlarm<'static, earlgrey::timer::RvTimer<'static, ChipConfig>>,
+    >;
     type WatchDog = lowrisc::aon_timer::AonTimer;
     type ContextSwitchCallback = ();
 
@@ -244,7 +256,11 @@ impl KernelResources<earlgrey::chip::EarlGrey<'static, EarlGreyDefaultPeripheral
 unsafe fn setup() -> (
     &'static kernel::Kernel,
     &'static EarlGrey,
-    &'static earlgrey::chip::EarlGrey<'static, EarlGreyDefaultPeripherals<'static, ChipConfig>, ChipConfig>,
+    &'static earlgrey::chip::EarlGrey<
+        'static,
+        EarlGreyDefaultPeripherals<'static, ChipConfig>,
+        ChipConfig,
+    >,
     &'static EarlGreyDefaultPeripherals<'static, ChipConfig>,
 ) {
     // Ibex-specific handler
@@ -270,11 +286,9 @@ unsafe fn setup() -> (
     );
 
     // Create a shared UART channel for the console and for kernel debug.
-    let uart_mux = components::console::UartMuxComponent::new(
-        &peripherals.uart0,
-        ChipConfig::UART_BAUDRATE,
-    )
-    .finalize(components::uart_mux_component_static!());
+    let uart_mux =
+        components::console::UartMuxComponent::new(&peripherals.uart0, ChipConfig::UART_BAUDRATE)
+            .finalize(components::uart_mux_component_static!());
 
     // LEDs
     // Start with half on and half off
@@ -307,7 +321,10 @@ unsafe fn setup() -> (
     )
     .finalize(components::gpio_component_static!(earlgrey::gpio::GpioPin));
 
-    let hardware_alarm = static_init!(earlgrey::timer::RvTimer<ChipConfig>, earlgrey::timer::RvTimer::new());
+    let hardware_alarm = static_init!(
+        earlgrey::timer::RvTimer<ChipConfig>,
+        earlgrey::timer::RvTimer::new()
+    );
     hardware_alarm.setup();
 
     // Create a shared virtualization mux layer on top of a single hardware
@@ -346,14 +363,14 @@ unsafe fn setup() -> (
     hil::time::Alarm::set_alarm_client(virtual_alarm_user, alarm);
 
     let scheduler_timer = static_init!(
-        VirtualSchedulerTimer<VirtualMuxAlarm<'static, earlgrey::timer::RvTimer<'static, ChipConfig>>>,
+        VirtualSchedulerTimer<
+            VirtualMuxAlarm<'static, earlgrey::timer::RvTimer<'static, ChipConfig>>,
+        >,
         VirtualSchedulerTimer::new(scheduler_timer_virtual_alarm)
     );
 
     let chip = static_init!(
-        earlgrey::chip::EarlGrey<
-            EarlGreyDefaultPeripherals<ChipConfig>, ChipConfig
-        >,
+        earlgrey::chip::EarlGrey<EarlGreyDefaultPeripherals<ChipConfig>, ChipConfig>,
         earlgrey::chip::EarlGrey::new(peripherals, hardware_alarm)
     );
     CHIP = Some(chip);
