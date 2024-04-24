@@ -227,8 +227,7 @@ const owner_flash_info_config_t info_config = {
 };
 
 TEST_F(OwnerBlockTest, FlashConfigApplyBad) {
-  rom_error_t error =
-      owner_block_flash_apply(&bad_flash_config, kBootDataSlotA, 0);
+  rom_error_t error = owner_block_flash_apply(&bad_flash_config, kBootSlotA, 0);
   EXPECT_EQ(error, kErrorOwnershipFlashConfigLenth);
 }
 
@@ -257,7 +256,7 @@ TEST_F(OwnerBlockTest, FlashConfigApplySideA) {
                                  kMultiBitBool4True)));
 
   rom_error_t error =
-      owner_block_flash_apply(&simple_flash_config, kBootDataSlotA, 0);
+      owner_block_flash_apply(&simple_flash_config, kBootSlotA, 0);
   EXPECT_EQ(error, kErrorOk);
 }
 
@@ -287,8 +286,8 @@ TEST_F(OwnerBlockTest, FlashConfigApplySideAPrimary) {
                         FlashCfg(kMultiBitBool4False, kMultiBitBool4False,
                                  kMultiBitBool4True)));
 
-  rom_error_t error = owner_block_flash_apply(&simple_flash_config,
-                                              kBootDataSlotA, kBootDataSlotA);
+  rom_error_t error =
+      owner_block_flash_apply(&simple_flash_config, kBootSlotA, kBootSlotA);
   EXPECT_EQ(error, kErrorOk);
 }
 
@@ -317,7 +316,7 @@ TEST_F(OwnerBlockTest, FlashConfigApplySideB) {
                                  kMultiBitBool4True)));
 
   rom_error_t error =
-      owner_block_flash_apply(&simple_flash_config, kBootDataSlotB, 0);
+      owner_block_flash_apply(&simple_flash_config, kBootSlotB, 0);
   EXPECT_EQ(error, kErrorOk);
 }
 
