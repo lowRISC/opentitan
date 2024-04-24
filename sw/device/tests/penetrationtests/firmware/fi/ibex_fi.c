@@ -1215,35 +1215,68 @@ status_t handle_ibex_fi_char_register_file_read(ujson_t *uj) {
   // Clear registered alerts in alert handler.
   sca_registered_alerts_t reg_alerts = sca_get_triggered_alerts();
 
-  uint32_t res_values[3];
+  uint32_t res_values[6];
   // Initialize temporary registers with reference values.
   asm volatile("li x5, %0" : : "i"(ref_values[0]));
   asm volatile("li x6, %0" : : "i"(ref_values[1]));
   asm volatile("li x7, %0" : : "i"(ref_values[2]));
-  asm volatile("li x28, 0");
-  asm volatile("li x29, 0");
-  asm volatile("li x30, 0");
+  asm volatile("li x28, %0" : : "i"(ref_values[3]));
+  asm volatile("li x29, %0" : : "i"(ref_values[4]));
+  asm volatile("li x30, %0" : : "i"(ref_values[5]));
 
   // FI code target.
   sca_set_trigger_high();
-  asm volatile("mv x28, x5");
-  asm volatile("mv x29, x6");
-  asm volatile("mv x30, x7");
+  asm volatile(NOP10);
+  asm volatile("or x5, x5, x5");
+  asm volatile("or x6, x6, x6");
+  asm volatile("or x7, x7, x7");
+  asm volatile("or x28, x28, x28");
+  asm volatile("or x29, x29, x29");
+  asm volatile("or x30, x30, x30");
+  asm volatile("or x5, x5, x5");
+  asm volatile("or x6, x6, x6");
+  asm volatile("or x7, x7, x7");
+  asm volatile("or x28, x28, x28");
+  asm volatile("or x29, x29, x29");
+  asm volatile("or x30, x30, x30");
+  asm volatile("or x5, x5, x5");
+  asm volatile("or x6, x6, x6");
+  asm volatile("or x7, x7, x7");
+  asm volatile("or x28, x28, x28");
+  asm volatile("or x29, x29, x29");
+  asm volatile("or x30, x30, x30");
+  asm volatile("or x5, x5, x5");
+  asm volatile("or x6, x6, x6");
+  asm volatile("or x7, x7, x7");
+  asm volatile("or x28, x28, x28");
+  asm volatile("or x29, x29, x29");
+  asm volatile("or x30, x30, x30");
+  asm volatile("or x5, x5, x5");
+  asm volatile("or x6, x6, x6");
+  asm volatile("or x7, x7, x7");
+  asm volatile("or x28, x28, x28");
+  asm volatile("or x29, x29, x29");
+  asm volatile("or x30, x30, x30");
   sca_set_trigger_low();
   // Get registered alerts from alert handler.
   reg_alerts = sca_get_triggered_alerts();
 
   // Load register values.
-  asm volatile("mv %0, x28" : "=r"(res_values[0]));
-  asm volatile("mv %0, x29" : "=r"(res_values[1]));
-  asm volatile("mv %0, x30" : "=r"(res_values[2]));
+  asm volatile("mv %0, x5" : "=r"(res_values[0]));
+  asm volatile("mv %0, x6" : "=r"(res_values[1]));
+  asm volatile("mv %0, x7" : "=r"(res_values[2]));
+  asm volatile("mv %0, x28" : "=r"(res_values[3]));
+  asm volatile("mv %0, x29" : "=r"(res_values[4]));
+  asm volatile("mv %0, x30" : "=r"(res_values[5]));
 
   // Check if one or multiple registers values are faulty.
-  uint32_t res = 0;
-  for (int it = 0; it < 3; it++) {
+  ibex_fi_faulty_addresses_data_t uj_output;
+  memset(uj_output.addresses, 0, sizeof(uj_output.addresses));
+  memset(uj_output.data, 0, sizeof(uj_output.data));
+  for (uint32_t it = 0; it < 6; it++) {
     if (res_values[it] != ref_values[it]) {
-      res |= 1;
-      LOG_ERROR("reg %d exp=%u got=%u", it, ref_values[it], res_values[it]);
+      uj_output.addresses[it] = it;
+      uj_output.data[it] = res_values[it];
     }
   }
 
@@ -1252,11 +1285,9 @@ status_t handle_ibex_fi_char_register_file_read(ujson_t *uj) {
   TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
 
   // Send result & ERR_STATUS to host.
-  ibex_fi_test_result_t uj_output;
-  uj_output.result = res;
   uj_output.err_status = codes;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
-  RESP_OK(ujson_serialize_ibex_fi_test_result_t, uj, &uj_output);
+  RESP_OK(ujson_serialize_ibex_fi_faulty_addresses_data_t, uj, &uj_output);
   return OK_STATUS();
 }
 

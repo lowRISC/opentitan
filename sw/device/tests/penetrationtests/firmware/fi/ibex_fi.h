@@ -368,7 +368,7 @@ status_t handle_ibex_fi_char_register_file(ujson_t *uj);
  *
  * This FI penetration test executes the following instructions:
  * - Initialize temp. registers with reference values
- * - Read these registers.
+ * - or reg reg reg
  * - Compare against reference values
  *
  * Faults are injected during the trigger_high & trigger_low.
