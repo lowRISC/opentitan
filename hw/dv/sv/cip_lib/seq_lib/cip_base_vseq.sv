@@ -192,7 +192,7 @@ class cip_base_vseq #(
                       tl_sequencer_h, tl_intg_err_type);
   endtask
 
-  // this tl_access can input req_abort_pct (pertentage to enable req abort) and output status for
+  // this tl_access can input req_abort_pct (percentage to enable req abort) and output status for
   // seq to update predicted value
   virtual task tl_access_w_abort(
       input bit [BUS_AW-1:0]  addr,

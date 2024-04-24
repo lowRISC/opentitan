@@ -195,7 +195,7 @@
     {
       name: flash_ctrl_wo
       uvm_test_seq: flash_ctrl_rw_vseq
-      run_opts: ["+scb_otf_en=1", "+otf_num_rw=100", "+otf_num_hr=0", "+otf_rd_pct=0"]
+      run_opts: ["+scb_otf_en=1", "+otf_num_rw=100", "+otf_num_hr=0", "+otf_rd_pct=0", "+ecc_mode=1"]
       reseed: 20
     }
     {
@@ -213,13 +213,13 @@
     {
       name: flash_ctrl_ro
       uvm_test_seq: flash_ctrl_rw_vseq
-      run_opts: ["+scb_otf_en=1", "+otf_num_rw=100", "+otf_num_hr=1000", "+otf_wr_pct=0"]
+      run_opts: ["+scb_otf_en=1", "+otf_num_rw=100", "+otf_num_hr=1000", "+otf_wr_pct=0", "+ecc_mode=1"]
       reseed: 20
     }
     {
       name: flash_ctrl_rw
       uvm_test_seq: flash_ctrl_rw_vseq
-      run_opts: ["+scb_otf_en=1", "+test_timeout_ns=5_000_000_000"]
+      run_opts: ["+scb_otf_en=1", "+test_timeout_ns=5_000_000_000", "+ecc_mode=1"]
       reseed: 20
     }
     {

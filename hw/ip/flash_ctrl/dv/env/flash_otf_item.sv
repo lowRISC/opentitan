@@ -135,8 +135,9 @@ class flash_otf_item extends uvm_object;
       return;
     end
     if (dis) begin
-    `uvm_info("wr_scr", $sformatf("size:%0d addr:%x  akey:%x  dkey:%x scr_en:%0d ecc_en:%0d",
-                              raw_fq.size(), addr, addr_key, data_key, scr_en, ecc_en), UVM_MEDIUM)
+      `uvm_info("wr_scr", $sformatf(
+                "size:%0d addr:%x  akey:%x  dkey:%x scr_en:%0d ecc_en:%0d",
+                raw_fq.size(), addr, addr_key, data_key, scr_en, ecc_en), UVM_MEDIUM)
     end
     foreach(raw_fq[i]) begin
       data = raw_fq[i][FlashDataWidth-1:0];
@@ -197,27 +198,36 @@ class flash_otf_item extends uvm_object;
     foreach (fq[i]) begin
        // erase data skip descramble
       if (fq[i] == {flash_phy_pkg::FullDataWidth{1'b1}}) begin
-         raw_fq.push_back(fq[i]);
+        raw_fq.push_back(fq[i]);
       end else begin
         if (ctrl_rd_region_q.size > 0) begin
           scr_en = (ctrl_rd_region_q[i].scramble_en == MuBi4True);
           ecc_en = (ctrl_rd_region_q[i].ecc_en == MuBi4True);
-          `uvm_info("rd_scr", $sformatf("size:%0d idx:%0d addr:%x scr_en:%0d ecc_en:%0d",
-                                        fq.size(), i, addr, scr_en, ecc_en), UVM_MEDIUM)
+          `uvm_info("rd_scr", $sformatf("size:%0d idx:%0d addr:%x data:0x%x scr_en:%0d ecc_en:%0d",
+                                        fq.size(), i, addr, fq[i], scr_en, ecc_en), UVM_MEDIUM)
         end
         if (ecc_en) begin
           dec68 = prim_secded_pkg::prim_secded_hamming_76_68_dec(fq[i]);
+          `uvm_info("rd_scr", $sformatf(
+                    "ecc dec input=0x%x, out_data=0x%x, synd=0x%x, err=0x%x", fq[i], dec68.data,
+                    dec68.syndrome, dec68.err), UVM_MEDIUM)
         end else begin
           dec68.data = fq[i][67:0];
         end
+        `uvm_info("rd_scr", $sformatf("data_scr:0x%x, err=0x%x", dec68.data, dec68.err),
+                  UVM_MEDIUM)
 
         if (scr_en) begin
           data = create_raw_data(dec68.data[63:0], addr, addr_key, data_key);
           data[67:64] = dec68.data[67:64];
+          `uvm_info("rd_scr", $sformatf(
+                    "data_plain:0x%x, intg=0x%x", data, dec68.data[67:64]), UVM_MEDIUM)
         end else begin
+          `uvm_info("rd_scr", $sformatf(
+                    "data_plain no scramble:0x%x, intg=0x%x", dec68.data, dec68.data[67:64]),
+                    UVM_MEDIUM)
           data = dec68.data;
         end
-
         // check ecc
         // chec icv
         if (ecc_en) begin

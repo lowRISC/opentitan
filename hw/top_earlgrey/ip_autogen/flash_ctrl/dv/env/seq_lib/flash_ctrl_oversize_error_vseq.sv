@@ -22,6 +22,7 @@ class flash_ctrl_oversize_error_vseq extends flash_ctrl_otf_base_vseq;
     fork
       begin
         repeat(cfg.otf_num_rw) begin
+          if (cfg.stop_transaction_generators()) break;
           `DV_CHECK_RANDOMIZE_FATAL(this)
           ctrl = rand_op;
           bank = rand_op.addr[OTFBankId];
