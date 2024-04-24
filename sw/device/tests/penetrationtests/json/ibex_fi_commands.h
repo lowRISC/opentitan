@@ -19,7 +19,12 @@ extern "C" {
     value(_, CharMemOpLoop) \
     value(_, CharRegisterFile) \
     value(_, CharRegisterFileRead) \
-    value(_, CharCondBranch) \
+    value(_, CharCondBranchBeq) \
+    value(_, CharCondBranchBne) \
+    value(_, CharCondBranchBge) \
+    value(_, CharCondBranchBgeu) \
+    value(_, CharCondBranchBlt) \
+    value(_, CharCondBranchBltu) \
     value(_, CharUncondBranch) \
     value(_, CharSramWrite) \
     value(_, CharSramWriteRead) \
