@@ -77,15 +77,12 @@
 OTTF_DEFINE_TEST_CONFIG();
 
 enum {
-  kWdogBarkMicros = 200,          // us
-  kWdogBiteMicros = 200,          // us
-  kEscalationPhase0Micros = 300,  // us
-  kEscalationPhase1Micros = 200,  // us
-  kEscalationPhase2Micros = 100,  // us
-  kRoundOneDelay = 100,           // us
-  kRoundTwoDelay = 100,           // us
-  kRoundThreeDelay = 1000,        // us
-  kEventCounter = 0               // the retention sram counter tracking events
+  kWdogBarkMicros = 200,
+  kWdogBiteMicros = 200,
+  kRoundOneDelay = 100,
+  kRoundTwoDelay = 100,
+  kRoundThreeDelay = 1000,
+  kEventCounter = 0  // the retention sram counter tracking events
 };
 
 static const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
@@ -312,12 +309,6 @@ void ottf_external_isr(uint32_t *exc_info) {
   CHECK_DIF_OK(dif_rv_plic_irq_complete(&plic, kPlicTarget, irq_id));
 }
 
-static void print_alert_cause(alert_handler_testutils_info_t info) {
-  for (uint32_t i = 0; i < ALERT_HANDLER_PARAM_N_ALERTS; ++i) {
-    LOG_INFO("alert_cause[%d]: 0x%x", i, info.alert_cause[i]);
-  }
-}
-
 /*
  * Configure alert for i2c0..i2c2 s.t.
  * .alert class = class A
@@ -328,7 +319,7 @@ static void prgm_alert_handler_round1(void) {
   dif_alert_handler_class_t alert_class = kDifAlertHandlerClassA;
 
   for (int i = kTopEarlgreyAlertPeripheralI2c0;
-       i < kTopEarlgreyAlertPeripheralI2c2 + 1; ++i) {
+       i <= kTopEarlgreyAlertPeripheralI2c2; ++i) {
     CHECK_DIF_OK(dif_alert_handler_configure_alert(
         &alert_handler, test_node[i].alert, test_node[i].class,
         /*enabled=*/kDifToggleEnabled, /*locked=*/kDifToggleEnabled));
@@ -361,7 +352,7 @@ static void prgm_alert_handler_round2(void) {
       kConfigProfiles[kDifAlertHandlerClassB]};
 
   for (int i = kTopEarlgreyAlertPeripheralUart0;
-       i < kTopEarlgreyAlertPeripheralUart3 + 1; ++i) {
+       i <= kTopEarlgreyAlertPeripheralUart3; ++i) {
     CHECK_DIF_OK(dif_alert_handler_configure_alert(
         &alert_handler, test_node[i].alert, test_node[i].class,
         /*enabled=*/kDifToggleEnabled, /*locked=*/kDifToggleEnabled));
@@ -562,7 +553,7 @@ static void collect_alert_dump_and_compare(test_round_t round) {
     // Check local alert only.
     // While testing ping timeout for local alert,
     // global alert ping timeout can be triggered
-    // dut to short timeout value.
+    // due to short timeout value.
     // However, alert source of this ping timeout can be choosen randomly,
     // as documented in issue #2321, so we only check local alert cause.
     LOG_INFO("loc_alert_cause: exp: %08x   obs: %08x",
@@ -571,14 +562,10 @@ static void collect_alert_dump_and_compare(test_round_t round) {
     CHECK(kExpectedInfo[round].alert_info.loc_alert_cause ==
           actual_info.loc_alert_cause);
   } else {
-    LOG_INFO("observed alert cause:");
-    print_alert_cause(actual_info);
-    LOG_INFO("expected alert cause:");
-    print_alert_cause(kExpectedInfo[round].alert_info);
     for (int i = 0; i < ALERT_HANDLER_PARAM_N_ALERTS; ++i) {
       CHECK(kExpectedInfo[round].alert_info.alert_cause[i] ==
                 actual_info.alert_cause[i],
-            "At alert cause %d Expected %d, got %d", i,
+            "alert_info.alert_cause[%d] mismatch exp:%u obs:%u", i,
             kExpectedInfo[round].alert_info.alert_cause[i],
             actual_info.alert_cause[i]);
     }
@@ -589,7 +576,7 @@ static void collect_alert_dump_and_compare(test_round_t round) {
     // be fatal and cause the accumulated count to continuously grow.
     CHECK(kExpectedInfo[round].alert_info.class_accum_cnt[i] <=
               actual_info.class_accum_cnt[i],
-          "alert_info.class_accum_cnt[%d] mismatch exp:0x%x  obs:0x%x", i,
+          "alert_info.class_accum_cnt[%d] mismatch exp:%u obs:%u", i,
           kExpectedInfo[round].alert_info.class_accum_cnt[i],
           actual_info.class_accum_cnt[i]);
   }
@@ -598,7 +585,7 @@ static void collect_alert_dump_and_compare(test_round_t round) {
     // depends on simulation, sometimes it captures higher phase.
     CHECK(kExpectedInfo[round].alert_info.class_esc_state[i] <=
               actual_info.class_esc_state[i],
-          "alert_info.class_esc_state[%d] mismatch exp:0x%x  obs:0x%x", i,
+          "alert_info.class_esc_state[%d] mismatch exp:%u obs:%u", i,
           kExpectedInfo[round].alert_info.class_esc_state[i],
           actual_info.class_esc_state[i]);
   }
@@ -727,7 +714,7 @@ bool test_main(void) {
       &plic, kPlicTarget, kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired,
       kTopEarlgreyPlicIrqIdAonTimerAonWdogTimerBark);
 
-  // enable alert info
+  // Enable alert info.
   CHECK_DIF_OK(dif_rstmgr_alert_info_set_enabled(&rstmgr, kDifToggleEnabled));
 
   // Check if there was a HW reset caused by the escalation.
@@ -738,8 +725,7 @@ bool test_main(void) {
   LOG_INFO("reset info = 0x%02X", rst_info);
   global_alert_called = 0;
 
-  // TODO(#13098): Change to equality after #13277 is merged.
-  if (rst_info & kDifRstmgrResetInfoPor) {
+  if (rst_info == kDifRstmgrResetInfoPor) {
     // Initialize the counter. Upon POR they have random values.
     CHECK_STATUS_OK(ret_sram_testutils_counter_clear(kEventCounter));
     CHECK_STATUS_OK(ret_sram_testutils_counter_get(kEventCounter, &event_idx));
@@ -748,7 +734,7 @@ bool test_main(void) {
     // We need to initialize the info FLASH partitions storing the Creator and
     // Owner secrets to avoid getting the flash controller into a fatal error
     // state.
-    if (kDeviceType == kDeviceFpgaCw310 && rst_info & kDifRstmgrResetInfoPor) {
+    if (kDeviceType == kDeviceFpgaCw310 || kDeviceType == kDeviceFpgaCw340) {
       CHECK_STATUS_OK(keymgr_testutils_flash_init(&flash_ctrl, &kCreatorSecret,
                                                   &kOwnerSecret));
     }
@@ -762,7 +748,7 @@ bool test_main(void) {
     CHECK_DIF_OK(dif_alert_handler_irq_set_enabled(
         &alert_handler, kDifAlertHandlerIrqClassa, kDifToggleEnabled));
 
-    // Give an enough delay until sw rest happens.
+    // Give an enough delay until sw reset happens.
     busy_spin_micros(kRoundOneDelay);
     CHECK(false, "Should have reset before this line");
   } else {
