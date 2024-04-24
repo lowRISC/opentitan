@@ -42,8 +42,6 @@ use rv32i::csr;
 
 pub mod io;
 mod otbn;
-#[cfg(test)]
-mod tests;
 
 const NUM_PROCS: usize = 4;
 
