@@ -39,6 +39,8 @@ def key_from_dict(key, attr_name):
     Returns:
         A struct with the key label, the key file and key nickname.
     """
+    if not key:
+        return None
     if len(key) == 0:
         return None
     if len(key) != 1:
@@ -609,6 +611,27 @@ offline_signature_attach = rule(
     toolchains = [LOCALTOOLS_TOOLCHAIN],
 )
 
+def _clear_if_none_key(key_attr):
+    """Clear the key attribute if it is set to "//hw/signing:none_key.
+
+    Args:
+        key_attr: The key attribute.
+    Returns:
+        The key attribute if it is not set to "//hw/signing:none_key" or {}.
+    """
+    if not key_attr:
+        return None
+
+    key, _ = key_attr.items()[0]
+
+    if KeyInfo in key:
+        return key_attr
+
+    if key.label.name == "none_key":
+        return None
+
+    return key_attr
+
 def sign_binary(ctx, opentitantool, **kwargs):
     """Sign a binary.
 
@@ -634,9 +657,13 @@ def sign_binary(ctx, opentitantool, **kwargs):
           signed: The final signed binary.
     """
     key_attr = get_override(ctx, "attr.ecdsa_key", kwargs)
+    key_attr = _clear_if_none_key(key_attr)
+
     ecdsa_key = key_from_dict(key_attr, "ecdsa_key")
 
     rsa_attr = get_override(ctx, "attr.rsa_key", kwargs)
+    rsa_attr = _clear_if_none_key(rsa_attr)
+
     if rsa_attr and key_attr:
         fail("Only one of ECDSA or RSA key should be provided")
 
