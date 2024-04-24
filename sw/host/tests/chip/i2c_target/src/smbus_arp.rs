@@ -183,7 +183,9 @@ fn test_smbus_arp_sequence(
     if write_scratch(&i2c, 0x57u8, !MESSAGE_REG, &msg_to_dut).is_err() {
         log::info!("Got an expected error");
     } else {
-        return Err(I2cError::Generic("Expected NACK, but transaction accepted".to_string()).into());
+        return Err(
+            I2cError::Generic("Expected NACK, but transaction accepted".to_string()).into(),
+        );
     }
     log::info!("Write scratch");
     if let Err(x) = write_scratch(&i2c, 0x57u8, MESSAGE_REG, &msg_to_dut) {
