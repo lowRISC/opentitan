@@ -286,9 +286,13 @@ module prim_alert_receiver
   `ASSERT(InitReq_A, mubi4_test_true_strict(init_trig_i) &&
           !(state_q inside {InitReq, InitAckWait}) |=> send_init)
 
-  // ping request at input -> need to see encoded ping request
-  `ASSERT(PingRequest0_A, ##1 $rose(ping_req_i) && !state_q inside {InitReq, InitAckWait}
-      |=> $changed(alert_rx_o.ping_p))
+  // If there is a ping request on the input then we should see an encoded ping request. This is
+  // squashed if we are in state InitReq or InitAckWait (because we are still initialising), or if
+  // we see the init_trig_i signal go high (because it will start an initialisation).
+  `ASSERT(PingRequest0_A,
+          $rose(ping_req_i) |=> $changed(alert_rx_o.ping_p),
+          clk_i, !rst_ni || init_trig_i || state_q inside {InitReq, InitAckWait})
+
   // ping response implies it has been requested
   `ASSERT(PingResponse0_A, ping_ok_o |-> ping_pending_q)
   // correctly latch ping request
