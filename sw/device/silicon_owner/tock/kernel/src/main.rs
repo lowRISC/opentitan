@@ -18,6 +18,7 @@ use crate::hil::symmetric_encryption::AES128_BLOCK_SIZE;
 use crate::otbn::OtbnComponent;
 use crate::pinmux_layout::BoardPinmuxLayout;
 use capsules_aes_gcm::aes_gcm;
+use capsules_core::rng::{Entropy32ToRandom, RngDriver};
 use capsules_core::virtualizers::virtual_aes_ccm;
 use capsules_core::virtualizers::virtual_alarm::{MuxAlarm, VirtualMuxAlarm};
 use earlgrey::chip::EarlGreyDefaultPeripherals;
@@ -38,6 +39,7 @@ use kernel::platform::{KernelResources, SyscallDriverLookup, TbfHeaderFilterDefa
 use kernel::scheduler::priority::PrioritySched;
 use kernel::utilities::registers::interfaces::ReadWriteable;
 use kernel::{create_capability, debug, static_init};
+use lowrisc::csrng::CsRng;
 use lowrisc::flash_ctrl::FlashMPConfig;
 use rv32i::csr;
 
@@ -157,7 +159,7 @@ struct EarlGrey {
             lowrisc::spi_host::SpiHost<'static>,
         >,
     >,
-    rng: &'static capsules_core::rng::RngDriver<'static>,
+    rng: &'static RngDriver<'static, Entropy32ToRandom<'static, CsRng<'static>>>,
     aes: &'static capsules_extra::symmetric_encryption::aes::AesDriver<
         'static,
         aes_gcm::Aes128Gcm<
@@ -222,7 +224,6 @@ impl KernelResources<EarlGreyChip> for EarlGrey {
     type SyscallDriverLookup = Self;
     type SyscallFilter = TbfHeaderFilterDefaultAllow;
     type ProcessFault = ();
-    type CredentialsCheckingPolicy = ();
     type Scheduler = PrioritySched;
     type SchedulerTimer = VirtualSchedulerTimer<
         VirtualMuxAlarm<'static, earlgrey::timer::RvTimer<'static, ChipConfig>>,
@@ -237,9 +238,6 @@ impl KernelResources<EarlGreyChip> for EarlGrey {
         &self.syscall_filter
     }
     fn process_fault(&self) -> &Self::ProcessFault {
-        &()
-    }
-    fn credentials_checking_policy(&self) -> &'static Self::CredentialsCheckingPolicy {
         &()
     }
     fn scheduler(&self) -> &Self::Scheduler {
@@ -686,14 +684,14 @@ unsafe fn setup() -> (
 
     // Convert hardware RNG to the Random interface.
     let entropy_to_random = static_init!(
-        capsules_core::rng::Entropy32ToRandom<'static>,
-        capsules_core::rng::Entropy32ToRandom::new(&peripherals.rng)
+        Entropy32ToRandom<'static, CsRng<'static>>,
+        Entropy32ToRandom::new(&peripherals.rng)
     );
     peripherals.rng.set_client(entropy_to_random);
     // Setup RNG for userspace
     let rng = static_init!(
-        capsules_core::rng::RngDriver<'static>,
-        capsules_core::rng::RngDriver::new(
+        RngDriver<'static, Entropy32ToRandom<'static, CsRng<'static>>>,
+        RngDriver::new(
             entropy_to_random,
             board_kernel.create_grant(capsules_core::rng::DRIVER_NUM, &memory_allocation_cap)
         )

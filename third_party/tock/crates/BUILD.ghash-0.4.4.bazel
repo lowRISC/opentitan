@@ -74,7 +74,7 @@ rust_library(
     }),
     version = "0.4.4",
     deps = [
-        "@tock_index__opaque-debug-0.3.0//:opaque_debug",
+        "@tock_index__opaque-debug-0.3.1//:opaque_debug",
         "@tock_index__polyval-0.5.3//:polyval",
     ],
 )

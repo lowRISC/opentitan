@@ -33,6 +33,6 @@ alias(
 
 alias(
     name = "libm",
-    actual = "@tock_index__libm-0.2.7//:libm",
+    actual = "@tock_index__libm-0.2.8//:libm",
     tags = ["manual"],
 )
