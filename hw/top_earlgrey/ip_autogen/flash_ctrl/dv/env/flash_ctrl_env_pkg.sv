@@ -297,12 +297,14 @@ package flash_ctrl_env_pkg;
   // Array of 2-states data words indexed with flash addresses.
   // Useful for the flash model.
   typedef data_t data_model_t[addr_t];
+  // Otf address in a bank.
+  typedef bit [flash_ctrl_pkg::BusAddrByteW-FlashBankWidth-1 :0] otf_addr_t;
 
   typedef struct packed {
     flash_dv_part_e  partition;   // data or one of the info partitions
     flash_erase_e    erase_type;  // erase page or the whole bank
     flash_op_e       op;          // read / program or erase
-    flash_prog_sel_e prog_sel;    // program select
+    flash_prog_sel_e prog_sel;    // program select: normal or repair
     uint             num_words;   // number of words to read or program (TL_DW)
     addr_t           addr;        // starting addr for the op
     // address for the ctrl interface per bank, 18:0
@@ -327,12 +329,12 @@ package flash_ctrl_env_pkg;
   parameter uint RMA_FSM_STATE_ST_RMA_RSP = 11'b10110001010;
 
   // Indicate host read
-  parameter int unsigned OTFBankId = flash_ctrl_pkg::BusAddrByteW - 1; // bit19
+  parameter int unsigned OTFBankId = flash_ctrl_pkg::BusAddrByteW - FlashBankWidth; // bit19
   parameter int unsigned OTFHostId = OTFBankId - 1; // bit 18
   parameter int unsigned DVPageMSB = 18;
   parameter int unsigned DVPageLSB = 11;
-  localparam int unsigned CTRL_TRANS_MIN = 1;
-  localparam int unsigned CTRL_TRANS_MAX = 32;
+  localparam int unsigned CtrlTransMin = 1;
+  localparam int unsigned CtrlTransMax = 32;
 
   // functions
   // Add below for the temporary until PR12492 is merged.
@@ -428,7 +430,8 @@ package flash_ctrl_env_pkg;
       input bit [FlashAddrWidth-1:0]               bank_addr,
       input bit [FlashKeySize-1:0]                 flash_addr_key,
       input bit [FlashKeySize-1:0]                 flash_data_key,
-      input bit                                    dis = 1);
+      input bit                                    dis = 1,
+      input uvm_verbosity                          verbosity = UVM_MEDIUM);
     bit [FlashDataWidth-1:0]                         mask;
     bit [FlashDataWidth-1:0]                         masked_data;
     bit [FlashDataWidth-1:0]                         plain_text;
@@ -442,12 +445,12 @@ package flash_ctrl_env_pkg;
                                                              FlashNumRoundsHalf,
                                                              0);
     if (dis) begin
-      `uvm_info("DCR_DBG", $sformatf("datakey:%x", flash_data_key), UVM_HIGH)
-      `uvm_info("DCR_DBG", $sformatf("masked_data:%x cout:%x", masked_data, plain_text), UVM_HIGH)
+      `uvm_info("DCR_DBG", $sformatf("datakey:%x", flash_data_key), verbosity)
+      `uvm_info("DCR_DBG", $sformatf("masked_data:%x cout:%x", masked_data, plain_text), verbosity)
       `uvm_info("DCR_DBG", $sformatf(
                 "addr:%x  mask:%x  din:%x  dout:%x ",
                 bank_addr, mask, data, (plain_text^mask)),
-                UVM_MEDIUM)
+                verbosity)
     end
 
     return (plain_text ^ mask);
@@ -526,6 +529,28 @@ package flash_ctrl_env_pkg;
     env_info.ecc_en        = info.ecc_en;
     env_info.he_en         = info.he_en;
     return env_info;
+  endfunction
+
+  function automatic void print_flash_op(input flash_op_t fop, uvm_verbosity verbosity);
+    `uvm_info("print_flash_op", $sformatf(
+              "flash_op: op=%s, part=%s, addr=0x%x, otf_addr=0x%x, words=%0d",
+              fop.op.name, fop.partition.name, fop.addr, fop.otf_addr, fop.num_words),
+              verbosity)
+    if (fop.op == FlashOpErase) begin
+      `uvm_info("print_flash_op", $sformatf(
+                "flash_op: erase_type=%s", fop.erase_type.name), verbosity)
+    end
+  endfunction
+
+  function automatic addr_t to_full_addr(input otf_addr_t addr, input logic bank);
+    addr_t ret_addr = addr;
+    ret_addr[TL_AW-1:OTFBankId] = bank;
+    return ret_addr;
+  endfunction
+
+  // Round an address down to a program resolution window.
+  function automatic addr_t round_to_prog_resolution(addr_t addr);
+    return addr - (addr & (BusPgmResBytes - 1));
   endfunction
 
   // package sources

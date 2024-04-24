@@ -7,7 +7,7 @@ class flash_ctrl_rw_rnd_wd_vseq extends flash_ctrl_otf_base_vseq;
   `uvm_object_utils(flash_ctrl_rw_rnd_wd_vseq)
   `uvm_object_new
 
-  constraint ctrl_num_c { ctrl_num dist { CTRL_TRANS_MIN := 7, [2:31] :/ 1, CTRL_TRANS_MAX := 2}; }
+  constraint ctrl_num_c { ctrl_num dist { CtrlTransMin := 7, [2:31] :/ 1, CtrlTransMax := 2}; }
   constraint fractions_c {
        solve ctrl_num before fractions;
        if (ctrl_num == 1)

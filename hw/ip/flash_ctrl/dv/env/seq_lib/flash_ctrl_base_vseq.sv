@@ -21,6 +21,11 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
   // flash ctrl configuration settings.
   bit [1:0]            otp_key_init_done;
 
+  // This tracks all addresses that have had a write to avoid multiple writes
+  // since they are most likely going to result in ECC errors, unless there is
+  // an erase.
+  bit        addresses_written[addr_t];
+
   constraint num_trans_c {num_trans inside {[1 : cfg.seq_cfg.max_num_trans]};}
 
   `uvm_object_new
@@ -49,6 +54,44 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
   // Vseq to do some initial post-reset actions. Can be overriden by extending envs.
   flash_ctrl_callback_vseq callback_vseq;
+
+  // Returns non-zero if the given address has been written. It assumes the
+  // info secret pages were completely written.
+  protected function bit address_was_written(input addr_t addr);
+    if (addr >= 16'h800 && addr < 16'h2000) return 1'b1;
+    return addresses_written.exists(addr);
+  endfunction
+
+  // Returns 1 if any address between start_addr and end_addr were written.
+  protected function bit address_range_was_written(input addr_t start_addr, input addr_t end_addr);
+     `uvm_info(`gfn, $sformatf("Query addresses_written from %x to %x", start_addr, end_addr),
+               UVM_MEDIUM)
+    for (addr_t addr = start_addr; addr < end_addr; addr += FlashBankBytesPerWord) begin
+      if (address_was_written(addr)) begin
+        `uvm_info(`gfn, "overwrite", UVM_MEDIUM)
+        return 1'b1;
+      end
+    end
+    return 1'b0;
+  endfunction
+
+  // Marks the given address as being written. It is fatal if it was already
+  // written.
+  protected function void update_addresses_written(input addr_t addr);
+    `DV_CHECK(!address_was_written(addr), $sformatf("Overwriting address 0x%x", addr), fatal)
+    addresses_written[addr] = 1;
+  endfunction
+
+  // Marks all addresses between start_addr and end_addr as being written.
+  // It is fatal if any was already written.
+  protected function void update_range_addresses_written(input addr_t start_addr,
+                                                         input addr_t end_addr);
+    `uvm_info(`gfn, $sformatf("Update addresses_written from %x to %x", start_addr, end_addr),
+              UVM_MEDIUM)
+    for (addr_t addr = start_addr; addr < end_addr; addr += FlashBankBytesPerWord) begin
+      update_addresses_written(addr);
+    end
+  endfunction
 
   // Check permission and page range of info partition
   // Set exp recov_err alert if check fails
@@ -90,7 +133,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
   virtual task pre_start();
     `uvm_create_on(callback_vseq, p_sequencer);
 
-    //Create key before mem init
+    // Create key before mem init
     otp_addr_key = {$urandom, $urandom, $urandom, $urandom};
     otp_addr_rand_key = {$urandom, $urandom, $urandom, $urandom};
     otp_data_key = {$urandom, $urandom, $urandom, $urandom};
@@ -137,7 +180,6 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
   // Apply a Reset to the DUT, then do some additional required actions with callback_vseq
   virtual task apply_reset(string kind = "HARD");
     uvm_reg_data_t data;
-
     bit init_busy;
     if (kind == "HARD") begin
       // reset assertion time in clock cycles (from assertion to deassertion).
@@ -292,12 +334,12 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
   virtual task wait_flash_op_done(
       bit clear_op_status = 1'b1, time timeout_ns = 10_000_000
   );  // Added because mass(bank) erase is longer then default timeout.
-    uvm_reg_data_t data;
     csr_spinwait(.ptr(ral.op_status.done),
                  .exp_data(1'b1),
                  .timeout_ns(timeout_ns));
 
     if (clear_op_status) begin
+      uvm_reg_data_t data;
       csr_rd(.ptr(ral.op_status), .value(data));
       data = get_csr_val_with_updated_field(ral.op_status.done, data, 0);
       csr_wr(.ptr(ral.op_status), .value(data));
@@ -342,6 +384,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     flash_part_e partition_sel;
     bit [InfoTypesWidth-1:0] info_sel;
 
+    print_flash_op(flash_op, UVM_MEDIUM);
     csr_wr(.ptr(ral.addr), .value(flash_op.addr));
 
     //    flash_op.partition     -> partition_sel  ,    info_sel         |
@@ -408,6 +451,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
     `uvm_info("flash_ctrl_intr_read", $sformatf("num_rd:%0d",
                                                 flash_op.num_words), UVM_MEDIUM)
+    print_flash_op(flash_op, UVM_MEDIUM);
 
     `DV_SPINWAIT(wait(cfg.rd_crd - flash_op.num_words >= 0);,
                  "wait for rd_crd timeout",
@@ -1454,36 +1498,40 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     flash_otf_item item;
     bit [BankAddrW-1:0] mem_addr;
     int                 page = 1;
+    `uvm_info(`gfn, $sformatf("Updating secret partition with addr_key:%x, data_key:%x",
+              otp_addr_key, otp_data_key), UVM_MEDIUM)
 
     repeat(3) begin
       int page_st_addr = page*2048;
-
+      mubi4_t scramble_en;
+      mubi4_t ecc_en;
+      // Only scr/ecc enable matter; cfg.ovrd_src_dis can be randomized in directed test,
+      // but otherwise it has the same default value as HW_INFO_CFG_OVERRIDE.
+      if (page != 3) begin
+        scramble_en = prim_mubi_pkg::mubi4_and_hi(flash_ctrl_pkg::CfgAllowRead.scramble_en,
+                                                  mubi4_t'(~cfg.ovrd_scr_dis));
+        ecc_en = prim_mubi_pkg::mubi4_and_hi(flash_ctrl_pkg::CfgAllowRead.ecc_en,
+                                             mubi4_t'(~cfg.ovrd_ecc_dis));
+      end else begin
+        scramble_en = flash_ctrl_pkg::CfgAllowRead.scramble_en;
+        ecc_en = flash_ctrl_pkg::CfgAllowRead.ecc_en;
+      end
+      `uvm_info(`gfn, $sformatf("info page %0d scr_en:%x, ecc_en:%x", page, scramble_en, ecc_en),
+                UVM_MEDIUM)
       for (int addr = page_st_addr; addr < (page_st_addr + 8*256); addr += 8) begin
         `uvm_create_obj(flash_otf_item, item)
         data = cfg.mem_bkdr_util_h[FlashPartInfo][0].read(addr);
         item.dq.push_back(data[31:0]);
         item.dq.push_back(data[63:32]);
-        // only scr/ecc enable counts.
-        // cfg.ovrd_src_dis can be randomized in directed test.
-        // Otherwise, it has the same default value as HW_INO_CFG_OVERRIDE
-        if (page != 3) begin
-          item.region.scramble_en = prim_mubi_pkg::mubi4_and_hi(
-                                    flash_ctrl_pkg::CfgAllowRead.scramble_en,
-                                    mubi4_t'(~cfg.ovrd_scr_dis));
-          item.region.ecc_en = prim_mubi_pkg::mubi4_and_hi(
-                               flash_ctrl_pkg::CfgAllowRead.ecc_en,
-                               mubi4_t'(~cfg.ovrd_ecc_dis));
-        end else begin
-          item.region.scramble_en = flash_ctrl_pkg::CfgAllowRead.scramble_en;
-          item.region.ecc_en = flash_ctrl_pkg::CfgAllowRead.ecc_en;
-        end
+        item.region.scramble_en = scramble_en;
+        item.region.ecc_en = ecc_en;
         item.scramble(otp_addr_key, otp_data_key, addr, dis);
         cfg.mem_bkdr_util_h[FlashPartInfo][0].write(addr, item.fq[0]);
         mem_addr = addr >> 3;
         cfg.otf_scb_h.info_mem[0][0][mem_addr] = item.fq[0];
         cfg.scb_flash_info[addr] = item.fq[0][31:0];
         cfg.scb_flash_info[addr+4] = item.fq[0][63:32];
-      end // for (int addr = page_st_addr; addr < (page_st_addr + 8*4); addr += 8)
+      end
       page++;
     end
   endfunction // update_secret_partition

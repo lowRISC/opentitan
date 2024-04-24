@@ -9,12 +9,21 @@ class flash_ctrl_wr_path_intg_vseq extends flash_ctrl_rw_vseq;
   `uvm_object_utils(flash_ctrl_wr_path_intg_vseq)
   `uvm_object_new
 
+  // Since we force bit 38 to 1, create more than one bus words
+  // to make sure data integrity error is created.
+  constraint fractions_c {
+    fractions >= 4;
+    fractions <= 16;
+    fractions[0] == 0;
+  }
+
   task body();
     string path = "tb.dut.u_prog_fifo.wdata_i[38]";
     int    state_timeout_ns = 100000; // 100us
 
     // Don't select a partition defined as read-only
     cfg.seq_cfg.avoid_ro_partitions = 1'b1;
+    cfg.seq_cfg.addr_flash_word_aligned = 1'b1;
 
     repeat(5) begin
       flash_otf_region_cfg(.scr_mode(scr_ecc_cfg), .ecc_mode(scr_ecc_cfg));
@@ -32,23 +41,9 @@ class flash_ctrl_wr_path_intg_vseq extends flash_ctrl_rw_vseq;
           bit status_clear = 0;
 
           repeat(cfg.otf_num_rw) begin
-            `DV_CHECK_RANDOMIZE_FATAL(this)
-            ctrl = rand_op;
-            bank = rand_op.addr[OTFBankId];
-
-            if (ctrl.partition == FlashPartData) begin
-              num = ctrl_num;
-            end else begin
-              num = ctrl_info_num;
-            end
-
-            // Since we force bit 38 to 1, create more than one bus words
-            // to make sure data integrity error is created.
-            if (fractions < 4) begin
-              fractions = 4;
-            end
             randcase
               cfg.otf_wr_pct: begin
+                `DV_CHECK(try_create_prog_op(), "Could not create a prog flash op")
                 cfg.scb_h.expected_alert["fatal_std_err"].expected = 1;
                 cfg.scb_h.expected_alert["fatal_std_err"].max_delay = 2000;
                 cfg.scb_h.exp_alert_contd["fatal_std_err"] = 10000;
@@ -78,7 +73,12 @@ class flash_ctrl_wr_path_intg_vseq extends flash_ctrl_rw_vseq;
                   disable fork;
                 end join
               end
-              cfg.otf_rd_pct:read_flash(ctrl, bank, num, fractions);
+              cfg.otf_rd_pct: begin
+                `DV_CHECK_RANDOMIZE_FATAL(this)
+                ctrl = rand_op;
+                get_bank_and_num(ctrl, bank, num);
+                read_flash(ctrl, bank, num, fractions);
+              end
             endcase
           end // repeat (cfg.otf_num_rw)
           // Check std_fault.prog_intg_err,  err_code.prog_err

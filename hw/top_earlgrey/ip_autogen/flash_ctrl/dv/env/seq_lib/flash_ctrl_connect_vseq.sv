@@ -37,7 +37,7 @@ class flash_ctrl_connect_vseq extends flash_ctrl_base_vseq;
     cfg.flash_ctrl_vif.lc_nvm_debug_en = (lc_nvm_debug_en)?
       lc_ctrl_pkg::On : get_rand_lc_tx_val(.t_weight(0), .f_weight(1), .other_weight(4));
 
-    // takes dealy to propagate lc_nvm_debug_en
+    // takes delay to propagate lc_nvm_debug_en
     cfg.clk_rst_vif.wait_clks(5);
     mystr = {cfg.seq_cfg.flash_path_str, ".tck_i"};
     `DV_CHECK(uvm_hdl_read(mystr, jtag_dst_req.tck))
