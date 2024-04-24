@@ -152,6 +152,7 @@ static status_t personalize(ujson_t *uj) {
   keymgr_advance_state();
   TRY(dice_attestation_keygen(kDiceKeyUds, &uds_pubkey_id, &curr_pubkey));
   TRY(otbn_boot_attestation_key_save(kUdsAttestationKeySeed,
+                                     kOtbnBootAttestationKeyTypeDice,
                                      kUdsKeymgrDiversifier));
   // We copy over the UDS endorsement key ID to an SHA256 digest type, since
   // this is the format of key IDs generated on-dice.
