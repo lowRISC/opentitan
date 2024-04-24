@@ -38,7 +38,6 @@ rom_error_t owner_block_parse(const owner_block_t *block,
   uint32_t offset = 0;
   while (remain) {
     const tlv_header_t *item = (const tlv_header_t *)(block->data + offset);
-    printf("Found tag: %08x %08x\n", item->tag, item->length);
     if (item->tag == kTlvTagNotPresent || item->length == kTlvTagNotPresent) {
       break;
     }
@@ -86,12 +85,12 @@ rom_error_t owner_block_flash_apply(const owner_flash_config_t *flash,
                                     uint32_t primary_side) {
   if ((hardened_bool_t)flash == kHardenedBoolFalse)
     return kErrorOk;
-  uint32_t start = config_side == kBootDataSlotA   ? 0
-                   : config_side == kBootDataSlotB ? kFlashBankSize
-                                                   : 0xFFFFFFFF;
-  uint32_t end = config_side == kBootDataSlotA   ? kFlashBankSize
-                 : config_side == kBootDataSlotB ? 2 * kFlashBankSize
-                                                 : 0;
+  uint32_t start = config_side == kBootSlotA   ? 0
+                   : config_side == kBootSlotB ? kFlashBankSize
+                                               : 0xFFFFFFFF;
+  uint32_t end = config_side == kBootSlotA   ? kFlashBankSize
+                 : config_side == kBootSlotB ? 2 * kFlashBankSize
+                                             : 0;
   size_t len = (flash->header.length - sizeof(owner_flash_config_t)) /
                sizeof(owner_flash_region_t);
   if (len >= 8) {
