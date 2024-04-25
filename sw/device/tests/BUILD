@@ -5251,15 +5251,14 @@ opentitan_test(
 )
 
 opentitan_test(
-    name = "rv_core_ibex_isa_test_functest",
+    name = "rv_core_ibex_isa_test_test_unlocked0",
     srcs = ["//sw/device/silicon_creator/manuf/tests:idle_functest.c"],
     cw310 = cw310_params(
         binaries = {
-            ":rv_core_ibex_isa_test": "sram_program",
+            ":rv_core_ibex_isa_test_sram": "sram_program",
         },
         needs_jtag = True,
         otp = "//sw/device/silicon_creator/manuf/tests:otp_img_rom_exec_disabled_test_unlocked0",
-        tags = ["manual"],
         test_cmd = "--elf={sram_program}",
         test_harness = "//sw/host/tests/chip/rv_core_ibex_isa",
     ),
@@ -5285,8 +5284,10 @@ opentitan_test(
     ],
 )
 
+# This test checks basic Ibex functionality, so we prefer to run as little code as possible before the test.
+# In LC states where JTAG is available, we use SRAM execution to run the test before ROM.
 opentitan_binary(
-    name = "rv_core_ibex_isa_test",
+    name = "rv_core_ibex_isa_test_sram",
     testonly = True,
     srcs = [
         "rv_core_ibex_isa_test.S",
@@ -5300,6 +5301,34 @@ opentitan_binary(
     deps = [
         "//sw/device/lib/testing/test_framework:ottf_test_config",
         "//sw/device/silicon_creator/manuf/lib:sram_start",
+    ],
+)
+
+# For PROD LC state, we run this test as normal.
+opentitan_test(
+    name = "rv_core_ibex_isa_test_prod",
+    srcs = [
+        "rv_core_ibex_isa_test.S",
+        "rv_core_ibex_isa_test.c",
+    ],
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+    ),
+    deps = [
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:otp_ctrl_testutils",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+test_suite(
+    name = "rv_core_ibex_isa_test",
+    tags = ["manual"],
+    tests = [
+        "rv_core_ibex_isa_test_prod",
+        "rv_core_ibex_isa_test_test_unlocked0",
     ],
 )
 
