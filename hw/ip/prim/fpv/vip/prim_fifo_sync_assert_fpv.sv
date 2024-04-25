@@ -63,9 +63,9 @@ module prim_fifo_sync_assert_fpv #(
               fifo <= wdata_i;
             end else if (wvalid_i && wready_o) begin
               fifo <= wdata_i;
-              ref_depth <= ref_depth + 1;
+              ref_depth <= ref_depth + (DepthW+2)'(1);
             end else if (rvalid_o && rready_i) begin
-              ref_depth <= ref_depth - 1;
+              ref_depth <= ref_depth - (DepthW+2)'(1);
             end
           end
         end
