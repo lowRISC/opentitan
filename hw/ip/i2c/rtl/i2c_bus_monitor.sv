@@ -133,12 +133,12 @@ module i2c_bus_monitor import i2c_pkg::*;
   // hold on the bus. Note that the bus doesn't immediately transition to
   // "free" status, since the controller can continue holding SCL low for some
   // time.
-  logic bus_active_timeout_d, bus_active_timeout_q;
+  logic bus_active_timeout_det_d, bus_active_timeout_det_q;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      bus_active_timeout_q <= 1'b0;
+      bus_active_timeout_det_q <= 1'b0;
     end else begin
-      bus_active_timeout_q <= bus_active_timeout_d;
+      bus_active_timeout_det_q <= bus_active_timeout_det_d;
     end
   end
 
@@ -174,11 +174,11 @@ module i2c_bus_monitor import i2c_pkg::*;
     bus_release_cnt_sel = 30'(t_buf_i);
     bus_release_cnt_dec = 1'b0;
     bus_inactive_timeout_det = 1'b0;
-    bus_active_timeout_d = bus_active_timeout_q;
+    bus_active_timeout_det_d = bus_active_timeout_det_q;
 
     unique case (state_q)
       StBusFree: begin
-        bus_active_timeout_d = 1'b0;
+        bus_active_timeout_det_d = 1'b0;
 
         if (!scl_i || !sda_i) begin
           state_d = StBusBusyLow;
@@ -201,7 +201,8 @@ module i2c_bus_monitor import i2c_pkg::*;
         end else if (scl_i) begin
           bus_release_cnt_load = 1'b1;
           bus_release_cnt_sel = bus_active_timeout_i;
-          if (bus_active_timeout_q) begin
+          if (bus_active_timeout_det_q) begin
+            // SCL was released due to the bus timeout, so go to BusFree.
             state_d = StBusFree;
           end
         end else if (bus_release_cnt == 30'd1) begin
@@ -209,7 +210,7 @@ module i2c_bus_monitor import i2c_pkg::*;
           // for too long. Both the controller and target should respond to
           // this timeout and release the bus. We don't consider the bus free
           // yet, though: SCL must be released first.
-          bus_active_timeout_d = bus_active_timeout_en_i;
+          bus_active_timeout_det_d = bus_active_timeout_en_i;
         end
       end
 
@@ -262,7 +263,7 @@ module i2c_bus_monitor import i2c_pkg::*;
   end
 
   assign bus_free_o = (state_q == StBusFree);
-  assign event_bus_active_timeout_o = bus_active_timeout_d && !bus_active_timeout_q;
+  assign event_bus_active_timeout_o = bus_active_timeout_det_d && !bus_active_timeout_det_q;
   assign event_host_timeout_o = !target_idle_i && bus_inactive_timeout_det;
 
 endmodule
