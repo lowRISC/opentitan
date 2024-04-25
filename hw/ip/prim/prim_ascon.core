@@ -9,9 +9,12 @@ filesets:
   files_rtl:
     depend:
        - lowrisc:prim:all
+       - lowrisc:prim:sparse_fsm
     files:
        - rtl/prim_ascon_round.sv
        - rtl/prim_ascon_sbox.sv
+       - rtl/prim_ascon_pkg.sv
+       - rtl/prim_ascon_duplex.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:
