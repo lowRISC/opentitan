@@ -29,7 +29,7 @@ module clkmgr_bind;
     .clk(clocks_o.clk_io_div4_powerup),
     .rst_n(rst_io_div4_ni),
     .ip_clk_en(pwr_i.io_ip_clk_en),
-    .sw_clk_en(reg2hw.clk_enables.clk_io_div4_peri_en.q),
+    .sw_clk_en(clk_io_div4_peri_sw_en),
     .scanmode(scanmode_i == prim_mubi_pkg::MuBi4True),
     .gated_clk(clocks_o.clk_io_div4_peri)
   );
@@ -38,7 +38,7 @@ module clkmgr_bind;
     .clk(clocks_o.clk_io_div2_powerup),
     .rst_n(rst_io_div2_ni),
     .ip_clk_en(pwr_i.io_ip_clk_en),
-    .sw_clk_en(reg2hw.clk_enables.clk_io_div2_peri_en.q),
+    .sw_clk_en(clk_io_div2_peri_sw_en),
     .scanmode(scanmode_i == prim_mubi_pkg::MuBi4True),
     .gated_clk(clocks_o.clk_io_div2_peri)
   );
@@ -47,7 +47,7 @@ module clkmgr_bind;
     .clk(clocks_o.clk_io_powerup),
     .rst_n(rst_io_ni),
     .ip_clk_en(pwr_i.io_ip_clk_en),
-    .sw_clk_en(reg2hw.clk_enables.clk_io_peri_en.q),
+    .sw_clk_en(clk_io_peri_sw_en),
     .scanmode(scanmode_i == prim_mubi_pkg::MuBi4True),
     .gated_clk(clocks_o.clk_io_peri)
   );
@@ -56,7 +56,7 @@ module clkmgr_bind;
     .clk(clocks_o.clk_usb_powerup),
     .rst_n(rst_usb_ni),
     .ip_clk_en(pwr_i.usb_ip_clk_en),
-    .sw_clk_en(reg2hw.clk_enables.clk_usb_peri_en.q),
+    .sw_clk_en(clk_usb_peri_sw_en),
     .scanmode(scanmode_i == prim_mubi_pkg::MuBi4True),
     .gated_clk(clocks_o.clk_usb_peri)
   );
