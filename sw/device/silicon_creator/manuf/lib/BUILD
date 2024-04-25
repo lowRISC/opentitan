@@ -268,7 +268,6 @@ opentitan_test(
         needs_jtag = True,
         otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival_bringup:otp_img_dev_manuf_individualized",
         tags = [
-            "broken",  # https://github.com/lowRISC/opentitan/issues/19086
             "lc_dev",
             "manuf",
         ],
