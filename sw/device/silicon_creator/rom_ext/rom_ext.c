@@ -133,26 +133,40 @@ static rom_error_t rom_ext_irq_error(void) {
 
 OT_WARN_UNUSED_RESULT
 static uint32_t rom_ext_current_slot(void) {
-  uint32_t pc = 0;
-  asm("auipc %[pc], 0;" : [pc] "=r"(pc));
+  uint32_t pc = ibex_addr_remap_get(0);
+  if (pc == 0) {
+    // If the remap window has address zero, we're running from flash and we can
+    // simply read the program counter.
+    asm("auipc %[pc], 0;" : [pc] "=r"(pc));
+  }
 
   const uint32_t kFlashSlotA = TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR;
   const uint32_t kFlashSlotB =
       kFlashSlotA + TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES / 2;
   const uint32_t kFlashSlotEnd =
       kFlashSlotA + TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES;
+  uint32_t side = 0;
   if (pc >= kFlashSlotA && pc < kFlashSlotB) {
     // Running in Slot A.
-    return kBootSlotA;
+    side = kBootSlotA;
   } else if (pc >= kFlashSlotB && pc < kFlashSlotEnd) {
     // Running in Slot B.
-    return kBootSlotB;
+    side = kBootSlotB;
   } else {
-    // Running elsewhere (ie: the remap window).
-    // TODO: read the remap register configuration to determine the execution
-    // slot.
-    return 0;
+    // Not running in flash: impossible.
+    HARDENED_TRAP();
   }
+  return side;
+}
+
+const manifest_t *rom_ext_manifest(void) {
+  uint32_t pc = 0;
+  asm("auipc %[pc], 0;" : [pc] "=r"(pc));
+  const uint32_t kFlashHalf = TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES / 2;
+  // Align the PC to the current flash side.  The ROM_EXT must be the first
+  // entity in each flash side, so this alignment is the manifest address.
+  pc &= ~(kFlashHalf - 1);
+  return (const manifest_t *)pc;
 }
 
 void rom_ext_check_rom_expectations(void) {
@@ -728,13 +742,19 @@ static rom_error_t rom_ext_try_next_stage(boot_data_t *boot_data) {
 
 static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
   HARDENED_RETURN_IF_ERROR(rom_ext_init(boot_data));
-  dbg_printf("Starting ROM_EXT\r\n");
+  const manifest_t *self = rom_ext_manifest();
+  dbg_printf("Starting ROM_EXT %u.%u\r\n", self->version_major,
+             self->version_minor);
 
   // Initialize the boot_log in retention RAM.
   const chip_info_t *rom_chip_info = (const chip_info_t *)_chip_info_start;
   boot_log_check_or_init(boot_log, rom_ext_current_slot(), rom_chip_info);
+  boot_log->rom_ext_major = self->version_major;
+  boot_log->rom_ext_minor = self->version_minor;
+  boot_log->rom_ext_size = CHIP_ROM_EXT_SIZE_MAX;
   boot_log->rom_ext_nonce = boot_data->nonce;
   boot_log->ownership_state = boot_data->ownership_state;
+  boot_log->ownership_transfers = boot_data->ownership_transfers;
 
   // Initialize the chip ownership state.
   HARDENED_RETURN_IF_ERROR(ownership_init());

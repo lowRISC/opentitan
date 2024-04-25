@@ -84,10 +84,15 @@ typedef struct boot_data {
    */
   uint32_t ownership_state;
   /**
+   * Number of ownership transfers this chip has had.
+   */
+  uint32_t ownership_transfers;
+
+  /**
    * Padding for future enhancements and to make the size of `boot_data_t` a
    * power of two.
    */
-  uint32_t padding[5];
+  uint32_t padding[4];
 } boot_data_t;
 
 OT_ASSERT_MEMBER_OFFSET(boot_data_t, digest, 0);
@@ -101,7 +106,8 @@ OT_ASSERT_MEMBER_OFFSET(boot_data_t, primary_bl0_slot, 60);
 OT_ASSERT_MEMBER_OFFSET(boot_data_t, next_owner, 64);
 OT_ASSERT_MEMBER_OFFSET(boot_data_t, nonce, 96);
 OT_ASSERT_MEMBER_OFFSET(boot_data_t, ownership_state, 104);
-OT_ASSERT_MEMBER_OFFSET(boot_data_t, padding, 108);
+OT_ASSERT_MEMBER_OFFSET(boot_data_t, ownership_transfers, 108);
+OT_ASSERT_MEMBER_OFFSET(boot_data_t, padding, 112);
 OT_ASSERT_SIZE(boot_data_t, 128);
 
 enum {
