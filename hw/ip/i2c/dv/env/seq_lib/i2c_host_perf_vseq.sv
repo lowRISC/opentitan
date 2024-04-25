@@ -13,7 +13,7 @@ class i2c_host_perf_vseq extends i2c_rx_tx_vseq;
   `uvm_object_utils(i2c_host_perf_vseq)
   `uvm_object_new
 
-  parameter real PERFTHRESHOLD = 0.80; // Threshold for performance comparison
+  parameter real PERFTHRESHOLD = 0.75; // Threshold for performance comparison
   rand speed_mode_e           speed_mode;
   rand uint                   scl_frequency; //in KHz
   rand uint                   scl_period; // converted to register value

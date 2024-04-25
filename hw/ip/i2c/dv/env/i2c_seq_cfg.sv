@@ -104,9 +104,9 @@ class i2c_seq_cfg extends uvm_object;
   `define I2C_GET_MIN_PARAM(NAME_, PARAM_NAME_) \
       function uint get_``NAME_``_min(speed_mode_e speed_mode, uint clk_period_ps); \
         case (speed_mode) inside \
-          Standard : return (1000* PARAM_NAME_``_MINSTANDARD/clk_period_ps); \
-          Fast     : return (1000* PARAM_NAME_``_MINFAST/clk_period_ps); \
-          FastPlus : return (1000* PARAM_NAME_``_MINFASTPLUS/clk_period_ps); \
+          Standard : return ((1000* PARAM_NAME_``_MINSTANDARD + clk_period_ps - 1)/clk_period_ps); \
+          Fast     : return ((1000* PARAM_NAME_``_MINFAST + clk_period_ps - 1)/clk_period_ps); \
+          FastPlus : return ((1000* PARAM_NAME_``_MINFASTPLUS + clk_period_ps - 1)/clk_period_ps); \
         endcase \
       endfunction
   `endif
@@ -118,9 +118,9 @@ class i2c_seq_cfg extends uvm_object;
   `define I2C_GET_MAX_PARAM(NAME_, PARAM_NAME_) \
       function uint get_``NAME_``_max(speed_mode_e speed_mode, uint clk_period_ps); \
         case (speed_mode) inside \
-          Standard : return (1000* PARAM_NAME_``_MAXSTANDARD/clk_period_ps); \
-          Fast     : return (1000* PARAM_NAME_``_MAXFAST/clk_period_ps); \
-          FastPlus : return (1000* PARAM_NAME_``_MAXFASTPLUS/clk_period_ps); \
+          Standard : return ((1000* PARAM_NAME_``_MAXSTANDARD + clk_period_ps - 1)/clk_period_ps); \
+          Fast     : return ((1000* PARAM_NAME_``_MAXFAST + clk_period_ps - 1)/clk_period_ps); \
+          FastPlus : return ((1000* PARAM_NAME_``_MAXFASTPLUS + clk_period_ps - 1)/clk_period_ps); \
         endcase \
       endfunction
   `endif
