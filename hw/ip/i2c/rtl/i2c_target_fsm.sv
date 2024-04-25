@@ -301,8 +301,10 @@ module i2c_target_fsm import i2c_pkg::*;
   end
 
   // Deserializer for a byte read from the bus on the target side
-  assign address0_match = ((input_byte[7:1] & target_mask0_i) == target_address0_i);
-  assign address1_match = ((input_byte[7:1] & target_mask1_i) == target_address1_i);
+  assign address0_match = ((input_byte[7:1] & target_mask0_i) == target_address0_i) &&
+                          (target_mask0_i != '0);
+  assign address1_match = ((input_byte[7:1] & target_mask1_i) == target_address1_i) &&
+                          (target_mask1_i != '0);
   assign address_match = (address0_match || address1_match);
 
   // Shift data in on positive SCL edge
