@@ -51,14 +51,13 @@ def strap_combination_test(name, rom, value, evaluator = None, tags = [], extra_
 
     opentitan_test(
         name = name,
-        exec_env = {"//hw/top_earlgrey:sim_verilator": None},
+        srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
+        exec_env = {
+            "//hw/top_earlgrey:sim_verilator_rom_with_fake_keys": None,
+        },
         verilator = verilator_params(
             tags = tags,
             rom = rom,
-            binaries = {
-                # The test expects an unsigned binary.
-                "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_sim_verilator_scr_vmem64": "firmware",
-            },
             test_cmd = extra_verilator_args + """
                 --exec="gpio set IOC0 --mode={b0_mode} --value={b0_value} --pull={b0_pull}"
                 --exec="gpio set IOC1 --mode={b1_mode} --value={b1_value} --pull={b1_pull}"
@@ -67,6 +66,14 @@ def strap_combination_test(name, rom, value, evaluator = None, tags = [], extra_
                 "no-op"
             """.format(**settings),
         ),
+        linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
+        deps = [
+            "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+            "//sw/device/lib/testing/test_framework:ottf_main",
+            "//sw/device/silicon_creator/lib/drivers:lifecycle",
+            "//sw/device/silicon_creator/lib/drivers:otp",
+            "//sw/device/silicon_creator/lib/sigverify:spx_verify",
+        ],
     )
 
 def strap_combinations_test(name, rom, tags = [], skip_value = []):

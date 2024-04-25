@@ -529,6 +529,15 @@ sim_verilator(
     """,
 )
 
+sim_verilator(
+    name = "sim_verilator_rom_with_fake_keys",
+    testonly = True,
+    base = ":sim_verilator",
+    manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
+    rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys_sim_verilator",
+    rsa_key = {"//sw/device/silicon_creator/rom/keys/fake/rsa:test_private_key_0": "test_key_0"},
+)
+
 ###########################################################################
 # Sim DV Environments
 #
