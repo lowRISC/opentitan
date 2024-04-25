@@ -30,7 +30,7 @@ rom_error_t test_owner_init(boot_data_t *bootdata, owner_config_t *config,
   owner_page[0].header.tag = kTlvTagOwner;
   owner_page[0].header.length = 2048;
   owner_page[0].version = 0;
-  owner_page[0].sram_exec_mode = kOwnerSramExecModeDisabled;
+  owner_page[0].sram_exec_mode = kOwnerSramExecModeDisabledLocked;
   owner_page[0].ownership_key_alg = kOwnershipKeyAlgEcdsaP256;
   owner_page[0].owner_key = (owner_key_t){OWNER_ECDSA_P256};
   owner_page[0].activate_key = (owner_key_t){ACTIVATE_ECDSA_P256};
@@ -108,9 +108,9 @@ rom_error_t test_owner_init(boot_data_t *bootdata, owner_config_t *config,
                                      sizeof(owner_page[0]) / sizeof(uint32_t),
                                      &owner_page[0]));
     OT_DISCARD(boot_data_write(bootdata));
-    dbg_printf("Test owner flash initialized\r\n");
+    dbg_printf("test_owner_init: flash\r\n");
   } else {
-    dbg_printf("Test owner ram initialized\r\n");
+    dbg_printf("test_owner_init: ram\r\n");
   }
   return kErrorOk;
 }
