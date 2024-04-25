@@ -9,11 +9,3 @@
 # assertion.
 cover -disable -regexp ".*\.u_prim_count_esc_cnt\..*\.UpCntIncrStable_A:precondition1"
 cover -disable -regexp ".*\.u_prim_count_esc_cnt\..*\.DnCntIncrStable_A:precondition1"
-
-# In the ping timer, there is also a counter called u_prim_count_cnt. This counts down from the
-# value supplied in ping_timeout_cyc_i (this happens to be constrained in
-# alert_handler_ping_timer_assert_fpv.sv to be less than 8). When it gets to zero, we set the
-# timer_expired flag, which disables the decrement. As such, we are never asked to decrement when
-# equal to zero. Waive the cover property for each of the assertions that checks this.
-cover -disable -regexp ".*\.u_prim_count_cnt\..*\.UpCntDecrStable_A:precondition1"
-cover -disable -regexp ".*\.u_prim_count_cnt\..*\.DnCntDecrStable_A:precondition1"
