@@ -89,7 +89,7 @@ module i2c_core import i2c_pkg::*;
   logic bus_event_detect;
   logic [10:0] bus_event_detect_cnt;
   logic sda_released_but_low;
-  logic controller_arbitration_lost;
+  logic controller_sda_interference;
   logic target_arbitration_lost;
 
   logic bus_free;
@@ -474,6 +474,9 @@ module i2c_core import i2c_pkg::*;
       // are allowed to propagate. The rise time is used here because it
       // should be the longer value. The (-1) term here is to account for the
       // delay in the counter.
+      // Note that there are limits to this method of detecting arbitration.
+      // A separate, buggy device that drives clock low faster than the counter
+      // can expire would not trigger loss of arbitration.
       bus_event_detect_cnt <= reg2hw.timing1.t_r.q + 10'(RoundTripCycles - 1);
     end else if (bus_event_detect_cnt != '0) begin
       bus_event_detect_cnt <= bus_event_detect_cnt - 1'b1;
@@ -481,9 +484,14 @@ module i2c_core import i2c_pkg::*;
   end
   assign bus_event_detect = (bus_event_detect_cnt == '0);
   assign sda_released_but_low = bus_event_detect && scl_sync && (sda_fsm_q != sda_sync);
-  assign controller_arbitration_lost = controller_transmitting && sda_released_but_low;
+  // What about unexpected start / stop on the bits that are read?
+  assign controller_sda_interference = controller_transmitting && sda_released_but_low;
   assign target_arbitration_lost = target_transmitting && sda_released_but_low;
 
+  assign event_sda_interference = controller_sda_interference;
+
+  // The bus monitor detects starts, stops, and bus timeouts. It also reports
+  // when the bus is free for the controller to transmit.
   i2c_bus_monitor u_i2c_bus_monitor (
     .clk_i,
     .rst_ni,
@@ -551,7 +559,7 @@ module i2c_core import i2c_pkg::*;
     .tsu_sta_i                      (tsu_sta),
     .tsu_sto_i                      (tsu_sto),
     .thd_dat_i                      (thd_dat),
-    .arbitration_lost_i             (controller_arbitration_lost),
+    .sda_interference_i             (controller_sda_interference),
     .stretch_timeout_i              (bus_active_timeout),
     .timeout_enable_i               (stretch_timeout_enable),
     .host_nack_handler_timeout_i    (host_nack_handler_timeout),
@@ -560,7 +568,6 @@ module i2c_core import i2c_pkg::*;
     .event_unhandled_nak_timeout_o  (event_unhandled_nak_timeout),
     .event_arbitration_lost_o       (event_controller_arbitration_lost),
     .event_scl_interference_o       (event_scl_interference),
-    .event_sda_interference_o       (event_sda_interference),
     .event_stretch_timeout_o        (event_stretch_timeout),
     .event_sda_unstable_o           (event_sda_unstable),
     .event_cmd_complete_o           (event_controller_cmd_complete)
@@ -871,8 +878,10 @@ module i2c_core import i2c_pkg::*;
   // ASSERTIONS //
   ////////////////
 
+  // TODO: Decide whether to keep this assertion. It is primarily checking the
+  // testbench, not the IP, due to the CDC cycle deletion.
   // Check to make sure scl_i is never a single cycle glitch
-  `ASSERT(SclInputGlitch_A, $rose(scl_sync) |-> ##1 scl_sync)
+  //  `ASSERT(SclInputGlitch_A, $rose(scl_sync) |-> ##1 scl_sync)
 
   `ASSERT_INIT(FifoDepthValid_A, FifoDepth > 0 && FifoDepthW <= MaxFifoDepthW)
   `ASSERT_INIT(AcqFifoDepthValid_A, AcqFifoDepth > 0 && AcqFifoDepthW <= MaxFifoDepthW)
