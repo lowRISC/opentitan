@@ -135,7 +135,7 @@ module prim_fifo_sync #(
     end
 
     if (OutputZeroIfEmpty == 1'b1) begin : gen_output_zero
-      assign rdata_o = empty ? 'b0 : rdata_int;
+      assign rdata_o = empty ? Width'(0) : rdata_int;
     end else begin : gen_no_output_zero
       assign rdata_o = rdata_int;
     end
