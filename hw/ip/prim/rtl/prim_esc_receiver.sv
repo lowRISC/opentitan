@@ -97,7 +97,7 @@ module prim_esc_receiver
   logic timeout_cnt_set, timeout_cnt_en;
   logic [TimeoutCntDw-1:0] timeout_cnt;
   assign timeout_cnt_set = (ping_en && !(&timeout_cnt));
-  assign timeout_cnt_en = ((timeout_cnt > '0) && !(&timeout_cnt));
+  assign timeout_cnt_en = (timeout_cnt > '0);
 
   prim_count #(
     .Width(TimeoutCntDw),
