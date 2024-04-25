@@ -1162,8 +1162,8 @@
             - Verify that keymgr is at the "reset" state.
             - Verify that
               - attestation sw binding equals
-                - the digest of the ROM_EXT if `OWNER_SW_CFG_ROM_KEYMGR_ROM_EXT_MEAS_EN` is
-                  `kHardenedBoolTrue`, and
+                - the digest of the software readable OTP partitions if
+                  `OWNER_SW_CFG_ROM_KEYMGR_OTP_MEAS_EN` is `kHardenedBoolTrue`, and
                 - the `binding_value` field of the manifest, otherwise,
               - sealing sw binding equals the `binding_value` field of the manifest, and
               - max creator key version equals the `max_key_version` field of the manifest,

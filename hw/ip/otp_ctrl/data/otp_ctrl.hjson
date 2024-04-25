@@ -823,14 +823,14 @@
       default: "4",
       local: "true"
     },
-    { name: "OwnerSwCfgRomKeymgrRomExtMeasEnOffset",
-      desc: "Offset of OWNER_SW_CFG_ROM_KEYMGR_ROM_EXT_MEAS_EN",
+    { name: "OwnerSwCfgRomKeymgrOtpMeasEnOffset",
+      desc: "Offset of OWNER_SW_CFG_ROM_KEYMGR_OTP_MEAS_EN",
       type: "int",
       default: "1004",
       local: "true"
     },
-    { name: "OwnerSwCfgRomKeymgrRomExtMeasEnSize",
-      desc: "Size of OWNER_SW_CFG_ROM_KEYMGR_ROM_EXT_MEAS_EN",
+    { name: "OwnerSwCfgRomKeymgrOtpMeasEnSize",
+      desc: "Size of OWNER_SW_CFG_ROM_KEYMGR_OTP_MEAS_EN",
       type: "int",
       default: "4",
       local: "true"

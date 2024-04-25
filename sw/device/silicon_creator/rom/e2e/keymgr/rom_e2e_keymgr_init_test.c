@@ -34,8 +34,7 @@ bool test_main(void) {
 
   const manifest_t *manifest = manifest_def_get();
 
-  if (otp_read32(
-          OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_KEYMGR_ROM_EXT_MEAS_EN_OFFSET) ==
+  if (otp_read32(OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_KEYMGR_OTP_MEAS_EN_OFFSET) ==
       kHardenedBoolTrue) {
     // Check that the attestation is equal to the digest.
     CHECK_ARRAYS_EQ(bindings.attestation, boot_measurements.rom_ext.data,

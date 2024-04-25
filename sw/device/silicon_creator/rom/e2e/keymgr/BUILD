@@ -65,7 +65,7 @@ rom_e2e_keymgr_init_configs = [
             otp_partition(
                 name = "OWNER_SW_CFG",
                 items = {
-                    "OWNER_SW_CFG_ROM_KEYMGR_ROM_EXT_MEAS_EN": otp_hex(config["value"]),
+                    "OWNER_SW_CFG_ROM_KEYMGR_OTP_MEAS_EN": otp_hex(config["value"]),
                 },
             ),
         ],

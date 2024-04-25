@@ -23,9 +23,10 @@
                     value: "0x1d4",
                 },
                 {
-                    name: "OWNER_SW_CFG_ROM_KEYMGR_ROM_EXT_MEAS_EN",
-                    // Set to 0x739 to use the ROM_EXT hash measurement as the
-                    // key manager attestation binding value.
+                    name: "OWNER_SW_CFG_ROM_KEYMGR_OTP_MEAS_EN",
+                    // Set to 0x739 to use the OTP hash measurement of the
+                    // software readable OTP partitions as the key manager
+                    // attestation binding value.
                     value: "0x0",
                 },
                 {
