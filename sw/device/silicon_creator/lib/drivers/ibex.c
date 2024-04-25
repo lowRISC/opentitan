@@ -62,6 +62,17 @@ void ibex_addr_remap_1_set(uint32_t matching_addr, uint32_t remap_addr,
   icache_invalidate();
 }
 
+uint32_t ibex_addr_remap_get(uint32_t index) {
+  HARDENED_CHECK_LT(index, 2);
+  index *= sizeof(uint32_t);
+  if (abs_mmio_read32(kBase + RV_CORE_IBEX_IBUS_ADDR_EN_0_REG_OFFSET + index)) {
+    return abs_mmio_read32(kBase + RV_CORE_IBEX_IBUS_REMAP_ADDR_0_REG_OFFSET +
+                           index);
+  } else {
+    return 0;
+  }
+}
+
 void ibex_addr_remap_lockdown(uint32_t index) {
   HARDENED_CHECK_LT(index, 2);
   index *= sizeof(uint32_t);

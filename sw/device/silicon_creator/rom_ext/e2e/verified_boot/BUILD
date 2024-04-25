@@ -20,25 +20,69 @@ filegroup(
 )
 
 _POSITIONS = {
-    "slot_a": {
+    "owner_slot_a": {
+        "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a",
+        "romext_offset": "0",
         "linker_script": "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
         "manifest": "//sw/device/silicon_owner:manifest_standard",
-        "offset": "0x10000",
+        "owner_offset": "0x10000",
+        "success": "bl0_slot = AA__\r\n",
     },
-    "slot_b": {
+    "owner_slot_b": {
+        "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a",
+        "romext_offset": "0",
         "linker_script": "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_b",
         "manifest": "//sw/device/silicon_owner:manifest_standard",
-        "offset": "0x90000",
+        "owner_offset": "0x90000",
+        "success": "bl0_slot = __BB\r\n",
     },
-    "virtual_a": {
+    "owner_virtual_a": {
+        "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a",
+        "romext_offset": "0",
         "linker_script": "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
         "manifest": "//sw/device/silicon_owner:manifest_virtual",
-        "offset": "0x10000",
+        "owner_offset": "0x10000",
+        "success": "bl0_slot = AA__\r\n",
     },
-    "virtual_b": {
+    "owner_virtual_b": {
+        "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a",
+        "romext_offset": "0",
         "linker_script": "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
         "manifest": "//sw/device/silicon_owner:manifest_virtual",
-        "offset": "0x90000",
+        "owner_offset": "0x90000",
+        "success": "bl0_slot = __BB\r\n",
+    },
+    "romext_slot_a": {
+        "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a",
+        "romext_offset": "0",
+        "linker_script": "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
+        "manifest": "//sw/device/silicon_owner:manifest_standard",
+        "owner_offset": "0x10000",
+        "success": "rom_ext_slot = AA__\r\n",
+    },
+    "romext_slot_b": {
+        "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_slot_b",
+        "romext_offset": "0x80000",
+        "linker_script": "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
+        "manifest": "//sw/device/silicon_owner:manifest_standard",
+        "owner_offset": "0x10000",
+        "success": "rom_ext_slot = __BB\r\n",
+    },
+    "romext_virtual_a": {
+        "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_slot_virtual",
+        "romext_offset": "0",
+        "linker_script": "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
+        "manifest": "//sw/device/silicon_owner:manifest_standard",
+        "owner_offset": "0x10000",
+        "success": "rom_ext_slot = AA__\r\n",
+    },
+    "romext_virtual_b": {
+        "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_slot_virtual",
+        "romext_offset": "0x80000",
+        "linker_script": "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
+        "manifest": "//sw/device/silicon_owner:manifest_standard",
+        "owner_offset": "0x10000",
+        "success": "rom_ext_slot = __BB\r\n",
     },
 }
 
@@ -47,8 +91,13 @@ _POSITIONS = {
         name = "position_{}".format(name),
         srcs = [":boot_test"],
         cw310 = cw310_params(
-            assemble = "{rom_ext}@0 {firmware}@{offset}",
-            offset = position["offset"],
+            assemble = "{romext}@{romext_offset} {firmware}@{owner_offset}",
+            binaries = {
+                position["romext"]: "romext",
+            },
+            exit_success = position["success"],
+            owner_offset = position["owner_offset"],
+            romext_offset = position["romext_offset"],
         ),
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_ext": None,

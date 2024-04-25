@@ -25,6 +25,7 @@ status_t boot_log_print(boot_log_t *boot_log) {
            boot_log->rom_ext_nonce.value[1], boot_log->rom_ext_nonce.value[0]);
   LOG_INFO("boot_log bl0_slot = %C", boot_log->bl0_slot);
   LOG_INFO("boot_log ownership_state = %C", boot_log->ownership_state);
+  LOG_INFO("boot_log ownership_transfers = %u", boot_log->ownership_transfers);
   return OK_STATUS();
 }
 
