@@ -17,12 +17,6 @@ load(
     "RSA_ONLY_KEY_STRUCTS",
 )
 load(
-    "//rules:opentitan_test.bzl",
-    "ROM_BOOT_FAILURE_MSG",
-    "opentitan_functest",
-    dv_params_functest = "dv_params",
-)
-load(
     "//rules:otp.bzl",
     "STD_OTP_OVERLAYS",
     "otp_image",
@@ -49,7 +43,7 @@ package(default_visibility = ["//visibility:public"])
 # TODO(lowRISC:opentitan#13180): this is a temporary solution to enable writing
 # manufacturer specific tests in the `manufacturer_test_hooks` repository that
 # use open source test code. Specifically, this enables defining an
-# `opentitan_functest` in the `manufacturer_test_hooks` repository without the
+# `opentitan_test` in the `manufacturer_test_hooks` repository without the
 # need to specify the corresponding test hooks that should be used with the test
 # on the command line.
 exports_files(glob([
@@ -1421,7 +1415,7 @@ opentitan_test(
         "//hw/top_earlgrey:sim_verilator": None,
     },
     # This test is designed to run and complete entirely in the ROM boot stage.
-    # Setting the `test_in_rom` flag makes the `opentitan_functest` rule aware
+    # Setting the `test_in_rom` flag makes the `opentitan_test` rule aware
     # of this, and instructs it to load the test image into ROM (rather than
     # loading the default test ROM, or any other ROM that may be specified via
     # DV or Verilator params).
@@ -3609,27 +3603,6 @@ opentitan_test(
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
-    ],
-)
-
-# Used by DVSIM test-points to test signed binaries.
-# Please do not remove until those tests are updated to use `uart_smoketest`.
-opentitan_functest(
-    name = "uart_smoketest_signed",
-    srcs = ["uart_smoketest.c"],
-    dv = dv_params_functest(
-        rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
-    ),
-    manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
-    signed = True,
-    targets = ["dv"],
-    deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/arch:device",
-        "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:uart",
-        "//sw/device/lib/runtime:hart",
-        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
