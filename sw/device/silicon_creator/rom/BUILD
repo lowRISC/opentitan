@@ -179,8 +179,8 @@ opentitan_binary(
     ],
 )
 
-# Create the legacy ROM target names so that existing opentitan_functest and
-# splicing rules can find the rom VMEM files.
+# Create the legacy ROM target names so that existing splicing rules can find
+# the rom VMEM files.
 legacy_rom_targets(
     testonly = True,
     suffixes = _ROM_DEVICES,
@@ -210,8 +210,8 @@ opentitan_binary(
     ],
 )
 
-# Create the legacy ROM target names so that existing opentitan_functest and
-# splicing rules can find the rom VMEM files.
+# Create the legacy ROM target names so that existing splicing rules can find
+# the rom VMEM files.
 legacy_rom_targets(
     suffixes = _ROM_DEVICES,
     target = "rom_with_real_keys",

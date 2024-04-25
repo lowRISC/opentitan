@@ -101,7 +101,7 @@ opentitan_test(
     name = "e2e_bootstrap_disabled",
     cw310 = cw310_params(
         # Since the bitstream disables bootstrap, there is no firmware to
-        # load into the chip.  However, opentitan_functest wants to build a
+        # load into the chip.  However, opentitan_test wants to build a
         # binary target.  We'll build an unsigned do-nothing binary.
         binaries = {
             "//sw/device/silicon_creator/rom/e2e:new_empty_test_slot_a": "firmware",
