@@ -167,7 +167,7 @@ static status_t provision(ujson_t *uj) {
   return OK_STATUS();
 }
 
-bool sram_main(void) {
+bool test_main(void) {
   // Initialize AST, DIF handles, pinmux, and UART.
   manually_init_ast(ast_cfg_data);
   CHECK_STATUS_OK(peripheral_handles_init());

@@ -51,6 +51,7 @@ kIAmBecomeUserEnd:
   .global finish_test
   .type finish_test, @function
 finish_test:
+  li  a0, 0
   li  sp, SRAM_MAGIC_SP_EXECUTION_DONE
   ebreak
   .size finish_test, .-finish_test
