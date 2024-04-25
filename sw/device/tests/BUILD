@@ -2576,26 +2576,16 @@ opentitan_test(
 opentitan_test(
     name = "pwrmgr_random_sleep_all_reset_reqs_test",
     srcs = ["pwrmgr_random_sleep_all_reset_reqs_test.c"],
-    exec_env = dicts.add(
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        {
-            "//hw/top_earlgrey:fpga_cw310_sival": "test_harness",
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "test_harness",
-            "//hw/top_earlgrey:fpga_cw310_test_rom": "test_harness",
-            "//hw/top_earlgrey:silicon_creator": None,
-            "//hw/top_earlgrey:sim_dv": None,
-        },
-    ),
-    silicon = silicon_params(
-        test_cmd = """
-            --bootstrap={firmware}
-        """,
+    cw310 = cw310_params(
+        test_cmd = "--bootstrap={firmware}",
         test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_resets",
     ),
-    test_harness = cw310_params(
-        test_cmd = """
-            --bootstrap={firmware}
-        """,
+    exec_env = dicts.add(
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        EARLGREY_TEST_ENVS,
+    ),
+    silicon = silicon_params(
+        test_cmd = "--bootstrap={firmware}",
         test_harness = "//sw/host/tests/chip/pwrmgr:sleep_all_resets",
     ),
     deps = [
