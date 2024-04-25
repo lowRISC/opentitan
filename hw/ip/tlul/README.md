@@ -440,7 +440,7 @@ the TileLink specification for more examples.
     text: 'TileLink-UL read transactions',
   },
   foot: {
-    text: 'six read transactions with various req/ready delays, error on I4 response',
+    text: 'six read transactions with various req/ready delays, error on I5 response',
     }
 }
 ```
