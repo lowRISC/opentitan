@@ -1,6 +1,3 @@
-# Registers
-
-<!-- BEGIN CMDGEN util/regtool.py -d ./hw/ip/sram_ctrl/data/sram_ctrl.hjson -->
 ## Summary of the **`regs`** interface's registers
 
 | Name                                            | Offset   |   Length | Description                                  |
@@ -34,23 +31,29 @@ Alert Test Register
 SRAM status register.
 - Offset: `0x4`
 - Reset default: `0x0`
-- Reset mask: `0x3f`
+- Reset mask: `0x7f`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "BUS_INTEG_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "INIT_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ESCALATED", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SCR_KEY_VALID", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SCR_KEY_SEED_VALID", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "INIT_DONE", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 26}], "config": {"lanes": 1, "fontsize": 10, "vspace": 200}}
+{"reg": [{"name": "BUS_INTEG_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "INIT_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ESCALATED", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SCR_KEY_VALID", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SCR_KEY_SEED_VALID", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "INIT_DONE", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SRAM_WE_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 25}], "config": {"lanes": 1, "fontsize": 10, "vspace": 200}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                              |
 |:------:|:------:|:-------:|:--------------------------------------------------|
-|  31:6  |        |         | Reserved                                          |
+|  31:7  |        |         | Reserved                                          |
+|   6    |   ro   |   0x0   | [SRAM_WE_ERROR](#status--sram_we_error)           |
 |   5    |   ro   |   0x0   | [INIT_DONE](#status--init_done)                   |
 |   4    |   ro   |   0x0   | [SCR_KEY_SEED_VALID](#status--scr_key_seed_valid) |
 |   3    |   ro   |   0x0   | [SCR_KEY_VALID](#status--scr_key_valid)           |
 |   2    |   ro   |   0x0   | [ESCALATED](#status--escalated)                   |
 |   1    |   ro   |   0x0   | [INIT_ERROR](#status--init_error)                 |
 |   0    |   ro   |   0x0   | [BUS_INTEG_ERROR](#status--bus_integ_error)       |
+
+### STATUS . SRAM_WE_ERROR
+This bit is set to 1 if a faulty SRAM WE multi-bit signal is detected.
+This error triggers a fatal_error alert.
+This condition is terminal.
 
 ### STATUS . INIT_DONE
 Set to 1 if the hardware initialization triggered via [`CTRL.INIT`](#ctrl) has completed.
@@ -202,4 +205,3 @@ kMultiBitBool4True indicates that a valid scrambling key has been obtained from 
 Write kMultiBitBool4True to clear.
 
 This interface does not expose any registers.
-<!-- END CMDGEN -->

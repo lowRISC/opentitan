@@ -60,10 +60,13 @@ module sram_ctrl
   import lc_ctrl_pkg::lc_tx_or_hi;
   import lc_ctrl_pkg::lc_tx_inv;
   import lc_ctrl_pkg::lc_to_mubi4;
+  import prim_mubi_pkg::mubi4_bool_to_mubi;
+  import prim_mubi_pkg::mubi4_or_hi;
   import prim_mubi_pkg::mubi4_t;
   import prim_mubi_pkg::mubi8_t;
   import prim_mubi_pkg::MuBi4True;
   import prim_mubi_pkg::MuBi4False;
+  import prim_mubi_pkg::MuBi4Width;
   import prim_mubi_pkg::mubi8_test_true_strict;
 
   // This is later on pruned to the correct width at the SRAM wrapper interface.
@@ -140,8 +143,12 @@ module sram_ctrl
   assign hw2reg.status.init_error.d  = 1'b1;
   assign hw2reg.status.init_error.de = init_error;
 
+  logic sram_we_error;
+  assign hw2reg.status.sram_we_error.d  = 1'b1;
+  assign hw2reg.status.sram_we_error.de = sram_we_error;
+
   logic alert_req;
-  assign alert_req = (|bus_integ_error) | init_error;
+  assign alert_req = (|bus_integ_error) | init_error | sram_we_error;
 
   prim_alert_sender #(
     .AsyncOn(AlertAsyncOn[0]),
@@ -437,11 +444,13 @@ module sram_ctrl
   // SRAM with scrambling device //
   /////////////////////////////////
 
-  logic tlul_req, tlul_gnt, tlul_we;
-  logic [AddrWidth-1:0] tlul_addr;
-  logic [DataWidth-1:0] tlul_wdata, tlul_wmask;
+  logic tlul_req, tlul_gnt;
+  mubi4_t                sram_we;
+  logic [MuBi4Width-1:0] tlul_we;
+  logic [AddrWidth-1:0]  tlul_addr;
+  logic [DataWidth-1:0]  tlul_wdata, tlul_wmask;
 
-  logic sram_intg_error, sram_req, sram_gnt, sram_we, sram_rvalid;
+  logic sram_intg_error, sram_req, sram_gnt, sram_rvalid;
   logic [AddrWidth-1:0] sram_addr;
   logic [DataWidth-1:0] sram_wdata, sram_wmask, sram_rdata;
 
@@ -455,6 +464,7 @@ module sram_ctrl
     .CmdIntgCheck(1),
     .EnableRspIntgGen(1),
     .EnableDataIntgGen(0),
+    .EnableWeIntg(1),
     .EnableDataIntgPt(1), // SEC_CM: MEM.INTEGRITY
     .SecFifoPtr      (1)  // SEC_CM: TLUL_FIFO.CTR.REDUN
   ) u_tlul_adapter_sram (
@@ -488,7 +498,7 @@ module sram_ctrl
   // for timing reasons so that the output TL ready isn't combinatorially connected to the incoming
   // TL valid. In particular we must not use `sram_gnt` in the expression to avoid this.
   assign tlul_gnt        = key_valid & ~init_req;
-  assign sram_we         = tlul_we | init_req;
+  assign sram_we         = mubi4_or_hi(mubi4_t'(tlul_we), mubi4_bool_to_mubi(init_req));
   assign sram_intg_error = |bus_integ_error[2:1] & ~init_req;
   assign sram_addr       = (init_req) ? init_cnt          : tlul_addr;
   assign sram_wdata      = (init_req) ? lfsr_out_integ    : tlul_wdata;
@@ -532,7 +542,8 @@ module sram_ctrl
     .rvalid_o    (sram_rvalid),
     .rerror_o    ( ),
     .raddr_o     ( ),
-    .cfg_i
+    .cfg_i,
+    .alert_o     (sram_we_error)
   );
 
   logic unused_sram_gnt;

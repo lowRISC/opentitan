@@ -576,7 +576,7 @@ module ibex_top import ibex_pkg::*; #(
           .req_i       (ic_tag_req[way]),
 
           .gnt_o       (),
-          .write_i     (ic_tag_write),
+          .write_i     (prim_mubi_pkg::mubi4_bool_to_mubi(ic_tag_write)),
           .addr_i      (ic_tag_addr),
           .wdata_i     (ic_tag_wdata),
           .wmask_i     ({TagSizeECC{1'b1}}),
@@ -608,7 +608,7 @@ module ibex_top import ibex_pkg::*; #(
           .req_i       (ic_data_req[way]),
 
           .gnt_o       (),
-          .write_i     (ic_data_write),
+          .write_i     (prim_mubi_pkg::mubi4_bool_to_mubi(ic_data_write)),
           .addr_i      (ic_data_addr),
           .wdata_i     (ic_data_wdata),
           .wmask_i     ({LineSizeECC{1'b1}}),

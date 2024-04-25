@@ -233,7 +233,7 @@ module otbn
 
   logic imem_req;
   logic imem_gnt;
-  logic imem_write;
+  mubi4_t imem_write;
   logic [ImemIndexWidth-1:0] imem_index;
   logic [38:0] imem_wdata;
   logic [38:0] imem_wmask;
@@ -243,14 +243,14 @@ module otbn
   logic imem_missed_gnt;
 
   logic imem_req_core;
-  logic imem_write_core;
+  mubi4_t imem_write_core;
   logic [ImemIndexWidth-1:0] imem_index_core;
   logic [38:0] imem_rdata_core;
   logic imem_rvalid_core;
 
   logic imem_req_bus;
   logic imem_dummy_response_q, imem_dummy_response_d;
-  logic imem_write_bus;
+  logic [MuBi4Width-1:0] imem_write_bus;
   logic [ImemIndexWidth-1:0] imem_index_bus;
   logic [38:0] imem_wdata_bus;
   logic [38:0] imem_wmask_bus;
@@ -353,7 +353,8 @@ module otbn
     .rvalid_o(imem_rvalid),
     .raddr_o (),
     .rerror_o(),
-    .cfg_i   (ram_cfg_i)
+    .cfg_i   (ram_cfg_i),
+    .alert_o ()
   );
 
   // We should never see a request that doesn't get granted. A fatal error is raised if this occurs.
@@ -371,7 +372,8 @@ module otbn
     .ByteAccess      (0),
     .ErrOnRead       (0),
     .EnableDataIntgPt(1),
-    .SecFifoPtr      (1)  // SEC_CM: TLUL_FIFO.CTR.REDUN
+    .SecFifoPtr      (1),  // SEC_CM: TLUL_FIFO.CTR.REDUN
+    .EnableWeIntg    (1)
   ) u_tlul_adapter_sram_imem (
     .clk_i,
     .rst_ni           (rst_n),
@@ -396,10 +398,10 @@ module otbn
   // Mux core and bus access into IMEM
   assign imem_access_core = busy_execute_q | start_q;
 
-  assign imem_req   = imem_access_core ? imem_req_core        : imem_req_bus;
-  assign imem_write = imem_access_core ? imem_write_core      : imem_write_bus;
-  assign imem_index = imem_access_core ? imem_index_core      : imem_index_bus;
-  assign imem_wdata = imem_access_core ? '0                   : imem_wdata_bus;
+  assign imem_req   = imem_access_core ? imem_req_core   : imem_req_bus;
+  assign imem_write = imem_access_core ? imem_write_core : mubi4_t'(imem_write_bus);
+  assign imem_index = imem_access_core ? imem_index_core : imem_index_bus;
+  assign imem_wdata = imem_access_core ? '0              : imem_wdata_bus;
 
   assign imem_illegal_bus_access = imem_req_bus & imem_access_core;
 
@@ -421,7 +423,8 @@ module otbn
   // don't have the corresponding check for writes from the core because the
   // core cannot perform writes (and has no imem_wmask_o port).
   assign imem_wmask = imem_access_core ? '1 : imem_wmask_bus;
-  `ASSERT(ImemWmaskBusIsFullWord_A, imem_req_bus && imem_write_bus |-> imem_wmask_bus == '1)
+  `ASSERT(ImemWmaskBusIsFullWord_A, imem_req_bus &&
+    mubi4_test_true_strict(mubi4_t'(imem_write_bus)) |-> imem_wmask_bus == '1)
 
   // SEC_CM: DATA_REG_SW.SCA
   // Blank bus read data interface during core operation to avoid leaking the currently executed
@@ -546,7 +549,7 @@ module otbn
 
     .req_i       (dmem_req),
     .gnt_o       (dmem_gnt),
-    .write_i     (dmem_write),
+    .write_i     (mubi4_bool_to_mubi(dmem_write)),
     .addr_i      (dmem_index),
     .wdata_i     (dmem_wdata),
     .wmask_i     (dmem_wmask),
@@ -556,7 +559,8 @@ module otbn
     .rvalid_o(dmem_rvalid),
     .raddr_o (),
     .rerror_o(),
-    .cfg_i   (ram_cfg_i)
+    .cfg_i   (ram_cfg_i),
+    .alert_o ()
   );
 
   // We should never see a request that doesn't get granted. A fatal error is raised if this occurs.
@@ -1190,7 +1194,7 @@ module otbn
         lc_ctrl_pkg::lc_tx_test_true_loose(lc_escalate_en[1])});
 
   // The core can never signal a write to IMEM
-  assign imem_write_core = 1'b0;
+  assign imem_write_core = MuBi4False;
 
 
   // Asserts ===================================================================

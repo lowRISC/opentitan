@@ -302,6 +302,15 @@
                   ''',
             resval: 0,
           }
+          { bits: "6"
+            name: "SRAM_WE_ERROR"
+            desc: '''
+                  This bit is set to 1 if a faulty SRAM WE multi-bit signal is detected.
+                  This error triggers a fatal_error alert.
+                  This condition is terminal.
+                  ''',
+            resval: 0,
+          }
         ]
       }
       { name: "EXEC_REGWEN",

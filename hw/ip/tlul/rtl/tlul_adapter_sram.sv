@@ -19,7 +19,7 @@
  */
 module tlul_adapter_sram
   import tlul_pkg::*;
-  import prim_mubi_pkg::mubi4_t;
+  import prim_mubi_pkg::*;
 #(
   parameter int SramAw            = 12,
   parameter int SramDw            = 32, // Must be multiple of the TL width
@@ -33,10 +33,12 @@ module tlul_adapter_sram
   parameter bit EnableRspIntgGen  = 0,  // 1: Generate response integrity
   parameter bit EnableDataIntgGen = 0,  // 1: Generate response data integrity
   parameter bit EnableDataIntgPt  = 0,  // 1: Passthrough command/response data integrity
+  parameter bit EnableWeIntg      = 0,  // 1: Encode SRAM write enable
   parameter bit SecFifoPtr        = 0,  // 1: Duplicated fifo pointers
   localparam int WidthMult        = SramDw / top_pkg::TL_DW,
   localparam int IntgWidth        = tlul_pkg::DataIntgWidth * WidthMult,
-  localparam int DataOutW         = EnableDataIntgPt ? SramDw + IntgWidth : SramDw
+  localparam int DataOutW         = EnableDataIntgPt ? SramDw + IntgWidth : SramDw,
+  localparam int SramWeW          = EnableWeIntg ? MuBi4Width : 1
 ) (
   input   clk_i,
   input   rst_ni,
@@ -52,7 +54,7 @@ module tlul_adapter_sram
   output logic                req_o,
   output mubi4_t              req_type_o,
   input                       gnt_i,
-  output logic                we_o,
+  output logic [SramWeW-1:0]  we_o,
   output logic [SramAw-1:0]   addr_o,
   output logic [DataOutW-1:0] wdata_o,
   output logic [DataOutW-1:0] wmask_o,
@@ -340,7 +342,9 @@ module tlul_adapter_sram
   //    In this case, it is assumed the request is granted (may cause ordering issue later?)
   assign req_o      = tl_i_int.a_valid & reqfifo_wready & ~error_internal;
   assign req_type_o = tl_i_int.a_user.instr_type;
-  assign we_o       = tl_i_int.a_valid & (tl_i_int.a_opcode inside {PutFullData, PutPartialData});
+  assign we_o       = (tl_i_int.a_valid & (tl_i_int.a_opcode inside
+                        {PutFullData, PutPartialData})) ? (EnableWeIntg ?
+                        MuBi4True : 1'b1) : (EnableWeIntg ? MuBi4False : 1'b0);
   assign addr_o     = (tl_i_int.a_valid) ? tl_i_int.a_address[DataBitWidth+:SramAw] : '0;
 
   // Support SRAMs wider than the TL-UL word width by mapping the parts of the
@@ -377,7 +381,9 @@ module tlul_adapter_sram
     if (tl_i_int.a_valid) begin
       for (int i = 0 ; i < top_pkg::TL_DW/8 ; i++) begin
         wmask_int[woffset][8*i +: 8] = {8{tl_i_int.a_mask[i]}};
-        wdata_int[woffset][8*i +: 8] = (tl_i_int.a_mask[i] && we_o) ? tl_i_int.a_data[8*i+:8] : '0;
+        wdata_int[woffset][8*i +: 8] = (tl_i_int.a_mask[i] && (EnableWeIntg ?
+                                        mubi4_test_true_strict(mubi4_t'(we_o)) : we_o)) ?
+                                        tl_i_int.a_data[8*i+:8] : '0;
       end
     end
   end
@@ -422,7 +428,8 @@ module tlul_adapter_sram
     mask    : tl_i_int.a_mask,
     woffset : woffset
   };
-  assign sramreqfifo_wvalid = sram_ack & ~we_o;
+  assign sramreqfifo_wvalid = sram_ack & ~(EnableWeIntg ?
+                                mubi4_test_true_strict(mubi4_t'(we_o)) : we_o);
   assign sramreqfifo_rready = rspfifo_wvalid;
 
   assign rspfifo_wvalid = rvalid_i & reqfifo_rvalid;
@@ -566,11 +573,11 @@ module tlul_adapter_sram
   `ASSERT_INIT(DataIntgOptions_A, ~(EnableDataIntgGen & EnableDataIntgPt))
 
   // Make sure that outputs are defined (a special case for tl_o is explained separately below)
-  `ASSERT_KNOWN(ReqOutKnown_A,   req_o  )
-  `ASSERT_KNOWN(WeOutKnown_A,    we_o   )
-  `ASSERT_KNOWN(AddrOutKnown_A,  addr_o )
-  `ASSERT_KNOWN(WdataOutKnown_A, wdata_o)
-  `ASSERT_KNOWN(WmaskOutKnown_A, wmask_o)
+  `ASSERT_KNOWN(ReqOutKnown_A,   req_o                                             )
+  `ASSERT_KNOWN(WeOutKnown_A,    EnableWeIntg ? mubi4_test_true_strict(mubi4_t'(we_o)) : we_o)
+  `ASSERT_KNOWN(AddrOutKnown_A,  addr_o                                            )
+  `ASSERT_KNOWN(WdataOutKnown_A, wdata_o                                           )
+  `ASSERT_KNOWN(WmaskOutKnown_A, wmask_o                                           )
 
   // We'd like to claim that the payload of the TL output is known, but this isn't necessarily true!
   // This block is just an adapter that converts from an SRAM interface to a TL interface. To make

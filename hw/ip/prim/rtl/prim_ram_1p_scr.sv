@@ -23,7 +23,10 @@
 
 `include "prim_assert.sv"
 
-module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
+module prim_ram_1p_scr
+  import prim_ram_1p_pkg::*;
+  import prim_mubi_pkg::*;
+#(
   parameter  int Depth               = 16*1024, // Needs to be a power of 2 if NumAddrScrRounds > 0.
   parameter  int Width               = 32, // Needs to be byte aligned if byte parity is enabled.
   parameter  int DataBitsPerMask     = 8, // Needs to be set to 8 in case of byte parity.
@@ -71,7 +74,7 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
   // Interface to TL-UL SRAM adapter
   input                             req_i,
   output logic                      gnt_o,
-  input                             write_i,
+  input  mubi4_t                    write_i,
   input        [AddrWidth-1:0]      addr_i,
   input        [Width-1:0]          wdata_i,
   input        [Width-1:0]          wmask_i,  // Needs to be byte-aligned for parity
@@ -83,7 +86,8 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
   output logic [31:0]               raddr_o,  // Read address for error reporting.
 
   // config
-  input ram_1p_cfg_t                cfg_i
+  input ram_1p_cfg_t                cfg_i,
+  output logic                      alert_o
 );
 
   //////////////////////
@@ -108,17 +112,22 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
   // the data from the write holding register.
 
   // Read / write strobes
-  logic read_en, write_en_d, write_en_q;
+  logic   read_en;
+  mubi4_t write_en_d, write_en_q;
   assign gnt_o = req_i & key_valid_i;
 
-  assign read_en = gnt_o & ~write_i;
-  assign write_en_d = gnt_o & write_i;
+  assign read_en = gnt_o & ~mubi4_test_true_strict(write_i);
+  assign write_en_d = mubi4_and_hi(mubi4_bool_to_mubi(gnt_o), write_i);
+
+  // Raise alert when an invalid mubi is detected.
+  assign alert_o = mubi4_test_invalid(write_en_q);
 
   logic write_pending_q;
   logic addr_collision_d, addr_collision_q;
   logic [AddrWidth-1:0] addr_scr;
   logic [AddrWidth-1:0] waddr_scr_q;
-  assign addr_collision_d = read_en & (write_en_q | write_pending_q) & (addr_scr == waddr_scr_q);
+  assign addr_collision_d = read_en & (mubi4_test_true_strict(write_en_q) |
+                              write_pending_q) & (addr_scr == waddr_scr_q);
 
   // Macro requests and write strobe
   // The macro operation is silenced if an integrity error is seen
@@ -128,13 +137,15 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
     .out_o(intg_error_buf)
   );
   logic macro_req;
-  assign macro_req   = ~intg_error_w_q & ~intg_error_buf & (read_en | write_en_q | write_pending_q);
+  assign macro_req   = ~intg_error_w_q & ~intg_error_buf & (read_en |
+                          mubi4_test_true_strict(write_en_q) | write_pending_q);
   // We are allowed to write a pending write transaction to the memory if there is no incoming read.
   logic macro_write;
-  assign macro_write = (write_en_q | write_pending_q) & ~read_en & ~intg_error_w_q;
+  assign macro_write = (mubi4_test_true_strict(write_en_q) | write_pending_q) &
+                          ~read_en & ~intg_error_w_q;
   // New read write collision
   logic rw_collision;
-  assign rw_collision = write_en_q & read_en;
+  assign rw_collision = mubi4_test_true_strict(write_en_q) & read_en;
 
   ////////////////////////
   // Address Scrambling //
@@ -339,12 +350,21 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
   // Registers //
   ///////////////
 
+  prim_flop #(
+    .Width(MuBi4Width),
+    .ResetValue(4'(MuBi4False))
+  ) u_rdback_check_flop (
+    .clk_i,
+    .rst_ni,
+    .d_i(4'(write_en_d)),
+    .q_o({write_en_q})
+  );
+
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_wdata_buf
     if (!rst_ni) begin
       write_pending_q     <= 1'b0;
       addr_collision_q    <= 1'b0;
       rvalid_q            <= 1'b0;
-      write_en_q          <= 1'b0;
       intg_error_r_q      <= 1'b0;
       intg_error_w_q      <= 1'b0;
       raddr_q             <= '0;
@@ -356,13 +376,12 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
       write_pending_q     <= write_scr_pending_d;
       addr_collision_q    <= addr_collision_d;
       rvalid_q            <= read_en;
-      write_en_q          <= write_en_d;
       intg_error_r_q      <= intg_error_buf;
 
       if (read_en) begin
         raddr_q <= addr_i;
       end
-      if (write_en_d) begin
+      if (mubi4_test_true_strict(write_en_d)) begin
         waddr_scr_q    <= addr_scr;
         wmask_q        <= wmask_i;
         wdata_q        <= wdata_i;
