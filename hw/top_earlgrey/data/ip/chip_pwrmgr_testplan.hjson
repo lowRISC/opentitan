@@ -20,6 +20,7 @@
       lc_states: ["PROD"]
       features: ["PWRMGR.RESET.POR_REQUEST"]
       tests: ["chip_sw_pwrmgr_full_aon_reset"]
+      bazel: ["//sw/device/tests:pwrmgr_smoketest"]
     }
     {
       name: chip_sw_pwrmgr_random_sleep_all_wake_ups
