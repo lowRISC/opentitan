@@ -43,8 +43,10 @@ typedef struct boot_log {
   uint32_t bl0_slot;
   /** Chip ownership state. */
   uint32_t ownership_state;
+  /** Number of ownership transfers this chip has had. */
+  uint32_t ownership_transfers;
   /** Pad to 128 bytes. */
-  uint32_t reserved[13];
+  uint32_t reserved[12];
 } boot_log_t;
 
 OT_ASSERT_MEMBER_OFFSET(boot_log_t, digest, 0);
@@ -57,7 +59,8 @@ OT_ASSERT_MEMBER_OFFSET(boot_log_t, rom_ext_size, 56);
 OT_ASSERT_MEMBER_OFFSET(boot_log_t, rom_ext_nonce, 60);
 OT_ASSERT_MEMBER_OFFSET(boot_log_t, bl0_slot, 68);
 OT_ASSERT_MEMBER_OFFSET(boot_log_t, ownership_state, 72);
-OT_ASSERT_MEMBER_OFFSET(boot_log_t, reserved, 76);
+OT_ASSERT_MEMBER_OFFSET(boot_log_t, ownership_transfers, 76);
+OT_ASSERT_MEMBER_OFFSET(boot_log_t, reserved, 80);
 
 enum {
   /**
