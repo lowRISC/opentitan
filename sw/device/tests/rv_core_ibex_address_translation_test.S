@@ -38,14 +38,6 @@ make_lower_case_end:
   ret
 
 /**
- * The size of the `make_lower_case` function in bytes.
- */
-  .global kMakeLowerCaseFnSize
-kMakeLowerCaseFnSize:
-  .4byte .-make_lower_case
-
-
-/**
  * Replaces the content of the given string with a constant string (`name`)
  * until a NULL character is encountered in either the given string
  * or the constant string.
@@ -89,8 +81,10 @@ name:
   .string "My name is Titan, Open Titan"
 
 /**
- * The size of the `get_name` function in bytes.
+ * Reserve some area to map functions to.
  */
-  .global kGetNameFnSize
-kGetNameFnSize:
-  .4byte .-get_name
+  .globl remapped_function
+  .type remapped_function, @function
+  .balign 256
+remapped_function:
+  .fill 256

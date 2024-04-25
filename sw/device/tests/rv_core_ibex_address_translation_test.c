@@ -42,14 +42,16 @@ extern void get_name(char *input);
  */
 extern void make_lower_case(char *input);
 
+/**
+ * Function that will be mapped to. Produces illegal instruction exception if
+ * unmapped.
+ */
+extern void remapped_function(char *input);
+
 enum {
-  // The memory address to which the functions will be mapped.
-  kRemapAddress = 0xa0000000,
   // Alignment of the functions in asm.
   kRemapAlignment = 256,
 };
-
-static str_fn_t remapped_function = (str_fn_t)kRemapAddress;
 
 // Short-hand arrays. (Allow slots and buses to be simply indexed.)
 const dif_rv_core_ibex_addr_translation_bus_t kBuses[] = {
@@ -100,14 +102,14 @@ void ottf_exception_handler(uint32_t *exc_info) {
   ibex_exc_t exception = mcause & kIbexExcMax;
 
   switch (exception) {
-    case kIbexExcInstrAccessFault:
-      LOG_INFO("Instruction access fault handler");
+    case kIbexExcIllegalInstrFault:
+      LOG_INFO("Illegal instruction fault handler");
       access_fault = true;
       *(uintptr_t *)mepc_stack_addr = ret_addr;
       break;
     default:
       LOG_FATAL("Unexpected exception id = 0x%x", exception);
-      abort();
+      CHECK(false);
   }
 }
 
@@ -143,15 +145,6 @@ void enable_slot(dif_rv_core_ibex_t *ibex_core,
 }
 
 bool test_main(void) {
-  // Unlock the entire address space for RWX so that we can run this test with
-  // both rom and test_rom.
-  CSR_WRITE(CSR_REG_PMPCFG3, (kEpmpModeNapot | kEpmpPermLockedReadWriteExecute)
-                                 << 24);
-  CSR_SET_BITS(CSR_REG_PMPADDR15, 0x7fffffff);
-  CSR_WRITE(CSR_REG_PMPCFG2, 0);
-  CSR_WRITE(CSR_REG_PMPCFG1, 0);
-  CSR_WRITE(CSR_REG_PMPCFG0, 0);
-
   char test_str[] = TEST_STR;
   make_lower_case(test_str);
   CHECK_STR_EQ(test_str, EXPECTED_RESULT_MAKE_LOWER_CASE);
@@ -161,12 +154,12 @@ bool test_main(void) {
 
   // Create translation descriptions.
   dif_rv_core_ibex_addr_translation_mapping_t make_lower_case_mapping = {
-      .matching_addr = kRemapAddress,
+      .matching_addr = (uintptr_t)remapped_function,
       .remap_addr = (uintptr_t)make_lower_case,
       .size = kRemapAlignment,
   };
   dif_rv_core_ibex_addr_translation_mapping_t get_name_mapping = {
-      .matching_addr = kRemapAddress,
+      .matching_addr = (uintptr_t)remapped_function,
       .remap_addr = (uintptr_t)get_name,
       .size = kRemapAlignment,
   };
