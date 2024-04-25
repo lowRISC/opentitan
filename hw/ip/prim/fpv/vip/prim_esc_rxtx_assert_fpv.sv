@@ -7,7 +7,11 @@
 
 `include "prim_assert.sv"
 
-module prim_esc_rxtx_assert_fpv (
+module prim_esc_rxtx_assert_fpv
+#(
+  // Specialise this as part of the binding to shrink the state space that we expect in the counter.
+  parameter int TimeoutCntDw = 32
+) (
   input        clk_i,
   input        rst_ni,
   // for sigint error injection only
@@ -138,13 +142,18 @@ module prim_esc_rxtx_assert_fpv (
       rst_ni ||
       error_present)
 
+  // The assertions below use TimeoutCntDw to bound some sequence lengths. Add an assertion to check
+  // it matches the parameter in the design.
+  `ASSERT(TimeoutCntDwConsistent_A,
+          TimeoutCntDw == prim_esc_rxtx_fpv.u_prim_esc_receiver.TimeoutCntDw)
+
   // check that auto escalation timeout does not trigger prematurely.
   // this requires that no errors have been present so far.
   `ASSERT(AutoEscalation0_A,
       ping_req_i &&
       ping_ok_o &&
       !esc_req_o ##1
-      !ping_req_i [*0 : 2**prim_esc_rxtx_fpv.u_prim_esc_receiver.TimeoutCntDw - 4]
+      !ping_req_i [*0 : 2**TimeoutCntDw - 4]
       |->
       !esc_req_o,
       clk_i,
@@ -158,7 +167,7 @@ module prim_esc_rxtx_assert_fpv (
       ping_req_i &&
       ping_ok_o &&
       !esc_req_o ##1
-      !ping_req_i [* 2**prim_esc_rxtx_fpv.u_prim_esc_receiver.TimeoutCntDw - 3 : $]
+      !ping_req_i [* 2**TimeoutCntDw - 3 : $]
       |->
       esc_req_o,
       clk_i,
