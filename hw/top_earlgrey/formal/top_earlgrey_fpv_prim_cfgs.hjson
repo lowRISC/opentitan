@@ -98,7 +98,6 @@
                build_opts: ["-define ResetValue -1 -define PrimCountFpv 1"]
                rel_path: "hw/ip/prim/prim_count/{name}/{sub_flow}/{tool}"
                cov: true
-               exp_fail_hjson: "{proj_root}/hw/ip/prim/fpv/prim_count_expected_failure.hjson"
              }
              {
                name: prim_count_zero_reset_fpv
@@ -108,7 +107,6 @@
                build_opts: ["-define ResetValue 0 -define PrimCountFpv 1"]
                rel_path: "hw/ip/prim/prim_count/{name}/{sub_flow}/{tool}"
                cov: true
-               exp_fail_hjson: "{proj_root}/hw/ip/prim/fpv/prim_count_expected_failure.hjson"
              }
              {
                name: prim_esc_rxtx_fpv
