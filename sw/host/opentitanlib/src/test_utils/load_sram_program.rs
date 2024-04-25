@@ -106,7 +106,9 @@ pub enum ExecutionResult {
     /// (Jump only) Execution is ongoing.
     Executing,
     /// (JumpAndWait only) Execution successfully stopped.
-    ExecutionDone,
+    ///
+    /// The content of register `a0` is returned.
+    ExecutionDone(u32),
     /// (JumpAndWait only) Execution did not finish it time or an error occurred.
     ExecutionError(ExecutionError),
 }
@@ -420,7 +422,10 @@ pub fn execute_sram_program(
             // the stack pointer to a certain value.
             let sp = jtag.read_riscv_reg(&RiscvReg::Gpr(RiscvGpr::SP))?;
             match sp {
-                SRAM_MAGIC_SP_EXECUTION_DONE => Ok(ExecutionResult::ExecutionDone),
+                SRAM_MAGIC_SP_EXECUTION_DONE => {
+                    let a0 = jtag.read_riscv_reg(&RiscvReg::Gpr(RiscvGpr::A0))?;
+                    Ok(ExecutionResult::ExecutionDone(a0))
+                }
                 SRAM_MAGIC_SP_CRC_ERROR => {
                     Ok(ExecutionResult::ExecutionError(ExecutionError::CrcMismatch))
                 }

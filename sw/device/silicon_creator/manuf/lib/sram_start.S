@@ -179,7 +179,7 @@ sram_start:
   li a0, 0  // Do not run in verbose mode.
   call ast_program_config
   // Jump into the C program entry point.
-  call sram_main
+  call test_main
 
   // Notify the host that we are done.
   li  sp, SRAM_MAGIC_SP_EXECUTION_DONE

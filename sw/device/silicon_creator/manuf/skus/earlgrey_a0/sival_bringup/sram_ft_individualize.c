@@ -97,7 +97,7 @@ static status_t provision(ujson_t *uj) {
   return OK_STATUS();
 }
 
-bool sram_main(void) {
+bool test_main(void) {
   CHECK_STATUS_OK(peripheral_handles_init());
   pinmux_testutils_init(&pinmux);
   ottf_console_init();
