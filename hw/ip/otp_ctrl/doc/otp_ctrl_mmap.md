@@ -55,7 +55,7 @@ It has been generated with ./util/design/gen-otp-mmap.py
 |         |                           |            |      32bit       |                      OWNER_SW_CFG_ROM_ALERT_DIGEST_DEV                      |     0x3E0      |     4      |
 |         |                           |            |      32bit       |                      OWNER_SW_CFG_ROM_ALERT_DIGEST_RMA                      |     0x3E4      |     4      |
 |         |                           |            |      32bit       |               OWNER_SW_CFG_ROM_WATCHDOG_BITE_THRESHOLD_CYCLES               |     0x3E8      |     4      |
-|         |                           |            |      32bit       |                   OWNER_SW_CFG_ROM_KEYMGR_ROM_EXT_MEAS_EN                   |     0x3EC      |     4      |
+|         |                           |            |      32bit       |                     OWNER_SW_CFG_ROM_KEYMGR_OTP_MEAS_EN                     |     0x3EC      |     4      |
 |         |                           |            |      32bit       |                          OWNER_SW_CFG_MANUF_STATE                           |     0x3F0      |     4      |
 |         |                           |            |      32bit       |                       OWNER_SW_CFG_ROM_RSTMGR_INFO_EN                       |     0x3F4      |     4      |
 |         |                           |            |      32bit       |                      OWNER_SW_CFG_ROM_EXT_BOOTSTRAP_EN                      |     0x3F8      |     4      |

@@ -422,14 +422,14 @@ static rom_error_t rom_boot(const manifest_t *manifest, uint32_t flash_exec) {
 
   const keymgr_binding_value_t *attestation_measurement =
       &manifest->binding_value;
-  uint32_t use_rom_ext_measurement =
-      otp_read32(OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_KEYMGR_ROM_EXT_MEAS_EN_OFFSET);
-  if (launder32(use_rom_ext_measurement) == kHardenedBoolTrue) {
-    HARDENED_CHECK_EQ(use_rom_ext_measurement, kHardenedBoolTrue);
+  uint32_t use_otp_measurement =
+      otp_read32(OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_KEYMGR_OTP_MEAS_EN_OFFSET);
+  if (launder32(use_otp_measurement) == kHardenedBoolTrue) {
+    HARDENED_CHECK_EQ(use_otp_measurement, kHardenedBoolTrue);
     attestation_measurement =
         (const keymgr_binding_value_t *)&boot_measurements.rom_ext;
   } else {
-    HARDENED_CHECK_NE(use_rom_ext_measurement, kHardenedBoolTrue);
+    HARDENED_CHECK_NE(use_otp_measurement, kHardenedBoolTrue);
   }
   sc_keymgr_sw_binding_set(&manifest->binding_value, attestation_measurement);
   sc_keymgr_creator_max_ver_set(manifest->max_key_version);

@@ -185,9 +185,10 @@ otp_json(
                 # Enable bootstrap. See `hardened_bool_t` in
                 # sw/device/lib/base/hardened.h.
                 "OWNER_SW_CFG_ROM_BOOTSTRAP_DIS": otp_hex(CONST.HARDENED_FALSE),
-                # Set to 0x739 to use the ROM_EXT hash measurement as the key
-                # manager attestation binding value.
-                "OWNER_SW_CFG_ROM_KEYMGR_ROM_EXT_MEAS_EN": otp_hex(0x0),
+                # Set to 0x739 to use the OTP hash measurement of the software
+                # readable OTP partitions as the key manager attestation binding
+                # value.
+                "OWNER_SW_CFG_ROM_KEYMGR_OTP_MEAS_EN": otp_hex(0x0),
                 # Report errors without any redaction.
                 "OWNER_SW_CFG_ROM_ERROR_REPORTING": otp_hex(CONST.SHUTDOWN.REDACT.NONE),
                 # Set the enables to kAlertEnableNone.

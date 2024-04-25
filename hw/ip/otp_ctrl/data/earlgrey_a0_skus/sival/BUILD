@@ -194,10 +194,11 @@ otp_json(
                     D = "0x0, 0x0, 0x0, 0x0",
                 ),
                 "OWNER_SW_CFG_ROM_WATCHDOG_BITE_THRESHOLD_CYCLES": otp_hex(0x0),
-                # Set to 0x739 to use the ROM_EXT hash measurement as the key
-                # manager attestation binding value. Since our attestation
-                # scheme has changed, we keep this as false (disabled).
-                "OWNER_SW_CFG_ROM_KEYMGR_ROM_EXT_MEAS_EN": otp_hex(0x0),
+                # Set to 0x739 to use the OTP hash measurement of the software
+                # readable OTP partitions as the key manager attestation binding
+                # value. Since our attestation scheme is not finalized, we keep
+                # this unprovisioned (disabled).
+                "OWNER_SW_CFG_ROM_KEYMGR_OTP_MEAS_EN": otp_hex(0x0),
                 "OWNER_SW_CFG_MANUF_STATE": otp_hex(0x0),
                 "OWNER_SW_CFG_ROM_RSTMGR_INFO_EN": otp_hex(0x0),
                 # Disable ROM_EXT recovery feature.

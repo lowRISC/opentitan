@@ -320,7 +320,7 @@
                     size: "4"
                 }
                 {
-                    name: "OWNER_SW_CFG_ROM_KEYMGR_ROM_EXT_MEAS_EN",
+                    name: "OWNER_SW_CFG_ROM_KEYMGR_OTP_MEAS_EN",
                     size: "4"
                 }
                 {
