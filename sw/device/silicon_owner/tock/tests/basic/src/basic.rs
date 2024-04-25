@@ -13,7 +13,7 @@ stack_size!(0x200);
 
 fn main() {
     write!(Console::writer(), "Hello world!\r\n").unwrap();
-    // opentitan_functest's default test harness looks for `PASS` or `FAIL` in
+    // opentitan_test's default test harness looks for `PASS` or `FAIL` in
     // the test output to determine the test result.
     write!(Console::writer(), "PASS!\r\n").unwrap();
 }

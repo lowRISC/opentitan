@@ -139,7 +139,7 @@ These tags can also be used to filter builds using `--build_tag_filters=-cw310,-
 `--build_tests_only` is important when matching wildcards if you aren't using
 `--build_tag_filters` to prevent `bazelisk.sh test //...` from building targets that are filtered out by `--test_tag_filters`.
 
-There is no way to filter out dependencies of a test\_suite such as `//sw/device/tests:uart_smoketest` (Which is a suite that's assembled by the `opentitan_functest` rule) from a build.
+There is no way to filter out dependencies of a test\_suite such as `//sw/device/tests:uart_smoketest` (Which is a suite that's assembled by the `opentitan_test` rule) from a build.
 
 ### Running on-device Tests
 

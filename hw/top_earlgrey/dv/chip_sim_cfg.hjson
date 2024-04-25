@@ -391,7 +391,7 @@
   // List of test specifications.
   //
   // If you are adding a test that has been generated from a Bazel
-  // `opentitan_functest` macro, you can specify the test using its Bazel label
+  // `opentitan_test` macro, you can specify the test using its Bazel label
   // followed by an index separated with a ':', which is used by the testbench
   // to know what type of image is it:
   // - 0 for Boot ROM,
