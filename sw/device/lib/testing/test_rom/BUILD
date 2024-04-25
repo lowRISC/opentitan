@@ -42,8 +42,8 @@ opentitan_binary(
     ],
 )
 
-# Create the legacy ROM target names so that existing opentitan_functest and
-# splicing rules can find the test_rom VMEM files.
+# Create the legacy ROM target names so that existing splicing rules
+# can find the test_rom VMEM files.
 legacy_rom_targets(
     suffixes = [
         "fpga_cw310",

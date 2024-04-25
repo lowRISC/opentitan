@@ -187,16 +187,16 @@ There are two ways to load a bitstream on to the FPGA and bootstrap software int
 1. **automatically**, on single invocations of `./bazelisk.sh test ...`.
 2. **manually**, using multiple invocations of `opentitantool`, and
 Which one you use, will depend on how the build target is defined for the software you would like to test on the FPGA.
-Specifically, for software build targets defined in Bazel BUILD files using the `opentitan_functest` Bazel macro, you will use the latter (**automatic**) approach.
-Alternatively, for software build targets defined in Bazel BUILD files using the `opentitan_flash_binary` Bazel macro, you will use the former (**manual**) approach.
+Specifically, for software build targets defined in Bazel BUILD files using the `opentitan_test` Bazel macro, you will use the latter (**automatic**) approach.
+Alternatively, for software build targets defined in Bazel BUILD files using the `opentitan_binary` Bazel macro, you will use the former (**manual**) approach.
 
 See below for details on both approaches.
 
 ### Automatically loading FPGA bitstreams and bootstrapping software with Bazel
 
-A majority of on-device software tests are defined using the custom `opentitan_functest` Bazel macro, which under the hood, instantiates several Bazel [`native.sh_test` rules](https://docs.bazel.build/versions/main/be/shell.html#sh_test).
+A majority of on-device software tests are defined using the custom `opentitan_test` Bazel macro, which under the hood, instantiates several Bazel [`native.sh_test` rules](https://docs.bazel.build/versions/main/be/shell.html#sh_test).
 In doing so, this macro provides a convenient interface for developers to run software tests on OpenTitan FPGA instances with a single invocation of `./bazelisk.sh test ...`.
-For example, to run the UART smoke test (which is an `opentitan_functest` defined in `sw/device/tests/BUILD`) on FPGA hardware, and see the output in real time, use:
+For example, to run the UART smoke test (which is an `opentitan_test` defined in `sw/device/tests/BUILD`) on FPGA hardware, and see the output in real time, use:
 ```sh
 cd $REPO_TOP
 ./bazelisk.sh test --test_tag_filters=${BOARD} --test_output=streamed //sw/device/tests:uart_smoketest
@@ -230,10 +230,10 @@ Alternatively, if you would like to instruct Bazel to skip loading any bitstream
 
 ### Manually loading FPGA bitstreams and bootstrapping OpenTitan software with `opentitantool`
 
-Some on-device software targets are defined using the custom `opentitan_flash_binary` Bazel macro.
-Unlike the `opentitan_functest` macro, the `opentitan_flash_binary` macro does **not** instantiate any Bazel test rules under the hood.
+Some on-device software targets are defined using the custom `opentitan_binary` Bazel macro.
+Unlike the `opentitan_test` macro, the `opentitan_binary` macro does **not** instantiate any Bazel test rules under the hood.
 Therefore, to run such software on OpenTitan FPGA hardware, both a bitstream and the software target must be loaded manually onto the FPGA.
-Below, we describe how to accomplish this, and in doing so, we shed some light on the tasks that Bazel automates through the use of `opentitan_functest` Bazel rules.
+Below, we describe how to accomplish this, and in doing so, we shed some light on the tasks that Bazel automates through the use of `opentitan_test` Bazel rules.
 
 #### Manually loading a bitstream onto the FPGA with `opentitantool`
 
