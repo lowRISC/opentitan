@@ -190,6 +190,10 @@ class i2c_base_vseq extends cip_base_vseq #(
     solve t_f, thigh            before t_sda_unstable, t_sda_interference;
 
     thd_sta > thd_dat + 1;
+    // thd_sta must at least be long enough to cover the round-trip time
+    thd_sta > 3;
+    // tsu_sto + t_r must cover the round-trip time.
+    tsu_sto > 3 - t_r;
     t_buf > thd_dat + 1;
 
     if (program_incorrect_regs) {
@@ -205,7 +209,6 @@ class i2c_base_vseq extends cip_base_vseq #(
       // If we are generating a fixed_period SCL in the agent, we need the clock pulses
       // to be at-least long enough to contain an RSTART condition to chain transfers
       // together.
-      thigh >= tsu_sta + t_f + thd_sta; // RSTART constraint
       // force derived timing parameters to be positive (correct DUT config)
       // tlow must be at least 2 greater than the sum of t_r + tsu_dat + thd_dat
       // because the flopped clock (see #15003 below) reduces tClockLow by 1.
@@ -213,9 +216,11 @@ class i2c_base_vseq extends cip_base_vseq #(
                        (t_r + tsu_dat + thd_dat + 2) + cfg.seq_cfg.i2c_time_range]};
       t_buf   inside {[(tsu_sta - t_r + 1) :
                        (tsu_sta - t_r + 1) + cfg.seq_cfg.i2c_time_range]};
-      t_sda_unstable     inside {[0 : t_r + thigh + t_f - 1]};
-      t_sda_interference inside {[0 : t_r + thigh + t_f - 1]};
-      t_scl_interference inside {[0 : t_r + thigh + t_f - 1]};
+      // These need to be at least 2 cycles to overcome CDC instrumentation's
+      // deletion.
+      t_sda_unstable     inside {[2 : t_r + thigh - 2]};
+      t_sda_interference inside {[2 : t_r + thigh + t_f - 1]};
+      t_scl_interference inside {[2 : t_r + thigh - 3]};
     }
   }
 
