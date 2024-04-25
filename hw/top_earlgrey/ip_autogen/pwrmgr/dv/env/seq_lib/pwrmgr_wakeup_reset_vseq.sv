@@ -114,7 +114,6 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
       end
       // twirl_rom_response has some waits, and so does the code to check wake_status,
       // so we fork them to avoid conflicts.
-
       fork
         begin
           // At lowpower state, wait for clock comes back before check any csr

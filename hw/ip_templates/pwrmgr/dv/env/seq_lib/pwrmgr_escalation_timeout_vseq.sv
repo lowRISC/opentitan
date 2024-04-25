@@ -1,6 +1,7 @@
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+
 // Description:
 // This test checks that an escalation reset is generated when the escalation clock stops for
 // enough cycles.
@@ -9,7 +10,17 @@ class pwrmgr_escalation_timeout_vseq extends pwrmgr_base_vseq;
 
   `uvm_object_new
 
-  localparam int TIMEOUT_THRESHOLD = 128;
+  // The following two parameters are used to determine when to perform checks.
+
+  // The number of clock cycles with a stopped escalation clock before raising escalation is 128.
+  // But the logic can wait for up to 7 more cycles before it starts the counter, and there is
+  // some additional fast clock cycles of delay in the logic that triggers the escalation to
+  // be signalled. This adds 12 extra cycles to be conservative.
+  localparam int EscTimeoutMainClkThreshold = 128 + 7 + 12;
+
+  // In addition, there is a clock domain crossing to the slow clock, which can add a couple slow
+  // clocks cycles plus an extra cycle for the input to meet the next clock cycle.
+  localparam int EscTimeoutSlowClkThreshold = 2 + 1;
 
   int trans_cnt = 0;
   constraint num_trans_c {num_trans inside {[1 : 5]};}
@@ -26,15 +37,19 @@ class pwrmgr_escalation_timeout_vseq extends pwrmgr_base_vseq;
         cfg.esc_clk_rst_vif.wait_clks(4000);
       end
       begin
-        cfg.clk_rst_vif.wait_clks(TIMEOUT_THRESHOLD);
         if (expect_reset) begin
-          `DV_WAIT(cfg.pwrmgr_vif.fetch_en != lc_ctrl_pkg::On,
-                   "Timeout waiting for cpu fetch disable", 4000)
-          `uvm_info(`gfn, "cpu fetch disabled, indicating a reset", UVM_MEDIUM)
-          `DV_WAIT(cfg.pwrmgr_vif.pwr_rst_req.rstreqs[pwrmgr_reg_pkg::ResetEscIdx] == 1'b1 &&
-                   cfg.pwrmgr_vif.pwr_rst_req.reset_cause == pwrmgr_pkg::HwReq,
-                   "Timeout waiting for outgoing escalation reset", 40000)
-          `uvm_info(`gfn, "Outgoing escalation reset", UVM_MEDIUM)
+          // The expectation is to create an outgoing reset request, disable cpu fetching, and the
+          // reset cause to indicate a hardware request.
+          // Turn the cycle counts into a number of nanoseconds for waiting with timeout.
+          // The clk_rst_vifs give the period in pico seconds so divide by 1000.
+          int wait_ns = (EscTimeoutMainClkThreshold * cfg.clk_rst_vif.clk_period_ps +
+                         EscTimeoutSlowClkThreshold * cfg.slow_clk_rst_vif.clk_period_ps) / 1000;
+          `DV_SPINWAIT(
+            wait(cfg.pwrmgr_vif.fetch_en != lc_ctrl_pkg::On &&
+                 cfg.pwrmgr_vif.pwr_rst_req.rstreqs[pwrmgr_reg_pkg::ResetEscIdx] == 1'b1 &&
+                 cfg.pwrmgr_vif.pwr_rst_req.reset_cause == pwrmgr_pkg::HwReq);
+            `uvm_info(`gfn, "escalation reset completed", UVM_LOW),
+            "escalation reset was not completed as expected", wait_ns)
         end else begin
           repeat (8000) begin
             cfg.clk_rst_vif.wait_clks(1);
