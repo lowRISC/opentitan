@@ -540,13 +540,13 @@ I2C target address and mask pairs
 {"reg": [{"name": "ADDRESS0", "bits": 7, "attr": ["rw"], "rotate": 0}, {"name": "MASK0", "bits": 7, "attr": ["rw"], "rotate": 0}, {"name": "ADDRESS1", "bits": 7, "attr": ["rw"], "rotate": 0}, {"name": "MASK1", "bits": 7, "attr": ["rw"], "rotate": 0}, {"bits": 4}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name     | Description                 |
-|:------:|:------:|:-------:|:---------|:----------------------------|
-| 31:28  |        |         |          | Reserved                    |
-| 27:21  |   rw   |   0x0   | MASK1    | I2C target mask number 1    |
-| 20:14  |   rw   |   0x0   | ADDRESS1 | I2C target address number 1 |
-|  13:7  |   rw   |   0x0   | MASK0    | I2C target mask number 0    |
-|  6:0   |   rw   |   0x0   | ADDRESS0 | I2C target address number 0 |
+|  Bits  |  Type  |  Reset  | Name     | Description                                                                                   |
+|:------:|:------:|:-------:|:---------|:----------------------------------------------------------------------------------------------|
+| 31:28  |        |         |          | Reserved                                                                                      |
+| 27:21  |   rw   |   0x0   | MASK1    | I2C target mask number 1. At least one bit in MASK1 must be set to 1 for ADDRESS1 to be used. |
+| 20:14  |   rw   |   0x0   | ADDRESS1 | I2C target address number 1                                                                   |
+|  13:7  |   rw   |   0x0   | MASK0    | I2C target mask number 0. At least one bit in MASK0 must be set to 1 for ADDRESS0 to be used. |
+|  6:0   |   rw   |   0x0   | ADDRESS0 | I2C target address number 0                                                                   |
 
 ## ACQDATA
 I2C target acquired data

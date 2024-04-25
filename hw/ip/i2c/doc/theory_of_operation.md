@@ -119,6 +119,10 @@ In other words, address matching is performed only for bits where the mask is "1
 Thus, with the masks set to all ones (0x7F), the target device will respond to either of the two assigned unique addresses and no other.
 If the mask and the assigned address both have zeros in a particular bit position, that bit will be a match regardless of the value of that bit received from the host.
 Note that if, in any bit position, the mask has zero and the assigned address has one, no transaction can match and such mask/address pair is effectively disabled.
+
+Finally, in the special case where the mask is all zeroes (0x00), then that corresponding entry is ignored and will not match.
+If the user wishes to have the target respond to *all* addresses, then this can be achieved by setting mask0 and mask1 to 0x01 and setting address0 to 0x00 and address1 to 0x01.
+
 The assigned address and mask pairs are set in registers [`TARGET_ID.ADDRESS0`](registers.md#target_id), [`TARGET_ID.MASK0`](registers.md#target_id), [`TARGET_ID.ADDRESS1`](registers.md#target_id), and [`TARGET_ID.MASK1`](registers.md#target_id).
 
 ### Acquired Formatted Data

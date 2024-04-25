@@ -691,7 +691,10 @@
         }
         { bits: "13:7"
           name: "MASK0"
-          desc: "I2C target mask number 0"
+          desc: '''
+                I2C target mask number 0.
+                At least one bit in MASK0 must be set to 1 for ADDRESS0 to be used.
+                '''
         }
         { bits: "20:14"
           name: "ADDRESS1"
@@ -699,7 +702,10 @@
         }
         { bits: "27:21"
           name: "MASK1"
-          desc: "I2C target mask number 1"
+          desc: '''
+                I2C target mask number 1.
+                At least one bit in MASK1 must be set to 1 for ADDRESS1 to be used.
+                '''
         }
       ]
     }
