@@ -26,18 +26,18 @@ interface pwrmgr_rstreqs_sva_if
 );
 
   // output reset cycle with a clk enable disable
-  localparam int MIN_MAIN_RST_CYCLES = 0;
-  localparam int MAX_MAIN_RST_CYCLES = 400;
-  `define MAIN_RST_CYCLES ##[MIN_MAIN_RST_CYCLES:MAX_MAIN_RST_CYCLES]
+  localparam int MinMainRstCycles = 0;
+  localparam int MaxMainRstCycles = 400;
+  `define MAIN_RST_CYCLES ##[MinMainRstCycles:MaxMainRstCycles]
 
   // The timing of the escalation reset is determined by the slow clock, but will not propagate if
   // the non-slow clock is off. We use the regular clock and multiply the clock cycles times the
   // clock ratio.
-  localparam int FAST_TO_SLOW_FREQ_RATIO = 120;
+  localparam int FastToSlowFreqRatio = 120;
 
-  localparam int MIN_ESC_RST_CYCLES = 0;
-  localparam int MAX_ESC_RST_CYCLES = 4 * FAST_TO_SLOW_FREQ_RATIO;
-  `define ESC_RST_CYCLES ##[MIN_ESC_RST_CYCLES:MAX_ESC_RST_CYCLES]
+  localparam int MinEscRstCycles = 0;
+  localparam int MaxEscRstCycles = 4 * FastToSlowFreqRatio;
+  `define ESC_RST_CYCLES ##[MinEscRstCycles:MaxEscRstCycles]
 
   bit disable_sva;
   bit reset_or_disable;

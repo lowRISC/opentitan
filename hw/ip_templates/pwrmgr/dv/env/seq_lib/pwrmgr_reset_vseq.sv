@@ -38,8 +38,10 @@ class pwrmgr_reset_vseq extends pwrmgr_base_vseq;
                 ), UVM_MEDIUM)
 
       csr_wr(.ptr(ral.reset_en[0]), .value(resets_en));
-      // This is necessary to propagate reset_en.
+      // This is necessary to propagate reset_en, and it needs a couple additional slow
+      // clock cycles for a synchronizer to be ready to mask incoming resets.
       wait_for_csr_to_propagate_to_slow_domain();
+      cfg.slow_clk_rst_vif.wait_clks(2);
 
       // Trigger resets. The glitch is sent prior to the externals since if it is delayed
       // it will cause a separate reset after the externals, which complicates the checks.

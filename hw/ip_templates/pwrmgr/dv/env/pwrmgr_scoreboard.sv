@@ -51,38 +51,41 @@ class pwrmgr_scoreboard extends cip_base_scoreboard #(
     join
   endtask
 
-  // An escalation timeout is triggered in test sequences by stopping clk_esc_i or by driving
-  // rst_esc_ni active when the dut state is not expecting it.
+  // An escalation timeout is triggered in test sequences by stopping clk_esc_i when the clock is
+  // meant to be enabled, or by driving rst_esc_ni active when the dut is not expecting it.
   task monitor_escalation_timeout();
     fork
       forever
         @(posedge cfg.esc_clk_rst_vif.clk_gate) begin
-          // A timeout could be triggered after more than 121 clk_i cycles, but this number
-          // is somewhat unpredictable for reasons explained in the pwrmgr_escalation_timeout
-          // sequence, so this relies on the sequence to avoid unpredictable stoppages.
-          `uvm_info(`gfn, "Detected unexpected clk_esc_i stop", UVM_MEDIUM)
-          fork
-            begin : isolation_fork
-              // This fork is so we can wait for a number of cycles with the clock inactive,
-              // and stop waiting if the escalation clock gate is re-opened.
-              fork
-                begin
-                  cfg.clk_rst_vif.wait_clks(121);
-                  if (cfg.esc_clk_rst_vif.clk_gate && cfg.pwrmgr_vif.pwr_ast_req.io_clk_en &&
-                    cfg.pwrmgr_vif.pwr_clk_req.io_ip_clk_en) begin
-                    `uvm_info(`gfn, "clk_esc_i has been inactive enough to trigger an alert",
-                              UVM_MEDIUM)
-                    `uvm_info(`gfn, "set_exp_alert from monitor_escalation_timeout clock gated",
-                              UVM_MEDIUM)
-                    set_exp_alert("fatal_fault", 1, 500);
+          if (cfg.pwrmgr_vif.pwr_clk_req.io_ip_clk_en) begin
+            // A timeout could be triggered if the escalation clock is stopped for too many clk_i
+            // cycles. The precise threshold is somewhat unpredictable for reasons explained in
+            // the pwrmgr_escalation_timeout sequence, and the sequence is such that 121 cycles
+            // works as a threshold to avoid unpredictable stoppages.
+            `uvm_info(`gfn, "Detected unexpected clk_esc_i stop", UVM_MEDIUM)
+            fork
+              begin : isolation_fork
+                // This fork is so we can wait for a number of cycles with the clock inactive,
+                // and stop waiting if the escalation clock gate is re-opened.
+                fork
+                  begin
+                    cfg.clk_rst_vif.wait_clks(121);
+                    if (cfg.esc_clk_rst_vif.clk_gate && cfg.pwrmgr_vif.pwr_ast_req.io_clk_en &&
+                        cfg.pwrmgr_vif.pwr_clk_req.io_ip_clk_en) begin
+                      `uvm_info(`gfn, "clk_esc_i has been inactive enough to trigger an alert",
+                                UVM_MEDIUM)
+                      `uvm_info(`gfn, "set_exp_alert from monitor_escalation_timeout clock gated",
+                                UVM_MEDIUM)
+                      set_exp_alert("fatal_fault", 1, 500);
+                    end
                   end
-                end
-                // This stops the wait if the gate is re-opened.
-                @(negedge cfg.esc_clk_rst_vif.clk_gate);
-              join_any
-              disable fork;
-            end
-          join
+                  // This stops the wait if the gate is re-opened.
+                  @(negedge cfg.esc_clk_rst_vif.clk_gate);
+                join_any
+                disable fork;
+              end
+            join
+          end
         end
       forever
         @(negedge cfg.esc_clk_rst_vif.o_rst_n) begin
