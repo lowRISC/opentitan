@@ -1,13 +1,6 @@
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-
-load(
-    "//rules:opentitan_test.bzl",
-    "cw310_params",
-    "dv_params",
-    "opentitan_functest",
-)
 load(
     "//rules:opentitan.bzl",
     "opentitan_flash_binary",
@@ -16,7 +9,6 @@ load(
     "//rules:otp.bzl",
     "STD_OTP_OVERLAYS",
     "otp_image",
-    "otp_json",
 )
 load(
     "//rules:splice.bzl",
