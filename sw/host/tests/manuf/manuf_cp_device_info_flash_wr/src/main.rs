@@ -58,7 +58,7 @@ fn manuf_cp_device_info_flash_wr(opts: &Opts, transport: &TransportWrapper) -> R
         .sram_program
         .load_and_execute(&mut *jtag, ExecutionMode::JumpAndWait(opts.timeout))?
     {
-        ExecutionResult::ExecutionDone => {
+        ExecutionResult::ExecutionDone(_) => {
             log::info!("SRAM program loaded and executed successfully.")
         }
         res => log::info!("SRAM program execution failed: {:?}.", res),

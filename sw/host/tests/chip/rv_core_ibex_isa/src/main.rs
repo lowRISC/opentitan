@@ -46,20 +46,27 @@ fn ibex_isa_smoke_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> 
     uart.clear_rx_buffer()?;
 
     // Load SRAM program
-    match opts.sram_program.load_and_execute(
+    let a0 = match opts.sram_program.load_and_execute(
         &mut *jtag,
         ExecutionMode::JumpAndWait(Duration::from_secs(5)),
     )? {
-        ExecutionResult::ExecutionDone => log::info!("program successfully ran"),
+        ExecutionResult::ExecutionDone(a0) => {
+            log::info!("program successfully ran");
+            a0
+        }
         res => bail!("program execution failed: {:?}", res),
-    }
-    let a0 = jtag.read_riscv_reg(&RiscvReg::Gpr(RiscvGpr::A0))?;
+    };
+
     log::info!("Return Value (a0): {a0}");
+    if a0 == 0 {
+        let a1 = jtag.read_riscv_reg(&RiscvReg::Gpr(RiscvGpr::A1))?;
+        log::info!("Return Value (a1): {a1}");
+    }
     // Disconnect JTAG.
     jtag.halt()?;
     jtag.disconnect()?;
 
-    assert_eq!(a0, 0, "An instruction failed");
+    assert_eq!(a0, 1, "Test failed");
 
     Ok(())
 }

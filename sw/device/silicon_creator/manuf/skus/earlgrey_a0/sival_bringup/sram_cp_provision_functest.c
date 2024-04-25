@@ -83,7 +83,7 @@ static status_t check_device_id_and_manuf_state(
   return OK_STATUS();
 }
 
-bool sram_main(void) {
+bool test_main(void) {
   CHECK_STATUS_OK(peripheral_handles_init());
   pinmux_testutils_init(&pinmux);
   ottf_console_init();

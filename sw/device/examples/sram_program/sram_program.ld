@@ -26,7 +26,7 @@ _stack_end = ORIGIN(ram_main) + LENGTH(ram_main);
  */
 _dv_log_offset = 0x10000;
 
-ENTRY(sram_main);
+ENTRY(test_main);
 
 SECTIONS {
   /**
@@ -47,8 +47,8 @@ SECTIONS {
     /* Place the entry point of the SRAM program to the start of the main SRAM
      * so that we don't have to maintain a separate offset from the start of
      * the RAM to the entry point. */
-    ASSERT(DEFINED(sram_main), "SRAM programs must define `sram_main()`");
-    KEEP(*(.text.sram_main))
+    ASSERT(DEFINED(test_main), "SRAM programs must define `test_main()`");
+    KEEP(*(.text.test_main))
     . = ALIGN(4);
 
     /* Place all input `.rodata`, `.data`, `.text`, and `.bss` sections in the
