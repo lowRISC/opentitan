@@ -39,8 +39,7 @@ module ascon_p_tb (
   prim_ascon_p ascon_p (
     .state_o   (response),
     .state_i   (stimulus),
-    .round_i   (4'b0000),
-    .version_i (4'b1100)
+    .round_i   (4'b0000)
   );
 
   always @(stimulus) begin : C_DPI

@@ -8,8 +8,7 @@
 module prim_ascon_p (
 output logic [319:0] state_o,
 input  logic [319:0] state_i,
-input  logic   [3:0] round_i,
-input  logic   [3:0] version_i
+input  logic   [3:0] round_i
 );
 
 logic [319:0] ark_w, sbox_w;
@@ -33,9 +32,13 @@ assign rcon[ 9] = 'h69;
 assign rcon[10] = 'h5a;
 assign rcon[11] = 'h4b;
 
-// The versions of Ascon permutation
-assign addr_w = round_i + (12-version_i);
+// Ascon applies the round constants according to the following formular
+// assign addr_w = round_i + (12-version_i); where version is either P12, P8, P6
+// To increase security and efficeny, this is done outside of this module.
+// Thus, depending on the permutation (P12, P8, P6) a different offset must be
+// applied.
 
+assign addr_w = round_i;
 assign ark_w = state_i ^ {64'h0, 64'h0, 56'h0, rcon[addr_w], 64'h0, 64'h0};
 
 // Substitution layer
