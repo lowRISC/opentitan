@@ -20,7 +20,7 @@ OTTF_DEFINE_TEST_CONFIG();
 static dif_uart_t uart;
 static dif_pinmux_t pinmux;
 
-void sram_main(void) {
+bool test_main(void) {
   // Initialize UART console.
   CHECK_DIF_OK(dif_pinmux_init(
       mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
@@ -44,4 +44,5 @@ void sram_main(void) {
   LOG_INFO("Hello OpenTitan! We are executing from SRAM.");
 
   // Make sure that the function returns so that the CRT can notify the host.
+  return true;
 }

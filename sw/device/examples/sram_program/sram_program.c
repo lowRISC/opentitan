@@ -24,7 +24,7 @@ enum {
              TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_SIZE_BYTES,
 };
 
-void sram_main(void) {
+bool test_main(void) {
   if (kDeviceType != kDeviceSimDV) {
     // Configure the pinmux.
     CHECK_DIF_OK(dif_pinmux_init(
@@ -57,6 +57,7 @@ void sram_main(void) {
   if (kDeviceType == kDeviceSimDV) {
     test_status_set(kTestStatusPassed);
   }
+  return true;
 }
 
 // Reference functions that the debugger may wish to call. This prevents the

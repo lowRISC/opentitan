@@ -155,7 +155,7 @@ static void setup_flash(void) {
 /**
  * The entry point of the SRAM test.
  */
-void sram_main(void) {
+bool test_main(void) {
   setup_uart();
 
   LOG_INFO("Testing Load from ROM Location.");
@@ -207,4 +207,5 @@ void sram_main(void) {
   flash_test_gadget();
 
   test_status_set(kTestStatusPassed);
+  return true;
 }

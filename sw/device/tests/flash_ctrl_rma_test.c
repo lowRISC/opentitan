@@ -99,7 +99,7 @@ static status_t read_and_check_info(bool match) {
   return OK_STATUS();
 }
 
-bool sram_main(void) {
+bool test_main(void) {
   // Initialize dif handles and pinmux
   CHECK_DIF_OK(dif_pinmux_init(
       mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));

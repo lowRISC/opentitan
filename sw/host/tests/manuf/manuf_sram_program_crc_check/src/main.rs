@@ -65,7 +65,7 @@ fn test_sram_load(opts: &Opts, transport: &TransportWrapper, corrupt: bool) -> R
         ExecutionMode::JumpAndWait(Duration::from_secs(5)),
     )?;
     match exec_res {
-        ExecutionResult::ExecutionDone => {
+        ExecutionResult::ExecutionDone(_) => {
             if corrupt {
                 bail!("SRAM program finished successfully but expected a CRC failure")
             } else {

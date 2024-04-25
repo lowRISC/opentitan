@@ -49,7 +49,7 @@ static status_t peripheral_handles_init(void) {
   return OK_STATUS();
 }
 
-bool sram_main(void) {
+bool test_main(void) {
   CHECK_STATUS_OK(peripheral_handles_init());
 
   // Initialize UART (for console, since we do not have the OTTF).

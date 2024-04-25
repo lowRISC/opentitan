@@ -5,14 +5,15 @@
 /**
  * Checks the given value is equal to zero or a second given value.
  * If they are not equal,
- * a0 is set to a unique value and returns early from sram_main.
+ * a1 is set to a unique value and returns early from test_main.
  *
  * @param actual The value to check.
  * @param[opt] expected The value to check against. Defaults to zero.
  */
 .macro check actual, expected=zero
   beq \actual, \expected, 1f
-  li a0, \@+1
+  li a0, 0
+  li a1, \@+1
   jr s1
   1:
 .endm
@@ -22,14 +23,15 @@
 /**
  * Runs every instruction that is available to the ibex.
  *
- * @param[out] a0 error code, will be non-zero if a check fails.
+ * @param[out] a0 test status, will be zero if a check fails.
+ * @param[out] a1 error code, set if `a0` is zero.
  */
   .balign 4
-  .global sram_main
-  .type sram_main, @function
-sram_main:
+  .global test_main
+  .type test_main, @function
+test_main:
   mv s1, ra
-  li a0, -1
+  li a1, -1
 
   jal smoke_branch
   jal smoke_auipc
@@ -53,7 +55,7 @@ sram_main:
   la t0, smoke_c
   c.jalr t0
 
-  mv a0, zero
+  li a0, 1
   jr s1
 
 /**

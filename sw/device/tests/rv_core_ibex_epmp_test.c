@@ -294,7 +294,7 @@ static void setup_uart(void) {
  *
  * *Control flow passed from `sram_start`.*
  */
-void sram_main(void) {
+bool test_main(void) {
   setup_uart();
 
   // Must set up the Machine Mode Area Correctly

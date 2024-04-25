@@ -97,7 +97,7 @@ class chip_sw_rom_e2e_jtag_inject_vseq extends chip_sw_base_vseq;
       `DV_CHECK(result)
       sram_program_gp = BUS_AW'(addr);
       result = dv_utils_pkg::sw_symbol_get_addr_size(.elf_file(elf_file),
-          .symbol("sram_main"), .does_not_exist_ok(0), .addr(addr), .size(size));
+          .symbol("test_main"), .does_not_exist_ok(0), .addr(addr), .size(size));
       `DV_CHECK(result)
       sram_program_start = BUS_AW'(addr);
     end
@@ -119,8 +119,8 @@ class chip_sw_rom_e2e_jtag_inject_vseq extends chip_sw_base_vseq;
     `uvm_info(`gfn, "Invalidate the icache", UVM_LOW)
     cfg.debugger.call(.symbol("icache_invalidate"));
 
-    `uvm_info(`gfn, "Call sram_main (it writes the PASS pattern to the DV monitor)", UVM_LOW)
-    cfg.debugger.call(.symbol("sram_main"), .noreturn_function(1));
+    `uvm_info(`gfn, "Call test_main (it writes the PASS pattern to the DV monitor)", UVM_LOW)
+    cfg.debugger.call(.symbol("test_main"), .noreturn_function(1));
   endtask
 
 endclass
