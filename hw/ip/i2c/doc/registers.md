@@ -152,23 +152,35 @@ Alert Test Register
 I2C Control Register
 - Offset: `0x10`
 - Reset default: `0x0`
-- Reset mask: `0x3f`
+- Reset mask: `0x7f`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "ENABLEHOST", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "ENABLETARGET", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "LLPBK", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "NACK_ADDR_AFTER_TIMEOUT", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "ACK_CTRL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX_STRETCH_CTRL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 26}], "config": {"lanes": 1, "fontsize": 10, "vspace": 250}}
+{"reg": [{"name": "ENABLEHOST", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "ENABLETARGET", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "LLPBK", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "NACK_ADDR_AFTER_TIMEOUT", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "ACK_CTRL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX_STRETCH_CTRL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "MULTI_CONTROLLER_MONITOR_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 25}], "config": {"lanes": 1, "fontsize": 10, "vspace": 290}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                                                      |
-|:------:|:------:|:-------:|:----------------------------------------------------------|
-|  31:6  |        |         | Reserved                                                  |
-|   5    |   rw   |   0x0   | [TX_STRETCH_CTRL_EN](#ctrl--tx_stretch_ctrl_en)           |
-|   4    |   rw   |   0x0   | [ACK_CTRL_EN](#ctrl--ack_ctrl_en)                         |
-|   3    |   rw   |   0x0   | [NACK_ADDR_AFTER_TIMEOUT](#ctrl--nack_addr_after_timeout) |
-|   2    |   rw   |   0x0   | [LLPBK](#ctrl--llpbk)                                     |
-|   1    |   rw   |   0x0   | [ENABLETARGET](#ctrl--enabletarget)                       |
-|   0    |   rw   |   0x0   | [ENABLEHOST](#ctrl--enablehost)                           |
+|  Bits  |  Type  |  Reset  | Name                                                              |
+|:------:|:------:|:-------:|:------------------------------------------------------------------|
+|  31:7  |        |         | Reserved                                                          |
+|   6    |   rw   |   0x0   | [MULTI_CONTROLLER_MONITOR_EN](#ctrl--multi_controller_monitor_en) |
+|   5    |   rw   |   0x0   | [TX_STRETCH_CTRL_EN](#ctrl--tx_stretch_ctrl_en)                   |
+|   4    |   rw   |   0x0   | [ACK_CTRL_EN](#ctrl--ack_ctrl_en)                                 |
+|   3    |   rw   |   0x0   | [NACK_ADDR_AFTER_TIMEOUT](#ctrl--nack_addr_after_timeout)         |
+|   2    |   rw   |   0x0   | [LLPBK](#ctrl--llpbk)                                             |
+|   1    |   rw   |   0x0   | [ENABLETARGET](#ctrl--enabletarget)                               |
+|   0    |   rw   |   0x0   | [ENABLEHOST](#ctrl--enablehost)                                   |
+
+### CTRL . MULTI_CONTROLLER_MONITOR_EN
+Enable the bus monitor in multi-controller mode.
+
+If a 0->1 transition happens while [`CTRL.ENABLEHOST`](#ctrl) and [`CTRL.ENABLETARGET`](#ctrl) are both 0, the bus monitor will enable and begin in the "bus busy" state.
+To transition to a bus free state, [`HOST_TIMEOUT_CTRL`](#host_timeout_ctrl) must be nonzero, so the bus monitor may count out idle cycles to confirm the freedom to transmit.
+In addition, the bus monitor will track whether the bus is free based on the enabled timeouts and detected Stop symbols.
+For multi-controller mode, ensure [`CTRL.MULTI_CONTROLLER_MONITOR_EN`](#ctrl) becomes 1 no later than [`CTRL.ENABLEHOST`](#ctrl) or [`CTRL.ENABLETARGET.`](#ctrl)
+
+When 0, the bus monitor will report that the bus is always free, so the controller FSM is never blocked from transmitting.
+If [`CTRL.MULTI_CONTROLLER_MONITOR_EN`](#ctrl) is set after [`CTRL.ENABLEHOST`](#ctrl) or [`CTRL.ENABLETARGET`](#ctrl), the bus monitor will begin in the "bus free" state instead.
 
 ### CTRL . TX_STRETCH_CTRL_EN
 Enable setting [`TARGET_EVENTS.TX_PENDING`](#target_events) to gate target read transfers.
@@ -649,6 +661,7 @@ I2C host clock generation timeout value (in units of input clock frequency).
 In an active transaction in Target-Mode, if the Controller ceases to send SCL pulses
 for this number of cycles then the "host_timeout" interrupt will be asserted.
 
+In multi-controller monitoring mode, [`HOST_TIMEOUT_CTRL`](#host_timeout_ctrl) is required to be nonzero to transition out of the initial busy state.
 Set this CSR to 0 to disable this behaviour.
 - Offset: `0x60`
 - Reset default: `0x0`

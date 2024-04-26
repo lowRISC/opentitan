@@ -185,6 +185,9 @@ package i2c_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
+    } multi_controller_monitor_en;
+    struct packed {
+      logic        q;
     } tx_stretch_ctrl_en;
     struct packed {
       logic        q;
@@ -630,11 +633,11 @@ package i2c_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    i2c_reg2hw_intr_state_reg_t intr_state; // [470:456]
-    i2c_reg2hw_intr_enable_reg_t intr_enable; // [455:441]
-    i2c_reg2hw_intr_test_reg_t intr_test; // [440:411]
-    i2c_reg2hw_alert_test_reg_t alert_test; // [410:409]
-    i2c_reg2hw_ctrl_reg_t ctrl; // [408:403]
+    i2c_reg2hw_intr_state_reg_t intr_state; // [471:457]
+    i2c_reg2hw_intr_enable_reg_t intr_enable; // [456:442]
+    i2c_reg2hw_intr_test_reg_t intr_test; // [441:412]
+    i2c_reg2hw_alert_test_reg_t alert_test; // [411:410]
+    i2c_reg2hw_ctrl_reg_t ctrl; // [409:403]
     i2c_reg2hw_rdata_reg_t rdata; // [402:394]
     i2c_reg2hw_fdata_reg_t fdata; // [393:375]
     i2c_reg2hw_fifo_ctrl_reg_t fifo_ctrl; // [374:367]

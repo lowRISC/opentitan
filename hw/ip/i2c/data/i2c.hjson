@@ -293,6 +293,21 @@
                 For example, the transaction could've targeted an alternate function via another address.
                 '''
         }
+        { bits: "6"
+          resval: "0"
+          name: "MULTI_CONTROLLER_MONITOR_EN"
+          desc: '''
+                Enable the bus monitor in multi-controller mode.
+
+                If a 0->1 transition happens while !!CTRL.ENABLEHOST and !!CTRL.ENABLETARGET are both 0, the bus monitor will enable and begin in the "bus busy" state.
+                To transition to a bus free state, !!HOST_TIMEOUT_CTRL must be nonzero, so the bus monitor may count out idle cycles to confirm the freedom to transmit.
+                In addition, the bus monitor will track whether the bus is free based on the enabled timeouts and detected Stop symbols.
+                For multi-controller mode, ensure !!CTRL.MULTI_CONTROLLER_MONITOR_EN becomes 1 no later than !!CTRL.ENABLEHOST or !!CTRL.ENABLETARGET.
+
+                When 0, the bus monitor will report that the bus is always free, so the controller FSM is never blocked from transmitting.
+                If !!CTRL.MULTI_CONTROLLER_MONITOR_EN is set after !!CTRL.ENABLEHOST or !!CTRL.ENABLETARGET, the bus monitor will begin in the "bus free" state instead.
+                '''
+        }
       ]
     }
     { name:     "STATUS"
@@ -838,6 +853,7 @@
             In an active transaction in Target-Mode, if the Controller ceases to send SCL pulses
             for this number of cycles then the "host_timeout" interrupt will be asserted.
 
+            In multi-controller monitoring mode, !!HOST_TIMEOUT_CTRL is required to be nonzero to transition out of the initial busy state.
             Set this CSR to 0 to disable this behaviour.
             '''
       swaccess: "rw"

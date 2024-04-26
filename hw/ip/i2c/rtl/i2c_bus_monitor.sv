@@ -14,6 +14,7 @@ module i2c_bus_monitor import i2c_pkg::*;
   input                            sda_i,
 
   input                            controller_enable_i,
+  input                            multi_controller_enable_i,
   input                            target_enable_i,
   input                            target_idle_i,
   input [12:0]                     thd_dat_i,              // Data hold time(?XX ns)
@@ -32,8 +33,16 @@ module i2c_bus_monitor import i2c_pkg::*;
 );
 
   // Only activate this monitor if at least one of the modules is enabled.
-  logic monitor_enable;
-  assign monitor_enable = controller_enable_i | target_enable_i;
+  logic monitor_enable, monitor_enable_q;
+  assign monitor_enable = controller_enable_i | target_enable_i | multi_controller_enable_i;
+
+  always_ff @ (posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      monitor_enable_q <= 1'b0;
+    end else begin
+      monitor_enable_q <= monitor_enable;
+    end
+  end
 
   // SDA and SCL at the previous clock edge
   logic scl_i_q, sda_i_q;
@@ -148,6 +157,14 @@ module i2c_bus_monitor import i2c_pkg::*;
   always_ff @ (posedge clk_i or negedge rst_ni) begin : bus_idle
     if (!rst_ni) begin
       bus_release_cnt <= '0;
+    end else if (monitor_enable && !monitor_enable_q) begin
+      // The rising edge of monitor enable resets the counter for
+      // multi-controller mode.
+      if (multi_controller_enable_i) begin
+        // For the multi-controller case, wait until the bus isn't busy before
+        // transmitting.
+        bus_release_cnt <= 30'(bus_inactive_timeout_i);
+      end
     end else if (bus_release_cnt_load) begin
       bus_release_cnt <= bus_release_cnt_sel;
     end else if (bus_release_cnt_dec && (bus_release_cnt != '0)) begin
@@ -231,7 +248,7 @@ module i2c_bus_monitor import i2c_pkg::*;
           // this state with SDA high. If SDA is low, a change to SCL will
           // cause a transition back to StBusBusyLow. If SDA changes from low
           // to high, we get a Stop condition and transition to StBusBusyStop.
-          bus_inactive_timeout_det = 1'b1;
+          bus_inactive_timeout_det = bus_inactive_timeout_en;
           if (sda_i) begin
             state_d = StBusFree;
           end
@@ -257,12 +274,22 @@ module i2c_bus_monitor import i2c_pkg::*;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       state_q <= StBusFree;
+    end else if (!monitor_enable) begin
+      state_q <= StBusFree;
+    end else if (monitor_enable && !monitor_enable_q) begin
+      if (multi_controller_enable_i) begin
+        // For the multi-controller case, wait until the bus isn't busy before
+        // transmitting.
+        state_q <= StBusBusyHigh;
+      end else begin
+        state_q <= StBusFree;
+      end
     end else begin
       state_q <= state_d;
     end
   end
 
-  assign bus_free_o = (state_q == StBusFree);
+  assign bus_free_o = (state_q == StBusFree) || !multi_controller_enable_i;
   assign event_bus_active_timeout_o = bus_active_timeout_det_d && !bus_active_timeout_det_q;
   assign event_host_timeout_o = !target_idle_i && bus_inactive_timeout_det;
 
