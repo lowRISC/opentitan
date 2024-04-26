@@ -297,11 +297,11 @@ static status_t test_init(void) {
   TRY(i2c_testutils_select_pinmux(&pinmux, 0, I2cPinmuxPlatformIdHyper310));
   TRY(i2c_testutils_set_speed(&i2c, kDifI2cSpeedStandard));
 
-  // 20 ms stretch timeout. The upper limit of support is ~1 GHz for the IP, so
-  // OK to make the frequency a uint32_t.
-  uint32_t kStretchCycles = ((uint32_t)kClockFreqPeripheralHz / (1000 / 20));
-  TRY(dif_i2c_enable_clock_stretching_timeout(&i2c, kDifToggleEnabled,
-                                              kStretchCycles));
+  // 25 ms bus timeout. The upper limit of support is ~1 GHz for the IP, so OK
+  // to make the frequency a uint32_t.
+  uint32_t kBusTimeoutCycles = ((uint32_t)kClockFreqPeripheralHz / (1000 / 25));
+  TRY(dif_i2c_enable_clock_timeout(&i2c, kDifI2cSclTimeoutBus,
+                                   kBusTimeoutCycles));
 
   // 50 us bus idle timeout.
   uint32_t kIdleCycles = ((uint32_t)kClockFreqPeripheralHz / (1000000 / 50));
@@ -319,6 +319,7 @@ static status_t test_init(void) {
   TRY(dif_i2c_set_target_watermarks(&i2c, /*tx_level=*/0,
                                     I2C_PARAM_ACQ_FIFO_DEPTH));
   TRY(dif_i2c_set_device_id(&i2c, &kSmbusArpId, NULL));
+  TRY(dif_i2c_multi_controller_monitor_set_enabled(&i2c, kDifToggleEnabled));
   TRY(dif_i2c_device_set_enabled(&i2c, kDifToggleEnabled));
 
   // Enable all I2C interrupts.

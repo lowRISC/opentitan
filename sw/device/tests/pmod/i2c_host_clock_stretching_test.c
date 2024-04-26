@@ -130,7 +130,7 @@ static status_t rx_stretch_timeout(void) {
   }
 
   uint32_t cycles = (kTimeoutMillis - 1) * 100;
-  TRY(dif_i2c_enable_clock_stretching_timeout(&i2c, kDifToggleEnabled, cycles));
+  TRY(dif_i2c_enable_clock_timeout(&i2c, kDifI2cSclTimeoutStretch, cycles));
 
   uint8_t reg = kProductIdReg;
   TRY(i2c_testutils_write(&i2c, kDeviceAddr, 1, &reg, true));
