@@ -374,6 +374,11 @@ typedef struct dif_i2c_controller_halt_events {
   bool nack_received;
   /** Failed to handle a NACK before the handling timeout. */
   bool unhandled_nack_timeout;
+  /**
+   * The bus timed out due to SCL held low for too long while the controller was
+   * transmitting.
+   */
+  bool bus_timeout;
 } dif_i2c_controller_halt_events_t;
 
 /**
@@ -561,6 +566,19 @@ dif_result_t dif_i2c_addr_nack_set_enabled(const dif_i2c_t *i2c,
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_i2c_ack_ctrl_set_enabled(const dif_i2c_t *i2c,
                                           dif_toggle_t state);
+
+/**
+ * Enables or disables the bus monitor's multi-controller functionality.
+ *
+ * This function should be called prior to enabling the host or target.
+ *
+ * @param i2c An I2C handle.
+ * @param state The new toggle state for the device functionality.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_i2c_multi_controller_monitor_set_enabled(const dif_i2c_t *i2c,
+                                                          dif_toggle_t state);
 
 /**
  * Enables or disables the "override mode". In override mode, software is able
@@ -780,19 +798,41 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_i2c_acquire_byte(const dif_i2c_t *i2c, uint8_t *byte,
                                   dif_i2c_signal_t *signal);
 
+typedef enum dif_i2c_scl_timeout {
+  /** To disable the clock timeout */
+  kDifI2cSclTimeoutDisabled = 0,
+  /** To select the stretch timeout */
+  kDifI2cSclTimeoutStretch,
+  /** To select the bus timeout (continuous SCL low) */
+  kDifI2cSclTimeoutBus,
+} dif_i2c_scl_timeout_t;
+
 /**
- * Enables clock stretching timeout after a number of I2C block clock cycles
+ * Enables clock timeout after a number of I2C block clock cycles
  * when I2C block is configured as host.
  *
+ * If `kDifI2cSclTimeoutDisabled` is selected, the clock timeout is disabled.
+ *
+ * If a `kDifI2cSclTimeoutStretch` timeout is selected, the target stretching
+ * timeout function is enabled and the bus timeout is disabled. The timeout
+ * duration is the maximum time a target is allowed to stretch the clock for
+ * any given bit when this i2c controller is transmitting.
+ *
+ * If a `kDifI2cSclTimeoutBus` timeout is selected, the bus timeout function is
+ * enabled, and the target stretching timeout is disabled. The timeout duration
+ * is the maximum time the clock may remain continuously low, even if it is this
+ * i2c controller or target that is pulling SCL low. The bus timeout should be
+ * selected for SMBus compatibility.
+ *
  * @param i2c An I2C handle,
- * @param enable the timeout
+ * @param timeout_type Whether to enable the timeout and which one
  * @param cycles How many cycles to wait before timing out
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_i2c_enable_clock_stretching_timeout(const dif_i2c_t *i2c,
-                                                     dif_toggle_t enable,
-                                                     uint32_t cycles);
+dif_result_t dif_i2c_enable_clock_timeout(const dif_i2c_t *i2c,
+                                          dif_i2c_scl_timeout_t timeout_type,
+                                          uint32_t cycles);
 
 /**
  * Sets the I2C device to listen for a pair of masked addresses

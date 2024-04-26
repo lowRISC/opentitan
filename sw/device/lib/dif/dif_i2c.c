@@ -72,6 +72,8 @@ dif_result_t dif_i2c_get_controller_halt_events(
       bitfield_bit32_read(reg, I2C_CONTROLLER_EVENTS_NACK_BIT);
   events->unhandled_nack_timeout = bitfield_bit32_read(
       reg, I2C_CONTROLLER_EVENTS_UNHANDLED_NACK_TIMEOUT_BIT);
+  events->bus_timeout =
+      bitfield_bit32_read(reg, I2C_CONTROLLER_EVENTS_BUS_TIMEOUT_BIT);
   return kDifOk;
 }
 
@@ -86,6 +88,8 @@ dif_result_t dif_i2c_clear_controller_halt_events(
   reg = bitfield_bit32_write(reg,
                              I2C_CONTROLLER_EVENTS_UNHANDLED_NACK_TIMEOUT_BIT,
                              events.unhandled_nack_timeout);
+  reg = bitfield_bit32_write(reg, I2C_CONTROLLER_EVENTS_BUS_TIMEOUT_BIT,
+                             events.bus_timeout);
   mmio_region_write32(i2c->base_addr, I2C_CONTROLLER_EVENTS_REG_OFFSET, reg);
   return kDifOk;
 }
@@ -424,6 +428,25 @@ dif_result_t dif_i2c_ack_ctrl_set_enabled(const dif_i2c_t *i2c,
   return kDifOk;
 }
 
+dif_result_t dif_i2c_multi_controller_monitor_set_enabled(const dif_i2c_t *i2c,
+                                                          dif_toggle_t state) {
+  if (i2c == NULL) {
+    return kDifBadArg;
+  }
+
+  if (!dif_is_valid_toggle(state)) {
+    return kDifBadArg;
+  }
+  bool flag = dif_toggle_to_bool(state);
+
+  uint32_t reg = mmio_region_read32(i2c->base_addr, I2C_CTRL_REG_OFFSET);
+  reg =
+      bitfield_bit32_write(reg, I2C_CTRL_MULTI_CONTROLLER_MONITOR_EN_BIT, flag);
+  mmio_region_write32(i2c->base_addr, I2C_CTRL_REG_OFFSET, reg);
+
+  return kDifOk;
+}
+
 dif_result_t dif_i2c_override_set_enabled(const dif_i2c_t *i2c,
                                           dif_toggle_t state) {
   if (i2c == NULL) {
@@ -725,20 +748,35 @@ dif_result_t dif_i2c_acquire_byte(const dif_i2c_t *i2c, uint8_t *byte,
   return kDifOk;
 }
 
-dif_result_t dif_i2c_enable_clock_stretching_timeout(const dif_i2c_t *i2c,
-                                                     dif_toggle_t enable,
-                                                     uint32_t cycles) {
+dif_result_t dif_i2c_enable_clock_timeout(const dif_i2c_t *i2c,
+                                          dif_i2c_scl_timeout_t timeout_type,
+                                          uint32_t cycles) {
   if (i2c == NULL) {
     return kDifBadArg;
   }
 
-  if (!dif_is_valid_toggle(enable)) {
-    return kDifBadArg;
+  bool timeout_en = false;
+  uint8_t timeout_mode = 0;
+  switch (timeout_type) {
+    case kDifI2cSclTimeoutDisabled:
+      timeout_en = false;
+      break;
+    case kDifI2cSclTimeoutStretch:
+      timeout_en = true;
+      timeout_mode = I2C_TIMEOUT_CTRL_MODE_VALUE_STRETCH_TIMEOUT;
+      break;
+    case kDifI2cSclTimeoutBus:
+      timeout_en = true;
+      timeout_mode = I2C_TIMEOUT_CTRL_MODE_VALUE_BUS_TIMEOUT;
+      break;
+    default:
+      return kDifBadArg;
   }
-  bool flag = dif_toggle_to_bool(enable);
 
   uint32_t config = 0;
-  config = bitfield_bit32_write(config, I2C_TIMEOUT_CTRL_EN_BIT, flag);
+  config = bitfield_bit32_write(config, I2C_TIMEOUT_CTRL_EN_BIT, timeout_en);
+  config =
+      bitfield_bit32_write(config, I2C_TIMEOUT_CTRL_MODE_BIT, timeout_mode);
   config = bitfield_field32_write(config, I2C_TIMEOUT_CTRL_VAL_FIELD, cycles);
   mmio_region_write32(i2c->base_addr, I2C_TIMEOUT_CTRL_REG_OFFSET, config);
   return kDifOk;

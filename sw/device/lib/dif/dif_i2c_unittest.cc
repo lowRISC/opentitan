@@ -502,10 +502,22 @@ TEST_F(ControlTest, HostEnable) {
 
   EXPECT_MASK32(I2C_CTRL_REG_OFFSET, {{I2C_CTRL_ENABLEHOST_BIT, 0x1, 0x0}});
   EXPECT_DIF_OK(dif_i2c_host_set_enabled(&i2c_, kDifToggleDisabled));
+
+  EXPECT_MASK32(I2C_CTRL_REG_OFFSET,
+                {{I2C_CTRL_MULTI_CONTROLLER_MONITOR_EN_BIT, 0x1, 0x1}});
+  EXPECT_DIF_OK(
+      dif_i2c_multi_controller_monitor_set_enabled(&i2c_, kDifToggleEnabled));
+
+  EXPECT_MASK32(I2C_CTRL_REG_OFFSET,
+                {{I2C_CTRL_MULTI_CONTROLLER_MONITOR_EN_BIT, 0x1, 0x0}});
+  EXPECT_DIF_OK(
+      dif_i2c_multi_controller_monitor_set_enabled(&i2c_, kDifToggleDisabled));
 }
 
 TEST_F(ControlTest, HostEnableNullArgs) {
   EXPECT_DIF_BADARG(dif_i2c_host_set_enabled(nullptr, kDifToggleEnabled));
+  EXPECT_DIF_BADARG(
+      dif_i2c_multi_controller_monitor_set_enabled(nullptr, kDifToggleEnabled));
 
   dif_i2c_controller_halt_events_t events_arg = {0};
   EXPECT_DIF_BADARG(dif_i2c_get_controller_halt_events(nullptr, &events_arg));
@@ -533,19 +545,23 @@ TEST_F(ControlTest, HaltEvents) {
 
   events_arg.nack_received = false;
   events_arg.unhandled_nack_timeout = true;
+  events_arg.bus_timeout = false;
   EXPECT_WRITE32(I2C_CONTROLLER_EVENTS_REG_OFFSET,
                  {
                      {I2C_CONTROLLER_EVENTS_NACK_BIT, 0},
                      {I2C_CONTROLLER_EVENTS_UNHANDLED_NACK_TIMEOUT_BIT, 1},
+                     {I2C_CONTROLLER_EVENTS_BUS_TIMEOUT_BIT, 0},
                  });
   EXPECT_DIF_OK(dif_i2c_clear_controller_halt_events(&i2c_, events_arg));
 
   events_arg.nack_received = true;
   events_arg.unhandled_nack_timeout = false;
+  events_arg.bus_timeout = true;
   EXPECT_WRITE32(I2C_CONTROLLER_EVENTS_REG_OFFSET,
                  {
                      {I2C_CONTROLLER_EVENTS_NACK_BIT, 1},
                      {I2C_CONTROLLER_EVENTS_UNHANDLED_NACK_TIMEOUT_BIT, 0},
+                     {I2C_CONTROLLER_EVENTS_BUS_TIMEOUT_BIT, 1},
                  });
   EXPECT_DIF_OK(dif_i2c_clear_controller_halt_events(&i2c_, events_arg));
 }
@@ -910,16 +926,25 @@ TEST_F(FifoTest, TransmitBadArgs) {
 class StretchTest : public I2cTest {};
 
 TEST_F(StretchTest, ConfigTimeouts) {
-  EXPECT_WRITE32(I2C_TIMEOUT_CTRL_REG_OFFSET, 0x81234567);
-  EXPECT_DIF_OK(dif_i2c_enable_clock_stretching_timeout(
-      &i2c_, kDifToggleEnabled, 0x01234567));
+  EXPECT_WRITE32(I2C_TIMEOUT_CTRL_REG_OFFSET,
+                 {{I2C_TIMEOUT_CTRL_EN_BIT, 1},
+                  {I2C_TIMEOUT_CTRL_MODE_BIT, 0},
+                  {I2C_TIMEOUT_CTRL_VAL_OFFSET, 0x01234567}});
+  EXPECT_DIF_OK(dif_i2c_enable_clock_timeout(&i2c_, kDifI2cSclTimeoutStretch,
+                                             0x01234567));
+  EXPECT_WRITE32(I2C_TIMEOUT_CTRL_REG_OFFSET,
+                 {{I2C_TIMEOUT_CTRL_EN_BIT, 1},
+                  {I2C_TIMEOUT_CTRL_MODE_BIT, 1},
+                  {I2C_TIMEOUT_CTRL_VAL_OFFSET, 0x07654321}});
+  EXPECT_DIF_OK(
+      dif_i2c_enable_clock_timeout(&i2c_, kDifI2cSclTimeoutBus, 0x07654321));
   EXPECT_WRITE32(I2C_HOST_TIMEOUT_CTRL_REG_OFFSET, 0x81234567);
   EXPECT_DIF_OK(dif_i2c_set_host_timeout(&i2c_, 0x81234567));
 }
 
 TEST_F(StretchTest, ConfigTimeoutsBadArgs) {
-  EXPECT_DIF_BADARG(dif_i2c_enable_clock_stretching_timeout(
-      nullptr, kDifToggleEnabled, 0x01234567));
+  EXPECT_DIF_BADARG(dif_i2c_enable_clock_timeout(
+      nullptr, kDifI2cSclTimeoutStretch, 0x01234567));
   EXPECT_DIF_BADARG(dif_i2c_set_host_timeout(nullptr, 0x81234567));
 }
 
