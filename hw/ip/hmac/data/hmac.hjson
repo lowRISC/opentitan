@@ -374,7 +374,7 @@
       fields: [
         { bits: "31:0",
           name: "err_code",
-          desc: '''If error interrupt occurs, this register has information of error cause.
+          desc: '''If an error interrupt occurs, this register has information of error cause.
                 Please take a look at `hw/ip/hmac/rtl/hmac_pkg.sv:err_code_e enum type.
                 '''
           tags: [// Randomly write mem will cause this reg updated by design
@@ -385,10 +385,10 @@
     { name: "WIPE_SECRET",
       desc: '''Clear internal secret registers.
 
-            If CPU writes value into the register, the value is used to clear the internal variables such as secret key, internal state machine, or hash value.
-            The clear secret operation uses XORs with the provided value as one of the operands.
+            If CPU writes a value into the register, the value is used to clear the internal variables such as the secret key, internal state machine, or hash value.
+            The clear secret operation overwrites the internal variables with the provided 32-bit value.
+            For SHA-2 384/512 that work with 64-bit words, the 32-bit value is duplicated and concatenated to generate the 64-bit value.
             It is recommended to use a value extracted from an entropy source.
-            A value equal to 0 will leave all internal values unchanged.
             ''',
       swaccess: "wo",
       hwaccess: "hro",

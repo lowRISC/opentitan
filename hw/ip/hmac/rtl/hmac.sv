@@ -639,8 +639,6 @@ module hmac
     .clk_i,
     .rst_ni,
     .secret_key_i  (secret_key),
-    .wipe_secret_i (wipe_secret),
-    .wipe_v_i      (wipe_v),
     .hmac_en_i     (hmac_en),
     .digest_size_i (digest_size),
     .key_length_i  (key_length),
