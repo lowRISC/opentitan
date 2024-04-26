@@ -197,9 +197,6 @@ static rom_error_t kmac_configure(kmac_config_t config) {
   // Set `CFG.ENTROPY_READY` bit to 1.
   cfg_reg =
       bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_ENTROPY_READY_BIT, 1);
-  // Set `CFG.ERR_PROCESSED` bit to 0.
-  cfg_reg =
-      bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_ERR_PROCESSED_BIT, 0);
   // Set `CFG.EN_UNSUPPORTED_MODESTRENGTH` bit to 0.
   cfg_reg = bitfield_bit32_write(
       cfg_reg, KMAC_CFG_SHADOWED_EN_UNSUPPORTED_MODESTRENGTH_BIT, 0);

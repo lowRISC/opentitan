@@ -183,20 +183,20 @@ If the software updates the register while the engine computes, the
 updated value will be discarded.
 - Offset: `0x14`
 - Reset default: `0x0`
-- Reset mask: `0x71b133f`
+- Reset mask: `0x51b133f`
 - Register enable: [`CFG_REGWEN`](#cfg_regwen)
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "kmac_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "kstrength", "bits": 3, "attr": ["rw"], "rotate": -90}, {"name": "mode", "bits": 2, "attr": ["rw"], "rotate": -90}, {"bits": 2}, {"name": "msg_endianness", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "state_endianness", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 2}, {"name": "sideload", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 3}, {"name": "entropy_mode", "bits": 2, "attr": ["rw"], "rotate": -90}, {"bits": 1}, {"name": "entropy_fast_process", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "msg_mask", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 3}, {"name": "entropy_ready", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "err_processed", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "en_unsupported_modestrength", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 5}], "config": {"lanes": 1, "fontsize": 10, "vspace": 290}}
+{"reg": [{"name": "kmac_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "kstrength", "bits": 3, "attr": ["rw"], "rotate": -90}, {"name": "mode", "bits": 2, "attr": ["rw"], "rotate": -90}, {"bits": 2}, {"name": "msg_endianness", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "state_endianness", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 2}, {"name": "sideload", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 3}, {"name": "entropy_mode", "bits": 2, "attr": ["rw"], "rotate": -90}, {"bits": 1}, {"name": "entropy_fast_process", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "msg_mask", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 3}, {"name": "entropy_ready", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 1}, {"name": "en_unsupported_modestrength", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 5}], "config": {"lanes": 1, "fontsize": 10, "vspace": 290}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                                                      |
 |:------:|:------:|:-------:|:--------------------------------------------------------------------------|
 | 31:27  |        |         | Reserved                                                                  |
 |   26   |   rw   |   0x0   | [en_unsupported_modestrength](#cfg_shadowed--en_unsupported_modestrength) |
-|   25   |   rw   |   0x0   | [err_processed](#cfg_shadowed--err_processed)                             |
+|   25   |        |         | Reserved                                                                  |
 |   24   |   rw   |   0x0   | [entropy_ready](#cfg_shadowed--entropy_ready)                             |
 | 23:21  |        |         | Reserved                                                                  |
 |   20   |   rw   |   0x0   | [msg_mask](#cfg_shadowed--msg_mask)                                       |
@@ -221,11 +221,6 @@ Keccak Mode and Strength configurations, such as cSHAKE512.
 
 If not set, KMAC won't propagate the SW command (CmdStart) to the
 rest of the blocks (AppIntf, KMAC Core, SHA3).
-
-### CFG_SHADOWED . err_processed
-When error occurs and one of the state machine stays at
- Error handling state, SW may process the error based on
- ERR_CODE, then let FSM back to the reset state
 
 ### CFG_SHADOWED . entropy_ready
 Entropy Ready status.
@@ -345,21 +340,27 @@ control logic. It follows the sequence of
 `start` --> `process` --> {`run` if needed --> } `done`
 - Offset: `0x18`
 - Reset default: `0x0`
-- Reset mask: `0x33f`
+- Reset mask: `0x73f`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "cmd", "bits": 6, "attr": ["r0w1c"], "rotate": 0}, {"bits": 2}, {"name": "entropy_req", "bits": 1, "attr": ["r0w1c"], "rotate": -90}, {"name": "hash_cnt_clr", "bits": 1, "attr": ["r0w1c"], "rotate": -90}, {"bits": 22}], "config": {"lanes": 1, "fontsize": 10, "vspace": 140}}
+{"reg": [{"name": "cmd", "bits": 6, "attr": ["r0w1c"], "rotate": 0}, {"bits": 2}, {"name": "entropy_req", "bits": 1, "attr": ["r0w1c"], "rotate": -90}, {"name": "hash_cnt_clr", "bits": 1, "attr": ["r0w1c"], "rotate": -90}, {"name": "err_processed", "bits": 1, "attr": ["r0w1c"], "rotate": -90}, {"bits": 21}], "config": {"lanes": 1, "fontsize": 10, "vspace": 150}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                               |
-|:------:|:------:|:-------:|:-----------------------------------|
-| 31:10  |        |         | Reserved                           |
-|   9    | r0w1c  |    x    | [hash_cnt_clr](#cmd--hash_cnt_clr) |
-|   8    | r0w1c  |    x    | [entropy_req](#cmd--entropy_req)   |
-|  7:6   |        |         | Reserved                           |
-|  5:0   | r0w1c  |    x    | [cmd](#cmd--cmd)                   |
+|  Bits  |  Type  |  Reset  | Name                                 |
+|:------:|:------:|:-------:|:-------------------------------------|
+| 31:11  |        |         | Reserved                             |
+|   10   | r0w1c  |    x    | [err_processed](#cmd--err_processed) |
+|   9    | r0w1c  |    x    | [hash_cnt_clr](#cmd--hash_cnt_clr)   |
+|   8    | r0w1c  |    x    | [entropy_req](#cmd--entropy_req)     |
+|  7:6   |        |         | Reserved                             |
+|  5:0   | r0w1c  |    x    | [cmd](#cmd--cmd)                     |
+
+### CMD . err_processed
+When error occurs and one of the state machine stays at
+ Error handling state, SW may process the error based on
+ ERR_CODE, then let FSM back to the reset state
 
 ### CMD . hash_cnt_clr
 If writes 1, it clears the hash (KMAC) counter in the entropy module

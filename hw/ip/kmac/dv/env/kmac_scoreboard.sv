@@ -438,7 +438,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
               end
               StError: begin
 
-                if (`gmv(ral.cfg_shadowed.err_processed)) begin
+                if (`gmv(ral.cmd.err_processed)) begin
                   app_st = StIdle;
                 end else begin
                   app_st = StError;

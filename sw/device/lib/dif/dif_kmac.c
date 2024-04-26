@@ -868,11 +868,9 @@ dif_result_t dif_kmac_reset(const dif_kmac_t *kmac,
   operation_state->r = 0;
   operation_state->offset = 0;
   operation_state->squeezing = false;
-  uint32_t reg =
-      mmio_region_read32(kmac->base_addr, KMAC_CFG_SHADOWED_REG_OFFSET);
-  reg = bitfield_bit32_write(reg, KMAC_CFG_SHADOWED_ERR_PROCESSED_BIT, 1);
+  uint32_t reg = 0;
+  reg = bitfield_bit32_write(reg, KMAC_CMD_ERR_PROCESSED_BIT, 1);
 
-  mmio_region_write32_shadowed(kmac->base_addr, KMAC_CFG_SHADOWED_REG_OFFSET,
-                               reg);
+  mmio_region_write32(kmac->base_addr, KMAC_CMD_REG_OFFSET, reg);
   return kDifOk;
 }

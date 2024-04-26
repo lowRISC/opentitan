@@ -557,14 +557,6 @@
                  "excl:CsrAllTests:CsrExclWrite",
                  "shadowed_reg_path:u_cfg_reg_shadowed.u_cfg_reg_shadowed_entropy_ready"]
         } // f: entropy_ready
-        { bits: "25"
-          name: err_processed
-          desc: '''When error occurs and one of the state machine stays at
-                 Error handling state, SW may process the error based on
-                 ERR_CODE, then let FSM back to the reset state
-                '''
-          tags: ["shadowed_reg_path:u_cfg_reg_shadowed.u_cfg_reg_shadowed_err_processed"]
-        } // f: err_processed
         { bits: "26"
           name: en_unsupported_modestrength
           desc: '''Enable Unsupported Mode and Strength configs.
@@ -655,6 +647,13 @@
           name: "hash_cnt_clr"
           desc: "If writes 1, it clears the hash (KMAC) counter in the entropy module"
         }
+        { bits: "10"
+          name: err_processed
+          desc: '''When error occurs and one of the state machine stays at
+                 Error handling state, SW may process the error based on
+                 ERR_CODE, then let FSM back to the reset state
+                '''
+        } // f: err_processed
       ]
     } // R: CMD
     { name: "STATUS"
