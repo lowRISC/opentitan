@@ -24,6 +24,7 @@ FT_PERSONALIZE_KEYS = [
     "//sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der",
 ]
 
+# Note that uds-auth-key-id below is the actual hash of the public key of cert_endorsement_key.sk.der
 FT_PROVISIONING_INPUTS = _DEVICE_ID_AND_TEST_TOKENS + """
   --target-mission-mode-lc-state="prod"
   --host-ecc-sk="$(rootpath //sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der)"
@@ -31,7 +32,7 @@ FT_PROVISIONING_INPUTS = _DEVICE_ID_AND_TEST_TOKENS + """
   --rom-ext-measurement="0x11111111_11111111_11111111_11111111_11111111_11111111_11111111_11111111"
   --owner-manifest-measurement="0x22222222_22222222_22222222_22222222_22222222_22222222_22222222_22222222"
   --owner-measurement="0x33333333_33333333_33333333_33333333_33333333_33333333_33333333_33333333"
-  --uds-auth-key-id="0x11223344_55667788_99112233_44556677_88991122"
+  --uds-auth-key-id="0xfe584ae7_53790cfd_8601a312_fb32d3c1_b822d112"
   --rom-ext-security-version="0"
   --owner-security-version="0"
 """
