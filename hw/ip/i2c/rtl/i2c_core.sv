@@ -435,6 +435,7 @@ module i2c_core import i2c_pkg::*;
     .sda_i                          (sda_sync),
 
     .controller_enable_i            (host_enable),
+    .multi_controller_enable_i      (reg2hw.ctrl.multi_controller_monitor_en.q),
     .target_enable_i                (target_enable),
     .target_idle_i                  (target_idle),
     .thd_dat_i                      (thd_dat),
