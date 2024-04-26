@@ -151,22 +151,38 @@ Alert Test Register
 I2C Control Register
 - Offset: `0x10`
 - Reset default: `0x0`
-- Reset mask: `0x1f`
+- Reset mask: `0x3f`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "ENABLEHOST", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "ENABLETARGET", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "LLPBK", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "NACK_ADDR_AFTER_TIMEOUT", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "ACK_CTRL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 27}], "config": {"lanes": 1, "fontsize": 10, "vspace": 250}}
+{"reg": [{"name": "ENABLEHOST", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "ENABLETARGET", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "LLPBK", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "NACK_ADDR_AFTER_TIMEOUT", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "ACK_CTRL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "MULTI_CONTROLLER_MONITOR_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 26}], "config": {"lanes": 1, "fontsize": 10, "vspace": 290}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                                                      |
-|:------:|:------:|:-------:|:----------------------------------------------------------|
-|  31:5  |        |         | Reserved                                                  |
-|   4    |   rw   |   0x0   | [ACK_CTRL_EN](#ctrl--ack_ctrl_en)                         |
-|   3    |   rw   |   0x0   | [NACK_ADDR_AFTER_TIMEOUT](#ctrl--nack_addr_after_timeout) |
-|   2    |   rw   |   0x0   | [LLPBK](#ctrl--llpbk)                                     |
-|   1    |   rw   |   0x0   | [ENABLETARGET](#ctrl--enabletarget)                       |
-|   0    |   rw   |   0x0   | [ENABLEHOST](#ctrl--enablehost)                           |
+|  Bits  |  Type  |  Reset  | Name                                                              |
+|:------:|:------:|:-------:|:------------------------------------------------------------------|
+|  31:6  |        |         | Reserved                                                          |
+|   5    |   rw   |   0x0   | [MULTI_CONTROLLER_MONITOR_EN](#ctrl--multi_controller_monitor_en) |
+|   4    |   rw   |   0x0   | [ACK_CTRL_EN](#ctrl--ack_ctrl_en)                                 |
+|   3    |   rw   |   0x0   | [NACK_ADDR_AFTER_TIMEOUT](#ctrl--nack_addr_after_timeout)         |
+|   2    |   rw   |   0x0   | [LLPBK](#ctrl--llpbk)                                             |
+|   1    |   rw   |   0x0   | [ENABLETARGET](#ctrl--enabletarget)                               |
+|   0    |   rw   |   0x0   | [ENABLEHOST](#ctrl--enablehost)                                   |
+
+### CTRL . MULTI_CONTROLLER_MONITOR_EN
+Enable the bus monitor in multi-controller mode.
+
+If a 0->1 transition happens while [`CTRL.ENABLEHOST`](#ctrl) and [`CTRL.ENABLETARGET`](#ctrl) are both 0, the bus monitor will enable and begin in the "bus busy" state.
+To transition to a bus free state, [`HOST_TIMEOUT_CTRL`](#host_timeout_ctrl) must be nonzero, so the bus monitor may count out idle cycles to confirm the freedom to transmit.
+In addition, the bus monitor will track whether the bus is free based on the enabled timeouts and detected Stop symbols.
+For multi-controller mode, ensure [`CTRL.MULTI_CONTROLLER_MONITOR_EN`](#ctrl) becomes 1 no later than [`CTRL.ENABLEHOST`](#ctrl) or [`CTRL.ENABLETARGET.`](#ctrl)
+This bit can be set at the same time as either or both of the other two, though.
+
+Note that if [`CTRL.MULTI_CONTROLLER_MONITOR_EN`](#ctrl) is set after [`CTRL.ENABLEHOST`](#ctrl) or [`CTRL.ENABLETARGET`](#ctrl), the bus monitor will begin in the "bus free" state instead.
+This would violate the proper protocol for a controller to join a multi-controller environment.
+However, if this controller is known to be the first to join, this ordering will enable skipping the idle wait.
+
+When 0, the bus monitor will report that the bus is always free, so the controller FSM is never blocked from transmitting.
 
 ### CTRL . ACK_CTRL_EN
 Enable I2C Target ACK Control Mode.
@@ -603,15 +619,15 @@ Software can discard any standalone NACK_STOP that appears.
 
 See the associated values for more information about the contents.
 
-| Value   | Name       | Description                                                                                                                                                                                                                       |
-|:--------|:-----------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0x0     | NONE       | ABYTE contains an ordinary data byte that was received and ACK'd.                                                                                                                                                                 |
-| 0x1     | START      | A START condition preceded the ABYTE to start a new transaction. ABYTE contains the 7-bit I2C address plus R/W command bit in the order received on the bus, MSB first.                                                           |
-| 0x2     | STOP       | A STOP condition was received for a transaction including a transfer that addressed this Target. No transfers addressing this Target in that transaction were NACK'd. ABYTE contains no data.                                     |
-| 0x3     | RESTART    | A repeated START condition preceded the ABYTE, extending the current transaction with a new transfer. ABYTE contains the 7-bit I2C address plus R/W command bit in the order received on the bus, MSB first.                      |
-| 0x4     | NACK       | ABYTE contains an ordinary data byte that was received and NACK'd.                                                                                                                                                                |
-| 0x5     | NACK_START | A START condition preceded the ABYTE (including repeated START) that was part of a NACK'd transer. The ABYTE contains the matching I2C address and command bit. The ABYTE was ACK'd, but the rest of the transaction was NACK'ed. |
-| 0x6     | NACK_STOP  | A STOP condition was received for a transaction including a transfer that addressed this Target. A transfer addressing this Target was NACK'd. ABYTE contains no data.                                                            |
+| Value   | Name       | Description                                                                                                                                                                                                                                                            |
+|:--------|:-----------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0x0     | NONE       | ABYTE contains an ordinary data byte that was received and ACK'd.                                                                                                                                                                                                      |
+| 0x1     | START      | A START condition preceded the ABYTE to start a new transaction. ABYTE contains the 7-bit I2C address plus R/W command bit in the order received on the bus, MSB first.                                                                                                |
+| 0x2     | STOP       | A STOP condition was received for a transaction including a transfer that addressed this Target. No transfers addressing this Target in that transaction were NACK'd. ABYTE contains no data.                                                                          |
+| 0x3     | RESTART    | A repeated START condition preceded the ABYTE, extending the current transaction with a new transfer. ABYTE contains the 7-bit I2C address plus R/W command bit in the order received on the bus, MSB first.                                                           |
+| 0x4     | NACK       | ABYTE contains an ordinary data byte that was received and NACK'd.                                                                                                                                                                                                     |
+| 0x5     | NACK_START | A START condition preceded the ABYTE (including repeated START) that was part of a NACK'd transer. The ABYTE contains the matching I2C address and command bit. The ABYTE was ACK'd, but the rest of the transaction was NACK'ed.                                      |
+| 0x6     | NACK_STOP  | A transaction including a transfer that addressed this Target was ended, but the transaction ended abnormally and/or the transfer was NACK'd. The end can be due to a STOP condition or unexpected events, such as a bus timeout (if enabled). ABYTE contains no data. |
 
 Other values are reserved.
 
@@ -641,6 +657,7 @@ I2C host clock generation timeout value (in units of input clock frequency).
 In an active transaction in Target-Mode, if the Controller ceases to send SCL pulses
 for this number of cycles then the "host_timeout" interrupt will be asserted.
 
+In multi-controller monitoring mode, [`HOST_TIMEOUT_CTRL`](#host_timeout_ctrl) is required to be nonzero to transition out of the initial busy state.
 Set this CSR to 0 to disable this behaviour.
 - Offset: `0x60`
 - Reset default: `0x0`

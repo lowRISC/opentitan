@@ -272,6 +272,25 @@
                 If it is 0, the decision to ACK or NACK is made only from stretching timeouts and !!CTRL.NACK_ADDR_AFTER_TIMEOUT.
                 '''
         }
+        { bits: "5"
+          resval: "0"
+          name: "MULTI_CONTROLLER_MONITOR_EN"
+          desc: '''
+                Enable the bus monitor in multi-controller mode.
+
+                If a 0->1 transition happens while !!CTRL.ENABLEHOST and !!CTRL.ENABLETARGET are both 0, the bus monitor will enable and begin in the "bus busy" state.
+                To transition to a bus free state, !!HOST_TIMEOUT_CTRL must be nonzero, so the bus monitor may count out idle cycles to confirm the freedom to transmit.
+                In addition, the bus monitor will track whether the bus is free based on the enabled timeouts and detected Stop symbols.
+                For multi-controller mode, ensure !!CTRL.MULTI_CONTROLLER_MONITOR_EN becomes 1 no later than !!CTRL.ENABLEHOST or !!CTRL.ENABLETARGET.
+                This bit can be set at the same time as either or both of the other two, though.
+
+                Note that if !!CTRL.MULTI_CONTROLLER_MONITOR_EN is set after !!CTRL.ENABLEHOST or !!CTRL.ENABLETARGET, the bus monitor will begin in the "bus free" state instead.
+                This would violate the proper protocol for a controller to join a multi-controller environment.
+                However, if this controller is known to be the first to join, this ordering will enable skipping the idle wait.
+
+                When 0, the bus monitor will report that the bus is always free, so the controller FSM is never blocked from transmitting.
+                '''
+        }
       ]
     }
     { name:     "STATUS"
@@ -808,8 +827,8 @@
             { value: "6",
               name: "NACK_STOP",
               desc: '''
-                    A STOP condition was received for a transaction including a transfer that addressed this Target.
-                    A transfer addressing this Target was NACK'd.
+                    A transaction including a transfer that addressed this Target was ended, but the transaction ended abnormally and/or the transfer was NACK'd.
+                    The end can be due to a STOP condition or unexpected events, such as a bus timeout (if enabled).
                     ABYTE contains no data.
                     '''
             },
@@ -836,6 +855,7 @@
             In an active transaction in Target-Mode, if the Controller ceases to send SCL pulses
             for this number of cycles then the "host_timeout" interrupt will be asserted.
 
+            In multi-controller monitoring mode, !!HOST_TIMEOUT_CTRL is required to be nonzero to transition out of the initial busy state.
             Set this CSR to 0 to disable this behaviour.
             '''
       swaccess: "rw"

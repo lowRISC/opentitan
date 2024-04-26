@@ -205,6 +205,8 @@ module i2c_reg_top (
   logic ctrl_nack_addr_after_timeout_wd;
   logic ctrl_ack_ctrl_en_qs;
   logic ctrl_ack_ctrl_en_wd;
+  logic ctrl_multi_controller_monitor_en_qs;
+  logic ctrl_multi_controller_monitor_en_wd;
   logic status_re;
   logic status_fmtfull_qs;
   logic status_rxfull_qs;
@@ -1550,6 +1552,33 @@ module i2c_reg_top (
 
     // to register interface (read)
     .qs     (ctrl_ack_ctrl_en_qs)
+  );
+
+  //   F[multi_controller_monitor_en]: 5:5
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_ctrl_multi_controller_monitor_en (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (ctrl_we),
+    .wd     (ctrl_multi_controller_monitor_en_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.ctrl.multi_controller_monitor_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (ctrl_multi_controller_monitor_en_qs)
   );
 
 
@@ -3405,6 +3434,8 @@ module i2c_reg_top (
   assign ctrl_nack_addr_after_timeout_wd = reg_wdata[3];
 
   assign ctrl_ack_ctrl_en_wd = reg_wdata[4];
+
+  assign ctrl_multi_controller_monitor_en_wd = reg_wdata[5];
   assign status_re = addr_hit[5] & reg_re & !reg_error;
   assign rdata_re = addr_hit[6] & reg_re & !reg_error;
   assign fdata_we = addr_hit[7] & reg_we & !reg_error;
@@ -3631,6 +3662,7 @@ module i2c_reg_top (
         reg_rdata_next[2] = ctrl_llpbk_qs;
         reg_rdata_next[3] = ctrl_nack_addr_after_timeout_qs;
         reg_rdata_next[4] = ctrl_ack_ctrl_en_qs;
+        reg_rdata_next[5] = ctrl_multi_controller_monitor_en_qs;
       end
 
       addr_hit[5]: begin
