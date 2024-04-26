@@ -565,8 +565,7 @@ module kmac
   end
 
   // Clear the error processed
-  assign err_processed = reg2hw.cfg_shadowed.err_processed.q
-                       & reg2hw.cfg_shadowed.err_processed.qe;
+  assign err_processed = reg2hw.cmd.err_processed.q & reg2hw.cmd.err_processed.qe;
 
   // Make sure the field has latch in reg_top
   `ASSERT(ErrProcessedLatched_A, $rose(err_processed) |=> !err_processed)

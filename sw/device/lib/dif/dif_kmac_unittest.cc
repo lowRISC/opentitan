@@ -143,7 +143,6 @@ class KmacTest : public testing::Test, public mock_mmio::MmioTest {
     bool entropy_fast_process = false;
     bool msg_mask = false;
     bool entropy_ready = false;
-    bool err_processed = false;
     bool enable_unsupported_mode_strength = false;
     uint16_t entropy_hash_threshold = 0;
     uint16_t entropy_wait_timer = 0;
@@ -212,7 +211,6 @@ class KmacTest : public testing::Test, public mock_mmio::MmioTest {
           config_reg_.entropy_fast_process},
          {KMAC_CFG_SHADOWED_MSG_MASK_BIT, config_reg_.msg_mask},
          {KMAC_CFG_SHADOWED_ENTROPY_READY_BIT, config_reg_.entropy_ready},
-         {KMAC_CFG_SHADOWED_ERR_PROCESSED_BIT, config_reg_.err_processed},
          {KMAC_CFG_SHADOWED_EN_UNSUPPORTED_MODESTRENGTH_BIT,
           config_reg_.enable_unsupported_mode_strength}});
   }
@@ -1007,9 +1005,7 @@ TEST_F(KmacSqueezeTest, RequestLessDataThanFixedLenError) {
 class KmacResetTest : public KmacTest {};
 
 TEST_F(KmacResetTest, Success) {
-  EXPECT_READ32(KMAC_CFG_SHADOWED_REG_OFFSET, 0);
-  EXPECT_WRITE32_SHADOWED(KMAC_CFG_SHADOWED_REG_OFFSET,
-                          {{KMAC_CFG_SHADOWED_ERR_PROCESSED_BIT, true}});
+  EXPECT_WRITE32(KMAC_CMD_REG_OFFSET, {{KMAC_CMD_ERR_PROCESSED_BIT, true}});
   EXPECT_DIF_OK(dif_kmac_reset(&kmac_, &op_state_));
   EXPECT_EQ(op_state_.squeezing, false);
   EXPECT_EQ(op_state_.append_d, false);

@@ -80,10 +80,6 @@ package kmac_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } err_processed;
-    struct packed {
-      logic        q;
-      logic        qe;
     } entropy_ready;
     struct packed {
       logic        q;
@@ -124,6 +120,10 @@ package kmac_reg_pkg;
   } kmac_reg2hw_cfg_shadowed_reg_t;
 
   typedef struct packed {
+    struct packed {
+      logic        q;
+      logic        qe;
+    } err_processed;
     struct packed {
       logic        q;
       logic        qe;
@@ -236,8 +236,8 @@ package kmac_reg_pkg;
     kmac_reg2hw_intr_enable_reg_t intr_enable; // [1531:1529]
     kmac_reg2hw_intr_test_reg_t intr_test; // [1528:1523]
     kmac_reg2hw_alert_test_reg_t alert_test; // [1522:1519]
-    kmac_reg2hw_cfg_shadowed_reg_t cfg_shadowed; // [1518:1491]
-    kmac_reg2hw_cmd_reg_t cmd; // [1490:1480]
+    kmac_reg2hw_cfg_shadowed_reg_t cfg_shadowed; // [1518:1493]
+    kmac_reg2hw_cmd_reg_t cmd; // [1492:1480]
     kmac_reg2hw_entropy_period_reg_t entropy_period; // [1479:1454]
     kmac_reg2hw_entropy_refresh_threshold_shadowed_reg_t
         entropy_refresh_threshold_shadowed; // [1453:1444]
@@ -326,7 +326,7 @@ package kmac_reg_pkg;
   parameter logic [0:0] KMAC_ALERT_TEST_FATAL_FAULT_ERR_RESVAL = 1'h 0;
   parameter logic [0:0] KMAC_CFG_REGWEN_RESVAL = 1'h 1;
   parameter logic [0:0] KMAC_CFG_REGWEN_EN_RESVAL = 1'h 1;
-  parameter logic [9:0] KMAC_CMD_RESVAL = 10'h 0;
+  parameter logic [10:0] KMAC_CMD_RESVAL = 11'h 0;
   parameter logic [17:0] KMAC_STATUS_RESVAL = 18'h 4001;
   parameter logic [0:0] KMAC_STATUS_SHA3_IDLE_RESVAL = 1'h 1;
   parameter logic [0:0] KMAC_STATUS_FIFO_EMPTY_RESVAL = 1'h 1;
