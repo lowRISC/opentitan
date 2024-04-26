@@ -1125,6 +1125,9 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_creator": None,
             # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
             "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
+            "//hw/top_earlgrey:sim_verilator_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:sim_verilator_rom_ext": None,
+            "//hw/top_earlgrey:sim_verilator_sival_rom_ext": None,
         },
     ),
     verilator = verilator_params(
