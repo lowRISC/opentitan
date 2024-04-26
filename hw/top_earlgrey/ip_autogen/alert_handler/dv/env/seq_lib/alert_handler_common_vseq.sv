@@ -144,17 +144,29 @@ class alert_handler_common_vseq extends alert_handler_base_vseq;
     $assertoff(0, "tb.dut.gen_classes[2].u_esc_timer.CheckEn_A");
     $assertoff(0, "tb.dut.gen_classes[3].u_esc_timer.CheckEn_A");
 
+    // Disable the EscStateOut_A assertion while we do FI checks. This assertion checks that an FSM
+    // state matches an output signal, but this can totally fail to be true if we're forcing either
+    // side.
+    $assertoff(0, "tb.dut.gen_classes[0].u_esc_timer.EscStateOut_A");
+    $assertoff(0, "tb.dut.gen_classes[1].u_esc_timer.EscStateOut_A");
+    $assertoff(0, "tb.dut.gen_classes[2].u_esc_timer.EscStateOut_A");
+    $assertoff(0, "tb.dut.gen_classes[3].u_esc_timer.EscStateOut_A");
+
     // Because the assertion contains `=>` statement.
     // Wait one clock cycle until the assertions are fully disabled.
     cfg.clk_rst_vif.wait_clks(1);
   endtask : pre_run_sec_cm_fi_vseq
 
   virtual task post_run_sec_cm_fi_vseq();
-    // Enable prim_sparse_fsm assertions.
+    // Enable all the assertions that pre_run_sec_cm_fi_vseq disabled
     $asserton(0, "tb.dut.gen_classes[0].u_esc_timer.CheckEn_A");
     $asserton(0, "tb.dut.gen_classes[1].u_esc_timer.CheckEn_A");
     $asserton(0, "tb.dut.gen_classes[2].u_esc_timer.CheckEn_A");
     $asserton(0, "tb.dut.gen_classes[3].u_esc_timer.CheckEn_A");
+    $assertoff(0, "tb.dut.gen_classes[0].u_esc_timer.EscStateOut_A");
+    $assertoff(0, "tb.dut.gen_classes[1].u_esc_timer.EscStateOut_A");
+    $assertoff(0, "tb.dut.gen_classes[2].u_esc_timer.EscStateOut_A");
+    $assertoff(0, "tb.dut.gen_classes[3].u_esc_timer.EscStateOut_A");
   endtask : post_run_sec_cm_fi_vseq
 
 endclass
