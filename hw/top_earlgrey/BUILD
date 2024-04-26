@@ -533,6 +533,53 @@ sim_verilator(
     """,
 )
 
+sim_verilator(
+    name = "sim_verilator_rom_with_fake_keys",
+    testonly = True,
+    base = ":sim_verilator",
+    exec_env = "sim_verilator_rom_with_fake_keys",
+    manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
+    rom = select({
+        "//signing:test_keys": "//sw/device/silicon_creator/rom:rom_with_fake_keys",
+        "//conditions:default": "//sw/device/silicon_creator/rom:rom_with_real_keys",
+    }),
+    rsa_key = select({
+        "//signing:test_keys": {"//sw/device/silicon_creator/rom/keys/fake/rsa:test_private_key_0": "test_key_0"},
+        "//conditions:default": {"//sw/device/silicon_creator/rom/keys/real/rsa:keyset": "earlgrey_a0_test_0"},
+    }),
+)
+
+sim_verilator(
+    name = "sim_verilator_rom_ext",
+    testonly = True,
+    base = ":sim_verilator_rom_with_fake_keys",
+    exec_env = "sim_verilator_rom_ext",
+    libs = [
+        "//sw/device/lib/arch:boot_stage_owner",
+        "//sw/device/lib/arch:sim_verilator",
+    ],
+    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
+    manifest = "//sw/device/silicon_owner:manifest_standard",
+    otp = "//sw/device/silicon_creator/rom_ext/e2e:otp_img_secret2_locked_rma",
+    param = {
+        "exit_success": DEFAULT_TEST_SUCCESS_MSG,
+        "exit_failure": DEFAULT_TEST_FAILURE_MSG,
+        "assemble": "{rom_ext:signed_bin}@0 {firmware:signed_bin}@0x10000",
+    },
+    rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a",
+    rsa_key = {"//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_test_private_key_0": "test_key_0"},
+)
+
+sim_verilator(
+    name = "sim_verilator_sival_rom_ext",
+    testonly = True,
+    base = ":sim_verilator_rom_ext",
+    exec_env = "sim_verilator_sival_rom_ext",
+    otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival_bringup:otp_img_prod_manuf_personalized",
+    rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a",
+    rsa_key = {"//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_prod_private_key_0": "prod_key_0"},
+)
+
 ###########################################################################
 # Sim DV Environments
 #
