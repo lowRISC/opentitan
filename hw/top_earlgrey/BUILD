@@ -490,12 +490,16 @@ sim_verilator(
     name = "sim_verilator_base",
     design = "earlgrey",
     exec_env = "sim_verilator",
+    flash_scramble_tool = "//util/design:gen-flash-img",
     libs = [
         "//sw/device/lib/arch:boot_stage_rom_ext",
         "//sw/device/lib/arch:sim_verilator",
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
     otp = "//hw/ip/otp_ctrl/data:img_rma",
+    otp_data_perm = "//hw/ip/otp_ctrl/data:data_perm",
+    otp_mmap = "//hw/ip/otp_ctrl/data:otp_ctrl_mmap.hjson",
+    otp_seed = "//hw/ip/otp_ctrl/data:otp_seed",
     rom_scramble_config = "//hw/top_earlgrey/data:autogen/top_earlgrey.gen.hjson",
     test_cmd = "testing-not-supported",
 )

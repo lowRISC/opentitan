@@ -3,7 +3,11 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@lowrisc_opentitan//rules/opentitan:providers.bzl", "SimVerilatorBinaryInfo")
-load("@lowrisc_opentitan//rules/opentitan:util.bzl", "get_fallback")
+load(
+    "@lowrisc_opentitan//rules/opentitan:util.bzl",
+    "assemble_for_test",
+    "get_fallback",
+)
 load(
     "//rules/opentitan:exec_env.bzl",
     "ExecEnvInfo",
@@ -15,6 +19,7 @@ load(
     "@lowrisc_opentitan//rules/opentitan:transform.bzl",
     "convert_to_scrambled_rom_vmem",
     "convert_to_vmem",
+    "scramble_flash",
 )
 load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 
@@ -73,23 +78,38 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
             src = signed_bin if signed_bin else binary,
             word_size = 32,
         )
+        default = vmem
     elif ctx.attr.kind == "flash":
-        vmem = convert_to_vmem(
+        # First convert to VMEM, then scramble according to flash
+        # scrambling settings.
+        vmem_base = convert_to_vmem(
             ctx,
             name = name,
             src = signed_bin if signed_bin else binary,
             word_size = 64,
         )
+        vmem = scramble_flash(
+            ctx,
+            name = name,
+            suffix = "64.scr.vmem",
+            src = vmem_base,
+            otp = get_fallback(ctx, "file.otp", exec_env),
+            otp_mmap = exec_env.otp_mmap,
+            otp_seed = exec_env.otp_seed,
+            otp_data_perm = exec_env.otp_data_perm,
+            _tool = exec_env.flash_scramble_tool.files_to_run,
+        )
         default = vmem
         rom = None
         rom32 = None
+        vmem = vmem_base
     else:
         fail("Not implemented: kind ==", ctx.attr.kind)
 
     return {
         "elf": elf,
         "binary": binary,
-        "default": vmem,
+        "default": default,
         "rom": rom,
         "signed_bin": signed_bin,
         "disassembly": disassembly,
@@ -112,6 +132,36 @@ def _test_dispatch(ctx, exec_env, firmware):
         fail("verilator is not capable of executing RAM tests")
 
     test_harness, data_labels, data_files, param, action_param = common_test_setup(ctx, exec_env, firmware)
+
+    # If the test requested an assembled image, then use opentitantool to
+    # assemble the image.  Replace the firmware param with the newly assembled
+    # image.
+    if "assemble" in param:
+        assemble = param["assemble"].format(**action_param)
+        assemble = ctx.expand_location(assemble, data_labels)
+        # We only assemble the A side.
+        image = assemble_for_test(
+            ctx,
+            name = ctx.attr.name,
+            spec = assemble.split(" "),
+            data_files = data_files,
+            opentitantool = exec_env._opentitantool,
+            size = 0x80000,
+        )
+        img_dict = _transform(
+            ctx,
+            exec_env,
+            ctx.attr.name + ".assemble", # Need a new name to avoid conflict
+            None, # no ELF
+            image,
+            None, # no signed binary, just transform the avoid binary
+            None, # no disassembly
+            None # no mapfile
+        )
+        vmem = img_dict["default"]
+        param["firmware"] = vmem.short_path
+        action_param["firmware"] = vmem.path
+        data_files.append(vmem)
 
     # Perform all relevant substitutions on the test_cmd.
     test_cmd = get_fallback(ctx, "attr.test_cmd", exec_env)
