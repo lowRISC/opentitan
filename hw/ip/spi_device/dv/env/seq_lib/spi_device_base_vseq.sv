@@ -31,6 +31,10 @@ class spi_device_base_vseq extends cip_base_vseq #(
     core_spi_freq_ratio inside {[1:8]};
     spi_freq_faster -> core_spi_freq_ratio <= 4;
   }
+  //Reducing the number of transactions to avoid hitting timeout
+  constraint num_trans_c {
+    num_trans < 15;
+  }
 
   `uvm_object_new
 
@@ -115,6 +119,11 @@ class spi_device_base_vseq extends cip_base_vseq #(
     super.post_start();
     // kill nonblocking seq
     kill_spi_device_flash_auto_rsp = 1;
+  endtask
+
+  task pre_start();
+    super.pre_start();
+    `uvm_info(`gfn, $sformatf("[PRE_START] - Test will run: num_trans = %0d",num_trans), UVM_NONE)
   endtask
 
   // send dummy item

@@ -77,6 +77,8 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
 
   // Triggered after CSB is asserted
   event CSB_not_active_ev;
+
+
   // Set to 1 when there's an ongoing flash READ_STATUS#1/2/3 command
   bit   ongoing_read_status_cmd;
   bit   update_spi_side_flash_status_after_read_status;
@@ -214,13 +216,11 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
                     rtl_committed_flash_status = fetch_flash_status_rtl_committed_value();
 
                     // Update flash_status.wel predicted value
-                    if (!ral.flash_status.wel.predict(.value(spi_side_flash_status.wel),
-                                                      .kind(UVM_PREDICT_READ)))
-                      `uvm_error(`gfn, "ral.flash_status.predict did not succeed")
-                    else begin
-                      `uvm_info(`gfn,$sformatf("Updated the TL-UL flash_status.wel CSR to: %p",
-                                               spi_side_flash_status.wel), UVM_DEBUG)
-                    end
+                    `DV_CHECK_EQ_FATAL( ral.flash_status.wel.predict(.value(
+                                        spi_side_flash_status.wel),.kind(UVM_PREDICT_READ)), 1,
+                                        "ral.flash_status.predict did not succeed")
+                    `uvm_info(`gfn,$sformatf("Updated the TL-UL flash_status.wel CSR to: %p",
+                                             spi_side_flash_status.wel), UVM_DEBUG)
 
                     foreach (tl_ul_fuzzy_flash_status_q[i]) begin
                       if (rtl_committed_flash_status == tl_ul_fuzzy_flash_status_q[i]) begin
@@ -274,13 +274,12 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
 
 
                     // Update flash_status.wel predicted value
-                    if (!ral.flash_status.wel.predict(.value(spi_side_flash_status.wel),
-                                                      .kind(UVM_PREDICT_READ)))
-                      `uvm_error(`gfn, "ral.flash_status.predict did not succeed")
-                    else begin
-                      `uvm_info(`gfn,$sformatf("Updated the TL-UL flash_status.wel CSR to: %p",
-                                               spi_side_flash_status.wel), UVM_DEBUG)
-                    end
+                    `DV_CHECK_EQ_FATAL( ral.flash_status.wel.predict(.value(
+                                        spi_side_flash_status.wel),.kind(UVM_PREDICT_READ)), 1,
+                                        "ral.flash_status.predict did not succeed")
+                    `uvm_info(`gfn,$sformatf("Updated the TL-UL flash_status.wel CSR to: %p",
+                                             spi_side_flash_status.wel), UVM_DEBUG)
+
 
                   end else begin
                     `uvm_fatal(`gfn, $sformatf("shouldn't enter here, opcode 0x%0x", item.opcode))
@@ -309,16 +308,14 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
               end
             end // if (is_opcode_passthrough(item.opcode))
 
-            //Updating BUSY below, otherwise it compromises the previous comparison
+            // Updating BUSY below, otherwise it compromises the previous comparison
             if (set_busy) begin
               spi_side_flash_status.busy = 1;
-              if (!ral.flash_status.busy.predict(.value(spi_side_flash_status.busy),
-                                                 .kind(UVM_PREDICT_READ)))
-                `uvm_error(`gfn, "ral.flash_status.predict did not succeed")
-              else begin
-                `uvm_info(`gfn,$sformatf("Updated the TL-UL flash_status.busy CSR to: %p",
-                                         spi_side_flash_status.busy), UVM_DEBUG)
-              end
+              `DV_CHECK_EQ_FATAL( ral.flash_status.wel.predict(.value(
+                                  spi_side_flash_status.busy),.kind(UVM_PREDICT_READ)), 1,
+                                  "ral.flash_status.predict did not succeed")
+              `uvm_info(`gfn,$sformatf("Updated the TL-UL flash_status.busy CSR to: %p",
+                                       spi_side_flash_status.wel), UVM_DEBUG)
 
               cfg.last_flash_cmd_set_busy = 1;
               `uvm_info(`gfn, "'cfg.last_flash_cmd_set_busy' set to help seqs 'busy' visibility",
@@ -906,7 +903,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
               // READ_STATUS flash_command. Otherwise, the TB will have a "new value" updated
               // too early to compare against the previously latched value in the parallel to
               // serial buffer in the RTL
-              if(update_spi_side_flash_status_after_read_status &&
+              if (update_spi_side_flash_status_after_read_status &&
                  tl_ul_fuzzy_flash_status_q.size > 0) begin
                 flash_status_t rtl_sck_status_committed_value;
                 // flash_status needs to be updated here, otherwise the busy bit may not be ready on
@@ -956,26 +953,24 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
                 // value before the TB notices. The TB isn't trying to accurately predict when a
                 // given value will be committed. Instead, the TB just checks from the set of
                 // written values one of those has been comitted
-
-                comitted_value_predicted  = 0;
+                //
                 // It can happen busy/wel bits may get set as the SPI txn goes through. In this
                 // case we don't compare WEL/busy, as the value might've changed since the
                 // flash_status write occurred
-                comitted_value_predicted = flash_sts_committed_value_in_q(tl_ul_side_flash_status_q,
-                                                                          0, 0, tl_ul_side_idx);
-                comitted_value_predicted |= flash_sts_committed_value_in_q(
-                                                                         tl_ul_fuzzy_flash_status_q,
-                                                                         0, 0,tl_ul_fuzzy_idx);
+                comitted_value_predicted  = 0;
+                comitted_value_predicted = |{flash_sts_committed_in_q(tl_ul_side_flash_status_q,
+                                                                    0, 0, tl_ul_side_idx),
+                                             flash_sts_committed_in_q(tl_ul_fuzzy_flash_status_q,
+                                                                      0, 0,tl_ul_fuzzy_idx)};
+
                 if (comitted_value_predicted) begin
                   uvm_hdl_data_t 	rtl_sck_status_committed_value;
                   flash_status_t  f_status_rtl_committed_value;
                   // Queue rather than a plain variable to check emptiness before updating
                   // spi_side_flash_status
                   flash_status_t  flash_status_q[$];
-                  flash_status_q = {};
                   f_status_rtl_committed_value = fetch_flash_status_rtl_committed_value();
-
-                  // Based on the indices returned by 'flash_sts_committed_value_in_q' we know what
+                  // Based on the indices returned by 'flash_sts_committed_in_q' we know what
                   // to populate flash_status_q with
                   if (tl_ul_side_idx != -1) begin
                     flash_status_q.push_back(tl_ul_side_flash_status_q[tl_ul_side_idx]);
@@ -987,11 +982,12 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
                     // removing all old items up to the one which made it to spi_side
                     for (int i=0; i <= tl_ul_side_idx; i++) begin
                       `uvm_info(`gfn, $sformatf("Popping 'tl_ul_side_flash_status_q[i=%0d]=0x%0x",i,
-                                                tl_ul_side_flash_status_q.pop_front()), UVM_DEBUG)
+                                                tl_ul_side_flash_status_q[0]), UVM_DEBUG)
+                      void'(tl_ul_side_flash_status_q.pop_front());
                     end
                   end // if (tl_ul_side_idx != -1)
                   else if (tl_ul_fuzzy_idx != -1) begin
-                    if(ongoing_read_status_cmd) begin
+                    if (ongoing_read_status_cmd) begin
                       // If there's a READ_STATUS flash command on-flight - we update spi_side
                       // status in task: process_flash_tl2spi_updates
                       update_spi_side_flash_status_after_read_status = 1;
@@ -1012,7 +1008,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
                   end // if (tl_ul_fuzzy_idx != -1)
 
                   // Predicted queues non-empty and value committed ? -> we update spi_side_flash_status
-                  if(flash_status_q.size > 0) begin
+                  if (flash_status_q.size > 0) begin
                     // Just for easier readability of the comparison
                     flash_status_t flash_rtl_committed;
                     bit tweak_wel_busy;
@@ -1020,7 +1016,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
                     `uvm_info(`gfn, {"Updating the SPI-side. Old spi-side flash_status value:",
                                      $sformatf(" 0x%0x",spi_side_flash_status)}, UVM_DEBUG)
 
-                    //Updating SPI-side with committed value:
+                    // Updating SPI-side with committed value:
                     spi_side_flash_status = flash_status_q[0];
                     flash_rtl_committed = f_status_rtl_committed_value;
 
@@ -1042,10 +1038,10 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
                              tl_ul_fuzzy_flash_status_q.size > 1) begin
                       flash_status_t predicted_flash = tl_ul_fuzzy_flash_status_q[tl_ul_fuzzy_idx];
 
-                      // Other_status bits matched (in function 'flash_sts_committed_value_in_q',
+                      // Other_status bits matched (in function 'flash_sts_committed_in_q',
                       // but not WEL OR busy: It can happen the WEL/busy bit had been clear by a
                       // previous write
-                      if( (flash_rtl_committed.wel != predicted_flash.wel) ||
+                      if ( (flash_rtl_committed.wel != predicted_flash.wel) ||
                           (flash_rtl_committed.busy != predicted_flash.busy) ) begin
                         tweak_wel_busy = 1;
                       end
@@ -1057,10 +1053,10 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
                       // We check the value the RTL has comitted at this point, because it can happen
                       // there have been 1+ writes and the 2nd write gets picked-up
                       if (flash_rtl_committed.wel != spi_side_flash_status.wel &&
-                          //Wel was cleared in the previous write - just the value hadn't update
+                          // Wel was cleared in the previous write - just the value hadn't update
                           tl_ul_fuzzy_flash_status_q[0].wel == flash_rtl_committed.wel
                           ) begin
-                        //WEL adjustment
+                        // WEL adjustment
                         `uvm_info(`gfn, $sformatf("%s WEL since it had previously been cleared",
                                                   tl_ul_fuzzy_flash_status_q[0].wel ? "Setting" :
                                                   "Clearing"), UVM_DEBUG)
@@ -1068,10 +1064,10 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
                       end
 
                       if (flash_rtl_committed.busy != spi_side_flash_status.busy &&
-                          //Busy was cleared in the previous write - just the value hadn't update
+                          // Busy was cleared in the previous write - just the value hadn't update
                           tl_ul_fuzzy_flash_status_q[0].busy == flash_rtl_committed.busy
                           ) begin
-                        //Busy adjustment
+                        // Busy adjustment
                         `uvm_info(`gfn, $sformatf("%s BUSY since it had previously been cleared",
                                                   tl_ul_fuzzy_flash_status_q[0].busy ? "Setting" :
                                                   "Clearing"), UVM_DEBUG)
@@ -1084,7 +1080,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
                                         spi_side_flash_status), UVM_DEBUG)
 
                   end // if (flash_status_q.size > 0)
-                  else begin
+                  else if (!update_spi_side_flash_status_after_read_status) begin
                     `uvm_fatal(`gfn, "RTL flash_status committed value is not in a predicted Q")
                   end
 
@@ -1125,7 +1121,8 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       // depending on when the read arrives
       while(tl_ul_old_flash_status_q.size > 2) begin
         `uvm_info(`gfn, $sformatf("Clearing item (0x%0x) from queue: 'tl_ul_old_flash_status_q'",
-                                  tl_ul_old_flash_status_q.pop_front()), UVM_DEBUG)
+                                  tl_ul_old_flash_status_q[0] ), UVM_DEBUG)
+        void'(tl_ul_old_flash_status_q.pop_front());
       end
       `uvm_info(`gfn, $sformatf("spi_side_flash_status = 0x%0x",spi_side_flash_status), UVM_DEBUG)
 
@@ -1135,12 +1132,12 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       #(cfg.spi_host_agent_cfg.sck_period_ps/4 * 1ps);
 
       // Update flash_status predicted value
-      if(!ral.flash_status.predict(.value(spi_side_flash_status),.kind(UVM_PREDICT_READ)))
-        `uvm_error(`gfn, "ral.flash_status.predict did not succeed")
-      else begin
-        `uvm_info(`gfn, $sformatf("Updated TL-UL flash_status CSR to: spi_side_flash_status=0x%0x",
+      `DV_CHECK_EQ_FATAL( ral.flash_status.predict(.value(spi_side_flash_status),
+                                                   .kind(UVM_PREDICT_READ)), 1,
+                          "ral.flash_status.predict did not succeed")
+      `uvm_info(`gfn, $sformatf("Updated TL-UL flash_status CSR to: spi_side_flash_status=0x%0x",
                                   spi_side_flash_status), UVM_DEBUG)
-      end
+
 
       // Triggered after CSB is asserted
       -> CSB_not_active_ev;
@@ -1152,7 +1149,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
   // Receives a flash_status_t queue and returns '1' if the value has yet been comitted
   // This function is used to update spi_side_flash_status value
   // Returns 1 if the item is in the queue
-  function bit flash_sts_committed_value_in_q(flash_status_t flash_status_q[$],
+  function bit flash_sts_committed_in_q(flash_status_t flash_status_q[$],
                                                   bit compare_busy, bit compare_wel,
                                                   ref int idx);
     bit             matched;
@@ -1166,13 +1163,13 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
         matched = (f_status_rtl_committed_value.other_status == flash_status_q[i].other_status)
           && (!compare_busy ? 1 : (f_status_rtl_committed_value.busy == flash_status_q[i].busy))
             && (!compare_wel ? 1 : (f_status_rtl_committed_value.wel == flash_status_q[i].wel));
-        if(matched) begin
+        if (matched) begin
           idx = i;
           break;
         end
       end
 
-      if(matched) begin
+      if (matched) begin
         `uvm_info(`gfn, $sformatf("Item matched - flash_status_q[idx=%0d]=0x%0x",idx,
                                   flash_status_q[idx]), UVM_DEBUG)
       end
@@ -1255,7 +1252,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
                 // Adding some "SPI-side" clk_delay to ensure the triggering events are noticed
                 #(cfg.spi_host_agent_cfg.sck_period_ps/4 * 1ps);
 
-                if(status_item.payload_q.size==0) begin
+                if (status_item.payload_q.size==0) begin
                   // This may be the event triggered after the opcode or address
                   // We skip any comparison because the RTL hasn't output any status bits yet
                   continue;
@@ -1395,7 +1392,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
                   end
                   READ_STATUS_3: begin
                     start_addr                                = 2;
-                    if(spi_side_flash_status.other_status[21:14] !=
+                    if (spi_side_flash_status.other_status[21:14] !=
                        spi_read_status_bits[7:0]) begin
 
                       // The value isn't the predicted one, is the fuzzy queue empty?
@@ -1414,7 +1411,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
                       end
 
 
-                      if(!is_fuzzy_q_match) begin
+                      if (!is_fuzzy_q_match) begin
                         `uvm_error(`gfn, {$sformatf("STATUS#2 other bits mismatch: {pred (0x%0x), ",
                                           spi_side_flash_status.other_status[21:14]),
                                           $sformatf("pred_fuzzy_q (%p), act (0x%0x)}",
@@ -1434,7 +1431,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
 
                 matched_flash_status = is_fuzzy_q_match ? spi_side_fuzzy_flash_status_q[0] :
                                        spi_side_flash_status;
-                if(spi_side_fuzzy_flash_status_q.size>0 && is_fuzzy_q_match) begin
+                if (spi_side_fuzzy_flash_status_q.size>0 && is_fuzzy_q_match) begin
                   `uvm_info(`gfn, {"Copying fuzzy-matched value 'spi_side_fuzzy_flash_status_q[0]'",
                                    " to 'spi_side_flash_status'"}, UVM_DEBUG)
                   spi_side_flash_status = matched_flash_status;
@@ -1712,7 +1709,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
                                       item.d_data), UVM_DEBUG)
           end
 
-          if(tl_ul_old_flash_status_q.size > 2) begin
+          if (tl_ul_old_flash_status_q.size > 2) begin
             `uvm_fatal(`gfn, $sformatf(
                             "'tl_ul_old_flash_status_q.size=%0d' - the max allowedvalue is 2",
                                        tl_ul_old_flash_status_q.size))
@@ -1777,13 +1774,13 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
               // means the TB has predicted another interrupt since last time intr_state was read.
               // But in the meantime, there's not been any intr_state.writes clearing the intr_state
               // register.
-              if(intr_trigger_pending[i] && intr_exp_read_mirrored[i]) begin
+              if (intr_trigger_pending[i] && intr_exp_read_mirrored[i]) begin
                 string printout =
                 $sformatf("Unsetting 'intr_trigger_pending[i=%s]'",spi_device_intr_e'(i));
                 `uvm_info(`gfn, printout , UVM_DEBUG)
                 intr_trigger_pending[i] = 0;
               end
-              if(intr_exp_read_mirrored[i]) begin
+              if (intr_exp_read_mirrored[i]) begin
                 intr_exp_read_mirrored[i] = 0;
               end
             end
@@ -1915,7 +1912,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
                       UVM_DEBUG)
 
             // Keep written value in Fuzzy Qs since the TB won't accuretly model the CDC crossing
-            if(tl_ul_fuzzy_flash_status_q.size > 0) begin
+            if (tl_ul_fuzzy_flash_status_q.size > 0) begin
               `uvm_info(`gfn, $sformatf(
                             "tl_ul_fuzzy_flash_status_q[$] old_value= 0x%0x, and new_value = 0x%0x",
                                         tl_ul_fuzzy_flash_status_q[$], flash_status)
@@ -1965,11 +1962,12 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
               // committed, then update spi_side .
               rtl_sck_status_committed_value = fetch_flash_status_rtl_committed_value();
 
-              if(tl_ul_fuzzy_flash_status_q.size > 0) begin
-                int unsigned idx = -1; //Set to >=0 when valid
+              if (tl_ul_fuzzy_flash_status_q.size > 0) begin
+                int idx = -1; //Set to >=0 when valid
                 bit          different_ral_value = 1;
+                //$display("rtl_sck_status_committed_value
                 foreach(tl_ul_fuzzy_flash_status_q[i]) begin
-                  if(rtl_sck_status_committed_value == tl_ul_fuzzy_flash_status_q[i])
+                  if (rtl_sck_status_committed_value == tl_ul_fuzzy_flash_status_q[i])
                     idx = i;
 
                   if (`gmv(ral.flash_status) == tl_ul_fuzzy_flash_status_q[i] && idx != -1)
@@ -1979,7 +1977,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
                 if ( different_ral_value && idx >=0 &&
                      rtl_sck_status_committed_value == tl_ul_fuzzy_flash_status_q[idx]) begin
                   int old_flash_status_idx = -1;
-                  flash_status_t old_flash_status; //This is the value before it was committed
+                  flash_status_t old_flash_status; // This is the value before it was committed
                   string print_str;
                   `uvm_info(`gfn, {$sformatf("old_value: spi_side_flash_status=0x%0x | ",
                                              spi_side_flash_status),
@@ -1992,14 +1990,14 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
                   // Clear all 'tl_ul_old_flash_status_q' entries if the RTL's flash_status value is
                   // in the queue
                   foreach(tl_ul_old_flash_status_q[i]) begin
-                    if(tl_ul_old_flash_status_q[i] == old_flash_status)
+                    if (tl_ul_old_flash_status_q[i] == old_flash_status)
                       old_flash_status_idx = i;
                   end
                   for(int i=0; i < old_flash_status_idx; i++) begin
                     `uvm_info(`gfn, {"Clearing item ",
                                      $sformatf("(0x%0x) from queue: 'tl_ul_old_flash_status_q'",
-                                               tl_ul_old_flash_status_q.pop_front())}, UVM_DEBUG)
-
+                                               tl_ul_old_flash_status_q[0])}, UVM_DEBUG)
+                    void'(tl_ul_old_flash_status_q.pop_front());
                   end
 
                   // GMV value will be push to the queue later, before we update the RAL
@@ -2024,13 +2022,13 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
                                              tl_ul_fuzzy_flash_status_q[idx]),
                                    " with the predicted value which was committed"}, UVM_DEBUG)
                   spi_side_flash_status = tl_ul_fuzzy_flash_status_q[idx];
-
                   for(int i=0; i <=idx; i++) begin
                     `uvm_info(`gfn, $sformatf("Popping tl_ul_fuzzy_flash_status_q[i=%0d] = 0x%0x",
-                                              i,tl_ul_fuzzy_flash_status_q.pop_front()), UVM_DEBUG)
+                                              i,tl_ul_fuzzy_flash_status_q[0]), UVM_DEBUG)
+                    void'(tl_ul_fuzzy_flash_status_q.pop_front());
                   end
-                end
-              end
+                end // if ( different_ral_value && idx >=0 &&...
+              end // if (tl_ul_fuzzy_flash_status_q.size > 0)
 
               tl_ul_old_flash_status_q.push_back(`gmv(ral.flash_status));
               `uvm_info(`gfn, $sformatf("Pushing 0x%0x, on 'tl_ul_old_flash_status_q'",
@@ -2043,17 +2041,19 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
               while(tl_ul_old_flash_status_q.size > 2) begin
                 `uvm_info(`gfn, {"Clearing item ",
                                  $sformatf("(0x%0x) from queue: 'tl_ul_old_flash_status_q'",
-                                           tl_ul_old_flash_status_q.pop_front())}, UVM_DEBUG)
+                                           tl_ul_old_flash_status_q[0])}, UVM_DEBUG)
+                void'(tl_ul_old_flash_status_q.pop_front());
               end
 
 
               // Update flash_status predicted value
-              if (!ral.flash_status.predict(.value(spi_side_flash_status),.kind(UVM_PREDICT_READ)))
-                `uvm_error(`gfn, "ral.flash_status.predict did not succeed")
-              else begin
-                `uvm_info(`gfn, {"Updated TL-UL flash_status (2nd time) due to short command (2B)"
-                                 , $sformatf(" CSR to: %p",spi_side_flash_status)}, UVM_DEBUG)
-              end
+              `DV_CHECK_EQ_FATAL( ral.flash_status.predict(.value(spi_side_flash_status),
+                                                           .kind(UVM_PREDICT_READ)), 1,
+                                  "ral.flash_status.predict did not succeed")
+              `uvm_info(`gfn, {"Updated TL-UL flash_status (2nd time) due to short command (2B)"
+                               , $sformatf(" CSR to: %p",spi_side_flash_status)}, UVM_DEBUG)
+
+
             end // if (csb_active)
             `uvm_info(`gfn, "Terminating thread due to CSB not active", UVM_DEBUG)
           end
