@@ -18,6 +18,7 @@ load(
     "sim_dv",
     "sim_verilator",
 )
+load("//hw:allfiles.bzl", "BAZEL_EXCLUSION_LIST")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -51,7 +52,7 @@ autogen_hjson_rust_header(
 
 filegroup(
     name = "all_files",
-    srcs = glob(["**"]) + [
+    srcs = glob(["**"], exclude = BAZEL_EXCLUSION_LIST) + [
         "//hw/top_earlgrey/data:all_files",
         "//hw/top_earlgrey/dv/verilator:all_files",
         "//hw/top_earlgrey/ip:all_files",

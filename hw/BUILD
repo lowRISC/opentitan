@@ -4,6 +4,7 @@
 
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 load("//rules:fusesoc.bzl", "fusesoc_build")
+load("//hw:allfiles.bzl", "BAZEL_EXCLUSION_LIST")
 
 # This configuration exposes fusesoc's "verilator_options" option to the
 # command line. This is intended to allow CI to specifically build a single
@@ -109,7 +110,7 @@ filegroup(
     srcs = glob(
         ["**"],
         # TODO(lowRISC/opentitan#15882): make Verilator work with foundry repo present.
-        exclude = ["foundry/**"],
+        exclude = ["foundry/**"] + BAZEL_EXCLUSION_LIST,
     ) + [
         "//:tool_requirements.py",
         "//hw/ip:all_files",
