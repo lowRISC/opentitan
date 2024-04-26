@@ -232,10 +232,10 @@ def generate_plic(top: Dict[str, object], out_path: Path) -> None:
     ipgen_render("rv_plic", topname, params, out_path)
 
 
-# TODO: For generated IPs that are generated legacy style (i.e., without IPgen)
-# we have to search both the source and destination RTL directories, since not
-# all files are copied over. This is a workaround which can be removed once
-# all generated IPs have transitioned to IPgen.
+# TODO(lowrisc/opentitan#8440): For templated IPs we have to search
+# both the source and destination RTL directories, since not all files
+# are copied over. This is a workaround which can be removed once all
+# generated IPs have transitioned to IPgen.
 def generate_regfile_from_path(hjson_path: Path,
                                generated_rtl_path: Path,
                                original_rtl_path: Path = None) -> None:
@@ -518,8 +518,7 @@ def generate_top_only(top_only_dict: Dict[str, bool], out_path: Path,
         if reggen_only and alt_hjson_path is not None:
             hjson_dir = Path(alt_hjson_path)
         else:
-            hjson_dir = (SRCTREE_TOP / "hw" / top_name / "ip" / ip /
-                         "data")
+            hjson_dir = (SRCTREE_TOP / "hw" / top_name / "ip" / ip / "data")
 
         hjson_path = hjson_dir / f"{ip}.hjson"
 
@@ -668,9 +667,10 @@ def generete_rust(topname, completecfg, name_to_block, out_path, version_stamp,
                     helper=rs_helper)
 
 
-def _process_top(topcfg: Dict[str, object], args: argparse.Namespace,
-                 cfg_path: Path, out_path: Path,
-                 pass_idx: int) -> (Dict[str, object], Dict[str, IpBlock]):
+def _process_top(
+        topcfg: Dict[str, object], args: argparse.Namespace, cfg_path: Path,
+        out_path: Path, pass_idx: int
+) -> (Dict[str, object], Dict[str, IpBlock], Dict[str, Path]):
     # Create generated list
     # These modules are generated through topgen
     templated_list = lib.get_templated_modules(topcfg)
@@ -745,6 +745,7 @@ def _process_top(topcfg: Dict[str, object], args: argparse.Namespace,
         ips.append(ip_hjson)
 
     # load Hjson and pass validate from reggen
+    name_to_hjson = {}  # type Dict[str, Path]
     try:
         ip_objs = []
         for ip_desc_file in ips:
@@ -779,6 +780,7 @@ def _process_top(topcfg: Dict[str, object], args: argparse.Namespace,
                     except TemplateRenderError as e:
                         log.error(e.verbose_str())
                         sys.exit(1)
+                    name_to_hjson[ip_name.lower()] = tpl_path
                     s = "default description of IP template {}".format(ip_name)
                     ip_objs.append(IpBlock.from_text(ip_desc, [], s))
                 else:
@@ -791,10 +793,11 @@ def _process_top(topcfg: Dict[str, object], args: argparse.Namespace,
                         "Falling back to Hjson description file %s shipped "
                         "with the IP template for initial validation." %
                         (ip_desc_file, template_hjson_file))
-
+                    name_to_hjson[ip_name] = template_hjson_file
                     ip_objs.append(
                         IpBlock.from_path(str(template_hjson_file), []))
             else:
+                name_to_hjson[ip_name] = ip_desc_file
                 ip_objs.append(IpBlock.from_path(str(ip_desc_file), []))
 
     except ValueError:
@@ -870,7 +873,43 @@ def _process_top(topcfg: Dict[str, object], args: argparse.Namespace,
     # These modules are not templated, but are not in hw/ip
     generate_top_only(top_only_dict, out_path, top_name, args.hjson_path)
 
-    return completecfg, name_to_block
+    return completecfg, name_to_block, name_to_hjson
+
+
+def _check_countermeasures(completecfg: Dict[str, object],
+                           name_to_block: Dict[str, IpBlock],
+                           name_to_hjson: Dict[str, Path]) -> bool:
+    success = True
+    for name, hjson_path in name_to_hjson.items():
+        log.debug("name %s, hjson %s", name, hjson_path)
+        ip_index = [m['type'] for m in completecfg['module']].index(name)
+        # TODO(lowrisc/opentitan#8440): For templated IPs we have to search
+        # both the source and destination RTL directories, since not all files
+        # are copied over. This is a workaround which can be removed once all
+        # generated IPs have transitioned to IPgen.
+        if ('attr' in completecfg['module'][ip_index] and
+                completecfg['module'][ip_index]['attr'] == 'templated'):
+            ip_proper_rtl_path = hjson_path.parents[5] / 'ip' / name / 'rtl'
+            sv_files = (hjson_path.parents[2] / 'rtl' / 'autogen').glob('*.sv')
+            sv_files = set(sv_files)
+            sv_names = set([f.name for f in sv_files])
+            proper_rtl_files = {
+                f
+                for f in ip_proper_rtl_path.glob('*.sv')
+                if f.name not in sv_names
+            }
+            sv_files = sv_files | proper_rtl_files
+        else:
+            sv_files = (hjson_path.parents[1] / 'rtl').glob('*.sv')
+        rtl_names = CounterMeasure.search_rtl_files(sv_files)
+        log.debug("Checking countermeasures for %s.", name)
+        success &= name_to_block[name].check_cm_annotations(
+            rtl_names, hjson_path.name)
+    if success:
+        log.info("All Hjson declared countermeasures are implemented in RTL.")
+    else:
+        log.error("Countermeasure checks failed.")
+    return success
 
 
 def main():
@@ -923,6 +962,16 @@ def main():
         "--top-only",
         action="store_true",
         help="If defined, the tool generates top RTL only")  # yapf:disable
+    parser.add_argument("--check-cm",
+                        action="store_true",
+                        help='''
+        Check countermeasures.
+
+        Check countermeasures of all modules in the top config. All
+        countermeasures declared in the module's hjson file should
+        be implemented in the RTL, and the RTL should only
+        contain countermeasures declared there.
+        ''')
     parser.add_argument(
         "--xbar-only",
         action="store_true",
@@ -991,13 +1040,13 @@ def main():
         raise SystemExit(sys.exc_info()[1])
 
     # Don't print warnings when querying the list of blocks.
-    log_level = (log.ERROR
-                 if args.get_blocks else log.DEBUG if args.verbose else None)
+    log_level = (log.ERROR if args.get_blocks or args.check_cm else
+                 log.DEBUG if args.verbose else None)
 
     log.basicConfig(format="%(levelname)s: %(message)s", level=log_level)
 
     if not args.outdir:
-        outdir = Path(args.topcfg).parent / ".."
+        outdir = Path(args.topcfg).parents[1]
         log.info("TOP directory not given. Use %s", (outdir))
     elif not Path(args.outdir).is_dir():
         log.error("'--outdir' should point to writable directory")
@@ -1077,11 +1126,11 @@ def main():
         log.debug("Generation pass {}".format(pass_idx))
         if pass_idx < process_dependencies:
             cfg_copy = deepcopy(topcfg)
-            _, _ = _process_top(cfg_copy, args, cfg_path, out_path_gen,
-                                pass_idx)
+            _, _, _ = _process_top(cfg_copy, args, cfg_path, out_path_gen,
+                                   pass_idx)
         else:
-            completecfg, name_to_block = _process_top(topcfg, args, cfg_path,
-                                                      out_path_gen, pass_idx)
+            completecfg, name_to_block, name_to_hjson = _process_top(
+                topcfg, args, cfg_path, out_path_gen, pass_idx)
 
     topname = topcfg["name"]
     top_name = f"top_{topname}"
@@ -1133,6 +1182,19 @@ def main():
         if args.rust_only:
             sys.exit(0)
 
+    # Check countermeasures for all blocks.
+    if args.check_cm:
+        # Change verbosity to log.INFO to see an okay confirmation message:
+        # the log level is set to log.ERROR upon start to avoid the chatter
+        # of the regular topgen elaboration.
+        log.basicConfig(format="%(levelname)s: %(message)s",
+                        level=log.INFO,
+                        force=True)
+
+        okay = _check_countermeasures(completecfg, name_to_block,
+                                      name_to_hjson)
+        sys.exit(0 if okay else 1)
+
     if not args.no_top or args.top_only:
 
         def render_template(template_path: str, rendered_path: Path,
@@ -1179,8 +1241,7 @@ def main():
 
         # compile-time random netlist constants
         render_template(TOPGEN_TEMPLATE_PATH / "toplevel_rnd_cnst_pkg.sv.tpl",
-                        out_path /
-                        f"rtl/autogen/{top_name}_rnd_cnst_pkg.sv",
+                        out_path / f"rtl/autogen/{top_name}_rnd_cnst_pkg.sv",
                         gencmd=gencmd)
 
         # Since SW does not use FuseSoC and instead expects those files always
@@ -1190,8 +1251,7 @@ def main():
         # - Once under hw/top_{topname}/sw/autogen
         root_paths = [out_path.resolve(), SRCTREE_TOP]
         out_paths = [
-            out_path.resolve(),
-            (SRCTREE_TOP / "hw" / top_name).resolve()
+            out_path.resolve(), (SRCTREE_TOP / "hw" / top_name).resolve()
         ]
         for idx, path in enumerate(out_paths):
             # C Header + C File + Clang-format file

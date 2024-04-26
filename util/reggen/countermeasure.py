@@ -114,8 +114,7 @@ class CounterMeasure:
         return CounterMeasure(instance, asset, cm_type, desc)
 
     @staticmethod
-    def from_raw_list(what: str,
-                      raw: object) -> List['CounterMeasure']:
+    def from_raw_list(what: str, raw: object) -> List['CounterMeasure']:
         """
         Create a list of CounterMeasure objects from a list of dicts.
 
@@ -131,18 +130,15 @@ class CounterMeasure:
 
     def _asdict(self) -> Dict[str, object]:
         """Returns a dict with 'name' and 'desc' fields"""
-        return {
-            'name': str(self),
-            'desc': self.desc
-        }
+        return {'name': str(self), 'desc': self.desc}
 
     def __str__(self) -> str:
         namestr = self.asset + '.' + self.cm_type
         return self.instance + '.' + namestr if self.instance else namestr
 
     @staticmethod
-    def search_rtl_files(paths: Sequence[str]) -> Dict[str,
-                                                       List[Tuple[str, int]]]:
+    def search_rtl_files(
+            paths: Sequence[str]) -> Dict[str, List[Tuple[str, int]]]:
         """Find countermeasures in the given list of RTL files.
 
         The return value is a dictionary mapping countermeasure name to where
@@ -171,45 +167,52 @@ class CounterMeasure:
 
                         if not good_name.match(entry):
                             raise ValueError('Malformed countermeasure name, '
-                                             '{!r}, at {}, line {}.'
-                                             .format(entry, path, idx + 1))
+                                             '{!r}, at {}, line {}.'.format(
+                                                 entry, path, idx + 1))
                         ret.setdefault(entry, []).append((path, idx + 1))
 
         return ret
 
     @staticmethod
-    def check_annotation_list(what: str,
+    def check_annotation_list(block_name: str, hjson_path: str,
                               rtl_names: Dict[str, List[Tuple[str, int]]],
-                              hjson_list: List['CounterMeasure']) -> None:
-        """Compare found list of countermeasures against list from Hjson
+                              hjson_list: List['CounterMeasure']) -> bool:
+        """Compare RTL to Hjson countermeasures.
 
         This compares a dictionary of countermeasure names extracted from the
-        RTL against the list defined in the IP Hjson and checks that they
-        match: every name in the RTL should correspond to an entry in the Hjson
-        and every entry in the Hjson should have at least one matching name in
-        the RTL.
+        RTL against the list defined in the IP Hjson and checks that:
+        - every name in the RTL should match one in Hjson
+        - every entry in Hjson should have some matching name in the RTL
 
+        Any mismatch logs an error showing the file and line of the problem.
+        Returns True if there are no errors.
         """
         hjson_set = {str(cm) for cm in hjson_list}
         rtl_set = set(rtl_names.keys())
 
         # Is there anything in the RTL that doesn't correspond to an Hjson
         # entry?
-        for name in rtl_set - hjson_set:
-            # Print out an error message for each hit and then raise a
-            # RuntimeError.
-            for path, line in rtl_names[name]:
-                log.error('Unknown countermeasure {!r} '
-                          'referenced at {}, line {}.'
-                          .format(name, path, line))
-            raise RuntimeError('One or more unknown countermeasures '
-                               'referenced in RTL.')
+        rtl_only_countermeasures = rtl_set - hjson_set
+        for name in rtl_only_countermeasures:
+            for rtl_path, line in rtl_names[name]:
+                log.error(f"No Hjson countermeasure {name} exists for RTL "
+                          f"reference at {rtl_path}, line {line}.")
 
-        # Is there anything in the Hjson that isn't described in the RTL?
-        for name in hjson_set - rtl_set:
-            log.warning("Countermeasure {} is referenced in the Hjson of the "
-                        "{}, but doesn't appear in the RTL."
-                        .format(name, what))
+        missing_countermeasures = hjson_set - rtl_set
+        for name in missing_countermeasures:
+            log.error(f"Hjson countermeasure {name} declared in Hjson file "
+                      f"{hjson_path} doesn't appear in the RTL.")
 
-        # TODO(#10071): Once all designs are annotated, generate a RuntimeError
-        #               if we saw anything in the loop above.
+        if len(rtl_only_countermeasures) > 0:
+            if len(missing_countermeasures) > 0:
+                log.error(f"Block {block_name}: Some unknown and some missing "
+                          "countermeasures in RTL")
+            else:
+                log.error(f"Block {block_name}: Some unknown countermeasures "
+                          "referenced in RTL.")
+            return False
+        elif len(missing_countermeasures) > 0:
+            log.error(f"Block {block_name}: Some countermeasures in Hjson "
+                      "don't appear in RTL.")
+            return False
+        return True
