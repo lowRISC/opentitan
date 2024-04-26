@@ -54,7 +54,7 @@ def get_files(attrs):
             print("No DefaultInfo in ", attr)
     return files
 
-def assemble_for_test(ctx, name, spec, data_files, opentitantool):
+def assemble_for_test(ctx, name, spec, data_files, opentitantool, size = None):
     """Assemble a set of images into a flash binary for testing.
 
     Args:
@@ -64,6 +64,7 @@ def assemble_for_test(ctx, name, spec, data_files, opentitantool):
             e.g.: ["rom_ext_path@0x0", "test_path@0x10000"].
       data_files: A list of files needed by the spec.
       opentitantool: The opentitantool executable.
+      size: Size of the image (default let opentitantool pick the default).
     Returns:
       File: the assembled image.
     """
@@ -77,7 +78,7 @@ def assemble_for_test(ctx, name, spec, data_files, opentitantool):
             "assemble",
             "--mirror=false",
             "--output={}".format(image.path),
-        ] + spec,
+        ] + ([] if size == None else ["--size={}".format(size)]) + spec,
         executable = opentitantool,
     )
     return image
