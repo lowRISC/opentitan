@@ -642,23 +642,23 @@ module flash_ctrl
   ) u_to_rd_fifo (
     .clk_i,
     .rst_ni,
-    .tl_i           (tl_win_h2d[1]),
-    .tl_o           (tl_win_d2h[1]),
-    .en_ifetch_i    (prim_mubi_pkg::MuBi4False),
-    .req_o          (adapter_req),
-    .req_type_o     (),
+    .tl_i             (tl_win_h2d[1]),
+    .tl_o             (tl_win_d2h[1]),
+    .en_ifetch_i      (prim_mubi_pkg::MuBi4False),
+    .req_o            (adapter_req),
+    .req_type_o       (),
     // if there is no valid read operation, don't hang the
     // bus, just let things normally return
-    .gnt_i          (sw_rfifo_rvalid | rd_no_op_d),
-    .we_o           (),
-    .addr_o         (),
-    .wmask_o        (),
-    .wdata_o        (),
-    .intg_error_o   (adapter_fifo_err),
-    .rdata_i        (sw_rfifo_rdata),
-    .rvalid_i       (adapter_rvalid | rd_no_op_q),
-    .rerror_i       ({rd_no_op_q, 1'b0}),
-    .rmw_in_progress()
+    .gnt_i            (sw_rfifo_rvalid | rd_no_op_d),
+    .we_o             (),
+    .addr_o           (),
+    .wmask_o          (),
+    .wdata_o          (),
+    .intg_error_o     (adapter_fifo_err),
+    .rdata_i          (sw_rfifo_rdata),
+    .rvalid_i         (adapter_rvalid | rd_no_op_q),
+    .rerror_i         ({rd_no_op_q, 1'b0}),
+    .rmw_in_progress_o()
   );
 
   assign sw_rfifo_wen = sw_sel & rd_ctrl_wen;
