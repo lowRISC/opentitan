@@ -9,8 +9,6 @@ module hmac_core import prim_sha2_pkg::*; (
   input rst_ni,
 
   input [1023:0]      secret_key_i, // {word0, word1, ..., word7}
-  input               wipe_secret_i,
-  input [31:0]        wipe_v_i,
   input               hmac_en_i,
   input digest_mode_e digest_size_i,
   input key_length_e  key_length_i,

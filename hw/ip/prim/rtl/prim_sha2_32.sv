@@ -188,7 +188,7 @@ module prim_sha2_32 import prim_sha2_pkg::*;
       .clk_i (clk_i),
       .rst_ni (rst_ni),
       .wipe_secret_i      (wipe_secret_i),
-      .wipe_v_i           ({wipe_v_i, wipe_v_i}),
+      .wipe_v_i           (wipe_v_i),
       .fifo_rvalid_i      (word_valid),
       .fifo_rdata_i       (full_word),
       .fifo_rready_o      (sha_ready),
@@ -239,7 +239,7 @@ module prim_sha2_32 import prim_sha2_pkg::*;
       .clk_i (clk_i),
       .rst_ni (rst_ni),
       .wipe_secret_i      (wipe_secret_i),
-      .wipe_v_i           ({wipe_v_i, wipe_v_i}),
+      .wipe_v_i           (wipe_v_i),
       .fifo_rvalid_i      (fifo_rvalid_i), // feed input directly
       .fifo_rdata_i       (full_word),
       .fifo_rready_o      (sha_ready),

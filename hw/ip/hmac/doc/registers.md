@@ -304,17 +304,17 @@ HMAC Error Code
 {"reg": [{"name": "err_code", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name     | Description                                                                                                                                      |
-|:------:|:------:|:-------:|:---------|:-------------------------------------------------------------------------------------------------------------------------------------------------|
-|  31:0  |   ro   |   0x0   | err_code | If error interrupt occurs, this register has information of error cause. Please take a look at `hw/ip/hmac/rtl/hmac_pkg.sv:err_code_e enum type. |
+|  Bits  |  Type  |  Reset  | Name     | Description                                                                                                                                         |
+|:------:|:------:|:-------:|:---------|:----------------------------------------------------------------------------------------------------------------------------------------------------|
+|  31:0  |   ro   |   0x0   | err_code | If an error interrupt occurs, this register has information of error cause. Please take a look at `hw/ip/hmac/rtl/hmac_pkg.sv:err_code_e enum type. |
 
 ## WIPE_SECRET
 Clear internal secret registers.
 
-If CPU writes value into the register, the value is used to clear the internal variables such as secret key, internal state machine, or hash value.
-The clear secret operation uses XORs with the provided value as one of the operands.
+If CPU writes a value into the register, the value is used to clear the internal variables such as the secret key, internal state machine, or hash value.
+The clear secret operation overwrites the internal variables with the provided 32-bit value.
+For SHA-2 384/512 that work with 64-bit words, the 32-bit value is duplicated and concatenated to generate the 64-bit value.
 It is recommended to use a value extracted from an entropy source.
-A value equal to 0 will leave all internal values unchanged.
 - Offset: `0x20`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`

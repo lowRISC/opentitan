@@ -4,9 +4,6 @@
 #
 # waiver file for HMAC
 
-waive -rules {HIER_BRANCH_NOT_READ INPUT_NOT_READ} -location {hmac_core.sv} -regexp {wipe_(secret|v)} \
-      -comment "Not used but remains for future use"
-
 # ARITH_CONTEXT
 waive -rules {ARITH_CONTEXT} -location {hmac.sv}  -regexp {Bitlength of arithmetic operation 'i % 2' is self-determined in this context} \
       -comment "Intended"

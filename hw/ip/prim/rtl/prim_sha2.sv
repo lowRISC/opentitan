@@ -16,7 +16,7 @@ module prim_sha2 import prim_sha2_pkg::*;
   input rst_ni,
 
   input               wipe_secret_i,
-  input sha_word64_t  wipe_v_i,
+  input sha_word32_t  wipe_v_i,
   // control signals and message words input to the message FIFO
   input               fifo_rvalid_i, // indicates that the message FIFO (prim_sync_fifo) has words
                                      // ready to write into the SHA-2 padding buffer
@@ -66,7 +66,7 @@ module prim_sha2 import prim_sha2_pkg::*;
       assign unused_digest_upper[i] = ^digest_i[i][63:32];
     end
     logic unused_signals;
-    assign unused_signals = ^{wipe_v_i[63:32], shaf_rdata[63:32], unused_digest_upper};
+    assign unused_signals = ^{shaf_rdata[63:32], unused_digest_upper};
   end
 
   // Most operations and control signals are identical no matter if we are starting or continuing
@@ -87,7 +87,7 @@ module prim_sha2 import prim_sha2_pkg::*;
     always_comb begin : compute_w_multimode
       w_d = w_q;
       if (wipe_secret_i) begin
-        w_d = w_q ^ {16{wipe_v_i[63:0]}};
+        w_d = {32{wipe_v_i}};
       end else if (!sha_en_i || hash_go) begin
         w_d = '0;
       end else if (!run_hash && update_w_from_fifo) begin
@@ -118,9 +118,7 @@ module prim_sha2 import prim_sha2_pkg::*;
     always_comb begin : compression_multimode
       hash_d = hash_q;
       if (wipe_secret_i) begin
-        for (int i = 0; i < 8; i++) begin
-          hash_d[i] = hash_q[i] ^ wipe_v_i;
-        end
+        hash_d = {16{wipe_v_i}};
       end else if (init_hash) begin
         hash_d = digest_q;
       end else if (run_hash) begin
@@ -143,9 +141,7 @@ module prim_sha2 import prim_sha2_pkg::*;
     always_comb begin : compute_digest_multimode
       digest_d = digest_q;
       if (wipe_secret_i) begin
-        for (int i = 0 ; i < 8 ; i++) begin
-          digest_d[i] = digest_q[i] ^ wipe_v_i;
-        end
+        digest_d = {16{wipe_v_i}};
       end else if (hash_start_i) begin
         for (int i = 0 ; i < 8 ; i++) begin
           if (digest_mode_i == SHA2_256) begin
@@ -202,7 +198,7 @@ module prim_sha2 import prim_sha2_pkg::*;
       // ~MultimodeEn
       w256_d = w256_q;
       if (wipe_secret_i) begin
-        w256_d = w256_q ^ {16{wipe_v_i[31:0]}};
+        w256_d = {16{wipe_v_i}};
       end else if (!sha_en_i || hash_go) begin
         w256_d = '0;
       end else if (!run_hash && update_w_from_fifo) begin
@@ -228,9 +224,7 @@ module prim_sha2 import prim_sha2_pkg::*;
     always_comb begin : compression_256
       hash256_d = hash256_q;
       if (wipe_secret_i) begin
-        for (int i = 0; i < 8; i++) begin
-          hash256_d[i] = hash256_q[i] ^ wipe_v_i[31:0];
-        end
+        hash256_d = {8{wipe_v_i}};
       end else if (init_hash) begin
         hash256_d = digest256_q;
       end else if (run_hash) begin
@@ -248,9 +242,7 @@ module prim_sha2 import prim_sha2_pkg::*;
     always_comb begin : compute_digest_256
       digest256_d = digest256_q;
       if (wipe_secret_i) begin
-        for (int i = 0 ; i < 8 ; i++) begin
-          digest256_d[i] = digest256_q[i] ^ wipe_v_i[31:0];
-        end
+        digest256_d = {8{wipe_v_i}};
       end else if (hash_start_i) begin
         for (int i = 0 ; i < 8 ; i++) begin
             digest256_d[i] = InitHash_256[i];
