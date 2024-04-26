@@ -15,7 +15,6 @@ from reggen import (
     gen_cfg_md, gen_cheader, gen_dv, gen_fpv, gen_md, gen_html, gen_json, gen_rtl,
     gen_rust, gen_sec_cm_testplan, gen_selfdoc, gen_tock, version,
 )
-from reggen.countermeasure import CounterMeasure
 from reggen.ip_block import IpBlock
 
 import version_file
@@ -257,16 +256,6 @@ def main():
         if args.scrub:
             raise ValueError('The --scrub argument is only meaningful in '
                              'combination with the --alias argument')
-
-    # If this block has countermeasures, we grep for RTL annotations in all
-    # .sv implementation files and check whether they match up with what is
-    # defined inside the Hjson.
-    # Skip this check when generating DV code - its not needed.
-    if fmt != 'dv':
-        sv_files = Path(
-            infile.name).parent.joinpath('..').joinpath('rtl').glob('*.sv')
-        rtl_names = CounterMeasure.search_rtl_files(sv_files)
-        obj.check_cm_annotations(rtl_names, infile.name)
 
     if args.novalidate:
         with outfile:
