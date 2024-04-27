@@ -336,36 +336,7 @@
       }
     ]
     soc: [
-      { name: "SOC_DOE_INTR_MSG_ADDR"
-        desc: '''
-              Utilized by the mailbox responder to send an interrupt message to the requester via a write to the configured address.
-              Defined only for FW-to-FW mailboxes.
-              '''
-        swaccess: "rw"
-        hwaccess: "hro"
-        fields: [
-          { name: "doe_intr_msg_addr"
-            desc: "Utilized by the mailbox responder to send an interrupt message to the requester via a write to the configured address."
-            bits: "31:0"
-            resval: "0x0"
-          }
-        ]
-      }
-      { name: "SOC_DOE_INTR_MSG_DATA"
-        desc: '''
-              Interrupt message data to be sent to the address configured in the DOE_INTR_MSG_ADDR register.
-              Defined only for FW-to-FW mailboxes.
-              '''
-        swaccess: "rw"
-        hwaccess: "hro"
-        fields: [
-          { name: "doe_intr_msg_data"
-            desc: "Interrupt message data to be sent to the address configured in the DOE_INTR_MSG_ADDR register."
-            bits: "31:0"
-            resval: "0x0"
-          }
-        ]
-      }
+      { skipto: "0x8" }
       { name: "SOC_CONTROL"
         desc: "DOE mailbox control register."
         hwaccess: "hrw"
@@ -481,6 +452,36 @@
           items: "1"
           swaccess: "rw"
         }
+      }
+      { name: "SOC_DOE_INTR_MSG_ADDR"
+        desc: '''
+              Utilized by the mailbox responder to send an interrupt message to the requester via a write to the configured address.
+              Defined only for FW-to-FW mailboxes.
+              '''
+        swaccess: "rw"
+        hwaccess: "hro"
+        fields: [
+          { name: "doe_intr_msg_addr"
+            desc: "Utilized by the mailbox responder to send an interrupt message to the requester via a write to the configured address."
+            bits: "31:0"
+            resval: "0x0"
+          }
+        ]
+      }
+      { name: "SOC_DOE_INTR_MSG_DATA"
+        desc: '''
+              Interrupt message data to be sent to the address configured in the DOE_INTR_MSG_ADDR register.
+              Defined only for FW-to-FW mailboxes.
+              '''
+        swaccess: "rw"
+        hwaccess: "hro"
+        fields: [
+          { name: "doe_intr_msg_data"
+            desc: "Interrupt message data to be sent to the address configured in the DOE_INTR_MSG_ADDR register."
+            bits: "31:0"
+            resval: "0x0"
+          }
+        ]
       }
     ]
   }
