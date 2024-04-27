@@ -13,10 +13,6 @@ interface csrng_path_if
 
   string core_path = "tb.dut.u_csrng_core";
 
-  function automatic string cs_hw_inst_exc_path(string which_path, int which_hw_inst_exc);
-    return {core_path, $sformatf(".cmd_stage_%s[%0d]", which_path, which_hw_inst_exc)};
-  endfunction // cs_hw_inst_exc_path
-
   function automatic string fifo_err_path(int app, string fifo_name, string which_path);
     case (fifo_name) inside
       "sfifo_cmd", "sfifo_genbits": return {core_path, $sformatf(".gen_cmd_stage[%0d]", app),
