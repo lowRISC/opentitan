@@ -50,7 +50,7 @@ module i2c_core import i2c_pkg::*;
   // Round-trip delay for outputs to appear on the inputs, not including rise
   // time. This is the input delay external to this IP, plus the output flop,
   // plus the 2-flop synchronizer on the input. The total value here
-  // represents the minimum allowed high time for SCL.
+  // represents the minimum allowed high and low times for SCL.
   localparam int unsigned RoundTripCycles = InputDelayCycles + 2 + 1;
 
   logic [12:0] thigh;
