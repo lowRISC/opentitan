@@ -287,14 +287,6 @@ package mbx_reg_pkg;
   //////////////////////////////////////////////
 
   typedef struct packed {
-    logic [31:0] q;
-  } mbx_reg2hw_soc_doe_intr_msg_addr_reg_t;
-
-  typedef struct packed {
-    logic [31:0] q;
-  } mbx_reg2hw_soc_doe_intr_msg_data_reg_t;
-
-  typedef struct packed {
     struct packed {
       logic        q;
       logic        qe;
@@ -327,6 +319,14 @@ package mbx_reg_pkg;
       logic        q;
     } busy;
   } mbx_reg2hw_soc_status_reg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+  } mbx_reg2hw_soc_doe_intr_msg_addr_reg_t;
+
+  typedef struct packed {
+    logic [31:0] q;
+  } mbx_reg2hw_soc_doe_intr_msg_data_reg_t;
 
   typedef struct packed {
     struct packed {
@@ -368,10 +368,10 @@ package mbx_reg_pkg;
 
   // Register -> HW type for soc interface
   typedef struct packed {
-    mbx_reg2hw_soc_doe_intr_msg_addr_reg_t soc_doe_intr_msg_addr; // [75:44]
-    mbx_reg2hw_soc_doe_intr_msg_data_reg_t soc_doe_intr_msg_data; // [43:12]
-    mbx_reg2hw_soc_control_reg_t soc_control; // [11:4]
-    mbx_reg2hw_soc_status_reg_t soc_status; // [3:0]
+    mbx_reg2hw_soc_control_reg_t soc_control; // [75:68]
+    mbx_reg2hw_soc_status_reg_t soc_status; // [67:64]
+    mbx_reg2hw_soc_doe_intr_msg_addr_reg_t soc_doe_intr_msg_addr; // [63:32]
+    mbx_reg2hw_soc_doe_intr_msg_data_reg_t soc_doe_intr_msg_data; // [31:0]
   } mbx_soc_reg2hw_t;
 
   // HW -> register type for soc interface
@@ -381,10 +381,10 @@ package mbx_reg_pkg;
   } mbx_soc_hw2reg_t;
 
   // Register offsets for soc interface
-  parameter logic [SocAw-1:0] MBX_SOC_DOE_INTR_MSG_ADDR_OFFSET = 5'h 0;
-  parameter logic [SocAw-1:0] MBX_SOC_DOE_INTR_MSG_DATA_OFFSET = 5'h 4;
   parameter logic [SocAw-1:0] MBX_SOC_CONTROL_OFFSET = 5'h 8;
   parameter logic [SocAw-1:0] MBX_SOC_STATUS_OFFSET = 5'h c;
+  parameter logic [SocAw-1:0] MBX_SOC_DOE_INTR_MSG_ADDR_OFFSET = 5'h 18;
+  parameter logic [SocAw-1:0] MBX_SOC_DOE_INTR_MSG_DATA_OFFSET = 5'h 1c;
 
   // Reset values for hwext registers and their fields for soc interface
   parameter logic [31:0] MBX_SOC_CONTROL_RESVAL = 32'h 0;
@@ -403,18 +403,18 @@ package mbx_reg_pkg;
 
   // Register index for soc interface
   typedef enum int {
-    MBX_SOC_DOE_INTR_MSG_ADDR,
-    MBX_SOC_DOE_INTR_MSG_DATA,
     MBX_SOC_CONTROL,
-    MBX_SOC_STATUS
+    MBX_SOC_STATUS,
+    MBX_SOC_DOE_INTR_MSG_ADDR,
+    MBX_SOC_DOE_INTR_MSG_DATA
   } mbx_soc_id_e;
 
   // Register width information to check illegal writes for soc interface
   parameter logic [3:0] MBX_SOC_PERMIT [4] = '{
-    4'b 1111, // index[0] MBX_SOC_DOE_INTR_MSG_ADDR
-    4'b 1111, // index[1] MBX_SOC_DOE_INTR_MSG_DATA
-    4'b 1111, // index[2] MBX_SOC_CONTROL
-    4'b 1111  // index[3] MBX_SOC_STATUS
+    4'b 1111, // index[0] MBX_SOC_CONTROL
+    4'b 1111, // index[1] MBX_SOC_STATUS
+    4'b 1111, // index[2] MBX_SOC_DOE_INTR_MSG_ADDR
+    4'b 1111  // index[3] MBX_SOC_DOE_INTR_MSG_DATA
   };
 
 endpackage

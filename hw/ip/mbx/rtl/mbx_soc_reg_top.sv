@@ -173,12 +173,6 @@ module mbx_soc_reg_top (
   // Define SW related signals
   // Format: <reg>_<field>_{wd|we|qs}
   //        or <reg>_{wd|we|qs} if field == 1 or 0
-  logic soc_doe_intr_msg_addr_we;
-  logic [31:0] soc_doe_intr_msg_addr_qs;
-  logic [31:0] soc_doe_intr_msg_addr_wd;
-  logic soc_doe_intr_msg_data_we;
-  logic [31:0] soc_doe_intr_msg_data_qs;
-  logic [31:0] soc_doe_intr_msg_data_wd;
   logic soc_control_re;
   logic soc_control_we;
   logic soc_control_abort_wd;
@@ -194,64 +188,14 @@ module mbx_soc_reg_top (
   logic soc_status_error_qs;
   logic soc_status_doe_async_msg_status_qs;
   logic soc_status_ready_qs;
+  logic soc_doe_intr_msg_addr_we;
+  logic [31:0] soc_doe_intr_msg_addr_qs;
+  logic [31:0] soc_doe_intr_msg_addr_wd;
+  logic soc_doe_intr_msg_data_we;
+  logic [31:0] soc_doe_intr_msg_data_qs;
+  logic [31:0] soc_doe_intr_msg_data_wd;
 
   // Register instances
-  // R[soc_doe_intr_msg_addr]: V(False)
-  prim_subreg #(
-    .DW      (32),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h0),
-    .Mubi    (1'b0)
-  ) u_soc_doe_intr_msg_addr (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (soc_doe_intr_msg_addr_we),
-    .wd     (soc_doe_intr_msg_addr_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.soc_doe_intr_msg_addr.q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (soc_doe_intr_msg_addr_qs)
-  );
-
-
-  // R[soc_doe_intr_msg_data]: V(False)
-  prim_subreg #(
-    .DW      (32),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h0),
-    .Mubi    (1'b0)
-  ) u_soc_doe_intr_msg_data (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (soc_doe_intr_msg_data_we),
-    .wd     (soc_doe_intr_msg_data_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.soc_doe_intr_msg_data.q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (soc_doe_intr_msg_data_qs)
-  );
-
-
   // R[soc_control]: V(True)
   logic soc_control_qe;
   logic [3:0] soc_control_flds_we;
@@ -458,14 +402,70 @@ module mbx_soc_reg_top (
   );
 
 
+  // R[soc_doe_intr_msg_addr]: V(False)
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
+  ) u_soc_doe_intr_msg_addr (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (soc_doe_intr_msg_addr_we),
+    .wd     (soc_doe_intr_msg_addr_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.soc_doe_intr_msg_addr.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (soc_doe_intr_msg_addr_qs)
+  );
+
+
+  // R[soc_doe_intr_msg_data]: V(False)
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
+  ) u_soc_doe_intr_msg_data (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (soc_doe_intr_msg_data_we),
+    .wd     (soc_doe_intr_msg_data_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.soc_doe_intr_msg_data.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (soc_doe_intr_msg_data_qs)
+  );
+
+
 
   logic [3:0] addr_hit;
   always_comb begin
     addr_hit = '0;
-    addr_hit[0] = (reg_addr == MBX_SOC_DOE_INTR_MSG_ADDR_OFFSET);
-    addr_hit[1] = (reg_addr == MBX_SOC_DOE_INTR_MSG_DATA_OFFSET);
-    addr_hit[2] = (reg_addr == MBX_SOC_CONTROL_OFFSET);
-    addr_hit[3] = (reg_addr == MBX_SOC_STATUS_OFFSET);
+    addr_hit[0] = (reg_addr == MBX_SOC_CONTROL_OFFSET);
+    addr_hit[1] = (reg_addr == MBX_SOC_STATUS_OFFSET);
+    addr_hit[2] = (reg_addr == MBX_SOC_DOE_INTR_MSG_ADDR_OFFSET);
+    addr_hit[3] = (reg_addr == MBX_SOC_DOE_INTR_MSG_DATA_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -480,14 +480,8 @@ module mbx_soc_reg_top (
   end
 
   // Generate write-enables
-  assign soc_doe_intr_msg_addr_we = addr_hit[0] & reg_we & !reg_error;
-
-  assign soc_doe_intr_msg_addr_wd = reg_wdata[31:0];
-  assign soc_doe_intr_msg_data_we = addr_hit[1] & reg_we & !reg_error;
-
-  assign soc_doe_intr_msg_data_wd = reg_wdata[31:0];
-  assign soc_control_re = addr_hit[2] & reg_re & !reg_error;
-  assign soc_control_we = addr_hit[2] & reg_we & !reg_error;
+  assign soc_control_re = addr_hit[0] & reg_re & !reg_error;
+  assign soc_control_we = addr_hit[0] & reg_we & !reg_error;
 
   assign soc_control_abort_wd = reg_wdata[0];
 
@@ -496,17 +490,23 @@ module mbx_soc_reg_top (
   assign soc_control_doe_async_msg_en_wd = reg_wdata[3];
 
   assign soc_control_go_wd = reg_wdata[31];
-  assign soc_status_we = addr_hit[3] & reg_we & !reg_error;
+  assign soc_status_we = addr_hit[1] & reg_we & !reg_error;
 
   assign soc_status_doe_intr_status_wd = reg_wdata[1];
+  assign soc_doe_intr_msg_addr_we = addr_hit[2] & reg_we & !reg_error;
+
+  assign soc_doe_intr_msg_addr_wd = reg_wdata[31:0];
+  assign soc_doe_intr_msg_data_we = addr_hit[3] & reg_we & !reg_error;
+
+  assign soc_doe_intr_msg_data_wd = reg_wdata[31:0];
 
   // Assign write-enables to checker logic vector.
   always_comb begin
     reg_we_check = '0;
-    reg_we_check[0] = soc_doe_intr_msg_addr_we;
-    reg_we_check[1] = soc_doe_intr_msg_data_we;
-    reg_we_check[2] = soc_control_we;
-    reg_we_check[3] = soc_status_we;
+    reg_we_check[0] = soc_control_we;
+    reg_we_check[1] = soc_status_we;
+    reg_we_check[2] = soc_doe_intr_msg_addr_we;
+    reg_we_check[3] = soc_doe_intr_msg_data_we;
   end
 
   // Read data return
@@ -514,26 +514,26 @@ module mbx_soc_reg_top (
     reg_rdata_next = '0;
     unique case (1'b1)
       addr_hit[0]: begin
-        reg_rdata_next[31:0] = soc_doe_intr_msg_addr_qs;
-      end
-
-      addr_hit[1]: begin
-        reg_rdata_next[31:0] = soc_doe_intr_msg_data_qs;
-      end
-
-      addr_hit[2]: begin
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = soc_control_doe_intr_en_qs;
         reg_rdata_next[3] = soc_control_doe_async_msg_en_qs;
         reg_rdata_next[31] = '0;
       end
 
-      addr_hit[3]: begin
+      addr_hit[1]: begin
         reg_rdata_next[0] = soc_status_busy_qs;
         reg_rdata_next[1] = soc_status_doe_intr_status_qs;
         reg_rdata_next[2] = soc_status_error_qs;
         reg_rdata_next[3] = soc_status_doe_async_msg_status_qs;
         reg_rdata_next[31] = soc_status_ready_qs;
+      end
+
+      addr_hit[2]: begin
+        reg_rdata_next[31:0] = soc_doe_intr_msg_addr_qs;
+      end
+
+      addr_hit[3]: begin
+        reg_rdata_next[31:0] = soc_doe_intr_msg_data_qs;
       end
 
       default: begin
