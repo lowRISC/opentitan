@@ -99,6 +99,7 @@ module i2c_controller_fsm import i2c_pkg::*;
   logic        log_start;     // indicates start is been issued
   logic        log_stop;      // indicates stop is been issued
   logic        auto_stop_d, auto_stop_q; // Tracks whether a Stop symbol was autonomously generated.
+  logic        ctrl_symbol_failed; // If SCL pulls low before the controller can issue Start/Stop
 
   // Clock counter implementation
   typedef enum logic [3:0] {
@@ -270,7 +271,10 @@ module i2c_controller_fsm import i2c_pkg::*;
     end
   end
 
-  assign event_arbitration_lost_o = event_sda_unstable_o || sda_interference_i;
+  // SCL going low early is just clock synchronization. SCL switching so fast that the controller
+  // can't even sense its outputs is cause for a bus error.
+  assign event_arbitration_lost_o = event_sda_unstable_o || sda_interference_i ||
+                                    ctrl_symbol_failed;
 
   // Registers whether a transaction start has been observed.
   // A transaction start does not include a "restart", but rather
@@ -348,6 +352,7 @@ module i2c_controller_fsm import i2c_pkg::*;
     rx_fifo_wdata_o = RX_FIFO_WIDTH'(0);
     event_nak_o = 1'b0;
     event_scl_interference_o = 1'b0;
+    ctrl_symbol_failed = 1'b0;
     event_sda_unstable_o = 1'b0;
     event_cmd_complete_o = 1'b0;
     stretch_en = 1'b0;
@@ -376,6 +381,14 @@ module i2c_controller_fsm import i2c_pkg::*;
         sda_d = 1'b1;
         scl_d = 1'b1;
         transmitting_o = 1'b1;
+        // If this is a restart, SCL was last low, and a target could be stretching the clock.
+        stretch_en = trans_started;
+        if (trans_started && !scl_i && scl_i_q) begin
+          // If this is a repeated Start, an early clock prevents issuing the symbol. If it's not
+          // a repeated start, the FSM will just go back to Idle and wait for the bus to go free
+          // again.
+          ctrl_symbol_failed = 1'b1;
+        end
         if (log_start) event_cmd_complete_o = pend_restart;
       end
       // HoldStart: SDA is pulled low, SCL is released
@@ -384,6 +397,7 @@ module i2c_controller_fsm import i2c_pkg::*;
         sda_d = 1'b0;
         scl_d = 1'b1;
         transmitting_o = 1'b1;
+        if (scl_i_q && !scl_i)  event_scl_interference_o = 1'b1;
       end
       // ClockStart: SCL is pulled low, SDA stays low
       ClockStart : begin
@@ -522,6 +536,11 @@ module i2c_controller_fsm import i2c_pkg::*;
         sda_d = 1'b0;
         scl_d = 1'b1;
         transmitting_o = 1'b1;
+        stretch_en = 1'b1;
+        if (!scl_i && scl_i_q) begin
+          // Failed to issue Stop before some other device could pull SCL low.
+          ctrl_symbol_failed = 1'b1;
+        end
       end
       // HoldStop: SDA and SCL are released
       HoldStop : begin
@@ -529,6 +548,10 @@ module i2c_controller_fsm import i2c_pkg::*;
         sda_d = 1'b1;
         scl_d = 1'b1;
         event_cmd_complete_o = 1'b1;
+        if (!sda_i && !scl_i) begin
+          // Failed to issue Stop before some other device could pull SCL low.
+          ctrl_symbol_failed = 1'b1;
+        end
       end
       // Active: continue while keeping SCL low
       Active : begin
@@ -554,11 +577,12 @@ module i2c_controller_fsm import i2c_pkg::*;
         sda_d = 1'b1;
         scl_d = 1'b1;
         transmitting_o = 1'b0;
+        event_scl_interference_o = 1'b0;
+        ctrl_symbol_failed = 1'b0;
         fmt_fifo_rready_o = 1'b0;
         rx_fifo_wvalid_o = 1'b0;
         rx_fifo_wdata_o = RX_FIFO_WIDTH'(0);
         event_nak_o = 1'b0;
-        event_scl_interference_o = 1'b0;
         event_sda_unstable_o = 1'b0;
         event_cmd_complete_o = 1'b0;
       end
@@ -625,7 +649,20 @@ module i2c_controller_fsm import i2c_pkg::*;
 
       // SetupStart: SDA and SCL are released
       SetupStart : begin
-        if (tcount_q == 20'd1) begin
+        if (!trans_started && !scl_i) begin
+          // This was the start of a transaction, but another device beat us to access. Go back to
+          // Idle, and wait for the next turn.
+          state_d = Idle;
+        end else if (trans_started && !scl_i && !scl_i_q && stretch_predict_cnt_expired) begin
+          // Saw stretching. Remain in this state and don't count down until we see SCL high.
+          state_d = SetupStart;
+          load_tcount = 1'b1;
+          // This double-counts the rise time, unfortunately.
+          tcount_sel = tSetupStart;
+        end else if (trans_started && !scl_i && scl_i_q) begin
+          // Failed to issue repeated Start. Effectively lost arbitration.
+          state_d = Idle;
+        end else if (tcount_q == 20'd1) begin
           state_d = HoldStart;
           load_tcount = 1'b1;
           tcount_sel = tHoldStart;
@@ -634,7 +671,7 @@ module i2c_controller_fsm import i2c_pkg::*;
       end
       // HoldStart: SDA is pulled low, SCL is released
       HoldStart : begin
-        if (tcount_q == 20'd1) begin
+        if (tcount_q == 20'd1 || (!scl_i && scl_i_q)) begin
           state_d = ClockStart;
           load_tcount = 1'b1;
           tcount_sel = tClockStart;
@@ -826,15 +863,26 @@ module i2c_controller_fsm import i2c_pkg::*;
       end
       // SetupStop: SDA is pulled low, SCL is released
       SetupStop : begin
-        if (tcount_q == 20'd1) begin
+        if (!scl_i && !scl_i_q && stretch_predict_cnt_expired) begin
+          // Saw stretching. Remain in this state and don't count down until we see SCL high.
+          load_tcount = 1'b1;
+          tcount_sel = tSetupStop;
+        end else if (!scl_i && scl_i_q) begin
+          // Failed to issue Stop before some other device could pull SCL low.
+          state_d = Idle;
+        end else if (tcount_q == 20'd1) begin
           state_d = HoldStop;
-          log_stop = 1'b1;
         end
       end
       // HoldStop: SDA and SCL are released
       HoldStop : begin
-        if (scl_i && sda_i) begin
+        if (!sda_i && !scl_i) begin
+          // Failed to issue Stop before some other device could pull SCL low.
+          state_d = Idle;
           auto_stop_d = 1'b0;
+        end else if (sda_i) begin
+          auto_stop_d = 1'b0;
+          log_stop = 1'b1;
           if (auto_stop_q) begin
             // If this Stop symbol was generated automatically, go back to Idle.
             state_d = Idle;
@@ -901,7 +949,7 @@ module i2c_controller_fsm import i2c_pkg::*;
       end
     endcase // unique case (state_q)
 
-    if (trans_started && sda_interference_i) begin
+    if (trans_started && (sda_interference_i || ctrl_symbol_failed)) begin
       state_d = Idle;
     end
   end
