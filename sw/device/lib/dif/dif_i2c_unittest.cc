@@ -525,7 +525,7 @@ TEST_F(ControlTest, HostEnableNullArgs) {
   EXPECT_DIF_BADARG(dif_i2c_clear_controller_halt_events(nullptr, events_arg));
 }
 
-TEST_F(ControlTest, HaltEvents) {
+TEST_F(ControlTest, ControllerHaltEvents) {
   dif_i2c_controller_halt_events_t events_arg = {0};
   EXPECT_READ32(I2C_CONTROLLER_EVENTS_REG_OFFSET,
                 {
@@ -580,11 +580,65 @@ TEST_F(ControlTest, DeviceEnable) {
   EXPECT_MASK32(I2C_CTRL_REG_OFFSET,
                 {{I2C_CTRL_NACK_ADDR_AFTER_TIMEOUT_BIT, 0x1, 0x0}});
   EXPECT_DIF_OK(dif_i2c_addr_nack_set_enabled(&i2c_, kDifToggleDisabled));
+
+  EXPECT_MASK32(I2C_CTRL_REG_OFFSET,
+                {{I2C_CTRL_TX_STRETCH_CTRL_EN_BIT, 0x1, 0x1}});
+  EXPECT_DIF_OK(
+      dif_i2c_target_tx_stretch_ctrl_set_enabled(&i2c_, kDifToggleEnabled));
+
+  EXPECT_MASK32(I2C_CTRL_REG_OFFSET,
+                {{I2C_CTRL_TX_STRETCH_CTRL_EN_BIT, 0x1, 0x0}});
+  EXPECT_DIF_OK(
+      dif_i2c_target_tx_stretch_ctrl_set_enabled(&i2c_, kDifToggleDisabled));
 }
 
 TEST_F(ControlTest, DeviceEnableNullArgs) {
   EXPECT_DIF_BADARG(dif_i2c_device_set_enabled(nullptr, kDifToggleEnabled));
   EXPECT_DIF_BADARG(dif_i2c_addr_nack_set_enabled(nullptr, kDifToggleEnabled));
+  EXPECT_DIF_BADARG(
+      dif_i2c_target_tx_stretch_ctrl_set_enabled(nullptr, kDifToggleEnabled));
+
+  dif_i2c_target_tx_halt_events_t events_arg = {0};
+  EXPECT_DIF_BADARG(dif_i2c_get_target_tx_halt_events(nullptr, &events_arg));
+  EXPECT_DIF_BADARG(dif_i2c_get_target_tx_halt_events(&i2c_, nullptr));
+  EXPECT_DIF_BADARG(dif_i2c_clear_target_tx_halt_events(nullptr, events_arg));
+}
+
+TEST_F(ControlTest, DeviceHaltEvents) {
+  dif_i2c_target_tx_halt_events_t events_arg = {0};
+  EXPECT_READ32(I2C_TARGET_EVENTS_REG_OFFSET,
+                {
+                    {I2C_TARGET_EVENTS_TX_PENDING_BIT, 1},
+                });
+  EXPECT_DIF_OK(dif_i2c_get_target_tx_halt_events(&i2c_, &events_arg));
+  EXPECT_TRUE(events_arg.tx_pending);
+  EXPECT_FALSE(events_arg.bus_timeout);
+
+  EXPECT_READ32(I2C_TARGET_EVENTS_REG_OFFSET,
+                {
+                    {I2C_TARGET_EVENTS_BUS_TIMEOUT_BIT, 1},
+                });
+  EXPECT_DIF_OK(dif_i2c_get_target_tx_halt_events(&i2c_, &events_arg));
+  EXPECT_FALSE(events_arg.tx_pending);
+  EXPECT_TRUE(events_arg.bus_timeout);
+
+  events_arg.tx_pending = false;
+  events_arg.bus_timeout = true;
+  EXPECT_WRITE32(I2C_TARGET_EVENTS_REG_OFFSET,
+                 {
+                     {I2C_TARGET_EVENTS_TX_PENDING_BIT, 0},
+                     {I2C_TARGET_EVENTS_BUS_TIMEOUT_BIT, 1},
+                 });
+  EXPECT_DIF_OK(dif_i2c_clear_target_tx_halt_events(&i2c_, events_arg));
+
+  events_arg.tx_pending = true;
+  events_arg.bus_timeout = false;
+  EXPECT_WRITE32(I2C_TARGET_EVENTS_REG_OFFSET,
+                 {
+                     {I2C_TARGET_EVENTS_TX_PENDING_BIT, 1},
+                     {I2C_TARGET_EVENTS_BUS_TIMEOUT_BIT, 0},
+                 });
+  EXPECT_DIF_OK(dif_i2c_clear_target_tx_halt_events(&i2c_, events_arg));
 }
 
 TEST_F(ControlTest, LLPBK) {

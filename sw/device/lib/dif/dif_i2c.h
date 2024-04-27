@@ -403,6 +403,37 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_i2c_clear_controller_halt_events(
     const dif_i2c_t *i2c, dif_i2c_controller_halt_events_t events);
 
+typedef struct dif_i2c_target_tx_halt_events {
+  /** Received a new read transfer, and TX stretch controls were enabled. */
+  bool tx_pending;
+  /** The bus timed out during a read transfer. */
+  bool bus_timeout;
+} dif_i2c_target_tx_halt_events_t;
+
+/**
+ * Get the events that are contributing or would contribute to the target
+ * halting and stretching the clock on a read.
+ *
+ * @param i2c handle,
+ * @param[out] events The events causing the target FSM to stretch on reads.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_i2c_get_target_tx_halt_events(
+    const dif_i2c_t *i2c, dif_i2c_target_tx_halt_events_t *events);
+
+/**
+ * Clear the selected events that are contributing or would contribute to the
+ * target halting and stretching the clock on a read.
+ *
+ * @param i2c handle,
+ * @param events The events to clear.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_i2c_clear_target_tx_halt_events(
+    const dif_i2c_t *i2c, dif_i2c_target_tx_halt_events_t events);
+
 /**
  * Computes timing parameters for an I2C host and stores them in `config`.
  *
@@ -580,6 +611,19 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_i2c_multi_controller_monitor_set_enabled(const dif_i2c_t *i2c,
                                                           dif_toggle_t state);
 
+/**
+ * Enables or disables the target FSM's stretch control for the start of read
+ * transactions.
+ *
+ * This function should be called prior to enabling the target.
+ *
+ * @param i2c An I2C handle.
+ * @param state The new toggle state for the device functionality.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_i2c_target_tx_stretch_ctrl_set_enabled(const dif_i2c_t *i2c,
+                                                        dif_toggle_t state);
 /**
  * Enables or disables the "override mode". In override mode, software is able
  * to directly control the driven values of the SCL and SDA lines using
