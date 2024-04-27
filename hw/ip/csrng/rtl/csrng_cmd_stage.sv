@@ -316,6 +316,9 @@ module csrng_cmd_stage import csrng_pkg::*; #(
         end
         CmdAck: begin
           if (cmd_ack_i) begin
+            // The state database has successfully been updated.
+            // In case of Generate commands, we get the generated bits one clock cycle before
+            // receiving the ACK from the state database (from csrng_ctr_drbg_gen).
             state_d = GenReq;
           end
         end
@@ -389,6 +392,17 @@ module csrng_cmd_stage import csrng_pkg::*; #(
 
   assign sfifo_genbits_wdata = {genbits_fips_i,genbits_bus_i};
 
+  // The prim_fifo_sync primitive is constructed to only accept pushes if there is indeed space
+  // available. Backpressure would actually need to be handled at the sender (csrng_ctr_drbg_gen).
+  // In this particular case, it is safe to unconditionally push the genbits FIFO because
+  // the GenSOP FSM state which triggers csrng_ctr_drbg_gen to generate bits can only be reached
+  // after checking that the genbits FIFO isn't full already. This condition is checked using an
+  // SVA below.
+  //
+  // If the genbits FIFO got pushed without having space, this either means the output of a genbits
+  // request is routed to the wrong application interface (which would be a critical design bug)
+  // or that some fault injection attack is going on. Thus, we track such cases both with an SVA
+  // and with a fatal alert (identifiable via the ERR_CODE register).
   assign sfifo_genbits_push = cs_enable_i && genbits_vld_i;
 
   assign sfifo_genbits_pop = genbits_vld_o && genbits_rdy_i;
@@ -396,11 +410,18 @@ module csrng_cmd_stage import csrng_pkg::*; #(
   assign genbits_vld_o = cs_enable_i && sfifo_genbits_not_empty;
   assign {genbits_fips_o, genbits_bus_o} = sfifo_genbits_rdata;
 
-
   assign sfifo_genbits_err =
          {(sfifo_genbits_push && sfifo_genbits_full),
           (sfifo_genbits_pop && !sfifo_genbits_not_empty),
           (sfifo_genbits_full && !sfifo_genbits_not_empty)};
+
+  // We're only allowed to request more bits if the genbits FIFO has indeed space.
+  `ASSERT(CsrngCmdStageGenbitsFifoFull_A, state_q == GenSOP |-> !sfifo_genbits_full)
+
+  // Pushes to the genbits FIFO outside of the GenCmdChk and CmdAck states or while handling a
+  // command other than Generate are not allowed.
+  `ASSERT(CsrngCmdStageGenbitsFifoPushExpected_A,
+      sfifo_genbits_push |-> state_q inside {GenCmdChk, CmdAck} && cmd_gen_flag_q)
 
   //---------------------------------------------------------
   // Ack logic.
