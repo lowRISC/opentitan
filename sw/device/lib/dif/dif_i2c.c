@@ -94,6 +94,34 @@ dif_result_t dif_i2c_clear_controller_halt_events(
   return kDifOk;
 }
 
+dif_result_t dif_i2c_get_target_tx_halt_events(
+    const dif_i2c_t *i2c, dif_i2c_target_tx_halt_events_t *events) {
+  if (i2c == NULL || events == NULL) {
+    return kDifBadArg;
+  }
+  uint32_t reg =
+      mmio_region_read32(i2c->base_addr, I2C_TARGET_EVENTS_REG_OFFSET);
+  events->tx_pending =
+      bitfield_bit32_read(reg, I2C_TARGET_EVENTS_TX_PENDING_BIT);
+  events->bus_timeout =
+      bitfield_bit32_read(reg, I2C_TARGET_EVENTS_BUS_TIMEOUT_BIT);
+  return kDifOk;
+}
+
+dif_result_t dif_i2c_clear_target_tx_halt_events(
+    const dif_i2c_t *i2c, dif_i2c_target_tx_halt_events_t events) {
+  if (i2c == NULL) {
+    return kDifBadArg;
+  }
+  uint32_t reg = 0;
+  reg = bitfield_bit32_write(reg, I2C_TARGET_EVENTS_TX_PENDING_BIT,
+                             events.tx_pending);
+  reg = bitfield_bit32_write(reg, I2C_TARGET_EVENTS_BUS_TIMEOUT_BIT,
+                             events.bus_timeout);
+  mmio_region_write32(i2c->base_addr, I2C_TARGET_EVENTS_REG_OFFSET, reg);
+  return kDifOk;
+}
+
 /**
  * Computes default timing parameters for a particular I2C speed, given the
  * clock period, in nanoseconds.
@@ -442,6 +470,24 @@ dif_result_t dif_i2c_multi_controller_monitor_set_enabled(const dif_i2c_t *i2c,
   uint32_t reg = mmio_region_read32(i2c->base_addr, I2C_CTRL_REG_OFFSET);
   reg =
       bitfield_bit32_write(reg, I2C_CTRL_MULTI_CONTROLLER_MONITOR_EN_BIT, flag);
+  mmio_region_write32(i2c->base_addr, I2C_CTRL_REG_OFFSET, reg);
+
+  return kDifOk;
+}
+
+dif_result_t dif_i2c_target_tx_stretch_ctrl_set_enabled(const dif_i2c_t *i2c,
+                                                        dif_toggle_t state) {
+  if (i2c == NULL) {
+    return kDifBadArg;
+  }
+
+  if (!dif_is_valid_toggle(state)) {
+    return kDifBadArg;
+  }
+  bool flag = dif_toggle_to_bool(state);
+
+  uint32_t reg = mmio_region_read32(i2c->base_addr, I2C_CTRL_REG_OFFSET);
+  reg = bitfield_bit32_write(reg, I2C_CTRL_TX_STRETCH_CTRL_EN_BIT, flag);
   mmio_region_write32(i2c->base_addr, I2C_CTRL_REG_OFFSET, reg);
 
   return kDifOk;
