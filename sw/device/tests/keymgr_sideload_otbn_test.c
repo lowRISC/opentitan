@@ -65,8 +65,10 @@ static void run_x25519_app(dif_otbn_t *otbn, uint32_t *result,
   CHECK_STATUS_OK(otbn_testutils_write_data(otbn, sizeof(kEncodedU), &kEncodedU,
                                             kOtbnVarEncU));
 
-  // Run the OTBN program and wait for it to complete.
+  // Run the OTBN program and wait for it to complete. Clear software
+  // error fatal flag as the test expects an intermediate error state.
   LOG_INFO("Starting OTBN program...");
+  CHECK_DIF_OK(dif_otbn_set_ctrl_software_errs_fatal(otbn, false));
   CHECK_STATUS_OK(otbn_testutils_execute(otbn));
   CHECK_STATUS_OK(otbn_testutils_wait_for_done(otbn, expect_err_bits));
 
@@ -151,25 +153,21 @@ static void test_otbn_with_sideloaded_key(dif_keymgr_t *keymgr,
 }
 
 bool test_main(void) {
-  // Initialize keymgr and advance to CreatorRootKey state.
-  dif_keymgr_t keymgr;
-  dif_kmac_t kmac;
-  CHECK_STATUS_OK(keymgr_testutils_startup(&keymgr, &kmac));
-  // Advance to OwnerIntermediateKey state.
-  CHECK_STATUS_OK(keymgr_testutils_advance_state(&keymgr, &kOwnerIntParams));
-  CHECK_STATUS_OK(keymgr_testutils_check_state(
-      &keymgr, kDifKeymgrStateOwnerIntermediateKey));
-  LOG_INFO("Keymgr entered OwnerIntKey State");
-
   // Initialize OTBN.
   dif_otbn_t otbn;
   CHECK_DIF_OK(
       dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), &otbn));
 
-  // Put entropy source into auto mode. If the entropy source was merely left
-  // with the entropy it generated at boot, this test may exhaust the supply
-  // with no renewal.
-  CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
+  // Initialize keymgr and advance to CreatorRootKey state.
+  dif_keymgr_t keymgr;
+  dif_kmac_t kmac;
+  CHECK_STATUS_OK(keymgr_testutils_startup(&keymgr, &kmac));
+
+  // Advance to OwnerIntermediateKey state.
+  CHECK_STATUS_OK(keymgr_testutils_advance_state(&keymgr, &kOwnerIntParams));
+  CHECK_STATUS_OK(keymgr_testutils_check_state(
+      &keymgr, kDifKeymgrStateOwnerIntermediateKey));
+  LOG_INFO("Keymgr entered OwnerIntKey State");
 
   // Test OTBN sideloading.
   test_otbn_with_sideloaded_key(&keymgr, &otbn);

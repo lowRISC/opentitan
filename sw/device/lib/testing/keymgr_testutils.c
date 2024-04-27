@@ -11,6 +11,7 @@
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/kmac_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
@@ -168,6 +169,9 @@ status_t keymgr_testutils_startup(dif_keymgr_t *keymgr, dif_kmac_t *kmac) {
   } else {
     TRY_CHECK(info == kDifRstmgrResetInfoSw, "Unexpected reset reason: %08x",
               info);
+
+    TRY(entropy_testutils_auto_mode_init());
+
     LOG_INFO(
         "Powered up for the second time, actuate keymgr and perform test.");
 
