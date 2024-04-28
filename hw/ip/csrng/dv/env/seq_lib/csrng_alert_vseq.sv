@@ -13,8 +13,8 @@ class csrng_alert_vseq extends csrng_base_vseq;
   csrng_item  cs_item;
   rand bit    flag0_flip_ins_cmd;
   rand acmd_e illegal_command;
-  rand [3:0]  clen;
-  rand [11:0] glen;
+  rand bit [3:0]  clen;
+  rand bit [11:0] glen;
 
   task body();
     int           first_index;
