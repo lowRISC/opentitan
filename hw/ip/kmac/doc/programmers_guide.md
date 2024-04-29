@@ -62,6 +62,18 @@ The `encode_string("KMAC")` represents `0x01 0x20 0x4b 0x4d 0x41 0x43` in byte o
 The software writes `0x4d4b2001` into [`PREFIX0`](registers.md#prefix) and `0x????4341` into [`PREFIX1`](registers.md#prefix) .
 Upper 2 bytes can vary depending on the customization input string `S`.
 
+
+## Error Handling
+
+When the KMAC HW IP encounters an error, it raises the `kmac_err` IRQ.
+SW can then read the `ERR_CODE` CSR to obtain more information about the error.
+Having handled that IRQ, SW is expected to clear the `kmac_err` bit in the `INTR_STATE` CSR before exiting the ISR.
+When SW has handled the error condition, it is expected to set the `err_processed` bit in the `CMD` CSR.
+The internal SHA3 engine then flushes its FIFOs and state, which may take a few cycles.
+The KMAC HW IP is ready for operation again as soon as the `sha3_idle` bit in the `STATUS` CSR is set; SW must not change the configuration of or send commands to the KMAC HW IP before that.
+If the error occurred while the KMAC HW IP was being used from SW (i.e., not via an HW application interface), the `kmac_done` IRQ is raised when the KMAC HW IP is ready again.
+
+
 ## KMAC/SHA3 context switching
 
 This version of KMAC/SHA3 HWIP _does not_ support the software context switching.
