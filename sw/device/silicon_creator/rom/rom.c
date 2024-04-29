@@ -181,9 +181,13 @@ static rom_error_t rom_init(void) {
       otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_RET_RAM_RESET_MASK_OFFSET);
   if ((reset_reasons & reset_mask) != 0) {
     retention_sram_init();
-    retention_sram_get()->version = kRetentionSramVersion3;
     retention_sram_get()->creator.last_shutdown_reason = kErrorOk;
   }
+
+  // Always store the retention RAM version so the ROM_EXT can depend on its
+  // accuracy even after scrambling.
+  retention_sram_get()->version = kRetentionSramVersion3;
+
   // Store the reset reason in retention RAM and clear the register.
   retention_sram_get()->creator.reset_reasons = reset_reasons;
   rstmgr_reason_clear(reset_reasons);
