@@ -44,13 +44,15 @@ TEST_F(AddressTranslationTest, Slot0Sucess) {
 }
 
 TEST_F(AddressTranslationTest, Slot1Sucess) {
+  // Note: 0xB040_0000 is not power-of-two aligned with respect to the size.
+  // The remap function will force-align the matching_addr to the size.
   uint32_t matching_addr = 0xB040000;
   uint32_t remap_addr = 0x6000000;
   uint32_t size = 0x80000;
   EXPECT_SEC_WRITE32(base_ + RV_CORE_IBEX_IBUS_ADDR_MATCHING_1_REG_OFFSET,
-                     0xb07ffff);
+                     0xb03ffff);
   EXPECT_SEC_WRITE32(base_ + RV_CORE_IBEX_DBUS_ADDR_MATCHING_1_REG_OFFSET,
-                     0xb07ffff);
+                     0xb03ffff);
 
   EXPECT_SEC_WRITE32(base_ + RV_CORE_IBEX_IBUS_REMAP_ADDR_1_REG_OFFSET,
                      remap_addr);
