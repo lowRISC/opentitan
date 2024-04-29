@@ -684,7 +684,6 @@ static status_t prepare_udid_reply(dif_i2c_irq_state_snapshot_t irq_snapshot,
 static status_t complete_get_udid(dif_i2c_irq_state_snapshot_t irq_snapshot,
                                   dif_i2c_status_t i2c_status) {
   TRY_CHECK(arp_cmd_pending == kArpCmdGetUdid);
-  // TODO: Handle arbitration loss.
   TRY_CHECK(bitfield_bit32_read(irq_snapshot, kDifI2cIrqCmdComplete));
   TRY_CHECK(!i2c_status.acq_fifo_empty);
 
@@ -693,6 +692,14 @@ static status_t complete_get_udid(dif_i2c_irq_state_snapshot_t irq_snapshot,
   // There should only be a Stop next.
   TRY(dif_i2c_acquire_byte(&i2c, &data, &signal));
   TRY_CHECK(signal == kDifI2cSignalStop);
+
+  // Make a superfluous check for lost arbitration. If arbitration were lost,
+  // the ACQ FIFO would have kDifI2cSignalNackStop instead.
+  dif_i2c_target_tx_halt_events_t events = {0};
+  TRY(dif_i2c_get_target_tx_halt_events(&i2c, &events));
+  TRY_CHECK(!events.tx_pending);
+  TRY_CHECK(!events.bus_timeout);
+  TRY_CHECK(!events.arbitration_lost);
 
   // Return to idle.
   TRY(dif_i2c_irq_acknowledge(&i2c, kDifI2cIrqCmdComplete));

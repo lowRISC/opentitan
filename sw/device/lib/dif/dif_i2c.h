@@ -379,6 +379,10 @@ typedef struct dif_i2c_controller_halt_events {
    * transmitting.
    */
   bool bus_timeout;
+  /**
+   * The controller was unable to transmit a symbol and lost arbitration.
+   */
+  bool arbitration_lost;
 } dif_i2c_controller_halt_events_t;
 
 /**
@@ -408,6 +412,12 @@ typedef struct dif_i2c_target_tx_halt_events {
   bool tx_pending;
   /** The bus timed out during a read transfer. */
   bool bus_timeout;
+  /**
+   * The target was unable to transmit a symbol and lost arbitration. For
+   * targets, a loss of arbitration might be an ordinary mechanism in specific
+   * contexts, such as broadcast commands.
+   */
+  bool arbitration_lost;
 } dif_i2c_target_tx_halt_events_t;
 
 /**
