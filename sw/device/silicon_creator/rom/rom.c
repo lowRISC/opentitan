@@ -25,6 +25,7 @@
 #include "sw/device/silicon_creator/lib/drivers/alert.h"
 #include "sw/device/silicon_creator/lib/drivers/ast.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
+#include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/ibex.h"
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
@@ -47,6 +48,7 @@
 #include "sw/device/silicon_creator/rom/sigverify_keys_spx.h"
 #include "sw/device/silicon_creator/rom/sigverify_otp_keys.h"
 
+#include "hmac_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "otp_ctrl_regs.h"
 #include "rstmgr_regs.h"
@@ -88,6 +90,8 @@ lifecycle_state_t lc_state = (lifecycle_state_t)0;
 boot_data_t boot_data = {0};
 // Whether we are "simply" waking from low power mode.
 static hardened_bool_t waking_from_low_power = 0;
+// First stage (ROM-->ROM_EXT) secure boot keys loaded from OTP.
+static sigverify_otp_key_ctx_t sigverify_ctx;
 
 OT_ALWAYS_INLINE
 OT_WARN_UNUSED_RESULT
@@ -237,13 +241,11 @@ static rom_error_t rom_init(void) {
 OT_WARN_UNUSED_RESULT
 static rom_error_t rom_verify(const manifest_t *manifest,
                               uint32_t *flash_exec) {
-  /**
-   * Check security version and manifest constraints.
-   *
-   * The poisoning work (`anti_rollback`) invalidates signatures if the security
-   * version of the manifest is smaller than the minimum required security
-   * version.
-   */
+  // Check security version and manifest constraints.
+  //
+  // The poisoning work (`anti_rollback`) invalidates signatures if the
+  // security version of the manifest is smaller than the minimum required
+  // security version.
   const uint32_t extra_word = UINT32_MAX;
   const uint32_t *anti_rollback = NULL;
   size_t anti_rollback_len = 0;
@@ -255,18 +257,13 @@ static rom_error_t rom_verify(const manifest_t *manifest,
   *flash_exec = 0;
   HARDENED_RETURN_IF_ERROR(boot_policy_manifest_check(manifest, &boot_data));
 
-  /**
-   * Load OTBN boot services app.
-   *
-   * This will be reused by later boot stages.
-   */
+  // Load OTBN boot services app.
+  //
+  // This will be reused by later boot stages.
   HARDENED_RETURN_IF_ERROR(otbn_boot_app_load());
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomVerify, 1);
 
-  /**
-   * Load secure boot keys from OTP into RAM.
-   */
-  sigverify_otp_key_ctx_t sigverify_ctx;
+  // Load secure boot keys from OTP into RAM.
   HARDENED_RETURN_IF_ERROR(sigverify_otp_keys_init(&sigverify_ctx));
   // ECDSA key.
   const sigverify_ecdsa_p256_buffer_t *ecdsa_key = NULL;
@@ -292,9 +289,7 @@ static rom_error_t rom_verify(const manifest_t *manifest,
     HARDENED_CHECK_EQ(sigverify_spx_en, kSigverifySpxDisabledOtp);
   }
 
-  /**
-   * Measure ROM_EXT and portions of manifest via SHA256 digest.
-   */
+  // Measure ROM_EXT and portions of manifest via SHA256 digest.
   // Initialize ROM_EXT measurement in .static_critical with garbage.
   memset(boot_measurements.rom_ext.data, (int)rnd_uint32(),
          sizeof(boot_measurements.rom_ext.data));
@@ -424,6 +419,46 @@ static void rom_pre_boot_check(void) {
 }
 
 /**
+ * Measures the combination of software configuration OTP digests and the digest
+ * of the secure boot keys.
+ *
+ * @param measurement Pointer to the measurement of the partitions.
+ * @return rom_error_t Result of the operation.
+ */
+static rom_error_t rom_measure_otp_partitions(
+    keymgr_binding_value_t *measurement) {
+  memset(measurement, (int)rnd_uint32(), sizeof(keymgr_binding_value_t));
+  // These is no need to harden these data copies as any poisoning of the OTP
+  // measurements will result in the derivation of a different UDS identity
+  // which will not be endorsed. Hence we save the cycles of using sec_mmio.
+  hmac_sha256_init();
+  static_assert(
+      (OTP_CTRL_CREATOR_SW_CFG_DIGEST_CREATOR_SW_CFG_DIGEST_FIELD_WIDTH *
+       OTP_CTRL_CREATOR_SW_CFG_DIGEST_MULTIREG_COUNT / 8) == sizeof(uint64_t),
+      "CreatorSwCfg OTP partition digest no longer 64 bits.");
+  static_assert(
+      (OTP_CTRL_OWNER_SW_CFG_DIGEST_OWNER_SW_CFG_DIGEST_FIELD_WIDTH *
+       OTP_CTRL_OWNER_SW_CFG_DIGEST_MULTIREG_COUNT / 8) == sizeof(uint64_t),
+      "OwnerSwCfg OTP partition digest no longer 64 bits.");
+  hmac_sha256_update(
+      (unsigned char *)(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR +
+                        OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
+                        OTP_CTRL_CREATOR_SW_CFG_DIGEST_0_REG_OFFSET),
+      sizeof(uint64_t));
+  hmac_sha256_update(
+      (unsigned char *)(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR +
+                        OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
+                        OTP_CTRL_OWNER_SW_CFG_DIGEST_0_REG_OFFSET),
+      sizeof(uint64_t));
+  hmac_sha256_update(sigverify_ctx.keys.integrity_measurement.digest,
+                     kHmacDigestNumBytes);
+  hmac_digest_t otp_measurement;
+  hmac_sha256_final(&otp_measurement);
+  memcpy(measurement->data, otp_measurement.digest, kHmacDigestNumBytes);
+  return kErrorOk;
+}
+
+/**
  * Boots a ROM_EXT.
  *
  * Note: This function should not return under normal conditions. Any returns
@@ -438,14 +473,15 @@ static rom_error_t rom_boot(const manifest_t *manifest, uint32_t flash_exec) {
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomBoot, 1);
   HARDENED_RETURN_IF_ERROR(sc_keymgr_state_check(kScKeymgrStateReset));
 
+  keymgr_binding_value_t otp_measurement;
   const keymgr_binding_value_t *attestation_measurement =
       &manifest->binding_value;
   uint32_t use_otp_measurement =
       otp_read32(OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_KEYMGR_OTP_MEAS_EN_OFFSET);
   if (launder32(use_otp_measurement) == kHardenedBoolTrue) {
     HARDENED_CHECK_EQ(use_otp_measurement, kHardenedBoolTrue);
-    attestation_measurement =
-        (const keymgr_binding_value_t *)&boot_measurements.rom_ext;
+    rom_measure_otp_partitions(&otp_measurement);
+    attestation_measurement = &otp_measurement;
   } else {
     HARDENED_CHECK_NE(use_otp_measurement, kHardenedBoolTrue);
   }

@@ -458,7 +458,6 @@ dual_cc_library(
     ),
     deps = dual_inputs(
         device = [
-            "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         ],
         host = [
@@ -467,6 +466,7 @@ dual_cc_library(
             "@googletest//:gtest",
         ],
         shared = [
+            "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
             "//sw/device/lib/base:hardened",
             "//sw/device/lib/base:macros",
             "//sw/device/silicon_creator/lib/base:sec_mmio",
