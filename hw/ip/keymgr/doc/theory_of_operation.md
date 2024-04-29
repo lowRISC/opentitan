@@ -238,18 +238,23 @@ The error is reported in [`FAULT_STATUS`](registers.md#fault_status) and the key
 When a fatal error is encountered, the key manager transitions to the `Invalid` [state](#invalid-entry-wiping).
 The following are a few examples of when the error occurs and how the key manager behaves.
 
-#### Example 1: Fault During Operation
+#### Example 1: Fault During Initialization
+The key manager is in the `Reset` state and receives an advance operation.
+After it has reseeded its internal PRNG with entropy, it will try to load the Creator Root Key from OTP.
+If not both shares of the Creator Root Key are valid at that point, key manager will wipe its secrets and transition to the `Invalid` state.
+
+#### Example 2: Fault During Operation
 The key manager is running a generate operation and a non-onehot command was observed by the KMAC interface.
 Since the non-onehot condition is a fault, it is reflected in [`FAULT_STATUS`](registers.md#fault_status) and a fatal alert is generated.
 The key manager transitions to `Invalid` state, wipes internal storage and reports an invalid operation in [`ERR_CODE.INVALID_OP`](registers.md#err_code).
 
-#### Example 2: Fault During Idle
+#### Example 3: Fault During Idle
 The key manager is NOT running an operation and is idle.
 During this time, a fault is observed on the regfile (shadow storage error) and FSM (control FSM integrity error).
 The faults are reflected in [`FAULT_STATUS`](registers.md#fault_status).
 The key manager transitions to `Invalid` state, wipes internal storage but does not report an invalid operation.
 
-#### Example 3: Operation after Fault Detection
+#### Example 4: Operation after Fault Detection
 Continuing from the example above, the key manager now begins an operation.
 Since the key manager is already in `Invalid` state, it does not wipe internal storage and reports an invalid operation in [`ERR_CODE.INVALID_OP`](registers.md#err_code).
 
@@ -259,6 +264,7 @@ What is considered invalid input changes based on current state and operation.
 
 When an advance operation is invoked:
 - The internal key is checked for all 0's and all 1's.
+- During the `Reset` state, both shares of the the Creator Root Key provided by OTP are checked to be valid.
 - During `Initialized` state, creator seed, device ID and health state data is checked for all 0's and all 1's.
 - During `CreatorRootKey` state, the owner seed is checked for all 0's and all 1's.
 - During all other states, nothing is explicitly checked.

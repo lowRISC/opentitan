@@ -518,7 +518,7 @@ module keymgr_ctrl
       StCtrlRootKey: begin
         init_o = 1'b1;
         initialized = 1'b1;
-        state_d = en_i ? StCtrlInit : StCtrlWipe;
+        state_d = (en_i && root_key_valid_q) ? StCtrlInit : StCtrlWipe;
       end
 
       // Beginning from the Init state, operations are accepted.
