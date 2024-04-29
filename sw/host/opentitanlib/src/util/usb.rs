@@ -130,6 +130,10 @@ impl UsbBackend {
         self.handle.claim_interface(iface).context("USB error")
     }
 
+    pub fn release_interface(&mut self, iface: u8) -> Result<()> {
+        self.handle.release_interface(iface).context("USB error")
+    }
+
     pub fn kernel_driver_active(&self, iface: u8) -> Result<bool> {
         self.handle.kernel_driver_active(iface).context("USB error")
     }
