@@ -377,6 +377,10 @@ impl<T: Flavor> Hyperdebug<T> {
             // Return cached value.
             return Ok(capabilities);
         }
+        self.inner
+            .usb_device
+            .borrow_mut()
+            .claim_interface(cmsis_interface.interface)?;
         let cmd = [
             Self::CMSIS_DAP_CUSTOM_COMMAND_GOOGLE_INFO,
             Self::GOOGLE_INFO_CAPABILITIES,
@@ -400,6 +404,10 @@ impl<T: Flavor> Hyperdebug<T> {
         );
         let capabilities = u16::from_le_bytes([resp[2], resp[3]]);
         self.cmsis_google_capabilities.set(Some(capabilities));
+        self.inner
+            .usb_device
+            .borrow_mut()
+            .release_interface(cmsis_interface.interface)?;
         Ok(capabilities)
     }
 }
