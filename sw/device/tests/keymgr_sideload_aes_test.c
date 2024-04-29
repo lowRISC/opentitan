@@ -38,7 +38,17 @@ static dif_kmac_t kmac;
 
 OTTF_DEFINE_TEST_CONFIG();
 
-static void keymgr_initialize(void) {
+/**
+ * Initializes all DIF handles for each peripheral used in this test.
+ */
+static void init_peripheral_handles(void) {
+  CHECK_DIF_OK(
+      dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
+  CHECK_DIF_OK(dif_keymgr_init(
+      mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR), &keymgr));
+}
+
+static void keymgr_initialize_sim_dv(void) {
   // Initialize keymgr and advance to CreatorRootKey state.
   CHECK_STATUS_OK(keymgr_testutils_startup(&keymgr, &kmac));
   LOG_INFO("Keymgr entered CreatorRootKey State");
@@ -47,11 +57,39 @@ static void keymgr_initialize(void) {
   CHECK_STATUS_OK(keymgr_testutils_generate_identity(&keymgr));
   LOG_INFO("Keymgr generated identity at CreatorRootKey State");
 
-  // Advance to OwnerIntermediateKey state.
+  // Advance to OwnerIntermediateKey state and check that the state is correct.
+  // The sim_dv testbench expects this state.
   CHECK_STATUS_OK(keymgr_testutils_advance_state(&keymgr, &kOwnerIntParams));
   CHECK_STATUS_OK(keymgr_testutils_check_state(
       &keymgr, kDifKeymgrStateOwnerIntermediateKey));
   LOG_INFO("Keymgr entered OwnerIntKey State");
+}
+
+static void keymgr_initialize_sival(void) {
+  dif_keymgr_state_t keymgr_state;
+  CHECK_STATUS_OK(keymgr_testutils_try_startup(&keymgr, &kmac, &keymgr_state));
+
+  if (keymgr_state == kDifKeymgrStateInitialized) {
+    CHECK_STATUS_OK(keymgr_testutils_advance_state(&keymgr, &kOwnerIntParams));
+    CHECK_DIF_OK(dif_keymgr_get_state(&keymgr, &keymgr_state));
+  }
+
+  if (keymgr_state == kDifKeymgrStateOwnerIntermediateKey) {
+    CHECK_STATUS_OK(
+        keymgr_testutils_advance_state(&keymgr, &kOwnerRootKeyParams));
+  }
+
+  CHECK_STATUS_OK(
+      keymgr_testutils_check_state(&keymgr, kDifKeymgrStateOwnerRootKey));
+}
+
+static void keymgr_initialize(void) {
+  if (kDeviceType == kDeviceSilicon) {
+    keymgr_initialize_sival();
+  } else {
+    // All other configurations use the sim_dv initialization.
+    keymgr_initialize_sim_dv();
+  }
 }
 
 status_t aes_crypt(dif_aes_t aes, dif_aes_data_t in_data,
@@ -91,12 +129,29 @@ status_t aes_crypt(dif_aes_t aes, dif_aes_data_t in_data,
 }
 
 void aes_test(void) {
-  // Generate sideload key for AES interface at OwnerIntKey state.
+  // Generate sideload key for AES interface at current keymgr state.
   dif_keymgr_versioned_key_params_t sideload_params = kKeyVersionedParams;
   sideload_params.dest = kDifKeymgrVersionedKeyDestAes;
+
+  // Get the maximum key version supported by the keymgr in its current state.
+  uint32_t max_key_version;
+  CHECK_STATUS_OK(
+      keymgr_testutils_max_key_version_get(&keymgr, &max_key_version));
+
+  if (sideload_params.version > max_key_version) {
+    LOG_INFO("Key version %d is greater than the maximum key version %d",
+             sideload_params.version, max_key_version);
+    LOG_INFO("Setting key version to the maximum key version %d",
+             max_key_version);
+    sideload_params.version = max_key_version;
+  }
+
+  const char *state_name;
+  CHECK_STATUS_OK(keymgr_testutils_state_string_get(&keymgr, &state_name));
+
   CHECK_STATUS_OK(
       keymgr_testutils_generate_versioned_key(&keymgr, sideload_params));
-  LOG_INFO("Keymgr generated HW output for Aes at OwnerIntKey State");
+  LOG_INFO("Keymgr generated HW output for Aes at %s State", state_name);
 
   // Initialize AES.
   dif_aes_t aes;
@@ -161,7 +216,7 @@ void aes_test(void) {
   // as the first.
   CHECK_STATUS_OK(
       keymgr_testutils_generate_versioned_key(&keymgr, sideload_params));
-  LOG_INFO("Keymgr generated HW output for Aes at OwnerIntKey State");
+  LOG_INFO("Keymgr generated HW output for Aes at %s State", state_name);
 
   dif_aes_data_t out_data_second_cipher;
   CHECK_STATUS_OK(aes_crypt(aes, in_data_plain, kDifAesOperationEncrypt,
@@ -173,6 +228,8 @@ void aes_test(void) {
 }
 
 bool test_main(void) {
+  init_peripheral_handles();
+
   // Configure the keymgr to generate an AES key.
   keymgr_initialize();
 
