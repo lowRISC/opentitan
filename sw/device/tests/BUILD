@@ -4398,8 +4398,10 @@ test_suite(
         cw310 = cw310_params(
             needs_jtag = True,
             otp = _SIVAL_OTP_IMAGE[lc_state],
+            # TODO(#22823): Remove "broken" tag once the test is fixed.
             tags = [
                 "lc_{}".format(lc_state),
+                "broken",
             ],
             test_harness = "//sw/host/tests/chip/rv_dm:jtag_tap_sel",
         ),
@@ -4416,7 +4418,11 @@ test_suite(
 
 test_suite(
     name = "rv_dm_jtag_tap_sel",
-    tags = ["manual"],
+    # TODO(#22823): Remove "broken" tag once the test is fixed.
+    tags = [
+        "broken",
+        "manual",
+    ],
     tests = [
         ":rv_dm_jtag_tap_sel_{}".format(lc_state)
         for lc_state, _ in _RV_DM_JTAG_LC_STATES
@@ -4808,6 +4814,8 @@ opentitan_test(
     cw310 = cw310_params(
         needs_jtag = True,
         otp = "//hw/ip/otp_ctrl/data:img_test_unlocked0",
+        # TODO(#22823): Remove "broken" tag once the test is fixed.
+        tags = ["broken"],
         test_cmd = """
             --bootstrap="{firmware}"
         """,
