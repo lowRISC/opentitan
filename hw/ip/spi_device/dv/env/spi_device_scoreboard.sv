@@ -38,11 +38,25 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
 
   // when interrupt is triggered, it may take a few cycles before it's reflected in a TL read
   local bit [NumSpiDevIntr-1:0] intr_trigger_pending;
-  local bit [NumSpiDevIntr-1:0]       intr_exp_read_mirrored;
+  local bit [NumSpiDevIntr-1:0] intr_exp_read_mirrored;
+
+  //TB will set bits below when the interrupt is on its way to be pending on the predicted side
+  local bit [NumSpiDevIntr-1:0] intr_pending_set_after_delay;
+  //TB will set bits below when interrupt is on its way to be pending, but the RTL read the bit set before the TB had set it due to the delay
+  local bit [NumSpiDevIntr-1:0] intr_pending_read_set_before_delay;
 
   // tx/rx async fifo, size is 2 words
   local bit [31:0] tx_word_q[$];
   local bit [31:0] rx_word_q[$];
+
+  //Tracks whether there's an ongoing read_buffer_cmd
+  bit              ongoing_read_buffer_cmd;
+  bit read_pipeline_ongoing_read_buffer_cmd, read_pipeline_read_buffer_cmd_last;
+  int unsigned last_readbuf_intr_update_spi_clk_cycle;
+  int unsigned last_read_buffer_addr;
+  bit          readbuf_int_predicted_already, readwatermark_int_predicted_already;
+  // Set to 1 when the last read command has no payload
+  bit          last_read_cmd_no_payload;
 
   // for passthrough
   spi_item spi_passthrough_downstream_q[$];
@@ -703,26 +717,40 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
 
     if (dn_item != null) begin
       // If the read_pipeline is enabled, there will be data latched on the pipe which won't
-      // "come out" to the host since CSB has become inactive. This can be 2-bit, 4-bit or 8-bit
+      // "come out" to the host because CSB has become inactive. This can be 2-bit, 4-bit or 8-bit
       // depending whether we're doing a "normal" READ, READDUAL, READQUAD.
       // Hence it's ok for the DS queue to be 1 item larger.
 
-      if(up_item.read_pipeline_mode && up_item.payload_q.size==0) begin
+      if (up_item.read_pipeline_mode && up_item.payload_q.size == 0) begin
         // If the read_pipeline is enabled is possible the DS item has sampled some data
         // since it had 2 "extra cycles", it really depends on when the txn terminated.
-        if(!((up_item.payload_q.size==dn_item.payload_q.size) ||
-             (up_item.payload_q.size==dn_item.payload_q.size-1)))
-          `uvm_error(`gfn, $sformatf(
-                           "DS and US items don't have the same payload size (US - %0d) (DS - %0d)",
-                                     up_item.payload_q.size,dn_item.payload_q.size ))
+        if (!((up_item.payload_q.size == dn_item.payload_q.size) ||
+             (up_item.payload_q.size == dn_item.payload_q.size-1)))
+          `uvm_error(`gfn, {"DS and US items don't have the same payload size" , $sformatf(
+                            " (US - %0d) (DS - %0d)", up_item.payload_q.size,
+                            dn_item.payload_q.size )})
       end
       else begin
-        if(!up_item.read_pipeline_mode ||
-           up_item.payload_q.size==0) begin //Read terminated before any data was returned
+        int unsigned dn_item_payload_size = dn_item.payload_q.size;
+        // We expect the payload for up_item to be one byte shorter than the payload for dn_item,
+        // unless dn_item had an empty payload or we're in read_pipeline mode.
+        if (dn_item.payload_q.size>0 &&  !(!up_item.read_pipeline_mode ||
+            up_item.payload_q.size == 0))  //Read terminated before any data was returned
+          dn_item_payload_size--;
+
+        `DV_CHECK_EQ(up_item.payload_q.size, dn_item_payload_size)
+
+
+        //TODO: remove_me
+/* -----\/----- EXCLUDED -----\/-----
+        if (!up_item.read_pipeline_mode ||
+            up_item.payload_q.size == 0) begin //Read terminated before any data was returned
           `DV_CHECK_EQ(up_item.payload_q.size, dn_item.payload_q.size)
         end
         else
           `DV_CHECK_EQ(up_item.payload_q.size, dn_item.payload_q.size-1)
+ -----/\----- EXCLUDED -----/\----- */
+
       end
     end // if (dn_item != null)
 
@@ -896,30 +924,33 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       end
     end else begin
 
-      if(upstream_item.read_pipeline_mode>0 &&
-         (downstream_item.payload_q.size==upstream_item.payload_q.size+1)) begin
-        string print_str;
+      if (upstream_item.read_pipeline_mode > 0 &&
+         (downstream_item.payload_q.size == (upstream_item.payload_q.size+1))) begin
         // Read pipeline is enabled, so if the US item is 1 item short of payload bytes (due to CSB
         // becoming inactive and the "missing" data still in the read pipeline), we need to
         // "manually" compare the items (opcode, address, payload)
-        print_str = "Comparing only the number of payload items in US item (1 less than DS item)";
-        print_str = {print_str, " ","since read_pipeline is enabled"};
-        `uvm_info(`gfn, print_str, UVM_DEBUG);
+        `uvm_info(`gfn, {"Comparing only the number of payload items in US item (1 less than DS",
+         " item) since read_pipeline is enabled"}, UVM_DEBUG);
+
         //compare opcode
         `DV_CHECK_CASE_EQ(upstream_item.opcode, downstream_item.opcode)
         //compare addr
         `DV_CHECK_EQ(upstream_item.address_q.size, downstream_item.address_q.size)
         foreach(upstream_item.address_q[i]) begin
-          print_str = $sformatf("compare US address with DS item. idx %0d, up: 0x%0x, dn: 0x%0x",
-                                i, upstream_item.address_q[i], downstream_item.address_q[i]);
-          `DV_CHECK_CASE_EQ(upstream_item.address_q[i], downstream_item.address_q[i], print_str)
+          `DV_CHECK_CASE_EQ(upstream_item.address_q[i], downstream_item.address_q[i],
+                            {"compare US address with DS item.", $sformatf(
+                             " idx %0d, up: 0x%0x, dn: 0x%0x",i, upstream_item.address_q[i],
+                             downstream_item.address_q[i])})
+
         end
         //compare payload
         foreach(upstream_item.payload_q[i]) begin
-          print_str = $sformatf("compare US data with DS item. idx %0d, up: 0x%0x, dn: 0x%0x",
-                                i, upstream_item.payload_q[i], downstream_item.payload_q[i]);
+          `DV_CHECK_CASE_EQ(upstream_item.payload_q[i], downstream_item.payload_q[i],
+                            {"compare US data with DS item.", $sformatf(
+                             " idx %0d, up: 0x%0x, dn: 0x%0x",i, upstream_item.payload_q[i],
+                             downstream_item.payload_q[i])})
 
-          `DV_CHECK_CASE_EQ(upstream_item.payload_q[i], downstream_item.payload_q[i], print_str)
+
         end
       end
       else if (!downstream_item.compare(upstream_item)) begin
@@ -1634,6 +1665,24 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     end
     else begin
       `uvm_info(`gfn, "Process read buffer command", UVM_DEBUG)
+      //Unsetting read buffer command tracking variables
+      read_pipeline_ongoing_read_buffer_cmd  = 0;
+      last_read_buffer_addr         = 0;
+      readbuf_int_predicted_already = 0;
+      readwatermark_int_predicted_already = 0;
+
+
+      fork begin
+        wait (spi_txn.dummy_cycles_ev.triggered);
+        // Needs to be set here after dummy_cycles  in case the read_pipeline is enabled and the
+        // threshold is crossed shortly after the starting address
+        last_readbuf_intr_update_spi_clk_cycle = cfg.spi_host_agent_cfg.vif.clk_cycle;
+        `uvm_info(`gfn, $sformatf("Updating last_readbuf_intr_update_spi_clk_cycle=%0d now",
+                                  last_readbuf_intr_update_spi_clk_cycle), UVM_DEBUG)
+      end join_none
+
+      start_addr = convert_addr_from_byte_queue(item.address_q);
+
 
       // Use fork...join_none and lock until we return from 'compare_mem_byte' below.
       // This needs to be separated because thread below would be killed on
@@ -1648,7 +1697,17 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
           `uvm_info(`gfn,
                     $sformatf("'interrupt_update_ev' event is triggered (buffer_addr=0x%0x)",
                               read_buffer_addr + 1 ), UVM_DEBUG)
-          predict_read_buffer_intr(read_buffer_addr + 1, item.opcode);
+          last_readbuf_intr_update_spi_clk_cycle = cfg.spi_host_agent_cfg.vif.clk_cycle;
+          last_read_buffer_addr = read_buffer_addr + 1;
+          `uvm_info(`gfn, {$sformatf("Reading read-buffer:\n start_addr=0x%0x\n ",start_addr),
+                           $sformatf("last_read_buffer_addr=0x%0x\n ",last_read_buffer_addr)},
+                    UVM_DEBUG)
+          if (start_addr == read_buffer_addr /*&& start_addr % READ_BUFFER_HALF_SIZE == 0*/) begin
+            // Also predicting the first address, in case the starting addrcauses any flip/watermark
+            // interrupt
+            predict_read_buffer_intr(read_buffer_addr, item.opcode, item.read_pipeline_mode>0);
+          end
+          predict_read_buffer_intr(read_buffer_addr + 1, item.opcode, item.read_pipeline_mode>0);
 
           // task above is delay free since it's within a fork...join_any
           // Adding some "SPI-side" clk_delay to ensure the triggering events are noticed
@@ -1660,59 +1719,157 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
         `uvm_info(`gfn, "Exiting interrupt update fork", UVM_DEBUG)
       end join_none
 
-      start_addr = convert_addr_from_byte_queue(item.address_q);
-      `DV_SPINWAIT(
-                   while (1) begin
-                   wait (item.payload_q.size > payload_idx || item.mon_item_complete);
-                   if (item.payload_q.size > payload_idx) begin
-                   offset = (start_addr + payload_idx) % READ_BUFFER_SIZE;
-                   compare_mem_byte(READ_BUFFER_START_ADDR, offset, item.payload_q[payload_idx],
-                                    payload_idx, "Read buffer");
-                   read_buffer_addr = start_addr + payload_idx; // it's kept until reset
-                   payload_idx++; // clear to 0 when transaction is done
-                   -> interrupt_update_ev;
-                   `uvm_info(`gfn,
-                            $sformatf("Triggering 'interrupt_update_ev' event  (buffer_addr=0x%0x)",
-                                       read_buffer_addr + 1 ), UVM_DEBUG)
 
-                   `DV_CHECK_EQ(item.payload_q.size, payload_idx)
-                   end
-                   if (item.mon_item_complete) begin
-                   `uvm_info(`gfn,
-                             "item.mon_item_complete=1 -> disabling all threads under DV_SPINWAIT",
-                             UVM_DEBUG)
-                   break;
-                   end
-                   end, // while (1)
-                   , // Default message
-                   default_spinwait_timeout_ns*2, // Increase the default timeout by 2 since the
-                                                  // payload_size can be up to 3000 bytes based
-                                                  // on sequence constraints
-                   )
-      // Exiting while loop after we finish reading the buffer and triggering the event
+      //Initialise here in case command is cancelled and no payload is read
+      read_buffer_addr = start_addr + payload_idx;
+      read_pipeline_ongoing_read_buffer_cmd = item.read_pipeline_mode>0 ? 1: 0;
+
+      `DV_SPINWAIT(
+        while (1) begin
+          wait (item.payload_q.size > payload_idx || item.mon_item_complete);
+          if (item.payload_q.size > payload_idx) begin
+            ongoing_read_buffer_cmd = 1;
+
+            offset = (start_addr + payload_idx) % READ_BUFFER_SIZE;
+            `uvm_info(`gfn, $sformatf("Comparing memory addr -> base=0x%0x + offset=0x%0x",
+                                      READ_BUFFER_START_ADDR, offset), UVM_DEBUG)
+
+            compare_mem_byte(READ_BUFFER_START_ADDR, offset, item.payload_q[payload_idx],
+                             payload_idx, "Read buffer");
+            `uvm_info(`gfn, $sformatf("Comparison complete for -> base=0x%0x + offset=0x%0x",
+                                      READ_BUFFER_START_ADDR, offset), UVM_DEBUG)
+
+            read_buffer_addr = start_addr + payload_idx; // it's kept until reset
+            payload_idx++; // clear to 0 when transaction is done
+            -> interrupt_update_ev;
+            `uvm_info(`gfn,
+             $sformatf("Triggering 'interrupt_update_ev' event  (buffer_addr=0x%0x)",
+                       read_buffer_addr + 1 ), UVM_DEBUG)
+
+            `DV_CHECK_EQ(item.payload_q.size, payload_idx)
+          end
+          if (item.mon_item_complete) begin
+            `uvm_info(`gfn,
+             "item.mon_item_complete=1 -> disabling all threads under DV_SPINWAIT", UVM_DEBUG)
+            break;
+          end
+        end
+        , // while(1)
+        "timeout occurred when reading read buffer!",//default message
+        default_spinwait_timeout_ns*4//, // Increase the default timeout by 4 since the
+                                         // payload_size can be up to 3000 bytes based
+                                         // on sequence constraints
+      )
+
+
+      //Exiting while loop after we finish reading the buffer and triggering the event
       //  in case the process is waiting - so we unlock it
+      read_pipeline_read_buffer_cmd_last = read_pipeline_ongoing_read_buffer_cmd;
+      read_pipeline_ongoing_read_buffer_cmd = 0;
+      ongoing_read_buffer_cmd = 0;
       reading_readbuffer = 0;
       -> interrupt_update_ev;
+
+      if(item.payload_q.size == 0) begin
+        last_read_cmd_no_payload = 1;
+        if (item.read_pipeline_mode > 0) begin
+          //setting here, in case the CMd doesn't have any payload , the RTL will have already
+          //fetched from memory In some cases, depending on the start_addr that may trigger a
+          // readbufflip/readwatermark interrupt
+          last_read_buffer_addr = start_addr;
+        end
+      end
+
       // only update when it has payload
-      if (payload_idx > 0) begin
-        `uvm_info(`gfn, $sformatf("Update last_read_addr to 0x%0x", read_buffer_addr), UVM_MEDIUM)
-        void'(ral.last_read_addr.predict(.value(read_buffer_addr), .kind(UVM_PREDICT_READ)));
+      if ( (payload_idx > 0) ||
+           //Incomplete read command, but RTL has already fetched data and some of it it's in the read pipeline
+           ((item.read_pipeline_mode > 0) && payload_idx==0 && item.read_size==0)
+          ) begin
+        bit updating_last_read_addr=1;
+        if(payload_idx>0 && item.read_pipeline_mode > 0 /*&&
+           item.opcode inside {READ_QUAD,READ_QUADIO }*/) begin
+          string print_str =
+                           "Opcode is inside {READ_QUAD, READ_QUADIO} and read_pipeline is enabled";
+          print_str = {print_str, ".\n", "The RTL believes the read_addr is 1 unit above because",
+                       " the data has been read and is already in the read_pipeline, it has just",
+                       " not  come out to the host yet. Hence we increase read_buffer_addr by 1"};
+          `uvm_info(`gfn, print_str,
+                    UVM_DEBUG)
+          read_buffer_addr++;
+        end // if (payload_idx>0 && item.read_pipeline_mode > 0...
+        else if(item.terminated_before_read_pipeline) begin
+          // SPI Txn was terminated before the dummy cycles started, hence the RTL didn't even fetch the first address
+          updating_last_read_addr = 0;
+        end
+
+        if(updating_last_read_addr) begin
+          // Update read_buffer_addr predicted value
+          `DV_CHECK_EQ_FATAL( ral.last_read_addr.predict(.value(read_buffer_addr),
+                                                         .kind(UVM_PREDICT_READ)), 1,
+                              "ral.last_read_addr.predict did not succeed")
+          `uvm_info(`gfn, $sformatf("Update last_read_addr to 0x%0x", read_buffer_addr), UVM_MEDIUM)
+
+        end
+        else begin
+          `uvm_info(`gfn, {"Not updating 'last_read_addr' since the spi txn was cancelled before ",
+                           "the RTL fetched any data"}, UVM_DEBUG)
+        end
       end
     end
   endtask // process_read_buffer_cmd
 
-
-  virtual function void predict_read_buffer_intr(int addr, bit [7:0] opcode);
+  virtual function void predict_read_buffer_intr(int addr, bit [7:0] opcode,
+                                                 bit read_pipeline_enabled);
     int threshold = `gmv(ral.read_threshold);
-    int offset = addr % READ_BUFFER_HALF_SIZE;
+    int offset;
+    bit watermark_crossed_initial_addr, buf_flip_crossed_initial_addr;
 
-    if (offset >= threshold && threshold > 0 && !read_buffer_watermark_triggered) begin
+    if(read_pipeline_enabled) begin
+      if(opcode inside {READ_CMD_LIST} /*&& !(opcode inside {READ_NORMAL,READ_FAST})*/) begin
+
+        offset                              = addr % READ_BUFFER_HALF_SIZE;
+        if (offset >= threshold && threshold > 0 && !read_buffer_watermark_triggered) begin
+          //covers the case when the original address crosses the watermark, but the next one doesn't because it wraps
+          `uvm_info(`gfn, "Read-pipeline ON -> 1st addr crossed watermark interrupt threshold",
+                    UVM_DEBUG)
+          watermark_crossed_initial_addr = 1;
+        end
+        if (addr > 0 &&
+            addr % READ_BUFFER_HALF_SIZE == 0) begin
+          `uvm_info(`gfn, "Read-pipeline ON -> 1st addr crossed buf_flip interrupt threshold",
+                    UVM_DEBUG)
+          buf_flip_crossed_initial_addr  = 1;
+        end
+
+        // If the read_pipeline feature is enabled, that means the RTL will be "ahead" with data
+        // from the read buffer stored in the internal read_pipeline
+        `uvm_info(`gfn , "Increasing read buffer address because read_pipeline is ON", UVM_DEBUG)
+        addr++;
+      end
+    end
+    offset                              = addr % READ_BUFFER_HALF_SIZE;
+
+    `uvm_info(`gfn, {$sformatf("Read-buffer command (op=0x%0x) - addr=0x%0x - offset=0x%0x",
+                              opcode, addr, offset),
+                     $sformatf(" - threshold=0x%0x - watermark_crossed_initial_addr=0x%0x",
+                               threshold, watermark_crossed_initial_addr),
+                     $sformatf(" - buf_flip_crossed_initial_addr=0x%0x",
+                               buf_flip_crossed_initial_addr),
+                     $sformatf(" - read_buffer_watermark_triggered=0x%0x",
+                               read_buffer_watermark_triggered),
+                     $sformatf(" - READ_BUFFER_HALF_SIZE=0x%0x",READ_BUFFER_HALF_SIZE)}
+
+              , UVM_DEBUG)
+
+    if (watermark_crossed_initial_addr ||
+        (offset >= threshold && threshold > 0 && !read_buffer_watermark_triggered)) begin
       read_buffer_watermark_triggered = 1;
       update_pending_intr_w_delay(ReadbufWatermark);
       `uvm_info(`gfn, $sformatf("read buffer watermark is triggered, addr: 0x%0x", addr),
                 UVM_MEDIUM)
     end
-    if (addr % READ_BUFFER_HALF_SIZE == 0) begin
+    if (buf_flip_crossed_initial_addr ||
+        (addr>0 && addr % READ_BUFFER_HALF_SIZE == 0)) begin
       // after flip, WM can be triggered again
       read_buffer_watermark_triggered = 0;
       update_pending_intr_w_delay(ReadbufFlip);
@@ -1737,9 +1894,55 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
         `uvm_info(`gfn,
                   $sformatf("Wait %0d cycles to enable compare of %s interrupt",delay_cyc, intr.name()),
                   UVM_MEDIUM)
+        //Adding a SPI clock cycle
+        //        #(cfg.spi_host_agent_cfg.sck_period_ps * 1ps);
+
+        intr_pending_set_after_delay[intr]=1;
+
         cfg.clk_rst_vif.wait_n_clks(delay_cyc);
         `uvm_info(`gfn,$sformatf("Wait done; Enable compare of %s", intr.name()), UVM_MEDIUM)
-        intr_trigger_pending[intr] = 1;
+        if(intr_pending_read_set_before_delay[intr]) begin
+          string print_str = $sformatf("%s interrupt already predicted and read on TL-UL side",
+                                       intr.name());
+          print_str = {print_str, " ",
+                  $sformatf("Unsetting from 'intr_pending_read_set_before_delay[%s]'",intr.name())};
+          `uvm_info(`gfn, print_str, UVM_DEBUG)
+          intr_pending_read_set_before_delay[intr] = 0;
+        end
+        else if((intr == ReadbufFlip && readbuf_int_predicted_already) ||
+                (intr == ReadbufWatermark && readwatermark_int_predicted_already)
+                ) begin
+          if(intr == ReadbufFlip) begin
+            string print_str = "Readbuf_flip already predicted. Don't set it again - unsetting";
+            print_str = {print_str, " ",
+                         "'readbuf_int_predicted_already' and intr_pending_set_after_delay[intr]"};
+            readbuf_int_predicted_already = 0;
+            intr_pending_set_after_delay[intr] = 0;
+
+            `uvm_info(`gfn, print_str, UVM_DEBUG)
+          end
+
+          if(intr == ReadbufWatermark) begin
+            string print_str ="Readbuf_watermark already predicted. Don't set it again - unsetting";
+            print_str = {print_str, " ",
+                    "'readwatermark_int_predicted_already' and intr_pending_set_after_delay[intr]"};
+            readwatermark_int_predicted_already = 0;
+            intr_pending_set_after_delay[intr] = 0;
+            `uvm_info(`gfn, print_str, UVM_DEBUG)
+          end
+
+        end
+        else begin
+          intr_trigger_pending[intr] = 1;
+          `uvm_info(`gfn, $sformatf("Setting 'intr_trigger_pending[intr=%s]",intr.name()),
+                    UVM_DEBUG)
+        end
+
+        if(intr == ReadbufFlip && readbuf_int_predicted_already) begin
+          readbuf_int_predicted_already = 0;
+          `uvm_info(`gfn, {"Readbuf_flip already predicted. Don't set it again",
+                           " - unsetting 'readbuf_int_predicted_already'"} ,UVM_DEBUG)
+        end
       end // fork begin
     join_none
   endfunction // update_pending_intr_w_delay
@@ -1912,9 +2115,14 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
         if (!write && channel == DataChannel) begin
           bit [NumSpiDevIntr-1:0] intr_exp = `gmv(csr);
           bit [TL_DW-1:0] intr_en = ral.intr_enable.get_mirrored_value();
+          //Set when a read_line command is ongoing, or was ongoing last:
+          bit             read_pipeline_cmd_now_or_last;
+          bit             num_cycles_since_last_readbuf_intr_sck_update;
           spi_device_intr_e intr;
           `uvm_info(`gfn,
-                    $sformatf("INTR_STATE: read (bus_value_read: 0x%0x)",item.d_data ), UVM_DEBUG)
+                    $sformatf("INTR_STATE: read (bus_value_read: 0x%0x)\nTB expects=0x%0x",
+                              item.d_data, intr_exp ), UVM_DEBUG)
+
           foreach (intr_exp[i]) begin
             intr = spi_device_intr_e'(i); // cast to enum to get interrupt name
             if (cfg.en_cov) begin
@@ -1927,6 +2135,57 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
                 (i == TpmHeaderNotEmpty && !cfg.en_check_tpm_not_empty_intr)) begin
               continue;
             end
+
+            read_pipeline_cmd_now_or_last = read_pipeline_ongoing_read_buffer_cmd ||
+                                         (read_pipeline_read_buffer_cmd_last &&
+                                          ongoing_read_buffer_cmd==0);
+            num_cycles_since_last_readbuf_intr_sck_update = cfg.spi_host_agent_cfg.vif.clk_cycle -
+                                                            last_readbuf_intr_update_spi_clk_cycle;
+
+            // For readbuf_flip/watermark, it can happen the read buffer data has been latched
+            // onto the read pipeline, and even if the CSB isn't active, the RTL has read that
+            // address and potentially also set the interrupt for it
+            if (item.d_data[i] && read_pipeline_cmd_now_or_last &&
+                // RTL set interrupt before full data was output to the host:
+                (num_cycles_since_last_readbuf_intr_sck_update  < 8 ||
+                // Either we received the interrupt from a read before we predicted it (because the
+                // TB hasn't yet received a full byte of data, or the command didn't have a payload
+                // (but some data was buffered in read_pipeline), but it had the readpipeline
+                // enabled (hence the RTL may've read memory locations already) or the interrupt is
+                // due at the end of the transaction and there's payload data:
+                 (ongoing_read_buffer_cmd==0 && read_pipeline_read_buffer_cmd_last)) ) begin
+
+              if(i == ReadbufFlip &&
+                 ( (last_read_buffer_addr+1) % READ_BUFFER_HALF_SIZE == 0) ) begin
+                `uvm_info(`gfn, $sformatf("TB predicts this interrupt (%s) 'early'", intr.name),
+                          UVM_DEBUG)
+                intr_trigger_pending[i] = 1;
+                readbuf_int_predicted_already = 1;
+                read_buffer_watermark_triggered = 0;
+              end
+
+              if ( (i == ReadbufWatermark) &&
+                   //It needs to be equals in the case we predict early
+                   ( ( (last_read_buffer_addr+1) % READ_BUFFER_HALF_SIZE) ==
+                     `gmv(ral.read_threshold) && `gmv(ral.read_threshold) > 0) ) begin
+                `uvm_info(`gfn, $sformatf("TB predicts this interrupt (%s) 'early'", intr.name),
+                          UVM_DEBUG)
+                intr_trigger_pending[i] = 1;
+                readwatermark_int_predicted_already = 1;
+                read_buffer_watermark_triggered = 1;
+              end
+            end // if (item.d_data[i] && read_pipeline_cmd_now_or_last &&...
+
+            //TB is on its way to predict the interrupt, but the RTL already read the bit set
+            if(intr_pending_set_after_delay[i] && item.d_data[i]) begin
+              spi_device_intr_e intr = spi_device_intr_e'(i);
+              intr_pending_set_after_delay[i] = 0;
+              `uvm_info(`gfn, $sformatf("Unsetting intr_pending_set_after_delay[i=%s]",intr.name()),
+                        UVM_DEBUG)
+              intr_pending_read_set_before_delay[i] = 1;
+              intr_trigger_pending[i] = 1;
+            end
+
             if (!intr_trigger_pending[i]) begin
               `DV_CHECK_EQ(item.d_data[i], intr_exp[i],
                            $sformatf("Compare %s mismatch, act (0x%0x) != exp %p",
@@ -1934,10 +2193,24 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
             end else begin
               // there is an interrupt pending, update interrupt to 1
               // skip the check, as either 0 or 1 is fine
-              intr_exp[i] = 1;
-              void'(csr.predict(.value(intr_exp), .kind(UVM_PREDICT_READ)));
-              // clear pending interrupt
-              intr_trigger_pending[i] = 0;
+              if(item.d_data[i]) begin
+                // We update intr_expt[i] once the RTL reports the interrupt, otherwise there's a
+                // chance the TB will predict the interrupt quicker than the RTL
+                intr_exp[i] = 1;
+                `DV_CHECK_EQ_FATAL( csr.predict(.value(intr_exp), .kind(UVM_PREDICT_READ)), 1,
+                                    $sformatf("%s.predict did not succeed", csr.get_name())
+
+                `uvm_info(`gfn, $sformatf("updating CSR intr_state with intr_exp[i=%0d]=%0d",i,
+                                          intr_exp[i]), UVM_DEBUG)
+                // clear pending interrupt
+                intr_trigger_pending[i] = 0;
+              end
+              else begin
+                spi_device_intr_e intr = spi_device_intr_e'(i);
+                `uvm_info(`gfn, {"TB hasn't yet updated CSR status in spite of having predicted ",
+                                 $sformatf("an interrupt for %s interrupt because the ",intr.name),
+                                 "prediction was quicker than the RTL"}, UVM_DEBUG)
+              end
             end
           end // foreach (intr_exp[i])
           // Update local mirror copy of intr_exp
@@ -1950,22 +2223,35 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
           bit [NumSpiDevIntr-1:0] intr_val = item.a_data;
           bit [NumSpiDevIntr-1:0] intr_exp = `gmv(csr);
           `uvm_info(`gfn, $sformatf("INTR_STATE: write (0x%0x)",intr_val ), UVM_DEBUG)
+
           foreach (intr_val[i]) begin
             spi_device_intr_e intr = spi_device_intr_e'(i);
             if (intr_val[i]) begin
               `uvm_info(`gfn, $sformatf("Clear %s", intr.name), UVM_MEDIUM)
 
+              if(i == ReadbufFlip && intr_val[i] && readbuf_int_predicted_already) begin
+                `uvm_info(`gfn, "'readbuf_int_predicted_already' is unset", UVM_DEBUG)
+                readbuf_int_predicted_already = 0;
+              end
+
+              if ( (i == ReadbufWatermark) && intr_val[i] &&
+                   readwatermark_int_predicted_already) begin
+                `uvm_info(`gfn, "'readwatermark_int_predicted_already' is unset", UVM_DEBUG)
+                readwatermark_int_predicted_already = 0;
+              end
+
               // If intr_trigger_pending[i] is set and intr_exp_read_mirrored[i] is also set, that
               // means the TB has predicted another interrupt since last time intr_state was read.
               // But in the meantime, there's not been any intr_state.writes clearing the intr_state
               // register.
-              if (intr_trigger_pending[i] && intr_exp_read_mirrored[i]) begin
-                string printout =
-                $sformatf("Unsetting 'intr_trigger_pending[i=%s]'",spi_device_intr_e'(i));
-                `uvm_info(`gfn, printout , UVM_DEBUG)
+              if(intr_trigger_pending[i] && intr_exp_read_mirrored[i]) begin
+                `uvm_info(`gfn, $sformatf("Unsetting 'intr_trigger_pending[i=%p]'",
+                                          spi_device_intr_e'(i)) , UVM_DEBUG)
                 intr_trigger_pending[i] = 0;
               end
-              if (intr_exp_read_mirrored[i]) begin
+              if(intr_exp_read_mirrored[i]) begin
+                `uvm_info(`gfn, $sformatf("Unsetting 'intr_exp_read_mirrored[i=%p]'",
+                                          spi_device_intr_e'(i)) , UVM_DEBUG)
                 intr_exp_read_mirrored[i] = 0;
               end
             end
@@ -2363,5 +2649,6 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     `DV_CHECK_EQ(upload_cmd_q.size, 0)
     `DV_CHECK_EQ(upload_addr_q.size, 0)
     `DV_CHECK_EQ(tpm_read_sw_q.size, 0)
+    `DV_CHECK_EQ(|intr_trigger_pending, 0)
   endfunction
 endclass

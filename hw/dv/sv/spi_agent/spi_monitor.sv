@@ -250,6 +250,9 @@ class spi_monitor extends dv_base_monitor#(
                                      num_addr_bytes, item.write_command, item.num_lanes,
                                      item.dummy_cycles, item.read_pipeline_mode);
     `uvm_info(`gfn, $sformatf("sampled flash opcode: 0x%0h", item.opcode), UVM_HIGH)
+    item.terminated_before_dummy_cycles = 1;
+    if(item.read_pipeline_mode>0)
+      item.terminated_before_read_pipeline = 1;
 
     `uvm_info(`gfn, "Triggering 'host_item.byte_sampled' after sampling opcode", UVM_DEBUG)
     -> host_item.byte_sampled_ev;
@@ -264,28 +267,33 @@ class spi_monitor extends dv_base_monitor#(
     end
     `uvm_info(`gfn, $sformatf("Sending {opcode=0x%0x,address=%p} on the 'req_analysis_port'",
                               item.opcode, item.address_q), UVM_DEBUG)
+    item.terminated_before_dummy_cycles = 0;
+
     req_analysis_port.write(item);
 
     if (cfg.if_mode == dv_utils_pkg::Device) begin
-      `uvm_info(`gfn,
-         "spi monitor is configured in Device mode -> don't need to add extra read_pipeline delay",
-         UVM_HIGH)
+      `uvm_info(`gfn, {"spi monitor is configured in Device mode -> don't need to add extra",
+                       " read_pipeline delay"}, UVM_HIGH)
     end
     else begin
-      repeat ((item.read_pipeline_mode>0 ? 2 : 0)) begin
+      repeat (item.read_pipeline_mode>0 ? 2 : 0) begin
         cfg.wait_sck_edge(SamplingEdge, active_csb);
+        item.terminated_before_read_pipeline = 0;
       end
     end
 
-    `uvm_info(`gfn, $sformatf(
-      "TB waited for (%0d) dummy_cycles + (%0d) cycles due to read_pipeline",
-      item.dummy_cycles, (item.read_pipeline_mode && cfg.if_mode != dv_utils_pkg::Device)  ? 2 : 0),
+    `uvm_info(`gfn, $sformatf("TB waited for (%0d) dummy_cycles + (%0d) cycles due to read_pipeline"
+                    ,item.dummy_cycles, (item.read_pipeline_mode &&
+                    cfg.if_mode != dv_utils_pkg::Device)  ? 2 : 0), UVM_DEBUG)
+
+    `uvm_info(`gfn, "Triggering 'dummy_cycles_ev' after dummy_cycles+read_pipeline(if any)",
               UVM_DEBUG)
+    -> host_item.dummy_cycles_ev;
 
     forever begin
       logic[7:0] byte_data;
       sample_and_check_byte(item.num_lanes, !item.write_command, byte_data);
-      `uvm_info(`gfn, $sformatf("Sampled: 0x%0x data",byte_data), UVM_DEBUG)
+      `uvm_info(`gfn, $sformatf("Sampled: 0x%0x data", byte_data), UVM_DEBUG)
       item.payload_q.push_back(byte_data);
       `uvm_info(`gfn, "Triggering 'host_item.byte_sampled' after sampling a data byte", UVM_DEBUG)
       -> host_item.byte_sampled_ev;

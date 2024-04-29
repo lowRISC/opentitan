@@ -30,6 +30,8 @@ interface spi_if
 
   bit         en_chk = 1;
   string      msg_id = "spi_if";
+
+  int unsigned clk_cycle;
   //---------------------------------
   // common tasks
   //---------------------------------
@@ -58,6 +60,13 @@ interface spi_if
     end
     `uvm_fatal(msg_id, "Don't call this function - get_active_csb when there is no active CSB")
   endfunction : get_active_csb
+
+  initial forever begin
+    @(posedge sck);
+    if (rst_n === 1)
+      if (&csb === 0)
+        clk_cycle++;
+  end
 
   // check only 1 csb can be active
   initial forever begin

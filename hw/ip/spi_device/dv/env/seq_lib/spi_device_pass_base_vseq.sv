@@ -447,7 +447,7 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
       cfg.spi_device_agent_cfg.add_cmd_info(info);
     end
 
-    `uvm_info(`gfn, $sformatf("Adding to cmd_info slot (%0d) this cmd_info \n%s", idx,
+    `uvm_info(`gfn, $sformatf("Adding to cmd_info slot (%0d) this cmd_info\n%s", idx,
                               info.sprint()), UVM_MEDIUM)
     case (info.num_lanes)
       0: lanes_en = 0;

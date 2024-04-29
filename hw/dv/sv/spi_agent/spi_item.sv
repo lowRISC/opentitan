@@ -20,6 +20,8 @@ class spi_item extends uvm_sequence_item;
   rand bit [2:0] num_lanes;
   rand int dummy_cycles;
   rand int read_pipeline_mode;
+  rand bit terminated_before_dummy_cycles;
+  rand bit terminated_before_read_pipeline;
 
   // for dummy transaction
   rand uint dummy_sck_cnt;
@@ -34,7 +36,7 @@ class spi_item extends uvm_sequence_item;
   bit mon_item_complete;
 
   // Triggered for each byte sampled and when CSB becomes inactive
-  event byte_sampled_ev, item_finished_ev;
+  event byte_sampled_ev, dummy_cycles_ev, item_finished_ev;
 
   // constrain size of data sent / received to be at most 64kB
   constraint data_size_c { data.size() inside {[0:65536]}; }
@@ -73,6 +75,8 @@ class spi_item extends uvm_sequence_item;
     `uvm_field_queue_int(payload_q,              UVM_DEFAULT)
     `uvm_field_queue_int(address_q,              UVM_DEFAULT)
     `uvm_field_int(read_pipeline_mode,           UVM_DEFAULT)
+    `uvm_field_int(terminated_before_dummy_cycles,UVM_DEFAULT)
+    `uvm_field_int(terminated_before_read_pipeline,UVM_DEFAULT)
   `uvm_object_utils_end
 
   `uvm_object_new
