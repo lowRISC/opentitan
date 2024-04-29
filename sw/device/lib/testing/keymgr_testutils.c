@@ -38,6 +38,16 @@ enum {
   kFlashInfoPageIdOwnerSecret = 2,
 };
 
+const static char *kKeymgrStageNames[] = {
+    [kDifKeymgrStateReset] = "Reset",
+    [kDifKeymgrStateInitialized] = "Init",
+    [kDifKeymgrStateCreatorRootKey] = "CreatorRootKey",
+    [kDifKeymgrStateOwnerIntermediateKey] = "OwnerIntKey",
+    [kDifKeymgrStateOwnerRootKey] = "OwnerKey",
+    [kDifKeymgrStateDisabled] = "Disabled",
+    [kDifKeymgrStateInvalid] = "Invalid",
+};
+
 static status_t write_info_page(dif_flash_ctrl_state_t *flash, uint32_t page_id,
                                 const keymgr_testutils_secret_t *data,
                                 bool scramble) {
@@ -244,5 +254,51 @@ status_t keymgr_testutils_wait_for_operation_done(const dif_keymgr_t *keymgr) {
   } while (status == 0);
   TRY_CHECK(status == kDifKeymgrStatusCodeIdle, "Unexpected status: %x",
             status);
+  return OK_STATUS();
+}
+
+status_t keymgr_testutils_max_key_version_get(const dif_keymgr_t *keymgr,
+                                              uint32_t *max_key_version) {
+  dif_keymgr_state_t keymgr_state;
+  TRY(dif_keymgr_get_state(keymgr, &keymgr_state));
+
+  if (keymgr_state == kDifKeymgrStateInvalid ||
+      keymgr_state == kDifKeymgrStateDisabled ||
+      keymgr_state == kDifKeymgrStateReset) {
+    LOG_INFO("Unexpected keymgr state: 0x%x", keymgr_state);
+    return INTERNAL();
+  }
+
+  dif_keymgr_max_key_version_t versions;
+  TRY(dif_keymgr_read_max_key_version(keymgr, &versions));
+
+  switch (keymgr_state) {
+    case kDifKeymgrStateCreatorRootKey:
+      *max_key_version = versions.creator_max_key_version;
+      break;
+    case kDifKeymgrStateOwnerIntermediateKey:
+      *max_key_version = versions.owner_int_max_key_version;
+      break;
+    case kDifKeymgrStateOwnerRootKey:
+      *max_key_version = versions.owner_max_key_version;
+      break;
+    default:
+      return INTERNAL();
+  }
+
+  return OK_STATUS();
+}
+
+status_t keymgr_testutils_state_string_get(const dif_keymgr_t *keymgr,
+                                           const char **stage_name) {
+  dif_keymgr_state_t state;
+  CHECK_DIF_OK(dif_keymgr_get_state(keymgr, &state));
+
+  if (state >= ARRAYSIZE(kKeymgrStageNames)) {
+    *stage_name = NULL;
+    return INTERNAL();
+  }
+
+  *stage_name = kKeymgrStageNames[state];
   return OK_STATUS();
 }
