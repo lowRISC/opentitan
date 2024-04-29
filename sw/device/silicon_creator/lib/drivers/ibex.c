@@ -22,9 +22,14 @@ uint32_t ibex_fpga_version(void) {
 
 void ibex_addr_remap_0_set(uint32_t matching_addr, uint32_t remap_addr,
                            size_t size) {
-  uint32_t mask = matching_addr | ((size - 1) >> 1);
-  sec_mmio_write32(kBase + RV_CORE_IBEX_IBUS_ADDR_MATCHING_0_REG_OFFSET, mask);
-  sec_mmio_write32(kBase + RV_CORE_IBEX_DBUS_ADDR_MATCHING_0_REG_OFFSET, mask);
+  // Work-around for opentitan#22884: Mask off bits below the alignment size
+  // prior to programming the REMAP_ADDR register.
+  size = size - 1;
+  uint32_t match = (matching_addr & ~size) | size >> 1;
+  remap_addr &= ~size;
+
+  sec_mmio_write32(kBase + RV_CORE_IBEX_IBUS_ADDR_MATCHING_0_REG_OFFSET, match);
+  sec_mmio_write32(kBase + RV_CORE_IBEX_DBUS_ADDR_MATCHING_0_REG_OFFSET, match);
 
   sec_mmio_write32(kBase + RV_CORE_IBEX_IBUS_REMAP_ADDR_0_REG_OFFSET,
                    remap_addr);
@@ -38,9 +43,14 @@ void ibex_addr_remap_0_set(uint32_t matching_addr, uint32_t remap_addr,
 
 void ibex_addr_remap_1_set(uint32_t matching_addr, uint32_t remap_addr,
                            size_t size) {
-  uint32_t mask = matching_addr | ((size - 1) >> 1);
-  sec_mmio_write32(kBase + RV_CORE_IBEX_IBUS_ADDR_MATCHING_1_REG_OFFSET, mask);
-  sec_mmio_write32(kBase + RV_CORE_IBEX_DBUS_ADDR_MATCHING_1_REG_OFFSET, mask);
+  // Work-around for opentitan#22884: Mask off bits below the alignment size
+  // prior to programming the REMAP_ADDR register.
+  size = size - 1;
+  uint32_t match = (matching_addr & ~size) | size >> 1;
+  remap_addr &= ~size;
+
+  sec_mmio_write32(kBase + RV_CORE_IBEX_IBUS_ADDR_MATCHING_1_REG_OFFSET, match);
+  sec_mmio_write32(kBase + RV_CORE_IBEX_DBUS_ADDR_MATCHING_1_REG_OFFSET, match);
 
   sec_mmio_write32(kBase + RV_CORE_IBEX_IBUS_REMAP_ADDR_1_REG_OFFSET,
                    remap_addr);
