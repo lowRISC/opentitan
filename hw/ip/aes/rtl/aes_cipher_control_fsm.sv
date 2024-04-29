@@ -384,6 +384,9 @@ module aes_cipher_control_fsm import aes_pkg::*;
         // Keep requesting PRNG reseeding until it is acknowledged.
         prng_reseed_req_o = prng_reseed_q_i & ~prng_reseed_done_q;
 
+        // Don't update the cycle counter as we don't need it.
+        cyc_ctr_d = 3'd0;
+
         // Once we're done, wait for handshake.
         out_valid_o = prng_reseed_done_q;
         if (out_valid_o && out_ready_i) begin
