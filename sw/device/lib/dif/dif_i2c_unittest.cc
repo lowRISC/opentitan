@@ -530,18 +530,24 @@ TEST_F(ControlTest, ControllerHaltEvents) {
   EXPECT_READ32(I2C_CONTROLLER_EVENTS_REG_OFFSET,
                 {
                     {I2C_CONTROLLER_EVENTS_NACK_BIT, 1},
+                    {I2C_CONTROLLER_EVENTS_ARBITRATION_LOST_BIT, 1},
                 });
   EXPECT_DIF_OK(dif_i2c_get_controller_halt_events(&i2c_, &events_arg));
   EXPECT_TRUE(events_arg.nack_received);
   EXPECT_FALSE(events_arg.unhandled_nack_timeout);
+  EXPECT_FALSE(events_arg.bus_timeout);
+  EXPECT_TRUE(events_arg.arbitration_lost);
 
   EXPECT_READ32(I2C_CONTROLLER_EVENTS_REG_OFFSET,
                 {
                     {I2C_CONTROLLER_EVENTS_UNHANDLED_NACK_TIMEOUT_BIT, 1},
+                    {I2C_CONTROLLER_EVENTS_BUS_TIMEOUT_BIT, 1},
                 });
   EXPECT_DIF_OK(dif_i2c_get_controller_halt_events(&i2c_, &events_arg));
   EXPECT_FALSE(events_arg.nack_received);
   EXPECT_TRUE(events_arg.unhandled_nack_timeout);
+  EXPECT_TRUE(events_arg.bus_timeout);
+  EXPECT_FALSE(events_arg.arbitration_lost);
 
   events_arg.nack_received = false;
   events_arg.unhandled_nack_timeout = true;
@@ -557,11 +563,13 @@ TEST_F(ControlTest, ControllerHaltEvents) {
   events_arg.nack_received = true;
   events_arg.unhandled_nack_timeout = false;
   events_arg.bus_timeout = true;
+  events_arg.arbitration_lost = false;
   EXPECT_WRITE32(I2C_CONTROLLER_EVENTS_REG_OFFSET,
                  {
                      {I2C_CONTROLLER_EVENTS_NACK_BIT, 1},
                      {I2C_CONTROLLER_EVENTS_UNHANDLED_NACK_TIMEOUT_BIT, 0},
                      {I2C_CONTROLLER_EVENTS_BUS_TIMEOUT_BIT, 1},
+                     {I2C_CONTROLLER_EVENTS_ARBITRATION_LOST_BIT, 0},
                  });
   EXPECT_DIF_OK(dif_i2c_clear_controller_halt_events(&i2c_, events_arg));
 }
@@ -613,30 +621,37 @@ TEST_F(ControlTest, DeviceHaltEvents) {
   EXPECT_DIF_OK(dif_i2c_get_target_tx_halt_events(&i2c_, &events_arg));
   EXPECT_TRUE(events_arg.tx_pending);
   EXPECT_FALSE(events_arg.bus_timeout);
+  EXPECT_FALSE(events_arg.arbitration_lost);
 
   EXPECT_READ32(I2C_TARGET_EVENTS_REG_OFFSET,
                 {
                     {I2C_TARGET_EVENTS_BUS_TIMEOUT_BIT, 1},
+                    {I2C_TARGET_EVENTS_ARBITRATION_LOST_BIT, 1},
                 });
   EXPECT_DIF_OK(dif_i2c_get_target_tx_halt_events(&i2c_, &events_arg));
   EXPECT_FALSE(events_arg.tx_pending);
   EXPECT_TRUE(events_arg.bus_timeout);
+  EXPECT_TRUE(events_arg.arbitration_lost);
 
   events_arg.tx_pending = false;
   events_arg.bus_timeout = true;
+  events_arg.arbitration_lost = false;
   EXPECT_WRITE32(I2C_TARGET_EVENTS_REG_OFFSET,
                  {
                      {I2C_TARGET_EVENTS_TX_PENDING_BIT, 0},
                      {I2C_TARGET_EVENTS_BUS_TIMEOUT_BIT, 1},
+                     {I2C_TARGET_EVENTS_ARBITRATION_LOST_BIT, 0},
                  });
   EXPECT_DIF_OK(dif_i2c_clear_target_tx_halt_events(&i2c_, events_arg));
 
   events_arg.tx_pending = true;
   events_arg.bus_timeout = false;
+  events_arg.arbitration_lost = true;
   EXPECT_WRITE32(I2C_TARGET_EVENTS_REG_OFFSET,
                  {
                      {I2C_TARGET_EVENTS_TX_PENDING_BIT, 1},
                      {I2C_TARGET_EVENTS_BUS_TIMEOUT_BIT, 0},
+                     {I2C_TARGET_EVENTS_ARBITRATION_LOST_BIT, 1},
                  });
   EXPECT_DIF_OK(dif_i2c_clear_target_tx_halt_events(&i2c_, events_arg));
 }

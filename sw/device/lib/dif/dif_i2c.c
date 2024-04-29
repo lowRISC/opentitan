@@ -74,6 +74,8 @@ dif_result_t dif_i2c_get_controller_halt_events(
       reg, I2C_CONTROLLER_EVENTS_UNHANDLED_NACK_TIMEOUT_BIT);
   events->bus_timeout =
       bitfield_bit32_read(reg, I2C_CONTROLLER_EVENTS_BUS_TIMEOUT_BIT);
+  events->arbitration_lost =
+      bitfield_bit32_read(reg, I2C_CONTROLLER_EVENTS_ARBITRATION_LOST_BIT);
   return kDifOk;
 }
 
@@ -90,6 +92,8 @@ dif_result_t dif_i2c_clear_controller_halt_events(
                              events.unhandled_nack_timeout);
   reg = bitfield_bit32_write(reg, I2C_CONTROLLER_EVENTS_BUS_TIMEOUT_BIT,
                              events.bus_timeout);
+  reg = bitfield_bit32_write(reg, I2C_CONTROLLER_EVENTS_ARBITRATION_LOST_BIT,
+                             events.arbitration_lost);
   mmio_region_write32(i2c->base_addr, I2C_CONTROLLER_EVENTS_REG_OFFSET, reg);
   return kDifOk;
 }
@@ -105,6 +109,8 @@ dif_result_t dif_i2c_get_target_tx_halt_events(
       bitfield_bit32_read(reg, I2C_TARGET_EVENTS_TX_PENDING_BIT);
   events->bus_timeout =
       bitfield_bit32_read(reg, I2C_TARGET_EVENTS_BUS_TIMEOUT_BIT);
+  events->arbitration_lost =
+      bitfield_bit32_read(reg, I2C_TARGET_EVENTS_ARBITRATION_LOST_BIT);
   return kDifOk;
 }
 
@@ -118,6 +124,8 @@ dif_result_t dif_i2c_clear_target_tx_halt_events(
                              events.tx_pending);
   reg = bitfield_bit32_write(reg, I2C_TARGET_EVENTS_BUS_TIMEOUT_BIT,
                              events.bus_timeout);
+  reg = bitfield_bit32_write(reg, I2C_TARGET_EVENTS_ARBITRATION_LOST_BIT,
+                             events.arbitration_lost);
   mmio_region_write32(i2c->base_addr, I2C_TARGET_EVENTS_REG_OFFSET, reg);
   return kDifOk;
 }
