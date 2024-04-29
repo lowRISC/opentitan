@@ -11,13 +11,13 @@ class spi_flash_cmd_info extends uvm_sequence_item;
   // number of lanes when sending payload, set to 0 if no payload is expected
   rand bit [2:0] num_lanes;
   rand int dummy_cycles;
+  // 2-stage read_pipeline enabled when >0
   rand bit [1:0] read_pipeline_mode;
 
   constraint addr_mode_c {
     // for dual/quad mode, it always contains address
     num_lanes > 1 -> addr_mode != SpiFlashAddrDisabled;
   }
-
 
   constraint num_lanes_c {
     write_command -> num_lanes == 1;

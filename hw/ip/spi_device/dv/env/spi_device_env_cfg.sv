@@ -100,6 +100,7 @@ class spi_device_env_cfg extends cip_base_env_cfg #(.RAL_T(spi_device_reg_block)
     bit [31:0] mbx_base_addr = get_mbx_base_addr();
     bit is_passthru = `gmv(ral.control.mode) == PassthroughMode;
     bit mailbox_en;
+
     if (`gmv(ral.cfg.mailbox_en)) begin
       mailbox_en = 1;
       if (is_passthru) mailbox_en &= `gmv(ral.intercept_en.mbx);
