@@ -3,14 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "//rules/opentitan:defs.bzl",
-    "cw310_params",
-    "dv_params",
-    "opentitan_binary",
-    "opentitan_test",
-    "verilator_params",
-)
-load(
     "//rules:const.bzl",
     "CONST",
 )
@@ -21,6 +13,14 @@ load(
     "otp_image",
     "otp_json",
     "otp_partition",
+)
+load(
+    "//rules/opentitan:defs.bzl",
+    "cw310_params",
+    "dv_params",
+    "opentitan_binary",
+    "opentitan_test",
+    "verilator_params",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -39,21 +39,22 @@ opentitan_binary(
         "//sw/device/lib/testing:keymgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib/drivers:hmac",
         "//sw/device/silicon_creator/lib/drivers:otp",
     ],
 )
 
 rom_e2e_keymgr_init_configs = [
     {
-        "name": "rom_ext_meas",
+        "name": "otp_meas",
         "value": CONST.HARDENED_TRUE,
     },
     {
-        "name": "rom_ext_no_meas",
+        "name": "otp_no_meas",
         "value": CONST.HARDENED_FALSE,
     },
     {
-        "name": "rom_ext_invalid_meas",
+        "name": "otp_invalid_meas",
         "value": 0,
     },
 ]

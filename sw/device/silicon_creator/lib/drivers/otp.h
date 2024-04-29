@@ -11,6 +11,8 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
+#include "otp_ctrl_regs.h"  // Generated.
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -27,6 +29,9 @@ extern "C" {
  * ```
  */
 enum {
+  /**
+   * Individual register reads/writes.
+   */
   kOtpSecMmioCreatorSwCfgLockDown = 1,
   kOtpSecMmioDaiRead32 = 1,
   kOtpSecMmioDaiRead64 = 1,
@@ -61,12 +66,13 @@ typedef struct otp_partition_info {
  * OTP partitions whose fields are readable after being locked.
  */
 typedef enum otp_partition {
-  kOtpPartitionCreatorSwCfg,
-  kOtpPartitionOwnerSwCfg,
-  kOtpPartitionRotCreatorAuthCodesign,
-  kOtpPartitionRotCreatorAuthState,
-  kOtpPartitionHwCfg0,
-  kOtpPartitionHwCfg1,
+  kOtpPartitionCreatorSwCfg = 0,
+  kOtpPartitionOwnerSwCfg = 1,
+  kOtpPartitionRotCreatorAuthCodesign = 2,
+  kOtpPartitionRotCreatorAuthState = 3,
+  kOtpPartitionHwCfg0 = 4,
+  kOtpPartitionHwCfg1 = 5,
+  kOtpPartitionNumPartitions = 6,
 } otp_partition_t;
 
 /**

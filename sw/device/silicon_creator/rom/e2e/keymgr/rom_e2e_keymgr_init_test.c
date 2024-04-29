@@ -13,6 +13,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/base/boot_measurements.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
+#include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/manifest.h"
 #include "sw/device/silicon_creator/lib/manifest_def.h"
@@ -21,6 +22,8 @@
 #include "otp_ctrl_regs.h"  // Generated
 
 OTTF_DEFINE_TEST_CONFIG();
+
+static uint32_t otp_state[kHmacDigestNumWords + 4] = {0};
 
 bool test_main(void) {
   dif_keymgr_t keymgr;
@@ -36,8 +39,32 @@ bool test_main(void) {
 
   if (otp_read32(OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_KEYMGR_OTP_MEAS_EN_OFFSET) ==
       kHardenedBoolTrue) {
-    // Check that the attestation is equal to the digest.
-    CHECK_ARRAYS_EQ(bindings.attestation, boot_measurements.rom_ext.data,
+    // Check that the attestation is equal to the digest of concatenations of:
+    //   - the digest of the CreatorSwCfg partition,
+    //   - the digest of the OwnerSwCfg partition,
+    //   - the SHA256 integrity hash of the first stage boot keys.
+    otp_dai_read(kOtpPartitionCreatorSwCfg,
+                 /*relative_address=*/
+                 kOtpPartitions[kOtpPartitionCreatorSwCfg].digest_addr -
+                     OTP_CTRL_PARAM_CREATOR_SW_CFG_OFFSET,
+                 otp_state,
+                 /*num_words=*/2);
+    otp_dai_read(kOtpPartitionOwnerSwCfg,
+                 /*relative_address=*/
+                 kOtpPartitions[kOtpPartitionOwnerSwCfg].digest_addr -
+                     OTP_CTRL_PARAM_OWNER_SW_CFG_OFFSET,
+                 &otp_state[2],
+                 /*num_words=*/2);
+    otp_dai_read(kOtpPartitionRotCreatorAuthCodesign,
+                 /*relative_address=*/
+                 OTP_CTRL_PARAM_ROTCREATORAUTHCODESIGNBLOCKSHA2_256HASHOFFSET -
+                     OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_OFFSET,
+                 &otp_state[4],
+                 /*num_words=*/kHmacDigestNumWords);
+    hmac_digest_t otp_measurement;
+    hmac_sha256(otp_state, (kHmacDigestNumWords + 4) * sizeof(uint32_t),
+                &otp_measurement);
+    CHECK_ARRAYS_EQ(bindings.attestation, otp_measurement.digest,
                     ARRAYSIZE(bindings.attestation));
   } else {
     // Check that the attestation is equal to `binding_value` field of the
