@@ -58,13 +58,14 @@ class hmac_env_cov extends cip_base_env_cov #(.CFG_T(hmac_env_cfg));
 
   covergroup err_code_cg with function sample (bit [TL_DW-1:0] err_code);
     hmac_errors: coverpoint err_code {
+      // TODO extend with new error code
       bins no_error                     = {NoError};
       // This error code is not used in this version. PR #13854.
       // bins push_msg_when_sha_disabled   = {SwPushMsgWhenShaDisabled};
       bins hash_start_when_sha_disabled = {SwHashStartWhenShaDisabled};
       bins update_secret_key_in_process = {SwUpdateSecretKeyInProcess};
       bins hash_start_when_active       = {SwHashStartWhenActive};
-      bins push_msg_when_idle           = {SwPushMsgWhenIdle};
+      bins push_msg_when_disallowed     = {SwPushMsgWhenDisallowed};
       bins key_length_higher_blk_size   = {SwInvalidConfig};
       illegal_bins illegalvalue         = default;
     }

@@ -21,8 +21,11 @@ package hmac_env_pkg;
   `include "dv_macros.svh"
 
   // local parameters and types
-  parameter uint32 HMAC_MSG_FIFO_DEPTH        = 32;
-  parameter uint32 HMAC_MSG_FIFO_DEPTH_BYTES  = HMAC_MSG_FIFO_DEPTH * 4;
+  parameter uint32 HMAC_MSG_FIFO_DEPTH_WR     = 32;
+  parameter uint32 HMAC_MSG_FIFO_DEPTH_RD     = 16;
+  parameter uint32 HMAC_MSG_FIFO_DEPTH_256    = 16;
+  parameter uint32 HMAC_MSG_FIFO_DEPTH_512    = 32;
+  parameter uint32 HMAC_MSG_FIFO_DEPTH_BYTES  = HMAC_MSG_FIFO_DEPTH_WR * 4;
   parameter uint32 HMAC_MSG_FIFO_SIZE         = 2048;
   parameter uint32 HMAC_MSG_FIFO_BASE         = 32'h1000;
   parameter uint32 HMAC_MSG_FIFO_LAST_ADDR    = HMAC_MSG_FIFO_BASE + HMAC_MSG_FIFO_SIZE - 1;
@@ -83,7 +86,7 @@ package hmac_env_pkg;
     SwHashStartWhenShaDisabled = 2,
     SwUpdateSecretKeyInProcess = 3,
     SwHashStartWhenActive      = 4,
-    SwPushMsgWhenIdle          = 5,
+    SwPushMsgWhenDisallowed    = 5,
     SwInvalidConfig            = 6
   } err_code_e;
 
