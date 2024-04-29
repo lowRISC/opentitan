@@ -38,6 +38,7 @@ static dif_rv_plic_t rv_plic;
 static dif_aon_timer_t aon_timer;
 static dif_pwrmgr_t pwrmgr;
 static dif_rstmgr_t rstmgr;
+static dif_sram_ctrl_t ret_sram;
 static plic_isr_ctx_t plic_ctx = {.rv_plic = &rv_plic,
                                   .hart_id = kTopEarlgreyPlicTargetIbex0};
 static pwrmgr_isr_ctx_t pwrmgr_isr_ctx = {
@@ -53,29 +54,22 @@ const uint32_t kTestData[kTestBufferSizeWords] = {
     0x49338fbd, 0x093e82cb, 0xaaa58121, 0x5b806f96,
 };
 
-typedef struct {
-  bool do_write;
-  bool is_equal;
-} check_config_t;
+static void retention_sram_write(void) {
+  sram_ctrl_testutils_write(
+      kRetSramOwnerAddr, (sram_ctrl_testutils_data_t){
+                             .words = kTestData, .len = kTestBufferSizeWords});
+}
 
-static void retention_sram_check(check_config_t config) {
-  if (config.do_write) {
-    sram_ctrl_testutils_write(
-        kRetSramOwnerAddr,
-        (sram_ctrl_testutils_data_t){.words = kTestData,
-                                     .len = kTestBufferSizeWords});
-  }
-
+static void retention_sram_check(bool equal) {
   uint32_t tmp_buffer[kTestBufferSizeWords];
   memcpy(tmp_buffer, (uint8_t *)kRetSramOwnerAddr, sizeof(tmp_buffer));
 
-  if (config.is_equal) {
+  if (equal) {
     CHECK_ARRAYS_EQ(tmp_buffer, kTestData, kTestBufferSizeWords);
   } else {
     CHECK_ARRAYS_NE(tmp_buffer, kTestData, kTestBufferSizeWords);
   }
-  LOG_INFO("retention ram check with write=%d and is_equal=%d succeeded",
-           config.do_write, config.is_equal);
+  LOG_INFO("retention ram check with equal=%d succeeded", equal);
 }
 
 /**
@@ -104,8 +98,9 @@ void ottf_external_isr(uint32_t *exc_info) {
 // normal sleep, no scrambling -> data preserved
 // normal sleep, with scrambling -> data preserved
 void test_ret_sram_in_normal_sleep(void) {
-  // Write data to retention SRAM and readback (to test basic functionality.)
-  retention_sram_check((check_config_t){.do_write = true, .is_equal = true});
+  // Write data to retention SRAM and readback (to test basic functionality).
+  retention_sram_write();
+  retention_sram_check(/* equal = */ true);
 
   // set up wakeup timer
   CHECK_STATUS_OK(aon_timer_testutils_wakeup_config(&aon_timer, 20));
@@ -125,7 +120,7 @@ void test_ret_sram_in_normal_sleep(void) {
   LOG_INFO("Issue WFI to enter normal sleep");
   wait_for_interrupt();
   // data preserved
-  retention_sram_check((check_config_t){.do_write = false, .is_equal = true});
+  retention_sram_check(/* equal = */ true);
 }
 
 // test these 2 cases:
@@ -176,6 +171,8 @@ bool execute_sram_ctrl_sleep_ret_sram_contents_test(bool scramble) {
   CHECK_DIF_OK(dif_aon_timer_init(addr, &aon_timer));
   addr = mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);
   CHECK_DIF_OK(dif_rv_plic_init(addr, &rv_plic));
+  addr = mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR);
+  CHECK_DIF_OK(dif_sram_ctrl_init(addr, &ret_sram));
 
   dif_rstmgr_reset_info_bitfield_t rstmgr_reset_info;
   rstmgr_reset_info = rstmgr_testutils_reason_get();
@@ -188,17 +185,53 @@ bool execute_sram_ctrl_sleep_ret_sram_contents_test(bool scramble) {
              scramble ? "" : "not ");
 
     if (scramble) {
-      dif_sram_ctrl_t ret_sram;
-      addr =
-          mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR);
-      CHECK_DIF_OK(dif_sram_ctrl_init(addr, &ret_sram));
+      // NOTE:
+      // The ES version of the ROM does not set the version field of the
+      // retention SRAM when it boots after being scrambled. The ROM_EXT
+      // expects a valid version and refuses to boot otherwise.
+      //
+      // This is fixed in the prod ROM, but we can must work around it in ES
+      // tests by restoring the version after the wipe.
+      //
+      // We write the version pre-scrambling since we want it to be readable
+      // using the default scrambling keys on the next boot.
+      uint32_t version = retention_sram_get()->version;
+
+      LOG_INFO("Wiping ret_sram...");
+      CHECK_STATUS_OK(sram_ctrl_testutils_wipe(&ret_sram));
+
+      retention_sram_get()->version = version;
+
+      LOG_INFO("Scrambling ret_sram...");
+      CHECK_STATUS_OK(sram_ctrl_testutils_scramble(&ret_sram));
+    }
+
+    retention_sram_write();
+    set_up_reset_request();
+  } else if (rstmgr_reset_info & kDifRstmgrResetInfoWatchdog) {
+    LOG_INFO("watchdog reset");
+    // reset due to a reset request, if scramble data is not preserved.
+    retention_sram_check(/* equal = */ !scramble);
+
+    if (scramble) {
+      // NOTE:
+      // As above, we restore the retention SRAM version here, except this time
+      // we do it _after_ scrambling since the next boot will be done using the
+      // new scrambling keys.
+      uint32_t version = retention_sram_get()->version;
+
       LOG_INFO("Wiping ret_sram...");
       CHECK_STATUS_OK(sram_ctrl_testutils_wipe(&ret_sram));
       LOG_INFO("Scrambling ret_sram...");
       CHECK_STATUS_OK(sram_ctrl_testutils_scramble(&ret_sram));
+
+      // Restore the retention SRAM version from before it was scrambled.
+      retention_sram_get()->version = version;
     }
+
     test_ret_sram_in_normal_sleep();
 
+    retention_sram_write();
     enter_deep_sleep();
   } else if (rstmgr_reset_info & kDifRstmgrResetInfoLowPowerExit) {
     LOG_INFO("Wake up from deep sleep");
@@ -206,14 +239,7 @@ bool execute_sram_ctrl_sleep_ret_sram_contents_test(bool scramble) {
     CHECK(UNWRAP(pwrmgr_testutils_is_wakeup_reason(
               &pwrmgr, kDifPwrmgrWakeupRequestSourceFive)) == true);
     // data preserved
-    retention_sram_check((check_config_t){.do_write = false, .is_equal = true});
-
-    set_up_reset_request();
-  } else if (rstmgr_reset_info & kDifRstmgrResetInfoWatchdog) {
-    LOG_INFO("watchdog reset");
-    // reset due to a reset request, if scramble data is not preserved.
-    retention_sram_check(
-        (check_config_t){.do_write = false, .is_equal = !scramble});
+    retention_sram_check(/* equal = */ true);
   } else {
     LOG_FATAL("Unexepected reset type detected.");
     return false;
