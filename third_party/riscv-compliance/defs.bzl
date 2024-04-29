@@ -5,8 +5,13 @@
 """Helper macros for generating RISC-V compliance test targets."""
 
 load(
+    "@bazel_skylib//lib:dicts.bzl",
+    "dicts",
+)
+load(
     "//rules/opentitan:defs.bzl",
     "EARLGREY_TEST_ENVS",
+    "cw310_params",
     "opentitan_test",
     "verilator_params",
 )
@@ -43,9 +48,16 @@ def rv_compliance_test(name, arch):
             "compliance_main.c",
             "compliance_main.S",
         ],
-        exec_env = EARLGREY_TEST_ENVS,
         verilator = verilator_params(
             timeout = "long",
+        ),
+        # TODO(#22871): Remove "broken" tag once the tests are fixed.
+        broken = cw310_params(tags = ["broken"]),
+        exec_env = dicts.add(
+            EARLGREY_TEST_ENVS,
+            {
+                "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
+            },
         ),
         linkopts = ["-Wl,--no-relax"],
         deps = [

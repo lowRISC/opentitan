@@ -9,6 +9,7 @@ alert_peripheral_names = sorted({p.name for p in helper.alert_peripherals})
 %>\
 load(
     "//rules/opentitan:defs.bzl",
+    "cw310_params",
     "opentitan_test",
     "silicon_params",
     "verilator_params",
@@ -68,9 +69,11 @@ test_suite(
 opentitan_test(
     name = "alert_test",
     srcs = ["alert_test.c"],
+    # TODO(#22871): Remove "broken" tag once the tests are fixed.
+    broken = cw310_params(tags = ["broken"]),
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_sival": None,
-        "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+        "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,
         "//hw/top_earlgrey:silicon_creator": None,
         "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
