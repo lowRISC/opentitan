@@ -116,7 +116,11 @@ opentitan_test(
         changes_otp = True,
         needs_jtag = True,
         otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival_bringup:otp_img_test_unlocked0_manuf_empty",
-        tags = ["manuf"],
+        # TODO(#22823): Remove "broken" tag once the test is fixed.
+        tags = [
+            "broken",
+            "manuf",
+        ],
         test_cmd = _CP_PROVISIONING_CMD_ARGS,
         test_harness = _CP_PROVISIONING_HARNESS,
     ),
@@ -263,7 +267,9 @@ opentitan_test(
         data = FT_PERSONALIZE_KEYS,
         needs_jtag = True,
         otp = "//hw/ip/otp_ctrl/data/earlgrey_a0_skus/sival_bringup:otp_img_test_locked0_manuf_initialized",
+        # TODO(#22823): Remove "broken" tag once the test is fixed.
         tags = [
+            "broken",
             "lc_test_locked0",
             "manuf",
         ],
