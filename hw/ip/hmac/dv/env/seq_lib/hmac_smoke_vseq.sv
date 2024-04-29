@@ -42,7 +42,7 @@ class hmac_smoke_vseq extends hmac_base_vseq;
   }
 
   constraint burst_wr_c {
-    burst_wr_length inside {[1 : HMAC_MSG_FIFO_DEPTH]};
+    burst_wr_length inside {[1 : HMAC_MSG_FIFO_DEPTH_WR]};
   }
 
   constraint intr_enable_c {
@@ -140,7 +140,7 @@ class hmac_smoke_vseq extends hmac_base_vseq;
               end else begin
                 csr_spinwait(.ptr(ral.intr_state.hmac_err), .exp_data(1'b1));
               end
-              `uvm_info(`gfn, $sformatf("HMAC Error,  %b", cfg.intr_vif.pins[HmacErr]), UVM_LOW)
+              check_error_code();
             end
             if (do_burst_wr) burst_wr_msg(msg, burst_wr_length);
             else             wr_msg(msg);
@@ -152,6 +152,8 @@ class hmac_smoke_vseq extends hmac_base_vseq;
               wipe_secrets();
             end
           end
+          csr_rd(.ptr(ral.intr_state), .value(intr_state_val));
+          csr_wr(.ptr(ral.intr_state), .value(intr_state_val));
         join
 
         if (!sha_en) begin
@@ -199,8 +201,7 @@ class hmac_smoke_vseq extends hmac_base_vseq;
             end
             begin
               if (do_wipe_secret == WipeSecretBeforeDone) begin
-                        `uvm_info(`gfn, $sformatf("wiping before done"), UVM_HIGH)
-
+                `uvm_info(`gfn, $sformatf("wiping before done"), UVM_HIGH)
                 cfg.clk_rst_vif.wait_clks($urandom_range(0, 100));
                 wipe_secrets();
               end

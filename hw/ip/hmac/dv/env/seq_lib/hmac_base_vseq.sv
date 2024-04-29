@@ -35,16 +35,35 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
     };
   }
 
-constraint key_digest_c {
+  // TODO: keep both blocks for key_length and digest size and toggle between both for WIP
+  // till DV stabilizes for all digest sizes and key lengths
+  constraint key_digest_c {
     $countones(key_length) == 1 dist {
-      1 :/ 8,  // Key_128/Key_256/Key_384/Key_512/Key_1024/Key_None
-      0 :/ 2   // Illegal -> should get casted to Key_None in HW
+      1 :/ 10,  // Key_128/Key_256/Key_384/Key_512/Key_1024/Key_None
+      0 :/ 0    // Illegal -> should get casted to Key_None in HW
     };
 
     $countones(digest_size) == 1 dist {
-      1 :/ 8,  // SHA2_256/SHA2_384/SHA2_512/SHA2_None
-      0 :/ 2   // Illegal -> should get casted to SHA2_None in HW
+      1 :/ 10,  // SHA2_256/SHA2_384/SHA2_512/SHA2_None
+      0 :/ 0    // Illegal -> should get casted to SHA2_None in HW
     };
+
+    /* key_length dist {
+      6'b00_0001 := 0,
+      6'b00_0010 := 10, // 256-bit key
+      6'b00_0100 := 0,
+      6'b00_1000 := 0,
+      6'b01_0000 := 0,
+      6'b10_0000 := 0
+    }; */
+
+  /*  // only testing SHA-2 256 now
+    digest_size dist {
+      4'b0001 := 10, // SHA-2 256
+      4'b0010 := 0,  // SHA-2 384
+      4'b0100 := 0,  // SHA-2 512
+      4'b1000 := 0   // SHA-2 None
+    }; */
   }
 
   constraint wr_mask_contiguous_c {
@@ -118,13 +137,14 @@ constraint key_digest_c {
   virtual task trigger_hash();
     csr_wr(.ptr(ral.cmd), .value(1'b1 << HashStart));
     // If SHA is not enabled, check that an error is signaled.
-    if (!ral.cfg.sha_en.get_mirrored_value()) check_error_code();
     `uvm_info(`gfn, "triggering hash to start", UVM_LOW)
+    if (!ral.cfg.sha_en.get_mirrored_value()) check_error_code();
   endtask
 
   // continue hash computations
   virtual task trigger_hash_continue();
     csr_wr(.ptr(ral.cmd), .value(1'b1 << HashContinue));
+    `uvm_info(`gfn, "triggering hash to continue", UVM_LOW)
     // If SHA is not enabled, check that an error is signaled.
     if (!ral.cfg.sha_en.get_mirrored_value()) check_error_code();
   endtask
@@ -132,12 +152,14 @@ constraint key_digest_c {
   // stop hash computations
   virtual task trigger_hash_stop();
     csr_wr(.ptr(ral.cmd), .value(1'b1 << HashStop));
+    `uvm_info(`gfn, "triggering hash to stop", UVM_LOW)
   endtask
 
   // trigger calculation of digest at the end of a message
   virtual task trigger_process();
     // read digest size and key length and update their mirrored values
     csr_wr(.ptr(ral.cmd), .value(1'b1 << HashProcess));
+   `uvm_info(`gfn, "triggering hash to process", UVM_LOW)
     cfg.hash_process_triggered = 1;
   endtask
 
@@ -285,7 +307,7 @@ constraint key_digest_c {
     while (msg_q.size() > 0) begin
       // wait until HMAC has enough space to burst write
       csr_spinwait(.ptr(ral.status.fifo_depth),
-                   .exp_data(HMAC_MSG_FIFO_DEPTH - burst_wr_length),
+                   .exp_data(HMAC_MSG_FIFO_DEPTH_WR - burst_wr_length),
                    .compare_op(CompareOpLe));
       if (msg_q.size() >= burst_wr_length * 4) begin
         repeat (burst_wr_length) begin

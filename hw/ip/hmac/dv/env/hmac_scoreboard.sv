@@ -36,7 +36,8 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
     uvm_reg csr;
-    bit     do_read_check           = 1'b1;
+    // TODO: enable back do_read_check once synchronization works for all digest sizes
+    bit     do_read_check           = 1'b0;
     bit     do_cycle_accurate_check = 1'b1;
     bit     write                   = item.is_write();
     string  csr_name;
@@ -60,9 +61,9 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
       // push the msg into msg_fifo
       if ((item.a_addr & addr_mask) inside {[HMAC_MSG_FIFO_BASE : HMAC_MSG_FIFO_LAST_ADDR]}) begin
         if (!hmac_start) begin
-          update_err_intr_code(SwPushMsgWhenIdle);
+          update_err_intr_code(SwPushMsgWhenDisallowed);
         end else if (!sha_en) begin
-          update_err_intr_code(SwPushMsgWhenShaDisabled);
+          update_err_intr_code(SwHashStartWhenShaDisabled);
         end else if (hmac_start && !cfg.under_reset) begin
           bit [7:0] bytes[4];
           bit [7:0] msg[$];
@@ -107,10 +108,10 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
                                (ral.cfg.key_length.get_mirrored_value() == Key_1024) &
                                 ral.cfg.hmac_en.get_mirrored_value());
 
-                `uvm_info(`gfn, $sformatf("invalid config: %1b", invalid_cfg), UVM_LOW)
+                `uvm_info(`gfn, $sformatf("invalid config at starting: %1b", invalid_cfg), UVM_LOW)
 
                 if (invalid_cfg) begin
-                  update_err_intr_code(SwInvalidConfig);
+                  // TODO: check if we need to update_err_intro_code and block hmac_start here
                 end else begin
                   check_idle_o(1'b0);
                   msg_q.delete(); // make sure next transaction won't include this msg_q
@@ -204,6 +205,22 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
             end else begin
               exp_digest[digest_idx] = `gmv(csr);
             end
+          end else if (csr_name == "cfg") begin
+            // update prediction of digest_size to SHA2_None for all invalid inputs
+            if ((item.a_data[DigestSizeMsb:DigestSizeLsb] != SHA2_256) &&
+                (item.a_data[DigestSizeMsb:DigestSizeLsb] != SHA2_384) &&
+                (item.a_data[DigestSizeMsb:DigestSizeLsb] != SHA2_512)) begin
+              void'(ral.cfg.digest_size.predict(.value(SHA2_None), .kind(UVM_PREDICT_WRITE)));
+            end
+
+            // update prediction of key_length to Key_None for all invalid inputs
+            if ((item.a_data[KeyLengthMsb:KeyLengthLsb] != Key_128) &&
+                (item.a_data[KeyLengthMsb:KeyLengthLsb] != Key_256) &&
+                (item.a_data[KeyLengthMsb:KeyLengthLsb] != Key_384) &&
+                (item.a_data[KeyLengthMsb:KeyLengthLsb] != Key_512) &&
+                (item.a_data[KeyLengthMsb:KeyLengthLsb] != Key_1024)) begin
+              void'(ral.cfg.key_length.predict(.value(Key_None), .kind(UVM_PREDICT_WRITE)));
+            end
           end
         end
       end
@@ -213,7 +230,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
     if (!write && channel != DataChannel) begin
       if (csr_name == "status") begin
         bit [5:0]       hmac_fifo_depth  = hmac_wr_cnt - hmac_rd_cnt;
-        bit             hmac_fifo_full   = hmac_fifo_depth == HMAC_MSG_FIFO_DEPTH;
+        bit             hmac_fifo_full   = hmac_fifo_depth == HMAC_MSG_FIFO_DEPTH_WR;
         bit             hmac_fifo_empty  = hmac_fifo_depth == 0;
         bit [TL_DW-1:0] hmac_status_data = (hmac_fifo_empty << HmacStaMsgFifoEmpty) |
                                            (hmac_fifo_full  << HmacStaMsgFifoFull)  |
@@ -252,6 +269,12 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
             check_idle_o(1'b1);
             flush();
           end
+          if (hmac_start && invalid_cfg) begin // hmac has been triggered and config is invalid
+            void'(ral.intr_state.hmac_err.predict(.value(1),    .kind(UVM_PREDICT_READ)));
+            void'(ral.err_code.predict(.value(SwInvalidConfig), .kind(UVM_PREDICT_READ)));
+            hmac_start = 0;
+            flush();
+          end
           // TODO(#21815): Verify FIFO empty status interrupt.
           fifo_empty = item.d_data[HmacMsgFifoEmpty];
           void'(ral.intr_state.fifo_empty.predict(.value(fifo_empty), .kind(UVM_PREDICT_READ)));
@@ -288,7 +311,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
           end
 
           `uvm_info(`gfn, $sformatf(
-                      "Comparing digest (previous, cfg, and expected): %4b, %4b, %4b",
+                      "comparing digest sizes (previous, cfg, and expected): %4b, %4b, %4b",
                        previous_digest_size, ral.cfg.digest_size.get_mirrored_value(),
                        expected_digest_size), UVM_HIGH)
 
@@ -296,9 +319,9 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
           // digest and update the predicted value with the read out value.
           if (cfg.wipe_secret_triggered) begin
             if (expected_digest_size == SHA2_256) begin
-              `DV_CHECK_NE(real_digest_val, exp_digest[digest_idx])
-              `uvm_info(`gfn, $sformatf("Updating digest to read value after wiping 0x%0h",
-                         exp_digest[digest_idx]), UVM_HIGH)
+              `DV_CHECK_NE(real_digest_val, exp_digest[digest_idx]);
+              `uvm_info(`gfn, $sformatf("updating digest to read value after wiping 0x%0h",
+                        exp_digest[digest_idx]), UVM_HIGH)
               // Update new digest data to the exp_digest variable.
               exp_digest[digest_idx] = real_digest_val;
             end else if (expected_digest_size == SHA2_384 || expected_digest_size == SHA2_512) begin
@@ -306,25 +329,26 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
                 if (digest_idx % 2) begin
                   `DV_CHECK_NE(real_digest_val, exp_digest[digest_idx-1])
                   // Update new digest data to the exp_digest variable.
-                  `uvm_info(`gfn, $sformatf("Updating digest to read value after wiping 0x%0h",
-                             exp_digest[digest_idx-1]), UVM_HIGH)
+                  `uvm_info(`gfn, $sformatf("updating digest to read value after wiping 0x%0h",
+                            exp_digest[digest_idx-1]), UVM_HIGH)
                   exp_digest[digest_idx-1] = real_digest_val;
                 end else begin
                   `DV_CHECK_NE(real_digest_val, exp_digest[digest_idx+1])
                   // Update new digest data to the exp_digest variable.
-                  `uvm_info(`gfn, $sformatf("Updating digest to read value after wiping 0x%0h",
+                  `uvm_info(`gfn, $sformatf("updating digest to read value after wiping 0x%0h",
                              exp_digest[digest_idx+1]), UVM_HIGH)
                   exp_digest[digest_idx+1] = real_digest_val;
                 end
               end else begin
-                `DV_CHECK_NE(real_digest_val, exp_digest[digest_idx])
+                `DV_CHECK_NE(real_digest_val, exp_digest[digest_idx]);
                 // Update new digest data to the exp_digest variable.
                 `uvm_info(`gfn, $sformatf("Updating digest to read value after wiping 0x%0h",
                            exp_digest[digest_idx]), UVM_HIGH)
                 exp_digest[digest_idx] = real_digest_val;
               end
             end
-          end else begin
+          end else begin // if !cfg.wipe_secret_triggered
+            `uvm_info(`gfn, $sformatf("comparing digests with predicted"), UVM_LOW)
             `uvm_info(`gfn, $sformatf("expected digest[%0d] 0x%0h",
                       digest_idx, exp_digest[digest_idx]), UVM_HIGH)
             if (expected_digest_size == SHA2_256) begin
@@ -380,12 +404,11 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
           `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
         end
       endcase
-      // TODO: uncomment this. It errors out on the FIFO status.
-      //if (do_read_check) begin
-      //  `uvm_info(`gfn, $sformatf("%s reg is checked with expected value %0h",
-      //                            csr_name, csr.get_mirrored_value()), UVM_LOW)
-      //  `DV_CHECK_EQ(item.d_data, csr.get_mirrored_value(), csr_name)
-      // end
+      if (do_read_check) begin
+        `uvm_info(`gfn, $sformatf("%s reg is checked with expected value %0h",
+                                  csr_name, csr.get_mirrored_value()), UVM_LOW)
+        `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data, csr_name)
+      end
       void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
     end
   endtask
@@ -435,8 +458,8 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
               end
               if (sha_en && has_unprocessed_msg) begin
                 // if fifo full, tlul will not write next data until fifo has space again
-                if ((hmac_wr_cnt - hmac_rd_cnt) == HMAC_MSG_FIFO_DEPTH) begin
-                  wait((hmac_wr_cnt - hmac_rd_cnt) < HMAC_MSG_FIFO_DEPTH);
+                if ((hmac_wr_cnt - hmac_rd_cnt) == HMAC_MSG_FIFO_DEPTH_WR) begin
+                  wait((hmac_wr_cnt - hmac_rd_cnt) < HMAC_MSG_FIFO_DEPTH_WR);
                 end
                 @(negedge cfg.clk_rst_vif.clk);
                 hmac_wr_cnt++;
@@ -481,6 +504,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
     fork
       begin : process_hmac_key_pad
         forever begin
+          `uvm_info(`gfn, $sformatf("cfg.under_reset %0b", cfg.under_reset), UVM_LOW)
           wait(!cfg.under_reset);
           // delay 1ps to make sure all variables are being reset, before moving to the next
           // forever loop
@@ -488,14 +512,17 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
           fork
             begin : key_padding
               wait(hmac_start && sha_en);
-              if (ral.cfg.hmac_en.get_mirrored_value() && hmac_rd_cnt == 0) begin
+              if (ral.cfg.hmac_en.get_mirrored_value() && hmac_rd_cnt == 0 && !invalid_cfg) begin
                 // 80 cycles for hmac key padding, 1 cycle for hash_start reg to reset
                 cfg.clk_rst_vif.wait_clks(HMAC_KEY_PROCESS_CYCLES + 1);
                 @(negedge cfg.clk_rst_vif.clk);
                 key_processed = 1;
               end
               while (1) begin
-                if (ral.intr_state.hmac_done.get_mirrored_value() == 1) break;
+                // break if hmac is done or if invalid config error is triggered
+                if (ral.intr_state.hmac_done.get_mirrored_value() == 1 ||
+                   (ral.intr_state.hmac_err.get_mirrored_value()  == 1 &&
+                    ral.err_code.get_mirrored_value() == SwInvalidConfig)) break;
                 cfg.clk_rst_vif.wait_clks(1);
               end
             end
@@ -518,14 +545,18 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
             begin : hmac_fifo_rd
               wait((hmac_wr_cnt > hmac_rd_cnt) && (sha_en));
               if (ral.cfg.hmac_en.get_mirrored_value() && hmac_rd_cnt == 0) begin
+                `uvm_info(`gfn, $sformatf("waiting on key processing to complete"), UVM_HIGH)
                 wait(key_processed);
+                `uvm_info(`gfn, $sformatf("key processing has completed"), UVM_HIGH)
               end
               #1ps; // delay 1 ps to make sure did not sample right at negedge clk
               cfg.clk_rst_vif.wait_n_clks(1);
               hmac_rd_cnt++;
               `uvm_info(`gfn, $sformatf("increase rd cnt %0d", hmac_rd_cnt), UVM_HIGH)
-              if (hmac_rd_cnt % HMAC_MSG_FIFO_DEPTH == 0) begin
+              if (hmac_rd_cnt % HMAC_MSG_FIFO_DEPTH_RD == 0) begin
+                `uvm_info(`gfn, $sformatf("start waiting on message processing now"), UVM_HIGH)
                 cfg.clk_rst_vif.wait_n_clks(HMAC_MSG_PROCESS_CYCLES);
+                `uvm_info(`gfn, $sformatf("message processing has completed"), UVM_HIGH)
               end
             end
             begin : reset_hmac_fifo_rd
@@ -621,12 +652,22 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
     void'(ral.msg_length_lower.predict(size_bits[TL_DW-1:0]));
   endfunction
 
-  virtual function void update_err_intr_code(err_code_e err_code_val);
-    if (!ral.intr_state.hmac_err.get_mirrored_value()) begin
-      void'(ral.intr_state.hmac_err.predict(.value(1), .kind(UVM_PREDICT_DIRECT)));
-      void'(ral.err_code.predict(.value(err_code_val), .kind(UVM_PREDICT_DIRECT)));
+  virtual task update_err_intr_code(err_code_e err_code_val);
+    // if (!ral.intr_state.hmac_err.get_mirrored_value()) begin
+    while (ral.intr_state.is_busy()) begin
+      // using cfg.clk_rst_vif.wait_clks(1) instead was still resulting in race conditions with
+      // the incrementing of hmac_rd_cnt and hmac_wr_cnt and a desynchronization
+      #1ps;
     end
-  endfunction
+    void'(ral.intr_state.hmac_err.predict(.value(1), .kind(UVM_PREDICT_DIRECT)));
+
+    while (ral.err_code.is_busy()) begin
+      // using cfg.clk_rst_vif.wait_clks(1) instead was still resulting in race conditions with
+      // the incrementing of hmac_rd_cnt and hmac_wr_cnt and a desynchronization
+      #1ps;
+    end
+    void'(ral.err_code.predict(.value(err_code_val), .kind(UVM_PREDICT_DIRECT)));
+  endtask
 
   virtual function void check_idle_o(bit val);
     if (cfg.under_reset == 0) `DV_CHECK_EQ(cfg.hmac_vif.is_idle(), val)
