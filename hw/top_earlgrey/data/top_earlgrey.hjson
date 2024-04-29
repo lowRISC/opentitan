@@ -701,7 +701,8 @@
       base_addrs: {
         mem:  {hart: "0x00010000"},
         regs: {hart: "0x41200000"}
-      }
+      },
+      generate_dif: "False"
     },
     { name: "rv_plic",
       type: "rv_plic",

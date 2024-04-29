@@ -201,7 +201,8 @@ module_optional = {
     'base_addrs': ['g', 'hex start addresses of the peripheral '
                         ' (if the IP has multiple TL-UL interfaces)'],
     'memory': ['g', 'optional dict with memory region attributes'],
-    'param_decl': ['g', 'optional dict that allows to override instantiation parameters']
+    'param_decl': ['g', 'optional dict that allows to override instantiation parameters'],
+    'generate_dif': ['pb', 'optional bool to indicate if a DIF should be generated for that module']
 }
 
 module_added = {

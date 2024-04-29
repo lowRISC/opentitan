@@ -14,6 +14,7 @@ from .clocks import Clocks
 from .resets import Resets
 from reggen.ip_block import IpBlock
 from reggen.params import LocalParam, Parameter, RandParameter, MemSizeParameter
+from reggen.validate import check_bool
 
 
 def _get_random_data_hex_literal(width):
@@ -213,6 +214,14 @@ def elaborate_instance(instance, block: IpBlock):
     if 'base_addr' in instance:
         del instance['base_addr']
 
+    # Default value if no value provided and otherwise convert string to bool
+    if 'generate_dif' not in instance:
+        instance['generate_dif'] = True
+    else:
+        converted_value, err = check_bool(instance['generate_dif'], 'generate_dif')
+        if err:
+            raise ValueError(f'generate_dif contains invalid value {instance['generate_dif']}')
+        instance['generate_dif'] = converted_value
 
 # TODO: Replace this part to be configurable from Hjson or template
 predefined_modules = {
