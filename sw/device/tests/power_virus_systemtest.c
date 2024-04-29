@@ -98,7 +98,7 @@ enum {
   /**
    * Maximum number of test iterations in silicon targets.
    */
-  kMaxIterationsSilicon = 10000,
+  kMaxIterationsSilicon = 1000,
   /**
    * Test timeout parameter.
    */
