@@ -71,9 +71,9 @@ void external_irq_handler(void)  {
   a = *p_reg1;
 
   if( a == 0xBAADC0DE){
-      p_reg = (int *) 0x40000C0C; // completion interrupt to ariane agent if msg = expected msg
+      p_reg = (int *) 0x4000120C; // completion interrupt to ariane agent if msg = expected msg
      *p_reg = 0x00000001;
-      p_reg = (int *) 0x40000C04; // completion interrupt to ariane agent if msg = expected msg
+      p_reg = (int *) 0x40001204; // completion interrupt to ariane agent if msg = expected msg
      *p_reg = 0x00000001;
   }
   return;
