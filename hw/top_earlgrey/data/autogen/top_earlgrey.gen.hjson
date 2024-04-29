@@ -576,6 +576,7 @@
           hart: 0x40000000
         }
       }
+      generate_dif: true
     }
     {
       name: uart1
@@ -626,6 +627,7 @@
           hart: 0x40010000
         }
       }
+      generate_dif: true
     }
     {
       name: uart2
@@ -676,6 +678,7 @@
           hart: 0x40020000
         }
       }
+      generate_dif: true
     }
     {
       name: uart3
@@ -726,6 +729,7 @@
           hart: 0x40030000
         }
       }
+      generate_dif: true
     }
     {
       name: gpio
@@ -790,6 +794,7 @@
           hart: 0x40040000
         }
       }
+      generate_dif: true
     }
     {
       name: spi_device
@@ -901,6 +906,7 @@
           hart: 0x40050000
         }
       }
+      generate_dif: true
     }
     {
       name: i2c0
@@ -978,6 +984,7 @@
           hart: 0x40080000
         }
       }
+      generate_dif: true
     }
     {
       name: i2c1
@@ -1055,6 +1062,7 @@
           hart: 0x40090000
         }
       }
+      generate_dif: true
     }
     {
       name: i2c2
@@ -1132,6 +1140,7 @@
           hart: 0x400A0000
         }
       }
+      generate_dif: true
     }
     {
       name: pattgen
@@ -1182,6 +1191,7 @@
           hart: 0x400E0000
         }
       }
+      generate_dif: true
     }
     {
       name: rv_timer
@@ -1232,6 +1242,7 @@
           hart: 0x40100000
         }
       }
+      generate_dif: true
     }
     {
       name: otp_ctrl
@@ -1661,6 +1672,7 @@
           index: -1
         }
       ]
+      generate_dif: true
     }
     {
       name: lc_ctrl
@@ -2266,6 +2278,7 @@
           hart: 0x40140000
         }
       }
+      generate_dif: true
     }
     {
       name: alert_handler
@@ -2401,6 +2414,7 @@
           hart: 0x40150000
         }
       }
+      generate_dif: true
     }
     {
       name: spi_host0
@@ -2463,6 +2477,7 @@
           hart: 0x40300000
         }
       }
+      generate_dif: true
     }
     {
       name: spi_host1
@@ -2523,6 +2538,7 @@
           hart: 0x40310000
         }
       }
+      generate_dif: true
     }
     {
       name: usbdev
@@ -2837,6 +2853,7 @@
           hart: 0x40320000
         }
       }
+      generate_dif: true
     }
     {
       name: pwrmgr_aon
@@ -3165,6 +3182,7 @@
           hart: 0x40400000
         }
       }
+      generate_dif: true
     }
     {
       name: rstmgr_aon
@@ -3366,6 +3384,7 @@
           hart: 0x40410000
         }
       }
+      generate_dif: true
     }
     {
       name: clkmgr_aon
@@ -3700,6 +3719,7 @@
           hart: 0x40420000
         }
       }
+      generate_dif: true
     }
     {
       name: sysrst_ctrl_aon
@@ -3781,6 +3801,7 @@
           hart: 0x40430000
         }
       }
+      generate_dif: true
     }
     {
       name: adc_ctrl_aon
@@ -3864,6 +3885,7 @@
           hart: 0x40440000
         }
       }
+      generate_dif: true
     }
     {
       name: pwm_aon
@@ -3921,6 +3943,7 @@
           hart: 0x40450000
         }
       }
+      generate_dif: true
     }
     {
       name: pinmux_aon
@@ -4374,6 +4397,7 @@
           hart: 0x40460000
         }
       }
+      generate_dif: true
     }
     {
       name: aon_timer_aon
@@ -4493,6 +4517,7 @@
           hart: 0x40470000
         }
       }
+      generate_dif: true
     }
     {
       name: ast
@@ -4601,6 +4626,7 @@
           hart: 0x40480000
         }
       }
+      generate_dif: true
     }
     {
       name: sensor_ctrl_aon
@@ -4741,6 +4767,7 @@
           hart: 0x40490000
         }
       }
+      generate_dif: true
     }
     {
       name: sram_ctrl_ret_aon
@@ -4953,6 +4980,7 @@
           index: -1
         }
       ]
+      generate_dif: true
     }
     {
       name: flash_ctrl
@@ -5403,6 +5431,7 @@
           index: -1
         }
       ]
+      generate_dif: true
     }
     {
       name: rv_dm
@@ -5441,6 +5470,7 @@
           hart: 0x41200000
         }
       }
+      generate_dif: false
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_infra
@@ -5744,6 +5774,7 @@
           hart: 0x48000000
         }
       }
+      generate_dif: true
     }
     {
       name: aes
@@ -5972,6 +6003,7 @@
           hart: 0x41100000
         }
       }
+      generate_dif: true
     }
     {
       name: hmac
@@ -6034,6 +6066,7 @@
           hart: 0x41110000
         }
       }
+      generate_dif: true
     }
     {
       name: kmac
@@ -6262,6 +6295,7 @@
           hart: 0x41120000
         }
       }
+      generate_dif: true
     }
     {
       name: otbn
@@ -6521,6 +6555,7 @@
           hart: 0x41130000
         }
       }
+      generate_dif: true
     }
     {
       name: keymgr
@@ -6893,6 +6928,7 @@
           hart: 0x41140000
         }
       }
+      generate_dif: true
     }
     {
       name: csrng
@@ -7043,6 +7079,7 @@
           hart: 0x41150000
         }
       }
+      generate_dif: true
     }
     {
       name: entropy_src
@@ -7211,6 +7248,7 @@
           hart: 0x41160000
         }
       }
+      generate_dif: true
     }
     {
       name: edn0
@@ -7296,6 +7334,7 @@
           hart: 0x41170000
         }
       }
+      generate_dif: true
     }
     {
       name: edn1
@@ -7381,6 +7420,7 @@
           hart: 0x41180000
         }
       }
+      generate_dif: true
     }
     {
       name: sram_ctrl_main
@@ -7596,6 +7636,7 @@
           index: -1
         }
       ]
+      generate_dif: true
     }
     {
       name: rom_ctrl
@@ -7781,6 +7822,7 @@
           index: -1
         }
       ]
+      generate_dif: true
     }
     {
       name: rv_core_ibex
@@ -8337,6 +8379,7 @@
           hart: 0x411F0000
         }
       }
+      generate_dif: true
     }
   ]
   memory: []

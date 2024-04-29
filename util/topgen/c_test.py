@@ -146,8 +146,7 @@ class TopGenCTest(TopGenC):
             if inst_name not in self.top["alert_module"]:
                 continue
 
-            # RV_DM module does not have DIF.
-            if inst_name == "rv_dm":
+            if not entry['generate_dif']:
                 continue
 
             for item in self.top['module']:
