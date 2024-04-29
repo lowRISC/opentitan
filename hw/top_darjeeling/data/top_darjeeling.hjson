@@ -582,7 +582,8 @@
         // THE RISK OF A BROKEN OTP MACRO. THIS WILL BE DISABLED FOR
         // PRODUCTION DEVICES.
         SecVolatileRawUnlockEn: "top_pkg::SecVolatileRawUnlockEn",
-      }
+      },
+      generate_dif: "False"
     },
     { name: "rv_plic",
       type: "rv_plic",
