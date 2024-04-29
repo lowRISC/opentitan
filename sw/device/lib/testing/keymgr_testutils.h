@@ -214,4 +214,28 @@ status_t keymgr_testutils_disable(const dif_keymgr_t *keymgr);
 OT_WARN_UNUSED_RESULT
 status_t keymgr_testutils_wait_for_operation_done(const dif_keymgr_t *keymgr);
 
+/**
+ * Get the maximum key version supported by the key manager.
+ *
+ * @param keymgr A key manager handle.
+ * @param[out] max_key_version The maximum key version supported by the key
+ *                             manager for its current operating state.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+status_t keymgr_testutils_max_key_version_get(const dif_keymgr_t *keymgr,
+                                              uint32_t *max_key_version);
+
+/**
+ * Get the current state of the key manager.
+ *
+ * @param keymgr A key manager handle.
+ * @param[out] state The current state of the key manager in C string format.
+ *
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+status_t keymgr_testutils_state_string_get(const dif_keymgr_t *keymgr,
+                                           const char **stage_name);
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_KEYMGR_TESTUTILS_H_
