@@ -763,9 +763,14 @@ KMAC/SHA3 Error Code
 {"reg": [{"name": "err_code", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name     | Description                                                                                                                                      |
-|:------:|:------:|:-------:|:---------|:-------------------------------------------------------------------------------------------------------------------------------------------------|
-|  31:0  |   ro   |   0x0   | err_code | If error interrupt occurs, this register has information of error cause. Please take a look at `hw/ip/kmac/rtl/kmac_pkg.sv:err_code_e enum type. |
+|  Bits  |  Type  |  Reset  | Name                            |
+|:------:|:------:|:-------:|:--------------------------------|
+|  31:0  |   ro   |   0x0   | [err_code](#err_code--err_code) |
+
+### ERR_CODE . err_code
+If the `kmac_err` interrupt occurs, this register has information on the error cause.
+Bits 31:24 contain the error code (please refer to `err_code_e` in `hw/ip/kmac/rtl/kmac_pkg.sv`) for the encoding, and bits 23:0 contain additional debug information.
+This register does *not* get cleared when the `kmac_err` interrupt state gets cleared.
 
 ## STATE
 Keccak State (1600 bit) memory.
