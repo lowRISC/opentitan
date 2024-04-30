@@ -12,6 +12,6 @@ mod rescue;
 pub use application_key::{ApplicationKeyDomain, OwnerApplicationKey};
 pub use flash::{FlashFlags, OwnerFlashConfig, OwnerFlashRegion};
 pub use flash_info::{OwnerFlashInfoConfig, OwnerInfoPage};
-pub use misc::{OwnershipKeyAlg, TlvHeader, TlvTag};
-pub use owner::{OwnerBlock, SramExecMode};
+pub use misc::{KeyMaterial, OwnershipKeyAlg, TlvHeader, TlvTag};
+pub use owner::{OwnerBlock, OwnerConfigItem, SramExecMode};
 pub use rescue::{OwnerRescueConfig, RescueType};
