@@ -134,16 +134,14 @@ static bool is_state_squeeze(const dif_kmac_t *kmac) {
   return bitfield_bit32_read(reg, KMAC_STATUS_SHA3_SQUEEZE_BIT);
 }
 
-/**
- * Report whether the hardware has indicated a error.
- *
- * @param kmac Handle.
- * @returns True if an error occurred, False otherwise.
- */
-static bool has_error_occurred(const dif_kmac_t *kmac) {
+dif_result_t dif_kmac_has_error_occurred(const dif_kmac_t *kmac, bool *error) {
+  if (kmac == NULL) {
+    return kDifBadArg;
+  }
   uint32_t reg =
       mmio_region_read32(kmac->base_addr, KMAC_INTR_STATE_REG_OFFSET);
-  return bitfield_bit32_read(reg, KMAC_INTR_STATE_KMAC_ERR_BIT);
+  *error = bitfield_bit32_read(reg, KMAC_INTR_STATE_KMAC_ERR_BIT);
+  return kDifOk;
 }
 
 dif_result_t dif_kmac_poll_status(const dif_kmac_t *kmac, uint32_t flag) {
@@ -152,7 +150,9 @@ dif_result_t dif_kmac_poll_status(const dif_kmac_t *kmac, uint32_t flag) {
     if (bitfield_bit32_read(reg, flag)) {
       break;
     }
-    if (has_error_occurred(kmac)) {
+    bool error;
+    DIF_RETURN_IF_ERROR(dif_kmac_has_error_occurred(kmac, &error));
+    if (error) {
       return kDifError;
     }
   }

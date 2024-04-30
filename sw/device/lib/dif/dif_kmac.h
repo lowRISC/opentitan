@@ -728,6 +728,15 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_kmac_err_processed(const dif_kmac_t *kmac);
 
 /**
+ * Report whether the hardware currently indicates an error.
+ *
+ * @param kmac A KMAC handle.
+ * @param[out] error Whether hardware currently indicates an error.
+ * @returns The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_kmac_has_error_occurred(const dif_kmac_t *kmac, bool *error);
+/**
  * Fetch the current status of the message FIFO used to buffer absorbed data.
  *
  * @param kmac A KMAC handle.
