@@ -14,11 +14,11 @@
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('p', '3', 'v')
 
-OTBN_DECLARE_APP_SYMBOLS(p384_ecdsa_verify);  // The OTBN ECDSA/P-384 app.
+OTBN_DECLARE_APP_SYMBOLS(p384_ecdsa_verify);     // The OTBN ECDSA/P-384 app.
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_verify, x);  // Public key x-coordinate.
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_verify, y);  // Public key y-coordinate.
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_verify,
-                         rnd);  // result of verify (x1 coordinate)
+                         x_r);  // result of verify (x1 coordinate)
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_verify,
                          msg);                   // hash message to sign/verify
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_verify, r);  // r part of signature
@@ -37,7 +37,7 @@ static const otbn_addr_t kOtbnVarEcdsaR =
 static const otbn_addr_t kOtbnVarEcdsaS =
     OTBN_ADDR_T_INIT(p384_ecdsa_verify, s);
 static const otbn_addr_t kOtbnVarEcdsaRnd =
-    OTBN_ADDR_T_INIT(p384_ecdsa_verify, rnd);
+    OTBN_ADDR_T_INIT(p384_ecdsa_verify, x_r);
 
 enum {
   /*
@@ -99,10 +99,10 @@ status_t ecdsa_p384_verify_finalize(const ecdsa_p384_signature_t *signature,
   HARDENED_TRY(otbn_busy_wait_for_done());
 
   // Read x_r (recovered R) out of OTBN dmem.
-  uint32_t rnd[kP384ScalarWords];
-  HARDENED_TRY(otbn_dmem_read(kP384ScalarWords, kOtbnVarEcdsaRnd, rnd));
+  uint32_t x_r[kP384ScalarWords];
+  HARDENED_TRY(otbn_dmem_read(kP384ScalarWords, kOtbnVarEcdsaRnd, x_r));
 
-  *result = hardened_memeq(rnd, signature->r, kP384ScalarWords);
+  *result = hardened_memeq(x_r, signature->r, kP384ScalarWords);
 
   // Wipe DMEM.
   HARDENED_TRY(otbn_dmem_sec_wipe());

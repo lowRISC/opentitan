@@ -13,11 +13,11 @@
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('p', '3', 'k')
 
-OTBN_DECLARE_APP_SYMBOLS(p384_ecdsa_keygen);  // The OTBN ECDSA/P-384 app.
+OTBN_DECLARE_APP_SYMBOLS(p384_ecdsa_keygen);      // The OTBN ECDSA/P-384 app.
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_keygen, d0);  // Private key first share.
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_keygen, d1);  // Private key second share.
-OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_keygen, x);  // x-coordinate.
-OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_keygen, y);  // y-coordinate.
+OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_keygen, x);   // x-coordinate.
+OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_keygen, y);   // y-coordinate.
 
 static const otbn_app_t kOtbnAppEcdsaKeygen =
     OTBN_APP_T_INIT(p384_ecdsa_keygen);

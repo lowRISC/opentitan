@@ -100,7 +100,7 @@ store_proj:
  * @param[in]  dmem[msg]: message to be verified in dmem
  * @param[in]    dmem[x]: x-coordinate of public key in dmem
  * @param[in]    dmem[y]: y-coordinate of public key in dmem
- * @param[out] dmem[rnd]: verification result: reduced affine x1-coordinate
+ * @param[out] dmem[x_r]: verification result: reduced affine x1-coordinate
  *
  * Scratchpad memory layout:
  * The routine expects at least 896 bytes of scratchpad memory at dmem
@@ -131,7 +131,7 @@ p384_verify:
   la        x7, s
 
   /* get dmem pointer of verification result (x1-coordinate) */
-  la        x8, rnd
+  la        x8, x_r
 
   /* get dmem pointer of message */
   la        x9, msg
@@ -405,7 +405,7 @@ p384_verify:
   bn.sel    w4, w16, w4, C
   bn.sel    w5, w17, w5, C
 
-  /* store affine x-coordinate in dmem: dmem[dptr_rnd] <= x1 = [w5,w4] */
+  /* store affine x-coordinate in dmem: dmem[x_r] <= x1 = [w5,w4] */
   li        x2, 4
   bn.sid    x2++, 0(x8)
   bn.sid    x2++, 32(x8)
@@ -457,9 +457,9 @@ y:
   .zero 64
 
 /* verification result (x1-coordinate) */
-.globl rnd
-.weak rnd
-rnd:
+.globl x_r
+.weak x_r
+x_r:
   .zero 64
 
 /* Scratchpad memory */

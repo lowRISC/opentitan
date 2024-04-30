@@ -14,10 +14,10 @@
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('p', '3', 'x')
 
-OTBN_DECLARE_APP_SYMBOLS(p384_ecdh);          // The OTBN ECDSH/P-384 app.
-OTBN_DECLARE_SYMBOL_ADDR(p384_ecdh, mode);    // ECDH application mode.
-OTBN_DECLARE_SYMBOL_ADDR(p384_ecdh, x);  // The public key x-coordinate.
-OTBN_DECLARE_SYMBOL_ADDR(p384_ecdh, y);  // The public key y-coordinate.
+OTBN_DECLARE_APP_SYMBOLS(p384_ecdh);        // The OTBN ECDSH/P-384 app.
+OTBN_DECLARE_SYMBOL_ADDR(p384_ecdh, mode);  // ECDH application mode.
+OTBN_DECLARE_SYMBOL_ADDR(p384_ecdh, x);     // The public key x-coordinate.
+OTBN_DECLARE_SYMBOL_ADDR(p384_ecdh, y);     // The public key y-coordinate.
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdh,
                          d0);  // The private key scalar d (share 0).
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdh,
