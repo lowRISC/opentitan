@@ -65,3 +65,32 @@ status_t kmac_testutils_kmac(const dif_kmac_t *kmac,
   TRY_CHECK(err == kDifErrorNone);
   return OK_STATUS();
 }
+
+status_t kmac_testutils_check_error(const dif_kmac_t *kmac) {
+  bool error;
+  TRY(dif_kmac_has_error_occurred(kmac, &error));
+
+  // If no error has occurred, return early with OK.
+  if (!error) {
+    return OK_STATUS();
+  }
+
+  // Obtain more information on the error.
+  dif_kmac_error_t err;
+  uint32_t info;
+  TRY(dif_kmac_get_error(kmac, &err, &info));
+
+  // Clear the error IRQ.
+  TRY(dif_kmac_clear_err_irq(kmac));
+
+  // Inform HW that we have handled the error.
+  TRY(dif_kmac_err_processed(kmac));
+
+  // Return with a status based on the error code.
+  switch (err) {
+    case kDifErrorKeyNotValid:
+      return FAILED_PRECONDITION();
+    default:
+      return INTERNAL();
+  }
+}
