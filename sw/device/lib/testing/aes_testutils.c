@@ -163,7 +163,7 @@ status_t aes_testutils_csrng_kat(void) {
   memcpy(seed_material_instantiate.seed_material, kEdnSeedMaterialInstantiate,
          sizeof(kEdnSeedMaterialInstantiate));
   dif_csrng_internal_state_t expected_state_instantiate = {
-      .reseed_counter = 1,
+      .reseed_counter = 0,
       .instantiated = true,
       .fips_compliance = false,
   };
@@ -177,7 +177,7 @@ status_t aes_testutils_csrng_kat(void) {
   // Generate one block containing the required seed for the AES masking PRNG
   // to output an all-zero vector.
   dif_csrng_internal_state_t expected_state_generate = {
-      .reseed_counter = 2,
+      .reseed_counter = 1,
       .instantiated = true,
       .fips_compliance = false,
   };
@@ -196,7 +196,7 @@ status_t aes_testutils_csrng_kat(void) {
   memcpy(seed_material_reseed.seed_material, kEdnSeedMaterialReseed,
          sizeof(kEdnSeedMaterialReseed));
   dif_csrng_internal_state_t expected_state_reseed = {
-      .reseed_counter = 1,
+      .reseed_counter = 0,
       .instantiated = true,
       .fips_compliance = false,
   };

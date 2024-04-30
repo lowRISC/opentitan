@@ -213,8 +213,8 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; #(
          '0;
 
   assign prep_rc =
-         (cmdreq_ccmd == INS) ? {{(CtrLen-1){1'b0}},1'b1} :
-         (cmdreq_ccmd == RES) ? {{(CtrLen-1){1'b0}},1'b1} :
+         (cmdreq_ccmd == INS) ? {{(CtrLen-1){1'b0}},1'b0} :
+         (cmdreq_ccmd == RES) ? {{(CtrLen-1){1'b0}},1'b0} :
          (cmdreq_ccmd == GEN) ? cmdreq_rc :
          (cmdreq_ccmd == UPD) ? cmdreq_rc :
          '0;
