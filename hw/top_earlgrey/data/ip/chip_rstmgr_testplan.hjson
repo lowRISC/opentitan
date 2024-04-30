@@ -115,7 +115,7 @@
       tests: ["chip_sw_rstmgr_sw_req"]
       bazel: [
         "//sw/device/tests:rstmgr_sw_req_test",
-        "//sw/device/tests:pwrmgr_random_sleep_all_reset_reqs",
+        "//sw/device/tests:pwrmgr_random_sleep_all_reset_reqs_test",
       ]
     }
     {
@@ -202,7 +202,7 @@
         "RSTMGR.ALERT_INFO.CAPTURE",
       ]
       tests: ["chip_sw_all_escalation_resets"]
-      bazel: ["//sw/device/tests:pwrmgr_random_sleep_all_reset_reqs"]
+      bazel: ["//sw/device/tests:pwrmgr_random_sleep_all_reset_reqs_test"]
     }
     {
       name: chip_sw_rstmgr_alert_handler_reset_enables
