@@ -124,7 +124,8 @@
       stage: V3
       si_stage: SV3
       lc_states: ["PROD"]
-      tests: ["//sw/device/tests:i2c_target_test", "//sw/device/tests/pmod:i2c_host_clock_stretching_test"]
+      tests: []
+      bazel: ["//sw/device/tests:i2c_target_test", "//sw/device/tests/pmod:i2c_host_clock_stretching_test"]
     }
     {
       name: chip_sw_i2c_nack
