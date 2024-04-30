@@ -7,12 +7,9 @@ class hmac_smoke_vseq extends hmac_base_vseq;
   `uvm_object_new
 
   rand bit               sha_en;
-  rand bit               endian_swap;
-  rand bit               digest_swap;
   rand bit               intr_fifo_empty_en;
   rand bit               intr_hmac_done_en;
   rand bit               intr_hmac_err_en;
-  rand bit [31:0]        key[];
   rand bit [7:0]         msg[];
   rand int               burst_wr_length;
   rand bit               do_hash_start_when_active;
@@ -22,12 +19,6 @@ class hmac_smoke_vseq extends hmac_base_vseq;
   bit                    invalid_cfg;
   bit [5:0]              cast_key_length;
   bit [3:0]              cast_digest_size;
-
-  // HMAC key size will always be 1024 bits.
-  // key_length determines actual key size used in HW and scoreboard.
-  constraint key_c {
-    key.size() == NUM_KEYS;
-  }
 
   constraint num_trans_c {
     num_trans inside {[1:50]};
@@ -82,8 +73,8 @@ class hmac_smoke_vseq extends hmac_base_vseq;
     for (int i = 1; i <= num_trans; i++) begin
       bit [7:0] msg_q[$];
       `DV_CHECK_RANDOMIZE_FATAL(this)
-      `uvm_info(`gfn, $sformatf("starting seq %0d/%0d, message size %0d, hmac=%0d, sha=%0d",
-                i, num_trans, msg.size(), hmac_en, sha_en), UVM_LOW)
+      `uvm_info(`gfn, $sformatf("starting seq %0d/%0d, message size %0d bits, hmac=%0d, sha=%0d",
+                i, num_trans, msg.size()*8, hmac_en, sha_en), UVM_LOW)
       `uvm_info(`gfn, $sformatf("digest size=%4b, key length=%6b",
                 digest_size, key_length), UVM_LOW)
       `uvm_info(`gfn, $sformatf("intr_fifo_empty/hmac_done/hmac_err_en=%b, endian/digest_swap=%b",
