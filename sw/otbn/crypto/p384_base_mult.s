@@ -19,10 +19,8 @@
  * Sets up context and calls the internal scalar multiplication routine.
  * This routine runs in constant time.
  *
- * @param[in]       x17: dptr_d0, pointer to location in dmem containing
- *                                1st private key share d0
- * @param[in]       x19: dptr_d1, pointer to location in dmem containing
- *                                2nd private key share d1
+ * @param[in]  dmem[d0]: 1st private key share d0 in dmem
+ * @param[in]  dmem[d1]: 2nd private key share d1 in dmem
  * @param[out]  dmem[x]: x-coordinate in dmem
  * @param[out]  dmem[y]: y-coordinate in dmem
  *
@@ -32,7 +30,7 @@
  * Flags: When leaving this subroutine, the M, L and Z flags of FG0 correspond
  *        to the computed affine y-coordinate.
  *
- * clobbered registers: x2, x3, x9 to x13, x18 to x21, x26 to x30
+ * clobbered registers: x2, x3, x9 to x13, x17 to x21, x26 to x30
  *                      w0 to w30
  * clobbered flag groups: FG0
  */
@@ -50,6 +48,12 @@ p384_base_mult:
 
   /* set dmem pointer to scratchpad */
   la        x30, scratchpad
+
+  /* set dmem pointer to 1st private key share d0 */
+  la        x17, d0
+
+  /* set dmem pointer to 1st private key share d0 */
+  la        x19, d1
 
   /* load domain parameter n (order of base point)
      [w11, w10] = n = dmem[p384_n] */
@@ -94,6 +98,18 @@ p384_base_mult:
 .section .data
 
 .balign 32
+
+/* 1st private key share d0 */
+.globl d0
+.weak d0
+d0:
+  .zero 64
+
+/* 2nd private key share d1 */
+.globl d1
+.weak d1
+d1:
+  .zero 64
 
 /* buffer for x-coordinate */
 .globl x

@@ -20,7 +20,7 @@ p384_oncurve_test:
   bn.lid    x2++, 0(x3)
   bn.lid    x2++, 32(x3)
 
-  /* Fill gpp registers with pointers to variables */
+  /* Fill gpr registers with pointers to variables */
   la        x20, x
   la        x21, y
   la        x22, rhs

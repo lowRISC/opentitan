@@ -19,12 +19,10 @@
  * Sets up context and calls the internal scalar multiplication routine.
  * This routine runs in constant time.
  *
- * @param[in]   x20:     dptr_x, pointer to affine x-coordinate in dmem
- * @param[in]   x21:     dptr_y, pointer to affine y-coordinate in dmem
- * @param[in]   x17:     dptr_k0, pointer to location in dmem containing
- *                                1st scalar share k0
- * @param[in]   x19:     dptr_k1, pointer to location in dmem containing
- *                                2nd scalar share k1
+ * @param[in]   dmem[x]: affine x-coordinate in dmem
+ * @param[in]   dmem[y]: affine y-coordinate in dmem
+ * @param[in]  dmem[k0]: 1st scalar share k0 in dmem
+ * @param[in]  dmem[k1]: 2nd scalar share k1 in dmem
  * @param[out]  dmem[x]: masked x coordinate of R
  * @param[out]  dmem[y]: corresponding mask
  *
@@ -34,7 +32,7 @@
  * Flags: When leaving this subroutine, the M, L and Z flags of FG0 depend on
  *        the computed affine y-coordinate.
  *
- * clobbered registers: x2, x3, x9 to x13, x18 to x21, x26 to x30
+ * clobbered registers: x2, x3, x9 to x13, x17 to x21, x26 to x30
  *                      w0 to w30
  * clobbered flag groups: FG0
  */
@@ -49,6 +47,18 @@ p384_scalar_mult:
 
   /* set dmem pointer to scratchpad */
   la        x30, scratchpad
+
+  /* set dmem pointer to point to x-coordinate */
+  la       x20, x
+
+  /* set dmem pointer to point to y-coordinate */
+  la       x21, y
+
+  /* set dmem pointer to point to 1st scalar share k0 */
+  la       x17, k0
+
+  /* set dmem pointer to point to 2nd scalar share k1 */
+  la       x19, k1
 
   /* load domain parameter p (modulus)
      [w13, w12] = p = dmem[p384_p] */
@@ -164,6 +174,32 @@ p384_scalar_mult:
 
 /* scratchpad memory */
 .section .data
+
+.balign 32
+
+/* 1st scalar share d0 */
+.globl k0
+.weak k0
+k0:
+  .zero 64
+
+/* 2nd scalar share d1 */
+.globl k1
+.weak k1
+k1:
+  .zero 64
+
+/* x-coordinate */
+.globl x
+.weak x
+x:
+  .zero 64
+
+/* y-coordinate */
+.globl y
+.weak y
+y:
+  .zero 64
 
 /* 704 bytes of scratchpad memory */
 .balign 32

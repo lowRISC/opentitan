@@ -24,7 +24,7 @@ p384_ecdh_shared_key_test:
   bn.xor    w31, w31, w31
 
   /* fill gpp registers with pointers to relevant variables */
-  la        x17, k0
+  /*la        x17, k0
   la        x19, k1
   la        x20, x
   la        x21, y

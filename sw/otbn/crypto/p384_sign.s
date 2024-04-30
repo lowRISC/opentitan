@@ -22,19 +22,13 @@
  *
  * This routine runs in constant time.
  *
- * @param[in]  x17:  dptr_k0, pointer to location in dmem containing
- *                            1st scalar share k0
- * @param[in]  x19:  dptr_k1, pointer to location in dmem containing
- *                            2nd scalar share k1
- * @param[in]   x6:  dptr_msg, pointer to the message to be signed in dmem
- * @param[in]  x14:  dptr_r, pointer to dmem location where s component
- *                           of signature will be placed
- * @param[in]  x15:  dptr_s, pointer to dmem location where r component
- *                           of signature will be placed
- * @param[in]   x4:  dptr_d0, pointer to location in dmem containing
- *                            1st private key share d0
- * @param[in]   x5:  dptr_d1, pointer to location in dmem containing
- *                            2nd private key share d1
+ * @param[in]  dmem[k0]: 1st scalar share k0 in dmem
+ * @param[in]  dmem[k1]: 2nd scalar share k1 in dmem
+ * @param[in] dmem[msg]: message to be signed in dmem
+ * @param[in]  dmem[d0]: 1st private key share d0 in dmem
+ * @param[in]  dmem[d1]: 2nd private key share d1 in dmem
+ * @param[out]  dmem[r]: r component of signature
+ * @param[out]  dmem[s]: s component of signature
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
@@ -58,6 +52,27 @@ p384_sign:
 
   /* get dmem pointer of scratchpad */
   la        x30, scratchpad
+
+  /* get dmem pointer of 1st scalar share k0 */
+  la        x17, k0
+
+  /* get dmem pointer of 1st scalar share k1 */
+  la        x19, k1
+
+  /* get dmem pointer of message */
+  la        x6, msg
+
+  /* get dmem pointer of r component */
+  la        x14, r
+
+  /* get dmem pointer of s component */
+  la        x15, s
+
+  /* get dmem pointer of 1st private key share d0 */
+  la        x4, d0
+
+  /* get dmem pointer of 1st private key share d0 */
+  la        x5, d1
 
   /* load domain parameter p (modulus)
      [w13, w12] <= p = dmem[dptr_p] */
@@ -240,6 +255,50 @@ p384_sign:
 
 /* scratchpad memory */
 .section .data
+
+.balign 32
+
+/* message to be signed */
+.globl msg
+.weak msg
+msg:
+  .zero 64
+
+/* r component of signature */
+.globl r
+.weak r
+r:
+  .zero 64
+
+/* s component of signature */
+.globl s
+.weak s
+s:
+  .zero 64
+
+/* 1st scalar share d0 */
+.globl k0
+.weak k0
+k0:
+  .zero 64
+
+/* 2nd scalar share d1 */
+.globl k1
+.weak k1
+k1:
+  .zero 64
+
+/* 1st private key share d0 */
+.globl d0
+.weak d0
+d0:
+  .zero 64
+
+/* 2nd private key share d1 */
+.globl d1
+.weak d1
+d1:
+  .zero 64
 
 /* 704 bytes of scratchpad memory */
 .balign 32

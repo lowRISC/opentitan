@@ -25,13 +25,9 @@ p384_keygen_test:
   bn.xor    w31, w31, w31
 
   /* generate 4 random 448-bit values and write them to d0, d1 */
-  la        x20, d0
-  la        x21, d1
   jal       x1, p384_generate_random_key
 
   /* generate 4 random 448-bit values and write them to k0, k1 */
-  la        x20, k0
-  la        x21, k1
   jal       x1, p384_generate_k
 
   /* load generated values into WDRs for range/distinctiveness check */

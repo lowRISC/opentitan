@@ -69,18 +69,10 @@ start:
  * clobbered flag groups: FG0
  */
 keypair_random:
-  /* Fill gpp registers with pointers to key shares */
-  la        x20, d0
-  la        x21, d1
-
   /* Generate secret key d in shares.
        dmem[d0] <= d0
        dmem[d1] <= d1 */
   jal       x1, p384_generate_random_key
-
-  /* Fill gpp registers with pointers to key shares */
-  la        x17, d0
-  la        x19, d1
 
   /* Generate public key d*G.
        dmem[x] <= (d*G).x
@@ -113,17 +105,9 @@ keypair_random:
  * clobbered flag groups: FG0
  */
 shared_key:
-  /* Fill gpp registers with pointers to coordinates */
-  la        x20, x
-  la        x21, y
-
-  /* Fill gpp registers with pointers to scalar shares */
-  la        x17, k0
-  la        x19, k1
-
-    /* Generate arithmetically masked shared key d*Q.
-       dmem[x] <= (d*Q).x - m mod p
-       dmem[y] <= m */
+  /* Generate arithmetically masked shared key d*Q.
+     dmem[x] <= (d*Q).x - m mod p
+     dmem[y] <= m */
   jal       x1, p384_scalar_mult
 
   /* Arithmetic-to-boolean conversion*/
