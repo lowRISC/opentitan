@@ -976,8 +976,10 @@
       fields: [
         { bits: "31:0",
           name: "err_code",
-          desc: '''If error interrupt occurs, this register has information of error cause.
-                Please take a look at `hw/ip/kmac/rtl/kmac_pkg.sv:err_code_e enum type.
+          desc: '''
+                If the `kmac_err` interrupt occurs, this register has information on the error cause.
+                Bits 31:24 contain the error code (please refer to `err_code_e` in `hw/ip/kmac/rtl/kmac_pkg.sv`) for the encoding, and bits 23:0 contain additional debug information.
+                This register does *not* get cleared when the `kmac_err` interrupt state gets cleared.
                 '''
           tags: [// Randomly write mem will cause this reg updated by design
                  "excl:CsrNonInitTests:CsrExclWriteCheck"]
