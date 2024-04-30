@@ -131,10 +131,8 @@ p384_isoncurve:
  * This routine raises a software error and halts operation if the curve point
  * is invalid.
  *
- * @param[in]  x20: dptr_x, pointer to dmem location containing affine
- *                          x-coordinate of input point
- * @param[in]  x21: dptr_y, pointer to dmem location containing affine
- *                          y-coordinate of input point
+ * @param[in]  dmem[x]: affine x-coordinate of input point in dmem
+ * @param[in]  dmem[y]: affine y-coordinate of input point in dmem
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
@@ -145,6 +143,12 @@ p384_isoncurve:
 p384_curve_point_valid:
   /* Init all-zero register. */
   bn.xor    w31, w31, w31
+
+  /* set dmem pointer to point x-coordinate */
+  la        x20, x
+
+  /* set dmem pointer to point y-coordinate */
+  la        x21, y
 
   /* load domain parameter p (modulus)
      [w13, w12] = p = dmem[p384_p] */
@@ -244,6 +248,20 @@ p384_curve_point_valid:
   ret
 
 .data
+
+/* x-coordinate */
+.globl x
+.weak x
+.balign 32
+x:
+  .zero 64
+
+/* y-coordinate */
+.globl y
+.weak y
+.balign 32
+y:
+  .zero 64
 
 /* Right side of Weierstrass equation */
 .globl rhs

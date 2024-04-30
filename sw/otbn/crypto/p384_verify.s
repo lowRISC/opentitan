@@ -95,13 +95,12 @@ store_proj:
  * host side. The signature is valid if x1 == r.
  * This routine runs in variable time.
  *
- * @param[in]  x6:  dptr_r, pointer to r of signature in dmem
- * @param[in]  x7:  dptr_s, pointer to s of signature in dmem
- * @param[in]  x8:  dptr_rnd, pointer to dmem location where the reduced
- *                            affine x1-coordinate will be stored
- * @param[in]  x9:  dptr_msg, pointer to the message to be verified in dmem
- * @param[in]  x13: dptr_x, pointer to x-coordinate of public key in dmem
- * @param[in]  x14: dptr_y, pointer to y-coordinate of public key in dmem
+ * @param[in]    dmem[r]: r component of signature in dmem
+ * @param[in]    dmem[s]: s component of signature in dmem
+ * @param[in]  dmem[msg]: message to be verified in dmem
+ * @param[in]    dmem[x]: x-coordinate of public key in dmem
+ * @param[in]    dmem[y]: y-coordinate of public key in dmem
+ * @param[out] dmem[rnd]: verification result: reduced affine x1-coordinate
  *
  * Scratchpad memory layout:
  * The routine expects at least 896 bytes of scratchpad memory at dmem
@@ -124,6 +123,24 @@ p384_verify:
 
   /* init all-zero reg */
   bn.xor    w31, w31, w31
+
+  /* get dmem pointer of r component */
+  la        x6, r
+
+  /* get dmem pointer of s component */
+  la        x7, s
+
+  /* get dmem pointer of verification result (x1-coordinate) */
+  la        x8, rnd
+
+  /* get dmem pointer of message */
+  la        x9, msg
+
+  /* get dmem pointer of public key x-coordinate */
+  la        x13, x
+
+  /* get dmem pointer of public key y-coordinate */
+  la        x14, y
 
   /* load domain parameter n (order of base point)
      [w13, w12] <= n = dmem[p384_n] */
@@ -406,6 +423,44 @@ fail:
 
 /* scratchpad memory */
 .section .data
+
+.balign 32
+
+/* message to be signed */
+.globl msg
+.weak msg
+msg:
+  .zero 64
+
+/* r component of signature */
+.globl r
+.weak r
+r:
+  .zero 64
+
+/* s component of signature */
+.globl s
+.weak s
+s:
+  .zero 64
+
+/* public key x-coordinate */
+.globl x
+.weak x
+x:
+  .zero 64
+
+/* public key y-coordinate */
+.globl y
+.weak y
+y:
+  .zero 64
+
+/* verification result (x1-coordinate) */
+.globl rnd
+.weak rnd
+rnd:
+  .zero 64
 
 /* Scratchpad memory */
 .balign 32

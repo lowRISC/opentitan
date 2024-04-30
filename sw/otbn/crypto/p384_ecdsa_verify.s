@@ -45,18 +45,6 @@ start:
  *
  */
 ecdsa_verify:
-  /* Fill gpp registers with pointers to variables required for p384_verify */
-  /* signature values */
-  la        x6, r
-  la        x7, s
-  /* reduced x1-coordinate */
-  la        x8, rnd
-  /* message */
-  la        x9, msg
-  /* public key coordinates*/
-  la        x13, x
-  la        x14, y
-
   /* Verify the signature (compute x1). */
   jal      x1, p384_verify
 
