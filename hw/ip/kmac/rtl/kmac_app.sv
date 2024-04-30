@@ -45,6 +45,7 @@ module kmac_app
   // to KMAC Core: Secret key
   output logic [MaxKeyLen-1:0] key_data_o [Share],
   output key_len_e             key_len_o,
+  output logic                 key_valid_o,
 
   // to MSG_FIFO
   output logic                kmac_valid_o,
@@ -850,6 +851,9 @@ module kmac_app
     for (int i = 0 ; i < Share; i++) begin
       key_data_o[i] = reg_key_data_i[i];
     end
+    // The key is considered invalid in all cases that are not listed below (which includes idle and
+    // error states).
+    key_valid_o = 1'b0;
 
     unique case (st)
       StAppCfg, StAppMsg, StAppOutLen, StAppProcess, StAppWait: begin
@@ -857,6 +861,9 @@ module kmac_app
         for (int i = 0 ; i < Share; i++) begin
           key_data_o[i] = keymgr_key[i];
         end
+        // Key is valid if the current HW app interface does *keyed* MAC and the key provided by
+        // keymgr is valid.
+        key_valid_o = keymgr_key_used && keymgr_key_i.valid;
       end
 
       StSw: begin
@@ -864,6 +871,16 @@ module kmac_app
           key_len_o = SideloadedKey;
           for (int i = 0 ; i < Share; i++) begin
             key_data_o[i] = keymgr_key[i];
+          end
+        end
+        // Key is valid if SW does *keyed* MAC and ...
+        if (kmac_en_o) begin
+          if (!keymgr_key_en_i) begin
+            // ... it uses the key from kmac's CSR, or ...
+            key_valid_o = 1'b1;
+          end else begin
+            // ... it uses the key provided by keymgr and that one is valid.
+            key_valid_o = keymgr_key_i.valid;
           end
         end
       end

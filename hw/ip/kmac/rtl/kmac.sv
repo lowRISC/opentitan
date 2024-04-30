@@ -263,6 +263,7 @@ module kmac
   logic [MaxKeyLen-1:0] sw_key_data [Share];
   key_len_e             sw_key_len;
   logic [MaxKeyLen-1:0] key_data [Share];
+  logic                 key_valid;
   key_len_e             key_len;
 
   // SHA3 Mode, Strength, KMAC enable for app interface
@@ -879,8 +880,9 @@ module kmac
     .strength_i (app_keccak_strength),
 
     // Secret key interface
-    .key_data_i (key_data),
-    .key_len_i  (key_len ),
+    .key_data_i  (key_data),
+    .key_len_i   (key_len),
+    .key_valid_i (key_valid),
 
     // Controls
     .start_i   (sha3_start          ),
@@ -1065,8 +1067,9 @@ module kmac
     .app_o,
 
     // Secret Key output to KMAC Core
-    .key_data_o (key_data),
-    .key_len_o  (key_len),
+    .key_data_o  (key_data),
+    .key_len_o   (key_len),
+    .key_valid_o (key_valid),
 
     // to MSG_FIFO
     .kmac_valid_o (mux2fifo_valid),
