@@ -190,7 +190,7 @@ bool execute_sram_ctrl_sleep_ret_sram_contents_test(bool scramble) {
       // retention SRAM when it boots after being scrambled. The ROM_EXT
       // expects a valid version and refuses to boot otherwise.
       //
-      // This is fixed in the prod ROM, but we can must work around it in ES
+      // This is fixed in the prod ROM, but we must work around it in ES
       // tests by restoring the version after the wipe.
       //
       // We write the version pre-scrambling since we want it to be readable
