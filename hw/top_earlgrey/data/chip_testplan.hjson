@@ -227,6 +227,7 @@
       lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "RMA"]
       tests: ["chip_tap_straps_dev", "chip_tap_straps_prod", "chip_tap_straps_rma",
               "chip_tap_straps_testunlock0"]
+      bazel: ["//sw/device/tests:rv_dm_jtag_tap_sel"],
     }
 
     // PATTGEN (pre-verified IP) integration tests:
