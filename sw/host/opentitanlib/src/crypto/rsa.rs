@@ -273,6 +273,13 @@ impl TryFrom<&RsaPublicKey> for RsaRawPublicKey {
     }
 }
 
+impl TryFrom<RsaPublicKey> for RsaRawPublicKey {
+    type Error = Error;
+    fn try_from(v: RsaPublicKey) -> Result<Self, Self::Error> {
+        RsaRawPublicKey::try_from(&v)
+    }
+}
+
 impl FromStr for RsaRawPublicKey {
     type Err = Error;
     fn from_str(s: &str) -> Result<Self, Self::Err> {

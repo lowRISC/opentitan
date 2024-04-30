@@ -226,6 +226,13 @@ impl TryFrom<&EcdsaPublicKey> for EcdsaRawPublicKey {
     }
 }
 
+impl TryFrom<EcdsaPublicKey> for EcdsaRawPublicKey {
+    type Error = Error;
+    fn try_from(v: EcdsaPublicKey) -> Result<Self, Self::Error> {
+        EcdsaRawPublicKey::try_from(&v)
+    }
+}
+
 impl FromStr for EcdsaRawPublicKey {
     type Err = Error;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
