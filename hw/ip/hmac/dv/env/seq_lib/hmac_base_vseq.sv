@@ -9,9 +9,10 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
   `uvm_object_utils(hmac_base_vseq)
   `uvm_object_new
 
-  bit do_hmac_init     = 1'b1;
-  bit do_back_pressure = 1'b0;
-  bit do_burst_wr      = 1'b0;
+  // Control knobs
+  bit do_hmac_init      = 1'b1;
+  bit do_back_pressure  = 1'b0;
+  bit do_burst_wr       = 1'b0;
 
   bit       invalid_cfg;
   bit [5:0] cast_key_length;
@@ -31,6 +32,18 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
   // TODO (issue #23245): verify key_swap
   rand bit                key_swap;
 
+  // Local variables
+  // Keep context configuration while testing Save and Restore feature
+  local bit               endian_swap_bak;
+  local bit               digest_swap_bak;
+  local bit [3:0]         digest_size_bak;
+  local bit [5:0]         key_length_bak;
+  local bit [TL_DW-1:0]   key_bak[];
+  local uvm_event         sar_window    = new();
+  local uvm_event         hash_continue = new();
+  local bit               save_ctx_ongoing;
+  local bit               sar_ongoing;
+
   constraint wr_addr_c {
     wr_addr inside {[HMAC_MSG_FIFO_BASE : HMAC_MSG_FIFO_LAST_ADDR]};
   }
@@ -44,33 +57,18 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
 
   // TODO: keep both blocks for key_length and digest size and toggle between both for WIP
   // till DV stabilizes for all digest sizes and key lengths
-  constraint key_digest_c {
+  constraint key_length_c {
     $countones(key_length) == 1 dist {
       1 :/ 10,  // Key_128/Key_256/Key_384/Key_512/Key_1024/Key_None
-      0 :/ 0    // Illegal -> should get casted to Key_None in HW
+      0 :/ 0    // Illegal -> should get casted to Key_None in HW TODO #23592
     };
+  }
 
+  constraint digest_size_c {
     $countones(digest_size) == 1 dist {
       1 :/ 10,  // SHA2_256/SHA2_384/SHA2_512/SHA2_None
-      0 :/ 0    // Illegal -> should get casted to SHA2_None in HW
+      0 :/ 0    // Illegal -> should get casted to SHA2_None in HW TODO #23592
     };
-
-    /* key_length dist {
-      6'b00_0001 := 0,
-      6'b00_0010 := 10, // 256-bit key
-      6'b00_0100 := 0,
-      6'b00_1000 := 0,
-      6'b01_0000 := 0,
-      6'b10_0000 := 0
-    }; */
-
-  /*  // only testing SHA-2 256 now
-    digest_size dist {
-      4'b0001 := 10, // SHA-2 256
-      4'b0010 := 0,  // SHA-2 384
-      4'b0100 := 0,  // SHA-2 512
-      4'b1000 := 0   // SHA-2 None
-    }; */
   }
 
   constraint wr_mask_contiguous_c {
@@ -171,6 +169,7 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
     csr_wr(.ptr(ral.cmd), .value(1'b1 << HashContinue));
     // If SHA is not enabled, check that an error is signaled.
     if (!ral.cfg.sha_en.get_mirrored_value()) check_error_code();
+    hash_continue.trigger();
   endtask
 
   // stop hash computations
@@ -179,11 +178,14 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
     csr_wr(.ptr(ral.cmd), .value(1'b1 << HashStop));
   endtask
 
-  // trigger calculation of digest at the end of a message
+  // trigger calculation of digest at the end of a message only when Save and Restore hasn't been
+  // triggered before
   virtual task trigger_process();
-    `uvm_info(`gfn, "triggering hash to process", UVM_LOW)
-    csr_wr(.ptr(ral.cmd), .value(1'b1 << HashProcess));
-    cfg.hash_process_triggered = 1;
+    if (!save_ctx_ongoing) begin
+      `uvm_info(`gfn, "triggering hash to process", UVM_LOW)
+      csr_wr(.ptr(ral.cmd), .value(1'b1 << HashProcess));
+      cfg.hash_process_triggered = 1;
+    end
   endtask
 
   virtual task trigger_hash_when_active();
@@ -247,77 +249,69 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
   endtask
 
   // write msg to DUT, read status FIFO FULL and check intr FIFO FULL
-  virtual task wr_msg(bit [7:0] msg[], bit non_blocking = $urandom_range(0, 1));
+  // Spawn a Save and Restore thread only when needed (as burst_wr_msg might call this task also
+  // while the sar_thread is already ongoing)
+  virtual task wr_msg(bit [7:0] msg[]);
     int bits_written = 0;
     bit [7:0] msg_q[$] = msg;
-    // randomly pick the size of bytes to write
-    // unless msg size is smaller than randomized size
-    while (msg_q.size() > 0) begin
-      bit [7:0] word_unpack[4];
-      bit [TL_DW-1:0] word;
-      `DV_CHECK_FATAL(randomize(wr_addr, wr_mask) with {$countones(wr_mask) <= msg_q.size();})
-      foreach (wr_mask[i]) begin
-        // wr_mask is a packed array, word_unpacked is unpack, has different index
-        if (wr_mask[i]) word_unpack[3 - i] = msg_q.pop_front();
-        else word_unpack[3 - i] = $urandom();
-      end
-      word = {>>byte{word_unpack}};
-      `uvm_info(`gfn, $sformatf("wr_addr = %0h, wr_mask = %0h, words = 0x%0h",
-                                wr_addr, wr_mask, word), UVM_LOW)
-      tl_access(.addr(cfg.ral.get_addr_from_offset(wr_addr)),
-                .write(1'b1), .data(word), .mask(wr_mask), .blocking(non_blocking));
-      bits_written += $countones(wr_mask) * 8;
 
-      `uvm_info(`gfn, $sformatf("bits written: %0d", bits_written), UVM_HIGH)
-
-      if (bits_written % 512 == 0 && msg_q.size() > 0 &&
-          cfg.save_and_restore_pct > $urandom_range(0, 99)) begin
-        // Multiple of block size reached; this is an opportunity to save the digest by reading it
-        // from SW, then disable SHA, reload the digest, and continue message processing.
-        // TODO: When adding SHA-384/512, the `512` (i.e., the block size) above must be dynamically
-        // changed between 512 (for SHA-256) and 1024 (for SHA-384/512).
-        bit [TL_DW-1:0] digest[16];
-        bit [2*TL_DW-1:0] msg_length;
-        `uvm_info(`gfn, $sformatf("Saving and restoring context"), UVM_LOW)
-        // Ensure all messages have been written to FIFO (in case the `tl_access`es above were
-        // non-blocking).
-        csr_utils_pkg::wait_no_outstanding_access();
-        // Stop hash operations.
-        trigger_hash_stop();
-        // Wait for hash to be done so the digest is updated.
-        csr_spinwait(.ptr(ral.intr_state.hmac_done), .exp_data(1'b1));
-        // Clear the interrupt.
-        csr_wr(.ptr(ral.intr_state.hmac_done), .value(1'b1));
-        // Read the digest to save it.
-        csr_rd_digest(digest);
-        // Read message length.
-        csr_rd_msg_length(msg_length);
-        // Disable SHA so we can write digest and message length.
-        csr_wr(.ptr(ral.cfg.sha_en), .value(1'b0));
-        // Clearing the message length is not strictly necessary but currently done to ensure the
-        // previous value does not persist.
-        csr_wr_msg_length('0); //
-        // Reload the digest by writing it back.
-        csr_wr_digest(digest);
-        // Reload the message length by writing it back.
-        csr_wr_msg_length(msg_length);
-        // Re-enable SHA and continue hashing.
-        csr_wr(.ptr(ral.cfg.sha_en), .value(1'b1));
-        trigger_hash_continue();
-      end
-
-      if (ral.cfg.sha_en.get_mirrored_value()) begin
-        if (!do_back_pressure) begin
-          if ($urandom_range(0, 1)) read_status_intr_clr();
+    // Spawn save and restore task only on some occasions
+    fork : sar_simple_thread
+      begin
+        if (!sar_ongoing && (cfg.save_and_restore_pct > $urandom_range(0, 99))) begin
+          save_and_restore();
         end
-        // randomly change key, config regs during msg wr, should trigger error or be discarded
-        write_discard_config_and_key(wr_config_during_hash, wr_key_during_hash);
-      end else begin
-        check_error_code();
       end
-    end
+      begin
+        // randomly pick the size of bytes to write
+        // unless msg size is smaller than randomized size
+        while (msg_q.size() > 0) begin
+          bit [7:0] word_unpack[4];
+          bit [TL_DW-1:0] word;
+          `DV_CHECK_FATAL(randomize(wr_addr, wr_mask) with {$countones(wr_mask) <= msg_q.size();})
+
+          foreach (wr_mask[i]) begin
+            // wr_mask is a packed array, word_unpacked is unpack, has different index
+            if (wr_mask[i]) word_unpack[3 - i] = msg_q.pop_front();
+            else word_unpack[3 - i] = $urandom();
+          end
+          word = {>>byte{word_unpack}};
+          `uvm_info(`gfn, $sformatf("wr_addr = %0h, wr_mask = %04b, words = 0x%0h",
+                                    wr_addr, wr_mask, word), UVM_LOW)
+          tl_access(.addr(cfg.ral.get_addr_from_offset(wr_addr)),
+                    .write(1'b1), .data(word), .mask(wr_mask), .blocking(1));
+          bits_written += $countones(wr_mask) * 8;
+
+          `uvm_info(`gfn, $sformatf("bits written: %0d", bits_written), UVM_HIGH)
+
+          // Block size has to be not zero to avoid to divide by zero
+          if (get_block_size(digest_size) != 0) begin
+            // Multiple of block size reached => opportunity to trigger a save and restore sequence
+            // Only when message is not completely yet transmitted, as it doesn't make sense
+            if ((bits_written % get_block_size(digest_size) == 0) && (msg_q.size() > 0)) begin
+              // Trigger the event only if someone is waiting for it, this is to prevent infinite
+              // wait in case of a S&R is triggered 2 times for a same message
+              if (sar_window.get_num_waiters() > 0) begin
+                sar_window.trigger();
+                hash_continue.wait_trigger();
+              end
+            end
+          end
+
+          if (ral.cfg.sha_en.get_mirrored_value()) begin
+            if (!do_back_pressure) begin
+              if ($urandom_range(0, 1)) read_status_intr_clr();
+            end
+            // randomly change key, config regs during msg wr, should trigger error or be discarded
+            write_discard_config_and_key(wr_config_during_hash, wr_key_during_hash);
+          end else begin
+            check_error_code();
+          end
+        end
+        if (!sar_ongoing) disable sar_simple_thread;
+      end
+    join
     // ensure all msg fifo are written before trigger hmac_process
-    csr_utils_pkg::wait_no_outstanding_access();
     if ($urandom_range(0, 1)) rd_msg_length();
     read_status_intr_clr();
   endtask
@@ -377,7 +371,6 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
   // read status and interrupt state and clear the interrupt state
   virtual task read_status_intr_clr();
     bit [TL_DW-1:0] rdata;
-    csr_utils_pkg::wait_no_outstanding_access();
     csr_rd(ral.status, rdata);
     csr_rd(ral.intr_state, rdata);
     csr_wr(.ptr(ral.intr_state), .value(rdata));
@@ -389,7 +382,6 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
   // will leave the checking to scoreboard
   virtual task check_error_code(bit check_err = 1);
     bit [TL_DW-1:0] error_code;
-    csr_utils_pkg::wait_no_outstanding_access();
     if (check_err) begin
       if (ral.intr_enable.hmac_err.get_mirrored_value()) begin
         check_interrupts(.interrupts((1 << HmacErr)), .check_set(1'b1));
@@ -405,8 +397,9 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
     `uvm_info(`gfn, $sformatf("Error code: 0x%0h", error_code), UVM_HIGH)
   endtask
 
-  // TODO: extend to check for SHA-2 384 and 512 once the hmac_test_vectors_sha_vseq test is
-  // extended for these digest sizes (issue #22932)
+  // TODO (#22932): extend to check for SHA-2 384 and 512 once the hmac_test_vectors_sha_vseq test
+  // is extended for these digest sizes
+  // TODO (#23288): remove this check from the seq
   virtual task compare_digest(bit [7:0] exp_digest[]);
     bit [TL_DW-1:0] act_digest[16];
     bit [TL_DW-1:0] packed_exp_digest[8];
@@ -431,4 +424,185 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
     end
   endtask
 
+  // Stop hash, save current context, do something/nothing and restore context
+  //    - Test with context A saved and restored
+  //    - Test with context A and B, alternatively saved and restored. Ensure to randomize again:
+  //      key length, digest size, digest swap, endian swap and secret key
+  virtual task save_and_restore();
+    bit [TL_DW-1:0]     digest_a[16];
+    bit [2*TL_DW-1:0]   msg_length_a;
+    bit [7:0]           msg_b[];
+    save_and_restore_e  sar_ctxt;
+    uvm_event           sar_stop_continue_ev;
+    uvm_event           sar_same_ctxt_ev;
+    uvm_event           sar_different_ctxt_ev;
+
+    sar_stop_continue_ev  = uvm_event_sar_pool::get_global("sar_stop_and_continue_event");
+    sar_same_ctxt_ev      = uvm_event_sar_pool::get_global("sar_same_context_event");
+    sar_different_ctxt_ev = uvm_event_sar_pool::get_global("sar_different_context_event");
+
+    randcase
+      1:  sar_ctxt = StopAndContinue;
+      1:  sar_ctxt = SameContext;
+      1:  sar_ctxt = DifferentContext;
+    endcase
+
+    if (sar_ctxt == SameContext) begin
+      // Wait until message transmission is on a block boundary (multiple of 512 bits in SHA-2 256
+      // or 1024 bits SHA-2 384/512)
+      sar_window.wait_trigger();
+      `uvm_info(`gfn, $sformatf("Saving and restoring with the same context"), UVM_LOW)
+      sar_ongoing = 1;
+      // Stop hash operations.
+      trigger_hash_stop();
+      // Expose ongoing Save and Restore triggered to avoid to request a new hash process
+      save_ctx_ongoing = 1;
+      // Wait for hash to be done so the digest is updated.
+      csr_spinwait(.ptr(ral.intr_state.hmac_done), .exp_data(1'b1));
+      // Clear the interrupt.
+      csr_wr(.ptr(ral.intr_state.hmac_done), .value(1'b1));
+      // Read the digest and save it.
+      csr_rd_digest(digest_a);
+      // Read message length and save it.
+      csr_rd_msg_length(msg_length_a);
+      // Disable SHA so we can write digest and message length.
+      csr_wr(.ptr(ral.cfg.sha_en), .value(1'b0));
+      // Clearing the message length is not strictly necessary but currently done to ensure the
+      // previous value does not persist.
+      csr_wr_msg_length('0); //
+      save_ctx_ongoing = 0;
+      // Reload the digest by writing it back.
+      csr_wr_digest(digest_a);
+      // Reload the message length by writing it back.
+      csr_wr_msg_length(msg_length_a);
+      // Re-enable SHA and continue hashing.
+      csr_wr(.ptr(ral.cfg.sha_en), .value(1'b1));
+      trigger_hash_continue();
+      sar_same_ctxt_ev.trigger();
+    //   Different context:
+    //   All those parameters could be changed: key length, digest size, digest swap, endian swap
+    //   and secret key, update all those registers and restart. Operations:
+    //      1- config registers for A, run A hash, stop A hash
+    //      2- save A context
+    //      3- config registers for B, run B hash, stop B hash
+    //      4- save B context, restore A context, resume A hash until the end
+    //      5- restore B context, resume B hash until the end
+    end else begin
+      // Wait until message transmission is on a block boundary (multiple of 512 bits in SHA-2 256
+      // or 1024 bits SHA-2 384/512)
+      sar_window.wait_trigger();
+      `uvm_info(`gfn, $sformatf("Saving and restoring with different contexts"), UVM_LOW)
+      sar_ongoing = 1;
+      // Stop hash operations.
+      trigger_hash_stop();
+      // Expose ongoing Save and Restore triggered to avoid to request a new hash process
+      save_ctx_ongoing = 1;
+      // Wait for hash to be done so the digest is updated.
+      csr_spinwait(.ptr(ral.intr_state.hmac_done), .exp_data(1'b1));
+      // Clear the interrupt.
+      csr_wr(.ptr(ral.intr_state.hmac_done), .value(1'b1));
+      // Read the digest and save it.
+      csr_rd_digest(digest_a);
+      // Read message length and save it.
+      csr_rd_msg_length(msg_length_a);
+      save_and_restore_cfg(1, 0);   // Save config A, generate config B and config DUT
+      save_ctx_ongoing = 0;
+      // Re-enable SHA and continue hashing.
+      csr_wr(.ptr(ral.cfg.sha_en), .value(1'b1));
+      trigger_hash_continue();
+      // Wait a block boundary
+      sar_window.wait_trigger();
+      // Stop hash operations.
+      trigger_hash_stop();
+      // Expose ongoing Save and Restore triggered to avoid to request a new hash process
+      save_ctx_ongoing = 1;
+      // Wait for hash to be done so the digest is updated.
+      csr_spinwait(.ptr(ral.intr_state.hmac_done), .exp_data(1'b1));
+      // Clear the interrupt.
+      csr_wr(.ptr(ral.intr_state.hmac_done), .value(1'b1));
+      // Read the digest and save it.
+      csr_rd_digest(digest_b);
+      // Read message length and save it.
+      csr_rd_msg_length(msg_length_b);
+      save_and_restore_cfg(1, 1);   // Save config B and restore config A
+      save_ctx_ongoing = 0;
+      // Re-enable SHA and continue hashing.
+      csr_wr(.ptr(ral.cfg.sha_en), .value(1'b1));
+      trigger_hash_continue();
+      // Wait message A completion
+      csr_spinwait(.ptr(ral.intr_state.hmac_done), .exp_data(1'b1));
+      // Wait for hash to be done so the digest is updated.
+      csr_spinwait(.ptr(ral.intr_state.hmac_done), .exp_data(1'b1));
+      // Clear the interrupt.
+      csr_wr(.ptr(ral.intr_state.hmac_done), .value(1'b1));
+      save_and_restore_cfg(0, 1);   // Restore config B without saving config A as hash completed
+      // Re-enable SHA and continue hashing.
+      csr_wr(.ptr(ral.cfg.sha_en), .value(1'b1));
+      trigger_hash_continue();
+      // Wait message B completion
+      csr_spinwait(.ptr(ral.intr_state.hmac_done), .exp_data(1'b1));
+      // Wait for hash to be done so the digest is updated.
+      csr_spinwait(.ptr(ral.intr_state.hmac_done), .exp_data(1'b1));
+      // Clear the interrupt.
+      csr_wr(.ptr(ral.intr_state.hmac_done), .value(1'b1));
+      sar_different_ctxt_ev.trigger();
+    end
+    sar_ongoing = 0;
+  endtask : save_and_restore
+
+  // Save the current config for some registers, and restore the previous saved config or genrate
+  // a new random one
+  virtual task save_and_restore_cfg(bit save_current_cfg,
+                                    bit restore_previous_cfg);
+    hmac_base_vseq  rand_cfg;     // Only here to randomize variables
+    bit             endian_swap_tmp;
+    bit             digest_swap_tmp;
+    bit [3:0]       digest_size_tmp;
+    bit [5:0]       key_length_tmp;
+    bit [TL_DW-1:0] key_tmp[];
+    string          secret_key_path = {`DUT_HIER_STR, ".secret_key"};
+    logic [NUM_KEYS*TL_DW-1:0] secret_key_probe;
+
+    `DV_CHECK_FATAL(uvm_hdl_read(secret_key_path, secret_key_probe),
+                    $sformatf("Failed to access path %s", secret_key_path))
+
+    if (save_current_cfg) begin
+      endian_swap_tmp = `gmv(ral.cfg.endian_swap);
+      digest_swap_tmp = `gmv(ral.cfg.digest_swap);
+      digest_size_tmp = `gmv(ral.cfg.digest_size);
+      key_length_tmp  = `gmv(ral.cfg.key_length);
+      key_tmp         = new[get_key_length(key_length_tmp)/TL_DW];
+      for (int i=0; i<key_tmp.size(); i++) begin
+        key_tmp[i] = secret_key_probe[NUM_KEYS*TL_DW-i*TL_DW-1 -: TL_DW];
+      end
+    end
+
+    // Restore the previous config
+    if (restore_previous_cfg) begin
+      ral.cfg.endian_swap.set(endian_swap_bak);
+      ral.cfg.digest_swap.set(digest_swap_bak);
+      ral.cfg.digest_size.set(digest_size_bak);
+      ral.cfg.key_length.set(key_length_bak);
+      csr_update(.csr(ral.cfg));
+      wr_key(key_bak);
+    // Generate new randomized config with the current set of constraints
+    end else begin
+      rand_cfg = hmac_base_vseq::type_id::create("rand_cfg");
+      rand_cfg.set_sequencer(p_sequencer);  // Won't be used but needed to avoid error
+      `DV_CHECK_FATAL(rand_cfg.randomize())
+      ral.cfg.endian_swap.set(rand_cfg.endian_swap);
+      ral.cfg.digest_swap.set(rand_cfg.digest_swap);
+      ral.cfg.digest_size.set(rand_cfg.digest_size);
+      ral.cfg.key_length.set(rand_cfg.key_length);
+      csr_update(.csr(ral.cfg));
+      wr_key(rand_cfg.key);
+    end
+
+    // Copy over into the previous config variables
+    endian_swap_bak = endian_swap_tmp;
+    digest_swap_bak = digest_swap_tmp;
+    digest_size_bak = digest_size_tmp;
+    key_length_bak  = key_length_tmp;
+    key_bak         = key_tmp;
+  endtask : save_and_restore_cfg
 endclass : hmac_base_vseq

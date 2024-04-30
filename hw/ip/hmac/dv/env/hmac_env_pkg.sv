@@ -108,13 +108,15 @@ package hmac_env_pkg;
 
   typedef enum int {
     SameContext       = 0,
-    DifferentContext  = 1
+    DifferentContext  = 1,
+    StopAndContinue   = 2
   } save_and_restore_e;
 
   typedef class hmac_env_cfg;
   typedef class hmac_env_cov;
   typedef cip_base_virtual_sequencer #(hmac_env_cfg, hmac_env_cov) hmac_virtual_sequencer;
   typedef virtual pins_if #(1) d2h_a_ready_vif;
+  typedef uvm_object_string_pool #(uvm_event) uvm_event_sar_pool;
 
   // functions
   function automatic int get_digest_index(string csr_name);
@@ -176,6 +178,40 @@ package hmac_env_pkg;
       default: `uvm_fatal("get_key_index", $sformatf("invalid key csr name: %0s", csr_name))
     endcase
   endfunction
+
+  function automatic int get_key_length(int key_length_reg);
+    case (key_length_reg)
+      'h01: return 128;   // 128-bit secret key
+      'h02: return 256;   // 256-bit secret key
+      'h04: return 384;   // 384-bit secret key
+      'h08: return 512;   // 512-bit secret key
+      'h10: return 1024;  // 1024-bit secret key
+      'h20: return 0;     // Unsupported/invalid values and all-zero values are mapped to Key_None
+      default: `uvm_fatal("get_key_length", $sformatf("Invalid key length register value: %0h",
+                          key_length_reg))
+    endcase
+  endfunction : get_key_length
+
+  function automatic string get_digest_size(int digest_size_reg);
+    case (digest_size_reg)
+      'h01:    return "SHA2_256";    // SHA-2 256 digest
+      'h02:    return "SHA2_384";    // SHA-2 384 digest
+      'h04:    return "SHA2_512";    // SHA-2 512 digest
+      'h08:    return "SHA2_None";   // Unsupported/invalid values and all-zero values
+      default: return "SHA2_None";
+    endcase
+  endfunction : get_digest_size
+
+  // Return block size in bits according to the digest size
+  function automatic int get_block_size(int digest_size_reg);
+    case (digest_size_reg)
+      'h01:    return HMAC_BLK_SIZE_SHA2_256*8;      // SHA-2 256: 512-bit block
+      'h02:    return HMAC_BLK_SIZE_SHA2_384_512*8;  // SHA-2 384: 1024-bit block
+      'h04:    return HMAC_BLK_SIZE_SHA2_384_512*8;  // SHA-2 512: 1024-bit block
+      'h08:    return 0;                             // Unsupported/invalid and all-zero values
+      default: return 0;
+    endcase
+  endfunction : get_block_size
 
   typedef virtual hmac_if hmac_vif;
 
