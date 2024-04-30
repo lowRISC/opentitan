@@ -66,6 +66,7 @@
       si_stage: SV3
       tests: ["chip_sw_rv_core_ibex_address_translation"]
       lc_states: ["PROD"]
+      boot_stages: ["rom_ext"],
       features: [
         "RV_CORE_IBEX.ADDRESS_TRANSLATION"
       ]
@@ -169,6 +170,7 @@
        tests: []
        bazel: ["//sw/device/tests:rv_core_ibex_epmp_test_functest"]
        lc_states: ["TEST_UNLOCKED", "DEV", "RMA", "PROD", "PROD_END"]
+       boot_stages: ["rom_ext"],
        features: [
          "RV_CORE_IBEX.CPU.EPMP"
        ]
