@@ -736,6 +736,16 @@ dif_result_t dif_kmac_err_processed(const dif_kmac_t *kmac);
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_kmac_has_error_occurred(const dif_kmac_t *kmac, bool *error);
+
+/**
+ * Clear the `kmac_err` IRQ.
+ *
+ * @param kmac A KMAC handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_kmac_clear_err_irq(const dif_kmac_t *kmac);
+
 /**
  * Fetch the current status of the message FIFO used to buffer absorbed data.
  *

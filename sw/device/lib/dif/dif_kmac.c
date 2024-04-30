@@ -144,6 +144,16 @@ dif_result_t dif_kmac_has_error_occurred(const dif_kmac_t *kmac, bool *error) {
   return kDifOk;
 }
 
+dif_result_t dif_kmac_clear_err_irq(const dif_kmac_t *kmac) {
+  if (kmac == NULL) {
+    return kDifBadArg;
+  }
+  uint32_t reg = 0;
+  reg = bitfield_bit32_write(reg, KMAC_INTR_STATE_KMAC_ERR_BIT, true);
+  mmio_region_write32(kmac->base_addr, KMAC_INTR_STATE_REG_OFFSET, reg);
+  return kDifOk;
+}
+
 dif_result_t dif_kmac_poll_status(const dif_kmac_t *kmac, uint32_t flag) {
   while (true) {
     uint32_t reg = mmio_region_read32(kmac->base_addr, KMAC_STATUS_REG_OFFSET);
