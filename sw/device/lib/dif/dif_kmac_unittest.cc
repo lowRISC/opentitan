@@ -781,31 +781,44 @@ TEST_F(KmacStatusTest, BadArg) {
 
 class KmacGetErrorTest : public KmacTest {
  protected:
-  static constexpr std::array<dif_kmac_error_t, 7> kErrors = {
+  static constexpr std::array<dif_kmac_error_t, 14> kErrors = {
       kDifErrorNone,
       kDifErrorKeyNotValid,
       kDifErrorSoftwarePushedMessageFifo,
-      kDifErrorSoftwarePushedWrongCommand,
+      kDifErrorSoftwareIssuedCommandWhileAppInterfaceActive,
       kDifErrorEntropyWaitTimerExpired,
       kDifErrorEntropyModeIncorrect,
-      kDifErrorUnknownError};
+      kDifErrorUnexpectedModeStrength,
+      kDifErrorIncorrectFunctionName,
+      kDifErrorSoftwareCommandSequence,
+      kDifErrorSoftwareHashingWithoutEntropyReady,
+      kDifErrorShadowRegisterUpdate,
+      kDifErrorFatalError,
+      kDifErrorPackerIntegrity,
+      kDifErrorMsgFifoIntegrity,
+  };
   dif_kmac_error_t error_;
+  uint32_t info_;
   KmacGetErrorTest() { op_state_.squeezing = true; }
 };
-constexpr std::array<dif_kmac_error_t, 7> KmacGetErrorTest::kErrors;
+constexpr std::array<dif_kmac_error_t, 14> KmacGetErrorTest::kErrors;
 
 TEST_F(KmacGetErrorTest, Success) {
   for (auto err : kErrors) {
-    EXPECT_READ32(KMAC_ERR_CODE_REG_OFFSET, err);
-    EXPECT_DIF_OK(dif_kmac_get_error(&kmac_, &error_));
+    uint32_t reg = err << 24 | 0x500bad;
+    EXPECT_READ32(KMAC_ERR_CODE_REG_OFFSET, reg);
+    EXPECT_DIF_OK(dif_kmac_get_error(&kmac_, &error_, &info_));
     EXPECT_EQ(error_, err);
+    EXPECT_EQ(info_, 0x500bad);
   }
 }
 
 TEST_F(KmacGetErrorTest, BadArg) {
-  EXPECT_DIF_BADARG(dif_kmac_get_error(nullptr, &error_));
+  EXPECT_DIF_BADARG(dif_kmac_get_error(nullptr, &error_, &info_));
 
-  EXPECT_DIF_BADARG(dif_kmac_get_error(&kmac_, nullptr));
+  EXPECT_DIF_BADARG(dif_kmac_get_error(&kmac_, nullptr, &info_));
+
+  EXPECT_DIF_BADARG(dif_kmac_get_error(&kmac_, &error_, nullptr));
 }
 
 class KmacGetHashCounterTest : public KmacTest {

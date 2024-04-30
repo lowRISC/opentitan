@@ -849,13 +849,15 @@ dif_result_t dif_kmac_get_hash_counter(const dif_kmac_t *kmac,
   return kDifOk;
 }
 
-dif_result_t dif_kmac_get_error(const dif_kmac_t *kmac,
-                                dif_kmac_error_t *error) {
-  if (kmac == NULL || error == NULL) {
+dif_result_t dif_kmac_get_error(const dif_kmac_t *kmac, dif_kmac_error_t *error,
+                                uint32_t *info) {
+  if (kmac == NULL || error == NULL || info == NULL) {
     return kDifBadArg;
   }
 
-  *error = mmio_region_read32(kmac->base_addr, KMAC_ERR_CODE_REG_OFFSET);
+  uint32_t reg = mmio_region_read32(kmac->base_addr, KMAC_ERR_CODE_REG_OFFSET);
+  *info = reg & 0xFFFFFF;
+  *error = (reg >> 24) & 0xFF;
   return kDifOk;
 }
 
