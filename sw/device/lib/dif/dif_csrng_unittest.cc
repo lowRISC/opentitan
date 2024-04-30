@@ -348,7 +348,7 @@ TEST_F(GetInternalStateTest, GetInternalStateOk) {
                 });
 
   dif_csrng_internal_state_t expected = {
-      .reseed_counter = 1,
+      .reseed_counter = 0,
       .v = {1, 2, 3, 4},
       .key = {1, 2, 3, 4, 5, 6, 7, 8},
       .instantiated = true,

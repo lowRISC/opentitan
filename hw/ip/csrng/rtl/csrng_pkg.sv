@@ -14,7 +14,7 @@ package csrng_pkg;
   parameter int unsigned FIPS_GENBITS_BUS_WIDTH = entropy_src_pkg::FIPS_BUS_WIDTH +
                          GENBITS_BUS_WIDTH;
   parameter int unsigned MainSmStateWidth = 8;
-  parameter int unsigned CSRNG_CMD_STS_WIDTH = 2;
+  parameter int unsigned CSRNG_CMD_STS_WIDTH = 3;
 
   // instantiation interface
   typedef struct packed {
@@ -28,6 +28,7 @@ package csrng_pkg;
     CMD_STS_INVALID_ACMD         = 'h1,
     CMD_STS_INVALID_GEN_CMD      = 'h2,
     CMD_STS_INVALID_CMD_SEQ      = 'h3,
+    CMD_STS_RESEED_CNT_EXCEEDED  = 'h4,
     CMD_STS_UNDRIVEN             = 'z
   } csrng_cmd_sts_e;
 

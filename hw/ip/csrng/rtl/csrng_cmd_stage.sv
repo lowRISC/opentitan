@@ -18,6 +18,9 @@ module csrng_cmd_stage import csrng_pkg::*; #(
   input logic [StateId-1:0]          cmd_stage_shid_i,
   input logic [CmdFifoWidth-1:0]     cmd_stage_bus_i,
   output logic                       cmd_stage_rdy_o,
+  // Command checking interface.
+  input logic                        reseed_cnt_reached_i,
+  output logic                       reseed_cnt_alert_o,
   // Command to arbiter.
   output logic                       cmd_arb_req_o,
   output logic                       cmd_arb_sop_o,
@@ -72,16 +75,19 @@ module csrng_cmd_stage import csrng_pkg::*; #(
   logic                        sfifo_genbits_not_empty;
 
   // Command signals.
-  logic [3:0]              cmd_len;
-  logic                    cmd_fifo_zero;
-  logic                    cmd_fifo_pop;
-  logic                    cmd_len_dec;
-  logic                    cmd_gen_cnt_dec;
-  logic                    cmd_gen_1st_req;
-  logic                    cmd_gen_inc_req;
-  logic                    cmd_gen_cnt_last;
-  logic                    cmd_final_ack;
+  logic [3:0]                  cmd_len;
+  logic                        cmd_fifo_zero;
+  logic                        cmd_fifo_pop;
+  logic                        cmd_len_dec;
+  logic                        cmd_gen_cnt_dec;
+  logic                        cmd_gen_1st_req;
+  logic                        cmd_gen_inc_req;
+  logic                        cmd_gen_cnt_last;
+  logic                        cmd_final_ack;
+  logic                        cmd_err_ack;
   logic [GenBitsCntrWidth-1:0] cmd_gen_cnt;
+  csrng_cmd_sts_e              err_sts;
+  logic                        reseed_cnt_exceeded;
 
   // Flops.
   logic                    cmd_ack_q, cmd_ack_d;
@@ -255,6 +261,8 @@ module csrng_cmd_stage import csrng_pkg::*; #(
     cmd_arb_mop_o = 1'b0;
     cmd_arb_eop_o = 1'b0;
     cmd_stage_sm_err_o = 1'b0;
+    cmd_err_ack = 1'b0;
+    reseed_cnt_exceeded = 1'b0;
 
     if (state_q == Error) begin
       // In case we are in the Error state we must ignore the local escalate and enable signals.
@@ -272,7 +280,15 @@ module csrng_cmd_stage import csrng_pkg::*; #(
         Idle: begin
           // Because of the if statement above we won't leave idle if enable is low.
           if (!cmd_fifo_zero) begin
-            state_d = ArbGnt;
+            // If the issued command is GEN and the reseed count has already been reached, send an
+            // ack with an error status response.
+            if ((sfifo_cmd_rdata[2:0] == GEN) && reseed_cnt_reached_i) begin
+              cmd_err_ack = 1'b1;
+              reseed_cnt_exceeded = 1'b1;
+              state_d = Idle;
+            end else begin
+              state_d = ArbGnt;
+            end
           end
         end
         ArbGnt: begin
@@ -310,7 +326,7 @@ module csrng_cmd_stage import csrng_pkg::*; #(
         end
         GenCmdChk: begin
           if (cmd_gen_flag_q) begin
-            cmd_gen_cnt_dec= 1'b1;
+            cmd_gen_cnt_dec = 1'b1;
           end
           state_d = CmdAck;
         end
@@ -429,16 +445,21 @@ module csrng_cmd_stage import csrng_pkg::*; #(
 
   assign cmd_ack_d =
          (!cs_enable_i) ? '0 :
-         cmd_final_ack;
+         cmd_final_ack || cmd_err_ack;
 
   assign cmd_stage_ack_o = cmd_ack_q;
 
+  assign err_sts = reseed_cnt_exceeded ? CMD_STS_RESEED_CNT_EXCEEDED : CMD_STS_SUCCESS;
+
   assign cmd_ack_sts_d =
          (!cs_enable_i) ? CMD_STS_SUCCESS :
+         cmd_err_ack ? err_sts :
          cmd_final_ack ? cmd_ack_sts_i :
          cmd_ack_sts_q;
 
   assign cmd_stage_ack_sts_o = cmd_ack_sts_q;
+
+  assign reseed_cnt_alert_o = reseed_cnt_exceeded;
 
   // Make sure that the state machine has a stable error state. This means that after the error
   // state is entered it will not exit it unless a reset signal is received.

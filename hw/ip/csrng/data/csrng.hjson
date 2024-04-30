@@ -317,6 +317,29 @@
         }
       ]
     },
+    { name: "RESEED_INTERVAL",
+      desc: "CSRNG maximum number of generate requests allowed between reseeds register",
+      swaccess: "rw",
+      hwaccess: "hro",
+      hwqe: "true",
+      fields: [
+        { bits: "31:0",
+          name: "RESEED_INTERVAL",
+          desc: '''
+                Setting this field will set the number of generate requests that can be
+                made to CSRNG before a reseed request needs to be made.
+                This register supports a maximum of 2^32 requests between reseeds.
+                This register will be compared to a counter, which counts the number of
+                generate commands between reseed or instantiate commands.
+                If the counter reaches the value of this register, the violating command
+                will be acknowledged with a status error.
+                If the violating command was issued by a HW instance, an interrupt will
+                be triggered.
+                '''
+          resval: 0xffff_ffff
+        }
+      ]
+    },
     {
       name: "SW_CMD_STS",
       desc: "Application interface command status register",
@@ -346,7 +369,7 @@
                 '''
           resval: "0"
         }
-        { bits: "4:3",
+        { bits: "5:3",
           name: "CMD_STS",
           desc: '''
                 This field represents the status code returned with the application command ack.
@@ -364,6 +387,8 @@
                 0x3: This error indicates that the last command was issued out of sequence.
                      This happens when a command other than instantiate was issued without sending an instantiate command first.
                      This can also happen when an uninstantiate command is sent without instantiating first.
+                0x4: This error indicates that the number of generate commands between reseeds exceeded the maximum number allowed.
+                     This happens only for generate commands.
                 '''
           resval: "0"
         }
@@ -538,6 +563,15 @@
                 instantiated or when any command other than instantiate is sent for a state that
                 wasn't instantiated yet.
                 The invalid command is ignored and CSRNG continues to operate.
+                Writing a zero resets this status bit.
+                '''
+        }
+        { bits: "15",
+          name: "CMD_STAGE_RESEED_CNT_ALERT",
+          desc: '''
+                This bit is set when the maximum number of generate requests between reseeds is
+                exceeded.
+                The invalid generate command is ignored and CSRNG continues to operate.
                 Writing a zero resets this status bit.
                 '''
         }

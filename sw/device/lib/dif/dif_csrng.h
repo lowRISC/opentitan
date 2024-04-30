@@ -339,11 +339,20 @@ typedef enum dif_csrng_recoverable_alert {
   kDifCsrngRecoverableAlertRepeatedGenBits =
       1U << CSRNG_RECOV_ALERT_STS_CS_BUS_CMP_ALERT_BIT,
   /**
-   * Indicates an unsupported CSRNG command is being processed, causing the main
-   * FSM to hang unless the module enable field is set to the disabled state.
+   * Indicates an unsupported CSRNG command was issued.
    */
   kDifCsrngRecoverableAlertBadCsrngCmd =
       1U << CSRNG_RECOV_ALERT_STS_CS_MAIN_SM_ALERT_BIT,
+  /**
+   * Indicates a supported CSRNG command was issued out of sequence.
+   */
+  kDifCsrngRecoverableAlertBadCsrngCmdSeq =
+      1U << CSRNG_RECOV_ALERT_STS_CS_MAIN_SM_INVALID_CMD_SEQ_BIT,
+  /**
+   * Indicates that too many generate commands were issued in a row.
+   */
+  kDifCsrngRecoverableAlertMaxReseedsExceeded =
+      1U << CSRNG_RECOV_ALERT_STS_CMD_STAGE_RESEED_CNT_ALERT_BIT,
 } dif_csrng_recoverable_alert_t;
 
 /**

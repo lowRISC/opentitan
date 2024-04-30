@@ -3,25 +3,26 @@
 <!-- BEGIN CMDGEN util/regtool.py -d ./hw/ip/csrng/data/csrng.hjson -->
 ## Summary
 
-| Name                                        | Offset   |   Length | Description                                            |
-|:--------------------------------------------|:---------|---------:|:-------------------------------------------------------|
-| csrng.[`INTR_STATE`](#intr_state)           | 0x0      |        4 | Interrupt State Register                               |
-| csrng.[`INTR_ENABLE`](#intr_enable)         | 0x4      |        4 | Interrupt Enable Register                              |
-| csrng.[`INTR_TEST`](#intr_test)             | 0x8      |        4 | Interrupt Test Register                                |
-| csrng.[`ALERT_TEST`](#alert_test)           | 0xc      |        4 | Alert Test Register                                    |
-| csrng.[`REGWEN`](#regwen)                   | 0x10     |        4 | Register write enable for all control registers        |
-| csrng.[`CTRL`](#ctrl)                       | 0x14     |        4 | Control register                                       |
-| csrng.[`CMD_REQ`](#cmd_req)                 | 0x18     |        4 | Command request register                               |
-| csrng.[`SW_CMD_STS`](#sw_cmd_sts)           | 0x1c     |        4 | Application interface command status register          |
-| csrng.[`GENBITS_VLD`](#genbits_vld)         | 0x20     |        4 | Generate bits returned valid register                  |
-| csrng.[`GENBITS`](#genbits)                 | 0x24     |        4 | Generate bits returned register                        |
-| csrng.[`INT_STATE_NUM`](#int_state_num)     | 0x28     |        4 | Internal state number register                         |
-| csrng.[`INT_STATE_VAL`](#int_state_val)     | 0x2c     |        4 | Internal state read access register                    |
-| csrng.[`HW_EXC_STS`](#hw_exc_sts)           | 0x30     |        4 | Hardware instance exception status register            |
-| csrng.[`RECOV_ALERT_STS`](#recov_alert_sts) | 0x34     |        4 | Recoverable alert status register                      |
-| csrng.[`ERR_CODE`](#err_code)               | 0x38     |        4 | Hardware detection of error conditions status register |
-| csrng.[`ERR_CODE_TEST`](#err_code_test)     | 0x3c     |        4 | Test error conditions register                         |
-| csrng.[`MAIN_SM_STATE`](#main_sm_state)     | 0x40     |        4 | Main state machine state debug register                |
+| Name                                        | Offset   |   Length | Description                                                                |
+|:--------------------------------------------|:---------|---------:|:---------------------------------------------------------------------------|
+| csrng.[`INTR_STATE`](#intr_state)           | 0x0      |        4 | Interrupt State Register                                                   |
+| csrng.[`INTR_ENABLE`](#intr_enable)         | 0x4      |        4 | Interrupt Enable Register                                                  |
+| csrng.[`INTR_TEST`](#intr_test)             | 0x8      |        4 | Interrupt Test Register                                                    |
+| csrng.[`ALERT_TEST`](#alert_test)           | 0xc      |        4 | Alert Test Register                                                        |
+| csrng.[`REGWEN`](#regwen)                   | 0x10     |        4 | Register write enable for all control registers                            |
+| csrng.[`CTRL`](#ctrl)                       | 0x14     |        4 | Control register                                                           |
+| csrng.[`CMD_REQ`](#cmd_req)                 | 0x18     |        4 | Command request register                                                   |
+| csrng.[`RESEED_INTERVAL`](#reseed_interval) | 0x1c     |        4 | CSRNG maximum number of generate requests allowed between reseeds register |
+| csrng.[`SW_CMD_STS`](#sw_cmd_sts)           | 0x20     |        4 | Application interface command status register                              |
+| csrng.[`GENBITS_VLD`](#genbits_vld)         | 0x24     |        4 | Generate bits returned valid register                                      |
+| csrng.[`GENBITS`](#genbits)                 | 0x28     |        4 | Generate bits returned register                                            |
+| csrng.[`INT_STATE_NUM`](#int_state_num)     | 0x2c     |        4 | Internal state number register                                             |
+| csrng.[`INT_STATE_VAL`](#int_state_val)     | 0x30     |        4 | Internal state read access register                                        |
+| csrng.[`HW_EXC_STS`](#hw_exc_sts)           | 0x34     |        4 | Hardware instance exception status register                                |
+| csrng.[`RECOV_ALERT_STS`](#recov_alert_sts) | 0x38     |        4 | Recoverable alert status register                                          |
+| csrng.[`ERR_CODE`](#err_code)               | 0x3c     |        4 | Hardware detection of error conditions status register                     |
+| csrng.[`ERR_CODE_TEST`](#err_code_test)     | 0x40     |        4 | Test error conditions register                                             |
+| csrng.[`MAIN_SM_STATE`](#main_sm_state)     | 0x44     |        4 | Main state machine state debug register                                    |
 
 ## INTR_STATE
 Interrupt State Register
@@ -154,22 +155,49 @@ Command request register
 |:------:|:------:|:-------:|:--------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 |  31:0  |   wo   |   0x0   | CMD_REQ | Writing this request with defined CSRNG commands will initiate all possible CSRNG actions. The application interface must wait for the "ack" to return before issuing new commands. |
 
-## SW_CMD_STS
-Application interface command status register
+## RESEED_INTERVAL
+CSRNG maximum number of generate requests allowed between reseeds register
 - Offset: `0x1c`
-- Reset default: `0x0`
-- Reset mask: `0x1e`
+- Reset default: `0xffffffff`
+- Reset mask: `0xffffffff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"bits": 1}, {"name": "CMD_RDY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CMD_ACK", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CMD_STS", "bits": 2, "attr": ["ro"], "rotate": -90}, {"bits": 27}], "config": {"lanes": 1, "fontsize": 10, "vspace": 90}}
+{"reg": [{"name": "RESEED_INTERVAL", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |   Reset    | Name                                                 |
+|:------:|:------:|:----------:|:-----------------------------------------------------|
+|  31:0  |   rw   | 0xffffffff | [RESEED_INTERVAL](#reseed_interval--reseed_interval) |
+
+### RESEED_INTERVAL . RESEED_INTERVAL
+Setting this field will set the number of generate requests that can be
+made to CSRNG before a reseed request needs to be made.
+This register supports a maximum of 2^32 requests between reseeds.
+This register will be compared to a counter, which counts the number of
+generate commands between reseed or instantiate commands.
+If the counter reaches the value of this register, the violating command
+will be acknowledged with a status error.
+If the violating command was issued by a HW instance, an interrupt will
+be triggered.
+
+## SW_CMD_STS
+Application interface command status register
+- Offset: `0x20`
+- Reset default: `0x0`
+- Reset mask: `0x3e`
+
+### Fields
+
+```wavejson
+{"reg": [{"bits": 1}, {"name": "CMD_RDY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CMD_ACK", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CMD_STS", "bits": 3, "attr": ["ro"], "rotate": -90}, {"bits": 26}], "config": {"lanes": 1, "fontsize": 10, "vspace": 90}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                            |
 |:------:|:------:|:-------:|:--------------------------------|
-|  31:5  |        |         | Reserved                        |
-|  4:3   |   ro   |   0x0   | [CMD_STS](#sw_cmd_sts--cmd_sts) |
+|  31:6  |        |         | Reserved                        |
+|  5:3   |   ro   |   0x0   | [CMD_STS](#sw_cmd_sts--cmd_sts) |
 |   2    |   ro   |   0x0   | [CMD_ACK](#sw_cmd_sts--cmd_ack) |
 |   1    |   ro   |   0x0   | [CMD_RDY](#sw_cmd_sts--cmd_rdy) |
 
@@ -189,6 +217,8 @@ To check whether a command was succesful, wait for [`INTR_STATE.CS_CMD_REQ_DONE`
 0x3: This error indicates that the last command was issued out of sequence.
      This happens when a command other than instantiate was issued without sending an instantiate command first.
      This can also happen when an uninstantiate command is sent without instantiating first.
+0x4: This error indicates that the number of generate commands between reseeds exceeded the maximum number allowed.
+     This happens only for generate commands.
 
 ### SW_CMD_STS . CMD_ACK
 This one bit field indicates when a SW command has been acknowledged by the CSRNG.
@@ -205,7 +235,7 @@ Before starting to write a new command to [`SW_CMD_REQ`](#sw_cmd_req), this fiel
 
 ## GENBITS_VLD
 Generate bits returned valid register
-- Offset: `0x20`
+- Offset: `0x24`
 - Reset default: `0x0`
 - Reset mask: `0x3`
 
@@ -223,7 +253,7 @@ Generate bits returned valid register
 
 ## GENBITS
 Generate bits returned register
-- Offset: `0x24`
+- Offset: `0x28`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -249,7 +279,7 @@ Otherwise, the register reads as 0.
 
 ## INT_STATE_NUM
 Internal state number register
-- Offset: `0x28`
+- Offset: `0x2c`
 - Reset default: `0x0`
 - Reset mask: `0xf`
 
@@ -277,7 +307,7 @@ that the [`INT_STATE_VAL`](#int_state_val) read back is accurate.
 
 ## INT_STATE_VAL
 Internal state read access register
-- Offset: `0x2c`
+- Offset: `0x30`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -304,7 +334,7 @@ Otherwise, the register reads as 0.
 
 ## HW_EXC_STS
 Hardware instance exception status register
-- Offset: `0x30`
+- Offset: `0x34`
 - Reset default: `0x0`
 - Reset mask: `0xffff`
 
@@ -329,19 +359,20 @@ resets the status bits.
 
 ## RECOV_ALERT_STS
 Recoverable alert status register
-- Offset: `0x34`
+- Offset: `0x38`
 - Reset default: `0x0`
-- Reset mask: `0x700f`
+- Reset mask: `0xf00f`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "SW_APP_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "READ_INT_STATE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ACMD_FLAG0_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 8}, {"name": "CS_BUS_CMP_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CS_MAIN_SM_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CS_MAIN_SM_INVALID_CMD_SEQ", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 17}], "config": {"lanes": 1, "fontsize": 10, "vspace": 280}}
+{"reg": [{"name": "ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "SW_APP_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "READ_INT_STATE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ACMD_FLAG0_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 8}, {"name": "CS_BUS_CMP_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CS_MAIN_SM_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CS_MAIN_SM_INVALID_CMD_SEQ", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CMD_STAGE_RESEED_CNT_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 16}], "config": {"lanes": 1, "fontsize": 10, "vspace": 280}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                                                       |
 |:------:|:------:|:-------:|:---------------------------------------------------------------------------|
-| 31:15  |        |         | Reserved                                                                   |
+| 31:16  |        |         | Reserved                                                                   |
+|   15   |  rw0c  |   0x0   | [CMD_STAGE_RESEED_CNT_ALERT](#recov_alert_sts--cmd_stage_reseed_cnt_alert) |
 |   14   |  rw0c  |   0x0   | [CS_MAIN_SM_INVALID_CMD_SEQ](#recov_alert_sts--cs_main_sm_invalid_cmd_seq) |
 |   13   |  rw0c  |   0x0   | [CS_MAIN_SM_ALERT](#recov_alert_sts--cs_main_sm_alert)                     |
 |   12   |  rw0c  |   0x0   | [CS_BUS_CMP_ALERT](#recov_alert_sts--cs_bus_cmp_alert)                     |
@@ -350,6 +381,12 @@ Recoverable alert status register
 |   2    |  rw0c  |   0x0   | [READ_INT_STATE_FIELD_ALERT](#recov_alert_sts--read_int_state_field_alert) |
 |   1    |  rw0c  |   0x0   | [SW_APP_ENABLE_FIELD_ALERT](#recov_alert_sts--sw_app_enable_field_alert)   |
 |   0    |  rw0c  |   0x0   | [ENABLE_FIELD_ALERT](#recov_alert_sts--enable_field_alert)                 |
+
+### RECOV_ALERT_STS . CMD_STAGE_RESEED_CNT_ALERT
+This bit is set when the maximum number of generate requests between reseeds is
+exceeded.
+The invalid generate command is ignored and CSRNG continues to operate.
+Writing a zero resets this status bit.
 
 ### RECOV_ALERT_STS . CS_MAIN_SM_INVALID_CMD_SEQ
 This bit is set when an out of order command is received by the main state machine.
@@ -392,7 +429,7 @@ Writing a zero resets this status bit.
 
 ## ERR_CODE
 Hardware detection of error conditions status register
-- Offset: `0x38`
+- Offset: `0x3c`
 - Reset default: `0x0`
 - Reset mask: `0x77f0ffff`
 
@@ -593,7 +630,7 @@ This bit will stay set until the next reset.
 
 ## ERR_CODE_TEST
 Test error conditions register
-- Offset: `0x3c`
+- Offset: `0x40`
 - Reset default: `0x0`
 - Reset mask: `0x1f`
 - Register enable: [`REGWEN`](#regwen)
@@ -619,7 +656,7 @@ an interrupt or an alert.
 
 ## MAIN_SM_STATE
 Main state machine state debug register
-- Offset: `0x40`
+- Offset: `0x44`
 - Reset default: `0x4e`
 - Reset mask: `0xff`
 
