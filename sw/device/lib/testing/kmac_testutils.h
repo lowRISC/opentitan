@@ -49,4 +49,13 @@ status_t kmac_testutils_kmac(const dif_kmac_t *kmac, dif_kmac_mode_kmac_t mode,
                              const char *message, const size_t message_len,
                              const size_t output_len, uint32_t *output);
 
+/**
+ * Check if the KMAC HW has flagged any errors and acknowledge them.
+ *
+ * @param kmac A KMAC DIF handle.
+ * @return Ok if there were no errors; non-Ok if there was any error.
+ */
+OT_WARN_UNUSED_RESULT
+status_t kmac_testutils_check_error(const dif_kmac_t *kmac);
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_KMAC_TESTUTILS_H_
