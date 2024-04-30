@@ -38,7 +38,7 @@ start:
  * @param[in]    dmem[s]: s part of signature
  * @param[in]    dmem[x]: x-coordinate of public key
  * @param[in]    dmem[y]: y-coordinate of public key
- * @param[out] dmem[rnd]: x1 coordinate to be compared to rs
+ * @param[out] dmem[x_r]: x1 coordinate to be compared to rs
  *
  * !!! Attention !!! - before signature verification p384_curve_point_valid
  * binary has to be executed to check if the provided public key is valid.
@@ -53,9 +53,9 @@ ecdsa_verify:
 .bss
 
 /* result of verify (x1 coordinate) */
-.globl rnd
+.globl x_r
 .balign 32
-rnd:
+x_r:
   .zero 64
 
 .data

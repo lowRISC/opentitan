@@ -19,7 +19,7 @@ p384_ecdsa_verify_test:
 
   /* load signature to wregs for comparison with reference */
   li        x2, 0
-  la        x3, rnd
+  la        x3, x_r
   bn.lid    x2++, 0(x3)
   bn.lid    x2, 32(x3)
 
@@ -113,7 +113,7 @@ y:
   .word 0xaaafcad2
   .zero 16
 
-/* signature verification result x_res (rnd) */
-.globl rnd
-rnd:
+/* signature verification result x_res (x_r) */
+.globl x_r
+x_r:
   .zero 64
