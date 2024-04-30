@@ -56,7 +56,6 @@ module csrng_core import csrng_pkg::*; #(
   import prim_mubi_pkg::mubi4_test_invalid;
 
   localparam int NApps = NHwApps + 1;
-  localparam int NAppsLog = $clog2(NApps);
   localparam int AppCmdWidth = 32;
   localparam int AppCmdFifoDepth = 2;
   localparam int GenBitsWidth = 128;
@@ -195,8 +194,6 @@ module csrng_core import csrng_pkg::*; #(
   logic                        cmd_gen_cnt_err_sum;
   logic                        cmd_stage_sm_err_sum;
   logic                        main_sm_err_sum;
-  logic                        cs_main_sm_invalid_cmd_seq;
-  logic                        cs_main_sm_alert;
   logic                        cs_main_sm_err;
   logic [MainSmStateWidth-1:0] cs_main_sm_state;
   logic                        drbg_gen_sm_err_sum;
@@ -216,7 +213,6 @@ module csrng_core import csrng_pkg::*; #(
   logic [CtrLen-1:0]           state_db_rd_rc;
   logic                        state_db_rd_fips;
   logic [2:0]                  acmd_hold;
-  logic [NAppsLog-1:0]         shid_hold;
   logic [3:0]                  shid;
   logic                        gen_last;
   mubi4_t                      flag0;
@@ -349,6 +345,8 @@ module csrng_core import csrng_pkg::*; #(
   logic                        cs_rdata_capt_vld;
   logic                        cs_bus_cmp_alert;
   logic                        cmd_rdy;
+  logic [NApps-1:0]            invalid_cmd_seq_alert;
+  logic [NApps-1:0]            invalid_acmd_alert;
   logic [NApps-1:0]            reseed_cnt_alert;
   logic                        sw_sts_ack;
   logic [1:0]                  efuse_sw_app_enable;
@@ -742,9 +740,9 @@ module csrng_core import csrng_pkg::*; #(
          sw_app_enable_pfa ||
          read_int_state_pfa ||
          acmd_flag0_pfa ||
-         cs_main_sm_alert ||
-         cs_main_sm_invalid_cmd_seq ||
          |reseed_cnt_alert ||
+         |invalid_cmd_seq_alert ||
+         |invalid_acmd_alert ||
          cs_bus_cmp_alert;
 
 
@@ -853,6 +851,8 @@ module csrng_core import csrng_pkg::*; #(
       .cmd_stage_rdy_o              (cmd_stage_rdy[ai]),
       .reseed_cnt_reached_i         (reseed_cnt_reached_q[ai]),
       .reseed_cnt_alert_o           (reseed_cnt_alert[ai]),
+      .invalid_cmd_seq_alert_o      (invalid_cmd_seq_alert[ai]),
+      .invalid_acmd_alert_o         (invalid_acmd_alert[ai]),
       .cmd_arb_req_o                (cmd_arb_req[ai]),
       .cmd_arb_sop_o                (cmd_arb_sop[ai]),
       .cmd_arb_mop_o                (cmd_arb_mop[ai]),
@@ -901,20 +901,15 @@ module csrng_core import csrng_pkg::*; #(
   // cmd sts ack
   assign hw2reg.sw_cmd_sts.cmd_ack.de = 1'b1;
   assign hw2reg.sw_cmd_sts.cmd_ack.d = sw_sts_ack_d;
-  assign sw_sts_ack = cmd_stage_ack[NApps-1] ||
-                      (cs_main_sm_invalid_cmd_seq && (shid_q == StateId'(NApps-1))) ||
-                      (cs_main_sm_alert && (shid_q == StateId'(NApps-1)));
+  assign sw_sts_ack = cmd_stage_ack[NApps-1];
   assign sw_sts_ack_d =
          !cs_enable_fo[28] ? 1'b0 :
          cmd_stage_vld[NApps-1] ? 1'b0 :
-         sw_sts_ack ? 1'b1 :
+         cmd_stage_ack[NApps-1] ? 1'b1 :
          sw_sts_ack_q;
   // cmd ack sts
-  assign hw2reg.sw_cmd_sts.cmd_sts.de = sw_sts_ack;
-  assign hw2reg.sw_cmd_sts.cmd_sts.d =
-      ((shid_q == StateId'(NApps-1)) && cs_main_sm_invalid_cmd_seq) ? CMD_STS_INVALID_ACMD :
-      ((shid_q == StateId'(NApps-1)) && cs_main_sm_alert)           ? CMD_STS_INVALID_CMD_SEQ :
-      cmd_stage_ack_sts[NApps-1];
+  assign hw2reg.sw_cmd_sts.cmd_sts.de = cmd_stage_ack[NApps-1];
+  assign hw2reg.sw_cmd_sts.cmd_sts.d = cmd_stage_ack_sts[NApps-1];
   // genbits
   assign hw2reg.genbits_vld.genbits_vld.d = genbits_stage_vldo_sw;
   assign hw2reg.genbits_vld.genbits_fips.d = genbits_stage_fips_sw;
@@ -988,11 +983,11 @@ module csrng_core import csrng_pkg::*; #(
   assign hw2reg.recov_alert_sts.cs_bus_cmp_alert.de = cs_bus_cmp_alert;
   assign hw2reg.recov_alert_sts.cs_bus_cmp_alert.d  = cs_bus_cmp_alert;
 
-  assign hw2reg.recov_alert_sts.cs_main_sm_alert.de = cs_main_sm_alert;
-  assign hw2reg.recov_alert_sts.cs_main_sm_alert.d  = cs_main_sm_alert;
+  assign hw2reg.recov_alert_sts.cmd_stage_invalid_acmd_alert.de = |invalid_acmd_alert;
+  assign hw2reg.recov_alert_sts.cmd_stage_invalid_acmd_alert.d  = |invalid_acmd_alert;
 
-  assign hw2reg.recov_alert_sts.cs_main_sm_invalid_cmd_seq.de = cs_main_sm_invalid_cmd_seq;
-  assign hw2reg.recov_alert_sts.cs_main_sm_invalid_cmd_seq.d  = cs_main_sm_invalid_cmd_seq;
+  assign hw2reg.recov_alert_sts.cmd_stage_invalid_cmd_seq_alert.de = |invalid_cmd_seq_alert;
+  assign hw2reg.recov_alert_sts.cmd_stage_invalid_cmd_seq_alert.d  = |invalid_cmd_seq_alert;
 
   assign hw2reg.recov_alert_sts.cmd_stage_reseed_cnt_alert.de = |reseed_cnt_alert;
   assign hw2reg.recov_alert_sts.cmd_stage_reseed_cnt_alert.d  = |reseed_cnt_alert;
@@ -1005,12 +1000,8 @@ module csrng_core import csrng_pkg::*; #(
     assign cmd_stage_bus[hai] = csrng_cmd_i[hai].csrng_req_bus;
     assign csrng_cmd_o[hai].csrng_req_ready = cmd_stage_rdy[hai];
     // cmd ack
-    assign csrng_cmd_o[hai].csrng_rsp_ack = cmd_stage_ack[hai] ||
-        ((cs_main_sm_alert || cs_main_sm_invalid_cmd_seq) && (shid_q == StateId'(hai)));
-    assign csrng_cmd_o[hai].csrng_rsp_sts =
-        (cs_main_sm_alert && (shid_q == StateId'(hai))) ? CMD_STS_INVALID_ACMD :
-        (cs_main_sm_invalid_cmd_seq && (shid_q == StateId'(hai))) ? CMD_STS_INVALID_CMD_SEQ :
-        cmd_stage_ack_sts[hai];
+    assign csrng_cmd_o[hai].csrng_rsp_ack = cmd_stage_ack[hai];
+    assign csrng_cmd_o[hai].csrng_rsp_sts = cmd_stage_ack_sts[hai];
     // genbits
     assign csrng_cmd_o[hai].genbits_valid = genbits_stage_vld[hai];
     assign csrng_cmd_o[hai].genbits_fips = genbits_stage_fips[hai];
@@ -1084,7 +1075,6 @@ module csrng_core import csrng_pkg::*; #(
   assign acmd_hold = acmd_sop ? acmd_bus[2:0] : acmd_q;
   assign flag0 = mubi_acmd_flag0;
   assign shid = acmd_bus[15:12];
-  assign shid_hold = acmd_sop ? shid[NAppsLog-1:0] : shid_q[NAppsLog-1:0];
   assign gen_last = acmd_bus[16];
 
   assign acmd_d =
@@ -1128,15 +1118,12 @@ module csrng_core import csrng_pkg::*; #(
   // sm to process all instantiation requests
   // SEC_CM: MAIN_SM.CTR.LOCAL_ESC
   // SEC_CM: MAIN_SM.FSM.SPARSE
-  csrng_main_sm #(
-    .NApps(NApps)
-  ) u_csrng_main_sm (
+  csrng_main_sm u_csrng_main_sm (
     .clk_i                  (clk_i),
     .rst_ni                 (rst_ni),
     .enable_i               (cs_enable_fo[36]),
     .acmd_avail_i           (acmd_avail),
     .acmd_accept_o          (acmd_accept),
-    .shid_i                 (shid_hold),
     .acmd_i                 (acmd_hold),
     .acmd_eop_i             (acmd_eop),
     .ctr_drbg_cmd_req_rdy_i (ctr_drbg_cmd_req_rdy),
@@ -1151,9 +1138,7 @@ module csrng_core import csrng_pkg::*; #(
     .clr_adata_packer_o     (clr_adata_packer),
     .cmd_complete_i         (state_db_wr_req),
     .local_escalate_i       (cmd_gen_cnt_err_sum),
-    .invalid_cmd_seq_o      (cs_main_sm_invalid_cmd_seq),
     .main_sm_state_o        (cs_main_sm_state),
-    .main_sm_alert_o        (cs_main_sm_alert),
     .main_sm_err_o          (cs_main_sm_err)
   );
 

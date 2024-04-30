@@ -6,17 +6,13 @@
 //
 //  - handles all app cmd requests from all requesting interfaces
 
-module csrng_main_sm import csrng_pkg::*; #(
-  parameter int unsigned NApps = 3,
-  localparam int unsigned NAppsLog = $clog2(NApps)
-) (
+module csrng_main_sm import csrng_pkg::*; (
   input logic                         clk_i,
   input logic                         rst_ni,
 
   input logic                         enable_i,
   input logic                         acmd_avail_i,
   output logic                        acmd_accept_o,
-  input logic [NAppsLog-1:0]          shid_i,
   input logic [2:0]                   acmd_i,
   input logic                         acmd_eop_i,
   input logic                         ctr_drbg_cmd_req_rdy_i,
@@ -31,39 +27,17 @@ module csrng_main_sm import csrng_pkg::*; #(
   output logic                        clr_adata_packer_o,
   input logic                         cmd_complete_i,
   input logic                         local_escalate_i,
-  output logic                        invalid_cmd_seq_o,
   output logic [MainSmStateWidth-1:0] main_sm_state_o,
-  output logic                        main_sm_alert_o,
   output logic                        main_sm_err_o
 );
 
   main_sm_state_e state_d, state_q;
-  // For each instance we need 1 bit to track whether the instance was instantiated or not.
-  logic [NApps-1:0] instantiated_d, instantiated_q;
-  logic [NApps-1:0] shid_one_hot;
   `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, main_sm_state_e, MainSmIdle)
-
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      instantiated_q <= '0;
-    end else begin
-      instantiated_q <= instantiated_d;
-    end
-  end
 
   assign main_sm_state_o = {state_q};
 
-  prim_onehot_enc #(
-    .OneHotWidth (NApps)
-  ) u_shid_one_hot_enc (
-    .in_i   (shid_i),
-    .en_i   (1'b1),
-    .out_o  (shid_one_hot)
-  );
-
   always_comb begin
     state_d            = state_q;
-    instantiated_d     = instantiated_q;
     acmd_accept_o      = 1'b0;
     cmd_entropy_req_o  = 1'b0;
     instant_req_o      = 1'b0;
@@ -72,9 +46,7 @@ module csrng_main_sm import csrng_pkg::*; #(
     update_req_o       = 1'b0;
     uninstant_req_o    = 1'b0;
     clr_adata_packer_o = 1'b0;
-    main_sm_alert_o    = 1'b0;
     main_sm_err_o      = 1'b0;
-    invalid_cmd_seq_o  = 1'b0;
 
     if (state_q == MainSmError) begin
       // In case we are in the Error state we must ignore the local escalate and enable signals.
@@ -90,7 +62,6 @@ module csrng_main_sm import csrng_pkg::*; #(
                                               MainSmClrAData, MainSmCmdCompWait}) begin
       // In case the module is disabled and we are in a legal state we must go into idle state.
       state_d = MainSmIdle;
-      instantiated_d = '0;
     end else begin
       // Otherwise do the state machine as normal.
       unique case (state_q)
@@ -105,59 +76,20 @@ module csrng_main_sm import csrng_pkg::*; #(
           end
         end
         MainSmParseCmd: begin
-          if (ctr_drbg_cmd_req_rdy_i) begin
+          if (ctr_drbg_cmd_req_rdy_i && acmd_eop_i) begin
             if (acmd_i == INS) begin
-              if (acmd_eop_i) begin
-                if ((instantiated_q & shid_one_hot) == 'b0) begin
-                  state_d = MainSmInstantPrep;
-                  // Toggle the instantiated state from off to on for the current shid.
-                  instantiated_d = instantiated_q ^ shid_one_hot;
-                end
-                if ((instantiated_q & shid_one_hot) != 'b0) begin
-                  state_d = MainSmIdle;
-                  invalid_cmd_seq_o = 1'b1;
-                end
-              end
+              state_d = MainSmInstantPrep;
             end else if (acmd_i == RES) begin
-              if (acmd_eop_i) begin
-                if ((instantiated_q & shid_one_hot) != 'b0) begin
-                  state_d = MainSmReseedPrep;
-                end
-                if ((instantiated_q & shid_one_hot) == 'b0) begin
-                  state_d = MainSmIdle;
-                  invalid_cmd_seq_o = 1'b1;
-                end
-              end
+              state_d = MainSmReseedPrep;
             end else if (acmd_i == GEN) begin
-              if (acmd_eop_i) begin
-                if ((instantiated_q & shid_one_hot) != 'b0) begin
-                  state_d = MainSmGeneratePrep;
-                end
-                if ((instantiated_q & shid_one_hot) == 'b0) begin
-                  state_d = MainSmIdle;
-                  invalid_cmd_seq_o = 1'b1;
-                end
-              end
+              state_d = MainSmGeneratePrep;
             end else if (acmd_i == UPD) begin
-              if (acmd_eop_i) begin
-                if ((instantiated_q & shid_one_hot) != 'b0) begin
-                  state_d = MainSmUpdatePrep;
-                end
-                if ((instantiated_q & shid_one_hot) == 'b0) begin
-                  state_d = MainSmIdle;
-                  invalid_cmd_seq_o = 1'b1;
-                end
-              end
+              state_d = MainSmUpdatePrep;
             end else if (acmd_i == UNI) begin
-              if (acmd_eop_i) begin
-                // Set the instantiation to zero for the relevant shid.
-                instantiated_d = instantiated_q & ~shid_one_hot;
-                state_d = MainSmUninstantPrep;
-              end
+              state_d = MainSmUninstantPrep;
             end else begin
               // Command was not supported.
               state_d = MainSmIdle;
-              main_sm_alert_o = 1'b1;
             end
           end
         end

@@ -366,21 +366,21 @@ Recoverable alert status register
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "SW_APP_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "READ_INT_STATE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ACMD_FLAG0_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 8}, {"name": "CS_BUS_CMP_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CS_MAIN_SM_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CS_MAIN_SM_INVALID_CMD_SEQ", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CMD_STAGE_RESEED_CNT_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 16}], "config": {"lanes": 1, "fontsize": 10, "vspace": 280}}
+{"reg": [{"name": "ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "SW_APP_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "READ_INT_STATE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ACMD_FLAG0_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 8}, {"name": "CS_BUS_CMP_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CMD_STAGE_INVALID_ACMD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CMD_STAGE_INVALID_CMD_SEQ_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CMD_STAGE_RESEED_CNT_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 16}], "config": {"lanes": 1, "fontsize": 10, "vspace": 330}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                                                                       |
-|:------:|:------:|:-------:|:---------------------------------------------------------------------------|
-| 31:16  |        |         | Reserved                                                                   |
-|   15   |  rw0c  |   0x0   | [CMD_STAGE_RESEED_CNT_ALERT](#recov_alert_sts--cmd_stage_reseed_cnt_alert) |
-|   14   |  rw0c  |   0x0   | [CS_MAIN_SM_INVALID_CMD_SEQ](#recov_alert_sts--cs_main_sm_invalid_cmd_seq) |
-|   13   |  rw0c  |   0x0   | [CS_MAIN_SM_ALERT](#recov_alert_sts--cs_main_sm_alert)                     |
-|   12   |  rw0c  |   0x0   | [CS_BUS_CMP_ALERT](#recov_alert_sts--cs_bus_cmp_alert)                     |
-|  11:4  |        |         | Reserved                                                                   |
-|   3    |  rw0c  |   0x0   | [ACMD_FLAG0_FIELD_ALERT](#recov_alert_sts--acmd_flag0_field_alert)         |
-|   2    |  rw0c  |   0x0   | [READ_INT_STATE_FIELD_ALERT](#recov_alert_sts--read_int_state_field_alert) |
-|   1    |  rw0c  |   0x0   | [SW_APP_ENABLE_FIELD_ALERT](#recov_alert_sts--sw_app_enable_field_alert)   |
-|   0    |  rw0c  |   0x0   | [ENABLE_FIELD_ALERT](#recov_alert_sts--enable_field_alert)                 |
+|  Bits  |  Type  |  Reset  | Name                                                                                 |
+|:------:|:------:|:-------:|:-------------------------------------------------------------------------------------|
+| 31:16  |        |         | Reserved                                                                             |
+|   15   |  rw0c  |   0x0   | [CMD_STAGE_RESEED_CNT_ALERT](#recov_alert_sts--cmd_stage_reseed_cnt_alert)           |
+|   14   |  rw0c  |   0x0   | [CMD_STAGE_INVALID_CMD_SEQ_ALERT](#recov_alert_sts--cmd_stage_invalid_cmd_seq_alert) |
+|   13   |  rw0c  |   0x0   | [CMD_STAGE_INVALID_ACMD_ALERT](#recov_alert_sts--cmd_stage_invalid_acmd_alert)       |
+|   12   |  rw0c  |   0x0   | [CS_BUS_CMP_ALERT](#recov_alert_sts--cs_bus_cmp_alert)                               |
+|  11:4  |        |         | Reserved                                                                             |
+|   3    |  rw0c  |   0x0   | [ACMD_FLAG0_FIELD_ALERT](#recov_alert_sts--acmd_flag0_field_alert)                   |
+|   2    |  rw0c  |   0x0   | [READ_INT_STATE_FIELD_ALERT](#recov_alert_sts--read_int_state_field_alert)           |
+|   1    |  rw0c  |   0x0   | [SW_APP_ENABLE_FIELD_ALERT](#recov_alert_sts--sw_app_enable_field_alert)             |
+|   0    |  rw0c  |   0x0   | [ENABLE_FIELD_ALERT](#recov_alert_sts--enable_field_alert)                           |
 
 ### RECOV_ALERT_STS . CMD_STAGE_RESEED_CNT_ALERT
 This bit is set when the maximum number of generate requests between reseeds is
@@ -388,7 +388,7 @@ exceeded.
 The invalid generate command is ignored and CSRNG continues to operate.
 Writing a zero resets this status bit.
 
-### RECOV_ALERT_STS . CS_MAIN_SM_INVALID_CMD_SEQ
+### RECOV_ALERT_STS . CMD_STAGE_INVALID_CMD_SEQ_ALERT
 This bit is set when an out of order command is received by the main state machine.
 This happens when an instantiate command is sent for a state that was already
 instantiated or when any command other than instantiate is sent for a state that
@@ -396,7 +396,7 @@ wasn't instantiated yet.
 The invalid command is ignored and CSRNG continues to operate.
 Writing a zero resets this status bit.
 
-### RECOV_ALERT_STS . CS_MAIN_SM_ALERT
+### RECOV_ALERT_STS . CMD_STAGE_INVALID_ACMD_ALERT
 This bit is set when an unsupported/illegal CSRNG command is received by the
 main state machine.
 The invalid command is ignored and CSRNG continues to operate.
