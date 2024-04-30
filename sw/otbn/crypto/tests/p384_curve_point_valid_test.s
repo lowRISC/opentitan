@@ -15,10 +15,6 @@ p384_curve_point_valid_test:
   /* Init all-zero register. */
   bn.xor    w31, w31, w31
 
-  /* Fill gpp registers with pointers to variables */
-  la        x20, x
-  la        x21, y
-
   jal       x1, p384_curve_point_valid
 
   ecall

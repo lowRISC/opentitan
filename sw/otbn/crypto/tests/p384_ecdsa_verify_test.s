@@ -14,14 +14,6 @@
 .section .text.start
 
 p384_ecdsa_verify_test:
-  /* Fill gpp registers with pointers to variables */
-  la        x6, r
-  la        x7, s
-  la        x8, rnd
-  la        x9, msg
-  la        x13, x
-  la        x14, y
-
   /* call ECDSA signature verification subroutine in P-384 lib */
   jal      x1, p384_verify
 
@@ -37,6 +29,7 @@ p384_ecdsa_verify_test:
 .data
 
 /* message */
+.globl msg
 msg:
   .word 0x55555555
   .word 0x55555555
@@ -53,6 +46,7 @@ msg:
   .zero 16
 
 /* signature R */
+.globl r
 r:
   .word 0xb68c28d8
   .word 0x2b23ce3a
@@ -69,6 +63,7 @@ r:
   .zero 16
 
 /* signature S */
+.globl s
 s:
   .word 0x24bc1bf9
   .word 0x752042f5
@@ -85,6 +80,7 @@ s:
   .zero 16
 
 /* public key x-coordinate */
+.globl x
 x:
   .word 0x4877f3d1
   .word 0x7b829460
@@ -101,6 +97,7 @@ x:
   .zero 16
 
 /* public key y-coordinate */
+.globl y
 y:
   .word 0xc181f90f
   .word 0xc31ef079
@@ -117,5 +114,6 @@ y:
   .zero 16
 
 /* signature verification result x_res (rnd) */
+.globl rnd
 rnd:
   .zero 64

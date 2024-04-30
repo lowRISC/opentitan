@@ -151,16 +151,22 @@ p384_random_scalar:
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
- * @param[in]  x20: dptr_d0, pointer to bufffer of 1st private key share d0
- * @param[in]  x21: dptr_d1, pointer to bufffer of 2nd private key share d1
+ * @param[out]  dmem[d0]: 1st private key share d0
+ * @param[out]  dmem[d1]: 2nd private key share d1
  *
- * clobbered registers: x2, x3, x20, w4 to w11, w14, w16 to w28
+ * clobbered registers: x2, x3, x20, x21, w4 to w11, w14, w16 to w28
  * clobbered flag groups: FG0
  */
 .globl p384_generate_random_key
 p384_generate_random_key:
   /* Init all-zero register. */
   bn.xor    w31, w31, w31
+
+  /* set dmem pointer to 1st private key share d0 */
+  la        x20, d0
+
+  /* set dmem pointer to 1st private key share d1 */
+  la        x21, d1
 
   /* Generate a random scalar in two 448-bit shares.
      [w7,w6] <= d0
@@ -185,16 +191,22 @@ p384_generate_random_key:
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
- * @param[in]  x20: dptr_k0, pointer to bufffer of 1st scalar share k0
- * @param[in]  x21: dptr_k1, pointer to bufffer of 2nd scalar share k1
+ * @param[out]  dmem[k0]: 1st scalar share k0
+ * @param[out]  dmem[k1]: 2nd scalar share k1
  *
- * clobbered registers: x2, x3, x20, w4 to w11, w14, w16 to w28
+ * clobbered registers: x2, x3, x20, x21, w4 to w11, w14, w16 to w28
  * clobbered flag groups: FG0
  */
 .globl p384_generate_k
 p384_generate_k:
   /* Init all-zero register. */
   bn.xor    w31, w31, w31
+
+  /* set dmem pointer to 1st scalar share k0 */
+  la        x20, k0
+
+  /* set dmem pointer to 1st scalar share k1 */
+  la        x21, k1
 
   /* Generate a random scalar in two 448-bit shares.
      [w7,w6] <= k0
@@ -213,3 +225,31 @@ p384_generate_k:
   bn.sid    x2++, 32(x21)
 
   ret
+
+.section .data
+
+.balign 32
+
+/* 1st scalar share d0 */
+.globl k0
+.weak k0
+k0:
+  .zero 64
+
+/* 2nd scalar share d1 */
+.globl k1
+.weak k1
+k1:
+  .zero 64
+
+/* 1st private key share d0 */
+.globl d0
+.weak d0
+d0:
+  .zero 64
+
+/* 2nd private key share d1 */
+.globl d1
+.weak d1
+d1:
+  .zero 64

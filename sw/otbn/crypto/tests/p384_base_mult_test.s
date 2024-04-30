@@ -15,10 +15,6 @@
 .section .text.start
 
 p384_base_mult_test:
-  /* Fill gpp registers with pointers to variables */
-  la        x17, d0
-  la        x19, d1
-
   /* call base point multiplication routine in P-384 lib */
   jal       x1, p384_base_mult
 

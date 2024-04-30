@@ -26,19 +26,6 @@ start:
 
 .text
 p384_ecdsa_sign:
-  /* Fill gpp registers with pointers to variables required for p384_sign */
-  /* scalar shares */
-  la        x17, k0
-  la        x19, k1
-  /* message */
-  la        x6, msg
-  /* signature values */
-  la        x14, r
-  la        x15, s
-  /* secret key shares */
-  la        x4, d0
-  la        x5, d1
-  
   jal      x1, p384_sign
   ecall
 
@@ -65,13 +52,13 @@ k0:
   .zero 64
 
 /* random scalar k1*/
-.global k1
+.globl k1
 .balign 64
 k1:
   .zero 64
 
 /* randomness for blinding */
-.global rnd
+.globl rnd
 .balign 64
 rnd:
   .zero 64

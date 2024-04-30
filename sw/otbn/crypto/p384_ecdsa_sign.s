@@ -34,10 +34,6 @@ start:
  * @param[out]   dmem[s]: s component of signature
  */
 ecdsa_sign:
-  /* Fill gpp registers with pointers to scalar shares */
-  la       x20, k0
-  la       x21, k1
-
   /* Generate a fresh random scalar for signing.
        dmem[k0] <= first share of k
        dmem[k1] <= second share of k */
@@ -45,15 +41,15 @@ ecdsa_sign:
 
   /* Fill gpp registers with pointers to variables required for p384_sign */
   /* scalar shares */
-  la        x17, k0
+  /*la        x17, k0
   la        x19, k1
   /* message */
-  la        x6, msg
+  /*la        x6, msg
   /* signature values */
-  la        x14, r
+  /*la        x14, r
   la        x15, s
   /* secret key shares */
-  la        x4, d0
+  /*la        x4, d0
   la        x5, d1
 
   /* Generate the signature. */
