@@ -14,15 +14,6 @@
 .section .text.start
 
 p384_ecdsa_sign_test:
-  /* Fill gpp registers with pointers to variables */
-  la        x17, k0
-  la        x19, k1
-  la        x6, msg
-  la        x14, r
-  la        x15, s
-  la        x4, d0
-  la        x5, d1
-
   /* call ECDSA signing subroutine in P-384 lib */
   jal       x1, p384_sign
 
@@ -42,6 +33,7 @@ p384_ecdsa_sign_test:
 .data
 
 /* 1st scalar share k0 (448-bit) */
+.globl k0
 k0:
   .word 0x5c832a51
   .word 0x3eb17c27
@@ -60,6 +52,7 @@ k0:
   .zero 8
 
 /* 2nd scalar share k1 (448-bit) */
+.globl k1
 k1:
   .word 0xe50b5e8e
   .word 0x776ad076
@@ -94,6 +87,7 @@ nonce_k:
   .zero 16
 
 /* 1st private key share d0 (448-bit) */
+.globl d0
 d0:
   .word 0x5c832a51
   .word 0x3eb17c27
@@ -112,6 +106,7 @@ d0:
   .zero 8
 
 /* 2nd private key share d1 (448-bit) */
+.globl d1
 d1:
   .word 0x33eae098
   .word 0xd31b18d5
@@ -146,6 +141,7 @@ priv_key_d:
   .zero 16
 
 /* message */
+.globl msg
 msg:
   .word 0x55555555
   .word 0x55555555
@@ -162,9 +158,11 @@ msg:
   .zero 16
 
 /* signature R */
+.globl r
 r:
   .zero 64
 
 /* signature S */
+.globl s
 s:
   .zero 64
