@@ -97,7 +97,10 @@ impl Xmodem {
                     }
                 }
                 _ => {
-                    log::info!("Unknown byte received while waiting for XMODEM start: {ch:#x?}");
+                    let p = ch as char;
+                    log::info!(
+                        "Unknown byte received while waiting for XMODEM start: {p:?} ({ch:#x?})"
+                    );
                 }
             }
         }
