@@ -9,17 +9,22 @@ class hmac_datapath_stress_vseq extends hmac_smoke_vseq;
   `uvm_object_utils(hmac_datapath_stress_vseq)
   `uvm_object_new
 
-  rand int msg_size_base;
+  rand int nb_blk_msg;
 
-  constraint msg_size_base_c {
-    msg_size_base dist {
-        0       :/1,
-        [1:156] :/1
+  constraint nb_blk_msg_c {
+    nb_blk_msg dist {
+      0       :/1,
+      [1:156] :/1
     };
   }
 
   constraint msg_c {
-    msg.size() == 1 + msg_size_base * HMAC_HASH_SIZE;
+    solve digest_size before msg;
+    if (digest_size == SHA2_256) {
+      msg.size() == 1 + nb_blk_msg * HMAC_BLK_SIZE_SHA2_256;
+    } else {
+      msg.size() == 1 + nb_blk_msg * HMAC_BLK_SIZE_SHA2_384_512;
+    }
   }
 
   constraint hmac_en_c {

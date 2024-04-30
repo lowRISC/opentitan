@@ -16,12 +16,6 @@ class hmac_test_vectors_sha_vseq extends hmac_base_vseq;
 
   string vector_list[] = test_vectors_pkg::sha_file_list;
 
-  // HMAC key size will always be 1024 bits.
-  // key_length determines actual key size used in HW and scoreboard.
-  constraint key_c {
-    key.size() == NUM_KEYS;
-  }
-
   constraint hmac_disabled_c {
     soft hmac_en == 0;
   }
@@ -91,7 +85,7 @@ class hmac_test_vectors_sha_vseq extends hmac_base_vseq;
         trigger_hash();
 
         // wr_msg is non_blocking to ensure the order of input msg
-        wr_msg(parsed_vectors[j].msg, 1);
+        wr_msg(parsed_vectors[j].msg);
 
         trigger_process();
 

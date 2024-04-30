@@ -21,12 +21,13 @@ package hmac_env_pkg;
   `include "dv_macros.svh"
 
   // local parameters and types
-  parameter uint32 HMAC_MSG_FIFO_DEPTH       = 32;
-  parameter uint32 HMAC_MSG_FIFO_DEPTH_BYTES = HMAC_MSG_FIFO_DEPTH * 4;
-  parameter uint32 HMAC_MSG_FIFO_SIZE        = 2048;
-  parameter uint32 HMAC_MSG_FIFO_BASE        = 32'h1000;
-  parameter uint32 HMAC_MSG_FIFO_LAST_ADDR   = HMAC_MSG_FIFO_BASE + HMAC_MSG_FIFO_SIZE - 1;
-  parameter uint32 HMAC_HASH_SIZE            = 64;
+  parameter uint32 HMAC_MSG_FIFO_DEPTH        = 32;
+  parameter uint32 HMAC_MSG_FIFO_DEPTH_BYTES  = HMAC_MSG_FIFO_DEPTH * 4;
+  parameter uint32 HMAC_MSG_FIFO_SIZE         = 2048;
+  parameter uint32 HMAC_MSG_FIFO_BASE         = 32'h1000;
+  parameter uint32 HMAC_MSG_FIFO_LAST_ADDR    = HMAC_MSG_FIFO_BASE + HMAC_MSG_FIFO_SIZE - 1;
+  parameter uint32 HMAC_BLK_SIZE_SHA2_256     = 512/8;  // Nb bytes
+  parameter uint32 HMAC_BLK_SIZE_SHA2_384_512 = 1024/8; // Nb bytes
   // 48 cycles of hashing, 16 cycles to rd next 16 words, 1 cycle to update digest
   parameter uint32 HMAC_MSG_PROCESS_CYCLES   = 65;
   // 80 cycles for hmac key padding
@@ -41,42 +42,49 @@ package hmac_env_pkg;
   parameter uint NUM_ALERTS = 1;
   parameter string LIST_OF_ALERTS[] = {"fatal_fault"};
 
-  typedef enum {
-    HmacDone,
-    HmacMsgFifoEmpty,
-    HmacErr
+  // HMAC interrupt register indices
+  typedef enum int {
+    HmacDone          = 0,
+    HmacMsgFifoEmpty  = 1,
+    HmacErr           = 2
   } hmac_intr_e;
 
-  typedef enum {
-    HmacStaMsgFifoEmpty,
-    HmacStaMsgFifoFull,
-    HmacStaMsgFifoDepth = 4
+  // HMAC status register indices
+  typedef enum int {
+    HmacStaMsgFifoEmpty     = 0,
+    HmacStaMsgFifoFull      = 1,
+    HmacStaMsgFifoDepthLsb  = 4,
+    HmacStaMsgFifoDepthMsb  = 9
   } hmac_sta_e;
 
-  typedef enum {
-    HmacEn,
-    ShaEn,
-    EndianSwap,
-    DigestSwap,
-    DigestSize,
-    KeyLength
+  // HMAC cfg register indices
+  typedef enum int {
+    HmacEn        = 0,
+    ShaEn         = 1,
+    EndianSwap    = 2,
+    DigestSwap    = 3,
+    DigestSizeLsb = 4,
+    DigestSizeMsb = 7,
+    KeyLengthLsb  = 8,
+    KeyLengthMsb  = 13
   } hmac_cfg_e;
 
-  typedef enum {
-    HashStart,
-    HashProcess,
-    HashStop,
-    HashContinue
+  // HMAC cmd register indices
+  typedef enum int {
+    HashStart     = 0,
+    HashProcess   = 1,
+    HashStop      = 2,
+    HashContinue  = 3
   } hmac_cmd_e;
 
-  typedef enum bit [TL_DW-1:0] {
-    NoError                    = 32'h 0000_0000,
-    SwPushMsgWhenShaDisabled   = 32'h 0000_0001,
-    SwHashStartWhenShaDisabled = 32'h 0000_0002,
-    SwUpdateSecretKeyInProcess = 32'h 0000_0003,
-    SwHashStartWhenActive      = 32'h 0000_0004,
-    SwPushMsgWhenIdle          = 32'h 0000_0005,
-    SwInvalidConfig            = 32'h 0000_0006
+  typedef enum int {
+    NoError                    = 0,
+    SwPushMsgWhenShaDisabled   = 1,
+    SwHashStartWhenShaDisabled = 2,
+    SwUpdateSecretKeyInProcess = 3,
+    SwHashStartWhenActive      = 4,
+    SwPushMsgWhenIdle          = 5,
+    SwInvalidConfig            = 6
   } err_code_e;
 
   // Enum for the timing when issue wipe_secret CSR.
@@ -87,6 +95,11 @@ package hmac_env_pkg;
     WipeSecretBeforeProcess,
     WipeSecretBeforeDone
   } wipe_secret_req_e;
+
+  typedef enum int {
+    SameContext       = 0,
+    DifferentContext  = 1
+  } save_and_restore_e;
 
   typedef class hmac_env_cfg;
   typedef class hmac_env_cov;

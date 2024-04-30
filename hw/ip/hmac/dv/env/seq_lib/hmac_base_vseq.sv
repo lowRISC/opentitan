@@ -19,7 +19,10 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
   rand bit                wr_key_during_hash;
   rand bit                hmac_en;
   rand bit [3:0]          digest_size;
+  rand bit [31:0]         key[NUM_KEYS];
   rand bit [5:0]          key_length;
+  rand bit                endian_swap;
+  rand bit                digest_swap;
 
   constraint wr_addr_c {
     wr_addr inside {[HMAC_MSG_FIFO_BASE : HMAC_MSG_FIFO_LAST_ADDR]};
@@ -260,7 +263,7 @@ constraint key_digest_c {
 
       if (ral.cfg.sha_en.get_mirrored_value()) begin
         if (!do_back_pressure) begin
-          if ($urandom_range(0, 1)) check_status_intr();
+          if ($urandom_range(0, 1)) read_status_intr_clr();
         end
         // randomly change key, config regs during msg wr, should trigger error or be discarded
         write_discard_config_and_key(wr_config_during_hash, wr_key_during_hash);
@@ -271,7 +274,7 @@ constraint key_digest_c {
     // ensure all msg fifo are written before trigger hmac_process
     csr_utils_pkg::wait_no_outstanding_access();
     if ($urandom_range(0, 1)) rd_msg_length();
-    check_status_intr();
+    read_status_intr_clr();
   endtask
 
   // read fifo_depth reg and burst write a chunk of words
@@ -294,41 +297,40 @@ constraint key_digest_c {
           tl_access(.addr(cfg.ral.get_addr_from_offset(wr_addr)),
                     .write(1'b1), .data(word), .mask(wr_mask), .blocking($urandom_range(0, 1)));
         end
-        if (ral.cfg.sha_en.get_mirrored_value()) begin
-          //clear_intr_fifo_full();
-        end else begin
+        // Expected error as we may not push message into the FIFO while SHA is disabled
+        if (!ral.cfg.sha_en.get_mirrored_value()) begin
           check_error_code();
         end
       end else begin // remaining msg is smaller than the burst_wr_length
         wr_msg(msg_q);
         break;
       end
-    csr_utils_pkg::wait_no_outstanding_access();
-    if ($urandom_range(0, 1)) rd_msg_length();
+      csr_utils_pkg::wait_no_outstanding_access();
+      if ($urandom_range(0, 1)) rd_msg_length();
+      read_status_intr_clr();
     end
   endtask
 
   // read the message length from the DUT reg (but discard it)
   virtual task rd_msg_length();
-    bit [4*TL_DW-1:0] unused;
+    bit [2*TL_DW-1:0] unused;
     csr_rd_msg_length(unused);
   endtask
 
   // read the message length from the DUT reg
-  virtual task csr_rd_msg_length(output bit [4*TL_DW-1:0] msg_length);
+  virtual task csr_rd_msg_length(output bit [2*TL_DW-1:0] msg_length);
     csr_rd(ral.msg_length_upper, msg_length[2*TL_DW-1:TL_DW]);
     csr_rd(ral.msg_length_lower, msg_length[TL_DW-1:0]);
   endtask
 
   // write message length to the DUT reg
-  virtual task csr_wr_msg_length(bit [4*TL_DW-1:0] msg_length);
+  virtual task csr_wr_msg_length(bit [2*TL_DW-1:0] msg_length);
     csr_wr(.ptr(ral.msg_length_upper), .value(msg_length[2*TL_DW-1:TL_DW]));
     csr_wr(.ptr(ral.msg_length_lower), .value(msg_length[TL_DW-1:0]));
   endtask
 
-  // read status FIFO FULL and check intr FIFO FULL
-  // if intr_fifo_full_enable is disable, check intr_fifo_full_state and clear it
-  virtual task check_status_intr();
+  // read status and interrupt state and clear the interrupt state
+  virtual task read_status_intr_clr();
     bit [TL_DW-1:0] rdata;
     csr_utils_pkg::wait_no_outstanding_access();
     csr_rd(ral.status, rdata);
