@@ -870,9 +870,16 @@ dif_result_t dif_kmac_reset(const dif_kmac_t *kmac,
   operation_state->r = 0;
   operation_state->offset = 0;
   operation_state->squeezing = false;
+  DIF_RETURN_IF_ERROR(dif_kmac_err_processed(kmac));
+  return kDifOk;
+}
+
+dif_result_t dif_kmac_err_processed(const dif_kmac_t *kmac) {
+  if (kmac == NULL) {
+    return kDifBadArg;
+  }
   uint32_t reg = 0;
   reg = bitfield_bit32_write(reg, KMAC_CMD_ERR_PROCESSED_BIT, 1);
-
   mmio_region_write32(kmac->base_addr, KMAC_CMD_REG_OFFSET, reg);
   return kDifOk;
 }
