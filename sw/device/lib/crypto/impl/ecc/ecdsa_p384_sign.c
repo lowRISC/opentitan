@@ -13,7 +13,7 @@
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('p', '3', 's')
 
-OTBN_DECLARE_APP_SYMBOLS(p384_ecdsa_sign);  // The OTBN ECDSA/P-384 app.
+OTBN_DECLARE_APP_SYMBOLS(p384_ecdsa_sign);       // The OTBN ECDSA/P-384 app.
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sign, d0);   // private key first share
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sign, d1);   // private key second share
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sign, msg);  // hash message to sign/verify
@@ -27,10 +27,8 @@ static const otbn_addr_t kOtbnVarEcdsaD1 =
     OTBN_ADDR_T_INIT(p384_ecdsa_sign, d1);
 static const otbn_addr_t kOtbnVarEcdsaMsg =
     OTBN_ADDR_T_INIT(p384_ecdsa_sign, msg);
-static const otbn_addr_t kOtbnVarEcdsaR =
-    OTBN_ADDR_T_INIT(p384_ecdsa_sign, r);
-static const otbn_addr_t kOtbnVarEcdsaS =
-    OTBN_ADDR_T_INIT(p384_ecdsa_sign, s);
+static const otbn_addr_t kOtbnVarEcdsaR = OTBN_ADDR_T_INIT(p384_ecdsa_sign, r);
+static const otbn_addr_t kOtbnVarEcdsaS = OTBN_ADDR_T_INIT(p384_ecdsa_sign, s);
 
 enum {
   /*

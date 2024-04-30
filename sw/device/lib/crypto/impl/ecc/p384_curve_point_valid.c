@@ -14,9 +14,11 @@
 #define MODULE_ID MAKE_MODULE_ID('p', '3', 'c')
 
 OTBN_DECLARE_APP_SYMBOLS(
-    p384_curve_point_valid); // The OTBN Curve Point Valid Check app.
-OTBN_DECLARE_SYMBOL_ADDR(p384_curve_point_valid, x); // The public key x-coordinate.
-OTBN_DECLARE_SYMBOL_ADDR(p384_curve_point_valid, y); // The public key y-coordinate.
+    p384_curve_point_valid);  // The OTBN Curve Point Valid Check app.
+OTBN_DECLARE_SYMBOL_ADDR(p384_curve_point_valid,
+                         x);  // The public key x-coordinate.
+OTBN_DECLARE_SYMBOL_ADDR(p384_curve_point_valid,
+                         y);  // The public key y-coordinate.
 
 static const otbn_app_t kOtbnAppCpv = OTBN_APP_T_INIT(p384_curve_point_valid);
 static const otbn_addr_t kOtbnVarCpvX =
