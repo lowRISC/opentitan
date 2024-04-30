@@ -7,8 +7,6 @@
 class hmac_test_vectors_sha_vseq extends hmac_base_vseq;
   `uvm_object_utils(hmac_test_vectors_sha_vseq)
   `uvm_object_new
-
-  rand bit [31:0] key[]; // random because SHA-2 will not use the key
   // TODO (#22932): remove this and use the constraints from hmac_base_vseq once
   // this test is adapted for all digest sizes and key lengths
   rand bit [5:0]  key_length;

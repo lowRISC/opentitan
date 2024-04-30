@@ -34,10 +34,14 @@ class hmac_smoke_vseq extends hmac_base_vseq;
   //msg[] is a streaming msg input so can be of any size and needs its size dist-constrained
   constraint msg_c {
     msg.size() dist {
-      0       :/ 1,
-      [1 :60] :/ 8,
-      [61:64] :/ 1
-    }; // upto 64 bytes (16 words, 512 bits)
+      0         :/ 3,   // Empty
+      [  1: 62] :/ 1,   // Less than a SHA-2 256 block (512-bit)
+      [ 63: 65] :/ 3,   // Around one SHA-2 256 block (512-bit)
+      [ 66:126] :/ 1,   // Less than a SHA-2 384/512 block (1024-bit) or two 512-bit blocks
+      [127:129] :/ 3,   // Around one SHA-2 384/512 block (1024-bit) or two 512-bit blocks
+      [130:254] :/ 1,   // Less than two 1024-bit blocks
+      [255:257] :/ 3    // Around two 1024-bit blocks
+    };
   }
 
   constraint burst_wr_c {
@@ -74,8 +78,8 @@ class hmac_smoke_vseq extends hmac_base_vseq;
       `DV_CHECK_RANDOMIZE_FATAL(this)
       `uvm_info(`gfn, $sformatf("starting seq %0d/%0d, message size %0d bits, hmac=%0d, sha=%0d",
                 i, num_trans, msg.size()*8, hmac_en, sha_en), UVM_LOW)
-      `uvm_info(`gfn, $sformatf("digest size=%4b, key length=%6b",
-                digest_size, key_length), UVM_LOW)
+      `uvm_info(`gfn, $sformatf("digest size=%s, key length=%0d",
+                get_digest_size(digest_size), get_key_length(key_length)), UVM_LOW)
       `uvm_info(`gfn, $sformatf("intr_fifo_empty/hmac_done/hmac_err_en=%b, endian/digest_swap=%b",
                 {intr_fifo_empty_en, intr_hmac_done_en, intr_hmac_err_en},
                 {endian_swap, digest_swap}), UVM_LOW)
@@ -150,7 +154,10 @@ class hmac_smoke_vseq extends hmac_base_vseq;
         end
 
         // msg stream in finished, start hash
-        if (do_hash_start) trigger_process();
+        if (do_hash_start) begin
+          `uvm_info(`gfn, $sformatf("triggering process because msg stream is finished"), UVM_LOW)
+          trigger_process();
+        end
 
         // there is one clk cycle difference between scb and design when predict fifo_empty,
         // it could happen when input message length is not a multiple of 4, then in design
